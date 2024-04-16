@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ThreadUnitTest.cc                                           (C) 2000-2022 */
+/* ThreadUnitTest.cc                                           (C) 2000-2024 */
 /*                                                                           */
 /* Service de test des threads.                                              */
 /*---------------------------------------------------------------------------*/
@@ -100,6 +100,7 @@ class Test1 : public TraceAccessor
       SpinLock::ScopedLock sl(m_lock);
       m_count2 += 10;
     }
+    std::cout << "MY_THREAD=" << platform::getThreadImplementationService()->currentThread() << "\n";
   }
   SpinLock m_lock;
   std::atomic<Int32> m_count;

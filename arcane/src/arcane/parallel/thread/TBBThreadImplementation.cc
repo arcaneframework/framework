@@ -54,11 +54,8 @@ typedef std::thread ThreadType;
 // la méthode IThreadImplementation::currentThread().
 inline Int64 arcaneGetThisThreadId()
 {
-  std::thread::id i = std::this_thread::get_id();
-  static_assert(sizeof(std::thread::id)>=4,"arcaneGetThisThreadId() not implemented if sizeof(std::thread::id)<4");
-  if (sizeof(std::thread::id)>=8)
-    return *reinterpret_cast<Int64*>(&i);
-  return *reinterpret_cast<Int32*>(&i);
+  Int64 v = std::hash<std::thread::id>{}(std::this_thread::get_id());
+  return v;
 }
 #else
 struct ThreadId
