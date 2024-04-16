@@ -884,7 +884,6 @@ _computeItemsToSend2()
 void MeshExchange::
 _computeMeshConnectivityInfos3()
 {
-  info() << "--- _computeMeshConnectivityInfos3" ;
   if (!m_mesh->itemFamilyNetwork()) info() << "Should have an IItemFamilyNetwork. Exiting.";
   //1-Prepare data structure
   m_ghost_item_dest_ranks_map.resize(m_parallel_mng->commSize());
@@ -892,6 +891,7 @@ _computeMeshConnectivityInfos3()
       _allocData(family);
       },
       IItemFamilyNetwork::TopologicalOrder);
+
   // Here the algorithm propagates the owner to the neighborhood
   // The propagation to the items owned (dependencies) has already been done in updateOwnersFromCell
   // Todo include also the owned item propagation (would avoid to call updateOwnersFromCell...)
@@ -1243,6 +1243,8 @@ _computeItemsToSend3()
 void MeshExchange::
 _setItemsToSend(IItemFamily* family)
 {
+  if(family->nbItem()==0)
+    return ;
   auto iter = m_items_to_send.find(family);
   if (iter==m_items_to_send.end())
     ARCANE_FATAL("No items to send for family '{0}'",family->name());
