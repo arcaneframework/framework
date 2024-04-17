@@ -1,27 +1,22 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Atomic.cc                                                   (C) 2000-2016 */
+/* Atomic.cc                                                   (C) 2000-2024 */
 /*                                                                           */
 /* Types atomiques pour le multi-threading.                                  */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/ArcanePrecomp.h"
-
 #include "arcane/utils/Atomic.h"
 
+#ifdef ARCANE_HAS_CXX20
+#include <atomic>
+#else
 #include <glib.h>
-
-// NOTE: Versions de GLIB suivant les distributions Linux.
-// CentOS 6 -> 2.28
-// CentOS 7 -> 2.46
-#if GLIB_CHECK_VERSION(2,30,0)
-#define ARCANE_GLIB_HAS_ATOMIC_ADD
 #endif
 
 #include <iostream>
@@ -29,7 +24,48 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
+
+namespace
+{
+  void _setValue(volatile Int32* ptr, Int32 value)
+  {
+#ifdef ARCANE_HAS_CXX20
+    std::atomic_ref<Int32> r(*const_cast<Int32*>(ptr));
+    r.store(value);
+#else
+    g_atomic_int_set(ptr, value);
+#endif
+  }
+  Int32 _getValue(volatile Int32* ptr)
+  {
+#ifdef ARCANE_HAS_CXX20
+    std::atomic_ref<Int32> r(*const_cast<Int32*>(ptr));
+    return r.load();
+#else
+    return g_atomic_int_get(ptr);
+#endif
+  }
+  Int32 _atomicAdd(volatile Int32* ptr)
+  {
+#ifdef ARCANE_HAS_CXX20
+    std::atomic_ref<Int32> r(*const_cast<Int32*>(ptr));
+    return r.fetch_add(1) + 1;
+#else
+    return g_atomic_int_add(ptr, 1) + 1;
+#endif
+  }
+  Int32 _atomicSub(volatile Int32* ptr)
+  {
+#ifdef ARCANE_HAS_CXX20
+    std::atomic_ref<Int32> r(*const_cast<Int32*>(ptr));
+    return r.fetch_sub(1) - 1;
+#else
+    return g_atomic_int_add(ptr, -1) - 1;
+#endif
+  }
+} // namespace
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -52,33 +88,25 @@ ARCANE_BEGIN_NAMESPACE
 AtomicInt32::
 AtomicInt32(int v)
 {
-  g_atomic_int_set(&m_value,v);
+  _setValue(&m_value, v);
 }
 
 Int32 AtomicInt32::
 operator++()
 {
-#ifdef ARCANE_GLIB_HAS_ATOMIC_ADD
-  return g_atomic_int_add(&m_value,1)+1;
-#else
-  return g_atomic_int_exchange_and_add(&m_value,1)+1;
-#endif
+  return _atomicAdd(&m_value);
 }
 
 Int32 AtomicInt32::
 operator--()
 {
-#ifdef ARCANE_GLIB_HAS_ATOMIC_ADD
-  return g_atomic_int_add(&m_value,-1)-1;
-#else
-  return g_atomic_int_exchange_and_add(&m_value,-1)-1;
-#endif
+  return _atomicSub(&m_value);
 }
 
 void AtomicInt32::
 operator=(Int32 v)
 {
-  g_atomic_int_set(&m_value,v);
+  _setValue(&m_value, v);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -87,44 +115,37 @@ operator=(Int32 v)
 Int32 AtomicInt32::
 value() const
 {
-  return g_atomic_int_get(&m_value);
+  return _getValue(&m_value);
 }
 
 Int32 AtomicInt32::
 increment(volatile Int32* v)
 {
-#ifdef ARCANE_GLIB_HAS_ATOMIC_ADD
-  return (g_atomic_int_add(v, 1) + 1);
-#else
-  return g_atomic_int_exchange_and_add(v,1)+1;
-#endif
+  return _atomicAdd(v);
 }
 
-Int32 AtomicInt32::decrement(volatile Int32* v)
+Int32 AtomicInt32::
+decrement(volatile Int32* v)
 {
-#ifdef ARCANE_GLIB_HAS_ATOMIC_ADD
-  return g_atomic_int_add(v,-1)-1;
-#else
-  return g_atomic_int_exchange_and_add(v,-1)-1;
-#endif
+  return _atomicSub(v);
 }
 
 void AtomicInt32::
-setValue(volatile Int32* v,Int32 new_v)
+setValue(volatile Int32* v, Int32 new_v)
 {
-  g_atomic_int_set(v,new_v);
+  _setValue(v, new_v);
 }
 
 Int32 AtomicInt32::
 getValue(volatile Int32* v)
 {
-  return g_atomic_int_get(v);
+  return _getValue(v);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
