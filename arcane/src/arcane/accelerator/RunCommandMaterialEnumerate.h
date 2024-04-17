@@ -587,7 +587,31 @@ doMatContainerGPULambda(ContainerType items, Lambda func)
   }
 }
 
-#endif // ARCANE_COMPILING_CUDA
+#endif // ARCANE_COMPILING_CUDA || ARCANE_COMPILING_HIP
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+#if defined(ARCANE_COMPILING_SYCL)
+
+template <typename ContainerType, typename Lambda>
+class DoMatContainerSYCLLambda
+{
+ public:
+
+  void operator()(sycl::id<1> x, ContainerType items, Lambda func) const
+  {
+    auto privatizer = privatize(func);
+    auto& body = privatizer.privateCopy();
+
+    Int32 i = static_cast<Int32>(x);
+    if (i < items.size()) {
+      body(items[i]);
+    }
+  }
+};
+
+#endif
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -619,6 +643,9 @@ _applyEnvCells(RunCommand& command, ContainerType items, const Lambda& func)
     break;
   case eExecutionPolicy::HIP:
     _applyKernelHIP(launch_info, ARCANE_KERNEL_HIP_FUNC(doMatContainerGPULambda) < ContainerType, Lambda >, func, items);
+    break;
+  case eExecutionPolicy::SYCL:
+    _applyKernelSYCL(launch_info, ARCANE_KERNEL_SYCL_FUNC(impl::DoMatContainerSYCLLambda) < ContainerType, Lambda > {}, func, items);
     break;
   case eExecutionPolicy::Sequential:
     for (Int32 i = 0, n = vsize; i < n; ++i)
