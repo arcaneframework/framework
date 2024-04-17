@@ -13,7 +13,11 @@
 
 #include "arcane/utils/Atomic.h"
 
+#ifdef ARCANE_HAS_CXX20
+#include <atomic>
+#else
 #include <glib.h>
+#endif
 
 #include <iostream>
 
@@ -22,6 +26,46 @@
 
 namespace Arcane
 {
+
+namespace
+{
+  void _setValue(volatile Int32* ptr, Int32 value)
+  {
+#ifdef ARCANE_HAS_CXX20
+    std::atomic_ref<Int32> r(*const_cast<Int32*>(ptr));
+    r.store(value);
+#else
+    g_atomic_int_set(ptr, value);
+#endif
+  }
+  Int32 _getValue(volatile Int32* ptr)
+  {
+#ifdef ARCANE_HAS_CXX20
+    std::atomic_ref<Int32> r(*const_cast<Int32*>(ptr));
+    return r.load();
+#else
+    return g_atomic_int_get(ptr);
+#endif
+  }
+  Int32 _atomicAdd(volatile Int32* ptr)
+  {
+#ifdef ARCANE_HAS_CXX20
+    std::atomic_ref<Int32> r(*const_cast<Int32*>(ptr));
+    return r.fetch_add(1) + 1;
+#else
+    return g_atomic_int_add(ptr, 1) + 1;
+#endif
+  }
+  Int32 _atomicSub(volatile Int32* ptr)
+  {
+#ifdef ARCANE_HAS_CXX20
+    std::atomic_ref<Int32> r(*const_cast<Int32*>(ptr));
+    return r.fetch_sub(1) - 1;
+#else
+    return g_atomic_int_add(ptr, -1) - 1;
+#endif
+  }
+} // namespace
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -44,25 +88,25 @@ namespace Arcane
 AtomicInt32::
 AtomicInt32(int v)
 {
-  g_atomic_int_set(&m_value, v);
+  _setValue(&m_value, v);
 }
 
 Int32 AtomicInt32::
 operator++()
 {
-  return g_atomic_int_add(&m_value, 1) + 1;
+  return _atomicAdd(&m_value);
 }
 
 Int32 AtomicInt32::
 operator--()
 {
-  return g_atomic_int_add(&m_value, -1) - 1;
+  return _atomicSub(&m_value);
 }
 
 void AtomicInt32::
 operator=(Int32 v)
 {
-  g_atomic_int_set(&m_value, v);
+  _setValue(&m_value, v);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -71,30 +115,31 @@ operator=(Int32 v)
 Int32 AtomicInt32::
 value() const
 {
-  return g_atomic_int_get(&m_value);
+  return _getValue(&m_value);
 }
 
 Int32 AtomicInt32::
 increment(volatile Int32* v)
 {
-  return (g_atomic_int_add(v, 1) + 1);
+  return _atomicAdd(v);
 }
 
-Int32 AtomicInt32::decrement(volatile Int32* v)
+Int32 AtomicInt32::
+decrement(volatile Int32* v)
 {
-  return g_atomic_int_add(v, -1) - 1;
+  return _atomicSub(v);
 }
 
 void AtomicInt32::
 setValue(volatile Int32* v, Int32 new_v)
 {
-  g_atomic_int_set(v, new_v);
+  _setValue(v, new_v);
 }
 
 Int32 AtomicInt32::
 getValue(volatile Int32* v)
 {
-  return g_atomic_int_get(v);
+  return _getValue(v);
 }
 
 /*---------------------------------------------------------------------------*/
