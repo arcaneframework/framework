@@ -17,9 +17,9 @@
 #include "arcane/utils/SpinLock.h"
 #include "arcane/utils/Mutex.h"
 
-#include "arcane/BasicUnitTest.h"
-#include "arcane/IMesh.h"
-#include "arcane/IItemFamily.h"
+#include "arcane/core/BasicUnitTest.h"
+#include "arcane/core/IMesh.h"
+#include "arcane/core/IItemFamily.h"
 
 #include "arcane/tests/ArcaneTestGlobal.h"
 #include "arcane/tests/ThreadUnitTest_axl.h"
@@ -72,13 +72,24 @@ class MyThread
 
 namespace ThreadTest
 {
-class Test1 : public TraceAccessor
+class Test1
+: public TraceAccessor
 {
  public:
-  Test1(ITraceMng* tm) : TraceAccessor(tm), m_count(0), m_count2(0){}
+
+  explicit Test1(ITraceMng* tm)
+  : TraceAccessor(tm)
+  {
+  }
+
  public:
+
   void exec()
   {
+    m_atomic_add_count = 0;
+    m_atomic_sub_count = 3000;
+    AtomicInt32::setValue(&m_add_count,0);
+    AtomicInt32::setValue(&m_sub_count,3000);
     for( Integer i=0; i<100; ++i ){
       FunctorT<Test1> f1(this,&Test1::_F1);
       constexpr Integer nb = 10;
@@ -88,10 +99,25 @@ class Test1 : public TraceAccessor
       for( Integer j=0; j<nb; ++j )
         threads[j].join();
     }
+    info() << "ATOMIC_ADD_COUNT=" << m_atomic_add_count.value();
+    info() << "ATOMIC_SUB_COUNT=" << m_atomic_sub_count.value();
+    info() << "ADD_COUNT=" << m_add_count;
+    info() << "SUB_COUNT=" << m_sub_count;
+
     if (m_count.load()!=1000)
       ARCANE_FATAL("Bad value for atomic count: v={0} expected=1000",m_count.load());
     if (m_count2!=10000)
       ARCANE_FATAL("Bad value for count2: v={0} expected=10000",m_count2);
+
+    if (m_atomic_add_count.value()!=3000)
+      ARCANE_FATAL("Bad value for atomic m_atomic_add_count: v={0} expected=3000",m_atomic_add_count.value());
+    if (m_atomic_sub_count.value()!=0)
+      ARCANE_FATAL("Bad value for atomic m_atomic_sub_count: v={0} expected=0",m_atomic_sub_count.value());
+
+    if (m_add_count!=3000)
+      ARCANE_FATAL("Bad value for atomic m_add_count: v={0} expected=3000",m_add_count);
+    if (m_sub_count!=0)
+      ARCANE_FATAL("Bad value for atomic m_sub_count: v={0} expected=0",m_sub_count);
   }
   void _F1()
   {
@@ -100,11 +126,23 @@ class Test1 : public TraceAccessor
       SpinLock::ScopedLock sl(m_lock);
       m_count2 += 10;
     }
-    std::cout << "MY_THREAD=" << platform::getThreadImplementationService()->currentThread() << "\n";
+    for( Int32 i=0;i<3; ++i ){
+      ++m_atomic_add_count;
+      AtomicInt32::increment(&m_add_count);
+    }
+    for( Int32 i=0;i<3; ++i ){
+      --m_atomic_sub_count;
+      AtomicInt32::decrement(&m_sub_count);
+    }
+    info() << "MY_THREAD=" << platform::getThreadImplementationService()->currentThread();
   }
   SpinLock m_lock;
-  std::atomic<Int32> m_count;
-  Int32 m_count2;
+  std::atomic<Int32> m_count = 0;
+  AtomicInt32 m_atomic_add_count;
+  AtomicInt32 m_atomic_sub_count;
+  Int32 m_add_count;
+  Int32 m_sub_count; 
+ Int32 m_count2 = 0;
 };
 
 class RealTime
@@ -122,7 +160,8 @@ class Test2
 {
  public:
 
-  Test2(ITraceMng* tm) : TraceAccessor(tm), m_value(0)
+  explicit Test2(ITraceMng* tm)
+  : TraceAccessor(tm)
   {
   }
 
@@ -165,7 +204,7 @@ class Test2
   }
  private:
 
-  Int64 m_value;
+  Int64 m_value = 0;
 };
 
 }
