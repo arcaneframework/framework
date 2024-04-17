@@ -129,6 +129,7 @@ void doDirectGPULambdaArrayBounds(LoopBoundType bounds,Lambda func)
 
 #if defined(ARCANE_COMPILING_SYCL)
 
+//! Boucle N-dimension sans indirection
 template<typename LoopBoundType,typename Lambda>
 class DoDirectSYCLLambdaArrayBounds
 {
@@ -141,6 +142,26 @@ class DoDirectSYCLLambdaArrayBounds
     Int32 i = static_cast<Int32>(x);
     if (i<bounds.nbElement()){
       body(bounds.getIndices(i));
+    }
+  }
+};
+
+//! Boucle 1D avec indirection
+template<typename BuilderType,typename Lambda>
+class DoIndirectSYCLLambda
+{
+ public:
+  void operator()(sycl::id<1> x, SmallSpan<const Int32> ids,Lambda func) const
+  {
+    using LocalIdType = BuilderType::ValueType;
+
+    auto privatizer = privatize(func);
+    auto& body = privatizer.privateCopy();
+
+    Int32 i = static_cast<Int32>(x);
+    if (i<ids.size()){
+      LocalIdType lid(ids[i]);
+      body(BuilderType::create(i,lid));
     }
   }
 };
