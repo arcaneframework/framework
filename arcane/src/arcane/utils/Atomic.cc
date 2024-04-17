@@ -1,35 +1,27 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Atomic.cc                                                   (C) 2000-2016 */
+/* Atomic.cc                                                   (C) 2000-2024 */
 /*                                                                           */
 /* Types atomiques pour le multi-threading.                                  */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/ArcanePrecomp.h"
-
 #include "arcane/utils/Atomic.h"
 
 #include <glib.h>
-
-// NOTE: Versions de GLIB suivant les distributions Linux.
-// CentOS 6 -> 2.28
-// CentOS 7 -> 2.46
-#if GLIB_CHECK_VERSION(2,30,0)
-#define ARCANE_GLIB_HAS_ATOMIC_ADD
-#endif
 
 #include <iostream>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -52,33 +44,25 @@ ARCANE_BEGIN_NAMESPACE
 AtomicInt32::
 AtomicInt32(int v)
 {
-  g_atomic_int_set(&m_value,v);
+  g_atomic_int_set(&m_value, v);
 }
 
 Int32 AtomicInt32::
 operator++()
 {
-#ifdef ARCANE_GLIB_HAS_ATOMIC_ADD
-  return g_atomic_int_add(&m_value,1)+1;
-#else
-  return g_atomic_int_exchange_and_add(&m_value,1)+1;
-#endif
+  return g_atomic_int_add(&m_value, 1) + 1;
 }
 
 Int32 AtomicInt32::
 operator--()
 {
-#ifdef ARCANE_GLIB_HAS_ATOMIC_ADD
-  return g_atomic_int_add(&m_value,-1)-1;
-#else
-  return g_atomic_int_exchange_and_add(&m_value,-1)-1;
-#endif
+  return g_atomic_int_add(&m_value, -1) - 1;
 }
 
 void AtomicInt32::
 operator=(Int32 v)
 {
-  g_atomic_int_set(&m_value,v);
+  g_atomic_int_set(&m_value, v);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -93,26 +77,18 @@ value() const
 Int32 AtomicInt32::
 increment(volatile Int32* v)
 {
-#ifdef ARCANE_GLIB_HAS_ATOMIC_ADD
   return (g_atomic_int_add(v, 1) + 1);
-#else
-  return g_atomic_int_exchange_and_add(v,1)+1;
-#endif
 }
 
 Int32 AtomicInt32::decrement(volatile Int32* v)
 {
-#ifdef ARCANE_GLIB_HAS_ATOMIC_ADD
-  return g_atomic_int_add(v,-1)-1;
-#else
-  return g_atomic_int_exchange_and_add(v,-1)-1;
-#endif
+  return g_atomic_int_add(v, -1) - 1;
 }
 
 void AtomicInt32::
-setValue(volatile Int32* v,Int32 new_v)
+setValue(volatile Int32* v, Int32 new_v)
 {
-  g_atomic_int_set(v,new_v);
+  g_atomic_int_set(v, new_v);
 }
 
 Int32 AtomicInt32::
@@ -124,7 +100,7 @@ getValue(volatile Int32* v)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
