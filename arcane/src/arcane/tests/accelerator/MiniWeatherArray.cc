@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -152,8 +152,10 @@ class MiniWeatherArray
   void semi_discrete_step(NumArray3Type& nstate_init, NumArray3Type& nstate_forcing,
                           NumArray3Type& nstate_out, double dt, int dir,
                           NumArray3Type& flux, NumArray3Type& tend);
-  void compute_tendencies_x(NumArray3Type& nstate, NumArray3Type& flux, NumArray3Type& tend);
-  void compute_tendencies_z(NumArray3Type& nstate, NumArray3Type& flux, NumArray3Type& tend);
+  void compute_tendencies_x(NumArray3Type& nstate, NumArray3Type& flux);
+  void compute_tendencies_final_x(NumArray3Type& flux, NumArray3Type& tend);
+  void compute_tendencies_z(NumArray3Type& nstate, NumArray3Type& flux);
+  void compute_tendencies_final_z(NumArray3Type& nstate, NumArray3Type& flux, NumArray3Type& tend);
   void set_halo_values_x(NumArray3Type& nstate);
   void set_halo_values_z(NumArray3Type& nstate);
 
@@ -205,6 +207,7 @@ class MiniWeatherArray
   int num_out = 0;   // The number of outputs performed so far
   int direction_switch = 1;
   ax::Runner* m_runner = nullptr;
+  ax::RunQueue m_queue;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -224,6 +227,7 @@ MiniWeatherArray(IAcceleratorMng* am,ITraceMng* tm,int nb_cell_x,int nb_cell_z,
 , nflux(memory)
 , ntend(memory)
 , m_runner(am->defaultRunner())
+, m_queue(makeQueue(m_runner))
 {
   m_const.nx_glob = nb_cell_x; // Number of total cells in the x-direction
   m_const.nz_glob = nb_cell_z; // Number of total cells in the z-direction
@@ -241,6 +245,7 @@ MiniWeatherArray(IAcceleratorMng* am,ITraceMng* tm,int nb_cell_x,int nb_cell_z,
   init();
   //Output the initial state
   output(nstate, etime);
+  m_queue.setAsync(true);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -284,6 +289,7 @@ doOneIteration()
 
     //Inform the user
 
+    m_queue.barrier();
     info() << "Elapsed Time: " << etime << " / " << sim_time();
 
     //Update the elapsed time and output counter
@@ -359,18 +365,19 @@ semi_discrete_step(NumArray3Type& nstate_init, NumArray3Type& nstate_forcing, Nu
     // Set the halo values  in the x-direction
     set_halo_values_x(nstate_forcing);
     // Compute the time tendencies for the fluid state in the x-direction
-    compute_tendencies_x(nstate_forcing, flux, tend);
+    compute_tendencies_x(nstate_forcing, flux);
+    compute_tendencies_final_x(flux, tend);
   }
   else if (dir == DIR_Z){
     // Set the halo values  in the z-direction
     set_halo_values_z(nstate_forcing);
     // Compute the time tendencies for the fluid state in the z-direction
-    compute_tendencies_z(nstate_forcing, flux, tend);
+    compute_tendencies_z(nstate_forcing, flux);
+    compute_tendencies_final_z(nstate_forcing, flux, tend);
   }
 
-  auto queue = makeQueue(m_runner);
-  auto command = makeCommand(queue);
-
+  auto command = makeCommand(m_queue);
+  command.addKernelName("semi_discrete_step");
   auto state_init = ax::viewIn(command,nstate_init);
   auto state_out = ax::viewOut(command,nstate_out);
   auto in_tend = ax::viewIn(command,tend);
@@ -391,56 +398,68 @@ semi_discrete_step(NumArray3Type& nstate_init, NumArray3Type& nstate_forcing, Nu
 //Then, compute the tendencies using those fluxes
 template<typename LayoutType>
 void MiniWeatherArray<LayoutType>::
-compute_tendencies_x(NumArray3Type& nstate, NumArray3Type& flux, NumArray3Type& tend)
+compute_tendencies_x(NumArray3Type& nstate, NumArray3Type& flux)
 {
-  auto queue = makeQueue(m_runner);
-  auto command = makeCommand(queue);
-
-  auto state = ax::viewIn(command,nstate);
-
   const auto dx = this->dx();
   const auto nx = this->nx();
   const auto nz = this->nz();
 
-  auto in_hy_dens_cell = ax::viewIn(command,hy_dens_cell);
-  auto in_hy_dens_theta_cell = ax::viewIn(command,hy_dens_theta_cell);
-
-  const double hv_coef = -hv_beta * dx / (16 * dt());
-  //Compute fluxes in the x-direction for each cell
-  auto out_flux = ax::viewOut(command,flux);
-  command.addKernelName("compute_tendencies_x") << RUNCOMMAND_LOOP2(iter,nz,nx+1)
   {
-    auto [k, i] = iter();
-    double r, u, w, t, p, stencil[4], d3_vals[NUM_VARS], vals[NUM_VARS];
-    //Use fourth-order interpolation from four cell averages to compute the value at the interface in question
-    for ( int ll = 0; ll < NUM_VARS; ll++){
-      for ( int s = 0; s < sten_size; s++)
-        stencil[s] = state(ll,k+hs,i+s);
+    auto command = makeCommand(m_queue);
+    auto state = ax::viewIn(command,nstate);
+    auto in_hy_dens_cell = ax::viewIn(command,hy_dens_cell);
+    auto in_hy_dens_theta_cell = ax::viewIn(command,hy_dens_theta_cell);
 
-      //Fourth-order-accurate interpolation of the state
-      vals[ll] = -stencil[0] / 12 + 7 * stencil[1] / 12 + 7 * stencil[2] / 12 - stencil[3] / 12;
-      //First-order-accurate interpolation of the third spatial derivative of the state (for artificial viscosity)
-      d3_vals[ll] = -stencil[0] + 3 * stencil[1] - 3 * stencil[2] + stencil[3];
-    }
+    const double hv_coef = -hv_beta * dx / (16 * dt());
+    //Compute fluxes in the x-direction for each cell
+    auto out_flux = ax::viewOut(command,flux);
 
-    //Compute density, u-wind, w-wind, potential temperature, and pressure (r,u,w,t,p respectively)
-    r = vals[ID_DENS] + in_hy_dens_cell(k + hs);
-    u = vals[ID_UMOM] / r;
-    w = vals[ID_WMOM] / r;
-    t = (vals[ID_RHOT] + in_hy_dens_theta_cell(k + hs)) / r;
-    p = C0 * pow((r * t), gamm);
+    command.addKernelName("compute_tendencies_x") << RUNCOMMAND_LOOP2(iter,nz,nx+1)
+    {
+      auto [k, i] = iter();
+      double r, u, w, t, p, stencil[4], d3_vals[NUM_VARS], vals[NUM_VARS];
+      //Use fourth-order interpolation from four cell averages to compute the value at the interface in question
+      for ( int ll = 0; ll < NUM_VARS; ll++){
+        for ( int s = 0; s < sten_size; s++)
+          stencil[s] = state(ll,k+hs,i+s);
 
-    // Compute the flux vector
-    out_flux(ID_DENS,k,i) = r * u - hv_coef * d3_vals[ID_DENS];
-    out_flux(ID_UMOM,k,i) = r * u * u + p - hv_coef * d3_vals[ID_UMOM];
-    out_flux(ID_WMOM,k,i) = r * u * w - hv_coef * d3_vals[ID_WMOM];
-    out_flux(ID_RHOT,k,i) = r * u * t - hv_coef * d3_vals[ID_RHOT];
-  };
+        //Fourth-order-accurate interpolation of the state
+        vals[ll] = -stencil[0] / 12 + 7 * stencil[1] / 12 + 7 * stencil[2] / 12 - stencil[3] / 12;
+        //First-order-accurate interpolation of the third spatial derivative of the state (for artificial viscosity)
+        d3_vals[ll] = -stencil[0] + 3 * stencil[1] - 3 * stencil[2] + stencil[3];
+      }
 
+      //Compute density, u-wind, w-wind, potential temperature, and pressure (r,u,w,t,p respectively)
+      r = vals[ID_DENS] + in_hy_dens_cell(k + hs);
+      u = vals[ID_UMOM] / r;
+      w = vals[ID_WMOM] / r;
+      t = (vals[ID_RHOT] + in_hy_dens_theta_cell(k + hs)) / r;
+      p = C0 * pow((r * t), gamm);
+
+      // Compute the flux vector
+      out_flux(ID_DENS,k,i) = r * u - hv_coef * d3_vals[ID_DENS];
+      out_flux(ID_UMOM,k,i) = r * u * u + p - hv_coef * d3_vals[ID_UMOM];
+      out_flux(ID_WMOM,k,i) = r * u * w - hv_coef * d3_vals[ID_WMOM];
+      out_flux(ID_RHOT,k,i) = r * u * t - hv_coef * d3_vals[ID_RHOT];
+    };
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<typename LayoutType> void MiniWeatherArray<LayoutType>::
+compute_tendencies_final_x(NumArray3Type& flux, NumArray3Type& tend)
+{
+  const auto dx = this->dx();
+  const auto nx = this->nx();
+  const auto nz = this->nz();
+
+  auto command = makeCommand(m_queue);
   auto in_flux = ax::viewIn(command,flux);
   auto out_tend = ax::viewOut(command,tend);
   // Use the fluxes to compute tendencies for each cell
-  command << RUNCOMMAND_LOOPN(iter,3,NUM_VARS,nz,nx)
+  command.addKernelName("compute_tendencies_final_x") << RUNCOMMAND_LOOPN(iter,3,NUM_VARS,nz,nx)
   {
     auto [ll, k, i] = iter();
     out_tend(iter) = -(in_flux(ll,k,i+1) - in_flux(iter)) / dx;
@@ -454,68 +473,100 @@ compute_tendencies_x(NumArray3Type& nstate, NumArray3Type& flux, NumArray3Type& 
 
 //First, compute the flux vector at each cell interface in the z-direction (including hyperviscosity)
 //Then, compute the tendencies using those fluxes
-template<typename LayoutType>
-void MiniWeatherArray<LayoutType>::
-compute_tendencies_z(NumArray3Type& nstate, NumArray3Type& flux, NumArray3Type& tend)
+template<typename LayoutType> void MiniWeatherArray<LayoutType>::
+compute_tendencies_z(NumArray3Type& nstate, NumArray3Type& flux)
 {
-  auto queue = makeQueue(m_runner);
-  auto command = makeCommand(queue);
-
   const auto dx = this->dx();
+  const auto nx = this->nx();
+  const auto nz = this->nz();
+
+  {
+    auto command = makeCommand(m_queue);
+    auto in_hy_dens_int = ax::viewIn(command,hy_dens_int);
+    auto in_hy_dens_theta_int = ax::viewIn(command,hy_dens_theta_int);
+    auto in_hy_pressure_int = ax::viewIn(command,hy_pressure_int);
+
+    auto state = ax::viewIn(command,nstate);
+    //Compute the hyperviscosity coeficient
+    const double hv_coef = -hv_beta * dx / (16 * dt());
+    //Compute fluxes in the x-direction for each cell
+    auto out_flux = ax::viewOut(command,flux);
+    command.addKernelName("compute_tendencies_z") << RUNCOMMAND_LOOPN(iter,2,nz+1,nx)
+    {
+      auto [k,i] = iter();
+
+      double r, u, w, t, p, stencil[4], d3_vals[NUM_VARS], vals[NUM_VARS];
+      //Use fourth-order interpolation from four cell averages to compute the value at the interface in question
+      for (int ll = 0; ll < NUM_VARS; ll++){
+        for (int s = 0; s < sten_size; s++)
+          stencil[s] = state(ll,k+s,i+hs);
+
+        //Fourth-order-accurate interpolation of the state
+        vals[ll] = -stencil[0] / 12 + 7 * stencil[1] / 12 + 7 * stencil[2] / 12 - stencil[3] / 12;
+        //First-order-accurate interpolation of the third spatial derivative of the state
+        d3_vals[ll] = -stencil[0] + 3 * stencil[1] - 3 * stencil[2] + stencil[3];
+      }
+
+      //Compute density, u-wind, w-wind, potential temperature, and pressure (r,u,w,t,p respectively)
+      r = vals[ID_DENS] + in_hy_dens_int(k);
+      u = vals[ID_UMOM] / r;
+      w = vals[ID_WMOM] / r;
+      t = (vals[ID_RHOT] + in_hy_dens_theta_int(k)) / r;
+      p = C0 * pow((r * t), gamm) - in_hy_pressure_int(k);
+
+      //Compute the flux vector with hyperviscosity
+      out_flux(ID_DENS,k,i) = r * w - hv_coef * d3_vals[ID_DENS];
+      out_flux(ID_UMOM,k,i) = r * w * u - hv_coef * d3_vals[ID_UMOM];
+      out_flux(ID_WMOM,k,i) = r * w * w + p - hv_coef * d3_vals[ID_WMOM];
+      out_flux(ID_RHOT,k,i) = r * w * t - hv_coef * d3_vals[ID_RHOT];
+    };
+  }
+}
+
+template<typename LayoutType> void MiniWeatherArray<LayoutType>::
+compute_tendencies_final_z(NumArray3Type& nstate, NumArray3Type& flux, NumArray3Type& tend)
+{
   const auto dz = this->dz();
   const auto nx = this->nx();
   const auto nz = this->nz();
 
-  auto in_hy_dens_int = ax::viewIn(command,hy_dens_int);
-  auto in_hy_dens_theta_int = ax::viewIn(command,hy_dens_theta_int);
-  auto in_hy_pressure_int = ax::viewIn(command,hy_pressure_int);
-
+  auto command = makeCommand(m_queue);
+  command.addKernelName("compute_tendencies_final_z");
   auto state = ax::viewIn(command,nstate);
-  //Compute the hyperviscosity coeficient
-  const double hv_coef = -hv_beta * dx / (16 * dt());
-  //Compute fluxes in the x-direction for each cell
-  auto out_flux = ax::viewOut(command,flux);
-  command << RUNCOMMAND_LOOPN(iter,2,nz+1,nx)
-  {
-    auto [k,i] = iter();
-
-    double r, u, w, t, p, stencil[4], d3_vals[NUM_VARS], vals[NUM_VARS];
-    //Use fourth-order interpolation from four cell averages to compute the value at the interface in question
-    for (int ll = 0; ll < NUM_VARS; ll++){
-      for (int s = 0; s < sten_size; s++)
-        stencil[s] = state(ll,k+s,i+hs);
-
-      //Fourth-order-accurate interpolation of the state
-      vals[ll] = -stencil[0] / 12 + 7 * stencil[1] / 12 + 7 * stencil[2] / 12 - stencil[3] / 12;
-      //First-order-accurate interpolation of the third spatial derivative of the state
-      d3_vals[ll] = -stencil[0] + 3 * stencil[1] - 3 * stencil[2] + stencil[3];
-    }
-
-    //Compute density, u-wind, w-wind, potential temperature, and pressure (r,u,w,t,p respectively)
-    r = vals[ID_DENS] + in_hy_dens_int(k);
-    u = vals[ID_UMOM] / r;
-    w = vals[ID_WMOM] / r;
-    t = (vals[ID_RHOT] + in_hy_dens_theta_int(k)) / r;
-    p = C0 * pow((r * t), gamm) - in_hy_pressure_int(k);
-
-    //Compute the flux vector with hyperviscosity
-    out_flux(ID_DENS,k,i) = r * w - hv_coef * d3_vals[ID_DENS];
-    out_flux(ID_UMOM,k,i) = r * w * u - hv_coef * d3_vals[ID_UMOM];
-    out_flux(ID_WMOM,k,i) = r * w * w + p - hv_coef * d3_vals[ID_WMOM];
-    out_flux(ID_RHOT,k,i) = r * w * t - hv_coef * d3_vals[ID_RHOT];
-  };
-
   // Use the fluxes to compute tendencies for each cell
   auto in_flux = ax::viewIn(command,flux);
   auto out_tend = ax::viewOut(command,tend);
-  command << RUNCOMMAND_LOOP(iter,ArrayBounds<MDDim3>(NUM_VARS,nz,nx))
-  {
-    auto [ll, k, i] = iter();
-    Real t = -(in_flux(ll,k+1,i) - in_flux(iter)) / dz;
-    if (ll == ID_WMOM)
-      t  = t - state(ID_DENS,k+hs,i+hs) * grav;
-    out_tend(iter) = t;
-  };
+  const bool do_old = false;
+  if (do_old){
+    command << RUNCOMMAND_LOOP(iter,ArrayBounds<MDDim3>(NUM_VARS,nz,nx))
+    {
+      auto [ll, k, i] = iter();
+      Real t = -(in_flux(ll,k+1,i) - in_flux(iter)) / dz;
+      if (ll == ID_WMOM)
+        t  = t - state(ID_DENS,k+hs,i+hs) * grav;
+      out_tend(iter) = t;
+    };
+  }
+  else{
+    command << RUNCOMMAND_LOOP(iter,ArrayBounds<MDDim2>(nz,nx))
+    {
+      auto [k, i] = iter();
+      double t1 = -(in_flux(ID_DENS,k+1,i) - in_flux(ID_DENS, k, i)) / dz;
+      double t2 = -(in_flux(ID_UMOM,k+1,i) - in_flux(ID_UMOM, k, i)) / dz;
+      double t3 = -(in_flux(ID_WMOM,k+1,i) - in_flux(ID_WMOM, k, i)) / dz;
+      double t4 = -(in_flux(ID_RHOT,k+1,i) - in_flux(ID_RHOT, k, i)) / dz;
+
+      //Real t = -(in_flux(ll,k+1,i) - in_flux(iter)) / dz;
+      //if (ll == ID_WMOM)
+      t3  = t3 - state(ID_DENS,k+hs,i+hs) * grav;
+      //t  = t - state(ID_DENS,k+hs,i+hs) * grav;
+
+      out_tend(ID_DENS, k, i) = t1;
+      out_tend(ID_UMOM, k, i) = t2;
+      out_tend(ID_WMOM, k, i) = t3;
+      out_tend(ID_RHOT, k, i) = t4;
+    };
+  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -525,8 +576,7 @@ template<typename LayoutType>
 void MiniWeatherArray<LayoutType>::
 set_halo_values_x(NumArray3Type& nstate)
 {
-  auto queue = makeQueue(m_runner);
-  auto command = makeCommand(queue);
+  auto command = makeCommand(m_queue);
 
   auto state_in_out = ax::viewInOut(command,nstate);
   auto in_hy_dens_cell = ax::viewIn(command,hy_dens_cell);
@@ -568,8 +618,7 @@ template<typename LayoutType>
 void MiniWeatherArray<LayoutType>::
 set_halo_values_z(NumArray3Type& nstate)
 {
-  auto queue = makeQueue(m_runner);
-  auto command = makeCommand(queue);
+  auto command = makeCommand(m_queue);
 
   const auto nx = this->nx();
   const auto nz = this->nz();
@@ -673,10 +722,8 @@ init()
     0.277777777777777777777777777779E0
   };
 
-  auto queue = makeQueue(m_runner);
-
   {
-    auto command = makeCommand(queue);
+    auto command = makeCommand(m_queue);
 
     auto in_out_state = viewInOut(command,nstate);
     auto out_state_tmp = viewOut(command,nstate_tmp);
@@ -718,7 +765,7 @@ init()
 
   // Compute the hydrostatic background state over vertical cell averages
   {
-    auto command = makeCommand(queue);
+    auto command = makeCommand(m_queue);
     auto out_hy_dens_cell = viewOut(command,hy_dens_cell);
     auto out_hy_dens_theta_cell = viewOut(command,hy_dens_theta_cell);
     command << RUNCOMMAND_LOOP1(iter,(nz + 2 * hs)){
@@ -741,7 +788,7 @@ init()
   }
 
   {
-    auto command = makeCommand(queue);
+    auto command = makeCommand(m_queue);
     auto out_hy_dens_int = viewOut(command,hy_dens_int);
     auto out_hy_dens_theta_int = viewOut(command,hy_dens_theta_int);
     auto out_hy_pressure_int = viewOut(command,hy_pressure_int);
