@@ -271,13 +271,13 @@ endif()
 # qui ne sont pas dans les dépots arcane (pour des raisons de taille)
 function(ARCANE_CEA_COPY_MESH mesh_name)
   if (ARCANE_ADDITIONAL_MESHES_PATH)
-    exec_program(${CMAKE_COMMAND} ARGS -E copy_if_different ${ARCANE_ADDITIONAL_MESHES_PATH}/${mesh_name}
+    execute_process(COMMAND ${CMAKE_COMMAND} -E copy_if_different ${ARCANE_ADDITIONAL_MESHES_PATH}/${mesh_name}
       ${ARCANE_TEST_PATH}/${mesh_name})
   endif()
 endfunction()
 function(ARCANE_CEA_COPY_MESH_DIRECTORY mesh_dir_name)
   if (ARCANE_ADDITIONAL_MESHES_PATH)
-    exec_program(${CMAKE_COMMAND} ARGS -E copy_directory ${ARCANE_ADDITIONAL_MESHES_PATH}/${mesh_dir_name}
+    execute_process(COMMAND ${CMAKE_COMMAND} -E copy_directory ${ARCANE_ADDITIONAL_MESHES_PATH}/${mesh_dir_name}
       ${ARCANE_TEST_PATH}/${mesh_dir_name})
   endif()
 endfunction()

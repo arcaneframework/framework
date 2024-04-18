@@ -218,13 +218,13 @@ include(ArcaneTests.cmake)
 # ----------------------------------------------------------------------------
 
 function(ARCANE_COPY_MESH orig_mesh_name mesh_name ext)
-  exec_program(${CMAKE_COMMAND} ARGS -E copy_if_different ${ARCANESRCROOT}/maillages/${orig_mesh_name}.${ext}
+  execute_process(COMMAND ${CMAKE_COMMAND} -E copy_if_different ${ARCANESRCROOT}/maillages/${orig_mesh_name}.${ext}
     ${ARCANE_TEST_PATH}/${mesh_name}.${ext})
-  exec_program(${CMAKE_COMMAND} ARGS -E copy_if_different ${ARCANESRCROOT}/maillages/${orig_mesh_name}.vtkfaces.${ext}
+  execute_process(COMMAND ${CMAKE_COMMAND} -E copy_if_different ${ARCANESRCROOT}/maillages/${orig_mesh_name}.vtkfaces.${ext}
     ${ARCANE_TEST_PATH}/${mesh_name}.${ext}faces.${ext})
 endfunction()
 function(ARCANE_COPY_MESH_DIRECT orig_mesh_name)
-  exec_program(${CMAKE_COMMAND} ARGS -E copy_if_different ${ARCANESRCROOT}/maillages/${orig_mesh_name}
+  execute_process(COMMAND ${CMAKE_COMMAND} -E copy_if_different ${ARCANESRCROOT}/maillages/${orig_mesh_name}
     ${ARCANE_TEST_PATH}/${orig_mesh_name})
 endfunction()
 
