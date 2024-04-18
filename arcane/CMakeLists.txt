@@ -34,6 +34,12 @@ if(POLICY CMP0111)
   cmake_policy(SET CMP0111 NEW)
 endif()
 
+# A partir de 3.27:
+# find_package() uses upper-case <PACKAGENAME>_ROOT variables.
+if(POLICY CMP0144)
+  cmake_policy(SET CMP0144 NEW)
+endif()
+
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
 # Positionne CMAKE_BUILD_TYPE si ARCANE_BUILD_TYPE est défini ou
