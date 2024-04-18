@@ -673,25 +673,6 @@ set(ARCANE_AXL2CC ${AXLSTAR_AXL2CC})
 message(STATUS "Arcane: axl2cc is '${ARCANE_AXL2CC}'")
 
 # ----------------------------------------------------------------------------
-
-# TODO: regarder le code retour et arreter la configuration si besoin
-macro(ARCANE_EXEC_CLR exe_name)
-  if(WIN32)
-    if(VERBOSE)
-      exec_program(${exe_name} ARGS ${ARGN})
-    else()
-      exec_program(${exe_name} ARGS ${ARGN} OUTPUT_VARIABLE ARCANE_EXEC_CLR_OUT)
-    endif()
-  else()
-    if(VERBOSE)
-      exec_program(${MONO_EXEC} ARGS ${exe_name} ${ARGN})
-    else()
-      exec_program(${MONO_EXEC} ARGS ${exe_name} ${ARGN} OUTPUT_VARIABLE ARCANE_EXEC_CLR_OUT)
-    endif()
-  endif()
-endmacro()
-
-# ----------------------------------------------------------------------------
 # Recherche 'googletest' pour les tests unitaires
 find_package(GTest)
 if (GTEST_FOUND)
