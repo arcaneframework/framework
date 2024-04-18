@@ -2574,11 +2574,13 @@ coarse()
         if (around_parent_cells_uid_to_owner.find(owner_of_cells_needed_all_procs[i]) != around_parent_cells_uid_to_owner.end()) {
           owner_of_cells_needed_all_procs[i] = around_parent_cells_uid_to_owner[owner_of_cells_needed_all_procs[i]];
         }
+        else {
+          owner_of_cells_needed_all_procs[i] = -1;
+        }
       }
     }
 
     pm->reduce(Parallel::eReduceType::ReduceMax, owner_of_cells_needed_all_procs);
-
 
     {
       Integer size_uid_of_cells_needed = uid_of_cells_needed.size();
@@ -3060,6 +3062,10 @@ coarse()
       // On attribue les bons propriétaires aux noeuds.
       ENUMERATE_ (Node, inode, m_mesh->nodeFamily()->view(nodes_lid)) {
         Node node = *inode;
+
+        ARCANE_ASSERT((node_uid_to_owner.find(node.uniqueId()) != node_uid_to_owner.end()), ("No owner found for node"));
+        ARCANE_ASSERT((node_uid_to_owner[node.uniqueId()] < nb_rank && node_uid_to_owner[node.uniqueId()] >= 0), ("Bad owner found for node"));
+
         node.mutableItemBase().setOwner(node_uid_to_owner[node.uniqueId()], my_rank);
 
         if (node_uid_to_owner[node.uniqueId()] == my_rank) {
@@ -3082,6 +3088,10 @@ coarse()
       // On attribue les bons propriétaires aux faces.
       ENUMERATE_ (Face, iface, m_mesh->faceFamily()->view(faces_lid)) {
         Face face = *iface;
+
+        ARCANE_ASSERT((face_uid_to_owner.find(face.uniqueId()) != face_uid_to_owner.end()), ("No owner found for face"));
+        ARCANE_ASSERT((face_uid_to_owner[face.uniqueId()] < nb_rank && face_uid_to_owner[face.uniqueId()] >= 0), ("Bad owner found for face"));
+
         face.mutableItemBase().setOwner(face_uid_to_owner[face.uniqueId()], my_rank);
 
         if (face_uid_to_owner[face.uniqueId()] == my_rank) {
