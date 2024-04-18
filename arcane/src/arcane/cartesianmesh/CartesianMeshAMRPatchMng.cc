@@ -2498,7 +2498,7 @@ coarse()
   if (version < 3)
     gm->setBuilderVersion(3);
   Int32 nb_ghost_layer = gm->nbGhostLayer();
-  gm->setNbGhostLayer(nb_ghost_layer * 2);
+  gm->setNbGhostLayer(nb_ghost_layer + (nb_ghost_layer % m_num_mng->getPattern()));
   mesh_modifier->setDynamic(true);
   mesh_modifier->updateGhostLayers();
   // Remet le nombre initial de couches de mailles fantômes
