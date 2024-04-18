@@ -2559,7 +2559,10 @@ coarse()
           if (around_parent_cells_uid_to_owner.find(cell_uid) != around_parent_cells_uid_to_owner.end())
             continue;
 
-          uid_of_cells_needed.add(cell_uid);
+          // TODO : Bof
+          if (!uid_of_cells_needed.contains(cell_uid)) {
+            uid_of_cells_needed.add(cell_uid);
+          }
         }
       }
     }
@@ -2571,8 +2574,8 @@ coarse()
 
     {
       for (Integer i = 0; i < uid_of_cells_needed_all_procs.size(); ++i) {
-        if (around_parent_cells_uid_to_owner.find(owner_of_cells_needed_all_procs[i]) != around_parent_cells_uid_to_owner.end()) {
-          owner_of_cells_needed_all_procs[i] = around_parent_cells_uid_to_owner[owner_of_cells_needed_all_procs[i]];
+        if (around_parent_cells_uid_to_owner.find(uid_of_cells_needed_all_procs[i]) != around_parent_cells_uid_to_owner.end()) {
+          owner_of_cells_needed_all_procs[i] = around_parent_cells_uid_to_owner[uid_of_cells_needed_all_procs[i]];
         }
         else {
           owner_of_cells_needed_all_procs[i] = -1;
@@ -2596,6 +2599,9 @@ coarse()
       ArrayView<Int32> owner_of_cells_needed = owner_of_cells_needed_all_procs.subView(my_pos_in_all_procs_arrays, size_uid_of_cells_needed);
       for (Integer i = 0; i < size_uid_of_cells_needed; ++i) {
         around_parent_cells_uid_to_owner[uid_of_cells_needed[i]] = owner_of_cells_needed[i];
+        if (owner_of_cells_needed[i] == -1) {
+          ARCANE_FATAL("En déraffinement, c'est normalement impossible");
+        }
       }
     }
   }
