@@ -1162,7 +1162,7 @@ endmacro()
 
 function(ARCANE_WRITE_CONFIG_STR str filename)
   file(WRITE ${CMAKE_BINARY_DIR}/lib/${filename}.gen ${str})
-  exec_program(${CMAKE_COMMAND} ARGS -E copy_if_different ${CMAKE_BINARY_DIR}/lib/${filename}.gen ${CMAKE_BINARY_DIR}/${filename})
+  execute_process(COMMAND ${CMAKE_COMMAND} -E copy_if_different ${CMAKE_BINARY_DIR}/lib/${filename}.gen ${CMAKE_BINARY_DIR}/${filename})
   install(FILES ${CMAKE_BINARY_DIR}/${filename} DESTINATION include)
 endfunction()
 
