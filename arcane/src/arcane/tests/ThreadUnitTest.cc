@@ -140,9 +140,9 @@ class Test1
   std::atomic<Int32> m_count = 0;
   AtomicInt32 m_atomic_add_count;
   AtomicInt32 m_atomic_sub_count;
-  Int32 m_add_count;
-  Int32 m_sub_count; 
- Int32 m_count2 = 0;
+  Int32 m_add_count = 0;
+  Int32 m_sub_count = 0;
+  Int32 m_count2 = 0;
 };
 
 class RealTime
