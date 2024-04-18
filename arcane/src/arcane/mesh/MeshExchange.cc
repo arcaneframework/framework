@@ -936,10 +936,14 @@ _propagatesToChildConnectivities(IItemFamily* family)
   for (const auto& child_connectivity : child_connectivities){
     //if(!child_connectivity->isEmpty())
     {
+      VariableItemInt32& conn_item_new_owner = child_connectivity->targetFamily()->itemsNewOwner();
       auto accessor = IndexedItemConnectivityAccessor(child_connectivity);
       ENUMERATE_ITEM(item, family->allItems()){
         // Parse child relations
         _addDestRank(*item,family,item_new_owner[item]);
+        ENUMERATE_ITEM(connected_item,accessor(ItemLocalId(item))){
+          _addDestRank(*item,family,conn_item_new_owner[connected_item]);
+        }
 
         ENUMERATE_ITEM(connected_item,accessor(ItemLocalId(item))){
           _addDestRank(*connected_item,child_connectivity->targetFamily(),*item,family);

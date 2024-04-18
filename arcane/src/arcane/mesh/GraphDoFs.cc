@@ -156,8 +156,6 @@ addLinks(Integer nb_link,
     links_infos.subConstView(links_infos_index, nb_dual_nodes_per_link));
     links_infos_index += nb_dual_nodes_per_link;
   }
-  for (auto uid : connected_dual_node_uids)
-    info() << "        DUALNODE UID : " << uid;
 
   Int32UniqueArray link_lids(link_uids.size());
   link_family.addDoFs(link_uids, link_lids);
@@ -730,14 +728,17 @@ printDualNodes() const
   ENUMERATE_DOF (idualnode, dualNodeFamily()->allItems()) {
     info() << "DualNode : lid = " << idualnode->localId();
     info() << "           uid = " << idualnode->uniqueId();
+    info() << "         owner = " << idualnode->owner();
     auto dual_item = graph_connectivity.dualItem(*idualnode);
     info() << "           DualItem : lid = " << dual_item.localId();
     info() << "                      uid = " << dual_item.uniqueId();
     info() << "                     kind = " << dual_item.kind();
+    info() << "                    owner = " << dual_item.owner();
     auto links = graph_connectivity.links(*idualnode);
     for (auto const& link : links) {
       info() << "           Connected link : lid = " << link.localId();
       info() << "                            uid = " << link.uniqueId();
+      info() << "                          owner = " << link.owner();
     }
   }
 }
@@ -758,12 +759,16 @@ printLinks() const
   ENUMERATE_DOF (ilink, linkFamily()->allItems()) {
     info() << "Link       :         LID = " << ilink.localId();
     info() << "                     UID = " << ilink->uniqueId();
+    info() << "                   OWNER = " << ilink->owner();
     ENUMERATE_DOF (idual_node, dual_nodes.connectedItems(ilink)) {
       info() << "     Dof :       index = " << idual_node.index();
       info() << "     Dof :         LID = " << idual_node->localId();
       info() << "                   UID = " << idual_node->uniqueId();
+      info() << "                 OWNER = " << idual_node->owner();
       auto dual_item = graph_connectivity.dualItem(*idual_node);
       info() << "         dual item UID = " << dual_item.uniqueId();
+      info() << "                  KIND = " << dual_item.kind();
+      info() << "                 OWNER = " << dual_item.owner();
     }
   }
 }
