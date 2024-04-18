@@ -200,6 +200,18 @@ template<typename Traits> void
 ItemMaterialVariableBase<Traits>::
 _syncFromGlobalVariable()
 {
+  // Cette méthode est appelée lorsque la variable globale voit sa taille
+  // modifiée. Dans ce cas seule la vue de la variable globale doit être modifiée.
+  // Mais cette méthode peut aussi être applelée lorsque la méthode setUsed()
+  // de la variable globale est appelée et dans ce cas il faut mettre à jour
+  // toutes les vues. Comme actuellement on ne peut pas distinguer les deux
+  // appels on fait la mise à jour complète dans tous les cas.
+  const bool do_complete_sync = true;
+  if (do_complete_sync){
+    syncReferences();
+    return;
+  }
+
   // Cette méthode est appelée lorsque la taille de la variable globale
   // change. Cette variable est la première variable de la liste.
   // Il faut ensuite notifier toutes les références de ce changement.
