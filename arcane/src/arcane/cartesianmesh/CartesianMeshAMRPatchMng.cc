@@ -2481,6 +2481,7 @@ coarse()
   UniqueArray<Int64> cell_uid_to_create;
 
   std::unordered_map<Int64, Int32> around_parent_cells_uid_to_owner;
+  std::unordered_map<Int64, bool> around_parent_cells_uid_is_in_subdomain;
   std::unordered_map<Int64, UniqueArray<Cell>> parent_to_child_cells;
 
   std::unordered_map<Int64, Int32> node_uid_to_owner;
@@ -2513,6 +2514,7 @@ coarse()
     if (!cell_uid_to_create.contains(parent_uid)) {
       cell_uid_to_create.add(parent_uid);
       around_parent_cells_uid_to_owner[parent_uid] = cell.owner();
+      around_parent_cells_uid_is_in_subdomain[parent_uid] = true;
     }
     else {
       if (around_parent_cells_uid_to_owner[parent_uid] != cell.owner()) {
@@ -2562,6 +2564,7 @@ coarse()
           // TODO : Bof
           if (!uid_of_cells_needed.contains(cell_uid)) {
             uid_of_cells_needed.add(cell_uid);
+            around_parent_cells_uid_is_in_subdomain[cell_uid] = false;
           }
         }
       }
@@ -2619,7 +2622,9 @@ coarse()
       m_num_mng->getCellUidsAround(cells_uid_around, parent_cell_uid, -1);
 
       UniqueArray<Int32> owner_cells_around_parent_cell_1d(9);
+      UniqueArray<bool> is_not_in_subdomain_cells_around_parent_cell_1d(9);
       ConstArray2View owner_cells_around_parent_cell(owner_cells_around_parent_cell_1d.data(), 3, 3);
+      ConstArray2View is_not_in_subdomain_cells_around_parent_cell(is_not_in_subdomain_cells_around_parent_cell_1d.data(), 3, 3);
 
       for (Integer i = 0; i < 9; ++i) {
         Int64 uid_cell = cells_uid_around[i];
@@ -2627,10 +2632,12 @@ coarse()
         // Si around_parent_cells_uid_to_owner[uid_cell] != -1 alors il y a bien une maille.
         if (uid_cell != -1 && around_parent_cells_uid_to_owner[uid_cell] != -1) {
           owner_cells_around_parent_cell_1d[i] = around_parent_cells_uid_to_owner[uid_cell];
+          is_not_in_subdomain_cells_around_parent_cell_1d[i] = !around_parent_cells_uid_is_in_subdomain[uid_cell];
         }
         else {
           cells_uid_around[i] = -1;
           owner_cells_around_parent_cell_1d[i] = -1;
+          is_not_in_subdomain_cells_around_parent_cell_1d[i] = true;
         }
       }
 
@@ -2666,9 +2673,14 @@ coarse()
       for (Integer l = 0; l < m_num_mng->getNbFace(); ++l) {
         Integer parent_face_owner = -1;
 
+        // On regarde si l'on doit traiter la face.
+        // Si mask_face_if_cell_left[l] == false, on doit regarder si la maille à gauche est à nous ou non
+        // ou si la maille à gauche est dans notre sous-domaine ou non.
+        // Si cette maille n'est pas à nous et/ou n'est pas sur notre sous-domaine,
+        // on doit créer la face en tant que face fantôme.
         if (
-        (mask_face_if_cell_left[l] || is_cell_around_parent_cell_different_owner(1, 0)) &&
-        (mask_face_if_cell_bottom[l] || is_cell_around_parent_cell_different_owner(0, 1))) {
+        (mask_face_if_cell_left[l] || is_cell_around_parent_cell_different_owner(1, 0) || is_not_in_subdomain_cells_around_parent_cell(1, 0)) &&
+        (mask_face_if_cell_bottom[l] || is_cell_around_parent_cell_different_owner(0, 1) || is_not_in_subdomain_cells_around_parent_cell(0, 1))) {
           faces_infos.add(type_face);
           faces_infos.add(parent_faces_uids[l]);
 
@@ -2703,8 +2715,8 @@ coarse()
       for (Integer l = 0; l < m_num_mng->getNbNode(); ++l) {
         Integer parent_node_owner = -1;
         if (
-        (mask_node_if_cell_left[l] || is_cell_around_parent_cell_different_owner(1, 0)) &&
-        (mask_node_if_cell_bottom[l] || is_cell_around_parent_cell_different_owner(0, 1))) {
+        (mask_node_if_cell_left[l] || is_cell_around_parent_cell_different_owner(1, 0) || is_not_in_subdomain_cells_around_parent_cell(1, 0)) &&
+        (mask_node_if_cell_bottom[l] || is_cell_around_parent_cell_different_owner(0, 1) || is_not_in_subdomain_cells_around_parent_cell(0, 1))) {
           nodes_infos.add(parent_nodes_uids[l]);
           total_nb_nodes++;
 
@@ -2789,7 +2801,9 @@ coarse()
       m_num_mng->getCellUidsAround(cells_uid_around, parent_cell_uid, -1);
 
       UniqueArray<Int32> owner_cells_around_parent_cell_1d(27);
+      UniqueArray<bool> is_not_in_subdomain_cells_around_parent_cell_1d(27);
       ConstArray3View owner_cells_around_parent_cell(owner_cells_around_parent_cell_1d.data(), 3, 3, 3);
+      ConstArray3View is_not_in_subdomain_cells_around_parent_cell(is_not_in_subdomain_cells_around_parent_cell_1d.data(), 3, 3, 3);
 
       for (Integer i = 0; i < 27; ++i) {
         Int64 uid_cell = cells_uid_around[i];
@@ -2797,10 +2811,12 @@ coarse()
         // Si around_parent_cells_uid_to_owner[uid_cell] != -1 alors il y a bien une maille.
         if (uid_cell != -1 && around_parent_cells_uid_to_owner[uid_cell] != -1) {
           owner_cells_around_parent_cell_1d[i] = around_parent_cells_uid_to_owner[uid_cell];
+          is_not_in_subdomain_cells_around_parent_cell_1d[i] = !around_parent_cells_uid_is_in_subdomain[uid_cell];
         }
         else {
           cells_uid_around[i] = -1;
           owner_cells_around_parent_cell_1d[i] = -1;
+          is_not_in_subdomain_cells_around_parent_cell_1d[i] = true;
         }
       }
 
@@ -2837,10 +2853,15 @@ coarse()
       for (Integer l = 0; l < m_num_mng->getNbFace(); ++l) {
         Integer parent_face_owner = -1;
 
+        // On regarde si l'on doit traiter la face.
+        // Si mask_face_if_cell_left[l] == false, on doit regarder si la maille à gauche est à nous ou non
+        // ou si la maille à gauche est dans notre sous-domaine ou non.
+        // Si cette maille n'est pas à nous et/ou n'est pas sur notre sous-domaine,
+        // on doit créer la face en tant que face fantôme.
         if (
-        (mask_face_if_cell_left[l] || is_cell_around_parent_cell_different_owner(1, 1, 0)) &&
-        (mask_face_if_cell_bottom[l] || is_cell_around_parent_cell_different_owner(1, 0, 1)) &&
-        (mask_face_if_cell_rear[l] || is_cell_around_parent_cell_different_owner(0, 1, 1))) {
+        (mask_face_if_cell_left[l] || is_cell_around_parent_cell_different_owner(1, 1, 0) || is_not_in_subdomain_cells_around_parent_cell(1, 1, 0)) &&
+        (mask_face_if_cell_bottom[l] || is_cell_around_parent_cell_different_owner(1, 0, 1) || is_not_in_subdomain_cells_around_parent_cell(1, 0, 1)) &&
+        (mask_face_if_cell_rear[l] || is_cell_around_parent_cell_different_owner(0, 1, 1) || is_not_in_subdomain_cells_around_parent_cell(0, 1, 1))) {
           faces_infos.add(type_face);
           faces_infos.add(parent_faces_uids[l]);
 
@@ -2900,9 +2921,9 @@ coarse()
       for (Integer l = 0; l < m_num_mng->getNbNode(); ++l) {
         Integer parent_node_owner = -1;
         if (
-        (mask_node_if_cell_left[l] || is_cell_around_parent_cell_different_owner(1, 1, 0)) &&
-        (mask_node_if_cell_bottom[l] || is_cell_around_parent_cell_different_owner(1, 0, 1)) &&
-        (mask_node_if_cell_rear[l] || is_cell_around_parent_cell_different_owner(0, 1, 1))) {
+        (mask_node_if_cell_left[l] || is_cell_around_parent_cell_different_owner(1, 1, 0) || is_not_in_subdomain_cells_around_parent_cell(1, 1, 0)) &&
+        (mask_node_if_cell_bottom[l] || is_cell_around_parent_cell_different_owner(1, 0, 1) || is_not_in_subdomain_cells_around_parent_cell(1, 0, 1)) &&
+        (mask_node_if_cell_rear[l] || is_cell_around_parent_cell_different_owner(0, 1, 1) || is_not_in_subdomain_cells_around_parent_cell(0, 1, 1))) {
           nodes_infos.add(parent_nodes_uids[l]);
           total_nb_nodes++;
 
