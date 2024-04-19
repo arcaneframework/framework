@@ -100,7 +100,7 @@ renumber()
   if (nb_cell_y <= 0)
     ARCANE_FATAL("Bad value '{0}' for globalNbCells()[MD_DirY] (should be >0)", nb_cell_y);
 
-  Int64 nb_cell_z = global_nb_cells_by_direction[MD_DirZ];
+  Int64 nb_cell_z = ((dimension == 2) ? 1 : global_nb_cells_by_direction[MD_DirZ]);
   if (nb_cell_z <= 0)
     ARCANE_FATAL("Bad value '{0}' for globalNbCells()[MD_DirZ] (should be >0)", nb_cell_z);
 
