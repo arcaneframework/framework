@@ -148,21 +148,6 @@ refine()
   UniqueArray<Int64> node_uid_change_owner_only;
   UniqueArray<Int64> face_uid_change_owner_only;
 
-  // Maps permettant de stocker les uids des noeuds et des faces
-  // dont on récupère la propriété. Un tableau par processus.
-  std::unordered_map<Int32, UniqueArray<Int64>> get_back_face_owner;
-  std::unordered_map<Int32, UniqueArray<Int64>> get_back_node_owner;
-
-  // Le premier élément de chaque tableau désigne le nouveau propriétaire des
-  // noeuds et des faces et le second le nombre d'uid de noeud et de faces de chaque tableau.
-  for(Integer rank = 0; rank < nb_rank; ++rank){
-    get_back_face_owner[rank].add(my_rank);
-    get_back_face_owner[rank].add(0);
-
-    get_back_node_owner[rank].add(my_rank);
-    get_back_node_owner[rank].add(0);
-  }
-
   // Deux tableaux permettant de récupérer les uniqueIds des noeuds et des faces
   // de chaque maille enfant à chaque appel à getNodeUids()/getFaceUids().
   UniqueArray<Int64> child_nodes_uids(m_num_mng->getNbNode());
@@ -554,22 +539,6 @@ refine()
               // Sinon, parent_cell est propriétaire de la face.
               else {
 
-                // Seul le propriétaire de la parent_cell peut communiquer sur le changement de propriété.
-                if (parent_cell_is_own) {
-
-                  // À droite, priorité 5 > 4 donc parent_cell récupère la propriété de la face.
-                  if (i == (child_coord_x + pattern - 1) && (!mask_face_if_cell_right[l]) && is_cell_around_parent_cell_different_owner(1, 2)) {
-                    get_back_face_owner[owner_cells_around_parent_cell(1, 2)][1]++;
-                    get_back_face_owner[owner_cells_around_parent_cell(1, 2)].add(child_faces_uids[l]);
-                  }
-
-                  // En haut, priorité 7 > 4 donc on récupère la propriété de la face.
-                  else if (j == (child_coord_y + pattern - 1) && (!mask_face_if_cell_top[l]) && is_cell_around_parent_cell_different_owner(2, 1)) {
-                    get_back_face_owner[owner_cells_around_parent_cell(2, 1)][1]++;
-                    get_back_face_owner[owner_cells_around_parent_cell(2, 1)].add(child_faces_uids[l]);
-                  }
-                }
-
                 // Sinon, c'est une face interne donc au parent_cell.
                 child_face_owner = owner_cells_around_parent_cell(1, 1);
               }
@@ -699,23 +668,6 @@ refine()
 
                   // Sinon, parent_cell est propriétaire du noeud.
                   else {
-
-                    // Seul le propriétaire de la parent_cell peut communiquer sur le changement de propriété.
-                    if (parent_cell_is_own) {
-
-                      // Priorité 6 > 4.
-                      if (is_cell_around_parent_cell_different_owner(2, 0)) {
-                        get_back_node_owner[owner_cells_around_parent_cell(2, 0)][1]++;
-                        get_back_node_owner[owner_cells_around_parent_cell(2, 0)].add(child_nodes_uids[l]);
-                      }
-
-                      // Priorité 7 > 4.
-                      if (is_cell_around_parent_cell_different_owner(2, 1)) {
-                        get_back_node_owner[owner_cells_around_parent_cell(2, 1)][1]++;
-                        get_back_node_owner[owner_cells_around_parent_cell(2, 1)].add(child_nodes_uids[l]);
-                      }
-                    }
-
                     child_node_owner = owner_cells_around_parent_cell(1, 1);
                   }
                 }
@@ -753,13 +705,6 @@ refine()
 
                   // Sinon, parent_cell est propriétaire du noeud.
                   else {
-
-                    // Seul le propriétaire de la parent_cell peut communiquer sur le changement de propriété.
-                    // Priorité 5 > 4.
-                    if (parent_cell_is_own && is_cell_around_parent_cell_different_owner(1, 2)) {
-                      get_back_node_owner[owner_cells_around_parent_cell(1, 2)][1]++;
-                      get_back_node_owner[owner_cells_around_parent_cell(1, 2)].add(child_nodes_uids[l]);
-                    }
                     child_node_owner = owner_cells_around_parent_cell(1, 1);
                   }
                 }
@@ -767,41 +712,11 @@ refine()
                 // Si le noeud est en haut de la maille parente ("sur la face haute").
                 // Donc noeud en haut à droite (même position que le noeud de la maille parente).
                 else if (j == (child_coord_y + pattern - 1) && (!mask_node_if_cell_top[l])) {
-
-                  // Seul le propriétaire de la parent_cell peut communiquer sur le changement de propriété.
-                  if (parent_cell_is_own) {
-
-                    // Priorité 5 > 4.
-                    if (is_cell_around_parent_cell_different_owner(1, 2)) {
-                      get_back_node_owner[owner_cells_around_parent_cell(1, 2)][1]++;
-                      get_back_node_owner[owner_cells_around_parent_cell(1, 2)].add(child_nodes_uids[l]);
-                    }
-
-                    // Priorité 7 > 4.
-                    if (is_cell_around_parent_cell_different_owner(2, 1)) {
-                      get_back_node_owner[owner_cells_around_parent_cell(2, 1)][1]++;
-                      get_back_node_owner[owner_cells_around_parent_cell(2, 1)].add(child_nodes_uids[l]);
-                    }
-
-                    // Priorité 8 > 4.
-                    if (is_cell_around_parent_cell_different_owner(2, 2)) {
-                      get_back_node_owner[owner_cells_around_parent_cell(2, 2)][1]++;
-                      get_back_node_owner[owner_cells_around_parent_cell(2, 2)].add(child_nodes_uids[l]);
-                    }
-                  }
-
                   child_node_owner = owner_cells_around_parent_cell(1, 1);
                 }
 
                 // Si le noeud est quelque part sur la face parente droite...
                 else {
-
-                  // S'il y a une maille à droite, parent_cell est le propriétaire du noeud.
-                  if (parent_cell_is_own && is_cell_around_parent_cell_different_owner(1, 2)) {
-                    get_back_node_owner[owner_cells_around_parent_cell(1, 2)][1]++;
-                    get_back_node_owner[owner_cells_around_parent_cell(1, 2)].add(child_nodes_uids[l]);
-                  }
-
                   child_node_owner = owner_cells_around_parent_cell(1, 1);
                 }
               }
@@ -818,9 +733,6 @@ refine()
                 // Si le noeud est sur le haut de la maille parente ("sur la face haute") et
                 // qu'il y a une maille en haut de priorité 7 > 4, parent_cell est propriétaire du noeud.
                 else if (parent_cell_is_own && j == (child_coord_y + pattern - 1) && (!mask_node_if_cell_top[l]) && is_cell_around_parent_cell_different_owner(2, 1)) {
-                  get_back_node_owner[owner_cells_around_parent_cell(2, 1)][1]++;
-                  get_back_node_owner[owner_cells_around_parent_cell(2, 1)].add(child_nodes_uids[l]);
-
                   child_node_owner = owner_cells_around_parent_cell(1, 1);
                 }
 
@@ -938,7 +850,6 @@ refine()
     for (Cell parent_cell : cell_to_refine_internals) {
       const Int64 parent_cell_uid = parent_cell.uniqueId();
       const Int32 parent_cell_level = parent_cell.level();
-      const bool parent_cell_is_own = (parent_cell.owner() == my_rank);
 
       const Int64 parent_coord_x = m_num_mng->uidToCoordX(parent_cell_uid, parent_cell_level);
       const Int64 parent_coord_y = m_num_mng->uidToCoordY(parent_cell_uid, parent_cell_level);
@@ -1220,28 +1131,6 @@ refine()
                 // Sinon, parent_cell est propriétaire de la face.
                 else {
 
-                  // Seul le propriétaire de la parent_cell peut communiquer sur le changement de propriété.
-                  if (parent_cell_is_own) {
-
-                    // À droite, priorité 14 > 13 donc parent_cell récupère la propriété de la face.
-                    if (i == (child_coord_x + pattern - 1) && (!mask_face_if_cell_right[l]) && is_cell_around_parent_cell_different_owner(1, 1, 2)) {
-                      get_back_face_owner[owner_cells_around_parent_cell(1, 1, 2)][1]++;
-                      get_back_face_owner[owner_cells_around_parent_cell(1, 1, 2)].add(child_faces_uids[l]);
-                    }
-
-                    // En haut, priorité 16 > 13 donc parent_cell récupère la propriété de la face.
-                    else if (j == (child_coord_y + pattern - 1) && (!mask_face_if_cell_top[l]) && is_cell_around_parent_cell_different_owner(1, 2, 1)) {
-                      get_back_face_owner[owner_cells_around_parent_cell(1, 2, 1)][1]++;
-                      get_back_face_owner[owner_cells_around_parent_cell(1, 2, 1)].add(child_faces_uids[l]);
-                    }
-
-                    // À l'avant, priorité 22 > 13 donc parent_cell récupère la propriété de la face.
-                    else if (k == (child_coord_z + pattern - 1) && (!mask_face_if_cell_front[l]) && is_cell_around_parent_cell_different_owner(2, 1, 1)) {
-                      get_back_face_owner[owner_cells_around_parent_cell(2, 1, 1)][1]++;
-                      get_back_face_owner[owner_cells_around_parent_cell(2, 1, 1)].add(child_faces_uids[l]);
-                    }
-                  }
-
                   // Sinon, c'est une face interne donc au parent_cell.
                   child_face_owner = owner_cells_around_parent_cell(1, 1, 1);
                 }
@@ -1419,35 +1308,6 @@ refine()
 
                       // Sinon, parent_cell est propriétaire du noeud.
                       else {
-
-                        // Seul le propriétaire de la parent_cell peut communiquer sur le changement de propriété.
-                        if (parent_cell_is_own) {
-
-                          // Priorité 18 > 13.
-                          if (is_cell_around_parent_cell_different_owner(2, 0, 0)) {
-                            get_back_node_owner[owner_cells_around_parent_cell(2, 0, 0)][1]++;
-                            get_back_node_owner[owner_cells_around_parent_cell(2, 0, 0)].add(child_nodes_uids[l]);
-                          }
-
-                          // Priorité 19 > 13.
-                          if (is_cell_around_parent_cell_different_owner(2, 0, 1)) {
-                            get_back_node_owner[owner_cells_around_parent_cell(2, 0, 1)][1]++;
-                            get_back_node_owner[owner_cells_around_parent_cell(2, 0, 1)].add(child_nodes_uids[l]);
-                          }
-
-                          // Priorité 21 > 13.
-                          if (is_cell_around_parent_cell_different_owner(2, 1, 0)) {
-                            get_back_node_owner[owner_cells_around_parent_cell(2, 1, 0)][1]++;
-                            get_back_node_owner[owner_cells_around_parent_cell(2, 1, 0)].add(child_nodes_uids[l]);
-                          }
-
-                          // Priorité 22 > 13.
-                          if (is_cell_around_parent_cell_different_owner(2, 1, 1)) {
-                            get_back_node_owner[owner_cells_around_parent_cell(2, 1, 1)][1]++;
-                            get_back_node_owner[owner_cells_around_parent_cell(2, 1, 1)].add(child_nodes_uids[l]);
-                          }
-                        }
-
                         child_node_owner = owner_cells_around_parent_cell(1, 1, 1);
                       }
                     }
@@ -1512,23 +1372,6 @@ refine()
 
                       // Sinon, parent_cell est propriétaire du noeud.
                       else {
-
-                        // Seul le propriétaire de la parent_cell peut communiquer sur le changement de propriété.
-                        if (parent_cell_is_own) {
-
-                          // Priorité 15 > 13.
-                          if (is_cell_around_parent_cell_different_owner(1, 2, 0)) {
-                            get_back_node_owner[owner_cells_around_parent_cell(1, 2, 0)][1]++;
-                            get_back_node_owner[owner_cells_around_parent_cell(1, 2, 0)].add(child_nodes_uids[l]);
-                          }
-
-                          // Priorité 16 > 13.
-                          if (is_cell_around_parent_cell_different_owner(1, 2, 1)) {
-                            get_back_node_owner[owner_cells_around_parent_cell(1, 2, 1)][1]++;
-                            get_back_node_owner[owner_cells_around_parent_cell(1, 2, 1)].add(child_nodes_uids[l]);
-                          }
-                        }
-
                         child_node_owner = owner_cells_around_parent_cell(1, 1, 1);
                       }
                     }
@@ -1544,47 +1387,6 @@ refine()
 
                       // Sinon, parent_cell est propriétaire du noeud.
                       else {
-
-                        // Seul le propriétaire de la parent_cell peut communiquer sur le changement de propriété.
-                        if (parent_cell_is_own) {
-
-                          // Priorité 15 > 13.
-                          if (is_cell_around_parent_cell_different_owner(1, 2, 0)) {
-                            get_back_node_owner[owner_cells_around_parent_cell(1, 2, 0)][1]++;
-                            get_back_node_owner[owner_cells_around_parent_cell(1, 2, 0)].add(child_nodes_uids[l]);
-                          }
-
-                          // Priorité 16 > 13.
-                          if (is_cell_around_parent_cell_different_owner(1, 2, 1)) {
-                            get_back_node_owner[owner_cells_around_parent_cell(1, 2, 1)][1]++;
-                            get_back_node_owner[owner_cells_around_parent_cell(1, 2, 1)].add(child_nodes_uids[l]);
-                          }
-
-                          // Priorité 21 > 13.
-                          if (is_cell_around_parent_cell_different_owner(2, 1, 0)) {
-                            get_back_node_owner[owner_cells_around_parent_cell(2, 1, 0)][1]++;
-                            get_back_node_owner[owner_cells_around_parent_cell(2, 1, 0)].add(child_nodes_uids[l]);
-                          }
-
-                          // Priorité 22 > 13.
-                          if (is_cell_around_parent_cell_different_owner(2, 1, 1)) {
-                            get_back_node_owner[owner_cells_around_parent_cell(2, 1, 1)][1]++;
-                            get_back_node_owner[owner_cells_around_parent_cell(2, 1, 1)].add(child_nodes_uids[l]);
-                          }
-
-                          // Priorité 24 > 13.
-                          if (is_cell_around_parent_cell_different_owner(2, 2, 0)) {
-                            get_back_node_owner[owner_cells_around_parent_cell(2, 2, 0)][1]++;
-                            get_back_node_owner[owner_cells_around_parent_cell(2, 2, 0)].add(child_nodes_uids[l]);
-                          }
-
-                          // Priorité 25 > 13.
-                          if (is_cell_around_parent_cell_different_owner(2, 2, 1)) {
-                            get_back_node_owner[owner_cells_around_parent_cell(2, 2, 1)][1]++;
-                            get_back_node_owner[owner_cells_around_parent_cell(2, 2, 1)].add(child_nodes_uids[l]);
-                          }
-                        }
-
                         child_node_owner = owner_cells_around_parent_cell(1, 1, 1);
                       }
                     }
@@ -1599,22 +1401,6 @@ refine()
 
                       // Sinon, parent_cell est propriétaire du noeud.
                       else {
-
-                        // Seul le propriétaire de la parent_cell peut communiquer sur le changement de propriété.
-                        if (parent_cell_is_own) {
-
-                          // Priorité 15 > 13.
-                          if (is_cell_around_parent_cell_different_owner(1, 2, 0)) {
-                            get_back_node_owner[owner_cells_around_parent_cell(1, 2, 0)][1]++;
-                            get_back_node_owner[owner_cells_around_parent_cell(1, 2, 0)].add(child_nodes_uids[l]);
-                          }
-
-                          // Priorité 16 > 13.
-                          if (is_cell_around_parent_cell_different_owner(1, 2, 1)) {
-                            get_back_node_owner[owner_cells_around_parent_cell(1, 2, 1)][1]++;
-                            get_back_node_owner[owner_cells_around_parent_cell(1, 2, 1)].add(child_nodes_uids[l]);
-                          }
-                        }
                         child_node_owner = owner_cells_around_parent_cell(1, 1, 1);
                       }
                     }
@@ -1657,23 +1443,6 @@ refine()
 
                       // Sinon, parent_cell est propriétaire du noeud.
                       else {
-
-                        // Seul le propriétaire de la parent_cell peut communiquer sur le changement de propriété.
-                        if (parent_cell_is_own) {
-
-                          // Priorité 21 > 13.
-                          if (is_cell_around_parent_cell_different_owner(2, 1, 0)) {
-                            get_back_node_owner[owner_cells_around_parent_cell(2, 1, 0)][1]++;
-                            get_back_node_owner[owner_cells_around_parent_cell(2, 1, 0)].add(child_nodes_uids[l]);
-                          }
-
-                          // Priorité 22 > 13.
-                          if (is_cell_around_parent_cell_different_owner(2, 1, 1)) {
-                            get_back_node_owner[owner_cells_around_parent_cell(2, 1, 1)][1]++;
-                            get_back_node_owner[owner_cells_around_parent_cell(2, 1, 1)].add(child_nodes_uids[l]);
-                          }
-                        }
-
                         child_node_owner = owner_cells_around_parent_cell(1, 1, 1);
                       }
                     }
@@ -1739,14 +1508,6 @@ refine()
 
                       // Sinon, parent_cell est propriétaire du noeud.
                       else {
-
-                        // Seul le propriétaire de la parent_cell peut communiquer sur le changement de propriété.
-                        // Priorité 14 > 13.
-                        if (is_cell_around_parent_cell_different_owner(1, 1, 2) && parent_cell_is_own) {
-                          get_back_node_owner[owner_cells_around_parent_cell(1, 1, 2)][1]++;
-                          get_back_node_owner[owner_cells_around_parent_cell(1, 1, 2)].add(child_nodes_uids[l]);
-                        }
-
                         child_node_owner = owner_cells_around_parent_cell(1, 1, 1);
                       }
                     }
@@ -1767,41 +1528,6 @@ refine()
 
                       // Sinon, parent_cell est propriétaire du noeud.
                       else {
-
-                        // Seul le propriétaire de la parent_cell peut communiquer sur le changement de propriété.
-                        if (parent_cell_is_own) {
-
-                          // Priorité 14 > 13.
-                          if (is_cell_around_parent_cell_different_owner(1, 1, 2)) {
-                            get_back_node_owner[owner_cells_around_parent_cell(1, 1, 2)][1]++;
-                            get_back_node_owner[owner_cells_around_parent_cell(1, 1, 2)].add(child_nodes_uids[l]);
-                          }
-
-                          // Priorité 19 > 13.
-                          if (is_cell_around_parent_cell_different_owner(2, 0, 1)) {
-                            get_back_node_owner[owner_cells_around_parent_cell(2, 0, 1)][1]++;
-                            get_back_node_owner[owner_cells_around_parent_cell(2, 0, 1)].add(child_nodes_uids[l]);
-                          }
-
-                          // Priorité 20 > 13.
-                          if (is_cell_around_parent_cell_different_owner(2, 0, 2)) {
-                            get_back_node_owner[owner_cells_around_parent_cell(2, 0, 2)][1]++;
-                            get_back_node_owner[owner_cells_around_parent_cell(2, 0, 2)].add(child_nodes_uids[l]);
-                          }
-
-                          // Priorité 22 > 13.
-                          if (is_cell_around_parent_cell_different_owner(2, 1, 1)) {
-                            get_back_node_owner[owner_cells_around_parent_cell(2, 1, 1)][1]++;
-                            get_back_node_owner[owner_cells_around_parent_cell(2, 1, 1)].add(child_nodes_uids[l]);
-                          }
-
-                          // Priorité 23 > 13.
-                          if (is_cell_around_parent_cell_different_owner(2, 1, 2)) {
-                            get_back_node_owner[owner_cells_around_parent_cell(2, 1, 2)][1]++;
-                            get_back_node_owner[owner_cells_around_parent_cell(2, 1, 2)].add(child_nodes_uids[l]);
-                          }
-                        }
-
                         child_node_owner = owner_cells_around_parent_cell(1, 1, 1);
                       }
                     }
@@ -1821,14 +1547,6 @@ refine()
 
                       // Sinon, parent_cell est propriétaire du noeud.
                       else {
-
-                        // Seul le propriétaire de la parent_cell peut communiquer sur le changement de propriété.
-                        // Priorité 14 > 13.
-                        if (is_cell_around_parent_cell_different_owner(1, 1, 2) && parent_cell_is_own) {
-                          get_back_node_owner[owner_cells_around_parent_cell(1, 1, 2)][1]++;
-                          get_back_node_owner[owner_cells_around_parent_cell(1, 1, 2)].add(child_nodes_uids[l]);
-                        }
-
                         child_node_owner = owner_cells_around_parent_cell(1, 1, 1);
                       }
                     }
@@ -1864,29 +1582,6 @@ refine()
 
                       // Sinon, parent_cell est propriétaire du noeud.
                       else {
-
-                        // Seul le propriétaire de la parent_cell peut communiquer sur le changement de propriété.
-                        if (parent_cell_is_own) {
-
-                          // Priorité 14 > 13.
-                          if (is_cell_around_parent_cell_different_owner(1, 1, 2)) {
-                            get_back_node_owner[owner_cells_around_parent_cell(1, 1, 2)][1]++;
-                            get_back_node_owner[owner_cells_around_parent_cell(1, 1, 2)].add(child_nodes_uids[l]);
-                          }
-
-                          // Priorité 16 > 13.
-                          if (is_cell_around_parent_cell_different_owner(1, 2, 1)) {
-                            get_back_node_owner[owner_cells_around_parent_cell(1, 2, 1)][1]++;
-                            get_back_node_owner[owner_cells_around_parent_cell(1, 2, 1)].add(child_nodes_uids[l]);
-                          }
-
-                          // Priorité 17 > 13.
-                          if (is_cell_around_parent_cell_different_owner(1, 2, 2)) {
-                            get_back_node_owner[owner_cells_around_parent_cell(1, 2, 2)][1]++;
-                            get_back_node_owner[owner_cells_around_parent_cell(1, 2, 2)].add(child_nodes_uids[l]);
-                          }
-                        }
-
                         child_node_owner = owner_cells_around_parent_cell(1, 1, 1);
                       }
                     }
@@ -1894,81 +1589,11 @@ refine()
                     // Si le noeud est sur la face avant de la maille parente.
                     // Donc noeud à droite, en haut, en avant (même position que le noeud de la maille parente).
                     else if(k == (child_coord_z + pattern-1) && (!mask_node_if_cell_front[l])) {
-
-                      // Seul le propriétaire de la parent_cell peut communiquer sur le changement de propriété.
-                      if (parent_cell_is_own) {
-
-                        // Priorité 14 > 13.
-                        if (is_cell_around_parent_cell_different_owner(1, 1, 2)) {
-                          get_back_node_owner[owner_cells_around_parent_cell(1, 1, 2)][1]++;
-                          get_back_node_owner[owner_cells_around_parent_cell(1, 1, 2)].add(child_nodes_uids[l]);
-                        }
-
-                        // Priorité 16 > 13.
-                        if (is_cell_around_parent_cell_different_owner(1, 2, 1)) {
-                          get_back_node_owner[owner_cells_around_parent_cell(1, 2, 1)][1]++;
-                          get_back_node_owner[owner_cells_around_parent_cell(1, 2, 1)].add(child_nodes_uids[l]);
-                        }
-
-                        // Priorité 17 > 13.
-                        if (is_cell_around_parent_cell_different_owner(1, 2, 2)) {
-                          get_back_node_owner[owner_cells_around_parent_cell(1, 2, 2)][1]++;
-                          get_back_node_owner[owner_cells_around_parent_cell(1, 2, 2)].add(child_nodes_uids[l]);
-                        }
-
-                        // Priorité 22 > 13.
-                        if (is_cell_around_parent_cell_different_owner(2, 1, 1)) {
-                          get_back_node_owner[owner_cells_around_parent_cell(2, 1, 1)][1]++;
-                          get_back_node_owner[owner_cells_around_parent_cell(2, 1, 1)].add(child_nodes_uids[l]);
-                        }
-
-                        // Priorité 23 > 13.
-                        if (is_cell_around_parent_cell_different_owner(2, 1, 2)) {
-                          get_back_node_owner[owner_cells_around_parent_cell(2, 1, 2)][1]++;
-                          get_back_node_owner[owner_cells_around_parent_cell(2, 1, 2)].add(child_nodes_uids[l]);
-                        }
-
-                        // Priorité 25 > 13.
-                        if (is_cell_around_parent_cell_different_owner(2, 2, 1)) {
-                          get_back_node_owner[owner_cells_around_parent_cell(2, 2, 1)][1]++;
-                          get_back_node_owner[owner_cells_around_parent_cell(2, 2, 1)].add(child_nodes_uids[l]);
-                        }
-
-                        // Priorité 26 > 13.
-                        if (is_cell_around_parent_cell_different_owner(2, 2, 2)) {
-                          get_back_node_owner[owner_cells_around_parent_cell(2, 2, 2)][1]++;
-                          get_back_node_owner[owner_cells_around_parent_cell(2, 2, 2)].add(child_nodes_uids[l]);
-                        }
-                      }
-
                       child_node_owner = owner_cells_around_parent_cell(1, 1, 1);
                     }
 
                     // Sinon le noeud est quelque part sur l'arête à droite en haut...
                     else {
-
-                      // Seul le propriétaire de la parent_cell peut communiquer sur le changement de propriété.
-                      if (parent_cell_is_own) {
-
-                        // Priorité 14 > 13.
-                        if (is_cell_around_parent_cell_different_owner(1, 1, 2)) {
-                          get_back_node_owner[owner_cells_around_parent_cell(1, 1, 2)][1]++;
-                          get_back_node_owner[owner_cells_around_parent_cell(1, 1, 2)].add(child_nodes_uids[l]);
-                        }
-
-                        // Priorité 16 > 13.
-                        if (is_cell_around_parent_cell_different_owner(1, 2, 1)) {
-                          get_back_node_owner[owner_cells_around_parent_cell(1, 2, 1)][1]++;
-                          get_back_node_owner[owner_cells_around_parent_cell(1, 2, 1)].add(child_nodes_uids[l]);
-                        }
-
-                        // Priorité 17 > 13.
-                        if (is_cell_around_parent_cell_different_owner(1, 2, 2)) {
-                          get_back_node_owner[owner_cells_around_parent_cell(1, 2, 2)][1]++;
-                          get_back_node_owner[owner_cells_around_parent_cell(1, 2, 2)].add(child_nodes_uids[l]);
-                        }
-                      }
-
                       child_node_owner = owner_cells_around_parent_cell(1, 1, 1);
                     }
                   }
@@ -1990,56 +1615,17 @@ refine()
 
                       // Sinon, parent_cell est propriétaire du noeud.
                       else {
-
-                        // Seul le propriétaire de la parent_cell peut communiquer sur le changement de propriété.
-                        // Priorité 14 > 13.
-                        if (is_cell_around_parent_cell_different_owner(1, 1, 2) && parent_cell_is_own) {
-                          get_back_node_owner[owner_cells_around_parent_cell(1, 1, 2)][1]++;
-                          get_back_node_owner[owner_cells_around_parent_cell(1, 1, 2)].add(child_nodes_uids[l]);
-                        }
-
                         child_node_owner = owner_cells_around_parent_cell(1, 1, 1);
                       }
                     }
 
                     // Si le noeud est quelque part sur l'arête à droite en avant.
                     else if (k == (child_coord_z + pattern - 1) && (!mask_node_if_cell_front[l])) {
-
-                      // Seul le propriétaire de la parent_cell peut communiquer sur le changement de propriété.
-                      if (parent_cell_is_own) {
-
-                        // Priorité 14 > 13.
-                        if (is_cell_around_parent_cell_different_owner(1, 1, 2)) {
-                          get_back_node_owner[owner_cells_around_parent_cell(1, 1, 2)][1]++;
-                          get_back_node_owner[owner_cells_around_parent_cell(1, 1, 2)].add(child_nodes_uids[l]);
-                        }
-
-                        // Priorité 22 > 13.
-                        if (is_cell_around_parent_cell_different_owner(2, 1, 1)) {
-                          get_back_node_owner[owner_cells_around_parent_cell(2, 1, 1)][1]++;
-                          get_back_node_owner[owner_cells_around_parent_cell(2, 1, 1)].add(child_nodes_uids[l]);
-                        }
-
-                        // Priorité 23 > 13.
-                        if (is_cell_around_parent_cell_different_owner(2, 1, 2)) {
-                          get_back_node_owner[owner_cells_around_parent_cell(2, 1, 2)][1]++;
-                          get_back_node_owner[owner_cells_around_parent_cell(2, 1, 2)].add(child_nodes_uids[l]);
-                        }
-                      }
-
                       child_node_owner = owner_cells_around_parent_cell(1, 1, 1);
                     }
 
                     // Sinon le noeud est quelque part sur la face droite...
                     else {
-
-                      // Seul le propriétaire de la parent_cell peut communiquer sur le changement de propriété.
-                      // Priorité 14 > 13.
-                      if (is_cell_around_parent_cell_different_owner(1, 1, 2) && parent_cell_is_own) {
-                        get_back_node_owner[owner_cells_around_parent_cell(1, 1, 2)][1]++;
-                        get_back_node_owner[owner_cells_around_parent_cell(1, 1, 2)].add(child_nodes_uids[l]);
-                      }
-
                       child_node_owner = owner_cells_around_parent_cell(1, 1, 1);
                     }
                   }
@@ -2091,23 +1677,6 @@ refine()
 
                       // Sinon, parent_cell est propriétaire du noeud.
                       else {
-
-                        // Seul le propriétaire de la parent_cell peut communiquer sur le changement de propriété.
-                        if (parent_cell_is_own) {
-
-                          // Priorité 19 > 13.
-                          if (is_cell_around_parent_cell_different_owner(2, 0, 1)) {
-                            get_back_node_owner[owner_cells_around_parent_cell(2, 0, 1)][1]++;
-                            get_back_node_owner[owner_cells_around_parent_cell(2, 0, 1)].add(child_nodes_uids[l]);
-                          }
-
-                          // Priorité 22 > 13.
-                          if (is_cell_around_parent_cell_different_owner(2, 1, 1)) {
-                            get_back_node_owner[owner_cells_around_parent_cell(2, 1, 1)][1]++;
-                            get_back_node_owner[owner_cells_around_parent_cell(2, 1, 1)].add(child_nodes_uids[l]);
-                          }
-                        }
-
                         child_node_owner = owner_cells_around_parent_cell(1, 1, 1);
                       }
                     }
@@ -2146,14 +1715,6 @@ refine()
 
                       // Sinon, parent_cell est propriétaire du noeud.
                       else {
-
-                        // Seul le propriétaire de la parent_cell peut communiquer sur le changement de propriété.
-                        // Priorité 16 > 13.
-                        if (is_cell_around_parent_cell_different_owner(1, 2, 1) && parent_cell_is_own) {
-                          get_back_node_owner[owner_cells_around_parent_cell(1, 2, 1)][1]++;
-                          get_back_node_owner[owner_cells_around_parent_cell(1, 2, 1)].add(child_nodes_uids[l]);
-                        }
-
                         child_node_owner = owner_cells_around_parent_cell(1, 1, 1);
                       }
                     }
@@ -2161,42 +1722,11 @@ refine()
                     // Si le noeud est sur la face avant de la maille parente.
                     // Donc noeud sur l'arête en avant en haut.
                     else if (k == (child_coord_z + pattern - 1) && (!mask_node_if_cell_front[l])) {
-
-                      // Seul le propriétaire de la parent_cell peut communiquer sur le changement de propriété.
-                      if (parent_cell_is_own) {
-
-                        // Priorité 16 > 13.
-                        if (is_cell_around_parent_cell_different_owner(1, 2, 1)) {
-                          get_back_node_owner[owner_cells_around_parent_cell(1, 2, 1)][1]++;
-                          get_back_node_owner[owner_cells_around_parent_cell(1, 2, 1)].add(child_nodes_uids[l]);
-                        }
-
-                        // Priorité 22 > 13.
-                        if (is_cell_around_parent_cell_different_owner(2, 1, 1)) {
-                          get_back_node_owner[owner_cells_around_parent_cell(2, 1, 1)][1]++;
-                          get_back_node_owner[owner_cells_around_parent_cell(2, 1, 1)].add(child_nodes_uids[l]);
-                        }
-
-                        // Priorité 25 > 13.
-                        if (is_cell_around_parent_cell_different_owner(2, 2, 1)) {
-                          get_back_node_owner[owner_cells_around_parent_cell(2, 2, 1)][1]++;
-                          get_back_node_owner[owner_cells_around_parent_cell(2, 2, 1)].add(child_nodes_uids[l]);
-                        }
-                      }
-
                       child_node_owner = owner_cells_around_parent_cell(1, 1, 1);
                     }
 
                     // Sinon le noeud est quelque part sur la face en haut...
                     else {
-
-                      // Seul le propriétaire de la parent_cell peut communiquer sur le changement de propriété.
-                      // Priorité 16 > 13.
-                      if (is_cell_around_parent_cell_different_owner(1, 2, 1) && parent_cell_is_own) {
-                        get_back_node_owner[owner_cells_around_parent_cell(1, 2, 1)][1]++;
-                        get_back_node_owner[owner_cells_around_parent_cell(1, 2, 1)].add(child_nodes_uids[l]);
-                      }
-
                       child_node_owner = owner_cells_around_parent_cell(1, 1, 1);
                     }
                   }
@@ -2220,14 +1750,6 @@ refine()
 
                     // Si le noeud est quelque part sur la face avant...
                     else if (k == (child_coord_z + pattern - 1) && (!mask_node_if_cell_front[l])) {
-
-                      // Seul le propriétaire de la parent_cell peut communiquer sur le changement de propriété.
-                      // Priorité 22 < 13.
-                      if (is_cell_around_parent_cell_different_owner(2, 1, 1) && parent_cell_is_own) {
-                        get_back_node_owner[owner_cells_around_parent_cell(2, 1, 1)][1]++;
-                        get_back_node_owner[owner_cells_around_parent_cell(2, 1, 1)].add(child_nodes_uids[l]);
-                      }
-
                       child_node_owner = owner_cells_around_parent_cell(1, 1, 1);
                     }
 
@@ -2300,46 +1822,11 @@ refine()
         if (node_uid_to_owner[node.uniqueId()] == my_rank) {
           node.mutableItemBase().addFlags(ItemFlags::II_Own);
         }
-      }
-    }
-
-    if(pm->commSize() != 1) {
-      // On distribue les nouveaux propriétaires aux processus.
-      UniqueArray<Int64> recv_buffer;
-
-      for (Integer rank = 0; rank < nb_rank; ++rank) {
-        pm->gatherVariable(get_back_node_owner[rank], recv_buffer, rank);
-      }
-
-      Integer index = 0;
-
-      // On explore le tableau reçu contenant les nouveaux propriétaires pour nos noeuds.
-      while (index < recv_buffer.size()) {
-
-        // Le nouveau propriétaire des noeuds de cette partie du tableau.
-        auto rank = static_cast<Integer>(recv_buffer[index++]);
-
-        // Le nombre de uid de noeuds à suivre dans le tableau.
-        auto size = static_cast<Integer>(recv_buffer[index++]);
-
-        // On récupère les uid des noeuds devant changer de proprio.
-        ConstArrayView<Int64> nodes_uid = recv_buffer.subView(index, size);
-        index += size;
-
-        UniqueArray<Int32> nodes_lid(size);
-        m_mesh->nodeFamily()->itemsUniqueIdToLocalId(nodes_lid, nodes_uid, true);
-
-        ENUMERATE_ (Node, inode, m_mesh->nodeFamily()->view(nodes_lid)) {
-          Node node = *inode;
-          debug() << "Change node owner -- UniqueId : " << node.uniqueId()
-                  << " -- Old Owner : " << node.owner()
-                  << " -- New Owner : " << rank
-          ;
-          node.mutableItemBase().setOwner(rank, my_rank);
+        else {
+          node.mutableItemBase().removeFlags(ItemFlags::II_Shared);
         }
       }
     }
-
     m_mesh->nodeFamily()->notifyItemsOwnerChanged();
   }
 
@@ -2367,46 +1854,11 @@ refine()
         if (face_uid_to_owner[face.uniqueId()] == my_rank) {
           face.mutableItemBase().addFlags(ItemFlags::II_Own);
         }
-      }
-    }
-
-    if(pm->commSize() != 1) {
-      // On distribue les nouveaux propriétaires aux processus.
-      UniqueArray<Int64> recv_buffer;
-
-      for (Integer rank = 0; rank < nb_rank; ++rank) {
-        pm->gatherVariable(get_back_face_owner[rank], recv_buffer, rank);
-      }
-
-      Integer index = 0;
-
-      // On explore le tableau reçu contenant les nouveaux propriétaires pour nos faces.
-      while (index < recv_buffer.size()) {
-
-        // Le nouveau propriétaire des faces de cette partie du tableau.
-        auto rank = static_cast<Integer>(recv_buffer[index++]);
-
-        // Le nombre de uid de faces à suivre dans le tableau.
-        auto size = static_cast<Integer>(recv_buffer[index++]);
-
-        // On récupère les uid des faces devant changer de proprio.
-        ConstArrayView<Int64> faces_uid = recv_buffer.subView(index, size);
-        index += size;
-
-        UniqueArray<Int32> faces_lid(size);
-        m_mesh->faceFamily()->itemsUniqueIdToLocalId(faces_lid, faces_uid, true);
-
-        ENUMERATE_ (Face, iface, m_mesh->faceFamily()->view(faces_lid)) {
-          Face face = *iface;
-          debug() << "Change face owner -- UniqueId : " << face.uniqueId()
-                  << " -- Old Owner : " << face.owner()
-                  << " -- New Owner : " << rank
-          ;
-          face.mutableItemBase().setOwner(rank, my_rank);
+        else {
+          face.mutableItemBase().removeFlags(ItemFlags::II_Shared);
         }
       }
     }
-
     m_mesh->faceFamily()->notifyItemsOwnerChanged();
   }
 
@@ -2451,6 +1903,23 @@ refine()
   // On positionne les noeuds dans l'espace.
   for(Cell parent_cell : cell_to_refine_internals){
     m_num_mng->setChildNodeCoordinates(parent_cell);
+    // On ajoute le flag "II_Shared" aux noeuds et aux faces des mailles partagées.
+    if (parent_cell.mutableItemBase().flags() & ItemFlags::II_Shared) {
+      for (Integer i = 0; i < parent_cell.nbHChildren(); ++i) {
+        Cell child_cell = parent_cell.hChild(i);
+        for (Node node : child_cell.nodes()) {
+          if (node.mutableItemBase().flags() & ItemFlags::II_Own) {
+            node.mutableItemBase().addFlags(ItemFlags::II_Shared);
+          }
+        }
+
+        for (Face face : child_cell.faces()) {
+          if (face.mutableItemBase().flags() & ItemFlags::II_Own) {
+            face.mutableItemBase().addFlags(ItemFlags::II_Shared);
+          }
+        }
+      }
+    }
   }
 
 //  ENUMERATE_(Cell, icell, m_mesh->allCells()){
@@ -3098,6 +2567,9 @@ coarse()
         if (node_uid_to_owner[node.uniqueId()] == my_rank) {
           node.mutableItemBase().addFlags(ItemFlags::II_Own);
         }
+        else {
+          node.mutableItemBase().removeFlags(ItemFlags::II_Shared);
+        }
       }
     }
 
@@ -3123,6 +2595,9 @@ coarse()
 
         if (face_uid_to_owner[face.uniqueId()] == my_rank) {
           face.mutableItemBase().addFlags(ItemFlags::II_Own);
+        }
+        else {
+          face.mutableItemBase().removeFlags(ItemFlags::II_Shared);
         }
       }
     }
@@ -3168,8 +2643,22 @@ coarse()
   // On positionne les noeuds dans l'espace.
   CellInfoListView cells(m_mesh->cellFamily());
   for (Integer i = 0; i < total_nb_cells; ++i) {
-    Cell parent = cells[cells_lid[i]];
-    m_num_mng->setParentNodeCoordinates(parent);
+    Cell parent_cell = cells[cells_lid[i]];
+    m_num_mng->setParentNodeCoordinates(parent_cell);
+
+    // On ajoute le flag "II_Shared" aux noeuds et aux faces des mailles partagées.
+    if (parent_cell.mutableItemBase().flags() & ItemFlags::II_Shared) {
+      for (Node node : parent_cell.nodes()) {
+        if (node.mutableItemBase().flags() & ItemFlags::II_Own) {
+          node.mutableItemBase().addFlags(ItemFlags::II_Shared);
+        }
+      }
+      for (Face face : parent_cell.faces()) {
+        if (face.mutableItemBase().flags() & ItemFlags::II_Own) {
+          face.mutableItemBase().addFlags(ItemFlags::II_Shared);
+        }
+      }
+    }
   }
 
   //! Créé le patch avec les mailles filles

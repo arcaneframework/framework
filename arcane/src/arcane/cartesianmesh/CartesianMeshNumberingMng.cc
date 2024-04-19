@@ -47,7 +47,7 @@ CartesianMeshNumberingMng(IMesh* mesh)
   if (m_nb_cell_y <= 0)
     ARCANE_FATAL("Bad value '{0}' for globalNbCells()[MD_DirY] (should be >0)", m_nb_cell_y);
 
-  m_nb_cell_z = global_nb_cells_by_direction[MD_DirZ];
+  m_nb_cell_z = ((m_mesh->dimension() == 2) ? 1 : global_nb_cells_by_direction[MD_DirZ]);
   if (m_nb_cell_z <= 0)
     ARCANE_FATAL("Bad value '{0}' for globalNbCells()[MD_DirZ] (should be >0)", m_nb_cell_z);
 
