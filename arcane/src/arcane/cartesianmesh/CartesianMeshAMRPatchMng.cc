@@ -433,11 +433,11 @@ refine()
           parent_cells.add(parent_cell);
           total_nb_cells++;
 
-          const Int64 child_cell_uid = m_num_mng->cellUniqueId(parent_cell_level + 1, Int64x2{ i, j });
+          const Int64 child_cell_uid = m_num_mng->cellUniqueId(parent_cell_level + 1, Int64x2(i, j));
           debug() << "Child -- x : " << i << " -- y : " << j << " -- level : " << parent_cell_level + 1 << " -- uid : " << child_cell_uid;
 
-          m_num_mng->cellNodeUniqueIds(child_nodes_uids, parent_cell_level + 1, Int64x2{ i, j });
-          m_num_mng->cellFaceUniqueIds(child_faces_uids, parent_cell_level + 1, Int64x2{ i, j });
+          m_num_mng->cellNodeUniqueIds(child_nodes_uids, parent_cell_level + 1, Int64x2(i, j));
+          m_num_mng->cellFaceUniqueIds(child_faces_uids, parent_cell_level + 1, Int64x2(i, j));
 
           const Integer type_cell = IT_Quad4;
           const Integer type_face = IT_Line2;
@@ -990,11 +990,11 @@ refine()
             parent_cells.add(parent_cell);
             total_nb_cells++;
 
-            const Int64 child_cell_uid = m_num_mng->cellUniqueId(parent_cell_level + 1, Int64x3{ i, j, k });
+            const Int64 child_cell_uid = m_num_mng->cellUniqueId(parent_cell_level + 1, Int64x3(i, j, k));
             debug() << "Child -- x : " << i << " -- y : " << j << " -- z : " << k << " -- level : " << parent_cell_level + 1 << " -- uid : " << child_cell_uid;
 
-            m_num_mng->cellNodeUniqueIds(child_nodes_uids, parent_cell_level + 1, Int64x3{ i, j, k });
-            m_num_mng->cellFaceUniqueIds(child_faces_uids, parent_cell_level + 1, Int64x3{ i, j, k });
+            m_num_mng->cellNodeUniqueIds(child_nodes_uids, parent_cell_level + 1, Int64x3(i, j, k));
+            m_num_mng->cellFaceUniqueIds(child_faces_uids, parent_cell_level + 1, Int64x3(i, j, k));
 
             const Integer type_cell = IT_Hexaedron8;
             const Integer type_face = IT_Quad4;

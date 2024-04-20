@@ -89,7 +89,7 @@ prepareLevel(Int32 level)
   m_first_node_uid_level.add(m_latest_node_uid);
   m_first_face_uid_level.add(m_latest_face_uid);
 
-  const Int64x3 nb_cell{ globalNbCellsX(level), globalNbCellsY(level), globalNbCellsZ(level) };
+  const Int64x3 nb_cell(globalNbCellsX(level), globalNbCellsY(level), globalNbCellsZ(level));
 
   if (m_dimension == 2) {
     m_latest_cell_uid += nb_cell.x * nb_cell.y;
@@ -344,11 +344,11 @@ void CartesianMeshNumberingMng::
 cellNodeUniqueIds(ArrayView<Int64> uid, Integer level, Int64 cell_uid)
 {
   if (m_dimension == 2) {
-    const Int64x2 cell_coord{ cellUniqueIdToCoordX(cell_uid, level), cellUniqueIdToCoordY(cell_uid, level) };
+    const Int64x2 cell_coord(cellUniqueIdToCoordX(cell_uid, level), cellUniqueIdToCoordY(cell_uid, level));
     cellNodeUniqueIds(uid, level, cell_coord);
   }
   else {
-    const Int64x3 cell_coord{ cellUniqueIdToCoordX(cell_uid, level), cellUniqueIdToCoordY(cell_uid, level), cellUniqueIdToCoordZ(cell_uid, level) };
+    const Int64x3 cell_coord(cellUniqueIdToCoordX(cell_uid, level), cellUniqueIdToCoordY(cell_uid, level), cellUniqueIdToCoordZ(cell_uid, level));
     cellNodeUniqueIds(uid, level, cell_coord);
   }
 }
@@ -365,8 +365,8 @@ cellFaceUniqueIds(ArrayView<Int64> uid, Integer level, Int64x3 cell_coord)
   if (uid.size() != nbFaceByCell())
     ARCANE_FATAL("Bad size of arrayview");
 
-  const Int64x3 nb_cell{ globalNbCellsX(level), globalNbCellsY(level), globalNbCellsZ(level) };
-  const Int64x3 nb_face{ nb_cell.x + 1, nb_cell.y + 1, nb_cell.z + 1 };
+  const Int64x3 nb_cell(globalNbCellsX(level), globalNbCellsY(level), globalNbCellsZ(level));
+  const Int64x3 nb_face(nb_cell + 1);
 
   const Int64 first_face_uid = firstFaceUniqueId(level);
 
@@ -487,11 +487,11 @@ void CartesianMeshNumberingMng::
 cellFaceUniqueIds(ArrayView<Int64> uid, Integer level, Int64 cell_uid)
 {
   if (m_dimension == 2) {
-    const Int64x2 cell_coord{ cellUniqueIdToCoordX(cell_uid, level), cellUniqueIdToCoordY(cell_uid, level) };
+    const Int64x2 cell_coord(cellUniqueIdToCoordX(cell_uid, level), cellUniqueIdToCoordY(cell_uid, level));
     cellFaceUniqueIds(uid, level, cell_coord);
   }
   else {
-    const Int64x3 cell_coord{ cellUniqueIdToCoordX(cell_uid, level), cellUniqueIdToCoordY(cell_uid, level), cellUniqueIdToCoordZ(cell_uid, level) };
+    const Int64x3 cell_coord(cellUniqueIdToCoordX(cell_uid, level), cellUniqueIdToCoordY(cell_uid, level), cellUniqueIdToCoordZ(cell_uid, level));
     cellFaceUniqueIds(uid, level, cell_coord);
   }
 }
@@ -523,7 +523,7 @@ cellUniqueIdsAroundCell(ArrayView<Int64> uid, Int64 cell_uid, Int32 level)
         for(Integer i = -1; i < 2; ++i){
           const Int64 coord_around_cell_x = coord_cell_x + i;
           if(coord_around_cell_x >= 0 && coord_around_cell_x < nb_cells_x) {
-            uid[(i + 1) + ((j + 1) * 3)] = cellUniqueId(level, Int64x2{ coord_around_cell_x, coord_around_cell_y });
+            uid[(i + 1) + ((j + 1) * 3)] = cellUniqueId(level, Int64x2(coord_around_cell_x, coord_around_cell_y));
           }
         }
       }
@@ -547,7 +547,7 @@ cellUniqueIdsAroundCell(ArrayView<Int64> uid, Int64 cell_uid, Int32 level)
             for(Integer i = -1; i < 2; ++i){
               const Int64 coord_around_cell_x = coord_cell_x + i;
               if(coord_around_cell_x >= 0 && coord_around_cell_x < nb_cells_x) {
-                uid[(i + 1) + ((j + 1) * 3) + ((k + 1) * 9)] = cellUniqueId(level, Int64x3{ coord_around_cell_x, coord_around_cell_y, coord_around_cell_z });
+                uid[(i + 1) + ((j + 1) * 3) + ((k + 1) * 9)] = cellUniqueId(level, Int64x3(coord_around_cell_x, coord_around_cell_y, coord_around_cell_z));
               }
             }
           }
@@ -642,7 +642,7 @@ setChildNodeCoordinates(Cell parent_cell)
         Integer begin = (i == 0 && j == 0 ? 0 : j == 0 ? 1
                                                        : 2);
         Integer end = (i == 0 ? nbNodeByCell() : nbNodeByCell() - 1);
-        Cell child = childCellOfCell(parent_cell, Int64x2{ i, j });
+        Cell child = childCellOfCell(parent_cell, Int64x2(i, j));
 
         for (Integer inode = begin; inode < end; ++inode) {
           nodes_coords[child.node(inode)] = txty(i + node_1d_2d_x[inode], j + node_1d_2d_y[inode]);
@@ -739,7 +739,7 @@ setChildNodeCoordinates(Cell parent_cell)
           // TODO : éviter les multiples appels pour un même noeud.
           Integer begin = 0;
           Integer end = nbNodeByCell();
-          Cell child = childCellOfCell(parent_cell, Int64x3{ i, j, k });
+          Cell child = childCellOfCell(parent_cell, Int64x3(i, j, k));
 
           for (Integer inode = begin; inode < end; ++inode) {
             nodes_coords[child.node(inode)] = txtytz(i + node_1d_3d_x[inode], j + node_1d_3d_y[inode], k + node_1d_3d_z[inode]);
@@ -767,22 +767,22 @@ setParentNodeCoordinates(Cell parent_cell)
   VariableNodeReal3& nodes_coords = m_mesh->nodesCoordinates();
 
   if (m_dimension == 2) {
-    nodes_coords[parent_cell.node(0)] = nodes_coords[childCellOfCell(parent_cell, Int64x2{ 0, 0 }).node(0)];
-    nodes_coords[parent_cell.node(1)] = nodes_coords[childCellOfCell(parent_cell, Int64x2{ m_pattern - 1, 0 }).node(1)];
-    nodes_coords[parent_cell.node(2)] = nodes_coords[childCellOfCell(parent_cell, Int64x2{ m_pattern - 1, m_pattern - 1 }).node(2)];
-    nodes_coords[parent_cell.node(3)] = nodes_coords[childCellOfCell(parent_cell, Int64x2{ 0, m_pattern - 1 }).node(3)];
+    nodes_coords[parent_cell.node(0)] = nodes_coords[childCellOfCell(parent_cell, Int64x2(0, 0)).node(0)];
+    nodes_coords[parent_cell.node(1)] = nodes_coords[childCellOfCell(parent_cell, Int64x2(m_pattern - 1, 0)).node(1)];
+    nodes_coords[parent_cell.node(2)] = nodes_coords[childCellOfCell(parent_cell, Int64x2(m_pattern - 1, m_pattern - 1)).node(2)];
+    nodes_coords[parent_cell.node(3)] = nodes_coords[childCellOfCell(parent_cell, Int64x2(0, m_pattern - 1)).node(3)];
   }
 
   else {
-    nodes_coords[parent_cell.node(0)] = nodes_coords[childCellOfCell(parent_cell, Int64x3{ 0, 0, 0 }).node(0)];
-    nodes_coords[parent_cell.node(1)] = nodes_coords[childCellOfCell(parent_cell, Int64x3{ m_pattern - 1, 0, 0 }).node(1)];
-    nodes_coords[parent_cell.node(2)] = nodes_coords[childCellOfCell(parent_cell, Int64x3{ m_pattern - 1, m_pattern - 1, 0 }).node(2)];
-    nodes_coords[parent_cell.node(3)] = nodes_coords[childCellOfCell(parent_cell, Int64x3{ 0, m_pattern - 1, 0 }).node(3)];
+    nodes_coords[parent_cell.node(0)] = nodes_coords[childCellOfCell(parent_cell, Int64x3(0, 0, 0)).node(0)];
+    nodes_coords[parent_cell.node(1)] = nodes_coords[childCellOfCell(parent_cell, Int64x3(m_pattern - 1, 0, 0)).node(1)];
+    nodes_coords[parent_cell.node(2)] = nodes_coords[childCellOfCell(parent_cell, Int64x3(m_pattern - 1, m_pattern - 1, 0)).node(2)];
+    nodes_coords[parent_cell.node(3)] = nodes_coords[childCellOfCell(parent_cell, Int64x3(0, m_pattern - 1, 0)).node(3)];
 
-    nodes_coords[parent_cell.node(4)] = nodes_coords[childCellOfCell(parent_cell, Int64x3{ 0, 0, m_pattern - 1 }).node(4)];
-    nodes_coords[parent_cell.node(5)] = nodes_coords[childCellOfCell(parent_cell, Int64x3{ m_pattern - 1, 0, m_pattern - 1 }).node(5)];
-    nodes_coords[parent_cell.node(6)] = nodes_coords[childCellOfCell(parent_cell, Int64x3{ m_pattern - 1, m_pattern - 1, m_pattern - 1 }).node(6)];
-    nodes_coords[parent_cell.node(7)] = nodes_coords[childCellOfCell(parent_cell, Int64x3{ 0, m_pattern - 1, m_pattern - 1 }).node(7)];
+    nodes_coords[parent_cell.node(4)] = nodes_coords[childCellOfCell(parent_cell, Int64x3(0, 0, m_pattern - 1)).node(4)];
+    nodes_coords[parent_cell.node(5)] = nodes_coords[childCellOfCell(parent_cell, Int64x3(m_pattern - 1, 0, m_pattern - 1)).node(5)];
+    nodes_coords[parent_cell.node(6)] = nodes_coords[childCellOfCell(parent_cell, Int64x3(m_pattern - 1, m_pattern - 1, m_pattern - 1)).node(6)];
+    nodes_coords[parent_cell.node(7)] = nodes_coords[childCellOfCell(parent_cell, Int64x3(0, m_pattern - 1, m_pattern - 1)).node(7)];
   }
 }
 
@@ -793,14 +793,14 @@ parentCellUniqueIdOfCell(Cell cell)
   const Int32 level = cell.level();
   if (m_dimension == 2) {
     return cellUniqueId(level - 1,
-                        Int64x2{ offsetLevelToLevel(cellUniqueIdToCoordX(uid, level), level, level - 1),
-                                 offsetLevelToLevel(cellUniqueIdToCoordY(uid, level), level, level - 1) });
+                        Int64x2(offsetLevelToLevel(cellUniqueIdToCoordX(uid, level), level, level - 1),
+                                offsetLevelToLevel(cellUniqueIdToCoordY(uid, level), level, level - 1)));
   }
   else {
     return cellUniqueId(level - 1,
-                        Int64x3{ offsetLevelToLevel(cellUniqueIdToCoordX(uid, level), level, level - 1),
-                                 offsetLevelToLevel(cellUniqueIdToCoordY(uid, level), level, level - 1),
-                                 offsetLevelToLevel(cellUniqueIdToCoordZ(uid, level), level, level - 1) });
+                        Int64x3(offsetLevelToLevel(cellUniqueIdToCoordX(uid, level), level, level - 1),
+                                offsetLevelToLevel(cellUniqueIdToCoordY(uid, level), level, level - 1),
+                                offsetLevelToLevel(cellUniqueIdToCoordZ(uid, level), level, level - 1)));
   }
 }
 
@@ -814,8 +814,8 @@ childCellUniqueIdOfCell(Cell cell, Int64x2 child_coord_in_parent)
   const Int32 level = cell.level();
 
   return cellUniqueId(level + 1,
-                      Int64x2{ offsetLevelToLevel(cellUniqueIdToCoordX(uid, level), level, level + 1) + child_coord_in_parent.x,
-                               offsetLevelToLevel(cellUniqueIdToCoordY(uid, level), level, level + 1) + child_coord_in_parent.y });
+                      Int64x2(offsetLevelToLevel(cellUniqueIdToCoordX(uid, level), level, level + 1) + child_coord_in_parent.x,
+                              offsetLevelToLevel(cellUniqueIdToCoordY(uid, level), level, level + 1) + child_coord_in_parent.y));
 }
 
 Cell CartesianMeshNumberingMng::
@@ -852,9 +852,9 @@ childCellUniqueIdOfCell(Cell cell, Int64x3 child_coord_in_parent)
   const Int32 level = cell.level();
 
   return cellUniqueId(level + 1,
-                      Int64x3{ offsetLevelToLevel(cellUniqueIdToCoordX(uid, level), level, level + 1) + child_coord_in_parent.x,
-                               offsetLevelToLevel(cellUniqueIdToCoordY(uid, level), level, level + 1) + child_coord_in_parent.y,
-                               offsetLevelToLevel(cellUniqueIdToCoordZ(uid, level), level, level + 1) + child_coord_in_parent.z });
+                      Int64x3(offsetLevelToLevel(cellUniqueIdToCoordX(uid, level), level, level + 1) + child_coord_in_parent.x,
+                              offsetLevelToLevel(cellUniqueIdToCoordY(uid, level), level, level + 1) + child_coord_in_parent.y,
+                              offsetLevelToLevel(cellUniqueIdToCoordZ(uid, level), level, level + 1) + child_coord_in_parent.z));
 }
 
 Cell CartesianMeshNumberingMng::
@@ -887,9 +887,9 @@ childCellUniqueIdOfCell(Cell cell, Int64 child_index_in_parent)
     ARCANE_ASSERT((child_index_in_parent < m_pattern * m_pattern && child_index_in_parent >= 0), ("Bad child_index_in_parent"))
 
     return childCellUniqueIdOfCell(cell,
-                                   Int64x2{
+                                   Int64x2(
                                    child_index_in_parent % m_pattern,
-                                   child_index_in_parent / m_pattern });
+                                   child_index_in_parent / m_pattern));
   }
 
   else {
@@ -897,10 +897,10 @@ childCellUniqueIdOfCell(Cell cell, Int64 child_index_in_parent)
 
     const Int64 to_2d = child_index_in_parent % (m_pattern * m_pattern);
     return childCellUniqueIdOfCell(cell,
-                                   Int64x3{
+                                   Int64x3(
                                    to_2d % m_pattern,
                                    to_2d / m_pattern,
-                                   child_index_in_parent / (m_pattern * m_pattern) });
+                                   child_index_in_parent / (m_pattern * m_pattern)));
   }
 }
 
