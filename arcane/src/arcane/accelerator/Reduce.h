@@ -20,6 +20,7 @@
 #include "arcane/accelerator/core/IReduceMemoryImpl.h"
 #include "arcane/accelerator/AcceleratorGlobal.h"
 #include "arcane/accelerator/CommonUtils.h"
+#include "arcane/accelerator/RunCommandLaunchInfo.h"
 
 #include <limits.h>
 #include <float.h>
@@ -656,9 +657,13 @@ class GenericReducerIf
 
   template <typename InputIterator, typename ReduceOperator>
   void apply(GenericReducerBase<DataType>& s, Int32 nb_item, const DataType& init_value,
-             InputIterator input_iter, ReduceOperator reduce_op)
+             InputIterator input_iter, ReduceOperator reduce_op, const TraceInfo& trace_info)
   {
     RunQueue& queue = s.m_queue;
+    RunCommand command = makeCommand(queue);
+    command << trace_info;
+    impl::RunCommandLaunchInfo launch_info(command, nb_item);
+    launch_info.beginExecute();
     eExecutionPolicy exec_policy = queue.executionPolicy();
     switch (exec_policy) {
 #if defined(ARCANE_COMPILING_CUDA)
@@ -709,6 +714,7 @@ class GenericReducerIf
     default:
       ARCANE_FATAL(getBadPolicyMessage(exec_policy));
     }
+    launch_info.endExecute();
   }
 };
 
@@ -774,42 +780,42 @@ class GenericReducer
  public:
 
   //! Applique une réduction 'Min' sur les valeurs \a values
-  void applyMin(SmallSpan<const DataType> values)
+  void applyMin(SmallSpan<const DataType> values, const TraceInfo& trace_info = TraceInfo())
   {
-    _apply(values.size(), values.data(), impl::MinOperator<DataType>{});
+    _apply(values.size(), values.data(), impl::MinOperator<DataType>{}, trace_info);
   }
 
   //! Applique une réduction 'Max' sur les valeurs \a values
-  void applyMax(SmallSpan<const DataType> values)
+  void applyMax(SmallSpan<const DataType> values, const TraceInfo& trace_info = TraceInfo())
   {
-    _apply(values.size(), values.data(), impl::MaxOperator<DataType>{});
+    _apply(values.size(), values.data(), impl::MaxOperator<DataType>{}, trace_info);
   }
 
   //! Applique une réduction 'Somme' sur les valeurs \a values
-  void applySum(SmallSpan<const DataType> values)
+  void applySum(SmallSpan<const DataType> values, const TraceInfo& trace_info = TraceInfo())
   {
-    _apply(values.size(), values.data(), impl::SumOperator<DataType>{});
+    _apply(values.size(), values.data(), impl::SumOperator<DataType>{}, trace_info);
   }
 
   //! Applique une réduction 'Min' sur les valeurs sélectionnées par \a select_lambda
   template <typename SelectLambda>
-  void applyMinWithIndex(Int32 nb_value, const SelectLambda& select_lambda)
+  void applyMinWithIndex(Int32 nb_value, const SelectLambda& select_lambda, const TraceInfo& trace_info = TraceInfo())
   {
-    _applyWithIndex(nb_value, select_lambda, impl::MinOperator<DataType>{});
+    _applyWithIndex(nb_value, select_lambda, impl::MinOperator<DataType>{}, trace_info);
   }
 
   //! Applique une réduction 'Max' sur les valeurs sélectionnées par \a select_lambda
   template <typename SelectLambda>
-  void applyMaxWithIndex(Int32 nb_value, const SelectLambda& select_lambda)
+  void applyMaxWithIndex(Int32 nb_value, const SelectLambda& select_lambda, const TraceInfo& trace_info = TraceInfo())
   {
-    _applyWithIndex(nb_value, select_lambda, impl::MaxOperator<DataType>{});
+    _applyWithIndex(nb_value, select_lambda, impl::MaxOperator<DataType>{}, trace_info);
   }
 
   //! Applique une réduction 'Somme' sur les valeurs sélectionnées par \a select_lambda
   template <typename SelectLambda>
-  void applySumWithIndex(Int32 nb_value, const SelectLambda& select_lambda)
+  void applySumWithIndex(Int32 nb_value, const SelectLambda& select_lambda, const TraceInfo& trace_info = TraceInfo())
   {
-    _applyWithIndex(nb_value, select_lambda, impl::SumOperator<DataType>{});
+    _applyWithIndex(nb_value, select_lambda, impl::SumOperator<DataType>{}, trace_info);
   }
 
   //! Valeur de la réduction
@@ -826,24 +832,25 @@ class GenericReducer
  private:
 
   template <typename InputIterator, typename ReduceOperator>
-  void _apply(Int32 nb_value, InputIterator input_iter, ReduceOperator reduce_op)
+  void _apply(Int32 nb_value, InputIterator input_iter, ReduceOperator reduce_op, const TraceInfo& trace_info)
   {
     _setCalled();
     impl::GenericReducerBase<DataType>* base_ptr = this;
     impl::GenericReducerIf<DataType> gf;
     DataType init_value = reduce_op.defaultValue();
-    gf.apply(*base_ptr, nb_value, init_value, input_iter, reduce_op);
+    gf.apply(*base_ptr, nb_value, init_value, input_iter, reduce_op, trace_info);
   }
 
   template <typename GetterLambda, typename ReduceOperator>
-  void _applyWithIndex(Int32 nb_value, const GetterLambda& getter_lambda, ReduceOperator reduce_op)
+  void _applyWithIndex(Int32 nb_value, const GetterLambda& getter_lambda,
+                       ReduceOperator reduce_op, const TraceInfo& trace_info)
   {
     _setCalled();
     impl::GenericReducerBase<DataType>* base_ptr = this;
     impl::GenericReducerIf<DataType> gf;
     impl::GetterLambdaIterator<DataType, GetterLambda> input_iter(getter_lambda);
     DataType init_value = reduce_op.defaultValue();
-    gf.apply(*base_ptr, nb_value, init_value, input_iter, reduce_op);
+    gf.apply(*base_ptr, nb_value, init_value, input_iter, reduce_op, trace_info);
   }
 
   void _setCalled()
