@@ -297,6 +297,7 @@ class HostDeviceReducer
       m_grid_memory_info = m_memory_impl->gridMemoryInfo();
     }
   }
+
   ARCCORE_HOST_DEVICE HostDeviceReducer(const HostDeviceReducer& rhs)
   : m_host_or_device_memory_for_reduced_value(rhs.m_host_or_device_memory_for_reduced_value)
   , m_local_value(rhs.m_local_value)
@@ -328,37 +329,7 @@ class HostDeviceReducer
 
   ARCCORE_HOST_DEVICE ~HostDeviceReducer()
   {
-#ifdef ARCCORE_DEVICE_CODE
-    //int threadId = threadIdx.x + blockDim.x * threadIdx.y + (blockDim.x * blockDim.y) * threadIdx.z;
-    //if ((threadId%16)==0)
-    //printf("Destroy device Id=%d\n",threadId);
-    auto buf_span = m_grid_memory_info.m_grid_memory_values.bytes();
-    DataType* buf = reinterpret_cast<DataType*>(buf_span.data());
-    SmallSpan<DataType> grid_buffer(buf, static_cast<Int32>(buf_span.size()));
-
-    impl::ReduceDeviceInfo<DataType> dvi;
-    dvi.m_grid_buffer = grid_buffer;
-    dvi.m_device_count = m_grid_memory_info.m_grid_device_count;
-    dvi.m_device_final_ptr = m_host_or_device_memory_for_reduced_value;
-    dvi.m_host_final_ptr = m_grid_memory_info.m_host_memory_for_reduced_value;
-    dvi.m_current_value = m_local_value;
-    dvi.m_identity = m_identity;
-    dvi.m_use_grid_reduce = m_grid_memory_info.m_reduce_policy != eDeviceReducePolicy::Atomic;
-    ReduceFunctor::applyDevice(dvi); //grid_buffer,m_grid_device_count,m_host_or_device_memory_for_reduced_value,m_local_value,m_identity);
-#else
-    //      printf("Destroy host parent_value=%p this=%p\n",(void*)m_parent_value,(void*)this);
-    // Code hôte
-    //std::cout << String::format("Reduce destructor this={0} parent_value={1} v={2} memory_impl={3}\n",this,(void*)m_parent_value,m_local_value,m_memory_impl);
-    //std::cout << String::format("Reduce destructor this={0} grid_data={1} grid_size={2}\n",
-    //                            this,(void*)m_grid_memory_value_as_bytes,m_grid_memory_size);
-    //std::cout.flush();
-    if (!m_is_master_instance)
-      ReduceFunctor::apply(m_atomic_parent_value, m_local_value);
-
-    //printf("Destroy host %p %p\n",m_host_or_device_memory_for_reduced_value,this);
-    if (m_memory_impl && m_is_master_instance)
-      m_memory_impl->release();
-#endif
+    _finalize();
   }
 
  public:
@@ -371,6 +342,7 @@ class HostDeviceReducer
   {
     return m_local_value;
   }
+
   //! Effectue la réduction et récupère la valeur. ATTENTION: ne faire qu'une seule fois.
   DataType reduce()
   {
@@ -421,11 +393,45 @@ class HostDeviceReducer
  private:
 
   DataType m_identity;
+  bool m_is_allocated = false;
+  bool m_is_master_instance = false;
 
  private:
 
-  bool m_is_allocated = false;
-  bool m_is_master_instance = false;
+  ARCCORE_HOST_DEVICE void _finalize()
+  {
+#ifdef ARCCORE_DEVICE_CODE
+    //int threadId = threadIdx.x + blockDim.x * threadIdx.y + (blockDim.x * blockDim.y) * threadIdx.z;
+    //if ((threadId%16)==0)
+    //printf("Destroy device Id=%d\n",threadId);
+    auto buf_span = m_grid_memory_info.m_grid_memory_values.bytes();
+    DataType* buf = reinterpret_cast<DataType*>(buf_span.data());
+    SmallSpan<DataType> grid_buffer(buf, static_cast<Int32>(buf_span.size()));
+
+    impl::ReduceDeviceInfo<DataType> dvi;
+    dvi.m_grid_buffer = grid_buffer;
+    dvi.m_device_count = m_grid_memory_info.m_grid_device_count;
+    dvi.m_device_final_ptr = m_host_or_device_memory_for_reduced_value;
+    dvi.m_host_final_ptr = m_grid_memory_info.m_host_memory_for_reduced_value;
+    dvi.m_current_value = m_local_value;
+    dvi.m_identity = m_identity;
+    dvi.m_use_grid_reduce = m_grid_memory_info.m_reduce_policy != eDeviceReducePolicy::Atomic;
+    ReduceFunctor::applyDevice(dvi); //grid_buffer,m_grid_device_count,m_host_or_device_memory_for_reduced_value,m_local_value,m_identity);
+#else
+    //      printf("Destroy host parent_value=%p this=%p\n",(void*)m_parent_value,(void*)this);
+    // Code hôte
+    //std::cout << String::format("Reduce destructor this={0} parent_value={1} v={2} memory_impl={3}\n",this,(void*)m_parent_value,m_local_value,m_memory_impl);
+    //std::cout << String::format("Reduce destructor this={0} grid_data={1} grid_size={2}\n",
+    //                            this,(void*)m_grid_memory_value_as_bytes,m_grid_memory_size);
+    //std::cout.flush();
+    if (!m_is_master_instance)
+      ReduceFunctor::apply(m_atomic_parent_value, m_local_value);
+
+    //printf("Destroy host %p %p\n",m_host_or_device_memory_for_reduced_value,this);
+    if (m_memory_impl && m_is_master_instance)
+      m_memory_impl->release();
+#endif
+  }
 };
 
 /*---------------------------------------------------------------------------*/
