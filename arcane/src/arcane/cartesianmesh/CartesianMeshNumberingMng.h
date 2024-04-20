@@ -96,6 +96,7 @@ class CartesianMeshNumberingMng
   Int64 childCellUniqueIdOfCell(Cell cell, Int64 child_index_in_parent) override;
 
  private:
+
   IMesh* m_mesh;
 
   Integer m_dimension;

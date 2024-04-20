@@ -40,9 +40,11 @@ class CartesianMeshAMRPatchMng
 , public ICartesianMeshAMRPatchMng
 {
  public:
+
   explicit CartesianMeshAMRPatchMng(ICartesianMesh* mesh);
 
  public:
+
   void flagCellToRefine(Int32ConstArrayView cells_lids) override;
   void _syncFlagCell();
 
@@ -50,6 +52,7 @@ class CartesianMeshAMRPatchMng
   void coarse() override;
 
  private:
+
   IMesh* m_mesh;
   ICartesianMesh* m_cmesh;
   Ref<ICartesianMeshNumberingMng> m_num_mng;
