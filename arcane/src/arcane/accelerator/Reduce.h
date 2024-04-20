@@ -20,6 +20,7 @@
 #include "arcane/accelerator/core/IReduceMemoryImpl.h"
 #include "arcane/accelerator/AcceleratorGlobal.h"
 #include "arcane/accelerator/CommonUtils.h"
+#include "arcane/accelerator/RunCommandLaunchInfo.h"
 
 #include <limits.h>
 #include <float.h>
@@ -29,7 +30,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arcane::Accelerator
+namespace Arcane::Accelerator::impl
 {
 
 /*---------------------------------------------------------------------------*/
@@ -39,209 +40,214 @@ using namespace Arccore;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+extern "C++" ARCANE_ACCELERATOR_CORE_EXPORT IReduceMemoryImpl*
+internalGetOrCreateReduceMemoryImpl(RunCommand* command);
 
-namespace impl
+template <typename DataType>
+class ReduceIdentity;
+template <>
+// TODO: utiliser numeric_limits.
+class ReduceIdentity<double>
 {
-  extern "C++" ARCANE_ACCELERATOR_CORE_EXPORT IReduceMemoryImpl*
-  internalGetOrCreateReduceMemoryImpl(RunCommand* command);
+ public:
 
-  template <typename DataType>
-  class ReduceIdentity;
-  template <>
-  // TODO: utiliser numeric_limits.
-  class ReduceIdentity<double>
-  {
-   public:
+  ARCCORE_HOST_DEVICE static constexpr double sumValue() { return 0.0; }
+  ARCCORE_HOST_DEVICE static constexpr double minValue() { return DBL_MAX; }
+  ARCCORE_HOST_DEVICE static constexpr double maxValue() { return -DBL_MAX; }
+};
+template <>
+class ReduceIdentity<Int32>
+{
+ public:
 
-    ARCCORE_HOST_DEVICE static constexpr double sumValue() { return 0.0; }
-    ARCCORE_HOST_DEVICE static constexpr double minValue() { return DBL_MAX; }
-    ARCCORE_HOST_DEVICE static constexpr double maxValue() { return -DBL_MAX; }
-  };
-  template <>
-  class ReduceIdentity<Int32>
-  {
-   public:
+  ARCCORE_HOST_DEVICE static constexpr Int32 sumValue() { return 0; }
+  ARCCORE_HOST_DEVICE static constexpr Int32 minValue() { return INT32_MAX; }
+  ARCCORE_HOST_DEVICE static constexpr Int32 maxValue() { return -INT32_MAX; }
+};
+template <>
+class ReduceIdentity<Int64>
+{
+ public:
 
-    ARCCORE_HOST_DEVICE static constexpr Int32 sumValue() { return 0; }
-    ARCCORE_HOST_DEVICE static constexpr Int32 minValue() { return INT32_MAX; }
-    ARCCORE_HOST_DEVICE static constexpr Int32 maxValue() { return -INT32_MAX; }
-  };
-  template <>
-  class ReduceIdentity<Int64>
-  {
-   public:
+  ARCCORE_HOST_DEVICE static constexpr Int64 sumValue() { return 0; }
+  ARCCORE_HOST_DEVICE static constexpr Int64 minValue() { return INT64_MAX; }
+  ARCCORE_HOST_DEVICE static constexpr Int64 maxValue() { return -INT64_MAX; }
+};
 
-    ARCCORE_HOST_DEVICE static constexpr Int64 sumValue() { return 0; }
-    ARCCORE_HOST_DEVICE static constexpr Int64 minValue() { return INT64_MAX; }
-    ARCCORE_HOST_DEVICE static constexpr Int64 maxValue() { return -INT64_MAX; }
-  };
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+// L'implémentation utilisée est définie dans 'CommonCudaHipReduceImpl.h'
 
-  /*---------------------------------------------------------------------------*/
-  /*---------------------------------------------------------------------------*/
-  // L'implémentation utilisée est définie dans 'CommonCudaHipReduceImpl.h'
-
-  /*---------------------------------------------------------------------------*/
-  /*---------------------------------------------------------------------------*/
-  /*!
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
  * \internal
  * \brief Informations pour effectuer une réduction sur un device.
  */
-  template <typename DataType>
-  class ReduceDeviceInfo
-  {
-   public:
+template <typename DataType>
+class ReduceDeviceInfo
+{
+ public:
 
-    //! Valeur du thread courant à réduire.
-    DataType m_current_value;
-    //! Valeur de l'identité pour la réduction
-    DataType m_identity;
-    //! Pointeur vers la donnée réduite (mémoire uniquement accessible depuis le device)
-    DataType* m_device_final_ptr = nullptr;
-    //! Pointeur vers la donnée réduite (mémoire uniquement accessible depuis l'hôte)
-    void* m_host_final_ptr = nullptr;
-    //! Tableau avec une valeur par bloc pour la réduction
-    SmallSpan<DataType> m_grid_buffer;
-    /*!
+  //! Valeur du thread courant à réduire.
+  DataType m_current_value;
+  //! Valeur de l'identité pour la réduction
+  DataType m_identity;
+  //! Pointeur vers la donnée réduite (mémoire uniquement accessible depuis le device)
+  DataType* m_device_final_ptr = nullptr;
+  //! Pointeur vers la donnée réduite (mémoire uniquement accessible depuis l'hôte)
+  void* m_host_final_ptr = nullptr;
+  //! Tableau avec une valeur par bloc pour la réduction
+  SmallSpan<DataType> m_grid_buffer;
+  /*!
    * Pointeur vers une zone mémoire contenant un entier pour indiquer
    * combien il reste de blocs à réduire.
    */
-    unsigned int* m_device_count = nullptr;
+  unsigned int* m_device_count = nullptr;
 
-    //! Indique si on utilise la réduction par grille (sinon on utilise les atomiques)
-    bool m_use_grid_reduce = true;
-  };
+  //! Indique si on utilise la réduction par grille (sinon on utilise les atomiques)
+  bool m_use_grid_reduce = true;
+};
 
-  /*---------------------------------------------------------------------------*/
-  /*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
-  template <typename DataType>
-  class ReduceAtomicSum;
+template <typename DataType>
+class ReduceAtomicSum;
 
-  template <>
-  class ReduceAtomicSum<double>
+template <>
+class ReduceAtomicSum<double>
+{
+ public:
+
+  static double apply(double* vptr, double v)
   {
-   public:
+    std::atomic_ref<double> aref(*vptr);
+    double old = aref.load(std::memory_order_consume);
+    double wanted = old + v;
+    while (!aref.compare_exchange_weak(old, wanted, std::memory_order_release, std::memory_order_consume))
+      wanted = old + v;
+    return wanted;
+  }
+};
+template <>
+class ReduceAtomicSum<Int64>
+{
+ public:
 
-    static double apply(std::atomic<double>* ptr, double v)
-    {
-      double old = ptr->load(std::memory_order_consume);
-      double wanted = old + v;
-      while (!ptr->compare_exchange_weak(old, wanted, std::memory_order_release, std::memory_order_consume))
-        wanted = old + v;
-      return wanted;
-    }
-  };
-  template <>
-  class ReduceAtomicSum<Int64>
+  static Int64 apply(Int64* vptr, Int64 v)
   {
-   public:
+    std::atomic_ref<Int64> aref(*vptr);
+    Int64 x = aref.fetch_add(v);
+    return x + v;
+  }
+};
+template <>
+class ReduceAtomicSum<Int32>
+{
+ public:
 
-    static Int64 apply(std::atomic<Int64>* ptr, Int64 v)
-    {
-      Int64 x = std::atomic_fetch_add(ptr, v);
-      return x + v;
-    }
-  };
-  template <>
-  class ReduceAtomicSum<Int32>
+  static Int32 apply(Int32* vptr, Int32 v)
   {
-   public:
+    std::atomic_ref<Int32> aref(*vptr);
+    Int32 x = aref.fetch_add(v);
+    return x + v;
+  }
+};
 
-    static Int32 apply(std::atomic<Int32>* ptr, Int32 v)
-    {
-      Int32 x = std::atomic_fetch_add(ptr, v);
-      return x + v;
-    }
-  };
+template <typename DataType>
+class ReduceFunctorSum
+{
+ public:
 
-  template <typename DataType>
-  class ReduceFunctorSum
+  static ARCCORE_DEVICE
+  DataType
+  applyDevice(const ReduceDeviceInfo<DataType>& dev_info)
   {
-   public:
-
-    static ARCCORE_DEVICE
-    DataType
-    applyDevice(const ReduceDeviceInfo<DataType>& dev_info)
-    {
-      _applyDevice(dev_info);
-      return *(dev_info.m_device_final_ptr);
-    }
-    static DataType apply(std::atomic<DataType>* ptr, DataType v)
-    {
-      return ReduceAtomicSum<DataType>::apply(ptr, v);
-    }
-
-   public:
-
-    ARCCORE_HOST_DEVICE static constexpr DataType identity() { return impl::ReduceIdentity<DataType>::sumValue(); }
-
-   private:
-
-    static ARCCORE_DEVICE void _applyDevice(const ReduceDeviceInfo<DataType>& dev_info);
-  };
-
-  template <typename DataType>
-  class ReduceFunctorMax
+    _applyDevice(dev_info);
+    return *(dev_info.m_device_final_ptr);
+  }
+  static DataType apply(DataType* vptr, DataType v)
   {
-   public:
+    return ReduceAtomicSum<DataType>::apply(vptr, v);
+  }
 
-    static ARCCORE_DEVICE
-    DataType
-    applyDevice(const ReduceDeviceInfo<DataType>& dev_info)
-    {
-      _applyDevice(dev_info);
-      return *(dev_info.m_device_final_ptr);
-    }
-    static DataType apply(std::atomic<DataType>* ptr, DataType v)
-    {
-      DataType prev_value = *ptr;
-      while (prev_value < v && !ptr->compare_exchange_weak(prev_value, v)) {
-      }
-      return *ptr;
-    }
+ public:
 
-   public:
+  ARCCORE_HOST_DEVICE static constexpr DataType identity() { return impl::ReduceIdentity<DataType>::sumValue(); }
 
-    ARCCORE_HOST_DEVICE static constexpr DataType identity() { return impl::ReduceIdentity<DataType>::maxValue(); }
+ private:
 
-   private:
+  static ARCCORE_DEVICE void _applyDevice(const ReduceDeviceInfo<DataType>& dev_info);
+};
 
-    static ARCCORE_DEVICE void _applyDevice(const ReduceDeviceInfo<DataType>& dev_info);
-  };
+template <typename DataType>
+class ReduceFunctorMax
+{
+ public:
 
-  template <typename DataType>
-  class ReduceFunctorMin
+  static ARCCORE_DEVICE
+  DataType
+  applyDevice(const ReduceDeviceInfo<DataType>& dev_info)
   {
-   public:
-
-    static ARCCORE_DEVICE
-    DataType
-    applyDevice(const ReduceDeviceInfo<DataType>& dev_info)
-    {
-      _applyDevice(dev_info);
-      return *(dev_info.m_device_final_ptr);
+    _applyDevice(dev_info);
+    return *(dev_info.m_device_final_ptr);
+  }
+  static DataType apply(DataType* ptr, DataType v)
+  {
+    std::atomic_ref<DataType> aref(*ptr);
+    DataType prev_value = aref.load();
+    while (prev_value < v && !aref.compare_exchange_weak(prev_value, v)) {
     }
-    static DataType apply(std::atomic<DataType>* ptr, DataType v)
-    {
-      DataType prev_value = *ptr;
-      while (prev_value > v && !ptr->compare_exchange_weak(prev_value, v)) {
-      }
-      return *ptr;
+    return aref.load();
+  }
+
+ public:
+
+  ARCCORE_HOST_DEVICE static constexpr DataType identity() { return impl::ReduceIdentity<DataType>::maxValue(); }
+
+ private:
+
+  static ARCCORE_DEVICE void _applyDevice(const ReduceDeviceInfo<DataType>& dev_info);
+};
+
+template <typename DataType>
+class ReduceFunctorMin
+{
+ public:
+
+  static ARCCORE_DEVICE
+  DataType
+  applyDevice(const ReduceDeviceInfo<DataType>& dev_info)
+  {
+    _applyDevice(dev_info);
+    return *(dev_info.m_device_final_ptr);
+  }
+  static DataType apply(DataType* vptr, DataType v)
+  {
+    std::atomic_ref<DataType> aref(*vptr);
+    DataType prev_value = aref.load();
+    while (prev_value > v && !aref.compare_exchange_weak(prev_value, v)) {
     }
+    return aref.load();
+  }
 
-   public:
+ public:
 
-    ARCCORE_HOST_DEVICE static constexpr DataType identity() { return impl::ReduceIdentity<DataType>::minValue(); }
+  ARCCORE_HOST_DEVICE static constexpr DataType identity() { return impl::ReduceIdentity<DataType>::minValue(); }
 
-   private:
+ private:
 
-    static ARCCORE_DEVICE void _applyDevice(const ReduceDeviceInfo<DataType>& dev_info);
-  };
+  static ARCCORE_DEVICE void _applyDevice(const ReduceDeviceInfo<DataType>& dev_info);
+};
 
-  /*---------------------------------------------------------------------------*/
-  /*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
-} // End namespace impl
+} // namespace Arcane::Accelerator::impl
+
+namespace Arcane::Accelerator
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -283,7 +289,7 @@ class HostDeviceReducer
     m_identity = ReduceFunctor::identity();
     m_local_value = m_identity;
     m_atomic_value = m_identity;
-    m_parent_value = &m_atomic_value;
+    m_atomic_parent_value = &m_atomic_value;
     //printf("Create null host parent_value=%p this=%p\n",(void*)m_parent_value,(void*)this);
     m_memory_impl = impl::internalGetOrCreateReduceMemoryImpl(&command);
     if (m_memory_impl) {
@@ -291,6 +297,7 @@ class HostDeviceReducer
       m_grid_memory_info = m_memory_impl->gridMemoryInfo();
     }
   }
+
   ARCCORE_HOST_DEVICE HostDeviceReducer(const HostDeviceReducer& rhs)
   : m_host_or_device_memory_for_reduced_value(rhs.m_host_or_device_memory_for_reduced_value)
   , m_local_value(rhs.m_local_value)
@@ -307,7 +314,7 @@ class HostDeviceReducer
       m_grid_memory_info = m_memory_impl->gridMemoryInfo();
     }
     //std::cout << String::format("Reduce: host copy this={0} rhs={1} mem={2} device_count={3}\n",this,&rhs,m_memory_impl,(void*)m_grid_device_count);
-    m_parent_value = rhs.m_parent_value;
+    m_atomic_parent_value = rhs.m_atomic_parent_value;
     m_local_value = rhs.m_identity;
     m_atomic_value = m_identity;
     //std::cout << String::format("Reduce copy host  this={0} parent_value={1} rhs={2}\n",this,(void*)m_parent_value,&rhs); std::cout.flush();
@@ -322,37 +329,7 @@ class HostDeviceReducer
 
   ARCCORE_HOST_DEVICE ~HostDeviceReducer()
   {
-#ifdef ARCCORE_DEVICE_CODE
-    //int threadId = threadIdx.x + blockDim.x * threadIdx.y + (blockDim.x * blockDim.y) * threadIdx.z;
-    //if ((threadId%16)==0)
-    //printf("Destroy device Id=%d\n",threadId);
-    auto buf_span = m_grid_memory_info.m_grid_memory_values.bytes();
-    DataType* buf = reinterpret_cast<DataType*>(buf_span.data());
-    SmallSpan<DataType> grid_buffer(buf, static_cast<Int32>(buf_span.size()));
-
-    impl::ReduceDeviceInfo<DataType> dvi;
-    dvi.m_grid_buffer = grid_buffer;
-    dvi.m_device_count = m_grid_memory_info.m_grid_device_count;
-    dvi.m_device_final_ptr = m_host_or_device_memory_for_reduced_value;
-    dvi.m_host_final_ptr = m_grid_memory_info.m_host_memory_for_reduced_value;
-    dvi.m_current_value = m_local_value;
-    dvi.m_identity = m_identity;
-    dvi.m_use_grid_reduce = m_grid_memory_info.m_reduce_policy != eDeviceReducePolicy::Atomic;
-    ReduceFunctor::applyDevice(dvi); //grid_buffer,m_grid_device_count,m_host_or_device_memory_for_reduced_value,m_local_value,m_identity);
-#else
-    //      printf("Destroy host parent_value=%p this=%p\n",(void*)m_parent_value,(void*)this);
-    // Code hôte
-    //std::cout << String::format("Reduce destructor this={0} parent_value={1} v={2} memory_impl={3}\n",this,(void*)m_parent_value,m_local_value,m_memory_impl);
-    //std::cout << String::format("Reduce destructor this={0} grid_data={1} grid_size={2}\n",
-    //                            this,(void*)m_grid_memory_value_as_bytes,m_grid_memory_size);
-    //std::cout.flush();
-    if (!m_is_master_instance)
-      ReduceFunctor::apply(m_parent_value, m_local_value);
-
-    //printf("Destroy host %p %p\n",m_host_or_device_memory_for_reduced_value,this);
-    if (m_memory_impl && m_is_master_instance)
-      m_memory_impl->release();
-#endif
+    _finalize();
   }
 
  public:
@@ -365,6 +342,7 @@ class HostDeviceReducer
   {
     return m_local_value;
   }
+
   //! Effectue la réduction et récupère la valeur. ATTENTION: ne faire qu'une seule fois.
   DataType reduce()
   {
@@ -375,12 +353,12 @@ class HostDeviceReducer
       final_ptr = reinterpret_cast<DataType*>(m_grid_memory_info.m_host_memory_for_reduced_value);
     }
 
-    if (m_parent_value) {
+    if (m_atomic_parent_value) {
       //std::cout << String::format("Reduce host has parent this={0} local_value={1} parent_value={2}\n",
       //                            this,m_local_value,*m_parent_value);
       //std::cout.flush();
-      ReduceFunctor::apply(m_parent_value, *final_ptr);
-      *final_ptr = *m_parent_value;
+      ReduceFunctor::apply(m_atomic_parent_value, *final_ptr);
+      *final_ptr = *m_atomic_parent_value;
     }
     else {
       //std::cout << String::format("Reduce host no parent this={0} local_value={1} managed={2}\n",
@@ -409,17 +387,51 @@ class HostDeviceReducer
  protected:
 
   mutable DataType m_local_value;
-  std::atomic<DataType>* m_parent_value = nullptr;
-  mutable std::atomic<DataType> m_atomic_value;
+  DataType* m_atomic_parent_value = nullptr;
+  mutable DataType m_atomic_value;
 
  private:
 
   DataType m_identity;
+  bool m_is_allocated = false;
+  bool m_is_master_instance = false;
 
  private:
 
-  bool m_is_allocated = false;
-  bool m_is_master_instance = false;
+  ARCCORE_HOST_DEVICE void _finalize()
+  {
+#ifdef ARCCORE_DEVICE_CODE
+    //int threadId = threadIdx.x + blockDim.x * threadIdx.y + (blockDim.x * blockDim.y) * threadIdx.z;
+    //if ((threadId%16)==0)
+    //printf("Destroy device Id=%d\n",threadId);
+    auto buf_span = m_grid_memory_info.m_grid_memory_values.bytes();
+    DataType* buf = reinterpret_cast<DataType*>(buf_span.data());
+    SmallSpan<DataType> grid_buffer(buf, static_cast<Int32>(buf_span.size()));
+
+    impl::ReduceDeviceInfo<DataType> dvi;
+    dvi.m_grid_buffer = grid_buffer;
+    dvi.m_device_count = m_grid_memory_info.m_grid_device_count;
+    dvi.m_device_final_ptr = m_host_or_device_memory_for_reduced_value;
+    dvi.m_host_final_ptr = m_grid_memory_info.m_host_memory_for_reduced_value;
+    dvi.m_current_value = m_local_value;
+    dvi.m_identity = m_identity;
+    dvi.m_use_grid_reduce = m_grid_memory_info.m_reduce_policy != eDeviceReducePolicy::Atomic;
+    ReduceFunctor::applyDevice(dvi); //grid_buffer,m_grid_device_count,m_host_or_device_memory_for_reduced_value,m_local_value,m_identity);
+#else
+    //      printf("Destroy host parent_value=%p this=%p\n",(void*)m_parent_value,(void*)this);
+    // Code hôte
+    //std::cout << String::format("Reduce destructor this={0} parent_value={1} v={2} memory_impl={3}\n",this,(void*)m_parent_value,m_local_value,m_memory_impl);
+    //std::cout << String::format("Reduce destructor this={0} grid_data={1} grid_size={2}\n",
+    //                            this,(void*)m_grid_memory_value_as_bytes,m_grid_memory_size);
+    //std::cout.flush();
+    if (!m_is_master_instance)
+      ReduceFunctor::apply(m_atomic_parent_value, m_local_value);
+
+    //printf("Destroy host %p %p\n",m_host_or_device_memory_for_reduced_value,this);
+    if (m_memory_impl && m_is_master_instance)
+      m_memory_impl->release();
+#endif
+  }
 };
 
 /*---------------------------------------------------------------------------*/
@@ -482,10 +494,15 @@ class ReducerSum
 
  public:
 
-  ARCCORE_HOST_DEVICE DataType add(DataType v) const
+  ARCCORE_HOST_DEVICE DataType combine(DataType v) const
   {
     m_local_value += v;
     return m_local_value;
+  }
+
+  ARCCORE_HOST_DEVICE DataType add(DataType v) const
+  {
+    return combine(v);
   }
 };
 
@@ -509,10 +526,15 @@ class ReducerMax
 
  public:
 
-  ARCCORE_HOST_DEVICE DataType max(DataType v) const
+  ARCCORE_HOST_DEVICE DataType combine(DataType v) const
   {
     m_local_value = v > m_local_value ? v : m_local_value;
     return m_local_value;
+  }
+
+  ARCCORE_HOST_DEVICE DataType max(DataType v) const
+  {
+    return combine(v);
   }
 };
 
@@ -536,10 +558,15 @@ class ReducerMin
 
  public:
 
-  ARCCORE_HOST_DEVICE DataType min(DataType v) const
+  ARCCORE_HOST_DEVICE DataType combine(DataType v) const
   {
     m_local_value = v < m_local_value ? v : m_local_value;
     return m_local_value;
+  }
+
+  ARCCORE_HOST_DEVICE DataType min(DataType v) const
+  {
+    return combine(v);
   }
 };
 
@@ -651,9 +678,13 @@ class GenericReducerIf
 
   template <typename InputIterator, typename ReduceOperator>
   void apply(GenericReducerBase<DataType>& s, Int32 nb_item, const DataType& init_value,
-             InputIterator input_iter, ReduceOperator reduce_op)
+             InputIterator input_iter, ReduceOperator reduce_op, const TraceInfo& trace_info)
   {
     RunQueue& queue = s.m_queue;
+    RunCommand command = makeCommand(queue);
+    command << trace_info;
+    impl::RunCommandLaunchInfo launch_info(command, nb_item);
+    launch_info.beginExecute();
     eExecutionPolicy exec_policy = queue.executionPolicy();
     switch (exec_policy) {
 #if defined(ARCANE_COMPILING_CUDA)
@@ -704,6 +735,7 @@ class GenericReducerIf
     default:
       ARCANE_FATAL(getBadPolicyMessage(exec_policy));
     }
+    launch_info.endExecute();
   }
 };
 
@@ -769,42 +801,42 @@ class GenericReducer
  public:
 
   //! Applique une réduction 'Min' sur les valeurs \a values
-  void applyMin(SmallSpan<const DataType> values)
+  void applyMin(SmallSpan<const DataType> values, const TraceInfo& trace_info = TraceInfo())
   {
-    _apply(values.size(), values.data(), impl::MinOperator<DataType>{});
+    _apply(values.size(), values.data(), impl::MinOperator<DataType>{}, trace_info);
   }
 
   //! Applique une réduction 'Max' sur les valeurs \a values
-  void applyMax(SmallSpan<const DataType> values)
+  void applyMax(SmallSpan<const DataType> values, const TraceInfo& trace_info = TraceInfo())
   {
-    _apply(values.size(), values.data(), impl::MaxOperator<DataType>{});
+    _apply(values.size(), values.data(), impl::MaxOperator<DataType>{}, trace_info);
   }
 
   //! Applique une réduction 'Somme' sur les valeurs \a values
-  void applySum(SmallSpan<const DataType> values)
+  void applySum(SmallSpan<const DataType> values, const TraceInfo& trace_info = TraceInfo())
   {
-    _apply(values.size(), values.data(), impl::SumOperator<DataType>{});
+    _apply(values.size(), values.data(), impl::SumOperator<DataType>{}, trace_info);
   }
 
   //! Applique une réduction 'Min' sur les valeurs sélectionnées par \a select_lambda
   template <typename SelectLambda>
-  void applyMinWithIndex(Int32 nb_value, const SelectLambda& select_lambda)
+  void applyMinWithIndex(Int32 nb_value, const SelectLambda& select_lambda, const TraceInfo& trace_info = TraceInfo())
   {
-    _applyWithIndex(nb_value, select_lambda, impl::MinOperator<DataType>{});
+    _applyWithIndex(nb_value, select_lambda, impl::MinOperator<DataType>{}, trace_info);
   }
 
   //! Applique une réduction 'Max' sur les valeurs sélectionnées par \a select_lambda
   template <typename SelectLambda>
-  void applyMaxWithIndex(Int32 nb_value, const SelectLambda& select_lambda)
+  void applyMaxWithIndex(Int32 nb_value, const SelectLambda& select_lambda, const TraceInfo& trace_info = TraceInfo())
   {
-    _applyWithIndex(nb_value, select_lambda, impl::MaxOperator<DataType>{});
+    _applyWithIndex(nb_value, select_lambda, impl::MaxOperator<DataType>{}, trace_info);
   }
 
   //! Applique une réduction 'Somme' sur les valeurs sélectionnées par \a select_lambda
   template <typename SelectLambda>
-  void applySumWithIndex(Int32 nb_value, const SelectLambda& select_lambda)
+  void applySumWithIndex(Int32 nb_value, const SelectLambda& select_lambda, const TraceInfo& trace_info = TraceInfo())
   {
-    _applyWithIndex(nb_value, select_lambda, impl::SumOperator<DataType>{});
+    _applyWithIndex(nb_value, select_lambda, impl::SumOperator<DataType>{}, trace_info);
   }
 
   //! Valeur de la réduction
@@ -821,24 +853,25 @@ class GenericReducer
  private:
 
   template <typename InputIterator, typename ReduceOperator>
-  void _apply(Int32 nb_value, InputIterator input_iter, ReduceOperator reduce_op)
+  void _apply(Int32 nb_value, InputIterator input_iter, ReduceOperator reduce_op, const TraceInfo& trace_info)
   {
     _setCalled();
     impl::GenericReducerBase<DataType>* base_ptr = this;
     impl::GenericReducerIf<DataType> gf;
     DataType init_value = reduce_op.defaultValue();
-    gf.apply(*base_ptr, nb_value, init_value, input_iter, reduce_op);
+    gf.apply(*base_ptr, nb_value, init_value, input_iter, reduce_op, trace_info);
   }
 
   template <typename GetterLambda, typename ReduceOperator>
-  void _applyWithIndex(Int32 nb_value, const GetterLambda& getter_lambda, ReduceOperator reduce_op)
+  void _applyWithIndex(Int32 nb_value, const GetterLambda& getter_lambda,
+                       ReduceOperator reduce_op, const TraceInfo& trace_info)
   {
     _setCalled();
     impl::GenericReducerBase<DataType>* base_ptr = this;
     impl::GenericReducerIf<DataType> gf;
     impl::GetterLambdaIterator<DataType, GetterLambda> input_iter(getter_lambda);
     DataType init_value = reduce_op.defaultValue();
-    gf.apply(*base_ptr, nb_value, init_value, input_iter, reduce_op);
+    gf.apply(*base_ptr, nb_value, init_value, input_iter, reduce_op, trace_info);
   }
 
   void _setCalled()
