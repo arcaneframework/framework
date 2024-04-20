@@ -120,7 +120,7 @@ class GenericFilteringFlag
       ARCANE_CHECK_HIP(rocprim::select(s.m_algo_storage.address(), temp_storage_size, input_data, flag_data, output_data,
                                        nb_out_ptr, nb_item, stream));
       s.m_device_nb_out_storage.copyToAsync(s.m_host_nb_out_storage, queue);
-    }
+    } break;
 #endif
     case eExecutionPolicy::Thread:
       // Pas encore implémenté en multi-thread
@@ -201,7 +201,7 @@ class GenericFilteringIf
       ARCANE_CHECK_HIP(rocprim::select(s.m_algo_storage.address(), temp_storage_size, input_iter, output_iter,
                                        nb_out_ptr, nb_item, select_lambda, 0));
       s.m_device_nb_out_storage.copyToAsync(s.m_host_nb_out_storage, queue);
-    }
+    } break;
 #endif
     case eExecutionPolicy::Thread:
       // Pas encore implémenté en multi-thread

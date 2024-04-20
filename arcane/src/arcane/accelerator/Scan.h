@@ -104,7 +104,7 @@ class ScannerImpl
       else
         ARCANE_CHECK_HIP(rocprim::inclusive_scan(temp_storage, temp_storage_size, input_data, output_data,
                                                  nb_item, op, stream));
-    }
+    } break;
 #endif
     case eExecutionPolicy::Thread:
       // Pas encore implémenté en multi-thread
