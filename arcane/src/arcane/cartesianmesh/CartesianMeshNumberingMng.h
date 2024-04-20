@@ -39,7 +39,7 @@ class CartesianMeshNumberingMng
 {
  public:
 
-  CartesianMeshNumberingMng(IMesh* mesh);
+  explicit CartesianMeshNumberingMng(IMesh* mesh);
 
  public:
 
@@ -68,18 +68,17 @@ class CartesianMeshNumberingMng
   Int64 uidToCoordZ(Int64 uid, Integer level) override;
   Int64 uidToCoordZ(Cell cell) override;
 
-
-  Int64 getCellUid(Integer level, Int64 cell_coord_i, Int64 cell_coord_j, Int64 cell_coord_k) override;
-  Int64 getCellUid(Integer level, Int64 cell_coord_i, Int64 cell_coord_j) override;
+  Int64 getCellUid(Integer level, Int64x3 cell_coord) override;
+  Int64 getCellUid(Integer level, Int64x2 cell_coord) override;
 
   Integer getNbNode() override;
-  void getNodeUids(ArrayView<Int64> uid, Integer level, Int64 cell_coord_i, Int64 cell_coord_j, Int64 cell_coord_k) override;
-  void getNodeUids(ArrayView<Int64> uid, Integer level, Int64 cell_coord_i, Int64 cell_coord_j) override;
+  void getNodeUids(ArrayView<Int64> uid, Integer level, Int64x3 cell_coord) override;
+  void getNodeUids(ArrayView<Int64> uid, Integer level, Int64x2 cell_coord) override;
   void getNodeUids(ArrayView<Int64> uid, Integer level, Int64 cell_uid) override;
 
   Integer getNbFace() override;
-  void getFaceUids(ArrayView<Int64> uid, Integer level, Int64 cell_coord_i, Int64 cell_coord_j, Int64 cell_coord_k) override;
-  void getFaceUids(ArrayView<Int64> uid, Integer level, Int64 cell_coord_i, Int64 cell_coord_j) override;
+  void getFaceUids(ArrayView<Int64> uid, Integer level, Int64x3 cell_coord) override;
+  void getFaceUids(ArrayView<Int64> uid, Integer level, Int64x2 cell_coord) override;
   void getFaceUids(ArrayView<Int64> uid, Integer level, Int64 cell_uid) override;
 
   void getCellUidsAround(ArrayView<Int64> uid, Int64 cell_uid, Int32 level) override;
@@ -90,17 +89,18 @@ class CartesianMeshNumberingMng
 
   Int64 getParentCellUidOfCell(Cell cell) override;
 
-  Int64 getChildCellUidOfCell(Cell cell, Int64 child_coord_x_in_parent, Int64 child_coord_y_in_parent) override;
-  Cell getChildCellOfCell(Cell cell, Int64 child_coord_x_in_parent, Int64 child_coord_y_in_parent) override;
+  Int64 getChildCellUidOfCell(Cell cell, Int64x2 child_coord_in_parent) override;
+  Cell getChildCellOfCell(Cell cell, Int64x2 child_coord_in_parent) override;
 
-  Int64 getChildCellUidOfCell(Cell cell, Int64 child_coord_x_in_parent, Int64 child_coord_y_in_parent, Int64 child_coord_z_in_parent) override;
-  Cell getChildCellOfCell(Cell cell, Int64 child_coord_x_in_parent, Int64 child_coord_y_in_parent, Int64 child_coord_z_in_parent) override;
+  Int64 getChildCellUidOfCell(Cell cell, Int64x3 child_coord_in_parent) override;
+  Cell getChildCellOfCell(Cell cell, Int64x3 child_coord_in_parent) override;
 
   Int64 getChildCellUidOfCell(Cell cell, Int64 child_index_in_parent) override;
 
  private:
   IMesh* m_mesh;
 
+  Integer m_dimension;
   Integer m_pattern;
 
   UniqueArray<Int32> m_p_to_l_level;
@@ -116,9 +116,7 @@ class CartesianMeshNumberingMng
   Int64 m_latest_face_uid;
   UniqueArray<Int64> m_first_face_uid_level;
 
-  Int64 m_nb_cell_x;
-  Int64 m_nb_cell_y;
-  Int64 m_nb_cell_z;
+  Int64x3 m_nb_cell;
 };
 
 /*---------------------------------------------------------------------------*/
