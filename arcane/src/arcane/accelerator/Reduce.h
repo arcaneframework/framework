@@ -29,7 +29,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arcane::Accelerator
+namespace Arcane::Accelerator::impl
 {
 
 /*---------------------------------------------------------------------------*/
@@ -39,214 +39,214 @@ using namespace Arccore;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+extern "C++" ARCANE_ACCELERATOR_CORE_EXPORT IReduceMemoryImpl*
+internalGetOrCreateReduceMemoryImpl(RunCommand* command);
 
-namespace impl
+template <typename DataType>
+class ReduceIdentity;
+template <>
+// TODO: utiliser numeric_limits.
+class ReduceIdentity<double>
 {
-  extern "C++" ARCANE_ACCELERATOR_CORE_EXPORT IReduceMemoryImpl*
-  internalGetOrCreateReduceMemoryImpl(RunCommand* command);
+ public:
 
-  template <typename DataType>
-  class ReduceIdentity;
-  template <>
-  // TODO: utiliser numeric_limits.
-  class ReduceIdentity<double>
-  {
-   public:
+  ARCCORE_HOST_DEVICE static constexpr double sumValue() { return 0.0; }
+  ARCCORE_HOST_DEVICE static constexpr double minValue() { return DBL_MAX; }
+  ARCCORE_HOST_DEVICE static constexpr double maxValue() { return -DBL_MAX; }
+};
+template <>
+class ReduceIdentity<Int32>
+{
+ public:
 
-    ARCCORE_HOST_DEVICE static constexpr double sumValue() { return 0.0; }
-    ARCCORE_HOST_DEVICE static constexpr double minValue() { return DBL_MAX; }
-    ARCCORE_HOST_DEVICE static constexpr double maxValue() { return -DBL_MAX; }
-  };
-  template <>
-  class ReduceIdentity<Int32>
-  {
-   public:
+  ARCCORE_HOST_DEVICE static constexpr Int32 sumValue() { return 0; }
+  ARCCORE_HOST_DEVICE static constexpr Int32 minValue() { return INT32_MAX; }
+  ARCCORE_HOST_DEVICE static constexpr Int32 maxValue() { return -INT32_MAX; }
+};
+template <>
+class ReduceIdentity<Int64>
+{
+ public:
 
-    ARCCORE_HOST_DEVICE static constexpr Int32 sumValue() { return 0; }
-    ARCCORE_HOST_DEVICE static constexpr Int32 minValue() { return INT32_MAX; }
-    ARCCORE_HOST_DEVICE static constexpr Int32 maxValue() { return -INT32_MAX; }
-  };
-  template <>
-  class ReduceIdentity<Int64>
-  {
-   public:
+  ARCCORE_HOST_DEVICE static constexpr Int64 sumValue() { return 0; }
+  ARCCORE_HOST_DEVICE static constexpr Int64 minValue() { return INT64_MAX; }
+  ARCCORE_HOST_DEVICE static constexpr Int64 maxValue() { return -INT64_MAX; }
+};
 
-    ARCCORE_HOST_DEVICE static constexpr Int64 sumValue() { return 0; }
-    ARCCORE_HOST_DEVICE static constexpr Int64 minValue() { return INT64_MAX; }
-    ARCCORE_HOST_DEVICE static constexpr Int64 maxValue() { return -INT64_MAX; }
-  };
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+// L'implémentation utilisée est définie dans 'CommonCudaHipReduceImpl.h'
 
-  /*---------------------------------------------------------------------------*/
-  /*---------------------------------------------------------------------------*/
-  // L'implémentation utilisée est définie dans 'CommonCudaHipReduceImpl.h'
-
-  /*---------------------------------------------------------------------------*/
-  /*---------------------------------------------------------------------------*/
-  /*!
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
  * \internal
  * \brief Informations pour effectuer une réduction sur un device.
  */
-  template <typename DataType>
-  class ReduceDeviceInfo
-  {
-   public:
+template <typename DataType>
+class ReduceDeviceInfo
+{
+ public:
 
-    //! Valeur du thread courant à réduire.
-    DataType m_current_value;
-    //! Valeur de l'identité pour la réduction
-    DataType m_identity;
-    //! Pointeur vers la donnée réduite (mémoire uniquement accessible depuis le device)
-    DataType* m_device_final_ptr = nullptr;
-    //! Pointeur vers la donnée réduite (mémoire uniquement accessible depuis l'hôte)
-    void* m_host_final_ptr = nullptr;
-    //! Tableau avec une valeur par bloc pour la réduction
-    SmallSpan<DataType> m_grid_buffer;
-    /*!
+  //! Valeur du thread courant à réduire.
+  DataType m_current_value;
+  //! Valeur de l'identité pour la réduction
+  DataType m_identity;
+  //! Pointeur vers la donnée réduite (mémoire uniquement accessible depuis le device)
+  DataType* m_device_final_ptr = nullptr;
+  //! Pointeur vers la donnée réduite (mémoire uniquement accessible depuis l'hôte)
+  void* m_host_final_ptr = nullptr;
+  //! Tableau avec une valeur par bloc pour la réduction
+  SmallSpan<DataType> m_grid_buffer;
+  /*!
    * Pointeur vers une zone mémoire contenant un entier pour indiquer
    * combien il reste de blocs à réduire.
    */
-    unsigned int* m_device_count = nullptr;
+  unsigned int* m_device_count = nullptr;
 
-    //! Indique si on utilise la réduction par grille (sinon on utilise les atomiques)
-    bool m_use_grid_reduce = true;
-  };
+  //! Indique si on utilise la réduction par grille (sinon on utilise les atomiques)
+  bool m_use_grid_reduce = true;
+};
 
-  /*---------------------------------------------------------------------------*/
-  /*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
-  template <typename DataType>
-  class ReduceAtomicSum;
+template <typename DataType>
+class ReduceAtomicSum;
 
-  template <>
-  class ReduceAtomicSum<double>
+template <>
+class ReduceAtomicSum<double>
+{
+ public:
+
+  static double apply(double* vptr, double v)
   {
-   public:
+    std::atomic_ref<double> aref(*vptr);
+    double old = aref.load(std::memory_order_consume);
+    double wanted = old + v;
+    while (!aref.compare_exchange_weak(old, wanted, std::memory_order_release, std::memory_order_consume))
+      wanted = old + v;
+    return wanted;
+  }
+};
+template <>
+class ReduceAtomicSum<Int64>
+{
+ public:
 
-    static double apply(double* vptr, double v)
-    {
-      std::atomic_ref<double> aref(*vptr);
-      double old = aref.load(std::memory_order_consume);
-      double wanted = old + v;
-      while (!aref.compare_exchange_weak(old, wanted, std::memory_order_release, std::memory_order_consume))
-        wanted = old + v;
-      return wanted;
-    }
-  };
-  template <>
-  class ReduceAtomicSum<Int64>
+  static Int64 apply(Int64* vptr, Int64 v)
   {
-   public:
+    std::atomic_ref<Int64> aref(*vptr);
+    Int64 x = aref.fetch_add(v);
+    return x + v;
+  }
+};
+template <>
+class ReduceAtomicSum<Int32>
+{
+ public:
 
-    static Int64 apply(Int64* vptr, Int64 v)
-    {
-      std::atomic_ref<Int64> aref(*vptr);
-      Int64 x = aref.fetch_add(v);
-      return x + v;
-    }
-  };
-  template <>
-  class ReduceAtomicSum<Int32>
+  static Int32 apply(Int32* vptr, Int32 v)
   {
-   public:
+    std::atomic_ref<Int32> aref(*vptr);
+    Int32 x = aref.fetch_add(v);
+    return x + v;
+  }
+};
 
-    static Int32 apply(Int32* vptr, Int32 v)
-    {
-      std::atomic_ref<Int32> aref(*vptr);
-      Int32 x = aref.fetch_add(v);
-      return x + v;
-    }
-  };
+template <typename DataType>
+class ReduceFunctorSum
+{
+ public:
 
-  template <typename DataType>
-  class ReduceFunctorSum
+  static ARCCORE_DEVICE
+  DataType
+  applyDevice(const ReduceDeviceInfo<DataType>& dev_info)
   {
-   public:
-
-    static ARCCORE_DEVICE
-    DataType
-    applyDevice(const ReduceDeviceInfo<DataType>& dev_info)
-    {
-      _applyDevice(dev_info);
-      return *(dev_info.m_device_final_ptr);
-    }
-    static DataType apply(DataType* vptr, DataType v)
-    {
-      return ReduceAtomicSum<DataType>::apply(vptr, v);
-    }
-
-   public:
-
-    ARCCORE_HOST_DEVICE static constexpr DataType identity() { return impl::ReduceIdentity<DataType>::sumValue(); }
-
-   private:
-
-    static ARCCORE_DEVICE void _applyDevice(const ReduceDeviceInfo<DataType>& dev_info);
-  };
-
-  template <typename DataType>
-  class ReduceFunctorMax
+    _applyDevice(dev_info);
+    return *(dev_info.m_device_final_ptr);
+  }
+  static DataType apply(DataType* vptr, DataType v)
   {
-   public:
+    return ReduceAtomicSum<DataType>::apply(vptr, v);
+  }
 
-    static ARCCORE_DEVICE
-    DataType
-    applyDevice(const ReduceDeviceInfo<DataType>& dev_info)
-    {
-      _applyDevice(dev_info);
-      return *(dev_info.m_device_final_ptr);
-    }
-    static DataType apply(DataType* ptr, DataType v)
-    {
-      std::atomic_ref<DataType> aref(*ptr);
-      DataType prev_value = aref.load();
-      while (prev_value < v && !aref.compare_exchange_weak(prev_value, v)) {
-      }
-      return aref.load();
-    }
+ public:
 
-   public:
+  ARCCORE_HOST_DEVICE static constexpr DataType identity() { return impl::ReduceIdentity<DataType>::sumValue(); }
 
-    ARCCORE_HOST_DEVICE static constexpr DataType identity() { return impl::ReduceIdentity<DataType>::maxValue(); }
+ private:
 
-   private:
+  static ARCCORE_DEVICE void _applyDevice(const ReduceDeviceInfo<DataType>& dev_info);
+};
 
-    static ARCCORE_DEVICE void _applyDevice(const ReduceDeviceInfo<DataType>& dev_info);
-  };
+template <typename DataType>
+class ReduceFunctorMax
+{
+ public:
 
-  template <typename DataType>
-  class ReduceFunctorMin
+  static ARCCORE_DEVICE
+  DataType
+  applyDevice(const ReduceDeviceInfo<DataType>& dev_info)
   {
-   public:
-
-    static ARCCORE_DEVICE
-    DataType
-    applyDevice(const ReduceDeviceInfo<DataType>& dev_info)
-    {
-      _applyDevice(dev_info);
-      return *(dev_info.m_device_final_ptr);
+    _applyDevice(dev_info);
+    return *(dev_info.m_device_final_ptr);
+  }
+  static DataType apply(DataType* ptr, DataType v)
+  {
+    std::atomic_ref<DataType> aref(*ptr);
+    DataType prev_value = aref.load();
+    while (prev_value < v && !aref.compare_exchange_weak(prev_value, v)) {
     }
-    static DataType apply(DataType* vptr, DataType v)
-    {
-      std::atomic_ref<DataType> aref(*vptr);
-      DataType prev_value = aref.load();
-      while (prev_value > v && !aref.compare_exchange_weak(prev_value, v)) {
-      }
-      return aref.load();
+    return aref.load();
+  }
+
+ public:
+
+  ARCCORE_HOST_DEVICE static constexpr DataType identity() { return impl::ReduceIdentity<DataType>::maxValue(); }
+
+ private:
+
+  static ARCCORE_DEVICE void _applyDevice(const ReduceDeviceInfo<DataType>& dev_info);
+};
+
+template <typename DataType>
+class ReduceFunctorMin
+{
+ public:
+
+  static ARCCORE_DEVICE
+  DataType
+  applyDevice(const ReduceDeviceInfo<DataType>& dev_info)
+  {
+    _applyDevice(dev_info);
+    return *(dev_info.m_device_final_ptr);
+  }
+  static DataType apply(DataType* vptr, DataType v)
+  {
+    std::atomic_ref<DataType> aref(*vptr);
+    DataType prev_value = aref.load();
+    while (prev_value > v && !aref.compare_exchange_weak(prev_value, v)) {
     }
+    return aref.load();
+  }
 
-   public:
+ public:
 
-    ARCCORE_HOST_DEVICE static constexpr DataType identity() { return impl::ReduceIdentity<DataType>::minValue(); }
+  ARCCORE_HOST_DEVICE static constexpr DataType identity() { return impl::ReduceIdentity<DataType>::minValue(); }
 
-   private:
+ private:
 
-    static ARCCORE_DEVICE void _applyDevice(const ReduceDeviceInfo<DataType>& dev_info);
-  };
+  static ARCCORE_DEVICE void _applyDevice(const ReduceDeviceInfo<DataType>& dev_info);
+};
 
-  /*---------------------------------------------------------------------------*/
-  /*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
-} // End namespace impl
+} // namespace Arcane::Accelerator::impl
+
+namespace Arcane::Accelerator
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
