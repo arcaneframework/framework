@@ -56,6 +56,8 @@ class ARCANE_MESH_EXPORT FaceFamily
   typedef ItemConnectivitySelectorT<EdgeInternalConnectivityIndex,IncrementalItemConnectivity> EdgeConnectivity;
   typedef ItemConnectivitySelectorT<FaceInternalConnectivityIndex,IncrementalItemConnectivity> FaceConnectivity;
   typedef ItemConnectivitySelectorT<CellInternalConnectivityIndex,IncrementalItemConnectivity> CellConnectivity;
+  typedef ItemConnectivitySelectorT<HParentInternalConnectivityIndex, IncrementalItemConnectivity> HParentConnectivity;
+  typedef ItemConnectivitySelectorT<HChildInternalConnectivityIndex, IncrementalItemConnectivity> HChildConnectivity;
 
  public:
 
@@ -117,6 +119,8 @@ class ARCANE_MESH_EXPORT FaceFamily
   void activeSubFaces(Face face,Array<ItemInternal*>& subfaces);
   void familyTree (Array<ItemInternal*>& family,Cell item, const bool reset=true) const;
   void activeFamilyTree (Array<ItemInternal*>& family,Cell item, const bool reset=true) const;
+  void _addChildFaceToFace(Face parent_face, Face child_face);
+  void _addParentFaceToFace(Face parent_face, Face child_face);
   // OFF AMR
 
   /*!
@@ -163,6 +167,8 @@ class ARCANE_MESH_EXPORT FaceFamily
   EdgeConnectivity* m_edge_connectivity = nullptr;
   FaceConnectivity* m_face_connectivity = nullptr;
   CellConnectivity* m_cell_connectivity = nullptr;
+  HParentConnectivity* m_hparent_connectivity = nullptr;
+  HChildConnectivity* m_hchild_connectivity = nullptr;
 
   bool m_has_face = true;
 

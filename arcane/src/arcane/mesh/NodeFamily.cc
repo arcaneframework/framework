@@ -118,10 +118,14 @@ build()
     m_face_connectivity = new FaceConnectivity(this,m_face_family,"NodeFace");
     m_cell_connectivity = new CellConnectivity(this,mesh()->cellFamily(),"NodeCell");
   }
+  m_hparent_connectivity = new HParentConnectivity(this, this, "HParentNode");
+  m_hchild_connectivity = new HChildConnectivity(this, this, "HChildNode");
 
   _addConnectivitySelector(m_edge_connectivity);
   _addConnectivitySelector(m_face_connectivity);
   _addConnectivitySelector(m_cell_connectivity);
+  _addConnectivitySelector(m_hparent_connectivity);
+  _addConnectivitySelector(m_hchild_connectivity);
 
   _buildConnectivitySelectors();
 }
@@ -408,6 +412,24 @@ notifyItemsUniqueIdChanged()
   // l'orientation des faces. Il faut donc renuméroter ces dernières
   if (m_face_family)
     m_face_family->reorientFacesIfNeeded();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void NodeFamily::
+_addParentNodeToNode(Node parent_node, Node child_node)
+{
+  m_hparent_connectivity->addConnectedItem(ItemLocalId(child_node), ItemLocalId(parent_node));
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void NodeFamily::
+_addChildNodeToNode(Node parent_node, Node child_node)
+{
+  m_hchild_connectivity->addConnectedItem(ItemLocalId(parent_node), ItemLocalId(child_node));
 }
 
 /*---------------------------------------------------------------------------*/

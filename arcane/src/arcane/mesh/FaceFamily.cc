@@ -117,11 +117,15 @@ build()
     m_face_connectivity = new FaceConnectivity(this,mesh()->faceFamily(),"FaceFace");
     m_cell_connectivity = new CellConnectivity(this,mesh()->cellFamily(),"FaceCell");
   }
+  m_hparent_connectivity = new HParentConnectivity(this, this, "HParentFace");
+  m_hchild_connectivity = new HChildConnectivity(this, this, "HChildFace");
 
   _addConnectivitySelector(m_node_connectivity);
   _addConnectivitySelector(m_edge_connectivity);
   _addConnectivitySelector(m_face_connectivity);
   _addConnectivitySelector(m_cell_connectivity);
+  _addConnectivitySelector(m_hparent_connectivity);
+  _addConnectivitySelector(m_hchild_connectivity);
 
   _buildConnectivitySelectors();
 }
@@ -708,6 +712,24 @@ activeFamilyTree(Array<ItemInternal*>& family,Cell item,const bool reset) const
 				activeFamilyTree(family,ichild,false);
 		}
 
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void FaceFamily::
+_addParentFaceToFace(Face parent_face, Face child_face)
+{
+  m_hparent_connectivity->addConnectedItem(ItemLocalId(child_face), ItemLocalId(parent_face));
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void FaceFamily::
+_addChildFaceToFace(Face parent_face, Face child_face)
+{
+  m_hchild_connectivity->addConnectedItem(ItemLocalId(parent_face), ItemLocalId(child_face));
 }
 
 // OFF AMR

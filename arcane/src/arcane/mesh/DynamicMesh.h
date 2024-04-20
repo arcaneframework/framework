@@ -272,6 +272,11 @@ class ARCANE_MESH_EXPORT DynamicMesh
   void addParentCellToCell(Cell child, Cell parent) override;
   void addChildCellToCell(Cell parent, Cell child) override;
 
+  void addParentFaceToFace(Face child, Face parent) override;
+  void addChildFaceToFace(Face parent, Face child) override;
+
+  void addParentNodeToNode(Node child, Node parent) override;
+  void addChildNodeToNode(Node parent, Node child) override;
 
   void endUpdate() override;
   Int64 timestamp() override { return m_timestamp; }

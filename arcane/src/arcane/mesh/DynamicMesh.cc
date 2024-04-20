@@ -1086,6 +1086,58 @@ addChildCellToCell(Cell parent, Cell child)
 /*---------------------------------------------------------------------------*/
 
 void DynamicMesh::
+addParentFaceToFace(Face child, Face parent)
+{
+  Trace::Setter mci(traceMng(), _className());
+  _checkDimension();
+  _checkConnectivity();
+
+  m_face_family->_addParentFaceToFace(parent, child);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void DynamicMesh::
+addChildFaceToFace(Face parent, Face child)
+{
+  Trace::Setter mci(traceMng(), _className());
+  _checkDimension();
+  _checkConnectivity();
+
+  m_face_family->_addChildFaceToFace(parent, child);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void DynamicMesh::
+addParentNodeToNode(Node child, Node parent)
+{
+  Trace::Setter mci(traceMng(), _className());
+  _checkDimension();
+  _checkConnectivity();
+
+  m_node_family->_addParentNodeToNode(parent, child);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void DynamicMesh::
+addChildNodeToNode(Node parent, Node child)
+{
+  Trace::Setter mci(traceMng(), _className());
+  _checkDimension();
+  _checkConnectivity();
+
+  m_node_family->_addChildNodeToNode(parent, child);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void DynamicMesh::
 addFaces(Integer nb_face,Int64ConstArrayView face_infos,Int32ArrayView faces)
 {
   _checkDimension();

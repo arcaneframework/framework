@@ -289,8 +289,15 @@ class ARCANE_CORE_EXPORT IMeshModifier
   virtual void unRegisterCallBack(IAMRTransportFunctor* f) = 0;
   virtual void addHChildrenCells(Cell parent_cell, Integer nb_cell,
                                  Int64ConstArrayView cells_infos, Int32ArrayView cells_lid = Int32ArrayView()) = 0;
+
   virtual void addParentCellToCell(Cell child, Cell parent) = 0;
   virtual void addChildCellToCell(Cell parent, Cell child) = 0;
+
+  virtual void addParentFaceToFace(Face child, Face parent) = 0;
+  virtual void addChildFaceToFace(Face parent, Face child) = 0;
+
+  virtual void addParentNodeToNode(Node child, Node parent) = 0;
+  virtual void addChildNodeToNode(Node parent, Node child) = 0;
 
   //! Supprime toutes les entitées de toutes les familles de ce maillage.
   virtual void clearItems() = 0;
