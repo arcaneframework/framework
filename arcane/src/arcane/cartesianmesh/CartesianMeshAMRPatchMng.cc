@@ -1820,6 +1820,7 @@ refine()
         if (node_uid_to_owner[node.uniqueId()] == my_rank) {
           node.mutableItemBase().addFlags(ItemFlags::II_Own);
         }
+        // TODO : Corriger ça dans la partie concerné directement.
         else {
           node.mutableItemBase().removeFlags(ItemFlags::II_Shared);
         }
@@ -1852,6 +1853,7 @@ refine()
         if (face_uid_to_owner[face.uniqueId()] == my_rank) {
           face.mutableItemBase().addFlags(ItemFlags::II_Own);
         }
+        // TODO : Corriger ça dans la partie concerné directement.
         else {
           face.mutableItemBase().removeFlags(ItemFlags::II_Shared);
         }
@@ -1947,6 +1949,7 @@ coarse()
 
   UniqueArray<Int64> cell_uid_to_create;
 
+  // TODO : Remplacer around_parent_cells_uid_to_owner par parent_to_child_cells ?
   std::unordered_map<Int64, Int32> around_parent_cells_uid_to_owner;
   std::unordered_map<Int64, bool> around_parent_cells_uid_is_in_subdomain;
   std::unordered_map<Int64, UniqueArray<Cell>> parent_to_child_cells;
@@ -1954,8 +1957,14 @@ coarse()
   std::unordered_map<Int64, Int32> node_uid_to_owner;
   std::unordered_map<Int64, Int32> face_uid_to_owner;
 
+  // On va créer le niveau -1.
+  // À noter qu'à la fin de la méthode, on replacera ce niveau
+  // à 0.
   m_num_mng->prepareLevel(-1);
 
+  // On crée une ou plusieurs couches de mailles fantômes
+  // pour éviter qu'une maille parente n'ai pas le même
+  // nombre de mailles enfant.
   // ----------
   // CartesianMeshCoarsening2::_doDoubleGhostLayers()
   IMeshModifier* mesh_modifier = m_mesh->modifier();
@@ -1974,20 +1983,29 @@ coarse()
   // CartesianMeshCoarsening2::_doDoubleGhostLayers()
   // ----------
 
+  // On récupère les uniqueIds des parents à créer.
   ENUMERATE_ (Cell, icell, m_mesh->allLevelCells(0)) {
     Cell cell = *icell;
 
     Int64 parent_uid = m_num_mng->parentCellUniqueIdOfCell(cell);
+
+    // On évite les doublons.
     if (!cell_uid_to_create.contains(parent_uid)) {
       cell_uid_to_create.add(parent_uid);
+      // On en profite pour sauvegarder les owners des futures mailles
+      // qui seront les mêmes owners que les mailles enfants.
       around_parent_cells_uid_to_owner[parent_uid] = cell.owner();
       around_parent_cells_uid_is_in_subdomain[parent_uid] = true;
     }
     else {
+      // Ça peut arriver si le partitionnement n'est pas adapté.
       if (around_parent_cells_uid_to_owner[parent_uid] != cell.owner()) {
         ARCANE_FATAL("Pb owner");
       }
     }
+
+    // On doit sauvegarder les enfants des parents pour créer les connectivités
+    // à la fin.
     parent_to_child_cells[parent_uid].add(cell);
   }
 
@@ -2031,30 +2049,40 @@ coarse()
           // TODO : Bof
           if (!uid_of_cells_needed.contains(cell_uid)) {
             uid_of_cells_needed.add(cell_uid);
+
+            // Si on a besoin des infos, c'est que l'on ne les possèdent pas :-)
+            // On en profite pour enregistrer cette information pour distinguer les
+            // mailles fantômes dont on possède les items (faces/noeuds) de celle dont
+            // on ne possède rien.
             around_parent_cells_uid_is_in_subdomain[cell_uid] = false;
           }
         }
       }
     }
 
+    // On partage les cell uid nécessaires de tout le monde.
     UniqueArray<Int64> uid_of_cells_needed_all_procs;
     pm->allGatherVariable(uid_of_cells_needed, uid_of_cells_needed_all_procs);
 
     UniqueArray<Int32> owner_of_cells_needed_all_procs(uid_of_cells_needed_all_procs.size());
 
     {
+      // On enregistre le propriétaire des mailles que l'on possède.
       for (Integer i = 0; i < uid_of_cells_needed_all_procs.size(); ++i) {
         if (around_parent_cells_uid_to_owner.find(uid_of_cells_needed_all_procs[i]) != around_parent_cells_uid_to_owner.end()) {
           owner_of_cells_needed_all_procs[i] = around_parent_cells_uid_to_owner[uid_of_cells_needed_all_procs[i]];
         }
         else {
+          // Le ReduceMax fera disparaitre ce -1.
           owner_of_cells_needed_all_procs[i] = -1;
         }
       }
     }
 
+    // On récupère les owners de toutes les mailles nécessaires.
     pm->reduce(Parallel::eReduceType::ReduceMax, owner_of_cells_needed_all_procs);
 
+    // On ne traite que les owners des mailles nécessaires pour nous.
     {
       Integer size_uid_of_cells_needed = uid_of_cells_needed.size();
       Integer my_pos_in_all_procs_arrays = 0;
@@ -2062,13 +2090,18 @@ coarse()
       ArrayView<Integer> av(1, &size_uid_of_cells_needed);
       pm->allGather(av, size_uid_of_cells_needed_per_proc);
 
+      // On zap les mailles de tous les procs avant nous.
       for (Integer i = 0; i < my_rank; ++i) {
         my_pos_in_all_procs_arrays += size_uid_of_cells_needed_per_proc[i];
       }
 
+      // On enregistre les owners nécessaires.
       ArrayView<Int32> owner_of_cells_needed = owner_of_cells_needed_all_procs.subView(my_pos_in_all_procs_arrays, size_uid_of_cells_needed);
       for (Integer i = 0; i < size_uid_of_cells_needed; ++i) {
         around_parent_cells_uid_to_owner[uid_of_cells_needed[i]] = owner_of_cells_needed[i];
+
+        // En rafinnement, il peut y avoir plusieurs niveaux d'écarts entre les patchs.
+        // En déraffinement, c'est impossible vu que le niveau 0 n'a pas de "trous".
         if (owner_of_cells_needed[i] == -1) {
           ARCANE_FATAL("En déraffinement, c'est normalement impossible");
         }
@@ -2077,12 +2110,19 @@ coarse()
   }
 
   if (m_mesh->dimension() == 2) {
+
+    // Masques permettant de savoir si on doit créer une faces/noeuds (true)
+    // ou si on doit regarder la maille d'à côté avant (false).
+    // Rappel que le parcours des faces par Arcane est dans l'ordre NumPad{2, 6, 8, 4}.
     const bool mask_face_if_cell_left[] = { true, true, true, false };
     const bool mask_face_if_cell_bottom[] = { false, true, true, true };
 
+    // Rappel que le parcours des nodes par Arcane est dans l'ordre NumPad{1, 3, 9, 7}.
     const bool mask_node_if_cell_left[] = { false, true, true, false };
     const bool mask_node_if_cell_bottom[] = { false, false, true, true };
 
+    // Pour le raffinement, on parcourait les mailles parents existantes.
+    // Ici, les mailles parents n'existent pas encore, donc on parcours les uid.
     for (Int64 parent_cell_uid : cell_uid_to_create) {
 
       UniqueArray<Int64> cells_uid_around(9);
@@ -2090,7 +2130,9 @@ coarse()
 
       UniqueArray<Int32> owner_cells_around_parent_cell_1d(9);
       UniqueArray<bool> is_not_in_subdomain_cells_around_parent_cell_1d(9);
+
       ConstArray2View owner_cells_around_parent_cell(owner_cells_around_parent_cell_1d.data(), 3, 3);
+      // Attention au "not" dans le nom de la variable.
       ConstArray2View is_not_in_subdomain_cells_around_parent_cell(is_not_in_subdomain_cells_around_parent_cell_1d.data(), 3, 3);
 
       for (Integer i = 0; i < 9; ++i) {
@@ -2108,6 +2150,9 @@ coarse()
         }
       }
 
+      // Ces deux lambdas sont différentes.
+      // Quand une parent_cell n'existe pas, il y a -1 dans le tableau adéquat,
+      // la première lambda répondra donc forcément true alors que la seconde false.
       auto is_cell_around_parent_cell_different_owner = [&](Integer y, Integer x) {
         return (owner_cells_around_parent_cell(y, x) != owner_cells_around_parent_cell(1, 1));
       };
@@ -2123,6 +2168,7 @@ coarse()
               << " -- level : " << -1
               << " -- uid : " << parent_cell_uid;
 
+      // On récupère les uniqueIds des nodes et faces à créer.
       m_num_mng->cellNodeUniqueIds(parent_nodes_uids, -1, parent_cell_uid);
       m_num_mng->cellFaceUniqueIds(parent_faces_uids, -1, parent_cell_uid);
 
@@ -2239,6 +2285,9 @@ coarse()
     }
   }
   else if (m_mesh->dimension() == 3) {
+
+    // Masques permettant de savoir si on doit créer une faces/noeuds (true)
+    // ou si on doit regarder la maille d'à côté avant (false).
     const bool mask_node_if_cell_left[] = { false, true, true, false, false, true, true, false };
     const bool mask_node_if_cell_bottom[] = { false, false, true, true, false, false, true, true };
     const bool mask_node_if_cell_rear[] = { false, false, false, false, true, true, true, true };
@@ -2263,13 +2312,18 @@ coarse()
 
     const Integer nb_nodes_in_face = 4;
 
+    // Pour le raffinement, on parcourait les mailles parents existantes.
+    // Ici, les mailles parents n'existent pas encore, donc on parcours les uid.
     for (Int64 parent_cell_uid : cell_uid_to_create) {
+
       UniqueArray<Int64> cells_uid_around(27);
       m_num_mng->cellUniqueIdsAroundCell(cells_uid_around, parent_cell_uid, -1);
 
       UniqueArray<Int32> owner_cells_around_parent_cell_1d(27);
       UniqueArray<bool> is_not_in_subdomain_cells_around_parent_cell_1d(27);
+
       ConstArray3View owner_cells_around_parent_cell(owner_cells_around_parent_cell_1d.data(), 3, 3, 3);
+      // Attention au "not" dans le nom de la variable.
       ConstArray3View is_not_in_subdomain_cells_around_parent_cell(is_not_in_subdomain_cells_around_parent_cell_1d.data(), 3, 3, 3);
 
       for (Integer i = 0; i < 27; ++i) {
@@ -2287,6 +2341,9 @@ coarse()
         }
       }
 
+      // Ces deux lambdas sont différentes.
+      // Quand une parent_cell n'existe pas, il y a -1 dans le tableau adéquat,
+      // la première lambda répondra donc forcément true alors que la seconde false.
       auto is_cell_around_parent_cell_different_owner = [&](Integer z, Integer y, Integer x) {
         return (owner_cells_around_parent_cell(z, y, x) != owner_cells_around_parent_cell(1, 1, 1));
       };
@@ -2303,6 +2360,7 @@ coarse()
               << " -- level : " << -1
               << " -- uid : " << parent_cell_uid;
 
+      // On récupère les uniqueIds des nodes et faces à créer.
       m_num_mng->cellNodeUniqueIds(parent_nodes_uids, -1, parent_cell_uid);
       m_num_mng->cellFaceUniqueIds(parent_faces_uids, -1, parent_cell_uid);
 
@@ -2548,6 +2606,7 @@ coarse()
   {
     debug() << "Nb new nodes in patch : " << total_nb_nodes;
     {
+      // Ce tableau contiendra les localIds des nouveaux noeuds.
       UniqueArray<Int32> nodes_lid(total_nb_nodes);
 
       // On crée les noeuds. On met les localIds des nouveaux noeuds au début du tableau.
@@ -2564,9 +2623,6 @@ coarse()
 
         if (node_uid_to_owner[node.uniqueId()] == my_rank) {
           node.mutableItemBase().addFlags(ItemFlags::II_Own);
-        }
-        else {
-          node.mutableItemBase().removeFlags(ItemFlags::II_Shared);
         }
       }
     }
@@ -2593,9 +2649,6 @@ coarse()
 
         if (face_uid_to_owner[face.uniqueId()] == my_rank) {
           face.mutableItemBase().addFlags(ItemFlags::II_Own);
-        }
-        else {
-          face.mutableItemBase().removeFlags(ItemFlags::II_Shared);
         }
       }
     }
@@ -2624,7 +2677,7 @@ coarse()
       if (around_parent_cells_uid_to_owner[parent.uniqueId()] == my_rank) {
         parent.mutableItemBase().addFlags(ItemFlags::II_Own);
       }
-      else {
+      if (parent_to_child_cells[parent.uniqueId()][0].itemBase().flags() & ItemFlags::II_Shared) {
         parent.mutableItemBase().addFlags(ItemFlags::II_Shared);
       }
       for (Cell child : parent_to_child_cells[parent.uniqueId()]) {
