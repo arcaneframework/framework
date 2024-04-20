@@ -150,8 +150,8 @@ refine()
 
   // Deux tableaux permettant de récupérer les uniqueIds des noeuds et des faces
   // de chaque maille enfant à chaque appel à getNodeUids()/getFaceUids().
-  UniqueArray<Int64> child_nodes_uids(m_num_mng->getNbNode());
-  UniqueArray<Int64> child_faces_uids(m_num_mng->getNbFace());
+  UniqueArray<Int64> child_nodes_uids(m_num_mng->nbNodeByCell());
+  UniqueArray<Int64> child_faces_uids(m_num_mng->nbFaceByCell());
 
   // On doit enregistrer les mailles parentes de chaque maille enfant pour mettre à jour les connectivités
   // lors de la création des mailles.
@@ -187,7 +187,7 @@ refine()
     {
       UniqueArray<Int64> cell_uids_around((m_mesh->dimension() == 2) ? 9 : 27);
       for (Cell parent_cell : cell_to_refine_internals) {
-        m_num_mng->getCellUidsAround(cell_uids_around, parent_cell);
+        m_num_mng->cellUniqueIdsAroundCell(cell_uids_around, parent_cell);
         for (Int64 cell_uid : cell_uids_around) {
           // Si -1 alors il n'y a pas de mailles à cette position.
           if (cell_uid == -1)
@@ -302,7 +302,7 @@ refine()
     // - on a "cell_to_refine_internals.size() * 4" mailles enfants,
     // - pour chaque maille, on a 2 infos (type de maille et uniqueId de la maille)
     // - pour chaque maille, on a "m_num_mng->getNbNode()" uniqueIds (les uniqueId de chaque noeud de la maille).
-    cells_infos.reserve((cell_to_refine_internals.size() * 4) * (2 + m_num_mng->getNbNode()));
+    cells_infos.reserve((cell_to_refine_internals.size() * 4) * (2 + m_num_mng->nbNodeByCell()));
 
     // Pour la taille, au maximum :
     // - on a "cell_to_refine_internals.size() * 12" faces
@@ -319,20 +319,19 @@ refine()
       const Int32 parent_cell_level = parent_cell.level();
       const bool parent_cell_is_own = (parent_cell.owner() == my_rank);
 
-      const Int64 parent_coord_x = m_num_mng->uidToCoordX(parent_cell_uid, parent_cell_level);
-      const Int64 parent_coord_y = m_num_mng->uidToCoordY(parent_cell_uid, parent_cell_level);
+      const Int64 parent_coord_x = m_num_mng->cellUniqueIdToCoordX(parent_cell_uid, parent_cell_level);
+      const Int64 parent_coord_y = m_num_mng->cellUniqueIdToCoordY(parent_cell_uid, parent_cell_level);
 
-      const Int64 child_coord_x = m_num_mng->getOffsetLevelToLevel(parent_coord_x, parent_cell_level, parent_cell_level + 1);
-      const Int64 child_coord_y = m_num_mng->getOffsetLevelToLevel(parent_coord_y, parent_cell_level, parent_cell_level + 1);
+      const Int64 child_coord_x = m_num_mng->offsetLevelToLevel(parent_coord_x, parent_cell_level, parent_cell_level + 1);
+      const Int64 child_coord_y = m_num_mng->offsetLevelToLevel(parent_coord_y, parent_cell_level, parent_cell_level + 1);
 
-      const Integer pattern = m_num_mng->getPattern();
-
+      const Integer pattern = m_num_mng->pattern();
 
       UniqueArray<Int64> uid_cells_around_parent_cell_1d(9);
       UniqueArray<Int32> owner_cells_around_parent_cell_1d(9);
       UniqueArray<Int32> flags_cells_around_parent_cell_1d(9);
 
-      m_num_mng->getCellUidsAround(uid_cells_around_parent_cell_1d, parent_cell);
+      m_num_mng->cellUniqueIdsAroundCell(uid_cells_around_parent_cell_1d, parent_cell);
 
       for(Integer i = 0; i < 9; ++i){
         Int64 uid_cell = uid_cells_around_parent_cell_1d[i];
@@ -434,11 +433,11 @@ refine()
           parent_cells.add(parent_cell);
           total_nb_cells++;
 
-          const Int64 child_cell_uid = m_num_mng->getCellUid(parent_cell_level + 1, Int64x2{ i, j });
+          const Int64 child_cell_uid = m_num_mng->cellUniqueId(parent_cell_level + 1, Int64x2{ i, j });
           debug() << "Child -- x : " << i << " -- y : " << j << " -- level : " << parent_cell_level + 1 << " -- uid : " << child_cell_uid;
 
-          m_num_mng->getNodeUids(child_nodes_uids, parent_cell_level + 1, Int64x2{ i, j });
-          m_num_mng->getFaceUids(child_faces_uids, parent_cell_level + 1, Int64x2{ i, j });
+          m_num_mng->cellNodeUniqueIds(child_nodes_uids, parent_cell_level + 1, Int64x2{ i, j });
+          m_num_mng->cellFaceUniqueIds(child_faces_uids, parent_cell_level + 1, Int64x2{ i, j });
 
           const Integer type_cell = IT_Quad4;
           const Integer type_face = IT_Line2;
@@ -446,12 +445,12 @@ refine()
           // Partie Cell.
           cells_infos.add(type_cell);
           cells_infos.add(child_cell_uid);
-          for (Integer nc = 0; nc < m_num_mng->getNbNode(); nc++) {
+          for (Integer nc = 0; nc < m_num_mng->nbNodeByCell(); nc++) {
             cells_infos.add(child_nodes_uids[nc]);
           }
 
           // Partie Face.
-          for(Integer l = 0; l < m_num_mng->getNbFace(); ++l){
+          for (Integer l = 0; l < m_num_mng->nbFaceByCell(); ++l) {
             Integer child_face_owner = -1;
             bool is_new_face = false;
 
@@ -483,7 +482,7 @@ refine()
               // Les noeuds de la face sont toujours les noeuds l et l+1
               // car on utilise la même exploration pour les deux cas.
               for (Integer nc = l; nc < l + 2; nc++) {
-                faces_infos.add(child_nodes_uids[nc % m_num_mng->getNbNode()]);
+                faces_infos.add(child_nodes_uids[nc % m_num_mng->nbNodeByCell()]);
               }
               total_nb_faces++;
 
@@ -576,7 +575,7 @@ refine()
           // Partie Node.
           // Cette partie est assez ressemblante à la partie face, mis à part le fait qu'il peut y avoir
           // plus de propriétaires possibles.
-          for(Integer l = 0; l < m_num_mng->getNbNode(); ++l) {
+          for (Integer l = 0; l < m_num_mng->nbNodeByCell(); ++l) {
             Integer child_node_owner = -1;
             bool is_new_node = false;
 
@@ -835,7 +834,7 @@ refine()
     // - on a "cell_to_refine_internals.size() * 8" mailles enfants,
     // - pour chaque maille, on a 2 infos (type de maille et uniqueId de la maille)
     // - pour chaque maille, on a "m_num_mng->getNbNode()" uniqueIds (les uniqueId de chaque noeud de la maille).
-    cells_infos.reserve((cell_to_refine_internals.size() * 8) * (2 + m_num_mng->getNbNode()));
+    cells_infos.reserve((cell_to_refine_internals.size() * 8) * (2 + m_num_mng->nbNodeByCell()));
 
     // Pour la taille, au maximum :
     // - on a "cell_to_refine_internals.size() * 36" faces enfants,
@@ -851,22 +850,21 @@ refine()
       const Int64 parent_cell_uid = parent_cell.uniqueId();
       const Int32 parent_cell_level = parent_cell.level();
 
-      const Int64 parent_coord_x = m_num_mng->uidToCoordX(parent_cell_uid, parent_cell_level);
-      const Int64 parent_coord_y = m_num_mng->uidToCoordY(parent_cell_uid, parent_cell_level);
-      const Int64 parent_coord_z = m_num_mng->uidToCoordZ(parent_cell_uid, parent_cell_level);
+      const Int64 parent_coord_x = m_num_mng->cellUniqueIdToCoordX(parent_cell_uid, parent_cell_level);
+      const Int64 parent_coord_y = m_num_mng->cellUniqueIdToCoordY(parent_cell_uid, parent_cell_level);
+      const Int64 parent_coord_z = m_num_mng->cellUniqueIdToCoordZ(parent_cell_uid, parent_cell_level);
 
-      const Int64 child_coord_x = m_num_mng->getOffsetLevelToLevel(parent_coord_x, parent_cell_level, parent_cell_level + 1);
-      const Int64 child_coord_y = m_num_mng->getOffsetLevelToLevel(parent_coord_y, parent_cell_level, parent_cell_level + 1);
-      const Int64 child_coord_z = m_num_mng->getOffsetLevelToLevel(parent_coord_z, parent_cell_level, parent_cell_level + 1);
+      const Int64 child_coord_x = m_num_mng->offsetLevelToLevel(parent_coord_x, parent_cell_level, parent_cell_level + 1);
+      const Int64 child_coord_y = m_num_mng->offsetLevelToLevel(parent_coord_y, parent_cell_level, parent_cell_level + 1);
+      const Int64 child_coord_z = m_num_mng->offsetLevelToLevel(parent_coord_z, parent_cell_level, parent_cell_level + 1);
 
-      const Integer pattern = m_num_mng->getPattern();
-
+      const Integer pattern = m_num_mng->pattern();
 
       UniqueArray<Int64> uid_cells_around_parent_cell_1d(27);
       UniqueArray<Int32> owner_cells_around_parent_cell_1d(27);
       UniqueArray<Int32> flags_cells_around_parent_cell_1d(27);
 
-      m_num_mng->getCellUidsAround(uid_cells_around_parent_cell_1d, parent_cell);
+      m_num_mng->cellUniqueIdsAroundCell(uid_cells_around_parent_cell_1d, parent_cell);
 
       for(Integer i = 0; i < 27; ++i){
         Int64 uid_cell = uid_cells_around_parent_cell_1d[i];
@@ -992,11 +990,11 @@ refine()
             parent_cells.add(parent_cell);
             total_nb_cells++;
 
-            const Int64 child_cell_uid = m_num_mng->getCellUid(parent_cell_level + 1, Int64x3{ i, j, k });
+            const Int64 child_cell_uid = m_num_mng->cellUniqueId(parent_cell_level + 1, Int64x3{ i, j, k });
             debug() << "Child -- x : " << i << " -- y : " << j << " -- z : " << k << " -- level : " << parent_cell_level + 1 << " -- uid : " << child_cell_uid;
 
-            m_num_mng->getNodeUids(child_nodes_uids, parent_cell_level + 1, Int64x3{ i, j, k });
-            m_num_mng->getFaceUids(child_faces_uids, parent_cell_level + 1, Int64x3{ i, j, k });
+            m_num_mng->cellNodeUniqueIds(child_nodes_uids, parent_cell_level + 1, Int64x3{ i, j, k });
+            m_num_mng->cellFaceUniqueIds(child_faces_uids, parent_cell_level + 1, Int64x3{ i, j, k });
 
             const Integer type_cell = IT_Hexaedron8;
             const Integer type_face = IT_Quad4;
@@ -1004,12 +1002,12 @@ refine()
             // Partie Cell.
             cells_infos.add(type_cell);
             cells_infos.add(child_cell_uid);
-            for (Integer nc = 0; nc < m_num_mng->getNbNode(); nc++) {
+            for (Integer nc = 0; nc < m_num_mng->nbNodeByCell(); nc++) {
               cells_infos.add(child_nodes_uids[nc]);
             }
 
             // Partie Face.
-            for(Integer l = 0; l < m_num_mng->getNbFace(); ++l){
+            for (Integer l = 0; l < m_num_mng->nbFaceByCell(); ++l) {
               Integer child_face_owner = -1;
               bool is_new_face = false;
 
@@ -1172,7 +1170,7 @@ refine()
             // Partie Node.
             // Cette partie est assez ressemblante à la partie face, mis à part le fait qu'il peut y avoir
             // plus de propriétaires possibles.
-            for(Integer l = 0; l < m_num_mng->getNbNode(); ++l){
+            for (Integer l = 0; l < m_num_mng->nbNodeByCell(); ++l) {
               Integer child_node_owner = -1;
               bool is_new_node = false;
 
@@ -1968,7 +1966,7 @@ coarse()
   if (version < 3)
     gm->setBuilderVersion(3);
   Int32 nb_ghost_layer = gm->nbGhostLayer();
-  gm->setNbGhostLayer(nb_ghost_layer + (nb_ghost_layer % m_num_mng->getPattern()));
+  gm->setNbGhostLayer(nb_ghost_layer + (nb_ghost_layer % m_num_mng->pattern()));
   mesh_modifier->setDynamic(true);
   mesh_modifier->updateGhostLayers();
   // Remet le nombre initial de couches de mailles fantômes
@@ -1979,7 +1977,7 @@ coarse()
   ENUMERATE_ (Cell, icell, m_mesh->allLevelCells(0)) {
     Cell cell = *icell;
 
-    Int64 parent_uid = m_num_mng->getParentCellUidOfCell(cell);
+    Int64 parent_uid = m_num_mng->parentCellUniqueIdOfCell(cell);
     if (!cell_uid_to_create.contains(parent_uid)) {
       cell_uid_to_create.add(parent_uid);
       around_parent_cells_uid_to_owner[parent_uid] = cell.owner();
@@ -2008,8 +2006,8 @@ coarse()
 
   // Deux tableaux permettant de récupérer les uniqueIds des noeuds et des faces
   // de chaque maille parent à chaque appel à getNodeUids()/getFaceUids().
-  UniqueArray<Int64> parent_nodes_uids(m_num_mng->getNbNode());
-  UniqueArray<Int64> parent_faces_uids(m_num_mng->getNbFace());
+  UniqueArray<Int64> parent_nodes_uids(m_num_mng->nbNodeByCell());
+  UniqueArray<Int64> parent_faces_uids(m_num_mng->nbFaceByCell());
 
   // Partie échange d'informations sur les mailles autour du patch
   // (pour remplacer les mailles fantômes).
@@ -2019,7 +2017,7 @@ coarse()
     {
       UniqueArray<Int64> cell_uids_around((m_mesh->dimension() == 2) ? 9 : 27);
       for (Int64 parent_cell : cell_uid_to_create) {
-        m_num_mng->getCellUidsAround(cell_uids_around, parent_cell, -1);
+        m_num_mng->cellUniqueIdsAroundCell(cell_uids_around, parent_cell, -1);
         for (Int64 cell_uid : cell_uids_around) {
           // Si -1 alors il n'y a pas de mailles à cette position.
           if (cell_uid == -1)
@@ -2088,7 +2086,7 @@ coarse()
     for (Int64 parent_cell_uid : cell_uid_to_create) {
 
       UniqueArray<Int64> cells_uid_around(9);
-      m_num_mng->getCellUidsAround(cells_uid_around, parent_cell_uid, -1);
+      m_num_mng->cellUniqueIdsAroundCell(cells_uid_around, parent_cell_uid, -1);
 
       UniqueArray<Int32> owner_cells_around_parent_cell_1d(9);
       UniqueArray<bool> is_not_in_subdomain_cells_around_parent_cell_1d(9);
@@ -2120,13 +2118,13 @@ coarse()
 
       total_nb_cells++;
       debug() << "Parent"
-              << " -- x : " << m_num_mng->uidToCoordX(parent_cell_uid, -1)
-              << " -- y : " << m_num_mng->uidToCoordY(parent_cell_uid, -1)
+              << " -- x : " << m_num_mng->cellUniqueIdToCoordX(parent_cell_uid, -1)
+              << " -- y : " << m_num_mng->cellUniqueIdToCoordY(parent_cell_uid, -1)
               << " -- level : " << -1
               << " -- uid : " << parent_cell_uid;
 
-      m_num_mng->getNodeUids(parent_nodes_uids, -1, parent_cell_uid);
-      m_num_mng->getFaceUids(parent_faces_uids, -1, parent_cell_uid);
+      m_num_mng->cellNodeUniqueIds(parent_nodes_uids, -1, parent_cell_uid);
+      m_num_mng->cellFaceUniqueIds(parent_faces_uids, -1, parent_cell_uid);
 
       const Integer type_cell = IT_Quad4;
       const Integer type_face = IT_Line2;
@@ -2134,12 +2132,12 @@ coarse()
       // Partie Cell.
       cells_infos.add(type_cell);
       cells_infos.add(parent_cell_uid);
-      for (Integer nc = 0; nc < m_num_mng->getNbNode(); nc++) {
+      for (Integer nc = 0; nc < m_num_mng->nbNodeByCell(); nc++) {
         cells_infos.add(parent_nodes_uids[nc]);
       }
 
       // Partie Face.
-      for (Integer l = 0; l < m_num_mng->getNbFace(); ++l) {
+      for (Integer l = 0; l < m_num_mng->nbFaceByCell(); ++l) {
         Integer parent_face_owner = -1;
 
         // On regarde si l'on doit traiter la face.
@@ -2156,7 +2154,7 @@ coarse()
           // Les noeuds de la face sont toujours les noeuds l et l+1
           // car on utilise la même exploration pour les deux cas.
           for (Integer nc = l; nc < l + 2; nc++) {
-            faces_infos.add(parent_nodes_uids[nc % m_num_mng->getNbNode()]);
+            faces_infos.add(parent_nodes_uids[nc % m_num_mng->nbNodeByCell()]);
           }
           total_nb_faces++;
 
@@ -2181,7 +2179,7 @@ coarse()
       // Partie Node.
       // Cette partie est assez ressemblante à la partie face, mis à part le fait qu'il peut y avoir
       // plus de propriétaires possibles.
-      for (Integer l = 0; l < m_num_mng->getNbNode(); ++l) {
+      for (Integer l = 0; l < m_num_mng->nbNodeByCell(); ++l) {
         Integer parent_node_owner = -1;
         if (
         (mask_node_if_cell_left[l] || is_cell_around_parent_cell_different_owner(1, 0) || is_not_in_subdomain_cells_around_parent_cell(1, 0)) &&
@@ -2267,7 +2265,7 @@ coarse()
 
     for (Int64 parent_cell_uid : cell_uid_to_create) {
       UniqueArray<Int64> cells_uid_around(27);
-      m_num_mng->getCellUidsAround(cells_uid_around, parent_cell_uid, -1);
+      m_num_mng->cellUniqueIdsAroundCell(cells_uid_around, parent_cell_uid, -1);
 
       UniqueArray<Int32> owner_cells_around_parent_cell_1d(27);
       UniqueArray<bool> is_not_in_subdomain_cells_around_parent_cell_1d(27);
@@ -2299,14 +2297,14 @@ coarse()
 
       total_nb_cells++;
       debug() << "Parent"
-              << " -- x : " << m_num_mng->uidToCoordX(parent_cell_uid, -1)
-              << " -- y : " << m_num_mng->uidToCoordY(parent_cell_uid, -1)
-              << " -- z : " << m_num_mng->uidToCoordZ(parent_cell_uid, -1)
+              << " -- x : " << m_num_mng->cellUniqueIdToCoordX(parent_cell_uid, -1)
+              << " -- y : " << m_num_mng->cellUniqueIdToCoordY(parent_cell_uid, -1)
+              << " -- z : " << m_num_mng->cellUniqueIdToCoordZ(parent_cell_uid, -1)
               << " -- level : " << -1
               << " -- uid : " << parent_cell_uid;
 
-      m_num_mng->getNodeUids(parent_nodes_uids, -1, parent_cell_uid);
-      m_num_mng->getFaceUids(parent_faces_uids, -1, parent_cell_uid);
+      m_num_mng->cellNodeUniqueIds(parent_nodes_uids, -1, parent_cell_uid);
+      m_num_mng->cellFaceUniqueIds(parent_faces_uids, -1, parent_cell_uid);
 
       const Integer type_cell = IT_Hexaedron8;
       const Integer type_face = IT_Quad4;
@@ -2314,12 +2312,12 @@ coarse()
       // Partie Cell.
       cells_infos.add(type_cell);
       cells_infos.add(parent_cell_uid);
-      for (Integer nc = 0; nc < m_num_mng->getNbNode(); nc++) {
+      for (Integer nc = 0; nc < m_num_mng->nbNodeByCell(); nc++) {
         cells_infos.add(parent_nodes_uids[nc]);
       }
 
       // Partie Face.
-      for (Integer l = 0; l < m_num_mng->getNbFace(); ++l) {
+      for (Integer l = 0; l < m_num_mng->nbFaceByCell(); ++l) {
         Integer parent_face_owner = -1;
 
         // On regarde si l'on doit traiter la face.
@@ -2387,7 +2385,7 @@ coarse()
       // Partie Node.
       // Cette partie est assez ressemblante à la partie face, mis à part le fait qu'il peut y avoir
       // plus de propriétaires possibles.
-      for (Integer l = 0; l < m_num_mng->getNbNode(); ++l) {
+      for (Integer l = 0; l < m_num_mng->nbNodeByCell(); ++l) {
         Integer parent_node_owner = -1;
         if (
         (mask_node_if_cell_left[l] || is_cell_around_parent_cell_different_owner(1, 1, 0) || is_not_in_subdomain_cells_around_parent_cell(1, 1, 0)) &&

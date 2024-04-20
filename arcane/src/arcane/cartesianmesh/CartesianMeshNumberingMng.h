@@ -46,56 +46,54 @@ class CartesianMeshNumberingMng
   void prepareLevel(Int32 level) override;
   void updateFirstLevel() override;
 
-  Int64 getFirstCellUidLevel(Integer level) override;
-  Int64 getFirstNodeUidLevel(Integer level) override;
-  Int64 getFirstFaceUidLevel(Integer level) override;
+  Int64 firstCellUniqueId(Integer level) override;
+  Int64 firstNodeUniqueId(Integer level) override;
+  Int64 firstFaceUniqueId(Integer level) override;
 
-  Int64 getGlobalNbCellsX(Integer level) const override;
-  Int64 getGlobalNbCellsY(Integer level) const override;
-  Int64 getGlobalNbCellsZ(Integer level) const override;
+  Int64 globalNbCellsX(Integer level) const override;
+  Int64 globalNbCellsY(Integer level) const override;
+  Int64 globalNbCellsZ(Integer level) const override;
 
+  Integer pattern() const override;
+  Int64 offsetLevelToLevel(Int64 coord, Integer level_from, Integer level_to) const override;
 
-  Integer getPattern() const override;
-  Int64 getOffsetLevelToLevel(Int64 coord, Integer level_from, Integer level_to) const override;
+  Int64 cellUniqueIdToCoordX(Int64 uid, Integer level) override;
+  Int64 cellUniqueIdToCoordX(Cell cell) override;
 
+  Int64 cellUniqueIdToCoordY(Int64 uid, Integer level) override;
+  Int64 cellUniqueIdToCoordY(Cell cell) override;
 
-  Int64 uidToCoordX(Int64 uid, Integer level) override;
-  Int64 uidToCoordX(Cell cell) override;
+  Int64 cellUniqueIdToCoordZ(Int64 uid, Integer level) override;
+  Int64 cellUniqueIdToCoordZ(Cell cell) override;
 
-  Int64 uidToCoordY(Int64 uid, Integer level) override;
-  Int64 uidToCoordY(Cell cell) override;
+  Int64 cellUniqueId(Integer level, Int64x3 cell_coord) override;
+  Int64 cellUniqueId(Integer level, Int64x2 cell_coord) override;
 
-  Int64 uidToCoordZ(Int64 uid, Integer level) override;
-  Int64 uidToCoordZ(Cell cell) override;
+  Integer nbNodeByCell() override;
+  void cellNodeUniqueIds(ArrayView<Int64> uid, Integer level, Int64x3 cell_coord) override;
+  void cellNodeUniqueIds(ArrayView<Int64> uid, Integer level, Int64x2 cell_coord) override;
+  void cellNodeUniqueIds(ArrayView<Int64> uid, Integer level, Int64 cell_uid) override;
 
-  Int64 getCellUid(Integer level, Int64x3 cell_coord) override;
-  Int64 getCellUid(Integer level, Int64x2 cell_coord) override;
+  Integer nbFaceByCell() override;
+  void cellFaceUniqueIds(ArrayView<Int64> uid, Integer level, Int64x3 cell_coord) override;
+  void cellFaceUniqueIds(ArrayView<Int64> uid, Integer level, Int64x2 cell_coord) override;
+  void cellFaceUniqueIds(ArrayView<Int64> uid, Integer level, Int64 cell_uid) override;
 
-  Integer getNbNode() override;
-  void getNodeUids(ArrayView<Int64> uid, Integer level, Int64x3 cell_coord) override;
-  void getNodeUids(ArrayView<Int64> uid, Integer level, Int64x2 cell_coord) override;
-  void getNodeUids(ArrayView<Int64> uid, Integer level, Int64 cell_uid) override;
-
-  Integer getNbFace() override;
-  void getFaceUids(ArrayView<Int64> uid, Integer level, Int64x3 cell_coord) override;
-  void getFaceUids(ArrayView<Int64> uid, Integer level, Int64x2 cell_coord) override;
-  void getFaceUids(ArrayView<Int64> uid, Integer level, Int64 cell_uid) override;
-
-  void getCellUidsAround(ArrayView<Int64> uid, Int64 cell_uid, Int32 level) override;
-  void getCellUidsAround(ArrayView<Int64> uid, Cell cell) override;
+  void cellUniqueIdsAroundCell(ArrayView<Int64> uid, Int64 cell_uid, Int32 level) override;
+  void cellUniqueIdsAroundCell(ArrayView<Int64> uid, Cell cell) override;
 
   void setChildNodeCoordinates(Cell parent_cell) override;
   void setParentNodeCoordinates(Cell parent_cell) override;
 
-  Int64 getParentCellUidOfCell(Cell cell) override;
+  Int64 parentCellUniqueIdOfCell(Cell cell) override;
 
-  Int64 getChildCellUidOfCell(Cell cell, Int64x2 child_coord_in_parent) override;
-  Cell getChildCellOfCell(Cell cell, Int64x2 child_coord_in_parent) override;
+  Int64 childCellUniqueIdOfCell(Cell cell, Int64x2 child_coord_in_parent) override;
+  Cell childCellOfCell(Cell cell, Int64x2 child_coord_in_parent) override;
 
-  Int64 getChildCellUidOfCell(Cell cell, Int64x3 child_coord_in_parent) override;
-  Cell getChildCellOfCell(Cell cell, Int64x3 child_coord_in_parent) override;
+  Int64 childCellUniqueIdOfCell(Cell cell, Int64x3 child_coord_in_parent) override;
+  Cell childCellOfCell(Cell cell, Int64x3 child_coord_in_parent) override;
 
-  Int64 getChildCellUidOfCell(Cell cell, Int64 child_index_in_parent) override;
+  Int64 childCellUniqueIdOfCell(Cell cell, Int64 child_index_in_parent) override;
 
  private:
   IMesh* m_mesh;
