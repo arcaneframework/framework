@@ -719,7 +719,7 @@ class GenericReducerIf
       ARCANE_CHECK_HIP(rocprim::reduce(s.m_algo_storage.address(), temp_storage_size, input_iter, reduced_value_ptr, init_value,
                                        nb_item, reduce_op, stream));
       s.m_device_reduce_storage.copyToAsync(s.m_host_reduce_storage, &queue);
-    }
+    } break;
 #endif
     case eExecutionPolicy::Thread:
       // Pas encore implémenté en multi-thread
