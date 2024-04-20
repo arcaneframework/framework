@@ -494,10 +494,15 @@ class ReducerSum
 
  public:
 
-  ARCCORE_HOST_DEVICE DataType add(DataType v) const
+  ARCCORE_HOST_DEVICE DataType combine(DataType v) const
   {
     m_local_value += v;
     return m_local_value;
+  }
+
+  ARCCORE_HOST_DEVICE DataType add(DataType v) const
+  {
+    return combine(v);
   }
 };
 
@@ -521,10 +526,15 @@ class ReducerMax
 
  public:
 
-  ARCCORE_HOST_DEVICE DataType max(DataType v) const
+  ARCCORE_HOST_DEVICE DataType combine(DataType v) const
   {
     m_local_value = v > m_local_value ? v : m_local_value;
     return m_local_value;
+  }
+
+  ARCCORE_HOST_DEVICE DataType max(DataType v) const
+  {
+    return combine(v);
   }
 };
 
@@ -548,10 +558,15 @@ class ReducerMin
 
  public:
 
-  ARCCORE_HOST_DEVICE DataType min(DataType v) const
+  ARCCORE_HOST_DEVICE DataType combine(DataType v) const
   {
     m_local_value = v < m_local_value ? v : m_local_value;
     return m_local_value;
+  }
+
+  ARCCORE_HOST_DEVICE DataType min(DataType v) const
+  {
+    return combine(v);
   }
 };
 
