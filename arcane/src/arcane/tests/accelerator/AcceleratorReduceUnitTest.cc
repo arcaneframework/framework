@@ -35,6 +35,7 @@
 namespace ArcaneTest
 {
 using namespace Arcane;
+using namespace Arcane::Accelerator;
 namespace ax = Arcane::Accelerator;
 
 /*---------------------------------------------------------------------------*/
@@ -57,7 +58,8 @@ class AcceleratorReduceUnitTest
 
  private:
 
-  ax::Runner m_runner;
+  Runner m_runner;
+  RunQueue m_queue;
 
  public:
 
@@ -79,6 +81,23 @@ class AcceleratorReduceUnitTest
     if (reduced_sum != sum)
       ARCANE_FATAL("Bad sum reduced_sum={0} expected={1}", reduced_sum, sum);
   }
+
+  template <typename DataType> void
+  _executeTestReduceSum(Int32 nb_iteration, const NumArray<DataType, MDDim1>& t1, DataType expected_value);
+  template <typename DataType> void
+  _executeTestReduceMin(Int32 nb_iteration, const NumArray<DataType, MDDim1>& t1, DataType expected_value);
+  template <typename DataType> void
+  _executeTestReduceMax(Int32 nb_iteration, const NumArray<DataType, MDDim1>& t1, DataType expected_value);
+  template <typename DataType> void
+  _executeTestReduceDirect(Int32 nb_iteration, const NumArray<DataType, MDDim1>& t1,
+                           DataType expected_sum,
+                           DataType expected_min,
+                           DataType expected_max);
+  template <typename DataType> void
+  _executeTestReduceWithIndex(Int32 nb_iteration, const NumArray<DataType, MDDim1>& t1,
+                              DataType expected_sum,
+                              DataType expected_min,
+                              DataType expected_max);
 
  private:
 
@@ -161,10 +180,11 @@ _executeTestDataType(Int32 nb_iteration)
   info() << "Execute Test1";
 
   auto queue = makeQueue(m_runner);
+  m_queue = queue;
 
   constexpr int n1 = 3000000;
 
-  NumArray<DataType, MDDim1> t1; //(eMemoryRessource::Host);
+  NumArray<DataType, MDDim1> t1;
   t1.resize(n1);
   ConstMemoryView t1_mem_view(makeMemoryView(t1.to1DSpan()));
   m_runner.setMemoryAdvice(t1_mem_view, ax::eMemoryAdvice::PreferredLocationDevice);
@@ -190,8 +210,111 @@ _executeTestDataType(Int32 nb_iteration)
   m_runner.setMemoryAdvice(t1_mem_view, ax::eMemoryAdvice::MostlyRead);
   queue.prefetchMemory(ax::MemoryPrefetchArgs(t1_mem_view).addAsync());
 
+  _executeTestReduceSum(nb_iteration, t1, sum);
+  _executeTestReduceMin(nb_iteration, t1, min_value);
+  _executeTestReduceMax(nb_iteration, t1, max_value);
+
+  // Utilisation des kernels spécifiques
+  _executeTestReduceDirect(nb_iteration, t1, sum, min_value, max_value);
+
+  // Utilisation des kernels spécifiques avec index
+  _executeTestReduceWithIndex(nb_iteration, t1, sum, min_value, max_value);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template <typename DataType> void AcceleratorReduceUnitTest::
+_executeTestReduceDirect(Int32 nb_iteration, const NumArray<DataType, MDDim1>& t1,
+                         DataType expected_sum,
+                         DataType expected_min,
+                         DataType expected_max)
+{
+  // Utilisation des kernels spécifiques
   for (int z = 0; z < nb_iteration; ++z) {
-    auto command = makeCommand(queue);
+    ax::GenericReducer<DataType> reducer(m_queue);
+    reducer.applySum(t1.to1DSmallSpan(), A_FUNCINFO);
+    DataType reduced_sum = reducer.reducedValue();
+    if (z == 0)
+      info() << "REDUCED_SUM (direct)=" << reduced_sum;
+    _compareSum(reduced_sum, expected_sum);
+  }
+
+  for (int z = 0; z < nb_iteration; ++z) {
+    ax::GenericReducer<DataType> reducer(m_queue);
+    reducer.applyMin(t1.to1DSmallSpan(), A_FUNCINFO);
+    DataType reduced_min = reducer.reducedValue();
+    if (z == 0)
+      info() << "REDUCED_MIN (direct)=" << reduced_min;
+    if (reduced_min != expected_min)
+      ARCANE_FATAL("Bad minimum reduced_min={0} expected={1}", reduced_min, expected_min);
+  }
+
+  for (int z = 0; z < nb_iteration; ++z) {
+    ax::GenericReducer<DataType> reducer(m_queue);
+    reducer.applyMax(t1.to1DSmallSpan(), A_FUNCINFO);
+    DataType reduced_max = reducer.reducedValue();
+    if (z == 0)
+      info() << "REDUCED_MAX (direct)=" << reduced_max;
+    if (reduced_max != expected_max)
+      ARCANE_FATAL("Bad maximum reduced_max={0} expected={1}", reduced_max, expected_max);
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template <typename DataType> void AcceleratorReduceUnitTest::
+_executeTestReduceWithIndex(Int32 nb_iteration, const NumArray<DataType, MDDim1>& t1,
+                            DataType expected_sum,
+                            DataType expected_min,
+                            DataType expected_max)
+{
+  auto t1_view = t1.to1DSmallSpan();
+  const Int32 n1 = t1_view.size();
+  auto getter_lambda = [=] ARCCORE_HOST_DEVICE(Int32 index) -> DataType {
+    return t1_view[index];
+  };
+
+  for (int z = 0; z < nb_iteration; ++z) {
+    ax::GenericReducer<DataType> reducer(m_queue);
+    reducer.applySumWithIndex(n1, getter_lambda, A_FUNCINFO);
+    DataType reduced_sum = reducer.reducedValue();
+    if (z == 0)
+      info() << "REDUCED_SUM (direct with index)=" << reduced_sum;
+    _compareSum(reduced_sum, expected_sum);
+  }
+
+  for (int z = 0; z < nb_iteration; ++z) {
+    ax::GenericReducer<DataType> reducer(m_queue);
+    reducer.applyMinWithIndex(n1, getter_lambda, A_FUNCINFO);
+    DataType reduced_min = reducer.reducedValue();
+    if (z == 0)
+      info() << "REDUCED_MIN (direct with index)=" << reduced_min;
+    if (reduced_min != expected_min)
+      ARCANE_FATAL("Bad minimum reduced_min={0} expected={1}", reduced_min, expected_min);
+  }
+
+  for (int z = 0; z < nb_iteration; ++z) {
+    ax::GenericReducer<DataType> reducer(m_queue);
+    reducer.applyMaxWithIndex(n1, getter_lambda, A_FUNCINFO);
+    DataType reduced_max = reducer.reducedValue();
+    if (z == 0)
+      info() << "REDUCED_MAX (direct with index)=" << reduced_max;
+    if (reduced_max != expected_max)
+      ARCANE_FATAL("Bad maximum reduced_max={0} expected={1}", reduced_max, expected_max);
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template <typename DataType> void AcceleratorReduceUnitTest::
+_executeTestReduceSum(Int32 nb_iteration, const NumArray<DataType, MDDim1>& t1, DataType expected_value)
+{
+  const Int32 n1 = t1.extent0();
+  for (int z = 0; z < nb_iteration; ++z) {
+    auto command = makeCommand(m_queue);
     ax::ReducerSum<DataType> acc_sum(command);
     acc_sum.setValue(0.0);
     auto in_t1 = viewIn(command, t1);
@@ -205,11 +328,19 @@ _executeTestDataType(Int32 nb_iteration)
     DataType reduced_sum = acc_sum.reduce();
     if (z == 0)
       info() << "REDUCED_SUM=" << reduced_sum;
-    _compareSum(reduced_sum, sum);
+    _compareSum(reduced_sum, expected_value);
   }
+}
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template <typename DataType> void AcceleratorReduceUnitTest::
+_executeTestReduceMin(Int32 nb_iteration, const NumArray<DataType, MDDim1>& t1, DataType expected_value)
+{
+  const Int32 n1 = t1.extent0();
   for (int z = 0; z < nb_iteration; ++z) {
-    auto command = makeCommand(queue);
+    auto command = makeCommand(m_queue);
     ax::ReducerMin<DataType> acc_min(command);
     auto in_t1 = viewIn(command, t1);
 
@@ -222,12 +353,20 @@ _executeTestDataType(Int32 nb_iteration)
     DataType reduced_min = acc_min.reduce();
     if (z == 0)
       info() << "REDUCED_MIN=" << reduced_min;
-    if (reduced_min != min_value)
-      ARCANE_FATAL("Bad minimum reduced_min={0} expected={1}", reduced_min, min_value);
+    if (reduced_min != expected_value)
+      ARCANE_FATAL("Bad minimum reduced_min={0} expected={1}", reduced_min, expected_value);
   }
+}
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template <typename DataType> void AcceleratorReduceUnitTest::
+_executeTestReduceMax(Int32 nb_iteration, const NumArray<DataType, MDDim1>& t1, DataType expected_value)
+{
+  const Int32 n1 = t1.extent0();
   for (int z = 0; z < nb_iteration; ++z) {
-    auto command = makeCommand(queue);
+    auto command = makeCommand(m_queue);
     ax::ReducerMax<DataType> acc_max(command);
     auto in_t1 = viewIn(command, t1);
 
@@ -240,76 +379,8 @@ _executeTestDataType(Int32 nb_iteration)
     DataType reduced_max = acc_max.reduce();
     if (z == 0)
       info() << "REDUCED_MAX=" << reduced_max;
-    if (reduced_max != max_value)
-      ARCANE_FATAL("Bad minimum reduced_min={0} expected={1}", reduced_max, max_value);
-  }
-
-  // Utilisation des kernels spécifiques
-  for (int z = 0; z < nb_iteration; ++z) {
-    ax::GenericReducer<DataType> reducer(queue);
-    reducer.applySum(t1.to1DSmallSpan());
-    DataType reduced_sum = reducer.reducedValue();
-    if (z == 0)
-      info() << "REDUCED_SUM (direct)=" << reduced_sum;
-    _compareSum(reduced_sum, sum);
-  }
-
-  for (int z = 0; z < nb_iteration; ++z) {
-    ax::GenericReducer<DataType> reducer(queue);
-    reducer.applyMin(t1.to1DSmallSpan());
-    DataType reduced_min = reducer.reducedValue();
-    if (z == 0)
-      info() << "REDUCED_MIN (direct)=" << reduced_min;
-    if (reduced_min != min_value)
-      ARCANE_FATAL("Bad minimum reduced_min={0} expected={1}", reduced_min, min_value);
-  }
-
-  for (int z = 0; z < nb_iteration; ++z) {
-    ax::GenericReducer<DataType> reducer(queue);
-    reducer.applyMax(t1.to1DSmallSpan());
-    DataType reduced_max = reducer.reducedValue();
-    if (z == 0)
-      info() << "REDUCED_MAX (direct)=" << reduced_max;
-    if (reduced_max != max_value)
-      ARCANE_FATAL("Bad maximum reduced_max={0} expected={1}", reduced_max, max_value);
-  }
-
-  // Utilisation des kernels spécifiques avec index
-
-  {
-    auto t1_view = t1.to1DSmallSpan();
-    auto getter_lambda = [=] ARCCORE_HOST_DEVICE(Int32 index) -> DataType {
-      return t1_view[index];
-    };
-
-    for (int z = 0; z < nb_iteration; ++z) {
-      ax::GenericReducer<DataType> reducer(queue);
-      reducer.applySumWithIndex(n1, getter_lambda);
-      DataType reduced_sum = reducer.reducedValue();
-      if (z == 0)
-        info() << "REDUCED_SUM (direct with index)=" << reduced_sum;
-      _compareSum(reduced_sum, sum);
-    }
-
-    for (int z = 0; z < nb_iteration; ++z) {
-      ax::GenericReducer<DataType> reducer(queue);
-      reducer.applyMinWithIndex(n1, getter_lambda);
-      DataType reduced_min = reducer.reducedValue();
-      if (z == 0)
-        info() << "REDUCED_MIN (direct with index)=" << reduced_min;
-      if (reduced_min != min_value)
-        ARCANE_FATAL("Bad minimum reduced_min={0} expected={1}", reduced_min, min_value);
-    }
-
-    for (int z = 0; z < nb_iteration; ++z) {
-      ax::GenericReducer<DataType> reducer(queue);
-      reducer.applyMaxWithIndex(n1, getter_lambda);
-      DataType reduced_max = reducer.reducedValue();
-      if (z == 0)
-        info() << "REDUCED_MAX (direct)=" << reduced_max;
-      if (reduced_max != max_value)
-        ARCANE_FATAL("Bad maximum reduced_max={0} expected={1}", reduced_max, max_value);
-    }
+    if (reduced_max != expected_value)
+      ARCANE_FATAL("Bad maximum reduced_max={0} expected={1}", reduced_max, expected_value);
   }
 }
 
