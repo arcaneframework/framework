@@ -122,11 +122,12 @@ namespace impl
   {
    public:
 
-    static double apply(std::atomic<double>* ptr, double v)
+    static double apply(double* vptr, double v)
     {
-      double old = ptr->load(std::memory_order_consume);
+      std::atomic_ref<double> aref(*vptr);
+      double old = aref.load(std::memory_order_consume);
       double wanted = old + v;
-      while (!ptr->compare_exchange_weak(old, wanted, std::memory_order_release, std::memory_order_consume))
+      while (!aref.compare_exchange_weak(old, wanted, std::memory_order_release, std::memory_order_consume))
         wanted = old + v;
       return wanted;
     }
@@ -136,9 +137,10 @@ namespace impl
   {
    public:
 
-    static Int64 apply(std::atomic<Int64>* ptr, Int64 v)
+    static Int64 apply(Int64* vptr, Int64 v)
     {
-      Int64 x = std::atomic_fetch_add(ptr, v);
+      std::atomic_ref<Int64> aref(*vptr);
+      Int64 x = aref.fetch_add(v);
       return x + v;
     }
   };
@@ -147,9 +149,10 @@ namespace impl
   {
    public:
 
-    static Int32 apply(std::atomic<Int32>* ptr, Int32 v)
+    static Int32 apply(Int32* vptr, Int32 v)
     {
-      Int32 x = std::atomic_fetch_add(ptr, v);
+      std::atomic_ref<Int32> aref(*vptr);
+      Int32 x = aref.fetch_add(v);
       return x + v;
     }
   };
@@ -166,9 +169,9 @@ namespace impl
       _applyDevice(dev_info);
       return *(dev_info.m_device_final_ptr);
     }
-    static DataType apply(std::atomic<DataType>* ptr, DataType v)
+    static DataType apply(DataType* vptr, DataType v)
     {
-      return ReduceAtomicSum<DataType>::apply(ptr, v);
+      return ReduceAtomicSum<DataType>::apply(vptr, v);
     }
 
    public:
@@ -192,12 +195,13 @@ namespace impl
       _applyDevice(dev_info);
       return *(dev_info.m_device_final_ptr);
     }
-    static DataType apply(std::atomic<DataType>* ptr, DataType v)
+    static DataType apply(DataType* ptr, DataType v)
     {
-      DataType prev_value = *ptr;
-      while (prev_value < v && !ptr->compare_exchange_weak(prev_value, v)) {
+      std::atomic_ref<DataType> aref(*ptr);
+      DataType prev_value = aref.load();
+      while (prev_value < v && !aref.compare_exchange_weak(prev_value, v)) {
       }
-      return *ptr;
+      return aref.load();
     }
 
    public:
@@ -221,12 +225,13 @@ namespace impl
       _applyDevice(dev_info);
       return *(dev_info.m_device_final_ptr);
     }
-    static DataType apply(std::atomic<DataType>* ptr, DataType v)
+    static DataType apply(DataType* vptr, DataType v)
     {
-      DataType prev_value = *ptr;
-      while (prev_value > v && !ptr->compare_exchange_weak(prev_value, v)) {
+      std::atomic_ref<DataType> aref(*vptr);
+      DataType prev_value = aref.load();
+      while (prev_value > v && !aref.compare_exchange_weak(prev_value, v)) {
       }
-      return *ptr;
+      return aref.load();
     }
 
    public:
@@ -283,7 +288,7 @@ class HostDeviceReducer
     m_identity = ReduceFunctor::identity();
     m_local_value = m_identity;
     m_atomic_value = m_identity;
-    m_parent_value = &m_atomic_value;
+    m_atomic_parent_value = &m_atomic_value;
     //printf("Create null host parent_value=%p this=%p\n",(void*)m_parent_value,(void*)this);
     m_memory_impl = impl::internalGetOrCreateReduceMemoryImpl(&command);
     if (m_memory_impl) {
@@ -307,7 +312,7 @@ class HostDeviceReducer
       m_grid_memory_info = m_memory_impl->gridMemoryInfo();
     }
     //std::cout << String::format("Reduce: host copy this={0} rhs={1} mem={2} device_count={3}\n",this,&rhs,m_memory_impl,(void*)m_grid_device_count);
-    m_parent_value = rhs.m_parent_value;
+    m_atomic_parent_value = rhs.m_atomic_parent_value;
     m_local_value = rhs.m_identity;
     m_atomic_value = m_identity;
     //std::cout << String::format("Reduce copy host  this={0} parent_value={1} rhs={2}\n",this,(void*)m_parent_value,&rhs); std::cout.flush();
@@ -347,7 +352,7 @@ class HostDeviceReducer
     //                            this,(void*)m_grid_memory_value_as_bytes,m_grid_memory_size);
     //std::cout.flush();
     if (!m_is_master_instance)
-      ReduceFunctor::apply(m_parent_value, m_local_value);
+      ReduceFunctor::apply(m_atomic_parent_value, m_local_value);
 
     //printf("Destroy host %p %p\n",m_host_or_device_memory_for_reduced_value,this);
     if (m_memory_impl && m_is_master_instance)
@@ -375,12 +380,12 @@ class HostDeviceReducer
       final_ptr = reinterpret_cast<DataType*>(m_grid_memory_info.m_host_memory_for_reduced_value);
     }
 
-    if (m_parent_value) {
+    if (m_atomic_parent_value) {
       //std::cout << String::format("Reduce host has parent this={0} local_value={1} parent_value={2}\n",
       //                            this,m_local_value,*m_parent_value);
       //std::cout.flush();
-      ReduceFunctor::apply(m_parent_value, *final_ptr);
-      *final_ptr = *m_parent_value;
+      ReduceFunctor::apply(m_atomic_parent_value, *final_ptr);
+      *final_ptr = *m_atomic_parent_value;
     }
     else {
       //std::cout << String::format("Reduce host no parent this={0} local_value={1} managed={2}\n",
@@ -409,8 +414,8 @@ class HostDeviceReducer
  protected:
 
   mutable DataType m_local_value;
-  std::atomic<DataType>* m_parent_value = nullptr;
-  mutable std::atomic<DataType> m_atomic_value;
+  DataType* m_atomic_parent_value = nullptr;
+  mutable DataType m_atomic_value;
 
  private:
 
