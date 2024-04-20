@@ -31,20 +31,22 @@ namespace Arcane
 class ARCANE_CARTESIANMESH_EXPORT ICartesianMeshAMRPatchMng
 {
  public:
+
   ~ICartesianMeshAMRPatchMng() = default;
 
  public:
+
   /*!
    * @brief Méthode permettant de définir les mailles à raffiner.
    * @param cells_lids Les localIds des mailles.
    */
-  virtual void flagCellToRefine(Int32ConstArrayView cells_lids) =0;
+  virtual void flagCellToRefine(Int32ConstArrayView cells_lids) = 0;
 
   /*!
    * @brief Méthode permettant de raffiner les mailles avec le
    * flag "II_Refine".
    */
-  virtual void refine() =0;
+  virtual void refine() = 0;
 
   /*!
    * \brief Méthode permettant de déraffiner les mailles de niveau 0.
@@ -53,8 +55,7 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMeshAMRPatchMng
    * de niveau 0 puis tous les niveaux seront incrémentés de 1. Le niveau créé
    * par cette méthode sera donc le nouveau niveau 0.
    */
-  virtual void coarse() =0;
-
+  virtual void coarse() = 0;
 };
 
 /*---------------------------------------------------------------------------*/
