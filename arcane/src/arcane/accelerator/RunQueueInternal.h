@@ -27,6 +27,8 @@
 #include <sycl/sycl.hpp>
 #endif
 
+#include <tuple>
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -76,8 +78,18 @@ ARCCORE_HOST_DEVICE auto privatize(const T& item) -> Privatizer<T>
 
 #if defined(ARCANE_COMPILING_CUDA) || defined(ARCANE_COMPILING_HIP)
 
-template<typename BuilderType,typename Lambda> __global__
-void doIndirectGPULambda(SmallSpan<const Int32> ids,Lambda func)
+//! Applique les fonctors des arguments additionnels.
+template <typename... RemainingArgs> inline __device__ void
+doKernelAdditionalArgs(Int32 index, std::tuple<RemainingArgs...>& other_args)
+{
+  using RemaingArgsType = std::tuple<RemainingArgs...>;
+  if constexpr (std::tuple_size<RemaingArgsType>{} > 0) {
+    std::apply([&] ARCCORE_HOST_DEVICE(RemainingArgs & ... args) { (args._execWorkItem(index), ...); }, other_args);
+  }
+}
+
+template <typename BuilderType, typename Lambda> __global__ void
+doIndirectGPULambda(SmallSpan<const Int32> ids, Lambda func)
 {
   using LocalIdType = BuilderType::ValueType;
 
@@ -85,37 +97,77 @@ void doIndirectGPULambda(SmallSpan<const Int32> ids,Lambda func)
   auto& body = privatizer.privateCopy();
 
   Int32 i = blockDim.x * blockIdx.x + threadIdx.x;
-  if (i<ids.size()){
+  if (i < ids.size()) {
     LocalIdType lid(ids[i]);
     //if (i<10)
     //printf("CUDA %d lid=%d\n",i,lid.localId());
-    body(BuilderType::create(i,lid));
+    body(BuilderType::create(i, lid));
   }
 }
 
-template<typename ItemType,typename Lambda> __global__
-void doDirectGPULambda(Int32 vsize,Lambda func)
+template <typename ItemType, typename Lambda> __global__ void
+doDirectGPULambda(Int32 vsize, Lambda func)
 {
   auto privatizer = privatize(func);
   auto& body = privatizer.privateCopy();
 
   Int32 i = blockDim.x * blockIdx.x + threadIdx.x;
-  if (i<vsize){
+  if (i < vsize) {
     //if (i<10)
     //printf("CUDA %d lid=%d\n",i,lid.localId());
     body(i);
   }
 }
 
-template<typename LoopBoundType,typename Lambda> __global__
-void doDirectGPULambdaArrayBounds(LoopBoundType bounds,Lambda func)
+template <typename LoopBoundType, typename Lambda> __global__ void
+doDirectGPULambdaArrayBounds(LoopBoundType bounds, Lambda func)
 {
   auto privatizer = privatize(func);
   auto& body = privatizer.privateCopy();
 
   Int32 i = blockDim.x * blockIdx.x + threadIdx.x;
-  if (i<bounds.nbElement()){
+  if (i < bounds.nbElement()) {
     body(bounds.getIndices(i));
+  }
+}
+
+template <typename BuilderType, typename Lambda, typename... RemainingArgs> __global__ void
+doIndirectGPULambda2(SmallSpan<const Int32> ids, Lambda func, std::tuple<RemainingArgs...> other_args)
+{
+  using LocalIdType = BuilderType::ValueType;
+
+  auto privatizer = privatize(func);
+  auto& body = privatizer.privateCopy();
+
+  Int32 i = blockDim.x * blockIdx.x + threadIdx.x;
+  if (i < ids.size()) {
+    LocalIdType lid(ids[i]);
+    body(BuilderType::create(i, lid));
+  }
+}
+
+template <typename ItemType, typename Lambda, typename... RemainingArgs> __global__ void
+doDirectGPULambda2(Int32 vsize, Lambda func, std::tuple<RemainingArgs...> other_args)
+{
+  auto privatizer = privatize(func);
+  auto& body = privatizer.privateCopy();
+
+  Int32 i = blockDim.x * blockIdx.x + threadIdx.x;
+  if (i < vsize) {
+    body(i);
+  }
+}
+
+template <typename LoopBoundType, typename Lambda, typename... RemainingArgs> __global__ void
+doDirectGPULambdaArrayBounds2(LoopBoundType bounds, Lambda func, std::tuple<RemainingArgs...> other_args)
+{
+  auto privatizer = privatize(func);
+  auto& body = privatizer.privateCopy();
+
+  Int32 i = blockDim.x * blockIdx.x + threadIdx.x;
+  if (i < bounds.nbElement()) {
+    body(bounds.getIndices(i));
+    doKernelAdditionalArgs(i, other_args);
   }
 }
 
@@ -130,28 +182,40 @@ void doDirectGPULambdaArrayBounds(LoopBoundType bounds,Lambda func)
 #if defined(ARCANE_COMPILING_SYCL)
 
 //! Boucle N-dimension sans indirection
-template<typename LoopBoundType,typename Lambda>
+template <typename LoopBoundType, typename Lambda, typename... RemainingArgs>
 class DoDirectSYCLLambdaArrayBounds
 {
  public:
-  void operator()(sycl::id<1> x, LoopBoundType bounds,Lambda func) const
+
+  void operator()(sycl::id<1> x, LoopBoundType bounds, Lambda func, std::tuple<RemainingArgs...>) const
   {
     auto privatizer = privatize(func);
     auto& body = privatizer.privateCopy();
 
     Int32 i = static_cast<Int32>(x);
-    if (i<bounds.nbElement()){
+    if (i < bounds.nbElement()) {
+      body(bounds.getIndices(i));
+    }
+  }
+  void operator()(sycl::id<1> x, LoopBoundType bounds, Lambda func) const
+  {
+    auto privatizer = privatize(func);
+    auto& body = privatizer.privateCopy();
+
+    Int32 i = static_cast<Int32>(x);
+    if (i < bounds.nbElement()) {
       body(bounds.getIndices(i));
     }
   }
 };
 
 //! Boucle 1D avec indirection
-template<typename BuilderType,typename Lambda>
+template <typename BuilderType, typename Lambda>
 class DoIndirectSYCLLambda
 {
  public:
-  void operator()(sycl::id<1> x, SmallSpan<const Int32> ids,Lambda func) const
+
+  void operator()(sycl::id<1> x, SmallSpan<const Int32> ids, Lambda func) const
   {
     using LocalIdType = BuilderType::ValueType;
 
@@ -159,9 +223,9 @@ class DoIndirectSYCLLambda
     auto& body = privatizer.privateCopy();
 
     Int32 i = static_cast<Int32>(x);
-    if (i<ids.size()){
+    if (i < ids.size()) {
       LocalIdType lid(ids[i]);
-      body(BuilderType::create(i,lid));
+      body(BuilderType::create(i, lid));
     }
   }
 };
@@ -213,36 +277,69 @@ class InvalidKernelClass
  * attendons les concepts c++20 (requires)
  * 
  */
-template<typename CudaKernel,typename Lambda,typename... LambdaArgs> void
-_applyKernelCUDA(impl::RunCommandLaunchInfo& launch_info,const CudaKernel& kernel,Lambda& func,[[maybe_unused]] const LambdaArgs&... args)
+template <typename CudaKernel, typename Lambda, typename LambdaArgs, typename... RemainingArgs> void
+_applyKernelCUDA(impl::RunCommandLaunchInfo& launch_info, const CudaKernel& kernel, Lambda& func,
+                 const LambdaArgs& args, const std::tuple<RemainingArgs...>& other_args)
 {
 #if defined(ARCANE_COMPILING_CUDA)
-  auto [b,t] = launch_info.threadBlockInfo();
+  auto [b, t] = launch_info.threadBlockInfo();
   cudaStream_t* s = reinterpret_cast<cudaStream_t*>(launch_info._internalStreamImpl());
   // TODO: utiliser cudaLaunchKernel() à la place.
-  /*
-   * Test si dessous non concluant. Le principe de la construction de l'array est bon,
-   * l'ensemble ressemble à ce qu'on peut trouver (par exemple :
-   * https://github.com/tensorflow/tensorflow/blob/master/tensorflow/core/util/gpu_kernel_helper.h)
-   * mais je pense que la lambda pose problème...
-   * A creuser encore donc...
-   *
-    std::array<void*, sizeof...(args)+1> kernel_args{std::forward<void*>((void*)&args)...};
-    kernel_args[sizeof...(args)] = std::forward<void*>((void*)&func);
-    cudaLaunchKernel<CudaKernel>(kernel, b, t, kernel_args.data(), 0, *s);
-   */
-  kernel <<<b, t, 0, *s>>>(args...,func);
+  kernel<<<b, t, 0, *s>>>(args, func, other_args);
 #else
   ARCANE_UNUSED(launch_info);
   ARCANE_UNUSED(kernel);
   ARCANE_UNUSED(func);
-  // ARCANE_UNUSED(args...);  FIXME: ne fonctionne pas, d'où le [[maybe_unused]] dans le prototype
+  ARCANE_UNUSED(args);
+  ARCANE_UNUSED(other_args);
+  ARCANE_FATAL_NO_CUDA_COMPILATION();
+#endif
+}
+
+template <typename CudaKernel, typename Lambda, typename LambdaArgs> void
+_applyKernelCUDA(impl::RunCommandLaunchInfo& launch_info, const CudaKernel& kernel, Lambda& func,
+                 const LambdaArgs& args)
+{
+#if defined(ARCANE_COMPILING_CUDA)
+  auto [b, t] = launch_info.threadBlockInfo();
+  cudaStream_t* s = reinterpret_cast<cudaStream_t*>(launch_info._internalStreamImpl());
+  // TODO: utiliser cudaLaunchKernel() à la place.
+  kernel<<<b, t, 0, *s>>>(args, func);
+#else
+  ARCANE_UNUSED(launch_info);
+  ARCANE_UNUSED(kernel);
+  ARCANE_UNUSED(func);
+  ARCANE_UNUSED(args);
   ARCANE_FATAL_NO_CUDA_COMPILATION();
 #endif
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+/*!
+ * \brief Fonction générique pour exécuter un kernel HIP.
+ *
+ * \param kernel noyau HIP
+ * \param func fonction à exécuter par le noyau
+ * \param args arguments de la fonction lambda
+ */
+template <typename HipKernel, typename Lambda, typename LambdaArgs, typename... RemainingArgs> void
+_applyKernelHIP(impl::RunCommandLaunchInfo& launch_info, const HipKernel& kernel, Lambda& func,
+                const LambdaArgs& args, const std::tuple<RemainingArgs...>& other_args)
+{
+#if defined(ARCANE_COMPILING_HIP)
+  auto [b, t] = launch_info.threadBlockInfo();
+  hipStream_t* s = reinterpret_cast<hipStream_t*>(launch_info._internalStreamImpl());
+  hipLaunchKernelGGL(kernel, b, t, 0, *s, args, func, other_args);
+#else
+  ARCANE_UNUSED(launch_info);
+  ARCANE_UNUSED(kernel);
+  ARCANE_UNUSED(func);
+  ARCANE_UNUSED(args);
+  ARCANE_UNUSED(other_args);
+  ARCANE_FATAL_NO_HIP_COMPILATION();
+#endif
+}
 
 /*!
  * \brief Fonction générique pour exécuter un kernel HIP.
@@ -251,18 +348,19 @@ _applyKernelCUDA(impl::RunCommandLaunchInfo& launch_info,const CudaKernel& kerne
  * \param func fonction à exécuter par le noyau
  * \param args arguments de la fonction lambda
  */
-template<typename HipKernel,typename Lambda,typename... LambdaArgs> void
-_applyKernelHIP(impl::RunCommandLaunchInfo& launch_info,const HipKernel& kernel,Lambda& func,[[maybe_unused]] const LambdaArgs&... args)
+template <typename HipKernel, typename Lambda, typename LambdaArgs> void
+_applyKernelHIP(impl::RunCommandLaunchInfo& launch_info, const HipKernel& kernel, Lambda& func,
+                const LambdaArgs& args)
 {
 #if defined(ARCANE_COMPILING_HIP)
-  auto [b,t] = launch_info.threadBlockInfo();
+  auto [b, t] = launch_info.threadBlockInfo();
   hipStream_t* s = reinterpret_cast<hipStream_t*>(launch_info._internalStreamImpl());
-  hipLaunchKernelGGL(kernel, b, t, 0, *s, args..., func); // TODO: pas encore testé !!!
+  hipLaunchKernelGGL(kernel, b, t, 0, *s, args, func);
 #else
   ARCANE_UNUSED(launch_info);
   ARCANE_UNUSED(kernel);
   ARCANE_UNUSED(func);
-  // ARCANE_UNUSED(args...);  FIXME: ne fonctionne pas, d'où le [[maybe_unused]] dans le prototype
+  ARCANE_UNUSED(args);
   ARCANE_FATAL_NO_HIP_COMPILATION();
 #endif
 }
@@ -276,19 +374,35 @@ _applyKernelHIP(impl::RunCommandLaunchInfo& launch_info,const HipKernel& kernel,
  * \param func fonction à exécuter par le noyau
  * \param args arguments de la fonction lambda
  */
-template <typename SyclKernel, typename Lambda, typename LambdaArgs> void
-_applyKernelSYCL(impl::RunCommandLaunchInfo& launch_info, SyclKernel kernel, Lambda& func, [[maybe_unused]] const LambdaArgs& args)
+template <typename SyclKernel, typename Lambda, typename LambdaArgs, typename... RemainingArgs>
+void _applyKernelSYCL(impl::RunCommandLaunchInfo& launch_info, SyclKernel kernel, Lambda& func,
+                      const LambdaArgs& args, const std::tuple<RemainingArgs...>& other_args)
 {
 #if defined(ARCANE_COMPILING_SYCL)
+  using RemaingArgsType = std::tuple<RemainingArgs...>;
   sycl::queue* s = reinterpret_cast<sycl::queue*>(launch_info._internalStreamImpl());
   sycl::range<1> loop_size = launch_info.totalLoopSize();
-  s->parallel_for(loop_size, [=](sycl::id<1> i) { kernel(i, args, func); });
+  if constexpr (std::tuple_size<RemaingArgsType>{} > 0) {
+    s->parallel_for(loop_size, [=](sycl::id<1> i) { kernel(i, args, func, other_args); });
+  }
+  else {
+    s->parallel_for(loop_size, [=](sycl::id<1> i) { kernel(i, args, func); });
+  }
 #else
   ARCANE_UNUSED(launch_info);
   ARCANE_UNUSED(kernel);
   ARCANE_UNUSED(func);
+  ARCANE_UNUSED(args);
+  ARCANE_UNUSED(other_args);
   ARCANE_FATAL_NO_SYCL_COMPILATION();
 #endif
+}
+
+template <typename SyclKernel, typename Lambda, typename LambdaArgs>
+void _applyKernelSYCL(impl::RunCommandLaunchInfo& launch_info, SyclKernel kernel, Lambda& func,
+                      const LambdaArgs& args)
+{
+  _applyKernelSYCL(launch_info, kernel, func, args, {});
 }
 
 /*---------------------------------------------------------------------------*/
@@ -299,4 +413,4 @@ _applyKernelSYCL(impl::RunCommandLaunchInfo& launch_info, SyclKernel kernel, Lam
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif
