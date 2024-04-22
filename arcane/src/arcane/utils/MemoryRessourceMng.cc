@@ -124,7 +124,7 @@ _checkValidRessource(eMemoryRessource r)
 /*---------------------------------------------------------------------------*/
 
 IMemoryAllocator* MemoryRessourceMng::
-getAllocator(eMemoryRessource r)
+getAllocator(eMemoryRessource r, bool throw_if_not_found)
 {
   int x = _checkValidRessource(r);
   IMemoryAllocator* a = m_allocators[x];
@@ -139,10 +139,19 @@ getAllocator(eMemoryRessource r)
     }
   }
 
-  if (!a)
+  if (!a && throw_if_not_found)
     ARCANE_FATAL("Allocator for ressource '{0}' is not available", r);
 
   return a;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+IMemoryAllocator* MemoryRessourceMng::
+getAllocator(eMemoryRessource r)
+{
+  return getAllocator(r, true);
 }
 
 /*---------------------------------------------------------------------------*/

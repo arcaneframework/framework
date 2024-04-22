@@ -43,6 +43,7 @@ class ARCANE_UTILS_EXPORT MemoryRessourceMng
  public:
 
   IMemoryAllocator* getAllocator(eMemoryRessource r) override;
+  IMemoryAllocator* getAllocator(eMemoryRessource r, bool throw_if_not_found) override;
 
  public:
 
