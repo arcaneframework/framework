@@ -61,7 +61,8 @@ faut alors au moins les versions GCC 11, Clang 16 ou Visual Studio
 - Refonte de la gestion de \arcane{ITimeHistoryMng} pour pouvoir
   facilement gérer plusieurs maillages (\pr{1203}, \pr{1249}, \pr{1256}, \pr{1260})
 - Ajoute support expérimental pour l'AMR cartésien par patch en
-  dupliquant les noeuds et les faces (\pr{1167})
+  dupliquant les noeuds et les faces (\pr{1167}, \pr{1337}, \pr{1350},
+  \pr{1351}, \pr{1353})
 - Ajoute nouvelle méthode (méthode 4) de renumérotation des patchs AMR
   pour avoir la même numérotation entre un maillage raffiné et un
   maillage dé-raffiné puis raffiné (\pr{1108}, \pr{1109})
@@ -96,7 +97,7 @@ faut alors au moins les versions GCC 11, Clang 16 ou Visual Studio
   \pr{1224}, \pr{1226}, \pr{1227}, \pr{1230}, \pr{1233}, \pr{1235},
   \pr{1238}, \pr{1239}, \pr{1241}, \pr{1243}, \pr{1247}, \pr{1257},
   \pr{1258}, \pr{1263}, \pr{1268}, \pr{1283}, \pr{1284}, \pr{1285}, \pr{1287},
-  \pr{1292}, \pr{1295}, \pr{1312})
+  \pr{1292}, \pr{1295}, \pr{1312}, \pr{1347})
 - Utilise l'API accélérateur pour l'ajoute et la suppression d'entités
   dans un \arcane{ItemGroup} (\pr{1288},\pr{1289}, \pr{1293}).
 - Ajoute constructeur par défaut pour \arcaneacc{RunQueue}. Dans ce
@@ -123,6 +124,10 @@ faut alors au moins les versions GCC 11, Clang 16 ou Visual Studio
   \arcane{eMemoryRessource::HostPinned} lorsque le runtime
   accélérateur n'est pas défini. Dans ce cas on utilise
   \arcane{eMemoryRessource::Host} (\pr{1315})
+- Débute support pour un backend avec l'API Sycl. Ce backend n'est pas
+  encore fonctionnel et n'est disponible que pour des tests internes
+  (\pr{1318}, \pr{1319}, \pr{1320}, \pr{1323}, \pr{1324},
+  \pr{1330},\pr{1334}, \pr{1345}, \pr{1355})
 
 ### Changements
 
@@ -130,7 +135,7 @@ faut alors au moins les versions GCC 11, Clang 16 ou Visual Studio
   remplacée par \arcanemat{ComponentItemBase}
   (\pr{1039}, \pr{1053}, \pr{1059}, \pr{1172}, \pr{1181},
   \pr{1187},\pr{1190}, \pr{1191}, \pr{1192}, \pr{1193}, \pr{1194},
-  \pr{1195},\pr{1197}, \pr{1199}, \pr{1200})
+  \pr{1195},\pr{1197}, \pr{1199}, \pr{1200}, \pr{1335})
 - Active toujours les connectivités incrémentales (\pr{1166})
 - Rend obsolète \arcane{NumArray::s()}. Il faut utiliser à la place
   `operator()` ou `operator[]` (\pr{1035})
@@ -216,7 +221,7 @@ faut alors au moins les versions GCC 11, Clang 16 ou Visual Studio
   \arcane{Int32x2} et \arcane{Int32x3} au lieu de `std::array` pour
   gérer les informations de construction des maillages cartésiens
   (\pr{1067})
-- Supprime avertissements coverity (\pr{1060}, \pr{1065})
+- Supprime avertissements coverity (\pr{1060}, \pr{1065}, \pr{1333}, \pr{1336})
 - Refonte du mécanisme interne de gestion des informations des entités
   matériaux pour rendre les propriétés accessibles sur accélérateur
   (\pr{1057}, \pr{1058}, \pr{1086})
@@ -225,8 +230,8 @@ faut alors au moins les versions GCC 11, Clang 16 ou Visual Studio
 - Utilise \arccore{ReferenceCounterImpl} pour l'implémentation de
   \arccore{IThreadImplementation} et \arcane{IParallelDispatchT}
   (\pr{1132}, \pr{1127})
-- Corrige avertissements de compilations divers (\pr{1130}, \pr{1163},
-  \pr{1164}, \pr{1042}, \pr{1118})
+- Corrige divers avertissements de compilation (\pr{1130}, \pr{1163},
+  \pr{1164}, \pr{1042}, \pr{1118}, \pr{1346})
 - Améliore le portage Windows (\pr{1154}, \pr{1157}, \pr{1246})
 - Ajoute méthode \arcane{IMesh::computeSynchronizeInfos()} pour
   forcer le recalcule des informations de synchronisation (\pr{1124})
@@ -239,6 +244,9 @@ faut alors au moins les versions GCC 11, Clang 16 ou Visual Studio
 - Ajoute détection du mode GPU Aware de MPI pour ROCM (\pr{1209})
 - Ajoute méthode \arcane{ITimeStats::resetStats()} pour remettre à
   zéro les statistiques temporelles de l'instance (\pr{1122}, \pr{1128})
+- Ajoute implémentation de \arccore{IThreadImplementation} et de
+  \arcane{AtomicInt32) en utilisant la bibliothèque standard du C++
+  (\pr{1339}, \pr{1340}, \pr{1342}, \pr{1343})
 
 ### Compilation et Intégration Continue (CI)
 
@@ -297,12 +305,18 @@ faut alors au moins les versions GCC 11, Clang 16 ou Visual Studio
   les opérations sur les types de données de base \pr{1105}
 - Ajoute possibilité de récupérer le communicateur MPI dans
   \arccore{MessagePassing::IMessagePassingMng} (\pr{1248})
+- Début ré-organisation interne pour rendre l'utilisation de la 'Glib'
+  optionnelle (\pr{1328}).
 
 ### Axlstar
 
 - Améliore la gestion de la documentation (\pr{1052}, \pr{1070},
   \pr{1072}, \pr{1073}, \pr{1084}, \pr{1104}, \pr{1107})
-- Ajoute option pour cahnger le répertoire d'installation (\pr{1171})
+- Ajoute option pour changer le répertoire d'installation (\pr{1171})
+- Ajoute option en ligne de commande pour changer le nom du namespace
+  généré (\pr{1321}).
+- Ajoute nom du namespace dans la protection de l'en-tête du fichier
+  généré (\pr{1322}).
 
 ### Alien
 
@@ -460,6 +474,8 @@ faut alors au moins les versions GCC 11, Clang 16 ou Visual Studio
   (\pr{943}).
 - Créé les \arcane{MeshHandle} des maillages additionnels avant
   l'appel aux points d'entrée `Build` (\pr{947}).
+- Utilise `std::atomic_ref` au lieu de `std::atomic` pour la gestion
+  des réductions sur accélérateur (\pr{1352})
 
 ### Compilation et Intégration Continue (CI)
 
