@@ -54,6 +54,10 @@ class CartesianMeshNumberingMng
   Int64 globalNbCellsY(Integer level) const override;
   Int64 globalNbCellsZ(Integer level) const override;
 
+  Int64 globalNbNodesX(Integer level) const override;
+  Int64 globalNbNodesY(Integer level) const override;
+  Int64 globalNbNodesZ(Integer level) const override;
+
   Integer pattern() const override;
   Int64 offsetLevelToLevel(Int64 coord, Integer level_from, Integer level_to) const override;
 
@@ -66,8 +70,20 @@ class CartesianMeshNumberingMng
   Int64 cellUniqueIdToCoordZ(Int64 uid, Integer level) override;
   Int64 cellUniqueIdToCoordZ(Cell cell) override;
 
+  Int64 nodeUniqueIdToCoordX(Int64 uid, Integer level) override;
+  Int64 nodeUniqueIdToCoordX(Node node) override;
+
+  Int64 nodeUniqueIdToCoordY(Int64 uid, Integer level) override;
+  Int64 nodeUniqueIdToCoordY(Node node) override;
+
+  Int64 nodeUniqueIdToCoordZ(Int64 uid, Integer level) override;
+  Int64 nodeUniqueIdToCoordZ(Node node) override;
+
   Int64 cellUniqueId(Integer level, Int64x3 cell_coord) override;
   Int64 cellUniqueId(Integer level, Int64x2 cell_coord) override;
+
+  Int64 nodeUniqueId(Integer level, Int64x3 node_coord) override;
+  Int64 nodeUniqueId(Integer level, Int64x2 node_coord) override;
 
   Integer nbNodeByCell() override;
   void cellNodeUniqueIds(ArrayView<Int64> uid, Integer level, Int64x3 cell_coord) override;
@@ -85,15 +101,19 @@ class CartesianMeshNumberingMng
   void setChildNodeCoordinates(Cell parent_cell) override;
   void setParentNodeCoordinates(Cell parent_cell) override;
 
-  Int64 parentCellUniqueIdOfCell(Cell cell) override;
-
-  Int64 childCellUniqueIdOfCell(Cell cell, Int64x2 child_coord_in_parent) override;
-  Cell childCellOfCell(Cell cell, Int64x2 child_coord_in_parent) override;
+  Int64 parentCellUniqueIdOfCell(Cell cell, bool do_fatal) override;
 
   Int64 childCellUniqueIdOfCell(Cell cell, Int64x3 child_coord_in_parent) override;
-  Cell childCellOfCell(Cell cell, Int64x3 child_coord_in_parent) override;
-
+  Int64 childCellUniqueIdOfCell(Cell cell, Int64x2 child_coord_in_parent) override;
   Int64 childCellUniqueIdOfCell(Cell cell, Int64 child_index_in_parent) override;
+
+  Cell childCellOfCell(Cell cell, Int64x3 child_coord_in_parent) override;
+  Cell childCellOfCell(Cell cell, Int64x2 child_coord_in_parent) override;
+
+  Int64 parentNodeUniqueIdOfNode(Int64 uid, Integer level, bool do_fatal) override;
+  Int64 parentNodeUniqueIdOfNode(Node node, bool do_fatal) override;
+
+  Int64 childNodeUniqueIdOfNode(Node node) override;
 
  private:
 

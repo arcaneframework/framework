@@ -94,7 +94,7 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMeshNumberingMng
   virtual Int64 firstFaceUniqueId(Integer level) = 0;
 
   /*!
-   * \brief Méthode permettant de récupérer le nombre de mailles globale en X d'un niveau.
+   * \brief Méthode permettant de récupérer le nombre de mailles global en X d'un niveau.
    *
    * \param level Le niveau.
    * \return Le nombre de mailles en X.
@@ -102,7 +102,7 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMeshNumberingMng
   virtual Int64 globalNbCellsX(Integer level) const = 0;
 
   /*!
-   * \brief Méthode permettant de récupérer le nombre de mailles globale en Y d'un niveau.
+   * \brief Méthode permettant de récupérer le nombre de mailles global en Y d'un niveau.
    *
    * \param level Le niveau.
    * \return Le nombre de mailles en Y.
@@ -110,12 +110,36 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMeshNumberingMng
   virtual Int64 globalNbCellsY(Integer level) const = 0;
 
   /*!
-   * \brief Méthode permettant de récupérer le nombre de mailles globale en Z d'un niveau.
+   * \brief Méthode permettant de récupérer le nombre de mailles global en Z d'un niveau.
    *
    * \param level Le niveau.
    * \return Le nombre de mailles en Z.
    */
   virtual Int64 globalNbCellsZ(Integer level) const = 0;
+
+  /*!
+   * \brief Méthode permettant de récupérer le nombre de noeuds global en X d'un niveau.
+   *
+   * \param level Le niveau.
+   * \return Le nombre de noeuds en X.
+   */
+  virtual Int64 globalNbNodesX(Integer level) const = 0;
+
+  /*!
+   * \brief Méthode permettant de récupérer le nombre de noeuds global en Y d'un niveau.
+   *
+   * \param level Le niveau.
+   * \return Le nombre de noeuds en Y.
+   */
+  virtual Int64 globalNbNodesY(Integer level) const = 0;
+
+  /*!
+   * \brief Méthode permettant de récupérer le nombre de noeuds global en Z d'un niveau.
+   *
+   * \param level Le niveau.
+   * \return Le nombre de noeuds en Z.
+   */
+  virtual Int64 globalNbNodesZ(Integer level) const = 0;
 
   /*!
    * \brief Méthode permettant de récupérer le pattern de raffinement utilisé dans chaque maille.
@@ -192,6 +216,57 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMeshNumberingMng
   virtual Int64 cellUniqueIdToCoordZ(Cell cell) = 0;
 
   /*!
+   * \brief Méthode permettant de récupérer la coordonnée en X d'un noeud grâce à son uniqueId.
+   *
+   * \param uid L'uniqueId du noeud.
+   * \param level Le niveau du noeud.
+   * \return La position en X du noeud.
+   */
+  virtual Int64 nodeUniqueIdToCoordX(Int64 uid, Integer level) = 0;
+
+  /*!
+   * \brief Méthode permettant de récupérer la coordonnée en X d'un noeud.
+   *
+   * \param node Le noeud.
+   * \return La position en X du noeud.
+   */
+  virtual Int64 nodeUniqueIdToCoordX(Node node) = 0;
+
+  /*!
+   * \brief Méthode permettant de récupérer la coordonnée en Y d'un noeud grâce à son uniqueId.
+   *
+   * \param uid L'uniqueId du noeud.
+   * \param level Le niveau du noeud.
+   * \return La position en Y du noeud.
+   */
+  virtual Int64 nodeUniqueIdToCoordY(Int64 uid, Integer level) = 0;
+
+  /*!
+   * \brief Méthode permettant de récupérer la coordonnée en Y d'un noeud.
+   *
+   * \param node Le noeud.
+   * \return La position en Y du noeud.
+   */
+  virtual Int64 nodeUniqueIdToCoordY(Node node) = 0;
+
+  /*!
+   * \brief Méthode permettant de récupérer la coordonnée en Z d'un noeud grâce à son uniqueId.
+   *
+   * \param uid L'uniqueId du noeud.
+   * \param level Le niveau du noeud.
+   * \return La position en Z du noeud.
+   */
+  virtual Int64 nodeUniqueIdToCoordZ(Int64 uid, Integer level) = 0;
+
+  /*!
+   * \brief Méthode permettant de récupérer la coordonnée en Z d'un noeud.
+   *
+   * \param node Le noeud.
+   * \return La position en Z du noeud.
+   */
+  virtual Int64 nodeUniqueIdToCoordZ(Node node) = 0;
+
+  /*!
    * \brief Méthode permettant de récupérer l'uniqueId d'une maille à partir de sa position et de son niveau.
    *
    * \param level Le niveau de la maille.
@@ -208,6 +283,24 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMeshNumberingMng
    * \return L'uniqueId de la maille.
    */
   virtual Int64 cellUniqueId(Integer level, Int64x2 cell_coord) = 0;
+
+  /*!
+   * \brief Méthode permettant de récupérer l'uniqueId d'un noeud à partir de sa position et de son niveau.
+   *
+   * \param level Le niveau du noeud.
+   * \param cell_coord La position du noeud.
+   * \return L'uniqueId du noeud.
+   */
+  virtual Int64 nodeUniqueId(Integer level, Int64x3 node_coord) = 0;
+
+  /*!
+   * \brief Méthode permettant de récupérer l'uniqueId d'un noeud à partir de sa position et de son niveau.
+   *
+   * \param level Le niveau du noeud.
+   * \param cell_coord La position du noeud.
+   * \return L'uniqueId du noeud.
+   */
+  virtual Int64 nodeUniqueId(Integer level, Int64x2 node_coord) = 0;
 
   /*!
    * \brief Méthode permettant de récupérer le nombre de noeuds dans une maille.
@@ -368,10 +461,23 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMeshNumberingMng
   /*!
    * \brief Méthode permettant de récupérer l'uniqueId du parent d'une maille.
    *
+   * Si \a do_fatal est vrai, une erreur fatale est générée si le parent n'existe
+   * pas, sinon l'uniqueId retourné a pour valeur NULL_ITEM_UNIQUE_ID.
+   *
    * \param cell La maille enfant.
    * \return L'uniqueId de la maille parent de la maille passé en paramètre.
    */
-  virtual Int64 parentCellUniqueIdOfCell(Cell cell) = 0;
+  virtual Int64 parentCellUniqueIdOfCell(Cell cell, bool do_fatal = true) = 0;
+
+  /*!
+   * \brief Méthode permettant de récupérer l'uniqueId d'une maille enfant d'une maille parent
+   * à partir de la position de la maille enfant dans la maille parent.
+   *
+   * \param cell La maille parent.
+   * \param child_coord_in_parent La position de l'enfant dans la maille parent.
+   * \return L'uniqueId de la maille enfant demandée.
+   */
+  virtual Int64 childCellUniqueIdOfCell(Cell cell, Int64x3 child_coord_in_parent) = 0;
 
   /*!
    * \brief Méthode permettant de récupérer l'uniqueId d'une maille enfant d'une maille parent
@@ -385,13 +491,13 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMeshNumberingMng
 
   /*!
    * \brief Méthode permettant de récupérer l'uniqueId d'une maille enfant d'une maille parent
-   * à partir de la position de la maille enfant dans la maille parent.
+   * à partir de l'index de la maille enfant dans la maille parent.
    *
    * \param cell La maille parent.
-   * \param child_coord_in_parent La position de l'enfant dans la maille parent.
+   * \param child_index_in_parent L'index de l'enfant dans la maille parent.
    * \return L'uniqueId de la maille enfant demandée.
    */
-  virtual Int64 childCellUniqueIdOfCell(Cell cell, Int64x3 child_coord_in_parent) = 0;
+  virtual Int64 childCellUniqueIdOfCell(Cell cell, Int64 child_index_in_parent) = 0;
 
   /*!
    * \brief Méthode permettant de récupérer une maille enfant d'une maille parent
@@ -414,14 +520,35 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMeshNumberingMng
   virtual Cell childCellOfCell(Cell cell, Int64x2 child_coord_in_parent) = 0;
 
   /*!
-   * \brief Méthode permettant de récupérer l'uniqueId d'une maille enfant d'une maille parent
-   * à partir de l'index de la maille enfant dans la maille parent.
+   * \brief Méthode permettant de récupérer l'uniqueId du parent d'un noeud.
    *
-   * \param cell La maille parent.
-   * \param child_index_in_parent L'index de l'enfant dans la maille parent.
-   * \return L'uniqueId de la maille enfant demandée.
+   * Si \a do_fatal est vrai, une erreur fatale est générée si le parent n'existe
+   * pas, sinon l'uniqueId retourné a pour valeur NULL_ITEM_UNIQUE_ID.
+   *
+   * \param uid L'uniqueId du noeud enfant.
+   * \param level Le niveau du noeud enfant.
+   * \return L'uniqueId du noeud parent du noeud enfant.
    */
-  virtual Int64 childCellUniqueIdOfCell(Cell cell, Int64 child_index_in_parent) = 0;
+  virtual Int64 parentNodeUniqueIdOfNode(Int64 uid, Integer level, bool do_fatal = true) = 0;
+
+  /*!
+   * \brief Méthode permettant de récupérer l'uniqueId du parent d'un noeud.
+   *
+   * Si \a do_fatal est vrai, une erreur fatale est générée si le parent n'existe
+   * pas, sinon l'uniqueId retourné a pour valeur NULL_ITEM_UNIQUE_ID.
+   *
+   * \param node Le noeud enfant.
+   * \return L'uniqueId du noeud parent du noeud passé en paramètre.
+   */
+  virtual Int64 parentNodeUniqueIdOfNode(Node node, bool do_fatal = true) = 0;
+
+  /*!
+   * \brief Méthode permettant de récupérer l'uniqueId d'un noeud enfant d'un noeud parent.
+   *
+   * \param node Le noeud parent.
+   * \return L'uniqueId du noeud enfant demandée.
+   */
+  virtual Int64 childNodeUniqueIdOfNode(Node node) = 0;
 };
 
 /*---------------------------------------------------------------------------*/
