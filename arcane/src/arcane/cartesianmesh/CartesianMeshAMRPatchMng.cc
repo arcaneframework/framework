@@ -1747,6 +1747,10 @@ refine()
       // On cherche les localIds des noeuds qui changent de proprio et on les met à la fin du tableau.
       m_mesh->nodeFamily()->itemsUniqueIdToLocalId(nodes_lid.subView(total_nb_nodes, nb_node_owner_change), node_uid_change_owner_only, true);
 
+      UniqueArray<Int64> uid_child_nodes(total_nb_nodes + nb_node_owner_change);
+      UniqueArray<Int32> lid_child_nodes(total_nb_nodes + nb_node_owner_change);
+      Integer index = 0;
+
       // On attribue les bons propriétaires aux noeuds.
       ENUMERATE_ (Node, inode, m_mesh->nodeFamily()->view(nodes_lid)) {
         Node node = *inode;
@@ -1759,6 +1763,26 @@ refine()
         else {
           node.mutableItemBase().removeFlags(ItemFlags::II_Shared);
         }
+        // Attention, node.level() == -1 ici.
+        uid_child_nodes[index++] = m_num_mng->parentNodeUniqueIdOfNode(node.uniqueId(), max_level + 1, false);
+      }
+
+      m_mesh->nodeFamily()->itemsUniqueIdToLocalId(lid_child_nodes, uid_child_nodes, false);
+      NodeInfoListView nodes(m_mesh->nodeFamily());
+
+      index = 0;
+      ENUMERATE_ (Node, inode, m_mesh->nodeFamily()->view(nodes_lid)) {
+        const Int32 child_lid = lid_child_nodes[index++];
+        if (child_lid == NULL_ITEM_ID) {
+          debug() << "No Parent Node Child : " << nodes[child_lid].uniqueId();
+          continue;
+        }
+
+        Node parent = nodes[child_lid];
+        Node child = *inode;
+
+        m_mesh->modifier()->addParentNodeToNode(child, parent);
+        m_mesh->modifier()->addChildNodeToNode(parent, child);
       }
     }
     m_mesh->nodeFamily()->notifyItemsOwnerChanged();
@@ -1867,10 +1891,17 @@ refine()
   //    }
   //  }
   //  info() << "Résumé :";
-  //  ENUMERATE_ (Cell, icell, m_mesh->allCells()){
+  //  ENUMERATE_ (Cell, icell, m_mesh->allCells()) {
   //    debug() << "\tCell uniqueId : " << icell->uniqueId() << " -- level : " << icell->level() << " -- nbChildren : " << icell->nbHChildren();
-  //    for(Integer i = 0; i < icell->nbHChildren(); ++i){
+  //    for (Integer i = 0; i < icell->nbHChildren(); ++i) {
   //      debug() << "\t\tChild uniqueId : " << icell->hChild(i).uniqueId() << " -- level : " << icell->hChild(i).level() << " -- nbChildren : " << icell->hChild(i).nbHChildren();
+  //    }
+  //  }
+  //  info() << "Résumé node:";
+  //  ENUMERATE_ (Node, inode, m_mesh->allNodes()) {
+  //    debug() << "\tNode uniqueId : " << inode->uniqueId() << " -- level : " << inode->level() << " -- nbChildren : " << inode->nbHChildren();
+  //    for (Integer i = 0; i < inode->nbHChildren(); ++i) {
+  //      debug() << "\t\tNode Child uniqueId : " << inode->hChild(i).uniqueId() << " -- level : " << inode->hChild(i).level() << " -- nbChildren : " << inode->hChild(i).nbHChildren();
   //    }
   //  }
 }
