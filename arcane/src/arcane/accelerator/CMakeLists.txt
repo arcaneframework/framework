@@ -26,6 +26,12 @@ target_link_libraries(arcane_accelerator PUBLIC
 arcane_register_library(arcane_accelerator OPTIONAL)
 
 # ----------------------------------------------------------------------------
+
+if (GTEST_FOUND)
+  add_subdirectory(tests)
+endif()
+
+# ----------------------------------------------------------------------------
 # Local Variables:
 # tab-width: 2
 # indent-tabs-mode: nil
