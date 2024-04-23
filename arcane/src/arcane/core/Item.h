@@ -447,8 +447,8 @@ class ARCANE_CORE_EXPORT Item
   inline Face _face(Int32 index) const;
   inline Cell _cell(Int32 index) const;
 
-  ItemBase _hParentBase(Int32 index) const { return _connectivity()->hParentBase(m_local_id,index); }
-  ItemBase _hChildBase(Int32 index) const { return _connectivity()->hChildBase(m_local_id,index); }
+  ItemBase _hParentBase(Int32 index) const { return _connectivity()->hParentBase(m_local_id, index, m_shared_info); }
+  ItemBase _hChildBase(Int32 index) const { return _connectivity()->hChildBase(m_local_id, index, m_shared_info); }
   ItemBase _toItemBase() const { return ItemBase(m_local_id,m_shared_info); }
 
  private:
