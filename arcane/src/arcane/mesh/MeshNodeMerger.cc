@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshNodeMerger.cc                                           (C) 2000-2023 */
+/* MeshNodeMerger.cc                                           (C) 2000-2024 */
 /*                                                                           */
 /* Fusions de noeuds d'un maillage.                                          */
 /*---------------------------------------------------------------------------*/
@@ -16,11 +16,12 @@
 #include "arcane/utils/NotSupportedException.h"
 #include "arcane/utils/ArgumentException.h"
 
-#include "arcane/IMesh.h"
-#include "arcane/ItemEnumerator.h"
-#include "arcane/IMeshModifier.h"
-#include "arcane/MeshUtils.h"
-#include "arcane/ItemPrinter.h"
+#include "arcane/core/IMesh.h"
+#include "arcane/core/ItemEnumerator.h"
+#include "arcane/core/IMeshModifier.h"
+#include "arcane/core/MeshUtils.h"
+#include "arcane/core/ItemPrinter.h"
+#include "arcane/core/Connectivity.h"
 
 #include "arcane/mesh/MeshNodeMerger.h"
 #include "arcane/mesh/FaceReorienter.h"
@@ -47,8 +48,11 @@ MeshNodeMerger(IMesh* mesh)
 {
   if (m_mesh->hasTiedInterface())
     throw NotImplementedException(A_FUNCINFO,"mesh with tied interfaces");
-  if (m_mesh->dimension()!=2)
-    throw NotImplementedException(A_FUNCINFO,"mesh with dimension!=2");
+  if (m_mesh->dimension()==3){
+    Int32 c = m_mesh->connectivity()();
+    if (Connectivity::hasConnectivity(c,Connectivity::CT_HasEdge))
+      throw NotImplementedException(A_FUNCINFO,"3D mesh with edges");
+  }
   if (m_mesh->childMeshes().count()!=0)
     throw NotSupportedException(A_FUNCINFO,"mesh with child meshes");
   if (m_mesh->isAmrActivated())
@@ -58,6 +62,7 @@ MeshNodeMerger(IMesh* mesh)
   m_edge_family = ARCANE_CHECK_POINTER(dynamic_cast<EdgeFamily*>(m_mesh->edgeFamily()));
   m_face_family = ARCANE_CHECK_POINTER(dynamic_cast<FaceFamily*>(m_mesh->faceFamily()));
   m_cell_family = ARCANE_CHECK_POINTER(dynamic_cast<CellFamily*>(m_mesh->cellFamily()));
+
 }
 
 /*---------------------------------------------------------------------------*/
@@ -136,6 +141,7 @@ mergeNodes(Int32ConstArrayView nodes_local_id,
       marked_faces.erase(marked_faces.find(face));
     }
   }
+  // TODO: traiter les arêtes
 
   // Marque toutes les mailles qui contiennent au moins un noeud fusionné.
   std::set<Cell> marked_cells;
