@@ -1,23 +1,23 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshMergeBoundariesUnitTest.cc                              (C) 2000-2023 */
+/* MeshMergeBoundariesUnitTest.cc                              (C) 2000-2024 */
 /*                                                                           */
 /* Service de test de la fusion de la frontière de plusieurs maillages.      */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/BasicUnitTest.h"
-#include "arcane/ServiceFactory.h"
-#include "arcane/IPrimaryMesh.h"
-#include "arcane/MeshBuildInfo.h"
-#include "arcane/IMeshMng.h"
-#include "arcane/IMeshFactoryMng.h"
-#include "arcane/IMeshUtilities.h"
+#include "arcane/core/BasicUnitTest.h"
+#include "arcane/core/ServiceFactory.h"
+#include "arcane/core/IPrimaryMesh.h"
+#include "arcane/core/MeshBuildInfo.h"
+#include "arcane/core/IMeshMng.h"
+#include "arcane/core/IMeshFactoryMng.h"
+#include "arcane/core/IMeshUtilities.h"
 
 #include <unordered_map>
 
@@ -135,8 +135,8 @@ executeTest()
       }
       ++nb_cell;
     }
-    offset_cell_uid = mesh->parallelMng()->reduce(Parallel::ReduceMax,max_cell_uid);
-    offset_node_uid = mesh->parallelMng()->reduce(Parallel::ReduceMax,max_node_uid);
+    offset_cell_uid = 1 + mesh->parallelMng()->reduce(Parallel::ReduceMax, max_cell_uid);
+    offset_node_uid = 1 + mesh->parallelMng()->reduce(Parallel::ReduceMax, max_node_uid);
   }
   boundary_mesh->allocateCells(nb_cell, cells_infos);
 
