@@ -134,7 +134,8 @@ executeTest()
   ms.dumpStats();
 
   ValueChecker vc(A_FUNCINFO);
-  vc.areEqual(std::ssize(m_node_pair_map), options()->nbNodePair(), "NbNodePair");
+  Int32 nb_node_pair = static_cast<Int32>(m_node_pair_map.size());
+  vc.areEqual(nb_node_pair, options()->nbNodePair(), "NbNodePair");
   vc.areEqual(mesh()->allNodes().size(), options()->nbFinalNode(), "NbFinalNode");
 }
 
