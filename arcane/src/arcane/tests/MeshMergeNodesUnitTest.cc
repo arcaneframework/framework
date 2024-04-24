@@ -65,23 +65,24 @@ class MeshMergeNodesUnitTest
 
  public:
 
-  MeshMergeNodesUnitTest(const ServiceBuildInfo& cb);
+  explicit MeshMergeNodesUnitTest(const ServiceBuildInfo& cb);
   ~MeshMergeNodesUnitTest();
 
  public:
 
-  virtual void initializeTest();
-  virtual void executeTest();
+  void initializeTest() override;
+  void executeTest() override;
 
  private:
 
-  typedef std::map<Real2, NodePair> NodePairMap;
+  using NodePairMap = std::map<Real2, NodePair>;
   NodePairMap m_node_pair_map;
 
  private:
 
   void _fillNodePairMap();
   void _addNodePairDirect(Real y, Int64 left_uid, Int64 right_uid);
+  void _addNodePairDirect(Real2 yz, Int64 left_uid, Int64 right_uid);
 };
 
 /*---------------------------------------------------------------------------*/
@@ -193,7 +194,16 @@ _fillNodePairMap()
 void MeshMergeNodesUnitTest::
 _addNodePairDirect(Real y, Int64 left_uid, Int64 right_uid)
 {
-  m_node_pair_map.insert(std::make_pair(y, NodePair(left_uid, right_uid)));
+  m_node_pair_map.insert(std::make_pair(Real2(y, 0.0), NodePair(left_uid, right_uid)));
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MeshMergeNodesUnitTest::
+_addNodePairDirect(Real2 yz, Int64 left_uid, Int64 right_uid)
+{
+  m_node_pair_map.insert(std::make_pair(yz, NodePair(left_uid, right_uid)));
 }
 
 /*---------------------------------------------------------------------------*/
