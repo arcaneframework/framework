@@ -6,6 +6,13 @@
 <!-- Options du jeu de données pour le service de fusion des noeuds -->
 
 <service name="MeshMergeNodesUnitTest" version="1.0" type="caseoption" parent-name="Arcane::BasicUnitTest" namespace-name="ArcaneTest">
- <interface name="Arcane::IUnitTest" inherited="false" />
-
+  <interface name="Arcane::IUnitTest" inherited="false" />
+  <options>
+    <simple name = "nb-node-pair" type = "integer" >
+      <description>Nombre de paires de noeuds à supprimer</description>
+    </simple>
+    <simple name = "nb-final-node" type = "integer" >
+      <description>Nombre de noeuds après fusion</description>
+    </simple>
+  </options>
 </service>

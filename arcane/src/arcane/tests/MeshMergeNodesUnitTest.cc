@@ -11,6 +11,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+#include "arcane/utils/ValueChecker.h"
+
 #include "arcane/core/BasicUnitTest.h"
 #include "arcane/core/ItemPrinter.h"
 #include "arcane/core/IMesh.h"
@@ -130,6 +132,10 @@ executeTest()
   mesh()->utilities()->mergeNodes(nodes_local_id, nodes_to_merge_local_id);
   MeshStats ms(traceMng(), mesh(), mesh()->parallelMng());
   ms.dumpStats();
+
+  ValueChecker vc(A_FUNCINFO);
+  vc.areEqual(std::ssize(m_node_pair_map), options()->nbNodePair(), "NbNodePair");
+  vc.areEqual(mesh()->allNodes().size(), options()->nbFinalNode(), "NbFinalNode");
 }
 
 /*---------------------------------------------------------------------------*/
