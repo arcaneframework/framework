@@ -7,13 +7,13 @@
   </arcane>
 
   <maillage>
-    <fichier internal-partition='true'>merge_nodes_2d.vtk</fichier>
+    <fichier internal-partition='true'>merge_nodes_3d.vtk</fichier>
   </maillage>
 
   <module-test-unitaire>
     <test name="MeshMergeNodesUnitTest">
-      <nb-node-pair>11</nb-node-pair>
-      <nb-final-node>231</nb-final-node>
+      <nb-node-pair>36</nb-node-pair>
+      <nb-final-node>396</nb-final-node>
     </test>
   </module-test-unitaire>
 
