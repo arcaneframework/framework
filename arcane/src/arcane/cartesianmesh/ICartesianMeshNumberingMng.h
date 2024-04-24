@@ -163,6 +163,7 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMeshNumberingMng
    * \return La position de la première fille de la maille parente.
    */
   virtual Int64 offsetLevelToLevel(Int64 coord, Integer level_from, Integer level_to) const = 0;
+  virtual Int64 faceOffsetLevelToLevel(Int64 coord, Integer level_from, Integer level_to) const = 0;
 
   /*!
    * \brief Méthode permettant de récupérer la coordonnée en X d'une maille grâce à son uniqueId.

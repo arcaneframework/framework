@@ -280,6 +280,69 @@ offsetLevelToLevel(Int64 coord, Integer level_from, Integer level_to) const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+// Tant que l'on a un unique "pattern" pour x, y, z, pas besoin de trois méthodes.
+Int64 CartesianMeshNumberingMng::
+faceOffsetLevelToLevel(Int64 coord, Integer level_from, Integer level_to) const
+{
+  // Admettons que l'on ai les faces suivantes :
+  //  ┌─0──┬──2─┐
+  // 4│   6│   8│
+  //  ├─5──┼─7──┤
+  // 9│  11│  13│
+  //  └─10─┴─12─┘
+
+  // Pour la position d'une face, on considère cette disposition :
+  // ┌──┬──┬──┬──┬──┐
+  // │  │ 0│  │ 2│  │
+  // ├──┼──┼──┼──┼──┤
+  // │ 4│  │ 6│  │ 8│
+  // ├──┼──┼──┼──┼──┤
+  // │  │ 5│  │ 7│  │
+  // ├──┼──┼──┼──┼──┤
+  // │ 9│  │11│  │13│
+  // ├──┼──┼──┼──┼──┤
+  // │  │10│  │12│  │
+  // └──┴──┴──┴──┴──┘
+
+  if (level_from == level_to) {
+    return coord;
+  }
+  else if (level_from < level_to) {
+    const Integer pattern = m_pattern * (level_to - level_from);
+    if (coord % 2 == 0) {
+      return coord * pattern;
+    }
+    else {
+      return ((coord - 1) * pattern) + 1;
+    }
+  }
+  else {
+    const Integer pattern = m_pattern * (level_from - level_to);
+    if (coord % 2 == 0) {
+      if (coord % (pattern * 2) == 0) {
+        return coord / pattern;
+      }
+      else {
+        ARCANE_FATAL("No parent");
+      }
+    }
+    else {
+      //    auto a = coord - 1;
+      //    auto b = a % (pattern * 2);
+      //    auto c = a / (pattern * 2);
+      //    auto d = c * (2 * (pattern - 1));
+      //    auto e = d + b;
+      //    auto f = coord - e;
+      //    return f;
+
+      return coord - ((Int64((coord - 1) / (pattern * 2)) * (2 * (pattern - 1))) + ((coord - 1) % (pattern * 2)));
+    }
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 Int64 CartesianMeshNumberingMng::
 cellUniqueIdToCoordX(Int64 uid, Integer level)
 {
@@ -645,11 +708,11 @@ cellFaceUniqueIds(ArrayView<Int64> uid, Integer level, Int64x2 cell_coord)
   const Int64 first_face_uid = firstFaceUniqueId(level);
 
   // Numérote les faces
-  //  |-0--|--2-|
-  // 4|   6|   8|
-  //  |-5--|-7--|
-  // 9|  11|  13|
-  //  |-10-|-12-|
+  //  ┌─0──┬──2─┐
+  // 4│   6│   8│
+  //  ├─5──┼─7──┤
+  // 9│  11│  13│
+  //  └─10─┴─12─┘
   //
   // Avec cette numérotation, HAUT < GAUCHE < BAS < DROITE
   // Mis à part les uniqueIds de la première ligne de face, tous

@@ -60,6 +60,7 @@ class CartesianMeshNumberingMng
 
   Integer pattern() const override;
   Int64 offsetLevelToLevel(Int64 coord, Integer level_from, Integer level_to) const override;
+  Int64 faceOffsetLevelToLevel(Int64 coord, Integer level_from, Integer level_to) const override;
 
   Int64 cellUniqueIdToCoordX(Int64 uid, Integer level) override;
   Int64 cellUniqueIdToCoordX(Cell cell) override;
