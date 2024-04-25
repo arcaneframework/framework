@@ -253,6 +253,33 @@ globalNbNodesZ(Integer level) const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+Int64 CartesianMeshNumberingMng::
+globalNbFacesX(Integer level) const
+{
+  return (globalNbCellsX(level) * 2) + 1;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Int64 CartesianMeshNumberingMng::
+globalNbFacesY(Integer level) const
+{
+  return (globalNbCellsY(level) * 2) + 1;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Int64 CartesianMeshNumberingMng::
+globalNbFacesZ(Integer level) const
+{
+  return (globalNbCellsZ(level) * 2) + 1;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 Integer CartesianMeshNumberingMng::
 pattern() const
 {
@@ -309,33 +336,43 @@ faceOffsetLevelToLevel(Int64 coord, Integer level_from, Integer level_to) const
   }
   else if (level_from < level_to) {
     const Integer pattern = m_pattern * (level_to - level_from);
-    if (coord % 2 == 0) {
-      return coord * pattern;
+    if (m_dimension == 2) {
+      if (coord % 2 == 0) {
+        return coord * pattern;
+      }
+      else {
+        return ((coord - 1) * pattern) + 1;
+      }
     }
     else {
-      return ((coord - 1) * pattern) + 1;
+      ARCANE_FATAL("3D not yet implem");
     }
   }
   else {
     const Integer pattern = m_pattern * (level_from - level_to);
-    if (coord % 2 == 0) {
-      if (coord % (pattern * 2) == 0) {
-        return coord / pattern;
+    if (m_dimension == 2) {
+      if (coord % 2 == 0) {
+        if (coord % (pattern * 2) == 0) {
+          return coord / pattern;
+        }
+        else {
+          return -1;
+        }
       }
       else {
-        ARCANE_FATAL("No parent");
+        //    auto a = coord - 1;
+        //    auto b = a % (pattern * 2);
+        //    auto c = a / (pattern * 2);
+        //    auto d = c * (2 * (pattern - 1));
+        //    auto e = d + b;
+        //    auto f = coord - e;
+        //    return f;
+
+        return coord - ((Int64((coord - 1) / (pattern * 2)) * (2 * (pattern - 1))) + ((coord - 1) % (pattern * 2)));
       }
     }
     else {
-      //    auto a = coord - 1;
-      //    auto b = a % (pattern * 2);
-      //    auto c = a / (pattern * 2);
-      //    auto d = c * (2 * (pattern - 1));
-      //    auto e = d + b;
-      //    auto f = coord - e;
-      //    return f;
-
-      return coord - ((Int64((coord - 1) / (pattern * 2)) * (2 * (pattern - 1))) + ((coord - 1) % (pattern * 2)));
+      ARCANE_FATAL("3D not yet implem");
     }
   }
 }
@@ -492,6 +529,124 @@ nodeUniqueIdToCoordZ(Node node)
 /*---------------------------------------------------------------------------*/
 
 Int64 CartesianMeshNumberingMng::
+faceUniqueIdToCoordX(Int64 uid, Integer level)
+{
+  if (m_dimension == 2) {
+
+    const Int64 nb_face_x = globalNbFacesX(level);
+    const Int64 first_face_uid = firstFaceUniqueId(level);
+
+    uid -= first_face_uid;
+    uid += 1;
+
+    // Le +1 nous permet d'avoir le niveau (imaginaire) -1 commençant à 0 :
+    //
+    //     x =  0  1  2  3  4
+    //        ┌──┬──┬──┬──┬──┐
+    // y = -1 │ 0│  │ 2│  │ 4│
+    //        ┌──┬──┬──┬──┬──┐
+    // y = 0  │  │ 1│  │ 3│  │
+    //        ├──┼──┼──┼──┼──┤
+    // y = 1  │ 5│  │ 7│  │ 9│
+    //        ├──┼──┼──┼──┼──┤
+    // y = 2  │  │ 6│  │ 8│  │
+    //        ├──┼──┼──┼──┼──┤
+    // y = 3  │10│  │12│  │14│
+    //        ├──┼──┼──┼──┼──┤
+    // y = 4  │  │11│  │13│  │
+    //        └──┴──┴──┴──┴──┘
+    //
+    // Si on fait "tomber" les faces (tetris), on obtient une numérotation
+    // cartésienne classique.
+
+    return uid % nb_face_x;
+  }
+  else {
+    ARCANE_FATAL("3D not yet implem");
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Int64 CartesianMeshNumberingMng::
+faceUniqueIdToCoordX(Face face)
+{
+  return faceUniqueIdToCoordX(face.uniqueId(), face.level());
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Int64 CartesianMeshNumberingMng::
+faceUniqueIdToCoordY(Int64 uid, Integer level)
+{
+  if (m_dimension == 2) {
+    const Int64 nb_face_x = globalNbFacesX(level);
+    const Int64 first_face_uid = firstFaceUniqueId(level);
+
+    uid -= first_face_uid;
+    uid += 1;
+
+    // Le +1 nous permet d'avoir le niveau (imaginaire) -1 commençant à 0 :
+    //
+    //     x =  0  1  2  3  4
+    //        ┌──┬──┬──┬──┬──┐
+    // y = -1 │ 0│  │ 2│  │ 4│
+    //        ┌──┬──┬──┬──┬──┐
+    // y = 0  │  │ 1│  │ 3│  │
+    //        ├──┼──┼──┼──┼──┤
+    // y = 1  │ 5│  │ 7│  │ 9│
+    //        ├──┼──┼──┼──┼──┤
+    // y = 2  │  │ 6│  │ 8│  │
+    //        ├──┼──┼──┼──┼──┤
+    // y = 3  │10│  │12│  │14│
+    //        ├──┼──┼──┼──┼──┤
+    // y = 4  │  │11│  │13│  │
+    //        └──┴──┴──┴──┴──┘
+    //
+    // Si, en plus, on fait y+1, on simplifie le problème puisque si on fait
+    // "tomber" les faces (tetris), on obtient une numérotation cartesienne classique.
+
+    const Int64 flat_pos = uid / nb_face_x;
+    return (flat_pos * 2) + (flat_pos % 2 == uid % 2 ? 0 : 1) - 1; // Le -1 pour "retirer" le niveau imaginaire.
+  }
+  else {
+    ARCANE_FATAL("3D not yet implem");
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Int64 CartesianMeshNumberingMng::
+faceUniqueIdToCoordY(Face face)
+{
+  return faceUniqueIdToCoordY(face.uniqueId(), face.level());
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Int64 CartesianMeshNumberingMng::
+faceUniqueIdToCoordZ(Int64 uid, Integer level)
+{
+  ARCANE_FATAL("3D not yet implem");
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Int64 CartesianMeshNumberingMng::
+faceUniqueIdToCoordZ(Face face)
+{
+  return faceUniqueIdToCoordZ(face.uniqueId(), face.level());
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Int64 CartesianMeshNumberingMng::
 cellUniqueId(Integer level, Int64x3 cell_coord)
 {
   const Int64 nb_cell_x = globalNbCellsX(level);
@@ -536,6 +691,51 @@ nodeUniqueId(Integer level, Int64x2 node_coord)
   const Int64 first_node_uid = firstNodeUniqueId(level);
 
   return (node_coord.x + node_coord.y * nb_node_x) + first_node_uid;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Int64 CartesianMeshNumberingMng::
+faceUniqueId(Integer level, Int64x3 face_coord)
+{
+  //todo
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Int64 CartesianMeshNumberingMng::
+faceUniqueId(Integer level, Int64x2 face_coord)
+{
+  const Int64 nb_face_x = globalNbFacesX(level);
+  const Int64 first_face_uid = firstFaceUniqueId(level);
+
+  // On considère que l'on a un niveau imaginaire -1 et que
+  // l'on obtiendra uid+1 (dans la numérotation utilisée normalement,
+  // la face à la position (1, 0) a un uid = 0).
+  //
+  //     x =  0  1  2  3  4
+  //        ┌──┬──┬──┬──┬──┐
+  // y = -1 │ 0│  │ 2│  │ 4│
+  //        ┌──┬──┬──┬──┬──┐
+  // y = 0  │  │ 1│  │ 3│  │
+  //        ├──┼──┼──┼──┼──┤
+  // y = 1  │ 5│  │ 7│  │ 9│
+  //        ├──┼──┼──┼──┼──┤
+  // y = 2  │  │ 6│  │ 8│  │
+  //        ├──┼──┼──┼──┼──┤
+  // y = 3  │10│  │12│  │14│
+  //        ├──┼──┼──┼──┼──┤
+  // y = 4  │  │11│  │13│  │
+  //        └──┴──┴──┴──┴──┘
+  //
+
+  face_coord.y += 1;
+
+  const Int64 a = (face_coord.y / 2) * nb_face_x;
+
+  return (face_coord.x + a - 1) + first_face_uid; // Le -1 est pour revenir à la numérotation normale.
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1242,6 +1442,9 @@ parentNodeUniqueIdOfNode(Int64 uid, Integer level, bool do_fatal)
   }
 }
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 Int64 CartesianMeshNumberingMng::
 parentNodeUniqueIdOfNode(Node node, bool do_fatal)
 {
@@ -1268,6 +1471,92 @@ childNodeUniqueIdOfNode(Node node)
                                 offsetLevelToLevel(nodeUniqueIdToCoordY(uid, level), level, level + 1),
                                 offsetLevelToLevel(nodeUniqueIdToCoordZ(uid, level), level, level + 1)));
   }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Int64 CartesianMeshNumberingMng::
+parentFaceUniqueIdOfFace(Int64 uid, Integer level, bool do_fatal)
+{
+  const Int64 coord_x = faceUniqueIdToCoordX(uid, level);
+  const Int64 coord_y = faceUniqueIdToCoordY(uid, level);
+
+  const Int64 parent_coord_x = faceOffsetLevelToLevel(coord_x, level, level - 1);
+  const Int64 parent_coord_y = faceOffsetLevelToLevel(coord_y, level, level - 1);
+
+  if (parent_coord_x == -1 || parent_coord_y == -1) {
+    if (do_fatal) {
+      ARCANE_FATAL("Face uid={0} do not have parent", uid);
+    }
+    return NULL_ITEM_UNIQUE_ID;
+  }
+
+  if (m_dimension == 2) {
+    return faceUniqueId(level - 1, Int64x2(parent_coord_x, parent_coord_y));
+  }
+  else {
+    const Int64 coord_z = nodeUniqueIdToCoordZ(uid, level);
+    const Int64 parent_coord_z = faceOffsetLevelToLevel(coord_z, level, level - 1);
+
+    if (parent_coord_z == -1) {
+      if (do_fatal) {
+        ARCANE_FATAL("Face uid={0} do not have parent", uid);
+      }
+      return NULL_ITEM_UNIQUE_ID;
+    }
+
+    return faceUniqueId(level - 1, Int64x3(parent_coord_x, parent_coord_y, parent_coord_z));
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Int64 CartesianMeshNumberingMng::
+parentFaceUniqueIdOfFace(Face face, bool do_fatal)
+{
+  return parentFaceUniqueIdOfFace(face.uniqueId(), face.level(), do_fatal);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Int64 CartesianMeshNumberingMng::
+childFaceUniqueIdOfFace(Int64 uid, Integer level, Int64 child_index_in_parent)
+{
+  ARCANE_ASSERT((child_index_in_parent < m_pattern), ("Invalid child_index_in_parent"))
+
+  const Int64 coord_x = faceUniqueIdToCoordX(uid, level);
+  const Int64 coord_y = faceUniqueIdToCoordY(uid, level);
+
+  Int64 first_child_coord_x = faceOffsetLevelToLevel(coord_x, level, level + 1);
+  Int64 first_child_coord_y = faceOffsetLevelToLevel(coord_y, level, level + 1);
+
+  if (m_dimension == 2) {
+    if (coord_y % 2 == 0) {
+      first_child_coord_x += child_index_in_parent * 2;
+    }
+    else if (coord_x % 2 == 0) {
+      first_child_coord_y += child_index_in_parent * globalNbFacesY(level + 1);
+    }
+    else {
+      ARCANE_FATAL("Impossible normalement");
+    }
+    return faceUniqueId(level + 1, Int64x2(first_child_coord_x, first_child_coord_y));
+  }
+  else {
+    ARCANE_FATAL("TODO 3D");
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Int64 CartesianMeshNumberingMng::
+childFaceUniqueIdOfFace(Face face, Int64 child_index_in_parent)
+{
+  return childFaceUniqueIdOfFace(face.uniqueId(), face.level(), child_index_in_parent);
 }
 
 /*---------------------------------------------------------------------------*/

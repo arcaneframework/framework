@@ -58,6 +58,10 @@ class CartesianMeshNumberingMng
   Int64 globalNbNodesY(Integer level) const override;
   Int64 globalNbNodesZ(Integer level) const override;
 
+  Int64 globalNbFacesX(Integer level) const override;
+  Int64 globalNbFacesY(Integer level) const override;
+  Int64 globalNbFacesZ(Integer level) const override;
+
   Integer pattern() const override;
   Int64 offsetLevelToLevel(Int64 coord, Integer level_from, Integer level_to) const override;
   Int64 faceOffsetLevelToLevel(Int64 coord, Integer level_from, Integer level_to) const override;
@@ -80,11 +84,23 @@ class CartesianMeshNumberingMng
   Int64 nodeUniqueIdToCoordZ(Int64 uid, Integer level) override;
   Int64 nodeUniqueIdToCoordZ(Node node) override;
 
+  Int64 faceUniqueIdToCoordX(Int64 uid, Integer level) override;
+  Int64 faceUniqueIdToCoordX(Face face) override;
+
+  Int64 faceUniqueIdToCoordY(Int64 uid, Integer level) override;
+  Int64 faceUniqueIdToCoordY(Face face) override;
+
+  Int64 faceUniqueIdToCoordZ(Int64 uid, Integer level) override;
+  Int64 faceUniqueIdToCoordZ(Face face) override;
+
   Int64 cellUniqueId(Integer level, Int64x3 cell_coord) override;
   Int64 cellUniqueId(Integer level, Int64x2 cell_coord) override;
 
   Int64 nodeUniqueId(Integer level, Int64x3 node_coord) override;
   Int64 nodeUniqueId(Integer level, Int64x2 node_coord) override;
+
+  Int64 faceUniqueId(Integer level, Int64x3 face_coord) override;
+  Int64 faceUniqueId(Integer level, Int64x2 face_coord) override;
 
   Integer nbNodeByCell() override;
   void cellNodeUniqueIds(ArrayView<Int64> uid, Integer level, Int64x3 cell_coord) override;
@@ -115,6 +131,12 @@ class CartesianMeshNumberingMng
   Int64 parentNodeUniqueIdOfNode(Node node, bool do_fatal) override;
 
   Int64 childNodeUniqueIdOfNode(Node node) override;
+
+  Int64 parentFaceUniqueIdOfFace(Int64 uid, Integer level, bool do_fatal) override;
+  Int64 parentFaceUniqueIdOfFace(Face face, bool do_fatal) override;
+
+  Int64 childFaceUniqueIdOfFace(Int64 uid, Integer level, Int64 child_index_in_parent) override;
+  Int64 childFaceUniqueIdOfFace(Face face, Int64 child_index_in_parent) override;
 
  private:
 

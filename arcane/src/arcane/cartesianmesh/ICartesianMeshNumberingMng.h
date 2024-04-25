@@ -142,6 +142,90 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMeshNumberingMng
   virtual Int64 globalNbNodesZ(Integer level) const = 0;
 
   /*!
+   * \brief Méthode permettant de récupérer le nombre de faces global en X d'un niveau.
+   *
+   * Admettons que l'on ai les faces suivantes :
+   *  ┌─0──┬──2─┐
+   * 4│   6│   8│
+   *  ├─5──┼─7──┤
+   * 9│  11│  13│
+   *  └─10─┴─12─┘
+   *
+   * Pour la position d'une face, on considère cette disposition :
+   * ┌──┬──┬──┬──┬──┐
+   * │  │ 0│  │ 2│  │
+   * ├──┼──┼──┼──┼──┤
+   * │ 4│  │ 6│  │ 8│
+   * ├──┼──┼──┼──┼──┤
+   * │  │ 5│  │ 7│  │
+   * ├──┼──┼──┼──┼──┤
+   * │ 9│  │11│  │13│
+   * ├──┼──┼──┼──┼──┤
+   * │  │10│  │12│  │
+   * └──┴──┴──┴──┴──┘
+   *
+   * \param level Le niveau.
+   * \return Le nombre de faces en X.
+   */
+  virtual Int64 globalNbFacesX(Integer level) const = 0;
+
+  /*!
+   * \brief Méthode permettant de récupérer le nombre de faces global en Y d'un niveau.
+   *
+   * Admettons que l'on ai les faces suivantes :
+   *  ┌─0──┬──2─┐
+   * 4│   6│   8│
+   *  ├─5──┼─7──┤
+   * 9│  11│  13│
+   *  └─10─┴─12─┘
+   *
+   * Pour la position d'une face, on considère cette disposition :
+   * ┌──┬──┬──┬──┬──┐
+   * │  │ 0│  │ 2│  │
+   * ├──┼──┼──┼──┼──┤
+   * │ 4│  │ 6│  │ 8│
+   * ├──┼──┼──┼──┼──┤
+   * │  │ 5│  │ 7│  │
+   * ├──┼──┼──┼──┼──┤
+   * │ 9│  │11│  │13│
+   * ├──┼──┼──┼──┼──┤
+   * │  │10│  │12│  │
+   * └──┴──┴──┴──┴──┘
+   *
+   * \param level Le niveau.
+   * \return Le nombre de faces en Y.
+   */
+  virtual Int64 globalNbFacesY(Integer level) const = 0;
+
+  /*!
+   * \brief Méthode permettant de récupérer le nombre de faces global en Z d'un niveau.
+   *
+   * Admettons que l'on ai les faces suivantes :
+   *  ┌─0──┬──2─┐
+   * 4│   6│   8│
+   *  ├─5──┼─7──┤
+   * 9│  11│  13│
+   *  └─10─┴─12─┘
+   *
+   * Pour la position d'une face, on considère cette disposition :
+   * ┌──┬──┬──┬──┬──┐
+   * │  │ 0│  │ 2│  │
+   * ├──┼──┼──┼──┼──┤
+   * │ 4│  │ 6│  │ 8│
+   * ├──┼──┼──┼──┼──┤
+   * │  │ 5│  │ 7│  │
+   * ├──┼──┼──┼──┼──┤
+   * │ 9│  │11│  │13│
+   * ├──┼──┼──┼──┼──┤
+   * │  │10│  │12│  │
+   * └──┴──┴──┴──┴──┘
+   *
+   * \param level Le niveau.
+   * \return Le nombre de faces en Z.
+   */
+  virtual Int64 globalNbFacesZ(Integer level) const = 0;
+
+  /*!
    * \brief Méthode permettant de récupérer le pattern de raffinement utilisé dans chaque maille.
    * Par exemple, si le pattern vaut 2, chaque maille parente aura 2*2 mailles filles (2*2*2 en 3D).
    *
@@ -163,6 +247,7 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMeshNumberingMng
    * \return La position de la première fille de la maille parente.
    */
   virtual Int64 offsetLevelToLevel(Int64 coord, Integer level_from, Integer level_to) const = 0;
+
   virtual Int64 faceOffsetLevelToLevel(Int64 coord, Integer level_from, Integer level_to) const = 0;
 
   /*!
@@ -268,6 +353,57 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMeshNumberingMng
   virtual Int64 nodeUniqueIdToCoordZ(Node node) = 0;
 
   /*!
+   * \brief Méthode permettant de récupérer la coordonnée en X d'une face grâce à son uniqueId.
+   *
+   * \param uid L'uniqueId de la face.
+   * \param level Le niveau de la face.
+   * \return La position en X de la face.
+   */
+  virtual Int64 faceUniqueIdToCoordX(Int64 uid, Integer level) = 0;
+
+  /*!
+   * \brief Méthode permettant de récupérer la coordonnée en X d'une face.
+   *
+   * \param face La face.
+   * \return La position en X de la face.
+   */
+  virtual Int64 faceUniqueIdToCoordX(Face face) = 0;
+
+  /*!
+   * \brief Méthode permettant de récupérer la coordonnée en Y d'une face grâce à son uniqueId.
+   *
+   * \param uid L'uniqueId de la face.
+   * \param level Le niveau de la face.
+   * \return La position en Y de la face.
+   */
+  virtual Int64 faceUniqueIdToCoordY(Int64 uid, Integer level) = 0;
+
+  /*!
+   * \brief Méthode permettant de récupérer la coordonnée en Y d'une face.
+   *
+   * \param face La face.
+   * \return La position en Y de la face.
+   */
+  virtual Int64 faceUniqueIdToCoordY(Face face) = 0;
+
+  /*!
+   * \brief Méthode permettant de récupérer la coordonnée en Z d'une face grâce à son uniqueId.
+   *
+   * \param uid L'uniqueId de la face.
+   * \param level Le niveau de la face.
+   * \return La position en Z de la face.
+   */
+  virtual Int64 faceUniqueIdToCoordZ(Int64 uid, Integer level) = 0;
+
+  /*!
+   * \brief Méthode permettant de récupérer la coordonnée en Z d'une face.
+   *
+   * \param face La face.
+   * \return La position en Z de la face.
+   */
+  virtual Int64 faceUniqueIdToCoordZ(Face face) = 0;
+
+  /*!
    * \brief Méthode permettant de récupérer l'uniqueId d'une maille à partir de sa position et de son niveau.
    *
    * \param level Le niveau de la maille.
@@ -302,6 +438,24 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMeshNumberingMng
    * \return L'uniqueId du noeud.
    */
   virtual Int64 nodeUniqueId(Integer level, Int64x2 node_coord) = 0;
+
+  /*!
+   * \brief Méthode permettant de récupérer l'uniqueId d'une face à partir de sa position et de son niveau.
+   *
+   * \param level Le niveau de la face.
+   * \param cell_coord La position de la face.
+   * \return L'uniqueId de la face.
+   */
+  virtual Int64 faceUniqueId(Integer level, Int64x3 face_coord) = 0;
+
+  /*!
+   * \brief Méthode permettant de récupérer l'uniqueId d'une face à partir de sa position et de son niveau.
+   *
+   * \param level Le niveau de la face.
+   * \param cell_coord La position de la face.
+   * \return L'uniqueId de la face.
+   */
+  virtual Int64 faceUniqueId(Integer level, Int64x2 face_coord) = 0;
 
   /*!
    * \brief Méthode permettant de récupérer le nombre de noeuds dans une maille.
@@ -550,6 +704,50 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMeshNumberingMng
    * \return L'uniqueId du noeud enfant demandée.
    */
   virtual Int64 childNodeUniqueIdOfNode(Node node) = 0;
+
+  /*!
+   * \brief Méthode permettant de récupérer l'uniqueId du parent d'une face.
+   *
+   * Si \a do_fatal est vrai, une erreur fatale est générée si le parent n'existe
+   * pas, sinon l'uniqueId retourné a pour valeur NULL_ITEM_UNIQUE_ID.
+   *
+   * \param uid L'uniqueId de la face enfant.
+   * \param level Le niveau de la face enfant.
+   * \return L'uniqueId de la face parent de la face enfant.
+   */
+  virtual Int64 parentFaceUniqueIdOfFace(Int64 uid, Integer level, bool do_fatal = true) = 0;
+
+  /*!
+   * \brief Méthode permettant de récupérer l'uniqueId du parent d'une face.
+   *
+   * Si \a do_fatal est vrai, une erreur fatale est générée si le parent n'existe
+   * pas, sinon l'uniqueId retourné a pour valeur NULL_ITEM_UNIQUE_ID.
+   *
+   * \param face La face enfant.
+   * \return L'uniqueId de la face parent de la face passé en paramètre.
+   */
+  virtual Int64 parentFaceUniqueIdOfFace(Face face, bool do_fatal = true) = 0;
+
+  /*!
+   * \brief Méthode permettant de récupérer l'uniqueId d'une face enfant d'une face parent
+   * à partir de l'index de la face enfant dans la face parent.
+   *
+   * \param uid L'uniqueId de la face parent.
+   * \param level Le niveau de la face parent.
+   * \param child_index_in_parent L'index de l'enfant dans la face parent.
+   * \return L'uniqueId de la face enfant demandée.
+   */
+  virtual Int64 childFaceUniqueIdOfFace(Int64 uid, Integer level, Int64 child_index_in_parent) = 0;
+
+  /*!
+   * \brief Méthode permettant de récupérer l'uniqueId d'une face enfant d'une face parent
+   * à partir de l'index de la face enfant dans la face parent.
+   *
+   * \param face La face parent.
+   * \param child_index_in_parent L'index de l'enfant dans la face parent.
+   * \return L'uniqueId de la face enfant demandée.
+   */
+  virtual Int64 childFaceUniqueIdOfFace(Face face, Int64 child_index_in_parent) = 0;
 };
 
 /*---------------------------------------------------------------------------*/
