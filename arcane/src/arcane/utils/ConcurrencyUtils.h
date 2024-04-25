@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ConcurrencyUtils.h                                          (C) 2000-2022 */
+/* ConcurrencyUtils.h                                          (C) 2000-2024 */
 /*                                                                           */
 /* Classes gérant la concurrence (tâches, boucles parallèles, ...)           */
 /*---------------------------------------------------------------------------*/
@@ -618,6 +618,10 @@ arcaneParallelFor(const ComplexForLoopRanges<RankValue>& loop_ranges,
   // en compte.
   // TODO: regarder si on pourrait faire la copie uniquement une fois par thread
   // si cette copie devient couteuse.
+  // NOTE: A partir de la version 3.12.15 (avril 2024), avec la nouvelle version
+  // des réducteurs (Reduce2), cette privatisation n'est plus utile. Une fois
+  // qu'on aura supprimer les anciennes classes gérant les réductions (Reduce),
+  // on pourra supprimer cette privatisation
   auto xfunc = [&lambda_function,reducer_args...] (const ComplexForLoopRanges<RankValue>& sub_bounds)
   {
     using Type = typename std::remove_reference<LambdaType>::type;
