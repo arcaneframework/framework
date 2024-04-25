@@ -215,11 +215,12 @@ makeLoopRanges(ForLoopRange n1,ForLoopRange n2,ForLoopRange n3,ForLoopRange n4)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 //! Applique le fonctor \a func sur une boucle 1D.
-template<template<int T> class LoopBoundType,typename Lambda> inline void
-arcaneSequentialFor(LoopBoundType<1> bounds,const Lambda& func)
+template <template <int T> class LoopBoundType, typename Lambda, typename... ReducerArgs> inline void
+arcaneSequentialFor(LoopBoundType<1> bounds, const Lambda& func, ReducerArgs... reducer_args)
 {
-  for( Int32 i0 = bounds.template lowerBound<0>(); i0 < bounds.template upperBound<0>(); ++i0 )
-    func(ArrayBoundsIndex<1>(i0));
+  for (Int32 i0 = bounds.template lowerBound<0>(); i0 < bounds.template upperBound<0>(); ++i0)
+    func(ArrayBoundsIndex<1>(i0), reducer_args...);
+  (reducer_args._internalReduceHost(), ...);
 }
 
 //! Applique le fonctor \a func sur une boucle 2D.

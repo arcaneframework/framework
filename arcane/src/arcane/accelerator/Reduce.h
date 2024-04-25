@@ -520,6 +520,11 @@ class HostDeviceReducer2
 
  public:
 
+  void _internalReduceHost()
+  {
+    this->_finalize();
+  }
+
 #if defined(ARCANE_COMPILING_CUDA) || defined(ARCANE_COMPILING_HIP)
   ARCCORE_HOST_DEVICE void _internalExecWorkItem(Int32)
   {

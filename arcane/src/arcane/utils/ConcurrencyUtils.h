@@ -606,10 +606,11 @@ class ARCANE_UTILS_EXPORT ParallelFor1DLoopInfo
  * \brief Applique en concurrence la fonction lambda \a lambda_function
  * sur l'intervalle d'itération donné par \a loop_ranges.
  */
-template<int RankValue,typename LambdaType> inline void
+template<int RankValue,typename LambdaType,typename... ReducerArgs> inline void
 arcaneParallelFor(const ComplexForLoopRanges<RankValue>& loop_ranges,
                   const ParallelLoopOptions& options,
-                  const LambdaType& lambda_function)
+                  const LambdaType& lambda_function,
+                  const ReducerArgs&... reducer_args)
 {
   // Modif Arcane 3.7.9 (septembre 2022)
   // Effectue une copie pour privatiser au thread courant les valeurs de la lambda.
@@ -617,11 +618,11 @@ arcaneParallelFor(const ComplexForLoopRanges<RankValue>& loop_ranges,
   // en compte.
   // TODO: regarder si on pourrait faire la copie uniquement une fois par thread
   // si cette copie devient couteuse.
-  auto xfunc = [&lambda_function] (const ComplexForLoopRanges<RankValue>& sub_bounds)
+  auto xfunc = [&lambda_function,reducer_args...] (const ComplexForLoopRanges<RankValue>& sub_bounds)
   {
     using Type = typename std::remove_reference<LambdaType>::type;
     Type private_lambda(lambda_function);
-    arcaneSequentialFor(sub_bounds,private_lambda);
+    arcaneSequentialFor(sub_bounds,private_lambda,reducer_args...);
   };
   LambdaMDRangeFunctor<RankValue,decltype(xfunc)> ipf(xfunc);
   TaskFactory::executeParallelFor(loop_ranges,options,&ipf);
@@ -633,13 +634,14 @@ arcaneParallelFor(const ComplexForLoopRanges<RankValue>& loop_ranges,
  * \brief Applique en concurrence la fonction lambda \a lambda_function
  * sur l'intervalle d'itération donné par \a loop_ranges.
  */
-template<int RankValue,typename LambdaType> inline void
+template <int RankValue, typename LambdaType, typename... ReducerArgs> inline void
 arcaneParallelFor(const SimpleForLoopRanges<RankValue>& loop_ranges,
                   const ParallelLoopOptions& options,
-                  const LambdaType& lambda_function)
+                  const LambdaType& lambda_function,
+                  const ReducerArgs&... reducer_args)
 {
-  ComplexForLoopRanges<RankValue> complex_loop_ranges{loop_ranges};
-  arcaneParallelFor(complex_loop_ranges,options,lambda_function);
+  ComplexForLoopRanges<RankValue> complex_loop_ranges{ loop_ranges };
+  arcaneParallelFor(complex_loop_ranges, options, lambda_function, reducer_args...);
 }
 
 /*---------------------------------------------------------------------------*/
