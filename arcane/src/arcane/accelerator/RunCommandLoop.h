@@ -36,7 +36,7 @@ namespace Arcane::Accelerator::impl
  */
 template <int N, template <int T> class LoopBoundType, typename Lambda, typename... RemainingArgs> void
 _applyGenericLoop(RunCommand& command, LoopBoundType<N> bounds,
-                  const Lambda& func, const std::tuple<RemainingArgs...>& other_args)
+                  const Lambda& func, const RemainingArgs&... other_args)
 {
   Int64 vsize = bounds.nbElement();
   if (vsize == 0)
@@ -46,13 +46,13 @@ _applyGenericLoop(RunCommand& command, LoopBoundType<N> bounds,
   launch_info.beginExecute();
   switch (exec_policy) {
   case eExecutionPolicy::CUDA:
-    _applyKernelCUDA(launch_info, ARCANE_KERNEL_CUDA_FUNC(impl::doDirectGPULambdaArrayBounds2) < LoopBoundType<N>, Lambda, RemainingArgs... >, func, bounds, other_args);
+    _applyKernelCUDA(launch_info, ARCANE_KERNEL_CUDA_FUNC(impl::doDirectGPULambdaArrayBounds2) < LoopBoundType<N>, Lambda, RemainingArgs... >, func, bounds, other_args...);
     break;
   case eExecutionPolicy::HIP:
-    _applyKernelHIP(launch_info, ARCANE_KERNEL_HIP_FUNC(impl::doDirectGPULambdaArrayBounds2) < LoopBoundType<N>, Lambda, RemainingArgs... >, func, bounds, other_args);
+    _applyKernelHIP(launch_info, ARCANE_KERNEL_HIP_FUNC(impl::doDirectGPULambdaArrayBounds2) < LoopBoundType<N>, Lambda, RemainingArgs... >, func, bounds, other_args...);
     break;
   case eExecutionPolicy::SYCL:
-    _applyKernelSYCL(launch_info, ARCANE_KERNEL_SYCL_FUNC(impl::DoDirectSYCLLambdaArrayBounds) < LoopBoundType<N>, Lambda, RemainingArgs... > {}, func, bounds, other_args);
+    _applyKernelSYCL(launch_info, ARCANE_KERNEL_SYCL_FUNC(impl::DoDirectSYCLLambdaArrayBounds) < LoopBoundType<N>, Lambda, RemainingArgs... > {}, func, bounds, other_args...);
     break;
   case eExecutionPolicy::Sequential:
     arcaneSequentialFor(bounds, func);
@@ -105,7 +105,7 @@ namespace Arcane::Accelerator
 template <typename ExtentType, typename Lambda> void
 run(RunCommand& command, ArrayBounds<ExtentType> bounds, const Lambda& func)
 {
-  impl::_applyGenericLoop(command, SimpleForLoopRanges<ExtentType::rank()>(bounds), func, {});
+  impl::_applyGenericLoop(command, SimpleForLoopRanges<ExtentType::rank()>(bounds), func);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -115,7 +115,7 @@ run(RunCommand& command, ArrayBounds<ExtentType> bounds, const Lambda& func)
 template <int N, typename Lambda> void
 run(RunCommand& command, SimpleForLoopRanges<N> bounds, const Lambda& func)
 {
-  impl::_applyGenericLoop(command, bounds, func, {});
+  impl::_applyGenericLoop(command, bounds, func);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -125,7 +125,7 @@ run(RunCommand& command, SimpleForLoopRanges<N> bounds, const Lambda& func)
 template <int N, typename Lambda> void
 run(RunCommand& command, ComplexForLoopRanges<N> bounds, const Lambda& func)
 {
-  impl::_applyGenericLoop(command, bounds, func, {});
+  impl::_applyGenericLoop(command, bounds, func);
 }
 
 //! Applique la lambda \a func sur l'intervalle d'itération donnée par \a bounds
@@ -133,7 +133,7 @@ template <int N, template <int T> class LoopBoundType, typename Lambda, typename
 runExtended(RunCommand& command, LoopBoundType<N> bounds,
             const Lambda& func, const std::tuple<RemainingArgs...>& other_args)
 {
-  impl::_applyGenericLoop(command, bounds, func, other_args);
+  std::apply([&](auto... vs) { impl::_applyGenericLoop(command, bounds, func, vs...); }, other_args);
 }
 
 /*---------------------------------------------------------------------------*/

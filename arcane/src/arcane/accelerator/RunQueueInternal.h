@@ -79,13 +79,11 @@ ARCCORE_HOST_DEVICE auto privatize(const T& item) -> Privatizer<T>
 #if defined(ARCANE_COMPILING_CUDA) || defined(ARCANE_COMPILING_HIP)
 
 //! Applique les fonctors des arguments additionnels.
-template <typename... RemainingArgs> inline __device__ void
-doKernelAdditionalArgs(Int32 index, std::tuple<RemainingArgs...>& other_args)
+template <typename... ReducerArgs> inline __device__ void
+doKernelReducerArgs(Int32 index, ReducerArgs&... reducer_args)
 {
-  using RemaingArgsType = std::tuple<RemainingArgs...>;
-  if constexpr (std::tuple_size<RemaingArgsType>{} > 0) {
-    std::apply([&] ARCCORE_HOST_DEVICE(RemainingArgs & ... args) { (args._execWorkItem(index), ...); }, other_args);
-  }
+  // Applique les réductions
+  (reducer_args._internalExecWorkItem(index), ...);
 }
 
 template <typename BuilderType, typename Lambda> __global__ void
@@ -132,7 +130,7 @@ doDirectGPULambdaArrayBounds(LoopBoundType bounds, Lambda func)
 }
 
 template <typename BuilderType, typename Lambda, typename... RemainingArgs> __global__ void
-doIndirectGPULambda2(SmallSpan<const Int32> ids, Lambda func, std::tuple<RemainingArgs...> other_args)
+doIndirectGPULambda2(SmallSpan<const Int32> ids, Lambda func, [[maybe_unused]] std::tuple<RemainingArgs...> other_args)
 {
   using LocalIdType = BuilderType::ValueType;
 
@@ -147,7 +145,7 @@ doIndirectGPULambda2(SmallSpan<const Int32> ids, Lambda func, std::tuple<Remaini
 }
 
 template <typename ItemType, typename Lambda, typename... RemainingArgs> __global__ void
-doDirectGPULambda2(Int32 vsize, Lambda func, std::tuple<RemainingArgs...> other_args)
+doDirectGPULambda2(Int32 vsize, Lambda func, [[maybe_unused]] std::tuple<RemainingArgs...> other_args)
 {
   auto privatizer = privatize(func);
   auto& body = privatizer.privateCopy();
@@ -158,17 +156,14 @@ doDirectGPULambda2(Int32 vsize, Lambda func, std::tuple<RemainingArgs...> other_
   }
 }
 
-template <typename LoopBoundType, typename Lambda, typename... RemainingArgs> __global__ void
-doDirectGPULambdaArrayBounds2(LoopBoundType bounds, Lambda func, std::tuple<RemainingArgs...> other_args)
+template <typename LoopBoundType, typename Lambda, typename... ReducerArgs> __global__ void
+doDirectGPULambdaArrayBounds2(LoopBoundType bounds, Lambda func, ReducerArgs... other_args)
 {
-  auto privatizer = privatize(func);
-  auto& body = privatizer.privateCopy();
-
   Int32 i = blockDim.x * blockIdx.x + threadIdx.x;
   if (i < bounds.nbElement()) {
-    body(bounds.getIndices(i));
-    doKernelAdditionalArgs(i, other_args);
+    func(bounds.getIndices(i), other_args...);
   }
+  doKernelReducerArgs(i, other_args...);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -187,15 +182,16 @@ class DoDirectSYCLLambdaArrayBounds
 {
  public:
 
-  void operator()(sycl::id<1> x, LoopBoundType bounds, Lambda func, std::tuple<RemainingArgs...>) const
+  void operator()(sycl::nd_item<1> x, LoopBoundType bounds, Lambda func, RemainingArgs... other_args) const
   {
     auto privatizer = privatize(func);
     auto& body = privatizer.privateCopy();
 
-    Int32 i = static_cast<Int32>(x);
+    Int32 i = static_cast<Int32>(x.get_global_id(0));
     if (i < bounds.nbElement()) {
-      body(bounds.getIndices(i));
+      body(bounds.getIndices(i), other_args...);
     }
+    // TODO: Appeler réduction
   }
   void operator()(sycl::id<1> x, LoopBoundType bounds, Lambda func) const
   {
@@ -279,19 +275,18 @@ class InvalidKernelClass
  */
 template <typename CudaKernel, typename Lambda, typename LambdaArgs, typename... RemainingArgs> void
 _applyKernelCUDA(impl::RunCommandLaunchInfo& launch_info, const CudaKernel& kernel, Lambda& func,
-                 const LambdaArgs& args, const std::tuple<RemainingArgs...>& other_args)
+                 const LambdaArgs& args, [[maybe_unused]] const RemainingArgs&... other_args)
 {
 #if defined(ARCANE_COMPILING_CUDA)
   auto [b, t] = launch_info.threadBlockInfo();
   cudaStream_t* s = reinterpret_cast<cudaStream_t*>(launch_info._internalStreamImpl());
   // TODO: utiliser cudaLaunchKernel() à la place.
-  kernel<<<b, t, 0, *s>>>(args, func, other_args);
+  kernel<<<b, t, 0, *s>>>(args, func, other_args...);
 #else
   ARCANE_UNUSED(launch_info);
   ARCANE_UNUSED(kernel);
   ARCANE_UNUSED(func);
   ARCANE_UNUSED(args);
-  ARCANE_UNUSED(other_args);
   ARCANE_FATAL_NO_CUDA_COMPILATION();
 #endif
 }
@@ -324,19 +319,18 @@ _applyKernelCUDA(impl::RunCommandLaunchInfo& launch_info, const CudaKernel& kern
  * \param args arguments de la fonction lambda
  */
 template <typename HipKernel, typename Lambda, typename LambdaArgs, typename... RemainingArgs> void
-_applyKernelHIP(impl::RunCommandLaunchInfo& launch_info, const HipKernel& kernel, Lambda& func,
-                const LambdaArgs& args, const std::tuple<RemainingArgs...>& other_args)
+_applyKernelHIP(impl::RunCommandLaunchInfo& launch_info, const HipKernel& kernel, const Lambda& func,
+                const LambdaArgs& args, [[maybe_unused]] const RemainingArgs&... other_args)
 {
 #if defined(ARCANE_COMPILING_HIP)
   auto [b, t] = launch_info.threadBlockInfo();
   hipStream_t* s = reinterpret_cast<hipStream_t*>(launch_info._internalStreamImpl());
-  hipLaunchKernelGGL(kernel, b, t, 0, *s, args, func, other_args);
+  hipLaunchKernelGGL(kernel, b, t, 0, *s, args, func, other_args...);
 #else
   ARCANE_UNUSED(launch_info);
   ARCANE_UNUSED(kernel);
   ARCANE_UNUSED(func);
   ARCANE_UNUSED(args);
-  ARCANE_UNUSED(other_args);
   ARCANE_FATAL_NO_HIP_COMPILATION();
 #endif
 }
@@ -376,16 +370,18 @@ _applyKernelHIP(impl::RunCommandLaunchInfo& launch_info, const HipKernel& kernel
  */
 template <typename SyclKernel, typename Lambda, typename LambdaArgs, typename... RemainingArgs>
 void _applyKernelSYCL(impl::RunCommandLaunchInfo& launch_info, SyclKernel kernel, Lambda& func,
-                      const LambdaArgs& args, const std::tuple<RemainingArgs...>& other_args)
+                      const LambdaArgs& args, [[maybe_unused]] const RemainingArgs&... other_args)
 {
 #if defined(ARCANE_COMPILING_SYCL)
   using RemaingArgsType = std::tuple<RemainingArgs...>;
   sycl::queue* s = reinterpret_cast<sycl::queue*>(launch_info._internalStreamImpl());
-  sycl::range<1> loop_size = launch_info.totalLoopSize();
   if constexpr (std::tuple_size<RemaingArgsType>{} > 0) {
-    s->parallel_for(loop_size, [=](sycl::id<1> i) { kernel(i, args, func, other_args); });
+    auto [b, t] = launch_info.threadBlockInfo();
+    sycl::nd_range<1> loop_size(b * t, t);
+    s->parallel_for(loop_size, [=](sycl::nd_item<1> i) { kernel(i, args, func, other_args...); });
   }
   else {
+    sycl::range<1> loop_size = launch_info.totalLoopSize();
     s->parallel_for(loop_size, [=](sycl::id<1> i) { kernel(i, args, func); });
   }
 #else
@@ -393,7 +389,6 @@ void _applyKernelSYCL(impl::RunCommandLaunchInfo& launch_info, SyclKernel kernel
   ARCANE_UNUSED(kernel);
   ARCANE_UNUSED(func);
   ARCANE_UNUSED(args);
-  ARCANE_UNUSED(other_args);
   ARCANE_FATAL_NO_SYCL_COMPILATION();
 #endif
 }
@@ -402,7 +397,7 @@ template <typename SyclKernel, typename Lambda, typename LambdaArgs>
 void _applyKernelSYCL(impl::RunCommandLaunchInfo& launch_info, SyclKernel kernel, Lambda& func,
                       const LambdaArgs& args)
 {
-  _applyKernelSYCL(launch_info, kernel, func, args, {});
+  _applyKernelSYCL(launch_info, kernel, func, args);
 }
 
 /*---------------------------------------------------------------------------*/
