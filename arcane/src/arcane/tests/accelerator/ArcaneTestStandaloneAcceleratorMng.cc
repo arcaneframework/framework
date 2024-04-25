@@ -10,6 +10,7 @@
 #include "arcane/utils/NumArray.h"
 #include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/IMemoryRessourceMng.h"
+#include "arcane/utils/MemoryUtils.h"
 
 #include "arcane/launcher/ArcaneLauncher.h"
 #include "arcane/accelerator/core/IAcceleratorMng.h"
@@ -182,6 +183,15 @@ int _testStandaloneLauncher(const CommandLineArguments& cmd_line_args,
   ArcaneLauncher::init(cmd_line_args);
   StandaloneAcceleratorMng launcher{ ArcaneLauncher::createStandaloneAcceleratorMng() };
   IAcceleratorMng* acc_mng = launcher.acceleratorMng();
+  RunQueue* default_queue = acc_mng->defaultQueue();
+  IMemoryRessourceMng* mrm = platform::getDataMemoryRessourceMng();
+  IMemoryAllocator* alloc0 = MemoryUtils::getDeviceOrHostAllocator();
+  IMemoryAllocator* wanted_alloc = mrm->getAllocator(eMemoryRessource::Host);
+  if (default_queue->isAcceleratorPolicy())
+    wanted_alloc = mrm->getAllocator(eMemoryRessource::Device);
+  if (alloc0 != wanted_alloc)
+    ARCANE_FATAL("Bad allocator");
+
   _printAvailableAllocators();
   if (method_name == "TestSum")
     _testSum(acc_mng);
