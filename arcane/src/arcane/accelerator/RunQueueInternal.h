@@ -182,16 +182,16 @@ class DoDirectSYCLLambdaArrayBounds
 {
  public:
 
-  void operator()(sycl::nd_item<1> x, LoopBoundType bounds, Lambda func, RemainingArgs... other_args) const
+  void operator()(sycl::nd_item<1> x, LoopBoundType bounds, Lambda func, RemainingArgs... reducer_args) const
   {
     auto privatizer = privatize(func);
     auto& body = privatizer.privateCopy();
 
     Int32 i = static_cast<Int32>(x.get_global_id(0));
     if (i < bounds.nbElement()) {
-      body(bounds.getIndices(i), other_args...);
+      body(bounds.getIndices(i), reducer_args...);
     }
-    // TODO: Appeler réduction
+    (reducer_args._internalExecWorkItem(x), ...);
   }
   void operator()(sycl::id<1> x, LoopBoundType bounds, Lambda func) const
   {

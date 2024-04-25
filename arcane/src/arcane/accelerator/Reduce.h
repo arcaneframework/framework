@@ -156,13 +156,15 @@ class ReduceAtomicSum<Int32>
   }
 };
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 template <typename DataType>
 class ReduceFunctorSum
 {
  public:
 
-  static ARCCORE_DEVICE
-  DataType
+  static ARCCORE_DEVICE DataType
   applyDevice(const ReduceDeviceInfo<DataType>& dev_info)
   {
     _applyDevice(dev_info);
@@ -172,6 +174,9 @@ class ReduceFunctorSum
   {
     return ReduceAtomicSum<DataType>::apply(vptr, v);
   }
+#if defined(ARCANE_COMPILING_SYCL)
+  static sycl::plus<DataType> syclFunctor() { return {}; }
+#endif
 
  public:
 
@@ -182,13 +187,15 @@ class ReduceFunctorSum
   static ARCCORE_DEVICE void _applyDevice(const ReduceDeviceInfo<DataType>& dev_info);
 };
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 template <typename DataType>
 class ReduceFunctorMax
 {
  public:
 
-  static ARCCORE_DEVICE
-  DataType
+  static ARCCORE_DEVICE DataType
   applyDevice(const ReduceDeviceInfo<DataType>& dev_info)
   {
     _applyDevice(dev_info);
@@ -202,6 +209,9 @@ class ReduceFunctorMax
     }
     return aref.load();
   }
+#if defined(ARCANE_COMPILING_SYCL)
+  static sycl::maximum<DataType> syclFunctor() { return {}; }
+#endif
 
  public:
 
@@ -212,13 +222,15 @@ class ReduceFunctorMax
   static ARCCORE_DEVICE void _applyDevice(const ReduceDeviceInfo<DataType>& dev_info);
 };
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 template <typename DataType>
 class ReduceFunctorMin
 {
  public:
 
-  static ARCCORE_DEVICE
-  DataType
+  static ARCCORE_DEVICE DataType
   applyDevice(const ReduceDeviceInfo<DataType>& dev_info)
   {
     _applyDevice(dev_info);
@@ -232,6 +244,9 @@ class ReduceFunctorMin
     }
     return aref.load();
   }
+#if defined(ARCANE_COMPILING_SYCL)
+  static sycl::minimum<DataType> syclFunctor() { return {}; }
+#endif
 
  public:
 
@@ -486,6 +501,9 @@ class HostDeviceReducer2
  public:
 
   using BaseClass = HostDeviceReducerBase<DataType, ReduceFunctor>;
+  using BaseClass::m_grid_memory_info;
+  using BaseClass::m_host_or_device_memory_for_reduced_value;
+  using BaseClass::m_local_value;
 
  public:
 
@@ -502,7 +520,53 @@ class HostDeviceReducer2
 
  public:
 
-  ARCCORE_HOST_DEVICE void _internalExecWorkItem(Int32) { this->_finalize(); };
+#if defined(ARCANE_COMPILING_CUDA) || defined(ARCANE_COMPILING_HIP)
+  ARCCORE_HOST_DEVICE void _internalExecWorkItem(Int32)
+  {
+    this->_finalize();
+  };
+#endif
+
+#if defined(ARCANE_COMPILING_SYCL)
+  void _internalExecWorkItem(sycl::nd_item<1> id)
+  {
+    auto* atomic_counter_ptr = m_grid_memory_info.m_grid_device_count;
+    Int32 i = static_cast<Int32>(id.get_global_id());
+    const Int32 global_id = static_cast<Int32>(id.get_global_id(0));
+    const Int32 local_id = static_cast<Int32>(id.get_local_id(0));
+    const Int32 group_id = static_cast<Int32>(id.get_group_linear_id());
+    const Int32 sub_group_id = static_cast<Int32>(id.get_sub_group().get_local_id());
+    const Int32 nb_block = static_cast<Int32>(id.get_group_range(0));
+
+    auto buf_span = m_grid_memory_info.m_grid_memory_values.bytes();
+    DataType* buf = reinterpret_cast<DataType*>(buf_span.data());
+    SmallSpan<DataType> grid_buffer(buf, static_cast<Int32>(buf_span.size()));
+
+    DataType v = m_local_value;
+    bool is_last = false;
+    auto sycl_functor = ReduceFunctor::syclFunctor();
+    DataType local_sum = sycl::reduce_over_group(id.get_group(), v, sycl_functor);
+    if (local_id == 0) {
+      Int32 base = global_id;
+      grid_buffer[group_id] = local_sum;
+      sycl::atomic_ref<unsigned int, sycl::memory_order::relaxed, sycl::memory_scope::device> a(*atomic_counter_ptr);
+      Int32 cx = a.fetch_add(1);
+      if (cx == (nb_block - 1))
+        is_last = true;
+    }
+    // Je suis le dernier à faire la réduction.
+    // Calcule la réduction finale
+    if (is_last) {
+      Int64 my_total = 0;
+      for (int x = 0; x < nb_block; ++x)
+        my_total = sycl_functor(my_total, grid_buffer[x]);
+      // Met le résultat final dans le premier élément du tableau.
+      grid_buffer[0] = my_total;
+      *m_host_or_device_memory_for_reduced_value = my_total;
+      *atomic_counter_ptr = 0;
+    }
+  }
+#endif
 };
 
 /*---------------------------------------------------------------------------*/
