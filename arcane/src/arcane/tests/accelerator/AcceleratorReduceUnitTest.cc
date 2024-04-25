@@ -99,6 +99,12 @@ class AcceleratorReduceUnitTest
                               DataType expected_min,
                               DataType expected_max);
 
+  template <typename DataType> void
+  _executeTestReduceV2(Int32 nb_iteration, const NumArray<DataType, MDDim1>& t1,
+                       DataType expected_sum,
+                       DataType expected_min,
+                       DataType expected_max);
+
  private:
 
   void executeTest2(Int32 nb_iteration);
@@ -154,7 +160,10 @@ executeTest()
   else {
     info() << "UseReducePolicy = Grid";
     m_runner.setDeviceReducePolicy(ax::eDeviceReducePolicy::Grid);
-    executeTest2(100);
+    Int32 nb_iter = 100;
+    if (arcaneIsDebug())
+      nb_iter = 5;
+    executeTest2(nb_iter);
   }
 }
 
@@ -209,6 +218,8 @@ _executeTestDataType(Int32 nb_iteration)
   //t1.copy(host_t1);
   m_runner.setMemoryAdvice(t1_mem_view, ax::eMemoryAdvice::MostlyRead);
   queue.prefetchMemory(ax::MemoryPrefetchArgs(t1_mem_view).addAsync());
+
+  _executeTestReduceV2(nb_iteration, t1, sum, min_value, max_value);
 
   _executeTestReduceSum(nb_iteration, t1, sum);
   _executeTestReduceMin(nb_iteration, t1, min_value);
@@ -381,6 +392,49 @@ _executeTestReduceMax(Int32 nb_iteration, const NumArray<DataType, MDDim1>& t1, 
       info() << "REDUCED_MAX=" << reduced_max;
     if (reduced_max != expected_value)
       ARCANE_FATAL("Bad maximum reduced_max={0} expected={1}", reduced_max, expected_value);
+  }
+}
+
+template <typename DataType> void AcceleratorReduceUnitTest::
+_executeTestReduceV2(Int32 nb_iteration, const NumArray<DataType, MDDim1>& t1,
+                     DataType expected_sum,
+                     DataType expected_min,
+                     DataType expected_max)
+{
+  const Int32 n1 = t1.extent0();
+  for (int z = 0; z < nb_iteration; ++z) {
+    auto command = makeCommand(m_queue);
+    ax::ReducerSum2<DataType> reducer_sum(command);
+    ax::ReducerMin2<DataType> reducer_min(command);
+    ax::ReducerMax2<DataType> reducer_max(command);
+    auto in_t1 = viewIn(command, t1);
+
+    command << ::Arcane::Accelerator::impl::makeExtendedArrayBoundLoop(Arcane::ArrayBounds<MDDim1>(n1),
+                                                                       reducer_sum, reducer_max, reducer_min)
+            << [=] ARCCORE_HOST_DEVICE(Arcane::ArrayIndex<1> iter,
+                                       ReducerSum2<DataType> & reducer_sum, ReducerMax2<DataType> & reducer_max,
+                                       ReducerMin2<DataType> & reducer_min) {
+                 {
+                   DataType v = in_t1(iter);
+                   reducer_sum.combine(v);
+                   reducer_min.combine(v);
+                   reducer_max.combine(v);
+                 };
+               };
+    DataType reduced_max = reducer_max.reducedValue();
+    DataType reduced_min = reducer_min.reducedValue();
+    DataType reduced_sum = reducer_sum.reducedValue();
+    if (z == 0) {
+      info() << "REDUCEDV2_MAX=" << reduced_max;
+      info() << "REDUCEDV2_MIN=" << reduced_min;
+      info() << "REDUCEDV2_SUM=" << reduced_sum;
+    }
+    if (reduced_max != expected_max)
+      ARCANE_FATAL("Bad reduced_max={0} expected={1}", reduced_max, expected_max);
+    if (reduced_min != expected_min)
+      ARCANE_FATAL("Bad reduced_min={0} expected={1}", reduced_min, expected_min);
+    if (reduced_sum != expected_sum)
+      ARCANE_FATAL("Bad reduced_sum={0} expected={1}", reduced_sum, expected_sum);
   }
 }
 
