@@ -36,6 +36,19 @@ getDefaultDataAllocator()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+IMemoryAllocator* MemoryUtils::
+getDeviceOrHostAllocator()
+{
+  IMemoryRessourceMng* mrm = platform::getDataMemoryRessourceMng();
+  IMemoryAllocator* a = mrm->getAllocator(eMemoryRessource::Device,false);
+  if (a)
+    return a;
+  return mrm->getAllocator(eMemoryRessource::Host);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 MemoryAllocationOptions MemoryUtils::
 getDefaultDataAllocator(eMemoryLocationHint hint)
 {

@@ -42,6 +42,17 @@ namespace Arcane::MemoryUtils
 extern "C++" ARCANE_UTILS_EXPORT IMemoryAllocator*
 getDefaultDataAllocator();
 
+/*!
+ * \brief Retourne l'allocateur sur l'hôte ou sur le device.
+ *
+ * Si un runtime accélérateur est initialisé, l'allocateur retourné permet
+ * d'allouer en utilisant la mémoire de l'accélérateur par défaut
+ * (eMemoryRessource::Device). Sinon, utilise l'allocateur de l'hôte
+ * (eMemoryRessource::Host).
+ */
+extern "C++" ARCANE_UTILS_EXPORT IMemoryAllocator*
+getDeviceOrHostAllocator();
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
