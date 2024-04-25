@@ -55,10 +55,10 @@ _applyGenericLoop(RunCommand& command, LoopBoundType<N> bounds,
     _applyKernelSYCL(launch_info, ARCANE_KERNEL_SYCL_FUNC(impl::DoDirectSYCLLambdaArrayBounds) < LoopBoundType<N>, Lambda, RemainingArgs... > {}, func, bounds, other_args...);
     break;
   case eExecutionPolicy::Sequential:
-    arcaneSequentialFor(bounds, func);
+    arcaneSequentialFor(bounds, func, other_args...);
     break;
   case eExecutionPolicy::Thread:
-    arcaneParallelFor(bounds, launch_info.computeParallelLoopOptions(), func);
+    arcaneParallelFor(bounds, launch_info.computeParallelLoopOptions(), func, other_args...);
     break;
   default:
     ARCANE_FATAL("Invalid execution policy '{0}'", exec_policy);
