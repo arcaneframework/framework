@@ -40,6 +40,7 @@ using namespace Arccore;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 extern "C++" ARCANE_ACCELERATOR_CORE_EXPORT IReduceMemoryImpl*
 internalGetOrCreateReduceMemoryImpl(RunCommand* command);
 
@@ -276,11 +277,11 @@ namespace Arcane::Accelerator
  * valide que sur l'hôte.
  */
 template <typename DataType, typename ReduceFunctor>
-class HostDeviceReducer
+class HostDeviceReducerBase
 {
  public:
 
-  HostDeviceReducer(RunCommand& command)
+  HostDeviceReducerBase(RunCommand& command)
   : m_host_or_device_memory_for_reduced_value(&m_local_value)
   , m_command(&command)
   {
@@ -298,7 +299,10 @@ class HostDeviceReducer
     }
   }
 
-  ARCCORE_HOST_DEVICE HostDeviceReducer(const HostDeviceReducer& rhs)
+#if defined(__INTEL_LLVM_COMPILER) && defined(__SYCL_DEVICE_ONLY__)
+  HostDeviceReducerBase(const HostDeviceReducerBase& rhs) = default;
+#else
+  ARCCORE_HOST_DEVICE HostDeviceReducerBase(const HostDeviceReducerBase& rhs)
   : m_host_or_device_memory_for_reduced_value(rhs.m_host_or_device_memory_for_reduced_value)
   , m_local_value(rhs.m_local_value)
   , m_identity(rhs.m_identity)
@@ -323,14 +327,10 @@ class HostDeviceReducer
     //printf("Create ref host parent_value=%p this=%p rhs=%p\n",(void*)m_parent_value,(void*)this,(void*)&rhs);
 #endif
   }
+#endif
 
-  ARCCORE_HOST_DEVICE HostDeviceReducer(HostDeviceReducer&& rhs) = delete;
-  HostDeviceReducer& operator=(const HostDeviceReducer& rhs) = delete;
-
-  ARCCORE_HOST_DEVICE ~HostDeviceReducer()
-  {
-    _finalize();
-  }
+  ARCCORE_HOST_DEVICE HostDeviceReducerBase(HostDeviceReducerBase&& rhs) = delete;
+  HostDeviceReducerBase& operator=(const HostDeviceReducerBase& rhs) = delete;
 
  public:
 
@@ -341,31 +341,6 @@ class HostDeviceReducer
   ARCCORE_HOST_DEVICE DataType localValue() const
   {
     return m_local_value;
-  }
-
-  //! Effectue la réduction et récupère la valeur. ATTENTION: ne faire qu'une seule fois.
-  DataType reduce()
-  {
-    // Si la réduction est faite sur accélérateur, il faut recopier la valeur du device sur l'hôte.
-    DataType* final_ptr = m_host_or_device_memory_for_reduced_value;
-    if (m_memory_impl) {
-      m_memory_impl->copyReduceValueFromDevice();
-      final_ptr = reinterpret_cast<DataType*>(m_grid_memory_info.m_host_memory_for_reduced_value);
-    }
-
-    if (m_atomic_parent_value) {
-      //std::cout << String::format("Reduce host has parent this={0} local_value={1} parent_value={2}\n",
-      //                            this,m_local_value,*m_parent_value);
-      //std::cout.flush();
-      ReduceFunctor::apply(m_atomic_parent_value, *final_ptr);
-      *final_ptr = *m_atomic_parent_value;
-    }
-    else {
-      //std::cout << String::format("Reduce host no parent this={0} local_value={1} managed={2}\n",
-      //                            this,m_local_value,*m_host_or_device_memory_for_reduced_value);
-      //std::cout.flush();
-    }
-    return *final_ptr;
   }
 
  protected:
@@ -393,12 +368,37 @@ class HostDeviceReducer
  private:
 
   DataType m_identity;
-  bool m_is_allocated = false;
+  //bool m_is_allocated = false;
   bool m_is_master_instance = false;
 
- private:
+ protected:
 
-  ARCCORE_HOST_DEVICE void _finalize()
+  //! Effectue la réduction et récupère la valeur. ATTENTION: ne faire qu'une seule fois.
+  DataType _reduce()
+  {
+    // Si la réduction est faite sur accélérateur, il faut recopier la valeur du device sur l'hôte.
+    DataType* final_ptr = m_host_or_device_memory_for_reduced_value;
+    if (m_memory_impl) {
+      m_memory_impl->copyReduceValueFromDevice();
+      final_ptr = reinterpret_cast<DataType*>(m_grid_memory_info.m_host_memory_for_reduced_value);
+    }
+
+    if (m_atomic_parent_value) {
+      //std::cout << String::format("Reduce host has parent this={0} local_value={1} parent_value={2}\n",
+      //                            this,m_local_value,*m_parent_value);
+      //std::cout.flush();
+      ReduceFunctor::apply(m_atomic_parent_value, *final_ptr);
+      *final_ptr = *m_atomic_parent_value;
+    }
+    else {
+      //std::cout << String::format("Reduce host no parent this={0} local_value={1} managed={2}\n",
+      //                            this,m_local_value,*m_host_or_device_memory_for_reduced_value);
+      //std::cout.flush();
+    }
+    return *final_ptr;
+  }
+  ARCCORE_HOST_DEVICE void
+  _finalize()
   {
 #ifdef ARCCORE_DEVICE_CODE
     //int threadId = threadIdx.x + blockDim.x * threadIdx.y + (blockDim.x * blockDim.y) * threadIdx.z;
@@ -437,6 +437,77 @@ class HostDeviceReducer
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
+ * \brief Version 1 de la réduction.
+ *
+ * Cette version est obsolète. Elle utilise le destructeur de la classe
+ * pour effectuer la réduction.
+ */
+template <typename DataType, typename ReduceFunctor>
+class HostDeviceReducer
+: public HostDeviceReducerBase<DataType, ReduceFunctor>
+{
+ public:
+
+  using BaseClass = HostDeviceReducerBase<DataType, ReduceFunctor>;
+
+ public:
+
+  explicit HostDeviceReducer(RunCommand& command)
+  : BaseClass(command)
+  {}
+  HostDeviceReducer(const HostDeviceReducer& rhs) = default;
+  ARCCORE_HOST_DEVICE ~HostDeviceReducer()
+  {
+    this->_finalize();
+  }
+
+ public:
+
+  DataType reduce()
+  {
+    return this->_reduce();
+  }
+
+  DataType reducedValue()
+  {
+    return this->_reduce();
+  }
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Version 2 de la réduction.
+ */
+template <typename DataType, typename ReduceFunctor>
+class HostDeviceReducer2
+: public HostDeviceReducerBase<DataType, ReduceFunctor>
+{
+ public:
+
+  using BaseClass = HostDeviceReducerBase<DataType, ReduceFunctor>;
+
+ public:
+
+  explicit HostDeviceReducer2(RunCommand& command)
+  : BaseClass(command)
+  {}
+
+ public:
+
+  DataType reducedValue()
+  {
+    return this->_reduce();
+  }
+
+ public:
+
+  ARCCORE_HOST_DEVICE void _internalExecWorkItem(Int32) { this->_finalize(); };
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
  * \brief Implémentation de la réduction pour le backend SYCL.
  *
  * \warning Pour l'instant il n'y aucune implémentation. Cette classe permet
@@ -447,7 +518,7 @@ class SyclReducer
 {
  public:
 
-  SyclReducer(RunCommand&) {}
+  explicit SyclReducer(RunCommand&) {}
 
  public:
 
@@ -488,7 +559,7 @@ class ReducerSum
 
  public:
 
-  ReducerSum(RunCommand& command)
+  explicit ReducerSum(RunCommand& command)
   : BaseClass(command)
   {}
 
@@ -520,7 +591,7 @@ class ReducerMax
 
  public:
 
-  ReducerMax(RunCommand& command)
+  explicit ReducerMax(RunCommand& command)
   : BaseClass(command)
   {}
 
@@ -540,6 +611,9 @@ class ReducerMax
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 /*!
  * \brief Classe pour effectuer une réduction 'min'.
  */
@@ -552,7 +626,7 @@ class ReducerMin
 
  public:
 
-  ReducerMin(RunCommand& command)
+  explicit ReducerMin(RunCommand& command)
   : BaseClass(command)
   {}
 
@@ -567,6 +641,86 @@ class ReducerMin
   ARCCORE_HOST_DEVICE DataType min(DataType v) const
   {
     return combine(v);
+  }
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Classe pour effectuer une réduction 'somme'.
+ */
+template <typename DataType>
+class ReducerSum2
+: public HostDeviceReducer2<DataType, impl::ReduceFunctorSum<DataType>>
+{
+  using BaseClass = HostDeviceReducer2<DataType, impl::ReduceFunctorSum<DataType>>;
+
+ public:
+
+  ReducerSum2(RunCommand& command)
+  : BaseClass(command)
+  {}
+
+ public:
+
+  ARCCORE_HOST_DEVICE void combine(DataType v)
+  {
+    this->m_local_value += v;
+  }
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Classe pour effectuer une réduction 'max'.
+ */
+template <typename DataType>
+class ReducerMax2
+: public HostDeviceReducer2<DataType, impl::ReduceFunctorMax<DataType>>
+{
+  using BaseClass = HostDeviceReducer2<DataType, impl::ReduceFunctorMax<DataType>>;
+
+ public:
+
+  explicit ReducerMax2(RunCommand& command)
+  : BaseClass(command)
+  {}
+
+ public:
+
+  ARCCORE_HOST_DEVICE void combine(DataType v)
+  {
+    DataType& lv = this->m_local_value;
+    lv = v > lv ? v : lv;
+  }
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Classe pour effectuer une réduction 'min'.
+ */
+template <typename DataType>
+class ReducerMin2
+: public HostDeviceReducer2<DataType, impl::ReduceFunctorMin<DataType>>
+{
+  using BaseClass = HostDeviceReducer2<DataType, impl::ReduceFunctorMin<DataType>>;
+
+ public:
+
+  explicit ReducerMin2(RunCommand& command)
+  : BaseClass(command)
+  {}
+
+ public:
+
+  ARCCORE_HOST_DEVICE void combine(DataType v)
+  {
+    DataType& lv = this->m_local_value;
+    lv = v < lv ? v : lv;
   }
 };
 
