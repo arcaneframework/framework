@@ -159,9 +159,12 @@ doDirectGPULambda2(Int32 vsize, Lambda func, [[maybe_unused]] std::tuple<Remaini
 template <typename LoopBoundType, typename Lambda, typename... ReducerArgs> __global__ void
 doDirectGPULambdaArrayBounds2(LoopBoundType bounds, Lambda func, ReducerArgs... other_args)
 {
+  auto privatizer = privatize(func);
+  auto& body = privatizer.privateCopy();
+
   Int32 i = blockDim.x * blockIdx.x + threadIdx.x;
   if (i < bounds.nbElement()) {
-    func(bounds.getIndices(i), other_args...);
+    body(bounds.getIndices(i), other_args...);
   }
   doKernelReducerArgs(i, other_args...);
 }
