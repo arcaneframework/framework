@@ -294,24 +294,6 @@ _applyKernelCUDA(impl::RunCommandLaunchInfo& launch_info, const CudaKernel& kern
 #endif
 }
 
-template <typename CudaKernel, typename Lambda, typename LambdaArgs> void
-_applyKernelCUDA(impl::RunCommandLaunchInfo& launch_info, const CudaKernel& kernel, Lambda& func,
-                 const LambdaArgs& args)
-{
-#if defined(ARCANE_COMPILING_CUDA)
-  auto [b, t] = launch_info.threadBlockInfo();
-  cudaStream_t* s = reinterpret_cast<cudaStream_t*>(launch_info._internalStreamImpl());
-  // TODO: utiliser cudaLaunchKernel() à la place.
-  kernel<<<b, t, 0, *s>>>(args, func);
-#else
-  ARCANE_UNUSED(launch_info);
-  ARCANE_UNUSED(kernel);
-  ARCANE_UNUSED(func);
-  ARCANE_UNUSED(args);
-  ARCANE_FATAL_NO_CUDA_COMPILATION();
-#endif
-}
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
@@ -329,30 +311,6 @@ _applyKernelHIP(impl::RunCommandLaunchInfo& launch_info, const HipKernel& kernel
   auto [b, t] = launch_info.threadBlockInfo();
   hipStream_t* s = reinterpret_cast<hipStream_t*>(launch_info._internalStreamImpl());
   hipLaunchKernelGGL(kernel, b, t, 0, *s, args, func, other_args...);
-#else
-  ARCANE_UNUSED(launch_info);
-  ARCANE_UNUSED(kernel);
-  ARCANE_UNUSED(func);
-  ARCANE_UNUSED(args);
-  ARCANE_FATAL_NO_HIP_COMPILATION();
-#endif
-}
-
-/*!
- * \brief Fonction générique pour exécuter un kernel HIP.
- *
- * \param kernel noyau HIP
- * \param func fonction à exécuter par le noyau
- * \param args arguments de la fonction lambda
- */
-template <typename HipKernel, typename Lambda, typename LambdaArgs> void
-_applyKernelHIP(impl::RunCommandLaunchInfo& launch_info, const HipKernel& kernel, Lambda& func,
-                const LambdaArgs& args)
-{
-#if defined(ARCANE_COMPILING_HIP)
-  auto [b, t] = launch_info.threadBlockInfo();
-  hipStream_t* s = reinterpret_cast<hipStream_t*>(launch_info._internalStreamImpl());
-  hipLaunchKernelGGL(kernel, b, t, 0, *s, args, func);
 #else
   ARCANE_UNUSED(launch_info);
   ARCANE_UNUSED(kernel);
@@ -394,13 +352,6 @@ void _applyKernelSYCL(impl::RunCommandLaunchInfo& launch_info, SyclKernel kernel
   ARCANE_UNUSED(args);
   ARCANE_FATAL_NO_SYCL_COMPILATION();
 #endif
-}
-
-template <typename SyclKernel, typename Lambda, typename LambdaArgs>
-void _applyKernelSYCL(impl::RunCommandLaunchInfo& launch_info, SyclKernel kernel, Lambda& func,
-                      const LambdaArgs& args)
-{
-  _applyKernelSYCL(launch_info, kernel, func, args);
 }
 
 /*---------------------------------------------------------------------------*/
