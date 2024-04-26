@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Math.h                                                      (C) 2000-2020 */
+/* Math.h                                                      (C) 2000-2024 */
 /*                                                                           */
 /* Fonctions mathématiques diverses.                                         */
 /*---------------------------------------------------------------------------*/
@@ -14,9 +14,11 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/Convert.h"
 #include "arcane/utils/UtilsTypes.h"
-#include "arcane/utils/StdHeader.h"
+#include "arcane/utils/Convert.h"
+
+#include <cmath>
+#include <cstdlib>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -41,7 +43,7 @@ log(double v)
   if (v==0.0 || v<0.0)
     arcaneMathError(v,"log");
 #endif
-  return ::log(v);
+  return std::log(v);
 }
 
 /*!
@@ -54,7 +56,7 @@ log(long double v)
   if (v==0.0 || v<0.0)
     arcaneMathError(v,"log");
 #endif
-  return ::logl(v);
+  return std::log(v);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -69,7 +71,7 @@ log10(double v)
   if (v==0.0 || v<0.0)
     arcaneMathError(v,"log");
 #endif
-  return ::log10(v);
+  return std::log10(v);
 }
 
 /*!
@@ -82,7 +84,7 @@ log10(long double v)
   if (v==0.0 || v<0.0)
     arcaneMathError(v,"log");
 #endif
-  return ::log10l(v);
+  return std::log10(v);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -93,7 +95,7 @@ log10(long double v)
 ARCCORE_HOST_DEVICE inline double
 floor(double v)
 {
-  return ::floor(v);
+  return std::floor(v);
 }
 
 /*!
@@ -102,7 +104,7 @@ floor(double v)
 ARCCORE_HOST_DEVICE inline long double
 floor(long double v)
 {
-  return ::floorl(v);
+  return std::floor(v);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -113,7 +115,7 @@ floor(long double v)
 ARCCORE_HOST_DEVICE inline double
 exp(double v)
 {
-  return ::exp(v);
+  return std::exp(v);
 }
 /*!
  * \brief Exponentielle de \a v.
@@ -121,7 +123,7 @@ exp(double v)
 ARCCORE_HOST_DEVICE inline long double
 exp(long double v)
 {
-  return ::expl(v);
+  return std::exp(v);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -136,7 +138,7 @@ sqrt(double v)
   if (v<0.)
     arcaneMathError(v,"sqrt");
 #endif
-  return ::sqrt(v);
+  return std::sqrt(v);
 }
 /*!
  * \brief Racine carrée de \a v.
@@ -148,7 +150,7 @@ sqrt(long double v)
   if (v<0.)
     arcaneMathError(v,"sqrt");
 #endif
-  return ::sqrtl(v);
+  return std::sqrt(v);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -168,7 +170,7 @@ pow(double x,double y)
   if (x<0.0 && ::floor(y)!=y)
     arcaneMathError(x,y,"pow");
 #endif
-  return ::pow(x,y);
+  return std::pow(x,y);
 }
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -187,7 +189,7 @@ pow(long double x,long double y)
   if (x<0.0 && ::floorl(y)!=y)
     arcaneMathError(x,y,"pow");
 #endif
-  return ::powl(x,y);
+  return std::pow(x,y);
 }
 /*!
  * \brief Fonction puissance.
@@ -204,7 +206,7 @@ pow(double x,long double y)
   if (x<0.0 && ::floorl(y)!=y)
     arcaneMathError(x,y,"pow");
 #endif
-  return ::powl(x,y);
+  return std::pow(x,y);
 }
 /*!
  * \brief Fonction puissance.
@@ -221,7 +223,7 @@ pow(long double x,double y)
   if (x<0.0 && ::floor(y)!=y)
     arcaneMathError(x,y,"pow");
 #endif
-  return ::powl(x,y);
+  return std::pow(x,y);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -416,8 +418,7 @@ max(Int64 a,Int64 b)
 ARCCORE_HOST_DEVICE inline long double
 abs(long double a)
 {
-  return ::fabsl(a);
-  //return (a>0.L) ? a : (-a);
+  return std::abs(a);
 }
 /*!
  * \brief Retourne la valeur absolue d'un réel.
@@ -426,7 +427,7 @@ abs(long double a)
 ARCCORE_HOST_DEVICE inline double
 abs(double a)
 {
-  return ::fabs(a);
+  return std::abs(a);
 }
 /*!
  * \brief Retourne la valeur absolue d'un réel.
@@ -435,8 +436,7 @@ abs(double a)
 ARCCORE_HOST_DEVICE inline float
 abs(float a)
 {
-  return ::fabsf(a);
-  //return (a>0.F) ? a : (-a);
+  return std::abs(a);
 }
 
 /*!
