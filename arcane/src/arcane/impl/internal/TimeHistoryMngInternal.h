@@ -34,6 +34,7 @@
 #include "arcane/core/IXmlDocumentHolder.h"
 #include "arcane/core/ServiceBuilder.h"
 #include "arcane/core/Properties.h"
+#include "arcane/core/IParallelReplication.h"
 
 #include "arcane/datatype/DataTypeTraits.h"
 
@@ -416,9 +417,10 @@ class TimeHistoryMngInternal
   , m_version(2)
   {
     m_enable_non_io_master_curves = !platform::getEnvironmentVariable("ARCANE_ENABLE_NON_IO_MASTER_CURVES").null();
+
     // Seul le sous-domaine maître des IO rend actif les time history.
-    // TODO : utilisation du allReplicaParallelMng ?
-    m_is_master_io = m_parallel_mng->isMasterIO();
+    IParallelReplication* pr = m_parallel_mng->replication();
+    m_is_master_io = (pr->hasReplication()) ? pr->isMasterRank() : m_parallel_mng->isMasterIO();
   }
 
   ~TimeHistoryMngInternal() override
