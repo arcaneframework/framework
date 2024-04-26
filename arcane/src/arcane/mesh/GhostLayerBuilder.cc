@@ -466,8 +466,6 @@ _addOneGhostLayerV2()
 void GhostLayerBuilder::
 _exchangeCells(HashTableMapT<Int32,SharedArray<Int32>>& cells_to_send,bool with_flags)
 {
-  ARCANE_UNUSED(with_flags);
-
   //TODO: fusionner avec GhostLayerBuilder2::_exchangeCells().
   typedef HashTableMapT<Int32,SharedArray<Int32>> SubDomainItemMap;
   IParallelMng* pm = m_mesh->parallelMng();
@@ -486,14 +484,23 @@ _exchangeCells(HashTableMapT<Int32,SharedArray<Int32>>& cells_to_send,bool with_
     Int32 rank = sm->destination().value();
     ISerializer* s = sm->serializer();
     Int32ConstArrayView items_to_send = cells_to_send[rank];
-    m_mesh->serializeCells(s,items_to_send);
+    //m_mesh->serializeCells(s,items_to_send,with_flags);
+    ScopedPtrT<IItemFamilySerializer> cell_serializer(m_mesh->cellFamily()->policyMng()->createSerializer(with_flags));
+    s->setMode(ISerializer::ModeReserve);
+    cell_serializer->serializeItems(s,items_to_send);
+    s->allocateBuffer();
+    s->setMode(ISerializer::ModePut);
+    cell_serializer->serializeItems(s,items_to_send);
   }
   exchanger->processExchange();
   info(4) << "END EXCHANGE CELLS";
   for( Integer i=0, ns=exchanger->nbReceiver(); i<ns; ++i ){
     ISerializeMessage* sm = exchanger->messageToReceive(i);
     ISerializer* s = sm->serializer();
-    m_mesh->addCells(s);
+    //m_mesh->addCells(s,with_flags);
+    s->setMode(ISerializer::ModeGet);
+    ScopedPtrT<IItemFamilySerializer> cell_serializer(m_mesh->cellFamily()->policyMng()->createSerializer(with_flags));
+    cell_serializer->deserializeItems(s,nullptr);
   }
 }
 
