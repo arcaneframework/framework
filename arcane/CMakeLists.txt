@@ -797,6 +797,9 @@ if (MSVC)
   # On utilise donc '/Z7' qui place les informations de debug dans les '.obj'.
   target_compile_options(arcane_build_compile_flags INTERFACE /Z7)
   target_link_options(arcane_build_compile_flags INTERFACE /debug)
+  # Indique qu'on souhaite utiliser le pré-processeur standard
+  # C'est nécessaire pour la macro __VA_OPT__ du C++20.
+  target_compile_options(arcane_build_compile_flags INTERFACE /Zc:preprocessor)
 endif()
 
 # ----------------------------------------------------------------------------

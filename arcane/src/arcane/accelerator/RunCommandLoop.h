@@ -205,13 +205,6 @@ void operator<<(ArrayBoundRunCommand<N, ForLoopBoundType<N>, RemainingArgs...>&&
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arcane::Accelerator::impl
-{
-} // namespace Arcane::Accelerator::impl
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 //! Boucle sur accélérateur
 #define RUNCOMMAND_LOOP(iter_name, bounds) \
   A_FUNCINFO << bounds << [=] ARCCORE_HOST_DEVICE(typename decltype(bounds)::IndexType iter_name)
@@ -236,10 +229,18 @@ namespace Arcane::Accelerator::impl
 #define RUNCOMMAND_LOOP4(iter_name, x1, x2, x3, x4) \
   A_FUNCINFO << Arcane::ArrayBounds<MDDim4>(x1, x2, x3, x4) << [=] ARCCORE_HOST_DEVICE(Arcane::ArrayIndex<4> iter_name)
 
-//! Boucle sur accélérateur avec arguments supplémentaires (EXPÉRIMENTAL)
+/*!
+ * \brief Boucle sur accélérateur avec arguments supplémentaires pour les réductions.
+ *
+ * \warning Ce mode est expérimental et ne doit pas être utilisé en dehors de Arcane.
+ *
+ * Cette macro est indentique à RUNCOMMAND_LOOP1() mais permet d'ajouter des arguments
+ * pour chaque valeur à réduire. Les arguments doivent être des instances des
+ * classes Arcane::Accelerator::ReducerSum2, Arcane::Accelerator::ReducerMax2 ou Arcane::Accelerator::ReducerMin2.
+ */
 #define RUNCOMMAND_LOOP1_EX(iter_name, x1, ...) \
-  A_FUNCINFO << ::Arcane::Accelerator::impl::makeExtendedArrayBoundLoop(Arcane::ArrayBounds<MDDim1>(x1), __VA_ARGS__) \
-             << [=] ARCCORE_HOST_DEVICE(Arcane::ArrayIndex<1> iter_name)
+  A_FUNCINFO << ::Arcane::Accelerator::impl::makeExtendedArrayBoundLoop(Arcane::ArrayBounds<MDDim1>(x1) __VA_OPT__(, __VA_ARGS__)) \
+             << [=] ARCCORE_HOST_DEVICE(Arcane::ArrayIndex<1> iter_name __VA_OPT__(ARCANE_RUNCOMMAND_REDUCER_FOR_EACH(__VA_ARGS__)))
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
