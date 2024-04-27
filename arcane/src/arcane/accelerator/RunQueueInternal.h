@@ -129,44 +129,50 @@ doDirectGPULambdaArrayBounds(LoopBoundType bounds, Lambda func)
   }
 }
 
-template <typename BuilderType, typename Lambda, typename... RemainingArgs> __global__ void
-doIndirectGPULambda2(SmallSpan<const Int32> ids, Lambda func, [[maybe_unused]] std::tuple<RemainingArgs...> other_args)
+template <typename TraitsType, typename Lambda, typename... ReducerArgs> __global__ void
+doIndirectGPULambda2(SmallSpan<const Int32> ids, Lambda func, ReducerArgs... reducer_args)
 {
+  using BuilderType = TraitsType::BuilderType;
   using LocalIdType = BuilderType::ValueType;
 
+  // TODO: a supprimer quand il n'y aura plus les anciennes réductions
   auto privatizer = privatize(func);
   auto& body = privatizer.privateCopy();
 
   Int32 i = blockDim.x * blockIdx.x + threadIdx.x;
   if (i < ids.size()) {
     LocalIdType lid(ids[i]);
-    body(BuilderType::create(i, lid));
+    body(BuilderType::create(i, lid), reducer_args...);
   }
+  doKernelReducerArgs(i, reducer_args...);
 }
 
-template <typename ItemType, typename Lambda, typename... RemainingArgs> __global__ void
-doDirectGPULambda2(Int32 vsize, Lambda func, [[maybe_unused]] std::tuple<RemainingArgs...> other_args)
+template <typename ItemType, typename Lambda, typename... ReducerArgs> __global__ void
+doDirectGPULambda2(Int32 vsize, Lambda func, ReducerArgs... reducer_args)
 {
+  // TODO: a supprimer quand il n'y aura plus les anciennes réductions
   auto privatizer = privatize(func);
   auto& body = privatizer.privateCopy();
 
   Int32 i = blockDim.x * blockIdx.x + threadIdx.x;
   if (i < vsize) {
-    body(i);
+    body(i, reducer_args...);
   }
+  doKernelReducerArgs(i, reducer_args...);
 }
 
 template <typename LoopBoundType, typename Lambda, typename... ReducerArgs> __global__ void
-doDirectGPULambdaArrayBounds2(LoopBoundType bounds, Lambda func, ReducerArgs... other_args)
+doDirectGPULambdaArrayBounds2(LoopBoundType bounds, Lambda func, ReducerArgs... reducer_args)
 {
+  // TODO: a supprimer quand il n'y aura plus les anciennes réductions
   auto privatizer = privatize(func);
   auto& body = privatizer.privateCopy();
 
   Int32 i = blockDim.x * blockIdx.x + threadIdx.x;
   if (i < bounds.nbElement()) {
-    body(bounds.getIndices(i), other_args...);
+    body(bounds.getIndices(i), reducer_args...);
   }
-  doKernelReducerArgs(i, other_args...);
+  doKernelReducerArgs(i, reducer_args...);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -209,15 +215,29 @@ class DoDirectSYCLLambdaArrayBounds
 };
 
 //! Boucle 1D avec indirection
-template <typename BuilderType, typename Lambda>
+template <typename TraitsType, typename Lambda, typename... ReducerArgs>
 class DoIndirectSYCLLambda
 {
  public:
 
+  void operator()(sycl::nd_item<1> x, SmallSpan<const Int32> ids, Lambda func, ReducerArgs... reducer_args) const
+  {
+    using BuilderType = TraitsType::BuilderType;
+    using LocalIdType = BuilderType::ValueType;
+    auto privatizer = privatize(func);
+    auto& body = privatizer.privateCopy();
+
+    Int32 i = static_cast<Int32>(x.get_global_id(0));
+    if (i < ids.size()) {
+      LocalIdType lid(ids[i]);
+      body(BuilderType::create(i, lid), reducer_args...);
+    }
+    (reducer_args._internalExecWorkItem(x), ...);
+  }
   void operator()(sycl::id<1> x, SmallSpan<const Int32> ids, Lambda func) const
   {
+    using BuilderType = TraitsType::BuilderType;
     using LocalIdType = BuilderType::ValueType;
-
     auto privatizer = privatize(func);
     auto& body = privatizer.privateCopy();
 
@@ -329,17 +349,16 @@ _applyKernelHIP(impl::RunCommandLaunchInfo& launch_info, const HipKernel& kernel
  * \param func fonction à exécuter par le noyau
  * \param args arguments de la fonction lambda
  */
-template <typename SyclKernel, typename Lambda, typename LambdaArgs, typename... RemainingArgs>
+template <typename SyclKernel, typename Lambda, typename LambdaArgs, typename... ReducerArgs>
 void _applyKernelSYCL(impl::RunCommandLaunchInfo& launch_info, SyclKernel kernel, Lambda& func,
-                      const LambdaArgs& args, [[maybe_unused]] const RemainingArgs&... other_args)
+                      const LambdaArgs& args, [[maybe_unused]] const ReducerArgs&... reducer_args)
 {
 #if defined(ARCANE_COMPILING_SYCL)
-  using RemaingArgsType = std::tuple<RemainingArgs...>;
   sycl::queue* s = reinterpret_cast<sycl::queue*>(launch_info._internalStreamImpl());
-  if constexpr (std::tuple_size<RemaingArgsType>{} > 0) {
+  if constexpr (sizeof...(ReducerArgs) > 0) {
     auto [b, t] = launch_info.threadBlockInfo();
     sycl::nd_range<1> loop_size(b * t, t);
-    s->parallel_for(loop_size, [=](sycl::nd_item<1> i) { kernel(i, args, func, other_args...); });
+    s->parallel_for(loop_size, [=](sycl::nd_item<1> i) { kernel(i, args, func, reducer_args...); });
   }
   else {
     sycl::range<1> loop_size = launch_info.totalLoopSize();
