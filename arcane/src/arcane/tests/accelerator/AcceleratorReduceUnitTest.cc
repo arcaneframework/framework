@@ -395,6 +395,9 @@ _executeTestReduceMax(Int32 nb_iteration, const NumArray<DataType, MDDim1>& t1, 
   }
 }
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 template <typename DataType> void AcceleratorReduceUnitTest::
 _executeTestReduceV2(Int32 nb_iteration, const NumArray<DataType, MDDim1>& t1,
                      DataType expected_sum,
@@ -404,23 +407,20 @@ _executeTestReduceV2(Int32 nb_iteration, const NumArray<DataType, MDDim1>& t1,
   const Int32 n1 = t1.extent0();
   for (int z = 0; z < nb_iteration; ++z) {
     auto command = makeCommand(m_queue);
-    ax::ReducerSum2<DataType> reducer_sum(command);
-    ax::ReducerMin2<DataType> reducer_min(command);
-    ax::ReducerMax2<DataType> reducer_max(command);
+    ReducerSum2<DataType> reducer_sum(command);
+    ReducerMin2<DataType> reducer_min(command);
+    ReducerMax2<DataType> reducer_max(command);
+
     auto in_t1 = viewIn(command, t1);
 
-    command << ::Arcane::Accelerator::impl::makeExtendedArrayBoundLoop(Arcane::ArrayBounds<MDDim1>(n1),
-                                                                       reducer_sum, reducer_max, reducer_min)
-            << [=] ARCCORE_HOST_DEVICE(Arcane::ArrayIndex<1> iter,
-                                       ReducerSum2<DataType> & reducer_sum, ReducerMax2<DataType> & reducer_max,
-                                       ReducerMin2<DataType> & reducer_min) {
-                 {
-                   DataType v = in_t1(iter);
-                   reducer_sum.combine(v);
-                   reducer_min.combine(v);
-                   reducer_max.combine(v);
-                 };
-               };
+    command << RUNCOMMAND_LOOP1_EX(iter, n1, reducer_sum, reducer_max, reducer_min)
+    {
+      DataType v = in_t1(iter);
+      reducer_sum.combine(v);
+      reducer_min.combine(v);
+      reducer_max.combine(v);
+    };
+
     DataType reduced_max = reducer_max.reducedValue();
     DataType reduced_min = reducer_min.reducedValue();
     DataType reduced_sum = reducer_sum.reducedValue();
