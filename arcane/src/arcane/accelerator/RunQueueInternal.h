@@ -129,44 +129,50 @@ doDirectGPULambdaArrayBounds(LoopBoundType bounds, Lambda func)
   }
 }
 
-template <typename BuilderType, typename Lambda, typename... RemainingArgs> __global__ void
-doIndirectGPULambda2(SmallSpan<const Int32> ids, Lambda func, [[maybe_unused]] std::tuple<RemainingArgs...> other_args)
+template <typename TraitsType, typename Lambda, typename... ReducerArgs> __global__ void
+doIndirectGPULambda2(SmallSpan<const Int32> ids, Lambda func, ReducerArgs... reducer_args)
 {
+  using BuilderType = TraitsType::BuilderType;
   using LocalIdType = BuilderType::ValueType;
 
+  // TODO: a supprimer quand il n'y aura plus les anciennes réductions
   auto privatizer = privatize(func);
   auto& body = privatizer.privateCopy();
 
   Int32 i = blockDim.x * blockIdx.x + threadIdx.x;
   if (i < ids.size()) {
     LocalIdType lid(ids[i]);
-    body(BuilderType::create(i, lid));
+    body(BuilderType::create(i, lid), reducer_args...);
   }
+  doKernelReducerArgs(i, reducer_args...);
 }
 
-template <typename ItemType, typename Lambda, typename... RemainingArgs> __global__ void
-doDirectGPULambda2(Int32 vsize, Lambda func, [[maybe_unused]] std::tuple<RemainingArgs...> other_args)
+template <typename ItemType, typename Lambda, typename... ReducerArgs> __global__ void
+doDirectGPULambda2(Int32 vsize, Lambda func, ReducerArgs... reducer_args)
 {
+  // TODO: a supprimer quand il n'y aura plus les anciennes réductions
   auto privatizer = privatize(func);
   auto& body = privatizer.privateCopy();
 
   Int32 i = blockDim.x * blockIdx.x + threadIdx.x;
   if (i < vsize) {
-    body(i);
+    body(i, reducer_args...);
   }
+  doKernelReducerArgs(i, reducer_args...);
 }
 
 template <typename LoopBoundType, typename Lambda, typename... ReducerArgs> __global__ void
-doDirectGPULambdaArrayBounds2(LoopBoundType bounds, Lambda func, ReducerArgs... other_args)
+doDirectGPULambdaArrayBounds2(LoopBoundType bounds, Lambda func, ReducerArgs... reducer_args)
 {
+  // TODO: a supprimer quand il n'y aura plus les anciennes réductions
   auto privatizer = privatize(func);
   auto& body = privatizer.privateCopy();
 
   Int32 i = blockDim.x * blockIdx.x + threadIdx.x;
   if (i < bounds.nbElement()) {
-    body(bounds.getIndices(i), other_args...);
+    body(bounds.getIndices(i), reducer_args...);
   }
-  doKernelReducerArgs(i, other_args...);
+  doKernelReducerArgs(i, reducer_args...);
 }
 
 /*---------------------------------------------------------------------------*/

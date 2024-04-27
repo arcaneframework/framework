@@ -229,10 +229,10 @@ _applyItems(RunCommand& command, typename TraitsType::ContainerType items,
   launch_info.beginExecute();
   switch (exec_policy) {
   case eExecutionPolicy::CUDA:
-    _applyKernelCUDA(launch_info, ARCANE_KERNEL_CUDA_FUNC(doIndirectGPULambda) < BuilderType, Lambda >, func, items.localIds());
+    _applyKernelCUDA(launch_info, ARCANE_KERNEL_CUDA_FUNC(doIndirectGPULambda2) < TraitsType, Lambda, ReducerArgs... >, func, items.localIds(), reducer_args...);
     break;
   case eExecutionPolicy::HIP:
-    _applyKernelHIP(launch_info, ARCANE_KERNEL_HIP_FUNC(doIndirectGPULambda) < BuilderType, Lambda >, func, items.localIds());
+    _applyKernelHIP(launch_info, ARCANE_KERNEL_HIP_FUNC(doIndirectGPULambda2) < TraitsType, Lambda, ReducerArgs... >, func, items.localIds(), reducer_args...);
     break;
   case eExecutionPolicy::SYCL:
     _applyKernelSYCL(launch_info, ARCANE_KERNEL_SYCL_FUNC(impl::DoIndirectSYCLLambda) < BuilderType, Lambda > {}, func, items.localIds());
