@@ -362,4 +362,41 @@ void _applyKernelSYCL(impl::RunCommandLaunchInfo& launch_info, SyclKernel kernel
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+#define ARCANE_MACRO_PARENS ()
+
+// Les trois macros suivantes permettent de générer récursivement un ensemble
+// de paramètres. Si on veut supporter plus de paramètres, on peut ajouter
+// des appels à la macro suivante dans chaque macro.
+// Plus d'info ici: https://stackoverflow.com/questions/70238923/how-to-expand-a-recursive-macro-via-va-opt-in-a-nested-context
+#define ARCANE_MACRO_EXPAND(...) ARCANE_MACRO_EXPAND2(ARCANE_MACRO_EXPAND2(ARCANE_MACRO_EXPAND2(__VA_ARGS__)))
+#define ARCANE_MACRO_EXPAND2(...) ARCANE_MACRO_EXPAND1(ARCANE_MACRO_EXPAND1(ARCANE_MACRO_EXPAND1(__VA_ARGS__)))
+#define ARCANE_MACRO_EXPAND1(...) __VA_ARGS__
+
+#define ARCANE_RUNCOMMAND_REDUCER_FOR_EACH_HELPER(a1, ...) \
+  , decltype(a1)& a1                                                     \
+  __VA_OPT__(ARCANE_RUNCOMMAND_REDUCER_FOR_EACH_AGAIN ARCANE_MACRO_PARENS(__VA_ARGS__))
+
+#define ARCANE_RUNCOMMAND_REDUCER_FOR_EACH_AGAIN() ARCANE_RUNCOMMAND_REDUCER_FOR_EACH_HELPER
+
+/*
+ * \brief Macro pour générer les arguments de la lambda.
+ *
+ * Cette macro est interne à Arcane et ne doit pas être utilisée en dehors de Arcane.
+ *
+ * Cette macro permet de générer pour chaque argument \a arg une valeur `decltype(arg)& arg`.
+ *
+ * Par exemple:
+ * \code
+ * ARCANE_RUNCOMMAND_REDUCER_FOR_EACH(value1,value2)
+ * // Cela génère le code suivant:
+ * , decltype(value1)&, decltype(value2)&
+ * \encode
+ */
+#define ARCANE_RUNCOMMAND_REDUCER_FOR_EACH(...) \
+  __VA_OPT__(ARCANE_MACRO_EXPAND(ARCANE_RUNCOMMAND_REDUCER_FOR_EACH_HELPER(__VA_ARGS__)))
+
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 #endif
