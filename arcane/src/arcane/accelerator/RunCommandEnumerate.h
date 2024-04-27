@@ -222,7 +222,6 @@ _applyItems(RunCommand& command, typename TraitsType::ContainerType items,
   if (vsize == 0)
     return;
   using ItemType = TraitsType::ItemType;
-  using BuilderType = TraitsType::BuilderType;
   impl::RunCommandLaunchInfo launch_info(command, vsize);
   const eExecutionPolicy exec_policy = launch_info.executionPolicy();
   launch_info.computeLoopRunInfo();
@@ -235,7 +234,7 @@ _applyItems(RunCommand& command, typename TraitsType::ContainerType items,
     _applyKernelHIP(launch_info, ARCANE_KERNEL_HIP_FUNC(doIndirectGPULambda2) < TraitsType, Lambda, ReducerArgs... >, func, items.localIds(), reducer_args...);
     break;
   case eExecutionPolicy::SYCL:
-    _applyKernelSYCL(launch_info, ARCANE_KERNEL_SYCL_FUNC(impl::DoIndirectSYCLLambda) < BuilderType, Lambda > {}, func, items.localIds());
+    _applyKernelSYCL(launch_info, ARCANE_KERNEL_SYCL_FUNC(impl::DoIndirectSYCLLambda) < TraitsType, Lambda, ReducerArgs... > {}, func, items.localIds(), reducer_args...);
     break;
   case eExecutionPolicy::Sequential:
     impl::_doItemsLambda<TraitsType>(0, items, func, reducer_args...);

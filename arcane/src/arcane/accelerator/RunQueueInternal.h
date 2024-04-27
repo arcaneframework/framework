@@ -215,15 +215,29 @@ class DoDirectSYCLLambdaArrayBounds
 };
 
 //! Boucle 1D avec indirection
-template <typename BuilderType, typename Lambda>
+template <typename TraitsType, typename Lambda, typename... ReducerArgs>
 class DoIndirectSYCLLambda
 {
  public:
 
+  void operator()(sycl::nd_item<1> x, SmallSpan<const Int32> ids, Lambda func, ReducerArgs... reducer_args) const
+  {
+    using BuilderType = TraitsType::BuilderType;
+    using LocalIdType = BuilderType::ValueType;
+    auto privatizer = privatize(func);
+    auto& body = privatizer.privateCopy();
+
+    Int32 i = static_cast<Int32>(x.get_global_id(0));
+    if (i < ids.size()) {
+      LocalIdType lid(ids[i]);
+      body(BuilderType::create(i, lid), reducer_args...);
+    }
+    (reducer_args._internalExecWorkItem(x), ...);
+  }
   void operator()(sycl::id<1> x, SmallSpan<const Int32> ids, Lambda func) const
   {
+    using BuilderType = TraitsType::BuilderType;
     using LocalIdType = BuilderType::ValueType;
-
     auto privatizer = privatize(func);
     auto& body = privatizer.privateCopy();
 
@@ -335,17 +349,16 @@ _applyKernelHIP(impl::RunCommandLaunchInfo& launch_info, const HipKernel& kernel
  * \param func fonction à exécuter par le noyau
  * \param args arguments de la fonction lambda
  */
-template <typename SyclKernel, typename Lambda, typename LambdaArgs, typename... RemainingArgs>
+template <typename SyclKernel, typename Lambda, typename LambdaArgs, typename... ReducerArgs>
 void _applyKernelSYCL(impl::RunCommandLaunchInfo& launch_info, SyclKernel kernel, Lambda& func,
-                      const LambdaArgs& args, [[maybe_unused]] const RemainingArgs&... other_args)
+                      const LambdaArgs& args, [[maybe_unused]] const ReducerArgs&... reducer_args)
 {
 #if defined(ARCANE_COMPILING_SYCL)
-  using RemaingArgsType = std::tuple<RemainingArgs...>;
   sycl::queue* s = reinterpret_cast<sycl::queue*>(launch_info._internalStreamImpl());
-  if constexpr (std::tuple_size<RemaingArgsType>{} > 0) {
+  if constexpr (sizeof...(ReducerArgs) > 0) {
     auto [b, t] = launch_info.threadBlockInfo();
     sycl::nd_range<1> loop_size(b * t, t);
-    s->parallel_for(loop_size, [=](sycl::nd_item<1> i) { kernel(i, args, func, other_args...); });
+    s->parallel_for(loop_size, [=](sycl::nd_item<1> i) { kernel(i, args, func, reducer_args...); });
   }
   else {
     sycl::range<1> loop_size = launch_info.totalLoopSize();
