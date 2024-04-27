@@ -648,13 +648,13 @@ void SimpleHydroAcceleratorService::
 updateDensity()
 {
   auto command = makeCommand(m_default_queue);
-  ax::ReducerMax<double> density_ratio_maximum(command);
+  ax::ReducerMax2<double> density_ratio_maximum(command);
   density_ratio_maximum.setValue(0.0);
   auto in_cell_mass = ax::viewIn(command,m_cell_mass);
   auto in_volume = ax::viewIn(command,m_volume);
   auto in_out_density = ax::viewInOut(command,m_density);
 
-  command << RUNCOMMAND_ENUMERATE(Cell,cid,allCells())
+  command << RUNCOMMAND_ENUMERATE_EX(Cell,cid,allCells(),density_ratio_maximum)
   {
     Real old_density = in_out_density[cid];
     Real new_density = in_cell_mass[cid] / in_volume[cid];
@@ -663,10 +663,10 @@ updateDensity()
 
     Real density_ratio = (new_density - old_density) / new_density;
 
-    density_ratio_maximum.max(density_ratio);
+    density_ratio_maximum.combine(density_ratio);
   };
 
-  m_density_ratio_maximum = density_ratio_maximum.reduce();
+  m_density_ratio_maximum = density_ratio_maximum.reducedValue();
 
   // Vérifie la validité du ratio calculé. La référence n'est valide
   // qu'en séquentiel car ce ratio n'est pas réduit sur tout les
@@ -750,17 +750,17 @@ computeDeltaT()
 
   {
     auto command = makeCommand(m_default_queue);
-    ax::ReducerMin<double> minimum_aux_reducer(command);
+    ax::ReducerMin2<double> minimum_aux_reducer(command);
     auto in_sound_speed = ax::viewIn(command,m_sound_speed);
     auto in_caracteristic_length = ax::viewIn(command,m_caracteristic_length);
-    command << RUNCOMMAND_ENUMERATE(Cell,cid,allCells())
+    command << RUNCOMMAND_ENUMERATE_EX(Cell,cid,allCells(),minimum_aux_reducer)
     {
       Real cell_dx = in_caracteristic_length[cid];
       Real sound_speed = in_sound_speed[cid];
       Real dx_sound = cell_dx / sound_speed;
-      minimum_aux_reducer.min(dx_sound);
+      minimum_aux_reducer.combine(dx_sound);
     };
-    minimum_aux = minimum_aux_reducer.reduce();
+    minimum_aux = minimum_aux_reducer.reducedValue();
   }
 
   Real new_dt = m_module->getCfl()*minimum_aux;
