@@ -161,8 +161,10 @@ executeTest()
     info() << "UseReducePolicy = Grid";
     m_runner.setDeviceReducePolicy(ax::eDeviceReducePolicy::Grid);
     Int32 nb_iter = 100;
+    if (!isAcceleratorPolicy(m_runner.executionPolicy()))
+      nb_iter = 10;
     if (arcaneIsDebug())
-      nb_iter = 5;
+      nb_iter /= 5;
     executeTest2(nb_iter);
   }
 }
@@ -186,7 +188,7 @@ _executeTestDataType(Int32 nb_iteration)
 {
   ValueChecker vc(A_FUNCINFO);
 
-  info() << "Execute Test1";
+  info() << "Execute Test1 nb_iter=" << nb_iteration;
 
   auto queue = makeQueue(m_runner);
   m_queue = queue;
@@ -404,6 +406,7 @@ _executeTestReduceV2(Int32 nb_iteration, const NumArray<DataType, MDDim1>& t1,
                      DataType expected_min,
                      DataType expected_max)
 {
+  info() << "Execute Test ReduceV2 nb_iter=" << nb_iteration;
   const Int32 n1 = t1.extent0();
   for (int z = 0; z < nb_iteration; ++z) {
     auto command = makeCommand(m_queue);
