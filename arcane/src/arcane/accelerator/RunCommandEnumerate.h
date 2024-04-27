@@ -34,7 +34,10 @@ namespace Arcane
 class IteratorWithIndexBase
 {
 };
-
+/*!
+ * \brief Classe de base pour un itérateur permettant de conserver l'index
+ * de l'itération.
+ */
 template <typename T>
 class IteratorWithIndex
 : public IteratorWithIndexBase
@@ -112,7 +115,9 @@ namespace Arcane::Accelerator::impl
  * type de numéro local (CellLocalId, NodeLocalId, ...)
  */
 template <typename T>
-concept RunCommandEnumerateIteratorConcept = std::derived_from<T, Item> || std::derived_from<T, ItemLocalId> || std::derived_from<T, IteratorWithIndexBase>;
+concept RunCommandEnumerateIteratorConcept = std::derived_from<T, Item>
+ || std::derived_from<T, ItemLocalId>
+ || std::derived_from<T, IteratorWithIndexBase>;
 
 //! Template pour connaitre le type d'entité associé à T
 template <typename T>
@@ -188,16 +193,19 @@ class RunCommandItemEnumeratorTraitsT
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template <typename BuilderType, typename ContainerType, typename Lambda>
-void _doIndirectThreadLambda(Int32 base_index, ContainerType sub_items, const Lambda& func)
+template <typename TraitsType, typename ContainerType, typename Lambda, typename... ReducerArgs>
+void _doItemsLambda(Int32 base_index, ContainerType sub_items, const Lambda& func, ReducerArgs... reducer_args)
 {
+  using ItemType = TraitsType::ItemType;
+  using BuilderType = TraitsType::BuilderType;
   using LocalIdType = BuilderType::ValueType;
   auto privatizer = privatize(func);
   auto& body = privatizer.privateCopy();
 
-  ENUMERATE_ITEM (iitem, sub_items) {
-    body(BuilderType::create(iitem.index() + base_index, LocalIdType(iitem.itemLocalId())));
+  ENUMERATE_NO_TRACE_ (ItemType, iitem, sub_items) {
+    body(BuilderType::create(iitem.index() + base_index, LocalIdType(iitem.itemLocalId())), reducer_args...);
   }
+  (reducer_args._internalReduceHost(), ...);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -205,14 +213,14 @@ void _doIndirectThreadLambda(Int32 base_index, ContainerType sub_items, const La
 /*!
  * \brief Applique l'enumération \a func sur la liste d'entité \a items.
  */
-template <typename TraitsType, typename Lambda> void
-_applyItems(RunCommand& command, typename TraitsType::ContainerType items, const Lambda& func)
+template <typename TraitsType, typename Lambda, typename... ReducerArgs> void
+_applyItems(RunCommand& command, typename TraitsType::ContainerType items,
+            const Lambda& func, const ReducerArgs&... reducer_args)
 {
   // TODO: fusionner la partie commune avec 'applyLoop'
   Integer vsize = items.size();
   if (vsize == 0)
     return;
-  using LocalIdType = TraitsType::LocalIdType;
   using ItemType = TraitsType::ItemType;
   using BuilderType = TraitsType::BuilderType;
   impl::RunCommandLaunchInfo launch_info(command, vsize);
@@ -230,15 +238,12 @@ _applyItems(RunCommand& command, typename TraitsType::ContainerType items, const
     _applyKernelSYCL(launch_info, ARCANE_KERNEL_SYCL_FUNC(impl::DoIndirectSYCLLambda) < BuilderType, Lambda > {}, func, items.localIds());
     break;
   case eExecutionPolicy::Sequential:
-    ENUMERATE_NO_TRACE_(ItemType, iitem, items)
-    {
-      func(BuilderType::create(iitem.index(), LocalIdType(iitem.itemLocalId())));
-    }
+    impl::_doItemsLambda<TraitsType>(0, items, func, reducer_args...);
     break;
   case eExecutionPolicy::Thread:
     arcaneParallelForeach(items, launch_info.loopRunInfo(),
                           [&](ItemVectorViewT<ItemType> sub_items, Int32 base_index) {
-                            impl::_doIndirectThreadLambda<BuilderType>(base_index, sub_items, func);
+                            impl::_doItemsLambda<TraitsType>(base_index, sub_items, func, reducer_args...);
                           });
     break;
   default:
@@ -249,6 +254,27 @@ _applyItems(RunCommand& command, typename TraitsType::ContainerType items, const
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+template <typename TraitsType, typename... ReducerArgs>
+class ItemRunCommandArgs
+{
+ public:
+
+  ItemRunCommandArgs(const TraitsType& traits, const ReducerArgs&... reducer_args)
+  : m_traits(traits)
+  , m_reducer_args(reducer_args...)
+  {
+  }
+
+ public:
+
+  TraitsType m_traits;
+  std::tuple<ReducerArgs...> m_reducer_args;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 } // namespace Arcane::Accelerator::impl
 
 namespace Arcane::Accelerator
@@ -266,7 +292,7 @@ run(RunCommand& command, const TraitsType& traits, const Lambda& func)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template <typename TraitsType>
+template <typename TraitsType, typename... ReducerArgs>
 class ItemRunCommand
 {
  public:
@@ -276,8 +302,19 @@ class ItemRunCommand
   , m_traits(traits)
   {
   }
+
+  ItemRunCommand(RunCommand& command, const TraitsType& traits, const std::tuple<ReducerArgs...>& reducer_args)
+  : m_command(command)
+  , m_traits(traits)
+  , m_reducer_args(reducer_args)
+  {
+  }
+
+ public:
+
   RunCommand& m_command;
   TraitsType m_traits;
+  std::tuple<ReducerArgs...> m_reducer_args;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -313,11 +350,11 @@ operator<<(RunCommand& command, const ItemGroupT<ItemType>& items)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template <typename TraitsType, typename Lambda>
-void operator<<(ItemRunCommand<TraitsType>&& nr, const Lambda& f)
-{
-  run(nr.m_command, nr.m_traits, f);
-}
+//template <typename TraitsType, typename Lambda>
+//void operator<<(ItemRunCommand<TraitsType>&& nr, const Lambda& f)
+//{
+//  run(nr.m_command, nr.m_traits, f);
+//}
 
 template <typename TraitsType, typename Lambda>
 void operator<<(ItemRunCommand<TraitsType>& nr, const Lambda& f)
@@ -325,10 +362,46 @@ void operator<<(ItemRunCommand<TraitsType>& nr, const Lambda& f)
   run(nr.m_command, nr.m_traits, f);
 }
 
+template <typename TraitsType, typename... ReducerArgs> auto
+operator<<(RunCommand& command, const impl::ItemRunCommandArgs<TraitsType, ReducerArgs...>& args)
+{
+  return ItemRunCommand<TraitsType, ReducerArgs...>(command, args.m_traits, args.m_reducer_args);
+}
+
+template <typename TraitsType, typename Lambda, typename... ReducerArgs>
+void operator<<(ItemRunCommand<TraitsType, ReducerArgs...>&& nr, const Lambda& f)
+{
+  if constexpr (sizeof...(ReducerArgs) > 0) {
+    std::apply([&](auto... vs) { impl::_applyItems<TraitsType>(nr.m_command, nr.m_traits.m_items, f, vs...); }, nr.m_reducer_args);
+  }
+  else
+    run(nr.m_command, nr.m_traits, f);
+}
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 } // namespace Arcane::Accelerator
+
+namespace Arcane::Accelerator::impl
+{
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template <typename ItemTypeName, typename ItemContainerType, typename... ReducerArgs> auto
+makeExtendedItemEnumeratorLoop(const ItemContainerType& container_type,
+                               const ReducerArgs&... reducer_args)
+//-> ItemRunCommandArgs<RunCommandItemEnumeratorTraitsT<ItemTypeName>, ReducerArgs...>
+{
+  using TraitsType = RunCommandItemEnumeratorTraitsT<ItemTypeName>;
+  return ItemRunCommandArgs<TraitsType, ReducerArgs...>(TraitsType(container_type), reducer_args...);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+} // namespace Arcane::Accelerator::impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -353,6 +426,14 @@ void operator<<(ItemRunCommand<TraitsType>& nr, const Lambda& f)
 #define RUNCOMMAND_ENUMERATE(ItemTypeName, iter_name, item_group) \
   A_FUNCINFO << ::Arcane::Accelerator::impl::RunCommandItemEnumeratorTraitsT<ItemTypeName>(item_group) \
              << [=] ARCCORE_HOST_DEVICE(::Arcane::Accelerator::impl::RunCommandItemEnumeratorTraitsT<ItemTypeName>::ValueType iter_name)
+
+/*!
+ * \brief Macro expérimentale identique à RUNCOMMAND_ENUMERATE() mais aved arguments pour les réductions
+ */
+#define RUNCOMMAND_ENUMERATE_EX(ItemTypeName, iter_name, item_group, ...) \
+  A_FUNCINFO << ::Arcane::Accelerator::impl::makeExtendedItemEnumeratorLoop<ItemTypeName>(item_group __VA_OPT__(, __VA_ARGS__)) \
+             << [=] ARCCORE_HOST_DEVICE(::Arcane::Accelerator::impl::RunCommandItemEnumeratorTraitsT<ItemTypeName>::ValueType iter_name \
+                                        __VA_OPT__(ARCANE_RUNCOMMAND_REDUCER_FOR_EACH(__VA_ARGS__)))
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
