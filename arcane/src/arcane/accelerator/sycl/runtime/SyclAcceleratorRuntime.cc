@@ -15,12 +15,9 @@
 #include "arcane/accelerator/sycl/internal/SyclAcceleratorInternal.h"
 
 #include "arcane/utils/PlatformUtils.h"
-#include "arcane/utils/Array.h"
-#include "arcane/utils/TraceInfo.h"
+#include "arcane/utils/NotSupportedException.h"
 #include "arcane/utils/FatalErrorException.h"
-#include "arcane/utils/NotImplementedException.h"
 #include "arcane/utils/IMemoryRessourceMng.h"
-#include "arcane/utils/OStringStream.h"
 #include "arcane/utils/internal/IMemoryRessourceMngInternal.h"
 
 #include "arcane/accelerator/core/RunQueueBuildInfo.h"
@@ -31,7 +28,6 @@
 #include "arcane/accelerator/core/IRunQueueEventImpl.h"
 #include "arcane/accelerator/core/DeviceInfoList.h"
 #include "arcane/accelerator/core/RunQueue.h"
-#include "arcane/accelerator/core/internal/RunCommandImpl.h"
 
 #include <iostream>
 
@@ -85,7 +81,7 @@ class SyclRunQueueStream
     if (!args.isAsync())
       m_sycl_stream->wait();
   }
-  void prefetchMemory(const MemoryPrefetchArgs& args) override
+  void prefetchMemory([[maybe_unused]] const MemoryPrefetchArgs& args) override
   {
     ARCANE_SYCL_FUNC_NOT_HANDLED;
   }
@@ -125,22 +121,34 @@ class SyclRunQueueEvent
  public:
 
   // Enregistre l'événement au sein d'une RunQueue
-  void recordQueue(impl::IRunQueueStream* stream) final
+  void recordQueue([[maybe_unused]] impl::IRunQueueStream* stream) final
   {
-    ARCANE_FATAL("NYI");
+#if defined(__ADAPTIVECPP__)
+    m_recorded_stream = stream;
+    // TODO: Vérifier s'il faut faire quelque chose
+#else
+    ARCANE_THROW(NotSupportedException, "Only supported for AdaptiveCpp implementation");
+#endif
   }
 
   void wait() final
   {
-    m_sycl_event.wait();
+    ARCANE_SYCL_FUNC_NOT_HANDLED;
+    // TODO: Vérifier ce que cela signifie exactement
+    //m_sycl_event.wait();
   }
 
-  void waitForEvent(impl::IRunQueueStream* stream) final
+  void waitForEvent([[maybe_unused]] impl::IRunQueueStream* stream) final
   {
-    ARCANE_FATAL("NYI");
+#if defined(__ADAPTIVECPP__)
+    auto* rq = static_cast<SyclRunQueueStream*>(stream);
+    m_sycl_event.wait(rq->trueStream().get_wait_list());
+#else
+    ARCANE_THROW(NotSupportedException, "Only supported for AdaptiveCpp implementation");
+#endif
   }
 
-  Int64 elapsedTime(IRunQueueEventImpl* start_event) final
+  Int64 elapsedTime([[maybe_unused]] IRunQueueEventImpl* start_event) final
   {
     ARCANE_SYCL_FUNC_NOT_HANDLED;
     return 0;
@@ -149,7 +157,7 @@ class SyclRunQueueEvent
  private:
 
   sycl::event m_sycl_event;
-  std::vector<sycl::event> m_my_event_as_vector;
+  impl::IRunQueueStream* m_recorded_stream = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -176,7 +184,7 @@ class SyclRunnerRuntime
   }
   eExecutionPolicy executionPolicy() const override
   {
-    ARCANE_FATAL("NYI");
+    return eExecutionPolicy::SYCL;
   }
   impl::IRunQueueStream* createStream(const RunQueueBuildInfo& bi) override
   {
@@ -190,16 +198,18 @@ class SyclRunnerRuntime
   {
     return new SyclRunQueueEvent(true);
   }
-  void setMemoryAdvice(ConstMemoryView buffer, eMemoryAdvice advice, DeviceId device_id) override
+  void setMemoryAdvice([[maybe_unused]] ConstMemoryView buffer, [[maybe_unused]] eMemoryAdvice advice,
+                       [[maybe_unused]] DeviceId device_id) override
   {
     ARCANE_SYCL_FUNC_NOT_HANDLED;
   }
-  void unsetMemoryAdvice(ConstMemoryView buffer, eMemoryAdvice advice, DeviceId device_id) override
+  void unsetMemoryAdvice([[maybe_unused]] ConstMemoryView buffer,
+                         [[maybe_unused]] eMemoryAdvice advice, [[maybe_unused]] DeviceId device_id) override
   {
     ARCANE_SYCL_FUNC_NOT_HANDLED;
   }
 
-  void setCurrentDevice(DeviceId device_id) final
+  void setCurrentDevice([[maybe_unused]] DeviceId device_id) final
   {
     ARCANE_SYCL_FUNC_NOT_HANDLED;
   }
@@ -241,7 +251,6 @@ class SyclRunnerRuntime
 
  private:
 
-  bool m_is_verbose = false;
   impl::DeviceInfoList m_device_info_list;
   std::unique_ptr<sycl::device> m_default_device;
   std::unique_ptr<sycl::context> m_default_context;
