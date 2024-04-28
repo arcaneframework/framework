@@ -38,6 +38,8 @@ namespace Arcane::Accelerator::impl
 
 template <enum eAtomicOperation Operation>
 class HostAtomic;
+template <enum eAtomicOperation Operation>
+class SyclAtomic;
 
 template <>
 class HostAtomic<eAtomicOperation::Add>
@@ -85,6 +87,52 @@ class HostAtomic<eAtomicOperation::Min>
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+#if defined(ARCANE_COMPILING_SYCL)
+
+template <>
+class SyclAtomic<eAtomicOperation::Add>
+{
+ public:
+
+  template <AcceleratorAtomicConcept DataType> static void
+  apply(DataType* ptr, DataType value)
+  {
+    sycl::atomic_ref<DataType, sycl::memory_order::relaxed, sycl::memory_scope::device> v(*ptr);
+    v.fetch_add(value);
+  }
+};
+
+template <>
+class SyclAtomic<eAtomicOperation::Max>
+{
+ public:
+
+  template <AcceleratorAtomicConcept DataType> static void
+  apply(DataType* ptr, DataType value)
+  {
+    sycl::atomic_ref<DataType, sycl::memory_order::relaxed, sycl::memory_scope::device> v(*ptr);
+    v.fetch_max(value);
+  }
+};
+
+template <>
+class SyclAtomic<eAtomicOperation::Min>
+{
+ public:
+
+  template <AcceleratorAtomicConcept DataType> static void
+  apply(DataType* ptr, DataType value)
+  {
+    sycl::atomic_ref<DataType, sycl::memory_order::relaxed, sycl::memory_scope::device> v(*ptr);
+    v.fetch_min(value);
+  }
+};
+
+#endif
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 class AtomicImpl
 {
  public:
@@ -95,6 +143,8 @@ class AtomicImpl
   {
 #if defined(ARCCORE_DEVICE_TARGET_CUDA) || defined(ARCCORE_DEVICE_TARGET_HIP)
     impl::CommonCudaHipAtomic<DataType, Operation>::apply(ptr, value);
+#elif defined(ARCCORE_DEVICE_TARGET_SYCL)
+    SyclAtomic<Operation>::apply(ptr, value);
 #else
     HostAtomic<Operation>::apply(ptr, value);
 #endif
