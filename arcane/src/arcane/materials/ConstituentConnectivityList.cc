@@ -65,8 +65,12 @@ namespace
         }
       }
     }
-#ifdef ARCCORE_DEVICE_CODE
+#if defined(ARCCORE_DEVICE_CODE)
+    // Avec Intel DPC++ 2024.1 l'utilisation de cette fonction avec le
+    // backend CUDA provoque une erreur dans l'assembleur généré.
+#  if !defined(__INTEL_LLVM_COMPILER)
     assert(false);
+#  endif
 #else
     ARCANE_FATAL("No value to remove '{0}' found in list {1}", value_to_remove, values);
 #endif
