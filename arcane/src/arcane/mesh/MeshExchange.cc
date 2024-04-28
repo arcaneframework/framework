@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -884,7 +884,6 @@ _computeItemsToSend2()
 void MeshExchange::
 _computeMeshConnectivityInfos3()
 {
-  info() << "--- _computeMeshConnectivityInfos3" ;
   if (!m_mesh->itemFamilyNetwork()) info() << "Should have an IItemFamilyNetwork. Exiting.";
   //1-Prepare data structure
   m_ghost_item_dest_ranks_map.resize(m_parallel_mng->commSize());
@@ -892,6 +891,7 @@ _computeMeshConnectivityInfos3()
       _allocData(family);
       },
       IItemFamilyNetwork::TopologicalOrder);
+
   // Here the algorithm propagates the owner to the neighborhood
   // The propagation to the items owned (dependencies) has already been done in updateOwnersFromCell
   // Todo include also the owned item propagation (would avoid to call updateOwnersFromCell...)
@@ -931,14 +931,19 @@ _propagatesToChildConnectivities(IItemFamily* family)
    * child_connectivities.add(m_mesh->itemFamilyNetwork()->getConnectivity(family,m_mesh->cellFamily(),mesh::connectivityName(family,m_mesh->cellFamily())));
    * }
    */
-  auto child_connectivities = m_mesh->itemFamilyNetwork()->getChildConnectivities(family);
+  //auto child_connectivities = m_mesh->itemFamilyNetwork()->getChildConnectivities(family);
+  auto child_connectivities = m_mesh->itemFamilyNetwork()->getChildDependencies(family); // Only dependencies are required to propagate owner
   for (const auto& child_connectivity : child_connectivities){
     //if(!child_connectivity->isEmpty())
     {
+      VariableItemInt32& conn_item_new_owner = child_connectivity->targetFamily()->itemsNewOwner();
       auto accessor = IndexedItemConnectivityAccessor(child_connectivity);
       ENUMERATE_ITEM(item, family->allItems()){
         // Parse child relations
         _addDestRank(*item,family,item_new_owner[item]);
+        ENUMERATE_ITEM(connected_item,accessor(ItemLocalId(item))){
+          _addDestRank(*item,family,conn_item_new_owner[connected_item]);
+        }
 
         ENUMERATE_ITEM(connected_item,accessor(ItemLocalId(item))){
           _addDestRank(*connected_item,child_connectivity->targetFamily(),*item,family);
@@ -1242,6 +1247,8 @@ _computeItemsToSend3()
 void MeshExchange::
 _setItemsToSend(IItemFamily* family)
 {
+  if(family->nbItem()==0)
+    return ;
   auto iter = m_items_to_send.find(family);
   if (iter==m_items_to_send.end())
     ARCANE_FATAL("No items to send for family '{0}'",family->name());

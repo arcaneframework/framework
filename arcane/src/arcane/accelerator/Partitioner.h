@@ -119,7 +119,7 @@ class GenericPartitionerIf
       ARCANE_CHECK_HIP(rocprim::partition(s.m_algo_storage.address(), temp_storage_size, input_iter, output_iter,
                                           nb_list1_ptr, nb_item, select_lambda, stream));
       s.m_device_nb_list1_storage.copyToAsync(s.m_host_nb_list1_storage, queue);
-    }
+    } break;
 #endif
     case eExecutionPolicy::Thread:
       // Pas encore implémenté en multi-thread

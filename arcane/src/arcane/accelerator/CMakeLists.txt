@@ -1,10 +1,6 @@
 ﻿# ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
 # Runtime Arcane pour les accélérateurs
-#
-# Pour l'instant seul CUDA est supporté
-# Ce fichier doit être inclus après 'arcane/accelerator/cuda' ou
-# 'arcane/accelerator/hip'
 
 include(srcs.cmake)
 
@@ -14,19 +10,28 @@ arcane_add_library(arcane_accelerator
   FILES ${ARCANE_SOURCES}
   )
 
-arcane_accelerator_add_source_files(MemoryCopier.cc Scan.cc CommonUtils.cc)
+arcane_accelerator_add_source_files(MemoryCopier.cc CommonUtils.cc)
 
 target_link_libraries(arcane_accelerator PUBLIC
   arcane_core
   arcane_accelerator_core
   "$<TARGET_NAME_IF_EXISTS:arcane_accelerator_cuda>"
   "$<TARGET_NAME_IF_EXISTS:arcane_accelerator_hip>"
-  )
+  "$<TARGET_NAME_IF_EXISTS:arcane_accelerator_sycl>"
+)
 
 # Cette cible est optionnelle pour éviter que le code n'utilisant
 # pas les accélérateurs ait besoin d'un runtime accélérateur
 # (par exemple 'cudart')
 arcane_register_library(arcane_accelerator OPTIONAL)
+
+# ----------------------------------------------------------------------------
+
+if (GTEST_FOUND)
+  # Pour l'instant n'active pas le test car il ne fonctionne
+  # pas sur tous les workflows du CI.
+  # add_subdirectory(tests)
+endif()
 
 # ----------------------------------------------------------------------------
 # Local Variables:

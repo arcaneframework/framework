@@ -63,6 +63,9 @@ namespace Arcane
     public static void Init(CommandLineArguments args)
     {
       ArcaneLauncher_INTERNAL.Init(args);
+#if ARCANE_HAS_DOTNET_PYTHON
+      Arcane.Python.MainInit.Init();
+#endif
     }
 
     public delegate int DirectSubDomainExecutionContextDelegate(DirectSubDomainExecutionContext ctx);

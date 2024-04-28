@@ -1,4 +1,5 @@
 ﻿set(SOURCE_FILES
+  TestAutoRef.cc
   TestDependencyInjection.cc
   TestRealN.cc
   TestNumVector.cc

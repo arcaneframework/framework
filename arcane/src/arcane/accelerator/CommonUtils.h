@@ -28,12 +28,23 @@
 #include "arcane/accelerator/cuda/CudaAccelerator.h"
 #include <cub/cub.cuh>
 #endif
+#if defined(ARCANE_COMPILING_SYCL)
+#include "arcane/accelerator/sycl/SyclAccelerator.h"
+#include <sycl/sycl.hpp>
+#if defined(__INTEL_LLVM_COMPILER)
+#include <oneapi/dpl/execution>
+#include <oneapi/dpl/algorithm>
+#endif
+#endif
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 namespace Arcane::Accelerator::impl
 {
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 #if defined(ARCANE_COMPILING_CUDA)
 class ARCANE_ACCELERATOR_EXPORT CudaUtils
@@ -53,6 +64,18 @@ class ARCANE_ACCELERATOR_EXPORT HipUtils
  public:
 
   static hipStream_t toNativeStream(RunQueue* queue);
+};
+#endif
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+#if defined(ARCANE_COMPILING_SYCL)
+class ARCANE_ACCELERATOR_EXPORT SyclUtils
+{
+ public:
+
+  static sycl::queue toNativeStream(RunQueue* queue);
 };
 #endif
 
@@ -210,6 +233,134 @@ class IndexIterator
  private:
 
   Int32 m_value = 0;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+//! Opérateur de Scan/Reduce pour les sommes
+template <typename DataType>
+class SumOperator
+{
+ public:
+
+  constexpr ARCCORE_HOST_DEVICE DataType operator()(const DataType& a, const DataType& b) const
+  {
+    return a + b;
+  }
+  static DataType defaultValue() { return {}; }
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+//! Opérateur de Scan/Reduce pour le minimum
+template <typename DataType>
+class MinOperator
+{
+ public:
+
+  constexpr ARCCORE_HOST_DEVICE DataType operator()(const DataType& a, const DataType& b) const
+  {
+    return (a < b) ? a : b;
+  }
+  static DataType defaultValue() { return std::numeric_limits<DataType>::max(); }
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+//! Opérateur de Scan/Reduce pour le maximum
+template <typename DataType>
+class MaxOperator
+{
+ public:
+
+  constexpr ARCCORE_HOST_DEVICE DataType operator()(const DataType& a, const DataType& b) const
+  {
+    return (a < b) ? b : a;
+  }
+  static DataType defaultValue() { return std::numeric_limits<DataType>::lowest(); }
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Itérateur sur une lambda pour récupérer une valeur via un index.
+ */
+template <typename DataType, typename GetterLambda>
+class GetterLambdaIterator
+{
+ public:
+
+  using value_type = DataType;
+  using iterator_category = std::random_access_iterator_tag;
+  using reference = DataType&;
+  using difference_type = ptrdiff_t;
+  using pointer = void;
+  using ThatClass = GetterLambdaIterator<DataType, GetterLambda>;
+
+ public:
+
+  ARCCORE_HOST_DEVICE GetterLambdaIterator(const GetterLambda& s)
+  : m_lambda(s)
+  {}
+  ARCCORE_HOST_DEVICE explicit GetterLambdaIterator(const GetterLambda& s, Int32 v)
+  : m_index(v)
+  , m_lambda(s)
+  {}
+
+ public:
+
+  ARCCORE_HOST_DEVICE ThatClass& operator++()
+  {
+    ++m_index;
+    return (*this);
+  }
+  ARCCORE_HOST_DEVICE ThatClass& operator+=(Int32 x)
+  {
+    m_index += x;
+    return (*this);
+  }
+  ARCCORE_HOST_DEVICE friend ThatClass operator+(const ThatClass& iter, Int32 x)
+  {
+    return ThatClass(iter.m_lambda, iter.m_index + x);
+  }
+  ARCCORE_HOST_DEVICE friend ThatClass operator+(Int32 x, const ThatClass& iter)
+  {
+    return ThatClass(iter.m_lambda, iter.m_index + x);
+  }
+  ARCCORE_HOST_DEVICE friend bool operator<(const ThatClass& iter1, const ThatClass& iter2)
+  {
+    return iter1.m_index < iter2.m_index;
+  }
+
+  ARCCORE_HOST_DEVICE ThatClass operator-(Int32 x) const
+  {
+    return ThatClass(m_lambda, m_index - x);
+  }
+  ARCCORE_HOST_DEVICE Int32 operator-(const ThatClass& x) const
+  {
+    return m_index - x.m_index;
+  }
+  ARCCORE_HOST_DEVICE value_type operator*() const
+  {
+    return m_lambda(m_index);
+  }
+  ARCCORE_HOST_DEVICE value_type operator[](Int32 x) const { return m_lambda(m_index + x); }
+  ARCCORE_HOST_DEVICE friend bool operator!=(const ThatClass& a, const ThatClass& b)
+  {
+    return a.m_index != b.m_index;
+  }
+  ARCCORE_HOST_DEVICE friend bool operator==(const ThatClass& a, const ThatClass& b)
+  {
+    return a.m_index == b.m_index;
+  }
+
+ private:
+
+  Int32 m_index = 0;
+  GetterLambda m_lambda;
 };
 
 /*---------------------------------------------------------------------------*/

@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ConcurrencyUtils.h                                          (C) 2000-2022 */
+/* ConcurrencyUtils.h                                          (C) 2000-2024 */
 /*                                                                           */
 /* Classes gérant la concurrence (tâches, boucles parallèles, ...)           */
 /*---------------------------------------------------------------------------*/
@@ -606,10 +606,11 @@ class ARCANE_UTILS_EXPORT ParallelFor1DLoopInfo
  * \brief Applique en concurrence la fonction lambda \a lambda_function
  * sur l'intervalle d'itération donné par \a loop_ranges.
  */
-template<int RankValue,typename LambdaType> inline void
+template<int RankValue,typename LambdaType,typename... ReducerArgs> inline void
 arcaneParallelFor(const ComplexForLoopRanges<RankValue>& loop_ranges,
                   const ParallelLoopOptions& options,
-                  const LambdaType& lambda_function)
+                  const LambdaType& lambda_function,
+                  const ReducerArgs&... reducer_args)
 {
   // Modif Arcane 3.7.9 (septembre 2022)
   // Effectue une copie pour privatiser au thread courant les valeurs de la lambda.
@@ -617,11 +618,15 @@ arcaneParallelFor(const ComplexForLoopRanges<RankValue>& loop_ranges,
   // en compte.
   // TODO: regarder si on pourrait faire la copie uniquement une fois par thread
   // si cette copie devient couteuse.
-  auto xfunc = [&lambda_function] (const ComplexForLoopRanges<RankValue>& sub_bounds)
+  // NOTE: A partir de la version 3.12.15 (avril 2024), avec la nouvelle version
+  // des réducteurs (Reduce2), cette privatisation n'est plus utile. Une fois
+  // qu'on aura supprimer les anciennes classes gérant les réductions (Reduce),
+  // on pourra supprimer cette privatisation
+  auto xfunc = [&lambda_function,reducer_args...] (const ComplexForLoopRanges<RankValue>& sub_bounds)
   {
     using Type = typename std::remove_reference<LambdaType>::type;
     Type private_lambda(lambda_function);
-    arcaneSequentialFor(sub_bounds,private_lambda);
+    arcaneSequentialFor(sub_bounds,private_lambda,reducer_args...);
   };
   LambdaMDRangeFunctor<RankValue,decltype(xfunc)> ipf(xfunc);
   TaskFactory::executeParallelFor(loop_ranges,options,&ipf);
@@ -633,13 +638,14 @@ arcaneParallelFor(const ComplexForLoopRanges<RankValue>& loop_ranges,
  * \brief Applique en concurrence la fonction lambda \a lambda_function
  * sur l'intervalle d'itération donné par \a loop_ranges.
  */
-template<int RankValue,typename LambdaType> inline void
+template <int RankValue, typename LambdaType, typename... ReducerArgs> inline void
 arcaneParallelFor(const SimpleForLoopRanges<RankValue>& loop_ranges,
                   const ParallelLoopOptions& options,
-                  const LambdaType& lambda_function)
+                  const LambdaType& lambda_function,
+                  const ReducerArgs&... reducer_args)
 {
-  ComplexForLoopRanges<RankValue> complex_loop_ranges{loop_ranges};
-  arcaneParallelFor(complex_loop_ranges,options,lambda_function);
+  ComplexForLoopRanges<RankValue> complex_loop_ranges{ loop_ranges };
+  arcaneParallelFor(complex_loop_ranges, options, lambda_function, reducer_args...);
 }
 
 /*---------------------------------------------------------------------------*/

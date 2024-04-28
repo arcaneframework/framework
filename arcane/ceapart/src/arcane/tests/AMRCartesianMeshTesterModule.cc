@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* AMRCartesianMeshTesterModule.cc                             (C) 2000-2023 */
+/* AMRCartesianMeshTesterModule.cc                             (C) 2000-2024 */
 /*                                                                           */
 /* Module de test du gestionnaire de maillages cartésiens AMR.               */
 /*---------------------------------------------------------------------------*/
@@ -17,6 +17,7 @@
 #include "arcane/utils/MD5HashAlgorithm.h"
 
 #include "arcane/core/MeshUtils.h"
+#include "arcane/core/MeshKind.h"
 #include "arcane/core/Directory.h"
 
 #include "arcane/core/ITimeLoopMng.h"
@@ -480,8 +481,17 @@ _initAMR()
     m_cartesian_mesh->computeDirections();
 
     info() << "Doint initial coarsening";
-    Ref<CartesianMeshCoarsening2> coarser = CartesianMeshUtils::createCartesianMeshCoarsening2(m_cartesian_mesh);
-    coarser->createCoarseCells();
+
+    if (m_cartesian_mesh->mesh()->meshKind().meshAMRKind() == eMeshAMRKind::PatchCartesianMeshOnly) {
+      debug() << "Coarse with specific coarser (for cartesian mesh only)";
+      Ref<ICartesianMeshAMRPatchMng> coarser = CartesianMeshUtils::cartesianMeshAMRPatchMng(m_cartesian_mesh);
+      coarser->coarse();
+    }
+    else {
+      Ref<CartesianMeshCoarsening2> coarser = CartesianMeshUtils::createCartesianMeshCoarsening2(m_cartesian_mesh);
+      coarser->createCoarseCells();
+    }
+
     CartesianMeshPatchListView patches = m_cartesian_mesh->patches();
     Int32 nb_patch = patches.size();
     {

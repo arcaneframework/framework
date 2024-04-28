@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* PapiPerformanceService.cc                                   (C) 2000-2023 */
+/* PapiPerformanceService.cc                                   (C) 2000-2024 */
 /*                                                                           */
 /* Informations de performances utilisant PAPI.                              */
 /*---------------------------------------------------------------------------*/
@@ -306,10 +306,10 @@ switchEvent()
 void PapiPerformanceService::
 _printFlops()
 {
-  float real_time = 0.0;
-  float proc_time = 0.0;
+  float real_time = 0.0f;
+  float proc_time = 0.0f;
   long long flpins = 0.0;
-  float mflops = 0.0;
+  float mflops = 0.0f;
   // A partir de PAPI 6.0 il n'y a plus PAPI_flops mais à la place
   // c'est 'PAPI_flops_rate' mais il y a un argument supplémentaire
   // à mettre pour spécifier le type de flop à calculer (simple précision,

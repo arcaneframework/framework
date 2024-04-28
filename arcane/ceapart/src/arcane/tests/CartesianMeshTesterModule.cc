@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CartesianMeshTesterModule.cc                                (C) 2000-2023 */
+/* CartesianMeshTesterModule.cc                                (C) 2000-2024 */
 /*                                                                           */
 /* Module de test du gestionnaire de maillages cartésiens.                   */
 /*---------------------------------------------------------------------------*/
@@ -98,6 +98,7 @@ class CartesianMeshTesterModule
   VariableCellReal3 m_cell_center;
   VariableFaceReal3 m_face_center;
   VariableNodeReal m_node_density; 
+  VariableFaceInt64 m_faces_uid;
   ICartesianMesh* m_cartesian_mesh;
   IInitialPartitioner* m_initial_partitioner;
   Ref<CartesianMeshTestUtils> m_utils;
@@ -214,6 +215,7 @@ CartesianMeshTesterModule(const ModuleBuildInfo& mbi)
 , m_cell_center(VariableBuildInfo(this,"CellCenter"))
 , m_face_center(VariableBuildInfo(this,"FaceCenter"))
 , m_node_density(VariableBuildInfo(this,"NodeDensity"))
+, m_faces_uid(VariableBuildInfo(this,"CartesianMeshTesterNodeUid"))
 , m_cartesian_mesh(nullptr)
 , m_initial_partitioner(nullptr)
 {
@@ -519,6 +521,22 @@ _compute1()
         ++n;
       }
       m_density[icell] = d / n;
+    }
+  }
+
+  {
+    Int64 to_add = m_global_iteration();
+    ENUMERATE_(Face,iface,ownFaces()){
+      Int64 uid = iface->uniqueId();
+      m_faces_uid[iface] = uid + to_add;
+    }
+    m_faces_uid.synchronize();
+    ENUMERATE_(Face,iface,allFaces()){
+      Face face(*iface);
+      Int64 uid = face.uniqueId();
+      Int64 expected_value = uid + to_add;
+      if (expected_value!=m_faces_uid[iface])
+        ARCANE_FATAL("Bad FaceUid face={0} expected={1} value={2}",ItemPrinter(face),expected_value,m_faces_uid[iface]);
     }
   }
 }

@@ -110,6 +110,12 @@ class ARCANE_CORE_EXPORT IMeshMaterialVariableInternal
 
   //! Liste des 'VariableRef' associées à cette variable.
   virtual ConstArrayView<VariableRef*> variableReferenceList() const =0;
+
+  //!Synchronise les références
+  virtual void syncReferences(bool check_resize) = 0;
+
+  //! Redimensionne la valeur partielle associée à l'indexer \a index
+  virtual void resizeForIndexer(Int32 index, RunQueue& queue) = 0;
 };
 
 /*---------------------------------------------------------------------------*/

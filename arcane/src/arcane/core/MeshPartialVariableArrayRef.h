@@ -1,27 +1,27 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshPartialVariableArrayRef.h                               (C) 2000-2020 */
+/* MeshPartialVariableArrayRef.h                               (C) 2000-2024 */
 /*                                                                           */
 /* Classe gérant une variable partielle array sur une entité du maillage.    */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_MESHPARTIALVARIABLEARRAYREF_H
-#define ARCANE_MESHPARTIALVARIABLEARRAYREF_H
+#ifndef ARCANE_CORE_MESHPARTIALVARIABLEARRAYREF_H
+#define ARCANE_CORE_MESHPARTIALVARIABLEARRAYREF_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/FatalErrorException.h"
 
-#include "arcane/MeshVariableRef.h"
-#include "arcane/PrivateVariableArray.h"
-#include "arcane/ItemEnumerator.h"
-#include "arcane/ItemGroupRangeIterator.h"
-#include "arcane/ItemPairEnumerator.h"
-#include "arcane/GroupIndexTable.h"
+#include "arcane/core/MeshVariableRef.h"
+#include "arcane/core/PrivateVariableArray.h"
+#include "arcane/core/ItemEnumerator.h"
+#include "arcane/core/ItemGroupRangeIterator.h"
+#include "arcane/core/ItemPairEnumerator.h"
+#include "arcane/core/GroupIndexTable.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -39,14 +39,14 @@ template<typename DataTypeT>
 class ItemPartialVariableArrayRefT
 : public PrivateVariableArrayT<DataTypeT>
 {
-public:
+ public:
   
   typedef DataTypeT DataType;
   typedef UniqueArray2<DataType> ValueType;
   typedef ConstArrayView<DataType> ConstReturnReferenceType;
   typedef ArrayView<DataType> ReturnReferenceType;
 
-protected:
+ protected:
 
   typedef PrivateVariableArrayT<DataType> BaseClass;
   typedef typename BaseClass::PrivatePartType PrivatePartType;
@@ -54,7 +54,7 @@ protected:
   typedef ArrayView<DataType> ArrayType;
   typedef ConstArrayView<DataType> ConstArrayType;
 
-public:
+ public:
 
   //! Construit une référence à la variable spécifiée dans \a vb
   ARCANE_CORE_EXPORT ItemPartialVariableArrayRefT(const VariableBuildInfo& vb,eItemKind ik);
@@ -112,6 +112,19 @@ public:
     ARCANE_CHECK_ENUMERATOR(i,this->itemGroup());
     return this->m_view[i.index()];
   }
+  ConstArrayType operator[](ItemEnumeratorIndex i) const
+  {
+    return this->m_view[i.index()];
+  }
+  ArrayType operator[](ItemEnumeratorIndex i)
+  {
+    return this->m_view[i.index()];
+  }
+
+ public:
+
+  //! Vue sur table d'indirection du groupe.
+  GroupIndexTableView tableView() const { return m_table->view(); }
 
  protected:
   
@@ -200,6 +213,14 @@ class MeshPartialVariableArrayRefT
   {
     ARCANE_CHECK_ENUMERATOR(i,this->itemGroup());
     return this->m_view[i.index()]; 
+  }
+  ConstArrayType operator[](ItemEnumeratorIndexT<ItemType> i) const
+  {
+    return this->m_view[i.index()];
+  }
+  ArrayType operator[](ItemEnumeratorIndexT<ItemType> i)
+  {
+    return this->m_view[i.index()];
   }
 
   //! Groupe associé à la grandeur

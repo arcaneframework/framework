@@ -111,7 +111,7 @@ void ExtraGhostParticlesBuilder::
 _computeForFamily(ParticleFamily* particle_family)
 {
   IParallelMng* pm = particle_family->itemFamily()->parallelMng();
-  const Int32 nsd = pm->commRank();
+  const Int32 nsd = pm->commSize();
 
   auto exchanger { ParallelMngUtils::createExchangerRef(pm) };
 

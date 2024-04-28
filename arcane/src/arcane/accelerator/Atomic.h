@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Atomic.h                                                    (C) 2000-2023 */
+/* Atomic.h                                                    (C) 2000-2024 */
 /*                                                                           */
 /* Opérations atomiques.                                                     */
 /*---------------------------------------------------------------------------*/
@@ -16,7 +16,7 @@
 
 #include "arcane/utils/ArcaneCxx20.h"
 
-#ifdef ARCCORE_DEVICE_CODE
+#if defined(ARCCORE_DEVICE_TARGET_CUDA) || defined(ARCCORE_DEVICE_TARGET_HIP)
 #include "arcane/accelerator/CommonCudaHipAtomicImpl.h"
 #endif
 
@@ -38,6 +38,8 @@ namespace Arcane::Accelerator::impl
 
 template <enum eAtomicOperation Operation>
 class HostAtomic;
+template <enum eAtomicOperation Operation>
+class SyclAtomic;
 
 template <>
 class HostAtomic<eAtomicOperation::Add>
@@ -85,6 +87,52 @@ class HostAtomic<eAtomicOperation::Min>
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+#if defined(ARCANE_COMPILING_SYCL)
+
+template <>
+class SyclAtomic<eAtomicOperation::Add>
+{
+ public:
+
+  template <AcceleratorAtomicConcept DataType> static void
+  apply(DataType* ptr, DataType value)
+  {
+    sycl::atomic_ref<DataType, sycl::memory_order::relaxed, sycl::memory_scope::device> v(*ptr);
+    v.fetch_add(value);
+  }
+};
+
+template <>
+class SyclAtomic<eAtomicOperation::Max>
+{
+ public:
+
+  template <AcceleratorAtomicConcept DataType> static void
+  apply(DataType* ptr, DataType value)
+  {
+    sycl::atomic_ref<DataType, sycl::memory_order::relaxed, sycl::memory_scope::device> v(*ptr);
+    v.fetch_max(value);
+  }
+};
+
+template <>
+class SyclAtomic<eAtomicOperation::Min>
+{
+ public:
+
+  template <AcceleratorAtomicConcept DataType> static void
+  apply(DataType* ptr, DataType value)
+  {
+    sycl::atomic_ref<DataType, sycl::memory_order::relaxed, sycl::memory_scope::device> v(*ptr);
+    v.fetch_min(value);
+  }
+};
+
+#endif
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 class AtomicImpl
 {
  public:
@@ -93,8 +141,10 @@ class AtomicImpl
   ARCCORE_HOST_DEVICE static inline void
   doAtomic(DataType* ptr, DataType value)
   {
-#ifdef ARCCORE_DEVICE_CODE
+#if defined(ARCCORE_DEVICE_TARGET_CUDA) || defined(ARCCORE_DEVICE_TARGET_HIP)
     impl::CommonCudaHipAtomic<DataType, Operation>::apply(ptr, value);
+#elif defined(ARCCORE_DEVICE_TARGET_SYCL)
+    SyclAtomic<Operation>::apply(ptr, value);
 #else
     HostAtomic<Operation>::apply(ptr, value);
 #endif

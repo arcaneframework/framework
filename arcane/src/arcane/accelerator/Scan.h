@@ -17,62 +17,22 @@
 #include "arcane/utils/ArrayView.h"
 #include "arcane/utils/FatalErrorException.h"
 
-#include "arcane/accelerator/AcceleratorGlobal.h"
 #include "arcane/accelerator/core/RunQueue.h"
+
+#include "arcane/accelerator/AcceleratorGlobal.h"
 #include "arcane/accelerator/CommonUtils.h"
 #include "arcane/accelerator/RunCommandLaunchInfo.h"
+
+#include <execution>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 namespace Arcane::Accelerator
 {
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-//! Opérateur de Scan pour les sommes
-template <typename DataType>
-class ScannerSumOperator
-{
- public:
-
-  constexpr ARCCORE_HOST_DEVICE DataType operator()(const DataType& a, const DataType& b) const
-  {
-    return a + b;
-  }
-  static DataType defaultValue() { return {}; }
-};
-
-//! Opérateur de Scan pour le minimum
-template <typename DataType>
-class ScannerMinOperator
-{
- public:
-
-  constexpr ARCCORE_HOST_DEVICE DataType operator()(const DataType& a, const DataType& b) const
-  {
-    return (a < b) ? a : b;
-  }
-  static DataType defaultValue() { return std::numeric_limits<DataType>::max(); }
-};
-
-//! Opérateur de Scan pour le maximum
-template <typename DataType>
-class ScannerMaxOperator
-{
- public:
-
-  constexpr ARCCORE_HOST_DEVICE DataType operator()(const DataType& a, const DataType& b) const
-  {
-    return (a < b) ? b : a;
-  }
-  static DataType defaultValue() { return std::numeric_limits<DataType>::lowest(); }
-};
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
+template <typename DataType> using ScannerSumOperator = impl::SumOperator<DataType>;
+template <typename DataType> using ScannerMaxOperator = impl::MaxOperator<DataType>;
+template <typename DataType> using ScannerMinOperator = impl::MinOperator<DataType>;
 } // namespace Arcane::Accelerator
 
 /*---------------------------------------------------------------------------*/
@@ -146,7 +106,42 @@ class ScannerImpl
       else
         ARCANE_CHECK_HIP(rocprim::inclusive_scan(temp_storage, temp_storage_size, input_data, output_data,
                                                  nb_item, op, stream));
-    }
+    } break;
+#endif
+#if defined(ARCANE_COMPILING_SYCL) && defined(__INTEL_LLVM_COMPILER)
+    case eExecutionPolicy::SYCL: {
+      sycl::queue queue = impl::SyclUtils::toNativeStream(&m_queue);
+      auto policy = oneapi::dpl::execution::make_device_policy(queue);
+      // Intel DPC++ 2024.1 a besoin de créér un tableau de valeur pour remplir
+      // les données de sortie. On ne peut donc pas utiliser directement SetterLambdaIterator.
+      // Il faut passer par un tableau temporaire dans ce cas.
+      // TODO: Utiliser un buffer pour faire un cache.
+      NumArray<DataType, MDDim1> temp_output_numarray(eMemoryRessource::Device);
+      DataType* temp_output_data = nullptr;
+      bool need_copy = false;
+      if constexpr (std::is_same_v<OutputIterator, DataType*>) {
+        temp_output_data = output_data;
+      }
+      else {
+        temp_output_numarray.resize(nb_item);
+        temp_output_data = temp_output_numarray.to1DSpan().data();
+        need_copy = true;
+      }
+      if constexpr (IsExclusive) {
+        oneapi::dpl::exclusive_scan(policy, input_data, input_data + nb_item, temp_output_data, init_value, op);
+      }
+      else {
+        oneapi::dpl::inclusive_scan(policy, input_data, input_data + nb_item, temp_output_data, op);
+      }
+      if (need_copy) {
+        // Recopie les valeurs temporaires dans l'itérateur de sortie
+        queue.parallel_for(sycl::range<1>(nb_item), [=](sycl::id<1> i) {
+               Int32 index = static_cast<Int32>(i);
+               output_data[index] = temp_output_data[index];
+             })
+        .wait();
+      }
+    } break;
 #endif
     case eExecutionPolicy::Thread:
       // Pas encore implémenté en multi-thread
@@ -282,16 +277,26 @@ class GenericScanner
       {}
       ARCCORE_HOST_DEVICE void operator=(const DataType& value)
       {
+        m_value = value;
         m_lambda(m_index, value);
       }
+      operator DataType() const { return m_value; }
+
+     public:
+
       Int32 m_index = 0;
       SetterLambda m_lambda;
+
+     private:
+
+      DataType m_value = {};
     };
 
     using value_type = Setter;
     using iterator_category = std::random_access_iterator_tag;
     using reference = Setter;
     using difference_type = ptrdiff_t;
+    using pointer = void;
     using ThatClass = SetterLambdaIterator<DataType, SetterLambda>;
 
    public:
@@ -311,75 +316,40 @@ class GenericScanner
       ++m_index;
       return (*this);
     }
-    ARCCORE_HOST_DEVICE ThatClass operator+(Int32 x)
+    ARCCORE_HOST_DEVICE friend ThatClass operator+(const ThatClass& iter, Int32 x)
     {
-      return ThatClass(m_lambda, m_index + x);
+      return ThatClass(iter.m_lambda, iter.m_index + x);
+    }
+    ARCCORE_HOST_DEVICE friend ThatClass operator+(Int32 x, const ThatClass& iter)
+    {
+      return ThatClass(iter.m_lambda, iter.m_index + x);
+    }
+    ARCCORE_HOST_DEVICE friend bool operator<(const ThatClass& iter1, const ThatClass& iter2)
+    {
+      return iter1.m_index < iter2.m_index;
     }
     ARCCORE_HOST_DEVICE ThatClass operator-(Int32 x)
     {
       return ThatClass(m_lambda, m_index - x);
+    }
+    ARCCORE_HOST_DEVICE Int32 operator-(const ThatClass& x) const
+    {
+      return m_index - x.m_index;
     }
     ARCCORE_HOST_DEVICE Setter operator*() const
     {
       return Setter(m_lambda, m_index);
     }
     ARCCORE_HOST_DEVICE value_type operator[](Int32 x) const { return Setter(m_lambda, m_index + x); }
+    ARCCORE_HOST_DEVICE friend bool operator!=(const ThatClass& a, const ThatClass& b)
+    {
+      return a.m_index != b.m_index;
+    }
 
    private:
 
     Int32 m_index = 0;
     SetterLambda m_lambda;
-  };
-
-  /*!
-   * \brief Itérateur sur une lambda pour récupérer une valeur via un index.
-   */
-  template <typename DataType, typename GetterLambda>
-  class GetterLambdaIterator
-  {
-   public:
-
-    using value_type = DataType;
-    using iterator_category = std::random_access_iterator_tag;
-    using reference = DataType&;
-    using difference_type = ptrdiff_t;
-    using ThatClass = GetterLambdaIterator<DataType, GetterLambda>;
-
-   public:
-
-    ARCCORE_HOST_DEVICE GetterLambdaIterator(const GetterLambda& s)
-    : m_lambda(s)
-    {}
-    ARCCORE_HOST_DEVICE explicit GetterLambdaIterator(const GetterLambda& s, Int32 v)
-    : m_index(v)
-    , m_lambda(s)
-    {}
-
-   public:
-
-    ARCCORE_HOST_DEVICE ThatClass& operator++()
-    {
-      ++m_index;
-      return (*this);
-    }
-    ARCCORE_HOST_DEVICE ThatClass operator+(Int32 x)
-    {
-      return ThatClass(m_lambda, m_index + x);
-    }
-    ARCCORE_HOST_DEVICE ThatClass operator-(Int32 x)
-    {
-      return ThatClass(m_lambda, m_index - x);
-    }
-    ARCCORE_HOST_DEVICE value_type operator*() const
-    {
-      return m_lambda(m_index);
-    }
-    ARCCORE_HOST_DEVICE value_type operator[](Int32 x) const { return m_lambda(m_index + x); }
-
-   private:
-
-    Int32 m_index = 0;
-    GetterLambda m_lambda;
   };
 
  public:
@@ -439,7 +409,7 @@ class GenericScanner
                        const Operator& op_lambda,
                        const TraceInfo& trace_info)
   {
-    GetterLambdaIterator<DataType, GetterLambda> input_iter(getter_lambda);
+    impl::GetterLambdaIterator<DataType, GetterLambda> input_iter(getter_lambda);
     SetterLambdaIterator<DataType, SetterLambda> output_iter(setter_lambda);
     impl::ScannerImpl scanner(m_queue);
     scanner.apply<IsExclusive>(nb_value, input_iter, output_iter, initial_value, op_lambda, trace_info);

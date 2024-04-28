@@ -1,27 +1,27 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshPartialVariableScalarRef.h                              (C) 2000-2022 */
+/* MeshPartialVariableScalarRef.h                              (C) 2000-2024 */
 /*                                                                           */
 /* Classe gérant une variable partielle scalaire sur une entité du maillage. */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_MESHPARTIALVARIABLESCALARREF_H
-#define ARCANE_MESHPARTIALVARIABLESCALARREF_H
+#ifndef ARCANE_CORE_MESHPARTIALVARIABLESCALARREF_H
+#define ARCANE_CORE_MESHPARTIALVARIABLESCALARREF_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/FatalErrorException.h"
 
-#include "arcane/MeshVariableRef.h"
-#include "arcane/PrivateVariableScalar.h"
-#include "arcane/ItemEnumerator.h"
-#include "arcane/ItemGroupRangeIterator.h"
-#include "arcane/ItemPairEnumerator.h"
-#include "arcane/GroupIndexTable.h"
+#include "arcane/core/MeshVariableRef.h"
+#include "arcane/core/PrivateVariableScalar.h"
+#include "arcane/core/ItemEnumerator.h"
+#include "arcane/core/ItemGroupRangeIterator.h"
+#include "arcane/core/ItemPairEnumerator.h"
+#include "arcane/core/GroupIndexTable.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -100,6 +100,10 @@ class ItemPartialVariableScalarRefT
     ARCANE_CHECK_ENUMERATOR(i,this->itemGroup());
     return this->_value(i.index());
   }
+  const DataType& operator[](ItemEnumeratorIndex i) const
+  {
+    return this->_value(i.index());
+  }
   const DataType& operator[](const ItemPairEnumerator& i) const
   {
     ARCANE_CHECK_VALID_ITEM_AND_GROUP_KIND((*i));
@@ -117,14 +121,23 @@ class ItemPartialVariableScalarRefT
     ARCANE_CHECK_ENUMERATOR(i,this->itemGroup());
     return this->_value(i.index());
   }
+  DataTypeReturnReference operator[](ItemEnumeratorIndex i)
+  {
+    return this->_value(i.index());
+  }
   DataTypeReturnReference operator[](const ItemPairEnumerator& i)
   {
     ARCANE_CHECK_VALID_ITEM_AND_GROUP_KIND((*i));
     return this->_value(i.index());
   }
 
+ public:
+
+  //! Vue sur table d'indirection du groupe.
+  GroupIndexTableView tableView() const { return m_table->view(); }
+
  protected:
-  
+
   SharedPtrT<GroupIndexTable> m_table;
 
  protected:
@@ -195,9 +208,17 @@ class MeshPartialVariableScalarRefT
     ARCANE_CHECK_ENUMERATOR(i,this->itemGroup());
     return this->_value(i.index());
   }
+  const DataType& operator[](ItemEnumeratorIndexT<ItemType> i) const
+  {
+    return this->_value(i.index());
+  }
   DataTypeReturnReference operator[](const ItemEnumeratorT<ItemType>& i)
   {
     ARCANE_CHECK_ENUMERATOR(i,this->itemGroup());
+    return this->_value(i.index());
+  }
+  DataTypeReturnReference operator[](ItemEnumeratorIndexT<ItemType> i)
+  {
     return this->_value(i.index());
   }
   const DataType& operator[](const ItemPairEnumeratorSubT<ItemType>& i) const

@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IThreadImplementationService.h                              (C) 2000-2019 */
+/* IThreadImplementationService.h                              (C) 2000-2024 */
 /*                                                                           */
 /* Interface d'un service de gestion des threads.                            */
 /*---------------------------------------------------------------------------*/
@@ -31,9 +31,12 @@ namespace Arcane
 class ARCANE_UTILS_EXPORT IThreadImplementationService
 {
  public:
+
   virtual ~IThreadImplementationService() = default;
+
  public:
-  virtual IThreadImplementation* createImplementation() =0;
+
+  virtual Ref<IThreadImplementation> createImplementation() = 0;
 };
 
 /*---------------------------------------------------------------------------*/

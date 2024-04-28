@@ -29,13 +29,31 @@ namespace Arcane::Accelerator
 /*!
  * \brief File d'exécution pour un accélérateur.
  *
- * Une file est attachée à une politique d'exécution et permet d'exécuter
- * des commandes (RunCommand) sur un accélérateur ou sur le CPU.
+ * Cette classe utilise une sémantique par référence. La file d'exécution est
+ * détruite lorsque la dernière référence dessus est détruite.
+ *
+ * Une file est attachée à une instance de Runner et permet d'exécuter
+ * des commandes (RunCommand) sur un accélérateur ou sur le CPU. La méthode
+ * executionPolicy() permet de savoir où s'exécutera les commandes issues
+ * de la file.
+ *
+ * Les instances de cette classe sont créées par l'appel à makeQueue(Runner).
+ * On peut ensuite créer des noyaux de calcul (RunCommand) via l'appel
+ * à makeCommand().
+ *
+ * Le constructeur par défaut construit Une file nulle qui ne peut pas être
+ * utilisée pour lancer des commandes. Les seules opérations autorisées sur
+ * la file nulle sont isNull(), executionPolicy(), isAcceleratorPolicy(),
+ * barrier(), allocationOptions() et memoryRessource().
+ *
+ * Les méthodes de cette classe ne sont pas thread-safe pour une même instance.
  */
 class ARCANE_ACCELERATOR_CORE_EXPORT RunQueue
 {
   friend class RunCommand;
   friend class impl::RunCommandLaunchInfo;
+  friend RunCommand makeCommand(const RunQueue& run_queue);
+  friend RunCommand makeCommand(const RunQueue* run_queue);
 
  public:
 
@@ -68,6 +86,8 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RunQueue
 
  public:
 
+  //! Créé une file nulle.
+  RunQueue();
   //! Créé une file associée à \a runner avec les paramètres par défaut
   explicit RunQueue(Runner& runner);
   //! Créé une file associée à \a runner avec les paramètres \a bi
@@ -78,32 +98,45 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RunQueue
 
   RunQueue(const RunQueue&);
   RunQueue& operator=(const RunQueue&);
-  RunQueue(RunQueue&&);
-  RunQueue& operator=(RunQueue&&);
+  RunQueue(RunQueue&&) noexcept;
+  RunQueue& operator=(RunQueue&&) noexcept;
 
  public:
+
+  //! Indique si la RunQueue est nulle
+  bool isNull() const { return !m_p; }
 
   //! Politique d'exécution de la file.
   eExecutionPolicy executionPolicy() const;
   //! Indique si l'instance est associée à un accélérateur
   bool isAcceleratorPolicy() const;
+
   /*!
    * \brief Positionne l'asynchronisme de l'instance.
    *
-   * Si l'instance est asynchrone, il faut appeler explicitement barrier()
+   * Si l'instance est asynchrone, les différentes commandes
+   * associées ne sont pas bloquantes et il faut appeler explicitement barrier()
    * pour attendre la fin de l'exécution des commandes.
+   *
+   * \pre !isNull()
    */
   void setAsync(bool v);
   //! Indique si la file d'exécution est asynchrone.
   bool isAsync() const;
+
   //! Bloque tant que toutes les commandes associées à la file ne sont pas terminées.
-  void barrier();
+  void barrier() const;
 
   //! Copie des informations entre deux zones mémoires
-  void copyMemory(const MemoryCopyArgs& args);
+  void copyMemory(const MemoryCopyArgs& args) const;
   //! Effectue un préfetching de la mémoire
-  void prefetchMemory(const MemoryPrefetchArgs& args);
+  void prefetchMemory(const MemoryPrefetchArgs& args) const;
 
+  /*!
+   * \name Gestion des évènements
+   * \pre !isNull()
+   */
+  //!@{
   //! Enregistre l'état de l'instance dans \a event.
   void recordEvent(RunQueueEvent& event);
   //! Enregistre l'état de l'instance dans \a event.
@@ -112,28 +145,58 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RunQueue
   void waitEvent(RunQueueEvent& event);
   //! Bloque l'exécution sur l'instance tant que les jobs enregistrés dans \a event ne sont pas terminés
   void waitEvent(Ref<RunQueueEvent>& event);
+  //!@}
+
+  //! \name Gestion mémoire
+  //!@{
+  /*!
+   * \brief Options d'allocation associée à cette file.
+   *
+   * Il est possible de changer la ressource mémoire et donc l'allocateur utilisé
+   * via setMemoryRessource().
+   */
+  MemoryAllocationOptions allocationOptions() const;
+
+  /*!
+   * \brief Positionne la ressource mémoire utilisée pour les allocations avec cette instance.
+   *
+   * La valeur par défaut est eMemoryRessource::UnifiedMemory
+   * si isAcceleratorPolicy()==true et eMemoryRessource::Host sinon.
+   *
+   * \sa memoryRessource()
+   * \sa allocationOptions()
+   *
+   * \pre !isNull()
+   */
+  void setMemoryRessource(eMemoryRessource mem);
+
+  //! Ressource mémoire utilisée pour les allocations avec cette instance.
+  eMemoryRessource memoryRessource() const;
+  //!@}
 
  public:
 
   /*!
-  * \brief Pointeur sur la structure interne dépendante de l'implémentation.
-  *
-  * Cette méthode est réservée à un usage avancée.
-  * La file retournée ne doit pas être conservée au delà de la vie de l'instance.
-  *
-  * Avec CUDA, le pointeur retourné est un 'cudaStream_t*'. Avec HIP, il
-  * s'agit d'un 'hipStream_t*'.
-  */
+   * \brief Pointeur sur la structure interne dépendante de l'implémentation.
+   *
+   * Cette méthode est réservée à un usage avancée.
+   * La file retournée ne doit pas être conservée au delà de la vie de l'instance.
+   *
+   * Avec CUDA, le pointeur retourné est un 'cudaStream_t*'. Avec HIP, il
+   * s'agit d'un 'hipStream_t*'.
+   */
   void* platformStream();
 
  private:
 
   impl::IRunnerRuntime* _internalRuntime() const;
   impl::IRunQueueStream* _internalStream() const;
-  impl::RunCommandImpl* _getCommandImpl();
+  impl::RunCommandImpl* _getCommandImpl() const;
+  void _checkNotNull() const;
 
   // Pour VariableViewBase
   friend class VariableViewBase;
+  friend class NumArrayViewBase;
   bool _isAutoPrefetchCommand() const;
 
  private:
@@ -150,8 +213,9 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RunQueue
  * \brief Créé une commande associée à la file \a run_queue.
  */
 inline RunCommand
-makeCommand(RunQueue& run_queue)
+makeCommand(const RunQueue& run_queue)
 {
+  run_queue._checkNotNull();
   return RunCommand(run_queue);
 }
 
@@ -159,9 +223,10 @@ makeCommand(RunQueue& run_queue)
  * \brief Créé une commande associée à la file \a run_queue.
  */
 inline RunCommand
-makeCommand(RunQueue* run_queue)
+makeCommand(const RunQueue* run_queue)
 {
   ARCANE_CHECK_POINTER(run_queue);
+  run_queue->_checkNotNull();
   return RunCommand(*run_queue);
 }
 

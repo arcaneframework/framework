@@ -392,6 +392,10 @@ class AbstractArray
   {
     return Span<const T>(m_ptr,m_md->size);
   }
+  operator SmallSpan<const T>() const
+  {
+    return SmallSpan<const T>(m_ptr,ARCCORE_CAST_SMALL_SIZE(size()));
+  }
 
  public:
 
@@ -1078,6 +1082,23 @@ class Array
   {
     return Span<T>(m_ptr,m_md->size);
   }
+  //! Vue immutable sur ce tableau
+  SmallSpan<const T> smallSpan() const
+  {
+    Integer s = arccoreCheckArraySize(m_md->size);
+    return SmallSpan<const T>(m_ptr,s);
+  }
+  //! Vue immutable sur ce tableau
+  SmallSpan<const T> constSmallSpan() const
+  {
+    return smallSpan();
+  }
+  //! Vue mutable sur ce tableau
+  SmallSpan<T> smallSpan()
+  {
+    Integer s = arccoreCheckArraySize(m_md->size);
+    return SmallSpan<T>(m_ptr,s);
+  }
   /*!
    * \brief Sous-vue à partir de l'élément \a abegin et contenant \a asize éléments.
    *
@@ -1163,6 +1184,18 @@ class Array
   void resize(Int64 s,ConstReferenceType fill_value)
   {
     this->_resize(s,fill_value);
+  }
+
+  /*!
+   * \brief Redimensionne sans initialiser les nouvelles valeurs.
+   *
+   * \warning Cela peut provoquer un comportement indéfini si les
+   * valeurs ne sont pas initialisées par la suite car le destructeur
+   * de \a T sera appelé lors de la destruction de l'instance.
+   */
+  void resizeNoInit(Int64 s)
+  {
+    this->_resizeNoInit(s);
   }
 
   //! Réserve le mémoire pour \a new_capacity éléments
@@ -1871,12 +1904,22 @@ class UniqueArray
     this->copy(rhs);
   }
   //! Copie les valeurs de la vue \a rhs dans cette instance.
+  void operator=(const SmallSpan<T>& rhs)
+  {
+    this->copy(rhs);
+  }
+  //! Copie les valeurs de la vue \a rhs dans cette instance.
   void operator=(const ConstArrayView<T>& rhs)
   {
     this->copy(rhs);
   }
   //! Copie les valeurs de la vue \a rhs dans cette instance.
   void operator=(const Span<const T>& rhs)
+  {
+    this->copy(rhs);
+  }
+  //! Copie les valeurs de la vue \a rhs dans cette instance.
+  void operator=(const SmallSpan<const T>& rhs)
   {
     this->copy(rhs);
   }

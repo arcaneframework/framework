@@ -96,6 +96,9 @@ message(STATUS "[arccore] Is Debug mode enabled (final) ? ${ARCCORE_DEBUG}")
 
 option(ARCCORE_USE_MPI "Whether or not MPI support is enabled" ON)
 
+# Pour l'instant c'est obligatoire d'avoir la GLIB.
+set(ARCCORE_ENABLE_GLIB TRUE CACHE BOOL "Is Glib enabled in Arccon?" FORCE)
+
 # ----------------------------------------------------------------------------
 # Il ne faut surtout pas inclure le répertoire courante automatiquement
 # car cela pose des problèmes avec certains fichiers tels que 'String.h' qui

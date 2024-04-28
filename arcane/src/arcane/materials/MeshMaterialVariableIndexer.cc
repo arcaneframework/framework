@@ -45,6 +45,8 @@ MeshMaterialVariableIndexer(ITraceMng* tm, const String& name)
 , m_local_ids(platform::getAcceleratorHostMemoryAllocator())
 {
   _init();
+  m_matvar_indexes.setDebugName(String("VariableIndexerMatVarIndexes")+name);
+  m_local_ids.setDebugName(String("VariableIndexerLocalIdsIndexes")+name);
 }
 
 /*---------------------------------------------------------------------------*/

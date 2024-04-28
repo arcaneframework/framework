@@ -16,6 +16,7 @@
 #include "arcane/utils/ITraceMng.h"
 #include "arcane/utils/FatalErrorException.h"
 #include "arcane/utils/MemoryUtils.h"
+#include "arcane/utils/IMemoryRessourceMng.h"
 
 #include "arcane/core/ItemPrinter.h"
 #include "arcane/core/ItemGroup.h"
@@ -36,8 +37,21 @@ namespace Arcane::Materials
 
 MaterialModifierOperation::
 MaterialModifierOperation()
-: m_ids(MemoryUtils::getAllocatorForMostlyReadOnlyData())
+: m_ids(MemoryUtils::getDefaultDataAllocator())
 {
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+MaterialModifierOperation::
+MaterialModifierOperation(IMeshMaterial* mat, SmallSpan<const Int32> ids, bool is_add)
+: MaterialModifierOperation()
+{
+  m_mat = mat;
+  m_is_add = is_add;
+  m_ids.resize(ids.size());
+  MemoryUtils::copy<Int32>(m_ids, ids);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -57,20 +71,20 @@ Int32 MaterialModifierOperation::
 _checkMaterialPresence(MaterialModifierOperation* operation)
 {
   IMeshMaterial* mat = operation->material();
-  Int32ConstArrayView ids = operation->ids();
+  SmallSpan<const Int32> ids = operation->ids();
 
   const MeshMaterialVariableIndexer* indexer = mat->_internalApi()->variableIndexer();
   IItemFamily* item_family = mat->cells().itemFamily();
   ItemInfoListView items_internal(item_family);
   Integer max_local_id = item_family->maxLocalId();
-  UniqueArray<bool> presence_flags(max_local_id,false);
-  Int32ConstArrayView mat_local_ids = indexer->localIds();
+  UniqueArray<bool> presence_flags(max_local_id, false);
+  SmallSpan<const Int32> mat_local_ids = indexer->localIds();
   Integer nb_error = 0;
   String name = mat->name();
   ITraceMng* tm = mat->traceMng();
 
-  for( Int32 lid : ids ){
-    if (presence_flags[lid]){
+  for (Int32 lid : ids) {
+    if (presence_flags[lid]) {
       tm->info() << "ERROR: item " << ItemPrinter(items_internal[lid])
                  << " is present several times in add/remove list for material mat=" << name;
       ++nb_error;
@@ -78,22 +92,22 @@ _checkMaterialPresence(MaterialModifierOperation* operation)
     presence_flags[lid] = true;
   }
 
-  if (operation->isAdd()){
-    for( Int32 lid : mat_local_ids ){
-      if (presence_flags[lid]){
+  if (operation->isAdd()) {
+    for (Int32 lid : mat_local_ids) {
+      if (presence_flags[lid]) {
         tm->info() << "ERROR: item " << ItemPrinter(items_internal[lid])
                    << " is already in material mat=" << name;
         ++nb_error;
       }
     }
   }
-  else{
-    for( Int32 lid : mat_local_ids ){
-      presence_flags[lid]= false;
+  else {
+    for (Int32 lid : mat_local_ids) {
+      presence_flags[lid] = false;
     }
 
-    for( Int32 lid : ids ){
-      if (presence_flags[lid]){
+    for (Int32 lid : ids) {
+      if (presence_flags[lid]) {
         tm->info() << "ERROR: item " << ItemPrinter(items_internal[lid])
                    << " is not in material mat=" << name;
         ++nb_error;
@@ -121,12 +135,12 @@ _filterValidIds(MaterialModifierOperation* operation, Int32Array& valid_ids)
 {
   IMeshMaterial* mat = operation->material();
   const bool do_add = operation->isAdd();
-  Int32ConstArrayView ids = operation->ids();
+  SmallSpan<const Int32> ids = operation->ids();
   const MeshMaterialVariableIndexer* indexer = mat->_internalApi()->variableIndexer();
   const IItemFamily* item_family = mat->cells().itemFamily();
   Integer max_local_id = item_family->maxLocalId();
   UniqueArray<bool> presence_flags(max_local_id, false);
-  Int32ConstArrayView mat_local_ids = indexer->localIds();
+  SmallSpan<const Int32> mat_local_ids = indexer->localIds();
   ITraceMng* tm = mat->traceMng();
 
   UniqueArray<Int32> unique_occurence_lids;

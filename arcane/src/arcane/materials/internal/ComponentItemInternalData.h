@@ -16,6 +16,7 @@
 
 #include "arcane/utils/TraceAccessor.h"
 #include "arcane/utils/Array.h"
+#include "arcane/utils/NumArray.h"
 
 #include "arcane/materials/MaterialsGlobal.h"
 #include "arcane/core/materials/ComponentItemInternal.h"
@@ -114,16 +115,18 @@ class ComponentItemInternalRange
 class ComponentItemInternalData
 : public TraceAccessor
 {
+ public:
+
   //! Conteneur pour les informations de ComponentItemSharedInfo
   class Storage
   {
    public:
 
-    explicit Storage(const MemoryAllocationOptions& alloc_info);
+    explicit Storage(const MemoryAllocationOptions& alloc_info, const String& base_name);
 
    public:
 
-    void resize(Int32 new_size, ComponentItemSharedInfo* shared_info);
+    void resize(Int32 new_size, ComponentItemSharedInfo* shared_info, RunQueue& queue);
     Int32 size() const { return m_size; }
 
    private:
@@ -135,6 +138,11 @@ class ComponentItemInternalData
     UniqueArray<Int16> m_nb_sub_constituent_item_list;
     UniqueArray<Int32> m_global_item_local_id_list;
     UniqueArray<MatVarIndex> m_var_index_list;
+
+   private:
+
+    static MemoryAllocationOptions _allocInfo(const MemoryAllocationOptions& alloc_info,
+                                              const String& base_name, const String& name);
   };
 
  public:
@@ -151,7 +159,7 @@ class ComponentItemInternalData
   //! Retourne la AllEnvCell correspondant à la maille \a id
   matimpl::ConstituentItemBase allEnvItemBase(CellLocalId id)
   {
-    return matimpl::ConstituentItemBase(allEnvSharedInfo(),ConstituentItemIndex(id.localId()));
+    return matimpl::ConstituentItemBase(allEnvSharedInfo(), ConstituentItemIndex(id.localId()));
   }
 
   //! Retourne la EnvCell correspondant à l'indice \a index
@@ -161,7 +169,7 @@ class ComponentItemInternalData
   }
 
   //! Retourne la MatCell correspondant au milieu d'indice \a index du milieu \a env_index
-  matimpl::ConstituentItemBase matItemBase(Int16 env_index,Int32 index)
+  matimpl::ConstituentItemBase matItemBase(Int16 env_index, Int32 index)
   {
     return matimpl::ConstituentItemBase(matSharedInfo(), ConstituentItemIndex(matItemsInternalRange(env_index)[index]));
   }
@@ -201,7 +209,7 @@ class ComponentItemInternalData
 
   ComponentItemInternalRange m_all_env_items_internal_range;
   ComponentItemInternalRange m_env_items_internal_range;
-  UniqueArray<ComponentItemInternalRange> m_mat_items_internal_range;
+  NumArray<ComponentItemInternalRange, MDDim1> m_mat_items_internal_range;
 
   Storage m_all_env_storage;
   Storage m_env_storage;

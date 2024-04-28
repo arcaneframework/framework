@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MemoryCopier.cc                                             (C) 2000-2023 */
+/* MemoryCopier.cc                                             (C) 2000-2024 */
 /*                                                                           */
 /* Fonctions diverses de copie mémoire.                                      */
 /*---------------------------------------------------------------------------*/
@@ -14,6 +14,7 @@
 #include "arcane/accelerator/AcceleratorGlobal.h"
 
 #include "arcane/utils/Ref.h"
+#include "arcane/utils/FixedArray.h"
 #include "arcane/utils/NotSupportedException.h"
 #include "arcane/utils/internal/SpecificMemoryCopyList.h"
 
@@ -150,7 +151,7 @@ class AcceleratorSpecificMemoryCopy
     ARCANE_CHECK_ACCESSIBLE_POINTER(eExecutionPolicy::Sequential, source.data());
 
     Int32 nb_index = indexes.size();
-    const Int64 sub_size = m_extent.v;
+    const Int32 sub_size = m_extent.v;
     constexpr Int32 max_size = 24;
 
     // Pour l'instant on limite la taille de DataType en dur.
@@ -159,10 +160,10 @@ class AcceleratorSpecificMemoryCopy
     if (sub_size > max_size)
       ARCANE_THROW(NotSupportedException, "sizeof(type) is too big (v={0} max={1})",
                    sizeof(DataType) * sub_size, sizeof(DataType) * max_size);
-    DataType local_source[max_size];
-    for (Int64 z = 0; z < sub_size; ++z)
+    FixedArray<DataType, max_size> local_source;
+    for (Int32 z = 0; z < sub_size; ++z)
       local_source[z] = source[z];
-    for (Int64 z = sub_size; z < max_size; ++z)
+    for (Int32 z = sub_size; z < max_size; ++z)
       local_source[z] = {};
 
     auto command = makeCommand(queue);
@@ -213,10 +214,10 @@ class AcceleratorSpecificMemoryCopy
     if (sub_size > max_size)
       ARCANE_THROW(NotSupportedException, "sizeof(type) is too big (v={0} max={1})",
                    sizeof(DataType) * sub_size, sizeof(DataType) * max_size);
-    DataType local_source[max_size];
-    for (Int64 z = 0; z < sub_size; ++z)
+    FixedArray<DataType, max_size> local_source;
+    for (Int32 z = 0; z < sub_size; ++z)
       local_source[z] = source[z];
-    for (Int64 z = sub_size; z < max_size; ++z)
+    for (Int32 z = sub_size; z < max_size; ++z)
       local_source[z] = {};
 
     if (nb_index == 0) {

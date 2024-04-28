@@ -19,14 +19,6 @@
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-/*!
- * \file NumArrayViews.h
- *
- * Ce fichier contient les déclarations des types pour gérer
- * les vues pour les accélérateurs de la classe 'NumArray'.
- */
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 
 namespace Arcane::Accelerator
 {
@@ -44,17 +36,13 @@ class NumArrayView;
 /*!
  * \brief Classe de base des vues sur les 'NumArray'.
  */
-class NumArrayViewBase
+class ARCANE_ACCELERATOR_EXPORT NumArrayViewBase
 {
  protected:
 
   // Pour l'instant n'utilise pas encore \a command
   // mais il ne faut pas le supprimer
-  explicit NumArrayViewBase(RunCommand&)
-  {
-  }
-
- private:
+  explicit NumArrayViewBase(const ViewBuildInfo&,Span<const std::byte> bytes);
 };
 
 /*---------------------------------------------------------------------------*/
@@ -76,8 +64,8 @@ class NumArrayView
 
  public:
 
-  NumArrayView(RunCommand& command, SpanType v)
-  : NumArrayViewBase(command)
+  NumArrayView(const ViewBuildInfo& command, SpanType v)
+  : NumArrayViewBase(command, Arccore::asBytes(v.to1DSpan()))
   , m_values(v)
   {}
 
@@ -162,7 +150,7 @@ class NumArrayView
  * \brief Vue en écriture.
  */
 template <typename DataType, typename Extents, typename LayoutPolicy> auto
-viewOut(RunCommand& command, NumArray<DataType, Extents, LayoutPolicy>& var)
+viewOut(const ViewBuildInfo& command, NumArray<DataType, Extents, LayoutPolicy>& var)
 {
   using Accessor = DataViewSetter<DataType>;
   return NumArrayView<Accessor, Extents, LayoutPolicy>(command, var.span());
@@ -175,7 +163,7 @@ viewOut(RunCommand& command, NumArray<DataType, Extents, LayoutPolicy>& var)
  * \brief Vue en lecture/écriture.
  */
 template <typename DataType, typename Extents, typename LayoutPolicy> auto
-viewInOut(RunCommand& command, NumArray<DataType, Extents, LayoutPolicy>& v)
+viewInOut(const ViewBuildInfo& command, NumArray<DataType, Extents, LayoutPolicy>& v)
 {
   using Accessor = DataViewGetterSetter<DataType>;
   return NumArrayView<Accessor, Extents, LayoutPolicy>(command, v.span());
@@ -187,7 +175,7 @@ viewInOut(RunCommand& command, NumArray<DataType, Extents, LayoutPolicy>& v)
  * \brief Vue en lecture.
  */
 template <typename DataType, typename Extents, typename LayoutType> auto
-viewIn(RunCommand& command, const NumArray<DataType, Extents, LayoutType>& v)
+viewIn(const ViewBuildInfo& command, const NumArray<DataType, Extents, LayoutType>& v)
 {
   using Accessor = DataViewGetter<DataType>;
   return NumArrayView<Accessor, Extents, LayoutType>(command, v.constSpan());

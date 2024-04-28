@@ -9,7 +9,328 @@ antérieures à la version 3 sont listées ici : \ref arcanedoc_news_changelog20
 
 ___
 
-## Arcane Version 3.11 (En cours...) {#arcanedoc_version3110}
+## Arcane Version 3.12 (...) {#arcanedoc_version3120}
+
+\note Avec cette version, il est nécessaire d'activer le C++20 pour pouvoir
+utiliser l'API accélérateur. Pour cela, il faut positionner la
+variable CMake `ARCCORE_CXX_STANDARD=20` lors de la configuration.  Il
+faut alors au moins les versions GCC 11, Clang 16 ou Visual Studio
+2022 ainsi que la version 3.26 de CMake.
+
+### Nouveautés/Améliorations
+
+- Ajoute possibilité de trier par uniqueId() croissant les faces et
+  arêtes connectées aux noeuds (\pr{990}). Cela n'est pas actif par défaut pour
+  compatibilité avec l'existant. Le tri permet d'avoir toujours le
+  même ordre de parcours pour les faces et les arêtes des noeuds ce
+  qui peut aider pour avoir des caluls répétables. Pour l'activer, on
+  peut positionner la variable d'environnement
+  `ARCANE_SORT_FACE_AND_EDGE_OF_NODE` à `1` ou utiliser le code
+  suivant:
+  ~~~{.cpp}
+  Arcane::IMesh* mesh = ...;
+  mesh->nodeFamily()->properties()->setBool("sort-connected-faces-edges",true);
+  mesh->modifier()->endUpdate();
+  ~~~
+- Permet de modifier le numéro du patch parent lors de la
+  renumérotation via
+  \arcane{CartesianMeshRenumberingInfo::setParentPatch()} (\pr{986}).
+- Ajoute support pour le calcul incrémental des fonctions de hash
+  (\pr{983}, \pr{984}).
+- Ajoute implémentation de l'algorithme de hash `SHA1` (\pr{982}).
+- Ajoute polique d'initialisation des données pour avoir le même
+  comportement que les version de %Arcane antérieures à la version 3
+  (\pr{1017}).
+- Ajoute classes \arcane{Vector2} et \arcane{Vector3} pour gérer des
+  couples et triplets de types quelconques (\pr{1066}, \pr{1075})
+- Ajoute classe \arcane{FixedArray} pour les tableaux de taille
+  fixe. Cette classe est similaire à `std::array` mais initialise
+  par défaut ses valeurs et permet la détection de débordement de
+  tableau (\pr{1063})
+- Ajoute support pour le dé-raffinement 3D et la renumérotation des
+  entités du maillage lors du raffinement ultérieur (\pr{1061}, \pr{1062})
+- Ajoute conversion possible de \arcanemat{ComponentCell} vers
+  \arcanemat{MatCell}, \arcanemat{EnvCell} et \arcanemat{AllEnvCell}
+  (\pr{1051}).
+- Ajoute support pour sauvegarder des 'hash' des variables pour comparer
+  rapidement si les valeurs sont différentes (\pr{1142}, \pr{1143}, \pr{1145},
+  \pr{1147}, \pr{1150}, \pr{1152}, \pr{1155}, \pr{1156}, \pr{1158},
+  \pr{1159}, \pr{1160})
+- Ajoute lecture parallèle des fichiers au format MSH (\pr{1126},
+  \pr{1136}, \pr{1137}, \pr{1138}, \pr{1139})
+- Refonte de la gestion de \arcane{ITimeHistoryMng} pour pouvoir
+  facilement gérer plusieurs maillages (\pr{1203}, \pr{1249}, \pr{1256}, \pr{1260})
+- Ajoute support expérimental pour l'AMR cartésien par patch en
+  dupliquant les noeuds et les faces (\pr{1167}, \pr{1337}, \pr{1350},
+  \pr{1351}, \pr{1353})
+- Ajoute nouvelle méthode (méthode 4) de renumérotation des patchs AMR
+  pour avoir la même numérotation entre un maillage raffiné et un
+  maillage dé-raffiné puis raffiné (\pr{1108}, \pr{1109})
+
+#### API Accélérateur
+
+- Rend nécessaire le C++20 pour l'API accélérateur (\pr{1020},
+  \pr{1026}, \pr{1030}, \pr{1050}).
+- Ajoute méthode `fill()` asynchrone pour les variable du maillage
+  (\arcane{ItemVariableArrayRefT} et \arcane{ItemVariableScalarRefT)}) (\pr{991})
+- Ajoute classe \arcaneacc{RunQueue::ScopedAsync} pour
+  rendre temporairement asynchrone une file d'exécution (\pr{978}).
+- Optimise la gestion mémoire de la classe
+  \arcaneacc{Filterer} et ajoute des surchages (\pr{1022}, \pr{1023},
+  \pr{1034}, \pr{1043}, \pr{1210}, \pr{1225}, \pr{1271})
+- Ajoute support des opérations atomiques (\pr{1028}, \pr{1032}, \pr{1033})
+- Ajoute support dans Aleph des versions de Hypre compilées avec le
+  support des accélérateurs (\pr{1125})
+- Ajoute support expérimental pour le prefetching automatique est
+  valeurs des vues (\pr{1179}, \pr{1180}, \pr{1304})
+- Ajoute algorithme de réduction directe via la classe
+  \arcaneacc{GenericReducer} (\pr{1306}, \pr{1307})
+- Ajoute algorithme de partitionnement de liste via la classe
+  \arcaneacc{GenericPartitioner} (\pr{1217})
+- Rend accessible sur accélérateurs certaines opérations
+  mathématiques (\pr{1294})
+- Ajoute surcharges pour l'algorithme `PrefixSum` ( \pr{1253}, \pr{1254})
+- Ajoute vues les variables partielles (\pr{1299}, \pr{1308}, \pr{1311}, \pr{1313}) 
+- Utilise l'API accélérateur lors de la mise à jour des matériaux via
+  \arcanemat{MeshMaterialModifier} (\pr{1182}, \pr{1183}, \pr{1185}, \pr{1186},
+  \pr{1196}, \pr{1204}, \pr{1205},\pr{1211}, \pr{1219}, \pr{1223},
+  \pr{1224}, \pr{1226}, \pr{1227}, \pr{1230}, \pr{1233}, \pr{1235},
+  \pr{1238}, \pr{1239}, \pr{1241}, \pr{1243}, \pr{1247}, \pr{1257},
+  \pr{1258}, \pr{1263}, \pr{1268}, \pr{1283}, \pr{1284}, \pr{1285}, \pr{1287},
+  \pr{1292}, \pr{1295}, \pr{1312}, \pr{1347})
+- Utilise l'API accélérateur pour l'ajoute et la suppression d'entités
+  dans un \arcane{ItemGroup} (\pr{1288},\pr{1289}, \pr{1293}).
+- Ajoute constructeur par défaut pour \arcaneacc{RunQueue}. Dans ce
+  cas l'instance n'est pas utilisable tant qu'elle n'a pas été
+  assignée (\pr{1282})
+- Ajoute possibilité de copier les \arcaneacc{RunQueue} avec une
+  sémantique par référence (\pr{1221})
+- Ajoute support pour choisir une ressource mémoire par défaut pour
+  une \arcaneacc{RunQueue} (\pr{1278})
+- Ajoute mécanismes pour faciliter la gestion mémoire (\pr{1273}, \pr{1274})
+- Ajoute possibilité de créér une vue sur des données en spécifiant
+  une instance de \arcaneacc{RunQueue} (\pr{1269}).
+- Ajoute méthodes de conversion de \arcane{NumArray} et
+  \arcane{MDSpan} vers \arccore{SmallSpan} (\pr{1262})
+- Ajoute support pour récupérer l'index de l'itérateur pour
+  RUNCOMMAND_ENUMERATE() et RUNCOMMAND_MAT_ENUMERATE() (\pr{1270},
+  \pr{1272})
+- Ajoute support dans RUNCOMMAND_MAT_ENUMERATE() pour
+  \arcanemat{MatCell} (\pr{1184})
+- Ajoute fonction
+  \arcane{VariableUtils::markVariableAsMostlyReadOnly()} pour marquer
+  les varibles comme étant principalement en lecture (\pr{1206})
+- Autorise l'utilisation de la mémoire
+  \arcane{eMemoryRessource::HostPinned} lorsque le runtime
+  accélérateur n'est pas défini. Dans ce cas on utilise
+  \arcane{eMemoryRessource::Host} (\pr{1315})
+- Débute support pour un backend avec l'API Sycl. Ce backend n'est pas
+  encore fonctionnel et n'est disponible que pour des tests internes
+  (\pr{1318}, \pr{1319}, \pr{1320}, \pr{1323}, \pr{1324},
+  \pr{1330},\pr{1334}, \pr{1345}, \pr{1355})
+
+### Changements
+
+- Supprime classe \arcanemat{ComponentItemInternal} qui est
+  remplacée par \arcanemat{ComponentItemBase}
+  (\pr{1039}, \pr{1053}, \pr{1059}, \pr{1172}, \pr{1181},
+  \pr{1187},\pr{1190}, \pr{1191}, \pr{1192}, \pr{1193}, \pr{1194},
+  \pr{1195},\pr{1197}, \pr{1199}, \pr{1200}, \pr{1335})
+- Active toujours les connectivités incrémentales (\pr{1166})
+- Rend obsolète \arcane{NumArray::s()}. Il faut utiliser à la place
+  `operator()` ou `operator[]` (\pr{1035})
+- N'initialise pas le runtime MPI si le service d'échange de message
+  (`MessagePassingService`) est `Sequential` (\pr{1029}).
+- Ne positionne pas par défaut la variable CMake `ARCANE_BUILD_TYPE`
+  lors de la configuration (\pr{1004}).
+- Ne filtre plus les assembly signées lors du chargement des plug-ins
+  en C# (\pr{1114})
+- Utilise \arcane{String} au lieu de `const String&` pour les valeurs
+  de retour de \arcane{IVariable} et \arcane{VariableRef} (\pr{1134})
+- Utilise par défaut la nouvelle version de la gestion des listes de
+  message de sérialisation (\pr{1113})
+- Utilise \arcane{Int16} au lieu de \arcane{Int8} pour l'identifiant
+  des accélérateurs (\arcaneacc{DeviceId}) (\pr{1276})
+- Utilise par défaut la version 2 de la gestion des listes d'entités
+  par type dans les groupes (\arcane{ItemGroup}. Cela est utilisé par
+  exemple dans \arcane{ItemGroup::applyOperation()}. La nouvelle
+  version n'utilise plus des sous-groupes mais uniquement des listes
+  et ne duplique par la mémoire si toutes les entités du groupe sont
+  de même type (\pr{1174})
+- Dans les vues, remplace \arcane{ViewSetter} par
+  \arcane{DataViewSetter} et \arcane{ViewGetterSetter} par
+  \arcane{DataViewGetterSetter} (\pr{1040})
+
+### Corrections
+
+- Corrige fuite mémoire avec les commandes asynchrones lorsqu'on
+  n'appelle pas \arcaneacc{RunQueue::barrier()}. Cela ne
+  devrait normalement pas arriver car il faut toujours appeler
+  `barrier()` après une commande asynchrone. Maintenant, si des
+  commandes sont actives lorsque la 'RunQueue' est détruite une
+  barrière implicite est effectuée (\pr{995})
+- Corrige mauvais type de retour de
+  \arcane{Accelerator::MatItemVariableScalarOutViewT::operator[]()}
+  qui ne permettait pas de modifier la valeur(\pr{981}).
+- Corrige mauvaise prise en compte des propriétés lors de la création
+  de variables matériaux dans certains cas (\pr{1012}).
+- Corrige mauvaise valeur pour la dimension Z pour le dé-raffinement
+  3D (\pr{1074})
+- Corrige numérotation des nouvelles entités des maillages cartésiens après
+  dé-raffinement 2D (\pr{1055}).
+- Corrige divers problèmes dans la gestion de la classe
+  \arcanemat{AllCellToAllEnvCellAccessor} (\pr{1071}, \pr{1133}, \pr{1188})
+- S'assure lors de la construction d'une variable matériau que la
+  variable globale associée est bien allouée (\pr{1056})
+- Corrige mauvaise valeur de retour de `ItemInternal.Cell()` dans le
+  wrapper C# (\pr{1131})
+- Corrige la version 2 de la sérialisation lorsqu'on utilise
+  `MPI_ANY_SOURCE` (\pr{1116})
+- Corrige mise à jour des synchronisation manquante lorsqu'on
+  dé-raffine mais qu'on ne raffine pas ensuite (\pr{1266})
+- Corrige divers problèmes de compilation (\pr{1044}, \pr{1047},
+  \pr{1280}, \pr{1309})
+- Corrige potentielle mauvaise mise à jour du padding SIMD dans la
+  mise à jour des \arcane{ItemGroup} (\pr{1165})
+- Corrige compilation avec ROCM 6.0 (\pr{1170})
+- Corrige compilation avec Swig 4.2 (\pr{1098})
+- Corrige compilation avec la version `2.12.0` et ultérieure de LibXml2
+  (\pr{1019}).
+
+### Interne
+
+- Utilise un compteur de référérence pour \arcaneacc{RunQueueImpl}
+  (\pr{996})
+- Ajoute support expérimental pour changer des valeurs dans le jeu de donnée à
+  partir de la ligne de commande (\pr{1038}).
+- Ajoute nouveau mécanisme de calcul de hash pour les implémentation
+  de \arcane{IData} (\pr{1036}).
+- Utilise nouveau mécanisme de Hash pour la détection de la validité
+  des valeurs des variables lors d'une reprise (\pr{1037}).
+- Simplifie l'implémentation de \arcane{MDSpan} via l'utilisation du
+  C++20 (\pr{1027})
+- Déplace les fichiers d'implémentation de Aleph dans le code source
+  et plus dans les fichiers d'en-tête et corrige le système de build
+  si on utilise Trilinos (\pr{1002}, \pr{1003})
+- Ajoute classes pour spécifier des arguments supplémentaires pour les
+  méthodes \arcane{IMeshModifier::addCells()} et
+  \arcane{IMeshModifier::addFaces()} (\pr{1077})
+- Supprime ancienne implémentation du générateur de maillage cartésien
+  (\pr{1069})
+- Utilise les classes \arcane{Int64x2}, \arcane{Int64x3},
+  \arcane{Int32x2} et \arcane{Int32x3} au lieu de `std::array` pour
+  gérer les informations de construction des maillages cartésiens
+  (\pr{1067})
+- Supprime avertissements coverity (\pr{1060}, \pr{1065}, \pr{1333}, \pr{1336})
+- Refonte du mécanisme interne de gestion des informations des entités
+  matériaux pour rendre les propriétés accessibles sur accélérateur
+  (\pr{1057}, \pr{1058}, \pr{1086})
+- Ajoute support pour le format JSON pour \arcane{VariableDataInfo}
+  (\pr{1148})
+- Utilise \arccore{ReferenceCounterImpl} pour l'implémentation de
+  \arccore{IThreadImplementation} et \arcane{IParallelDispatchT}
+  (\pr{1132}, \pr{1127})
+- Corrige divers avertissements de compilation (\pr{1130}, \pr{1163},
+  \pr{1164}, \pr{1042}, \pr{1118}, \pr{1346})
+- Améliore le portage Windows (\pr{1154}, \pr{1157}, \pr{1246})
+- Ajoute méthode \arcane{IMesh::computeSynchronizeInfos()} pour
+  forcer le recalcule des informations de synchronisation (\pr{1124})
+- Désactive les exceptions flottantes en fin de calcul. Cela permet
+  d'éviter des FPE dus aux exécution spéculatives (\pr{1232})
+- Ajoute classe expérimentatle \arcane{DualUniqueArray} pour gérer une
+  vue double sur CPU et accélérateur (\pr{1215})
+- Utilise la bonne valeur de la taille de page pour l'allocateur
+  interne lié à CUDA (\pr{1198})
+- Ajoute détection du mode GPU Aware de MPI pour ROCM (\pr{1209})
+- Ajoute méthode \arcane{ITimeStats::resetStats()} pour remettre à
+  zéro les statistiques temporelles de l'instance (\pr{1122}, \pr{1128})
+- Ajoute implémentation de \arccore{IThreadImplementation} et de
+  \arcane{AtomicInt32) en utilisant la bibliothèque standard du C++
+  (\pr{1339}, \pr{1340}, \pr{1342}, \pr{1343})
+
+### Compilation et Intégration Continue (CI)
+
+- Mise à jour de l'image `U22_G12_C15_CU122` (\pr{1031})
+- Supprime utilisation des cibles utilisant CUDA 11.8 ( \pr{1078})
+- Mise à jour du worflow `vcpkg` avec la version `2023-12-12`
+  (\pr{1076})
+- Utilise le C++20 pour le workflow `compile-all-vcpkg` (\pr{1048})
+- Positionne par défaut `CMAKE_BUILD_TYPE` à `Release` si non spécifié
+  (\pr{1149})
+- Ajoute macro `ARCANE_HAS_ACCELERATOR` si Arcane est compilé avec le
+  support d'un accélérateur (\pr{1123})
+- Ajoute support pour utiliser 'googletest' avec des cas MPI (\pr{1092})
+- Supprime utilisation de Clang13 dans le CI (\pr{1083})
+- Modifie le workflow IFPEN pour compiler directement tous les
+  composants de `framework` (\pr{1214}, \pr{1281})
+- Désactive les tests en cours si on publie une modification dans la
+  branche liée au 'pull-request' (\pr{1250})
+- Ajoute workflow pour IFPEN 2021 avec les versions 7, 8 et 9 de RHEL
+  (\pr{1255})
+- Met à jour certaines actions obsolètes (\pr{1218},\pr{1222})
+- Utilise le C++20 pour certains workflow (\pr{1189})
+
+### Arccore
+
+- Ajoute support pour des destructeurs particuliers dans
+  \arccore{ReferenceCounterImpl} (\pr{1068})
+- Ajoute nouvelle implémentation de \arccore{ReferenceCounterImpl} qui
+  n'appelle pas directement l'opérateur `operator delete`. Cela permet
+  de détruire l'instance de manière externe (\pr{989}, \pr{1080},
+  \pr{1081}, \pr{1120}, \pr{1161}, \pr{1162}).
+- Autorise l'utilisation de \arccore{ReferenceCounterImpl} sans avoir
+  besoin d'une classe interface (\pr{1121})
+- Utilise `std::atomic_flag` au lieu de la `glib` pour la classe
+  \arccore(SpinLock) (\pr{1110})
+- Début support pour les types \arccore{Float16}, \arccore{Float32} et \arccore{BFloat16}
+  (\pr{1087}, \pr{1088}, \pr{1089}, \pr{1095}, \pr{1099}, \pr{1101},
+  \pr{1102}, \pr{1106})
+- Rend privé \arccore{StringImpl} (\pr{1096}, \pr{1097})
+- Améliorations diverses dans \arccore{ISerializer} (\pr{1090},
+  \pr{1093}, \pr{1112})
+- Rend publique la méthode \arccore{Array::resizeNoInit()} (\pr{1220},
+  \pr{1297})
+- Ajoute argument template dans \arccore{Span}, \arccore{SmallSpan} et
+  \arccore{SpanImpl} pour indiquer la valeur minimale de l'index (`0`
+  par défaut) (\pr{1296}).
+- Ajoute conversions implicites et explicites entre \arccore{Array} et
+  \arccore{SmallSpan} (\pr{1277}, \pr{1279})
+- Corrige pour \arccore{String} des conversions multiples entre UTF-8
+  et UTF-16 (\pr{1251}).
+- Ajoute fonction utilitaire pour remplir un \arccore{Span} avec des
+  valeurs aléatoires (\pr{1103})
+- Ajoute méthode \arccore{arccoreCheckRange()} pour vérifier si une
+  valeur est dans un intervalle (\pr{1091}).
+- Ajoute classe \arccore{BuiltInDataTypeContainer} pour généraliser
+  les opérations sur les types de données de base \pr{1105}
+- Ajoute possibilité de récupérer le communicateur MPI dans
+  \arccore{MessagePassing::IMessagePassingMng} (\pr{1248})
+- Début ré-organisation interne pour rendre l'utilisation de la 'Glib'
+  optionnelle (\pr{1328}).
+
+### Axlstar
+
+- Améliore la gestion de la documentation (\pr{1052}, \pr{1070},
+  \pr{1072}, \pr{1073}, \pr{1084}, \pr{1104}, \pr{1107})
+- Ajoute option pour changer le répertoire d'installation (\pr{1171})
+- Ajoute option en ligne de commande pour changer le nom du namespace
+  généré (\pr{1321}).
+- Ajoute nom du namespace dans la protection de l'en-tête du fichier
+  généré (\pr{1322}).
+
+### Alien
+
+- Début support du remplissage des matrices sur accélérateur
+  (\pr{1177}, \pr{1216}, \pr{1242}, \pr{1245}, \pr{1252}, \pr{1267})
+- Améliore la documentation Alien et la gère en même temps que la
+  documentation Arcane (\pr{1265})
+- Ajoute gestion des blocs pour le backend PETSc (\pr{1286}, \pr{1302})
+- Ajoute possibilité de passer des paramètres supplémentaires dans
+  l'API C de Alien (\pr{1259})
+
+##########################################################################################
+
+## Arcane Version 3.11 (23 novembre 2023) {#arcanedoc_version3110}
 
 ### Nouveautés/Améliorations
 
@@ -103,7 +424,6 @@ ___
 - Corrige mauvaise prise en compte des maillages additionnels pour les
   options complexes avec occurences multiples (\pr{941}).
 
-
 ### Interne
 
 - Début support des maillages cartésian avec patchs bloc structuré
@@ -154,6 +474,8 @@ ___
   (\pr{943}).
 - Créé les \arcane{MeshHandle} des maillages additionnels avant
   l'appel aux points d'entrée `Build` (\pr{947}).
+- Utilise `std::atomic_ref` au lieu de `std::atomic` pour la gestion
+  des réductions sur accélérateur (\pr{1352})
 
 ### Compilation et Intégration Continue (CI)
 
@@ -297,7 +619,7 @@ utilisateurs de %Arcane.
   groupes d'entités (\arcane{ItemGroup}) utilisent cet attribut
   (\pr{691}, \pr{714}).
 - Rend accessible sur accélérateur les informations conservées dans
-  \arcane{Materials::AllEnvCell} (\pr{742}).
+  \arcanemat{AllEnvCell} (\pr{742}).
 - Ajoute dans l'API accélérateur des vues à partir des \arccore{Span}.
   Cela permet d'avoir des vues sur des conteneurs autres
   que ceux de %Arcane (par exemple `std::vector`) à partir du moment

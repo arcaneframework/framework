@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MemoryRessourceMng.cc                                       (C) 2000-2023 */
+/* MemoryRessourceMng.cc                                       (C) 2000-2024 */
 /*                                                                           */
 /* Gestion des ressources mémoire pour les CPU et accélérateurs.             */
 /*---------------------------------------------------------------------------*/
@@ -75,7 +75,8 @@ class DefaultHostMemoryCopier
  public:
 
   void copy(ConstMemoryView from, eMemoryRessource from_mem,
-            MutableMemoryView to, eMemoryRessource to_mem, [[maybe_unused]] RunQueue* queue) override
+            MutableMemoryView to, eMemoryRessource to_mem,
+            [[maybe_unused]] const RunQueue* queue) override
   {
     // Sans support accélérateur, on peut juste faire un 'memcpy' si la mémoire
     // est accessible depuis le CPU
@@ -100,7 +101,6 @@ MemoryRessourceMng()
 : m_default_memory_copier(new DefaultHostMemoryCopier())
 , m_copier(m_default_memory_copier.get())
 {
-  std::fill(m_allocators.begin(), m_allocators.end(), nullptr);
   // Par défaut on utilise l'allocateur CPU. Les allocateurs spécifiques pour
   // les accélérateurs seront positionnés lorsqu'on aura choisi le runtime
   // accélérateur
@@ -124,23 +124,34 @@ _checkValidRessource(eMemoryRessource r)
 /*---------------------------------------------------------------------------*/
 
 IMemoryAllocator* MemoryRessourceMng::
-getAllocator(eMemoryRessource r)
+getAllocator(eMemoryRessource r, bool throw_if_not_found)
 {
   int x = _checkValidRessource(r);
-  IMemoryAllocator* a = m_allocators[(int)r];
+  IMemoryAllocator* a = m_allocators[x];
 
-  // Si pas d'allocateur spécifique, utilise platform::getAcceleratorHostMemoryAllocator()
-  // pour compatibilité avec l'existant
-  if (r == eMemoryRessource::UnifiedMemory && !a) {
-    a = platform::getAcceleratorHostMemoryAllocator();
-    if (!a)
-      a = m_allocators[(int)eMemoryRessource::Host];
+  // Si pas d'allocateur spécifique et qu'on n'est pas sur accélérateur,
+  // utilise platform::getAcceleratorHostMemoryAllocator().
+  if (!a && !m_is_accelerator) {
+    if (r == eMemoryRessource::UnifiedMemory || r == eMemoryRessource::HostPinned) {
+      a = platform::getAcceleratorHostMemoryAllocator();
+      if (!a)
+        a = m_allocators[(int)eMemoryRessource::Host];
+    }
   }
 
-  if (!a)
-    ARCANE_FATAL("Allocator for ressource '{0}' is not available", x);
+  if (!a && throw_if_not_found)
+    ARCANE_FATAL("Allocator for ressource '{0}' is not available", r);
 
   return a;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+IMemoryAllocator* MemoryRessourceMng::
+getAllocator(eMemoryRessource r)
+{
+  return getAllocator(r, true);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -158,7 +169,7 @@ setAllocator(eMemoryRessource r, IMemoryAllocator* allocator)
 
 void MemoryRessourceMng::
 copy(ConstMemoryView from, eMemoryRessource from_mem,
-     MutableMemoryView to, eMemoryRessource to_mem, RunQueue* queue)
+     MutableMemoryView to, eMemoryRessource to_mem, const RunQueue* queue)
 {
   Int64 from_size = from.bytes().size();
   Int64 to_size = to.bytes().size();

@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* NumericWrapper.h                                            (C) 2000-2022 */
+/* NumericWrapper.h                                            (C) 2000-2024 */
 /*                                                                           */
 /* Wrapper pour swig.                                                        */
 /*---------------------------------------------------------------------------*/
@@ -162,7 +162,7 @@ namespace Arcane
    public:
     // Pour SWIG, ajout du constructeur avec un entier.
     ArrayViewPOD_T(int){}
-    ArrayViewPOD_T(){}
+    ArrayViewPOD_T() = default;
    public:
     Integer m_size;
     DataType* m_ptr;
@@ -182,7 +182,7 @@ namespace Arcane
    public:
     // Pour SWIG, ajout du constructeur avec un entier.
     ConstArrayViewPOD_T(int){}
-    ConstArrayViewPOD_T(){}
+    ConstArrayViewPOD_T() = default;
    public:
      Integer m_size;
      const DataType* m_ptr;

@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* RunCommandLaunchInfo.cc                                     (C) 2000-2022 */
+/* RunCommandLaunchInfo.cc                                     (C) 2000-2024 */
 /*                                                                           */
 /* Informations pour l'exécution d'une 'RunCommand'.                         */
 /*---------------------------------------------------------------------------*/
@@ -29,20 +29,11 @@ namespace Arcane::Accelerator::impl
 /*---------------------------------------------------------------------------*/
 
 RunCommandLaunchInfo::
-RunCommandLaunchInfo(RunCommand& command)
+RunCommandLaunchInfo(RunCommand& command, Int64 total_loop_size)
 : m_command(command)
+, m_total_loop_size(total_loop_size)
 {
-  _begin();
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-RunCommandLaunchInfo::
-RunCommandLaunchInfo(RunCommand& command,Int64 total_loop_size)
-: m_command(command)
-{
-  m_thread_block_info = computeThreadBlockInfo(total_loop_size);
+  m_thread_block_info = _computeThreadBlockInfo();
   _begin();
 }
 
@@ -63,7 +54,7 @@ RunCommandLaunchInfo::
 void RunCommandLaunchInfo::
 _begin()
 {
-  RunQueue& queue = m_command._internalQueue();
+  const RunQueue& queue = m_command._internalQueue();
   m_exec_policy = queue.executionPolicy();
   m_queue_stream = queue._internalStream();
   m_runtime = queue._internalRuntime();
@@ -109,7 +100,7 @@ _doEndKernelLaunch()
   m_is_notify_end_kernel_done = true;
   m_command._internalNotifyEndLaunchKernel();
 
-  RunQueue& q = m_command._internalQueue();
+  const RunQueue& q = m_command._internalQueue();
   if (!q.isAsync())
     q.barrier();
 }
@@ -126,13 +117,14 @@ _internalStreamImpl()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+//! Calcule le nombre de block/thread/grille du noyau en fonction de \a full_size
 auto RunCommandLaunchInfo::
-computeThreadBlockInfo(Int64 full_size) const -> ThreadBlockInfo
+_computeThreadBlockInfo() const -> ThreadBlockInfo
 {
   int threads_per_block = m_command.nbThreadPerBlock();
   if (threads_per_block<=0)
     threads_per_block = 256;
-  Int64 big_b = (full_size + threads_per_block - 1) / threads_per_block;
+  Int64 big_b = (m_total_loop_size + threads_per_block - 1) / threads_per_block;
   int blocks_per_grid = CheckedConvert::toInt32(big_b);
   return { blocks_per_grid, threads_per_block };
 }
@@ -141,7 +133,7 @@ computeThreadBlockInfo(Int64 full_size) const -> ThreadBlockInfo
 /*---------------------------------------------------------------------------*/
 
 ParallelLoopOptions RunCommandLaunchInfo::
-computeParallelLoopOptions(Int64 full_size) const
+computeParallelLoopOptions() const
 {
   ParallelLoopOptions opt = m_command.parallelLoopOptions();
   const bool use_dynamic_compute = false;
@@ -153,7 +145,7 @@ computeParallelLoopOptions(Int64 full_size) const
       nb_thread = TaskFactory::nbAllowedThread();
     if (nb_thread <= 0)
       nb_thread = 1;
-    Int32 grain_size = static_cast<Int32>((double)full_size / (nb_thread * 10.0));
+    Int32 grain_size = static_cast<Int32>((double)m_total_loop_size / (nb_thread * 10.0));
     opt.setGrainSize(grain_size);
   }
   return opt;
@@ -163,12 +155,12 @@ computeParallelLoopOptions(Int64 full_size) const
 /*---------------------------------------------------------------------------*/
 
 void RunCommandLaunchInfo::
-computeLoopRunInfo(Int64 full_size)
+computeLoopRunInfo()
 {
   if (m_has_exec_begun)
     ARCANE_FATAL("computeLoopRunInfo() has to be called before beginExecute()");
   ForLoopTraceInfo lti(m_command.traceInfo(), m_command.kernelName());
-  m_loop_run_info = ForLoopRunInfo(computeParallelLoopOptions(full_size), lti);
+  m_loop_run_info = ForLoopRunInfo(computeParallelLoopOptions(), lti);
   m_loop_run_info.setExecStat(m_command._internalCommandExecStat());
 }
 

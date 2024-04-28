@@ -13,6 +13,8 @@
 
 #include "arcane/core/VariableUtils.h"
 
+#include "arcane/utils/MemoryUtils.h"
+
 #include "arcane/accelerator/core/RunQueue.h"
 #include "arcane/accelerator/core/Memory.h"
 
@@ -20,6 +22,7 @@
 #include "arcane/core/IVariable.h"
 #include "arcane/core/VariableRef.h"
 #include "arcane/core/internal/IDataInternal.h"
+#include "arcane/core/internal/IVariableInternal.h"
 #include "arcane/core/datatype/DataAllocationInfo.h"
 #include "arcane/core/materials/MeshMaterialVariableRef.h"
 #include "arcane/core/materials/internal/IMeshMaterialVariableInternal.h"
@@ -42,7 +45,7 @@ using namespace Arcane::Accelerator;
 /*---------------------------------------------------------------------------*/
 
 void VariableUtils::
-prefetchVariableAsync(IVariable* var, RunQueue* queue_or_null)
+prefetchVariableAsync(IVariable* var, const RunQueue* queue_or_null)
 {
   ARCANE_CHECK_POINTER(var);
   if (!queue_or_null)
@@ -61,7 +64,7 @@ prefetchVariableAsync(IVariable* var, RunQueue* queue_or_null)
 /*---------------------------------------------------------------------------*/
 
 void VariableUtils::
-prefetchVariableAsync(VariableRef& var, RunQueue* queue_or_null)
+prefetchVariableAsync(VariableRef& var, const RunQueue* queue_or_null)
 {
   return prefetchVariableAsync(var.variable(), queue_or_null);
 }
@@ -94,6 +97,39 @@ markVariableAsMostlyReadOnly(::Arcane::Materials::MeshMaterialVariableRef& var)
   auto vars = var.materialVariable()->_internalApi()->variableReferenceList();
   for (VariableRef* v : vars)
     markVariableAsMostlyReadOnly(v->variable());
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void VariableUtils::
+experimentalChangeAllocator(::Arcane::Materials::IMeshMaterialVariable* var,
+                            eMemoryRessource mem)
+{
+  MemoryAllocationOptions mem_opts(MemoryUtils::getAllocationOptions(mem));
+  Arcane::Materials::IMeshMaterialVariableInternal* mat_var = var->_internalApi();
+  for (VariableRef* vref : mat_var->variableReferenceList())
+    vref->variable()->_internalApi()->changeAllocator(mem_opts);
+  var->globalVariable()->_internalApi()->changeAllocator(mem_opts);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void VariableUtils::
+experimentalChangeAllocator(IVariable* var, eMemoryRessource mem)
+{
+  MemoryAllocationOptions mem_opts(MemoryUtils::getAllocationOptions(mem));
+  var->_internalApi()->changeAllocator(mem_opts);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void VariableUtils::
+experimentalChangeAllocator(VariableRef& var, eMemoryRessource mem)
+{
+  experimentalChangeAllocator(var.variable(), mem);
 }
 
 /*---------------------------------------------------------------------------*/

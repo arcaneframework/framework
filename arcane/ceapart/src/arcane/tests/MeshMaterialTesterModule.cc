@@ -181,6 +181,7 @@ class MeshMaterialTesterModule
   void _initUnitTest();
   void _applyEos(bool is_init);
   void _testDumpProperties();
+  void _checkNullComponentItem();
 };
 
 /*---------------------------------------------------------------------------*/
@@ -652,11 +653,10 @@ startInit()
                  << " component_uid=" << mc.componentUniqueId();
           //env_density += m_mat_density[imatcell];
         }
-        ENUMERATE_CELL_COMPONENTCELL(iccell,(*ienvcell)){
-          ComponentCell mc = *iccell;
+        for( ComponentCell mc : ec.subItems()){
           info() << "Cell     mat=" << mc.component()->name()
                  << " (id=" << mc.componentId() << ")"
-                 << " density=" << m_mat_density[iccell]
+                 << " density=" << m_mat_density[mc]
                  << " index=" << mc._varIndex()
                  << " component_uid=" << mc.componentUniqueId();
           //env_density += m_mat_density[imatcell];
@@ -717,6 +717,29 @@ startInit()
 
   _applyEos(true);
   _testDumpProperties();
+  _checkNullComponentItem();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MeshMaterialTesterModule::
+_checkNullComponentItem()
+{
+  EnvCell null_env_cell;
+  info() << "NullEnvCell global_cell_id=" << null_env_cell.globalCell().localId();
+
+  info() << "NullEnvCell var_index =" << null_env_cell._varIndex();
+  //info() << "NullEnvCell component =" << null_env_cell.component();
+  info() << "NullEnvCell component_id =" << null_env_cell.componentId();
+  info() << "NullEnvCell null =" << null_env_cell.null();
+  info() << "NullEnvCell super_cell =" << null_env_cell.superCell();
+  info() << "NullEnvCell level =" << null_env_cell.level();
+  info() << "NullEnvCell nb_sub_item=" << null_env_cell.nbSubItem();
+  info() << "NullEnvCell component_unique_id=" << null_env_cell.componentUniqueId();
+  info() << "NullEnvCell sub_items =" << null_env_cell.subItems();
+
+  info() << "NullEnvCell all_env_cell =" << null_env_cell.allEnvCell().null();
 }
 
 /*---------------------------------------------------------------------------*/

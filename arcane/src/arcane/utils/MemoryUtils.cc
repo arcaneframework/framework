@@ -15,6 +15,8 @@
 
 #include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/MemoryAllocator.h"
+#include "arcane/utils/IMemoryRessourceMng.h"
+#include "arcane/utils/internal/IMemoryRessourceMngInternal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -34,10 +36,33 @@ getDefaultDataAllocator()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+IMemoryAllocator* MemoryUtils::
+getDeviceOrHostAllocator()
+{
+  IMemoryRessourceMng* mrm = platform::getDataMemoryRessourceMng();
+  IMemoryAllocator* a = mrm->getAllocator(eMemoryRessource::Device,false);
+  if (a)
+    return a;
+  return mrm->getAllocator(eMemoryRessource::Host);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 MemoryAllocationOptions MemoryUtils::
 getDefaultDataAllocator(eMemoryLocationHint hint)
 {
   return MemoryAllocationOptions(getDefaultDataAllocator(), hint);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+MemoryAllocationOptions MemoryUtils::
+getAllocationOptions(eMemoryRessource mem_ressource)
+{
+  IMemoryAllocator* allocator = platform::getDataMemoryRessourceMng()->getAllocator(mem_ressource);
+  return MemoryAllocationOptions(allocator);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -55,12 +80,24 @@ getAllocatorForMostlyReadOnlyData()
 Int64 MemoryUtils::impl::
 computeCapacity(Int64 size)
 {
-  Int64 new_capacity = size * 2;
+  double d_size = static_cast<double>(size);
+  double d_new_capacity = d_size * 1.8;
   if (size > 5000000)
-    new_capacity = static_cast<Int64>(static_cast<double>(size) * 1.2);
+    d_new_capacity = d_size * 1.2;
   else if (size > 500000)
-    new_capacity = static_cast<Int64>(static_cast<double>(size) * 1.5);
-  return new_capacity;
+    d_new_capacity = d_size * 1.5;
+  return static_cast<Int64>(d_new_capacity);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MemoryUtils::
+copy(MutableMemoryView destination, eMemoryRessource destination_mem,
+     ConstMemoryView source, eMemoryRessource source_mem, const RunQueue* queue)
+{
+  IMemoryRessourceMng* mrm = platform::getDataMemoryRessourceMng();
+  mrm->_internal()->copy(source, destination_mem, destination, source_mem, queue);
 }
 
 /*---------------------------------------------------------------------------*/

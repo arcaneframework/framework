@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ArcaneGlobal.h                                              (C) 2000-2023 */
+/* ArcaneGlobal.h                                              (C) 2000-2024 */
 /*                                                                           */
 /* Déclarations générales de Arcane.                                         */
 /*---------------------------------------------------------------------------*/
@@ -56,6 +56,16 @@
  * de HIP et qu'on utilise le compilateur HIP.
  */
 #define ARCANE_COMPILING_HIP
+#endif
+
+#if defined(ARCANE_HAS_SYCL)
+#  if defined(SYCL_LANGUAGE_VERSION) || defined(__ADAPTIVECPP__)
+/*!
+ * \brief Macro pour indiquer qu'on compile %Arcane avec le support
+ * de SYCL et qu'on utilise le compilateur SYCL.
+ */
+#    define ARCANE_COMPILING_SYCL
+#  endif
 #endif
 
 /*---------------------------------------------------------------------------*/

@@ -80,7 +80,7 @@ class VariablePrivate
 {
  public:
 
-  VariablePrivate(const VariableBuildInfo& v,const VariableInfo& vi);
+  VariablePrivate(const VariableBuildInfo& v, const VariableInfo& vi, Variable* var);
 
  public:
 
@@ -112,6 +112,7 @@ class VariablePrivate
   std::map<String,String> m_tags; //!< Liste des tags
   bool m_has_recursive_depend = true; //!< Vrai si les dépendances sont récursives
   bool m_want_shrink = false;
+  Variable* m_variable = nullptr; //!< Variable associée
 
  public:
 
@@ -150,9 +151,10 @@ class VariablePrivate
 
  public:
 
-  //@{ Implémentation de IVariableInternal
+  //!@{ \name Implémentation de IVariableInternal
   String computeComparisonHashCollective(IHashAlgorithm* hash_algo, IData* sorted_data) override;
-  //@}
+  void changeAllocator(const MemoryAllocationOptions& alloc_info) override;
+  //!@}
 
  private:
 
@@ -204,13 +206,14 @@ incrementModifiedTime()
 /*---------------------------------------------------------------------------*/
 
 VariablePrivate::
-VariablePrivate(const VariableBuildInfo& v,const VariableInfo& vi)
+VariablePrivate(const VariableBuildInfo& v, const VariableInfo& vi, Variable* var)
 : m_sub_domain(v._subDomain())
 , m_data_factory_mng(v.dataFactoryMng())
 , m_mesh_handle(v.meshHandle())
 , m_infos(vi)
 , m_property(v.property())
 , m_is_partial(vi.isPartial())
+, m_variable(var)
 {
   _setHashId();
   m_infos.setDefaultItemGroupName();
@@ -329,7 +332,7 @@ private:
 Variable::
 Variable(const VariableBuildInfo& v,const VariableInfo& vi)
 : TraceAccessor(v.traceMng())
-, m_p(new VariablePrivate(v,vi))
+, m_p(new VariablePrivate(v, vi, this))
 {
 }
 
@@ -1401,6 +1404,19 @@ computeComparisonHashCollective(IHashAlgorithm* hash_algo,
     hash_string = Convert::toHexaString(asBytes(hash_value.bytes()));
   }
   return hash_string;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void VariablePrivate::
+changeAllocator(const MemoryAllocationOptions& mem_options)
+{
+  INumericDataInternal* dx = m_data->_commonInternal()->numericData();
+  if (dx) {
+    dx->changeAllocator(mem_options);
+    m_variable->syncReferences();
+  }
 }
 
 /*---------------------------------------------------------------------------*/

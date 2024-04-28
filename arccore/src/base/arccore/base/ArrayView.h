@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ArrayView.h                                                 (C) 2000-2023 */
+/* ArrayView.h                                                 (C) 2000-2024 */
 /*                                                                           */
 /* Types définissant les vues de tableaux C.                                 */
 /*---------------------------------------------------------------------------*/
@@ -92,10 +92,8 @@ template<typename T> class IterT;
 template<class T>
 class ArrayView
 {
-  friend class Span<T>;
-  friend class Span<const T>;
-  friend class SmallSpan<T>;
-  friend class SmallSpan<const T>;
+  template <typename T2, Int64 Extent, Int64 MinValue> friend class Span;
+  template <typename T2, Int32 Extent, Int32 MinValue> friend class SmallSpan;
 
  public:
 
@@ -134,8 +132,7 @@ class ArrayView
   constexpr ArrayView() noexcept : m_size(0), m_ptr(nullptr) {}
 
   //! Constructeur de recopie depuis une autre vue
-  constexpr ArrayView(const ArrayView<T>& from) noexcept
-  : m_size(from.m_size), m_ptr(from.m_ptr) {}
+  ArrayView(const ArrayView<T>& from) = default;
 
   //! Construit une vue sur une zone mémoire commencant par \a ptr et
   // contenant \a asize éléments.
@@ -570,11 +567,8 @@ class ConstArrayView
   //! Construit un tableau avec \a s élément
   constexpr ConstArrayView(Integer s,const_pointer ptr) noexcept
   : m_size(s), m_ptr(ptr) {}
-  /*! \brief Constructeur par copie.
-   * \warning Seul le pointeur est copié. Aucune copie mémoire n'est effectuée.
-   */
-  constexpr ConstArrayView(const ConstArrayView<T>& from) noexcept
-  : m_size(from.m_size), m_ptr(from.m_ptr) {}
+  //! Constructeur par copie.
+  ConstArrayView(const ConstArrayView<T>& from) = default;
   /*!
    * \brief Constructeur par copie.
    * \warning Seul le pointeur est copié. Aucune copie mémoire n'est effectuée.

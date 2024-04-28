@@ -55,6 +55,7 @@ class DeviceId;
 class DeviceInfo;
 class IDeviceInfoList;
 class PointerAttribute;
+class ViewBuildInfo;
 enum class eMemoryAdvice;
 
 namespace impl
@@ -90,7 +91,9 @@ enum class eExecutionPolicy
   //! Politique d'exécution utilisant l'environnement CUDA
   CUDA,
   //! Politique d'exécution utilisant l'environnement HIP
-  HIP
+  HIP,
+  //! Politique d'exécution utilisant l'environnement SYCL
+  SYCL
 };
 
 //! Affiche le nom de la politique d'exécution
@@ -174,7 +177,7 @@ enum class ePointerAccessibility
 inline bool
 isAcceleratorPolicy(eExecutionPolicy exec_policy)
 {
-  return exec_policy == eExecutionPolicy::CUDA || exec_policy == eExecutionPolicy::HIP;
+  return exec_policy == eExecutionPolicy::CUDA || exec_policy == eExecutionPolicy::HIP || exec_policy == eExecutionPolicy::SYCL;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -233,8 +236,8 @@ using Arcane::Accelerator::isAcceleratorPolicy;
  * Lève une exception FatalErrorException si ce n'est pas le cas.
  */
 extern "C++" ARCANE_ACCELERATOR_CORE_EXPORT void
-arcaneCheckPointerIsAcccessible(RunQueue* queue, const void* ptr,
-                                const char* name, const TraceInfo& ti);
+arcaneCheckPointerIsAccessible(RunQueue* queue, const void* ptr,
+                               const char* name, const TraceInfo& ti);
 
 /*!
  * \brief Vérifie si \a ptr est accessible pour une exécution sur \a runner.
@@ -242,8 +245,8 @@ arcaneCheckPointerIsAcccessible(RunQueue* queue, const void* ptr,
  * Lève une exception FatalErrorException si ce n'est pas le cas.
  */
 extern "C++" ARCANE_ACCELERATOR_CORE_EXPORT void
-arcaneCheckPointerIsAcccessible(Runner* runner, const void* ptr,
-                                const char* name, const TraceInfo& ti);
+arcaneCheckPointerIsAccessible(Runner* runner, const void* ptr,
+                               const char* name, const TraceInfo& ti);
 
 /*!
  * \brief Vérifie si \a ptr est accessible pour une exécution \a policy.
@@ -251,14 +254,14 @@ arcaneCheckPointerIsAcccessible(Runner* runner, const void* ptr,
  * Lève une exception FatalErrorException si ce n'est pas le cas.
  */
 extern "C++" ARCANE_ACCELERATOR_CORE_EXPORT void
-arcaneCheckPointerIsAcccessible(eExecutionPolicy policy, const void* ptr,
-                                const char* name, const TraceInfo& ti);
+arcaneCheckPointerIsAccessible(eExecutionPolicy policy, const void* ptr,
+                               const char* name, const TraceInfo& ti);
 
 template <typename T> inline void
-arcaneCheckPointerIsAcccessible(T& queue_or_runner, const void* ptr,
-                                const char* name, const TraceInfo& ti)
+arcaneCheckPointerIsAccessible(T& queue_or_runner, const void* ptr,
+                               const char* name, const TraceInfo& ti)
 {
-  arcaneCheckPointerIsAcccessible(&queue_or_runner, ptr, name, ti);
+  arcaneCheckPointerIsAccessible(&queue_or_runner, ptr, name, ti);
 }
 
 } // namespace Arcane::Accelerator::impl
@@ -271,7 +274,7 @@ arcaneCheckPointerIsAcccessible(T& queue_or_runner, const void* ptr,
  * Lance une exception si ce n'est pas le cas.
  */
 #define ARCANE_CHECK_ACCESSIBLE_POINTER_ALWAYS(queue_or_runner_or_policy, ptr) \
-  ::Arcane::Accelerator::impl::arcaneCheckPointerIsAcccessible((queue_or_runner_or_policy), (ptr), #ptr, A_FUNCINFO)
+  ::Arcane::Accelerator::impl::arcaneCheckPointerIsAccessible((queue_or_runner_or_policy), (ptr), #ptr, A_FUNCINFO)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

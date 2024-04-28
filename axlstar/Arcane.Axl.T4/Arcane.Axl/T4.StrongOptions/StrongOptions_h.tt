@@ -272,8 +272,8 @@ private:
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#ifndef ARCANE_STRONGOPTIONS_<#= Xml.ClassName.ToUpper() #>_H
-#define ARCANE_STRONGOPTIONS_<#= Xml.ClassName.ToUpper() #>_H
+#ifndef ARCANE_STRONGOPTIONS_<#= Xml.CppHeaderGuardName #>_H
+#define ARCANE_STRONGOPTIONS_<#= Xml.CppHeaderGuardName #>_H
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

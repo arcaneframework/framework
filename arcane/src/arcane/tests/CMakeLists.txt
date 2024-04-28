@@ -44,6 +44,7 @@ set(ARCANE_ACCELERATOR_SOURCES
   accelerator/AcceleratorFilterUnitTest.cc
   accelerator/AcceleratorPartitionerUnitTest.cc
   accelerator/RunQueueUnitTest.cc
+  accelerator/AcceleratorMathUnitTest.cc
   accelerator/AcceleratorViewsUnitTest.cc
   accelerator/ArcaneTestStandaloneAcceleratorMng.cc
   accelerator/MeshMaterialAcceleratorUnitTest.cc
@@ -122,6 +123,10 @@ if (TARGET arcane_dotnet_wrapper_services)
   set(OUTLIB ${LIBRARY_OUTPUT_PATH}/ArcaneTest.dll)
   set(CSPATH ${ARCANE_SRC_PATH}/arcane/tests)
   set(CSOUTPATH ${ARCANEBUILDROOT}/arcane/tests)
+  if (ARCANE_ENABLE_DOTNET_PYTHON_WRAPPER)
+    # Cette variable est utilisée lors de la génération du fichier '.csproj'
+    set(_HAS_PYTHON_WRAPPER "true")
+  endif()
   configure_file(ArcaneTest.csproj.in ${ARCANE_CSHARP_PROJECT_PATH}/ArcaneTest/ArcaneTest.csproj @ONLY)
 
   add_custom_command(OUTPUT ${CSOUTPATH}/SimpleHydroCS_axl.cs
@@ -213,13 +218,13 @@ include(ArcaneTests.cmake)
 # ----------------------------------------------------------------------------
 
 function(ARCANE_COPY_MESH orig_mesh_name mesh_name ext)
-  exec_program(${CMAKE_COMMAND} ARGS -E copy_if_different ${ARCANESRCROOT}/maillages/${orig_mesh_name}.${ext}
+  execute_process(COMMAND ${CMAKE_COMMAND} -E copy_if_different ${ARCANESRCROOT}/maillages/${orig_mesh_name}.${ext}
     ${ARCANE_TEST_PATH}/${mesh_name}.${ext})
-  exec_program(${CMAKE_COMMAND} ARGS -E copy_if_different ${ARCANESRCROOT}/maillages/${orig_mesh_name}.vtkfaces.${ext}
+  execute_process(COMMAND ${CMAKE_COMMAND} -E copy_if_different ${ARCANESRCROOT}/maillages/${orig_mesh_name}.vtkfaces.${ext}
     ${ARCANE_TEST_PATH}/${mesh_name}.${ext}faces.${ext})
 endfunction()
 function(ARCANE_COPY_MESH_DIRECT orig_mesh_name)
-  exec_program(${CMAKE_COMMAND} ARGS -E copy_if_different ${ARCANESRCROOT}/maillages/${orig_mesh_name}
+  execute_process(COMMAND ${CMAKE_COMMAND} -E copy_if_different ${ARCANESRCROOT}/maillages/${orig_mesh_name}
     ${ARCANE_TEST_PATH}/${orig_mesh_name})
 endfunction()
 
@@ -451,6 +456,8 @@ arcane_add_test_sequential(dofnode testDoFNode.arc)
 arcane_add_test_parallel(dofnode testDoFNode.arc 4)
 ARCANE_ADD_TEST_SEQUENTIAL(graphdof_onecell testGraph-OneCell.arc -We,ARCANE_GRAPH_CONNECTIVITY_POLICY,1)
 ARCANE_ADD_TEST_SEQUENTIAL(graphdof_twocells testGraph-TwoCells.arc -We,ARCANE_GRAPH_CONNECTIVITY_POLICY,1)
+ARCANE_ADD_TEST_PARALLEL(graphdof_fourcells testGraph-TwoCells2P.arc 2 -We,ARCANE_GRAPH_CONNECTIVITY_POLICY,1)
+ARCANE_ADD_TEST_PARALLEL(graphdof_fourcells testGraph-FourCells.arc 4 -We,ARCANE_GRAPH_CONNECTIVITY_POLICY,1)
 ARCANE_ADD_TEST_SEQUENTIAL(inout testInOut.arc)
 ARCANE_ADD_TEST_SEQUENTIAL(mesh_merge_nodes_2d testMeshMergeNodes-2D.arc)
 arcane_add_test_sequential(mesh_merge_boundaries testMeshMergeBoundaries-1.arc)
@@ -683,6 +690,7 @@ if (ARCANE_HAS_ACCELERATOR_API)
   arcane_add_test_sequential(acceleratorviews1 testAcceleratorViews-1.arc)
   arcane_add_test_sequential_task(acceleratorviews1 testAcceleratorViews-1.arc 4)
   arcane_add_accelerator_test_sequential(acceleratorviews1 testAcceleratorViews-1.arc)
+  arcane_add_accelerator_test_parallel(acceleratorviews1 testAcceleratorViews-1.arc 4)
 
   arcane_add_test_sequential(accelerator_reduce1 testAcceleratorReduce-1.arc)
   arcane_add_test_sequential_task(accelerator_reduce1 testAcceleratorReduce-1.arc 4)
@@ -727,6 +735,9 @@ if (ARCANE_HAS_ACCELERATOR_API)
   arcane_add_accelerator_test_sequential(miniweather_array1_device testMiniWeatherArrayDevice.arc)
 
   arcane_add_accelerator_test_all_policies(accelerator_atomic testAcceleratorAtomic-1.arc)
+
+  arcane_add_test_sequential(acceleratormath1 testAcceleratorMath-1.arc)
+  arcane_add_accelerator_test_sequential(acceleratormath1 testAcceleratorMath-1.arc)
 endif()
 
 arcane_add_test_sequential(pdes_random_number_generator_service testPDESRandomNumberGenerator.arc)
@@ -788,6 +799,8 @@ ARCANE_ADD_TEST_PARALLEL_THREAD(thread1 testThread-1.arc 1 -m 15)
 arcane_add_test_sequential(task1_0 testTask-1.arc 1 -m 5)
 arcane_add_test_sequential_task(task1 testTask-1.arc 1 -m 5)
 arcane_add_test_sequential_task(task1 testTask-1.arc 4 -m 5)
+arcane_add_test_sequential_task(task1_cppstd testTask-1.arc 4 -m 5 -A,ThreadService=Cpp)
+arcane_add_test_sequential_task(task1_glib testTask-1.arc 4 -m 5 -A,ThreadService=Glib)
 arcane_add_test_sequential_task(task1_setoptions testTask-1.arc 4 -m 5 -A,ParallelLoopGrainSize=4 -A,ParallelLoopPartitioner=static)
 arcane_add_test_sequential_task(task1_loop_profile testTask-1.arc 4 -m 5 -We,ARCANE_LOOP_PROFILING_LEVEL,2)
 if(HWLoc_FOUND)
@@ -980,6 +993,11 @@ arcane_add_test_sequential(string_variable_replace testStringVariableReplace.arc
 # Test pour les implementations de TimeHistoryAdder.
 arcane_add_test(time_history_adder_1 testTimeHistoryAdder-1.arc -c 2 -m 5 -We,ARCANE_ENABLE_NON_IO_MASTER_CURVES,1)
 
+#################################################################
+# Test wrapper python
+if (ARCANE_ENABLE_DOTNET_PYTHON_WRAPPER)
+  arcane_add_test_sequential(python_wrapping_test1 testSimplePythonCall-1.arc -Z --dotnet-runtime=coreclr -m 5)
+endif()
 
 # ----------------------------------------------------------------------------
 # Local Variables:

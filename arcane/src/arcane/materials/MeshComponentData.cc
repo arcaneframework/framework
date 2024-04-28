@@ -39,7 +39,7 @@ MeshComponentData(IMeshComponent* component, const String& name,
 , m_component(component)
 , m_component_id(component_id)
 , m_name(name)
-, m_constituent_local_id_list(shared_info)
+, m_constituent_local_id_list(shared_info, String("MeshComponentDataIdList")+name)
 {
   if (create_indexer) {
     m_variable_indexer = new MeshMaterialVariableIndexer(traceMng(), name);
@@ -108,7 +108,7 @@ _setItems(const ItemGroup& group)
 void MeshComponentData::
 _buildPartData()
 {
-  m_part_data = new MeshComponentPartData(m_component);
+  m_part_data = new MeshComponentPartData(m_component, m_name);
   _setPartInfo();
 }
 

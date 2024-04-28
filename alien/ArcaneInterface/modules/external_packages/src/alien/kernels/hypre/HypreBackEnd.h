@@ -14,6 +14,7 @@
 #define ALIEN_KERNELS_HYPRE_HYPREBACKEND_H
 
 #include <alien/core/backend/BackEnd.h>
+#include <alien/AlienExternalPackagesPrecomp.h>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -39,7 +40,7 @@ class Space;
 template <class Matrix, class Vector> class IInternalLinearAlgebra;
 template <class Matrix, class Vector> class IInternalLinearSolver;
 
-extern IInternalLinearAlgebra<HypreMatrix, HypreVector>*
+extern ALIEN_EXTERNAL_PACKAGES_EXPORT IInternalLinearAlgebra<HypreMatrix, HypreVector>*
 HypreInternalLinearAlgebraFactory();
 
 extern IInternalLinearSolver<HypreMatrix, HypreVector>* HypreInternalLinearSolverFactory(

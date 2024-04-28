@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IMemoryRessourceMng.h                                       (C) 2000-2023 */
+/* MemoryRessourceMng.h                                        (C) 2000-2024 */
 /*                                                                           */
 /* Gestion des ressources mémoire pour les CPU et accélérateurs.             */
 /*---------------------------------------------------------------------------*/
@@ -15,6 +15,7 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/IMemoryRessourceMng.h"
+#include "arcane/utils/FixedArray.h"
 #include "arcane/utils/internal/IMemoryRessourceMngInternal.h"
 
 #include <memory>
@@ -42,16 +43,18 @@ class ARCANE_UTILS_EXPORT MemoryRessourceMng
  public:
 
   IMemoryAllocator* getAllocator(eMemoryRessource r) override;
+  IMemoryAllocator* getAllocator(eMemoryRessource r, bool throw_if_not_found) override;
 
  public:
 
   void copy(ConstMemoryView from, eMemoryRessource from_mem,
-            MutableMemoryView to, eMemoryRessource to_mem, RunQueue* queue) override;
+            MutableMemoryView to, eMemoryRessource to_mem, const RunQueue* queue) override;
 
  public:
 
   void setAllocator(eMemoryRessource r, IMemoryAllocator* allocator) override;
   void setCopier(IMemoryCopier* copier) override { m_copier = copier; }
+  void setIsAccelerator(bool v) override { m_is_accelerator = v; }
 
  public:
 
@@ -65,9 +68,10 @@ class ARCANE_UTILS_EXPORT MemoryRessourceMng
 
  private:
 
-  std::array<IMemoryAllocator*, NB_MEMORY_RESSOURCE> m_allocators;
+  FixedArray<IMemoryAllocator*, NB_MEMORY_RESSOURCE> m_allocators;
   std::unique_ptr<IMemoryCopier> m_default_memory_copier;
   IMemoryCopier* m_copier = nullptr;
+  bool m_is_accelerator = false;
 
  private:
 

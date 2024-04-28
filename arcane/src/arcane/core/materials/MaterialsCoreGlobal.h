@@ -92,12 +92,13 @@ class IMeshMaterialMngInternal;
 class MeshEnvironmentBuildInfo;
 class MeshBlockBuildInfo;
 class IMeshMaterialMngInternal;
-class IMeshMaterialModifierImpl;
+class MeshMaterialModifierImpl;
 class CellToAllEnvCellConverter;
 class IMeshMaterialVariableSynchronizer;
 class AllCellToAllEnvCell;
 class ConstituentItemIndex;
 class IConstituentItemVectorImpl;
+class ComponentItemSharedInfo;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -143,6 +144,18 @@ template <typename ItemType, typename DataType>
 class IScalarMeshMaterialVariable;
 template <typename ItemType, typename DataType>
 class IArrayMeshMaterialVariable;
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+class CellComponentCellEnumerator;
+template <typename ConstituentCellType> class CellComponentCellEnumeratorT;
+
+//! Enumérateur sur les mailles matériaux d'une maille.
+using CellMatCellEnumerator = CellComponentCellEnumeratorT<MatCell>;
+
+//! Enumérateur sur les mailles milieux d'une maille.
+using CellEnvCellEnumerator = CellComponentCellEnumeratorT<EnvCell>;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

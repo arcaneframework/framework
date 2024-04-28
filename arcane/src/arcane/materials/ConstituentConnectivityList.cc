@@ -65,8 +65,12 @@ namespace
         }
       }
     }
-#ifdef ARCCORE_DEVICE_CODE
+#if defined(ARCCORE_DEVICE_CODE)
+    // Avec Intel DPC++ 2024.1 l'utilisation de cette fonction avec le
+    // backend CUDA provoque une erreur dans l'assembleur généré.
+#  if !defined(__INTEL_LLVM_COMPILER)
     assert(false);
+#  endif
 #else
     ARCANE_FATAL("No value to remove '{0}' found in list {1}", value_to_remove, values);
 #endif
@@ -335,7 +339,7 @@ endCreate(bool is_continue)
 /*---------------------------------------------------------------------------*/
 
 void ConstituentConnectivityList::
-_addCells(Int16 component_id, ConstArrayView<Int32> cells_local_id,
+_addCells(Int16 component_id, SmallSpan<const Int32> cells_local_id,
           ConstituentContainer& component, RunQueue& queue)
 {
   const Int32 nb_item = cells_local_id.size();
@@ -348,23 +352,30 @@ _addCells(Int16 component_id, ConstArrayView<Int32> cells_local_id,
   SmallSpan<Int16> nb_component_view = component.m_nb_component_as_array.view();
 
   NumArray<Int32, MDDim1> new_indexes(nb_item);
+  const bool is_device = queue.isAcceleratorPolicy();
+  // Pour recopier le nombre d'éléments à ajouter du device vers le CPU
+  NumArray<Int32, MDDim1> new_indexes_to_add(is_device ? eMemoryRessource::HostPinned : eMemoryRessource::Host);
+  new_indexes_to_add.resize(1);
+
   // Calcul l'index des nouveaux éléments
   {
     Accelerator::GenericScanner scanner(queue);
     SmallSpan<Int32> new_indexes_view = new_indexes;
+    SmallSpan<Int32> new_indexes_to_add_view = new_indexes_to_add;
     auto getter = [=] ARCCORE_HOST_DEVICE(Int32 index) -> Int32 {
       return 1 + nb_component_view[cells_local_id[index]];
     };
     auto setter = [=] ARCCORE_HOST_DEVICE(Int32 index, Int32 value) {
       new_indexes_view[index] = value;
+      if (index == (nb_item - 1))
+        new_indexes_to_add_view[0] = new_indexes_view[index] + nb_component_view[cells_local_id[index]] + 1;
     };
     Accelerator::ScannerSumOperator<Int32> op;
     scanner.applyWithIndexExclusive(nb_item, 0, getter, setter, op, A_FUNCINFO);
   }
   queue.barrier();
 
-  // TODO: Utiliser une copie depuis le device pour ces deux valeurs.
-  const Int32 nb_indexes_to_add = new_indexes[nb_item - 1] + nb_component_view[cells_local_id[nb_item - 1]] + 1;
+  const Int32 nb_indexes_to_add = new_indexes_to_add[0];
   const Int32 current_list_index = component_list.size();
 
   MemoryUtils::checkResizeArrayWithCapacity(component_list, current_list_index + nb_indexes_to_add, false);
@@ -403,7 +414,7 @@ _addCells(Int16 component_id, ConstArrayView<Int32> cells_local_id,
 /*---------------------------------------------------------------------------*/
 
 void ConstituentConnectivityList::
-_removeCells(Int16 component_id, ConstArrayView<Int32> cells_local_id,
+_removeCells(Int16 component_id, SmallSpan<const Int32> cells_local_id,
              ConstituentContainer& component, RunQueue& queue)
 {
   SmallSpan<Int16> nb_component = component.m_nb_component_as_array.view();
@@ -433,7 +444,7 @@ _removeCells(Int16 component_id, ConstArrayView<Int32> cells_local_id,
 /*---------------------------------------------------------------------------*/
 
 void ConstituentConnectivityList::
-addCellsToEnvironment(Int16 env_id, ConstArrayView<Int32> cell_ids, RunQueue& queue)
+addCellsToEnvironment(Int16 env_id, SmallSpan<const Int32> cell_ids, RunQueue& queue)
 {
   _addCells(env_id, cell_ids, m_container->m_environment, queue);
 }
@@ -442,7 +453,7 @@ addCellsToEnvironment(Int16 env_id, ConstArrayView<Int32> cell_ids, RunQueue& qu
 /*---------------------------------------------------------------------------*/
 
 void ConstituentConnectivityList::
-removeCellsToEnvironment(Int16 env_id, ConstArrayView<Int32> cell_ids, RunQueue& queue)
+removeCellsToEnvironment(Int16 env_id, SmallSpan<const Int32> cell_ids, RunQueue& queue)
 {
   _removeCells(env_id, cell_ids, m_container->m_environment, queue);
 }
@@ -451,7 +462,7 @@ removeCellsToEnvironment(Int16 env_id, ConstArrayView<Int32> cell_ids, RunQueue&
 /*---------------------------------------------------------------------------*/
 
 void ConstituentConnectivityList::
-addCellsToMaterial(Int16 mat_id, ConstArrayView<Int32> cell_ids, RunQueue& queue)
+addCellsToMaterial(Int16 mat_id, SmallSpan<const Int32> cell_ids, RunQueue& queue)
 {
   _addCells(mat_id, cell_ids, m_container->m_material, queue);
 }
@@ -460,7 +471,7 @@ addCellsToMaterial(Int16 mat_id, ConstArrayView<Int32> cell_ids, RunQueue& queue
 /*---------------------------------------------------------------------------*/
 
 void ConstituentConnectivityList::
-removeCellsToMaterial(Int16 mat_id, ConstArrayView<Int32> cell_ids, RunQueue& queue)
+removeCellsToMaterial(Int16 mat_id, SmallSpan<const Int32> cell_ids, RunQueue& queue)
 {
   _removeCells(mat_id, cell_ids, m_container->m_material, queue);
 }

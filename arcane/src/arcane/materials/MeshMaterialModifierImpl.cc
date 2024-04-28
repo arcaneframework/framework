@@ -79,13 +79,14 @@ MeshMaterialModifierImpl::
 MeshMaterialModifierImpl(MeshMaterialMng* mm)
 : TraceAccessor(mm->traceMng())
 , m_material_mng(mm)
+, m_queue(makeQueue(m_material_mng->runner()))
 {
   _setLocalVerboseLevel(4);
-  if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_DEBUG_MATERIAL_MODIFIER", true)){
+  if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_DEBUG_MATERIAL_MODIFIER", true)) {
     Int32 value = v.value();
-    if (value>0)
+    if (value > 0)
       _setLocalVerboseLevel(3);
-    if (value>1)
+    if (value > 1)
       m_print_component_list = true;
   }
 }
@@ -128,46 +129,46 @@ initOptimizationFlags()
 /*---------------------------------------------------------------------------*/
 
 void MeshMaterialModifierImpl::
-addCells(IMeshMaterial* mat,Int32ConstArrayView ids)
+addCells(IMeshMaterial* mat, SmallSpan<const Int32> ids)
 {
   if (ids.empty())
     return;
-  m_operations.add(Operation::createAdd(mat,ids));
+  m_operations.add(Operation::createAdd(mat, ids));
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void MeshMaterialModifierImpl::
-removeCells(IMeshMaterial* mat,Int32ConstArrayView ids)
+removeCells(IMeshMaterial* mat, SmallSpan<const Int32> ids)
 {
   if (ids.empty())
     return;
-  m_operations.add(Operation::createRemove(mat,ids));
+  m_operations.add(Operation::createRemove(mat, ids));
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void MeshMaterialModifierImpl::
-_addCellsToGroupDirect(IMeshMaterial* mat,Int32ConstArrayView ids)
+_addCellsToGroupDirect(IMeshMaterial* mat,SmallSpan<const Int32> ids)
 {
   CellGroup cells = mat->cells();
   info(4) << "ADD_CELLS_TO_MATERIAL: mat=" << mat->name()
          << " nb_item=" << ids.size();
-  cells.addItems(ids);
+  cells.addItems(ids.smallView());
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void MeshMaterialModifierImpl::
-_removeCellsToGroupDirect(IMeshMaterial* mat,Int32ConstArrayView ids)
+_removeCellsToGroupDirect(IMeshMaterial* mat,SmallSpan<const Int32> ids)
 {
   CellGroup cells = mat->cells();
   info(4) << "REMOVE_CELLS_TO_MATERIAL: mat=" << mat->name()
          << " nb_item=" << ids.size();
-  cells.removeItems(ids);
+  cells.removeItems(ids.smallView());
 }
 
 /*---------------------------------------------------------------------------*/
@@ -227,23 +228,28 @@ _endUpdate()
 
   m_material_mng->incrementTimestamp();
 
-  MeshMaterialBackup backup(m_material_mng,false);
+  MeshMaterialBackup backup(m_material_mng, false);
 
-  UniqueArray<Int32> keeped_lids;
   bool no_optimization_done = true;
 
   ++nb_update;
   AllEnvData* all_env_data = m_material_mng->allEnvData();
 
-  for( Integer i=0; i<nb_operation; ++i ){
+  bool is_display = traceMng()->verbosityLevel() >= _localVerboseLevel();
+
+  for (Integer i = 0; i < nb_operation; ++i) {
     const Operation* op = m_operations.values()[i];
     IMeshMaterial* mat = op->material();
     const IMeshComponentInternal* mci = mat->_internalApi();
-    linfo() << "MODIFIER_CELLS_TO_MATERIAL: mat=" << mat->name()
-            << " is_add="  << op->isAdd()
-            << " mat_index=" << mci->variableIndexer()->index()
-            << " op_index=" << i
-            << " ids=" << op->ids();
+
+    // N'appelle la méthode que si l'affichage sera réalisé pour éviter
+    // de recopier 'op->ids()' sur l'hôte.
+    if (is_display)
+      linfo() << "MODIFIER_CELLS_TO_MATERIAL: mat=" << mat->name()
+              << " is_add=" << op->isAdd()
+              << " mat_index=" << mci->variableIndexer()->index()
+              << " op_index=" << i
+              << " ids=" << op->ids();
   }
 
   bool is_optimization_active = m_allow_optimization;
@@ -252,24 +258,23 @@ _endUpdate()
   linfo() << "Check optimize ? = " << is_optimization_active;
 
   // Tableau de travail utilisé lors des modifications incrémentales
-  IncrementalComponentModifier incremental_modifier(all_env_data);
-  if (is_optimization_active && m_use_incremental_recompute){
+  IncrementalComponentModifier incremental_modifier(all_env_data, m_queue);
+  if (is_optimization_active && m_use_incremental_recompute) {
     incremental_modifier.initialize();
   }
 
-  if (is_optimization_active){
-    for( Operation* op : m_operations.values() ){
+  if (is_optimization_active) {
+    for (Operation* op : m_operations.values()) {
       const IMeshMaterial* mat = op->material();
 
-      if (op->isAdd()){
+      if (op->isAdd()) {
         linfo() << "ONLY_ONE_ADD: using optimization mat=" << mat->name();
         ++nb_optimize_add;
       }
-      else{
+      else {
         linfo() << "ONLY_ONE_REMOVE: using optimization mat=" << mat->name();
         ++nb_optimize_remove;
       }
-      keeped_lids = op->ids();
 
       incremental_modifier.m_work_info.setCurrentOperation(op);
 
@@ -283,8 +288,8 @@ _endUpdate()
     no_optimization_done = false;
   }
 
-  if (no_optimization_done){
-    if (is_keep_value){
+  if (no_optimization_done) {
+    if (is_keep_value) {
       ++nb_save_restore;
       backup.saveValues();
     }
@@ -294,20 +299,16 @@ _endUpdate()
 
     all_env_data->forceRecompute(true);
 
-    if (is_keep_value){
+    if (is_keep_value) {
       backup.restoreValues();
     }
   }
-  else{
+  else {
     incremental_modifier.finalize();
     all_env_data->recomputeIncremental();
   }
 
   linfo() << "END_UPDATE_MAT End";
-  if (keeped_lids.size()!=0){
-    info(4) << "PRINT KEEPED_IDS size=" << keeped_lids.size();
-    //m_material_mng->allEnvData()->printAllEnvCells(keeped_lids);
-  }
 }
 
 /*---------------------------------------------------------------------------*/

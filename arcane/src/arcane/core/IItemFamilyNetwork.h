@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -21,6 +21,8 @@
 
 #include "arcane/IItemFamily.h"
 #include "arcane/IIncrementalItemConnectivity.h"
+#include "arcane/IGraph2.h"
+
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -102,6 +104,15 @@ public:
 
   //! Récupère l'information relative au stockage de la connectivité
   virtual bool isDeep(IIncrementalItemConnectivity* connectivity) = 0;
+
+  //! enregistre un graphe gérant des DoFs connectés au maillage
+  virtual Integer registerConnectedGraph(IGraph2* graph) = 0 ;
+
+  //! dé enregistre un graphe gérant des DoFs connectés au maillage
+  virtual void releaseConnectedGraph(Integer graph_id) = 0 ;
+
+  //! supprime les DoFs et les liens entre DoFs connectés aux mailles supprimées
+  virtual void removeConnectedDoFsFromCells(Int32ConstArrayView local_ids) = 0;
 
 };
 

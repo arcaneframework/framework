@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* RunCommandLaunchInfo.h                                      (C) 2000-2022 */
+/* RunCommandLaunchInfo.h                                      (C) 2000-2024 */
 /*                                                                           */
 /* Informations pour l'exécution d'une 'RunCommand'.                         */
 /*---------------------------------------------------------------------------*/
@@ -45,8 +45,6 @@ class ARCANE_ACCELERATOR_EXPORT RunCommandLaunchInfo
 
  public:
 
-  ARCANE_DEPRECATED_REASON("Use RunCommandLaunchInfo(RunCommand&,Int64) overload")
-  RunCommandLaunchInfo(RunCommand& command);
   RunCommandLaunchInfo(RunCommand& command, Int64 total_loop_size);
   ~RunCommandLaunchInfo();
   RunCommandLaunchInfo(const RunCommandLaunchInfo&) = delete;
@@ -75,17 +73,17 @@ class ARCANE_ACCELERATOR_EXPORT RunCommandLaunchInfo
   //! Informations sur le nombre de block/thread/grille du noyau à lancer.
   ThreadBlockInfo threadBlockInfo() const { return m_thread_block_info; }
 
-  //! Calcul le nombre de block/thread/grille du noyau en fonction de \a full_size
-  ThreadBlockInfo computeThreadBlockInfo(Int64 full_size) const;
-
   //! Calcul les informations pour les boucles multi-thread
-  ParallelLoopOptions computeParallelLoopOptions(Int64 full_size) const;
+  ParallelLoopOptions computeParallelLoopOptions() const;
 
   //! Calcule la valeur de loopRunInfo()
-  void computeLoopRunInfo(Int64 full_size);
+  void computeLoopRunInfo();
 
-  //! Informations d'exéctution de la boucle
+  //! Informations d'exécution de la boucle
   const ForLoopRunInfo& loopRunInfo() const { return m_loop_run_info; }
+
+  //! Taille totale de la boucle
+  Int64 totalLoopSize() const { return m_total_loop_size; }
 
  public:
 
@@ -101,11 +99,13 @@ class ARCANE_ACCELERATOR_EXPORT RunCommandLaunchInfo
   eExecutionPolicy m_exec_policy = eExecutionPolicy::Sequential;
   ThreadBlockInfo m_thread_block_info;
   ForLoopRunInfo m_loop_run_info;
+  Int64 m_total_loop_size = 0;
 
  private:
 
   void _begin();
   void _doEndKernelLaunch();
+  ThreadBlockInfo _computeThreadBlockInfo() const;
 };
 
 /*---------------------------------------------------------------------------*/

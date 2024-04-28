@@ -251,8 +251,9 @@ class EnvAndGlobalCellRunCommand
 
    public:
 
-    constexpr ARCCORE_HOST_DEVICE Accessor(ComponentItemLocalId mvi, CellLocalId cid)
+    constexpr ARCCORE_HOST_DEVICE Accessor(ComponentItemLocalId mvi, CellLocalId cid, Int32 index)
     : m_internal_data{ mvi, cid }
+    , m_index(index)
     {
     }
 
@@ -274,15 +275,19 @@ class EnvAndGlobalCellRunCommand
       return { m_internal_data.m_mvi, m_internal_data.m_cid };
     }
 
-    ///! Accesseur sur la partie MatVarIndex
-    ARCCORE_HOST_DEVICE ComponentItemLocalId varIndex() { return m_internal_data.m_mvi; };
+    //! Accesseur sur la partie MatVarIndex
+    ARCCORE_HOST_DEVICE ComponentItemLocalId varIndex() const { return m_internal_data.m_mvi; };
 
-    ///! Accesseur sur la partie cell local id
-    ARCCORE_HOST_DEVICE CellLocalId globalCellId() { return m_internal_data.m_cid; }
+    //! Accesseur sur la partie cell local id
+    ARCCORE_HOST_DEVICE CellLocalId globalCellId() const { return m_internal_data.m_cid; }
+
+    //! Index de l'itération courante
+    ARCCORE_HOST_DEVICE Int32 index() const { return m_index; }
 
    private:
 
     Data m_internal_data;
+    Int32 m_index = -1;
   };
 
   /*!
@@ -314,7 +319,7 @@ class EnvAndGlobalCellRunCommand
     //! Accesseur pour le i-ème élément de la liste
     constexpr ARCCORE_HOST_DEVICE Accessor operator[](Int32 i) const
     {
-      return { ComponentItemLocalId(m_matvar_indexes[i]), CellLocalId(m_global_cells_local_id[i]) };
+      return { ComponentItemLocalId(m_matvar_indexes[i]), CellLocalId(m_global_cells_local_id[i]), i };
     }
   };
 
@@ -369,8 +374,9 @@ class MatAndGlobalCellRunCommand
 
    public:
 
-    constexpr ARCCORE_HOST_DEVICE Accessor(ComponentItemLocalId mvi, CellLocalId cid)
+    constexpr ARCCORE_HOST_DEVICE Accessor(ComponentItemLocalId mvi, CellLocalId cid, Int32 index)
     : m_internal_data{ mvi, cid }
+    , m_index(index)
     {
     }
 
@@ -393,14 +399,18 @@ class MatAndGlobalCellRunCommand
     }
 
     ///! Accesseur sur la partie MatVarIndex
-    ARCCORE_HOST_DEVICE ComponentItemLocalId varIndex() { return m_internal_data.m_mvi; };
+    ARCCORE_HOST_DEVICE ComponentItemLocalId varIndex() const { return m_internal_data.m_mvi; };
 
     ///! Accesseur sur la partie cell local id
-    ARCCORE_HOST_DEVICE CellLocalId globalCellId() { return m_internal_data.m_cid; }
+    ARCCORE_HOST_DEVICE CellLocalId globalCellId() const { return m_internal_data.m_cid; }
+
+    //! Index de l'itération courante
+    ARCCORE_HOST_DEVICE Int32 index() const { return m_index; }
 
    private:
 
     Data m_internal_data;
+    Int32 m_index = -1;
   };
 
   /*!
@@ -432,7 +442,7 @@ class MatAndGlobalCellRunCommand
     //! Accesseur pour le i-ème élément de la liste
     constexpr ARCCORE_HOST_DEVICE Accessor operator[](Int32 i) const
     {
-      return { ComponentItemLocalId(m_matvar_indexes[i]), CellLocalId(m_global_cells_local_id[i]) };
+      return { ComponentItemLocalId(m_matvar_indexes[i]), CellLocalId(m_global_cells_local_id[i]), i };
     }
   };
 
@@ -577,7 +587,31 @@ doMatContainerGPULambda(ContainerType items, Lambda func)
   }
 }
 
-#endif // ARCANE_COMPILING_CUDA
+#endif // ARCANE_COMPILING_CUDA || ARCANE_COMPILING_HIP
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+#if defined(ARCANE_COMPILING_SYCL)
+
+template <typename ContainerType, typename Lambda>
+class DoMatContainerSYCLLambda
+{
+ public:
+
+  void operator()(sycl::id<1> x, ContainerType items, Lambda func) const
+  {
+    auto privatizer = privatize(func);
+    auto& body = privatizer.privateCopy();
+
+    Int32 i = static_cast<Int32>(x);
+    if (i < items.size()) {
+      body(items[i]);
+    }
+  }
+};
+
+#endif
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -601,7 +635,7 @@ _applyEnvCells(RunCommand& command, ContainerType items, const Lambda& func)
 
   RunCommandLaunchInfo launch_info(command, vsize);
   const eExecutionPolicy exec_policy = launch_info.executionPolicy();
-  launch_info.computeLoopRunInfo(vsize);
+  launch_info.computeLoopRunInfo();
   launch_info.beginExecute();
   switch (exec_policy) {
   case eExecutionPolicy::CUDA:
@@ -609,6 +643,9 @@ _applyEnvCells(RunCommand& command, ContainerType items, const Lambda& func)
     break;
   case eExecutionPolicy::HIP:
     _applyKernelHIP(launch_info, ARCANE_KERNEL_HIP_FUNC(doMatContainerGPULambda) < ContainerType, Lambda >, func, items);
+    break;
+  case eExecutionPolicy::SYCL:
+    _applyKernelSYCL(launch_info, ARCANE_KERNEL_SYCL_FUNC(impl::DoMatContainerSYCLLambda) < ContainerType, Lambda > {}, func, items);
     break;
   case eExecutionPolicy::Sequential:
     for (Int32 i = 0, n = vsize; i < n; ++i)
@@ -706,10 +743,10 @@ void operator<<(MatCellRunCommand&& nr, const Lambda& func)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Macro pour itérer un matériau ou un milieu
+//! Macro pour itérer sur un matériau ou un milieu
 #define RUNCOMMAND_MAT_ENUMERATE(MatItemNameType, iter_name, env_or_mat_vector) \
-  A_FUNCINFO << Arcane::Accelerator::RunCommandMatItemEnumeratorTraitsT<MatItemNameType>::createContainer(env_or_mat_vector) \
-             << [=] ARCCORE_HOST_DEVICE(Arcane::Accelerator::RunCommandMatItemEnumeratorTraitsT<MatItemNameType>::EnumeratorType iter_name)
+  A_FUNCINFO << ::Arcane::Accelerator::RunCommandMatItemEnumeratorTraitsT<MatItemNameType>::createContainer(env_or_mat_vector) \
+  << [=] ARCCORE_HOST_DEVICE(::Arcane::Accelerator::RunCommandMatItemEnumeratorTraitsT<MatItemNameType>::EnumeratorType iter_name)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

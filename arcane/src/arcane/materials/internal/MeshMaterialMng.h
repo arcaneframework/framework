@@ -109,7 +109,7 @@ class MeshMaterialMng
     {
       return m_material_mng->_removeVariable(var);
     }
-    IMeshMaterialModifierImpl* modifier() override
+    MeshMaterialModifierImpl* modifier() override
     {
       return m_material_mng->_modifier();
     }
@@ -138,7 +138,7 @@ class MeshMaterialMng
  public:
 
   MeshMaterialMng(const MeshHandle& mesh_handle,const String& name);
-  virtual ~MeshMaterialMng() override;
+  ~MeshMaterialMng() override;
 
  public:
 
@@ -266,7 +266,7 @@ class MeshMaterialMng
 
   AllEnvData* allEnvData() { return m_all_env_data.get(); }
   ComponentItemSharedInfo* componentItemSharedInfo(Int32 level) const;
-  void syncVariablesReferences();
+  void syncVariablesReferences(bool check_resize);
 
   void incrementTimestamp() { ++m_timestamp; }
   void dumpInfos2(std::ostream& o);
@@ -374,7 +374,7 @@ class MeshMaterialMng
   void _unregisterAllVariables();
   void _addVariable(IMeshMaterialVariable* var);
   void _removeVariable(IMeshMaterialVariable* var);
-  IMeshMaterialModifierImpl* _modifier();
+  MeshMaterialModifierImpl* _modifier();
   ConstArrayView<MeshMaterialVariableIndexer*> _variablesIndexer()
   {
     return m_variables_indexer;

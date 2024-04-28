@@ -42,9 +42,10 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RunCommand
   friend impl::IReduceMemoryImpl* impl::internalGetOrCreateReduceMemoryImpl(RunCommand* command);
   friend impl::RunCommandLaunchInfo;
   friend impl::RunQueueImpl;
-  friend class VariableViewBase;
-  friend RunCommand makeCommand(RunQueue& run_queue);
-  friend RunCommand makeCommand(RunQueue* run_queue);
+  friend class ViewBuildInfo;
+
+  friend RunCommand makeCommand(const RunQueue& run_queue);
+  friend RunCommand makeCommand(const RunQueue* run_queue);
 
  public:
 
@@ -52,7 +53,7 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RunCommand
 
  protected:
 
-  explicit RunCommand(RunQueue& run_queue);
+  explicit RunCommand(const RunQueue& run_queue);
 
  public:
 
@@ -119,7 +120,7 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RunCommand
  private:
 
   //! \internal
-  RunQueue& _internalQueue() { return m_run_queue; }
+  const RunQueue& _internalQueue() const { return m_run_queue; }
   static impl::RunCommandImpl* _internalCreateImpl(impl::RunQueueImpl* queue);
   static void _internalDestroyImpl(impl::RunCommandImpl* p);
 
@@ -129,7 +130,7 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RunCommand
 
  private:
 
-  RunQueue& m_run_queue;
+  const RunQueue& m_run_queue;
   impl::RunCommandImpl* m_p;
 };
 

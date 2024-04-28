@@ -10,6 +10,7 @@ set(ARCANE_SOURCES
   Array.h
   ArrayShape.cc
   ArrayShape.h
+  ArraySimdPadder.h
   Atomic.cc
   Atomic.h
   AMRCallBackMng.cc

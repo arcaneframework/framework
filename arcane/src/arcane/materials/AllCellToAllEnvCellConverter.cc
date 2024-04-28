@@ -13,17 +13,68 @@
 
 #include "arcane/materials/AllCellToAllEnvCellConverter.h"
 
-#include <algorithm>
 #include "arcane/core/IItemFamily.h"
 #include "arcane/core/ItemEnumerator.h"
 #include "arcane/core/ItemGroup.h"
 #include "arcane/core/materials/internal/IMeshMaterialMngInternal.h"
+
+#include "arcane/accelerator/Reduce.h"
+#include "arcane/accelerator/RunCommandEnumerate.h"
+
+#include <algorithm>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 namespace Arcane::Materials
 {
+namespace
+{
+  Int32 _computeMaxNbEnvPerCell(IMeshMaterialMng* material_mng)
+  {
+    CellToAllEnvCellConverter allenvcell_converter(material_mng);
+    RunQueue& queue = material_mng->_internalApi()->runQueue();
+    Accelerator::GenericReducer<Int32> reducer(queue);
+    auto local_ids = material_mng->mesh()->allCells().internal()->itemsLocalId();
+    Int32 nb_item = local_ids.size();
+    auto select_func = [=] ARCCORE_HOST_DEVICE(Int32 i) -> Int32 {
+      CellLocalId lid(local_ids[i]);
+      AllEnvCell all_env_cell = allenvcell_converter[lid];
+      return all_env_cell.nbEnvironment();
+    };
+    reducer.applyMaxWithIndex(nb_item, select_func);
+    Int32 max_nb_env = reducer.reducedValue();
+    return max_nb_env;
+  }
+
+  void _updateValues(IMeshMaterialMng* material_mng,
+                     ComponentItemLocalId* mem_pool,
+                     Span<ComponentItemLocalId>* allcell_allenvcell,
+                     Int32 max_nb_env)
+  {
+    // mise a jour des valeurs
+    CellToAllEnvCellConverter all_env_cell_converter(material_mng);
+    RunQueue& queue = material_mng->_internalApi()->runQueue();
+    auto command = makeCommand(queue);
+    command << RUNCOMMAND_ENUMERATE (CellLocalId, cid, material_mng->mesh()->allCells())
+    {
+      AllEnvCell all_env_cell = all_env_cell_converter[cid];
+      Int32 nb_env = all_env_cell.nbEnvironment();
+      if (nb_env != 0) {
+        Integer i = 0;
+        Integer offset = cid * max_nb_env;
+        for (EnvCell ev : all_env_cell.subEnvItems()) {
+          mem_pool[offset + i] = ComponentItemLocalId(ev._varIndex());
+          ++i;
+        }
+        allcell_allenvcell[cid] = Span<ComponentItemLocalId>(mem_pool + offset, nb_env);
+      }
+      else {
+        allcell_allenvcell[cid] = Span<ComponentItemLocalId>();
+      }
+    };
+  }
+} // namespace
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -62,18 +113,7 @@ destroy(AllCellToAllEnvCell* instance)
 Int32 AllCellToAllEnvCell::
 maxNbEnvPerCell() const
 {
-  // On peut imaginer le faire sur l'accelerator aussi, avec :
-  // 1. runcmd_enum_cell pour remplir un array de max env de size max cell id
-  // 2. runcmd_loop sur le array avec un reducer max
-  // A voir si c'est interessant...
-  CellToAllEnvCellConverter allenvcell_converter(m_material_mng);
-  Int32 max_nb_env(0);
-  ENUMERATE_CELL(icell, m_material_mng->mesh()->allCells()) {
-    AllEnvCell all_env_cell = allenvcell_converter[icell];
-    if (all_env_cell.nbEnvironment() > max_nb_env)
-      max_nb_env = all_env_cell.nbEnvironment();
-  }
-  return max_nb_env;
+  return _computeMaxNbEnvPerCell(m_material_mng);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -92,7 +132,7 @@ create(IMeshMaterialMng* mm, IMemoryAllocator* alloc)
   _instance->m_size = mm->mesh()->cellFamily()->maxLocalId() + 1;
 
   _instance->m_allcell_allenvcell = reinterpret_cast<Span<ComponentItemLocalId>*>(
-    alloc->allocate(sizeof(Span<ComponentItemLocalId>) * _instance->m_size));
+  alloc->allocate(sizeof(Span<ComponentItemLocalId>) * _instance->m_size));
   // On force la valeur initiale sur tous les elmts car dans le ENUMERATE_CELL ci-dessous
   // il se peut que m_size (qui vaut maxLocalId()+1) soit different de allCells().size()
   std::fill_n(_instance->m_allcell_allenvcell, _instance->m_size, Span<ComponentItemLocalId>());
@@ -107,15 +147,15 @@ create(IMeshMaterialMng* mm, IMemoryAllocator* alloc)
     Int32 cid = icell->itemLocalId();
     AllEnvCell all_env_cell = all_env_cell_converter[CellLocalId(cid)];
     Integer nb_env(all_env_cell.nbEnvironment());
-    if (nb_env) {
-      Integer i(0);
+    if (nb_env != 0) {
+      Integer i = 0;
       Integer offset(cid * _instance->m_current_max_nb_env);
       ENUMERATE_CELL_ENVCELL (ienvcell, all_env_cell) {
         EnvCell ev = *ienvcell;
         _instance->m_mem_pool[offset + i] = ComponentItemLocalId(ev._varIndex());
         ++i;
       }
-      _instance->m_allcell_allenvcell[cid] = Span<ComponentItemLocalId>(_instance->m_mem_pool+offset, nb_env);
+      _instance->m_allcell_allenvcell[cid] = Span<ComponentItemLocalId>(_instance->m_mem_pool + offset, nb_env);
     }
   }
   return _instance;
@@ -155,25 +195,8 @@ bruteForceUpdate()
       m_mem_pool = reinterpret_cast<ComponentItemLocalId*>(m_alloc->allocate(sizeof(ComponentItemLocalId) * pool_size));
       std::fill_n(m_mem_pool, pool_size, ComponentItemLocalId());
     }
-    // mise a jour des valeurs
-    CellToAllEnvCellConverter all_env_cell_converter(m_material_mng);
-    ENUMERATE_CELL (icell, m_material_mng->mesh()->allCells()) {
-      Int32 cid = icell->itemLocalId();
-      AllEnvCell all_env_cell = all_env_cell_converter[CellLocalId(cid)];
-      Integer nb_env(all_env_cell.nbEnvironment());
-      if (nb_env) {
-        Integer i(0);
-        Integer offset(cid * m_current_max_nb_env);
-        ENUMERATE_CELL_ENVCELL (ienvcell, all_env_cell) {
-          EnvCell ev = *ienvcell;
-          m_mem_pool[offset+i] = ComponentItemLocalId(ev._varIndex());
-          ++i;
-        }
-        m_allcell_allenvcell[cid] = Span<ComponentItemLocalId>(m_mem_pool+offset, nb_env);
-      } else {
-        m_allcell_allenvcell[cid] = Span<ComponentItemLocalId>();
-      }
-    }
+    // Mise a jour des valeurs
+    _updateValues(m_material_mng, m_mem_pool, m_allcell_allenvcell, m_current_max_nb_env);
   }
 }
 

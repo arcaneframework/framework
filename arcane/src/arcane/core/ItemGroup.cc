@@ -447,7 +447,7 @@ addItems(Int32ConstArrayView items_local_id,bool check_if_present)
     throw ArgumentException(A_FUNCINFO,"Can not addItems() to null group");
   if (isAllItems())
     throw ArgumentException(A_FUNCINFO,"Can not addItems() to all-items group");
-  m_impl->checkNeedUpdate();
+  m_impl->_checkNeedUpdateNoPadding();
   m_impl->addItems(items_local_id,check_if_present);
 }
 
@@ -469,7 +469,7 @@ removeItems(Int32ConstArrayView items_local_id,bool check_if_present)
     throw ArgumentException(A_FUNCINFO,"Can not removeItems() to null group");
   if (isAllItems())
     throw ArgumentException(A_FUNCINFO,"Can not removeItems() to all-items group");
-  m_impl->checkNeedUpdate();
+  m_impl->_checkNeedUpdateNoPadding();
   m_impl->removeItems(items_local_id,check_if_present);
 }
 

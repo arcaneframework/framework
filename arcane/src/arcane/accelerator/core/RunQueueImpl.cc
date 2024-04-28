@@ -14,6 +14,7 @@
 #include "arcane/accelerator/core/internal/RunQueueImpl.h"
 
 #include "arcane/utils/FatalErrorException.h"
+#include "arcane/utils/MemoryUtils.h"
 
 #include "arcane/accelerator/core/Runner.h"
 #include "arcane/accelerator/core/RunQueueBuildInfo.h"
@@ -69,8 +70,8 @@ _release()
   // les commandes ne seront pas désallouées.
   // TODO: Regarder s'il ne faudrait pas plutôt indiquer cela à l'utilisateur
   // ou faire une erreur fatale.
-  if (!m_active_run_command_list.empty()){
-    if (!_internalStream()->_barrierNoException()){
+  if (!m_active_run_command_list.empty()) {
+    if (!_internalStream()->_barrierNoException()) {
       _internalFreeRunningCommands();
     }
     else
@@ -78,9 +79,32 @@ _release()
   }
   if (_isInPool())
     m_runner_impl->_internalPutRunQueueImplInPool(this);
-  else{
+  else {
     delete this;
   }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void RunQueueImpl::
+_setDefaultMemoryRessource()
+{
+  m_memory_ressource = eMemoryRessource::Host;
+  if (isAcceleratorPolicy(m_execution_policy))
+    m_memory_ressource = eMemoryRessource::UnifiedMemory;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+MemoryAllocationOptions RunQueueImpl::
+allocationOptions() const
+{
+  MemoryAllocationOptions opt = MemoryUtils::getAllocationOptions(m_memory_ressource);
+  Int16 device_id = static_cast<Int16>(m_runner_impl->deviceId().asInt32());
+  opt.setDevice(device_id);
+  return opt;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -165,6 +189,7 @@ RunQueueImpl* RunQueueImpl::
 _reset(RunQueueImpl* p)
 {
   p->m_is_async = false;
+  p->_setDefaultMemoryRessource();
   return p;
 }
 

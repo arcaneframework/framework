@@ -67,7 +67,7 @@ class MatCell
  public:
 
   //! Maille milieu auquel cette maille matériau appartient.
-  inline EnvCell envCell() const;
+  ARCCORE_HOST_DEVICE inline EnvCell envCell() const;
 
   //! Materiau associé
   IMeshMaterial* material() const { return _material(); }
@@ -76,10 +76,10 @@ class MatCell
   IUserMeshMaterial* userMaterial() const { return _material()->userMaterial(); }
 
   //! Identifiant du matériau
-  Int32 materialId() const { return componentId(); }
+  ARCCORE_HOST_DEVICE Int32 materialId() const { return componentId(); }
 
  private:
-  
+
   IMeshMaterial* _material() const { return static_cast<IMeshMaterial*>(component()); }
 };
 
@@ -122,13 +122,13 @@ class EnvCell
  public:
 
   // Nombre de matériaux du milieu présents dans la maille
-  Int32 nbMaterial() const { return nbSubItem(); }
+  ARCCORE_HOST_DEVICE Int32 nbMaterial() const { return nbSubItem(); }
 
   //! Maille contenant les infos sur tous les milieux
-  AllEnvCell allEnvCell() const;
+  ARCCORE_HOST_DEVICE inline AllEnvCell allEnvCell() const;
 
   //! i-ème maille matériau de cette maille
-  inline MatCell cell(Integer i) const { return _subItemBase(i); }
+  ARCCORE_HOST_DEVICE inline MatCell cell(Integer i) const { return _subItemBase(i); }
 
   //! Milieu associé
   IMeshEnvironment* environment() const { return _environment(); }
@@ -136,8 +136,14 @@ class EnvCell
   //! Identifiant du milieu
   ARCCORE_HOST_DEVICE Int32 environmentId() const { return componentId(); }
 
+  //! Enumérateur sur les mailles matériaux de cette maille
+  ARCCORE_HOST_DEVICE CellMatCellEnumerator subMatItems() const
+  {
+    return CellMatCellEnumerator(*this);
+  }
+
  private:
-  
+
   IMeshEnvironment* _environment() const { return static_cast<IMeshEnvironment*>(component()); }
 };
 
@@ -178,16 +184,22 @@ class AllEnvCell
  public:
 
   //! Nombre de milieux présents dans la maille
-  Int32 nbEnvironment() const{ return nbSubItem(); }
+  ARCCORE_HOST_DEVICE Int32 nbEnvironment() const { return nbSubItem(); }
 
   //! i-ème maille milieu
   EnvCell cell(Int32 i) const { return EnvCell(_subItemBase(i)); }
+
+  //! Enumérateur sur les mailles milieux de cette maille
+  ARCCORE_HOST_DEVICE CellEnvCellEnumerator subEnvItems() const
+  {
+    return CellEnvCellEnumerator(*this);
+  }
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-inline EnvCell MatCell::
+ARCCORE_HOST_DEVICE inline EnvCell MatCell::
 envCell() const
 {
   return EnvCell(_superItemBase());
@@ -196,7 +208,7 @@ envCell() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-inline AllEnvCell EnvCell::
+ARCCORE_HOST_DEVICE inline AllEnvCell EnvCell::
 allEnvCell() const
 {
   return AllEnvCell(_superItemBase());
