@@ -535,8 +535,7 @@ class HostDeviceReducer2
 #if defined(ARCANE_COMPILING_SYCL)
   void _internalExecWorkItem(sycl::nd_item<1> id)
   {
-    auto* atomic_counter_ptr = m_grid_memory_info.m_grid_device_count;
-    const Int32 global_id = static_cast<Int32>(id.get_global_id(0));
+    unsigned int* atomic_counter_ptr = m_grid_memory_info.m_grid_device_count;
     const Int32 local_id = static_cast<Int32>(id.get_local_id(0));
     const Int32 group_id = static_cast<Int32>(id.get_group_linear_id());
     const Int32 nb_block = static_cast<Int32>(id.get_group_range(0));
@@ -550,9 +549,16 @@ class HostDeviceReducer2
     auto sycl_functor = ReduceFunctor::syclFunctor();
     DataType local_sum = sycl::reduce_over_group(id.get_group(), v, sycl_functor);
     if (local_id == 0) {
-      Int32 base = global_id;
       grid_buffer[group_id] = local_sum;
+      // AdaptiveCpp 2024.2 ne supporte pas les opérations atomiques sur 'unsigned int'.
+      // Elles sont supportées avec le type 'int'. Comme on est certain de ne pas dépasser 2^31, on
+      // converti le pointeur en un 'int*'.
+#if defined(__ADAPTIVECPP__)
+      int* atomic_counter_ptr_as_int = reinterpret_cast<int*>(atomic_counter_ptr);
+      sycl::atomic_ref<int, sycl::memory_order::relaxed, sycl::memory_scope::device> a(*atomic_counter_ptr_as_int);
+#else
       sycl::atomic_ref<unsigned int, sycl::memory_order::relaxed, sycl::memory_scope::device> a(*atomic_counter_ptr);
+#endif
       Int32 cx = a.fetch_add(1);
       if (cx == (nb_block - 1))
         is_last = true;

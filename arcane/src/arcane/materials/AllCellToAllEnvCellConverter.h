@@ -155,27 +155,9 @@ class ARCANE_MATERIALS_EXPORT CellToAllEnvCellAccessor
 
   CellToAllEnvCellAccessor() = default;
   explicit CellToAllEnvCellAccessor(const IMeshMaterialMng* mm);
-  ARCCORE_HOST_DEVICE CellToAllEnvCellAccessor(const CellToAllEnvCellAccessor& acc)
-  : m_cell_allenvcell(acc.m_cell_allenvcell)
-  {
-  }
+  CellToAllEnvCellAccessor(const CellToAllEnvCellAccessor& acc) = default;
 
-  ARCCORE_HOST_DEVICE CellToAllEnvCellAccessor& operator=(CellToAllEnvCellAccessor acc)
-  {
-    m_cell_allenvcell = acc.m_cell_allenvcell;
-    return *this;
-  }
-  ARCCORE_HOST_DEVICE CellToAllEnvCellAccessor& operator=(CellToAllEnvCellAccessor& acc)
-  {
-    m_cell_allenvcell = acc.m_cell_allenvcell;
-    return *this;
-  }
-
-  ARCCORE_HOST_DEVICE CellToAllEnvCellAccessor& operator=(const CellToAllEnvCellAccessor& acc)
-  {
-    m_cell_allenvcell = acc.m_cell_allenvcell;
-    return *this;
-  }
+  ARCCORE_HOST_DEVICE CellToAllEnvCellAccessor& operator=(const CellToAllEnvCellAccessor& acc) = default;
 
   ARCCORE_HOST_DEVICE const AllCellToAllEnvCell* getAllCellToAllEnvCell() const
   {
