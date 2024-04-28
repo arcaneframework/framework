@@ -73,6 +73,27 @@ toNativeStream(RunQueue* queue)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+#if defined(ARCANE_COMPILING_SYCL)
+
+sycl::queue SyclUtils::
+toNativeStream(RunQueue* queue)
+{
+  eExecutionPolicy p = eExecutionPolicy::None;
+  if (queue)
+    p = queue->executionPolicy();
+  if (p != eExecutionPolicy::SYCL)
+    ARCANE_FATAL("RunQueue is not a SYCL queue");
+  sycl::queue* s = reinterpret_cast<sycl::queue*>(queue->platformStream());
+  if (!s)
+    ARCANE_FATAL("Null stream");
+  return *s;
+}
+
+#endif
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 void DeviceStorageBase::
 _copyToAsync(Span<std::byte> destination, Span<const std::byte> source, RunQueue* queue)
 {
