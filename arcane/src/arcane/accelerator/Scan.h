@@ -23,6 +23,8 @@
 #include "arcane/accelerator/CommonUtils.h"
 #include "arcane/accelerator/RunCommandLaunchInfo.h"
 
+#include <execution>
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -104,6 +106,41 @@ class ScannerImpl
       else
         ARCANE_CHECK_HIP(rocprim::inclusive_scan(temp_storage, temp_storage_size, input_data, output_data,
                                                  nb_item, op, stream));
+    } break;
+#endif
+#if defined(ARCANE_COMPILING_SYCL) && defined(__INTEL_LLVM_COMPILER)
+    case eExecutionPolicy::SYCL: {
+      sycl::queue queue = impl::SyclUtils::toNativeStream(&m_queue);
+      auto policy = oneapi::dpl::execution::make_device_policy(queue);
+      // Intel DPC++ 2024.1 a besoin de créér un tableau de valeur pour remplir
+      // les données de sortie. On ne peut donc pas utiliser directement SetterLambdaIterator.
+      // Il faut passer par un tableau temporaire dans ce cas.
+      // TODO: Utiliser un buffer pour faire un cache.
+      NumArray<DataType, MDDim1> temp_output_numarray(eMemoryRessource::Device);
+      DataType* temp_output_data = nullptr;
+      bool need_copy = false;
+      if constexpr (std::is_same_v<OutputIterator, DataType*>) {
+        temp_output_data = output_data;
+      }
+      else {
+        temp_output_numarray.resize(nb_item);
+        temp_output_data = temp_output_numarray.to1DSpan().data();
+        need_copy = true;
+      }
+      if constexpr (IsExclusive) {
+        oneapi::dpl::exclusive_scan(policy, input_data, input_data + nb_item, temp_output_data, init_value, op);
+      }
+      else {
+        oneapi::dpl::inclusive_scan(policy, input_data, input_data + nb_item, temp_output_data, op);
+      }
+      if (need_copy) {
+        // Recopie les valeurs temporaires dans l'itérateur de sortie
+        queue.parallel_for(sycl::range<1>(nb_item), [=](sycl::id<1> i) {
+               Int32 index = static_cast<Int32>(i);
+               output_data[index] = temp_output_data[index];
+             })
+        .wait();
+      }
     } break;
 #endif
     case eExecutionPolicy::Thread:
@@ -240,16 +277,26 @@ class GenericScanner
       {}
       ARCCORE_HOST_DEVICE void operator=(const DataType& value)
       {
+        m_value = value;
         m_lambda(m_index, value);
       }
+      operator DataType() const { return m_value; }
+
+     public:
+
       Int32 m_index = 0;
       SetterLambda m_lambda;
+
+     private:
+
+      DataType m_value = {};
     };
 
     using value_type = Setter;
     using iterator_category = std::random_access_iterator_tag;
     using reference = Setter;
     using difference_type = ptrdiff_t;
+    using pointer = void;
     using ThatClass = SetterLambdaIterator<DataType, SetterLambda>;
 
    public:
@@ -269,19 +316,35 @@ class GenericScanner
       ++m_index;
       return (*this);
     }
-    ARCCORE_HOST_DEVICE ThatClass operator+(Int32 x)
+    ARCCORE_HOST_DEVICE friend ThatClass operator+(const ThatClass& iter, Int32 x)
     {
-      return ThatClass(m_lambda, m_index + x);
+      return ThatClass(iter.m_lambda, iter.m_index + x);
+    }
+    ARCCORE_HOST_DEVICE friend ThatClass operator+(Int32 x, const ThatClass& iter)
+    {
+      return ThatClass(iter.m_lambda, iter.m_index + x);
+    }
+    ARCCORE_HOST_DEVICE friend bool operator<(const ThatClass& iter1, const ThatClass& iter2)
+    {
+      return iter1.m_index < iter2.m_index;
     }
     ARCCORE_HOST_DEVICE ThatClass operator-(Int32 x)
     {
       return ThatClass(m_lambda, m_index - x);
+    }
+    ARCCORE_HOST_DEVICE Int32 operator-(const ThatClass& x) const
+    {
+      return m_index - x.m_index;
     }
     ARCCORE_HOST_DEVICE Setter operator*() const
     {
       return Setter(m_lambda, m_index);
     }
     ARCCORE_HOST_DEVICE value_type operator[](Int32 x) const { return Setter(m_lambda, m_index + x); }
+    ARCCORE_HOST_DEVICE friend bool operator!=(const ThatClass& a, const ThatClass& b)
+    {
+      return a.m_index != b.m_index;
+    }
 
    private:
 

@@ -31,6 +31,10 @@
 #if defined(ARCANE_COMPILING_SYCL)
 #include "arcane/accelerator/sycl/SyclAccelerator.h"
 #include <sycl/sycl.hpp>
+#if defined(__INTEL_LLVM_COMPILER)
+#include <oneapi/dpl/execution>
+#include <oneapi/dpl/algorithm>
+#endif
 #endif
 
 /*---------------------------------------------------------------------------*/
@@ -60,6 +64,18 @@ class ARCANE_ACCELERATOR_EXPORT HipUtils
  public:
 
   static hipStream_t toNativeStream(RunQueue* queue);
+};
+#endif
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+#if defined(ARCANE_COMPILING_SYCL)
+class ARCANE_ACCELERATOR_EXPORT SyclUtils
+{
+ public:
+
+  static sycl::queue toNativeStream(RunQueue* queue);
 };
 #endif
 
@@ -281,6 +297,7 @@ class GetterLambdaIterator
   using iterator_category = std::random_access_iterator_tag;
   using reference = DataType&;
   using difference_type = ptrdiff_t;
+  using pointer = void;
   using ThatClass = GetterLambdaIterator<DataType, GetterLambda>;
 
  public:
@@ -300,19 +317,45 @@ class GetterLambdaIterator
     ++m_index;
     return (*this);
   }
-  ARCCORE_HOST_DEVICE ThatClass operator+(Int32 x)
+  ARCCORE_HOST_DEVICE ThatClass& operator+=(Int32 x)
   {
-    return ThatClass(m_lambda, m_index + x);
+    m_index += x;
+    return (*this);
   }
-  ARCCORE_HOST_DEVICE ThatClass operator-(Int32 x)
+  ARCCORE_HOST_DEVICE friend ThatClass operator+(const ThatClass& iter, Int32 x)
+  {
+    return ThatClass(iter.m_lambda, iter.m_index + x);
+  }
+  ARCCORE_HOST_DEVICE friend ThatClass operator+(Int32 x, const ThatClass& iter)
+  {
+    return ThatClass(iter.m_lambda, iter.m_index + x);
+  }
+  ARCCORE_HOST_DEVICE friend bool operator<(const ThatClass& iter1, const ThatClass& iter2)
+  {
+    return iter1.m_index < iter2.m_index;
+  }
+
+  ARCCORE_HOST_DEVICE ThatClass operator-(Int32 x) const
   {
     return ThatClass(m_lambda, m_index - x);
+  }
+  ARCCORE_HOST_DEVICE Int32 operator-(const ThatClass& x) const
+  {
+    return m_index - x.m_index;
   }
   ARCCORE_HOST_DEVICE value_type operator*() const
   {
     return m_lambda(m_index);
   }
   ARCCORE_HOST_DEVICE value_type operator[](Int32 x) const { return m_lambda(m_index + x); }
+  ARCCORE_HOST_DEVICE friend bool operator!=(const ThatClass& a, const ThatClass& b)
+  {
+    return a.m_index != b.m_index;
+  }
+  ARCCORE_HOST_DEVICE friend bool operator==(const ThatClass& a, const ThatClass& b)
+  {
+    return a.m_index == b.m_index;
+  }
 
  private:
 
