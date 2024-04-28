@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* TestCpp.cc                                                  (C) 2000-2024 */
 /*                                                                           */
-/* Fichier de tests pour HIP.                                                */
+/* Fichier de tests pour SYCL.                                               */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -19,6 +19,10 @@ extern "C"
 int arcaneTestSycl2();
 extern "C"
 int arcaneTestSycl3();
+extern "C"
+int arcaneTestSycl4();
+extern "C"
+int arcaneTestSycl5();
 
 extern "C" ARCANE_EXPORT
 int func0()
@@ -26,5 +30,7 @@ int func0()
   arcaneTestSycl1();
   arcaneTestSycl2();
   arcaneTestSycl3();
+  arcaneTestSycl4();
+  arcaneTestSycl5();
   return 0;
 }
