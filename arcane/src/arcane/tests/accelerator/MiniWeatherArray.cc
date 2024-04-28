@@ -213,10 +213,10 @@ class MiniWeatherArray
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename LayoutType>
+template <typename LayoutType>
 MiniWeatherArray<LayoutType>::
-MiniWeatherArray(IAcceleratorMng* am,ITraceMng* tm,int nb_cell_x,int nb_cell_z,
-                 double final_time,eMemoryRessource memory)
+MiniWeatherArray(IAcceleratorMng* am, ITraceMng* tm, int nb_cell_x, int nb_cell_z,
+                 double final_time, eMemoryRessource memory)
 : MiniWeatherArrayBase(tm)
 , hy_dens_cell(memory)
 , hy_dens_theta_cell(memory)
@@ -239,7 +239,7 @@ MiniWeatherArray(IAcceleratorMng* am,ITraceMng* tm,int nb_cell_x,int nb_cell_z,
   auto layout_info = Layout3Type::layoutInfo();
   info() << "NumArrayLayout = " << layout_info[0] << " " << layout_info[1] << " " << layout_info[2];
 
-  m_const.sim_time = final_time;   //How many seconds to run the simulation
+  m_const.sim_time = final_time; //How many seconds to run the simulation
   m_const.output_freq = 100; //How frequently to output data to file (in seconds)
   //Set the cell grid size
   init();
@@ -572,38 +572,43 @@ compute_tendencies_final_z(NumArray3Type& nstate, NumArray3Type& flux, NumArray3
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename LayoutType>
+template <typename LayoutType>
 void MiniWeatherArray<LayoutType>::
 set_halo_values_x(NumArray3Type& nstate)
 {
   auto command = makeCommand(m_queue);
 
-  auto state_in_out = ax::viewInOut(command,nstate);
-  auto in_hy_dens_cell = ax::viewIn(command,hy_dens_cell);
-  auto in_hy_dens_theta_cell = ax::viewIn(command,hy_dens_theta_cell);
+  auto state_in_out = ax::viewInOut(command, nstate);
+  auto in_hy_dens_cell = ax::viewIn(command, hy_dens_cell);
+  auto in_hy_dens_theta_cell = ax::viewIn(command, hy_dens_theta_cell);
 
   const auto nx = this->nx();
   const auto nz = this->nz();
   const auto dz = this->dz();
   const auto k_beg = this->k_beg();
 
-  command << RUNCOMMAND_LOOP(iter,ArrayBounds<MDDim2>(NUM_VARS,nz))
+  command << RUNCOMMAND_LOOP (iter, ArrayBounds<MDDim2>(NUM_VARS, nz))
   {
     auto [ll, k] = iter();
-    state_in_out(ll,k+hs,0) = state_in_out(ll,k+hs,nx+hs-2);
-    state_in_out(ll,k+hs,1) = state_in_out(ll,k+hs,nx+hs-1);
-    state_in_out(ll,k+hs,nx+hs) = state_in_out(ll,k+hs,hs);
-    state_in_out(ll,k+hs,nx+hs+1) = state_in_out(ll,k+hs,hs+1);
+    state_in_out(ll, k + hs, 0) = state_in_out(ll, k + hs, nx + hs - 2);
+    state_in_out(ll, k + hs, 1) = state_in_out(ll, k + hs, nx + hs - 1);
+    state_in_out(ll, k + hs, nx + hs) = state_in_out(ll, k + hs, hs);
+    state_in_out(ll, k + hs, nx + hs + 1) = state_in_out(ll, k + hs, hs + 1);
   };
 
-  if (m_const.myrank == 0){
-    command << RUNCOMMAND_LOOP(iter,ArrayBounds<MDDim2>(nz,hs))
+  if (m_const.myrank == 0) {
+    command << RUNCOMMAND_LOOP (iter, ArrayBounds<MDDim2>(nz, hs))
     {
       auto [k, i] = iter();
       double z = ((double)(k_beg + k) + 0.5) * dz;
-      if (abs(z - 3 * zlen / 4) <= zlen / 16){
-        state_in_out(ID_UMOM,k+hs,i) = (state_in_out(ID_DENS,k+hs,i) + in_hy_dens_cell(k + hs)) * 50.;
-        state_in_out(ID_RHOT,k+hs,i) = (state_in_out(ID_DENS,k+hs,i) + in_hy_dens_cell(k + hs)) * 298. - in_hy_dens_theta_cell(k + hs);
+      double v = z - 3 * zlen / 4;
+      double compare_value = zlen / 16;
+      // Normalement il faut comparer la valeur absolue via math::abs() mais
+      // cette fonction n'est pas disponible avec DPC++ 2024.1 et le back-end CUDA
+      // if (math::abs(v) <= compare_value) {
+      if (v >= -compare_value && v <= compare_value) {
+        state_in_out(ID_UMOM, k + hs, i) = (state_in_out(ID_DENS, k + hs, i) + in_hy_dens_cell(k + hs)) * 50.;
+        state_in_out(ID_RHOT, k + hs, i) = (state_in_out(ID_DENS, k + hs, i) + in_hy_dens_cell(k + hs)) * 298. - in_hy_dens_theta_cell(k + hs);
       }
     };
   }
