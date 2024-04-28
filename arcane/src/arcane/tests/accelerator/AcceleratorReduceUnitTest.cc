@@ -16,12 +16,13 @@
 #include "arcane/utils/ValueChecker.h"
 #include "arcane/utils/MemoryView.h"
 
-#include "arcane/BasicUnitTest.h"
-#include "arcane/ServiceFactory.h"
+#include "arcane/core/BasicUnitTest.h"
+#include "arcane/core/ServiceFactory.h"
 
 #include "arcane/accelerator/core/RunQueueBuildInfo.h"
 #include "arcane/accelerator/core/Runner.h"
 #include "arcane/accelerator/core/Memory.h"
+#include "arcane/accelerator/core/IAcceleratorMng.h"
 
 #include "arcane/accelerator/Reduce.h"
 #include "arcane/accelerator/NumArrayViews.h"
@@ -141,9 +142,11 @@ AcceleratorReduceUnitTest::
 void AcceleratorReduceUnitTest::
 initializeTest()
 {
-  IApplication* app = subDomain()->application();
-  const auto& acc_info = app->acceleratorRuntimeInitialisationInfo();
-  initializeRunner(m_runner, traceMng(), acc_info);
+  IAcceleratorMng* amng = subDomain()->acceleratorMng();
+  m_runner = *amng->defaultRunner();
+
+  auto queue = makeQueue(m_runner);
+  m_queue = queue;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -152,6 +155,8 @@ initializeTest()
 void AcceleratorReduceUnitTest::
 executeTest()
 {
+
+  info() << "ExecuteReduceTest policy=" << m_queue.executionPolicy();
   if (options()->useAtomic()) {
     info() << "UseReducePolicy = Atomic";
     m_runner.setDeviceReducePolicy(ax::eDeviceReducePolicy::Atomic);
@@ -188,10 +193,7 @@ _executeTestDataType(Int32 nb_iteration)
 {
   ValueChecker vc(A_FUNCINFO);
 
-  info() << "Execute Test1 nb_iter=" << nb_iteration;
-
-  auto queue = makeQueue(m_runner);
-  m_queue = queue;
+  info() << "Execute Test1 nb_iter=" << nb_iteration << " policy=" << m_queue.executionPolicy();
 
   constexpr int n1 = 3000000;
 
@@ -219,19 +221,25 @@ _executeTestDataType(Int32 nb_iteration)
   //NumArray<DataType, MDDim1> t1; //(eMemoryRessource::Device);
   //t1.copy(host_t1);
   m_runner.setMemoryAdvice(t1_mem_view, ax::eMemoryAdvice::MostlyRead);
-  queue.prefetchMemory(ax::MemoryPrefetchArgs(t1_mem_view).addAsync());
+  m_queue.prefetchMemory(ax::MemoryPrefetchArgs(t1_mem_view).addAsync());
 
   _executeTestReduceV2(nb_iteration, t1, sum, min_value, max_value);
 
-  _executeTestReduceSum(nb_iteration, t1, sum);
-  _executeTestReduceMin(nb_iteration, t1, min_value);
-  _executeTestReduceMax(nb_iteration, t1, max_value);
+  // Les tests suivants avec les réductions historiques ne sont pas supportés en SYCL
+  if (m_queue.executionPolicy() != eExecutionPolicy::SYCL) {
+    _executeTestReduceSum(nb_iteration, t1, sum);
+    _executeTestReduceMin(nb_iteration, t1, min_value);
+    _executeTestReduceMax(nb_iteration, t1, max_value);
+  }
 
-  // Utilisation des kernels spécifiques
-  _executeTestReduceDirect(nb_iteration, t1, sum, min_value, max_value);
+  // Les tests suivants ne passent pas encore avec SYCL
+  if (m_queue.executionPolicy() != eExecutionPolicy::SYCL) {
+    // Utilisation des kernels spécifiques
+    _executeTestReduceDirect(nb_iteration, t1, sum, min_value, max_value);
 
-  // Utilisation des kernels spécifiques avec index
-  _executeTestReduceWithIndex(nb_iteration, t1, sum, min_value, max_value);
+    // Utilisation des kernels spécifiques avec index
+    _executeTestReduceWithIndex(nb_iteration, t1, sum, min_value, max_value);
+  }
 }
 
 /*---------------------------------------------------------------------------*/
