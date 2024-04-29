@@ -204,6 +204,9 @@ class IndexIterator
   using iterator_category = std::random_access_iterator_tag;
   using reference = value_type&;
   using difference_type = ptrdiff_t;
+  using pointer = void;
+
+  using ThatClass = IndexIterator;
 
  public:
 
@@ -223,12 +226,28 @@ class IndexIterator
   {
     return IndexIterator(m_value + x);
   }
+  ARCCORE_HOST_DEVICE friend ThatClass operator+(Int32 x, const ThatClass& iter)
+  {
+    return ThatClass(iter.m_value + x);
+  }
   ARCCORE_HOST_DEVICE IndexIterator operator-(Int32 x) const
   {
     return IndexIterator(m_value - x);
   }
+  ARCCORE_HOST_DEVICE Int32 operator-(const ThatClass& x) const
+  {
+    return m_value - x.m_value;
+  }
   ARCCORE_HOST_DEVICE Int32 operator*() const { return m_value; }
   ARCCORE_HOST_DEVICE Int32 operator[](Int32 x) const { return m_value + x; }
+  ARCCORE_HOST_DEVICE friend bool operator==(const ThatClass& a, const ThatClass& b)
+  {
+    return a.m_value == b.m_value;
+  }
+  ARCCORE_HOST_DEVICE friend bool operator<(const ThatClass& iter1, const ThatClass& iter2)
+  {
+    return iter1.m_value < iter2.m_value;
+  }
 
  private:
 
