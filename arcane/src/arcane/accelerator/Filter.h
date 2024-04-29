@@ -46,6 +46,86 @@ class ARCANE_ACCELERATOR_EXPORT GenericFilteringBase
   friend class GenericFilteringIf;
 
  public:
+ public:
+
+  // NOTE: cette classe devrait être privée mais ce n'est pas possible avec CUDA.
+  //! Itérateur sur la lambda via un index
+  template <typename SetterLambda>
+  class SetterLambdaIterator
+  {
+   public:
+
+    //! Permet de positionner un élément de l'itérateur de sortie
+    class Setter
+    {
+     public:
+
+      ARCCORE_HOST_DEVICE explicit Setter(const SetterLambda& s, Int32 output_index)
+      : m_output_index(output_index)
+      , m_lambda(s)
+      {}
+      ARCCORE_HOST_DEVICE void operator=(Int32 input_index)
+      {
+        m_lambda(input_index, m_output_index);
+      }
+      Int32 m_output_index = 0;
+      SetterLambda m_lambda;
+    };
+
+    using value_type = Int32;
+    using iterator_category = std::random_access_iterator_tag;
+    using reference = Setter;
+    using difference_type = ptrdiff_t;
+    using pointer = void;
+
+    using ThatClass = SetterLambdaIterator<SetterLambda>;
+
+   public:
+
+    ARCCORE_HOST_DEVICE SetterLambdaIterator(const SetterLambda& s)
+    : m_lambda(s)
+    {}
+    ARCCORE_HOST_DEVICE explicit SetterLambdaIterator(const SetterLambda& s, Int32 v)
+    : m_lambda(s)
+    , m_index(v)
+    {}
+
+   public:
+
+    ARCCORE_HOST_DEVICE SetterLambdaIterator<SetterLambda>& operator++()
+    {
+      ++m_index;
+      return (*this);
+    }
+    ARCCORE_HOST_DEVICE reference operator*() const
+    {
+      return Setter(m_lambda, m_index);
+    }
+    ARCCORE_HOST_DEVICE reference operator[](Int32 x) const { return Setter(m_lambda, m_index + x); }
+    ARCCORE_HOST_DEVICE friend ThatClass operator+(Int32 x, const ThatClass& iter)
+    {
+      return ThatClass(iter.m_lambda, iter.m_index + x);
+    }
+    ARCCORE_HOST_DEVICE friend ThatClass operator+(const ThatClass& iter, Int32 x)
+    {
+      return ThatClass(iter.m_lambda, iter.m_index + x);
+    }
+    ARCCORE_HOST_DEVICE Int32 operator-(const ThatClass& x) const
+    {
+      return m_index - x.m_index;
+    }
+    ARCCORE_HOST_DEVICE friend bool operator<(const ThatClass& iter1, const ThatClass& iter2)
+    {
+      return iter1.m_index < iter2.m_index;
+    }
+
+   private:
+
+    Int32 m_index = 0;
+    SetterLambda m_lambda;
+  };
+
+ public:
 
   GenericFilteringBase();
 
@@ -122,6 +202,19 @@ class GenericFilteringFlag
       s.m_device_nb_out_storage.copyToAsync(s.m_host_nb_out_storage, queue);
     } break;
 #endif
+#if defined(ARCANE_COMPILING_SYCL) && defined(__INTEL_LLVM_COMPILER)
+    case eExecutionPolicy::SYCL: {
+      sycl::queue true_queue = impl::SyclUtils::toNativeStream(queue);
+      auto policy = oneapi::dpl::execution::make_device_policy(true_queue);
+      impl::IndexIterator iter2(0);
+      auto filter_lambda = [=](Int32 input_index) -> bool { return flag[input_index] != 0; };
+      auto setter_lambda = [=](Int32 input_index, Int32 output_index) { output[output_index] = input[input_index]; };
+      GenericFilteringBase::SetterLambdaIterator<decltype(setter_lambda)> out(setter_lambda);
+      auto out_iter = oneapi::dpl::copy_if(policy, iter2, iter2 + nb_item, out, filter_lambda);
+      Int32 n = out_iter - out;
+      s.m_host_nb_out_storage[0] = n;
+    } break;
+#endif
     case eExecutionPolicy::Thread:
       // Pas encore implémenté en multi-thread
       [[fallthrough]];
@@ -188,7 +281,6 @@ class GenericFilteringIf
 #endif
 #if defined(ARCANE_COMPILING_HIP)
     case eExecutionPolicy::HIP: {
-      ARCANE_CHECK_POINTER(queue);
       size_t temp_storage_size = 0;
       // Premier appel pour connaitre la taille pour l'allocation
       hipStream_t stream = impl::HipUtils::toNativeStream(queue);
@@ -201,6 +293,16 @@ class GenericFilteringIf
       ARCANE_CHECK_HIP(rocprim::select(s.m_algo_storage.address(), temp_storage_size, input_iter, output_iter,
                                        nb_out_ptr, nb_item, select_lambda, 0));
       s.m_device_nb_out_storage.copyToAsync(s.m_host_nb_out_storage, queue);
+    } break;
+#endif
+#if defined(ARCANE_COMPILING_SYCL) && defined(__INTEL_LLVM_COMPILER)
+    case eExecutionPolicy::SYCL: {
+      using DataType = std::iterator_traits<OutputIterator>::value_type;
+      sycl::queue true_queue = impl::SyclUtils::toNativeStream(queue);
+      auto policy = oneapi::dpl::execution::make_device_policy(true_queue);
+      auto out_iter = oneapi::dpl::copy_if(policy, input_iter, input_iter + nb_item, output_iter, select_lambda);
+      Int32 nb_output = out_iter - output_iter;
+      s.m_host_nb_out_storage[0] = nb_output;
     } break;
 #endif
     case eExecutionPolicy::Thread:
@@ -342,65 +444,6 @@ class Filterer
 class GenericFilterer
 : private impl::GenericFilteringBase
 {
- public:
-
-  // NOTE: cette classe devrait être privée mais ce n'est pas possible avec CUDA.
-  //! Itérateur sur la lambda via un index
-  template <typename SetterLambda>
-  class SetterLambdaIterator
-  {
-   public:
-
-    //! Permet de positionner un élément de l'itérateur de sortie
-    class Setter
-    {
-     public:
-
-      ARCCORE_HOST_DEVICE explicit Setter(const SetterLambda& s, Int32 output_index)
-      : m_output_index(output_index)
-      , m_lambda(s)
-      {}
-      ARCCORE_HOST_DEVICE void operator=(Int32 input_index)
-      {
-        m_lambda(input_index, m_output_index);
-      }
-      Int32 m_output_index = 0;
-      SetterLambda m_lambda;
-    };
-
-    using value_type = Setter;
-    using iterator_category = std::random_access_iterator_tag;
-    using reference = Setter;
-    using difference_type = ptrdiff_t;
-
-   public:
-
-    ARCCORE_HOST_DEVICE SetterLambdaIterator(const SetterLambda& s)
-    : m_lambda(s)
-    {}
-    ARCCORE_HOST_DEVICE explicit SetterLambdaIterator(const SetterLambda& s, Int32 v)
-    : m_lambda(s)
-    , m_index(v)
-    {}
-
-   public:
-
-    ARCCORE_HOST_DEVICE SetterLambdaIterator<SetterLambda>& operator++()
-    {
-      ++m_index;
-      return (*this);
-    }
-    ARCCORE_HOST_DEVICE Setter operator*() const
-    {
-      return Setter(m_lambda, m_index);
-    }
-    ARCCORE_HOST_DEVICE value_type operator[](Int32 x) const { return Setter(m_lambda, m_index + x); }
-
-   private:
-
-    Int32 m_index = 0;
-    SetterLambda m_lambda;
-  };
 
  public:
 
