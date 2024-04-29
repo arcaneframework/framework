@@ -74,7 +74,7 @@ _allocateGraph()
 
   m_item_family_network = m_mesh->itemFamilyNetwork();
   if (m_item_family_network == nullptr)
-    traceMng()->fatal() << "ARCANE_GRAPH_CONNECTIVITY_POLICY need to be activated";
+    ARCANE_FATAL("ARCANE_GRAPH_CONNECTIVITY_POLICY need to be activated");
 
   m_graph_id = m_item_family_network->registerConnectedGraph(this);
 
