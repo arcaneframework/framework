@@ -282,10 +282,10 @@ SyclRunQueueStream(SyclRunnerRuntime* runtime, const RunQueueBuildInfo& bi)
 : m_runtime(runtime)
 {
   if (bi.isDefault())
-    m_sycl_stream = std::make_unique<sycl::queue>(runtime->defaultDevice());
+    m_sycl_stream = std::make_unique<sycl::queue>(runtime->defaultDevice(), sycl::property::queue::in_order());
   else {
     ARCANE_SYCL_FUNC_NOT_HANDLED;
-    m_sycl_stream = std::make_unique<sycl::queue>(runtime->defaultDevice());
+    m_sycl_stream = std::make_unique<sycl::queue>(runtime->defaultDevice(), sycl::property::queue::in_order());
   }
 }
 
