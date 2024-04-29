@@ -30,8 +30,14 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+namespace Arcane::impl
+{
+class HostReducerHelper;
+}
+
 namespace Arcane::Accelerator::impl
 {
+class KernelReducerHelper;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -498,6 +504,9 @@ template <typename DataType, typename ReduceFunctor>
 class HostDeviceReducer2
 : public HostDeviceReducerBase<DataType, ReduceFunctor>
 {
+  friend impl::KernelReducerHelper;
+  friend ::Arcane::impl::HostReducerHelper;
+
  public:
 
   using BaseClass = HostDeviceReducerBase<DataType, ReduceFunctor>;
@@ -518,7 +527,10 @@ class HostDeviceReducer2
     return this->_reduce();
   }
 
- public:
+ private:
+
+  // Note: les méthodes _internalReduce...() sont
+  // internes à Arcane.
 
   void _internalReduceHost()
   {
@@ -550,6 +562,11 @@ class HostDeviceReducer2
     DataType local_sum = sycl::reduce_over_group(id.get_group(), v, sycl_functor);
     if (local_id == 0) {
       grid_buffer[group_id] = local_sum;
+      
+      // TODO: En théorie il faut faire l'équivalent d'un __threadfence() ici
+      // pour garantir que les autres work-item voient bien la mise à jour de 'grid_buffer'.
+      // Mais ce mécanisme n'existe pas avec SYCL 2020.
+
       // AdaptiveCpp 2024.2 ne supporte pas les opérations atomiques sur 'unsigned int'.
       // Elles sont supportées avec le type 'int'. Comme on est certain de ne pas dépasser 2^31, on
       // converti le pointeur en un 'int*'.
@@ -563,6 +580,7 @@ class HostDeviceReducer2
       if (cx == (nb_block - 1))
         is_last = true;
     }
+
     // Je suis le dernier à faire la réduction.
     // Calcule la réduction finale
     if (is_last) {
