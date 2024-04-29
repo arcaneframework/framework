@@ -205,7 +205,7 @@ void _doItemsLambda(Int32 base_index, ContainerType sub_items, const Lambda& fun
   ENUMERATE_NO_TRACE_ (ItemType, iitem, sub_items) {
     body(BuilderType::create(iitem.index() + base_index, LocalIdType(iitem.itemLocalId())), reducer_args...);
   }
-  (reducer_args._internalReduceHost(), ...);
+  ::Arcane::impl::HostReducerHelper::applyReducerArgs(reducer_args...);
 }
 
 /*---------------------------------------------------------------------------*/
