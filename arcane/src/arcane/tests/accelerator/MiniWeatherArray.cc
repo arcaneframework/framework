@@ -248,8 +248,8 @@ MiniWeatherArray(IAcceleratorMng* am, ITraceMng* tm, int nb_cell_x, int nb_cell_
 
   // Rend la file asynchrone
   // Ne le fait pas avec SYCL car cela provoque des résultats faux (avril 2024)
-  if (m_queue.executionPolicy() != eExecutionPolicy::SYCL)
-    m_queue.setAsync(true);
+  //if (m_queue.executionPolicy() != eExecutionPolicy::SYCL)
+  m_queue.setAsync(true);
 }
 
 /*---------------------------------------------------------------------------*/

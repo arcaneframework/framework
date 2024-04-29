@@ -112,35 +112,13 @@ class ScannerImpl
     case eExecutionPolicy::SYCL: {
       sycl::queue queue = impl::SyclUtils::toNativeStream(&m_queue);
       auto policy = oneapi::dpl::execution::make_device_policy(queue);
-      // Intel DPC++ 2024.1 a besoin de créér un tableau de valeur pour remplir
-      // les données de sortie. On ne peut donc pas utiliser directement SetterLambdaIterator.
-      // Il faut passer par un tableau temporaire dans ce cas.
-      // TODO: Utiliser un buffer pour faire un cache.
-      NumArray<DataType, MDDim1> temp_output_numarray(eMemoryRessource::Device);
-      DataType* temp_output_data = nullptr;
-      bool need_copy = false;
-      if constexpr (std::is_same_v<OutputIterator, DataType*>) {
-        temp_output_data = output_data;
-      }
-      else {
-        temp_output_numarray.resize(nb_item);
-        temp_output_data = temp_output_numarray.to1DSpan().data();
-        need_copy = true;
-      }
       if constexpr (IsExclusive) {
-        oneapi::dpl::exclusive_scan(policy, input_data, input_data + nb_item, temp_output_data, init_value, op);
+        oneapi::dpl::exclusive_scan(policy, input_data, input_data + nb_item, output_data, init_value, op);
       }
       else {
-        oneapi::dpl::inclusive_scan(policy, input_data, input_data + nb_item, temp_output_data, op);
+        oneapi::dpl::inclusive_scan(policy, input_data, input_data + nb_item, output_data, op);
       }
-      if (need_copy) {
-        // Recopie les valeurs temporaires dans l'itérateur de sortie
-        queue.parallel_for(sycl::range<1>(nb_item), [=](sycl::id<1> i) {
-               Int32 index = static_cast<Int32>(i);
-               output_data[index] = temp_output_data[index];
-             })
-        .wait();
-      }
+
     } break;
 #endif
     case eExecutionPolicy::Thread:
@@ -277,22 +255,16 @@ class GenericScanner
       {}
       ARCCORE_HOST_DEVICE void operator=(const DataType& value)
       {
-        m_value = value;
         m_lambda(m_index, value);
       }
-      operator DataType() const { return m_value; }
 
      public:
 
       Int32 m_index = 0;
       SetterLambda m_lambda;
-
-     private:
-
-      DataType m_value = {};
     };
 
-    using value_type = Setter;
+    using value_type = DataType;
     using iterator_category = std::random_access_iterator_tag;
     using reference = Setter;
     using difference_type = ptrdiff_t;
@@ -336,11 +308,11 @@ class GenericScanner
     {
       return m_index - x.m_index;
     }
-    ARCCORE_HOST_DEVICE Setter operator*() const
+    ARCCORE_HOST_DEVICE reference operator*() const
     {
       return Setter(m_lambda, m_index);
     }
-    ARCCORE_HOST_DEVICE value_type operator[](Int32 x) const { return Setter(m_lambda, m_index + x); }
+    ARCCORE_HOST_DEVICE reference operator[](Int32 x) const { return Setter(m_lambda, m_index + x); }
     ARCCORE_HOST_DEVICE friend bool operator!=(const ThatClass& a, const ThatClass& b)
     {
       return a.m_index != b.m_index;

@@ -126,16 +126,19 @@ class SyclRunQueueEvent
 #if defined(__ADAPTIVECPP__)
     m_recorded_stream = stream;
     // TODO: Vérifier s'il faut faire quelque chose
+#elif defined(__INTEL_LLVM_COMPILER)
+    auto* rq = static_cast<SyclRunQueueStream*>(stream);
+    m_sycl_event = rq->trueStream().ext_oneapi_submit_barrier();
 #else
-    ARCANE_THROW(NotSupportedException, "Only supported for AdaptiveCpp implementation");
+    ARCANE_THROW(NotSupportedException, "Only supported for AdaptiveCpp and Intel DPC++ implementation");
 #endif
   }
 
   void wait() final
   {
-    ARCANE_SYCL_FUNC_NOT_HANDLED;
+    //ARCANE_SYCL_FUNC_NOT_HANDLED;
     // TODO: Vérifier ce que cela signifie exactement
-    //m_sycl_event.wait();
+    m_sycl_event.wait();
   }
 
   void waitForEvent([[maybe_unused]] impl::IRunQueueStream* stream) final
@@ -143,8 +146,13 @@ class SyclRunQueueEvent
 #if defined(__ADAPTIVECPP__)
     auto* rq = static_cast<SyclRunQueueStream*>(stream);
     m_sycl_event.wait(rq->trueStream().get_wait_list());
+#elif defined(__INTEL_LLVM_COMPILER)
+    std::vector<sycl::event> events;
+    events.push_back(m_sycl_event);
+    auto* rq = static_cast<SyclRunQueueStream*>(stream);
+    rq->trueStream().ext_oneapi_submit_barrier(events);
 #else
-    ARCANE_THROW(NotSupportedException, "Only supported for AdaptiveCpp implementation");
+    ARCANE_THROW(NotSupportedException, "Only supported for AdaptiveCpp and Intel DPC++ implementation");
 #endif
   }
 
@@ -274,10 +282,10 @@ SyclRunQueueStream(SyclRunnerRuntime* runtime, const RunQueueBuildInfo& bi)
 : m_runtime(runtime)
 {
   if (bi.isDefault())
-    m_sycl_stream = std::make_unique<sycl::queue>(runtime->defaultDevice());
+    m_sycl_stream = std::make_unique<sycl::queue>(runtime->defaultDevice(), sycl::property::queue::in_order());
   else {
     ARCANE_SYCL_FUNC_NOT_HANDLED;
-    m_sycl_stream = std::make_unique<sycl::queue>(runtime->defaultDevice());
+    m_sycl_stream = std::make_unique<sycl::queue>(runtime->defaultDevice(), sycl::property::queue::in_order());
   }
 }
 

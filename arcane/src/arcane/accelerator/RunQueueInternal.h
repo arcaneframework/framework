@@ -92,7 +92,7 @@ class KernelReducerHelper
 
 #if defined(ARCANE_COMPILING_SYCL)
   //! Applique les fonctors des arguments additionnels.
-  template <typename... ReducerArgs> static inline ARCCORE_DEVICE void
+  template <typename... ReducerArgs> static inline ARCCORE_HOST_DEVICE void
   applyReducerArgs(sycl::nd_item<1> x, ReducerArgs&... reducer_args)
   {
     // Applique les réductions
