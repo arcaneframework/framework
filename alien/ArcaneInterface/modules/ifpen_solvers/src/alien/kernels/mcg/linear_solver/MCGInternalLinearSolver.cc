@@ -196,7 +196,7 @@ MCGInternalLinearSolver::init()
       dynamic_cast<Arccore::MessagePassing::Mpi::MpiMessagePassingMng*>(m_parallel_mng);
 
   m_machine_info = new MCGSolver::MachineInfo;
-  m_machine_info->init(m_parallel_mng->commRank() == 0);
+  m_machine_info->init(m_parallel_mng->commRank() == 0 && m_output_level > 2);
 
   if (m_use_mpi) {
     MPI_Comm comm = *static_cast<const MPI_Comm*>(mpi_mng->getMPIComm());
