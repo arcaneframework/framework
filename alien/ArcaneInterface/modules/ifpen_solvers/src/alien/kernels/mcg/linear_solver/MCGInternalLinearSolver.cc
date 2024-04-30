@@ -131,9 +131,9 @@ MCGInternalLinearSolver::MCGInternalLinearSolver(
   const std::regex expected_revision_regex("^" + expected_version + ".*");
   m_version = MCGSolver::LinearSolver::getRevision();
 
-  if(!std::regex_match(m_version,expected_revision_regex))
+  if(!std::regex_match(m_version,expected_revision_regex) && m_parallel_mng->commRank() == 0)
   {
-    alien_info([&] { cout()<<"MCGSolver version mismatch: expect " << expected_version << " get " << m_version ; });
+    alien_warning([&] { cout() <<"MCGSolver version mismatch: expect " << expected_version << " get " << m_version ; });
   }
 
   const std::regex end_regex("-[[:alnum:]]+$");
@@ -185,10 +185,9 @@ MCGInternalLinearSolver::init()
     return;
 
   m_output_level = m_options->output();
-  if (m_output_level > 0) {
+  if (m_output_level > 0 && m_parallel_mng->commRank() == 0) {
     alien_info([&] {
-      printf("MCGSolver version %s\n",
-          MCGSolver::LinearSolver::getRevision().c_str());
+      cout() << "MCGSolver version" << MCGSolver::LinearSolver::getRevision() << '\n';
     });
   }
   m_use_mpi = m_parallel_mng->commSize() > 1;
@@ -223,8 +222,6 @@ MCGInternalLinearSolver::init()
     m_solver->setLog(m_mcg_log);
   }
 
-
-
   m_solver->setMachineInfo(m_machine_info);
   if (m_use_mpi)
     m_solver->initMPIInfo(m_mpi_info);
@@ -239,8 +236,7 @@ MCGInternalLinearSolver::init()
       m_num_thread = std::atoi(env_num_thread);
       if (m_output_level > 0) {
         alien_info([&] {
-          printf(
-              "MCGInternalLinearSolver: set num_thread to %d from env\n", m_num_thread);
+          cout() << "Alien MCGSolver: set num_thread to " << m_num_thread << " from env";
         });
       }
     }
@@ -305,7 +301,7 @@ MCGInternalLinearSolver::init()
     if (m_options->amgx()[0]->parameterFile().empty())
       m_solver->setOpt(MCGSolver::AmgAlgo, m_options->amgx()[0]->amgAlgo());
     else
-      printf("Only parameter-file option is considered");
+      alien_info([&] { cout() << "Only parameter-file option is considered"; });
   }
 
   m_solver->setOpt(MCGSolver::BiCGStabRhoInit, MCGSolver::RhoInit::RhsSquareNorm);
@@ -342,7 +338,7 @@ Integer
 MCGInternalLinearSolver::_solve(const MCGMatrixType& A, const MCGVectorType& b,MCGVectorType& x,
                                 const std::shared_ptr<const MCGSolver::PartitionInfo<int>>& part_info)
 {
-  if (m_output_level > 1) {
+  if (m_output_level > 2 ) {
     alien_info([&] {
       cout() << "MCGInternalLinearSolver::_solve A:" << A.m_matrix.get()
              << " b:" << &b << " x:" << &x;
@@ -383,7 +379,7 @@ Integer
 MCGInternalLinearSolver::_solve(const MCGMatrixType& A, const MCGVectorType& b,const MCGVectorType& x0,
                                 MCGVectorType& x, const std::shared_ptr<const MCGSolver::PartitionInfo<int>>& part_info)
 {
-  if (m_output_level > 1)
+  if (m_output_level > 2)
     alien_info([&] {
       cout() << "MCGInternalLinearSolver::_solve with x0"
              << " A:" << &A << " b:" << &b << " x0:" << &x0 << " x:" << &x;
@@ -561,7 +557,7 @@ MCGInternalLinearSolver::solve(IMatrix const& A, IVector const& b, IVector& x)
   if (error == 0) {
     m_status.succeeded = true;
     m_status.error = 0;
-    if (m_output_level > 0) {
+    if (m_output_level > 0 && m_parallel_mng->commRank() == 0) {
       printInfo();
 
       alien_info([&] {
@@ -579,7 +575,7 @@ MCGInternalLinearSolver::solve(IMatrix const& A, IVector const& b, IVector& x)
   } else {
     m_status.succeeded = false;
     m_status.error = m_mcg_status.m_error;
-    if (m_output_level > 0) {
+    if (m_output_level > 0 && m_parallel_mng->commRank() == 0) {
       printInfo();
 
       alien_info([&] {
