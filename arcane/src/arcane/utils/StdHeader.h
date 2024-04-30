@@ -23,6 +23,15 @@
 #include <cmath>
 #include <locale>
 
+// Temporaire (avril 2024) pour compatibilité avec l'existant.
+// Par la suite il faudra supprimer ces using
+#if !defined(ARCANE_NO_USE_STD_MATH_FUNCTIONS)
+using std::abs;
+using std::cos;
+using std::isnan;
+using std::isinf;
+#endif
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
