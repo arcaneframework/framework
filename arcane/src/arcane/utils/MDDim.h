@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MDDim.h                                                     (C) 2000-2022 */
+/* MDDim.h                                                     (C) 2000-2024 */
 /*                                                                           */
 /* Tag pour les tableaux N-dimensions.                                       */
 /*---------------------------------------------------------------------------*/
@@ -43,7 +43,7 @@ namespace impl::extent
   {
     return doSum(oneIfDynamic(args)...);
   }
-} // namespace impl
+} // namespace impl::extent
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -172,34 +172,39 @@ using MDDim4 = ExtentsV<Int32, DynExtent, DynExtent, DynExtent, DynExtent>;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<>
+template <>
 class MDDimType<0>
 {
  public:
+
   using DimType = MDDim0;
 };
-template<>
+template <>
 class MDDimType<1>
 {
  public:
+
   using DimType = MDDim1;
 };
-template<>
+template <>
 class MDDimType<2>
 {
  public:
+
   using DimType = MDDim2;
 };
-template<>
+template <>
 class MDDimType<3>
 {
  public:
+
   using DimType = MDDim3;
 };
-template<>
+template <>
 class MDDimType<4>
 {
  public:
+
   using DimType = MDDim4;
 };
 
@@ -212,7 +217,7 @@ class MDDimType<4>
 // soit spécifié par une classe au lieu d'un entier
 #define ARCANE_USE_TYPE_FOR_EXTENT
 #define A_MDRANK_TYPE(rank_name) typename rank_name
-#define A_MDRANK_RANK_VALUE(rank_name) (rank_name :: rank())
+#define A_MDRANK_RANK_VALUE(rank_name) (rank_name ::rank())
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
