@@ -144,34 +144,35 @@ TEST(NumArray,Basic2)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-TEST(NumArray,Extents)
+TEST(NumArray, Extents)
 {
   std::cout << "TEST_NUMARRAY Extents\n";
 
-  ASSERT_EQ(1,(ExtentsV<-1,1,1,1>::nb_dynamic));
-  ASSERT_EQ(2,(ExtentsV<-1,DynExtent,2>::nb_dynamic));
-  ASSERT_EQ(1,(ExtentsV<DynExtent,1>::nb_dynamic));
-  ASSERT_EQ(1,(ExtentsV<-1>::nb_dynamic));
-  ASSERT_EQ(2,(ExtentsV<DynExtent,DynExtent,1>::nb_dynamic));
-  ASSERT_EQ(1,MDDim1::nb_dynamic);
-  ASSERT_EQ(2,MDDim2::nb_dynamic);
-  ASSERT_EQ(3,MDDim3::nb_dynamic);;
-  ASSERT_EQ(4,MDDim4::nb_dynamic);
+  ASSERT_EQ(1, (ExtentsV<Int32, -1, 1, 1, 1>::nb_dynamic));
+  ASSERT_EQ(2, (ExtentsV<Int32, -1, DynExtent, 2>::nb_dynamic));
+  ASSERT_EQ(1, (ExtentsV<Int32, DynExtent, 1>::nb_dynamic));
+  ASSERT_EQ(1, (ExtentsV<Int32, -1>::nb_dynamic));
+  ASSERT_EQ(2, (ExtentsV<Int32, DynExtent, DynExtent, 1>::nb_dynamic));
+  ASSERT_EQ(1, MDDim1::nb_dynamic);
+  ASSERT_EQ(2, MDDim2::nb_dynamic);
+  ASSERT_EQ(3, MDDim3::nb_dynamic);
+  ;
+  ASSERT_EQ(4, MDDim4::nb_dynamic);
 
   {
-    NumArray<int,ExtentsV<2,DynExtent,3,DynExtent>> x1;
-    x1.resize({6,7});
-    ASSERT_EQ(x1.extent0(),2);
-    ASSERT_EQ(x1.extent1(),6);
-    ASSERT_EQ(x1.extent2(),3);
-    ASSERT_EQ(x1.extent3(),7);
+    NumArray<int, ExtentsV<Int32, 2, DynExtent, 3, DynExtent>> x1;
+    x1.resize({ 6, 7 });
+    ASSERT_EQ(x1.extent0(), 2);
+    ASSERT_EQ(x1.extent1(), 6);
+    ASSERT_EQ(x1.extent2(), 3);
+    ASSERT_EQ(x1.extent3(), 7);
   }
   {
-    NumArray<int,ExtentsV<2,3,DynExtent>> x1;
+    NumArray<int, ExtentsV<Int32, 2, 3, DynExtent>> x1;
     x1.resize(6);
-    ASSERT_EQ(x1.extent0(),2);
-    ASSERT_EQ(x1.extent1(),3);
-    ASSERT_EQ(x1.extent2(),6);
+    ASSERT_EQ(x1.extent0(), 2);
+    ASSERT_EQ(x1.extent1(), 3);
+    ASSERT_EQ(x1.extent2(), 6);
   }
 }
 
@@ -434,58 +435,58 @@ void _checkLeftLayoutDim3(NumArray3& a)
   ASSERT_EQ(values.smallView(),ref_value.view());
 }
 
-TEST(NumArray3,Layout)
+TEST(NumArray3, Layout)
 {
   std::cout << "TEST_NUMARRAY3 Layout\n";
 
   {
-    NumArray<Real,MDDim3,RightLayout3> a(2,3,5);
+    NumArray<Real, MDDim3, RightLayout3> a(2, 3, 5);
     std::cout << "TEST_NUMARRAY3 RightLayout 1\n";
     _checkRightLayoutDim3(a);
   }
   {
-    NumArray<Real,ExtentsV<DynExtent,3,5>,RightLayout3> a(2);
+    NumArray<Real, ExtentsV<Int32, DynExtent, 3, 5>, RightLayout3> a(2);
     std::cout << "TEST_NUMARRAY3 RightLayout 2\n";
     _checkRightLayoutDim3(a);
   }
   {
-    NumArray<Real,ExtentsV<2,DynExtent,5>,RightLayout3> a(3);
+    NumArray<Real, ExtentsV<Int32, 2, DynExtent, 5>, RightLayout3> a(3);
     std::cout << "TEST_NUMARRAY3 RightLayout 3\n";
     _checkRightLayoutDim3(a);
   }
   {
-    NumArray<Real,ExtentsV<2,3,5>,RightLayout3> a;
+    NumArray<Real, ExtentsV<Int32, 2, 3, 5>, RightLayout3> a;
     std::cout << "TEST_NUMARRAY3 RightLayout 4\n";
     _checkRightLayoutDim3(a);
   }
   {
-    NumArray<Real,ExtentsV<DynExtent,3,DynExtent>,RightLayout3> a(2,5);
+    NumArray<Real, ExtentsV<Int32, DynExtent, 3, DynExtent>, RightLayout3> a(2, 5);
     std::cout << "TEST_NUMARRAY3 RightLayout 5\n";
     _checkRightLayoutDim3(a);
   }
 
   {
-    NumArray<Real,MDDim3,LeftLayout3> a(2,3,5);
+    NumArray<Real, MDDim3, LeftLayout3> a(2, 3, 5);
     std::cout << "TEST_NUMARRAY3 LeftLayout 1\n";
     _checkLeftLayoutDim3(a);
   }
   {
-    NumArray<Real,ExtentsV<DynExtent,3,5>,LeftLayout3> a(2);
+    NumArray<Real, ExtentsV<Int32, DynExtent, 3, 5>, LeftLayout3> a(2);
     std::cout << "TEST_NUMARRAY3 LeftLayout 2\n";
     _checkLeftLayoutDim3(a);
   }
   {
-    NumArray<Real,ExtentsV<2,DynExtent,5>,LeftLayout3> a(3);
+    NumArray<Real, ExtentsV<Int32, 2, DynExtent, 5>, LeftLayout3> a(3);
     std::cout << "TEST_NUMARRAY3 LeftLayout 3\n";
     _checkLeftLayoutDim3(a);
   }
   {
-    NumArray<Real,ExtentsV<2,3,5>,LeftLayout3> a;
+    NumArray<Real, ExtentsV<Int32, 2, 3, 5>, LeftLayout3> a;
     std::cout << "TEST_NUMARRAY3 LeftLayout 4\n";
     _checkLeftLayoutDim3(a);
   }
   {
-    NumArray<Real,ExtentsV<DynExtent,3,DynExtent>,LeftLayout3> a(2,5);
+    NumArray<Real, ExtentsV<Int32, DynExtent, 3, DynExtent>, LeftLayout3> a(2, 5);
     std::cout << "TEST_NUMARRAY3 LeftLayout 5\n";
     _checkLeftLayoutDim3(a);
   }
@@ -623,11 +624,11 @@ template class NumArray<float,MDDim2,LeftLayout>;
 
 template class NumArray<float,MDDim1>;
 
-template class NumArray<float,ExtentsV<7,DynExtent,2,3>,RightLayout>;
-template class NumArray<float,ExtentsV<DynExtent,2,3>,RightLayout>;
-template class NumArray<float,ExtentsV<2,3>>;
-template class NumArray<float,ExtentsV<2>>;
-template class NumArray<float,ExtentsV<3,DynExtent>>;
+template class NumArray<float, ExtentsV<Int32, 7, DynExtent, 2, 3>, RightLayout>;
+template class NumArray<float, ExtentsV<Int32, DynExtent, 2, 3>, RightLayout>;
+template class NumArray<float, ExtentsV<Int32, 2, 3>>;
+template class NumArray<float, ExtentsV<Int32, 2>>;
+template class NumArray<float, ExtentsV<Int32, 3, DynExtent>>;
 
 template class MDSpan<float,MDDim4,RightLayout>;
 template class MDSpan<float,MDDim3,RightLayout>;
@@ -639,11 +640,11 @@ template class MDSpan<float,MDDim2,LeftLayout>;
 
 template class MDSpan<float,MDDim1>;
 
-template class MDSpan<float,ExtentsV<7,DynExtent,2,3>,RightLayout>;
-template class MDSpan<float,ExtentsV<DynExtent,2,3>,RightLayout>;
-template class MDSpan<float,ExtentsV<2,3>>;
-template class MDSpan<float,ExtentsV<2>>;
-template class MDSpan<float,ExtentsV<3,DynExtent>>;
+template class MDSpan<float, ExtentsV<Int32, 7, DynExtent, 2, 3>, RightLayout>;
+template class MDSpan<float, ExtentsV<Int32, DynExtent, 2, 3>, RightLayout>;
+template class MDSpan<float, ExtentsV<Int32, 2, 3>>;
+template class MDSpan<float, ExtentsV<Int32, 2>>;
+template class MDSpan<float, ExtentsV<Int32, 3, DynExtent>>;
 }
 
 /*---------------------------------------------------------------------------*/
