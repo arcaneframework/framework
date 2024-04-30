@@ -388,16 +388,16 @@ _executeTest1(eMemoryRessource mem_kind)
     _doRank2(queue, t1, expected_sum2);
   }
   {
-    NumArray<double, ExtentsV<n1, n2>> t1(mem_kind);
+    NumArray<double, ExtentsV<Int32, n1, n2>> t1(mem_kind);
     _doRank2(queue, t1, expected_sum2);
   }
   {
-    NumArray<double, ExtentsV<DynExtent, n2>> t1(mem_kind);
+    NumArray<double, ExtentsV<Int32, DynExtent, n2>> t1(mem_kind);
     t1.resize(n1);
     _doRank2(queue, t1, expected_sum2);
   }
   {
-    NumArray<double, ExtentsV<n1, DynExtent>> t1(mem_kind);
+    NumArray<double, ExtentsV<Int32, n1, DynExtent>> t1(mem_kind);
     t1.resize(n2);
     _doRank2(queue, t1, expected_sum2);
   }
@@ -414,16 +414,16 @@ _executeTest1(eMemoryRessource mem_kind)
     _doRank3(queue, t1, expected_sum3);
   }
   {
-    NumArray<double, ExtentsV<DynExtent, n2, n3>, LeftLayout> t1(mem_kind);
+    NumArray<double, ExtentsV<Int32, DynExtent, n2, n3>, LeftLayout> t1(mem_kind);
     t1.resize(n1);
     _doRank3(queue, t1, expected_sum3);
   }
   {
-    NumArray<double, ExtentsV<n1, n2, n3>, LeftLayout> t1(mem_kind);
+    NumArray<double, ExtentsV<Int32, n1, n2, n3>, LeftLayout> t1(mem_kind);
     _doRank3(queue, t1, expected_sum3);
   }
   {
-    NumArray<double, ExtentsV<DynExtent, n2, DynExtent>, LeftLayout> t1(mem_kind);
+    NumArray<double, ExtentsV<Int32, DynExtent, n2, DynExtent>, LeftLayout> t1(mem_kind);
     t1.resize(n1, n3);
     _doRank3(queue, t1, expected_sum3);
   }
@@ -435,17 +435,17 @@ _executeTest1(eMemoryRessource mem_kind)
     _doRank4(queue, t1, expected_sum4);
   }
   {
-    NumArray<double, ExtentsV<n1, DynExtent, DynExtent, n4>> t1(mem_kind);
+    NumArray<double, ExtentsV<Int32, n1, DynExtent, DynExtent, n4>> t1(mem_kind);
     t1.resize(n2, n3);
     _doRank4(queue, t1, expected_sum4);
   }
   {
-    NumArray<double, ExtentsV<DynExtent, DynExtent, n3, n4>, LeftLayout> t1(mem_kind);
+    NumArray<double, ExtentsV<Int32, DynExtent, DynExtent, n3, n4>, LeftLayout> t1(mem_kind);
     t1.resize(n1, n2);
     _doRank4(queue, t1, expected_sum4);
   }
   {
-    NumArray<double, ExtentsV<n1, n2, n3, n4>> t1(mem_kind);
+    NumArray<double, ExtentsV<Int32, n1, n2, n3, n4>> t1(mem_kind);
     _doRank4(queue, t1, expected_sum4);
   }
 
@@ -736,68 +736,68 @@ extern "C" void
 _arcaneNumArraySamples()
 {
   //![SampleNumArrayDeclarations]
-  Arcane::NumArray<double,Arcane::MDDim1>  a1; //< Tableau dynamique de rang 1.
-  Arcane::NumArray<double,Arcane::MDDim2>  a2; //< Tableau dynamique de rang 2.
-  Arcane::NumArray<double,Arcane::MDDim3>  a3; //< Tableau dynamique de rang 3.
-  Arcane::NumArray<double,Arcane::MDDim4>  a4; //< Tableau dynamique de rang 4.
+  Arcane::NumArray<double, Arcane::MDDim1> a1; //< Tableau dynamique de rang 1.
+  Arcane::NumArray<double, Arcane::MDDim2> a2; //< Tableau dynamique de rang 2.
+  Arcane::NumArray<double, Arcane::MDDim3> a3; //< Tableau dynamique de rang 3.
+  Arcane::NumArray<double, Arcane::MDDim4> a4; //< Tableau dynamique de rang 4.
   //![SampleNumArrayDeclarations]
 
   //![SampleNumArrayDeclarationsExtented]
   // Tableau 2D avec 2 dimensions statiques (3x4)
-  Arcane::NumArray<double, Arcane::ExtentsV<3,4>> t1;
+  Arcane::NumArray<double, Arcane::ExtentsV<Arcane::Int32, 3, 4>> t1;
   // Tableau 2D avec la première dimension dynamique et la deuxième fixée à 5.
-  Arcane::NumArray<double, Arcane::ExtentsV<Arcane::DynExtent,5>> t2;
+  Arcane::NumArray<double, Arcane::ExtentsV<Arcane::Int32, Arcane::DynExtent, 5>> t2;
   // Tableau 3D avec la première dimension et troisième dimension dynamique et la deuxième fixée à 5.
-  Arcane::NumArray<double, Arcane::ExtentsV<Arcane::DynExtent,7,Arcane::DynExtent>> t3;
+  Arcane::NumArray<double, Arcane::ExtentsV<Arcane::Int32, Arcane::DynExtent, 7, Arcane::DynExtent>> t3;
   //![SampleNumArrayDeclarationsExtented]
 
   //![SampleNumArrayResize]
   // Tableau 2D avec 2 dimensions statiques (3x4)
-  Arcane::NumArray<double, Arcane::ExtentsV<3,4>> t4;
+  Arcane::NumArray<double, Arcane::ExtentsV<Arcane::Int32, 3, 4>> t4;
   // Tableau 2D avec 8x5 valeurs
-  Arcane::NumArray<double, Arcane::ExtentsV<Arcane::DynExtent,5>> t5(8);
+  Arcane::NumArray<double, Arcane::ExtentsV<Arcane::Int32, Arcane::DynExtent, 5>> t5(8);
   // Tableau 3D avec 3x7x9 valeurs
-  Arcane::NumArray<double, Arcane::ExtentsV<Arcane::DynExtent,7,Arcane::DynExtent>> t6(3,9);
+  Arcane::NumArray<double, Arcane::ExtentsV<Arcane::Int32, Arcane::DynExtent, 7, Arcane::DynExtent>> t6(3, 9);
   // Redimensionne t2 avec 6x5 valeurs
   t2.resize(6);
   // Redimensionne t3 avec 2x7x4 valeurs
-  t3.resize(2,4);
+  t3.resize(2, 4);
   // Redimensionne a1 avec 12 valeurs
   a1.resize(12);
   // Redimensionne a2 avec 3x4 valeurs
-  a2.resize(3,4);
+  a2.resize(3, 4);
   // Redimensionne a3 avec 2x7x6 valeurs
-  a3.resize(2,7,6);
+  a3.resize(2, 7, 6);
   // Redimensionne a1 avec 2x9x4x6 valeurs
-  a4.resize(2,9,4,6);
+  a4.resize(2, 9, 4, 6);
   //![SampleNumArrayResize]
 
   //![SampleNumArrayDeclarationsMemory]
   // Tableau 2D avec 2 dimensions statiques (3x4) sur l'accélérateur
-  Arcane::NumArray<double, Arcane::ExtentsV<3,4>> t7(Arcane::eMemoryRessource::Device);
+  Arcane::NumArray<double, Arcane::ExtentsV<Arcane::Int32, 3, 4>> t7(Arcane::eMemoryRessource::Device);
   // Tableau 2D avec 8x5 valeurs alloué sur l'hôte.
-  Arcane::NumArray<double, Arcane::ExtentsV<Arcane::DynExtent,5>> t8(8,Arcane::eMemoryRessource::Host);
+  Arcane::NumArray<double, Arcane::ExtentsV<Arcane::Int32, Arcane::DynExtent, 5>> t8(8, Arcane::eMemoryRessource::Host);
   // Tableau 3D avec 3x7x9 valeurs allouée sur le device.
-  Arcane::NumArray<double, Arcane::ExtentsV<Arcane::DynExtent,7,Arcane::DynExtent>> t9(3,9,Arcane::eMemoryRessource::Device);
+  Arcane::NumArray<double, Arcane::ExtentsV<Arcane::Int32, Arcane::DynExtent, 7, Arcane::DynExtent>> t9(3, 9, Arcane::eMemoryRessource::Device);
   //![SampleNumArrayDeclarationsMemory]
 
   //![SampleNumArrayDeclarationsIndexation]
   Arcane::ArrayIndex<1> i1(2);
-  Arcane::ArrayIndex<2> i2(2,3);
-  Arcane::ArrayIndex<3> i3(1,6,5);
-  Arcane::ArrayIndex<4> i4(1,7,2,4);
+  Arcane::ArrayIndex<2> i2(2, 3);
+  Arcane::ArrayIndex<3> i3(1, 6, 5);
+  Arcane::ArrayIndex<4> i4(1, 7, 2, 4);
   a1(i1) = 3.0;
   a1(2) = 4.0;
   a2(i2) = 2.0;
-  a2(2,3) = 4.0;
+  a2(2, 3) = 4.0;
   a3(i3) = 1.0;
-  a3(1,6,5) = 6.0;
+  a3(1, 6, 5) = 6.0;
   a4(i4) = 1.0;
-  a4(1,7,2,4) = 6.0;
+  a4(1, 7, 2, 4) = 6.0;
   //![SampleNumArrayDeclarationsIndexation]
 
   {
-    Arcane::NumArray<Arcane::Int32, Arcane::MDDim2> aaa(5,4);
+    Arcane::NumArray<Arcane::Int32, Arcane::MDDim2> aaa(5, 4);
     Arcane::MDSpan<Arcane::Int32, Arcane::MDDim1> bbb(aaa.span().slice(0));
 
     Arcane::MDSpan<Arcane::Real, Arcane::MDDim3> a3_span(a3.span());

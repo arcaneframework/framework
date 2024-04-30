@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ArrayExtents.h                                              (C) 2000-2022 */
+/* ArrayExtents.h                                              (C) 2000-2024 */
 /*                                                                           */
 /* Gestion du nombre d'éléments par dimension pour les tableaux N-dimensions.*/
 /*---------------------------------------------------------------------------*/
@@ -21,12 +21,6 @@
 
 #include "arccore/base/Span.h"
 
-/*
- * ATTENTION:
- *
- * Toutes les classes de ce fichier sont expérimentales et l'API n'est pas
- * figée. A NE PAS UTILISER EN DEHORS DE ARCANE.
- */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -204,13 +198,13 @@ class ArrayExtentsBase
 /*!
  * \brief Extent pour les tableaux à 1 dimension.
  */
-template <int X0>
-class ArrayExtents<ExtentsV<X0>>
-: public ArrayExtentsBase<ExtentsV<X0>>
+template <typename SizeType_, int X0>
+class ArrayExtents<ExtentsV<SizeType_, X0>>
+: public ArrayExtentsBase<ExtentsV<SizeType_, X0>>
 {
  public:
 
-  using ExtentsType = ExtentsV<X0>;
+  using ExtentsType = ExtentsV<SizeType_, X0>;
   using BaseClass = ArrayExtentsBase<ExtentsType>;
   using BaseClass::totalNbElement;
   using DynamicDimsType = typename ExtentsType::DynamicDimsType;
@@ -238,13 +232,13 @@ class ArrayExtents<ExtentsV<X0>>
 /*!
  * \brief Extent pour les tableaux à 2 dimensions.
  */
-template <int X0, int X1>
-class ArrayExtents<ExtentsV<X0, X1>>
-: public ArrayExtentsBase<ExtentsV<X0, X1>>
+template <typename SizeType_, int X0, int X1>
+class ArrayExtents<ExtentsV<SizeType_, X0, X1>>
+: public ArrayExtentsBase<ExtentsV<SizeType_, X0, X1>>
 {
  public:
 
-  using ExtentsType = ExtentsV<X0, X1>;
+  using ExtentsType = ExtentsV<SizeType_, X0, X1>;
   using BaseClass = ArrayExtentsBase<ExtentsType>;
   using BaseClass::totalNbElement;
   using DynamicDimsType = typename ExtentsType::DynamicDimsType;
@@ -273,13 +267,13 @@ class ArrayExtents<ExtentsV<X0, X1>>
 /*!
  * \brief Extent pour les tableaux à 3 dimensions.
  */
-template <int X0, int X1, int X2>
-class ArrayExtents<ExtentsV<X0, X1, X2>>
-: public ArrayExtentsBase<ExtentsV<X0, X1, X2>>
+template <typename SizeType_, int X0, int X1, int X2>
+class ArrayExtents<ExtentsV<SizeType_, X0, X1, X2>>
+: public ArrayExtentsBase<ExtentsV<SizeType_, X0, X1, X2>>
 {
  public:
 
-  using ExtentsType = ExtentsV<X0, X1, X2>;
+  using ExtentsType = ExtentsV<SizeType_, X0, X1, X2>;
   using BaseClass = ArrayExtentsBase<ExtentsType>;
   using BaseClass::totalNbElement;
   using DynamicDimsType = typename BaseClass::DynamicDimsType;
@@ -309,13 +303,13 @@ class ArrayExtents<ExtentsV<X0, X1, X2>>
 /*!
  * \brief Extent pour les tableaux à 4 dimensions.
  */
-template <int X0, int X1, int X2, int X3>
-class ArrayExtents<ExtentsV<X0, X1, X2, X3>>
-: public ArrayExtentsBase<ExtentsV<X0, X1, X2, X3>>
+template <typename SizeType_, int X0, int X1, int X2, int X3>
+class ArrayExtents<ExtentsV<SizeType_, X0, X1, X2, X3>>
+: public ArrayExtentsBase<ExtentsV<SizeType_, X0, X1, X2, X3>>
 {
  public:
 
-  using ExtentsType = ExtentsV<X0, X1, X2, X3>;
+  using ExtentsType = ExtentsV<SizeType_, X0, X1, X2, X3>;
   using BaseClass = ArrayExtentsBase<ExtentsType>;
   using BaseClass::totalNbElement;
   using DynamicDimsType = typename BaseClass::DynamicDimsType;
@@ -349,13 +343,13 @@ class ArrayExtents<ExtentsV<X0, X1, X2, X3>>
 /*!
  * \brief Extent et Offset pour les tableaux à 1 dimension.
  */
-template <int X0, typename LayoutType>
-class ArrayExtentsWithOffset<ExtentsV<X0>, LayoutType>
-: private ArrayExtents<ExtentsV<X0>>
+template <typename SizeType_, int X0, typename LayoutType>
+class ArrayExtentsWithOffset<ExtentsV<SizeType_, X0>, LayoutType>
+: private ArrayExtents<ExtentsV<SizeType_, X0>>
 {
  public:
 
-  using ExtentsType = ExtentsV<X0>;
+  using ExtentsType = ExtentsV<SizeType_, X0>;
   using BaseClass = ArrayExtents<ExtentsType>;
   using BaseClass::asStdArray;
   using BaseClass::extent0;
@@ -399,13 +393,13 @@ class ArrayExtentsWithOffset<ExtentsV<X0>, LayoutType>
 /*!
  * \brief Extent et Offset pour les tableaux à 2 dimensions.
  */
-template <int X0, int X1, typename LayoutType>
-class ArrayExtentsWithOffset<ExtentsV<X0, X1>, LayoutType>
-: private ArrayExtents<ExtentsV<X0, X1>>
+template <typename SizeType_, int X0, int X1, typename LayoutType>
+class ArrayExtentsWithOffset<ExtentsV<SizeType_, X0, X1>, LayoutType>
+: private ArrayExtents<ExtentsV<SizeType_, X0, X1>>
 {
  public:
 
-  using ExtentsType = ExtentsV<X0, X1>;
+  using ExtentsType = ExtentsV<SizeType_, X0, X1>;
   using BaseClass = ArrayExtents<ExtentsType>;
   using BaseClass::asStdArray;
   using BaseClass::extent0;
@@ -449,13 +443,13 @@ class ArrayExtentsWithOffset<ExtentsV<X0, X1>, LayoutType>
 /*!
  * \brief Extent et Offset pour les tableaux à 3 dimensions.
  */
-template <int X0, int X1, int X2, typename LayoutType>
-class ArrayExtentsWithOffset<ExtentsV<X0, X1, X2>, LayoutType>
-: private ArrayExtents<ExtentsV<X0, X1, X2>>
+template <typename SizeType_, int X0, int X1, int X2, typename LayoutType>
+class ArrayExtentsWithOffset<ExtentsV<SizeType_, X0, X1, X2>, LayoutType>
+: private ArrayExtents<ExtentsV<SizeType_, X0, X1, X2>>
 {
  public:
 
-  using ExtentsType = ExtentsV<X0, X1, X2>;
+  using ExtentsType = ExtentsV<SizeType_, X0, X1, X2>;
   using BaseClass = ArrayExtents<ExtentsType>;
   using BaseClass::asStdArray;
   using BaseClass::extent0;
@@ -514,13 +508,13 @@ class ArrayExtentsWithOffset<ExtentsV<X0, X1, X2>, LayoutType>
 /*!
  * \brief Extent et Offset pour les tableaux à 4 dimensions.
  */
-template <int X0, int X1, int X2, int X3, typename LayoutType>
-class ArrayExtentsWithOffset<ExtentsV<X0, X1, X2, X3>, LayoutType>
-: private ArrayExtents<ExtentsV<X0, X1, X2, X3>>
+template <typename SizeType_, int X0, int X1, int X2, int X3, typename LayoutType>
+class ArrayExtentsWithOffset<ExtentsV<SizeType_, X0, X1, X2, X3>, LayoutType>
+: private ArrayExtents<ExtentsV<SizeType_, X0, X1, X2, X3>>
 {
  public:
 
-  using ExtentsType = ExtentsV<X0, X1, X2, X3>;
+  using ExtentsType = ExtentsV<SizeType_, X0, X1, X2, X3>;
   using BaseClass = ArrayExtents<ExtentsType>;
   using BaseClass::asStdArray;
   using BaseClass::extent0;
