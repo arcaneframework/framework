@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ArrayIndex.h                                                (C) 2000-2022 */
+/* ArrayIndex.h                                                (C) 2000-2024 */
 /*                                                                           */
 /* Gestion des indices des tableaux multi-dimensionnels.                     */
 /*---------------------------------------------------------------------------*/
@@ -35,7 +35,7 @@ namespace Arcane
 /*!
  * \brief Classe de base de la gestion des indices d'un tableau N-dimension.
  */
-template <int RankValue>
+template <int RankValue, typename IndexType_>
 class ArrayIndexBase
 {
  protected:
@@ -80,35 +80,38 @@ class ArrayIndexBase
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template <>
-class ArrayIndex<0>
-: public ArrayIndexBase<0>
+template <typename IndexType_>
+class ArrayIndex<0, IndexType_>
+: public ArrayIndexBase<0, IndexType_>
 {
  public:
 
   ArrayIndex() = default;
   ARCCORE_HOST_DEVICE constexpr ArrayIndex(std::array<Int32, 0> _id)
-  : ArrayIndexBase<0>(_id)
+  : ArrayIndexBase<0, IndexType_>(_id)
   {}
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template <>
-class ArrayIndex<1>
-: public ArrayIndexBase<1>
+template <typename IndexType_>
+class ArrayIndex<1, IndexType_>
+: public ArrayIndexBase<1, IndexType_>
 {
+  using BaseClass = ArrayIndexBase<1, IndexType_>;
+  using BaseClass::m_indexes;
+
  public:
 
   ArrayIndex() = default;
   ARCCORE_HOST_DEVICE constexpr ArrayIndex(Int32 _id0)
-  : ArrayIndexBase<1>()
+  : BaseClass()
   {
     m_indexes[0] = _id0;
   }
   ARCCORE_HOST_DEVICE constexpr ArrayIndex(std::array<Int32, 1> _id)
-  : ArrayIndexBase<1>(_id)
+  : BaseClass(_id)
   {}
 
  public:
@@ -120,21 +123,24 @@ class ArrayIndex<1>
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template <>
-class ArrayIndex<2>
-: public ArrayIndexBase<2>
+template <typename IndexType_>
+class ArrayIndex<2, IndexType_>
+: public ArrayIndexBase<2, IndexType_>
 {
+  using BaseClass = ArrayIndexBase<2, IndexType_>;
+  using BaseClass::m_indexes;
+
  public:
 
   ArrayIndex() = default;
   ARCCORE_HOST_DEVICE constexpr ArrayIndex(Int32 _id0, Int32 _id1)
-  : ArrayIndexBase<2>()
+  : BaseClass()
   {
     m_indexes[0] = _id0;
     m_indexes[1] = _id1;
   }
   ARCCORE_HOST_DEVICE constexpr ArrayIndex(std::array<Int32, 2> _id)
-  : ArrayIndexBase<2>(_id)
+  : BaseClass(_id)
   {}
 
  public:
@@ -148,22 +154,25 @@ class ArrayIndex<2>
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template <>
-class ArrayIndex<3>
-: public ArrayIndexBase<3>
+template <typename IndexType_>
+class ArrayIndex<3, IndexType_>
+: public ArrayIndexBase<3, IndexType_>
 {
+  using BaseClass = ArrayIndexBase<3, IndexType_>;
+  using BaseClass::m_indexes;
+
  public:
 
   ArrayIndex() = default;
   ARCCORE_HOST_DEVICE constexpr ArrayIndex(Int32 _id0, Int32 _id1, Int32 _id2)
-  : ArrayIndexBase<3>()
+  : BaseClass()
   {
     m_indexes[0] = _id0;
     m_indexes[1] = _id1;
     m_indexes[2] = _id2;
   }
   ARCCORE_HOST_DEVICE constexpr ArrayIndex(std::array<Int32, 3> _id)
-  : ArrayIndexBase<3>(_id)
+  : BaseClass(_id)
   {}
 
  public:
@@ -179,15 +188,18 @@ class ArrayIndex<3>
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template <>
-class ArrayIndex<4>
-: public ArrayIndexBase<4>
+template <typename IndexType_>
+class ArrayIndex<4, IndexType_>
+: public ArrayIndexBase<4, IndexType_>
 {
+  using BaseClass = ArrayIndexBase<4, IndexType_>;
+  using BaseClass::m_indexes;
+
  public:
 
   ArrayIndex() = default;
   ARCCORE_HOST_DEVICE constexpr ArrayIndex(Int32 _id0, Int32 _id1, Int32 _id2, Int32 _id3)
-  : ArrayIndexBase<4>()
+  : ArrayIndexBase<4, IndexType_>()
   {
     m_indexes[0] = _id0;
     m_indexes[1] = _id1;
@@ -195,7 +207,7 @@ class ArrayIndex<4>
     m_indexes[3] = _id3;
   }
   ARCCORE_HOST_DEVICE constexpr ArrayIndex(std::array<Int32, 4> _id)
-  : ArrayIndexBase<4>(_id)
+  : ArrayIndexBase<4, IndexType_>(_id)
   {}
 
  public:

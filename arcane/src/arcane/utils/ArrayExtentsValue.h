@@ -41,7 +41,7 @@ fastmod(T a, T b)
  *
  * La valeur de la dimension est donnée en paramètre template
  */
-template <Int32 Size>
+template <Int32 Size, typename IndexType_ = Int32>
 class ExtentValue
 {
  public:
@@ -55,8 +55,8 @@ class ExtentValue
  *
  * La valeur de la dimension est conservée dans \a v.
  */
-template <>
-class ExtentValue<DynExtent>
+template <typename IndexType_>
+class ExtentValue<DynExtent, IndexType_>
 {
  public:
 
@@ -64,7 +64,7 @@ class ExtentValue<DynExtent>
 
  public:
 
-  Int32 v = 0;
+  IndexType_ v = 0;
 };
 
 /*---------------------------------------------------------------------------*/
