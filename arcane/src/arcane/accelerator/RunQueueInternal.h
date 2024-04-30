@@ -75,16 +75,36 @@ ARCCORE_HOST_DEVICE auto privatize(const T& item) -> Privatizer<T>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+/*!
+ * \brief Classe pour appliquer la finalisation des réductions.
+ */
+class KernelReducerHelper
+{
+ public:
+
+  //! Applique les fonctors des arguments additionnels.
+  template <typename... ReducerArgs> static inline ARCCORE_DEVICE void
+  applyReducerArgs(Int32 index, ReducerArgs&... reducer_args)
+  {
+    // Applique les réductions
+    (reducer_args._internalExecWorkItem(index), ...);
+  }
+
+#if defined(ARCANE_COMPILING_SYCL)
+  //! Applique les fonctors des arguments additionnels.
+  template <typename... ReducerArgs> static inline ARCCORE_HOST_DEVICE void
+  applyReducerArgs(sycl::nd_item<1> x, ReducerArgs&... reducer_args)
+  {
+    // Applique les réductions
+    (reducer_args._internalExecWorkItem(x), ...);
+  }
+#endif
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 #if defined(ARCANE_COMPILING_CUDA) || defined(ARCANE_COMPILING_HIP)
-
-//! Applique les fonctors des arguments additionnels.
-template <typename... ReducerArgs> inline __device__ void
-doKernelReducerArgs(Int32 index, ReducerArgs&... reducer_args)
-{
-  // Applique les réductions
-  (reducer_args._internalExecWorkItem(index), ...);
-}
 
 template <typename BuilderType, typename Lambda> __global__ void
 doIndirectGPULambda(SmallSpan<const Int32> ids, Lambda func)
@@ -144,7 +164,7 @@ doIndirectGPULambda2(SmallSpan<const Int32> ids, Lambda func, ReducerArgs... red
     LocalIdType lid(ids[i]);
     body(BuilderType::create(i, lid), reducer_args...);
   }
-  doKernelReducerArgs(i, reducer_args...);
+  KernelReducerHelper::applyReducerArgs(i, reducer_args...);
 }
 
 template <typename ItemType, typename Lambda, typename... ReducerArgs> __global__ void
@@ -158,7 +178,7 @@ doDirectGPULambda2(Int32 vsize, Lambda func, ReducerArgs... reducer_args)
   if (i < vsize) {
     body(i, reducer_args...);
   }
-  doKernelReducerArgs(i, reducer_args...);
+  KernelReducerHelper::applyReducerArgs(i, reducer_args...);
 }
 
 template <typename LoopBoundType, typename Lambda, typename... ReducerArgs> __global__ void
@@ -172,7 +192,7 @@ doDirectGPULambdaArrayBounds2(LoopBoundType bounds, Lambda func, ReducerArgs... 
   if (i < bounds.nbElement()) {
     body(bounds.getIndices(i), reducer_args...);
   }
-  doKernelReducerArgs(i, reducer_args...);
+  KernelReducerHelper::applyReducerArgs(i, reducer_args...);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -200,7 +220,7 @@ class DoDirectSYCLLambdaArrayBounds
     if (i < bounds.nbElement()) {
       body(bounds.getIndices(i), reducer_args...);
     }
-    (reducer_args._internalExecWorkItem(x), ...);
+    KernelReducerHelper::applyReducerArgs(x, reducer_args...);
   }
   void operator()(sycl::id<1> x, LoopBoundType bounds, Lambda func) const
   {
@@ -232,7 +252,7 @@ class DoIndirectSYCLLambda
       LocalIdType lid(ids[i]);
       body(BuilderType::create(i, lid), reducer_args...);
     }
-    (reducer_args._internalExecWorkItem(x), ...);
+    KernelReducerHelper::applyReducerArgs(x, reducer_args...);
   }
   void operator()(sycl::id<1> x, SmallSpan<const Int32> ids, Lambda func) const
   {

@@ -151,9 +151,9 @@ endUpdateAdd(const ComponentItemListBuilder& builder, RunQueue& queue)
   Int32 max_index_in_multiple = m_max_index_in_multiple_array;
   if (use_v2) {
     auto command = makeCommand(queue);
-    Arcane::Accelerator::ReducerMax<Int32> max_index_reducer(command);
+    Arcane::Accelerator::ReducerMax2<Int32> max_index_reducer(command);
     Int32 max_to_add = math::max(nb_pure_to_add, nb_partial_to_add);
-    command << RUNCOMMAND_LOOP1(iter, max_to_add)
+    command << RUNCOMMAND_LOOP1_EX(iter, max_to_add, max_index_reducer)
     {
       auto [i] = iter();
       if (i < nb_pure_to_add) {
@@ -163,10 +163,10 @@ endUpdateAdd(const ComponentItemListBuilder& builder, RunQueue& queue)
       if (i < nb_partial_to_add) {
         local_ids_view[nb_pure_to_add + i] = local_ids_in_multiple[i];
         matvar_indexes[nb_pure_to_add + i] = partial_matvar[i];
-        max_index_reducer.max(partial_matvar[i].valueIndex());
+        max_index_reducer.combine(partial_matvar[i].valueIndex());
       }
     };
-    max_index_in_multiple = math::max(max_index_reducer.reduce(), m_max_index_in_multiple_array);
+    max_index_in_multiple = math::max(max_index_reducer.reducedValue(), m_max_index_in_multiple_array);
   }
   else {
     for (Integer i = 0, n = nb_pure_to_add; i < n; ++i) {

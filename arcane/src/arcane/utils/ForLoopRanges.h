@@ -19,6 +19,25 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+namespace Arcane::impl
+{
+/*!
+ * \brief Classe pour appliquer la finalisation des réductions.
+ */
+class HostReducerHelper
+{
+ public:
+
+  //! Applique les fonctors des arguments additionnels.
+  template <typename... ReducerArgs> static inline void
+  applyReducerArgs(ReducerArgs&... reducer_args)
+  {
+    // Applique les réductions
+    (reducer_args._internalReduceHost(), ...);
+  }
+};
+}
+
 namespace Arcane
 {
 
@@ -220,7 +239,7 @@ arcaneSequentialFor(LoopBoundType<1> bounds, const Lambda& func, ReducerArgs... 
 {
   for (Int32 i0 = bounds.template lowerBound<0>(); i0 < bounds.template upperBound<0>(); ++i0)
     func(ArrayBoundsIndex<1>(i0), reducer_args...);
-  (reducer_args._internalReduceHost(), ...);
+  impl::HostReducerHelper::applyReducerArgs(reducer_args...);
 }
 
 //! Applique le fonctor \a func sur une boucle 2D.

@@ -1,17 +1,15 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* DomLibXml2.cc                                               (C) 2000-2023 */
+/* DomLibXml2.cc                                               (C) 2000-2024 */
 /*                                                                           */
 /* Encapsulation du DOM de libxml2.                                          */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-#include "arcane/utils/ArcanePrecomp.h"
 
 #include "arcane/utils/NotImplementedException.h"
 #include "arcane/utils/Array.h"
@@ -24,12 +22,12 @@
 #include "arcane/utils/StringBuilder.h"
 #include "arcane/utils/CheckedConvert.h"
 
-#include "arcane/Dom.h"
-#include "arcane/DomUtils.h"
-#include "arcane/ISharedReference.h"
-#include "arcane/XmlNode.h"
-#include "arcane/IXmlDocumentHolder.h"
-#include "arcane/XmlException.h"
+#include "arcane/core/Dom.h"
+#include "arcane/core/DomUtils.h"
+#include "arcane/core/ISharedReference.h"
+#include "arcane/core/XmlNode.h"
+#include "arcane/core/IXmlDocumentHolder.h"
+#include "arcane/core/XmlException.h"
 
 #include <libxml/tree.h>
 #include <libxml/parser.h>
@@ -41,8 +39,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-ARCANE_BEGIN_NAMESPACE_DOM
+namespace Arcane::dom
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -623,8 +621,10 @@ _save(ByteArray& bytes,const Document& document,int indent_level)
   // nouveau mécanisme.
   xmlDocPtr doc = impl(document._impl());
   xmlBufferPtr buf = ::xmlBufferCreate();
-  // TODO: tenir compte de indent_level
+
   int options = 0;
+  if (indent_level > 0)
+    options = XML_SAVE_FORMAT;
   xmlSaveCtxtPtr ctx = ::xmlSaveToBuffer(buf,nullptr,options);
   (void)::xmlSaveDoc(ctx,doc);
   (void)::xmlSaveClose(ctx);
@@ -2511,8 +2511,7 @@ terminate()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE_DOM
-ARCANE_END_NAMESPACE
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
