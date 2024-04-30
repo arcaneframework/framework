@@ -72,6 +72,12 @@ loadPackage(NAME HPDDM)
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
 
+# Packages already loaded for Arcane : added here for dll copy on Windows
+loadPackage(NAME Zoltan)
+
+# ----------------------------------------------------------------------------
+# ----------------------------------------------------------------------------
+
 # arccon fix
 if (TARGET arcconpkg_Hypre)
   add_library(hypre ALIAS arcconpkg_Hypre)
