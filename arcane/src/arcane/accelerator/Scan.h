@@ -23,8 +23,6 @@
 #include "arcane/accelerator/CommonUtils.h"
 #include "arcane/accelerator/RunCommandLaunchInfo.h"
 
-#include <execution>
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
