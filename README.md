@@ -107,7 +107,6 @@ Vous pouvez aussi installer directement CMake via [snap](https://snapcraft.io/):
 sudo snap install --classic cmake
 ~~~
 
-
 ### Environnement `.Net`
 
 L'environnement [.Net 6.0](https://dotnet.microsoft.com) est nécessaire
@@ -192,6 +191,61 @@ sudo apt-get install -y libtrilinos-ifpack-dev libtrilinos-anasazi-dev \
   libtrilinos-intrepid2-dev libtrilinos-teko-dev libtrilinos-sacado-dev \
   libtrilinos-stratimikos-dev libtrilinos-shylu-dev \
   libtrilinos-zoltan-dev libtrilinos-zoltan2-dev
+~~~
+
+### Ubuntu 24.04 via les packages systèmes
+
+Les commandes suivantes permettent d'installer les dépendances
+nécessaires pour Arcane et Alien (ainsi que les dépendances optionnelles `HDF5` et `ParMetis`):
+
+~~~{sh}
+sudo apt-get update
+sudo apt-get install -y apt-utils build-essential iputils-ping python3 \
+  git gfortran libglib2.0-dev libxml2-dev libhdf5-openmpi-dev \
+  libparmetis-dev cmake
+
+# .Net 6
+sudo apt-get install -y software-properties-common
+sudo add-apt-repository ppa:dotnet/backports
+sudo apt-get install -y dotnet-sdk-6.0
+
+# boost (pour Alien)
+sudo apt-get install -y libboost-program-options-dev
+~~~
+
+Il est aussi possible d'installer les packages optionnels suivants:
+
+~~~{sh}
+# Pour google test:
+sudo apt-get install -y googletest
+
+# Pour Ninja:
+sudo apt-get install -y ninja-build
+
+# Pour Hypre
+sudo apt-get install -y libhypre-dev
+
+# Pour PETSc
+sudo apt-get install -y libpetsc-real-dev
+
+# Pour Trilinos
+sudo apt-get install -y libtrilinos-teuchos-dev libtrilinos-epetra-dev \
+  libtrilinos-tpetra-dev libtrilinos-kokkos-dev libtrilinos-ifpack2-dev \
+  libtrilinos-ifpack-dev libtrilinos-amesos-dev libtrilinos-galeri-dev \
+  libtrilinos-xpetra-dev libtrilinos-epetraext-dev \
+  libtrilinos-triutils-dev libtrilinos-thyra-dev \
+  libtrilinos-kokkos-kernels-dev libtrilinos-rtop-dev \
+  libtrilinos-isorropia-dev libtrilinos-belos-dev
+
+# Pour Zoltan
+sudo apt-get install -y libtrilinos-ifpack-dev libtrilinos-anasazi-dev \
+  libtrilinos-amesos2-dev libtrilinos-shards-dev libtrilinos-muelu-dev \
+  libtrilinos-intrepid2-dev libtrilinos-teko-dev libtrilinos-sacado-dev \
+  libtrilinos-stratimikos-dev libtrilinos-shylu-dev \
+  libtrilinos-zoltan-dev libtrilinos-zoltan2-dev
+
+# Pour le wrapper C#:
+sudo apt-get install -y swig
 ~~~
 
 ### Arch Linux/Manjaro via Pacman/YAY
