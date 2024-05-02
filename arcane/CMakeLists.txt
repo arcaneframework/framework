@@ -922,7 +922,7 @@ endif()
 
 if (ARCANE_HAS_ACCELERATOR)
   if (ARCANE_ACCELERATOR_MODE STREQUAL "ROCMHIP")
-    # Il faut au moins CMake 3.21 pour qu'il reconnaise langage HIP
+    # Il faut au moins CMake 3.21 pour qu'il reconnaisse langage HIP
     enable_language(HIP)
     add_subdirectory(src/arcane/accelerator/hip)
   elseif(ARCANE_ACCELERATOR_MODE STREQUAL "CUDANVCC")
@@ -933,6 +933,9 @@ if (ARCANE_HAS_ACCELERATOR)
     # A partir de CMake 3.18, il faut spécifier une architecture GPU pour CUDA
     if (NOT CMAKE_CUDA_ARCHITECTURES)
       set(CMAKE_CUDA_ARCHITECTURES 50 60 70 80)
+    endif()
+    if (NOT CMAKE_CUDA_HOST_COMPILER)
+      set(CMAKE_CUDA_HOST_COMPILER "${CMAKE_CXX_COMPILER}")
     endif()
     enable_language(CUDA)
     add_subdirectory(src/arcane/accelerator/cuda)
