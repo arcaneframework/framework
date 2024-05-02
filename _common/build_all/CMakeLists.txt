@@ -99,6 +99,7 @@ endif()
 
 if (Alien IN_LIST ARCANEFRAMEWORK_BUILD_COMPONENTS)
   message(STATUS "Configuring Alien")
+  set(ARCANEFRAMEWORK_BINARY_DIR ${CMAKE_BINARY_DIR})
   add_subdirectory(${ARCFRAMEWORK_ROOT}/alien alien)
 endif()
 
