@@ -29,6 +29,7 @@ set( ARCANE_SOURCES
   RunQueueInternal.cc
   RunQueueInternal.h
   Scan.h
+  ScanImpl.h
   Filter.h
   Filterer.cc
   Partitioner.h
