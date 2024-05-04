@@ -232,14 +232,11 @@ _executeTestDataType(Int32 nb_iteration)
     _executeTestReduceMax(nb_iteration, t1, max_value);
   }
 
-  // Les tests suivants ne passent pas encore avec SYCL
-  if (m_queue.executionPolicy() != eExecutionPolicy::SYCL) {
-    // Utilisation des kernels spécifiques
-    _executeTestReduceDirect(nb_iteration, t1, sum, min_value, max_value);
+  // Utilisation des kernels spécifiques
+  _executeTestReduceDirect(nb_iteration, t1, sum, min_value, max_value);
 
-    // Utilisation des kernels spécifiques avec index
-    _executeTestReduceWithIndex(nb_iteration, t1, sum, min_value, max_value);
-  }
+  // Utilisation des kernels spécifiques avec index
+  _executeTestReduceWithIndex(nb_iteration, t1, sum, min_value, max_value);
 }
 
 /*---------------------------------------------------------------------------*/
