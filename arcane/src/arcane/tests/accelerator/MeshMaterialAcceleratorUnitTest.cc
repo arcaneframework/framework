@@ -52,6 +52,7 @@
 #include "arcane/accelerator/MaterialVariableViews.h"
 #include "arcane/accelerator/RunCommandMaterialEnumerate.h"
 #include "arcane/accelerator/AsyncRunQueuePool.h"
+#include "arcane/accelerator/Reduce.h"
 
 #include "arcane/accelerator/RunCommandEnumerate.h"
 
@@ -485,28 +486,33 @@ _executeTest2(Integer nb_z)
   MaterialVariableCellReal& c_ref(m_mat_c_ref);
   MaterialVariableCellReal& d_ref(m_mat_d_ref);
   MaterialVariableCellReal& e_ref(m_mat_e_ref);
-
+  UniqueArray<Real> ref_reduced_values(m_mm_mng->environments().size());
   // Ref CPU
   CellToAllEnvCellConverter allenvcell_converter(m_mm_mng);
-  for (Integer z=0, iz=nb_z; z<iz; ++z) {
-    ENUMERATE_ENV(ienv, m_mm_mng) {
+  for (Integer z = 0, iz = nb_z; z < iz; ++z) {
+    ENUMERATE_ENV (ienv, m_mm_mng) {
       IMeshEnvironment* env = *ienv;
       EnvCellVectorView envcellsv = env->envView();
-      ENUMERATE_ENVCELL(iev,envcellsv)
-      {
+      ENUMERATE_ENVCELL (iev, envcellsv) {
         Cell cell = (*iev).globalCell();
         a_ref[iev] = b_ref[iev] * e_ref[cell];
         AllEnvCell all_env_cell = allenvcell_converter[cell];
-        ENUMERATE_CELL_ENVCELL(ienvcell,all_env_cell){
+        ENUMERATE_CELL_ENVCELL (ienvcell, all_env_cell) {
           EnvCell env_cell = *ienvcell;
           Int32 env_id = env_cell.environmentId();
           a_ref[iev] += env_id;
         }
       }
-      ENUMERATE_ENVCELL(iev,envcellsv)
-      {
+      Real total_cref = 0.0;
+      ENUMERATE_ENVCELL (iev, envcellsv) {
         Cell cell = (*iev).globalCell();
-        c_ref[iev] += a_ref[iev] * d_ref[cell];
+        Real value_to_add = a_ref[iev] * d_ref[cell];
+        c_ref[iev] += value_to_add;
+        total_cref += value_to_add;
+      }
+      if (z == 0) {
+        ref_reduced_values[env->id()] = total_cref;
+        info() << "REF_REDUCED_VALUE=" << total_cref << " env=" << env->name();
       }
     }
   }
@@ -526,17 +532,18 @@ _executeTest2(Integer nb_z)
     auto in_env_b = ax::viewIn(cmd, m_env_b);
     auto out_env_c = ax::viewOut(cmd, m_env_c);
 
-    for (Integer z=0, iz=nb_z; z<iz; ++z) {
-      ENUMERATE_ENV(ienv, m_mm_mng) {
+    for (Integer z = 0, iz = nb_z; z < iz; ++z) {
+      ENUMERATE_ENV (ienv, m_mm_mng) {
         IMeshEnvironment* env = *ienv;
-        EnvCellVectorView envcellsv = env->envView();    
+        EnvCellVectorView envcellsv = env->envView();
         {
-          cmd << RUNCOMMAND_MAT_ENUMERATE(EnvAndGlobalCell, evi, envcellsv) {
+          cmd << RUNCOMMAND_MAT_ENUMERATE(EnvAndGlobalCell, evi, envcellsv)
+          {
             auto [mvi, cid] = evi();
             inout_a[mvi] = in_b[mvi] * in_e[cid];
             inout_env_a[mvi] = in_env_b[mvi] * in_e[cid];
             AllEnvCell all_env_cell = allenvcell_converter[cid];
-            ENUMERATE_CELL_ENVCELL(ienvcell,all_env_cell){
+            ENUMERATE_CELL_ENVCELL (ienvcell, all_env_cell) {
               EnvCell env_cell = *ienvcell;
               Int32 env_id = env_cell.environmentId();
               inout_a[mvi] += env_id;
@@ -545,11 +552,22 @@ _executeTest2(Integer nb_z)
           };
         }
         {
-          cmd << RUNCOMMAND_MAT_ENUMERATE(EnvAndGlobalCell, evi, envcellsv) {
+          ax::ReducerSum2<Real> reducer2(cmd);
+          cmd << RUNCOMMAND_MAT_ENUMERATE_EX(EnvAndGlobalCell, evi, envcellsv, reducer2)
+          {
             auto [mvi, cid] = evi();
-            out_c[mvi] += inout_a[mvi] * in_d[cid];
+            Real value_to_add = inout_env_a[mvi] * in_d[cid];
+            out_c[mvi] += value_to_add;
             out_env_c[mvi] += inout_env_a[mvi] * in_d[cid];
+            reducer2.combine(value_to_add);
           };
+          Real reduced_value = reducer2.reducedValue();
+          if (z == 0) {
+            Real ref_value = ref_reduced_values[env->id()];
+            info() << "REDUCED_VALUE=" << reduced_value << " ref=" << ref_value << " env=" << env->name();
+            if (!math::isNearlyEqualWithEpsilon(reduced_value, ref_value, 1.0e-14))
+              ARCANE_FATAL("Bad value v={0} expected={1}", reduced_value, ref_value);
+          }
         }
       }
     }
