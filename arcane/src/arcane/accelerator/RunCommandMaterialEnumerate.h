@@ -472,6 +472,7 @@ class RunCommandMatItemEnumeratorTraitsT<Arcane::Materials::EnvAndGlobalCell>
 
   using EnumeratorType = EnvAndGlobalCellRunCommand::Accessor;
   using ContainerType = EnvAndGlobalCellRunCommand::Container;
+  using MatCommandType = EnvAndGlobalCellRunCommand;
 
  public:
 
@@ -496,6 +497,7 @@ class RunCommandMatItemEnumeratorTraitsT<Arcane::Materials::MatAndGlobalCell>
 
   using EnumeratorType = MatAndGlobalCellRunCommand::Accessor;
   using ContainerType = MatAndGlobalCellRunCommand::Container;
+  using MatCommandType = MatAndGlobalCellRunCommand;
 
  public:
 
@@ -520,6 +522,7 @@ class RunCommandMatItemEnumeratorTraitsT<Arcane::Materials::EnvCell>
 
   using EnumeratorType = Arcane::Materials::ComponentItemLocalId;
   using ContainerType = EnvCellRunCommand::Container;
+  using MatCommandType = EnvCellRunCommand;
 
  public:
 
@@ -544,6 +547,7 @@ class RunCommandMatItemEnumeratorTraitsT<Arcane::Materials::MatCell>
 
   using EnumeratorType = Arcane::Materials::ComponentItemLocalId;
   using ContainerType = MatCellRunCommand::Container;
+  using MatCommandType = MatCellRunCommand;
 
  public:
 
@@ -616,18 +620,51 @@ class DoMatContainerSYCLLambda
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template <typename MatCommandType>
+template <typename TraitsType, typename... ReducerArgs>
+class GenericMatCommandArgs
+{
+ public:
+
+  using ContainerType = typename TraitsType::ContainerType;
+  using MatCommandType = typename TraitsType::MatCommandType;
+
+ public:
+
+  explicit GenericMatCommandArgs(const ContainerType& container, const ReducerArgs&... reducer_args)
+  : m_container(container)
+  , m_reducer_args(reducer_args...)
+  {}
+
+ public:
+
+  ContainerType m_container;
+  std::tuple<ReducerArgs...> m_reducer_args;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template <typename MatCommandType, typename... ReducerArgs>
 class GenericMatCommand
 {
+ public:
+
+  using ContainerType = typename MatCommandType::Container;
+
  public:
 
   explicit GenericMatCommand(const MatCommandType& mat_command)
   : m_mat_command(mat_command)
   {}
+  explicit GenericMatCommand(const MatCommandType& mat_command, const std::tuple<ReducerArgs...>& reducer_args)
+  : m_mat_command(mat_command)
+  , m_reducer_args(reducer_args)
+  {}
 
  public:
 
   MatCommandType m_mat_command;
+  std::tuple<ReducerArgs...> m_reducer_args;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -684,10 +721,18 @@ _applyEnvCells(RunCommand& command, ContainerType items, const Lambda& func)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template <typename MatCommandType, typename Lambda>
-void operator<<(const GenericMatCommand<MatCommandType>& c, const Lambda& func)
+template <typename MatCommandType, typename... ReducerArgs, typename Lambda>
+void operator<<(const GenericMatCommand<MatCommandType, ReducerArgs...>& c, const Lambda& func)
 {
   impl::_applyEnvCells(c.m_mat_command.m_command, c.m_mat_command.m_items, func);
+}
+
+template <typename MatItemType, typename MatItemContainerType, typename... ReducerArgs> auto
+makeExtendedMatItemEnumeratorLoop(const MatItemContainerType& container,
+                                  const ReducerArgs&... reducer_args)
+{
+  using TraitsType = RunCommandMatItemEnumeratorTraitsT<MatItemType>;
+  return GenericMatCommandArgs<TraitsType, ReducerArgs...>(TraitsType::createContainer(container), reducer_args...);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -700,6 +745,13 @@ void operator<<(const GenericMatCommand<MatCommandType>& c, const Lambda& func)
 
 namespace Arcane::Accelerator
 {
+
+template <typename TraitsType, typename... ReducerArgs> auto
+operator<<(RunCommand& command, const impl::GenericMatCommandArgs<TraitsType, ReducerArgs...>& args)
+{
+  using MatCommandType = typename TraitsType::MatCommandType;
+  return impl::GenericMatCommand<MatCommandType, ReducerArgs...>(args.m_container.createCommand(command), args.m_reducer_args);
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -748,6 +800,11 @@ operator<<(RunCommand& command, const MatCellRunCommand::Container& view)
 //! Macro pour itérer sur un matériau ou un milieu
 #define RUNCOMMAND_MAT_ENUMERATE(MatItemNameType, iter_name, env_or_mat_vector) \
   A_FUNCINFO << ::Arcane::Accelerator::RunCommandMatItemEnumeratorTraitsT<MatItemNameType>::createContainer(env_or_mat_vector) \
+             << [=] ARCCORE_HOST_DEVICE(::Arcane::Accelerator::RunCommandMatItemEnumeratorTraitsT<MatItemNameType>::EnumeratorType iter_name)
+
+//! Macro pour itérer sur un matériau ou un milieu
+#define RUNCOMMAND_MAT_ENUMERATE_EX(MatItemNameType, iter_name, env_or_mat_vector, ...) \
+  A_FUNCINFO << ::Arcane::Accelerator::impl::makeExtendedMatItemEnumeratorLoop<MatItemNameType>(env_or_mat_vector __VA_OPT__(, __VA_ARGS__)) \
              << [=] ARCCORE_HOST_DEVICE(::Arcane::Accelerator::RunCommandMatItemEnumeratorTraitsT<MatItemNameType>::EnumeratorType iter_name)
 
 /*---------------------------------------------------------------------------*/
