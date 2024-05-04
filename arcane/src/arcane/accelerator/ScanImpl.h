@@ -85,7 +85,7 @@ class SyclScanner
     // Contient l'application partielle de Operator cumulée avec les blocs précédents
     NumArray<DataType, MDDim1> tmp2;
     Int32 nb_item = input.size();
-    Int32 block_size = 64;
+    Int32 block_size = 256;
     Int32 nb_block = (nb_item / block_size);
     if ((nb_item % block_size) != 0)
       ++nb_block;
