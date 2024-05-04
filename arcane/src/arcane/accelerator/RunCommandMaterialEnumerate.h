@@ -66,13 +66,6 @@ class MatCommandContainerBase
     m_global_cells_local_id = m_items._internalLocalIds();
   }
 };
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-namespace Arcane::Accelerator
-{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -564,17 +557,6 @@ class RunCommandMatItemEnumeratorTraitsT<Arcane::Materials::MatCell>
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // namespace Arcane::Accelerator
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-namespace Arcane::Accelerator::impl
-{
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 #if defined(ARCANE_COMPILING_CUDA) || defined(ARCANE_COMPILING_HIP)
 /*
  * Surcharge de la fonction de lancement de kernel pour GPU pour les ComponentItemLocalId et CellLocalId
@@ -787,36 +769,36 @@ operator<<(RunCommand& command, const impl::GenericMatCommandArgs<TraitsType, Re
 /*---------------------------------------------------------------------------*/
 
 inline auto
-operator<<(RunCommand& command, const MatAndGlobalCellRunCommand::Container& view)
+operator<<(RunCommand& command, const impl::MatAndGlobalCellRunCommand::Container& view)
 {
-  return impl::GenericMatCommand<MatAndGlobalCellRunCommand>(view.createCommand(command));
+  return impl::GenericMatCommand<impl::MatAndGlobalCellRunCommand>(view.createCommand(command));
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 inline auto
-operator<<(RunCommand& command, const EnvAndGlobalCellRunCommand::Container& view)
+operator<<(RunCommand& command, const impl::EnvAndGlobalCellRunCommand::Container& view)
 {
-  return impl::GenericMatCommand<EnvAndGlobalCellRunCommand>(view.createCommand(command));
+  return impl::GenericMatCommand<impl::EnvAndGlobalCellRunCommand>(view.createCommand(command));
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 inline auto
-operator<<(RunCommand& command, const EnvCellRunCommand::Container& view)
+operator<<(RunCommand& command, const impl::EnvCellRunCommand::Container& view)
 {
-  return impl::GenericMatCommand<EnvCellRunCommand>(view.createCommand(command));
+  return impl::GenericMatCommand<impl::EnvCellRunCommand>(view.createCommand(command));
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 inline auto
-operator<<(RunCommand& command, const MatCellRunCommand::Container& view)
+operator<<(RunCommand& command, const impl::MatCellRunCommand::Container& view)
 {
-  return impl::GenericMatCommand<MatCellRunCommand>(view.createCommand(command));
+  return impl::GenericMatCommand<impl::MatCellRunCommand>(view.createCommand(command));
 }
 
 /*---------------------------------------------------------------------------*/
@@ -829,13 +811,13 @@ operator<<(RunCommand& command, const MatCellRunCommand::Container& view)
 
 //! Macro pour itérer sur un matériau ou un milieu
 #define RUNCOMMAND_MAT_ENUMERATE(MatItemNameType, iter_name, env_or_mat_vector) \
-  A_FUNCINFO << ::Arcane::Accelerator::RunCommandMatItemEnumeratorTraitsT<MatItemNameType>::createContainer(env_or_mat_vector) \
-             << [=] ARCCORE_HOST_DEVICE(::Arcane::Accelerator::RunCommandMatItemEnumeratorTraitsT<MatItemNameType>::EnumeratorType iter_name)
+  A_FUNCINFO << ::Arcane::Accelerator::impl::RunCommandMatItemEnumeratorTraitsT<MatItemNameType>::createContainer(env_or_mat_vector) \
+             << [=] ARCCORE_HOST_DEVICE(::Arcane::Accelerator::impl::RunCommandMatItemEnumeratorTraitsT<MatItemNameType>::EnumeratorType iter_name)
 
 //! Macro pour itérer sur un matériau ou un milieu
 #define RUNCOMMAND_MAT_ENUMERATE_EX(MatItemNameType, iter_name, env_or_mat_vector, ...) \
   A_FUNCINFO << ::Arcane::Accelerator::impl::makeExtendedMatItemEnumeratorLoop<MatItemNameType>(env_or_mat_vector __VA_OPT__(, __VA_ARGS__)) \
-             << [=] ARCCORE_HOST_DEVICE(::Arcane::Accelerator::RunCommandMatItemEnumeratorTraitsT<MatItemNameType>::EnumeratorType iter_name \
+             << [=] ARCCORE_HOST_DEVICE(::Arcane::Accelerator::impl::RunCommandMatItemEnumeratorTraitsT<MatItemNameType>::EnumeratorType iter_name \
                                         __VA_OPT__(ARCANE_RUNCOMMAND_REDUCER_FOR_EACH(__VA_ARGS__)))
 
 /*---------------------------------------------------------------------------*/
