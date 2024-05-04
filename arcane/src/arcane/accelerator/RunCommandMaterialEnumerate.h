@@ -633,16 +633,14 @@ class DoMatContainerSYCLLambda
 /*---------------------------------------------------------------------------*/
 
 template <typename ContainerType, typename Lambda, typename... ReducerArgs>
-void _doMatItemsLambda(Int32 base_index, ContainerType sub_items, const Lambda& func, ReducerArgs... reducer_args)
+void _doMatItemsLambda(Int32 base_index, Int32 size, ContainerType items, const Lambda& func, ReducerArgs... reducer_args)
 {
-  //using ItemType = TraitsType::ItemType;
-  //using LocalIdType = BuilderType::ValueType;
   auto privatizer = privatize(func);
   auto& body = privatizer.privateCopy();
-  Int32 nb_item = sub_items.size();
 
-  for (Int32 i = 0; i < nb_item; ++i) {
-    body(sub_items[base_index + i], reducer_args...);
+  Int32 last_value = base_index + size;
+  for (Int32 i = base_index; i < last_value; ++i) {
+    body(items[i], reducer_args...);
   }
   ::Arcane::impl::HostReducerHelper::applyReducerArgs(reducer_args...);
 }
@@ -732,18 +730,13 @@ _applyEnvCells(RunCommand& command, ContainerType items, const Lambda& func, con
     _applyKernelSYCL(launch_info, ARCANE_KERNEL_SYCL_FUNC(impl::DoMatContainerSYCLLambda) < ContainerType, Lambda, ReducerArgs... > {}, func, items, reducer_args...);
     break;
   case eExecutionPolicy::Sequential:
-    _doMatItemsLambda(0, items, func, reducer_args...);
-    //for (Int32 i = 0, n = vsize; i < n; ++i)
-    //func(items[i], reducer_args...);
+    _doMatItemsLambda(0, vsize, items, func, reducer_args...);
     break;
   case eExecutionPolicy::Thread:
-#if 0
     arcaneParallelFor(0, vsize, launch_info.loopRunInfo(),
                       [&](Int32 begin, Int32 size) {
-                        for (Int32 i = begin, n = (begin + size); i < n; ++i)
-                          func(items[i], reducer_args...);
+                        _doMatItemsLambda(begin, size, items, func, reducer_args...);
                       });
-#endif
     break;
   default:
     ARCANE_FATAL("Invalid execution policy '{0}'", exec_policy);
