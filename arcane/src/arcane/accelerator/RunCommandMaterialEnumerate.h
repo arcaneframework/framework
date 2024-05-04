@@ -615,6 +615,23 @@ class DoMatContainerSYCLLambda
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+template <typename MatCommandType>
+class GenericMatCommand
+{
+ public:
+
+  explicit GenericMatCommand(const MatCommandType& mat_command)
+  : m_mat_command(mat_command)
+  {}
+
+ public:
+
+  MatCommandType m_mat_command;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 /*!
  * \brief Applique l'énumération \a func sur la liste d'entité \a items.
  *
@@ -667,6 +684,15 @@ _applyEnvCells(RunCommand& command, ContainerType items, const Lambda& func)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+template <typename MatCommandType, typename Lambda>
+void operator<<(const GenericMatCommand<MatCommandType>& c, const Lambda& func)
+{
+  impl::_applyEnvCells(c.m_mat_command.m_command, c.m_mat_command.m_items, func);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 } // namespace Arcane::Accelerator::impl
 
 /*---------------------------------------------------------------------------*/
@@ -678,61 +704,37 @@ namespace Arcane::Accelerator
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-inline MatAndGlobalCellRunCommand
+inline auto
 operator<<(RunCommand& command, const MatAndGlobalCellRunCommand::Container& view)
 {
-  return view.createCommand(command);
-}
-
-template <typename Lambda>
-void operator<<(MatAndGlobalCellRunCommand&& nr, const Lambda& func)
-{
-  impl::_applyEnvCells(nr.m_command, nr.m_items, func);
+  return impl::GenericMatCommand<MatAndGlobalCellRunCommand>(view.createCommand(command));
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-inline EnvAndGlobalCellRunCommand
+inline auto
 operator<<(RunCommand& command, const EnvAndGlobalCellRunCommand::Container& view)
 {
-  return view.createCommand(command);
-}
-
-template <typename Lambda>
-void operator<<(EnvAndGlobalCellRunCommand&& nr, const Lambda& func)
-{
-  impl::_applyEnvCells(nr.m_command, nr.m_items, func);
+  return impl::GenericMatCommand<EnvAndGlobalCellRunCommand>(view.createCommand(command));
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-inline EnvCellRunCommand
+inline auto
 operator<<(RunCommand& command, const EnvCellRunCommand::Container& view)
 {
-  return view.createCommand(command);
-}
-
-template <typename Lambda>
-void operator<<(EnvCellRunCommand&& nr, const Lambda& func)
-{
-  impl::_applyEnvCells(nr.m_command, nr.m_items, func);
+  return impl::GenericMatCommand<EnvCellRunCommand>(view.createCommand(command));
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-inline MatCellRunCommand
+inline auto
 operator<<(RunCommand& command, const MatCellRunCommand::Container& view)
 {
-  return view.createCommand(command);
-}
-
-template <typename Lambda>
-void operator<<(MatCellRunCommand&& nr, const Lambda& func)
-{
-  impl::_applyEnvCells(nr.m_command, nr.m_items, func);
+  return impl::GenericMatCommand<MatCellRunCommand>(view.createCommand(command));
 }
 
 /*---------------------------------------------------------------------------*/
@@ -746,7 +748,7 @@ void operator<<(MatCellRunCommand&& nr, const Lambda& func)
 //! Macro pour itérer sur un matériau ou un milieu
 #define RUNCOMMAND_MAT_ENUMERATE(MatItemNameType, iter_name, env_or_mat_vector) \
   A_FUNCINFO << ::Arcane::Accelerator::RunCommandMatItemEnumeratorTraitsT<MatItemNameType>::createContainer(env_or_mat_vector) \
-  << [=] ARCCORE_HOST_DEVICE(::Arcane::Accelerator::RunCommandMatItemEnumeratorTraitsT<MatItemNameType>::EnumeratorType iter_name)
+             << [=] ARCCORE_HOST_DEVICE(::Arcane::Accelerator::RunCommandMatItemEnumeratorTraitsT<MatItemNameType>::EnumeratorType iter_name)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
