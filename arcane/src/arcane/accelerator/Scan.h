@@ -125,6 +125,7 @@ class ScannerImpl
           in_data[i] = input_data[i];
         };
       }
+      m_queue.barrier();
       SyclScanner<IsExclusive, DataType, Operator> scanner;
       scanner.doScan(m_queue, in_data, out_data, init_value);
       {
@@ -135,6 +136,7 @@ class ScannerImpl
           output_data[i] = out_data[i];
         };
       }
+      m_queue.barrier();
 #endif
     } break;
 #endif
