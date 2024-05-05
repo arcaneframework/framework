@@ -159,48 +159,65 @@ class SyclGenericFilteringImpl
                     OutputIterator output_iter, SelectLambda select_lambda)
   {
     RunQueue* queue = s.m_queue;
-#if defined(ARCANE_USE_SCAN_ONEDPL) && defined(__INTEL_LLVM_COMPILER)
     using DataType = std::iterator_traits<OutputIterator>::value_type;
+#if defined(ARCANE_USE_SCAN_ONEDPL) && defined(__INTEL_LLVM_COMPILER)
     sycl::queue true_queue = impl::SyclUtils::toNativeStream(queue);
     auto policy = oneapi::dpl::execution::make_device_policy(true_queue);
     auto out_iter = oneapi::dpl::copy_if(policy, input_iter, input_iter + nb_item, output_iter, select_lambda);
     Int32 nb_output = out_iter - output_iter;
     s.m_host_nb_out_storage[0] = nb_output;
 #else
-    NumArray<Int32, MDDim1> copy_input_data(nb_item);
-    NumArray<Int32, MDDim1> copy_output_data(nb_item);
-    SmallSpan<Int32> in_data = copy_input_data.to1DSmallSpan();
-    SmallSpan<Int32> out_data = copy_output_data.to1DSmallSpan();
+    NumArray<Int32, MDDim1> scan_input_data(nb_item);
+    NumArray<Int32, MDDim1> scan_output_data(nb_item);
+    SmallSpan<Int32> in_scan_data = scan_input_data.to1DSmallSpan();
+    SmallSpan<Int32> out_scan_data = scan_output_data.to1DSmallSpan();
     {
       auto command = makeCommand(queue);
       command << RUNCOMMAND_LOOP1(iter, nb_item)
       {
         auto [i] = iter();
-        in_data[i] = select_lambda(input_iter[i]) ? 1 : 0;
+        in_scan_data[i] = select_lambda(input_iter[i]) ? 1 : 0;
       };
     }
     queue->barrier();
     SyclScanner<false /*is_exclusive*/, Int32, ScannerSumOperator<Int32>> scanner;
-    scanner.doScan(*queue, in_data, out_data, 0);
+    scanner.doScan(*queue, in_scan_data, out_scan_data, 0);
     // La valeur de 'out_data' pour le dernier élément (nb_item-1) contient la taille du filtre
-    Int32 nb_output = out_data[nb_item - 1];
+    Int32 nb_output = out_scan_data[nb_item - 1];
     s.m_host_nb_out_storage[0] = nb_output;
 
     const bool do_verbose = false;
     if (do_verbose && nb_item < 1500)
       for (int i = 0; i < nb_item; ++i) {
-        std::cout << "out_data i=" << i << " out_data=" << out_data[i] << " in_data=" << in_data[i] << " value=" << input_iter[i] << "\n ";
+        std::cout << "out_data i=" << i << " out_data=" << out_scan_data[i]
+                  << " in_data=" << in_scan_data[i] << " value=" << input_iter[i] << "\n ";
       }
     // Copie depuis 'out_data' vers 'in_data' les indices correspondant au filtre
+    // Comme 'output_iter' et 'input_iter' peuvent se chevaucher, il
+    // faut faire une copie intermédiaire
+    // TODO: détecter cela et ne faire la copie que si nécessaire.
+    NumArray<DataType,MDDim1> out_copy(eMemoryRessource::Device);
+    out_copy.resize(nb_output);
+    auto out_copy_view = out_copy.to1DSpan();
     {
       auto command = makeCommand(queue);
       command << RUNCOMMAND_LOOP1(iter, nb_item)
       {
         auto [i] = iter();
-        if (in_data[i] == 1)
-          output_iter[out_data[i] - 1] = input_iter[i];
+        if (in_scan_data[i] == 1)
+          out_copy_view[out_scan_data[i] - 1] = input_iter[i];
       };
     }
+    {
+      auto command = makeCommand(queue);
+      command << RUNCOMMAND_LOOP1(iter, nb_output)
+      {
+        auto [i] = iter();
+        output_iter[i] = out_copy_view[i];
+      };
+    }
+    // Obligatoire à cause de 'out_copy'. On pourra le supprimer avec une
+    // allocation temporaire.
     queue->barrier();
 #endif
   }
