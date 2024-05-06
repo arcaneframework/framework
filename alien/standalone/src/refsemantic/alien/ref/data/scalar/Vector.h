@@ -75,13 +75,13 @@ class ALIEN_REFSEMANTIC_EXPORT Vector final : public IVector
 
  private:
   std::shared_ptr<MultiVectorImpl> m_impl;
-#ifdef DEBUG
+//#ifdef DEBUG
   std::string m_name = "UnamedVector";
 
  public:
   void setName(std::string name) { m_name = name; }
   std::string const& name() const { return m_name; }
-#endif
+//#endif
 };
 
 /*---------------------------------------------------------------------------*/
