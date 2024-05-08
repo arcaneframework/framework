@@ -19,7 +19,7 @@
 
 #include "arcane/accelerator/core/Runner.h"
 #include "arcane/accelerator/core/Memory.h"
-#include "arcane/accelerator/core/IRunQueueStream.h"
+#include "arcane/accelerator/core/internal/IRunQueueStream.h"
 #include "arcane/accelerator/core/internal/RunCommandImpl.h"
 #include "arcane/accelerator/core/internal/RunnerImpl.h"
 

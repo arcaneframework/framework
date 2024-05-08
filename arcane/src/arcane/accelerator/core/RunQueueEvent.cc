@@ -13,7 +13,7 @@
 
 #include "arcane/accelerator/core/RunQueueEvent.h"
 
-#include "arcane/accelerator/core/IRunQueueEventImpl.h"
+#include "arcane/accelerator/core/internal/IRunQueueEventImpl.h"
 #include "arcane/accelerator/core/Runner.h"
 #include "arcane/accelerator/core/internal/RunnerImpl.h"
 

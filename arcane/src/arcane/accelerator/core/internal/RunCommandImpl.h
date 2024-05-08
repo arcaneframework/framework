@@ -66,6 +66,10 @@ class RunCommandImpl
   IRunQueueStream* internalStream() const;
   RunnerImpl* runner() const;
 
+ public:
+
+  void notifyLaunchKernelSyclEvent(void* sycl_event_ptr);
+
  private:
 
   ReduceMemoryImpl* _getOrCreateReduceMemoryImpl();

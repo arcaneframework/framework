@@ -35,6 +35,10 @@ namespace Arcane::Accelerator::impl
  */
 class ARCANE_ACCELERATOR_EXPORT RunCommandLaunchInfo
 {
+  template <typename SyclKernel, typename Lambda, typename LambdaArgs, typename... ReducerArgs>
+  friend void _applyKernelSYCL(impl::RunCommandLaunchInfo& launch_info, SyclKernel kernel, Lambda& func,
+                               const LambdaArgs& args, const ReducerArgs&... reducer_args);
+
  public:
 
   struct ThreadBlockInfo
@@ -106,6 +110,12 @@ class ARCANE_ACCELERATOR_EXPORT RunCommandLaunchInfo
   void _begin();
   void _doEndKernelLaunch();
   ThreadBlockInfo _computeThreadBlockInfo() const;
+
+ private:
+
+  // Pour SYCL: enregistre l'évènement associé à la dernière commande de la file
+  // \a sycl_event_ptr est de type 'sycl::event*'.
+  void _addSyclEvent(void* sycl_event_ptr);
 };
 
 /*---------------------------------------------------------------------------*/
