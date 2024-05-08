@@ -149,6 +149,26 @@ notifyEndLaunchKernel()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
+ * \brief Notification du lancement d'un kernel SYCL.
+ *
+ * \a sycl_event_ptr est de type sycl::event* et contient
+ * l'évènement associé à la commande qui est retourné lors
+ * des appels à sycl::queue::submit().
+ */
+void RunCommandImpl::
+notifyLaunchKernelSyclEvent(void* sycl_event_ptr)
+{
+  IRunQueueStream* stream = internalStream();
+  stream->_setSyclLastCommandEvent(sycl_event_ptr);
+  // Il faut enregistrer à nouveau la file associée à l'évènement
+  // car lors de l'appel à notifyBeginLaunchKernel() il n'y avait pas
+  // encore l'évènement associé à cette file.
+  m_start_event->recordQueue(stream);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
  * \brief Notification de la fin d'exécution du noyau.
  *
  * Après cet appel, on est sur que la commande a fini de s'exécuter et on

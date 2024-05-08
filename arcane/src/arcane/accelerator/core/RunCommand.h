@@ -115,6 +115,7 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RunCommand
   // Pour RunCommandLaunchInfo
   void _internalNotifyBeginLaunchKernel();
   void _internalNotifyEndLaunchKernel();
+  void _internalNotifyBeginLaunchKernelSyclEvent(void* sycl_event_ptr);
   ForLoopOneExecStat* _internalCommandExecStat();
 
  private:

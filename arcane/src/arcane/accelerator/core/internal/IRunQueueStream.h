@@ -68,6 +68,9 @@ class ARCANE_ACCELERATOR_CORE_EXPORT IRunQueueStream
 
   //! Barrière sans exception. Retourne \a true en cas d'erreur
   virtual bool _barrierNoException() = 0;
+
+  //! Pour SYCL, positionne l'évènement associé à la dernière commande exécutée.
+  virtual void _setSyclLastCommandEvent([[maybe_unused]] void* sycl_event_ptr) {}
 };
 
 /*---------------------------------------------------------------------------*/

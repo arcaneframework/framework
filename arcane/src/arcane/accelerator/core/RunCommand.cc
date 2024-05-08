@@ -186,6 +186,15 @@ _internalNotifyEndLaunchKernel()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+void RunCommand::
+_internalNotifyBeginLaunchKernelSyclEvent(void* sycl_event_ptr)
+{
+  m_p->notifyLaunchKernelSyclEvent(sycl_event_ptr);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 ForLoopOneExecStat* RunCommand::
 _internalCommandExecStat()
 {

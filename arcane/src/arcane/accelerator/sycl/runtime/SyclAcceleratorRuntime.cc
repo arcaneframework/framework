@@ -95,6 +95,17 @@ class SyclRunQueueStream
   {
     return m_sycl_stream.get();
   }
+
+  void _setSyclLastCommandEvent([[maybe_unused]] void* sycl_event_ptr) override
+  {
+    sycl::event last_event;
+    if (sycl_event_ptr)
+      last_event = *(reinterpret_cast<sycl::event*>(sycl_event_ptr));
+    m_last_command_event = last_event;
+  }
+
+ public:
+
   static sycl::async_handler _getAsyncHandler()
   {
     auto err_handler = [](const sycl::exception_list& exceptions) {
@@ -113,6 +124,9 @@ class SyclRunQueueStream
     return err_handler;
   }
 
+  //! Évènement correspondant à la dernière commande
+  sycl::event lastCommandEvent() { return m_last_command_event; }
+
  public:
 
   sycl::queue& trueStream() const
@@ -124,6 +138,7 @@ class SyclRunQueueStream
 
   impl::IRunnerRuntime* m_runtime;
   std::unique_ptr<sycl::queue> m_sycl_stream;
+  sycl::event m_last_command_event;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -146,12 +161,14 @@ class SyclRunQueueEvent
   // Enregistre l'événement au sein d'une RunQueue
   void recordQueue([[maybe_unused]] impl::IRunQueueStream* stream) final
   {
+    ARCANE_CHECK_POINTER(stream);
+    auto* rq = static_cast<SyclRunQueueStream*>(stream);
+    m_sycl_event = rq->lastCommandEvent();
 #if defined(__ADAPTIVECPP__)
     m_recorded_stream = stream;
     // TODO: Vérifier s'il faut faire quelque chose
 #elif defined(__INTEL_LLVM_COMPILER)
-    auto* rq = static_cast<SyclRunQueueStream*>(stream);
-    m_sycl_event = rq->trueStream().ext_oneapi_submit_barrier();
+    //m_sycl_event = rq->trueStream().ext_oneapi_submit_barrier();
 #else
     ARCANE_THROW(NotSupportedException, "Only supported for AdaptiveCpp and Intel DPC++ implementation");
 #endif
@@ -181,8 +198,20 @@ class SyclRunQueueEvent
 
   Int64 elapsedTime([[maybe_unused]] IRunQueueEventImpl* start_event) final
   {
-    //ARCANE_SYCL_FUNC_NOT_HANDLED;
-    return 0;
+    ARCANE_CHECK_POINTER(start_event);
+    // Il faut prendre l'évènement de début car on est certain qu'il contient
+    // la bonne valeur de 'sycl::event'.
+    sycl::event event = (static_cast<SyclRunQueueEvent*>(start_event))->m_sycl_event;
+    // Si pas d'évènement associé, on ne fait rien pour éviter une exception
+    if (event==sycl::event())
+      return 0;
+
+    bool is_submitted = event.get_info<sycl::info::event::command_execution_status>() == sycl::info::event_command_status::complete;
+    if (!is_submitted)
+      return 0;
+    Int64 start = event.get_profiling_info<sycl::info::event_profiling::command_start>();
+    Int64 end = event.get_profiling_info<sycl::info::event_profiling::command_end>();
+    return (end - start);
   }
 
  private:

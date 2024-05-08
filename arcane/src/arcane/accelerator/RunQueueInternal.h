@@ -375,15 +375,17 @@ void _applyKernelSYCL(impl::RunCommandLaunchInfo& launch_info, SyclKernel kernel
 {
 #if defined(ARCANE_COMPILING_SYCL)
   sycl::queue* s = reinterpret_cast<sycl::queue*>(launch_info._internalStreamImpl());
+  sycl::event event;
   if constexpr (sizeof...(ReducerArgs) > 0) {
     auto [b, t] = launch_info.threadBlockInfo();
     sycl::nd_range<1> loop_size(b * t, t);
-    s->parallel_for(loop_size, [=](sycl::nd_item<1> i) { kernel(i, args, func, reducer_args...); });
+    event = s->parallel_for(loop_size, [=](sycl::nd_item<1> i) { kernel(i, args, func, reducer_args...); });
   }
   else {
     sycl::range<1> loop_size = launch_info.totalLoopSize();
-    s->parallel_for(loop_size, [=](sycl::id<1> i) { kernel(i, args, func); });
+    event = s->parallel_for(loop_size, [=](sycl::id<1> i) { kernel(i, args, func); });
   }
+  launch_info._addSyclEvent(&event);
 #else
   ARCANE_UNUSED(launch_info);
   ARCANE_UNUSED(kernel);
