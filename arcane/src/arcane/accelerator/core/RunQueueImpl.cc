@@ -19,7 +19,7 @@
 #include "arcane/accelerator/core/Runner.h"
 #include "arcane/accelerator/core/RunQueueBuildInfo.h"
 #include "arcane/accelerator/core/internal/IRunnerRuntime.h"
-#include "arcane/accelerator/core/IRunQueueStream.h"
+#include "arcane/accelerator/core/internal/IRunQueueStream.h"
 #include "arcane/accelerator/core/DeviceId.h"
 #include "arcane/accelerator/core/internal/RunCommandImpl.h"
 #include "arcane/accelerator/core/internal/RunnerImpl.h"
