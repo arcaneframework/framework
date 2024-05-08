@@ -66,7 +66,7 @@ class SyclRunQueueStream
   }
   void barrier() override
   {
-    m_sycl_stream->wait();
+    m_sycl_stream->wait_and_throw();
   }
   bool _barrierNoException() override
   {
@@ -79,15 +79,38 @@ class SyclRunQueueStream
     m_sycl_stream->memcpy(args.destination().data(), source_bytes.data(),
                           source_bytes.size());
     if (!args.isAsync())
-      m_sycl_stream->wait();
+      this->barrier();
   }
   void prefetchMemory([[maybe_unused]] const MemoryPrefetchArgs& args) override
   {
-    ARCANE_SYCL_FUNC_NOT_HANDLED;
+    auto source_bytes = args.source().bytes();
+    Int64 nb_byte = source_bytes.size();
+    if (nb_byte == 0)
+      return;
+    m_sycl_stream->prefetch(source_bytes.data(), nb_byte);
+    if (!args.isAsync())
+      this->barrier();
   }
   void* _internalImpl() override
   {
     return m_sycl_stream.get();
+  }
+  static sycl::async_handler _getAsyncHandler()
+  {
+    auto err_handler = [](const sycl::exception_list& exceptions) {
+      std::ostringstream ostr;
+      ostr << "Error in SYCL runtime\n";
+      for (const std::exception_ptr& e : exceptions) {
+        try {
+          std::rethrow_exception(e);
+        }
+        catch (const sycl::exception& e) {
+          ostr << "SYCL exception: " << e.what() << "\n";
+        }
+      }
+      ARCANE_FATAL(ostr.str());
+    };
+    return err_handler;
   }
 
  public:
@@ -158,7 +181,7 @@ class SyclRunQueueEvent
 
   Int64 elapsedTime([[maybe_unused]] IRunQueueEventImpl* start_event) final
   {
-    ARCANE_SYCL_FUNC_NOT_HANDLED;
+    //ARCANE_SYCL_FUNC_NOT_HANDLED;
     return 0;
   }
 
@@ -209,12 +232,10 @@ class SyclRunnerRuntime
   void setMemoryAdvice([[maybe_unused]] ConstMemoryView buffer, [[maybe_unused]] eMemoryAdvice advice,
                        [[maybe_unused]] DeviceId device_id) override
   {
-    ARCANE_SYCL_FUNC_NOT_HANDLED;
   }
   void unsetMemoryAdvice([[maybe_unused]] ConstMemoryView buffer,
                          [[maybe_unused]] eMemoryAdvice advice, [[maybe_unused]] DeviceId device_id) override
   {
-    ARCANE_SYCL_FUNC_NOT_HANDLED;
   }
 
   void setCurrentDevice([[maybe_unused]] DeviceId device_id) final
@@ -281,11 +302,22 @@ SyclRunQueueStream::
 SyclRunQueueStream(SyclRunnerRuntime* runtime, const RunQueueBuildInfo& bi)
 : m_runtime(runtime)
 {
+  sycl::device& d = runtime->defaultDevice();
+  // Indique que les commandes lancées sont implicitement exécutées les
+  // unes derrière les autres.
+  auto queue_property = sycl::property::queue::in_order();
+  // Pour le profiling
+  auto profiling_property = sycl::property::queue::enable_profiling();
+  sycl::property_list queue_properties(queue_property, profiling_property);
+
+  // Gestionnaire d'erreur.
+  sycl::async_handler err_handler;
+  err_handler = _getAsyncHandler();
   if (bi.isDefault())
-    m_sycl_stream = std::make_unique<sycl::queue>(runtime->defaultDevice(), sycl::property::queue::in_order());
+    m_sycl_stream = std::make_unique<sycl::queue>(d, err_handler, queue_properties);
   else {
     ARCANE_SYCL_FUNC_NOT_HANDLED;
-    m_sycl_stream = std::make_unique<sycl::queue>(runtime->defaultDevice(), sycl::property::queue::in_order());
+    m_sycl_stream = std::make_unique<sycl::queue>(d, err_handler, queue_properties);
   }
 }
 
