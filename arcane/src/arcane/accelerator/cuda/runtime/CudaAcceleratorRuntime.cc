@@ -33,7 +33,7 @@
 #include "arcane/accelerator/core/internal/AcceleratorCoreGlobalInternal.h"
 #include "arcane/accelerator/core/internal/RunCommandImpl.h"
 #include "arcane/accelerator/core/internal/IRunQueueStream.h"
-#include "arcane/accelerator/core/IRunQueueEventImpl.h"
+#include "arcane/accelerator/core/internal/IRunQueueEventImpl.h"
 #include "arcane/accelerator/core/PointerAttribute.h"
 #include "arcane/accelerator/core/RunQueue.h"
 
