@@ -273,10 +273,12 @@ class NumArray;
 template<typename DataType,typename Extents,typename LayoutPolicy = DefaultLayout >
 using NumArrayBase ARCANE_DEPRECATED_REASON("Use 'NumArray' type instead") = NumArray<DataType,Extents,LayoutPolicy>;
 template<typename ExtentType> class ArrayBounds;
-template<int RankValue, typename IndexType_ = Int32> class ArrayIndexBase;
-template<int RankValue, typename IndexType_ = Int32> class ArrayIndex;
-template<int RankValue> using ArrayBoundsIndexBase ARCANE_DEPRECATED_REASON("Use 'ArrayIndexBase' type instead") = ArrayIndexBase<RankValue>;
-template<int RankValue> using ArrayBoundsIndex ARCANE_DEPRECATED_REASON("Use 'ArrayIndex' type instead") = ArrayIndex<RankValue>;
+template<int RankValue, typename IndexType_ = Int32> class MDIndexBase;
+template<int RankValue, typename IndexType_ = Int32> class MDIndex;
+template<int RankValue, typename IndexType_ = Int32> using ArrayIndexBase = MDIndexBase<RankValue,IndexType_>;
+template<int RankValue, typename IndexType_ = Int32> using ArrayIndex = MDIndex<RankValue,IndexType_>;
+template<int RankValue> using ArrayBoundsIndexBase ARCANE_DEPRECATED_REASON("Use 'MDIndexBase' type instead") = ArrayIndexBase<RankValue>;
+template<int RankValue> using ArrayBoundsIndex ARCANE_DEPRECATED_REASON("Use 'MDIndex' type instead") = ArrayIndex<RankValue>;
 template<typename Extents> class ArrayExtentsBase;
 template<typename Extents> class ArrayExtents;
 template<int RankValue> class ArrayStridesBase;
