@@ -284,8 +284,8 @@ template<typename Extents> class ArrayExtents;
 template<int RankValue> class ArrayStridesBase;
 template<typename Extents,typename LayoutPolicy> class ArrayExtentsWithOffset;
 class ForLoopRange;
-template<int RankValue> class SimpleForLoopRanges;
-template<int RankValue> class ComplexForLoopRanges;
+template<int RankValue, typename IndexType_ = Int32> class SimpleForLoopRanges;
+template<int RankValue, typename IndexType_ = Int32> class ComplexForLoopRanges;
 template<int RankValue> class IMDRangeFunctor;
 template<int RankValue> class ArrayExtentsValueDynamic;
 namespace impl

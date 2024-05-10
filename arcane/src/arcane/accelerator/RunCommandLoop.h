@@ -34,8 +34,8 @@ namespace Arcane::Accelerator::impl
  * \a func est appliqué à la commande \a command. Les arguments supplémentaires
  * sont des fonctor supplémentaires (comme les réductions).
  */
-template <int N, template <int T> class LoopBoundType, typename Lambda, typename... RemainingArgs> void
-_applyGenericLoop(RunCommand& command, LoopBoundType<N> bounds,
+template <int N, template <int T, typename> class LoopBoundType, typename Lambda, typename... RemainingArgs> void
+_applyGenericLoop(RunCommand& command, LoopBoundType<N, Int32> bounds,
                   const Lambda& func, const RemainingArgs&... other_args)
 {
   Int64 vsize = bounds.nbElement();
@@ -46,13 +46,13 @@ _applyGenericLoop(RunCommand& command, LoopBoundType<N> bounds,
   launch_info.beginExecute();
   switch (exec_policy) {
   case eExecutionPolicy::CUDA:
-    _applyKernelCUDA(launch_info, ARCANE_KERNEL_CUDA_FUNC(impl::doDirectGPULambdaArrayBounds2) < LoopBoundType<N>, Lambda, RemainingArgs... >, func, bounds, other_args...);
+    _applyKernelCUDA(launch_info, ARCANE_KERNEL_CUDA_FUNC(impl::doDirectGPULambdaArrayBounds2) < LoopBoundType<N, Int32>, Lambda, RemainingArgs... >, func, bounds, other_args...);
     break;
   case eExecutionPolicy::HIP:
-    _applyKernelHIP(launch_info, ARCANE_KERNEL_HIP_FUNC(impl::doDirectGPULambdaArrayBounds2) < LoopBoundType<N>, Lambda, RemainingArgs... >, func, bounds, other_args...);
+    _applyKernelHIP(launch_info, ARCANE_KERNEL_HIP_FUNC(impl::doDirectGPULambdaArrayBounds2) < LoopBoundType<N, Int32>, Lambda, RemainingArgs... >, func, bounds, other_args...);
     break;
   case eExecutionPolicy::SYCL:
-    _applyKernelSYCL(launch_info, ARCANE_KERNEL_SYCL_FUNC(impl::DoDirectSYCLLambdaArrayBounds) < LoopBoundType<N>, Lambda, RemainingArgs... > {}, func, bounds, other_args...);
+    _applyKernelSYCL(launch_info, ARCANE_KERNEL_SYCL_FUNC(impl::DoDirectSYCLLambdaArrayBounds) < LoopBoundType<N, Int32>, Lambda, RemainingArgs... > {}, func, bounds, other_args...);
     break;
   case eExecutionPolicy::Sequential:
     arcaneSequentialFor(bounds, func, other_args...);
@@ -113,7 +113,7 @@ run(RunCommand& command, ArrayBounds<ExtentType> bounds, const Lambda& func)
 
 //! Applique la lambda \a func sur l'intervalle d'itération donnée par \a bounds
 template <int N, typename Lambda> void
-run(RunCommand& command, SimpleForLoopRanges<N> bounds, const Lambda& func)
+run(RunCommand& command, SimpleForLoopRanges<N, Int32> bounds, const Lambda& func)
 {
   impl::_applyGenericLoop(command, bounds, func);
 }
@@ -123,14 +123,14 @@ run(RunCommand& command, SimpleForLoopRanges<N> bounds, const Lambda& func)
 
 //! Applique la lambda \a func sur l'intervalle d'itération donnée par \a bounds
 template <int N, typename Lambda> void
-run(RunCommand& command, ComplexForLoopRanges<N> bounds, const Lambda& func)
+run(RunCommand& command, ComplexForLoopRanges<N, Int32> bounds, const Lambda& func)
 {
   impl::_applyGenericLoop(command, bounds, func);
 }
 
 //! Applique la lambda \a func sur l'intervalle d'itération donnée par \a bounds
-template <int N, template <int T> class LoopBoundType, typename Lambda, typename... RemainingArgs> void
-runExtended(RunCommand& command, LoopBoundType<N> bounds,
+template <int N, template <int T, typename> class LoopBoundType, typename Lambda, typename... RemainingArgs> void
+runExtended(RunCommand& command, LoopBoundType<N, Int32> bounds,
             const Lambda& func, const std::tuple<RemainingArgs...>& other_args)
 {
   std::apply([&](auto... vs) { impl::_applyGenericLoop(command, bounds, func, vs...); }, other_args);
@@ -162,32 +162,32 @@ class ArrayBoundRunCommand
 
 template <typename ExtentType> auto
 operator<<(RunCommand& command, const ArrayBounds<ExtentType>& bounds)
--> ArrayBoundRunCommand<ExtentType::rank(), SimpleForLoopRanges<ExtentType::rank()>>
+-> ArrayBoundRunCommand<ExtentType::rank(), SimpleForLoopRanges<ExtentType::rank(), Int32>>
 {
   return { command, bounds };
 }
 
 template <typename ExtentType, typename... RemainingArgs> auto
 operator<<(RunCommand& command, const impl::ExtendedArrayBoundLoop<ExtentType, RemainingArgs...>& ex_loop)
--> ArrayBoundRunCommand<1, SimpleForLoopRanges<1>, RemainingArgs...>
+-> ArrayBoundRunCommand<1, SimpleForLoopRanges<1, Int32>, RemainingArgs...>
 {
   return { command, ex_loop.m_bounds, ex_loop.m_remaining_args };
 }
 
 template <int N> ArrayBoundRunCommand<N, SimpleForLoopRanges<N>>
-operator<<(RunCommand& command, const SimpleForLoopRanges<N>& bounds)
+operator<<(RunCommand& command, const SimpleForLoopRanges<N, Int32>& bounds)
 {
   return { command, bounds };
 }
 
 template <int N> ArrayBoundRunCommand<N, ComplexForLoopRanges<N>>
-operator<<(RunCommand& command, const ComplexForLoopRanges<N>& bounds)
+operator<<(RunCommand& command, const ComplexForLoopRanges<N, Int32>& bounds)
 {
   return { command, bounds };
 }
 
-template <int N, template <int> class ForLoopBoundType, typename Lambda, typename... RemainingArgs>
-void operator<<(ArrayBoundRunCommand<N, ForLoopBoundType<N>, RemainingArgs...>&& nr, const Lambda& f)
+template <int N, template <int, typename> class ForLoopBoundType, typename Lambda, typename... RemainingArgs>
+void operator<<(ArrayBoundRunCommand<N, ForLoopBoundType<N, Int32>, RemainingArgs...>&& nr, const Lambda& f)
 {
   if constexpr (sizeof...(RemainingArgs) > 0) {
     runExtended(nr.m_command, nr.m_bounds, f, nr.m_remaining_args);
@@ -215,19 +215,19 @@ void operator<<(ArrayBoundRunCommand<N, ForLoopBoundType<N>, RemainingArgs...>&&
 
 //! Boucle sur accélérateur
 #define RUNCOMMAND_LOOP1(iter_name, x1) \
-  A_FUNCINFO << Arcane::ArrayBounds<MDDim1>(x1) << [=] ARCCORE_HOST_DEVICE(Arcane::ArrayIndex<1> iter_name)
+  A_FUNCINFO << Arcane::ArrayBounds<MDDim1>(x1) << [=] ARCCORE_HOST_DEVICE(Arcane::MDIndex<1> iter_name)
 
 //! Boucle sur accélérateur
 #define RUNCOMMAND_LOOP2(iter_name, x1, x2) \
-  A_FUNCINFO << Arcane::ArrayBounds<MDDim2>(x1, x2) << [=] ARCCORE_HOST_DEVICE(Arcane::ArrayIndex<2> iter_name)
+  A_FUNCINFO << Arcane::ArrayBounds<MDDim2>(x1, x2) << [=] ARCCORE_HOST_DEVICE(Arcane::MDIndex<2> iter_name)
 
 //! Boucle sur accélérateur
 #define RUNCOMMAND_LOOP3(iter_name, x1, x2, x3) \
-  A_FUNCINFO << Arcane::ArrayBounds<MDDim3>(x1, x2, x3) << [=] ARCCORE_HOST_DEVICE(Arcane::ArrayIndex<3> iter_name)
+  A_FUNCINFO << Arcane::ArrayBounds<MDDim3>(x1, x2, x3) << [=] ARCCORE_HOST_DEVICE(Arcane::MDIndex<3> iter_name)
 
 //! Boucle sur accélérateur
 #define RUNCOMMAND_LOOP4(iter_name, x1, x2, x3, x4) \
-  A_FUNCINFO << Arcane::ArrayBounds<MDDim4>(x1, x2, x3, x4) << [=] ARCCORE_HOST_DEVICE(Arcane::ArrayIndex<4> iter_name)
+  A_FUNCINFO << Arcane::ArrayBounds<MDDim4>(x1, x2, x3, x4) << [=] ARCCORE_HOST_DEVICE(Arcane::MDIndex<4> iter_name)
 
 /*!
  * \brief Boucle sur accélérateur avec arguments supplémentaires pour les réductions.
