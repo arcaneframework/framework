@@ -52,12 +52,14 @@ class MDSpan
   using value_type = DataType;
   using ExtentsType = Extents;
   using LayoutPolicyType = LayoutPolicy;
-  using IndexType = typename Extents::IndexType;
+  using MDIndexType = typename Extents::MDIndexType;
   using ArrayExtentsWithOffsetType = ArrayExtentsWithOffset<Extents, LayoutPolicy>;
   using DynamicDimsType = typename Extents::DynamicDimsType;
   using RemovedFirstExtentsType = typename Extents::RemovedFirstExtentsType;
+
   // Pour compatibilité. A supprimer pour cohérence avec les autres 'using'
-  using ArrayBoundsIndexType = typename Extents::IndexType;
+  using ArrayBoundsIndexType = typename Extents::MDIndexType;
+  using IndexType = typename Extents::MDIndexType;
 
  public:
 
@@ -127,7 +129,7 @@ class MDSpan
   constexpr ARCCORE_HOST_DEVICE Int64 offset(Int32 i) const requires(Extents::rank() == 1) { return m_extents.offset(i); }
 
   //! Valeur pour l'élément \a idx
-  constexpr ARCCORE_HOST_DEVICE Int64 offset(IndexType idx) const
+  constexpr ARCCORE_HOST_DEVICE Int64 offset(MDIndexType idx) const
   {
     return m_extents.offset(idx);
   }
@@ -155,7 +157,7 @@ class MDSpan
   constexpr ARCCORE_HOST_DEVICE DataType operator[](Int32 i) const requires(Extents::rank() == 1) { return m_ptr[offset(i)]; }
 
   //! Valeur pour l'élément \a idx
-  constexpr ARCCORE_HOST_DEVICE DataType& operator()(IndexType idx) const
+  constexpr ARCCORE_HOST_DEVICE DataType& operator()(MDIndexType idx) const
   {
     return m_ptr[offset(idx)];
   }
@@ -181,7 +183,7 @@ class MDSpan
   constexpr ARCCORE_HOST_DEVICE DataType* ptrAt(Int32 i) const requires(Extents::rank() == 1) { return m_ptr + offset(i); }
 
   //! Pointeur sur la valeur pour l'élément \a i
-  constexpr ARCCORE_HOST_DEVICE DataType* ptrAt(IndexType idx) const
+  constexpr ARCCORE_HOST_DEVICE DataType* ptrAt(MDIndexType idx) const
   {
     return m_ptr + offset(idx);
   }
@@ -206,7 +208,7 @@ class MDSpan
     auto new_extents = m_extents.extents().removeFirstExtent().dynamicExtents();
     std::array<Int32, ExtentsType::rank()> indexes = {};
     indexes[0] = i;
-    DataType* base_ptr = this->ptrAt(IndexType(indexes));
+    DataType* base_ptr = this->ptrAt(MDIndexType(indexes));
     return MDSpan<DataType, RemovedFirstExtentsType, LayoutPolicy>(base_ptr, new_extents);
   }
 

@@ -357,6 +357,9 @@ class ArrayExtentsWithOffset<ExtentsV<SizeType_, X0>, LayoutType>
   using BaseClass::totalNbElement;
   using Layout = typename LayoutType::Layout1Type;
   using DynamicDimsType = typename BaseClass::DynamicDimsType;
+  using MDIndexType = typename BaseClass::MDIndexType;
+
+  // TODO: Rendre obsolète mi-2024
   using IndexType = typename BaseClass::IndexType;
 
  public:
@@ -408,6 +411,9 @@ class ArrayExtentsWithOffset<ExtentsV<SizeType_, X0, X1>, LayoutType>
   using BaseClass::totalNbElement;
   using Layout = typename LayoutType::Layout2Type;
   using DynamicDimsType = typename BaseClass::DynamicDimsType;
+  using MDIndexType = typename BaseClass::MDIndexType;
+
+  // TODO: Rendre obsolète mi-2024
   using IndexType = typename BaseClass::IndexType;
 
  public:
@@ -459,6 +465,9 @@ class ArrayExtentsWithOffset<ExtentsV<SizeType_, X0, X1, X2>, LayoutType>
   using BaseClass::totalNbElement;
   using Layout = typename LayoutType::Layout3Type;
   using DynamicDimsType = typename BaseClass::DynamicDimsType;
+  using MDIndexType = typename BaseClass::MDIndexType;
+
+  // TODO: Rendre obsolète mi-2024
   using IndexType = typename BaseClass::IndexType;
 
  public:
@@ -525,6 +534,9 @@ class ArrayExtentsWithOffset<ExtentsV<SizeType_, X0, X1, X2, X3>, LayoutType>
   using BaseClass::totalNbElement;
   using Layout = typename LayoutType::Layout4Type;
   using DynamicDimsType = typename BaseClass::DynamicDimsType;
+  using MDIndexType = typename BaseClass::MDIndexType;
+
+  // TODO: Rendre obsolète mi-2024
   using IndexType = typename BaseClass::IndexType;
 
  public:

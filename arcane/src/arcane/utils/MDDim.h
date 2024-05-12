@@ -79,13 +79,16 @@ class ExtentsV<IndexType_, X0>
   static constexpr int nb_dynamic = impl::extent::nbDynamic(X0);
   static constexpr bool is_full_dynamic() { return (nb_dynamic == 1); }
 
-  using IndexType = ArrayIndex<1>;
+  using MDIndexType = MDIndex<1>;
   using ArrayExtentsValueType = impl::ArrayExtentsValue<IndexType_, X0>;
   using RemovedFirstExtentsType = ExtentsV<IndexType_>;
-  using DynamicDimsType = ArrayIndex<nb_dynamic>;
+  using DynamicDimsType = MDIndex<nb_dynamic>;
   template <int X> using AddedFirstExtentsType = ExtentsV<IndexType_, X, X0>;
   template <int X, int Last> using AddedFirstLastExtentsType = ExtentsV<IndexType_, X, X0, Last>;
   template <int X, int Last1, int Last2> using AddedFirstLastLastExtentsType = ExtentsV<IndexType_, X, X0, Last1, Last2>;
+
+  // TODO: rendre obsolète (mi-2024). Utiliser MDIndexType à la place
+  using IndexType = ArrayIndex<1>;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -102,12 +105,15 @@ class ExtentsV<IndexType_, X0, X1>
   static constexpr int nb_dynamic = impl::extent::nbDynamic(X0, X1);
   static constexpr bool is_full_dynamic() { return (nb_dynamic == 2); }
 
-  using IndexType = ArrayIndex<2>;
+  using MDIndexType = MDIndex<2>;
   using ArrayExtentsValueType = impl::ArrayExtentsValue<IndexType_, X0, X1>;
   using RemovedFirstExtentsType = ExtentsV<IndexType_, X1>;
-  using DynamicDimsType = ArrayIndex<nb_dynamic>;
+  using DynamicDimsType = MDIndex<nb_dynamic>;
   template <int X> using AddedFirstExtentsType = ExtentsV<IndexType_, X, X0, X1>;
   template <int X, int Last> using AddedFirstLastExtentsType = ExtentsV<IndexType_, X, X0, X1, Last>;
+
+  // TODO: rendre obsolète (mi-2024). Utiliser MDIndexType à la place
+  using IndexType = ArrayIndex<2>;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -124,11 +130,14 @@ class ExtentsV<IndexType_, X0, X1, X2>
   static constexpr int nb_dynamic = impl::extent::nbDynamic(X0, X1, X2);
   static constexpr bool is_full_dynamic() { return (nb_dynamic == 3); }
 
-  using IndexType = ArrayIndex<3>;
+  using MDIndexType = MDIndex<3>;
   using ArrayExtentsValueType = impl::ArrayExtentsValue<IndexType_, X0, X1, X2>;
   using RemovedFirstExtentsType = ExtentsV<IndexType_, X1, X2>;
-  using DynamicDimsType = ArrayIndex<nb_dynamic>;
+  using DynamicDimsType = MDIndex<nb_dynamic>;
   template <int X> using AddedFirstExtentsType = ExtentsV<IndexType_, X, X0, X1, X2>;
+
+  // TODO: rendre obsolète (mi-2024). Utiliser MDIndexType à la place
+  using IndexType = MDIndex<3>;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -145,10 +154,13 @@ class ExtentsV<IndexType_, X0, X1, X2, X3>
   static constexpr int nb_dynamic = impl::extent::nbDynamic(X0, X1, X2, X3);
   static constexpr bool is_full_dynamic() { return (nb_dynamic == 4); }
 
-  using IndexType = ArrayIndex<4>;
+  using MDIndexType = MDIndex<4>;
   using ArrayExtentsValueType = impl::ArrayExtentsValue<IndexType_, X0, X1, X2, X3>;
   using RemovedFirstExtentsType = ExtentsV<IndexType_, X1, X2, X3>;
-  using DynamicDimsType = ArrayIndex<nb_dynamic>;
+  using DynamicDimsType = MDIndex<nb_dynamic>;
+
+  // TODO: rendre obsolète (mi-2024). Utiliser MDIndexType à la place
+  using IndexType = MDIndex<4>;
 };
 
 /*---------------------------------------------------------------------------*/
