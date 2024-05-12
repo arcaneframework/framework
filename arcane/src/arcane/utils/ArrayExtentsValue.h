@@ -78,8 +78,11 @@ class ArrayExtentsValue<IndexType_, X0>
  public:
 
   using ExtentsType = ExtentsV<IndexType_, X0>;
-  using IndexType = ArrayIndex<1>;
   using DynamicDimsType = typename ExtentsType::DynamicDimsType;
+  using MDIndexType = MDIndex<1>;
+
+  // TODO: Rendre obsolète mi-2024
+  using IndexType = ArrayIndex<1>;
 
   ArrayExtentsValue() = default;
 
@@ -160,10 +163,17 @@ class ArrayExtentsValue<IndexType_, X0, X1>
  public:
 
   using ExtentsType = ExtentsV<IndexType_, X0, X1>;
-  using IndexType = ArrayIndex<2>;
+  using MDIndexType = MDIndex<2>;
   using DynamicDimsType = typename ExtentsType::DynamicDimsType;
 
+  // TODO: Rendre obsolète mi-2024
+  using IndexType = ArrayIndex<2>;
+
+ public:
+
   ArrayExtentsValue() = default;
+
+ public:
 
   template <Int32 I> constexpr ARCCORE_HOST_DEVICE Int32 constExtent() const
   {
@@ -255,9 +265,17 @@ class ArrayExtentsValue<IndexType_, X0, X1, X2>
  public:
 
   using ExtentsType = ExtentsV<IndexType_, X0, X1, X2>;
-  using IndexType = ArrayIndex<3>;
+  using MDIndexType = MDIndex<3>;
   using DynamicDimsType = typename ExtentsType::DynamicDimsType;
+
+  // TODO: Rendre obsolète mi-2024
+  using IndexType = ArrayIndex<3>;
+
+ public:
+
   ArrayExtentsValue() = default;
+
+ public:
 
   template <Int32 I> constexpr ARCCORE_HOST_DEVICE Int32 constExtent() const
   {
@@ -363,10 +381,17 @@ class ArrayExtentsValue<IndexType_, X0, X1, X2, X3>
  public:
 
   using ExtentsType = ExtentsV<IndexType_, X0, X1, X2, X3>;
-  using IndexType = ArrayIndex<4>;
+  using MDIndexType = MDIndex<4>;
   using DynamicDimsType = typename ExtentsType::DynamicDimsType;
 
+  // TODO: Rendre obsolète mi-2024
+  using IndexType = ArrayIndex<4>;
+
+ public:
+
   ArrayExtentsValue() = default;
+
+ public:
 
   template <Int32 I> constexpr ARCCORE_HOST_DEVICE Int32 constExtent() const
   {
