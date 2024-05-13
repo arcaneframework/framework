@@ -56,7 +56,8 @@ jobs:
           - image_short: 'U22_G12_C15_CU122'
             image_long: 'ubuntu-2204:gcc-12_clang-15_cuda-122'
             image_date: '20231127'
-            image_args: '-DARCCORE_CXX_STANDARD=20'
+            # Disable googletest with CUDA because it requires a GPU driver
+            image_args: '-DARCCORE_CXX_STANDARD=20 -DARCANE_EXECUTE_ACCELERATOR_GOOGLETEST=OFF'
             image_cuda: true
 
           - version_short: 'M'
