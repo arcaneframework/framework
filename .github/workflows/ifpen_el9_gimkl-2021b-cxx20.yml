@@ -60,8 +60,8 @@ jobs:
         uses: actions/cache/restore@v3
         with:
           path: ${{ env.CCACHE_DIR }}
-          key: ifpen-el9-gimkl-2021b-${{ env.CM_BUILD_TYPE }}-${{ env.NOW }}-${{ github.run_number }}
-          restore-keys: ifpen-el9-gimkl-2021b-${{ env.CM_BUILD_TYPE }}-
+          key: ifpen-el9-gimkl-2021b-cxx20-${{ env.CM_BUILD_TYPE }}-${{ env.NOW }}-${{ github.run_number }}
+          restore-keys: ifpen-el9-gimkl-2021b-cxx20-${{ env.CM_BUILD_TYPE }}-
 
       # Installation
 
