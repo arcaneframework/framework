@@ -28,9 +28,7 @@ arcane_register_library(arcane_accelerator OPTIONAL)
 # ----------------------------------------------------------------------------
 
 if (GTEST_FOUND)
-  # Pour l'instant n'active pas le test car il ne fonctionne
-  # pas sur tous les workflows du CI.
-  # add_subdirectory(tests)
+  add_subdirectory(tests)
 endif()
 
 # ----------------------------------------------------------------------------
