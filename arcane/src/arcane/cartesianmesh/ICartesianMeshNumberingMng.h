@@ -226,6 +226,30 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMeshNumberingMng
   virtual Int64 globalNbFacesZ(Integer level) const = 0;
 
   /*!
+   * \brief Méthode permettant de récupérer le nombre de mailles total dans un niveau.
+   *
+   * \param level Le niveau.
+   * \return Le nombre de mailles dans le niveau.
+   */
+  virtual Int64 nbCellInLevel(Integer level) const = 0;
+
+  /*!
+   * \brief Méthode permettant de récupérer le nombre de noeuds total dans un niveau.
+   *
+   * \param level Le niveau.
+   * \return Le nombre de noeuds dans le niveau.
+   */
+  virtual Int64 nbNodeInLevel(Integer level) const = 0;
+
+  /*!
+   * \brief Méthode permettant de récupérer le nombre de faces total dans un niveau.
+   *
+   * \param level Le niveau.
+   * \return Le nombre de faces dans le niveau.
+   */
+  virtual Int64 nbFaceInLevel(Integer level) const = 0;
+
+  /*!
    * \brief Méthode permettant de récupérer le pattern de raffinement utilisé dans chaque maille.
    * Par exemple, si le pattern vaut 2, chaque maille parente aura 2*2 mailles filles (2*2*2 en 3D).
    *

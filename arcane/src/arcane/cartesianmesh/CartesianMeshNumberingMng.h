@@ -62,6 +62,10 @@ class CartesianMeshNumberingMng
   Int64 globalNbFacesY(Integer level) const override;
   Int64 globalNbFacesZ(Integer level) const override;
 
+  Int64 nbCellInLevel(Integer level) const override;
+  Int64 nbNodeInLevel(Integer level) const override;
+  Int64 nbFaceInLevel(Integer level) const override;
+
   Integer pattern() const override;
   Int64 offsetLevelToLevel(Int64 coord, Integer level_from, Integer level_to) const override;
   Int64 faceOffsetLevelToLevel(Int64 coord, Integer level_from, Integer level_to) const override;
@@ -137,6 +141,19 @@ class CartesianMeshNumberingMng
 
   Int64 childFaceUniqueIdOfFace(Int64 uid, Integer level, Int64 child_index_in_parent) override;
   Int64 childFaceUniqueIdOfFace(Face face, Int64 child_index_in_parent) override;
+
+ private:
+
+  /*!
+   * \brief Méthode permettant de récupérer le nombre de faces des trois parties de la numérotation.
+   *
+   * En effet, pour numéroter en 3D, on numérote d'abord les faces xy, puis les faces yz et enfin
+   * les faces zx. Cette méthode permet de récupérer le nombre de faces {xy, yz, zx}.
+   *
+   * \param level Le niveau de la numérotation.
+   * \return Le nombre de faces {xy, yz, zx}.
+   */
+  Int64x3 face3DNumberingThreeParts(Integer level) const;
 
  private:
 
