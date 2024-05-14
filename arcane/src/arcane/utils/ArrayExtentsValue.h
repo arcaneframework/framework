@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ArrayExtentsValue.h                                         (C) 2000-2023 */
+/* ArrayExtentsValue.h                                         (C) 2000-2024 */
 /*                                                                           */
 /* Gestion de valeurs des dimensions des tableaux N-dimensions.              */
 /*---------------------------------------------------------------------------*/
@@ -20,12 +20,6 @@
 
 #include "arccore/base/Span.h"
 
-/*
- * ATTENTION:
- *
- * Toutes les classes de ce fichier sont expérimentales et l'API n'est pas
- * figée. A NE PAS UTILISER EN DEHORS DE ARCANE.
- */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -36,9 +30,10 @@ namespace Arcane::impl
 /*---------------------------------------------------------------------------*/
 
 template <class T> constexpr ARCCORE_HOST_DEVICE
-T fastmod(T a , T b)
+T
+fastmod(T a, T b)
 {
-  return a < b ? a : a-b*(a/b);
+  return a < b ? a : a - b * (a / b);
 }
 
 /*!
@@ -46,10 +41,11 @@ T fastmod(T a , T b)
  *
  * La valeur de la dimension est donnée en paramètre template
  */
-template<Int32 Size>
+template <Int32 Size, typename IndexType_ = Int32>
 class ExtentValue
 {
  public:
+
   static constexpr Int64 size() { return Size; };
   static constexpr Int32 v = Size;
 };
@@ -59,8 +55,8 @@ class ExtentValue
  *
  * La valeur de la dimension est conservée dans \a v.
  */
-template<>
-class ExtentValue<DynExtent>
+template <typename IndexType_>
+class ExtentValue<DynExtent, IndexType_>
 {
  public:
 
@@ -68,7 +64,7 @@ class ExtentValue<DynExtent>
 
  public:
 
-  Int32 v = 0;
+  IndexType_ v = 0;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -76,26 +72,29 @@ class ExtentValue<DynExtent>
 /*!
  * \brief Spécialisation pour contenir les dimensions d'un tableau à 1 dimension.
  */
-template<Int32 X0>
-class ArrayExtentsValue<X0>
+template <typename IndexType_, Int32 X0>
+class ArrayExtentsValue<IndexType_, X0>
 {
  public:
 
-  using ExtentsType = ExtentsV<X0>;
-  using IndexType = ArrayIndex<1>;
+  using ExtentsType = ExtentsV<IndexType_, X0>;
   using DynamicDimsType = typename ExtentsType::DynamicDimsType;
+  using MDIndexType = MDIndex<1>;
+
+  // TODO: Rendre obsolète mi-2024
+  using IndexType = ArrayIndex<1>;
 
   ArrayExtentsValue() = default;
 
-  template<Int32 I> constexpr ARCCORE_HOST_DEVICE Int32 constExtent() const
+  template <Int32 I> constexpr ARCCORE_HOST_DEVICE Int32 constExtent() const
   {
-    static_assert(I==0,"Invalid value for i (i==0)");
+    static_assert(I == 0, "Invalid value for i (i==0)");
     return m_extent0.v;
   }
 
-  constexpr ARCCORE_HOST_DEVICE std::array<Int32,1> asStdArray() const
+  constexpr ARCCORE_HOST_DEVICE std::array<Int32, 1> asStdArray() const
   {
-    return std::array<Int32,1>{m_extent0.v};
+    return std::array<Int32, 1>{ m_extent0.v };
   }
 
   constexpr ARCCORE_HOST_DEVICE Int64 totalNbElement() const
@@ -158,26 +157,33 @@ class ArrayExtentsValue<X0>
 /*!
  * \brief Spécialisation pour contenir les dimensions d'un tableau à 2 dimensions.
  */
-template<Int32 X0,Int32 X1>
-class ArrayExtentsValue<X0,X1>
+template <typename IndexType_, Int32 X0, Int32 X1>
+class ArrayExtentsValue<IndexType_, X0, X1>
 {
  public:
 
-  using ExtentsType = ExtentsV<X0,X1>;
-  using IndexType = ArrayIndex<2>;
+  using ExtentsType = ExtentsV<IndexType_, X0, X1>;
+  using MDIndexType = MDIndex<2>;
   using DynamicDimsType = typename ExtentsType::DynamicDimsType;
+
+  // TODO: Rendre obsolète mi-2024
+  using IndexType = ArrayIndex<2>;
+
+ public:
 
   ArrayExtentsValue() = default;
 
-  template<Int32 I> constexpr ARCCORE_HOST_DEVICE Int32 constExtent() const
+ public:
+
+  template <Int32 I> constexpr ARCCORE_HOST_DEVICE Int32 constExtent() const
   {
-    static_assert(I>=0 && I<2,"Invalid value for I (0<=I<2)");
-    if (I==0)
+    static_assert(I >= 0 && I < 2, "Invalid value for I (0<=I<2)");
+    if (I == 0)
       return m_extent0.v;
     return m_extent1.v;
   }
 
-  constexpr ARCCORE_HOST_DEVICE std::array<Int32,2> asStdArray() const
+  constexpr ARCCORE_HOST_DEVICE std::array<Int32, 2> asStdArray() const
   {
     return { m_extent0.v, m_extent1.v };
   }
@@ -189,7 +195,7 @@ class ArrayExtentsValue<X0,X1>
 
   constexpr ARCCORE_HOST_DEVICE IndexType getIndices(Int32 i) const
   {
-    Int32 i1 = impl::fastmod(i,m_extent1.v);
+    Int32 i1 = impl::fastmod(i, m_extent1.v);
     Int32 i0 = i / m_extent1.v;
     return { i0, i1 };
   }
@@ -232,7 +238,7 @@ class ArrayExtentsValue<X0,X1>
 
   constexpr std::array<Int32, 1> _removeFirstExtent() const
   {
-    return std::array<Int32, 1>{m_extent1.v};
+    return std::array<Int32, 1>{ m_extent1.v };
   }
 
   ARCCORE_HOST_DEVICE void _checkIndex(IndexType idx) const
@@ -253,27 +259,35 @@ class ArrayExtentsValue<X0,X1>
 /*!
  * \brief Spécialisation pour contenir les dimensions d'un tableau à 3 dimensions.
  */
-template<Int32 X0,Int32 X1,Int32 X2>
-class ArrayExtentsValue<X0,X1,X2>
+template <typename IndexType_, Int32 X0, Int32 X1, Int32 X2>
+class ArrayExtentsValue<IndexType_, X0, X1, X2>
 {
  public:
 
-  using ExtentsType = ExtentsV<X0,X1,X2>;
-  using IndexType = ArrayIndex<3>;
+  using ExtentsType = ExtentsV<IndexType_, X0, X1, X2>;
+  using MDIndexType = MDIndex<3>;
   using DynamicDimsType = typename ExtentsType::DynamicDimsType;
+
+  // TODO: Rendre obsolète mi-2024
+  using IndexType = ArrayIndex<3>;
+
+ public:
+
   ArrayExtentsValue() = default;
 
-  template<Int32 I> constexpr ARCCORE_HOST_DEVICE Int32 constExtent() const
+ public:
+
+  template <Int32 I> constexpr ARCCORE_HOST_DEVICE Int32 constExtent() const
   {
-    static_assert(I>=0 && I<3,"Invalid value for I (0<=I<3)");
-    if (I==0)
+    static_assert(I >= 0 && I < 3, "Invalid value for I (0<=I<3)");
+    if (I == 0)
       return m_extent0.v;
-    if (I==1)
+    if (I == 1)
       return m_extent1.v;
     return m_extent2.v;
   }
 
-  constexpr ARCCORE_HOST_DEVICE std::array<Int32,3> asStdArray() const
+  constexpr ARCCORE_HOST_DEVICE std::array<Int32, 3> asStdArray() const
   {
     return { m_extent0.v, m_extent1.v, m_extent2.v };
   }
@@ -285,9 +299,9 @@ class ArrayExtentsValue<X0,X1,X2>
 
   constexpr ARCCORE_HOST_DEVICE IndexType getIndices(Int32 i) const
   {
-    Int32 i2 = impl::fastmod(i,m_extent2.v);
+    Int32 i2 = impl::fastmod(i, m_extent2.v);
     Int32 fac = m_extent2.v;
-    Int32 i1 = impl::fastmod(i / fac,m_extent1.v);
+    Int32 i1 = impl::fastmod(i / fac, m_extent1.v);
     fac *= m_extent1.v;
     Int32 i0 = i / fac;
     return { i0, i1, i2 };
@@ -361,30 +375,37 @@ class ArrayExtentsValue<X0,X1,X2>
 /*!
  * \brief Spécialisation pour contenir les dimensions d'un tableau à 4 dimensions.
  */
-template<Int32 X0,Int32 X1,Int32 X2,Int32 X3>
-class ArrayExtentsValue<X0,X1,X2,X3>
+template <typename IndexType_, Int32 X0, Int32 X1, Int32 X2, Int32 X3>
+class ArrayExtentsValue<IndexType_, X0, X1, X2, X3>
 {
  public:
 
-  using ExtentsType = ExtentsV<X0,X1,X2,X3>;
-  using IndexType = ArrayIndex<4>;
+  using ExtentsType = ExtentsV<IndexType_, X0, X1, X2, X3>;
+  using MDIndexType = MDIndex<4>;
   using DynamicDimsType = typename ExtentsType::DynamicDimsType;
+
+  // TODO: Rendre obsolète mi-2024
+  using IndexType = ArrayIndex<4>;
+
+ public:
 
   ArrayExtentsValue() = default;
 
-  template<Int32 I> constexpr ARCCORE_HOST_DEVICE Int32 constExtent() const
+ public:
+
+  template <Int32 I> constexpr ARCCORE_HOST_DEVICE Int32 constExtent() const
   {
-    static_assert(I>=0 && I<4,"Invalid value for I (0<=I<4)");
-    if (I==0)
+    static_assert(I >= 0 && I < 4, "Invalid value for I (0<=I<4)");
+    if (I == 0)
       return m_extent0.v;
-    if (I==1)
+    if (I == 1)
       return m_extent1.v;
-    if (I==2)
+    if (I == 2)
       return m_extent2.v;
     return m_extent3.v;
   }
 
-  constexpr ARCCORE_HOST_DEVICE std::array<Int32,4> asStdArray() const
+  constexpr ARCCORE_HOST_DEVICE std::array<Int32, 4> asStdArray() const
   {
     return { m_extent0.v, m_extent1.v, m_extent2.v, m_extent3.v };
   }
@@ -397,13 +418,13 @@ class ArrayExtentsValue<X0,X1,X2,X3>
   constexpr ARCCORE_HOST_DEVICE IndexType getIndices(Int32 i) const
   {
     // Compute base indices
-    Int32 i3 = impl::fastmod(i,m_extent3.v);
+    Int32 i3 = impl::fastmod(i, m_extent3.v);
     Int32 fac = m_extent3.v;
-    Int32 i2 = impl::fastmod(i/fac,m_extent2.v);
+    Int32 i2 = impl::fastmod(i / fac, m_extent2.v);
     fac *= m_extent2.v;
-    Int32 i1 = impl::fastmod(i/fac,m_extent1.v);
+    Int32 i1 = impl::fastmod(i / fac, m_extent1.v);
     fac *= m_extent1.v;
-    Int32 i0 = i /fac;
+    Int32 i0 = i / fac;
     return { i0, i1, i2, i3 };
   }
 

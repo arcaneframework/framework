@@ -52,6 +52,9 @@ void arcaneCheckCudaErrorsNoThrow(const TraceInfo& ti, cudaError_t e)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 /*!
  * \brief Classe de base d'un allocateur spécifique pour 'Cuda'.
  */
@@ -106,8 +109,6 @@ class UnifiedMemoryCudaMemoryAllocator
   {
     if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_CUDA_UM_PAGE_ALLOC", true))
       m_page_allocate_level = v.value();
-    if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_CUDA_MALLOC_TRACE", true))
-      m_trace_level = v.value();
   }
 
  public:
@@ -129,7 +130,7 @@ class UnifiedMemoryCudaMemoryAllocator
       return wanted_capacity;
     // Alloue un multiple de la taille d'une page
     // Comme les transfers de la mémoire unifiée se font par page,
-    // cela permet de détecter qu'elle allocation provoque le transfert
+    // cela permet de détecter quelles allocations provoquent le transfert
     // TODO: vérifier que le début de l'allocation est bien un multiple
     // de la taille de page.
     Int64 orig_capacity = wanted_capacity;
@@ -149,27 +150,7 @@ class UnifiedMemoryCudaMemoryAllocator
   cudaError_t _deallocate(AllocatedMemoryInfo mem_info, MemoryAllocationArgs args) override
   {
     void* ptr = mem_info.baseAddress();
-    const bool do_trace = m_trace_level > 0;
-    if (do_trace) {
-      // Utilise un flux spécifique pour être sur que les affichages ne seront pas mélangés
-      // en cas de multi-threading
-      std::ostringstream ostr;
-      if (m_trace_level >= 2)
-        ostr << "FREE_MANAGED=" << ptr << " size=" << mem_info.capacity() << " name=" << args.arrayName();
-      String s;
-      if (m_trace_level >= 3) {
-        s = platform::getStackTrace();
-        if (m_trace_level >= 4) {
-          ostr << " stack=" << s;
-        }
-      }
-      impl::MemoryTracer::notifyMemoryFree(ptr, args.arrayName(), s, 0);
-      if (m_trace_level >= 2) {
-        ostr << "\n";
-        std::cout << ostr.str();
-      }
-    }
-
+    m_tracer.traceDeallocate(mem_info, args);
     return ::cudaFree(ptr);
   }
 
@@ -180,31 +161,10 @@ class UnifiedMemoryCudaMemoryAllocator
     if (r != cudaSuccess)
       return r;
 
-    const bool do_trace = m_trace_level > 0;
-    if (do_trace) {
-      // Utilise un flux spécifique pour être sur que les affichages ne seront pas mélangés
-      // en cas de multi-threading
-      std::ostringstream ostr;
-      if (m_trace_level >= 2)
-        ostr << "MALLOC_MANAGED=" << p << " size=" << new_size << " name=" << args.arrayName();
-      String s;
-      if (m_trace_level >= 3) {
-        s = platform::getStackTrace();
-        if (m_trace_level >= 4) {
-          ostr << " stack=" << s;
-        }
-      }
-      Span<const std::byte> bytes(reinterpret_cast<std::byte*>(p), new_size);
-      impl::MemoryTracer::notifyMemoryAllocation(bytes, args.arrayName(), s, 0);
-      if (m_trace_level >= 2) {
-        ostr << "\n";
-        std::cout << ostr.str();
-      }
-    }
+    m_tracer.traceAllocate(p, new_size, args);
 
     _applyHint(*ptr, new_size, args);
-
-    return r;
+    return cudaSuccess;
   }
 
   void _applyHint(void* p, size_t new_size, MemoryAllocationArgs args)
@@ -231,7 +191,7 @@ class UnifiedMemoryCudaMemoryAllocator
   //! Strictement positif si on alloue page par page
   Int32 m_page_allocate_level = 0;
 
-  Int32 m_trace_level = 0;
+  impl::MemoryTracerWrapper m_tracer;
 };
 
 /*---------------------------------------------------------------------------*/

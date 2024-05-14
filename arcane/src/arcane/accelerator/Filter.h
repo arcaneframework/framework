@@ -24,12 +24,15 @@
 #include "arcane/accelerator/AcceleratorGlobal.h"
 #include "arcane/accelerator/CommonUtils.h"
 #include "arcane/accelerator/RunCommandLaunchInfo.h"
+#include "arcane/accelerator/RunCommandLoop.h"
+#include "arcane/accelerator/ScanImpl.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 namespace Arcane::Accelerator::impl
 {
+//#define ARCANE_USE_SCAN_ONEDPL
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -44,8 +47,8 @@ class ARCANE_ACCELERATOR_EXPORT GenericFilteringBase
   template <typename DataType, typename FlagType, typename OutputDataType>
   friend class GenericFilteringFlag;
   friend class GenericFilteringIf;
+  friend class SyclGenericFilteringImpl;
 
- public:
  public:
 
   // NOTE: cette classe devrait être privée mais ce n'est pas possible avec CUDA.
@@ -144,6 +147,85 @@ class ARCANE_ACCELERATOR_EXPORT GenericFilteringBase
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+#if defined(ARCANE_COMPILING_SYCL)
+//! Implémentation pour SYCL
+class SyclGenericFilteringImpl
+{
+ public:
+
+  template <typename SelectLambda, typename InputIterator, typename OutputIterator>
+  static void apply(GenericFilteringBase& s, Int32 nb_item, InputIterator input_iter,
+                    OutputIterator output_iter, SelectLambda select_lambda)
+  {
+    RunQueue* queue = s.m_queue;
+    using DataType = std::iterator_traits<OutputIterator>::value_type;
+#if defined(ARCANE_USE_SCAN_ONEDPL) && defined(__INTEL_LLVM_COMPILER)
+    sycl::queue true_queue = impl::SyclUtils::toNativeStream(queue);
+    auto policy = oneapi::dpl::execution::make_device_policy(true_queue);
+    auto out_iter = oneapi::dpl::copy_if(policy, input_iter, input_iter + nb_item, output_iter, select_lambda);
+    Int32 nb_output = out_iter - output_iter;
+    s.m_host_nb_out_storage[0] = nb_output;
+#else
+    NumArray<Int32, MDDim1> scan_input_data(nb_item);
+    NumArray<Int32, MDDim1> scan_output_data(nb_item);
+    SmallSpan<Int32> in_scan_data = scan_input_data.to1DSmallSpan();
+    SmallSpan<Int32> out_scan_data = scan_output_data.to1DSmallSpan();
+    {
+      auto command = makeCommand(queue);
+      command << RUNCOMMAND_LOOP1(iter, nb_item)
+      {
+        auto [i] = iter();
+        in_scan_data[i] = select_lambda(input_iter[i]) ? 1 : 0;
+      };
+    }
+    queue->barrier();
+    SyclScanner<false /*is_exclusive*/, Int32, ScannerSumOperator<Int32>> scanner;
+    scanner.doScan(*queue, in_scan_data, out_scan_data, 0);
+    // La valeur de 'out_data' pour le dernier élément (nb_item-1) contient la taille du filtre
+    Int32 nb_output = out_scan_data[nb_item - 1];
+    s.m_host_nb_out_storage[0] = nb_output;
+
+    const bool do_verbose = false;
+    if (do_verbose && nb_item < 1500)
+      for (int i = 0; i < nb_item; ++i) {
+        std::cout << "out_data i=" << i << " out_data=" << out_scan_data[i]
+                  << " in_data=" << in_scan_data[i] << " value=" << input_iter[i] << "\n ";
+      }
+    // Copie depuis 'out_data' vers 'in_data' les indices correspondant au filtre
+    // Comme 'output_iter' et 'input_iter' peuvent se chevaucher, il
+    // faut faire une copie intermédiaire
+    // TODO: détecter cela et ne faire la copie que si nécessaire.
+    NumArray<DataType,MDDim1> out_copy(eMemoryRessource::Device);
+    out_copy.resize(nb_output);
+    auto out_copy_view = out_copy.to1DSpan();
+    {
+      auto command = makeCommand(queue);
+      command << RUNCOMMAND_LOOP1(iter, nb_item)
+      {
+        auto [i] = iter();
+        if (in_scan_data[i] == 1)
+          out_copy_view[out_scan_data[i] - 1] = input_iter[i];
+      };
+    }
+    {
+      auto command = makeCommand(queue);
+      command << RUNCOMMAND_LOOP1(iter, nb_output)
+      {
+        auto [i] = iter();
+        output_iter[i] = out_copy_view[i];
+      };
+    }
+    // Obligatoire à cause de 'out_copy'. On pourra le supprimer avec une
+    // allocation temporaire.
+    queue->barrier();
+#endif
+  }
+};
+#endif
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 /*!
  * \internal
  * \brief Classe pour effectuer un filtrage
@@ -202,17 +284,13 @@ class GenericFilteringFlag
       s.m_device_nb_out_storage.copyToAsync(s.m_host_nb_out_storage, queue);
     } break;
 #endif
-#if defined(ARCANE_COMPILING_SYCL) && defined(__INTEL_LLVM_COMPILER)
+#if defined(ARCANE_COMPILING_SYCL)
     case eExecutionPolicy::SYCL: {
-      sycl::queue true_queue = impl::SyclUtils::toNativeStream(queue);
-      auto policy = oneapi::dpl::execution::make_device_policy(true_queue);
       impl::IndexIterator iter2(0);
       auto filter_lambda = [=](Int32 input_index) -> bool { return flag[input_index] != 0; };
       auto setter_lambda = [=](Int32 input_index, Int32 output_index) { output[output_index] = input[input_index]; };
       GenericFilteringBase::SetterLambdaIterator<decltype(setter_lambda)> out(setter_lambda);
-      auto out_iter = oneapi::dpl::copy_if(policy, iter2, iter2 + nb_item, out, filter_lambda);
-      Int32 n = out_iter - out;
-      s.m_host_nb_out_storage[0] = n;
+      SyclGenericFilteringImpl::apply(s, nb_item, iter2, out, filter_lambda);
     } break;
 #endif
     case eExecutionPolicy::Thread:
@@ -295,14 +373,9 @@ class GenericFilteringIf
       s.m_device_nb_out_storage.copyToAsync(s.m_host_nb_out_storage, queue);
     } break;
 #endif
-#if defined(ARCANE_COMPILING_SYCL) && defined(__INTEL_LLVM_COMPILER)
+#if defined(ARCANE_COMPILING_SYCL)
     case eExecutionPolicy::SYCL: {
-      using DataType = std::iterator_traits<OutputIterator>::value_type;
-      sycl::queue true_queue = impl::SyclUtils::toNativeStream(queue);
-      auto policy = oneapi::dpl::execution::make_device_policy(true_queue);
-      auto out_iter = oneapi::dpl::copy_if(policy, input_iter, input_iter + nb_item, output_iter, select_lambda);
-      Int32 nb_output = out_iter - output_iter;
-      s.m_host_nb_out_storage[0] = nb_output;
+      SyclGenericFilteringImpl::apply(s, nb_item, input_iter, output_iter, select_lambda);
     } break;
 #endif
     case eExecutionPolicy::Thread:

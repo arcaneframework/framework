@@ -9,7 +9,6 @@ set( ARCANE_SOURCES
   CommonUtils.h
   CommonUtils.cc
   IReduceMemoryImpl.h
-  IRunQueueStream.h
   MaterialVariableViews.h
   MemoryCopier.cc
   NumArray.h
@@ -29,6 +28,7 @@ set( ARCANE_SOURCES
   RunQueueInternal.cc
   RunQueueInternal.h
   Scan.h
+  ScanImpl.h
   Filter.h
   Filterer.cc
   Partitioner.h

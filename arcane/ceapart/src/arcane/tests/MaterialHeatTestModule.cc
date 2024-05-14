@@ -699,17 +699,17 @@ _computeTotalTemperature(const HeatObject& heat_object, bool do_check)
   {
     auto command = makeCommand(m_queue);
     auto in_mat_temperature = viewIn(command, m_mat_temperature);
-    Accelerator::ReducerSum<double> total_temperature_reducer(command);
+    Accelerator::ReducerSum2<double> total_temperature_reducer(command);
     CellInfoListView cells_info(defaultMesh()->cellFamily());
-    command << RUNCOMMAND_MAT_ENUMERATE(MatAndGlobalCell, iter, mat)
+    command << RUNCOMMAND_MAT_ENUMERATE_EX(MatAndGlobalCell, iter, mat, total_temperature_reducer)
     {
       auto [mvi, cid] = iter();
       if (cells_info.isOwn(cid)) {
         Real t = in_mat_temperature[mvi];
-        total_temperature_reducer.add(t);
+        total_temperature_reducer.combine(t);
       }
     };
-    total_mat_temperature = total_temperature_reducer.reduce();
+    total_mat_temperature = total_temperature_reducer.reducedValue();
   }
 
   total_mat_temperature = parallelMng()->reduce(Parallel::ReduceSum, total_mat_temperature);

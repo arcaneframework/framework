@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ArrayIterator.h                                             (C) 2000-2022 */
+/* ArrayIterator.h                                             (C) 2000-2024 */
 /*                                                                           */
 /* Itérateur sur les Array, ArrayView, ConstArrayView, ...                   */
 /*---------------------------------------------------------------------------*/
@@ -69,11 +69,11 @@ class ArrayIterator
   constexpr ARCCORE_HOST_DEVICE reference operator*() const ARCCORE_NOEXCEPT { return *m_ptr; }
   constexpr ARCCORE_HOST_DEVICE pointer operator->() const ARCCORE_NOEXCEPT { return m_ptr; }
   constexpr ARCCORE_HOST_DEVICE ArrayIterator& operator++() ARCCORE_NOEXCEPT { ++m_ptr; return *this; }
-  constexpr ARCCORE_HOST_DEVICE const ArrayIterator operator++(int) ARCCORE_NOEXCEPT { return ArrayIterator(m_ptr++); }
+  constexpr ARCCORE_HOST_DEVICE ArrayIterator operator++(int) ARCCORE_NOEXCEPT { return ArrayIterator(m_ptr++); }
 
   // Bidirectional iterator requirements
   constexpr ARCCORE_HOST_DEVICE ArrayIterator& operator--() ARCCORE_NOEXCEPT { --m_ptr; return *this; }
-  constexpr ARCCORE_HOST_DEVICE const ArrayIterator operator--(int) ARCCORE_NOEXCEPT { return ArrayIterator(m_ptr--); }
+  constexpr ARCCORE_HOST_DEVICE ArrayIterator operator--(int) ARCCORE_NOEXCEPT { return ArrayIterator(m_ptr--); }
 
   // Random access iterator requirements
   constexpr ARCCORE_HOST_DEVICE reference operator[](difference_type n) const ARCCORE_NOEXCEPT { return m_ptr[n]; }

@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MemoryTracer.h                                              (C) 2000-2023 */
+/* MemoryTracer.h                                              (C) 2000-2024 */
 /*                                                                           */
 /* Utilitaires pour tracer les accès mémoire entre l'accélérateur et l'hôte. */
 /*---------------------------------------------------------------------------*/
@@ -28,7 +28,7 @@ namespace Arcane::Accelerator::impl
 /*---------------------------------------------------------------------------*/
 /*!
  * \internal
- * \brief Class utilitaires pour tracer les accès mémoire entre l'accélérateur
+ * \brief Classe utilitaire pour tracer les accès mémoire entre l'accélérateur
  * et l'hôte.
  */
 class ARCANE_ACCELERATOR_CORE_EXPORT MemoryTracer
@@ -38,6 +38,29 @@ class ARCANE_ACCELERATOR_CORE_EXPORT MemoryTracer
   static void notifyMemoryAllocation(Span<const std::byte> bytes, const String& name, const String& stack_trace, Int64 timestamp);
   static void notifyMemoryFree(void* ptr, const String& name, const String& stack_trace, Int64 timestamp);
   static std::pair<String, String> findMemory(const void* ptr);
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \internal
+ * \brief Classe utilitaire pour tracer les allocations/désallocation
+ */
+class ARCANE_ACCELERATOR_CORE_EXPORT MemoryTracerWrapper
+{
+ public:
+
+  MemoryTracerWrapper();
+
+ public:
+
+  bool isActive() const { return m_trace_level > 0; }
+  void traceDeallocate(const AllocatedMemoryInfo& mem_info, const MemoryAllocationArgs& args);
+  void traceAllocate(void* p, size_t new_size, MemoryAllocationArgs args);
+
+ private:
+
+  Int32 m_trace_level = 0;
 };
 
 /*---------------------------------------------------------------------------*/

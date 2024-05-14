@@ -24,8 +24,8 @@
 #include "arcane/accelerator/core/Memory.h"
 #include "arcane/accelerator/core/internal/IRunnerRuntime.h"
 #include "arcane/accelerator/core/internal/AcceleratorCoreGlobalInternal.h"
-#include "arcane/accelerator/core/IRunQueueStream.h"
-#include "arcane/accelerator/core/IRunQueueEventImpl.h"
+#include "arcane/accelerator/core/internal/IRunQueueStream.h"
+#include "arcane/accelerator/core/internal/IRunQueueEventImpl.h"
 #include "arcane/accelerator/core/DeviceInfoList.h"
 #include "arcane/accelerator/core/RunQueue.h"
 
@@ -66,7 +66,7 @@ class SyclRunQueueStream
   }
   void barrier() override
   {
-    m_sycl_stream->wait();
+    m_sycl_stream->wait_and_throw();
   }
   bool _barrierNoException() override
   {
@@ -79,16 +79,53 @@ class SyclRunQueueStream
     m_sycl_stream->memcpy(args.destination().data(), source_bytes.data(),
                           source_bytes.size());
     if (!args.isAsync())
-      m_sycl_stream->wait();
+      this->barrier();
   }
   void prefetchMemory([[maybe_unused]] const MemoryPrefetchArgs& args) override
   {
-    ARCANE_SYCL_FUNC_NOT_HANDLED;
+    auto source_bytes = args.source().bytes();
+    Int64 nb_byte = source_bytes.size();
+    if (nb_byte == 0)
+      return;
+    m_sycl_stream->prefetch(source_bytes.data(), nb_byte);
+    if (!args.isAsync())
+      this->barrier();
   }
   void* _internalImpl() override
   {
     return m_sycl_stream.get();
   }
+
+  void _setSyclLastCommandEvent([[maybe_unused]] void* sycl_event_ptr) override
+  {
+    sycl::event last_event;
+    if (sycl_event_ptr)
+      last_event = *(reinterpret_cast<sycl::event*>(sycl_event_ptr));
+    m_last_command_event = last_event;
+  }
+
+ public:
+
+  static sycl::async_handler _getAsyncHandler()
+  {
+    auto err_handler = [](const sycl::exception_list& exceptions) {
+      std::ostringstream ostr;
+      ostr << "Error in SYCL runtime\n";
+      for (const std::exception_ptr& e : exceptions) {
+        try {
+          std::rethrow_exception(e);
+        }
+        catch (const sycl::exception& e) {
+          ostr << "SYCL exception: " << e.what() << "\n";
+        }
+      }
+      ARCANE_FATAL(ostr.str());
+    };
+    return err_handler;
+  }
+
+  //! Évènement correspondant à la dernière commande
+  sycl::event lastCommandEvent() { return m_last_command_event; }
 
  public:
 
@@ -101,6 +138,7 @@ class SyclRunQueueStream
 
   impl::IRunnerRuntime* m_runtime;
   std::unique_ptr<sycl::queue> m_sycl_stream;
+  sycl::event m_last_command_event;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -123,12 +161,14 @@ class SyclRunQueueEvent
   // Enregistre l'événement au sein d'une RunQueue
   void recordQueue([[maybe_unused]] impl::IRunQueueStream* stream) final
   {
+    ARCANE_CHECK_POINTER(stream);
+    auto* rq = static_cast<SyclRunQueueStream*>(stream);
+    m_sycl_event = rq->lastCommandEvent();
 #if defined(__ADAPTIVECPP__)
     m_recorded_stream = stream;
     // TODO: Vérifier s'il faut faire quelque chose
 #elif defined(__INTEL_LLVM_COMPILER)
-    auto* rq = static_cast<SyclRunQueueStream*>(stream);
-    m_sycl_event = rq->trueStream().ext_oneapi_submit_barrier();
+    //m_sycl_event = rq->trueStream().ext_oneapi_submit_barrier();
 #else
     ARCANE_THROW(NotSupportedException, "Only supported for AdaptiveCpp and Intel DPC++ implementation");
 #endif
@@ -158,8 +198,20 @@ class SyclRunQueueEvent
 
   Int64 elapsedTime([[maybe_unused]] IRunQueueEventImpl* start_event) final
   {
-    ARCANE_SYCL_FUNC_NOT_HANDLED;
-    return 0;
+    ARCANE_CHECK_POINTER(start_event);
+    // Il faut prendre l'évènement de début car on est certain qu'il contient
+    // la bonne valeur de 'sycl::event'.
+    sycl::event event = (static_cast<SyclRunQueueEvent*>(start_event))->m_sycl_event;
+    // Si pas d'évènement associé, on ne fait rien pour éviter une exception
+    if (event==sycl::event())
+      return 0;
+
+    bool is_submitted = event.get_info<sycl::info::event::command_execution_status>() == sycl::info::event_command_status::complete;
+    if (!is_submitted)
+      return 0;
+    Int64 start = event.get_profiling_info<sycl::info::event_profiling::command_start>();
+    Int64 end = event.get_profiling_info<sycl::info::event_profiling::command_end>();
+    return (end - start);
   }
 
  private:
@@ -209,12 +261,10 @@ class SyclRunnerRuntime
   void setMemoryAdvice([[maybe_unused]] ConstMemoryView buffer, [[maybe_unused]] eMemoryAdvice advice,
                        [[maybe_unused]] DeviceId device_id) override
   {
-    ARCANE_SYCL_FUNC_NOT_HANDLED;
   }
   void unsetMemoryAdvice([[maybe_unused]] ConstMemoryView buffer,
                          [[maybe_unused]] eMemoryAdvice advice, [[maybe_unused]] DeviceId device_id) override
   {
-    ARCANE_SYCL_FUNC_NOT_HANDLED;
   }
 
   void setCurrentDevice([[maybe_unused]] DeviceId device_id) final
@@ -281,11 +331,22 @@ SyclRunQueueStream::
 SyclRunQueueStream(SyclRunnerRuntime* runtime, const RunQueueBuildInfo& bi)
 : m_runtime(runtime)
 {
+  sycl::device& d = runtime->defaultDevice();
+  // Indique que les commandes lancées sont implicitement exécutées les
+  // unes derrière les autres.
+  auto queue_property = sycl::property::queue::in_order();
+  // Pour le profiling
+  auto profiling_property = sycl::property::queue::enable_profiling();
+  sycl::property_list queue_properties(queue_property, profiling_property);
+
+  // Gestionnaire d'erreur.
+  sycl::async_handler err_handler;
+  err_handler = _getAsyncHandler();
   if (bi.isDefault())
-    m_sycl_stream = std::make_unique<sycl::queue>(runtime->defaultDevice(), sycl::property::queue::in_order());
+    m_sycl_stream = std::make_unique<sycl::queue>(d, err_handler, queue_properties);
   else {
     ARCANE_SYCL_FUNC_NOT_HANDLED;
-    m_sycl_stream = std::make_unique<sycl::queue>(runtime->defaultDevice(), sycl::property::queue::in_order());
+    m_sycl_stream = std::make_unique<sycl::queue>(d, err_handler, queue_properties);
   }
 }
 

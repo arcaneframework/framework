@@ -17,7 +17,7 @@
 #include "arcane/utils/PlatformUtils.h"
 
 #include "arcane/accelerator/core/RunQueue.h"
-#include "arcane/accelerator/core/IRunQueueStream.h"
+#include "arcane/accelerator/core/internal/IRunQueueStream.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -162,6 +162,15 @@ computeLoopRunInfo()
   ForLoopTraceInfo lti(m_command.traceInfo(), m_command.kernelName());
   m_loop_run_info = ForLoopRunInfo(computeParallelLoopOptions(), lti);
   m_loop_run_info.setExecStat(m_command._internalCommandExecStat());
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void RunCommandLaunchInfo::
+_addSyclEvent(void* sycl_event_ptr)
+{
+  m_command._internalNotifyBeginLaunchKernelSyclEvent(sycl_event_ptr);
 }
 
 /*---------------------------------------------------------------------------*/

@@ -1,6 +1,7 @@
 ﻿set(SOURCE_FILES
   TestInit.cc
   TestCommon.cc
+  TestReduce.cc
 )
 
 arcane_add_component_test_executable(accelerator

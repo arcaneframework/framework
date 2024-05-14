@@ -17,23 +17,15 @@
 #include "arcane/utils/ArrayView.h"
 #include "arcane/utils/FatalErrorException.h"
 
+#include "arcane/utils/NumArray.h"
+
 #include "arcane/accelerator/core/RunQueue.h"
 
 #include "arcane/accelerator/AcceleratorGlobal.h"
 #include "arcane/accelerator/CommonUtils.h"
 #include "arcane/accelerator/RunCommandLaunchInfo.h"
-
-#include <execution>
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-namespace Arcane::Accelerator
-{
-template <typename DataType> using ScannerSumOperator = impl::SumOperator<DataType>;
-template <typename DataType> using ScannerMaxOperator = impl::MaxOperator<DataType>;
-template <typename DataType> using ScannerMinOperator = impl::MinOperator<DataType>;
-} // namespace Arcane::Accelerator
+#include "arcane/accelerator/RunCommandLoop.h"
+#include "arcane/accelerator/ScanImpl.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -108,8 +100,9 @@ class ScannerImpl
                                                  nb_item, op, stream));
     } break;
 #endif
-#if defined(ARCANE_COMPILING_SYCL) && defined(__INTEL_LLVM_COMPILER)
+#if defined(ARCANE_COMPILING_SYCL)
     case eExecutionPolicy::SYCL: {
+#if defined(ARCANE_USE_SCAN_ONEDPL) && defined(__INTEL_LLVM_COMPILER)
       sycl::queue queue = impl::SyclUtils::toNativeStream(&m_queue);
       auto policy = oneapi::dpl::execution::make_device_policy(queue);
       if constexpr (IsExclusive) {
@@ -118,7 +111,33 @@ class ScannerImpl
       else {
         oneapi::dpl::inclusive_scan(policy, input_data, input_data + nb_item, output_data, op);
       }
-
+#else
+      NumArray<DataType, MDDim1>
+      copy_input_data(nb_item);
+      NumArray<DataType, MDDim1> copy_output_data(nb_item);
+      SmallSpan<DataType> in_data = copy_input_data.to1DSmallSpan();
+      SmallSpan<DataType> out_data = copy_output_data.to1DSmallSpan();
+      {
+        auto command = makeCommand(m_queue);
+        command << RUNCOMMAND_LOOP1(iter, nb_item)
+        {
+          auto [i] = iter();
+          in_data[i] = input_data[i];
+        };
+      }
+      m_queue.barrier();
+      SyclScanner<IsExclusive, DataType, Operator> scanner;
+      scanner.doScan(m_queue, in_data, out_data, init_value);
+      {
+        auto command = makeCommand(m_queue);
+        command << RUNCOMMAND_LOOP1(iter, nb_item)
+        {
+          auto [i] = iter();
+          output_data[i] = out_data[i];
+        };
+      }
+      m_queue.barrier();
+#endif
     } break;
 #endif
     case eExecutionPolicy::Thread:

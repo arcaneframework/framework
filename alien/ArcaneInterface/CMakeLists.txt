@@ -58,6 +58,9 @@ set(Boost_USE_CMAKE_CONFIG TRUE)
 #set(Glib_USE_CMAKE_CONFIG TRUE)
 set(HDF5_USE_CMAKE_CONFIG TRUE)
 
+# Path for dll copy
+set(BUILDSYSTEM_DLL_COPY_DIRECTORY ${ARCANEFRAMEWORK_BINARY_DIR}/lib)
+
 # Path to configuration files for Alien
 set(ALIEN_CMAKE_CONFIG_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 # Path to local build-system

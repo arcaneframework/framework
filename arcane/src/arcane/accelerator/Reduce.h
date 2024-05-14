@@ -21,6 +21,7 @@
 #include "arcane/accelerator/AcceleratorGlobal.h"
 #include "arcane/accelerator/CommonUtils.h"
 #include "arcane/accelerator/RunCommandLaunchInfo.h"
+#include "arcane/accelerator/RunCommandLoop.h"
 
 #include <limits.h>
 #include <float.h>
@@ -562,7 +563,7 @@ class HostDeviceReducer2
     DataType local_sum = sycl::reduce_over_group(id.get_group(), v, sycl_functor);
     if (local_id == 0) {
       grid_buffer[group_id] = local_sum;
-      
+
       // TODO: En théorie il faut faire l'équivalent d'un __threadfence() ici
       // pour garantir que les autres work-item voient bien la mise à jour de 'grid_buffer'.
       // Mais ce mécanisme n'existe pas avec SYCL 2020.
@@ -860,6 +861,35 @@ class GenericReducerIf;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+// Classe pour déterminer l'instance de 'Reducer2' à utiliser en fonction de l'opérateur.
+// A spécialiser.
+template <typename DataType, typename Operator>
+class ReduceOperatorToReducerTypeTraits;
+
+template <typename DataType>
+class ReduceOperatorToReducerTypeTraits<DataType, MaxOperator<DataType>>
+{
+ public:
+
+  using ReducerType = ReducerMax2<DataType>;
+};
+template <typename DataType>
+class ReduceOperatorToReducerTypeTraits<DataType, MinOperator<DataType>>
+{
+ public:
+
+  using ReducerType = ReducerMin2<DataType>;
+};
+template <typename DataType>
+class ReduceOperatorToReducerTypeTraits<DataType, SumOperator<DataType>>
+{
+ public:
+
+  using ReducerType = ReducerSum2<DataType>;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 /*!
  * \internal
  * \brief Classe de base pour effectuer une réduction.
@@ -964,6 +994,22 @@ class GenericReducerIf
       ARCANE_CHECK_HIP(rocprim::reduce(s.m_algo_storage.address(), temp_storage_size, input_iter, reduced_value_ptr, init_value,
                                        nb_item, reduce_op, stream));
       s.m_device_reduce_storage.copyToAsync(s.m_host_reduce_storage, &queue);
+    } break;
+#endif
+#if defined(ARCANE_COMPILING_SYCL)
+    case eExecutionPolicy::SYCL: {
+      {
+        RunCommand command2 = makeCommand(queue);
+        using ReducerType = typename ReduceOperatorToReducerTypeTraits<DataType, ReduceOperator>::ReducerType;
+        ReducerType reducer(command2);
+        command2 << RUNCOMMAND_LOOP1_EX(iter, nb_item, reducer)
+        {
+          auto [i] = iter();
+          reducer.combine(input_iter[i]);
+        };
+        queue.barrier();
+        s.m_host_reduce_storage[0] = reducer.reducedValue();
+      }
     } break;
 #endif
     case eExecutionPolicy::Thread:

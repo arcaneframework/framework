@@ -159,6 +159,7 @@ set(ARCANE_SOURCES
   ArrayExtentsValue.h
   ArrayBounds.h
   ArrayIndex.h
+  MDIndex.h
   ArrayLayout.h
   LoopRanges.h
   ArithmeticException.h

@@ -5,12 +5,12 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IRunQueueStream.h                                           (C) 2000-2024 */
+/* IRunQueueEventImpl.h                                        (C) 2000-2024 */
 /*                                                                           */
-/* Interface d'un flux d'exécution pour une RunQueue.                        */
+/* Interface de l'implémentation d'un évènement.                             */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_ACCELERATOR_IRUNQUEUESTREAM_H
-#define ARCANE_ACCELERATOR_IRUNQUEUESTREAM_H
+#ifndef ARCANE_ACCELERATOR_IRUNQUEUEEVENTIMPL_H
+#define ARCANE_ACCELERATOR_IRUNQUEUEEVENTIMPL_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -26,48 +26,22 @@ namespace Arcane::Accelerator::impl
 /*---------------------------------------------------------------------------*/
 /*!
  * \internal
- * \brief Interface d'un flux d'exécution pour une RunQueue.
+ * \brief Interface de l'implémentation d'un évènement.
  */
-class ARCANE_ACCELERATOR_CORE_EXPORT IRunQueueStream
+class ARCANE_ACCELERATOR_CORE_EXPORT IRunQueueEventImpl
 {
  public:
 
-  virtual ~IRunQueueStream() = default;
+  virtual ~IRunQueueEventImpl() = default;
 
  public:
 
-  //! Notification avant le lancement de la commande
-  virtual void notifyBeginLaunchKernel(impl::RunCommandImpl& command) = 0;
+  virtual void recordQueue(IRunQueueStream* stream) = 0;
+  virtual void wait() = 0;
+  virtual void waitForEvent(IRunQueueStream* stream) = 0;
 
-  /*!
-   * \brief Notification de fin de lancement de la commande.
-   *
-   * En mode asynchrone, la commande peut continuer à s'exécuter en tâche de fond.
-   */
-  virtual void notifyEndLaunchKernel(impl::RunCommandImpl& command) = 0;
-
-  /*!
-   * \brief Bloque jusqu'à ce que toutes les actions associées à cette file
-   * soient terminées.
-   *
-   * Cela comprend les commandes (RunCommandImpl) et les autres actions telles
-   * que les copies mémoire asynchrones.
-   */
-  virtual void barrier() = 0;
-
-  //! Effectue une copie entre deux zones mémoire
-  virtual void copyMemory(const MemoryCopyArgs& args) = 0;
-
-  //! Effectue un pré-chargement d'une zone mémoire
-  virtual void prefetchMemory(const MemoryPrefetchArgs& args) = 0;
-
- public:
-
-  //! Pointeur sur la structure interne dépendante de l'implémentation
-  virtual void* _internalImpl() = 0;
-
-  //! Barrière sans exception. Retourne \a true en cas d'erreur
-  virtual bool _barrierNoException() = 0;
+  //! Temps écoulé (en nanoseconde) entre l'évènement \a from_event et cet évènement.
+  virtual Int64 elapsedTime(IRunQueueEventImpl* from_event) = 0;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -78,4 +52,4 @@ class ARCANE_ACCELERATOR_CORE_EXPORT IRunQueueStream
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

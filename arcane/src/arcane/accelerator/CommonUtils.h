@@ -268,6 +268,9 @@ class SumOperator
     return a + b;
   }
   static DataType defaultValue() { return {}; }
+#if defined(ARCANE_COMPILING_SYCL)
+  static sycl::plus<DataType> syclFunctor() { return {}; }
+#endif
 };
 
 /*---------------------------------------------------------------------------*/
@@ -284,6 +287,9 @@ class MinOperator
     return (a < b) ? a : b;
   }
   static DataType defaultValue() { return std::numeric_limits<DataType>::max(); }
+#if defined(ARCANE_COMPILING_SYCL)
+  static sycl::minimum<DataType> syclFunctor() { return {}; }
+#endif
 };
 
 /*---------------------------------------------------------------------------*/
@@ -300,6 +306,9 @@ class MaxOperator
     return (a < b) ? b : a;
   }
   static DataType defaultValue() { return std::numeric_limits<DataType>::lowest(); }
+#if defined(ARCANE_COMPILING_SYCL)
+  static sycl::maximum<DataType> syclFunctor() { return {}; }
+#endif
 };
 
 /*---------------------------------------------------------------------------*/
@@ -386,6 +395,16 @@ class GetterLambdaIterator
 /*---------------------------------------------------------------------------*/
 
 } // namespace Arcane::Accelerator::impl
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace Arcane::Accelerator
+{
+template <typename DataType> using ScannerSumOperator = impl::SumOperator<DataType>;
+template <typename DataType> using ScannerMaxOperator = impl::MaxOperator<DataType>;
+template <typename DataType> using ScannerMinOperator = impl::MinOperator<DataType>;
+} // namespace Arcane::Accelerator
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

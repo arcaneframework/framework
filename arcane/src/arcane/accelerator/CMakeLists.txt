@@ -27,10 +27,9 @@ arcane_register_library(arcane_accelerator OPTIONAL)
 
 # ----------------------------------------------------------------------------
 
-if (GTEST_FOUND)
-  # Pour l'instant n'active pas le test car il ne fonctionne
-  # pas sur tous les workflows du CI.
-  # add_subdirectory(tests)
+option(ARCANE_EXECUTE_ACCELERATOR_GOOGLETEST "True if we run accelerator googletest. This require GPU driver" ON)
+if (GTEST_FOUND AND ARCANE_EXECUTE_ACCELERATOR_GOOGLETEST)
+  add_subdirectory(tests)
 endif()
 
 # ----------------------------------------------------------------------------
