@@ -320,6 +320,9 @@ class ARCANE_CORE_EXPORT ItemGroup
     return m_impl->checkIsSorted();
   }
 
+  //! Vue sur les entités du groupe avec padding pour la vectorisation
+  ItemVectorView _paddedView() const;
+
  public:
 
   //! API interne à Arcane
@@ -349,6 +352,8 @@ class ARCANE_CORE_EXPORT ItemGroup
   {
     return impl->itemKind()==ik ? impl : ItemGroupImpl::checkSharedNull();
   }
+
+  ItemVectorView _view(bool do_padding) const;
 };
 
 /*---------------------------------------------------------------------------*/

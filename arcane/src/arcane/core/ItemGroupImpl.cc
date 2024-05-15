@@ -1148,9 +1148,18 @@ _checkNeedUpdateNoPadding()
 /*---------------------------------------------------------------------------*/
 
 bool ItemGroupImpl::
-checkNeedUpdate()
+_checkNeedUpdateWithPadding()
 {
   return _checkNeedUpdate(true);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+bool ItemGroupImpl::
+checkNeedUpdate()
+{
+  return _checkNeedUpdate(false);
 }
 
 /*---------------------------------------------------------------------------*/
