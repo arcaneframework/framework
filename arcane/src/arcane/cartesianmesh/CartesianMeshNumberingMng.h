@@ -62,6 +62,10 @@ class CartesianMeshNumberingMng
   Int64 globalNbFacesY(Integer level) const override;
   Int64 globalNbFacesZ(Integer level) const override;
 
+  Int64 globalNbFacesXCartesianView(Integer level) const override;
+  Int64 globalNbFacesYCartesianView(Integer level) const override;
+  Int64 globalNbFacesZCartesianView(Integer level) const override;
+
   Int64 nbCellInLevel(Integer level) const override;
   Int64 nbNodeInLevel(Integer level) const override;
   Int64 nbFaceInLevel(Integer level) const override;
@@ -122,6 +126,7 @@ class CartesianMeshNumberingMng
   void setChildNodeCoordinates(Cell parent_cell) override;
   void setParentNodeCoordinates(Cell parent_cell) override;
 
+  Int64 parentCellUniqueIdOfCell(Int64 uid, Integer level, bool do_fatal) override;
   Int64 parentCellUniqueIdOfCell(Cell cell, bool do_fatal) override;
 
   Int64 childCellUniqueIdOfCell(Cell cell, Int64x3 child_coord_in_parent) override;

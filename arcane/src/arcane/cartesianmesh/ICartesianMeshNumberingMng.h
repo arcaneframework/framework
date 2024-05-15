@@ -151,18 +151,10 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMeshNumberingMng
    * 9│  11│  13│
    *  └─10─┴─12─┘
    *
-   * Pour la position d'une face, on considère cette disposition :
-   * ┌──┬──┬──┬──┬──┐
-   * │  │ 0│  │ 2│  │
-   * ├──┼──┼──┼──┼──┤
-   * │ 4│  │ 6│  │ 8│
-   * ├──┼──┼──┼──┼──┤
-   * │  │ 5│  │ 7│  │
-   * ├──┼──┼──┼──┼──┤
-   * │ 9│  │11│  │13│
-   * ├──┼──┼──┼──┼──┤
-   * │  │10│  │12│  │
-   * └──┴──┴──┴──┴──┘
+   * Donc, on a 2x2 mailles.
+   * En X, on a 3 faces.
+   *
+   * Pour le nombre de faces en vue cartésienne, voir \a globalNbFacesXCartesianView.
    *
    * \param level Le niveau.
    * \return Le nombre de faces en X.
@@ -179,18 +171,10 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMeshNumberingMng
    * 9│  11│  13│
    *  └─10─┴─12─┘
    *
-   * Pour la position d'une face, on considère cette disposition :
-   * ┌──┬──┬──┬──┬──┐
-   * │  │ 0│  │ 2│  │
-   * ├──┼──┼──┼──┼──┤
-   * │ 4│  │ 6│  │ 8│
-   * ├──┼──┼──┼──┼──┤
-   * │  │ 5│  │ 7│  │
-   * ├──┼──┼──┼──┼──┤
-   * │ 9│  │11│  │13│
-   * ├──┼──┼──┼──┼──┤
-   * │  │10│  │12│  │
-   * └──┴──┴──┴──┴──┘
+   * Donc, on a 2x2 mailles.
+   * En Y, on a 3 faces.
+   *
+   * Pour le nombre de faces en vue cartésienne, voir \a globalNbFacesYCartesianView.
    *
    * \param level Le niveau.
    * \return Le nombre de faces en Y.
@@ -207,23 +191,75 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMeshNumberingMng
    * 9│  11│  13│
    *  └─10─┴─12─┘
    *
-   * Pour la position d'une face, on considère cette disposition :
-   * ┌──┬──┬──┬──┬──┐
-   * │  │ 0│  │ 2│  │
-   * ├──┼──┼──┼──┼──┤
-   * │ 4│  │ 6│  │ 8│
-   * ├──┼──┼──┼──┼──┤
-   * │  │ 5│  │ 7│  │
-   * ├──┼──┼──┼──┼──┤
-   * │ 9│  │11│  │13│
-   * ├──┼──┼──┼──┼──┤
-   * │  │10│  │12│  │
-   * └──┴──┴──┴──┴──┘
+   * Si on a 2x2x2 mailles, on aura, en Z, 3 faces.
+   *
+   * Pour le nombre de faces en vue cartésienne, voir \a globalNbFacesZCartesianView.
    *
    * \param level Le niveau.
    * \return Le nombre de faces en Z.
    */
   virtual Int64 globalNbFacesZ(Integer level) const = 0;
+
+  /*!
+   * \brief Méthode permettant de récupérer la taille de la vue "grille cartésienne"
+   *        contenant les noeuds.
+   *
+   * En 2D, on peut avoir cette vue :
+   *      x =  0  1  2  3  4
+   *         ┌──┬──┬──┬──┬──┐
+   *  y = 0  │  │ 1│  │ 3│  │
+   *         ├──┼──┼──┼──┼──┤
+   *  y = 1  │ 5│  │ 7│  │ 9│
+   *         ├──┼──┼──┼──┼──┤
+   *  y = 2  │  │ 6│  │ 8│  │
+   *         ├──┼──┼──┼──┼──┤
+   *  y = 3  │10│  │12│  │14│
+   *         ├──┼──┼──┼──┼──┤
+   *  y = 4  │  │11│  │13│  │
+   *         └──┴──┴──┴──┴──┘
+   *
+   * Et en 3D :
+   *         z = 0            │ z = 1            │ z = 2            │ z = 3            │ z = 4
+   *      x =  0  1  2  3  4  │   0  1  2  3  4  │   0  1  2  3  4  │   0  1  2  3  4  │   0  1  2  3  4
+   *         ┌──┬──┬──┬──┬──┐ │ ┌──┬──┬──┬──┬──┐ │ ┌──┬──┬──┬──┬──┐ │ ┌──┬──┬──┬──┬──┐ │ ┌──┬──┬──┬──┬──┐
+   *  y = 0  │  │  │  │  │  │ │ │  │24│  │25│  │ │ │  │  │  │  │  │ │ │  │30│  │31│  │ │ │  │  │  │  │  │
+   *         ├──┼──┼──┼──┼──┤ │ ├──┼──┼──┼──┼──┤ │ ├──┼──┼──┼──┼──┤ │ ├──┼──┼──┼──┼──┤ │ ├──┼──┼──┼──┼──┤
+   *  y = 1  │  │ 0│  │ 1│  │ │ │12│  │13│  │14│ │ │  │ 4│  │ 5│  │ │ │18│  │19│  │20│ │ │  │ 8│  │ 9│  │
+   *         ├──┼──┼──┼──┼──┤ │ ├──┼──┼──┼──┼──┤ │ ├──┼──┼──┼──┼──┤ │ ├──┼──┼──┼──┼──┤ │ ├──┼──┼──┼──┼──┤
+   *  y = 2  │  │  │  │  │  │ │ │  │26│  │27│  │ │ │  │  │  │  │  │ │ │  │32│  │33│  │ │ │  │  │  │  │  │
+   *         ├──┼──┼──┼──┼──┤ │ ├──┼──┼──┼──┼──┤ │ ├──┼──┼──┼──┼──┤ │ ├──┼──┼──┼──┼──┤ │ ├──┼──┼──┼──┼──┤
+   *  y = 3  │  │ 2│  │ 3│  │ │ │15│  │16│  │17│ │ │  │ 6│  │ 7│  │ │ │21│  │22│  │23│ │ │  │10│  │11│  │
+   *         ├──┼──┼──┼──┼──┤ │ ├──┼──┼──┼──┼──┤ │ ├──┼──┼──┼──┼──┤ │ ├──┼──┼──┼──┼──┤ │ ├──┼──┼──┼──┼──┤
+   *  y = 4  │  │  │  │  │  │ │ │  │28│  │29│  │ │ │  │  │  │  │  │ │ │  │34│  │35│  │ │ │  │  │  │  │  │
+   *         └──┴──┴──┴──┴──┘ │ └──┴──┴──┴──┴──┘ │ └──┴──┴──┴──┴──┘ │ └──┴──┴──┴──┴──┘ │ └──┴──┴──┴──┴──┘
+   *                          │                  │                  │                  │
+   *
+   * \param level Le niveau.
+   * \return La taille de la grille en X.
+   */
+  virtual Int64 globalNbFacesXCartesianView(Integer level) const = 0;
+
+  /*!
+   * \brief Méthode permettant de récupérer la taille de la vue "grille cartésienne"
+   *        contenant les noeuds.
+   *
+   * Un exemple de cette vue est disponible dans la documentation de \a globalNbFacesXCartesianView.
+   *
+   * \param level Le niveau.
+   * \return La taille de la grille en Y.
+   */
+  virtual Int64 globalNbFacesYCartesianView(Integer level) const = 0;
+
+  /*!
+   * \brief Méthode permettant de récupérer la taille de la vue "grille cartésienne"
+   *        contenant les noeuds.
+   *
+   * Un exemple de cette vue est disponible dans la documentation de \a globalNbFacesXCartesianView.
+   *
+   * \param level Le niveau.
+   * \return La taille de la grille en Z.
+   */
+  virtual Int64 globalNbFacesZCartesianView(Integer level) const = 0;
 
   /*!
    * \brief Méthode permettant de récupérer le nombre de mailles total dans un niveau.
@@ -258,20 +294,32 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMeshNumberingMng
   virtual Integer pattern() const = 0;
 
   /*!
-   * \brief Méthode permettant d'obtenir la position de la première maille fille à partir de la position
-   * de la maille parente.
+   * \brief Méthode permettant d'obtenir la position du premier noeud/maille fille à partir de la position
+   * du noeud/maille parent.
    *
    * Exemple : si l'on a un maillage 2D de 2*2 mailles et un pattern de raffinement de 2,
    * on sait que la grille de niveau 1 (pour les patchs de niveau 1) sera de 4*4 mailles.
-   * La première maille fille de la maille parente (Xp=1,Yp=0) aura la position Xf=Xp*Pattern=2 (idem pour Y).
+   * Le premier noeud/maille fille du noeud/maille parent (Xp=1,Yp=0) aura la position Xf=Xp*Pattern=2 (idem pour Y).
    *
-   * \param coord La position X ou Y ou Z de la maille parente.
+   * \param coord La position X ou Y ou Z du noeud/maille parent.
    * \param level_from Le niveau parent.
    * \param level_to Le niveau enfant.
-   * \return La position de la première fille de la maille parente.
+   * \return La position de la première fille du noeud/maille parent.
    */
   virtual Int64 offsetLevelToLevel(Int64 coord, Integer level_from, Integer level_to) const = 0;
 
+  /*!
+   * \brief Méthode permettant d'obtenir la position de la première face enfant à partir de la position
+   * de la face parente.
+   *
+   * Attention, les coordonnées utilisées ici sont les coordonnées des faces en "vue cartésienne"
+   * (voir \a globalNbFacesXCartesianView ).
+   *
+   * \param coord La position X ou Y ou Z de la face parente.
+   * \param level_from Le niveau parent.
+   * \param level_to Le niveau enfant.
+   * \return La position du premier enfant de la face parente.
+   */
   virtual Int64 faceOffsetLevelToLevel(Int64 coord, Integer level_from, Integer level_to) const = 0;
 
   /*!
@@ -379,6 +427,9 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMeshNumberingMng
   /*!
    * \brief Méthode permettant de récupérer la coordonnée en X d'une face grâce à son uniqueId.
    *
+   * Attention, les coordonnées utilisées ici sont les coordonnées des faces en "vue cartésienne"
+   * (voir \a globalNbFacesXCartesianView ).
+   *
    * \param uid L'uniqueId de la face.
    * \param level Le niveau de la face.
    * \return La position en X de la face.
@@ -388,6 +439,9 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMeshNumberingMng
   /*!
    * \brief Méthode permettant de récupérer la coordonnée en X d'une face.
    *
+   * Attention, les coordonnées utilisées ici sont les coordonnées des faces en "vue cartésienne"
+   * (voir \a globalNbFacesXCartesianView ).
+   *
    * \param face La face.
    * \return La position en X de la face.
    */
@@ -395,6 +449,9 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMeshNumberingMng
 
   /*!
    * \brief Méthode permettant de récupérer la coordonnée en Y d'une face grâce à son uniqueId.
+   *
+   * Attention, les coordonnées utilisées ici sont les coordonnées des faces en "vue cartésienne"
+   * (voir \a globalNbFacesXCartesianView ).
    *
    * \param uid L'uniqueId de la face.
    * \param level Le niveau de la face.
@@ -405,6 +462,9 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMeshNumberingMng
   /*!
    * \brief Méthode permettant de récupérer la coordonnée en Y d'une face.
    *
+   * Attention, les coordonnées utilisées ici sont les coordonnées des faces en "vue cartésienne"
+   * (voir \a globalNbFacesXCartesianView ).
+   *
    * \param face La face.
    * \return La position en Y de la face.
    */
@@ -412,6 +472,9 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMeshNumberingMng
 
   /*!
    * \brief Méthode permettant de récupérer la coordonnée en Z d'une face grâce à son uniqueId.
+   *
+   * Attention, les coordonnées utilisées ici sont les coordonnées des faces en "vue cartésienne"
+   * (voir \a globalNbFacesXCartesianView ).
    *
    * \param uid L'uniqueId de la face.
    * \param level Le niveau de la face.
@@ -421,6 +484,9 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMeshNumberingMng
 
   /*!
    * \brief Méthode permettant de récupérer la coordonnée en Z d'une face.
+   *
+   * Attention, les coordonnées utilisées ici sont les coordonnées des faces en "vue cartésienne"
+   * (voir \a globalNbFacesXCartesianView ).
    *
    * \param face La face.
    * \return La position en Z de la face.
@@ -466,6 +532,9 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMeshNumberingMng
   /*!
    * \brief Méthode permettant de récupérer l'uniqueId d'une face à partir de sa position et de son niveau.
    *
+   * Attention, les coordonnées utilisées ici sont les coordonnées des faces en "vue cartésienne"
+   * (voir \a globalNbFacesXCartesianView ).
+   *
    * \param level Le niveau de la face.
    * \param cell_coord La position de la face.
    * \return L'uniqueId de la face.
@@ -474,6 +543,9 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMeshNumberingMng
 
   /*!
    * \brief Méthode permettant de récupérer l'uniqueId d'une face à partir de sa position et de son niveau.
+   *
+   * Attention, les coordonnées utilisées ici sont les coordonnées des faces en "vue cartésienne"
+   * (voir \a globalNbFacesXCartesianView ).
    *
    * \param level Le niveau de la face.
    * \param cell_coord La position de la face.
@@ -636,6 +708,18 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMeshNumberingMng
    * \param parent_cell La maille parent.
    */
   virtual void setParentNodeCoordinates(Cell parent_cell) = 0;
+
+  /*!
+   * \brief Méthode permettant de récupérer l'uniqueId du parent d'une maille.
+   *
+   * Si \a do_fatal est vrai, une erreur fatale est générée si le parent n'existe
+   * pas, sinon l'uniqueId retourné a pour valeur NULL_ITEM_UNIQUE_ID.
+   *
+   * \param uid L'uniqueId de la maille enfant.
+   * \param level Le niveau de la maille enfant.
+   * \return L'uniqueId de la maille parent de la maille passé en paramètre.
+   */
+  virtual Int64 parentCellUniqueIdOfCell(Int64 uid, Integer level, bool do_fatal = true) = 0;
 
   /*!
    * \brief Méthode permettant de récupérer l'uniqueId du parent d'une maille.
