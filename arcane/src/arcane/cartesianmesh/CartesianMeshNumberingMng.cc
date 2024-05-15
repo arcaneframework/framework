@@ -79,6 +79,7 @@ CartesianMeshNumberingMng(IMesh* mesh)
       for (Integer i = 0; i < nbFaceByCell(); ++i) {
         m_face_ori_numbering_to_new[icell->face(i).uniqueId()] = face_uid[i];
         m_face_new_numbering_to_ori[face_uid[i]] = icell->face(i).uniqueId();
+        //        debug() << "Face Ori <-> New -- Ori : " << icell->face(i).uniqueId() << " -- New : " << face_uid[i];
       }
     }
   }
@@ -1863,10 +1864,8 @@ parentNodeUniqueIdOfNode(Node node, bool do_fatal)
 /*---------------------------------------------------------------------------*/
 
 Int64 CartesianMeshNumberingMng::
-childNodeUniqueIdOfNode(Node node)
+childNodeUniqueIdOfNode(Int64 uid, Integer level)
 {
-  const Int64 uid = node.uniqueId();
-  const Int32 level = node.level();
   if (m_dimension == 2) {
     return nodeUniqueId(level + 1,
                         Int64x2(offsetLevelToLevel(nodeUniqueIdToCoordX(uid, level), level, level + 1),
@@ -1879,6 +1878,15 @@ childNodeUniqueIdOfNode(Node node)
                                 offsetLevelToLevel(nodeUniqueIdToCoordY(uid, level), level, level + 1),
                                 offsetLevelToLevel(nodeUniqueIdToCoordZ(uid, level), level, level + 1)));
   }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Int64 CartesianMeshNumberingMng::
+childNodeUniqueIdOfNode(Node node)
+{
+  return childNodeUniqueIdOfNode(node.uniqueId(), node.level());
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1968,8 +1976,14 @@ childFaceUniqueIdOfFace(Int64 uid, Integer level, Int64 child_index_in_parent)
   const Int64 coord_x = faceUniqueIdToCoordX(uid, level);
   const Int64 coord_y = faceUniqueIdToCoordY(uid, level);
 
+  ARCANE_ASSERT((coord_x < globalNbFacesXCartesianView(level) && coord_x >= 0), ("Bad coord_x"))
+  ARCANE_ASSERT((coord_y < globalNbFacesYCartesianView(level) && coord_y >= 0), ("Bad coord_y"))
+
   Int64 first_child_coord_x = faceOffsetLevelToLevel(coord_x, level, level + 1);
   Int64 first_child_coord_y = faceOffsetLevelToLevel(coord_y, level, level + 1);
+
+  ARCANE_ASSERT((first_child_coord_x < globalNbFacesXCartesianView(level + 1) && first_child_coord_x >= 0), ("Bad first_child_coord_x"))
+  ARCANE_ASSERT((first_child_coord_y < globalNbFacesYCartesianView(level + 1) && first_child_coord_y >= 0), ("Bad first_child_coord_y"))
 
   if (m_dimension == 2) {
     ARCANE_ASSERT((child_index_in_parent < m_pattern && child_index_in_parent >= 0), ("Invalid child_index_in_parent"))
@@ -1978,7 +1992,7 @@ childFaceUniqueIdOfFace(Int64 uid, Integer level, Int64 child_index_in_parent)
       first_child_coord_x += child_index_in_parent * 2;
     }
     else if (coord_x % 2 == 0) {
-      first_child_coord_y += child_index_in_parent * globalNbFacesYCartesianView(level + 1);
+      first_child_coord_y += child_index_in_parent * globalNbFacesY(level + 1);
     }
     else {
       ARCANE_FATAL("Impossible normalement");
@@ -1995,7 +2009,10 @@ childFaceUniqueIdOfFace(Int64 uid, Integer level, Int64 child_index_in_parent)
     ARCANE_ASSERT((child_index_in_parent < m_pattern * m_pattern && child_index_in_parent >= 0), ("Invalid child_index_in_parent"))
 
     const Int64 coord_z = faceUniqueIdToCoordZ(uid, level);
+    ARCANE_ASSERT((coord_z < globalNbFacesZCartesianView(level) && coord_z >= 0), ("Bad coord_z"))
+
     Int64 first_child_coord_z = faceOffsetLevelToLevel(coord_z, level, level + 1);
+    ARCANE_ASSERT((first_child_coord_z < globalNbFacesZCartesianView(level + 1) && first_child_coord_z >= 0), ("Bad first_child_coord_z"))
 
     Int64 child_x = child_index_in_parent % m_pattern;
     Int64 child_y = child_index_in_parent / m_pattern;

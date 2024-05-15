@@ -141,6 +141,7 @@ class CartesianMeshNumberingMng
   Int64 parentNodeUniqueIdOfNode(Int64 uid, Integer level, bool do_fatal) override;
   Int64 parentNodeUniqueIdOfNode(Node node, bool do_fatal) override;
 
+  Int64 childNodeUniqueIdOfNode(Int64 uid, Integer level) override;
   Int64 childNodeUniqueIdOfNode(Node node) override;
 
   Int64 parentFaceUniqueIdOfFace(Int64 uid, Integer level, bool do_fatal) override;

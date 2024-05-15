@@ -1803,8 +1803,8 @@ refine()
       // On cherche les localIds des faces qui changent de proprio et on les met à la fin du tableau.
       m_mesh->faceFamily()->itemsUniqueIdToLocalId(faces_lid.subView(total_nb_faces, nb_face_owner_change), face_uid_change_owner_only, true);
 
-      UniqueArray<Int64> uid_child_faces(total_nb_faces + nb_face_owner_change);
-      UniqueArray<Int32> lid_child_faces(total_nb_faces + nb_face_owner_change);
+      UniqueArray<Int64> uid_parent_faces(total_nb_faces + nb_face_owner_change);
+      UniqueArray<Int32> lid_parent_faces(total_nb_faces + nb_face_owner_change);
       Integer index = 0;
 
       // On attribue les bons propriétaires aux faces.
@@ -1820,16 +1820,16 @@ refine()
           face.mutableItemBase().removeFlags(ItemFlags::II_Shared);
         }
         // Attention, face.level() == -1 ici.
-        uid_child_faces[index++] = m_num_mng->parentFaceUniqueIdOfFace(face.uniqueId(), max_level + 1, false);
+        uid_parent_faces[index++] = m_num_mng->parentFaceUniqueIdOfFace(face.uniqueId(), max_level + 1, false);
         //debug() << "Parent of : " << face.uniqueId() << " is : " << uid_child_faces[index - 1];
       }
 
-      m_mesh->faceFamily()->itemsUniqueIdToLocalId(lid_child_faces, uid_child_faces, false);
+      m_mesh->faceFamily()->itemsUniqueIdToLocalId(lid_parent_faces, uid_parent_faces, false);
       FaceInfoListView faces(m_mesh->faceFamily());
 
       index = 0;
       ENUMERATE_ (Face, iface, m_mesh->faceFamily()->view(faces_lid)) {
-        const Int32 child_lid = lid_child_faces[index++];
+        const Int32 child_lid = lid_parent_faces[index++];
         if (child_lid == NULL_ITEM_ID) {
           continue;
         }
@@ -2612,6 +2612,10 @@ coarse()
       // On crée les noeuds. On met les localIds des nouveaux noeuds au début du tableau.
       m_mesh->modifier()->addNodes(nodes_infos, nodes_lid);
 
+      UniqueArray<Int64> uid_child_nodes(total_nb_nodes);
+      UniqueArray<Int32> lid_child_nodes(total_nb_nodes);
+      Integer index = 0;
+
       // On attribue les bons propriétaires aux noeuds.
       ENUMERATE_ (Node, inode, m_mesh->nodeFamily()->view(nodes_lid)) {
         Node node = *inode;
@@ -2624,6 +2628,24 @@ coarse()
         if (node_uid_to_owner[node.uniqueId()] == my_rank) {
           node.mutableItemBase().addFlags(ItemFlags::II_Own);
         }
+
+        uid_child_nodes[index++] = m_num_mng->childNodeUniqueIdOfNode(node.uniqueId(), -1);
+      }
+      m_mesh->nodeFamily()->itemsUniqueIdToLocalId(lid_child_nodes, uid_child_nodes, false);
+      NodeInfoListView nodes(m_mesh->nodeFamily());
+
+      index = 0;
+      ENUMERATE_ (Node, inode, m_mesh->nodeFamily()->view(nodes_lid)) {
+        const Int32 child_lid = lid_child_nodes[index++];
+        if (child_lid == NULL_ITEM_ID) {
+          continue;
+        }
+
+        Node child = nodes[child_lid];
+        Node parent = *inode;
+
+        m_mesh->modifier()->addParentNodeToNode(child, parent);
+        m_mesh->modifier()->addChildNodeToNode(parent, child);
       }
     }
 
@@ -2634,9 +2656,14 @@ coarse()
   {
     debug() << "Nb new faces in patch : " << total_nb_faces;
     {
+      Integer nb_child = (m_mesh->dimension() == 2 ? 2 : 4);
       UniqueArray<Int32> faces_lid(total_nb_faces);
 
       m_mesh->modifier()->addFaces(total_nb_faces, faces_infos, faces_lid);
+
+      UniqueArray<Int64> uid_child_faces(total_nb_faces * m_num_mng->nbFaceByCell());
+      UniqueArray<Int32> lid_child_faces(total_nb_faces * m_num_mng->nbFaceByCell());
+      Integer index = 0;
 
       // On attribue les bons propriétaires aux faces.
       ENUMERATE_ (Face, iface, m_mesh->faceFamily()->view(faces_lid)) {
@@ -2649,6 +2676,29 @@ coarse()
 
         if (face_uid_to_owner[face.uniqueId()] == my_rank) {
           face.mutableItemBase().addFlags(ItemFlags::II_Own);
+        }
+
+        for (Integer i = 0; i < nb_child; ++i) {
+          uid_child_faces[index++] = m_num_mng->childFaceUniqueIdOfFace(face.uniqueId(), -1, i);
+        }
+      }
+
+      m_mesh->faceFamily()->itemsUniqueIdToLocalId(lid_child_faces, uid_child_faces, false);
+      FaceInfoListView faces(m_mesh->faceFamily());
+
+      index = 0;
+      ENUMERATE_ (Face, iface, m_mesh->faceFamily()->view(faces_lid)) {
+        for (Integer i = 0; i < nb_child; ++i) {
+          const Int32 child_lid = lid_child_faces[index++];
+          if (child_lid == NULL_ITEM_ID) {
+            continue;
+          }
+
+          Face child = faces[child_lid];
+          Face parent = *iface;
+
+          m_mesh->modifier()->addParentFaceToFace(child, parent);
+          m_mesh->modifier()->addChildFaceToFace(parent, child);
         }
       }
     }
@@ -2727,6 +2777,38 @@ coarse()
   // Il faut recalculer les nouvelles directions après les modifications
   // et l'ajout de patch.
   m_cmesh->computeDirections();
+
+  //  ENUMERATE_(Cell, icell, m_mesh->allCells()){
+  //    debug() << "\t" << *icell;
+  //    for(Node node : icell->nodes()){
+  //      debug() << "\t\t" << node;
+  //    }
+  //    for(Face face : icell->faces()){
+  //      debug() << "\t\t\t" << face;
+  //    }
+  //  }
+  //  info() << "Résumé :";
+  //  ENUMERATE_ (Cell, icell, m_mesh->allCells()) {
+  //    debug() << "\tCell uniqueId : " << icell->uniqueId() << " -- level : " << icell->level() << " -- nbChildren : " << icell->nbHChildren();
+  //    for (Integer i = 0; i < icell->nbHChildren(); ++i) {
+  //      debug() << "\t\tChild uniqueId : " << icell->hChild(i).uniqueId() << " -- level : " << icell->hChild(i).level() << " -- nbChildren : " << icell->hChild(i).nbHChildren();
+  //    }
+  //  }
+  //  info() << "Résumé node:";
+  //  ENUMERATE_ (Node, inode, m_mesh->allNodes()) {
+  //    debug() << "\tNode uniqueId : " << inode->uniqueId() << " -- level : " << inode->level() << " -- nbChildren : " << inode->nbHChildren();
+  //    for (Integer i = 0; i < inode->nbHChildren(); ++i) {
+  //      debug() << "\t\tNode Child uniqueId : " << inode->hChild(i).uniqueId() << " -- level : " << inode->hChild(i).level() << " -- nbChildren : " << inode->hChild(i).nbHChildren();
+  //    }
+  //  }
+  //
+  //  info() << "Résumé face:";
+  //  ENUMERATE_ (Face, iface, m_mesh->allFaces()) {
+  //    debug() << "\tFace uniqueId : " << iface->uniqueId() << " -- level : " << iface->level() << " -- nbChildren : " << iface->nbHChildren();
+  //    for (Integer i = 0; i < iface->nbHChildren(); ++i) {
+  //      debug() << "\t\tChild uniqueId : " << iface->hChild(i).uniqueId() << " -- level : " << iface->hChild(i).level() << " -- nbChildren : " << iface->hChild(i).nbHChildren();
+  //    }
+  //  }
 }
 
 /*---------------------------------------------------------------------------*/

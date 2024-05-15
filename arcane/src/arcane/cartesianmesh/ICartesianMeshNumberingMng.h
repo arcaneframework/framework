@@ -808,6 +808,15 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMeshNumberingMng
   /*!
    * \brief Méthode permettant de récupérer l'uniqueId d'un noeud enfant d'un noeud parent.
    *
+   * \param uid L'uniqueId du noeud enfant.
+   * \param level Le niveau du noeud enfant.
+   * \return L'uniqueId du noeud enfant demandée.
+   */
+  virtual Int64 childNodeUniqueIdOfNode(Int64 uid, Integer level) = 0;
+
+  /*!
+   * \brief Méthode permettant de récupérer l'uniqueId d'un noeud enfant d'un noeud parent.
+   *
    * \param node Le noeud parent.
    * \return L'uniqueId du noeud enfant demandée.
    */
