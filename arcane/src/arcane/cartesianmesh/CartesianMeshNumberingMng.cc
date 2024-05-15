@@ -36,6 +36,8 @@ CartesianMeshNumberingMng(IMesh* mesh)
 , m_pattern(2)
 , m_max_level(0)
 , m_min_level(0)
+, m_converting_numbering_face(true)
+, m_ori_level(0)
 {
   auto* m_generation_info = ICartesianMeshGenerationInfo::getReference(m_mesh, true);
 
@@ -67,6 +69,19 @@ CartesianMeshNumberingMng(IMesh* mesh)
   m_first_cell_uid_level.add(0);
   m_first_node_uid_level.add(0);
   m_first_face_uid_level.add(0);
+
+  // Tant qu'on utilise la numérotation d'origine pour le niveau 0, on doit utiliser
+  // une conversion de la numérotation d'origine vers la nouvelle.
+  if (m_converting_numbering_face) {
+    UniqueArray<Int64> face_uid(nbFaceByCell());
+    ENUMERATE_ (Cell, icell, m_mesh->allLevelCells(0)) {
+      cellFaceUniqueIds(face_uid, 0, icell->uniqueId());
+      for (Integer i = 0; i < nbFaceByCell(); ++i) {
+        m_face_ori_numbering_to_new[icell->face(i).uniqueId()] = face_uid[i];
+        m_face_new_numbering_to_ori[face_uid[i]] = icell->face(i).uniqueId();
+      }
+    }
+  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -104,6 +119,7 @@ void CartesianMeshNumberingMng::
 updateFirstLevel()
 {
   Int32 nb_levels_to_add = -m_min_level;
+  m_ori_level += nb_levels_to_add;
 
   if (nb_levels_to_add == 0) {
     return;
@@ -1871,6 +1887,10 @@ childNodeUniqueIdOfNode(Node node)
 Int64 CartesianMeshNumberingMng::
 parentFaceUniqueIdOfFace(Int64 uid, Integer level, bool do_fatal)
 {
+  if (m_converting_numbering_face && level == m_ori_level) {
+    uid = m_face_ori_numbering_to_new[uid];
+  }
+
   // Pour avoir la face parent d'une face, on passe d'abord de l'uid vers les
   // coordonnées de la face en "vue cartésienne",
   // puis on détermine les coordonnées du parent grâce au m_pattern,
@@ -1896,6 +1916,9 @@ parentFaceUniqueIdOfFace(Int64 uid, Integer level, bool do_fatal)
   ARCANE_ASSERT((parent_coord_y < globalNbFacesYCartesianView(level - 1) && parent_coord_y >= 0), ("Bad parent_coord_y"))
 
   if (m_dimension == 2) {
+    if (m_converting_numbering_face && level - 1 == m_ori_level) {
+      return m_face_new_numbering_to_ori[faceUniqueId(level - 1, Int64x2(parent_coord_x, parent_coord_y))];
+    }
     return faceUniqueId(level - 1, Int64x2(parent_coord_x, parent_coord_y));
   }
   else {
@@ -1914,6 +1937,10 @@ parentFaceUniqueIdOfFace(Int64 uid, Integer level, bool do_fatal)
     ARCANE_ASSERT((parent_coord_z < globalNbFacesZCartesianView(level - 1) && parent_coord_z >= 0), ("Bad parent_coord_z"))
 
     //    debug() << "Uid : " << uid << " -- CoordX : " << coord_x << " -- CoordY : " << coord_y << " -- CoordZ : " << coord_z;
+
+    if (m_converting_numbering_face && level - 1 == m_ori_level) {
+      return m_face_new_numbering_to_ori[faceUniqueId(level - 1, Int64x3(parent_coord_x, parent_coord_y, parent_coord_z))];
+    }
 
     return faceUniqueId(level - 1, Int64x3(parent_coord_x, parent_coord_y, parent_coord_z));
   }
@@ -1934,6 +1961,10 @@ parentFaceUniqueIdOfFace(Face face, bool do_fatal)
 Int64 CartesianMeshNumberingMng::
 childFaceUniqueIdOfFace(Int64 uid, Integer level, Int64 child_index_in_parent)
 {
+  if (m_converting_numbering_face && level == m_ori_level) {
+    uid = m_face_ori_numbering_to_new[uid];
+  }
+
   const Int64 coord_x = faceUniqueIdToCoordX(uid, level);
   const Int64 coord_y = faceUniqueIdToCoordY(uid, level);
 
@@ -1952,6 +1983,11 @@ childFaceUniqueIdOfFace(Int64 uid, Integer level, Int64 child_index_in_parent)
     else {
       ARCANE_FATAL("Impossible normalement");
     }
+
+    if (m_converting_numbering_face && level + 1 == m_ori_level) {
+      return m_face_new_numbering_to_ori[faceUniqueId(level + 1, Int64x2(first_child_coord_x, first_child_coord_y))];
+    }
+
     return faceUniqueId(level + 1, Int64x2(first_child_coord_x, first_child_coord_y));
   }
 
@@ -1978,6 +2014,11 @@ childFaceUniqueIdOfFace(Int64 uid, Integer level, Int64 child_index_in_parent)
       first_child_coord_x += child_x * 2;
       first_child_coord_z += child_y * 2;
     }
+
+    if (m_converting_numbering_face && level + 1 == m_ori_level) {
+      return m_face_new_numbering_to_ori[faceUniqueId(level + 1, Int64x3(first_child_coord_x, first_child_coord_y, first_child_coord_z))];
+    }
+
     return faceUniqueId(level + 1, Int64x3(first_child_coord_x, first_child_coord_y, first_child_coord_z));
   }
 }

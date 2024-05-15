@@ -24,6 +24,8 @@
 
 #include "arcane/cartesianmesh/ICartesianMeshNumberingMng.h"
 
+#include <unordered_map>
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -181,6 +183,12 @@ class CartesianMeshNumberingMng
   UniqueArray<Int64> m_first_face_uid_level;
 
   Int64x3 m_nb_cell;
+
+  // Partie conversion numérotation d'origine <-> nouvelle numérotation (face).
+  bool m_converting_numbering_face;
+  Integer m_ori_level;
+  std::unordered_map<Int64, Int64> m_face_ori_numbering_to_new;
+  std::unordered_map<Int64, Int64> m_face_new_numbering_to_ori;
 };
 
 /*---------------------------------------------------------------------------*/
