@@ -329,7 +329,14 @@ class ARCANE_CORE_EXPORT ItemGroup
 
   //! Enumérateur sur les entités du groupe.
   ItemEnumerator enumerator() const;
-  
+
+ private:
+
+  template <typename T>
+  friend class SimdItemEnumeratorContainerTraits;
+  //! Enumérateur sur les entités du groupe pour la vectorisation
+  ItemEnumerator _simdEnumerator() const;
+
  protected:
 
   //! Représentation interne du groupe.
@@ -429,7 +436,7 @@ class ItemGroupT
   {
     return ItemEnumeratorT<T>::fromItemEnumerator(ItemGroup::enumerator());
   }
-  
+
  protected:
 
   void _assign(const ItemGroup& from)

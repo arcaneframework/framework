@@ -549,6 +549,18 @@ enumerator() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+ItemEnumerator ItemGroup::
+_simdEnumerator() const
+{
+  if (null())
+    return ItemEnumerator();
+  m_impl->checkNeedUpdate();
+  return ItemEnumerator(m_impl->itemInfoListView(),m_impl->itemsLocalId(),m_impl.get());
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 ItemVectorView ItemGroup::
 view() const
 {

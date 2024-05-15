@@ -386,9 +386,16 @@ class ARCANE_CORE_EXPORT SimdItemEnumeratorBase
 
   // TODO: Gérer les m_local_id_offset pour cette classe
 
+  // TODO: Fin 2024, rendre certains constructeurs internes à Arcane et rendre
+  // obsolètes les autres.
+  // Faire de même avec les classes dérivées
+
   SimdItemEnumeratorBase() = default;
+
+  // TODO: Rendre interne à Arcane
   SimdItemEnumeratorBase(const ItemInternalVectorView& view)
   : SimdEnumeratorBase(view.localIds()), m_shared_info(view.m_shared_info) {}
+  // TODO: Rendre interne à Arcane
   SimdItemEnumeratorBase(const ItemEnumerator& rhs)
   : SimdEnumeratorBase(rhs.m_view.m_local_ids,rhs.count()), m_shared_info(rhs.m_item.m_shared_info) {}
 
@@ -516,11 +523,13 @@ class SimdItemEnumeratorContainerTraits
 {
  public:
 
-  static ItemEnumeratorT<ItemType> getSimdEnumerator(const ItemGroupT<ItemType>& g)
+  static SimdItemEnumeratorT<ItemType> getSimdEnumerator(const ItemGroupT<ItemType>& g)
   {
-    return g.enumerator();
+    return g._simdEnumerator();
   }
-  static ItemEnumeratorT<ItemType> getSimdEnumerator(const ItemVectorViewT<ItemType>& g)
+  // Créé un itérateur à partir d'un ItemVectorView. Il faut que ce dernier ait un padding
+  // de la taille du vecteur.
+  static SimdItemEnumeratorT<ItemType> getSimdEnumerator(const ItemVectorViewT<ItemType>& g)
   {
     return g.enumerator();
   }
@@ -529,7 +538,7 @@ class SimdItemEnumeratorContainerTraits
   // Si on est ici cela signifie que le type 'T' n'est pas un type Arcane.
   // Il faudrait à terme interdire cet appel (par exemple fin 2025)
   template <typename T>
-  static ItemEnumeratorT<ItemType> getSimdEnumerator(const T& g)
+  static SimdItemEnumeratorT<ItemType> getSimdEnumerator(const T& g)
   {
     return g.enumerator();
   }
