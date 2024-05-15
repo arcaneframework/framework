@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* SimdItem.h                                                  (C) 2000-2022 */
+/* SimdItem.h                                                  (C) 2000-2024 */
 /*                                                                           */
 /* Types des entités et des énumérateurs des entités pour la vectorisation.  */
 /*---------------------------------------------------------------------------*/
@@ -386,9 +386,16 @@ class ARCANE_CORE_EXPORT SimdItemEnumeratorBase
 
   // TODO: Gérer les m_local_id_offset pour cette classe
 
+  // TODO: Fin 2024, rendre certains constructeurs internes à Arcane et rendre
+  // obsolètes les autres.
+  // Faire de même avec les classes dérivées
+
   SimdItemEnumeratorBase() = default;
+
+  // TODO: Rendre interne à Arcane
   SimdItemEnumeratorBase(const ItemInternalVectorView& view)
   : SimdEnumeratorBase(view.localIds()), m_shared_info(view.m_shared_info) {}
+  // TODO: Rendre interne à Arcane
   SimdItemEnumeratorBase(const ItemEnumerator& rhs)
   : SimdEnumeratorBase(rhs.m_view.m_local_ids,rhs.count()), m_shared_info(rhs.m_item.m_shared_info) {}
 
@@ -511,42 +518,71 @@ typedef SimdItemT<Cell> SimdCell;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#define ENUMERATE_SIMD_(type,iname,view)                         \
-  for( A_TRACE_ITEM_ENUMERATOR(SimdItemEnumeratorT< type >) iname((view).enumerator() A_TRACE_ENUMERATOR_WHERE); iname.hasNext(); ++iname )
+template <typename ItemType>
+class SimdItemEnumeratorContainerTraits
+{
+ public:
 
-#define ENUMERATE_SIMD_GENERIC(type,iname,view)                         \
-  for( A_TRACE_ITEM_ENUMERATOR(SimdItemEnumeratorT< type >) iname((view).enumerator() A_TRACE_ENUMERATOR_WHERE); iname.hasNext(); ++iname )
+  static SimdItemEnumeratorT<ItemType> getSimdEnumerator(const ItemGroupT<ItemType>& g)
+  {
+    return g._simdEnumerator();
+  }
+  // Créé un itérateur à partir d'un ItemVectorView. Il faut que ce dernier ait un padding
+  // de la taille du vecteur.
+  static SimdItemEnumeratorT<ItemType> getSimdEnumerator(const ItemVectorViewT<ItemType>& g)
+  {
+    return g.enumerator();
+  }
+
+  // Pour compatibilité avec l'existant
+  // Si on est ici cela signifie que le type 'T' n'est pas un type Arcane.
+  // Il faudrait à terme interdire cet appel (par exemple fin 2025)
+  template <typename T>
+  static SimdItemEnumeratorT<ItemType> getSimdEnumerator(const T& g)
+  {
+    return g.enumerator();
+  }
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+#define ENUMERATE_SIMD_(type, iname, view) \
+  for (A_TRACE_ITEM_ENUMERATOR(SimdItemEnumeratorT<type>) iname(::Arcane::SimdItemEnumeratorContainerTraits<type>::getSimdEnumerator(view) A_TRACE_ENUMERATOR_WHERE); iname.hasNext(); ++iname)
+
+// TODO: A supprimer. Utiliser ENUMERATE_SIMD_ à la place
+#define ENUMERATE_SIMD_GENERIC(type, iname, view) \
+  ENUMERATE_SIMD_(type,iname,view)
 
 /*!
  * \ingroup ArcaneSimd
  * \brief Enumérateur SIMD sur un groupe ou liste de noeuds.
  */
-#define ENUMERATE_SIMD_NODE(name,group) ENUMERATE_SIMD_GENERIC(::Arcane::Node,name,group)
+#define ENUMERATE_SIMD_NODE(name, group) ENUMERATE_SIMD_(::Arcane::Node, name, group)
 
 /*!
  * \ingroup ArcaneSimd
  * \brief Enumérateur SIMD sur un groupe ou liste d'arêtes.
  */
-#define ENUMERATE_SIMD_EDGE(name,group) ENUMERATE_SIMD_GENERIC(::Arcane::Edge,name,group)
+#define ENUMERATE_SIMD_EDGE(name, group) ENUMERATE_SIMD_(::Arcane::Edge, name, group)
 
 /*!
  * \ingroup ArcaneSimd
  * \brief Enumérateur SIMD sur un groupe ou liste de faces.
  */
-#define ENUMERATE_SIMD_FACE(name,group) ENUMERATE_SIMD_GENERIC(::Arcane::Face,name,group)
+#define ENUMERATE_SIMD_FACE(name, group) ENUMERATE_SIMD_(::Arcane::Face, name, group)
 
 /*!
  * \ingroup ArcaneSimd
  * \brief Enumérateur SIMD sur un groupe ou liste de mailles.
  */
-#define ENUMERATE_SIMD_CELL(name,group) ENUMERATE_SIMD_GENERIC(::Arcane::Cell,name,group)
+#define ENUMERATE_SIMD_CELL(name, group) ENUMERATE_SIMD_(::Arcane::Cell, name, group)
 
 /*!
  * \ingroup ArcaneSimd
  * \brief Enumérateur SIMD sur un groupe ou liste de particles.
  */
-#define ENUMERATE_SIMD_PARTICLE(name,group) ENUMERATE_SIMD_GENERIC(::Arcane::Particle,name,group)
-
+#define ENUMERATE_SIMD_PARTICLE(name, group) ENUMERATE_SIMD_(::Arcane::Particle, name, group)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

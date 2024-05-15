@@ -542,8 +542,36 @@ enumerator() const
 {
   if (null())
     return ItemEnumerator();
-  m_impl->checkNeedUpdate();
+  m_impl->_checkNeedUpdateNoPadding();
   return ItemEnumerator(m_impl->itemInfoListView(),m_impl->itemsLocalId(),m_impl.get());
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+ItemEnumerator ItemGroup::
+_simdEnumerator() const
+{
+  if (null())
+    return ItemEnumerator();
+  m_impl->_checkNeedUpdateWithPadding();
+  return ItemEnumerator(m_impl->itemInfoListView(),m_impl->itemsLocalId(),m_impl.get());
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+ItemVectorView ItemGroup::
+_view(bool do_padding) const
+{
+  if (null())
+    return ItemVectorView();
+  m_impl->_checkNeedUpdate(do_padding);
+  Int32 flags = 0;
+  if (m_impl->isContigousLocalIds())
+    flags |= ItemIndexArrayView::F_Contigous;
+  // TODO: gérer l'offset
+  return ItemVectorView(m_impl->itemFamily(),ItemIndexArrayView(m_impl->itemsLocalId(),0,flags));
 }
 
 /*---------------------------------------------------------------------------*/
@@ -552,14 +580,16 @@ enumerator() const
 ItemVectorView ItemGroup::
 view() const
 {
-  if (null())
-    return ItemVectorView();
-  m_impl->checkNeedUpdate();
-  Int32 flags = 0;
-  if (m_impl->isContigousLocalIds())
-    flags |= ItemIndexArrayView::F_Contigous;
-  // TODO: gérer l'offset
-  return ItemVectorView(m_impl->itemFamily(),ItemIndexArrayView(m_impl->itemsLocalId(),0,flags));
+  return _view(false);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+ItemVectorView ItemGroup::
+_paddedView() const
+{
+  return _view(true);
 }
 
 /*---------------------------------------------------------------------------*/
