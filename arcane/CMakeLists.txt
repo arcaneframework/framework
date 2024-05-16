@@ -645,6 +645,7 @@ set(ARCANE_USE_HIDDEN_VISIBILITY TRUE)
 # Gestion du C#.
 
 include(ArcconDotNet)
+include(${CMAKE_CURRENT_LIST_DIR}/cmake/GlobalCSharpTarget.cmake)
 
 # ----------------------------------------------------------------------------
 
