@@ -25,7 +25,7 @@ env:
   CCACHE_MAXSIZE: 5G
   # CMake
   CM_BUILD_OPTS: "-j2"
-  CM_BUILD_TYPE: Release
+  CM_BUILD_TYPE: Debug
   CM_CCACHE_OPTS: "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache"
   # CTest
   CT_OPTS: "--timeout 30 --output-on-failure ${{ github.event.inputs.ctest_options }}"

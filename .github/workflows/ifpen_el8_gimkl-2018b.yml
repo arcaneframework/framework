@@ -25,7 +25,7 @@ env:
   CCACHE_MAXSIZE: 5G
   # CMake
   CM_BUILD_OPTS: "-j2"
-  CM_BUILD_TYPE: Release
+  CM_BUILD_TYPE: Debug
   CM_CCACHE_OPTS: "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache"
   # CTest
   CT_OPTS: "--timeout 300 --output-on-failure --exclude-regex '(^hydro5_4proc_3sd_4proc$|^alien.interface.c.seq.mpi-1$|^alien.interface.fortran.seq.mpi-1$|.petsc.mumps)' ${{ github.event.inputs.ctest_options }}"
