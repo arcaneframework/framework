@@ -22,8 +22,7 @@ add_custom_command(OUTPUT ${CSOUTPATH}/MeshMaterialCSharpUnitTest_axl.cs
   COMMAND ${ARCANE_AXL2CC}
   ARGS -i arcane/tests/. --lang c\# -o ${CSOUTPATH} ${CSPATH}/MeshMaterialCSharpUnitTest.axl)
 
-arccon_add_csharp_target(arcanecea_test_cs
-  DOTNET_RUNTIME ${ARCANE_DOTNET_RUNTIME}
+arcane_add_global_csharp_target(arcanecea_test_cs
   BUILD_DIR ${LIBRARY_OUTPUT_PATH}
   ASSEMBLY_NAME ArcaneCeaTest.dll
   PROJECT_PATH ${ARCANE_CSHARP_PROJECT_PATH}/ArcaneCeaTest

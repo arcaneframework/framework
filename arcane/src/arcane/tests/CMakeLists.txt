@@ -144,8 +144,7 @@ if (TARGET arcane_dotnet_wrapper_services)
     COMMAND ${ARCANE_AXL2CC}
     ARGS -i arcane/tests/. --lang c\# -o ${CSOUTPATH} ${CSPATH}/MeshModification.axl)
 
-  arccon_add_csharp_target(arcane_test_cs
-    DOTNET_RUNTIME ${ARCANE_DOTNET_RUNTIME}
+  arcane_add_global_csharp_target(arcane_test_cs
     BUILD_DIR ${LIBRARY_OUTPUT_PATH}
     ASSEMBLY_NAME ArcaneTest.dll
     PROJECT_PATH ${ARCANE_CSHARP_PROJECT_PATH}/ArcaneTest
@@ -166,8 +165,7 @@ if (TARGET arcane_dotnet_wrapper_services)
     DOTNET_TARGET_DEPENDS dotnet_wrapper_services dotnet_wrapper_launcher
     )
 
-  arccon_add_csharp_target(arcane_test_cs_exe
-    DOTNET_RUNTIME ${ARCANE_DOTNET_RUNTIME}
+  arcane_add_global_csharp_target(arcane_test_cs_exe
     BUILD_DIR ${LIBRARY_OUTPUT_PATH}
     ASSEMBLY_NAME ArcaneTestExe.dll
     PROJECT_PATH ${ARCANE_CSHARP_PROJECT_PATH}/ArcaneTestExe

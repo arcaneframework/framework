@@ -118,8 +118,7 @@ function(arcane_wrapper_add_csharp_target)
     file(WRITE ${ARCANE_CSHARP_PROJECT_PATH}/${ARGS_PROJECT_NAME}/csfiles.txt ${_OUT_CSHARP_TXT})
   endif()
 
-  arccon_add_csharp_target(${ARGS_TARGET_NAME}
-    DOTNET_RUNTIME ${ARCANE_DOTNET_RUNTIME}
+  arcane_add_global_csharp_target(${ARGS_TARGET_NAME}
     BUILD_DIR ${ARCANE_DOTNET_WRAPPER_INSTALL_DIRECTORY}
     ASSEMBLY_NAME ${ARGS_PROJECT_NAME}.dll
     PROJECT_PATH ${ARCANE_CSHARP_PROJECT_PATH}/${ARGS_PROJECT_NAME}

@@ -2,6 +2,9 @@
 
   <Import Project="../CommonExe.props" />
 
+  <PropertyGroup>
+    <UseAppHost>false</UseAppHost>
+  </PropertyGroup>
   <ItemGroup>
     <Compile Include="@CSPATH@/Main.cs" />
   </ItemGroup>
