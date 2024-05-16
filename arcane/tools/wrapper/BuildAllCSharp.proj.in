@@ -1,0 +1,22 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ProjectReferences Include=".\**\*.csproj" />
+  </ItemGroup>
+  <PropertyGroup>
+  </PropertyGroup>
+
+  <Target Name="Build">
+    <MSBuild Projects="@(ProjectReferences)" Targets="Build" Properties="SelfContained=false;PublishSelfContained=false">
+    </MSBuild>
+  </Target>
+
+  <Target Name="Restore">
+    <MSBuild Projects="@(ProjectReferences)" Targets="Restore">
+    </MSBuild>
+  </Target>
+
+  <Target Name="Publish">
+    <MSBuild Projects="@(ProjectReferences)" Targets="Publish">
+    </MSBuild>
+  </Target>
+</Project>
