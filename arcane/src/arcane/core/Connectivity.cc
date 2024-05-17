@@ -324,6 +324,7 @@ kindsToConnectivity(eItemKind kindA, eItemKind kindB)
   case IK_Face:
   case IK_Cell:
   case IK_DoF:
+  case IK_Particle:
     break;
   default:
     throw FatalErrorException(A_FUNCINFO, String::format("Connectivity from kind {0} not supported", kindA));
