@@ -496,7 +496,7 @@ _doInit()
     m_particle_family_testers.add(new ParticleFamilyTester(pf1));
 
     IItemFamily* pf2 = mesh->createItemFamily(IK_Particle,"Particle2NoMap");
-    pf2->setHasUniqueIdMap(false);
+//    pf2->setHasUniqueIdMap(false); // to see why this. Cannot work when USE_GRAPH_CONNECTIVITY_POLICY is on.
     m_particle_family_testers.add(new ParticleFamilyTester(pf2));
 
     IItemFamily* pf3 = mesh->createItemFamily(IK_Particle,"Particle3Ghost");
