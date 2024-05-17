@@ -369,6 +369,54 @@ pattern() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+Int32 CartesianMeshNumberingMng::
+cellLevel(Int64 uid) const
+{
+  Integer pos = 0;
+
+  while (pos < m_first_cell_uid_level.size() && m_first_cell_uid_level[pos] <= uid) {
+    pos++;
+  }
+  pos--;
+
+  return m_p_to_l_level[pos];
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Int32 CartesianMeshNumberingMng::
+nodeLevel(Int64 uid) const
+{
+  Integer pos = 0;
+
+  while (pos < m_first_node_uid_level.size() && m_first_node_uid_level[pos] <= uid) {
+    pos++;
+  }
+  pos--;
+
+  return m_p_to_l_level[pos];
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Int32 CartesianMeshNumberingMng::
+faceLevel(Int64 uid) const
+{
+  Integer pos = 0;
+
+  while (pos < m_first_face_uid_level.size() && m_first_face_uid_level[pos] <= uid) {
+    pos++;
+  }
+  pos--;
+
+  return m_p_to_l_level[pos];
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 // Tant que l'on a un unique "pattern" pour x, y, z, pas besoin de trois méthodes.
 Int64 CartesianMeshNumberingMng::
 offsetLevelToLevel(Int64 coord, Integer level_from, Integer level_to) const
@@ -543,7 +591,8 @@ nodeUniqueIdToCoordX(Int64 uid, Integer level)
 Int64 CartesianMeshNumberingMng::
 nodeUniqueIdToCoordX(Node node)
 {
-  return nodeUniqueIdToCoordX(node.uniqueId(), node.level());
+  const Int64 uid = node.uniqueId();
+  return nodeUniqueIdToCoordX(uid, nodeLevel(uid));
 }
 
 /*---------------------------------------------------------------------------*/
@@ -568,7 +617,8 @@ nodeUniqueIdToCoordY(Int64 uid, Integer level)
 Int64 CartesianMeshNumberingMng::
 nodeUniqueIdToCoordY(Node node)
 {
-  return nodeUniqueIdToCoordY(node.uniqueId(), node.level());
+  const Int64 uid = node.uniqueId();
+  return nodeUniqueIdToCoordY(uid, nodeLevel(uid));
 }
 
 /*---------------------------------------------------------------------------*/
@@ -592,7 +642,8 @@ nodeUniqueIdToCoordZ(Int64 uid, Integer level)
 Int64 CartesianMeshNumberingMng::
 nodeUniqueIdToCoordZ(Node node)
 {
-  return nodeUniqueIdToCoordZ(node.uniqueId(), node.level());
+  const Int64 uid = node.uniqueId();
+  return nodeUniqueIdToCoordZ(uid, nodeLevel(uid));
 }
 
 /*---------------------------------------------------------------------------*/
@@ -719,7 +770,8 @@ faceUniqueIdToCoordX(Int64 uid, Integer level)
 Int64 CartesianMeshNumberingMng::
 faceUniqueIdToCoordX(Face face)
 {
-  return faceUniqueIdToCoordX(face.uniqueId(), face.level());
+  const Int64 uid = face.uniqueId();
+  return faceUniqueIdToCoordX(uid, faceLevel(uid));
 }
 
 /*---------------------------------------------------------------------------*/
@@ -855,7 +907,8 @@ faceUniqueIdToCoordY(Int64 uid, Integer level)
 Int64 CartesianMeshNumberingMng::
 faceUniqueIdToCoordY(Face face)
 {
-  return faceUniqueIdToCoordY(face.uniqueId(), face.level());
+  const Int64 uid = face.uniqueId();
+  return faceUniqueIdToCoordY(uid, faceLevel(uid));
 }
 
 /*---------------------------------------------------------------------------*/
@@ -956,7 +1009,8 @@ faceUniqueIdToCoordZ(Int64 uid, Integer level)
 Int64 CartesianMeshNumberingMng::
 faceUniqueIdToCoordZ(Face face)
 {
-  return faceUniqueIdToCoordZ(face.uniqueId(), face.level());
+  const Int64 uid = face.uniqueId();
+  return faceUniqueIdToCoordZ(uid, faceLevel(uid));
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1857,7 +1911,8 @@ parentNodeUniqueIdOfNode(Int64 uid, Integer level, bool do_fatal)
 Int64 CartesianMeshNumberingMng::
 parentNodeUniqueIdOfNode(Node node, bool do_fatal)
 {
-  return parentNodeUniqueIdOfNode(node.uniqueId(), node.level(), do_fatal);
+  const Int64 uid = node.uniqueId();
+  return parentNodeUniqueIdOfNode(uid, nodeLevel(uid), do_fatal);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1886,7 +1941,8 @@ childNodeUniqueIdOfNode(Int64 uid, Integer level)
 Int64 CartesianMeshNumberingMng::
 childNodeUniqueIdOfNode(Node node)
 {
-  return childNodeUniqueIdOfNode(node.uniqueId(), node.level());
+  const Int64 uid = node.uniqueId();
+  return childNodeUniqueIdOfNode(uid, nodeLevel(uid));
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1960,7 +2016,8 @@ parentFaceUniqueIdOfFace(Int64 uid, Integer level, bool do_fatal)
 Int64 CartesianMeshNumberingMng::
 parentFaceUniqueIdOfFace(Face face, bool do_fatal)
 {
-  return parentFaceUniqueIdOfFace(face.uniqueId(), face.level(), do_fatal);
+  const Int64 uid = face.uniqueId();
+  return parentFaceUniqueIdOfFace(uid, faceLevel(uid), do_fatal);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -2046,7 +2103,8 @@ childFaceUniqueIdOfFace(Int64 uid, Integer level, Int64 child_index_in_parent)
 Int64 CartesianMeshNumberingMng::
 childFaceUniqueIdOfFace(Face face, Int64 child_index_in_parent)
 {
-  return childFaceUniqueIdOfFace(face.uniqueId(), face.level(), child_index_in_parent);
+  const Int64 uid = face.uniqueId();
+  return childFaceUniqueIdOfFace(uid, faceLevel(uid), child_index_in_parent);
 }
 
 /*---------------------------------------------------------------------------*/

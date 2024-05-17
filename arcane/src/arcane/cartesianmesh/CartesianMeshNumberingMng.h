@@ -73,6 +73,11 @@ class CartesianMeshNumberingMng
   Int64 nbFaceInLevel(Integer level) const override;
 
   Integer pattern() const override;
+
+  Int32 cellLevel(Int64 uid) const override;
+  Int32 nodeLevel(Int64 uid) const override;
+  Int32 faceLevel(Int64 uid) const override;
+
   Int64 offsetLevelToLevel(Int64 coord, Integer level_from, Integer level_to) const override;
   Int64 faceOffsetLevelToLevel(Int64 coord, Integer level_from, Integer level_to) const override;
 

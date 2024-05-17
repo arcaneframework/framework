@@ -294,6 +294,30 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMeshNumberingMng
   virtual Integer pattern() const = 0;
 
   /*!
+   * \brief Méthode permettant de récupérer le niveau d'une maille avec son uid.
+   *
+   * \param uid L'uniqueId de la maille.
+   * \return Le niveau de la maille.
+   */
+  virtual Int32 cellLevel(Int64 uid) const = 0;
+
+  /*!
+   * \brief Méthode permettant de récupérer le niveau d'un noeud avec son uid.
+   *
+   * \param uid L'uniqueId du noeud.
+   * \return Le niveau du noeud.
+   */
+  virtual Int32 nodeLevel(Int64 uid) const = 0;
+
+  /*!
+   * \brief Méthode permettant de récupérer le niveau d'une face avec son uid.
+   *
+   * \param uid L'uniqueId de la face.
+   * \return Le niveau de la face.
+   */
+  virtual Int32 faceLevel(Int64 uid) const = 0;
+
+  /*!
    * \brief Méthode permettant d'obtenir la position du premier noeud/maille fille à partir de la position
    * du noeud/maille parent.
    *
