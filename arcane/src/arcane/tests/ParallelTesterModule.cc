@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ParallelTesterModule.cc                                     (C) 2000-2023 */
+/* ParallelTesterModule.cc                                     (C) 2000-2024 */
 /*                                                                           */
 /* Module de test du parallèlisme.                                           */
 /*---------------------------------------------------------------------------*/
@@ -496,7 +496,7 @@ _doInit()
     m_particle_family_testers.add(new ParticleFamilyTester(pf1));
 
     IItemFamily* pf2 = mesh->createItemFamily(IK_Particle,"Particle2NoMap");
-    pf2->setHasUniqueIdMap(false);
+//    pf2->setHasUniqueIdMap(false); // to see why this. Cannot work when USE_GRAPH_CONNECTIVITY_POLICY is on.
     m_particle_family_testers.add(new ParticleFamilyTester(pf2));
 
     IItemFamily* pf3 = mesh->createItemFamily(IK_Particle,"Particle3Ghost");
