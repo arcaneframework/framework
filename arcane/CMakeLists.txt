@@ -1373,6 +1373,14 @@ message(STATUS "ARCANE_LIBRARIES: ${ARCANE_LIBRARIES}")
 message(STATUS "ARCANE_OPTIONAL_LIBRARIES: ${ARCANE_OPTIONAL_LIBRARIES}")
 
 # ----------------------------------------------------------------------------
+
+# Finalise la gestion du C# en créant la commande qui compile le projet
+# On doit faire cela à la fin car il n'y a qu'à ce moment là qu'on connait
+# toutes les dépendences (en effet CMake ne propage pas les dépendences sur
+# add_custom_command)
+include(${CMAKE_CURRENT_LIST_DIR}/cmake/GlobalCSharpCommand.cmake)
+
+# ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
 # Création des fichiers ArcaneConfig.cmake et ArcaneTargets.cmake
 #

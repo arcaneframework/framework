@@ -1,7 +1,7 @@
 ﻿# ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
 # Pour tester l'utilisation d'un cible globale pour le C#
-set(ARCANE_USE_GLOBAL_CSHARP FALSE)
+option(ARCANE_USE_GLOBAL_CSHARP "True if we use global C# project (experimental)" OFF)
 
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
@@ -15,31 +15,6 @@ if(ARCANE_USE_GLOBAL_CSHARP)
 
   add_custom_target(arcane_global_csharp_target ALL DEPENDS "${ARCANE_DOTNET_PUBLISH_TIMESTAMP}")
   add_custom_target(arcane_global_csharp_restore_target ALL DEPENDS "${ARCANE_DOTNET_RESTORE_TIMESTAMP}")
-
-  set(ARGS_DOTNET_RUNTIME "coreclr")
-  set(_msbuild_exe ${ARCCON_MSBUILD_EXEC_${ARGS_DOTNET_RUNTIME}})
-  if (NOT _msbuild_exe)
-    logFatalError("In ${_func_name}: 'msbuild' command for runtime '${ARGS_DOTNET_RUNTIME}' is not available.")
-  endif()
-  # TODO: Faire la restauration avant
-  set(_BUILD_ARGS publish --no-restore BuildAllCSharp.proj /t:Publish /p:PublishDir=${ARCANE_DOTNET_PUBLISH_PATH}/ ${ARGS_MSBUILD_ARGS})
-
-  # Commande de restauration des packages nuget
-  add_custom_command(OUTPUT "${ARCANE_DOTNET_RESTORE_TIMESTAMP}"
-    WORKING_DIRECTORY "${ARCANE_CSHARP_PROJECT_PATH}"
-    COMMAND ${_msbuild_exe} build BuildAllCSharp.proj /t:Restore
-    COMMAND ${CMAKE_COMMAND} -E touch ${ARCANE_DOTNET_RESTORE_TIMESTAMP}
-    COMMENT "Restoring global 'C#' target"
-  )
-
-  # Commande de compilation de la cible
-  add_custom_command(OUTPUT "${ARCANE_DOTNET_PUBLISH_TIMESTAMP}"
-    WORKING_DIRECTORY "${ARCANE_CSHARP_PROJECT_PATH}"
-    COMMAND ${_msbuild_exe} ${_BUILD_ARGS}
-    COMMAND ${CMAKE_COMMAND} -E touch ${ARCANE_DOTNET_PUBLISH_TIMESTAMP}
-    DEPENDS arcane_global_csharp_restore_target
-    COMMENT "Building global 'C#' target"
-  )
 
   # TODO: Ajouter cible pour le pack
   # TODO: Ajouter cible pour forcer la compilation
