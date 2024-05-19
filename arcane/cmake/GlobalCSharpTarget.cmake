@@ -1,7 +1,7 @@
 ﻿# ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
 # Pour tester l'utilisation d'un cible globale pour le C#
-option(ARCANE_USE_GLOBAL_CSHARP "True if we use global C# project (experimental)" OFF)
+option(ARCANE_USE_GLOBAL_CSHARP "True if we use global C# project (experimental)" ON)
 
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
