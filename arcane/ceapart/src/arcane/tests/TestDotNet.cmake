@@ -18,10 +18,13 @@ set(CSOUTPATH ${CMAKE_CURRENT_BINARY_DIR})
 configure_file(ArcaneCeaTest.csproj.in ${ARCANE_CSHARP_PROJECT_PATH}/ArcaneCeaTest/ArcaneCeaTest.csproj @ONLY)
 
 add_custom_command(OUTPUT ${CSOUTPATH}/MeshMaterialCSharpUnitTest_axl.cs
-  DEPENDS ${CSPATH}/MeshMaterialCSharpUnitTest.axl ${ARCANE_AXL2CC}
+  DEPENDS ${CSPATH}/MeshMaterialCSharpUnitTest.axl ${ARCANE_AXL2CC} dotnet_axl_depend
   COMMAND ${ARCANE_AXL2CC}
   ARGS -i arcane/tests/. --lang c\# -o ${CSOUTPATH} ${CSPATH}/MeshMaterialCSharpUnitTest.axl)
 
+add_custom_target(arcanecea_test_cs_generate ALL DEPENDS
+  ${CSOUTPATH}/MeshMaterialCSharpUnitTest_axl.cs
+  )
 arcane_add_global_csharp_target(arcanecea_test_cs
   BUILD_DIR ${LIBRARY_OUTPUT_PATH}
   ASSEMBLY_NAME ArcaneCeaTest.dll
@@ -30,7 +33,7 @@ arcane_add_global_csharp_target(arcanecea_test_cs
   MSBUILD_ARGS ${ARCANE_MSBUILD_ARGS}
   DOTNET_TARGET_DEPENDS dotnet_wrapper_cea_materials dotnet_wrapper_services
   DEPENDS
-  ${CSOUTPATH}/MeshMaterialCSharpUnitTest_axl.cs
+  arcanecea_test_cs_generate
   ${CSPATH}/Test1.cs
   ${CSPATH}/StiffenedGasMaterialEos.cs
   test_material_eos_csharp
