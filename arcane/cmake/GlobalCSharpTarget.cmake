@@ -59,9 +59,6 @@ function(arcane_add_global_csharp_target target_name)
   if (NOT target_name)
     logFatalError("In ${_func_name}: no 'target_name' specified")
   endif()
-  if (NOT ${ARGS_DOTNET_RUNTIME} MATCHES "coreclr|mono")
-    logFatalError("In ${_func_name}: Invalid value '${ARGS_DOTNET_RUNTIME}' for DOTNET_RUNTIME. Valid values are 'coreclr' or 'mono'")
-  endif()
   if (NOT ARGS_BUILD_DIR)
     logFatalError("In ${_func_name}: BUILD_DIR not specified")
   endif()
@@ -77,15 +74,6 @@ function(arcane_add_global_csharp_target target_name)
   set(assembly_name ${ARGS_ASSEMBLY_NAME})
   set(build_proj_path ${ARGS_PROJECT_PATH}/${ARGS_PROJECT_NAME})
   set(output_assembly_path ${ARGS_BUILD_DIR}/${assembly_name})
-  set(_msbuild_exe ${ARCCON_MSBUILD_EXEC_${ARGS_DOTNET_RUNTIME}})
-  if (NOT _msbuild_exe)
-    logFatalError("In ${_func_name}: 'msbuild' command for runtime '${ARGS_DOTNET_RUNTIME}' is not available.")
-  endif()
-  set(_BUILD_ARGS ${ARCCON_MSBUILD_ARGS_${ARGS_DOTNET_RUNTIME}} ${ARGS_PROJECT_NAME} /t:Publish /p:PublishDir=${ARGS_BUILD_DIR}/ ${ARGS_MSBUILD_ARGS})
-  # Comme 'cmake' ne propage pas les dépendances de fichiers entre les 'add_custom_command'
-  # et 'add_custom_target', il faut le faire manuellement. Pour cela, on utilise
-  # notre propriété 'DOTNET_DLL_NAME' définie sur les cibles '.Net' et on
-  # ajoute explicitement aux dépendences ce fichier.
   set(_DOTNET_TARGET_DLL_DEPENDS)
   if (ARGS_DOTNET_TARGET_DEPENDS)
     #message(STATUS "ARGS_DOTNET_TARGET_DEPENDS=${ARGS_DOTNET_TARGET_DEPENDS}")
@@ -97,43 +85,14 @@ function(arcane_add_global_csharp_target target_name)
   endif()
   message(STATUS "_DOTNET_TARGET_DLL_DEPENDS=${_DOTNET_TARGET_DLL_DEPENDS}")
   set(_ALL_DEPENDS ${build_proj_path} ${ARGS_DEPENDS} ${_DOTNET_TARGET_DLL_DEPENDS} ${ARGS_DOTNET_TARGET_DEPENDS})
-  #message(STATUS "_ALL_DEPENDS=${_ALL_DEPENDS}")
 
-  if (ARGS_PACK)
-    set(_DO_PACK TRUE)
-  endif()
-  if (_DO_PACK)
-    set(_PACK_DIR ${CMAKE_BINARY_DIR}/nupkgs)
-    file(MAKE_DIRECTORY ${_PACK_DIR})
-    set(_PACK_ARGS ${ARCCON_DOTNET_PACK_ARGS_${ARGS_DOTNET_RUNTIME}} /p:PackageOutputPath=${_PACK_DIR} /p:IncludeSymbols=true ${ARGS_PROJECT_NAME} ${ARGS_MSBUILD_ARGS})
-  endif()
-  # if (_DO_PACK)
-  #   add_custom_command(OUTPUT ${output_assembly_path}
-  #     WORKING_DIRECTORY ${ARGS_PROJECT_PATH}
-  #     COMMAND ${_msbuild_exe} ${_BUILD_ARGS}
-  #     COMMAND ${_msbuild_exe} ${_PACK_ARGS}
-  #     DEPENDS ${_ALL_DEPENDS}
-  #     COMMENT "Building and packing 'C#' target '${target_name}' (expected output '${output_assembly_path}')"
-  #   )
-  # else()
-  #   add_custom_command(OUTPUT ${output_assembly_path}
-  #     WORKING_DIRECTORY ${ARGS_PROJECT_PATH}
-  #     COMMAND ${_msbuild_exe} ${_BUILD_ARGS}
-  #     DEPENDS ${_ALL_DEPENDS}
-  #     COMMENT "Building 'C#' target '${target_name}' (expected output '${output_assembly_path}')"
-  #   )
-  # endif()
-
-  # Ajoute les fichiers à la dépendence de la cible globale
+  # Ajoute les fichiers à la dépendance de la cible globale
+  # Cela est utilisé ensuite dans 'GlobalCSharpCommand.cmake' pour générer la liste de dépendances
   set_property(TARGET arcane_global_csharp_target
     APPEND PROPERTY
     DEPENDS ${_ALL_DEPENDS}
   )
 
-  # add_custom_target(${target_name} ALL DEPENDS ${output_assembly_path} ${ARGS_DOTNET_TARGET_DEPENDS})
-  # add_dependencies(arcane_global_csharp_target ${ARGS_DOTNET_TARGET_DEPENDS})
-
-  # add_custom_target(${target_name} ALL DEPENDS arcane_global_csharp_target)
   add_custom_target(${target_name})
   add_dependencies(arcane_global_csharp_target ${target_name})
 

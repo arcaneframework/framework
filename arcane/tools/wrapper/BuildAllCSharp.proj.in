@@ -2,6 +2,12 @@
   <ItemGroup>
     <ProjectReferences Include=".\**\*.csproj" />
   </ItemGroup>
+  <!-- On ne fait des packages nuget que pour les cibles dont le nom commence par 'Arcane.'
+       Les autres concernent par exemple les tests et il n'y a pas besoin de faire de packages nuget pour elles.
+  -->
+  <ItemGroup>
+    <ProjectReferencesToPack Include=".\**\Arcane.*.csproj" />
+  </ItemGroup>
   <PropertyGroup>
   </PropertyGroup>
 
@@ -18,5 +24,10 @@
   <Target Name="Publish">
     <MSBuild Projects="@(ProjectReferences)" Targets="Publish">
     </MSBuild>
+  </Target>
+
+  <Target Name="PublishAndPack">
+    <MSBuild Projects="@(ProjectReferences)" Targets="Publish" />
+    <MSBuild Projects="@(ProjectReferencesToPack)" Targets="Pack" />
   </Target>
 </Project>
