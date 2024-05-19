@@ -1,7 +1,7 @@
 ﻿# ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
 # Pour tester l'utilisation d'un cible globale pour le C#
-option(ARCANE_USE_GLOBAL_CSHARP "True if we use global C# project (experimental)" OFF)
+option(ARCANE_USE_GLOBAL_CSHARP "True if we use global C# project (experimental)" ON)
 
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
@@ -84,7 +84,7 @@ function(arcane_add_global_csharp_target target_name)
     endforeach()
   endif()
   message(STATUS "_DOTNET_TARGET_DLL_DEPENDS=${_DOTNET_TARGET_DLL_DEPENDS}")
-  set(_ALL_DEPENDS ${build_proj_path} ${ARGS_DEPENDS} ${_DOTNET_TARGET_DLL_DEPENDS} ${ARGS_DOTNET_TARGET_DEPENDS})
+  set(_ALL_DEPENDS ${build_proj_path} ${ARGS_DEPENDS} ${ARGS_DOTNET_TARGET_DEPENDS})
 
   # Ajoute les fichiers à la dépendance de la cible globale
   # Cela est utilisé ensuite dans 'GlobalCSharpCommand.cmake' pour générer la liste de dépendances
@@ -93,7 +93,7 @@ function(arcane_add_global_csharp_target target_name)
     DEPENDS ${_ALL_DEPENDS}
   )
 
-  add_custom_target(${target_name})
+  add_custom_target(${target_name} DEPENDS ${ARGS_DOTNET_TARGET_DEPENDS})
   add_dependencies(arcane_global_csharp_target ${target_name})
 
   # Indique que la cible génère la dll '${output_assembly_path}'
