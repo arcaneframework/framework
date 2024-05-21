@@ -46,10 +46,7 @@
 
 // Belos
 #include <BelosConfigDefs.hpp>
-#include <BelosLinearProblem.hpp>
 #include <BelosTpetraAdapter.hpp>
-#include <BelosTpetraOperator.hpp>
-#include <BelosBiCGStabSolMgr.hpp>
 
 // Tpetra
 #include <Tpetra_Core.hpp>
