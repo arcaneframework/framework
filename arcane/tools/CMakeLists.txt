@@ -229,7 +229,7 @@ arccon_add_csharp_target(dotnet_arcane_utils
   PROJECT_NAME Arcane.Utils/Arcane.Utils.csproj
   MSBUILD_ARGS ${ARCANE_MSBUILD_ARGS}
   PACK
-  )
+)
 
 arccon_add_csharp_target(dotnet_tools
   DOTNET_RUNTIME ${ARCANE_DOTNET_RUNTIME}
@@ -239,7 +239,12 @@ arccon_add_csharp_target(dotnet_tools
   PROJECT_NAME AllTools.sln
   MSBUILD_ARGS ${ARCANE_MSBUILD_ARGS}
   DOTNET_TARGET_DEPENDS dotnet_arcane_utils
-  )
+)
+
+# Voir fichier 'GlobalCSharpTarget' pour explicataion sur cette dépendance
+if (TARGET dotnet_axl_depend)
+  add_dependencies(dotnet_arcane_utils dotnet_axl_depend)
+endif()
 
 # Pour compatibilité avec l'existant (versions 3.11 et antérieures)
 add_custom_target(dotnet_xbuild DEPENDS dotnet_tools)

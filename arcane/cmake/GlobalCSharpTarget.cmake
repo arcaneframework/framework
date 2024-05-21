@@ -16,7 +16,14 @@ if(ARCANE_USE_GLOBAL_CSHARP)
   add_custom_target(arcane_global_csharp_target ALL DEPENDS "${ARCANE_DOTNET_PUBLISH_TIMESTAMP}")
   add_custom_target(arcane_global_csharp_restore_target ALL DEPENDS "${ARCANE_DOTNET_RESTORE_TIMESTAMP}")
 
-  # TODO: Ajouter cible pour le pack
+  # Cette dépendence n'existe pas réellement mais elle permet de s'assurer qu'il n'y
+  # a qu'une seule cible à la fois qui appelle `dotnet`.
+  # C'est nécessaire pour éviter les erreurs dues à la création de répertoires lors de
+  # la première utilisation de `dotnet` (dans 'Microsoft.DotNet.Configurer.DotnetFirstTimeUseConfigurer.Configure()')
+  if (TARGET dotnet_axl_depend)
+    add_dependencies(arcane_global_csharp_restore_target dotnet_axl_depend)
+  endif()
+
   # TODO: Ajouter cible pour forcer la compilation
 endif()
 
