@@ -607,9 +607,14 @@ template <typename TagT> class SolverInternal
     using Teuchos::rcp;
     using Teuchos::rcpFromRef; // Make a "weak" RCP from a reference.
 
+#if (TRILINOS_MAJOR_VERSION < 15)
     Belos::SolverFactory<scalar_type, vec_type, op_type> factory;
     RCP<Belos::SolverManager<scalar_type, vec_type, op_type>> solver =
         factory.create(m_solver_name, m_solver_parameters);
+#else
+    RCP<Belos::SolverManager<scalar_type, vec_type, op_type>> solver =
+        belos_solver_create<scalar_type, vec_type, op_type>(m_solver_name, m_solver_parameters);
+#endif
 
     // Create a LinearProblem struct with the problem to solve.
     // A, X, B, and M are passed by (smart) pointer, not copied.
@@ -674,14 +679,15 @@ template <typename TagT> class SolverInternal
     // Tell the LinearProblem to make itself ready to solve.
     problem->setProblem();
 
-    std::cout<<"CREATE BELOS SOLVER : "<<std::endl ;
     // the list of solver parameters created above.
-    //Belos::SolverFactory<scalar_type, vec_type, op_type> factory;
-    //RCP<Belos::SolverManager<scalar_type, vec_type, op_type>> solver =
-    //    factory.create(m_solver_name, m_solver_parameters);
+#if (TRILINOS_MAJOR_VERSION < 15)
+    Belos::SolverFactory<scalar_type, vec_type, op_type> factory;
+    RCP<Belos::SolverManager<scalar_type, vec_type, op_type>> solver =
+        factory.create(m_solver_name, m_solver_parameters);
+#else
     RCP<Belos::SolverManager<scalar_type, vec_type, op_type>> solver =
         belos_solver_create<scalar_type, vec_type, op_type>(m_solver_name, m_solver_parameters);
-
+#endif
     // Tell the solver what problem you want to solve.
     solver->setProblem(problem);
 

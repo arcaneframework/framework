@@ -47,11 +47,7 @@
 
 // Belos
 #include <BelosConfigDefs.hpp>
-#include <BelosLinearProblem.hpp>
 #include <BelosTpetraAdapter.hpp>
-#include <BelosTpetraOperator.hpp>
-#include <BelosBiCGStabSolMgr.hpp>
-
 // Tpetra
 #include <Tpetra_Core.hpp>
 #include <Tpetra_Map_fwd.hpp>
@@ -74,4 +70,4 @@ using namespace Belos;
 
 template<typename ScalarT, typename MVectorT, typename OpT>
 RCP<Belos::SolverManager<ScalarT, MVectorT, OpT> >
-belos_solver_create(std::string solverName, Teuchos::RCP<Teuchos::ParameterList> solver_parameters) ;
+belos_solver_create(std::string const& solverName, Teuchos::RCP<Teuchos::ParameterList> const& solver_parameters) ;

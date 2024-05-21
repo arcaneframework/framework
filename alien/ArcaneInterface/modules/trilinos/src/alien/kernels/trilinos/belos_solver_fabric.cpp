@@ -69,7 +69,7 @@ using namespace Belos;
 
 template<typename ScalarT, typename MVectorT, typename OpT>
 RCP<Belos::SolverManager<ScalarT, MVectorT, OpT> >
-private_belos_solver_create(std::string solverName,Teuchos::RCP<Teuchos::ParameterList> solver_parameters)
+private_belos_solver_create(std::string const& solverName, Teuchos::RCP<Teuchos::ParameterList> const& solver_parameters)
 {
     std::cout<<"CREATE BELOS SOLVER : "<<solverName<<std::endl ;
 
@@ -95,7 +95,7 @@ private_belos_solver_create(std::string solverName,Teuchos::RCP<Teuchos::Paramet
 
 template<typename ScalarT, typename MVectorT, typename OpT>
 RCP<Belos::SolverManager<ScalarT, MVectorT, OpT> >
-belos_solver_create(std::string solverName,Teuchos::RCP<Teuchos::ParameterList> solver_parameters) ;
+belos_solver_create(std::string const& solverName,Teuchos::RCP<Teuchos::ParameterList> const& solver_parameters) ;
 
 #include <Kokkos_Macros.hpp>
 
@@ -106,7 +106,7 @@ typedef Tpetra::Operator<double,int,int,SerialNT> SerialOP;
 
 template<>
 RCP<Belos::SolverManager<double, SerialMV, SerialOP> >
-belos_solver_create(std::string solverName, Teuchos::RCP<Teuchos::ParameterList> solver_parameters)
+belos_solver_create(std::string const& solverName, Teuchos::RCP<Teuchos::ParameterList> const& solver_parameters)
 {
   return private_belos_solver_create<double,SerialMV,SerialOP>(solverName,solver_parameters) ;
 }
@@ -119,7 +119,7 @@ typedef Tpetra::Operator<double,int,int,OMPNT> OMPOP;
 
 template<>
 RCP<Belos::SolverManager<double, OMPMV, OMPOP> >
-belos_solver_create(std::string solverName, Teuchos::RCP<Teuchos::ParameterList> solver_parameters)
+belos_solver_create(std::string const& solverName, Teuchos::RCP<Teuchos::ParameterList> const& solver_parameters)
 {
   return private_belos_solver_create<double,OMPMV,OMPOP>(solverName,solver_parameters) ;
 }
@@ -132,7 +132,7 @@ typedef Tpetra::Operator<double,int,int,THNT> THOP;
 
 template<>
 RCP<Belos::SolverManager<double, THMV, THOP> >
-belos_solver_create(std::string solverName, Teuchos::RCP<Teuchos::ParameterList> solver_parameters)
+belos_solver_create(std::string const& solverName, Teuchos::RCP<Teuchos::ParameterList> const& solver_parameters)
 {
   return private_belos_solver_create<double,THMV,THOP>(solverName,solver_parameters) ;
 }
@@ -145,7 +145,7 @@ typedef Tpetra::Operator<double,int,int,CudaNT> CudaOP;
 
 template<>
 RCP<Belos::SolverManager<double, CudaMV, CudaOP> >
-belos_solver_create(std::string solverName, Teuchos::RCP<Teuchos::ParameterList> solver_parameters)
+belos_solver_create(std::string const& solverName, Teuchos::RCP<Teuchos::ParameterList> const& solver_parameters)
 {
   return private_belos_solver_create<double,CudaMV,CudaOP>(solverName,solver_parameters) ;
 }
