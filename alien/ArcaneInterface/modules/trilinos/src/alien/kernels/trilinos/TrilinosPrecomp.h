@@ -1,4 +1,9 @@
-// -*- C++ -*-
+﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
+//-----------------------------------------------------------------------------
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// See the top-level COPYRIGHT file for details.
+// SPDX-License-Identifier: Apache-2.0
+//-----------------------------------------------------------------------------
 #ifndef ALIEN_TRILINOSIMPL_TRILINOSPRECOMP_H
 #define ALIEN_TRILINOSIMPL_TRILINOSPRECOMP_H
 /* Author : mesriy at Tue Jul 24 15:49:46 2012

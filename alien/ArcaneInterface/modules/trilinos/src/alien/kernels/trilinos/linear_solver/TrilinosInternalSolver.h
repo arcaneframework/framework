@@ -1,9 +1,9 @@
-/*
- * TrilinosInternalSolver.h
- *
- *  Created on: Dec 16, 2019
- *      Author: gratienj
- */
+﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
+//-----------------------------------------------------------------------------
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// See the top-level COPYRIGHT file for details.
+// SPDX-License-Identifier: Apache-2.0
+//-----------------------------------------------------------------------------
 
 #ifndef MODULES_TRILINOS_SRC_ALIEN_KERNELS_TRILINOS_LINEARSOLVER_TRILINOSINTERNALSOLVER_H_
 #define MODULES_TRILINOS_SRC_ALIEN_KERNELS_TRILINOS_LINEARSOLVER_TRILINOSINTERNALSOLVER_H_
