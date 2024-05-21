@@ -14,18 +14,21 @@
 #include <alien/kernels/trilinos/TrilinosPrecomp.h>
 
 #ifdef ALIEN_USE_TRILINOS
+#if (TRILINOS_MAJOR_VERSION < 15)
 #ifdef ALIEN_USE_MPI
 #include <Epetra_MpiComm.h>
 #else
 #include <Epetra_SerialComm.h>
 #endif
-
+#endif
 #include <Teuchos_DefaultMpiComm.hpp> // wrapper for MPI_Comm
 #include <Tpetra_Version.hpp> // Tpetra version string#endif
 
+#if (TRILINOS_MAJOR_VERSION < 15)
 #include <Epetra_CrsMatrix.h>
 #include <Epetra_Map.h>
 #include <Epetra_Vector.h>
+#endif
 
 #include <Tpetra_Core.hpp>
 #include <Tpetra_CrsMatrix.hpp>
@@ -39,7 +42,6 @@
 
 #include <MatrixMarket_Tpetra.hpp>
 
-#define HAVE_MUELU
 #ifdef HAVE_MUELU
 #include <Trilinos_version.h>
 #include <MueLu.hpp>

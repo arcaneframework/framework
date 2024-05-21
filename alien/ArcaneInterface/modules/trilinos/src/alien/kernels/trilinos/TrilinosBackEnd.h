@@ -6,6 +6,7 @@
 
 #include <alien/utils/Precomp.h>
 #include <alien/core/backend/BackEnd.h>
+#include <alien/kernels/trilinos/TrilinosPrecomp.h>
 #include <Kokkos_Macros.hpp>
 /*---------------------------------------------------------------------------*/
 //#define KOKKOS_ENABLE_OPENMP

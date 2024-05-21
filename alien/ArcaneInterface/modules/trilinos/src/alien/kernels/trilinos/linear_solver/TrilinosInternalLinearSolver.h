@@ -8,6 +8,8 @@
 #ifndef ALIEN_KERNELS_TRILINOS_LINEARSOLVER_TRILINOSINTERNALLINEARSOLVER_H
 #define ALIEN_KERNELS_TRILINOS_LINEARSOLVER_TRILINOSINTERNALLINEARSOLVER_H
 
+#include "alien/kernels/trilinos/linear_solver/belos_solver_fabric.h"
+
 #include <alien/utils/Precomp.h>
 #include <alien/AlienTrilinosPrecomp.h>
 #include <alien/kernels/trilinos/linear_solver/TrilinosOptionTypes.h>

@@ -15,7 +15,7 @@
 #include <Tpetra_HashTable.hpp>
 #include <Tpetra_Import.hpp>
 #include <Tpetra_Import_Util.hpp>
-#define HAVE_MUELU
+
 #ifdef HAVE_MUELU
 #include <MueLu.hpp>
 #ifdef HAVE_MUELU_AMGX

@@ -41,12 +41,21 @@ MatrixInternal<ValueT, TagT>::setMatrixValues(Real const* values)
   for (int irow = 0; irow < m_local_size; ++irow) {
     size_t row_size = csr_matrix.getNumEntriesInLocalRow(m_local_offset + irow);
 
+#if (TRILINOS_MAJOR_VERSION < 15)
     Array<scalar_type> rowvals(row_size);
     Array<global_ordinal_type> cols(row_size);
     csr_matrix.getGlobalRowCopy(irow, cols(), rowvals(), row_size);
     for (std::size_t k = 0; k < row_size; ++k)
       rowvals[k] = values_ptr[k];
     csr_matrix.replaceGlobalValues(m_local_offset + irow, cols, rowvals());
+#else
+    typename MatrixInternal::matrix_type::nonconst_global_inds_host_view_type cols("Inds",row_size);
+    typename MatrixInternal::matrix_type::nonconst_values_host_view_type rowvals("Vals",row_size);
+    csr_matrix.getGlobalRowCopy(irow, cols, rowvals, row_size);
+    for (std::size_t k = 0; k < row_size; ++k)
+      rowvals[k] = values_ptr[k];
+    csr_matrix.replaceGlobalValues(m_local_offset + irow, cols, rowvals);
+#endif
     values_ptr += row_size;
   }
   return true;

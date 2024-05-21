@@ -19,7 +19,7 @@
     <meshgenerator>
       <cartesian>
         <origine>0. 0. 0.</origine>
-        <nsd>1 1 1</nsd>
+        <nsd>2 1 1</nsd>
         <lx nx="10">1.</lx>
         <ly ny="10">1.</ly>
         <lz nz="10">1.</lz>
@@ -29,39 +29,21 @@
 
 
     <alien-bench>
-      <redistribution>false</redistribution>
+      <redistribution>true</redistribution>
       <!-- big diagonal-coefficient keep diagonal dominant matrix -->
-      <homogeneous>true</homogeneous>
+      <homogeneous>false</homogeneous>
       <diagonal-coefficient>0.</diagonal-coefficient>
       <lambdax>0.125</lambdax>
       <lambday>0.25</lambday>
       <alpha>10.</alpha>
       <sigma>1000000.</sigma>
       <epsilon>0.01</epsilon>
-      <unit-rhs>1</unit-rhs>
 
       <linear-solver name="TrilinosSolver">
         <solver>BiCGStab</solver>
         <max-iteration-num>1000</max-iteration-num>
         <stop-criteria-value>1e-8</stop-criteria-value>
-        <preconditioner>MueLu</preconditioner>
-        <!--chebyshev>
-           <degree>3</degree>
-        </chebyshev!-->
-        <relaxation>
-           <type>Symmetric Gauss-Seidel</type>
-           <sweeps>2</sweeps>
-           <damping-factor>0.9</damping-factor>
-        </relaxation>
-        <muelu>
-           <verbosity>high</verbosity>
-           <symmetric>false</symmetric>
-           <max-level>20</max-level>
-           <cycle-type>W</cycle-type>
-           <smoother-type>RELAXATION</smoother-type>
-           <coarse-type>KLU2</coarse-type>
-           <multigrid-algorithm>pg</multigrid-algorithm>
-        </muelu>
+        <preconditioner>ILUK</preconditioner>
         <iluk>
           <level-of-fill>0</level-of-fill>
         </iluk>

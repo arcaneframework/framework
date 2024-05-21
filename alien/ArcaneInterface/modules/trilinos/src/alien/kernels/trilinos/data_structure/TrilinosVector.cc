@@ -61,17 +61,26 @@ void
 TrilinosVector<ValueT, TagT>::setValues(const int nrow, const ValueT* values)
 {
   auto& x = *m_internal->m_internal;
+#if (TRILINOS_MAJOR_VERSION < 15)
   x.sync_host();
   auto x_2d = x.getLocalViewHost();
   auto x_1d = Kokkos::subview(x_2d, Kokkos::ALL(), 0);
   const size_t localLength = x.getLocalLength();
   x.modify_host();
+#else
+  auto x_2d = x.getLocalViewHost(Tpetra::Access::ReadWrite);
+  auto x_1d = Kokkos::subview(x_2d, Kokkos::ALL(), 0);
+  const size_t localLength = x.getLocalLength();
+#endif
+  
   for (int i = 0; i < nrow; ++i) {
     x_1d(i) = values[i];
     // std::cout<<"SET X["<<i<<"]"<<values[i]<<std::endl ;
   }
+#if (TRILINOS_MAJOR_VERSION < 15)
   using memory_space = typename VectorInternal::vector_type::device_type::memory_space;
   x.template sync<memory_space>();
+#endif
 }
 
 /*---------------------------------------------------------------------------*/
@@ -80,8 +89,12 @@ void
 TrilinosVector<ValueT, TagT>::getValues(const int nrow, ValueT* values) const
 {
   auto& x = *m_internal->m_internal;
+#if (TRILINOS_MAJOR_VERSION < 15)
   x.sync_host();
   auto x_2d = x.getLocalViewHost();
+#else
+  auto x_2d = x.getLocalViewHost(Tpetra::Access::ReadWrite);
+#endif
   auto x_1d = Kokkos::subview(x_2d, Kokkos::ALL(), 0);
   const size_t localLength = x.getLocalLength();
   for (int i = 0; i < nrow; ++i) {
@@ -116,8 +129,12 @@ void
 TrilinosVector<ValueT, TagT>::dump() const
 {
   auto& x = *m_internal->m_internal;
+#if (TRILINOS_MAJOR_VERSION < 15)
   x.sync_host();
   auto x_2d = x.getLocalViewHost();
+#else
+  auto x_2d = x.getLocalViewHost(Tpetra::Access::ReadOnly);
+#endif
   auto x_1d = Kokkos::subview(x_2d, Kokkos::ALL(), 0);
   const size_t localLength = x.getLocalLength();
   for (int i = 0; i < localLength; ++i)

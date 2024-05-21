@@ -7,6 +7,20 @@
 
 #include <alien/utils/Precomp.h>
 #include <alien/AlienTrilinosPrecomp.h>
+#include "Trilinos_version.h"
+
+
+#if (TRILINOS_MAJOR_VERSION < 15)
+#if __cplusplus >= 202002L
+// C++20 (and later) code
+//#define HAVE_MUELU  MUELU DESACTIVATED
+#else
+#define HAVE_MUELU
+#endif
+#else
+#define HAVE_MUELU
+#endif
+
 
 #define BEGIN_TRILINOSINTERNAL_NAMESPACE                                                 \
   namespace Alien {                                                                      \

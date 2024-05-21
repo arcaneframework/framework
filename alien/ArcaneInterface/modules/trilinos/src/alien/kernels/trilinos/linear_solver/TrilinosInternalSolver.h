@@ -8,7 +8,13 @@
 #ifndef MODULES_TRILINOS_SRC_ALIEN_KERNELS_TRILINOS_LINEARSOLVER_TRILINOSINTERNALSOLVER_H_
 #define MODULES_TRILINOS_SRC_ALIEN_KERNELS_TRILINOS_LINEARSOLVER_TRILINOSINTERNALSOLVER_H_
 
+
 #ifdef ALIEN_USE_TRILINOS
+
+#include "alien/kernels/trilinos/linear_solver/belos_solver_fabric.h"
+
+#include <alien/kernels/trilinos/TrilinosPrecomp.h>$
+
 #include <Kokkos_DefaultNode.hpp>
 
 #include <Tpetra_Version.hpp>
@@ -24,7 +30,7 @@
 #include <BelosTpetraAdapter.hpp>
 #include <BelosSolverFactory.hpp>
 #include <Ifpack2_Factory.hpp>
-#define HAVE_MUELU
+
 #ifdef HAVE_MUELU 
 #include <MueLu.hpp>
 
@@ -668,10 +674,13 @@ template <typename TagT> class SolverInternal
     // Tell the LinearProblem to make itself ready to solve.
     problem->setProblem();
 
+    std::cout<<"CREATE BELOS SOLVER : "<<std::endl ;
     // the list of solver parameters created above.
-    Belos::SolverFactory<scalar_type, vec_type, op_type> factory;
+    //Belos::SolverFactory<scalar_type, vec_type, op_type> factory;
+    //RCP<Belos::SolverManager<scalar_type, vec_type, op_type>> solver =
+    //    factory.create(m_solver_name, m_solver_parameters);
     RCP<Belos::SolverManager<scalar_type, vec_type, op_type>> solver =
-        factory.create(m_solver_name, m_solver_parameters);
+        belos_solver_create<scalar_type, vec_type, op_type>(m_solver_name, m_solver_parameters);
 
     // Tell the solver what problem you want to solve.
     solver->setProblem(problem);
