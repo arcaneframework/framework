@@ -59,8 +59,18 @@ belos_solver_create(std::string const& solverName,Teuchos::RCP<Teuchos::Paramete
 
 #include <Kokkos_Macros.hpp>
 
+#if (TRILINOS_MAJOR_VERSION < 15)
+#include <KokkosCompat_ClassicNodeAPI_Wrapper.hpp>
+#else
+#include <Tpetra_KokkosCompat_ClassicNodeAPI_Wrapper.hpp>
+#endif
+
 #ifdef KOKKOS_ENABLE_SERIAL
+#if (TRILINOS_MAJOR_VERSION < 15)
+typedef Kokkos::Compat::KokkosSerialWrapperNode SerialNT ;
+#else
 typedef Tpetra::KokkosCompat::KokkosDeviceWrapperNode<Kokkos::Serial, Kokkos::HostSpace> SerialNT;
+#endif
 typedef Tpetra::MultiVector<double,int,int,SerialNT> SerialMV;
 typedef Tpetra::Operator<double,int,int,SerialNT> SerialOP;
 
@@ -73,7 +83,11 @@ belos_solver_create(std::string const& solverName, Teuchos::RCP<Teuchos::Paramet
 #endif
 
 #ifdef KOKKOS_ENABLE_OPENMP
+#if (TRILINOS_MAJOR_VERSION < 15)
+typedef Kokkos::Compat::KokkosOpenMPWrapperNode OMPNT ;
+#else
 typedef Tpetra::KokkosCompat::KokkosDeviceWrapperNode<Kokkos::OpenMP, Kokkos::HostSpace> OMPNT;
+#endif
 typedef Tpetra::MultiVector<double,int,int,OMPNT> OMPMV;
 typedef Tpetra::Operator<double,int,int,OMPNT> OMPOP;
 
@@ -86,7 +100,11 @@ belos_solver_create(std::string const& solverName, Teuchos::RCP<Teuchos::Paramet
 #endif
 
 #ifdef KOKKOS_ENABLE_THREADS
+#if (TRILINOS_MAJOR_VERSION < 15)
+typedef Kokkos::Compat::KokkosThreadsWrapperNode THNT ;
+#else
 typedef Tpetra::KokkosCompat::KokkosDeviceWrapperNode<Kokkos::Threads, Kokkos::HostSpace> THNT;
+#endif
 typedef Tpetra::MultiVector<double,int,int,THNT> THMV;
 typedef Tpetra::Operator<double,int,int,THNT> THOP;
 
@@ -99,7 +117,11 @@ belos_solver_create(std::string const& solverName, Teuchos::RCP<Teuchos::Paramet
 #endif
 /*---------------------------------------------------------------------------*/
 #ifdef KOKKOS_ENABLE_CUDA
+#if (TRILINOS_MAJOR_VERSION < 15)
+typedef Kokkos::Compat::KokkosCudaWrapperNode CudaNT ;
+#else
 typedef Tpetra::KokkosCompat::KokkosDeviceWrapperNode<Kokkos::Cuda, Kokkos::HostSpace> CudaNT;
+#endif
 typedef Tpetra::MultiVector<double,int,int,CudaNT> CudaMV;
 typedef Tpetra::Operator<double,int,int,CudaNT> CudaOP;
 
