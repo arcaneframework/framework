@@ -111,10 +111,11 @@ TrilinosMatrix<ValueT, TagT>::initMatrix(IMessagePassingMng const* parallel_mng,
     int block_size, ValueT const* values)
 {
   using namespace Arccore::MessagePassing::Mpi;
-  auto* parallel_mng_ = const_cast<IMessagePassingMng*>(parallel_mng);
-  const auto* mpi_mng = dynamic_cast<const MpiMessagePassingMng*>(parallel_mng_);
-  const MPI_Comm* comm = static_cast<const MPI_Comm*>(mpi_mng->getMPIComm());
-  m_internal.reset(new MatrixInternal(local_offset, global_size, nrows, *comm));
+  auto* pm = dynamic_cast<MpiMessagePassingMng*>(const_cast<IMessagePassingMng*>(parallel_mng));
+  if(pm && *static_cast<const MPI_Comm*>(pm->getMPIComm()) != MPI_COMM_NULL)
+    m_internal.reset(new MatrixInternal(local_offset, global_size, nrows,*static_cast<const MPI_Comm*>(pm->getMPIComm())));
+  else
+    m_internal.reset(new MatrixInternal(local_offset, global_size, nrows, MPI_COMM_WORLD));
 
   return m_internal->initMatrix(local_offset, nrows, kcol, cols, block_size, values);
 }

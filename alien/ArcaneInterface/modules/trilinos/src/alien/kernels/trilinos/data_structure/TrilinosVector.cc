@@ -50,13 +50,15 @@ TrilinosVector<ValueT, TagT>::allocate()
   const Integer globalSize = dist.globalSize();
   auto* parallel_mng =
       const_cast<Arccore::MessagePassing::IMessagePassingMng*>(dist.parallelMng());
-  auto* mpi_mng =
-      dynamic_cast<Arccore::MessagePassing::Mpi::MpiMessagePassingMng*>(parallel_mng);
-  const MPI_Comm* comm = static_cast<const MPI_Comm*>(mpi_mng->getMPIComm());
 
-  m_internal.reset(
-      new VectorInternal(dist.offset(), globalSize, this->scalarizedLocalSize(), *comm));
-
+  using namespace Arccore::MessagePassing::Mpi;
+  auto* pm = dynamic_cast<MpiMessagePassingMng*>(parallel_mng);
+  if(pm && *static_cast<const MPI_Comm*>(pm->getMPIComm()) != MPI_COMM_NULL)
+    m_internal.reset(
+        new VectorInternal(dist.offset(), globalSize, this->scalarizedLocalSize(), *static_cast<const MPI_Comm*>(pm->getMPIComm())));
+  else
+    m_internal.reset(
+        new VectorInternal(dist.offset(), globalSize, this->scalarizedLocalSize(), MPI_COMM_WORLD));
   // m_internal->m_internal = 0.;
 }
 
