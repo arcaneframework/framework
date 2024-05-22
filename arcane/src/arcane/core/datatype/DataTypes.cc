@@ -69,7 +69,7 @@ namespace
 extern "C++" const char*
 dataTypeName(eDataType type)
 {
-  uint8_t v = type;
+  Int32 v = type;
   if (v >= NB_ARCANE_DATA_TYPE)
     return "(Invalid)";
   return N_ALL_NAMES[v];
@@ -110,7 +110,7 @@ dataTypeSize(eDataType type)
 {
   if (type == DT_String)
     ARCANE_THROW(ArgumentException, "datatype 'DT_String' has no size");
-  const uint8_t v = type;
+  const Int32 v = type;
   if (v >= NB_ARCANE_DATA_TYPE)
     ARCANE_THROW(ArgumentException, "Invalid datatype value '{0}'", v);
   return ALL_SIZEOF[v];
