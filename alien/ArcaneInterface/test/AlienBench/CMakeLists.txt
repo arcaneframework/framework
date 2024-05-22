@@ -90,8 +90,9 @@ if (TARGET  alien_ifpen_solvers)
 endif ()
 
 if (TARGET  alien_trilinos)
-    linkLibraries(alien_bench.exe alien_trilinos)
+    linkLibraries(alien_bench.exe alien_trilinos trilinos)
 endif ()
+
 
 if (TARGET alien_hpddm)
     linkLibraries(alien_bench.exe alien_hpddm)
@@ -132,6 +133,19 @@ if (TARGET hypre)
             )
 endif ()
 
+if (TARGET trilinos)
+    configure_file(AlienBench-trilinos.arc ${CMAKE_BINARY_DIR}/${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench/AlienBench-trilinos.arc COPYONLY)
+    configure_file(AlienBench-trilinos-2P.arc ${CMAKE_BINARY_DIR}/${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench/AlienBench-trilinos-2P.arc COPYONLY)
+    configure_file(AlienBench-trilinosmuelu.arc ${CMAKE_BINARY_DIR}/${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench/AlienBench-trilinosmuelu.arc COPYONLY)
+    configure_file(AlienBench-trilinosmuelu-4P.arc ${CMAKE_BINARY_DIR}/${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench/AlienBench-trilinosmuelu-4P.arc COPYONLY)
+
+    list(APPEND ALIEN_EXAMPLE_FILES
+            AlienBench-trilinos.arc
+            AlienBench-trilinos-2P.arc
+            AlienBench-trilinosmuelu.arc
+            AlienBench-trilinosmuelu-4P.arc
+            )
+endif ()
 #Examples !
 
 get_property(ALIEN_COMPILE_DEFS SOURCE main.cc PROPERTY COMPILE_DEFINITIONS)
@@ -199,5 +213,41 @@ if (TARGET hypre)
             PROCS 2
             COMMAND alien_bench.exe
             OPTIONS AlienBench-hypre-2P.arc
+            WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
+endif ()
+
+if (TARGET trilinos)
+    set(ENV (ARCANE_PARALLEL_SERVICE) "Mpi")
+
+    alien_test(
+            BENCH alien.bench.trilinos
+            NAME seq
+            PROCS 1
+            COMMAND alien_bench.exe
+            OPTIONS AlienBench-trilinos.arc
+            WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
+
+    alien_test(
+            BENCH alien.bench.trilinosmuelu
+            NAME seq
+            PROCS 1
+            COMMAND alien_bench.exe
+            OPTIONS AlienBench-trilinosmuelu.arc
+            WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
+
+    alien_test(
+            BENCH alien.bench.trilinos
+            NAME parallel
+            PROCS 2
+            COMMAND alien_bench.exe
+            OPTIONS AlienBench-trilinos-2P.arc
+            WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
+
+    alien_test(
+            BENCH alien.bench.trilinosmuelu
+            NAME parallel
+            PROCS 4
+            COMMAND alien_bench.exe
+            OPTIONS AlienBench-trilinosmuelu-4P.arc
             WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
 endif ()

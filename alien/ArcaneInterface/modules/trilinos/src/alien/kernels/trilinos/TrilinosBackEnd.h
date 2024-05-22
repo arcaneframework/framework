@@ -1,3 +1,9 @@
+﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
+//-----------------------------------------------------------------------------
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// See the top-level COPYRIGHT file for details.
+// SPDX-License-Identifier: Apache-2.0
+//-----------------------------------------------------------------------------
 #ifndef ALIEN_TRILINOSIMPL_TRILINOSBACKEND_H
 #define ALIEN_TRILINOSIMPL_TRILINOSBACKEND_H
 /* Author : mesriy at Tue Jul 24 15:56:45 2012
@@ -6,6 +12,7 @@
 
 #include <alien/utils/Precomp.h>
 #include <alien/core/backend/BackEnd.h>
+#include <alien/kernels/trilinos/TrilinosPrecomp.h>
 #include <Kokkos_Macros.hpp>
 /*---------------------------------------------------------------------------*/
 //#define KOKKOS_ENABLE_OPENMP

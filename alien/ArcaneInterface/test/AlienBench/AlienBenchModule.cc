@@ -129,6 +129,7 @@ AlienBenchModule::init()
     Alien::ILinearSolver* solver = options()->linearSolver[0];
     solver->init();
   }
+
 }
 
 /*---------------------------------------------------------------------------*/
@@ -364,37 +365,38 @@ AlienBenchModule::test()
                       }
                       break;
                       case AlienCoreSolverOptionTypes::NeumannPoly:
-                        {
-                          info()<<"NEUMANN PRECONDITIONER";
-                          double polynom_factor          = opt->polyFactor() ;
-                          int    polynom_order           = opt->polyOrder() ;
-                          int    polynom_factor_max_iter = opt->polyFactorMaxIter() ;
+                      {
+                        info()<<"NEUMANN PRECONDITIONER";
+                        double polynom_factor          = opt->polyFactor() ;
+                        int    polynom_order           = opt->polyOrder() ;
+                        int    polynom_factor_max_iter = opt->polyFactorMaxIter() ;
 
-                          typedef Alien::NeumannPolyPreconditioner<AlgebraType> PrecondType ;
-                          PrecondType precond{alg,true_A,polynom_factor,polynom_order,polynom_factor_max_iter,traceMng()} ;
-                          precond.init() ;
+                        typedef Alien::NeumannPolyPreconditioner<AlgebraType> PrecondType ;
+                        PrecondType precond{alg,true_A,polynom_factor,polynom_order,polynom_factor_max_iter,traceMng()} ;
+                        precond.init() ;
 
-                          Timer::Sentry ts(&psolve_timer);
-                          if(asynch==0)
-                            solver.solve(precond,stop_criteria,true_A,true_b,true_x) ;
-                          else
-                            solver.solve2(precond,stop_criteria,true_A,true_b,true_x) ;
-                        }
-                        case AlienCoreSolverOptionTypes::Diag:
-                        default:
-                        {
-                          info()<<"DIAG PRECONDITIONER";
-                          typedef Alien::DiagPreconditioner<AlgebraType> PrecondType ;
-                          PrecondType      precond{alg,true_A} ;
-                          precond.init() ;
+                        Timer::Sentry ts(&psolve_timer);
+                        if(asynch==0)
+                          solver.solve(precond,stop_criteria,true_A,true_b,true_x) ;
+                        else
+                          solver.solve2(precond,stop_criteria,true_A,true_b,true_x) ;
+                      }
+                      break ;
+                      case AlienCoreSolverOptionTypes::Diag:
+                      default:
+                      {
+                        info()<<"DIAG PRECONDITIONER";
+                        typedef Alien::DiagPreconditioner<AlgebraType> PrecondType ;
+                        PrecondType      precond{alg,true_A} ;
+                        precond.init() ;
 
-                          Timer::Sentry ts(&psolve_timer);
-                          if(asynch==0)
-                            solver.solve(precond,stop_criteria,true_A,true_b,true_x) ;
-                          else
-                            solver.solve2(precond,stop_criteria,true_A,true_b,true_x) ;
-                        }
-                        break ;
+                        Timer::Sentry ts(&psolve_timer);
+                        if(asynch==0)
+                          solver.solve(precond,stop_criteria,true_A,true_b,true_x) ;
+                        else
+                          solver.solve2(precond,stop_criteria,true_A,true_b,true_x) ;
+                      }
+                      break ;
                     }
                 }
                 break ;
