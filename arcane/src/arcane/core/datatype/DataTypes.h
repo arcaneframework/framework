@@ -9,8 +9,8 @@
 /*                                                                           */
 /* Définition des types liées aux données.                                   */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_DATATYPES_DATATYPES_H
-#define ARCANE_DATATYPES_DATATYPES_H
+#ifndef ARCANE_CORE_DATATYPES_DATATYPES_H
+#define ARCANE_CORE_DATATYPES_DATATYPES_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -29,7 +29,7 @@ namespace Arcane
 /*!
  * \brief Type d'une donnée.
  */
-enum eDataType : uint8_t
+enum eDataType : Int32
 {
   DT_Byte = 0, //!< Donnée de type octet
   DT_Real, //!< Donnée de type réel
@@ -45,11 +45,11 @@ enum eDataType : uint8_t
   DT_Float16, //!< Donnée de type 'Float16'
   DT_Float32, //!< Donnée de type 'Float32'
   DT_Int8, //!< Donnée de type entier sur 8 bits
-  DT_Unknown  //!< Donnée de type inconnue ou non initialisée
+  DT_Unknown //!< Donnée de type inconnue ou non initialisée
 };
 
 //! Nombre de valeurs de eDataType
-static constexpr uint8_t NB_ARCANE_DATA_TYPE = 15;
+static constexpr Int32 NB_ARCANE_DATA_TYPE = 15;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
