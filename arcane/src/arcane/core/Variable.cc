@@ -722,7 +722,7 @@ String _buildVariableFullType(const IVariable* var)
 /*---------------------------------------------------------------------------*/
 
 VariableMetaData* Variable::
-createMetaData() const
+_createMetaData() const
 {
   auto vmd = new VariableMetaData(name(),meshName(),itemFamilyName(),
                                   itemGroupName(),isPartial());
@@ -730,6 +730,24 @@ createMetaData() const
   vmd->setMultiTag(String::fromNumber(multiTag()));
   vmd->setProperty(property());
   return vmd;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+VariableMetaData* Variable::
+createMetaData() const
+{
+  return _createMetaData();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Ref<VariableMetaData> Variable::
+createMetaDataRef() const
+{
+  return makeRef(_createMetaData());
 }
 
 /*---------------------------------------------------------------------------*/
