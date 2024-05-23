@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* VariableIOWriterMng.cc                                      (C) 2000-2023 */
+/* VariableIOWriterMng.cc                                      (C) 2000-2024 */
 /*                                                                           */
 /* Classe gérant les entrées/sorties pour les variables.                     */
 /*---------------------------------------------------------------------------*/
@@ -195,7 +195,7 @@ _generateVariablesMetaData(JSONWriter& json_writer, XmlNode variables_node,
   for (VariableCollection::Enumerator i(vars); ++i;) {
     JSONWriter::Object o(json_writer);
     IVariable* var = *i;
-    ScopedPtrT<VariableMetaData> vmd(var->createMetaData());
+    Ref<VariableMetaData> vmd(var->createMetaDataRef());
     String var_full_type = vmd->fullType();
     String var_family_name = var->itemFamilyName();
     String var_mesh_name = var->meshName();

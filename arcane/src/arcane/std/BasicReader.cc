@@ -288,7 +288,7 @@ read(IVariable* var, IData* data)
     info() << "** WARNING: partial variable not implemented in BasicReaderWriter";
     return;
   }
-  ScopedPtrT<VariableMetaData> vmd(var->createMetaData());
+  Ref<VariableMetaData> vmd(var->createMetaDataRef());
   _directReadVal(vmd.get(), data);
 }
 

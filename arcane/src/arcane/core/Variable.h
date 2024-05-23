@@ -139,6 +139,7 @@ class ARCANE_CORE_EXPORT Variable
   Integer nbReference() const override;
 
   VariableMetaData* createMetaData() const override;
+  Ref<VariableMetaData> createMetaDataRef() const override;
   void syncReferences() override;
 
   IMesh* mesh() const final;
@@ -240,6 +241,7 @@ class ARCANE_CORE_EXPORT Variable
   bool _hasReference() const;
   void _removeMeshReference();
   String _computeComparisonHashCollective(IData* sorted_data);
+  VariableMetaData* _createMetaData() const;
 };
 
 /*---------------------------------------------------------------------------*/

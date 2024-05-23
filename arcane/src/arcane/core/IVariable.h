@@ -14,6 +14,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+#include "arcane/utils/Ref.h"
 #include "arcane/core/ItemTypes.h"
 
 /*---------------------------------------------------------------------------*/
@@ -471,7 +472,11 @@ class ARCANE_CORE_EXPORT IVariable
    *
    * L'instance retournée doit être détruite par l'appel à l'opérateur delete.
    */
+  ARCANE_DEPRECATED_REASON("Y2024: Use createMetaDataRef() instead")
   virtual VariableMetaData* createMetaData() const =0;
+
+  //! Créé une instance contenant les meta-données de la variable.
+  virtual Ref<VariableMetaData> createMetaDataRef() const = 0;
 
   /*!
    * \brief Synchronise les références.

@@ -195,7 +195,7 @@ class VariableMetaDataList
 {
  public:
 
-  typedef std::map<String, VariableMetaData*> VMDMap;
+  typedef std::map<String, Ref<VariableMetaData>> VMDMap;
 
  public:
 
@@ -213,25 +213,23 @@ class VariableMetaDataList
                         const String& family_name, const String& group_name,
                         bool is_partial)
   {
-    auto vmd = new VariableMetaData(base_name, mesh_name, family_name, group_name, is_partial);
+    auto vmd = makeRef(new VariableMetaData(base_name, mesh_name, family_name, group_name, is_partial));
     return add(vmd);
   }
-  VariableMetaData* add(VariableMetaData* vmd)
+  VariableMetaData* add(Ref<VariableMetaData> vmd)
   {
     m_vmd_map.insert(std::make_pair(vmd->fullName(), vmd));
-    return vmd;
+    return vmd.get();
   }
   void clear()
   {
-    for (const auto& x : m_vmd_map)
-      delete x.second;
     m_vmd_map.clear();
   }
   VariableMetaData* findMetaData(const String& full_name)
   {
     auto x = m_vmd_map.find(full_name);
     if (x != m_vmd_map.end())
-      return x->second;
+      return x->second.get();
     return nullptr;
   }
   VMDMap::const_iterator begin() const { return m_vmd_map.begin(); }
@@ -241,7 +239,7 @@ class VariableMetaDataList
 
  public:
 
-  std::map<String, VariableMetaData*> m_vmd_map;
+  std::map<String, Ref<VariableMetaData>> m_vmd_map;
   String m_hash_algorithm;
 };
 
@@ -310,7 +308,7 @@ _buildVariablesToRead(IVariableMng* vm)
     if (!var)
       ARCANE_FATAL("Var {0} not in VariableMng", full_name);
     m_vars_to_read.add(var);
-    m_var_read_info_list.add(VarReadInfo(var, var->data(), x.second));
+    m_var_read_info_list.add(VarReadInfo(var, var->data(), x.second.get()));
   }
 }
 
@@ -568,7 +566,7 @@ _checkHashFunction(const VariableMetaDataList& vmd_list)
   Int32 sid = pm->commRank();
   Directory listing_dir = m_variable_mng->subDomain()->listingDirectory();
   for (const auto& i : vmd_list) {
-    const VariableMetaData* vmd = i.second;
+    const VariableMetaData* vmd = i.second.get();
     Int32 hash_version = vmd->hashVersion();
     String reference_hash = (hash_version > 0) ? vmd->hash2() : vmd->hash();
     // Teste si la valeur de hashage est présente. C'est normalement
@@ -632,7 +630,7 @@ _createVariablesFromMetaData(const VariableMetaDataList& vmd_list)
   ISubDomain* sd = m_variable_mng->subDomain();
   // Récupère ou construit les variables qui n'existent pas encore.
   for (const auto& xvmd : vmd_list) {
-    auto& vmd = *(xvmd.second);
+    auto& vmd = *(xvmd.second.get());
     const String& full_name = vmd.fullName();
     IVariable* var = m_variable_mng->findVariableFullyQualified(full_name);
     if (var)
@@ -855,7 +853,7 @@ _buildFilteredVariableList(VariableReaderMng& var_read_mng, IVariableFilter* fil
       apply_me = filter->applyFilter(*var);
     info(5) << "Read variable name=" << var->fullName() << " filter=" << apply_me;
     if (apply_me) {
-      VariableMetaData* vmd = var->createMetaData();
+      Ref<VariableMetaData> vmd = var->createMetaDataRef();
       vmd_list.add(vmd);
     }
   }
