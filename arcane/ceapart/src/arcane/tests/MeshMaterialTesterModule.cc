@@ -429,6 +429,8 @@ startInit()
   // Ajoute les mailles du milieu 1
   {
     Materials::MeshMaterialModifier modifier(m_material_mng);
+    modifier.setDoCopyBetweenPartialAndPure(false);
+    modifier.setDoInitNewItems(false);
     Materials::IMeshEnvironment* env = m_mat1->environment();
     // Ajoute les mailles du milieu
     //modifier.addCells(env,env1_indexes);
