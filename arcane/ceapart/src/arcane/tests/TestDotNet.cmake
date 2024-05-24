@@ -36,5 +36,4 @@ arcane_add_global_csharp_target(arcanecea_test_cs
   arcanecea_test_cs_generate
   ${CSPATH}/Test1.cs
   ${CSPATH}/StiffenedGasMaterialEos.cs
-  test_material_eos_csharp
   )

@@ -230,7 +230,8 @@ macro(arcane_wrapper_add_swig_target)
   # Ce n'est pas explicitement le cas car en fait elle dépend uniquement de
   # la génération des fichiers par 'swig' mais il n'y a pas de moyen simple d'indiquer
   # cela.
-  add_dependencies(dotnet_wrapper_${ARGS_NAME} ${_TARGET_NAME})
+  # add_custom_target(dotnet_wrapper_${ARGS_NAME}_swig_depend ALL DEPENDS ${support_files})
+  # add_dependencies(dotnet_wrapper_${ARGS_NAME} dotnet_wrapper_${ARGS_NAME}_swig_depend)
 
   # Ajoute les dépendences sur les autres cibles SWIG
   foreach(_dtg ${ARGS_SWIG_TARGET_DEPENDS})
