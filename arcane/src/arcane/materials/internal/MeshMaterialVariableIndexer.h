@@ -139,15 +139,10 @@ class ARCANE_MATERIALS_EXPORT MeshMaterialVariableIndexer
   //! Vrai si l'indexeur est associé à un milieu.
   bool m_is_environment = false;
 
-  //! Vrai si on utilise l'ancienne version de gestion de la transformation
-  bool m_use_transform_no_filter = false;
-
  private:
 
   static void _changeLocalIdsV2(MeshMaterialVariableIndexer* var_indexer,
                                 Int32ConstArrayView old_to_new_ids);
-  void _transformPureToPartialV2(ConstituentModifierWorkInfo& args);
-  void _transformPartialToPureV2(ConstituentModifierWorkInfo& args);
   void _init();
 
  public:
