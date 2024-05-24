@@ -532,6 +532,7 @@ _copyBetweenPartialsAndGlobals(const MeshVariableCopyBetweenPartialAndGlobalArgs
 {
   if (args.m_local_ids.empty())
     return;
+  bool do_copy = args.m_do_copy_between_partial_and_pure;
 
   RunQueue::ScopedAsync sc(args.m_queue);
   // Comme on a modifié des mailles, il faut mettre à jour les valeurs
@@ -542,9 +543,10 @@ _copyBetweenPartialsAndGlobals(const MeshVariableCopyBetweenPartialAndGlobalArgs
     auto* mvi = mv->_internalApi();
     if (is_add_operation){
       mvi->resizeForIndexer(args.m_var_index, *args.m_queue);
-      mvi->copyGlobalToPartial(args);
+      if (do_copy)
+        mvi->copyGlobalToPartial(args);
     }
-    else
+    else if (do_copy)
       mvi->copyPartialToGlobal(args);
   };
   functor::apply(m_material_mng, &MeshMaterialMng::visitVariables, func);
