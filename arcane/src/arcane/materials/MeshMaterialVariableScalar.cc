@@ -721,9 +721,9 @@ serialize(ISerializer* sbuf,Int32ConstArrayView ids)
     {
       Integer nb_val = 0;
       ENUMERATE_ALLENVCELL(iallenvcell,mat_mng,ids_view){
-        ++nb_val; // 1 valeur pour le milieu
         ENUMERATE_CELL_ENVCELL(ienvcell,(*iallenvcell)){
           EnvCell envcell = *ienvcell;
+          ++nb_val; // 1 valeur pour le milieu
           if (has_mat)
             nb_val += envcell.nbMaterial(); // 1 valeur par matériau du milieu.
         }
