@@ -49,8 +49,6 @@ IncrementalComponentModifier(AllEnvData* all_env_data, const RunQueue& queue)
 , m_work_info(queue.allocationOptions(), queue.memoryRessource())
 , m_queue(queue)
 {
-  if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_MATERIAL_TRANSFORM_NO_FILTER", true))
-    m_do_old_implementation = (v.value() != 0);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -118,8 +116,7 @@ apply(MaterialModifierOperation* operation)
 
     connectivity->fillCellsNbMaterial(ids, env_id, cells_current_nb_material.view(), m_queue);
 
-    const bool do_new = !m_do_old_implementation;
-    if (do_new) {
+    {
       Accelerator::GenericFilterer filterer(&m_queue);
       SmallSpan<Int32> cells_unchanged_in_env_view = cells_unchanged_in_env.view();
       SmallSpan<Int32> cells_changed_in_env_view = cells_changed_in_env.view();
@@ -145,20 +142,6 @@ apply(MaterialModifierOperation* operation)
         };
         filterer.applyWithIndex(nb_id, select_lambda, setter_lambda, A_FUNCINFO);
         cells_changed_in_env.resize(filterer.nbOutputElement());
-      }
-    }
-    else {
-      cells_unchanged_in_env.clear();
-      cells_changed_in_env.clear();
-      for (Integer i = 0; i < nb_id; ++i) {
-        Int32 lid = ids[i];
-        Int16 current_cell_nb_mat = cells_current_nb_material[i];
-        if (current_cell_nb_mat != ref_nb_mat) {
-          cells_unchanged_in_env.add(lid);
-        }
-        else {
-          cells_changed_in_env.add(lid);
-        }
       }
     }
 
@@ -361,33 +344,7 @@ _computeCellsToTransformForMaterial(const MeshMaterial* mat, SmallSpan<const Int
 
   ConstituentConnectivityList* connectivity = m_all_env_data->componentConnectivityList();
   SmallSpan<bool> transformed_cells = m_work_info.transformedCells();
-  const bool do_new = !m_do_old_implementation;
-  if (do_new)
-    connectivity->fillCellsToTransform(ids, env_id, transformed_cells, is_add, m_queue);
-  else {
-    ConstArrayView<Int16> cells_nb_env = connectivity->cellsNbEnvironment();
-
-    for (Int32 local_id : ids) {
-      bool do_transform = false;
-      CellLocalId cell_id(local_id);
-      // En cas d'ajout on passe de pure à partiel s'il y a plusieurs milieux ou
-      // plusieurs matériaux dans le milieu.
-      // En cas de supression, on passe de partiel à pure si on est le seul matériau
-      // et le seul milieu.
-      const Int16 nb_env = cells_nb_env[local_id];
-      if (is_add) {
-        do_transform = (nb_env > 1);
-        if (!do_transform)
-          do_transform = connectivity->cellNbMaterial(cell_id, env_id) > 1;
-      }
-      else {
-        do_transform = (nb_env == 1);
-        if (do_transform)
-          do_transform = connectivity->cellNbMaterial(cell_id, env_id) == 1;
-      }
-      m_work_info.setTransformedCell(cell_id, do_transform);
-    }
-  }
+  connectivity->fillCellsToTransform(ids, env_id, transformed_cells, is_add, m_queue);
 }
 
 /*---------------------------------------------------------------------------*/
