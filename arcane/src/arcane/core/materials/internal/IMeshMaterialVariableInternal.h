@@ -36,10 +36,12 @@ class ARCANE_CORE_EXPORT MeshVariableCopyBetweenPartialAndGlobalArgs
   MeshVariableCopyBetweenPartialAndGlobalArgs(Int32 var_index,
                                               SmallSpan<const Int32> local_ids,
                                               SmallSpan<const Int32> indexes_in_multiple,
+                                              bool do_copy,
                                               RunQueue* queue)
   : m_var_index(var_index)
   , m_local_ids(local_ids)
   , m_indexes_in_multiple(indexes_in_multiple)
+  , m_do_copy_between_partial_and_pure(do_copy)
   , m_queue(queue)
   {}
 
@@ -48,6 +50,7 @@ class ARCANE_CORE_EXPORT MeshVariableCopyBetweenPartialAndGlobalArgs
   Int32 m_var_index = -1;
   SmallSpan<const Int32> m_local_ids;
   SmallSpan<const Int32> m_indexes_in_multiple;
+  bool m_do_copy_between_partial_and_pure = true;
   RunQueue* m_queue = nullptr;
 };
 
