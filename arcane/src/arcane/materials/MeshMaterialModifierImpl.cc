@@ -39,7 +39,6 @@ namespace Arcane::Materials
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -258,11 +257,14 @@ _endUpdate()
   linfo() << "Check optimize ? = " << is_optimization_active;
 
   // Tableau de travail utilisé lors des modifications incrémentales
-  IncrementalComponentModifier incremental_modifier(all_env_data, m_queue);
+  if (!m_incremental_modifier){
+    linfo() << "Creating IncrementalComponentModifier";
+    m_incremental_modifier = std::make_unique<IncrementalComponentModifier>(all_env_data, m_queue);
+  }
   if (is_optimization_active && m_use_incremental_recompute) {
-    incremental_modifier.initialize();
-    incremental_modifier.setDoCopyBetweenPartialAndPure(m_do_copy_between_partial_and_pure);
-    incremental_modifier.setDoInitNewItems(m_do_init_new_items);
+    m_incremental_modifier->initialize();
+    m_incremental_modifier->setDoCopyBetweenPartialAndPure(m_do_copy_between_partial_and_pure);
+    m_incremental_modifier->setDoInitNewItems(m_do_init_new_items);
   }
 
   if (is_optimization_active) {
@@ -278,14 +280,14 @@ _endUpdate()
         ++nb_optimize_remove;
       }
 
-      incremental_modifier.m_work_info.setCurrentOperation(op);
+      m_incremental_modifier->m_work_info.setCurrentOperation(op);
 
       // Vérifie dans le cas des mailles à ajouter si elles ne sont pas déjà
       // dans le matériau et dans le cas des mailles à supprimer si elles y sont.
       if (arcaneIsCheck())
         op->filterIds();
 
-      incremental_modifier.apply(op);
+      m_incremental_modifier->apply(op);
     }
     no_optimization_done = false;
   }
@@ -306,9 +308,12 @@ _endUpdate()
     }
   }
   else {
-    incremental_modifier.finalize();
+    m_incremental_modifier->finalize();
     all_env_data->recomputeIncremental();
   }
+
+  if (!m_is_keep_work_buffer)
+    m_incremental_modifier = nullptr;
 
   linfo() << "END_UPDATE_MAT End";
 }

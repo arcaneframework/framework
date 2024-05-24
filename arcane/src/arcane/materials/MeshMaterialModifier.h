@@ -87,6 +87,16 @@ class ARCANE_MATERIALS_EXPORT MeshMaterialModifier
    */
   void setDoInitNewItems(bool v);
 
+  /*!
+   * \brief Indique si on conserve les tableaux de travail entre les modifications
+   *
+   * Si vrai (le défaut), les tableaux de travail sont conservés entres les
+   * instances de cette classe. Cela permet d'éviter de réallouer ces tableaux entre
+   * chaque utilisation de cette classe mais en contrepartie la consommation
+   * mémoire peut augmenter.
+   */
+  void setPersistantWorkBuffer(bool v);
+
  private:
 
   MeshMaterialModifierImpl* m_impl = nullptr;
