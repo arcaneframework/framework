@@ -362,7 +362,7 @@ endif()
 ARCANE_ADD_TEST_SEQUENTIAL(geometric1 testGeometric-1.arc)
 
 # Material Heat
-foreach(test_index 1 2 3)
+foreach(test_index 1 2 3 4)
   foreach(opt_level 0 3 7 11 15)
     set(TEST_MODIFICATION_FLAG ${opt_level})
 
@@ -373,19 +373,21 @@ foreach(test_index 1 2 3)
 
     # Test avec équilibrage
     set(TEST_ACTIVE_LOAD_BALANCE "true")
-    set(_TEST_FILENAME "${ARCANE_TEST_PATH}/testMaterialHeat-${test_index}-opt${opt_level}-lb.arc")
-    configure_file("testMaterialHeat-${test_index}.arc.in" "${_TEST_FILENAME}")
+    set(_TEST_FILENAME_LB "${ARCANE_TEST_PATH}/testMaterialHeat-${test_index}-opt${opt_level}-lb.arc")
+    configure_file("testMaterialHeat-${test_index}.arc.in" "${_TEST_FILENAME_LB}")
     if (ARCANE_HAS_ACCELERATOR_API)
-      arcane_add_test(material_heat_opt${opt_level}_${test_index} ${_TEST_FILENAME})
-      arcane_add_test(material_heat_lb_opt${opt_level}_${test_index} ${_TEST_FILENAME})
+      arcane_add_test_sequential(material_heat${test_index}_opt${opt_level} ${_TEST_FILENAME})
+      arcane_add_test_parallel_thread(material_heat${test_index}_opt${opt_level} ${_TEST_FILENAME} 4)
+      arcane_add_test(material_heat${test_index}_lb_opt${opt_level} ${_TEST_FILENAME_LB})
+      arcane_add_test_parallel_thread(material_heat${test_index}_lb_opt${opt_level} ${_TEST_FILENAME_LB} 4)
     endif()
   endforeach()
 endforeach()
 if (ARCANE_HAS_ACCELERATOR_API)
-  arcane_add_test_sequential(material_heat_opt15_2small testMaterialHeat-2-small-opt15.arc "-We,ARCANE_DEBUG_MATERIAL_MODIFIER,2")
-  arcane_add_test_sequential(material_heat_accelerator "${ARCANE_TEST_PATH}/testMaterialHeat-2-opt15.arc" "-m 20")
-  arcane_add_accelerator_test_sequential(material_heat_accelerator "${ARCANE_TEST_PATH}/testMaterialHeat-2-opt15.arc" "-m 20")
-  arcane_add_accelerator_test_sequential(material_heat_accelerator_noqueue
+  arcane_add_test_sequential(material_heat2_opt15_2small testMaterialHeat-2-small-opt15.arc "-We,ARCANE_DEBUG_MATERIAL_MODIFIER,2")
+  arcane_add_test_sequential(material_heat2_accelerator "${ARCANE_TEST_PATH}/testMaterialHeat-2-opt15.arc" "-m 20")
+  arcane_add_accelerator_test_sequential(material_heat2_accelerator "${ARCANE_TEST_PATH}/testMaterialHeat-2-opt15.arc" "-m 20")
+  arcane_add_accelerator_test_sequential(material_heat2_accelerator_noqueue
     "${ARCANE_TEST_PATH}/testMaterialHeat-2-opt15.arc" "-m 20" "-We,ARCANE_MATERIALMNG_USE_QUEUE,0")
 endif()
 

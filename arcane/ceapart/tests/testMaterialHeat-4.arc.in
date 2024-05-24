@@ -1,0 +1,138 @@
+<?xml version="1.0"?>
+<case codename="ArcaneTest" xml:lang="en" codeversion="1.0">
+ <arcane>
+   <title>Test MaterialHeat</title>
+   <description>Test des Materiaux</description>
+   <timeloop>MaterialHeatTestLoop</timeloop>
+ </arcane>
+
+ <arcane-post-processing>
+   <output-period>5</output-period>
+   <output>
+    <variable>Temperature</variable>
+    <variable>AllTemperatures</variable>
+   </output>
+ </arcane-post-processing>
+
+ <meshes>
+   <mesh>
+     <generator name="Cartesian2D">
+       <nb-part-x>2</nb-part-x>
+       <nb-part-y>2</nb-part-y>
+       <origin>0.0 0.0</origin>
+       <x><n>20</n><length>1.2</length><progression>1.0</progression></x>
+       <y><n>30</n><length>1.5</length><progression>1.0</progression></y>
+     </generator>
+   </mesh>
+ </meshes>
+
+ <arcane-load-balance>
+   <active>@TEST_ACTIVE_LOAD_BALANCE@</active>
+   <period>5</period>
+   <max-imbalance>0.01</max-imbalance>
+   <min-cpu-time>0</min-cpu-time>
+   <partitioner name="MeshPartitionerTester" />
+ </arcane-load-balance>
+
+ <material-heat-test>
+   <nb-iteration>25</nb-iteration>
+   <modification-flags>@TEST_MODIFICATION_FLAG@</modification-flags>
+   <check-numerical-result>true</check-numerical-result>
+   <material>
+     <name>MAT1</name>
+   </material>
+   <material>
+     <name>MAT2</name>
+   </material>
+   <material>
+     <name>MAT3</name>
+   </material>
+   <material>
+     <name>MAT4</name>
+   </material>
+   <material>
+     <name>MAT5</name>
+   </material>
+
+   <environment>
+     <name>ENV1</name>
+     <material>MAT1</material>
+   </environment>
+   <environment>
+     <name>ENV2</name>
+     <material>MAT2</material>
+   </environment>
+   <environment>
+     <name>ENV3</name>
+     <material>MAT3</material>
+   </environment>
+   <environment>
+     <name>ENV4</name>
+     <material>MAT4</material>
+   </environment>
+   <environment>
+     <name>ENV5</name>
+     <material>MAT5</material>
+   </environment>
+   <environment>
+     <name>ENV6</name>
+     <material>MAT3</material>
+   </environment>
+   <environment>
+     <name>ENV7</name>
+     <material>MAT5</material>
+   </environment>
+
+   <heat-object>
+     <center>0.3 0.4 0.0</center>
+     <velocity>0.02 0.04 0.0</velocity>
+     <radius>0.18</radius>
+     <material>ENV1_MAT1</material>
+     <expected-final-temperature>257180.677498899</expected-final-temperature>
+   </heat-object>
+   <heat-object>
+     <center>0.8 0.4 0.0</center>
+     <velocity>-0.02 0.04 0.0</velocity>
+     <radius>0.25</radius>
+     <material>ENV2_MAT2</material>
+     <expected-final-temperature>605007.901645382</expected-final-temperature>
+   </heat-object>
+   <heat-object>
+     <center>0.2 1.2 0.0</center>
+     <velocity>0.02 -0.05 0.0</velocity>
+     <radius>0.2</radius>
+     <material>ENV3_MAT3</material>
+     <expected-final-temperature>255592.467127441</expected-final-temperature>
+   </heat-object>
+   <heat-object>
+     <center>0.9 0.9 0.0</center>
+     <velocity>-0.02 -0.04 0.0</velocity>
+     <radius>0.15</radius>
+     <material>ENV4_MAT4</material>
+     <expected-final-temperature>103054.154833469</expected-final-temperature>
+   </heat-object>
+   <heat-object>
+     <center>0.4 0.3 0.0</center>
+     <velocity>0.02 0.04 0.0</velocity>
+     <radius>0.1</radius>
+     <material>ENV5_MAT5</material>
+     <expected-final-temperature>49555.9576094166</expected-final-temperature>
+   </heat-object>
+   <heat-object>
+     <center>0.4 0.1 0.0</center>
+     <velocity>0.02 0.02 0.0</velocity>
+     <radius>0.12</radius>
+     <material>ENV6_MAT3</material>
+     <expected-final-temperature>129796.137526162</expected-final-temperature>
+   </heat-object>
+   <heat-object>
+     <center>0.5 1.2 0.0</center>
+     <velocity>0.01 -0.04 0.0</velocity>
+     <radius>0.08</radius>
+     <material>ENV7_MAT5</material>
+     <expected-final-temperature>26603.6088774079</expected-final-temperature>
+   </heat-object>
+
+ </material-heat-test>
+
+</case>
