@@ -50,6 +50,8 @@ class ARCANE_MATERIALS_EXPORT IncrementalComponentModifier
   void initialize();
   void apply(MaterialModifierOperation* operation);
   void finalize();
+  void setDoCopyBetweenPartialAndPure(bool v) { m_do_copy_between_partial_and_pure = v; }
+  void setDoInitNewItems(bool v) { m_do_init_new_items = v; }
 
  private:
 
@@ -57,6 +59,8 @@ class ARCANE_MATERIALS_EXPORT IncrementalComponentModifier
   MeshMaterialMng* m_material_mng = nullptr;
   ConstituentModifierWorkInfo m_work_info;
   RunQueue m_queue;
+  bool m_do_copy_between_partial_and_pure = true;
+  bool m_do_init_new_items = true;
 
  public:
 

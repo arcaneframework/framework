@@ -261,6 +261,8 @@ _endUpdate()
   IncrementalComponentModifier incremental_modifier(all_env_data, m_queue);
   if (is_optimization_active && m_use_incremental_recompute) {
     incremental_modifier.initialize();
+    incremental_modifier.setDoCopyBetweenPartialAndPure(m_do_copy_between_partial_and_pure);
+    incremental_modifier.setDoInitNewItems(m_do_init_new_items);
   }
 
   if (is_optimization_active) {

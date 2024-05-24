@@ -264,6 +264,7 @@ _switchCellsForMaterials(const MeshMaterial* modified_mat,
       MeshVariableCopyBetweenPartialAndGlobalArgs args(indexer->index(),
                                                        pure_local_ids,
                                                        partial_indexes,
+                                                       m_do_copy_between_partial_and_pure,
                                                        &m_queue);
       m_all_env_data->_copyBetweenPartialsAndGlobals(args, is_add);
     }
@@ -292,7 +293,7 @@ _switchCellsForEnvironments(const IMeshEnvironment* modified_env,
   const bool is_device = m_queue.isAcceleratorPolicy();
 
   // Ne copie pas les valeurs partielles des milieux vers les valeurs globales
-  // en cas de suppression de mailles car cela sera fait avec la valeur matériau
+  // en cas de suppression de mailles, car cela sera fait avec la valeur matériau
   // correspondante. Cela permet d'avoir le même comportement que sans
   // optimisation. Ce n'est pas actif par défaut pour compatibilité avec l'existant.
   const bool is_copy = is_add || !(m_material_mng->isUseMaterialValueWhenRemovingPartialValue());
@@ -324,7 +325,8 @@ _switchCellsForEnvironments(const IMeshEnvironment* modified_env,
 
     if (is_copy) {
       MeshVariableCopyBetweenPartialAndGlobalArgs copy_args(indexer->index(), pure_local_ids,
-                                                            partial_indexes, &m_queue);
+                                                            partial_indexes,
+                                                            m_do_copy_between_partial_and_pure, &m_queue);
       m_all_env_data->_copyBetweenPartialsAndGlobals(copy_args, is_add);
     }
   }
@@ -368,8 +370,8 @@ _computeCellsToTransformForEnvironments(SmallSpan<const Int32> ids)
     auto [i] = iter();
     Int32 lid = ids[i];
     bool do_transform = false;
-    // En cas d'ajout on passe de pure à partiel s'il y a plusieurs milieux.
-    // En cas de supression, on passe de partiel à pure si on est le seul milieu.
+    // En cas d'ajout, on passe de pure à partiel s'il y a plusieurs milieux.
+    // En cas de suppression, on passe de partiel à pure si on est le seul milieu.
     if (is_add)
       do_transform = cells_nb_env[lid] > 1;
     else
@@ -401,10 +403,7 @@ _removeItemsFromEnvironment(MeshEnvironment* env, MeshMaterial* mat,
 
   Int32 nb_to_remove = local_ids.size();
 
-  // Positionne le filtre des mailles supprimées.
-  //setRemovedCells(local_ids, true);
-
-  // TODO: à faire dans finialize()
+  // TODO: à faire dans finalize()
   env->addToTotalNbCellMat(-nb_to_remove);
 
   mat->variableIndexer()->endUpdateRemove(m_work_info, nb_to_remove, m_queue);
@@ -416,10 +415,6 @@ _removeItemsFromEnvironment(MeshEnvironment* env, MeshMaterial* mat,
     // ont le même indexeur)
     env->variableIndexer()->endUpdateRemove(m_work_info, nb_to_remove, m_queue);
   }
-
-  // Remet \a removed_local_ids_filter à la valeur initiale pour
-  // les prochaines opérations
-  //setRemovedCells(local_ids, false);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -539,9 +534,11 @@ _addItemsToIndexer(MeshMaterialVariableIndexer* var_indexer,
     // éventuellement utiliser plusieurs files.
     RunQueue::ScopedAsync sc(&m_queue);
     IMeshMaterialMng* mm = m_material_mng;
+    bool do_init = m_do_init_new_items;
     auto func = [&](IMeshMaterialVariable* mv) {
       mv->_internalApi()->resizeForIndexer(var_indexer->index(), m_queue);
-      mv->_internalApi()->initializeNewItems(list_builder, m_queue);
+      if (do_init)
+        mv->_internalApi()->initializeNewItems(list_builder, m_queue);
     };
     functor::apply(mm, &IMeshMaterialMng::visitVariables, func);
     m_queue.barrier();

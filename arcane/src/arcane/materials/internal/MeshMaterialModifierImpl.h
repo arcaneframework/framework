@@ -59,6 +59,8 @@ class MeshMaterialModifierImpl
  public:
 
   void initOptimizationFlags();
+  void setDoCopyBetweenPartialAndPure(bool v) { m_do_copy_between_partial_and_pure = v; }
+  void setDoInitNewItems(bool v) { m_do_init_new_items = v; }
 
  public:
 
@@ -94,6 +96,9 @@ class MeshMaterialModifierImpl
   bool m_allow_optimize_multiple_material = false;
   bool m_use_incremental_recompute = false;
   bool m_print_component_list = false;
+
+  bool m_do_copy_between_partial_and_pure = true;
+  bool m_do_init_new_items = true;
 
  private:
 
