@@ -50,9 +50,7 @@ MatCellVector(CellVectorView view,IMeshMaterial* material)
 void MatCellVector::
 _build(CellVectorView view)
 {
-  FixedArray<UniqueArray<ConstituentItemIndex>,2> internals;
-  FixedArray<UniqueArray<MatVarIndex>,2> matvar_indexes;
-  FixedArray<UniqueArray<Int32>,2> local_ids;
+  FixedArray<UniqueArray<ConstituentItemIndex>, 2> item_indexes;
   IMeshComponent* my_component = _component();
 
   ENUMERATE_ALLENVCELL(iallenvcell,_materialMng()->view(view)){
@@ -62,23 +60,14 @@ _build(CellVectorView view)
         MatCell mc = *imatcell;
         if (mc.component()==my_component){
           MatVarIndex idx = mc._varIndex();
-          if (idx.arrayIndex()==0){
-            internals[0].add(mc._constituentItemIndex());
-            matvar_indexes[0].add(idx);
-            local_ids[0].add(mc.globalCell().localId());
-          }
-          else{
-            internals[1].add(mc._constituentItemIndex());
-            matvar_indexes[1].add(idx);
-            local_ids[1].add(mc.globalCell().localId());
-          }
+          ConstituentItemIndex cii = mc._constituentItemIndex();
+          Int32 array_index = (idx.arrayIndex() == 0) ? 0 : 1;
+          item_indexes[array_index].add(cii);
         }
       }
     }
   }
-  this->_setItems(internals[0],internals[1]);
-  this->_setMatVarIndexes(matvar_indexes[0],matvar_indexes[1]);
-  this->_setLocalIds(local_ids[0],local_ids[1]);
+  this->_setItems(item_indexes[0], item_indexes[1]);
 }
 
 /*---------------------------------------------------------------------------*/

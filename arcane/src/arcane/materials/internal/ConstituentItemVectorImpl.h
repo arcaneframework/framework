@@ -52,10 +52,6 @@ class ConstituentItemVectorImpl
 
  private:
 
-  void _setMatVarIndexes(ConstArrayView<MatVarIndex> globals,
-                         ConstArrayView<MatVarIndex> multiples) override;
-  void _setLocalIds(ConstArrayView<Int32> globals,
-                    ConstArrayView<Int32> multiples) override;
   ComponentItemVectorView _view() const override;
   ComponentPurePartItemVectorView _pureItems() const override
   {
@@ -78,10 +74,7 @@ class ConstituentItemVectorImpl
     return m_matvar_indexes;
   }
   void _setItems(ConstArrayView<ConstituentItemIndex> globals,
-                 ConstArrayView<ConstituentItemIndex> multiples) override
-  {
-    m_constituent_list->copyPureAndPartial(globals, multiples);
-  }
+                 ConstArrayView<ConstituentItemIndex> multiples) override;
 
  public:
 
@@ -91,6 +84,7 @@ class ConstituentItemVectorImpl
   UniqueArray<Int32> m_items_local_id;
   std::unique_ptr<MeshComponentPartData> m_part_data;
   std::unique_ptr<ConstituentItemLocalIdList> m_constituent_list;
+  ComponentItemSharedInfo* m_component_shared_info = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/

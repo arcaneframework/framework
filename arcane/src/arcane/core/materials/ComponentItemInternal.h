@@ -131,6 +131,7 @@ class ARCANE_CORE_EXPORT ComponentItemSharedInfo
   friend class ComponentCell;
   friend class CellToAllEnvCellConverter;
   friend class AllEnvCellVectorView;
+  friend class ConstituentItemVectorImpl;
 
   static const int MAT_INDEX_OFFSET = 10;
 

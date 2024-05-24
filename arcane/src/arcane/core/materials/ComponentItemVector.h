@@ -47,10 +47,6 @@ class IConstituentItemVectorImpl
 
  protected:
 
-  virtual void _setMatVarIndexes(ConstArrayView<MatVarIndex> globals,
-                                 ConstArrayView<MatVarIndex> multiples) = 0;
-  virtual void _setLocalIds(ConstArrayView<Int32> globals,
-                            ConstArrayView<Int32> multiples) = 0;
   virtual ComponentItemVectorView _view() const = 0;
   virtual ComponentPurePartItemVectorView _pureItems() const = 0;
   virtual ComponentImpurePartItemVectorView _impureItems() const = 0;
@@ -87,9 +83,6 @@ class IConstituentItemVectorImpl
  */
 class ARCANE_CORE_EXPORT ComponentItemVector
 {
-  friend class EnvCellVector;
-  friend class MatCellVector;
-
  public:
 
   //! Constructeur de recopie. Cette instance fait ensuite référence à \a rhs
@@ -129,7 +122,7 @@ class ARCANE_CORE_EXPORT ComponentItemVector
   //! Liste des entités impures (partielles) du composant
   ComponentImpurePartItemVectorView impureItems() const;
 
- private:
+ protected:
 
   ConstArrayView<MatVarIndex> _matvarIndexes() const;
   ConstituentItemLocalIdListView _constituentItemListView() const;
@@ -138,9 +131,6 @@ class ARCANE_CORE_EXPORT ComponentItemVector
 
   void _setItems(ConstArrayView<ConstituentItemIndex> globals,
                  ConstArrayView<ConstituentItemIndex> multiples);
-  void _setMatVarIndexes(ConstArrayView<MatVarIndex> globals,
-                         ConstArrayView<MatVarIndex> multiples);
-  void _setLocalIds(ConstArrayView<Int32> globals, ConstArrayView<Int32> multiples);
   ConstArrayView<Int32> _localIds() const;
   IMeshMaterialMng* _materialMng() const;
   IMeshComponent* _component() const;
