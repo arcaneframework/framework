@@ -38,10 +38,6 @@ namespace Arcane::Materials
 class MeshComponentPartData
 : public TraceAccessor
 {
-  friend class MeshComponentData;
-  friend class ComponentItemVector;
-  friend class ConstituentItemVectorImpl;
-
  public:
 
   MeshComponentPartData(IMeshComponent* component,const String& debug_name);
@@ -65,33 +61,10 @@ class MeshComponentPartData
 
  public:
 
-  Int32ConstArrayView valueIndexes(eMatPart k) const
-  {
-    return m_value_indexes[(Int32)k];
-  }
-
-  Int32ConstArrayView itemIndexes(eMatPart k) const
-  {
-    return m_items_internal_indexes[(Int32)k];
-  }
-
- private:
-
-  void _setConstituentListView(const ConstituentItemLocalIdListView& v)
-  {
-    m_constituent_list_view = v;
-  }
-
-  //! Il faut appeler notifyValueIndexesChanged() après modification du tableau.
-  Int32Array& _mutableValueIndexes(eMatPart k)
-  {
-    return m_value_indexes[(Int32)k];
-  }
-
- public:
-
+  void _setConstituentListView(const ConstituentItemLocalIdListView& v);
   void _setFromMatVarIndexes(ConstArrayView<MatVarIndex> matvar_indexes, RunQueue& queue);
-  void _notifyValueIndexesChanged(RunQueue* queue);
+  void _setFromMatVarIndexes(ConstArrayView<MatVarIndex> globals,
+                             ConstArrayView<MatVarIndex> multiples);
 
  private:
 
@@ -109,6 +82,11 @@ class MeshComponentPartData
 
   //! Liste des ComponentItem pour ce constituant.
   ConstituentItemLocalIdListView m_constituent_list_view;
+
+ public:
+
+  // Cette fonction est privée mais doit être rendue publique pour compiler avec CUDA.
+  void _notifyValueIndexesChanged(RunQueue* queue);
 };
 
 /*---------------------------------------------------------------------------*/

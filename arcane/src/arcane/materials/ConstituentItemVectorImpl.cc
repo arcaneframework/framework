@@ -76,22 +76,7 @@ _setMatVarIndexes(ConstArrayView<MatVarIndex> globals,
 
   m_matvar_indexes.subView(0, nb_global).copy(globals);
   m_matvar_indexes.subView(nb_global, nb_multiple).copy(multiples);
-
-  {
-    Int32Array& idx = m_part_data->_mutableValueIndexes(eMatPart::Pure);
-    idx.resize(nb_global);
-    for (Integer i = 0; i < nb_global; ++i)
-      idx[i] = globals[i].valueIndex();
-  }
-
-  {
-    Int32Array& idx = m_part_data->_mutableValueIndexes(eMatPart::Impure);
-    idx.resize(nb_multiple);
-    for (Integer i = 0; i < nb_multiple; ++i)
-      idx[i] = multiples[i].valueIndex();
-  }
-
-  m_part_data->_notifyValueIndexesChanged(nullptr);
+  m_part_data->_setFromMatVarIndexes(globals, multiples);
 }
 
 /*---------------------------------------------------------------------------*/

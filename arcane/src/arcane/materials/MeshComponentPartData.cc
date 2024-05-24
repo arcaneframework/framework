@@ -168,6 +168,44 @@ _setFromMatVarIndexes(ConstArrayView<MatVarIndex> matvar_indexes, RunQueue& queu
 /*---------------------------------------------------------------------------*/
 
 void MeshComponentPartData::
+_setFromMatVarIndexes(ConstArrayView<MatVarIndex> globals,
+                      ConstArrayView<MatVarIndex> multiples)
+{
+  Integer nb_global = globals.size();
+  Integer nb_multiple = multiples.size();
+
+  {
+    const auto mat_part = static_cast<Int32>(eMatPart::Pure);
+    Int32Array& idx = m_value_indexes[mat_part];
+    idx.resize(nb_global);
+    for (Integer i = 0; i < nb_global; ++i)
+      idx[i] = globals[i].valueIndex();
+  }
+
+  {
+    const auto mat_part = static_cast<Int32>(eMatPart::Impure);
+    Int32Array& idx = m_value_indexes[mat_part];
+    idx.resize(nb_multiple);
+    for (Integer i = 0; i < nb_multiple; ++i)
+      idx[i] = multiples[i].valueIndex();
+  }
+
+  _notifyValueIndexesChanged(nullptr);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MeshComponentPartData::
+_setConstituentListView(const ConstituentItemLocalIdListView& v)
+{
+  m_constituent_list_view = v;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MeshComponentPartData::
 checkValid() const
 {
   info(4) << "CHECK_VALID_COMPONENT_PART_DATA c=" << m_component->name();
@@ -196,11 +234,26 @@ checkValid() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+ComponentPartItemVectorView MeshComponentPartData::
+partView(eMatPart part) const
+{
+  const auto mat_part = static_cast<Int32>(part);
+  Int32ConstArrayView value_indexes = m_value_indexes[mat_part];
+  Int32ConstArrayView item_indexes = m_items_internal_indexes[mat_part];
+  Int32 var_idx = (part == eMatPart::Pure) ? 0 : impureVarIdx();
+  return { m_component, var_idx, value_indexes,
+           item_indexes, m_constituent_list_view, part };
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 ComponentPurePartItemVectorView MeshComponentPartData::
 pureView() const
 {
-  Int32ConstArrayView value_indexes = valueIndexes(eMatPart::Pure);
-  Int32ConstArrayView item_indexes = itemIndexes(eMatPart::Pure);
+  const auto mat_part = static_cast<Int32>(eMatPart::Pure);
+  Int32ConstArrayView value_indexes = m_value_indexes[mat_part];
+  Int32ConstArrayView item_indexes = m_items_internal_indexes[mat_part];
   return { m_component, value_indexes,
            item_indexes, m_constituent_list_view };
 }
@@ -211,24 +264,12 @@ pureView() const
 ComponentImpurePartItemVectorView MeshComponentPartData::
 impureView() const
 {
-  Int32ConstArrayView value_indexes = valueIndexes(eMatPart::Impure);
-  Int32ConstArrayView item_indexes = itemIndexes(eMatPart::Impure);
-  Int32 var_idx = impureVarIdx();
+  const auto mat_part = static_cast<Int32>(eMatPart::Impure);
+  Int32ConstArrayView value_indexes = m_value_indexes[mat_part];
+  Int32ConstArrayView item_indexes = m_items_internal_indexes[mat_part];
+  const Int32 var_idx = impureVarIdx();
   return { m_component, var_idx, value_indexes,
            item_indexes, m_constituent_list_view };
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ComponentPartItemVectorView MeshComponentPartData::
-partView(eMatPart part) const
-{
-  Int32ConstArrayView value_indexes = valueIndexes(part);
-  Int32ConstArrayView item_indexes = itemIndexes(part);
-  Int32 var_idx = (part == eMatPart::Pure) ? 0 : impureVarIdx();
-  return { m_component, var_idx, value_indexes,
-           item_indexes, m_constituent_list_view, part };
 }
 
 /*---------------------------------------------------------------------------*/
