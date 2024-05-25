@@ -15,9 +15,9 @@
 #include "arcane/utils/ValueChecker.h"
 #include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/ArraySimdPadder.h"
+#include "arcane/utils/IFunctor.h"
 
 #include "arcane/core/IItemFamily.h"
-#include "arcane/core/ItemPrinter.h"
 
 #include "arcane/core/materials/IMeshComponent.h"
 #include "arcane/core/materials/ComponentItemInternal.h"
@@ -206,9 +206,10 @@ _setConstituentListView(const ConstituentItemLocalIdListView& v)
 /*---------------------------------------------------------------------------*/
 
 void MeshComponentPartData::
-checkValid() const
+checkValid()
 {
   info(4) << "CHECK_VALID_COMPONENT_PART_DATA c=" << m_component->name();
+  _checkNeedRecompute();
   ValueChecker vc(A_FUNCINFO);
   Integer nb_error = 0;
   for (Integer i = 0; i < 2; ++i) {
@@ -234,9 +235,24 @@ checkValid() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ComponentPartItemVectorView MeshComponentPartData::
-partView(eMatPart part) const
+void MeshComponentPartData::
+_checkNeedRecompute()
 {
+  if (!m_is_need_recompute)
+    return;
+  if (!m_compute_functor)
+    ARCANE_FATAL("No compute functor");
+  m_compute_functor->executeFunctor();
+  m_is_need_recompute = false;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+ComponentPartItemVectorView MeshComponentPartData::
+partView(eMatPart part)
+{
+  _checkNeedRecompute();
   const auto mat_part = static_cast<Int32>(part);
   Int32ConstArrayView value_indexes = m_value_indexes[mat_part];
   Int32ConstArrayView item_indexes = m_items_internal_indexes[mat_part];
@@ -249,8 +265,9 @@ partView(eMatPart part) const
 /*---------------------------------------------------------------------------*/
 
 ComponentPurePartItemVectorView MeshComponentPartData::
-pureView() const
+pureView()
 {
+  _checkNeedRecompute();
   const auto mat_part = static_cast<Int32>(eMatPart::Pure);
   Int32ConstArrayView value_indexes = m_value_indexes[mat_part];
   Int32ConstArrayView item_indexes = m_items_internal_indexes[mat_part];
@@ -262,8 +279,9 @@ pureView() const
 /*---------------------------------------------------------------------------*/
 
 ComponentImpurePartItemVectorView MeshComponentPartData::
-impureView() const
+impureView()
 {
+  _checkNeedRecompute();
   const auto mat_part = static_cast<Int32>(eMatPart::Impure);
   Int32ConstArrayView value_indexes = m_value_indexes[mat_part];
   Int32ConstArrayView item_indexes = m_items_internal_indexes[mat_part];

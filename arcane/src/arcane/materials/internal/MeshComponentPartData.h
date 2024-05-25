@@ -48,16 +48,27 @@ class MeshComponentPartData
 
   IMeshComponent* component() const { return m_component; }
 
-  void checkValid() const;
+  void checkValid();
 
   //! Vue sur la partie pure
-  ComponentPurePartItemVectorView pureView() const;
+  ComponentPurePartItemVectorView pureView();
 
   //! Vue sur la partie impure
-  ComponentImpurePartItemVectorView impureView() const;
+  ComponentImpurePartItemVectorView impureView();
 
   //! Vue sur la partie \a part
-  ComponentPartItemVectorView partView(eMatPart part) const;
+  ComponentPartItemVectorView partView(eMatPart part);
+
+  /*
+   * \brief Fonctor pour recalculer les parties pures et impures suite à une modification.
+   *
+   * Si ce fonctor n'est pas positionné, alors il faut mettre à jour manuellement
+   * l'instance via l'appel à _setFromMatVarIndexes(). \a func doit rester valide
+   * durant toute la durée de vie de cette instance
+   */
+  void setRecomputeFunctor(IFunctor* func) { m_compute_functor = func; }
+
+  void setNeedRecompute() { m_is_need_recompute = true; }
 
  public:
 
@@ -83,10 +94,17 @@ class MeshComponentPartData
   //! Liste des ComponentItem pour ce constituant.
   ConstituentItemLocalIdListView m_constituent_list_view;
 
+  IFunctor* m_compute_functor = nullptr;
+  bool m_is_need_recompute = false;
+
  public:
 
   // Cette fonction est privée mais doit être rendue publique pour compiler avec CUDA.
   void _notifyValueIndexesChanged(RunQueue* queue);
+
+ private:
+
+  void _checkNeedRecompute();
 };
 
 /*---------------------------------------------------------------------------*/
