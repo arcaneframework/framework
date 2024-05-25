@@ -1,6 +1,6 @@
 ﻿cmake_minimum_required(VERSION 3.21 FATAL_ERROR)
 
-message(STATUS "CMAKE_SOURCE_DIR=${CMAKE_SOURCE_DIR}")
+message(STATUS "CMAKE_SOURCE_DIR=${CMAKE_SOURCE_DIR} CMAKE_VERSION=${CMAKE_VERSION}")
 
 # ----------------------------------------------------------------------------
 # Récupère numéro de version de Arcane à partir du fichier 'version' et

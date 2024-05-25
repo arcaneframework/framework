@@ -224,14 +224,19 @@ macro(arcane_wrapper_add_swig_target)
     PROJECT_NAME ${ARGS_DLL_NAME}
     CSHARP_SOURCES ${ARGS_CSHARP_SOURCES}
     DOTNET_TARGET_DEPENDS ${_DOTNET_TARGET_DEPENDS}
-    )
+  )
 
-  # Indique que la compilation du C# dépend de la compilation de la lib C++.
-  # Ce n'est pas explicitement le cas car en fait elle dépend uniquement de
-  # la génération des fichiers par 'swig' mais il n'y a pas de moyen simple d'indiquer
-  # cela.
-  # add_custom_target(dotnet_wrapper_${ARGS_NAME}_swig_depend ALL DEPENDS ${support_files})
-  # add_dependencies(dotnet_wrapper_${ARGS_NAME} dotnet_wrapper_${ARGS_NAME}_swig_depend)
+  # Indique que la compilation du C# dépend des fichiers générés par SWIG.
+  # NOTE: il y a probablement un bug avec CMake 3.21 sur cette partie car il indique
+  # qu'il ne sait pas comment trouver les fichiers générés. Cela est peut-être du
+  # au module UseSwig associé à cette version.
+  if (CMAKE_VERSION VERSION_GREATER_EQUAL 3.22)
+    message(STATUS "Adding custom target with support files for wrapper '${ARGS_NAME}'")
+    add_custom_target(dotnet_wrapper_${ARGS_NAME}_swig_depend ALL DEPENDS "${support_files}")
+    add_dependencies(dotnet_wrapper_${ARGS_NAME} dotnet_wrapper_${ARGS_NAME}_swig_depend)
+  else()
+    add_dependencies(dotnet_wrapper_${ARGS_NAME} ${_TARGET_NAME})
+  endif()
 
   # Ajoute les dépendences sur les autres cibles SWIG
   foreach(_dtg ${ARGS_SWIG_TARGET_DEPENDS})

@@ -17,8 +17,12 @@ set(CSPATH ${CMAKE_CURRENT_SOURCE_DIR})
 set(CSOUTPATH ${CMAKE_CURRENT_BINARY_DIR})
 configure_file(ArcaneCeaTest.csproj.in ${ARCANE_CSHARP_PROJECT_PATH}/ArcaneCeaTest/ArcaneCeaTest.csproj @ONLY)
 
+set(_MY_DEPS test_material_eos_csharp_swig_depend)
+if (TARGET dotnet_axl_depend)
+  list(APPEND _MY_DEPS dotnet_axl_depend)
+endif()
 add_custom_command(OUTPUT ${CSOUTPATH}/MeshMaterialCSharpUnitTest_axl.cs
-  DEPENDS ${CSPATH}/MeshMaterialCSharpUnitTest.axl ${ARCANE_AXL2CC} dotnet_axl_depend
+  DEPENDS ${CSPATH}/MeshMaterialCSharpUnitTest.axl ${ARCANE_AXL2CC} ${_MY_DEPS}
   COMMAND ${ARCANE_AXL2CC}
   ARGS -i arcane/tests/. --lang c\# -o ${CSOUTPATH} ${CSPATH}/MeshMaterialCSharpUnitTest.axl)
 
