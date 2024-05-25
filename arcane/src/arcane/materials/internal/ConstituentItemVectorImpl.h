@@ -14,8 +14,10 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/TraceAccessor.h"
 #include "arccore/base/ReferenceCounterImpl.h"
+
+#include "arcane/utils/TraceAccessor.h"
+#include "arcane/utils/Functor.h"
 
 #include "arcane/core/materials/ComponentItemVector.h"
 #include "arcane/core/materials/internal/ConstituentItemLocalIdList.h"
@@ -52,10 +54,6 @@ class ConstituentItemVectorImpl
 
  private:
 
-  void _setMatVarIndexes(ConstArrayView<MatVarIndex> globals,
-                         ConstArrayView<MatVarIndex> multiples) override;
-  void _setLocalIds(ConstArrayView<Int32> globals,
-                    ConstArrayView<Int32> multiples) override;
   ComponentItemVectorView _view() const override;
   ComponentPurePartItemVectorView _pureItems() const override
   {
@@ -78,10 +76,11 @@ class ConstituentItemVectorImpl
     return m_matvar_indexes;
   }
   void _setItems(ConstArrayView<ConstituentItemIndex> globals,
-                 ConstArrayView<ConstituentItemIndex> multiples) override
-  {
-    m_constituent_list->copyPureAndPartial(globals, multiples);
-  }
+                 ConstArrayView<ConstituentItemIndex> multiples) override;
+
+ private:
+
+  void _recomputePartData();
 
  public:
 
@@ -91,6 +90,13 @@ class ConstituentItemVectorImpl
   UniqueArray<Int32> m_items_local_id;
   std::unique_ptr<MeshComponentPartData> m_part_data;
   std::unique_ptr<ConstituentItemLocalIdList> m_constituent_list;
+  ComponentItemSharedInfo* m_component_shared_info = nullptr;
+
+  FunctorT<ConstituentItemVectorImpl> m_recompute_part_data_functor;
+  // Seulement utile pour le re-calcul à la volée
+  Int32 m_nb_pure = 0;
+  // Seulement utile pour le re-calcul à la volée
+  Int32 m_nb_impure = 0;
 };
 
 /*---------------------------------------------------------------------------*/

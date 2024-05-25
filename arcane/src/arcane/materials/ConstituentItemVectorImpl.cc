@@ -35,7 +35,8 @@ ConstituentItemVectorImpl(IMeshComponent* component)
 , m_component(component)
 , m_matvar_indexes(platform::getDefaultDataAllocator())
 , m_items_local_id(platform::getDefaultDataAllocator())
-  , m_part_data(std::make_unique<MeshComponentPartData>(component,String()))
+, m_part_data(std::make_unique<MeshComponentPartData>(component, String()))
+, m_recompute_part_data_functor(this, &ConstituentItemVectorImpl::_recomputePartData)
 {
   Int32 level = -1;
   if (component->isMaterial())
@@ -44,8 +45,9 @@ ConstituentItemVectorImpl(IMeshComponent* component)
     level = LEVEL_ENVIRONMENT;
   else
     ARCANE_FATAL("Bad internal type of component");
-  ComponentItemSharedInfo* shared_info = m_material_mng->_internalApi()->componentItemSharedInfo(level);
-  m_constituent_list = std::make_unique<ConstituentItemLocalIdList>(shared_info,String());
+  m_component_shared_info = m_material_mng->_internalApi()->componentItemSharedInfo(level);
+  m_constituent_list = std::make_unique<ConstituentItemLocalIdList>(m_component_shared_info, String());
+  m_part_data->setRecomputeFunctor(&m_recompute_part_data_functor);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -65,48 +67,57 @@ ConstituentItemVectorImpl(const ComponentItemVectorView& rhs)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 void ConstituentItemVectorImpl::
-_setMatVarIndexes(ConstArrayView<MatVarIndex> globals,
-                  ConstArrayView<MatVarIndex> multiples)
+_setItems(ConstArrayView<ConstituentItemIndex> globals,
+          ConstArrayView<ConstituentItemIndex> multiples)
 {
-  Integer nb_global = globals.size();
-  Integer nb_multiple = multiples.size();
+  m_constituent_list->copyPureAndPartial(globals, multiples);
 
-  m_matvar_indexes.resize(nb_global + nb_multiple);
+  // TODO: Ne pas remettre à jour systématiquement les
+  // 'm_items_local_id' mais ne le faire qu'à la demande
+  // car ils ne sont pas utilisés souvent.
+  Int32 nb_pure = globals.size();
+  Int32 nb_impure = multiples.size();
 
-  m_matvar_indexes.subView(0, nb_global).copy(globals);
-  m_matvar_indexes.subView(nb_global, nb_multiple).copy(multiples);
+  m_matvar_indexes.resize(nb_pure + nb_impure);
+  m_items_local_id.resize(nb_pure + nb_impure);
 
-  {
-    Int32Array& idx = m_part_data->_mutableValueIndexes(eMatPart::Pure);
-    idx.resize(nb_global);
-    for (Integer i = 0; i < nb_global; ++i)
-      idx[i] = globals[i].valueIndex();
+  ComponentItemSharedInfo* cisi = m_component_shared_info;
+
+  for (Int32 i = 0; i < nb_pure; ++i) {
+    ConstituentItemIndex cii = globals[i];
+    m_matvar_indexes[i] = cisi->_varIndex(cii);
+    m_items_local_id[i] = cisi->_globalItemBase(cii).localId();
   }
 
-  {
-    Int32Array& idx = m_part_data->_mutableValueIndexes(eMatPart::Impure);
-    idx.resize(nb_multiple);
-    for (Integer i = 0; i < nb_multiple; ++i)
-      idx[i] = multiples[i].valueIndex();
+  for (Int32 i = 0; i < nb_impure; ++i) {
+    ConstituentItemIndex cii = multiples[i];
+    m_matvar_indexes[nb_pure + i] = cisi->_varIndex(cii);
+    m_items_local_id[nb_pure + i] = cisi->_globalItemBase(cii).localId();
   }
 
-  m_part_data->_notifyValueIndexesChanged(nullptr);
+  // Mise à jour de MeshComponentPartData
+  m_nb_pure = nb_pure;
+  m_nb_impure = nb_impure;
+  const bool do_lazy_evaluation = true;
+  if (do_lazy_evaluation)
+    m_part_data->setNeedRecompute();
+  else
+    _recomputePartData();
 }
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void ConstituentItemVectorImpl::
-_setLocalIds(ConstArrayView<Int32> globals, ConstArrayView<Int32> multiples)
+_recomputePartData()
 {
-  Integer nb_global = globals.size();
-  Integer nb_multiple = multiples.size();
-
-  m_items_local_id.resize(nb_global + nb_multiple);
-
-  m_items_local_id.subView(0, nb_global).copy(globals);
-  m_items_local_id.subView(nb_global, nb_multiple).copy(multiples);
+  // Mise à jour de MeshComponentPartData
+  auto mvi_pure_view = m_matvar_indexes.subView(0, m_nb_pure);
+  auto mvi_impure_view = m_matvar_indexes.subView(m_nb_pure, m_nb_impure);
+  m_part_data->_setFromMatVarIndexes(mvi_pure_view, mvi_impure_view);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -115,8 +126,8 @@ _setLocalIds(ConstArrayView<Int32> globals, ConstArrayView<Int32> multiples)
 ComponentItemVectorView ConstituentItemVectorImpl::
 _view() const
 {
-  return ComponentItemVectorView(m_component, m_matvar_indexes,
-                                 m_constituent_list->view(), m_items_local_id);
+  return { m_component, m_matvar_indexes,
+           m_constituent_list->view(), m_items_local_id };
 }
 
 /*---------------------------------------------------------------------------*/
