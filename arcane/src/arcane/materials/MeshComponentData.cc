@@ -18,6 +18,7 @@
 #include "arcane/core/IItemFamily.h"
 #include "arcane/core/ItemPrinter.h"
 #include "arcane/core/materials/IMeshMaterialMng.h"
+#include "arcane/core/materials/internal/IMeshMaterialMngInternal.h"
 
 #include "arcane/materials/internal/MeshMaterialVariableIndexer.h"
 #include "arcane/materials/internal/MeshComponentPartData.h"
@@ -40,6 +41,7 @@ MeshComponentData(IMeshComponent* component, const String& name,
 , m_component_id(component_id)
 , m_name(name)
 , m_constituent_local_id_list(shared_info, String("MeshComponentDataIdList")+name)
+, m_recompute_part_data_functor(this, &MeshComponentData::_rebuildPartDataDirect)
 {
   if (create_indexer) {
     m_variable_indexer = new MeshMaterialVariableIndexer(traceMng(), name);
@@ -109,6 +111,7 @@ void MeshComponentData::
 _buildPartData()
 {
   m_part_data = new MeshComponentPartData(m_component, m_name);
+  m_part_data->setRecomputeFunctor(&m_recompute_part_data_functor);
   _setPartInfo();
 }
 
@@ -156,6 +159,20 @@ _rebuildPartData(RunQueue& queue)
   if (!m_part_data)
     _buildPartData();
   _setPartInfo();
+  const bool do_lazy_evaluation = true;
+  if (do_lazy_evaluation)
+    m_part_data->setNeedRecompute();
+  else
+    m_part_data->_setFromMatVarIndexes(m_variable_indexer->matvarIndexes(), queue);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MeshComponentData::
+_rebuildPartDataDirect()
+{
+  RunQueue& queue = m_component->materialMng()->_internalApi()->runQueue();
   m_part_data->_setFromMatVarIndexes(m_variable_indexer->matvarIndexes(), queue);
 }
 
