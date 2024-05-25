@@ -36,6 +36,7 @@ ConstituentItemVectorImpl(IMeshComponent* component)
 , m_matvar_indexes(platform::getDefaultDataAllocator())
 , m_items_local_id(platform::getDefaultDataAllocator())
 , m_part_data(std::make_unique<MeshComponentPartData>(component, String()))
+, m_recompute_part_data_functor(this, &ConstituentItemVectorImpl::_recomputePartData)
 {
   Int32 level = -1;
   if (component->isMaterial())
@@ -46,6 +47,7 @@ ConstituentItemVectorImpl(IMeshComponent* component)
     ARCANE_FATAL("Bad internal type of component");
   m_component_shared_info = m_material_mng->_internalApi()->componentItemSharedInfo(level);
   m_constituent_list = std::make_unique<ConstituentItemLocalIdList>(m_component_shared_info, String());
+  m_part_data->setRecomputeFunctor(&m_recompute_part_data_functor);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -98,10 +100,26 @@ _setItems(ConstArrayView<ConstituentItemIndex> globals,
   }
 
   // Mise à jour de MeshComponentPartData
-  auto mvi_pure_view = m_matvar_indexes.subView(0, nb_pure);
-  auto mvi_impure_view = m_matvar_indexes.subView(nb_pure, nb_impure);
+  m_nb_pure = nb_pure;
+  m_nb_impure = nb_impure;
+  const bool do_lazy_evaluation = true;
+  if (do_lazy_evaluation)
+    m_part_data->setNeedRecompute();
+  else
+    _recomputePartData();
+}
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ConstituentItemVectorImpl::
+_recomputePartData()
+{
+  // Mise à jour de MeshComponentPartData
+  auto mvi_pure_view = m_matvar_indexes.subView(0, m_nb_pure);
+  auto mvi_impure_view = m_matvar_indexes.subView(m_nb_pure, m_nb_impure);
   m_part_data->_setFromMatVarIndexes(mvi_pure_view, mvi_impure_view);
 }
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
