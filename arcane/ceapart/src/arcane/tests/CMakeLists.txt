@@ -60,6 +60,12 @@ if (TARGET arcane_dotnet_wrapper_cea_materials)
     OUTPUT_DIR ${MATERIAL_CSHARP_OUTDIR}/cs_files
     OUTFILE_DIR ${MATERIAL_CSHARP_OUTDIR}/cpp_files
     )
+  if (CMAKE_VERSION VERSION_GREATER_EQUAL 3.22)
+    get_property(support_files TARGET test_material_eos_csharp PROPERTY SWIG_SUPPORT_FILES)
+    add_custom_target(test_material_eos_csharp_swig_depend ALL DEPENDS "${support_files}")
+  else()
+    add_custom_target(test_material_eos_csharp_swig_depend ALL DEPENDS "${_TARGET_NAME}")
+  endif()
 
   target_link_libraries(test_material_eos_csharp PUBLIC arcane_dotnet_wrapper_cea_materials arcane_materials)
   target_include_directories(test_material_eos_csharp PUBLIC ${Arcane_SOURCE_DIR}/tools/wrapper)
