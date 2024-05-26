@@ -5,6 +5,10 @@
   <PropertyGroup>
     <UseAppHost>false</UseAppHost>
   </PropertyGroup>
+  <PropertyGroup>
+    <!-- Needed with .Net 8 to prevent FPE in garbage collection -->
+    <ServerGarbageCollection Condition="'$(TargetFramework)'=='net8' or $(TargetFramework)=='netcoreapp8.0'">true</ServerGarbageCollection>
+  </PropertyGroup>
   <ItemGroup>
     <Compile Include="@CSPATH@/Main.cs" />
   </ItemGroup>
