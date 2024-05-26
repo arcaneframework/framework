@@ -7,8 +7,9 @@ if(ARCANE_USE_GLOBAL_CSHARP)
   if (NOT _msbuild_exe)
     logFatalError("In ${_func_name}: 'msbuild' command for runtime '${ARGS_DOTNET_RUNTIME}' is not available.")
   endif()
-  # TODO: Faire la restauration avant
-  set(_BUILD_ARGS publish --no-restore BuildAllCSharp.proj /t:PublishAndPack /p:PublishDir=${ARCANE_DOTNET_PUBLISH_PATH}/ ${ARGS_MSBUILD_ARGS})
+  set(ARGS_MSBUILD_ARGS "/p:BinDir=${ARCANE_CSHARP_PROJECT_PATH}")
+  set(_RESTORE_BUILD_ARGS build BuildAllCSharp.proj /t:Restore ${ARGS_MSBUILD_ARGS} )
+  set(_BUILD_ARGS publish --no-restore BuildAllCSharp.proj /t:PublishAndPack /p:PublishDir=${ARCANE_DOTNET_PUBLISH_PATH}/ ${ARGS_MSBUILD_ARGS} )
 
   get_property(_ALL_DEPEND_LIST TARGET arcane_global_csharp_target
     PROPERTY DEPENDS
@@ -21,7 +22,7 @@ if(ARCANE_USE_GLOBAL_CSHARP)
     # Commande de restauration des packages nuget
     add_custom_command(OUTPUT "${ARCANE_DOTNET_RESTORE_TIMESTAMP}"
       WORKING_DIRECTORY "${ARCANE_CSHARP_PROJECT_PATH}"
-      COMMAND ${_msbuild_exe} build BuildAllCSharp.proj /t:Restore
+      COMMAND ${_msbuild_exe} ${_RESTORE_BUILD_ARGS}
       COMMAND ${CMAKE_COMMAND} -E touch ${ARCANE_DOTNET_RESTORE_TIMESTAMP}
       COMMENT "Restoring global 'C#' target"
     )
