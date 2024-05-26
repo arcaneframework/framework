@@ -278,22 +278,22 @@ arcane_add_test_parallel(cartesian3d_grid_partitioning_12proc testCartesianMesh3
 # Ces tests ont besoin d'Aleph
 # TODO: faire des tests sans avoir besoin de Aleph
 if (TARGET arcane_aleph_hypre)
-  ARCANE_ADD_TEST_SEQUENTIAL(cartesianMeshGenerator testCartesianMeshGenerator.arc "-m 1")
+  arcane_add_test_parallel(cartesianMeshGenerator testCartesianMeshGenerator.arc 1 "-m 1")
   ARCANE_ADD_TEST_PARALLEL(cartesianMeshGenerator testCartesianMeshGenerator.arc 8 "-m 1")
 
-  ARCANE_ADD_TEST_SEQUENTIAL(cartesianMeshGenerator2D testCartesianMeshGenerator2D.arc)
+  arcane_add_test_parallel(cartesianMeshGenerator2D testCartesianMeshGenerator2D.arc 1)
   ARCANE_ADD_TEST_PARALLEL(cartesianMeshGenerator2D testCartesianMeshGenerator2D.arc 4)
 
-  ARCANE_ADD_TEST_SEQUENTIAL(cartesianMeshGenerator2D-meshservice testCartesianMeshGenerator2D-meshservice.arc)
+  arcane_add_test_parallel(cartesianMeshGenerator2D-meshservice testCartesianMeshGenerator2D-meshservice.arc 1)
   ARCANE_ADD_TEST_PARALLEL(cartesianMeshGenerator2D-meshservice testCartesianMeshGenerator2D-meshservice.arc 4)
 
-  ARCANE_ADD_TEST_SEQUENTIAL(cartesianMeshGeneratorModulo testCartesianMeshGeneratorModulo.arc)
+  arcane_add_test_parallel(cartesianMeshGeneratorModulo testCartesianMeshGeneratorModulo.arc 1)
   ARCANE_ADD_TEST_PARALLEL(cartesianMeshGeneratorModulo testCartesianMeshGeneratorModulo.arc 3)
 
-  ARCANE_ADD_TEST_SEQUENTIAL(cartesianMeshGeneratorOrigin testCartesianMeshGeneratorOrigin.arc)
+  arcane_add_test_parallel(cartesianMeshGeneratorOrigin testCartesianMeshGeneratorOrigin.arc 1)
   ARCANE_ADD_TEST_PARALLEL(cartesianMeshGeneratorOrigin testCartesianMeshGeneratorOrigin.arc 4)
 
-  ARCANE_ADD_TEST_SEQUENTIAL(cartesianMeshGeneratorOrigin2D testCartesianMeshGeneratorOrigin2D.arc)
+  arcane_add_test_parallel(cartesianMeshGeneratorOrigin2D testCartesianMeshGeneratorOrigin2D.arc 1)
   ARCANE_ADD_TEST_PARALLEL(cartesianMeshGeneratorOrigin2D testCartesianMeshGeneratorOrigin2D.arc 4)
 endif()
 
