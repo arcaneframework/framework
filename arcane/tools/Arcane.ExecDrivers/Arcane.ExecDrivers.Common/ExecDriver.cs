@@ -487,13 +487,19 @@ namespace Arcane.ExecDrivers.Common
           Console.WriteLine("ArgsForArcane: {0}", x);
         }
         if (m_properties.NbIteration >= 1) {
-          args.Add("-arcane_opt");
-          args.Add("max_iteration");
-          args.Add(m_properties.NbIteration.ToString());
+          args.Add("-A,MaxIteration="+m_properties.NbIteration.ToString());
         }
         if (current_exec != 0) {
           args.Add("-arcane_opt");
           args.Add("continue");
+        }
+        // En séquentiel pure, ne charge pas l'environnement MPI.
+        // Cela permet de gagner du temps lors de l'initialisation et de permettre
+        // de lancer directement l'exécutable sans passer par 'mpiexec'.
+        if (m_properties.NbProc==0 && m_properties.NbSharedMemorySubDomain==0){
+          string env_parallel_service = Utils.GetEnvironmentVariable("ARCANE_PARALLEL_SERVICE");
+          if (String.IsNullOrEmpty(env_parallel_service))
+            args.Add("-A,MessagePassingService=Sequential");
         }
         if (OnAddAdditionalArgs != null)
           OnAddAdditionalArgs(this);

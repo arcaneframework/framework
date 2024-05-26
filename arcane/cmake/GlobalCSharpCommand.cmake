@@ -7,7 +7,7 @@ if(ARCANE_USE_GLOBAL_CSHARP)
   if (NOT _msbuild_exe)
     logFatalError("In ${_func_name}: 'msbuild' command for runtime '${ARGS_DOTNET_RUNTIME}' is not available.")
   endif()
-  set(ARGS_MSBUILD_ARGS "/p:BinDir=${ARCANE_CSHARP_PROJECT_PATH}")
+  set(ARGS_MSBUILD_ARGS "/p:BinDir=${ARCANE_CSHARP_PROJECT_PATH}/bin_dir/")
   set(_RESTORE_BUILD_ARGS build BuildAllCSharp.proj /t:Restore ${ARGS_MSBUILD_ARGS} )
   set(_BUILD_ARGS publish --no-restore BuildAllCSharp.proj /t:PublishAndPack /p:PublishDir=${ARCANE_DOTNET_PUBLISH_PATH}/ ${ARGS_MSBUILD_ARGS} )
 
