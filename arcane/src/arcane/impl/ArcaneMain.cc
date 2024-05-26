@@ -316,6 +316,8 @@ class ArcaneMainAutoDetectRuntimeHelper
     if (x->m_nb_autodetect > 0)
       return x->m_autodetect_return_value;
 
+    ArcaneMain::_setArcaneLibraryPath();
+
     std::chrono::high_resolution_clock clock;
 
     // TODO: rendre thread-safe
@@ -705,7 +707,6 @@ _checkCreateDynamicLibraryLoader()
   auto x = platform::getDynamicLibraryLoader();
   if (!x) {
     platform::setDynamicLibraryLoader(createGlibDynamicLibraryLoader());
-    _setArcaneLibraryPath();
   }
 }
 
