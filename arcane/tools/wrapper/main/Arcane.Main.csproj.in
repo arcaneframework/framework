@@ -8,6 +8,11 @@
     <UseAppHost>false</UseAppHost>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <!-- Needed with .Net 8 to prevent FPE in garbage collection -->
+    <ServerGarbageCollection Condition="'$(TargetFramework)'=='net8' or $(TargetFramework)=='netcoreapp8.0'">true</ServerGarbageCollection>
+  </PropertyGroup>
+
   <!-- Infos pour NuGet -->
   <PropertyGroup>
     <PackageVersion>@ARCANE_VERSION@</PackageVersion>
