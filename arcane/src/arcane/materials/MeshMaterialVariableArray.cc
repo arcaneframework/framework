@@ -30,6 +30,7 @@
 #include "arcane/core/VariableRefArray2.h"
 #include "arcane/core/MeshVariable.h"
 #include "arcane/core/ISerializer.h"
+#include "arcane/core/internal/IVariableInternal.h"
 
 #include "arcane/materials/ItemMaterialVariableBaseT.H"
 
@@ -79,6 +80,19 @@ resizeAndFillWithDefault(ValueDataType* data,ContainerType& container,Integer di
   //TODO: faire une version de Array2 qui spécifie une valeur à donner
   // pour initialiser lors d'un resize() (comme pour Array::resize()).
   container.resize(dim1_size,dim2_size);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<typename DataType> void
+MaterialVariableArrayTraits<DataType>::
+resizeWithReserve(PrivatePartType* var,Integer dim1_size)
+{
+  // Pour éviter de réallouer à chaque fois qu'il y a une augmentation du
+  // nombre de mailles matériaux, alloue un petit peu plus que nécessaire.
+  // Par défaut, on alloue 5% de plus.
+  var->_internalApi()->resizeWithReserve(dim1_size, dim1_size/20);
 }
 
 /*---------------------------------------------------------------------------*/
