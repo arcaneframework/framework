@@ -596,8 +596,7 @@ _internalResize(Integer new_size,Integer nb_additional_element)
 template<typename DataType> void VariableArrayT<DataType>::
 resizeWithReserve(Integer n,Integer nb_additional)
 {
-  _internalResize(n,nb_additional);
-  syncReferences();
+  _resizeWithReserve(n,nb_additional);
 }
 
 /*---------------------------------------------------------------------------*/

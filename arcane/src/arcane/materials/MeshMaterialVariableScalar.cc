@@ -40,6 +40,7 @@
 #include "arcane/core/IParallelExchanger.h"
 #include "arcane/core/ISerializer.h"
 #include "arcane/core/ISerializeMessage.h"
+#include "arcane/core/internal/IVariableInternal.h"
 #include "arcane/core/materials/internal/IMeshComponentInternal.h"
 #include "arcane/core/VariableInfo.h"
 #include "arcane/core/VariableRefArray.h"
@@ -126,15 +127,7 @@ resizeWithReserve(PrivatePartType* var,Integer dim1_size)
   // Pour éviter de réallouer à chaque fois qu'il y a une augmentation du
   // nombre de mailles matériaux, alloue un petit peu plus que nécessaire.
   // Par défaut, on alloue 5% de plus.
-  Integer capacity = var->capacity();
-  Integer reserve_size = 0;
-  if (dim1_size>=capacity && reserve_size>0){
-    Integer additional_size = CheckedConvert::toInteger((Real)dim1_size * 1.05);
-    additional_size = math::max(additional_size,1024);
-    var->resizeWithReserve(dim1_size,additional_size);
-  }
-  else
-    var->resize(dim1_size);
+  var->_internalApi()->resizeWithReserve(dim1_size, dim1_size/20);
 }
 
 /*---------------------------------------------------------------------------*/

@@ -154,6 +154,7 @@ class VariablePrivate
   //!@{ \name Implémentation de IVariableInternal
   String computeComparisonHashCollective(IHashAlgorithm* hash_algo, IData* sorted_data) override;
   void changeAllocator(const MemoryAllocationOptions& alloc_info) override;
+  void resizeWithReserve(Int32 new_size,Int32 additional_capacity) override;
   //!@}
 
  private:
@@ -950,14 +951,23 @@ serialize(ISerializer* sbuffer,IDataOperation* operation)
 /*---------------------------------------------------------------------------*/
 
 void Variable::
-resize(Integer new_size)
+_resizeWithReserve(Int32 new_size,Int32 additional_capacity)
 {
   eItemKind ik = itemKind();
   if (ik!=IK_Unknown){
     ARCANE_FATAL("This call is invalid for item variable. Use resizeFromGroup() instead");
   }
-  _internalResize(new_size,0);
+  _internalResize(new_size, additional_capacity);
   syncReferences();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void Variable::
+resize(Integer new_size)
+{
+  _resizeWithReserve(new_size,0);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1435,6 +1445,15 @@ changeAllocator(const MemoryAllocationOptions& mem_options)
     dx->changeAllocator(mem_options);
     m_variable->syncReferences();
   }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void VariablePrivate::
+resizeWithReserve(Int32 new_size,Int32 additional_capacity)
+{
+  return m_variable->_resizeWithReserve(new_size,additional_capacity);
 }
 
 /*---------------------------------------------------------------------------*/

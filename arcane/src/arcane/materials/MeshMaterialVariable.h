@@ -249,10 +249,8 @@ class MaterialVariableArrayTraits
   {
     view.copy(v);
   }
-  static void resizeWithReserve(PrivatePartType* var, Integer new_size)
-  {
-    var->resize(new_size);
-  }
+  ARCANE_MATERIALS_EXPORT
+  static void resizeWithReserve(PrivatePartType* var, Integer new_size);
   static Span<std::byte> toBytes(Array2View<DataType> view)
   {
     Span<DataType> s(view.data(),view.totalNbElement());

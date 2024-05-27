@@ -229,6 +229,10 @@ class ARCANE_CORE_EXPORT Variable
   // Temporaire pour test libération mémoire
   bool _wantShrink() const;
 
+  // Accès via VariablePrivate pour l'API interne
+  friend class VariablePrivate;
+  void _resizeWithReserve(Int32 new_size,Int32 additional_capacity);
+
  private:
 
   VariablePrivate* m_p; //!< Implémentation
