@@ -104,6 +104,21 @@ RunnerInfo(Runner& runner)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+void MeshMaterialMng::RunnerInfo::
+initializeAsyncPool(Int32 nb_queue)
+{
+  // Si on utilise une politique accélérateur, créé des RunQueue asynchrones
+  // pour les opérations indépendantes. Cela permettra d'en exécuter plusieurs
+  // à la fois.
+  bool is_accelerator = isAcceleratorPolicy(m_runner.executionPolicy());
+  m_async_queue_pool.initialize(m_runner,nb_queue);
+  if (is_accelerator)
+    m_async_queue_pool.setAsync(true);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -212,7 +227,10 @@ build()
     if (!runner.isInitialized())
       runner.initialize(Accelerator::eExecutionPolicy::Sequential);
     m_runner_info = std::make_unique<RunnerInfo>(runner);
-    info() << "Use runner '" << this->runner().executionPolicy() << "' for MeshMaterialMng name=" << name();
+    Int32 nb_queue = isAcceleratorPolicy(runner.executionPolicy()) ? 8 : 1;
+    info() << "Use runner '" << this->runner().executionPolicy() << "' for MeshMaterialMng name=" << name()
+           << " async_queue_size=" << nb_queue;
+    m_runner_info->initializeAsyncPool(nb_queue);
   }
 
   // Choix des optimisations.
