@@ -317,9 +317,11 @@ _computeInfosForEnvCells()
       };
       cells._internalApi()->notifySimdPaddingDone();
     }
+    Accelerator::RunQueuePool& queue_pool = m_material_mng->_internalApi()->asyncRunQueuePool();
     for (MeshEnvironment* env : true_environments) {
-      env->computeMaterialIndexes(&m_item_internal_data, queue);
+      env->computeMaterialIndexes(&m_item_internal_data, queue_pool[env->id()]);
     }
+    queue_pool.barrier();
   }
 
   // Positionne les infos pour les AllEnvCell.
