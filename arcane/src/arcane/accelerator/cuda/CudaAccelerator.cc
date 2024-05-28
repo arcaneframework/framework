@@ -1,4 +1,4 @@
-﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
+﻿﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
 // Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
@@ -222,15 +222,25 @@ class UnifiedMemoryCudaMemoryAllocator
   {
     m_wrapper.doDeallocate(mem_info, args);
     void* ptr = mem_info.baseAddress();
+#ifdef ARCANE_CUDA_ALLOC_ATS
+    ::free(ptr);
+    return cudaSuccess;
+#else
     return ::cudaFree(ptr);
+#endif
   }
 
   cudaError_t _allocate(void** ptr, size_t new_size, MemoryAllocationArgs args) override
   {
+#ifdef ARCANE_CUDA_ALLOC_ATS
+    *ptr = ::malloc(new_size);
+    auto p = *ptr;
+#else
     auto r = ::cudaMallocManaged(ptr, new_size, cudaMemAttachGlobal);
     void* p = *ptr;
     if (r != cudaSuccess)
       return r;
+#endif
 
     m_wrapper.doAllocate(p, new_size, args);
 
@@ -296,11 +306,24 @@ class DeviceCudaMemoryAllocator
 
   cudaError_t _allocate(void** ptr, size_t new_size, MemoryAllocationArgs) override
   {
+#ifdef ARCANE_CUDA_ALLOC_ATS
+    *ptr = malloc(new_size);
+    if (*ptr != nullptr)
+      return cudaSuccess;
+    else
+      return cudaErrorMemoryAllocation;
+#else
     return ::cudaMalloc(ptr, new_size);
+#endif
   }
   cudaError_t _deallocate(AllocatedMemoryInfo mem_info, MemoryAllocationArgs) override
   {
+#ifdef ARCANE_CUDA_ALLOC_ATS
+    free(mem_info.baseAddress());
+    return cudaSuccess;
+#else
     return ::cudaFree(mem_info.baseAddress());
+#endif
   }
 };
 
