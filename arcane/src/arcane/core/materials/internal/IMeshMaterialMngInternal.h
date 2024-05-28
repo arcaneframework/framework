@@ -16,6 +16,7 @@
 
 #include "arcane/core/ItemTypes.h"
 #include "arcane/core/materials/MaterialsCoreGlobal.h"
+#include "arcane/accelerator/core/AcceleratorCoreGlobal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -108,6 +109,9 @@ class ARCANE_CORE_EXPORT IMeshMaterialMngInternal
 
   //! File d'exécution associée
   virtual RunQueue& runQueue() const = 0;
+
+  //! Liste de files asynchrones
+  virtual Accelerator::RunQueuePool& asyncRunQueuePool() const = 0;
 };
 
 /*---------------------------------------------------------------------------*/

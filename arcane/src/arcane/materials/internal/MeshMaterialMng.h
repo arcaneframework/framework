@@ -25,6 +25,7 @@
 #include "arcane/core/materials/internal/IMeshMaterialMngInternal.h"
 
 #include "arcane/accelerator/core/Runner.h"
+#include "arcane/accelerator/core/RunQueuePool.h"
 
 #include "arcane/materials/MeshBlock.h"
 #include "arcane/materials/AllCellToAllEnvCellConverter.h"
@@ -70,12 +71,17 @@ class MeshMaterialMng
   {
    public:
 
-    RunnerInfo(Runner& runner);
+    explicit RunnerInfo(Runner& runner);
+
+   public:
+
+    void initializeAsyncPool(Int32 nb_queue);
 
    public:
 
     Runner m_runner;
     RunQueue m_run_queue;
+    Accelerator::RunQueuePool m_async_queue_pool;
   };
 
   class InternalApi
@@ -128,6 +134,10 @@ class MeshMaterialMng
     RunQueue& runQueue() const override
     {
       return m_material_mng->runQueue();
+    }
+    Accelerator::RunQueuePool& asyncRunQueuePool() const override
+    {
+      return m_material_mng->asyncRunQueuePool();
     }
 
    private:
@@ -287,6 +297,7 @@ class MeshMaterialMng
 
   Runner& runner() const { return m_runner_info->m_runner; }
   RunQueue& runQueue() const { return m_runner_info->m_run_queue; }
+  Accelerator::RunQueuePool& asyncRunQueuePool() const { return m_runner_info->m_async_queue_pool; }
 
  private:
 
