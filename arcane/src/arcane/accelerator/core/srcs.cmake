@@ -28,6 +28,8 @@ set( ARCANE_SOURCES
   RunQueueEvent.cc
   RunQueueImpl.h
   RunQueueImpl.cc
+  RunQueuePool.h
+  RunQueuePool.cc
   RunQueueRuntime.cc
   ViewBuildInfo.h
   internal/IRunnerRuntime.h

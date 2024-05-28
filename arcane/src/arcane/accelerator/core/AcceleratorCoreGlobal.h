@@ -45,6 +45,7 @@ namespace Arcane::Accelerator
 class IAcceleratorMng;
 class Runner;
 class RunQueue;
+class RunQueuePool;
 class RunCommand;
 class RunQueueEvent;
 class AcceleratorRuntimeInitialisationInfo;
