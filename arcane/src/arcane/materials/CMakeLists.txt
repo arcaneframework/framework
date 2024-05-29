@@ -19,6 +19,7 @@ arcane_accelerator_add_source_files(
   MeshMaterialVariableScalar.cc
   MeshMaterialVariableArray.cc
   MeshMaterialVariableIndexer.cc
+  MeshMaterialVariableSynchronizer.cc
 )
 
 target_compile_definitions(arcane_materials PRIVATE ARCANE_COMPONENT_arcane_materials)

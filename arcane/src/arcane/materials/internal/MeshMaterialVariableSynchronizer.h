@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshMaterialVariableSynchronizer.h                          (C) 2000-2023 */
+/* MeshMaterialVariableSynchronizer.h                          (C) 2000-2024 */
 /*                                                                           */
 /* Synchroniseur de variables matériaux.                                     */
 /*---------------------------------------------------------------------------*/
@@ -72,9 +72,15 @@ class ARCANE_MATERIALS_EXPORT MeshMaterialVariableSynchronizer
   Ref<IMeshMaterialSynchronizeBuffer> m_common_buffer;
   eMemoryRessource m_buffer_memory_ressource = eMemoryRessource::UnifiedMemory;
 
+ public:
+
+  // Doit être publique pour CUDA.
+  void _fillCellsAccelerator(Array<MatVarIndex>& items, AllEnvCellVectorView view, RunQueue& queue);
+
  private:
 
-  void _fillCells(Array<MatVarIndex>& items, AllEnvCellVectorView view);
+  void _fillCells(Array<MatVarIndex>& items, AllEnvCellVectorView view, RunQueue& queue);
+  void _fillCellsSequential(Array<MatVarIndex>& items, AllEnvCellVectorView view);
   void _initialize();
 };
 
