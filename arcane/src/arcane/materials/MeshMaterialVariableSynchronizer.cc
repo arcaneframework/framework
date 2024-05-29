@@ -15,7 +15,7 @@
 
 #include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/MemoryUtils.h"
-#include "arcane/utils/ITraceMng.h"
+#include "arcane/utils/ValueConvert.h"
 
 #include "arcane/core/IMesh.h"
 #include "arcane/core/IVariableSynchronizer.h"
@@ -51,15 +51,9 @@ MeshMaterialVariableSynchronizer(IMeshMaterialMng* material_mng,
 , m_timestamp(-1)
 , m_var_space(space)
 {
+  if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_MATERIALSYNCHRONIZER_ACCELERATOR_MODE", true))
+    m_use_accelerator_mode = v.value();
   _initialize();
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-MeshMaterialVariableSynchronizer::
-~MeshMaterialVariableSynchronizer()
-{
 }
 
 /*---------------------------------------------------------------------------*/
@@ -112,7 +106,14 @@ _fillCells(Array<MatVarIndex>& items, AllEnvCellVectorView view, RunQueue& queue
   // correspondante pour les variables
   if (view.size() == 0)
     return;
-  if (queue.isAcceleratorPolicy())
+
+  bool use_accelerator = queue.isAcceleratorPolicy();
+  if (m_use_accelerator_mode == 1)
+    use_accelerator = true;
+  if (m_use_accelerator_mode == 0)
+    use_accelerator = false;
+
+  if (use_accelerator)
     _fillCellsAccelerator(items, view, queue);
   else
     _fillCellsSequential(items, view);
@@ -185,6 +186,7 @@ _fillCellsAccelerator(Array<MatVarIndex>& items, AllEnvCellVectorView view, RunQ
   scanner.applyWithIndexExclusive(nb_item + 1, 0, getter, setter, op);
   Int32 total = indexes[nb_item];
   items.resize(total);
+
   {
     auto command = makeCommand(queue);
     Span<const Int32> in_indexes = indexes;
