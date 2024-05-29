@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshMaterialVariableSynchronizer.h                          (C) 2000-2023 */
+/* MeshMaterialVariableSynchronizer.h                          (C) 2000-2024 */
 /*                                                                           */
 /* Synchroniseur de variables matériaux.                                     */
 /*---------------------------------------------------------------------------*/
@@ -49,8 +49,6 @@ class ARCANE_MATERIALS_EXPORT MeshMaterialVariableSynchronizer
                                    IVariableSynchronizer* var_syncer,
                                    MatVarSpace mvs);
 
-  ~MeshMaterialVariableSynchronizer() override;
-
  public:
 
   IVariableSynchronizer* variableSynchronizer() override;
@@ -71,10 +69,18 @@ class ARCANE_MATERIALS_EXPORT MeshMaterialVariableSynchronizer
   MatVarSpace m_var_space;
   Ref<IMeshMaterialSynchronizeBuffer> m_common_buffer;
   eMemoryRessource m_buffer_memory_ressource = eMemoryRessource::UnifiedMemory;
+  // Permet de forcer l'utilisation ou non l'implémentation accélérateur
+  Int32 m_use_accelerator_mode = -1;
+
+ public:
+
+  // Doit être publique pour CUDA.
+  void _fillCellsAccelerator(Array<MatVarIndex>& items, AllEnvCellVectorView view, RunQueue& queue);
 
  private:
 
-  void _fillCells(Array<MatVarIndex>& items, AllEnvCellVectorView view);
+  void _fillCells(Array<MatVarIndex>& items, AllEnvCellVectorView view, RunQueue& queue);
+  void _fillCellsSequential(Array<MatVarIndex>& items, AllEnvCellVectorView view);
   void _initialize();
 };
 
