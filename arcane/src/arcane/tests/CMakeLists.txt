@@ -109,8 +109,8 @@ arcane_target_set_standard_path(arcane_tests_exec)
 configure_file(ArcaneTest.config ${CMAKE_BINARY_DIR}/lib COPYONLY)
 
 if (Neo_FOUND)
-  target_compile_definitions(arcane_tests_exec PRIVATE ARCANE_HAS_CUSTOM_MESH_TOOLS)
-  target_compile_definitions(arcane_tests_lib PUBLIC ARCANE_HAS_CUSTOM_MESH_TOOLS)
+  target_compile_definitions(arcane_tests_exec PRIVATE ARCANE_HAS_POLYHEDRAL_MESH_TOOLS)
+  target_compile_definitions(arcane_tests_lib PUBLIC ARCANE_HAS_POLYHEDRAL_MESH_TOOLS)
 endif()
 
 # ----------------------------------------------------------------------------

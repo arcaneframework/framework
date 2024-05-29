@@ -81,7 +81,7 @@
 
 #include <set>
 
-#ifdef ARCANE_HAS_CUSTOM_MESH_TOOLS
+#ifdef ARCANE_HAS_POLYHEDRAL_MESH_TOOLS
 #include "neo/Mesh.h"
 #endif
 
@@ -1320,7 +1320,7 @@ _testAdditionalMeshes()
 void MeshUnitTest::
 _testCustomMeshTools()
 {
-#ifdef ARCANE_HAS_CUSTOM_MESH_TOOLS
+#ifdef ARCANE_HAS_POLYHEDRAL_MESH_TOOLS
   // Test dépendance outillage externe pour maillage custom (ex polyédrique)
   Neo::Mesh mesh{"test_mesh"};
   info() << "Neo::Mesh{" << mesh.name() << "}";
