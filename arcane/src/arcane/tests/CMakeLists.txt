@@ -130,17 +130,17 @@ if (TARGET arcane_dotnet_wrapper_services)
   configure_file(ArcaneTest.csproj.in ${ARCANE_CSHARP_PROJECT_PATH}/ArcaneTest/ArcaneTest.csproj @ONLY)
 
   add_custom_command(OUTPUT ${CSOUTPATH}/SimpleHydroCS_axl.cs
-    DEPENDS ${CSPATH}/SimpleHydroCS.axl ${ARCANE_AXL2CC} dotnet_axl_depend
+    DEPENDS ${CSPATH}/SimpleHydroCS.axl ${ARCANE_AXLSTAR_DEPEND}
     COMMAND ${ARCANE_AXL2CC}
     ARGS -i arcane/tests/. --lang c\# -o ${CSOUTPATH} ${CSPATH}/SimpleHydroCS.axl)
 
   add_custom_command(OUTPUT ${CSOUTPATH}/PerfectGasEOS_axl.cs
-    DEPENDS ${CSPATH}/PerfectGasEOS.axl ${ARCANE_AXL2CC} dotnet_axl_depend
+    DEPENDS ${CSPATH}/PerfectGasEOS.axl ${ARCANE_AXLSTAR_DEPEND}
     COMMAND ${ARCANE_AXL2CC}
     ARGS -i arcane/tests/. --lang c\# -o ${CSOUTPATH} ${CSPATH}/PerfectGasEOS.axl)
 
   add_custom_command(OUTPUT ${CSOUTPATH}/MeshModification_axl.cs
-    DEPENDS ${CSPATH}/MeshModification.axl ${ARCANE_AXL2CC} dotnet_axl_depend
+    DEPENDS ${CSPATH}/MeshModification.axl ${ARCANE_AXLSTAR_DEPEND}
     COMMAND ${ARCANE_AXL2CC}
     ARGS -i arcane/tests/. --lang c\# -o ${CSOUTPATH} ${CSPATH}/MeshModification.axl)
 

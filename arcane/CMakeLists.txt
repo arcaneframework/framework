@@ -679,6 +679,12 @@ set(ARCANE_ARC_PATH ${CMAKE_CURRENT_SOURCE_DIR}/tests)
 set(ARCANE_AXL2CC ${AXLSTAR_AXL2CC})
 message(STATUS "Arcane: axl2cc is '${ARCANE_AXL2CC}'")
 
+# Liste des dépendances pour la génération des axl en C#.
+set(ARCANE_AXLSTAR_DEPEND "${AXLSTAR_AXL2CC}")
+if (TARGET dotnet_axl_depend)
+  list(APPEND ARCANE_AXLSTAR_DEPEND dotnet_axl_depend)
+endif()
+
 # ----------------------------------------------------------------------------
 # Recherche 'googletest' pour les tests unitaires
 find_package(GTest)
