@@ -73,6 +73,8 @@ class CustomMeshTestModule : public ArcaneCustomMeshTestObject
   void _checkFlags(IMesh* mesh) const;
   template <typename VariableRefType>
   void _checkVariable(VariableRefType variable, ItemGroup item_group);
+  template <typename VariableRefType>
+  void _checkVariableWithRefValue(VariableRefType variable, ItemGroup item_group, const typename VariableRefType::DataType& ref_sum);
   template <typename VariableArrayRefType>
   void _checkArrayVariable(VariableArrayRefType variable, ItemGroup item_group);
 };
@@ -279,6 +281,13 @@ void CustomMeshTestModule::_testVariables(IMesh* mesh)
     VariableFaceArrayReal var{ VariableBuildInfo(mesh, variable_name) };
     _checkArrayVariable(var, mesh->allFaces());
   }
+  for (const auto& variable_with_ref_option : options()->checkCellVariableIntegerWithRefValue()) {
+    String variable_name = variable_with_ref_option->getVarName();
+    if (!Arcane::AbstractModule::subDomain()->variableMng()->findMeshVariable(mesh,variable_name ))
+      ARCANE_FATAL("Cannot find mesh array variable {0}", variable_name);
+    VariableCellInteger var{ VariableBuildInfo(mesh, variable_name) };
+    _checkVariableWithRefValue(var, mesh->allCells(),variable_with_ref_option->getVarRefSum());
+  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -407,16 +416,26 @@ _buildGroup(IItemFamily* family, String const& group_name)
 
 template <typename VariableRefType>
 void CustomMeshTestModule::
-_checkVariable(VariableRefType variable_ref, ItemGroup item_group)
+_checkVariable(VariableRefType variable, ItemGroup item_group)
 {
-  auto variable_sum = 0.;
+  _checkVariableWithRefValue(variable, item_group, item_group.size());
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template <typename VariableRefType>
+void CustomMeshTestModule::
+_checkVariableWithRefValue(VariableRefType variable, Arcane::ItemGroup item_group, const typename VariableRefType::DataType& ref_sum)
+{
+  typename VariableRefType::DataType variable_sum = 0.;
   using ItemType = typename VariableRefType::ItemType;
   ENUMERATE_ (ItemType, iitem, item_group) {
-    info() << variable_ref.name() << " at item " << iitem.localId() << " " << variable_ref[iitem];
-    variable_sum += variable_ref[iitem];
+    info() << variable.name() << " at item " << iitem.localId() << " " << variable[iitem];
+    variable_sum += variable[iitem];
   }
-  if (variable_sum != item_group.size()) {
-    fatal() << "Error on variable " << variable_ref.name();
+  if (variable_sum != ref_sum) {
+    fatal() << "Error on variable " << variable.name();
   }
 }
 
