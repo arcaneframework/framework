@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* PolyhedralMesh.h                                            (C) 2000-2023 */
+/* PolyhedralMesh.h                                            (C) 2000-2024 */
 /*                                                                           */
 /* Polyhedral mesh impl using Neo data structure                             */
 /*---------------------------------------------------------------------------*/
@@ -36,7 +36,7 @@
 
 #include <memory>
 
-#ifdef ARCANE_HAS_CUSTOM_MESH_TOOLS
+#ifdef ARCANE_HAS_POLYHEDRAL_MESH_TOOLS
 #include <vector>
 #include <array>
 
@@ -108,7 +108,7 @@ class PolyhedralMesh
     return m_mesh_events.eventObservable(type);
   }
 
-#ifdef ARCANE_HAS_CUSTOM_MESH_TOOLS
+#ifdef ARCANE_HAS_POLYHEDRAL_MESH_TOOLS
 
   class InitialAllocator : public IMeshInitialAllocator
   {
@@ -242,7 +242,7 @@ class PolyhedralMesh
   PolyhedralFamily* _itemFamily(eItemKind ik);
   PolyhedralFamily* _findItemFamily(eItemKind ik, const String& name, bool create_if_needed = false);
 
-#endif // ARCANE_HAS_CUSTOM_MESH_TOOLS
+#endif // ARCANE_HAS_POLYHEDRAL_MESH_TOOLS
 
  private:
 

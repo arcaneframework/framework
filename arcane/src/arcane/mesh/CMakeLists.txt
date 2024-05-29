@@ -22,7 +22,7 @@ target_link_libraries(arcane_mesh PUBLIC arcane_core)
 find_package(Neo QUIET)
 if(Neo_FOUND)
   target_link_libraries(arcane_mesh PRIVATE Neo::Neo)
-  target_compile_definitions(arcane_mesh PRIVATE ARCANE_HAS_CUSTOM_MESH_TOOLS)
+  target_compile_definitions(arcane_mesh PRIVATE ARCANE_HAS_POLYHEDRAL_MESH_TOOLS)
 endif()
 
 if(vtkIOXML_FOUND) # this dependency to vtk is temporary, will be in Neo then

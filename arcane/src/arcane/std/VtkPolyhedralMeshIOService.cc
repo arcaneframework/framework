@@ -1,11 +1,11 @@
-// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
+﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* VtkPolyhedralMeshIOService                      (C) 2000-2023             */
+/* VtkPolyhedralMeshIOService                      (C) 2000-2024             */
 /*                                                                           */
 /* Read/write fools for polyhedral mesh with vtk file format                 */
 /*---------------------------------------------------------------------------*/
@@ -982,6 +982,10 @@ _findFace(Int64ConstArrayView face_nodes, Int64ConstArrayView face_node_uids, In
     face_index = 0;
     while (position != found_face_position) {
       position += face_nb_nodes[face_index++];
+      if (position > found_face_position) { // spurious found, in fact it was node the current face
+        // (ex if algo used for edges: edge_nodes = [0 1 3 4] search for edge [1 3] the algo thinks it was found but no
+        return std::make_pair(false, -1);
+      }
     }
     // compute
   }

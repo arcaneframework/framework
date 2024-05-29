@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshUnitTest.cc                                             (C) 2000-2023 */
+/* MeshUnitTest.cc                                             (C) 2000-2024 */
 /*                                                                           */
 /* Service du test du maillage.                                              */
 /*---------------------------------------------------------------------------*/
@@ -81,7 +81,7 @@
 
 #include <set>
 
-#ifdef ARCANE_HAS_CUSTOM_MESH_TOOLS
+#ifdef ARCANE_HAS_POLYHEDRAL_MESH_TOOLS
 #include "neo/Mesh.h"
 #endif
 
@@ -1320,7 +1320,7 @@ _testAdditionalMeshes()
 void MeshUnitTest::
 _testCustomMeshTools()
 {
-#ifdef ARCANE_HAS_CUSTOM_MESH_TOOLS
+#ifdef ARCANE_HAS_POLYHEDRAL_MESH_TOOLS
   // Test dépendance outillage externe pour maillage custom (ex polyédrique)
   Neo::Mesh mesh{"test_mesh"};
   info() << "Neo::Mesh{" << mesh.name() << "}";
