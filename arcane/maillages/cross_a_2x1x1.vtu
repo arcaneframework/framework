@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<VTKFile type="UnstructuredGrid" version="0.1" byte_order="LittleEndian">
+    <Information>Original file cross_a_2x1x1.egrid converted using GeoPolyMesh CPG2VTP tool</Information>
+    <UnstructuredGrid>
+        <Piece NumberOfPoints="16" NumberOfCells="2">
+            <Points>
+                <DataArray type="Float64" NumberOfComponents="3" format="ascii">0.000000 0.000000 50.000000 0.000000 0.000000 150.000000 100.000000 0.000000 -50.000000 100.000000 0.000000 50.000000 100.000000 0.000000 150.000000 0.000000 100.000000 -50.000000 0.000000 100.000000 50.000000 100.000000 100.000000 -50.000000 100.000000 100.000000 50.000000 100.000000 100.000000 150.000000 100.000000 50.000000 0.000000 100.000000 50.000000 100.000000 200.000000 0.000000 -50.000000 200.000000 0.000000 50.000000 200.000000 100.000000 50.000000 200.000000 100.000000 150.000000 </DataArray>
+            </Points>
+            <Cells>
+                <DataArray type="Int32" Name="connectivity" format="ascii">0 1 3 4 5 6 7 8 10 11 2 3 8 9 10 11 12 13 14 15 </DataArray>
+                <DataArray type="Int32" Name="offsets" format="ascii">10 20 </DataArray>
+                <DataArray type="UInt8" Name="types" format="ascii">42 42 </DataArray>
+                <DataArray type="Int32" Name="faces" format="ascii">8 4 0 3 4 1 4 6 8 7 5 4 1 6 5 0 3 3 11 4 3 8 10 7 4 10 8 11 3 5 4 11 8 6 1 5 0 5 7 10 3 8 4 2 12 13 3 4 9 15 14 8 3 3 10 2 3 8 11 9 4 3 11 8 10 4 12 14 15 13 5 3 13 15 9 11 5 10 8 14 12 2 </DataArray>
+                <DataArray type="Int32" Name="faceoffsets" format="ascii">41 82 </DataArray>
+            </Cells>
+            <CellData>
+                <DataArray type="Int32" Name="CellFlags" format="ascii">1 1</DataArray>
+                <DataArray type="Float64" Name="CellReal" format="ascii">1. 1.</DataArray>
+                <DataArray type="Int32" Name="CellArrayFlags" NumberOfComponents="3" format="ascii">1 2 3 1 2 3</DataArray>
+                <DataArray type="Float64" Name="CellArrayReal" NumberOfComponents="3" format="ascii">1. 2. 3. 1. 2. 3.</DataArray>
+                <DataArray type="Int32" Name="GROUP_HALF_CELL" format="ascii">0 1</DataArray>
+                <DataArray type="Int32" Name="i" NumberOfComponents="1" format="ascii">0 1 </DataArray>
+                <DataArray type="Int32" Name="j" NumberOfComponents="1" format="ascii">0 0 </DataArray>
+                <DataArray type="Int32" Name="k" NumberOfComponents="1" format="ascii">0 0 </DataArray>
+            </CellData>
+            <PointData>
+                <DataArray type="Int32" Name="NodeFlags" format="ascii">1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1</DataArray>
+                <DataArray type="Float64" Name="NodeReal" format="ascii">1. 1. 1. 1. 1. 1. 1. 1. 1. 1. 1. 1. 1. 1. 1. 1.</DataArray>
+                <DataArray type="Int32" Name="NodeArrayFlags" NumberOfComponents="3" format="ascii">1 2 3 1 2 3 1 2 3 1 2 3 1 2 3 1 2 3 1 2 3 1 2 3 1 2 3 1 2 3 1 2 3 1 2 3 1 2 3 1 2 3 1 2 3 1 2 3</DataArray>
+                <DataArray type="Float64" Name="NodeArrayReal" NumberOfComponents="3" format="ascii">1. 2. 3. 1. 2. 3. 1. 2. 3. 1. 2. 3. 1. 2. 3. 1. 2. 3. 1. 2. 3. 1. 2. 3. 1. 2. 3. 1. 2. 3. 1. 2. 3. 1. 2. 3. 1. 2. 3. 1. 2. 3. 1. 2. 3. 1. 2. 3.</DataArray>
+                <DataArray type="Int32" Name="GROUP_FIRST_CELL_NODES" format="ascii">1 1 0 1 1 1 1 1 1 0 1 1 0 0 0 0</DataArray>
+            </PointData>
+        </Piece>
+    </UnstructuredGrid>
+</VTKFile>
