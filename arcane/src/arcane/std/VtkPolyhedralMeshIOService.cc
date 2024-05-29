@@ -982,6 +982,10 @@ _findFace(Int64ConstArrayView face_nodes, Int64ConstArrayView face_node_uids, In
     face_index = 0;
     while (position != found_face_position) {
       position += face_nb_nodes[face_index++];
+      if (position > found_face_position) { // spurious found, in fact it was node the current face
+        // (ex if algo used for edges: edge_nodes = [0 1 3 4] search for edge [1 3] the algo thinks it was found but no
+        return std::make_pair(false, -1);
+      }
     }
     // compute
   }
