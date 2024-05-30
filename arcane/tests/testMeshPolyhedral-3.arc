@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
 <case codename="ArcaneTest" xml:lang="en" codeversion="1.0">
   <arcane>
-    <title>Test Maillage Custom 1</title>
-    <description>Test Maillage 1</description>
-    <timeloop>CustomMeshTestLoop</timeloop>
+    <title>Test Vtk Mesh Polyhedral 3</title>
+    <description>Test polyhedral mesh fan 2x1x3</description>
+    <timeloop>MeshPolyhedralTestLoop</timeloop>
     <modules>
       <module name="ArcanePostProcessing" active="true"/>
     </modules>
@@ -19,7 +19,7 @@
     </mesh>
   </meshes>
 
-  <custom-mesh-test>
+  <mesh-polyhedral-test>
     <mesh-size>
       <nb-cells>6</nb-cells>
       <nb-faces>35</nb-faces>
@@ -89,7 +89,7 @@
         <value>200 100 0</value>
       </coords>
     </mesh-coordinates>
-  </custom-mesh-test>
+  </mesh-polyhedral-test>
 
   <arcane-post-processing>
     <output-period>1</output-period>

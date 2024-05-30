@@ -69,7 +69,7 @@ set(ARCANE_SOURCES
   ArcaneTestInit.cc
   ArcaneTestDirectExecution.cc
   ArcaneTestStandaloneSubDomain.cc
-  CustomMeshTestModule.cc
+  MeshPolyhedralTestModule.cc
   TaskUnitTest.cc
   PDESRandomNumberGeneratorUnitTest.cc
   RandomNumberGeneratorUnitTest.cc
@@ -112,7 +112,7 @@ set(AXL_FILES
   graph/GraphUnitTest
   inout/InOutTester
   geometry/GeometryUnitTest
-  CustomMeshTest
+  MeshPolyhedralTest
   HydroAdditionalTest
   accelerator/SimpleHydroAccelerator
   accelerator/AcceleratorReduceUnitTest
