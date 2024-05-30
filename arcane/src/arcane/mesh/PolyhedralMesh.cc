@@ -39,11 +39,6 @@
 
 #include "neo/Mesh.h"
 
-#ifdef ARCANE_HAS_VTKIO
-#include "arcane/mesh/PolyhedralMeshTools.h" // non utilisé ??
-#include "arcane/core/IMeshFactory.h"
-
-#endif
 
 #endif
 
@@ -477,18 +472,6 @@ namespace mesh
       m_mesh.applyScheduledOperations();
     }
 
-   private:
-
-    void _createSingleCellTest()
-    {
-      auto& cell_family = m_mesh.addFamily(Neo::ItemKind::IK_Cell, "cell_family");
-      auto& node_family = m_mesh.addFamily(Neo::ItemKind::IK_Node, "node_family");
-      auto added_cells = Neo::FutureItemRange{};
-      m_mesh.scheduleAddItems(cell_family, { 0 }, added_cells);
-      auto added_nodes = Neo::FutureItemRange{};
-      m_mesh.scheduleAddItems(node_family, { 0, 1, 2, 3, 4, 5 }, added_nodes);
-      m_mesh.applyScheduledOperations();
-    }
   };
 
   template <> class PolyhedralMeshImpl::ItemKindTraits<IK_Cell>
@@ -562,75 +545,6 @@ PolyhedralMesh(ISubDomain* subdomain, const MeshBuildInfo& mbi)
   m_mesh_handle._setMesh(this);
   m_mesh_item_internal_list.mesh = this;
   m_default_arcane_families.fill(nullptr);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void Arcane::mesh::PolyhedralMesh::
-read(const String& filename)
-{
-  // First step: create manually a unit mesh
-  //  ARCANE_UNUSED(filename); // temporary
-  //  _createUnitMesh();
-  // Second step read a vtk polyhedral mesh
-  m_subdomain->traceMng()->info() << "--PolyhedralMesh : reading " << filename;
-  // First step create a single cell
-  //      _createSingleCellTest();
-  // Second step : read a vtk polyhedral file
-  UniqueArray<String> splitted_filename{};
-  filename.split(splitted_filename, '.');
-  const auto& file_extension = splitted_filename.back();
-  if (file_extension != "vtk")
-    m_subdomain->traceMng()->fatal() << "Only vtk file format supported for polyhedral mesh";
-
-  createItemFamily(IK_Cell, "Cell");
-  createItemFamily(IK_Node, "Node");
-  createItemFamily(IK_Face, "Face");
-  createItemFamily(IK_Edge, "Edge");
-  [[maybe_unused]] auto cell_family = arcaneDefaultFamily(IK_Cell);
-  [[maybe_unused]] auto node_family = arcaneDefaultFamily(IK_Node);
-  [[maybe_unused]] auto face_family = arcaneDefaultFamily(IK_Face);
-  [[maybe_unused]] auto edge_family = arcaneDefaultFamily(IK_Edge);
-#ifdef ARCANE_HAS_VTKIO
-  PolyhedralMeshTools::VtkReader reader{ filename };
-  PolyhedralMeshImpl::ItemLocalIds cell_lids, node_lids, face_lids, edge_lids;
-  // todo separate Link with Arcane and link with vtk structure
-  // Add items
-  m_mesh->scheduleAddItems(cell_family, reader.cellUids(), cell_lids);
-  m_mesh->scheduleAddItems(node_family, reader.nodeUids(), node_lids);
-  m_mesh->scheduleAddItems(face_family, reader.faceUids(), face_lids);
-  m_mesh->scheduleAddItems(edge_family, reader.edgeUids(), edge_lids);
-  // Add connectivities
-  m_mesh->scheduleAddConnectivity(cell_family, cell_lids, reader.cellNbNodes(), node_family, reader.cellNodes(), String{ "CellToNodes" });
-  m_mesh->scheduleAddConnectivity(cell_family, cell_lids, reader.cellNbFaces(), face_family, reader.cellFaces(), String{ "CellToFaces" });
-  m_mesh->scheduleAddConnectivity(face_family, face_lids, reader.faceNbNodes(), node_family, reader.faceNodes(), String{ "FaceToNodes" });
-  m_mesh->scheduleAddConnectivity(edge_family, edge_lids, 2, node_family, reader.edgeNodes(), String{ "EdgeToNodes" });
-  m_mesh->scheduleAddConnectivity(face_family, face_lids, reader.faceNbCells(), cell_family, reader.faceCells(), String{ "FaceToCells" });
-  m_mesh->scheduleAddConnectivity(edge_family, edge_lids, reader.edgeNbCells(), cell_family, reader.edgeCells(), String{ "EdgeToCells" });
-  m_mesh->scheduleAddConnectivity(edge_family, edge_lids, reader.edgeNbFaces(), face_family, reader.edgeFaces(), String{ "EdgeToFaces" });
-  m_mesh->scheduleAddConnectivity(face_family, face_lids, reader.faceNbEdges(), edge_family, reader.faceEdges(), String{ "FaceToEdges" });
-  m_mesh->scheduleAddConnectivity(cell_family, cell_lids, reader.cellNbEdges(), edge_family, reader.cellEdges(), String{ "CellToEdges" });
-  m_mesh->scheduleAddConnectivity(node_family, node_lids, reader.nodeNbCells(), cell_family, reader.nodeCells(), String{ "NodeToCells" });
-  m_mesh->scheduleAddConnectivity(node_family, node_lids, reader.nodeNbFaces(), face_family, reader.nodeFaces(), String{ "NodeToFaces" });
-  m_mesh->scheduleAddConnectivity(node_family, node_lids, reader.nodeNbEdges(), edge_family, reader.nodeEdges(), String{ "NodeToEdges" });
-  // Add node coordinates
-  m_arcane_node_coords = std::make_unique<VariableNodeReal3>(VariableBuildInfo(this, "NodeCoord"));
-  m_arcane_node_coords->setUsed(true);
-  m_mesh->applyScheduledOperations();
-  cell_family->endUpdate();
-  node_family->endUpdate();
-  face_family->endUpdate();
-  edge_family->endUpdate();
-  endUpdate();
-  m_mesh->scheduleSetItemCoordinates(node_family, node_lids, reader.nodeCoords(), *m_arcane_node_coords);
-  m_mesh->applyScheduledOperations();
-  m_is_allocated = true;
-  // indicates mesh contains general Cells
-  itemTypeMng()->setMeshWithGeneralCells(this);
-#else
-  ARCANE_FATAL("Need VTKIO to read polyhedral mesh");
-#endif
 }
 
 /*---------------------------------------------------------------------------*/

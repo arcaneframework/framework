@@ -238,7 +238,6 @@ set( ARCANE_SOURCES
   MeshInfos.h
   PolyhedralMesh.cc
   PolyhedralMesh.h
-  PolyhedralMeshService.cc
   GraphBuilder.h
   GraphDoFs.h
   GraphDoFs.cc
@@ -246,5 +245,4 @@ set( ARCANE_SOURCES
 
 set(AXL_FILES 
   BasicParticleExchanger
-  PolyhedralMesh
   )
