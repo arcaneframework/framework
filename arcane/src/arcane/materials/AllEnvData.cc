@@ -541,18 +541,36 @@ _copyBetweenPartialsAndGlobals(const CopyBetweenPartialAndGlobalArgs& args,
   // correspondantes pour chaque variable.
   //info(4) << "NB_TRANSFORM=" << nb_transform << " name=" << e->name();
   //Integer indexer_index = indexer->index();
-  auto func = [&](IMeshMaterialVariable* mv) {
-    auto* mvi = mv->_internalApi();
-    if (is_add_operation){
-      mvi->resizeForIndexer(args.m_var_index, queue);
-      if (do_copy)
+
+  Accelerator::RunQueuePool& queue_pool = m_material_mng->_internalApi()->asyncRunQueuePool();
+
+  // Redimensionne les variables si nécessaire
+  if (is_add_operation) {
+    Int32 index = 0;
+    auto func1 = [&](IMeshMaterialVariable* mv) {
+      auto* mvi = mv->_internalApi();
+      mvi->resizeForIndexer(args.m_var_index, queue_pool[index]);
+      ++index;
+    };
+    functor::apply(m_material_mng, &MeshMaterialMng::visitVariables, func1);
+    queue_pool.barrier();
+  }
+
+  if (do_copy) {
+    Int32 index = 0;
+    CopyBetweenPartialAndGlobalArgs args2(args);
+    auto func2 = [&](IMeshMaterialVariable* mv) {
+      auto* mvi = mv->_internalApi();
+      args2.m_queue = queue_pool[index];
+      if (is_add_operation)
         mvi->copyGlobalToPartial(args);
-    }
-    else if (do_copy)
-      mvi->copyPartialToGlobal(args);
-  };
-  functor::apply(m_material_mng, &MeshMaterialMng::visitVariables, func);
-  args.m_queue.barrier();
+      else
+        mvi->copyPartialToGlobal(args);
+      ++index;
+    };
+    functor::apply(m_material_mng, &MeshMaterialMng::visitVariables, func2);
+    queue_pool.barrier();
+  }
 }
 
 /*---------------------------------------------------------------------------*/
