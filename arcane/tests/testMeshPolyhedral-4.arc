@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <case codename="ArcaneTest" xml:lang="en" codeversion="1.0">
   <arcane>
-    <title>Test Vtk Mesh Polyhedral 2</title>
-    <description>Test polyhedral mesh cross 2x1x1</description>
+    <title>Test Vtk Mesh Polyhedral 4</title>
+    <description>Test polyhedral mesh cross 2x1x1 vtk xml</description>
     <timeloop>MeshPolyhedralTestLoop</timeloop>
     <modules>
       <module name="ArcanePostProcessing" active="true"/>
@@ -11,7 +11,7 @@
 
   <meshes>
     <mesh>
-      <filename>cross_a_2x1x1.vtk</filename>
+      <filename>cross_a_2x1x1.vtu</filename>
       <specific-reader name="VtkPolyhedralCaseMeshReader">
         <print-mesh-infos>true</print-mesh-infos>
         <print-debug-infos>false</print-debug-infos>
@@ -26,7 +26,6 @@
       <nb-edges>29</nb-edges>
       <nb-nodes>16</nb-nodes>
     </mesh-size>
-    <nb-mesh-group>5</nb-mesh-group>
     <check-group>
       <name>HALF_CELL</name>
       <size>1</size>
@@ -43,8 +42,7 @@
       <name>BOUNDARY_FACES</name>
       <size>14</size>
     </check-group>
-    <check-boundary-face-group>BOUNDARY_FACES</check-boundary-face-group>
-    <check-internal-face-group>INTERNAL_FACES</check-internal-face-group>
+    <nb-mesh-group>5</nb-mesh-group>
     <check-cell-variable-integer>CellFlags</check-cell-variable-integer>
     <check-cell-variable-real>CellReal</check-cell-variable-real>
     <check-cell-variable-array-integer>CellArrayFlags</check-cell-variable-array-integer>
@@ -53,10 +51,22 @@
     <check-node-variable-real>NodeReal</check-node-variable-real>
     <check-node-variable-array-integer>NodeArrayFlags</check-node-variable-array-integer>
     <check-node-variable-array-real>NodeArrayReal</check-node-variable-array-real>
-    <check-face-variable-integer>FaceFlags</check-face-variable-integer>
-    <check-face-variable-real>FaceReal</check-face-variable-real>
+    <check-node-variable-integer>NodeFlags</check-node-variable-integer>
+    <check-node-variable-real>NodeReal</check-node-variable-real>
     <check-face-variable-array-integer>FaceArrayFlags</check-face-variable-array-integer>
     <check-face-variable-array-real>FaceArrayReal</check-face-variable-array-real>
+    <check-cell-variable-integer-with-ref-value>
+      <var-name>i</var-name>
+      <var-ref-sum>1</var-ref-sum>
+    </check-cell-variable-integer-with-ref-value>
+    <check-cell-variable-integer-with-ref-value>
+      <var-name>j</var-name>
+      <var-ref-sum>0</var-ref-sum>
+    </check-cell-variable-integer-with-ref-value>
+    <check-cell-variable-integer-with-ref-value>
+      <var-name>k</var-name>
+      <var-ref-sum>0</var-ref-sum>
+    </check-cell-variable-integer-with-ref-value>
     <mesh-coordinates>
       <do-check>true</do-check>
       <coords>

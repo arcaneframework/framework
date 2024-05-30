@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CustomMeshTestModule.cc                                      C) 2000-2023 */
+/* MeshPolyhedralTestModule.cc                                  C) 2000-2024 */
 /*                                                                           */
 /* Test Module for custom mesh                                               */
 /*---------------------------------------------------------------------------*/
@@ -21,23 +21,23 @@
 #include "arcane/utils/ValueChecker.h"
 
 #include "arcane/ItemGroup.h"
-#include "CustomMeshTest_axl.h"
+#include "MeshPolyhedralTest_axl.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace ArcaneTest::CustomMesh
+namespace ArcaneTest::MeshPolyhedral
 {
 using namespace Arcane;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class CustomMeshTestModule : public ArcaneCustomMeshTestObject
+class MeshPolyhedralTestModule : public ArcaneMeshPolyhedralTestObject
 {
  public:
 
-  explicit CustomMeshTestModule(const ModuleBuildInfo& sbi)
-  : ArcaneCustomMeshTestObject(sbi)
+  explicit MeshPolyhedralTestModule(const ModuleBuildInfo& sbi)
+  : ArcaneMeshPolyhedralTestObject(sbi)
   {}
 
  public:
@@ -73,6 +73,8 @@ class CustomMeshTestModule : public ArcaneCustomMeshTestObject
   void _checkFlags(IMesh* mesh) const;
   template <typename VariableRefType>
   void _checkVariable(VariableRefType variable, ItemGroup item_group);
+  template <typename VariableRefType>
+  void _checkVariableWithRefValue(VariableRefType variable, ItemGroup item_group, const typename VariableRefType::DataType& ref_sum);
   template <typename VariableArrayRefType>
   void _checkArrayVariable(VariableArrayRefType variable, ItemGroup item_group);
 };
@@ -80,7 +82,7 @@ class CustomMeshTestModule : public ArcaneCustomMeshTestObject
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void CustomMeshTestModule::
+void MeshPolyhedralTestModule::
 _testEnumerationAndConnectivities(IMesh* mesh)
 {
   info() << "- Polyhedral mesh test -";
@@ -187,7 +189,7 @@ _testEnumerationAndConnectivities(IMesh* mesh)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void CustomMeshTestModule::_testVariables(IMesh* mesh)
+void MeshPolyhedralTestModule::_testVariables(IMesh* mesh)
 {
   // test variables
   info() << " -- test variables -- ";
@@ -279,12 +281,19 @@ void CustomMeshTestModule::_testVariables(IMesh* mesh)
     VariableFaceArrayReal var{ VariableBuildInfo(mesh, variable_name) };
     _checkArrayVariable(var, mesh->allFaces());
   }
+  for (const auto& variable_with_ref_option : options()->checkCellVariableIntegerWithRefValue()) {
+    String variable_name = variable_with_ref_option->getVarName();
+    if (!Arcane::AbstractModule::subDomain()->variableMng()->findMeshVariable(mesh,variable_name ))
+      ARCANE_FATAL("Cannot find mesh array variable {0}", variable_name);
+    VariableCellInteger var{ VariableBuildInfo(mesh, variable_name) };
+    _checkVariableWithRefValue(var, mesh->allCells(),variable_with_ref_option->getVarRefSum());
+  }
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void CustomMeshTestModule::
+void MeshPolyhedralTestModule::
 _testGroups(IMesh* mesh)
 {
   // AllItems groups
@@ -353,7 +362,7 @@ _testGroups(IMesh* mesh)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void CustomMeshTestModule::
+void MeshPolyhedralTestModule::
 _testDimensions(IMesh* mesh)
 {
   auto mesh_size = options()->meshSize();
@@ -369,7 +378,7 @@ _testDimensions(IMesh* mesh)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void CustomMeshTestModule::
+void MeshPolyhedralTestModule::
 _testCoordinates(Arcane::IMesh* mesh)
 {
   if (options()->meshCoordinates.size() == 1) {
@@ -388,7 +397,7 @@ _testCoordinates(Arcane::IMesh* mesh)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void CustomMeshTestModule::
+void MeshPolyhedralTestModule::
 _buildGroup(IItemFamily* family, String const& group_name)
 {
   auto group = family->findGroup(group_name, true);
@@ -406,17 +415,27 @@ _buildGroup(IItemFamily* family, String const& group_name)
 /*---------------------------------------------------------------------------*/
 
 template <typename VariableRefType>
-void CustomMeshTestModule::
-_checkVariable(VariableRefType variable_ref, ItemGroup item_group)
+void MeshPolyhedralTestModule::
+_checkVariable(VariableRefType variable, ItemGroup item_group)
 {
-  auto variable_sum = 0.;
+  _checkVariableWithRefValue(variable, item_group, item_group.size());
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template <typename VariableRefType>
+void MeshPolyhedralTestModule::
+_checkVariableWithRefValue(VariableRefType variable, Arcane::ItemGroup item_group, const typename VariableRefType::DataType& ref_sum)
+{
+  typename VariableRefType::DataType variable_sum = 0.;
   using ItemType = typename VariableRefType::ItemType;
   ENUMERATE_ (ItemType, iitem, item_group) {
-    info() << variable_ref.name() << " at item " << iitem.localId() << " " << variable_ref[iitem];
-    variable_sum += variable_ref[iitem];
+    info() << variable.name() << " at item " << iitem.localId() << " " << variable[iitem];
+    variable_sum += variable[iitem];
   }
-  if (variable_sum != item_group.size()) {
-    fatal() << "Error on variable " << variable_ref.name();
+  if (variable_sum != ref_sum) {
+    fatal() << "Error on variable " << variable.name();
   }
 }
 
@@ -424,7 +443,7 @@ _checkVariable(VariableRefType variable_ref, ItemGroup item_group)
 /*---------------------------------------------------------------------------*/
 
 template <typename VariableArrayRefType>
-void CustomMeshTestModule::
+void MeshPolyhedralTestModule::
 _checkArrayVariable(VariableArrayRefType variable_ref, ItemGroup item_group)
 {
   auto variable_sum = 0.;
@@ -447,7 +466,7 @@ _checkArrayVariable(VariableArrayRefType variable_ref, ItemGroup item_group)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void CustomMeshTestModule::
+void MeshPolyhedralTestModule::
 _checkBoundaryFaceGroup(IMesh* mesh, const String& boundary_face_group_name) const
 {
   auto boundary_face_group = mesh->findGroup(boundary_face_group_name);
@@ -467,7 +486,7 @@ _checkBoundaryFaceGroup(IMesh* mesh, const String& boundary_face_group_name) con
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void CustomMeshTestModule::
+void MeshPolyhedralTestModule::
 _checkInternalFaceGroup(IMesh* mesh, const String& internal_face_group_name) const
 {
   auto internal_face_group = mesh->findGroup(internal_face_group_name);
@@ -486,7 +505,7 @@ _checkInternalFaceGroup(IMesh* mesh, const String& internal_face_group_name) con
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void CustomMeshTestModule::
+void MeshPolyhedralTestModule::
 _checkFlags(IMesh* mesh) const
 {
   bool are_flags_ok = true;
@@ -530,12 +549,12 @@ _checkFlags(IMesh* mesh) const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_REGISTER_MODULE_CUSTOMMESHTEST(CustomMeshTestModule);
+ARCANE_REGISTER_MODULE_MESHPOLYHEDRALTEST(MeshPolyhedralTestModule);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace ArcaneTest::CustomMesh
+} // End namespace ArcaneTest::MeshPolyhedral
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

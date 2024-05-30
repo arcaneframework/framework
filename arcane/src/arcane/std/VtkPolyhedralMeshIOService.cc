@@ -33,6 +33,8 @@
 #include <arccore/base/Ref.h>
 #include <arccore/base/String.h>
 #include <arccore/base/FatalErrorException.h>
+#include <vtkXMLUnstructuredGridReader.h>
+#include <vtkXMLPolyDataReader.h>
 
 #include "arcane/core/ArcaneTypes.h"
 #include "arcane/core/AbstractService.h"
@@ -95,6 +97,8 @@ class VtkPolyhedralMeshIOService
 
     explicit VtkReader(const String& filename, VtkPolyhedralTools::PrintInfoLevel print_info_level = VtkPolyhedralTools::PrintInfoLevel{});
 
+    static String supportedVtkExtensions() noexcept {return "vtk,vtu";};
+
     Int64ConstArrayView cellUids();
     Int64ConstArrayView nodeUids();
     Int64ConstArrayView faceUids();
@@ -153,7 +157,11 @@ class VtkPolyhedralMeshIOService
     VtkPolyhedralTools::PrintInfoLevel m_print_info_level;
     VtkPolyhedralTools::ReadStatus m_read_status;
     vtkNew<vtkUnstructuredGridReader> m_vtk_grid_reader;
+    vtkNew<vtkXMLUnstructuredGridReader> m_vtk_xml_grid_reader;
     vtkNew<vtkPolyDataReader> m_vtk_face_grid_reader;
+    vtkNew<vtkXMLPolyDataReader> m_vtk_xml_face_grid_reader;
+    vtkUnstructuredGrid* m_vtk_grid = nullptr;
+    vtkPolyData* m_vtk_face_grid = nullptr;
     Int64UniqueArray m_cell_uids, m_node_uids, m_face_uids, m_edge_uids;
     Int64UniqueArray m_face_node_uids, m_edge_node_uids, m_cell_node_uids;
     Int64UniqueArray m_face_cell_uids, m_edge_cell_uids, m_edge_face_uids;
@@ -174,6 +182,11 @@ class VtkPolyhedralMeshIOService
     static std::pair<bool, Int32> _findFace(Int64ConstArrayView face_nodes, Int64ConstArrayView face_node_uids, Int32ConstArrayView face_nb_nodes);
     template <typename Connectivity2DArray>
     static void _flattenConnectivity(Connectivity2DArray connected_item_2darray, Int32Span nb_connected_item_per_source_item, Int64UniqueArray& connected_item_array);
+    void _readPlainTextVtkGrid(const String& filename);
+    void _readXlmVtkGrid(const String& filename);
+    void _checkVtkGrid() const;
+    void _readPlainTextVtkFaceGrid(const String& faces_filename);
+    void _readXmlVtkFaceGrid(const String& faces_filename);
   };
 
  public:
@@ -257,7 +270,7 @@ class VtkPolyhedralCaseMeshReader
   Ref<IMeshBuilder> createBuilder(const CaseMeshReaderReadInfo& read_info) const override
   {
     IMeshBuilder* builder = nullptr;
-    if (read_info.format() == "vtk")
+    if (VtkPolyhedralMeshIOService::VtkReader::supportedVtkExtensions().contains(read_info.format()))
       builder = new Builder(traceMng(), read_info, VtkPolyhedralTools::PrintInfoLevel{ options()->getPrintMeshInfos(), options()->getPrintDebugInfos() });
     return makeRef(builder);
   }
@@ -607,48 +620,70 @@ VtkReader(const String& filename, VtkPolyhedralTools::PrintInfoLevel print_info_
     m_read_status.failure_message = "filename for polyhedral vtk mesh is empty.";
     return;
   }
-  m_vtk_grid_reader->SetFileName(filename.localstr());
-  m_vtk_grid_reader->ReadAllScalarsOn();
-  m_vtk_grid_reader->Update();
-  auto* vtk_grid = m_vtk_grid_reader->GetOutput();
+  if (filename.endsWith("vtk"))
+    _readPlainTextVtkGrid(filename);
+  else if (filename.endsWith("vtu"))
+    _readXlmVtkGrid(filename);
+  else {
+    m_read_status.failure = true;
+    m_read_status.failure_message = String::format("Unsupported vtk extension for file {0}. Supported vtk extension for Polyhedral meshes are {1}",
+                                                   filename,VtkReader::supportedVtkExtensions());
+  }
   // Check vtk grid exists and not empty
-  if (!vtk_grid) {
+  if (!m_vtk_grid) {
     m_read_status.failure = true;
-    m_read_status.failure_message = String::format("Cannot read vtk polyhedral file {0}", filename);
+    m_read_status.failure_message = String::format("Cannot read vtk polyhedral file {0}. Vtk grid was not created.", filename);
     return;
   }
-  if (vtk_grid->GetNumberOfCells() == 0) {
+  if (m_vtk_grid->GetNumberOfCells() == 0) {
     m_read_status.failure = true;
-    m_read_status.failure_message = String::format("Cannot read vtk polyhedral file {0}", filename);
+    m_read_status.failure_message = String::format("Cannot read vtk polyhedral file {0}. No cells were found.", filename);
     return;
   }
-  if (!vtk_grid->GetFaces()) {
+  if (!m_vtk_grid->GetFaces()) {
     m_read_status.failure = true;
     m_read_status.failure_message = String::format("The given mesh vtk file {0} is not a polyhedral mesh, cannot read it", filename);
     return;
   }
 
-  m_cell_data = vtk_grid->GetCellData();
-  m_point_data = vtk_grid->GetPointData();
+  m_cell_data = m_vtk_grid->GetCellData();
+  m_point_data = m_vtk_grid->GetPointData();
 
   // Read face info (for variables and groups) if present
   String faces_filename = m_filename + "faces.vtk";
   std::ifstream ifile(faces_filename.localstr());
-  if (!ifile) {
-    m_read_status.info_message = String::format("Information no face mesh given {0} to define face variables or groups on faces.", faces_filename);
+  if (ifile) {
+    _readPlainTextVtkFaceGrid(faces_filename);
+  }
+  else{
+    faces_filename = m_filename + "faces.vtu";
+    ifile = std::ifstream{ faces_filename.localstr() };
+    _readXmlVtkFaceGrid(faces_filename);
+  }
+
+  StringUniqueArray faces_filename_and_extension;
+  faces_filename.split(faces_filename_and_extension,'.');
+
+  if (!ifile){
+    m_read_status.info_message = String::format("Information no face mesh given {0}{1} (.vtk or .vtu) to define face variables or groups on faces.",
+                                                faces_filename_and_extension[0],
+                                                faces_filename_and_extension[1]);
   }
   else {
-    m_vtk_face_grid_reader->SetFileName(faces_filename.localstr());
-    m_vtk_face_grid_reader->ReadAllScalarsOn();
-    m_vtk_face_grid_reader->Update();
-    auto* vtk_face_grid = m_vtk_face_grid_reader->GetOutput();
-    // Check face vtk grid exists and not empty
-    if (vtk_face_grid->GetNumberOfCells() == 0) {
-      m_read_status.failure = true;
-      m_read_status.failure_message = m_read_status.failure_message + String::format(" Error in reading face information for groups in mesh file {0} ", faces_filename);
+    if (m_vtk_face_grid) { // Check face vtk grid exists and not empty
+      if (m_vtk_face_grid->GetNumberOfCells() == 0) {
+        m_read_status.failure = true;
+        m_read_status.failure_message = m_read_status.failure_message + String::format(" Error in reading face information for groups in mesh file {0} ", faces_filename);
+      }
+      else {
+        m_face_data = m_vtk_face_grid->GetCellData();
+      }
     }
-    else {
-      m_face_data = vtk_face_grid->GetCellData();
+    else{
+      m_read_status.failure = true;
+      m_read_status.failure_message = m_read_status.failure_message + String::format("Face data could not be built from file {0}{1} (.vtk or .vtu).",
+                                                                                     faces_filename_and_extension[0],
+                                                                                     faces_filename_and_extension[1]);
     }
   }
 
@@ -663,11 +698,11 @@ Int64ConstArrayView VtkPolyhedralMeshIOService::VtkReader::
 cellUids()
 {
   if (m_cell_uids.empty()) {
-    auto* vtk_grid = m_vtk_grid_reader->GetOutput();
-    m_cell_uids.reserve(vtk_grid->GetNumberOfCells());
-    m_cell_nb_nodes.reserve(vtk_grid->GetNumberOfCells());
-    m_cell_node_uids.reserve(10 * vtk_grid->GetNumberOfCells()); // take a mean of 10 nodes per cell
-    auto* cell_iter = vtk_grid->NewCellIterator();
+    _checkVtkGrid();
+    m_cell_uids.reserve(m_vtk_grid->GetNumberOfCells());
+    m_cell_nb_nodes.reserve(m_vtk_grid->GetNumberOfCells());
+    m_cell_node_uids.reserve(10 * m_vtk_grid->GetNumberOfCells()); // take a mean of 10 nodes per cell
+    auto* cell_iter = m_vtk_grid->NewCellIterator();
     cell_iter->InitTraversal();
     while (!cell_iter->IsDoneWithTraversal()) {
       m_cell_uids.push_back(cell_iter->GetCellId());
@@ -687,15 +722,15 @@ Int64ConstArrayView VtkPolyhedralMeshIOService::VtkReader::
 nodeUids()
 {
   if (m_node_uids.empty()) {
-    auto* vtk_grid = m_vtk_grid_reader->GetOutput();
-    auto nb_nodes = vtk_grid->GetNumberOfPoints();
+    _checkVtkGrid();
+    auto nb_nodes = m_vtk_grid->GetNumberOfPoints();
     m_node_uids.reserve(nb_nodes);
     m_node_nb_cells.reserve(nb_nodes);
     m_node_cell_uids.reserve(8 * nb_nodes);
     for (int node_index = 0; node_index < nb_nodes; ++node_index) {
       m_node_uids.push_back(node_index);
       auto cell_nodes = vtkIdList::New();
-      vtk_grid->GetPointCells(node_index, cell_nodes);
+      m_vtk_grid->GetPointCells(node_index, cell_nodes);
       Int64Span cell_nodes_view((Int64*)cell_nodes->GetPointer(0), cell_nodes->GetNumberOfIds());
       m_node_cell_uids.addRange(cell_nodes_view);
       m_node_nb_cells.push_back((Int32)cell_nodes->GetNumberOfIds());
@@ -712,20 +747,19 @@ faceUids()
 {
   if (!m_face_uids.empty())
     return m_face_uids;
-
-  auto* vtk_grid = m_vtk_grid_reader->GetOutput();
-  auto* cell_iter = vtk_grid->NewCellIterator();
+  _checkVtkGrid();
+  auto* cell_iter = m_vtk_grid->NewCellIterator();
   cell_iter->InitTraversal();
   vtkIdType nb_face_estimation = 0;
   while (!cell_iter->IsDoneWithTraversal()) {
     vtkIdType cell_nb_faces = 0;
     vtkIdType* points{ nullptr };
-    vtk_grid->GetFaceStream(cell_iter->GetCellId(), cell_nb_faces, points);
+    m_vtk_grid->GetFaceStream(cell_iter->GetCellId(), cell_nb_faces, points);
     nb_face_estimation += cell_nb_faces;
     cell_iter->GoToNextCell();
   }
   m_face_uids.reserve(nb_face_estimation);
-  auto const* faces = vtk_grid->GetFaces();
+  auto const* faces = m_vtk_grid->GetFaces();
   // This array contains the face info per cells (cf. vtk file)
   // first_cell_nb_faces first_cell_first_face_nb_nodes first_cell_first_face_node_1 ... first_cell_first_face_node_n first_cell_second_face_nb_nodes etc
 
@@ -841,9 +875,9 @@ edgeUids()
   if (!m_edge_uids.empty())
     return m_edge_uids;
 
-  auto vtk_grid = m_vtk_grid_reader->GetOutput();
-  m_edge_uids.reserve(2 * vtk_grid->GetNumberOfPoints());
-  auto const* faces = vtk_grid->GetFaces();
+  _checkVtkGrid();
+  m_edge_uids.reserve(2 * m_vtk_grid->GetNumberOfPoints());
+  auto const* faces = m_vtk_grid->GetFaces();
   // This array contains the face info per cells (cf. vtk file)
   // first_cell_nb_faces first_cell_first_face_nb_nodes first_cell_first_face_node_1 ... first_cell_first_face_node_n first_cell_second_face_nb_nodes etc
 
@@ -1305,15 +1339,15 @@ Real3ArrayView VtkPolyhedralMeshIOService::VtkReader::
 nodeCoords()
 {
   if (m_node_coordinates.empty()) {
-    auto* vtk_grid = m_vtk_grid_reader->GetOutput();
-    auto point_coords = vtk_grid->GetPoints()->GetData();
+    _checkVtkGrid();
+    auto point_coords = m_vtk_grid->GetPoints()->GetData();
     if (m_print_info_level.print_debug_info) {
       std::cout << "======= Point COORDS ====" << std::endl;
       std::ostringstream oss;
       point_coords->PrintSelf(oss, vtkIndent{ 2 });
       std::cout << oss.str() << std::endl;
     }
-    auto nb_nodes = vtk_grid->GetNumberOfPoints();
+    auto nb_nodes = m_vtk_grid->GetNumberOfPoints();
     for (int i = 0; i < nb_nodes; ++i) {
       if (m_print_info_level.print_debug_info) {
           std::cout << "==========current point coordinates : ( ";
@@ -1353,11 +1387,11 @@ pointData()
 void VtkPolyhedralMeshIOService::VtkReader::
 _printMeshInfos() const
 {
-  auto* vtk_grid = m_vtk_grid_reader->GetOutput();
+  _checkVtkGrid();
   std::cout << "-- VTK GRID READ "
-            << " NB CELLS  " << vtk_grid->GetNumberOfCells() << std::endl;
+            << " NB CELLS  " << m_vtk_grid->GetNumberOfCells() << std::endl;
   // Parse cells
-  auto* cell_iter = vtk_grid->vtkDataSet::NewCellIterator();
+  auto* cell_iter = m_vtk_grid->vtkDataSet::NewCellIterator();
   cell_iter->InitTraversal();
   vtkIdType* cell_faces{ nullptr };
   vtkIdType nb_faces = 0;
@@ -1365,7 +1399,7 @@ _printMeshInfos() const
     std::cout << "---- visiting cell id " << cell_iter->GetCellId() << std::endl;
     std::cout << "----   cell number of faces " << cell_iter->GetNumberOfFaces() << std::endl;
     std::cout << "----   cell number of points " << cell_iter->GetNumberOfPoints() << std::endl;
-    vtk_grid->GetFaceStream(cell_iter->GetCellId(), nb_faces, cell_faces);
+    m_vtk_grid->GetFaceStream(cell_iter->GetCellId(), nb_faces, cell_faces);
     for (auto iface = 0; iface < nb_faces; ++iface) {
       auto face_nb_nodes = *cell_faces++;
       std::cout << "----      has face with " << face_nb_nodes << " nodes. Node ids : ";
@@ -1387,6 +1421,58 @@ vtkCellData* VtkPolyhedralMeshIOService::VtkReader::faceData()
 }
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void VtkPolyhedralMeshIOService::VtkReader::
+_readPlainTextVtkGrid(const String& filename)
+{
+  m_vtk_grid_reader->SetFileName(filename.localstr());
+  m_vtk_grid_reader->ReadAllScalarsOn();
+  m_vtk_grid_reader->Update();
+  m_vtk_grid = m_vtk_grid_reader->GetOutput();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void VtkPolyhedralMeshIOService::VtkReader::
+_readXlmVtkGrid(const String& filename)
+{
+  m_vtk_xml_grid_reader->SetFileName(filename.localstr());
+  m_vtk_xml_grid_reader->Update();
+  m_vtk_grid = m_vtk_xml_grid_reader->GetOutput();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void VtkPolyhedralMeshIOService::VtkReader::_readPlainTextVtkFaceGrid(const String& faces_filename)
+{
+  m_vtk_face_grid_reader->SetFileName(faces_filename.localstr());
+  m_vtk_face_grid_reader->ReadAllScalarsOn();
+  m_vtk_face_grid_reader->Update();
+  m_vtk_face_grid = m_vtk_face_grid_reader->GetOutput();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+void VtkPolyhedralMeshIOService::VtkReader::_readXmlVtkFaceGrid(const String& faces_filename)
+{
+  m_vtk_xml_face_grid_reader->SetFileName(faces_filename.localstr());
+  m_vtk_xml_face_grid_reader->Update();
+  m_vtk_face_grid = m_vtk_xml_face_grid_reader->GetOutput();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void VtkPolyhedralMeshIOService::VtkReader::_checkVtkGrid() const
+{
+  if (!m_vtk_grid)
+    ARCANE_FATAL("Polyhedral vtk grid not loaded. Cannot continue.");
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

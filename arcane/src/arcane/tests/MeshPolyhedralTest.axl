@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?><!-- -*- SGML -*- -->
-<module name="CustomMeshTest" version="1.0" namespace-name="ArcaneTest::CustomMesh">
+<module name="MeshPolyhedralTest" version="1.0" namespace-name="ArcaneTest::MeshPolyhedral">
   <description>Module to test custom mesh</description>
   <entry-points>
     <entry-point method-name="init" name="Init" where="init" property="none" />
@@ -26,6 +26,10 @@
     <simple name="check-internal-face-group" minOccurs="0" maxOccurs="unbounded" type="string"/>
     <simple name="check-cell-variable-real" minOccurs="0" maxOccurs="unbounded" type="string"/>
     <simple name="check-cell-variable-integer" minOccurs="0" maxOccurs="unbounded" type="string"/>
+    <complex name="check-cell-variable-integer-with-ref-value" minOccurs="0" maxOccurs="unbounded" type="CheckCellIntVarWithRefValue">
+      <simple name="var-name" minOccurs="1" maxOccurs="1" type="string"/>
+      <simple name="var-ref-sum" minOccurs="1" maxOccurs="1" type="integer"/>
+    </complex>
     <simple name="check-cell-variable-array-real" minOccurs="0" maxOccurs="unbounded" type="string"/>
     <simple name="check-cell-variable-array-integer" minOccurs="0" maxOccurs="unbounded" type="string"/>
     <simple name="check-node-variable-real" minOccurs="0" maxOccurs="unbounded" type="string"/>
