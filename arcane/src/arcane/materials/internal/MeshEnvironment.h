@@ -189,6 +189,11 @@ class MeshEnvironment
   MeshEnvironment* m_non_const_this = nullptr;
   InternalApi m_internal_api;
 
+ public:
+
+  void _computeMaterialIndexes(ComponentItemInternalData* item_internal_data, RunQueue& queue);
+  void _computeMaterialIndexesMonoMat(ComponentItemInternalData* item_internal_data, RunQueue& queue);
+
  private:
   
   void _changeIds(MeshComponentData* component_data,Int32ConstArrayView old_to_new_ids);
@@ -203,4 +208,3 @@ class MeshEnvironment
 /*---------------------------------------------------------------------------*/
 
 #endif  
-

@@ -207,7 +207,20 @@ void MeshEnvironment::
 computeMaterialIndexes(ComponentItemInternalData* item_internal_data, RunQueue& queue)
 {
   info(4) << "Compute (V2) indexes for environment name=" << name();
+  const bool is_mono_mat = (nbMaterial() == 1 && (cells().size() == totalNbCellMat()));
+  if (is_mono_mat) {
+    _computeMaterialIndexesMonoMat(item_internal_data, queue);
+  }
+  else
+    _computeMaterialIndexes(item_internal_data, queue);
+}
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MeshEnvironment::
+_computeMaterialIndexes(ComponentItemInternalData* item_internal_data, RunQueue& queue)
+{
   IItemFamily* cell_family = cells().itemFamily();
   Integer max_local_id = cell_family->maxLocalId();
   const Int16 env_id = componentId();
@@ -312,12 +325,65 @@ computeMaterialIndexes(ComponentItemInternalData* item_internal_data, RunQueue& 
         ref_ii._setComponent(mat_id);
         ref_ii._setVariableIndex(mvi);
         // Le rang 0 met à jour le padding SIMD du groupe associé au matériau
-        if (z==0)
+        if (z == 0)
           ArraySimdPadder::applySimdPaddingView(mat_cells_local_id);
       };
       mat_cells._internalApi()->notifySimdPaddingDone();
     }
   }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Calcul les infos sur les matériaux en mono-matériaux.
+ *
+ * Spécialisation pour le cas où le milieu n'a qu'un matériau.
+ */
+void MeshEnvironment::
+_computeMaterialIndexesMonoMat(ComponentItemInternalData* item_internal_data, RunQueue& queue)
+{
+  const Int16 env_id = componentId();
+
+  ConstituentItemLocalIdListView constituent_item_list_view = m_data.constituentItemListView();
+
+  MeshMaterial* mat = m_true_materials[0];
+  const Int16 mat_id = mat->componentId();
+  const MeshMaterialVariableIndexer* var_indexer = mat->variableIndexer();
+  CellGroup mat_cells = mat->cells();
+  info(4) << "COMPUTE (V2) mat_cells mat=" << mat->name() << " nb_cell=" << mat_cells.size()
+          << " mat_id=" << mat_id << " index=" << var_indexer->index();
+
+  mat->resizeItemsInternal(var_indexer->nbItem());
+
+  auto command = makeCommand(queue);
+  auto matvar_indexes = viewIn(command, var_indexer->matvarIndexes());
+  auto local_ids = viewIn(command, var_indexer->localIds());
+  ComponentItemSharedInfo* mat_shared_info = item_internal_data->matSharedInfo();
+  ComponentItemInternalRange mat_item_internal_range(item_internal_data->matItemsInternalRange(env_id));
+  SmallSpan<ConstituentItemIndex> mat_id_list = mat->componentData()->m_constituent_local_id_list.mutableLocalIds();
+  const Int32 nb_id = local_ids.size();
+  Span<Int32> mat_cells_local_id = mat_cells._internalApi()->itemsLocalId();
+  command << RUNCOMMAND_LOOP1(iter, nb_id)
+  {
+    auto [z] = iter();
+    MatVarIndex mvi = matvar_indexes[z];
+    const Int32 lid = local_ids[z];
+    const Int32 pos = z;
+    matimpl::ConstituentItemBase env_item = constituent_item_list_view._constituenItemBase(z);
+    ConstituentItemIndex cii = mat_item_internal_range[pos];
+    env_item._setFirstSubItem(cii);
+
+    matimpl::ConstituentItemBase ref_ii(mat_shared_info, cii);
+    mat_id_list[z] = cii;
+    ref_ii._setSuperAndGlobalItem(env_item.constituentItemIndex(), ItemLocalId(lid));
+    ref_ii._setComponent(mat_id);
+    ref_ii._setVariableIndex(mvi);
+    // Le rang 0 met à jour le padding SIMD du groupe associé au matériau
+    if (z == 0)
+      ArraySimdPadder::applySimdPaddingView(mat_cells_local_id);
+  };
+  mat_cells._internalApi()->notifySimdPaddingDone();
 }
 
 /*---------------------------------------------------------------------------*/
