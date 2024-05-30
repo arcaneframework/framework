@@ -139,7 +139,7 @@ restoreData(IMeshComponent* component,IData* data,Integer data_index,
 /*---------------------------------------------------------------------------*/
 
 void MeshMaterialVariablePrivate::
-copyGlobalToPartial(const MeshVariableCopyBetweenPartialAndGlobalArgs& args)
+copyGlobalToPartial(const CopyBetweenPartialAndGlobalArgs& args)
 {
   m_variable->_copyGlobalToPartial(args);
 }
@@ -148,7 +148,7 @@ copyGlobalToPartial(const MeshVariableCopyBetweenPartialAndGlobalArgs& args)
 /*---------------------------------------------------------------------------*/
 
 void MeshMaterialVariablePrivate::
-copyPartialToGlobal(const MeshVariableCopyBetweenPartialAndGlobalArgs& args)
+copyPartialToGlobal(const CopyBetweenPartialAndGlobalArgs& args)
 {
   m_variable->_copyPartialToGlobal(args);
 }

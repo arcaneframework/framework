@@ -389,13 +389,13 @@ _copyHostViewsToViews(RunQueue* queue)
 
 template <typename Traits> void
 ItemMaterialVariableBase<Traits>::
-_copyGlobalToPartial(const MeshVariableCopyBetweenPartialAndGlobalArgs& args)
+_copyGlobalToPartial(const CopyBetweenPartialAndGlobalArgs& args)
 {
   Int32 var_index = args.m_var_index;
   PrivatePartType* partial_var = m_vars[var_index + 1];
   if (_isValidAndUsedAndGlobalUsed(partial_var)) {
     Traits::copyTo(m_host_views[0], args.m_local_ids, m_host_views[var_index + 1],
-                   args.m_indexes_in_multiple, *args.m_queue);
+                   args.m_indexes_in_multiple, args.m_queue);
   }
 }
 
@@ -404,13 +404,13 @@ _copyGlobalToPartial(const MeshVariableCopyBetweenPartialAndGlobalArgs& args)
 
 template<typename Traits> void
 ItemMaterialVariableBase<Traits>::
-_copyPartialToGlobal(const MeshVariableCopyBetweenPartialAndGlobalArgs& args)
+_copyPartialToGlobal(const CopyBetweenPartialAndGlobalArgs& args)
 {
   Int32 var_index = args.m_var_index;
   PrivatePartType* partial_var = m_vars[var_index+1];
   if (_isValidAndUsedAndGlobalUsed(partial_var)) {
     Traits::copyTo(m_host_views[var_index + 1], args.m_indexes_in_multiple,
-                   m_host_views[0], args.m_local_ids, *args.m_queue);
+                   m_host_views[0], args.m_local_ids, args.m_queue);
   }
 }
 

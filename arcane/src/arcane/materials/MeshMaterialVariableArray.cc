@@ -50,7 +50,7 @@ template<typename DataType> void
 MaterialVariableArrayTraits<DataType>::
 copyTo(SmallSpan2<const DataType> input, SmallSpan<const Int32> input_indexes,
        SmallSpan2<DataType> output, SmallSpan<const Int32> output_indexes,
-       RunQueue& queue)
+       const RunQueue& queue)
 {
   // TODO: vérifier tailles des indexes et des dim2Size() identiques
   Integer nb_value = input_indexes.size();
