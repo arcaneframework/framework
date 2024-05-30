@@ -360,6 +360,9 @@ _resizeForIndexer(Int32 index, RunQueue& queue)
   if (_isValidAndUsedAndGlobalUsed(partial_var)) {
     // Redimensionne le tableau des valeurs multiples si besoin.
     // TODO: Faire sur le device pour la mise à jour de view
+    // TODO: Utiliser allocation asynchrone si possible (si pas d'initialisation)
+    // TODO: Pouvoir indiquer qu'on ne souhaite pas initialiser la variable
+    //       quelle que soit la valeur de eDataInitialisationPolicy
     ConstArrayView<MeshMaterialVariableIndexer*> indexers = m_p->materialMng()->_internalApi()->variablesIndexer();
     Traits::resizeWithReserve(partial_var, indexers[index]->maxIndexInMultipleArray());
     this->_setView(index + 1);
@@ -374,7 +377,7 @@ template <typename Traits> void
 ItemMaterialVariableBase<Traits>::
 _copyHostViewsToViews(RunQueue* queue)
 {
-  const bool use_queue = false;
+  const bool use_queue = true;
   if (queue && use_queue){
     Accelerator::MemoryCopyArgs copy_args(asWritableBytes(m_views),asBytes(m_host_views));
     copy_args.addAsync(true);
