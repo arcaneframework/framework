@@ -32,7 +32,7 @@
 
 namespace Arcane::Materials
 {
-class MeshVariableCopyBetweenPartialAndGlobalArgs;
+class CopyBetweenPartialAndGlobalArgs;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -83,7 +83,7 @@ class AllEnvData
  private:
 
   void _computeNbEnvAndNbMatPerCell();
-  void _copyBetweenPartialsAndGlobals(const MeshVariableCopyBetweenPartialAndGlobalArgs& args,
+  void _copyBetweenPartialsAndGlobals(const CopyBetweenPartialAndGlobalArgs& args,
                                       bool is_add_operation);
   void _computeAndResizeEnvItemsInternal();
   bool _isFullVerbose() const;

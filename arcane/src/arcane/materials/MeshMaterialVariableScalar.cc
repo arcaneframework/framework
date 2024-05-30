@@ -88,7 +88,7 @@ template<typename DataType> void
 MaterialVariableScalarTraits<DataType>::
 copyTo(SmallSpan<const DataType> input, SmallSpan<const Int32> input_indexes,
        SmallSpan<DataType> output, SmallSpan<const Int32> output_indexes,
-       RunQueue& queue)
+       const RunQueue& queue)
 {
   // TODO: vérifier tailles des indexes identiques
   Integer nb_value = input_indexes.size();

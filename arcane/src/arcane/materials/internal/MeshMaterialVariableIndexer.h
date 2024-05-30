@@ -62,7 +62,6 @@ class ARCANE_MATERIALS_EXPORT MeshMaterialVariableIndexer
  public:
 
   MeshMaterialVariableIndexer(ITraceMng* tm, const String& name);
-  MeshMaterialVariableIndexer(const MeshMaterialVariableIndexer& rhs);
 
  public:
 

@@ -218,9 +218,9 @@ resizeComponentItemInternals(Int32 max_local_id, Int32 total_nb_env_cell)
     }
   }
 
-  info() << "ResizeStorage max_local_id=" << max_local_id
-         << " total_nb_env_cell=" << total_nb_env_cell
-         << " total_nb_mat_cell=" << total_nb_mat_cell;
+  info(4) << "ResizeStorage max_local_id=" << max_local_id
+          << " total_nb_env_cell=" << total_nb_env_cell
+          << " total_nb_mat_cell=" << total_nb_mat_cell;
   {
     RunQueue::ScopedAsync sc(&queue);
     m_mat_items_internal_range.copy(host_mats_range, &queue);
