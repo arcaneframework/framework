@@ -17,7 +17,7 @@ jobs:
     name: ubuntu coverity
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/arcaneframework/ubuntu-2204:gcc-12_clang-16_full_20230808
+      image: ghcr.io/arcaneframework/ubuntu-2404:gcc-14_clang-18_full_20240530
     steps:
       - name: Checkout
         uses: actions/checkout@v4

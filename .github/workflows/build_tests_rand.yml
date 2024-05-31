@@ -1,4 +1,4 @@
-name: '[Rand] Build/Install/Test Arcane Framework (Ubuntu 20.04-22.04 / GCC 11-12 / CLang 16 / Full / Debug)'
+name: '[Rand] Build/Install/Test Arcane Framework (Ubuntu 22.04-24.04 / GCC 12-14 / CLang 16-18 / Full / Debug)'
 
 on:
   schedule:
@@ -10,21 +10,21 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        image_short: [ 'U20_G11_C13', 'U22_G12_C16' ]
+        image_short: [ 'U22_G12_C16', 'U24_G14_C18' ]
         version_short: [ 'F' ]
         compilo: [ 'CLang', 'GCC' ]
         type_build: [ 'Debug' ]
 
         include:
-          - image_short: 'U20_G11_C13'
-            image_long: 'ubuntu-2004:gcc-11_clang-13'
-            image_date: '20230808'
-            image_args: '-DARCCORE_CXX_STANDARD=20'
-            image_cuda: false
-
           - image_short: 'U22_G12_C16'
             image_long: 'ubuntu-2204:gcc-12_clang-16'
-            image_date: '20230808'
+            image_date: '20230906'
+            image_args: '-DARCCORE_CXX_STANDARD=23'
+            image_cuda: false
+
+          - image_short: 'U24_G14_C18'
+            image_long: 'ubuntu-2404:gcc-14_clang-18'
+            image_date: '20240530'
             image_args: '-DARCCORE_CXX_STANDARD=23'
             image_cuda: false
 
@@ -36,10 +36,6 @@ jobs:
           - type_build: 'Debug'
             excluded_tests: '^.*([3-9]proc|[1-9][0-9]+proc|[5-9]thread|[1-9][0-9]+thread).*$'
             excluded_tests_with_labels: 'LARGE_HYBRID'
-
-        exclude:
-          - image_short: 'U20_G11_C13'
-            compilo: 'CLang'
 
 
     name: '[${{matrix.image_short}}_${{matrix.version_short}}]_${{matrix.compilo}}_${{matrix.mpi}}_${{matrix.type_build}}'

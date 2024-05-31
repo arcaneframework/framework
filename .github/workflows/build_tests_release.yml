@@ -1,4 +1,4 @@
-name: '[Check] Build/Install/Test Arcane Framework (Ubuntu 20.04-22.04 / GCC 11-12 / CLang 13-16 / CUDA 12.2 / Minimal-Full)'
+name: '[Check] Build/Install/Test Arcane Framework (Ubuntu 22.04-24.04 / GCC 12-14 / CLang 15-16-18 / CUDA 12.2 / Minimal-Full)'
 
 on:
   push:
@@ -35,21 +35,16 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        image_short: [ 'U20_G11_C13', 'U22_G12_C16', 'U22_G12_C15_CU122' ]
+        image_short: [ 'U22_G12_C16', 'U22_G12_C15_CU122', 'U24_G14_C18' ]
         version_short: [ 'F', 'M' ]
         compilo: [ 'CLang', 'GCC' ]
         type_build: [ 'Check' ]
         mpi: [ 'OpenMPI', 'MPICH' ]
 
         include:
-          - image_short: 'U20_G11_C13'
-            image_long: 'ubuntu-2004:gcc-11_clang-13'
-            image_date: '20230808'
-            image_cuda: false
-
           - image_short: 'U22_G12_C16'
             image_long: 'ubuntu-2204:gcc-12_clang-16'
-            image_date: '20230808'
+            image_date: '20230906'
             image_args: '-DARCCORE_CXX_STANDARD=23'
             image_cuda: false
 
@@ -59,6 +54,12 @@ jobs:
             # Disable googletest with CUDA because it requires a GPU driver
             image_args: '-DARCCORE_CXX_STANDARD=20 -DARCANE_EXECUTE_ACCELERATOR_GOOGLETEST=OFF'
             image_cuda: true
+
+          - image_short: 'U24_G14_C18'
+            image_long: 'ubuntu-2404:gcc-14_clang-18'
+            image_date: '20240530'
+            image_args: '-DARCCORE_CXX_STANDARD=23'
+            image_cuda: false
 
           - version_short: 'M'
             version_long: 'minimal'

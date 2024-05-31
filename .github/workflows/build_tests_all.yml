@@ -1,4 +1,4 @@
-name: '[All] Build/Install/Test Arcane Framework (Ubuntu 20.04-22.04 / GCC 11-12 / CLang 13-16 / CUDA 12.2 / Minimal-Full / Release-Debug)'
+name: '[All] Build/Install/Test Arcane Framework (Ubuntu 20.04-22.04-24.04 / GCC 11-12-14 / CLang 13-15-16-18 / CUDA 12.2 / Minimal-Full / Release-Debug)'
 # Attention : GitHub limite à 20 tests à la fois.
 
 on:
@@ -11,7 +11,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        image_short: [ 'U20_G11_C13', 'U22_G12_C16', 'U22_G12_C15_CU122' ]
+        image_short: [ 'U20_G11_C13', 'U22_G12_C16', 'U22_G12_C15_CU122', 'U24_G14_C18' ]
         version_short: [ 'F', 'M' ]
         compilo: [ 'CLang', 'GCC' ]
         type_build: [ 'Debug', 'Release' ]
@@ -25,7 +25,7 @@ jobs:
 
           - image_short: 'U22_G12_C16'
             image_long: 'ubuntu-2204:gcc-12_clang-16'
-            image_date: '20230808'
+            image_date: '20230906'
             image_args: '-DARCCORE_CXX_STANDARD=23'
             image_cuda: false
 
@@ -35,6 +35,12 @@ jobs:
             # Disable googletest with CUDA because it requires a GPU driver
             image_args: '-DARCCORE_CXX_STANDARD=20 -DARCANE_EXECUTE_ACCELERATOR_GOOGLETEST=OFF'
             image_cuda: true
+
+          - image_short: 'U24_G14_C18'
+            image_long: 'ubuntu-2404:gcc-14_clang-18'
+            image_date: '20240530'
+            image_args: '-DARCCORE_CXX_STANDARD=23'
+            image_cuda: false
 
           - version_short: 'M'
             version_long: 'minimal'
@@ -74,65 +80,3 @@ jobs:
       excluded_tests: ${{ matrix.excluded_tests }}
       excluded_tests_with_labels: ${{ matrix.excluded_tests_with_labels }}
       cache_key_prefix: ${{matrix.image_short}}_${{matrix.version_short}}_${{matrix.compilo}}_${{matrix.mpi}}_${{matrix.type_build}}
-
-  build-install-test-split:
-    strategy:
-      fail-fast: false
-      matrix:
-        image_short: [ 'U20_G11_C13', 'U22_G12_C16' ]
-        version_short: [ 'F', 'M' ]
-        compilo: [ 'CLang', 'GCC' ]
-        type_build: [ 'Debug', 'Release' ]
-        mpi: [ 'OpenMPI', 'MPICH' ]
-
-        include:
-          - image_short: 'U20_G11_C13'
-            image_long: 'ubuntu-2004:gcc-11_clang-13'
-            image_date: '20230808'
-            image_cuda: false
-
-          - image_short: 'U22_G12_C16'
-            image_long: 'ubuntu-2204:gcc-12_clang-16'
-            image_date: '20230808'
-            image_args: '-DARCCORE_CXX_STANDARD=23'
-            image_cuda: false
-
-          - version_short: 'M'
-            version_long: 'minimal'
-            version_args: '-DARCANE_DISABLE_PERFCOUNTER_TESTS=ON'
-
-          - version_short: 'F'
-            version_long: 'full'
-            version_args: '-DARCANE_DISABLE_PERFCOUNTER_TESTS=ON
-              -DARCANE_DEFAULT_PARTITIONER=Metis
-              -DPTScotch_INCLUDE_DIR="/usr/include/scotch"'
-
-          - type_build: 'Release'
-            excluded_tests: ''
-            excluded_tests_with_labels: 'LARGE_HYBRID'
-
-          - type_build: 'Debug'
-            excluded_tests: ''
-            excluded_tests_with_labels: 'LARGE_HYBRID'
-
-        exclude:
-          - version_short: 'F'
-            mpi: 'MPICH'
-
-
-    name: '[${{matrix.image_short}}_${{matrix.version_short}}][Split]_${{matrix.compilo}}_${{matrix.mpi}}_${{matrix.type_build}}'
-    # La partie 'uses' est déterminée à la compilation, donc on ne peut pas mettre de variable ${{}}.
-    uses: 'arcaneframework/gh_actions/.github/workflows/reusable_test_split_framework.yml@v1'
-    with:
-      image: ghcr.io/arcaneframework/${{matrix.image_long}}_${{matrix.version_long}}_${{matrix.image_date}}
-      compilo: ${{ matrix.compilo }}
-      mpi: ${{ matrix.mpi }}
-      with_cuda: ${{ matrix.image_cuda }}
-      type_build: ${{ matrix.type_build }}
-      cmake_additionnal_args: '${{ matrix.image_args }} ${{ matrix.version_args }}'
-      verbose: true
-      with_samples: true
-      execute_tests: ${{ !matrix.image_cuda }}
-      excluded_tests: ${{ matrix.excluded_tests }}
-      excluded_tests_with_labels: ${{ matrix.excluded_tests_with_labels }}
-      cache_key_prefix: ${{matrix.image_short}}_${{matrix.version_short}}_${{matrix.compilo}}_${{matrix.mpi}}_${{matrix.type_build}}_split
