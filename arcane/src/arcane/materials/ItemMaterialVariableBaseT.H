@@ -134,7 +134,9 @@ buildFromManager(bool is_continue)
 
   // Il faut récupérer (ou créér) les autres variables.
   //ConstArrayView<IMeshMaterial*> materials = mat_mng->materials();
-  ConstArrayView<MeshMaterialVariableIndexer*> indexers = mat_mng->_internalApi()->variablesIndexer();
+  IMeshMaterialMngInternal* mm_api = mat_mng->_internalApi();
+  const Real reserve_ratio = mm_api->additionalCapacityRatio();
+  ConstArrayView<MeshMaterialVariableIndexer*> indexers = mm_api->variablesIndexer();
   Integer nb_indexer = indexers.size();
   UniqueArray<PrivatePartType*> all_vars(nb_indexer+1);
   all_vars[0] = m_global_variable;
@@ -187,7 +189,7 @@ buildFromManager(bool is_continue)
       // TODO: regarder si setUsed() est nécessaire.
       true_ptr->setUsed(true);
       // Dimensionne la variable à la taille du tableau des valeurs mixtes.
-      Traits::resizeWithReserve(true_ptr,indexer->maxIndexInMultipleArray());
+      Traits::resizeWithReserve(true_ptr, indexer->maxIndexInMultipleArray(), reserve_ratio);
     }
   }
   this->_init(all_vars);
@@ -242,13 +244,15 @@ ItemMaterialVariableBase<Traits>::
 _syncReferences(bool check_resize)
 {
   if (check_resize) {
-    ConstArrayView<MeshMaterialVariableIndexer*> indexers = m_p->materialMng()->_internalApi()->variablesIndexer();
+    IMeshMaterialMngInternal* api = m_p->materialMng()->_internalApi();
+    ConstArrayView<MeshMaterialVariableIndexer*> indexers = api->variablesIndexer();
+    Real ratio = api->additionalCapacityRatio();
     Integer nb_indexer = indexers.size();
     for (Integer i = 0; i < nb_indexer; ++i) {
       MeshMaterialVariableIndexer* indexer = indexers[i];
       PrivatePartType* true_ptr = m_vars[i + 1];
       if (true_ptr) {
-        Traits::resizeWithReserve(true_ptr, indexer->maxIndexInMultipleArray());
+        Traits::resizeWithReserve(true_ptr, indexer->maxIndexInMultipleArray(), ratio);
         _setView(i + 1);
       }
     }
@@ -363,8 +367,10 @@ _resizeForIndexer(Int32 index, RunQueue& queue)
     // TODO: Utiliser allocation asynchrone si possible (si pas d'initialisation)
     // TODO: Pouvoir indiquer qu'on ne souhaite pas initialiser la variable
     //       quelle que soit la valeur de eDataInitialisationPolicy
-    ConstArrayView<MeshMaterialVariableIndexer*> indexers = m_p->materialMng()->_internalApi()->variablesIndexer();
-    Traits::resizeWithReserve(partial_var, indexers[index]->maxIndexInMultipleArray());
+    IMeshMaterialMngInternal* api = m_p->materialMng()->_internalApi();
+    ConstArrayView<MeshMaterialVariableIndexer*> indexers = api->variablesIndexer();
+    Real ratio = api->additionalCapacityRatio();
+    Traits::resizeWithReserve(partial_var, indexers[index]->maxIndexInMultipleArray(), ratio);
     this->_setView(index + 1);
   }
   _copyHostViewsToViews(&queue);

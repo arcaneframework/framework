@@ -139,6 +139,10 @@ class MeshMaterialMng
     {
       return m_material_mng->asyncRunQueuePool();
     }
+    Real additionalCapacityRatio() const override
+    {
+      return m_material_mng->additionalCapacityRatio();
+    }
 
    private:
 
@@ -295,9 +299,12 @@ class MeshMaterialMng
 
  public:
 
+  //@{ Implémentation de IMeshMaterialMngInternal
   Runner& runner() const { return m_runner_info->m_runner; }
   RunQueue& runQueue() const { return m_runner_info->m_run_queue; }
   Accelerator::RunQueuePool& asyncRunQueuePool() const { return m_runner_info->m_async_queue_pool; }
+  Real additionalCapacityRatio() const { return 0.05; }
+  //@}
 
  private:
 
