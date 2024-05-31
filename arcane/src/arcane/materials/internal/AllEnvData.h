@@ -47,6 +47,10 @@ class AllEnvData
 
  public:
 
+  class RecomputeConstituentCellInfos;
+
+ public:
+
   explicit AllEnvData(MeshMaterialMng* mmg);
 
  public:
@@ -95,7 +99,8 @@ class AllEnvData
 
  public:
 
-  void _computeInfosForEnvCells();
+  void _computeInfosForAllEnvCells(RecomputeConstituentCellInfos& work_info);
+  void _computeInfosForEnvCells(RecomputeConstituentCellInfos& work_info);
 };
 
 /*---------------------------------------------------------------------------*/
