@@ -57,7 +57,7 @@ jobs:
 
           - image_short: 'U24_G14_C18'
             image_long: 'ubuntu-2404:gcc-14_clang-18'
-            image_date: '20240530'
+            image_date: '20240531'
             image_args: '-DARCCORE_CXX_STANDARD=23'
             image_cuda: false
 
