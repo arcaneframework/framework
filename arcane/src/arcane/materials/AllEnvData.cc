@@ -260,13 +260,26 @@ _computeInfosForEnvCells()
     scanner.applyExclusive(0, cells_nb_env, env_cell_indexes_view, op, A_FUNCINFO);
   }
 
+  // Positionne les infos pour les AllEnvCell.
+  {
+    ComponentItemSharedInfo* all_env_shared_info = m_item_internal_data.allEnvSharedInfo();
+    auto command = makeCommand(queue);
+    SmallSpan<Int32> env_cell_indexes_view(env_cell_indexes);
+    command << RUNCOMMAND_ENUMERATE (Cell, cell_id, all_cells)
+    {
+      Int32 lid = cell_id;
+      Int16 n = cells_nb_env[lid];
+      matimpl::ConstituentItemBase ref_ii(all_env_shared_info, ConstituentItemIndex(lid));
+      ref_ii._setSuperAndGlobalItem({}, cell_id);
+      ref_ii._setVariableIndex(MatVarIndex(0, lid));
+      ref_ii._setNbSubItem(n);
+      if (n != 0)
+        ref_ii._setFirstSubItem(ConstituentItemIndex(env_cell_indexes_view[lid]));
+    };
+  }
+
   // Positionne les infos pour les EnvCell
   {
-    NumArray<Int32, MDDim1> current_pos;
-    {
-      MDSpan<Int32, MDDim1> s(env_cell_indexes.data(), ArrayIndex<1>{ env_cell_indexes.size() });
-      current_pos.copy(s);
-    }
     for (MeshEnvironment* env : true_environments) {
       const Int16 env_id = env->componentId();
       const MeshMaterialVariableIndexer* var_indexer = env->variableIndexer();
@@ -286,7 +299,7 @@ _computeInfosForEnvCells()
       m_component_connectivity_list->fillCellsNbMaterial(local_ids, env_id, cells_nb_mat_view, queue);
 
       auto command = makeCommand(queue);
-      SmallSpan<Int32> current_pos_view(current_pos);
+      SmallSpan<Int32> current_pos_view(env_cell_indexes);
       const Int32 nb_id = matvar_indexes.size();
       ComponentItemSharedInfo* env_shared_info = m_item_internal_data.envSharedInfo();
 
@@ -317,29 +330,15 @@ _computeInfosForEnvCells()
       };
       cells._internalApi()->notifySimdPaddingDone();
     }
+  }
+
+  // Positionne les infos pour les MatCell
+  {
     Accelerator::RunQueuePool& queue_pool = m_material_mng->_internalApi()->asyncRunQueuePool();
     for (MeshEnvironment* env : true_environments) {
       env->computeMaterialIndexes(&m_item_internal_data, queue_pool[env->id()]);
     }
     queue_pool.barrier();
-  }
-
-  // Positionne les infos pour les AllEnvCell.
-  {
-    ComponentItemSharedInfo* all_env_shared_info = m_item_internal_data.allEnvSharedInfo();
-    auto command = makeCommand(queue);
-    SmallSpan<Int32> env_cell_indexes_view(env_cell_indexes);
-    command << RUNCOMMAND_ENUMERATE (Cell, cell_id, all_cells)
-    {
-      Int32 lid = cell_id;
-      Int16 n = cells_nb_env[lid];
-      matimpl::ConstituentItemBase ref_ii(all_env_shared_info, ConstituentItemIndex(lid));
-      ref_ii._setSuperAndGlobalItem({}, cell_id);
-      ref_ii._setVariableIndex(MatVarIndex(0, lid));
-      ref_ii._setNbSubItem(n);
-      if (n != 0)
-        ref_ii._setFirstSubItem(ConstituentItemIndex(env_cell_indexes_view[lid]));
-    };
   }
 }
 
