@@ -112,6 +112,9 @@ class ARCANE_CORE_EXPORT IMeshMaterialMngInternal
 
   //! Liste de files asynchrones
   virtual Accelerator::RunQueuePool& asyncRunQueuePool() const = 0;
+
+  //! Ratio pour la capacité additionnelle à allouer lors du redimensionnement des variables.
+  virtual Real additionalCapacityRatio() const = 0;
 };
 
 /*---------------------------------------------------------------------------*/

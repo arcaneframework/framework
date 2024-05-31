@@ -87,12 +87,13 @@ resizeAndFillWithDefault(ValueDataType* data,ContainerType& container,Integer di
 
 template<typename DataType> void
 MaterialVariableArrayTraits<DataType>::
-resizeWithReserve(PrivatePartType* var,Integer dim1_size)
+resizeWithReserve(PrivatePartType* var, Integer dim1_size, Real reserve_ratio)
 {
   // Pour éviter de réallouer à chaque fois qu'il y a une augmentation du
   // nombre de mailles matériaux, alloue un petit peu plus que nécessaire.
   // Par défaut, on alloue 5% de plus.
-  var->_internalApi()->resizeWithReserve(dim1_size, dim1_size/20);
+  Int32 nb_add = static_cast<Int32>(dim1_size * reserve_ratio);
+  var->_internalApi()->resizeWithReserve(dim1_size, nb_add);
 }
 
 /*---------------------------------------------------------------------------*/
