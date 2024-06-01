@@ -133,6 +133,9 @@ class MeshEnvironment
   EnvImpurePartItemVectorView impureEnvItems() const override;
   EnvPartItemVectorView partEnvItems(eMatPart part) const override;
 
+  //! Indique si le milieu est mono-matériau
+  bool isMonoMaterial() const;
+
  public:
 
   IMeshComponentInternal* _internalApi() override { return &m_internal_api; }

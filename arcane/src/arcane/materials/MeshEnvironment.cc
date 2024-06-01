@@ -207,7 +207,7 @@ void MeshEnvironment::
 computeMaterialIndexes(ComponentItemInternalData* item_internal_data, RunQueue& queue)
 {
   info(4) << "Compute (V2) indexes for environment name=" << name();
-  const bool is_mono_mat = (nbMaterial() == 1 && (cells().size() == totalNbCellMat()));
+  const bool is_mono_mat = isMonoMaterial();
   if (is_mono_mat) {
     _computeMaterialIndexesMonoMat(item_internal_data, queue);
   }
@@ -628,6 +628,16 @@ checkValid()
   for (IMeshMaterial* mat : m_materials) {
     mat->checkValid();
   }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+bool MeshEnvironment::
+isMonoMaterial() const
+{
+  bool is_mono_mat = (nbMaterial() == 1 && (cells().size() == totalNbCellMat()));
+  return is_mono_mat;
 }
 
 /*---------------------------------------------------------------------------*/
