@@ -55,7 +55,7 @@ class AllEnvData::RecomputeConstituentCellInfos
 
   RecomputeConstituentCellInfos()
   : env_cell_indexes(MemoryUtils::getDefaultDataAllocator())
-  , cells_nb_material(MemoryUtils::getDeviceOrHostAllocator())
+  , cells_nb_material(MemoryUtils::getDefaultDataAllocator())
   {
   }
 
@@ -243,22 +243,15 @@ _computeInfosForAllEnvCells(RecomputeConstituentCellInfos& work_info)
   IItemFamily* cell_family = mesh->cellFamily();
   CellGroup all_cells = cell_family->allItems();
   const Int32 nb_cell = all_cells.size();
+  const Int32 max_local_id = cell_family->maxLocalId();
 
   SmallSpan<const Int16> cells_nb_env = m_component_connectivity_list->cellsNbEnvironment();
 
   // Calcule pour chaque maille sa position dans le tableau des milieux
   // en considérant que les milieux de chaque maille sont rangés consécutivement
   // dans m_env_items_internal.
-  const Int32 max_local_id = cell_family->maxLocalId();
 
-  //UniqueArray<Int32> env_cell_indexes(platform::getDefaultDataAllocator());
   work_info.env_cell_indexes.resize(cells_nb_env.size());
-
-  // TODO: N'allouer que si demandé et le nombre de matériaux différents de 1
-
-  //! Tableau de travail pour le nombre de matériaux par milieu
-  //UniqueArray<Int16> cells_nb_material(MemoryUtils::getDeviceOrHostAllocator());
-  work_info.cells_nb_material.resize(max_local_id);
 
   RunQueue queue(m_material_mng->runQueue());
 
@@ -311,6 +304,10 @@ _computeInfosForEnvCells(RecomputeConstituentCellInfos& work_info)
   ConstArrayView<MeshEnvironment*> true_environments(m_material_mng->trueEnvironments());
   RunQueue queue(m_material_mng->runQueue());
 
+  IMesh* mesh = m_material_mng->mesh();
+  IItemFamily* cell_family = mesh->cellFamily();
+  const Int32 max_local_id = cell_family->maxLocalId();
+
   for (MeshEnvironment* env : true_environments) {
     const Int16 env_id = env->componentId();
     const MeshMaterialVariableIndexer* var_indexer = env->variableIndexer();
@@ -326,8 +323,14 @@ _computeInfosForEnvCells(RecomputeConstituentCellInfos& work_info)
 
     Int32ConstArrayView local_ids = var_indexer->localIds();
 
+    const bool is_mono_mat = env->isMonoMaterial();
+    if (!is_mono_mat)
+      work_info.cells_nb_material.resize(max_local_id);
+
     SmallSpan<Int16> cells_nb_mat_view = work_info.cells_nb_material.view();
-    m_component_connectivity_list->fillCellsNbMaterial(local_ids, env_id, cells_nb_mat_view, queue);
+
+    if (!is_mono_mat)
+      m_component_connectivity_list->fillCellsNbMaterial(local_ids, env_id, cells_nb_mat_view, queue);
 
     auto command = makeCommand(queue);
     SmallSpan<Int32> current_pos_view(work_info.env_cell_indexes);
@@ -344,7 +347,7 @@ _computeInfosForEnvCells(RecomputeConstituentCellInfos& work_info)
       Int32 lid = local_ids[z];
       Int32 pos = current_pos_view[lid];
       ++current_pos_view[lid];
-      Int16 nb_mat = cells_nb_mat_view[z];
+      Int16 nb_mat = (is_mono_mat) ? 1 : cells_nb_mat_view[z];
 
       ConstituentItemIndex cii_pos(pos);
       matimpl::ConstituentItemBase ref_ii(env_shared_info, cii_pos);
