@@ -74,12 +74,11 @@ jobs:
         with:
           source_dir: ${{ env.SOURCE_DIR }}
           build_dir: ${{ env.BUILD_DIR }}
-          cmake_additionnal_args: '-DCMAKE_CXX_FLAGS_RELEASE="-O2 -g --coverage -fprofile-abs-path -ftest-coverage"
+          cmake_additionnal_args: '-DCMAKE_CXX_FLAGS_RELEASE="-O2 -g"
             -DARCCORE_CXX_STANDARD=20
-            -DARCANE_DEFAULT_PARTITIONER=Metis
+            -DARCCORE_ENABLE_CODE_COVERAGE=ON
             -DARCANE_DISABLE_PERFCOUNTER_TESTS=ON
-            -DARCANE_DISABLE_HYODA=TRUE
-            -DARCCON_REGISTER_PACKAGE_VERSION=2'
+            -DARCANE_DISABLE_HYODA=TRUE'
           type_build: 'Release'
           compilo: 'GCC'
           verbose: true
