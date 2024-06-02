@@ -1,16 +1,4 @@
-﻿cmake_minimum_required(VERSION 3.13 FATAL_ERROR)
-
-# ----------------------------------------------------------------------------
-# ----------------------------------------------------------------------------
-
-# For support of VERSION
-cmake_policy(SET CMP0048 NEW)
-# Check libraries with FOO_ROOT (CMake 3.12)
-cmake_policy(SET CMP0074 NEW)
-# target_link_libraries from different libraries (CMake 3.13)
-cmake_policy(SET CMP0079 NEW)
-# option() honors normal variables (CMake 3.13)
-cmake_policy(SET CMP0077 NEW)
+﻿cmake_minimum_required(VERSION 3.21 FATAL_ERROR)
 
 # ----------------------------------------------------------------------------
 # Récupère numéro de version de Arccore à partir du fichier 'version' et
