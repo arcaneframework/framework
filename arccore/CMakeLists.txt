@@ -83,6 +83,7 @@ message(STATUS "[arccore] Is Debug mode enabled (final) ? ${ARCCORE_DEBUG}")
 # ----------------------------------------------------------------------------
 
 option(ARCCORE_USE_MPI "Whether or not MPI support is enabled" ON)
+option(ARCCORE_ENABLE_CODE_COVERAGE "Whether we use compiler option for code coverage" OFF)
 
 # Pour l'instant c'est obligatoire d'avoir la GLIB.
 set(ARCCORE_ENABLE_GLIB TRUE CACHE BOOL "Is Glib enabled in Arccon?" FORCE)
@@ -157,8 +158,17 @@ install(TARGETS arccore_full EXPORT ${ARCCORE_EXPORT_TARGET})
 # Les symboles des bibliothèques ne sont pas visibles sauf si demandé
 # explicitement
 
-if (CMAKE_COMPILER_IS_GNUCXX)
-  target_compile_options(arccore_build_compile_flags INTERFACE -fvisibility-inlines-hidden -fvisibility=hidden)
+# ----------------------------------------------------------------------------
+# Options pour la couverture de test
+
+if (ARCCORE_ENABLE_CODE_COVERAGE)
+  message(STATUS "Code coverage is enabled")
+  if (CMAKE_COMPILER_IS_GNUCXX)
+    target_compile_options(arccore_build_compile_flags INTERFACE --coverage -fprofile-abs-path -ftest-coverage)
+    target_link_options(arccore_build_compile_flags INTERFACE --coverage -fprofile-abs-path -ftest-coverage)
+  else()
+    message(FATAL_ERROR "Code coverage is only enabled for GCC compiler")
+  endif()
 endif()
 
 # ----------------------------------------------------------------------------
