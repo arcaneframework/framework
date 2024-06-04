@@ -1,0 +1,16 @@
+from pythonnet import load
+load("coreclr")
+
+import os
+import clr
+import sys
+
+assembly_path = r"@ARCANE_DOTNET_DLLS_DIR@"
+sys.path.append(assembly_path)
+
+clr.AddReference("Arcane.Launcher")
+clr.AddReference("Arcane.Utils")
+clr.AddReference("Arcane.Core")
+clr.AddReference("Arcane.Services")
+
+import Arcane
