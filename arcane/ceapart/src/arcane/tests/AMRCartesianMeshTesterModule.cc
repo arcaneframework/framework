@@ -172,6 +172,7 @@ staticInitialize(ISubDomain* sd)
     clist.clear();
     clist.add("ArcanePostProcessing");
     clist.add("ArcaneCheckpoint");
+    clist.add("ArcaneLoadBalance");
     time_loop->setOptionalModulesName(clist);
   }
 
