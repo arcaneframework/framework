@@ -977,6 +977,12 @@ endif()
 add_subdirectory(tools)
 
 # ----------------------------------------------------------------------------
+# Gestion du wrapper python (nécessite le wrapper C#)
+if (ARCANE_ENABLE_DOTNET_PYTHON_WRAPPER)
+  add_subdirectory(python)
+endif()
+
+# ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
 # Détection ou choix du partitionneur par défaut
 
