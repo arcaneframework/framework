@@ -60,7 +60,7 @@ jobs:
             package_name: 'ubuntu-22.04'
             triplet: x64-linux
             vcpkg_os: ubuntu-22.04
-            cmake_specific_args : '-DALIEN_BUILD_COMPONENT=all -DARCCORE_BUILD_MODE=Debug -DCMAKE_BUILD_TYPE=Debug -DARCCORE_CXX_STANDARD=20'
+            cmake_specific_args : '-DALIEN_BUILD_COMPONENT=all -DARCCORE_BUILD_MODE=Debug -DCMAKE_BUILD_TYPE=Debug -DARCCORE_CXX_STANDARD=20 -DARCANE_ENABLE_DOTNET_PYTHON_WRAPPER=ON'
             ctest_specific_args : '-I 1,150'
           - os: 'windows-2019'
             full_name: 'windows-2019-msmpi'
@@ -152,6 +152,11 @@ jobs:
         with:
           dotnet-version: '6.0.x'
 
+      - name: Install pythonnet
+        shell: 'bash'
+        run: |
+          pip3 install pythonnet
+
       - name: Get cache for 'ccache' tool
         uses: actions/cache@v4
         with:
@@ -196,7 +201,7 @@ jobs:
         run: |
           cmake -S "${{ github.workspace }}/_common/build_all" -B "${{ env.CMAKE_BUILD_DIR }}" -DCMAKE_VERBOSE_MAKEFILE=TRUE -DVCPKG_INSTALLED_DIR="${{ env.VCPKG_BUILD_DIR }}/installed" -DBUILD_SHARED_LIBS=TRUE -DARCANE_ADD_RPATH_TO_LIBS=OFF -DARCCON_REGISTER_PACKAGE_VERSION=2 -DCMAKE_TOOLCHAIN_FILE="${{ env.VCPKG_ROOT }}/scripts/buildsystems/vcpkg.cmake" ${{ matrix.cmake_specific_args }} -DCMAKE_CXX_COMPILER_LAUNCHER="ccache" -GNinja
 
-      - name: Dump Some Generated fileskCMakeCache.txt
+      - name: Dump Some Generated files
         shell: bash
         run: |
           echo "Dump CMakeCache.txt"
@@ -219,7 +224,12 @@ jobs:
           cd "${{ env.CMAKE_BUILD_DIR }}" && ctest --output-on-failure ${{ matrix.ctest_specific_args }}
 
       - name: Test Aleph kappa
-#        if: matrix.triplet == 'x64-windows'
         shell: bash
         run: |
           cd "${{ env.CMAKE_BUILD_DIR }}" && ctest --output-on-failure ${{ matrix.ctest_specific_args }} -R kappa
+
+      - name: Test Python wrapper
+        shell: bash
+        run: |
+          cd "${{ env.CMAKE_BUILD_DIR }}" && ctest --output-on-failure -V -R python_test
+
