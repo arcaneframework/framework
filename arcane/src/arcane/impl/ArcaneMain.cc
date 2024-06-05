@@ -744,6 +744,7 @@ arcaneInitialize()
 void ArcaneMain::
 arcaneFinalize()
 {
+  std::cout << "CALLING ARCANE_FINALIZE\n";
   _checkHasInit();
 
   if (m_nb_arcane_init.fetch_sub(1) == 1) {
@@ -773,6 +774,7 @@ arcaneFinalize()
 #endif
     m_is_init_done = 0;
   }
+  std::cout << "END_CALLING ARCANE_FINALIZE\n";
 }
 
 /*---------------------------------------------------------------------------*/
@@ -963,7 +965,9 @@ run()
   // (parce que le Main est en C# par exemple), on ne lance pas le wrapper
   bool is_in_dotnet = platform::hasDotNETRuntime();
   if (!is_in_dotnet && dotnet_info.isUsingDotNetRuntime()) {
+    std::cout << "Doing Dotnet\n";
     r = _runDotNet();
+    std::cout << "End Doing Dotnet\n";
     // Avant la version 3.7.8 on n'appelait par arcaneFinalize() car cela pouvait
     // poser des problèmes avec le Garbage Collector de '.Net'. Normalement ces
     // problèmes sont corrigés mais on autorise le comportement d'avant au cas où.

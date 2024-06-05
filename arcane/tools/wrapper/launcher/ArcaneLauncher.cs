@@ -45,7 +45,10 @@ namespace Arcane
   {
     public static int Run()
     {
-      return ArcaneMain.Run();
+      int r = ArcaneMain.Run();
+      Debug.Write("End of Run()");
+      return r;
+
     }
     public static ApplicationInfo ApplicationInfo
     {

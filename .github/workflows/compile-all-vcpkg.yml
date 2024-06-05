@@ -41,20 +41,20 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: ubuntu-20.04
-            full_name: 'ubuntu-20.04'
-            package_name: 'ubuntu-20.04'
-            triplet: x64-linux
-            vcpkg_os: ubuntu-20.04
-            cmake_specific_args : '-DARCCORE_BUILD_MODE=Debug -DCMAKE_BUILD_TYPE=Debug'
-            ctest_specific_args : '-I 1,140'
-          - os: ubuntu-22.04
-            full_name: 'ubuntu-22.04'
-            package_name: 'ubuntu-22.04'
-            triplet: x64-linux
-            vcpkg_os: ubuntu-22.04
-            cmake_specific_args : '-DALIEN_BUILD_COMPONENT=all -DARCCORE_BUILD_MODE=Debug -DCMAKE_BUILD_TYPE=Debug'
-            ctest_specific_args : '-I 1,140'
+          # - os: ubuntu-20.04
+          #   full_name: 'ubuntu-20.04'
+          #   package_name: 'ubuntu-20.04'
+          #   triplet: x64-linux
+          #   vcpkg_os: ubuntu-20.04
+          #   cmake_specific_args : '-DARCCORE_BUILD_MODE=Debug -DCMAKE_BUILD_TYPE=Debug'
+          #   ctest_specific_args : '-I 1,140'
+          # - os: ubuntu-22.04
+          #   full_name: 'ubuntu-22.04'
+          #   package_name: 'ubuntu-22.04'
+          #   triplet: x64-linux
+          #   vcpkg_os: ubuntu-22.04
+          #   cmake_specific_args : '-DALIEN_BUILD_COMPONENT=all -DARCCORE_BUILD_MODE=Debug -DCMAKE_BUILD_TYPE=Debug'
+          #   ctest_specific_args : '-I 1,140'
           - os: ubuntu-22.04
             full_name: 'ubuntu-22.04-cxx20'
             package_name: 'ubuntu-22.04'
@@ -62,34 +62,34 @@ jobs:
             vcpkg_os: ubuntu-22.04
             cmake_specific_args : '-DALIEN_BUILD_COMPONENT=all -DARCCORE_BUILD_MODE=Debug -DCMAKE_BUILD_TYPE=Debug -DARCCORE_CXX_STANDARD=20 -DARCANE_ENABLE_DOTNET_PYTHON_WRAPPER=ON'
             ctest_specific_args : '-I 1,150'
-          - os: 'windows-2019'
-            full_name: 'windows-2019-msmpi'
-            package_name: 'windows-2019-msmpi'
-            triplet: x64-windows
-            vcpkg_os: windows-2019
-            cmake_specific_args : '-DCMAKE_BUILD_TYPE=Release'
-            ctest_specific_args : '-I 1,160'
-          - os: 'windows-2019'
-            full_name: 'windows-2019-intelmpi'
-            package_name: 'windows-2019-intelmpi'
-            triplet: x64-windows
-            vcpkg_os: windows-2019
-            cmake_specific_args : '-DCMAKE_BUILD_TYPE=Release'
-            ctest_specific_args : '-I 1,160'
-          - os: 'windows-2022'
-            full_name: 'windows-2022-intelmpi'
-            package_name: 'windows-2022-intelmpi'
-            triplet: x64-windows
-            vcpkg_os: windows-2022
-            cmake_specific_args : '-DCMAKE_BUILD_TYPE=Release'
-            ctest_specific_args : '-I 1,160'
-          - os: 'windows-2022'
-            full_name: 'windows-2022-cxx20-intelmpi'
-            package_name: 'windows-2022-intelmpi'
-            triplet: x64-windows
-            vcpkg_os: windows-2022
-            cmake_specific_args : '-DCMAKE_BUILD_TYPE=Release -DARCCORE_CXX_STANDARD=20'
-            ctest_specific_args : '-I 1,160'
+          # - os: 'windows-2019'
+          #   full_name: 'windows-2019-msmpi'
+          #   package_name: 'windows-2019-msmpi'
+          #   triplet: x64-windows
+          #   vcpkg_os: windows-2019
+          #   cmake_specific_args : '-DCMAKE_BUILD_TYPE=Release'
+          #   ctest_specific_args : '-I 1,160'
+          # - os: 'windows-2019'
+          #   full_name: 'windows-2019-intelmpi'
+          #   package_name: 'windows-2019-intelmpi'
+          #   triplet: x64-windows
+          #   vcpkg_os: windows-2019
+          #   cmake_specific_args : '-DCMAKE_BUILD_TYPE=Release'
+          #   ctest_specific_args : '-I 1,160'
+          # - os: 'windows-2022'
+          #   full_name: 'windows-2022-intelmpi'
+          #   package_name: 'windows-2022-intelmpi'
+          #   triplet: x64-windows
+          #   vcpkg_os: windows-2022
+          #   cmake_specific_args : '-DCMAKE_BUILD_TYPE=Release'
+          #   ctest_specific_args : '-I 1,160'
+          # - os: 'windows-2022'
+          #   full_name: 'windows-2022-cxx20-intelmpi'
+          #   package_name: 'windows-2022-intelmpi'
+          #   triplet: x64-windows
+          #   vcpkg_os: windows-2022
+          #   cmake_specific_args : '-DCMAKE_BUILD_TYPE=Release -DARCCORE_CXX_STANDARD=20'
+          #   ctest_specific_args : '-I 1,160'
 
     env:
       # Indique pour IntelMPI de ne pas faire d'attente active
@@ -227,6 +227,12 @@ jobs:
         shell: bash
         run: |
           cd "${{ env.CMAKE_BUILD_DIR }}" && ctest --output-on-failure ${{ matrix.ctest_specific_args }} -R kappa
+
+      - name: Test Task
+        shell: bash
+        run: |
+          cd "${{ env.CMAKE_BUILD_DIR }}" && ctest --output-on-failure ${{ matrix.ctest_specific_args }} -R task1_task
+          cd "${{ env.CMAKE_BUILD_DIR }}" && ctest --output-on-failure ${{ matrix.ctest_specific_args }} -V -R task1_bind
 
       - name: Test Python wrapper
         shell: bash

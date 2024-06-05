@@ -575,8 +575,9 @@ class TBBTaskImplementation::Impl
     m_sub_arena_list.clear();
     m_main_arena.terminate();
 #ifdef ARCANE_USE_ONETBB
+    std::cout << "DOING_ONETBB_TERMINATE\n";
     m_task_observer.observe(false);
-    oneapi::tbb::finalize(m_task_scheduler_handle);
+    //oneapi::tbb::finalize(m_task_scheduler_handle);
 #else
     m_scheduler_init.terminate();
     m_task_observer.observe(false);

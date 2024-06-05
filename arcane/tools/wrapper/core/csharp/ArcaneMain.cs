@@ -265,6 +265,7 @@ namespace Arcane
 
     static int _Run2()
     {
+      Debug.Write("Execute _Run2. HasDotNet?='{0}'", HasDotNetWrapper);
       int r = 0;
       if (HasDotNetWrapper)
         r = ArcaneMain_INTERNAL.ArcaneMain(DefaultApplicationInfo);
