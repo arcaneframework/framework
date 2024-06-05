@@ -354,7 +354,7 @@ namespace Arcane.AxlDoc
           //Console.WriteLine("SERVICE TYPE FOUND={0}",o.Type);
           _WriteHtmlOnly(m_full_stream, "<div class='full_desc_service_module ServiceTable'>");
           if(m_code_info.Language == "fr"){
-            m_full_stream.WriteLine ("<dl><dt>Valeur{0} possible{0} pour le tag <i>name</i>:</dt>",
+            m_full_stream.WriteLine ("<dl><dt>Valeur{0} possible{0} pour le tag <i>name</i> :</dt>",
                                      (interface_info.Services.Count>1)?"s":"");
           }
           else{
@@ -363,11 +363,24 @@ namespace Arcane.AxlDoc
           }
           foreach (CodeServiceInfo csi in interface_info.Services) {
             //Console.WriteLine("SERVICE TYPE FOUND={0} {1} {2}",o.Type,csi.Name,csi.FileBaseName);
+
+            _WriteHtmlOnly(m_full_stream, "<details>");
+            _WriteHtmlOnly(m_full_stream, "<summary>");
             if (csi.FileBaseName != null) {
-              m_full_stream.WriteLine ("<dd>\\ref axldoc_service_{0} \"{1}\"<br/></dd>", csi.FileBaseName, csi.Name);
+              m_full_stream.WriteLine ("\\ref axldoc_service_{0} \"{1}\"<br/>", csi.FileBaseName, csi.Name);
             } else {
-              m_full_stream.WriteLine ("<dd>{0}</dd>", csi.Name);
+              m_full_stream.WriteLine ("{0}", csi.Name);
             }
+            _WriteHtmlOnly(m_full_stream, "</summary>");
+
+            if(m_code_info.Language == "fr"){
+              m_full_stream.WriteLine ("Liste des options :");
+            }
+            else{
+              m_full_stream.WriteLine ("Summary of options:");
+            }
+
+            _WriteHtmlOnly(m_full_stream, "</details>");
           }
           m_full_stream.WriteLine ("</dl>");
           _WriteHtmlOnly(m_full_stream, "</div>");
@@ -375,7 +388,7 @@ namespace Arcane.AxlDoc
       }
       _WriteAfterDescriptionsBeforeLabels();
 
-      _WriteLabels(color, "ServiceInstance");
+      _WriteLabels(color, "Service Instance");
 
       _WriteAfterLabelsBeforeCode();
 
