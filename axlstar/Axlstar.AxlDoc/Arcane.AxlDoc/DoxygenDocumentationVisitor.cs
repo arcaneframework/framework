@@ -360,7 +360,7 @@ namespace Arcane.AxlDoc
       if (m_code_info.Interfaces.TryGetValue (o.Type, out interface_info)) {
         if (interface_info.Services.Count>0) {
           //Console.WriteLine("SERVICE TYPE FOUND={0}",o.Type);
-          _WriteHtmlOnly(m_full_stream, "<div class=\"ServiceTable\">");
+          _WriteHtmlOnly(m_full_stream, "<div class='ServiceTable' id='FullDescServiceModule'>");
           if(m_code_info.Language == "fr"){
             m_full_stream.WriteLine ("<dl><dt>Valeur{0} possible{0} pour le tag <i>name</i>:</dt>",
                                      (interface_info.Services.Count>1)?"s":"");
@@ -450,7 +450,7 @@ namespace Arcane.AxlDoc
 
     private void _AddFullDescription (int i, Option option, XmlElement desc_elem)
     {
-      _WriteHtmlOnly(m_full_stream, "<div class='OptionFullDescription'>");
+      _WriteHtmlOnly(m_full_stream, "<div class='OptionFullDescription' id='FullDescServiceModule'>");
       _WriteDescription (i, option, desc_elem, m_full_stream);
       // Passage en \htmlonly car s'il y a une liste non numéroté :
       // - 
