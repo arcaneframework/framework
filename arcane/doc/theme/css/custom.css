@@ -376,3 +376,19 @@ details[open] summary::before {
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+
+/*
+ * Début : Personnalisation de la partie axldoc.
+ */
+#FullDescServiceModule {
+  color: var(--page-foreground-color) !important;
+  text-shadow: none;
+}
+
+/*
+ * Fin : Personnalisation de la partie axldoc.
+ */
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
