@@ -51,6 +51,10 @@ namespace Arcane
     {
       get { return ArcaneLauncher_INTERNAL.ApplicationInfo(); }
     }
+    public static ApplicationBuildInfo ApplicationBuildInfo
+    {
+      get { return ArcaneLauncher_INTERNAL.ApplicationBuildInfo(); }
+    }
     public static DotNetRuntimeInitialisationInfo DotNetRuntimeInitialisationInfo
     {
       get { return ArcaneLauncher_INTERNAL.DotNetRuntimeInitialisationInfo(); }

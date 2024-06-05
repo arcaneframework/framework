@@ -412,7 +412,12 @@ namespace Arcane
 
     static void _LoadModuleAndServiceFromAssembly(Assembly a)
     {
-      Debug.Write("Reading assembly name={0} path={1}",a,a.Location);
+      // On ne peut pas appeler 'a.Location' sur une assembly dynamique
+      if (a.IsDynamic)
+        Debug.Write("Reading dynamic assembly name={0}",a);
+      else
+        Debug.Write("Reading assembly name={0} path={1}",a,a.Location);
+
       Type[] atypes = null;
       try{
         atypes = a.GetTypes();

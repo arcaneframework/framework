@@ -757,6 +757,7 @@ arcaneFinalize()
       if (x) {
         x->closeLibraries();
         delete x;
+        platform::setDynamicLibraryLoader(nullptr);
       }
     }
     arcanePrintSpecificMemoryStats();
