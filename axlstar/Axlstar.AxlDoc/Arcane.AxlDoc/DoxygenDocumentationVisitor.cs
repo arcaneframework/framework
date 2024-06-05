@@ -120,11 +120,9 @@ namespace Arcane.AxlDoc
       if (m_config.max_display_size > 0 && otc.NbTotalOption > m_config.max_display_size) {
 
         _WriteHtmlOnly(m_full_stream, "<div class=\"ComplexOptionInfoBlock\">");
-        _WriteHtmlOnly(m_full_stream, "<h2 class=\"memtitle\" style=\"border-color: purple;\">");
 
         _WriteColoredTitle("purple", o, true);
 
-        _WriteHtmlOnly(m_full_stream, "</h2>");
         _WriteHtmlOnly(m_full_stream, "<div class=\"memitem\" style=\"border-color: purple;\">");
         _WriteHtmlOnly(m_full_stream, "<div class=\"memproto\">");
 
@@ -167,11 +165,9 @@ namespace Arcane.AxlDoc
         // - Un titre (h2 de classe .memtitle)
         // - Une partie "sous-titre" (div de classe .memitem.memproto)
         // - Une partie "description" (div de classe .memitem.memdoc)
-        _WriteHtmlOnly(m_full_stream, "<h2 class=\"memtitle\" style=\"border-color: purple;\">");
 
         _WriteColoredTitle ("purple", o, false);
 
-        _WriteHtmlOnly(m_full_stream, "</h2>");
         _WriteHtmlOnly(m_full_stream, "<div class=\"memitem\" style=\"border-color: purple;\">");
         _WriteHtmlOnly(m_full_stream, "<div class=\"memproto\">");
 
@@ -202,9 +198,7 @@ namespace Arcane.AxlDoc
       // - Un titre (h2 de classe .memtitle)
       // - Une partie "sous-titre" (div de classe .memitem.memproto)
       // - Une partie "description" (div de classe .memitem.memdoc)
-      _WriteHtmlOnly(m_full_stream, "<h2 class=\"memtitle\" style=\"border-color: olive;\">");
       _WriteColoredTitle ("olive", o, false);
-      _WriteHtmlOnly(m_full_stream, "</h2>");
       XmlDocument owner_doc = o.Node.OwnerDocument;
       XmlElement desc_elem = o.DescriptionElement;
       // Construit dans \a enum_list_element
@@ -278,10 +272,8 @@ namespace Arcane.AxlDoc
       // - Un titre (h2 de classe .memtitle)
       // - Une partie "sous-titre" (div de classe .memitem.memproto)
       // - Une partie "description" (div de classe .memitem.memdoc)
-      _WriteHtmlOnly(m_full_stream, "<h2 class=\"memtitle\" style=\"border-color: teal;\">");
 
       _WriteColoredTitle ("teal", o, false);
-      _WriteHtmlOnly(m_full_stream, "</h2>");
 
       _WriteHtmlOnly(m_full_stream, "<div class=\"memitem\" style=\"border-color: teal;\">");
       _WriteHtmlOnly(m_full_stream, "<div class=\"memproto\">");
@@ -301,11 +293,9 @@ namespace Arcane.AxlDoc
       // - Un titre (h2 de classe .memtitle)
       // - Une partie "sous-titre" (div de classe .memitem.memproto)
       // - Une partie "description" (div de classe .memitem.memdoc)
-      _WriteHtmlOnly(m_full_stream, "<h2 class=\"memtitle\" style=\"border-color: teal;\">");
-      _WriteColoredTitle ("teal", o, false);
-      _WriteHtmlOnly(m_full_stream, "</h2>");
+      _WriteColoredTitle ("red", o, false);
 
-      _WriteHtmlOnly(m_full_stream, "<div class=\"memitem\" style=\"border-color: teal;\">");
+      _WriteHtmlOnly(m_full_stream, "<div class=\"memitem\" style=\"border-color: red;\">");
       _WriteHtmlOnly(m_full_stream, "<div class=\"memproto\">");
       _AddBriefDescription (o, false);
       _AddFullDescription (o);
@@ -323,9 +313,7 @@ namespace Arcane.AxlDoc
       // - Un titre (h2 de classe .memtitle)
       // - Une partie "sous-titre" (div de classe .memitem.memproto)
       // - Une partie "description" (div de classe .memitem.memdoc)
-      _WriteHtmlOnly(m_full_stream, "<h2 class=\"memtitle\" style=\"border-color: green;\">");
       _WriteColoredTitle ("green", o, false);
-      _WriteHtmlOnly(m_full_stream, "</h2>");
 
       _WriteHtmlOnly(m_full_stream, "<div class=\"memitem\" style=\"border-color: green;\">");
       _WriteHtmlOnly(m_full_stream, "<div class=\"memproto\">");
@@ -348,11 +336,9 @@ namespace Arcane.AxlDoc
       // - Un titre (h2 de classe .memtitle)
       // - Une partie "sous-titre" (div de classe .memitem.memproto)
       // - Une partie "description" (div de classe .memitem.memdoc)
-      _WriteHtmlOnly(m_full_stream, "<h2 class=\"memtitle\" style=\"border-color: green;\">");
-      _WriteColoredTitle ("green", o, false);
+      _WriteColoredTitle ("DodgerBlue", o, false);
       //m_full_stream.WriteLine("<p>SERVICE TYPE={0}</p>",o.Type);
-      _WriteHtmlOnly(m_full_stream, "</h2>");
-      _WriteHtmlOnly(m_full_stream, "<div class=\"memitem\" style=\"border-color: green;\">");
+      _WriteHtmlOnly(m_full_stream, "<div class=\"memitem\" style=\"border-color: DodgerBlue;\">");
       _WriteHtmlOnly(m_full_stream, "<div class=\"memproto\">");
       _AddBriefDescription (o, false);
       _AddFullDescription (o);
@@ -513,9 +499,11 @@ namespace Arcane.AxlDoc
 
     private void _WriteColoredTitle (string color, Option o, bool option_with_subpage)
     {
+      _WriteHtmlOnly(m_full_stream, "<h2 class='memtitle' style='border-color: " + color + ";'>");
       _WriteHtmlOnly (m_full_stream, "<font color = \"" + color + "\" >");
       _WriteTitle (o, option_with_subpage);
       _WriteHtmlOnly (m_full_stream, "</font>");
+      _WriteHtmlOnly(m_full_stream, "</h2>");
     }
 
     // option_with_subpage est utile pour les options complexes ayant plus de 30 sous-options.
