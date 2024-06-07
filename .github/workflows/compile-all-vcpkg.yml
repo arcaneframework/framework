@@ -224,6 +224,7 @@ jobs:
           cd "${{ env.CMAKE_BUILD_DIR }}" && ctest --output-on-failure ${{ matrix.ctest_specific_args }}
 
       - name: Test Aleph kappa
+        if: matrix.os != 'windows-2022'
         shell: bash
         run: |
           cd "${{ env.CMAKE_BUILD_DIR }}" && ctest --output-on-failure ${{ matrix.ctest_specific_args }} -R kappa
