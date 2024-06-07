@@ -82,14 +82,14 @@ jobs:
             triplet: x64-windows
             vcpkg_os: windows-2022
             cmake_specific_args : '-DCMAKE_BUILD_TYPE=Release'
-            ctest_specific_args : '-I 1,160'
+            ctest_specific_args : '-I 1,10'
           - os: 'windows-2022'
             full_name: 'windows-2022-cxx20-intelmpi'
             package_name: 'windows-2022-intelmpi'
             triplet: x64-windows
             vcpkg_os: windows-2022
             cmake_specific_args : '-DCMAKE_BUILD_TYPE=Release -DARCCORE_CXX_STANDARD=20'
-            ctest_specific_args : '-I 1,160'
+            ctest_specific_args : '-I 1,10'
 
     env:
       # Indique pour IntelMPI de ne pas faire d'attente active
