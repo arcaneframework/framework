@@ -82,7 +82,7 @@ namespace Arcane.AxlDoc
 
       string snippet_name = String.Format ("snippet_{0}", m_page_name);
       string snippet_file_name = String.Format ("{0}.md", snippet_name);
-      string snippet_full_name = Path.Combine (m_output_path, snippet_file_name);
+      string snippet_full_name = Path.Combine (m_output_path, "snippets", snippet_file_name);
 
       using (TextWriter tw = new StreamWriter (full_name, false, Utils.WriteEncoding)) {
         tw.WriteLine ("# {1} {{#{0}}}\n", m_page_name, m_page_title);
