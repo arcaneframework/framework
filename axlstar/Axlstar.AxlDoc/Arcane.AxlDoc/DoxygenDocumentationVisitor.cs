@@ -134,11 +134,11 @@ namespace Arcane.AxlDoc
 
         if(m_code_info.Language == "fr"){
           _WriteHtmlOnly(m_full_stream, "<br>");
-          m_full_stream.WriteLine("Le nombre de sous-options étant trop élevé, \\subpage " + DoxygenDocumentationUtils.AnchorName(o) + " \"une page dédiée a été générée\".\n");
+          m_full_stream.WriteLine("Le nombre de sous-options étant trop élevé, \\subpage {0} \"une page dédiée a été générée\".\n", DoxygenDocumentationUtils.AnchorName(o));
         }
         else{
           _WriteHtmlOnly(m_full_stream, "<br>");
-          m_full_stream.WriteLine("The number of suboptions is too high. \\subpage " + DoxygenDocumentationUtils.AnchorName(o) + " \"A subpage has been generated\".\n");
+          m_full_stream.WriteLine("The number of suboptions is too high. \\subpage {0} \"A subpage has been generated\".\n", DoxygenDocumentationUtils.AnchorName(o));
         }
 
         _WriteAfterCode();
@@ -354,35 +354,43 @@ namespace Arcane.AxlDoc
           //Console.WriteLine("SERVICE TYPE FOUND={0}",o.Type);
           _WriteHtmlOnly(m_full_stream, "<div class='full_desc_service_module ServiceTable'>");
           if(m_code_info.Language == "fr"){
-            m_full_stream.WriteLine ("<dl><dt>Valeur{0} possible{0} pour le tag <i>name</i> :</dt>",
-                                     (interface_info.Services.Count>1)?"s":"");
+            _WriteHtmlOnly(m_full_stream, String.Format("<dl><dt>Valeur{0} possible{0} pour le tag <i>name</i> :</dt>",
+                                     (interface_info.Services.Count>1)?"s":""));
           }
           else{
-            m_full_stream.WriteLine ("<dl><dt>Possible value{0} for tag <i>name</i>:</dt>",
-                                     (interface_info.Services.Count>1)?"s":"");
+            _WriteHtmlOnly(m_full_stream, String.Format("<dl><dt>Possible value{0} for tag <i>name</i>:</dt>",
+                                     (interface_info.Services.Count>1)?"s":""));
           }
-          foreach (CodeServiceInfo csi in interface_info.Services) {
-            //Console.WriteLine("SERVICE TYPE FOUND={0} {1} {2}",o.Type,csi.Name,csi.FileBaseName);
 
+          // Ajout des différents services disponibles pour cette option.
+          // Avec un aperçu des options de ces services.
+          foreach (CodeServiceInfo csi in interface_info.Services) {
             _WriteHtmlOnly(m_full_stream, "<details>");
             _WriteHtmlOnly(m_full_stream, "<summary>");
-            if (csi.FileBaseName != null) {
-              m_full_stream.WriteLine ("\\ref axldoc_service_{0} \"{1}\"<br/>", csi.FileBaseName, csi.Name);
-            } else {
+            if (String.IsNullOrEmpty(csi.FileBaseName)) {
               m_full_stream.WriteLine ("{0}", csi.Name);
-            }
-            _WriteHtmlOnly(m_full_stream, "</summary>");
+              _WriteHtmlOnly(m_full_stream, "</summary>");
+              _WriteHtmlOnly(m_full_stream, "</details>");
+            } 
+            else {
+              m_full_stream.WriteLine ("\\ref axldoc_service_{0} \"{1}\"<br/>", csi.FileBaseName, csi.Name);
+              _WriteHtmlOnly(m_full_stream, "</summary>");
 
-            if(m_code_info.Language == "fr"){
-              m_full_stream.WriteLine ("Liste des options :");
-            }
-            else{
-              m_full_stream.WriteLine ("Summary of options:");
-            }
+              if(m_code_info.Language == "fr"){
+                m_full_stream.WriteLine ("Liste des options du service \\ref axldoc_service_{0} \"{1}\" :", csi.FileBaseName, csi.Name);
+              }
+              else{
+                m_full_stream.WriteLine ("Summary of options of \\ref axldoc_service_{0} \"{1}\" service:", csi.FileBaseName, csi.Name);
+              }
 
-            _WriteHtmlOnly(m_full_stream, "</details>");
+              // Attention : Pour que ça fonctionne, il faut ajouter le dossier de sortie dans
+              // la partie "EXAMPLE_PATH" du .doxyfile.
+              m_full_stream.WriteLine("\n\\snippet{{doc}} snippet_axldoc_service_{0}.md snippet_axldoc_service_{0}\n", csi.FileBaseName);
+
+              _WriteHtmlOnly(m_full_stream, "</details>");
+            }
           }
-          m_full_stream.WriteLine ("</dl>");
+          _WriteHtmlOnly(m_full_stream, "</dl>");
           _WriteHtmlOnly(m_full_stream, "</div>");
         }
       }
