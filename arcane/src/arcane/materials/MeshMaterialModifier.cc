@@ -37,6 +37,7 @@ MeshMaterialModifier(IMeshMaterialMng* mm)
 {
   if (!m_impl)
     ARCANE_FATAL("Can not create 'MeshMaterialModifier' because IMeshMaterialMng is not yet initialized");
+  m_impl->reset();
 }
 
 /*---------------------------------------------------------------------------*/
