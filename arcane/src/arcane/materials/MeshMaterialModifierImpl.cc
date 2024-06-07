@@ -399,6 +399,17 @@ _updateEnvironmentsNoOptimize()
 /*---------------------------------------------------------------------------*/
 
 void MeshMaterialModifierImpl::
+reset()
+{
+  m_do_copy_between_partial_and_pure = true;
+  m_do_init_new_items = true;
+  m_is_keep_work_buffer = true;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MeshMaterialModifierImpl::
 beginUpdate()
 {
   m_material_mng->info(4) << "BEGIN_UPDATE_MAT";

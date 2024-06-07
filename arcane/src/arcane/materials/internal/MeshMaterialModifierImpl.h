@@ -66,6 +66,8 @@ class MeshMaterialModifierImpl
 
  public:
 
+  void reset();
+
   void addCells(IMeshMaterial* mat, SmallSpan<const Int32> ids);
   void removeCells(IMeshMaterial* mat, SmallSpan<const Int32> ids);
 
