@@ -42,8 +42,10 @@ arcaneIsCudaAwareMPI()
   bool is_aware = false;
   // OpenMPI définit MPIX_CUDA_AWARE_SUPPORT et mpich définit MPIX_GPU_SUPPORT_CUDA
   // pour indiquer que MPIX_Query_cuda_support() est disponible.
+#if defined(ARCANE_OS_LINUX)
 #if defined(MPIX_CUDA_AWARE_SUPPORT) || defined(MPIX_GPU_SUPPORT_CUDA)
   is_aware =  (MPIX_Query_cuda_support()==1);
+#endif
 #endif
   return is_aware;
 }
@@ -56,6 +58,7 @@ arcaneIsHipAwareMPI()
   // pour indiquer que MPIX_Query_hip_support() est disponible.
 
   // MPICH
+#if defined(ARCANE_OS_LINUX)
 #if defined(MPIX_GPU_SUPPORT_HIP)
   is_aware =  (MPIX_Query_hip_support()==1);
 #endif
@@ -63,6 +66,7 @@ arcaneIsHipAwareMPI()
   // OpenMPI:
 #if defined(MPIX_ROCM_AWARE_SUPPORT)
   is_aware =  (MPIX_Query_rocm_support()==1);
+#endif
 #endif
   return is_aware;
 }
