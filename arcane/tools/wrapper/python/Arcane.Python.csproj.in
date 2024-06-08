@@ -23,5 +23,7 @@
   <ItemGroup>
     <PackageReference Include="pythonnet" Version="3.0.*" />
     <PackageReference Include="Numpy.Bare" Version="3.11.*" />
+    <!-- Pas directement utile mais permet d'éviter un avertissement sur les versions des packages nuget -->
+    <PackageReference Include="System.Runtime" Version="4.3.1" />
   </ItemGroup>
 </Project>
