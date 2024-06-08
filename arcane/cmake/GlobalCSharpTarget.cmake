@@ -24,9 +24,14 @@ if(ARCANE_USE_GLOBAL_CSHARP)
     add_dependencies(arcane_global_csharp_restore_target dotnet_axl_depend)
   endif()
 
-  # TODO: Ajouter cible pour forcer la compilation
+  # Cible pour forcer la recompilation et la restauration
+  add_custom_target(force_arcane_global_csharp
+      WORKING_DIRECTORY ${ARGS_PROJECT_PATH}
+      COMMAND ${CMAKE_COMMAND} -E remove "${ARCANE_DOTNET_RESTORE_TIMESTAMP}"
+      COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR} --target arcane_global_csharp_target
+      COMMENT "Force Building global 'C#' target"
+      )
 endif()
-
 
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
