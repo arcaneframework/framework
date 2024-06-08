@@ -20,9 +20,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="@CMAKE_CURRENT_SOURCE_DIR@/ArcaneMainExec.cs" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="../Arcane.Launcher/Arcane.Launcher.csproj" />
     <ProjectReference Include="../Arcane.Core/Arcane.Core.csproj" />
   </ItemGroup>
