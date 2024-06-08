@@ -127,13 +127,13 @@ void ExternalPluginTesterModule::
 init()
 {
   info() << "Begin of init";
-  options()->externalPlugin()->loadFile("toto.py");
+  options()->externalPlugin()->loadFile(options()->file());
 }
 
 void ExternalPluginTesterModule::
 computeLoop()
 {
-  options()->externalPlugin()->loadFile("toto.py");
+  options()->externalPlugin()->loadFile(options()->file());
   bool is_finished = (m_global_iteration() >= 15);
   if (is_finished)
     subDomain()->timeLoopMng()->stopComputeLoop(true);
