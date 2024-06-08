@@ -8,6 +8,7 @@ set(ARCANE_SOURCES
   CaseFunctionUnitTest.cc
   CaseFunctionTesterModule.cc
   CaseOptionsTesterModule.cc
+  ExternalPluginTesterModule.cc
   ParallelTesterModule.cc
   SubMeshTestModule.cc
   HydroAdditionalTestModule.cc
@@ -85,6 +86,7 @@ set(AXL_FILES
   ScriptTester
   CaseFunctionTester
   CaseOptionsTester
+  ExternalPluginTester
   ParallelTester
   SubMeshTest
   SingletonService

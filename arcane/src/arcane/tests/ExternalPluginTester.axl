@@ -1,0 +1,20 @@
+<?xml version="1.0" ?><!-- -*- SGML -*- -->
+
+<!-- ###################################################################### -->
+<!-- ###################################################################### -->
+
+<module name="ExternalPluginTester" version="1.0" namespace-name="ArcaneTest::ExternalPluginTester" >
+  <description>
+    Module de test des plugins externes
+  </description>
+  <entry-points>
+    <entry-point method-name="build" name="EPT_Build" where="build" property="none" />
+    <entry-point method-name="init" name="EPT_Init" where="init" property="none" />
+    <entry-point method-name="exit" name="EPT_Exit" where="exit" property="none" />
+    <entry-point method-name="computeLoop" name="EPT_ComputeLoop" where="compute-loop" property="none" />
+  </entry-points>
+  <options>
+    <service-instance name="external-plugin" type="Arcane::IExternalPlugin" default="BasicDotNetPythonExternalPlugin" />
+    <simple name="file" type="string" />
+  </options>
+</module>

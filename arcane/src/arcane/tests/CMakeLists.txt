@@ -274,6 +274,7 @@ arcane_copy_mesh(sphere_v4.2 sphere_v4.2 vtk)
 arcane_copy_mesh(sphere_v4.2_binary sphere_v4.2_binary vtk)
 
 configure_file(test-CasePartVtu.sh.in ${ARCANE_TEST_PATH}/test-CasePartVtu.sh)
+configure_file(${ARCANE_ARC_PATH}/testExternalPlugin-1.arc.in ${ARCANE_TEST_PATH}/testExternalPlugin-1.arc)
 
 # Copie le répertoire des données dans le répertoire d'exécution des tests
 # Cela est nécessaire pour certains cas comme ceux faisant une reprise
@@ -1009,9 +1010,21 @@ arcane_add_test_sequential(string_variable_replace testStringVariableReplace.arc
 arcane_add_test(time_history_adder_1 testTimeHistoryAdder-1.arc -c 2 -m 5 -We,ARCANE_ENABLE_NON_IO_MASTER_CURVES,1)
 
 #################################################################
-# Test wrapper python
+# Test wrapper python en mode embedded
 if (ARCANE_ENABLE_DOTNET_PYTHON_WRAPPER)
-  arcane_add_test_sequential(python_wrapping_test1 testSimplePythonCall-1.arc -Z --dotnet-runtime=coreclr -m 5)
+  # Il faut trouver le chemin de 'libpython.so' et positionner
+  # la variable d'environnement PYTHONNET_PYDLL pour le mode embedded.
+  # TODO: Positionner directement lors de la compilation la propriété C# Python.Runtime.PythonDLL
+  set(Python_USE_STATIC_LIBS FALSE)
+  find_package(Python COMPONENTS Interpreter Development)
+  message(STATUS "Python FOUND=${Python_FOUND}")
+  if (Python_FOUND)
+    message(STATUS "PythonLibraries=${Python_LIBRARIES}")
+    message(STATUS "Python Python_RUNTIME_LIBRARY_DIRS=${Python_RUNTIME_LIBRARY_DIRS}")
+    arcane_add_test_sequential(python_test_embed1 "${ARCANE_TEST_PATH}/testExternalPlugin-1.arc" -Z)
+    set_property(TEST python_test_embed1 APPEND PROPERTY ENVIRONMENT "PYTHONNET_PYDLL=${Python_LIBRARIES}")
+  endif()
+  #arcane_add_test_sequential(python_wrapping_test1 testSimplePythonCall-1.arc -Z --dotnet-runtime=coreclr -m 5)
 endif()
 
 # ----------------------------------------------------------------------------

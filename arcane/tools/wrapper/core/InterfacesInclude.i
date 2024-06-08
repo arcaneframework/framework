@@ -1,4 +1,7 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
+
+%feature("director") Arcane::IExternalPlugin;
+
 ARCANE_STD_EXHANDLER
 %include arcane/core/IUnitTest.h
 %include arcane/core/IDataWriter.h
@@ -11,4 +14,5 @@ ARCANE_STD_EXHANDLER
 %include arcane/core/IDirectExecution.h
 %include arcane/core/ITimeHistoryCurveWriter2.h
 %include arcane/core/IPostProcessorWriter.h
+%include arcane/core/IExternalPlugin.h
 %exception;
