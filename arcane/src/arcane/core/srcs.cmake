@@ -107,6 +107,7 @@ set(ARCANE_ORIGINAL_SOURCES
   IDirectExecution.h
   IDirectory.h
   IEntryPoint.h
+  IExternalPlugin.h
   IItemConnectivityInfo.h
   IItemFamily.h
   ISession.h
