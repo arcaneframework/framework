@@ -303,7 +303,7 @@ class MeshMaterialMng
   Runner& runner() const { return m_runner_info->m_runner; }
   RunQueue& runQueue() const { return m_runner_info->m_run_queue; }
   Accelerator::RunQueuePool& asyncRunQueuePool() const { return m_runner_info->m_async_queue_pool; }
-  Real additionalCapacityRatio() const { return 0.05; }
+  Real additionalCapacityRatio() const { return m_additional_capacity_ratio; }
   //@}
 
  private:
@@ -339,6 +339,7 @@ class MeshMaterialMng
   bool m_is_allocate_scalar_environment_variable_as_material = false;
   bool m_is_use_material_value_when_removing_partial_value = false;
   int m_modification_flags = 0;
+  Real m_additional_capacity_ratio = 0.05;
 
   Mutex m_variable_lock;
 
