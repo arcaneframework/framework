@@ -31,6 +31,7 @@
 #include "arcane/core/ICartesianMeshGenerationInfo.h"
 #include "arcane/core/MeshEvents.h"
 #include "arcane/core/MeshKind.h"
+#include "arcane/core/internal/IMeshInternal.h"
 
 #include "arcane/cartesianmesh/ICartesianMesh.h"
 #include "arcane/cartesianmesh/CartesianConnectivity.h"
@@ -856,6 +857,12 @@ getReference(const MeshHandleOrMesh& mesh_handle_or_mesh,bool create)
       ARCANE_FATAL("The mesh {0} is not yet created",h.meshName());
     ICartesianMesh* cm = arcaneCreateCartesianMesh(mesh);
     udlist->setData(name,new AutoDestroyUserData<ICartesianMesh>(cm));
+
+    // Indique que le maillage est cartésien
+    MeshKind mk = mesh->meshKind();
+    mk.setMeshStructure(eMeshStructure::Cartesian);
+    mesh->_internalApi()->setMeshKind(mk);
+
     return cm;
   }
   AutoDestroyUserData<ICartesianMesh>* adud = dynamic_cast<AutoDestroyUserData<ICartesianMesh>*>(ud);
