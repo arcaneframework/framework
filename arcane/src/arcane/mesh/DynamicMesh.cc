@@ -160,9 +160,16 @@ class DynamicMesh::InternalApi
 {
  public:
 
-  InternalApi(DynamicMesh* mesh)
+  explicit InternalApi(DynamicMesh* mesh)
   : m_mesh(mesh)
   {
+  }
+
+ public:
+
+  void setMeshKind(const MeshKind& v)
+  {
+    m_mesh->m_mesh_kind = v;
   }
 
  private:
@@ -830,6 +837,12 @@ endAllocate()
   m_is_allocated = true;
   if (arcaneIsCheck())
     checkValidMesh();
+
+  // Affiche les statistiques du nouveau maillage
+  {
+    MeshStats ms(traceMng(),this,m_parallel_mng);
+    ms.dumpStats();
+  }
 }
 
 /*---------------------------------------------------------------------------*/

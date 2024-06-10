@@ -27,6 +27,7 @@
 #include "arcane/core/ItemPrinter.h"
 #include "arcane/core/IParallelMng.h"
 #include "arcane/core/IMeshWriter.h"
+#include "arcane/core/MeshKind.h"
 
 #include "arcane/core/ICaseDocument.h"
 #include "arcane/core/IInitialPartitioner.h"
@@ -41,6 +42,7 @@
 #include "arcane/core/MeshReaderMng.h"
 #include "arcane/core/IGridMeshPartitioner.h"
 #include "arcane/core/ICartesianMeshGenerationInfo.h"
+#include "arcane/core/AbstractItemOperationByBasicType.h"
 
 #include "arcane/core/Connectivity.h"
 
@@ -76,6 +78,20 @@ using namespace Arcane;
 class CartesianMeshTesterModule
 : public ArcaneCartesianMeshTesterObject
 {
+  class CountByBasicType
+  : public AbstractItemOperationByBasicType
+  {
+   public:
+
+    void applyQuad4(ItemVectorView group) override { m_nb_quad4 += group.size(); }
+    void applyHexaedron8(ItemVectorView group) override { m_nb_hexa8 += group.size(); }
+
+   public:
+
+    Int32 m_nb_quad4 = 0;
+    Int32 m_nb_hexa8 = 0;
+  };
+
  public:
 
   explicit CartesianMeshTesterModule(const ModuleBuildInfo& mbi);
@@ -115,6 +131,7 @@ class CartesianMeshTesterModule
   void _checkFaceUniqueIdsAreContiguous();
   void _checkNearlyEqual(Real3 a,Real3 b,const String& message);
   void _testCoarsening();
+  void _checkSpecificApplyOperator();
 };
 
 /*---------------------------------------------------------------------------*/
@@ -415,6 +432,7 @@ init()
   _testXmlInfos();
   _testGridPartitioning();
   _printCartesianMeshInfos();
+  _checkSpecificApplyOperator();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -769,6 +787,31 @@ _printCartesianMeshInfos()
     _checkNearlyEqual(cartesian_info->globalOrigin(),options()->expectedMeshOrigin(),"Origin");
   if (options()->expectedMeshLength.isPresent())
     _checkNearlyEqual(cartesian_info->globalLength(),options()->expectedMeshLength(),"Length");
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void CartesianMeshTesterModule::
+_checkSpecificApplyOperator()
+{
+  CountByBasicType op;
+  CellGroup all_cells = allCells();
+  Int32 nb_item = all_cells.size();
+  Int32 dim = mesh()->dimension();
+  all_cells.applyOperation(&op);
+  eMeshStructure mk = mesh()->meshKind().meshStructure();
+  info() << "MeshStructure=" << mk;
+  if (mk != eMeshStructure::Cartesian)
+    ARCANE_FATAL("Invalid mesh structure v={0} (expected 'Cartesian')", mk);
+  if (dim == 3) {
+    if (nb_item != op.m_nb_hexa8)
+      ARCANE_FATAL("Bad number of Hexa8 n={0} expected={1}", op.m_nb_hexa8, nb_item);
+  }
+  else if (dim == 2) {
+    if (nb_item != op.m_nb_quad4)
+      ARCANE_FATAL("Bad number of Quad8 n={0} expected={1}", op.m_nb_quad4, nb_item);
+  }
 }
 
 /*---------------------------------------------------------------------------*/

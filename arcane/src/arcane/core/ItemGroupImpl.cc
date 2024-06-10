@@ -22,6 +22,7 @@
 #include "arcane/core/ItemGroup.h"
 #include "arcane/core/IMesh.h"
 #include "arcane/core/MeshPartInfo.h"
+#include "arcane/core/MeshKind.h"
 #include "arcane/core/ItemPrinter.h"
 #include "arcane/core/IItemOperationByBasicType.h"
 #include "arcane/core/ItemGroupComputeFunctor.h"
@@ -1457,11 +1458,19 @@ _computeChildrenByTypeV2()
 {
   ItemGroup that_group(this);
   Int32 nb_item = size();
-  ItemTypeMng* type_mng = m_p->mesh()->itemTypeMng();
-  ITraceMng* trace = m_p->mesh()->traceMng();
+  IMesh* mesh = m_p->mesh();
+  ItemTypeMng* type_mng = mesh->itemTypeMng();
+  ITraceMng* trace = mesh->traceMng();
   bool is_verbose = m_p->m_is_debug_apply_operation;
   if (is_verbose)
     trace->info() << "ItemGroupImpl::_computeChildrenByTypeV2 for " << name();
+
+  // Si le maillage est cartésien, on sait que toutes les entités ont le même type
+  if (nb_item>0 && mesh->meshKind().meshStructure()==eMeshStructure::Cartesian){
+    ItemInfoListView lv(m_p->m_item_family->itemInfoListView());
+    m_p->m_unique_children_type = ItemTypeId{lv.typeId(m_p->itemsLocalId()[0])};
+    return;
+  }
 
   Int32 nb_basic_item_type = ItemTypeMng::nbBasicItemType();
   m_p->m_unique_children_type = ItemTypeId{IT_NullType};
