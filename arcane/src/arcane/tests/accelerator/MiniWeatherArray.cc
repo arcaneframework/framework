@@ -68,6 +68,14 @@
 
 namespace MiniWeatherArray
 {
+ARCCORE_HOST_DEVICE inline double localPow(double a,double b)
+{
+#if defined(__CUDA_ARCH__) && defined(USE_FAST_POW)
+  return __powf(a,b);
+#else
+  return ::pow(a,b);
+#endif
+}
 using namespace Arcane;
 using namespace Arcane::Accelerator;
 namespace ax = Arcane::Accelerator;
@@ -438,7 +446,7 @@ compute_tendencies_x(NumArray3Type& nstate, NumArray3Type& flux)
       u = vals[ID_UMOM] / r;
       w = vals[ID_WMOM] / r;
       t = (vals[ID_RHOT] + in_hy_dens_theta_cell(k + hs)) / r;
-      p = C0 * pow((r * t), gamm);
+      p = C0 * localPow((r * t), gamm);
 
       // Compute the flux vector
       out_flux(ID_DENS,k,i) = r * u - hv_coef * d3_vals[ID_DENS];
@@ -516,7 +524,7 @@ compute_tendencies_z(NumArray3Type& nstate, NumArray3Type& flux)
       u = vals[ID_UMOM] / r;
       w = vals[ID_WMOM] / r;
       t = (vals[ID_RHOT] + in_hy_dens_theta_int(k)) / r;
-      p = C0 * pow((r * t), gamm) - in_hy_pressure_int(k);
+      p = C0 * localPow((r * t), gamm) - in_hy_pressure_int(k);
 
       //Compute the flux vector with hyperviscosity
       out_flux(ID_DENS,k,i) = r * w - hv_coef * d3_vals[ID_DENS];
@@ -797,7 +805,16 @@ init()
   }
 
   {
-    auto command = makeCommand(m_queue);
+    // NOTE: lorsque ce noyau est exécuté sur accélérateur avec CUDA, alors
+    // la fonction 'pow()' utilisée par la suite dans les autres noyaux est la
+    // version précise. Si par contre ce noyau est exécuté sur CPU, alors la
+    // fonction 'pow()' utilisée par la suite est la version rapide.
+    // A étudier pourquoi.
+    Runner seq_runner(eExecutionPolicy::Sequential);
+    RunQueue seq_queue(makeQueue(seq_runner));
+    const bool use_seq_queue = false;
+
+    auto command = makeCommand(use_seq_queue ? seq_queue : m_queue);
     auto out_hy_dens_int = viewOut(command,hy_dens_int);
     auto out_hy_dens_theta_int = viewOut(command,hy_dens_theta_int);
     auto out_hy_pressure_int = viewOut(command,hy_pressure_int);
@@ -812,7 +829,7 @@ init()
 
       out_hy_dens_int(k) = hr;
       out_hy_dens_theta_int(k) = hr * ht;
-      out_hy_pressure_int(k) = C0 * pow((hr * ht), gamm);
+      out_hy_pressure_int(k) = C0 * localPow((hr * ht), gamm);
     };
   }
 }
@@ -851,8 +868,8 @@ hydro_const_theta(double z, double &r, double &t)
   //Establish hydrostatic balance first using Exner pressure
   t = theta0;                                //Potential Temperature at z
   double exner = exner0 - grav * z / (cp * theta0); //Exner pressure at z
-  double p = p0 * pow(exner, (cp / rd));            //Pressure at z
-  double rt = pow((p / C0), (1. / gamm));           //rho*theta at z
+  double p = p0 * localPow(exner, (cp / rd));            //Pressure at z
+  double rt = localPow((p / C0), (1. / gamm));           //rho*theta at z
   r = rt / t;                                //Density at z
 }
 
