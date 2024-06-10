@@ -287,6 +287,15 @@ build()
     }
   }
 
+  // Choix du ratio de capacité additionelle
+  {
+    if (auto v = Convert::Type<Real>::tryParseFromEnvironment("ARCANE_MATERIALMNG_ADDITIONAL_CAPACITY_RATIO", true)){
+      if (v>=0.0){
+        m_additional_capacity_ratio = v.value();
+        info() << "Set additional capacity ratio to " << m_additional_capacity_ratio;
+      }
+    }
+  }
 
   m_exchange_mng->build();
   // Si les traces des énumérateurs sur les entités sont actives, active celles

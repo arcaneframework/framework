@@ -389,7 +389,11 @@ foreach(test_index 1 2 3 4)
 endforeach()
 if (ARCANE_HAS_ACCELERATOR_API)
   arcane_add_test_sequential(material_heat2_opt15_2small testMaterialHeat-2-small-opt15.arc "-We,ARCANE_DEBUG_MATERIAL_MODIFIER,2")
-  arcane_add_test_sequential(material_heat2_accelerator "${ARCANE_TEST_PATH}/testMaterialHeat-2-opt15.arc" "-m 20")
+  arcane_add_test_sequential(material_heat2_accelerator
+    "${ARCANE_TEST_PATH}/testMaterialHeat-2-opt15.arc"
+    "-We,ARCANE_MATERIALMNG_ADDITIONAL_CAPACITY_RATIO,0.5"
+    "-m 20"
+  )
   arcane_add_accelerator_test_sequential(material_heat2_accelerator "${ARCANE_TEST_PATH}/testMaterialHeat-2-opt15.arc" "-m 20")
   arcane_add_accelerator_test_sequential(material_heat2_accelerator_noqueue
     "${ARCANE_TEST_PATH}/testMaterialHeat-2-opt15.arc" "-m 20" "-We,ARCANE_MATERIALMNG_USE_QUEUE,0")
