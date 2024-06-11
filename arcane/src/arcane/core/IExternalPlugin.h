@@ -37,7 +37,16 @@ class ARCANE_CORE_EXPORT IExternalPlugin
 
  public:
 
+  //! Charge et exécute un fichier contenant un script externe
   virtual void loadFile(const String& filename) = 0;
+
+  /*!
+   * \brief Exécute la fonction \a function_name.
+   *
+   * Il faut avoir chargé un script contenant cette fonction (via loadFile())
+   * avant d'appeler cette méthode.
+   */
+  virtual void executeFunction(const String& function_name) = 0;
 };
 
 /*---------------------------------------------------------------------------*/
