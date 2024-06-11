@@ -274,7 +274,6 @@ arcane_copy_mesh(sphere_v4.2 sphere_v4.2 vtk)
 arcane_copy_mesh(sphere_v4.2_binary sphere_v4.2_binary vtk)
 
 configure_file(test-CasePartVtu.sh.in ${ARCANE_TEST_PATH}/test-CasePartVtu.sh)
-configure_file(${ARCANE_ARC_PATH}/testExternalPlugin-1.arc.in ${ARCANE_TEST_PATH}/testExternalPlugin-1.arc)
 
 # Copie le répertoire des données dans le répertoire d'exécution des tests
 # Cela est nécessaire pour certains cas comme ceux faisant une reprise
@@ -1010,6 +1009,15 @@ arcane_add_test_sequential(string_variable_replace testStringVariableReplace.arc
 arcane_add_test(time_history_adder_1 testTimeHistoryAdder-1.arc -c 2 -m 5 -We,ARCANE_ENABLE_NON_IO_MASTER_CURVES,1)
 
 #################################################################
+function(arcane_add_python_test_sequential test_name script_name case_file)
+  arcane_add_test_sequential(${test_name} "${ARCANE_TEST_PATH}/testPython-${script_name}.arc" -Z ${ARGN})
+  set_property(TEST ${test_name} APPEND PROPERTY ENVIRONMENT "PYTHONNET_PYDLL=${Python_LIBRARIES}")
+  set_property(TEST ${test_name} APPEND PROPERTY ENVIRONMENT "PYTHONPATH=${CMAKE_BINARY_DIR}/lib/python")
+  set(ARCANE_TEST_PYTHON_SCRIPT ${script_name})
+  configure_file(${ARCANE_ARC_PATH}/${case_file}.in "${ARCANE_TEST_PATH}/testPython-${script_name}.arc")
+endfunction()
+
+#################################################################
 # Test wrapper python en mode embedded
 if (ARCANE_ENABLE_DOTNET_PYTHON_WRAPPER)
   # Il faut trouver le chemin de 'libpython.so' et positionner
@@ -1021,8 +1029,8 @@ if (ARCANE_ENABLE_DOTNET_PYTHON_WRAPPER)
   if (Python_FOUND)
     message(STATUS "PythonLibraries=${Python_LIBRARIES}")
     message(STATUS "Python Python_RUNTIME_LIBRARY_DIRS=${Python_RUNTIME_LIBRARY_DIRS}")
-    arcane_add_test_sequential(python_test_embed1 "${ARCANE_TEST_PATH}/testExternalPlugin-1.arc" -Z)
-    set_property(TEST python_test_embed1 APPEND PROPERTY ENVIRONMENT "PYTHONNET_PYDLL=${Python_LIBRARIES}")
+    arcane_add_python_test_sequential(python_test_embed1 script1 "testExternalPlugin-1.arc")
+    arcane_add_python_test_sequential(python_test_embed2 script2 "testExternalPlugin-1.arc")
   endif()
   #arcane_add_test_sequential(python_wrapping_test1 testSimplePythonCall-1.arc -Z --dotnet-runtime=coreclr -m 5)
 endif()
