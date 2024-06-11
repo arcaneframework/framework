@@ -1,12 +1,13 @@
 ﻿# NOTE: Python binding is a work in progress. DO NOT USE IT
 
 set(ARCANE_DOTNET_DLLS_DIR "${CMAKE_BINARY_DIR}/lib")
-file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/ArcanePython")
-configure_file(ArcanePython/__init__.py.in ArcanePython/__init__.py @ONLY)
-configure_file(ArcanePython/app.runtime.json ArcanePython COPYONLY)
+set(ARCANE_PYTHON_BASE_INSTALL_DIR "${ARCANE_DOTNET_DLLS_DIR}/python")
+file(MAKE_DIRECTORY "${ARCANE_PYTHON_BASE_INSTALL_DIR}/ArcanePython")
+configure_file(ArcanePython/__init__.py.in "${ARCANE_PYTHON_BASE_INSTALL_DIR}/ArcanePython/__init__.py" @ONLY)
+configure_file(ArcanePython/app.runtime.json "${ARCANE_PYTHON_BASE_INSTALL_DIR}/ArcanePython" COPYONLY)
 
 install(FILES
-  "${CMAKE_CURRENT_BINARY_DIR}/ArcanePython/__init__.py"
+  "${ARCANE_PYTHON_INSTALL_DIR}/ArcanePython/__init__.py"
   ArcanePython/app.runtime.json
   DESTINATION "ArcanePython")
 install(DIRECTORY tests DESTINATION . USE_SOURCE_PERMISSIONS)
