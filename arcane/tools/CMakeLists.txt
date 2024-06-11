@@ -113,6 +113,7 @@ file(MAKE_DIRECTORY ${ARCANE_CSHARP_PROJECT_PATH})
 configure_file(Directory.Build.props ${ARCANE_CSHARP_PROJECT_PATH} COPYONLY)
 configure_file(Directory.Build.targets ${ARCANE_CSHARP_PROJECT_PATH} COPYONLY)
 configure_file(CommonExe.props ${ARCANE_CSHARP_PROJECT_PATH} COPYONLY)
+configure_file(CommonDll.props ${ARCANE_CSHARP_PROJECT_PATH} COPYONLY)
 
 message(STATUS "ARCANE_MSBUILD_ARGS=${ARCANE_MSBUILD_ARGS}")
 

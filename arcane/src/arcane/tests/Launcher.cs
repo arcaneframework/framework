@@ -41,7 +41,7 @@ public class Launcher
 #if ARCANE_HAS_DOTNET_PYTHON
     Arcane.Python.MainInit.Init();
 #endif
-    return ArcaneMain.Run();
+    return ArcaneLauncher.Run();
   }
 
   public static int ExecDirect()
