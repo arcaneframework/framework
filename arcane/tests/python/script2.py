@@ -3,15 +3,23 @@ import Arcane
 
 print("Hello (script2) from python")
 
-print(Arcane.RealArray)
 zz = Arcane.RealArray()
-zz.Resize(3)
+nb_call = 1
 
+zz.Resize(3)
 print(zz.Size)
 assert zz.Size==3, "Bad Size"
 
-zz[0] = 5.2
-print(zz[0])
-assert zz[0]==5.2, "Bad value zz[0]"
-
-print("End of test", flush=True)
+def func1():
+    global nb_call
+    nb_call += 5
+    print("This is func1 !",nb_call)
+    print(Arcane.RealArray)
+    zz.Resize(nb_call)
+    print("ZZ Size",zz.Size)
+    zz[nb_call-1] = nb_call
+    print(zz[nb_call-1])
+    assert zz[nb_call-1]==nb_call, "Bad value zz[0]"
+    print("End of test 'func1'", flush=True)
+print("NbCall=",nb_call)
+print("End of init test", flush=True)

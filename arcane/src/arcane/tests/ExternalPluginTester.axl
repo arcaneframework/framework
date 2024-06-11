@@ -16,5 +16,6 @@
   <options>
     <service-instance name="external-plugin" type="Arcane::IExternalPlugin" default="BasicDotNetPythonExternalPlugin" />
     <simple name="file" type="string" />
+    <simple name="function-name" type="string" optional="true"/>
   </options>
 </module>

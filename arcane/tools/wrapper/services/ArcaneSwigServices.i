@@ -125,4 +125,5 @@ ARCANE_SWIG_DEFINE_SERVICE(Arcane,IVariableReader,
 
 ARCANE_SWIG_DEFINE_SERVICE(Arcane,IExternalPlugin,
                            public abstract void LoadFile(string filename);
+                           public abstract void ExecuteFunction(string function_name);
                            );

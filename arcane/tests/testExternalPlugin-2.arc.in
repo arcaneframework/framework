@@ -15,5 +15,6 @@
 
   <external-plugin-tester>
     <file>@Arcane_SOURCE_DIR@/tests/python/@ARCANE_TEST_PYTHON_SCRIPT@.py</file>
+    <function-name>func1</function-name>
   </external-plugin-tester>
 </case>

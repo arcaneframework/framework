@@ -17,17 +17,40 @@ namespace Arcane.Python
 
     public override void LoadFile(string s)
     {
-      PythonEngine.Initialize();
+      _checkInit();
       Console.WriteLine("EXTERNAL LOAD!");
       string text = File.ReadAllText(s);
       Console.WriteLine("TEXT={0}",text);
       Console.WriteLine("-- -- -- Executing Python");
       using (Py.GIL())
-      using (var scope = Py.CreateScope())
+      //using (var scope = Py.CreateScope())
       {
-        scope.Exec(text);
+        m_python_scope = Py.CreateScope();
+        m_python_scope.Exec(text);
       }
       Console.WriteLine("** -- End setup python");
     }
+
+    public override void ExecuteFunction(string function_name)
+    {
+      if (m_python_scope==null)
+        throw new ApplicationException("Null python scope. You need to call 'LoadFile()' before");
+      using (Py.GIL())
+      //using (var scope = Py.CreateScope())
+      {
+        m_python_scope.Exec(function_name+"()");
+      }
+    }
+
+    void _checkInit()
+    {
+      if (m_has_init)
+        return;
+      PythonEngine.Initialize();
+      m_has_init = true;
+    }
+
+    bool m_has_init;
+    PyModule m_python_scope;
   }
 }
