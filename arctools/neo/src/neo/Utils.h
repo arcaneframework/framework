@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Utils.h                                         (C) 2000-2023             */
+/* Utils.h                                         (C) 2000-2024             */
 /*                                                                           */
 /* Neo utils                                                                 */
 /*---------------------------------------------------------------------------*/
@@ -15,6 +15,7 @@
 #define NEO_UTILS_H
 
 #include <iostream>
+#include <sstream>
 #include <vector>
 #include <cassert>
 #include <cstdint>
@@ -38,18 +39,32 @@ static constexpr bool _debug = true;
 
 namespace Neo
 {
+
+enum class Trace{
+  Verbose, Silent
+};
+
 struct NullOstream : public std::ostream
 {
-  NullOstream()
+  explicit NullOstream()
   : std::ostream{ nullptr } {}
+
 };
 
 struct NeoOutputStream
 {
+  explicit NeoOutputStream(Neo::Trace trace_level)
+  : m_trace_level(trace_level) {}
+
   mutable NullOstream m_null_ostream;
+  Neo::Trace m_trace_level;
 };
+
 inline NeoOutputStream print() {
-  return NeoOutputStream{};
+  if (std::getenv("NEO_DEBUG_PRINT"))
+    return NeoOutputStream{Neo::Trace::Verbose};
+  else
+    return NeoOutputStream{Neo::Trace::Silent};
 }
 
 //----------------------------------------------------------------------------/
@@ -277,12 +292,7 @@ namespace utils
     return oss;
   }
 
-  template <typename Container>
-  void printContainer(Container&& container, std::string const& name = "Container") {
-    std::cout << name << " , size : " << container.size() << std::endl;
-    _printContainer(container, std::cout);
-    std::cout << std::endl;
-  }
+
 
   //----------------------------------------------------------------------------/
 
@@ -366,15 +376,36 @@ namespace Neo
 
 template <typename T>
 std::ostream& operator<<(Neo::NeoOutputStream const& oss, T const& printable) {
-  if constexpr (ndebug)
+  switch (oss.m_trace_level) {
+  case Neo::Trace::Silent:
     return oss.m_null_ostream;
-  else
+    break;
+  case Neo::Trace::Verbose:
     return std::cout << printable;
+    break;
+  }
 }
 
 #ifdef _MSC_VER // problem with operator<< overload with MSVC
 } // namespace Neo
 #endif
+
+namespace Neo
+{
+  namespace utils
+  {
+    template <typename Container>
+    void printContainer(Container&& container, std::string const& name = "Container") {
+      Neo::print() << name << " , size : " << container.size() << std::endl;
+      std::ostringstream oss;
+      _printContainer(container, oss);
+      Neo::print() << oss.str();
+      Neo::print() << "" << std::endl;
+    }
+  }
+}
+
+
 
 //----------------------------------------------------------------------------/
 //----------------------------------------------------------------------------/

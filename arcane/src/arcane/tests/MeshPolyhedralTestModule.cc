@@ -44,10 +44,9 @@ class MeshPolyhedralTestModule : public ArcaneMeshPolyhedralTestObject
 
   void init()
   {
-    info() << "-- INIT CUSTOM MESH MODULE";
     auto mesh_handle = subDomain()->defaultMeshHandle();
     if (mesh_handle.hasMesh()) {
-      info() << "-- MESH NAME: " << mesh()->name();
+      info() << "-- Mesh name: " << mesh()->name();
       _testDimensions(mesh());
       _testCoordinates(mesh());
       _testEnumerationAndConnectivities(mesh());
@@ -96,39 +95,39 @@ _testEnumerationAndConnectivities(IMesh* mesh)
   auto all_cells = mesh->allCells();
   // ALL CELLS
   ENUMERATE_CELL (icell, all_cells) {
-    info() << "cell with index " << icell.index();
-    info() << "cell with lid " << icell.localId();
-    info() << "cell with uid " << icell->uniqueId().asInt64();
-    info() << "cell number of nodes " << icell->nodes().size();
-    info() << "cell number of faces " << icell->faces().size();
-    info() << "cell number of edges " << icell->edges().size();
+    debug(Trace::High) << "cell with index " << icell.index();
+    debug(Trace::High) << "cell with lid " << icell.localId();
+    debug(Trace::High) << "cell with uid " << icell->uniqueId().asInt64();
+    debug(Trace::High) << "cell number of nodes " << icell->nodes().size();
+    debug(Trace::High) << "cell number of faces " << icell->faces().size();
+    debug(Trace::High) << "cell number of edges " << icell->edges().size();
     for (Node node : icell->nodes()) {
-      info() << "cell node lid " << node.localId() << " uid " << node.uniqueId().asInt64();
+      debug(Trace::High) << "cell node lid " << node.localId() << " uid " << node.uniqueId().asInt64();
     }
     for (Face face : icell->faces()) {
-      info() << "cell face lid " << face.localId() << " uid " << face.uniqueId().asInt64();
+      debug(Trace::High) << "cell face lid " << face.localId() << " uid " << face.uniqueId().asInt64();
     }
     for (Edge edge : icell->edges()) {
-      info() << "cell edge lid " << edge.localId() << " uid " << edge.uniqueId().asInt64();
+      debug(Trace::High) << "cell edge lid " << edge.localId() << " uid " << edge.uniqueId().asInt64();
     }
   }
   // ALL FACES
   ENUMERATE_FACE (iface, mesh->allFaces()) {
-    info() << "face with index " << iface.index();
-    info() << "face with lid " << iface.localId();
-    info() << "face with uid " << iface->uniqueId().asInt64();
-    info() << "face number of nodes " << iface->nodes().size();
-    info() << "face number of cells " << iface->cells().size();
-    info() << "face number of edges " << iface->edges().size();
-    info() << "face back cell " << iface->backCell().localId();
-    info() << "face front cell " << iface->frontCell().localId();
+    debug(Trace::High) << "face with index " << iface.index();
+    debug(Trace::High) << "face with lid " << iface.localId();
+    debug(Trace::High) << "face with uid " << iface->uniqueId().asInt64();
+    debug(Trace::High) << "face number of nodes " << iface->nodes().size();
+    debug(Trace::High) << "face number of cells " << iface->cells().size();
+    debug(Trace::High) << "face number of edges " << iface->edges().size();
+    debug(Trace::High) << "face back cell " << iface->backCell().localId();
+    debug(Trace::High) << "face front cell " << iface->frontCell().localId();
     for (Node node : iface->nodes()) {
-      info() << "face node lid " << node.localId() << " uid " << node.uniqueId().asInt64();
+      debug(Trace::High) << "face node lid " << node.localId() << " uid " << node.uniqueId().asInt64();
     }
     auto cell_index = 0;
     bool are_face_cells_ok = true;
     for (Cell cell : iface->cells()) {
-      info() << "face cell lid " << cell.localId() << " uid " << cell.uniqueId().asInt64();
+      debug(Trace::High) << "face cell lid " << cell.localId() << " uid " << cell.uniqueId().asInt64();
       if (cell_index == 0) {
         if (iface->itemBase().flags() & ItemFlags::II_FrontCellIsFirst)
           are_face_cells_ok = are_face_cells_ok && cell.uniqueId() == iface->frontCell().uniqueId();
@@ -143,45 +142,45 @@ _testEnumerationAndConnectivities(IMesh* mesh)
       ARCANE_FATAL("Problem with face cells.");
     }
     for (Edge edge : iface->edges()) {
-      info() << "face edge lid " << edge.localId() << " uid " << edge.uniqueId().asInt64();
+      debug(Trace::High) << "face edge lid " << edge.localId() << " uid " << edge.uniqueId().asInt64();
     }
   }
   // Check face flags
   _checkFlags(mesh);
   // ALL NODES
   ENUMERATE_NODE (inode, mesh->allNodes()) {
-    info() << "node with index " << inode.index();
-    info() << "node with lid " << inode.localId();
-    info() << "node with uid " << inode->uniqueId().asInt64();
-    info() << "node number of faces " << inode->faces().size();
-    info() << "node number of cells " << inode->cells().size();
-    info() << "node number of edges " << inode->edges().size();
+    debug(Trace::High) << "node with index " << inode.index();
+    debug(Trace::High) << "node with lid " << inode.localId();
+    debug(Trace::High) << "node with uid " << inode->uniqueId().asInt64();
+    debug(Trace::High) << "node number of faces " << inode->faces().size();
+    debug(Trace::High) << "node number of cells " << inode->cells().size();
+    debug(Trace::High) << "node number of edges " << inode->edges().size();
     for (Face face : inode->faces()) {
-      info() << "node face lid " << face.localId() << " uid " << face.uniqueId().asInt64();
+      debug(Trace::High) << "node face lid " << face.localId() << " uid " << face.uniqueId().asInt64();
     }
     for (Cell cell : inode->cells()) {
-      info() << "node cell lid " << cell.localId() << " uid " << cell.uniqueId().asInt64();
+      debug(Trace::High) << "node cell lid " << cell.localId() << " uid " << cell.uniqueId().asInt64();
     }
     for (Edge edge : inode->edges()) {
-      info() << "node edge lid " << edge.localId() << " uid " << edge.uniqueId().asInt64();
+      debug(Trace::High) << "node edge lid " << edge.localId() << " uid " << edge.uniqueId().asInt64();
     }
   }
   // ALL EDGES
   ENUMERATE_EDGE (iedge, mesh->allEdges()) {
-    info() << "edge with index " << iedge.index();
-    info() << "edge with lid " << iedge.localId();
-    info() << "edge with uid " << iedge->uniqueId().asInt64();
-    info() << "edge number of faces " << iedge->faces().size();
-    info() << "edge number of cells " << iedge->cells().size();
-    info() << "edge number of nodes " << iedge->nodes().size();
+    debug(Trace::High) << "edge with index " << iedge.index();
+    debug(Trace::High) << "edge with lid " << iedge.localId();
+    debug(Trace::High) << "edge with uid " << iedge->uniqueId().asInt64();
+    debug(Trace::High) << "edge number of faces " << iedge->faces().size();
+    debug(Trace::High) << "edge number of cells " << iedge->cells().size();
+    debug(Trace::High) << "edge number of nodes " << iedge->nodes().size();
     for (Face face : iedge->faces()) {
-      info() << "edge face lid " << face.localId() << " uid " << face.uniqueId();
+      debug(Trace::High) << "edge face lid " << face.localId() << " uid " << face.uniqueId();
     }
     for (Cell cell : iedge->cells()) {
-      info() << "edge cell lid " << cell.localId() << " uid " << cell.uniqueId();
+      debug(Trace::High) << "edge cell lid " << cell.localId() << " uid " << cell.uniqueId();
     }
     for (Node node : iedge->nodes()) {
-      info() << "edge node lid " << node.localId() << " uid " << node.uniqueId();
+      debug(Trace::High) << "edge node lid " << node.localId() << " uid " << node.uniqueId();
     }
   }
 }
@@ -388,7 +387,7 @@ _testCoordinates(Arcane::IMesh* mesh)
       ValueChecker vc{ A_FUNCINFO };
       ENUMERATE_NODE (inode, allNodes()) {
         vc.areEqual(node_coords[inode], node_coords_ref[0]->value[inode.index()], "check coords values");
-        info() << " node coords  " << node_coords[inode];
+        debug(Trace::High) << " node coords  " << node_coords[inode];
       }
     }
   }
@@ -431,7 +430,7 @@ _checkVariableWithRefValue(VariableRefType variable, Arcane::ItemGroup item_grou
   typename VariableRefType::DataType variable_sum = 0.;
   using ItemType = typename VariableRefType::ItemType;
   ENUMERATE_ (ItemType, iitem, item_group) {
-    info() << variable.name() << " at item " << iitem.localId() << " " << variable[iitem];
+    debug(Trace::High) << variable.name() << " at item " << iitem.localId() << " " << variable[iitem];
     variable_sum += variable[iitem];
   }
   if (variable_sum != ref_sum) {
@@ -453,7 +452,7 @@ _checkArrayVariable(VariableArrayRefType variable_ref, ItemGroup item_group)
     for (auto value : variable_ref[iitem]) {
       variable_sum += value;
     }
-    info() << variable_ref.name() << " at item " << iitem.localId() << variable_ref[iitem];
+    debug(Trace::High) << variable_ref.name() << " at item " << iitem.localId() << variable_ref[iitem];
   }
   ValueChecker vc{ A_FUNCINFO };
   if (array_size == 0)
@@ -476,7 +475,7 @@ _checkBoundaryFaceGroup(IMesh* mesh, const String& boundary_face_group_name) con
   ENUMERATE_FACE (iface, boundary_face_group) {
     are_face_boundaries = are_face_boundaries && iface->isSubDomainBoundary();
     if (!iface->isSubDomainBoundary()) {
-      info() << String::format("Face {0} with nodes {1} is not boundary", iface->uniqueId(), iface->nodes());
+      debug(Trace::High) << String::format("Face {0} with nodes {1} is not boundary", iface->uniqueId(), iface->nodes());
     }
   }
   if (!are_face_boundaries)
@@ -496,7 +495,7 @@ _checkInternalFaceGroup(IMesh* mesh, const String& internal_face_group_name) con
   ENUMERATE_FACE (iface, internal_face_group) {
     are_face_internals = are_face_internals && !iface->isSubDomainBoundary();
     if (iface->isSubDomainBoundary()) {
-      info() << String::format("Face {0} with nodes {1} is not an internal face", iface->uniqueId(), iface->nodes());
+      debug(Trace::High) << String::format("Face {0} with nodes {1} is not an internal face", iface->uniqueId(), iface->nodes());
     }
   }
   if (!are_face_internals)

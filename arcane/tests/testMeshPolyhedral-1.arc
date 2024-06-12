@@ -11,7 +11,6 @@
 
   <meshes>
     <mesh>
-      <!--     <fichier>example_polyhedral_cell.xmf</fichier>-->
       <filename>faultx1_2x1x1.vtk</filename>
       <specific-reader name="VtkPolyhedralCaseMeshReader">
         <print-mesh-infos>true</print-mesh-infos>
