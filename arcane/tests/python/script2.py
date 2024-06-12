@@ -1,4 +1,3 @@
-import ArcanePython
 import Arcane
 
 print("Hello (script2) from python")
