@@ -658,7 +658,9 @@ VtkReader(const String& filename, VtkPolyhedralTools::PrintInfoLevel print_info_
   else{
     faces_filename = m_filename + "faces.vtu";
     ifile = std::ifstream{ faces_filename.localstr() };
-    _readXmlVtkFaceGrid(faces_filename);
+    if (ifile) {
+      _readXmlVtkFaceGrid(faces_filename);
+    }
   }
 
   StringUniqueArray faces_filename_and_extension;
