@@ -32,7 +32,7 @@ valeurs suivantes:
 
 Par défaut la valeur est `%Arcane;Alien` et donc on compile les deux composants.
 
-Pour compiler Arcane et Alien , il faut procéder comme suit:
+Pour compiler %Arcane et Alien , il faut procéder comme suit:
 
 ~~~{sh}
 mkdir /path/to/build
@@ -81,9 +81,9 @@ Options générales :
 </table>
 </details>
 
-Depuis la version 3.12 de Arcane, le support des accélérateurs nécessite un
+Depuis la version 3.12 de %Arcane, le support des accélérateurs nécessite un
 compilateur supportant le C++20. Il est donc nécessaire de compiler
-Arcane en spécifiant la variable CMake `-DARCCORE_CXX_STANDARD=20`.
+%Arcane en spécifiant la variable CMake `-DARCCORE_CXX_STANDARD=20`.
 
 La variable CMake `ARCANE_ACCELERATOR_MODE` permet de spécifier le
 type d'accélerateur qu'on souhaite utiliser. Il y a actuellement deux
@@ -128,7 +128,7 @@ Compute) via la variable `CMAKE_CUDA_ARCHITECTURES`, par exemple
 
 Pour compiler pour les GPU AMD (comme par exemple les GPU MI100 ou
 MI250) il faut avoir auparavant installer la bibliothèque [ROCM](https://docs.amd.com/). Lors
-de la configuration de Arcane, il faut spécifier
+de la configuration de %Arcane, il faut spécifier
 `-DARCANE_ACCELERATOR_MODE=ROCMHIP`.
 
 Par exemple, si ROCM est installé dans `/opt/rocm` et qu'on souhaite

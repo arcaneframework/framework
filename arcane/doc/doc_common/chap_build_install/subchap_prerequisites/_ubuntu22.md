@@ -8,7 +8,7 @@ Sur Ubuntu 22.04, les versions de CMake et de '.Net' sont suffisamment
 récentes pour pouvoir être installés via les packages système.
 
 Les commandes suivantes permettent d'installer les dépendances
-nécessaires pour Arcane (ainsi que les dépendances optionnelles `HDF5` et `ParMetis`):
+nécessaires pour %Arcane (ainsi que les dépendances optionnelles `HDF5` et `ParMetis`):
 
 ~~~{sh}
 sudo apt update
