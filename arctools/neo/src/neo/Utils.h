@@ -386,6 +386,10 @@ std::ostream& operator<<(Neo::NeoOutputStream const& oss, T const& printable) {
   }
 }
 
+#ifdef _MSC_VER // problem with operator<< overload with MSVC
+} // namespace Neo
+#endif
+
 namespace Neo
 {
   namespace utils
@@ -401,9 +405,7 @@ namespace Neo
   }
 }
 
-#ifdef _MSC_VER // problem with operator<< overload with MSVC
-} // namespace Neo
-#endif
+
 
 //----------------------------------------------------------------------------/
 //----------------------------------------------------------------------------/
