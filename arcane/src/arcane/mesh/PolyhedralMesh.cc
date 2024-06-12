@@ -121,7 +121,7 @@ namespace mesh
       if (uids.empty())
         return;
       ARCANE_ASSERT((uids.size() == items.size()), ("one must have items.size==uids.size()"));
-      m_mesh->traceMng()->info() << " PolyhedralFamily::ADDITEMS ";
+      m_mesh->traceMng()->debug(Arccore::Trace::Highest) << " PolyhedralFamily::addItems ";
       preAllocate(uids.size());
       auto index{ 0 };
       for (auto uid : uids) {
@@ -285,7 +285,7 @@ namespace mesh
                                                          Neo::MeshScalarPropertyT<Neo::utils::Int32>&) {
                                 Int32UniqueArray arcane_items(uids.size());
                                 arcane_item_family->addItems(uids, arcane_items);
-                                arcane_item_family->traceMng()->info() << arcane_items;
+                                arcane_item_family->traceMng()->debug(Trace::Highest) << arcane_items;
                                 // debug check lid matching. maybe to remove if too coostly
                                 auto neo_lids = lids_property.values();
                                 if (!std::equal(neo_lids.begin(), neo_lids.end(), arcane_items.begin()))
@@ -320,22 +320,6 @@ namespace mesh
                                  Int64ConstSmallSpan target_items_uids,
                                  String const& connectivity_name)
     {
-      // debug
-      std::cout << "====================VALIDATE CONNECTIVITY  ==================" << std::endl;
-      std::cout << "== " << connectivity_name << std::endl;
-      auto item_index = 0;
-      std::cout << "==== nb connected items ====" << std::endl;
-      std::copy(nb_connected_items_per_item.begin(), nb_connected_items_per_item.end(), std::ostream_iterator<Int32>(std::cout, " "));
-      std::cout << std::endl
-                << "==== connected items ====" << std::endl;
-      std::copy(target_items_uids.begin(), target_items_uids.end(), std::ostream_iterator<Int64>(std::cout, " "));
-      std::cout << std::endl;
-      for (auto&& nb_connected_items : nb_connected_items_per_item) {
-        Int64ConstArrayView connected_items{ nb_connected_items, &target_items_uids[item_index] };
-        std::copy(connected_items.begin(), connected_items.end(), std::ostream_iterator<Int64>{ std::cout, " " });
-        item_index += nb_connected_items;
-        std::cout << "\n";
-      }
       _scheduleAddConnectivity(arcane_source_item_family,
                                source_items,
                                std::vector<Int32>{ nb_connected_items_per_item.begin(), nb_connected_items_per_item.end() },
@@ -380,7 +364,6 @@ namespace mesh
                               Neo::MeshKernel::OutProperty{ source_family, connectivity_add_output_property_name },
                               [arcane_source_item_family, arcane_target_item_family, &source_family, &target_family, this, connectivity_name](Neo::Mesh::ConnectivityPropertyType const&,
                                                                                                                               Neo::ScalarPropertyT<Neo::utils::Int32>&) {
-                                this->m_subdomain->traceMng()->info() << "ADD CONNECTIVITY";
                                 auto item_internal_connectivity_list = arcane_source_item_family->itemInternalConnectivityList();
                                 // todo check if families are default families
                                 auto connectivity = m_mesh.getConnectivity(source_family, target_family, connectivity_name.localstr());
@@ -450,7 +433,6 @@ namespace mesh
                               Neo::MeshKernel::OutProperty{ _item_family, "NoOutProperty42" },
                               [this, item_family, &_item_family, &arcane_coords](Neo::Mesh::CoordPropertyType const& item_coords_property,
                                                                                  Neo::ScalarPropertyT<Neo::utils::Int32>&) {
-                                this->m_subdomain->traceMng()->info() << "= Update Arcane Coordinates =";
                                 // enumerate nodes : ensure again Arcane/Neo local_ids are identicals
                                 auto& all_items = _item_family.all();
                                 VariableNodeReal3 node_coords{ VariableBuildInfo{ item_family->mesh(), "NodeCoord" } };
@@ -560,17 +542,17 @@ allocateItems(const Arcane::ItemAllocationInfo& item_allocation_info)
   // Prepare item creation
   for (auto& family_info : item_allocation_info.family_infos) {
     auto item_family = _createItemFamily(family_info.item_kind, family_info.name);
-    m_trace_mng->info() << " Create items " << family_info.name;
+    m_trace_mng->debug(Trace::High) << " Create items " << family_info.name;
     m_mesh->scheduleAddItems(item_family, family_info.item_uids, item_local_ids[family_index++]);
   }
   // Prepare connectivity creation
   family_index = 0;
   for (auto& family_info : item_allocation_info.family_infos) {
     auto item_family = _findItemFamily(family_info.item_kind, family_info.name);
-    m_trace_mng->info() << "Current family " << family_info.name;
+    m_trace_mng->debug(Trace::High) << "Current family " << family_info.name;
     for (auto& current_connected_family_info : family_info.connected_family_info) {
       auto connected_family = _findItemFamily(current_connected_family_info.item_kind, current_connected_family_info.name);
-      m_trace_mng->info() << " Create connectivity " << current_connected_family_info.connectivity_name;
+      m_trace_mng->debug(Trace::High) << " Create connectivity " << current_connected_family_info.connectivity_name;
       // check if connected family exists
       if (!connected_family) {
         ARCANE_WARNING((String::format("Cannot find family {0} with kind {1} "
@@ -872,7 +854,6 @@ endUpdate()
       String name = String::concat(itemKindName((eItemKind)ik), "EmptyFamily");
       m_empty_arcane_families[ik] = std::make_unique<mesh::PolyhedralFamily>(this, (eItemKind)ik, name);
       m_default_arcane_families[ik] = m_empty_arcane_families[ik].get();
-      m_subdomain->traceMng()->info() << " Create empty family " << itemKindName((eItemKind)ik);
     }
   }
 }
