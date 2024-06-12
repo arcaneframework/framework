@@ -44,12 +44,8 @@ PETScSolverConfigSuperLUService::configure(
   checkError("Preconditioner set type", PCSetType(pc, PCLU));
 
   if (isParallel())
-#ifdef WIN32
-    alien_fatal([&] { cout() << "SuperLUDist is not available for windows"; });
-#else
     checkError("Set superlu_dist solver package",
         PCFactorSetMatSolverType(pc, MATSOLVERSUPERLU_DIST));
-#endif
   else
     checkError(
         "Set superlu solver package", PCFactorSetMatSolverType(pc, MATSOLVERSUPERLU));
@@ -62,7 +58,6 @@ PETScSolverConfigSuperLUService::configure(
 
 ARCANE_REGISTER_SERVICE_PETSCSOLVERCONFIGSUPERLU(
     SuperLU, PETScSolverConfigSuperLUService);
-ARCANE_REGISTER_SERVICE_PETSCSOLVERCONFIGSUPERLU(LU, PETScSolverConfigSuperLUService);
 
 } // namespace Alien
 
