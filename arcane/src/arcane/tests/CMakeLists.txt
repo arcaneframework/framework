@@ -1010,7 +1010,7 @@ arcane_add_test(time_history_adder_1 testTimeHistoryAdder-1.arc -c 2 -m 5 -We,AR
 
 #################################################################
 function(arcane_add_python_test_sequential test_name script_name case_file)
-  arcane_add_test_sequential(${test_name} "${ARCANE_TEST_PATH}/testPython-${script_name}.arc" -Z ${ARGN})
+  arcane_add_test_sequential(${test_name} "${ARCANE_TEST_PATH}/testPython-${script_name}.arc" -A,UsingDotNet=1 ${ARGN})
   set_property(TEST ${test_name} APPEND PROPERTY ENVIRONMENT "PYTHONNET_PYDLL=${Python_LIBRARIES}")
   set_property(TEST ${test_name} APPEND PROPERTY ENVIRONMENT "PYTHONPATH=${CMAKE_BINARY_DIR}/lib/python")
   set(ARCANE_TEST_PYTHON_SCRIPT ${script_name})

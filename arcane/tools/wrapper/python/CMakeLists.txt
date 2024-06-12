@@ -3,6 +3,7 @@
 set(ARCANE_SWIG_PYTHON_CSHARP_FILES
   SimplePythonCallerModule
   BasicDotNetPythonExternalPlugin
+  MainInit
 )
 
 arcane_wrapper_add_swig_target(NAME python SOURCE ArcaneSwigPython.i

@@ -40,15 +40,3 @@ class SimplePythonCallerModule
     PythonEngine.Shutdown();
   }
 }
-
-namespace Arcane.Python
-{
-  public static class MainInit
-  {
-    static public void Init()
-    {
-      Console.WriteLine("Loading python wrapping assembly");
-      // Only useful for loading this assembly
-    }
-  }
-}

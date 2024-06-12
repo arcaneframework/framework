@@ -14,6 +14,14 @@ namespace Arcane.Python
     public BasicDotNetPythonExternalPlugin(ServiceBuildInfo bi) : base(bi)
     {
     }
+    ~BasicDotNetPythonExternalPlugin()
+    {
+      if (m_python_scope!=null){
+        m_python_scope.Dispose();
+        m_python_scope = null;
+      }
+      //PythonEngine.Shutdown();
+    }
 
     public override void LoadFile(string s)
     {

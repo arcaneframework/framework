@@ -1,9 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
+  <Import Project="../CommonDll.props" />
+
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
   </PropertyGroup>
+
   <PropertyGroup Condition="'@_HAS_PYTHON_WRAPPER@' == 'true'">
     <DefineConstants>ARCANE_HAS_DOTNET_PYTHON</DefineConstants>
   </PropertyGroup>
