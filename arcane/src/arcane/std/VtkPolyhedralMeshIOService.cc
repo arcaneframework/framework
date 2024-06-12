@@ -245,7 +245,7 @@ class VtkPolyhedralCaseMeshReader
     void allocateMeshItems(IPrimaryMesh* pm) override
     {
       ARCANE_CHECK_POINTER(pm);
-      m_trace_mng->info() << "---CREATE POLYHEDRAL MESH---- " << pm->name();
+      m_trace_mng->info() << "---Create Polyhedral mesh: " << pm->name() << "---";
       m_trace_mng->info() << "--Read mesh file " << m_read_info.fileName();
       VtkPolyhedralMeshIOService polyhedral_vtk_service{ m_trace_mng, m_print_info_level };
       auto read_status = polyhedral_vtk_service.read(pm, m_read_info.fileName());
@@ -425,10 +425,12 @@ _readVariablesAndGroups(IPrimaryMesh* mesh, VtkReader& reader)
         _createGroup(cell_array, name.substring(6), mesh, mesh->cellFamily(), vtk_to_arcane_lids.constSpan());
       else
         _createVariable(cell_array, name, mesh, mesh->cellFamily(), arcane_to_vtk_lids);
-      info() << "Reading property " << cell_array->GetName();
-      for (auto tuple_index = 0; tuple_index < cell_array->GetNumberOfTuples(); ++tuple_index) {
-        for (auto component_index = 0; component_index < cell_array->GetNumberOfComponents(); ++component_index) {
-          info() << cell_array->GetName() << "[" << tuple_index << "][" << component_index << "] = " << cell_array->GetComponent(tuple_index, component_index);
+      if (m_print_info_level.print_debug_info) {
+        debug(Trace::High) << "Reading property " << cell_array->GetName();
+        for (auto tuple_index = 0; tuple_index < cell_array->GetNumberOfTuples(); ++tuple_index) {
+          for (auto component_index = 0; component_index < cell_array->GetNumberOfComponents(); ++component_index) {
+            debug(Trace::High) << cell_array->GetName() << "[" << tuple_index << "][" << component_index << "] = " << cell_array->GetComponent(tuple_index, component_index);
+          }
         }
       }
     }
@@ -445,10 +447,12 @@ _readVariablesAndGroups(IPrimaryMesh* mesh, VtkReader& reader)
         _createGroup(point_array, name.substring(6), mesh, mesh->nodeFamily(), vtk_to_arcane_lids.constSpan());
       else
         _createVariable(point_array, name, mesh, mesh->nodeFamily(), arcane_to_vtk_lids);
-      info() << "Reading property " << point_array->GetName();
-      for (auto tuple_index = 0; tuple_index < point_array->GetNumberOfTuples(); ++tuple_index) {
-        for (auto component_index = 0; component_index < point_array->GetNumberOfComponents(); ++component_index) {
-          info() << point_array->GetName() << "[" << tuple_index << "][" << component_index << "] = " << point_array->GetComponent(tuple_index, component_index);
+      if (m_print_info_level.print_debug_info) {
+        debug(Trace::High) << "Reading property " << point_array->GetName();
+        for (auto tuple_index = 0; tuple_index < point_array->GetNumberOfTuples(); ++tuple_index) {
+          for (auto component_index = 0; component_index < point_array->GetNumberOfComponents(); ++component_index) {
+            debug(Trace::High) << point_array->GetName() << "[" << tuple_index << "][" << component_index << "] = " << point_array->GetComponent(tuple_index, component_index);
+          }
         }
       }
     }
@@ -465,10 +469,12 @@ _readVariablesAndGroups(IPrimaryMesh* mesh, VtkReader& reader)
         _createGroup(face_array, name.substring(6), mesh, mesh->faceFamily(), vtk_to_Arcane_lids);
       else
         _createVariable(face_array, name, mesh, mesh->faceFamily(), arcane_to_vtk_lids);
-      info() << "Reading property " << face_array->GetName();
-      for (auto tuple_index = 0; tuple_index < face_array->GetNumberOfTuples(); ++tuple_index) {
-        for (auto component_index = 0; component_index < face_array->GetNumberOfComponents(); ++component_index) {
-          info() << face_array->GetName() << "[" << tuple_index << "][" << component_index << "] = " << face_array->GetComponent(tuple_index, component_index);
+      if (m_print_info_level.print_debug_info) {
+        debug(Trace::High) << "Reading property " << face_array->GetName();
+        for (auto tuple_index = 0; tuple_index < face_array->GetNumberOfTuples(); ++tuple_index) {
+          for (auto component_index = 0; component_index < face_array->GetNumberOfComponents(); ++component_index) {
+            debug(Trace::High) << face_array->GetName() << "[" << tuple_index << "][" << component_index << "] = " << face_array->GetComponent(tuple_index, component_index);
+          }
         }
       }
     }
@@ -540,7 +546,7 @@ _createVariable(vtkDataArray* item_values, const String& variable_name, IMesh* m
   if (item_values->GetNumberOfTuples() != item_family->nbItem())
     ARCANE_FATAL("Cannot create variable {0}, {1} values are given for {2} items in {3} family",
                  variable_name, item_values->GetNumberOfTuples(), item_family->nbItem(), item_family->name());
-  info() << "Create mesh variable " << variable_name;
+  debug(Trace::High) << "Create mesh variable " << variable_name;
   auto variable_creator = [mesh, variable_name, item_family, arcane_to_vtk_lids, this](auto* values) {
     VariableBuildInfo vbi{ mesh, variable_name };
     using ValueType = typename std::remove_pointer_t<decltype(values)>::ValueType;
