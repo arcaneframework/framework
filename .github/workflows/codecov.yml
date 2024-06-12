@@ -56,12 +56,20 @@ jobs:
         run: |
           echo "SOURCE_DIR=${GITHUB_WORKSPACE}" >> $GITHUB_ENV
           echo "BUILD_DIR=${GITHUB_WORKSPACE}/build" >> $GITHUB_ENV
+          echo "CCACHE_DIR=${GITHUB_WORKSPACE}/ccache" >> $GITHUB_ENV
           echo "LOG_DIR=${GITHUB_WORKSPACE}/log" >> $GITHUB_ENV
           echo "CT_RESULT_DIR=${GITHUB_WORKSPACE}/test" >> $GITHUB_ENV
 
       - name: Get date
         shell: bash
         run: echo "m_date=$(/bin/date -u '+%Y%m%d%H%M%S')" >> $GITHUB_ENV
+
+      - name: Get cache for ccache tool
+        uses: actions/cache@v4
+        with:
+          path: ${{env.CCACHE_DIR}}
+          key: codecov-${{ env.m_date }}-${{ github.run_number }}
+          restore-keys: codecov-
 
       - name: Checkout framework
         uses: actions/checkout@v4
@@ -74,6 +82,8 @@ jobs:
         with:
           source_dir: ${{ env.SOURCE_DIR }}
           build_dir: ${{ env.BUILD_DIR }}
+          log_dir: ${{ env.LOG_DIR }}
+          cache_dir: ${{ env.CCACHE_DIR }}
           cmake_additionnal_args: '-DCMAKE_CXX_FLAGS_RELEASE="-O2 -g"
             -DARCCORE_CXX_STANDARD=20
             -DARCCORE_ENABLE_CODE_COVERAGE=ON
