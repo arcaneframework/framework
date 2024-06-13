@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* LibUnwindStackTraceService.cc                               (C) 2000-2023 */
+/* LibUnwindStackTraceService.cc                               (C) 2000-2024 */
 /*                                                                           */
 /* Service de trace des appels de fonctions utilisant 'libunwind'.           */
 /*---------------------------------------------------------------------------*/
@@ -31,6 +31,7 @@
 #include <cxxabi.h>
 
 #include <map>
+#include <mutex>
 
 #include <execinfo.h>
 #include <stdio.h>
@@ -100,8 +101,10 @@ class LibUnwindStackTraceService
 
  private:
 
-  typedef std::map<unw_word_t,ProcInfo> ProcInfoMap;
-  std::map<unw_word_t,ProcInfo> m_proc_name_map;
+  using ProcInfoMap = std::map<unw_word_t,ProcInfo>;
+  ProcInfoMap m_proc_name_map;
+  std::mutex m_proc_name_map_mutex;
+
   bool m_want_gdb_info;
   bool m_use_backtrace;
   IApplication* m_application; //A SUPPRIMER
@@ -119,9 +122,12 @@ class LibUnwindStackTraceService
 LibUnwindStackTraceService::ProcInfo LibUnwindStackTraceService::
 _getFuncInfo(unw_word_t ip,unw_cursor_t* cursor)
 {
-  ProcInfoMap::const_iterator v = m_proc_name_map.find(ip);
-  if (v!=m_proc_name_map.end())
-    return v->second;
+  {
+    std::lock_guard<std::mutex> lk(m_proc_name_map_mutex);
+    auto v = m_proc_name_map.find(ip);
+    if (v!=m_proc_name_map.end())
+      return v->second;
+  }
 
   unw_word_t offset;
   char func_name_buf[10000];
@@ -149,8 +155,10 @@ _getFuncInfo(unw_word_t ip,unw_cursor_t* cursor)
     pi.m_name = std::string_view(buf);
   else
     pi.m_name = std::string_view(func_name_buf);
-  m_proc_name_map.insert(ProcInfoMap::value_type(ip,pi));
-
+  {
+    std::lock_guard<std::mutex> lk(m_proc_name_map_mutex);
+    m_proc_name_map.insert(ProcInfoMap::value_type(ip,pi));
+  }
   return pi;
 }
 
@@ -163,9 +171,12 @@ _getFuncInfo(unw_word_t ip,unw_cursor_t* cursor)
 LibUnwindStackTraceService::ProcInfo LibUnwindStackTraceService::
 _getFuncInfo(void* addr)
 {
-  ProcInfoMap::const_iterator v = m_proc_name_map.find((unw_word_t)addr);
-  if (v!=m_proc_name_map.end()){
-    return v->second;
+  {
+    std::lock_guard<std::mutex> lk(m_proc_name_map_mutex);
+    auto v = m_proc_name_map.find((unw_word_t)addr);
+    if (v!=m_proc_name_map.end()){
+      return v->second;
+    }
   }
   const size_t buf_size = 10000;
   char demangled_func_name_buf[buf_size];
@@ -188,7 +199,10 @@ _getFuncInfo(void* addr)
     pi.m_name = std::string_view(buf);
   else
     pi.m_name = std::string_view(dli_sname);
-  m_proc_name_map.insert(ProcInfoMap::value_type((unw_word_t)addr,pi));
+  {
+    std::lock_guard<std::mutex> lk(m_proc_name_map_mutex);
+    m_proc_name_map.insert(ProcInfoMap::value_type((unw_word_t)addr,pi));
+  }
   return pi;
 }
 
