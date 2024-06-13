@@ -33,6 +33,7 @@ Table of Contents:
 - [Documentation](#documentation)
   - [User documentation](#user-documentation)
   - [Developer documentation](#developer-documentation)
+  - [Alien documentation](#alien-documentation)
 - [Changelog](#changelog)
 - [Key features](#key-features)
 - [Getting started](#getting-started)
@@ -64,6 +65,12 @@ This documentation is intended for Arcane developers.
 
 - [Developer documentation (French)](https://arcaneframework.github.io/arcane/devdoc/html/index.html)
 - Developer documentation (English) (Soon)
+
+## Alien documentation
+
+This documentation is intended for Alien users and developers.
+
+- [Alien documentation](https://arcaneframework.github.io/framework/aliendoc/html/index.html)
 
 # Changelog
 
@@ -205,7 +212,7 @@ The next Rencontres Arcane are scheduled for 2025.
 
 <p align="center">
   <a href="https://github.com/arcaneframework/events">
-    <img alt="Arcane Framework" src="https://raw.githubusercontent.com/arcaneframework/events/main/rencontresarcane2023/visuel/BandeauARCANE_2023_V1.png" width="602px">
+    <img alt="Arcane Framework" src="https://raw.githubusercontent.com/arcaneframework/events/main/rencontresarcane2023/visuel/BandeauARCANE_2023_V1.png" width="700px">
   </a>
   <p align="center">Les Rencontres Arcane on April 17th 2023.</p>
 </p>
@@ -216,62 +223,62 @@ The previous presentations are stored [here](https://github.com/arcaneframework/
 
 <p align="center">
   <a href="https://github.com/arcaneframework/arcanefem/tree/main/elastodynamics">
-    <img alt="Transient elastodynamics" src="https://github.com/arcaneframework/arcanefem/assets/52162083/692ba9e7-5dbd-450a-ab19-e6c4a0df58a6" style="zoom: 120%;">
+    <img alt="Transient elastodynamics" src="https://github.com/arcaneframework/arcanefem/assets/52162083/692ba9e7-5dbd-450a-ab19-e6c4a0df58a6" width="600px">
   </a>
-  <p align="center">Transient elastodynamics</p>
+  <p align="center">Transient elastodynamics with ArcaneFEM</p>
 </p>
 
 
 <details>
-  <summary>More Screenshots</summary>
+  <summary>More Screenshots from ArcaneFEM</summary>
 
 <p align="center">
   <a href="https://github.com/arcaneframework/arcanefem/tree/main/aerodynamics">
-    <img alt="Aerodynamics with ArcaneFEM" src="https://github.com/arcaneframework/arcanefem/assets/52162083/8c691cee-d8e8-463a-b9b1-c00d016386f5" style="zoom: 50%;">
+    <img alt="Aerodynamics" src="https://github.com/arcaneframework/arcanefem/assets/52162083/8c691cee-d8e8-463a-b9b1-c00d016386f5" width="600px">
   </a>
-  <p align="center">Aerodynamics with ArcaneFEM</p>
+  <p align="center">Aerodynamics</p>
 </p>
 
 <p align="center">
   <a href="https://github.com/arcaneframework/arcanefem/blob/main/bilaplacian">
-    <img alt="Bilaplacian with ArcaneFEM" src="https://github.com/arcaneframework/arcanefem/assets/52162083/9f183f44-cc7c-40cb-9b6b-8fefdf0f94bf" style="zoom: 50%;">
+    <img alt="Bilaplacian" src="https://github.com/arcaneframework/arcanefem/assets/52162083/9f183f44-cc7c-40cb-9b6b-8fefdf0f94bf" width="400px">
   </a>
-  <p align="center">Bilaplacian with ArcaneFEM</p>
+  <p align="center">Bilaplacian</p>
 </p>
 
 <p align="center">
   <a href="https://github.com/arcaneframework/arcanefem/blob/main/elasticity">
-    <img alt="Linear elasticity" src="https://github.com/arcaneframework/arcanefem/assets/52162083/eb970ece-5fd3-4862-9b93-e8930a103ae9" style="zoom: 100%;">
+    <img alt="Linear elasticity" src="https://github.com/arcaneframework/arcanefem/assets/52162083/eb970ece-5fd3-4862-9b93-e8930a103ae9" width="500px">
   </a>
   <p align="center">Linear elasticity</p>
 </p>
 
 <p align="center">
   <a href="https://github.com/arcaneframework/arcanefem/blob/main/electrostatics">
-    <img alt="Arcane Framework" src="https://github.com/arcaneframework/arcanefem/assets/52162083/959988a3-1717-4449-b412-14cbd1582367" style="zoom: 100%;">
+    <img alt="Electrostatics" src="https://github.com/arcaneframework/arcanefem/assets/52162083/959988a3-1717-4449-b412-14cbd1582367" width="500px">
   </a>
-  <p align="center">Electrostatics with ArcaneFEM</p>
+  <p align="center">Electrostatics</p>
 </p>
 
 <p align="center">
   <a href="https://github.com/arcaneframework/arcanefem/blob/main/fourier">
-    <img alt="Solving Fourier equation with FEM and Arcane" src="https://github.com/arcaneframework/arcanefem/assets/52162083/cf86f60f-360f-491b-a234-9631fc27af45" style="zoom: 50%;">
+    <img alt="Solving Fourier equation" src="https://github.com/arcaneframework/arcanefem/assets/52162083/cf86f60f-360f-491b-a234-9631fc27af45" width="600px">
   </a>
-  <p align="center">Solving Fourier equation with FEM and Arcane</p>
+  <p align="center">Solving Fourier equation</p>
 </p>
 
 <p align="center">
   <a href="https://github.com/arcaneframework/arcanefem/blob/main/laplace">
-    <img alt="Solving Laplace equation with ArcaneFEM" src="https://github.com/arcaneframework/arcanefem/assets/52162083/be3d2ea6-bfb7-42d9-b82e-a62509a498f8" style="zoom: 80%;">
+    <img alt="Solving Laplace equation with ArcaneFEM" src="https://github.com/arcaneframework/arcanefem/assets/52162083/be3d2ea6-bfb7-42d9-b82e-a62509a498f8" width="400px">
   </a>
-  <p align="center">Solving Laplace equation with ArcaneFEM</p>
+  <p align="center">Solving Laplace equation</p>
 </p>
 
 <p align="center">
   <a href="https://github.com/arcaneframework/arcanefem/blob/main/poisson">
-    <img alt="Solving Poisson equation with ArcaneFEM" src="https://github.com/arcaneframework/arcanefem/assets/52162083/a8d114e1-5589-4efd-88fd-84b398acab84" style="zoom: 50%;">
+    <img alt="Solving Poisson equation with ArcaneFEM" src="https://github.com/arcaneframework/arcanefem/assets/52162083/a8d114e1-5589-4efd-88fd-84b398acab84" width="400px">
   </a>
-  <p align="center">Solving Poisson equation with ArcaneFEM</p>
+  <p align="center">Solving Poisson equation</p>
 </p>
 
 </details>
