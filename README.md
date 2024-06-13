@@ -26,12 +26,15 @@ ____
 ![Codacy grade](https://img.shields.io/codacy/grade/9d31bc0a9ae04f858a26342092cb2744?style=for-the-badge)
 ![Coverity Scan](https://img.shields.io/coverity/scan/24734?style=for-the-badge)
 
+Arcane is a development environment for parallel numerical calculation codes. It supports the architectural aspects of a calculation code, such as data structures for meshing and parallelism, as well as more environment-related aspects such as dataset configuration.
+____
+
 Table of Contents:
 - [Documentation](#documentation)
   - [User documentation](#user-documentation)
   - [Developer documentation](#developer-documentation)
 - [Changelog](#changelog)
-- [Main features](#main-features)
+- [Key features](#key-features)
 - [Getting started](#getting-started)
   - [Compiling and/or installing Arcane](#compiling-andor-installing-arcane)
     - [Docker images](#docker-images)
@@ -67,9 +70,73 @@ This documentation is intended for Arcane developers.
 The changelog is available [in the documentation](https://arcaneframework.github.io/arcane/userdoc/html/da/d0c/arcanedoc_news_changelog.html) 
 or [in this repository](arcane/doc/doc_common/changelog.md).
 
-# Main features
+# Key features
+
+<details>
+  <summary><strong>Massively parallel</strong></summary>
+
+  - Work on simple laptop or on a supercomputer
+  - Multi-subdomain
+  - Multithreading
+  - Accelerator support (Nvidia/AMD/Intel)
+  - Vectorized loop
+  - Load Balancing
+
+</details>
+
+<details>
+  <summary><strong>I/O</strong></summary>
+
+  - Supported input mesh file type:
+    - VTK 4.2
+    - VTK 2.0
+    - Lima
+    - MED
+    - xmf
+    - vtu
+    - Gmsh
+  - Supported output file type:
+    - VTKHDF
+    - Ensight7
+
+</details>
+
+<details>
+  <summary><strong>Mesh entities</strong></summary>
+
+  - Multiple mesh entities are usable in Arcane:
+    - Cell
+    - Node
+    - Face
+    - Edge
+    - DoF
+    - Particle
+  - Connectivities to explore these entities
+  - Easy-to-use Arcane mesh variables:
+    - VariableCellReal
+    - VariableFaceReal
+    - VariableCellArrayInteger
+    - VariableCellArrayReal3
+    - and many more...
+  - Usable in GPU too
+
+</details>
+
+<details>
+  <summary><strong>Multi-materials support</strong></summary>
 
 TODO
+
+</details>
+
+<details>
+  <summary><strong>Validation</strong></summary>
+
+  - Bit-to-bit comparing for Arcane variables
+  - Between-synchronizations comparing
+  - Unit test system integration
+
+</details>
 
 # Getting started
 
@@ -122,7 +189,7 @@ started with Arcane.
 
 ## [Sharc](https://github.com/arcaneframework/sharc)
 
-TODO
+Arcane-based application for solving different geosciences problems.
 
 ## [ArcaneFem](https://github.com/arcaneframework/arcanefem)
 
@@ -147,8 +214,64 @@ The previous presentations are stored [here](https://github.com/arcaneframework/
 
 # Screenshots
 
+<p align="center">
+  <a href="https://github.com/arcaneframework/arcanefem/tree/main/elastodynamics">
+    <img alt="Transient elastodynamics" src="https://github.com/arcaneframework/arcanefem/assets/52162083/692ba9e7-5dbd-450a-ab19-e6c4a0df58a6" style="zoom: 120%;">
+  </a>
+  <p align="center">Transient elastodynamics</p>
+</p>
+
+
 <details>
-  <summary>Click here</summary>
-TODO
-Wow, c tro bo !
+  <summary>More Screenshots</summary>
+
+<p align="center">
+  <a href="https://github.com/arcaneframework/arcanefem/tree/main/aerodynamics">
+    <img alt="Aerodynamics with ArcaneFEM" src="https://github.com/arcaneframework/arcanefem/assets/52162083/8c691cee-d8e8-463a-b9b1-c00d016386f5" style="zoom: 50%;">
+  </a>
+  <p align="center">Aerodynamics with ArcaneFEM</p>
+</p>
+
+<p align="center">
+  <a href="https://github.com/arcaneframework/arcanefem/blob/main/bilaplacian">
+    <img alt="Bilaplacian with ArcaneFEM" src="https://github.com/arcaneframework/arcanefem/assets/52162083/9f183f44-cc7c-40cb-9b6b-8fefdf0f94bf" style="zoom: 50%;">
+  </a>
+  <p align="center">Bilaplacian with ArcaneFEM</p>
+</p>
+
+<p align="center">
+  <a href="https://github.com/arcaneframework/arcanefem/blob/main/elasticity">
+    <img alt="Linear elasticity" src="https://github.com/arcaneframework/arcanefem/assets/52162083/eb970ece-5fd3-4862-9b93-e8930a103ae9" style="zoom: 100%;">
+  </a>
+  <p align="center">Linear elasticity</p>
+</p>
+
+<p align="center">
+  <a href="https://github.com/arcaneframework/arcanefem/blob/main/electrostatics">
+    <img alt="Arcane Framework" src="https://github.com/arcaneframework/arcanefem/assets/52162083/959988a3-1717-4449-b412-14cbd1582367" style="zoom: 100%;">
+  </a>
+  <p align="center">Electrostatics with ArcaneFEM</p>
+</p>
+
+<p align="center">
+  <a href="https://github.com/arcaneframework/arcanefem/blob/main/fourier">
+    <img alt="Solving Fourier equation with FEM and Arcane" src="https://github.com/arcaneframework/arcanefem/assets/52162083/cf86f60f-360f-491b-a234-9631fc27af45" style="zoom: 50%;">
+  </a>
+  <p align="center">Solving Fourier equation with FEM and Arcane</p>
+</p>
+
+<p align="center">
+  <a href="https://github.com/arcaneframework/arcanefem/blob/main/laplace">
+    <img alt="Solving Laplace equation with ArcaneFEM" src="https://github.com/arcaneframework/arcanefem/assets/52162083/be3d2ea6-bfb7-42d9-b82e-a62509a498f8" style="zoom: 80%;">
+  </a>
+  <p align="center">Solving Laplace equation with ArcaneFEM</p>
+</p>
+
+<p align="center">
+  <a href="https://github.com/arcaneframework/arcanefem/blob/main/poisson">
+    <img alt="Solving Poisson equation with ArcaneFEM" src="https://github.com/arcaneframework/arcanefem/assets/52162083/a8d114e1-5589-4efd-88fd-84b398acab84" style="zoom: 50%;">
+  </a>
+  <p align="center">Solving Poisson equation with ArcaneFEM</p>
+</p>
+
 </details>
