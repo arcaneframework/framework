@@ -22,12 +22,14 @@ ____
 ![GitHub all releases](https://img.shields.io/github/downloads/arcaneframework/framework/total?style=for-the-badge)
 ![GitHub commit activity](https://img.shields.io/github/commit-activity/m/arcaneframework/framework?style=for-the-badge)
 ![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/arcaneframework/framework?style=for-the-badge)
-
 ![Codecov](https://img.shields.io/codecov/c/gh/arcaneframework/framework?style=for-the-badge)
 ![Codacy grade](https://img.shields.io/codacy/grade/9d31bc0a9ae04f858a26342092cb2744?style=for-the-badge)
 ![Coverity Scan](https://img.shields.io/coverity/scan/24734?style=for-the-badge)
 
+Table of Contents:
 - [Documentation](#documentation)
+  - [User documentation](#user-documentation)
+  - [Developer documentation](#developer-documentation)
 - [Changelog](#changelog)
 - [Main features](#main-features)
 - [Getting started](#getting-started)
@@ -44,19 +46,26 @@ ____
 
 # Documentation
 
-The documentation is available online:
+The documentation is available online and is generated and stored in this [GitHub repository](https://github.com/arcaneframework/arcaneframework.github.io).
 
-- User documentation can be found
-  here: [User documentation](https://arcaneframework.github.io/arcane/userdoc/html/index.html)
-- Developer documentation can be found
-  here: [Developer documentation](https://arcaneframework.github.io/arcane/devdoc/html/index.html)
-- The GitHub repository where documentation is generated and
-  stored: [GitHub repository](https://github.com/arcaneframework/arcaneframework.github.io)
+## User documentation
+
+This documentation is intended for Arcane users.
+
+- [User documentation (French)](https://arcaneframework.github.io/arcane/userdoc/html/index.html)
+- User documentation (English) (Soon)
+
+## Developer documentation
+
+This documentation is intended for Arcane developers.
+
+- [Developer documentation (French)](https://arcaneframework.github.io/arcane/devdoc/html/index.html)
+- Developer documentation (English) (Soon)
 
 # Changelog
 
-The changelog is available
-here: [Changelog](https://arcaneframework.github.io/arcane/userdoc/html/da/d0c/arcanedoc_news_changelog.html)
+The changelog is available [in the documentation](https://arcaneframework.github.io/arcane/userdoc/html/da/d0c/arcanedoc_news_changelog.html) 
+or [in this repository](arcane/doc/doc_common/changelog.md).
 
 # Main features
 
@@ -66,17 +75,33 @@ TODO
 
 ## Compiling and/or installing Arcane
 
-To compile the Arcane Framework, you need an x86 or ARM64 CPU, Linux OS or Windows OS and a C++ compiler with a version that supports C++20 or higher.
+To compile the Arcane Framework, you need an x86 or ARM64 CPU, Linux OS or Windows OS and a C++
+compiler with a version that supports C++20 or higher.
 
-For all other dependencies and more information, check out
-the [Compiling/Installing](https://arcaneframework.github.io/arcane/userdoc/html/d7/d94/arcanedoc_build_install.html)
+For all other dependencies and more information, check out the 
+[Compiling/Installing](https://arcaneframework.github.io/arcane/userdoc/html/d7/d94/arcanedoc_build_install.html)
 guide.
+
+<details>
+  <summary>Click here if the documentation is not available</summary>
+
+To prepare your computer :
+
+- [Ubuntu 24.04](arcane/doc/doc_common/chap_build_install/subchap_prerequisites/_ubuntu24.md)
+- [Ubuntu 22.04](arcane/doc/doc_common/chap_build_install/subchap_prerequisites/_ubuntu22.md) and [CMake instructions](arcane/doc/doc_common/chap_build_install/subchap_prerequisites/snippets/_cmake.md)
+- [Ubuntu 20.04](arcane/doc/doc_common/chap_build_install/subchap_prerequisites/_ubuntu20.md) and [CMake instructions](arcane/doc/doc_common/chap_build_install/subchap_prerequisites/snippets/_cmake.md)
+- [AlmaLinux/RedHat 9](arcane/doc/doc_common/chap_build_install/subchap_prerequisites/_rh9.md) and [CMake instructions](arcane/doc/doc_common/chap_build_install/subchap_prerequisites/snippets/_cmake.md)
+- [ArchLinux based](arcane/doc/doc_common/chap_build_install/subchap_prerequisites/_arch.md)
+
+To build and install Arcane:
+- [Compiling/Installing](arcane/doc/doc_common/chap_build_install/2_build.md)
+</details>
 
 ### Docker images
 
-Docker images with the Arcane framework installed are available in
-this [GitHub repository](https://github.com/arcaneframework/containers/pkgs/container/arcane_ubuntu-2204). More
-information [here](https://github.com/arcaneframework/containers).
+Docker images with the Arcane framework installed are available in this 
+[GitHub repository](https://github.com/arcaneframework/containers/pkgs/container/arcane_ubuntu-2204).
+More information [here](https://github.com/arcaneframework/containers).
 
 ### Spack
 
@@ -86,22 +111,29 @@ Spack recipes for Arcane are available [here](https://github.com/arcaneframework
 
 An introductory chapter with the construction of a Hello world is
 available [here](https://arcaneframework.github.io/arcane/userdoc/html/db/d53/arcanedoc_examples.html).
-Examples of applications using Arcane are available on GitHub. Here is a non-exhaustive list:
+
+Examples of applications using Arcane are available on GitHub. 
+Here is a non-exhaustive list:
 
 ## [Arcane Benchs](https://github.com/arcaneframework/arcane-benchs)
-A set of mini-applications to evaluate Arcane functionalities. These are a good basis for getting started with Arcane.
+
+A set of mini-applications to evaluate Arcane functionalities. These are a good basis for getting 
+started with Arcane.
 
 ## [Sharc](https://github.com/arcaneframework/sharc)
+
 TODO
 
 ## [ArcaneFem](https://github.com/arcaneframework/arcanefem)
+
 Very simple codes to test Finite Element Methods using Arcane.
 
 ## [MaHyCo](https://github.com/cea-hpc/MaHyCo)
+
 TODO
 
-
 # Rencontres Arcanes
+
 The next Rencontres Arcane are scheduled for 2025.
 
 <p align="center">
