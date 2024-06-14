@@ -5,7 +5,6 @@
     "MpiBinary" : "@MPIEXEC_EXECUTABLE@",
     "CustomMpiDriver" : "@ARCANE_CUSTOM_MPI_DRIVER@",
     "ValgrindBinary" : "@VALGRIND_EXEC_NAME@",
-    "MonoExecPath" : "@MONO_EXEC_PATH@",
     "DotnetCoreClrPath" : "@DOTNET_EXEC@",
     "DotnetCoreClrVersion" : "@ARCANE_CORECLR_VERSION@",
     "DotnetCoreClrFullVersion" : "@ARCANE_CORECLR_VERSION_FULL@",
