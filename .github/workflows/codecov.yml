@@ -64,18 +64,18 @@ jobs:
         shell: bash
         run: echo "m_date=$(/bin/date -u '+%Y%m%d%H%M%S')" >> $GITHUB_ENV
 
+      - name: Checkout framework
+        uses: actions/checkout@v4
+        with:
+          path: ${{ env.SOURCE_DIR }}
+          submodules: true
+
       - name: Get cache for ccache tool
         uses: actions/cache@v4
         with:
           path: ${{env.CCACHE_DIR}}
           key: codecov-${{ env.m_date }}-${{ github.run_number }}
           restore-keys: codecov-
-
-      - name: Checkout framework
-        uses: actions/checkout@v4
-        with:
-          path: ${{ env.SOURCE_DIR }}
-          submodules: true
 
       - name: Build framework
         uses: arcaneframework/gh_actions/build_install_framework@v1
