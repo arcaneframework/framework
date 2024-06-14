@@ -721,10 +721,6 @@ if(NOT ARCANE_DISABLE_HYODA)
   endif()
 endif()
 
-if (NOT MONO_EXEC_ONLY)
-  add_subdirectory(src/arcane/mono)
-endif()
-
 add_subdirectory(src/arcane/dotnet/coreclr)
 
 add_subdirectory(src/arcane/parallel/mpi)

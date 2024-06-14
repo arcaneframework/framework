@@ -22,7 +22,7 @@ namespace Arcane.ExecDrivers.Common
     public int NbContinue;
 
     public bool UseDotNet;
-    public string DotNetRuntime = "mono";
+    public string DotNetRuntime = "coreclr";
     public string DotNetAssembly;
     public string DotNetUserCompile;
     public string[] ParallelArgs;
@@ -465,16 +465,12 @@ namespace Arcane.ExecDrivers.Common
           }
           if (m_use_dotnet && want_dotnet_shared) {
             string test_exe_dll_path = Path.Combine(lib_path, "ArcaneTestExe.dll");
-            if (m_dotnet_runtime == "mono") {
-              string mono_bin = Path.Combine(Utils.MonoExecPath, "mono");
-              exe_name = $"\"{mono_bin}\"  --debug {test_exe_dll_path}";
-            }
-            else if (m_dotnet_runtime=="coreclr"){
+            if (m_dotnet_runtime=="coreclr"){
               string coreclr_bin = Utils.DotnetCoreClrPath;
               exe_name = $"\"{coreclr_bin}\" {test_exe_dll_path}";
             }
             else
-             throw new ArgumentException("Invalid value for option 'dotnet-runtime'. Valid values are 'mono' or 'coreclr'");
+             throw new ArgumentException("Invalid value for option 'dotnet-runtime'. Valid value is 'coreclr'");
           }
 
           args.Add(exe_name);
@@ -511,16 +507,12 @@ namespace Arcane.ExecDrivers.Common
           Console.WriteLine("Launching '.Net' sequential test");
           string test_exe_dll_path = Path.Combine(lib_path, "ArcaneTestExe.dll");
           string all_args = $"{test_exe_dll_path} {args_str}";
-          if (m_dotnet_runtime == "mono") {
-            string mono_bin = Path.Combine(Utils.MonoExecPath, "mono");
-            r = Utils.ExecCommandNoException(mono_bin, " --debug " + all_args);
-          }
-          else if (m_dotnet_runtime == "coreclr") {
+          if (m_dotnet_runtime == "coreclr") {
             string coreclr_bin = Utils.DotnetCoreClrPath;
             r = Utils.ExecCommandNoException(coreclr_bin, all_args);
           }
           else
-            throw new ArgumentException("Invalid value for option 'dotnet-runtime'. Valid values are 'mono' or 'coreclr'");
+            throw new ArgumentException("Invalid value for option 'dotnet-runtime'. Valid value is 'coreclr'");
         }
         else {
           if (m_properties.UseTotalview) {

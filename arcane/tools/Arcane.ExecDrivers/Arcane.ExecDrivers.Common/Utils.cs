@@ -47,8 +47,6 @@ namespace Arcane.ExecDrivers.Common
     static string m_valgrind_exec_name;
     public static string ValgrindExecName { get { return m_valgrind_exec_name; } }
 
-    static string m_mono_exec_path;
-    public static string MonoExecPath { get { return m_mono_exec_path; } }
     public static string DotnetCoreClrPath { get; private set; }
     public static string DotnetCoreClrFullVersion { get; private set; }
     public static string DotnetCoreClrVersion { get; private set; }
@@ -109,7 +107,6 @@ namespace Arcane.ExecDrivers.Common
       m_code_share_path = NormalizePath(_ReadConfig(settings, "CodeSharePath"));
       m_mpi_exec_name = NormalizePath(_ReadConfig(settings, "MpiBinary"));
       m_valgrind_exec_name = NormalizePath(_ReadConfig(settings, "ValgrindBinary"));
-      m_mono_exec_path = NormalizePath(_ReadConfig(settings, "MonoExecPath"));
       DotnetCoreClrPath = NormalizePath(_ReadConfig(settings, "DotnetCoreClrPath"));
       DotnetCoreClrFullVersion = NormalizePath(_ReadConfig(settings, "DotnetCoreClrFullVersion"));
       DotnetCoreClrVersion = NormalizePath(_ReadConfig(settings, "DotnetCoreClrVersion"));

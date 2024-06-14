@@ -285,20 +285,6 @@ function(arcane_add_csharp_test_direct)
     list(APPEND _ALL_ARGS "--dotnet-assembly=${ARGS_ASSEMBLY}")
   endif()
 
-  # Test avec mono
-  if (MONO_EXEC)
-    arcane_add_test_direct(NAME ${ARGS_TEST_NAME}_mono
-      COMMAND ${ARGS_LAUNCH_COMMAND} -Z ${_ALL_ARGS}
-      WORKING_DIRECTORY ${ARGS_WORKING_DIRECTORY})
-  endif()
-
-  # Test avec mono embedded
-  if (TARGET arcane::MonoEmbed)
-    arcane_add_test_direct(NAME ${ARGS_TEST_NAME}_mono_embedded
-      COMMAND ${ARGS_LAUNCH_COMMAND} -We,ARCANE_USE_DOTNET_WRAPPER,1 ${_ALL_ARGS}
-      WORKING_DIRECTORY ${ARGS_WORKING_DIRECTORY})
-  endif()
-
   if (DOTNET_EXEC)
     # Test avec coreclr direct
     arcane_add_test_direct(NAME ${ARGS_TEST_NAME}_coreclr
