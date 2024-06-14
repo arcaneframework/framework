@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* TaskUnitTest.cc                                             (C) 2000-2023 */
+/* TaskUnitTest.cc                                             (C) 2000-2024 */
 /*                                                                           */
 /* Service de test des tâches.                                               */
 /*---------------------------------------------------------------------------*/
@@ -163,7 +163,7 @@ class Test3
     for( Integer i=0; i<3; ++ i){
       Integer v = TaskFactory::verboseLevel();
       TaskFactory::setVerboseLevel(3);
-      Integer grain_size = 50*i;
+      Integer grain_size = 10*i;
       _reset();
       info() << "Test Deterministic partitionner N=" << i << " grain_size=" << grain_size
              << " nb_item=" << nodes.size();
