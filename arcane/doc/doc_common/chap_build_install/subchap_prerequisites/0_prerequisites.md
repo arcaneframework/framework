@@ -54,6 +54,9 @@ Choisissez votre OS :
 - \subpage arcanedoc_build_install_prerequisites_ubuntu22 <br>
   Présente les prérequis nécessaires pour %Arcane sous Ubuntu 22.04.
 
+- \subpage arcanedoc_build_install_prerequisites_ubuntu24 <br>
+Présente les prérequis nécessaires pour %Arcane sous Ubuntu 24.04.
+
 - \subpage arcanedoc_build_install_prerequisites_arch <br>
   Présente les prérequis nécessaires pour %Arcane sous ArchLinux.
 

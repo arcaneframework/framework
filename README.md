@@ -4,270 +4,305 @@
 
 Written by CEA/IFPEN and Contributors
 
-(C) Copyright 2000-2023 CEA/IFPEN. All rights reserved.
+(C) Copyright 2000-2024 CEA/IFPEN. All rights reserved.
 
 All content is the property of the respective authors or their employers.
 
 For more information regarding authorship of content, please consult the listed source code repository logs.
+____
+
+<p align="center">
+  <a href="https://github.com/arcaneframework/framework">
+    <img alt="Arcane Framework" src="arcane/doc/theme/img/arcane_framework_medium.webp" width="602px">
+  </a>
+  <p align="center">Development platform for unstructured 2D or 3D parallel computing codes.</p>
+</p>
+
+![GitHub](https://img.shields.io/github/license/arcaneframework/framework?style=for-the-badge)
+![GitHub all releases](https://img.shields.io/github/downloads/arcaneframework/framework/total?style=for-the-badge)
+![GitHub commit activity](https://img.shields.io/github/commit-activity/m/arcaneframework/framework?style=for-the-badge)
+![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/arcaneframework/framework?style=for-the-badge)
+![Codecov](https://img.shields.io/codecov/c/gh/arcaneframework/framework?style=for-the-badge)
+![Codacy grade](https://img.shields.io/codacy/grade/9d31bc0a9ae04f858a26342092cb2744?style=for-the-badge)
+![Coverity Scan](https://img.shields.io/coverity/scan/24734?style=for-the-badge)
+
+Arcane is a development environment for parallel numerical calculation codes. It supports the architectural aspects of a calculation code, such as data structures for meshing and parallelism, as well as more environment-related aspects such as dataset configuration.
+____
+
+Table of Contents:
+- [Documentation](#documentation)
+  - [User documentation](#user-documentation)
+  - [Developer documentation](#developer-documentation)
+  - [Alien documentation](#alien-documentation)
+- [Changelog](#changelog)
+- [Key features](#key-features)
+- [Getting started](#getting-started)
+  - [Compiling and/or installing Arcane](#compiling-andor-installing-arcane)
+    - [Docker images](#docker-images)
+    - [Spack](#spack)
+- [Examples of how to use the Arcane Framework](#examples-of-how-to-use-the-arcane-framework)
+  - [Arcane Benchs](#arcane-benchs)
+  - [Sharc](#sharc)
+  - [ArcaneFem](#arcanefem)
+  - [MaHyCo](#mahyco)
+- [Rencontres Arcanes](#rencontres-arcanes)
+- [Screenshots](#screenshots)
 
-## Introduction
+# Documentation
 
-Arcane est une plateforme de développement pour les codes de calcul parallèles non structurés 2D ou 3D.
+The documentation is available online and is generated and stored in this [GitHub repository](https://github.com/arcaneframework/arcaneframework.github.io).
 
-### Documentation
+## User documentation
 
-La documentation en ligne est accessible depuis internet :
-- La documentation utilisateur se trouve ici : [Documentation utilisateur](https://arcaneframework.github.io/arcane/userdoc/html/index.html)
-- La documentation développeur se trouve ici : [Documentation développeur](https://arcaneframework.github.io/arcane/devdoc/html/index.html)
-- Le dépôt GitHub où est générée et stockée la documentation : [Dépôt GitHub](https://github.com/arcaneframework/arcaneframework.github.io)
+This documentation is intended for Arcane users.
 
-### Changelog
+- [User documentation (French)](https://arcaneframework.github.io/arcane/userdoc/html/index.html)
+- User documentation (English) (Soon)
 
-Les dernières modifications de Arcane sont dans le fichier suivant: [Changelog](arcane/doc/doc_common/changelog.md)
+## Developer documentation
 
-## Compilation
+This documentation is intended for Arcane developers.
 
-Ce dépôt permet de compiler directement Arcane et/ou Alien et ses dépendances
-(Arrcon, Axlstar et Arccore)
+- [Developer documentation (French)](https://arcaneframework.github.io/arcane/devdoc/html/index.html)
+- Developer documentation (English) (Soon)
 
-La compilation doit se faire dans un répertoire différent de celui
-contenant les sources.
+## Alien documentation
 
-Pour les prérequis, voir les répertoires [Arcane](arcane/README.md) et [Alien](alien/standalone/README.md):
+This documentation is intended for Alien users and developers.
 
-- [Linux](#linux)
+- [Alien documentation](https://arcaneframework.github.io/framework/aliendoc/html/index.html)
 
-Pour récuperer les sources:
+# Changelog
 
-~~~{sh}
-git clone --recurse-submodules /path/to/git
-~~~
+The changelog is available [in the documentation](https://arcaneframework.github.io/arcane/userdoc/html/da/d0c/arcanedoc_news_changelog.html) 
+or [in this repository](arcane/doc/doc_common/changelog.md).
 
-ou
+# Key features
 
-~~~{sh}
-git clone /path/to/git
-cd framework && git submodule update --init --recursive
-~~~
+<details>
+  <summary><strong>Massively parallel</strong></summary>
 
-Par défaut, on compile Arcane et Alien si les pré-requis sont disponibles
-La variable CMake `ARCANEFRAMEWORK_BUILD_COMPONENTS` contient la liste
-des composants du dépôt à compiler. Cette liste peut contenir les
-valeurs suivantes:
+  - Work on simple laptop or on a supercomputer
+  - Multi-subdomain
+  - Multithreading
+  - Accelerator support (Nvidia/AMD/Intel)
+  - Vectorized loop
+  - Load Balancing
 
-- `Arcane`
-- `Alien`
+</details>
 
-Par défaut la valeur est `Arcane;Alien` et donc on compile les deux composants.
+<details>
+  <summary><strong>I/O</strong></summary>
 
-Pour compiler Arcane et Alien , il faut procéder comme suit:
+  - Supported input mesh file type:
+    - VTK 4.2
+    - VTK 2.0
+    - Lima
+    - MED
+    - xmf
+    - vtu
+    - Gmsh
+  - Supported output file type:
+    - VTKHDF
+    - Ensight7
 
-~~~{sh}
-mkdir /path/to/build
-cmake -S /path/to/sources -B /path/to/build
-cmake --build /path/to/build
-~~~
+</details>
 
-Si on ne souhaite compiler que Arcane :
+<details>
+  <summary><strong>Mesh entities</strong></summary>
 
-~~~{sh}
-cmake -S /path/to/sources -B /path/to/build -DARCANEFRAMEWORK_BUILD_COMPONENTS=Arcane
-~~~
+  - Multiple mesh entities are usable in Arcane:
+    - Cell
+    - Node
+    - Face
+    - Edge
+    - DoF
+    - Particle
+  - Connectivities to explore these entities
+  - Easy-to-use Arcane mesh variables:
+    - VariableCellReal
+    - VariableFaceReal
+    - VariableCellArrayInteger
+    - VariableCellArrayReal3
+    - and many more...
+  - Usable in GPU too
 
-Si on ne souhaite compiler que Alien :
+</details>
 
-~~~{sh}
-cmake -S /path/to/sources -B /path/to/build -DARCANEFRAMEWORK_BUILD_COMPONENTS=Alien
-~~~
+<details>
+  <summary><strong>Multi-materials support</strong></summary>
 
-## Linux
+TODO
 
-Cette section indique comment installer sous Linux x64 les dépendances
-nécessaires.
+</details>
 
-### CMake
+<details>
+  <summary><strong>Validation</strong></summary>
 
-Il faut au moins la version 3.21 de CMake. Pour le support de CUDA, il faut
-au moins la version 3.26. Si elle n'est pas présente sur votre système, la commande
-suivante permet d'installer la version 3.27.8 pour Linux x64 dans `/usr/local`.
-Il faudra ensuite ajouter le chemin correspondant dans la variable d'environnement `PATH`.
+  - Bit-to-bit comparing for Arcane variables
+  - Between-synchronizations comparing
+  - Unit test system integration
 
-~~~{sh}
-# Install CMake 3.27.8 in /usr/local/cmake
-MY_CMAKE_INSTALL_PATH=/usr/local/cmake-3.27.8
-wget https://github.com/Kitware/CMake/releases/download/v3.27.8/cmake-3.27.8-linux-x86_64.tar.gz
-sudo mkdir ${MY_CMAKE_INSTALL_PATH}
-sudo tar -C ${MY_CMAKE_INSTALL_PATH} -x --strip-components 1 -f cmake-3.27.8-linux-x86_64.tar.gz
-export PATH=${MY_CMAKE_INSTALL_PATH}/bin:${PATH}
-cmake --version
-~~~
+</details>
 
-Vous pouvez aussi installer directement CMake via [snap](https://snapcraft.io/):
-~~~{sh}
-sudo snap install --classic cmake
-~~~
+# Getting started
 
-### Environnement `.Net`
+## Compiling and/or installing Arcane
 
-L'environnement [.Net 6.0](https://dotnet.microsoft.com) est nécessaire
-pour compiler Arcane. Il est accessible via les packages systèmes
-(`apt` ou `yum`) mais vous pouvez aussi directement télécharger un
-fichier `tar` contenant le binaire et les fichiers nécessaires. Pour
-l'architecture `x64`, les commandes suivantes installent
-l'environnement dans le répertoire `$HOME/dotnet`.
-
-~~~{sh}
-wget https://download.visualstudio.microsoft.com/download/pr/372b11de-1321-44f3-aad7-040842babe62/c5925f9f856c3a299e97c80283317275/dotnet-sdk-6.0.304-linux-x64.tar.gz
-mkdir -p $HOME/dotnet && tar zxf dotnet-sdk-6.0.304-linux-x64.tar.gz -C $HOME/dotnet
-export DOTNET_ROOT=$HOME/dotnet
-export PATH=$HOME/dotnet:$PATH:
-~~~
-
-Pour d'autres architectures, la page [Download
-.Net](https://dotnet.microsoft.com/en-us/download) contient la liste
-des téléchargements disponibles.
-
-### Ubuntu 20.04 via les packages systèmes
-
-Les commandes suivantes permettent d'installer les dépendances
-nécessaires pour Arcane (ainsi que les dépendances optionnelles `HDF5` et `ParMetis`):
-
-~~~{sh}
-sudo apt-get update
-sudo apt-get install -y apt-utils build-essential iputils-ping python3 \
-git gfortran libglib2.0-dev libxml2-dev libhdf5-openmpi-dev \
-libparmetis-dev wget
-wget https://packages.microsoft.com/config/ubuntu/20.04/packages-microsoft-prod.deb -O packages-microsoft-prod.deb
-sudo dpkg -i packages-microsoft-prod.deb
-sudo apt-get update
-sudo apt-get install -y apt-transport-https dotnet-sdk-6.0
-~~~
-
-### Ubuntu 22.04 via les packages systèmes
-
-Sur Ubuntu 22.04, les versions de CMake et de '.Net' sont suffisamment
-récentes pour pouvoir être installés via les packages système.
-
-Les commandes suivantes permettent d'installer les dépendances
-nécessaires pour Arcane (ainsi que les dépendances optionnelles `HDF5` et `ParMetis`):
-
-~~~{sh}
-sudo apt-get update
-sudo apt-get install -y apt-utils build-essential iputils-ping python3 \
-  git gfortran libglib2.0-dev libxml2-dev libhdf5-openmpi-dev \
-  libparmetis-dev dotnet6 cmake
-~~~
-
-Il est aussi possible d'installer les packages optionnels suivants:
-
-~~~{sh}
-# Pour google test:
-sudo apt-get install -y googletest
-
-# Pour Ninja:
-sudo apt-get install -y ninja-build
-
-# Pour le wrapper C#:
-sudo apt-get install -y swig4.0
-
-# Pour Hypre
-sudo apt-get install -y libhypre-dev
-
-# Pour PETSc
-sudo apt-get install -y libpetsc-real-dev
-
-# Pour Trilinos
-sudo apt-get install -y libtrilinos-teuchos-dev libtrilinos-epetra-dev \
-  libtrilinos-tpetra-dev libtrilinos-kokkos-dev libtrilinos-ifpack2-dev \
-  libtrilinos-ifpack-dev libtrilinos-amesos-dev libtrilinos-galeri-dev \
-  libtrilinos-xpetra-dev libtrilinos-epetraext-dev \
-  libtrilinos-triutils-dev libtrilinos-thyra-dev \
-  libtrilinos-kokkos-kernels-dev libtrilinos-rtop-dev \
-  libtrilinos-isorropia-dev libtrilinos-belos-dev \
-
-# Pour Zoltan
-sudo apt-get install -y libtrilinos-ifpack-dev libtrilinos-anasazi-dev \
-  libtrilinos-amesos2-dev libtrilinos-shards-dev libtrilinos-muelu-dev \
-  libtrilinos-intrepid2-dev libtrilinos-teko-dev libtrilinos-sacado-dev \
-  libtrilinos-stratimikos-dev libtrilinos-shylu-dev \
-  libtrilinos-zoltan-dev libtrilinos-zoltan2-dev
-~~~
-
-### Ubuntu 24.04 via les packages systèmes
-
-Les commandes suivantes permettent d'installer les dépendances
-nécessaires pour Arcane et Alien (ainsi que les dépendances optionnelles `HDF5` et `ParMetis`):
-
-~~~{sh}
-sudo apt-get update
-sudo apt-get install -y apt-utils build-essential iputils-ping python3 \
-  git gfortran libglib2.0-dev libxml2-dev libhdf5-openmpi-dev \
-  libparmetis-dev cmake
-
-# .Net 6
-sudo apt-get install -y software-properties-common
-sudo add-apt-repository ppa:dotnet/backports
-sudo apt-get install -y dotnet-sdk-6.0
-
-# boost (pour Alien)
-sudo apt-get install -y libboost-program-options-dev
-~~~
-
-Il est aussi possible d'installer les packages optionnels suivants:
-
-~~~{sh}
-# Pour google test:
-sudo apt-get install -y googletest
-
-# Pour Ninja:
-sudo apt-get install -y ninja-build
-
-# Pour Hypre
-sudo apt-get install -y libhypre-dev
-
-# Pour PETSc
-sudo apt-get install -y libpetsc-real-dev
-
-# Pour Trilinos
-sudo apt-get install -y libtrilinos-teuchos-dev libtrilinos-epetra-dev \
-  libtrilinos-tpetra-dev libtrilinos-kokkos-dev libtrilinos-ifpack2-dev \
-  libtrilinos-ifpack-dev libtrilinos-amesos-dev libtrilinos-galeri-dev \
-  libtrilinos-xpetra-dev libtrilinos-epetraext-dev \
-  libtrilinos-triutils-dev libtrilinos-thyra-dev \
-  libtrilinos-kokkos-kernels-dev libtrilinos-rtop-dev \
-  libtrilinos-isorropia-dev libtrilinos-belos-dev
-
-# Pour Zoltan
-sudo apt-get install -y libtrilinos-ifpack-dev libtrilinos-anasazi-dev \
-  libtrilinos-amesos2-dev libtrilinos-shards-dev libtrilinos-muelu-dev \
-  libtrilinos-intrepid2-dev libtrilinos-teko-dev libtrilinos-sacado-dev \
-  libtrilinos-stratimikos-dev libtrilinos-shylu-dev \
-  libtrilinos-zoltan-dev libtrilinos-zoltan2-dev
-
-# Pour le wrapper C#:
-sudo apt-get install -y swig
-~~~
-
-### Arch Linux/Manjaro via Pacman/YAY
-
-Les commandes suivantes permettent d'installer CMake, .Net et les dépendances
-nécessaires pour Arcane (ainsi que les dépendances optionnelles `TBB`, `HDF5` et `ParMetis`):
-
-~~~{sh}
-sudo pacman -Syu
-sudo pacman -S gcc cmake python git gcc-fortran glib2 libxml2 hdf5-openmpi wget tbb dotnet-sdk aspnet-runtime aspnet-targeting-pack
-yay -S aur/parmetis
-~~~
-
-### AlmaLinux 9 (or RedHat 9)
-
-Pour compiler Arcane, il est nécessaire d'installer les packages
-suivants:
-
-~~~{sh}
-# Packages nécessaires
-yum -y install dotnet-sdk-6.0 glib2-devel libxml2-devel gcc-c++
-~~~
-
-La version par défaut de CMake sur AlmaLinux 9 est trop ancienne
-(3.20). Il faut donc télécharger une version plus récente
+To compile the Arcane Framework, you need an x86 or ARM64 CPU, Linux OS or Windows OS and a C++
+compiler with a version that supports C++20 or higher.
+
+For all other dependencies and more information, check out the 
+[Compiling/Installing](https://arcaneframework.github.io/arcane/userdoc/html/d7/d94/arcanedoc_build_install.html)
+guide.
+
+<details>
+  <summary>Click here if the documentation is not available</summary>
+
+To prepare your computer :
+
+- [Ubuntu 24.04](arcane/doc/doc_common/chap_build_install/subchap_prerequisites/_ubuntu24.md)
+- [Ubuntu 22.04](arcane/doc/doc_common/chap_build_install/subchap_prerequisites/_ubuntu22.md) and [CMake instructions](arcane/doc/doc_common/chap_build_install/subchap_prerequisites/snippets/_cmake.md)
+- [Ubuntu 20.04](arcane/doc/doc_common/chap_build_install/subchap_prerequisites/_ubuntu20.md) and [CMake instructions](arcane/doc/doc_common/chap_build_install/subchap_prerequisites/snippets/_cmake.md)
+- [AlmaLinux/RedHat 9](arcane/doc/doc_common/chap_build_install/subchap_prerequisites/_rh9.md) and [CMake instructions](arcane/doc/doc_common/chap_build_install/subchap_prerequisites/snippets/_cmake.md)
+- [ArchLinux based](arcane/doc/doc_common/chap_build_install/subchap_prerequisites/_arch.md)
+
+To build and install Arcane:
+- [Compiling/Installing](arcane/doc/doc_common/chap_build_install/2_build.md)
+</details>
+
+### Docker images
+
+Docker images with the Arcane framework installed are available in this 
+[GitHub repository](https://github.com/arcaneframework/containers/pkgs/container/arcane_ubuntu-2204).
+More information [here](https://github.com/arcaneframework/containers).
+
+### Spack
+
+Spack recipes for Arcane are available [here](https://github.com/arcaneframework/spack_recipes).
+
+# Examples of how to use the Arcane Framework
+
+An introductory chapter with the construction of a Hello world is
+available [here](https://arcaneframework.github.io/arcane/userdoc/html/db/d53/arcanedoc_examples.html).
+
+Examples of applications using Arcane are available on GitHub. 
+Here is a non-exhaustive list:
+
+## [Arcane Benchs](https://github.com/arcaneframework/arcane-benchs)
+
+A set of mini-applications to evaluate Arcane functionalities. These are a good basis for getting 
+started with Arcane.
+
+## [Sharc](https://github.com/arcaneframework/sharc)
+
+Arcane-based application for solving different geosciences problems.
+
+## [ArcaneFem](https://github.com/arcaneframework/arcanefem)
+
+Very simple codes to test Finite Element Methods using Arcane.
+
+## [MaHyCo](https://github.com/cea-hpc/MaHyCo)
+
+TODO
+
+# Rencontres Arcanes
+
+The next Rencontres Arcane are scheduled for 2025.
+
+<p align="center">
+  <a href="https://github.com/arcaneframework/events">
+    <img alt="Arcane Framework" src="https://raw.githubusercontent.com/arcaneframework/events/main/rencontresarcane2023/visuel/BandeauARCANE_2023_V1.png" width="700px">
+  </a>
+  <p align="center">Les Rencontres Arcane on April 17th 2023.</p>
+</p>
+
+The previous presentations are stored [here](https://github.com/arcaneframework/events).
+
+# Screenshots
+
+<p align="center">
+  <a href="https://github.com/arcaneframework/arcanefem/tree/main/elastodynamics">
+    <img alt="Transient elastodynamics" src="https://github.com/arcaneframework/arcanefem/assets/52162083/692ba9e7-5dbd-450a-ab19-e6c4a0df58a6" width="600px">
+  </a>
+  <p align="center">Transient elastodynamics with ArcaneFEM</p>
+</p>
+
+
+<details>
+  <summary><strong>More Screenshots from ArcaneFEM</strong></summary>
+
+<p align="center">
+  <a href="https://github.com/arcaneframework/arcanefem/tree/main/aerodynamics">
+    <img alt="Aerodynamics" src="https://github.com/arcaneframework/arcanefem/assets/52162083/8c691cee-d8e8-463a-b9b1-c00d016386f5" width="600px">
+  </a>
+  <p align="center">Aerodynamics</p>
+</p>
+
+<p align="center">
+  <a href="https://github.com/arcaneframework/arcanefem/blob/main/bilaplacian">
+    <img alt="Bilaplacian" src="https://github.com/arcaneframework/arcanefem/assets/52162083/9f183f44-cc7c-40cb-9b6b-8fefdf0f94bf" width="400px">
+  </a>
+  <p align="center">Bilaplacian</p>
+</p>
+
+<p align="center">
+  <a href="https://github.com/arcaneframework/arcanefem/blob/main/elasticity">
+    <img alt="Linear elasticity" src="https://github.com/arcaneframework/arcanefem/assets/52162083/eb970ece-5fd3-4862-9b93-e8930a103ae9" width="500px">
+  </a>
+  <p align="center">Linear elasticity</p>
+</p>
+
+<p align="center">
+  <a href="https://github.com/arcaneframework/arcanefem/blob/main/electrostatics">
+    <img alt="Electrostatics" src="https://github.com/arcaneframework/arcanefem/assets/52162083/959988a3-1717-4449-b412-14cbd1582367" width="500px">
+  </a>
+  <p align="center">Electrostatics</p>
+</p>
+
+<p align="center">
+  <a href="https://github.com/arcaneframework/arcanefem/blob/main/fourier">
+    <img alt="Solving Fourier equation" src="https://github.com/arcaneframework/arcanefem/assets/52162083/cf86f60f-360f-491b-a234-9631fc27af45" width="600px">
+  </a>
+  <p align="center">Solving Fourier equation</p>
+</p>
+
+<p align="center">
+  <a href="https://github.com/arcaneframework/arcanefem/blob/main/laplace">
+    <img alt="Solving Laplace equation with ArcaneFEM" src="https://github.com/arcaneframework/arcanefem/assets/52162083/be3d2ea6-bfb7-42d9-b82e-a62509a498f8" width="400px">
+  </a>
+  <p align="center">Solving Laplace equation</p>
+</p>
+
+<p align="center">
+  <a href="https://github.com/arcaneframework/arcanefem/blob/main/poisson">
+    <img alt="Solving Poisson equation with ArcaneFEM" src="https://github.com/arcaneframework/arcanefem/assets/52162083/a8d114e1-5589-4efd-88fd-84b398acab84" width="400px">
+  </a>
+  <p align="center">Solving Poisson equation</p>
+</p>
+
+</details>
+
+
+<p align="center">
+  <a href="https://github.com/arcaneframework/sharc">
+    <img alt="t=28" src="https://raw.githubusercontent.com/arcaneframework/resources/master/screenshots/sharc/conc28.jpeg" width="400px">
+  </a>
+  <p align="center">Water concentration in a porous material with Sharc</p>
+</p>
+
+<details>
+  <summary><strong>More Screenshots from Sharc</strong></summary>
+
+<p align="center">
+  <a href="https://github.com/arcaneframework/sharc">
+    <img alt="t=34" src="https://raw.githubusercontent.com/arcaneframework/resources/master/screenshots/sharc/conc34.jpeg" width="400px">
+  </a>
+
+  <a href="https://github.com/arcaneframework/sharc">
+    <img alt="t=40" src="https://raw.githubusercontent.com/arcaneframework/resources/master/screenshots/sharc/conc40.jpeg" width="400px">
+  </a>
+  <p align="center">Evolution of water concentration over time in a porous material</p>
+</p>
+
+</details>

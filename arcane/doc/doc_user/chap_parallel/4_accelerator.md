@@ -37,6 +37,10 @@ déportés. Le code est exécuté par défaut sur le CPU (l'hôte) et
 certaines parties du calcul sont déportés sur les accélérateurs. Ce
 déport se fait via des appels spécifiques.
 
+Pour utiliser les accélerateurs, il est nécessaire d'avoir compiler
+%Arcane avec CUDA ou ROCm. Plus d'informations dans le chapitre 
+\ref arcanedoc_build_install_build.
+
 ## Utilisation dans Arcane {#arcanedoc_parallel_accelerator_usage}
 
 L'ensemble des types utilisés pour la gestion des accélérateurs est

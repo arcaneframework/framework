@@ -61,7 +61,7 @@ PROJECT_BRIEF          = Documentation utilisateur
 # pixels and the maximum width should not exceed 200 pixels. Doxygen will copy
 # the logo to the output directory.
 
-PROJECT_LOGO           = @ARCANESRCROOT@/doc/theme/img/arcane_logo.webp
+PROJECT_LOGO           = @ARCANESRCROOT@/doc/theme/img/arcane_framework_small.webp
 
 # The OUTPUT_DIRECTORY tag is used to specify the (relative or absolute) path
 # into which the generated documentation will be written. If a relative path is
@@ -1423,7 +1423,8 @@ HTML_EXTRA_FILES       = @ARCANESRCROOT@/doc/theme/doxygen-awesome-theme/doxygen
                          @ARCANESRCROOT@/doc/theme/js/script-num-lines-code.js \
                          @ARCANESRCROOT@/doc/theme/js/script-config-theme.js \
                          @ARCANESRCROOT@/doc/theme/js/script-edit-config-theme.js \
-                         @ARCANESRCROOT@/doc/theme/js/script-apply-config-theme.js
+                         @ARCANESRCROOT@/doc/theme/js/script-apply-config-theme.js \
+                         @ARCANESRCROOT@/doc/theme/img/logo_arcane.svg
 
 # The HTML_COLORSTYLE tag can be used to specify if the generated HTML output
 # should be rendered with a dark or light theme. Default setting AUTO_LIGHT
