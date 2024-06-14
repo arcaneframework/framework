@@ -230,7 +230,7 @@ The previous presentations are stored [here](https://github.com/arcaneframework/
 
 
 <details>
-  <summary>More Screenshots from ArcaneFEM</summary>
+  <summary><strong>More Screenshots from ArcaneFEM</strong></summary>
 
 <p align="center">
   <a href="https://github.com/arcaneframework/arcanefem/tree/main/aerodynamics">
@@ -279,6 +279,30 @@ The previous presentations are stored [here](https://github.com/arcaneframework/
     <img alt="Solving Poisson equation with ArcaneFEM" src="https://github.com/arcaneframework/arcanefem/assets/52162083/a8d114e1-5589-4efd-88fd-84b398acab84" width="400px">
   </a>
   <p align="center">Solving Poisson equation</p>
+</p>
+
+</details>
+
+
+<p align="center">
+  <a href="https://github.com/arcaneframework/sharc">
+    <img alt="t=28" src="https://raw.githubusercontent.com/arcaneframework/resources/master/screenshots/sharc/conc28.jpeg" width="400px">
+  </a>
+  <p align="center">Water concentration in a porous material with Sharc</p>
+</p>
+
+<details>
+  <summary><strong>More Screenshots from Sharc</strong></summary>
+
+<p align="center">
+  <a href="https://github.com/arcaneframework/sharc">
+    <img alt="t=34" src="https://raw.githubusercontent.com/arcaneframework/resources/master/screenshots/sharc/conc34.jpeg" width="400px">
+  </a>
+
+  <a href="https://github.com/arcaneframework/sharc">
+    <img alt="t=40" src="https://raw.githubusercontent.com/arcaneframework/resources/master/screenshots/sharc/conc40.jpeg" width="400px">
+  </a>
+  <p align="center">Evolution of water concentration over time in a porous material</p>
 </p>
 
 </details>
