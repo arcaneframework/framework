@@ -8,8 +8,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
-using Integer = System.Int32;
-using Real = System.Double;
 
 namespace Arcane
 {
@@ -683,18 +681,5 @@ namespace Arcane
         return new ConstArrayView<CTYPE>(m_ptr+(m_dim2_size*index),m_dim2_size);
       }
     }
-  }
-}
-
-namespace ArcaneTest
-{
-  using Arcane;
-  public class Tester1
-  {
-    Array<Real> m_real = new Array<Real>();
-    Array<Real2> m_real2 = new Array<Real2>();
-    Array<Real3> m_real3 = new Array<Real3>();
-    Array<Real2x2> m_real2x2 = new Array<Real2x2>();
-    Array<Real3x3> m_real3x3 = new Array<Real3x3>();
   }
 }

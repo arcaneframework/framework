@@ -5,11 +5,8 @@
 //-----------------------------------------------------------------------------
 using System;
 using Arcane;
-#if ARCANE_64BIT
-using Integer = System.Int64;
-#else
 using Integer = System.Int32;
-#endif
+using Real = System.Double;
 
 namespace Tests
 {
@@ -48,11 +45,41 @@ namespace Tests
         a.Resize(100000);
         //a.Dispose();
       }
+      for( int i=0; i<1000; ++i ){
+        var a = new Array<Int32>();
+        a.Resize(100000);
+        //a.Dispose();
+      }
       Console.WriteLine("Memory Used {0}",GC.GetTotalMemory(false));
       GC.Collect(2);
       GC.WaitForPendingFinalizers();
       GC.Collect(2);
       Console.WriteLine("End of allocation test");
+    }
+  }
+}
+
+
+namespace ArcaneTest
+{
+  public class Tester1
+  {
+    public void Test()
+    {
+      Array<Real> real = new Array<Real>();
+      ArrayView<Real> real_view = real.View;
+      Array<Real2> m_real2 = new Array<Real2>();
+      Array<Real3> m_real3 = new Array<Real3>();
+      Array<Real2x2> m_real2x2 = new Array<Real2x2>();
+      Array<Real3x3> m_real3x3 = new Array<Real3x3>();
+
+      RealArray e_real_array = new RealArray();
+      RealArrayView e_real_array_view = e_real_array.View;
+      ArrayView<Real> real_array_view = e_real_array.View;
+      
+      RealConstArrayView e_const_real_array_view = e_real_array.ConstView;
+      ConstArrayView<Real> const_real_array_view1 = e_real_array.ConstView;
+      ConstArrayView<Real> const_real_array_view2 = e_real_array.View;
     }
   }
 }

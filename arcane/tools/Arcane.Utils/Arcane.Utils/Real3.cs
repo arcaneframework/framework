@@ -1,13 +1,10 @@
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.Runtime.InteropServices;
-using Real = System.Double;
 
 namespace Arcane
 {
@@ -16,9 +13,9 @@ namespace Arcane
   {  
     public static readonly Real3 Zero = new Real3(0.0,0.0,0.0);
 
-    public Real x; //!< premiere composante du triplet
-    public Real y; //!< deuxiÃ¨me composante du triplet
-    public Real z; //!< troisiÃ¨me composante du triplet
+    public Real x; //!< première composante du triplet
+    public Real y; //!< deuxième composante du triplet
+    public Real z; //!< troisième composante du triplet
 
     public Real3(Real _x,Real _y,Real _z)
     {
