@@ -1,13 +1,6 @@
 using System;
 using System.Runtime.InteropServices;
 
-#if ARCANE_64BIT
-using Integer = System.Int64;
-#else
-using Integer = System.Int32;
-#endif
-using Real = System.Double;
-
 namespace Arcane
 {
   [StructLayout(LayoutKind.Sequential)]

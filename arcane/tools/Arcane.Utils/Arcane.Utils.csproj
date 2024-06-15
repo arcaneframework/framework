@@ -1,9 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <OutputType>Library</OutputType>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <!-- Sera nécessaire pour la version template de ArrayView -->
-    <!-- <LangVersion>8.0</LangVersion> -->
+    <LangVersion>10</LangVersion>
   </PropertyGroup>
+  <ItemGroup>
+   <Compile Remove="Tests/**/*.cs" />
+  </ItemGroup>
 </Project>

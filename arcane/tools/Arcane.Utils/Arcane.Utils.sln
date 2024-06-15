@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Arcane.Utils", "Arcane.Utils.csproj", "{EF977D86-13AE-47DB-9734-1C709BF4C36B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests", "Tests\Tests.csproj", "{E6106C7E-2104-41D6-9668-C702E05F2B7A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Arcane.Utils.Tests", "Tests\Arcane.Utils.Tests.csproj", "{E6106C7E-2104-41D6-9668-C702E05F2B7A}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Arcane.Utils.Generator", "..\Arcane.Utils.Generator\Arcane.Utils.Generator.csproj", "{D7DB1FE7-F808-4378-B2EA-330148D4DCC4}"
 EndProject

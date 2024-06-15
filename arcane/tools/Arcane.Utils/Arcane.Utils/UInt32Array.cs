@@ -1,16 +1,10 @@
 //WARNING: this file is generated. Do not Edit
-//Date 7/19/2023 1:42:56 PM
+//Date 6/15/2024 10:19:21 AM
 // -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
-using Real = System.Double;
-#if ARCANE_64BIT
-using Integer = System.Int64;
-#else
-using Integer = System.Int32;
-#endif
 
 namespace Arcane
 {
@@ -57,9 +51,9 @@ namespace Arcane
         TrueImpl* old_v = m_p;
         m_p = EmptyVal;
         ArrayImplBase.deallocate(sizeof(TrueImpl),sizeof(UInt32),(ArrayImplBase*)old_v);
-        //TODO: ajouter test interdisant d'utiliser le tableau une fois le dispose effectue
-        // car on a supprime le finalize et il ne seront donc plus appele et la memoire
-        // allouee plus jamais liberee.
+        // TODO: ajouter test interdisant d'utiliser le tableau une fois le dispose effectue
+        // car on a supprime le finalize et il ne seront donc plus appelés et la mémoire
+        // allouée plus jamais libérée.
         GC.SuppressFinalize(this);
       }
     }
@@ -173,7 +167,7 @@ namespace Arcane
     }
 
     /// <summary>
-    /// Construit un tableau de \a n éléments non initialisÃ©s
+    /// Construit un tableau de \a n éléments non initialisés
     /// </summary>
     public UInt32Array(Integer size)
     {
@@ -219,7 +213,7 @@ namespace Arcane
       UInt32* rhs_begin = rhs.m_ptr;
       Integer rhs_size = rhs.Size;
       UInt32* begin = &m_p->ptr;
-      // VÃ©rifie que \a rhs n'est pas un Ã©lÃ©ment Ã  l'intÃ©rieur de ce tableau
+      // Vérifie que \a rhs n'est pas un élément à l'intérieur de ce tableau
       if (begin>=rhs_begin && begin<(rhs_begin+rhs_size))
         throw new ApplicationException("Overlap error in copy");
       Resize(rhs_size);
@@ -397,6 +391,18 @@ namespace Arcane
 #endif
         m_ptr[index] = value;
       }
+    }
+
+    //! Opérateur de conversion vers la version template
+    public static implicit operator ArrayView<UInt32>(UInt32ArrayView v)
+    {
+      return new ArrayView<UInt32>(v.m_ptr,v.m_size);
+    }
+
+    //! Opérateur de conversion vers la version template
+    public static implicit operator ConstArrayView<UInt32>(UInt32ArrayView v)
+    {
+      return new ConstArrayView<UInt32>(v.m_ptr,v.m_size);
     }
 
     //! Sous-vue de cette vue commencant a \a begin et de taille \a size
@@ -582,6 +588,13 @@ namespace Arcane
         return m_ptr[index];
       }
     }
+
+    //! Opérateur de conversion vers la version template
+    public static implicit operator ConstArrayView<UInt32>(UInt32ConstArrayView v)
+    {
+      return new ConstArrayView<UInt32>(v.m_ptr,v.m_size);
+    }
+
     //! Sous-vue de cette vue commencant a \a begin et de taille \a size
     public UInt32ConstArrayView SubView(Integer begin,Integer size)
     {
@@ -687,7 +700,5 @@ namespace Arcane
       }
     }
   }
-
-
 }
 
