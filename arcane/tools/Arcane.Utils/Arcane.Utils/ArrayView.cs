@@ -1,11 +1,9 @@
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
-// Version template de ArrayView.
-// Nécessite C# 8.0
-#if false
+
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -700,4 +698,3 @@ namespace ArcaneTest
     Array<Real3x3> m_real3x3 = new Array<Real3x3>();
   }
 }
-#endif
