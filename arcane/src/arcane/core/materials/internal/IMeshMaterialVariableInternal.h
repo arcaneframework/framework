@@ -53,6 +53,7 @@ class ARCANE_CORE_EXPORT CopyBetweenPartialAndGlobalArgs
   SmallSpan<const Int32> m_indexes_in_multiple;
   bool m_do_copy_between_partial_and_pure = true;
   RunQueue m_queue;
+  bool m_use_generic_copy = false;
 };
 
 /*---------------------------------------------------------------------------*/

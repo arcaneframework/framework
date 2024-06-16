@@ -46,6 +46,8 @@
 #include "arcane/materials/internal/MeshMaterialVariablePrivate.h"
 #include "arcane/materials/internal/MeshMaterialVariableIndexer.h"
 
+#include "arcane/accelerator/RunCommandLoop.h"
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -513,6 +515,37 @@ _copyFromBuffer(SmallSpan<const MatVarIndex> matvar_indexes,
   MutableMultiMemoryView destination_view(m_views_as_bytes.view(),one_data_size);
   ConstMemoryView source_buffer(makeConstMemoryView(bytes.data(),one_data_size,nb_item));
   destination_view.copyFromIndexes(source_buffer,indexes,queue);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MeshMaterialVariable::
+_genericCopyTo(Span<const std::byte> input,
+               SmallSpan<const Int32> input_indexes,
+               Span<std::byte> output,
+               SmallSpan<const Int32> output_indexes,
+               const RunQueue& queue, Int32 data_type_size)
+{
+  // TODO: vérifier tailles des indexes identiques
+  Integer nb_value = input_indexes.size();
+  auto command = makeCommand(queue);
+
+  ARCANE_CHECK_ACCESSIBLE_POINTER(queue, output.data());
+  ARCANE_CHECK_ACCESSIBLE_POINTER(queue, input.data());
+  ARCANE_CHECK_ACCESSIBLE_POINTER(queue, input_indexes.data());
+  ARCANE_CHECK_ACCESSIBLE_POINTER(queue, output_indexes.data());
+  const Int32 dim2_size = data_type_size;
+
+  command << RUNCOMMAND_LOOP1(iter, nb_value)
+  {
+    auto [i] = iter();
+
+    Int32 output_base = output_indexes[i] * dim2_size;
+    Int32 input_base = input_indexes[i] * dim2_size;
+    for (Int32 j = 0; j < dim2_size; ++j)
+      output[output_base + j] = input[input_base + j];
+  };
 }
 
 /*---------------------------------------------------------------------------*/

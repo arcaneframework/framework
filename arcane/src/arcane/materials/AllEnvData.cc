@@ -81,6 +81,8 @@ AllEnvData(MeshMaterialMng* mmg)
 
   if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_ALLENVDATA_DEBUG_LEVEL", true))
     m_verbose_debug_level = v.value();
+  if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_USE_GENERIC_COPY_BETWEEN_PURE_AND_PARTIAL", true))
+    m_use_generic_copy_between_pure_and_partial = v.value();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -595,13 +597,14 @@ _copyBetweenPartialsAndGlobals(const CopyBetweenPartialAndGlobalArgs& args,
   if (do_copy) {
     Int32 index = 0;
     CopyBetweenPartialAndGlobalArgs args2(args);
+    args2.m_use_generic_copy = m_use_generic_copy_between_pure_and_partial;
     auto func2 = [&](IMeshMaterialVariable* mv) {
       auto* mvi = mv->_internalApi();
       args2.m_queue = queue_pool[index];
       if (is_add_operation)
-        mvi->copyGlobalToPartial(args);
+        mvi->copyGlobalToPartial(args2);
       else
-        mvi->copyPartialToGlobal(args);
+        mvi->copyPartialToGlobal(args2);
       ++index;
     };
     functor::apply(m_material_mng, &MeshMaterialMng::visitVariables, func2);

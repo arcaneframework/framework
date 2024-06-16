@@ -16,6 +16,7 @@ arcane_accelerator_add_source_files(
   IncrementalComponentModifier.cc
   MeshComponentPartData.cc
   MeshEnvironment.cc
+  MeshMaterialVariable.cc
   MeshMaterialVariableScalar.cc
   MeshMaterialVariableArray.cc
   MeshMaterialVariableIndexer.cc

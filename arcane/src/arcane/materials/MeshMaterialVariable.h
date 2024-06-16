@@ -159,6 +159,14 @@ class ARCANE_MATERIALS_EXPORT MeshMaterialVariable
  private:
 
   static SmallSpan<const Int32> _toInt32Indexes(SmallSpan<const MatVarIndex> indexes);
+
+ public:
+
+  static void _genericCopyTo(Span<const std::byte> input,
+                             SmallSpan<const Int32> input_indexes,
+                             Span<std::byte> output,
+                             SmallSpan<const Int32> output_indexes,
+                             const RunQueue& queue, Int32 data_type_size);
 };
 
 /*---------------------------------------------------------------------------*/
@@ -315,6 +323,9 @@ class ItemMaterialVariableBase
   void _copyPartialToGlobal(const CopyBetweenPartialAndGlobalArgs& args) override;
   ARCANE_MATERIALS_EXPORT
   void _initializeNewItems(const ComponentItemListBuilder& list_builder, RunQueue& queue) override;
+
+  ARCANE_MATERIALS_EXPORT
+  void _copyBetweenPartialInGlobal(const CopyBetweenPartialAndGlobalArgs& args, bool is_global_to_partial);
 
   ARCANE_MATERIALS_EXPORT void fillPartialValuesWithGlobalValues() override;
   ARCANE_MATERIALS_EXPORT void
