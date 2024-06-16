@@ -397,6 +397,8 @@ if (ARCANE_HAS_ACCELERATOR_API)
   arcane_add_accelerator_test_sequential(material_heat2_accelerator "${ARCANE_TEST_PATH}/testMaterialHeat-2-opt15.arc" "-m 20")
   arcane_add_accelerator_test_sequential(material_heat2_accelerator_noqueue
     "${ARCANE_TEST_PATH}/testMaterialHeat-2-opt15.arc" "-m 20" "-We,ARCANE_MATERIALMNG_USE_QUEUE,0")
+  arcane_add_accelerator_test_sequential(material_heat2_accelerator_generic_copy
+    "${ARCANE_TEST_PATH}/testMaterialHeat-2-opt15.arc" "-m 20" "-We,ARCANE_USE_GENERIC_COPY_BETWEEN_PURE_AND_PARTIAL,1")
   arcane_add_test_sequential(material_heat4_accelerator "${ARCANE_TEST_PATH}/testMaterialHeat-4-opt15.arc" "-m 20")
   arcane_add_accelerator_test_sequential(material_heat4_accelerator "${ARCANE_TEST_PATH}/testMaterialHeat-4-opt15.arc" "-m 20")
 endif()
