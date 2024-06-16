@@ -103,6 +103,7 @@ class AllEnvData
 
   void _computeInfosForAllEnvCells(RecomputeConstituentCellInfos& work_info);
   void _computeInfosForEnvCells(RecomputeConstituentCellInfos& work_info);
+  void _applyCopyBetweenPartialsAndGlobals(const CopyBetweenPartialAndGlobalArgs& args, RunQueue& queue);
 };
 
 /*---------------------------------------------------------------------------*/
