@@ -16,11 +16,7 @@
 #include "arcane/utils/NotImplementedException.h"
 #include "arcane/utils/ScopedPtr.h"
 #include "arcane/utils/ITraceMng.h"
-#include "arcane/utils/Real2.h"
-#include "arcane/utils/Real3.h"
-#include "arcane/utils/Real2x2.h"
-#include "arcane/utils/Real3x3.h"
-#include "arcane/utils/Array2.h"
+#include "arcane/utils/NumericTypes.h"
 #include "arcane/utils/CheckedConvert.h"
 
 #include "arcane/materials/MaterialVariableBuildInfo.h"
@@ -53,7 +49,6 @@
 #include "arcane/core/parallel/IStat.h"
 #include "arcane/core/datatype/DataTypeTraits.h"
 #include "arcane/core/datatype/DataStorageBuildInfo.h"
-#include "arcane/core/VariableDataTypeTraits.h"
 
 #include <vector>
 
@@ -84,7 +79,10 @@ saveData(IMeshComponent* component,IData* data,
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename DataType> void
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template <typename DataType> void
 MaterialVariableScalarTraits<DataType>::
 copyTo(SmallSpan<const DataType> input, SmallSpan<const Int32> input_indexes,
        SmallSpan<DataType> output, SmallSpan<const Int32> output_indexes,

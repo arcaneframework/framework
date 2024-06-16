@@ -38,11 +38,13 @@ class ARCANE_CORE_EXPORT CopyBetweenPartialAndGlobalArgs
                                   SmallSpan<const Int32> local_ids,
                                   SmallSpan<const Int32> indexes_in_multiple,
                                   bool do_copy,
+                                  bool is_global_to_partial,
                                   const RunQueue& queue)
   : m_var_index(var_index)
   , m_local_ids(local_ids)
   , m_indexes_in_multiple(indexes_in_multiple)
   , m_do_copy_between_partial_and_pure(do_copy)
+  , m_is_global_to_partial(is_global_to_partial)
   , m_queue(queue)
   {}
 
@@ -52,6 +54,8 @@ class ARCANE_CORE_EXPORT CopyBetweenPartialAndGlobalArgs
   SmallSpan<const Int32> m_local_ids;
   SmallSpan<const Int32> m_indexes_in_multiple;
   bool m_do_copy_between_partial_and_pure = true;
+  bool m_is_global_to_partial = false;
+  bool m_use_generic_copy = false;
   RunQueue m_queue;
 };
 
@@ -104,10 +108,7 @@ class ARCANE_CORE_EXPORT IMeshMaterialVariableInternal
                            Integer data_index, Int32ConstArrayView ids, bool allow_null_id) = 0;
 
   //! \internal
-  virtual void copyGlobalToPartial(const CopyBetweenPartialAndGlobalArgs& args) = 0;
-
-  //! \internal
-  virtual void copyPartialToGlobal(const CopyBetweenPartialAndGlobalArgs& args) = 0;
+  virtual void copyBetweenPartialAndGlobal(const CopyBetweenPartialAndGlobalArgs& args) = 0;
 
   //! \internal
   virtual void initializeNewItems(const ComponentItemListBuilder& list_builder, RunQueue& queue) = 0;

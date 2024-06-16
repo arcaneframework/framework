@@ -150,8 +150,7 @@ class ARCANE_MATERIALS_EXPORT MeshMaterialVariable
   virtual void _saveData(IMeshComponent* component,IData* data) =0;
   virtual void _restoreData(IMeshComponent* component,IData* data,Integer data_index,
                             Int32ConstArrayView ids,bool allow_null_id) =0;
-  virtual void _copyGlobalToPartial(const CopyBetweenPartialAndGlobalArgs& args) = 0;
-  virtual void _copyPartialToGlobal(const CopyBetweenPartialAndGlobalArgs& args) = 0;
+  virtual void _copyBetweenPartialAndGlobal(const CopyBetweenPartialAndGlobalArgs& args) = 0;
   virtual void _initializeNewItems(const ComponentItemListBuilder& list_builder, RunQueue& queue) = 0;
   virtual void _syncReferences(bool update_views) = 0;
   virtual void _resizeForIndexer(Int32 index, RunQueue& queue) = 0;
@@ -159,6 +158,14 @@ class ARCANE_MATERIALS_EXPORT MeshMaterialVariable
  private:
 
   static SmallSpan<const Int32> _toInt32Indexes(SmallSpan<const MatVarIndex> indexes);
+
+ public:
+
+  static void _genericCopyTo(Span<const std::byte> input,
+                             SmallSpan<const Int32> input_indexes,
+                             Span<std::byte> output,
+                             SmallSpan<const Int32> output_indexes,
+                             const RunQueue& queue, Int32 data_type_size);
 };
 
 /*---------------------------------------------------------------------------*/
@@ -310,9 +317,7 @@ class ItemMaterialVariableBase
   void _restoreData(IMeshComponent* component,IData* data,Integer data_index,
                     Int32ConstArrayView ids,bool allow_null_id) override;
   ARCANE_MATERIALS_EXPORT
-  void _copyGlobalToPartial(const CopyBetweenPartialAndGlobalArgs& args) override;
-  ARCANE_MATERIALS_EXPORT
-  void _copyPartialToGlobal(const CopyBetweenPartialAndGlobalArgs& args) override;
+  void _copyBetweenPartialAndGlobal(const CopyBetweenPartialAndGlobalArgs& args) override;
   ARCANE_MATERIALS_EXPORT
   void _initializeNewItems(const ComponentItemListBuilder& list_builder, RunQueue& queue) override;
 

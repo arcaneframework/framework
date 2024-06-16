@@ -84,11 +84,13 @@ class AllEnvData
   ComponentItemInternalData m_item_internal_data;
   Int64 m_current_mesh_timestamp = -1;
 
+  //! Vrai si on utilise une version générique pour les copies entre pure et partiel
+  bool m_use_generic_copy_between_pure_and_partial = false;
+
  private:
 
   void _computeNbEnvAndNbMatPerCell();
-  void _copyBetweenPartialsAndGlobals(const CopyBetweenPartialAndGlobalArgs& args,
-                                      bool is_add_operation);
+  void _copyBetweenPartialsAndGlobals(const CopyBetweenPartialAndGlobalArgs& args);
   void _computeAndResizeEnvItemsInternal();
   bool _isFullVerbose() const;
   void _rebuildMaterialsAndEnvironmentsFromGroups();

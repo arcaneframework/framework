@@ -264,8 +264,9 @@ _switchCellsForMaterials(const MeshMaterial* modified_mat,
       CopyBetweenPartialAndGlobalArgs args(indexer->index(), pure_local_ids,
                                            partial_indexes,
                                            m_do_copy_between_partial_and_pure,
+                                           is_add,
                                            m_queue);
-      m_all_env_data->_copyBetweenPartialsAndGlobals(args, is_add);
+      m_all_env_data->_copyBetweenPartialsAndGlobals(args);
     }
   }
 }
@@ -325,8 +326,9 @@ _switchCellsForEnvironments(const IMeshEnvironment* modified_env,
     if (is_copy) {
       CopyBetweenPartialAndGlobalArgs copy_args(indexer->index(), pure_local_ids,
                                                 partial_indexes,
-                                                m_do_copy_between_partial_and_pure, m_queue);
-      m_all_env_data->_copyBetweenPartialsAndGlobals(copy_args, is_add);
+                                                m_do_copy_between_partial_and_pure, is_add,
+                                                m_queue);
+      m_all_env_data->_copyBetweenPartialsAndGlobals(copy_args);
     }
   }
 }

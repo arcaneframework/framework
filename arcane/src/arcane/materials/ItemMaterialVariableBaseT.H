@@ -398,28 +398,34 @@ _copyHostViewsToViews(RunQueue* queue)
 
 template <typename Traits> void
 ItemMaterialVariableBase<Traits>::
-_copyGlobalToPartial(const CopyBetweenPartialAndGlobalArgs& args)
+_copyBetweenPartialAndGlobal(const CopyBetweenPartialAndGlobalArgs& args)
 {
-  Int32 var_index = args.m_var_index;
-  PrivatePartType* partial_var = m_vars[var_index + 1];
-  if (_isValidAndUsedAndGlobalUsed(partial_var)) {
-    Traits::copyTo(m_host_views[0], args.m_local_ids, m_host_views[var_index + 1],
-                   args.m_indexes_in_multiple, args.m_queue);
+  Int32 var_index = args.m_var_index + 1;
+  PrivatePartType* partial_var = m_vars[var_index];
+  if (!_isValidAndUsedAndGlobalUsed(partial_var))
+    return;
+  const bool is_global_to_partial = args.m_is_global_to_partial;
+  const bool use_generic = args.m_use_generic_copy;
+  const RunQueue& queue = args.m_queue;
+
+  auto input = m_host_views[var_index];
+  auto output = m_host_views[0];
+  auto output_indexes = args.m_local_ids;
+  auto input_indexes = args.m_indexes_in_multiple;
+
+  if (is_global_to_partial) {
+    std::swap(input, output);
+    std::swap(output_indexes, input_indexes);
   }
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-template<typename Traits> void
-ItemMaterialVariableBase<Traits>::
-_copyPartialToGlobal(const CopyBetweenPartialAndGlobalArgs& args)
-{
-  Int32 var_index = args.m_var_index;
-  PrivatePartType* partial_var = m_vars[var_index+1];
-  if (_isValidAndUsedAndGlobalUsed(partial_var)) {
-    Traits::copyTo(m_host_views[var_index + 1], args.m_indexes_in_multiple,
-                   m_host_views[0], args.m_local_ids, args.m_queue);
+  if (use_generic) {
+    Int32 data_type_size = dataTypeSize();
+    Span<const std::byte> input_bytes(Traits::toBytes(input));
+    Span<std::byte> output_bytes(Traits::toBytes(output));
+    _genericCopyTo(input_bytes, input_indexes,
+                   output_bytes, output_indexes, queue, data_type_size);
+  }
+  else {
+    Traits::copyTo(input, input_indexes, output, output_indexes, queue);
   }
 }
 

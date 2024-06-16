@@ -387,6 +387,12 @@ macro(arcane_add_accelerator_test_message_passing_hybrid test_name)
   endif()
 endmacro()
 
+macro(arcane_add_test_sequential_host_and_accelerator test_name case_file)
+  arcane_add_test_sequential(${test_name} ${case_file} ${ARGN})
+  arcane_add_test_sequential_task(${test_name} ${case_file} 4 ${ARGN})
+  arcane_add_accelerator_test_sequential(${test_name} ${case_file} ${ARGN})
+endmacro()
+
 # ----------------------------------------------------------------------------
 # Local Variables:
 # tab-width: 2
