@@ -17,6 +17,7 @@
 #include "arcane/utils/TraceAccessor.h"
 #include "arcane/utils/DualUniqueArray.h"
 
+#include "arcane/core/materials/internal/IMeshMaterialVariableInternal.h"
 #include "arcane/materials/MaterialsGlobal.h"
 #include "arcane/materials/internal/MeshMaterialVariableIndexer.h"
 #include "arcane/materials/internal/ComponentItemListBuilder.h"
@@ -69,6 +70,12 @@ class ARCANE_MATERIALS_EXPORT ConstituentModifierWorkInfo
 
   ComponentItemListBuilder list_builder;
 
+  //! Informations pour les copies entre valeurs partielles et globales.
+  UniqueArray<CopyBetweenPartialAndGlobalOneData> m_host_variables_copy_data;
+
+  //! Informations pour les copies entre valeurs partielles et globales.
+  NumArray<CopyBetweenPartialAndGlobalOneData, MDDim1> m_variables_copy_data;
+
  public:
 
   //! Initialise l'instance.
@@ -113,11 +120,11 @@ class ARCANE_MATERIALS_EXPORT ConstituentModifierWorkInfo
 
  private:
 
-  // Filtre indiquant les mailles qui sont supprimées du constituant
+  //! Filtre indiquant les mailles qui sont supprimées du constituant
   // Ce tableau est dimensionné au nombre de mailles.
   NumArray<bool, MDDim1> m_removed_local_ids_filter;
 
-  // Filtre indiquant les mailles qui doivent changer de status (Pure<->Partial)
+  //! Filtre indiquant les mailles qui doivent changer de status (Pure<->Partial)
   // Ce tableau est dimensionné au nombre de mailles.
   NumArray<bool, MDDim1> m_cells_to_transform;
 

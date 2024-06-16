@@ -54,6 +54,10 @@ initialize(Int32 max_local_id, RunQueue& queue)
 
   m_saved_matvar_indexes.resizeHost(max_local_id);
   m_saved_local_ids.resizeHost(max_local_id);
+
+  // Utilise toujours la mémoire du device pour le tableau contenant les données de copie
+  if (queue.isAcceleratorPolicy())
+    m_variables_copy_data = NumArray<CopyBetweenPartialAndGlobalOneData, MDDim1>(eMemoryRessource::Device);
 }
 
 /*---------------------------------------------------------------------------*/

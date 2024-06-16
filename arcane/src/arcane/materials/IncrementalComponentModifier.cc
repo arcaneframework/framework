@@ -49,6 +49,9 @@ IncrementalComponentModifier(AllEnvData* all_env_data, const RunQueue& queue)
 , m_work_info(queue.allocationOptions(), queue.memoryRessource())
 , m_queue(queue)
 {
+  // 0 si on utilise la copie typée (mode historique) et une commande par variable
+  // 1 si on utilise la copie générique et une commande par variable
+  // 2 si on utilise la copie générique et une commande pour toutes les variables
   if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_USE_GENERIC_COPY_BETWEEN_PURE_AND_PARTIAL", true))
     m_use_generic_copy_between_pure_and_partial = v.value();
 }
@@ -663,26 +666,34 @@ _copyBetweenPartialsAndGlobals(const CopyBetweenPartialAndGlobalArgs& args)
     functor::apply(m_material_mng, &MeshMaterialMng::visitVariables, func1);
     queue_pool.barrier();
   }
-  bool do_one_command = m_use_generic_copy_between_pure_and_partial;
-  UniqueArray<CopyBetweenPartialAndGlobalOneData> m_copy_data(MemoryUtils::getDefaultDataAllocator());
-  m_copy_data.reserve(m_material_mng->nbVariable());
+
   if (do_copy) {
+    bool do_one_command = (m_use_generic_copy_between_pure_and_partial == 2);
+    UniqueArray<CopyBetweenPartialAndGlobalOneData>& copy_data = m_work_info.m_host_variables_copy_data;
+    copy_data.clear();
+    copy_data.reserve(m_material_mng->nbVariable());
+
     Int32 index = 0;
     CopyBetweenPartialAndGlobalArgs args2(args);
-    args2.m_use_generic_copy = m_use_generic_copy_between_pure_and_partial;
+    args2.m_use_generic_copy = (m_use_generic_copy_between_pure_and_partial >= 1);
     if (do_one_command)
-      args2.m_copy_data = &m_copy_data;
+      args2.m_copy_data = &copy_data;
     auto func2 = [&](IMeshMaterialVariable* mv) {
       auto* mvi = mv->_internalApi();
-      args2.m_queue = queue_pool[index];
+      if (!do_one_command)
+        args2.m_queue = queue_pool[index];
       mvi->copyBetweenPartialAndGlobal(args2);
       ++index;
     };
     functor::apply(m_material_mng, &MeshMaterialMng::visitVariables, func2);
-    queue_pool.barrier();
-    if (do_one_command)
-      // TODO: Faire copie asynchrone de m_copy_data sur le device.
+    if (do_one_command) {
+      // Copie 'copy_data' dans le tableau correspondant pour le device éventuel.
+      MDSpan<CopyBetweenPartialAndGlobalOneData, MDDim1> x(copy_data.data(), MDIndex<1>(copy_data.size()));
+      m_work_info.m_variables_copy_data.copy(x, &queue);
       _applyCopyBetweenPartialsAndGlobals(args2, queue);
+    }
+    else
+      queue_pool.barrier();
   }
 }
 
@@ -700,7 +711,8 @@ _applyCopyBetweenPartialsAndGlobals(const CopyBetweenPartialAndGlobalArgs& args,
 
   if (is_global_to_partial)
     std::swap(output_indexes, input_indexes);
-  ConstArrayView<CopyBetweenPartialAndGlobalOneData> copy_data(*args.m_copy_data);
+  SmallSpan<const CopyBetweenPartialAndGlobalOneData> host_copy_data(m_work_info.m_host_variables_copy_data);
+  SmallSpan<const CopyBetweenPartialAndGlobalOneData> copy_data(m_work_info.m_variables_copy_data.to1DSmallSpan());
   const Int32 nb_value = input_indexes.size();
   if (nb_value != output_indexes.size())
     ARCANE_FATAL("input_indexes ({0}) and output_indexes ({1}) are different", nb_value, output_indexes);
@@ -708,8 +720,8 @@ _applyCopyBetweenPartialsAndGlobals(const CopyBetweenPartialAndGlobalArgs& args,
   const Int32 nb_copy = copy_data.size();
 
   for (Int32 i = 0; i < nb_copy; ++i) {
-    ARCANE_CHECK_ACCESSIBLE_POINTER(queue, copy_data[i].m_output.data());
-    ARCANE_CHECK_ACCESSIBLE_POINTER(queue, copy_data[i].m_input.data());
+    ARCANE_CHECK_ACCESSIBLE_POINTER(queue, host_copy_data[i].m_output.data());
+    ARCANE_CHECK_ACCESSIBLE_POINTER(queue, host_copy_data[i].m_input.data());
   }
   ARCANE_CHECK_ACCESSIBLE_POINTER(queue, input_indexes.data());
   ARCANE_CHECK_ACCESSIBLE_POINTER(queue, output_indexes.data());

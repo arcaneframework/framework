@@ -63,8 +63,8 @@ class ARCANE_MATERIALS_EXPORT IncrementalComponentModifier
   bool m_do_copy_between_partial_and_pure = true;
   bool m_do_init_new_items = true;
 
-  //! Vrai si on utilise une version générique pour les copies entre pure et partiel
-  bool m_use_generic_copy_between_pure_and_partial = false;
+  //! 1 ou 2 si on utilise une version générique pour les copies entre pure et partiel
+  Int32 m_use_generic_copy_between_pure_and_partial = 0;
 
  public:
 
