@@ -72,9 +72,7 @@ class MeshMaterialVariablePrivate
   void restoreData(IMeshComponent* component, IData* data, Integer data_index,
                    Int32ConstArrayView ids, bool allow_null_id) override;
 
-  void copyGlobalToPartial(const CopyBetweenPartialAndGlobalArgs& args) override;
-
-  void copyPartialToGlobal(const CopyBetweenPartialAndGlobalArgs& args) override;
+  void copyBetweenPartialAndGlobal(const CopyBetweenPartialAndGlobalArgs& args) override;
 
   void initializeNewItems(const ComponentItemListBuilder& list_builder, RunQueue& queue) override;
 

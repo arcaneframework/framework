@@ -150,8 +150,7 @@ class ARCANE_MATERIALS_EXPORT MeshMaterialVariable
   virtual void _saveData(IMeshComponent* component,IData* data) =0;
   virtual void _restoreData(IMeshComponent* component,IData* data,Integer data_index,
                             Int32ConstArrayView ids,bool allow_null_id) =0;
-  virtual void _copyGlobalToPartial(const CopyBetweenPartialAndGlobalArgs& args) = 0;
-  virtual void _copyPartialToGlobal(const CopyBetweenPartialAndGlobalArgs& args) = 0;
+  virtual void _copyBetweenPartialAndGlobal(const CopyBetweenPartialAndGlobalArgs& args) = 0;
   virtual void _initializeNewItems(const ComponentItemListBuilder& list_builder, RunQueue& queue) = 0;
   virtual void _syncReferences(bool update_views) = 0;
   virtual void _resizeForIndexer(Int32 index, RunQueue& queue) = 0;
@@ -318,14 +317,9 @@ class ItemMaterialVariableBase
   void _restoreData(IMeshComponent* component,IData* data,Integer data_index,
                     Int32ConstArrayView ids,bool allow_null_id) override;
   ARCANE_MATERIALS_EXPORT
-  void _copyGlobalToPartial(const CopyBetweenPartialAndGlobalArgs& args) override;
-  ARCANE_MATERIALS_EXPORT
-  void _copyPartialToGlobal(const CopyBetweenPartialAndGlobalArgs& args) override;
+  void _copyBetweenPartialAndGlobal(const CopyBetweenPartialAndGlobalArgs& args) override;
   ARCANE_MATERIALS_EXPORT
   void _initializeNewItems(const ComponentItemListBuilder& list_builder, RunQueue& queue) override;
-
-  ARCANE_MATERIALS_EXPORT
-  void _copyBetweenPartialInGlobal(const CopyBetweenPartialAndGlobalArgs& args, bool is_global_to_partial);
 
   ARCANE_MATERIALS_EXPORT void fillPartialValuesWithGlobalValues() override;
   ARCANE_MATERIALS_EXPORT void

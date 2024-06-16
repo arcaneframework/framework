@@ -398,32 +398,13 @@ _copyHostViewsToViews(RunQueue* queue)
 
 template <typename Traits> void
 ItemMaterialVariableBase<Traits>::
-_copyGlobalToPartial(const CopyBetweenPartialAndGlobalArgs& args)
-{
-  _copyBetweenPartialInGlobal(args, true);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-template<typename Traits> void
-ItemMaterialVariableBase<Traits>::
-_copyPartialToGlobal(const CopyBetweenPartialAndGlobalArgs& args)
-{
-  _copyBetweenPartialInGlobal(args, false);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-template <typename Traits> void
-ItemMaterialVariableBase<Traits>::
-_copyBetweenPartialInGlobal(const CopyBetweenPartialAndGlobalArgs& args, bool is_global_to_partial)
+_copyBetweenPartialAndGlobal(const CopyBetweenPartialAndGlobalArgs& args)
 {
   Int32 var_index = args.m_var_index + 1;
   PrivatePartType* partial_var = m_vars[var_index];
   if (!_isValidAndUsedAndGlobalUsed(partial_var))
     return;
+  const bool is_global_to_partial = args.m_is_global_to_partial;
   const bool use_generic = args.m_use_generic_copy;
   const RunQueue& queue = args.m_queue;
 

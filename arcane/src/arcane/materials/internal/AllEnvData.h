@@ -90,8 +90,7 @@ class AllEnvData
  private:
 
   void _computeNbEnvAndNbMatPerCell();
-  void _copyBetweenPartialsAndGlobals(const CopyBetweenPartialAndGlobalArgs& args,
-                                      bool is_add_operation);
+  void _copyBetweenPartialsAndGlobals(const CopyBetweenPartialAndGlobalArgs& args);
   void _computeAndResizeEnvItemsInternal();
   bool _isFullVerbose() const;
   void _rebuildMaterialsAndEnvironmentsFromGroups();

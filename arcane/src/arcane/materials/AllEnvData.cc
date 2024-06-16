@@ -567,12 +567,12 @@ _printAllEnvCells(CellVectorView ids)
  * de suppression d'un matériau)
  */
 void AllEnvData::
-_copyBetweenPartialsAndGlobals(const CopyBetweenPartialAndGlobalArgs& args,
-                               bool is_add_operation)
+_copyBetweenPartialsAndGlobals(const CopyBetweenPartialAndGlobalArgs& args)
 {
   if (args.m_local_ids.empty())
     return;
-  bool do_copy = args.m_do_copy_between_partial_and_pure;
+  const bool do_copy = args.m_do_copy_between_partial_and_pure;
+  const bool is_add_operation = args.m_is_global_to_partial;
   RunQueue queue(args.m_queue);
   RunQueue::ScopedAsync sc(&queue);
   // Comme on a modifié des mailles, il faut mettre à jour les valeurs
@@ -601,10 +601,7 @@ _copyBetweenPartialsAndGlobals(const CopyBetweenPartialAndGlobalArgs& args,
     auto func2 = [&](IMeshMaterialVariable* mv) {
       auto* mvi = mv->_internalApi();
       args2.m_queue = queue_pool[index];
-      if (is_add_operation)
-        mvi->copyGlobalToPartial(args2);
-      else
-        mvi->copyPartialToGlobal(args2);
+      mvi->copyBetweenPartialAndGlobal(args2);
       ++index;
     };
     functor::apply(m_material_mng, &MeshMaterialMng::visitVariables, func2);
