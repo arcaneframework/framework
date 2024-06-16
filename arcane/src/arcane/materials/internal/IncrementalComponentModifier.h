@@ -27,6 +27,7 @@
 
 namespace Arcane::Materials
 {
+class CopyBetweenPartialAndGlobalArgs;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -62,6 +63,9 @@ class ARCANE_MATERIALS_EXPORT IncrementalComponentModifier
   bool m_do_copy_between_partial_and_pure = true;
   bool m_do_init_new_items = true;
 
+  //! Vrai si on utilise une version générique pour les copies entre pure et partiel
+  bool m_use_generic_copy_between_pure_and_partial = false;
+
  public:
 
   void flagRemovedCells(SmallSpan<const Int32> local_ids, bool value_to_set);
@@ -73,6 +77,7 @@ class ARCANE_MATERIALS_EXPORT IncrementalComponentModifier
   void _addItemsToIndexer(MeshMaterialVariableIndexer* var_indexer,
                           SmallSpan<const Int32> local_ids);
   void _removeItemsInGroup(ItemGroup cells,SmallSpan<const Int32> removed_ids);
+  void _applyCopyBetweenPartialsAndGlobals(const CopyBetweenPartialAndGlobalArgs& args, RunQueue& queue);
 
  private:
 
@@ -85,6 +90,7 @@ class ARCANE_MATERIALS_EXPORT IncrementalComponentModifier
                                    SmallSpan<const Int32> local_ids, bool update_env_indexer);
   void _addItemsToEnvironment(MeshEnvironment* env, MeshMaterial* mat,
                               SmallSpan<const Int32> local_ids, bool update_env_indexer);
+  void _copyBetweenPartialsAndGlobals(const CopyBetweenPartialAndGlobalArgs& args);
 };
 
 /*---------------------------------------------------------------------------*/
