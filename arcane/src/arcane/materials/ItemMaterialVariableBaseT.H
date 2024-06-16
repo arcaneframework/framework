@@ -421,8 +421,11 @@ _copyBetweenPartialAndGlobal(const CopyBetweenPartialAndGlobalArgs& args)
     Int32 data_type_size = dataTypeSize();
     Span<const std::byte> input_bytes(Traits::toBytes(input));
     Span<std::byte> output_bytes(Traits::toBytes(output));
-    _genericCopyTo(input_bytes, input_indexes,
-                   output_bytes, output_indexes, queue, data_type_size);
+    if (args.isUseOneCommand())
+      args.addOneCopyData(input_bytes, output_bytes, data_type_size);
+    else
+      _genericCopyTo(input_bytes, input_indexes,
+                     output_bytes, output_indexes, queue, data_type_size);
   }
   else {
     Traits::copyTo(input, input_indexes, output, output_indexes, queue);

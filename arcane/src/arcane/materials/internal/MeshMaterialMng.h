@@ -229,6 +229,7 @@ class MeshMaterialMng
 
   ConstArrayView<MeshEnvironment*> trueEnvironments() const { return m_true_environments; }
   ConstArrayView<MeshMaterial*> trueMaterials() const { return m_true_materials; }
+  Int32 nbVariable() const { return static_cast<Int32>(m_full_name_variable_map.size()); }
 
  public:
 

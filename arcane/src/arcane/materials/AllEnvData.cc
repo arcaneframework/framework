@@ -81,8 +81,6 @@ AllEnvData(MeshMaterialMng* mmg)
 
   if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_ALLENVDATA_DEBUG_LEVEL", true))
     m_verbose_debug_level = v.value();
-  if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_USE_GENERIC_COPY_BETWEEN_PURE_AND_PARTIAL", true))
-    m_use_generic_copy_between_pure_and_partial = v.value();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -554,58 +552,6 @@ _printAllEnvCells(CellVectorView ids)
         info() << "CELL4 mat_item=" << mc._varIndex() << " mat_id=" << mc.materialId();
       }
     }
-  }
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
- * \brief Copie entre les valeurs partielles et les valeurs globales.
- *
- * Si \a pure_to_partial est vrai, alors on copie les valeurs globales
- * vers les valeurs partielles, sinon on fait l'inverse.
- * de suppression d'un matériau)
- */
-void AllEnvData::
-_copyBetweenPartialsAndGlobals(const CopyBetweenPartialAndGlobalArgs& args)
-{
-  if (args.m_local_ids.empty())
-    return;
-  const bool do_copy = args.m_do_copy_between_partial_and_pure;
-  const bool is_add_operation = args.m_is_global_to_partial;
-  RunQueue queue(args.m_queue);
-  RunQueue::ScopedAsync sc(&queue);
-  // Comme on a modifié des mailles, il faut mettre à jour les valeurs
-  // correspondantes pour chaque variable.
-  //info(4) << "NB_TRANSFORM=" << nb_transform << " name=" << e->name();
-  //Integer indexer_index = indexer->index();
-
-  Accelerator::RunQueuePool& queue_pool = m_material_mng->_internalApi()->asyncRunQueuePool();
-
-  // Redimensionne les variables si nécessaire
-  if (is_add_operation) {
-    Int32 index = 0;
-    auto func1 = [&](IMeshMaterialVariable* mv) {
-      auto* mvi = mv->_internalApi();
-      mvi->resizeForIndexer(args.m_var_index, queue_pool[index]);
-      ++index;
-    };
-    functor::apply(m_material_mng, &MeshMaterialMng::visitVariables, func1);
-    queue_pool.barrier();
-  }
-
-  if (do_copy) {
-    Int32 index = 0;
-    CopyBetweenPartialAndGlobalArgs args2(args);
-    args2.m_use_generic_copy = m_use_generic_copy_between_pure_and_partial;
-    auto func2 = [&](IMeshMaterialVariable* mv) {
-      auto* mvi = mv->_internalApi();
-      args2.m_queue = queue_pool[index];
-      mvi->copyBetweenPartialAndGlobal(args2);
-      ++index;
-    };
-    functor::apply(m_material_mng, &MeshMaterialMng::visitVariables, func2);
-    queue_pool.barrier();
   }
 }
 

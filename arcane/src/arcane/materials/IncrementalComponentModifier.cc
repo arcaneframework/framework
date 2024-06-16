@@ -49,6 +49,11 @@ IncrementalComponentModifier(AllEnvData* all_env_data, const RunQueue& queue)
 , m_work_info(queue.allocationOptions(), queue.memoryRessource())
 , m_queue(queue)
 {
+  // 0 si on utilise la copie typée (mode historique) et une commande par variable
+  // 1 si on utilise la copie générique et une commande par variable
+  // 2 si on utilise la copie générique et une commande pour toutes les variables
+  if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_USE_GENERIC_COPY_BETWEEN_PURE_AND_PARTIAL", true))
+    m_use_generic_copy_between_pure_and_partial = v.value();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -266,7 +271,7 @@ _switchCellsForMaterials(const MeshMaterial* modified_mat,
                                            m_do_copy_between_partial_and_pure,
                                            is_add,
                                            m_queue);
-      m_all_env_data->_copyBetweenPartialsAndGlobals(args);
+      _copyBetweenPartialsAndGlobals(args);
     }
   }
 }
@@ -328,7 +333,7 @@ _switchCellsForEnvironments(const IMeshEnvironment* modified_env,
                                                 partial_indexes,
                                                 m_do_copy_between_partial_and_pure, is_add,
                                                 m_queue);
-      m_all_env_data->_copyBetweenPartialsAndGlobals(copy_args);
+      _copyBetweenPartialsAndGlobals(copy_args);
     }
   }
 }
@@ -622,6 +627,120 @@ _removeItemsInGroup(ItemGroup cells, SmallSpan<const Int32> removed_ids)
                    nb_remaining, nb_removed, current_nb_item);
     impl_internal->notifyDirectRemoveItems(removed_ids, nb_remaining);
   }
+}
+
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Copie entre les valeurs partielles et les valeurs globales.
+ *
+ * Si \a pure_to_partial est vrai, alors on copie les valeurs globales
+ * vers les valeurs partielles, sinon on fait l'inverse.
+ * de suppression d'un matériau)
+ */
+void IncrementalComponentModifier::
+_copyBetweenPartialsAndGlobals(const CopyBetweenPartialAndGlobalArgs& args)
+{
+  if (args.m_local_ids.empty())
+    return;
+  const bool do_copy = args.m_do_copy_between_partial_and_pure;
+  const bool is_add_operation = args.m_is_global_to_partial;
+  RunQueue queue(args.m_queue);
+  RunQueue::ScopedAsync sc(&queue);
+  // Comme on a modifié des mailles, il faut mettre à jour les valeurs
+  // correspondantes pour chaque variable.
+  //info(4) << "NB_TRANSFORM=" << nb_transform << " name=" << e->name();
+  //Integer indexer_index = indexer->index();
+
+  Accelerator::RunQueuePool& queue_pool = m_material_mng->_internalApi()->asyncRunQueuePool();
+
+  // Redimensionne les variables si nécessaire
+  if (is_add_operation) {
+    Int32 index = 0;
+    auto func1 = [&](IMeshMaterialVariable* mv) {
+      auto* mvi = mv->_internalApi();
+      mvi->resizeForIndexer(args.m_var_index, queue_pool[index]);
+      ++index;
+    };
+    functor::apply(m_material_mng, &MeshMaterialMng::visitVariables, func1);
+    queue_pool.barrier();
+  }
+
+  if (do_copy) {
+    bool do_one_command = (m_use_generic_copy_between_pure_and_partial == 2);
+    UniqueArray<CopyBetweenPartialAndGlobalOneData>& copy_data = m_work_info.m_host_variables_copy_data;
+    copy_data.clear();
+    copy_data.reserve(m_material_mng->nbVariable());
+
+    Int32 index = 0;
+    CopyBetweenPartialAndGlobalArgs args2(args);
+    args2.m_use_generic_copy = (m_use_generic_copy_between_pure_and_partial >= 1);
+    if (do_one_command)
+      args2.m_copy_data = &copy_data;
+    auto func2 = [&](IMeshMaterialVariable* mv) {
+      auto* mvi = mv->_internalApi();
+      if (!do_one_command)
+        args2.m_queue = queue_pool[index];
+      mvi->copyBetweenPartialAndGlobal(args2);
+      ++index;
+    };
+    functor::apply(m_material_mng, &MeshMaterialMng::visitVariables, func2);
+    if (do_one_command) {
+      // Copie 'copy_data' dans le tableau correspondant pour le device éventuel.
+      MDSpan<CopyBetweenPartialAndGlobalOneData, MDDim1> x(copy_data.data(), MDIndex<1>(copy_data.size()));
+      m_work_info.m_variables_copy_data.copy(x, &queue);
+      _applyCopyBetweenPartialsAndGlobals(args2, queue);
+    }
+    else
+      queue_pool.barrier();
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void IncrementalComponentModifier::
+_applyCopyBetweenPartialsAndGlobals(const CopyBetweenPartialAndGlobalArgs& args, RunQueue& queue)
+{
+  ARCANE_CHECK_POINTER(args.m_copy_data);
+
+  auto output_indexes = args.m_local_ids;
+  auto input_indexes = args.m_indexes_in_multiple;
+  const bool is_global_to_partial = args.m_is_global_to_partial;
+
+  if (is_global_to_partial)
+    std::swap(output_indexes, input_indexes);
+  SmallSpan<const CopyBetweenPartialAndGlobalOneData> host_copy_data(m_work_info.m_host_variables_copy_data);
+  SmallSpan<const CopyBetweenPartialAndGlobalOneData> copy_data(m_work_info.m_variables_copy_data.to1DSmallSpan());
+  const Int32 nb_value = input_indexes.size();
+  if (nb_value != output_indexes.size())
+    ARCANE_FATAL("input_indexes ({0}) and output_indexes ({1}) are different", nb_value, output_indexes);
+
+  const Int32 nb_copy = copy_data.size();
+
+  for (Int32 i = 0; i < nb_copy; ++i) {
+    ARCANE_CHECK_ACCESSIBLE_POINTER(queue, host_copy_data[i].m_output.data());
+    ARCANE_CHECK_ACCESSIBLE_POINTER(queue, host_copy_data[i].m_input.data());
+  }
+  ARCANE_CHECK_ACCESSIBLE_POINTER(queue, input_indexes.data());
+  ARCANE_CHECK_ACCESSIBLE_POINTER(queue, output_indexes.data());
+
+  // TODO: Gérer la copie de manière à pouvoir utiliser la coalescence
+  // TODO: Faire des spécialisations si le dim2_size est de 4 ou 8
+  // (voire un multiple) pour éviter la boucle interne.
+  auto command = makeCommand(queue);
+  command << RUNCOMMAND_LOOP2(iter, nb_copy, nb_value)
+  {
+    auto [icopy, i] = iter();
+    auto input = copy_data[icopy].m_input;
+    auto output = copy_data[icopy].m_output;
+    Int32 dim2_size = copy_data[icopy].m_data_size;
+    Int32 output_base = output_indexes[i] * dim2_size;
+    Int32 input_base = input_indexes[i] * dim2_size;
+    for (Int32 j = 0; j < dim2_size; ++j)
+      output[output_base + j] = input[input_base + j];
+  };
 }
 
 /*---------------------------------------------------------------------------*/

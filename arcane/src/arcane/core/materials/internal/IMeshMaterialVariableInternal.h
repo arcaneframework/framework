@@ -28,6 +28,26 @@ class ComponentItemListBuilder;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
+ * \brief Informations pour la copie entre valeurs globales et partielles d'une variable
+ */
+struct ARCANE_CORE_EXPORT CopyBetweenPartialAndGlobalOneData
+{
+ public:
+
+  CopyBetweenPartialAndGlobalOneData(Span<const std::byte> input, Span<std::byte> output, Int32 data_size)
+  : m_input(input)
+  , m_output(output)
+  , m_data_size(data_size)
+  {}
+
+ public:
+
+  Span<const std::byte> m_input;
+  Span<std::byte> m_output;
+  Int32 m_data_size = 0;
+};
+
+/*!
  * \brief Arguments des méthodes de copie entre valeurs partielles et globales
  */
 class ARCANE_CORE_EXPORT CopyBetweenPartialAndGlobalArgs
@@ -50,6 +70,20 @@ class ARCANE_CORE_EXPORT CopyBetweenPartialAndGlobalArgs
 
  public:
 
+  void addOneCopyData(Span<const std::byte> input,
+                      Span<std::byte> output,
+                      Int32 data_size) const
+  {
+    if (m_copy_data) {
+      CopyBetweenPartialAndGlobalOneData x(input, output, data_size);
+      m_copy_data->add(x);
+    }
+  }
+
+  bool isUseOneCommand() const { return m_copy_data; }
+
+ public:
+
   Int32 m_var_index = -1;
   SmallSpan<const Int32> m_local_ids;
   SmallSpan<const Int32> m_indexes_in_multiple;
@@ -57,6 +91,8 @@ class ARCANE_CORE_EXPORT CopyBetweenPartialAndGlobalArgs
   bool m_is_global_to_partial = false;
   bool m_use_generic_copy = false;
   RunQueue m_queue;
+  //! Informations de copie si on n'utilise qu'une seule commande
+  UniqueArray<CopyBetweenPartialAndGlobalOneData>* m_copy_data = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/
