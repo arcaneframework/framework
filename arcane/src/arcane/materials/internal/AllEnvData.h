@@ -96,7 +96,8 @@ class AllEnvData
 
  public:
 
-  void _computeInfosForAllEnvCells(RecomputeConstituentCellInfos& work_info);
+  void _computeInfosForAllEnvCells1(RecomputeConstituentCellInfos& work_info);
+  void _computeInfosForAllEnvCells2(RecomputeConstituentCellInfos& work_info);
   void _computeInfosForEnvCells(RecomputeConstituentCellInfos& work_info);
 };
 
