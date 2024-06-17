@@ -53,9 +53,10 @@ class AllEnvData::RecomputeConstituentCellInfos
 {
  public:
 
-  RecomputeConstituentCellInfos()
-  : env_cell_indexes(MemoryUtils::getDefaultDataAllocator())
-  , cells_nb_material(MemoryUtils::getDefaultDataAllocator())
+  explicit RecomputeConstituentCellInfos(RunQueue& q)
+  : env_cell_indexes(q.allocationOptions())
+  , cells_nb_material(q.allocationOptions())
+  , m_queue(q)
   {
   }
 
@@ -63,6 +64,7 @@ class AllEnvData::RecomputeConstituentCellInfos
 
   UniqueArray<Int32> env_cell_indexes;
   UniqueArray<Int16> cells_nb_material;
+  RunQueue m_queue;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -237,7 +239,7 @@ _rebuildMaterialsAndEnvironmentsFromGroups()
 /*---------------------------------------------------------------------------*/
 
 void AllEnvData::
-_computeInfosForAllEnvCells(RecomputeConstituentCellInfos& work_info)
+_computeInfosForAllEnvCells1(RecomputeConstituentCellInfos& work_info)
 {
   IMesh* mesh = m_material_mng->mesh();
   IItemFamily* cell_family = mesh->cellFamily();
@@ -253,8 +255,6 @@ _computeInfosForAllEnvCells(RecomputeConstituentCellInfos& work_info)
 
   work_info.env_cell_indexes.resize(cells_nb_env.size());
 
-  RunQueue queue(m_material_mng->runQueue());
-
   bool do_old = (max_local_id != nb_cell);
   if (do_old) {
     Integer env_cell_index = 0;
@@ -268,29 +268,38 @@ _computeInfosForAllEnvCells(RecomputeConstituentCellInfos& work_info)
   else {
     // TODO: Cela ne fonctionne que si all_cells est compacté et
     // local_id[i] <=> i.
-    Accelerator::GenericScanner scanner(queue);
+    Accelerator::GenericScanner scanner(work_info.m_queue);
     SmallSpan<Int32> env_cell_indexes_view(work_info.env_cell_indexes);
     Accelerator::ScannerSumOperator<Int32> op;
     scanner.applyExclusive(0, cells_nb_env, env_cell_indexes_view, op, A_FUNCINFO);
   }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void AllEnvData::
+_computeInfosForAllEnvCells2(RecomputeConstituentCellInfos& work_info)
+{
+  CellGroup all_cells = m_material_mng->mesh()->allCells();
+
+  SmallSpan<const Int16> cells_nb_env = m_component_connectivity_list->cellsNbEnvironment();
 
   // Positionne les infos pour les AllEnvCell.
+  ComponentItemSharedInfo* all_env_shared_info = m_item_internal_data.allEnvSharedInfo();
+  auto command = makeCommand(work_info.m_queue);
+  SmallSpan<Int32> env_cell_indexes_view(work_info.env_cell_indexes);
+  command << RUNCOMMAND_ENUMERATE (Cell, cell_id, all_cells)
   {
-    ComponentItemSharedInfo* all_env_shared_info = m_item_internal_data.allEnvSharedInfo();
-    auto command = makeCommand(queue);
-    SmallSpan<Int32> env_cell_indexes_view(work_info.env_cell_indexes);
-    command << RUNCOMMAND_ENUMERATE (Cell, cell_id, all_cells)
-    {
-      Int32 lid = cell_id;
-      Int16 n = cells_nb_env[lid];
-      matimpl::ConstituentItemBase ref_ii(all_env_shared_info, ConstituentItemIndex(lid));
-      ref_ii._setSuperAndGlobalItem({}, cell_id);
-      ref_ii._setVariableIndex(MatVarIndex(0, lid));
-      ref_ii._setNbSubItem(n);
-      if (n != 0)
-        ref_ii._setFirstSubItem(ConstituentItemIndex(env_cell_indexes_view[lid]));
-    };
-  }
+    Int32 lid = cell_id;
+    Int16 n = cells_nb_env[lid];
+    matimpl::ConstituentItemBase ref_ii(all_env_shared_info, ConstituentItemIndex(lid));
+    ref_ii._setSuperAndGlobalItem({}, cell_id);
+    ref_ii._setVariableIndex(MatVarIndex(0, lid));
+    ref_ii._setNbSubItem(n);
+    if (n != 0)
+      ref_ii._setFirstSubItem(ConstituentItemIndex(env_cell_indexes_view[lid]));
+  };
 }
 
 /*---------------------------------------------------------------------------*/
@@ -467,9 +476,12 @@ forceRecompute(bool compute_all)
     }
   }
 
+  RunQueue& queue(m_material_mng->runQueue());
+
   {
-    RecomputeConstituentCellInfos work_info;
-    _computeInfosForAllEnvCells(work_info);
+    RecomputeConstituentCellInfos work_info(queue);
+    _computeInfosForAllEnvCells1(work_info);
+    _computeInfosForAllEnvCells2(work_info);
     _computeInfosForEnvCells(work_info);
   }
 
@@ -484,7 +496,6 @@ forceRecompute(bool compute_all)
   }
 
   {
-    RunQueue& queue(m_material_mng->runQueue());
     for (MeshEnvironment* env : true_environments) {
       env->componentData()->_rebuildPartData(queue);
       for (MeshMaterial* mat : env->trueMaterials())

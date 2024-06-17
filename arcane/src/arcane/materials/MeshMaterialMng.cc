@@ -231,6 +231,15 @@ build()
     info() << "Use runner '" << this->runner().executionPolicy() << "' for MeshMaterialMng name=" << name()
            << " async_queue_size=" << nb_queue;
     m_runner_info->initializeAsyncPool(nb_queue);
+
+    // En mode release et si on utilise un accélérateur alors on alloue par
+    // défaut sur accélérateur. C'est important surtout pour les tableaux
+    // temporaires.
+    // En mode 'check' il faut laisser la mémoire unifiée car les tests sont faits
+    // sur le CPU.
+    RunQueue& q = runQueue();
+    if (!arcaneIsCheck() && q.isAcceleratorPolicy())
+      q.setMemoryRessource(eMemoryRessource::Device);
   }
 
   // Choix des optimisations.
