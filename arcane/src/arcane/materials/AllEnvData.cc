@@ -53,9 +53,9 @@ class AllEnvData::RecomputeConstituentCellInfos
 {
  public:
 
-  RecomputeConstituentCellInfos()
-  : env_cell_indexes(MemoryUtils::getDefaultDataAllocator())
-  , cells_nb_material(MemoryUtils::getDefaultDataAllocator())
+  RecomputeConstituentCellInfos(RunQueue& q)
+  : env_cell_indexes(q.allocationOptions())
+  , cells_nb_material(q.allocationOptions())
   {
   }
 
@@ -467,8 +467,10 @@ forceRecompute(bool compute_all)
     }
   }
 
+  RunQueue& queue(m_material_mng->runQueue());
+
   {
-    RecomputeConstituentCellInfos work_info;
+    RecomputeConstituentCellInfos work_info(queue);
     _computeInfosForAllEnvCells(work_info);
     _computeInfosForEnvCells(work_info);
   }
@@ -484,7 +486,6 @@ forceRecompute(bool compute_all)
   }
 
   {
-    RunQueue& queue(m_material_mng->runQueue());
     for (MeshEnvironment* env : true_environments) {
       env->componentData()->_rebuildPartData(queue);
       for (MeshMaterial* mat : env->trueMaterials())
