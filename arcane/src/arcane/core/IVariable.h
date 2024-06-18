@@ -414,6 +414,16 @@ class ARCANE_CORE_EXPORT IVariable
   virtual void synchronize() =0;
 
   /*!
+   * \brief Synchronise la variable sur une liste d'entités.
+   *
+   * La synchronisation ne peut se faire que sur les variables du maillage.
+   * Seules les entités listées dans \a local_ids seront synchronisées. Attention :
+   * une entité présente dans cette liste sur un sous-domaine doit être présente
+   * dans cette liste pour tout autre sous-domaine qui possède cette entité.
+   */
+  virtual void synchronize(Int32ConstArrayView local_ids) =0;
+  
+  /*!
    * \brief Maillage auquel est associé la variable.
    *
    * Cette opération n'est significative que pour les variables sur des

@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* StdScalarMeshVariables.cc                                   (C) 2000-2016 */
+/* StdScalarMeshVariables.cc                                   (C) 2000-2024 */
 /*                                                                           */
 /* Définition de variables scalaires du maillage pour des tests.             */
 /*---------------------------------------------------------------------------*/
@@ -75,10 +75,10 @@ void _setReferenceValue(Int64 n,MultiScalarValue& sv)
 /*---------------------------------------------------------------------------*/
 
 template<class ItemType> void StdScalarMeshVariables<ItemType>::
-setItemValues(Integer seed, ItemType item)
+setItemValues(Int64 n, ItemType item)
 {
   MultiScalarValue sv;
-  Int64 n = 1 + (item.uniqueId().asInt64() + seed*7);
+  
   _setReferenceValue(n,sv);
 
   this->m_byte[item] = sv.m_byte;
@@ -96,11 +96,38 @@ setItemValues(Integer seed, ItemType item)
 /*---------------------------------------------------------------------------*/
 
 template<class ItemType> void StdScalarMeshVariables<ItemType>::
+setEvenValues(Integer iteration, const GroupType& group)
+{
+  ENUMERATE_ITEM(iter,group){
+    ItemType item = (*iter).itemBase();
+    Int64 n = 1 + (item.uniqueId().asInt64() + iteration*7);
+    setItemValues(n,item);
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<class ItemType> void StdScalarMeshVariables<ItemType>::
+setOddValues(Integer iteration, const GroupType& group)
+{
+  ENUMERATE_ITEM(iter,group){
+    ItemType item = (*iter).itemBase();
+    Int64 n = 1 + (item.uniqueId().asInt64() + iteration*7);
+    setItemValues(-n,item);
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<class ItemType> void StdScalarMeshVariables<ItemType>::
 setValues(Integer iteration, const GroupType& group)
 {
   ENUMERATE_ITEM(iter,group){
     ItemType item = (*iter).itemBase();
-    setItemValues(iteration,item);
+    Int64 n = 1 + (item.uniqueId().asInt64() + iteration*7);
+    setItemValues(n,item);
   }
 }
 
@@ -200,6 +227,53 @@ _checkItemValues(Integer seed, ItemType item, const MultiScalarValue& current_sv
   _setReferenceValue(n,ref_sv);
 
   return _checkValue(item,ref_sv,current_sv);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<class ItemType> Integer StdScalarMeshVariables<ItemType>::
+checkGhostValuesOddOrEven(Integer iteration, const GroupType& group)
+{
+  Integer nb_error = 0;
+  MultiScalarValue current_sv;
+  m_nb_displayed_error = 0;
+  
+  auto check_value = [&](ItemType item)
+  {
+    MultiScalarValue ref_sv;
+    
+    Int64 uid = item.uniqueId();
+    Int64 n = 1 + (uid + iteration*7);
+    
+    if (uid % 2 != 0) {
+      n = -n;
+    }
+    
+    _setReferenceValue(n, ref_sv);
+    
+    return _checkValue(item,ref_sv,current_sv);
+  };
+  
+  ENUMERATE_ITEM(iter,group){
+    ItemType item = (*iter).itemBase();
+
+    if (!item.isOwn()){
+      current_sv.m_byte = this->m_byte[item];
+      current_sv.m_real = this->m_real[item];
+      current_sv.m_int64 = this->m_int64[item];
+      current_sv.m_int32 = this->m_int32[item];
+      current_sv.m_int16 = this->m_int16[item];
+      current_sv.m_real2 = this->m_real2[item];
+      current_sv.m_real2x2 = this->m_real2x2[item];
+      current_sv.m_real3 = this->m_real3[item];
+      current_sv.m_real3x3 = this->m_real3x3[item];
+      
+      nb_error += check_value(item);
+    }
+  }
+
+  return nb_error;
 }
 
 /*---------------------------------------------------------------------------*/

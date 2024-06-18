@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IItemFamily.h                                               (C) 2000-2023 */
+/* IItemFamily.h                                               (C) 2000-2024 */
 /*                                                                           */
 /* Interface d'une famille d'entités.                                        */
 /*---------------------------------------------------------------------------*/
@@ -573,6 +573,18 @@ class IItemFamily
    * de cette famille et ne pas être partielles.
    */
   virtual void synchronize(VariableCollection variables) =0;
+  
+    /*!
+   * \brief Synchronise les variables \a variables sur une liste d'entités.
+   *
+   * Les variables \a variables doivent être toutes être issues
+   * de cette famille et ne pas être partielles.
+   * 
+   * Seules les entités listées dans \a local_ids seront synchronisées. Attention :
+   * une entité présente dans cette liste sur un sous-domaine doit être présente
+   * dans cette liste pour tout autre sous-domaine qui possède cette entité.
+   */
+  virtual void synchronize(VariableCollection variables, Int32ConstArrayView local_ids) =0;
   //@}
   
   /*!

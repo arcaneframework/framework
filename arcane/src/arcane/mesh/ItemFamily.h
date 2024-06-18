@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemFamily.h                                                (C) 2000-2023 */
+/* ItemFamily.h                                                (C) 2000-2024 */
 /*                                                                           */
 /* Famille d'entités.                                                        */
 /*---------------------------------------------------------------------------*/
@@ -234,6 +234,7 @@ class ARCANE_MESH_EXPORT ItemFamily
   void computeSynchronizeInfos() override;
   void getCommunicatingSubDomains(Int32Array& sub_domains) const override;
   void synchronize(VariableCollection variables) override;
+  void synchronize(VariableCollection variables, Int32ConstArrayView local_ids) override;
   IVariableSynchronizer* allItemsSynchronizer() override;
   
   void reduceFromGhostItems(IVariable* v,IDataOperation* operation) override;
