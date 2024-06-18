@@ -423,20 +423,17 @@ computeDirections()
   // d'indice 1 celle de droite.
   for( Integer i=0; i<nb_face; ++i ){
     Face f = cell0.face(i);
-    if (f.isSubDomainBoundary())
-      continue;
-    Cell next_cell = (f.backCell()==cell0) ? f.frontCell() : f.backCell();
-    Real3 next_center = cells_center[next_cell];
-    info(4) << "NEXT_CELL=" << ItemPrinter(next_cell) << " center=" << next_center \
-            << " back=" << f.backCell().uniqueId()
-            << " front=" << f.frontCell().uniqueId();
 
-    Real diff_x = math::abs(next_center.x - cell_center.x);
-    Real diff_y = math::abs(next_center.y - cell_center.y);
-    Real diff_z = math::abs(next_center.z - cell_center.z);
-    info(4) << "NEXT_CELL=" << ItemPrinter(next_cell) << " diff=" << Real3(diff_x,diff_y,diff_z);
-    //TODO: Verifier qu'il s'agit bien de la maille apres et pas avant.
-    // (tenir compte du signe de diff)
+    Real3 next_center = faces_center[f];
+
+    info(4) << "NEXT_FACE=" << ItemPrinter(f) << " center=" << next_center;
+
+    Real diff_x = next_center.x - cell_center.x;
+    Real diff_y = next_center.y - cell_center.y;
+    Real diff_z = next_center.z - cell_center.z;
+
+    info(4) << "NEXT_FACE=" << ItemPrinter(f) << " diff=" << Real3(diff_x, diff_y, diff_z);
+
     if (diff_x>diff_y && diff_x>diff_z){
       // INC X
       next_face_x = i;
@@ -452,8 +449,6 @@ computeDirections()
       next_face_z = i;
       info(4) << "Advance in direction Z -> " << next_face_z;
     }
-    else
-      ARCANE_FATAL("Bad value for next cell");
   }
 
   bool is_3d = m_mesh->dimension()==3;
