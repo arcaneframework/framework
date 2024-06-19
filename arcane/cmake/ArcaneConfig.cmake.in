@@ -193,7 +193,7 @@ endfunction()
 
 # ----------------------------------------------------------------------------
 # Ajoute à la cible 'target_name' les informations nécessaires pour utiliser
-# les accélérateurs. Il faut avoir appeler 'arcane_enable_cuda' avant.
+# les accélérateurs. Il faut avoir appeler 'arcane_enable_accelerator' avant.
 function(arcane_accelerator_add_to_target target_name)
   if (NOT target_name)
     message(FATAL_ERROR "Invalid null argument 'target_name' (${target_name}) to 'arcane_accelerator_add_to_target' function")
@@ -206,6 +206,9 @@ function(arcane_accelerator_add_to_target target_name)
   if (ARCANE_HAS_HIP)
     target_link_libraries(${target_name} PUBLIC arcane_accelerator_hip_runtime)
     set_property(TARGET ${target_name} PROPERTY HIP_ARCHITECTURES ${CMAKE_HIP_ARCHITECTURES})
+  endif()
+  if (ARCANE_HAS_SYCL)
+    target_link_libraries(${target_name} PUBLIC arcane_accelerator_sycl_runtime)
   endif()
 endfunction()
 
