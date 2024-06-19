@@ -133,10 +133,13 @@ init()
 void ExternalPluginTesterModule::
 computeLoop()
 {
-  if (options()->functionName.isPresent())
-    options()->externalPlugin()->executeFunction(options()->functionName());
+  IExternalPlugin* p = options()->externalPlugin();
+  if (options()->contextFunctionName.isPresent())
+    p->executeContextFunction(options()->contextFunctionName());
+  else if (options()->functionName.isPresent())
+    p->executeFunction(options()->functionName());
   else
-    options()->externalPlugin()->loadFile(options()->file());
+    p->loadFile(options()->file());
   bool is_finished = (m_global_iteration() >= 15);
   if (is_finished)
     subDomain()->timeLoopMng()->stopComputeLoop(true);

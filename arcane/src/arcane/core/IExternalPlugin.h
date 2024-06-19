@@ -44,9 +44,19 @@ class ARCANE_CORE_EXPORT IExternalPlugin
    * \brief Exécute la fonction \a function_name.
    *
    * Il faut avoir chargé un script contenant cette fonction (via loadFile())
-   * avant d'appeler cette méthode.
+   * avant d'appeler cette méthode. La méthode \a function_name ne doit pas
+   * avoir d'arguments.
    */
   virtual void executeFunction(const String& function_name) = 0;
+
+  /*!
+   * \brief Exécute la fonction \a function_name avec un contexte
+   *
+   * Il faut avoir chargé un script contenant cette fonction (via loadFile())
+   * avant d'appeler cette méthode. La méthode spécifiée doit prendre en
+   * argument une instance de PythonSubDomainContext.
+   */
+  virtual void executeContextFunction(const String& function_name) = 0;
 };
 
 /*---------------------------------------------------------------------------*/
