@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* DataSynchronizeInfo.h                                       (C) 2000-2023 */
+/* DataSynchronizeInfo.h                                       (C) 2000-2024 */
 /*                                                                           */
 /* Informations pour synchroniser les données.                               */
 /*---------------------------------------------------------------------------*/
@@ -192,9 +192,9 @@ class ARCANE_IMPL_EXPORT DataSynchronizeInfo
 
  public:
 
-  void clear() { m_ranks_info.clear(); }
+  void clear() { m_ranks_info.clear(); m_communicating_ranks.clear(); }
   Int32 size() const { return m_ranks_info.size(); }
-  void add(const VariableSyncInfo& s) { m_ranks_info.add(s); }
+  void add(const VariableSyncInfo& s);
 
   //! Informations d'envoi (partagées)
   const DataSynchronizeBufferInfoList& sendInfo() const { return m_buffer_infos[SEND]; }
@@ -204,6 +204,9 @@ class ARCANE_IMPL_EXPORT DataSynchronizeInfo
   //! Rang de la \a index-ème cible
   Int32 targetRank(Int32 index) const { return m_ranks_info[index].targetRank(); }
 
+  //! Rangs de toutes les cibles
+  Int32ConstArrayView communicatingRanks() const { return m_communicating_ranks; }
+  
   //! Notifie l'instance que les indices locaux ont changé
   void changeLocalIds(Int32ConstArrayView old_to_new_ids);
 
@@ -235,6 +238,7 @@ class ARCANE_IMPL_EXPORT DataSynchronizeInfo
 
  private:
 
+  UniqueArray<Int32> m_communicating_ranks;
   UniqueArray<VariableSyncInfo> m_ranks_info;
   std::array<DataSynchronizeBufferInfoList, 2> m_buffer_infos = { { { this, true }, { this, false } } };
 

@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* VariableSynchronizerComputeList.cc                          (C) 2000-2023 */
+/* VariableSynchronizerComputeList.cc                          (C) 2000-2024 */
 /*                                                                           */
 /* Calcule de la liste des entités à synchroniser.                           */
 /*---------------------------------------------------------------------------*/
@@ -148,10 +148,9 @@ _createList(UniqueArray<SharedArray<Int32>>& boundary_items)
   info(4) << "VariableSynchronizer::createList() begin for group=" << m_item_group.name();
 
   // Table du voisinage connu par items fantomes.
-  // Ceci n'est pas obligatoirement la liste finale pour m_communicating_ranks dans le cas
+  // Ceci n'est pas obligatoirement la liste finale pour sync_info->communicatingRanks() dans le cas
   // de relation non symétrique ghost/shared entre processeurs (si l'un des deux vaut 0)
   // Le traitement complémentaire apparaît après la section "Réciprocité des communications"
-  m_synchronizer->m_communicating_ranks.clear();
   Int32UniqueArray communicating_ghost_ranks;
   for (Integer i = 0; i < nb_rank; ++i) {
     if (boundary_items[i].empty())
@@ -416,10 +415,9 @@ _createList(UniqueArray<SharedArray<Int32>>& boundary_items)
   _checkValid(ghost_rank_info, share_rank_info);
   sync_info->recompute();
 
-  // Calcul de m_communicating_ranks qui synthétisent les processeurs communiquants
+  // Vérifie que l'on a trouvé tous les ghosts
   for (Integer i = 0, n = sync_info->size(); i < n; ++i) {
     Int32 target_rank = sync_info->targetRank(i);
-    m_synchronizer->m_communicating_ranks.add(target_rank);
     if (sync_info->receiveInfo().nbItem(i) != boundary_items[target_rank].size())
       ARCANE_FATAL("Inconsistent ghost count");
   }

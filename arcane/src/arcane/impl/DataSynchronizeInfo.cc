@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* DataSynchronizeInfo.cc                                      (C) 2000-2023 */
+/* DataSynchronizeInfo.cc                                      (C) 2000-2024 */
 /*                                                                           */
 /* Informations pour synchroniser les données.                               */
 /*---------------------------------------------------------------------------*/
@@ -159,6 +159,16 @@ changeLocalIds(Int32ConstArrayView old_to_new_ids)
     vsi.changeLocalIds(old_to_new_ids);
   }
   recompute();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void DataSynchronizeInfo::
+add(const VariableSyncInfo& s)
+{
+  m_ranks_info.add(s);
+  m_communicating_ranks.add(s.targetRank());
 }
 
 /*---------------------------------------------------------------------------*/

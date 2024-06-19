@@ -311,6 +311,23 @@ synchronize()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+template<typename T> void VariableArrayT<T>::
+synchronize(Int32ConstArrayView local_ids)
+{
+  if (itemKind()==IK_Unknown)
+    ARCANE_THROW(NotSupportedException,"variable '{0}' is not a mesh variable",fullName());
+  IItemFamily* family = itemGroup().itemFamily();
+  if (!family)
+    ARCANE_FATAL("variable '{0}' without family",fullName());
+  if(isPartial())
+    itemGroup().synchronizer()->synchronize(this, local_ids);
+  else
+    family->allItemsSynchronizer()->synchronize(this, local_ids);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 template<typename T> Real VariableArrayT<T>::
 allocatedMemory() const
 {

@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Array2Variable.h                                            (C) 2000-2020 */
+/* Array2Variable.h                                            (C) 2000-2024 */
 /*                                                                           */
 /* Variable tableau 2D.                                                      */
 /*---------------------------------------------------------------------------*/
@@ -55,6 +55,7 @@ class Array2VariableT
 
   Integer checkIfSame(IDataReader* reader,int max_print,bool compare_ghost) override;
   void synchronize() override;
+  void synchronize(Int32ConstArrayView local_ids) override;
   Real allocatedMemory() const override;
   Integer checkIfSync(int max_print) override;
   Integer nbElement() const override { return m_data->view().totalNbElement(); }

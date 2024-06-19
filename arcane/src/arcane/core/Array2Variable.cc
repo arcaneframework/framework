@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Array2Variable.cc                                           (C) 2000-2023 */
+/* Array2Variable.cc                                           (C) 2000-2024 */
 /*                                                                           */
 /* Variable tableau 2D.                                                      */
 /*---------------------------------------------------------------------------*/
@@ -355,6 +355,23 @@ synchronize()
     itemGroup().synchronizer()->synchronize(this);
   else
     family->allItemsSynchronizer()->synchronize(this);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<typename T> void Array2VariableT<T>::
+synchronize(Int32ConstArrayView local_ids)
+{
+  if (itemKind()==IK_Unknown)
+    ARCANE_THROW(NotSupportedException,"variable '{0}' is not a mesh variable",fullName());
+  IItemFamily* family = itemGroup().itemFamily();
+  if (!family)
+    ARCANE_FATAL("variable '{0}' without family",fullName());
+  if(isPartial())
+    itemGroup().synchronizer()->synchronize(this, local_ids);
+  else
+    family->allItemsSynchronizer()->synchronize(this, local_ids);
 }
 
 /*---------------------------------------------------------------------------*/

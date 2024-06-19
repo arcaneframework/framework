@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* VariableScalar.cc                                           (C) 2000-2023 */
+/* VariableScalar.cc                                           (C) 2000-2024 */
 /*                                                                           */
 /* Variable scalaire.                                                        */
 /*---------------------------------------------------------------------------*/
@@ -272,6 +272,16 @@ template<typename T> void VariableScalarT<T>::
 synchronize()
 {
   // Rien à faire pour les variables scalaires
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<typename T> void VariableScalarT<T>::
+synchronize(Int32ConstArrayView local_ids)
+{
+  // Rien à faire pour les variables scalaires
+  ARCANE_UNUSED(local_ids);
 }
 
 /*---------------------------------------------------------------------------*/

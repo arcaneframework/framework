@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* StdArrayMeshVariables.h                                     (C) 2000-2019 */
+/* StdArrayMeshVariables.h                                     (C) 2000-2024 */
 /*                                                                           */
 /* Définition de variables tableaux du maillage pour des tests.              */
 /*---------------------------------------------------------------------------*/
@@ -44,8 +44,12 @@ class StdArrayMeshVariables
 
   void initialize();
   Integer nbValuePerItem();
+  void setValue(Int64 n, ItemType item);
   void setValues(Integer iteration, const GroupType& group);
+  void setEvenValues(Integer iteration, const GroupType& group);
+  void setOddValues(Integer iteration, const GroupType& group);
   Integer checkValues(Integer iteration, const GroupType& group);
+  Integer checkGhostValuesOddOrEven(Integer iteration, const GroupType& group);
   Integer checkReplica();
 };
 
