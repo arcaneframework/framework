@@ -6,9 +6,9 @@ namespace Arcane.Python
   {
     public SubDomainContext(ISubDomain sd)
     {
-      m_sub_domain = m_sub_domain;
+      m_sub_domain = sd;
     }
     public string Name() { return "SubDomain"; }
-    ISubDomain m_sub_domain;
+    readonly ISubDomain m_sub_domain;
   }
 }

@@ -77,7 +77,7 @@ namespace Arcane.Python
 
     bool m_has_init;
     PyModule m_python_scope;
-    SubDomainContext m_sub_domain_context;
+    readonly SubDomainContext m_sub_domain_context;
     PyObject m_py_sub_domain_context;
   }
 }
