@@ -348,6 +348,9 @@ endif()
 if (ARCANE_ACCELERATOR_MODE STREQUAL "CUDANVCC" )
   set(ARCANE_ACCELERATOR_RUNTIME_NAME cuda)
 endif()
+if (ARCANE_ACCELERATOR_MODE STREQUAL "SYCLDPCPP" )
+  set(ARCANE_ACCELERATOR_RUNTIME_NAME sycl)
+endif()
 
 # ----------------------------------------------------------------------------
 # Ajoute un test séquentiel pour accélerateur si disponible
