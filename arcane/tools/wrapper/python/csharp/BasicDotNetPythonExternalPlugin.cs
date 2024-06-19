@@ -13,9 +13,12 @@ namespace Arcane.Python
 
     public BasicDotNetPythonExternalPlugin(ServiceBuildInfo bi) : base(bi)
     {
+      m_sub_domain_context = new SubDomainContext(bi.SubDomain());
     }
+
     ~BasicDotNetPythonExternalPlugin()
     {
+      m_py_sub_domain_context = null;
       if (m_python_scope!=null){
         m_python_scope.Dispose();
         m_python_scope = null;
@@ -31,23 +34,37 @@ namespace Arcane.Python
       Console.WriteLine("TEXT={0}",text);
       Console.WriteLine("-- -- -- Executing Python");
       using (Py.GIL())
-      //using (var scope = Py.CreateScope())
       {
         m_python_scope = Py.CreateScope();
         m_python_scope.Exec(text);
+        if (m_py_sub_domain_context==null)
+          m_py_sub_domain_context = m_sub_domain_context.ToPython();
       }
       Console.WriteLine("** -- End setup python");
     }
 
     public override void ExecuteFunction(string function_name)
     {
+      _checkScope();
+      using (Py.GIL())
+      {
+        m_python_scope.InvokeMethod(function_name);
+      }
+    }
+
+    public override void ExecuteContextFunction(string function_name)
+    {
+      _checkScope();
+      using (Py.GIL())
+      {
+        m_python_scope.InvokeMethod(function_name,m_py_sub_domain_context);
+      }
+    }
+
+    void _checkScope()
+    {
       if (m_python_scope==null)
         throw new ApplicationException("Null python scope. You need to call 'LoadFile()' before");
-      using (Py.GIL())
-      //using (var scope = Py.CreateScope())
-      {
-        m_python_scope.Exec(function_name+"()");
-      }
     }
 
     void _checkInit()
@@ -60,5 +77,7 @@ namespace Arcane.Python
 
     bool m_has_init;
     PyModule m_python_scope;
+    SubDomainContext m_sub_domain_context;
+    PyObject m_py_sub_domain_context;
   }
 }
