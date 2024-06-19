@@ -17,11 +17,12 @@
 #include "arcane/utils/TraceAccessor.h"
 #include "arcane/utils/ArrayView.h"
 
-#include "arcane/ItemGroup.h"
+#include "arcane/core/ItemGroup.h"
 
 #include "arcane/core/materials/MatVarIndex.h"
 #include "arcane/core/materials/IMeshComponent.h"
 #include "arcane/core/materials/ComponentItemInternal.h"
+#include "arcane/core/materials/MatItem.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -104,6 +105,12 @@ class ARCANE_CORE_EXPORT ComponentItemVectorView
   //! Composant associé
   IMeshComponent* component() const { return m_component; }
 
+  //! Retourne la \a index-ème ComponentCell de la vue
+  ARCCORE_HOST_DEVICE ComponentCell componentCell(Int32 index) const
+  {
+    return m_constituent_list_view._constituenItemBase(index);
+  }
+
  private:
 
   // Tableau des MatVarIndex de cette vue.
@@ -131,7 +138,7 @@ class ARCANE_CORE_EXPORT ComponentItemVectorView
  private:
 
   // NOTE: Cette classe est wrappée directement en C#.
-  // Si on modifie les champs de cette classe il faut modifier le type correspondant
+  // Si on modifie les champs de cette classe, il faut modifier le type correspondant
   // dans le wrappeur.
   ConstArrayView<MatVarIndex> m_matvar_indexes_view;
   ConstituentItemLocalIdListView m_constituent_list_view;
@@ -186,6 +193,9 @@ class ARCANE_CORE_EXPORT MatItemVectorView
   //! Matériau associé
   IMeshMaterial* material() const;
 
+  //! Récupère la index-ème MatCell de la vue
+  ARCCORE_HOST_DEVICE MatCell matCell(Int32 index) const { return MatCell(componentCell(index)); }
+
   // Temporaire: à conserver pour compatibilité
   ARCANE_DEPRECATED_240 MatItemVectorView subView(Integer begin, Integer size)
   {
@@ -239,6 +249,9 @@ class ARCANE_CORE_EXPORT EnvItemVectorView
 
   //! Milieu associé
   IMeshEnvironment* environment() const;
+
+  //! Récupère la index-ème EnvCell de la vue
+  ARCCORE_HOST_DEVICE EnvCell envCell(Int32 index) const { return EnvCell(componentCell(index)); }
 };
 
 /*---------------------------------------------------------------------------*/
