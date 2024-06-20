@@ -209,7 +209,7 @@ macro(arcane_wrapper_add_swig_target)
   arcane_target_set_standard_path(${_TARGET_NAME})
 
   # Récupère la liste des fichiers générés par Swig. On s'en sert pour faire une
-  # dépendence dessus pour la compilation de la partie C#.
+  # dépendance dessus pour la compilation de la partie C#.
   get_property(support_files TARGET ${_TARGET_NAME} PROPERTY SWIG_SUPPORT_FILES)
   message(STATUS "Support files for wrapper '${ARGS_NAME}' (target='${_TARGET_NAME}') files='${support_files}'")
 
@@ -230,12 +230,17 @@ macro(arcane_wrapper_add_swig_target)
   # NOTE: il y a probablement un bug avec CMake 3.21 sur cette partie car il indique
   # qu'il ne sait pas comment trouver les fichiers générés. Cela est peut-être du
   # au module UseSwig associé à cette version.
-  if (CMAKE_VERSION VERSION_GREATER_EQUAL 3.22)
+  # NOTE: Il semble que cela ne fonctionne pas toujours correctement si on utilise 'Make'
+  # (Il y a d'ailleurs un comportement spécifique du fichier 'UseSwig.cmake' dans ce cas)
+  # On n'active donc pas cette gestion si on utilise 'Make'. Dans ce cas on ajoute
+  # une dépendance sur la cible générée par SWIG mais cela oblige à recompiler si une
+  # des dépendances est modifiée (par exemple un '.so')
+  if (CMAKE_VERSION VERSION_LESS_EQUAL 3.21 OR CMAKE_GENERATOR MATCHES "Make")
+    add_dependencies(dotnet_wrapper_${ARGS_NAME} ${_TARGET_NAME})
+  else()
     message(STATUS "Adding custom target with support files for wrapper '${ARGS_NAME}'")
     add_custom_target(dotnet_wrapper_${ARGS_NAME}_swig_depend ALL DEPENDS "${support_files}")
     add_dependencies(dotnet_wrapper_${ARGS_NAME} dotnet_wrapper_${ARGS_NAME}_swig_depend)
-  else()
-    add_dependencies(dotnet_wrapper_${ARGS_NAME} ${_TARGET_NAME})
   endif()
 
   # Ajoute les dépendences sur les autres cibles SWIG
