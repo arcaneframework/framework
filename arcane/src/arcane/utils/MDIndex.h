@@ -29,6 +29,128 @@
 
 namespace Arcane
 {
+template <typename IndexType, int rank>
+struct MDTruc
+{};
+} // namespace Arcane
+
+namespace std
+{
+template <typename IndexType, int rank>
+struct tuple_size<Arcane::MDTruc<IndexType, rank>>
+{
+  static constexpr size_t value = rank;
+};
+
+template <typename IndexType, int rank>
+struct tuple_element<0, Arcane::MDTruc<IndexType, rank>>
+{
+  using type = Arccore::Integer;
+};
+
+template <typename IndexType>
+struct tuple_element<1, Arcane::MDTruc<IndexType, 2>>
+{
+  using type = Arccore::Integer;
+};
+
+template <typename IndexType>
+struct tuple_element<1, Arcane::MDTruc<IndexType, 3>>
+{
+  using type = Arccore::Integer;
+};
+
+template <typename IndexType>
+struct tuple_element<1, Arcane::MDTruc<IndexType, 4>>
+{
+  using type = Arccore::Integer;
+};
+
+template <typename IndexType>
+struct tuple_element<2, Arcane::MDTruc<IndexType, 3>>
+{
+  using type = Arccore::Integer;
+};
+
+template <typename IndexType>
+struct tuple_element<2, Arcane::MDTruc<IndexType, 4>>
+{
+  using type = Arccore::Integer;
+};
+
+template <typename IndexType>
+struct tuple_element<3, Arcane::MDTruc<IndexType, 4>>
+{
+  using type = Arccore::Integer;
+};
+} // namespace std
+
+namespace Arcane
+{
+
+template <typename IndexType>
+struct MDTruc<IndexType, 1>
+{
+  constexpr explicit MDTruc(IndexType a)
+  : id0(a)
+  {}
+
+  template <std::size_t Index>
+  ARCCORE_HOST_DEVICE std::tuple_element_t<Index, MDTruc<IndexType, 1>> const& get() const&
+  {
+    return std::get<Index>(id0);
+  }
+
+  std::tuple<IndexType> id0 = {};
+};
+
+template <typename IndexType>
+struct MDTruc<IndexType, 2>
+{
+  constexpr MDTruc(IndexType a, IndexType b)
+  : id0(a, b)
+  {}
+
+  template <std::size_t Index>
+  ARCCORE_HOST_DEVICE std::tuple_element_t<Index, MDTruc<IndexType, 2>> const& get() const&
+  {
+    return std::get<Index>(id0);
+  }
+
+  std::tuple<IndexType, IndexType> id0 = {};
+};
+
+template <typename IndexType>
+struct MDTruc<IndexType, 3>
+{
+  constexpr MDTruc(IndexType a, IndexType b, IndexType c)
+  : id0(a, b, c)
+  {}
+
+  template <std::size_t Index>
+  ARCCORE_HOST_DEVICE std::tuple_element_t<Index, MDTruc<IndexType, 3>> const& get() const&
+  {
+    return std::get<Index>(id0);
+  }
+
+  std::tuple<IndexType, IndexType, IndexType> id0 = {};
+};
+
+template <typename IndexType>
+struct MDTruc<IndexType, 4>
+{
+  constexpr MDTruc(IndexType a, IndexType b, IndexType c, IndexType d)
+  : id0(a, b, c, d)
+  {}
+
+  template <std::size_t Index>
+  ARCCORE_HOST_DEVICE std::tuple_element_t<Index, MDTruc<IndexType, 4>> const& get() const&
+  {
+    return std::get<Index>(id0);
+  }
+
+  std::tuple<IndexType, IndexType, IndexType, IndexType> id0 = {};
+};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
