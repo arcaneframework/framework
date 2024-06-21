@@ -567,10 +567,17 @@ _dumpTiedInterfaces()
 void MeshUnitTest::
 _testGroups()
 {
+  {
+    // Vérifie que le groupe nul est trié
+    CellGroup null_group;
+    if (!null_group.checkIsSorted())
+      ARCANE_FATAL("Null group is not sorted");
+  }
+
   IItemFamily* item_family = mesh()->cellFamily();
   CellGroup all_items = item_family->allItems();
   if (!all_items.checkIsSorted())
-    throw FatalErrorException(A_FUNCINFO,"AllItems group is not sorted");
+    ARCANE_FATAL("AllItems group is not sorted");
 
   Integer nb_item = all_items.size();
   CellGroup group = mesh()->cellFamily()->findGroup("TestGroup",true);
@@ -587,7 +594,7 @@ _testGroups()
     group.addItems(items);
     if (group.size()>1)
       if (group.checkIsSorted())
-        throw FatalErrorException(A_FUNCINFO,"Group should not be sorted");
+        ARCANE_FATAL("Group should not be sorted");
   }
   {
     Int32UniqueArray items;
