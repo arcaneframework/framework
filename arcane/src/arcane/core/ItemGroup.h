@@ -295,30 +295,16 @@ class ARCANE_CORE_EXPORT ItemGroup
   }
  
   //! Synchronizer du groupe
-  IVariableSynchronizer * synchronizer() const
-  {
-    return m_impl->synchronizer();
-  }
+  IVariableSynchronizer* synchronizer() const;
 
   //! Vrai s'il s'agit d'un groupe calculé automatiquement.
-  bool isAutoComputed() const
-  {
-    return m_impl->hasComputeFunctor();
-  }
-  
-  //! Indique si le groupe possède un synchroniser actif
-  bool hasSynchronizer() const 
-  {
-    return m_impl->hasSynchronizer();
-  }
+  bool isAutoComputed() const;
 
-  /*!
-   * \brief Vérifie et retourne si le groupe est trié par uniqueId() croissants.
-   */
-  bool checkIsSorted() const
-  {
-    return m_impl->checkIsSorted();
-  }
+  //! Indique si le groupe possède un synchroniser actif
+  bool hasSynchronizer() const;
+
+  //! Vérifie et retourne si le groupe est trié par uniqueId() croissants.
+  bool checkIsSorted() const;
 
   //! Vue sur les entités du groupe avec padding pour la vectorisation
   ItemVectorView _paddedView() const;
@@ -326,7 +312,7 @@ class ARCANE_CORE_EXPORT ItemGroup
  public:
 
   //! API interne à Arcane
-  ItemGroupImplInternal* _internalApi() const { return m_impl->_internalApi(); }
+ ItemGroupImplInternal* _internalApi() const;
 
  public:
 

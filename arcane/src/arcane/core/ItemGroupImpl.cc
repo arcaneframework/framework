@@ -1684,6 +1684,9 @@ hasSynchronizer()
 bool ItemGroupImpl::
 checkIsSorted() const
 {
+  if (null())
+    return true;
+
   // TODO: stocker l'info dans un flag et ne refaire le test que si
   // la liste des entités a changer (utiliser timestamp()).
   ItemInternalList items(m_p->items());
