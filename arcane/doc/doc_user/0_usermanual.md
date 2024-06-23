@@ -55,6 +55,10 @@ Les chapitres disponibles sont :
 - \subpage arcanedoc_parallel <br>
   Présente les différents moyens de paralléliser un code %Arcane.
 
+- \subpage arcanedoc_acceleratorapi <br>
+  Présente les mécanismes disponibles dans %Arcane pour pouvoir utiliser
+  les accélérateurs (GPU) dans %Arcane.
+
 - \subpage arcanedoc_materials <br>
   Présente la partie matériau de %Arcane.
 
