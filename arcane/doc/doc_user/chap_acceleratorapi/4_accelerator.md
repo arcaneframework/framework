@@ -647,9 +647,6 @@ ____
 
 <div class="section_buttons">
 <span class="back_section_button">
-\ref arcanedoc_parallel_simd
-</span>
-<span class="next_section_button">
-\ref arcanedoc_parallel_loadbalance
+\ref arcanedoc_acceleratorapi
 </span>
 </div>

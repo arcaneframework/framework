@@ -958,6 +958,7 @@ INPUT                  = @ARCANE_SRC_PATH@/arcane/core \
                          @ARCANESRCROOT@/doc/doc_user/chap_io/subchap_timehistory \
                          @ARCANESRCROOT@/doc/doc_user/chap_materials \
                          @ARCANESRCROOT@/doc/doc_user/chap_parallel \
+                         @ARCANESRCROOT@/doc/doc_user/chap_acceleratorapi \
                          @ARCANESRCROOT@/doc/doc_user/chap_services_modules \
                          @ARCANESRCROOT@/doc/doc_user/chap_services_modules/subchap_simplecsvoutput \
                          @ARCANESRCROOT@/doc/doc_user/chap_services_modules/subchap_simplecsvcomparator \

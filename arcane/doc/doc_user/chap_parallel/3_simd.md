@@ -359,6 +359,6 @@ ____
 \ref arcanedoc_parallel_concurrency
 </span>
 <span class="next_section_button">
-\ref arcanedoc_parallel_accelerator
+\ref arcanedoc_parallel_loadbalance
 </span>
 </div>
