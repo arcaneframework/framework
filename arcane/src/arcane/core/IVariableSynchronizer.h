@@ -74,6 +74,7 @@ class ARCANE_CORE_EXPORT IVariableSynchronizer
   //! Synchronise la variable \a var en mode bloquant
   virtual void synchronize(IVariable* var) = 0;
 
+  // TODO: à rendre virtuelle pure (décembre 2024)
   /*!
    * \brief Synchronise la variable \a var sur les entités \a local_ids en mode bloquant
    * 
@@ -81,7 +82,7 @@ class ARCANE_CORE_EXPORT IVariableSynchronizer
    * une entité présente dans cette liste sur un sous-domaine doit être présente
    * dans cette liste pour tout autre sous-domaine qui possède cette entité.
    */
-  virtual void synchronize(IVariable* var, Int32ConstArrayView local_ids) = 0;
+  virtual void synchronize(IVariable* var, Int32ConstArrayView local_ids);
   
   /*!
    * \brief Synchronise les variables \a vars en mode bloquant.
@@ -91,6 +92,7 @@ class ARCANE_CORE_EXPORT IVariableSynchronizer
    */
   virtual void synchronize(VariableCollection vars) = 0;
 
+  // TODO: à rendre virtuelle pure (décembre 2024)
   /*!
    * \brief Synchronise les variables \a vars en mode bloquant.
    *
@@ -101,7 +103,7 @@ class ARCANE_CORE_EXPORT IVariableSynchronizer
    * une entité présente dans cette liste sur un sous-domaine doit être présente
    * dans cette liste pour tout autre sous-domaine qui possède cette entité.
    */
-  virtual void synchronize(VariableCollection vars, Int32ConstArrayView local_ids) = 0;
+  virtual void synchronize(VariableCollection vars, Int32ConstArrayView local_ids);
   
   /*!
    * \brief Rangs des sous-domaines avec lesquels on communique.

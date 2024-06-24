@@ -107,7 +107,7 @@ namespace mesh
  * soit conserver son numéro unique et utiliser itemsUniqueIdToLocalId().
  *
  */
-class IItemFamily
+class ARCANE_CORE_EXPORT IItemFamily
 {
   friend class mesh::DynamicMesh;
   friend class mesh::ItemFamily;
@@ -574,7 +574,8 @@ class IItemFamily
    */
   virtual void synchronize(VariableCollection variables) =0;
   
-    /*!
+  // TODO: à rendre virtuelle pure (décembre 2024)
+  /*!
    * \brief Synchronise les variables \a variables sur une liste d'entités.
    *
    * Les variables \a variables doivent être toutes être issues
@@ -584,7 +585,7 @@ class IItemFamily
    * une entité présente dans cette liste sur un sous-domaine doit être présente
    * dans cette liste pour tout autre sous-domaine qui possède cette entité.
    */
-  virtual void synchronize(VariableCollection variables, Int32ConstArrayView local_ids) =0;
+  virtual void synchronize(VariableCollection variables, Int32ConstArrayView local_ids);
   //@}
   
   /*!
