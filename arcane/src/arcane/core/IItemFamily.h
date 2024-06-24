@@ -107,7 +107,7 @@ namespace mesh
  * soit conserver son numéro unique et utiliser itemsUniqueIdToLocalId().
  *
  */
-class IItemFamily
+class ARCANE_CORE_EXPORT IItemFamily
 {
   friend class mesh::DynamicMesh;
   friend class mesh::ItemFamily;
