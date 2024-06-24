@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -370,6 +370,11 @@ checkVariable(const VariableInfo& infos)
         infos.dimension()!=var->dimension()){
       throw BadVariableKindTypeException(A_FUNCINFO,var,infos.itemKind(),
                                          infos.dataType(),infos.dimension());
+    }
+    // For partial variable: if exists already must be defined on the same group, otherwise fatal
+    if (infos.isPartial()) {
+      if (infos.itemGroupName() != var->itemGroupName())
+        throw BadPartialVariableItemGroupNameException(A_FUNCINFO, var, infos.itemGroupName());
     }
   }
   return var;
