@@ -66,6 +66,7 @@
 #include "arcane/core/IItemConnectivityMng.h"
 #include "arcane/core/IItemConnectivitySynchronizer.h"
 #include "arcane/core/ItemFamilyCompactInfos.h"
+#include "arcane/core/IItemFamily.h"
 #include "arcane/core/IItemFamilyCompactPolicy.h"
 #include "arcane/core/IItemFamilySerializer.h"
 #include "arcane/core/IItemFamilySerializeStep.h"
@@ -250,6 +251,33 @@ void IMeshModifier::
 addFaces(const MeshModifierAddFacesArgs& args)
 {
   addFaces(args.nbFace(),args.faceInfos(),args.faceLocalIds());
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void IVariable::
+synchronize(Int32ConstArrayView local_ids)
+{
+  ARCANE_THROW(NotImplementedException,"synchronize() with specific local ids");
+}
+
+void IItemFamily::
+synchronize(VariableCollection variables, Int32ConstArrayView local_ids)
+{
+  ARCANE_THROW(NotImplementedException,"synchronize() with specific local ids");
+}
+
+void IVariableSynchronizer::
+synchronize(IVariable* var, Int32ConstArrayView local_ids)
+{
+  ARCANE_THROW(NotImplementedException,"synchronize() with specific local ids");
+}
+
+void IVariableSynchronizer::
+synchronize(VariableCollection vars, Int32ConstArrayView local_ids)
+{
+  ARCANE_THROW(NotImplementedException,"synchronize() with specific local ids");
 }
 
 /*---------------------------------------------------------------------------*/

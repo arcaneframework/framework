@@ -413,6 +413,7 @@ class ARCANE_CORE_EXPORT IVariable
    */
   virtual void synchronize() =0;
 
+  // TODO: à rendre virtuelle pure (décembre 2024)
   /*!
    * \brief Synchronise la variable sur une liste d'entités.
    *
@@ -421,7 +422,7 @@ class ARCANE_CORE_EXPORT IVariable
    * une entité présente dans cette liste sur un sous-domaine doit être présente
    * dans cette liste pour tout autre sous-domaine qui possède cette entité.
    */
-  virtual void synchronize(Int32ConstArrayView local_ids) =0;
+  virtual void synchronize(Int32ConstArrayView local_ids);
   
   /*!
    * \brief Maillage auquel est associé la variable.
