@@ -810,15 +810,14 @@ operator<<(RunCommand& command, const impl::MatCellRunCommand::Container& view)
 /*---------------------------------------------------------------------------*/
 
 //! Macro pour itérer sur un matériau ou un milieu
-#define RUNCOMMAND_MAT_ENUMERATE(MatItemNameType, iter_name, env_or_mat_vector) \
-  A_FUNCINFO << ::Arcane::Accelerator::impl::RunCommandMatItemEnumeratorTraitsT<MatItemNameType>::createContainer(env_or_mat_vector) \
-             << [=] ARCCORE_HOST_DEVICE(::Arcane::Accelerator::impl::RunCommandMatItemEnumeratorTraitsT<MatItemNameType>::EnumeratorType iter_name)
-
-//! Macro pour itérer sur un matériau ou un milieu
-#define RUNCOMMAND_MAT_ENUMERATE_EX(MatItemNameType, iter_name, env_or_mat_vector, ...) \
+#define RUNCOMMAND_MAT_ENUMERATE(MatItemNameType, iter_name, env_or_mat_vector, ...) \
   A_FUNCINFO << ::Arcane::Accelerator::impl::makeExtendedMatItemEnumeratorLoop<MatItemNameType>(env_or_mat_vector __VA_OPT__(, __VA_ARGS__)) \
              << [=] ARCCORE_HOST_DEVICE(::Arcane::Accelerator::impl::RunCommandMatItemEnumeratorTraitsT<MatItemNameType>::EnumeratorType iter_name \
                                         __VA_OPT__(ARCANE_RUNCOMMAND_REDUCER_FOR_EACH(__VA_ARGS__)))
+
+//! Macro pour itérer sur un matériau ou un milieu
+#define RUNCOMMAND_MAT_ENUMERATE_EX(MatItemNameType, iter_name, env_or_mat_vector, ...) \
+  RUNCOMMAND_MAT_ENUMERATE(MatItemNameType, iter_name, env_or_mat_vector, __VA_ARGS__)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

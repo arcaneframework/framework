@@ -1007,7 +1007,7 @@ class GenericReducerIf
         RunCommand command2 = makeCommand(queue);
         using ReducerType = typename ReduceOperatorToReducerTypeTraits<DataType, ReduceOperator>::ReducerType;
         ReducerType reducer(command2);
-        command2 << RUNCOMMAND_LOOP1_EX(iter, nb_item, reducer)
+        command2 << RUNCOMMAND_LOOP1(iter, nb_item, reducer)
         {
           auto [i] = iter();
           reducer.combine(input_iter[i]);

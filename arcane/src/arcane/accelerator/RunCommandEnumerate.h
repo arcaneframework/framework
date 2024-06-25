@@ -421,21 +421,18 @@ makeExtendedItemEnumeratorLoop(const ItemContainerType& container_type,
  * il faut remplacer \a Cell par \a CellLocalId).
  * \a iter_name est le nom de la variable contenant la valeur courante de l'itérateur.
  * \a item_group est le nom du ItemGroup ou ItemVectorView associé
+ * Les arguments supplémentaires servent à spécifier les réductions éventuelles
  */
-#define RUNCOMMAND_ENUMERATE(ItemTypeName, iter_name, item_group) \
-  A_FUNCINFO << ::Arcane::Accelerator::impl::RunCommandItemEnumeratorTraitsT<ItemTypeName>(item_group) \
-             << [=] ARCCORE_HOST_DEVICE(::Arcane::Accelerator::impl::RunCommandItemEnumeratorTraitsT<ItemTypeName>::ValueType iter_name)
-
-/*!
- * \brief Macro expérimentale identique à RUNCOMMAND_ENUMERATE() mais aved arguments pour les réductions
- */
-#define RUNCOMMAND_ENUMERATE_EX(ItemTypeName, iter_name, item_group, ...) \
+#define RUNCOMMAND_ENUMERATE(ItemTypeName, iter_name, item_group, ...) \
   A_FUNCINFO << ::Arcane::Accelerator::impl::makeExtendedItemEnumeratorLoop<ItemTypeName>(item_group __VA_OPT__(, __VA_ARGS__)) \
              << [=] ARCCORE_HOST_DEVICE(::Arcane::Accelerator::impl::RunCommandItemEnumeratorTraitsT<ItemTypeName>::ValueType iter_name \
                                         __VA_OPT__(ARCANE_RUNCOMMAND_REDUCER_FOR_EACH(__VA_ARGS__)))
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
+/*!
+ * \deprecated Utiliser RUNCOMMAN_ENUMERATE à la place.
+ */
+#define RUNCOMMAND_ENUMERATE_EX(ItemTypeName, iter_name, item_group, ...) \
+  RUNCOMMAND_ENUMERATE (ItemTypeName, iter_name, item_group, __VA_ARGS__)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
