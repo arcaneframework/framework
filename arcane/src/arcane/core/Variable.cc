@@ -1072,7 +1072,7 @@ _checkSetItemGroup()
     ARCANE_FATAL("Cannot add variable ({0}) on a own group (name={1})",
                  fullName(),internal->name());
   if (isPartial()) {
-    if (group_name.null())
+    if (group_name.empty())
       ARCANE_FATAL("Cannot create a partial variable with an empty item_group_name");
     debug(Trace::High) << "Attach ItemGroupPartialVariableObserver from " << fullName() 
                        << " to " << m_p->m_item_group.name();
