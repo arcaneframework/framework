@@ -654,7 +654,7 @@ updateDensity()
   auto in_volume = ax::viewIn(command,m_volume);
   auto in_out_density = ax::viewInOut(command,m_density);
 
-  command << RUNCOMMAND_ENUMERATE_EX(Cell,cid,allCells(),density_ratio_maximum)
+  command << RUNCOMMAND_ENUMERATE(Cell,cid,allCells(),density_ratio_maximum)
   {
     Real old_density = in_out_density[cid];
     Real new_density = in_cell_mass[cid] / in_volume[cid];
@@ -753,7 +753,7 @@ computeDeltaT()
     ax::ReducerMin2<double> minimum_aux_reducer(command);
     auto in_sound_speed = ax::viewIn(command,m_sound_speed);
     auto in_caracteristic_length = ax::viewIn(command,m_caracteristic_length);
-    command << RUNCOMMAND_ENUMERATE_EX(Cell,cid,allCells(),minimum_aux_reducer)
+    command << RUNCOMMAND_ENUMERATE(Cell,cid,allCells(),minimum_aux_reducer)
     {
       Real cell_dx = in_caracteristic_length[cid];
       Real sound_speed = in_sound_speed[cid];

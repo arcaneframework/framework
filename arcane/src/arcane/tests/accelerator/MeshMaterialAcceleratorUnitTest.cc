@@ -567,7 +567,7 @@ _executeTest2(Integer nb_z)
         }
         {
           ax::ReducerSum2<Real> reducer2(cmd);
-          cmd << RUNCOMMAND_MAT_ENUMERATE_EX(EnvAndGlobalCell, evi, envcellsv, reducer2)
+          cmd << RUNCOMMAND_MAT_ENUMERATE(EnvAndGlobalCell, evi, envcellsv, reducer2)
           {
             auto [mvi, cid] = evi();
             Real value_to_add = inout_env_a[mvi] * in_d[cid];

@@ -718,7 +718,7 @@ _computeTotalTemperature(const HeatObject& heat_object, bool do_check)
     auto in_mat_temperature = viewIn(command, m_mat_temperature);
     Accelerator::ReducerSum2<double> total_temperature_reducer(command);
     CellInfoListView cells_info(defaultMesh()->cellFamily());
-    command << RUNCOMMAND_MAT_ENUMERATE_EX(MatAndGlobalCell, iter, mat, total_temperature_reducer)
+    command << RUNCOMMAND_MAT_ENUMERATE(MatAndGlobalCell, iter, mat, total_temperature_reducer)
     {
       auto [mvi, cid] = iter();
       if (cells_info.isOwn(cid)) {
