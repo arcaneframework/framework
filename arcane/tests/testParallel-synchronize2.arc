@@ -24,6 +24,6 @@
 
   <parallel-tester>
     <test-id>None</test-id>
-    <nb-test-sync>5</nb-test-sync>
+    <nb-test-sync>3</nb-test-sync>
   </parallel-tester>
 </cas>
