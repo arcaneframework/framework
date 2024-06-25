@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ArcaneException.cc                                          (C) 2000-2020 */
+/* ArcaneException.cc                                          (C) 2000-2024 */
 /*                                                                           */
 /* Exceptions lancées par l'architecture.                                    */
 /*---------------------------------------------------------------------------*/
@@ -141,6 +141,32 @@ explain(std::ostream& m) const
     << "' has already been declared\n"
     << "as '" << m_valid_var->itemKind() << '.' << m_valid_var->dataType()
     << "." << m_valid_var->dimension()
+    << "'";
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+BadPartialVariableItemGroupNameException::
+BadPartialVariableItemGroupNameException(const TraceInfo& where,IVariable* prv,
+                                         const String& item_group_name)
+: Exception("BadVariableKindType",where)
+, m_valid_var(prv)
+, m_item_group_name(item_group_name)
+{
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void BadPartialVariableItemGroupNameException::
+explain(std::ostream& m) const
+{
+  m << "Wrong partial variable type:\n"
+    << "Partial Variable '" << m_valid_var->name() << "'\n";
+  m << "declared on item group '" << m_item_group_name
+    << "' has already been declared\n"
+    << "on item group '" << m_valid_var->itemGroupName()
     << "'";
 }
 

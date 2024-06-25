@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ArcaneException.h                                           (C) 2000-2020 */
+/* ArcaneException.h                                           (C) 2000-2024 */
 /*                                                                           */
 /* Exceptions lancées par Arcane.                                            */
 /*---------------------------------------------------------------------------*/
@@ -151,6 +151,36 @@ class ARCANE_CORE_EXPORT BadVariableKindTypeException
   eDataType m_data_type;
   int m_dimension;
 };
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \internal
+ * \brief Exception sur un nom de groupe d'items de variable partielle non valide.
+ *
+ * Cette exception est envoyée lorsqu'on essaye de référencer une variable partielle
+ * qui existe déjà dans un autre module avec un nom de groupe d'items
+ * différent.
+ */
+class ARCANE_CORE_EXPORT BadPartialVariableItemGroupNameException
+: public Exception
+{
+ public:
+
+  BadPartialVariableItemGroupNameException(const TraceInfo& where,IVariable* valid_var,
+                                           const String& item_group_name);
+  ~BadPartialVariableItemGroupNameException() ARCANE_NOEXCEPT override {}
+
+ public:
+
+  void explain(std::ostream& m) const override;
+
+ private:
+
+  IVariable *m_valid_var;
+  String m_item_group_name;
+};
+
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
