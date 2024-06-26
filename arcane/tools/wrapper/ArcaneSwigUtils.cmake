@@ -1,6 +1,5 @@
 ﻿set(ARCANE_HAS_SWIG FALSE)
 
-
 # Pour générer automatiquement le nom de bibliothèque compatible avec
 # la plateforme cible
 if (POLICY CMP0122)
@@ -178,6 +177,7 @@ macro(arcane_wrapper_add_swig_target)
   cmake_parse_arguments(ARGS "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
   set_property(SOURCE ${ARGS_SOURCE} PROPERTY CPLUSPLUS ON)
+  set_property(SOURCE ${ARGS_SOURCE} PROPERTY USE_SWIG_DEPENDENCIES TRUE)
   set_property(SOURCE ${ARGS_SOURCE} PROPERTY INCLUDE_DIRECTORIES ${ARCANE_SRC_PATH} ${ARCANE_DOTNET_WRAPPER_SOURCE_DIR} ${ARGS_INCLUDE_DIRECTORIES})
   if (UNIX)
     # TODO: regarder si on ne peut pas mettre ce define dans un .i
