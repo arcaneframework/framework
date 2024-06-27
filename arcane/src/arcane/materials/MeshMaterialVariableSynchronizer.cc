@@ -182,11 +182,7 @@ _fillCellsAccelerator(Array<MatVarIndex>& items, AllEnvCellVectorView view, RunQ
 
   {
     // Tableau pour conserver la somme finale
-    eMemoryRessource r = eMemoryRessource::Host;
-    if (queue.isAcceleratorPolicy())
-      r = eMemoryRessource::HostPinned;
-    NumArray<Int32, MDDim1> host_total_storage(r);
-    host_total_storage.resize(1);
+    NumArray<Int32, MDDim1> host_total_storage(1, eMemoryRessource::HostPinned);
     SmallSpan<Int32> in_host_total_storage(host_total_storage);
 
     auto setter = [=] ARCCORE_HOST_DEVICE(Int32 index, Int32 value) {
