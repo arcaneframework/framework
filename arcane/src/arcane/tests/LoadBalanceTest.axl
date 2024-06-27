@@ -1,0 +1,23 @@
+<?xml version="1.0" ?>
+<module name="LoadBalanceTest" version="1.0" namespace-name="ArcaneTest">
+  <description>
+  </description>
+
+  <variables>
+  </variables>
+
+  <entry-points>
+    <entry-point method-name="init" name="Init" where="init" property="none" />
+    <entry-point method-name="loop" name="Loop" where="compute-loop" property="none" />
+    <entry-point method-name="exit" name="Exit" where="exit" property="none" />
+  </entry-points>
+
+  <options>
+    <service-instance
+      name    = "partitioner"
+      type    = "Arcane::IMeshPartitioner"
+      default = "DefaultPartitioner"
+    />
+  </options>
+
+</module>

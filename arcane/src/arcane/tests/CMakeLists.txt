@@ -442,12 +442,16 @@ ARCANE_ADD_TEST_PARALLEL(cell-submesh testSubMesh.arc 12)
 ARCANE_ADD_TEST_PARALLEL(face-submesh testSubMesh2.arc 1)
 ARCANE_ADD_TEST_PARALLEL(face-submesh testSubMesh2.arc 12)
 arcane_add_test_parallel_all(face-submesh_2d testSubMesh2-2D.arc 2 2)
+
 if(PARTITIONER_FOUND)
   ARCANE_ADD_TEST_PARALLEL(loadbalance testLoadBalance-1.arc 4)
   ARCANE_ADD_TEST_PARALLEL_THREAD(loadbalance testParticle.arc 4)
   ARCANE_ADD_TEST_PARALLEL(loadbalance_rep3 testLoadBalance-1.arc 12 -R 3)
   ARCANE_ADD_TEST_PARALLEL(loadbalance_collective testLoadBalance-1.arc 4 -We,ARCANE_MESH_EXCHANGE_USE_COLLECTIVE,1 -We,ARCANE_PRINT_CPUAFFINITY,1)
+
+  ARCANE_ADD_TEST_PARALLEL(loadbalancemng testLoadBalanceMng-1.arc 4 -m 2)
 endif()
+
 arcane_add_test_parallel_all(particle testParticle.arc 3 4)
 arcane_add_test_parallel_all(particle_nonblocking testParticleNonBlocking.arc 3 4)
 arcane_add_test_sequential(particle_async testParticleAsync.arc)
