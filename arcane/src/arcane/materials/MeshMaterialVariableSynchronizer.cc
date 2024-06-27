@@ -160,8 +160,9 @@ _fillCellsAccelerator(Array<MatVarIndex>& items, AllEnvCellVectorView view, RunQ
   // La tableau a (nb_item+1) éléments et la dernière valeur contiendra le
   // nombre total d'éléments de la liste
   Int32 nb_item = view.size();
-  UniqueArray<Int32> indexes(MemoryUtils::getDefaultDataAllocator());
+  UniqueArray<Int32> indexes(queue.allocationOptions());
   indexes.resize(nb_item + 1);
+
   Accelerator::GenericScanner scanner(queue);
   Accelerator::ScannerSumOperator<Int32> op;
   Span<Int32> out_indexes = indexes;
@@ -179,13 +180,24 @@ _fillCellsAccelerator(Array<MatVarIndex>& items, AllEnvCellVectorView view, RunQ
     return n;
   };
 
-  // TODO: Recopier la dernière valeur dans une mémoire host
-  auto setter = [=] ARCCORE_HOST_DEVICE(Int32 index, Int32 value) {
-    out_indexes[index] = value;
-  };
-  scanner.applyWithIndexExclusive(nb_item + 1, 0, getter, setter, op);
-  Int32 total = indexes[nb_item];
-  items.resize(total);
+  {
+    // Tableau pour conserver la somme finale
+    eMemoryRessource r = eMemoryRessource::Host;
+    if (queue.isAcceleratorPolicy())
+      r = eMemoryRessource::HostPinned;
+    NumArray<Int32, MDDim1> host_total_storage(r);
+    host_total_storage.resize(1);
+    SmallSpan<Int32> in_host_total_storage(host_total_storage);
+
+    auto setter = [=] ARCCORE_HOST_DEVICE(Int32 index, Int32 value) {
+      out_indexes[index] = value;
+      if (index == nb_item)
+        in_host_total_storage[0] = value;
+    };
+    scanner.applyWithIndexExclusive(nb_item + 1, 0, getter, setter, op);
+    Int32 total = host_total_storage[0]; //indexes[nb_item];
+    items.resize(total);
+  }
 
   {
     auto command = makeCommand(queue);
@@ -251,17 +263,18 @@ recompute()
   m_shared_items.resize(nb_rank);
   m_ghost_items.resize(nb_rank);
 
+  RunQueue queue = m_material_mng->_internalApi()->runQueue();
+
   {
     // Ces tableaux doivent être accessibles sur l'accélérateur
     // TODO: à terme, n'utiliser un seul tableau pour les envois
     // et un seul pour les réceptions.
-    IMemoryAllocator* a = platform::getDefaultDataAllocator();
+    MemoryAllocationOptions a = queue.allocationOptions();
     for (Int32 i = 0; i < nb_rank; ++i) {
       m_shared_items[i] = UniqueArray<MatVarIndex>(a);
       m_ghost_items[i] = UniqueArray<MatVarIndex>(a);
     }
   }
-  RunQueue queue = m_material_mng->_internalApi()->runQueue();
 
   // NOTE: les appels à _fillCells() sont indépendants. On pourrait
   // donc les rendre asynchrones.
