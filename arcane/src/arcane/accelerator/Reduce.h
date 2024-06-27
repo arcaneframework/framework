@@ -922,9 +922,7 @@ class GenericReducerBase
 
   void _allocate()
   {
-    eMemoryRessource r = eMemoryRessource::Host;
-    if (m_queue.isAcceleratorPolicy())
-      r = eMemoryRessource::HostPinned;
+    eMemoryRessource r = eMemoryRessource::HostPinned;
     if (m_host_reduce_storage.memoryRessource() != r)
       m_host_reduce_storage = NumArray<DataType, MDDim1>(r);
     m_host_reduce_storage.resize(1);

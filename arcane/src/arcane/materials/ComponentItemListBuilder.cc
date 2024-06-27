@@ -14,14 +14,22 @@
 #include "arcane/materials/internal/ComponentItemListBuilder.h"
 #include "arcane/materials/internal/MeshMaterialVariableIndexer.h"
 
-#include "arcane/utils/PlatformUtils.h"
+#include "arcane/utils/MemoryUtils.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 namespace Arcane::Materials
 {
-
+namespace
+{
+  MemoryAllocationOptions _allocInfo(const String& name)
+  {
+    MemoryAllocationOptions opts(MemoryUtils::getDefaultDataAllocator());
+    opts.setArrayName(name);
+    return opts;
+  }
+} // namespace
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -38,9 +46,9 @@ ComponentItemListBuilderOld(MeshMaterialVariableIndexer* var_indexer,
                          Integer begin_index_in_partial)
 : m_component_index(var_indexer->index() + 1)
 , m_index_in_partial(begin_index_in_partial)
-, m_pure_matvar_indexes(platform::getDefaultDataAllocator())
-, m_partial_matvar_indexes(platform::getDefaultDataAllocator())
-, m_partial_local_ids(platform::getDefaultDataAllocator())
+, m_pure_matvar_indexes(_allocInfo("PureMatVarIndexes"))
+, m_partial_matvar_indexes(_allocInfo("PartialMatVarIndexes"))
+, m_partial_local_ids(_allocInfo("PartialLocalIds"))
 , m_indexer(var_indexer)
 {
   Integer reserve_size = 4000;
