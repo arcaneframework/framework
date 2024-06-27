@@ -187,17 +187,21 @@ class Array2DataT<DataType>::Impl
   {
     m_p->m_value.resize(new_dim1_size,m_p->m_value.dim2Size());
   }
-  void resize(Int32 new_dim1_size,Int32 new_dim2_size) override
+  void resize(Int32 new_dim1_size, Int32 new_dim2_size) override
   {
+    if (new_dim1_size < 0)
+      ARCANE_FATAL("Bad value '{0}' for dim1_size", new_dim1_size);
+    if (new_dim2_size < 0)
+      ARCANE_FATAL("Bad value '{0}' for dim2_size", new_dim2_size);
     // Cette méthode est appelée si on modifie la deuxième dimension.
     // Dans ce cas cela invalide l'ancienne valeur de shape.
     bool need_reshape = false;
-    if (new_dim2_size!=m_p->m_value.dim2Size())
+    if (new_dim2_size != m_p->m_value.dim2Size())
       need_reshape = true;
-    m_p->m_value.resize(new_dim1_size,new_dim2_size);
-    if (need_reshape){
+    m_p->m_value.resize(new_dim1_size, new_dim2_size);
+    if (need_reshape) {
       m_p->m_shape.setNbDimension(1);
-      m_p->m_shape.setDimension(0,new_dim2_size);
+      m_p->m_shape.setDimension(0, new_dim2_size);
     }
   }
   Array2<DataType>& _internalDeprecatedValue() override { return m_p->m_value; }
