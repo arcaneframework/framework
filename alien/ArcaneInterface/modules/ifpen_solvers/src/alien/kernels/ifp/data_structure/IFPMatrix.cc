@@ -74,7 +74,7 @@ IFPMatrix::initMatrix(Integer links_num, // num of links
       m_multi_impl->release<BackEnd::tag::ifpsolver>();
     }
   }
-  std::cout << " NEW IFP INTERNAL" << std::endl;
+  alien_debug([&] {cout() << " NEW IFP INTERNAL";});
 
   // Check non used internal
   ALIEN_ASSERT((!MatrixInternal::isInstancied()),
@@ -575,8 +575,10 @@ IFPMatrix::initMatrix(int equations_num, int unknowns_num, int global_nodes_num,
       // space().message() << "Free IFPSolver owned internal";
       // delete m_internal;
       if (timestamp == m_internal->timestamp()) {
-        std::cout << " KEEP IFP INTERNAL" << timestamp << " " << m_internal->timestamp()
-                  << std::endl;
+        alien_debug([&] {
+          cout() << " KEEP IFP INTERNAL" << timestamp << " " << m_internal->timestamp();
+        });
+
         m_internal->init();
         return true;
       } else
