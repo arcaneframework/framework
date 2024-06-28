@@ -1050,10 +1050,10 @@ namespace Arcane::Accelerator
  * \brief Algorithme générique de réduction sur accélérateur.
  *
  * La réduction se fait via les appels à applyMin(), applyMax(), applySum(),
- * applyMinWithIndex(), applyMaxWithIndex() ou applySumWithIndex().
- *
- * Après réduction, il est possible récupérer la valeur réduite via
- * reducedValue().
+ * applyMinWithIndex(), applyMaxWithIndex() ou applySumWithIndex(). Ces
+ * méthodes sont asynchrones.  Après réduction, il est possible récupérer la
+ * valeur réduite via reducedValue(). L'appel à reducedValue() bloque tant
+ * que la réduction n'est pas terminée.
  *
  * Les instances de cette classe peuvent être utilisées plusieurs fois.
  *
