@@ -592,27 +592,8 @@ La classe \arcaneacc{Scanner} permet d'effectuer des algorithmes de
 scan inclusifs ou exclusifs (voir
 [Algorithmes de Scan](https://en.wikipedia.org/wiki/Prefix_sum) sur wikipedia)
 
-Les classes \arcaneacc{ReducerMax}, \arcaneacc{ReducerMin} et
-\arcaneacc{ReducerSum} permettent d'effectuer des réductions sur
-accélérateurs. Elles s'utilisent à l'intérieur des boucles
-RUNCOMMAND_LOOP() ou RUNCOMMAND_ENUMERATE(). Par exemple:
-
-```cpp
-#include "arcane/accelerator/RunCommandEnumerate.h"
-#include "arcane/accelerator/Reduce.h"
-{
-  Arcane::Accelerator::RunQueue queue = ...;
-  auto command = makeCommand(queue);
-  Arcane::Accelerator::ReducerMin<double> minimum_reducer(command);
-  Arcane::VariableCellReal my_variable = ...;
-  auto in_my_variable = viewIn(command,my_variable);
-  command << RUNCOMMAND_ENUMERATE(Cell,cid,allCells())
-  {
-    minimum_reducer.min(in_my_variable[cid]);
-  };
-  info() << "MinValue=" << minimum_reducer.reduce();
-}
-```
+Les réductions peuvent être gérées de plusieurs manières qui sont
+décrites dans la page (\ref arcanedoc_acceleratorapi_reduction)
 
 ## Mode Autonome accélérateur {#arcanedoc_parallel_accelerator_standalone}
 

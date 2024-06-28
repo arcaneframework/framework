@@ -11,6 +11,9 @@ Sommaire de ce chapitre :
   Présente les mécanismes disponibles dans %Arcane pour pouvoir utiliser
   les accélérateurs (GPU) dans %Arcane.
 
+2. \subpage arcanedoc_acceleratorapi_reduction <br>
+  Présente les mécanismes disponibles pour effectuer des réductions.
+
 ____
 
 <div class="section_buttons">
