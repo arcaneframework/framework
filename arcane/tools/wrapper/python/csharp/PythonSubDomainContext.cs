@@ -1,7 +1,4 @@
 using System;
-using System.Collections.Generic;
-using Arcane;
-using Numpy;
 using Python.Runtime;
 
 namespace Arcane.Python
@@ -37,7 +34,7 @@ namespace Arcane.Python
       {
         Arcane.RealArray x = new Arcane.RealArray(nb_item);
         Arcane.VariableUtilsInternal.FillFloat64Array(v, x.View);
-        dynamic px = np2.array(x.View.ToArray());
+        dynamic px = np2.array(x.View.ToArray(), dtype: np2.float64);
         return px;
       }
     }
