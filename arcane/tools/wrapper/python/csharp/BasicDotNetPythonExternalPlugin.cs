@@ -1,8 +1,5 @@
-using Arcane;
 using System;
 using Python.Runtime;
-using System.Threading.Tasks;
-using Numpy;
 using System.IO;
 
 namespace Arcane.Python
@@ -23,7 +20,6 @@ namespace Arcane.Python
         m_python_scope.Dispose();
         m_python_scope = null;
       }
-      //PythonEngine.Shutdown();
     }
 
     public override void LoadFile(string s)
@@ -39,6 +35,10 @@ namespace Arcane.Python
         m_python_scope.Exec(text);
         if (m_py_sub_domain_context==null)
           m_py_sub_domain_context = m_sub_domain_context.ToPython();
+        if (m_numpy_module==null){
+          m_numpy_module = Py.Import("numpy");
+          m_sub_domain_context.SetNumpyModule(m_numpy_module);
+        }
       }
       Console.WriteLine("** -- End setup python");
     }
@@ -79,5 +79,6 @@ namespace Arcane.Python
     PyModule m_python_scope;
     readonly SubDomainContext m_sub_domain_context;
     PyObject m_py_sub_domain_context;
+    PyObject m_numpy_module;
   }
 }
