@@ -24,12 +24,18 @@
 namespace Arcane
 {
 
+// NOTE: Swig 4.2.0 ne gère pas bien le 'Int32´.
+// (cela fonctionne avec Swig 4.1.1)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
  * \brief Type d'une donnée.
  */
+#ifndef SWIG
 enum eDataType : Int32
+#else
+enum eDataType
+#endif
 {
   DT_Byte = 0, //!< Donnée de type octet
   DT_Real, //!< Donnée de type réel
