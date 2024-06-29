@@ -441,6 +441,7 @@ class IEntryPoint
 };
 }
 
+%include arcane/core/datatype/DataTypes.h
 %include arcane/core/IBase.h
 %include arcane/core/ISubDomain.h
 %include arcane/core/SharedVariable.h
@@ -453,6 +454,7 @@ class IEntryPoint
 %include arcane/utils/IObserver.h
 %include arcane/utils/Observer.h
 %include arcane/utils/IObservable.h
+%include arcane/utils/ArrayShape.h
 %include arcane/core/IMainFactory.h
 %include arcane/core/ApplicationBuildInfo.h
 %include arcane/core/DotNetRuntimeInitialisationInfo.h
