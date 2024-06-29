@@ -73,6 +73,7 @@ set(ARCANE_INTERNAL_SOURCES
   internal/StringVariableReplace.h
   internal/StringVariableReplace.cc
   internal/ITimeHistoryMngInternal.h
+  internal/VariableUtilsInternal.h
   )
 
 set(ARCANE_ORIGINAL_SOURCES
@@ -368,6 +369,7 @@ set(ARCANE_ORIGINAL_SOURCES
   VariableRef.h
   VariableUtils.h
   VariableUtils.cc
+  VariableUtilsInternal.cc
 
   XmlNode.h
   XmlNodeList.h
