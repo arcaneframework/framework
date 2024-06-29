@@ -19,4 +19,7 @@
     <simple name="function-name" type="string" optional="true"/>
     <simple name="context-function-name" type="string" optional="true"/>
   </options>
+  <variables>
+    <variable field-name="density" name="Density" data-type="real" item-kind="cell" dim="0" />
+  </variables>
 </module>

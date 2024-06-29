@@ -133,6 +133,13 @@ init()
 void ExternalPluginTesterModule::
 computeLoop()
 {
+  Int32 current_iteration = m_global_iteration();
+
+  ENUMERATE_ (Cell, icell, allCells()) {
+    Cell cell = *icell;
+    m_density[icell] = static_cast<Real>(current_iteration + cell.uniqueId().asInt64());
+  }
+
   IExternalPlugin* p = options()->externalPlugin();
   if (options()->contextFunctionName.isPresent())
     p->executeContextFunction(options()->contextFunctionName());
@@ -140,7 +147,7 @@ computeLoop()
     p->executeFunction(options()->functionName());
   else
     p->loadFile(options()->file());
-  bool is_finished = (m_global_iteration() >= 15);
+  bool is_finished = (current_iteration >= 15);
   if (is_finished)
     subDomain()->timeLoopMng()->stopComputeLoop(true);
 }

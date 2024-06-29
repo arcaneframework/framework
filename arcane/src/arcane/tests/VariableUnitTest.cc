@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* VariableUnitTest.cc                                         (C) 2000-2023 */
+/* VariableUnitTest.cc                                         (C) 2000-2024 */
 /*                                                                           */
 /* Service de test des variables.                                            */
 /*---------------------------------------------------------------------------*/
@@ -24,6 +24,7 @@
 #include "arcane/core/VariableStatusChangedEventArgs.h"
 #include "arcane/core/VariableView.h"
 #include "arcane/core/internal/IDataInternal.h"
+#include "arcane/core/internal/VariableUtilsInternal.h"
 
 #include "arcane/tests/ArcaneTestGlobal.h"
 #include "arcane/tests/StdScalarMeshVariables.h"
@@ -80,15 +81,16 @@ class VariableUnitTest
     Integer m_nb_removed;
     EventObserverPool m_observer_pool;
   };
+
  public:
 
-  VariableUnitTest(const ServiceBuildInfo& cb);
+  explicit VariableUnitTest(const ServiceBuildInfo& cb);
   ~VariableUnitTest();
 
  public:
 
-  virtual void initializeTest();
-  virtual void executeTest();
+  void initializeTest() override;
+  void executeTest() override;
 
  private:
 
@@ -96,6 +98,7 @@ class VariableUnitTest
   StdScalarVariables m_scalars;
   StdScalarMeshVariables<Cell> m_cells;
   StdArrayMeshVariables<Cell> m_array_cells;
+  VariableCellReal m_var_cell1;
 
  private:
 
@@ -108,6 +111,7 @@ class VariableUnitTest
   void _testSwap();
   void _testCompression();
   void _testDataAllocation();
+  void _testUtilsInternal();
 
   template<typename MeshVarType>
   void _testSwapHelper(MeshVarType& cells);
@@ -128,6 +132,7 @@ VariableUnitTest(const ServiceBuildInfo& mb)
 , m_scalars(mb.meshHandle(),"TestParallelScalars")
 , m_cells(mb.meshHandle(),"TestParallelCells")
 , m_array_cells(mb.meshHandle(),"TestArrayCells")
+, m_var_cell1(VariableBuildInfo(mb.meshHandle(),"VarTest1Real"))
 {
 }
 
@@ -153,6 +158,7 @@ executeTest()
   _testReferences(options()->nbReference());
   _testCompression();
   _testDataAllocation();
+  _testUtilsInternal();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -617,6 +623,36 @@ _testAlignment()
 
   if (xad.nb_error!=0)
     ARCANE_FATAL("Invalid alignment for variables nb_error={0}",xad.nb_error);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void VariableUnitTest::
+_testUtilsInternal()
+{
+  ENUMERATE_ (Cell, icell, allCells()) {
+    Cell cell = *icell;
+    Int64 uid = cell.uniqueId();
+    Real x = static_cast<Real>(uid + 3);
+    m_var_cell1[cell] = x;
+  }
+
+  IVariable* v = m_var_cell1.variable();
+  IDataInternal* di = VariableUtilsInternal::getDataInternal(v);
+  Int32 dim1 = di->numericData()->extent0();
+  UniqueArray<Real> copied_values(dim1);
+  bool is_bad = VariableUtilsInternal::fillFloat64Array(v, copied_values);
+  if (is_bad)
+    ARCANE_FATAL("Can not convert");
+
+  ENUMERATE_ (Cell, icell, allCells()) {
+    Cell cell = *icell;
+    Real ref_v = m_var_cell1[cell];
+    Real copied_v = copied_values[icell.index()];
+    if (ref_v != copied_v)
+      ARCANE_FATAL("Bad copied value index={0} ref={1} v={2}", icell.index(), ref_v, copied_v);
+  }
 }
 
 /*---------------------------------------------------------------------------*/
