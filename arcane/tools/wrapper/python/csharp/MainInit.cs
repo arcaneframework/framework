@@ -1,8 +1,5 @@
 using Arcane;
-using System;
 using Python.Runtime;
-using System.Threading.Tasks;
-using Numpy;
 
 namespace Arcane.Python
 {

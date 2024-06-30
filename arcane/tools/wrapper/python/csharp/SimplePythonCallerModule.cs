@@ -1,8 +1,6 @@
 using Arcane;
 using System;
 using Python.Runtime;
-using System.Threading.Tasks;
-using Numpy;
 
 [Arcane.Module("SimplePythonCallerModule","0.0.1")]
 class SimplePythonCallerModule
@@ -24,10 +22,10 @@ class SimplePythonCallerModule
     using (Py.GIL())
     using (var scope = Py.CreateScope())
     {
-      var p1 = np.array<double>(new double[]{1, 3.423, 1.5, 12.5});
-      scope.Set("my_array",p1);
+      int p1 = 25;
+      scope.Set("my_value",p1);
       //scope.Set(parameterName, parameter.ToPython());
-      scope.Exec("a=my_array.size\nb=5\nc=a+b\nprint(c)\n");
+      scope.Exec("a=my_value\nb=5\nc=a+b\nprint(c)\n");
       c = scope.Get<int>("c");
     }
     Console.WriteLine("C={0}",c);
