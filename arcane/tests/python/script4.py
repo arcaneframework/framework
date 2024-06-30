@@ -14,7 +14,7 @@ def context_func1(sd_context):
     print("NP_TEST[25]=",np_test[25])
     print("V[25]",nd_a1[25])
     print("Sum",sum)
-    sum2 = np.sum([0.5, 0.7, 0.2, 1.5], dtype=np.float)
+    sum2 = np.sum([0.5, 0.7, 0.2, 1.5], dtype=np.float64)
     print("Sum2",sum2)
     #sum3 = np.sum(nd_a1, dtype=np.float)
     #print("Sum2",sum3)
