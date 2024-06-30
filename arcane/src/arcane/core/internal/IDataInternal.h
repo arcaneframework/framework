@@ -152,6 +152,9 @@ class ARCANE_CORE_EXPORT INumericDataInternal
   //! Vue mémoire sur la donnée
   virtual MutableMemoryView memoryView() = 0;
 
+  //! Nombre d'éléments de la première dimension
+  virtual Int32 extent0() const = 0;
+
   /*!
    * \brief Change l'allocateur de la variable.
    * \warning For experimental use only.

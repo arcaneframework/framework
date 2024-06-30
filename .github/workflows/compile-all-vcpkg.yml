@@ -152,10 +152,16 @@ jobs:
         with:
           dotnet-version: '6.0.x'
 
+      - name: Install pnumpy
+        shell: 'bash'
+        run: |
+          pip3 install numpy
+
       - name: Install pythonnet
         shell: 'bash'
         run: |
           pip3 install pythonnet
+          pip3 install numpy
 
       - name: Get cache for 'ccache' tool
         uses: actions/cache@v4

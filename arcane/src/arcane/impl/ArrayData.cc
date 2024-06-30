@@ -220,6 +220,10 @@ class ArrayDataT<DataType>::Impl
   {
     return makeMutableMemoryView<DataType>(m_p->view());
   }
+  Int32 extent0() const override
+  {
+    return m_p->view().size();
+  }
   INumericDataInternal* numericData() override { return this; }
   void changeAllocator(const MemoryAllocationOptions& v) override { m_p->changeAllocator(v); }
   void computeHash(DataHashInfo& hash_info) override

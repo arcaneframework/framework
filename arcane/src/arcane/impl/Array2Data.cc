@@ -241,6 +241,10 @@ class Array2DataT<DataType>::Impl
     Int32 datatype_size = basicDataTypeSize(storage_info.basicDataType()) * nb_basic_element;
     return makeMutableMemoryView(value.data(), datatype_size * dim2_size, dim1_size);
   }
+  Int32 extent0() const override
+  {
+    return m_p->view().dim1Size();
+  }
   INumericDataInternal* numericData() override { return this; }
   void changeAllocator(const MemoryAllocationOptions& v) override { m_p->changeAllocator(v); }
   void computeHash(DataHashInfo& hash_info) override
