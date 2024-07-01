@@ -95,7 +95,7 @@ function(arcane_add_global_csharp_target target_name)
   # Cela est utilisé ensuite dans 'GlobalCSharpCommand.cmake' pour générer la liste de dépendances
   set_property(TARGET arcane_global_csharp_target
     APPEND PROPERTY
-    DEPENDS ${_ALL_DEPENDS}
+    ARCANE_ALL_DEPENDS ${_ALL_DEPENDS}
   )
 
   add_custom_target(${target_name} DEPENDS ${ARGS_DOTNET_TARGET_DEPENDS})

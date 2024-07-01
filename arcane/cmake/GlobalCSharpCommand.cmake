@@ -11,7 +11,7 @@ set(_RESTORE_BUILD_ARGS build BuildAllCSharp.proj /t:Restore ${ARGS_MSBUILD_ARGS
 set(_BUILD_ARGS publish --no-restore BuildAllCSharp.proj /t:PublishAndPack /p:PublishDir=${ARCANE_DOTNET_PUBLISH_PATH}/ ${ARGS_MSBUILD_ARGS} )
 
 get_property(_ALL_DEPEND_LIST TARGET arcane_global_csharp_target
-  PROPERTY DEPENDS
+  PROPERTY ARCANE_ALL_DEPENDS
 )
 set(_PACK_DIR ${CMAKE_BINARY_DIR}/nupkgs)
 file(MAKE_DIRECTORY ${_PACK_DIR})
