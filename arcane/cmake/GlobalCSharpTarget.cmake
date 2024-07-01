@@ -48,10 +48,6 @@ add_custom_target(force_arcane_global_csharp
 #
 function(arcane_add_global_csharp_target target_name)
   # Appelle l'ancienne méthode tant que la nouvelle n'est pas finalisée
-  if (NOT ARCANE_USE_GLOBAL_CSHARP)
-    arccon_add_csharp_target(${target_name} DOTNET_RUNTIME coreclr ${ARGN})
-    return()
-  endif()
   set(_func_name "arcane_add_global_csharp_target")
   set(options PACK)
   set(oneValueArgs BUILD_DIR TARGET_PATH ASSEMBLY_NAME PROJECT_NAME PROJECT_PATH)
@@ -89,13 +85,20 @@ function(arcane_add_global_csharp_target target_name)
     endforeach()
   endif()
   message(STATUS "_DOTNET_TARGET_DLL_DEPENDS=${_DOTNET_TARGET_DLL_DEPENDS}")
-  set(_ALL_DEPENDS ${build_proj_path} ${ARGS_DEPENDS} ${ARGS_DOTNET_TARGET_DEPENDS})
+  set(_ALL_DEPENDS ${ARGS_DEPENDS} ${ARGS_DOTNET_TARGET_DEPENDS})
 
   # Ajoute les fichiers à la dépendance de la cible globale
   # Cela est utilisé ensuite dans 'GlobalCSharpCommand.cmake' pour générer la liste de dépendances
   set_property(TARGET arcane_global_csharp_target
     APPEND PROPERTY
     ARCANE_ALL_DEPENDS ${_ALL_DEPENDS}
+  )
+
+  # Ajoute le fichier projet à la dépendance de la cible globale.
+  # Cela sera utilisé ensuite dans 'GlobalCSharpCommand.cmake' pour la restauration nuget.
+  set_property(TARGET arcane_global_csharp_target
+    APPEND PROPERTY
+    ARCANE_CSHARP_PROJECT_DEPENDS "${build_proj_path}"
   )
 
   add_custom_target(${target_name} DEPENDS ${ARGS_DOTNET_TARGET_DEPENDS})

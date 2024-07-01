@@ -10,8 +10,14 @@ set(ARGS_MSBUILD_ARGS "/p:BinDir=${ARCANE_CSHARP_PROJECT_PATH}/bin_dir/")
 set(_RESTORE_BUILD_ARGS build BuildAllCSharp.proj /t:Restore ${ARGS_MSBUILD_ARGS} )
 set(_BUILD_ARGS publish --no-restore BuildAllCSharp.proj /t:PublishAndPack /p:PublishDir=${ARCANE_DOTNET_PUBLISH_PATH}/ ${ARGS_MSBUILD_ARGS} )
 
+# Liste de toutes les dépendances pour la cible 'arcane_global_csharp_target'
 get_property(_ALL_DEPEND_LIST TARGET arcane_global_csharp_target
   PROPERTY ARCANE_ALL_DEPENDS
+)
+# Liste des dépendances '*.csproj' pour la cible 'arcane_global_csharp_target'
+# Si les fichiers projets sont modifiés il faut refaire un 'restore'
+get_property(_CSHARP_PROJECT_DEPEND_LIST TARGET arcane_global_csharp_target
+  PROPERTY ARCANE_CSHARP_PROJECT_DEPENDS
 )
 set(_PACK_DIR ${CMAKE_BINARY_DIR}/nupkgs)
 file(MAKE_DIRECTORY ${_PACK_DIR})
@@ -23,6 +29,7 @@ if (ARCANE_HAS_DOTNET_WRAPPER)
     WORKING_DIRECTORY "${ARCANE_CSHARP_PROJECT_PATH}"
     COMMAND ${_msbuild_exe} ${_RESTORE_BUILD_ARGS}
     COMMAND ${CMAKE_COMMAND} -E touch ${ARCANE_DOTNET_RESTORE_TIMESTAMP}
+    DEPENDS ${_CSHARP_PROJECT_DEPEND_LIST}
     COMMENT "Restoring global 'C#' target"
   )
 
