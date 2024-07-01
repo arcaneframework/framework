@@ -1,37 +1,30 @@
 ﻿# ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
-# Pour tester l'utilisation d'un cible globale pour le C#
-option(ARCANE_USE_GLOBAL_CSHARP "True if we use global C# project (experimental)" ON)
 
-# ----------------------------------------------------------------------------
-# ----------------------------------------------------------------------------
+set(ARCANE_DOTNET_PUBLISH_PATH "${CMAKE_BINARY_DIR}/lib")
+# Fichier pour savoir si on a déjà générer la cible
+set(ARCANE_DOTNET_PUBLISH_TIMESTAMP "${ARCANE_DOTNET_PUBLISH_PATH}/.dotnet_stamp")
+# Fichier pour savoir si on a déjà restaurer la cible
+set(ARCANE_DOTNET_RESTORE_TIMESTAMP "${ARCANE_DOTNET_PUBLISH_PATH}/.dotnet_restore_stamp")
 
-if(ARCANE_USE_GLOBAL_CSHARP)
-  set(ARCANE_DOTNET_PUBLISH_PATH "${CMAKE_BINARY_DIR}/lib")
-  # Fichier pour savoir si on a déjà générer la cible
-  set(ARCANE_DOTNET_PUBLISH_TIMESTAMP "${ARCANE_DOTNET_PUBLISH_PATH}/.dotnet_stamp")
-  # Fichier pour savoir si on a déjà restaurer la cible
-  set(ARCANE_DOTNET_RESTORE_TIMESTAMP "${ARCANE_DOTNET_PUBLISH_PATH}/.dotnet_restore_stamp")
+add_custom_target(arcane_global_csharp_target ALL DEPENDS "${ARCANE_DOTNET_PUBLISH_TIMESTAMP}")
+add_custom_target(arcane_global_csharp_restore_target ALL DEPENDS "${ARCANE_DOTNET_RESTORE_TIMESTAMP}")
 
-  add_custom_target(arcane_global_csharp_target ALL DEPENDS "${ARCANE_DOTNET_PUBLISH_TIMESTAMP}")
-  add_custom_target(arcane_global_csharp_restore_target ALL DEPENDS "${ARCANE_DOTNET_RESTORE_TIMESTAMP}")
-
-  # Cette dépendence n'existe pas réellement mais elle permet de s'assurer qu'il n'y
-  # a qu'une seule cible à la fois qui appelle `dotnet`.
-  # C'est nécessaire pour éviter les erreurs dues à la création de répertoires lors de
-  # la première utilisation de `dotnet` (dans 'Microsoft.DotNet.Configurer.DotnetFirstTimeUseConfigurer.Configure()')
-  if (TARGET dotnet_axl_depend)
-    add_dependencies(arcane_global_csharp_restore_target dotnet_axl_depend)
-  endif()
-
-  # Cible pour forcer la recompilation et la restauration
-  add_custom_target(force_arcane_global_csharp
-      WORKING_DIRECTORY ${ARGS_PROJECT_PATH}
-      COMMAND ${CMAKE_COMMAND} -E remove "${ARCANE_DOTNET_RESTORE_TIMESTAMP}"
-      COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR} --target arcane_global_csharp_target
-      COMMENT "Force Building global 'C#' target"
-      )
+# Cette dépendence n'existe pas réellement mais elle permet de s'assurer qu'il n'y
+# a qu'une seule cible à la fois qui appelle `dotnet`.
+# C'est nécessaire pour éviter les erreurs dues à la création de répertoires lors de
+# la première utilisation de `dotnet` (dans 'Microsoft.DotNet.Configurer.DotnetFirstTimeUseConfigurer.Configure()')
+if (TARGET dotnet_axl_depend)
+  add_dependencies(arcane_global_csharp_restore_target dotnet_axl_depend)
 endif()
+
+# Cible pour forcer la recompilation et la restauration
+add_custom_target(force_arcane_global_csharp
+  WORKING_DIRECTORY ${ARGS_PROJECT_PATH}
+  COMMAND ${CMAKE_COMMAND} -E remove "${ARCANE_DOTNET_RESTORE_TIMESTAMP}"
+  COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR} --target arcane_global_csharp_target
+  COMMENT "Force Building global 'C#' target"
+)
 
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
