@@ -153,7 +153,9 @@ set( ARCANE_SOURCES
   internal/VariableSynchronizerComputeList.h
   internal/TimeHistoryMngInternal.h
   internal/TimeHistoryMngInternal.cc
-  )
+    internal/LoadBalanceMngInternal.h
+    internal/LoadBalanceMngInternal.cc
+)
 
 if (ARCANE_HAS_ACCELERATOR_API)
   list(APPEND ARCANE_SOURCES
