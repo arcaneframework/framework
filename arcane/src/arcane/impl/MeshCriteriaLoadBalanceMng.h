@@ -39,32 +39,25 @@ class ARCANE_IMPL_EXPORT MeshCriteriaLoadBalanceMng
   MeshCriteriaLoadBalanceMng(ISubDomain* sd, const MeshHandle& mesh_handle);
 
  public:
-  /*!
-   * Methodes utilisees par les modules clients pour definir les criteres
-   * de partitionnement.
-   */
+
   void addMass(VariableCellInt32& count, const String& entity) override;
   void addCriterion(VariableCellInt32& count) override;
   void addCriterion(VariableCellReal& count) override;
   void addCommCost(VariableFaceInt32& count, const String& entity) override;
 
-  void reset() override;
-
-  /*!
-   * Methodes utilisees par le MeshPartitioner pour acceder a la description
-   * du probleme.
-   */
   void setMassAsCriterion(bool active) override;
   void setNbCellsAsCriterion(bool active) override;
   void setCellCommContrib(bool active) override;
-  bool cellCommContrib() const override;
   void setComputeComm(bool active) override;
-  Integer nbCriteria() override;
   const VariableFaceReal& commCost() const override;
   const VariableCellReal& massWeight() const override;
   const VariableCellReal& massResWeight() const override;
   const VariableCellArrayReal& mCriteriaWeight() const override;
-  void notifyEndPartition() override;
+
+  bool cellCommContrib() const override;
+  Integer nbCriteria() override;
+
+  void reset() override;
 
  private:
 

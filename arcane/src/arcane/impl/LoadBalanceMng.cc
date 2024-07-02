@@ -27,7 +27,7 @@ namespace Arcane
 
 LoadBalanceMng::
 LoadBalanceMng(ISubDomain* sd, bool mass_as_criterion)
-: m_internal(makeRef(new LoadBalanceMngInternal(sd, mass_as_criterion)))
+: m_internal(makeRef(new LoadBalanceMngInternal(mass_as_criterion)))
 , m_mesh_handle(sd->defaultMeshHandle())
 {
   m_internal->reset(m_mesh_handle.mesh());

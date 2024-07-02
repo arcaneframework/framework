@@ -88,15 +88,6 @@ nbCriteria()
 /*---------------------------------------------------------------------------*/
 
 void MeshCriteriaLoadBalanceMng::
-notifyEndPartition()
-{
-  m_internal->notifyEndPartition();
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void MeshCriteriaLoadBalanceMng::
 setMassAsCriterion(bool active)
 {
   m_internal->setMassAsCriterion(m_mesh_handle.mesh(), active);
