@@ -1,0 +1,75 @@
+﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
+//-----------------------------------------------------------------------------
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// See the top-level COPYRIGHT file for details.
+// SPDX-License-Identifier: Apache-2.0
+//-----------------------------------------------------------------------------
+/*---------------------------------------------------------------------------*/
+/* ILoadBalanceMngInternal.h                                   (C) 2000-2024 */
+/*                                                                           */
+/* Interface de classe interne gérant un TODO.              */
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+#ifndef ARCANE_ILOADBALANCEMNGINTERNAL_H
+#define ARCANE_ILOADBALANCEMNGINTERNAL_H
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+#include "arcane/utils/UtilsTypes.h"
+
+#include "arcane/core/ITimeHistoryMng.h"
+#include "arcane/core/IPropertyMng.h"
+#include "arcane/core/Directory.h"
+#include "arcane/core/MeshHandle.h"
+#include "arcane/core/VariableTypedef.h"
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace Arcane
+{
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+
+class ARCANE_CORE_EXPORT ILoadBalanceMngInternal
+{
+ public:
+
+  virtual ~ILoadBalanceMngInternal() = default; //!< Libère les ressources
+
+  virtual void addMass(VariableCellInt32& count, IMesh* mesh, const String& entity) =0;
+  virtual void addCriterion(VariableCellInt32& count, IMesh* mesh) =0;
+  virtual void addCriterion(VariableCellReal& count, IMesh* mesh) =0;
+  virtual void addCommCost(VariableFaceInt32& count, IMesh* mesh, const String& entity) =0;
+  virtual void reset(IMesh* mesh) =0;
+
+ public:
+
+  virtual void setMassAsCriterion(IMesh* mesh, bool active) =0;
+  virtual void setNbCellsAsCriterion(IMesh* mesh, bool active) =0;
+  virtual Integer nbCriteria(IMesh* mesh) =0;
+  virtual void setCellCommContrib(IMesh* mesh, bool active) =0;
+  virtual bool cellCommContrib(IMesh* mesh) const =0;
+  virtual void setComputeComm(IMesh* mesh, bool active) =0;
+  virtual void initAccess(IMesh* mesh) =0;
+  virtual const VariableFaceReal& commCost(IMesh* mesh) const =0;
+  virtual const VariableCellReal& massWeight(IMesh* mesh) const =0;
+  virtual const VariableCellReal& massResWeight(IMesh* mesh) const =0;
+  virtual const VariableCellArrayReal& mCriteriaWeight(IMesh* mesh) const =0;
+  virtual void endAccess() =0;
+  virtual void notifyEndPartition() =0;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+} // End namespace Arcane
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+#endif

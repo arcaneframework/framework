@@ -24,6 +24,8 @@
 namespace Arcane
 {
 
+class ILoadBalanceMngInternal;
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
@@ -65,6 +67,11 @@ class ILoadBalanceMng
   virtual const VariableCellArrayReal& mCriteriaWeight() const =0;
   virtual void endAccess() =0;
   virtual void notifyEndPartition() =0;
+
+ public:
+
+  //! API interne à Arcane
+  virtual ILoadBalanceMngInternal* _internalApi() { ARCANE_FATAL("Invalid usage"); };
 };
 
 /*---------------------------------------------------------------------------*/
