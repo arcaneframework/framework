@@ -34,8 +34,25 @@ fillFloat64Array(IVariable* v, ArrayView<double> values)
   auto* true_data = dynamic_cast<IArrayDataT<double>*>(var_data);
   if (!true_data)
     return true;
+  // TODO: Vérifier la taille
   ArrayView<Real> var_values(true_data->view());
   values.copy(var_values);
+  return false;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+bool VariableUtilsInternal::
+setFromFloat64Array(IVariable* v, ConstArrayView<double> values)
+{
+  IData* var_data = v->data();
+  auto* true_data = dynamic_cast<IArrayDataT<double>*>(var_data);
+  if (!true_data)
+    return true;
+  // TODO: Vérifier la taille
+  ArrayView<Real> var_values(true_data->view());
+  var_values.copy(values);
   return false;
 }
 
