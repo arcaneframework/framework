@@ -18,8 +18,10 @@
     <simple name="file" type="string" />
     <simple name="function-name" type="string" optional="true"/>
     <simple name="context-function-name" type="string" optional="true"/>
+    <simple name="check-values" type="bool" default="false"/>
   </options>
   <variables>
     <variable field-name="density" name="Density" data-type="real" item-kind="cell" dim="0" />
+    <variable field-name="ref_density" name="RefDensity" data-type="real" item-kind="cell" dim="0" />
   </variables>
 </module>
