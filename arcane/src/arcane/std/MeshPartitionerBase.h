@@ -74,7 +74,7 @@ class ARCANE_STD_EXPORT MeshPartitionerBase
   virtual ArrayView<float> cellsWeight() const;
 
   // CORRECT
-  virtual Integer nbCellWeight() const { return math::max(loadBalanceMng()->nbCriteria(),1); }
+  virtual Integer nbCellWeight() const { return math::max(m_mesh_criteria->nbCriteria(), 1); }
   virtual void setILoadBalanceMng(ILoadBalanceMng* mng) { m_lbMng = mng; }
   virtual ILoadBalanceMng* loadBalanceMng() const { return m_lbMng; }
 
