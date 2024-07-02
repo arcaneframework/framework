@@ -172,6 +172,10 @@ class VtkPolyhedralMeshIOService
     Int32UniqueArray m_node_nb_cells, m_node_nb_faces, m_node_nb_edges;
     Int32UniqueArray m_cell_nb_edges, m_face_nb_edges, m_face_uid_indexes;
     Int32UniqueArray m_cell_face_indexes, m_edge_nb_nodes;
+    using NodeUidToIndexMap = Int32UniqueArray; // use a map when no longer possible to index with node uids
+    using FaceUidToIndexMap = Int32UniqueArray; // use a map when no longer possible to index with face uids
+    using EdgeUidToIndexMap = Int32UniqueArray; // use a map when no longer possible to index with edge uids
+    NodeUidToIndexMap m_node_uid_to_index;
     Real3UniqueArray m_node_coordinates;
     vtkCellData* m_cell_data = nullptr;
     vtkPointData* m_point_data = nullptr;
@@ -179,7 +183,7 @@ class VtkPolyhedralMeshIOService
 
     void _printMeshInfos() const;
 
-    static std::pair<bool, Int32> _findFace(Int64ConstArrayView face_nodes, Int64ConstArrayView face_node_uids, Int32ConstArrayView face_nb_nodes);
+    std::pair<bool, Int32> _findFace(const Int64UniqueArray& sorted_face_nodes, const UniqueArray<Int64UniqueArray>& node_face_uids, const NodeUidToIndexMap& node_uid_to_index, const Int32UniqueArray& face_nb_nodes, const FaceUidToIndexMap& face_uid_to_index, const UniqueArray<Int32>& face_offsets, const Int64UniqueArray& face_node_uids);
     template <typename Connectivity2DArray>
     static void _flattenConnectivity(Connectivity2DArray connected_item_2darray, Int32Span nb_connected_item_per_source_item, Int64UniqueArray& connected_item_array);
     void _readPlainTextVtkGrid(const String& filename);
@@ -732,16 +736,21 @@ nodeUids()
   if (m_node_uids.empty()) {
     _checkVtkGrid();
     auto nb_nodes = m_vtk_grid->GetNumberOfPoints();
-    m_node_uids.reserve(nb_nodes);
-    m_node_nb_cells.reserve(nb_nodes);
+    m_node_uids.resize(nb_nodes);
+    m_node_nb_cells.resize(nb_nodes);
     m_node_cell_uids.reserve(8 * nb_nodes);
+    m_node_uid_to_index.resize(nb_nodes);
     for (int node_index = 0; node_index < nb_nodes; ++node_index) {
-      m_node_uids.push_back(node_index);
+      Int64 node_uid = node_index;
+      m_node_uids[node_index] = node_uid;
       auto cell_nodes = vtkIdList::New();
       m_vtk_grid->GetPointCells(node_index, cell_nodes);
       Int64Span cell_nodes_view((Int64*)cell_nodes->GetPointer(0), cell_nodes->GetNumberOfIds());
       m_node_cell_uids.addRange(cell_nodes_view);
-      m_node_nb_cells.push_back((Int32)cell_nodes->GetNumberOfIds());
+      m_node_nb_cells[node_index] = (Int32)cell_nodes->GetNumberOfIds();
+      // uid and index might differ in the future (ex parallel read).
+      // This structure is created to be used in faceUids. Should be a map if node_uid is no longer the node index
+      m_node_uid_to_index[node_uid] = node_index;
     }
   }
   return m_node_uids;
@@ -753,6 +762,9 @@ nodeUids()
 Int64ConstArrayView VtkPolyhedralMeshIOService::VtkReader::
 faceUids()
 {
+  // Needs nodeUids to be called first (no work done if already called)
+  nodeUids();
+
   if (!m_face_uids.empty())
     return m_face_uids;
   _checkVtkGrid();
@@ -787,7 +799,12 @@ faceUids()
   Int64UniqueArray current_face_nodes, sorted_current_face_nodes;
   current_face_nodes.reserve(10);
   sorted_current_face_nodes.reserve(10);
-  UniqueArray<std::set<Int64>> node_faces(m_node_uids.size());
+  UniqueArray<UniqueArray<Int64>> node_faces(m_node_uids.size());
+  UniqueArray<Int32> face_offsets;
+  face_offsets.reserve(nb_face_estimation);
+  face_offsets.push_back(0);
+  FaceUidToIndexMap face_uid_to_index;
+  face_uid_to_index.reserve(nb_face_estimation);
   auto cell_index = 0;
   auto cell_face_index = 0;
   auto global_face_index = 0;
@@ -803,17 +820,24 @@ faceUids()
       }
       sorted_current_face_nodes.resize(current_face_nodes.size());
       auto is_front_cell = mesh_utils::reorderNodesOfFace(current_face_nodes, sorted_current_face_nodes);
-      auto [is_face_found, existing_face_index] = _findFace(sorted_current_face_nodes, m_face_node_uids, m_face_nb_nodes);
+      auto [is_face_found, existing_face_index] = _findFace(sorted_current_face_nodes, node_faces,
+                                                             m_node_uid_to_index, m_face_nb_nodes,
+                                                             face_uid_to_index, face_offsets, m_face_node_uids);
       if (!is_face_found) {
-        for (auto node : current_face_nodes) {
-          node_faces[node].insert(face_uid);
+        for (auto node_uid : current_face_nodes) {
+          node_faces[m_node_uid_to_index[node_uid]].push_back(face_uid);
         }
         m_cell_face_uids.push_back(face_uid);
-        m_face_uids.push_back(face_uid++); // todo parallel
+        m_face_uids.push_back(face_uid); // todo parallel
         m_face_nb_nodes.push_back(current_face_nb_nodes);
         m_face_node_uids.addRange(sorted_current_face_nodes);
         m_face_nb_cells.push_back(1);
-        m_face_uid_indexes[global_face_index] = face_uid_index++;
+        m_face_uid_indexes[global_face_index] = face_uid_index;
+        face_uid_to_index.push_back(face_uid_index);
+        auto previous_offset = face_offsets.back();
+        face_offsets.push_back(previous_offset + sorted_current_face_nodes.size());
+        ++face_uid;
+        ++face_uid_index;
         if (is_front_cell) {
           m_face_cell_uids.push_back(NULL_ITEM_UNIQUE_ID);
           m_face_cell_uids.push_back(m_cell_uids[cell_index]);
@@ -824,9 +848,6 @@ faceUids()
           }
         }
         else {
-          for (auto node : current_face_nodes) {
-            node_faces[node].insert(m_face_uids[existing_face_index]);
-          }
           m_cell_face_uids.push_back(m_face_uids[existing_face_index]);
           m_face_nb_cells[existing_face_index] += 1;
           m_face_uid_indexes[global_face_index] = existing_face_index;
@@ -883,6 +904,8 @@ edgeUids()
   if (!m_edge_uids.empty())
     return m_edge_uids;
 
+  nodeUids(); // Needed to be called first. No work done if already called
+
   _checkVtkGrid();
   m_edge_uids.reserve(2 * m_vtk_grid->GetNumberOfPoints());
   auto const* faces = m_vtk_grid->GetFaces();
@@ -893,10 +916,12 @@ edgeUids()
     ARCANE_FATAL("Mesh {0} is not polyhedral: faces are not defined", m_filename);
   }
   Int64 edge_uid = 0;
-  m_edge_node_uids.reserve(2 * m_edge_uids.capacity());
+  auto nb_edge_estimation = 2 * m_edge_uids.capacity();
+  m_edge_node_uids.reserve(nb_edge_estimation);
   auto face_info_size = faces->GetNumberOfValues();
   auto cell_index = 0;
   auto global_face_index = 0;
+  auto new_edge_index = 0;
   UniqueArray<std::set<Int64>> edge_cells;
   UniqueArray<Int64UniqueArray> edge_faces;
   edge_cells.reserve(m_edge_uids.capacity());
@@ -907,8 +932,14 @@ edgeUids()
   face_edges.resize(m_face_uids.size());
   UniqueArray<std::set<Int64>> cell_edges;
   cell_edges.resize(m_cell_uids.size());
-  UniqueArray<std::set<Int64>> node_edges;
+  UniqueArray<Int64UniqueArray> node_edges;
   node_edges.resize(m_node_uids.size());
+  EdgeUidToIndexMap edge_uid_to_index;
+  edge_uid_to_index.reserve(nb_edge_estimation);
+  Int32UniqueArray edge_offsets;
+  edge_offsets.reserve(nb_edge_estimation);
+  edge_offsets.push_back(0);
+  m_edge_nb_nodes.reserve(nb_edge_estimation);
   for (int face_info_index = 0; face_info_index < face_info_size; ++cell_index) {
     auto current_cell_nb_faces = Int32(faces->GetValue(face_info_index++));
     for (auto face_index = 0; face_index < current_cell_nb_faces; ++face_index, ++global_face_index) {
@@ -918,32 +949,40 @@ edgeUids()
         for (int node_index = 0; node_index < current_face_nb_nodes - 1; ++node_index) {
           current_edge = UniqueArray<Int64>{ faces->GetValue(face_info_index++), faces->GetValue(face_info_index) };
           mesh_utils::reorderNodesOfFace(current_edge, sorted_edge); // works for edges
-          auto [is_edge_found, existing_edge_index] = _findFace(sorted_edge, m_edge_node_uids, Int32UniqueArray(m_edge_uids.size(), 2)); // works for edges
+          auto [is_edge_found, existing_edge_index] = _findFace(sorted_edge, node_edges,
+                                                                 m_node_uid_to_index,
+                                                                 m_edge_nb_nodes,
+                                                                 edge_uid_to_index, edge_offsets, m_edge_node_uids); // works for edges
           if (!is_edge_found) {
             m_cell_nb_edges[cell_index] += 1;
             face_edges[m_face_uid_indexes[global_face_index]].insert(edge_uid);
             cell_edges[cell_index].insert(edge_uid);
             for (auto node : current_edge) {
-              node_edges[node].insert(edge_uid);
+              node_edges[node].push_back(edge_uid);
             }
             edge_cells.push_back(std::set{ m_cell_uids[cell_index] });
             edge_faces.push_back(Int64UniqueArray{ m_cell_face_uids[m_cell_face_indexes[cell_index] + face_index] });
             m_edge_uids.push_back(edge_uid++); // todo parallel
             m_edge_node_uids.addRange(sorted_edge);
+            edge_uid_to_index.push_back(new_edge_index);
+            auto current_offset = edge_offsets.back();
+            edge_offsets.push_back(current_offset + 2);
+            m_edge_nb_nodes.push_back(2);
+            ++new_edge_index;
           }
           else {
             edge_cells[existing_edge_index].insert(m_cell_uids[cell_index]);
             edge_faces[existing_edge_index].push_back(m_cell_face_uids[m_cell_face_indexes[cell_index] + face_index]);
             face_edges[m_face_uid_indexes[global_face_index]].insert(m_edge_uids[existing_edge_index]);
             cell_edges[cell_index].insert(m_edge_uids[existing_edge_index]);
-            for (auto node : current_edge) {
-              node_edges[node].insert(m_edge_uids[existing_edge_index]);
-            }
           }
         }
         current_edge = UniqueArray<Int64>{ faces->GetValue(face_info_index++), first_face_node_uid };
         mesh_utils::reorderNodesOfFace(current_edge, sorted_edge); // works for edges
-        auto [is_edge_found, existing_edge_index] = _findFace(sorted_edge, m_edge_node_uids, Int32UniqueArray(m_edge_uids.size(), 2)); // works for edges
+        auto [is_edge_found, existing_edge_index] = _findFace(sorted_edge, node_edges,
+                                                               m_node_uid_to_index,
+                                                               m_edge_nb_nodes,
+                                                               edge_uid_to_index, edge_offsets, m_edge_node_uids); // works for edges
         if (!is_edge_found) {
           m_cell_nb_edges[cell_index] += 1;
           edge_cells.push_back(std::set{ m_cell_uids[cell_index] });
@@ -951,19 +990,21 @@ edgeUids()
           face_edges[m_face_uid_indexes[global_face_index]].insert(edge_uid);
           cell_edges[cell_index].insert(edge_uid);
           for (auto node : current_edge) {
-            node_edges[node].insert(edge_uid);
+            node_edges[node].push_back(edge_uid);
           }
           m_edge_uids.push_back(edge_uid++); // todo parallel
           m_edge_node_uids.addRange(sorted_edge);
+          edge_uid_to_index.push_back(new_edge_index);
+          auto current_offset = edge_offsets.back();
+          edge_offsets.push_back(current_offset + 2);
+          m_edge_nb_nodes.push_back(2);
+          ++new_edge_index;
         }
         else {
           edge_cells[existing_edge_index].insert(m_cell_uids[cell_index]);
           edge_faces[existing_edge_index].push_back(m_cell_face_uids[m_cell_face_indexes[cell_index] + face_index]);
           face_edges[m_face_uid_indexes[global_face_index]].insert(m_edge_uids[existing_edge_index]);
           cell_edges[cell_index].insert(m_edge_uids[existing_edge_index]);
-          for (auto node : current_edge) {
-            node_edges[node].insert(m_edge_uids[existing_edge_index]);
-          }
         }
       }
     }
@@ -987,9 +1028,6 @@ edgeUids()
     m_node_nb_edges.resize(m_node_uids.size(), 0);
     _flattenConnectivity(node_edges, m_node_nb_edges, m_node_edge_uids);
 
-    // fill edge nb nodes
-    m_edge_nb_nodes.resize(m_edge_uids.size(), 2);
-
     if (m_print_info_level.print_debug_info) {
       std::cout << "================EDGE NODES ==============" << std::endl;
       std::copy(m_edge_node_uids.begin(), m_edge_node_uids.end(), std::ostream_iterator<Int64>(std::cout, " "));
@@ -1012,26 +1050,33 @@ edgeUids()
 /*---------------------------------------------------------------------------*/
 
 std::pair<bool, Int32> VtkPolyhedralMeshIOService::VtkReader::
-_findFace(Int64ConstArrayView face_nodes, Int64ConstArrayView face_node_uids, Int32ConstArrayView face_nb_nodes)
+_findFace(const Int64UniqueArray& sorted_face_nodes,
+          const UniqueArray<Int64UniqueArray>& node_face_uids,
+          const NodeUidToIndexMap& node_uid_to_index,
+          const Int32UniqueArray& face_nb_nodes,
+          const FaceUidToIndexMap& face_uid_to_index,
+          const UniqueArray<Int32>& face_offsets,
+          const Int64UniqueArray& face_node_uids)
 {
-  // todo coder l'algo recherche : d'abord on vérifie nombre de noeuds puis on teste tant que l'id est égal (est-ce beaucoup plus rapide ?)
-  auto it = std::search(face_node_uids.begin(), face_node_uids.end(), std::boyer_moore_searcher(face_nodes.begin(), face_nodes.end()));
-  auto face_index = -1; // 0 starting index
-  if (it != face_node_uids.end()) {
-    // compute face_index
-    auto found_face_position = std::distance(face_node_uids.begin(), it);
-    auto position = 0;
-    face_index = 0;
-    while (position != found_face_position) {
-      position += face_nb_nodes[face_index++];
-      if (position > found_face_position) { // spurious found, in fact it was node the current face
-        // (ex if algo used for edges: edge_nodes = [0 1 3 4] search for edge [1 3] the algo thinks it was found but no
-        return std::make_pair(false, -1);
+  auto first_node_uid = sorted_face_nodes[0];
+  auto first_node_index = node_uid_to_index[first_node_uid];
+  // If the face already exists it has already been registered in node_face connectivity
+  for (auto face_uid : node_face_uids[first_node_index]) {
+    auto face_index = face_uid_to_index[face_uid];
+    auto face_offset = face_offsets[face_index];
+    auto face_nb_node = face_nb_nodes[face_index];
+    if (face_nb_node == sorted_face_nodes.size()) {
+      bool is_same_face = true;
+      for (auto index = 0; index < face_nb_node; ++index) {
+        if (sorted_face_nodes[index] != face_node_uids[face_offset + index]) {
+          is_same_face = false;
+        }
       }
+      if (is_same_face)
+        return { true, face_index };
     }
-    // compute
   }
-  return std::make_pair(it != face_node_uids.end(), face_index);
+  return { false, -1 };
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1456,7 +1501,8 @@ _readXlmVtkGrid(const String& filename)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void VtkPolyhedralMeshIOService::VtkReader::_readPlainTextVtkFaceGrid(const String& faces_filename)
+void VtkPolyhedralMeshIOService::VtkReader::
+_readPlainTextVtkFaceGrid(const String& faces_filename)
 {
   m_vtk_face_grid_reader->SetFileName(faces_filename.localstr());
   m_vtk_face_grid_reader->ReadAllScalarsOn();
@@ -1466,7 +1512,9 @@ void VtkPolyhedralMeshIOService::VtkReader::_readPlainTextVtkFaceGrid(const Stri
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-void VtkPolyhedralMeshIOService::VtkReader::_readXmlVtkFaceGrid(const String& faces_filename)
+
+void VtkPolyhedralMeshIOService::VtkReader::
+_readXmlVtkFaceGrid(const String& faces_filename)
 {
   m_vtk_xml_face_grid_reader->SetFileName(faces_filename.localstr());
   m_vtk_xml_face_grid_reader->Update();
@@ -1476,7 +1524,8 @@ void VtkPolyhedralMeshIOService::VtkReader::_readXmlVtkFaceGrid(const String& fa
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void VtkPolyhedralMeshIOService::VtkReader::_checkVtkGrid() const
+void VtkPolyhedralMeshIOService::VtkReader::
+_checkVtkGrid() const
 {
   if (!m_vtk_grid)
     ARCANE_FATAL("Polyhedral vtk grid not loaded. Cannot continue.");

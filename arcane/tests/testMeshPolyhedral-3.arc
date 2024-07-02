@@ -23,7 +23,7 @@
     <mesh-size>
       <nb-cells>6</nb-cells>
       <nb-faces>35</nb-faces>
-      <nb-edges>60</nb-edges>
+      <nb-edges>55</nb-edges>
       <nb-nodes>27</nb-nodes>
     </mesh-size>
     <nb-mesh-group>5</nb-mesh-group>
