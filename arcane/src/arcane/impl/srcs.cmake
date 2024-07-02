@@ -54,6 +54,8 @@ set( ARCANE_SOURCES
   DefaultBackwardMng.h
   LoadBalanceMng.cc
   LoadBalanceMng.h
+    MeshCriteriaLoadBalanceMng.cc
+    MeshCriteriaLoadBalanceMng.h
   NullVariableSynchronizer.cc
   ParallelExchanger.cc
   ParallelExchanger.h
