@@ -22,4 +22,5 @@
       <HintPath>@ARCANE_DOTNET_PUBLISH_BUILD_DIR@/Arcane.Utils.dll</HintPath>
     </Reference>
   </ItemGroup>
+  @ARCANE_CSHARP_ITEM_GROUP_FILES@
 </Project>

@@ -24,4 +24,5 @@
     <!-- Pas directement utile mais permet d'éviter un avertissement sur les versions des packages nuget -->
     <PackageReference Include="System.Runtime" Version="4.3.1" />
   </ItemGroup>
+  @ARCANE_CSHARP_ITEM_GROUP_FILES@
 </Project>

@@ -105,17 +105,22 @@ function(arcane_wrapper_add_csharp_target)
 
   set(FULL_DLL_PATH ${ARCANE_DOTNET_WRAPPER_INSTALL_DIRECTORY}/${ARGS_PROJECT_NAME}.dll)
 
-  configure_file(${ARGS_PROJECT_NAME}.csproj.in
-    ${ARCANE_CSHARP_PROJECT_PATH}/${ARGS_PROJECT_NAME}/${ARGS_PROJECT_NAME}.csproj @ONLY)
-
+  # Génère une variable ARCANE_CSHARP_ITEM_GROUP_FILES contenant la liste des fichiers
+  # à compiler. Cette variable sera utilisé dans le configure du projet
   if (ARGS_CSHARP_SOURCES)
-    list(TRANSFORM ARGS_CSHARP_SOURCES PREPEND ${CMAKE_CURRENT_SOURCE_DIR}/csharp/)
+    list(TRANSFORM ARGS_CSHARP_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/csharp/")
     list(TRANSFORM ARGS_CSHARP_SOURCES APPEND ".cs")
     set(_CSHARP_DEPENDS ${ARGS_CSHARP_SOURCES})
+
+    list(TRANSFORM ARGS_CSHARP_SOURCES PREPEND "    <Compile Include = \"")
+    list(TRANSFORM ARGS_CSHARP_SOURCES APPEND "\"/>")
     list(JOIN ARGS_CSHARP_SOURCES "\n" _OUT_CSHARP_TXT)
-    message(STATUS "TRANSFORM_LIST=${_OUT_CSHARP_TXT}")
-    file(WRITE ${ARCANE_CSHARP_PROJECT_PATH}/${ARGS_PROJECT_NAME}/csfiles.txt ${_OUT_CSHARP_TXT})
+    message(VERBOSE "TRANSFORM_LIST=${_OUT_CSHARP_TXT}")
+    set(ARCANE_CSHARP_ITEM_GROUP_FILES "\n  <!-- The following ItemGroup is generated -->\n  <ItemGroup>\n${_OUT_CSHARP_TXT}\n  </ItemGroup>")
   endif()
+
+  configure_file(${ARGS_PROJECT_NAME}.csproj.in
+    ${ARCANE_CSHARP_PROJECT_PATH}/${ARGS_PROJECT_NAME}/${ARGS_PROJECT_NAME}.csproj @ONLY)
 
   arcane_add_global_csharp_target(${ARGS_TARGET_NAME}
     BUILD_DIR ${ARCANE_DOTNET_WRAPPER_INSTALL_DIRECTORY}
