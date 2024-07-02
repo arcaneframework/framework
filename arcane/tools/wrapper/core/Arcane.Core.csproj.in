@@ -19,4 +19,5 @@
   <ItemGroup>
     <ProjectReference Include="@ARCANE_DOTNET_ARCANE_UTILS_CSPROJ_PATH@" />
   </ItemGroup>
+  @ARCANE_CSHARP_ITEM_GROUP_FILES@
 </Project>

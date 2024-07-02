@@ -17,4 +17,5 @@
   <ItemGroup>
     <ProjectReference Include="../Arcane.Core/Arcane.Core.csproj" />
   </ItemGroup>
+  @ARCANE_CSHARP_ITEM_GROUP_FILES@
 </Project>
