@@ -5,9 +5,9 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* LoadBalanceTestModule.cc                               (C) 2000-2024 */
+/* MeshCriteriaLoadBalanceMngTestModule.cc                     (C) 2000-2024 */
 /*                                                                           */
-/* Module de test pour les implementations de LoadBalance.             */
+/* Module de test pour les implementations de MeshCriteriaLoadBalanceMng.    */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -16,7 +16,7 @@
 #include "arcane/core/IMeshModifier.h"
 #include "arcane/core/ITimeLoopMng.h"
 #include "arcane/impl/MeshCriteriaLoadBalanceMng.h"
-#include "arcane/tests/LoadBalanceTest_axl.h"
+#include "arcane/tests/MeshCriteriaLoadBalanceMngTest_axl.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -32,12 +32,12 @@ using namespace Arcane;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class LoadBalanceTestModule
-: public ArcaneLoadBalanceTestObject
+class MeshCriteriaLoadBalanceMngTestModule
+: public ArcaneMeshCriteriaLoadBalanceMngTestObject
 {
  public:
 
-  explicit LoadBalanceTestModule(const ModuleBuildInfo& mbi);
+  explicit MeshCriteriaLoadBalanceMngTestModule(const ModuleBuildInfo& mbi);
 
  public:
 
@@ -55,16 +55,16 @@ class LoadBalanceTestModule
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-LoadBalanceTestModule::
-LoadBalanceTestModule(const ModuleBuildInfo& mbi)
-: ArcaneLoadBalanceTestObject(mbi)
+MeshCriteriaLoadBalanceMngTestModule::
+MeshCriteriaLoadBalanceMngTestModule(const ModuleBuildInfo& mbi)
+: ArcaneMeshCriteriaLoadBalanceMngTestObject(mbi)
 {
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void LoadBalanceTestModule::
+void MeshCriteriaLoadBalanceMngTestModule::
 init()
 {
   m_density_meshes_ref.resize(subDomain()->meshes().size());
@@ -85,7 +85,7 @@ init()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void LoadBalanceTestModule::
+void MeshCriteriaLoadBalanceMngTestModule::
 loop()
 {
   //for(Integer imesh = 0; imesh < subDomain()->meshes().size(); ++imesh){
@@ -121,7 +121,7 @@ loop()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void LoadBalanceTestModule::
+void MeshCriteriaLoadBalanceMngTestModule::
 exit()
 {
 }
@@ -129,7 +129,7 @@ exit()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_REGISTER_MODULE_LOADBALANCETEST(LoadBalanceTestModule);
+ARCANE_REGISTER_MODULE_MESHCRITERIALOADBALANCEMNGTEST(MeshCriteriaLoadBalanceMngTestModule);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
