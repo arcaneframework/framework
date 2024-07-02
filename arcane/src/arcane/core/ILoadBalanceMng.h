@@ -39,34 +39,26 @@ class ILoadBalanceMng
 
  public:
 
-  /*!
-   * Methodes utilisees par les modules clients pour definir les criteres
-   * de partitionnement.
-   */
+  // TODO : Deprecated
   virtual void addMass(VariableCellInt32& count, const String& entity="") =0;
   virtual void addCriterion(VariableCellInt32& count) =0;
   virtual void addCriterion(VariableCellReal& count) =0;
   virtual void addCommCost(VariableFaceInt32& count, const String& entity="") =0;
-
   virtual void reset() =0;
-
-  /*!
-   * Methodes utilisees par le MeshPartitioner pour acceder a la description
-   * du probleme.
-   */
   virtual void setMassAsCriterion(bool active=true) =0;
   virtual void setNbCellsAsCriterion(bool active=true) =0;
   virtual Integer nbCriteria() =0;
   virtual void setCellCommContrib(bool active=true) =0;
   virtual bool cellCommContrib() const =0;
   virtual void setComputeComm(bool active=true) =0;
-  virtual void initAccess(IMesh* mesh) =0;
   virtual const VariableFaceReal& commCost() const =0;
   virtual const VariableCellReal& massWeight() const =0;
   virtual const VariableCellReal& massResWeight() const =0;
   virtual const VariableCellArrayReal& mCriteriaWeight() const =0;
-  virtual void endAccess() =0;
-  virtual void notifyEndPartition() =0;
+
+  virtual void initAccess(IMesh* mesh) = 0;
+  virtual void endAccess() = 0;
+  virtual void notifyEndPartition() = 0;
 
  public:
 
