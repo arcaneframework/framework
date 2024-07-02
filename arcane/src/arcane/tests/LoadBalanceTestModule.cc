@@ -89,7 +89,7 @@ void LoadBalanceTestModule::
 loop()
 {
   //for(Integer imesh = 0; imesh < subDomain()->meshes().size(); ++imesh){
-  for (Integer imesh = 1; imesh < 2; ++imesh) {
+  for (Integer imesh = 0; imesh < 2; ++imesh) {
     VariableCellReal& density = *(m_density_meshes_ref[imesh].get());
     IMesh* mesh = subDomain()->meshes()[imesh];
 
@@ -114,7 +114,7 @@ loop()
       debug() << "CellUniqueId : " << icell->uniqueId();
     }
   }
-  //subDomain()->timeLoopMng()->registerActionMeshPartition((IMeshPartitionerBase*)options()->partitioner0());
+  subDomain()->timeLoopMng()->registerActionMeshPartition((IMeshPartitionerBase*)options()->partitioner0());
   subDomain()->timeLoopMng()->registerActionMeshPartition((IMeshPartitionerBase*)options()->partitioner1());
 }
 
