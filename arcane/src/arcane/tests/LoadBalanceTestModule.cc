@@ -15,6 +15,7 @@
 #include "arcane/core/IMesh.h"
 #include "arcane/core/IMeshModifier.h"
 #include "arcane/core/ITimeLoopMng.h"
+#include "arcane/impl/MeshCriteriaLoadBalanceMng.h"
 #include "arcane/tests/LoadBalanceTest_axl.h"
 
 /*---------------------------------------------------------------------------*/
@@ -87,12 +88,18 @@ init()
 void LoadBalanceTestModule::
 loop()
 {
-  for(Integer imesh = 0; imesh < subDomain()->meshes().size(); ++imesh){
+  //for(Integer imesh = 0; imesh < subDomain()->meshes().size(); ++imesh){
+  for (Integer imesh = 1; imesh < 2; ++imesh) {
+    VariableCellReal& density = *(m_density_meshes_ref[imesh].get());
+    IMesh* mesh = subDomain()->meshes()[imesh];
+
+    MeshCriteriaLoadBalanceMng mesh_criteria = MeshCriteriaLoadBalanceMng(subDomain(), mesh->handle());
+    mesh_criteria.addCriterion(density);
+  }
+
+  for (Integer imesh = 0; imesh < subDomain()->meshes().size(); ++imesh) {
     IMesh* mesh = subDomain()->meshes()[imesh];
     VariableCellReal& density = *(m_density_meshes_ref[imesh].get());
-
-    ILoadBalanceMng* lb_mng = subDomain()->loadBalanceMng();
-    lb_mng->addCriterion(density);
 
     Real sum = {};
     ENUMERATE_ (Cell, icell, mesh->ownCells()) {
@@ -107,7 +114,8 @@ loop()
       debug() << "CellUniqueId : " << icell->uniqueId();
     }
   }
-  subDomain()->timeLoopMng()->registerActionMeshPartition((IMeshPartitionerBase*)options()->partitioner());
+  //subDomain()->timeLoopMng()->registerActionMeshPartition((IMeshPartitionerBase*)options()->partitioner0());
+  subDomain()->timeLoopMng()->registerActionMeshPartition((IMeshPartitionerBase*)options()->partitioner1());
 }
 
 /*---------------------------------------------------------------------------*/

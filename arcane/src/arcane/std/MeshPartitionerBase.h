@@ -24,6 +24,7 @@
 #include <arcane/utils/ScopedPtr.h>
 
 #include "arcane/ILoadBalanceMng.h"
+#include "arcane/impl/MeshCriteriaLoadBalanceMng.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -189,6 +190,7 @@ protected:
  private:
 
   ILoadBalanceMng* m_lbMng = nullptr;
+  Ref<MeshCriteriaLoadBalanceMng> m_mesh_criteria;
 
   Real m_maximum_computation_time = 0.0;
   Real m_imbalance = 0.0;

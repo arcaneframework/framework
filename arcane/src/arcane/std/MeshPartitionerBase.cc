@@ -58,6 +58,7 @@ MeshPartitionerBase(const ServiceBuildInfo& sbi)
 , m_pm_sub(0)
 , m_cell_family(sbi.mesh()->cellFamily())
 , m_lbMng(sbi.subDomain()->loadBalanceMng())
+, m_mesh_criteria(makeRef(new MeshCriteriaLoadBalanceMng(sbi.subDomain(), sbi.mesh()->handle())))
 , m_maximum_computation_time(0.0)
 , m_imbalance(0.0)
 , m_max_imbalance(1.0)
@@ -97,7 +98,7 @@ communicator() const
 void MeshPartitionerBase::
 changeOwnersFromCells()
 {
-  mesh()->utilities()->changeOwnersFromCells();
+  m_mesh->utilities()->changeOwnersFromCells();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -117,10 +118,10 @@ initConstraints(bool uidref)
 
   _initNbCellsWithConstraints();
 
-  loadBalanceMng()->initAccess(mesh());
+  m_lbMng->initAccess(m_mesh);
 
   info() << "Weight (" << subDomain()->commonVariables().globalIteration()
-         << "): " << loadBalanceMng()->nbCriteria();
+         << "): " << m_mesh_criteria->nbCriteria();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -129,7 +130,7 @@ initConstraints(bool uidref)
 void MeshPartitionerBase::
 freeConstraints()
 {
-  loadBalanceMng()->endAccess();
+  m_lbMng->endAccess();
   _clearCellWgt();
   m_cells_with_constraints.clear();
   m_cells_with_weak_constraints.clear();
@@ -281,7 +282,7 @@ void MeshPartitionerBase::
 _checkCreateVar()
 {
   if (!m_unique_id_reference)
-    m_unique_id_reference = new VariableCellInt64(VariableBuildInfo(mesh(),"CellUniqueIdRef",IVariable::PNoDump));
+    m_unique_id_reference = new VariableCellInt64(VariableBuildInfo(m_mesh, "CellUniqueIdRef", IVariable::PNoDump));
 }
 
 /*---------------------------------------------------------------------------*/
@@ -319,7 +320,7 @@ _initUidRef(VariableCellInteger& cell_renum_uid)
   // Mise en place d'un tableau d'indirection entre les cell et un uniqueId de référence
   // permet de connaitre l'uid de la première maille de chacune des contraintes
   // y compris pour les mailles fantômes
-  ENUMERATE_CELL(icell, mesh()->allCells()){
+  ENUMERATE_CELL (icell, m_mesh->allCells()) {
     uids_ref[icell] = cell_renum_uid[icell];
   }
   for (Integer i=0; i<m_cells_with_constraints.size(); ++i){
@@ -433,7 +434,7 @@ _addNgb(const Cell& cell, const Face& face,
   bool toAdd = false;
   Int32 myoffset = neighbourcells.size();
   Real hg_contrib = 0;
-  const VariableFaceReal& commCost = m_lbMng->commCost();
+  const VariableFaceReal& commCost = m_mesh_criteria->commCost();
 
   // Maille traditionnelle, on peut ajouter
   if ((!special) &&(m_filter_lid_cells[cell.localId()] == eCellClassical))
@@ -621,7 +622,7 @@ invertArrayLid2LidCompacted()
 SharedArray<float> MeshPartitionerBase::
 cellsSizeWithConstraints()
 {
-  VariableCellReal mWgt = loadBalanceMng()->massResWeight();
+  VariableCellReal mWgt = m_mesh_criteria->massResWeight();
   return _cellsProjectWeights(mWgt);
 }
 
@@ -631,16 +632,15 @@ cellsWeightsWithConstraints(Int32 max_nb_weight, bool ask_lb_cells)
   ARCANE_UNUSED(ask_lb_cells);
 
   Int32 nb_weight = max_nb_weight;
-  ILoadBalanceMng *lbMng = loadBalanceMng();
 
-  Int32 nb_criteria = lbMng->nbCriteria();
+  Int32 nb_criteria = m_mesh_criteria->nbCriteria();
 
   if (max_nb_weight <= 0 || max_nb_weight > nb_criteria)
     nb_weight = nb_criteria;
 
   info() <<  "Number of weights " << nb_weight << " / " << nb_criteria;
 
-  VariableCellArrayReal mWgt = lbMng->mCriteriaWeight();
+  VariableCellArrayReal mWgt = m_mesh_criteria->mCriteriaWeight();
   return _cellsProjectWeights(mWgt, nb_weight);
 }
 
@@ -747,26 +747,24 @@ changeCellOwner(Item cell, VariableItemInt32& cells_new_owner, Int32 new_owner)
 void
 MeshPartitionerBase::setCellsWeight(ArrayView<float> weights,Integer nb_weight)
 {
-  ILoadBalanceMng *lbMng = loadBalanceMng();
-
-  lbMng->reset();
+  m_mesh_criteria->reset();
   _clearCellWgt();
 
   for (int i = 0 ; i <nb_weight ; ++i) {
     StringBuilder varName("LB_wgt_");
     varName += (i+1);
 
-    VariableCellReal myvar(VariableBuildInfo(mesh(), varName.toString(),
-                                     IVariable::PNoDump|IVariable::PTemporary|IVariable::PExecutionDepend));
-    ENUMERATE_CELL(icell,mesh()->ownCells()){
+    VariableCellReal myvar(VariableBuildInfo(m_mesh, varName.toString(),
+                                             IVariable::PNoDump|IVariable::PTemporary|IVariable::PExecutionDepend));
+    ENUMERATE_CELL (icell, m_mesh->ownCells()) {
       (myvar)[icell] = weights[icell->localId()*nb_weight+i];
     }
-    lbMng->addCriterion(myvar);
+    m_mesh_criteria->addCriterion(myvar);
   }
 
-  lbMng->initAccess(mesh());
-  lbMng->setMassAsCriterion(false);
-  lbMng->setNbCellsAsCriterion(false);
+  m_lbMng->initAccess(m_mesh);
+  m_mesh_criteria->setMassAsCriterion(false);
+  m_mesh_criteria->setNbCellsAsCriterion(false);
 }
 
 ArrayView<float>
