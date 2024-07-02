@@ -449,7 +449,7 @@ if(PARTITIONER_FOUND)
   ARCANE_ADD_TEST_PARALLEL(loadbalance_rep3 testLoadBalance-1.arc 12 -R 3)
   ARCANE_ADD_TEST_PARALLEL(loadbalance_collective testLoadBalance-1.arc 4 -We,ARCANE_MESH_EXCHANGE_USE_COLLECTIVE,1 -We,ARCANE_PRINT_CPUAFFINITY,1)
 
-  ARCANE_ADD_TEST_PARALLEL(loadbalancemng testLoadBalanceMng-1.arc 4 -m 2)
+  ARCANE_ADD_TEST_PARALLEL(meshcriterialoadbalancemng testMeshCriteriaLoadBalanceMng-1.arc 4 -m 2)
 endif()
 
 arcane_add_test_parallel_all(particle testParticle.arc 3 4)

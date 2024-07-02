@@ -78,7 +78,7 @@ set(ARCANE_SOURCES
   SimpleTableComparatorUnitTest.cc
   StringVariableReplaceTest.cc
   TimeHistoryAdderTestModule.cc
-    LoadBalanceTestModule.cc
+    MeshCriteriaLoadBalanceMngTestModule.cc
 )
 
 set(AXL_FILES
@@ -130,6 +130,6 @@ set(AXL_FILES
   SimpleTableOutputUnitTest
   StringVariableReplaceTest
   TimeHistoryAdderTest
-    LoadBalanceTest
+    MeshCriteriaLoadBalanceMngTest
 )
 

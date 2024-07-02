@@ -1,11 +1,11 @@
 <?xml version="1.0"?>
 <case codename="ArcaneTest" xml:lang="en" codeversion="1.0">
   <arcane>
-    <titre>Test LoadBalanceMng</titre>
-    <description>Test LoadBalanceMng</description>
-    <timeloop>LoadBalanceTestModuleLoop</timeloop>
+    <titre>Test MeshCriteriaLoadBalanceMng</titre>
+    <description>Test MeshCriteriaLoadBalanceMng</description>
+    <timeloop>MeshCriteriaLoadBalanceMngTestModuleLoop</timeloop>
     <modules>
-      <module name="LoadBalanceTest" active="true" />
+      <module name="MeshCriteriaLoadBalanceMngTest" active="true"/>
     </modules>
   </arcane>
 
@@ -30,7 +30,7 @@
     </mesh>
   </meshes>
 
-  <load-balance-test>
-  </load-balance-test>
+  <mesh-criteria-load-balance-mng-test>
+  </mesh-criteria-load-balance-mng-test>
 
 </case>
