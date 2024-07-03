@@ -377,7 +377,7 @@ _gatherFaces(ConstArrayView<ItemUniqueId> faces_to_send,
   Integer sub_domain_id = pm->commRank();
   Integer nb_sub_domain = pm->commSize();
 
-  const Real tol = 10e-6;
+  const Real tol = 10e-12;
 
   SerializeBuffer sbuf;
   sbuf.setMode(ISerializer::ModeReserve);

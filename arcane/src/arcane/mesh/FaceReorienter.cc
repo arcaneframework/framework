@@ -19,6 +19,7 @@
 #include "arcane/mesh/FaceFamily.h"
 
 #include "arcane/MeshUtils.h"
+#include "arcane/ItemPrinter.h"
 
 #include "arcane/ItemInternal.h"
 #include "arcane/IMesh.h"
@@ -109,7 +110,9 @@ checkAndChangeOrientation(Face face)
   // On cherche le plus petit uid de la face
   std::pair<Int64,Int64> face_smallest_node_uids = std::make_pair(face.node(0).uniqueId(),
                                                                   face.node(1).uniqueId());
-
+  if(face.node(0).uniqueId()==face.node(1).uniqueId())
+    face_smallest_node_uids = std::make_pair(face.node(0).uniqueId(),
+                                             face.node(2).uniqueId());
   Cell cell = face.cell(0);
   Int32 cell0_lid = cell.localId();
   Integer local_face_number = -1;
@@ -134,13 +137,27 @@ checkAndChangeOrientation(Face face)
   else {
     for (Integer i_node=0; i_node<local_face.nbNode(); ++i_node) {
       if (cell.node(local_face.node(i_node)).uniqueId() == face_smallest_node_uids.first) {
-        if (cell.node(local_face.node((i_node+1)%local_face.nbNode())).uniqueId() == face_smallest_node_uids.second) {
-          cell0_is_back_cell = true;
-          break;
+        if(cell.node(local_face.node((i_node+1)%local_face.nbNode())).uniqueId()==cell.node(local_face.node(i_node)).uniqueId())
+        {
+            if (cell.node(local_face.node((i_node+2)%local_face.nbNode())).uniqueId() == face_smallest_node_uids.second) {
+              cell0_is_back_cell = true;
+              break;
+            }
+            else {
+              cell0_is_back_cell = false;
+              break;
+            }
         }
-        else {
-          cell0_is_back_cell = false;
-          break;
+        else
+        {
+          if (cell.node(local_face.node((i_node+1)%local_face.nbNode())).uniqueId() == face_smallest_node_uids.second) {
+            cell0_is_back_cell = true;
+            break;
+          }
+          else {
+            cell0_is_back_cell = false;
+            break;
+          }
         }
       }
     }
@@ -154,6 +171,7 @@ checkAndChangeOrientation(Face face)
     std::swap(face_cells.first,face_cells.second);
   }
   m_face_family->setBackAndFrontCells(face,face_cells.first,face_cells.second);
+
 }
 
 /*---------------------------------------------------------------------------*/
@@ -185,6 +203,10 @@ checkAndChangeOrientationAMR(Face face)
   std::pair<Int64,Int64> face_smallest_node_uids = std::make_pair(face.node(0).uniqueId(),
                                                                   face.node(1).uniqueId());
 
+  if(face.node(0).uniqueId()==face.node(1).uniqueId())
+    face_smallest_node_uids = std::make_pair(face.node(0).uniqueId(),
+                                             face.node(2).uniqueId());
+
   //ItemInternal* cell = face->cell(0);
   bool cell_0 = false;
   bool cell_1 = false;
@@ -213,11 +235,13 @@ checkAndChangeOrientationAMR(Face face)
     }
   }
 
+
   if (local_face_number==(-1))
     ARCANE_FATAL("Incoherent connectivity: Face {0} not connected to cell {1}",
                  face.uniqueId(),cell.uniqueId());
 
   const ItemTypeInfo::LocalFace& local_face = cell.typeInfo()->localFace(local_face_number);
+
   bool cell_is_back_cell = false;
 
   if (face.nbNode() == 2) {
@@ -226,13 +250,27 @@ checkAndChangeOrientationAMR(Face face)
   else {
     for (Integer i_node=0; i_node<local_face.nbNode(); ++i_node) {
       if (cell.node(local_face.node(i_node)).uniqueId() == face_smallest_node_uids.first) {
-        if (cell.node(local_face.node((i_node+1)%local_face.nbNode())).uniqueId() == face_smallest_node_uids.second) {
-          cell_is_back_cell = true;
-          break;
+        if(cell.node(local_face.node((i_node+1)%local_face.nbNode())).uniqueId()==cell.node(local_face.node(i_node)).uniqueId())
+        {
+            if (cell.node(local_face.node((i_node+2)%local_face.nbNode())).uniqueId() == face_smallest_node_uids.second) {
+              cell_is_back_cell = true;
+              break;
+            }
+            else {
+              cell_is_back_cell = false;
+              break;
+            }
         }
-        else {
-          cell_is_back_cell = false;
-          break;
+        else
+        {
+          if (cell.node(local_face.node((i_node+1)%local_face.nbNode())).uniqueId() == face_smallest_node_uids.second) {
+            cell_is_back_cell = true;
+            break;
+          }
+          else {
+            cell_is_back_cell = false;
+            break;
+          }
         }
       }
     }
