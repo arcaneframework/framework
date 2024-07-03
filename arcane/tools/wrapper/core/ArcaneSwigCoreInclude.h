@@ -19,6 +19,7 @@
 #include "arcane/utils/CommandLineArguments.h"
 #include "arcane/utils/ApplicationInfo.h"
 #include "arcane/utils/ArrayShape.h"
+#include "arcane/utils/MemoryView.h"
 
 #include "arcane/expr/Expression.h"
 #include "arcane/expr/ArrayExpressionImpl.h"

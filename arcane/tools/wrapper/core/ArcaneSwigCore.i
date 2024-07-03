@@ -362,6 +362,7 @@ ARCANE_SWIG_OVERRIDE_GETCPTR(Arcane::ItemGroupT<Arcane::Cell>,Arcane)
 %include Numeric.i
 
 %include ArrayView.i
+%include MemoryView.i
 
 %feature("director") Arcane::IBinaryMathFunctor;
 %include arcane/utils/IMathFunctor.h

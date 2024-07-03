@@ -19,6 +19,7 @@ set(ARCANE_SWIG_CORE_INSTALL_FILES
   Variables.i
   DataVisitor.i
   ArrayView.i
+  MemoryView.i
   DotNetObject.i
   )
 
