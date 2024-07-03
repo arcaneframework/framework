@@ -644,7 +644,14 @@ _testUtilsInternal()
   UniqueArray<Real> copied_values(dim1);
   bool is_bad = VariableUtilsInternal::fillFloat64Array(v, copied_values);
   if (is_bad)
-    ARCANE_FATAL("Can not convert");
+    ARCANE_FATAL("Can not convert in getValues()");
+
+  for( Real& x : copied_values )
+    x += 4.0;
+
+  is_bad = VariableUtilsInternal::setFromFloat64Array(v, copied_values);
+  if (is_bad)
+    ARCANE_FATAL("Can not convert in setValues()");
 
   ENUMERATE_ (Cell, icell, allCells()) {
     Cell cell = *icell;

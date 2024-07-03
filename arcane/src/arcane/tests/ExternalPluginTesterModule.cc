@@ -137,7 +137,10 @@ computeLoop()
 
   ENUMERATE_ (Cell, icell, allCells()) {
     Cell cell = *icell;
-    m_density[icell] = static_cast<Real>(current_iteration + cell.uniqueId().asInt64());
+    Real x = static_cast<Real>(current_iteration + cell.uniqueId().asInt64());
+    m_density[icell] = x;
+    // La valeur 3.5 est issu du script python 'script4'
+    m_ref_density[icell] = x + 3.5;
   }
 
   IExternalPlugin* p = options()->externalPlugin();
@@ -150,6 +153,17 @@ computeLoop()
   bool is_finished = (current_iteration >= 15);
   if (is_finished)
     subDomain()->timeLoopMng()->stopComputeLoop(true);
+
+  if (options()->checkValues()) {
+    info() << "Checking Density values";
+    ENUMERATE_ (Cell, icell, allCells()) {
+      Cell cell = *icell;
+      Real x = m_density[icell];
+      Real ref_x = m_ref_density[icell];
+      if (x != ref_x)
+        ARCANE_FATAL("Bad value v={0} ref={1} uid={2}", x, ref_x, cell.uniqueId());
+    }
+  }
 }
 
 /*---------------------------------------------------------------------------*/
