@@ -7,9 +7,9 @@ configure_file(ArcanePython/__init__.py.in "${ARCANE_PYTHON_BASE_INSTALL_DIR}/Ar
 configure_file(ArcanePython/app.runtime.json "${ARCANE_PYTHON_BASE_INSTALL_DIR}/ArcanePython" COPYONLY)
 
 install(FILES
-  "${ARCANE_PYTHON_INSTALL_DIR}/ArcanePython/__init__.py"
+  "${ARCANE_PYTHON_BASE_INSTALL_DIR}/ArcanePython/__init__.py"
   ArcanePython/app.runtime.json
-  DESTINATION "ArcanePython")
+  DESTINATION "lib/python/ArcanePython")
 install(DIRECTORY tests DESTINATION . USE_SOURCE_PERMISSIONS)
 enable_testing()
 
