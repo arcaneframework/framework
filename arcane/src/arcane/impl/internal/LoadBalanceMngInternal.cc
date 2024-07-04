@@ -174,7 +174,7 @@ endAccess()
 {
   IMesh* mesh = m_mesh_handle.mesh();
   if (!mesh)
-    ARCANE_FATAL("Null mesh");
+    return;
 
   m_mesh_criterion[mesh].clearVariables();
 
