@@ -77,6 +77,14 @@ PETScInternalLinearAlgebra::norm2(const PETScVector& vx) const
   return result;
 }
 
+
+Arccore::Real
+PETScInternalLinearAlgebra::normInf(const PETScVector& vx) const
+{
+  Arccore::Real result = 0;
+  VecNorm(vx.internal()->m_internal, NORM_INFINITY, &result);
+  return result;
+}
 /*---------------------------------------------------------------------------*/
 
 void

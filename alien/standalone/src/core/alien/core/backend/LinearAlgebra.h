@@ -99,6 +99,13 @@ class LinearAlgebra : public ILinearAlgebra
   Real norm2(const IVector& x) const;
 
   /*!
+   * \brief Compute LInf norm of a vector
+   * \param[in] x The vector on which norm2 is computed
+   * \returns The normInf of the vector
+   */
+  Real normInf(const IVector& x) const;
+
+  /*!
    * \brief Compute a matrix vector product
    *
    * Compute the matrix-vector product a by x and store it in r : r = a * x

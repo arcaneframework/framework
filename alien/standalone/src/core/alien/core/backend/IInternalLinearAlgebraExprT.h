@@ -84,6 +84,13 @@ class IInternalLinearAlgebraExpr
   virtual Real norm2(const Vector& x) const = 0;
 
   /*!
+   * \brief Compute LInf norm of a vector
+   * \param[in] x The vector on which norm0 is computed
+   * \returns The normInf of the vector
+   */
+  virtual Real normInf(const Vector& x) const = 0;
+
+  /*!
    * \brief Compute L2 (Frobenous) norm of a matrix
    * \param[in] x The matrix on which norm2 is computed
    * \returns The norm2 of the matrix

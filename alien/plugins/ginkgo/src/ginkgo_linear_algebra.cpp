@@ -50,6 +50,8 @@ class ALIEN_GINKGO_EXPORT InternalLinearAlgebra
 
   Arccore::Real norm2(const Vector& x) const override;
 
+  Arccore::Real normInf(const Vector& x) const override;
+
   void mult(const Matrix& a, const Vector& x, Vector& r) const override;
 
   void axpy(Arccore::Real alpha, const Vector& x,
@@ -74,6 +76,12 @@ class ALIEN_GINKGO_EXPORT InternalLinearAlgebra
 
 Arccore::Real
 InternalLinearAlgebra::norm0(const Vector& vx ALIEN_UNUSED_PARAM) const
+{
+  throw Arccore::NotImplementedException(A_FUNCINFO, "GinkgoLinearAlgebra::norm0 not implemented");
+}
+
+Arccore::Real
+InternalLinearAlgebra::normInf(const Vector& vx ALIEN_UNUSED_PARAM) const
 {
   throw Arccore::NotImplementedException(A_FUNCINFO, "GinkgoLinearAlgebra::norm0 not implemented");
 }

@@ -79,12 +79,22 @@ LinearAlgebraExpr<Tag, TagV>::norm2(const IVector& x) const
 
 template <class Tag, class TagV>
 Arccore::Real
+LinearAlgebraExpr<Tag, TagV>::normInf(const IVector& x) const
+{
+  const auto& vx = x.impl()->get<Tag>();
+  return m_algebra->normInf(vx);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template <class Tag, class TagV>
+Arccore::Real
 LinearAlgebraExpr<Tag, TagV>::norm2(const IMatrix& x) const
 {
   const auto& mx = x.impl()->get<Tag>();
   return m_algebra->norm2(mx);
 }
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 

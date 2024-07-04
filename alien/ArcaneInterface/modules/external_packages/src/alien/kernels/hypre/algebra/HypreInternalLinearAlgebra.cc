@@ -98,6 +98,15 @@ HypreInternalLinearAlgebra::norm2(const HypreVector& vx) const
   return std::sqrt(dot(vx, vx));
 }
 
+Arccore::Real
+HypreInternalLinearAlgebra::normInf([[maybe_unused]] const HypreVector& vx) const
+{
+  Arccore::Real result = 0;
+  throw Arccore::NotImplementedException(
+      A_FUNCINFO, "HypreLinearAlgebra::norm0 not implemented");
+  // VecNorm(vx.internal()->m_internal, NORM_INFINITY, &result);
+  return result;
+}
 /*---------------------------------------------------------------------------*/
 
 void

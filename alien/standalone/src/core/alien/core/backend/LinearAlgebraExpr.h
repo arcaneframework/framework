@@ -98,6 +98,13 @@ class LinearAlgebraExpr
   Real norm2(const IVector& x) const;
 
   /*!
+   * \brief Compute LInf norm of a vector
+   * \param[in] x The vector on which norm0 is computed
+   * \returns The normInf of the vector
+   */
+  Real normInf(const IVector& x) const;
+
+  /*!
    * \brief Compute L2 (Frobenous) norm of a matrix
    * \param[in] x The matrix on which norm2 is computed
    * \returns The norm2 of the matrix

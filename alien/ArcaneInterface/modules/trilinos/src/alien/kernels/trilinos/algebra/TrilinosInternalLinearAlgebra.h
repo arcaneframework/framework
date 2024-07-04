@@ -38,6 +38,8 @@ class ALIEN_TRILINOS_EXPORT TrilinosInternalLinearAlgebra
 
   Real norm2(const Vector& x) const;
 
+  Real normInf(const Vector& x) const;
+
   void mult(const Matrix& a, const Vector& x, Vector& r) const;
 
   void axpy(Real alpha, const Vector& x, Vector& r) const;

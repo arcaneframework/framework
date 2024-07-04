@@ -106,6 +106,23 @@ class CBLASMPIKernel
   }
 
   template <typename Distribution, typename VectorT>
+  static typename VectorT::ValueType nrm0(Distribution const& dist, const VectorT& x)
+  {
+    typedef typename VectorT::ValueType ValueType;
+    auto local_size = x.scalarizedLocalSize();
+    auto x_ptr = x.getDataPtr();
+    ValueType value = ValueType() ;
+    for(std::size_t i = 0; i < local_size; ++i)
+      value += (std::abs(x_ptr[i])>0?1:0) ;
+
+    if (dist.isParallel()) {
+      value = Arccore::MessagePassing::mpAllReduce(
+      dist.parallelMng(), Arccore::MessagePassing::ReduceSum, value);
+    }
+    return value;
+  }
+
+  template <typename Distribution, typename VectorT>
   static typename VectorT::ValueType nrm1(Distribution const& dist, const VectorT& x)
   {
     typedef typename VectorT::ValueType ValueType;
@@ -129,6 +146,23 @@ class CBLASMPIKernel
       dist.parallelMng(), Arccore::MessagePassing::ReduceSum, value);
     }
     return std::sqrt(value);
+  }
+
+  template <typename Distribution, typename VectorT>
+  static typename VectorT::ValueType nrmInf(Distribution const& dist, const VectorT& x)
+  {
+    typedef typename VectorT::ValueType ValueType;
+    auto local_size = x.scalarizedLocalSize();
+    auto x_ptr = x.getDataPtr();
+    ValueType value = ValueType() ;
+    for(std::size_t i = 0; i < local_size; ++i)
+      value = std::max(value,std::abs(x_ptr[i])) ;
+
+    if (dist.isParallel()) {
+      value = Arccore::MessagePassing::mpAllReduce(
+      dist.parallelMng(), Arccore::MessagePassing::ReduceMax, value);
+    }
+    return value;
   }
 
   template <typename Distribution, typename MatrixT>

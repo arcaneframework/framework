@@ -58,7 +58,7 @@ HTSInternalLinearAlgebra::~HTSInternalLinearAlgebra()
 Real
 HTSInternalLinearAlgebra::norm0(const Vector& x) const
 {
-  return 0.;
+  return CBLASMPIKernel::nrm0(x.distribution(), x);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -66,8 +66,7 @@ HTSInternalLinearAlgebra::norm0(const Vector& x) const
 Real
 HTSInternalLinearAlgebra::norm1(const Vector& x) const
 {
-  throw NotImplementedException(
-      A_FUNCINFO, "HTSInternalLinearAlgebra::aypx not implemented");
+  return CBLASMPIKernel::nrm1(x.distribution(), x);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -77,6 +76,13 @@ HTSInternalLinearAlgebra::norm2(const Vector& x) const
 {
   return CBLASMPIKernel::nrm2(x.distribution(), x);
 }
+
+Real
+HTSInternalLinearAlgebra::normInf(const Vector& x) const
+{
+  return CBLASMPIKernel::nrmInf(x.distribution(), x);
+}
+
 
 /*---------------------------------------------------------------------------*/
 

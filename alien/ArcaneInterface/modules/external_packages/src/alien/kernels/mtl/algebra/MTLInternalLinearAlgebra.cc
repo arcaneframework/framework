@@ -68,6 +68,13 @@ MTLInternalLinearAlgebra::norm2(const Vector& x) const
   return two_norm(x.internal()->m_internal);
 }
 
+Arccore::Real
+MTLInternalLinearAlgebra::normInf(const Vector& x) const
+{
+  return infinity_norm(x.internal()->m_internal);
+}
+
+
 /*---------------------------------------------------------------------------*/
 
 void

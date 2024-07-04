@@ -86,6 +86,11 @@ TrilinosInternalLinearAlgebra::norm2(const Vector& x) const
   return x.norm2();
 }
 
+Real
+TrilinosInternalLinearAlgebra::normInf(const Vector& x) const
+{
+  return 0.;
+}
 /*---------------------------------------------------------------------------*/
 
 void
