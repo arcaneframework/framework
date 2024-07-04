@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshPartitionerBase.cc                                      (C) 2000-2023 */
+/* MeshPartitionerBase.cc                                      (C) 2000-2024 */
 /*                                                                           */
 /* Classe de base d'un partitionneur de maillage                             */
 /*---------------------------------------------------------------------------*/
@@ -58,12 +58,12 @@ MeshPartitionerBase(const ServiceBuildInfo& sbi)
 , m_pm_sub(0)
 , m_cell_family(sbi.mesh()->cellFamily())
 , m_lbMng(sbi.subDomain()->loadBalanceMng())
-, m_mesh_criteria(makeRef(new MeshCriteriaLoadBalanceMng(sbi.subDomain(), sbi.mesh()->handle())))
+, m_lb_mng_internal(sbi.subDomain()->loadBalanceMng()->_internalApi())
 , m_maximum_computation_time(0.0)
 , m_imbalance(0.0)
 , m_max_imbalance(1.0)
-, m_unique_id_reference(0)
- {
+, m_unique_id_reference(nullptr)
+{
   IParallelMng* pm = m_mesh->parallelMng();
   m_pm_sub = pm;
  }
@@ -118,10 +118,10 @@ initConstraints(bool uidref)
 
   _initNbCellsWithConstraints();
 
-  m_lbMng->initAccess(m_mesh);
+  m_lb_mng_internal->initAccess(m_mesh);
 
   info() << "Weight (" << subDomain()->commonVariables().globalIteration()
-         << "): " << m_mesh_criteria->nbCriteria();
+         << "): " << m_lb_mng_internal->nbCriteria(m_mesh);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -130,7 +130,7 @@ initConstraints(bool uidref)
 void MeshPartitionerBase::
 freeConstraints()
 {
-  m_lbMng->endAccess();
+  m_lb_mng_internal->endAccess();
   _clearCellWgt();
   m_cells_with_constraints.clear();
   m_cells_with_weak_constraints.clear();
@@ -434,7 +434,7 @@ _addNgb(const Cell& cell, const Face& face,
   bool toAdd = false;
   Int32 myoffset = neighbourcells.size();
   Real hg_contrib = 0;
-  const VariableFaceReal& commCost = m_mesh_criteria->commCost();
+  const VariableFaceReal& commCost = m_lb_mng_internal->commCost(m_mesh);
 
   // Maille traditionnelle, on peut ajouter
   if ((!special) &&(m_filter_lid_cells[cell.localId()] == eCellClassical))
@@ -622,7 +622,7 @@ invertArrayLid2LidCompacted()
 SharedArray<float> MeshPartitionerBase::
 cellsSizeWithConstraints()
 {
-  VariableCellReal mWgt = m_mesh_criteria->massResWeight();
+  VariableCellReal mWgt = m_lb_mng_internal->massResWeight(m_mesh);
   return _cellsProjectWeights(mWgt);
 }
 
@@ -633,14 +633,14 @@ cellsWeightsWithConstraints(Int32 max_nb_weight, bool ask_lb_cells)
 
   Int32 nb_weight = max_nb_weight;
 
-  Int32 nb_criteria = m_mesh_criteria->nbCriteria();
+  Int32 nb_criteria = m_lb_mng_internal->nbCriteria(m_mesh);
 
   if (max_nb_weight <= 0 || max_nb_weight > nb_criteria)
     nb_weight = nb_criteria;
 
   info() <<  "Number of weights " << nb_weight << " / " << nb_criteria;
 
-  VariableCellArrayReal mWgt = m_mesh_criteria->mCriteriaWeight();
+  VariableCellArrayReal mWgt = m_lb_mng_internal->mCriteriaWeight(m_mesh);
   return _cellsProjectWeights(mWgt, nb_weight);
 }
 
@@ -747,7 +747,7 @@ changeCellOwner(Item cell, VariableItemInt32& cells_new_owner, Int32 new_owner)
 void
 MeshPartitionerBase::setCellsWeight(ArrayView<float> weights,Integer nb_weight)
 {
-  m_mesh_criteria->reset();
+  m_lb_mng_internal->reset(m_mesh);
   _clearCellWgt();
 
   for (int i = 0 ; i <nb_weight ; ++i) {
@@ -759,12 +759,12 @@ MeshPartitionerBase::setCellsWeight(ArrayView<float> weights,Integer nb_weight)
     ENUMERATE_CELL (icell, m_mesh->ownCells()) {
       (myvar)[icell] = weights[icell->localId()*nb_weight+i];
     }
-    m_mesh_criteria->addCriterion(myvar);
+    m_lb_mng_internal->addCriterion(myvar, m_mesh);
   }
 
-  m_lbMng->initAccess(m_mesh);
-  m_mesh_criteria->setMassAsCriterion(false);
-  m_mesh_criteria->setNbCellsAsCriterion(false);
+  m_lb_mng_internal->initAccess(m_mesh);
+  m_lb_mng_internal->setMassAsCriterion(m_mesh, false);
+  m_lb_mng_internal->setNbCellsAsCriterion(m_mesh, false);
 }
 
 ArrayView<float>
