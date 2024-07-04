@@ -1302,7 +1302,8 @@ _readEntities()
       Real3 xyz = _getReal3();
       Int64 num_physical_tag = ios_file->getInt64();
       if (num_physical_tag > 1)
-        ARCANE_FATAL("NotImplemented numPhysicalTag>1 (n={0})", num_physical_tag);
+        ARCANE_FATAL("NotImplemented numPhysicalTag>1 (n={0}, index={1} xyz={2})",
+                     num_physical_tag, i, xyz);
 
       Int32 physical_tag = -1;
       if (num_physical_tag == 1)
@@ -1334,27 +1335,37 @@ _readOneEntity(Int32 entity_dim)
 {
   IosFile* ios_file = m_ios_file.get();
 
-  FixedArray<Int64, 3> dim_and_tag_info;
+  // Infos pour les tags
+  // [0] entity_dim
+  // [1] tag
+  // [2] nb_physical_tag
+  // [3] physical_tag1
+  // [4] physical_tag2
+  // [5] ...
+  FixedArray<Int64, 128> dim_and_tag_info;
+  dim_and_tag_info[0] = entity_dim;
   if (ios_file) {
     Int64 tag = ios_file->getInt64();
+    dim_and_tag_info[1] = tag;
     Real3 min_pos = _getReal3();
     Real3 max_pos = _getReal3();
-    Int64 num_physical_tag = ios_file->getInt64();
-    if (num_physical_tag > 1)
-      ARCANE_FATAL("NotImplemented numPhysicalTag>1 (n={0})", num_physical_tag);
-    Int32 physical_tag = -1;
-    if (num_physical_tag == 1)
-      physical_tag = ios_file->getInteger();
+    Int64 nb_physical_tag = ios_file->getInt64();
+    if (nb_physical_tag >= 124)
+      ARCANE_FATAL("NotImplemented numPhysicalTag>=124 (n={0})", nb_physical_tag);
+    dim_and_tag_info[2] = nb_physical_tag;
+    for (Int32 z = 0; z < nb_physical_tag; ++z) {
+      Int32 physical_tag = ios_file->getInteger();
+      dim_and_tag_info[3 + z] = physical_tag;
+      info(4) << "[Entities] z=" << z << " physical_tag=" << physical_tag;
+    }
+    // TODO: Lire les informations numBounding...
     Int32 num_bounding_group = ios_file->getInteger();
     for (Int32 k = 0; k < num_bounding_group; ++k) {
       [[maybe_unused]] Int32 group_tag = ios_file->getInteger();
     }
     info(4) << "[Entities] dim=" << entity_dim << " tag=" << tag
             << " min_pos=" << min_pos << " max_pos=" << max_pos
-            << " phys_tag=" << physical_tag;
-    dim_and_tag_info[0] = entity_dim;
-    dim_and_tag_info[1] = tag;
-    dim_and_tag_info[2] = physical_tag;
+            << " nb_phys_tag=" << nb_physical_tag;
   }
 
   m_parallel_mng->broadcast(dim_and_tag_info.view(), m_master_io_rank);
@@ -1362,8 +1373,11 @@ _readOneEntity(Int32 entity_dim)
   {
     Int32 dim = CheckedConvert::toInt32(dim_and_tag_info[0]);
     Int64 tag = dim_and_tag_info[1];
-    Int64 physical_tag = dim_and_tag_info[2];
-    m_mesh_info.entities_with_nodes_list[dim - 1].add(MeshV4EntitiesWithNodes(dim, tag, physical_tag));
+    Int64 nb_physical_tag = dim_and_tag_info[2];
+    for (Int32 z = 0; z < nb_physical_tag; ++z) {
+      Int64 physical_tag = dim_and_tag_info[2 + z];
+      m_mesh_info.entities_with_nodes_list[dim - 1].add(MeshV4EntitiesWithNodes(dim, tag, physical_tag));
+    }
   }
 
   _goToNextLine();
