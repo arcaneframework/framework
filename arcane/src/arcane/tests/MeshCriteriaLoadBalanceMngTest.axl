@@ -13,18 +13,6 @@
   </entry-points>
 
   <options>
-    <service-instance
-        name="partitioner0"
-        type="Arcane::IMeshPartitioner"
-        default="DefaultPartitioner"
-        mesh-name="Mesh0"
-    />
-    <service-instance
-        name="partitioner1"
-        type="Arcane::IMeshPartitioner"
-        default="DefaultPartitioner"
-        mesh-name="Mesh1"
-    />
   </options>
 
 </module>
