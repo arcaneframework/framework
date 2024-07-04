@@ -1,3 +1,10 @@
+// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
+//-----------------------------------------------------------------------------
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// See the top-level COPYRIGHT file for details.
+// SPDX-License-Identifier: Apache-2.0
+//-----------------------------------------------------------------------------
+
 #include <iostream>
 
 #include <alien/core/backend/IVectorConverter.h>
@@ -42,8 +49,9 @@ SimpleCSR_to_MCG_VectorConverter::convert(
       cast<SimpleCSRVector<double>>(sourceImpl, sourceBackend());
   MCGVector& v2 = cast<MCGVector>(targetImpl, targetBackend());
 
-  alien_debug(
-      [&] { cout() << "Converting SimpleCSRVector: " << &v << " to MCGVector " << &v2; });
+  alien_debug([&] {
+    cout() << "Converting SimpleCSRVector: " << &v << " to MCGVector " << &v2;
+  });
 
   v2.setValues(v.values().data());
 }
