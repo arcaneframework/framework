@@ -52,6 +52,7 @@ class MeshCriteriaLoadBalanceMngTestModule
 
   UniqueArray<Ref<VariableCellInt32>> m_density_meshes_ref;
   UniqueArray<Int32> m_sum;
+  UniqueArray<Real> m_quality;
   UniqueArray<Ref<IMeshPartitioner>> m_partitioners;
 };
 
@@ -73,6 +74,7 @@ init()
   m_density_meshes_ref.resize(subDomain()->meshes().size());
   m_sum.resize(subDomain()->meshes().size());
   m_partitioners.resize(subDomain()->meshes().size());
+  m_quality.resize(subDomain()->meshes().size());
 
   for(Integer imesh = 0; imesh < subDomain()->meshes().size(); ++imesh){
     IMesh* mesh = subDomain()->meshes()[imesh];
@@ -93,14 +95,16 @@ init()
 
     Real target = Real(m_sum[imesh]) / parallelMng()->commSize();
 
-    Real lb_quality = (max - target) * 100 / (m_sum[imesh] - target); // TODO div 0
+    m_quality[imesh] = (max - target) * 100 / (m_sum[imesh] - target);
 
     debug() << "Initial Balancing"
             << " -- Mesh : " << mesh->name()
             << " -- NbCells : " << mesh->ownCells().size()
-            << " -- Local sum density : " << sum
-            << " -- All domains sum density : " << m_sum[imesh]
-            << " -- Quality of LoadBalance (between 0 and 100, lower is better) : " << lb_quality;
+            << " -- Quality of LoadBalance (between 0 and 100, lower is better) : " << m_quality[imesh];
+    debug() << " -- Local density : " << sum
+            << " -- Target density per SubDomain : " << target
+            << " -- ReduceMax density : " << max
+            << " -- ReduceSum density : " << m_sum[imesh];
 
     m_partitioners[imesh] = ServiceBuilder<IMeshPartitioner>::createReference(subDomain(), "DefaultPartitioner", mesh);
   }
@@ -112,8 +116,7 @@ init()
 void MeshCriteriaLoadBalanceMngTestModule::
 loop()
 {
-  //for(Integer imesh = 0; imesh < subDomain()->meshes().size(); ++imesh){
-  for (Integer imesh = 0; imesh < 2; ++imesh) {
+  for (Integer imesh = 0; imesh < subDomain()->meshes().size(); ++imesh) {
     VariableCellInt32& density = *(m_density_meshes_ref[imesh].get());
     IMesh* mesh = subDomain()->meshes()[imesh];
 
@@ -140,15 +143,22 @@ loop()
     debug() << "Actual Balancing"
             << " -- Mesh : " << mesh->name()
             << " -- NbCells : " << mesh->ownCells().size()
-            << " -- Local sum density : " << sum
-            << " -- All domains sum density : " << sum_sum
-            << " -- Original density : " << m_sum[imesh]
-            << " -- Quality of LoadBalance (between 0 and 100, lower is better) : " << lb_quality;
+            << " -- Quality of LoadBalance (between 0 and 100, lower is better) : " << lb_quality
+            << " -- Initial Quality of LoadBalance : " << m_quality[imesh];
+    debug() << " -- Local density : " << sum
+            << " -- Target density per SubDomain : " << target
+            << " -- ReduceMax density : " << max
+            << " -- ReduceSum density : " << sum_sum
+            << " -- Initial ReduceSum density : " << m_sum[imesh];
 
     //    ENUMERATE_ (Cell, icell, mesh->ownCells()) {
     //      debug() << "CellUniqueId : " << icell->uniqueId();
     //    }
     ARCANE_ASSERT((sum_sum == m_sum[imesh]), ("Different sum"));
+    if (lb_quality > m_quality[imesh]) {
+      warning() << "Bad quality, need checking test";
+    }
+
     subDomain()->timeLoopMng()->registerActionMeshPartition((IMeshPartitionerBase*)m_partitioners[imesh].get());
   }
 }

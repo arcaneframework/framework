@@ -25,6 +25,7 @@
         </y>
       </generator>
     </mesh>
+
     <mesh>
       <generator name="Cartesian3D">
         <nb-part-x>2</nb-part-x>
@@ -44,6 +45,18 @@
           <length>4.0</length>
         </z>
       </generator>
+    </mesh>
+
+    <mesh>
+      <generator name="Sod3D">
+        <x>50</x>
+        <y>5</y>
+        <z>5</z>
+      </generator>
+    </mesh>
+
+    <mesh>
+      <filename internal-partition="true">sphere_v4.2.vtk</filename>
     </mesh>
   </meshes>
 
