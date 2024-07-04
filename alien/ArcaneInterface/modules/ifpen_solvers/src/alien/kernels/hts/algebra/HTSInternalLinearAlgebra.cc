@@ -1,4 +1,9 @@
-
+﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
+//-----------------------------------------------------------------------------
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// See the top-level COPYRIGHT file for details.
+// SPDX-License-Identifier: Apache-2.0
+//-----------------------------------------------------------------------------
 #include "HTSInternalLinearAlgebra.h"
 
 #include <alien/kernels/hts/HTSBackEnd.h>
@@ -58,7 +63,7 @@ HTSInternalLinearAlgebra::~HTSInternalLinearAlgebra()
 Real
 HTSInternalLinearAlgebra::norm0(const Vector& x) const
 {
-  return 0.;
+  return CBLASMPIKernel::nrm0(x.distribution(), x);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -66,8 +71,7 @@ HTSInternalLinearAlgebra::norm0(const Vector& x) const
 Real
 HTSInternalLinearAlgebra::norm1(const Vector& x) const
 {
-  throw NotImplementedException(
-      A_FUNCINFO, "HTSInternalLinearAlgebra::aypx not implemented");
+  return CBLASMPIKernel::nrm1(x.distribution(), x);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -77,6 +81,13 @@ HTSInternalLinearAlgebra::norm2(const Vector& x) const
 {
   return CBLASMPIKernel::nrm2(x.distribution(), x);
 }
+
+Real
+HTSInternalLinearAlgebra::normInf(const Vector& x) const
+{
+  return CBLASMPIKernel::nrmInf(x.distribution(), x);
+}
+
 
 /*---------------------------------------------------------------------------*/
 

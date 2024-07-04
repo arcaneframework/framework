@@ -1,4 +1,10 @@
-﻿#include "HypreInternalLinearAlgebra.h"
+﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
+//-----------------------------------------------------------------------------
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// See the top-level COPYRIGHT file for details.
+// SPDX-License-Identifier: Apache-2.0
+//-----------------------------------------------------------------------------
+#include "HypreInternalLinearAlgebra.h"
 
 #include <HYPRE_parcsr_mv.h>
 #include <HYPRE_IJ_mv.h>
@@ -98,6 +104,15 @@ HypreInternalLinearAlgebra::norm2(const HypreVector& vx) const
   return std::sqrt(dot(vx, vx));
 }
 
+Arccore::Real
+HypreInternalLinearAlgebra::normInf([[maybe_unused]] const HypreVector& vx) const
+{
+  Arccore::Real result = 0;
+  throw Arccore::NotImplementedException(
+      A_FUNCINFO, "HypreLinearAlgebra::norm0 not implemented");
+  // VecNorm(vx.internal()->m_internal, NORM_INFINITY, &result);
+  return result;
+}
 /*---------------------------------------------------------------------------*/
 
 void

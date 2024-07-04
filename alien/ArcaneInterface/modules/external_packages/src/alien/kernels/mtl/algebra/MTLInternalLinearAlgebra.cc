@@ -1,4 +1,10 @@
-﻿#include <alien/kernels/mtl/algebra/MTLInternalLinearAlgebra.h>
+﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
+//-----------------------------------------------------------------------------
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// See the top-level COPYRIGHT file for details.
+// SPDX-License-Identifier: Apache-2.0
+//-----------------------------------------------------------------------------
+#include <alien/kernels/mtl/algebra/MTLInternalLinearAlgebra.h>
 
 #include <alien/core/backend/LinearAlgebraT.h>
 
@@ -67,6 +73,13 @@ MTLInternalLinearAlgebra::norm2(const Vector& x) const
 {
   return two_norm(x.internal()->m_internal);
 }
+
+Arccore::Real
+MTLInternalLinearAlgebra::normInf(const Vector& x) const
+{
+  return infinity_norm(x.internal()->m_internal);
+}
+
 
 /*---------------------------------------------------------------------------*/
 

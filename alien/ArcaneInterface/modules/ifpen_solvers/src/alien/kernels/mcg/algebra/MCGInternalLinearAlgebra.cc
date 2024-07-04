@@ -1,3 +1,9 @@
+﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
+//-----------------------------------------------------------------------------
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// See the top-level COPYRIGHT file for details.
+// SPDX-License-Identifier: Apache-2.0
+//-----------------------------------------------------------------------------
 #include "mpi.h"
 
 #include <alien/core/impl/MultiMatrixImpl.h>
@@ -56,6 +62,12 @@ MCGInternalLinearAlgebra::norm2(const VectorType& x) const
   return norm2(vx);
 }
 
+Real
+MCGInternalLinearAlgebra::normInf(const VectorType& x) const
+{
+  const MCGVector& vx = x.impl()->get<BackEnd::tag::mcgsolver>();
+  return normInf(vx);
+}
 /*---------------------------------------------------------------------------*/
 
 void
@@ -133,6 +145,15 @@ MCGInternalLinearAlgebra::norm2(const VectorImpl& vx) const
   // result = two_norm(vx.internal()->m_internal);
   return result;
 }
+
+Real
+MCGInternalLinearAlgebra::normInf(const VectorImpl& vx) const
+{
+  Real result = 0;
+  // result = two_norm(vx.internal()->m_internal);
+  return result;
+}
+
 
 /*---------------------------------------------------------------------------*/
 

@@ -95,11 +95,13 @@ void SimpleCSRInternalLinearAlgebra::free(Vector& v)
   v.clear();
 }
 
-Real SimpleCSRInternalLinearAlgebra::norm0(const CSRVector& vx ALIEN_UNUSED_PARAM) const
+Real SimpleCSRInternalLinearAlgebra::norm0(const CSRVector& vx) const
 {
-  // return CBLASMPIKernel::nrm0(x.space().structInfo(),vx);
-  throw NotImplementedException(
-  A_FUNCINFO, "SimpleCSRLinearAlgebra::norm0 not implemented");
+#ifdef ALIEN_USE_PERF_TIMER
+  SentryType s(m_timer, "CSR-NORM0");
+#endif
+
+  return CBLASMPIKernel::nrm0(vx.distribution(), vx);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -121,6 +123,16 @@ Real SimpleCSRInternalLinearAlgebra::norm2(const CSRVector& vx) const
   SentryType s(m_timer, "CSR-NORM2");
 #endif
   return CBLASMPIKernel::nrm2(vx.distribution(), vx);
+}
+
+/*---------------------------------------------------------------------------*/
+
+Real SimpleCSRInternalLinearAlgebra::normInf(const CSRVector& vx) const
+{
+#ifdef ALIEN_USE_PERF_TIMER
+  SentryType s(m_timer, "CSR-NORMINF");
+#endif
+  return CBLASMPIKernel::nrmInf(vx.distribution(), vx);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -275,20 +287,16 @@ SimpleCSRInternalLinearAlgebraExpr::~SimpleCSRInternalLinearAlgebraExpr() {}
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Real SimpleCSRInternalLinearAlgebraExpr::norm0(const CSRVector& vx ALIEN_UNUSED_PARAM) const
+Real SimpleCSRInternalLinearAlgebraExpr::norm0(const CSRVector& vx) const
 {
-  // return CBLASMPIKernel::nrm0(x.space().structInfo(),vx);
-  throw NotImplementedException(
-  A_FUNCINFO, "SimpleCSRLinearAlgebra::norm0 not implemented");
+  return CBLASMPIKernel::nrm0(vx.distribution(), vx);
 }
 
 /*---------------------------------------------------------------------------*/
 
-Real SimpleCSRInternalLinearAlgebraExpr::norm1(const CSRVector& vx ALIEN_UNUSED_PARAM) const
+Real SimpleCSRInternalLinearAlgebraExpr::norm1(const CSRVector& vx) const
 {
-  // return CBLASMPIKernel::nrm1(x.space().structInfo(),vx);
-  throw NotImplementedException(
-  A_FUNCINFO, "SimpleCSRLinearAlgebra::norm1 not implemented");
+  return CBLASMPIKernel::nrm1(vx.distribution(), vx);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -296,6 +304,13 @@ Real SimpleCSRInternalLinearAlgebraExpr::norm1(const CSRVector& vx ALIEN_UNUSED_
 Real SimpleCSRInternalLinearAlgebraExpr::norm2(const CSRVector& vx) const
 {
   return CBLASMPIKernel::nrm2(vx.distribution(), vx);
+}
+
+/*---------------------------------------------------------------------------*/
+
+Real SimpleCSRInternalLinearAlgebraExpr::normInf(const CSRVector& vx) const
+{
+  return CBLASMPIKernel::nrmInf(vx.distribution(), vx);
 }
 
 /*---------------------------------------------------------------------------*/

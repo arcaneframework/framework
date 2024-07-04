@@ -72,6 +72,8 @@ class ALIEN_HYPRE_EXPORT InternalLinearAlgebra final
 
   Arccore::Real norm2(const Vector& x) const override;
 
+  Arccore::Real normInf(const Vector& x) const override;
+
   void mult(const Matrix& a, const Vector& x, Vector& r) const override;
 
   void axpy(Arccore::Real alpha, const Vector& x, Vector& r) const override;
@@ -107,6 +109,12 @@ Arccore::Real
 InternalLinearAlgebra::norm2(const Vector& vx) const
 {
   return std::sqrt(dot(vx, vx));
+}
+
+Arccore::Real
+InternalLinearAlgebra::normInf(const Vector& vx ALIEN_UNUSED_PARAM) const
+{
+  throw Arccore::NotImplementedException(A_FUNCINFO, "HypreLinearAlgebra::norm1 not implemented");
 }
 
 void InternalLinearAlgebra::mult(const Matrix& ma, const Vector& vx, Vector& vr) const
