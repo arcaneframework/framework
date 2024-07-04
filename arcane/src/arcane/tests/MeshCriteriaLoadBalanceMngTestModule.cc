@@ -17,7 +17,7 @@
 #include "arcane/core/IParallelMng.h"
 #include "arcane/core/ITimeLoopMng.h"
 #include "arcane/core/ServiceBuilder.h"
-#include "arcane/impl/MeshCriteriaLoadBalanceMng.h"
+#include "arcane/core/MeshCriteriaLoadBalanceMng.h"
 #include "arcane/tests/MeshCriteriaLoadBalanceMngTest_axl.h"
 
 /*---------------------------------------------------------------------------*/

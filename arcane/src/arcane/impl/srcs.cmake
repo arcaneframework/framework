@@ -54,8 +54,6 @@ set( ARCANE_SOURCES
   DefaultBackwardMng.h
   LoadBalanceMng.cc
   LoadBalanceMng.h
-    MeshCriteriaLoadBalanceMng.cc
-    MeshCriteriaLoadBalanceMng.h
   NullVariableSynchronizer.cc
   ParallelExchanger.cc
   ParallelExchanger.h
@@ -155,8 +153,8 @@ set( ARCANE_SOURCES
   internal/VariableSynchronizerComputeList.h
   internal/TimeHistoryMngInternal.h
   internal/TimeHistoryMngInternal.cc
-    internal/LoadBalanceMngInternal.h
-    internal/LoadBalanceMngInternal.cc
+  internal/LoadBalanceMngInternal.h
+  internal/LoadBalanceMngInternal.cc
 )
 
 if (ARCANE_HAS_ACCELERATOR_API)

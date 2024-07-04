@@ -9,12 +9,12 @@
 /*                                                                           */
 /* Gestionnaire des critères d'équilibre de charge des maillages.            */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_IMPL_MESHCRITERIALOADBALANCEMNG_H
-#define ARCANE_IMPL_MESHCRITERIALOADBALANCEMNG_H
+#ifndef ARCANE_CORE_MESHCRITERIALOADBALANCEMNG_H
+#define ARCANE_CORE_MESHCRITERIALOADBALANCEMNG_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/ILoadBalanceMng.h"
+#include "arcane/core/ILoadBalanceMng.h"
 #include "arcane/core/ISubDomain.h"
 #include "arcane/core/ICriteriaLoadBalanceMng.h"
 
@@ -26,12 +26,12 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Implantation standard d'une interface d'enregistrement des variables
- * pour l'equilibrage de charge.
- *
+ * \brief Classe permettant d'ajouter des critères pour ajuster
+ *        l'équilibre de charge.
  */
-class ARCANE_IMPL_EXPORT MeshCriteriaLoadBalanceMng
+class ARCANE_CORE_EXPORT MeshCriteriaLoadBalanceMng
 : public ICriteriaLoadBalanceMng
 {
  public:
@@ -40,22 +40,10 @@ class ARCANE_IMPL_EXPORT MeshCriteriaLoadBalanceMng
 
  public:
 
-  void addMass(VariableCellInt32& count, const String& entity) override;
   void addCriterion(VariableCellInt32& count) override;
   void addCriterion(VariableCellReal& count) override;
+  void addMass(VariableCellInt32& count, const String& entity) override;
   void addCommCost(VariableFaceInt32& count, const String& entity) override;
-
-  void setMassAsCriterion(bool active) override;
-  void setNbCellsAsCriterion(bool active) override;
-  void setCellCommContrib(bool active) override;
-  void setComputeComm(bool active) override;
-  const VariableFaceReal& commCost() const override;
-  const VariableCellReal& massWeight() const override;
-  const VariableCellReal& massResWeight() const override;
-  const VariableCellArrayReal& mCriteriaWeight() const override;
-
-  bool cellCommContrib() const override;
-  Integer nbCriteria() override;
 
   void reset() override;
 

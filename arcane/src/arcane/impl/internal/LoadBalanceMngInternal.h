@@ -555,18 +555,18 @@ class CriteriaMng
   {
     m_event_weights->resize(nbCriteria());
 
-    ArrayView<StoreIProxyItemVariable> eventVars = criteria();
+    ArrayView<StoreIProxyItemVariable> event_vars = criteria();
 
     VariableCellArrayReal& event_weights = *(m_event_weights);
 
-    for (Integer i = 0; i < eventVars.size(); ++i) {
+    for (Integer i = 0; i < event_vars.size(); ++i) {
       ENUMERATE_CELL (icell, m_mesh->ownCells()) {
         Integer count = i;
         if (m_nb_cells_as_criterion) {
           count += 1;
           event_weights(icell, 0) = 1;
         }
-        event_weights(icell, count) = eventVars[i][icell];
+        event_weights(icell, count) = event_vars[i][icell];
       }
     }
   }
