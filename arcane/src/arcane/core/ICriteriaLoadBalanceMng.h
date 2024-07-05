@@ -73,6 +73,43 @@ class ICriteriaLoadBalanceMng
    * \brief Méthode permettant d'effacer les critères déjà ajoutés.
    */
   virtual void reset() =0;
+
+  /*!
+   * \brief Méthode permettant de dire si la masse de données de chaque
+   *        maille est un critère pour l'équilibre de charge.
+   *
+   * \param active true si la masse de données doit être un critère.
+   */
+  virtual void setMassAsCriterion(bool active) = 0;
+
+  /*!
+   * \brief Méthode permettant de dire si le nombre de mailles dans un
+   *        sous-domaine doit être un critère pour l'équilibre de charge.
+   *
+   * \param active true si le nombre de maille doit être un critère.
+   */
+  virtual void setNbCellsAsCriterion(bool active) = 0;
+
+  /*!
+   * \brief Méthode permettant de dire si la masse des communications
+   *        entre les mailles doit être un critère pour l'équilibre de charge.
+   *
+   * \param active true si la masse des communications doit être un critère.
+   */
+  virtual void setCellCommContrib(bool active) = 0;
+
+  /*!
+   * \brief
+   * \param active
+   */
+  virtual void setComputeComm(bool active) = 0;
+
+  /*!
+   * \brief Méthode permettant d'obtenir le nombre de critères déjà enregistrés.
+   *
+   * \return Le nombre de critères.
+   */
+  virtual Integer nbCriteria() = 0;
 };
 
 /*---------------------------------------------------------------------------*/

@@ -78,6 +78,51 @@ addCommCost(VariableFaceInt32& count, const String& entity)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+void MeshCriteriaLoadBalanceMng::
+setMassAsCriterion(bool active)
+{
+  m_internal->setMassAsCriterion(m_mesh_handle.mesh(), active);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MeshCriteriaLoadBalanceMng::
+setNbCellsAsCriterion(bool active)
+{
+  m_internal->setNbCellsAsCriterion(m_mesh_handle.mesh(), active);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MeshCriteriaLoadBalanceMng::
+setCellCommContrib(bool active)
+{
+  m_internal->setCellCommContrib(m_mesh_handle.mesh(), active);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MeshCriteriaLoadBalanceMng::
+setComputeComm(bool active)
+{
+  m_internal->setComputeComm(m_mesh_handle.mesh(), active);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Integer MeshCriteriaLoadBalanceMng::
+nbCriteria()
+{
+  return m_internal->nbCriteria(m_mesh_handle.mesh());
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 } // namespace Arcane
 
 /*---------------------------------------------------------------------------*/

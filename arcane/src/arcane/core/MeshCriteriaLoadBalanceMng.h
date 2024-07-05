@@ -47,6 +47,13 @@ class ARCANE_CORE_EXPORT MeshCriteriaLoadBalanceMng
 
   void reset() override;
 
+  void setMassAsCriterion(bool active) override;
+  void setNbCellsAsCriterion(bool active) override;
+  void setCellCommContrib(bool active) override;
+  void setComputeComm(bool active) override;
+
+  Integer nbCriteria() override;
+
  private:
 
   ILoadBalanceMngInternal* m_internal;
