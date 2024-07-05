@@ -53,7 +53,7 @@ class MeshCriteriaLoadBalanceMngTestModule
   UniqueArray<Ref<VariableCellInt32>> m_density_meshes_ref;
   UniqueArray<Int32> m_sum;
   UniqueArray<Real> m_quality;
-  UniqueArray<Ref<IMeshPartitioner>> m_partitioners;
+  UniqueArray<Ref<IMeshPartitionerBase>> m_partitioners;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -106,7 +106,7 @@ init()
             << " -- ReduceMax density : " << max
             << " -- ReduceSum density : " << m_sum[imesh];
 
-    m_partitioners[imesh] = ServiceBuilder<IMeshPartitioner>::createReference(subDomain(), "DefaultPartitioner", mesh);
+    m_partitioners[imesh] = ServiceBuilder<IMeshPartitionerBase>::createReference(subDomain(), "DefaultPartitioner", mesh);
   }
 }
 
@@ -159,7 +159,7 @@ loop()
       warning() << "Bad quality, need checking test";
     }
 
-    subDomain()->timeLoopMng()->registerActionMeshPartition((IMeshPartitionerBase*)m_partitioners[imesh].get());
+    subDomain()->timeLoopMng()->registerActionMeshPartition(static_cast<IMeshPartitionerBase*>(m_partitioners[imesh].get()));
   }
 }
 

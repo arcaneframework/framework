@@ -74,7 +74,7 @@ template <typename DataType> class ProxyItemVariable
 {
  public:
 
-  ProxyItemVariable(IVariable* var, Integer pos = 0)
+  explicit ProxyItemVariable(IVariable* var, Integer pos = 0)
   : m_var(var)
   , m_pos(pos)
   {
