@@ -584,6 +584,14 @@ des hexaèdres.
 
 \snippet accelerator/SimpleHydroAcceleratorService.cc AcceleratorConnectivity
 
+## Opérations atomiques
+
+La méthode \arcaneacc{doAtomic} permet d'effectuer des opérations
+atomiques. Les types d'opérations supportées sont définies par
+l'énumération \arcaneacc{eAtomicOperation}. Par exemple:
+
+\snippet AtomicUnitTest.cc SampleAtomicAdd
+
 ## Réductions, Scan et Filtrage
 
 La classe \arcaneacc{Filterer} permet de filtrer les éléments d'un tableau.

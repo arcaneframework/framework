@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* AtomicUnitTest.cc                                           (C) 2000-2023 */
+/* AtomicUnitTest.cc                                           (C) 2000-2024 */
 /*                                                                           */
 /* Service de test des fonctions 'atomic' sur accélérateur.                  */
 /*---------------------------------------------------------------------------*/
@@ -71,6 +71,7 @@ class AtomicUnitTest
   void _executeTestOperation();
   template <typename DataType, enum ax::eAtomicOperation Operation>
   void _executeTestType();
+  void executeTestSample();
 };
 
 /*---------------------------------------------------------------------------*/
@@ -118,6 +119,30 @@ executeTest()
   _executeTestOperation<ax::eAtomicOperation::Add>();
   _executeTestOperation<ax::eAtomicOperation::Max>();
   _executeTestOperation<ax::eAtomicOperation::Min>();
+  executeTestSample();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void AtomicUnitTest::
+executeTestSample()
+{
+  //![SampleAtomicAdd]
+  using namespace Arcane;
+  namespace ax = Arcane::Accelerator;
+  Arcane::Accelerator::RunQueue queue = makeQueue(m_runner);
+  Arcane::NumArray<Arcane::Real, MDDim1> v_sum(100);
+  auto command = makeCommand(queue);
+  auto inout_a = viewInOut(command, v_sum);
+  Real v_to_add = 2.1;
+  constexpr auto Add = ax::eAtomicOperation::Add;
+  command << RUNCOMMAND_LOOP1(iter, 100)
+  {
+    // atomic add 'v' to 'inout_a(iter)'
+    ax::doAtomic<Add>(inout_a(iter), v_to_add);
+  };
+  //![SampleAtomicAdd]
 }
 
 /*---------------------------------------------------------------------------*/
