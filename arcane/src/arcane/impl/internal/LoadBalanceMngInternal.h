@@ -124,9 +124,8 @@ class PartitionerMemoryInfo
  public:
 
   //! Construction en fonction du IVariableMng.
-  explicit PartitionerMemoryInfo(IVariableMng* varMng)
-  : m_variable_mng(varMng)
-  , m_family_names(IK_Unknown + 1, "__special__") // +1 car certaines variables sont associées à IK_Unknown
+  explicit PartitionerMemoryInfo()
+  : m_family_names(IK_Unknown + 1, "__special__") // +1 car certaines variables sont associées à IK_Unknown
   {
     m_family_names[IK_Cell] = "Cell";
     m_family_names[IK_Face] = "Face";
@@ -149,7 +148,7 @@ class PartitionerMemoryInfo
 
   // Calcul de la consommation mémoire pour chaque type d'entité.
   // Les mailles bénéficient ensuite des contributions des autres entités adjacentes.
-  void computeMemory()
+  void computeMemory(IVariableMng* varMng)
   {
     Int32 length = m_family_names.size();
     m_overall_memory.resize(length);
@@ -159,7 +158,7 @@ class PartitionerMemoryInfo
     m_resident_memory.fill(0);
 
     // For each variable, compute the size for one object.
-    for (VariableCollectionEnumerator vc(m_variable_mng->usedVariables()); ++vc;) {
+    for (VariableCollectionEnumerator vc(varMng->usedVariables()); ++vc;) {
       const IVariable* var = *vc;
       Integer memory = 0;
       try {
@@ -288,7 +287,6 @@ class PartitionerMemoryInfo
     return contrib;
   }
 
-  IVariableMng* m_variable_mng;
   UniqueArray<String> m_family_names;
   UniqueArray<Int32> m_overall_memory;
   UniqueArray<Int32> m_resident_memory;
@@ -315,7 +313,7 @@ class CriteriaMng
   , m_is_edited_mass_criterion(false)
   , m_is_init(false)
   , m_mesh(nullptr)
-  , m_criteria(nullptr)
+  , m_criteria(new PartitionerMemoryInfo())
   {
     m_mass_vars.clear();
     m_comm_vars.clear();
@@ -353,7 +351,6 @@ class CriteriaMng
     m_mass_res_weight->fill(1);
     m_is_init = true;
     m_mesh = mesh;
-    m_criteria = new PartitionerMemoryInfo(mesh->variableMng());
   }
 
   void defaultMassCriterion(bool mass_criterion)
@@ -490,7 +487,7 @@ class CriteriaMng
   void computeCriteria()
   {
     if (needComputeComm() || useMassAsCriterion()) { // Memory useful only for communication cost or mass lb criterion
-      m_criteria->computeMemory();
+      m_criteria->computeMemory(m_mesh->variableMng());
       _computeResidentMass();
     }
     if (needComputeComm()) {

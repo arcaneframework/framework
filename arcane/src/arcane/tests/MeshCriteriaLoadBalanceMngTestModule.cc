@@ -51,6 +51,7 @@ class MeshCriteriaLoadBalanceMngTestModule
  private:
 
   UniqueArray<Ref<VariableCellInt32>> m_density_meshes_ref;
+  UniqueArray<Ref<VariableFaceInt32>> m_faces_density_meshes_ref;
   UniqueArray<Int32> m_sum;
   UniqueArray<Real> m_quality;
   UniqueArray<Ref<IMeshPartitionerBase>> m_partitioners;
@@ -72,6 +73,7 @@ void MeshCriteriaLoadBalanceMngTestModule::
 init()
 {
   m_density_meshes_ref.resize(subDomain()->meshes().size());
+  m_faces_density_meshes_ref.resize(subDomain()->meshes().size());
   m_sum.resize(subDomain()->meshes().size());
   m_partitioners.resize(subDomain()->meshes().size());
   m_quality.resize(subDomain()->meshes().size());
@@ -79,15 +81,20 @@ init()
   for(Integer imesh = 0; imesh < subDomain()->meshes().size(); ++imesh){
     IMesh* mesh = subDomain()->meshes()[imesh];
     m_density_meshes_ref[imesh] = makeRef(new VariableCellInt32(VariableBuildInfo(mesh, "Density")));
+    m_faces_density_meshes_ref[imesh] = makeRef(new VariableFaceInt32(VariableBuildInfo(mesh, "FaceDensity")));
 
     Int32 sum{};
 
     VariableCellInt32& density = *(m_density_meshes_ref[imesh].get());
+    VariableFaceInt32& face_density = *(m_faces_density_meshes_ref[imesh].get());
 
     mesh->modifier()->setDynamic(true);
     ENUMERATE_ (Cell, icell, mesh->ownCells()){
       density[icell] = icell->uniqueId().asInt32();
       sum += icell->uniqueId().asInt32();
+    }
+    ENUMERATE_ (Face, iface, mesh->ownFaces()) {
+      face_density[iface] = 1;
     }
     m_sum[imesh] = parallelMng()->reduce(IParallelMng::eReduceType::ReduceSum, sum);
 
@@ -118,10 +125,12 @@ loop()
 {
   for (Integer imesh = 0; imesh < subDomain()->meshes().size(); ++imesh) {
     VariableCellInt32& density = *(m_density_meshes_ref[imesh].get());
+    VariableFaceInt32& face_density = *(m_faces_density_meshes_ref[imesh].get());
     IMesh* mesh = subDomain()->meshes()[imesh];
 
     MeshCriteriaLoadBalanceMng mesh_criteria = MeshCriteriaLoadBalanceMng(subDomain(), mesh->handle());
     mesh_criteria.addCriterion(density);
+    mesh_criteria.addCommCost(face_density, "Face");
   }
 
   for (Integer imesh = 0; imesh < subDomain()->meshes().size(); ++imesh) {
