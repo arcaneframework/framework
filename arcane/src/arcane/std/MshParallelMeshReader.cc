@@ -169,12 +169,12 @@ class MshParallelMeshReader
   {
    public:
 
-    MeshV4EntitiesWithNodes* findEntities(Int32 dimension, Int64 tag)
+    void findEntities(Int32 dimension, Int64 tag,Array<MeshV4EntitiesWithNodes>& entities)
     {
+      entities.clear();
       for (auto& x : entities_with_nodes_list[dimension - 1])
         if (x.tag == tag)
-          return &x;
-      return nullptr;
+          entities.add(x);
     }
 
     MeshV4EntitiesNodes* findNodeEntities(Int64 tag)
@@ -1015,7 +1015,11 @@ _allocateGroups()
   IMesh* mesh = m_mesh;
   Int32 mesh_dim = mesh->dimension();
   Int32 face_dim = mesh_dim - 1;
+  UniqueArray<MeshV4EntitiesWithNodes> entity_list;
+  UniqueArray<MeshPhysicalName> physical_name_list;
   for (MeshV4ElementsBlock& block : m_mesh_info.blocks) {
+    entity_list.clear();
+    physical_name_list.clear();
     Int32 block_index = block.index;
     Int32 block_dim = block.dimension;
     // On alloue un groupe s'il a un nom physique associé.
@@ -1025,7 +1029,6 @@ _allocateGroups()
       info(5) << "[Groups] Skipping block index=" << block_index << " because it has no entity";
       continue;
     }
-    MeshPhysicalName physical_name;
     if (block_dim == 0) {
       const MeshV4EntitiesNodes* entity = m_mesh_info.findNodeEntities(block_entity_tag);
       if (!entity) {
@@ -1034,33 +1037,34 @@ _allocateGroups()
         continue;
       }
       Int64 entity_physical_tag = entity->physical_tag;
-      physical_name = m_mesh_info.physical_name_list.find(block_dim, entity_physical_tag);
+      MeshPhysicalName physical_name = m_mesh_info.physical_name_list.find(block_dim, entity_physical_tag);
+      physical_name_list.add(physical_name);
     }
     else {
-      const MeshV4EntitiesWithNodes* entity = m_mesh_info.findEntities(block_dim, block_entity_tag);
-      if (!entity) {
+      m_mesh_info.findEntities(block_dim, block_entity_tag, entity_list);
+      for (const MeshV4EntitiesWithNodes& x : entity_list) {
+        Int64 entity_physical_tag = x.physical_tag;
+        MeshPhysicalName physical_name = m_mesh_info.physical_name_list.find(block_dim, entity_physical_tag);
+        physical_name_list.add(physical_name);
+      }
+    }
+    for (const MeshPhysicalName& physical_name : physical_name_list) {
+      if (physical_name.isNull()) {
         info(5) << "[Groups] Skipping block index=" << block_index
-                << " because entity tag is invalid";
+                << " because entity physical tag is invalid";
         continue;
       }
-      Int64 entity_physical_tag = entity->physical_tag;
-      physical_name = m_mesh_info.physical_name_list.find(block_dim, entity_physical_tag);
-    }
-    if (physical_name.isNull()) {
-      info(5) << "[Groups] Skipping block index=" << block_index
-              << " because entity physical tag is invalid";
-      continue;
-    }
-    info(4) << "[Groups] Block index=" << block_index << " dim=" << block_dim
-            << " name='" << physical_name.name << "'";
-    if (block_dim == mesh_dim) {
-      _addCellOrNodeGroup(block, physical_name.name, mesh->cellFamily());
-    }
-    else if (block_dim == face_dim) {
-      _addFaceGroup(block, physical_name.name);
-    }
-    else {
-      _addCellOrNodeGroup(block, physical_name.name, mesh->nodeFamily());
+      info(4) << "[Groups] Block index=" << block_index << " dim=" << block_dim
+              << " name='" << physical_name.name << "'";
+      if (block_dim == mesh_dim) {
+        _addCellOrNodeGroup(block, physical_name.name, mesh->cellFamily());
+      }
+      else if (block_dim == face_dim) {
+        _addFaceGroup(block, physical_name.name);
+      }
+      else {
+        _addCellOrNodeGroup(block, physical_name.name, mesh->nodeFamily());
+      }
     }
   }
 }
@@ -1375,7 +1379,9 @@ _readOneEntity(Int32 entity_dim)
     Int64 tag = dim_and_tag_info[1];
     Int64 nb_physical_tag = dim_and_tag_info[2];
     for (Int32 z = 0; z < nb_physical_tag; ++z) {
-      Int64 physical_tag = dim_and_tag_info[2 + z];
+      Int64 physical_tag = dim_and_tag_info[3 + z];
+      info(4) << "[Entities] adding info dim=" << entity_dim << " tag=" << tag
+              << " physical_tag=" << physical_tag;
       m_mesh_info.entities_with_nodes_list[dim - 1].add(MeshV4EntitiesWithNodes(dim, tag, physical_tag));
     }
   }
