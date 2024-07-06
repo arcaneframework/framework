@@ -124,14 +124,8 @@ class VariableRef::UpdateNotifyFunctorList
 
 VariableRef::
 VariableRef(const VariableBuildInfo& vbi)
-: m_variable(0)
-, m_module(vbi.module())
-, m_is_registered(false)
+: m_module(vbi.module())
 , m_reference_property(vbi.property())
-, m_previous_reference(0)
-, m_next_reference(0)
-, m_has_trace(false)
-, m_notify_functor_list(0)
 {
   //cout << "VAR NAME=" << vbi.name() << " this="
   //     << this << " module=" << m_module << '\n';
@@ -144,13 +138,7 @@ VariableRef(const VariableBuildInfo& vbi)
 VariableRef::
 VariableRef(IVariable* var)
 : m_variable(var)
-, m_module(0)
-, m_is_registered(false)
 , m_reference_property(var->property())
-, m_previous_reference(0)
-, m_next_reference(0)
-, m_has_trace(false)
-, m_notify_functor_list(0)
 {
   //cout << "VAR NAME=" << vbi.name() << " this="
   //     << this << " module=" << m_module << '\n';
@@ -168,14 +156,6 @@ VariableRef(IVariable* var)
  */
 VariableRef::
 VariableRef()
-: m_variable(0)
-, m_module(0)
-, m_is_registered(false)
-, m_reference_property(0)
-, m_previous_reference(0)
-, m_next_reference(0)
-, m_has_trace(false)
-, m_notify_functor_list(0)
 {
 }
 
@@ -186,12 +166,7 @@ VariableRef::
 VariableRef(const VariableRef& from)
 : m_variable(from.m_variable)
 , m_module(from.m_module)
-, m_is_registered(false)
 , m_reference_property(from.m_reference_property)
-, m_previous_reference(0)
-, m_next_reference(0)
-, m_has_trace(false)
-, m_notify_functor_list(0)
 {
   _setAssignmentStackTrace();
   //cout << "** TODO: check variable copy constructor with linked list\n";
@@ -207,8 +182,10 @@ VariableRef(const VariableRef& from)
 VariableRef& VariableRef::
 operator=(const VariableRef& rhs)
 {
-  if (rhs.m_variable!=m_variable)
-    _internalAssignVariable(rhs);
+  if (this != &rhs) {
+    if (rhs.m_variable != m_variable)
+      _internalAssignVariable(rhs);
+  }
   return (*this);
 }
 
