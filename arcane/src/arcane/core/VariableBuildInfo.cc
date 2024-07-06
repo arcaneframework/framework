@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* VariableBuildInfo.cc                                        (C) 2000-2023 */
+/* VariableBuildInfo.cc                                        (C) 2000-2024 */
 /*                                                                           */
 /* Informations pour construire une variable.                                */
 /*---------------------------------------------------------------------------*/
@@ -59,7 +59,6 @@ VariableBuildInfo(IModule* m,const String& name,int property)
 VariableBuildInfo::
 VariableBuildInfo(ISubDomain* sd,const String& name,int property)
 : m_sub_domain(sd)
-, m_module(nullptr)
 , m_name(name)
 , m_property(property)
 {
@@ -72,7 +71,6 @@ VariableBuildInfo(ISubDomain* sd,const String& name,int property)
 VariableBuildInfo::
 VariableBuildInfo(IVariableMng* variable_mng,const String& name,int property)
 : m_sub_domain(variable_mng->_internalApi()->internalSubDomain())
-, m_module(nullptr)
 , m_name(name)
 , m_property(property)
 {
@@ -85,7 +83,6 @@ VariableBuildInfo(IVariableMng* variable_mng,const String& name,int property)
 VariableBuildInfo::
 VariableBuildInfo(const MeshHandle& mesh_handle,const String& name,int property)
 : m_sub_domain(_getSubDomainDeprecated(mesh_handle))
-, m_module(nullptr)
 , m_mesh_handle(mesh_handle)
 , m_name(name)
 , m_property(property)
@@ -125,7 +122,6 @@ VariableBuildInfo::
 VariableBuildInfo(const MeshHandle& mesh_handle,const String& name,
                   const String& item_family_name,int property)
 : m_sub_domain(_getSubDomainDeprecated(mesh_handle))
-, m_module(nullptr)
 , m_mesh_handle(mesh_handle)
 , m_name(name)
 , m_item_family_name(item_family_name)
@@ -151,7 +147,6 @@ VariableBuildInfo::
 VariableBuildInfo(ISubDomain* sd,const String& name,const String& mesh_name,
                   const String& item_family_name,int property)
 : m_sub_domain(sd)
-, m_module(nullptr)
 , m_name(name)
 , m_item_family_name(item_family_name)
 , m_mesh_name(mesh_name)
@@ -167,7 +162,6 @@ VariableBuildInfo::
 VariableBuildInfo(IVariableMng* variable_mng,const String& name,const String& mesh_name,
                   const String& item_family_name,int property)
 : m_sub_domain(variable_mng->_internalApi()->internalSubDomain())
-, m_module(nullptr)
 , m_name(name)
 , m_item_family_name(item_family_name)
 , m_mesh_name(mesh_name)
@@ -182,7 +176,6 @@ VariableBuildInfo(IVariableMng* variable_mng,const String& name,const String& me
 VariableBuildInfo::
 VariableBuildInfo(IItemFamily* family,const String& name,int property)
 : m_sub_domain(_getSubDomainDeprecated(family->mesh()->handle()))
-, m_module(nullptr)
 , m_mesh_handle(family->mesh()->handle())
 , m_name(name)
 , m_item_family_name(family->name())
@@ -217,7 +210,6 @@ VariableBuildInfo(const MeshHandle& mesh_handle,const String& name,
                   const String& item_family_name,
                   const String& item_group_name,int property)
 : m_sub_domain(_getSubDomainDeprecated(mesh_handle))
-, m_module(nullptr)
 , m_mesh_handle(mesh_handle)
 , m_name(name)
 , m_item_family_name(item_family_name)
@@ -247,7 +239,6 @@ VariableBuildInfo(ISubDomain* sd,const String& name,
                   const String& item_family_name,
                   const String& item_group_name,int property)
 : m_sub_domain(sd)
-, m_module(nullptr)
 , m_name(name)
 , m_item_family_name(item_family_name)
 , m_item_group_name(item_group_name)
@@ -266,12 +257,21 @@ VariableBuildInfo(IVariableMng* variable_mng,const String& name,
                   const String& item_family_name,
                   const String& item_group_name,int property)
 : m_sub_domain(variable_mng->_internalApi()->internalSubDomain())
-, m_module(nullptr)
 , m_name(name)
 , m_item_family_name(item_family_name)
 , m_item_group_name(item_group_name)
 , m_mesh_name(mesh_name)
 , m_property(property)
+{
+  _init();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+VariableBuildInfo::
+VariableBuildInfo(const NullTag&)
+: m_is_null(true)
 {
   _init();
 }

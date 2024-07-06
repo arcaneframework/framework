@@ -524,6 +524,7 @@ class IVariableFactory;
 class VariableTypeInfo;
 class VariableRef;
 class VariableBuildInfo;
+class NullVariableBuildInfo;
 class VariableFactoryRegisterer;
 class VariableInfo;
 typedef VariableRef* (*VariableFactoryVariableRefCreateFunc)(const VariableBuildInfo& vb);

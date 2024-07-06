@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshVariableArrayRefT.H                                     (C) 2000-2023 */
+/* MeshVariableArrayRefT.H                                     (C) 2000-2024 */
 /*                                                                           */
 /* Variable vectorielle du maillage.                                         */
 /*---------------------------------------------------------------------------*/
@@ -61,9 +61,11 @@ ItemVariableArrayRefT<DataType>::
 ItemVariableArrayRefT(const VariableBuildInfo& vb,eItemKind ik)
 : PrivateVariableArrayT<DataType>(vb,_internalVariableInfo(vb,ik))
 {
-  this->_internalInit();
-  if (this->m_private_part->isPartial())
-    ARCANE_FATAL("Can not assign a partial variable to a full variable");
+  if (!vb.isNull()) {
+    this->_internalInit();
+    if (this->m_private_part->isPartial())
+      ARCANE_FATAL("Can not assign a partial variable to a full variable");
+  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -85,19 +87,25 @@ template<class DataType> ItemVariableArrayRefT<DataType>::
 ItemVariableArrayRefT(const ItemVariableArrayRefT<DataType>& rhs)
 : PrivateVariableArrayT<DataType>(rhs)
 {
-  this->updateFromInternal();
+  if (this->m_private_part)
+    this->updateFromInternal();
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class DataType> void 
+template <class DataType> ItemVariableArrayRefT<DataType>&
 ItemVariableArrayRefT<DataType>::
 operator=(const ItemVariableArrayRefT<DataType>& rhs)
 {
-  BaseClass::operator=(rhs);
-  this->m_private_part = rhs.m_private_part;
-  this->updateFromInternal();
+  if (this != &rhs) {
+    BaseClass::operator=(rhs);
+    if (this->m_private_part) {
+      this->m_private_part = rhs.m_private_part;
+      this->updateFromInternal();
+    }
+  }
+  return (*this);
 }
 
 /*---------------------------------------------------------------------------*/

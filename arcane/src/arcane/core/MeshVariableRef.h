@@ -35,8 +35,8 @@ class ARCANE_CORE_EXPORT MeshVariableRef
  public:
 
   //! Construit une référence liée au module \a module
-  MeshVariableRef(const VariableBuildInfo& vb);
-  virtual ~MeshVariableRef() {}
+  explicit MeshVariableRef(const VariableBuildInfo& vb);
+  ~MeshVariableRef() override = default;
 
  protected:
 

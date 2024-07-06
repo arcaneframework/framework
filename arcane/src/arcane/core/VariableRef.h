@@ -64,7 +64,7 @@ class ARCANE_CORE_EXPORT VariableRef
   //! Construit une référence sur une variable avec les infos \a vbi
   explicit VariableRef(const VariableBuildInfo& vbi);
   //! Constructeur de copie
-  explicit VariableRef(const VariableRef& from);
+  VariableRef(const VariableRef& from);
   //! Construit une référence sur une variable \a var
   explicit VariableRef(IVariable* var);
   //! Opérateur de recopie
@@ -301,22 +301,22 @@ class ARCANE_CORE_EXPORT VariableRef
  private:
 
   //! Variable associée
-  IVariable* m_variable;
+  IVariable* m_variable = nullptr;
 
   //! Module associé (ou 0 si aucun)
-  IModule* m_module;
+  IModule* m_module = nullptr;
 
   //! \a true si la variable a été enregistrée
-  bool m_is_registered;
+  bool m_is_registered = false;
 
   //! Propriétés de la référence
-  int m_reference_property;
+  int m_reference_property = 0;
 
   //! Référence précédente sur \a m_variable
-  VariableRef* m_previous_reference;
+  VariableRef* m_previous_reference = nullptr;
 
   //! Référence suivante sur \a m_variable
-  VariableRef* m_next_reference;
+  VariableRef* m_next_reference = nullptr;
 
   /*!
    * \brief Pile d'appel lors de l'assignation de la variable.
@@ -329,7 +329,7 @@ class ARCANE_CORE_EXPORT VariableRef
 
   void _executeUpdateFunctors();
 
-  bool m_has_trace;
+  bool m_has_trace = false;
 
  private:
 
@@ -351,7 +351,7 @@ class ARCANE_CORE_EXPORT VariableRef
  private:
 
   static bool m_static_has_trace_creation;
-  UpdateNotifyFunctorList* m_notify_functor_list;
+  UpdateNotifyFunctorList* m_notify_functor_list = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/

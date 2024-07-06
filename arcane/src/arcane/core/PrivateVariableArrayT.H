@@ -53,7 +53,8 @@ PrivateVariableArrayT(const PrivateVariableArrayT& rhs)
 : MeshVariableRef(rhs)
 , m_private_part(rhs.m_private_part)
 {
-  updateFromInternal();
+  if (m_private_part)
+    updateFromInternal();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -63,9 +64,12 @@ template<class DataType> void
 PrivateVariableArrayT<DataType>::
 operator=(const PrivateVariableArrayT& rhs)
 {
-  VariableRef::operator=(rhs);
-  m_private_part = rhs.m_private_part;
-  updateFromInternal();
+  if (this != &rhs) {
+    VariableRef::operator=(rhs);
+    m_private_part = rhs.m_private_part;
+    if (m_private_part)
+      updateFromInternal();
+  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -74,7 +78,8 @@ operator=(const PrivateVariableArrayT& rhs)
 template<class DataType> void
 PrivateVariableArrayT<DataType>::
 updateFromInternal()
-{ 
+{
+  ARCANE_CHECK_POINTER(m_private_part);
   m_view = m_private_part->valueView();
   MeshVariableRef::updateFromInternal();
   _executeUpdateFunctors();
@@ -87,6 +92,7 @@ template<class DataType> void
 PrivateVariableArrayT<DataType>::
 resize(Integer dim2_size)
 {
+  ARCANE_CHECK_POINTER(m_private_part);
   m_private_part->directResize(m_private_part->valueView().dim1Size(),dim2_size);
   updateFromInternal();
 }

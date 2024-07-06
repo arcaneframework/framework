@@ -102,9 +102,11 @@ ItemVariableScalarRefT<DataTypeT>::
 ItemVariableScalarRefT(const VariableBuildInfo& vb,eItemKind ik)
 : PrivateVariableScalarT<DataTypeT>(vb,_internalVariableInfo(vb,ik))
 {
-  this->_internalInit();
-  if (this->m_private_part->isPartial())
-    ARCANE_FATAL("Can not assign a partial variable to a full variable");
+  if (!vb.isNull()) {
+    this->_internalInit();
+    if (this->m_private_part->isPartial())
+      ARCANE_FATAL("Can not assign a partial variable to a full variable");
+  }
 }
 
 /*---------------------------------------------------------------------------*/

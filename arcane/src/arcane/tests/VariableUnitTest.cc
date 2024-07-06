@@ -265,6 +265,9 @@ _testRefersTo()
 
   ValueChecker vc(A_FUNCINFO);
 
+  VariableCellReal null_var1(NullVariableBuildInfo{});
+  VariableCellArrayReal null_array_var1(NullVariableBuildInfo{});
+
   // Teste refersTo() pour les variables 0D sur les entités du maillage
   {
     VariableCellReal var1(VariableBuildInfo(mesh(),"CellRealTest1"));
@@ -276,6 +279,11 @@ _testRefersTo()
     // Vérifie que ce sont les mêmes variables avec les mêmes valeurs.
     vc.areEqual(var1.variable(),var2.variable(),"Bad refersTo()");
     vc.areEqualArray(var1.asArray().constView(),var2.asArray().constView(),"Bad values");
+
+    VariableCellReal from_null_var2(null_var1);
+    from_null_var2.refersTo(var2);
+    vc.areEqual(from_null_var2.variable(),var2.variable(),"Bad refersTo()");
+    vc.areEqualArray(from_null_var2.asArray().constView(),var2.asArray().constView(),"Bad values");
   }
 
   // Teste refersTo() pour les variables 1D sur les entités du maillage
@@ -294,6 +302,11 @@ _testRefersTo()
     vc.areEqual(var1.variable(),var2.variable(),"Bad refersTo() for Array");
     vc.areEqual(var1.arraySize(),3,"Bad size (2)");
     //vc.areEqualArray(var1.asArray().constView(),var2.asArray().constView(),"Bad values");
+
+    VariableCellArrayReal from_null_array_var2(null_array_var1);
+    from_null_array_var2.refersTo(var2);
+    vc.areEqual(from_null_array_var2.variable(),var2.variable(),"Bad refersTo() for Array");
+    vc.areEqual(from_null_array_var2.arraySize(),3,"Bad size (2)");
 
     // Teste les accesseurs
     {
