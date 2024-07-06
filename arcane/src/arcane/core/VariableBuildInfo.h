@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* VariableBuildInfo.h                                         (C) 2000-2022 */
+/* VariableBuildInfo.h                                         (C) 2000-2024 */
 /*                                                                           */
 /* Informations pour construire une variable.                                */
 /*---------------------------------------------------------------------------*/
@@ -15,7 +15,7 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/String.h"
-#include "arcane/MeshHandle.h"
+#include "arcane/core/MeshHandle.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -42,8 +42,18 @@ class IDataFactoryMng;
 class ARCANE_CORE_EXPORT VariableBuildInfo
 {
  public:
+
+  // Pour accéder au constructeur par défaut.
+  friend class NullVariableBuildInfo;
   // TEMPORAIRE Pour accéder à _subDomain(). A supprimer par la suite.
   friend class VariablePrivate;
+
+ private:
+
+  //! Tag pour un VariableBuildInfo nul.
+  struct NullTag
+  {};
+
  public:
 
   /*!
@@ -235,10 +245,17 @@ class ARCANE_CORE_EXPORT VariableBuildInfo
                     const String& item_family_name,
                     const String& item_group_name,int property=0);
 
+ private:
+
+  explicit VariableBuildInfo(const NullTag&);
+
  public:
+
   ARCCORE_DEPRECATED_2020("Do not use this method. Try to get ISubDomain from another way")
   ISubDomain* subDomain() const { return m_sub_domain; }
+
  public:
+
   IVariableMng* variableMng() const;
   IDataFactoryMng* dataFactoryMng() const;
   ITraceMng* traceMng() const;
@@ -250,22 +267,42 @@ class ARCANE_CORE_EXPORT VariableBuildInfo
   const String& itemGroupName() const { return m_item_group_name; }
   const String& meshName() const { return m_mesh_name; }
   int property() const { return m_property; }
+  bool isNull() const { return m_is_null; }
 
  private:
 
-  ISubDomain* m_sub_domain; //!< Gestionnaire de sous-domaine
-  IModule* m_module; //!< Module associé à la variable
+  ISubDomain* m_sub_domain = nullptr; //!< Gestionnaire de sous-domaine
+  IModule* m_module = nullptr; //!< Module associé à la variable
   MeshHandle m_mesh_handle;  //!< Handle sur le maillage
   String m_name; //!< Nom de la variable
   String m_item_family_name; //!< Nom de la famille d'entité
   String m_item_group_name; //!< Nom du groupe d'entité support
   String m_mesh_name; //!< Nom du maillage associé à la variable
-  int m_property; //!< Propriétés de la variable
+  int m_property = 0; //!< Propriétés de la variable
+  bool m_is_null = false;
 
  private:
 
   void _init();
   ISubDomain* _subDomain() const { return m_sub_domain; }
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Constructeur pour une variable nulle.
+ *
+ * \warning Cette classe est expérimentale. Ne pas utiliser en dehors
+ * de Arcane.
+ */
+class ARCANE_CORE_EXPORT NullVariableBuildInfo
+: public VariableBuildInfo
+{
+ public:
+
+  NullVariableBuildInfo()
+  : VariableBuildInfo(NullTag{})
+  {}
 };
 
 /*---------------------------------------------------------------------------*/
