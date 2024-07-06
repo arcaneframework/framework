@@ -158,7 +158,7 @@ class MpiAdapter::RequestSet
   }
 
   /*!
-   * \warning Cette fonction doit etre appelee avec le verrou mpi_lock actif.
+   * \warning Cette fonction doit être appelé avec le verrou mpi_lock actif.
    */
   void _removeRequest(MPI_Request request)
   {
@@ -260,6 +260,13 @@ MpiAdapter(ITraceMng* trace,IStat* stat,MPI_Comm comm,
 
   if (Platform::getEnvironmentVariable("ARCCORE_TRACE_MPI")=="TRUE")
     m_is_trace = true;
+  {
+    String s = Platform::getEnvironmentVariable("ARCCORE_ALLOW_NULL_RANK_FOR_MPI_ANY_SOURCE");
+    if (s == "1" || s == "TRUE")
+      m_is_allow_null_rank_for_any_source = true;
+    if (s == "0" || s == "FALSE")
+      m_is_allow_null_rank_for_any_source = false;
+  }
 
   ::MPI_Comm_rank(m_communicator,&m_comm_rank);
   ::MPI_Comm_size(m_communicator,&m_comm_size);
@@ -1005,6 +1012,8 @@ directRecv(void* recv_buffer,Int64 recv_buffer_size,
   int i_proc = 0;
   if (proc==A_PROC_NULL_RANK)
     ARCCORE_THROW(NotImplementedException,"Receive with MPI_PROC_NULL");
+  if (proc == A_NULL_RANK && !m_is_allow_null_rank_for_any_source)
+    ARCCORE_FATAL("Can not use A_NULL_RANK for any source. Use A_ANY_SOURCE_RANK instead");
   if (proc==A_NULL_RANK || proc==A_ANY_SOURCE_RANK)
     i_proc = MPI_ANY_SOURCE;
   else
@@ -1124,6 +1133,8 @@ _probeMessage(MessageRank source,MessageTag tag,bool is_blocking)
   int mpi_source = source.value();
   if (source.isProcNull())
     ARCCORE_THROW(NotImplementedException,"Probe with MPI_PROC_NULL");
+  if (source.isNull() && !m_is_allow_null_rank_for_any_source)
+    ARCCORE_FATAL("Can not use MPI_Mprobe with null rank. Use MessageRank::anySourceRank() instead");
   if (source.isNull() || source.isAnySource())
     mpi_source = MPI_ANY_SOURCE;
   int mpi_tag = tag.value();
@@ -1133,8 +1144,9 @@ _probeMessage(MessageRank source,MessageTag tag,bool is_blocking)
     ret = MPI_Mprobe(mpi_source,mpi_tag,m_communicator,&message,&mpi_status);
     has_message = true;
   }
-  else
-    ret = MPI_Improbe(mpi_source,mpi_tag,m_communicator,&has_message,&message,&mpi_status);
+  else {
+    ret = MPI_Improbe(mpi_source, mpi_tag, m_communicator, &has_message, &message, &mpi_status);
+  }
   if (ret!=0)
     ARCCORE_FATAL("Error during call to MPI_Mprobe r={0}",ret);
   MessageId ret_message;
@@ -1173,6 +1185,8 @@ _legacyProbeMessage(MessageRank source,MessageTag tag,bool is_blocking)
   int mpi_source = source.value();
   if (source.isProcNull())
     ARCCORE_THROW(NotImplementedException,"Probe with MPI_PROC_NULL");
+  if (source.isNull() && !m_is_allow_null_rank_for_any_source)
+    ARCCORE_FATAL("Can not use MPI_Probe with null rank. Use MessageRank::anySourceRank() instead");
   if (source.isNull() || source.isAnySource())
     mpi_source = MPI_ANY_SOURCE;
   int mpi_tag = tag.value();

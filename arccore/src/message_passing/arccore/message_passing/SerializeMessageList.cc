@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* SerializeMessageList.cc                                     (C) 2000-2020 */
+/* SerializeMessageList.cc                                     (C) 2000-2024 */
 /*                                                                           */
 /* Liste de messages de sérialisation.                                       */
 /*---------------------------------------------------------------------------*/
@@ -58,7 +58,8 @@ processPendingMessages()
 {
   for( BasicSerializeMessage* sm : m_messages_to_process ){
     PointToPointMessageInfo message_info(buildMessageInfo(sm));
-    if (sm->destination().isNull() && !m_allow_any_rank_receive){
+    bool is_any_source = sm->destination().isNull() || sm->destination().isAnySource();
+    if (is_any_source && !m_allow_any_rank_receive) {
       // Il faudra faire un probe pour ce message
       m_messages_to_probe.add({sm,message_info});
     }

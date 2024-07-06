@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MpiAdapter.h                                                (C) 2000-2020 */
+/* MpiAdapter.h                                                (C) 2000-2024 */
 /*                                                                           */
 /* Implémentation des messages avec MPI.                                     */
 /*---------------------------------------------------------------------------*/
@@ -61,7 +61,7 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiAdapter
 
  protected:
 
-  ~MpiAdapter();
+  ~MpiAdapter() override;
 
  public:
 
@@ -206,6 +206,8 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiAdapter
   ITimeMetricCollector* timeMetricCollector() const { return m_metric_collector; }
   void setTimeMetricCollector(ITimeMetricCollector* v) { m_metric_collector = v; }
 
+  bool isAllowNullRankForAnySource() const { return m_is_allow_null_rank_for_any_source; }
+
  private:
 
   IStat* m_stat;
@@ -213,8 +215,8 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiAdapter
   IMpiProfiling* m_mpi_prof;
   ITimeMetricCollector* m_metric_collector = nullptr;
   MPI_Comm m_communicator; //!< Communicateur MPI
-  int m_comm_rank;
-  int m_comm_size;
+  int m_comm_rank = A_PROC_NULL_RANK;
+  int m_comm_size = 0;
   Int64 m_nb_all_reduce = 0;
   Int64 m_nb_reduce = 0;
   bool m_is_trace = false;
@@ -225,6 +227,13 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiAdapter
   int m_recv_buffer_for_empty_request[1];
   int m_send_buffer_for_empty_request2[1];
   int m_recv_buffer_for_empty_request2[1];
+
+  // Si vrai, autorise d'utiliser le rang nul (A_NULL_RANK) pour spécifier MPI_ANY_SOURCE
+  // Cela est le défaut dans les versions de Arccore avant juillet 2024.
+  // A partir de 2025 il faudra l'interdire.
+  // La variable d'environnement ARCCORE_ALLOW_NULL_RANK_FOR_MPI_ANY_SOURCE permettra
+  // de temporairement garder un mode compatible.
+  bool m_is_allow_null_rank_for_any_source = true;
 
  private:
   

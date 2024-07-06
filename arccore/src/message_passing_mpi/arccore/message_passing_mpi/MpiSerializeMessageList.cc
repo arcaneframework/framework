@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MpiSerializeMessageList.cc                                  (C) 2000-2023 */
+/* MpiSerializeMessageList.cc                                  (C) 2000-2024 */
 /*                                                                           */
-/* Gestion des messages de sérialisationd via MPI.                           */
+/* Gestion des messages de sérialisation via MPI.                            */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -390,8 +390,11 @@ _processOneMessageGlobalBuffer(BasicSerializeMessage* message,MessageRank source
   Int64 message_size = sbuf->totalSize();
 
   MessageRank dest_rank = message->destination();
-  if (dest_rank.isNull())
-    // Signife que le message était un MPI_ANY_SOURCE
+  if (dest_rank.isNull() && !m_adapter->isAllowNullRankForAnySource())
+    ARCCORE_FATAL("Can not use MPI_Mprobe with null rank. Use MessageRank::anySourceRank() instead");
+
+  if (dest_rank.isNull() || dest_rank.isAnySource())
+    // Signifie que le message était un MPI_ANY_SOURCE
     dest_rank = source;
 
   if (m_is_verbose){
