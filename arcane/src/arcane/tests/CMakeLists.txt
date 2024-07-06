@@ -374,7 +374,7 @@ arcane_add_test_parallel(standalone_subdomain2 dummy.arc 4 "-A,StandaloneSubDoma
 
 # Macro pour tester le message_passing
 macro(add_test_message_passing test_name)
-  set(_OPTS -We,MESSAGE_PASSING_TEST,${test_name} -arcane_opt direct_test ParallelMngTest null)
+  set(_OPTS -We,MESSAGE_PASSING_TEST,${test_name} -We,ARCCORE_ALLOW_NULL_RANK_FOR_MPI_ANY_SOURCE,1 -arcane_opt direct_test ParallelMngTest null)
   set(_TEST_NAME parallelmng_${test_name})
   add_test(${_TEST_NAME}_seq ${ARCANE_TEST_DRIVER} launch ${_OPTS})
   if(TARGET arcane_mpi)
