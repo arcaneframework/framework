@@ -76,7 +76,7 @@ class ARCANE_THREAD_EXPORT SharedMemoryMessageQueue
 
  private:
 
-  Int32 m_nb_thread;
+  Int32 m_nb_thread = 0;
   UniqueArray<SubQueue*> m_sub_queues;
   std::atomic<Int64> m_atomic_request_id;
 

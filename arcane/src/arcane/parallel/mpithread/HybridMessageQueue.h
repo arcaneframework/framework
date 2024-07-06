@@ -221,6 +221,7 @@ class HybridMessageQueue
   Int32 m_local_nb_rank;
   RankTagBuilder m_rank_tag_builder;
   Int32 m_debug_level = 0;
+  bool m_is_allow_null_rank_for_any_source = true;
 
  private:
 
