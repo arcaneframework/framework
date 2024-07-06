@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* SharedMemoryMessageQueue.cc                                 (C) 2000-2023 */
+/* SharedMemoryMessageQueue.cc                                 (C) 2000-2024 */
 /*                                                                           */
 /* Implémentation d'une file de messages en mémoire partagée.                */
 /*---------------------------------------------------------------------------*/
@@ -16,13 +16,14 @@
 #include "arcane/utils/NotSupportedException.h"
 #include "arcane/utils/ArgumentException.h"
 #include "arcane/utils/ITraceMng.h"
+#include "arcane/utils/ValueConvert.h"
 
 #include "arcane/utils/internal/MemoryRessourceMng.h"
 
 #include "arcane/parallel/thread/SharedMemoryMessageQueue.h"
 #include "arcane/parallel/thread/IAsyncQueue.h"
 
-#include "arcane/ISerializeMessage.h"
+#include "arcane/core/ISerializeMessage.h"
 
 // Macro pour afficher des messages pour debug
 #define TRACE_DEBUG(format_str,...)             \
@@ -143,7 +144,6 @@ class SharedMemoryMessageQueue::SubQueue
  public:
 
   SubQueue(SharedMemoryMessageQueue* master_queue,MessageRank rank);
-  ~SubQueue();
 
  public:
 
@@ -166,14 +166,15 @@ class SharedMemoryMessageQueue::SubQueue
 
  private:
 
-  SharedMemoryMessageQueue* m_master_queue;
+  SharedMemoryMessageQueue* m_master_queue = nullptr;
   MessageRank m_rank;
   UniqueArray<SharedMemoryMessageRequest*> m_send_requests;
   UniqueArray<SharedMemoryMessageRequest*> m_recv_requests;
   UniqueArray<SharedMemoryMessageRequest*> m_done_requests;
   RequestAsyncQueue m_async_message_queue;
-  ITraceMng* m_trace_mng;
-  bool m_is_debug;
+  ITraceMng* m_trace_mng = nullptr;
+  bool m_is_debug = false;
+  bool m_is_allow_null_rank_for_any_source = true;
 
  private:
 
@@ -200,17 +201,9 @@ SharedMemoryMessageQueue::SubQueue::
 SubQueue(SharedMemoryMessageQueue* master_queue,MessageRank rank)
 : m_master_queue(master_queue)
 , m_rank(rank)
-, m_trace_mng(nullptr)
-, m_is_debug(false)
 {
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-SharedMemoryMessageQueue::SubQueue::
-~SubQueue()
-{
+  if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCCORE_ALLOW_NULL_RANK_FOR_MPI_ANY_SOURCE", true))
+    m_is_allow_null_rank_for_any_source = v.value() != 0;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -458,7 +451,9 @@ SharedMemoryMessageRequest* SharedMemoryMessageQueue::SubQueue::
 _getMatchingSendRequest(MessageRank recv_dest,MessageRank recv_orig,MessageTag tag)
 {
   bool is_any_tag = tag.isNull();
-  bool is_any_dest = recv_dest.isNull();
+  bool is_any_dest = recv_dest.isNull() || recv_dest.isAnySource();
+  if (recv_dest.isNull() && !m_is_allow_null_rank_for_any_source)
+    ARCANE_FATAL("Can not use probe() with null rank. Use MessageRank::anySourceRank() instead");
   for( Integer j=0, n=m_send_requests.size(); j<n; ++j ){
     SharedMemoryMessageRequest* tmr_send = m_send_requests[j];
     TRACE_DEBUG("CHECK RECV DONE id={7} tmr_send={0} recv_dest={1}"

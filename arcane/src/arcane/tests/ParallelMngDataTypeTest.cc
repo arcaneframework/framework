@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ParallelMngDataTypeTest.cc                                  (C) 2000-2023 */
+/* ParallelMngDataTypeTest.cc                                  (C) 2000-2024 */
 /*                                                                           */
 /* Test des opérations de base du parallèlisme.                              */
 /*---------------------------------------------------------------------------*/
@@ -909,7 +909,7 @@ _testMessageProbe(Int32 rank_to_receive,Integer nb_message,
     for( Integer orig=0; orig<comm_size; ++orig ){
       if (orig!=rank_to_receive)
         for( Integer z=0; z<nb_message; ++z ){
-          MessageRank source_rank( (use_any_source) ? A_NULL_RANK : orig );
+          MessageRank source_rank( (use_any_source) ? MessageRank::anySourceRank() : MessageRank(orig) );
           all_msg_info.add({source_rank, Parallel::NonBlocking});
         }
     }
@@ -1011,7 +1011,7 @@ _testMessageLegacyProbe(Int32 rank_to_receive,Int32 nb_message,
     for( Integer orig=0; orig<comm_size; ++orig ){
       if (orig!=rank_to_receive)
         for( Integer z=0; z<nb_message; ++z ){
-          MessageRank source_rank( (use_any_source) ? A_NULL_RANK : orig );
+          MessageRank source_rank( (use_any_source) ? MessageRank::anySourceRank() : MessageRank(orig) );
           all_msg_info.add({source_rank, Parallel::NonBlocking});
         }
     }

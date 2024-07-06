@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* SharedMemoryMessageQueue.h                                  (C) 2000-2019 */
+/* SharedMemoryMessageQueue.h                                  (C) 2000-2024 */
 /*                                                                           */
 /* Implémentation d'une file de messages en mémoire partagée.                */
 /*---------------------------------------------------------------------------*/
@@ -76,7 +76,7 @@ class ARCANE_THREAD_EXPORT SharedMemoryMessageQueue
 
  private:
 
-  Int32 m_nb_thread;
+  Int32 m_nb_thread = 0;
   UniqueArray<SubQueue*> m_sub_queues;
   std::atomic<Int64> m_atomic_request_id;
 
