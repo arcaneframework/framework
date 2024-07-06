@@ -63,8 +63,8 @@ class ItemVariableArrayRefT
  protected:
   
   //! Positionne la référence de l'instance à la variable \a rhs.
-  ARCANE_CORE_EXPORT void operator=(const ItemVariableArrayRefT<DataType>& rhs);
-  
+  ARCANE_CORE_EXPORT ItemVariableArrayRefT<DataType>& operator=(const ItemVariableArrayRefT<DataType>& rhs);
+
  public:
 
   //! Valeur non modifiable de l'entité \a item

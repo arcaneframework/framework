@@ -82,11 +82,11 @@ class PrivateVariableScalarT
   
  protected:
 
-  PrivatePartType* m_private_part;
-    
+  PrivatePartType* m_private_part = nullptr;
+
   ArrayView<DataType> m_view;
-  
-  IMemoryAccessTrace* m_memory_trace;
+
+  IMemoryAccessTrace* m_memory_trace = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/

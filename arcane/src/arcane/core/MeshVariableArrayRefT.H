@@ -61,9 +61,11 @@ ItemVariableArrayRefT<DataType>::
 ItemVariableArrayRefT(const VariableBuildInfo& vb,eItemKind ik)
 : PrivateVariableArrayT<DataType>(vb,_internalVariableInfo(vb,ik))
 {
-  this->_internalInit();
-  if (this->m_private_part->isPartial())
-    ARCANE_FATAL("Can not assign a partial variable to a full variable");
+  if (!vb.isNull()) {
+    this->_internalInit();
+    if (this->m_private_part->isPartial())
+      ARCANE_FATAL("Can not assign a partial variable to a full variable");
+  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -85,19 +87,25 @@ template<class DataType> ItemVariableArrayRefT<DataType>::
 ItemVariableArrayRefT(const ItemVariableArrayRefT<DataType>& rhs)
 : PrivateVariableArrayT<DataType>(rhs)
 {
-  this->updateFromInternal();
+  if (this->m_private_part)
+    this->updateFromInternal();
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class DataType> void 
+template <class DataType> ItemVariableArrayRefT<DataType>&
 ItemVariableArrayRefT<DataType>::
 operator=(const ItemVariableArrayRefT<DataType>& rhs)
 {
-  BaseClass::operator=(rhs);
-  this->m_private_part = rhs.m_private_part;
-  this->updateFromInternal();
+  if (this != &rhs) {
+    BaseClass::operator=(rhs);
+    if (this->m_private_part) {
+      this->m_private_part = rhs.m_private_part;
+      this->updateFromInternal();
+    }
+  }
+  return (*this);
 }
 
 /*---------------------------------------------------------------------------*/

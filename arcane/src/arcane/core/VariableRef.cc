@@ -170,10 +170,11 @@ VariableRef(const VariableRef& from)
 {
   _setAssignmentStackTrace();
   //cout << "** TODO: check variable copy constructor with linked list\n";
-  //NOTE:
+  // NOTE:
   // C'est la variable qui met à jour m_previous_reference et m_next_reference
   // dans registerVariable.
-  registerVariable();
+  if (from.m_variable)
+    registerVariable();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -250,7 +251,7 @@ _internalInit(IVariable* variable)
   m_variable = variable;
   registerVariable();
   updateFromInternal();
-  // Les variables autre que celles sur le maillages sont toujours utilisées
+  // Les variables autres que celles sur le maillage sont toujours utilisées
   // par défaut
   if (variable->itemKind()==IK_Unknown)
     setUsed(true);

@@ -243,7 +243,9 @@ Array2VariableT(const VariableBuildInfo& vb,const VariableInfo& info)
 template<typename T> Array2VariableT<T>* Array2VariableT<T>::
 getReference(const VariableBuildInfo& vb,const VariableInfo& vi)
 {
-  ThatClass* true_ptr = 0;
+  if (vb.isNull())
+    return nullptr;
+  ThatClass* true_ptr = nullptr;
   IVariableMng* vm = vb.variableMng();
   IVariable* var = vm->checkVariable(vi);
   if (var)

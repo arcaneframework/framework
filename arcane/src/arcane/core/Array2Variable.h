@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -16,7 +16,7 @@
 
 #include "arcane/utils/Array2.h"
 
-#include "arcane/Variable.h"
+#include "arcane/core/Variable.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -35,11 +35,11 @@ class Array2VariableT
 : public Variable
 {
  public:
-	
-  typedef Array2<T> ValueType;
-  typedef IArray2DataT<T> ValueDataType;
-  typedef Array2VariableT<T> ThatClass;
-  typedef Variable BaseClass;
+
+  using ValueType = Array2<T>;
+  using ValueDataType = IArray2DataT<T>;
+  using ThatClass = Array2VariableT<T>;
+  using BaseClass = Variable;
 
  protected:
 
@@ -92,7 +92,7 @@ class Array2VariableT
 
  private:
 
-  ValueDataType* m_data;
+  ValueDataType* m_data = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/
