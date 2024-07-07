@@ -81,7 +81,9 @@ namespace Arcane.Python
       using (var rview_wrapper = new RealArrayView.Wrapper(xvalues))
       {
         RealConstArrayView v = rview_wrapper.ConstView;
-        Arcane.VariableUtilsInternal.SetFromFloat64Array(var_wrapper.m_variable, v);
+        ConstArrayView<double> cv = v;
+        ConstMemoryView mv = ConstMemoryView.FromView(cv);
+        Arcane.VariableUtilsInternal.SetFromMemoryBuffer(var_wrapper.m_variable, mv);
       }
     }
     public IMesh DefaultMesh { get { return m_default_mesh; } }
