@@ -82,12 +82,18 @@ or [in this repository](arcane/doc/doc_common/changelog.md).
 <details>
   <summary><strong>Massively parallel</strong></summary>
 
-  - Work on simple laptop or on a supercomputer
-  - Multi-subdomain
-  - Multithreading
-  - Accelerator support (Nvidia/AMD/Intel)
-  - Vectorized loop
-  - Load Balancing
+  - Work on simple laptop or on a supercomputer (run case on more than 100k CPU core)
+  - Domain partitioning with message-passing (MPI, Shared Memory or hydrid MPI/Shared Memory)
+  - Unified Accelerator API (experimental)
+    - CUDA
+    - ROCM
+    - SYCL (experimental)
+    - oneTBB (experimental)
+  - Basic support for explicit vectorization
+  - Automatic Load Balancing with cell migration with several mesh partitioner
+    - ParMetis
+    - PTScotch
+    - Zoltan
 
 </details>
 
@@ -95,53 +101,101 @@ or [in this repository](arcane/doc/doc_common/changelog.md).
   <summary><strong>I/O</strong></summary>
 
   - Supported input mesh file type:
-    - VTK 4.2
-    - VTK 2.0
-    - Lima
+    - VTK Legacy (2.0 and 4.2)
+    - VTK VTU
+    - [Lima](https://github.com/LIHPC-Computational-Geometry/lima)
     - MED
     - xmf
-    - vtu
-    - Gmsh
-  - Supported output file type:
-    - VTKHDF
-    - Ensight7
+    - Gmsh (4.1)
+  - Post-processing with the following supported output file type:
+    - VTKHDF (V1 and V2)
+    - Ensight7Gold
+  - Time history curves
+  - Support for checkpoint/restarting for long simulation
 
 </details>
 
 <details>
   <summary><strong>Mesh entities</strong></summary>
 
-  - Multiple mesh entities are usable in Arcane:
-    - Cell
-    - Node
-    - Face
-    - Edge
-    - DoF
+  - Multiple mesh entities (items) are usable in Arcane:
+    - Node (0D), Edge (1D), Face and Cells
     - Particle
-  - Connectivities to explore these entities
-  - Easy-to-use Arcane mesh variables:
-    - VariableCellReal
-    - VariableFaceReal
-    - VariableCellArrayInteger
-    - VariableCellArrayReal3
+    - DoF (Degree of freedom)
+  - Full Connectivities between items (cell to node, node to edge, ...)
+  - Support for user connectivities
+  - Easy-to-use Arcane mesh variables on any kind of item
+    - double, Int32, Int64, ..
+    - Scalar, 1D, 2D or multi-dim
     - and many more...
-  - Usable in GPU too
+  - Several kind of meshes are supported (1D, 2D and 3D)
+    - unstructured
+    - unstructured with adaptative refinement
+    - cartesian (experimental)
+    - cartesian with patch refinement (AMR) (experimental)
+    - polyedral mesh (any number of edges/faces per cell)
+  - Meshes are fully dynamic (adding/removing cells)
+  - All the connectivities and variables are usable on accelerators
 
 </details>
 
 <details>
-  <summary><strong>Multi-materials support</strong></summary>
+  <summary><strong>Multi-constituents support</strong></summary>
 
-TODO
+  - Two levels of constituents (environment and materials)
+  - Any cell variable may have values par constituant
 
 </details>
 
 <details>
-  <summary><strong>Validation</strong></summary>
+  <summary><strong>Performance and Verification and Validation</strong></summary>
 
-  - Bit-to-bit comparing for Arcane variables
+  - Bit-to-bit comparison for Arcane variables
   - Between-synchronizations comparing
   - Unit test system integration
+  - Automatic profiling of loops using accelerator API
+  - Automatic profiling with sampling using Papi library or signal using SIGPROF
+  - Automatic use of CUDA CUPTI library to track unified memory (USM) moves between host and device
+
+</details>
+
+<details>
+  <summary><strong>Decoupled and extensible framework</strong></summary>
+
+  - Handling of case options via a descriptor file based on XML (axl files)
+  - Automatic generation of documentation
+  - Notion of Service (plugin) with separated interface/implementation to extend functionalities
+  - Notion of independant Modules to enable modularity
+  - Limited usage of C++ templates to make extensibility easier
+
+</details>
+
+<details>
+  <summary><strong>Extensions to other langages</strong></summary>
+
+  - Most of the classes are available in C#
+  - Python wrapping (work in progress, available at end of 2024)
+
+</details>
+
+<details>
+  <summary><strong>Algebraic manipulation</strong></summary>
+
+  - Use of Alien library to handle linear systems
+  - Coupling with several linear solver libraries
+    - Hypre
+    - Trilinos
+    - PETSc
+
+</details>
+
+<details>
+  <summary><strong>Other functionalities</strong></summary>
+
+  - Standalone mode to use only some functionalities of Arcane
+    - mesh connectivities
+    - accelerator API
+  - Handling of time loop with automatic support to go back to a previous iteration
 
 </details>
 
