@@ -33,7 +33,7 @@ class ARCANE_CORE_EXPORT VariableUtilsInternal
   /*!
    * \brief Remplit \a values avec les valeurs de la variable.
    *
-   * Seules les variables 1D de type \a DT_Real dont convertibles.
+   * Seules les variables 1D de type \a DT_Real sont convertibles.
    *
    * \retval false si tout s'est bien passé.
    * \retval true si rien n'a été effectué.
@@ -43,12 +43,22 @@ class ARCANE_CORE_EXPORT VariableUtilsInternal
   /*!
    * \brief Recopie dans la variable \a v les valeurs \a values.
    *
-   * Seules les variables 1D de type \a DT_Real dont convertibles.
+   * Seules les variables 1D de type \a DT_Real sont convertibles.
    *
    * \retval false si tout s'est bien passé.
    * \retval true si rien n'a été effectué.
    */
   static bool setFromFloat64Array(IVariable* v, ConstArrayView<double> values);
+
+  /*!
+   * \brief Recopie dans la variable \a v les valeurs \a values.
+   *
+   * Seules les variables numériques sont convertibles.
+   *
+   * \retval false si tout s'est bien passé.
+   * \retval true si rien n'a été effectué.
+   */
+  static bool setFromMemoryBuffer(IVariable* v, ConstMemoryView values);
 
   //! Retourne l'API internal de IData associé à la variable \a v
   static IDataInternal* getDataInternal(IVariable* v);

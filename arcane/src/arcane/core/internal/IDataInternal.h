@@ -242,21 +242,30 @@ namespace Arcane::impl
 /*!
  * \brief Copie de \a source vers \a destination.
  *
+ * La zone mémoire \a source doit déjà avoir la même taille que celle de
+ * la donnée \a destination.
+ */
+extern "C++" ARCANE_CORE_EXPORT void
+copyContiguousData(INumericDataInternal* destination, ConstMemoryView source, RunQueue& queue);
+
+/*!
+ * \brief Copie de \a source vers \a destination.
+ *
  * Les données doivent être de type \a INumericData et la zone mémoire
  * de destination doit déjà avoir été alloué à la bonne taille.
  */
 extern "C++" ARCANE_CORE_EXPORT void
-copyContigousData(IData* destination, IData* source, RunQueue& queue);
+copyContiguousData(IData* destination, IData* source, RunQueue& queue);
 
 extern "C++" ARCANE_CORE_EXPORT void
-fillContigousDataGeneric(IData* data, const void* fill_address,
-                         Int32 datatype_size, RunQueue& queue);
+fillContiguousDataGeneric(IData* data, const void* fill_address,
+                          Int32 datatype_size, RunQueue& queue);
 
 template <typename DataType> inline void
-fillContigousData(IData* data, const DataType& value, RunQueue& queue)
+fillContiguousData(IData* data, const DataType& value, RunQueue& queue)
 {
   constexpr Int32 type_size = static_cast<Int32>(sizeof(DataType));
-  fillContigousDataGeneric(data, &value, type_size, queue);
+  fillContiguousDataGeneric(data, &value, type_size, queue);
 }
 
 } // namespace Arcane::impl
