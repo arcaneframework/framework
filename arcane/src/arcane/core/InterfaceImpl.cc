@@ -51,6 +51,7 @@
 #include "arcane/core/IMeshMng.h"
 #include "arcane/core/IMeshPartitioner.h"
 #include "arcane/core/IGridMeshPartitioner.h"
+#include "arcane/core/IDataStorageFactory.h"
 #include "arcane/core/IDirectExecution.h"
 #include "arcane/core/IDirectSubDomainExecuteFunctor.h"
 #include "arcane/core/ISerializer.h"

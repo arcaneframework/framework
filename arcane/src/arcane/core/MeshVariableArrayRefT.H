@@ -278,7 +278,7 @@ copy(const ItemVariableArrayRefT<DataTypeT>& v,RunQueue* queue)
     copy(v);
     return;
   }
-  impl::copyContigousData(this->m_private_part->data(),v.m_private_part->data(),*queue);
+  impl::copyContiguousData(this->m_private_part->data(), v.m_private_part->data(), *queue);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -292,7 +292,7 @@ fill(const DataTypeT& v,RunQueue* queue)
     fill(v);
     return;
   }
-  impl::fillContigousData(this->m_private_part->data(),v,*queue);
+  impl::fillContiguousData(this->m_private_part->data(), v, *queue);
 }
 
 /*---------------------------------------------------------------------------*/

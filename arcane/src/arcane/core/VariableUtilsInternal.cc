@@ -14,9 +14,13 @@
 #include "arcane/core/internal/VariableUtilsInternal.h"
 
 #include "arcane/utils/ArrayView.h"
+#include "arcane/utils/MemoryView.h"
 
 #include "arcane/core/IVariable.h"
 #include "arcane/core/IData.h"
+#include "arcane/core/internal/IDataInternal.h"
+
+#include "arcane/accelerator/core/RunQueue.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -46,13 +50,20 @@ fillFloat64Array(IVariable* v, ArrayView<double> values)
 bool VariableUtilsInternal::
 setFromFloat64Array(IVariable* v, ConstArrayView<double> values)
 {
-  IData* var_data = v->data();
-  auto* true_data = dynamic_cast<IArrayDataT<double>*>(var_data);
-  if (!true_data)
+  return setFromMemoryBuffer(v, ConstMemoryView(values));
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+bool VariableUtilsInternal::
+setFromMemoryBuffer(IVariable* v, ConstMemoryView mem_view)
+{
+  INumericDataInternal* num_data = v->data()->_commonInternal()->numericData();
+  if (!num_data)
     return true;
-  // TODO: Vérifier la taille
-  ArrayView<Real> var_values(true_data->view());
-  var_values.copy(values);
+  RunQueue queue;
+  impl::copyContiguousData(num_data, mem_view, queue);
   return false;
 }
 
