@@ -80,8 +80,8 @@ init()
 
   for(Integer imesh = 0; imesh < subDomain()->meshes().size(); ++imesh){
     IMesh* mesh = subDomain()->meshes()[imesh];
-    m_density_meshes_ref[imesh] = makeRef(new VariableCellInt32(VariableBuildInfo(mesh, "Density")));
-    m_faces_density_meshes_ref[imesh] = makeRef(new VariableFaceInt32(VariableBuildInfo(mesh, "FaceDensity")));
+    m_density_meshes_ref[imesh] = makeRef(new VariableCellInt32(VariableBuildInfo(mesh->handle(), "Density")));
+    m_faces_density_meshes_ref[imesh] = makeRef(new VariableFaceInt32(VariableBuildInfo(mesh->handle(), "FaceDensity")));
 
     Int32 sum{};
 
@@ -168,7 +168,7 @@ loop()
       warning() << "Bad quality, need checking test";
     }
 
-    subDomain()->timeLoopMng()->registerActionMeshPartition(static_cast<IMeshPartitionerBase*>(m_partitioners[imesh].get()));
+    subDomain()->timeLoopMng()->registerActionMeshPartition(m_partitioners[imesh].get());
   }
 }
 
