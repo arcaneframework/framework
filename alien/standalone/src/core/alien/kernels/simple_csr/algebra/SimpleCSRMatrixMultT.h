@@ -295,7 +295,7 @@ void SimpleCSRMatrixMultT<ValueT>::_parallelMultBlock(const VectorType& x, Vecto
       ConstArrayView<Real> ptr = x_ptr.subView(cols[jcol] * block_size, block_size);
       for (Integer ieq = 0; ieq < block_size; ++ieq)
         for (Integer iu = 0; iu < block_size; ++iu)
-          yptr[ieq] += m[ieq + block_size * iu] * ptr[iu];
+          yptr[ieq] += m[iu + block_size * ieq] * ptr[iu];
       m += block_size * block_size;
     }
   }
