@@ -23,6 +23,11 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+/*!
+ * \brief Constructeur
+ * \param sd Le sous-domaine où se trouve l'instance de ILoadBalanceMng.
+ * \param mesh_handle Le maillage sur lequel les critères seront définis.
+ */
 MeshCriteriaLoadBalanceMng::
 MeshCriteriaLoadBalanceMng(ISubDomain* sd, const MeshHandle& mesh_handle)
 : m_internal(sd->loadBalanceMng()->_internalApi())
