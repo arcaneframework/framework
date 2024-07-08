@@ -40,8 +40,11 @@ namespace Arcane
     internal ItemInternalList edges;
     internal ItemInternalList faces;
     internal ItemInternalList cells;
-    internal ItemInternalList dualNodes;
-    internal ItemInternalList links;
+    IntPtr mesh; // IMesh*
+    internal ItemSharedInfo* m_node_shared_info;
+    internal ItemSharedInfo* m_edge_shared_info;
+    internal ItemSharedInfo* m_face_shared_info;
+    internal ItemSharedInfo* m_cell_shared_info;
   }
 
   /*---------------------------------------------------------------------------*/
@@ -66,9 +69,14 @@ namespace Arcane
     {
       return m_container_node.m_list[ m_container_node.m_indexes[local_id] + index ];
     }
+    [Obsolete("Use NodeBase() instead.")]
     public ItemInternal* Node(Int32 local_id,Int32 index)
     {
       return m_items->nodes[ NodeLocalId(local_id,index) ];
+    }
+    internal ItemBase NodeBase(Int32 local_id,Int32 index)
+    {
+      return new ItemBase(m_items->m_node_shared_info,NodeLocalId(local_id,index));
     }
     public NodeList Nodes(Int32 local_id)
     {
@@ -84,9 +92,14 @@ namespace Arcane
     {
       return m_container_face.m_list[ m_container_face.m_indexes[local_id] + index ];
     }
+    [Obsolete("Use FaceBase() instead.")]
     public ItemInternal* Face(Int32 local_id,Int32 index)
     {
       return m_items->faces[ FaceLocalId(local_id,index) ];
+    }
+    internal ItemBase FaceBase(Int32 local_id,Int32 index)
+    {
+      return new ItemBase(m_items->m_face_shared_info,FaceLocalId(local_id,index));
     }
     public ItemList<Face> Faces(Int32 local_id)
     {
@@ -102,9 +115,14 @@ namespace Arcane
     {
       return m_container_cell.m_list[ m_container_cell.m_indexes[local_id] + index ];
     }
+    [Obsolete("Use CellBase() instead.")]
     public ItemInternal* Cell(Int32 local_id,Int32 index)
     {
       return m_items->cells[ CellLocalId(local_id,index) ];
+    }
+    internal ItemBase CellBase(Int32 local_id,Int32 index)
+    {
+      return new ItemBase(m_items->m_cell_shared_info,CellLocalId(local_id,index));
     }
     public ItemList<Cell> Cells(Int32 local_id)
     {
@@ -230,8 +248,8 @@ namespace Arcane
     internal static ItemInternal* null_item = null;
     public Int32 m_local_id;
     public Int32 m_padding;
-    ItemSharedInfo* m_shared_info;
-    
+    internal ItemSharedInfo* m_shared_info;
+
     internal static ItemInternal* Zero
     {
       get
@@ -247,14 +265,19 @@ namespace Arcane
     }
 
     public bool IsNull { get { return m_local_id==NULL_ITEM_LOCAL_ID; } }
-    
+
     //! Flags de l'entité
     public Integer Flags { get { return m_shared_info->m_flags.At(m_local_id); } }
     ItemInternalConnectivityList* _connectivity() { return m_shared_info->m_connectivity; }
 
+    [Obsolete("Use NodeBase() instead.")]
     public ItemInternal* Node(Integer index)
     {
       return _connectivity()->Node(m_local_id,index);
+    }
+    internal ItemBase NodeBase(Integer index)
+    {
+      return _connectivity()->NodeBase(m_local_id,index);
     }
     public Int32 NodeLocalId(Integer index)
     {
@@ -269,9 +292,14 @@ namespace Arcane
       get { return _connectivity()->NbNode(m_local_id); }
     }
 
+    [Obsolete("Use CellBase() instead.")]
     public ItemInternal* Cell(Integer index)
     {
       return _connectivity()->Cell(m_local_id,index);
+    }
+    internal ItemBase CellBase(Int32 index)
+    {
+      return _connectivity()->CellBase(m_local_id,index);
     }
     public Int32 CellLocalId(Integer index)
     {
@@ -286,9 +314,14 @@ namespace Arcane
       get { return _connectivity()->NbCell(m_local_id); }
     }
 
+    [Obsolete("Use FaceBase() instead.")]
     public ItemInternal* Face(Integer index)
     {
       return _connectivity()->Face(m_local_id,index);
+    }
+    internal ItemBase FaceBase(Int32 index)
+    {
+      return _connectivity()->FaceBase(m_local_id,index);
     }
     public Int32 FaceLocalId(Integer index)
     {
@@ -311,25 +344,36 @@ namespace Arcane
     {
       get { return m_shared_info->m_item_kind; }
     }
-
+    [Obsolete("Use BackCellBase() instead")]
     public ItemInternal* BackCell()
     {
       if ((Flags & II_HasBackCell)!=0){
-        //Console.WriteLine("HAS BACK CELL");
         return Cell(((Flags & II_BackCellIsFirst)!=0) ? 0 : 1);
       }
-      //Console.WriteLine("NO BACK CELL");
       return ItemInternal.Zero;
     }
+    internal ItemBase BackCellBase()
+    {
+      if ((Flags & II_HasBackCell)!=0){
+        return CellBase(((Flags & II_BackCellIsFirst)!=0) ? 0 : 1);
+      }
+      return ItemBase.Zero;
+    }
     //! Maille devant l'entité (0 si aucune)
+    [Obsolete("Use FrontCellBase() instead")]
     public ItemInternal* FrontCell()
     {
       if ((Flags & II_HasFrontCell)!=0){
-        //Console.WriteLine("HAS FRONT CELL");
         return Cell(((Flags & II_FrontCellIsFirst)!=0) ? 0 : 1);
       }
-      //Console.WriteLine("NO FRONT CELL");
       return ItemInternal.Zero;
+    }
+    public ItemBase FrontCellBase()
+    {
+      if ((Flags & II_HasFrontCell)!=0){
+        return CellBase(((Flags & II_FrontCellIsFirst)!=0) ? 0 : 1);
+      }
+      return ItemBase.Zero;
     }
   }
 
@@ -395,33 +439,45 @@ namespace Arcane
     internal ItemBase(ItemInternal* v)
     {
       m_item_internal = v;
+      m_local_id = v->m_local_id;
+      m_shared_info = v->m_shared_info;
+    }
+    internal ItemBase(ItemSharedInfo* si,Int32 local_id)
+    {
+      m_local_id = local_id;
+      m_shared_info = si;
+      m_item_internal = si->m_items_internal[local_id];
     }
 
     internal ItemInternal* Internal { get { return m_item_internal; } }
 
     internal bool IsNull { get { return m_item_internal->IsNull; } }
-    internal Int32 LocalId { get { return m_item_internal->m_local_id; } }
+    internal Int32 LocalId { get { return m_local_id; } }
     internal Int64 UniqueId { get { return m_item_internal->UniqueId(); } }
     internal eItemKind Kind { get { return m_item_internal->Kind; } }
 
     internal Int32 NbNode { get { return m_item_internal->NbNode; } }
-    internal ItemBase Node(Int32 index) { return new ItemBase(m_item_internal->Node(index)); }
+    internal ItemBase Node(Int32 index) { return m_item_internal->NodeBase(index); }
     internal Int32 NodeLocalId(Int32 index) { return m_item_internal->NodeLocalId(index); }
     internal NodeList Nodes{ get { return m_item_internal->Nodes; } }
 
     internal Int32 NbFace { get { return m_item_internal->NbFace; } }
-    internal ItemBase Face(Int32 index) { return new ItemBase(m_item_internal->Face(index)); }
+    internal ItemBase Face(Int32 index) { return m_item_internal->FaceBase(index); }
     internal Int32 FaceLocalId(Int32 index) { return m_item_internal->FaceLocalId(index); }
     internal ItemList<Face> Faces { get { return m_item_internal->Faces; } }
 
     internal Int32 NbCell { get { return m_item_internal->NbCell; } }
-    internal ItemBase Cell(Int32 index) { return new ItemBase(m_item_internal->Cell(index)); }
+    internal ItemBase Cell(Int32 index) { return m_item_internal->CellBase(index); }
     internal Int32 CellLocalId(Int32 index) { return m_item_internal->CellLocalId(index); }
     internal ItemList<Cell> Cells { get { return m_item_internal->Cells; } }
 
-    internal ItemBase BackCell { get { return new ItemBase(m_item_internal->BackCell()); } }
-    internal ItemBase FrontCell { get { return new ItemBase(m_item_internal->FrontCell()); } }
+    internal ItemBase BackCell { get { return m_item_internal->BackCellBase(); } }
+    internal ItemBase FrontCell { get { return m_item_internal->FrontCellBase(); } }
 
+    Int32 m_local_id = -1;
+    ItemSharedInfo* m_shared_info = ItemSharedInfo.Zero;
     ItemInternal* m_item_internal;
+
+    static internal ItemBase Zero { get { return new ItemBase(ItemSharedInfo.Zero,-1);}}
   }
 }
