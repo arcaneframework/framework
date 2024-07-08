@@ -8,6 +8,7 @@ set(ARCANE_SOURCES
   CaseFunctionUnitTest.cc
   CaseFunctionTesterModule.cc
   CaseOptionsTesterModule.cc
+  ExternalPluginTesterModule.cc
   ParallelTesterModule.cc
   SubMeshTestModule.cc
   HydroAdditionalTestModule.cc
@@ -69,7 +70,7 @@ set(ARCANE_SOURCES
   ArcaneTestInit.cc
   ArcaneTestDirectExecution.cc
   ArcaneTestStandaloneSubDomain.cc
-  CustomMeshTestModule.cc
+  MeshPolyhedralTestModule.cc
   TaskUnitTest.cc
   PDESRandomNumberGeneratorUnitTest.cc
   RandomNumberGeneratorUnitTest.cc
@@ -77,6 +78,7 @@ set(ARCANE_SOURCES
   SimpleTableComparatorUnitTest.cc
   StringVariableReplaceTest.cc
   TimeHistoryAdderTestModule.cc
+  MeshCriteriaLoadBalanceMngTestModule.cc
 )
 
 set(AXL_FILES
@@ -85,6 +87,7 @@ set(AXL_FILES
   ScriptTester
   CaseFunctionTester
   CaseOptionsTester
+  ExternalPluginTester
   ParallelTester
   SubMeshTest
   SingletonService
@@ -112,7 +115,7 @@ set(AXL_FILES
   graph/GraphUnitTest
   inout/InOutTester
   geometry/GeometryUnitTest
-  CustomMeshTest
+  MeshPolyhedralTest
   HydroAdditionalTest
   accelerator/SimpleHydroAccelerator
   accelerator/AcceleratorReduceUnitTest
@@ -127,5 +130,6 @@ set(AXL_FILES
   SimpleTableOutputUnitTest
   StringVariableReplaceTest
   TimeHistoryAdderTest
+  MeshCriteriaLoadBalanceMngTest
 )
 

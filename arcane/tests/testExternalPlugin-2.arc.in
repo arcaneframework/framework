@@ -1,0 +1,20 @@
+<?xml version="1.0" ?>
+<case codename="ArcaneTest" xml:lang="en" codeversion="1.0">
+  <arcane>
+    <title>Test ExternalPlugin</title>
+    <timeloop>ExternalPluginTesterLoop</timeloop>
+  </arcane>
+
+  <mesh>
+    <meshgenerator><sod><x>50</x><y>5</y><z>5</z></sod></meshgenerator>
+  </mesh>
+
+  <arcane-checkpoint>
+    <do-dump-at-end>false</do-dump-at-end>
+  </arcane-checkpoint>
+
+  <external-plugin-tester>
+    <file>@Arcane_SOURCE_DIR@/tests/python/@ARCANE_TEST_PYTHON_SCRIPT@.py</file>
+    <function-name>func1</function-name>
+  </external-plugin-tester>
+</case>

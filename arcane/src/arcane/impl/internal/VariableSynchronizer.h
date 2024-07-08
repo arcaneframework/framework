@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* VariableSynchronizer.h                                      (C) 2000-2023 */
+/* VariableSynchronizer.h                                      (C) 2000-2024 */
 /*                                                                           */
 /* Service de synchronisation des variables.                                 */
 /*---------------------------------------------------------------------------*/
@@ -75,8 +75,12 @@ class ARCANE_IMPL_EXPORT VariableSynchronizer
 
   void synchronize(IVariable* var) override;
 
+  void synchronize(IVariable* var, Int32ConstArrayView local_ids) override;
+  
   void synchronize(VariableCollection vars) override;
 
+  void synchronize(VariableCollection vars, Int32ConstArrayView local_ids) override;
+  
   Int32ConstArrayView communicatingRanks() override;
 
   Int32ConstArrayView sharedItems(Int32 index) override;
@@ -99,7 +103,6 @@ class ARCANE_IMPL_EXPORT VariableSynchronizer
   IParallelMng* m_parallel_mng = nullptr;
   ItemGroup m_item_group;
   Ref<DataSynchronizeInfo> m_sync_info;
-  UniqueArray<Int32> m_communicating_ranks;
   Timer* m_sync_timer = nullptr;
   bool m_is_verbose = false;
   bool m_allow_multi_sync = true;
@@ -109,13 +112,20 @@ class ARCANE_IMPL_EXPORT VariableSynchronizer
   IVariableSynchronizerMng* m_variable_synchronizer_mng = nullptr;
   SyncMessage* m_default_message = nullptr;
   Runner* m_runner = nullptr;
-
+  // Pour les synchronisations sur un sous-ensemble des entités
+  Ref<DataSynchronizeInfo> m_partial_sync_info;
+  Ref<SyncMessage> m_partial_message;
+  UniqueArray<Int32> m_partial_local_ids;
+  
  private:
 
-  void _synchronizeMulti(const VariableCollection& vars);
+  void _synchronize(IVariable* var, SyncMessage* message);
+  void _synchronizeMulti(const VariableCollection& vars, SyncMessage* message);
   bool _canSynchronizeMulti(const VariableCollection& vars);
   DataSynchronizeResult _synchronize(INumericDataInternal* data, bool is_compare_sync);
   SyncMessage* _buildMessage();
+  SyncMessage* _buildMessage(Ref<DataSynchronizeInfo>& sync_info);
+  void _rebuildMessage(Int32ConstArrayView local_ids);
   void _sendBeginEvent(VariableSynchronizerEventArgs& args);
   void _sendEndEvent(VariableSynchronizerEventArgs& args);
   void _sendEvent(VariableSynchronizerEventArgs& args);

@@ -61,7 +61,7 @@ PROJECT_BRIEF          = Documentation utilisateur
 # pixels and the maximum width should not exceed 200 pixels. Doxygen will copy
 # the logo to the output directory.
 
-PROJECT_LOGO           = @ARCANESRCROOT@/doc/theme/img/arcane_logo.webp
+PROJECT_LOGO           = @ARCANESRCROOT@/doc/theme/img/arcane_framework_small.webp
 
 # The OUTPUT_DIRECTORY tag is used to specify the (relative or absolute) path
 # into which the generated documentation will be written. If a relative path is
@@ -958,6 +958,7 @@ INPUT                  = @ARCANE_SRC_PATH@/arcane/core \
                          @ARCANESRCROOT@/doc/doc_user/chap_io/subchap_timehistory \
                          @ARCANESRCROOT@/doc/doc_user/chap_materials \
                          @ARCANESRCROOT@/doc/doc_user/chap_parallel \
+                         @ARCANESRCROOT@/doc/doc_user/chap_acceleratorapi \
                          @ARCANESRCROOT@/doc/doc_user/chap_services_modules \
                          @ARCANESRCROOT@/doc/doc_user/chap_services_modules/subchap_simplecsvoutput \
                          @ARCANESRCROOT@/doc/doc_user/chap_services_modules/subchap_simplecsvcomparator \
@@ -1076,7 +1077,8 @@ EXAMPLE_PATH           = @ARCANE_CEA_SOURCE_PATH@/src/arcane/tests \
                          @Arcane_SOURCE_DIR@/src/arcane/tests/accelerator \
                          @ARCANESRCROOT@/samples_build/samples \
                          @Arcane_SOURCE_DIR@/src/arcane/tests \
-                         @ARCANESRCROOT@/doc/doc_common/chap_build_install/subchap_prerequisites/snippets
+                         @ARCANESRCROOT@/doc/doc_common/chap_build_install/subchap_prerequisites/snippets \
+                         @DOC_OUTPUT_DIR@/share/axl/dox/snippets
 
 # If the value of the EXAMPLE_PATH tag contains directories, you can use the
 # EXAMPLE_PATTERNS tag to specify one or more wildcard pattern (like *.cpp and
@@ -1422,7 +1424,8 @@ HTML_EXTRA_FILES       = @ARCANESRCROOT@/doc/theme/doxygen-awesome-theme/doxygen
                          @ARCANESRCROOT@/doc/theme/js/script-num-lines-code.js \
                          @ARCANESRCROOT@/doc/theme/js/script-config-theme.js \
                          @ARCANESRCROOT@/doc/theme/js/script-edit-config-theme.js \
-                         @ARCANESRCROOT@/doc/theme/js/script-apply-config-theme.js
+                         @ARCANESRCROOT@/doc/theme/js/script-apply-config-theme.js \
+                         @ARCANESRCROOT@/doc/theme/img/logo_arcane.svg
 
 # The HTML_COLORSTYLE tag can be used to specify if the generated HTML output
 # should be rendered with a dark or light theme. Default setting AUTO_LIGHT

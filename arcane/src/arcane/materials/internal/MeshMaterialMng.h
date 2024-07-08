@@ -25,6 +25,7 @@
 #include "arcane/core/materials/internal/IMeshMaterialMngInternal.h"
 
 #include "arcane/accelerator/core/Runner.h"
+#include "arcane/accelerator/core/RunQueuePool.h"
 
 #include "arcane/materials/MeshBlock.h"
 #include "arcane/materials/AllCellToAllEnvCellConverter.h"
@@ -70,12 +71,17 @@ class MeshMaterialMng
   {
    public:
 
-    RunnerInfo(Runner& runner);
+    explicit RunnerInfo(Runner& runner);
+
+   public:
+
+    void initializeAsyncPool(Int32 nb_queue);
 
    public:
 
     Runner m_runner;
     RunQueue m_run_queue;
+    Accelerator::RunQueuePool m_async_queue_pool;
   };
 
   class InternalApi
@@ -128,6 +134,14 @@ class MeshMaterialMng
     RunQueue& runQueue() const override
     {
       return m_material_mng->runQueue();
+    }
+    Accelerator::RunQueuePool& asyncRunQueuePool() const override
+    {
+      return m_material_mng->asyncRunQueuePool();
+    }
+    Real additionalCapacityRatio() const override
+    {
+      return m_material_mng->additionalCapacityRatio();
     }
 
    private:
@@ -215,6 +229,7 @@ class MeshMaterialMng
 
   ConstArrayView<MeshEnvironment*> trueEnvironments() const { return m_true_environments; }
   ConstArrayView<MeshMaterial*> trueMaterials() const { return m_true_materials; }
+  Int32 nbVariable() const { return static_cast<Int32>(m_full_name_variable_map.size()); }
 
  public:
 
@@ -285,8 +300,12 @@ class MeshMaterialMng
 
  public:
 
+  //@{ Implémentation de IMeshMaterialMngInternal
   Runner& runner() const { return m_runner_info->m_runner; }
   RunQueue& runQueue() const { return m_runner_info->m_run_queue; }
+  Accelerator::RunQueuePool& asyncRunQueuePool() const { return m_runner_info->m_async_queue_pool; }
+  Real additionalCapacityRatio() const { return m_additional_capacity_ratio; }
+  //@}
 
  private:
 
@@ -321,6 +340,7 @@ class MeshMaterialMng
   bool m_is_allocate_scalar_environment_variable_as_material = false;
   bool m_is_use_material_value_when_removing_partial_value = false;
   int m_modification_flags = 0;
+  Real m_additional_capacity_ratio = 0.05;
 
   Mutex m_variable_lock;
 

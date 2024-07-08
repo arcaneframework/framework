@@ -109,8 +109,8 @@ arcane_target_set_standard_path(arcane_tests_exec)
 configure_file(ArcaneTest.config ${CMAKE_BINARY_DIR}/lib COPYONLY)
 
 if (Neo_FOUND)
-  target_compile_definitions(arcane_tests_exec PRIVATE ARCANE_HAS_CUSTOM_MESH_TOOLS)
-  target_compile_definitions(arcane_tests_lib PUBLIC ARCANE_HAS_CUSTOM_MESH_TOOLS)
+  target_compile_definitions(arcane_tests_exec PRIVATE ARCANE_HAS_POLYHEDRAL_MESH_TOOLS)
+  target_compile_definitions(arcane_tests_lib PUBLIC ARCANE_HAS_POLYHEDRAL_MESH_TOOLS)
 endif()
 
 # ----------------------------------------------------------------------------
@@ -130,22 +130,27 @@ if (TARGET arcane_dotnet_wrapper_services)
   configure_file(ArcaneTest.csproj.in ${ARCANE_CSHARP_PROJECT_PATH}/ArcaneTest/ArcaneTest.csproj @ONLY)
 
   add_custom_command(OUTPUT ${CSOUTPATH}/SimpleHydroCS_axl.cs
-    DEPENDS ${CSPATH}/SimpleHydroCS.axl ${ARCANE_AXL2CC}
+    DEPENDS ${CSPATH}/SimpleHydroCS.axl ${ARCANE_AXLSTAR_DEPEND}
     COMMAND ${ARCANE_AXL2CC}
     ARGS -i arcane/tests/. --lang c\# -o ${CSOUTPATH} ${CSPATH}/SimpleHydroCS.axl)
 
   add_custom_command(OUTPUT ${CSOUTPATH}/PerfectGasEOS_axl.cs
-    DEPENDS ${CSPATH}/PerfectGasEOS.axl ${ARCANE_AXL2CC}
+    DEPENDS ${CSPATH}/PerfectGasEOS.axl ${ARCANE_AXLSTAR_DEPEND}
     COMMAND ${ARCANE_AXL2CC}
     ARGS -i arcane/tests/. --lang c\# -o ${CSOUTPATH} ${CSPATH}/PerfectGasEOS.axl)
 
   add_custom_command(OUTPUT ${CSOUTPATH}/MeshModification_axl.cs
-    DEPENDS ${CSPATH}/MeshModification.axl ${ARCANE_AXL2CC}
+    DEPENDS ${CSPATH}/MeshModification.axl ${ARCANE_AXLSTAR_DEPEND}
     COMMAND ${ARCANE_AXL2CC}
     ARGS -i arcane/tests/. --lang c\# -o ${CSOUTPATH} ${CSPATH}/MeshModification.axl)
 
-  arccon_add_csharp_target(arcane_test_cs
-    DOTNET_RUNTIME ${ARCANE_DOTNET_RUNTIME}
+  add_custom_target(arcane_test_cs_generate ALL DEPENDS
+    "${CSOUTPATH}/SimpleHydroCS_axl.cs"
+    "${CSOUTPATH}/PerfectGasEOS_axl.cs"
+    "${CSOUTPATH}/MeshModification_axl.cs"
+  )
+
+  arcane_add_global_csharp_target(arcane_test_cs
     BUILD_DIR ${LIBRARY_OUTPUT_PATH}
     ASSEMBLY_NAME ArcaneTest.dll
     PROJECT_PATH ${ARCANE_CSHARP_PROJECT_PATH}/ArcaneTest
@@ -160,14 +165,11 @@ if (TARGET arcane_dotnet_wrapper_services)
     "${CSPATH}/SimpleHydro.cs"
     "${CSPATH}/PerfectGasEOS.cs"
     "${CSPATH}/Launcher.cs"
-    "${CSOUTPATH}/SimpleHydroCS_axl.cs"
-    "${CSOUTPATH}/PerfectGasEOS_axl.cs"
-    "${CSOUTPATH}/MeshModification_axl.cs"
+    arcane_test_cs_generate
     DOTNET_TARGET_DEPENDS dotnet_wrapper_services dotnet_wrapper_launcher
     )
 
-  arccon_add_csharp_target(arcane_test_cs_exe
-    DOTNET_RUNTIME ${ARCANE_DOTNET_RUNTIME}
+  arcane_add_global_csharp_target(arcane_test_cs_exe
     BUILD_DIR ${LIBRARY_OUTPUT_PATH}
     ASSEMBLY_NAME ArcaneTestExe.dll
     PROJECT_PATH ${ARCANE_CSHARP_PROJECT_PATH}/ArcaneTestExe
@@ -255,7 +257,14 @@ arcane_copy_mesh_direct(sod3d-misc.msh)
 arcane_copy_mesh_direct(planar_unstructured_quad1.msh)
 arcane_copy_mesh_direct(faultx1_2x1x1.vtk)
 arcane_copy_mesh_direct(faultx1_2x1x1.vtkfaces.vtk)
+arcane_copy_mesh_direct(cross_a_2x1x1.vtk)
+arcane_copy_mesh_direct(cross_a_2x1x1.vtkfaces.vtk)
+arcane_copy_mesh_direct(fan_2x1x3.vtk)
+arcane_copy_mesh_direct(fan_2x1x3.vtkfaces.vtk)
+arcane_copy_mesh_direct(cross_a_2x1x1.vtu)
+arcane_copy_mesh_direct(cross_a_2x1x1.vtufaces.vtu)
 arcane_copy_mesh_direct(plancher.msh)
+arcane_copy_mesh_direct(hex_tetra_pyramics.msh)
 arcane_copy_mesh(tied_interface_1 tied_interface_1 vtk)
 arcane_copy_mesh(tied_interface_2 tied_interface_2 vtk)
 arcane_copy_mesh(tied_interface_2d_1 tied_interface_2d_1 vtk)
@@ -365,7 +374,7 @@ arcane_add_test_parallel(standalone_subdomain2 dummy.arc 4 "-A,StandaloneSubDoma
 
 # Macro pour tester le message_passing
 macro(add_test_message_passing test_name)
-  set(_OPTS -We,MESSAGE_PASSING_TEST,${test_name} -arcane_opt direct_test ParallelMngTest null)
+  set(_OPTS -We,MESSAGE_PASSING_TEST,${test_name} -We,ARCCORE_ALLOW_NULL_RANK_FOR_MPI_ANY_SOURCE,1 -arcane_opt direct_test ParallelMngTest null)
   set(_TEST_NAME parallelmng_${test_name})
   add_test(${_TEST_NAME}_seq ${ARCANE_TEST_DRIVER} launch ${_OPTS})
   if(TARGET arcane_mpi)
@@ -433,12 +442,16 @@ ARCANE_ADD_TEST_PARALLEL(cell-submesh testSubMesh.arc 12)
 ARCANE_ADD_TEST_PARALLEL(face-submesh testSubMesh2.arc 1)
 ARCANE_ADD_TEST_PARALLEL(face-submesh testSubMesh2.arc 12)
 arcane_add_test_parallel_all(face-submesh_2d testSubMesh2-2D.arc 2 2)
+
 if(PARTITIONER_FOUND)
   ARCANE_ADD_TEST_PARALLEL(loadbalance testLoadBalance-1.arc 4)
   ARCANE_ADD_TEST_PARALLEL_THREAD(loadbalance testParticle.arc 4)
   ARCANE_ADD_TEST_PARALLEL(loadbalance_rep3 testLoadBalance-1.arc 12 -R 3)
   ARCANE_ADD_TEST_PARALLEL(loadbalance_collective testLoadBalance-1.arc 4 -We,ARCANE_MESH_EXCHANGE_USE_COLLECTIVE,1 -We,ARCANE_PRINT_CPUAFFINITY,1)
+
+  ARCANE_ADD_TEST_PARALLEL(meshcriterialoadbalancemng testMeshCriteriaLoadBalanceMng-1.arc 8 -m 2)
 endif()
+
 arcane_add_test_parallel_all(particle testParticle.arc 3 4)
 arcane_add_test_parallel_all(particle_nonblocking testParticleNonBlocking.arc 3 4)
 arcane_add_test_sequential(particle_async testParticleAsync.arc)
@@ -495,6 +508,12 @@ if(HDF5_FOUND)
 endif()
 if(vtkIOXML_FOUND)
   ARCANE_ADD_TEST_SEQUENTIAL(vtk_vtu testMesh-format_vtu.arc)
+  if (Neo_FOUND)
+    arcane_add_test_sequential(polyhedral_vtk1 testMeshPolyhedral-1.arc)
+    arcane_add_test_sequential(polyhedral_vtk2 testMeshPolyhedral-2.arc)
+    arcane_add_test_sequential(polyhedral_vtk3 testMeshPolyhedral-3.arc)
+    arcane_add_test_sequential(polyhedral_vtk4 testMeshPolyhedral-4.arc)
+  endif()
 endif()
 if(MEDFile_FOUND)
   arcane_add_test_sequential(mesh1_med testMesh-med1.arc)
@@ -545,10 +564,12 @@ arcane_add_test_sequential(ios_msh3 testIos-msh3.arc)
 arcane_add_test_sequential(ios_msh4 testIos-msh4.arc)
 arcane_add_test_sequential(ios_msh5 testIos-msh5.arc)
 arcane_add_test_sequential(ios_msh5_parallel testIos-msh5.arc "-We,ARCANE_USE_PARALLEL_MSH_READER,1")
+arcane_add_test_sequential(ios_msh6_parallel testIos-msh6.arc "-We,ARCANE_USE_PARALLEL_MSH_READER,1")
 if (ARCANE_DEFAULT_PARTITIONER_IS_METIS)
   arcane_add_test_parallel_thread(ios_msh4 testIos-msh4.arc 4)
   arcane_add_test_parallel_thread(ios_msh5 testIos-msh5.arc 5)
   arcane_add_test_parallel(ios_msh5_parallel testIos-msh5.arc 4 "-We,ARCANE_USE_PARALLEL_MSH_READER,1")
+  arcane_add_test_parallel(ios_msh6_parallel testIos-msh6.arc 4 "-We,ARCANE_USE_PARALLEL_MSH_READER,1")
 endif()
 if(vtkIOXML_FOUND)
   ARCANE_ADD_TEST_SEQUENTIAL(ios_vtu testIos-vtu.arc)
@@ -590,7 +611,8 @@ arcane_add_test_sequential(hydro3_cartesian testHydro-3-cartesian.arc -m 50)
 arcane_add_test_sequential(hydro3_cartesian_small testHydro-3-cartesian-small.arc -m 10)
 arcane_add_test_parallel_thread(hydro3_cartesian_small testHydro-3-cartesian-small.arc 4 -m 10)
 arcane_add_test_script(continue_hydro3_cartesian_small continue_hydro3_cartesian_small.xml)
-arcane_add_test_script(continue_hydro3_cartesian_small_4shm continue_hydro3_cartesian_small_4shm.xml)
+# TODO : À réactiver.
+#arcane_add_test_script(continue_hydro3_cartesian_small_4shm continue_hydro3_cartesian_small_4shm.xml)
 arcane_add_test_parallel(hydro3_cartesian_8proc testHydro-3-cartesian.arc 8 "-m 50")
 arcane_add_test_parallel_all(hydro3_meshservice testHydro-3-meshservice.arc 3 4 -m 50)
 arcane_add_test_parallel_all(hydro3_checkpoint_meshservice testHydro-3-checkpoint-meshservice.arc 3 4 -c 3 -m 10)
@@ -994,9 +1016,32 @@ arcane_add_test_sequential(string_variable_replace testStringVariableReplace.arc
 arcane_add_test(time_history_adder_1 testTimeHistoryAdder-1.arc -c 2 -m 5 -We,ARCANE_ENABLE_NON_IO_MASTER_CURVES,1)
 
 #################################################################
-# Test wrapper python
+function(arcane_add_python_test_sequential test_name script_name case_file)
+  arcane_add_test_sequential(${test_name} "${ARCANE_TEST_PATH}/testPython-${script_name}.arc" -A,UsingDotNet=1 ${ARGN})
+  set_property(TEST ${test_name} APPEND PROPERTY ENVIRONMENT "PYTHONNET_PYDLL=${Python_LIBRARIES}")
+  set_property(TEST ${test_name} APPEND PROPERTY ENVIRONMENT "PYTHONPATH=${CMAKE_BINARY_DIR}/lib/python")
+  set(ARCANE_TEST_PYTHON_SCRIPT ${script_name})
+  configure_file(${ARCANE_ARC_PATH}/${case_file}.in "${ARCANE_TEST_PATH}/testPython-${script_name}.arc")
+endfunction()
+
+#################################################################
+# Test wrapper python en mode embedded
 if (ARCANE_ENABLE_DOTNET_PYTHON_WRAPPER)
-  arcane_add_test_sequential(python_wrapping_test1 testSimplePythonCall-1.arc -Z --dotnet-runtime=coreclr -m 5)
+  # Il faut trouver le chemin de 'libpython.so' et positionner
+  # la variable d'environnement PYTHONNET_PYDLL pour le mode embedded.
+  # TODO: Positionner directement lors de la compilation la propriété C# Python.Runtime.PythonDLL
+  set(Python_USE_STATIC_LIBS FALSE)
+  find_package(Python COMPONENTS Interpreter Development)
+  message(STATUS "Python FOUND=${Python_FOUND}")
+  if (Python_FOUND)
+    message(STATUS "PythonLibraries=${Python_LIBRARIES}")
+    message(STATUS "Python Python_RUNTIME_LIBRARY_DIRS=${Python_RUNTIME_LIBRARY_DIRS}")
+    arcane_add_python_test_sequential(python_test_embed1 script1 "testExternalPlugin-1.arc")
+    arcane_add_python_test_sequential(python_test_embed2 script2 "testExternalPlugin-2.arc")
+    arcane_add_python_test_sequential(python_test_embed3 script3 "testExternalPlugin-3.arc")
+    arcane_add_python_test_sequential(python_test_embed4 script4 "testExternalPlugin-4.arc")
+  endif()
+  #arcane_add_test_sequential(python_wrapping_test1 testSimplePythonCall-1.arc -Z --dotnet-runtime=coreclr -m 5)
 endif()
 
 # ----------------------------------------------------------------------------

@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshVariableRef.h                                           (C) 2000-2022 */
+/* MeshVariableRef.h                                           (C) 2000-2024 */
 /*                                                                           */
 /* Classe gérant une variable sur une entité du maillage.                    */
 /*---------------------------------------------------------------------------*/
@@ -35,8 +35,8 @@ class ARCANE_CORE_EXPORT MeshVariableRef
  public:
 
   //! Construit une référence liée au module \a module
-  MeshVariableRef(const VariableBuildInfo& vb);
-  virtual ~MeshVariableRef() {}
+  explicit MeshVariableRef(const VariableBuildInfo& vb);
+  ~MeshVariableRef() override = default;
 
  protected:
 
@@ -48,7 +48,8 @@ class ARCANE_CORE_EXPORT MeshVariableRef
  public:
 
   void synchronize();
-
+  void synchronize(Int32ConstArrayView local_ids);
+  
  protected:
 
   void _internalInit(IVariable*);

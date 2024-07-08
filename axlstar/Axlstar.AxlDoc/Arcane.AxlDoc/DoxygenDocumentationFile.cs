@@ -79,6 +79,11 @@ namespace Arcane.AxlDoc
     {
       string file_name = String.Format ("{0}.md", m_page_name);
       string full_name = Path.Combine (m_output_path, file_name);
+
+      string snippet_name = String.Format ("snippet_{0}", m_page_name);
+      string snippet_file_name = String.Format ("{0}.md", snippet_name);
+      string snippet_full_name = Path.Combine (m_output_path, "snippets", snippet_file_name);
+
       using (TextWriter tw = new StreamWriter (full_name, false, Utils.WriteEncoding)) {
         tw.WriteLine ("# {1} {{#{0}}}\n", m_page_name, m_page_title);
         string main_desc_string = m_main_desc_stream.ToString ();
@@ -94,9 +99,15 @@ namespace Arcane.AxlDoc
           else{
             tw.WriteLine ("\n## Summary of options\n");
           }
+
+          // if(false){
+          //   tw.WriteLine ("\\snippet{{doc}} {0} {1}", snippet_file_name, snippet_name);
+          // }
+          // else{
           tw.WriteLine("<ul>");
           tw.Write (m_brief_stream.ToString ());
           tw.WriteLine ("</ul>");
+          // }
         }
         if (!string.IsNullOrEmpty (m_full_stream.ToString ())) {
           if(m_language == "fr"){
@@ -107,6 +118,17 @@ namespace Arcane.AxlDoc
           }
           tw.Write(m_full_stream.ToString());
         }
+      }
+
+      // Génération des fichiers snippets avec les options des services/modules.
+      // Attention : Pour que ça fonctionne, il faut ajouter le dossier de sortie dans
+      // la partie "EXAMPLE_PATH" du .doxyfile.
+      using (TextWriter tw = new StreamWriter (snippet_full_name, false, Utils.WriteEncoding)) {
+        tw.WriteLine ("//![{0}]", snippet_name);
+        tw.WriteLine("<ul>");
+        tw.Write (m_brief_stream.ToString ());
+        tw.WriteLine ("</ul>");
+        tw.WriteLine ("//![{0}]", snippet_name);
       }
     }
 

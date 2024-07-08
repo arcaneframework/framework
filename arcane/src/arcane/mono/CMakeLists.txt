@@ -1,3 +1,9 @@
+﻿# WARNING: This component is no longer used
+message(FATAL_ERROR "The component 'arcane_mono' is no longer supported")
+
+# ----------------------------------------------------------------------------
+# ----------------------------------------------------------------------------
+
 set(PKGS MonoEmbed Glib)
 arcane_find_package(MonoEmbed)
 if(NOT MonoEmbed_FOUND)
@@ -27,3 +33,10 @@ endif()
 target_link_libraries(arcane_mono PRIVATE arcane_utils)
 
 arcane_register_library(arcane_mono OPTIONAL)
+
+# ----------------------------------------------------------------------------
+# Local Variables:
+# tab-width: 2
+# indent-tabs-mode: nil
+# coding: utf-8-with-signature
+# End:

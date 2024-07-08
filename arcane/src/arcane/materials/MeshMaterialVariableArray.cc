@@ -30,6 +30,7 @@
 #include "arcane/core/VariableRefArray2.h"
 #include "arcane/core/MeshVariable.h"
 #include "arcane/core/ISerializer.h"
+#include "arcane/core/internal/IVariableInternal.h"
 
 #include "arcane/materials/ItemMaterialVariableBaseT.H"
 
@@ -49,7 +50,7 @@ template<typename DataType> void
 MaterialVariableArrayTraits<DataType>::
 copyTo(SmallSpan2<const DataType> input, SmallSpan<const Int32> input_indexes,
        SmallSpan2<DataType> output, SmallSpan<const Int32> output_indexes,
-       RunQueue& queue)
+       const RunQueue& queue)
 {
   // TODO: vérifier tailles des indexes et des dim2Size() identiques
   Integer nb_value = input_indexes.size();
@@ -79,6 +80,20 @@ resizeAndFillWithDefault(ValueDataType* data,ContainerType& container,Integer di
   //TODO: faire une version de Array2 qui spécifie une valeur à donner
   // pour initialiser lors d'un resize() (comme pour Array::resize()).
   container.resize(dim1_size,dim2_size);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<typename DataType> void
+MaterialVariableArrayTraits<DataType>::
+resizeWithReserve(PrivatePartType* var, Integer dim1_size, Real reserve_ratio)
+{
+  // Pour éviter de réallouer à chaque fois qu'il y a une augmentation du
+  // nombre de mailles matériaux, alloue un petit peu plus que nécessaire.
+  // Par défaut, on alloue 5% de plus.
+  Int32 nb_add = static_cast<Int32>(dim1_size * reserve_ratio);
+  var->_internalApi()->resizeWithReserve(dim1_size, nb_add);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -168,8 +183,8 @@ serialize(ISerializer* sbuf,Int32ConstArrayView ids)
     {
       Int64 nb_val = 0;
       ENUMERATE_ALLENVCELL(iallenvcell,mat_mng,ids_view){
-        ++nb_val; // 1 valeur pour le milieu
         ENUMERATE_CELL_ENVCELL(ienvcell,(*iallenvcell)){
+          ++nb_val; // 1 valeur pour le milieu
           EnvCell envcell = *ienvcell;
           if (has_mat)
             nb_val += envcell.nbMaterial(); // 1 valeur par matériau du milieu.

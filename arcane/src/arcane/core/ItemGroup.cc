@@ -221,6 +221,7 @@ interface() const
   return ItemGroup(m_impl->interfaceGroup());
 }
 
+// GERER PLANTAGE SORTED
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -542,7 +543,19 @@ enumerator() const
 {
   if (null())
     return ItemEnumerator();
-  m_impl->checkNeedUpdate();
+  m_impl->_checkNeedUpdateNoPadding();
+  return ItemEnumerator(m_impl->itemInfoListView(),m_impl->itemsLocalId(),m_impl.get());
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+ItemEnumerator ItemGroup::
+_simdEnumerator() const
+{
+  if (null())
+    return ItemEnumerator();
+  m_impl->_checkNeedUpdateWithPadding();
   return ItemEnumerator(m_impl->itemInfoListView(),m_impl->itemsLocalId(),m_impl.get());
 }
 
@@ -550,11 +563,11 @@ enumerator() const
 /*---------------------------------------------------------------------------*/
 
 ItemVectorView ItemGroup::
-view() const
+_view(bool do_padding) const
 {
   if (null())
     return ItemVectorView();
-  m_impl->checkNeedUpdate();
+  m_impl->_checkNeedUpdate(do_padding);
   Int32 flags = 0;
   if (m_impl->isContigousLocalIds())
     flags |= ItemIndexArrayView::F_Contigous;
@@ -565,10 +578,73 @@ view() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+ItemVectorView ItemGroup::
+view() const
+{
+  return _view(false);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+ItemVectorView ItemGroup::
+_paddedView() const
+{
+  return _view(true);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 bool ItemGroup::
 isAllItems() const
 {
   return m_impl->isAllItems();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+IVariableSynchronizer* ItemGroup::
+synchronizer() const
+{
+  return m_impl->synchronizer();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+bool ItemGroup::
+isAutoComputed() const
+{
+  return m_impl->hasComputeFunctor();
+}
+  
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+bool ItemGroup::
+hasSynchronizer() const 
+{
+  return m_impl->hasSynchronizer();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+ItemGroupImplInternal* ItemGroup::
+_internalApi() const
+{
+  return m_impl->_internalApi();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+bool ItemGroup::
+checkIsSorted() const
+{
+  return m_impl->checkIsSorted();
 }
 
 /*---------------------------------------------------------------------------*/

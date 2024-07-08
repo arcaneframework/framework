@@ -56,25 +56,6 @@ _setItems(ConstArrayView<ConstituentItemIndex> globals,
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void ComponentItemVector::
-_setMatVarIndexes(ConstArrayView<MatVarIndex> globals,
-                  ConstArrayView<MatVarIndex> multiples)
-{
-  m_p->_setMatVarIndexes(globals, multiples);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void ComponentItemVector::
-_setLocalIds(ConstArrayView<Int32> globals, ConstArrayView<Int32> multiples)
-{
-  m_p->_setLocalIds(globals, multiples);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 ComponentItemVectorView ComponentItemVector::
 view() const
 {

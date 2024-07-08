@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* VariableSynchronizer.cc                                     (C) 2000-2023 */
+/* VariableSynchronizer.cc                                     (C) 2000-2024 */
 /*                                                                           */
 /* Service de synchronisation des variables.                                 */
 /*---------------------------------------------------------------------------*/
@@ -205,6 +205,8 @@ VariableSynchronizer(IParallelMng* pm, const ItemGroup& group,
 , m_item_group(group)
 {
   m_sync_info = DataSynchronizeInfo::create();
+  m_partial_sync_info = DataSynchronizeInfo::create();
+  
   if (!implementation_factory.get())
     implementation_factory = arcaneCreateSimpleVariableSynchronizerFactory(pm);
   m_implementation_factory = implementation_factory;
@@ -223,6 +225,7 @@ VariableSynchronizer(IParallelMng* pm, const ItemGroup& group,
   }
 
   m_default_message = _buildMessage();
+  m_partial_message = makeRef<SyncMessage>(_buildMessage(m_partial_sync_info));
 }
 
 /*---------------------------------------------------------------------------*/
@@ -241,6 +244,23 @@ VariableSynchronizer::
 VariableSynchronizer::SyncMessage* VariableSynchronizer::
 _buildMessage()
 {
+  auto* internal_pm = m_parallel_mng->_internalApi();
+  Runner* runner = internal_pm->defaultRunner();
+  bool is_accelerator_aware = internal_pm->isAcceleratorAware();
+
+  if (runner && is_accelerator_aware) {
+    m_runner = runner;
+  }
+  
+  return _buildMessage(m_sync_info);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+VariableSynchronizer::SyncMessage* VariableSynchronizer::
+_buildMessage(Ref<DataSynchronizeInfo>& sync_info)
+{
   GroupIndexTable* table = nullptr;
   if (!m_item_group.isAllItems())
     table = m_item_group.localIdToIndex().get();
@@ -252,23 +272,21 @@ _buildMessage()
     buffer_copier = makeRef<IBufferCopier>(new DirectBufferCopier());
 
   auto* internal_pm = m_parallel_mng->_internalApi();
-  Runner* runner = internal_pm->defaultRunner();
-  bool is_accelerator_aware = internal_pm->isAcceleratorAware();
+
   IMemoryAllocator* allocator = nullptr;
   // Si le IParallelMng gère la mémoire des accélérateurs alors on alloue le
   // buffer sur le device. On pourrait utiliser la mémoire managée mais certaines
   // implémentations MPI (i.e: BXI) ne le supportent pas.
-  if (runner && is_accelerator_aware) {
-    m_runner = runner;
+  if (m_runner) {
     buffer_copier->setRunQueue(internal_pm->defaultQueue());
     allocator = platform::getDataMemoryRessourceMng()->getAllocator(eMemoryRessource::Device);
   }
 
   // Créé une instance de l'implémentation
   Ref<IDataSynchronizeImplementation> sync_impl = m_implementation_factory->createInstance();
-  sync_impl->setDataSynchronizeInfo(m_sync_info.get());
+  sync_impl->setDataSynchronizeInfo(sync_info.get());
 
-  DataSynchronizeDispatcherBuildInfo bi(m_parallel_mng, sync_impl, m_sync_info, buffer_copier);
+  DataSynchronizeDispatcherBuildInfo bi(m_parallel_mng, sync_impl, sync_info, buffer_copier);
   return new SyncMessage(bi, this, allocator);
 }
 
@@ -331,9 +349,79 @@ _doSynchronize(SyncMessage* message)
 /*---------------------------------------------------------------------------*/
 
 void VariableSynchronizer::
-synchronize(IVariable* var)
+_rebuildMessage(Int32ConstArrayView local_ids)
 {
-  m_default_message->initialize(var);
+  // Si les localIds n'ont pas changés depuis le dernier appel, on conserve
+  // les informations de synchronisation déjà calculées
+  
+  if (local_ids == m_partial_local_ids.constView()) {
+    //debug(Trace::High) << "Proc " << m_parallel_mng->commRank() << " infos for partial synchronisations are up to date";
+    return;
+  }
+  
+  //debug(Trace::High) << "Proc " << m_parallel_mng->commRank() << " recompute infos for partial synchronisations";
+    
+  m_partial_local_ids.copy(local_ids);
+  
+  UniqueArray<bool> flags(m_item_group.itemFamily()->maxLocalId());
+  flags.fill(false);
+  
+  for (Int32 lid : local_ids) {
+    flags[lid] = true;
+  }
+  
+  Int32ConstArrayView comm_ranks = m_sync_info->communicatingRanks();
+  Int32 nb_comm_ranks = comm_ranks.size();
+  
+  const DataSynchronizeBufferInfoList& send_info = m_sync_info->sendInfo();
+  const DataSynchronizeBufferInfoList& recv_info = m_sync_info->receiveInfo();
+  
+  m_partial_sync_info = DataSynchronizeInfo::create();
+  
+  if (!local_ids.empty()) {
+    
+    UniqueArray<Int32> recv_grp;
+    UniqueArray<Int32> send_grp;
+    
+    for (Int32 index = 0; index < nb_comm_ranks; ++index) {
+      Int32 target_rank = comm_ranks[index];
+      ConstArrayView<Int32> send_lids = send_info.localIds(index);
+      ConstArrayView<Int32> recv_lids = recv_info.localIds(index);
+      
+      recv_grp.clear();
+      send_grp.clear();
+      
+      for (Int32 lid : recv_lids) {
+        if (flags[lid]) {
+          recv_grp.add(lid);
+        }
+      }
+      
+      for (Int32 lid : send_lids) {
+        if (flags[lid]) {
+          send_grp.add(lid);
+        }
+      }
+      
+      if ((!send_grp.empty()) || (!recv_grp.empty())) {
+        // Ajoute les informations sur les echanges avec le rang target_rank
+        m_partial_sync_info->add(VariableSyncInfo(send_grp, recv_grp, target_rank));
+      }
+    }
+  }
+  
+  m_partial_sync_info->recompute();
+  m_partial_message = makeRef<SyncMessage>(_buildMessage(m_partial_sync_info));
+  m_partial_message->compute();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void VariableSynchronizer::
+_synchronize(IVariable* var, SyncMessage* message)
+{
+  message->initialize(var);
 
   IParallelMng* pm = m_parallel_mng;
   debug(Trace::High) << " Proc " << pm->commRank() << " Sync variable " << var->fullName();
@@ -341,7 +429,26 @@ synchronize(IVariable* var)
     info() << " Synchronize variable " << var->fullName()
            << " stack=" << platform::getStackTrace();
   }
-  _doSynchronize(m_default_message);
+  _doSynchronize(message);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void VariableSynchronizer::
+synchronize(IVariable* var)
+{
+  _synchronize(var, m_default_message);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void VariableSynchronizer::
+synchronize(IVariable* var, Int32ConstArrayView local_ids)
+{
+  _rebuildMessage(local_ids); 
+  _synchronize(var, m_partial_message.get());
 }
 
 /*---------------------------------------------------------------------------*/
@@ -355,13 +462,36 @@ synchronize(VariableCollection vars)
 
   const bool use_multi = m_allow_multi_sync;
   if (use_multi && _canSynchronizeMulti(vars)) {
-    _synchronizeMulti(vars);
+    _synchronizeMulti(vars, m_default_message);
   }
   else {
     for (VariableCollection::Enumerator ivar(vars); ++ivar;) {
-      synchronize(*ivar);
+      _synchronize(*ivar, m_default_message);
     }
   }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void VariableSynchronizer::
+synchronize(VariableCollection vars, Int32ConstArrayView local_ids)
+{
+  if (vars.empty())
+    return;
+
+  _rebuildMessage(local_ids);
+
+  const bool use_multi = m_allow_multi_sync;
+  if (use_multi && _canSynchronizeMulti(vars)) {
+    _synchronizeMulti(vars, m_partial_message.get());
+  }
+  else {
+    for (VariableCollection::Enumerator ivar(vars); ++ivar;) {
+      _synchronize(*ivar, m_partial_message.get());
+    }
+  }
+  
 }
 
 /*---------------------------------------------------------------------------*/
@@ -395,6 +525,8 @@ changeLocalIds(Int32ConstArrayView old_to_new_ids)
   info(4) << "** VariableSynchronizer::changeLocalIds() group=" << m_item_group.name();
   m_sync_info->changeLocalIds(old_to_new_ids);
   m_default_message->compute();
+  // Force le recalcul des informations pour les synchronisations partielles
+  _rebuildMessage(Int32ConstArrayView());
 }
 
 /*---------------------------------------------------------------------------*/
@@ -432,9 +564,9 @@ _canSynchronizeMulti(const VariableCollection& vars)
 /*---------------------------------------------------------------------------*/
 
 void VariableSynchronizer::
-_synchronizeMulti(const VariableCollection& vars)
+_synchronizeMulti(const VariableCollection& vars, SyncMessage* message)
 {
-  m_default_message->initialize(vars);
+  message->initialize(vars);
 
   IParallelMng* pm = m_parallel_mng;
   debug(Trace::High) << " Proc " << pm->commRank() << " MultiSync variable";
@@ -443,7 +575,7 @@ _synchronizeMulti(const VariableCollection& vars)
            << " stack=" << platform::getStackTrace();
   }
 
-  _doSynchronize(m_default_message);
+  _doSynchronize(message);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -452,7 +584,7 @@ _synchronizeMulti(const VariableCollection& vars)
 Int32ConstArrayView VariableSynchronizer::
 communicatingRanks()
 {
-  return m_communicating_ranks;
+  return m_sync_info->communicatingRanks();
 }
 
 /*---------------------------------------------------------------------------*/

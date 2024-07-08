@@ -398,11 +398,15 @@ class HostDeviceReducerBase
   //! Effectue la réduction et récupère la valeur. ATTENTION: ne faire qu'une seule fois.
   DataType _reduce()
   {
+    if (!m_is_master_instance)
+      ARCANE_FATAL("Final reduce operation is only valid on master instance");
     // Si la réduction est faite sur accélérateur, il faut recopier la valeur du device sur l'hôte.
     DataType* final_ptr = m_host_or_device_memory_for_reduced_value;
     if (m_memory_impl) {
       m_memory_impl->copyReduceValueFromDevice();
       final_ptr = reinterpret_cast<DataType*>(m_grid_memory_info.m_host_memory_for_reduced_value);
+      m_memory_impl->release();
+      m_memory_impl = nullptr;
     }
 
     if (m_atomic_parent_value) {
@@ -419,6 +423,9 @@ class HostDeviceReducerBase
     }
     return *final_ptr;
   }
+
+  // NOTE: Lorsqu'il n'y aura plus la version V1 de la réduction, cette méthode ne sera
+  // appelée que depuis le device.
   ARCCORE_HOST_DEVICE void
   _finalize()
   {
@@ -450,8 +457,6 @@ class HostDeviceReducerBase
       ReduceFunctor::apply(m_atomic_parent_value, m_local_value);
 
     //printf("Destroy host %p %p\n",m_host_or_device_memory_for_reduced_value,this);
-    if (m_memory_impl && m_is_master_instance)
-      m_memory_impl->release();
 #endif
   }
 };
@@ -917,9 +922,7 @@ class GenericReducerBase
 
   void _allocate()
   {
-    eMemoryRessource r = eMemoryRessource::Host;
-    if (m_queue.isAcceleratorPolicy())
-      r = eMemoryRessource::HostPinned;
+    eMemoryRessource r = eMemoryRessource::HostPinned;
     if (m_host_reduce_storage.memoryRessource() != r)
       m_host_reduce_storage = NumArray<DataType, MDDim1>(r);
     m_host_reduce_storage.resize(1);
@@ -1002,7 +1005,7 @@ class GenericReducerIf
         RunCommand command2 = makeCommand(queue);
         using ReducerType = typename ReduceOperatorToReducerTypeTraits<DataType, ReduceOperator>::ReducerType;
         ReducerType reducer(command2);
-        command2 << RUNCOMMAND_LOOP1_EX(iter, nb_item, reducer)
+        command2 << RUNCOMMAND_LOOP1(iter, nb_item, reducer)
         {
           auto [i] = iter();
           reducer.combine(input_iter[i]);
@@ -1047,10 +1050,10 @@ namespace Arcane::Accelerator
  * \brief Algorithme générique de réduction sur accélérateur.
  *
  * La réduction se fait via les appels à applyMin(), applyMax(), applySum(),
- * applyMinWithIndex(), applyMaxWithIndex() ou applySumWithIndex().
- *
- * Après réduction, il est possible récupérer la valeur réduite via
- * reducedValue().
+ * applyMinWithIndex(), applyMaxWithIndex() ou applySumWithIndex(). Ces
+ * méthodes sont asynchrones.  Après réduction, il est possible récupérer la
+ * valeur réduite via reducedValue(). L'appel à reducedValue() bloque tant
+ * que la réduction n'est pas terminée.
  *
  * Les instances de cette classe peuvent être utilisées plusieurs fois.
  *

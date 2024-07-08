@@ -139,6 +139,31 @@ typedef uint64_t UInt64;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+// Macro pour générer un type POD
+// - CPP_TYPE est le type C++
+// - CSHARP_TYPE est le type C#.
+// Pour que cela fonctionne, il faut que la macro soit utilisée avant que le
+// type ne soit utilisé.
+// Les types 'MutableMemoryView' et 'ConstMemoryView' sont des exemples d'utilisation.
+%define ARCANE_SWIG_GENERATE_POD_TYPE(CPP_TYPE,CSHARP_TYPE)
+%typemap(csinterfaces) CPP_TYPE "";
+%typemap(csbody) CPP_TYPE %{ %}
+%typemap(SWIG_DISPOSING, methodname="Dispose", methodmodifiers="private") CPP_TYPE ""
+%typemap(SWIG_DISPOSE, methodname="Dispose", methodmodifiers="private") CPP_TYPE ""
+%typemap(csclassmodifiers) CPP_TYPE "public struct"
+%typemap(csattributes) CPP_TYPE "[StructLayout(LayoutKind.Sequential)]"
+%typemap(cstype) CPP_TYPE "CSHARP_TYPE"
+%typemap(ctype, out="CPP_TYPE",
+	 directorout="CPP_TYPE",
+	 directorin="CPP_TYPE") CPP_TYPE "CPP_TYPE"
+%typemap(imtype) CPP_TYPE "CSHARP_TYPE"
+%typemap(csin) CPP_TYPE "$csinput"
+%typemap(csout) CPP_TYPE { return $imcall;  }
+%enddef
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 // Gestion des interfaces de Arcane.
 // Ce fichier doit être inclus avant toute classe utilisant des
 // interfaces de Arcane.
@@ -362,6 +387,7 @@ ARCANE_SWIG_OVERRIDE_GETCPTR(Arcane::ItemGroupT<Arcane::Cell>,Arcane)
 %include Numeric.i
 
 %include ArrayView.i
+%include MemoryView.i
 
 %feature("director") Arcane::IBinaryMathFunctor;
 %include arcane/utils/IMathFunctor.h
@@ -441,6 +467,7 @@ class IEntryPoint
 };
 }
 
+%include arcane/core/datatype/DataTypes.h
 %include arcane/core/IBase.h
 %include arcane/core/ISubDomain.h
 %include arcane/core/SharedVariable.h
@@ -453,6 +480,7 @@ class IEntryPoint
 %include arcane/utils/IObserver.h
 %include arcane/utils/Observer.h
 %include arcane/utils/IObservable.h
+%include arcane/utils/ArrayShape.h
 %include arcane/core/IMainFactory.h
 %include arcane/core/ApplicationBuildInfo.h
 %include arcane/core/DotNetRuntimeInitialisationInfo.h

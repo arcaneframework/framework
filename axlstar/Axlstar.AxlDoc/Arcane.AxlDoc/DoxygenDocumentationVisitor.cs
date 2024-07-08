@@ -116,34 +116,32 @@ namespace Arcane.AxlDoc
     {
       OptionTypeCounterVisitor otc = new OptionTypeCounterVisitor ();
       o.AcceptChildren (otc, x => m_config.private_app_pages.Filter(x));
+      string color = "purple";
 
       if (m_config.max_display_size > 0 && otc.NbTotalOption > m_config.max_display_size) {
 
-        _WriteHtmlOnly(m_full_stream, "<div class=\"ComplexOptionInfoBlock\">");
-        _WriteHtmlOnly(m_full_stream, "<h2 class=\"memtitle\" style=\"border-color: purple;\">");
+        _WriteHtmlOnly(m_full_stream, "<div class='ComplexOptionInfoBlock'>");
 
-        _WriteColoredTitle("purple", o, true);
+        _WriteColoredTitle(color, o, true);
 
-        _WriteHtmlOnly(m_full_stream, "</h2>");
-        _WriteHtmlOnly(m_full_stream, "<div class=\"memitem\" style=\"border-color: purple;\">");
-        _WriteHtmlOnly(m_full_stream, "<div class=\"memproto\">");
+        _WriteBeforeDescriptions(color);
 
         _AddFullDescription(o);
 
-        _WriteHtmlOnly(m_full_stream, "</div>");
-        _WriteHtmlOnly(m_full_stream, "<div class=\"memdoc\">");
+        _WriteAfterDescriptionsBeforeLabels();
+        _WriteLabels(color, "Complex");
+        _WriteAfterLabelsBeforeCode();
 
         if(m_code_info.Language == "fr"){
           _WriteHtmlOnly(m_full_stream, "<br>");
-          m_full_stream.WriteLine("Le nombre de sous-options étant trop élevé, \\subpage " + DoxygenDocumentationUtils.AnchorName(o) + " \"une page dédiée a été générée\".\n");
+          m_full_stream.WriteLine("Le nombre de sous-options étant trop élevé, \\subpage {0} \"une page dédiée a été générée\".\n", DoxygenDocumentationUtils.AnchorName(o));
         }
         else{
           _WriteHtmlOnly(m_full_stream, "<br>");
-          m_full_stream.WriteLine("The number of suboptions is too high. \\subpage " + DoxygenDocumentationUtils.AnchorName(o) + " \"A subpage has been generated\".\n");
+          m_full_stream.WriteLine("The number of suboptions is too high. \\subpage {0} \"A subpage has been generated\".\n", DoxygenDocumentationUtils.AnchorName(o));
         }
 
-        _WriteHtmlOnly(m_full_stream, "</div>");
-        _WriteHtmlOnly(m_full_stream, "</div>");
+        _WriteAfterCode();
         _WriteHtmlOnly(m_full_stream, "</div>");
 
         _AddBriefDescription(o, true);
@@ -161,25 +159,24 @@ namespace Arcane.AxlDoc
         df.Write ();
       }
       else {
-        _WriteHtmlOnly(m_full_stream, "<div class=\"ComplexOptionInfoBlock\">");
+        _WriteHtmlOnly(m_full_stream, "<div class='ComplexOptionInfoBlock'>");
 
         // La partie "détail des méthodes" de doxygen se compose de trois parties :
         // - Un titre (h2 de classe .memtitle)
         // - Une partie "sous-titre" (div de classe .memitem.memproto)
         // - Une partie "description" (div de classe .memitem.memdoc)
-        _WriteHtmlOnly(m_full_stream, "<h2 class=\"memtitle\" style=\"border-color: purple;\">");
 
-        _WriteColoredTitle ("purple", o, false);
+        _WriteColoredTitle (color, o, false);
 
-        _WriteHtmlOnly(m_full_stream, "</h2>");
-        _WriteHtmlOnly(m_full_stream, "<div class=\"memitem\" style=\"border-color: purple;\">");
-        _WriteHtmlOnly(m_full_stream, "<div class=\"memproto\">");
+        _WriteBeforeDescriptions(color);
 
         _AddBriefDescription(o, false);
         _AddFullDescription (o);
 
-        _WriteHtmlOnly(m_full_stream, "</div>");
-        _WriteHtmlOnly(m_full_stream, "<div class=\"memdoc\">");
+        _WriteAfterDescriptionsBeforeLabels();
+        _WriteLabels(color, "Complex");
+        _WriteAfterLabelsBeforeCode();
+
         if (otc.NbTotalOption > 0) {
           m_brief_stream.WriteLine ("<ul>");
           if (m_config.do_sort != SortMode.None)
@@ -189,8 +186,8 @@ namespace Arcane.AxlDoc
           m_brief_stream.WriteLine ("</ul>");
         }
         _WriteCode(o);
-        _WriteHtmlOnly(m_full_stream, "</div>");
-        _WriteHtmlOnly(m_full_stream, "</div>");
+        _WriteAfterCode();
+        
         _WriteHtmlOnly(m_full_stream, "</div><!-- End of ComplexOptionInfoBlock -->"); // Pour ComplexOptionInfoBlock
       }
     }
@@ -202,9 +199,8 @@ namespace Arcane.AxlDoc
       // - Un titre (h2 de classe .memtitle)
       // - Une partie "sous-titre" (div de classe .memitem.memproto)
       // - Une partie "description" (div de classe .memitem.memdoc)
-      _WriteHtmlOnly(m_full_stream, "<h2 class=\"memtitle\" style=\"border-color: olive;\">");
-      _WriteColoredTitle ("olive", o, false);
-      _WriteHtmlOnly(m_full_stream, "</h2>");
+      string color = "olive";
+      _WriteColoredTitle (color, o, false);
       XmlDocument owner_doc = o.Node.OwnerDocument;
       XmlElement desc_elem = o.DescriptionElement;
       // Construit dans \a enum_list_element
@@ -250,8 +246,7 @@ namespace Arcane.AxlDoc
         tr.AppendChild (td2);
       }
       // enum_list_element.AppendChild (owner_doc.CreateElement ("br"));
-      _WriteHtmlOnly(m_full_stream, "<div class=\"memitem\" style=\"border-color: olive;\">");
-      _WriteHtmlOnly(m_full_stream, "<div class=\"memproto\">");
+      _WriteBeforeDescriptions(color);
       _AddBriefDescription (o, false);
       if (desc_elem != null) {
         XmlElement elem_description = desc_elem.SelectSingleNode ("enum-description") as XmlElement;
@@ -265,11 +260,13 @@ namespace Arcane.AxlDoc
       }
       //m_full_stream.Write(enum_list_element.OuterXml);
       _AddFullDescription (o);
-      _WriteHtmlOnly(m_full_stream, "</div>");
-      _WriteHtmlOnly(m_full_stream, "<div class=\"memdoc\">");
+
+      _WriteAfterDescriptionsBeforeLabels();
+      _WriteLabels(color, "Enumeration");
+      _WriteAfterLabelsBeforeCode();
+
       _WriteCode(o);
-      _WriteHtmlOnly(m_full_stream, "</div>");
-      _WriteHtmlOnly(m_full_stream, "</div>");
+      _WriteAfterCode();
     }
 
     public void VisitExtended (ExtendedOptionInfo o)
@@ -278,21 +275,21 @@ namespace Arcane.AxlDoc
       // - Un titre (h2 de classe .memtitle)
       // - Une partie "sous-titre" (div de classe .memitem.memproto)
       // - Une partie "description" (div de classe .memitem.memdoc)
-      _WriteHtmlOnly(m_full_stream, "<h2 class=\"memtitle\" style=\"border-color: teal;\">");
 
-      _WriteColoredTitle ("teal", o, false);
-      _WriteHtmlOnly(m_full_stream, "</h2>");
+      string color = "teal";
+      _WriteColoredTitle (color, o, false);
 
-      _WriteHtmlOnly(m_full_stream, "<div class=\"memitem\" style=\"border-color: teal;\">");
-      _WriteHtmlOnly(m_full_stream, "<div class=\"memproto\">");
+      _WriteBeforeDescriptions(color);
+
       _AddBriefDescription (o, false);
       _AddFullDescription (o);
-      _WriteHtmlOnly(m_full_stream, "</div>");
 
-      _WriteHtmlOnly(m_full_stream, "<div class=\"memdoc\">");
+      _WriteAfterDescriptionsBeforeLabels();
+      _WriteLabels(color, "Extended");
+      _WriteAfterLabelsBeforeCode();
+
       _WriteCode(o);
-      _WriteHtmlOnly(m_full_stream, "</div>");
-      _WriteHtmlOnly(m_full_stream, "</div>");
+      _WriteAfterCode();
     }
 
     public void VisitScript (ScriptOptionInfo o)
@@ -301,20 +298,20 @@ namespace Arcane.AxlDoc
       // - Un titre (h2 de classe .memtitle)
       // - Une partie "sous-titre" (div de classe .memitem.memproto)
       // - Une partie "description" (div de classe .memitem.memdoc)
-      _WriteHtmlOnly(m_full_stream, "<h2 class=\"memtitle\" style=\"border-color: teal;\">");
-      _WriteColoredTitle ("teal", o, false);
-      _WriteHtmlOnly(m_full_stream, "</h2>");
+      string color = "red";
+      _WriteColoredTitle (color, o, false);
 
-      _WriteHtmlOnly(m_full_stream, "<div class=\"memitem\" style=\"border-color: teal;\">");
-      _WriteHtmlOnly(m_full_stream, "<div class=\"memproto\">");
+      _WriteBeforeDescriptions(color);
+
       _AddBriefDescription (o, false);
       _AddFullDescription (o);
-      _WriteHtmlOnly(m_full_stream, "</div>");
 
-      _WriteHtmlOnly(m_full_stream, "<div class=\"memdoc\">");
+      _WriteAfterDescriptionsBeforeLabels();
+      _WriteLabels(color, "Script");
+      _WriteAfterLabelsBeforeCode();
+
       _WriteCode(o);
-      _WriteHtmlOnly(m_full_stream, "</div>");
-      _WriteHtmlOnly(m_full_stream, "</div>");
+      _WriteAfterCode();
     }
 
     public void VisitSimple (SimpleOptionInfo o)
@@ -323,23 +320,20 @@ namespace Arcane.AxlDoc
       // - Un titre (h2 de classe .memtitle)
       // - Une partie "sous-titre" (div de classe .memitem.memproto)
       // - Une partie "description" (div de classe .memitem.memdoc)
-      _WriteHtmlOnly(m_full_stream, "<h2 class=\"memtitle\" style=\"border-color: green;\">");
-      _WriteColoredTitle ("green", o, false);
-      _WriteHtmlOnly(m_full_stream, "</h2>");
+      string color = "green";
 
-      _WriteHtmlOnly(m_full_stream, "<div class=\"memitem\" style=\"border-color: green;\">");
-      _WriteHtmlOnly(m_full_stream, "<div class=\"memproto\">");
-      // m_full_stream.WriteLine("<p>TYPE={0}</p>",o.Type);
-      // if (o.DefaultValue!=null)
-      //   m_full_stream.WriteLine("<p>DEFAULT={0}</p>",o.DefaultValue);
+      _WriteColoredTitle (color, o, false);
+      _WriteBeforeDescriptions(color);
+
       _AddBriefDescription (o, false);
       _AddFullDescription (o);
-      _WriteHtmlOnly(m_full_stream, "</div>");
 
-      _WriteHtmlOnly(m_full_stream, "<div class=\"memdoc\">");
+      _WriteAfterDescriptionsBeforeLabels();
+      _WriteLabels(color, "Simple");
+      _WriteAfterLabelsBeforeCode();
+
       _WriteCode(o);
-      _WriteHtmlOnly(m_full_stream, "</div>");
-      _WriteHtmlOnly(m_full_stream, "</div>");
+      _WriteAfterCode();
     }
 
     public void VisitServiceInstance (ServiceInstanceOptionInfo o)
@@ -348,44 +342,67 @@ namespace Arcane.AxlDoc
       // - Un titre (h2 de classe .memtitle)
       // - Une partie "sous-titre" (div de classe .memitem.memproto)
       // - Une partie "description" (div de classe .memitem.memdoc)
-      _WriteHtmlOnly(m_full_stream, "<h2 class=\"memtitle\" style=\"border-color: green;\">");
-      _WriteColoredTitle ("green", o, false);
+      string color = "DodgerBlue";
+      _WriteColoredTitle (color, o, false);
       //m_full_stream.WriteLine("<p>SERVICE TYPE={0}</p>",o.Type);
-      _WriteHtmlOnly(m_full_stream, "</h2>");
-      _WriteHtmlOnly(m_full_stream, "<div class=\"memitem\" style=\"border-color: green;\">");
-      _WriteHtmlOnly(m_full_stream, "<div class=\"memproto\">");
+      _WriteBeforeDescriptions(color);
       _AddBriefDescription (o, false);
       _AddFullDescription (o);
       CodeInterfaceInfo interface_info = null;
       if (m_code_info.Interfaces.TryGetValue (o.Type, out interface_info)) {
         if (interface_info.Services.Count>0) {
           //Console.WriteLine("SERVICE TYPE FOUND={0}",o.Type);
-          _WriteHtmlOnly(m_full_stream, "<div class=\"ServiceTable\">");
+          _WriteHtmlOnly(m_full_stream, "<div class='full_desc_service_module ServiceTable'>");
           if(m_code_info.Language == "fr"){
-            m_full_stream.WriteLine ("<dl><dt>Valeur{0} possible{0} pour le tag <i>name</i>:</dt>",
-                                     (interface_info.Services.Count>1)?"s":"");
+            _WriteHtmlOnly(m_full_stream, String.Format("<dl><dt>Valeur{0} possible{0} pour le tag <i>name</i> :</dt>",
+                                     (interface_info.Services.Count>1)?"s":""));
           }
           else{
-            m_full_stream.WriteLine ("<dl><dt>Possible value{0} for tag <i>name</i>:</dt>",
-                                     (interface_info.Services.Count>1)?"s":"");
+            _WriteHtmlOnly(m_full_stream, String.Format("<dl><dt>Possible value{0} for tag <i>name</i>:</dt>",
+                                     (interface_info.Services.Count>1)?"s":""));
           }
+
+          // Ajout des différents services disponibles pour cette option.
+          // Avec un aperçu des options de ces services.
           foreach (CodeServiceInfo csi in interface_info.Services) {
-            //Console.WriteLine("SERVICE TYPE FOUND={0} {1} {2}",o.Type,csi.Name,csi.FileBaseName);
-            if (csi.FileBaseName != null) {
-              m_full_stream.WriteLine ("<dd>\\ref axldoc_service_{0} \"{1}\"<br/></dd>", csi.FileBaseName, csi.Name);
-            } else {
-              m_full_stream.WriteLine ("<dd>{0}</dd>", csi.Name);
+            _WriteHtmlOnly(m_full_stream, "<details>");
+            _WriteHtmlOnly(m_full_stream, "<summary>");
+            if (String.IsNullOrEmpty(csi.FileBaseName)) {
+              m_full_stream.WriteLine ("{0}", csi.Name);
+              _WriteHtmlOnly(m_full_stream, "</summary>");
+              _WriteHtmlOnly(m_full_stream, "</details>");
+            } 
+            else {
+              m_full_stream.WriteLine ("\\ref axldoc_service_{0} \"{1}\"<br/>", csi.FileBaseName, csi.Name);
+              _WriteHtmlOnly(m_full_stream, "</summary>");
+
+              if(m_code_info.Language == "fr"){
+                m_full_stream.WriteLine ("Liste des options du service \\ref axldoc_service_{0} \"{1}\" :", csi.FileBaseName, csi.Name);
+              }
+              else{
+                m_full_stream.WriteLine ("Summary of options of \\ref axldoc_service_{0} \"{1}\" service:", csi.FileBaseName, csi.Name);
+              }
+
+              // Attention : Pour que ça fonctionne, il faut ajouter le dossier de sortie dans
+              // la partie "EXAMPLE_PATH" du .doxyfile.
+              m_full_stream.WriteLine("\n\\snippet{{doc}} snippet_axldoc_service_{0}.md snippet_axldoc_service_{0}\n", csi.FileBaseName);
+
+              _WriteHtmlOnly(m_full_stream, "</details>");
             }
           }
-          m_full_stream.WriteLine ("</dl>");
+          _WriteHtmlOnly(m_full_stream, "</dl>");
           _WriteHtmlOnly(m_full_stream, "</div>");
         }
       }
-      _WriteHtmlOnly(m_full_stream, "</div>");
-      _WriteHtmlOnly(m_full_stream, "<div class=\"memdoc\">");
+      _WriteAfterDescriptionsBeforeLabels();
+
+      _WriteLabels(color, "Service Instance");
+
+      _WriteAfterLabelsBeforeCode();
+
       _WriteCode(o);
-      _WriteHtmlOnly(m_full_stream, "</div>");
-      _WriteHtmlOnly(m_full_stream, "</div>");
+
+      _WriteAfterCode();
     }
 
     private void _WriteDescription (int i, Option option, XmlElement desc_elem, TextWriter stream)
@@ -450,7 +467,7 @@ namespace Arcane.AxlDoc
 
     private void _AddFullDescription (int i, Option option, XmlElement desc_elem)
     {
-      _WriteHtmlOnly(m_full_stream, "<div class='OptionFullDescription'>");
+      _WriteHtmlOnly(m_full_stream, "<div class='full_desc_service_module OptionFullDescription'>");
       _WriteDescription (i, option, desc_elem, m_full_stream);
       // Passage en \htmlonly car s'il y a une liste non numéroté :
       // - 
@@ -511,11 +528,56 @@ namespace Arcane.AxlDoc
       m_brief_stream.WriteLine ("</li>");
     }
 
+    private void _WriteBeforeDescriptions(string color)
+    {
+      _WriteHtmlOnly(m_full_stream, "<div class='memitem' style='border-color: " + color + ";'>");
+      _WriteHtmlOnly(m_full_stream, "<div class='memproto'>");
+
+      _WriteHtmlOnly(m_full_stream, "<table class='mlabels'>");
+      _WriteHtmlOnly(m_full_stream, "<tbody>");
+      _WriteHtmlOnly(m_full_stream, "<tr>");
+      _WriteHtmlOnly(m_full_stream, "<td class='mlabels-left'>");
+    }
+
+    private void _WriteAfterDescriptionsBeforeLabels()
+    {
+      _WriteHtmlOnly(m_full_stream, "</td>");
+      _WriteHtmlOnly(m_full_stream, "<td class='mlabels-right'>");
+      _WriteHtmlOnly(m_full_stream, "<span class='mlabels'>");
+    }
+
+    private void _WriteLabels(string color, string text)
+    {
+      _WriteHtmlOnly(m_full_stream, "<span class='label_option_type mlabel' style='background: " + color + ";'>" + text + "</span>");
+    }
+
+    private void _WriteAfterLabelsBeforeCode()
+    {
+      _WriteHtmlOnly(m_full_stream, "</span>");
+      _WriteHtmlOnly(m_full_stream, "</td>");
+
+      _WriteHtmlOnly(m_full_stream, "</tr>");
+      _WriteHtmlOnly(m_full_stream, "</tbody>");
+      _WriteHtmlOnly(m_full_stream, "</table>");
+
+      _WriteHtmlOnly(m_full_stream, "</div>");
+
+      _WriteHtmlOnly(m_full_stream, "<div class='memdoc'>");
+    }
+
+    private void _WriteAfterCode()
+    {
+      _WriteHtmlOnly(m_full_stream, "</div>");
+      _WriteHtmlOnly(m_full_stream, "</div>");
+    }
+
     private void _WriteColoredTitle (string color, Option o, bool option_with_subpage)
     {
-      _WriteHtmlOnly (m_full_stream, "<font color = \"" + color + "\" >");
+      _WriteHtmlOnly(m_full_stream, "<h2 class='memtitle' style='border-color: " + color + "; background: linear-gradient(" + color + ", 0.01%, var(--fragment-background));'>");
+      _WriteHtmlOnly (m_full_stream, "<font style='color: var(--page-foreground-color) !important;' >");
       _WriteTitle (o, option_with_subpage);
       _WriteHtmlOnly (m_full_stream, "</font>");
+      _WriteHtmlOnly(m_full_stream, "</h2>");
     }
 
     // option_with_subpage est utile pour les options complexes ayant plus de 30 sous-options.

@@ -68,11 +68,39 @@ class ARCANE_MATERIALS_EXPORT MeshMaterialModifier
    */
   void endUpdate();
 
+  /*!
+   * \brief Indique si on copie les valeurs entre pure et partiel lors
+   * d'un changement d'état de la maille.
+   *
+   * Si vrai (le défaut), alors on recopie la valeur partielle
+   * d'une maille dans la valeur pure lors du passage de la maille partielle
+   * en maille pure.
+   */
+  void setDoCopyBetweenPartialAndPure(bool v);
+
+  /*!
+   * \brief Indique si on initialise les nouvelles mailles matériaux ou milieux créées
+   *
+   * Si vrai (le défaut), alors les mailles constituants nouvellement créées
+   * sont initialisées. La valeur utilisée pour l'initialisation dépend de
+   * IMeshMaterialMng::isDataInitialisationWithZero().
+   */
+  void setDoInitNewItems(bool v);
+
+  /*!
+   * \brief Indique si on conserve les tableaux de travail entre les modifications
+   *
+   * Si vrai (le défaut), les tableaux de travail sont conservés entres les
+   * instances de cette classe. Cela permet d'éviter de réallouer ces tableaux entre
+   * chaque utilisation de cette classe mais en contrepartie la consommation
+   * mémoire peut augmenter.
+   */
+  void setPersistantWorkBuffer(bool v);
+
  private:
 
   MeshMaterialModifierImpl* m_impl = nullptr;
   bool m_has_update = false;
-
   void _checkHasUpdate();
 };
 

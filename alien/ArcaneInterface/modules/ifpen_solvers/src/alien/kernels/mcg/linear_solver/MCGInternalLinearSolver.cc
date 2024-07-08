@@ -1,8 +1,9 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
+//-----------------------------------------------------------------------------
 
 #define MPICH_SKIP_MPICXX 1
 #include "mpi.h"
@@ -133,7 +134,8 @@ MCGInternalLinearSolver::MCGInternalLinearSolver(
 
   if(!std::regex_match(m_version,expected_revision_regex) && m_parallel_mng->commRank() == 0)
   {
-    alien_warning([&] { cout() <<"MCGSolver version mismatch: expect " << expected_version << " get " << m_version ; });
+    alien_info([&]{
+      cout()<<"MCGSolver version mismatch: expect " << expected_version << " get " << m_version ; });
   }
 
   const std::regex end_regex("-[[:alnum:]]+$");
@@ -185,11 +187,10 @@ MCGInternalLinearSolver::init()
     return;
 
   m_output_level = m_options->output();
-  if (m_output_level > 0 && m_parallel_mng->commRank() == 0) {
-    alien_info([&] {
-      cout() << "MCGSolver version" << MCGSolver::LinearSolver::getRevision() << '\n';
-    });
-  }
+  alien_info([&]{
+    cout() << "MCGSolver version " << MCGSolver::LinearSolver::getRevision();
+  });
+
   m_use_mpi = m_parallel_mng->commSize() > 1;
 
   auto mpi_mng =
@@ -234,11 +235,9 @@ MCGInternalLinearSolver::init()
     const char* env_num_thread = getenv("OMP_NUM_THREADS");
     if (env_num_thread != nullptr) {
       m_num_thread = std::atoi(env_num_thread);
-      if (m_output_level > 0) {
-        alien_info([&] {
-          cout() << "Alien MCGSolver: set num_thread to " << m_num_thread << " from env";
-        });
-      }
+      alien_debug([&]{
+        cout() << "Alien MCGSolver: set num_thread to " << m_num_thread << " from env";
+      });
     }
     m_solver->setOpt(MCGSolver::UseOmpThread, m_use_thread);
     m_solver->setOpt(MCGSolver::NumThread, m_num_thread);
@@ -301,7 +300,9 @@ MCGInternalLinearSolver::init()
     if (m_options->amgx()[0]->parameterFile().empty())
       m_solver->setOpt(MCGSolver::AmgAlgo, m_options->amgx()[0]->amgAlgo());
     else
-      alien_info([&] { cout() << "Only parameter-file option is considered"; });
+      alien_info([&]{
+        cout() << "Only parameter-file option is considered";
+      });
   }
 
   m_solver->setOpt(MCGSolver::BiCGStabRhoInit, MCGSolver::RhoInit::RhsSquareNorm);
@@ -310,7 +311,7 @@ MCGInternalLinearSolver::init()
 
   m_init_timer.stop();
 
-#if 0  
+#if 0
   if(m_logger)
   {
     m_logger->log("precond",OptionsMCGSolverUtils::preconditionerEnumToString(m_precond_opt));
@@ -338,12 +339,10 @@ Integer
 MCGInternalLinearSolver::_solve(const MCGMatrixType& A, const MCGVectorType& b,MCGVectorType& x,
                                 const std::shared_ptr<const MCGSolver::PartitionInfo<int>>& part_info)
 {
-  if (m_output_level > 2 ) {
-    alien_info([&] {
-      cout() << "MCGInternalLinearSolver::_solve A:" << A.m_matrix.get()
-             << " b:" << &b << " x:" << &x;
-    });
-  }
+  alien_debug([&]{
+    cout() << "MCGInternalLinearSolver::_solve A:" << A.m_matrix[0][0].get()
+           << " b:" << &b << " x:" << &x;
+  });
 
   Integer error = -1;
 
@@ -379,11 +378,10 @@ Integer
 MCGInternalLinearSolver::_solve(const MCGMatrixType& A, const MCGVectorType& b,const MCGVectorType& x0,
                                 MCGVectorType& x, const std::shared_ptr<const MCGSolver::PartitionInfo<int>>& part_info)
 {
-  if (m_output_level > 2)
-    alien_info([&] {
+    alien_debug([&]{
       cout() << "MCGInternalLinearSolver::_solve with x0"
              << " A:" << &A << " b:" << &b << " x0:" << &x0 << " x:" << &x;
-    });
+  });
 
   Integer error = -1;
 
@@ -472,13 +470,11 @@ MCGInternalLinearSolver::solve(IMatrix const& A, IVector const& b, IVector& x)
   if (m_parallel_mng == nullptr)
     return true;
 
-  if (m_output_level > 1) {
-    alien_info([&] {
-      cout() << "MCGInternalLinearSolver::solve A timestamp: " << A.impl()->timestamp();
-      cout() << "MCGInternalLinearSolver::solve b timestamp: " << b.impl()->timestamp();
-      cout() << "MCGInternalLinearSolver::solve x timestamp: " << x.impl()->timestamp();
-    });
-  }
+  alien_debug([&] {
+   cout() << "MCGInternalLinearSolver::solve A timestamp: " << A.impl()->timestamp();
+   cout() << "MCGInternalLinearSolver::solve b timestamp: " << b.impl()->timestamp();
+   cout() << "MCGInternalLinearSolver::solve x timestamp: " << x.impl()->timestamp();
+  });
 
   using namespace Alien;
   using namespace Alien::MCGInternal;
@@ -487,7 +483,8 @@ MCGInternalLinearSolver::solve(IMatrix const& A, IVector const& b, IVector& x)
 
   if (A.impl()->hasFeature("composite")) {
     throw Alien::FatalErrorException("composite no more supported with MCGSolver");
-  } else {
+  }
+  else {
     m_A_update = A.impl()->timestamp() > m_A_time_stamp;
     m_A_update = b.impl()->timestamp() > m_b_time_stamp;
     m_A_time_stamp = A.impl()->timestamp();
@@ -514,7 +511,8 @@ MCGInternalLinearSolver::solve(IMatrix const& A, IVector const& b, IVector& x)
         block_size = blockSize;
         m_part_info = std::make_shared<MCGSolver::PartitionInfo<int>>();
         m_part_info->init((int*)offsets.data(), offsets.size(), block_size);
-      } else {
+      }
+      else {
         Integer loffset = matrix.distribution().rowOffset();
         Integer nproc = m_parallel_mng->commSize();
         UniqueArray<Integer> scalarOffsets;
@@ -557,17 +555,15 @@ MCGInternalLinearSolver::solve(IMatrix const& A, IVector const& b, IVector& x)
   if (error == 0) {
     m_status.succeeded = true;
     m_status.error = 0;
-    if (m_output_level > 0 && m_parallel_mng->commRank() == 0) {
-      printInfo();
 
-      alien_info([&] {
-        cout() << "Resolution info      :";
-        cout() << "Resolution status    : OK";
-        cout() << "Residual             : " << m_mcg_status.m_residual;
-        cout() << "Number of iterations : " << m_mcg_status.m_num_iter;
-      });
-    }
-#if 0    
+    printInfo();
+    alien_info([&] {
+      cout() << "Resolution info      :";
+      cout() << "Resolution status    : OK";
+      cout() << "Residual             : " << m_mcg_status.m_residual;
+      cout() << "Number of iterations : " << m_mcg_status.m_num_iter;
+    });
+#if 0
     if(m_logger)
       m_logger->stop(eStep::solve, m_status);
 #endif

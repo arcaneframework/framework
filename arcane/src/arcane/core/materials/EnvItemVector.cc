@@ -53,32 +53,22 @@ EnvCellVector(CellVectorView view,IMeshEnvironment* environment)
 void EnvCellVector::
 _build(CellVectorView view)
 {
-  FixedArray<UniqueArray<ConstituentItemIndex>,2> internals;
-  FixedArray<UniqueArray<MatVarIndex>,2> matvar_indexes;
-  FixedArray<UniqueArray<Int32>,2> local_ids;
+  FixedArray<UniqueArray<ConstituentItemIndex>, 2> item_indexes;
   IMeshComponent* my_component = _component();
+
   ENUMERATE_ALLENVCELL(iallenvcell,_materialMng()->view(view)){
     AllEnvCell all_env_cell = *iallenvcell;
     ENUMERATE_CELL_ENVCELL(ienvcell,all_env_cell){
       EnvCell ec = *ienvcell;
       if (ec.component()==my_component){
         MatVarIndex idx = ec._varIndex();
-        if (idx.arrayIndex()==0){
-          internals[0].add(ec._constituentItemIndex());
-          matvar_indexes[0].add(idx);
-          local_ids[0].add(ec.globalCell().localId());
-        }
-        else{
-          internals[1].add(ec._constituentItemIndex());
-          matvar_indexes[1].add(idx);
-          local_ids[1].add(ec.globalCell().localId());
-        }
+        ConstituentItemIndex cii = ec._constituentItemIndex();
+        Int32 array_index = (idx.arrayIndex() == 0) ? 0 : 1;
+        item_indexes[array_index].add(cii);
       }
     }
   }
-  this->_setItems(internals[0],internals[1]);
-  this->_setMatVarIndexes(matvar_indexes[0],matvar_indexes[1]);
-  this->_setLocalIds(local_ids[0],local_ids[1]);
+  this->_setItems(item_indexes[0], item_indexes[1]);
 }
 
 /*---------------------------------------------------------------------------*/

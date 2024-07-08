@@ -31,6 +31,7 @@
 #include "arcane/core/ICartesianMeshGenerationInfo.h"
 #include "arcane/core/MeshEvents.h"
 #include "arcane/core/MeshKind.h"
+#include "arcane/core/internal/IMeshInternal.h"
 
 #include "arcane/cartesianmesh/ICartesianMesh.h"
 #include "arcane/cartesianmesh/CartesianConnectivity.h"
@@ -189,7 +190,7 @@ class CartesianMeshImpl
   InternalApi m_internal_api;
   //! Indice dans la numérotation locale de la maille, de la face dans
   // la direction X, Y ou Z
-  Int32 m_local_face_direction[3];
+  Int32 m_local_face_direction[3] = { -1, -1, -1 };
   IMesh* m_mesh = nullptr;
   Ref<CartesianMeshPatch> m_all_items_direction_info;
   CartesianConnectivity m_connectivity;
@@ -259,10 +260,6 @@ CartesianMeshImpl(IMesh* mesh)
 
   m_all_items_direction_info = makeRef(new CartesianMeshPatch(this,-1));
   _addPatchInstance(m_all_items_direction_info);
-  Integer nb_dir = mesh->dimension();
-  for( Integer i=0; i<nb_dir; ++i ){
-    m_local_face_direction[i] = -1;
-  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -417,45 +414,79 @@ computeDirections()
     info(4) << "Node I=" << i << " node=" << ItemPrinter(node) << " pos=" << nodes_coord[node];
   }
 
+  bool is_3d = m_mesh->dimension() == 3;
+
   // On suppose que toutes les mailles ont le même sens de numérotation dans le maillage.
   // Par exemple, pour toutes les mailles, la face d'indice 0 est celle du haut, celle
   // d'indice 1 celle de droite.
-  for( Integer i=0; i<nb_face; ++i ){
-    Face f = cell0.face(i);
-    if (f.isSubDomainBoundary())
-      continue;
-    Cell next_cell = (f.backCell()==cell0) ? f.frontCell() : f.backCell();
-    Real3 next_center = cells_center[next_cell];
-    info(4) << "NEXT_CELL=" << ItemPrinter(next_cell) << " center=" << next_center \
-            << " back=" << f.backCell().uniqueId()
-            << " front=" << f.frontCell().uniqueId();
+  if (is_3d) {
+    for (Integer i = 0; i < nb_face; ++i) {
+      Face f = cell0.face(i);
 
-    Real diff_x = math::abs(next_center.x - cell_center.x);
-    Real diff_y = math::abs(next_center.y - cell_center.y);
-    Real diff_z = math::abs(next_center.z - cell_center.z);
-    info(4) << "NEXT_CELL=" << ItemPrinter(next_cell) << " diff=" << Real3(diff_x,diff_y,diff_z);
-    //TODO: Verifier qu'il s'agit bien de la maille apres et pas avant.
-    // (tenir compte du signe de diff)
-    if (diff_x>diff_y && diff_x>diff_z){
-      // INC X
-      next_face_x = i;
-      info(4) << "Advance in direction X -> " << next_face_x;
+      Real3 next_center = faces_center[f];
+
+      info(4) << "NEXT_FACE=" << ItemPrinter(f) << " center=" << next_center;
+
+      Real diff_x = next_center.x - cell_center.x;
+      Real diff_y = next_center.y - cell_center.y;
+      Real diff_z = next_center.z - cell_center.z;
+
+      if (diff_x < 0)
+        diff_x = 0;
+      if (diff_y < 0)
+        diff_y = 0;
+      if (diff_z < 0)
+        diff_z = 0;
+
+      info(4) << "NEXT_FACE=" << ItemPrinter(f) << " diff=" << Real3(diff_x, diff_y, diff_z);
+
+      if (diff_x > diff_y && diff_x > diff_z) {
+        // INC X
+        next_face_x = i;
+        info(4) << "Advance in direction X -> " << next_face_x;
+      }
+      else if (diff_y > diff_x && diff_y > diff_z) {
+        // INC Y
+        next_face_y = i;
+        info(4) << "Advance in direction Y -> " << next_face_y;
+      }
+      else if (diff_z > diff_x && diff_z > diff_y) {
+        // INC Z
+        next_face_z = i;
+        info(4) << "Advance in direction Z -> " << next_face_z;
+      }
     }
-    else if (diff_y>diff_x && diff_y>diff_z){
-      // INC Y
-      next_face_y = i;
-      info(4) << "Advance in direction Y -> " << next_face_y;
-    }
-    else if (diff_z>diff_x && diff_z>diff_y){
-      // INC Z
-      next_face_z = i;
-      info(4) << "Advance in direction Z -> " << next_face_z;
-    }
-    else
-      ARCANE_FATAL("Bad value for next cell");
   }
+  else {
+    for (Integer i = 0; i < nb_face; ++i) {
+      Face f = cell0.face(i);
 
-  bool is_3d = m_mesh->dimension()==3;
+      Real3 next_center = faces_center[f];
+
+      info(4) << "NEXT_FACE=" << ItemPrinter(f) << " center=" << next_center;
+
+      Real diff_x = next_center.x - cell_center.x;
+      Real diff_y = next_center.y - cell_center.y;
+
+      if (diff_x < 0)
+        diff_x = 0;
+      if (diff_y < 0)
+        diff_y = 0;
+
+      info(4) << "NEXT_FACE=" << ItemPrinter(f) << " diff=" << Real2(diff_x, diff_y);
+
+      if (diff_x > diff_y) {
+        // INC X
+        next_face_x = i;
+        info(4) << "Advance in direction X -> " << next_face_x;
+      }
+      else if (diff_y > diff_x) {
+        // INC Y
+        next_face_y = i;
+        info(4) << "Advance in direction Y -> " << next_face_y;
+      }
+    }
+  }
   m_all_items_direction_info->_internalComputeNodeCellInformations(cell0,cells_center[cell0],nodes_coord);
 
   info() << "Informations from IMesh properties:";
@@ -483,7 +514,7 @@ computeDirections()
     m_local_face_direction[MD_DirY] = next_face_y;
     _computeMeshDirection(*m_all_items_direction_info.get(),MD_DirY,cells_center,faces_center,all_cells,all_nodes);
   }
-  if (next_face_z!=(-1)){
+  if (next_face_z != (-1)) {
     m_local_face_direction[MD_DirZ] = next_face_z;
     _computeMeshDirection(*m_all_items_direction_info.get(),MD_DirZ,cells_center,faces_center,all_cells,all_nodes);
   }
@@ -856,6 +887,12 @@ getReference(const MeshHandleOrMesh& mesh_handle_or_mesh,bool create)
       ARCANE_FATAL("The mesh {0} is not yet created",h.meshName());
     ICartesianMesh* cm = arcaneCreateCartesianMesh(mesh);
     udlist->setData(name,new AutoDestroyUserData<ICartesianMesh>(cm));
+
+    // Indique que le maillage est cartésien
+    MeshKind mk = mesh->meshKind();
+    mk.setMeshStructure(eMeshStructure::Cartesian);
+    mesh->_internalApi()->setMeshKind(mk);
+
     return cm;
   }
   AutoDestroyUserData<ICartesianMesh>* adud = dynamic_cast<AutoDestroyUserData<ICartesianMesh>*>(ud);

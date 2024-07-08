@@ -1,7 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
+  <Import Project="../CommonDll.props" />
+
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
   </PropertyGroup>
 
@@ -11,17 +12,17 @@
     <Copyright>CEA/IFPEN</Copyright>
   </PropertyGroup>
 
-  <!-- <ItemGroup>
-    <Compile Include="@ARCANE_DOTNET_WRAPPER_OUTDIRECTORY@/out_cs_python/*.cs" />
-  </ItemGroup> -->
   <ItemGroup>
-    <Compile Include="@CMAKE_CURRENT_SOURCE_DIR@/csharp/SimplePythonCallerModule.cs" />
+    <Compile Include="@ARCANE_DOTNET_WRAPPER_OUTDIRECTORY@/out_cs_python/*.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="../Arcane.Core/Arcane.Core.csproj" />
+    <ProjectReference Include="../Arcane.Services/Arcane.Services.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="pythonnet" Version="3.0.*" />
-    <PackageReference Include="Numpy.Bare" Version="3.11.*" />
+    <!-- Pas directement utile mais permet d'éviter un avertissement sur les versions des packages nuget -->
+    <PackageReference Include="System.Runtime" Version="4.3.1" />
   </ItemGroup>
+  @ARCANE_CSHARP_ITEM_GROUP_FILES@
 </Project>

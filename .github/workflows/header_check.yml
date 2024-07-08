@@ -82,7 +82,7 @@ jobs:
           cat ${{ env.ARCANE_SOURCE_DIR }}/output.log
 
       - name: Upload the logs artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: failure()
         with:
           name: Header Check Logs

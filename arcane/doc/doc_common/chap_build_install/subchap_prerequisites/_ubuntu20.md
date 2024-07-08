@@ -5,7 +5,7 @@
 ## Installation des packages nécessaires
 
 Les commandes suivantes permettent d'installer les dépendances
-nécessaires pour Arcane (ainsi que les dépendances optionnelles `HDF5` et `ParMetis`):
+nécessaires pour %Arcane (ainsi que les dépendances optionnelles `HDF5` et `ParMetis`):
 
 ~~~{sh}
 sudo apt update

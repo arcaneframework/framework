@@ -51,7 +51,7 @@ namespace Arcane::Materials
 class MaterialVariableBuildInfo;
 class MeshMaterialVariablePrivate;
 class MeshMaterialVariableSynchronizerList;
-class MeshVariableCopyBetweenPartialAndGlobalArgs;
+class CopyBetweenPartialAndGlobalArgs;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -150,8 +150,7 @@ class ARCANE_MATERIALS_EXPORT MeshMaterialVariable
   virtual void _saveData(IMeshComponent* component,IData* data) =0;
   virtual void _restoreData(IMeshComponent* component,IData* data,Integer data_index,
                             Int32ConstArrayView ids,bool allow_null_id) =0;
-  virtual void _copyGlobalToPartial(const MeshVariableCopyBetweenPartialAndGlobalArgs& args) = 0;
-  virtual void _copyPartialToGlobal(const MeshVariableCopyBetweenPartialAndGlobalArgs& args) = 0;
+  virtual void _copyBetweenPartialAndGlobal(const CopyBetweenPartialAndGlobalArgs& args) = 0;
   virtual void _initializeNewItems(const ComponentItemListBuilder& list_builder, RunQueue& queue) = 0;
   virtual void _syncReferences(bool update_views) = 0;
   virtual void _resizeForIndexer(Int32 index, RunQueue& queue) = 0;
@@ -159,6 +158,14 @@ class ARCANE_MATERIALS_EXPORT MeshMaterialVariable
  private:
 
   static SmallSpan<const Int32> _toInt32Indexes(SmallSpan<const MatVarIndex> indexes);
+
+ public:
+
+  static void _genericCopyTo(Span<const std::byte> input,
+                             SmallSpan<const Int32> input_indexes,
+                             Span<std::byte> output,
+                             SmallSpan<const Int32> output_indexes,
+                             const RunQueue& queue, Int32 data_type_size);
 };
 
 /*---------------------------------------------------------------------------*/
@@ -189,7 +196,8 @@ class MaterialVariableScalarTraits
   saveData(IMeshComponent* component,IData* data,Array<ContainerViewType>& cviews);
   ARCANE_MATERIALS_EXPORT static void
   copyTo(SmallSpan<const DataType> input, SmallSpan<const Int32> input_indexes,
-         SmallSpan<DataType> output, SmallSpan<const Int32> output_indexes, RunQueue& queue);
+         SmallSpan<DataType> output, SmallSpan<const Int32> output_indexes,
+         const RunQueue& queue);
   ARCANE_MATERIALS_EXPORT static void
   resizeAndFillWithDefault(ValueDataType* data,ContainerType& container,Integer dim1_size);
 
@@ -198,7 +206,7 @@ class MaterialVariableScalarTraits
     view = v;
   }
   ARCANE_MATERIALS_EXPORT static void
-  resizeWithReserve(PrivatePartType* var,Integer new_size);
+  resizeWithReserve(PrivatePartType* var, Int32 new_size, Real reserve_ratio);
   static Integer dimension() { return 0; }
   static Span<std::byte> toBytes(ArrayView<DataType> view)
   {
@@ -237,7 +245,7 @@ class MaterialVariableArrayTraits
   ARCANE_MATERIALS_EXPORT
   static void copyTo(SmallSpan2<const DataType> input, SmallSpan<const Int32> input_indexes,
                      SmallSpan2<DataType> output, SmallSpan<const Int32> output_indexes,
-                     RunQueue& queue);
+                     const RunQueue& queue);
   ARCANE_MATERIALS_EXPORT
   static void resizeAndFillWithDefault(ValueDataType* data, ContainerType& container,
                                        Integer dim1_size);
@@ -249,10 +257,8 @@ class MaterialVariableArrayTraits
   {
     view.copy(v);
   }
-  static void resizeWithReserve(PrivatePartType* var, Integer new_size)
-  {
-    var->resize(new_size);
-  }
+  ARCANE_MATERIALS_EXPORT
+  static void resizeWithReserve(PrivatePartType* var, Integer new_size, Real resize_ratio);
   static Span<std::byte> toBytes(Array2View<DataType> view)
   {
     Span<DataType> s(view.data(),view.totalNbElement());
@@ -311,9 +317,7 @@ class ItemMaterialVariableBase
   void _restoreData(IMeshComponent* component,IData* data,Integer data_index,
                     Int32ConstArrayView ids,bool allow_null_id) override;
   ARCANE_MATERIALS_EXPORT
-  void _copyGlobalToPartial(const MeshVariableCopyBetweenPartialAndGlobalArgs& args) override;
-  ARCANE_MATERIALS_EXPORT
-  void _copyPartialToGlobal(const MeshVariableCopyBetweenPartialAndGlobalArgs& args) override;
+  void _copyBetweenPartialAndGlobal(const CopyBetweenPartialAndGlobalArgs& args) override;
   ARCANE_MATERIALS_EXPORT
   void _initializeNewItems(const ComponentItemListBuilder& list_builder, RunQueue& queue) override;
 

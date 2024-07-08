@@ -1,24 +1,24 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Concurrency.h                                               (C) 2000-2022 */
+/* Concurrency.h                                               (C) 2000-2024 */
 /*                                                                           */
 /* Classes gérant la concurrence (tâches, boucles parallèles, ...)           */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_CONCURRENCY_H
-#define ARCANE_CONCURRENCY_H
+#ifndef ARCANE_CORE_CONCURRENCY_H
+#define ARCANE_CORE_CONCURRENCY_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/ConcurrencyUtils.h"
 
-#include "arcane/Item.h"
-#include "arcane/ItemFunctor.h"
-#include "arcane/ItemGroup.h"
+#include "arcane/core/Item.h"
+#include "arcane/core/ItemFunctor.h"
+#include "arcane/core/ItemGroup.h"
 
 #include <arcane/core/materials/MatItem.h>
 
@@ -115,7 +115,7 @@ template <typename InstanceType, typename ItemType> inline void
 arcaneParallelForeach(const ItemGroup& items, const ForLoopRunInfo& run_info,
                       InstanceType* instance, void (InstanceType::*function)(ItemVectorViewT<ItemType> items))
 {
-  arcaneParallelForeach(items.view(), run_info, instance, function);
+  arcaneParallelForeach(items._paddedView(), run_info, instance, function);
 }
 
 /*!
@@ -139,7 +139,7 @@ template <typename InstanceType, typename ItemType> inline void
 arcaneParallelForeach(const ItemGroup& items,
                       InstanceType* instance, void (InstanceType::*function)(ItemVectorViewT<ItemType> items))
 {
-  arcaneParallelForeach(items.view(), ForLoopRunInfo(), instance, function);
+  arcaneParallelForeach(items._paddedView(), ForLoopRunInfo(), instance, function);
 }
 
 /*!
@@ -163,7 +163,7 @@ template <typename LambdaType> inline void
 arcaneParallelForeach(const ItemGroup& items, const ParallelLoopOptions& options,
                       const LambdaType& lambda_function)
 {
-  arcaneParallelForeach(items.view(), ForLoopRunInfo(options), lambda_function);
+  arcaneParallelForeach(items._paddedView(), ForLoopRunInfo(options), lambda_function);
 }
 
 /*!
@@ -185,7 +185,7 @@ arcaneParallelForeach(const ItemVectorView& items_view, const LambdaType& lambda
 template <typename LambdaType> inline void
 arcaneParallelForeach(const ItemGroup& items, const LambdaType& lambda_function)
 {
-  arcaneParallelForeach(items.view(), lambda_function);
+  arcaneParallelForeach(items._paddedView(), lambda_function);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -298,7 +298,7 @@ namespace Parallel
   Foreach(const ItemGroup& items, const ParallelLoopOptions& options, InstanceType* instance,
           void (InstanceType::*function)(ItemVectorViewT<ItemType> items))
   {
-    Foreach(items.view(), options, instance, function);
+    Foreach(items._paddedView(), options, instance, function);
   }
 
   /*!
@@ -319,7 +319,7 @@ namespace Parallel
   [[deprecated("Year2021: Use Arcane::arcaneParallelForeach() instead")]] inline void
   Foreach(const ItemGroup& items, InstanceType* instance, void (InstanceType::*function)(ItemVectorViewT<ItemType> items))
   {
-    Foreach(items.view(), instance, function);
+    Foreach(items._paddedView(), instance, function);
   }
 
   /*!
@@ -343,7 +343,7 @@ namespace Parallel
   [[deprecated("Year2021: Use Arcane::arcaneParallelForeach() instead")]] inline void
   Foreach(const ItemGroup& items, const ParallelLoopOptions& options, const LambdaType& lambda_function)
   {
-    Foreach(items.view(), options, lambda_function);
+    Foreach(items._paddedView(), options, lambda_function);
   }
 
   /*!
@@ -364,7 +364,7 @@ namespace Parallel
   [[deprecated("Year2021: Use Arcane::arcaneParallelForeach() instead")]] inline void
   Foreach(const ItemGroup& items, const LambdaType& lambda_function)
   {
-    Foreach(items.view(), lambda_function);
+    Foreach(items._paddedView(), lambda_function);
   }
 
   /*!

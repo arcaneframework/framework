@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshUnitTest.cc                                             (C) 2000-2023 */
+/* MeshUnitTest.cc                                             (C) 2000-2024 */
 /*                                                                           */
 /* Service du test du maillage.                                              */
 /*---------------------------------------------------------------------------*/
@@ -81,7 +81,7 @@
 
 #include <set>
 
-#ifdef ARCANE_HAS_CUSTOM_MESH_TOOLS
+#ifdef ARCANE_HAS_POLYHEDRAL_MESH_TOOLS
 #include "neo/Mesh.h"
 #endif
 
@@ -567,10 +567,17 @@ _dumpTiedInterfaces()
 void MeshUnitTest::
 _testGroups()
 {
+  {
+    // Vérifie que le groupe nul est trié
+    CellGroup null_group;
+    if (!null_group.checkIsSorted())
+      ARCANE_FATAL("Null group is not sorted");
+  }
+
   IItemFamily* item_family = mesh()->cellFamily();
   CellGroup all_items = item_family->allItems();
   if (!all_items.checkIsSorted())
-    throw FatalErrorException(A_FUNCINFO,"AllItems group is not sorted");
+    ARCANE_FATAL("AllItems group is not sorted");
 
   Integer nb_item = all_items.size();
   CellGroup group = mesh()->cellFamily()->findGroup("TestGroup",true);
@@ -587,7 +594,7 @@ _testGroups()
     group.addItems(items);
     if (group.size()>1)
       if (group.checkIsSorted())
-        throw FatalErrorException(A_FUNCINFO,"Group should not be sorted");
+        ARCANE_FATAL("Group should not be sorted");
   }
   {
     Int32UniqueArray items;
@@ -1320,7 +1327,7 @@ _testAdditionalMeshes()
 void MeshUnitTest::
 _testCustomMeshTools()
 {
-#ifdef ARCANE_HAS_CUSTOM_MESH_TOOLS
+#ifdef ARCANE_HAS_POLYHEDRAL_MESH_TOOLS
   // Test dépendance outillage externe pour maillage custom (ex polyédrique)
   Neo::Mesh mesh{"test_mesh"};
   info() << "Neo::Mesh{" << mesh.name() << "}";

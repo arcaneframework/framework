@@ -37,6 +37,7 @@ MeshMaterialModifier(IMeshMaterialMng* mm)
 {
   if (!m_impl)
     ARCANE_FATAL("Can not create 'MeshMaterialModifier' because IMeshMaterialMng is not yet initialized");
+  m_impl->reset();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -96,6 +97,33 @@ endUpdate()
     m_has_update = false;
     m_impl->endUpdate();
   }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MeshMaterialModifier::
+setDoCopyBetweenPartialAndPure(bool v)
+{
+  m_impl->setDoCopyBetweenPartialAndPure(v);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MeshMaterialModifier::
+setDoInitNewItems(bool v)
+{
+  m_impl->setDoInitNewItems(v);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MeshMaterialModifier::
+setPersistantWorkBuffer(bool v)
+{
+  m_impl->setPersistantWorkBuffer(v);
 }
 
 /*---------------------------------------------------------------------------*/

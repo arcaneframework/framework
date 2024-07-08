@@ -15,6 +15,7 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/TraceAccessor.h"
+#include "arcane/utils/Functor.h"
 
 #include "arcane/core/ItemGroup.h"
 #include "arcane/core/materials/MatItem.h"
@@ -139,10 +140,12 @@ class MeshComponentData
   ConstituentItemLocalIdList m_constituent_local_id_list;
 
   MeshComponentPartData* m_part_data = nullptr;
+  FunctorT<MeshComponentData> m_recompute_part_data_functor;
 
  private:
 
   void _setPartInfo();
+  void _rebuildPartDataDirect();
 };
 
 /*---------------------------------------------------------------------------*/

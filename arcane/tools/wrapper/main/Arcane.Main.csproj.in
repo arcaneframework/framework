@@ -7,6 +7,11 @@
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <!-- Needed with .Net 8 to prevent FPE in garbage collection -->
+    <ServerGarbageCollection Condition="'$(TargetFramework)'=='net8' or $(TargetFramework)=='netcoreapp8.0'">true</ServerGarbageCollection>
+  </PropertyGroup>
+
   <!-- Infos pour NuGet -->
   <PropertyGroup>
     <PackageVersion>@ARCANE_VERSION@</PackageVersion>
@@ -14,10 +19,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="@CMAKE_CURRENT_SOURCE_DIR@/ArcaneMainExec.cs" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="../Arcane.Launcher/Arcane.Launcher.csproj" />
     <ProjectReference Include="../Arcane.Core/Arcane.Core.csproj" />
   </ItemGroup>
+  @ARCANE_CSHARP_ITEM_GROUP_FILES@
 </Project>

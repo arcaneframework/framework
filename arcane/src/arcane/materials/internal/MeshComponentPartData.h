@@ -38,10 +38,6 @@ namespace Arcane::Materials
 class MeshComponentPartData
 : public TraceAccessor
 {
-  friend class MeshComponentData;
-  friend class ComponentItemVector;
-  friend class ConstituentItemVectorImpl;
-
  public:
 
   MeshComponentPartData(IMeshComponent* component,const String& debug_name);
@@ -52,46 +48,34 @@ class MeshComponentPartData
 
   IMeshComponent* component() const { return m_component; }
 
-  void checkValid() const;
+  void checkValid();
 
   //! Vue sur la partie pure
-  ComponentPurePartItemVectorView pureView() const;
+  ComponentPurePartItemVectorView pureView();
 
   //! Vue sur la partie impure
-  ComponentImpurePartItemVectorView impureView() const;
+  ComponentImpurePartItemVectorView impureView();
 
   //! Vue sur la partie \a part
-  ComponentPartItemVectorView partView(eMatPart part) const;
+  ComponentPartItemVectorView partView(eMatPart part);
+
+  /*
+   * \brief Fonctor pour recalculer les parties pures et impures suite à une modification.
+   *
+   * Si ce fonctor n'est pas positionné, alors il faut mettre à jour manuellement
+   * l'instance via l'appel à _setFromMatVarIndexes(). \a func doit rester valide
+   * durant toute la durée de vie de cette instance
+   */
+  void setRecomputeFunctor(IFunctor* func) { m_compute_functor = func; }
+
+  void setNeedRecompute() { m_is_need_recompute = true; }
 
  public:
 
-  Int32ConstArrayView valueIndexes(eMatPart k) const
-  {
-    return m_value_indexes[(Int32)k];
-  }
-
-  Int32ConstArrayView itemIndexes(eMatPart k) const
-  {
-    return m_items_internal_indexes[(Int32)k];
-  }
-
- private:
-
-  void _setConstituentListView(const ConstituentItemLocalIdListView& v)
-  {
-    m_constituent_list_view = v;
-  }
-
-  //! Il faut appeler notifyValueIndexesChanged() après modification du tableau.
-  Int32Array& _mutableValueIndexes(eMatPart k)
-  {
-    return m_value_indexes[(Int32)k];
-  }
-
- public:
-
+  void _setConstituentListView(const ConstituentItemLocalIdListView& v);
   void _setFromMatVarIndexes(ConstArrayView<MatVarIndex> matvar_indexes, RunQueue& queue);
-  void _notifyValueIndexesChanged(RunQueue* queue);
+  void _setFromMatVarIndexes(ConstArrayView<MatVarIndex> globals,
+                             ConstArrayView<MatVarIndex> multiples);
 
  private:
 
@@ -109,6 +93,18 @@ class MeshComponentPartData
 
   //! Liste des ComponentItem pour ce constituant.
   ConstituentItemLocalIdListView m_constituent_list_view;
+
+  IFunctor* m_compute_functor = nullptr;
+  bool m_is_need_recompute = false;
+
+ public:
+
+  // Cette fonction est privée mais doit être rendue publique pour compiler avec CUDA.
+  void _notifyValueIndexesChanged(RunQueue* queue);
+
+ private:
+
+  void _checkNeedRecompute();
 };
 
 /*---------------------------------------------------------------------------*/

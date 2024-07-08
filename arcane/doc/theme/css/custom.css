@@ -56,8 +56,6 @@ dl.deprecated dd {
  * Taille / Position du logo.
  */
 #projectlogo img {
-  width: 250px;
-  height: 100px;
   max-height: none !important;
   padding-top: 5px;
   padding-bottom: 5px;
@@ -373,6 +371,26 @@ details[open] summary::before {
  * Fin : Personnalisation de la partie spoiler.
  */
 
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+
+/*
+ * Début : Personnalisation de la partie axldoc.
+ */
+.full_desc_service_module {
+  color: var(--page-foreground-color) !important;
+  text-shadow: none;
+}
+
+.label_option_type {
+  font-size: 8pt !important;
+  font-weight: bold;
+}
+/*
+ * Fin : Personnalisation de la partie axldoc.
+ */
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

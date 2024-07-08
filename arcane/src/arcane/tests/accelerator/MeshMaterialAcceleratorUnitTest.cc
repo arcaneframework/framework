@@ -433,41 +433,55 @@ _executeTest1(Integer nb_z, EnvCellVectorView env1)
 /*---------------------------------------------------------------------------*/
 /*!
  * \brief Test du RUNCOMMAND_MAT_ENUMERATE(MatCell, ...
- * avec en paramètres l'environnement et cherchant à accèder
- * aux variables multimat par l'envcell (i.e. le MatVarIndex en fait)
+ * avec en paramètres le matériau et cherchant à accèder
+ * aux variables multimat par la matcell (i.e. le MatVarIndex en fait)
  */
 void MeshMaterialAcceleratorUnitTest::
-_executeTest5(Integer nb_z,MatCellVectorView mat1)
+_executeTest5(Integer nb_z, MatCellVectorView mat1)
 {
   info() << "Execute Test 5";
   _initializeVariables(mat1);
 
   // Ref CPU
-  for (Integer z=0, iz=nb_z; z<iz; ++z) {
-    ENUMERATE_MATCELL(i,mat1){
+  for (Integer z = 0, iz = nb_z; z < iz; ++z) {
+    ENUMERATE_MATCELL (i, mat1) {
       m_mat_a_ref[i] = m_mat_b_ref[i] + m_mat_c_ref[i] * m_mat_d_ref[i] + m_mat_e_ref[i];
     }
   }
 
   // GPU
-  {
-    auto queue = makeQueue(m_runner);
+  auto queue = makeQueue(m_runner);
+  for (Integer z = 0, iz = nb_z; z < iz; ++z) {
     auto cmd = makeCommand(queue);
 
     auto out_a = ax::viewOut(cmd, m_mat_a);
     auto in_b = ax::viewIn(cmd, m_mat_b);
     auto in_c = ax::viewIn(cmd, m_mat_c);
     auto in_d = ax::viewIn(cmd, m_mat_d);
-    auto in_e = ax::viewIn(cmd, m_mat_e);  
-
-    for (Integer z=0, iz=nb_z; z<iz; ++z) {
-      cmd << RUNCOMMAND_MAT_ENUMERATE(MatCell, evi, mat1) {
-        out_a[evi] = in_b[evi] + in_c[evi] * in_d[evi] + in_e[evi];
-      };
-    }
+    auto in_e = ax::viewIn(cmd, m_mat_e);
+    cmd << RUNCOMMAND_MAT_ENUMERATE(MatCell, evi, mat1)
+    {
+      out_a[evi] = in_b[evi] + in_c[evi] * in_d[evi] + in_e[evi];
+    };
   }
 
   _checkMatValues1();
+
+  // Test récupération des MatCell
+  {
+    auto cmd = makeCommand(queue);
+    auto in_b = ax::viewIn(cmd, m_mat_b);
+    auto in_c = ax::viewIn(cmd, m_mat_c);
+    auto out_a = ax::viewOut(cmd, m_mat_a);
+    cmd << RUNCOMMAND_MAT_ENUMERATE(MatAndGlobalCell, vi, mat1)
+    {
+      auto [mvi, cid] = vi();
+      MatCell mc = mat1.matCell(vi.index());
+      Real x = in_b[mvi] + in_c[mvi];
+      Real y = in_b[mc] + in_c[mc];
+      out_a[mc] = x + y;
+    };
+  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -553,7 +567,7 @@ _executeTest2(Integer nb_z)
         }
         {
           ax::ReducerSum2<Real> reducer2(cmd);
-          cmd << RUNCOMMAND_MAT_ENUMERATE_EX(EnvAndGlobalCell, evi, envcellsv, reducer2)
+          cmd << RUNCOMMAND_MAT_ENUMERATE(EnvAndGlobalCell, evi, envcellsv, reducer2)
           {
             auto [mvi, cid] = evi();
             Real value_to_add = inout_env_a[mvi] * in_d[cid];
@@ -594,17 +608,15 @@ _executeTest3(Integer nb_z)
   MaterialVariableCellReal& e_ref(m_mat_e_ref);
 
   // Ref CPU
-  for (Integer z=0, iz=nb_z; z<iz; ++z) {
-    ENUMERATE_ENV(ienv, m_mm_mng) {
+  for (Integer z = 0, iz = nb_z; z < iz; ++z) {
+    ENUMERATE_ENV (ienv, m_mm_mng) {
       IMeshEnvironment* env = *ienv;
       EnvCellVectorView envcellsv = env->envView();
-      ENUMERATE_ENVCELL(iev,envcellsv)
-      {
+      ENUMERATE_ENVCELL (iev, envcellsv) {
         Cell cell = (*iev).globalCell();
         a_ref[iev] = b_ref[iev] * e_ref[cell];
       }
-      ENUMERATE_ENVCELL(iev,envcellsv)
-      {
+      ENUMERATE_ENVCELL (iev, envcellsv) {
         Cell cell = (*iev).globalCell();
         c_ref[iev] += a_ref[iev] * d_ref[cell];
       }
@@ -615,8 +627,8 @@ _executeTest3(Integer nb_z)
   {
     auto async_queues = makeAsyncQueuePool(m_runner, m_mm_mng->environments().size());
 
-    for (Integer z=0, iz=nb_z; z<iz; ++z) {
-      ENUMERATE_ENV(ienv, m_mm_mng) {
+    for (Integer z = 0, iz = nb_z; z < iz; ++z) {
+      ENUMERATE_ENV (ienv, m_mm_mng) {
         IMeshEnvironment* env = *ienv;
         EnvCellVectorView envcellsv = env->envView();
 
@@ -629,13 +641,16 @@ _executeTest3(Integer nb_z)
         auto in_e = ax::viewIn(cmd, m_mat_e.globalVariable());
 
         {
-          cmd << RUNCOMMAND_MAT_ENUMERATE(EnvAndGlobalCell, evi, envcellsv) {
+          cmd << RUNCOMMAND_MAT_ENUMERATE(EnvAndGlobalCell, evi, envcellsv)
+          {
             auto [mvi, cid] = evi();
-            inout_a[mvi] = in_b[mvi] * in_e[cid];
+            EnvCell ev = envcellsv.envCell(evi.index());
+            inout_a[mvi] = in_b[ev] * in_e[cid];
           };
         }
         {
-          cmd << RUNCOMMAND_MAT_ENUMERATE(EnvAndGlobalCell, evi, envcellsv) {
+          cmd << RUNCOMMAND_MAT_ENUMERATE(EnvAndGlobalCell, evi, envcellsv)
+          {
             auto [mvi, cid] = evi();
             out_c[mvi] += inout_a[mvi] * in_d[cid];
           };

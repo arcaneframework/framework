@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* VariableScalar.h                                            (C) 2000-2020 */
+/* VariableScalar.h                                            (C) 2000-2024 */
 /*                                                                           */
 /* Variable scalaire.                                                        */
 /*---------------------------------------------------------------------------*/
@@ -53,6 +53,7 @@ class VariableScalarT
 
   Integer checkIfSame(IDataReader* reader,int max_print,bool compare_ghost) override;
   void synchronize() override;
+  void synchronize(Int32ConstArrayView local_ids) override;
   Real allocatedMemory() const override;
   Integer nbElement() const override { return 1; }
   ValueType& value() { return m_value->value(); }

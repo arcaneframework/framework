@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* StdScalarMeshVariables.h                                    (C) 2000-2016 */
+/* StdScalarMeshVariables.h                                    (C) 2000-2024 */
 /*                                                                           */
 /* Définition de variables scalaires du maillage pour des tests.             */
 /*---------------------------------------------------------------------------*/
@@ -48,10 +48,14 @@ class StdScalarMeshVariables
   Integer checkValuesWithViews(Integer iteration, const GroupType& group);
   Integer checkReplica();
 
-  void setItemValues(Integer iteration, ItemType item);
-
+  void setEvenValues(Integer iteration, const GroupType& group);
+  void setOddValues(Integer iteration, const GroupType& group);
+  Integer checkGhostValuesOddOrEven(Integer iteration, const GroupType& group);
+  
  private:
 
+  void setItemValues(Int64 n, ItemType item);
+  
   Integer m_nb_display_error;
   Integer m_nb_displayed_error;
 

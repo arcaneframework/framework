@@ -45,11 +45,23 @@ namespace Arcane
   {
     public static int Run()
     {
-      return ArcaneMain.Run();
+      _CheckInitPython();
+      int r = 0;
+      try{
+        r = ArcaneMain.Run();
+      }
+      finally{
+        _ShutdownPython();
+      }
+      return r;
     }
     public static ApplicationInfo ApplicationInfo
     {
       get { return ArcaneLauncher_INTERNAL.ApplicationInfo(); }
+    }
+    public static ApplicationBuildInfo ApplicationBuildInfo
+    {
+      get { return ArcaneLauncher_INTERNAL.ApplicationBuildInfo(); }
     }
     public static DotNetRuntimeInitialisationInfo DotNetRuntimeInitialisationInfo
     {
@@ -63,9 +75,7 @@ namespace Arcane
     public static void Init(CommandLineArguments args)
     {
       ArcaneLauncher_INTERNAL.Init(args);
-#if ARCANE_HAS_DOTNET_PYTHON
-      Arcane.Python.MainInit.Init();
-#endif
+      _CheckInitPython();
     }
 
     public delegate int DirectSubDomainExecutionContextDelegate(DirectSubDomainExecutionContext ctx);
@@ -82,6 +92,26 @@ namespace Arcane
     {
       var x = new DirectFunctor(d);
       return DirectExecutionWrapper.Run(x);
+    }
+    static bool m_has_python_init;
+    static void _CheckInitPython()
+    {
+      if (!m_has_python_init){
+        _InitPython();
+        m_has_python_init = true;
+      }
+    }
+    static void _InitPython()
+    {
+#if ARCANE_HAS_DOTNET_PYTHON
+      Arcane.Python.MainInit.Init();
+#endif
+    }
+    static void _ShutdownPython()
+    {
+#if ARCANE_HAS_DOTNET_PYTHON
+      Arcane.Python.MainInit.Shutdown();
+#endif
     }
   }
 }

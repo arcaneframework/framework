@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* NodeFamily.h                                                (C) 2000-2023 */
+/* NodeFamily.h                                                (C) 2000-2024 */
 /*                                                                           */
 /* Famille de noeuds.                                                        */
 /*---------------------------------------------------------------------------*/
@@ -42,6 +42,8 @@ class ARCANE_MESH_EXPORT NodeFamily
   typedef ItemConnectivitySelectorT<EdgeInternalConnectivityIndex,IncrementalItemConnectivity> EdgeConnectivity;
   typedef ItemConnectivitySelectorT<FaceInternalConnectivityIndex,IncrementalItemConnectivity> FaceConnectivity;
   typedef ItemConnectivitySelectorT<CellInternalConnectivityIndex,IncrementalItemConnectivity> CellConnectivity;
+  typedef ItemConnectivitySelectorT<HParentInternalConnectivityIndex, IncrementalItemConnectivity> HParentConnectivity;
+  typedef ItemConnectivitySelectorT<HChildInternalConnectivityIndex, IncrementalItemConnectivity> HChildConnectivity;
 
  public:
 
@@ -138,6 +140,9 @@ class ARCANE_MESH_EXPORT NodeFamily
 
   void notifyItemsUniqueIdChanged() override;
 
+  void _addChildNodeToNode(Node parent_node, Node child_node);
+  void _addParentNodeToNode(Node parent_node, Node child_node);
+
  private:
   
   ItemTypeInfo* m_node_type = nullptr; //!< Instance contenant le type des noeuds
@@ -150,6 +155,9 @@ class ARCANE_MESH_EXPORT NodeFamily
   EdgeConnectivity* m_edge_connectivity = nullptr;
   FaceConnectivity* m_face_connectivity = nullptr;
   CellConnectivity* m_cell_connectivity = nullptr;
+  HParentConnectivity* m_hparent_connectivity = nullptr;
+  HChildConnectivity* m_hchild_connectivity = nullptr;
+
   FaceFamily* m_face_family = nullptr;
   //! Indique si on trie les faces et arêtes connectées aux noeuds
   bool m_is_sort_connected_faces_and_edges = false;

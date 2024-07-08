@@ -1,3 +1,9 @@
+﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
+//-----------------------------------------------------------------------------
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// See the top-level COPYRIGHT file for details.
+// SPDX-License-Identifier: Apache-2.0
+//-----------------------------------------------------------------------------
 #include <alien/kernels/trilinos/TrilinosBackEnd.h>
 #include <alien/kernels/trilinos/data_structure/TrilinosInternal.h>
 
@@ -41,12 +47,21 @@ MatrixInternal<ValueT, TagT>::setMatrixValues(Real const* values)
   for (int irow = 0; irow < m_local_size; ++irow) {
     size_t row_size = csr_matrix.getNumEntriesInLocalRow(m_local_offset + irow);
 
+#if (TRILINOS_MAJOR_VERSION < 15)
     Array<scalar_type> rowvals(row_size);
     Array<global_ordinal_type> cols(row_size);
     csr_matrix.getGlobalRowCopy(irow, cols(), rowvals(), row_size);
     for (std::size_t k = 0; k < row_size; ++k)
       rowvals[k] = values_ptr[k];
     csr_matrix.replaceGlobalValues(m_local_offset + irow, cols, rowvals());
+#else
+    typename MatrixInternal::matrix_type::nonconst_global_inds_host_view_type cols("Inds",row_size);
+    typename MatrixInternal::matrix_type::nonconst_values_host_view_type rowvals("Vals",row_size);
+    csr_matrix.getGlobalRowCopy(irow, cols, rowvals, row_size);
+    for (std::size_t k = 0; k < row_size; ++k)
+      rowvals[k] = values_ptr[k];
+    csr_matrix.replaceGlobalValues(m_local_offset + irow, cols, rowvals);
+#endif
     values_ptr += row_size;
   }
   return true;
@@ -96,10 +111,11 @@ TrilinosMatrix<ValueT, TagT>::initMatrix(IMessagePassingMng const* parallel_mng,
     int block_size, ValueT const* values)
 {
   using namespace Arccore::MessagePassing::Mpi;
-  auto* parallel_mng_ = const_cast<IMessagePassingMng*>(parallel_mng);
-  const auto* mpi_mng = dynamic_cast<const MpiMessagePassingMng*>(parallel_mng_);
-  const MPI_Comm* comm = static_cast<const MPI_Comm*>(mpi_mng->getMPIComm());
-  m_internal.reset(new MatrixInternal(local_offset, global_size, nrows, *comm));
+  auto* pm = dynamic_cast<MpiMessagePassingMng*>(const_cast<IMessagePassingMng*>(parallel_mng));
+  if(pm && *static_cast<const MPI_Comm*>(pm->getMPIComm()) != MPI_COMM_NULL)
+    m_internal.reset(new MatrixInternal(local_offset, global_size, nrows,*static_cast<const MPI_Comm*>(pm->getMPIComm())));
+  else
+    m_internal.reset(new MatrixInternal(local_offset, global_size, nrows, MPI_COMM_WORLD));
 
   return m_internal->initMatrix(local_offset, nrows, kcol, cols, block_size, values);
 }

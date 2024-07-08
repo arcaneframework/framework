@@ -7,7 +7,7 @@
  </arcane>
 
  <maillage>
-  <meshgenerator><sod><x>100</x><y>5</y><z>5</z></sod></meshgenerator>
+  <meshgenerator><sod><x>100</x><y>15</y><z>5</z></sod></meshgenerator>
  </maillage>
 
  <module-test-unitaire>

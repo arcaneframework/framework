@@ -37,6 +37,10 @@ déportés. Le code est exécuté par défaut sur le CPU (l'hôte) et
 certaines parties du calcul sont déportés sur les accélérateurs. Ce
 déport se fait via des appels spécifiques.
 
+Pour utiliser les accélerateurs, il est nécessaire d'avoir compiler
+%Arcane avec CUDA ou ROCm. Plus d'informations dans le chapitre 
+\ref arcanedoc_build_install_build.
+
 ## Utilisation dans Arcane {#arcanedoc_parallel_accelerator_usage}
 
 L'ensemble des types utilisés pour la gestion des accélérateurs est
@@ -580,6 +584,14 @@ des hexaèdres.
 
 \snippet accelerator/SimpleHydroAcceleratorService.cc AcceleratorConnectivity
 
+## Opérations atomiques
+
+La méthode \arcaneacc{doAtomic} permet d'effectuer des opérations
+atomiques. Les types d'opérations supportées sont définies par
+l'énumération \arcaneacc{eAtomicOperation}. Par exemple:
+
+\snippet AtomicUnitTest.cc SampleAtomicAdd
+
 ## Réductions, Scan et Filtrage
 
 La classe \arcaneacc{Filterer} permet de filtrer les éléments d'un tableau.
@@ -588,27 +600,8 @@ La classe \arcaneacc{Scanner} permet d'effectuer des algorithmes de
 scan inclusifs ou exclusifs (voir
 [Algorithmes de Scan](https://en.wikipedia.org/wiki/Prefix_sum) sur wikipedia)
 
-Les classes \arcaneacc{ReducerMax}, \arcaneacc{ReducerMin} et
-\arcaneacc{ReducerSum} permettent d'effectuer des réductions sur
-accélérateurs. Elles s'utilisent à l'intérieur des boucles
-RUNCOMMAND_LOOP() ou RUNCOMMAND_ENUMERATE(). Par exemple:
-
-```cpp
-#include "arcane/accelerator/RunCommandEnumerate.h"
-#include "arcane/accelerator/Reduce.h"
-{
-  Arcane::Accelerator::RunQueue queue = ...;
-  auto command = makeCommand(queue);
-  Arcane::Accelerator::ReducerMin<double> minimum_reducer(command);
-  Arcane::VariableCellReal my_variable = ...;
-  auto in_my_variable = viewIn(command,my_variable);
-  command << RUNCOMMAND_ENUMERATE(Cell,cid,allCells())
-  {
-    minimum_reducer.min(in_my_variable[cid]);
-  };
-  info() << "MinValue=" << minimum_reducer.reduce();
-}
-```
+Les réductions peuvent être gérées de plusieurs manières qui sont
+décrites dans la page (\ref arcanedoc_acceleratorapi_reduction)
 
 ## Mode Autonome accélérateur {#arcanedoc_parallel_accelerator_standalone}
 
@@ -643,9 +636,6 @@ ____
 
 <div class="section_buttons">
 <span class="back_section_button">
-\ref arcanedoc_parallel_simd
-</span>
-<span class="next_section_button">
-\ref arcanedoc_parallel_loadbalance
+\ref arcanedoc_acceleratorapi
 </span>
 </div>

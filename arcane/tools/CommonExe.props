@@ -19,8 +19,8 @@
     <TargetFramework
         Condition="'$(TargetFramework)'=='' and '$(BundledNETCoreAppTargetFrameworkVersion)'!=''"
         >netcoreapp$(BundledNETCoreAppTargetFrameworkVersion)</TargetFramework>
-    <TargetFramework Condition="'$(TargetFramework)'==''">net461</TargetFramework>
     <TargetExt>.dll</TargetExt>
     <OutputType>Exe</OutputType>
+    <UseAppHost>false</UseAppHost>
   </PropertyGroup>
 </Project>

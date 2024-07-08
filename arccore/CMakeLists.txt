@@ -1,16 +1,4 @@
-﻿cmake_minimum_required(VERSION 3.13 FATAL_ERROR)
-
-# ----------------------------------------------------------------------------
-# ----------------------------------------------------------------------------
-
-# For support of VERSION
-cmake_policy(SET CMP0048 NEW)
-# Check libraries with FOO_ROOT (CMake 3.12)
-cmake_policy(SET CMP0074 NEW)
-# target_link_libraries from different libraries (CMake 3.13)
-cmake_policy(SET CMP0079 NEW)
-# option() honors normal variables (CMake 3.13)
-cmake_policy(SET CMP0077 NEW)
+﻿cmake_minimum_required(VERSION 3.21 FATAL_ERROR)
 
 # ----------------------------------------------------------------------------
 # Récupère numéro de version de Arccore à partir du fichier 'version' et
@@ -95,6 +83,7 @@ message(STATUS "[arccore] Is Debug mode enabled (final) ? ${ARCCORE_DEBUG}")
 # ----------------------------------------------------------------------------
 
 option(ARCCORE_USE_MPI "Whether or not MPI support is enabled" ON)
+option(ARCCORE_ENABLE_CODE_COVERAGE "Whether we use compiler option for code coverage" OFF)
 
 # Pour l'instant c'est obligatoire d'avoir la GLIB.
 set(ARCCORE_ENABLE_GLIB TRUE CACHE BOOL "Is Glib enabled in Arccon?" FORCE)
@@ -169,8 +158,17 @@ install(TARGETS arccore_full EXPORT ${ARCCORE_EXPORT_TARGET})
 # Les symboles des bibliothèques ne sont pas visibles sauf si demandé
 # explicitement
 
-if (CMAKE_COMPILER_IS_GNUCXX)
-  target_compile_options(arccore_build_compile_flags INTERFACE -fvisibility-inlines-hidden -fvisibility=hidden)
+# ----------------------------------------------------------------------------
+# Options pour la couverture de test
+
+if (ARCCORE_ENABLE_CODE_COVERAGE)
+  message(STATUS "Code coverage is enabled")
+  if (CMAKE_COMPILER_IS_GNUCXX)
+    target_compile_options(arccore_build_compile_flags INTERFACE --coverage -fprofile-abs-path -ftest-coverage)
+    target_link_options(arccore_build_compile_flags INTERFACE --coverage -fprofile-abs-path -ftest-coverage)
+  else()
+    message(FATAL_ERROR "Code coverage is only enabled for GCC compiler")
+  endif()
 endif()
 
 # ----------------------------------------------------------------------------

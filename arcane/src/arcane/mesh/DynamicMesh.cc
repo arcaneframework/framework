@@ -160,9 +160,16 @@ class DynamicMesh::InternalApi
 {
  public:
 
-  InternalApi(DynamicMesh* mesh)
+  explicit InternalApi(DynamicMesh* mesh)
   : m_mesh(mesh)
   {
+  }
+
+ public:
+
+  void setMeshKind(const MeshKind& v)
+  {
+    m_mesh->m_mesh_kind = v;
   }
 
  private:
@@ -830,6 +837,12 @@ endAllocate()
   m_is_allocated = true;
   if (arcaneIsCheck())
     checkValidMesh();
+
+  // Affiche les statistiques du nouveau maillage
+  {
+    MeshStats ms(traceMng(),this,m_parallel_mng);
+    ms.dumpStats();
+  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1080,6 +1093,58 @@ addChildCellToCell(Cell parent, Cell child)
   _checkConnectivity();
 
   m_cell_family->_addChildCellToCell2(parent, child);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void DynamicMesh::
+addParentFaceToFace(Face child, Face parent)
+{
+  Trace::Setter mci(traceMng(), _className());
+  _checkDimension();
+  _checkConnectivity();
+
+  m_face_family->_addParentFaceToFace(parent, child);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void DynamicMesh::
+addChildFaceToFace(Face parent, Face child)
+{
+  Trace::Setter mci(traceMng(), _className());
+  _checkDimension();
+  _checkConnectivity();
+
+  m_face_family->_addChildFaceToFace(parent, child);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void DynamicMesh::
+addParentNodeToNode(Node child, Node parent)
+{
+  Trace::Setter mci(traceMng(), _className());
+  _checkDimension();
+  _checkConnectivity();
+
+  m_node_family->_addParentNodeToNode(parent, child);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void DynamicMesh::
+addChildNodeToNode(Node parent, Node child)
+{
+  Trace::Setter mci(traceMng(), _className());
+  _checkDimension();
+  _checkConnectivity();
+
+  m_node_family->_addChildNodeToNode(parent, child);
 }
 
 /*---------------------------------------------------------------------------*/

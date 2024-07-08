@@ -26,6 +26,8 @@
 
 #include "arcane/utils/SharedPtr.h"
 
+#include "arcane/core/ArcaneException.h"
+
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -66,6 +68,7 @@ class PartialVariableTester
   PartialVariableCellArrayInteger m_partial_initial_and_current_rank;
   VariableCellInteger m_post_initial_rank;
   VariableCellInteger m_post_current_rank;
+  void _testPartialVariableChecks() const;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -209,6 +212,8 @@ init()
               << " from variable not equals rank " << m_partial_initial_and_current_rank[icell][0]
               << " from partial variable";
   }
+
+  _testPartialVariableChecks();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -322,6 +327,33 @@ compute()
   //             << "," << icell->uniqueId() << ") uid " << m_all_cells_uid[icell]
   //             << " from partial variable on all-cells group";
   // }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void PartialVariableTester::
+_testPartialVariableChecks() const
+{
+  // check a partial variable cannot be created with an empty group name
+  try {
+    // Create var : must throw
+    PartialVariableCellReal partial_var{VariableBuildInfo{meshHandle(),"PartialTestVar",mesh()->cellFamily()->name(),""}};
+    throw AssertionException(A_FUNCINFO,"PartialVariableException creation does throw","PartialVariableException creation doesn't throw");
+  }
+  catch (FatalErrorException&) {
+    info() << "Correct behavior for partial variable creation with an empty group name";
+  }
+  // check a partial variable ref cannot be created when the partial var already exists on another group
+  PartialVariableCellReal partial_var2{VariableBuildInfo{meshHandle(),"PartialTestVar2",mesh()->cellFamily()->name(),"group_name"}};
+  try {
+    // Create var : must throw
+    PartialVariableCellReal partial_var3{VariableBuildInfo{meshHandle(),"PartialTestVar2",mesh()->cellFamily()->name(),"another_group_name"}};
+    ARCANE_FATAL("A Partial Variable Ref cannot be created when a Partial Variable with the same name already exists on another group");
+  }
+  catch (BadPartialVariableItemGroupNameException&){
+    info() << "Correct behavior for partial variable creation when a partial variable with the same name already exists on another group";
+  }
 }
 
 /*---------------------------------------------------------------------------*/

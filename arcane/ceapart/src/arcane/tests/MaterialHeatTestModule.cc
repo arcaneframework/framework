@@ -166,6 +166,7 @@ class MaterialHeatTestModule
   IProfilingService* m_profiling_service = nullptr;
   RunQueue m_queue;
   Runner m_sequential_runner;
+  UniqueArray<MeshMaterialVariableRef*> m_additional_variables;
 
  private:
 
@@ -213,6 +214,9 @@ MaterialHeatTestModule(const ModuleBuildInfo& mbi)
 MaterialHeatTestModule::
 ~MaterialHeatTestModule()
 {
+  for (MeshMaterialVariableRef* v : m_additional_variables)
+    delete v;
+  m_additional_variables.clear();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -231,7 +235,8 @@ buildInit()
   // milieux et les matériaux soit accessibles dans le post-traitement.
   info() << "MaterialHeatTestModule::buildInit()";
 
-  Materials::IMeshMaterialMng* mm = IMeshMaterialMng::getReference(defaultMesh());
+  IMesh* mesh = defaultMesh();
+  Materials::IMeshMaterialMng* mm = IMeshMaterialMng::getReference(mesh);
 
   int flags = options()->modificationFlags();
 
@@ -275,6 +280,18 @@ buildInit()
       info() << "MAT=" << m->name();
       for (String s : m->environmentsName())
         info() << " In ENV=" << s;
+    }
+  }
+
+  // Créé les éventuelles variables additionnelles.
+  {
+    Int32 nb_var_to_add = options()->nbAdditionalVariable();
+    info() << "NbVariableToAdd = " << nb_var_to_add;
+    for (Int32 i = 0; i < nb_var_to_add; ++i) {
+      String var_name = "MaterialAdditionalVar" + String::fromNumber(i);
+      auto* v = new MaterialVariableCellInt32(VariableBuildInfo(mesh, var_name));
+      m_additional_variables.add(v);
+      v->fill(i + 2);
     }
   }
 }
@@ -701,7 +718,7 @@ _computeTotalTemperature(const HeatObject& heat_object, bool do_check)
     auto in_mat_temperature = viewIn(command, m_mat_temperature);
     Accelerator::ReducerSum2<double> total_temperature_reducer(command);
     CellInfoListView cells_info(defaultMesh()->cellFamily());
-    command << RUNCOMMAND_MAT_ENUMERATE_EX(MatAndGlobalCell, iter, mat, total_temperature_reducer)
+    command << RUNCOMMAND_MAT_ENUMERATE(MatAndGlobalCell, iter, mat, total_temperature_reducer)
     {
       auto [mvi, cid] = iter();
       if (cells_info.isOwn(cid)) {

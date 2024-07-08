@@ -1,0 +1,4 @@
+#!/bin/sh
+PYTHONPATH=@ARCANE_PYTHON_BASE_INSTALL_DIR@
+export PYTHONPATH
+python3 "$@"

@@ -104,6 +104,21 @@ RunnerInfo(Runner& runner)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+void MeshMaterialMng::RunnerInfo::
+initializeAsyncPool(Int32 nb_queue)
+{
+  // Si on utilise une politique accélérateur, créé des RunQueue asynchrones
+  // pour les opérations indépendantes. Cela permettra d'en exécuter plusieurs
+  // à la fois.
+  bool is_accelerator = isAcceleratorPolicy(m_runner.executionPolicy());
+  m_async_queue_pool.initialize(m_runner,nb_queue);
+  if (is_accelerator)
+    m_async_queue_pool.setAsync(true);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -212,7 +227,19 @@ build()
     if (!runner.isInitialized())
       runner.initialize(Accelerator::eExecutionPolicy::Sequential);
     m_runner_info = std::make_unique<RunnerInfo>(runner);
-    info() << "Use runner '" << this->runner().executionPolicy() << "' for MeshMaterialMng name=" << name();
+    Int32 nb_queue = isAcceleratorPolicy(runner.executionPolicy()) ? 8 : 1;
+    info() << "Use runner '" << this->runner().executionPolicy() << "' for MeshMaterialMng name=" << name()
+           << " async_queue_size=" << nb_queue;
+    m_runner_info->initializeAsyncPool(nb_queue);
+
+    // En mode release et si on utilise un accélérateur alors on alloue par
+    // défaut sur accélérateur. C'est important surtout pour les tableaux
+    // temporaires.
+    // En mode 'check' il faut laisser la mémoire unifiée car les tests sont faits
+    // sur le CPU.
+    RunQueue& q = runQueue();
+    if (!arcaneIsCheck() && q.isAcceleratorPolicy())
+      q.setMemoryRessource(eMemoryRessource::Device);
   }
 
   // Choix des optimisations.
@@ -269,6 +296,15 @@ build()
     }
   }
 
+  // Choix du ratio de capacité additionelle
+  {
+    if (auto v = Convert::Type<Real>::tryParseFromEnvironment("ARCANE_MATERIALMNG_ADDITIONAL_CAPACITY_RATIO", true)){
+      if (v>=0.0){
+        m_additional_capacity_ratio = v.value();
+        info() << "Set additional capacity ratio to " << m_additional_capacity_ratio;
+      }
+    }
+  }
 
   m_exchange_mng->build();
   // Si les traces des énumérateurs sur les entités sont actives, active celles

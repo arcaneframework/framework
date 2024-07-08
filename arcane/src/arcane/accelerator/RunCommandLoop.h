@@ -214,10 +214,6 @@ void operator<<(ArrayBoundRunCommand<N, ForLoopBoundType<N, Int32>, RemainingArg
   A_FUNCINFO << Arcane::ArrayBounds<typename Arcane::MDDimType<N>::DimType>(__VA_ARGS__) << [=] ARCCORE_HOST_DEVICE(Arcane::ArrayIndex<N> iter_name)
 
 //! Boucle sur accélérateur
-#define RUNCOMMAND_LOOP1(iter_name, x1) \
-  A_FUNCINFO << Arcane::ArrayBounds<MDDim1>(x1) << [=] ARCCORE_HOST_DEVICE(Arcane::MDIndex<1> iter_name)
-
-//! Boucle sur accélérateur
 #define RUNCOMMAND_LOOP2(iter_name, x1, x2) \
   A_FUNCINFO << Arcane::ArrayBounds<MDDim2>(x1, x2) << [=] ARCCORE_HOST_DEVICE(Arcane::MDIndex<2> iter_name)
 
@@ -238,9 +234,13 @@ void operator<<(ArrayBoundRunCommand<N, ForLoopBoundType<N, Int32>, RemainingArg
  * pour chaque valeur à réduire. Les arguments doivent être des instances des
  * classes Arcane::Accelerator::ReducerSum2, Arcane::Accelerator::ReducerMax2 ou Arcane::Accelerator::ReducerMin2.
  */
-#define RUNCOMMAND_LOOP1_EX(iter_name, x1, ...) \
+#define RUNCOMMAND_LOOP1(iter_name, x1, ...) \
   A_FUNCINFO << ::Arcane::Accelerator::impl::makeExtendedArrayBoundLoop(Arcane::ArrayBounds<MDDim1>(x1) __VA_OPT__(, __VA_ARGS__)) \
              << [=] ARCCORE_HOST_DEVICE(Arcane::ArrayIndex<1> iter_name __VA_OPT__(ARCANE_RUNCOMMAND_REDUCER_FOR_EACH(__VA_ARGS__)))
+
+//! Boucle sur accélérateur
+#define RUNCOMMAND_LOOP1_EX(iter_name, x1, ...) \
+  RUNCOMMAND_LOOP1(iter_name, x1, __VA_ARGS__)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

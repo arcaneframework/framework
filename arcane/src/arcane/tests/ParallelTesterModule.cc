@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ParallelTesterModule.cc                                     (C) 2000-2023 */
+/* ParallelTesterModule.cc                                     (C) 2000-2024 */
 /*                                                                           */
 /* Module de test du parallèlisme.                                           */
 /*---------------------------------------------------------------------------*/
@@ -316,7 +316,9 @@ class ParallelTesterModule
  private:
 
   void _testSynchronize();
+  void _testPartialSynchronize();
   void _testMultiSynchronize();
+  void _testPartialMultiSynchronize();
   void _testSameValuesOnAllReplica();
   void _testDifferentValuesOnAllReplica();
   void _testAccumulate();
@@ -496,7 +498,7 @@ _doInit()
     m_particle_family_testers.add(new ParticleFamilyTester(pf1));
 
     IItemFamily* pf2 = mesh->createItemFamily(IK_Particle,"Particle2NoMap");
-    pf2->setHasUniqueIdMap(false);
+//    pf2->setHasUniqueIdMap(false); // to see why this. Cannot work when USE_GRAPH_CONNECTIVITY_POLICY is on.
     m_particle_family_testers.add(new ParticleFamilyTester(pf2));
 
     IItemFamily* pf3 = mesh->createItemFamily(IK_Particle,"Particle3Ghost");
@@ -572,7 +574,9 @@ testLoop()
   _checkEnd();
   if (m_nb_test_synchronize>=1){
     _testSynchronize();
+    _testPartialSynchronize();
     _testMultiSynchronize();
+    _testPartialMultiSynchronize();
     _testSameValuesOnAllReplica();
     _testDifferentValuesOnAllReplica();
   }
@@ -716,6 +720,228 @@ _testSynchronize()
       if (nb_error!=0)
         ARCANE_FATAL("Error in synchronize test: n={0}",nb_error);
     }
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ParallelTesterModule::
+_testPartialSynchronize()
+{
+  IMesh* mesh = defaultMesh();
+  Integer current_iteration = m_global_iteration();
+  
+  UniqueArray<Int32> even_cells;
+  UniqueArray<Int32> even_nodes;
+  UniqueArray<Int32> even_faces;
+  UniqueArray<Int32> odd_cells;
+  UniqueArray<Int32> odd_nodes;
+  UniqueArray<Int32> odd_faces;
+  
+  m_array_cells.initialize();
+  m_array_nodes.initialize();
+  m_array_faces.initialize();
+  
+  VariableList cell_vars;
+  m_cells.addToCollection(cell_vars);
+  m_array_cells.addToCollection(cell_vars);
+    
+  VariableList node_vars;
+  m_nodes.addToCollection(node_vars);
+  m_array_nodes.addToCollection(node_vars);
+  
+  VariableList face_vars;
+  m_array_faces.addToCollection(face_vars);
+  m_faces.addToCollection(face_vars);
+  
+  
+  ENUMERATE_CELL(i, allCells()) {
+    Int64 uid = i->uniqueId();
+    if (uid % 2 == 0) {
+      even_cells.add(i->localId());
+    } else {
+      odd_cells.add(i->localId());
+    }
+  }
+  
+  ENUMERATE_NODE(i, allNodes()) {
+    Int64 uid = i->uniqueId();
+    if (uid % 2 == 0) {
+      even_nodes.add(i->localId());
+    } else {
+      odd_nodes.add(i->localId());
+    }
+  }
+  
+  ENUMERATE_FACE(i, allFaces()) {
+    Int64 uid = i->uniqueId();
+    if (uid % 2 == 0) {
+      even_faces.add(i->localId());
+    } else {
+      odd_faces.add(i->localId());
+    }
+  }
+  
+  // Synchronise les items d'UID pair
+  
+  m_cells.setEvenValues(current_iteration,mesh->ownCells());
+  m_nodes.setEvenValues(current_iteration,mesh->ownNodes());
+  m_faces.setEvenValues(current_iteration,mesh->ownFaces());
+  m_array_cells.setEvenValues(current_iteration,mesh->ownCells());
+  m_array_nodes.setEvenValues(current_iteration,mesh->ownNodes());
+  m_array_faces.setEvenValues(current_iteration,mesh->ownFaces());
+
+  for( Integer i=0; i<m_nb_test_synchronize; ++i ){
+    cell_vars.each([&](IVariable* v){v->synchronize(even_cells);});
+    node_vars.each([&](IVariable* v){v->synchronize(even_nodes);});
+    face_vars.each([&](IVariable* v){v->synchronize(even_faces);});
+  }
+  
+  // Synchronise les items d'UID impair
+  
+  m_cells.setOddValues(current_iteration,mesh->ownCells());
+  m_nodes.setOddValues(current_iteration,mesh->ownNodes());
+  m_faces.setOddValues(current_iteration,mesh->ownFaces());
+  m_array_cells.setOddValues(current_iteration,mesh->ownCells());
+  m_array_nodes.setOddValues(current_iteration,mesh->ownNodes());
+  m_array_faces.setOddValues(current_iteration,mesh->ownFaces());
+  
+  for( Integer i=0; i<m_nb_test_synchronize; ++i ){
+    cell_vars.each([&](IVariable* v){v->synchronize(odd_cells);});
+    node_vars.each([&](IVariable* v){v->synchronize(odd_nodes);});
+    face_vars.each([&](IVariable* v){v->synchronize(odd_faces);});
+  }
+
+  // Verifie
+  
+  {
+    Integer nb_error = 0;
+
+    nb_error += m_cells.checkGhostValuesOddOrEven(current_iteration,mesh->allCells());
+    nb_error += m_nodes.checkGhostValuesOddOrEven(current_iteration,mesh->allNodes());
+    nb_error += m_faces.checkGhostValuesOddOrEven(current_iteration,mesh->allFaces());
+    
+    info() << "NB ERROR SEQ=" << nb_error;
+    nb_error += m_array_cells.checkGhostValuesOddOrEven(current_iteration,mesh->allCells());
+    nb_error += m_array_nodes.checkGhostValuesOddOrEven(current_iteration,mesh->allNodes());
+    nb_error += m_array_faces.checkGhostValuesOddOrEven(current_iteration,mesh->allFaces());
+
+    if (nb_error!=0)
+      ARCANE_FATAL("Error in partial synchronize test: n={0}",nb_error);
+    
+    info() << "PARTIAL SYNC OK.";
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ParallelTesterModule::
+_testPartialMultiSynchronize()
+{
+  IMesh* mesh = defaultMesh();
+  Integer current_iteration = m_global_iteration();
+  
+  UniqueArray<Int32> even_cells;
+  UniqueArray<Int32> even_nodes;
+  UniqueArray<Int32> even_faces;
+  UniqueArray<Int32> odd_cells;
+  UniqueArray<Int32> odd_nodes;
+  UniqueArray<Int32> odd_faces;
+  
+  m_array_cells.initialize();
+  m_array_nodes.initialize();
+  m_array_faces.initialize();
+  
+  VariableList cell_vars;
+  m_cells.addToCollection(cell_vars);
+  m_array_cells.addToCollection(cell_vars);
+    
+  VariableList node_vars;
+  m_nodes.addToCollection(node_vars);
+  m_array_nodes.addToCollection(node_vars);
+  
+  VariableList face_vars;
+  m_array_faces.addToCollection(face_vars);
+  m_faces.addToCollection(face_vars);
+  
+  
+  ENUMERATE_CELL(i, allCells()) {
+    Int64 uid = i->uniqueId();
+    if (uid % 2 == 0) {
+      even_cells.add(i->localId());
+    } else {
+      odd_cells.add(i->localId());
+    }
+  }
+  
+  ENUMERATE_NODE(i, allNodes()) {
+    Int64 uid = i->uniqueId();
+    if (uid % 2 == 0) {
+      even_nodes.add(i->localId());
+    } else {
+      odd_nodes.add(i->localId());
+    }
+  }
+  
+  ENUMERATE_FACE(i, allFaces()) {
+    Int64 uid = i->uniqueId();
+    if (uid % 2 == 0) {
+      even_faces.add(i->localId());
+    } else {
+      odd_faces.add(i->localId());
+    }
+  }
+  
+  // Synchronise les items d'UID pair
+  
+  m_cells.setEvenValues(current_iteration,mesh->ownCells());
+  m_nodes.setEvenValues(current_iteration,mesh->ownNodes());
+  m_faces.setEvenValues(current_iteration,mesh->ownFaces());
+  m_array_cells.setEvenValues(current_iteration,mesh->ownCells());
+  m_array_nodes.setEvenValues(current_iteration,mesh->ownNodes());
+  m_array_faces.setEvenValues(current_iteration,mesh->ownFaces());
+
+  for( Integer i=0; i<m_nb_test_synchronize; ++i ){
+    mesh->cellFamily()->synchronize(cell_vars, even_cells);
+    mesh->nodeFamily()->synchronize(node_vars, even_nodes);
+    mesh->faceFamily()->synchronize(face_vars, even_faces);
+  }
+  
+  // Synchronise les items d'UID impair
+  
+  m_cells.setOddValues(current_iteration,mesh->ownCells());
+  m_nodes.setOddValues(current_iteration,mesh->ownNodes());
+  m_faces.setOddValues(current_iteration,mesh->ownFaces());
+  m_array_cells.setOddValues(current_iteration,mesh->ownCells());
+  m_array_nodes.setOddValues(current_iteration,mesh->ownNodes());
+  m_array_faces.setOddValues(current_iteration,mesh->ownFaces());
+  
+  for( Integer i=0; i<m_nb_test_synchronize; ++i ){
+    mesh->cellFamily()->synchronize(cell_vars, odd_cells);
+    mesh->nodeFamily()->synchronize(node_vars, odd_nodes);
+    mesh->faceFamily()->synchronize(face_vars, odd_faces);
+  }
+
+  // Verifie
+  
+  {
+    Integer nb_error = 0;
+
+    nb_error += m_cells.checkGhostValuesOddOrEven(current_iteration,mesh->allCells());
+    nb_error += m_nodes.checkGhostValuesOddOrEven(current_iteration,mesh->allNodes());
+    nb_error += m_faces.checkGhostValuesOddOrEven(current_iteration,mesh->allFaces());
+    
+    info() << "NB ERROR SEQ=" << nb_error;
+    nb_error += m_array_cells.checkGhostValuesOddOrEven(current_iteration,mesh->allCells());
+    nb_error += m_array_nodes.checkGhostValuesOddOrEven(current_iteration,mesh->allNodes());
+    nb_error += m_array_faces.checkGhostValuesOddOrEven(current_iteration,mesh->allFaces());
+
+    if (nb_error!=0)
+      ARCANE_FATAL("Error in partial synchronize test: n={0}",nb_error);
+    
+    info() << "PARTIAL MULTISYNC OK.";
   }
 }
 

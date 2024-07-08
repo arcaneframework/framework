@@ -1,0 +1,22 @@
+﻿# -*- indent-tabs-mode: nil; coding: utf-8-with-signature -*-
+from pythonnet import load
+load("coreclr")
+
+import os
+import clr
+import sys
+
+assembly_path = r"@ARCANE_DOTNET_DLLS_DIR@"
+
+clr.AddReference(os.path.join(assembly_path,"Arcane.Launcher.dll"))
+clr.AddReference(os.path.join(assembly_path,"Arcane.Utils.dll"))
+clr.AddReference(os.path.join(assembly_path,"Arcane.Core.dll"))
+clr.AddReference(os.path.join(assembly_path,"Arcane.Services.dll"))
+
+import Arcane
+
+from Arcane import ArcaneLauncher
+
+app_info = ArcaneLauncher.ApplicationInfo;
+app_info.SetDataOsDir(assembly_path)
+app_info.SetDataDir(assembly_path)

@@ -14,6 +14,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+#include "arcane/utils/Ref.h"
 #include "arcane/core/ItemTypes.h"
 
 /*---------------------------------------------------------------------------*/
@@ -412,6 +413,17 @@ class ARCANE_CORE_EXPORT IVariable
    */
   virtual void synchronize() =0;
 
+  // TODO: à rendre virtuelle pure (décembre 2024)
+  /*!
+   * \brief Synchronise la variable sur une liste d'entités.
+   *
+   * La synchronisation ne peut se faire que sur les variables du maillage.
+   * Seules les entités listées dans \a local_ids seront synchronisées. Attention :
+   * une entité présente dans cette liste sur un sous-domaine doit être présente
+   * dans cette liste pour tout autre sous-domaine qui possède cette entité.
+   */
+  virtual void synchronize(Int32ConstArrayView local_ids);
+  
   /*!
    * \brief Maillage auquel est associé la variable.
    *
@@ -471,7 +483,11 @@ class ARCANE_CORE_EXPORT IVariable
    *
    * L'instance retournée doit être détruite par l'appel à l'opérateur delete.
    */
+  ARCANE_DEPRECATED_REASON("Y2024: Use createMetaDataRef() instead")
   virtual VariableMetaData* createMetaData() const =0;
+
+  //! Créé une instance contenant les meta-données de la variable.
+  virtual Ref<VariableMetaData> createMetaDataRef() const = 0;
 
   /*!
    * \brief Synchronise les références.

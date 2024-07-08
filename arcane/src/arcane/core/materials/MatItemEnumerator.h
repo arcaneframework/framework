@@ -89,13 +89,13 @@ class ARCANE_CORE_EXPORT AllEnvCellVectorView
   Integer size() const { return m_local_ids.size(); }
 
   // \i ème maille du vecteur
-  AllEnvCell operator[](Integer index) const
+  ARCCORE_HOST_DEVICE AllEnvCell operator[](Integer index) const
   {
     return AllEnvCell(m_shared_info->_item(ConstituentItemIndex(m_local_ids[index])));
   }
 
   // localId() de la \i ème maille du vecteur
-  Int32 localId(Integer index) const { return m_local_ids[index]; }
+  ARCCORE_HOST_DEVICE Int32 localId(Integer index) const { return m_local_ids[index]; }
 
  private:
 

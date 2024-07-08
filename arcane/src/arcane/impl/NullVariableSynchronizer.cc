@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* NullVariableSynchronizer.cc                                 (C) 2000-2023 */
+/* NullVariableSynchronizer.cc                                 (C) 2000-2024 */
 /*                                                                           */
 /* Synchronisation des variables en séquentiel.                              */
 /*---------------------------------------------------------------------------*/
@@ -65,6 +65,11 @@ class NullVariableSynchronizer
       m_on_synchronized.notify(args);
     }
   }
+  void synchronize(IVariable* var, Int32ConstArrayView local_ids) override
+  {
+    ARCANE_UNUSED(local_ids);
+    synchronize(var);
+  }
   void synchronize(VariableCollection vars) override
   {
     ARCANE_UNUSED(vars);
@@ -72,6 +77,11 @@ class NullVariableSynchronizer
       VariableSynchronizerEventArgs args(vars, this, 0.0);
       m_on_synchronized.notify(args);
     }
+  }
+  void synchronize(VariableCollection vars, Int32ConstArrayView local_ids) override
+  {
+    ARCANE_UNUSED(local_ids);
+    synchronize(vars);
   }
   Int32ConstArrayView communicatingRanks() override
   {

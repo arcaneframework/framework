@@ -62,8 +62,8 @@ if (Parmetis_FOUND AND Lima_FOUND)
 endif ()
 
 if (ARCANE_HAS_ACCELERATOR_API)
-  arcane_add_test(material1 testMaterial-1.arc "-m 10")
-  arcane_add_test_parallel_thread(material1 testMaterial-1.arc 4 "-m 10")
+  arcane_add_test(material1 testMaterial-1.arc "-m 10" "-We,ARCANE_MATERIALSYNCHRONIZER_ACCELERATOR_MODE,1")
+  arcane_add_test_parallel_thread(material1 testMaterial-1.arc 4 "-m 10" "-We,ARCANE_MATERIALSYNCHRONIZER_ACCELERATOR_MODE,1")
   arcane_add_test_parallel(material1_legacy_sync testMaterial-1.arc 4 "-m 10" "-We,ARCANE_MATERIAL_LEGACY_SYNCHRONIZE,1")
   if (LZ4_FOUND)
     arcane_add_test_sequential(material1_lz4 testMaterial-1.arc "-m 10" "-We,ARCANE_MATERIAL_DATA_COMPRESSOR_NAME,LZ4DataCompressor")
@@ -103,10 +103,10 @@ if (ARCANE_HAS_ACCELERATOR_API)
   ARCANE_ADD_TEST(material3 testMaterial-3.arc "-m 20")
   # NOTE Ajoute test optmisation uniquement en sequentiel car pour l'instant cela
   # ne marche pas en parallele a cause de la suppression de mailles.
-  ARCANE_ADD_TEST_SEQUENTIAL(material3_opt1 testMaterial-3-opt1.arc "-m 20" "-We,ARCANE_MATERIAL_TRANSFORM_NO_FILTER,1")
-  ARCANE_ADD_TEST_SEQUENTIAL(material3_opt3 testMaterial-3-opt3.arc "-m 20" "-We,ARCANE_MATERIAL_TRANSFORM_NO_FILTER,1")
-  ARCANE_ADD_TEST_SEQUENTIAL(material3_opt5 testMaterial-3-opt5.arc "-m 20" "-We,ARCANE_MATERIAL_TRANSFORM_NO_FILTER,1")
-  ARCANE_ADD_TEST_SEQUENTIAL(material3_opt7 testMaterial-3-opt7.arc "-m 20" "-We,ARCANE_MATERIAL_TRANSFORM_NO_FILTER,1")
+  ARCANE_ADD_TEST_SEQUENTIAL(material3_opt1 testMaterial-3-opt1.arc "-m 20")
+  ARCANE_ADD_TEST_SEQUENTIAL(material3_opt3 testMaterial-3-opt3.arc "-m 20")
+  ARCANE_ADD_TEST_SEQUENTIAL(material3_opt5 testMaterial-3-opt5.arc "-m 20")
+  ARCANE_ADD_TEST_SEQUENTIAL(material3_opt7 testMaterial-3-opt7.arc "-m 20")
   if(NOT ARCANE_DISABLE_PERFCOUNTER_TESTS)
     arcane_add_test_sequential(material3_opt7_trace testMaterial-3-opt7.arc "-m 20" "-We,ARCANE_TRACE_ENUMERATOR,1")
   endif()
@@ -243,6 +243,10 @@ arcane_add_test(amr-cartesian3D-V1-coarse-1 testAMRCartesianMesh3D-V1-coarse-1.a
 arcane_add_test_sequential(amr-cartesian3D-V1-coarse-2 testAMRCartesianMesh3D-V1-coarse-2.arc "-m 10")
 arcane_add_test_parallel_thread(amr-cartesian3D-V1-coarse-2 testAMRCartesianMesh3D-V1-coarse-2.arc 8 "-m 10")
 
+# Test AMR dé-raffinement avec équilibrage.
+# Pas encore actif car ne fonctionne pas
+# arcane_add_test_parallel(amr-cartesian2D-V1-coarse-lb-1 testAMRCartesianMesh2D-V1-coarse-lb-1.arc 4 "-m 20")
+
 # Ce test prend du temps (environ 30 secondes) donc on ne l'active pas par défaut
 if (BIG_TEST)
   arcane_add_test_sequential(amr-cartesian3D-V1-coarse-3 testAMRCartesianMesh3D-V1-coarse-3.arc "-m 10")
@@ -278,22 +282,22 @@ arcane_add_test_parallel(cartesian3d_grid_partitioning_12proc testCartesianMesh3
 # Ces tests ont besoin d'Aleph
 # TODO: faire des tests sans avoir besoin de Aleph
 if (TARGET arcane_aleph_hypre)
-  ARCANE_ADD_TEST_SEQUENTIAL(cartesianMeshGenerator testCartesianMeshGenerator.arc "-m 1")
+  arcane_add_test_parallel(cartesianMeshGenerator testCartesianMeshGenerator.arc 1 "-m 1")
   ARCANE_ADD_TEST_PARALLEL(cartesianMeshGenerator testCartesianMeshGenerator.arc 8 "-m 1")
 
-  ARCANE_ADD_TEST_SEQUENTIAL(cartesianMeshGenerator2D testCartesianMeshGenerator2D.arc)
+  arcane_add_test_parallel(cartesianMeshGenerator2D testCartesianMeshGenerator2D.arc 1)
   ARCANE_ADD_TEST_PARALLEL(cartesianMeshGenerator2D testCartesianMeshGenerator2D.arc 4)
 
-  ARCANE_ADD_TEST_SEQUENTIAL(cartesianMeshGenerator2D-meshservice testCartesianMeshGenerator2D-meshservice.arc)
+  arcane_add_test_parallel(cartesianMeshGenerator2D-meshservice testCartesianMeshGenerator2D-meshservice.arc 1)
   ARCANE_ADD_TEST_PARALLEL(cartesianMeshGenerator2D-meshservice testCartesianMeshGenerator2D-meshservice.arc 4)
 
-  ARCANE_ADD_TEST_SEQUENTIAL(cartesianMeshGeneratorModulo testCartesianMeshGeneratorModulo.arc)
+  arcane_add_test_parallel(cartesianMeshGeneratorModulo testCartesianMeshGeneratorModulo.arc 1)
   ARCANE_ADD_TEST_PARALLEL(cartesianMeshGeneratorModulo testCartesianMeshGeneratorModulo.arc 3)
 
-  ARCANE_ADD_TEST_SEQUENTIAL(cartesianMeshGeneratorOrigin testCartesianMeshGeneratorOrigin.arc)
+  arcane_add_test_parallel(cartesianMeshGeneratorOrigin testCartesianMeshGeneratorOrigin.arc 1)
   ARCANE_ADD_TEST_PARALLEL(cartesianMeshGeneratorOrigin testCartesianMeshGeneratorOrigin.arc 4)
 
-  ARCANE_ADD_TEST_SEQUENTIAL(cartesianMeshGeneratorOrigin2D testCartesianMeshGeneratorOrigin2D.arc)
+  arcane_add_test_parallel(cartesianMeshGeneratorOrigin2D testCartesianMeshGeneratorOrigin2D.arc 1)
   ARCANE_ADD_TEST_PARALLEL(cartesianMeshGeneratorOrigin2D testCartesianMeshGeneratorOrigin2D.arc 4)
 endif()
 
@@ -362,7 +366,7 @@ endif()
 ARCANE_ADD_TEST_SEQUENTIAL(geometric1 testGeometric-1.arc)
 
 # Material Heat
-foreach(test_index 1 2 3)
+foreach(test_index 1 2 3 4)
   foreach(opt_level 0 3 7 11 15)
     set(TEST_MODIFICATION_FLAG ${opt_level})
 
@@ -373,22 +377,33 @@ foreach(test_index 1 2 3)
 
     # Test avec équilibrage
     set(TEST_ACTIVE_LOAD_BALANCE "true")
-    set(_TEST_FILENAME "${ARCANE_TEST_PATH}/testMaterialHeat-${test_index}-opt${opt_level}-lb.arc")
-    configure_file("testMaterialHeat-${test_index}.arc.in" "${_TEST_FILENAME}")
+    set(_TEST_FILENAME_LB "${ARCANE_TEST_PATH}/testMaterialHeat-${test_index}-opt${opt_level}-lb.arc")
+    configure_file("testMaterialHeat-${test_index}.arc.in" "${_TEST_FILENAME_LB}")
     if (ARCANE_HAS_ACCELERATOR_API)
-      arcane_add_test(material_heat_opt${opt_level}_${test_index} ${_TEST_FILENAME})
-      arcane_add_test(material_heat_lb_opt${opt_level}_${test_index} ${_TEST_FILENAME})
+      arcane_add_test_sequential(material_heat${test_index}_opt${opt_level} ${_TEST_FILENAME})
+      arcane_add_test_parallel_thread(material_heat${test_index}_opt${opt_level} ${_TEST_FILENAME} 4)
+      arcane_add_test(material_heat${test_index}_lb_opt${opt_level} ${_TEST_FILENAME_LB})
+      arcane_add_test_parallel_thread(material_heat${test_index}_lb_opt${opt_level} ${_TEST_FILENAME_LB} 4)
     endif()
   endforeach()
 endforeach()
 if (ARCANE_HAS_ACCELERATOR_API)
-  arcane_add_test_sequential(material_heat_opt15_2small testMaterialHeat-2-small-opt15.arc "-We,ARCANE_DEBUG_MATERIAL_MODIFIER,2")
-  arcane_add_test_sequential(material_heat_accelerator "${ARCANE_TEST_PATH}/testMaterialHeat-2-opt15.arc" "-m 20")
-  arcane_add_test_sequential(material_heat_accelerator_old
-    "${ARCANE_TEST_PATH}/testMaterialHeat-2-opt15.arc" "-m 20" "-We,ARCANE_MATERIAL_TRANSFORM_NO_FILTER,1")
-  arcane_add_accelerator_test_sequential(material_heat_accelerator "${ARCANE_TEST_PATH}/testMaterialHeat-2-opt15.arc" "-m 20")
-  arcane_add_accelerator_test_sequential(material_heat_accelerator_noqueue
+  arcane_add_test_sequential(material_heat2_opt15_2small testMaterialHeat-2-small-opt15.arc "-We,ARCANE_DEBUG_MATERIAL_MODIFIER,2")
+  arcane_add_test_sequential(material_heat2_accelerator
+    "${ARCANE_TEST_PATH}/testMaterialHeat-2-opt15.arc"
+    "-We,ARCANE_MATERIALMNG_ADDITIONAL_CAPACITY_RATIO,0.5"
+    "-m 20"
+  )
+  arcane_add_accelerator_test_sequential(material_heat2_accelerator "${ARCANE_TEST_PATH}/testMaterialHeat-2-opt15.arc" "-m 20")
+  arcane_add_accelerator_test_sequential(material_heat2_accelerator_noqueue
     "${ARCANE_TEST_PATH}/testMaterialHeat-2-opt15.arc" "-m 20" "-We,ARCANE_MATERIALMNG_USE_QUEUE,0")
+  arcane_add_test_sequential_host_and_accelerator(material_heat2_accelerator_generic_copy
+    "${ARCANE_TEST_PATH}/testMaterialHeat-2-opt15.arc" "-m 20" "-We,ARCANE_USE_GENERIC_COPY_BETWEEN_PURE_AND_PARTIAL,1")
+  arcane_add_test_sequential_host_and_accelerator(material_heat2_accelerator_generic_copy_one_queue
+    "${ARCANE_TEST_PATH}/testMaterialHeat-2-opt15.arc" "-m 20" "-We,ARCANE_USE_GENERIC_COPY_BETWEEN_PURE_AND_PARTIAL,2")
+
+  arcane_add_test_sequential(material_heat4_accelerator "${ARCANE_TEST_PATH}/testMaterialHeat-4-opt15.arc" "-m 20")
+  arcane_add_accelerator_test_sequential(material_heat4_accelerator "${ARCANE_TEST_PATH}/testMaterialHeat-4-opt15.arc" "-m 20")
 endif()
 
 ###################

@@ -56,7 +56,8 @@ PrivateVariableScalarT(const PrivateVariableScalarT& rhs)
 , m_private_part(rhs.m_private_part)
 , m_memory_trace(rhs.m_memory_trace)
 {
-  updateFromInternal();
+  if (m_private_part)
+    updateFromInternal();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -65,8 +66,6 @@ PrivateVariableScalarT(const PrivateVariableScalarT& rhs)
 template<class DataType> 
 PrivateVariableScalarT<DataType>::
 PrivateVariableScalarT()
-: m_private_part(nullptr)
-, m_memory_trace(nullptr)
 {
 }
 
@@ -79,7 +78,8 @@ operator=(const PrivateVariableScalarT& rhs)
 {
   VariableRef::operator=(rhs);
   m_private_part = rhs.m_private_part;
-  updateFromInternal();
+  if (m_private_part)
+    updateFromInternal();
 }
 
 /*---------------------------------------------------------------------------*/

@@ -1,0 +1,27 @@
+<?xml version="1.0" ?><!-- -*- SGML -*- -->
+
+<!-- ###################################################################### -->
+<!-- ###################################################################### -->
+
+<module name="ExternalPluginTester" version="1.0" namespace-name="ArcaneTest::ExternalPluginTester" >
+  <description>
+    Module de test des plugins externes
+  </description>
+  <entry-points>
+    <entry-point method-name="build" name="EPT_Build" where="build" property="none" />
+    <entry-point method-name="init" name="EPT_Init" where="init" property="none" />
+    <entry-point method-name="exit" name="EPT_Exit" where="exit" property="none" />
+    <entry-point method-name="computeLoop" name="EPT_ComputeLoop" where="compute-loop" property="none" />
+  </entry-points>
+  <options>
+    <service-instance name="external-plugin" type="Arcane::IExternalPlugin" default="BasicDotNetPythonExternalPlugin" />
+    <simple name="file" type="string" />
+    <simple name="function-name" type="string" optional="true"/>
+    <simple name="context-function-name" type="string" optional="true"/>
+    <simple name="check-values" type="bool" default="false"/>
+  </options>
+  <variables>
+    <variable field-name="density" name="Density" data-type="real" item-kind="cell" dim="0" />
+    <variable field-name="ref_density" name="RefDensity" data-type="real" item-kind="cell" dim="0" />
+  </variables>
+</module>

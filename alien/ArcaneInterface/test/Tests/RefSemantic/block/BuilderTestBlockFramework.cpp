@@ -4,6 +4,89 @@
 #include <alien/ref/AlienRefSemantic.h>
 
 #include <Tests/Solver.h>
+#include <alien/kernels/simple_csr/algebra/SimpleCSRLinearAlgebra.h>
+#include <alien/kernels/hypre/algebra/HypreLinearAlgebra.h>
+
+template<typename AlgebraT>
+void test(Alien::ITraceMng* tm,const std::string& format,
+    Arccore::MessagePassing::IMessagePassingMng *pm,
+    boost::program_options::variables_map& arguments,
+    AlgebraT& algebra,int size,const Alien::Block& block,
+    const Alien::BlockMatrix& A,const Alien::BlockVector& xe,Alien::BlockVector& b)
+{
+
+  algebra.mult(A, xe, b);
+
+#ifdef ALIEN_USE_PETSC
+  if (arguments.count("dump-on-screen")) {
+    tm->info() << "dump b";
+    Alien::dump(b);
+  }
+#endif
+
+#ifdef ALIEN_USE_PETSC
+  if (arguments.count("dump-on-file")) {
+    tm->info() << "dump A, b";
+    Alien::SystemWriter system_writer("System-out", format, pm);
+    system_writer.dump(A, b);
+  }
+#endif
+
+  tm->info() << " ** [solver package=" << arguments["solver-package"].as<std::string>()
+             << "]";
+
+  Alien::BlockVector x(size, block, pm);
+
+  tm->info() << "* x = A^-1 b";
+
+  auto solver = Environment::createSolver(arguments);
+  solver->init();
+  solver->solve(A, b, x);
+
+  tm->info() << "* r = Ax - b";
+
+  Alien::BlockVector r(size, block, pm);
+
+  {
+    Alien::BlockVector tmp(size, block, pm);
+    tm->info() << "t = Ax";
+    algebra.mult(A, x, tmp);
+    tm->info() << "r = t";
+    algebra.copy(tmp, r);
+    tm->info() << "r -= b";
+    algebra.axpy(-1., b, r);
+  }
+
+  auto norm = algebra.norm2(r);
+
+  tm->info() << " => ||r|| = " << norm;
+
+#ifdef ALIEN_USE_PETSC
+  if (arguments.count("dump-on-screen")) {
+    tm->info() << "dump solution after solve";
+    Alien::dump(x);
+  }
+#endif
+
+  tm->info() << "* r = || x - xe ||";
+
+  {
+    tm->info() << "r = x";
+    algebra.copy(x, r);
+    tm->info() << "r -= xe";
+    algebra.axpy(-1., xe, r);
+  }
+
+  tm->info() << " => ||r|| = " << norm;
+
+  // double tol = arguments["tol"].as<double>();
+  if (norm > 1e-3)
+    tm->fatal() << "||r|| too big";
+
+  tm->info() << " ";
+  tm->info() << "... example finished !!!";
+}
+
 
 // Méthode de construction de la matrice
 extern void buildMatrix(
@@ -93,76 +176,40 @@ main(int argc, char** argv)
 
     Alien::BlockVector b(size, block, pm);
 
+
+    const auto solver_package = arguments["solver-package"].as<std::string>();
 #ifdef ALIEN_USE_PETSC
+    if(solver_package == "petsc") {
+      Alien::PETScLinearAlgebra algebra;
 
-    Alien::PETScLinearAlgebra algebra;
-
-    algebra.mult(A, xe, b);
-
-    if (arguments.count("dump-on-screen")) {
-      tm->info() << "dump b";
-      Alien::dump(b);
+      test(tm, format, pm, arguments, algebra, size, block, A, xe, b);
     }
-
-    if (arguments.count("dump-on-file")) {
-      tm->info() << "dump A, b";
-      Alien::SystemWriter system_writer("System-out", format, pm);
-      system_writer.dump(A, b);
-    }
-
-    tm->info() << " ** [solver package=" << arguments["solver-package"].as<std::string>()
-               << "]";
-
-    Alien::BlockVector x(size, block, pm);
-
-    tm->info() << "* x = A^-1 b";
-
-    auto solver = Environment::createSolver(arguments);
-    solver->init();
-    solver->solve(A, b, x);
-
-    tm->info() << "* r = Ax - b";
-
-    Alien::BlockVector r(size, block, pm);
-
-    {
-      Alien::BlockVector tmp(size, block, pm);
-      tm->info() << "t = Ax";
-      algebra.mult(A, x, tmp);
-      tm->info() << "r = t";
-      algebra.copy(tmp, r);
-      tm->info() << "r -= b";
-      algebra.axpy(-1., b, r);
-    }
-
-    auto norm = algebra.norm2(r);
-
-    tm->info() << " => ||r|| = " << norm;
-
-    if (arguments.count("dump-on-screen")) {
-      tm->info() << "dump solution after solve";
-      Alien::dump(x);
-    }
-
-    tm->info() << "* r = || x - xe ||";
-
-    {
-      tm->info() << "r = x";
-      algebra.copy(x, r);
-      tm->info() << "r -= xe";
-      algebra.axpy(-1., xe, r);
-    }
-
-    tm->info() << " => ||r|| = " << norm;
-
-    // double tol = arguments["tol"].as<double>();
-    if (norm > 1e-3)
-      tm->fatal() << "||r|| too big";
-
-    tm->info() << " ";
-    tm->info() << "... example finished !!!";
-
 #endif // ALIEN_USE_PETSC
+
+#ifdef ALIEN_USE_HYPRE
+    if(solver_package == "hypre") {
+      //Alien::HypreLinearAlgebra algebra;
+      Alien::SimpleCSRLinearAlgebra algebra; // Hypre Algebra not complete
+
+      test(tm, format, pm, arguments, algebra, size, block, A, xe, b);
+    }
+#endif
+
+#ifdef ALIEN_USE_IFPSOLVER
+    if(solver_package == "ifpsolver") {
+      Alien::SimpleCSRLinearAlgebra algebra;
+
+      test(tm, format, pm, arguments, algebra, size, block, A, xe, b);
+    }
+#endif
+
+#ifdef ALIEN_USE_MCGSOLVER
+    if(solver_package == "mcgsolver") {
+      Alien::SimpleCSRLinearAlgebra algebra;
+
+      test(tm, format, pm, arguments, algebra, size, block, A, xe, b);
+    }
+#endif
 
     return 0;
   });

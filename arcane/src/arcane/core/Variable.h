@@ -139,6 +139,7 @@ class ARCANE_CORE_EXPORT Variable
   Integer nbReference() const override;
 
   VariableMetaData* createMetaData() const override;
+  Ref<VariableMetaData> createMetaDataRef() const override;
   void syncReferences() override;
 
   IMesh* mesh() const final;
@@ -228,6 +229,10 @@ class ARCANE_CORE_EXPORT Variable
   // Temporaire pour test libération mémoire
   bool _wantShrink() const;
 
+  // Accès via VariablePrivate pour l'API interne
+  friend class VariablePrivate;
+  void _resizeWithReserve(Int32 new_size,Int32 additional_capacity);
+
  private:
 
   VariablePrivate* m_p; //!< Implémentation
@@ -240,6 +245,7 @@ class ARCANE_CORE_EXPORT Variable
   bool _hasReference() const;
   void _removeMeshReference();
   String _computeComparisonHashCollective(IData* sorted_data);
+  VariableMetaData* _createMetaData() const;
 };
 
 /*---------------------------------------------------------------------------*/

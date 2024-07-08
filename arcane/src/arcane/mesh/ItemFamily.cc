@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemFamily.cc                                               (C) 2000-2023 */
+/* ItemFamily.cc                                               (C) 2000-2024 */
 /*                                                                           */
 /* Infos de maillage pour un genre d'entité donnée.                          */
 /*---------------------------------------------------------------------------*/
@@ -1995,6 +1995,15 @@ void ItemFamily::
 synchronize(VariableCollection variables)
 {
   m_variable_synchronizer->synchronize(variables);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ItemFamily::
+synchronize(VariableCollection variables, Int32ConstArrayView local_ids)
+{
+  m_variable_synchronizer->synchronize(variables, local_ids);
 }
 
 /*---------------------------------------------------------------------------*/

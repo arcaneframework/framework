@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Data.cc                                                     (C) 2000-2023 */
+/* Data.cc                                                     (C) 2000-2024 */
 /*                                                                           */
 /* Types liés aux 'IData'.                                                   */
 /*---------------------------------------------------------------------------*/
@@ -13,13 +13,12 @@
 
 #include "arcane/core/IData.h"
 
-#include "arcane/utils/String.h"
 #include "arcane/utils/NotSupportedException.h"
 #include "arcane/utils/FatalErrorException.h"
 #include "arcane/utils/ArrayShape.h"
+#include "arcane/utils/MemoryUtils.h"
 
 #include "arcane/core/IDataFactory.h"
-#include "arcane/core/IDataStorageFactory.h"
 #include "arcane/core/IDataVisitor.h"
 #include "arcane/core/ISerializedData.h"
 #include "arcane/core/internal/IDataInternal.h"
@@ -63,31 +62,45 @@ visitMultiArray2(IMultiArray2DataVisitor*)
 /*---------------------------------------------------------------------------*/
 
 void impl::
-copyContigousData(IData* destination, IData* source, RunQueue& queue)
+copyContiguousData(INumericDataInternal* num_destination, ConstMemoryView source_buf,
+                   RunQueue& queue)
 {
-  ARCANE_CHECK_POINTER(source);
-  ARCANE_CHECK_POINTER(destination);
+  ARCANE_CHECK_POINTER(num_destination);
 
-  INumericDataInternal* num_source = destination->_commonInternal()->numericData();
-  if (!num_source)
-    ARCANE_FATAL("Source is not a numerical data");
-  INumericDataInternal* num_destination = source->_commonInternal()->numericData();
-  if (!num_destination)
-    ARCANE_FATAL("Destination is not a numerical data");
   MutableMemoryView destination_buf = num_destination->memoryView();
-  ConstMemoryView source_buf = num_source->memoryView();
   if (source_buf.datatypeSize() != destination_buf.datatypeSize())
     ARCANE_FATAL("Source and destination do not have the same datatype s={0} d={1}",
                  source_buf.datatypeSize(), destination_buf.datatypeSize());
-  queue.copyMemory(Accelerator::MemoryCopyArgs(destination_buf, source_buf));
+  if (queue.isNull())
+    MemoryUtils::copy(destination_buf, source_buf);
+  else
+    queue.copyMemory(Accelerator::MemoryCopyArgs(destination_buf, source_buf));
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void impl::
-fillContigousDataGeneric(IData* data, const void* fill_address,
-                         Int32 datatype_size, RunQueue& queue)
+copyContiguousData(IData* destination, IData* source, RunQueue& queue)
+{
+  ARCANE_CHECK_POINTER(source);
+  ARCANE_CHECK_POINTER(destination);
+
+  INumericDataInternal* num_destination = destination->_commonInternal()->numericData();
+  if (!num_destination)
+    ARCANE_FATAL("Destination is not a numerical data");
+  INumericDataInternal* num_source = source->_commonInternal()->numericData();
+  if (!num_source)
+    ARCANE_FATAL("Source is not a numerical data");
+  copyContiguousData(num_destination, num_source->memoryView(), queue);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void impl::
+fillContiguousDataGeneric(IData* data, const void* fill_address,
+                          Int32 datatype_size, RunQueue& queue)
 {
   INumericDataInternal* num_data = data->_commonInternal()->numericData();
   if (!num_data)

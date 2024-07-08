@@ -4,17 +4,18 @@
 
 %{
 #include "ArcaneSwigUtils.h"
-#include "arcane/ServiceBuilder.h"
-#include "arcane/IUnitTest.h"
-#include "arcane/IDataReader.h"
-#include "arcane/IDataWriter.h"
-#include "arcane/ICaseFunctionProvider.h"
-#include "arcane/ICheckpointWriter.h"
-#include "arcane/ICheckpointReader.h"
-#include "arcane/IVariableReader.h"
-#include "arcane/IDirectExecution.h"
-#include "arcane/ITimeHistoryCurveWriter2.h"
-#include "arcane/IPostProcessorWriter.h"
+#include "arcane/core/ServiceBuilder.h"
+#include "arcane/core/IUnitTest.h"
+#include "arcane/core/IDataReader.h"
+#include "arcane/core/IDataWriter.h"
+#include "arcane/core/ICaseFunctionProvider.h"
+#include "arcane/core/ICheckpointWriter.h"
+#include "arcane/core/ICheckpointReader.h"
+#include "arcane/core/IVariableReader.h"
+#include "arcane/core/IDirectExecution.h"
+#include "arcane/core/ITimeHistoryCurveWriter2.h"
+#include "arcane/core/IPostProcessorWriter.h"
+#include "arcane/core/IExternalPlugin.h"
 using namespace Arcane;
 %}
 
@@ -120,4 +121,10 @@ ARCANE_SWIG_DEFINE_SERVICE(Arcane,IVariableReader,
                            public abstract void SetVariables(VariableCollection vars);
                            public abstract void UpdateVariables(double wanted_time);
                            public abstract Real2 TimeInterval(IVariable var);
+                           );
+
+ARCANE_SWIG_DEFINE_SERVICE(Arcane,IExternalPlugin,
+                           public abstract void LoadFile(string filename);
+                           public abstract void ExecuteFunction(string function_name);
+                           public abstract void ExecuteContextFunction(string function_name);
                            );

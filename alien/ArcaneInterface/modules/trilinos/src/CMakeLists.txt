@@ -36,6 +36,10 @@ else ()
     linkLibraries(alien_trilinos alien_strong_options)
 endif ()
 
+if(TARGET trilinos)
+  linkLibraries(alien_trilinos trilinos)
+endif()
+
 if(TARGET mkl)
   linkLibraries(alien_trilinos mkl)
 endif()

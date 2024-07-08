@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* TimeLoopMng.cc                                              (C) 2000-2023 */
+/* TimeLoopMng.cc                                              (C) 2000-2024 */
 /*                                                                           */
 /* Gestionnaire de la boucle en temps.                                       */
 /*---------------------------------------------------------------------------*/
@@ -289,7 +289,7 @@ class TimeLoopMng
   ModuleFactoryMap m_lang_module_factory_map; //! Liste des fabriques des modules dans la langue du JDD.
 
   Ref<IVerifierService> m_verifier_service;
-  IMeshPartitionerBase* m_mesh_partitioner;
+  UniqueArray<IMeshPartitionerBase*> m_mesh_partitioner;
   String m_message_class_name;
   Integer m_alarm_timer_value;
   Integer m_nb_loop;
@@ -350,7 +350,6 @@ TimeLoopMng(ISubDomain* sd)
 , m_verification_at_entry_point(false)
 , m_backward_mng(nullptr)
 , m_my_own_backward_mng(false)
-, m_mesh_partitioner(nullptr)
 , m_message_class_name("TimeLoopMng")
 , m_alarm_timer_value(0)
 , m_nb_loop(0)
@@ -878,12 +877,12 @@ doOneIteration()
     execRestoreEntryPoints();
 
     // Repartitionnement inutile si retour-arrière
-    m_mesh_partitioner = nullptr;
+    m_mesh_partitioner.clear();
   }
 
   // Repartionnement demandé
   bool mesh_partition_done = false;
-  if (m_mesh_partitioner){
+  if (!m_mesh_partitioner.empty()) {
     _doMeshPartition();
     mesh_partition_done = true;
   }
@@ -976,7 +975,7 @@ doOneIteration()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Effectue un repartitionnement du maillage.
+ * \brief Effectue un repartitionnement des maillages.
  */
 void TimeLoopMng::
 _doMeshPartition()
@@ -988,38 +987,46 @@ _doMeshPartition()
   m_backward_mng->clear();
 
   Timer timer(sd,"TimeLoopMng::partitionMesh",Timer::TimerReal);
-  Timer::Action ts_action(sd,"MeshLoadBalance",true);
-  IMesh* mesh = m_mesh_partitioner->primaryMesh();
-  {
-    Timer::Sentry sentry(&timer);
-    mesh->utilities()->partitionAndExchangeMeshWithReplication(m_mesh_partitioner,false);
-    {
-      Timer::Action ts_action1(sd,"OnMeshChangeEntryPoints",true);
-      execOnMeshChangedEntryPoints();
-    }
-    m_mesh_partitioner = nullptr;
-  }
-  info() << "Time spent to repartition the mesh (unit: second): "
-         << timer.lastActivationTime();
+  Timer::Action ts_action(sd, "MeshesLoadBalance", true);
 
-  // Écrit dans les logs dans les infos sur la distribution du voisinage
-  // TODO: pouvoir configurer cela et éventuellement ajouter des informations
-  {
-    IItemFamily* cell_family = mesh->cellFamily();
-    IVariableSynchronizer* sync_info = cell_family->allItemsSynchronizer();
-    auto communicating_ranks = sync_info->communicatingRanks();
-    Int64 current_iteration = subDomain()->commonVariables().globalIteration();
+  for (IMeshPartitionerBase* mesh_partitioner : m_mesh_partitioner) {
+    IMesh* mesh = mesh_partitioner->primaryMesh();
+    Timer::Action ts_action2(sd, mesh->name(), true);
     {
-      JSONWriter json_writer(JSONWriter::FormatFlags::None);
-      json_writer.beginObject();
-      json_writer.write("Iteration",current_iteration);
-      json_writer.write("CommunicatingRanks",communicating_ranks);
-      json_writer.endObject();
-      plog() << "MeshPartitionCommunicatingInfos:" << json_writer.getBuffer();
+      Timer::Sentry sentry(&timer);
+      mesh->utilities()->partitionAndExchangeMeshWithReplication(mesh_partitioner, false);
+    }
+    info() << "Time spent to repartition the mesh (unit: second): "
+           << timer.lastActivationTime();
+
+    // Écrit dans les logs dans les infos sur la distribution du voisinage
+    // TODO: pouvoir configurer cela et éventuellement ajouter des informations
+    {
+      IItemFamily* cell_family = mesh->cellFamily();
+      IVariableSynchronizer* sync_info = cell_family->allItemsSynchronizer();
+      auto communicating_ranks = sync_info->communicatingRanks();
+      Int64 current_iteration = subDomain()->commonVariables().globalIteration();
+      {
+        JSONWriter json_writer(JSONWriter::FormatFlags::None);
+        json_writer.beginObject();
+        json_writer.write("Mesh", mesh->name());
+        json_writer.write("Iteration", current_iteration);
+        json_writer.write("CommunicatingRanks", communicating_ranks);
+        json_writer.endObject();
+        plog() << "MeshPartitionCommunicatingInfos:" << json_writer.getBuffer();
+      }
     }
   }
-    // Affiche les statistiques d'exécution
-  sd->timeStats()->dumpCurrentStats("MeshLoadBalance");
+
+  {
+    Timer::Action ts_action1(sd, "OnMeshChangeEntryPoints", true);
+    execOnMeshChangedEntryPoints();
+  }
+
+  m_mesh_partitioner.clear();
+
+  // Affiche les statistiques d'exécution
+  sd->timeStats()->dumpCurrentStats("MeshesLoadBalance");
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1757,7 +1764,7 @@ registerActionMeshPartition(IMeshPartitionerBase* mesh_partitioner)
     info() << "Repartioning required but inactive due to a backward process active";
     return;
   }
-  m_mesh_partitioner = mesh_partitioner;
+  m_mesh_partitioner.add(mesh_partitioner);
 }
 
 /*---------------------------------------------------------------------------*/

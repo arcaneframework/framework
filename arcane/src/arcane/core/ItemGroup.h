@@ -295,41 +295,37 @@ class ARCANE_CORE_EXPORT ItemGroup
   }
  
   //! Synchronizer du groupe
-  IVariableSynchronizer * synchronizer() const
-  {
-    return m_impl->synchronizer();
-  }
+  IVariableSynchronizer* synchronizer() const;
 
   //! Vrai s'il s'agit d'un groupe calculé automatiquement.
-  bool isAutoComputed() const
-  {
-    return m_impl->hasComputeFunctor();
-  }
-  
-  //! Indique si le groupe possède un synchroniser actif
-  bool hasSynchronizer() const 
-  {
-    return m_impl->hasSynchronizer();
-  }
+  bool isAutoComputed() const;
 
-  /*!
-   * \brief Vérifie et retourne si le groupe est trié par uniqueId() croissants.
-   */
-  bool checkIsSorted() const
-  {
-    return m_impl->checkIsSorted();
-  }
+  //! Indique si le groupe possède un synchroniser actif
+  bool hasSynchronizer() const;
+
+  //! Vérifie et retourne si le groupe est trié par uniqueId() croissants.
+  bool checkIsSorted() const;
+
+  //! Vue sur les entités du groupe avec padding pour la vectorisation
+  ItemVectorView _paddedView() const;
 
  public:
 
   //! API interne à Arcane
-  ItemGroupImplInternal* _internalApi() const { return m_impl->_internalApi(); }
+ ItemGroupImplInternal* _internalApi() const;
 
  public:
 
   //! Enumérateur sur les entités du groupe.
   ItemEnumerator enumerator() const;
-  
+
+ private:
+
+  template <typename T>
+  friend class SimdItemEnumeratorContainerTraits;
+  //! Enumérateur sur les entités du groupe pour la vectorisation
+  ItemEnumerator _simdEnumerator() const;
+
  protected:
 
   //! Représentation interne du groupe.
@@ -342,6 +338,8 @@ class ARCANE_CORE_EXPORT ItemGroup
   {
     return impl->itemKind()==ik ? impl : ItemGroupImpl::checkSharedNull();
   }
+
+  ItemVectorView _view(bool do_padding) const;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -429,7 +427,7 @@ class ItemGroupT
   {
     return ItemEnumeratorT<T>::fromItemEnumerator(ItemGroup::enumerator());
   }
-  
+
  protected:
 
   void _assign(const ItemGroup& from)

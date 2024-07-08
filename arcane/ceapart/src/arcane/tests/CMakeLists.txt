@@ -59,7 +59,15 @@ if (TARGET arcane_dotnet_wrapper_cea_materials)
     SOURCES MaterialEosService.i
     OUTPUT_DIR ${MATERIAL_CSHARP_OUTDIR}/cs_files
     OUTFILE_DIR ${MATERIAL_CSHARP_OUTDIR}/cpp_files
-    )
+  )
+  # Génère une cible 'test_material_eos_csharp_swig_depend' pour garantir que le
+  # wrapper swig est bien exécuté avant de compiler les tests.
+  if (CMAKE_VERSION VERSION_LESS_EQUAL 3.21 OR CMAKE_GENERATOR MATCHES "Make")
+    add_custom_target(test_material_eos_csharp_swig_depend ALL DEPENDS test_material_eos_csharp)
+  else()
+    get_property(support_files TARGET test_material_eos_csharp PROPERTY SWIG_SUPPORT_FILES)
+    add_custom_target(test_material_eos_csharp_swig_depend ALL DEPENDS "${support_files}")
+  endif()
 
   target_link_libraries(test_material_eos_csharp PUBLIC arcane_dotnet_wrapper_cea_materials arcane_materials)
   target_include_directories(test_material_eos_csharp PUBLIC ${Arcane_SOURCE_DIR}/tools/wrapper)

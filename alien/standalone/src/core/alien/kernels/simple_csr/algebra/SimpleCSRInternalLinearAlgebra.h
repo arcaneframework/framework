@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -106,6 +106,7 @@ class ALIEN_EXPORT SimpleCSRInternalLinearAlgebra
   Real norm0(const Vector& x) const;
   Real norm1(const Vector& x) const;
   Real norm2(const Vector& x) const;
+  Real normInf(const Vector& x) const;
 
   void mult(const Matrix& A, const Vector& x, Vector& r) const;
   void addLMult(Real alpha, const Matrix& A, const Vector& x, Vector& y) const;
@@ -180,6 +181,7 @@ class SimpleCSRInternalLinearAlgebraExpr
   Real norm0(const Vector& x) const;
   Real norm1(const Vector& x) const;
   Real norm2(const Vector& x) const;
+  Real normInf(const Vector& x) const;
   Real norm2(const Matrix& x) const;
   void mult(const Matrix& a, const Vector& x, Vector& r) const;
   void axpy(Real alpha, const Vector& x, Vector& r) const;

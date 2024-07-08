@@ -3,7 +3,7 @@
 [TOC]
 
 Les commandes suivantes permettent d'installer CMake, .Net et les dépendances
-nécessaires pour Arcane (ainsi que les dépendances optionnelles `TBB`, `HDF5` et `ParMetis`):
+nécessaires pour %Arcane (ainsi que les dépendances optionnelles `TBB`, `HDF5` et `ParMetis`):
 
 ~~~{sh}
 sudo pacman -Syu

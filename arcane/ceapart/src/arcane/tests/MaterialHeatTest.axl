@@ -19,6 +19,9 @@
     <simple name="verbosity-level" type="int32" default="0">
       <description>Verbosity level</description>
     </simple>
+    <simple name="nb-additional-variable" type="int32" default="2">
+      <description>Number of additional variables to create</description>
+    </simple>
 
     <!-- Infos sur les materiaux -->
     <complex name="material" type="Material" minOccurs="1" maxOccurs="unbounded">

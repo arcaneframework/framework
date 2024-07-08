@@ -19,6 +19,7 @@
 
 #include "arcane/materials/MaterialsGlobal.h"
 #include "arcane/materials/IMeshMaterial.h"
+#include "arcane/materials/internal/IncrementalComponentModifier.h"
 
 #include "arcane/accelerator/RunQueue.h"
 
@@ -59,8 +60,13 @@ class MeshMaterialModifierImpl
  public:
 
   void initOptimizationFlags();
+  void setDoCopyBetweenPartialAndPure(bool v) { m_do_copy_between_partial_and_pure = v; }
+  void setDoInitNewItems(bool v) { m_do_init_new_items = v; }
+  void setPersistantWorkBuffer(bool v) { m_is_keep_work_buffer = v; }
 
  public:
+
+  void reset();
 
   void addCells(IMeshMaterial* mat, SmallSpan<const Int32> ids);
   void removeCells(IMeshMaterial* mat, SmallSpan<const Int32> ids);
@@ -83,6 +89,8 @@ class MeshMaterialModifierImpl
   MeshMaterialMng* m_material_mng = nullptr;
   OperationList m_operations;
   RunQueue m_queue;
+  std::unique_ptr<IncrementalComponentModifier> m_incremental_modifier;
+
   Int32 nb_update = 0;
   Int32 nb_save_restore = 0;
   Int32 nb_optimize_add = 0;
@@ -94,6 +102,10 @@ class MeshMaterialModifierImpl
   bool m_allow_optimize_multiple_material = false;
   bool m_use_incremental_recompute = false;
   bool m_print_component_list = false;
+
+  bool m_do_copy_between_partial_and_pure = true;
+  bool m_do_init_new_items = true;
+  bool m_is_keep_work_buffer = true;
 
  private:
 

@@ -4,6 +4,7 @@
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
+
 #include <iostream>
 
 #include <alien/core/backend/IMatrixConverter.h>
@@ -47,8 +48,9 @@ SimpleCSR_to_MCG_BCSR_MatrixConverter::convert(
       cast<SimpleCSRMatrix<Real>>(sourceImpl, sourceBackend());
   MCGMatrix& v2 = cast<MCGMatrix>(targetImpl, targetBackend());
 
-  alien_debug(
-      [&] { cout() << "Converting SimpleCSRMatrix: " << &v << " to MCGMatrix " << &v2; });
+  alien_debug([&] {
+    cout() << "Converting SimpleCSRMatrix: " << &v << " to MCGMatrix " << &v2;
+  });
 
   if (sourceImpl->vblock())
     throw FatalErrorException(

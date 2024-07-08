@@ -16,11 +16,7 @@
 #include "arcane/utils/NotImplementedException.h"
 #include "arcane/utils/ScopedPtr.h"
 #include "arcane/utils/ITraceMng.h"
-#include "arcane/utils/Real2.h"
-#include "arcane/utils/Real3.h"
-#include "arcane/utils/Real2x2.h"
-#include "arcane/utils/Real3x3.h"
-#include "arcane/utils/Array2.h"
+#include "arcane/utils/NumericTypes.h"
 #include "arcane/utils/CheckedConvert.h"
 
 #include "arcane/materials/MaterialVariableBuildInfo.h"
@@ -40,6 +36,7 @@
 #include "arcane/core/IParallelExchanger.h"
 #include "arcane/core/ISerializer.h"
 #include "arcane/core/ISerializeMessage.h"
+#include "arcane/core/internal/IVariableInternal.h"
 #include "arcane/core/materials/internal/IMeshComponentInternal.h"
 #include "arcane/core/VariableInfo.h"
 #include "arcane/core/VariableRefArray.h"
@@ -52,7 +49,6 @@
 #include "arcane/core/parallel/IStat.h"
 #include "arcane/core/datatype/DataTypeTraits.h"
 #include "arcane/core/datatype/DataStorageBuildInfo.h"
-#include "arcane/core/VariableDataTypeTraits.h"
 
 #include <vector>
 
@@ -83,11 +79,14 @@ saveData(IMeshComponent* component,IData* data,
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename DataType> void
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template <typename DataType> void
 MaterialVariableScalarTraits<DataType>::
 copyTo(SmallSpan<const DataType> input, SmallSpan<const Int32> input_indexes,
        SmallSpan<DataType> output, SmallSpan<const Int32> output_indexes,
-       RunQueue& queue)
+       const RunQueue& queue)
 {
   // TODO: vérifier tailles des indexes identiques
   Integer nb_value = input_indexes.size();
@@ -121,20 +120,13 @@ resizeAndFillWithDefault(ValueDataType* data,ContainerType& container,Integer di
 
 template<typename DataType> void
 MaterialVariableScalarTraits<DataType>::
-resizeWithReserve(PrivatePartType* var,Integer dim1_size)
+resizeWithReserve(PrivatePartType* var, Integer dim1_size, Real reserve_ratio)
 {
   // Pour éviter de réallouer à chaque fois qu'il y a une augmentation du
   // nombre de mailles matériaux, alloue un petit peu plus que nécessaire.
   // Par défaut, on alloue 5% de plus.
-  Integer capacity = var->capacity();
-  Integer reserve_size = 0;
-  if (dim1_size>=capacity && reserve_size>0){
-    Integer additional_size = CheckedConvert::toInteger((Real)dim1_size * 1.05);
-    additional_size = math::max(additional_size,1024);
-    var->resizeWithReserve(dim1_size,additional_size);
-  }
-  else
-    var->resize(dim1_size);
+  Int32 nb_add = static_cast<Int32>(dim1_size * reserve_ratio);
+  var->_internalApi()->resizeWithReserve(dim1_size, nb_add);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -721,9 +713,9 @@ serialize(ISerializer* sbuf,Int32ConstArrayView ids)
     {
       Integer nb_val = 0;
       ENUMERATE_ALLENVCELL(iallenvcell,mat_mng,ids_view){
-        ++nb_val; // 1 valeur pour le milieu
         ENUMERATE_CELL_ENVCELL(ienvcell,(*iallenvcell)){
           EnvCell envcell = *ienvcell;
+          ++nb_val; // 1 valeur pour le milieu
           if (has_mat)
             nb_val += envcell.nbMaterial(); // 1 valeur par matériau du milieu.
         }

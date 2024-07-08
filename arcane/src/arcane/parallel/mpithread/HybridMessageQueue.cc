@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* HybridMessageQueue.cc                                       (C) 2000-2020 */
+/* HybridMessageQueue.cc                                       (C) 2000-2024 */
 /*                                                                           */
 /* File de messages pour une implémentation MPI/Thread.                      */
 /*---------------------------------------------------------------------------*/
@@ -20,6 +20,7 @@
 #include "arcane/utils/ArgumentException.h"
 #include "arcane/utils/TraceInfo.h"
 #include "arcane/utils/ITraceMng.h"
+#include "arcane/utils/ValueConvert.h"
 
 #include "arcane/parallel/mpithread/HybridMessageQueue.h"
 #include "arcane/parallel/mpi/MpiAdapter.h"
@@ -55,6 +56,8 @@ HybridMessageQueue(ISharedMemoryMessageQueue* thread_queue,MpiParallelMng* mpi_p
 , m_rank_tag_builder(local_nb_rank)
 , m_debug_level(0)
 {
+  if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCCORE_ALLOW_NULL_RANK_FOR_MPI_ANY_SOURCE", true))
+    m_is_allow_null_rank_for_any_source = v.value() != 0;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -447,7 +450,10 @@ probe(const MP::PointToPointMessageInfo& message)
   FullRankInfo dest_fri = m_rank_tag_builder.rank(dest);
   MessageId message_id;
   Int32 found_dest = dest.value();
-  if (dest.isNull()){
+  const bool is_any_source = dest.isNull() || dest.isAnySource();
+  if (dest.isNull() && !m_is_allow_null_rank_for_any_source)
+    ARCANE_FATAL("Can not use probe() with null rank. Use MessageRank::anySourceRank() instead");
+  if (is_any_source) {
     // Comme on ne sait pas de qui on va recevoir, il faut tester à la
     // fois la file de thread et via MPI.
     MP::PointToPointMessageInfo p2p_message(message);
@@ -546,7 +552,10 @@ legacyProbe(const MP::PointToPointMessageInfo& message)
   FullRankInfo dest_fri = m_rank_tag_builder.rank(dest);
   MP::MessageSourceInfo message_source_info;
   Int32 found_dest = dest.value();
-  if (dest.isNull()){
+  const bool is_any_source = dest.isNull() || dest.isAnySource();
+  if (dest.isNull() && !m_is_allow_null_rank_for_any_source)
+    ARCANE_FATAL("Can not use legacyProbe() with null rank. Use MessageRank::anySourceRank() instead");
+  if (is_any_source) {
     // Comme on ne sait pas de qui on va recevoir, il faut tester à la
     // fois la file de thread et via MPI.
     MP::PointToPointMessageInfo p2p_message(message);

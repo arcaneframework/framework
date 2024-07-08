@@ -1,4 +1,9 @@
-// -*- C++ -*-
+﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
+//-----------------------------------------------------------------------------
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// See the top-level COPYRIGHT file for details.
+// SPDX-License-Identifier: Apache-2.0
+//-----------------------------------------------------------------------------
 #ifndef ALIEN_KERNELS_TRILINOS_ALGEBRA_TRILINOSINTERNALLINEARALGEBRA_H
 #define ALIEN_KERNELS_TRILINOS_ALGEBRA_TRILINOSINTERNALLINEARALGEBRA_H
 
@@ -37,6 +42,8 @@ class ALIEN_TRILINOS_EXPORT TrilinosInternalLinearAlgebra
   Real norm1(const Vector& x) const;
 
   Real norm2(const Vector& x) const;
+
+  Real normInf(const Vector& x) const;
 
   void mult(const Matrix& a, const Vector& x, Vector& r) const;
 

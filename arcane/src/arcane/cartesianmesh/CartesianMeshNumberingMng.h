@@ -24,6 +24,8 @@
 
 #include "arcane/cartesianmesh/ICartesianMeshNumberingMng.h"
 
+#include <unordered_map>
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -54,8 +56,30 @@ class CartesianMeshNumberingMng
   Int64 globalNbCellsY(Integer level) const override;
   Int64 globalNbCellsZ(Integer level) const override;
 
+  Int64 globalNbNodesX(Integer level) const override;
+  Int64 globalNbNodesY(Integer level) const override;
+  Int64 globalNbNodesZ(Integer level) const override;
+
+  Int64 globalNbFacesX(Integer level) const override;
+  Int64 globalNbFacesY(Integer level) const override;
+  Int64 globalNbFacesZ(Integer level) const override;
+
+  Int64 globalNbFacesXCartesianView(Integer level) const override;
+  Int64 globalNbFacesYCartesianView(Integer level) const override;
+  Int64 globalNbFacesZCartesianView(Integer level) const override;
+
+  Int64 nbCellInLevel(Integer level) const override;
+  Int64 nbNodeInLevel(Integer level) const override;
+  Int64 nbFaceInLevel(Integer level) const override;
+
   Integer pattern() const override;
+
+  Int32 cellLevel(Int64 uid) const override;
+  Int32 nodeLevel(Int64 uid) const override;
+  Int32 faceLevel(Int64 uid) const override;
+
   Int64 offsetLevelToLevel(Int64 coord, Integer level_from, Integer level_to) const override;
+  Int64 faceOffsetLevelToLevel(Int64 coord, Integer level_from, Integer level_to) const override;
 
   Int64 cellUniqueIdToCoordX(Int64 uid, Integer level) override;
   Int64 cellUniqueIdToCoordX(Cell cell) override;
@@ -66,8 +90,32 @@ class CartesianMeshNumberingMng
   Int64 cellUniqueIdToCoordZ(Int64 uid, Integer level) override;
   Int64 cellUniqueIdToCoordZ(Cell cell) override;
 
+  Int64 nodeUniqueIdToCoordX(Int64 uid, Integer level) override;
+  Int64 nodeUniqueIdToCoordX(Node node) override;
+
+  Int64 nodeUniqueIdToCoordY(Int64 uid, Integer level) override;
+  Int64 nodeUniqueIdToCoordY(Node node) override;
+
+  Int64 nodeUniqueIdToCoordZ(Int64 uid, Integer level) override;
+  Int64 nodeUniqueIdToCoordZ(Node node) override;
+
+  Int64 faceUniqueIdToCoordX(Int64 uid, Integer level) override;
+  Int64 faceUniqueIdToCoordX(Face face) override;
+
+  Int64 faceUniqueIdToCoordY(Int64 uid, Integer level) override;
+  Int64 faceUniqueIdToCoordY(Face face) override;
+
+  Int64 faceUniqueIdToCoordZ(Int64 uid, Integer level) override;
+  Int64 faceUniqueIdToCoordZ(Face face) override;
+
   Int64 cellUniqueId(Integer level, Int64x3 cell_coord) override;
   Int64 cellUniqueId(Integer level, Int64x2 cell_coord) override;
+
+  Int64 nodeUniqueId(Integer level, Int64x3 node_coord) override;
+  Int64 nodeUniqueId(Integer level, Int64x2 node_coord) override;
+
+  Int64 faceUniqueId(Integer level, Int64x3 face_coord) override;
+  Int64 faceUniqueId(Integer level, Int64x2 face_coord) override;
 
   Integer nbNodeByCell() override;
   void cellNodeUniqueIds(ArrayView<Int64> uid, Integer level, Int64x3 cell_coord) override;
@@ -85,15 +133,40 @@ class CartesianMeshNumberingMng
   void setChildNodeCoordinates(Cell parent_cell) override;
   void setParentNodeCoordinates(Cell parent_cell) override;
 
-  Int64 parentCellUniqueIdOfCell(Cell cell) override;
-
-  Int64 childCellUniqueIdOfCell(Cell cell, Int64x2 child_coord_in_parent) override;
-  Cell childCellOfCell(Cell cell, Int64x2 child_coord_in_parent) override;
+  Int64 parentCellUniqueIdOfCell(Int64 uid, Integer level, bool do_fatal) override;
+  Int64 parentCellUniqueIdOfCell(Cell cell, bool do_fatal) override;
 
   Int64 childCellUniqueIdOfCell(Cell cell, Int64x3 child_coord_in_parent) override;
-  Cell childCellOfCell(Cell cell, Int64x3 child_coord_in_parent) override;
-
+  Int64 childCellUniqueIdOfCell(Cell cell, Int64x2 child_coord_in_parent) override;
   Int64 childCellUniqueIdOfCell(Cell cell, Int64 child_index_in_parent) override;
+
+  Cell childCellOfCell(Cell cell, Int64x3 child_coord_in_parent) override;
+  Cell childCellOfCell(Cell cell, Int64x2 child_coord_in_parent) override;
+
+  Int64 parentNodeUniqueIdOfNode(Int64 uid, Integer level, bool do_fatal) override;
+  Int64 parentNodeUniqueIdOfNode(Node node, bool do_fatal) override;
+
+  Int64 childNodeUniqueIdOfNode(Int64 uid, Integer level) override;
+  Int64 childNodeUniqueIdOfNode(Node node) override;
+
+  Int64 parentFaceUniqueIdOfFace(Int64 uid, Integer level, bool do_fatal) override;
+  Int64 parentFaceUniqueIdOfFace(Face face, bool do_fatal) override;
+
+  Int64 childFaceUniqueIdOfFace(Int64 uid, Integer level, Int64 child_index_in_parent) override;
+  Int64 childFaceUniqueIdOfFace(Face face, Int64 child_index_in_parent) override;
+
+ private:
+
+  /*!
+   * \brief Méthode permettant de récupérer le nombre de faces des trois parties de la numérotation.
+   *
+   * En effet, pour numéroter en 3D, on numérote d'abord les faces xy, puis les faces yz et enfin
+   * les faces zx. Cette méthode permet de récupérer le nombre de faces {xy, yz, zx}.
+   *
+   * \param level Le niveau de la numérotation.
+   * \return Le nombre de faces {xy, yz, zx}.
+   */
+  Int64x3 face3DNumberingThreeParts(Integer level) const;
 
  private:
 
@@ -116,6 +189,12 @@ class CartesianMeshNumberingMng
   UniqueArray<Int64> m_first_face_uid_level;
 
   Int64x3 m_nb_cell;
+
+  // Partie conversion numérotation d'origine <-> nouvelle numérotation (face).
+  bool m_converting_numbering_face;
+  Integer m_ori_level;
+  std::unordered_map<Int64, Int64> m_face_ori_numbering_to_new;
+  std::unordered_map<Int64, Int64> m_face_new_numbering_to_ori;
 };
 
 /*---------------------------------------------------------------------------*/

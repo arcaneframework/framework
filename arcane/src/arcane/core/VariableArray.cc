@@ -248,7 +248,9 @@ template<typename T> VariableArrayT<T>::
 template<typename T> VariableArrayT<T>* VariableArrayT<T>::
 getReference(const VariableBuildInfo& vb,const VariableInfo& vi)
 {
-  ThatClass* true_ptr = 0;
+  if (vb.isNull())
+    return nullptr;
+  ThatClass* true_ptr = nullptr;
   IVariableMng* vm = vb.variableMng();
   IVariable* var = vm->checkVariable(vi);
   if (var)
@@ -306,6 +308,23 @@ synchronize()
     itemGroup().synchronizer()->synchronize(this);
   else
     family->allItemsSynchronizer()->synchronize(this);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<typename T> void VariableArrayT<T>::
+synchronize(Int32ConstArrayView local_ids)
+{
+  if (itemKind()==IK_Unknown)
+    ARCANE_THROW(NotSupportedException,"variable '{0}' is not a mesh variable",fullName());
+  IItemFamily* family = itemGroup().itemFamily();
+  if (!family)
+    ARCANE_FATAL("variable '{0}' without family",fullName());
+  if(isPartial())
+    itemGroup().synchronizer()->synchronize(this, local_ids);
+  else
+    family->allItemsSynchronizer()->synchronize(this, local_ids);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -596,8 +615,7 @@ _internalResize(Integer new_size,Integer nb_additional_element)
 template<typename DataType> void VariableArrayT<DataType>::
 resizeWithReserve(Integer n,Integer nb_additional)
 {
-  _internalResize(n,nb_additional);
-  syncReferences();
+  _resizeWithReserve(n,nb_additional);
 }
 
 /*---------------------------------------------------------------------------*/

@@ -49,8 +49,11 @@ IncrementalComponentModifier(AllEnvData* all_env_data, const RunQueue& queue)
 , m_work_info(queue.allocationOptions(), queue.memoryRessource())
 , m_queue(queue)
 {
-  if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_MATERIAL_TRANSFORM_NO_FILTER", true))
-    m_do_old_implementation = (v.value() != 0);
+  // 0 si on utilise la copie typée (mode historique) et une commande par variable
+  // 1 si on utilise la copie générique et une commande par variable
+  // 2 si on utilise la copie générique et une commande pour toutes les variables
+  if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_USE_GENERIC_COPY_BETWEEN_PURE_AND_PARTIAL", true))
+    m_use_generic_copy_between_pure_and_partial = v.value();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -118,8 +121,7 @@ apply(MaterialModifierOperation* operation)
 
     connectivity->fillCellsNbMaterial(ids, env_id, cells_current_nb_material.view(), m_queue);
 
-    const bool do_new = !m_do_old_implementation;
-    if (do_new) {
+    {
       Accelerator::GenericFilterer filterer(&m_queue);
       SmallSpan<Int32> cells_unchanged_in_env_view = cells_unchanged_in_env.view();
       SmallSpan<Int32> cells_changed_in_env_view = cells_changed_in_env.view();
@@ -145,20 +147,6 @@ apply(MaterialModifierOperation* operation)
         };
         filterer.applyWithIndex(nb_id, select_lambda, setter_lambda, A_FUNCINFO);
         cells_changed_in_env.resize(filterer.nbOutputElement());
-      }
-    }
-    else {
-      cells_unchanged_in_env.clear();
-      cells_changed_in_env.clear();
-      for (Integer i = 0; i < nb_id; ++i) {
-        Int32 lid = ids[i];
-        Int16 current_cell_nb_mat = cells_current_nb_material[i];
-        if (current_cell_nb_mat != ref_nb_mat) {
-          cells_unchanged_in_env.add(lid);
-        }
-        else {
-          cells_changed_in_env.add(lid);
-        }
       }
     }
 
@@ -278,11 +266,12 @@ _switchCellsForMaterials(const MeshMaterial* modified_mat,
               << " partial=" << partial_indexes.size() << " name=" << mat->name()
               << " is_device?=" << is_device;
 
-      MeshVariableCopyBetweenPartialAndGlobalArgs args(indexer->index(),
-                                                       pure_local_ids,
-                                                       partial_indexes,
-                                                       &m_queue);
-      m_all_env_data->_copyBetweenPartialsAndGlobals(args, is_add);
+      CopyBetweenPartialAndGlobalArgs args(indexer->index(), pure_local_ids,
+                                           partial_indexes,
+                                           m_do_copy_between_partial_and_pure,
+                                           is_add,
+                                           m_queue);
+      _copyBetweenPartialsAndGlobals(args);
     }
   }
 }
@@ -309,7 +298,7 @@ _switchCellsForEnvironments(const IMeshEnvironment* modified_env,
   const bool is_device = m_queue.isAcceleratorPolicy();
 
   // Ne copie pas les valeurs partielles des milieux vers les valeurs globales
-  // en cas de suppression de mailles car cela sera fait avec la valeur matériau
+  // en cas de suppression de mailles, car cela sera fait avec la valeur matériau
   // correspondante. Cela permet d'avoir le même comportement que sans
   // optimisation. Ce n'est pas actif par défaut pour compatibilité avec l'existant.
   const bool is_copy = is_add || !(m_material_mng->isUseMaterialValueWhenRemovingPartialValue());
@@ -340,9 +329,11 @@ _switchCellsForEnvironments(const IMeshEnvironment* modified_env,
             << " name=" << env->name();
 
     if (is_copy) {
-      MeshVariableCopyBetweenPartialAndGlobalArgs copy_args(indexer->index(), pure_local_ids,
-                                                            partial_indexes, &m_queue);
-      m_all_env_data->_copyBetweenPartialsAndGlobals(copy_args, is_add);
+      CopyBetweenPartialAndGlobalArgs copy_args(indexer->index(), pure_local_ids,
+                                                partial_indexes,
+                                                m_do_copy_between_partial_and_pure, is_add,
+                                                m_queue);
+      _copyBetweenPartialsAndGlobals(copy_args);
     }
   }
 }
@@ -361,33 +352,7 @@ _computeCellsToTransformForMaterial(const MeshMaterial* mat, SmallSpan<const Int
 
   ConstituentConnectivityList* connectivity = m_all_env_data->componentConnectivityList();
   SmallSpan<bool> transformed_cells = m_work_info.transformedCells();
-  const bool do_new = !m_do_old_implementation;
-  if (do_new)
-    connectivity->fillCellsToTransform(ids, env_id, transformed_cells, is_add, m_queue);
-  else {
-    ConstArrayView<Int16> cells_nb_env = connectivity->cellsNbEnvironment();
-
-    for (Int32 local_id : ids) {
-      bool do_transform = false;
-      CellLocalId cell_id(local_id);
-      // En cas d'ajout on passe de pure à partiel s'il y a plusieurs milieux ou
-      // plusieurs matériaux dans le milieu.
-      // En cas de supression, on passe de partiel à pure si on est le seul matériau
-      // et le seul milieu.
-      const Int16 nb_env = cells_nb_env[local_id];
-      if (is_add) {
-        do_transform = (nb_env > 1);
-        if (!do_transform)
-          do_transform = connectivity->cellNbMaterial(cell_id, env_id) > 1;
-      }
-      else {
-        do_transform = (nb_env == 1);
-        if (do_transform)
-          do_transform = connectivity->cellNbMaterial(cell_id, env_id) == 1;
-      }
-      m_work_info.setTransformedCell(cell_id, do_transform);
-    }
-  }
+  connectivity->fillCellsToTransform(ids, env_id, transformed_cells, is_add, m_queue);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -411,8 +376,8 @@ _computeCellsToTransformForEnvironments(SmallSpan<const Int32> ids)
     auto [i] = iter();
     Int32 lid = ids[i];
     bool do_transform = false;
-    // En cas d'ajout on passe de pure à partiel s'il y a plusieurs milieux.
-    // En cas de supression, on passe de partiel à pure si on est le seul milieu.
+    // En cas d'ajout, on passe de pure à partiel s'il y a plusieurs milieux.
+    // En cas de suppression, on passe de partiel à pure si on est le seul milieu.
     if (is_add)
       do_transform = cells_nb_env[lid] > 1;
     else
@@ -444,10 +409,7 @@ _removeItemsFromEnvironment(MeshEnvironment* env, MeshMaterial* mat,
 
   Int32 nb_to_remove = local_ids.size();
 
-  // Positionne le filtre des mailles supprimées.
-  //setRemovedCells(local_ids, true);
-
-  // TODO: à faire dans finialize()
+  // TODO: à faire dans finalize()
   env->addToTotalNbCellMat(-nb_to_remove);
 
   mat->variableIndexer()->endUpdateRemove(m_work_info, nb_to_remove, m_queue);
@@ -459,10 +421,6 @@ _removeItemsFromEnvironment(MeshEnvironment* env, MeshMaterial* mat,
     // ont le même indexeur)
     env->variableIndexer()->endUpdateRemove(m_work_info, nb_to_remove, m_queue);
   }
-
-  // Remet \a removed_local_ids_filter à la valeur initiale pour
-  // les prochaines opérations
-  //setRemovedCells(local_ids, false);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -582,9 +540,11 @@ _addItemsToIndexer(MeshMaterialVariableIndexer* var_indexer,
     // éventuellement utiliser plusieurs files.
     RunQueue::ScopedAsync sc(&m_queue);
     IMeshMaterialMng* mm = m_material_mng;
+    bool do_init = m_do_init_new_items;
     auto func = [&](IMeshMaterialVariable* mv) {
       mv->_internalApi()->resizeForIndexer(var_indexer->index(), m_queue);
-      mv->_internalApi()->initializeNewItems(list_builder, m_queue);
+      if (do_init)
+        mv->_internalApi()->initializeNewItems(list_builder, m_queue);
     };
     functor::apply(mm, &IMeshMaterialMng::visitVariables, func);
     m_queue.barrier();
@@ -667,6 +627,120 @@ _removeItemsInGroup(ItemGroup cells, SmallSpan<const Int32> removed_ids)
                    nb_remaining, nb_removed, current_nb_item);
     impl_internal->notifyDirectRemoveItems(removed_ids, nb_remaining);
   }
+}
+
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Copie entre les valeurs partielles et les valeurs globales.
+ *
+ * Si \a pure_to_partial est vrai, alors on copie les valeurs globales
+ * vers les valeurs partielles, sinon on fait l'inverse.
+ * de suppression d'un matériau)
+ */
+void IncrementalComponentModifier::
+_copyBetweenPartialsAndGlobals(const CopyBetweenPartialAndGlobalArgs& args)
+{
+  if (args.m_local_ids.empty())
+    return;
+  const bool do_copy = args.m_do_copy_between_partial_and_pure;
+  const bool is_add_operation = args.m_is_global_to_partial;
+  RunQueue queue(args.m_queue);
+  RunQueue::ScopedAsync sc(&queue);
+  // Comme on a modifié des mailles, il faut mettre à jour les valeurs
+  // correspondantes pour chaque variable.
+  //info(4) << "NB_TRANSFORM=" << nb_transform << " name=" << e->name();
+  //Integer indexer_index = indexer->index();
+
+  Accelerator::RunQueuePool& queue_pool = m_material_mng->_internalApi()->asyncRunQueuePool();
+
+  // Redimensionne les variables si nécessaire
+  if (is_add_operation) {
+    Int32 index = 0;
+    auto func1 = [&](IMeshMaterialVariable* mv) {
+      auto* mvi = mv->_internalApi();
+      mvi->resizeForIndexer(args.m_var_index, queue_pool[index]);
+      ++index;
+    };
+    functor::apply(m_material_mng, &MeshMaterialMng::visitVariables, func1);
+    queue_pool.barrier();
+  }
+
+  if (do_copy) {
+    bool do_one_command = (m_use_generic_copy_between_pure_and_partial == 2);
+    UniqueArray<CopyBetweenPartialAndGlobalOneData>& copy_data = m_work_info.m_host_variables_copy_data;
+    copy_data.clear();
+    copy_data.reserve(m_material_mng->nbVariable());
+
+    Int32 index = 0;
+    CopyBetweenPartialAndGlobalArgs args2(args);
+    args2.m_use_generic_copy = (m_use_generic_copy_between_pure_and_partial >= 1);
+    if (do_one_command)
+      args2.m_copy_data = &copy_data;
+    auto func2 = [&](IMeshMaterialVariable* mv) {
+      auto* mvi = mv->_internalApi();
+      if (!do_one_command)
+        args2.m_queue = queue_pool[index];
+      mvi->copyBetweenPartialAndGlobal(args2);
+      ++index;
+    };
+    functor::apply(m_material_mng, &MeshMaterialMng::visitVariables, func2);
+    if (do_one_command) {
+      // Copie 'copy_data' dans le tableau correspondant pour le device éventuel.
+      MDSpan<CopyBetweenPartialAndGlobalOneData, MDDim1> x(copy_data.data(), MDIndex<1>(copy_data.size()));
+      m_work_info.m_variables_copy_data.copy(x, &queue);
+      _applyCopyBetweenPartialsAndGlobals(args2, queue);
+    }
+    else
+      queue_pool.barrier();
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void IncrementalComponentModifier::
+_applyCopyBetweenPartialsAndGlobals(const CopyBetweenPartialAndGlobalArgs& args, RunQueue& queue)
+{
+  ARCANE_CHECK_POINTER(args.m_copy_data);
+
+  auto output_indexes = args.m_local_ids;
+  auto input_indexes = args.m_indexes_in_multiple;
+  const bool is_global_to_partial = args.m_is_global_to_partial;
+
+  if (is_global_to_partial)
+    std::swap(output_indexes, input_indexes);
+  SmallSpan<const CopyBetweenPartialAndGlobalOneData> host_copy_data(m_work_info.m_host_variables_copy_data);
+  SmallSpan<const CopyBetweenPartialAndGlobalOneData> copy_data(m_work_info.m_variables_copy_data.to1DSmallSpan());
+  const Int32 nb_value = input_indexes.size();
+  if (nb_value != output_indexes.size())
+    ARCANE_FATAL("input_indexes ({0}) and output_indexes ({1}) are different", nb_value, output_indexes);
+
+  const Int32 nb_copy = copy_data.size();
+
+  for (Int32 i = 0; i < nb_copy; ++i) {
+    ARCANE_CHECK_ACCESSIBLE_POINTER(queue, host_copy_data[i].m_output.data());
+    ARCANE_CHECK_ACCESSIBLE_POINTER(queue, host_copy_data[i].m_input.data());
+  }
+  ARCANE_CHECK_ACCESSIBLE_POINTER(queue, input_indexes.data());
+  ARCANE_CHECK_ACCESSIBLE_POINTER(queue, output_indexes.data());
+
+  // TODO: Gérer la copie de manière à pouvoir utiliser la coalescence
+  // TODO: Faire des spécialisations si le dim2_size est de 4 ou 8
+  // (voire un multiple) pour éviter la boucle interne.
+  auto command = makeCommand(queue);
+  command << RUNCOMMAND_LOOP2(iter, nb_copy, nb_value)
+  {
+    auto [icopy, i] = iter();
+    auto input = copy_data[icopy].m_input;
+    auto output = copy_data[icopy].m_output;
+    Int32 dim2_size = copy_data[icopy].m_data_size;
+    Int32 output_base = output_indexes[i] * dim2_size;
+    Int32 input_base = input_indexes[i] * dim2_size;
+    for (Int32 j = 0; j < dim2_size; ++j)
+      output[output_base + j] = input[input_base + j];
+  };
 }
 
 /*---------------------------------------------------------------------------*/

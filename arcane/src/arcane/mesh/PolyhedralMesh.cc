@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* PolyhedralMesh.cc                                           (C) 2000-2023 */
+/* PolyhedralMesh.cc                                           (C) 2000-2024 */
 /*                                                                           */
 /* Polyhedral mesh impl using Neo data structure.                            */
 /*---------------------------------------------------------------------------*/
@@ -28,7 +28,7 @@
 #include "arcane/core/ItemInternal.h"
 #include "arcane/core/internal/IVariableMngInternal.h"
 
-#ifdef ARCANE_HAS_CUSTOM_MESH_TOOLS
+#ifdef ARCANE_HAS_POLYHEDRAL_MESH_TOOLS
 
 #include "arcane/IMeshMng.h"
 #include "arcane/MeshHandle.h"
@@ -39,11 +39,6 @@
 
 #include "neo/Mesh.h"
 
-#ifdef ARCANE_HAS_VTKIO
-#include "arcane/mesh/PolyhedralMeshTools.h" // non utilisé ??
-#include "arcane/core/IMeshFactory.h"
-
-#endif
 
 #endif
 
@@ -126,7 +121,7 @@ namespace mesh
       if (uids.empty())
         return;
       ARCANE_ASSERT((uids.size() == items.size()), ("one must have items.size==uids.size()"));
-      m_mesh->traceMng()->info() << " PolyhedralFamily::ADDITEMS ";
+      m_mesh->traceMng()->debug(Arccore::Trace::Highest) << " PolyhedralFamily::addItems ";
       preAllocate(uids.size());
       auto index{ 0 };
       for (auto uid : uids) {
@@ -179,7 +174,7 @@ namespace mesh
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#ifdef ARCANE_HAS_CUSTOM_MESH_TOOLS
+#ifdef ARCANE_HAS_POLYHEDRAL_MESH_TOOLS
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -290,7 +285,7 @@ namespace mesh
                                                          Neo::MeshScalarPropertyT<Neo::utils::Int32>&) {
                                 Int32UniqueArray arcane_items(uids.size());
                                 arcane_item_family->addItems(uids, arcane_items);
-                                arcane_item_family->traceMng()->info() << arcane_items;
+                                arcane_item_family->traceMng()->debug(Trace::Highest) << arcane_items;
                                 // debug check lid matching. maybe to remove if too coostly
                                 auto neo_lids = lids_property.values();
                                 if (!std::equal(neo_lids.begin(), neo_lids.end(), arcane_items.begin()))
@@ -325,22 +320,6 @@ namespace mesh
                                  Int64ConstSmallSpan target_items_uids,
                                  String const& connectivity_name)
     {
-      // debug
-      std::cout << "====================VALIDATE CONNECTIVITY  ==================" << std::endl;
-      std::cout << "== " << connectivity_name << std::endl;
-      auto item_index = 0;
-      std::cout << "==== nb connected items ====" << std::endl;
-      std::copy(nb_connected_items_per_item.begin(), nb_connected_items_per_item.end(), std::ostream_iterator<Int32>(std::cout, " "));
-      std::cout << std::endl
-                << "==== connected items ====" << std::endl;
-      std::copy(target_items_uids.begin(), target_items_uids.end(), std::ostream_iterator<Int64>(std::cout, " "));
-      std::cout << std::endl;
-      for (auto&& nb_connected_items : nb_connected_items_per_item) {
-        Int64ConstArrayView connected_items{ nb_connected_items, &target_items_uids[item_index] };
-        std::copy(connected_items.begin(), connected_items.end(), std::ostream_iterator<Int64>{ std::cout, " " });
-        item_index += nb_connected_items;
-        std::cout << "\n";
-      }
       _scheduleAddConnectivity(arcane_source_item_family,
                                source_items,
                                std::vector<Int32>{ nb_connected_items_per_item.begin(), nb_connected_items_per_item.end() },
@@ -385,7 +364,6 @@ namespace mesh
                               Neo::MeshKernel::OutProperty{ source_family, connectivity_add_output_property_name },
                               [arcane_source_item_family, arcane_target_item_family, &source_family, &target_family, this, connectivity_name](Neo::Mesh::ConnectivityPropertyType const&,
                                                                                                                               Neo::ScalarPropertyT<Neo::utils::Int32>&) {
-                                this->m_subdomain->traceMng()->info() << "ADD CONNECTIVITY";
                                 auto item_internal_connectivity_list = arcane_source_item_family->itemInternalConnectivityList();
                                 // todo check if families are default families
                                 auto connectivity = m_mesh.getConnectivity(source_family, target_family, connectivity_name.localstr());
@@ -455,7 +433,6 @@ namespace mesh
                               Neo::MeshKernel::OutProperty{ _item_family, "NoOutProperty42" },
                               [this, item_family, &_item_family, &arcane_coords](Neo::Mesh::CoordPropertyType const& item_coords_property,
                                                                                  Neo::ScalarPropertyT<Neo::utils::Int32>&) {
-                                this->m_subdomain->traceMng()->info() << "= Update Arcane Coordinates =";
                                 // enumerate nodes : ensure again Arcane/Neo local_ids are identicals
                                 auto& all_items = _item_family.all();
                                 VariableNodeReal3 node_coords{ VariableBuildInfo{ item_family->mesh(), "NodeCoord" } };
@@ -477,18 +454,6 @@ namespace mesh
       m_mesh.applyScheduledOperations();
     }
 
-   private:
-
-    void _createSingleCellTest()
-    {
-      auto& cell_family = m_mesh.addFamily(Neo::ItemKind::IK_Cell, "cell_family");
-      auto& node_family = m_mesh.addFamily(Neo::ItemKind::IK_Node, "node_family");
-      auto added_cells = Neo::FutureItemRange{};
-      m_mesh.scheduleAddItems(cell_family, { 0 }, added_cells);
-      auto added_nodes = Neo::FutureItemRange{};
-      m_mesh.scheduleAddItems(node_family, { 0, 1, 2, 3, 4, 5 }, added_nodes);
-      m_mesh.applyScheduledOperations();
-    }
   };
 
   template <> class PolyhedralMeshImpl::ItemKindTraits<IK_Cell>
@@ -568,75 +533,6 @@ PolyhedralMesh(ISubDomain* subdomain, const MeshBuildInfo& mbi)
 /*---------------------------------------------------------------------------*/
 
 void Arcane::mesh::PolyhedralMesh::
-read(const String& filename)
-{
-  // First step: create manually a unit mesh
-  //  ARCANE_UNUSED(filename); // temporary
-  //  _createUnitMesh();
-  // Second step read a vtk polyhedral mesh
-  m_subdomain->traceMng()->info() << "--PolyhedralMesh : reading " << filename;
-  // First step create a single cell
-  //      _createSingleCellTest();
-  // Second step : read a vtk polyhedral file
-  UniqueArray<String> splitted_filename{};
-  filename.split(splitted_filename, '.');
-  const auto& file_extension = splitted_filename.back();
-  if (file_extension != "vtk")
-    m_subdomain->traceMng()->fatal() << "Only vtk file format supported for polyhedral mesh";
-
-  createItemFamily(IK_Cell, "Cell");
-  createItemFamily(IK_Node, "Node");
-  createItemFamily(IK_Face, "Face");
-  createItemFamily(IK_Edge, "Edge");
-  [[maybe_unused]] auto cell_family = arcaneDefaultFamily(IK_Cell);
-  [[maybe_unused]] auto node_family = arcaneDefaultFamily(IK_Node);
-  [[maybe_unused]] auto face_family = arcaneDefaultFamily(IK_Face);
-  [[maybe_unused]] auto edge_family = arcaneDefaultFamily(IK_Edge);
-#ifdef ARCANE_HAS_VTKIO
-  PolyhedralMeshTools::VtkReader reader{ filename };
-  PolyhedralMeshImpl::ItemLocalIds cell_lids, node_lids, face_lids, edge_lids;
-  // todo separate Link with Arcane and link with vtk structure
-  // Add items
-  m_mesh->scheduleAddItems(cell_family, reader.cellUids(), cell_lids);
-  m_mesh->scheduleAddItems(node_family, reader.nodeUids(), node_lids);
-  m_mesh->scheduleAddItems(face_family, reader.faceUids(), face_lids);
-  m_mesh->scheduleAddItems(edge_family, reader.edgeUids(), edge_lids);
-  // Add connectivities
-  m_mesh->scheduleAddConnectivity(cell_family, cell_lids, reader.cellNbNodes(), node_family, reader.cellNodes(), String{ "CellToNodes" });
-  m_mesh->scheduleAddConnectivity(cell_family, cell_lids, reader.cellNbFaces(), face_family, reader.cellFaces(), String{ "CellToFaces" });
-  m_mesh->scheduleAddConnectivity(face_family, face_lids, reader.faceNbNodes(), node_family, reader.faceNodes(), String{ "FaceToNodes" });
-  m_mesh->scheduleAddConnectivity(edge_family, edge_lids, 2, node_family, reader.edgeNodes(), String{ "EdgeToNodes" });
-  m_mesh->scheduleAddConnectivity(face_family, face_lids, reader.faceNbCells(), cell_family, reader.faceCells(), String{ "FaceToCells" });
-  m_mesh->scheduleAddConnectivity(edge_family, edge_lids, reader.edgeNbCells(), cell_family, reader.edgeCells(), String{ "EdgeToCells" });
-  m_mesh->scheduleAddConnectivity(edge_family, edge_lids, reader.edgeNbFaces(), face_family, reader.edgeFaces(), String{ "EdgeToFaces" });
-  m_mesh->scheduleAddConnectivity(face_family, face_lids, reader.faceNbEdges(), edge_family, reader.faceEdges(), String{ "FaceToEdges" });
-  m_mesh->scheduleAddConnectivity(cell_family, cell_lids, reader.cellNbEdges(), edge_family, reader.cellEdges(), String{ "CellToEdges" });
-  m_mesh->scheduleAddConnectivity(node_family, node_lids, reader.nodeNbCells(), cell_family, reader.nodeCells(), String{ "NodeToCells" });
-  m_mesh->scheduleAddConnectivity(node_family, node_lids, reader.nodeNbFaces(), face_family, reader.nodeFaces(), String{ "NodeToFaces" });
-  m_mesh->scheduleAddConnectivity(node_family, node_lids, reader.nodeNbEdges(), edge_family, reader.nodeEdges(), String{ "NodeToEdges" });
-  // Add node coordinates
-  m_arcane_node_coords = std::make_unique<VariableNodeReal3>(VariableBuildInfo(this, "NodeCoord"));
-  m_arcane_node_coords->setUsed(true);
-  m_mesh->applyScheduledOperations();
-  cell_family->endUpdate();
-  node_family->endUpdate();
-  face_family->endUpdate();
-  edge_family->endUpdate();
-  endUpdate();
-  m_mesh->scheduleSetItemCoordinates(node_family, node_lids, reader.nodeCoords(), *m_arcane_node_coords);
-  m_mesh->applyScheduledOperations();
-  m_is_allocated = true;
-  // indicates mesh contains general Cells
-  itemTypeMng()->setMeshWithGeneralCells(this);
-#else
-  ARCANE_FATAL("Need VTKIO to read polyhedral mesh");
-#endif
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void Arcane::mesh::PolyhedralMesh::
 allocateItems(const Arcane::ItemAllocationInfo& item_allocation_info)
 {
   // Second step read a vtk polyhedral mesh
@@ -646,17 +542,17 @@ allocateItems(const Arcane::ItemAllocationInfo& item_allocation_info)
   // Prepare item creation
   for (auto& family_info : item_allocation_info.family_infos) {
     auto item_family = _createItemFamily(family_info.item_kind, family_info.name);
-    m_trace_mng->info() << " Create items " << family_info.name;
+    m_trace_mng->debug(Trace::High) << " Create items " << family_info.name;
     m_mesh->scheduleAddItems(item_family, family_info.item_uids, item_local_ids[family_index++]);
   }
   // Prepare connectivity creation
   family_index = 0;
   for (auto& family_info : item_allocation_info.family_infos) {
     auto item_family = _findItemFamily(family_info.item_kind, family_info.name);
-    m_trace_mng->info() << "Current family " << family_info.name;
+    m_trace_mng->debug(Trace::High) << "Current family " << family_info.name;
     for (auto& current_connected_family_info : family_info.connected_family_info) {
       auto connected_family = _findItemFamily(current_connected_family_info.item_kind, current_connected_family_info.name);
-      m_trace_mng->info() << " Create connectivity " << current_connected_family_info.connectivity_name;
+      m_trace_mng->debug(Trace::High) << " Create connectivity " << current_connected_family_info.connectivity_name;
       // check if connected family exists
       if (!connected_family) {
         ARCANE_WARNING((String::format("Cannot find family {0} with kind {1} "
@@ -958,7 +854,6 @@ endUpdate()
       String name = String::concat(itemKindName((eItemKind)ik), "EmptyFamily");
       m_empty_arcane_families[ik] = std::make_unique<mesh::PolyhedralFamily>(this, (eItemKind)ik, name);
       m_default_arcane_families[ik] = m_empty_arcane_families[ik].get();
-      m_subdomain->traceMng()->info() << " Create empty family " << itemKindName((eItemKind)ik);
     }
   }
 }
@@ -1160,7 +1055,7 @@ itemFamilies()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#else // ARCANE_HAS_CUSTOM_MESH_TOOLS
+#else // ARCANE_HAS_POLYHEDRAL_MESH_TOOLS
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -1211,7 +1106,7 @@ allocateItems(const Arcane::ItemAllocationInfo& item_allocation_info)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif // ARCANE_HAS_CUSTOM_MESH_TOOLS
+#endif // ARCANE_HAS_POLYHEDRAL_MESH_TOOLS
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -1248,7 +1143,7 @@ ARCANE_REGISTER_SERVICE(PolyhedralMeshFactory,
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#if ARCANE_HAS_CUSTOM_MESH_TOOLS
+#if ARCANE_HAS_POLYHEDRAL_MESH_TOOLS
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -1262,7 +1157,7 @@ factoryName() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif // ARCANE_HAS_CUSTOM_MESH_TOOLS
+#endif // ARCANE_HAS_POLYHEDRAL_MESH_TOOLS
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

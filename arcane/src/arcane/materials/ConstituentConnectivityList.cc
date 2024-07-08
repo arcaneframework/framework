@@ -354,8 +354,7 @@ _addCells(Int16 component_id, SmallSpan<const Int32> cells_local_id,
   NumArray<Int32, MDDim1> new_indexes(nb_item);
   const bool is_device = queue.isAcceleratorPolicy();
   // Pour recopier le nombre d'éléments à ajouter du device vers le CPU
-  NumArray<Int32, MDDim1> new_indexes_to_add(is_device ? eMemoryRessource::HostPinned : eMemoryRessource::Host);
-  new_indexes_to_add.resize(1);
+  NumArray<Int32, MDDim1> new_indexes_to_add(1, eMemoryRessource::HostPinned);
 
   // Calcul l'index des nouveaux éléments
   {

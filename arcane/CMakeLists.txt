@@ -1,6 +1,6 @@
 ﻿cmake_minimum_required(VERSION 3.21 FATAL_ERROR)
 
-message(STATUS "CMAKE_SOURCE_DIR=${CMAKE_SOURCE_DIR}")
+message(STATUS "CMAKE_SOURCE_DIR=${CMAKE_SOURCE_DIR} CMAKE_VERSION=${CMAKE_VERSION}")
 
 # ----------------------------------------------------------------------------
 # Récupère numéro de version de Arcane à partir du fichier 'version' et
@@ -367,7 +367,7 @@ if (ARCANE_WANT_CHECK)
   set(ARCCORE_CHECK TRUE)
 endif()
 
-set(ARCANE_ARCCORE_NEEDED_VERSION "2.6.7")
+set(ARCANE_ARCCORE_NEEDED_VERSION "2.7.0")
 if (NOT Arccore_FOUND)
   find_package(Arccore ${ARCANE_ARCCORE_NEEDED_VERSION} REQUIRED)
 endif ()
@@ -645,6 +645,7 @@ set(ARCANE_USE_HIDDEN_VISIBILITY TRUE)
 # Gestion du C#.
 
 include(ArcconDotNet)
+include(${CMAKE_CURRENT_LIST_DIR}/cmake/GlobalCSharpTarget.cmake)
 
 # ----------------------------------------------------------------------------
 
@@ -677,6 +678,12 @@ set(ARCANE_ARC_PATH ${CMAKE_CURRENT_SOURCE_DIR}/tests)
 
 set(ARCANE_AXL2CC ${AXLSTAR_AXL2CC})
 message(STATUS "Arcane: axl2cc is '${ARCANE_AXL2CC}'")
+
+# Liste des dépendances pour la génération des axl en C#.
+set(ARCANE_AXLSTAR_DEPEND "${AXLSTAR_AXL2CC}")
+if (TARGET dotnet_axl_depend)
+  list(APPEND ARCANE_AXLSTAR_DEPEND dotnet_axl_depend)
+endif()
 
 # ----------------------------------------------------------------------------
 # Recherche 'googletest' pour les tests unitaires
@@ -712,10 +719,6 @@ if(NOT ARCANE_DISABLE_HYODA)
   if(TARGET arcane_hyoda)
     list(APPEND ARCANE_ADDITIONAL_COMPONENTS arcane_hyoda)
   endif()
-endif()
-
-if (NOT MONO_EXEC_ONLY)
-  add_subdirectory(src/arcane/mono)
 endif()
 
 add_subdirectory(src/arcane/dotnet/coreclr)
@@ -968,6 +971,12 @@ endif()
 # Gestion des outils 'C#' et du wrapper 'Swig'
 
 add_subdirectory(tools)
+
+# ----------------------------------------------------------------------------
+# Gestion du wrapper python (nécessite le wrapper C#)
+if (ARCANE_ENABLE_DOTNET_PYTHON_WRAPPER)
+  add_subdirectory(python)
+endif()
 
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
@@ -1370,6 +1379,14 @@ endif()
 
 message(STATUS "ARCANE_LIBRARIES: ${ARCANE_LIBRARIES}")
 message(STATUS "ARCANE_OPTIONAL_LIBRARIES: ${ARCANE_OPTIONAL_LIBRARIES}")
+
+# ----------------------------------------------------------------------------
+
+# Finalise la gestion du C# en créant la commande qui compile le projet
+# On doit faire cela à la fin car il n'y a qu'à ce moment là qu'on connait
+# toutes les dépendences (en effet CMake ne propage pas les dépendences sur
+# add_custom_command)
+include(${CMAKE_CURRENT_LIST_DIR}/cmake/GlobalCSharpCommand.cmake)
 
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------

@@ -27,6 +27,7 @@
 
 namespace Arcane::Materials
 {
+class CopyBetweenPartialAndGlobalArgs;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -50,6 +51,8 @@ class ARCANE_MATERIALS_EXPORT IncrementalComponentModifier
   void initialize();
   void apply(MaterialModifierOperation* operation);
   void finalize();
+  void setDoCopyBetweenPartialAndPure(bool v) { m_do_copy_between_partial_and_pure = v; }
+  void setDoInitNewItems(bool v) { m_do_init_new_items = v; }
 
  private:
 
@@ -57,7 +60,11 @@ class ARCANE_MATERIALS_EXPORT IncrementalComponentModifier
   MeshMaterialMng* m_material_mng = nullptr;
   ConstituentModifierWorkInfo m_work_info;
   RunQueue m_queue;
-  bool m_do_old_implementation = false;
+  bool m_do_copy_between_partial_and_pure = true;
+  bool m_do_init_new_items = true;
+
+  //! 1 ou 2 si on utilise une version générique pour les copies entre pure et partiel
+  Int32 m_use_generic_copy_between_pure_and_partial = 0;
 
  public:
 
@@ -70,6 +77,7 @@ class ARCANE_MATERIALS_EXPORT IncrementalComponentModifier
   void _addItemsToIndexer(MeshMaterialVariableIndexer* var_indexer,
                           SmallSpan<const Int32> local_ids);
   void _removeItemsInGroup(ItemGroup cells,SmallSpan<const Int32> removed_ids);
+  void _applyCopyBetweenPartialsAndGlobals(const CopyBetweenPartialAndGlobalArgs& args, RunQueue& queue);
 
  private:
 
@@ -82,6 +90,7 @@ class ARCANE_MATERIALS_EXPORT IncrementalComponentModifier
                                    SmallSpan<const Int32> local_ids, bool update_env_indexer);
   void _addItemsToEnvironment(MeshEnvironment* env, MeshMaterial* mat,
                               SmallSpan<const Int32> local_ids, bool update_env_indexer);
+  void _copyBetweenPartialsAndGlobals(const CopyBetweenPartialAndGlobalArgs& args);
 };
 
 /*---------------------------------------------------------------------------*/

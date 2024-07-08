@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* VariableArray.h                                             (C) 2000-2022 */
+/* VariableArray.h                                             (C) 2000-2024 */
 /*                                                                           */
 /* Variable tableau 1D.                                                      */
 /*---------------------------------------------------------------------------*/
@@ -59,6 +59,7 @@ class VariableArrayT
 
   Integer checkIfSame(IDataReader* reader,int max_print,bool compare_ghost) override;
   void synchronize() override;
+  void synchronize(Int32ConstArrayView local_ids) override;
   virtual void resizeWithReserve(Integer n,Integer nb_additional);
   Real allocatedMemory() const override;
   Integer checkIfSync(int max_print) override;

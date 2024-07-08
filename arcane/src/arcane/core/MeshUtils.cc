@@ -1412,17 +1412,29 @@ reorderNodesOfFace(Int64ConstArrayView before_ids, Int64ArrayView after_ids)
   }
   Int64 next_node = before_ids[(min_node_index + 1) % nb_node];
   Int64 prev_node = before_ids[(min_node_index + (nb_node - 1)) % nb_node];
+  Integer incr = 0 ;
+  Integer incr2 = 0 ;
+  if(next_node==min_node)
+  {
+    next_node = before_ids[(min_node_index + (nb_node + 2)) % nb_node];
+    incr = 1 ;
+  }
+  if(prev_node==min_node)
+  {
+    prev_node = before_ids[(min_node_index + (nb_node - 2)) % nb_node];
+    incr2 = nb_node - 1 ;
+  }
   if (next_node > prev_node)
     need_swap_orientation = true;
   if (need_swap_orientation) {
     for (Integer k = 0; k < nb_node; ++k) {
-      Integer index = (nb_node - k + min_node_index) % nb_node;
+      Integer index = (nb_node - k + min_node_index + incr) % nb_node;
       after_ids[k] = before_ids[index];
     }
   }
   else {
     for (Integer k = 0; k < nb_node; ++k) {
-      Integer index = (k + min_node_index) % nb_node;
+      Integer index = (k + min_node_index + incr2) % nb_node;
       after_ids[k] = before_ids[index];
     }
   }
@@ -1476,17 +1488,29 @@ reorderNodesOfFace2(Int64ConstArrayView nodes_unique_id, IntegerArrayView new_in
   }
   Int64 next_node = nodes_unique_id[(min_node_index + 1) % nb_node];
   Int64 prev_node = nodes_unique_id[(min_node_index + (nb_node - 1)) % nb_node];
+  Integer incr = 0 ;
+  Integer incr2 = 0 ;
+  if(next_node==min_node)
+  {
+    next_node = nodes_unique_id[(min_node_index + 2) % nb_node];
+    incr = 1 ;
+  }
+  if(prev_node==min_node)
+  {
+    prev_node = nodes_unique_id[(min_node_index + (nb_node - 2)) % nb_node];
+    incr2 = nb_node - 1 ;
+  }
   if (next_node > prev_node)
     need_swap_orientation = true;
   if (need_swap_orientation) {
     for (Integer k = 0; k < nb_node; ++k) {
-      Integer index = (nb_node - k + min_node_index) % nb_node;
+      Integer index = (nb_node - k + min_node_index + incr) % nb_node;
       new_index[k] = index;
     }
   }
   else {
     for (Integer k = 0; k < nb_node; ++k) {
-      Integer index = (k + min_node_index) % nb_node;
+      Integer index = (k + min_node_index + incr2) % nb_node;
       new_index[k] = index;
     }
   }

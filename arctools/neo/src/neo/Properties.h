@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Property                                        (C) 2000-2023             */
+/* Property                                        (C) 2000-2024             */
 /*                                                                           */
 /* Classes and tools for Property                                            */
 /*---------------------------------------------------------------------------*/
@@ -342,9 +342,9 @@ class ArrayPropertyT : public PropertyBase
   void debugPrint() const {
     if constexpr (ndebug)
       return;
-    std::cout << "= Print array property " << m_name << " =" << std::endl;
-    std::cout << m_data;
-    std::cout << std::endl;
+    Neo::print()  << "= Print array property " << m_name << " =" << std::endl;
+    Neo::print() << m_data;
+    Neo::print() << "" << std::endl;
   }
 
   utils::Span<DataType> view() { return utils::Span<DataType>{ m_data.data(), m_data.size() }; }
@@ -453,11 +453,11 @@ class MeshScalarPropertyT : public PropertyBase
   void debugPrint() const {
     if constexpr (ndebug)
       return;
-    std::cout << "= Print mesh scalar property " << m_name << " =" << std::endl;
+    Neo::print() << "= Print mesh scalar property " << m_name << " =" << std::endl;
     for (auto& val : m_data) {
-      std::cout << "\"" << val << "\" ";
+      Neo::print() << "\"" << val << "\" ";
     }
-    std::cout << std::endl;
+    Neo::print() << "" << std::endl;
   }
 
   utils::Span<DataType> values() { return Neo::utils::Span<DataType>{ m_data.data(), m_data.size() }; }
@@ -589,11 +589,11 @@ class MeshArrayPropertyT : public PropertyBase
   void debugPrint() const {
     if constexpr (ndebug)
       return;
-    std::cout << "= Print mesh array property " << m_name << " =" << std::endl;
+    Neo::print() << "= Print mesh array property " << m_name << " =" << std::endl;
     for (auto& val : m_data) {
-      std::cout << "\"" << val << "\" ";
+      Neo::print() << "\"" << val << "\" ";
     }
-    std::cout << std::endl;
+    Neo::print() << "" << std::endl;
     utils::printContainer(m_offsets, "Offsets ");
     utils::printContainer(m_indexes, "Indexes");
   }

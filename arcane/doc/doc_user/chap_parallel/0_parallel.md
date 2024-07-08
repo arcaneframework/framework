@@ -23,11 +23,7 @@ Sommaire de ce chapitre :
   Présente les mécanismes disponibles dans %Arcane pour pouvoir utiliser
   les unités vectoriels des CPU d'aujourd'hui.
 
-4. \subpage arcanedoc_parallel_accelerator <br>
-  Présente les mécanismes disponibles dans %Arcane pour pouvoir utiliser
-  les accélérateurs (GPU) dans %Arcane.
-
-5. \subpage arcanedoc_parallel_loadbalance <br>
+4. \subpage arcanedoc_parallel_loadbalance <br>
   Décrit l'utilisation du mécanisme d'équilibrage de charge sur le maillage.
 
 

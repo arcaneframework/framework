@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<VTKFile type="PolyData" version="0.1" byte_order="LittleEndian">
+    <Information>Face data for original file cross_a_2x1x1.egrid converted using GeoPolyMesh CPG2VTP tool</Information>
+    <PolyData>
+        <Piece NumberOfPoints="16" NumberOfPolys="15">
+            <Points>
+                <DataArray type="Float64" NumberOfComponents="3" format="ascii">0.000000 0.000000 50.000000 0.000000 0.000000 150.000000 100.000000 0.000000 -50.000000 100.000000 0.000000 50.000000 100.000000 0.000000 150.000000 0.000000 100.000000 -50.000000 0.000000 100.000000 50.000000 100.000000 100.000000 -50.000000 100.000000 100.000000 50.000000 100.000000 100.000000 150.000000 100.000000 50.000000 0.000000 100.000000 50.000000 100.000000 200.000000 0.000000 -50.000000 200.000000 0.000000 50.000000 200.000000 100.000000 50.000000 200.000000 100.000000 150.000000 </DataArray>
+            </Points>
+            <Polys>
+                <DataArray type="Int32" Name="connectivity" format="ascii">0 3 4 1 6 8 7 5 1 6 5 0 3 11 4 8 10 7 10 8 11 3 4 11 8 6 1 0 5 7 10 3 2 12 13 3 9 15 14 8 3 10 2 8 11 9 12 14 15 13 3 13 15 9 11 10 8 14 12 2 </DataArray>
+                <DataArray type="Int32" Name="offsets" format="ascii">4 8 12 15 18 22 27 32 36 40 43 46 50 55 60</DataArray>
+            </Polys>
+            <CellData>
+                <DataArray type="Int32" Name="FaceFlags" format="ascii">1 1 1 1 1 1 1 1 1 1 1 1 1 1 1</DataArray>
+                <DataArray type="Float64" Name="FaceReal"  format="ascii">1. 1. 1. 1. 1. 1. 1. 1. 1. 1. 1. 1. 1. 1. 1.</DataArray>
+                <DataArray type="Int32" Name="FaceArrayFlags" NumberOfComponents="3" format="ascii">1 2 3 1 2 3 1 2 3 1 2 3 1 2 3 1 2 3 1 2 3 1 2 3 1 2 3 1 2 3 1 2 3 1 2 3 1 2 3 1 2 3 1 2 3</DataArray>
+                <DataArray type="Float64" Name="FaceArrayReal" NumberOfComponents="3" format="ascii">1. 2. 3. 1. 2. 3. 1. 2. 3. 1. 2. 3. 1. 2. 3. 1. 2. 3. 1. 2. 3. 1. 2. 3. 1. 2. 3. 1. 2. 3. 1. 2. 3. 1. 2. 3. 1. 2. 3. 1. 2. 3. 1. 2. 3.</DataArray>
+                <DataArray type="Int32" Name="GROUP_HALF_FACE" format="ascii">0 1 0 1 0 1 0 1 0 1 0 1 0 1 0</DataArray>
+                <DataArray type="Int32" Name="GROUP_BOUNDARY_FACES" format="ascii">1 1 1 1 1 0 1 1 1 1 1 1 1 1 1</DataArray>
+                <DataArray type="Int32" Name="GROUP_INTERNAL_FACES" format="ascii">0 0 0 0 0 1 0 0 0 0 0 0 0 0 0</DataArray>
+
+            </CellData>
+        </Piece>
+    </PolyData>
+</VTKFile>

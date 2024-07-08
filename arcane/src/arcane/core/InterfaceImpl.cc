@@ -51,6 +51,7 @@
 #include "arcane/core/IMeshMng.h"
 #include "arcane/core/IMeshPartitioner.h"
 #include "arcane/core/IGridMeshPartitioner.h"
+#include "arcane/core/IDataStorageFactory.h"
 #include "arcane/core/IDirectExecution.h"
 #include "arcane/core/IDirectSubDomainExecuteFunctor.h"
 #include "arcane/core/ISerializer.h"
@@ -66,6 +67,7 @@
 #include "arcane/core/IItemConnectivityMng.h"
 #include "arcane/core/IItemConnectivitySynchronizer.h"
 #include "arcane/core/ItemFamilyCompactInfos.h"
+#include "arcane/core/IItemFamily.h"
 #include "arcane/core/IItemFamilyCompactPolicy.h"
 #include "arcane/core/IItemFamilySerializer.h"
 #include "arcane/core/IItemFamilySerializeStep.h"
@@ -116,6 +118,7 @@
 #include "arcane/core/IPostProcessorWriter.h"
 #include "arcane/core/IMeshModifier.h"
 #include "arcane/core/MeshEvents.h"
+#include "arcane/core/IExternalPlugin.h"
 
 #include "arcane/core/IMeshInitialAllocator.h"
 #include "arcane/core/internal/IItemFamilyInternal.h"
@@ -249,6 +252,33 @@ void IMeshModifier::
 addFaces(const MeshModifierAddFacesArgs& args)
 {
   addFaces(args.nbFace(),args.faceInfos(),args.faceLocalIds());
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void IVariable::
+synchronize(Int32ConstArrayView local_ids)
+{
+  ARCANE_THROW(NotImplementedException,"synchronize() with specific local ids");
+}
+
+void IItemFamily::
+synchronize(VariableCollection variables, Int32ConstArrayView local_ids)
+{
+  ARCANE_THROW(NotImplementedException,"synchronize() with specific local ids");
+}
+
+void IVariableSynchronizer::
+synchronize(IVariable* var, Int32ConstArrayView local_ids)
+{
+  ARCANE_THROW(NotImplementedException,"synchronize() with specific local ids");
+}
+
+void IVariableSynchronizer::
+synchronize(VariableCollection vars, Int32ConstArrayView local_ids)
+{
+  ARCANE_THROW(NotImplementedException,"synchronize() with specific local ids");
 }
 
 /*---------------------------------------------------------------------------*/

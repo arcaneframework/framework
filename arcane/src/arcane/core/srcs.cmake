@@ -1,4 +1,4 @@
-﻿set(CURRENT_SRC_PATH ${Arcane_SOURCE_DIR}/src)
+set(CURRENT_SRC_PATH ${Arcane_SOURCE_DIR}/src)
 
 set(ARCANE_MATERIALS_SOURCES
   materials/CellToAllEnvCellConverter.h
@@ -73,6 +73,7 @@ set(ARCANE_INTERNAL_SOURCES
   internal/StringVariableReplace.h
   internal/StringVariableReplace.cc
   internal/ITimeHistoryMngInternal.h
+  internal/VariableUtilsInternal.h
   )
 
 set(ARCANE_ORIGINAL_SOURCES
@@ -107,6 +108,7 @@ set(ARCANE_ORIGINAL_SOURCES
   IDirectExecution.h
   IDirectory.h
   IEntryPoint.h
+  IExternalPlugin.h
   IItemConnectivityInfo.h
   IItemFamily.h
   ISession.h
@@ -367,6 +369,7 @@ set(ARCANE_ORIGINAL_SOURCES
   VariableRef.h
   VariableUtils.h
   VariableUtils.cc
+  VariableUtilsInternal.cc
 
   XmlNode.h
   XmlNodeList.h
@@ -486,6 +489,8 @@ set(ARCANE_ORIGINAL_SOURCES
   MeshAreaAccessor.h
   MeshBuildInfo.cc
   MeshBuildInfo.h
+  MeshCriteriaLoadBalanceMng.cc
+  MeshCriteriaLoadBalanceMng.h
   MeshMDVariableRef.h
   MeshEvents.h
   MeshHandle.cc

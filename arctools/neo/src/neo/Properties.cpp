@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Properties                                      (C) 2000-2023             */
+/* Properties                                      (C) 2000-2024             */
 /*                                                                           */
 /* Classes and tools for Property                                            */
 /*---------------------------------------------------------------------------*/
@@ -131,12 +131,12 @@ Neo::ItemRange Neo::ItemLidsProperty::values() const {
 void Neo::ItemLidsProperty::debugPrint() const {
   if constexpr (ndebug)
     return;
-  std::cout << "= Print property " << m_name << " =" << std::endl;
+  Neo::print() << "= Print property " << m_name << " =" << std::endl;
   for (auto uid : m_uid2lid) {
     if (uid.second != Neo::utils::NULL_ITEM_LID)
-      std::cout << " uid to lid  " << uid.first << " : " << uid.second;
+      Neo::print() << " uid to lid  " << uid.first << " : " << uid.second;
   }
-  std::cout << std::endl;
+  Neo::print() << "" << std::endl;
 }
 
 /*---------------------------------------------------------------------------*/

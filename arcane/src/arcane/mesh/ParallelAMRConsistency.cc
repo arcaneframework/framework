@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -377,7 +377,7 @@ _gatherFaces(ConstArrayView<ItemUniqueId> faces_to_send,
   Integer sub_domain_id = pm->commRank();
   Integer nb_sub_domain = pm->commSize();
 
-  const Real tol = 10e-6;
+  const Real tol = 10e-12;
 
   SerializeBuffer sbuf;
   sbuf.setMode(ISerializer::ModeReserve);

@@ -1,3 +1,9 @@
+﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
+//-----------------------------------------------------------------------------
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// See the top-level COPYRIGHT file for details.
+// SPDX-License-Identifier: Apache-2.0
+//-----------------------------------------------------------------------------
 #include <alien/kernels/trilinos/TrilinosBackEnd.h>
 #include <alien/kernels/trilinos/data_structure/TrilinosInternal.h>
 
@@ -44,13 +50,15 @@ TrilinosVector<ValueT, TagT>::allocate()
   const Integer globalSize = dist.globalSize();
   auto* parallel_mng =
       const_cast<Arccore::MessagePassing::IMessagePassingMng*>(dist.parallelMng());
-  auto* mpi_mng =
-      dynamic_cast<Arccore::MessagePassing::Mpi::MpiMessagePassingMng*>(parallel_mng);
-  const MPI_Comm* comm = static_cast<const MPI_Comm*>(mpi_mng->getMPIComm());
 
-  m_internal.reset(
-      new VectorInternal(dist.offset(), globalSize, this->scalarizedLocalSize(), *comm));
-
+  using namespace Arccore::MessagePassing::Mpi;
+  auto* pm = dynamic_cast<MpiMessagePassingMng*>(parallel_mng);
+  if(pm && *static_cast<const MPI_Comm*>(pm->getMPIComm()) != MPI_COMM_NULL)
+    m_internal.reset(
+        new VectorInternal(dist.offset(), globalSize, this->scalarizedLocalSize(), *static_cast<const MPI_Comm*>(pm->getMPIComm())));
+  else
+    m_internal.reset(
+        new VectorInternal(dist.offset(), globalSize, this->scalarizedLocalSize(), MPI_COMM_WORLD));
   // m_internal->m_internal = 0.;
 }
 
@@ -61,17 +69,26 @@ void
 TrilinosVector<ValueT, TagT>::setValues(const int nrow, const ValueT* values)
 {
   auto& x = *m_internal->m_internal;
+#if (TRILINOS_MAJOR_VERSION < 15)
   x.sync_host();
   auto x_2d = x.getLocalViewHost();
   auto x_1d = Kokkos::subview(x_2d, Kokkos::ALL(), 0);
   const size_t localLength = x.getLocalLength();
   x.modify_host();
+#else
+  auto x_2d = x.getLocalViewHost(Tpetra::Access::ReadWrite);
+  auto x_1d = Kokkos::subview(x_2d, Kokkos::ALL(), 0);
+  const size_t localLength = x.getLocalLength();
+#endif
+  
   for (int i = 0; i < nrow; ++i) {
     x_1d(i) = values[i];
     // std::cout<<"SET X["<<i<<"]"<<values[i]<<std::endl ;
   }
+#if (TRILINOS_MAJOR_VERSION < 15)
   using memory_space = typename VectorInternal::vector_type::device_type::memory_space;
   x.template sync<memory_space>();
+#endif
 }
 
 /*---------------------------------------------------------------------------*/
@@ -80,8 +97,12 @@ void
 TrilinosVector<ValueT, TagT>::getValues(const int nrow, ValueT* values) const
 {
   auto& x = *m_internal->m_internal;
+#if (TRILINOS_MAJOR_VERSION < 15)
   x.sync_host();
   auto x_2d = x.getLocalViewHost();
+#else
+  auto x_2d = x.getLocalViewHost(Tpetra::Access::ReadWrite);
+#endif
   auto x_1d = Kokkos::subview(x_2d, Kokkos::ALL(), 0);
   const size_t localLength = x.getLocalLength();
   for (int i = 0; i < nrow; ++i) {
@@ -116,8 +137,12 @@ void
 TrilinosVector<ValueT, TagT>::dump() const
 {
   auto& x = *m_internal->m_internal;
+#if (TRILINOS_MAJOR_VERSION < 15)
   x.sync_host();
   auto x_2d = x.getLocalViewHost();
+#else
+  auto x_2d = x.getLocalViewHost(Tpetra::Access::ReadOnly);
+#endif
   auto x_1d = Kokkos::subview(x_2d, Kokkos::ALL(), 0);
   const size_t localLength = x.getLocalLength();
   for (int i = 0; i < localLength; ++i)

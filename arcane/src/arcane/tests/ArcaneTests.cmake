@@ -285,20 +285,6 @@ function(arcane_add_csharp_test_direct)
     list(APPEND _ALL_ARGS "--dotnet-assembly=${ARGS_ASSEMBLY}")
   endif()
 
-  # Test avec mono
-  if (MONO_EXEC)
-    arcane_add_test_direct(NAME ${ARGS_TEST_NAME}_mono
-      COMMAND ${ARGS_LAUNCH_COMMAND} -Z ${_ALL_ARGS}
-      WORKING_DIRECTORY ${ARGS_WORKING_DIRECTORY})
-  endif()
-
-  # Test avec mono embedded
-  if (TARGET arcane::MonoEmbed)
-    arcane_add_test_direct(NAME ${ARGS_TEST_NAME}_mono_embedded
-      COMMAND ${ARGS_LAUNCH_COMMAND} -We,ARCANE_USE_DOTNET_WRAPPER,1 ${_ALL_ARGS}
-      WORKING_DIRECTORY ${ARGS_WORKING_DIRECTORY})
-  endif()
-
   if (DOTNET_EXEC)
     # Test avec coreclr direct
     arcane_add_test_direct(NAME ${ARGS_TEST_NAME}_coreclr
@@ -362,6 +348,9 @@ endif()
 if (ARCANE_ACCELERATOR_MODE STREQUAL "CUDANVCC" )
   set(ARCANE_ACCELERATOR_RUNTIME_NAME cuda)
 endif()
+if (ARCANE_ACCELERATOR_MODE STREQUAL "SYCLDPCPP" )
+  set(ARCANE_ACCELERATOR_RUNTIME_NAME sycl)
+endif()
 
 # ----------------------------------------------------------------------------
 # Ajoute un test séquentiel pour accélerateur si disponible
@@ -399,6 +388,12 @@ macro(arcane_add_accelerator_test_message_passing_hybrid test_name)
       "-A,AcceleratorRuntime=${ARCANE_ACCELERATOR_RUNTIME_NAME}"
     )
   endif()
+endmacro()
+
+macro(arcane_add_test_sequential_host_and_accelerator test_name case_file)
+  arcane_add_test_sequential(${test_name} ${case_file} ${ARGN})
+  arcane_add_test_sequential_task(${test_name} ${case_file} 4 ${ARGN})
+  arcane_add_accelerator_test_sequential(${test_name} ${case_file} ${ARGN})
 endmacro()
 
 # ----------------------------------------------------------------------------

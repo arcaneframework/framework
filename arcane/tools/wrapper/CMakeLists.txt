@@ -39,6 +39,7 @@ endif()
 # ----------------------------------------------------------------------------
 
 configure_file(ArcaneSwigConfig.cmake.in ${CMAKE_CURRENT_BINARY_DIR}/ArcaneSwigConfig.cmake @ONLY)
+configure_file(BuildAllCSharp.proj.in ${ARCANE_CSHARP_PROJECT_PATH}/BuildAllCSharp.proj @ONLY)
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/ArcaneSwigConfig.cmake
   DESTINATION ${ARCANE_CMAKE_CONFIG_DIR})
 

@@ -134,7 +134,9 @@ buildFromManager(bool is_continue)
 
   // Il faut récupérer (ou créér) les autres variables.
   //ConstArrayView<IMeshMaterial*> materials = mat_mng->materials();
-  ConstArrayView<MeshMaterialVariableIndexer*> indexers = mat_mng->_internalApi()->variablesIndexer();
+  IMeshMaterialMngInternal* mm_api = mat_mng->_internalApi();
+  const Real reserve_ratio = mm_api->additionalCapacityRatio();
+  ConstArrayView<MeshMaterialVariableIndexer*> indexers = mm_api->variablesIndexer();
   Integer nb_indexer = indexers.size();
   UniqueArray<PrivatePartType*> all_vars(nb_indexer+1);
   all_vars[0] = m_global_variable;
@@ -187,7 +189,7 @@ buildFromManager(bool is_continue)
       // TODO: regarder si setUsed() est nécessaire.
       true_ptr->setUsed(true);
       // Dimensionne la variable à la taille du tableau des valeurs mixtes.
-      Traits::resizeWithReserve(true_ptr,indexer->maxIndexInMultipleArray());
+      Traits::resizeWithReserve(true_ptr, indexer->maxIndexInMultipleArray(), reserve_ratio);
     }
   }
   this->_init(all_vars);
@@ -242,13 +244,15 @@ ItemMaterialVariableBase<Traits>::
 _syncReferences(bool check_resize)
 {
   if (check_resize) {
-    ConstArrayView<MeshMaterialVariableIndexer*> indexers = m_p->materialMng()->_internalApi()->variablesIndexer();
+    IMeshMaterialMngInternal* api = m_p->materialMng()->_internalApi();
+    ConstArrayView<MeshMaterialVariableIndexer*> indexers = api->variablesIndexer();
+    Real ratio = api->additionalCapacityRatio();
     Integer nb_indexer = indexers.size();
     for (Integer i = 0; i < nb_indexer; ++i) {
       MeshMaterialVariableIndexer* indexer = indexers[i];
       PrivatePartType* true_ptr = m_vars[i + 1];
       if (true_ptr) {
-        Traits::resizeWithReserve(true_ptr, indexer->maxIndexInMultipleArray());
+        Traits::resizeWithReserve(true_ptr, indexer->maxIndexInMultipleArray(), ratio);
         _setView(i + 1);
       }
     }
@@ -360,8 +364,13 @@ _resizeForIndexer(Int32 index, RunQueue& queue)
   if (_isValidAndUsedAndGlobalUsed(partial_var)) {
     // Redimensionne le tableau des valeurs multiples si besoin.
     // TODO: Faire sur le device pour la mise à jour de view
-    ConstArrayView<MeshMaterialVariableIndexer*> indexers = m_p->materialMng()->_internalApi()->variablesIndexer();
-    Traits::resizeWithReserve(partial_var, indexers[index]->maxIndexInMultipleArray());
+    // TODO: Utiliser allocation asynchrone si possible (si pas d'initialisation)
+    // TODO: Pouvoir indiquer qu'on ne souhaite pas initialiser la variable
+    //       quelle que soit la valeur de eDataInitialisationPolicy
+    IMeshMaterialMngInternal* api = m_p->materialMng()->_internalApi();
+    ConstArrayView<MeshMaterialVariableIndexer*> indexers = api->variablesIndexer();
+    Real ratio = api->additionalCapacityRatio();
+    Traits::resizeWithReserve(partial_var, indexers[index]->maxIndexInMultipleArray(), ratio);
     this->_setView(index + 1);
   }
   _copyHostViewsToViews(&queue);
@@ -374,7 +383,7 @@ template <typename Traits> void
 ItemMaterialVariableBase<Traits>::
 _copyHostViewsToViews(RunQueue* queue)
 {
-  const bool use_queue = false;
+  const bool use_queue = true;
   if (queue && use_queue){
     Accelerator::MemoryCopyArgs copy_args(asWritableBytes(m_views),asBytes(m_host_views));
     copy_args.addAsync(true);
@@ -389,28 +398,37 @@ _copyHostViewsToViews(RunQueue* queue)
 
 template <typename Traits> void
 ItemMaterialVariableBase<Traits>::
-_copyGlobalToPartial(const MeshVariableCopyBetweenPartialAndGlobalArgs& args)
+_copyBetweenPartialAndGlobal(const CopyBetweenPartialAndGlobalArgs& args)
 {
-  Int32 var_index = args.m_var_index;
-  PrivatePartType* partial_var = m_vars[var_index + 1];
-  if (_isValidAndUsedAndGlobalUsed(partial_var)) {
-    Traits::copyTo(m_host_views[0], args.m_local_ids, m_host_views[var_index + 1],
-                   args.m_indexes_in_multiple, *args.m_queue);
+  Int32 var_index = args.m_var_index + 1;
+  PrivatePartType* partial_var = m_vars[var_index];
+  if (!_isValidAndUsedAndGlobalUsed(partial_var))
+    return;
+  const bool is_global_to_partial = args.m_is_global_to_partial;
+  const bool use_generic = args.m_use_generic_copy;
+  const RunQueue& queue = args.m_queue;
+
+  auto input = m_host_views[var_index];
+  auto output = m_host_views[0];
+  auto output_indexes = args.m_local_ids;
+  auto input_indexes = args.m_indexes_in_multiple;
+
+  if (is_global_to_partial) {
+    std::swap(input, output);
+    std::swap(output_indexes, input_indexes);
   }
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-template<typename Traits> void
-ItemMaterialVariableBase<Traits>::
-_copyPartialToGlobal(const MeshVariableCopyBetweenPartialAndGlobalArgs& args)
-{
-  Int32 var_index = args.m_var_index;
-  PrivatePartType* partial_var = m_vars[var_index+1];
-  if (_isValidAndUsedAndGlobalUsed(partial_var)) {
-    Traits::copyTo(m_host_views[var_index + 1], args.m_indexes_in_multiple,
-                   m_host_views[0], args.m_local_ids, *args.m_queue);
+  if (use_generic) {
+    Int32 data_type_size = dataTypeSize();
+    Span<const std::byte> input_bytes(Traits::toBytes(input));
+    Span<std::byte> output_bytes(Traits::toBytes(output));
+    if (args.isUseOneCommand())
+      args.addOneCopyData(input_bytes, output_bytes, data_type_size);
+    else
+      _genericCopyTo(input_bytes, input_indexes,
+                     output_bytes, output_indexes, queue, data_type_size);
+  }
+  else {
+    Traits::copyTo(input, input_indexes, output, output_indexes, queue);
   }
 }
 

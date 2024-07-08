@@ -1,6 +1,5 @@
 ﻿set(ARCANE_HAS_SWIG FALSE)
 
-
 # Pour générer automatiquement le nom de bibliothèque compatible avec
 # la plateforme cible
 if (POLICY CMP0122)
@@ -106,20 +105,24 @@ function(arcane_wrapper_add_csharp_target)
 
   set(FULL_DLL_PATH ${ARCANE_DOTNET_WRAPPER_INSTALL_DIRECTORY}/${ARGS_PROJECT_NAME}.dll)
 
+  # Génère une variable ARCANE_CSHARP_ITEM_GROUP_FILES contenant la liste des fichiers
+  # à compiler. Cette variable sera utilisé dans le configure du projet
+  if (ARGS_CSHARP_SOURCES)
+    list(TRANSFORM ARGS_CSHARP_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/csharp/")
+    list(TRANSFORM ARGS_CSHARP_SOURCES APPEND ".cs")
+    set(_CSHARP_DEPENDS ${ARGS_CSHARP_SOURCES})
+
+    list(TRANSFORM ARGS_CSHARP_SOURCES PREPEND "    <Compile Include = \"")
+    list(TRANSFORM ARGS_CSHARP_SOURCES APPEND "\"/>")
+    list(JOIN ARGS_CSHARP_SOURCES "\n" _OUT_CSHARP_TXT)
+    message(VERBOSE "TRANSFORM_LIST=${_OUT_CSHARP_TXT}")
+    set(ARCANE_CSHARP_ITEM_GROUP_FILES "\n  <!-- The following ItemGroup is generated -->\n  <ItemGroup>\n${_OUT_CSHARP_TXT}\n  </ItemGroup>")
+  endif()
+
   configure_file(${ARGS_PROJECT_NAME}.csproj.in
     ${ARCANE_CSHARP_PROJECT_PATH}/${ARGS_PROJECT_NAME}/${ARGS_PROJECT_NAME}.csproj @ONLY)
 
-  if (ARGS_CSHARP_SOURCES)
-    list(TRANSFORM ARGS_CSHARP_SOURCES PREPEND ${CMAKE_CURRENT_SOURCE_DIR}/csharp/)
-    list(TRANSFORM ARGS_CSHARP_SOURCES APPEND ".cs")
-    set(_CSHARP_DEPENDS ${ARGS_CSHARP_SOURCES})
-    list(JOIN ARGS_CSHARP_SOURCES "\n" _OUT_CSHARP_TXT)
-    message(STATUS "TRANSFORM_LIST=${_OUT_CSHARP_TXT}")
-    file(WRITE ${ARCANE_CSHARP_PROJECT_PATH}/${ARGS_PROJECT_NAME}/csfiles.txt ${_OUT_CSHARP_TXT})
-  endif()
-
-  arccon_add_csharp_target(${ARGS_TARGET_NAME}
-    DOTNET_RUNTIME ${ARCANE_DOTNET_RUNTIME}
+  arcane_add_global_csharp_target(${ARGS_TARGET_NAME}
     BUILD_DIR ${ARCANE_DOTNET_WRAPPER_INSTALL_DIRECTORY}
     ASSEMBLY_NAME ${ARGS_PROJECT_NAME}.dll
     PROJECT_PATH ${ARCANE_CSHARP_PROJECT_PATH}/${ARGS_PROJECT_NAME}
@@ -179,6 +182,7 @@ macro(arcane_wrapper_add_swig_target)
   cmake_parse_arguments(ARGS "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
   set_property(SOURCE ${ARGS_SOURCE} PROPERTY CPLUSPLUS ON)
+  set_property(SOURCE ${ARGS_SOURCE} PROPERTY USE_SWIG_DEPENDENCIES TRUE)
   set_property(SOURCE ${ARGS_SOURCE} PROPERTY INCLUDE_DIRECTORIES ${ARCANE_SRC_PATH} ${ARCANE_DOTNET_WRAPPER_SOURCE_DIR} ${ARGS_INCLUDE_DIRECTORIES})
   if (UNIX)
     # TODO: regarder si on ne peut pas mettre ce define dans un .i
@@ -210,7 +214,7 @@ macro(arcane_wrapper_add_swig_target)
   arcane_target_set_standard_path(${_TARGET_NAME})
 
   # Récupère la liste des fichiers générés par Swig. On s'en sert pour faire une
-  # dépendence dessus pour la compilation de la partie C#.
+  # dépendance dessus pour la compilation de la partie C#.
   get_property(support_files TARGET ${_TARGET_NAME} PROPERTY SWIG_SUPPORT_FILES)
   message(STATUS "Support files for wrapper '${ARGS_NAME}' (target='${_TARGET_NAME}') files='${support_files}'")
 
@@ -225,13 +229,24 @@ macro(arcane_wrapper_add_swig_target)
     PROJECT_NAME ${ARGS_DLL_NAME}
     CSHARP_SOURCES ${ARGS_CSHARP_SOURCES}
     DOTNET_TARGET_DEPENDS ${_DOTNET_TARGET_DEPENDS}
-    )
+  )
 
-  # Indique que la compilation du C# dépend de la compilation de la lib C++.
-  # Ce n'est pas explicitement le cas car en fait elle dépend uniquement de
-  # la génération des fichiers par 'swig' mais il n'y a pas de moyen simple d'indiquer
-  # cela.
-  add_dependencies(dotnet_wrapper_${ARGS_NAME} ${_TARGET_NAME})
+  # Indique que la compilation du C# dépend des fichiers générés par SWIG.
+  # NOTE: il y a probablement un bug avec CMake 3.21 sur cette partie car il indique
+  # qu'il ne sait pas comment trouver les fichiers générés. Cela est peut-être du
+  # au module UseSwig associé à cette version.
+  # NOTE: Il semble que cela ne fonctionne pas toujours correctement si on utilise 'Make'
+  # (Il y a d'ailleurs un comportement spécifique du fichier 'UseSwig.cmake' dans ce cas)
+  # On n'active donc pas cette gestion si on utilise 'Make'. Dans ce cas on ajoute
+  # une dépendance sur la cible générée par SWIG mais cela oblige à recompiler si une
+  # des dépendances est modifiée (par exemple un '.so')
+  if (CMAKE_VERSION VERSION_LESS_EQUAL 3.21 OR CMAKE_GENERATOR MATCHES "Make")
+    add_dependencies(dotnet_wrapper_${ARGS_NAME} ${_TARGET_NAME})
+  else()
+    message(STATUS "Adding custom target with support files for wrapper '${ARGS_NAME}'")
+    add_custom_target(dotnet_wrapper_${ARGS_NAME}_swig_depend ALL DEPENDS "${support_files}")
+    add_dependencies(dotnet_wrapper_${ARGS_NAME} dotnet_wrapper_${ARGS_NAME}_swig_depend)
+  endif()
 
   # Ajoute les dépendences sur les autres cibles SWIG
   foreach(_dtg ${ARGS_SWIG_TARGET_DEPENDS})
