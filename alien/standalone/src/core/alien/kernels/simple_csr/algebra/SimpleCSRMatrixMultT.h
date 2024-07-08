@@ -1,20 +1,9 @@
-/*
- * Copyright 2020 IFPEN-CEA
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *
- * SPDX-License-Identifier: Apache-2.0
- */
+﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
+//-----------------------------------------------------------------------------
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// See the top-level COPYRIGHT file for details.
+// SPDX-License-Identifier: Apache-2.0
+//-----------------------------------------------------------------------------
 
 #pragma once
 
@@ -286,7 +275,7 @@ void SimpleCSRMatrixMultT<ValueT>::_parallelMultBlock(const VectorType& x, Vecto
       ConstArrayView<Real> ptr = x_ptr.subView(cols[jcol] * block_size, block_size);
       for (Integer ieq = 0; ieq < block_size; ++ieq)
         for (Integer iu = 0; iu < block_size; ++iu)
-          y_ptr[ieq] += m[ieq + block_size * iu] * ptr[iu];
+          y_ptr[ieq] += m[iu + block_size * ieq] * ptr[iu];
       m += block_size * block_size;
     }
     // y_ptr += block_size;
@@ -306,7 +295,7 @@ void SimpleCSRMatrixMultT<ValueT>::_parallelMultBlock(const VectorType& x, Vecto
       ConstArrayView<Real> ptr = x_ptr.subView(cols[jcol] * block_size, block_size);
       for (Integer ieq = 0; ieq < block_size; ++ieq)
         for (Integer iu = 0; iu < block_size; ++iu)
-          yptr[ieq] += m[ieq + block_size * iu] * ptr[iu];
+          yptr[ieq] += m[iu + block_size * ieq] * ptr[iu];
       m += block_size * block_size;
     }
   }
@@ -334,7 +323,7 @@ void SimpleCSRMatrixMultT<ValueT>::_seqMultBlock(const VectorType& x, VectorType
       Real const* ptr = x_ptr + cols[jcol] * block_size;
       for (Integer ieq = 0; ieq < block_size; ++ieq)
         for (Integer iu = 0; iu < block_size; ++iu)
-          y_ptr[ieq] += m[ieq + block_size * iu] * ptr[iu];
+          y_ptr[ieq] += m[iu + block_size * ieq] * ptr[iu];
       m += block_size * block_size;
     }
     y_ptr += block_size;
