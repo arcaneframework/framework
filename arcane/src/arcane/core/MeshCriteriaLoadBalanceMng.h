@@ -5,16 +5,18 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* LoadBalanceMng.h                                            (C) 2000-2024 */
+/* MeshCriteriaLoadBalanceMng.h                                (C) 2000-2024 */
 /*                                                                           */
-/* Module standard de description du probleme pour l'equilibrage de charge.  */
+/* Gestionnaire des critères d'équilibre de charge des maillages.            */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_IMPL_LOADBALANCEMNG_H
-#define ARCANE_IMPL_LOADBALANCEMNG_H
+#ifndef ARCANE_CORE_MESHCRITERIALOADBALANCEMNG_H
+#define ARCANE_CORE_MESHCRITERIALOADBALANCEMNG_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/ILoadBalanceMng.h"
+#include "arcane/core/ILoadBalanceMng.h"
+#include "arcane/core/ISubDomain.h"
+#include "arcane/core/ICriteriaLoadBalanceMng.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -24,55 +26,38 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Implantation standard d'une interface d'enregistrement des variables
- * pour l'equilibrage de charge.
- *
+ * \brief Classe permettant d'ajouter des critères pour ajuster
+ *        l'équilibre de charge.
  */
-class ARCANE_IMPL_EXPORT LoadBalanceMng
-: public ILoadBalanceMng
+class ARCANE_CORE_EXPORT MeshCriteriaLoadBalanceMng
+: public ICriteriaLoadBalanceMng
 {
  public:
 
-  explicit LoadBalanceMng(ISubDomain* sd, bool massAsCriterion = true);
+  MeshCriteriaLoadBalanceMng(ISubDomain* sd, const MeshHandle& mesh_handle);
 
  public:
-  /*!
-   * Methodes utilisees par les modules clients pour definir les criteres
-   * de partitionnement.
-   */
-  void addMass(VariableCellInt32& count, const String& entity="") override;
+
   void addCriterion(VariableCellInt32& count) override;
   void addCriterion(VariableCellReal& count) override;
-  void addCommCost(VariableFaceInt32& count, const String& entity="") override;
+  void addMass(VariableCellInt32& count, const String& entity) override;
+  void addCommCost(VariableFaceInt32& count, const String& entity) override;
 
   void reset() override;
 
-  /*!
-   * Methodes utilisees par le MeshPartitioner pour acceder a la description
-   * du probleme.
-   */
-  void setMassAsCriterion(bool active = true) override;
-  void setNbCellsAsCriterion(bool active = true) override;
-  void setCellCommContrib(bool active = true) override;
-  bool cellCommContrib() const override;
-  void setComputeComm(bool active = true) override;
-  Integer nbCriteria() override;
-  void initAccess(IMesh* mesh=nullptr) override;
-  const VariableFaceReal& commCost() const override;
-  const VariableCellReal& massWeight() const override;
-  const VariableCellReal& massResWeight() const override;
-  const VariableCellArrayReal& mCriteriaWeight() const override;
-  void endAccess() override;
-  void notifyEndPartition() override;
+  void setMassAsCriterion(bool active) override;
+  void setNbCellsAsCriterion(bool active) override;
+  void setCellCommContrib(bool active) override;
+  void setComputeComm(bool active) override;
 
-  ILoadBalanceMngInternal* _internalApi() override;
+  Integer nbCriteria() override;
 
  private:
 
-  Ref<ILoadBalanceMngInternal> m_internal;
+  ILoadBalanceMngInternal* m_internal;
   MeshHandle m_mesh_handle;
-
 };
 
 /*---------------------------------------------------------------------------*/

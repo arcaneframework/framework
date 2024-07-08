@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshPartitionerBase.h                                       (C) 2000-2014 */
+/* MeshPartitionerBase.h                                       (C) 2000-2024 */
 /*                                                                           */
 /* Classe de base d'un partitionneur de maillage.                            */
 /*---------------------------------------------------------------------------*/
@@ -16,19 +16,20 @@
 
 #include <set>
 
+#include "arcane/core/IMeshPartitioner.h"
+#include "arcane/core/AbstractService.h"
+#include "arcane/core/ILoadBalanceMng.h"
+#include "arcane/core/internal/ILoadBalanceMngInternal.h"
+
 #include "arcane/utils/Array.h"
-
-#include "arcane/IMeshPartitioner.h"
-#include "arcane/AbstractService.h"
 #include "arcane/utils/HashTableMap.h"
-#include <arcane/utils/ScopedPtr.h>
-
-#include "arcane/ILoadBalanceMng.h"
+#include "arcane/utils/ScopedPtr.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -73,7 +74,7 @@ class ARCANE_STD_EXPORT MeshPartitionerBase
   virtual ArrayView<float> cellsWeight() const;
 
   // CORRECT
-  virtual Integer nbCellWeight() const { return math::max(loadBalanceMng()->nbCriteria(),1); }
+  virtual Integer nbCellWeight() const { return math::max(m_lb_mng_internal->nbCriteria(m_mesh), 1); }
   virtual void setILoadBalanceMng(ILoadBalanceMng* mng) { m_lbMng = mng; }
   virtual ILoadBalanceMng* loadBalanceMng() const { return m_lbMng; }
 
@@ -189,6 +190,7 @@ protected:
  private:
 
   ILoadBalanceMng* m_lbMng = nullptr;
+  ILoadBalanceMngInternal* m_lb_mng_internal = nullptr;
 
   Real m_maximum_computation_time = 0.0;
   Real m_imbalance = 0.0;
@@ -211,7 +213,7 @@ protected:
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
