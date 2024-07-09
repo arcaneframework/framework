@@ -219,11 +219,13 @@ namespace Arcane
   };
 
   // Cette classe sert de type de retour pour wrapper la classe 'ItemVectorView'
+  // Note: cette structure doit avoir le même layout que la
+  // version qui est dans NumericWrapper.h
   class ItemVectorViewPOD
   {
    public:
-    ArrayViewPOD_T<ItemInternal*> m_items;
     ItemIndexArrayViewPOD m_local_ids;
+    ItemSharedInfo* m_shared_info;
   };
 }
 

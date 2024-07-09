@@ -218,113 +218,6 @@ namespace Arcane
   /*---------------------------------------------------------------------------*/
 
   [StructLayout(LayoutKind.Sequential)]
-  public unsafe struct ItemIndexArrayView
-  {
-    internal Int32ConstArrayView m_local_ids;
-    internal Int32 m_flags;
-
-    public ItemIndexArrayView(Int32ConstArrayView local_ids)
-    {
-      m_local_ids = local_ids;
-      m_flags = 0;
-    }
-
-    public ItemIndexArrayView(Int32ConstArrayView local_ids,Int32 flags)
-    {
-      m_local_ids = local_ids;
-      m_flags = flags;
-    }
-
-    public Integer Size { get { return m_local_ids.Length; } }
-    public Integer Length { get { return m_local_ids.Length; } }
-
-    public Int32 this[Integer index]
-    {
-      get
-      {
-        return m_local_ids[index];
-      }
-    }
-
-    public Int32ConstArrayView LocalIds
-    {
-      get { return m_local_ids; }
-    }
-
-    public ItemIndexArrayView SubViewInterval(Integer interval,Integer nb_interval)
-    {
-      return new ItemIndexArrayView(m_local_ids.SubViewInterval(interval,nb_interval));
-    }
-  }
-
-  /*---------------------------------------------------------------------------*/
-  /*---------------------------------------------------------------------------*/
-
-  [StructLayout(LayoutKind.Sequential)]
-  public unsafe struct ItemVectorView<_ItemKind>
-    where _ItemKind : IItem, new()
-  {
-    internal ItemInternalArrayView m_items;
-    internal ItemIndexArrayView m_local_ids;
-
-    public ItemVectorView(ItemInternalArrayView items,Int32ConstArrayView local_ids)
-    {
-      m_items = items;
-      m_local_ids = new ItemIndexArrayView(local_ids);
-    }
-    public ItemVectorView(ItemInternalArrayView items,ItemIndexArrayView indexes)
-    {
-      m_items = items;
-      m_local_ids = indexes;
-    }
-    public ItemVectorView(ItemVectorView gen_view)
-    {
-      m_items = gen_view.Items;
-      m_local_ids = gen_view.Indexes;
-    }
-
-    public Integer Size { get { return m_local_ids.Length; } }
-
-    public _ItemKind this[Integer index]
-    {
-      get
-      {
-        _ItemKind item = new _ItemKind();
-        item.ItemBase = m_items[m_local_ids[index]].ItemBase;
-        return item;
-      }
-    }
-
-    public Int32ConstArrayView LocalIds
-    {
-      get { return m_local_ids.LocalIds; }
-    }
-
-    public ItemIndexArrayView Indexes
-    {
-      get { return m_local_ids; }
-    }
-
-    public ItemInternalArrayView Items
-    {
-      get { return m_items; }
-    }
-
-    public IndexedItemEnumerator<_ItemKind> GetEnumerator()
-    {
-      return new IndexedItemEnumerator<_ItemKind>(m_items.m_ptr,m_local_ids.m_local_ids._InternalData(),m_local_ids.Length);
-    }
-
-    public ItemVectorView<_ItemKind> SubViewInterval(Integer interval,Integer nb_interval)
-    {
-      return new ItemVectorView<_ItemKind>(m_items,m_local_ids.SubViewInterval(interval,nb_interval));
-    }
-  }
-  
-  /*---------------------------------------------------------------------------*/
-  /*---------------------------------------------------------------------------*/
-
-  [StructLayout(LayoutKind.Sequential)]
   public unsafe struct NodeList
   {
     ItemInternal** m_items;
@@ -343,7 +236,7 @@ namespace Arcane
       return new IndexedNodeEnumerator(m_items,m_local_ids,m_end);
     }
   }
-  
+
   /*---------------------------------------------------------------------------*/
   /*---------------------------------------------------------------------------*/
 
@@ -382,7 +275,7 @@ namespace Arcane
   : IEnumerator< ItemPairList<_ItemKind1,_ItemKind2> >
     where _ItemKind1 : IItem, new()
     where _ItemKind2 : IItem, new()
-  {  
+  {
     Integer m_current;
     Integer m_end;
     IntegerConstArrayView m_indexes;
@@ -420,7 +313,7 @@ namespace Arcane
     {
       get { return Current; }
     }
-    
+
     public void Reset()
     {
       m_current = -1;
@@ -448,7 +341,7 @@ namespace Arcane
   {
     Item m_first;
     Item m_second;
-  
+
     public ItemPair(Item first,Item second)
     {
       m_first = first;
@@ -468,7 +361,7 @@ namespace Arcane
   {
     _ItemKind1 m_first;
     _ItemKind2 m_second;
-    
+
     public ItemPair(_ItemKind1 first,_ItemKind2 second)
     {
       m_first = first;

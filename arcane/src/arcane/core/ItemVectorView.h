@@ -1,29 +1,31 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemVectorView.h                                            (C) 2000-2023 */
+/* ItemVectorView.h                                            (C) 2000-2024 */
 /*                                                                           */
 /* Vue sur un vecteur (tableau indirect) d'entités.                          */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_ITEMVECTORVIEW_H
-#define ARCANE_ITEMVECTORVIEW_H
+#ifndef ARCANE_CORE_ITEMVECTORVIEW_H
+#define ARCANE_CORE_ITEMVECTORVIEW_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/ItemInternalVectorView.h"
-#include "arcane/ItemIndexArrayView.h"
-#include "arcane/ItemInfoListView.h"
-#include "arcane/ItemConnectedListView.h"
+#include "arcane/core/ItemInternalVectorView.h"
+#include "arcane/core/ItemIndexArrayView.h"
+#include "arcane/core/ItemInfoListView.h"
+#include "arcane/core/ItemConnectedListView.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 namespace Arcane
 {
+// Pour le wrapper C#
+class ItemVectorViewPOD;
 namespace mesh
 {
 class IndexedItemConnectivityAccessor;
@@ -223,6 +225,9 @@ class ItemVectorViewConstIteratorT
  */
 class ARCANE_CORE_EXPORT ItemVectorView
 {
+  // NOTE: Cette classe est mappée en C# et si on change sa structure il
+  // faut mettre à jour la version C# correspondante.
+
   friend ItemVector;
   friend ItemEnumeratorBase;
   friend mesh::IndexedItemConnectivityAccessor;
@@ -383,6 +388,11 @@ class ARCANE_CORE_EXPORT ItemVectorView
     m_shared_info = (size() > 0 && !items.empty()) ? ItemInternalCompatibility::_getSharedInfo(items[0]) : ItemSharedInfo::nullInstance();
   }
   void _init2(IItemFamily* family);
+
+ public:
+
+  // Pour SWIG pour positionner les valeurs l'instance POD
+  void _internalSwigSet(ItemVectorViewPOD* vpod);
 };
 
 /*---------------------------------------------------------------------------*/

@@ -29,8 +29,7 @@ namespace Arcane
         class_type = a.GetType(class_name,true);
       }
       catch(Exception ex){
-        throw new ApplicationException($"Can not load class {class_name} for assembly {a}");
-        return;
+        throw new ApplicationException($"Can not load class {class_name} for assembly {a} ex={ex} stack={ex.StackTrace}");
       }
       LoadCaseFunction(case_mng,class_type);
     }
@@ -69,7 +68,7 @@ namespace Arcane
       //ICaseMng cm = sd.CaseMng();
       BindingFlags flags = BindingFlags.Public|BindingFlags.InvokeMethod|BindingFlags.Instance|BindingFlags.DeclaredOnly;
       MethodInfo[] methods = class_type.GetMethods(flags);
-      
+
       foreach(MethodInfo method in methods){
         string func_name = method.Name;
         Trace.Info(String.Format("FOUND METHOD name={0}",func_name));
@@ -187,7 +186,7 @@ namespace Arcane
     public IRealRealToReal3MathFunctor m_rr_to_r3;
     public IRealReal3ToRealMathFunctor m_rr3_to_r;
     public IRealReal3ToReal3MathFunctor m_rr3_to_r3;
-    
+
     UserStandardCaseFunction(IRealRealToRealMathFunctor r,CaseFunctionBuildInfo cfbi) : base(cfbi)
     {
       m_rr_to_r = r;

@@ -5,12 +5,12 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemIndexArrayView.h                                        (C) 2000-2023 */
+/* ItemIndexArrayView.h                                        (C) 2000-2024 */
 /*                                                                           */
 /* Vue sur un tableau d'index (localIds()) d'entités.                        */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_ITEMINDEXARRAYVIEW_H
-#define ARCANE_ITEMINDEXARRAYVIEW_H
+#ifndef ARCANE_CORE_ITEMINDEXARRAYVIEW_H
+#define ARCANE_CORE_ITEMINDEXARRAYVIEW_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -38,6 +38,8 @@ namespace Arcane
  */
 class ARCANE_CORE_EXPORT ItemIndexArrayView
 {
+  // NOTE: Cette classe est mappée en C# et si on change sa structure il
+  // faut mettre à jour la version C# correspondante.
   friend ItemVectorView;
   friend ItemGroup;
   template <int Extent> friend class ItemConnectedListView;

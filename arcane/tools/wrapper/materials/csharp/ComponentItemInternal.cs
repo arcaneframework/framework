@@ -25,7 +25,7 @@ namespace Arcane.Materials
     internal Cell GlobalCell(Int32 constituent_local_id)
     {
       Int32 global_local_id = m_global_item_local_id_data[constituent_local_id];
-      return new Cell(m_item_shared_info->m_items_internal[global_local_id]);
+      return new Cell(new ItemBase(m_item_shared_info->m_items_internal[global_local_id]));
     }
     internal MatVarIndex VarIndex(Int32 constituent_local_id)
     {

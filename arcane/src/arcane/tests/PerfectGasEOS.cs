@@ -16,7 +16,7 @@ public class PerfectGasEOSService
   : base(sbi)
   {
   }
-  
+
   public virtual void initEOS(CellGroup group)
   {
     // Initialise l'énergie et la vitesse du son
@@ -45,7 +45,7 @@ public class PerfectGasEOSService
 
   public virtual void applyEOS2(CellGroup group)
   {
-    Int32ConstArrayView local_ids = group.View().LocalIds;
+    ItemIndexArrayView local_ids = group.View().Indexes;
     int nb_cell = local_ids.Length;
     for( int i=0; i<nb_cell; ++i ){
       Int32 icell = local_ids[i];
