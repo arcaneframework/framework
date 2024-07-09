@@ -35,39 +35,23 @@
   internal ItemInternalArrayView m_items;
   internal ItemIndexArrayView m_local_ids;
 
-  public ItemVectorView(ItemInternalArrayView items,Int32ConstArrayView local_ids)
-  {
-    m_items = items;
-    m_local_ids = new ItemIndexArrayView(local_ids);
-  }
-
   public ItemVectorView(ItemInternalArrayView items,ItemIndexArrayView indexes)
   {
     m_items = items;
     m_local_ids = indexes;
   }
 
-  public Integer Size { get { return m_local_ids.Length; } }
+  public Int32 Size { get { return m_local_ids.Length; } }
 
-  public Item this[Integer index]
-  {
-    get { return m_items[m_local_ids[index]]; }
-  }
+  public Item this[Int32 index] { get { return m_items[m_local_ids[index]]; } }
 
-  public Int32ConstArrayView LocalIds
-  {
-    get { return m_local_ids.LocalIds; }
-  }
+  [Obsolete("Use Indexes property instead")]
+  public Int32ConstArrayView LocalIds { get { return m_local_ids.LocalIds; } }
 
-  public ItemIndexArrayView Indexes
-  {
-    get { return m_local_ids; }
-  }
+  public ItemIndexArrayView Indexes { get { return m_local_ids; } }
 
-  public ItemInternalArrayView Items
-  {
-    get { return m_items; }
-  }
+  [Obsolete("This method is internal to Arcane. Use Indexes or operator[] instead.")]
+  public ItemInternalArrayView Items { get { return m_items; } }
 
   public ItemEnumerator GetEnumerator()
   {
@@ -78,6 +62,10 @@
   {
     return new ItemVectorView(m_items,m_local_ids.SubViewInterval(interval,nb_interval));
   }
+
+  // TODO: pour compatibilité avec l'existant. A supprimer
+  internal Int32ConstArrayView _LocalIds { get { return m_local_ids.LocalIds; } }
+  internal ItemInternalArrayView _Items { get { return m_items; } }
 %}
 
 /*---------------------------------------------------------------------------*/

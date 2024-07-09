@@ -36,7 +36,7 @@ namespace Arcane
     }
     public ItemVectorView(ItemVectorView gen_view)
     {
-      m_items = gen_view.Items;
+      m_items = gen_view._Items;
       m_local_ids = gen_view.Indexes;
     }
 
@@ -52,20 +52,7 @@ namespace Arcane
       }
     }
 
-    public Int32ConstArrayView LocalIds
-    {
-      get { return m_local_ids.LocalIds; }
-    }
-
-    public ItemIndexArrayView Indexes
-    {
-      get { return m_local_ids; }
-    }
-
-    public ItemInternalArrayView Items
-    {
-      get { return m_items; }
-    }
+    public ItemIndexArrayView Indexes { get { return m_local_ids; } }
 
     public IndexedItemEnumerator<_ItemKind> GetEnumerator()
     {
@@ -76,5 +63,15 @@ namespace Arcane
     {
       return new ItemVectorView<_ItemKind>(m_items,m_local_ids.SubViewInterval(interval,nb_interval));
     }
+
+    [Obsolete("Use Indexes property instead")]
+    public Int32ConstArrayView LocalIds { get { return m_local_ids.LocalIds; } }
+
+    [Obsolete("This method is internal to Arcane. Use ItemBase() instead.")]
+    public ItemInternalArrayView Items { get { return m_items; } }
+
+    // TODO: pour compatibilité avec l'existant. A supprimer
+    internal Int32ConstArrayView _LocalIds { get { return m_local_ids.LocalIds; } }
+    internal ItemInternalArrayView _Items { get { return m_items; } }
   }
 }
