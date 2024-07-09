@@ -340,7 +340,7 @@ MCGInternalLinearSolver::_solve(const MCGMatrixType& A, const MCGVectorType& b,M
                                 const std::shared_ptr<const MCGSolver::PartitionInfo<int>>& part_info)
 {
   alien_debug([&]{
-    cout() << "MCGInternalLinearSolver::_solve A:" << A.m_matrix[0][0].get()
+    cout() << "MCGInternalLinearSolver::_solve A:" << A.m_matrix.get()
            << " b:" << &b << " x:" << &x;
   });
 
