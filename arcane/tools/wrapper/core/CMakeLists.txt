@@ -38,6 +38,7 @@ set(ARCANE_SWIG_CORE_CSHARP_FILES
   EntryPoint
   ItemInternal
   Item
+  ItemLocalIdListContainerView
   Math
   CaseOptionServiceContainer
   CaseOptionEnumT
