@@ -39,6 +39,8 @@ set(ARCANE_SWIG_CORE_CSHARP_FILES
   ItemInternal
   Item
   ItemLocalIdListContainerView
+  ItemIndexArrayView
+  ItemVectorViewT
   Math
   CaseOptionServiceContainer
   CaseOptionEnumT
