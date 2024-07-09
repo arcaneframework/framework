@@ -82,7 +82,7 @@ class ALIEN_IFPEN_SOLVERS_EXPORT MCGInternalLinearSolver : public ILinearSolver,
       m_elapse += m_end - m_start;
     }
 
-    const double getElapse() const { return m_elapse.count(); }
+    [[nodiscard]] double getElapse() const { return m_elapse.count(); }
   };
 
   typedef SolverStatus Status;
@@ -101,43 +101,42 @@ class ALIEN_IFPEN_SOLVERS_EXPORT MCGInternalLinearSolver : public ILinearSolver,
   MCGInternalLinearSolver(const MCGInternalLinearSolver&) = delete;
 
   /** Constructeur de la classe */
-  MCGInternalLinearSolver(
+  explicit MCGInternalLinearSolver(
       Arccore::MessagePassing::IMessagePassingMng* parallel_mng = nullptr,
       IOptionsMCGSolver* options = nullptr);
 
   /** Destructeur de la classe */
-  virtual ~MCGInternalLinearSolver();
+  ~MCGInternalLinearSolver() override;
 
  public:
   //! Initialisation
-  // void init(int argv,char const** argc);
-  void init();
-  void updateParallelMng(Arccore::MessagePassing::IMessagePassingMng* pm);
-  void updateParameters();
+  void init() override;
+  void updateParallelMng(Arccore::MessagePassing::IMessagePassingMng* pm) override;
+  //void updateParameters();
 
   // void setDiagScal(double* Diag, int size);
   //! Finalize
-  void end();
+  void end() override;
 
-  String getBackEndName() const { return "mcgsolver"; }
+  String getBackEndName() const override { return "mcgsolver"; }
 
   //! Linear system solve
-  bool solve(IMatrix const& A, IVector const& b, IVector& x);
+  bool solve(IMatrix const& A, IVector const& b, IVector& x) override;
 
   //! Indicateur de support de r�solution parall�le
-  bool hasParallelSupport() const { return true; }
+  bool hasParallelSupport() const override { return true; }
 
-  std::shared_ptr<ILinearAlgebra> algebra() const;
+  std::shared_ptr<ILinearAlgebra> algebra() const override;
 
   //! Etat du solveur
-  const Alien::SolverStatus& getStatus() const;
+  const Alien::SolverStatus& getStatus() const override;
 
-  const SolverStat& getSolverStat() const { return m_stat; }
+  const SolverStat& getSolverStat() const override { return m_stat; }
 
   String getName() const { return "mcgsolver"; }
 
   //! Etat du solveur
-  void setNullSpaceConstantOption(bool flag)
+  void setNullSpaceConstantOption(bool flag) override
   {
     alien_warning([&] { cout() << "Null Space Constant Option not yet implemented"; });
   }
@@ -242,7 +241,7 @@ class ALIEN_IFPEN_SOLVERS_EXPORT MCGInternalLinearSolver : public ILinearSolver,
   std::shared_ptr<MCGSolver::ILogMng> m_mcg_log;
   std::shared_ptr<MCGSolver::ILogMng> m_mcg_mpi_log;
 
-#if 0  
+#if 0
   std::unique_ptr<ILogger> m_logger;
 #endif
 };
