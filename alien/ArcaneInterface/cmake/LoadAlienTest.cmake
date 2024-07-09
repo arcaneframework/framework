@@ -73,6 +73,8 @@ macro(alien_test)
             )
         endif ()
 
+        set_tests_properties(${ARGS_BENCH}.${ARGS_NAME} PROPERTIES LABELS "alien")
+
         if (TARGET arcane_core)
 
             set_tests_properties(${ARGS_BENCH}.${ARGS_NAME} PROPERTIES
@@ -120,6 +122,8 @@ macro(alien_test)
                         WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/${ARGS_WORKING_DIRECTORY}
                 )
             endif ()
+
+            set_tests_properties(${ARGS_BENCH}.${ARGS_NAME}.mpi-${mpi} PROPERTIES LABELS "alien")
 
             if (TARGET arcane_core)
 
