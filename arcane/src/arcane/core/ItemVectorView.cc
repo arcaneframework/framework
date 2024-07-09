@@ -76,6 +76,46 @@ fillLocalIds(Array<Int32>& ids) const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+// Note: ces structures doivent avoir le même layout que la
+// version qui est dans NumericWrapper.h
+
+// Cette classe sert de type de retour pour wrapper la class ConstArrayView
+template<typename DataType> class ConstArrayViewPOD_T
+{
+ public:
+  Integer m_size;
+  const DataType* m_ptr;
+};
+
+class ItemIndexArrayViewPOD
+{
+ public:
+  ConstArrayViewPOD_T<Int32> m_local_ids;
+  Int32 m_flags;
+};
+
+class ItemVectorViewPOD
+{
+ public:
+  ItemIndexArrayViewPOD m_local_ids;
+  ItemSharedInfo* m_shared_info;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ItemVectorView::
+_internalSwigSet(ItemVectorViewPOD* vpod)
+{
+  vpod->m_local_ids.m_local_ids.m_size = localIds().size();
+  vpod->m_local_ids.m_local_ids.m_ptr = localIds().unguardedBasePointer();
+  vpod->m_local_ids.m_flags = indexes().flags();
+  vpod->m_shared_info = m_shared_info;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 } // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/

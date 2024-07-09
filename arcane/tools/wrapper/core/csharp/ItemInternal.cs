@@ -386,6 +386,11 @@ namespace Arcane
     private Integer m_size;
     internal ItemInternal** m_ptr;
 
+    internal ItemInternalArrayView(ItemInternalList vlist)
+    {
+      m_size = vlist.m_size;
+      m_ptr = vlist.m_ptr;
+    }
     public Item this[Integer index]
     {
       get{
