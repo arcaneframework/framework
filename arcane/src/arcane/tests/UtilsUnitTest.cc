@@ -707,18 +707,29 @@ _testFloatingException()
       ARCANE_FATAL("Can not enable FPE");
     // Test si on récupère bien une ArithmeticException.
     bool is_ok = false;
+    bool is_ok2 = false;
     try{
       platform::raiseFloatingException();
     }
     catch(const ArithmeticException& ex){
       info() << "'ArithmeticException' catched\n";
       is_ok = true;
+      // Regarde si le FPE peut être relancé à l'intérieur.
+      try{
+        platform::raiseFloatingException();
+      }
+      catch(const ArithmeticException& ex){
+        info() << "'ArithmeticException' catched (nested)\n";
+        is_ok2 = true;
+      }
     }
     catch(...){
       info() << "Unknown exception catched\n";
     }
     if (!is_ok)
       ARCANE_FATAL("No 'ArithmeticException' catched");
+    if (!is_ok2)
+      ARCANE_FATAL("No nested 'ArithmeticException' catched");
   }
 }
 
