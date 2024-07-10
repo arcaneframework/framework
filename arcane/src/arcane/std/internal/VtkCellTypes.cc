@@ -90,6 +90,8 @@ arcaneToVtkCellType(Int16 arcane_type)
     return VTK_LINE;
   case IT_Line3:
     return VTK_QUADRATIC_EDGE;
+  case IT_CellLine2:
+    return VTK_LINE;
   case IT_Triangle3:
     return VTK_TRIANGLE;
   case IT_Triangle6:
