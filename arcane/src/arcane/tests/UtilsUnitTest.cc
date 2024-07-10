@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* UtilsUnitTest.cc                                            (C) 2000-2023 */
+/* UtilsUnitTest.cc                                            (C) 2000-2024 */
 /*                                                                           */
 /* Test des fonctions utilitaires de Arcane.                                 */
 /*---------------------------------------------------------------------------*/
@@ -707,18 +707,29 @@ _testFloatingException()
       ARCANE_FATAL("Can not enable FPE");
     // Test si on récupère bien une ArithmeticException.
     bool is_ok = false;
+    bool is_ok2 = false;
     try{
       platform::raiseFloatingException();
     }
     catch(const ArithmeticException& ex){
       info() << "'ArithmeticException' catched\n";
       is_ok = true;
+      // Regarde si le FPE peut être relancé à l'intérieur.
+      try{
+        platform::raiseFloatingException();
+      }
+      catch(const ArithmeticException& ex){
+        info() << "'ArithmeticException' catched (nested)\n";
+        is_ok2 = true;
+      }
     }
     catch(...){
       info() << "Unknown exception catched\n";
     }
     if (!is_ok)
       ARCANE_FATAL("No 'ArithmeticException' catched");
+    if (!is_ok2)
+      ARCANE_FATAL("No nested 'ArithmeticException' catched");
   }
 }
 
