@@ -767,6 +767,15 @@ MeshPartitionerBase::setCellsWeight(ArrayView<float> weights,Integer nb_weight)
   m_lb_mng_internal->setNbCellsAsCriterion(m_mesh, false);
 }
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Integer MeshPartitionerBase::
+nbCellWeight() const
+{
+  return math::max(m_lb_mng_internal->nbCriteria(m_mesh), 1);
+}
+
 ArrayView<float>
 MeshPartitionerBase::cellsWeight() const
 {
@@ -778,12 +787,13 @@ MeshPartitionerBase::_clearCellWgt() {
   //m_cell_wgt.clear();
 }
 
-#ifdef ARCANE_PART_DUMP
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 //! Fonction auxiliaire pour dumper le graphe.
-template <class ArrayType>
-Parallel::Request centralizePartInfo(String filename, IParallelMng *pm,
-                                     UniqueArray<ArrayType> data, String header, int step=1 )
+template <class ArrayType> Parallel::Request
+centralizePartInfo(String filename, IParallelMng *pm,
+                   UniqueArray<ArrayType> data, String header, int step=1 )
 {
   Parallel::Request req;
   UniqueArray<Integer> sizes(pm->commSize());
@@ -820,15 +830,6 @@ Parallel::Request centralizePartInfo(String filename, IParallelMng *pm,
   }
 
   return req;
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-Integer MeshPartitionerBase::
-nbCellWeight() const
-{
-  return math::max(m_lb_mng_internal->nbCriteria(m_mesh), 1);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -924,7 +925,6 @@ MeshPartitionerBase::dumpObject(String filebase)
 
   pm->waitAllRequests(reqs);
 }
-#endif // ARCANE_PART_DUMP
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
