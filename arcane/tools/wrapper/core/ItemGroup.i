@@ -22,7 +22,7 @@
 %typemap(out) Arcane::ItemVectorView
 %{
    Arcane::ItemVectorView result_ref = ($1);
-   result_ref._internalSwigSet( & $result);
+   result_ref._internalSwigSet(& $result);
 %}
 
 %typemap(in) Arcane::ItemVectorView %{$1 = $input; %}
@@ -59,7 +59,7 @@
 
   public ItemEnumerator GetEnumerator()
   {
-    unsafe{return new ItemEnumerator(m_shared_info->m_items_internal.m_ptr,m_local_ids.m_local_ids._InternalData(),m_local_ids.Length);}
+    unsafe{return new ItemEnumerator(m_shared_info,m_local_ids.m_local_ids._InternalData(),m_local_ids.Length);}
   }
 
   public ItemVectorView SubViewInterval(Integer interval,Integer nb_interval)
@@ -100,22 +100,19 @@
 %typemap(out) Arcane::ItemEnumerator
 %{
   Arcane::ItemEnumerator result_ref = ($1);
-  $result . m_items = result_ref.unguardedItems();
-  $result . m_local_ids = result_ref.unguardedLocalIds();
-  $result . m_index = result_ref.index();
-  $result . m_count = result_ref.count();
+   _arcaneInternalItemEnumeratorSwigSet(&result_ref, & $result);
 %}
 %typemap(in) Arcane::ItemEnumerator %{$1 = $input; %}
 %typemap(cscode) Arcane::ItemEnumerator
 %{
-  internal ItemInternal** m_items;
+  ItemSharedInfo* m_shared_info;
   internal Int32* m_local_ids;
   internal Integer m_current;
   internal Integer m_end;
 
-  public ItemEnumerator(ItemInternal** items,Int32* local_ids,Integer end)
+  public ItemEnumerator(ItemSharedInfo* shared_info,Int32* local_ids,Integer end)
   {
-    m_items = items;
+    m_shared_info = shared_info;
     m_local_ids = local_ids;
     m_current = -1;
     m_end = end;
@@ -128,7 +125,7 @@
 
   public Item Current
   {
-    get{ return new Item(m_items[m_local_ids[m_current]]); }
+    get{ return new Item(new ItemBase(m_shared_info,m_local_ids[m_current])); }
   }
 
   public bool MoveNext()
@@ -136,6 +133,7 @@
     ++m_current;
     return m_current<m_end;
   }
+  internal ItemSharedInfo* _SharedInfo{ get { return m_shared_info; }}
 %}
 
 /*---------------------------------------------------------------------------*/
@@ -143,7 +141,7 @@
 
 %typemap(cscode) Arcane::ItemGroup
 %{
-  public new ItemEnumerator GetEnumerator()
+  public ItemEnumerator GetEnumerator()
   {
     ItemEnumerator e = _enumerator();
     e.Reset();

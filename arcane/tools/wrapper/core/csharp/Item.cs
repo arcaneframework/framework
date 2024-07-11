@@ -431,9 +431,9 @@ namespace Arcane
       m_index = index;
     }
 
-    internal void _Set(ItemInternal* ii,Integer index)
+    internal void _Set(ItemBase ii,Integer index)
     {
-      m_item.Internal = ii;
+      m_item.ItemBase = ii;
       m_index = index;
     }
   }

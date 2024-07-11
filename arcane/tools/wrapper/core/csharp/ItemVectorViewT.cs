@@ -72,7 +72,7 @@ namespace Arcane
 
     public IndexedItemEnumerator<_ItemKind> GetEnumerator()
     {
-      return new IndexedItemEnumerator<_ItemKind>(m_shared_info->m_items_internal.m_ptr, m_local_ids.m_local_ids._InternalData(), m_local_ids.Length);
+      return new IndexedItemEnumerator<_ItemKind>(m_shared_info, m_local_ids.m_local_ids._InternalData(), m_local_ids.Length);
     }
 
     public ItemVectorView<_ItemKind> SubViewInterval(Int32 interval, Int32 nb_interval)

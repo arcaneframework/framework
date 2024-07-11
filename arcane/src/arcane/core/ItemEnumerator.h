@@ -1,25 +1,25 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemEnumerator.h                                            (C) 2000-2023 */
+/* ItemEnumerator.h                                            (C) 2000-2024 */
 /*                                                                           */
 /* Enumérateur sur des groupes d'entités du maillage.                        */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_ITEMENUMERATOR_H
-#define ARCANE_ITEMENUMERATOR_H
+#ifndef ARCANE_CORE_ITEMENUMERATOR_H
+#define ARCANE_CORE_ITEMENUMERATOR_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/ItemInternalEnumerator.h"
-#include "arcane/Item.h"
-#include "arcane/EnumeratorTraceWrapper.h"
-#include "arcane/IItemEnumeratorTracer.h"
-#include "arcane/ItemEnumeratorBase.h"
-#include "arcane/ItemConnectedEnumerator.h"
+#include "arcane/core/ItemInternalEnumerator.h"
+#include "arcane/core/Item.h"
+#include "arcane/core/EnumeratorTraceWrapper.h"
+#include "arcane/core/IItemEnumeratorTracer.h"
+#include "arcane/core/ItemEnumeratorBase.h"
+#include "arcane/core/ItemConnectedEnumerator.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -42,6 +42,11 @@ namespace Arcane
 
 class ItemEnumeratorCS;
 class ItemGroupImpl;
+class ItemEnumeratorPOD;
+
+// Cette méthode est réservée pour SWIG
+extern "C++" ARCANE_CORE_EXPORT
+void _arcaneInternalItemEnumeratorSwigSet(const ItemEnumerator* ie, ItemEnumeratorPOD* vpod);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -70,6 +75,7 @@ class ItemEnumerator
   friend class ItemEnumeratorBaseT<Cell>;
   friend class ItemEnumeratorBaseT<Particle>;
   friend class ItemEnumeratorBaseT<DoF>;
+  friend void _arcaneInternalItemEnumeratorSwigSet(const ItemEnumerator* ie, ItemEnumeratorPOD* vpod);
 
  public:
 
@@ -146,6 +152,7 @@ class ItemEnumerator
                  const ItemGroupImpl* agroup, Item item_base)
   : BaseClass(view, index, agroup, item_base)
   {}
+  ItemSharedInfo* _sharedInfo() const { return _internalItemBase().m_shared_info; }
 };
 
 /*---------------------------------------------------------------------------*/
