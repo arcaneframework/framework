@@ -71,7 +71,7 @@ namespace Arcane
     Int32 m_current;
     Integer m_end;
     Int32* m_local_ids;
-    ItemSharedInfo* m_shared_info;
+    readonly ItemSharedInfo* m_shared_info;
 
     IndexedItem<_ItemKind> m_current_item;
 
@@ -247,8 +247,8 @@ namespace Arcane
     IntegerConstArrayView m_indexes;
     Int32ConstArrayView m_items_local_id;
     Int32ConstArrayView m_sub_items_local_id;
-    ItemSharedInfo* m_item_shared_info;
-    ItemSharedInfo* m_sub_item_shared_info;
+    readonly ItemSharedInfo* m_item_shared_info;
+    readonly ItemSharedInfo* m_sub_item_shared_info;
     ItemPairList<_ItemKind1,_ItemKind2> m_pair;
 
     public ItemPairEnumerator(ItemPairEnumerator e)
