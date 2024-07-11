@@ -22,43 +22,6 @@ namespace Arcane
   /*---------------------------------------------------------------------------*/
   /*---------------------------------------------------------------------------*/
 
-  //WARNING: cette structure doit avoir le meme layout en C++ avec ItemGroupRangeIterator
-  [StructLayout(LayoutKind.Sequential)]
-  public unsafe struct ItemEnumerator2
-  {
-    internal Integer m_current;
-    internal Integer m_end;
-    internal Int32* m_local_ids;
-    internal ItemInternal** m_items;
-
-    internal ItemEnumerator2(ItemInternal** items,Int32* local_ids,Integer end)
-    {
-      m_items = items;
-      m_local_ids = local_ids;
-      m_current = -1;
-      m_end = end;
-    }
-
-    public void Reset()
-    {
-      m_current = -1;
-    }
-
-    public Item Current
-    {
-      get{ return new Item(new ItemBase(m_items[m_local_ids[m_current]])); }
-    }
-
-    public bool MoveNext()
-    {
-      ++m_current;
-      return m_current<m_end;
-    }
-  }
-
-  /*---------------------------------------------------------------------------*/
-  /*---------------------------------------------------------------------------*/
-
   [StructLayout(LayoutKind.Sequential)]
   public unsafe struct ItemEnumerator<_ItemKind> where _ItemKind : IItem, new()
   {
