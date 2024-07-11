@@ -202,9 +202,7 @@ namespace Arcane
   class ItemEnumeratorPOD
   {
    public:
-    typedef ItemInternal* Ptr;
-   public:
-    const Ptr* m_items;
+    ItemSharedInfo* m_shared_info;
     const Int32* m_local_ids;
     Integer m_index;
     Integer m_count;

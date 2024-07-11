@@ -108,22 +108,21 @@ namespace Arcane
     Int32 m_current;
     Integer m_end;
     Int32* m_local_ids;
-    ItemInternal** m_items;
+    ItemSharedInfo* m_shared_info;
 
     IndexedItem<_ItemKind> m_current_item;
 
-    internal IndexedItemEnumerator(ItemInternal** items,Int32* local_ids,Integer end)
+    internal IndexedItemEnumerator(ItemSharedInfo* shared_info,Int32* local_ids,Integer end)
     {
-      m_items = items;
+      m_shared_info = shared_info;
       m_local_ids = local_ids;
       m_current = -1;
       m_end = end;
       m_current_item = new IndexedItem<_ItemKind>(new ItemBase(),0);
     }
-
     public IndexedItemEnumerator(ItemEnumerator ie)
     {
-      m_items = ie.m_items;
+      m_shared_info = ie._SharedInfo;
       m_local_ids = ie.m_local_ids;
       m_current = -1;
       m_end = ie.m_end;
@@ -137,7 +136,11 @@ namespace Arcane
 
     public IndexedItem<_ItemKind> Current
     {
-      get{ m_current_item._Set(m_items[m_local_ids[m_current]],m_current); return m_current_item; }
+      get
+      {
+         m_current_item._Set(new ItemBase(m_shared_info,m_local_ids[m_current]),m_current);
+         return m_current_item;
+      }
     }
 
     public bool MoveNext()
@@ -156,11 +159,11 @@ namespace Arcane
     Int32 m_current;
     Integer m_end;
     Int32* m_local_ids;
-    ItemInternal** m_items;
+    ItemSharedInfo* m_shared_info;
 
-    internal IndexedNodeEnumerator(ItemInternal** items,Int32* local_ids,Integer end)
+    internal IndexedNodeEnumerator(ItemSharedInfo* shared_info,Int32* local_ids,Integer end)
     {
-      m_items = items;
+      m_shared_info = shared_info;
       m_local_ids = local_ids;
       m_current = -1;
       m_end = end;
@@ -168,7 +171,7 @@ namespace Arcane
 
     public IndexedNodeEnumerator(ItemEnumerator ie)
     {
-      m_items = ie.m_items;
+      m_shared_info = ie._SharedInfo;
       m_local_ids = ie.m_local_ids;
       m_current = -1;
       m_end = ie.m_end;
@@ -181,7 +184,7 @@ namespace Arcane
 
     public IndexedNode Current
     {
-      get{ return new IndexedNode(new ItemBase(m_items[m_local_ids[m_current]]),m_current); }
+      get{ return new IndexedNode(new ItemBase(m_shared_info,m_local_ids[m_current]),m_current); }
     }
 
     public bool MoveNext()
@@ -197,20 +200,20 @@ namespace Arcane
   [StructLayout(LayoutKind.Sequential)]
   public unsafe struct ItemList<_ItemKind> where _ItemKind : IItem, new()
   {
-    ItemInternal** m_items;
+    ItemSharedInfo* m_shared_info;
     Int32* m_local_ids;
     Integer m_end;
 
-    internal ItemList(ItemInternal** items,Int32* local_ids,Integer end)
+    internal ItemList(ItemSharedInfo* shared_info,Int32* local_ids,Integer end)
     {
-      m_items = items;
+      m_shared_info = shared_info;
       m_local_ids = local_ids;
       m_end = end;
     }
 
     public IndexedItemEnumerator<_ItemKind> GetEnumerator()
     {
-      return new IndexedItemEnumerator<_ItemKind>(m_items,m_local_ids,m_end);
+      return new IndexedItemEnumerator<_ItemKind>(m_shared_info,m_local_ids,m_end);
     }
   }
 
@@ -220,20 +223,20 @@ namespace Arcane
   [StructLayout(LayoutKind.Sequential)]
   public unsafe struct NodeList
   {
-    ItemInternal** m_items;
+    ItemSharedInfo* m_shared_info;
     Int32* m_local_ids;
     Integer m_end;
 
-    public NodeList(ItemInternal** items,Int32* local_ids,Integer end)
+    internal NodeList(ItemSharedInfo* shared_info,Int32* local_ids,Integer end)
     {
-      m_items = items;
+      m_shared_info = shared_info;
       m_local_ids = local_ids;
       m_end = end;
     }
 
     public IndexedNodeEnumerator GetEnumerator()
     {
-      return new IndexedNodeEnumerator(m_items,m_local_ids,m_end);
+      return new IndexedNodeEnumerator(m_shared_info,m_local_ids,m_end);
     }
   }
 
@@ -245,7 +248,7 @@ namespace Arcane
     where _ItemKind1 : IItem, new()
     where _ItemKind2 : IItem, new()
   {
-    internal ItemInternal** m_sub_items;
+    internal ItemSharedInfo* m_shared_info;
     internal Int32* m_sub_local_ids;
     internal Integer m_nb_sub_item;
     internal Integer m_index;
@@ -253,7 +256,7 @@ namespace Arcane
 
     public IndexedItemEnumerator<_ItemKind2> GetEnumerator()
     {
-      return new IndexedItemEnumerator<_ItemKind2>(m_sub_items,m_sub_local_ids,m_nb_sub_item);
+      return new IndexedItemEnumerator<_ItemKind2>(m_shared_info,m_sub_local_ids,m_nb_sub_item);
     }
 
     public Integer NbItem
@@ -281,8 +284,8 @@ namespace Arcane
     IntegerConstArrayView m_indexes;
     Int32ConstArrayView m_items_local_id;
     Int32ConstArrayView m_sub_items_local_id;
-    ItemInternalList m_items_internal;
-    ItemInternalList m_sub_items_internal;
+    ItemSharedInfo* m_item_shared_info;
+    ItemSharedInfo* m_sub_item_shared_info;
     ItemPairList<_ItemKind1,_ItemKind2> m_pair;
 
     public ItemPairEnumerator(ItemPairEnumerator e)
@@ -292,11 +295,11 @@ namespace Arcane
       m_indexes = e.m_indexes;
       m_items_local_id = e.m_items_local_id;
       m_sub_items_local_id = e.m_sub_items_local_id;
-      m_items_internal = e.m_items_internal;
-      m_sub_items_internal = e.m_sub_items_internal;
+      m_item_shared_info = e.m_item_shared_info;
+      m_sub_item_shared_info = e.m_sub_item_shared_info;
 
       m_pair = new ItemPairList<_ItemKind1,_ItemKind2>();
-      m_pair.m_sub_items = m_sub_items_internal.m_ptr;
+      m_pair.m_shared_info = m_sub_item_shared_info;
     }
 
     public ItemPairList<_ItemKind1,_ItemKind2> Current
@@ -327,7 +330,7 @@ namespace Arcane
       m_pair.m_sub_local_ids = m_sub_items_local_id._InternalData()+m_indexes[m_current];
       m_pair.m_nb_sub_item = m_indexes[m_current+1]-m_indexes[m_current];
       m_pair.m_index = m_current;
-      m_pair.m_item.ItemBase = new ItemBase(m_items_internal.m_ptr[m_current]);
+      m_pair.m_item.ItemBase = new ItemBase(m_item_shared_info,m_items_local_id[m_current]);
       return true;
     }
     void IDisposable.Dispose(){}

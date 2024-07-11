@@ -29,12 +29,12 @@
   internal IntegerConstArrayView m_indexes;
   internal Int32ConstArrayView m_items_local_id;
   internal Int32ConstArrayView m_sub_items_local_id;
-  internal ItemInternalList m_items_internal;
-  internal ItemInternalList m_sub_items_internal;
+  internal ItemSharedInfo* m_item_shared_info;
+  internal ItemSharedInfo* m_sub_item_shared_info;
   
   public Item Current
   {
-    get { return new Item(m_items_internal.m_ptr[m_current]); }
+    get { return new Item(new ItemBase(m_item_shared_info,m_items_local_id[m_current])); }
   }
   public void Reset()
   {

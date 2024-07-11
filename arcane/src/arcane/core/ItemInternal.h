@@ -487,6 +487,7 @@ class ARCANE_CORE_EXPORT ItemBase
   friend class ::Arcane::ItemInternalCompatibility;
   friend class ::Arcane::Materials::ComponentItemInternal;
   friend class ::Arcane::Materials::ComponentItemSharedInfo;
+  friend class ::Arcane::ItemEnumerator;
   friend MutableItemBase;
 
  private:
