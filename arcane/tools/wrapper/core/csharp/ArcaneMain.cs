@@ -159,7 +159,9 @@ namespace Arcane
 
     class DirectMethodInfo
     {
+#pragma warning disable 0649
       public MethodInfo m_method;
+#pragma warning restore 0649
     }
 
     static Type _GetTypeFromLoadededAssemblies(string class_name)

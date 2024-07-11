@@ -141,7 +141,7 @@
 
 %typemap(cscode) Arcane::ItemGroup
 %{
-  public new ItemEnumerator GetEnumerator()
+  public ItemEnumerator GetEnumerator()
   {
     ItemEnumerator e = _enumerator();
     e.Reset();
