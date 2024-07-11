@@ -51,7 +51,6 @@ set(ARCANE_SWIG_CORE_CSHARP_FILES
   Variable
   BasicModule
   CaseOptionExtendedT
-  CellGroupEnumerator
   ItemEnumerator
   ModuleAttribute
   ServiceAttribute
