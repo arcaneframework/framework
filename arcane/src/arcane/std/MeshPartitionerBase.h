@@ -19,7 +19,6 @@
 #include "arcane/core/IMeshPartitioner.h"
 #include "arcane/core/AbstractService.h"
 #include "arcane/core/ILoadBalanceMng.h"
-#include "arcane/core/internal/ILoadBalanceMngInternal.h"
 
 #include "arcane/utils/Array.h"
 #include "arcane/utils/HashTableMap.h"
@@ -74,7 +73,7 @@ class ARCANE_STD_EXPORT MeshPartitionerBase
   virtual ArrayView<float> cellsWeight() const;
 
   // CORRECT
-  virtual Integer nbCellWeight() const { return math::max(m_lb_mng_internal->nbCriteria(m_mesh), 1); }
+  virtual Integer nbCellWeight() const;
   virtual void setILoadBalanceMng(ILoadBalanceMng* mng) { m_lbMng = mng; }
   virtual ILoadBalanceMng* loadBalanceMng() const { return m_lbMng; }
 
