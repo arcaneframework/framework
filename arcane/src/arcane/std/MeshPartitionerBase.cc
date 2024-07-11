@@ -21,23 +21,23 @@
 
 #define INSURE_CONSTRAINTS
 
-#include "arcane/ServiceBuildInfo.h"
-#include "arcane/IMesh.h"
-#include "arcane/IMeshModifier.h"
-#include "arcane/IMeshSubMeshTransition.h"
-#include "arcane/IMeshUtilities.h"
-#include "arcane/IItemFamily.h"
-#include "arcane/ItemGroup.h"
-#include "arcane/ItemPrinter.h"
-#include "arcane/ISubDomain.h"
-#include "arcane/IParallelMng.h"
-#include "arcane/ItemEnumerator.h"
-#include "arcane/IVariableMng.h"
-#include "arcane/VariableTypes.h"
-#include "arcane/CommonVariables.h"
-
-#include "arcane/IMeshPartitionConstraintMng.h"
-#include "arcane/ILoadBalanceMng.h"
+#include "arcane/core/ServiceBuildInfo.h"
+#include "arcane/core/IMesh.h"
+#include "arcane/core/IMeshModifier.h"
+#include "arcane/core/IMeshSubMeshTransition.h"
+#include "arcane/core/IMeshUtilities.h"
+#include "arcane/core/IItemFamily.h"
+#include "arcane/core/ItemGroup.h"
+#include "arcane/core/ItemPrinter.h"
+#include "arcane/core/ISubDomain.h"
+#include "arcane/core/IParallelMng.h"
+#include "arcane/core/ItemEnumerator.h"
+#include "arcane/core/IVariableMng.h"
+#include "arcane/core/VariableTypes.h"
+#include "arcane/core/CommonVariables.h"
+#include "arcane/core/IMeshPartitionConstraintMng.h"
+#include "arcane/core/ILoadBalanceMng.h"
+#include "arcane/core/internal/ILoadBalanceMngInternal.h"
 
 #include "arcane/std/MeshPartitionerBase.h"
 
@@ -767,6 +767,15 @@ MeshPartitionerBase::setCellsWeight(ArrayView<float> weights,Integer nb_weight)
   m_lb_mng_internal->setNbCellsAsCriterion(m_mesh, false);
 }
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Integer MeshPartitionerBase::
+nbCellWeight() const
+{
+  return math::max(m_lb_mng_internal->nbCriteria(m_mesh), 1);
+}
+
 ArrayView<float>
 MeshPartitionerBase::cellsWeight() const
 {
@@ -778,12 +787,13 @@ MeshPartitionerBase::_clearCellWgt() {
   //m_cell_wgt.clear();
 }
 
-#ifdef ARCANE_PART_DUMP
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 //! Fonction auxiliaire pour dumper le graphe.
-template <class ArrayType>
-Parallel::Request centralizePartInfo(String filename, IParallelMng *pm,
-                                     UniqueArray<ArrayType> data, String header, int step=1 )
+template <class ArrayType> Parallel::Request
+centralizePartInfo(String filename, IParallelMng *pm,
+                   UniqueArray<ArrayType> data, String header, int step=1 )
 {
   Parallel::Request req;
   UniqueArray<Integer> sizes(pm->commSize());
@@ -915,7 +925,6 @@ MeshPartitionerBase::dumpObject(String filebase)
 
   pm->waitAllRequests(reqs);
 }
-#endif // ARCANE_PART_DUMP
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
