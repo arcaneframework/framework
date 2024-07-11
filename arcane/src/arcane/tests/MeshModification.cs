@@ -115,7 +115,10 @@ public class MeshModificationService
   {
     IItemFamily cell_family = Mesh().CellFamily();
     CellGroup all_cells = cell_family.AllItems().CellGroup();
-    foreach(Cell c in all_cells){
+    ItemVectorView all_cells_view = all_cells.View();
+    ItemVectorView<Cell> all_cells_view2 = new ItemVectorView<Cell>(all_cells_view);
+    Console.WriteLine("PrintCells");
+    foreach(Cell c in all_cells_view2){
       int nb_node = c.NbNode;
       Console.WriteLine("Cell: c={0}",c.LocalId, nb_node);
       for( int i=0; i<nb_node; ++i )
@@ -133,6 +136,7 @@ public class MeshModificationService
 
     ItemVectorView cell_view = all_cells.View();
     int n = cell_view.Size;
+    Console.WriteLine($"RemoveCells n={n}");
     for( int i=0; i<n; ++i ){
       Console.WriteLine("CELL_VIEW i={0} id={1}",i,cell_view.Indexes[i]);
     }
