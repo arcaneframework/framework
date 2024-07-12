@@ -581,7 +581,7 @@ _view(bool do_padding) const
 ItemVectorView ItemGroup::
 view() const
 {
-  return _view(false);
+  return _view(true);
 }
 
 /*---------------------------------------------------------------------------*/
