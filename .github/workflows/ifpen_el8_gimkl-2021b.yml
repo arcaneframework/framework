@@ -182,6 +182,14 @@ jobs:
         shell: bash
         run: rm -f build-artifact.tar.gz
 
+      - name: Install IntelMPI runtime
+        id: install-intel-mpi-runtime
+        shell: bash
+        run: |
+           wget -O /tmp/intelmpi.sh https://registrationcenter-download.intel.com/akdlm/IRC_NAS/9f84e1e8-11b2-4bd1-8512-3e3343585956/l_mpi_oneapi_p_2021.13.0.719_offline.sh
+           bash /tmp/intelmpi.sh -a -s --eula accept --install-dir /tmp/intelmpi
+           source /tmp/intelmpi/setvars.sh
+
       - name: Test
         id: test
         shell: bash
