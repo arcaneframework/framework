@@ -191,7 +191,7 @@ jobs:
            osdir=el_`lsb_release -r | awk -F ":" '{print $2}' | awk -F "." '{print $1}' | tr -d '\t'`-x86_64
            for file in `grep -Rl '/soft/irsrvsoft1/expl/eb/r11/${osdir}/easybuild/software/impi/2021.4.0-GCC-11.2.0/mpi/2021.4.0/bin/mpiexec' ${{ env.BUILD_DIR }}`
            do
-             sed -i "s,/soft/irsrvsoft1/expl/eb/r11/${osdir}/easybuild/software/impi/2021.4.0-GCC-11.2.0/mpi/2021.4.0/bin/mpiexec,/tmp/intelmpi/mpi/latest/bin/mpiexec,s" ${file}
+             sed -i "s,/soft/irsrvsoft1/expl/eb/r11/${osdir}/easybuild/software/impi/2021.4.0-GCC-11.2.0/mpi/2021.4.0/bin/mpiexec,/tmp/intelmpi/mpi/latest/bin/mpiexec,g" ${file}
            done
 
       - name: Test
