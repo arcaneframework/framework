@@ -187,8 +187,13 @@ jobs:
         shell: bash
         run: |
            wget -O /tmp/intelmpi.sh https://registrationcenter-download.intel.com/akdlm/IRC_NAS/9f84e1e8-11b2-4bd1-8512-3e3343585956/l_mpi_oneapi_p_2021.13.0.719_offline.sh
-           bash /tmp/intelmpi.sh -a -s --eula accept --install-dir /tmp/intelmpi
-           source /tmp/intelmpi/setvars.sh
+           osdir=el_`lsb_release -r | awk -F ":" '{print $2}' | awk -F "." '{print $1}' | tr -d '\t'`-x86_64
+           impidir=/soft/irsrvsoft1/expl/eb/r11/${osdir}/easybuild/software/impi/2021.4.0-GCC-11.2.0
+           chmod -R u+w ${impidir}
+           \rm -rf ${impidir}
+           bash /tmp/intelmpi.sh -a -s --eula accept --install-dir ${impidir}
+           ln -s 2021.13 ${impidir}/mpi/2021.4.0
+           source ${impidir}/setvars.sh
 
       - name: Test
         id: test
