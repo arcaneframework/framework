@@ -199,6 +199,7 @@ jobs:
         id: test
         shell: bash
         run: |
+           source ~/.bashrc
            module unload impi
            module list
            export LD_LIBRARY_PATH=${{ env.BUILD_DIR }}/${{ env.EXT_LIB_SUBDIR }}:${LD_LIBRARY_PATH}
