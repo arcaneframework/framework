@@ -131,7 +131,7 @@ endUpdateAdd(const ComponentItemListBuilder& builder, RunQueue& queue)
     auto command = makeCommand(queue);
     Arcane::Accelerator::ReducerMax2<Int32> max_index_reducer(command);
     Int32 max_to_add = math::max(nb_pure_to_add, nb_partial_to_add);
-    command << RUNCOMMAND_LOOP1_EX(iter, max_to_add, max_index_reducer)
+    command << RUNCOMMAND_LOOP1(iter, max_to_add, max_index_reducer)
     {
       auto [i] = iter();
       if (i < nb_pure_to_add) {
