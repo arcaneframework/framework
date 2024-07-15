@@ -199,6 +199,8 @@ jobs:
         id: test
         shell: bash
         run: |
+           module unload impi
+           module list
            export LD_LIBRARY_PATH=${{ env.BUILD_DIR }}/${{ env.EXT_LIB_SUBDIR }}:${LD_LIBRARY_PATH}
            source /tmp/intelmpi/setvars.sh
            ctest --test-dir ${{ env.BUILD_DIR }} ${{ env.CT_OPTS }}
