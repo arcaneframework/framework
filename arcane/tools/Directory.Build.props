@@ -29,5 +29,9 @@
     <RestoreOutputPath>$(BaseIntermediateOutputPath)</RestoreOutputPath>
 
     <LangVersion>8.0</LangVersion>
+
+    <!-- Pour éviter une exception en fin d'exécution avec .Net 8 -->
+    <!-- Le 'BinaryFormatter' est obsolète en '.Net 8' et supprimé en '.Net 9' -->
+    <EnableUnsafeBinaryFormatterSerialization>true</EnableUnsafeBinaryFormatterSerialization>
   </PropertyGroup>
 </Project>
