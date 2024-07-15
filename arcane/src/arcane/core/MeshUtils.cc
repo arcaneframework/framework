@@ -975,11 +975,11 @@ writeMeshConnectivity(IMesh* mesh, const String& file_name)
         //FaceVectorView slave_faces = face.slaveFaces();
         ofile << "<master-face uid='" << face.uniqueId() << "'>\n";
         for (Integer zz = 0, zs = tied_nodes[iface.index()].size(); zz < zs; ++zz) {
-          const TiedNode& tn = tied_nodes[iface.index()][zz];
+          TiedNode tn = tied_nodes[iface.index()][zz];
           ofile << "<node uid='" << tn.node().uniqueId() << "' iso='" << tn.isoCoordinates() << "' />\n";
         }
         for (Integer zz = 0, zs = tied_faces[iface.index()].size(); zz < zs; ++zz) {
-          const TiedFace& tf = tied_faces[iface.index()][zz];
+          TiedFace tf = tied_faces[iface.index()][zz];
           ofile << "<face uid='" << tf.face().uniqueId() << "'/>\n";
         }
         ofile << "</master-face>\n";
