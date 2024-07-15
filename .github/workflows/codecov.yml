@@ -87,6 +87,7 @@ jobs:
           cmake_additionnal_args: '-DCMAKE_CXX_FLAGS_RELEASE="-O2 -g"
             -DARCCORE_CXX_STANDARD=20
             -DARCCORE_ENABLE_CODE_COVERAGE=ON
+            -DARCANE_ENABLE_DOTNET_PYTHON_WRAPPER=ON
             -DARCANE_DISABLE_PERFCOUNTER_TESTS=ON
             -DARCANE_DISABLE_HYODA=TRUE'
           type_build: 'Release'
