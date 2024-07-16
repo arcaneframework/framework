@@ -609,7 +609,7 @@ arcane_add_test_parallel_all(amr2_checkpoint testAMR-2-checkpoint.arc 3 4 -c 2)
 ARCANE_ADD_TEST(hydro3 testHydro-3.arc -m 50)
 arcane_add_test_sequential(hydro3_cartesian testHydro-3-cartesian.arc -m 50)
 arcane_add_test_sequential(hydro3_cartesian_small testHydro-3-cartesian-small.arc -m 10)
-arcane_add_test_parallel_thread(hydro3_cartesian_small testHydro-3-cartesian-small.arc 4 -m 10)
+arcane_add_test_parallel_thread(hydro3_cartesian_small testHydro-3-cartesian-small.arc 4 -m 10 "-We,ARCANE_USE_ACTIVE_SHM_QUEUE,1")
 arcane_add_test_script(continue_hydro3_cartesian_small continue_hydro3_cartesian_small.xml)
 # TODO : À réactiver.
 #arcane_add_test_script(continue_hydro3_cartesian_small_4shm continue_hydro3_cartesian_small_4shm.xml)
