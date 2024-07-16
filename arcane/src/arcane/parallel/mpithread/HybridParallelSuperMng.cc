@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* HybridParallelSuperMng.cc                                   (C) 2000-2023 */
+/* HybridParallelSuperMng.cc                                   (C) 2000-2024 */
 /*                                                                           */
 /* Gestionnaire de parallélisme utilisant MPI et mémoire partagée.           */
 /*---------------------------------------------------------------------------*/
@@ -30,21 +30,21 @@
 #include "arcane/parallel/mpi/MpiErrorHandler.h"
 
 #include "arcane/parallel/thread/SharedMemoryMessageQueue.h"
-#include "arcane/parallel/thread/GlibThreadMng.h"
 #include "arcane/parallel/thread/SharedMemoryParallelMng.h"
 #include "arcane/parallel/thread/SharedMemoryParallelSuperMng.h"
+#include "arcane/parallel/thread/internal/SharedMemoryThreadMng.h"
 
 #include "arcane/parallel/mpithread/HybridParallelMng.h"
 #include "arcane/parallel/mpithread/HybridParallelDispatch.h"
 
-#include "arcane/FactoryService.h"
-#include "arcane/AbstractService.h"
-#include "arcane/IApplication.h"
-#include "arcane/ParallelSuperMngDispatcher.h"
-#include "arcane/ApplicationBuildInfo.h"
-#include "arcane/ServiceBuilder.h"
+#include "arcane/core/FactoryService.h"
+#include "arcane/core/AbstractService.h"
+#include "arcane/core/IApplication.h"
+#include "arcane/core/ParallelSuperMngDispatcher.h"
+#include "arcane/core/ApplicationBuildInfo.h"
+#include "arcane/core/ServiceBuilder.h"
 
-#include "arcane/IMainFactory.h"
+#include "arcane/core/IMainFactory.h"
 
 #include "arccore/base/ReferenceCounterImpl.h"
 
@@ -105,7 +105,7 @@ HybridParallelMngContainer(IApplication* app,Int32 nb_local_rank,
                            Parallel::IStat* stat,MpiLock* mpi_lock)
 : m_application(app)
 , m_stat(stat)
-, m_thread_mng(new GlibThreadMng())
+, m_thread_mng(new SharedMemoryThreadMng())
 , m_mpi_lock(mpi_lock)
 , m_local_nb_rank(nb_local_rank)
 , m_parallel_mng_list(new UniqueArray<HybridParallelMng*>())
