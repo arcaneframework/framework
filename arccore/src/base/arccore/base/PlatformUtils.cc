@@ -535,6 +535,14 @@ getMemoryUsed()
 extern "C++" ARCCORE_BASE_EXPORT Int64 Platform::
 getCPUTime()
 {
+#if defined(ARCCORE_OS_LINUX)
+  struct timespec ts;
+  if (clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &ts) == 0){
+    return (ts.tv_sec*1000000) + (ts.tv_nsec / 1000);
+  }
+  return 1;
+#else
+  // TODO Supprimer l'usage de clock() pour Win32 et MacOS.
   static Int64 orig_clock = 0;
   static clock_t call_clock = 0;
   clock_t current_clock = ::clock();
@@ -555,6 +563,7 @@ getCPUTime()
   //cout << " INFO: CLOCK orig=" << orig_clock << " call=" << call_clock
   //   << " current=" << current_clock << '\n';
   return orig_clock + call_clock;
+#endif
 }
 
 /*---------------------------------------------------------------------------*/
