@@ -13,6 +13,9 @@
 
 #include "arcane/parallel/thread/IAsyncQueue.h"
 
+#include "arcane/utils/PlatformUtils.h"
+#include "arcane/utils/ValueConvert.h"
+
 #include "arcane/parallel/thread/ArcaneThreadMisc.h"
 
 #include <queue>
@@ -42,6 +45,7 @@ class SharedMemoryBasicAsyncQueue
 : public IAsyncQueue
 {
  public:
+
   void push(void* v) override
   {
     {
@@ -53,8 +57,7 @@ class SharedMemoryBasicAsyncQueue
   void* pop() override
   {
     std::unique_lock<std::mutex> lg(m_mutex);
-    while (m_shared_queue.empty())
-    {
+    while (m_shared_queue.empty()) {
       m_conditional_variable.wait(lg);
     }
     void* v = m_shared_queue.front();
@@ -86,6 +89,7 @@ class TBBAsyncQueue
 : public IAsyncQueue
 {
  public:
+
   void push(void* v)
   {
     m_shared_queue.push(v);
@@ -94,9 +98,9 @@ class TBBAsyncQueue
   {
     void* v = 0;
     int count = 1;
-    while (!m_shared_queue.try_pop(v)){
+    while (!m_shared_queue.try_pop(v)) {
       arcaneDoCPUPause(count);
-      if (count<100)
+      if (count < 100)
         count *= 2;
     }
     return v;
@@ -117,28 +121,23 @@ class TBBAsyncQueue
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace
-{
-#ifdef ARCANE_HAS_PACKAGE_TBB
-bool global_use_tbb_queue = true;
-#else
-bool global_use_tbb_queue = false;
-#endif
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 IAsyncQueue* IAsyncQueue::
 createQueue()
 {
-  global_use_tbb_queue = false;
+  // Par défaut n'utilise pas l'attente active car il n'y a pas de différence
+  // notable de performance  et cela évite des contentions lorsque le nombre
+  // de coeurs disponibles est inférieure au nombre de threads.
+  [[maybe_unused]] bool use_active_queue = false;
+  if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_USE_ACTIVE_SHM_QUEUE", true))
+    use_active_queue = (v.value() != 0);
+  IAsyncQueue* queue = nullptr;
 #ifdef ARCANE_HAS_PACKAGE_TBB
-  if (global_use_tbb_queue)
-    return new TBBAsyncQueue();
+  if (use_active_queue)
+    queue = new TBBAsyncQueue();
 #endif
-  auto* v = new SharedMemoryBasicAsyncQueue();
-  return v;
+  if (!queue)
+    queue = new SharedMemoryBasicAsyncQueue();
+  return queue;
 }
 
 /*---------------------------------------------------------------------------*/
