@@ -63,6 +63,7 @@
 
 #include <map>
 #include <set>
+#include <atomic>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -84,7 +85,7 @@ class VariablePrivate
 
  public:
 
-  static Int64 modified_time_global_value;
+  static std::atomic<Int64> modified_time_global_value;
 
  public:
 
@@ -189,7 +190,7 @@ class VariablePrivate
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Int64 VariablePrivate::modified_time_global_value = 1;
+std::atomic<Int64> VariablePrivate::modified_time_global_value = 1;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -197,7 +198,6 @@ Int64 VariablePrivate::modified_time_global_value = 1;
 Int64 IVariable::
 incrementModifiedTime()
 {
-  //TODO: Utiliser version atomique.
   Int64 v = VariablePrivate::modified_time_global_value;
   ++VariablePrivate::modified_time_global_value;
   return v;
