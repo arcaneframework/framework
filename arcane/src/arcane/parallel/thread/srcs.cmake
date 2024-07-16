@@ -20,6 +20,8 @@ set(ARCANE_SOURCES
 
   StdThreadImplementationService.cc
 
+  internal/SharedMemoryThreadMng.h
+
   # TODO: les fichiers suivants sont gardés pour des raisons
   # de compatibilité avec l'existant. Il faudra les supprimer
   IThreadMessageQueue.h
