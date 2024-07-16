@@ -48,10 +48,13 @@ class SharedMemoryBasicAsyncQueue
 
   void push(void* v) override
   {
-    {
-      std::unique_lock<std::mutex> lg(m_mutex);
-      m_shared_queue.push(v);
-    }
+    std::unique_lock<std::mutex> lg(m_mutex);
+    m_shared_queue.push(v);
+    // NOTE: normalement il n'y a pas besoin d'avoir le verrou actif
+    // lors de l'appel à 'notify_one()' mais cela génère des avertissements
+    // avec helgrind (valgrind). Du coup on laisse le verrou pour éviter cela.
+    // Il faudrait vérifier si cela à des effets sur les performances (dans
+    // les tests Arcane du CI ce n'est pas le cas).
     m_conditional_variable.notify_one();
   }
   void* pop() override
