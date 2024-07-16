@@ -179,9 +179,14 @@ class TBBThreadImplementation
  public:
 
   TBBThreadImplementation()
-  : m_use_tbb_barrier(false), m_global_mutex_impl(nullptr)
+  : m_use_tbb_barrier(false)
+  , m_global_mutex_impl(nullptr)
   {
+    if (!platform::getEnvironmentVariable("ARCANE_SPINLOCK_BARRIER").null())
+      m_use_tbb_barrier = true;
+    m_std_thread_implementation = Arccore::Concurrency::createStdThreadImplementation();
   }
+
   ~TBBThreadImplementation() override
   {
     //std::cout << "DESTROYING TBB IMPLEMENTATION\n";
@@ -194,8 +199,6 @@ class TBBThreadImplementation
 
   void build()
   {
-    if (!platform::getEnvironmentVariable("ARCANE_SPINLOCK_BARRIER").null())
-      m_use_tbb_barrier = true;
   }
 
   void initialize() override
@@ -275,13 +278,14 @@ class TBBThreadImplementation
     // de la machine.
     if (m_use_tbb_barrier)
       return new TBBBarrier();
-    return createGlibThreadBarrier();
+    return m_std_thread_implementation->createBarrier();
   }
 
  private:
 
   bool m_use_tbb_barrier;
   MutexImpl* m_global_mutex_impl;
+  Ref<IThreadImplementation> m_std_thread_implementation;
 };
 
 /*---------------------------------------------------------------------------*/
