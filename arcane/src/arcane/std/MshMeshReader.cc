@@ -58,6 +58,10 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+// NOTE: A partir de juillet 2024 (version 3.13.8), on utilise par défaut
+// la version parallèle du lecteur (MshParallelMshReader.cc). Cette version
+// sera à terme supprimée.
+
 /*
  * NOTES:
  * - La bibliothèque `gmsh` fournit un script 'open.py' dans le répertoire
@@ -1193,9 +1197,9 @@ namespace
 Ref<IMshMeshReader>
 _internalCreateReader(ITraceMng* tm)
 {
-  bool use_new_reader = false;
+  bool use_new_reader = true;
   if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_USE_PARALLEL_MSH_READER", true))
-    use_new_reader = v.value();
+    use_new_reader = (v.value()!=0);
   Ref<IMshMeshReader> reader;
   if (use_new_reader)
     reader = createMshParallelMeshReader(tm);
