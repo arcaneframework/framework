@@ -428,39 +428,36 @@ class TraceMng
   typedef std::set<ITraceMessageListener*> ListenerList;
   typedef std::vector<TraceClass> TraceClassStack;
 
-  bool m_is_master;
-  bool m_want_trace_function;
-  bool m_want_trace_timer;
-  Int32 m_verbosity_level;
-  Int32 m_stdout_verbosity_level;
-  Int32 m_current_class_verbosity_level;
-  Int32 m_current_class_flags;
-  ListenerList* m_listeners;
-  bool m_is_info_activated;
+  bool m_is_master = true;
+  bool m_want_trace_function = false;
+  bool m_want_trace_timer = false;
+  Int32 m_verbosity_level = TraceMessage::DEFAULT_LEVEL;
+  Int32 m_stdout_verbosity_level = TraceMessage::DEFAULT_LEVEL;
+  Int32 m_current_class_verbosity_level = TraceMessage::DEFAULT_LEVEL;
+  Int32 m_current_class_flags = Trace::PF_Default;
+  ListenerList* m_listeners = nullptr;
+  bool m_is_info_activated = true;
   std::map<String,TraceClassConfig*> m_trace_class_config_map;
   TraceClassStack m_trace_class_stack;
   TraceClassConfig m_default_trace_class_config;
   TraceClass m_default_trace_class;
   TraceClass m_current_msg_class;
   ReferenceCounter<ITraceStream> m_listing_stream;
-  std::atomic<Int64> m_nb_flush;
+  std::atomic<Int64> m_nb_flush = 0;
   String m_error_file_name;
   String m_log_file_name;
   String m_trace_id;
   ReferenceCounter<ITraceStream> m_error_file;
   ReferenceCounter<ITraceStream> m_log_file;
-  Mutex* m_trace_mutex;
-  bool m_is_error_disabled;
-  bool m_is_log_disabled;
-  bool m_has_color;
-
- private:
-
+  Mutex* m_trace_mutex = nullptr;
+  bool m_is_error_disabled = false;
+  bool m_is_log_disabled = false;
+  bool m_has_color = false;
   TraceTimer m_trace_timer;
-  void _writeTimeString(std::ostream& out);
 
  private:
 
+  void _writeTimeString(std::ostream& out);
   TraceMngStreamList* _getStreamList() const
   {
     return global_stream_list_storage.item();
@@ -520,39 +517,11 @@ ITraceMng* arccoreCreateDefaultTraceMng()
 
 TraceMng::
 TraceMng()
-: m_is_master(true)
-, m_want_trace_function(false)
-, m_want_trace_timer(false)
-, m_verbosity_level(TraceMessage::DEFAULT_LEVEL)
-, m_stdout_verbosity_level(TraceMessage::DEFAULT_LEVEL)
-, m_current_class_verbosity_level(TraceMessage::DEFAULT_LEVEL)
-, m_current_class_flags(Trace::PF_Default)
-, m_listeners(nullptr)
-, m_is_info_activated(true)
-, m_default_trace_class("Internal",&m_default_trace_class_config)
+: m_default_trace_class("Internal", &m_default_trace_class_config)
 , m_current_msg_class(m_default_trace_class)
-, m_listing_stream(nullptr)
-, m_nb_flush(0)
 , m_error_file_name("errors")
 , m_trace_mutex(new Mutex())
-, m_is_error_disabled(false)
-, m_is_log_disabled(false)
-, m_has_color(false)
 {
-#if OLD
-  {
-    String s;
-
-    s = Platform::getEnvironmentVariable("ARCCORE_TRACE_FUNCTION");
-    if (s=="TRUE" || s=="1")
-      m_want_trace_function = true;
-
-    s = platform::getEnvironmentVariable("ARCCORE_TRACE_TIMER");
-    if (s=="TRUE" || s=="1")
-      m_want_trace_timer = true;
-  }
-#endif
-
   m_has_color = Platform::getConsoleHasColor();
 }
 
@@ -992,7 +961,7 @@ endTrace(const TraceMessage* msg)
 void TraceMng::
 putTrace(const String& message,int type)
 {
-  Trace::eMessageType message_type = (Trace::eMessageType)type;
+  auto message_type = static_cast<Trace::eMessageType>(type);
   switch(message_type){
   case Trace::Normal:
   case Trace::Info:
@@ -1342,8 +1311,7 @@ removeListener(ITraceMessageListener* v)
 void ITraceMng::
 fatalMessage(const StandaloneTraceMessage& o)
 {
-  fatal() << o.value();
-  ARCCORE_FATAL("Should not reach this line");
+  ARCCORE_FATAL(o.value());
 }
 
 /*---------------------------------------------------------------------------*/
