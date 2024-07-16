@@ -1,30 +1,30 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Item.cc                                                     (C) 2000-2023 */
+/* Item.cc                                                     (C) 2000-2024 */
 /*                                                                           */
 /* Classe de base d'un élément du maillage.                                  */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/Item.h"
+#include "arcane/core/Item.h"
 
 #include "arcane/utils/Iostream.h"
 #include "arcane/utils/FatalErrorException.h"
 #include "arcane/utils/NotSupportedException.h"
 #include "arcane/utils/ITraceMng.h"
 
-#include "arcane/ItemCompare.h"
-#include "arcane/ItemPrinter.h"
-#include "arcane/MeshItemInternalList.h"
-#include "arcane/IndexedItemConnectivityView.h"
-#include "arcane/ItemConnectedEnumerator.h"
+#include "arcane/core/ItemCompare.h"
+#include "arcane/core/ItemPrinter.h"
+#include "arcane/core/MeshItemInternalList.h"
+#include "arcane/core/IndexedItemConnectivityView.h"
+#include "arcane/core/ItemConnectedEnumerator.h"
 
-#include "arcane/ItemEnumerator.h"
+#include "arcane/core/ItemEnumerator.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -32,9 +32,9 @@
 namespace Arcane
 {
 
-int Item::m_nb_created_from_internal = 0;
-int Item::m_nb_created_from_internalptr = 0;
-int Item::m_nb_set_from_internal = 0;
+std::atomic<int> Item::m_nb_created_from_internal = 0;
+std::atomic<int> Item::m_nb_created_from_internalptr = 0;
+std::atomic<int> Item::m_nb_set_from_internal = 0;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

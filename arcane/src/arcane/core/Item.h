@@ -9,14 +9,16 @@
 /*                                                                           */
 /* Informations sur les éléments du maillage.                                */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_ITEM_H
-#define ARCANE_ITEM_H
+#ifndef ARCANE_CORE_ITEM_H
+#define ARCANE_CORE_ITEM_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/ItemTypes.h"
-#include "arcane/ItemInternal.h"
-#include "arcane/ItemLocalId.h"
+#include "arcane/core/ItemTypes.h"
+#include "arcane/core/ItemInternal.h"
+#include "arcane/core/ItemLocalId.h"
+
+#include <atomic>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -476,9 +478,9 @@ class ARCANE_CORE_EXPORT Item
 
  private:
 
-  static int m_nb_created_from_internal;
-  static int m_nb_created_from_internalptr;
-  static int m_nb_set_from_internal;
+  static std::atomic<int> m_nb_created_from_internal;
+  static std::atomic<int> m_nb_created_from_internalptr;
+  static std::atomic<int> m_nb_set_from_internal;
 
  private:
 
