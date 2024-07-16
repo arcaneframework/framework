@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* AsyncQueue.cc                                               (C) 2000-2021 */
+/* AsyncQueue.cc                                               (C) 2000-2024 */
 /*                                                                           */
 /* Implémentation d'une file de messages en mémoire partagée.                */
 /*---------------------------------------------------------------------------*/
@@ -15,13 +15,15 @@
 
 #include "arcane/parallel/thread/ArcaneThreadMisc.h"
 
+#include <queue>
+#include <mutex>
+#include <condition_variable>
+
 #include "arcane_packages.h"
 
 #ifdef ARCANE_HAS_PACKAGE_TBB
 #include <tbb/concurrent_queue.h>
 #endif
-
-#include <glib.h>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -31,37 +33,49 @@ namespace Arcane::MessagePassing
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-class GlibAsyncQueue
+/*!
+ * \brief Implémentation basique d'une file multi-thread.
+ *
+ * Utilise un mutex pour protéger les appels.
+ */
+class SharedMemoryBasicAsyncQueue
 : public IAsyncQueue
 {
  public:
-  GlibAsyncQueue()
-  {
-    m_shared_queue = g_async_queue_new();
-  }
-  ~GlibAsyncQueue() override
-  {
-    g_async_queue_unref(m_shared_queue);
-  }
   void push(void* v) override
   {
-    g_async_queue_push(m_shared_queue,v);
+    {
+      std::unique_lock<std::mutex> lg(m_mutex);
+      m_shared_queue.push(v);
+    }
+    m_conditional_variable.notify_one();
   }
   void* pop() override
   {
-    void* p = g_async_queue_pop(m_shared_queue);
-    return p;
+    std::unique_lock<std::mutex> lg(m_mutex);
+    while (m_shared_queue.empty())
+    {
+      m_conditional_variable.wait(lg);
+    }
+    void* v = m_shared_queue.front();
+    m_shared_queue.pop();
+    return v;
   }
   void* tryPop() override
   {
-    void* p = g_async_queue_try_pop(m_shared_queue);
+    std::unique_lock<std::mutex> lg(m_mutex);
+    if (m_shared_queue.empty())
+      return nullptr;
+    void* p = m_shared_queue.front();
+    m_shared_queue.pop();
     return p;
   }
 
  private:
 
-  GAsyncQueue* m_shared_queue;
+  std::queue<void*> m_shared_queue;
+  std::mutex m_mutex;
+  std::condition_variable m_conditional_variable;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -103,16 +117,28 @@ class TBBAsyncQueue
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+namespace
+{
+#ifdef ARCANE_HAS_PACKAGE_TBB
+bool global_use_tbb_queue = true;
+#else
+bool global_use_tbb_queue = false;
+#endif
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 IAsyncQueue* IAsyncQueue::
 createQueue()
 {
+  global_use_tbb_queue = false;
 #ifdef ARCANE_HAS_PACKAGE_TBB
-  typedef TBBAsyncQueue AsyncQueueType;
-#else
-  typedef GlibAsyncQueue AsyncQueueType;
+  if (global_use_tbb_queue)
+    return new TBBAsyncQueue();
 #endif
-  auto x = new AsyncQueueType();
-  return x;
+  auto* v = new SharedMemoryBasicAsyncQueue();
+  return v;
 }
 
 /*---------------------------------------------------------------------------*/
