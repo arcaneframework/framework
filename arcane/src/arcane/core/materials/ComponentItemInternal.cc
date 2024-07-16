@@ -14,8 +14,9 @@
 #include "arcane/core/materials/ComponentItemInternal.h"
 
 #include "arcane/utils/FixedArray.h"
-#include "arcane/utils/BadCastException.h"
 #include "arcane/utils/FatalErrorException.h"
+
+#include <mutex>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -52,6 +53,10 @@ namespace
 
 ComponentItemSharedInfo ComponentItemSharedInfo::null_shared_info;
 ComponentItemSharedInfo* ComponentItemSharedInfo::null_shared_info_pointer = &ComponentItemSharedInfo::null_shared_info;
+namespace
+{
+  std::once_flag component_set_null_instance_once_flag;
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -59,17 +64,22 @@ ComponentItemSharedInfo* ComponentItemSharedInfo::null_shared_info_pointer = &Co
 void ComponentItemSharedInfo::
 _setNullInstance()
 {
-  ComponentItemSharedInfo* x = null_shared_info_pointer;
-  NullComponentItemSharedInfoContainer& c = global_null_component_item_shared_info_container;
+  auto init_func = []() {
+    ComponentItemSharedInfo* x = null_shared_info_pointer;
+    NullComponentItemSharedInfoContainer& c = global_null_component_item_shared_info_container;
 
-  x->m_storage_size = 0;
-  x->m_first_sub_constituent_item_id_data = c.m_first_sub_constituent_item_id_list.data() + 1;
-  x->m_super_component_item_local_id_data = c.m_super_component_item_local_id_list.data() + 1;
-  x->m_component_id_data = c.m_component_id_list.data() + 1;
+    x->m_storage_size = 0;
+    x->m_first_sub_constituent_item_id_data = c.m_first_sub_constituent_item_id_list.data() + 1;
+    x->m_super_component_item_local_id_data = c.m_super_component_item_local_id_list.data() + 1;
+    x->m_component_id_data = c.m_component_id_list.data() + 1;
 
-  x->m_nb_sub_constituent_item_data = c.m_nb_sub_constituent_item_list.data() + 1;
-  x->m_global_item_local_id_data = c.m_global_item_local_id_list.data() + 1;
-  x->m_var_index_data = c.m_var_index_list.data() + 1;
+    x->m_nb_sub_constituent_item_data = c.m_nb_sub_constituent_item_list.data() + 1;
+    x->m_global_item_local_id_data = c.m_global_item_local_id_list.data() + 1;
+    x->m_var_index_data = c.m_var_index_list.data() + 1;
+  };
+  // Garanti que cela ne sera appelé qu'une seule fois et protège des appels
+  // concurrents.
+  std::call_once(component_set_null_instance_once_flag, init_func);
 }
 
 /*---------------------------------------------------------------------------*/
