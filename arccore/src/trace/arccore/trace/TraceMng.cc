@@ -433,8 +433,8 @@ class TraceMng
   bool m_want_trace_timer = false;
   Int32 m_verbosity_level = TraceMessage::DEFAULT_LEVEL;
   Int32 m_stdout_verbosity_level = TraceMessage::DEFAULT_LEVEL;
-  Int32 m_current_class_verbosity_level = TraceMessage::DEFAULT_LEVEL;
-  Int32 m_current_class_flags = Trace::PF_Default;
+  std::atomic<Int32> m_current_class_verbosity_level = TraceMessage::DEFAULT_LEVEL;
+  std::atomic<Int32> m_current_class_flags = Trace::PF_Default;
   ListenerList* m_listeners = nullptr;
   bool m_is_info_activated = true;
   std::map<String,TraceClassConfig*> m_trace_class_config_map;
@@ -480,7 +480,11 @@ class TraceMng
     }
     return &m_default_trace_class_config;
   }
-  const String& _currentTraceClassName() const { return m_current_msg_class.m_name; }
+  String _currentTraceClassName() const
+  {
+    Mutex::ScopedLock sl(m_trace_mutex);
+    return m_current_msg_class.m_name;
+  }
   void _checkFlush();
   void _putStream(std::ostream& ostr,Span<const Byte> buffer);
   void _putTraceMessage(std::ostream& ostr,Trace::eMessageType id,Span<const Byte>);
