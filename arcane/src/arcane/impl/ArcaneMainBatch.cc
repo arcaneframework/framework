@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ArcaneMainBatch.cc                                          (C) 2000-2022 */
+/* ArcaneMainBatch.cc                                          (C) 2000-2024 */
 /*                                                                           */
 /* Gestion de l'exécution en mode Batch.                                     */
 /*---------------------------------------------------------------------------*/
@@ -35,6 +35,7 @@
 #include "arcane/utils/Property.h"
 #include "arcane/utils/ParameterListPropertyReader.h"
 #include "arcane/utils/CommandLineArguments.h"
+#include "arcane/utils/CriticalSection.h"
 
 #include "arcane/impl/ArcaneMain.h"
 #include "arcane/impl/ParallelReplication.h"
@@ -903,7 +904,10 @@ _createAndRunSubDomain(SubInfo* sub_info,Ref<IParallelMng> pm,Ref<IParallelMng> 
     // Cela se fait aussi a l'initialisation mais ici on peut être dans un autre
     // thread et de plus certaines bibliothèques ont pu rediriger les signaux
     // lors de l'init
-    ArcaneMain::redirectSignals();
+    {
+      CriticalSection cs(pm->threadMng());
+      ArcaneMain::redirectSignals();
+    }
     int ret_compute_loop = 0;
 
     IDirectExecution* direct_exec = sub_domain->directExecution();
