@@ -1,1 +1,0 @@
-__create_library(Application)
