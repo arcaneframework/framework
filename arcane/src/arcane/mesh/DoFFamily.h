@@ -155,7 +155,7 @@ class ARCANE_MESH_EXPORT DoFFamily
   void preAllocate(Integer nb_item);
   ItemInternal* _allocDoF(const Int64 uid);
   ItemInternal* _allocDoFGhost(const Int64 uid, const Int32 owner);
-  ItemInternal* _findOrAllocDoF(const Int64 uid, bool is_alloc);
+  ItemInternal* _findOrAllocDoF(const Int64 uid, bool& is_alloc);
 
   ItemSharedInfoWithType* m_shared_info;
 
