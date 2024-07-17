@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* DoFFamily.h                                                 (C) 2000-2022 */
+/* DoFFamily.h                                                 (C) 2000-2024 */
 /*                                                                           */
 /* Famille de degres de liberte (DoF)                                        */
 /*---------------------------------------------------------------------------*/
@@ -155,7 +155,7 @@ class ARCANE_MESH_EXPORT DoFFamily
   void preAllocate(Integer nb_item);
   ItemInternal* _allocDoF(const Int64 uid);
   ItemInternal* _allocDoFGhost(const Int64 uid, const Int32 owner);
-  ItemInternal* _findOrAllocDoF(const Int64 uid, bool is_alloc);
+  ItemInternal* _findOrAllocDoF(const Int64 uid, bool& is_alloc);
 
   ItemSharedInfoWithType* m_shared_info;
 

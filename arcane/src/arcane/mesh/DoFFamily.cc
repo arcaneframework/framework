@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* DoFFamily.cc                                                (C) 2000-2023 */
+/* DoFFamily.cc                                                (C) 2000-2024 */
 /*                                                                           */
 /* Famille de degre de liberte                                               */
 /*---------------------------------------------------------------------------*/
@@ -221,11 +221,10 @@ _allocDoFGhost(const Int64 uid, const Int32 owner)
 }
 
 ItemInternal* DoFFamily::
-_findOrAllocDoF(const Int64 uid,[[maybe_unused]] bool is_alloc)
+_findOrAllocDoF(const Int64 uid,bool& is_alloc)
 {
-  bool need_alloc; // given by alloc
-  ItemInternal* item_internal = ItemFamily::_findOrAllocOne(uid,need_alloc);
-  if (!need_alloc) {
+  ItemInternal* item_internal = ItemFamily::_findOrAllocOne(uid,is_alloc);
+  if (!is_alloc) {
     item_internal->setUniqueId(uid);
   }
   else {
