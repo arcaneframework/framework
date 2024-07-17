@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* GraphDoFs.cc                                                (C) 2000-2021 */
+/* GraphDoFs.cc                                                (C) 2000-2024 */
 /*                                                                           */
 /*---------------------------------------------------------------------------*/
 
@@ -717,22 +717,16 @@ updateAfterMeshChanged()
 void GraphDoFs::
 printDualNodes() const
 {
-  auto graph_connectivity = GraphIncrementalConnectivity(dualNodeFamily(),
-                                                         linkFamily(),
-                                                         m_dualnodes_incremental_connectivity,
-                                                         m_links_incremental_connectivity,
-                                                         m_incremental_connectivities,
-                                                         m_dual_node_to_connectivity_index);
   ENUMERATE_DOF (idualnode, dualNodeFamily()->allItems()) {
     info() << "DualNode : lid = " << idualnode->localId();
     info() << "           uid = " << idualnode->uniqueId();
     info() << "         owner = " << idualnode->owner();
-    auto dual_item = graph_connectivity.dualItem(*idualnode);
+    auto dual_item = m_graph_connectivity->dualItem(*idualnode);
     info() << "           DualItem : lid = " << dual_item.localId();
     info() << "                      uid = " << dual_item.uniqueId();
     info() << "                     kind = " << dual_item.kind();
     info() << "                    owner = " << dual_item.owner();
-    auto links = graph_connectivity.links(*idualnode);
+    auto links = m_graph_connectivity->links(*idualnode);
     for (auto const& link : links) {
       info() << "           Connected link : lid = " << link.localId();
       info() << "                            uid = " << link.uniqueId();
@@ -747,23 +741,16 @@ printDualNodes() const
 void GraphDoFs::
 printLinks() const
 {
-  ConnectivityItemVector dual_nodes(m_links_incremental_connectivity);
-  auto graph_connectivity = GraphIncrementalConnectivity(dualNodeFamily(),
-                                                         linkFamily(),
-                                                         m_dualnodes_incremental_connectivity,
-                                                         m_links_incremental_connectivity,
-                                                         m_incremental_connectivities,
-                                                         m_dual_node_to_connectivity_index);
   ENUMERATE_DOF (ilink, linkFamily()->allItems()) {
     info() << "Link       :         LID = " << ilink.localId();
     info() << "                     UID = " << ilink->uniqueId();
     info() << "                   OWNER = " << ilink->owner();
-    ENUMERATE_DOF (idual_node, dual_nodes.connectedItems(ilink)) {
+    ENUMERATE_DOF (idual_node, m_graph_connectivity->dualNodes(*ilink)) {
       info() << "     Dof :       index = " << idual_node.index();
       info() << "     Dof :         LID = " << idual_node->localId();
       info() << "                   UID = " << idual_node->uniqueId();
       info() << "                 OWNER = " << idual_node->owner();
-      auto dual_item = graph_connectivity.dualItem(*idual_node);
+      auto dual_item = m_graph_connectivity->dualItem(*idual_node);
       info() << "         dual item UID = " << dual_item.uniqueId();
       info() << "                  KIND = " << dual_item.kind();
       info() << "                 OWNER = " << dual_item.owner();
