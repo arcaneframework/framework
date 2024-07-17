@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshExchange.cc                                             (C) 2000-2023 */
+/* MeshExchange.cc                                             (C) 2000-2024 */
 /*                                                                           */
 /* Echange un maillage entre entre sous-domaines.                            */
 /*---------------------------------------------------------------------------*/
@@ -1193,6 +1193,21 @@ _exchangeCellDataInfos3()
       }
       item_uid_index+= family_nb_items[family_index];
     }
+  }
+  // Dest rank propagation needed since they have been updated for own items
+  // copy of propagation part of method computeMeshConnectivityInfo3
+  for (int ghost_layer_index = 0; ghost_layer_index < m_mesh->ghostLayerMng()->nbGhostLayer(); ++ghost_layer_index)
+  {
+    //2-Diffuse destination rank info to connected items
+    m_mesh->itemFamilyNetwork()->schedule([&](IItemFamily* family){
+                                              _propagatesToChildConnectivities(family);
+                                          },
+                                          IItemFamilyNetwork::TopologicalOrder);
+
+    //m_mesh->itemFamilyNetwork()->schedule([&](IItemFamily* family){
+    //  _propagatesToChildDependencies(family);
+    //},
+    //IItemFamilyNetwork::TopologicalOrder);
   }
 }
 /*---------------------------------------------------------------------------*/
