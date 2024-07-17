@@ -37,8 +37,6 @@ GraphIncrementalConnectivity(GraphDoFs* graph)
 , m_link_connectivity(graph->m_links_incremental_connectivity)
 , m_dualitem_connectivities(graph->m_incremental_connectivities)
 , m_dualnode_to_connectivity_index(graph->m_dual_node_to_connectivity_index)
-, m_dualnode_connectivity_accessor(m_dualnode_connectivity->connectivityAccessor())
-, m_link_connectivity_accessor(m_link_connectivity->connectivityAccessor())
 {
 }
 
