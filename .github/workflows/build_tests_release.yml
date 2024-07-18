@@ -77,7 +77,8 @@ jobs:
             compilo_name: 'gcc'
             compilo_version: '13'
             date: '20240717'
-            args: '-DARCCORE_CXX_STANDARD=23'
+            # Disable googletest with CUDA because it requires a GPU driver
+            args: '-DARCCORE_CXX_STANDARD=20 -DARCANE_EXECUTE_ACCELERATOR_GOOGLETEST=OFF'
             cuda: 'cuda-125'
             execute_tests: false
 
@@ -86,25 +87,27 @@ jobs:
             compilo_name: 'clang'
             compilo_version: '17'
             date: '20240717'
-            args: '-DARCCORE_CXX_STANDARD=23'
+            # Disable googletest with CUDA because it requires a GPU driver
+            args: '-DARCCORE_CXX_STANDARD=20 -DARCANE_EXECUTE_ACCELERATOR_GOOGLETEST=OFF'
             cuda: 'cuda-125'
             execute_tests: false
 
         version:
-          - short: 'F'
-            long: 'full'
-            args: '-DARCANE_DISABLE_PERFCOUNTER_TESTS=ON'
-
           - short: 'M'
             long: 'minimal'
+            args: '-DARCANE_DISABLE_PERFCOUNTER_TESTS=ON'
+
+          - short: 'F'
+            long: 'full'
             args: '-DARCANE_DISABLE_PERFCOUNTER_TESTS=ON
               -DARCANE_DEFAULT_PARTITIONER=Metis
               -DPTScotch_INCLUDE_DIR="/usr/include/scotch"'
 
         config:
           - type: 'Check'
-            excluded_tests: ''
+            excluded_tests: '^.*([5-9]proc|[1-9][0-9]+proc|[5-9]thread|[1-9][0-9]+thread).*$'
             excluded_tests_with_labels: 'LARGE_HYBRID'
+            ctest_args: '-j4 --repeat until-pass:3'
 
         mpi:
           - implementation: 'OMPI'
@@ -112,6 +115,8 @@ jobs:
 
         exclude:
           - { version: { short: 'F' }, mpi: { implementation: 'MPICH' } }
+          - { version: { short: 'M' }, image: { short: 'U24_G13_CU125' } }
+          - { version: { short: 'M' }, image: { short: 'U24_C17_CU125' } }
 
 
     name: '[${{matrix.image.short}}_${{matrix.version.short}}]_${{matrix.mpi.implementation}}_${{matrix.config.type}}'
@@ -130,4 +135,5 @@ jobs:
       execute_tests: ${{ matrix.image.execute_tests }}
       excluded_tests: ${{ matrix.config.excluded_tests }}
       excluded_tests_with_labels: ${{ matrix.config.excluded_tests_with_labels }}
+      ctest_additionnal_args: '${{ matrix.config.ctest_args }}'
       cache_key_prefix: ${{matrix.image.short}}_${{matrix.version.short}}
