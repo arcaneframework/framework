@@ -22,6 +22,8 @@
 namespace Arcane
 {
 
+class IItemConnectivityMng;
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
@@ -43,6 +45,15 @@ class ARCANE_CORE_EXPORT IMeshInternal
    * la structure du maillage (eMeshStructure).
    */
   virtual void setMeshKind(const MeshKind& v) = 0;
+
+  /*!
+   * \brief Renvoie le gestionnaire de connectivités des dofs.
+   *
+   * Cette méthode est temporaire car ce gestionnaire de connectivités des dofs
+   * à vocation à disparaître, l'évolution des connectivités des dofs étant maintenant gérée
+   * automatiquement. A usage interne uniquement en attendant la suppression.
+   */
+  virtual IItemConnectivityMng* dofConnectivityMng() const noexcept = 0;
 };
 
 /*---------------------------------------------------------------------------*/
