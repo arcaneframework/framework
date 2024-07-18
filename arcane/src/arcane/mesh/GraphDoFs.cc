@@ -47,8 +47,8 @@ GraphDoFs::
 GraphDoFs(IMesh* mesh, String particle_family_name)
 : TraceAccessor(mesh->traceMng())
 , m_mesh(mesh)
-, m_connectivity_mng(mesh->traceMng())
-, m_dof_mng(mesh, &m_connectivity_mng)
+, m_dof_mng(mesh)
+, m_connectivity_mng(m_dof_mng.connectivityMng())
 , m_dual_node_family(m_dof_mng.family(GraphDoFs::dualNodeFamilyName(), true))
 , m_link_family(m_dof_mng.family(GraphDoFs::linkFamilyName(), true))
 , m_update_sync_info(false)
@@ -81,7 +81,7 @@ _allocateGraph()
                                   linkFamily(),
                                   mesh::connectivityName(dualNodeFamily(), linkFamily()));
 
-  m_connectivity_mng.registerConnectivity(m_dualnodes_incremental_connectivity);
+  m_connectivity_mng->registerConnectivity(m_dualnodes_incremental_connectivity);
 
   if (m_item_family_network)
     m_item_family_network->addRelation(dualNodeFamily(), linkFamily(), m_dualnodes_incremental_connectivity);
@@ -90,7 +90,7 @@ _allocateGraph()
   new IncrementalItemConnectivity(linkFamily(),
                                   dualNodeFamily(),
                                   mesh::connectivityName(linkFamily(), dualNodeFamily()));
-  m_connectivity_mng.registerConnectivity(m_links_incremental_connectivity);
+  m_connectivity_mng->registerConnectivity(m_links_incremental_connectivity);
 
   if (m_item_family_network)
     //m_item_family_network->addRelation(linkFamily(),dualNodeFamily(),m_links_incremental_connectivity);
@@ -106,7 +106,7 @@ _allocateGraph()
                                       dual_item_family,
                                       mesh::connectivityName(dualNodeFamily(), dual_item_family));
 
-      m_connectivity_mng.registerConnectivity(dof2dual_incremental_connectivity);
+      m_connectivity_mng->registerConnectivity(dof2dual_incremental_connectivity);
       m_incremental_connectivities[_connectivityIndex(dual_node_kind)] = dof2dual_incremental_connectivity;
       if (m_item_family_network)
         m_item_family_network->addDependency(dualNodeFamily(), dual_item_family, dof2dual_incremental_connectivity, false);
@@ -174,8 +174,8 @@ addLinks(Integer nb_link,
     }
     link_index += nb_dual_nodes_per_link;
   }
-  m_connectivity_mng.setUpToDate(m_links_incremental_connectivity);
-  m_connectivity_mng.setUpToDate(m_dualnodes_incremental_connectivity);
+  m_connectivity_mng->setUpToDate(m_links_incremental_connectivity);
+  m_connectivity_mng->setUpToDate(m_dualnodes_incremental_connectivity);
 
   m_update_sync_info = false;
 }
@@ -217,7 +217,7 @@ addDualNodes(Integer graph_nb_dual_node,
                                     dual_item_family,
                                     mesh::connectivityName(dualNodeFamily(), dual_item_family));
 
-    m_connectivity_mng.registerConnectivity(incremental_dual_item_connectivity);
+    m_connectivity_mng->registerConnectivity(incremental_dual_item_connectivity);
     m_incremental_connectivities[_connectivityIndex(dual_node_kind)] = incremental_dual_item_connectivity;
     if (m_item_family_network)
       m_item_family_network->addDependency(dualNodeFamily(), dual_item_family, incremental_dual_item_connectivity, false);
@@ -229,7 +229,7 @@ addDualNodes(Integer graph_nb_dual_node,
     incremental_dual_item_connectivity->notifySourceItemAdded(ItemLocalId(*idual_node));
     incremental_dual_item_connectivity->addConnectedItem(ItemLocalId(*idual_node), ItemLocalId(dual_item_lids[idual_node.index()]));
   }
-  m_connectivity_mng.setUpToDate(incremental_dual_item_connectivity);
+  m_connectivity_mng->setUpToDate(incremental_dual_item_connectivity);
 
   m_update_sync_info = false;
   //m_dual_node_to_connectivity_index.resize(&dual_node_family, _connectivityIndex(dual_node_kind));
@@ -338,7 +338,7 @@ addDualNodes(Integer graph_nb_dual_node,
                                         dual_item_family,
                                         mesh::connectivityName(dualNodeFamily(), dual_item_family));
 
-        m_connectivity_mng.registerConnectivity(incremental_dual_item_connectivity);
+        m_connectivity_mng->registerConnectivity(incremental_dual_item_connectivity);
         m_incremental_connectivities[index] = incremental_dual_item_connectivity;
         if (m_item_family_network)
           m_item_family_network->addDependency(dualNodeFamily(), dual_item_family, incremental_dual_item_connectivity, false);
@@ -353,7 +353,7 @@ addDualNodes(Integer graph_nb_dual_node,
 
       //m_dual_node_to_connectivity_index.resize(&dual_node_family, _connectivityIndex(dual_node_kind));
 
-      m_connectivity_mng.setUpToDate(incremental_dual_item_connectivity);
+      m_connectivity_mng->setUpToDate(incremental_dual_item_connectivity);
     }
   }
 
@@ -518,13 +518,13 @@ isUpdated()
     Integer dual_node_kind = m_dualnode_kinds[index];
     auto dof2dual_incremental_connectivity = m_incremental_connectivities[_connectivityIndex(dual_node_kind)];
 
-    if (dof2dual_incremental_connectivity && !m_connectivity_mng.isUpToDate(dof2dual_incremental_connectivity))
+    if (dof2dual_incremental_connectivity && !m_connectivity_mng->isUpToDate(dof2dual_incremental_connectivity))
       m_update_sync_info = false;
 
-    if (!m_connectivity_mng.isUpToDate(m_dualnodes_incremental_connectivity))
+    if (!m_connectivity_mng->isUpToDate(m_dualnodes_incremental_connectivity))
       m_update_sync_info = false;
 
-    if (!m_connectivity_mng.isUpToDate(m_links_incremental_connectivity))
+    if (!m_connectivity_mng->isUpToDate(m_links_incremental_connectivity))
       m_update_sync_info = false;
   }
 
@@ -554,12 +554,12 @@ endUpdate()
       continue;
 
     auto dof2dual_incremental_connectivity = m_incremental_connectivities[_connectivityIndex(dual_node_kind)];
-    if (dof2dual_incremental_connectivity && !m_connectivity_mng.isUpToDate(dof2dual_incremental_connectivity)) {
+    if (dof2dual_incremental_connectivity && !m_connectivity_mng->isUpToDate(dof2dual_incremental_connectivity)) {
       //info() << "UPDATE DUALNODE CONNECTIVITY KIND " << index << " " << dual_node_kind << " " << dual_item_kind;
       // Handle added nodes : create a dof for each own node added
       Int32ArrayView source_family_added_items_lids;
       Int32ArrayView source_family_removed_items_lids;
-      m_connectivity_mng.getSourceFamilyModifiedItems(dof2dual_incremental_connectivity, source_family_added_items_lids, source_family_removed_items_lids);
+      m_connectivity_mng->getSourceFamilyModifiedItems(dof2dual_incremental_connectivity, source_family_added_items_lids, source_family_removed_items_lids);
 
       info() << "     NUMBER OF REMOVE ITEMS : " << source_family_removed_items_lids.size();
       info() << "     NUMBER OF ADDED ITEMS : " << source_family_added_items_lids.size();
@@ -594,23 +594,23 @@ endUpdate()
 
       // For test purpose only : try getSourceFamilyModifiedItem (must give back the new dofs created)
       //Int32ArrayView target_family_added_item_lids, target_family_removed_item_lids;
-      //m_connectivity_mng.getTargetFamilyModifiedItems(dof2dual_incremental_connectivity,target_family_added_item_lids,target_family_removed_item_lids);
+      //m_connectivity_mng->getTargetFamilyModifiedItems(dof2dual_incremental_connectivity,target_family_added_item_lids,target_family_removed_item_lids);
       //_checkTargetFamilyInfo(dualnode_family.view(target_family_added_item_lids),lids);
 
       //m_dual_node_to_connectivity_index.resize(dualnode_family, _connectivityIndex(dual_node_kind));
 
       // Finalize connectivity update
-      m_connectivity_mng.setUpToDate(dof2dual_incremental_connectivity);
+      m_connectivity_mng->setUpToDate(dof2dual_incremental_connectivity);
     }
   }
 
-  if (!m_connectivity_mng.isUpToDate(m_links_incremental_connectivity)) {
+  if (!m_connectivity_mng->isUpToDate(m_links_incremental_connectivity)) {
 
     //info()<<"UPDATE LINK TO DUALNODE CONNECTIVITY" ;
     // Handle added nodes : create a dof for each own node added
     Int32ArrayView source_family_added_items_lids;
     Int32ArrayView source_family_removed_items_lids;
-    m_connectivity_mng.getSourceFamilyModifiedItems(m_links_incremental_connectivity, source_family_added_items_lids, source_family_removed_items_lids);
+    m_connectivity_mng->getSourceFamilyModifiedItems(m_links_incremental_connectivity, source_family_added_items_lids, source_family_removed_items_lids);
 
     info() << "     NUMBER OF REMOVE ITEMS : " << source_family_removed_items_lids.size();
     info() << "     NUMBER OF ADDED ITEMS : " << source_family_added_items_lids.size();
@@ -654,8 +654,8 @@ endUpdate()
     }
 
     // Finalize connectivity update
-    m_connectivity_mng.setUpToDate(m_links_incremental_connectivity);
-    m_connectivity_mng.setUpToDate(m_dualnodes_incremental_connectivity);
+    m_connectivity_mng->setUpToDate(m_links_incremental_connectivity);
+    m_connectivity_mng->setUpToDate(m_dualnodes_incremental_connectivity);
   }
 
   dualnode_family->computeSynchronizeInfos();

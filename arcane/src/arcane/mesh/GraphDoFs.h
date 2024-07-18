@@ -13,18 +13,17 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/IGraph2.h"
-#include "arcane/IGraphModifier2.h"
+#include "arcane/core/IGraph2.h"
+#include "arcane/core/IGraphModifier2.h"
+#include "arcane/core/IItemConnectivityMng.h"
 
 #include "arcane/utils/TraceAccessor.h"
 #include "arcane/utils/Convert.h"
 
 #include "arcane/mesh/ItemFamily.h"
-
 #include "arcane/mesh/DoFManager.h"
 #include "arcane/mesh/DoFFamily.h"
 #include "arcane/mesh/ItemConnectivity.h"
-#include "arcane/mesh/ItemConnectivityMng.h"
 #include "arcane/mesh/IncrementalItemConnectivity.h"
 #include "arcane/mesh/GhostLayerFromConnectivityComputer.h"
 #include "arcane/mesh/DualUniqueIdMng.h"
@@ -283,8 +282,8 @@ class ARCANE_MESH_EXPORT GraphDoFs
   bool m_graph_allocated = false;
   Integer m_graph_id = -1;
 
-  ItemConnectivityMng m_connectivity_mng;
   DoFManager m_dof_mng;
+  IItemConnectivityMng* m_connectivity_mng;
   DoFFamily& m_dual_node_family;
   DoFFamily& m_link_family;
 

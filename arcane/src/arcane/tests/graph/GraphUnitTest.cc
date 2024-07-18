@@ -184,8 +184,8 @@ class GraphUnitTest
   : ArcaneGraphUnitTestObject(mb)
   , m_mesh(mb.mesh())
   , m_stats(NULL)
-  , m_connectivity_mng(mb.subDomain()->traceMng())
-  , m_dof_mng(mb.mesh(), &m_connectivity_mng)
+  , m_dof_mng(mb.mesh())
+  , m_connectivity_mng(m_dof_mng.connectivityMng())
   , m_dualUid_mng(mb.subDomain()->traceMng())
   {}
 
@@ -207,8 +207,8 @@ class GraphUnitTest
 
   IMeshStats* m_stats;
 
-  ItemConnectivityMng m_connectivity_mng;
   DoFManager m_dof_mng;
+  IItemConnectivityMng* m_connectivity_mng;
   DoFManager& dofMng() { return m_dof_mng; }
   DualUniqueIdMng m_dualUid_mng;
 };

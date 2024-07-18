@@ -62,8 +62,7 @@ class DoFTester
 
   DoFTester(const ServiceBuildInfo& sbi)
     : ArcaneDoFTesterObject(sbi)
-    , m_connectivity_mng(sbi.subDomain()->traceMng())
-    , m_dof_mng(sbi.mesh(),&m_connectivity_mng)
+    , m_dof_mng(sbi.mesh())
     , m_dof_family_name("DoFFamily")
     , m_dof_on_cell_family_name("DoFOnCell")
     , m_dofs_on_cell_family_name("DoFsOnCell")
@@ -129,15 +128,14 @@ private:
 
 
 private:
- ItemConnectivityMng m_connectivity_mng;
- DoFManager m_dof_mng;
- String m_dof_family_name;
- String m_dof_on_cell_family_name;  // One dof per cell
- String m_dofs_on_cell_family_name; // Several dofs per cell
- String m_dof_on_node_family_name;  // One dof per node
- String m_dofs_on_node_family_name; // Several dofs per node
- String m_dofs_multi_on_face_family_name; // Several dofs per face (non constant size)
- String m_dofs_multi_on_node_family_name; // Several dofs per node (non constant size)
+  DoFManager m_dof_mng;
+  String m_dof_family_name;
+  String m_dof_on_cell_family_name;  // One dof per cell
+  String m_dofs_on_cell_family_name; // Several dofs per cell
+  String m_dof_on_node_family_name;  // One dof per node
+  String m_dofs_on_node_family_name; // Several dofs per node
+  String m_dofs_multi_on_face_family_name; // Several dofs per face (non constant size)
+  String m_dofs_multi_on_node_family_name; // Several dofs per node (non constant size)
 
 };
 
