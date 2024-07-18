@@ -1,4 +1,4 @@
-name: '[Check] Build/Install/Test Arcane Framework (Ubuntu 22.04-24.04 / GCC 12-14 / CLang 15-16-18 / CUDA 12.2 / Minimal-Full)'
+name: '[Check] Build/Install/Test Arcane Framework (Ubuntu 22.04-24.04 / GCC 12-14 / CLang 16-17-18 / CUDA 12.5 / Minimal-Full)'
 
 on:
   push:
@@ -107,7 +107,7 @@ jobs:
           - type: 'Check'
             excluded_tests: '^.*([5-9]proc|[1-9][0-9]+proc|[5-9]thread|[1-9][0-9]+thread).*$'
             excluded_tests_with_labels: 'LARGE_HYBRID'
-            ctest_args: '-j4 --repeat until-pass:3'
+            ctest_args: '-j4'
 
         mpi:
           - implementation: 'OMPI'
@@ -135,5 +135,5 @@ jobs:
       execute_tests: ${{ matrix.image.execute_tests }}
       excluded_tests: ${{ matrix.config.excluded_tests }}
       excluded_tests_with_labels: ${{ matrix.config.excluded_tests_with_labels }}
-      ctest_additionnal_args: '${{ matrix.config.ctest_args }}'
+      ctest_additionnal_args: ${{ matrix.config.ctest_args }}
       cache_key_prefix: ${{matrix.image.short}}_${{matrix.version.short}}
