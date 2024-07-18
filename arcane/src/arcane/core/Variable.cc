@@ -31,8 +31,6 @@
 #include "arcane/utils/MemoryView.h"
 
 #include "arcane/core/ItemGroupObserver.h"
-#include "arcane/core/expr/Expression.h"
-#include "arcane/core/VariableExpressionImpl.h"
 #include "arcane/core/Variable.h"
 #include "arcane/core/VarRefEnumerator.h"
 #include "arcane/core/IVariableAccessor.h"
@@ -520,15 +518,6 @@ eDataType Variable::
 dataType() const
 {
   return m_p->m_infos.dataType();
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-Expression Variable::
-expression()
-{
-  return Expression(new VariableExpressionImpl(this));
 }
 
 /*---------------------------------------------------------------------------*/
