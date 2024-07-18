@@ -737,7 +737,7 @@ cross(Real3 v1, Real3 v2)
  * \brief Normalisation d'un Real3.
  * \pre la norme de \a v ne doit pas être nulle.
  */
-inline Real3
+ARCCORE_HOST_DEVICE inline Real3
 normalizeReal3(Real3 v)
 {
   Real norme = math::sqrt(v.x*v.x + v.y*v.y + v.z*v.z);
