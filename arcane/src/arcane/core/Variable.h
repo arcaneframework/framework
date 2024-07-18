@@ -107,10 +107,6 @@ class ARCANE_CORE_EXPORT Variable
   void notifyReferencePropertyChanged() override;
 
  public:
-
-  Expression expression() override;
-
- public:
 	
   //! Positionne l'état d'utilisation de la variable
   void setUsed(bool v) override;

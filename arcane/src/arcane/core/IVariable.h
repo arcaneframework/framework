@@ -33,7 +33,6 @@ class IDataReader;
 class IDataWriter;
 class VariableMng;
 class Module;
-class Expression;
 class IVariableComputeFunction;
 class IObservable;
 class IDataOperation;
@@ -261,15 +260,6 @@ class ARCANE_CORE_EXPORT IVariable
 
   //! Nombre de références sur cette variable
   virtual Integer nbReference() const =0;
-
-
- public:
-
-//%% ARCANE_BENCH_SUPPRESS_BEGIN
-  virtual Expression expression() =0;
-
- public:
-//%% ARCANE_BENCH_SUPPRESS_END
 
  public:
  
