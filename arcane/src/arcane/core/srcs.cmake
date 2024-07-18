@@ -1,4 +1,4 @@
-set(CURRENT_SRC_PATH ${Arcane_SOURCE_DIR}/src)
+﻿set(CURRENT_SRC_PATH ${Arcane_SOURCE_DIR}/src)
 
 set(ARCANE_MATERIALS_SOURCES
   materials/CellToAllEnvCellConverter.h
@@ -621,8 +621,8 @@ set(ARCANE_ORIGINAL_SOURCES
   VariableDependInfo.h
   VariableDiff.h
   VariableDiff.cc
-  VariableExpressionImpl.cc
-  VariableExpressionImpl.h
+  #VariableExpressionImpl.cc
+  #VariableExpressionImpl.h
   VariableFactory.cc
   VariableFactory.h
   VariableFactoryRegisterer.cc
@@ -690,31 +690,31 @@ set(ARCANE_ORIGINAL_SOURCES
   datatype/VariantBase.cc
   datatype/VariantBase.h
 
-  expr/IExpressionImpl.h
-  expr/Expression.h
-  expr/ArrayExpressionImpl.cc
-  expr/ArrayExpressionImpl.h
-  expr/BadExpressionException.cc
-  expr/BadExpressionException.h
-  expr/BadOperandException.cc
-  expr/BadOperandException.h
-  expr/BadOperationException.cc
-  expr/BadOperationException.h
-  expr/Expression.cc
-  expr/ExpressionResult.cc
-  expr/ExpressionResult.h
-  expr/ExpressionImpl.cc
-  expr/ExpressionImpl.h
-  expr/UnaryExpressionImpl.cc
-  expr/UnaryExpressionImpl.h
-  expr/LitteralExpressionImpl.cc
-  expr/LitteralExpressionImpl.h
-  expr/BinaryExpressionImpl.cc
-  expr/BinaryExpressionImpl.h
-  expr/WhereExpressionImpl.cc
-  expr/WhereExpressionImpl.h
-  expr/OperatorMng.cc
-  expr/OperatorMng.h
+  # expr/IExpressionImpl.h
+  # expr/Expression.h
+  # expr/ArrayExpressionImpl.cc
+  # expr/ArrayExpressionImpl.h
+  # expr/BadExpressionException.cc
+  # expr/BadExpressionException.h
+  # expr/BadOperandException.cc
+  # expr/BadOperandException.h
+  # expr/BadOperationException.cc
+  # expr/BadOperationException.h
+  # expr/Expression.cc
+  # expr/ExpressionResult.cc
+  # expr/ExpressionResult.h
+  # expr/ExpressionImpl.cc
+  # expr/ExpressionImpl.h
+  # expr/UnaryExpressionImpl.cc
+  # expr/UnaryExpressionImpl.h
+  # expr/LitteralExpressionImpl.cc
+  # expr/LitteralExpressionImpl.h
+  # expr/BinaryExpressionImpl.cc
+  # expr/BinaryExpressionImpl.h
+  # expr/WhereExpressionImpl.cc
+  # expr/WhereExpressionImpl.h
+  # expr/OperatorMng.cc
+  # expr/OperatorMng.h
 
   anyitem/AnyItem.h
   anyitem/AnyItemGlobal.h
