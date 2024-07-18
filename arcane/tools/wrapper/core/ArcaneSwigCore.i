@@ -475,7 +475,6 @@ class IEntryPoint
 %include arcane/core/IApplication.h
 %include arcane/core/IDirectory.h
 %include arcane/core/ItemGroupImpl.h
-%include arcane/core/expr/IExpressionImpl.h
 %include arcane/core/SharedReference.h
 %include arcane/utils/IObserver.h
 %include arcane/utils/Observer.h
@@ -556,7 +555,6 @@ ARCANE_STD_EXHANDLER
 
 %include arcane/core/IVariableMng.h
 %include arcane/core/IVariable.h
-%include arcane/core/expr/Expression.h
 %include arcane/core/IArcaneMain.h
 %include arcane/core/ITimeLoopMng.h
 %include arcane/core/datatype/ScalarVariant.h
