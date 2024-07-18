@@ -94,8 +94,10 @@
 #include "arcane/mesh/NewItemOwnerBuilder.h"
 
 #include "arcane/mesh/IncrementalItemConnectivity.h"
+#include "arcane/mesh/ItemConnectivityMng.h"
 
 #include <functional>
+#include <memory>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -163,18 +165,25 @@ class DynamicMesh::InternalApi
   explicit InternalApi(DynamicMesh* mesh)
   : m_mesh(mesh)
   {
+    m_connectivity_mng = std::make_unique<ItemConnectivityMng>(mesh->traceMng());
   }
 
  public:
 
-  void setMeshKind(const MeshKind& v)
+  void setMeshKind(const MeshKind& v) override
   {
     m_mesh->m_mesh_kind = v;
+  }
+
+  IItemConnectivityMng* dofConnectivityMng() const noexcept override
+  {
+    return m_connectivity_mng.get();
   }
 
  private:
 
   DynamicMesh* m_mesh = nullptr;
+  std::unique_ptr<IItemConnectivityMng> m_connectivity_mng = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/

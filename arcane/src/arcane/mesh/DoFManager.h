@@ -1,20 +1,21 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* DoFManager.h                                                (C) 2000-2022 */
+/* DoFManager.h                                                (C) 2000-2024 */
 /*                                                                           */
-/* Comment on file content.                                                  */
+/* Class to handle dof families and connectivities.                          */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MESH_DOFMANAGER_H
 #define ARCANE_MESH_DOFMANAGER_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/IMesh.h"
+#include "arcane/core/IMesh.h"
+#include "arcane/core/IItemConnectivityMng.h"
 #include "arcane/mesh/DoFFamily.h"
 
 /*---------------------------------------------------------------------------*/
@@ -28,15 +29,12 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 
 //TODO: renommer en DofMng
-class DoFManager
+class ARCANE_MESH_EXPORT DoFManager
 {
  public:
 
   //! Constructeur de la classe
-  DoFManager(IMesh* mesh, IItemConnectivityMng* connectivity_mng)
-  : m_mesh(mesh)
-  , m_connectivity_mng(connectivity_mng)
-  {}
+  explicit DoFManager(IMesh* mesh);
 
  public:
 
