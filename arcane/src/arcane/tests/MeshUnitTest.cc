@@ -977,7 +977,7 @@ _testVariableWriter()
   if (replication_rank>0){
     dir_name = dir_name + String::fromNumber(replication_rank);
   }
-  Directory out_dir(dir_name);
+  Directory out_dir(subDomain()->exportDirectory(), dir_name);
   if (pm->isMasterIO())
     out_dir.createDirectory();
   writer->setBaseDirectoryName(out_dir.path());
