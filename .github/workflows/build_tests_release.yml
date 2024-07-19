@@ -107,7 +107,7 @@ jobs:
 
     name: '[${{matrix.image.short}}_${{matrix.version.short}}]_${{matrix.mpi.implementation}}_${{matrix.config.type}}'
     # La partie 'uses' est déterminée à la compilation, donc on ne peut pas mettre de variable ${{}}.
-    uses: 'arcaneframework/gh_actions/.github/workflows/reusable_test_framework.yml@dev/ah-prepare-v2'
+    uses: 'arcaneframework/gh_actions/.github/workflows/reusable_test_framework.yml@v2'
     with:
       image: ghcr.io/arcaneframework/${{matrix.image.long}}:${{matrix.image.compilo_name}}-${{matrix.image.compilo_version}}_${{matrix.version.long}}_${{matrix.image.date}}
       compilo_name: ${{ matrix.image.compilo_name }}
