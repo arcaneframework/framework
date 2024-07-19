@@ -99,12 +99,12 @@ jobs:
           - type: 'Release'
             excluded_tests: ''
             excluded_tests_with_labels: 'LARGE_HYBRID'
-            ctest_args: '-j4'
+            ctest_args: '-j4 --timeout 1200'
 
           - type: 'Debug'
             excluded_tests: ''
             excluded_tests_with_labels: 'LARGE_HYBRID'
-            ctest_args: '-j4'
+            ctest_args: '-j4 --timeout 1200'
 
         mpi:
           - implementation: 'OMPI'
