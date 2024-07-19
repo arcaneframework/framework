@@ -46,16 +46,6 @@ jobs:
             acpp: false
             execute_tests: true
 
-          - short: 'U22_C16'
-            long: 'ubuntu-2204'
-            compilo_name: 'clang'
-            compilo_version: '16'
-            date: '20240717'
-            args: '-DARCCORE_CXX_STANDARD=23'
-            cuda: 'false'
-            acpp: false
-            execute_tests: true
-
           - short: 'U24_G14'
             long: 'ubuntu-2404'
             compilo_name: 'gcc'
@@ -85,27 +75,6 @@ jobs:
             args: '-DARCCORE_CXX_STANDARD=20 -DARCANE_EXECUTE_ACCELERATOR_GOOGLETEST=OFF'
             cuda: 'cuda-125'
             acpp: false
-            execute_tests: false
-
-          - short: 'U24_C17_CU125'
-            long: 'ubuntu-2404'
-            compilo_name: 'clang'
-            compilo_version: '17'
-            date: '20240717'
-            # Disable googletest with CUDA because it requires a GPU driver
-            args: '-DARCCORE_CXX_STANDARD=20 -DARCANE_EXECUTE_ACCELERATOR_GOOGLETEST=OFF'
-            cuda: 'cuda-125'
-            acpp: false
-            execute_tests: false
-
-          - short: 'U24_ACPP'
-            long: 'ubuntu-2404'
-            compilo_name: 'clang'
-            compilo_version: '18'
-            date: '20240717'
-            args: '-DARCCORE_CXX_STANDARD=23'
-            cuda: 'false'
-            acpp: true
             execute_tests: false
 
         version:
