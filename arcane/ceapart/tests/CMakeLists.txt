@@ -267,6 +267,8 @@ arcane_add_test_sequential(cartesian3d_face_renumbering_v3 testCartesianMesh3D-f
 arcane_add_test_parallel_thread(cartesian3d_face_renumbering_v3 testCartesianMesh3D-face-renumbering-v3.arc 12 "-m 10")
 arcane_add_test_sequential(cartesian3d_face_edge_renumbering testCartesianMesh3D-face-edge-renumbering.arc "-m 10")
 arcane_add_test_parallel_thread(cartesian3d_face_edge_renumbering testCartesianMesh3D-face-edge-renumbering.arc 12 "-m 10")
+arcane_add_test_sequential(cartesian3d_face_edgev3_renumbering testCartesianMesh3D-face-edgev3-renumbering.arc "-m 10")
+arcane_add_test_parallel_thread(cartesian3d_face_edgev3_renumbering testCartesianMesh3D-face-edgev3-renumbering.arc 12 "-m 10")
 
 # Tests sur le partitionnement avec grille en cartésien
 arcane_add_test(cartesian_grid_partitioning testCartesianMesh-grid-partitioning.arc "-m 10")
