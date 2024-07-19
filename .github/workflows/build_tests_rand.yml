@@ -48,7 +48,6 @@ jobs:
           - short: 'F'
             long: 'full'
             args: '-DARCANE_DISABLE_PERFCOUNTER_TESTS=ON
-              -DARCANE_DEFAULT_PARTITIONER=Metis
               -DPTScotch_INCLUDE_DIR="/usr/include/scotch"'
 
         config:
@@ -57,7 +56,7 @@ jobs:
             excluded_tests_with_labels: 'LARGE_HYBRID'
             ctest_args: '--timeout 1200'
 
-    name: '[${{matrix.image.short}}_${{matrix.version.short}}]_${{matrix.mpi.implementation}}_${{matrix.config.type}}'
+    name: '[${{matrix.image.short}}_${{matrix.version.short}}]_OMPI_${{matrix.config.type}}'
     # La partie 'uses' est déterminée à la compilation, donc on ne peut pas mettre de variable ${{}}.
     uses: 'arcaneframework/gh_actions/.github/workflows/reusable_test_framework.yml@dev/ah-prepare-v2'
     with:
