@@ -193,6 +193,7 @@ jobs:
            do
              sed -i "s,/soft/irsrvsoft1/expl/eb/r11/${osdir}/easybuild/software/impi/2021.4.0-GCC-11.2.0/mpi/2021.4.0/bin/mpiexec,/tmp/intelmpi/mpi/latest/bin/mpiexec,g" ${file}
            done
+           grep -R "/soft/irsrvsoft1/expl/eb/r11/${osdir}/easybuild/software/impi/2021.4.0-GCC-11.2.0/mpi/2021.4.0/bin/mpiexec" ${{ env.BUILD_DIR }}
            grep -R "/tmp/intelmpi/mpi/latest/bin/mpiexec" ${{ env.BUILD_DIR }}
 
       - name: Test
