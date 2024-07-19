@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* EdgeUniqueIdBuilder.h                                       (C) 2000-2022 */
+/* EdgeUniqueIdBuilder.h                                       (C) 2000-2024 */
 /*                                                                           */
 /* Construction des indentifiants uniques des edges.                         */
 /*---------------------------------------------------------------------------*/
@@ -72,6 +72,7 @@ class EdgeUniqueIdBuilder
   void _computeEdgesUniqueIdsParallel3();
   void _exchangeData(IParallelExchanger* exchanger,BoundaryInfosMap& boundary_infos_to_send);
   void _computeEdgesUniqueIdsParallelV2();
+  void _computeEdgesUniqueIdsParallel64bit();
 };
 
 /*---------------------------------------------------------------------------*/

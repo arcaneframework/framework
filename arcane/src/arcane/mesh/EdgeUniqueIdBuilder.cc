@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* EdgeUniqueIdBuilder.cc                                      (C) 2000-2022 */
+/* EdgeUniqueIdBuilder.cc                                      (C) 2000-2024 */
 /*                                                                           */
 /* Construction des indentifiants uniques des edges.                         */
 /*---------------------------------------------------------------------------*/
@@ -27,6 +27,8 @@
 #include "arcane/ISerializer.h"
 #include "arcane/ParallelMngUtils.h"
 #include "arcane/IMeshUniqueIdMng.h"
+
+#include <functional>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -73,10 +75,12 @@ computeEdgesUniqueIds()
     _computeEdgesUniqueIdsParallel3();
   else if (edge_version==2)
     _computeEdgesUniqueIdsParallelV2();
+  else if (edge_version==3)
+    _computeEdgesUniqueIdsParallel64bit();
   else if (edge_version==0)
     info() << "No renumbering for edges";
   else
-    ARCANE_FATAL("Invalid valid version '{0}'. Valid values are 0, 1 or 2");
+    ARCANE_FATAL("Invalid valid version '{0}'. Valid values are 0, 1, 2 or 3");
 
   double end_time = platform::getRealTime();
   Real diff = (Real)(end_time - begin_time);
@@ -654,6 +658,30 @@ _computeEdgesUniqueIdsParallelV2()
     Node node0{edge.node(0)};
     Node node1{edge.node(1)};
     Int64 new_uid = (node0.uniqueId().asInt64() * total_max_uid) + node1.uniqueId().asInt64();
+    edge.mutableItemBase().setUniqueId(new_uid);
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void EdgeUniqueIdBuilder::
+_computeEdgesUniqueIdsParallel64bit()
+{
+  // Positionne les uniqueId() des arêtes
+  // en utilisant un hash des 2 noeuds de l'arête.
+  ItemInternalMap& edges_map = m_mesh->edgesMap();
+
+  std::hash<Int64> hasher;
+
+  ENUMERATE_ITEM_INTERNAL_MAP_DATA(ebid,edges_map){
+    Edge edge{ebid->value()};
+    Node node0{edge.node(0)};
+    Node node1{edge.node(1)};
+    size_t hash0 = hasher(node0.uniqueId().asInt64());
+    size_t hash1 = hasher(node1.uniqueId().asInt64());
+    hash0 ^= hash1 + 0x9e3779b9 + (hash0 << 6) + (hash0 >> 2);
+    Int64 new_uid = hash0 & 0x7fffffff;
     edge.mutableItemBase().setUniqueId(new_uid);
   }
 }
