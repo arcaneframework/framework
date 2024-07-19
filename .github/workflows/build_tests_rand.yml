@@ -26,7 +26,6 @@ jobs:
             compilo_version: '16'
             date: '20240717'
             args: '-DARCCORE_CXX_STANDARD=23'
-            cuda: 'false'
             execute_tests: true
 
           - short: 'U24_G14'
@@ -35,7 +34,6 @@ jobs:
             compilo_version: '14'
             date: '20240717'
             args: '-DARCCORE_CXX_STANDARD=23'
-            cuda: 'false'
             execute_tests: true
 
           - short: 'U24_C18'
@@ -44,7 +42,6 @@ jobs:
             compilo_version: '18'
             date: '20240717'
             args: '-DARCCORE_CXX_STANDARD=23'
-            cuda: 'false'
             execute_tests: true
 
         version:
@@ -58,6 +55,7 @@ jobs:
           - type: 'Debug'
             excluded_tests: '^.*([5-9]proc|[1-9][0-9]+proc|[5-9]thread|[1-9][0-9]+thread).*$'
             excluded_tests_with_labels: 'LARGE_HYBRID'
+            ctest_args: '-j4'
 
     name: '[${{matrix.image.short}}_${{matrix.version.short}}]_${{matrix.mpi.implementation}}_${{matrix.config.type}}'
     # La partie 'uses' est déterminée à la compilation, donc on ne peut pas mettre de variable ${{}}.
@@ -67,7 +65,6 @@ jobs:
       compilo_name: ${{ matrix.image.compilo_name }}
       compilo_version: ${{ matrix.image.compilo_version }}
       mpi: OMPI
-      cuda: ${{ matrix.image.cuda }}
       type_build: ${{ matrix.config.type }}
       cmake_additionnal_args: '${{ matrix.image.args }} ${{ matrix.version.args }}'
       verbose: true
@@ -76,4 +73,5 @@ jobs:
       execute_tests: ${{ matrix.image.execute_tests }}
       excluded_tests: ${{ matrix.config.excluded_tests }}
       excluded_tests_with_labels: ${{ matrix.config.excluded_tests_with_labels }}
+      ctest_additionnal_args: ${{ matrix.config.ctest_args }}
       cache_key_prefix: ${{matrix.image.short}}_${{matrix.version.short}}

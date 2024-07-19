@@ -19,6 +19,7 @@ jobs:
             date: '20240717'
             args: '-DARCCORE_CXX_STANDARD=23'
             cuda: 'false'
+            acpp: false
             execute_tests: true
 
           - short: 'U22_C16'
@@ -28,6 +29,7 @@ jobs:
             date: '20240717'
             args: '-DARCCORE_CXX_STANDARD=23'
             cuda: 'false'
+            acpp: false
             execute_tests: true
 
           - short: 'U24_G14'
@@ -37,6 +39,7 @@ jobs:
             date: '20240717'
             args: '-DARCCORE_CXX_STANDARD=23'
             cuda: 'false'
+            acpp: false
             execute_tests: true
 
           - short: 'U24_C18'
@@ -46,6 +49,7 @@ jobs:
             date: '20240717'
             args: '-DARCCORE_CXX_STANDARD=23'
             cuda: 'false'
+            acpp: false
             execute_tests: true
 
           - short: 'U24_G13_CU125'
@@ -56,6 +60,7 @@ jobs:
             # Disable googletest with CUDA because it requires a GPU driver
             args: '-DARCCORE_CXX_STANDARD=20 -DARCANE_EXECUTE_ACCELERATOR_GOOGLETEST=OFF'
             cuda: 'cuda-125'
+            acpp: false
             execute_tests: false
 
           - short: 'U24_C17_CU125'
@@ -66,6 +71,17 @@ jobs:
             # Disable googletest with CUDA because it requires a GPU driver
             args: '-DARCCORE_CXX_STANDARD=20 -DARCANE_EXECUTE_ACCELERATOR_GOOGLETEST=OFF'
             cuda: 'cuda-125'
+            acpp: false
+            execute_tests: false
+
+          - short: 'U24_ACPP'
+            long: 'ubuntu-2404'
+            compilo_name: 'clang'
+            compilo_version: '18'
+            date: '20240717'
+            args: '-DARCCORE_CXX_STANDARD=23'
+            cuda: 'false'
+            acpp: true
             execute_tests: false
 
         version:
@@ -83,10 +99,12 @@ jobs:
           - type: 'Release'
             excluded_tests: ''
             excluded_tests_with_labels: 'LARGE_HYBRID'
+            ctest_args: '-j4'
 
           - type: 'Debug'
             excluded_tests: ''
             excluded_tests_with_labels: 'LARGE_HYBRID'
+            ctest_args: '-j4'
 
         mpi:
           - implementation: 'OMPI'
@@ -96,6 +114,8 @@ jobs:
           - { version: { short: 'F' }, mpi: { implementation: 'MPICH' } }
           - { version: { short: 'M' }, image: { short: 'U24_G13_CU125' } }
           - { version: { short: 'M' }, image: { short: 'U24_C17_CU125' } }
+          - { version: { short: 'M' }, image: { short: 'U24_ACPP' } }
+          - { config: { type: 'Debug' }, image: { short: 'U24_ACPP' } }
 
     name: '[${{matrix.image.short}}_${{matrix.version.short}}]_${{matrix.mpi.implementation}}_${{matrix.config.type}}'
     # La partie 'uses' est déterminée à la compilation, donc on ne peut pas mettre de variable ${{}}.
@@ -106,6 +126,7 @@ jobs:
       compilo_version: ${{ matrix.image.compilo_version }}
       mpi: ${{ matrix.mpi.implementation }}
       cuda: ${{ matrix.image.cuda }}
+      use_acpp: ${{ matrix.image.acpp }}
       type_build: ${{ matrix.config.type }}
       cmake_additionnal_args: '${{ matrix.image.args }} ${{ matrix.version.args }}'
       verbose: true
@@ -113,4 +134,5 @@ jobs:
       execute_tests: ${{ matrix.image.execute_tests }}
       excluded_tests: ${{ matrix.config.excluded_tests }}
       excluded_tests_with_labels: ${{ matrix.config.excluded_tests_with_labels }}
+      ctest_additionnal_args: ${{ matrix.config.ctest_args }}
       cache_key_prefix: ${{matrix.image.short}}_${{matrix.version.short}}
