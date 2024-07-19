@@ -54,7 +54,7 @@ jobs:
 
     executor: <<parameters.arch>>
     docker:
-      - image: ghcr.io/arcaneframework/ubuntu-2404:gcc-14_clang-18_<<parameters.image_version>>_20240703
+      - image: ghcr.io/arcaneframework/ubuntu-2404:gcc-14_<<parameters.image_version>>_20240717
 
     steps:
       - when:
@@ -99,6 +99,12 @@ jobs:
             -DARCCORE_BUILD_MODE=<<parameters.type_build>> \
             -DARCANE_BUILD_TYPE=<<parameters.type_build>> \
             "' >> $BASH_ENV
+
+      - run:
+          name: "Set C++ compiler and default MPI"
+          command: |
+            source /root/scripts/use_openmpi.sh
+            source /root/scripts/use_gcc-14.sh
 
       - run:
           name: Display set variables
