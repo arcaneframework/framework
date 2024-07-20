@@ -8,6 +8,14 @@ using Python.Runtime;
 
 namespace Arcane.Python
 {
+  public class BadNDArrayException : Exception
+  {
+    public BadNDArrayException(string message)
+    {
+      Message = message;
+    }
+    public override string Message { get; }
+  }
   public class VariableWrapper
   {
     internal VariableWrapper(SubDomainContext sdc, IVariable var)
@@ -72,18 +80,48 @@ namespace Arcane.Python
     {
       _checkNumpyImport();
       double[] xvalues = null;
+      ConstMemoryView memory_view;
       using (Py.GIL())
       {
+        dynamic nd = nd_array;
+        PyObject p = nd.ctypes.data;
+        PyObject dtype = nd_array.GetAttr("dtype");
+        dynamic dyn_dtype = dtype;
+        dynamic np = m_numpy_module;
+        PyObject dtype_f64 = np.float64;
+        bool is_same = dtype == dtype_f64;
+        //string dt2 = dtype.As<string>();
+        //int dtype = nd.dtype.As<int>();
+        int item_size = nd.itemsize;
+        int nb_item = nd.size;
+        UInt64 nd_address = p.As<UInt64>();
+        bool is_c_contiguous = nd.flags.c_contiguous;
+        if (!is_c_contiguous)
+          throw new BadNDArrayException("NDArray is not 'c_contiguous'");
+        PyTuple nd_shape = nd.shape;
+        long nd_shape_len = nd_shape.Length();
+        // TODO: Vérifier que le tableau est layout 'C' et contigu
+        Console.WriteLine("ND address={0} is_c?={1} shape={2} shape_len={3}", nd_address, is_c_contiguous, nd_shape, nd_shape_len);
+        Console.WriteLine("ND dtype={0} item_size={1} nb_item={2} is_float64={3} x={4}", dtype, item_size, nb_item, is_same, dyn_dtype.str);
         // TODO Supprimer le passage par un double[]
         xvalues = nd_array.As<double[]>();
+        memory_view = new ConstMemoryView((IntPtr)nd_address, nb_item * item_size, nb_item, item_size);
       }
       Console.WriteLine("X=" + xvalues.Length);
-      using (var rview_wrapper = new RealArrayView.Wrapper(xvalues))
-      {
-        RealConstArrayView v = rview_wrapper.ConstView;
-        ConstArrayView<double> cv = v;
-        ConstMemoryView mv = ConstMemoryView.FromView(cv);
-        Arcane.VariableUtilsInternal.SetFromMemoryBuffer(var_wrapper.m_variable, mv);
+      bool use_memory_view = true;
+      if (use_memory_view) {
+        //Console.WriteLine("DIRECT_COPY FROM NUMPY ARRAY");
+        Arcane.VariableUtilsInternal.SetFromMemoryBuffer(var_wrapper.m_variable, memory_view);
+      }
+      else {
+        using (var rview_wrapper = new RealArrayView.Wrapper(xvalues)) {
+          RealConstArrayView v = rview_wrapper.ConstView;
+          ConstArrayView<double> cv = v;
+          ConstMemoryView mv = ConstMemoryView.FromView(cv);
+          //Arcane.VariableUtilsInternal.SetFromMemoryBuffer(var_wrapper.m_variable, mv);
+          //Console.WriteLine("DIRECT_COPY FROM NUMPY ARRAY");
+          Arcane.VariableUtilsInternal.SetFromMemoryBuffer(var_wrapper.m_variable, mv);
+        }
       }
     }
     public IMesh DefaultMesh { get { return m_default_mesh; } }
