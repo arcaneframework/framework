@@ -16,6 +16,9 @@ using System.Runtime.CompilerServices;
 // besoin de ItemInternal
 [assembly: InternalsVisibleToAttribute("Arcane.Cea.Materials")]
 
+// Pour accéder aux constructeurs internes de ConstMemoryView
+[assembly: InternalsVisibleToAttribute("Arcane.Python")]
+
 namespace Arcane
 {
   public static class ArcaneMain

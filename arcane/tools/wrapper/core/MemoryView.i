@@ -43,6 +43,14 @@ ARCANE_SWIG_GENERATE_MEMORY_VIEW(Arcane::ConstMemoryView,Arcane.ConstMemoryView)
   Int64 m_nb_element;
   Int32 m_datatype_size;
 
+  internal ConstMemoryView(IntPtr ptr,Int64 size,Int32 nb_element,Int32 datatype_size)
+  {
+    m_ptr = ptr;
+    m_size = size;
+    m_nb_element = nb_element;
+    m_datatype_size = datatype_size;
+  }
+
   static public ConstMemoryView FromView<T>(ConstArrayView<T> buf)
   where T : unmanaged
   {
