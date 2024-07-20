@@ -9,6 +9,137 @@ antérieures à la version 3 sont listées ici : \ref arcanedoc_news_changelog20
 
 ___
 
+## Arcane Version 3.13.08 (19 juillet 2024) {#arcanedoc_version3130}
+
+### Nouveautés/Améliorations
+
+- Ajoute support expérimental pour créer une variable du maillage sans
+  référence. Il faut pour cela l'initialiser avec une instance de
+  \arcane{NullVariableBuildInfo} (\pr{1510}).
+- Ajoute support pour l'équilibrage de charge dynamique avec plusieurs
+  maillages (\pr{1505}, \pr{1515}).
+- Ajoute support pour les synchronisations sur un sous-ensemble des
+  entités fantômes (\pr{1468}, \pr{1484}, \pr{1486}).
+- Amélioration et passage en anglais du README (\pr{1466}).
+- Ajoute support expérimental de l'AMR par patch (\pr{1413}).
+- Débute le support pour intégrer du code python lors de
+  l'exécution. Ce support est considéré comme expérimental
+  (\pr{1447}, \pr{1449}, \pr{1454}, \pr{1456},\pr{1461}, \pr{1462},
+  \pr{1471}, \pr{1479}, \pr{1493}, \pr{1494}, \pr{1499}, \pr{1501},
+  \pr{1502}, \pr{1513}, \pr{1522}, \pr{1525}).
+
+#### API Accélérateur
+
+- Ajoute accès accélérateur à certaines méthodes (\pr{1539})
+- Optimise les noyaux de calcul pour la gestion des mise à jour des
+  matériaux (\pr{1421}, \pr{1422}, \pr{1424}, \pr{1426}, \pr{1431},
+  \pr{1432}, \pr{1434}, \pr{1437}, \pr{1440}, \pr{1441}, \pr{1443},
+  \pr{1458}, \pr{1472}, \pr{1473}, \pr{1474}, \pr{1488}, \pr{1489})
+- Mise à jour de la documentation (\pr{1483}, \pr{1492}, \pr{1508})
+- Ajoute arguments templates pour spécifier la taille des entiers
+  utilisés pour l'indexation (`Int32` ou `Int64`) (\pr{1398}).
+- Ajoute support pour les réductions version 2 dans
+  RUNCOMMAND_MAT_ENUMERATE() (\pr{1390}).
+- Continue travail de portage SYCL (\pr{1389}, \pr{1391}, \pr{1393},
+  \pr{1396}).
+- Améliore la gestion du padding SIMD pour \arcane{ItemGroup} pour ne
+  le faire qu'à la demande et le faire sur accélérateur si possible
+  (\pr{1405}, \pr{1523}, \pr{1524}).
+
+### Changements
+
+- Supprime la composante gérant les expressions vectorielles sur les
+  variables car elle n'est plus utilisée depuis longtemps (\pr{1537})
+- Utilise `clock_gettime()` au lieu de `clock()` pour mesurer le temps
+  CPU utilisé (\pr{1532})
+- Utilise par défaut la version parallèle du lecteur *MSH*. Il est
+  toujours possible d'utiliser la version séquentielle en positionnant
+  la variable d'environnement `ARCANE_USE_PARALLEL_MSH_READER` à `0`
+  (\pr{1528}).
+- Supprime le support de la compilation du C# avec `mono`. Il faut
+  maintenant obligatoire utiliser `dotnet` (version 6 au minimum)
+  (\pr{1470}).
+- Renomme \arcane{ArrayIndex} en \arcane{MDIndex} (\pr{1397}).
+- Ajoute possibilité de récupérer une \arcanemat{ComponentCell} à
+  partir d'un \arcanemat{ComponentItemVectorView} (\pr{1478})
+
+### Corrections
+
+- Corrige divers bugs dans la gestion des graphes du maillage (\pr{1536},
+  \pr{1535})
+- Corrige *situations de concurrence* potentielles en mode multi-thread
+  (\pr{1467}, \pr{1534}, \pr{1533}, \pr{1529})
+- Ajoute support des maillages 1D dans le format VtkHdfV2 (\pr{1519})
+- Ré-active l'envoi de signaux dans un handler de signal. Cela avait
+  été implicitement désactivé lors de l'utilisation de `sigaction` au
+  lieu de `sigset` pour positionner les signaux (\pr{1518})
+- Corrige lecture des groupes dans le format `MSH` lorsqu'il y a
+  plusieurs groupes par entité physique (\pr{1507}, \pr{1509}).
+- Ajoute tests de vérification dans l'utilisation des variables
+  partielles (\pr{1485})
+- Indique explicitement le type sous-jacent pour \arcane{eDataType}
+  (\pr{1418})
+- Corrige non-réutilisation de la mémoire allouée pour les réductions
+  introduite lors de la création de la version 2 des réductions
+  (\pr{1439}).
+- Corrige mauvais calcul potentiel du nombre d'entités à sérialiser ce
+  qui pouvait se traduire par un débordement de tableau (\pr{1423}).
+- Ne conserve pas les propriétés de changement de comportement dans
+  \arcanemat{MeshMaterialModifier} pour éviter des incohérences
+  (\pr{1453}).
+
+### Interne
+
+- Utilise une seule instance de \arcane{DofManager} (\pr{1538})
+- Supprime plusieurs utilisation de la Glib (\pr{1531})
+- Supprime certaines utilisations obsolètes de \arcane{ItemInternal}
+  dans le wrapper C# (\pr{1517}, \pr{1520})
+- Améliore la gestion de la compilation C# et des dépendances SWIG en
+  utilisant un seul projet et corrige divers problèmes de dépendance
+  dans la gestion CMake (\pr{1433}, \pr{1407}, \pr{1410}, \pr{1411},
+  \pr{1412}, \pr{1414}, \pr{1425}, \pr{1427}, \pr{1428}, \pr{1429},
+  \pr{1455}, \pr{1480}, \pr{1487}, \pr{1495}, \pr{1497}, \pr{1498})
+- Améliorations diverses dans la gestion des maillages polyédriques
+  (\pr{1435}, \pr{1436}, \pr{1438}, \pr{1463}, \pr{1496})
+
+### Compilation et Intégration Continue (CI)
+
+- Ajoute tests python dans certains workflows (\pr{1448}, \pr{1526}).
+- Mise à jour des images ubuntu (\pr{1417}, \pr{1442}, \pr{1503}).
+- Active `ccache` pour le workflow `codecov` (\pr{1464}).
+- Passage à la version `vcpkg` 2024.04 pour le workflow
+  `compile-all-vcpkg` (\pr{1450}).
+- Utilise une variable CMake spécifique pour activer la couverture de
+  test (\pr{1444}, \pr{1445}).
+- Mise à jour des CI pour ne plus utiliser les actions github
+  obsolètes (\pr{1416}).
+- Mise à jour des CI pour les dockers IFPEN (\pr{1402}, \pr{1409})
+- Ajoute possibilité d'utiliser des tests accélérateurs via googletest
+  (\pr{1401}, \pr{1403}).
+- Utilise explicitement le service d'échange de message séquentiel
+  pour les tests séquentiels (\pr{1430}).
+
+### Arccore
+
+- Utilise \arccore{MessagePassing::MessageRank::anySourceRank()} au
+  lieu du constructeur par défaut pour spécifier
+  `MPI_ANY_SOURCE`. L'ancien mécanisme reste temporairement valide
+  (\pr{1511}, \pr{1512}).
+- Supprime `const` pour le type de retour de certaines méthodes de
+  \arccore{ArrayIterator} pour qu'elles soient conformes à la norme
+  C++ (\pr{1392})
+
+### Axlstar
+
+- Amélioration de la documentation générée à partir des fichiers AXL
+  (\pr{1452})
+
+### Alien
+
+- Corrections diverses (\pr{1395}, \pr{1415}, \pr{1465}, \pr{1491},
+  \pr{1500}, \pr{1506}, \pr{1514})
+- Ajoute support de la norme infinie (\pr{1504})
+
 ## Arcane Version 3.12.18 (02 mai 2024) {#arcanedoc_version3120}
 
 \note Avec cette version, il est nécessaire d'activer le C++20 pour pouvoir
@@ -20,11 +151,11 @@ faut alors au moins les versions GCC 11, Clang 16 ou Visual Studio
 ### Nouveautés/Améliorations
 
 - Ajoute possibilité de trier par uniqueId() croissant les faces et
-  arêtes connectées aux noeuds (\pr{990}). Cela n'est pas actif par défaut pour
-  compatibilité avec l'existant. Le tri permet d'avoir toujours le
-  même ordre de parcours pour les faces et les arêtes des noeuds ce
-  qui peut aider pour avoir des calculs répétables. Pour l'activer, il
-  faut positionner la variable d'environnement
+  arêtes connectées aux noeuds (\pr{990}). Cela n'est pas actif par
+  défaut pour compatibilité avec l'existant. Le tri permet d'avoir
+  toujours le même ordre de parcours pour les faces et les arêtes des
+  noeuds ce qui peut aider pour avoir des calculs répétables. Pour
+  l'activer, il faut positionner la variable d'environnement
   `ARCANE_SORT_FACE_AND_EDGE_OF_NODE` à `1` ou utiliser le code
   suivant:
   ~~~{.cpp}
