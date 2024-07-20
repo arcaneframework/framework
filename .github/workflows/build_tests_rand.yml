@@ -67,6 +67,7 @@ jobs:
       type_build: ${{ matrix.config.type }}
       cmake_additionnal_args: '${{ matrix.image.args }} ${{ matrix.version.args }}'
       verbose: true
+      ccache_debug_mode: false
       with_samples: true
       with_rand_script: true
       execute_tests: ${{ matrix.image.execute_tests }}

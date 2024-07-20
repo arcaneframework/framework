@@ -119,7 +119,7 @@ jobs:
 
     name: '[${{matrix.image.short}}_${{matrix.version.short}}]_${{matrix.mpi.implementation}}_${{matrix.config.type}}'
     # La partie 'uses' est déterminée à la compilation, donc on ne peut pas mettre de variable ${{}}.
-    uses: 'arcaneframework/gh_actions/.github/workflows/reusable_test_framework.yml@dev/ah-dir-size'
+    uses: 'arcaneframework/gh_actions/.github/workflows/reusable_test_framework.yml@v2'
     with:
       image: ghcr.io/arcaneframework/${{matrix.image.long}}:${{matrix.image.compilo_name}}-${{matrix.image.compilo_version}}_${{matrix.version.long}}_${{matrix.image.date}}
       compilo_name: ${{ matrix.image.compilo_name }}
@@ -130,6 +130,7 @@ jobs:
       type_build: ${{ matrix.config.type }}
       cmake_additionnal_args: '${{ matrix.image.args }} ${{ matrix.version.args }}'
       verbose: true
+      ccache_debug_mode: false
       with_samples: true
       execute_tests: ${{ matrix.image.execute_tests }}
       excluded_tests: ${{ matrix.config.excluded_tests }}

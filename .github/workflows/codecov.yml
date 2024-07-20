@@ -101,6 +101,7 @@ jobs:
           log_dir: ${{ env.LOG_DIR }}
           cache_dir: ${{ env.CCACHE_DIR }}
           max_size_cache_dir: 1G
+          ccache_debug_mode: false
           cmake_additionnal_args: '-DCMAKE_CXX_FLAGS_RELEASE="-O2 -g"
             -DARCCORE_CXX_STANDARD=20
             -DARCCORE_ENABLE_CODE_COVERAGE=ON
