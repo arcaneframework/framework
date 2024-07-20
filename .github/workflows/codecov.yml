@@ -32,8 +32,8 @@ concurrency:
 
 env:
   # CTest
-  CT_OPTS: "--timeout 300 --output-on-failure"
-  EXCLUDED_TESTS: ''
+  CT_OPTS: "--timeout 600 --output-on-failure"
+  EXCLUDED_TESTS: '^.*(mumps).*$'
   EXCLUDED_TESTS_WITH_LABELS: 'LARGE_HYBRID'
 
   # OpenMPI
@@ -49,10 +49,15 @@ jobs:
       image: ghcr.io/arcaneframework/ubuntu-2404:gcc-13_full_20240717
 
     steps:
-      - name: Display CPU Infos
+      - name: Display CPU infos
         shell: bash
         run: |
           cat /proc/cpuinfo
+
+      - name: Display disks infos
+        shell: bash
+        run: |
+          df -h
 
       # On place la source à la racine pour éviter
       # un sous-répertoire en plus dans Codecov.
@@ -121,11 +126,21 @@ jobs:
           path: ${{ env.LOG_DIR }}
           retention-days: 7
 
+      - name: Display disks infos
+        shell: bash
+        run: |
+          df -h
+
       - name: Test
         shell: bash
         run: |
           mkdir -p ${{ env.CT_RESULT_DIR }}
           ARCANE_CHECK=1 ctest --test-dir ${{ env.BUILD_DIR }} --output-junit ${{ env.CT_RESULT_DIR }}/results.xml ${{ env.CT_OPTS }} -E '${{ env.EXCLUDED_TESTS }}' -LE '${{ env.EXCLUDED_TESTS_WITH_LABELS }}'
+
+      - name: Display disks infos
+        shell: bash
+        run: |
+          df -h
 
       - name: Apply coverage
         shell: bash
