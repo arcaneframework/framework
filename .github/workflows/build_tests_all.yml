@@ -130,10 +130,9 @@ jobs:
       type_build: ${{ matrix.config.type }}
       cmake_additionnal_args: '${{ matrix.image.args }} ${{ matrix.version.args }}'
       verbose: true
-      ccache_debug_mode: false
       with_samples: true
       execute_tests: ${{ matrix.image.execute_tests }}
       excluded_tests: ${{ matrix.config.excluded_tests }}
       excluded_tests_with_labels: ${{ matrix.config.excluded_tests_with_labels }}
       ctest_additionnal_args: ${{ matrix.config.ctest_args }}
-      cache_key_prefix: ${{matrix.image.short}}_${{matrix.version.short}}
+      use_cache: false
