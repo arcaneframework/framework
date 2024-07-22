@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* GhostLayerBuilder2.cc                                       (C) 2000-2022 */
+/* GhostLayerBuilder2.cc                                       (C) 2000-2024 */
 /*                                                                           */
 /* Construction des couches fantomes.                                        */
 /*---------------------------------------------------------------------------*/
@@ -125,16 +125,61 @@ _printItem(ItemInternal* ii,std::ostream& o)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
+/*!
+ * \brief Structure contenant les informations des noeuds frontières.
+ *
+ * Cette structure est utilisée pour communiquer avec les autres rangs.
+ * Il faut donc qu'elle soit de type POD. Pour la communication avec les autres
+ * rang on la converti en un type de base qui est un Int64. Il faut donc aussi
+ * que sa taille soit un multiple de celle d'un Int64..
+ */
 class GhostLayerBuilder2::BoundaryNodeInfo
 {
  public:
-  BoundaryNodeInfo()
-  : node_uid(NULL_ITEM_UNIQUE_ID), cell_uid(NULL_ITEM_UNIQUE_ID),cell_owner(-1){}
+
+  using BasicType = Int64;
+  static constexpr Int64 nbBasicTypeSize() { return 3; }
+
  public:
-  Int64 node_uid;
-  Int64 cell_uid;
-  Int32 cell_owner;
+
+  static ConstArrayView<BasicType> asBasicBuffer(ConstArrayView<BoundaryNodeInfo> values)
+  {
+    Int32 message_size = messageSize(values);
+    const BoundaryNodeInfo* fsi_base = values.data();
+    auto* ptr = reinterpret_cast<const Int64*>(fsi_base);
+    return ConstArrayView<BasicType>(message_size, ptr);
+  }
+
+  static ArrayView<BasicType> asBasicBuffer(ArrayView<BoundaryNodeInfo> values)
+  {
+    Int32 message_size = messageSize(values);
+    BoundaryNodeInfo* fsi_base = values.data();
+    auto* ptr = reinterpret_cast<Int64*>(fsi_base);
+    return ArrayView<BasicType>(message_size, ptr);
+  }
+
+  static Int32 messageSize(ConstArrayView<BoundaryNodeInfo> values)
+  {
+    static_assert((sizeof(Int64) * nbBasicTypeSize()) == sizeof(BoundaryNodeInfo));
+    Int64 message_size_i64 = values.size() * nbBasicTypeSize();
+    Int32 message_size = CheckedConvert::toInteger(message_size_i64);
+    return message_size;
+  }
+
+  static Int32 nbElement(Int32 message_size)
+  {
+    if ((message_size % nbBasicTypeSize()) != 0)
+      ARCANE_FATAL("Message size '{0}' is not a multiple of basic size '{1}'", message_size, nbBasicTypeSize());
+    Int32 nb_element = message_size / nbBasicTypeSize();
+    return nb_element;
+  }
+
+ public:
+
+  Int64 node_uid = NULL_ITEM_UNIQUE_ID;
+  Int64 cell_uid = NULL_ITEM_UNIQUE_ID;
+  Int32 cell_owner = -1;
+  Int32 padding = 0;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -166,19 +211,19 @@ class GhostLayerBuilder2::BoundaryNodeBitonicSortTraits
 
   static Parallel::Request send(IParallelMng* pm,Int32 rank,ConstArrayView<BoundaryNodeInfo> values)
   {
-    const BoundaryNodeInfo* fsi_base = values.data();
-    return pm->send(ByteConstArrayView(messageSize(values),(const Byte*)fsi_base),rank,false);
+    auto buf_view = BoundaryNodeInfo::asBasicBuffer(values);
+    return pm->send(buf_view, rank, false);
   }
 
   static Parallel::Request recv(IParallelMng* pm,Int32 rank,ArrayView<BoundaryNodeInfo> values)
   {
-    BoundaryNodeInfo* fsi_base = values.data();
-    return pm->recv(ByteArrayView(messageSize(values),(Byte*)fsi_base),rank,false);
+    auto buf_view = BoundaryNodeInfo::asBasicBuffer(values);
+    return pm->recv(buf_view, rank, false);
   }
 
   static Integer messageSize(ConstArrayView<BoundaryNodeInfo> values)
   {
-    return CheckedConvert::toInteger(values.size()*sizeof(BoundaryNodeInfo));
+    return BoundaryNodeInfo::messageSize(values);
   }
 
   static BoundaryNodeInfo maxValue()
@@ -750,8 +795,8 @@ _sortBoundaryNodeList(Array<BoundaryNodeInfo>& boundary_node_list)
     requests.clear();
     
     if (recv_message_size!=0){
-      Integer message_size = CheckedConvert::toInteger(recv_message_size/sizeof(BoundaryNodeInfo));
-      end_node_list_recv.resize(message_size);
+      Int32 nb_element = BoundaryNodeInfo::nbElement(recv_message_size);
+      end_node_list_recv.resize(nb_element);
       requests.add(BoundaryNodeBitonicSortTraits::recv(pm,my_rank+1,end_node_list_recv));
     }
     if (send_message_size!=0)
