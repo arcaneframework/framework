@@ -740,7 +740,7 @@ _addGhostLayer(Integer current_layer,Int32ConstArrayView node_layer)
 
   {
     Integer index = 0;
-    Int32UniqueArray my_cells;
+    UniqueArray<Int32> my_cells;
     SharedArray<Int32> ranks_to_send;
     std::set<Int32> ranks_done;
     while (index<total_nb_to_recv){
@@ -748,6 +748,7 @@ _addGhostLayer(Integer current_layer,Int32ConstArrayView node_layer)
       ++index;
       Int64 nb_cell = recv_infos[index];
       ++index;
+      Node current_node(nodes_map.lookupValue(node_uid));
       if (is_verbose)
         info() << "NODE uid=" << node_uid << " nb_cell=" << nb_cell << " idx=" << (index-2);
       my_cells.clear();
@@ -769,7 +770,13 @@ _addGhostLayer(Integer current_layer,Int32ConstArrayView node_layer)
           ItemInternalMap::Data* dcell = cells_map.lookup(cell_uid);
           if (!dcell)
             throw FatalErrorException(A_FUNCINFO,"Internal error: cell not in our mesh");
-          my_cells.add(dcell->value()->localId());
+          if (do_only_minimal_uid){
+            // Ajoute toutes les mailles autour de mon noeud
+            for( CellLocalId c : current_node.cellIds() )
+              my_cells.add(c);
+          }
+          else
+            my_cells.add(dcell->value()->localId());
         }
         else{
           if (ranks_done.find(cell_owner)==ranks_done.end()){
@@ -779,13 +786,18 @@ _addGhostLayer(Integer current_layer,Int32ConstArrayView node_layer)
         }
       }
 
-      if (is_verbose)
+      if (is_verbose){
         info() << "CELLS TO SEND: node_uid=" << node_uid
                << " nb_rank=" << ranks_to_send.size()
                << " nb_cell=" << my_cells.size();
+        info(4) << "CELLS TO SEND: node_uid=" << node_uid
+                << " rank=" << ranks_to_send
+                << " cell=" << my_cells;
+      }
 
       for( Integer zrank=0, zn=ranks_to_send.size(); zrank<zn; ++zrank ){
-        SubDomainItemMap::Data* d = cells_to_send.lookupAdd(ranks_to_send[zrank]);
+        Int32 send_rank = ranks_to_send[zrank];
+        SubDomainItemMap::Data* d = cells_to_send.lookupAdd(send_rank);
         Int32Array& c = d->value();
         for( Integer zid=0, zid_size=my_cells.size(); zid<zid_size; ++zid ){
           // TODO: regarder si maille pas déjà présente et ne pas l'ajouter si ce n'est pas nécessaire.
