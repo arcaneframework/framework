@@ -24,6 +24,7 @@
 #include "arcane/core/parallel/BitonicSortT.H"
 #include "arcane/core/ParallelMngUtils.h"
 #include "arcane/core/ItemGroup.h"
+#include "arcane/core/IItemFamily.h"
 #include "arcane/core/MeshUtils.h"
 
 /*---------------------------------------------------------------------------*/
