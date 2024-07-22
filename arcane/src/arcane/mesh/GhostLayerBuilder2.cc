@@ -79,6 +79,7 @@ class GhostLayerBuilder2
   bool m_is_allocate = false;
   Int32 m_version = -1;
   bool m_use_optimized_node_layer = true;
+  bool m_use_only_minimal_cell_uid = false;
 
  private:
   
@@ -102,8 +103,14 @@ GhostLayerBuilder2(DynamicMeshIncrementalBuilder* mesh_builder,bool is_allocate,
 , m_is_allocate(is_allocate)
 , m_version(version)
 {
-  if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_GHOSTLAYER_USE_OPTIMIZED_LAYER", true))
-    m_use_optimized_node_layer = (v.value()!=0);
+  if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_GHOSTLAYER_USE_OPTIMIZED_LAYER", true)) {
+    Int32 vv = v.value();
+    m_use_optimized_node_layer = (vv == 1 || vv == 3);
+    m_use_only_minimal_cell_uid = (v == 2 || vv == 3);
+  }
+  if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_GHOSTLAYER_VERBOSE", true)) {
+    m_is_verbose = (v.value()!=0);
+  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -400,14 +407,14 @@ addGhostLayers()
   // Le but est de ne jamais transférer ces noeux.
   // NOTE: Ce mécanisme a été ajouté en juillet 2024 pour la version 3.14.
   //       S'il fonctionne bien on pourra ne conserver que cette méthode.
-  if (m_use_optimized_node_layer){
+  if (m_use_optimized_node_layer) {
     Integer nb_no_layer = 0;
-    ENUMERATE_ITEM_INTERNAL_MAP_DATA(iid,nodes_map){
+    ENUMERATE_ITEM_INTERNAL_MAP_DATA (iid, nodes_map) {
       ItemInternal* node = iid->value();
       Int32 lid = node->localId();
       Int32 layer = node_layer[lid];
-      if (layer<=0){
-        node_layer[lid] = nb_ghost_layer+1;
+      if (layer <= 0) {
+        node_layer[lid] = nb_ghost_layer + 1;
         ++nb_no_layer;
       }
     }
@@ -484,6 +491,13 @@ _addGhostLayer(Integer current_layer,Int32ConstArrayView node_layer)
   Int64 nb_added_for_different_rank = 0;
   Int64 nb_added_for_in_layer = 0;
 
+  const Int32 max_local_id = node_layer.size();
+
+  // Tableaux contenant pour chaque noeud le uid de la plus petite maille connectée
+  // et le rang associé. Si le uid est A_NULL_UNIQUE_ID il ne faut pas ajouter ce noeud.
+  UniqueArray<Int64> node_cell_uids(max_local_id, NULL_ITEM_UNIQUE_ID);
+
+  const bool do_only_minimal_uid = m_use_only_minimal_cell_uid;
   // On doit envoyer tous les noeuds dont le numéro de couche est différent de (-1).
   // NOTE: pour la couche au dessus de 1, il ne faut envoyer qu'une seule valeur.
   ENUMERATE_ITEM_INTERNAL_MAP_DATA(iid,cells_map){
@@ -506,7 +520,39 @@ _addGhostLayer(Integer current_layer,Int32ConstArrayView node_layer)
           ++nb_added_for_in_layer;
       }
       if (do_it){
-        Int64 node_uid = node.uniqueId();
+        Int32 node_lid = node.localId();
+        Int64 current_uid = node_cell_uids[node_lid];
+        if (do_only_minimal_uid) {
+          if ((current_uid == NULL_ITEM_UNIQUE_ID) || cell_uid < current_uid) {
+            node_cell_uids[node_lid] = cell_uid;
+            if (is_verbose)
+              info() << "AddNode node_uid=" << node.uniqueId() << " cell=" << cell_uid;
+          }
+          else
+            if (is_verbose)
+              info() << "AddNode node_uid=" << node.uniqueId() << " cell=" << cell_uid << " not done current=" << current_uid;
+        }
+        else {
+          Int64 node_uid = node.uniqueId();
+          BoundaryNodeInfo nci;
+          nci.node_uid = node_uid;
+          nci.cell_uid = cell_uid;
+          nci.cell_owner = my_rank;
+          boundary_node_list.add(nci);
+          if (is_verbose)
+            info() << "AddNode node_uid=" << node.uniqueId() << " cell=" << cell_uid;
+        }
+      }
+    }
+  }
+
+  if (do_only_minimal_uid) {
+    ENUMERATE_ITEM_INTERNAL_MAP_DATA (iid, nodes_map) {
+      ItemInternal* node = iid->value();
+      Int32 lid = node->localId();
+      Int64 cell_uid = node_cell_uids[lid];
+      if (cell_uid != NULL_ITEM_UNIQUE_ID) {
+        Int64 node_uid = node->uniqueId();
         BoundaryNodeInfo nci;
         nci.node_uid = node_uid;
         nci.cell_uid = cell_uid;
@@ -515,9 +561,11 @@ _addGhostLayer(Integer current_layer,Int32ConstArrayView node_layer)
       }
     }
   }
+
   info() << "NB BOUNDARY NODE LIST=" << boundary_node_list.size()
          << " nb_added_for_different_rank=" << nb_added_for_different_rank
-         << " nb_added_for_in_layer=" << nb_added_for_in_layer;
+         << " nb_added_for_in_layer=" << nb_added_for_in_layer
+         << " do_only_minimal=" << do_only_minimal_uid;
 
   _sortBoundaryNodeList(boundary_node_list);
   SharedArray<BoundaryNodeInfo> all_boundary_node_info = boundary_node_list;
@@ -553,6 +601,8 @@ _addGhostLayer(Integer current_layer,Int32ConstArrayView node_layer)
         si.m_index = i;
         si.m_nb_cell = nb_same_node;
         node_list_to_send.add(si);
+        if (is_verbose)
+          info() << "Add ghost uid=" << node_uid << " index=" << i << " nb_same_node=" << nb_same_node;
       }
       i = last_i-1;
     }
