@@ -16,19 +16,20 @@
 #include "arcane/utils/ScopedPtr.h"
 #include "arcane/utils/ITraceMng.h"
 #include "arcane/utils/CheckedConvert.h"
+#include "arcane/utils/ValueConvert.h"
 
-#include "arcane/parallel/BitonicSortT.H"
+#include "arcane/core/parallel/BitonicSortT.H"
 
-#include "arcane/IParallelExchanger.h"
-#include "arcane/ISerializeMessage.h"
-#include "arcane/SerializeBuffer.h"
-#include "arcane/ISerializer.h"
-#include "arcane/ItemPrinter.h"
-#include "arcane/Timer.h"
-#include "arcane/IGhostLayerMng.h"
-#include "arcane/IItemFamilyPolicyMng.h"
-#include "arcane/IItemFamilySerializer.h"
-#include "arcane/ParallelMngUtils.h"
+#include "arcane/core/IParallelExchanger.h"
+#include "arcane/core/ISerializeMessage.h"
+#include "arcane/core/SerializeBuffer.h"
+#include "arcane/core/ISerializer.h"
+#include "arcane/core/ItemPrinter.h"
+#include "arcane/core/Timer.h"
+#include "arcane/core/IGhostLayerMng.h"
+#include "arcane/core/IItemFamilyPolicyMng.h"
+#include "arcane/core/IItemFamilySerializer.h"
+#include "arcane/core/ParallelMngUtils.h"
 
 #include "arcane/mesh/DynamicMesh.h"
 #include "arcane/mesh/DynamicMeshIncrementalBuilder.h"
@@ -56,8 +57,8 @@ class GhostLayerBuilder2
 
  public:
 
-  typedef DynamicMeshKindInfos::ItemInternalMap ItemInternalMap;
-  typedef HashTableMapT<Int32,SharedArray<Int32> > SubDomainItemMap;
+  using ItemInternalMap = DynamicMeshKindInfos::ItemInternalMap;
+  using SubDomainItemMap = HashTableMapT<Int32,SharedArray<Int32> >;
   
  public:
 
@@ -71,12 +72,13 @@ class GhostLayerBuilder2
 
  private:
 
-  DynamicMesh* m_mesh;
-  DynamicMeshIncrementalBuilder* m_mesh_builder;
-  IParallelMng* m_parallel_mng;
-  bool m_is_verbose;
-  bool m_is_allocate;
-  Int32 m_version;
+  DynamicMesh* m_mesh = nullptr;
+  DynamicMeshIncrementalBuilder* m_mesh_builder = nullptr;
+  IParallelMng* m_parallel_mng = nullptr;
+  bool m_is_verbose = false;
+  bool m_is_allocate = false;
+  Int32 m_version = -1;
+  bool m_use_optimized_node_layer = true;
 
  private:
   
@@ -97,10 +99,11 @@ GhostLayerBuilder2(DynamicMeshIncrementalBuilder* mesh_builder,bool is_allocate,
 , m_mesh(mesh_builder->mesh())
 , m_mesh_builder(mesh_builder)
 , m_parallel_mng(m_mesh->parallelMng())
-, m_is_verbose(false)
 , m_is_allocate(is_allocate)
 , m_version(version)
 {
+  if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_GHOSTLAYER_USE_OPTIMIZED_LAYER", true))
+    m_use_optimized_node_layer = (v.value()!=0);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -172,6 +175,23 @@ class GhostLayerBuilder2::BoundaryNodeInfo
       ARCANE_FATAL("Message size '{0}' is not a multiple of basic size '{1}'", message_size, nbBasicTypeSize());
     Int32 nb_element = message_size / nbBasicTypeSize();
     return nb_element;
+  }
+
+ public:
+
+  struct HashFunction
+  {
+    size_t operator()(const BoundaryNodeInfo& a) const
+    {
+      size_t h1 = std::hash<Int64>{}(a.node_uid);
+      size_t h2 = std::hash<Int64>{}(a.cell_uid);
+      size_t h3 = std::hash<Int32>{}(a.cell_owner);
+      return h1 ^ h2 ^ h3;
+    }
+  };
+  friend bool operator==(const BoundaryNodeInfo& a, const BoundaryNodeInfo& b)
+  {
+    return (a.node_uid == b.node_uid && a.cell_uid == b.cell_uid && a.cell_owner == b.cell_owner);
   }
 
  public:
@@ -375,6 +395,25 @@ addGhostLayers()
     }
   }
 
+  // Marque les noeuds pour lesquels on n'a pas encore assigné la couche fantôme.
+  // Pour eux on indique qu'on est sur la couche 'nb_ghost_layer+1'.
+  // Le but est de ne jamais transférer ces noeux.
+  // NOTE: Ce mécanisme a été ajouté en juillet 2024 pour la version 3.14.
+  //       S'il fonctionne bien on pourra ne conserver que cette méthode.
+  if (m_use_optimized_node_layer){
+    Integer nb_no_layer = 0;
+    ENUMERATE_ITEM_INTERNAL_MAP_DATA(iid,nodes_map){
+      ItemInternal* node = iid->value();
+      Int32 lid = node->localId();
+      Int32 layer = node_layer[lid];
+      if (layer<=0){
+        node_layer[lid] = nb_ghost_layer+1;
+        ++nb_no_layer;
+      }
+    }
+    info() << "Mark remaining nodes nb=" << nb_no_layer;
+  }
+
   for( Integer i=1; i<=nb_ghost_layer; ++i )
     _addGhostLayer(i,node_layer);
 }
@@ -442,6 +481,9 @@ _addGhostLayer(Integer current_layer,Int32ConstArrayView node_layer)
   ItemInternalMap& cells_map = m_mesh->cellsMap();
   ItemInternalMap& nodes_map = m_mesh->nodesMap();
 
+  Int64 nb_added_for_different_rank = 0;
+  Int64 nb_added_for_in_layer = 0;
+
   // On doit envoyer tous les noeuds dont le numéro de couche est différent de (-1).
   // NOTE: pour la couche au dessus de 1, il ne faut envoyer qu'une seule valeur.
   ENUMERATE_ITEM_INTERNAL_MAP_DATA(iid,cells_map){
@@ -453,14 +495,15 @@ _addGhostLayer(Integer current_layer,Int32ConstArrayView node_layer)
     for( Node node : cell.nodes() ){
       Int32 node_lid = node.localId();
       bool do_it = false;
-      //if (node_lid>=node_layer.size())
-      //do_it = true;
       if (cell.owner()!=my_rank){
         do_it = true;
+        ++nb_added_for_different_rank;
       }
       else{
         Integer layer = node_layer[node_lid];
         do_it = layer<=current_layer;
+        if (do_it)
+          ++nb_added_for_in_layer;
       }
       if (do_it){
         Int64 node_uid = node.uniqueId();
@@ -472,7 +515,9 @@ _addGhostLayer(Integer current_layer,Int32ConstArrayView node_layer)
       }
     }
   }
-  info() << "NB BOUNDARY NODE LIST=" << boundary_node_list.size();
+  info() << "NB BOUNDARY NODE LIST=" << boundary_node_list.size()
+         << " nb_added_for_different_rank=" << nb_added_for_different_rank
+         << " nb_added_for_in_layer=" << nb_added_for_in_layer;
 
   _sortBoundaryNodeList(boundary_node_list);
   SharedArray<BoundaryNodeInfo> all_boundary_node_info = boundary_node_list;
@@ -770,7 +815,7 @@ _sortBoundaryNodeList(Array<BoundaryNodeInfo>& boundary_node_list)
         }
       }
     }
-    info() << "BEGIN_OWN_LIST_INDEX=" << begin_own_list_index;
+    info() << "BEGIN_OWN_LIST_INDEX=" << begin_own_list_index << " end_node_list_size=" << end_node_list.size();
     if (is_verbose){
       for( Integer k=0, kn=end_node_list.size(); k<kn; ++k )
         info() << " SEND node_uid=" << end_node_list[k].node_uid
@@ -790,7 +835,7 @@ _sortBoundaryNodeList(Array<BoundaryNodeInfo>& boundary_node_list)
     if (my_rank!=0){
       requests.add(pm->send(IntegerConstArrayView(1,&send_message_size),my_rank-1,false));
     }
-    
+    info() << "Send size=" << send_message_size << " Recv size=" << recv_message_size;
     pm->waitAllRequests(requests);
     requests.clear();
     
