@@ -79,7 +79,7 @@ class GhostLayerBuilder2
   bool m_is_allocate = false;
   Int32 m_version = -1;
   bool m_use_optimized_node_layer = true;
-  bool m_use_only_minimal_cell_uid = false;
+  bool m_use_only_minimal_cell_uid = true;
 
  private:
   
