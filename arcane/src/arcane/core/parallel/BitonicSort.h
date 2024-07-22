@@ -147,9 +147,9 @@ class BitonicSort
   //! Gestionnaire du parallèlisme
   IParallelMng* m_parallel_mng = nullptr;
   //! Nombre d'éléments locaux
-  Integer m_init_size = 0;
+  Int64 m_init_size = 0;
   //! Nombre d'éléments locaux pour le tri bitonique
-  Integer m_size = 0;
+  Int64 m_size = 0;
 
   //! Indique si on souhaite les infos sur les rangs et index
   bool m_want_index_and_rank = true;
