@@ -491,7 +491,7 @@ _addGhostLayer(Integer current_layer,Int32ConstArrayView node_layer)
   Int64 nb_added_for_different_rank = 0;
   Int64 nb_added_for_in_layer = 0;
 
-  const Int32 max_local_id = node_layer.size();
+  const Int32 max_local_id = m_mesh->nodeFamily()->maxLocalId();
 
   // Tableaux contenant pour chaque noeud le uid de la plus petite maille connectée
   // et le rang associé. Si le uid est A_NULL_UNIQUE_ID il ne faut pas ajouter ce noeud.
@@ -521,8 +521,8 @@ _addGhostLayer(Integer current_layer,Int32ConstArrayView node_layer)
       }
       if (do_it){
         Int32 node_lid = node.localId();
-        Int64 current_uid = node_cell_uids[node_lid];
         if (do_only_minimal_uid) {
+          Int64 current_uid = node_cell_uids[node_lid];
           if ((current_uid == NULL_ITEM_UNIQUE_ID) || cell_uid < current_uid) {
             node_cell_uids[node_lid] = cell_uid;
             if (is_verbose)
