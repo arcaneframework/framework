@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* GhostLayerBuilder2.cc                                       (C) 2000-2022 */
+/* GhostLayerBuilder2.cc                                       (C) 2000-2024 */
 /*                                                                           */
 /* Construction des couches fantomes.                                        */
 /*---------------------------------------------------------------------------*/
@@ -16,19 +16,20 @@
 #include "arcane/utils/ScopedPtr.h"
 #include "arcane/utils/ITraceMng.h"
 #include "arcane/utils/CheckedConvert.h"
+#include "arcane/utils/ValueConvert.h"
 
-#include "arcane/parallel/BitonicSortT.H"
+#include "arcane/core/parallel/BitonicSortT.H"
 
-#include "arcane/IParallelExchanger.h"
-#include "arcane/ISerializeMessage.h"
-#include "arcane/SerializeBuffer.h"
-#include "arcane/ISerializer.h"
-#include "arcane/ItemPrinter.h"
-#include "arcane/Timer.h"
-#include "arcane/IGhostLayerMng.h"
-#include "arcane/IItemFamilyPolicyMng.h"
-#include "arcane/IItemFamilySerializer.h"
-#include "arcane/ParallelMngUtils.h"
+#include "arcane/core/IParallelExchanger.h"
+#include "arcane/core/ISerializeMessage.h"
+#include "arcane/core/SerializeBuffer.h"
+#include "arcane/core/ISerializer.h"
+#include "arcane/core/ItemPrinter.h"
+#include "arcane/core/Timer.h"
+#include "arcane/core/IGhostLayerMng.h"
+#include "arcane/core/IItemFamilyPolicyMng.h"
+#include "arcane/core/IItemFamilySerializer.h"
+#include "arcane/core/ParallelMngUtils.h"
 
 #include "arcane/mesh/DynamicMesh.h"
 #include "arcane/mesh/DynamicMeshIncrementalBuilder.h"
@@ -56,8 +57,8 @@ class GhostLayerBuilder2
 
  public:
 
-  typedef DynamicMeshKindInfos::ItemInternalMap ItemInternalMap;
-  typedef HashTableMapT<Int32,SharedArray<Int32> > SubDomainItemMap;
+  using ItemInternalMap = DynamicMeshKindInfos::ItemInternalMap;
+  using SubDomainItemMap = HashTableMapT<Int32,SharedArray<Int32> >;
   
  public:
 
@@ -71,12 +72,14 @@ class GhostLayerBuilder2
 
  private:
 
-  DynamicMesh* m_mesh;
-  DynamicMeshIncrementalBuilder* m_mesh_builder;
-  IParallelMng* m_parallel_mng;
-  bool m_is_verbose;
-  bool m_is_allocate;
-  Int32 m_version;
+  DynamicMesh* m_mesh = nullptr;
+  DynamicMeshIncrementalBuilder* m_mesh_builder = nullptr;
+  IParallelMng* m_parallel_mng = nullptr;
+  bool m_is_verbose = false;
+  bool m_is_allocate = false;
+  Int32 m_version = -1;
+  bool m_use_optimized_node_layer = true;
+  bool m_use_only_minimal_cell_uid = true;
 
  private:
   
@@ -97,10 +100,17 @@ GhostLayerBuilder2(DynamicMeshIncrementalBuilder* mesh_builder,bool is_allocate,
 , m_mesh(mesh_builder->mesh())
 , m_mesh_builder(mesh_builder)
 , m_parallel_mng(m_mesh->parallelMng())
-, m_is_verbose(false)
 , m_is_allocate(is_allocate)
 , m_version(version)
 {
+  if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_GHOSTLAYER_USE_OPTIMIZED_LAYER", true)) {
+    Int32 vv = v.value();
+    m_use_optimized_node_layer = (vv == 1 || vv == 3);
+    m_use_only_minimal_cell_uid = (v == 2 || vv == 3);
+  }
+  if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_GHOSTLAYER_VERBOSE", true)) {
+    m_is_verbose = (v.value()!=0);
+  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -125,16 +135,78 @@ _printItem(ItemInternal* ii,std::ostream& o)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
+/*!
+ * \brief Structure contenant les informations des noeuds frontières.
+ *
+ * Cette structure est utilisée pour communiquer avec les autres rangs.
+ * Il faut donc qu'elle soit de type POD. Pour la communication avec les autres
+ * rang on la converti en un type de base qui est un Int64. Il faut donc aussi
+ * que sa taille soit un multiple de celle d'un Int64..
+ */
 class GhostLayerBuilder2::BoundaryNodeInfo
 {
  public:
-  BoundaryNodeInfo()
-  : node_uid(NULL_ITEM_UNIQUE_ID), cell_uid(NULL_ITEM_UNIQUE_ID),cell_owner(-1){}
+
+  using BasicType = Int64;
+  static constexpr Int64 nbBasicTypeSize() { return 3; }
+
  public:
-  Int64 node_uid;
-  Int64 cell_uid;
-  Int32 cell_owner;
+
+  static ConstArrayView<BasicType> asBasicBuffer(ConstArrayView<BoundaryNodeInfo> values)
+  {
+    Int32 message_size = messageSize(values);
+    const BoundaryNodeInfo* fsi_base = values.data();
+    auto* ptr = reinterpret_cast<const Int64*>(fsi_base);
+    return ConstArrayView<BasicType>(message_size, ptr);
+  }
+
+  static ArrayView<BasicType> asBasicBuffer(ArrayView<BoundaryNodeInfo> values)
+  {
+    Int32 message_size = messageSize(values);
+    BoundaryNodeInfo* fsi_base = values.data();
+    auto* ptr = reinterpret_cast<Int64*>(fsi_base);
+    return ArrayView<BasicType>(message_size, ptr);
+  }
+
+  static Int32 messageSize(ConstArrayView<BoundaryNodeInfo> values)
+  {
+    static_assert((sizeof(Int64) * nbBasicTypeSize()) == sizeof(BoundaryNodeInfo));
+    Int64 message_size_i64 = values.size() * nbBasicTypeSize();
+    Int32 message_size = CheckedConvert::toInteger(message_size_i64);
+    return message_size;
+  }
+
+  static Int32 nbElement(Int32 message_size)
+  {
+    if ((message_size % nbBasicTypeSize()) != 0)
+      ARCANE_FATAL("Message size '{0}' is not a multiple of basic size '{1}'", message_size, nbBasicTypeSize());
+    Int32 nb_element = message_size / nbBasicTypeSize();
+    return nb_element;
+  }
+
+ public:
+
+  struct HashFunction
+  {
+    size_t operator()(const BoundaryNodeInfo& a) const
+    {
+      size_t h1 = std::hash<Int64>{}(a.node_uid);
+      size_t h2 = std::hash<Int64>{}(a.cell_uid);
+      size_t h3 = std::hash<Int32>{}(a.cell_owner);
+      return h1 ^ h2 ^ h3;
+    }
+  };
+  friend bool operator==(const BoundaryNodeInfo& a, const BoundaryNodeInfo& b)
+  {
+    return (a.node_uid == b.node_uid && a.cell_uid == b.cell_uid && a.cell_owner == b.cell_owner);
+  }
+
+ public:
+
+  Int64 node_uid = NULL_ITEM_UNIQUE_ID;
+  Int64 cell_uid = NULL_ITEM_UNIQUE_ID;
+  Int32 cell_owner = -1;
+  Int32 padding = 0;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -166,19 +238,19 @@ class GhostLayerBuilder2::BoundaryNodeBitonicSortTraits
 
   static Parallel::Request send(IParallelMng* pm,Int32 rank,ConstArrayView<BoundaryNodeInfo> values)
   {
-    const BoundaryNodeInfo* fsi_base = values.data();
-    return pm->send(ByteConstArrayView(messageSize(values),(const Byte*)fsi_base),rank,false);
+    auto buf_view = BoundaryNodeInfo::asBasicBuffer(values);
+    return pm->send(buf_view, rank, false);
   }
 
   static Parallel::Request recv(IParallelMng* pm,Int32 rank,ArrayView<BoundaryNodeInfo> values)
   {
-    BoundaryNodeInfo* fsi_base = values.data();
-    return pm->recv(ByteArrayView(messageSize(values),(Byte*)fsi_base),rank,false);
+    auto buf_view = BoundaryNodeInfo::asBasicBuffer(values);
+    return pm->recv(buf_view, rank, false);
   }
 
   static Integer messageSize(ConstArrayView<BoundaryNodeInfo> values)
   {
-    return CheckedConvert::toInteger(values.size()*sizeof(BoundaryNodeInfo));
+    return BoundaryNodeInfo::messageSize(values);
   }
 
   static BoundaryNodeInfo maxValue()
@@ -330,6 +402,25 @@ addGhostLayers()
     }
   }
 
+  // Marque les noeuds pour lesquels on n'a pas encore assigné la couche fantôme.
+  // Pour eux on indique qu'on est sur la couche 'nb_ghost_layer+1'.
+  // Le but est de ne jamais transférer ces noeux.
+  // NOTE: Ce mécanisme a été ajouté en juillet 2024 pour la version 3.14.
+  //       S'il fonctionne bien on pourra ne conserver que cette méthode.
+  if (m_use_optimized_node_layer) {
+    Integer nb_no_layer = 0;
+    ENUMERATE_ITEM_INTERNAL_MAP_DATA (iid, nodes_map) {
+      ItemInternal* node = iid->value();
+      Int32 lid = node->localId();
+      Int32 layer = node_layer[lid];
+      if (layer <= 0) {
+        node_layer[lid] = nb_ghost_layer + 1;
+        ++nb_no_layer;
+      }
+    }
+    info() << "Mark remaining nodes nb=" << nb_no_layer;
+  }
+
   for( Integer i=1; i<=nb_ghost_layer; ++i )
     _addGhostLayer(i,node_layer);
 }
@@ -397,6 +488,16 @@ _addGhostLayer(Integer current_layer,Int32ConstArrayView node_layer)
   ItemInternalMap& cells_map = m_mesh->cellsMap();
   ItemInternalMap& nodes_map = m_mesh->nodesMap();
 
+  Int64 nb_added_for_different_rank = 0;
+  Int64 nb_added_for_in_layer = 0;
+
+  const Int32 max_local_id = m_mesh->nodeFamily()->maxLocalId();
+
+  // Tableaux contenant pour chaque noeud le uid de la plus petite maille connectée
+  // et le rang associé. Si le uid est A_NULL_UNIQUE_ID il ne faut pas ajouter ce noeud.
+  UniqueArray<Int64> node_cell_uids(max_local_id, NULL_ITEM_UNIQUE_ID);
+
+  const bool do_only_minimal_uid = m_use_only_minimal_cell_uid;
   // On doit envoyer tous les noeuds dont le numéro de couche est différent de (-1).
   // NOTE: pour la couche au dessus de 1, il ne faut envoyer qu'une seule valeur.
   ENUMERATE_ITEM_INTERNAL_MAP_DATA(iid,cells_map){
@@ -408,17 +509,50 @@ _addGhostLayer(Integer current_layer,Int32ConstArrayView node_layer)
     for( Node node : cell.nodes() ){
       Int32 node_lid = node.localId();
       bool do_it = false;
-      //if (node_lid>=node_layer.size())
-      //do_it = true;
       if (cell.owner()!=my_rank){
         do_it = true;
+        ++nb_added_for_different_rank;
       }
       else{
         Integer layer = node_layer[node_lid];
         do_it = layer<=current_layer;
+        if (do_it)
+          ++nb_added_for_in_layer;
       }
       if (do_it){
-        Int64 node_uid = node.uniqueId();
+        Int32 node_lid = node.localId();
+        if (do_only_minimal_uid) {
+          Int64 current_uid = node_cell_uids[node_lid];
+          if ((current_uid == NULL_ITEM_UNIQUE_ID) || cell_uid < current_uid) {
+            node_cell_uids[node_lid] = cell_uid;
+            if (is_verbose)
+              info() << "AddNode node_uid=" << node.uniqueId() << " cell=" << cell_uid;
+          }
+          else
+            if (is_verbose)
+              info() << "AddNode node_uid=" << node.uniqueId() << " cell=" << cell_uid << " not done current=" << current_uid;
+        }
+        else {
+          Int64 node_uid = node.uniqueId();
+          BoundaryNodeInfo nci;
+          nci.node_uid = node_uid;
+          nci.cell_uid = cell_uid;
+          nci.cell_owner = my_rank;
+          boundary_node_list.add(nci);
+          if (is_verbose)
+            info() << "AddNode node_uid=" << node.uniqueId() << " cell=" << cell_uid;
+        }
+      }
+    }
+  }
+
+  if (do_only_minimal_uid) {
+    ENUMERATE_ITEM_INTERNAL_MAP_DATA (iid, nodes_map) {
+      ItemInternal* node = iid->value();
+      Int32 lid = node->localId();
+      Int64 cell_uid = node_cell_uids[lid];
+      if (cell_uid != NULL_ITEM_UNIQUE_ID) {
+        Int64 node_uid = node->uniqueId();
         BoundaryNodeInfo nci;
         nci.node_uid = node_uid;
         nci.cell_uid = cell_uid;
@@ -427,7 +561,11 @@ _addGhostLayer(Integer current_layer,Int32ConstArrayView node_layer)
       }
     }
   }
-  info() << "NB BOUNDARY NODE LIST=" << boundary_node_list.size();
+
+  info() << "NB BOUNDARY NODE LIST=" << boundary_node_list.size()
+         << " nb_added_for_different_rank=" << nb_added_for_different_rank
+         << " nb_added_for_in_layer=" << nb_added_for_in_layer
+         << " do_only_minimal=" << do_only_minimal_uid;
 
   _sortBoundaryNodeList(boundary_node_list);
   SharedArray<BoundaryNodeInfo> all_boundary_node_info = boundary_node_list;
@@ -463,6 +601,8 @@ _addGhostLayer(Integer current_layer,Int32ConstArrayView node_layer)
         si.m_index = i;
         si.m_nb_cell = nb_same_node;
         node_list_to_send.add(si);
+        if (is_verbose)
+          info() << "Add ghost uid=" << node_uid << " index=" << i << " nb_same_node=" << nb_same_node;
       }
       i = last_i-1;
     }
@@ -600,7 +740,7 @@ _addGhostLayer(Integer current_layer,Int32ConstArrayView node_layer)
 
   {
     Integer index = 0;
-    Int32UniqueArray my_cells;
+    UniqueArray<Int32> my_cells;
     SharedArray<Int32> ranks_to_send;
     std::set<Int32> ranks_done;
     while (index<total_nb_to_recv){
@@ -608,6 +748,7 @@ _addGhostLayer(Integer current_layer,Int32ConstArrayView node_layer)
       ++index;
       Int64 nb_cell = recv_infos[index];
       ++index;
+      Node current_node(nodes_map.lookupValue(node_uid));
       if (is_verbose)
         info() << "NODE uid=" << node_uid << " nb_cell=" << nb_cell << " idx=" << (index-2);
       my_cells.clear();
@@ -629,7 +770,13 @@ _addGhostLayer(Integer current_layer,Int32ConstArrayView node_layer)
           ItemInternalMap::Data* dcell = cells_map.lookup(cell_uid);
           if (!dcell)
             throw FatalErrorException(A_FUNCINFO,"Internal error: cell not in our mesh");
-          my_cells.add(dcell->value()->localId());
+          if (do_only_minimal_uid){
+            // Ajoute toutes les mailles autour de mon noeud
+            for( CellLocalId c : current_node.cellIds() )
+              my_cells.add(c);
+          }
+          else
+            my_cells.add(dcell->value()->localId());
         }
         else{
           if (ranks_done.find(cell_owner)==ranks_done.end()){
@@ -639,13 +786,18 @@ _addGhostLayer(Integer current_layer,Int32ConstArrayView node_layer)
         }
       }
 
-      if (is_verbose)
+      if (is_verbose){
         info() << "CELLS TO SEND: node_uid=" << node_uid
                << " nb_rank=" << ranks_to_send.size()
                << " nb_cell=" << my_cells.size();
+        info(4) << "CELLS TO SEND: node_uid=" << node_uid
+                << " rank=" << ranks_to_send
+                << " cell=" << my_cells;
+      }
 
       for( Integer zrank=0, zn=ranks_to_send.size(); zrank<zn; ++zrank ){
-        SubDomainItemMap::Data* d = cells_to_send.lookupAdd(ranks_to_send[zrank]);
+        Int32 send_rank = ranks_to_send[zrank];
+        SubDomainItemMap::Data* d = cells_to_send.lookupAdd(send_rank);
         Int32Array& c = d->value();
         for( Integer zid=0, zid_size=my_cells.size(); zid<zid_size; ++zid ){
           // TODO: regarder si maille pas déjà présente et ne pas l'ajouter si ce n'est pas nécessaire.
@@ -725,7 +877,7 @@ _sortBoundaryNodeList(Array<BoundaryNodeInfo>& boundary_node_list)
         }
       }
     }
-    info() << "BEGIN_OWN_LIST_INDEX=" << begin_own_list_index;
+    info() << "BEGIN_OWN_LIST_INDEX=" << begin_own_list_index << " end_node_list_size=" << end_node_list.size();
     if (is_verbose){
       for( Integer k=0, kn=end_node_list.size(); k<kn; ++k )
         info() << " SEND node_uid=" << end_node_list[k].node_uid
@@ -745,13 +897,13 @@ _sortBoundaryNodeList(Array<BoundaryNodeInfo>& boundary_node_list)
     if (my_rank!=0){
       requests.add(pm->send(IntegerConstArrayView(1,&send_message_size),my_rank-1,false));
     }
-    
+    info() << "Send size=" << send_message_size << " Recv size=" << recv_message_size;
     pm->waitAllRequests(requests);
     requests.clear();
     
     if (recv_message_size!=0){
-      Integer message_size = CheckedConvert::toInteger(recv_message_size/sizeof(BoundaryNodeInfo));
-      end_node_list_recv.resize(message_size);
+      Int32 nb_element = BoundaryNodeInfo::nbElement(recv_message_size);
+      end_node_list_recv.resize(nb_element);
       requests.add(BoundaryNodeBitonicSortTraits::recv(pm,my_rank+1,end_node_list_recv));
     }
     if (send_message_size!=0)
