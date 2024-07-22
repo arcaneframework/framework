@@ -1,34 +1,30 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* BitonicSort.h                                               (C) 2000-2016 */
+/* BitonicSort.h                                               (C) 2000-2024 */
 /*                                                                           */
 /* Algorithme de tri bitonique parallèle                                     */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_PARALLEL_BITONICSORT_H
-#define ARCANE_PARALLEL_BITONICSORT_H
+#ifndef ARCANE_CORE_PARALLEL_BITONICSORT_H
+#define ARCANE_CORE_PARALLEL_BITONICSORT_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/TraceAccessor.h"
 #include "arcane/utils/Limits.h"
 
-#include "arcane/IParallelSort.h"
-#include "arcane/IParallelMng.h"
+#include "arcane/core/IParallelSort.h"
+#include "arcane/core/IParallelMng.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ARCANE_BEGIN_NAMESPACE_PARALLEL
+namespace Arcane::Parallel
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -36,21 +32,22 @@ ARCANE_BEGIN_NAMESPACE_PARALLEL
  * \brief Fournit les opérations nécessaires pour le tri via la
  * classe \a BitonicSort.
  */
-template<typename KeyType>
+template <typename KeyType>
 class BitonicSortDefaultTraits
 {
  public:
-  static bool compareLess(const KeyType& k1,const KeyType& k2)
+
+  static bool compareLess(const KeyType& k1, const KeyType& k2)
   {
-    return k1<k2;
+    return k1 < k2;
   }
-  static Request send(IParallelMng* pm,Int32 rank,ConstArrayView<KeyType> values)
+  static Request send(IParallelMng* pm, Int32 rank, ConstArrayView<KeyType> values)
   {
-    return pm->send(values,rank,false);
+    return pm->send(values, rank, false);
   }
-  static Request recv(IParallelMng* pm,Int32 rank,ArrayView<KeyType> values)
+  static Request recv(IParallelMng* pm, Int32 rank, ArrayView<KeyType> values)
   {
-    return pm->recv(values,rank,false);
+    return pm->recv(values, rank, false);
   }
   //! Valeur max possible pour la clé.
   static KeyType maxValue()
@@ -61,7 +58,7 @@ class BitonicSortDefaultTraits
   // Indique si la clé est valide. Elle doit être invalide si k==maxValue()
   static bool isValid(const KeyType& k)
   {
-    return k!=maxValue();
+    return k != maxValue();
   }
 };
 
@@ -98,30 +95,32 @@ class BitonicSortDefaultTraits
  * d'éléments dans la liste et notamment les processeurs de rang les plus élevés
  * peuvent ne pas avoir d'éléments.
  */
-template<typename KeyType,typename KeyTypeTraits = BitonicSortDefaultTraits<KeyType> >
+template <typename KeyType, typename KeyTypeTraits = BitonicSortDefaultTraits<KeyType>>
 class BitonicSort
 : public TraceAccessor
 , public IParallelSort<KeyType>
 {
  public:
 
-  BitonicSort(IParallelMng* parallel_mng);
+  explicit BitonicSort(IParallelMng* parallel_mng);
+
+ public:
 
   /*!
    * \brief Trie en parallèle les éléments de \a keys sur tous les rangs.
    *
    * Cette opération est collective.
    */
-  virtual void sort(ConstArrayView<KeyType> keys);
+  void sort(ConstArrayView<KeyType> keys) override;
 
   //! Après un tri, retourne la liste des éléments de ce rang.
-  virtual ConstArrayView<KeyType> keys() const { return m_keys; }
+  ConstArrayView<KeyType> keys() const override { return m_keys; }
 
   //! Après un tri, retourne le tableau des rangs d'origine des éléments de keys().
-  virtual Int32ConstArrayView keyRanks() const { return m_key_ranks; }
-  
+  Int32ConstArrayView keyRanks() const override { return m_key_ranks; }
+
   //! Après un tri, retourne le tableau des indices dans la liste d'origine des éléments de keys().
-  virtual Int32ConstArrayView keyIndexes() const { return m_key_indexes; }
+  Int32ConstArrayView keyIndexes() const override { return m_key_indexes; }
 
  public:
 
@@ -132,9 +131,9 @@ class BitonicSort
 
  private:
 
-  void _mergeLevels(Int32 begin,Int32 size);
-  void _mergeProcessors(Int32 proc1,Int32 proc2);
-  void _separator(Int32 begin,Int32 size);
+  void _mergeLevels(Int32 begin, Int32 size);
+  void _mergeProcessors(Int32 proc1, Int32 proc2);
+  void _separator(Int32 begin, Int32 size);
   void _localHeapSort();
 
  private:
@@ -146,17 +145,17 @@ class BitonicSort
   //! Tableau contenant l'indice de la clé dans le processeur
   UniqueArray<Int32> m_key_indexes;
   //! Gestionnaire du parallèlisme
-  IParallelMng* m_parallel_mng;
+  IParallelMng* m_parallel_mng = nullptr;
   //! Nombre d'éléments locaux
-  Integer m_init_size;
+  Integer m_init_size = 0;
   //! Nombre d'éléments locaux pour le tri bitonique
-  Integer m_size;
-  
+  Integer m_size = 0;
+
   //! Indique si on souhaite les infos sur les rangs et index
-  bool m_want_index_and_rank;
+  bool m_want_index_and_rank = true;
 
   //! Statistiques sur le nombre de niveaux de messages
-  Integer m_nb_merge;
+  Integer m_nb_merge = 0;
 
  private:
 
@@ -166,12 +165,7 @@ class BitonicSort
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE_PARALLEL
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ARCANE_END_NAMESPACE
+} // namespace Arcane::Parallel
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

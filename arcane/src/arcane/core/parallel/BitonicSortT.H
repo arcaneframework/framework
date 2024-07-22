@@ -38,10 +38,6 @@ template<typename KeyType,typename KeyTypeTraits> BitonicSort<KeyType,KeyTypeTra
 BitonicSort(IParallelMng* parallel_mng)
 : TraceAccessor(parallel_mng->traceMng())
 , m_parallel_mng(parallel_mng)
-, m_init_size(0)
-, m_size(0)
-, m_want_index_and_rank(true)
-, m_nb_merge(0)
 {
 }
 
