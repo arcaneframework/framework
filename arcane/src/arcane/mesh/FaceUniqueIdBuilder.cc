@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* FaceUniqueIdBuilder.cc                                      (C) 2000-2022 */
+/* FaceUniqueIdBuilder.cc                                      (C) 2000-2024 */
 /*                                                                           */
-/* Construction des indentifiants uniques des faces.                         */
+/* Construction des identifiants uniques des faces.                          */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -23,12 +23,12 @@
 #include "arcane/mesh/FaceUniqueIdBuilder.h"
 #include "arcane/mesh/ItemTools.h"
 
-#include "arcane/IMeshUniqueIdMng.h"
-#include "arcane/IParallelExchanger.h"
-#include "arcane/IParallelMng.h"
-#include "arcane/ISerializeMessage.h"
-#include "arcane/ISerializer.h"
-#include "arcane/ParallelMngUtils.h"
+#include "arcane/core/IMeshUniqueIdMng.h"
+#include "arcane/core/IParallelExchanger.h"
+#include "arcane/core/IParallelMng.h"
+#include "arcane/core/ISerializeMessage.h"
+#include "arcane/core/ISerializer.h"
+#include "arcane/core/ParallelMngUtils.h"
 
 #include <unordered_set>
 
@@ -42,7 +42,7 @@ namespace Arcane::mesh
 /*---------------------------------------------------------------------------*/
 
 extern "C++" void
-_FaceUiDBuilderComputeNewVersion(DynamicMesh* mesh);
+_computeFaceUniqueIdVersion3(DynamicMesh* mesh);
 extern "C++" void
 arcaneComputeCartesianFaceUniqueId(DynamicMesh* mesh);
 
@@ -54,14 +54,6 @@ FaceUniqueIdBuilder(DynamicMeshIncrementalBuilder* mesh_builder)
 : TraceAccessor(mesh_builder->mesh()->traceMng())
 , m_mesh(mesh_builder->mesh())
 , m_mesh_builder(mesh_builder)
-{
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-FaceUniqueIdBuilder::
-~FaceUniqueIdBuilder()
 {
 }
 
@@ -84,7 +76,7 @@ computeFacesUniqueIds()
   if (face_version==4)
     arcaneComputeCartesianFaceUniqueId(m_mesh);
   else if (face_version==3)
-    _FaceUiDBuilderComputeNewVersion(m_mesh);
+    _computeFaceUniqueIdVersion3(m_mesh);
   else{
     if (is_parallel){
       if (face_version==2){

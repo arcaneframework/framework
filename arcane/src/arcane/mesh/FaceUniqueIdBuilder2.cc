@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* FaceUniqueIdBuilder2.cc                                     (C) 2000-2022 */
+/* FaceUniqueIdBuilder2.cc                                     (C) 2000-2024 */
 /*                                                                           */
-/* Construction des indentifiants uniques des faces.                         */
+/* Construction des identifiants uniques des faces.                          */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -18,8 +18,8 @@
 #include "arcane/mesh/DynamicMesh.h"
 #include "arcane/mesh/FaceUniqueIdBuilder.h"
 
-#include "arcane/IParallelMng.h"
-#include "arcane/Timer.h"
+#include "arcane/core/IParallelMng.h"
+#include "arcane/core/Timer.h"
 
 #include "arcane/parallel/BitonicSortT.H"
 
@@ -81,19 +81,17 @@ class FaceUniqueIdBuilder2
   class UniqueIdSorter;
 
   // Choisir le bon typedef suivant le choix de la structure d'échange.
-  // typedef WideCellFaceInfo CellFaceInfo;
   typedef NarrowCellFaceInfo CellFaceInfo;
 
  public:
 
-  typedef DynamicMeshKindInfos::ItemInternalMap ItemInternalMap;
-  typedef ItemInternalMap::Data ItemInternalMapData;
-  
+  using ItemInternalMap = DynamicMeshKindInfos::ItemInternalMap;
+  using ItemInternalMapData = ItemInternalMap::Data;
+
  public:
 
   //! Construit une instance pour le maillage \a mesh
-  FaceUniqueIdBuilder2(DynamicMesh* mesh);
-  virtual ~FaceUniqueIdBuilder2();
+  explicit FaceUniqueIdBuilder2(DynamicMesh* mesh);
 
  public:
 
@@ -101,9 +99,9 @@ class FaceUniqueIdBuilder2
 
  private:
 
-  DynamicMesh* m_mesh;
-  IParallelMng* m_parallel_mng;
-  bool m_is_verbose;
+  DynamicMesh* m_mesh = nullptr;
+  IParallelMng* m_parallel_mng = nullptr;
+  bool m_is_verbose = false;
 
  private:
 
@@ -195,7 +193,7 @@ class FaceUniqueIdBuilder2::NarrowCellFaceInfo
     
  private:
 
-  Int64 m_value;
+  Int64 m_value = -1;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -290,7 +288,9 @@ class FaceUniqueIdBuilder2::BoundaryFaceInfo
 class FaceUniqueIdBuilder2::AnyFaceInfo
 {
  public:
-  AnyFaceInfo() {}
+
+  AnyFaceInfo() = default;
+
  public:
   void setCell0(Int64 uid,Int32 rank,Int32 face_local_index)
   {
@@ -475,15 +475,6 @@ FaceUniqueIdBuilder2(DynamicMesh* mesh)
 : TraceAccessor(mesh->traceMng())
 , m_mesh(mesh)
 , m_parallel_mng(mesh->parallelMng())
-, m_is_verbose(false)
-{
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-FaceUniqueIdBuilder2::
-~FaceUniqueIdBuilder2()
 {
 }
 
@@ -1053,14 +1044,14 @@ _checkFacesUniqueId()
     }
   }
   if (nb_error!=0)
-    fatal() << "Internal error in face uniqueId computation: nb_invalid=" << nb_error;
+    ARCANE_FATAL("Internal error in face uniqueId computation: nb_invalid={0}", nb_error);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 extern "C++" void
-_FaceUiDBuilderComputeNewVersion(DynamicMesh* mesh)
+_computeFaceUniqueIdVersion3(DynamicMesh* mesh)
 {
   FaceUniqueIdBuilder2 f(mesh);
   f.computeFacesUniqueIdAndOwner();
