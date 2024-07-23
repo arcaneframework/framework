@@ -1,5 +1,6 @@
 ﻿set(SOURCE_FILES
   TestDataTypes.cc
+  TestHashUniqueId.cc
 )
 
 arcane_add_component_test_executable(core

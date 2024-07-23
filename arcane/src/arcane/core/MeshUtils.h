@@ -135,6 +135,14 @@ getFaceFromNodesUnique(Node node, Int64ConstArrayView face_nodes_unique_id);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+/*!
+ * \brief Génère un identifiant unique à partir d'une liste d'identifiants de noeuds.
+ */
+extern "C++" ARCANE_CORE_EXPORT Int64
+generateHashUniqueId(SmallSpan<const Int64> nodes_unique_id);
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 /*!
  * \brief Supprime une entité en conservant l'ordre.

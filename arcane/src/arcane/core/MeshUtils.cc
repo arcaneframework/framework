@@ -1891,6 +1891,34 @@ fillUniqueIds(ItemVectorView items,Array<Int64>& uids)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+Int64 MeshUtils::
+generateHashUniqueId(SmallSpan<const Int64> nodes_unique_id)
+{
+  // Prend les 30 premiers bits du premier nœud pour former
+  // les 30 premiers bits de la fonction de hash.
+  // Les 32 bits suivants sont formées avec la fonction de hash.
+  // Le uniqueId() généré doit toujours être strictement positif
+  // sauf pour l'entité nulle.
+  Int32 nb_node = nodes_unique_id.size();
+  if (nb_node == 0)
+    return -1;
+  using Hasher = IntegerHashFunctionT<Int64>;
+  Int64 uid0 = nodes_unique_id[0];
+  Int64 hash = Hasher::hashfunc(uid0);
+  for (Int32 i = 1; i < nb_node; ++i) {
+    Int64 next_hash = Hasher::hashfunc(nodes_unique_id[i]);
+    hash ^= next_hash + 0x9e3779b9 + (hash << 6) + (hash >> 2);
+  }
+  Int64 truncated_uid0 = uid0 & ((1 << 30) - 1);
+  Int64 truncated_hash = hash & ((1LL << 31) - 1);
+  Int64 new_uid = truncated_uid0 + (truncated_hash << 31);
+  ARCANE_ASSERT(new_uid > 0, ("UniqueId is not > 0"));
+  return new_uid;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 } // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/
