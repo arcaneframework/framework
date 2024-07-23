@@ -95,7 +95,8 @@ class FaceUniqueIdBuilder2
 
  public:
 
-  void computeFacesUniqueIdAndOwner();
+  void computeFacesUniqueIdAndOwnerVersion3();
+  void computeFacesUniqueIdAndOwnerVersion5();
 
  private:
 
@@ -487,7 +488,7 @@ FaceUniqueIdBuilder2(DynamicMesh* mesh)
  *\brief Calcul les numéros uniques de chaque face en parallèle.
  */  
 void FaceUniqueIdBuilder2::
-computeFacesUniqueIdAndOwner()
+computeFacesUniqueIdAndOwnerVersion3()
 {
   if (m_parallel_mng->isParallel())
     _computeParallel();
@@ -1013,6 +1014,34 @@ _resendCellsAndComputeFacesUniqueId(ConstArrayView<AnyFaceInfo> all_csi)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
+ *\brief Calcule les uniqueId() via un hash généré par les uniqueId() des noeuds.
+ */
+void FaceUniqueIdBuilder2::
+computeFacesUniqueIdAndOwnerVersion5()
+{
+  info() << "Compute FacesUniqueId() V5 (experimental)";
+
+  ItemInternalMap& faces_map = m_mesh->facesMap();
+  UniqueArray<Int64> nodes_uid;
+  ENUMERATE_ITEM_INTERNAL_MAP_DATA (iid, faces_map) {
+    Face face(iid->value());
+    Int32 nb_node = face.nbNode();
+    nodes_uid.resize(nb_node);
+    {
+      Int32 index = 0;
+      for (Node node : face.nodes()) {
+        nodes_uid[index] = node.uniqueId();
+        ++index;
+      }
+    }
+    Int64 new_face_uid = MeshUtils::generateHashUniqueId(nodes_uid);
+    face.mutableItemBase().setUniqueId(new_face_uid);
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
  * \brief Invalide les uid pour être certain qu'ils seront tous positionnés.
  */
 void FaceUniqueIdBuilder2::
@@ -1054,7 +1083,17 @@ extern "C++" void
 _computeFaceUniqueIdVersion3(DynamicMesh* mesh)
 {
   FaceUniqueIdBuilder2 f(mesh);
-  f.computeFacesUniqueIdAndOwner();
+  f.computeFacesUniqueIdAndOwnerVersion3();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+extern "C++" void
+_computeFaceUniqueIdVersion5(DynamicMesh* mesh)
+{
+  FaceUniqueIdBuilder2 f(mesh);
+  f.computeFacesUniqueIdAndOwnerVersion5();
 }
 
 /*---------------------------------------------------------------------------*/

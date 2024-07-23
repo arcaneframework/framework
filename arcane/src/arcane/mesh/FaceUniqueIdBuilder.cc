@@ -44,6 +44,8 @@ namespace Arcane::mesh
 extern "C++" void
 _computeFaceUniqueIdVersion3(DynamicMesh* mesh);
 extern "C++" void
+_computeFaceUniqueIdVersion5(DynamicMesh* mesh);
+extern "C++" void
 arcaneComputeCartesianFaceUniqueId(DynamicMesh* mesh);
 
 /*---------------------------------------------------------------------------*/
@@ -70,10 +72,12 @@ computeFacesUniqueIds()
   info() << "Using version=" << face_version << " to compute faces unique ids"
          << " mesh=" << m_mesh->name() << " is_parallel=" << is_parallel;
 
-  if (face_version>4 || face_version<0)
-    ARCANE_FATAL("Invalid value '{0}' for compute face unique ids versions: v>=0 && v<=4");
+  if (face_version > 5 || face_version < 0)
+    ARCANE_FATAL("Invalid value '{0}' for compute face unique ids versions: v>=0 && v<=6", face_version);
 
-  if (face_version==4)
+  if (face_version == 5)
+    _computeFaceUniqueIdVersion5(m_mesh);
+  else if (face_version == 4)
     arcaneComputeCartesianFaceUniqueId(m_mesh);
   else if (face_version==3)
     _computeFaceUniqueIdVersion3(m_mesh);
