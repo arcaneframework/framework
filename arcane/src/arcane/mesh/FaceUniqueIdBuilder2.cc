@@ -1021,6 +1021,10 @@ computeFacesUniqueIdAndOwnerVersion5()
 {
   info() << "Compute FacesUniqueId() V5 (experimental)";
 
+  IParallelMng* pm = m_parallel_mng;
+  Int32 my_rank = pm->commRank();
+  bool is_parallel = pm->isParallel();
+
   ItemInternalMap& faces_map = m_mesh->facesMap();
   UniqueArray<Int64> nodes_uid;
   ENUMERATE_ITEM_INTERNAL_MAP_DATA (iid, faces_map) {
@@ -1036,6 +1040,12 @@ computeFacesUniqueIdAndOwnerVersion5()
     }
     Int64 new_face_uid = MeshUtils::generateHashUniqueId(nodes_uid);
     face.mutableItemBase().setUniqueId(new_face_uid);
+    // En parallèle, indique qu'il faudra positionner le owner de cette face
+    // si elle est frontière.
+    Int32 new_rank = my_rank;
+    if (is_parallel && face.nbCell()==1)
+      new_rank = A_NULL_RANK;
+    face.mutableItemBase().setOwner(new_rank,my_rank);
   }
 }
 
