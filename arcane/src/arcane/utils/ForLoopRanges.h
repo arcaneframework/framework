@@ -257,7 +257,7 @@ inline void
 arcaneSequentialFor(LoopBoundType<1, IndexType> bounds, const Lambda& func, ReducerArgs... reducer_args)
 {
   for (Int32 i0 = bounds.template lowerBound<0>(); i0 < bounds.template upperBound<0>(); ++i0)
-    func(ArrayBoundsIndex<1>(i0), reducer_args...);
+    func(MDIndex<1>(i0), reducer_args...);
   impl::HostReducerHelper::applyReducerArgs(reducer_args...);
 }
 
@@ -267,7 +267,7 @@ arcaneSequentialFor(LoopBoundType<2, IndexType> bounds, const Lambda& func)
 {
   for (Int32 i0 = bounds.template lowerBound<0>(); i0 < bounds.template upperBound<0>(); ++i0)
     for (Int32 i1 = bounds.template lowerBound<1>(); i1 < bounds.template upperBound<1>(); ++i1)
-      func(ArrayBoundsIndex<2>(i0, i1));
+      func(MDIndex<2>(i0, i1));
 }
 
 //! Applique le fonctor \a func sur une boucle 3D.
@@ -277,7 +277,7 @@ arcaneSequentialFor(LoopBoundType<3, IndexType> bounds, const Lambda& func)
   for (Int32 i0 = bounds.template lowerBound<0>(); i0 < bounds.template upperBound<0>(); ++i0)
     for (Int32 i1 = bounds.template lowerBound<1>(); i1 < bounds.template upperBound<1>(); ++i1)
       for (Int32 i2 = bounds.template lowerBound<2>(); i2 < bounds.template upperBound<2>(); ++i2)
-        func(ArrayIndex<3>(i0, i1, i2));
+        func(MDIndex<3>(i0, i1, i2));
 }
 
 //! Applique le fonctor \a func sur une boucle 4D.
@@ -288,7 +288,7 @@ arcaneSequentialFor(LoopBoundType<4, IndexType> bounds, const Lambda& func)
     for (Int32 i1 = bounds.template lowerBound<1>(); i1 < bounds.template upperBound<1>(); ++i1)
       for (Int32 i2 = bounds.template lowerBound<2>(); i2 < bounds.template upperBound<2>(); ++i2)
         for (Int32 i3 = bounds.template lowerBound<3>(); i3 < bounds.template upperBound<3>(); ++i3)
-          func(ArrayIndex<4>(i0, i1, i2, i3));
+          func(MDIndex<4>(i0, i1, i2, i3));
 }
 
 /*---------------------------------------------------------------------------*/

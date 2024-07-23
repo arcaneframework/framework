@@ -25,17 +25,29 @@ if (ARCANE_CUDA_DEVICE_DEBUG)
   set(_CUDA_DEBUG_FLAGS "--device-debug")
 endif()
 
-target_compile_options(arcane_cuda_compile_flags INTERFACE
-  "$<$<COMPILE_LANGUAGE:CUDA>:--extended-lambda>"
-  "$<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr>"
-  "$<$<COMPILE_LANGUAGE:CUDA>:-g>"
-  "$<$<COMPILE_LANGUAGE:CUDA>:-Werror>"
-  "$<$<COMPILE_LANGUAGE:CUDA>:cross-execution-space-call>"
-)
+if (CMAKE_CUDA_COMPILER_ID STREQUAL "Clang")
+  # Lorsqu'on compile avec clang, il ne faut pas générer certaines informations
+  # de debug car cela provoque une erreur de compilation
+  # (voir https://github.com/llvm/llvm-project/issues/58491)
+  # Cela sera peut-être corrigé avec la version 19 de clang
+  target_compile_options(arcane_cuda_compile_flags INTERFACE
+    "$<$<COMPILE_LANGUAGE:CUDA>:-Xarch_device>"
+    "$<$<COMPILE_LANGUAGE:CUDA>:-g0>"
+  )
+else()
+  # Compilateur CUDA classique (NVCC ou NVHPC)
+  target_compile_options(arcane_cuda_compile_flags INTERFACE
+    "$<$<COMPILE_LANGUAGE:CUDA>:--extended-lambda>"
+    "$<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr>"
+    "$<$<COMPILE_LANGUAGE:CUDA>:-g>"
+    "$<$<COMPILE_LANGUAGE:CUDA>:-Werror>"
+    "$<$<COMPILE_LANGUAGE:CUDA>:cross-execution-space-call>"
+  )
 
-target_compile_options(arcane_cuda_build_compile_flags INTERFACE
-  "$<$<COMPILE_LANGUAGE:CUDA>:${_CUDA_DEBUG_FLAGS}>"
-)
+  target_compile_options(arcane_cuda_build_compile_flags INTERFACE
+    "$<$<COMPILE_LANGUAGE:CUDA>:${_CUDA_DEBUG_FLAGS}>"
+  )
+endif()
 
 install(TARGETS arcane_cuda_compile_flags EXPORT ArcaneTargets)
 install(TARGETS arcane_cuda_build_compile_flags EXPORT ArcaneTargets)

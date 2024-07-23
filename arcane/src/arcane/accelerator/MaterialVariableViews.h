@@ -93,7 +93,7 @@ class MatItemVariableScalarInViewT
 
   ARCCORE_HOST_DEVICE const DataType& value0(PureMatVarIndex idx) const
   {
-    return this->m_value0[idx.valueIndex()];
+    return this->m_value[0][idx.valueIndex()];
   }
 
  private:
