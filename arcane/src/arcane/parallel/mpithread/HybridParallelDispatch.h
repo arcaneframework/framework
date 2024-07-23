@@ -119,7 +119,8 @@ class HybridParallelDispatch
   class ReduceInfo
   {
    public:
-    Span<Type> reduce_buf;
+
+    Span<Type> reduce_buf_span;
     Type reduce_value;
     int m_index;
   };
@@ -218,29 +219,45 @@ class HybridParallelDispatch
   ITypeDispatcher<Type>* toArccoreDispatcher() override { return this; }
 
  private:
-  HybridParallelMng* m_parallel_mng;
-  Int32 m_local_rank;
-  Int32 m_local_nb_rank;
-  Int32 m_global_rank;
-  Int32 m_global_nb_rank;
-  Int32 m_mpi_rank;
-  Int32 m_mpi_nb_rank;
+
+  HybridParallelMng* m_parallel_mng = nullptr;
+  Int32 m_local_rank = A_NULL_RANK;
+  Int32 m_local_nb_rank = 0;
+  Int32 m_global_rank = A_NULL_RANK;
+  Int32 m_global_nb_rank = 0;
+  Int32 m_mpi_rank = A_NULL_RANK;
+  Int32 m_mpi_nb_rank = 0;
+
  public:
+
+  using AllDispatchView = ArrayView<HybridParallelDispatch<Type>*>;
   Int32 globalRank() const { return m_global_rank; }
-  ArrayView< HybridParallelDispatch<Type>* > m_all_dispatchs;
+  AllDispatchView m_all_dispatchs;
+
  private:
+
   Span<Type> m_broadcast_view;
   Span<const Type> m_const_view;
   Span<Type> m_recv_view;
   Span<const Type> m_send_view;
   AllToAllVariableInfo m_alltoallv_infos;
+
  public:
+
   ReduceInfo m_reduce_infos;
   MinMaxSumInfo m_min_max_sum_infos;
+
  private:
-  HybridMessageQueue* m_message_queue;
-  MpiParallelDispatchT<Type>* m_mpi_dispatcher;
+
+  HybridMessageQueue* m_message_queue = nullptr;
+  MpiParallelDispatchT<Type>* m_mpi_dispatcher = nullptr;
+
+ private:
+
   void _collectiveBarrier();
+  void _allReduceOrScan(eReduceType op, Span<Type> send_buf, bool is_scan);
+  void _applyReduceOperator(eReduceType op, Span<Type> result, AllDispatchView dispatch_view,
+                            Int32 first_rank, Int32 last_rank);
 };
 
 /*---------------------------------------------------------------------------*/

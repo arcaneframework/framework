@@ -295,7 +295,7 @@ class ParallelMngDataTypeValueGenerator<HPReal>
 {
   // On utilise un log pour avoir des valeurs avec
   // une précision suffisante pour générer des
-  // erreur d'arrondi lors de la somme.
+  // erreurs d'arrondi lors de la somme.
  public:
   static HPReal zero() { return HPReal::zero(); }
   static HPReal generateTriValue(Int32 v1,Int32 v2,Int32 v3)
@@ -383,12 +383,12 @@ class ParallelMngDataTypeTest
   }
   void _testComputeMinMaxSum();
   void _testAllReduce();
-  void _fillAllReduceArray(Integer nb_value,CommInfo& c,Parallel::eReduceType rt);
+  void _fillAllReduceOrScanArray(Integer nb_value, CommInfo& c, Parallel::eReduceType rt, bool is_scan);
   template<bool UseMessagePassingMng>
-  void _testAllReduceArray(Parallel::eReduceType rt);
+  void _testAllReduceOrScanArray(Parallel::eReduceType rt, bool is_scan);
   template<bool UseMessagePassingMng>
-  void _testAllReduceArray2();
-  void _testAllReduceArray();
+  void _testAllReduceOrScanArray2(bool is_scan);
+  void _testAllReduceAndScanArray();
   template<bool UseMessagePassingMng>
   void _testAllGatherVariable3(Int32 root_rank,bool use_generic);
   void _testAllGatherVariable();
@@ -435,7 +435,7 @@ doTests()
   _launchTest("MessageProbe",&ThatClass::_testMessageProbe2);
   _launchTest("MessageLegacyProbe",&ThatClass::_testMessageLegacyProbe2);
   _launchTest("AllReduce",&ThatClass::_testAllReduce);
-  _launchTest("AllReduce array",&ThatClass::_testAllReduceArray);
+  _launchTest("AllReduceAndScan array", &ThatClass::_testAllReduceAndScanArray);
   // Le ComputeMinMaxSum n'est pas encore disponible pour les threads avec les Real*
   bool no_minmaxsum = (Generator::isMultiReal() && m_parallel_mng->isThreadImplementation());
   if (!no_minmaxsum)
@@ -549,14 +549,20 @@ _testAllReduce()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
+/*!
+ * \brief Remplit \a c avec les informations pour une réduction ou un scan.
+ */
 template<typename DataType> void
 ParallelMngDataTypeTest<DataType>::
-_fillAllReduceArray(Integer nb_value,CommInfo& c,Parallel::eReduceType rt)
+_fillAllReduceOrScanArray(Integer nb_value, CommInfo& c, Parallel::eReduceType rt, bool is_scan)
 {
   IParallelMng* pm = m_parallel_mng;
-  Integer rank = pm->commRank();
-  Integer nb_rank = pm->commSize();
+  Int32 rank = pm->commRank();
+  Int32 nb_rank = pm->commSize();
+
+  // Pour un scan, on s'arrête à notre propre rang.
+  if (is_scan)
+    nb_rank = rank + 1;
 
   c.send_values.resize(nb_value);
   c.recv_values.resize(nb_value);
@@ -574,7 +580,7 @@ _fillAllReduceArray(Integer nb_value,CommInfo& c,Parallel::eReduceType rt)
       if (rt==Parallel::ReduceSum){
         // Le cast est nécessaire pour le type 'short' car ce
         // dernier est converti en 'int' lors des calculs arithmétiques
-        c.ref_values[i] = (DataType)(c.ref_values[i] + value);
+        c.ref_values[i] = static_cast<DataType>(c.ref_values[i] + value);
       }
       else if (rt==Parallel::ReduceMin){
         if (z==0 || value<c.ref_values[i])
@@ -595,13 +601,17 @@ _fillAllReduceArray(Integer nb_value,CommInfo& c,Parallel::eReduceType rt)
 
 template<typename DataType> void
 ParallelMngDataTypeTest<DataType>::
-_testAllReduceArray()
+_testAllReduceAndScanArray()
 {
   info() << "Testing AllReduceArray: use IParallelMng";
-  _testAllReduceArray2<false>();
+  _testAllReduceOrScanArray2<false>(false);
+  info() << "Testing AllScanArray: use IParallelMng";
+  _testAllReduceOrScanArray2<false>(true);
   if constexpr (HasMessagePassingMngImplementation<DataType>::hasImpl()){
     info() << "Testing AllReduceArray: use IMessagePassingMng";
-    _testAllReduceArray2<true>();
+    _testAllReduceOrScanArray2<true>(false);
+    info() << "Testing AllScanArray: use IMessagePassingMng";
+    _testAllReduceOrScanArray2<true>(true);
   }
 }
 
@@ -610,14 +620,14 @@ _testAllReduceArray()
 
 template<typename DataType> template<bool UseMessagePassingMng> void
 ParallelMngDataTypeTest<DataType>::
-_testAllReduceArray2()
+_testAllReduceOrScanArray2(bool is_scan)
 {
-  info() << "Testing AllReduceArray (Sum) type=" << m_datatype_name;
-  _testAllReduceArray<UseMessagePassingMng>(Parallel::ReduceSum);
-  info() << "Testing AllReduceArray (Min) type=" << m_datatype_name;
-  _testAllReduceArray<UseMessagePassingMng>(Parallel::ReduceMin);
-  info() << "Testing AllReduceArray (Max) type=" << m_datatype_name;
-  _testAllReduceArray<UseMessagePassingMng>(Parallel::ReduceMax);
+  info() << "Testing AllReduceOrScanArray (Sum) type=" << m_datatype_name << " is_scan?=" << is_scan;
+  _testAllReduceOrScanArray<UseMessagePassingMng>(Parallel::ReduceSum, is_scan);
+  info() << "Testing AllReduceOrScanArray (Min) type=" << m_datatype_name << " is_scan?=" << is_scan;
+  _testAllReduceOrScanArray<UseMessagePassingMng>(Parallel::ReduceMin, is_scan);
+  info() << "Testing AllReduceOrScanArray (Max) type=" << m_datatype_name << " is_scan?=" << is_scan;
+  _testAllReduceOrScanArray<UseMessagePassingMng>(Parallel::ReduceMax, is_scan);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -625,7 +635,7 @@ _testAllReduceArray2()
 
 template<typename DataType> template<bool UseMessagePassingMng> void
 ParallelMngDataTypeTest<DataType>::
-_testAllReduceArray(Parallel::eReduceType rt)
+_testAllReduceOrScanArray(Parallel::eReduceType rt, bool is_scan)
 {
   const Integer nb_size = 5;
   Integer _sizes[nb_size] = { 1 , 9, 143, 3090, 15953 };
@@ -637,9 +647,9 @@ _testAllReduceArray(Parallel::eReduceType rt)
 
   ValueChecker vc(A_FUNCINFO);
 
-  UniqueArray<CommInfo> c(nb_size,CommInfo());
+  UniqueArray<CommInfo> comms(nb_size, CommInfo());
   for( Integer i=0; i<nb_size; ++i ){
-    _fillAllReduceArray(sizes[i],c[i],rt);
+    _fillAllReduceOrScanArray(sizes[i], comms[i], rt, is_scan);
   }
 
   // Teste les collectives bloquantes
@@ -647,13 +657,28 @@ _testAllReduceArray(Parallel::eReduceType rt)
     info() << "Testing AllReduceArray type=" << m_datatype_name << " size=" << sizes[i];
     // Comme le tableau envoyé est aussi utilisé en réception, on le copie
     // sinon il n'aura plus les bonnes valeurs pour les tests non bloquants.
-    UniqueArray<DataType> send_copy(c[i].send_values);
-    if constexpr (UseMessagePassingMng)
-      mpAllReduce(mpm,rt,send_copy.span());
-    else
-      pm->reduce(rt,send_copy);
-    vc.areEqualArray(send_copy.constView(),c[i].ref_values.constView(),"AllReduceArray");
+    UniqueArray<DataType> send_copy(comms[i].send_values);
+    if constexpr (UseMessagePassingMng) {
+      if (is_scan)
+        // mpAllScan n'existe pas encore
+        pm->scan(rt, send_copy);
+      else
+        mpAllReduce(mpm, rt, send_copy.span());
+    }
+    else {
+      if (is_scan)
+        pm->scan(rt, send_copy);
+      else
+        pm->reduce(rt, send_copy);
+    }
+    pm->traceMng()->flush();
+    pm->barrier();
+    vc.areEqualArray(send_copy.constView(), comms[i].ref_values.constView(), "AllReduceArray");
   }
+
+  // Pour l'instant pas encore de scan en mode non bloquant
+  if (is_scan)
+    return;
 
   // Teste les collectives non bloquantes
   // TODO: Pour l'instant pnbc est nul si les collectives ne sont pas supportées.
@@ -664,15 +689,15 @@ _testAllReduceArray(Parallel::eReduceType rt)
       for( Integer i=0; i<nb_size; ++i ){
         info() << "Testing NonBlockingAllReduceArray type=" << m_datatype_name << " size=" << sizes[i];
         if constexpr (UseMessagePassingMng)
-          requests.add(mpNonBlockingAllReduce(mpm,rt,c[i].send_values,c[i].recv_values));
+          requests.add(mpNonBlockingAllReduce(mpm, rt, comms[i].send_values, comms[i].recv_values));
         else
-          requests.add(pnbc->allReduce(rt,c[i].send_values,c[i].recv_values));
+          requests.add(pnbc->allReduce(rt, comms[i].send_values, comms[i].recv_values));
       }
 
       pm->waitAllRequests(requests);
 
       for( Integer i=0; i<nb_size; ++i ){
-        vc.areEqualArray(c[i].recv_values.constView(),c[i].ref_values.constView(),"AllReduceArray NonBlocking");
+        vc.areEqualArray(comms[i].recv_values.constView(), comms[i].ref_values.constView(), "AllReduceArray NonBlocking");
       }
     }
     else
