@@ -813,14 +813,49 @@ allReduce(eReduceType op,Type send_buf)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class Type> void HybridParallelDispatch<Type>::
-allReduce(eReduceType op,Span<Type> send_buf)
+template <class Type> void HybridParallelDispatch<Type>::
+_applyReduceOperator(eReduceType op, Span<Type> result, AllDispatchView dispatch_view,
+                     Int32 first_rank, Int32 last_rank)
 {
-  //TODO: fusionner avec allReduce simple
-  m_reduce_infos.reduce_buf = send_buf;
+  Int64 buf_size = result.size();
+  switch (op) {
+  case Parallel::ReduceMin:
+    for (Integer i = first_rank; i <= last_rank; ++i)
+      for (Int64 j = 0; j < buf_size; ++j)
+        result[j] = math::min(result[j], dispatch_view[i]->m_reduce_infos.reduce_buf_span[j]);
+    break;
+  case Parallel::ReduceMax:
+    for (Integer i = first_rank; i <= last_rank; ++i)
+      for (Int64 j = 0; j < buf_size; ++j)
+        result[j] = math::max(result[j], dispatch_view[i]->m_reduce_infos.reduce_buf_span[j]);
+    break;
+  case Parallel::ReduceSum:
+    for (Integer i = first_rank; i <= last_rank; ++i)
+      for (Integer j = 0; j < buf_size; ++j) {
+        result[j] = static_cast<Type>(result[j] + dispatch_view[i]->m_reduce_infos.reduce_buf_span[j]);
+      }
+    break;
+  default:
+    ARCANE_FATAL("Bad reduce type");
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<class Type> void HybridParallelDispatch<Type>::
+_allReduceOrScan(eReduceType op, Span<Type> send_buf, bool is_scan)
+{
+  m_reduce_infos.reduce_buf_span = send_buf;
   ++m_reduce_infos.m_index;
   Int64 buf_size = send_buf.size();
   UniqueArray<Type> ret(buf_size);
+  // Valeurs du rang MPI précédent (utilisé uniquement en mode Scan)
+  UniqueArray<Type> previous_rank_ret;
+  MpiParallelMng* mpi_pm = m_parallel_mng->mpiParallelMng();
+  Int32 my_mpi_rank = mpi_pm->commRank();
+  Int32 mpi_nb_rank = mpi_pm->commSize();
+
   //cout << "ALL REDUCE BEGIN RANk=" << m_local_rank << " TYPE=" << (int)op << " MY=" << send_buf << '\n';
   //cout.flush();
   _collectiveBarrier();
@@ -836,39 +871,71 @@ allReduce(eReduceType op,Span<Type> send_buf)
   }
 
   if (m_local_rank==0){
+    const Int32 nb_local_rank = m_local_nb_rank;
     for( Integer j=0; j<buf_size; ++j )
-      ret[j] = m_all_dispatchs[0]->m_reduce_infos.reduce_buf[j];
-    switch(op){
-    case Parallel::ReduceMin:
-      for( Integer i=1; i<m_local_nb_rank; ++i )
-        for( Integer j=0; j<buf_size; ++j )
-          ret[j] = math::min(ret[j],m_all_dispatchs[i]->m_reduce_infos.reduce_buf[j]);
-      break;
-    case Parallel::ReduceMax:
-      for( Integer i=1; i<m_local_nb_rank; ++i )
-        for( Integer j=0; j<buf_size; ++j )
-          ret[j] = math::max(ret[j],m_all_dispatchs[i]->m_reduce_infos.reduce_buf[j]);
-      break;
-    case Parallel::ReduceSum:
-      for( Integer i=1; i<m_local_nb_rank; ++i )
-        for( Integer j=0; j<buf_size; ++j )
-          ret[j] = (Type)(ret[j] + m_all_dispatchs[i]->m_reduce_infos.reduce_buf[j]);
-      break;
-    default:
-      ARCANE_FATAL("Bad reduce type");
+      ret[j] = m_all_dispatchs[0]->m_reduce_infos.reduce_buf_span[j];
+    _applyReduceOperator(op, ret, m_all_dispatchs, 1, nb_local_rank - 1);
+    if (is_scan) {
+      // Pour le scan, on a besoin de savoir la valeur du scan du rang qui nous précéde.
+      // On utilise ensuite cette valeur et on applique notre opérateur.
+      mpi_pm->scan(op, ret);
+      previous_rank_ret.resize(buf_size);
+      UniqueArray<Request> requests;
+      if (my_mpi_rank != 0)
+        requests.add(mpi_pm->recv(previous_rank_ret, my_mpi_rank - 1, false));
+      if (my_mpi_rank != (mpi_nb_rank - 1))
+        requests.add(mpi_pm->send(ret, my_mpi_rank + 1, false));
+      mpi_pm->waitAllRequests(requests);
+      if (my_mpi_rank != 0) {
+        // Applique le scan à mes valeurs.
+        _applyReduceOperator(op, previous_rank_ret, m_all_dispatchs, 0, 0);
+        send_buf.copy(previous_rank_ret);
+      }
+      else {
+        // Je suis le premier rang local et MPI. J'ai déja les bonnes valeurs
+        // dans \a send_buf.
+      }
     }
-    m_parallel_mng->mpiParallelMng()->reduce(op,ret);
-    send_buf.copy(ret);
+    else {
+      mpi_pm->reduce(op, ret);
+      send_buf.copy(ret);
+    }
   }
 
   _collectiveBarrier();
 
-  if (m_local_rank!=0){
-    Span<const Type> global_buf = m_all_dispatchs[0]->m_reduce_infos.reduce_buf;
-    send_buf.copy(global_buf);
+  if (is_scan) {
+    if (m_local_rank != 0) {
+      Span<const Type> global_buf = m_all_dispatchs[0]->m_reduce_infos.reduce_buf_span;
+      ret.copy(global_buf);
+      // Le scan pour le rank local 0 a déjà été appliqué
+      _applyReduceOperator(op, ret, m_all_dispatchs, 1, m_local_rank);
+    }
+    // TODO: On pourrait éviter cette barrière si on copiait les valeurs de 'send_buf'
+    // avant de les modifier.
+    _collectiveBarrier();
+
+    if (m_local_rank != 0) {
+      send_buf.copy(ret);
+    }
+  }
+  else {
+    if (m_local_rank != 0) {
+      Span<const Type> global_buf = m_all_dispatchs[0]->m_reduce_infos.reduce_buf_span;
+      send_buf.copy(global_buf);
+    }
   }
 
   _collectiveBarrier();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template <class Type> void HybridParallelDispatch<Type>::
+allReduce(eReduceType op, Span<Type> send_buf)
+{
+  _allReduceOrScan(op, send_buf, false);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -962,9 +1029,7 @@ scan(eReduceType op,Type send_buf)
 template<class Type> void HybridParallelDispatch<Type>::
 scan(eReduceType op,ArrayView<Type> send_buf)
 {
-  ARCANE_UNUSED(op);
-  ARCANE_UNUSED(send_buf);
-  throw NotImplementedException(A_FUNCINFO);
+  _allReduceOrScan(op, send_buf, true);
 }
 
 /*---------------------------------------------------------------------------*/
