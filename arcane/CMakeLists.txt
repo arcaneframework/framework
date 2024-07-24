@@ -893,12 +893,24 @@ add_subdirectory(src/arcane/driver)
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
 # Gestion du support des accélérateurs.
-# Les deux modes supportés sont 'CUDANVCC' et 'ROCMHIP'
+# Les modes supportés sont 'CUDA', 'ROCM' et 'SYCL'
 
 # Pour des raisons de compatibilité avec les configurations 2021, on
 # regarde d'abord si ARCANE_WANT_CUDA est défini
 if (ARCANE_WANT_CUDA AND NOT DEFINED ARCANE_ACCELERATOR_MODE)
-  set (ARCANE_ACCELERATOR_MODE "CUDANVCC")
+  set (ARCANE_ACCELERATOR_MODE "CUDA")
+endif()
+
+# Renomme 'CUDANVCC' en 'CUDA', 'ROCMHIP' en 'ROCM' et 'SYCLDPCPP' en 'SYCL'
+# Cela est fait pour compatibilité avec les versions antérieures à la 3.14.
+if (ARCANE_ACCELERATOR_MODE STREQUAL "CUDANVCC" )
+  set (ARCANE_ACCELERATOR_MODE "CUDA" )
+endif()
+if (ARCANE_ACCELERATOR_MODE STREQUAL "ROCMHIP" )
+  set (ARCANE_ACCELERATOR_MODE "ROCM" )
+endif()
+if (ARCANE_ACCELERATOR_MODE STREQUAL "SYCLDPCPP" )
+  set (ARCANE_ACCELERATOR_MODE "SYCL" )
 endif()
 
 if(DEFINED ARCANE_ACCELERATOR_MODE)
@@ -906,29 +918,30 @@ if(DEFINED ARCANE_ACCELERATOR_MODE)
     message(FATAL_ERROR "Arcane Accelerator API requires C++20. Add -DARCCORE_CXX_STANDARD=20 to the configuration")
   endif()
 
-  if (ARCANE_ACCELERATOR_MODE STREQUAL "CUDANVCC" )
+  if (ARCANE_ACCELERATOR_MODE STREQUAL "CUDA" )
     set (ARCANE_WANT_CUDA TRUE)
-  elseif (ARCANE_ACCELERATOR_MODE STREQUAL "ROCMHIP" )
+  elseif (ARCANE_ACCELERATOR_MODE STREQUAL "ROCM" )
     set (ARCANE_WANT_HIP TRUE)
     # TODO: vérifier qu'on utilise bien 'hipcc'
-  elseif (ARCANE_ACCELERATOR_MODE STREQUAL "SYCLDPCPP" )
+  elseif (ARCANE_ACCELERATOR_MODE STREQUAL "SYCL" )
     set (ARCANE_WANT_SYCL TRUE)
   else()
     message(FATAL_ERROR "Unsupported ARCANE_ACCELERATOR_MODE '${ARCANE_ACCELERATOR_MODE}'."
-      "Valid values are 'CUDANVCC', 'ROCMHIP' ou 'SYCLDPCPP")
+      "Valid values are 'CUDA', 'ROCM' ou 'SYCL")
   endif()
   set (ARCANE_ACCELERATOR_MODE ${ARCANE_ACCELERATOR_MODE} CACHE STRING "Accelerator Mode" FORCE)
   set (ARCANE_HAS_ACCELERATOR TRUE)
+  message(STATUS "Arcane has accelerator mode enabled : ${ARCANE_ACCELERATOR_MODE}")
 endif()
 
 # ----------------------------------------------------------------------------
 
 if (ARCANE_HAS_ACCELERATOR)
-  if (ARCANE_ACCELERATOR_MODE STREQUAL "ROCMHIP")
+  if (ARCANE_ACCELERATOR_MODE STREQUAL "ROCM")
     # Il faut au moins CMake 3.21 pour qu'il reconnaisse langage HIP
     enable_language(HIP)
     add_subdirectory(src/arcane/accelerator/hip)
-  elseif(ARCANE_ACCELERATOR_MODE STREQUAL "CUDANVCC")
+  elseif(ARCANE_ACCELERATOR_MODE STREQUAL "CUDA")
     # Pour le support du C++20 avec NVCC, il faut au moins cmake 3.26
     message(STATUS "CMake 3.26 is required for CUDA C++20 support in Arcane. Checking it")
     cmake_minimum_required(VERSION 3.26 FATAL_ERROR)
@@ -942,7 +955,7 @@ if (ARCANE_HAS_ACCELERATOR)
     endif()
     enable_language(CUDA)
     add_subdirectory(src/arcane/accelerator/cuda)
-  elseif(ARCANE_ACCELERATOR_MODE STREQUAL "SYCLDPCPP")
+  elseif(ARCANE_ACCELERATOR_MODE STREQUAL "SYCL")
     add_subdirectory(src/arcane/accelerator/sycl)
   else()
     message(FATAL_ERROR "Unsupported Accelerator Mode : ${ARCANE_ACCELERATOR_MODE}")
@@ -955,11 +968,11 @@ if (ARCANE_HAS_ACCELERATOR_API)
 endif()
 
 if (ARCANE_HAS_ACCELERATOR)
-  if (ARCANE_ACCELERATOR_MODE STREQUAL "ROCMHIP" )
+  if (ARCANE_ACCELERATOR_MODE STREQUAL "ROCM" )
     add_subdirectory(src/arcane/accelerator/hip/runtime)
-  elseif(ARCANE_ACCELERATOR_MODE STREQUAL "CUDANVCC")
+  elseif(ARCANE_ACCELERATOR_MODE STREQUAL "CUDA")
     add_subdirectory(src/arcane/accelerator/cuda/runtime)
-  elseif(ARCANE_ACCELERATOR_MODE STREQUAL "SYCLDPCPP")
+  elseif(ARCANE_ACCELERATOR_MODE STREQUAL "SYCL")
     add_subdirectory(src/arcane/accelerator/sycl/runtime)
   else()
     message(FATAL_ERROR "Unsupported Accelerator Mode : ${ARCANE_ACCELERATOR_MODE}")
