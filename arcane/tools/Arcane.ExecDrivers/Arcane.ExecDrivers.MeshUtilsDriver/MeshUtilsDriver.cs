@@ -33,6 +33,7 @@ namespace Arcane.ExecDrivers.MeshUtilsDriver
         bool generate_correspondance_file = false;
         string partitioner_name = "DefaultPartitioner";
         string mesh_writer_name = Utils.ReadConfig("DefaultMeshWriter");
+        string output_file_pattern = null;
         List<string> constrained_groups = new List<string>();
         opt_set.Add("p|parties|nb-part=","nombre de parties a decouper",(int v) => nb_part= v);
         opt_set.Add("f|fantomes|nb-ghost-layer=","nombre de couches de mailles fantomes",(int v) => nb_ghost= v);
@@ -40,6 +41,7 @@ namespace Arcane.ExecDrivers.MeshUtilsDriver
         opt_set.Add("I|indivisible=","groupe d'entites indivisibles",(string v) => constrained_groups.Add(v));
         opt_set.Add("A|algorithme=","nom du partitionneur a utiliser (Metis, Zoltan ou PTScotch)",(string v) => partitioner_name = v);
         opt_set.Add("writer|ecrivain=","nom du service pour l'ecriture des maillages decoupes",(string v) => mesh_writer_name = v);
+        opt_set.Add("output-file-pattern=","file pattern for output file (default to CPU%05d)",(string v) => output_file_pattern = v);
         exec_driver.OnAddAdditionalArgs += delegate (ExecDriver d){
           // Si le nombre de parties n'est pas specifie, il est egal au nombre de processeurs
           if (nb_part==0)
@@ -47,10 +49,13 @@ namespace Arcane.ExecDrivers.MeshUtilsDriver
           if (d.NbProc<2){
             _ErrorArg(String.Format("le nombre de processeurs (option -n) doit etre superieur a 1 (actuellement {0})",d.NbProc));
           }
-          _AddArg(d,"nb-ghost-layer",nb_part.ToString());
-          _AddArg(d,"nb-couches-fantomes",nb_ghost.ToString());;
+          _AddArg(d,"nb-ghost-layer",nb_ghost.ToString());
           _AddArg(d,"create-correspondances",generate_correspondance_file ? "1" : "0" );
           _AddArg(d,"library",partitioner_name);
+          _AddArg(d,"nb-cut-part",nb_part.ToString());
+          if (!String.IsNullOrEmpty(output_file_pattern)){
+            _AddArg(d,"mesh-file-name-pattern",output_file_pattern);
+          }
           foreach(string s in constrained_groups){
             d.AdditionalArgs.AddRange(new string[]{ "-arcane_opt","tool_arg","constraints",s });
           }
