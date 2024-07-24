@@ -100,8 +100,8 @@ La variable CMake `ARCANE_ACCELERATOR_MODE` permet de spécifier le
 type d'accélerateur qu'on souhaite utiliser. Il y a actuellement deux
 valeurs supportées:
 
-- `CUDANVCC` pour les GPU NVIDIA
-- `ROCMHIP` pour les GPU AMD
+- `CUDA` pour les GPU NVIDIA
+- `ROCM` pour les GPU AMD
 
 ##### Compilation CUDA
 
@@ -109,13 +109,13 @@ Il est nécessaire d'avoir au moins la version 12 de
 [CUDA](https://developer.nvidia.com/cuda-downloads).
 
 Si on souhaite compiler le support CUDA, il faut ajouter l'argument
-`-DARCANE_ACCELERATOR_MODE=CUDANVCC` à la configuration et spécifier
+`-DARCANE_ACCELERATOR_MODE=CUDA` à la configuration et spécifier
 le chemin vers le compilateur `nvcc` via la variable CMake
 `CMAKE_CUDA_COMPILER` ou la variable d'environnement `CUDACXX`:
 
 ~~~{.sh}
-cmake -DARCANE_ACCELERATOR_MODE=CUDANVCC
--DCMAKE_CUDA_COMPILER=/usr/local/cuda-11/bin/nvcc \
+cmake -DARCANE_ACCELERATOR_MODE=CUDAN
+-DCMAKE_CUDA_COMPILER=/usr/local/cuda-12/bin/nvcc \
 -DARCCORE_CXX_STANDARD=20 \
 ...
 ~~~
@@ -140,7 +140,7 @@ Compute) via la variable `CMAKE_CUDA_ARCHITECTURES`, par exemple
 Pour compiler pour les GPU AMD (comme par exemple les GPU MI100 ou
 MI250) il faut avoir auparavant installer la bibliothèque [ROCM](https://docs.amd.com/). Lors
 de la configuration de Arcane, il faut spécifier
-`-DARCANE_ACCELERATOR_MODE=ROCMHIP`.
+`-DARCANE_ACCELERATOR_MODE=ROCM`.
 
 Par exemple, si ROCM est installé dans `/opt/rocm` et qu'on souhaite
 compiler pour les cartes MI250 (architecture gfx90x):
@@ -152,7 +152,7 @@ export CXX=/opt/rocm/llvm/bin/clang++
 export CMAKE_HIP_COMPILER=/opt/rocm/hip/bin/hipcc
 
 cmake -DCMAKE_PREFIX_PATH="/opt/rocm;/opt/rocm/hip" \
--DARCANE_ACCELERATOR_MODE=ROCMHIP \
+-DARCANE_ACCELERATOR_MODE=ROCM \
 -DCMAKE_HIP_ARCHITECTURES=gfx90a \
 -DARCCORE_CXX_STANDARD=20 \
 ...
