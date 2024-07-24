@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ArcaneCasePartitioner.cc                                    (C) 2000-2023 */
+/* ArcaneCasePartitioner.cc                                    (C) 2000-2024 */
 /*                                                                           */
 /* Service de partitionnement externe du maillage.                           */
 /*---------------------------------------------------------------------------*/
@@ -16,33 +16,31 @@
 #include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/ITraceMng.h"
 
-#include "arcane/BasicService.h"
+#include "arcane/core/BasicService.h"
 
-#include "arcane/ISubDomain.h"
-#include "arcane/ServiceFinder2.h"
-#include "arcane/FactoryService.h"
-#include "arcane/SerializeBuffer.h"
-#include "arcane/IMeshPartitioner.h"
-#include "arcane/IMainFactory.h"
-#include "arcane/IMeshModifier.h"
-#include "arcane/Properties.h"
-#include "arcane/IInitialPartitioner.h"
-#include "arcane/Timer.h"
-#include "arcane/IMesh.h"
-#include "arcane/IMeshModifier.h"
-#include "arcane/IMeshSubMeshTransition.h"
-#include "arcane/IItemFamily.h"
-#include "arcane/IDirectExecution.h"
-#include "arcane/IParallelMng.h"
-#include "arcane/IMeshUtilities.h"
-#include "arcane/IMeshWriter.h"
-#include "arcane/ItemPrinter.h"
-#include "arcane/ITimeStats.h"
-#include "arcane/ServiceBuilder.h"
+#include "arcane/core/ISubDomain.h"
+#include "arcane/core/ServiceFinder2.h"
+#include "arcane/core/FactoryService.h"
+#include "arcane/core/SerializeBuffer.h"
+#include "arcane/core/IMeshPartitioner.h"
+#include "arcane/core/IMainFactory.h"
+#include "arcane/core/IMeshModifier.h"
+#include "arcane/core/Properties.h"
+#include "arcane/core/IInitialPartitioner.h"
+#include "arcane/core/Timer.h"
+#include "arcane/core/IMesh.h"
+#include "arcane/core/IMeshSubMeshTransition.h"
+#include "arcane/core/IItemFamily.h"
+#include "arcane/core/IDirectExecution.h"
+#include "arcane/core/IParallelMng.h"
+#include "arcane/core/IMeshUtilities.h"
+#include "arcane/core/IMeshWriter.h"
+#include "arcane/core/ITimeStats.h"
+#include "arcane/core/ServiceBuilder.h"
 
 #include "arcane/std/ArcaneCasePartitioner_axl.h"
 
-#include "arcane/IMeshPartitionConstraintMng.h"
+#include "arcane/core/IMeshPartitionConstraintMng.h"
 #include "arcane/mesh/ExternalPartitionConstraint.h"
 
 #include <map>
@@ -65,19 +63,22 @@ class ArcaneInitialPartitioner
 : public IInitialPartitioner
 {
  public:
+
   struct TrueOwnerInfo
   {
-    VariableCellInt32* m_true_cells_owner;
-    VariableNodeInt32* m_true_nodes_owner;
+    VariableCellInt32* m_true_cells_owner = nullptr;
+    VariableNodeInt32* m_true_nodes_owner = nullptr;
   };
+
  public:
 
   ArcaneInitialPartitioner(ArcaneCasePartitioner* mt,ISubDomain* sd)
-  : m_sub_domain(sd), m_main(mt)
+  : m_sub_domain(sd)
+  , m_main(mt)
   {
   }
-  virtual void build() {}
-  virtual void partitionAndDistributeMeshes(ConstArrayView<IMesh*> meshes);
+  void build() override {}
+  void partitionAndDistributeMeshes(ConstArrayView<IMesh*> meshes) override;
 
  private:
 
@@ -89,8 +90,8 @@ class ArcaneInitialPartitioner
 
  public:
 
-  ISubDomain* m_sub_domain;
-  ArcaneCasePartitioner* m_main;
+  ISubDomain* m_sub_domain = nullptr;
+  ArcaneCasePartitioner* m_main = nullptr;
   //! Stocke pour chaque maillage une variable indiquant pour chaque maille quelle partie la possède.
   UniqueArray<TrueOwnerInfo> m_part_indexes;
 };
@@ -99,7 +100,6 @@ class ArcaneInitialPartitioner
 /*---------------------------------------------------------------------------*/
 /*!
  * \brief Service de partitionnement externe du maillage.
- *
  */
 class ArcaneCasePartitioner
 : public ArcaneArcaneCasePartitionerObject
@@ -108,16 +108,15 @@ class ArcaneCasePartitioner
 
  public:
 
-  ArcaneCasePartitioner(const ServiceBuildInfo& cb);
-  virtual ~ArcaneCasePartitioner();
+  explicit ArcaneCasePartitioner(const ServiceBuildInfo& sbi);
+  ~ArcaneCasePartitioner() override;
 
  public:
 
-  virtual void build() {}
-  virtual void initialize();
-  virtual void execute();
-  virtual void setParallelMng(IParallelMng*){}
-  virtual bool isActive() const { return true; }
+  void build() override {}
+  void execute() override;
+  void setParallelMng(IParallelMng*) override {}
+  bool isActive() const override { return true; }
 
  private:
 
@@ -135,7 +134,7 @@ class ArcaneCasePartitioner
 
   std::ofstream m_sortiesCorrespondance;
 
-  ArcaneInitialPartitioner* m_init_part;
+  ArcaneInitialPartitioner* m_init_part = nullptr;
 
   void _partitionMesh(Int32 nb_part);
   void _computeGroups(IItemFamily* current_family,IItemFamily* new_family);
@@ -154,7 +153,7 @@ _mergeConstraints(ConstArrayView<IMesh*> meshes)
 {
   Integer nb_mesh = meshes.size();
   if (nb_mesh!=1)
-    throw FatalErrorException(A_FUNCINFO,"Can not partition multiple meshes");
+    ARCANE_FATAL("Can not partition multiple meshes");
 
   IMesh* mesh = meshes[0];
   ISubDomain* sd = m_sub_domain;
@@ -172,7 +171,6 @@ _mergeConstraints(ConstArrayView<IMesh*> meshes)
   ENUMERATE_CELL(icell,current_cell_family->allItems()){
     cells_new_owner[icell] = (*icell).owner();
   }
-
 
   sd->timeStats()->dumpTimeAndMemoryUsage(sd->parallelMng());
   IMeshPartitionConstraint* c = new mesh::ExternalPartitionConstraint(mesh, m_main->options()->constraints);
@@ -219,19 +217,20 @@ partitionAndDistributeMeshes(ConstArrayView<IMesh*> meshes)
   tm->info() << "DoInitialPartition. Service=" << lib_name;
 
   if (!mesh_partitioner.get())
-    throw FatalErrorException(A_FUNCINFO,
-                              String::format("can not found service named '{0}' for initial mesh partitioning",
-                                             lib_name));
+    ARCANE_FATAL("can not found service named '{0}' for initial mesh partitioning", lib_name);
+
   _mergeConstraints(meshes);
 
   Integer nb_mesh = meshes.size();
   if (nb_mesh!=1)
-    throw FatalErrorException(A_FUNCINFO,"Can not partition multiple meshes");
+    ARCANE_FATAL("Can not partition multiple meshes");
+
   m_part_indexes.resize(nb_mesh);
   Int32 nb_part = m_main->options()->nbCutPart();
   if (nb_part==0)
     nb_part = nb_rank;
-  tm->info() << "NbPart = " << nb_part;
+  tm->info() << "NbPart = " << nb_part << " nb_mesh=" << nb_mesh;
+
   for( Integer i=0; i<nb_mesh; ++i ){
     IMesh* mesh = meshes[i];
     ARCANE_CHECK_POINTER(mesh);
@@ -336,20 +335,11 @@ void ArcaneCasePartitioner::
 execute()
 {
   Int32 nb_part = options()->nbCutPart();
+  info() << "ArcaneCasePartitioner::execute() nb_part=" << nb_part;
   if (nb_part!=0){
-    info() << "PARTITION MESH nb_part=" << nb_part;
     subDomain()->timeStats()->dumpTimeAndMemoryUsage(subDomain()->parallelMng());
     _partitionMesh(nb_part);
-    return;
   }
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void ArcaneCasePartitioner::
-initialize()
-{
 }
 
 /*---------------------------------------------------------------------------*/
@@ -424,6 +414,7 @@ _partitionMesh(Int32 nb_part)
   // Pour chaque partie à traiter, créé un maillage
   // contenant les entités de cette partie
   // et le sauvegarde
+  info() << "NbPart=" << nb_part << " my_rank=" << my_rank;
   for( Integer i=0; i<nb_part; ++i ){
     if ((i % nb_rank)!=my_rank){
       if (my_rank==0 && options()->createCorrespondances()){
@@ -531,7 +522,12 @@ _partitionMesh(Int32 nb_part)
       sprintf(buf,pattern.localstr(),i);
       filename = String(StringView(buf));
     }
-    mesh_writer->writeMeshToFile(new_mesh,filename);
+    {
+      info() << "Writing mesh file filename='" << filename << "'";
+      bool is_bad = mesh_writer->writeMeshToFile(new_mesh, filename);
+      if (is_bad)
+        ARCANE_FATAL("Can not write mesh file '{0}'", filename);
+    }
 
     // Fichier Correspondance
     if (options()->createCorrespondances()){
