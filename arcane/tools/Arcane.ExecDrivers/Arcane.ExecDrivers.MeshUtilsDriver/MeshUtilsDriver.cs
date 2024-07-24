@@ -47,10 +47,10 @@ namespace Arcane.ExecDrivers.MeshUtilsDriver
           if (d.NbProc<2){
             _ErrorArg(String.Format("le nombre de processeurs (option -n) doit etre superieur a 1 (actuellement {0})",d.NbProc));
           }
-          _AddArg(d,"nb-ghost-layer",nb_part.ToString());
-          _AddArg(d,"nb-couches-fantomes",nb_ghost.ToString());;
+          _AddArg(d,"nb-ghost-layer",nb_ghost.ToString());
           _AddArg(d,"create-correspondances",generate_correspondance_file ? "1" : "0" );
           _AddArg(d,"library",partitioner_name);
+          _AddArg(d,"nb-cut-part",nb_part.ToString());
           foreach(string s in constrained_groups){
             d.AdditionalArgs.AddRange(new string[]{ "-arcane_opt","tool_arg","constraints",s });
           }
