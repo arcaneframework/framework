@@ -1,3 +1,4 @@
+cmake_minimum_required(VERSION 3.21 FATAL_ERROR)
 set(EXAMPLE_NAME MicroHydro)
 project(MicroHydro LANGUAGES C CXX)
 include(../samples.common.cmake)

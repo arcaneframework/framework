@@ -1,5 +1,5 @@
 set(PROJECT_NAME csv)
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.21 FATAL_ERROR)
 project(${PROJECT_NAME} LANGUAGES CXX C)
 
 set(BUILD_SHARED_LIBS TRUE)

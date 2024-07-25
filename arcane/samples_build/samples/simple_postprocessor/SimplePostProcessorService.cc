@@ -71,7 +71,6 @@ void SimplePostProcessorDataWriter::
 beginWrite(const VariableCollection& vars)
 {
   IParallelMng* pm = m_mesh->parallelMng();
-  const Int32 nb_rank = pm->commSize();
   bool is_master_io = pm->isMasterIO();
 
   Directory dir(m_directory_name);
