@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CartesianMeshCoarsening2.h                                  (C) 2000-2023 */
+/* CartesianMeshCoarsening2.h                                  (C) 2000-2024 */
 /*                                                                           */
 /* Déraffinement d'un maillage cartésien.                                    */
 /*---------------------------------------------------------------------------*/
@@ -59,6 +59,14 @@ namespace Arcane
  *   de niveau zéro et le second contiendra les mailles de niveau 1 qui sont les
  *   anciennes mailles avant dé-raffinement.
  *
+ * Il est ensuite possible de ne conserver que les mailles grossières et de
+ * supprimer les mailles raffinées par la'appel à la méthode.
+ *
+ * - removeRefinedCells() qui supprime les mailles autres que les mailles
+ *   grossière. Après cet appel, il n'y a plus qu'un maillage cartésien
+ *   avec 2 fois moins de mailles dans chaque direction. Il sera ensuite
+ *   possible d'appeler les méthodes de raffinement pour créer des niveaux
+ *   supplémentaires.
  * Voici un exemple de code utilisateur:
  *
  * \code
@@ -85,12 +93,16 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianMeshCoarsening2
    */
   void createCoarseCells();
 
+  void removeRefinedCells();
+
  private:
 
   ICartesianMesh* m_cartesian_mesh = nullptr;
   Int32 m_verbosity_level = false;
-  UniqueArray2<Int32> m_refined_cells;
-  UniqueArray<Int32> m_coarse_cells;
+  //! uniqueId() des mailles grossières
+  UniqueArray<Int64> m_coarse_cells_uid;
+  bool m_is_create_coarse_called = false;
+  bool m_is_remove_refined_called = false;
   Int64 m_first_own_cell_unique_id_offset = NULL_ITEM_UNIQUE_ID;
 
  private:
