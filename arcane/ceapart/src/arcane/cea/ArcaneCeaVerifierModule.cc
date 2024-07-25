@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ArcaneVerifierModule.cc                                     (C) 2000-2022 */
+/* ArcaneVerifierModule.cc                                     (C) 2000-2024 */
 /*                                                                           */
 /* Module de vérification.                                                   */
 /*---------------------------------------------------------------------------*/
@@ -14,20 +14,21 @@
 #include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/ScopedPtr.h"
 
-#include "arcane/EntryPoint.h"
-#include "arcane/ISubDomain.h"
-#include "arcane/ModuleFactory.h"
-#include "arcane/IVerifierService.h"
-#include "arcane/ServiceUtils.h"
-#include "arcane/IVariableMng.h"
-#include "arcane/IParallelMng.h"
-#include "arcane/IMesh.h"
-#include "arcane/IItemFamily.h"
-#include "arcane/ITimeLoopMng.h"
-#include "arcane/ServiceBuilder.h"
-#include "arcane/ObserverPool.h"
-#include "arcane/ICheckpointMng.h"
-#include "arcane/MeshVisitor.h"
+#include "arcane/core/EntryPoint.h"
+#include "arcane/core/ISubDomain.h"
+#include "arcane/core/ModuleFactory.h"
+#include "arcane/core/IVerifierService.h"
+#include "arcane/core/ServiceUtils.h"
+#include "arcane/core/IVariableMng.h"
+#include "arcane/core/IParallelMng.h"
+#include "arcane/core/IMesh.h"
+#include "arcane/core/IItemFamily.h"
+#include "arcane/core/ITimeLoopMng.h"
+#include "arcane/core/ServiceBuilder.h"
+#include "arcane/core/ObserverPool.h"
+#include "arcane/core/ICheckpointMng.h"
+#include "arcane/core/MeshVisitor.h"
+#include "arcane/core/IDirectory.h"
 
 #include "arcane/cea/ArcaneCeaVerifier_axl.h"
 
@@ -149,24 +150,44 @@ onExit()
     compare_from_sequential = false;
 
   String result_file_name = options()->resultFile();
-  if (result_file_name.empty())
-    result_file_name = "compare.xml";
+  String reference_file_name = options()->referenceFile();
+
+  if (options()->filesInOutputDir()) {
+    if (result_file_name.empty()) {
+      result_file_name = subDomain()->exportDirectory().file("compare.xml");
+    }
+    else {
+      result_file_name = subDomain()->exportDirectory().file(result_file_name);
+    }
+
+    if (reference_file_name.empty()) {
+      reference_file_name = subDomain()->exportDirectory().file("check");
+    }
+    else {
+      reference_file_name = subDomain()->exportDirectory().file(reference_file_name);
+    }
+  }
+  else {
+    if (result_file_name.empty()) {
+      result_file_name = "compare.xml";
+    }
+
+    if (reference_file_name.empty()) {
+      reference_file_name = "check";
+    }
+  }
+
   verifier_service->setResultFileName(result_file_name);
 
-  String reference_file_name = options()->referenceFile();
-  if (reference_file_name.empty())
-    reference_file_name = "check";
-
   info() << "Verification check is_parallel?=" << is_parallel << " compare_from_sequential?=" << compare_from_sequential;
-  String base_file_name = reference_file_name;
-  verifier_service->setFileName(base_file_name);
+  verifier_service->setFileName(reference_file_name);
 
   if (options()->generate()){
-    info() << "Writing check file '" << base_file_name << "'";
+    info() << "Writing check file '" << reference_file_name << "'";
     verifier_service->writeReferenceFile();
   }
   else{
-    info() << "Comparing reference file '" << base_file_name << "'";
+    info() << "Comparing reference file '" << reference_file_name << "'";
     verifier_service->doVerifFromReferenceFile(compare_from_sequential,false);
   }
 }

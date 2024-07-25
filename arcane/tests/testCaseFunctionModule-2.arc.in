@@ -8,7 +8,7 @@
 
   <functions>
     <external-assembly>
-      <assembly-name>ExternalDotNetFunction1.dll</assembly-name>
+      <assembly-name>@_OUTPUT_DLL@</assembly-name>
       <class-name>ArcaneTest.TestCaseFunction1</class-name>
     </external-assembly>
   </functions>
