@@ -442,11 +442,12 @@ void CartesianMeshTesterModule::
 _testCoarsening()
 {
   Int32 coarse_version = options()->coarseCartesianMesh();
-
+  IMesh* mesh = m_cartesian_mesh->mesh();
+  Int32 mesh_dim = mesh->dimension();
+  const Int32 coarse_factor = 1 << mesh_dim;
   if (coarse_version==1){
     info() << "Test CartesianCoarsening V1";
     Ref<CartesianMeshCoarsening> coarser = m_cartesian_mesh->createCartesianMeshCoarsening();
-    IMesh* mesh = m_cartesian_mesh->mesh();
     IItemFamily* cell_family = mesh->cellFamily();
     CellInfoListView cells(cell_family);
     coarser->createCoarseCells();
@@ -464,6 +465,7 @@ _testCoarsening()
 
   if (coarse_version==2){
     info() << "Test CartesianCoarsening V2";
+    const Int32 nb_orig_cell = ownCells().size();
     Ref<CartesianMeshCoarsening2> coarser = CartesianMeshUtils::createCartesianMeshCoarsening2(m_cartesian_mesh);
     coarser->createCoarseCells();
     ENUMERATE_(Cell,icell,allCells()){
@@ -481,6 +483,15 @@ _testCoarsening()
       ICartesianMeshPatch* p = m_cartesian_mesh->patch(i);
       info() << "Patch i=" << i << " nb_cell=" << p->cells().size();
     }
+    coarser->removeRefinedCells();
+    // Le nombre de mailles doit être égal au nombre d'origine
+    // divisé par \a coarse_factor.
+    const Int32 nb_final_cell = ownCells().size();
+    info() << "nb_orig_cell=" << nb_orig_cell << " nb_final_cell=" << nb_final_cell
+           << " coarse_factor=" << coarse_factor;
+    const Int32 nb_computed = nb_final_cell * coarse_factor;
+    if (nb_computed != nb_orig_cell)
+      ARCANE_FATAL("Bad number of cells orig={0} computed={1}", nb_orig_cell, nb_computed);
   }
 }
 
