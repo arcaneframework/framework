@@ -269,7 +269,7 @@ endmacro()
 #
 function(arcane_add_csharp_test_direct)
   set(options        )
-  set(oneValueArgs   CASE_FILE_PATH TEST_NAME WORKING_DIRECTORY ASSEMBLY)
+  set(oneValueArgs CASE_FILE_PATH TEST_NAME WORKING_DIRECTORY ASSEMBLY EXTERNAL_ASSEMBLY)
   set(multiValueArgs LAUNCH_COMMAND ARGS)
   cmake_parse_arguments(ARGS "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
@@ -277,25 +277,53 @@ function(arcane_add_csharp_test_direct)
     message(FATAL_ERROR "No 'TEST_NAME' argument")
   endif()
 
-  # Il faut mettre d'abord les arguments de la fonction car ils peuvent contenir
-  # des arguments à passer en premier
-  set(_ALL_ARGS ${ARGS_ARGS})
-  list(APPEND _ALL_ARGS ${ARGS_CASE_FILE_PATH})
+  cmake_path(GET ARGS_CASE_FILE_PATH EXTENSION LAST_ONLY _EXTENSION_ARC)
+
+  # Si l'extension du fichier est .in, alors on a un EXTERNAL_ASSEMBLY à situer.
+  # On récupère le nom du fichier sans extension.
+  # Sinon, on garde le répertoire du .arc d'origine.
+  if (_EXTENSION_ARC STREQUAL ".in")
+    cmake_path(GET ARGS_CASE_FILE_PATH STEM _FILENAME)
+  else ()
+    set(_FILE_ARC ${ARGS_CASE_FILE_PATH})
+  endif ()
+
   if (ARGS_ASSEMBLY)
-    list(APPEND _ALL_ARGS "--dotnet-assembly=${ARGS_ASSEMBLY}")
-  endif()
+    set(_ALL_ARGS "--dotnet-assembly=${ARGS_ASSEMBLY}")
+  endif ()
 
   if (DOTNET_EXEC)
     # Test avec coreclr direct
+    if (ARGS_EXTERNAL_ASSEMBLY)
+      set(_OUTPUT_DLL ${ARGS_WORKING_DIRECTORY}/${ARGS_EXTERNAL_ASSEMBLY}_coreclr.dll)
+      if (_EXTENSION_ARC STREQUAL ".in")
+        set(_FILE_ARC ${ARGS_WORKING_DIRECTORY}/${_FILENAME}_coreclr.arc)
+        # Dans ce fichier, il n'y a que le _OUTPUT_DLL à définir.
+        configure_file(${ARGS_CASE_FILE_PATH} ${_FILE_ARC} @ONLY)
+      endif ()
+      set(_EXTERNAL_ARGS "--dotnet-compile=${TEST_PATH}/${ARGS_EXTERNAL_ASSEMBLY}.cs")
+      list(APPEND _EXTERNAL_ARGS "--dotnet-output-dll=${_OUTPUT_DLL}")
+    endif ()
+
     arcane_add_test_direct(NAME ${ARGS_TEST_NAME}_coreclr
-      COMMAND ${ARGS_LAUNCH_COMMAND} -Z --dotnet-runtime=coreclr ${_ALL_ARGS}
+      COMMAND ${ARGS_LAUNCH_COMMAND} -Z --dotnet-runtime=coreclr ${ARGS_ARGS} ${_FILE_ARC} ${_ALL_ARGS} ${_EXTERNAL_ARGS}
       WORKING_DIRECTORY ${ARGS_WORKING_DIRECTORY})
   endif()
 
   if (TARGET arcane_dotnet_coreclr)
     # Test avec coreclr embedded
+    if (ARGS_EXTERNAL_ASSEMBLY)
+      set(_OUTPUT_DLL ${ARGS_WORKING_DIRECTORY}/${ARGS_EXTERNAL_ASSEMBLY}_coreclr_embedded.dll)
+      if (_EXTENSION_ARC STREQUAL ".in")
+        set(_FILE_ARC ${ARGS_WORKING_DIRECTORY}/${_FILENAME}_coreclr_embedded.arc)
+        configure_file(${ARGS_CASE_FILE_PATH} ${_FILE_ARC} @ONLY)
+      endif ()
+      set(_EXTERNAL_ARGS "--dotnet-compile=${TEST_PATH}/${ARGS_EXTERNAL_ASSEMBLY}.cs")
+      list(APPEND _EXTERNAL_ARGS "--dotnet-output-dll=${_OUTPUT_DLL}")
+    endif ()
+
     arcane_add_test_direct(NAME ${ARGS_TEST_NAME}_coreclr_embedded
-      COMMAND ${ARGS_LAUNCH_COMMAND} -We,ARCANE_USE_DOTNET_WRAPPER,1 --dotnet-runtime=coreclr ${_ALL_ARGS}
+      COMMAND ${ARGS_LAUNCH_COMMAND} -We,ARCANE_USE_DOTNET_WRAPPER,1 --dotnet-runtime=coreclr ${ARGS_ARGS} ${_FILE_ARC} ${_ALL_ARGS} ${_EXTERNAL_ARGS}
       WORKING_DIRECTORY ${ARGS_WORKING_DIRECTORY})
   endif()
 
@@ -317,6 +345,26 @@ macro(arcane_add_csharp_test_sequential test_name case_file)
     ASSEMBLY ${ARCANE_TEST_DOTNET_ASSEMBLY}
     ARGS ${ARGN}
     )
+endmacro()
+
+# ----------------------------------------------------------------------------
+# Ajoute un test séquentiel en C# avec chargement d'une dll externe.
+#
+macro(arcane_add_csharp_test_sequential_external_assembly test_name case_file assembly_file)
+  if (VERBOSE)
+    message(STATUS "    ADD C# SEQUENTIAL TEST=${ARCANE_TEST_CASEPATH} ${case_file} WITH EXTERNAL ASSEMBLY=${assembly_file}")
+  endif ()
+  arcane_get_case_path(${case_file})
+  message(STATUS "ADD C# test name=${test_name} assembly=${ARCANE_TEST_DOTNET_ASSEMBLY} external assembly=${assembly_file}")
+  arcane_add_csharp_test_direct(
+          TEST_NAME ${test_name}
+          WORKING_DIRECTORY ${ARCANE_TEST_WORKDIR}
+          LAUNCH_COMMAND ${ARCANE_TEST_LAUNCH_COMMAND}
+          CASE_FILE_PATH ${full_case_file}
+          ASSEMBLY ${ARCANE_TEST_DOTNET_ASSEMBLY}
+          EXTERNAL_ASSEMBLY ${assembly_file}
+          ARGS ${ARGN}
+  )
 endmacro()
 
 # ----------------------------------------------------------------------------

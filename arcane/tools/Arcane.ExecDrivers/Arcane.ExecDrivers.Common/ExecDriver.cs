@@ -25,6 +25,7 @@ namespace Arcane.ExecDrivers.Common
     public string DotNetRuntime = "coreclr";
     public string DotNetAssembly;
     public string DotNetUserCompile;
+    public string DotNetUserOutputDll;
     public string[] ParallelArgs;
     public string[] AdditionalArgs;
 
@@ -59,6 +60,7 @@ namespace Arcane.ExecDrivers.Common
       opt_set.Add("dotnet-runtime=", "nom du runtime '.Net' à utiliser (mono|coreclr)", (string v) => DotNetRuntime = v);
       opt_set.Add("dotnet-assembly=", "nom complet de l'assembly '.Net' à charger au démarrage", (string v) => DotNetAssembly = v);
       opt_set.Add("dotnet-compile=", "liste de fichiers C# à compiler", (string v) => DotNetUserCompile = v);
+      opt_set.Add("dotnet-output-dll=", "chemin et nom du fichier .dll généré", (string v) => DotNetUserOutputDll = v);
       opt_set.Add("P|parallelarg=", "option passee au gestionnaire parallele", (string v) => parallel_args.Add(v));
       opt_set.Add("d|debugtool=", "outil de debug (tv,gdb,memcheck,...)", (string v) => DebugTool = v);
       opt_set.Add("R|replication=", "nombre de replication de sous-domaines", (int v) => NbReplication = v);
@@ -172,6 +174,7 @@ namespace Arcane.ExecDrivers.Common
     string m_dotnet_runtime;
     string m_dotnet_assembly;
     string m_dotnet_compile;
+    string m_dotnet_output_dll;
     string[] m_parallel_args;
     CommandArgs m_command_args;
     List<Assembly> m_additional_assemblies;
@@ -209,6 +212,7 @@ namespace Arcane.ExecDrivers.Common
       m_dotnet_runtime = command_args.DotNetRuntime;
       m_dotnet_assembly = command_args.DotNetAssembly;
       m_dotnet_compile = command_args.DotNetUserCompile;
+      m_dotnet_output_dll = command_args.DotNetUserOutputDll;
 
       m_remaining_args = command_args.RemainingArguments;
       if (!String.IsNullOrEmpty(command_args.ExecName))
@@ -259,7 +263,18 @@ namespace Arcane.ExecDrivers.Common
       // Compile les fichiers C# spécifiés
       if (!String.IsNullOrEmpty(m_dotnet_compile)){
         var x = new Arcane.ExecDrivers.DotNetCompile.Compile();
-        x.Execute(new string[]{m_dotnet_compile});
+        if (!String.IsNullOrEmpty(m_dotnet_output_dll)){
+          FileInfo fif = new FileInfo(m_dotnet_output_dll);
+          Console.WriteLine("OUTPUT DLL: {0}", fif.FullName);
+          DirectoryInfo di = new DirectoryInfo(fif.Directory.FullName);
+          if (!di.Exists){
+            di.Create();
+          }
+          x.Execute(new string[]{"/out:" + fif.FullName, m_dotnet_compile});
+        }
+        else{
+          x.Execute(new string[]{m_dotnet_compile});
+        }
       }
       if (!String.IsNullOrEmpty(m_properties.DirectExecMethod))
         _AddArcaneArg(arcane_args, "DirectExecutionMethod", m_properties.DirectExecMethod);

@@ -797,7 +797,7 @@ if (ARCANE_HAS_DOTNET_TESTS)
     arcane_add_csharp_test_sequential(hydro_cs_task testSimpleHydroCS-1.arc -m 15 -K 4)
   endif()
   arcane_add_csharp_test_sequential(casefunction_cs1 testCaseFunctionModule-1.arc)
-  arcane_add_csharp_test_sequential(casefunction_cs2 testCaseFunctionModule-2.arc --dotnet-compile="${TEST_PATH}/ExternalDotNetFunction1.cs")
+  arcane_add_csharp_test_sequential_external_assembly(casefunction_cs2 testCaseFunctionModule-2.arc.in ExternalDotNetFunction1)
 endif()
 
 arcane_add_test_parallel(loadbalance_test1 testLoadBalanceHydro-MeshPartitionerTester.arc 4 -m 30)
