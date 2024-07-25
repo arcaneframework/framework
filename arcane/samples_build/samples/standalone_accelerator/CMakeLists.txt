@@ -1,10 +1,11 @@
+cmake_minimum_required(VERSION 3.21 FATAL_ERROR)
 project(StandaloneAccelerator LANGUAGES C CXX)
 
 find_package(Arcane REQUIRED)
 add_executable(StandaloneAccelerator main.cc)
 arcane_add_arcane_libraries_to_target(StandaloneAccelerator)
 
-# Indique qu'on souhaite compiler 'main.cc' avec le support des Partie spécifique accélérateur
+# Indique qu'on souhaite compiler 'main.cc' avec le support des accélérateur
 arcane_accelerator_enable()
 arcane_accelerator_add_source_files(main.cc)
 arcane_accelerator_add_to_target(StandaloneAccelerator)

@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* main.cc                                                     (C) 2000-2022 */
+/* main.cc                                                     (C) 2000-2024 */
 /*                                                                           */
 /* Main MiniNBody sample.                                                    */
 /*---------------------------------------------------------------------------*/
@@ -65,7 +65,7 @@ initWithRandom(NumArray<RealType,MDDim1>& data)
 {
   data.resize(m_nb_body);
   for (Int32 i = 0, n = m_nb_body; i < n; i++) {
-    data.s(i) = 2.0f * (rand() / (RealType)RAND_MAX) - 1.0f;
+    data(i) = 2.0f * (rand() / (RealType)RAND_MAX) - 1.0f;
   }
 }
 
@@ -155,9 +155,9 @@ execute()
 
     // Mise à jour des positions
     for (int i = 0 ; i < nb_body; ++i ) {
-      m_x.s(i) += m_vx(i)*dt;
-      m_y.s(i) += m_vy(i)*dt;
-      m_z.s(i) += m_vz(i)*dt;
+      m_x(i) += m_vx(i)*dt;
+      m_y(i) += m_vy(i)*dt;
+      m_z(i) += m_vz(i)*dt;
     }
   }
   std::cout << "Elapsed time_per_iter: " << (total_elapsed_time/(nb_iter-1)) << "s\n";      
