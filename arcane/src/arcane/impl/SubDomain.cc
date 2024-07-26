@@ -104,6 +104,7 @@
 #include "arcane/accelerator/core/DeviceInfo.h"
 #include "arcane/accelerator/core/Runner.h"
 #include "arcane/accelerator/core/AcceleratorRuntimeInitialisationInfo.h"
+#include "arcane/accelerator/core/IDeviceInfoList.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -353,6 +354,7 @@ class SubDomain
   void _doInitialPartitionForMesh(IMesh* mesh,const String& service_name,bool is_required);
   void _notifyWriteCheckpoint();
   void _printCPUAffinity();
+  void _setDefaultAcceleratorDevice(Accelerator::AcceleratorRuntimeInitialisationInfo& config);
 };
 
 /*---------------------------------------------------------------------------*/
@@ -470,15 +472,8 @@ initialize()
     // donnés par l'utilisateur.
     IApplication* app = application();
     ax::AcceleratorRuntimeInitialisationInfo config = app->acceleratorRuntimeInitialisationInfo();
-    // TODO: faire cela ailleurs
-    if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_ACCELERATOR_PARALLELMNG_RANK_FOR_DEVICE",true)){
-      Int32 modulo = v.value();
-      if (modulo==0)
-        modulo = 1;
-      info() << "Use commRank() to choose accelerator device with modulo=" << modulo;
-      Int32 device_rank = m_parallel_mng->commRank() % modulo;
-      config.setDeviceId(ax::DeviceId(device_rank));
-    }
+    _setDefaultAcceleratorDevice(config);
+
     m_accelerator_mng->initialize(config);
     Runner* runner = m_accelerator_mng->defaultRunner();
     const auto& device_info = runner->deviceInfo();
@@ -551,7 +546,49 @@ initialize()
   m_observers.addObserver(this,
                           &SubDomain::_notifyWriteCheckpoint,
                           m_checkpoint_mng->writeObservable());
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void SubDomain::
+_setDefaultAcceleratorDevice(Accelerator::AcceleratorRuntimeInitialisationInfo& config)
+{
+  // Choix de l'accélérateur à utiliser
+  // Si plusieurs accélérateurs sont disponibles, il faut en choisir un par défaut.
+  // On considère que tous les noeuds ont le même nombre d'accélérateur.
+  // Dans ce cas, on prend comme accélérateur par défaut le i-ème accélérateur disponible,
+  // avec \a i choisi comme étant notre rang modulo le nombre d'accélérateur disponible sur
+  // le noeud.
+  // NOTE: cela fonctionne bien si on utilise un seul processus par accélérateur.
+  // Si on en utilise plus, il faudrait plutôt prendre les rangs consécutifs pour
+  // le même accélérateur.
+  // TODO: Regarder aussi pour voir comment utiliser plutôt l'accélérateur le plus proche
+  // de notre rang. Pour cela il faudrait utiliser des bibliothèque comme HWLOC
+  //
+  auto* device_list = Runner::deviceInfoList(config.executionPolicy());
+
+  Int32 modulo_device = 0;
+  if (device_list){
+    Int32 nb_device = device_list->nbDevice();
+    info() << "DeviceInfo: nb_device=" << nb_device;
+    modulo_device = nb_device;
   }
+
+  // TODO: faire cela ailleurs
+  if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_ACCELERATOR_PARALLELMNG_RANK_FOR_DEVICE",true)){
+    Int32 modulo = v.value();
+    if (modulo==0)
+      modulo = 1;
+    modulo_device = modulo;
+    info() << "Use commRank() to choose accelerator device with modulo=" << modulo;
+  }
+  if (modulo_device!=0){
+    Int32 device_rank = m_parallel_mng->commRank() % modulo_device;
+    info() << "Using device number=" << device_rank;
+    config.setDeviceId(Accelerator::DeviceId(device_rank));
+  }
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
