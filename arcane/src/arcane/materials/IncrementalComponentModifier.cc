@@ -52,8 +52,15 @@ IncrementalComponentModifier(AllEnvData* all_env_data, const RunQueue& queue)
   // 0 si on utilise la copie typée (mode historique) et une commande par variable
   // 1 si on utilise la copie générique et une commande par variable
   // 2 si on utilise la copie générique et une commande pour toutes les variables
-  if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_USE_GENERIC_COPY_BETWEEN_PURE_AND_PARTIAL", true))
+  if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_USE_GENERIC_COPY_BETWEEN_PURE_AND_PARTIAL", true)){
     m_use_generic_copy_between_pure_and_partial = v.value();
+  }
+  else{
+    // Par défaut sur un accélérateur on utilise la copie avec une seule file
+    // car c'est la plus performante.
+    if (queue.isAcceleratorPolicy())
+      m_use_generic_copy_between_pure_and_partial = 2;
+  }
 }
 
 /*---------------------------------------------------------------------------*/
