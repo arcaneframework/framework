@@ -238,12 +238,19 @@ class UnifiedMemoryCudaMemoryAllocator
 
   void _applyHint(void* p, size_t new_size, MemoryAllocationArgs args)
   {
-    // TODO: regarder comment utiliser une autre device que le device 0.
-    // (Peut-être prendre cudaGetDevice ?)
     eMemoryLocationHint hint = args.memoryLocationHint();
+
+    // Utilise le device actif pour positionner le GPU par défaut
+    // On ne le fait que si le \a hint le nécessite pour éviter d'appeler
+    // cudaGetDevice() à chaque fois.
+    int device_id = 0;
+    if (hint == eMemoryLocationHint::MainlyDevice || hint == eMemoryLocationHint::HostAndDeviceMostlyRead) {
+      cudaGetDevice(&device_id);
+    }
+
     //std::cout << "SET_MEMORY_HINT name=" << args.arrayName() << " size=" << new_size << " hint=" << (int)hint << "\n";
     if (hint == eMemoryLocationHint::MainlyDevice || hint == eMemoryLocationHint::HostAndDeviceMostlyRead) {
-      ARCANE_CHECK_CUDA(cudaMemAdvise(p, new_size, cudaMemAdviseSetPreferredLocation, 0));
+      ARCANE_CHECK_CUDA(cudaMemAdvise(p, new_size, cudaMemAdviseSetPreferredLocation, device_id));
       ARCANE_CHECK_CUDA(cudaMemAdvise(p, new_size, cudaMemAdviseSetAccessedBy, cudaCpuDeviceId));
     }
     if (hint == eMemoryLocationHint::MainlyHost) {
@@ -251,7 +258,7 @@ class UnifiedMemoryCudaMemoryAllocator
       //ARCANE_CHECK_CUDA(cudaMemAdvise(p, new_size, cudaMemAdviseSetAccessedBy, 0));
     }
     if (hint == eMemoryLocationHint::HostAndDeviceMostlyRead) {
-      ARCANE_CHECK_CUDA(cudaMemAdvise(p, new_size, cudaMemAdviseSetReadMostly, 0));
+      ARCANE_CHECK_CUDA(cudaMemAdvise(p, new_size, cudaMemAdviseSetReadMostly, device_id));
     }
   }
 
