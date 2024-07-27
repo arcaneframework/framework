@@ -97,18 +97,104 @@ class CudaMemoryAllocatorBase
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+/*!
+ * \brief Classe commune pour gérer l'allocation en mémoire unifiée.
+ *
+ * Cette classe permet de garantir qu'on alloue la mémoire unifiée sur des
+ * multiples de la taille d'une page ce qui permet d'éviter des effets de bord
+ * entre les allocations pour les transferts entre l'accélérateur CPU et l'hôte.
+ */
+class CommonUnifiedMemoryAllocatorWrapper
+{
+ public:
+
+  CommonUnifiedMemoryAllocatorWrapper()
+  {
+    m_page_size = platform::getPageSize();
+    if (m_page_size <= 0)
+      m_page_size = 4096;
+  }
+
+  ~CommonUnifiedMemoryAllocatorWrapper()
+  {
+    std::cout << "NB_ALLOCATE=" << m_nb_allocate
+              << " NB_UNALIGNED=" << m_nb_unaligned_allocate
+              << "\n";
+  }
+
+ public:
+
+  void initialize()
+  {
+    if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_CUDA_UM_PAGE_ALLOC", true))
+      m_page_allocate_level = v.value();
+  }
+
+  Int64 adjustedCapacity(Int64 wanted_capacity, Int64 element_size) const
+  {
+    const bool do_page = m_page_allocate_level > 0;
+    if (!do_page)
+      return wanted_capacity;
+    // Alloue un multiple de la taille d'une page
+    // Comme les transfers de la mémoire unifiée se font par page,
+    // cela permet de détecter quelles allocations provoquent le transfert
+    Int64 orig_capacity = wanted_capacity;
+    Int64 new_size = orig_capacity * element_size;
+    size_t n = new_size / m_page_size;
+    if ((new_size % m_page_size) != 0)
+      ++n;
+    new_size = (n + 1) * m_page_size;
+    wanted_capacity = new_size / element_size;
+    if (wanted_capacity < orig_capacity)
+      wanted_capacity = orig_capacity;
+    return wanted_capacity;
+  }
+
+  void doDeallocate(AllocatedMemoryInfo mem_info, MemoryAllocationArgs args)
+  {
+    void* ptr = mem_info.baseAddress();
+    const bool do_page = m_page_allocate_level > 0;
+    if (do_page) {
+      uintptr_t addr = reinterpret_cast<uintptr_t>(ptr);
+      if ((addr % m_page_size) != 0) {
+        ++m_nb_unaligned_allocate;
+      }
+    }
+    m_tracer.traceDeallocate(mem_info, args);
+  }
+
+  void doAllocate(void* ptr, size_t new_size, MemoryAllocationArgs args)
+  {
+    ++m_nb_allocate;
+    m_tracer.traceAllocate(ptr, new_size, args);
+  }
+
+ private:
+
+  Int64 m_page_size = 4096;
+  Int32 m_page_allocate_level = 0;
+  //! Nombre d'allocations
+  std::atomic<Int32> m_nb_allocate = 0;
+  //! Nombre d'allocations non alignées
+  std::atomic<Int32> m_nb_unaligned_allocate = 0;
+  impl::MemoryTracerWrapper m_tracer;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 class UnifiedMemoryCudaMemoryAllocator
 : public CudaMemoryAllocatorBase
 {
  public:
 
-  Int64 page_size = platform::getPageSize();
+  ~UnifiedMemoryCudaMemoryAllocator()
+  {
+  }
 
   void initialize()
   {
-    if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_CUDA_UM_PAGE_ALLOC", true))
-      m_page_allocate_level = v.value();
+    m_wrapper.initialize();
   }
 
  public:
@@ -125,32 +211,15 @@ class UnifiedMemoryCudaMemoryAllocator
   Int64 adjustedCapacity(MemoryAllocationArgs args, Int64 wanted_capacity, Int64 element_size) const override
   {
     wanted_capacity = AlignedMemoryAllocator3::adjustedCapacity(args, wanted_capacity, element_size);
-    const bool do_page = m_page_allocate_level > 0;
-    if (!do_page)
-      return wanted_capacity;
-    // Alloue un multiple de la taille d'une page
-    // Comme les transfers de la mémoire unifiée se font par page,
-    // cela permet de détecter quelles allocations provoquent le transfert
-    // TODO: vérifier que le début de l'allocation est bien un multiple
-    // de la taille de page.
-    Int64 orig_capacity = wanted_capacity;
-    Int64 new_size = orig_capacity * element_size;
-    size_t n = new_size / page_size;
-    if ((new_size % page_size) != 0)
-      ++n;
-    new_size = (n + 1) * page_size;
-    wanted_capacity = new_size / element_size;
-    if (wanted_capacity < orig_capacity)
-      wanted_capacity = orig_capacity;
-    return wanted_capacity;
+    return m_wrapper.adjustedCapacity(wanted_capacity, element_size);
   }
 
  protected:
 
   cudaError_t _deallocate(AllocatedMemoryInfo mem_info, MemoryAllocationArgs args) override
   {
+    m_wrapper.doDeallocate(mem_info, args);
     void* ptr = mem_info.baseAddress();
-    m_tracer.traceDeallocate(mem_info, args);
     return ::cudaFree(ptr);
   }
 
@@ -161,7 +230,7 @@ class UnifiedMemoryCudaMemoryAllocator
     if (r != cudaSuccess)
       return r;
 
-    m_tracer.traceAllocate(p, new_size, args);
+    m_wrapper.doAllocate(p, new_size, args);
 
     _applyHint(*ptr, new_size, args);
     return cudaSuccess;
@@ -169,12 +238,19 @@ class UnifiedMemoryCudaMemoryAllocator
 
   void _applyHint(void* p, size_t new_size, MemoryAllocationArgs args)
   {
-    // TODO: regarder comment utiliser une autre device que le device 0.
-    // (Peut-être prendre cudaGetDevice ?)
     eMemoryLocationHint hint = args.memoryLocationHint();
+
+    // Utilise le device actif pour positionner le GPU par défaut
+    // On ne le fait que si le \a hint le nécessite pour éviter d'appeler
+    // cudaGetDevice() à chaque fois.
+    int device_id = 0;
+    if (hint == eMemoryLocationHint::MainlyDevice || hint == eMemoryLocationHint::HostAndDeviceMostlyRead) {
+      cudaGetDevice(&device_id);
+    }
+
     //std::cout << "SET_MEMORY_HINT name=" << args.arrayName() << " size=" << new_size << " hint=" << (int)hint << "\n";
     if (hint == eMemoryLocationHint::MainlyDevice || hint == eMemoryLocationHint::HostAndDeviceMostlyRead) {
-      ARCANE_CHECK_CUDA(cudaMemAdvise(p, new_size, cudaMemAdviseSetPreferredLocation, 0));
+      ARCANE_CHECK_CUDA(cudaMemAdvise(p, new_size, cudaMemAdviseSetPreferredLocation, device_id));
       ARCANE_CHECK_CUDA(cudaMemAdvise(p, new_size, cudaMemAdviseSetAccessedBy, cudaCpuDeviceId));
     }
     if (hint == eMemoryLocationHint::MainlyHost) {
@@ -182,16 +258,13 @@ class UnifiedMemoryCudaMemoryAllocator
       //ARCANE_CHECK_CUDA(cudaMemAdvise(p, new_size, cudaMemAdviseSetAccessedBy, 0));
     }
     if (hint == eMemoryLocationHint::HostAndDeviceMostlyRead) {
-      ARCANE_CHECK_CUDA(cudaMemAdvise(p, new_size, cudaMemAdviseSetReadMostly, 0));
+      ARCANE_CHECK_CUDA(cudaMemAdvise(p, new_size, cudaMemAdviseSetReadMostly, device_id));
     }
   }
 
  private:
 
-  //! Strictement positif si on alloue page par page
-  Int32 m_page_allocate_level = 0;
-
-  impl::MemoryTracerWrapper m_tracer;
+  CommonUnifiedMemoryAllocatorWrapper m_wrapper;
 };
 
 /*---------------------------------------------------------------------------*/
