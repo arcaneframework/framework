@@ -41,6 +41,18 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RunnerInternal
   //! Stoppe toutes les activités de profiling.
   static void stopAllProfiling();
 
+  // Les méthodes suivantes qui gèrent le profiling agissent sur
+  // le runtime  (CUDA, ROCM, ...) associé au runner. Par exemple si on
+  // a deux runners associés à CUDA, si on appelle startProfiling() pour l'un
+  // alors isProfilingActive() sera vrai pour le second runner.
+
+  //! Indique si le profiling est actif pour le runtime associé
+  bool isProfilingActive();
+  //! Démarre le profiling pour le runtime associé
+  void startProfiling();
+  //! Stoppe le profiling pour le runtime associé
+  void stopProfiling();
+
  private:
 
   impl::RunnerImpl* m_runner_impl = nullptr;

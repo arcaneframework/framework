@@ -62,6 +62,8 @@ extern "C++" void
 startCupti();
 extern "C++" void
 stopCupti();
+extern "C++" bool
+isCuptiActive();
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -373,6 +375,11 @@ class CudaRunnerRuntime
     stopCupti();
   }
 
+  bool isProfilingActive() override
+  {
+    return isCuptiActive();
+  }
+
   void getPointerAttribute(PointerAttribute& attribute, const void* ptr) override
   {
     cudaPointerAttributes ca;
@@ -464,8 +471,10 @@ fillDevices()
   if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_CUPTI_PRINT", true))
     do_print_cupti = (v.value() != 0);
 
-  if (global_cupti_level > 0)
+  if (global_cupti_level > 0){
     initCupti(global_cupti_level, do_print_cupti);
+    startCupti();
+  }
 }
 
 /*---------------------------------------------------------------------------*/
