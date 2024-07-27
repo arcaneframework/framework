@@ -451,6 +451,25 @@ fillPointerAttribute(PointerAttribute& attr, const void* ptr)
   m_p->runtime()->getPointerAttribute(attr, ptr);
 }
 
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+bool Runner::
+_isAutoPrefetchCommand() const
+{
+  return m_p->isAutoPrefetchCommand();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+RunnerInternal* Runner::
+_internalApi()
+{
+  return m_p->_internalApi();
+}
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
@@ -458,7 +477,7 @@ fillPointerAttribute(PointerAttribute& attr, const void* ptr)
  *
  * En général on utilise cela en fin de calcul.
  */
-void Runner::
+void RunnerInternal::
 stopAllProfiling()
 {
   _stopProfiling(eExecutionPolicy::CUDA);
@@ -470,10 +489,28 @@ stopAllProfiling()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-bool Runner::
-_isAutoPrefetchCommand() const
+void RunnerInternal::
+startProfiling()
 {
-  return m_p->isAutoPrefetchCommand();
+  m_runner_impl->runtime()->startProfiling();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void RunnerInternal::
+stopProfiling()
+{
+  m_runner_impl->runtime()->stopProfiling();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+bool RunnerInternal::
+isProfilingActive()
+{
+  return m_runner_impl->runtime()->isProfilingActive();
 }
 
 /*---------------------------------------------------------------------------*/

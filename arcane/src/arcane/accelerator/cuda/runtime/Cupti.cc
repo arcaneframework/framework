@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Cupti.cc                                                    (C) 2000-2023 */
+/* Cupti.cc                                                    (C) 2000-2024 */
 /*                                                                           */
 /* Intégration de CUPTI.                                                     */
 /*---------------------------------------------------------------------------*/
@@ -231,12 +231,13 @@ class CuptiInfo
   void start();
   void stop();
   void flush();
+  bool isActive() const { return m_is_active; }
 
  private:
 
   CUpti_ActivityUnifiedMemoryCounterConfig config[2];
   CUpti_ActivityPCSamplingConfig configPC;
-  bool m_is_init = false;
+  bool m_is_active = false;
   int m_profiling_level = 0;
 };
 
@@ -300,7 +301,6 @@ void CuptiInfo::
 init(Int32 level)
 {
   m_profiling_level = level;
-  start();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -309,7 +309,7 @@ init(Int32 level)
 void CuptiInfo::
 start()
 {
-  if (m_is_init)
+  if (m_is_active)
     return;
 
   int level = m_profiling_level;
@@ -330,7 +330,7 @@ start()
 
   // NOTE: un seul processus peut utiliser le sampling. Si on utilise MPI avec plusieurs
   // rangs il ne faut pas activer le sampling
-  if (level>=3){
+  if (level >= 3) {
     configPC.size = sizeof(CUpti_ActivityPCSamplingConfig);
     configPC.samplingPeriod = CUPTI_ACTIVITY_PC_SAMPLING_PERIOD_MIN;
     configPC.samplingPeriod2 = 0;
@@ -353,7 +353,7 @@ start()
 
   // Mettre à la fin pour qu'en cas d'exception on considère l'initialisation
   // non effectuée.
-  m_is_init = true;
+  m_is_active = true;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -362,7 +362,7 @@ start()
 void CuptiInfo::
 stop()
 {
-  if (!m_is_init)
+  if (!m_is_active)
     return;
   int level = m_profiling_level;
 
@@ -376,7 +376,7 @@ stop()
   ARCANE_CHECK_CUDA(cuptiActivityFlushAll(0));
   ARCANE_CHECK_CUDA(cudaDeviceSynchronize());
 
-  m_is_init = false;
+  m_is_active = false;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -387,7 +387,7 @@ flush()
 {
   // Il ne faut pas faire de flush si CUPTI n'a pas démarré car cela provoque
   // une erreur.
-  if (!m_is_init)
+  if (!m_is_active)
     return;
   ARCANE_CHECK_CUDA(cuptiActivityFlushAll(0));
 }
@@ -423,6 +423,12 @@ extern "C++" void
 stopCupti()
 {
   m_global_cupti_info.stop();
+}
+
+extern "C++" bool
+isCuptiActive()
+{
+  return m_global_cupti_info.isActive();
 }
 
 /*---------------------------------------------------------------------------*/

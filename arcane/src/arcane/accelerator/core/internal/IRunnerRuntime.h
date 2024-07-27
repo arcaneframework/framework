@@ -1,16 +1,16 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IRunnerRuntime.h                                            (C) 2000-2023 */
+/* IRunnerRuntime.h                                            (C) 2000-2024 */
 /*                                                                           */
 /* Interface du runtime associé à une RunQueue.                              */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_ACCELERATOR_IRUNQUEUERUNTIME_H
-#define ARCANE_ACCELERATOR_IRUNQUEUERUNTIME_H
+#ifndef ARCANE_ACCELERATOR_INTERNAL_IRUNQUEUERUNTIME_H
+#define ARCANE_ACCELERATOR_INTERNAL_IRUNQUEUERUNTIME_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -49,6 +49,7 @@ class ARCANE_ACCELERATOR_CORE_EXPORT IRunnerRuntime
   virtual const IDeviceInfoList* deviceInfoList() = 0;
   virtual void startProfiling() {}
   virtual void stopProfiling() {}
+  virtual bool isProfilingActive() { return false; }
   virtual void getPointerAttribute(PointerAttribute& attribute, const void* ptr) = 0;
 
  protected:
