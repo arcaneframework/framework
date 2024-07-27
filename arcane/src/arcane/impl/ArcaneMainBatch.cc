@@ -66,7 +66,7 @@
 #include "arcane/impl/ExecutionStatsDumper.h"
 #include "arcane/impl/TimeLoopReader.h"
 
-#include "arcane/accelerator/core/Runner.h"
+#include "arcane/accelerator/core/internal/RunnerInternal.h"
 
 #include <thread>
 
@@ -826,7 +826,7 @@ executeRank(Int32 local_rank)
     IParallelMng* pm = sub_domain->parallelMng();
     pm->barrier();
     if (local_rank==0)
-      Runner::stopAllProfiling();
+      Accelerator::RunnerInternal::stopAllProfiling();
     pm->barrier();
     _printStats(sub_domain,trace,time_stat);
   }

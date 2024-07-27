@@ -25,7 +25,7 @@ namespace Arcane::Accelerator
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class RunnerInternal
+class ARCANE_ACCELERATOR_CORE_EXPORT RunnerInternal
 {
   friend ::Arcane::Accelerator::Runner;
   friend ::Arcane::Accelerator::impl::RunnerImpl;
@@ -35,6 +35,11 @@ class RunnerInternal
   explicit RunnerInternal(impl::RunnerImpl* p)
   : m_runner_impl(p)
   {}
+
+ public:
+
+  //! Stoppe toutes les activités de profiling.
+  static void stopAllProfiling();
 
  private:
 

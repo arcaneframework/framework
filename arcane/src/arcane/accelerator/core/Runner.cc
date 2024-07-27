@@ -451,21 +451,6 @@ fillPointerAttribute(PointerAttribute& attr, const void* ptr)
   m_p->runtime()->getPointerAttribute(attr, ptr);
 }
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
- * \brief Arrête tout les profiling en cours de tout les runtime.
- *
- * En général on utilise cela en fin de calcul.
- */
-void Runner::
-stopAllProfiling()
-{
-  _stopProfiling(eExecutionPolicy::CUDA);
-  _stopProfiling(eExecutionPolicy::HIP);
-  _stopProfiling(eExecutionPolicy::Sequential);
-  _stopProfiling(eExecutionPolicy::Thread);
-}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -483,6 +468,22 @@ RunnerInternal* Runner::
 _internalApi()
 {
   return m_p->_internalApi();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Arrête tout les profiling en cours de tout les runtime.
+ *
+ * En général on utilise cela en fin de calcul.
+ */
+void RunnerInternal::
+stopAllProfiling()
+{
+  _stopProfiling(eExecutionPolicy::CUDA);
+  _stopProfiling(eExecutionPolicy::HIP);
+  _stopProfiling(eExecutionPolicy::Sequential);
+  _stopProfiling(eExecutionPolicy::Thread);
 }
 
 /*---------------------------------------------------------------------------*/

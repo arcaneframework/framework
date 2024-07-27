@@ -139,12 +139,6 @@ class ARCANE_ACCELERATOR_CORE_EXPORT Runner
    */
   static const IDeviceInfoList* deviceInfoList(eExecutionPolicy policy);
 
-  /*!
-   * \internal
-   * \brief Stoppe toutes les activités de profiling.
-   */
-  static void stopAllProfiling();
-
  public:
 
   //! API interne à Arcane
