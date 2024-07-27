@@ -145,6 +145,11 @@ class ARCANE_ACCELERATOR_CORE_EXPORT Runner
    */
   static void stopAllProfiling();
 
+ public:
+
+  //! API interne à Arcane
+  RunnerInternal* _internalApi();
+
  private:
 
   impl::IRunnerRuntime* _internalRuntime() const;

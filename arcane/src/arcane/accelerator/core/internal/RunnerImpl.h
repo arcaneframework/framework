@@ -17,6 +17,7 @@
 #include "arcane/accelerator/core/AcceleratorCoreGlobal.h"
 
 #include "arcane/accelerator/core/DeviceId.h"
+#include "arcane/accelerator/core/internal/RunnerInternal.h"
 
 #include <stack>
 #include <mutex>
@@ -47,6 +48,7 @@ class RunQueueImplStack
  public:
 
   RunQueueImpl* createRunQueue(const RunQueueBuildInfo& bi);
+
  private:
 
   std::stack<impl::RunQueueImpl*> m_stack;
@@ -90,6 +92,11 @@ class RunnerImpl
   };
 
  public:
+
+  RunnerImpl()
+  : m_internal_api(this)
+  {
+  }
 
   ~RunnerImpl()
   {
@@ -138,6 +145,7 @@ class RunnerImpl
   RunQueueImpl* _internalCreateOrGetRunQueueImpl(const RunQueueBuildInfo& bi);
   IRunQueueEventImpl* _createEvent();
   IRunQueueEventImpl* _createEventWithTimer();
+  RunnerInternal* _internalApi() { return &m_internal_api; }
 
  private:
 
@@ -157,6 +165,8 @@ class RunnerImpl
 
   //! Indique si on pré-copie les données avant une commande de cette RunQueue
   bool m_is_auto_prefetch_command = false;
+
+  RunnerInternal m_internal_api;
 
  private:
 

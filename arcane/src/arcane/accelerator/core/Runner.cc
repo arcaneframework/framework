@@ -479,6 +479,15 @@ _isAutoPrefetchCommand() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+RunnerInternal* Runner::
+_internalApi()
+{
+  return m_p->_internalApi();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 extern "C++" ePointerAccessibility
 getPointerAccessibility(Runner* runner, const void* ptr, PointerAttribute* ptr_attr)
 {
