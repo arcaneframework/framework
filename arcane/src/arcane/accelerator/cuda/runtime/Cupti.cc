@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Cupti.cc                                                    (C) 2000-2023 */
+/* Cupti.cc                                                    (C) 2000-2024 */
 /*                                                                           */
 /* Intégration de CUPTI.                                                     */
 /*---------------------------------------------------------------------------*/
@@ -354,7 +354,6 @@ start()
   // Mettre à la fin pour qu'en cas d'exception on considère l'initialisation
   // non effectuée.
   m_is_active = true;
-  std::cout << "START_CUPTI\n";
 }
 
 /*---------------------------------------------------------------------------*/
