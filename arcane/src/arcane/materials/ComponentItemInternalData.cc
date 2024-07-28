@@ -146,8 +146,6 @@ _allocOptions()
 void ComponentItemInternalData::
 endCreate()
 {
-  const Int32 nb_env = m_material_mng->environments().size();
-  m_mat_items_internal_range.resize(nb_env);
   _initSharedInfos();
 }
 
@@ -210,10 +208,11 @@ resizeComponentItemInternals(Int32 max_local_id, Int32 total_nb_env_cell)
     m_all_env_items_internal_range.setRange(0, max_local_id);
     m_env_items_internal_range.setRange(0, total_nb_env_cell);
     Int32 index_in_container = 0;
-    for (const MeshEnvironment* env : m_material_mng->trueEnvironments()) {
+    for (MeshEnvironment* env : m_material_mng->trueEnvironments()) {
       Int32 nb_cell_mat = env->totalNbCellMat();
-      Int32 env_id = env->id();
-      host_mats_range[env_id].setRange(index_in_container, nb_cell_mat);
+      ComponentItemInternalRange mat_range;
+      mat_range.setRange(index_in_container, nb_cell_mat);
+      env->setMatInternalDataRange(mat_range);
       index_in_container += nb_cell_mat;
     }
   }
@@ -223,7 +222,6 @@ resizeComponentItemInternals(Int32 max_local_id, Int32 total_nb_env_cell)
           << " total_nb_mat_cell=" << total_nb_mat_cell;
   {
     RunQueue::ScopedAsync sc(&queue);
-    m_mat_items_internal_range.copy(host_mats_range, &queue);
     m_all_env_storage.resize(max_local_id, allEnvSharedInfo(), queue);
     m_env_storage.resize(total_nb_env_cell, envSharedInfo(), queue);
     m_mat_storage.resize(total_nb_mat_cell, matSharedInfo(), queue);

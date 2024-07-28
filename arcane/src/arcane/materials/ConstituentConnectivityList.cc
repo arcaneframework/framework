@@ -351,8 +351,8 @@ _addCells(Int16 component_id, SmallSpan<const Int32> cells_local_id,
 
   SmallSpan<Int16> nb_component_view = component.m_nb_component_as_array.view();
 
-  NumArray<Int32, MDDim1> new_indexes(nb_item);
-  const bool is_device = queue.isAcceleratorPolicy();
+  // TODO: Utiliser des tableaux de travail à conserver.
+  NumArray<Int32, MDDim1> new_indexes(nb_item, queue.memoryRessource());
   // Pour recopier le nombre d'éléments à ajouter du device vers le CPU
   NumArray<Int32, MDDim1> new_indexes_to_add(1, eMemoryRessource::HostPinned);
 
