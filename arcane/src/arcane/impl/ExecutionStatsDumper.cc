@@ -232,6 +232,10 @@ _dumpOneAcceleratorListStat(std::ostream& o, const impl::AcceleratorStatInfoList
   const auto& dtoh = stat_list.memoryTransfer(impl::AcceleratorStatInfoList::eMemoryTransferType::DeviceToHost);
   o << "MemoryTransferSTATS: HTOD = " << htod.m_nb_byte << " (" << htod.m_nb_call << ")"
     << " DTOH = " << dtoh.m_nb_byte << " (" << dtoh.m_nb_call << ")";
+  const auto& cpu_fault = stat_list.memoryPageFault(impl::AcceleratorStatInfoList::eMemoryPageFaultType::Cpu);
+  const auto& gpu_fault = stat_list.memoryPageFault(impl::AcceleratorStatInfoList::eMemoryPageFaultType::Gpu);
+  o << " PageFaultCPU = " << cpu_fault.m_nb_fault << " (" << cpu_fault.m_nb_call << ")"
+    << " PageFaultGPU = " << gpu_fault.m_nb_fault << " (" << gpu_fault.m_nb_call << ")";
 }
 
 /*---------------------------------------------------------------------------*/

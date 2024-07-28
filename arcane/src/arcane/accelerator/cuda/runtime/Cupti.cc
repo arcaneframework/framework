@@ -12,6 +12,7 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/Profiling.h"
+#include "arcane/utils/FixedArray.h"
 #include "arcane/utils/internal/ProfilingInternal.h"
 
 #include "arcane/accelerator/cuda/CudaAccelerator.h"
@@ -31,7 +32,7 @@ namespace Arcane::Accelerator::Cuda
 using Arcane::impl::AcceleratorStatInfoList;
 namespace
 {
-bool global_do_print = true;
+  bool global_do_print = true;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -102,6 +103,10 @@ getUvmCounterKindString(CUpti_ActivityUnifiedMemoryCounterKind kind)
     return "BYTES_TRANSFER_HTOD";
   case CUPTI_ACTIVITY_UNIFIED_MEMORY_COUNTER_KIND_BYTES_TRANSFER_DTOH:
     return "BYTES_TRANSFER_DTOH";
+  case CUPTI_ACTIVITY_UNIFIED_MEMORY_COUNTER_KIND_CPU_PAGE_FAULT_COUNT:
+    return "CPU_PAGE_FAULT";
+  case CUPTI_ACTIVITY_UNIFIED_MEMORY_COUNTER_KIND_GPU_PAGE_FAULT:
+    return "GPU_PAGE_FAULT";
   default:
     break;
   }
@@ -123,7 +128,7 @@ printActivity(AcceleratorStatInfoList* stat_info,
     Int64 nb_byte = uvm->value;
     if (do_print) {
       void* address = reinterpret_cast<void*>(uvm->address);
-      std::pair<String,String> mem_info = impl::MemoryTracer::findMemory(address);
+      std::pair<String, String> mem_info = impl::MemoryTracer::findMemory(address);
       std::cout << "UNIFIED_MEMORY_COUNTER [ " << (uvm->start - startTimestamp) << " " << (uvm->end - startTimestamp) << " ]"
                 << " address=" << address
                 << " kind=" << getUvmCounterKindString(uvm->counterKind)
@@ -139,6 +144,12 @@ printActivity(AcceleratorStatInfoList* stat_info,
         stat_info->addMemoryTransfer(AcceleratorStatInfoList::eMemoryTransferType::HostToDevice, nb_byte);
       if (uvm->counterKind == CUPTI_ACTIVITY_UNIFIED_MEMORY_COUNTER_KIND_BYTES_TRANSFER_DTOH)
         stat_info->addMemoryTransfer(AcceleratorStatInfoList::eMemoryTransferType::DeviceToHost, nb_byte);
+      if (uvm->counterKind == CUPTI_ACTIVITY_UNIFIED_MEMORY_COUNTER_KIND_CPU_PAGE_FAULT_COUNT)
+        // TODO: regarder à quoi correspond uvw->value pour cet évènement
+        stat_info->addMemoryPageFault(AcceleratorStatInfoList::eMemoryPageFaultType::Cpu, 1);
+      if (uvm->counterKind == CUPTI_ACTIVITY_UNIFIED_MEMORY_COUNTER_KIND_GPU_PAGE_FAULT) {
+        stat_info->addMemoryPageFault(AcceleratorStatInfoList::eMemoryPageFaultType::Gpu, nb_byte);
+      }
     }
     break;
   }
@@ -235,7 +246,7 @@ class CuptiInfo
 
  private:
 
-  CUpti_ActivityUnifiedMemoryCounterConfig config[2];
+  FixedArray<CUpti_ActivityUnifiedMemoryCounterConfig, 4> config;
   CUpti_ActivityPCSamplingConfig configPC;
   bool m_is_active = false;
   int m_profiling_level = 0;
@@ -275,7 +286,7 @@ arcaneCuptiBufferCompleted(CUcontext ctx, uint32_t stream_id, uint8_t* buffer,
   do {
     status = cuptiActivityGetNextRecord(buffer, validSize, &record);
     if (status == CUPTI_SUCCESS) {
-      printActivity(stat_info,record,global_do_print);
+      printActivity(stat_info, record, global_do_print);
     }
     else if (status == CUPTI_ERROR_MAX_LIMIT_REACHED) {
       break;
@@ -312,21 +323,33 @@ start()
   if (m_is_active)
     return;
 
+  int device_id = 0;
+  cudaGetDevice(&device_id);
   int level = m_profiling_level;
 
   ARCANE_CHECK_CUDA(cuptiActivityRegisterCallbacks(arcaneCuptiBufferRequested, arcaneCuptiBufferCompleted));
 
   config[0].scope = CUPTI_ACTIVITY_UNIFIED_MEMORY_COUNTER_SCOPE_PROCESS_SINGLE_DEVICE;
   config[0].kind = CUPTI_ACTIVITY_UNIFIED_MEMORY_COUNTER_KIND_BYTES_TRANSFER_HTOD;
-  config[0].deviceId = 0;
+  config[0].deviceId = device_id;
   config[0].enable = 1;
 
   config[1].scope = CUPTI_ACTIVITY_UNIFIED_MEMORY_COUNTER_SCOPE_PROCESS_SINGLE_DEVICE;
   config[1].kind = CUPTI_ACTIVITY_UNIFIED_MEMORY_COUNTER_KIND_BYTES_TRANSFER_DTOH;
-  config[1].deviceId = 0;
+  config[1].deviceId = device_id;
   config[1].enable = 1;
 
-  ARCANE_CHECK_CUDA(cuptiActivityConfigureUnifiedMemoryCounter(config, 2));
+  config[2].scope = CUPTI_ACTIVITY_UNIFIED_MEMORY_COUNTER_SCOPE_PROCESS_SINGLE_DEVICE;
+  config[2].kind = CUPTI_ACTIVITY_UNIFIED_MEMORY_COUNTER_KIND_CPU_PAGE_FAULT_COUNT;
+  config[2].deviceId = device_id;
+  config[2].enable = 1;
+
+  config[3].scope = CUPTI_ACTIVITY_UNIFIED_MEMORY_COUNTER_SCOPE_PROCESS_SINGLE_DEVICE;
+  config[3].kind = CUPTI_ACTIVITY_UNIFIED_MEMORY_COUNTER_KIND_GPU_PAGE_FAULT;
+  config[3].deviceId = device_id;
+  config[3].enable = 1;
+
+  ARCANE_CHECK_CUDA(cuptiActivityConfigureUnifiedMemoryCounter(config.data(), config.size()));
 
   // NOTE: un seul processus peut utiliser le sampling. Si on utilise MPI avec plusieurs
   // rangs il ne faut pas activer le sampling
@@ -401,7 +424,7 @@ namespace
 }
 
 extern "C++" void
-initCupti(Int32 level,bool do_print)
+initCupti(Int32 level, bool do_print)
 {
   m_global_cupti_info.init(level);
   global_do_print = do_print;
