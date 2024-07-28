@@ -78,7 +78,7 @@ MeshMaterialModifierImpl::
 MeshMaterialModifierImpl(MeshMaterialMng* mm)
 : TraceAccessor(mm->traceMng())
 , m_material_mng(mm)
-, m_queue(makeQueue(m_material_mng->runner()))
+, m_queue(m_material_mng->runQueue())
 {
   _setLocalVerboseLevel(4);
   if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_DEBUG_MATERIAL_MODIFIER", true)) {
