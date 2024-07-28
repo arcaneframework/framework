@@ -85,7 +85,7 @@ resize(Int32 new_size, ComponentItemSharedInfo* shared_info, RunQueue& queue)
   // On le fait sur l'accélérateur pour éviter des recopies avec le CPU.
   {
     auto command = makeCommand(queue);
-    command << RUNCOMMAND_LOOP1(iter, 1)
+    command << RUNCOMMAND_SINGLE()
     {
       shared_info->m_storage_size = new_size;
       first_sub_constituent_item_id_list[0] = {};
