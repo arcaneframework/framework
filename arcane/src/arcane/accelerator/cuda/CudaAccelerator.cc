@@ -103,14 +103,16 @@ class CudaMemoryAllocatorBase
  * Cette classe permet de garantir qu'on alloue la mémoire unifiée sur des
  * multiples de la taille d'une page ce qui permet d'éviter des effets de bord
  * entre les allocations pour les transferts entre l'accélérateur CPU et l'hôte.
+ *
+ * Par défaut on alloue un multiple de la taille de la page.
  */
 class CommonUnifiedMemoryAllocatorWrapper
 {
  public:
 
   CommonUnifiedMemoryAllocatorWrapper()
+  : m_page_size(platform::getPageSize())
   {
-    m_page_size = platform::getPageSize();
     if (m_page_size <= 0)
       m_page_size = 4096;
   }
@@ -172,7 +174,7 @@ class CommonUnifiedMemoryAllocatorWrapper
  private:
 
   Int64 m_page_size = 4096;
-  Int32 m_page_allocate_level = 0;
+  Int32 m_page_allocate_level = 1;
   //! Nombre d'allocations
   std::atomic<Int32> m_nb_allocate = 0;
   //! Nombre d'allocations non alignées
@@ -247,7 +249,6 @@ class UnifiedMemoryCudaMemoryAllocator
     if (hint == eMemoryLocationHint::MainlyDevice || hint == eMemoryLocationHint::HostAndDeviceMostlyRead) {
       cudaGetDevice(&device_id);
     }
-
     //std::cout << "SET_MEMORY_HINT name=" << args.arrayName() << " size=" << new_size << " hint=" << (int)hint << "\n";
     if (hint == eMemoryLocationHint::MainlyDevice || hint == eMemoryLocationHint::HostAndDeviceMostlyRead) {
       ARCANE_CHECK_CUDA(cudaMemAdvise(p, new_size, cudaMemAdviseSetPreferredLocation, device_id));
