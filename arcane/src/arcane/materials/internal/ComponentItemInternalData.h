@@ -156,41 +156,6 @@ class ComponentItemInternalData
 
  public:
 
-  //! Retourne la AllEnvCell correspondant à la maille \a id
-  matimpl::ConstituentItemBase allEnvItemBase(CellLocalId id)
-  {
-    return matimpl::ConstituentItemBase(allEnvSharedInfo(), ConstituentItemIndex(id.localId()));
-  }
-
-  //! Retourne la EnvCell correspondant à l'indice \a index
-  matimpl::ConstituentItemBase envItemBase(Int32 index)
-  {
-    return matimpl::ConstituentItemBase(envSharedInfo(), ConstituentItemIndex(index));
-  }
-
-  //! Retourne la MatCell correspondant au milieu d'indice \a index du milieu \a env_index
-  matimpl::ConstituentItemBase matItemBase(Int16 env_index, Int32 index)
-  {
-    return matimpl::ConstituentItemBase(matSharedInfo(), ConstituentItemIndex(matItemsInternalRange(env_index)[index]));
-  }
-
-  ComponentItemInternalRange allEnvItemsInternalRange() const
-  {
-    return m_all_env_items_internal_range;
-  }
-
-  //! Liste des mailles milieux.
-  ComponentItemInternalRange envItemsInternalRange() const
-  {
-    return m_env_items_internal_range;
-  }
-
-  //! Liste des mailles matériaux pour le \a env_index ème milieu
-  ComponentItemInternalRange matItemsInternalRange(Int32 env_index)
-  {
-    return m_mat_items_internal_range[env_index];
-  }
-
   //! Redimensionne les structures allouant les 'ComponentItemInternal'
   void resizeComponentItemInternals(Int32 max_local_id, Int32 total_env_cell);
 
@@ -209,7 +174,6 @@ class ComponentItemInternalData
 
   ComponentItemInternalRange m_all_env_items_internal_range;
   ComponentItemInternalRange m_env_items_internal_range;
-  NumArray<ComponentItemInternalRange, MDDim1> m_mat_items_internal_range;
 
   Storage m_all_env_storage;
   Storage m_env_storage;

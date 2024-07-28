@@ -23,6 +23,7 @@
 #include "arcane/core/materials/ComponentItemInternal.h"
 #include "arcane/core/materials/internal/IMeshComponentInternal.h"
 
+#include "arcane/materials/internal/ComponentItemInternalData.h"
 #include "arcane/materials/internal/MeshComponentData.h"
 
 /*---------------------------------------------------------------------------*/
@@ -173,6 +174,7 @@ class MeshEnvironment
   {
     return m_true_materials;
   }
+  void setMatInternalDataRange(ComponentItemInternalRange v) { m_mat_internal_data_range = v; }
   //@}
 
  private:
@@ -191,6 +193,7 @@ class MeshEnvironment
   MeshComponentData m_data;
   MeshEnvironment* m_non_const_this = nullptr;
   InternalApi m_internal_api;
+  ComponentItemInternalRange m_mat_internal_data_range;
 
  public:
 
