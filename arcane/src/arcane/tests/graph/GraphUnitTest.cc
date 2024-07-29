@@ -451,7 +451,6 @@ _createGraphOfDof(IItemFamily* particle_family)
     // CREATION DE LINK CELL-CELL
     // On remplit le tableau links_infos
     ENUMERATE_FACE (iface, ownFaces()) {
-      auto const& face = *iface;
       auto const& back_cell = iface->backCell();
       auto const& front_cell = iface->frontCell();
 

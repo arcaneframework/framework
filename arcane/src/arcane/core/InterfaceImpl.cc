@@ -258,25 +258,25 @@ addFaces(const MeshModifierAddFacesArgs& args)
 /*---------------------------------------------------------------------------*/
 
 void IVariable::
-synchronize(Int32ConstArrayView local_ids)
+synchronize(Int32ConstArrayView)
 {
   ARCANE_THROW(NotImplementedException,"synchronize() with specific local ids");
 }
 
 void IItemFamily::
-synchronize(VariableCollection variables, Int32ConstArrayView local_ids)
+synchronize(VariableCollection, Int32ConstArrayView)
 {
   ARCANE_THROW(NotImplementedException,"synchronize() with specific local ids");
 }
 
 void IVariableSynchronizer::
-synchronize(IVariable* var, Int32ConstArrayView local_ids)
+synchronize(IVariable*, Int32ConstArrayView)
 {
   ARCANE_THROW(NotImplementedException,"synchronize() with specific local ids");
 }
 
 void IVariableSynchronizer::
-synchronize(VariableCollection vars, Int32ConstArrayView local_ids)
+synchronize(VariableCollection, Int32ConstArrayView)
 {
   ARCANE_THROW(NotImplementedException,"synchronize() with specific local ids");
 }
