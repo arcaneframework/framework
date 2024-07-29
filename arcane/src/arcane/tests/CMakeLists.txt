@@ -441,7 +441,15 @@ ARCANE_ADD_TEST_PARALLEL(cell-submesh testSubMesh.arc 1)
 ARCANE_ADD_TEST_PARALLEL(cell-submesh testSubMesh.arc 12)
 ARCANE_ADD_TEST_PARALLEL(face-submesh testSubMesh2.arc 1)
 ARCANE_ADD_TEST_PARALLEL(face-submesh testSubMesh2.arc 12)
-arcane_add_test_parallel_all(face-submesh_2d testSubMesh2-2D.arc 2 2)
+
+# Le test suivant ne fonctionne en mode hybride que si le
+# partitionneur par défaut est ParMetis
+if (ARCANE_DEFAULT_PARTITIONER_IS_METIS)
+  arcane_add_test_parallel_all(face-submesh_2d testSubMesh2-2D.arc 2 2)
+else()
+  arcane_add_test(face-submesh_2d testSubMesh2-2D.arc)
+  arcane_add_test_parallel(face-submesh_2d testSubMesh2-2D.arc 2 2)
+endif()
 
 if(PARTITIONER_FOUND)
   ARCANE_ADD_TEST_PARALLEL(loadbalance testLoadBalance-1.arc 4)
