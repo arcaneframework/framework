@@ -45,7 +45,7 @@ void _check(eBasicDataType basic_type, int value, int nb_byte, const char* const
     eBasicDataType dt = basicDataTypeFromName(const_char_name, has_error);
     ASSERT_FALSE(has_error);
     ASSERT_EQ(basic_type, dt);
-    eBasicDataType dt2 = basicDataTypeFromName("Test1", has_error);
+    [[maybe_unused]] eBasicDataType dt2 = basicDataTypeFromName("Test1", has_error);
     ASSERT_TRUE(has_error);
   }
   {
