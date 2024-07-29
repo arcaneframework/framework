@@ -973,7 +973,8 @@ run()
       do_finalize = false;
     if (x == "0")
       do_finalize = true;
-    arcaneFinalize();
+    if (do_finalize)
+      arcaneFinalize();
   }
   else {
     arcaneInitialize();
