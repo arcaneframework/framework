@@ -43,7 +43,7 @@
 #include <cuda.h>
 
 #ifdef ARCANE_HAS_CUDA_NVTOOLSEXT
-#include <nvToolsExt.h>
+#include <nvtx3/nvToolsExt.h>
 #endif
 
 using namespace Arccore;
@@ -157,7 +157,7 @@ class CudaRunQueueStream
   void prefetchMemory(const MemoryPrefetchArgs& args) override
   {
     auto src = args.source().bytes();
-    if (src.size()==0)
+    if (src.size() == 0)
       return;
     DeviceId d = args.deviceId();
     int device = cudaCpuDeviceId;
@@ -483,8 +483,8 @@ class CudaMemoryCopier
             MutableMemoryView to, [[maybe_unused]] eMemoryRessource to_mem,
             const RunQueue* queue) override
   {
-    if (queue){
-      queue->copyMemory(MemoryCopyArgs(to.bytes(),from.bytes()).addAsync(queue->isAsync()));
+    if (queue) {
+      queue->copyMemory(MemoryCopyArgs(to.bytes(), from.bytes()).addAsync(queue->isAsync()));
       return;
     }
     // 'cudaMemcpyDefault' sait automatiquement ce qu'il faut faire en tenant
