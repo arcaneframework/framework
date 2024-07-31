@@ -214,8 +214,6 @@ _getGDBStack()
 {
   void *array [256];
   char **names;
-  const size_t cmd_size = 4096;
-  char cmd [cmd_size+1];
   int i, size;
 
   fprintf (stderr, "\nNative stacktrace:\n\n");
@@ -227,26 +225,7 @@ _getGDBStack()
   }
 
   fflush (stderr);
-
-  //sprintf (cmd, "gdb --ex 'attach %ld' --ex 'info threads' --ex 'thread apply all bt'", (long)getpid ());
-  //sprintf (cmd, "gdb --ex 'attach %ld' --ex 'info threads' --ex 'thread apply all bt' --batch", (long)getpid ());
-  char filename[4096];
-  long pid = (long)getpid();
-  sprintf(filename,"errlog.%ld",pid);
-  snprintf (cmd,cmd_size,"gdb --ex 'attach %ld' --ex 'info threads' --ex 'thread apply all bt full' --batch",pid);
-  int ret_value = system(cmd);
-
-  long unsigned int file_length = 0;
-  if (ret_value==0)
-    file_length = platform::getFileLength(filename);
-  if (file_length==0)
-    return String();
-
-  std::ifstream ifile;
-  ifile.open(filename,std::ios::binary);
-  ByteUniqueArray bytes(arcaneCheckArraySize(file_length));
-  ifile.read((char*)bytes.data(),file_length);
-  return String(bytes);
+  return platform::getGDBStack();
 }
 
 /*---------------------------------------------------------------------------*/
