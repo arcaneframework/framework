@@ -394,6 +394,21 @@ getPageSize();
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+/*!
+ * \brief Récupère la pile d'appel via gdb.
+ *
+ * Cette méthode ne fonctionne que sous Linux et si GDB est installé. Dans
+ * les autres cas c'est la chaîne nulle qui est retournée.
+ *
+ * Cette méthode appelle la commande std::system() pour lancer gbd qui doit
+ * se trouver dans le PATH. Comme gdb charge ensuite les symboles de debug
+ * la commande peut être assez longue à s'exécuter.
+ */
+extern "C++" ARCANE_UTILS_EXPORT String
+getGDBStack();
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 // Définition du pragma pour indiquer l'indépendance des itérations
 
