@@ -4,6 +4,7 @@
 
 set(ARCANE_SOURCES
   CudaAcceleratorRuntime.cc
+  internal/Cupti.h
   )
 
 arcane_find_package(CUDAToolkit REQUIRED)

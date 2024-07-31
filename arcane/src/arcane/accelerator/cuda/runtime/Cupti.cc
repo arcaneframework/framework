@@ -18,9 +18,7 @@
 #include "arcane/accelerator/cuda/CudaAccelerator.h"
 
 #include "arcane/accelerator/core/internal/MemoryTracer.h"
-
-#include <cuda.h>
-#include <cupti.h>
+#include "arcane/accelerator/cuda/runtime/internal/Cupti.h"
 
 #include <iostream>
 
@@ -231,29 +229,6 @@ printActivity(AcceleratorStatInfoList* stat_info,
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-/*!
- * \brief Classe singleton pour gérer CUPTI.
- */
-class CuptiInfo
-{
- public:
-
-  void init(Int32 level);
-  void start();
-  void stop();
-  void flush();
-  bool isActive() const { return m_is_active; }
-
- private:
-
-  FixedArray<CUpti_ActivityUnifiedMemoryCounterConfig, 4> config;
-  CUpti_ActivityPCSamplingConfig configPC;
-  bool m_is_active = false;
-  int m_profiling_level = 0;
-};
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 
 static void CUPTIAPI
 arcaneCuptiBufferRequested(uint8_t** buffer, size_t* size, size_t* maxNumRecords)
@@ -309,19 +284,12 @@ arcaneCuptiBufferCompleted(CUcontext ctx, uint32_t stream_id, uint8_t* buffer,
 /*---------------------------------------------------------------------------*/
 
 void CuptiInfo::
-init(Int32 level)
-{
-  m_profiling_level = level;
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void CuptiInfo::
 start()
 {
   if (m_is_active)
     return;
+
+  global_do_print = m_do_print;
 
   int device_id = 0;
   cudaGetDevice(&device_id);
@@ -418,40 +386,10 @@ flush()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace
-{
-  CuptiInfo m_global_cupti_info;
-}
-
 extern "C++" void
-initCupti(Int32 level, bool do_print)
+initCupti(bool do_print)
 {
-  m_global_cupti_info.init(level);
   global_do_print = do_print;
-}
-
-extern "C++" void
-flushCupti()
-{
-  m_global_cupti_info.flush();
-}
-
-extern "C++" void
-startCupti()
-{
-  m_global_cupti_info.start();
-}
-
-extern "C++" void
-stopCupti()
-{
-  m_global_cupti_info.stop();
-}
-
-extern "C++" bool
-isCuptiActive()
-{
-  return m_global_cupti_info.isActive();
 }
 
 /*---------------------------------------------------------------------------*/

@@ -36,6 +36,7 @@
 #include "arcane/accelerator/core/internal/IRunQueueEventImpl.h"
 #include "arcane/accelerator/core/PointerAttribute.h"
 #include "arcane/accelerator/core/RunQueue.h"
+#include "arcane/accelerator/cuda/runtime/internal/Cupti.h"
 
 #include <iostream>
 
@@ -51,19 +52,9 @@ namespace Arcane::Accelerator::Cuda
 {
 namespace
 {
-  Int32 global_cupti_level = 0;
   Int32 global_cupti_flush = 0;
+  CuptiInfo global_cupti_info;
 } // namespace
-extern "C++" void
-initCupti(Int32 level, bool do_print);
-extern "C++" void
-flushCupti();
-extern "C++" void
-startCupti();
-extern "C++" void
-stopCupti();
-extern "C++" bool
-isCuptiActive();
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -148,7 +139,7 @@ class CudaRunQueueStream
   {
     ARCANE_CHECK_CUDA(cudaStreamSynchronize(m_cuda_stream));
     if (global_cupti_flush > 0)
-      flushCupti();
+      global_cupti_info.flush();
   }
   bool _barrierNoException() override
   {
@@ -367,17 +358,17 @@ class CudaRunnerRuntime
 
   void startProfiling() override
   {
-    startCupti();
+    global_cupti_info.start();
   }
 
   void stopProfiling() override
   {
-    stopCupti();
+    global_cupti_info.stop();
   }
 
   bool isProfilingActive() override
   {
-    return isCuptiActive();
+    return global_cupti_info.isActive();
   }
 
   void getPointerAttribute(PointerAttribute& attribute, const void* ptr) override
@@ -462,6 +453,8 @@ fillDevices()
     m_device_info_list.addDevice(device_info);
   }
 
+  Int32 global_cupti_level = 0;
+
   // Regarde si on active Cupti
   if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_CUPTI_LEVEL", true))
     global_cupti_level = v.value();
@@ -471,9 +464,12 @@ fillDevices()
   if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_CUPTI_PRINT", true))
     do_print_cupti = (v.value() != 0);
 
-  if (global_cupti_level > 0){
-    initCupti(global_cupti_level, do_print_cupti);
-    startCupti();
+  if (global_cupti_level > 0) {
+#ifndef ARCANE_HAS_CUDA_CUPTI
+    ARCANE_FATAL("Trying to enable CUPTI but Arcane is not compiled with cupti support");
+#endif
+    global_cupti_info.init(global_cupti_level, do_print_cupti);
+    global_cupti_info.start();
   }
 }
 
