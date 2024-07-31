@@ -118,7 +118,7 @@ static uint64_t startTimestamp = 0;
 
 static void
 printActivity(AcceleratorStatInfoList* stat_info,
-              CUpti_Activity* record, bool do_print)
+              CUpti_Activity* record, bool do_print, std::ostream& ostr)
 {
   switch (record->kind) {
   case CUPTI_ACTIVITY_KIND_UNIFIED_MEMORY_COUNTER: {
@@ -127,15 +127,15 @@ printActivity(AcceleratorStatInfoList* stat_info,
     if (do_print) {
       void* address = reinterpret_cast<void*>(uvm->address);
       std::pair<String, String> mem_info = impl::MemoryTracer::findMemory(address);
-      std::cout << "UNIFIED_MEMORY_COUNTER [ " << (uvm->start - startTimestamp) << " " << (uvm->end - startTimestamp) << " ]"
-                << " address=" << address
-                << " kind=" << getUvmCounterKindString(uvm->counterKind)
-                << " value=" << nb_byte
-                << " flags=" << uvm->flags
-                << " source=" << uvm->srcId << " destination=" << uvm->dstId
-                << " name=" << mem_info.first
-                << " stack=" << mem_info.second
-                << "\n";
+      ostr << "UNIFIED_MEMORY_COUNTER [ " << (uvm->start - startTimestamp) << " " << (uvm->end - startTimestamp) << " ]"
+           << " address=" << address
+           << " kind=" << getUvmCounterKindString(uvm->counterKind)
+           << " value=" << nb_byte
+           << " flags=" << uvm->flags
+           << " source=" << uvm->srcId << " destination=" << uvm->dstId
+           << " name=" << mem_info.first
+           << " stack=" << mem_info.second
+           << "\n";
     }
     if (stat_info) {
       if (uvm->counterKind == CUPTI_ACTIVITY_UNIFIED_MEMORY_COUNTER_KIND_BYTES_TRANSFER_HTOD)
@@ -158,26 +158,26 @@ printActivity(AcceleratorStatInfoList* stat_info,
     // à partir de Cuda 12 on pourra utiliser 'CUpti_ActivityKernel9'.
     auto* kernel = reinterpret_cast<CUpti_ActivityKernel5*>(record);
     if (do_print) {
-      std::cout << kindString << " [ " << (kernel->start - startTimestamp) << " - " << (kernel->end - startTimestamp)
-                << " - " << (kernel->end - kernel->start) << " ]"
-                << " device=" << kernel->deviceId << " context=" << kernel->contextId
-                << " stream=" << kernel->streamId << " correlation=" << kernel->correlationId;
-      std::cout << " grid=[" << kernel->gridX << "," << kernel->gridY << "," << kernel->gridZ << "]"
-                << " block=[" << kernel->blockX << "," << kernel->blockY << "," << kernel->blockZ << "]"
-                << " shared memory (static=" << kernel->staticSharedMemory << " dynamic=" << kernel->dynamicSharedMemory << ")"
-                << " registers=" << kernel->registersPerThread
-                << " name=" << '"' << kernel->name << '"'
-                << "\n";
+      ostr << kindString << " [ " << (kernel->start - startTimestamp) << " - " << (kernel->end - startTimestamp)
+           << " - " << (kernel->end - kernel->start) << " ]"
+           << " device=" << kernel->deviceId << " context=" << kernel->contextId
+           << " stream=" << kernel->streamId << " correlation=" << kernel->correlationId;
+      ostr << " grid=[" << kernel->gridX << "," << kernel->gridY << "," << kernel->gridZ << "]"
+           << " block=[" << kernel->blockX << "," << kernel->blockY << "," << kernel->blockZ << "]"
+           << " shared memory (static=" << kernel->staticSharedMemory << " dynamic=" << kernel->dynamicSharedMemory << ")"
+           << " registers=" << kernel->registersPerThread
+           << " name=" << '"' << kernel->name << '"'
+           << "\n";
     }
     break;
   }
   case CUPTI_ACTIVITY_KIND_SOURCE_LOCATOR: {
     auto* source_locator = reinterpret_cast<CUpti_ActivitySourceLocator*>(record);
     if (do_print) {
-      std::cout << "Source Locator Id " << source_locator->id
-                << " File " << source_locator->fileName
-                << " Line " << source_locator->lineNumber
-                << "\n";
+      ostr << "Source Locator Id " << source_locator->id
+           << " File " << source_locator->fileName
+           << " Line " << source_locator->lineNumber
+           << "\n";
     }
     break;
   }
@@ -185,12 +185,12 @@ printActivity(AcceleratorStatInfoList* stat_info,
     auto* ps_record = reinterpret_cast<CUpti_ActivityPCSampling3*>(record);
 
     if (do_print) {
-      std::cout << "source " << ps_record->sourceLocatorId << " functionId " << ps_record->functionId
-                << " pc " << ps_record->pcOffset << " correlation " << ps_record->correlationId
-                << " samples " << ps_record->samples
-                << " latency samples " << ps_record->latencySamples
-                << " stallreason " << getStallReasonString(ps_record->stallReason)
-                << "\n";
+      ostr << "source " << ps_record->sourceLocatorId << " functionId " << ps_record->functionId
+           << " pc " << ps_record->pcOffset << " correlation " << ps_record->correlationId
+           << " samples " << ps_record->samples
+           << " latency samples " << ps_record->latencySamples
+           << " stallreason " << getStallReasonString(ps_record->stallReason)
+           << "\n";
     }
     break;
   }
@@ -198,11 +198,11 @@ printActivity(AcceleratorStatInfoList* stat_info,
     auto* pcsri_result = reinterpret_cast<CUpti_ActivityPCSamplingRecordInfo*>(record);
 
     if (do_print) {
-      std::cout << "correlation " << pcsri_result->correlationId
-                << " totalSamples " << pcsri_result->totalSamples
-                << " droppedSamples " << pcsri_result->droppedSamples
-                << " samplingPeriodInCycles " << pcsri_result->samplingPeriodInCycles
-                << "\n";
+      ostr << "correlation " << pcsri_result->correlationId
+           << " totalSamples " << pcsri_result->totalSamples
+           << " droppedSamples " << pcsri_result->droppedSamples
+           << " samplingPeriodInCycles " << pcsri_result->samplingPeriodInCycles
+           << "\n";
     }
     break;
   }
@@ -210,18 +210,18 @@ printActivity(AcceleratorStatInfoList* stat_info,
     auto* func_result = reinterpret_cast<CUpti_ActivityFunction*>(record);
 
     if (do_print) {
-      std::cout << "id " << func_result->id << " ctx " << func_result->contextId
-                << " moduleId " << func_result->moduleId
-                << " functionIndex " << func_result->functionIndex
-                << " name " << func_result->name
-                << "\n";
+      ostr << "id " << func_result->id << " ctx " << func_result->contextId
+           << " moduleId " << func_result->moduleId
+           << " functionIndex " << func_result->functionIndex
+           << " name " << func_result->name
+           << "\n";
     }
     break;
   }
 
   default:
     if (do_print) {
-      std::cout << "  <unknown>\n";
+      ostr << "  <unknown>\n";
     }
     break;
   }
@@ -237,7 +237,6 @@ arcaneCuptiBufferRequested(uint8_t** buffer, size_t* size, size_t* maxNumRecords
 
   // TODO: utiliser un ou plusieurs buffers pré-alloués pour éviter les
   // successions d'allocations/désallocations.
-  //std::cout << "ALLOCATE BUFFER\n";
   *size = BUF_SIZE;
   *buffer = new (std::align_val_t{ 8 }) uint8_t[BUF_SIZE];
   *maxNumRecords = 0;
@@ -257,11 +256,11 @@ arcaneCuptiBufferCompleted(CUcontext ctx, uint32_t stream_id, uint8_t* buffer,
   CUpti_Activity* record = nullptr;
 
   AcceleratorStatInfoList* stat_info = ProfilingRegistry::_threadLocalAcceleratorInstance();
-
+  std::ostringstream ostr;
   do {
     status = cuptiActivityGetNextRecord(buffer, validSize, &record);
     if (status == CUPTI_SUCCESS) {
-      printActivity(stat_info, record, global_do_print);
+      printActivity(stat_info, record, global_do_print, ostr);
     }
     else if (status == CUPTI_ERROR_MAX_LIMIT_REACHED) {
       break;
@@ -270,7 +269,7 @@ arcaneCuptiBufferCompleted(CUcontext ctx, uint32_t stream_id, uint8_t* buffer,
       ARCANE_CHECK_CUDA(status);
     }
   } while (1);
-
+  std::cout << ostr.str();
   // report any records dropped from the queue
   size_t nb_dropped = 0;
   ARCANE_CHECK_CUDA(cuptiActivityGetNumDroppedRecords(ctx, stream_id, &nb_dropped));
