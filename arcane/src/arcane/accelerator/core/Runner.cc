@@ -19,6 +19,8 @@
 #include "arcane/utils/ArgumentException.h"
 #include "arcane/utils/MemoryView.h"
 #include "arcane/utils/ValueConvert.h"
+#include "arcane/utils/Profiling.h"
+#include "arcane/utils/internal/ProfilingInternal.h"
 
 #include "arcane/accelerator/core/RunQueueBuildInfo.h"
 #include "arcane/accelerator/core/DeviceId.h"
@@ -511,6 +513,29 @@ bool RunnerInternal::
 isProfilingActive()
 {
   return m_runner_impl->runtime()->isProfilingActive();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void RunnerInternal::
+printProfilingInfos(std::ostream& o)
+{
+  bool is_active = isProfilingActive();
+  if (is_active)
+    stopProfiling();
+
+  {
+    // Affiche les statistiques de profiling.
+    using Arcane::impl::AcceleratorStatInfoList;
+    auto f = [&](const AcceleratorStatInfoList& stat_list) {
+      stat_list.print(o);
+    };
+    ProfilingRegistry::visitAcceleratorStat(f);
+  }
+
+  if (is_active)
+    startProfiling();
 }
 
 /*---------------------------------------------------------------------------*/

@@ -53,6 +53,13 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RunnerInternal
   //! Stoppe le profiling pour le runtime associé
   void stopProfiling();
 
+  /*!
+   * \brief Affiche les informations de profiling.
+   *
+   * S'il est actif, le profiling est temporairement arrêté et redémaré.
+   */
+  void printProfilingInfos(std::ostream& o);
+
  private:
 
   impl::RunnerImpl* m_runner_impl = nullptr;
