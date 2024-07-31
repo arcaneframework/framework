@@ -55,7 +55,7 @@ struct ARCANE_UTILS_EXPORT ForLoopProfilingStat
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class ForLoopStatInfoListImpl
+class ARCANE_UTILS_EXPORT ForLoopStatInfoListImpl
 {
  public:
 
@@ -67,13 +67,12 @@ class ForLoopStatInfoListImpl
   std::map<String, ForLoopProfilingStat> m_stat_map;
 };
 
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
  * \brief Statistiques cumulées sur le nombre de boucles exécutées.
  */
-class ForLoopCumulativeStat
+class ARCANE_UTILS_EXPORT ForLoopCumulativeStat
 {
  public:
 
@@ -105,7 +104,7 @@ class ForLoopCumulativeStat
  * TODO: regarder comment rendre cela plus générique et permettre à
  * l'implémentation d'ajouter ses évènements
  */
-class AcceleratorStatInfoList
+class ARCANE_UTILS_EXPORT AcceleratorStatInfoList
 {
  public:
 
@@ -174,6 +173,10 @@ class AcceleratorStatInfoList
   {
     return m_managed_memory_page_fault_list[(int)type];
   }
+
+ public:
+
+  void print(std::ostream& ostr) const;
 
  private:
 

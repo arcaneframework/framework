@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Profiling.cc                                                (C) 2000-2022 */
+/* Profiling.cc                                                (C) 2000-2024 */
 /*                                                                           */
 /* Classes pour gérer le profilage.                                          */
 /*---------------------------------------------------------------------------*/
@@ -272,6 +272,22 @@ merge(const ForLoopOneExecStat& loop_stat_info, const ForLoopTraceInfo& loop_tra
       loop_name = loop_trace_info.traceInfo().name();
   }
   m_p->m_stat_map[loop_name].add(loop_stat_info);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void impl::AcceleratorStatInfoList::
+print(std::ostream& o) const
+{
+  const auto& htod = memoryTransfer(eMemoryTransferType::HostToDevice);
+  const auto& dtoh = memoryTransfer(eMemoryTransferType::DeviceToHost);
+  o << "MemoryTransferSTATS: HTOD = " << htod.m_nb_byte << " (" << htod.m_nb_call << ")"
+    << " DTOH = " << dtoh.m_nb_byte << " (" << dtoh.m_nb_call << ")";
+  const auto& cpu_fault = memoryPageFault(eMemoryPageFaultType::Cpu);
+  const auto& gpu_fault = memoryPageFault(eMemoryPageFaultType::Gpu);
+  o << " PageFaultCPU = " << cpu_fault.m_nb_fault << " (" << cpu_fault.m_nb_call << ")"
+    << " PageFaultGPU = " << gpu_fault.m_nb_fault << " (" << gpu_fault.m_nb_call << ")";
 }
 
 /*---------------------------------------------------------------------------*/
