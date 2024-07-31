@@ -9,6 +9,7 @@
 
 #include "arcane/utils/HashTableMap.h"
 #include "arcane/utils/PlatformUtils.h"
+#include "arcane/utils/String.h"
 
 #include <iostream>
 
@@ -22,6 +23,15 @@ TEST(TestPlatform, Misc)
   Int64 page_size = platform::getPageSize();
   std::cout << "PageSize=" << page_size << "\n";
   ASSERT_TRUE(page_size>0);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+TEST(TestPlatform, GDBStack)
+{
+  String str = platform::getGDBStack();
+  std::cout << "Stack=" << str << "\n";
 }
 
 /*---------------------------------------------------------------------------*/
