@@ -438,20 +438,16 @@ arcaneCallDefaultSignal(int val)
 
   switch(val){
   case SIGSEGV:
-    //func = default_signal_func_sigsegv;
     signal_type = SignalException::ST_SegmentationFault;
     break;
   case SIGFPE:
-    //func = default_signal_func_sigfpe;
     signal_type = SignalException::ST_FloatingException;
     break;
   case SIGBUS:
-    //func = default_signal_func_sigbus;
     signal_type = SignalException::ST_BusError;
     break;
   case SIGALRM:
   case SIGVTALRM:
-    // func = default_signal_func_sigalrm;
     signal_type = SignalException::ST_Alarm;
     break;
   }
@@ -478,7 +474,19 @@ arcaneCallDefaultSignal(int val)
   }
   else
     cerr << " No stack trace service\n";
-  
+
+  // Si demandé, affiche la pile d'appel via le debugger. Cela permet d'avoir
+  // plus d'informations (mais c'est plus long à exécuter)
+  bool do_debug_stack = false;
+  if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_DUMP_DEBUGGER_STACK_IN_SIGNAL", true))
+    do_debug_stack = (v.value()!=0);
+  if (do_debug_stack){
+    std::cerr << "GBDStack pid=" << platform::getProcessId() << " stack=" << platform::getGDBStack() << "\n";
+  }
+  else
+    std::cerr << "SignalCaught: You can dump full stacktrace of the process if environment "
+    "variable ARCANE_DUMP_DEBUGGER_STACK_IN_SIGNAL is set to 1\n";
+
   if (signal_type==SignalException::ST_Alarm){
     global_already_in_signal = false;
     throw TimeoutException("Arcane.Signal",stack_trace);
