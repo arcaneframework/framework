@@ -17,6 +17,9 @@
 #include "arcane/utils/IProfilingService.h"
 #include "arcane/utils/IMemoryRessourceMng.h"
 
+#include "arcane/utils/Profiling.h"
+#include "arcane/utils/internal/ProfilingInternal.h"
+
 #include "arcane/core/VariableTypes.h"
 #include "arcane/core/IMesh.h"
 #include "arcane/core/Item.h"
@@ -42,6 +45,7 @@
 #include "arcane/accelerator/core/RunCommand.h"
 #include "arcane/accelerator/core/RunQueue.h"
 #include "arcane/accelerator/core/Runner.h"
+#include "arcane/accelerator/core/internal/RunnerInternal.h"
 #include "arcane/accelerator/VariableViews.h"
 #include "arcane/accelerator/MaterialVariableViews.h"
 #include "arcane/accelerator/RunCommandMaterialEnumerate.h"
@@ -226,7 +230,6 @@ void MaterialHeatTestModule::
 buildInit()
 {
   m_sequential_runner.initialize(Accelerator::eExecutionPolicy::Sequential);
-  //m_queue = makeQueue(m_sequential_runner);
   m_queue = *acceleratorMng()->defaultQueue();
   ProfilingRegistry::setProfilingLevel(2);
 
@@ -374,6 +377,14 @@ compute()
   Int32 iteration = m_global_iteration();
   if (iteration <= 2)
     _changeVariableAllocator();
+
+  if (iteration>=2){
+    Runner runner = *acceleratorMng()->defaultRunner();
+    ostringstream o;
+    runner._internalApi()->printProfilingInfos(o);
+    info() << o.str();
+  }
+
   bool is_end = (iteration >= options()->nbIteration());
   if (is_end)
     subDomain()->timeLoopMng()->stopComputeLoop(true);
