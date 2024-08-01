@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* VariableSynchronizerComputeList.h                           (C) 2000-2023 */
+/* VariableSynchronizerComputeList.h                           (C) 2000-2024 */
 /*                                                                           */
 /* Calcule de la liste des entités à synchroniser.                           */
 /*---------------------------------------------------------------------------*/
@@ -40,10 +40,8 @@ class ARCANE_IMPL_EXPORT VariableSynchronizerComputeList
   {
    public:
 
-    RankInfo()
-    : m_rank(A_NULL_RANK)
-    {}
-    RankInfo(Int32 arank)
+    RankInfo() = default;
+    explicit RankInfo(Int32 arank)
     : m_rank(arank)
     {}
 
@@ -63,17 +61,16 @@ class ARCANE_IMPL_EXPORT VariableSynchronizerComputeList
 
    private:
 
-    Int32 m_rank;
+    Int32 m_rank = A_NULL_RANK;
   };
 
-  class GhostRankInfo : public RankInfo
+  class GhostRankInfo
+  : public RankInfo
   {
    public:
 
-    GhostRankInfo()
-    : m_nb_item(0)
-    {}
-    GhostRankInfo(Int32 arank)
+    GhostRankInfo() = default;
+    explicit GhostRankInfo(Int32 arank)
     : RankInfo(arank)
     , m_nb_item(0)
     {}
@@ -97,25 +94,23 @@ class ARCANE_IMPL_EXPORT VariableSynchronizerComputeList
 
    private:
 
-    Integer m_nb_item;
+    Integer m_nb_item = 0;
     SharedArray<Int32> m_local_ids;
     SharedArray<Int64> m_unique_ids;
   };
 
-  class ShareRankInfo : public RankInfo
+  class ShareRankInfo
+  : public RankInfo
   {
    public:
 
-    ShareRankInfo()
-    : m_nb_item(0)
-    {}
+    ShareRankInfo() = default;
     ShareRankInfo(Int32 arank, Integer nb_item)
     : RankInfo(arank)
     , m_nb_item(nb_item)
     {}
-    ShareRankInfo(Int32 arank)
+    explicit ShareRankInfo(Int32 arank)
     : RankInfo(arank)
-    , m_nb_item(0)
     {}
 
    public:
@@ -134,14 +129,14 @@ class ARCANE_IMPL_EXPORT VariableSynchronizerComputeList
 
    private:
 
-    Integer m_nb_item;
+    Integer m_nb_item = 0;
     SharedArray<Int32> m_local_ids;
     SharedArray<Int64> m_unique_ids;
   };
 
  public:
 
-  VariableSynchronizerComputeList(VariableSynchronizer* var_sync);
+  explicit VariableSynchronizerComputeList(VariableSynchronizer* var_sync);
 
  public:
 
