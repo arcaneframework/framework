@@ -85,7 +85,6 @@ compute()
 
   info() << "Compute synchronize informations group=" << m_item_group.name()
          << " family=" << item_family->fullName()
-         << " this=" << this
          << " group size=" << m_item_group.size()
          << " is_verbose=" << m_is_verbose;
 
@@ -112,12 +111,12 @@ compute()
       boundary_items[owner].add(item_internal.localId());
     }
     if (nb_error != 0) {
-      for (Integer i = 0, is = bad_items_uid.size(); i < is; ++i) {
-        info() << "ERROR: The entity uid=" << bad_items_uid[i]
+      for (Int64 uid : bad_items_uid) {
+        info() << "ERROR: The entity uid=" << uid
                << " group=" << m_item_group.name() << " doesn't belong to "
                << "any subdomain or belong to an invalid subdomain";
       }
-      ARCANE_FATAL("Error while creating synchronization information");
+      ARCANE_FATAL("Error while creating synchronization information nb_error={0}", nb_error);
     }
   }
 
@@ -126,8 +125,8 @@ compute()
   if (is_debug)
     _printSyncList();
 
-  if (m_is_verbose)
-    info() << "Begin compute dispatcher Date=" << platform::getCurrentDateTime();
+  info() << "End compute synchronize information group=" << m_item_group.name()
+         << " Date=" << platform::getCurrentDateTime();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -146,6 +145,13 @@ _createList(UniqueArray<SharedArray<Int32>>& boundary_items)
   Int32 my_rank = pm->commRank();
   Int32 nb_rank = pm->commSize();
   info(4) << "VariableSynchronizer::createList() begin for group=" << m_item_group.name();
+
+  Real time_begin = platform::getRealTime();
+  Real time_before_all_gather = 0.0;
+  Real time_after_all_gather = 0.0;
+  Real time_before_sendrecv = 0.0;
+  Real time_after_sendrecv = 0.0;
+  Real time_after_sendrecv_wait = 0.0;
 
   // Table du voisinage connu par items fantomes.
   // Ceci n'est pas obligatoirement la liste finale pour sync_info->communicatingRanks() dans le cas
@@ -210,12 +216,14 @@ _createList(UniqueArray<SharedArray<Int32>>& boundary_items)
         debug() << "Send local info i=" << index << " target=" << communicating_ghost_ranks[index]
                 << " nb=" << ghost_group_list[index].size();
       }
+      time_before_all_gather = platform::getRealTime();
       if (m_is_verbose) {
         info() << "AllGather size() " << local_ghost_info.size()
                << ' ' << global_ghost_info.size()
                << " begin_date=" << platform::getCurrentDateTime();
       }
       pm->allGather(local_ghost_info, global_ghost_info);
+      time_after_all_gather = platform::getRealTime();
       if (m_is_verbose) {
         info() << "AllGather end_date=" << platform::getCurrentDateTime();
       }
@@ -318,6 +326,7 @@ _createList(UniqueArray<SharedArray<Int32>>& boundary_items)
     Integer nb_comm_proc = ghost_rank_info.size();
     info(4) << "Number of communicating processors: " << nb_comm_proc;
     UniqueArray<Parallel::Request> requests;
+    time_before_sendrecv = platform::getRealTime();
     {
       //Integer nb_recv = share_rank_info.size();
 
@@ -402,11 +411,13 @@ _createList(UniqueArray<SharedArray<Int32>>& boundary_items)
           ++current_recv_index;
         }
       }
+      time_after_sendrecv = platform::getRealTime();
       if (m_is_verbose) {
         info() << "Wait requests n=" << requests.size()
                << " begin_date=" << platform::getCurrentDateTime();
       }
       pm->waitAllRequests(requests);
+      time_after_sendrecv_wait = platform::getRealTime();
       if (m_is_verbose) {
         info() << "Wait requests end_date=" << platform::getCurrentDateTime();
       }
@@ -421,6 +432,12 @@ _createList(UniqueArray<SharedArray<Int32>>& boundary_items)
     if (sync_info->receiveInfo().nbItem(i) != boundary_items[target_rank].size())
       ARCANE_FATAL("Inconsistent ghost count");
   }
+
+  info() << "VariableSynchronize:: end compute list group=" << m_item_group.name()
+         << " t_init=" << Trace::Precision(4, time_before_all_gather - time_begin, true)
+         << " t_allgather=" << Trace::Precision(4, time_after_all_gather - time_before_all_gather, true)
+         << " t_sendrecv=" << Trace::Precision(4, time_after_sendrecv_wait - time_before_sendrecv, true)
+         << " t_wait=" << Trace::Precision(4, time_after_sendrecv_wait - time_after_sendrecv, true);
 }
 
 /*---------------------------------------------------------------------------*/
