@@ -40,7 +40,8 @@ class ALIEN_EXTERNAL_PACKAGES_EXPORT AsciiDumper
     eMatlabStyle,
     eInfoStyle,
     eSequentialFixedBlockSizeStype,
-    eSequentialVariableBlockSizeStype
+    eSequentialVariableBlockSizeStype,
+    eMatrixMarketStyle
   };
 
  public:

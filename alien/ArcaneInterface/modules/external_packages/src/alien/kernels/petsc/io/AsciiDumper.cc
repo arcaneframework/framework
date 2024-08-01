@@ -122,6 +122,9 @@ class AsciiDumper::Internal
     case eInfoStyle:
       PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_INFO_DETAIL);
       break;
+    case eMatrixMarketStyle:
+      PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_MATRIXMARKET);
+      break;
     default:
       throw Arccore::NotImplementedException(A_FUNCINFO, "Unknown dump style");
     }
