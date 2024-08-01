@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* VtkHdfV2PostProcessor.cc                                    (C) 2000-2023 */
+/* VtkHdfV2PostProcessor.cc                                    (C) 2000-2024 */
 /*                                                                           */
 /* Pos-traitement au format VTK HDF.                                         */
 /*---------------------------------------------------------------------------*/
@@ -148,7 +148,7 @@ class VtkHdfV2DataWriter
 
  public:
 
-  VtkHdfV2DataWriter(IMesh* mesh, ItemGroupCollection groups);
+  VtkHdfV2DataWriter(IMesh* mesh, ItemGroupCollection groups, bool use_collective_io);
 
  public:
 
@@ -164,7 +164,7 @@ class VtkHdfV2DataWriter
 
  private:
 
-  IMesh* m_mesh;
+  IMesh* m_mesh = nullptr;
 
   //! Liste des groupes à sauver
   ItemGroupCollection m_groups;
@@ -250,10 +250,11 @@ class VtkHdfV2DataWriter
 /*---------------------------------------------------------------------------*/
 
 VtkHdfV2DataWriter::
-VtkHdfV2DataWriter(IMesh* mesh, ItemGroupCollection groups)
+VtkHdfV2DataWriter(IMesh* mesh, ItemGroupCollection groups, bool is_collective_io)
 : TraceAccessor(mesh->traceMng())
 , m_mesh(mesh)
 , m_groups(groups)
+, m_is_collective_io(is_collective_io)
 , m_standard_types(false)
 {
 }
@@ -289,7 +290,7 @@ beginWrite(const VariableCollection& vars)
   // Il est possible d'utiliser le mode collectif de HDF5 via MPI-IO dans les cas suivants:
   // - Hdf5 a été compilé avec MPI
   // - on est en mode MPI pure (ni mode mémoire partagé, ni mode hybride)
-  m_is_collective_io = pm->isParallel() && HInit::hasParallelHdf5();
+  m_is_collective_io = m_is_collective_io && (pm->isParallel() && HInit::hasParallelHdf5());
   if (pm->isHybridImplementation() || pm->isThreadImplementation())
     m_is_collective_io = false;
 
@@ -1075,7 +1076,11 @@ class VtkHdfV2PostProcessor
   IDataWriter* dataWriter() override { return m_writer.get(); }
   void notifyBeginWrite() override
   {
-    auto w = std::make_unique<VtkHdfV2DataWriter>(mesh(), groups());
+    bool use_collective_io = true;
+    if (options()) {
+      use_collective_io = options()->useCollectiveWrite();
+    }
+    auto w = std::make_unique<VtkHdfV2DataWriter>(mesh(), groups(), use_collective_io);
     w->setTimes(times());
     Directory dir(baseDirectoryName());
     w->setDirectoryName(dir.file("vtkhdfv2"));
