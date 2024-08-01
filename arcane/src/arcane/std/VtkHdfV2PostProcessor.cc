@@ -577,17 +577,20 @@ _writeDataSetGeneric(const DataInfo& data_info, Int32 nb_dim,
     Int64 chunk_size = global_dim1_size / nb_participating_rank;
     if (chunk_size < 1024)
       chunk_size = 1024;
+    const Int64 max_chunk_size = 1024 * 1024 * 10;
+    chunk_size = math::min(chunk_size, max_chunk_size);
     chunk_dims[0] = chunk_size;
     chunk_dims[1] = dim2_size;
-    info(4) << "CHUNK nb_dim=" << nb_dim
-            << " chunk0=" << chunk_dims[0]
-            << " name=" << name
-            << " nb_byte=" << global_dim1_size * sizeof(DataType);
+    info() << "CHUNK nb_dim=" << nb_dim
+           << " global_dim1_size=" << global_dim1_size
+           << " chunk0=" << chunk_dims[0]
+           << " chunk1=" << chunk_dims[1]
+           << " name=" << name
+           << " nb_byte=" << global_dim1_size * sizeof(DataType);
     file_space.createSimple(nb_dim, global_dims, max_dims);
     HProperty plist_id;
     plist_id.create(H5P_DATASET_CREATE);
     H5Pset_chunk(plist_id.id(), nb_dim, chunk_dims);
-
     dataset.create(group, name.localstr(), hdf_type, file_space, HProperty{}, plist_id, HProperty{});
 
     if (is_collective) {
