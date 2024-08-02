@@ -233,7 +233,7 @@ class UnifiedMemoryCudaMemoryAllocator
   cudaError_t _allocate(void** ptr, size_t new_size, MemoryAllocationArgs args) override
   {
 #ifdef ARCANE_CUDA_ALLOC_ATS
-    *ptr = ::malloc(new_size);
+    *ptr = ::aligned_alloc(128, new_size);
     auto p = *ptr;
 #else
     auto r = ::cudaMallocManaged(ptr, new_size, cudaMemAttachGlobal);
@@ -307,7 +307,7 @@ class DeviceCudaMemoryAllocator
   cudaError_t _allocate(void** ptr, size_t new_size, MemoryAllocationArgs) override
   {
 #ifdef ARCANE_CUDA_ALLOC_ATS
-    *ptr = malloc(new_size);
+    *ptr = ::aligned_alloc(128, new_size);
     if (*ptr != nullptr)
       return cudaSuccess;
     else
