@@ -288,6 +288,19 @@ foreach (REFMVTESTS
                 --solver=lu
         )
 
+        alien_test(
+                BENCH refmvhandlers.scalar
+                NAME ${REFMVTESTS}.petsc.spai
+                COMMAND refmvhandlers.Scalar${REFMVTESTS}
+                OPTIONS
+                --size=100
+                --solver-package=petsc
+                --solver=bicgs
+                --precond=spai
+                --tol=1.e-10
+                --max-iter=100
+        )
+
         if (TARGET mumps)
             alien_test(
                     BENCH refmvhandlers.scalar

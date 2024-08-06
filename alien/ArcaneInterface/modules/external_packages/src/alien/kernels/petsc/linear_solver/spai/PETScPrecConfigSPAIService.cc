@@ -39,7 +39,23 @@ PETScPrecConfigSPAIService::configure([[maybe_unused]] PC& pc,
                                       [[maybe_unused]] const ISpace& space,
                                       [[maybe_unused]] const MatrixDistribution& distribution)
 {
-  alien_fatal([&] { cout() << "configure SPAI not available need to be checked"; });
+#ifndef PETSC_HAVE_SPAI
+  alien_fatal([&] { cout() << "SPAI not available in PETSc"; });
+#else
+  checkError("Set preconditioner",PCSetType(pc,PCSPAI));
+
+  double epsilon = options()->epsilon();
+  if (epsilon > 0 and epsilon < 1)
+    checkError("Set SPAI epsilon",PCSPAISetEpsilon(pc,epsilon));
+  else
+    PETScConfig::traceMng()->fatal() << "SPAI epsilon must be in [0:1]";
+
+  double nonzero_max = options()->nonzeroMax();
+  if (nonzero_max >= 0)
+    checkError("Set SPAI epsilon",PCSPAISetMaxNew(pc,nonzero_max));
+  else
+    PETScConfig::traceMng()->fatal() << "SPAI nonzero-max must be positive";
+#endif
 }
 
 //  //! Initialisation

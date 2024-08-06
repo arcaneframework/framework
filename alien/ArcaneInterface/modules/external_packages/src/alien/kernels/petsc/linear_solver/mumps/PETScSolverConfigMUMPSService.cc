@@ -33,6 +33,9 @@ void
 PETScSolverConfigMUMPSService::configure(
     KSP& ksp, const ISpace& space, const MatrixDistribution& distribution)
 {
+#ifndef PETSC_HAVE_MUMPS
+  alien_fatal([&] { cout() << "MUMPS not available in PETSc"; });
+#else
   alien_debug([&] { cout() << "configure PETSc mumps solver"; });
 
   checkError(
@@ -62,6 +65,7 @@ PETScSolverConfigMUMPSService::configure(
   PetscReal val = 1.e-6;
   icntl = 3;
   MatMumpsSetCntl(F, icntl, val);
+#endif
 #endif
 }
 
