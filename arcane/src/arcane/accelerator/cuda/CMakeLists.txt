@@ -2,6 +2,8 @@
 # ----------------------------------------------------------------------------
 # Backend Arcane pour CUDA
 
+option(ARCANE_CUDA_ALLOC_ATS "Force using ATS memory for nvidia" OFF)
+
 set(ARCANE_SOURCES
   CudaAccelerator.cc
   CudaAccelerator.h
@@ -61,6 +63,10 @@ arcane_add_library(arcane_accelerator_cuda
 target_link_libraries(arcane_accelerator_cuda PUBLIC
   arcane_core arcane_cuda_compile_flags $<BUILD_INTERFACE:arcane_cuda_build_compile_flags> CUDA::cudart
 )
+
+if (ARCANE_CUDA_ALLOC_ATS)
+  target_compile_definitions(arcane_accelerator_cuda PRIVATE ARCANE_CUDA_ALLOC_ATS)
+endif()
 
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
