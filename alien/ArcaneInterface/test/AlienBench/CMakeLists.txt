@@ -196,13 +196,15 @@ if (TARGET petsc)
             OPTIONS AlienBench-4P.arc
             WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
 
-    alien_test(
-            BENCH alien.bench.petsc-spai
-            NAME seq
-            PROCS 1
-            COMMAND alien_bench.exe
-            OPTIONS AlienBench-petsc-spai.arc
-            WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
+    if(TARGET petsc::spai)
+        alien_test(
+                BENCH alien.bench.petsc-spai
+                NAME seq
+                PROCS 4
+                COMMAND alien_bench.exe
+                OPTIONS AlienBench-petsc-spai.arc
+                WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
+    endif()
 
 endif ()
 

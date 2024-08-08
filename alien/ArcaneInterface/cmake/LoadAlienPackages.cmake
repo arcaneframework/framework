@@ -121,18 +121,14 @@ if(TARGET petsc)
     # check for SPAI in PETSc
     file(READ ${INC_DIR}/petscconf.h PETSCCONF_H)
     if("${PETSCCONF_H}" MATCHES "PETSC_HAVE_SPAI")
-        list(APPEND PETSC_SUB_TARGETS petsc::spai)
+        add_library(petsc::spai INTERFACE IMPORTED)
     endif()
 
     # check for MUMPS in PETSc
     if("${PETSCCONF_H}" MATCHES "PETSC_HAVE_MUMPS")
-        list(APPEND PETSC_SUB_TARGETS petsc::mumps)
+        add_library(petsc::mumps INTERFACE IMPORTED)
     endif()
 
-    get_property(TARGETS GLOBAL PROPERTY ${PROJECT_NAME}_TARGETS)
-    list(APPEND TARGETS ${PETSC_SUB_TARGETS})
-    list(REMOVE_DUPLICATES TARGETS)
-    set_property(GLOBAL PROPERTY ${PROJECT_NAME}_TARGETS ${TARGETS})
 endif()
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
