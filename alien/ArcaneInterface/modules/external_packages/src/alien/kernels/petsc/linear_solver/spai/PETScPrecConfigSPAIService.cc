@@ -67,6 +67,10 @@ PETScPrecConfigSPAIService::configure([[maybe_unused]] PC& pc,
   {
     checkError("Set SPAI nb steps", PCSPAISetNBSteps(pc,nb_steps));
   }
+
+  bool verbose = options()->verbose();
+  checkError("Set SPAI verbose", PCSPAISetVerbose(pc,verbose));
+
 #endif
 }
 
