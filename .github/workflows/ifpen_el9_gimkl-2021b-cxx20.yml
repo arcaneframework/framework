@@ -153,7 +153,7 @@ jobs:
   #   runs-on: ubuntu-latest
   #   timeout-minutes: 120
   #   container:
-  #     image: ghcr.io/arcaneframework/arcane-ifpen-devenv-gimkl-2021b:el9-rt
+  #     image: ghcr.io/arcaneframework/arcane-ifpen-devenv-gimkl-2021b-rt:el9
   #     #options: --user root  # Avoid to match github UID in container.
   #   strategy:
   #     fail-fast: false
@@ -182,27 +182,13 @@ jobs:
   #       shell: bash
   #       run: rm -f build-artifact.tar.gz
 
-  #     - name: Install IntelMPI runtime
-  #       id: install-intel-mpi-runtime
-  #       shell: bash
-  #       run: |
-  #          wget --no-verbose -O /tmp/intelmpi.sh https://registrationcenter-download.intel.com/akdlm/IRC_NAS/9f84e1e8-11b2-4bd1-8512-3e3343585956/l_mpi_oneapi_p_2021.13.0.719_offline.sh
-  #          bash /tmp/intelmpi.sh -a -s --eula accept --install-dir /tmp/intelmpi
-  #          osdir=el_`lsb_release -r | awk -F ":" '{print $2}' | awk -F "." '{print $1}' | tr -d '\t'`-x86_64
-  #          for file in `grep -Rl "/soft/irsrvsoft1/expl/eb/r11/${osdir}/easybuild/software/impi/2021.4.0-GCC-11.2.0/mpi/2021.4.0/bin/mpiexec" ${{ env.BUILD_DIR }}`
-  #          do
-  #            sed -i "s,/soft/irsrvsoft1/expl/eb/r11/${osdir}/easybuild/software/impi/2021.4.0-GCC-11.2.0/mpi/2021.4.0/bin/mpiexec,/tmp/intelmpi/mpi/latest/bin/mpiexec,g" ${file}
-  #          done
-
   #     - name: Test
   #       id: test
   #       shell: bash
   #       run: |
-  #          source /etc/bashrc
-  #          module unload impi
-  #          module list
   #          export LD_LIBRARY_PATH=${{ env.BUILD_DIR }}/${{ env.EXT_LIB_SUBDIR }}:${LD_LIBRARY_PATH}
-  #          source /tmp/intelmpi/setvars.sh
+  #          which mpiexec
+  #          mpiexec --version
   #          ctest --test-dir ${{ env.BUILD_DIR }} ${{ env.CT_OPTS }}
 
   #     - name: Upload test artifact
