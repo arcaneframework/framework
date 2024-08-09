@@ -23,7 +23,6 @@
 
 #include <alien/AlienExternalPackages.h>
 #include <alien/AlienIFPENSolvers.h>
-
 #ifdef ALIEN_USE_MTL4
 #include <alien/kernels/mtl/linear_solver/arcane/MTLLinearSolverService.h>
 #include <alien/kernels/mtl/linear_solver/MTLOptionTypes.h>
@@ -37,11 +36,14 @@
 // preconditionner
 #include <alien/kernels/petsc/linear_solver/arcane/PETScPrecConfigDiagonalService.h>
 #include <alien/kernels/petsc/linear_solver/arcane/PETScPrecConfigJacobiService.h>
+#include <alien/kernels/petsc/linear_solver/spai/PETScPrecConfigSPAIService.h>
 #include <alien/kernels/petsc/linear_solver/arcane/PETScPrecConfigNoPreconditionerService.h>
 #include <ALIEN/axl/PETScPrecConfigDiagonal_IOptions.h>
 #include <ALIEN/axl/PETScPrecConfigDiagonal_StrongOptions.h>
 #include <ALIEN/axl/PETScPrecConfigJacobi_IOptions.h>
 #include <ALIEN/axl/PETScPrecConfigJacobi_StrongOptions.h>
+#include <ALIEN/axl/PETScPrecConfigSPAI_IOptions.h>
+#include <ALIEN/axl/PETScPrecConfigSPAI_StrongOptions.h>
 #include <ALIEN/axl/PETScPrecConfigNoPreconditioner_IOptions.h>
 #include <ALIEN/axl/PETScPrecConfigNoPreconditioner_StrongOptions.h>
 // solver
@@ -53,10 +55,9 @@
 #include <ALIEN/axl/PETScSolverConfigBiCGStab_StrongOptions.h>
 #include <ALIEN/axl/PETScSolverConfigLU_IOptions.h>
 #include <ALIEN/axl/PETScSolverConfigLU_StrongOptions.h>
-#ifdef ALIEN_USE_MUMPS
 #include <alien/kernels/petsc/linear_solver/mumps/PETScSolverConfigMUMPSService.h>
 #include <ALIEN/axl/PETScSolverConfigMUMPS_IOptions.h>
-#endif
+
 // root linear solver instance
 #include <ALIEN/axl/PETScLinearSolver_IOptions.h>
 #include <ALIEN/axl/PETScLinearSolver_StrongOptions.h>
@@ -106,6 +107,9 @@ createSolver(boost::program_options::variables_map& vm)
     } else if (precond_type_s.compare("diag") == 0) {
       auto options_prec = std::make_shared<StrongOptionsPETScPrecConfigDiagonal>();
       prec = std::make_shared<Alien::PETScPrecConfigDiagonalService>(pm, options_prec);
+    } else if (precond_type_s.compare("spai") == 0) {
+      auto options_prec = std::make_shared<StrongOptionsPETScPrecConfigSPAI>();
+      prec = std::make_shared<Alien::PETScPrecConfigSPAIService>(pm, options_prec);
     } else if (precond_type_s.compare("none") == 0) {
       auto options_prec =
           std::make_shared<StrongOptionsPETScPrecConfigNoPreconditioner>();
@@ -138,7 +142,6 @@ createSolver(boost::program_options::variables_map& vm)
       return std::make_shared<Alien::PETScLinearSolverService>(pm, root_options);
     }
     if (solver.compare("mumps") == 0) {
-#ifdef ALIEN_USE_MUMPS
         // solver service mumps
         auto options_solver = std::make_shared<IOptionsPETScSolverConfigMUMPS>();
         // root petsc option
@@ -147,7 +150,6 @@ createSolver(boost::program_options::variables_map& vm)
                         std::make_shared<Alien::PETScSolverConfigMUMPSService>(pm, options_solver));
         // root petsc service
         return std::make_shared<Alien::PETScLinearSolverService>(pm, root_options);
-#endif
     }
     tm->fatal() << "*** solver " << solver << " not available in test!";
 #else

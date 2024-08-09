@@ -107,10 +107,11 @@ foreach (REFMVTESTS
                 --solver-package=petsc
                 --solver=bicgs
                 --precond=bjacobi
-                --tol=1.e-100
+                --tol=1.e-10
                 --max-iter=100
                 --block-size=5
         )
+
         alien_test(
                 BENCH refmvhandlers.block
                 NAME ${REFMVTESTS}.petsc.lu
@@ -119,9 +120,27 @@ foreach (REFMVTESTS
                 --size=100
                 --solver-package=petsc
                 --solver=lu
+                --block-size=5
         )
 
-        if (TARGET mumps)
+        if (TARGET petsc::spai)
+            alien_test(
+                    BENCH refmvhandlers.block
+                    NAME ${REFMVTESTS}.petsc.spai
+                    PROCS 4
+                    COMMAND refmvhandlers.Block${REFMVTESTS}
+                    OPTIONS
+                    --size=100
+                    --solver-package=petsc
+                    --solver=bicgs
+                    --precond=spai
+                    --tol=1.e-10
+                    --max-iter=100
+                    --block-size=5
+            )
+        endif()
+
+        if (TARGET petsc::mumps)
             alien_test(
                     BENCH refmvhandlers.block
                     NAME ${REFMVTESTS}.petsc.mumps
@@ -131,6 +150,7 @@ foreach (REFMVTESTS
                     --size=100
                     --solver-package=petsc
                     --solver=mumps
+                    --block-size=5
             )
         endif ()
 
@@ -185,7 +205,7 @@ foreach (REFMVTESTS
                 --tol=1.e-10
                 --max-iter=100
                 --kernel=cpu_cblas_bcsr
-                --block-size=3
+                --block-size=5
                 --output-level=1
         )
     endif ()

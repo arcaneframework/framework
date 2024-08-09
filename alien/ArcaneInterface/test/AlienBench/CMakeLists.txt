@@ -120,7 +120,17 @@ if (TARGET petsc)
     list(APPEND ALIEN_EXAMPLE_FILES
             AlienBench.arc
             AlienBench-4P.arc
+            AlienBench-petsc-spai.arc
             )
+
+    if (TARGET petsc::spai)
+        configure_file(AlienBench-petsc-spai.arc ${CMAKE_BINARY_DIR}/${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench/AlienBench-petsc-spai.arc COPYONLY)
+        configure_file(AlienBench-petsc-spai-4P.arc ${CMAKE_BINARY_DIR}/${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench/AlienBench-petsc-spai-4P.arc COPYONLY)
+
+        list(APPEND ALIEN_EXAMPLE_FILES
+                AlienBench-petsc-spai.arc
+                AlienBench-petsc-spai-4P.arc)
+    endif ()
 endif ()
 
 if (TARGET hypre)
@@ -193,6 +203,24 @@ if (TARGET petsc)
             COMMAND alien_bench.exe
             OPTIONS AlienBench-4P.arc
             WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
+
+    if(TARGET petsc::spai)
+        alien_test(
+                BENCH alien.bench.petsc-spai
+                NAME seq
+                PROCS 1
+                COMMAND alien_bench.exe
+                OPTIONS AlienBench-petsc-spai.arc
+                WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
+
+        alien_test(
+                BENCH alien.bench.petsc-spai
+                NAME parallel
+                PROCS 4
+                COMMAND alien_bench.exe
+                OPTIONS AlienBench-petsc-spai-4P.arc
+                WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
+    endif()
 
 endif ()
 

@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -44,6 +44,9 @@ void
 PETScPrecConfigMUMPSService::configure(
     PC& pc, const ISpace& space, const MatrixDistribution& distribution)
 {
+#ifndef PETSC_HAVE_MUMPS
+  alien_fatal([&] { cout() << "MUMPS not available in PETSc"; });
+#else
   alien_debug([&] { cout() << "configure PETSc mumps preconditioner"; });
   checkError("Set preconditioner", PCSetType(pc, PCLU));
 
@@ -59,6 +62,7 @@ PETScPrecConfigMUMPSService::configure(
   checkError("Set shift amount", PCFactorSetShiftAmount(pc, PETSC_DECIDE));
 
   checkError("Preconditioner setup", PCSetUp(pc));
+#endif
 }
 
 /*---------------------------------------------------------------------------*/
