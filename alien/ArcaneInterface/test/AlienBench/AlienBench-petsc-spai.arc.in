@@ -43,6 +43,7 @@
           <num-iterations-max>1000</num-iterations-max>
           <stop-criteria-value>1e-8</stop-criteria-value>
           <preconditioner name="SPAI">
+            <verbose>true</verbose>
           </preconditioner>
         </solver>
        <verbose>high</verbose>
