@@ -153,7 +153,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 120
     container:
-      image: ghcr.io/arcaneframework/arcane-ifpen-devenv-gimkl-2021b:el7-rt
+      image: ghcr.io/arcaneframework/arcane-ifpen-devenv-gimkl-2021b-rt:el7
       #options: --user root  # Avoid to match github UID in container.
     strategy:
       fail-fast: false
@@ -185,7 +185,11 @@ jobs:
       - name: Test
         id: test
         shell: bash
-        run: env LD_LIBRARY_PATH=${{ env.BUILD_DIR }}/${{ env.EXT_LIB_SUBDIR }}:${LD_LIBRARY_PATH} ctest --test-dir ${{ env.BUILD_DIR }} ${{ env.CT_OPTS }}
+        run: |
+           export LD_LIBRARY_PATH=${{ env.BUILD_DIR }}/${{ env.EXT_LIB_SUBDIR }}:${LD_LIBRARY_PATH}
+           which mpiexec
+           mpiexec --version
+           ctest --test-dir ${{ env.BUILD_DIR }} ${{ env.CT_OPTS }}
 
       - name: Upload test artifact
         id: upload-test-artifact
