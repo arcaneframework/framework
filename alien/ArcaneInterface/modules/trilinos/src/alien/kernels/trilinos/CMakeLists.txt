@@ -3,10 +3,11 @@ set(CMAKE_CXX_COMPILER "$ENV{TRILINOS_ROOT}/bin/nvcc_wrapper")
 
 
 if (TARGET  trilinos)
-createLibrary(alien_belos)
-addSources(alien_belos belos_solver_fabric.cpp)
-linkLibraries(alien_belos trilinos)
-commit(alien_belos)
+    createLibrary(alien_belos)
+    addSources(alien_belos belos_solver_fabric.cpp)
+    linkLibraries(alien_belos trilinos)
+    commit(alien_belos)
+    target_include_directories(alien_belos PRIVATE ${MPI_CXX_INCLUDE_DIRS})
 endif ()
 
 
@@ -52,12 +53,12 @@ addSources(alien_trilinos
     )
 
 
-if (TARGET  alien_belos)
-linkLibraries(alien_trilinos alien_belos)
+if (TARGET alien_belos)
+    linkLibraries(alien_trilinos alien_belos)
 endif()
 
-if (TARGET  trilinos)
-linkLibraries(alien_trilinos trilinos)
+if (TARGET trilinos)
+    linkLibraries(alien_trilinos trilinos)
 endif()
 
 #if(TARGET nvamg)
