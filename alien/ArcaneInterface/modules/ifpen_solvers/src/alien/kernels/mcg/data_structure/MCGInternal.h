@@ -14,8 +14,8 @@
 #include <x86intrin.h>
 #endif
 
-#include <BCSR/BCSRMatrix.h>
-#include <MCGSolver/BVector.h>
+#include <Common/index.h>
+#include <MCGSolver/LinearSystem/LinearSystem.h>
 #include <Precond/PrecondEquation.h>
 
 #include <alien/kernels/mcg/MCGPrecomp.h>
@@ -63,48 +63,26 @@ class UniqueKey
 class MatrixInternal
 {
  public:
-  typedef MCGSolver::CSRProfile<int, int> ProfileType;
-  typedef MCGSolver::BCSRMatrix<double> MatrixType;
+  using MatrixType = MCGSolver::BCSRMatrix<double,MCGSolver::Int32SparseIndex>;
 
   bool m_elliptic_split_tag = false;
-  MCGSolver::BVector<MCGSolver::Equation::eType>* m_equation_type = nullptr;
+  std::shared_ptr<MCGSolver::BVector<MCGSolver::Equation::eType>> m_equation_type;
 
   UniqueKey m_key;
-  std::shared_ptr<MatrixType> m_matrix[2][2] = { { nullptr, nullptr },
-    { nullptr, nullptr } };
+  std::shared_ptr<MatrixType> m_matrix;
 
   std::vector<int> m_elem_perm;
-
-  MatrixInternal() {}
-
-  ~MatrixInternal() { delete m_equation_type; }
 };
 
 class VectorInternal
 {
  public:
   VectorInternal(int nrow, int block_size)
-  : m_bvector(nrow, block_size)
+  : m_vector(new MCGSolver::BVector<double>(nrow, block_size))
   {}
 
   UniqueKey m_key;
-  MCGSolver::BVector<double> m_bvector;
-};
-
-class CompositeVectorInternal
-{
- public:
-  CompositeVectorInternal(const std::vector<std::pair<int, int>>& composite_info)
-  {
-    m_bvector.reserve(composite_info.size());
-
-    for (const auto& p : composite_info) {
-      m_bvector.emplace_back(p.first, p.second);
-    }
-  }
-
-  UniqueKey m_key;
-  std::vector<MCGSolver::BVector<double>> m_bvector;
+  std::shared_ptr<MCGSolver::BVector<double>> m_vector;
 };
 
 END_MCGINTERNAL_NAMESPACE

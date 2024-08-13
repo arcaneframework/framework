@@ -56,22 +56,4 @@ SimpleCSR_to_MCG_VectorConverter::convert(
   v2.setValues(v.values().data());
 }
 
-/*
-void
-SimpleCSR_to_MCG_VectorConverter::
-convert(const IVectorImpl * sourceImpl, IVectorImpl * targetImpl,int i) const
-{
-
-  const SimpleCSRVector<double> & v = cast<SimpleCSRVector<double> >(sourceImpl,
-sourceBackend()); MCGVector & v2 = cast<MCGVector>(targetImpl, targetBackend());
-
-  const Space & space = v.space();
-  ConstArrayView<Real> values = v.values();
-  if(i==0)
-    v2.setValues(space.localSize(),dataPtr(values));
-  else
-    v2.setExtraEqValues(v.space().localSize(),dataPtr(values)) ;
-}
-*/
-
 REGISTER_VECTOR_CONVERTER(SimpleCSR_to_MCG_VectorConverter);

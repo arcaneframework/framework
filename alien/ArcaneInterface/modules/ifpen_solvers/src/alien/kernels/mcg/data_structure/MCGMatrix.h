@@ -61,7 +61,8 @@ class MCGMatrix : public IMatrixImpl
   bool computeEllipticSplitTags(int equation_num) const;
 
  public:
-  bool initMatrix(const int block_size, const int block_size2, const int nrow,
+  bool initMatrix(const int block_size, const int block_size2,
+      const int nrow,const int ncol,
       int const* row_offset, int const* cols, int partition_offset);
 
   bool initMatrixValues(Real const* values);

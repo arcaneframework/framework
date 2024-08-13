@@ -3,9 +3,7 @@
 #include "alien/kernels/mcg/data_structure/MCGInternal.h"
 #include "alien/kernels/mcg/data_structure/MCGMatrix.h"
 
-BEGIN_MCGINTERNAL_NAMESPACE
-
-END_MCGINTERNAL_NAMESPACE
+#include "MCGSolver/LinearSystem/LinearSystem.h"
 
 namespace Alien {
 
@@ -21,22 +19,17 @@ MCGMatrix::~MCGMatrix()
 }
 
 bool
-MCGMatrix::initMatrix(const int block_size, const int block_size2, const int nrow,
+MCGMatrix::initMatrix(const int block_size, const int block_size2,
+    const int nrow,const int ncol,
     int const* row_offset, int const* cols, int partition_offset)
 {
   Integer nblocks = row_offset[nrow];
-  std::shared_ptr<MCGInternal::MatrixInternal::ProfileType> profile(
-      new MCGInternal::MatrixInternal::ProfileType(
-          nrow, nrow, nblocks, partition_offset));
 
   m_internal->m_elem_perm.resize(nblocks);
 
-  profile->rawSortInit(row_offset, cols, m_internal->m_elem_perm);
-
-  profile->computeDiagIndex();
-
-  m_internal->m_matrix[0][0].reset(
-      new MCGInternal::MatrixInternal::MatrixType(block_size, block_size2, profile));
+  m_internal->m_matrix =
+    MCGSolver::LinearSystem<double,MCGSolver::Int32SparseIndex>::createMatrix(
+      block_size,block_size2,nrow,ncol,nblocks,row_offset,cols,m_internal->m_elem_perm);
 
   m_internal->m_elliptic_split_tag = computeEllipticSplitTags(block_size);
   m_is_init = true;
@@ -46,7 +39,9 @@ MCGMatrix::initMatrix(const int block_size, const int block_size2, const int nro
 bool
 MCGMatrix::initMatrixValues(Real const* values)
 {
-  m_internal->m_matrix[0][0]->setValues(values, m_internal->m_elem_perm);
+  MCGSolver::LinearSystem<double,MCGSolver::Int32SparseIndex>::setMatrixValues(
+       m_internal->m_matrix,values,m_internal->m_elem_perm);
+
   return true;
 }
 
@@ -66,7 +61,7 @@ MCGMatrix::computeEllipticSplitTags(int equation_num) const
   Integer local_size = dist.localRowSize();
 
   m_internal->m_equation_type =
-      new MCGSolver::BVector<MCGSolver::Equation::eType>(local_size * equation_num, 1);
+      std::make_shared<MCGSolver::BVector<MCGSolver::Equation::eType>>(local_size * equation_num, 1);
   for (int i = 0; i < local_size * equation_num; ++i)
     m_internal->m_equation_type->data()[i] =
         MCGSolver::Equation::NoType; // NoTyp == 0 , Elliptic==1 cf. PrecondEquation.h
