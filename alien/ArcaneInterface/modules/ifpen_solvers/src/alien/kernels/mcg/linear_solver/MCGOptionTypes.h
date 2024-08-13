@@ -1,5 +1,11 @@
-#ifndef MCG_OPTION_TYPES
-#define MCG_OPTION_TYPES
+﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
+//-----------------------------------------------------------------------------
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// See the top-level COPYRIGHT file for details.
+// SPDX-License-Identifier: Apache-2.0
+
+#ifndef ALIEN_MCGIMPL_OPTIONTYPES_H
+#define ALIEN_MCGIMPL_OPTIONTYPES_H
 
 struct MCGOptionTypes
 {
@@ -14,4 +20,4 @@ struct MCGOptionTypes
   };
 };
 
-#endif /* MCG_OPTION_TYPES */
+#endif /* ALIEN_MCGIMPL_OPTIONTYPES_H */
