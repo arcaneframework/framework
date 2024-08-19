@@ -297,6 +297,7 @@ processExchange()
     // aussi, il faudra peut être prévoir d'utiliser des tags MPI.
     e->prepareToSend();   // Préparation de toutes les données à envoyer puis sérialisation
     e->processExchange(); // Envoi effectif
+    e->releaseBuffer();
   }
   m_phase = ePhase::RemoveItems;
 }

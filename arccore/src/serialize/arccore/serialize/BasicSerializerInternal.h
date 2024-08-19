@@ -53,6 +53,7 @@ class ARCCORE_SERIALIZE_EXPORT BasicSerializer::Impl
   virtual Int64ConstArrayView sizesBuffer() const = 0;
   virtual ByteConstArrayView copyAndGetSizesBuffer() = 0;
   virtual void preallocate(Int64 size) = 0;
+  virtual void releaseBuffer() = 0;
   virtual void setFromSizes() = 0;
   virtual Int64 totalSize() const = 0;
   virtual void printSizes(std::ostream& o) const = 0;

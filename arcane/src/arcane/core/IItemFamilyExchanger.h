@@ -97,7 +97,8 @@ class ARCANE_CORE_EXPORT IItemFamilyExchanger
 
   //! Prépare les structures d'envoie
   virtual void prepareToSend() =0;
-  
+  virtual void releaseBuffer() =0;
+
   /*!
    * \brief Après réception des messages, lit et créé les entités transférées.
    *

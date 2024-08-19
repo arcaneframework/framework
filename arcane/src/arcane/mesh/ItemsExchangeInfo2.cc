@@ -343,6 +343,19 @@ prepareToSend()
   }
 }
 
+void ItemsExchangeInfo2::
+releaseBuffer()
+{
+  for( Integer i=0, is=m_exchanger->senderRanks().size(); i<is; ++i ) {
+    ISerializeMessage* comm = m_exchanger->messageToSend(i);
+
+    ISerializer* isbuf = comm->serializer();
+    SerializeBuffer* sbuf = dynamic_cast<SerializeBuffer*>(isbuf);
+
+    sbuf->releaseBuffer();
+  }
+}
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 

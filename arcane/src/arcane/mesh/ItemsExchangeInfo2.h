@@ -95,7 +95,8 @@ class ARCANE_MESH_EXPORT ItemsExchangeInfo2
 
   //! Prépare les structures d'envoie
   void prepareToSend() override;
-  
+  void releaseBuffer() override;
+
   /*!
    * \brief Après réception des messages, lit et créé les entités transférées.
    *
