@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CartesianMeshCoarsening.h                                   (C) 2000-2023 */
+/* CartesianMeshCoarsening.h                                   (C) 2000-2024 */
 /*                                                                           */
 /* Déraffinement d'un maillage cartésien.                                    */
 /*---------------------------------------------------------------------------*/
@@ -35,7 +35,8 @@ namespace Arcane
  *
  * \brief Déraffine un maillage cartésien par 2.
  *
- * \warning Cette méthode est expérimentale.
+ * \deprecated Cette classe est obsolète. Il faut utiliser la version 2
+ * de l'implémentation (CartesianMeshCoarsening2).
  *
  * Cette classe permet de déraffiner un maillage cartésien. Les instances
  * de cette classe sont créées via ICartesianMesh::createCartesianMeshCoarsening().
@@ -84,6 +85,7 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianMeshCoarsening
 
  private:
 
+  ARCANE_DEPRECATED_REASON("Y2024: Use Arcane::CartesianMeshUtils::createCartesianMeshCoarsening2() instead")
   explicit CartesianMeshCoarsening(ICartesianMesh* m);
 
  public:
