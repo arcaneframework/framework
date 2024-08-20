@@ -41,6 +41,9 @@ env:
   OMPI_ALLOW_RUN_AS_ROOT_CONFIRM: 1
   OMPI_MCA_rmaps_base_oversubscribe : true
 
+  # Remove test output file after run to reduce disk usage
+  ARCANE_TEST_CLEANUP_AFTER_RUN: 1
+
 jobs:
   build:
     name: Codecov
