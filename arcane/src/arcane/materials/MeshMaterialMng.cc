@@ -140,6 +140,7 @@ MeshMaterialMng(const MeshHandle& mesh_handle,const String& name)
   String s = platform::getEnvironmentVariable("ARCANE_ALLENVCELL_FOR_RUNCOMMAND");
   if (!s.null())
     m_is_allcell_2_allenvcell = true;
+  m_mms = new MeshMaterialSynchronizer(this);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -153,6 +154,7 @@ MeshMaterialMng::
   if (tracer)
     tracer->dumpStats();
 
+  delete m_mms;
   delete m_variable_factory_mng;
   m_exchange_mng.reset();
   m_all_cells_env_only_synchronizer.reset();
@@ -958,8 +960,7 @@ dumpInfos2(std::ostream& o)
 bool MeshMaterialMng::
 synchronizeMaterialsInCells()
 {
-  MeshMaterialSynchronizer mms(this);
-  return mms.synchronizeMaterialsInCells();
+  return m_mms->synchronizeMaterialsInCells();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -968,8 +969,7 @@ synchronizeMaterialsInCells()
 void MeshMaterialMng::
 checkMaterialsInCells(Integer max_print)
 {
-  MeshMaterialSynchronizer mms(this);
-  mms.checkMaterialsInCells(max_print);
+  m_mms->checkMaterialsInCells(max_print);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1051,7 +1051,7 @@ getTrueReference(const MeshHandle& mesh_handle,bool is_create)
 {
   //TODO: faire lock pour multi-thread
   typedef AutoDestroyUserData<Ref<IMeshMaterialMng>> UserDataType;
-  
+
   const char* name = "MeshMaterialMng_StdMat";
   IUserDataList* udlist = mesh_handle.meshUserDataList();
 
@@ -1227,7 +1227,7 @@ recreateFromDump()
     }
     this->createBlock(mbbi);
   }
-  
+
   endCreate(true);
 }
 

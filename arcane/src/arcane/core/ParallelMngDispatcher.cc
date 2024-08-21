@@ -240,7 +240,7 @@ class ParallelMngDispatcher::Impl
   {
     if (m_is_accelerator_aware_disabled)
       return false;
-    if (!m_queue.get())
+    if (!m_queue.get() || m_runner->executionPolicy() == Arcane::Accelerator::eExecutionPolicy::Sequential)
       return false;
     return m_parallel_mng->_isAcceleratorAware();
   }

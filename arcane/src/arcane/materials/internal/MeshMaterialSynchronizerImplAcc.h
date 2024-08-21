@@ -9,8 +9,8 @@
 /*                                                                           */
 /* Synchronisation de la liste des matériaux/milieux des entités.            */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_MATERIALS_INTERNAL_MESHMATERIALSYNCHRONIZER_H
-#define ARCANE_MATERIALS_INTERNAL_MESHMATERIALSYNCHRONIZER_H
+#ifndef ARCANE_MATERIALS_INTERNAL_MESHMATERIALSYNCHRONIZERIMPLACC_H
+#define ARCANE_MATERIALS_INTERNAL_MESHMATERIALSYNCHRONIZERIMPLACC_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -18,6 +18,7 @@
 #include "arcane/utils/ArrayView.h"
 
 #include "arcane/VariableTypedef.h"
+#include <arcane/core/MeshVariableArrayRef.h>
 
 #include "arcane/materials/MaterialsGlobal.h"
 #include "arcane/materials/MatItem.h"
@@ -42,11 +43,8 @@
 #include "arcane/accelerator/RunCommandMaterialEnumerate.h"
 #include "arcane/accelerator/core/IAcceleratorMng.h"
 #include "arcane/accelerator/core/RunQueueEvent.h"
-#include "arcane/utils/ValueConvert.h"
 
 #include "arcane/materials/internal/IMeshMaterialSynchronizerImpl.h"
-#include "arcane/materials/internal/MeshMaterialSynchronizerImplAcc.h"
-#include "arcane/materials/internal/MeshMaterialSynchronizerImpl.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -59,7 +57,7 @@ class MeshMaterialModifierImpl;
 /*---------------------------------------------------------------------------*/
 /*!
  * \internal
- * \brief Synchronisation de la liste des matériaux/milieux des entités.
+ * \brief Stratégie de synchronisation de la liste des matériaux/milieux des entités sur accélérateur.
  *
  * Cette classe permet de syncrhoniser entre les sous-domaines la liste
  * des matériaux/milieux auxquelles une maille appartient.
@@ -69,13 +67,14 @@ class MeshMaterialModifierImpl;
  * être ajoutés ou retirer des matériaux et milieux actuels pour être en cohérence
  * avec cette liste issue des mailles propres.
  */
-class MeshMaterialSynchronizer
+class MeshMaterialSynchronizerImplAcc
 : public TraceAccessor
+, public IMeshMaterialSynchronizerImpl
 {
  public:
 
-  explicit MeshMaterialSynchronizer(IMeshMaterialMng* material_mng);
-  ~MeshMaterialSynchronizer();
+  explicit MeshMaterialSynchronizerImplAcc(IMeshMaterialMng* material_mng);
+  ~MeshMaterialSynchronizerImplAcc();
 
  public:
 
@@ -88,16 +87,17 @@ class MeshMaterialSynchronizer
    * ou d'un milieu lors de cette opération pour ce sous-domaine.
    */
   bool synchronizeMaterialsInCells();
-  void checkMaterialsInCells(Integer max_print);
 
  private:
 
-  IMeshMaterialSynchronizerImpl*m_synchronizer;
   IMeshMaterialMng* m_material_mng;
+public:
+  ARCCORE_HOST_DEVICE inline static void _setBit(Arcane::DataViewGetterSetter<unsigned char> bytes,Integer position);
+  ARCCORE_HOST_DEVICE inline static bool _hasBit(Arcane::DataViewGetterSetter<unsigned char> bytes,Integer position);
+private:
+  Arcane::Accelerator::IndexSelecter m_idx_selecter;
+  VariableCellArrayByte m_mat_presence;
 
-  void _checkComponents(VariableCellInt32& indexes,
-                        ConstArrayView<IMeshComponent*> components,
-                        Integer max_print);
 };
 
 /*---------------------------------------------------------------------------*/

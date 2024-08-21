@@ -29,11 +29,11 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 //! Active toujours les traces dans les parties Arcane concernant les matériaux.
-#ifdef ARCANE_COMPONENT_arcane_materials
+/*#ifdef ARCANE_COMPONENT_arcane_materials
 #ifndef ARCANE_TRACE_ENUMERATOR
 #define ARCANE_TRACE_ENUMERATOR
 #endif
-#endif
+#endif*/
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -680,4 +680,4 @@ class ComponentItemEnumeratorTraitsT<ComponentPartSimdCell>
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

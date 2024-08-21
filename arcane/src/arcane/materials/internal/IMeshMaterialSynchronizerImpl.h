@@ -5,12 +5,12 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshMaterialSynchronizer.h                                  (C) 2000-2023 */
+/* IMeshMaterialSynchronizerImpl.h                                  (C) 2000-2023 */
 /*                                                                           */
 /* Synchronisation de la liste des matériaux/milieux des entités.            */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_MATERIALS_INTERNAL_MESHMATERIALSYNCHRONIZER_H
-#define ARCANE_MATERIALS_INTERNAL_MESHMATERIALSYNCHRONIZER_H
+#ifndef ARCANE_MATERIALS_INTERNAL_IMESHMATERIALSYNCHRONIZERIMPL_H
+#define ARCANE_MATERIALS_INTERNAL_IMESHMATERIALSYNCHRONIZERIMPL_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -42,42 +42,30 @@
 #include "arcane/accelerator/RunCommandMaterialEnumerate.h"
 #include "arcane/accelerator/core/IAcceleratorMng.h"
 #include "arcane/accelerator/core/RunQueueEvent.h"
-#include "arcane/utils/ValueConvert.h"
-
-#include "arcane/materials/internal/IMeshMaterialSynchronizerImpl.h"
-#include "arcane/materials/internal/MeshMaterialSynchronizerImplAcc.h"
-#include "arcane/materials/internal/MeshMaterialSynchronizerImpl.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 namespace Arcane::Materials
 {
-class MeshMaterialModifierImpl;
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
  * \internal
- * \brief Synchronisation de la liste des matériaux/milieux des entités.
+ * \brief Stratégie de synchronisation de la liste des matériaux/milieux des entités.
  *
- * Cette classe permet de syncrhoniser entre les sous-domaines la liste
+ * Cette classe abstraite determine la méthode de syncrhonisation entre les sous-domaines la liste
  * des matériaux/milieux auxquelles une maille appartient.
  *
- * Les mailles fantômes de ce sous-domaine vont récupérer des mailles propres
- * leur liste des matériaux/milieux. Ces mailles fantômes vont ensuite éventuellement
- * être ajoutés ou retirer des matériaux et milieux actuels pour être en cohérence
- * avec cette liste issue des mailles propres.
  */
-class MeshMaterialSynchronizer
-: public TraceAccessor
+class IMeshMaterialSynchronizerImpl
 {
- public:
+protected:
 
-  explicit MeshMaterialSynchronizer(IMeshMaterialMng* material_mng);
-  ~MeshMaterialSynchronizer();
+explicit IMeshMaterialSynchronizerImpl(){};
 
- public:
+public:
+  virtual ~IMeshMaterialSynchronizerImpl(){};
 
   /*!
    * \brief Synchronisation de la liste des matériaux/milieux des entités.
@@ -87,17 +75,9 @@ class MeshMaterialSynchronizer
    * Retourne \a true si des mailles ont été ajoutées ou supprimées d'un matériau
    * ou d'un milieu lors de cette opération pour ce sous-domaine.
    */
-  bool synchronizeMaterialsInCells();
-  void checkMaterialsInCells(Integer max_print);
+  virtual bool synchronizeMaterialsInCells() = 0;
 
- private:
 
-  IMeshMaterialSynchronizerImpl*m_synchronizer;
-  IMeshMaterialMng* m_material_mng;
-
-  void _checkComponents(VariableCellInt32& indexes,
-                        ConstArrayView<IMeshComponent*> components,
-                        Integer max_print);
 };
 
 /*---------------------------------------------------------------------------*/

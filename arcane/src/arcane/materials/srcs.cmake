@@ -46,6 +46,8 @@ set(ARCANE_SOURCES
   MeshMaterialInfo.cc
   MeshMaterialInfo.h
   MeshMaterialSynchronizer.cc
+  MeshMaterialSynchronizerImpl.cc
+  MeshMaterialSynchronizerImplAcc.cc
   MeshMaterialIndirectModifier.cc
   MeshMaterialIndirectModifier.h
   MeshMaterialModifier.cc
@@ -134,4 +136,7 @@ set(ARCANE_SOURCES
   internal/MeshComponentData.h
   internal/MeshMaterialVariableIndexer.h
   internal/MeshMaterialSynchronizer.h
+  internal/IMeshMaterialSynchronizerImpl.h
+  internal/MeshMaterialSynchronizerImpl.h
+  internal/MeshMaterialSynchronizerImplAcc.h
   )
