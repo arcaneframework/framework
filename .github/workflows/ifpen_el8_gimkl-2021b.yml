@@ -115,7 +115,7 @@ jobs:
         shell: bash
         run: |
           cd ${{ env.BUILD_DIR }}
-          bash /scripts/copyextlib_github.sh
+          bash -xe /scripts/copyextlib_github.sh
 
       - name: Tar build artifact
         shell: bash
