@@ -63,6 +63,8 @@ set(ARCANE_SOURCES
   JSONReader.h
   JSONWriter.cc
   JSONWriter.h
+  LinearOffsetMap.h
+  LinearOffsetMap.cc
   HashAlgorithm.cc
   HashTable.cc
   HashTable.h
