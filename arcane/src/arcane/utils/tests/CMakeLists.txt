@@ -5,6 +5,7 @@
   TestNumVector.cc
   TestValueConvert.cc
   TestCollections.cc
+  TestLinearOffsetMap.cc
   TestHash.cc
   TestHashTable.cc
   TestMemory.cc
