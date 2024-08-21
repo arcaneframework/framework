@@ -50,28 +50,6 @@ set(ARCCON_HAS_DOTNET ${ARCCON_HAS_DOTNET} CACHE BOOL "True if .NET environment 
 
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
-# Fonction pour installer une assembly .NET
-# Les fichiers sont installés dans le chemin relatif 'rel_path'
-# Obsolète: ne plus utiliser. Utiliser 'arccon_add_csharp_target' à la place
-# avec 'arccon_dotnet_install_publish_directory'
-function(arccon_install_clr assembly_name rel_path)
-  set(full_output_name "${CMAKE_BINARY_DIR}/${rel_path}/${assembly_name}")
-  install(FILES ${full_output_name} DESTINATION ${rel_path})
-  # Installe les fichiers de debug s'ils existent
-  # Si l'extension est 'mdb', alors elle s'ajoute au nom de l'assembly.
-  # Si l'extension est 'pdb', alors elle la remplace.
-  # Par exemple, pour 'toto.dll', alors c'est 'toto.dll.mdb' ou 'toto.pdb'
-  if (CSC_DEBUG_EXTENSION STREQUAL "mdb")
-    install(FILES ${full_output_name}.mdb DESTINATION ${rel_path} OPTIONAL)
-  endif()
-  if (CSC_DEBUG_EXTENSION STREQUAL "pdb")
-    string(REGEX REPLACE ".(dll|exe)$" "" _name_without_extension ${full_output_name})
-    install(FILES ${_name_without_extension}.pdb DESTINATION ${rel_path} OPTIONAL)
-  endif()
-endfunction()
-
-# ----------------------------------------------------------------------------
-# ----------------------------------------------------------------------------
 #
 # Copie à l'installation un répertoire où ont été publiés des
 # fichier '.NET'.
