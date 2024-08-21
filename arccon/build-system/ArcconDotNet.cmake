@@ -16,11 +16,8 @@ set(ARCCON_MSBUILD_COMMON_ARGS /nodeReuse:false ${ARCCON_MSBUILD_RESTORE_ARGS})
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
 
-# Regarde si les frameworks 'dotnet' et 'mono' sont disponibles.
-# Si au moins un des deux est présent, alors 'ARCCON_HAS_DOTNET' est mis à TRUE.
-# Le code ci-dessous permet d'avoir simultanément 'mono' et 'dotnet' et d'utiliser
-# l'un ou l'autre dans le même projet CMake. Dans le cas de '.NetCore', la
-# version minimal requise est '2.2'. Pour mono, c'est 5.4.
+# Regarde si le framework 'dotnet' est disponible.
+# Si c'est le cas, alors 'ARCCON_HAS_DOTNET' est mis à TRUE.
 #
 find_program(DOTNET_EXEC NAMES dotnet)
 message(STATUS "[.Net] DOTNET exe: ${DOTNET_EXEC}")
@@ -43,20 +40,10 @@ else()
   set(ARCCON_DOTNET_HAS_RUNTIME_coreclr FALSE)
 endif()
 
-find_package(Mono)
-if (MONO_EXEC_PATH)
-  # TODO: vérifier que 'msbuild' est bien la
-  set(ARCCON_DOTNET_HAS_RUNTIME_mono TRUE)
-  find_program(ARCCON_MSBUILD_EXEC_mono NAMES msbuild PATH ${MONO_EXEC_PATH})
-  set(ARCCON_MSBUILD_ARGS_mono /Restore ${ARCCON_MSBUILD_COMMON_ARGS})
-  # Arguments pour fabriquer les packages NuGet
-  set(ARCCON_DOTNET_PACK_ARGS_mono /t:Pack)
-else()
-  message(STATUS "[.Net]: no 'mono' exec found")
-  set(ARCCON_DOTNET_HAS_RUNTIME_mono FALSE)
-endif()
+# Mono is no longer supported (09/2024)
+set(ARCCON_DOTNET_HAS_RUNTIME_mono FALSE)
 
-if (ARCCON_DOTNET_HAS_RUNTIME_mono OR ARCCON_DOTNET_HAS_RUNTIME_coreclr)
+if (ARCCON_DOTNET_HAS_RUNTIME_coreclr)
   set(ARCCON_HAS_DOTNET TRUE)
 endif()
 set(ARCCON_HAS_DOTNET ${ARCCON_HAS_DOTNET} CACHE BOOL "True if .NET environment ('coreclr' or 'mono') is found" FORCE)
