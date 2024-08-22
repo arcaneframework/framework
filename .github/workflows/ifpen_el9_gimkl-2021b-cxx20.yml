@@ -74,6 +74,14 @@ jobs:
           path: ${{ env.SOURCE_DIR }}
           submodules: true
 
+      - name: Modules information
+        id: modules_information
+        if: |
+          (success() || failure()) &&
+          steps.checkout.outcome == 'success'
+        shell: bash
+        run: module --terse list 2>&1 | sort
+
       - name: Configure
         id: configure
         if: |
