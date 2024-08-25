@@ -41,7 +41,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 120
     container:
-      image: ghcr.io/arcaneframework/arcane-ifpen-devenv-foss-2018b:el9
+      image: ghcr.io/cedricga91/arcane-ifpen-devenv-foss-2018b:el9
       #options: --user root  # Avoid to match github UID in container.
     strategy:
       fail-fast: false
@@ -73,6 +73,14 @@ jobs:
         with:
           path: ${{ env.SOURCE_DIR }}
           submodules: true
+
+      - name: Modules information
+        id: modules_information
+        if: |
+          (success() || failure()) &&
+          steps.checkout.outcome == 'success'
+        shell: bash
+        run: module --terse list 2>&1 | sort
 
       - name: Configure
         id: configure
@@ -113,14 +121,11 @@ jobs:
           steps.install.outcome == 'success'
         shell: bash
         run: |
-           osdir=centos_`lsb_release -r | awk -F ":" '{print $2}' | awk -F "." '{print $1}' | tr -d '\t'`
-           mkdir -p ${{ env.BUILD_DIR }}/${{ env.EXT_LIB_SUBDIR }}
-           export LD_LIBRARY_PATH="${{ env.INSTALL_DIR }}/lib:${LD_LIBRARY_PATH}"
-           # Copy libraries
-           while read line; do \cp -avn ${line} ${{ env.BUILD_DIR }}/${{ env.EXT_LIB_SUBDIR }}/.; if [ -L ${line} ]; then \cp -avn `readlink -f ${line}` ${{ env.BUILD_DIR }}/${{ env.EXT_LIB_SUBDIR }}/.; fi; done < <(ldd ${{ env.INSTALL_DIR }}/bin/alien* ${{ env.INSTALL_DIR }}/bin/gtest* ${{ env.INSTALL_DIR }}/lib/*.so ${{ env.INSTALL_DIR }}/lib/arcane_driver | awk 'NF == 4 { print $3 }' | grep -v -e "^/lib64/" -e "^${EBROOTOPENMPI}" -e "^${EBROOTUDUNITS}" -e "^${EBROOTMONO}" -e "^${EBROOTCMAKE}" -e "^${EBROOTDOTNETMINSDK}" -e "^/__w/")
-           # Copy googletest
-           \rm -vf ${{ env.BUILD_DIR }}/${{ env.EXT_LIB_SUBDIR }}//libgtest.so
-           \cp -avf /soft/irsrvsoft1/expl/eb/r11/${osdir}/easybuild/software/Compiler/GCCcore/7.3.0/googletest/1.10.0/lib64/*.so ${{ env.BUILD_DIR }}/${{ env.EXT_LIB_SUBDIR }}/.
+          cd ${{ env.BUILD_DIR }}
+          echo '--'
+          cat /scripts/copyextlib_github.sh
+          echo '--'
+          bash /scripts/copyextlib_github.sh
 
       - name: Tar build artifact
         shell: bash
@@ -150,7 +155,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 120
     container:
-      image: ghcr.io/arcaneframework/arcane-ifpen-devenv-foss-2018b:el9-rt
+      image: ghcr.io/cedricga91/arcane-ifpen-devenv-foss-2018b-rt:el9
       #options: --user root  # Avoid to match github UID in container.
     strategy:
       fail-fast: false
