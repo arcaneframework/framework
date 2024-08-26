@@ -30,10 +30,8 @@
 
 // Provided by the AppHost NuGet package and installed as an SDK pack
 #include <nethost.h>
-
-// Header files copied from https://github.com/dotnet/core-setup
-#include "arcane/dotnet/coreclr/coreclr_delegates.h"
-#include "arcane/dotnet/coreclr/hostfxr.h"
+#include <coreclr_delegates.h>
+#include <hostfxr.h>
 
 #include <iostream>
 
