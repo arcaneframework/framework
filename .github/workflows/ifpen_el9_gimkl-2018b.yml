@@ -24,7 +24,7 @@ env:
   CCACHE_DIR: '/__w/framework/framework/ccache'
   CCACHE_MAXSIZE: 5G
   # CMake
-  CM_BUILD_OPTS: "-j2"
+  CM_BUILD_OPTS: "-j4"
   CM_BUILD_TYPE: Release
   CM_CCACHE_OPTS: "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache"
   # CTest
