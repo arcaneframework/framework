@@ -67,7 +67,9 @@ class NumArrayContainer
  public:
 
   using BaseClass::capacity;
+  using BaseClass::debugName;
   using BaseClass::fill;
+  using BaseClass::setDebugName;
 
  private:
 
