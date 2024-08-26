@@ -398,7 +398,7 @@ LibHandle load_library(const char_t* path)
 {
   void* h = dlopen(path, RTLD_LAZY | RTLD_LOCAL);
   if (!h)
-    ARCANE_FATAL("Can not load library '{0}'",path);
+    ARCANE_FATAL("Can not load library '{0}' error='{1}'",path,dlerror());
   return h;
 }
 void free_library(LibHandle h)
@@ -410,7 +410,7 @@ void* get_export(LibHandle h, const char* name)
   void* f = dlsym(h, name);
   PRINT_FORMAT(1,"get_export name={0} f={1}",name,f);
   if (!f)
-    PRINT_FORMAT(0,"Can not get library symbol '{0}'",name);
+    PRINT_FORMAT(0,"Can not get library symbol '{0}'  error='{1}'",name,dlerror());
   return f;
 }
 #endif
@@ -435,10 +435,19 @@ load_hostfxr(const string_t& assembly_name)
   const int BUF_LEN = 12000;
   char_t buffer[BUF_LEN];
   size_t buffer_size = sizeof(buffer) / sizeof(char_t);
+
+  // List of return values for 'get_hostfxr_path' are here:
+  // https://github.com/dotnet/runtime/blob/main/docs/design/features/host-error-codes.md
+  // Real good value is '0'.
+  // Positive values are for warnings
+  // Negative valeurs are for errors
   int rc = get_hostfxr_path(buffer, &buffer_size, &hostfxr_parameters);
   PRINT_FORMAT(1,"Return value of 'get_hostfxr_path' = '{0}'",rc);
-  //if (rc != 0)
-  //return false;
+  if (rc != 0)
+    PRINT_FORMAT(0,"Error or warning calling 'get_hostfxr_path' = '{0}'",rc);
+  if (rc < 0)
+    return false;
+
   // Load hostfxr and get desired exports
   LibHandle lib = load_library(buffer);
   PRINT_FORMAT(1,"LIB_PTR={0} path={1}",lib,_toArcaneString(buffer));
