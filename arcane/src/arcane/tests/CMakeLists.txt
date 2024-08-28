@@ -705,6 +705,11 @@ if (HDF5_FOUND)
   arcane_add_test_generic(hydro1_vtkhdfv2_not_collective CASE_FILE testHydro-1-vtkhdfv2-not-collective.arc MP_MPI ARGS "-m 50")
   arcane_add_test_generic(hydro1_vtkhdfv2_backward CASE_FILE testHydro-1-vtkhdfv2-backward.arc ARGS "-m 58")
 endif()
+
+if (ARCANE_HAS_KDI)
+  arcane_add_test_generic(hydro1_kdi MP_SEQUENTIAL CASE_FILE testHydro-1-kdi.arc ARGS "-m 50")
+endif()
+
 ARCANE_ADD_TEST(hydro_depend1 testHydroDepend-1.arc "-m 25")
 ARCANE_ADD_TEST(hydro2 testHydro-2.arc "-m 25")
 
