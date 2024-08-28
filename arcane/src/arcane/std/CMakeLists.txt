@@ -5,6 +5,7 @@ set(PKGS ${PRIVATE_PKGS} ${PUBLIC_PKGS})
 foreach(package ${PKGS})
   arcane_find_package(${package})
 endforeach()
+find_package (Python COMPONENTS Development)
 
 set(ADDITIONAL_TARGETS)
 
@@ -114,7 +115,16 @@ if(vtkIOXML_FOUND)
     VtkPolyhedralMeshIOService.cc
     )
   list(APPEND PRIVATE_PKGS vtkIOXML)
+endif()
 
+# Pour l'instant n'active pas KDI car il n'y a pas d'installation disponibles
+set(ARCANE_HAS_KDI FALSE CACHE BOOL "Is KDI available" FORCE)
+
+if (Python_FOUND AND ARCANE_HAS_KDI)
+  list(APPEND ARCANE_SOURCES
+    KdiPostProcessor.cc
+    internal/Kdi.h
+  )
 endif()
 
 # ----------------------------------------------------------------------------
@@ -132,7 +142,7 @@ if(${ARCANE_HAS_MALLOC_HOOKS})
   target_compile_definitions(arcane_std PRIVATE ARCANE_USE_MALLOC_HOOK)
 endif()
 
-target_link_libraries(arcane_std PUBLIC $<TARGET_NAME_IF_EXISTS:Arccore::arccore_message_passing_mpi>)
+target_link_libraries(arcane_std PUBLIC Python::Python $<TARGET_NAME_IF_EXISTS:Arccore::arccore_message_passing_mpi>)
 target_link_libraries(arcane_std PUBLIC $<TARGET_NAME_IF_EXISTS:Arcane::arcane_hdf5>)
 target_link_libraries(arcane_std PUBLIC ${ARCANE_BASE_LIBRARIES})
 
