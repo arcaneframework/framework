@@ -7,15 +7,16 @@
 /*---------------------------------------------------------------------------*/
 /* Kdi.h                                                       (C) 2000-2024 */
 /*                                                                           */
-/* Pos-traitement avec l'outil KDI.                                          */
+/* Post-traitement avec l'outil KDI.                                         */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_STD_INTERNAL_KDI_H
 #define ARCANE_STD_INTERNAL_KDI_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+#define Py_LIMITED_API 0x03100000
 #define PY_SSIZE_T_CLEAN
-#define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
+#define NPY_NO_DEPRECATED_API NPY_1_23_API_VERSION
 #include <Python.h>
 
 #include <numpy/arrayobject.h>
