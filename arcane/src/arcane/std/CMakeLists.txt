@@ -142,7 +142,7 @@ if(${ARCANE_HAS_MALLOC_HOOKS})
   target_compile_definitions(arcane_std PRIVATE ARCANE_USE_MALLOC_HOOK)
 endif()
 
-target_link_libraries(arcane_std PUBLIC Python::Python $<TARGET_NAME_IF_EXISTS:Arccore::arccore_message_passing_mpi>)
+target_link_libraries(arcane_std PUBLIC $<TARGET_NAME_IF_EXISTS:Python::Python> $<TARGET_NAME_IF_EXISTS:Arccore::arccore_message_passing_mpi>)
 target_link_libraries(arcane_std PUBLIC $<TARGET_NAME_IF_EXISTS:Arcane::arcane_hdf5>)
 target_link_libraries(arcane_std PUBLIC ${ARCANE_BASE_LIBRARIES})
 
