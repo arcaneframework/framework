@@ -175,7 +175,7 @@ if(${ARCANE_HAS_MALLOC_HOOKS})
 endif()
 
 if (ARCANE_HAS_KDI_PYTHON)
-  target_link_libraries(arcane_std PUBLIC Python::Python Python::NumPy)
+  target_link_libraries(arcane_std PRIVATE Python::Python Python::NumPy)
 endif()
 
 target_link_libraries(arcane_std PUBLIC $<TARGET_NAME_IF_EXISTS:Arccore::arccore_message_passing_mpi>)
