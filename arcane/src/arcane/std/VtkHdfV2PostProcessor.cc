@@ -14,11 +14,9 @@
 #include "arcane/utils/Collection.h"
 #include "arcane/utils/Enumerator.h"
 #include "arcane/utils/Iostream.h"
-#include "arcane/utils/ScopedPtr.h"
 #include "arcane/utils/StringBuilder.h"
-#include "arcane/utils/CheckedConvert.h"
-#include "arcane/utils/JSONWriter.h"
 #include "arcane/utils/IOException.h"
+#include "arcane/utils/FixedArray.h"
 
 #include "arcane/core/PostProcessorWriterBase.h"
 #include "arcane/core/Directory.h"
@@ -142,6 +140,16 @@ class VtkHdfV2DataWriter
    */
   struct DataInfo
   {
+   public:
+
+    DataInfo(const DatasetGroupAndName& dname, const OffsetInfo& offset_info)
+    : dataset(dname)
+    , offset(offset_info)
+    {
+    }
+
+   public:
+
     DatasetGroupAndName dataset;
     OffsetInfo offset;
   };
@@ -475,8 +483,6 @@ _writeDataSetGeneric(const DataInfo& data_info, Int32 nb_dim,
   // Si positif ou nul indique l'offset d'écriture. Sinon on écrit à la fin
   Int64 wanted_offset = data_info.offset.value();
 
-  // TODO: utiliser une structure qui encapsule les dimensions pour vérifier
-  // les éventuels débordements de tableau.
   static constexpr int MAX_DIM = 2;
   HDataset dataset;
 
@@ -486,16 +492,16 @@ _writeDataSetGeneric(const DataInfo& data_info, Int32 nb_dim,
   // tout le calcul.
 
   // Dimensions du dataset que le rang courant va écrire.
-  hsize_t local_dims[MAX_DIM];
+  FixedArray<hsize_t, MAX_DIM> local_dims;
   local_dims[0] = dim1_size;
   local_dims[1] = dim2_size;
 
   // Dimensions cumulées de tous les rangs pour l'écriture.
-  hsize_t global_dims[MAX_DIM];
+  FixedArray<hsize_t, MAX_DIM> global_dims;
 
   // Dimensions maximales du DataSet
   // Pour la deuxième dimension, on suppose qu'elle est constante au cours du temps.
-  hsize_t max_dims[MAX_DIM];
+  FixedArray<hsize_t, MAX_DIM> max_dims;
   max_dims[0] = H5S_UNLIMITED;
   max_dims[1] = dim2_size;
 
@@ -529,13 +535,13 @@ _writeDataSetGeneric(const DataInfo& data_info, Int32 nb_dim,
     write_plist_id.createDatasetTransfertCollectiveMPIIO();
 
   HSpace memory_space;
-  memory_space.createSimple(nb_dim, local_dims);
+  memory_space.createSimple(nb_dim, local_dims.data());
 
   HSpace file_space;
 
   if (m_is_first_call) {
     // TODO: regarder comment mieux calculer le chunk
-    hsize_t chunk_dims[MAX_DIM];
+    FixedArray<hsize_t, MAX_DIM> chunk_dims;
     global_dims[0] = global_dim1_size;
     global_dims[1] = dim2_size;
     // Il est important que tout le monde ait la même taille de chunk.
@@ -551,17 +557,17 @@ _writeDataSetGeneric(const DataInfo& data_info, Int32 nb_dim,
            << " chunk0=" << chunk_dims[0]
            << " chunk1=" << chunk_dims[1]
            << " name=" << name;
-    file_space.createSimple(nb_dim, global_dims, max_dims);
+    file_space.createSimple(nb_dim, global_dims.data(), max_dims.data());
     HProperty plist_id;
     plist_id.create(H5P_DATASET_CREATE);
-    H5Pset_chunk(plist_id.id(), nb_dim, chunk_dims);
+    H5Pset_chunk(plist_id.id(), nb_dim, chunk_dims.data());
     dataset.create(group, name.localstr(), hdf_type, file_space, HProperty{}, plist_id, HProperty{});
 
     if (is_collective) {
-      hsize_t offset[MAX_DIM];
+      FixedArray<hsize_t, MAX_DIM> offset;
       offset[0] = my_index;
       offset[1] = 0;
-      if ((herror = H5Sselect_hyperslab(file_space.id(), H5S_SELECT_SET, offset, nullptr, local_dims, nullptr)) < 0)
+      if ((herror = H5Sselect_hyperslab(file_space.id(), H5S_SELECT_SET, offset.data(), nullptr, local_dims.data(), nullptr)) < 0)
         ARCANE_THROW(IOException, "Can not select hyperslab '{0}' (err={1})", name, herror);
     }
   }
@@ -575,8 +581,8 @@ _writeDataSetGeneric(const DataInfo& data_info, Int32 nb_dim,
       ARCANE_THROW(IOException, "Bad dimension '{0}' for dataset '{1}' (should be 1)",
                    nb_dimension, name);
     // TODO: Vérifier que la deuxième dimension est la même que celle sauvée.
-    hsize_t original_dims[MAX_DIM];
-    file_space.getDimensions(original_dims, nullptr);
+    FixedArray<hsize_t, MAX_DIM> original_dims;
+    file_space.getDimensions(original_dims.data(), nullptr);
     hsize_t offset0 = original_dims[0];
     // Si on a un offset positif issu de OffsetInfo alors on le prend.
     // Cela signifie qu'on a fait un retour arrière.
@@ -589,11 +595,11 @@ _writeDataSetGeneric(const DataInfo& data_info, Int32 nb_dim,
     write_offset = offset0;
     // Agrandit le dataset.
     // ATTENTION cela invalide file_space. Il faut donc le relire juste après.
-    if ((herror = dataset.setExtent(global_dims)) < 0)
+    if ((herror = dataset.setExtent(global_dims.data())) < 0)
       ARCANE_THROW(IOException, "Can not extent dataset '{0}' (err={1})", name, herror);
     file_space = dataset.getSpace();
 
-    hsize_t offsets[MAX_DIM];
+    FixedArray<hsize_t, MAX_DIM> offsets;
     offsets[0] = offset0 + my_index;
     offsets[1] = 0;
     info(4) << "APPEND nb_dim=" << nb_dim
@@ -601,7 +607,7 @@ _writeDataSetGeneric(const DataInfo& data_info, Int32 nb_dim,
             << " count0=" << local_dims[0]
             << " offsets0=" << offsets[0] << " name=" << name;
 
-    if ((herror = H5Sselect_hyperslab(file_space.id(), H5S_SELECT_SET, offsets, nullptr, local_dims, nullptr)) < 0)
+    if ((herror = H5Sselect_hyperslab(file_space.id(), H5S_SELECT_SET, offsets.data(), nullptr, local_dims.data(), nullptr)) < 0)
       ARCANE_THROW(IOException, "Can not select hyperslab '{0}' (err={1})", name, herror);
   }
 
@@ -713,7 +719,7 @@ void VtkHdfV2DataWriter::
 _addInt64ArrayAttribute(Hid& hid, const char* name, Span<const Int64> values)
 {
   hsize_t len = values.size();
-  hid_t aid = H5Screate_simple(1, &len, 0);
+  hid_t aid = H5Screate_simple(1, &len, nullptr);
   hid_t attr = H5Acreate2(hid.id(), name, H5T_NATIVE_INT64, aid, H5P_DEFAULT, H5P_DEFAULT);
   if (attr < 0)
     ARCANE_FATAL("Can not create attribute '{0}'", name);
@@ -872,7 +878,7 @@ write(IVariable* var, IData* data)
 
   ARCANE_CHECK_POINTER(group);
 
-  DataInfo data_info{ { *group, var->name() }, offset_info };
+  DataInfo data_info(DatasetGroupAndName{ *group, var->name() }, offset_info);
   eDataType data_type = var->dataType();
   switch (data_type) {
   case DT_Real:
