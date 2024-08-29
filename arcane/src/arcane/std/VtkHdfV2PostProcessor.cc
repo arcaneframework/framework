@@ -238,6 +238,9 @@ class VtkHdfV2DataWriter
   _writeDataSetGeneric(const DataInfo& data_info, Int32 nb_dim,
                        Int64 dim1_size, Int64 dim2_size, const DataType* values_data,
                        bool is_collective);
+  void _writeDataSetGeneric(const DataInfo& data_info, Int32 nb_dim,
+                            Int64 dim1_size, Int64 dim2_size, const void* values_data,
+                            const hid_t hdf_datatype_type, bool is_collective);
   void _addInt64ttribute(Hid& hid, const char* name, Int64 value);
   Int64 _readInt64Attribute(Hid& hid, const char* name);
   void _openOrCreateGroups();
@@ -455,54 +458,16 @@ beginWrite(const VariableCollection& vars)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-namespace
-{
-  template <typename DataType> class HDFTraits;
-
-  template <> class HDFTraits<Int64>
-  {
-   public:
-
-    static hid_t hdfType() { return H5T_NATIVE_INT64; }
-  };
-
-  template <> class HDFTraits<Int32>
-  {
-   public:
-
-    static hid_t hdfType() { return H5T_NATIVE_INT32; }
-  };
-
-  template <> class HDFTraits<double>
-  {
-   public:
-
-    static hid_t hdfType() { return H5T_NATIVE_DOUBLE; }
-  };
-
-  template <> class HDFTraits<unsigned char>
-  {
-   public:
-
-    static hid_t hdfType() { return H5T_NATIVE_UINT8; }
-  };
-
-} // namespace
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 /*!
  * \brief Ecrit une donnée 1D ou 2D.
  *
  * Pour chaque temps ajouté, la donnée est écrite à la fin des valeurs précédentes
  * sauf en cas de retour arrière où l'offset est dans data_info.
- *
  */
-template <typename DataType> void VtkHdfV2DataWriter::
+void VtkHdfV2DataWriter::
 _writeDataSetGeneric(const DataInfo& data_info, Int32 nb_dim,
-                     Int64 dim1_size, Int64 dim2_size, const DataType* values_data,
-                     bool is_collective)
+                     Int64 dim1_size, Int64 dim2_size, const void* values_data,
+                     const hid_t hdf_type, bool is_collective)
 {
   HGroup& group = data_info.dataset.group;
   const String& name = data_info.dataset.name;
@@ -534,7 +499,6 @@ _writeDataSetGeneric(const DataInfo& data_info, Int32 nb_dim,
   max_dims[0] = H5S_UNLIMITED;
   max_dims[1] = dim2_size;
 
-  const hid_t hdf_type = HDFTraits<DataType>::hdfType();
   herr_t herror = 0;
   Int64 write_offset = 0;
 
@@ -586,8 +550,7 @@ _writeDataSetGeneric(const DataInfo& data_info, Int32 nb_dim,
            << " global_dim1_size=" << global_dim1_size
            << " chunk0=" << chunk_dims[0]
            << " chunk1=" << chunk_dims[1]
-           << " name=" << name
-           << " nb_byte=" << global_dim1_size * sizeof(DataType);
+           << " name=" << name;
     file_space.createSimple(nb_dim, global_dims, max_dims);
     HProperty plist_id;
     plist_id.create(H5P_DATASET_CREATE);
@@ -651,6 +614,18 @@ _writeDataSetGeneric(const DataInfo& data_info, Int32 nb_dim,
 
   if (!data_info.offset.isNull())
     m_offset_info_list.insert(std::make_pair(data_info.offset, write_offset));
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template <typename DataType> void VtkHdfV2DataWriter::
+_writeDataSetGeneric(const DataInfo& data_info, Int32 nb_dim,
+                     Int64 dim1_size, Int64 dim2_size, const DataType* values_data,
+                     bool is_collective)
+{
+  const hid_t hdf_type = m_standard_types.nativeType(DataType{});
+  _writeDataSetGeneric(data_info, nb_dim, dim1_size, dim2_size, values_data, hdf_type, is_collective);
 }
 
 /*---------------------------------------------------------------------------*/
