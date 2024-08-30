@@ -119,6 +119,7 @@ class NumArrayUnitTest
   void _executeTest2();
   void _executeTest3();
   void _executeTest4(eMemoryRessource mem_kind);
+  void _executeTest5();
 
  private:
 
@@ -192,6 +193,7 @@ executeTest()
   _executeTest2();
   _executeTest2();
   _executeTest3();
+  _executeTest5();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -671,6 +673,20 @@ _executeTest4(eMemoryRessource mem_kind)
       vc.areEqual(s3, expected_sum1, "SUM1_3");
     }
   }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void NumArrayUnitTest::
+_executeTest5()
+{
+  ValueChecker vc(A_FUNCINFO);
+
+  NumArray<Int32, MDDim1> t1;
+  t1.setDebugName("Bonjour");
+  String str_test = "Bonjour";
+  vc.areEqual(t1.debugName(), str_test, "Pas bonjour :-(");
 }
 
 /*---------------------------------------------------------------------------*/

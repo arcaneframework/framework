@@ -544,6 +544,23 @@ getPageSize()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+namespace
+{
+  String _getDebuggerStack(const char* command)
+  {
+    char filename[4096];
+    long pid = (long)getpid();
+    sprintf(filename, "errlog.%ld", pid);
+    int ret_value = system(command);
+    if (ret_value != 0) {
+      UniqueArray<Byte> bytes;
+      if (!platform::readAllFile(filename, false, bytes))
+        return String(bytes);
+    }
+    return {};
+  }
+} // namespace
+
 extern "C++" ARCANE_UTILS_EXPORT String platform::
 getGDBStack()
 {
@@ -553,22 +570,28 @@ getGDBStack()
   char cmd[cmd_size + 1];
   //sprintf (cmd, "gdb --ex 'attach %ld' --ex 'info threads' --ex 'thread apply all bt'", (long)getpid ());
   //sprintf (cmd, "gdb --ex 'attach %ld' --ex 'info threads' --ex 'thread apply all bt' --batch", (long)getpid ());
-  char filename[4096];
   long pid = (long)getpid();
-  sprintf(filename, "errlog.%ld", pid);
   snprintf(cmd, cmd_size, "gdb --ex 'attach %ld' --ex 'info threads' --ex 'thread apply all bt full' --batch", pid);
-  int ret_value = system(cmd);
+  result = _getDebuggerStack(cmd);
+#endif
+  return result;
+}
 
-  long unsigned int file_length = 0;
-  if (ret_value == 0)
-    file_length = platform::getFileLength(filename);
-  if (file_length != 0) {
-    std::ifstream ifile;
-    ifile.open(filename, std::ios::binary);
-    ByteUniqueArray bytes(file_length);
-    ifile.read((char*)bytes.data(), file_length);
-    result = String(bytes);
-  }
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+extern "C++" ARCANE_UTILS_EXPORT String platform::
+getLLDBStack()
+{
+  String result;
+#if defined(ARCANE_OS_LINUX)
+  const size_t cmd_size = 4096;
+  char cmd[cmd_size + 1];
+  long pid = (long)getpid();
+  // Les commandes 'clrthreads', 'clrstack' et 'dumpstack' nécessitent
+  // d'avoir installé 'dotnet-sos'.
+  snprintf(cmd, cmd_size, "lldb -p %ld -o 'bt' -o 'bt all' -o 'clrthreads' -o 'clrstack' -o 'dumpstack' --batch", pid);
+  result = _getDebuggerStack(cmd);
 #endif
   return result;
 }
