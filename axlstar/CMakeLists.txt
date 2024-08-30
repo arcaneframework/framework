@@ -94,7 +94,7 @@ if (AXLSTAR_DOTNET_RUNNER STREQUAL coreclr)
   #  3. /p:UseSharedCompilation=false (pour ne pas garder la compilateur actif entre deux compilations)
   # La méthode 1. évite de laisser des processus tourner et n'ajoute pas de temps à la compilation
   # donc on l'utilise par défaut.
-  set(AXLSTAR_BUILD_COMMAND_ARGS publish /nodeReuse:false /v:Normal /p:UseSharedCompilation=false ${AXL_SOLUTION_FILE} /p:AxlToolsExeFramework=netcoreapp${CORECLR_VERSION} /p:PublishDir=${AXLSTAR_PUBLISH_DIR}/)
+  set(AXLSTAR_BUILD_COMMAND_ARGS publish /nodeReuse:false /p:UseSharedCompilation=false ${AXL_SOLUTION_FILE} /p:AxlToolsExeFramework=netcoreapp${CORECLR_VERSION} /p:PublishDir=${AXLSTAR_PUBLISH_DIR}/)
 endif()
 set(AXLSTAR_BUILD_COMMAND_ARGS ${AXLSTAR_BUILD_COMMAND_ARGS} ${AXLSTAR_MSBUILD_COMMON_COMMAND_ARGS})
 
