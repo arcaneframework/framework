@@ -45,8 +45,20 @@ std::unique_ptr<HypreLibrary> HypreInternalLinearSolver::m_library_plugin ;
 
 HypreLibrary::HypreLibrary()
 {
-#if HYPRE_HAVE_HYPRE_INIT
-  HYPRE_Init() ;
+  // NOTE: A partir de la 2.29, on peut utiliser
+  // HYPRE_Initialize() et tester si l'initialisation
+  // a déjà été faite via HYPRE_Initialized().
+#if HYPRE_RELEASE_NUMBER >= 22900
+  if (!HYPRE_Initialized()){
+    HYPRE_Initialize();
+  }
+#elif HYPRE_RELEASE_NUMBER >= 22700
+  HYPRE_Init();
+#endif
+
+#if HYPRE_RELEASE_NUMBER >= 22700
+  HYPRE_SetMemoryLocation(HYPRE_MEMORY_HOST);
+  HYPRE_SetExecutionPolicy(HYPRE_EXEC_HOST);
 #endif
 }
 
