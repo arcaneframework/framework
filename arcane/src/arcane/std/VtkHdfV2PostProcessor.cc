@@ -135,6 +135,28 @@ class VtkHdfV2DataWriter
     String m_name;
     Int64 m_value = -1;
   };
+
+  //! Informations collectives sur un ItemGroup;
+  struct ItemGroupCollectiveInfo
+  {
+   public:
+
+    explicit ItemGroupCollectiveInfo(const ItemGroup& g)
+    : m_item_group(g)
+    {}
+
+   public:
+
+    //! Groupe associé
+    ItemGroup m_item_group;
+    //! Nombre de valeur pour chaque rang.
+    UniqueArray<Int64> m_ranks_size;
+    //! Nombre total d'éléments sur tous les rangs
+    Int64 m_total_size = 0;
+    //! Offset dans le tableau du rang courant
+    Int64 m_my_offset = -1;
+  };
+
   /*!
    * \brief Conserve les infos sur les données à sauver et l'offset associé.
    */
@@ -147,11 +169,19 @@ class VtkHdfV2DataWriter
     , offset(offset_info)
     {
     }
+    DataInfo(const DatasetGroupAndName& dname, const OffsetInfo& offset_info,
+             ItemGroupCollectiveInfo* group_info)
+    : dataset(dname)
+    , offset(offset_info)
+    , m_group_info(group_info)
+    {
+    }
 
    public:
 
     DatasetGroupAndName dataset;
     OffsetInfo offset;
+    ItemGroupCollectiveInfo* m_group_info = nullptr;
   };
 
  public:
@@ -212,7 +242,10 @@ class VtkHdfV2DataWriter
   OffsetInfo m_time_offset_info;
   std::map<OffsetInfo, Int64> m_offset_info_list;
 
-  StandardTypes m_standard_types;
+  StandardTypes m_standard_types{ false };
+
+  ItemGroupCollectiveInfo m_all_cells_info;
+  ItemGroupCollectiveInfo m_all_nodes_info;
 
  private:
 
@@ -255,6 +288,7 @@ class VtkHdfV2DataWriter
   void _closeGroups();
   void _readAndSetOffset(OffsetInfo& offset_info, Int32 wanted_step);
   void _initializeOffsets();
+  void _initializeItemGroupCollectiveInfos(ItemGroupCollectiveInfo& group_info);
 };
 
 /*---------------------------------------------------------------------------*/
@@ -266,7 +300,8 @@ VtkHdfV2DataWriter(IMesh* mesh, ItemGroupCollection groups, bool is_collective_i
 , m_mesh(mesh)
 , m_groups(groups)
 , m_is_collective_io(is_collective_io)
-, m_standard_types(false)
+, m_all_cells_info(mesh->allCells())
+, m_all_nodes_info(mesh->allNodes())
 {
 }
 
@@ -341,6 +376,10 @@ beginWrite(const VariableCollection& vars)
       _addStringAttribute(m_top_group, "Type", "UnstructuredGrid");
     }
   }
+
+  // Initialise les informations collectives sur les groupes de mailles et noeuds
+  _initializeItemGroupCollectiveInfos(m_all_cells_info);
+  _initializeItemGroupCollectiveInfos(m_all_nodes_info);
 
   CellGroup all_cells = m_mesh->allCells();
   NodeGroup all_nodes = m_mesh->allNodes();
@@ -466,6 +505,32 @@ beginWrite(const VariableCollection& vars)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+void VtkHdfV2DataWriter::
+_initializeItemGroupCollectiveInfos(ItemGroupCollectiveInfo& group_info)
+{
+  IParallelMng* pm = m_mesh->parallelMng();
+  Int32 nb_rank = pm->commSize();
+  Int32 my_rank = pm->commRank();
+
+  group_info.m_ranks_size.resize(nb_rank);
+  ArrayView<Int64> all_sizes(group_info.m_ranks_size);
+  Int64 dim1_size = group_info.m_item_group.size();
+  pm->allGather(ConstArrayView<Int64>(1, &dim1_size), all_sizes);
+
+  Int64 total_size = 0;
+  for (Integer i = 0; i < nb_rank; ++i)
+    total_size += all_sizes[i];
+  group_info.m_total_size = total_size;
+
+  Int64 my_index = 0;
+  for (Integer i = 0; i < my_rank; ++i)
+    my_index += all_sizes[i];
+  group_info.m_my_offset = my_index;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 /*!
  * \brief Ecrit une donnée 1D ou 2D.
  *
@@ -512,22 +577,28 @@ _writeDataSetGeneric(const DataInfo& data_info, Int32 nb_dim,
   Int64 global_dim1_size = dim1_size;
   Int32 nb_participating_rank = 1;
   if (is_collective) {
-    // En mode collectif il faut récupérer les index de chaque rang.
-    // TODO: pour les variables, ces indices ne dépendent que du groupe associé
-    // et on peut donc conserver l'information pour éviter le gather à chaque fois.
-    IParallelMng* pm = m_mesh->parallelMng();
-    nb_participating_rank = pm->commSize();
-    Int32 my_rank = pm->commRank();
+    if (data_info.m_group_info) {
+      global_dim1_size = data_info.m_group_info->m_total_size;
+      my_index = data_info.m_group_info->m_my_offset;
+    }
+    else {
+      // En mode collectif il faut récupérer les index de chaque rang.
+      // TODO: pour les variables, ces indices ne dépendent que du groupe associé
+      // et on peut donc conserver l'information pour éviter le gather à chaque fois.
+      IParallelMng* pm = m_mesh->parallelMng();
+      nb_participating_rank = pm->commSize();
+      Int32 my_rank = pm->commRank();
 
-    UniqueArray<Int64> all_sizes(nb_participating_rank);
-    pm->allGather(ConstArrayView<Int64>(1, &dim1_size), all_sizes);
+      UniqueArray<Int64> all_sizes(nb_participating_rank);
+      pm->allGather(ConstArrayView<Int64>(1, &dim1_size), all_sizes);
 
-    global_dim1_size = 0;
-    for (Integer i = 0; i < nb_participating_rank; ++i)
-      global_dim1_size += all_sizes[i];
-    my_index = 0;
-    for (Integer i = 0; i < my_rank; ++i)
-      my_index += all_sizes[i];
+      global_dim1_size = 0;
+      for (Integer i = 0; i < nb_participating_rank; ++i)
+        global_dim1_size += all_sizes[i];
+      my_index = 0;
+      for (Integer i = 0; i < my_rank; ++i)
+        my_index += all_sizes[i];
+    }
   }
 
   HProperty write_plist_id;
@@ -860,17 +931,22 @@ write(IVariable* var, IData* data)
 
   if (var->dimension() != 1)
     ARCANE_FATAL("Only export of scalar item variable is implemented (name={0})", var->name());
+  if (var->isPartial())
+    ARCANE_FATAL("Export of partial variable is not implemented");
 
   HGroup* group = nullptr;
   OffsetInfo offset_info;
+  ItemGroupCollectiveInfo* group_info = nullptr;
   switch (item_kind) {
   case IK_Cell:
     group = &m_cell_data_group;
     offset_info = m_cell_offset_info;
+    group_info = &m_all_cells_info;
     break;
   case IK_Node:
     group = &m_node_data_group;
     offset_info = m_point_offset_info;
+    group_info = &m_all_nodes_info;
     break;
   default:
     ARCANE_FATAL("Only export of 'Cell' or 'Node' variable is implemented (name={0})", var->name());
@@ -878,7 +954,7 @@ write(IVariable* var, IData* data)
 
   ARCANE_CHECK_POINTER(group);
 
-  DataInfo data_info(DatasetGroupAndName{ *group, var->name() }, offset_info);
+  DataInfo data_info(DatasetGroupAndName{ *group, var->name() }, offset_info, group_info);
   eDataType data_type = var->dataType();
   switch (data_type) {
   case DT_Real:
