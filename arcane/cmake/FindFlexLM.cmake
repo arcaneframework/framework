@@ -58,7 +58,8 @@ IF(FLEXLM_INCLUDE_DIR)
     if(WIN32)
       SET(FLEXLM_LIBRARIES ${FLEXLM_LIBRARY} oldnames.lib kernel32.lib user32.lib netapi32.lib
         advapi32.lib gdi32.lib comdlg32.lib comctl32.lib wsock32.lib shell32.lib
-        Rpcrt4.lib oleaut32.lib Ole32.lib Wbemuuid.lib wintrust.lib crypt32.lib Ws2_32.lib psapi.lib Shlwapi.lib dhcpcsvc.lib)
+        Rpcrt4.lib oleaut32.lib Ole32.lib Wbemuuid.lib wintrust.lib crypt32.lib Ws2_32.lib psapi.lib Shlwapi.lib dhcpcsvc.lib
+        userenv.lib legacy_stdio_definitions.lib vcruntime.lib ucrt.lib legacy_stdio_wide_specifiers.lib libvcruntime.lib)
     else(WIN32)
       SET(FLEXLM_LIBRARIES ${FLEXLM_LIBRARY} pthread)
     endif(WIN32)
