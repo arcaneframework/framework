@@ -14,11 +14,9 @@
 #include "arcane/utils/Collection.h"
 #include "arcane/utils/Enumerator.h"
 #include "arcane/utils/Iostream.h"
-#include "arcane/utils/ScopedPtr.h"
 #include "arcane/utils/StringBuilder.h"
-#include "arcane/utils/CheckedConvert.h"
-#include "arcane/utils/JSONWriter.h"
 #include "arcane/utils/IOException.h"
+#include "arcane/utils/FixedArray.h"
 
 #include "arcane/core/PostProcessorWriterBase.h"
 #include "arcane/core/Directory.h"
@@ -137,13 +135,53 @@ class VtkHdfV2DataWriter
     String m_name;
     Int64 m_value = -1;
   };
+
+  //! Informations collectives sur un ItemGroup;
+  struct ItemGroupCollectiveInfo
+  {
+   public:
+
+    explicit ItemGroupCollectiveInfo(const ItemGroup& g)
+    : m_item_group(g)
+    {}
+
+   public:
+
+    //! Groupe associé
+    ItemGroup m_item_group;
+    //! Nombre de valeur pour chaque rang.
+    UniqueArray<Int64> m_ranks_size;
+    //! Nombre total d'éléments sur tous les rangs
+    Int64 m_total_size = 0;
+    //! Offset dans le tableau du rang courant
+    Int64 m_my_offset = -1;
+  };
+
   /*!
    * \brief Conserve les infos sur les données à sauver et l'offset associé.
    */
   struct DataInfo
   {
+   public:
+
+    DataInfo(const DatasetGroupAndName& dname, const OffsetInfo& offset_info)
+    : dataset(dname)
+    , offset(offset_info)
+    {
+    }
+    DataInfo(const DatasetGroupAndName& dname, const OffsetInfo& offset_info,
+             ItemGroupCollectiveInfo* group_info)
+    : dataset(dname)
+    , offset(offset_info)
+    , m_group_info(group_info)
+    {
+    }
+
+   public:
+
     DatasetGroupAndName dataset;
     OffsetInfo offset;
+    ItemGroupCollectiveInfo* m_group_info = nullptr;
   };
 
  public:
@@ -204,7 +242,10 @@ class VtkHdfV2DataWriter
   OffsetInfo m_time_offset_info;
   std::map<OffsetInfo, Int64> m_offset_info_list;
 
-  StandardTypes m_standard_types;
+  StandardTypes m_standard_types{ false };
+
+  ItemGroupCollectiveInfo m_all_cells_info;
+  ItemGroupCollectiveInfo m_all_nodes_info;
 
  private:
 
@@ -238,12 +279,16 @@ class VtkHdfV2DataWriter
   _writeDataSetGeneric(const DataInfo& data_info, Int32 nb_dim,
                        Int64 dim1_size, Int64 dim2_size, const DataType* values_data,
                        bool is_collective);
+  void _writeDataSetGeneric(const DataInfo& data_info, Int32 nb_dim,
+                            Int64 dim1_size, Int64 dim2_size, const void* values_data,
+                            const hid_t hdf_datatype_type, bool is_collective);
   void _addInt64ttribute(Hid& hid, const char* name, Int64 value);
   Int64 _readInt64Attribute(Hid& hid, const char* name);
   void _openOrCreateGroups();
   void _closeGroups();
   void _readAndSetOffset(OffsetInfo& offset_info, Int32 wanted_step);
   void _initializeOffsets();
+  void _initializeItemGroupCollectiveInfos(ItemGroupCollectiveInfo& group_info);
 };
 
 /*---------------------------------------------------------------------------*/
@@ -255,7 +300,8 @@ VtkHdfV2DataWriter(IMesh* mesh, ItemGroupCollection groups, bool is_collective_i
 , m_mesh(mesh)
 , m_groups(groups)
 , m_is_collective_io(is_collective_io)
-, m_standard_types(false)
+, m_all_cells_info(mesh->allCells())
+, m_all_nodes_info(mesh->allNodes())
 {
 }
 
@@ -330,6 +376,10 @@ beginWrite(const VariableCollection& vars)
       _addStringAttribute(m_top_group, "Type", "UnstructuredGrid");
     }
   }
+
+  // Initialise les informations collectives sur les groupes de mailles et noeuds
+  _initializeItemGroupCollectiveInfos(m_all_cells_info);
+  _initializeItemGroupCollectiveInfos(m_all_nodes_info);
 
   CellGroup all_cells = m_mesh->allCells();
   NodeGroup all_nodes = m_mesh->allNodes();
@@ -456,39 +506,28 @@ beginWrite(const VariableCollection& vars)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace
+void VtkHdfV2DataWriter::
+_initializeItemGroupCollectiveInfos(ItemGroupCollectiveInfo& group_info)
 {
-  template <typename DataType> class HDFTraits;
+  IParallelMng* pm = m_mesh->parallelMng();
+  Int32 nb_rank = pm->commSize();
+  Int32 my_rank = pm->commRank();
 
-  template <> class HDFTraits<Int64>
-  {
-   public:
+  group_info.m_ranks_size.resize(nb_rank);
+  ArrayView<Int64> all_sizes(group_info.m_ranks_size);
+  Int64 dim1_size = group_info.m_item_group.size();
+  pm->allGather(ConstArrayView<Int64>(1, &dim1_size), all_sizes);
 
-    static hid_t hdfType() { return H5T_NATIVE_INT64; }
-  };
+  Int64 total_size = 0;
+  for (Integer i = 0; i < nb_rank; ++i)
+    total_size += all_sizes[i];
+  group_info.m_total_size = total_size;
 
-  template <> class HDFTraits<Int32>
-  {
-   public:
-
-    static hid_t hdfType() { return H5T_NATIVE_INT32; }
-  };
-
-  template <> class HDFTraits<double>
-  {
-   public:
-
-    static hid_t hdfType() { return H5T_NATIVE_DOUBLE; }
-  };
-
-  template <> class HDFTraits<unsigned char>
-  {
-   public:
-
-    static hid_t hdfType() { return H5T_NATIVE_UINT8; }
-  };
-
-} // namespace
+  Int64 my_index = 0;
+  for (Integer i = 0; i < my_rank; ++i)
+    my_index += all_sizes[i];
+  group_info.m_my_offset = my_index;
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -497,12 +536,11 @@ namespace
  *
  * Pour chaque temps ajouté, la donnée est écrite à la fin des valeurs précédentes
  * sauf en cas de retour arrière où l'offset est dans data_info.
- *
  */
-template <typename DataType> void VtkHdfV2DataWriter::
+void VtkHdfV2DataWriter::
 _writeDataSetGeneric(const DataInfo& data_info, Int32 nb_dim,
-                     Int64 dim1_size, Int64 dim2_size, const DataType* values_data,
-                     bool is_collective)
+                     Int64 dim1_size, Int64 dim2_size, const void* values_data,
+                     const hid_t hdf_type, bool is_collective)
 {
   HGroup& group = data_info.dataset.group;
   const String& name = data_info.dataset.name;
@@ -510,8 +548,6 @@ _writeDataSetGeneric(const DataInfo& data_info, Int32 nb_dim,
   // Si positif ou nul indique l'offset d'écriture. Sinon on écrit à la fin
   Int64 wanted_offset = data_info.offset.value();
 
-  // TODO: utiliser une structure qui encapsule les dimensions pour vérifier
-  // les éventuels débordements de tableau.
   static constexpr int MAX_DIM = 2;
   HDataset dataset;
 
@@ -521,20 +557,19 @@ _writeDataSetGeneric(const DataInfo& data_info, Int32 nb_dim,
   // tout le calcul.
 
   // Dimensions du dataset que le rang courant va écrire.
-  hsize_t local_dims[MAX_DIM];
+  FixedArray<hsize_t, MAX_DIM> local_dims;
   local_dims[0] = dim1_size;
   local_dims[1] = dim2_size;
 
   // Dimensions cumulées de tous les rangs pour l'écriture.
-  hsize_t global_dims[MAX_DIM];
+  FixedArray<hsize_t, MAX_DIM> global_dims;
 
   // Dimensions maximales du DataSet
   // Pour la deuxième dimension, on suppose qu'elle est constante au cours du temps.
-  hsize_t max_dims[MAX_DIM];
+  FixedArray<hsize_t, MAX_DIM> max_dims;
   max_dims[0] = H5S_UNLIMITED;
   max_dims[1] = dim2_size;
 
-  const hid_t hdf_type = HDFTraits<DataType>::hdfType();
   herr_t herror = 0;
   Int64 write_offset = 0;
 
@@ -542,22 +577,28 @@ _writeDataSetGeneric(const DataInfo& data_info, Int32 nb_dim,
   Int64 global_dim1_size = dim1_size;
   Int32 nb_participating_rank = 1;
   if (is_collective) {
-    // En mode collectif il faut récupérer les index de chaque rang.
-    // TODO: pour les variables, ces indices ne dépendent que du groupe associé
-    // et on peut donc conserver l'information pour éviter le gather à chaque fois.
-    IParallelMng* pm = m_mesh->parallelMng();
-    nb_participating_rank = pm->commSize();
-    Int32 my_rank = pm->commRank();
+    if (data_info.m_group_info) {
+      global_dim1_size = data_info.m_group_info->m_total_size;
+      my_index = data_info.m_group_info->m_my_offset;
+    }
+    else {
+      // En mode collectif il faut récupérer les index de chaque rang.
+      // TODO: pour les variables, ces indices ne dépendent que du groupe associé
+      // et on peut donc conserver l'information pour éviter le gather à chaque fois.
+      IParallelMng* pm = m_mesh->parallelMng();
+      nb_participating_rank = pm->commSize();
+      Int32 my_rank = pm->commRank();
 
-    UniqueArray<Int64> all_sizes(nb_participating_rank);
-    pm->allGather(ConstArrayView<Int64>(1, &dim1_size), all_sizes);
+      UniqueArray<Int64> all_sizes(nb_participating_rank);
+      pm->allGather(ConstArrayView<Int64>(1, &dim1_size), all_sizes);
 
-    global_dim1_size = 0;
-    for (Integer i = 0; i < nb_participating_rank; ++i)
-      global_dim1_size += all_sizes[i];
-    my_index = 0;
-    for (Integer i = 0; i < my_rank; ++i)
-      my_index += all_sizes[i];
+      global_dim1_size = 0;
+      for (Integer i = 0; i < nb_participating_rank; ++i)
+        global_dim1_size += all_sizes[i];
+      my_index = 0;
+      for (Integer i = 0; i < my_rank; ++i)
+        my_index += all_sizes[i];
+    }
   }
 
   HProperty write_plist_id;
@@ -565,13 +606,13 @@ _writeDataSetGeneric(const DataInfo& data_info, Int32 nb_dim,
     write_plist_id.createDatasetTransfertCollectiveMPIIO();
 
   HSpace memory_space;
-  memory_space.createSimple(nb_dim, local_dims);
+  memory_space.createSimple(nb_dim, local_dims.data());
 
   HSpace file_space;
 
   if (m_is_first_call) {
     // TODO: regarder comment mieux calculer le chunk
-    hsize_t chunk_dims[MAX_DIM];
+    FixedArray<hsize_t, MAX_DIM> chunk_dims;
     global_dims[0] = global_dim1_size;
     global_dims[1] = dim2_size;
     // Il est important que tout le monde ait la même taille de chunk.
@@ -586,19 +627,18 @@ _writeDataSetGeneric(const DataInfo& data_info, Int32 nb_dim,
            << " global_dim1_size=" << global_dim1_size
            << " chunk0=" << chunk_dims[0]
            << " chunk1=" << chunk_dims[1]
-           << " name=" << name
-           << " nb_byte=" << global_dim1_size * sizeof(DataType);
-    file_space.createSimple(nb_dim, global_dims, max_dims);
+           << " name=" << name;
+    file_space.createSimple(nb_dim, global_dims.data(), max_dims.data());
     HProperty plist_id;
     plist_id.create(H5P_DATASET_CREATE);
-    H5Pset_chunk(plist_id.id(), nb_dim, chunk_dims);
+    H5Pset_chunk(plist_id.id(), nb_dim, chunk_dims.data());
     dataset.create(group, name.localstr(), hdf_type, file_space, HProperty{}, plist_id, HProperty{});
 
     if (is_collective) {
-      hsize_t offset[MAX_DIM];
+      FixedArray<hsize_t, MAX_DIM> offset;
       offset[0] = my_index;
       offset[1] = 0;
-      if ((herror = H5Sselect_hyperslab(file_space.id(), H5S_SELECT_SET, offset, nullptr, local_dims, nullptr)) < 0)
+      if ((herror = H5Sselect_hyperslab(file_space.id(), H5S_SELECT_SET, offset.data(), nullptr, local_dims.data(), nullptr)) < 0)
         ARCANE_THROW(IOException, "Can not select hyperslab '{0}' (err={1})", name, herror);
     }
   }
@@ -612,8 +652,8 @@ _writeDataSetGeneric(const DataInfo& data_info, Int32 nb_dim,
       ARCANE_THROW(IOException, "Bad dimension '{0}' for dataset '{1}' (should be 1)",
                    nb_dimension, name);
     // TODO: Vérifier que la deuxième dimension est la même que celle sauvée.
-    hsize_t original_dims[MAX_DIM];
-    file_space.getDimensions(original_dims, nullptr);
+    FixedArray<hsize_t, MAX_DIM> original_dims;
+    file_space.getDimensions(original_dims.data(), nullptr);
     hsize_t offset0 = original_dims[0];
     // Si on a un offset positif issu de OffsetInfo alors on le prend.
     // Cela signifie qu'on a fait un retour arrière.
@@ -626,11 +666,11 @@ _writeDataSetGeneric(const DataInfo& data_info, Int32 nb_dim,
     write_offset = offset0;
     // Agrandit le dataset.
     // ATTENTION cela invalide file_space. Il faut donc le relire juste après.
-    if ((herror = dataset.setExtent(global_dims)) < 0)
+    if ((herror = dataset.setExtent(global_dims.data())) < 0)
       ARCANE_THROW(IOException, "Can not extent dataset '{0}' (err={1})", name, herror);
     file_space = dataset.getSpace();
 
-    hsize_t offsets[MAX_DIM];
+    FixedArray<hsize_t, MAX_DIM> offsets;
     offsets[0] = offset0 + my_index;
     offsets[1] = 0;
     info(4) << "APPEND nb_dim=" << nb_dim
@@ -638,7 +678,7 @@ _writeDataSetGeneric(const DataInfo& data_info, Int32 nb_dim,
             << " count0=" << local_dims[0]
             << " offsets0=" << offsets[0] << " name=" << name;
 
-    if ((herror = H5Sselect_hyperslab(file_space.id(), H5S_SELECT_SET, offsets, nullptr, local_dims, nullptr)) < 0)
+    if ((herror = H5Sselect_hyperslab(file_space.id(), H5S_SELECT_SET, offsets.data(), nullptr, local_dims.data(), nullptr)) < 0)
       ARCANE_THROW(IOException, "Can not select hyperslab '{0}' (err={1})", name, herror);
   }
 
@@ -651,6 +691,18 @@ _writeDataSetGeneric(const DataInfo& data_info, Int32 nb_dim,
 
   if (!data_info.offset.isNull())
     m_offset_info_list.insert(std::make_pair(data_info.offset, write_offset));
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template <typename DataType> void VtkHdfV2DataWriter::
+_writeDataSetGeneric(const DataInfo& data_info, Int32 nb_dim,
+                     Int64 dim1_size, Int64 dim2_size, const DataType* values_data,
+                     bool is_collective)
+{
+  const hid_t hdf_type = m_standard_types.nativeType(DataType{});
+  _writeDataSetGeneric(data_info, nb_dim, dim1_size, dim2_size, values_data, hdf_type, is_collective);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -738,7 +790,7 @@ void VtkHdfV2DataWriter::
 _addInt64ArrayAttribute(Hid& hid, const char* name, Span<const Int64> values)
 {
   hsize_t len = values.size();
-  hid_t aid = H5Screate_simple(1, &len, 0);
+  hid_t aid = H5Screate_simple(1, &len, nullptr);
   hid_t attr = H5Acreate2(hid.id(), name, H5T_NATIVE_INT64, aid, H5P_DEFAULT, H5P_DEFAULT);
   if (attr < 0)
     ARCANE_FATAL("Can not create attribute '{0}'", name);
@@ -879,17 +931,22 @@ write(IVariable* var, IData* data)
 
   if (var->dimension() != 1)
     ARCANE_FATAL("Only export of scalar item variable is implemented (name={0})", var->name());
+  if (var->isPartial())
+    ARCANE_FATAL("Export of partial variable is not implemented");
 
   HGroup* group = nullptr;
   OffsetInfo offset_info;
+  ItemGroupCollectiveInfo* group_info = nullptr;
   switch (item_kind) {
   case IK_Cell:
     group = &m_cell_data_group;
     offset_info = m_cell_offset_info;
+    group_info = &m_all_cells_info;
     break;
   case IK_Node:
     group = &m_node_data_group;
     offset_info = m_point_offset_info;
+    group_info = &m_all_nodes_info;
     break;
   default:
     ARCANE_FATAL("Only export of 'Cell' or 'Node' variable is implemented (name={0})", var->name());
@@ -897,7 +954,7 @@ write(IVariable* var, IData* data)
 
   ARCANE_CHECK_POINTER(group);
 
-  DataInfo data_info{ { *group, var->name() }, offset_info };
+  DataInfo data_info(DatasetGroupAndName{ *group, var->name() }, offset_info, group_info);
   eDataType data_type = var->dataType();
   switch (data_type) {
   case DT_Real:
