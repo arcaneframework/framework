@@ -418,7 +418,7 @@ arcane_add_test_parallel(parallel2_synchronize_compare testParallel-synchronize1
 arcane_add_test_parallel(parallel2_synchronize_legacymulti testParallel-synchronize1.arc 4 -We,ARCANE_USE_LEGACY_MULTISYNCHRONIZE,1)
 arcane_add_test_parallel(parallel2_synchronize_v1 testParallel-synchronize1.arc 4 -We,ARCANE_SYNCHRONIZE_VERSION,1)
 arcane_add_test_parallel(parallel2_synchronize_v2 testParallel-synchronize1.arc 4 -We,ARCANE_SYNCHRONIZE_VERSION,2)
-arcane_add_test_parallel(parallel2_synchronize_v3 testParallel-synchronize1.arc 4 -We,ARCANE_SYNCHRONIZE_VERSION,3)
+arcane_add_test_parallel(parallel2_synchronize_v3 testParallel-synchronize1.arc 4 -We,ARCANE_SYNCHRONIZE_VERSION,3 -We,ARCANE_CHECK_SYNCHRONIZE_COHERENCE,1)
 arcane_add_test_parallel(parallel2_synchronize_v4 testParallel-synchronize1.arc 4 -We,ARCANE_SYNCHRONIZE_VERSION,4 -We,ARCANE_SYNCHRONIZE_NB_SEQUENCE,3)
 arcane_add_test_parallel(parallel2_synchronize_v4_b1024 testParallel-synchronize1.arc 4 -We,ARCANE_SYNCHRONIZE_VERSION,4 -We,ARCANE_SYNCHRONIZE_BLOCK_SIZE,1024)
 arcane_add_test_parallel(parallel2_synchronize testParallel-synchronize2.arc 8)
