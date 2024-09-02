@@ -18,6 +18,7 @@
 #include "arcane/utils/FatalErrorException.h"
 #include "arcane/utils/ITraceMng.h"
 #include "arcane/utils/IMemoryRessourceMng.h"
+#include "arcane/utils/ValueConvert.h"
 #include "arcane/utils/internal/MemoryBuffer.h"
 
 #include "arcane/core/VariableSynchronizerEventArgs.h"
@@ -224,6 +225,10 @@ VariableSynchronizer(IParallelMng* pm, const ItemGroup& group,
       m_trace_sync = true;
   }
 
+  // Indique si on vérifie la cohérence des variables synchronisées
+  if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_CHECK_SYNCHRONIZE_COHERENCE",true))
+    m_is_check_coherence = (v.value()!=0);
+
   m_default_message = _buildMessage();
   m_partial_message = makeRef<SyncMessage>(_buildMessage(m_partial_sync_info));
 }
@@ -424,6 +429,8 @@ _synchronize(IVariable* var, SyncMessage* message)
   message->initialize(var);
 
   IParallelMng* pm = m_parallel_mng;
+  if (m_is_check_coherence)
+    MessagePassing::namedBarrier(pm,var->name());
   debug(Trace::High) << " Proc " << pm->commRank() << " Sync variable " << var->fullName();
   if (m_trace_sync) {
     info() << " Synchronize variable " << var->fullName()
