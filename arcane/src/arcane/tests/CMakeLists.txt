@@ -628,6 +628,7 @@ arcane_add_test_script(continue_hydro3_cartesian_small continue_hydro3_cartesian
 #arcane_add_test_script(continue_hydro3_cartesian_small_4shm continue_hydro3_cartesian_small_4shm.xml)
 arcane_add_test_parallel(hydro3_cartesian_8proc testHydro-3-cartesian.arc 8 "-m 50")
 arcane_add_test_parallel_all(hydro3_meshservice testHydro-3-meshservice.arc 3 4 -m 50)
+arcane_add_test_generic(hydro3_meshservice_subdivide1 CASE_FILE testHydro-3-meshservice-subdivide1.arc MP_SEQUENTIAL MP_SHM ARGS "-m 50")
 arcane_add_test_parallel_all(hydro3_checkpoint_meshservice testHydro-3-checkpoint-meshservice.arc 3 4 -c 3 -m 10)
 arcane_add_test(hydro5 testHydro-5.arc -m 50 -We,ARCANE_MASTER_HAS_OUTPUT_FILE,1)
 arcane_add_test(hydro5_message_passing_prof testHydro-5.arc -m 50 -We,ARCANE_MESSAGE_PASSING_PROFILING,JSON)

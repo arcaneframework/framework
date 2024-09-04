@@ -92,6 +92,19 @@
       </description>
     </service-instance>
 
+    <!-- Service spécifique de lecture de maillage -->
+    <service-instance
+      name = "subdivider"
+      type = "Arcane::IMeshSubdivider"
+      default = "ArcaneBasicMeshSubdivider"
+      optional = "true"
+      >
+      <userclass>User</userclass>
+      <description>
+        Service permettant de subdiviser les éléments du maillage.
+      </description>
+    </service-instance>
+
     <!-- Options pour initialiser les variables avec certaines valeurs -->
     <complex type="Init" name="initialization">
       <userclass>User</userclass>
