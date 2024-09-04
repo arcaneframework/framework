@@ -119,6 +119,7 @@
 #include "arcane/core/IMeshModifier.h"
 #include "arcane/core/MeshEvents.h"
 #include "arcane/core/IExternalPlugin.h"
+#include "arcane/core/IMeshSubdivider.h"
 
 #include "arcane/core/IMeshInitialAllocator.h"
 #include "arcane/core/internal/IItemFamilyInternal.h"

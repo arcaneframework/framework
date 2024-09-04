@@ -118,6 +118,7 @@ set(ARCANE_ORIGINAL_SOURCES
   IMeshInitialAllocator.h
   IMeshModifier.h
   IMeshReader.h
+  IMeshSubdivider.h
   IMeshUtilities.h
   IModule.h
   IModuleFactory.h
