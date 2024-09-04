@@ -1,15 +1,18 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ArcaneCaseMeshService.cc                                    (C) 2000-2023 */
+/* ArcaneCaseMeshService.cc                                    (C) 2000-2024 */
 /*                                                                           */
 /* Service Arcane gérant un maillage du jeu de données.                      */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+#include "arcane/utils/ApplicationInfo.h"
+#include "arcane/utils/CommandLineArguments.h"
 
 #include "arcane/core/ServiceFactory.h"
 #include "arcane/core/ServiceBuilder.h"
@@ -28,9 +31,9 @@
 #include "arcane/core/IMeshFactoryMng.h"
 #include "arcane/core/IGhostLayerMng.h"
 #include "arcane/core/MeshPartInfo.h"
+#include "arcane/core/IMeshSubdivider.h"
 #include "arcane/core/internal/StringVariableReplace.h"
-#include "arcane/utils/ApplicationInfo.h"
-#include "arcane/utils/CommandLineArguments.h"
+
 #include "arcane/impl/ArcaneCaseMeshService_axl.h"
 
 /*---------------------------------------------------------------------------*/
@@ -160,7 +163,10 @@ allocateMeshItems()
   _setGhostLayerInfos();
 
   m_mesh_builder->allocateMeshItems(m_mesh);
-
+  IMeshSubdivider* subdivider = options()->subdivider();
+  if (subdivider)
+    subdivider->subdivideMesh(m_mesh);
+  
   _initializeVariables();
 }
 

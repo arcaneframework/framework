@@ -3,6 +3,7 @@ set( ARCANE_SOURCES
   Application.h
   ArcaneCaseMeshMasterService.cc
   ArcaneCaseMeshService.cc
+  ArcaneBasicMeshSubdividerService.cc
   ArcaneSimpleExecutor.h
   ArcaneSimpleExecutor.cc
   ArcaneSession.cc
@@ -167,4 +168,5 @@ set(AXL_FILES
   ArcaneCaseMeshMasterService
   ArcaneCaseMeshService
   MeshPartitionerTesterService
+  ArcaneBasicMeshSubdividerService
 )
