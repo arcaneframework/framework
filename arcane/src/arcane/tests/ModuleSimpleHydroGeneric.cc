@@ -90,6 +90,7 @@ class ModuleSimpleHydroGeneric
   void applyEquationOfState() override { m_service->applyEquationOfState(); }
   void computeDeltaT() override{ m_service->computeDeltaT(); }
   void doOneIteration() override;
+  void onMeshChanged() override {}
 
  private:
 
