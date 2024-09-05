@@ -175,7 +175,7 @@ class DumpWEnsight7
     : m_group(grp)
     , m_part_id(id)
     {
-      m_general_item_types = std::make_unique<VariableItemInt32>(VariableBuildInfo{ m_group.mesh(), "GeneralItemTypesGroup" + m_group.name() }, m_group.itemKind());
+      m_general_item_types = std::make_unique<VariableItemInt32>(VariableBuildInfo{ m_group.mesh(), "GeneralItemTypesGroup" + m_group.name(), m_group.itemFamily()->name() }, m_group.itemKind());
       _init(use_degenerated_hexa);
     }
     Integer totalNbElement() const
