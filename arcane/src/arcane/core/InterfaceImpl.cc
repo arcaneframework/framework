@@ -229,6 +229,16 @@ reserveMemoryForNbSourceItems([[maybe_unused]] Int32 n,
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+void IIncrementalItemSourceConnectivity::
+_internalNotifySourceItemsAdded(Int32ConstArrayView local_ids)
+{
+  for (Int32 lid : local_ids)
+    notifySourceItemAdded(ItemLocalId(lid));
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 void IPostProcessorWriter::
 setMesh([[maybe_unused]] IMesh* mesh)
 {

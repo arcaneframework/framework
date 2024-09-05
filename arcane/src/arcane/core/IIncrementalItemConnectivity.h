@@ -1,23 +1,23 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IIncrementalItemConnectivity.h                              (C) 2000-2023 */
+/* IIncrementalItemConnectivity.h                              (C) 2000-2024 */
 /*                                                                           */
 /* Interface de connectivité incrémentale des entités.                       */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_IINCREMENTALITEMCONNECTIVITY_H
-#define ARCANE_IINCREMENTALITEMCONNECTIVITY_H
+#ifndef ARCANE_CORE_IINCREMENTALITEMCONNECTIVITY_H
+#define ARCANE_CORE_IINCREMENTALITEMCONNECTIVITY_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/ArrayView.h"
 
-#include "arcane/ItemTypes.h"
-#include "arcane/IItemConnectivityAccessor.h"
+#include "arcane/core/ItemTypes.h"
+#include "arcane/core/IItemConnectivityAccessor.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -27,7 +27,9 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
+/*!
+ * \brief Interface de la source d'une connectivité incrémentale
+ */
 class ARCANE_CORE_EXPORT IIncrementalItemSourceConnectivity
 {
   ARCCORE_DECLARE_REFERENCE_COUNTED_INCLASS_METHODS();
@@ -54,11 +56,11 @@ class ARCANE_CORE_EXPORT IIncrementalItemSourceConnectivity
    * L'appel à cette méthode est optionnel mais permet d'éviter de multiples
    * réallocations lors d'appels successifs à notifySourceItemAdded().
    *
-   * Si \a pre_alloc_connectivity est vrai, préalloue aussi les la liste des
+   * Si \a pre_alloc_connectivity est vrai, pré-alloue aussi les la liste des
    * connectivités en fonction de la valeur de preAllocatedSize(). Par exemple
-   * si preAllocatedSize() vaut 4 et si \a n vaut 10000, on va préallouer
+   * si preAllocatedSize() vaut 4 et si \a n vaut 10000, on va pré-allouer
    * pour 40000 connectivités. Pour éviter une surconsommation mémoire inutile,
-   * il ne faut préallouer les connectivités que si on est sur qu'on va les utiliser.
+   * il ne faut pré-allouer les connectivités que si on est sur qu'on va les utiliser.
    */
   virtual void reserveMemoryForNbSourceItems(Int32 n, bool pre_alloc_connectivity);
 
@@ -67,11 +69,20 @@ class ARCANE_CORE_EXPORT IIncrementalItemSourceConnectivity
 
   //! Retourne une référence sur l'instance
   virtual Ref<IIncrementalItemSourceConnectivity> toSourceReference() = 0;
+
+ private:
+
+  // Interfaces réservées à Arcane
+
+  //! Notifie la connectivité que les entités \a items ont été ajoutées à la famille source
+  virtual void _internalNotifySourceItemsAdded(Int32ConstArrayView items);
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
+/*!
+ * \brief Interface de la cible d'une connectivité incrémentale
+ */
 class ARCANE_CORE_EXPORT IIncrementalItemTargetConnectivity
 {
   ARCCORE_DECLARE_REFERENCE_COUNTED_INCLASS_METHODS();
@@ -108,7 +119,7 @@ class ARCANE_CORE_EXPORT IIncrementalItemConnectivity
  public:
 
   //TODO rendre 'protected' une fois que tout le monde utilisera le compteur de référence
-  virtual ~IIncrementalItemConnectivity() = default;
+  ~IIncrementalItemConnectivity() = default;
 
  public:
 
@@ -147,10 +158,10 @@ class ARCANE_CORE_EXPORT IIncrementalItemConnectivity
    */
   virtual Int32 maxNbConnectedItem() const = 0;
 
-  //! Nombre d'entités préalloués pour la connectivité de chaque entité
+  //! Nombre d'entités pré-alloués pour la connectivité de chaque entité
   virtual Integer preAllocatedSize() const = 0;
 
-  //! Positionne le nombre d'entités à préallouer pour la connectivité de chaque entité
+  //! Positionne le nombre d'entités à pré-allouer pour la connectivité de chaque entité
   virtual void setPreAllocatedSize(Integer value) = 0;
 
   //! Sort sur le flot \a out des statistiques sur l'utilisation et la mémoire utilisée
