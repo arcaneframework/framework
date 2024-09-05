@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IncrementalItemConnectivity.cc                              (C) 2000-2023 */
+/* IncrementalItemConnectivity.cc                              (C) 2000-2024 */
 /*                                                                           */
 /* Connectivité incrémentale des entités.                                    */
 /*---------------------------------------------------------------------------*/
@@ -16,18 +16,17 @@
 #include "arcane/utils/StringBuilder.h"
 #include "arcane/utils/ArgumentException.h"
 
-#include "arcane/IMesh.h"
-#include "arcane/IItemFamily.h"
-#include "arcane/ItemPrinter.h"
-#include "arcane/ConnectivityItemVector.h"
-#include "arcane/MeshUtils.h"
-#include "arcane/ObserverPool.h"
-#include "arcane/Properties.h"
-#include "arcane/IndexedItemConnectivityView.h"
-#include "arcane/mesh/IndexedItemConnectivityAccessor.h"
-
+#include "arcane/core/IMesh.h"
+#include "arcane/core/IItemFamily.h"
+#include "arcane/core/ConnectivityItemVector.h"
+#include "arcane/core/MeshUtils.h"
+#include "arcane/core/ObserverPool.h"
+#include "arcane/core/Properties.h"
+#include "arcane/core/IndexedItemConnectivityView.h"
 #include "arcane/core/internal/IDataInternal.h"
 #include "arcane/core/internal/IItemFamilyInternal.h"
+
+#include "arcane/mesh/IndexedItemConnectivityAccessor.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -103,7 +102,8 @@ toTargetReference()
 class IncrementalItemConnectivityContainer
 {
  public:
-  struct Idx
+
+  /*struct Idx
   {
     //! Nombre d'entités connecté
     Int32 nb;
@@ -111,7 +111,7 @@ class IncrementalItemConnectivityContainer
     Int32 index;
 
     Idx(Int32 n,Int32 i) : nb(n), index(i){}
-  };
+  };*/
  public:
   IncrementalItemConnectivityContainer(IMesh* mesh,const String& var_name)
   : m_var_name(var_name),
@@ -698,6 +698,30 @@ notifySourceItemAdded(ItemLocalId item)
 
   m_connectivity_nb_item[lid] = 0;
   m_connectivity_index[lid] = 0;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void IncrementalItemConnectivity::
+_internalNotifySourceItemsAdded(ConstArrayView<Int32> local_ids)
+{
+  // Pré-calcule le maximum des local_ids pour le redimensionnement.
+  Int32 nb_item = local_ids.size();
+  if (nb_item <= 0)
+    return;
+  Int32 max_lid = local_ids[0];
+  for (Int32 lid : local_ids)
+    max_lid = math::max(max_lid, lid);
+
+  m_p->_checkResize(max_lid);
+  _notifyConnectivityIndexChanged();
+  _notifyConnectivityNbItemChanged();
+
+  for (Int32 lid : local_ids) {
+    m_connectivity_nb_item[lid] = 0;
+    m_connectivity_index[lid] = 0;
+  }
 }
 
 /*---------------------------------------------------------------------------*/
