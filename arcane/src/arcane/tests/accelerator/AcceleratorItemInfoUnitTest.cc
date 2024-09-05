@@ -19,6 +19,7 @@
 #include "arcane/core/ItemGroup.h"
 #include "arcane/core/ItemGenericInfoListView.h"
 #include "arcane/core/IMesh.h"
+#include "arcane/core/UnstructuredMeshConnectivity.h"
 
 #include "arcane/accelerator/core/IAcceleratorMng.h"
 #include "arcane/accelerator/core/RunQueue.h"
@@ -154,7 +155,10 @@ _executeTest2()
   ValueChecker vc(A_FUNCINFO);
   VariableFaceByte var_subdomain_boundary(VariableBuildInfo(mesh(), "TestSubDomainBoundary"));
   VariableFaceByte var_subdomain_boundary_outside(VariableBuildInfo(mesh(), "TestSubDomainBoundaryOutside"));
-
+  VariableFaceInt32 var_back_cell_id(VariableBuildInfo(mesh(), "TestFaceBackCellLocalId"));
+  VariableFaceInt32 var_front_cell_id(VariableBuildInfo(mesh(), "TestFaceFrontCellLocalId"));
+  UnstructuredMeshConnectivityView connectivity_view(mesh());
+  auto fcc = connectivity_view.faceCell();
   auto* queue = subDomain()->acceleratorMng()->defaultQueue();
   FaceInfoListView faces_info(mesh()->faceFamily());
   {
@@ -162,22 +166,30 @@ _executeTest2()
 
     auto out_subdomain_boundary = viewOut(command, var_subdomain_boundary);
     auto out_subdomain_boundary_outside = viewOut(command, var_subdomain_boundary_outside);
+    auto out_front_cell_id = viewOut(command, var_front_cell_id);
+    auto out_back_cell_id = viewOut(command, var_back_cell_id);
 
     command << RUNCOMMAND_ENUMERATE (Face, face, allFaces())
     {
       out_subdomain_boundary[face] = faces_info.isSubDomainBoundary(face);
       out_subdomain_boundary_outside[face] = faces_info.isSubDomainBoundaryOutside(face);
+      Int32 back_cell_index = faces_info.backCellIndex(face);
+      out_back_cell_id[face] = (back_cell_index == -1) ? NULL_ITEM_LOCAL_ID : fcc.cellId(face, back_cell_index);
+      Int32 front_cell_index = faces_info.frontCellIndex(face);
+      out_front_cell_id[face] = (front_cell_index == -1) ? NULL_ITEM_LOCAL_ID : fcc.cellId(face, front_cell_index);
     };
   }
 
   // Vérification
   ENUMERATE_ (Face, iface, allFaces()) {
     Face face = *iface;
-    bool sb = var_subdomain_boundary[face]!=0;
-    bool sbo = var_subdomain_boundary_outside[face]!=0;
+    bool sb = var_subdomain_boundary[face] != 0;
+    bool sbo = var_subdomain_boundary_outside[face] != 0;
 
-    vc.areEqual(face.isSubDomainBoundary(),sb,"SubDomainBoundary");
-    vc.areEqual(face.isSubDomainBoundaryOutside(),sbo,"SubDomainBoundaryOutside");
+    vc.areEqual(face.isSubDomainBoundary(), sb, "SubDomainBoundary");
+    vc.areEqual(face.isSubDomainBoundaryOutside(), sbo, "SubDomainBoundaryOutside");
+    vc.areEqual(face.backCellId(), var_back_cell_id[face], "BackCellId");
+    vc.areEqual(face.frontCellId(), var_front_cell_id[face], "FrontCellId");
   }
 }
 

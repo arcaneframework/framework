@@ -116,7 +116,7 @@ class MeshUnitTest
   public:
     virtual void applyVertex(ItemVectorView group)
     { info() << "NB Vertex = " << group.size(); }
-    virtual void applyLine2(ItemVectorView group) 
+    virtual void applyLine2(ItemVectorView group)
     { info() << "NB Line2 = " << group.size(); }
     virtual void applyTriangle3(ItemVectorView group) 
     { info() << "NB Triangle3 = " << group.size(); }
@@ -1520,8 +1520,26 @@ _testFaces()
 
   ENUMERATE_(Face,iface,allFaces()){
     Face face = *iface;
+    Int32 flags = face.itemBase().flags();
     vc.areEqual(face.backCell().itemLocalId(),face.backCellId(),"BackCell");
     vc.areEqual(face.frontCell().itemLocalId(),face.frontCellId(),"FrontCell");
+    vc.areEqual(face.isSubDomainBoundary(), ItemFlags::isSubDomainBoundary(flags), "IsSubDomainBoundary");
+    vc.areEqual(!face.backCell().null(), ItemFlags::hasBackCell(flags), "HasBackCell");
+
+    {
+      Int32 back_cell_index = ItemFlags::backCellIndex(flags);
+      if (back_cell_index < 0)
+        vc.areEqual(face.backCell(), Cell(), "BackCellIndex 0");
+      else
+        vc.areEqual(face.backCell(), face.cell(back_cell_index), "BackCellIndex 1");
+    }
+    {
+      Int32 front_cell_index = ItemFlags::frontCellIndex(flags);
+      if (front_cell_index < 0)
+        vc.areEqual(face.frontCell(), Cell(), "FrontCellIndex 0");
+      else
+        vc.areEqual(face.frontCell(), face.cell(front_cell_index), "FrontCellIndex 1");
+    }
   }
 
   ENUMERATE_(Cell,icell,allCells()){
