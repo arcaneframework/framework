@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemInternalMap.h                                           (C) 2000-2023 */
+/* ItemInternalMap.h                                           (C) 2000-2024 */
 /*                                                                           */
 /* Tableau associatif de ItemInternal.                                       */
 /*---------------------------------------------------------------------------*/
@@ -17,6 +17,7 @@
 #include "arcane/utils/HashTableMap.h"
 
 #include "arcane/mesh/MeshGlobal.h"
+#include "arcane/core/ItemInternal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -45,11 +46,39 @@ class ItemInternalMap
 : public HashTableMapT<Int64,ItemInternal*>
 {
  private:
-  typedef HashTableMapT<Int64,ItemInternal*> BaseClass;
+
+  using BaseClass = HashTableMapT<Int64, ItemInternal*>;
+
  public:
+
   ItemInternalMap();
+
  public:
+
   void notifyUniqueIdsChanged();
+  /*!
+   * \brief Fonction template pour itérer sur les entités de l'instance.
+   *
+   * Le type de l'arguments template peut-être n'importe quel type d'entité
+   * qui peut être construit à partir d'un impl::ItemBase.
+   * \code
+   * ItemInternalMap item_map = ...
+   * item_map.eachItemBase([&](Item item){
+   *   std::cout << "LID=" << item_base.localId() << "\n";
+   * });
+   * \endcode
+   */
+  template <class Lambda> void
+  eachItem(const Lambda& lambda)
+  {
+    ConstArrayView<BaseClass::Data*> b = buckets();
+    for (Integer k = 0, n = b.size(); k < n; ++k) {
+      Data* nbid = b[k];
+      for (; nbid; nbid = nbid->next()) {
+        lambda(Arcane::impl::ItemBase(nbid->value()));
+      }
+    }
+  }
 };
 
 /*---------------------------------------------------------------------------*/

@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemInternalMap.cc                                          (C) 2000-2021 */
+/* ItemInternalMap.cc                                          (C) 2000-2024 */
 /*                                                                           */
 /* Tableau associatif de ItemInternal.                                       */
 /*---------------------------------------------------------------------------*/
@@ -17,7 +17,7 @@
 #include "arcane/utils/Iterator.h"
 #include "arcane/utils/FatalErrorException.h"
 
-#include "arcane/ItemInternal.h"
+#include "arcane/core/Item.h"
 
 #include <unordered_set>
 
@@ -42,17 +42,17 @@ ItemInternalMap()
 void ItemInternalMap::
 notifyUniqueIdsChanged()
 {
-  BaseClass& c = *this;
+  ItemInternalMap& c = *this;
 
   if (arcaneIsCheck()){
     // Vérifie qu'on n'a pas deux fois la même clé.
     std::unordered_set<Int64> uids;
-    ENUMERATE_ITEM_INTERNAL_MAP_DATA(nbid,c){
-      Int64 uid = nbid->value()->uniqueId().asInt64();
+    c.eachItem([&](Item item) {
+      Int64 uid = item.uniqueId().asInt64();
       if (uids.find(uid)!=uids.end())
         ARCANE_FATAL("Duplicated uniqueId '{0}'",uid);
       uids.insert(uid);
-    }
+    });
   }
 
   ENUMERATE_ITEM_INTERNAL_MAP_DATA(nbid,c){
