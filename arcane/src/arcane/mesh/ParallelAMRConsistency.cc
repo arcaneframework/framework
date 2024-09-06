@@ -5,44 +5,40 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/*  ParallelAMRConsistency.cc                                  (C) 2000-2023 */
+/*  ParallelAMRConsistency.cc                                  (C) 2000-2024 */
 /*                                                                           */
 /* Consistence parallèle des uid des noeuds/faces dans le cas AMR            */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/String.h"
 #include "arcane/utils/HashTableMap.h"
 #include "arcane/utils/Real3.h"
-#include "arcane/utils/OStringStream.h"
 #include "arcane/utils/NotImplementedException.h"
 #include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/ITraceMng.h"
 #include "arcane/utils/Collection.h"
-#include "arcane/utils/Enumerator.h"
 
 #include "arcane/mesh/DynamicMesh.h"
 #include "arcane/mesh/FaceFamily.h"
 #include "arcane/mesh/MapCoordToUid.h"
 #include "arcane/mesh/ParallelAMRConsistency.h"
 
-#include "arcane/IMesh.h"
-#include "arcane/IMeshSubMeshTransition.h"
-#include "arcane/ItemEnumerator.h"
-#include "arcane/ItemGroup.h"
-#include "arcane/Item.h"
-#include "arcane/ISubDomain.h"
-#include "arcane/VariableTypes.h"
-#include "arcane/IItemFamily.h"
-#include "arcane/ItemCompare.h"
-#include "arcane/IParallelMng.h"
-#include "arcane/GeometricUtilities.h"
-#include "arcane/SerializeBuffer.h"
-#include "arcane/ItemPrinter.h"
-#include "arcane/IMeshUtilities.h"
+#include "arcane/core/IMesh.h"
+#include "arcane/core/IMeshSubMeshTransition.h"
+#include "arcane/core/ItemEnumerator.h"
+#include "arcane/core/ItemGroup.h"
+#include "arcane/core/Item.h"
+#include "arcane/core/ISubDomain.h"
+#include "arcane/core/VariableTypes.h"
+#include "arcane/core/IItemFamily.h"
+#include "arcane/core/ItemCompare.h"
+#include "arcane/core/IParallelMng.h"
+#include "arcane/core/GeometricUtilities.h"
+#include "arcane/core/SerializeBuffer.h"
+#include "arcane/core/ItemPrinter.h"
+#include "arcane/core/IMeshUtilities.h"
 
 #include <set>
-#include <map>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -600,8 +596,7 @@ makeNewItemsConsistent2(MapCoordToUid& node_finder, MapCoordToUid& face_finder)
     throw FatalErrorException(A_FUNCINFO, "can not obtain DynamicMesh");
   ItemInternalMap& faces_map = mesh->facesMap();
 
-  ENUMERATE_ITEM_INTERNAL_MAP_DATA(nbid,faces_map){
-    Face face(nbid->value());
+  faces_map.eachItem([&](Face face) {
     bool is_sub_domain_boundary_face = false;
     if (face.itemBase().flags() & ItemFlags::II_SubDomainBoundary){
       is_sub_domain_boundary_face = true; // true is not needed
@@ -630,7 +625,7 @@ makeNewItemsConsistent2(MapCoordToUid& node_finder, MapCoordToUid& face_finder)
           edge.mutableItemBase().addFlags(ItemFlags::II_Shared | ItemFlags::II_SubDomainBoundary);
       }
     }
-  }
+  });
 
   UniqueArray<ItemUniqueId> active_faces_to_send(arcaneCheckArraySize(active_faces_set.size()));
   UniqueArray<ItemUniqueId> active_nodes_to_send(arcaneCheckArraySize(active_nodes_set.size()));

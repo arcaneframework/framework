@@ -2194,8 +2194,7 @@ removeNeedRemoveMarkedItems()
   items_to_remove.reserve(1000);
   items_to_remove_lids.reserve(1000);
 
-  ENUMERATE_ITEM_INTERNAL_MAP_DATA(nbid,item_map){
-    ItemInternal* item = nbid->value();
+  item_map.eachValue([&](ItemInternal* item) {
     Integer f = item->flags();
     if (f & ItemFlags::II_NeedRemove){
       f &= ~ItemFlags::II_NeedRemove & ItemFlags::II_Suppressed;
@@ -2203,7 +2202,7 @@ removeNeedRemoveMarkedItems()
       items_to_remove.add(item);
       items_to_remove_lids.add(item->localId());
     }
-  }
+  });
   info() << "Number of " << itemKind() << " of family "<< name()<<" to remove: " << items_to_remove.size();
   if (items_to_remove.size() == 0)
     return;

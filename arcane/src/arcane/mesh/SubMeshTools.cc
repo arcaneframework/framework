@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* SubMeshTools.cc                                             (C) 2000-2023 */
+/* SubMeshTools.cc                                             (C) 2000-2024 */
 /*                                                                           */
 /* Algorithmes spécifiques aux sous-maillages.                               */
 /*---------------------------------------------------------------------------*/
@@ -13,23 +13,24 @@
 
 #include "arcane/mesh/SubMeshTools.h"
 
-// Includes génériques non spécifiques à l'implémentation DynamicMesh
-#include "arcane/Variable.h"
-#include "arcane/SharedVariable.h"
-#include "arcane/IParallelMng.h"
-#include "arcane/MeshToMeshTransposer.h"
-#include "arcane/IVariableSynchronizer.h"
-#include "arcane/IParallelExchanger.h"
-#include "arcane/utils/ScopedPtr.h"
-#include "arcane/ISerializer.h"
-#include "arcane/ISerializeMessage.h"
-#include "arcane/IMeshModifier.h"
-#include "arcane/ItemPrinter.h"
 #include "arcane/utils/ITraceMng.h"
-#include "arcane/TemporaryVariableBuildInfo.h"
-#include "arcane/ParallelMngUtils.h"
+#include "arcane/utils/ScopedPtr.h"
 
-// Inlcudes spécifiques à l'implémentation à base de DynamicMesh
+// Includes génériques non spécifiques à l'implémentation DynamicMesh
+#include "arcane/core/Variable.h"
+#include "arcane/core/SharedVariable.h"
+#include "arcane/core/IParallelMng.h"
+#include "arcane/core/MeshToMeshTransposer.h"
+#include "arcane/core/IVariableSynchronizer.h"
+#include "arcane/core/IParallelExchanger.h"
+#include "arcane/core/ISerializer.h"
+#include "arcane/core/ISerializeMessage.h"
+#include "arcane/core/IMeshModifier.h"
+#include "arcane/core/ItemPrinter.h"
+#include "arcane/core/TemporaryVariableBuildInfo.h"
+#include "arcane/core/ParallelMngUtils.h"
+
+// Includes spécifiques à l'implémentation à base de DynamicMesh
 #include "arcane/mesh/DynamicMesh.h"
 #include "arcane/mesh/DynamicMeshIncrementalBuilder.h"
 #include "arcane/mesh/ItemFamily.h"
@@ -106,12 +107,11 @@ _ghostItems(ItemFamily * family)
   DynamicMeshKindInfos::ItemInternalMap& items_map = family->itemsMap();
   Integer sid = m_parallel_mng->commRank();
 
-  ENUMERATE_ITEM_INTERNAL_MAP_DATA(nbid,items_map){
-    ItemInternal* item = nbid->value();
-    if (item->owner() != sid){
-      items_to_remove.add(item);
+  items_map.eachItem([&](Item item) {
+    if (item.owner() != sid) {
+      items_to_remove.add(item.internal());
     }
-  }
+  });
   return items_to_remove;
 }
 
@@ -124,13 +124,12 @@ _floatingItems(ItemFamily * family)
   SharedArray<ItemInternal*> items_to_remove;
   items_to_remove.reserve(1000);
   DynamicMeshKindInfos::ItemInternalMap& items_map = family->itemsMap();
-  ENUMERATE_ITEM_INTERNAL_MAP_DATA(nbid,items_map){
-    ItemInternal* item = nbid->value();
-    if (!item->isSuppressed() && item->nbCell() == 0 && !item->isOwn()){
-      debug(Trace::High) << "Floating item to remove " << ItemPrinter(item);
-      items_to_remove.add(item);
+  items_map.eachItem([&](impl::ItemBase item) {
+    if (!item.isSuppressed() && item.nbCell() == 0 && !item.isOwn()) {
+      debug(Trace::High) << "Floating item to remove " << ItemPrinter(Item(item));
+      items_to_remove.add(item.itemInternal());
     }
-  }
+  });
   return items_to_remove;
 }
 

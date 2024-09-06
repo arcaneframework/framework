@@ -5,13 +5,12 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* GhostLayerBuilder.cc                                        (C) 2000-2022 */
+/* GhostLayerBuilder.cc                                        (C) 2000-2024 */
 /*                                                                           */
-/* Construction des couches fantomes.                                        */
+/* Construction des couches fantômes.                                        */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/Iterator.h"
 #include "arcane/utils/ArgumentException.h"
 #include "arcane/utils/NotImplementedException.h"
 #include "arcane/utils/NotSupportedException.h"
@@ -23,23 +22,21 @@
 #include "arcane/utils/OStringStream.h"
 #include "arcane/utils/CheckedConvert.h"
 
-#include "arcane/ItemTypeMng.h"
-#include "arcane/MeshUtils.h"
-#include "arcane/IParallelMng.h"
-#include "arcane/SerializeBuffer.h"
-#include "arcane/ItemPrinter.h"
-#include "arcane/IParallelExchanger.h"
-#include "arcane/ISerializeMessage.h"
-#include "arcane/Timer.h"
-#include "arcane/IItemFamilyPolicyMng.h"
-#include "arcane/IItemFamilySerializer.h"
-#include "arcane/ParallelMngUtils.h"
+#include "arcane/core/ItemTypeMng.h"
+#include "arcane/core/MeshUtils.h"
+#include "arcane/core/IParallelMng.h"
+#include "arcane/core/SerializeBuffer.h"
+#include "arcane/core/ItemPrinter.h"
+#include "arcane/core/IParallelExchanger.h"
+#include "arcane/core/ISerializeMessage.h"
+#include "arcane/core/IItemFamilyPolicyMng.h"
+#include "arcane/core/IItemFamilySerializer.h"
+#include "arcane/core/ParallelMngUtils.h"
+#include "arcane/core/IGhostLayerMng.h"
 
 #include "arcane/mesh/DynamicMesh.h"
 #include "arcane/mesh/GhostLayerBuilder.h"
 #include "arcane/mesh/OneMeshItemAdder.h"
-#include "arcane/Connectivity.h"
-#include "arcane/IGhostLayerMng.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -216,10 +213,9 @@ _addOneGhostLayerV2()
   ItemInternalMap& nodes_map = m_mesh->nodesMap(); // Localise les modifications
 
   const int shared_and_boundary_flags = ItemFlags::II_Shared | ItemFlags::II_SubDomainBoundary;
-  // Parcours les faces et marque les noeuds, arêtes et faces frontieres
-  ENUMERATE_ITEM_INTERNAL_MAP_DATA(iid,faces_map){
-    Face face = iid->value();
-    ItemInternal* face_internal = iid->value();
+  // Parcours les faces et marque les nœuds, arêtes et faces frontières
+  faces_map.eachItem([&](Face face) {
+    ItemInternal* face_internal = face.internal();
     if (is_verbose){
       _printItem(face_internal,ostr());
       ostr() << '\n';
@@ -240,23 +236,21 @@ _addOneGhostLayerV2()
       for( Item iedge : face.edges() )
         iedge.mutableItemBase().addFlags(shared_and_boundary_flags);
     }
-  }
+  });
 
   Integer boundary_nodes_uid_count = 0;
 
   // Parcours les noeuds et ajoute les noeuds frontières
   Int64 my_max_node_uid = NULL_ITEM_UNIQUE_ID;
-  ENUMERATE_ITEM_INTERNAL_MAP_DATA(iid,nodes_map){
-    ItemInternal* node = iid->value();
-    Int32 f = node->flags();
-    if (f & ItemFlags::II_Shared){
-      Int64 node_uid = node->uniqueId();
-      if (node_uid>my_max_node_uid)
+  nodes_map.eachItem([&](Node node) {
+    Int32 f = node.itemBase().flags();
+    if (f & ItemFlags::II_Shared) {
+      Int64 node_uid = node.uniqueId();
+      if (node_uid > my_max_node_uid)
         my_max_node_uid = node_uid;
-      //boundary_nodes_uid.add(node_uid);
       ++boundary_nodes_uid_count;
     }
-  }
+  });
 
   Int64 global_max_node_uid = pm->reduce(Parallel::ReduceMax,my_max_node_uid);
   debug() << "NB BOUNDARY NODE=" << boundary_nodes_uid_count
@@ -273,8 +267,7 @@ _addOneGhostLayerV2()
   BoundaryInfosMap boundary_infos_to_send(200,true);
   NodeUidToSubDomain uid_to_subdomain_converter(global_max_node_uid,nb_rank);
 
-  ENUMERATE_ITEM_INTERNAL_MAP_DATA(iid,cells_map){
-    Cell cell = iid->value();
+  cells_map.eachItem([&](Cell cell) {
     if (is_verbose){
       ostr() << "Send cell " << ItemPrinter(cell) << '\n';
     }
@@ -295,7 +288,7 @@ _addOneGhostLayerV2()
         //break;
       }
     }
-  }
+  });
 
   if (is_verbose)
     info() << ostr.str();
@@ -528,18 +521,17 @@ addGhostChildFromParent()
   //TODO: choisir bonne valeur pour initialiser la table
   BoundaryInfosMap boundary_infos_to_send(200,true);
 
-  ENUMERATE_ITEM_INTERNAL_MAP_DATA(ncd,cells_map){
-    ItemInternal* cell = ncd->value();
-    ARCANE_ASSERT((cell->owner() != -1),(""));
-    if(cell->level() == 0 && cell->owner() != sid){
+  cells_map.eachItem([&](Item cell) {
+    ARCANE_ASSERT((cell.owner() != -1), (""));
+    if (cell.itemBase().level() == 0 && cell.owner() != sid) {
       ARCANE_ASSERT((cell->owner() != -1),(""));
-      Int64Array& v = boundary_infos_to_send.lookupAdd(cell->owner())->value();
+      Int64Array& v = boundary_infos_to_send.lookupAdd(cell.owner())->value();
       v.add(sid);
-      v.add(cell->uniqueId());
+      v.add(cell.uniqueId());
     }
-  }
+  });
 
-  // Positionne la liste des envoies
+  // Positionne la liste des envois
   auto exchanger { ParallelMngUtils::createExchangerRef(pm) };
   _exchangeData(exchanger.get(),boundary_infos_to_send);
 
@@ -620,27 +612,26 @@ addGhostChildFromParent2(Array<Int64>& ghost_cell_to_refine)
 
   //TODO: choisir bonne valeur pour initialiser la table
   BoundaryInfosMap boundary_infos_to_send(200,true);
-  // mailles de niveau 0 ne sont pas concernee
-  // que les mailles actives de niveau superieur a 0 sont concernees
-  // que les mailles qui viennent d etre raffinees ou deraffinnes sont concernees
-  ENUMERATE_ITEM_INTERNAL_MAP_DATA(ncd,cells_map){
-    ItemInternal* cell = ncd->value();
-    ARCANE_ASSERT((cell->owner() != -1),(""));
-    if (cell->owner()  == sid)
-      continue;
+  // mailles de niveau 0 ne sont pas concernée
+  // que les mailles actives de niveau supérieur a 0 sont concernees
+  // que les mailles qui viennent d'être raffinées ou dé-raffinées sont concernées
+  cells_map.eachItem([&](Item cell) {
+    ARCANE_ASSERT((cell.owner() != -1), (""));
+    if (cell.owner() == sid)
+      return;
     // cela suppose que les flags sont deja synchronises
-    if(cell->flags() & ItemFlags::II_JustRefined){
+    if (cell.itemBase().flags() & ItemFlags::II_JustRefined) {
       // cell to add
-      ghost_cell_to_refine.add(cell->uniqueId()) ;
-      Int64Array& v = boundary_infos_to_send.lookupAdd(cell->owner())->value();
+      ghost_cell_to_refine.add(cell.uniqueId());
+      Int64Array& v = boundary_infos_to_send.lookupAdd(cell.owner())->value();
       v.add(sid);
-      v.add(cell->uniqueId());
+      v.add(cell.uniqueId());
     }
-  }
+  });
 
-  // Positionne la liste des envoies
-  auto exchanger { ParallelMngUtils::createExchangerRef(pm) };
-  _exchangeData(exchanger.get(),boundary_infos_to_send);
+  // Positionne la liste des envois
+  auto exchanger{ ParallelMngUtils::createExchangerRef(pm) };
+  _exchangeData(exchanger.get(), boundary_infos_to_send);
 
   traceMng()->flush();
   pm->barrier();
