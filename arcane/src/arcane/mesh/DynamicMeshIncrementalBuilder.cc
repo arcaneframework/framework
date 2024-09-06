@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* DynamicMeshIncrementalBuilder.cc                            (C) 2000-2022 */
+/* DynamicMeshIncrementalBuilder.cc                            (C) 2000-2024 */
 /*                                                                           */
 /* Construction d'un maillage de manière incrémentale.                       */
 /*---------------------------------------------------------------------------*/
@@ -13,16 +13,18 @@
 
 #include "arcane/utils/Iterator.h"
 #include "arcane/utils/ArgumentException.h"
-#include "arcane/utils/OStringStream.h"
 #include "arcane/utils/NotImplementedException.h"
 #include "arcane/utils/NotSupportedException.h"
-
-#include "arcane/ItemTypeMng.h"
-#include "arcane/MeshUtils.h"
-#include "arcane/IParallelMng.h"
-#include "arcane/SerializeBuffer.h"
-#include "arcane/ItemPrinter.h"
 #include "arcane/utils/ITraceMng.h"
+
+#include "arcane/core/ItemTypeMng.h"
+#include "arcane/core/MeshUtils.h"
+#include "arcane/core/IParallelMng.h"
+#include "arcane/core/SerializeBuffer.h"
+#include "arcane/core/ItemPrinter.h"
+#include "arcane/core/Connectivity.h"
+#include "arcane/core/MeshToMeshTransposer.h"
+#include "arcane/core/IItemFamilyModifier.h"
 
 #include "arcane/mesh/DynamicMesh.h"
 #include "arcane/mesh/DynamicMeshIncrementalBuilder.h"
@@ -32,13 +34,7 @@
 #include "arcane/mesh/EdgeUniqueIdBuilder.h"
 #include "arcane/mesh/CellFamily.h"
 #include "arcane/mesh/GraphDoFs.h"
-
-#include "arcane/Connectivity.h"
-#include "arcane/MeshToMeshTransposer.h"
-
 #include "arcane/mesh/ParticleFamily.h"
-
-#include "arcane/IItemFamilyModifier.h"
 
 #include <set>
 #include <map>
@@ -1527,21 +1523,19 @@ readFromDump()
   // utiliser en cas de creation de face.
   ItemInternalMap& faces_map = m_mesh->facesMap();
   Int64 max_uid = 0;
-  ENUMERATE_ITEM_INTERNAL_MAP_DATA(nbid,faces_map){
-    ItemInternal* face = nbid->value();
-    if (face->uniqueId()>max_uid)
-      max_uid = face->uniqueId();
-  }
+  faces_map.eachItem([&](Item face) {
+    if (face.uniqueId() > max_uid)
+      max_uid = face.uniqueId();
+  });
   m_one_mesh_item_adder->setNextFaceUid(max_uid + 1);
 
   if (m_has_edge) {
     ItemInternalMap& edges_map = m_mesh->edgesMap();
     Int64 max_uid = 0;
-    ENUMERATE_ITEM_INTERNAL_MAP_DATA(nbid,edges_map){
-      ItemInternal* edge = nbid->value();
-      if (edge->uniqueId()>max_uid)
-        max_uid = edge->uniqueId();
-    }
+    edges_map.eachItem([&](Item edge) {
+      if (edge.uniqueId() > max_uid)
+        max_uid = edge.uniqueId();
+    });
     m_one_mesh_item_adder->setNextEdgeUid(max_uid + 1);
   }
 
@@ -1652,16 +1646,16 @@ _removeNeedRemoveMarkedItems(ItemInternalMap& map)
   // Suppression des liaisons
   SharedArray<ItemInternal*> items_to_remove;
   items_to_remove.reserve(1000);
-  
-  ENUMERATE_ITEM_INTERNAL_MAP_DATA(nbid,map){
-    ItemInternal* item = nbid->value();
-    Integer f = item->flags();
+
+  map.eachItem([&](Item item) {
+    impl::MutableItemBase mb_item = item.mutableItemBase();
+    Integer f = mb_item.flags();
     if (f & ItemFlags::II_NeedRemove){
       f &= ~ItemFlags::II_NeedRemove;
-      item->setFlags(f);
-      items_to_remove.add(item);
+      mb_item.setFlags(f);
+      items_to_remove.add(item.internal());
     }
-  }
+  });
   return items_to_remove;
 }
 
@@ -1702,20 +1696,21 @@ removeNeedRemoveMarkedItems()
       IItemFamily* family = *i;
       if (family->itemKind()==IK_Particle){
         ParticleFamily* particle_family = dynamic_cast<ParticleFamily*>(family) ;
+        ARCANE_CHECK_POINTER(particle_family);
         if(particle_family && particle_family->getEnableGhostItems()==true){
           UniqueArray<Integer> lids_to_remove ;
           lids_to_remove.reserve(1000);
 
           ItemInternalMap& particle_map = particle_family->itemsMap();
-          ENUMERATE_ITEM_INTERNAL_MAP_DATA(nbid,particle_map){
-            ItemInternal* item = nbid->value();
-            Integer f = item->flags();
+          particle_map.eachItem([&](Item item) {
+            impl::MutableItemBase mb_item = item.mutableItemBase();
+            Integer f = mb_item.flags();
             if (f & ItemFlags::II_NeedRemove){
               f &= ~ItemFlags::II_NeedRemove;
-              item->setFlags(f);
-              lids_to_remove.add(item->localId());
+              mb_item.setFlags(f);
+              lids_to_remove.add(item.localId());
             }
-          }
+          });
 
           info() << "Number of particles of family "<<family->name()<<" to remove: " << lids_to_remove.size();
           if(lids_to_remove.size()>0)

@@ -40,7 +40,7 @@ namespace Arcane::mesh
  *
  * Cette algorithme garanti que la numérotation est la même
  * indépendamment du découpage et du nombre de processeurs.
- * En séquentiel, l'algorithme peut s'ecrire comme suit:
+ * En séquentiel, l'algorithme peut s'écrire comme suit:
  \code
  * Int64 face_unique_id_counter = 0;
  * // Parcours les mailles en supposant les uniqueId() croissants.
@@ -515,9 +515,9 @@ _computeSequential()
   cells.reserve(nb_cell);
   // D'abord, il faut trier les mailles par leur uniqueId()
   // en ordre croissant
-  ENUMERATE_ITEM_INTERNAL_MAP_DATA(iid,cells_map){
-    cells.add(iid->value());
-  }
+  cells_map.eachItem([&](Item item) {
+    cells.add(item.internal());
+  });
   std::sort(std::begin(cells),std::end(cells),UniqueIdSorter());
 
   // Invalide les uid pour être certain qu'ils seront tous positionnés.
@@ -618,8 +618,7 @@ _computeParallel()
 
   // Ajoute les faces propres a notre sous-domaine.
   // Il s'agit de toutes les faces qui ont 2 mailles connectées.
-  ENUMERATE_ITEM_INTERNAL_MAP_DATA(iid,cells_map){
-    Cell cell(iid->value());
+  cells_map.eachItem([&](Cell cell) {
     Integer cell_nb_face = cell.nbFace();
     Int64 cell_uid = cell.uniqueId();
     for( Integer z=0; z<cell_nb_face; ++z ){
@@ -639,7 +638,7 @@ _computeParallel()
         all_face_list.add(csi);
       }
     }
-  }
+  });
 
   if (is_verbose){
     Integer n = all_face_list.size();
@@ -682,12 +681,11 @@ _computeAndSortBoundaryFaces(Array<BoundaryFaceInfo>& boundary_faces_info)
 
   //UniqueArray<BoundaryFaceInfo> boundary_face_list;
   boundary_faces_info.clear();
-  ENUMERATE_ITEM_INTERNAL_MAP_DATA(iid,faces_map){
-    Face face(iid->value());
+  faces_map.eachItem([&](Face face) {
     BoundaryFaceInfo fsi;
     Integer nb_cell = face.nbCell();
     if (nb_cell==2)
-      continue;
+      return;
 
     fsi.m_rank = my_rank;
     fsi.setNodes(face);
@@ -701,7 +699,7 @@ _computeAndSortBoundaryFaces(Array<BoundaryFaceInfo>& boundary_faces_info)
       }
     fsi.m_face_local_index = face_local_index;
     boundary_faces_info.add(fsi);
-  }
+  });
 
   if (is_verbose){
     ConstArrayView<BoundaryFaceInfo> all_fsi = boundary_faces_info;
@@ -1027,8 +1025,7 @@ computeFacesUniqueIdAndOwnerVersion5()
 
   ItemInternalMap& faces_map = m_mesh->facesMap();
   UniqueArray<Int64> nodes_uid;
-  ENUMERATE_ITEM_INTERNAL_MAP_DATA (iid, faces_map) {
-    Face face(iid->value());
+  faces_map.eachItem([&](Face face) {
     Int32 nb_node = face.nbNode();
     nodes_uid.resize(nb_node);
     {
@@ -1046,7 +1043,7 @@ computeFacesUniqueIdAndOwnerVersion5()
     if (is_parallel && face.nbCell()==1)
       new_rank = A_NULL_RANK;
     face.mutableItemBase().setOwner(new_rank,my_rank);
-  }
+  });
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1058,10 +1055,9 @@ void FaceUniqueIdBuilder2::
 _unsetFacesUniqueId()
 {
   ItemInternalMap& faces_map = m_mesh->facesMap();
-  ENUMERATE_ITEM_INTERNAL_MAP_DATA(iid,faces_map){
-    ItemInternal* face = iid->value();
-    face->unsetUniqueId();
-  }
+  faces_map.eachItem([&](Item face) {
+    face.mutableItemBase().unsetUniqueId();
+  });
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1074,14 +1070,13 @@ _checkFacesUniqueId()
 {
   ItemInternalMap& faces_map = m_mesh->facesMap();
   Integer nb_error = 0;
-  ENUMERATE_ITEM_INTERNAL_MAP_DATA(iid,faces_map){
-    Face face(iid->value());
+  faces_map.eachItem([&](Face face) {
     Int64 face_uid = face.uniqueId();
     if (face_uid==NULL_ITEM_UNIQUE_ID){
       info() << "Bad face uid cell0=" << face.cell(0).uniqueId();
       ++nb_error;
     }
-  }
+  });
   if (nb_error!=0)
     ARCANE_FATAL("Internal error in face uniqueId computation: nb_invalid={0}", nb_error);
 }

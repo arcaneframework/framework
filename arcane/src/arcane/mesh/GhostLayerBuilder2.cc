@@ -7,13 +7,11 @@
 /*---------------------------------------------------------------------------*/
 /* GhostLayerBuilder2.cc                                       (C) 2000-2024 */
 /*                                                                           */
-/* Construction des couches fantomes.                                        */
+/* Construction des couches fantômes.                                        */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/HashTableMap.h"
-#include "arcane/utils/PlatformUtils.h"
-#include "arcane/utils/ScopedPtr.h"
 #include "arcane/utils/ITraceMng.h"
 #include "arcane/utils/CheckedConvert.h"
 #include "arcane/utils/ValueConvert.h"
@@ -64,7 +62,6 @@ class GhostLayerBuilder2
 
   //! Construit une instance pour le maillage \a mesh
   GhostLayerBuilder2(DynamicMeshIncrementalBuilder* mesh_builder,bool is_allocate,Int32 version);
-  ~GhostLayerBuilder2();
 
  public:
 
@@ -111,14 +108,6 @@ GhostLayerBuilder2(DynamicMeshIncrementalBuilder* mesh_builder,bool is_allocate,
   if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_GHOSTLAYER_VERBOSE", true)) {
     m_is_verbose = (v.value()!=0);
   }
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-GhostLayerBuilder2::
-~GhostLayerBuilder2()
-{
 }
 
 /*---------------------------------------------------------------------------*/
@@ -326,11 +315,10 @@ addGhostLayers()
   // Si c'est le cas, affiche un avertissement et indique de passer à la version 4.
   if (m_version==3){
     Integer nb_ghost = 0;
-    ENUMERATE_ITEM_INTERNAL_MAP_DATA(iid,cells_map){
-      ItemInternal* cell = iid->value();
-      if (!cell->isOwn())
+    cells_map.eachItem([&](Item cell) {
+      if (!cell.isOwn())
         ++nb_ghost;
-    }
+    });
     if (nb_ghost!=0)
       warning() << "Invalid call to addGhostLayers() with version 3 because mesh "
                 << " already has '" << nb_ghost << "' ghost cells. The computed ghost cells"
@@ -345,23 +333,21 @@ addGhostLayers()
 
   if (m_version>=4){
     _markBoundaryNodes(node_layer);
-    ENUMERATE_ITEM_INTERNAL_MAP_DATA(iid,nodes_map){
-      ItemInternal* node = iid->value();
-      if (node_layer[node->localId()]==1)
+    nodes_map.eachItem([&](Item node) {
+      if (node_layer[node.localId()] == 1)
         ++boundary_nodes_uid_count;
-    }
+    });
   }
   else{
-    // Parcours les noeuds et calcule le nombre de noeud frontières
+    // Parcours les nœuds et calcule le nombre de nœuds frontières
     // et marque la première couche
-    ENUMERATE_ITEM_INTERNAL_MAP_DATA(iid,nodes_map){
-      ItemInternal* node = iid->value();
-      Int32 f = node->flags();
+    nodes_map.eachItem([&](Item node) {
+      Int32 f = node.itemBase().flags();
       if (f & ItemFlags::II_Shared){
-        node_layer[node->localId()] = 1;
+        node_layer[node.localId()] = 1;
         ++boundary_nodes_uid_count;
       }
-    }
+    });
   }
 
   info() << "NB BOUNDARY NODE=" << boundary_nodes_uid_count;
@@ -369,15 +355,14 @@ addGhostLayers()
   for(Integer current_layer=1; current_layer<=nb_ghost_layer; ++current_layer){
     //Integer current_layer = 1;
     info() << "Processing layer " << current_layer;
-    ENUMERATE_ITEM_INTERNAL_MAP_DATA(iid,cells_map){
-      Cell cell = iid->value();
+    cells_map.eachItem([&](Cell cell) {
       // Ne traite pas les mailles qui ne m'appartiennent pas
       if (m_version>=4 && cell.owner()!=my_rank)
-        continue;
+        return;
       //Int64 cell_uid = cell->uniqueId();
       Int32 cell_lid = cell.localId();
       if (cell_layer[cell_lid]!=(-1))
-        continue;
+        return;
       bool is_current_layer = false;
       for( Int32 inode_local_id : cell.nodeIds() ){
         Integer layer = node_layer[inode_local_id];
@@ -399,25 +384,24 @@ addGhostLayers()
           }
         }
       }
-    }
+    });
   }
 
-  // Marque les noeuds pour lesquels on n'a pas encore assigné la couche fantôme.
-  // Pour eux on indique qu'on est sur la couche 'nb_ghost_layer+1'.
-  // Le but est de ne jamais transférer ces noeux.
+  // Marque les nœuds pour lesquels on n'a pas encore assigné la couche fantôme.
+  // Pour eux, on indique qu'on est sur la couche 'nb_ghost_layer+1'.
+  // Le but est de ne jamais transférer ces noeuds.
   // NOTE: Ce mécanisme a été ajouté en juillet 2024 pour la version 3.14.
   //       S'il fonctionne bien on pourra ne conserver que cette méthode.
   if (m_use_optimized_node_layer) {
     Integer nb_no_layer = 0;
-    ENUMERATE_ITEM_INTERNAL_MAP_DATA (iid, nodes_map) {
-      ItemInternal* node = iid->value();
-      Int32 lid = node->localId();
+    nodes_map.eachItem([&](Node node) {
+      Int32 lid = node.localId();
       Int32 layer = node_layer[lid];
       if (layer <= 0) {
         node_layer[lid] = nb_ghost_layer + 1;
         ++nb_no_layer;
       }
-    }
+    });
     info() << "Mark remaining nodes nb=" << nb_no_layer;
   }
 
@@ -447,16 +431,14 @@ _markBoundaryNodes(ArrayView<Int32> node_layer)
   ItemInternalMap& faces_map = m_mesh->facesMap();
   // TODO: regarder s'il est correcte de modifier ItemFlags::II_SubDomainBoundary
   const int shared_and_boundary_flags = ItemFlags::II_Shared | ItemFlags::II_SubDomainBoundary;
-  // Parcours les faces et marque les noeuds, arêtes et faces frontieres
-  ENUMERATE_ITEM_INTERNAL_MAP_DATA(iid,faces_map){
-    ItemInternal* face_internal = iid->value();
-    Face face = iid->value();
+  // Parcours les faces et marque les nœuds, arêtes et faces frontières
+  faces_map.eachItem([&](Face face) {
     Int32 nb_own = 0;
     for( Integer i=0, n=face.nbCell(); i<n; ++i )
       if (face.cell(i).owner()==my_rank)
         ++nb_own;
     if (nb_own==1){
-      face_internal->addFlags(shared_and_boundary_flags);
+      face.mutableItemBase().addFlags(shared_and_boundary_flags);
       //++nb_sub_domain_boundary_face;
       for( Item inode : face.nodes() ){
         inode.mutableItemBase().addFlags(shared_and_boundary_flags);
@@ -465,7 +447,7 @@ _markBoundaryNodes(ArrayView<Int32> node_layer)
       for( Item iedge : face.edges() )
         iedge.mutableItemBase().addFlags(shared_and_boundary_flags);
     }
-  }
+  });
 }
 
 /*---------------------------------------------------------------------------*/
@@ -493,18 +475,17 @@ _addGhostLayer(Integer current_layer,Int32ConstArrayView node_layer)
 
   const Int32 max_local_id = m_mesh->nodeFamily()->maxLocalId();
 
-  // Tableaux contenant pour chaque noeud le uid de la plus petite maille connectée
-  // et le rang associé. Si le uid est A_NULL_UNIQUE_ID il ne faut pas ajouter ce noeud.
+  // Tableaux contenant pour chaque nœud le uid de la plus petite maille connectée
+  // et le rang associé. Si le uid est A_NULL_UNIQUE_ID il ne faut pas ajouter ce nœud.
   UniqueArray<Int64> node_cell_uids(max_local_id, NULL_ITEM_UNIQUE_ID);
 
   const bool do_only_minimal_uid = m_use_only_minimal_cell_uid;
-  // On doit envoyer tous les noeuds dont le numéro de couche est différent de (-1).
+  // On doit envoyer tous les nœuds dont le numéro de couche est différent de (-1).
   // NOTE: pour la couche au dessus de 1, il ne faut envoyer qu'une seule valeur.
-  ENUMERATE_ITEM_INTERNAL_MAP_DATA(iid,cells_map){
-    Cell cell = iid->value();
+  cells_map.eachItem([&](Cell cell) {
     // Ne traite pas les mailles qui ne m'appartiennent pas
     if (m_version>=4 && cell.owner()!=my_rank)
-      continue;
+      return;
     Int64 cell_uid = cell.uniqueId();
     for( Node node : cell.nodes() ){
       Int32 node_lid = node.localId();
@@ -544,22 +525,21 @@ _addGhostLayer(Integer current_layer,Int32ConstArrayView node_layer)
         }
       }
     }
-  }
+  });
 
   if (do_only_minimal_uid) {
-    ENUMERATE_ITEM_INTERNAL_MAP_DATA (iid, nodes_map) {
-      ItemInternal* node = iid->value();
-      Int32 lid = node->localId();
+    nodes_map.eachItem([&](Node node) {
+      Int32 lid = node.localId();
       Int64 cell_uid = node_cell_uids[lid];
       if (cell_uid != NULL_ITEM_UNIQUE_ID) {
-        Int64 node_uid = node->uniqueId();
+        Int64 node_uid = node.uniqueId();
         BoundaryNodeInfo nci;
         nci.node_uid = node_uid;
         nci.cell_uid = cell_uid;
         nci.cell_owner = my_rank;
         boundary_node_list.add(nci);
       }
-    }
+    });
   }
 
   info() << "NB BOUNDARY NODE LIST=" << boundary_node_list.size()
@@ -980,9 +960,8 @@ _markBoundaryItems()
 
   const int shared_and_boundary_flags = ItemFlags::II_Shared | ItemFlags::II_SubDomainBoundary;
 
-  // Parcours les faces et marque les noeuds, arêtes et faces frontieres
-  ENUMERATE_ITEM_INTERNAL_MAP_DATA(iid,faces_map){
-    Face face = iid->value();
+  // Parcours les faces et marque les nœuds, arêtes et faces frontières
+  faces_map.eachItem([&](Face face) {
     bool is_sub_domain_boundary_face = false;
     if (face.itemBase().flags() & ItemFlags::II_Boundary){
       is_sub_domain_boundary_face = true;
@@ -998,7 +977,7 @@ _markBoundaryItems()
       for( Item iedge : face.edges() )
         iedge.mutableItemBase().addFlags(shared_and_boundary_flags);
     }
-  }
+  });
 }
 
 /*---------------------------------------------------------------------------*/

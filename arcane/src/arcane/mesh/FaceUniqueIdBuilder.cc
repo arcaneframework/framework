@@ -118,10 +118,9 @@ computeFacesUniqueIds()
   bool is_verbose = m_mesh_builder->isVerbose();
   if (is_verbose){
     info() << "NEW FACES_MAP after re-indexing";
-    ENUMERATE_ITEM_INTERNAL_MAP_DATA(nbid,faces_map){
-      ItemInternal* face = nbid->value();
-      info() << "Face uid=" << face->uniqueId() << " lid=" << face->localId();
-    }
+    faces_map.eachItem([&](Item face) {
+      info() << "Face uid=" << face.uniqueId() << " lid=" << face.localId();
+    });
   }
 }
 
@@ -136,8 +135,7 @@ _checkNoDuplicate()
   info() << "Check no duplicate face uniqueId";
   ItemInternalMap& faces_map = m_mesh->facesMap();
   std::unordered_set<Int64> checked_faces_map;
-  ENUMERATE_ITEM_INTERNAL_MAP_DATA(nbid,faces_map){
-    ItemInternal* face = nbid->value();
+  faces_map.eachValue([&](ItemInternal* face) {
     ItemUniqueId uid = face->uniqueId();
     auto p = checked_faces_map.find(uid);
     if (p!=checked_faces_map.end()){
@@ -145,7 +143,7 @@ _checkNoDuplicate()
       ARCANE_FATAL("Duplicate Face uniqueId={0}",uid);
     }
     checked_faces_map.insert(uid);
-  }
+  });
 }
 
 /*---------------------------------------------------------------------------*/
@@ -256,12 +254,11 @@ _computeFacesUniqueIdsParallelV1()
 
     UniqueArray<ItemInternal*> faces;
 
-    ENUMERATE_ITEM_INTERNAL_MAP_DATA(nbid,faces_map){
-      ItemInternal* face = nbid->value();
-      bool boundary_val = face->flags() & ItemFlags::II_Boundary;
+    faces_map.eachItem([&](Face face) {
+      bool boundary_val = face.isSubDomainBoundary();
       if (boundary_val)
-        faces.add(face);
-    }
+        faces.add(face.internal());
+    });
 
     Integer nb_sub_domain_boundary_face = faces.size();
     Int64 global_nb_boundary_face = pm->reduce(Parallel::ReduceSum,(Int64)nb_sub_domain_boundary_face);
@@ -380,15 +377,14 @@ _computeFacesUniqueIdsParallelV1()
   // Cherche le uniqueId max des mailles sur tous les sous-domaines.
   Int64 max_cell_uid = 0;
   Int32 max_cell_local_id = 0;
-  ENUMERATE_ITEM_INTERNAL_MAP_DATA(nbid,cells_map){
-    ItemInternal* cell = nbid->value();
-    Int64 cell_uid = cell->uniqueId().asInt64();
-    Int32 cell_local_id = cell->localId();
+  cells_map.eachItem([&](Item cell) {
+    Int64 cell_uid = cell.uniqueId().asInt64();
+    Int32 cell_local_id = cell.localId();
     if (cell_uid>max_cell_uid)
       max_cell_uid = cell_uid;
     if (cell_local_id>max_cell_local_id)
       max_cell_local_id = cell_local_id;
-  }
+  });
   Int64 global_max_cell_uid = pm->reduce(Parallel::ReduceMax,max_cell_uid);
   debug() << "GLOBAL MAX CELL UID=" << global_max_cell_uid;
 
@@ -398,8 +394,7 @@ _computeFacesUniqueIdsParallelV1()
   IntegerUniqueArray my_cells_nb_back_face(max_cell_local_id+1);
   my_cells_nb_back_face.fill(0);
 
-  ENUMERATE_ITEM_INTERNAL_MAP_DATA(nbid,cells_map){
-    Cell cell(nbid->value());
+  cells_map.eachItem([&](Cell cell) {
     Int64 cell_uid = cell.uniqueId().asInt64();
     Int32 cell_local_id = cell.localId();
     Integer nb_back_face = 0;
@@ -414,7 +409,7 @@ _computeFacesUniqueIdsParallelV1()
     }
     my_cells_nb_back_face[cell_local_id] = nb_back_face;
     my_cells_faces_info.add(T_CellFaceInfo(cell_uid,nb_back_face,nb_true_boundary_face));
-  }
+  });
   std::sort(std::begin(my_cells_faces_info),std::end(my_cells_faces_info));
 
   {
@@ -478,8 +473,7 @@ _computeFacesUniqueIdsParallelV1()
     }
   }
 
-  ENUMERATE_ITEM_INTERNAL_MAP_DATA(nbid,cells_map){
-    Cell cell(nbid->value());
+  cells_map.eachItem([&](Cell cell) {
     Int64 cell_uid = cell.uniqueId();
     Int32 cell_local_id = cell.localId();
     Integer num_local_face = 0;
@@ -515,7 +509,7 @@ _computeFacesUniqueIdsParallelV1()
         face.mutableItemBase().setUniqueId(face_new_uid);
       }
     }
-  }
+  });
 
   // Vérifie que toutes les faces ont été réindéxées
   {
@@ -533,8 +527,7 @@ _computeFacesUniqueIdsParallelV1()
 
   if (is_verbose){
     OStringStream ostr;
-    ENUMERATE_ITEM_INTERNAL_MAP_DATA(nbid,cells_map){
-      Cell cell(nbid->value());
+    cells_map.eachItem([&](Cell cell) {
       Int64 cell_uid = cell.uniqueId().asInt64();
       Integer face_index = 0;
       for( Face face : cell.faces() ){
@@ -575,7 +568,7 @@ _computeFacesUniqueIdsParallelV1()
         ostr() << "\n";
         ++face_index;
       }
-    }
+    });
     info() << ostr.str();
     String file_name("faces_uid.");
     file_name = file_name + my_rank;    
@@ -718,12 +711,11 @@ _computeFacesUniqueIdsParallelV2()
 
   // Détermine le unique id max des noeuds
   Int64 my_max_node_uid = NULL_ITEM_UNIQUE_ID;
-  ENUMERATE_ITEM_INTERNAL_MAP_DATA(nbid,nodes_map){
-    ItemInternal* node = nbid->value();
-    Int64 node_uid = node->uniqueId();
+  nodes_map.eachItem([&](Item node) {
+    Int64 node_uid = node.uniqueId();
     if (node_uid>my_max_node_uid)
       my_max_node_uid = node_uid;
-  }
+  });
   Int64 global_max_node_uid = pm->reduce(Parallel::ReduceMax,my_max_node_uid);
   debug() << "NODE_UID_INFO: MY_MAX_UID=" << my_max_node_uid
          << " GLOBAL=" << global_max_node_uid;
@@ -737,18 +729,16 @@ _computeFacesUniqueIdsParallelV2()
   UniqueArray<bool> is_boundary_nodes(node_family->maxLocalId(),false);
 
   // Marque tous les noeuds frontieres car ce sont ceux qu'il faudra envoyer
-  ENUMERATE_ITEM_INTERNAL_MAP_DATA(nbid,faces_map){
-    Face face(nbid->value());
+  faces_map.eachItem([&](Face face) {
     Integer face_nb_cell = face.nbCell();
     if (face_nb_cell==1){
       for( Node node : face.nodes() )
         is_boundary_nodes[node.localId()] = true;
     }
-  }
+  });
 
   // Détermine la liste des faces frontières
-  ENUMERATE_ITEM_INTERNAL_MAP_DATA(nbid,faces_map){
-    Face face(nbid->value());
+  faces_map.eachItem([&](Face face) {
     Node first_node = face.node(0);
     Int64 first_node_uid = first_node.uniqueId();
     SharedArray<Int64> v;
@@ -776,7 +766,7 @@ _computeFacesUniqueIdsParallelV2()
       v.add(front_cell.uniqueId());
     for( Integer z=0, zs=face.nbNode(); z<zs; ++z )
       v.add(face.node(z).uniqueId());
-  }
+  });
 
   // Positionne la liste des envoies
   Ref<IParallelExchanger> exchanger{ParallelMngUtils::createExchangerRef(pm)};
@@ -921,20 +911,18 @@ _computeFacesUniqueIdsSequential()
   // En séquentiel, les uniqueId() des mailles ne peuvent dépasser la
   // taille des Integers même en 32bits.
   Int32 max_uid = 0;
-  ENUMERATE_ITEM_INTERNAL_MAP_DATA(nbid,cells_map){
-    ItemInternal* cell = nbid->value();
-    Int32 cell_uid = cell->uniqueId().asInt32();
+  cells_map.eachItem([&](Item cell) {
+    Int32 cell_uid = cell.uniqueId().asInt32();
     if (cell_uid>max_uid)
       max_uid = cell_uid;
-  }
+  });
   info() << "Max uid=" << max_uid;
   Integer nb_computed = max_uid + 1;
   Int32UniqueArray cell_first_face_uid(nb_computed,0);
   Int32UniqueArray cell_nb_num_back_face(nb_computed,0);
   Int32UniqueArray cell_true_boundary_face(nb_computed,0);
 
-  ENUMERATE_ITEM_INTERNAL_MAP_DATA(nbid,cells_map){
-    Cell cell(nbid->value());
+  cells_map.eachItem([&](Cell cell) {
     Int32 cell_uid = cell.uniqueId().asInt32();
     Integer nb_num_back_face = 0;
     Integer nb_true_boundary_face = 0;
@@ -947,7 +935,7 @@ _computeFacesUniqueIdsSequential()
     }
     cell_nb_num_back_face[cell_uid] = nb_num_back_face;
     cell_true_boundary_face[cell_uid] = nb_true_boundary_face;
-  }
+  });
 
   Integer current_face_uid = 0;
   for( Integer i=0; i<nb_computed; ++i ){
@@ -956,18 +944,16 @@ _computeFacesUniqueIdsSequential()
   }
   
   if (is_verbose){
-    ENUMERATE_ITEM_INTERNAL_MAP_DATA(nbid,cells_map){
-      ItemInternal* cell = nbid->value();
-      Int32 i = cell->uniqueId().asInt32();
+    cells_map.eachItem([&](Item cell) {
+      Int32 i = cell.uniqueId().asInt32();
       info() << "Recv: Cell FaceInfo celluid=" << i
              << " firstfaceuid=" << cell_first_face_uid[i]
              << " nbback=" << cell_nb_num_back_face[i]
              << " nbbound=" << cell_true_boundary_face[i];
-    }
+    });
   }
 
-  ENUMERATE_ITEM_INTERNAL_MAP_DATA(nbid,cells_map){
-    Cell cell(nbid->value());
+  cells_map.eachItem([&](Cell cell) {
     Int32 cell_uid = cell.uniqueId().asInt32();
     Integer nb_num_back_face = 0;
     Integer nb_true_boundary_face = 0;
@@ -985,12 +971,11 @@ _computeFacesUniqueIdsSequential()
         face.mutableItemBase().setUniqueId(face_new_uid);
       }
     }
-  }
+  });
 
   if (is_verbose){
     OStringStream ostr;
-    ENUMERATE_ITEM_INTERNAL_MAP_DATA(nbid,cells_map){
-      Cell cell(nbid->value());
+    cells_map.eachItem([&](Cell cell) {
       Integer face_index = 0;
       for( Face face : cell.faces() ){
         Int64 opposite_cell_uid = NULL_ITEM_UNIQUE_ID;
@@ -1019,7 +1004,7 @@ _computeFacesUniqueIdsSequential()
         ostr() << '\n';
         ++face_index;
       }
-    }
+    });
     info() << ostr.str();
   }
 }
