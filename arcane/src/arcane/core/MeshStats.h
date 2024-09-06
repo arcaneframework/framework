@@ -1,22 +1,23 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshStats.h                                                 (C) 2000-2020 */
+/* MeshStats.h                                                 (C) 2000-2024 */
 /*                                                                           */
 /* Statistiques sur le maillage.                                             */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_MESHSTATS_H
-#define ARCANE_MESHSTATS_H
+#ifndef ARCANE_CORE_MESHSTATS_H
+#define ARCANE_CORE_MESHSTATS_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/TraceAccessor.h"
-#include "arcane/ArcaneTypes.h"
-#include "arcane/IMeshStats.h"
+
+#include "arcane/core/ArcaneTypes.h"
+#include "arcane/core/IMeshStats.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -41,19 +42,17 @@ class ARCANE_CORE_EXPORT MeshStats
  public:
 
   MeshStats(ITraceMng* msg,IMesh* mesh,IParallelMng* pm);
-  ~MeshStats();
 
  public:
 
-  void dumpStats();
-  
-  void dumpGraphStats();
-  
+  void dumpStats() override;
+
+  void dumpGraphStats() override;
+
  private:
 
-  IMesh* m_mesh;
-  IParallelMng* m_parallel_mng;
-  StringDictionary* m_dictionary;
+  IMesh* m_mesh = nullptr;
+  IParallelMng* m_parallel_mng = nullptr;
 
  private:
   
@@ -64,8 +63,8 @@ class ARCANE_CORE_EXPORT MeshStats
   void _computeElementsOnGroup(Int64ArrayView nb_type,Int64ArrayView nb_kind, Integer istat);
   
   template<typename T>
-  void _statLabel(String name);
-  
+  void _statLabel(const String& name);
+
   void _computeElementsOnGroup(Int64ArrayView nb_type,Int64ArrayView nb_kind,
                                ItemGroup group,Integer istat);
   
@@ -88,4 +87,3 @@ class ARCANE_CORE_EXPORT MeshStats
 /*---------------------------------------------------------------------------*/
 
 #endif  
-
