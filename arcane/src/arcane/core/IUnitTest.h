@@ -1,17 +1,17 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IUnitTest.cc                                                (C) 2000-2020 */
+/* IUnitTest.h                                                 (C) 2000-2024 */
 /*                                                                           */
 /* Interface d'un service de test unitaire.                                  */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_IUNITTEST_H
-#define ARCANE_IUNITTEST_H
+#ifndef ARCANE_CORE_IUNITTEST_H
+#define ARCANE_CORE_IUNITTEST_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -38,8 +38,16 @@ class IUnitTest
 
  public:
 
+  //! Méthode appelée après lecture du jeu de données mais avant de lire le maillage
+  virtual void buildInitializeTest() {}
+
+  //! Méthode appelée après lecture du jeu de données pour initialiser le test
   virtual void initializeTest() =0;
+
+  //! Méthode appelée pour exécuter le test
   virtual void executeTest() =0;
+
+  //! Méthode appelée pour libérer les ressources en fin d'exécution
   virtual void finalizeTest() =0;
 };
 
@@ -58,6 +66,7 @@ class IXmlUnitTest
 
  public:
 
+  virtual void buildInitializeTest() {}
   virtual void initializeTest() =0;
   /*!
    * \brief Exécute le test et remplit le noeud XML fournit en paramètre.

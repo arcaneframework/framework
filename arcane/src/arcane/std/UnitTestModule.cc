@@ -1,29 +1,29 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* UnitTestModule.cc                                           (C) 2000-2020 */
+/* UnitTestModule.cc                                           (C) 2000-2024 */
 /*                                                                           */
 /* Module pour les tests unitaires.                                          */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/IUnitTest.h"
-#include "arcane/ISubDomain.h"
-#include "arcane/IApplication.h"
-#include "arcane/ITimeLoop.h"
-#include "arcane/ITimeLoopMng.h"
-#include "arcane/IXmlDocumentHolder.h"
-#include "arcane/IRessourceMng.h"
-#include "arcane/IIOMng.h"
-#include "arcane/ArcaneException.h"
-#include "arcane/TimeLoopEntryPointInfo.h"
-#include "arcane/Directory.h"
-#include "arcane/XmlNode.h"
-#include "arcane/IParallelMng.h"
+#include "arcane/core/IUnitTest.h"
+#include "arcane/core/ISubDomain.h"
+#include "arcane/core/IApplication.h"
+#include "arcane/core/ITimeLoop.h"
+#include "arcane/core/ITimeLoopMng.h"
+#include "arcane/core/IXmlDocumentHolder.h"
+#include "arcane/core/IRessourceMng.h"
+#include "arcane/core/IIOMng.h"
+#include "arcane/core/ArcaneException.h"
+#include "arcane/core/TimeLoopEntryPointInfo.h"
+#include "arcane/core/Directory.h"
+#include "arcane/core/XmlNode.h"
+#include "arcane/core/IParallelMng.h"
 
 #include "arcane/std/UnitTest_axl.h"
 
@@ -53,6 +53,7 @@ class UnitTestModule
 
  public:
 
+  void unitTestBuild() override;
   void unitTestInit() override;
   void unitTestDoTest() override;
   void unitTestExit() override;
@@ -102,6 +103,12 @@ staticInitialize(ISubDomain* sd)
 
   {
     List<TimeLoopEntryPointInfo> clist;
+    clist.add(TimeLoopEntryPointInfo("UnitTest.UnitTestBuild"));
+    time_loop->setEntryPoints(ITimeLoop::WBuild,clist);
+  }
+
+  {
+    List<TimeLoopEntryPointInfo> clist;
     clist.add(TimeLoopEntryPointInfo("UnitTest.UnitTestInit"));
     time_loop->setEntryPoints(ITimeLoop::WInit,clist);
   }
@@ -132,7 +139,7 @@ staticInitialize(ISubDomain* sd)
 /*---------------------------------------------------------------------------*/
 
 void UnitTestModule::
-unitTestInit()
+unitTestBuild()
 {
   // creation du rapport XML
   if (options()->xmlTest.size() > 0) {
@@ -142,17 +149,27 @@ unitTestInit()
     XmlElement root(doc, "unit-tests-results");
   }
 
+  for( IUnitTest* service : options()->test )
+    service->buildInitializeTest();
+
+  for( IXmlUnitTest* service : options()->xmlTest )
+    service->buildInitializeTest();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void UnitTestModule::
+unitTestInit()
+{
   // Initialise au cas où aucun test ne le fait
   m_global_deltat = 1.0;
-  for( Integer i=0, is=options()->test.size(); i<is; ++i ){
-    IUnitTest* service = options()->test[i];
-    service->initializeTest();
-  }
 
-  for( Integer i=0, is=options()->xmlTest.size(); i<is; ++i ){
-    IXmlUnitTest* service = options()->xmlTest[i];
+  for( IUnitTest* service : options()->test )
     service->initializeTest();
-  }
+
+  for( IXmlUnitTest* service : options()->xmlTest )
+    service->initializeTest();
 }
 
 /*---------------------------------------------------------------------------*/
