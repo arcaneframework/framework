@@ -209,6 +209,7 @@ class ARCANE_MESH_EXPORT IncrementalItemConnectivity
  public:
 
   void addConnectedItems(ItemLocalId source_item,Integer nb_item);
+  void setConnectedItems(ItemLocalId source_item, Int32ConstArrayView target_local_ids) override;
   void removeConnectedItems(ItemLocalId source_item) override;
   void addConnectedItem(ItemLocalId source_item,ItemLocalId target_local_id) override;
   void removeConnectedItem(ItemLocalId source_item,ItemLocalId target_local_id) override;

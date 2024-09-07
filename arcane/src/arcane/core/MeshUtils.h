@@ -427,7 +427,7 @@ fillUniqueIds(ItemVectorView items,Array<Int64>& uids);
  * La connectivité aura pour nom \a connectivity_name.
  */
 extern "C++" ARCANE_CORE_EXPORT Ref<IIndexedIncrementalItemConnectivity>
-createNodeNodeViaEdgeConnectivity(IMesh* mesh, const String& connectivity_name);
+computeNodeNodeViaEdgeConnectivity(IMesh* mesh, const String& connectivity_name);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

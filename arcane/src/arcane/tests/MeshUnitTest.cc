@@ -305,8 +305,11 @@ executeTest()
   _testCoherency();
   _testFindOneItem();
   _testEvents();
-  if (options()->createEdges())
+  if (options()->createEdges()) {
+    // Appelle 2 fois la méthode pour vérifier que le recalcul est correct.
     _testNodeNodeViaEdgeConnectivity();
+    _testNodeNodeViaEdgeConnectivity();
+  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1694,7 +1697,8 @@ _testEvents()
 void MeshUnitTest::
 _testNodeNodeViaEdgeConnectivity()
 {
-  auto x = Arcane::MeshUtils::createNodeNodeViaEdgeConnectivity(mesh(), "NodeNodeViaEdge");
+  info() << "Test: _testNodeNodeViaEdgeConnectivity";
+  auto x = Arcane::MeshUtils::computeNodeNodeViaEdgeConnectivity(mesh(), "NodeNodeViaEdge");
   IndexedNodeNodeConnectivityView nn_cv = x->view();
 
   // Tableau contenant la liste triée des nœuds connectés à un nœud.

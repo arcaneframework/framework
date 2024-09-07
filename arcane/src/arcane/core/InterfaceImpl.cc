@@ -239,6 +239,17 @@ _internalNotifySourceItemsAdded(Int32ConstArrayView local_ids)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+void IIncrementalItemConnectivity::
+setConnectedItems(ItemLocalId source_item, Int32ConstArrayView target_local_ids)
+{
+  removeConnectedItems(source_item);
+  for (Int32 x : target_local_ids)
+    addConnectedItem(source_item, ItemLocalId{ x });
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 void IPostProcessorWriter::
 setMesh([[maybe_unused]] IMesh* mesh)
 {

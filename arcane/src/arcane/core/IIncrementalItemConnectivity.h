@@ -135,6 +135,22 @@ class ARCANE_CORE_EXPORT IIncrementalItemConnectivity
   //! Ajoute l'entité de localId() \a target_local_id à la connectivité de \a source_item
   virtual void addConnectedItem(ItemLocalId source_item, ItemLocalId target_local_id) = 0;
 
+  /*!
+   * \brief Alloue et positionne les entités connectées à \a source_item.
+   *
+   * S'il y avait des déjà des entités connectées à \a source_item, elles sont supprimées.
+   * \a target_local_ids contient la liste des numéros locaux des entités à ajouter.
+   * Cette méthode est équivalente à appeler le code suivant mais permet des optimisations sur la
+   * gestion mémoire:
+   * \code
+   * IIncrementalItemConnectivity* c = ...;
+   * c->removeConnectedItems(source_item);
+   * for( Int32 x : target_local_ids )
+   *   c->addConnectedItem(source_item,ItemLocalId{x});
+   * \endcode
+   */
+  virtual void setConnectedItems(ItemLocalId source_item, Int32ConstArrayView target_local_ids);
+
   //! Supprime l'entité de localId() \a target_local_id à la connectivité de \a source_item
   virtual void removeConnectedItem(ItemLocalId source_item, ItemLocalId target_local_id) = 0;
 
