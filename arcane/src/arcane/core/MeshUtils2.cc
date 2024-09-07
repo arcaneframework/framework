@@ -36,7 +36,7 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 
 Ref<IIndexedIncrementalItemConnectivity> MeshUtils::
-createNodeNodeViaEdgeConnectivity(IMesh* mesh, const String& connectivity_name)
+computeNodeNodeViaEdgeConnectivity(IMesh* mesh, const String& connectivity_name)
 {
   IItemFamily* node_family = mesh->nodeFamily();
   auto connectivity_mng = mesh->indexedConnectivityMng();
