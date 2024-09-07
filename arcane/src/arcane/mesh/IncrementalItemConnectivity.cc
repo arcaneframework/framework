@@ -625,6 +625,17 @@ addConnectedItems(ItemLocalId source_item,Integer nb_item)
 /*---------------------------------------------------------------------------*/
 
 void IncrementalItemConnectivity::
+setConnectedItems(ItemLocalId source_item, Int32ConstArrayView target_local_ids)
+{
+  removeConnectedItems(source_item);
+  addConnectedItems(source_item, target_local_ids.size());
+  replaceConnectedItems(source_item, target_local_ids);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void IncrementalItemConnectivity::
 removeConnectedItems(ItemLocalId source_item)
 {
   Int32 lid = source_item.localId();
@@ -665,22 +676,25 @@ void IncrementalItemConnectivity::
 replaceConnectedItems(ItemLocalId source_item,Int32ConstArrayView target_local_ids)
 {
   Int32 lid = source_item.localId();
-  Integer n = target_local_ids.size();
-  ARCANE_CHECK_AT(n,m_connectivity_nb_item[lid]);
-  for( Integer i=0; i<n; ++i )
-    m_connectivity_list[ m_connectivity_index[lid] + i ] = target_local_ids[i];
+  Int32 n = target_local_ids.size();
+  if (n > 0) {
+    ARCANE_CHECK_AT(n - 1, m_connectivity_nb_item[lid]);
+    const Int32 pos = m_connectivity_index[lid];
+    for (Integer i = 0; i < n; ++i)
+      m_connectivity_list[pos + i] = target_local_ids[i];
+  }
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 bool IncrementalItemConnectivity::
-hasConnectedItem(Arcane::ItemLocalId source_item,
-                 Arcane::ItemLocalId target_local_id) const
+hasConnectedItem(ItemLocalId source_item, ItemLocalId target_local_id) const
 {
   bool has_connection = false;
   auto connected_items = _connectedItemsLocalId(source_item);
-  if (std::find(connected_items.begin(),connected_items.end(),target_local_id) != connected_items.end()) has_connection = true;
+  if (std::find(connected_items.begin(), connected_items.end(), target_local_id) != connected_items.end())
+    has_connection = true;
   return has_connection;
 }
 
