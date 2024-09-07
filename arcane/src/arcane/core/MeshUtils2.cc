@@ -13,6 +13,8 @@
 
 #include "arcane/core/MeshUtils.h"
 
+#include "arcane/utils/SmallArray.h"
+
 #include "arcane/core/IMesh.h"
 #include "arcane/core/IItemFamily.h"
 #include "arcane/core/Item.h"
@@ -38,7 +40,7 @@ createNodeNodeViaEdgeConnectivity(IMesh* mesh, const String& connectivity_name)
 {
   IItemFamily* node_family = mesh->nodeFamily();
   auto connectivity_mng = mesh->indexedConnectivityMng();
-  auto connectivity_ref = connectivity_mng->findOrCreateConnectivity(node_family,node_family,connectivity_name);
+  auto connectivity_ref = connectivity_mng->findOrCreateConnectivity(node_family, node_family, connectivity_name);
   IIncrementalItemConnectivity* cx = connectivity_ref->connectivity();
 
   // Ensemble des nœuds connectés à un nœud
@@ -50,14 +52,14 @@ createNodeNodeViaEdgeConnectivity(IMesh* mesh, const String& connectivity_name)
   // nœud et ensuite l'ensemble des arêtes de cette maille.
   // Si un des deux nœuds de l'arête est mon nœud, l'ajoute
   // à la connectivité.
-
+  SmallArray<Int32> connected_items_ids;
   ENUMERATE_ (Node, inode, node_family->allItems()) {
     Node node = *inode;
     NodeLocalId node_lid(node.localId());
     node_set.clear();
     for (Cell cell : node.cells()) {
       const ItemTypeInfo* t = cell.typeInfo();
-      for( Int32 i=0, n=t->nbLocalEdge(); i<n; ++i ) {
+      for (Int32 i = 0, n = t->nbLocalEdge(); i < n; ++i) {
         ItemTypeInfo::LocalEdge e = t->localEdge(i);
         NodeLocalId node0_lid = cell.nodeId(e.beginNode());
         NodeLocalId node1_lid = cell.nodeId(e.endNode());
@@ -67,11 +69,15 @@ createNodeNodeViaEdgeConnectivity(IMesh* mesh, const String& connectivity_name)
           node_set.insert(node0_lid);
       }
     }
-    // Au cas où la connectivité existe déjà, supprime les entités
-    // connectées à ce nœud.
-    cx->removeConnectedItems(node_lid);
-    for( auto x : node_set) {
-      cx->addConnectedItem(node_lid,ItemLocalId{x});
+    // Ajoute les entités au noeud.
+    {
+      connected_items_ids.resize(node_set.size());
+      Int32 index = 0;
+      for (auto x : node_set) {
+        connected_items_ids[index] = x;
+        ++index;
+      }
+      cx->setConnectedItems(node_lid, connected_items_ids);
     }
   }
 
