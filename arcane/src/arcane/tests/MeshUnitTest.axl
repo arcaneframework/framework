@@ -8,7 +8,7 @@
 <service name="MeshUnitTest" version="1.0" type="caseoption" parent-name="Arcane::BasicUnitTest" namespace-name="ArcaneTest">
  <interface name="Arcane::IUnitTest" inherited="false" />
 
-	<variables>
+ <variables>
     <variable
       field-name="cell_flag"
       name="MeshUnitTest_CellFlags"
@@ -124,6 +124,12 @@ Teste la désallocation du maillage
    <description>
      Indique si on tri les faces et les arêtes connectées aux noeuds
    </description>
+  </simple>
+
+  <simple name = "create-edges" type = "bool" default = "false">
+    <description>
+      Indique si en 3D on créé les arêtes.
+    </description>
   </simple>
 
  </options>
