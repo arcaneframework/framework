@@ -13,6 +13,7 @@
  <module-test-unitaire>
   <test name="MeshUnitTest">
     <maillage-additionnel>sod.vtk</maillage-additionnel>
+    <create-edges>true</create-edges>
   </test>
  </module-test-unitaire>
 
