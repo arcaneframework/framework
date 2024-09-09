@@ -2194,13 +2194,13 @@ removeNeedRemoveMarkedItems()
   items_to_remove.reserve(1000);
   items_to_remove_lids.reserve(1000);
 
-  item_map.eachValue([&](ItemInternal* item) {
-    Integer f = item->flags();
+  item_map.eachItem([&](impl::ItemBase item) {
+    Integer f = item.flags();
     if (f & ItemFlags::II_NeedRemove){
       f &= ~ItemFlags::II_NeedRemove & ItemFlags::II_Suppressed;
-      item->setFlags(f);
-      items_to_remove.add(item);
-      items_to_remove_lids.add(item->localId());
+      item.toMutable().setFlags(f);
+      items_to_remove.add(item.itemInternal());
+      items_to_remove_lids.add(item.localId());
     }
   });
   info() << "Number of " << itemKind() << " of family "<< name()<<" to remove: " << items_to_remove.size();

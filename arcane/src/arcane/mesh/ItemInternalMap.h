@@ -43,11 +43,26 @@ namespace Arcane::mesh
  * à jour le tableau associatif.
  */
 class ItemInternalMap
-: public HashTableMapT<Int64,ItemInternal*>
+: private HashTableMapT<Int64, ItemInternal*>
 {
  private:
 
   using BaseClass = HashTableMapT<Int64, ItemInternal*>;
+
+ public:
+
+  using Data = BaseClass::Data;
+  using BaseClass::add;
+  using BaseClass::buckets;
+  using BaseClass::clear;
+  using BaseClass::count;
+  using BaseClass::lookup;
+  using BaseClass::lookupAdd;
+  using BaseClass::lookupValue;
+  using BaseClass::remove;
+  using BaseClass::operator[];
+  using BaseClass::hasKey;
+  using BaseClass::resize;
 
  public:
 
