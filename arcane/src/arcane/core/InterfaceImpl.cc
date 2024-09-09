@@ -128,6 +128,7 @@
 #include "arcane/core/internal/IMeshModifierInternal.h"
 #include "arcane/core/internal/IVariableMngInternal.h"
 #include "arcane/core/internal/IVariableSynchronizerMngInternal.h"
+#include "arcane/core/internal/IIncrementalItemConnectivityInternal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
