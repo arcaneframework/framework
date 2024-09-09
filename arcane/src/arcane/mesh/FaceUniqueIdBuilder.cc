@@ -135,8 +135,8 @@ _checkNoDuplicate()
   info() << "Check no duplicate face uniqueId";
   ItemInternalMap& faces_map = m_mesh->facesMap();
   std::unordered_set<Int64> checked_faces_map;
-  faces_map.eachValue([&](ItemInternal* face) {
-    ItemUniqueId uid = face->uniqueId();
+  faces_map.eachItem([&](Item face) {
+    ItemUniqueId uid = face.uniqueId();
     auto p = checked_faces_map.find(uid);
     if (p!=checked_faces_map.end()){
       pwarning() << "Duplicate Face UniqueId=" << uid;

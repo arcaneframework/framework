@@ -2139,10 +2139,10 @@ _removeGhostItems()
 
   ItemInternalMap& cells_map = m_cell_family->itemsMap();
 
-  cells_map.eachValue([&](ItemInternal* cell){
-      if (cell->owner() != sid)
-        cells_to_remove.add(cell);
-    });
+  cells_map.eachItem([&](Item cell) {
+    if (cell.owner() != sid)
+      cells_to_remove.add(cell.internal());
+  });
 
   info() << "Number of cells to remove: " << cells_to_remove.size();
   for( Integer i=0, is=cells_to_remove.size(); i<is; ++i )
@@ -2213,19 +2213,19 @@ _removeGhostChildItems()
 
   ItemInternalMap& cells_map = m_cell_family->itemsMap();
   Integer max_level=0;
-  cells_map.eachValue([&](ItemInternal* cell){
-      if ((cell->owner() != sid) && (cell->level() != 0))
-        max_level= (cell->level() > max_level) ? cell->level() : max_level;
-    });
+  cells_map.eachItem([&](impl::ItemBase cell) {
+    if ((cell.owner() != sid) && (cell.level() != 0))
+      max_level = (cell.level() > max_level) ? cell.level() : max_level;
+  });
 
   if (max_level==0)
     return;
 
-  cells_map.eachValue([&](ItemInternal* cell){
-      if ((cell->owner() != sid) && (cell->level() == max_level)){
-        cells_to_remove.add(cell);
-      }
-    });
+  cells_map.eachItem([&](impl::ItemBase cell) {
+    if ((cell.owner() != sid) && (cell.level() == max_level)) {
+      cells_to_remove.add(cell.itemInternal());
+    }
+  });
 
   info() << "Number of cells to remove: " << cells_to_remove.size();
   for( Integer i=0, is=cells_to_remove.size(); i<is; ++i )
@@ -2251,18 +2251,17 @@ _removeGhostChildItems2(Array<Int64>& cells_to_coarsen)
 
   ItemInternalMap& cells_map = m_cell_family->itemsMap();
   Integer counter=0;
-  cells_map.eachValue([&](ItemInternal* icell){
-      Cell cell(icell);
-      if (cell.owner() != sid)
-        return;
-      if (icell->flags() & ItemFlags::II_JustCoarsened){
-        cells_to_coarsen.add(cell.uniqueId()) ;
-        for(Integer c=0,cs=cell.nbHChildren();c<cs;c++){
-          cells_to_remove.add(cell.hChild(c));
-          counter++;
-        }
+  cells_map.eachItem([&](Cell cell) {
+    if (cell.owner() != sid)
+      return;
+    if (cell.itemBase().flags() & ItemFlags::II_JustCoarsened) {
+      cells_to_coarsen.add(cell.uniqueId());
+      for (Integer c = 0, cs = cell.nbHChildren(); c < cs; c++) {
+        cells_to_remove.add(cell.hChild(c));
+        counter++;
       }
-    });
+    }
+  });
 
   if (counter==0)
     return;
