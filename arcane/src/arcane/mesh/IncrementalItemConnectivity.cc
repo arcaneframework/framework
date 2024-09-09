@@ -15,6 +15,7 @@
 
 #include "arcane/utils/StringBuilder.h"
 #include "arcane/utils/ArgumentException.h"
+#include "arcane/utils/PlatformUtils.h"
 
 #include "arcane/core/IMesh.h"
 #include "arcane/core/IItemFamily.h"
@@ -25,6 +26,7 @@
 #include "arcane/core/IndexedItemConnectivityView.h"
 #include "arcane/core/internal/IDataInternal.h"
 #include "arcane/core/internal/IItemFamilyInternal.h"
+#include "arcane/core/internal/IIncrementalItemConnectivityInternal.h"
 
 #include "arcane/mesh/IndexedItemConnectivityAccessor.h"
 
@@ -103,16 +105,6 @@ class IncrementalItemConnectivityContainer
 {
  public:
 
-  /*struct Idx
-  {
-    //! Nombre d'entités connecté
-    Int32 nb;
-    //! Indice de la première entité dans la liste des entités connectées
-    Int32 index;
-
-    Idx(Int32 n,Int32 i) : nb(n), index(i){}
-  };*/
- public:
   IncrementalItemConnectivityContainer(IMesh* mesh,const String& var_name)
   : m_var_name(var_name),
     m_connectivity_nb_item_variable(VariableBuildInfo(mesh,var_name+"Nb",IVariable::PPrivate)),
@@ -194,12 +186,34 @@ class IncrementalItemConnectivityContainer
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+class IncrementalItemConnectivityBase::InternalApi
+: public IIncrementalItemConnectivityInternal
+{
+ public:
+
+  explicit InternalApi(IncrementalItemConnectivityBase* v)
+  : m_internal_api(v)
+  {}
+
+ public:
+
+  void shrinkMemory() override { return m_internal_api->_shrinkMemory(); }
+
+ private:
+
+  IncrementalItemConnectivityBase* m_internal_api = nullptr;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 IncrementalItemConnectivityBase::
 IncrementalItemConnectivityBase(IItemFamily* source_family,IItemFamily* target_family,
                                 const String& aname)
 : AbstractIncrementalItemConnectivity(source_family,target_family,aname)
 , m_item_connectivity_list(nullptr)
 , m_item_connectivity_index(-1)
+, m_internal_api(std::make_unique<InternalApi>(this))
 {
   StringBuilder var_name("Connectivity");
   var_name += aname;
@@ -434,6 +448,15 @@ IndexedItemConnectivityAccessor IncrementalItemConnectivityBase::
 connectivityAccessor() const
 {
   return IndexedItemConnectivityAccessor(connectivityView(),_targetFamily());
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+IIncrementalItemConnectivityInternal* IncrementalItemConnectivityBase::
+_internalApi()
+{
+  return m_internal_api.get();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -762,9 +785,9 @@ setPreAllocatedSize(Integer prealloc_size)
                             String::format("Invalid prealloc_size v={0}",
                                            prealloc_size));
 
-  // Ne fait rien rien si on a déjà alloué des entités sinon cela rendrait
+  // Ne fait rien si on a déjà alloué des entités sinon cela rendrait
   // incohérent les allocations.
-  // NOTE: on pourrait autoriser cela mais cela nécessiterait de reconstruire
+  // NOTE: on pourrait l'autoriser, mais cela nécessiterait de reconstruire
   // les indices des connectivités. A priori un appel à compactConnectivityList()
   // suffirait.
   if (m_connectivity_nb_item.size()!=0)
@@ -785,9 +808,10 @@ setPreAllocatedSize(Integer prealloc_size)
 void IncrementalItemConnectivity::
 dumpStats(std::ostream& out) const
 {
-  size_t allocated_size = m_p->m_connectivity_list_array.capacity()
-  + m_p->m_connectivity_index_array.capacity()
-  + m_p->m_connectivity_nb_item_array.capacity();
+  Int64 mem1 = m_p->m_connectivity_list_array.capacity();
+  Int64 mem2 = m_p->m_connectivity_index_array.capacity();
+  Int64 mem3 = m_p->m_connectivity_nb_item_array.capacity();
+  Int64 allocated_size = mem1 + mem2 + mem3;
   allocated_size *= sizeof(Int32);
 
   out << " connectiviy name=" << name()
@@ -796,9 +820,26 @@ dumpStats(std::ostream& out) const
       << " nb_remove=" << m_nb_remove
       << " nb_memcopy=" << m_nb_memcopy
       << " list_size=" << m_connectivity_list.size()
+      << " list_capacity=" << mem1
       << " index_size=" << m_connectivity_index.size()
+      << " index_capacity=" << mem2
       << " nb_item_size=" << m_connectivity_nb_item.size()
+      << " nb_item_capacity=" << mem3
       << " allocated_size=" << allocated_size;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void IncrementalItemConnectivityBase::
+_shrinkMemory()
+{
+  m_p->m_connectivity_list_array.shrink();
+  m_p->m_connectivity_index_array.shrink();
+  m_p->m_connectivity_nb_item_array.shrink();
+  _notifyConnectivityIndexChanged();
+  _notifyConnectivityNbItemChanged();
+  _notifyConnectivityListChanged();
 }
 
 /*---------------------------------------------------------------------------*/

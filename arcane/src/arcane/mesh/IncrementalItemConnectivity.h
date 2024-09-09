@@ -93,6 +93,8 @@ class ARCANE_MESH_EXPORT AbstractIncrementalItemConnectivity
 class ARCANE_MESH_EXPORT IncrementalItemConnectivityBase
 : public AbstractIncrementalItemConnectivity
 {
+  class InternalApi;
+
  public:
 
   template <class SourceFamily, class TargetFamily, class LegacyType, class CustomType>
@@ -132,6 +134,7 @@ class ARCANE_MESH_EXPORT IncrementalItemConnectivityBase
   Int32 maxNbConnectedItem() const override;
 
   void reserveMemoryForNbSourceItems(Int32 n, bool pre_alloc_connectivity) override;
+  IIncrementalItemConnectivityInternal* _internalApi() override;
 
  public:
 
@@ -174,7 +177,8 @@ class ARCANE_MESH_EXPORT IncrementalItemConnectivityBase
   Int32ArrayView m_connectivity_list;
   IncrementalItemConnectivityContainer* m_p = nullptr;
   ItemInternalConnectivityList* m_item_connectivity_list = nullptr;
-  Integer m_item_connectivity_index;
+  Integer m_item_connectivity_index = -1;
+  std::unique_ptr<InternalApi> m_internal_api;
 
  protected:
 
@@ -185,6 +189,10 @@ class ARCANE_MESH_EXPORT IncrementalItemConnectivityBase
   void _computeMaxNbConnectedItem();
   void _setNewMaxNbConnectedItems(Int32 new_max);
   void _setMaxNbConnectedItemsInConnectivityList();
+
+ private:
+
+  void _shrinkMemory();
 };
 
 /*---------------------------------------------------------------------------*/
@@ -234,8 +242,8 @@ class ARCANE_MESH_EXPORT IncrementalItemConnectivity
 
  private:
 
-  Int64 m_nb_add     = 0;
-  Int64 m_nb_remove  = 0;
+  Int64 m_nb_add = 0;
+  Int64 m_nb_remove = 0;
   Int64 m_nb_memcopy = 0;
   Integer m_pre_allocated_size = 0;
 
@@ -280,11 +288,11 @@ class ARCANE_MESH_EXPORT OneItemIncrementalItemConnectivity
   void removeConnectedItem(ItemLocalId source_item,ItemLocalId target_local_id) override;
   void replaceConnectedItem(ItemLocalId source_item,Integer index,ItemLocalId target_local_id) override;
   void replaceConnectedItems(ItemLocalId source_item,Int32ConstArrayView target_local_ids) override;
-  bool hasConnectedItem(ItemLocalId source_item,ItemLocalId targer_local_id) const override;
+  bool hasConnectedItem(ItemLocalId source_item, ItemLocalId target_local_id) const override;
   void notifySourceItemAdded(ItemLocalId item) override;
   void notifyReadFromDump() override;
-  Integer preAllocatedSize() const override final { return 1; }
-  void setPreAllocatedSize([[maybe_unused]] Int32 value) override final {}
+  Integer preAllocatedSize() const final { return 1; }
+  void setPreAllocatedSize([[maybe_unused]] Int32 value) final {}
 
  public:
 

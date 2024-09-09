@@ -119,7 +119,7 @@ public:
   void setPreAllocatedSize(Integer value) override {Base::setPreAllocatedSize(value);}
 
   //! Sort sur le flot \a out des statistiques sur l'utilisation et la mémoire utilisée
-  void dumpStats(std::ostream& out) const override {Base::trueCustomConnectivity()->dumpStats(out);}
+  void dumpStats(std::ostream& out) const override { Base::trueCustomConnectivity()->dumpStats(out); }
 
   //! Nombre d'entité connectées à l'entité source de numéro local \a lid
   Integer nbConnectedItem(ItemLocalId lid) const override {return Base::trueCustomConnectivity()->nbConnectedItem(lid);}
@@ -138,8 +138,12 @@ public:
   {
     return Arccore::makeRef<IIncrementalItemTargetConnectivity>(this);
   }
+  IIncrementalItemConnectivityInternal* _internalApi() override
+  {
+    return Base::trueCustomConnectivity()->_internalApi();
+  }
 
-  protected:
+ protected:
 
   //! Implémente l'initialisation de \a civ pour cette connectivitée.
   void _initializeStorage(ConnectivityItemVector* civ) override {Base::trueCustomConnectivity()->_initializeStorage(civ);};
