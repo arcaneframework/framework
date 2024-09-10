@@ -244,6 +244,9 @@ class VtkPolyhedralCaseMeshReader
     {
       build_info.addFactoryName("ArcanePolyhedralMeshFactory");
       build_info.addNeedPartitioning(false);
+      MeshKind mk;
+      mk.setMeshStructure(eMeshStructure::Polyhedral);
+      build_info.addMeshKind(mk);
     }
 
     void allocateMeshItems(IPrimaryMesh* pm) override
