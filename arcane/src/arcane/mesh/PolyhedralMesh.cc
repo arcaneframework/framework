@@ -520,6 +520,7 @@ PolyhedralMesh(ISubDomain* subdomain, const MeshBuildInfo& mbi)
 , m_parallel_mng{ mbi.parallelMngRef().get() }
 , m_mesh_part_info{ makeMeshPartInfoFromParallelMng(m_parallel_mng) }
 , m_item_type_mng(ItemTypeMng::_singleton())
+, m_mesh_kind(mbi.meshKind())
 , m_initial_allocator(*this)
 , m_variable_mng{ subdomain->variableMng() }
 , m_mesh_checker{ this }
