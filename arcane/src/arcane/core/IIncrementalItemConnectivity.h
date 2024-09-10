@@ -182,6 +182,9 @@ class ARCANE_CORE_EXPORT IIncrementalItemConnectivity
 
   //! Sort sur le flot \a out des statistiques sur l'utilisation et la mémoire utilisée
   virtual void dumpStats(std::ostream& out) const = 0;
+
+  //! API interne à Arcane
+  virtual IIncrementalItemConnectivityInternal* _internalApi() = 0;
 };
 
 /*---------------------------------------------------------------------------*/

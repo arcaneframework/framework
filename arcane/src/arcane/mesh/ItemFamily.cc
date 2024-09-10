@@ -20,6 +20,8 @@
 #include "arcane/utils/ArgumentException.h"
 #include "arcane/utils/CheckedConvert.h"
 #include "arcane/utils/PlatformUtils.h"
+#include "arcane/utils/OStringStream.h"
+#include "arcane/utils/ValueConvert.h"
 
 #include "arcane/core/IParallelMng.h"
 #include "arcane/core/ISubDomain.h"
@@ -45,6 +47,7 @@
 #include "arcane/core/ParallelMngUtils.h"
 #include "arcane/core/internal/IDataInternal.h"
 #include "arcane/core/internal/IItemFamilyInternal.h"
+#include "arcane/core/internal/IIncrementalItemConnectivityInternal.h"
 #include "arcane/core/datatype/IDataOperation.h"
 
 #include "arcane/mesh/ItemFamily.h"
@@ -370,6 +373,10 @@ build()
       m_use_legacy_compact_item = true;
     }
   }
+  {
+    if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_ITEMFAMILY_SHRINK_AFTER_ALLOCATE", true))
+      m_do_shrink_after_allocate = (v.value()!=0);
+  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -535,6 +542,29 @@ _endAllocate()
   if (!m_parent_family) {
     m_internal_variables->setUsed();
   }
+  if (m_do_shrink_after_allocate)
+    _shrinkConnectiviyAndPrintInfos();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ItemFamily::
+_shrinkConnectiviyAndPrintInfos()
+{
+  OStringStream ostr;
+  std::ostream& o = ostr();
+  o << "Mem=" << platform::getMemoryUsed();
+  for (ItemConnectivitySelector* cs : m_connectivity_selector_list) {
+    IIncrementalItemConnectivity* c = cs->customConnectivity();
+    c->dumpStats(o);
+    o << "\n";
+    c->_internalApi()->shrinkMemory();
+    c->dumpStats(o);
+    o << "\n";
+  }
+  o << "Mem=" << platform::getMemoryUsed();
+  info() <<  ostr.str();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -2187,7 +2217,7 @@ removeNeedRemoveMarkedItems()
   if (!m_mesh->itemFamilyNetwork())
     ARCANE_FATAL("Family name='{0}': IMesh::itemFamilyNetwork() is null",name());
   if (!IItemFamilyNetwork::plug_serializer)
-    ARCANE_FATAL("family name='{0}': removeNeedMarkedItems() cannot be called if ItemFamilyNetwork is unplugged.");
+    ARCANE_FATAL("family name='{0}': removeNeedMarkedItems() cannot be called if ItemFamilyNetwork is unplugged.",name());
 
   UniqueArray<ItemInternal*> items_to_remove;
   UniqueArray<Int32> items_to_remove_lids;

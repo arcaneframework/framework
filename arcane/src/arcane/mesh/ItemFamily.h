@@ -465,6 +465,7 @@ class ARCANE_MESH_EXPORT ItemFamily
  private:
 
   ItemTypeMng* m_item_type_mng = nullptr;
+  bool m_do_shrink_after_allocate = false;
 
  protected:
 
@@ -543,6 +544,7 @@ class ARCANE_MESH_EXPORT ItemFamily
   void _addVariable(IVariable* var);
   void _removeVariable(IVariable* var);
   void _resizeVariables(bool force_resize);
+  void _shrinkConnectiviyAndPrintInfos();
 };
 
 /*---------------------------------------------------------------------------*/
