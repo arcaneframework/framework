@@ -13,10 +13,11 @@
 
 #include <numeric>
 
-#include "arcane/ITimeLoopMng.h"
-#include "arcane/IMesh.h"
-#include "arcane/MeshHandle.h"
-#include "arcane/IMeshMng.h"
+#include "arcane/core/ITimeLoopMng.h"
+#include "arcane/core/IMesh.h"
+#include "arcane/core/MeshHandle.h"
+#include "arcane/core/IMeshMng.h"
+#include "arcane/core/internal/IMeshInternal.h"
 #include "arcane/mesh/PolyhedralMesh.h"
 #include "arcane/utils/ValueChecker.h"
 
@@ -86,9 +87,20 @@ class MeshPolyhedralTestModule : public ArcaneMeshPolyhedralTestObject
 void MeshPolyhedralTestModule::
 _testKind(IMesh* mesh)
 {
+  // Check mesh kind
   if (mesh->meshKind().meshStructure() != eMeshStructure::Polyhedral) {
     ARCANE_FATAL("Mesh kind for mesh {0} is not eMeshStructure::Polyhedral",mesh->name());
   }
+  // Set mesh kind (for test, done by mesh reader)
+  // So far for PolyhedralMesh must be : eMeshStructure::Polyhedral, eMeshAMRKind::Node
+  MeshKind kind;
+  kind.setMeshStructure(eMeshStructure::Polyhedral);
+  kind.setMeshAMRKind(eMeshAMRKind::None);
+  mesh->_internalApi()->setMeshKind(kind);
+  // Finalize internalApi check. Dof tests done in DoFTester
+  auto dof_mng = mesh->_internalApi()->dofConnectivityMng();
+  if (!dof_mng)
+    ARCANE_FATAL("Cannot get DoFConnectivityMng from PolyhedralMesh");
 }
 
 /*---------------------------------------------------------------------------*/
