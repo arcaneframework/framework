@@ -489,9 +489,8 @@ class mesh::PolyhedralMesh::InternalApi
 
   explicit InternalApi(PolyhedralMesh* mesh)
   : m_mesh(mesh)
-  {
-    m_connectivity_mng = std::make_unique<ItemConnectivityMng>(mesh->traceMng());
-  }
+  , m_connectivity_mng(std::make_unique<ItemConnectivityMng>(mesh->traceMng()))
+  {}
 
  public:
 
