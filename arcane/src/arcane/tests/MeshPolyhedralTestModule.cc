@@ -47,6 +47,7 @@ class MeshPolyhedralTestModule : public ArcaneMeshPolyhedralTestObject
     auto mesh_handle = subDomain()->defaultMeshHandle();
     if (mesh_handle.hasMesh()) {
       info() << "-- Mesh name: " << mesh()->name();
+      _testKind(mesh());
       _testDimensions(mesh());
       _testCoordinates(mesh());
       _testEnumerationAndConnectivities(mesh());
@@ -61,6 +62,7 @@ class MeshPolyhedralTestModule : public ArcaneMeshPolyhedralTestObject
 
  private:
 
+  void _testKind(IMesh* mesh);
   void _testEnumerationAndConnectivities(IMesh* mesh);
   void _testVariables(IMesh* mesh);
   void _testGroups(IMesh* mesh);
@@ -77,6 +79,17 @@ class MeshPolyhedralTestModule : public ArcaneMeshPolyhedralTestObject
   template <typename VariableArrayRefType>
   void _checkArrayVariable(VariableArrayRefType variable, ItemGroup item_group);
 };
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MeshPolyhedralTestModule::
+_testKind(IMesh* mesh)
+{
+  if (mesh->meshKind().meshStructure() != eMeshStructure::Polyhedral) {
+    ARCANE_FATAL("Mesh kind for mesh {0} is not eMeshStructure::Polyhedral",mesh->name());
+  }
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
