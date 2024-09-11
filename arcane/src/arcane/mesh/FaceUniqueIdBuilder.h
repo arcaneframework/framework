@@ -39,9 +39,6 @@ class FaceUniqueIdBuilder
 {
  public:
 
-  using ItemInternalMap = DynamicMeshKindInfos::ItemInternalMap;
-  using ItemInternalMapData = ItemInternalMap::Data;
-
   using BoundaryInfosMap = HashTableMapT<Int32, SharedArray<Int64>>;
   using BoundaryInfosMapEnumerator = HashTableMapEnumeratorT<Int32, SharedArray<Int64>>;
 

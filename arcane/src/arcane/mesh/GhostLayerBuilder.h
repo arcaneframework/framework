@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* GhostLayerBuilder.h                                         (C) 2000-2021 */
+/* GhostLayerBuilder.h                                         (C) 2000-2024 */
 /*                                                                           */
 /* Construction des couches fantômes.                                        */
 /*---------------------------------------------------------------------------*/
@@ -41,7 +41,6 @@ class GhostLayerBuilder
  public:
 
   typedef DynamicMeshKindInfos::ItemInternalMap ItemInternalMap;
-  typedef ItemInternalMap::Data ItemInternalMapData;
 
   typedef HashTableMapT<Int32,SharedArray<Int64> > BoundaryInfosMap;
   typedef HashTableMapEnumeratorT<Int32,SharedArray<Int64> > BoundaryInfosMapEnumerator;
@@ -49,7 +48,7 @@ class GhostLayerBuilder
  public:
 
   //! Construit une instance pour le maillage \a mesh
-  GhostLayerBuilder(DynamicMeshIncrementalBuilder* mesh_builder);
+  explicit GhostLayerBuilder(DynamicMeshIncrementalBuilder* mesh_builder);
   virtual ~GhostLayerBuilder();
 
  public:

@@ -354,12 +354,12 @@ _computeFacesUniqueIdsParallelV1()
           ++recv_faces_infos_index;
           Integer cell_face_index = CheckedConvert::toInteger(recv_faces_infos[recv_faces_infos_index]);
           ++recv_faces_infos_index;
-          
-          ItemInternalMapData* data = nodes_map.lookup(faces_nodes_uid[0]);
+
+          Node node = nodes_map.tryFind(faces_nodes_uid[0]);
           // Si la face n'existe pas dans mon sous-domaine, elle ne m'intéresse pas
-          if (!data)
+          if (node.null())
             continue;
-          Face face = ItemTools::findFaceInNode2(data->value(),face_type,faces_nodes_uid);
+          Face face = ItemTools::findFaceInNode2(node, face_type, faces_nodes_uid);
           if (face.null())
             continue;
           ++nb_recv_sub_domain_boundary_face;
@@ -879,11 +879,11 @@ _computeFacesUniqueIdsParallelV2()
         Int64 old_uid = received_infos[(z*3)];
         Int64 new_uid = received_infos[(z*3)+1];
         Int32 new_owner = (Int32)received_infos[(z*3)+2];
-        ItemInternalMapData* face_data = faces_map.lookup(old_uid);
-        if (!face_data)
-          fatal() << "Can not find own face uid=" << old_uid;
-        face_data->value()->setUniqueId(new_uid);
-        face_data->value()->setOwner(new_owner,my_rank);
+        impl::MutableItemBase face(faces_map.tryFind(old_uid));
+        if (face.null())
+          ARCANE_FATAL("Can not find own face uid={0}", old_uid);
+        face.setUniqueId(new_uid);
+        face.setOwner(new_owner, my_rank);
       }
     }
   }

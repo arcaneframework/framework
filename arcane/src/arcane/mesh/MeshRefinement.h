@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshRefinement.h                                            (C) 2000-2023 */
+/* MeshRefinement.h                                            (C) 2000-2024 */
 /*                                                                           */
 /* Gestion de l'adaptation de maillages non-structurés par raffinement       */
 /*---------------------------------------------------------------------------*/
@@ -17,10 +17,12 @@
 #include "arcane/utils/TraceAccessor.h"
 #include "arcane/utils/PerfCounterMng.h"
 #include "arcane/utils/AMRCallBackMng.h"
+
+#include "arcane/core/ItemRefinementPattern.h"
+
 #include "arcane/mesh/MeshGlobal.h"
 #include "arcane/mesh/MapCoordToUid.h"
 #include "arcane/mesh/DynamicMeshKindInfos.h"
-#include "arcane/ItemRefinementPattern.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -53,12 +55,6 @@ class ParallelAMRConsistency;
 class MeshRefinement
 :  public TraceAccessor
 {
-public:
-  //! Type la table de hashage uniqueId()->ItemInternal*
-  typedef DynamicMeshKindInfos::ItemInternalMap ItemInternalMap;
-  typedef ItemInternalMap::Data ItemInternalMapData;
-
-
 public:
 #ifdef ACTIVATE_PERF_COUNTER
   struct PerfCounter

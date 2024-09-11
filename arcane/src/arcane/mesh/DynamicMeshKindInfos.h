@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* DynamicMeshKindInfos.h                                      (C) 2000-2022 */
+/* DynamicMeshKindInfos.h                                      (C) 2000-2024 */
 /*                                                                           */
 /* Infos de maillage pour un genre d'entité donnée.                          */
 /*---------------------------------------------------------------------------*/
@@ -19,9 +19,9 @@
 #include "arcane/utils/HashTableMap.h"
 #include "arcane/utils/TraceAccessor.h"
 
-#include "arcane/ItemGroup.h"
-#include "arcane/ItemInternal.h"
-#include "arcane/VariableTypedef.h"
+#include "arcane/core/ItemGroup.h"
+#include "arcane/core/ItemInternal.h"
+#include "arcane/core/VariableTypedef.h"
 
 #include "arcane/mesh/ItemInternalMap.h"
 
@@ -53,8 +53,12 @@ class ARCANE_MESH_EXPORT DynamicMeshKindInfos
 {
  public:
 
+  // TODO: a supprimer
   typedef Arcane::mesh::ItemInternalMap ItemInternalMap;
-  typedef ItemInternalMap::Data ItemInternalMapData;
+
+ private:
+
+  using ItemInternalMapData = ItemInternalMap::BaseData;
 
  public:
 
@@ -190,18 +194,15 @@ class ARCANE_MESH_EXPORT DynamicMeshKindInfos
     }
     return item_data->value();
   }
-  
-  //! Recherche l'entit de numro unique \a unique_id et 
+
+  //! Recherche l'entité de numéro unique \a uid
   ItemInternal* findOne(Int64 uid)
   {
 #ifdef ARCANE_CHECK
     if (!m_has_unique_id_map)
       _badUniqueIdMap();
 #endif
-    ItemInternalMapData* item_data = m_items_map.lookup(uid);
-    if(item_data)
-      return item_data->value();
-    return nullptr;
+    return m_items_map.tryFindItemInternal(uid);
   }
 
   //! Vérifie si les structures internes de l'instance sont valides
