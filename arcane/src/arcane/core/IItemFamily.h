@@ -264,6 +264,7 @@ class ARCANE_CORE_EXPORT IItemFamily
    *
    * \pre hasUniqueIdMap()
    */
+  ARCANE_DEPRECATED_REASON("Use MeshUtils::findOneItem() instead")
   virtual ItemInternal* findOneItem(Int64 unique_id) =0;
 
   /*! \brief Notifie la fin de modification de la liste des entités.
