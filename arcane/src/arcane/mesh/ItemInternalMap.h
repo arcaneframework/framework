@@ -55,7 +55,7 @@ class ItemInternalMap
 
  public:
 
-  using Data ARCANE_DEPRECATED_REASON("Data type is internal to Arcane") = BaseClass::Data;
+  using Data ARCANE_DEPRECATED_REASON("Y2024: Data type is internal to Arcane") = BaseClass::Data;
 
  public:
 
@@ -98,6 +98,8 @@ class ItemInternalMap
       }
     }
   }
+  //! Nombre de buckets
+  Int32 nbBucket() const { return BaseClass::buckets().size(); }
 
  public:
 
@@ -145,19 +147,19 @@ class ItemInternalMap
 
  public:
 
-  ARCANE_DEPRECATED_REASON("This method is internal to Arcane")
+  ARCANE_DEPRECATED_REASON("Y2024: This method is internal to Arcane")
   Data* lookup(Int64 key)
   {
     return BaseClass::lookup(key);
   }
 
-  ARCANE_DEPRECATED_REASON("This method is internal to Arcane")
+  ARCANE_DEPRECATED_REASON("Y2024: This method is internal to Arcane")
   const Data* lookup(Int64 key) const
   {
     return BaseClass::lookup(key);
   }
 
-  ARCANE_DEPRECATED_REASON("This method is internal to Arcane")
+  ARCANE_DEPRECATED_REASON("Y2024: This method is internal to Arcane")
   ConstArrayView<BaseData*> buckets() const { return BaseClass::buckets(); }
 
   ARCANE_DEPRECATED_REASON("This method is internal to Arcane")
@@ -166,13 +168,13 @@ class ItemInternalMap
     return BaseClass::lookupAdd(id, value, is_add);
   }
 
-  ARCANE_DEPRECATED_REASON("This method is internal to Arcane")
+  ARCANE_DEPRECATED_REASON("Y2024: This method is internal to Arcane")
   BaseData* lookupAdd(Int64 uid)
   {
     return BaseClass::lookupAdd(uid);
   }
 
-  ARCANE_DEPRECATED_REASON("Use findItem() instead")
+  ARCANE_DEPRECATED_REASON("Y2024: Use findItem() instead")
   ItemInternal* lookupValue(Int64 uid) const
   {
     return BaseClass::lookupValue(uid);

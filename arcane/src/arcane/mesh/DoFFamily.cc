@@ -172,23 +172,21 @@ _printInfos(Integer nb_added)
   info() << "DoFFamily: added=" << nb_added
          << " nb_internal=" << infos().m_internals.size()
          << " nb_free=" << infos().m_free_internals.size()
-         << " map_nb_bucket=" << itemsMap().buckets().size()
+         << " map_nb_bucket=" << itemsMap().nbBucket()
          << " map_size=" << nb_in_map;
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void
-DoFFamily::
+void DoFFamily::
 preAllocate(Integer nb_item)
 {
   // Copy paste de particle, pas utilise pour l'instant
-  Integer nb_hash = itemsMap().buckets().size();
+  Integer nb_hash = itemsMap().nbBucket();
   Integer wanted_size = 2*(nb_item+infos().nbItem());
   if (nb_hash<wanted_size)
     itemsMap().resize(wanted_size,true);
-
 }
 
 /*---------------------------------------------------------------------------*/
