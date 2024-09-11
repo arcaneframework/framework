@@ -651,11 +651,7 @@ finishCompactItems(ItemFamilyCompactInfos& compact_infos)
   // IMPORTANT: Cette opération doit toujours être la dernière car ensuite
   // on perd la relation entre les anciens local_ids et les nouveaux à
   // travers cette structure
-  ENUMERATE_ITEM_INTERNAL_MAP_DATA(nbid,m_items_map){
-    ItemInternal* item = nbid->value();
-    Integer current_local_id = item->localId();
-    nbid->setValue(m_internals[ old_to_new_local_ids[ current_local_id ] ]);
-  }
+  m_items_map.changeLocalIds(m_internals, old_to_new_local_ids);
 
   if (m_is_verbose){
     info() << "DumpItemsBefore:";

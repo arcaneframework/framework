@@ -26,13 +26,28 @@
 namespace Arcane::mesh
 {
 
+Int64 DoFUids::
+getMaxItemUid(IItemFamily* family)
+{
+  Int64 max_uid = 0;
+  // This method can be used within IItemFamily::endUpdate when new items have been created but the groups are not yet updated.
+  // Therefore we use internal map enumeration instead of group enumeration
+  ItemFamily* item_family = ARCANE_CHECK_POINTER(dynamic_cast<ItemFamily*>(family));
+  item_family->itemsMap().eachItem([&](Item item) {
+    if (max_uid < item.uniqueId().asInt64())
+      max_uid = item.uniqueId().asInt64();
+  });
+  Int64 pmax_uid = family->mesh()->parallelMng()->reduce(Parallel::ReduceMax, max_uid);
+  return pmax_uid;
+}
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 DoFFamily::
 DoFFamily(IMesh* mesh, const String& name)
   : ItemFamily(mesh,IK_DoF,name)
-  , m_shared_info(0)
+, m_shared_info(nullptr)
 {}
 
 /*---------------------------------------------------------------------------*/

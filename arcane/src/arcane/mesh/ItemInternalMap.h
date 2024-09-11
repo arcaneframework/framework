@@ -60,7 +60,6 @@ class ItemInternalMap
  public:
 
   using BaseClass::add;
-  using BaseClass::buckets;
   using BaseClass::clear;
   using BaseClass::count;
   using BaseClass::lookupAdd;
@@ -93,7 +92,7 @@ class ItemInternalMap
   template <class Lambda> void
   eachItem(const Lambda& lambda)
   {
-    ConstArrayView<BaseData*> b = buckets();
+    ConstArrayView<BaseData*> b = BaseClass::buckets();
     for (Int32 k = 0, n = b.size(); k < n; ++k) {
       BaseData* nbid = b[k];
       for (; nbid; nbid = nbid->next()) {
@@ -126,7 +125,7 @@ class ItemInternalMap
     return (d ? d->value() : nullptr);
   }
 
- private:
+ public:
 
   ARCANE_DEPRECATED_REASON("This method is internal to Arcane")
   Data* lookup(Int64 key)
@@ -139,6 +138,19 @@ class ItemInternalMap
   {
     return BaseClass::lookup(key);
   }
+
+  ARCANE_DEPRECATED_REASON("This method is internal to Arcane")
+  ConstArrayView<BaseData*> buckets() const { return BaseClass::buckets(); }
+
+ private:
+
+  /*!
+   * \brief Change la valeurs des localId(0.
+   *
+   * Cette méthode ne doit être appelée que par DynamicMeshKindInfos.
+   */
+  void changeLocalIds(ArrayView<ItemInternal*> items_internal,
+                      ConstArrayView<Int32> old_to_new_local_ids);
 };
 
 /*---------------------------------------------------------------------------*/

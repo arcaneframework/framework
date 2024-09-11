@@ -27,6 +27,10 @@
 namespace Arcane::mesh
 {
 
+#define ENUMERATE_ITEM_INTERNAL_MAP_DATA2(iter, item_list) \
+  for (auto __i__##iter : item_list.buckets()) \
+    for (auto* iter = __i__##iter; iter; iter = iter->next())
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -55,10 +59,29 @@ notifyUniqueIdsChanged()
     });
   }
 
-  ENUMERATE_ITEM_INTERNAL_MAP_DATA(nbid,c){
+  ENUMERATE_ITEM_INTERNAL_MAP_DATA2(nbid, c)
+  {
     nbid->setKey(nbid->value()->uniqueId().asInt64());
   }
+
   this->rehash();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ItemInternalMap::
+changeLocalIds(ArrayView<ItemInternal*> items_internal,
+               ConstArrayView<Int32> old_to_new_local_ids)
+{
+  ItemInternalMap& c = *this;
+
+  ENUMERATE_ITEM_INTERNAL_MAP_DATA2(nbid, c)
+  {
+    ItemInternal* item = nbid->value();
+    Int32 current_local_id = item->localId();
+    nbid->setValue(items_internal[old_to_new_local_ids[current_local_id]]);
+  }
 }
 
 /*---------------------------------------------------------------------------*/
