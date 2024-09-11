@@ -673,6 +673,9 @@ dumpInfo(std::ostream& o)
 void SubDomain::
 allocateMeshes()
 {
+  info() << "SubDomain: Allocating meshes";
+  MessagePassing::dumpDateAndMemoryUsage(parallelMng(), traceMng());
+
   Timer::Action ts_action2(this,"AllocateMesh");
   Trace::Setter mci(traceMng(),_msgClassName());
 
@@ -703,6 +706,8 @@ allocateMeshes()
 void SubDomain::
 readOrReloadMeshes()
 {
+  info() << "SubDomain: read or reload meshes";
+  MessagePassing::dumpDateAndMemoryUsage(parallelMng(), traceMng());
   logdate() << "Initialisation du code.";
 
   Integer nb_mesh = m_mesh_mng->meshes().size();
