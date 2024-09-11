@@ -192,7 +192,7 @@ itemsUniqueIdToLocalId(ArrayView<Int64> ids,bool do_fatal) const
     if (do_fatal){
       for( Integer i=0, s=ids.size(); i<s; ++i ){
         Int64 unique_id = ids[i];
-        ids[i] =m_items_map.lookupValue(unique_id)->localId();
+        ids[i] = m_items_map.findLocalId(unique_id);
       }
     }
     else{
@@ -236,7 +236,7 @@ itemsUniqueIdToLocalId(Int32ArrayView local_ids,
     if (do_fatal){
       for( Integer i=0, s=unique_ids.size(); i<s; ++i ){
         Int64 unique_id = unique_ids[i];
-        local_ids[i] = (unique_id==NULL_ITEM_UNIQUE_ID) ? NULL_ITEM_LOCAL_ID : m_items_map.lookupValue(unique_id)->localId();
+        local_ids[i] = (unique_id == NULL_ITEM_UNIQUE_ID) ? NULL_ITEM_LOCAL_ID : m_items_map.findLocalId(unique_id);
       }
     }
     else{
@@ -280,7 +280,7 @@ itemsUniqueIdToLocalId(Int32ArrayView local_ids,
     if (do_fatal){
       for( Integer i=0, s=unique_ids.size(); i<s; ++i ){
         Int64 unique_id = unique_ids[i];
-        local_ids[i] = m_items_map.lookupValue(unique_id)->localId();
+        local_ids[i] = m_items_map.findLocalId(unique_id);
       }
     }
     else{
@@ -651,11 +651,7 @@ finishCompactItems(ItemFamilyCompactInfos& compact_infos)
   // IMPORTANT: Cette opération doit toujours être la dernière car ensuite
   // on perd la relation entre les anciens local_ids et les nouveaux à
   // travers cette structure
-  ENUMERATE_ITEM_INTERNAL_MAP_DATA(nbid,m_items_map){
-    ItemInternal* item = nbid->value();
-    Integer current_local_id = item->localId();
-    nbid->setValue(m_internals[ old_to_new_local_ids[ current_local_id ] ]);
-  }
+  m_items_map._changeLocalIds(m_internals, old_to_new_local_ids);
 
   if (m_is_verbose){
     info() << "DumpItemsBefore:";

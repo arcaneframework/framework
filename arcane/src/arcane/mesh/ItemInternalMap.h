@@ -55,16 +55,13 @@ class ItemInternalMap
 
  public:
 
-  using Data ARCANE_DEPRECATED_REASON("Data type is internal to Arcane") = BaseClass::Data;
+  using Data ARCANE_DEPRECATED_REASON("Y2024: Data type is internal to Arcane") = BaseClass::Data;
 
  public:
 
   using BaseClass::add;
-  using BaseClass::buckets;
   using BaseClass::clear;
   using BaseClass::count;
-  using BaseClass::lookupAdd;
-  using BaseClass::lookupValue;
   using BaseClass::remove;
   using BaseClass::operator[];
   using BaseClass::hasKey;
@@ -93,7 +90,7 @@ class ItemInternalMap
   template <class Lambda> void
   eachItem(const Lambda& lambda)
   {
-    ConstArrayView<BaseData*> b = buckets();
+    ConstArrayView<BaseData*> b = BaseClass::buckets();
     for (Int32 k = 0, n = b.size(); k < n; ++k) {
       BaseData* nbid = b[k];
       for (; nbid; nbid = nbid->next()) {
@@ -101,6 +98,8 @@ class ItemInternalMap
       }
     }
   }
+  //! Nombre de buckets
+  Int32 nbBucket() const { return BaseClass::buckets().size(); }
 
  public:
 
@@ -117,6 +116,26 @@ class ItemInternalMap
     return (d ? d->value()->localId() : NULL_ITEM_LOCAL_ID);
   }
 
+  /*!
+   * \brief Retourne l'entité de numéro unique \a uid.
+   *
+   * Lève une exception si l'entité n'est pas dans la table.
+   */
+  impl::ItemBase findItem(Int64 uid) const
+  {
+    return impl::ItemBase(BaseClass::lookupValue(uid));
+  }
+
+  /*!
+   * \brief Retourne le numéro local de l'entité de numéro unique \a uid.
+   *
+   * Lève une exception si l'entité n'est pas dans la table.
+   */
+  Int32 findLocalId(Int64 uid) const
+  {
+    return BaseClass::lookupValue(uid)->localId();
+  }
+
  private:
 
   //! Retourne l'entité associée à \a key si trouvé ou nullptr sinon
@@ -126,25 +145,65 @@ class ItemInternalMap
     return (d ? d->value() : nullptr);
   }
 
- private:
+ public:
 
-  ARCANE_DEPRECATED_REASON("This method is internal to Arcane")
+  ARCANE_DEPRECATED_REASON("Y2024: This method is internal to Arcane")
   Data* lookup(Int64 key)
   {
     return BaseClass::lookup(key);
   }
 
-  ARCANE_DEPRECATED_REASON("This method is internal to Arcane")
+  ARCANE_DEPRECATED_REASON("Y2024: This method is internal to Arcane")
   const Data* lookup(Int64 key) const
   {
     return BaseClass::lookup(key);
+  }
+
+  ARCANE_DEPRECATED_REASON("Y2024: This method is internal to Arcane")
+  ConstArrayView<BaseData*> buckets() const { return BaseClass::buckets(); }
+
+  ARCANE_DEPRECATED_REASON("This method is internal to Arcane")
+  BaseData* lookupAdd(Int64 id, ItemInternal* value, bool& is_add)
+  {
+    return BaseClass::lookupAdd(id, value, is_add);
+  }
+
+  ARCANE_DEPRECATED_REASON("Y2024: This method is internal to Arcane")
+  BaseData* lookupAdd(Int64 uid)
+  {
+    return BaseClass::lookupAdd(uid);
+  }
+
+  ARCANE_DEPRECATED_REASON("Y2024: Use findItem() instead")
+  ItemInternal* lookupValue(Int64 uid) const
+  {
+    return BaseClass::lookupValue(uid);
+  }
+
+ private:
+
+  /*!
+   * \brief Change la valeurs des localId(0.
+   *
+   * Cette méthode ne doit être appelée que par DynamicMeshKindInfos.
+   */
+  void _changeLocalIds(ArrayView<ItemInternal*> items_internal,
+                       ConstArrayView<Int32> old_to_new_local_ids);
+
+  BaseData* _lookupAdd(Int64 id, ItemInternal* value, bool& is_add)
+  {
+    return BaseClass::lookupAdd(id, value, is_add);
   }
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Macro pour itérer sur les valeurs d'un ItemInternalMap
+/*!
+ * \brief Macro pour itérer sur les valeurs d'un ItemInternalMap.
+ *
+ * \deprecated Utiliser ItemInternalMap::eachItem() à la place.
+ */
 #define ENUMERATE_ITEM_INTERNAL_MAP_DATA(iter,item_list) \
 for( auto __i__##iter : item_list .buckets() ) \
     for (auto* iter = __i__##iter; iter; iter = iter->next())
