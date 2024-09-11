@@ -189,7 +189,16 @@ _setFaceInfos(Int32 mod_flags)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
+/*!
+ * \brief Pour une face, positionne à la fois la back cell et la front cell.
+ *
+ * \a back_cell_lid et/ou \a front_cell_lid peuvent valoir NULL_ITEM_LOCAL_ID
+ * ce qui signifie que l'entité n'a pas de back cell ou front cell. Si les
+ * deux valeurs sont nulles, alors la face est considérée comme n'ayant
+ * plus de mailles connectées.
+ *
+ * \note Cette méthode est utilisée uniquement par FaceFamily.
+ */
 void impl::MutableItemBase::
 _setFaceBackAndFrontCells(Int32 back_cell_lid,Int32 front_cell_lid)
 {

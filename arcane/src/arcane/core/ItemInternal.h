@@ -54,10 +54,10 @@ namespace Arcane::mesh
 class IncrementalItemConnectivityBase;
 class PolyhedralFamily;
 class PolyhedralMeshImpl;
+class FaceFamily;
 }
 namespace Arcane::Materials
 {
-class ComponentItemInternal;
 class ComponentItemSharedInfo;
 }
 namespace Arcane
@@ -485,7 +485,6 @@ class ARCANE_CORE_EXPORT ItemBase
   friend class ::Arcane::ItemInternal;
   friend class ::Arcane::Item;
   friend class ::Arcane::ItemInternalCompatibility;
-  friend class ::Arcane::Materials::ComponentItemInternal;
   friend class ::Arcane::Materials::ComponentItemSharedInfo;
   friend class ::Arcane::ItemEnumerator;
   friend MutableItemBase;
@@ -824,6 +823,8 @@ class ARCANE_CORE_EXPORT MutableItemBase
 {
   friend class ::Arcane::Item;
   friend ItemBase;
+  // Pour _setFaceBackAndFrontCell()
+  friend Arcane::mesh::FaceFamily;
 
  private:
 
@@ -924,26 +925,9 @@ class ARCANE_CORE_EXPORT MutableItemBase
     m_shared_info->_setParentV2(m_local_id,aindex,parent_local_id);
   }
 
- public:
-
-  /*!
-   * \brief Méthodes temporaires pour passer des connectivités historiques
-   * aux nouvelles. A ne pas utiliser en dehors de Arcane.
-   */
-  //@{
-  /*!
-   * \internal
-   * \brief Pour une face, positionne à la fois la back cell et la front cell.
-   *
-   * \a back_cell_lid et/ou \a front_cell_lid peuvent valoir NULL_ITEM_LOCAL_ID
-   * ce qui signifie que l'entité n'a pas de back cell ou front cell. Si les
-   * deux valeurs sont nulles, alors la face est considérée comme n'ayant
-   * plus de mailles connectées.
-   */
-  void _setFaceBackAndFrontCells(Int32 back_cell_lid,Int32 front_cell_lid);
-  //@}
-
  private:
+
+  void _setFaceBackAndFrontCells(Int32 back_cell_lid, Int32 front_cell_lid);
 
   void _checkUniqueId(Int64 new_uid) const;
 
