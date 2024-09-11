@@ -1,17 +1,17 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemInternal.cc                                             (C) 2000-2022 */
+/* ItemInternal.cc                                             (C) 2000-2024 */
 /*                                                                           */
 /* Partie interne d'une entité.                                              */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/ItemInternal.h"
+#include "arcane/core/ItemInternal.h"
 
 #include "arcane/utils/NotImplementedException.h"
 #include "arcane/utils/FatalErrorException.h"
@@ -19,9 +19,9 @@
 #include "arcane/utils/TraceInfo.h"
 #include "arcane/utils/CheckedConvert.h"
 
-#include "arcane/IItemFamily.h"
-#include "arcane/IItemFamilyTopologyModifier.h"
-#include "arcane/ItemPrinter.h"
+#include "arcane/core/IItemFamily.h"
+#include "arcane/core/IItemFamilyTopologyModifier.h"
+#include "arcane/core/ItemPrinter.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -162,7 +162,7 @@ whichChildAmI(const ItemInternal *iitem) const
 /*---------------------------------------------------------------------------*/
 
 ItemInternalVectorView impl::ItemBase::
-_internalActiveCells(Int32Array& local_ids) const
+_internalActiveCells2(Int32Array& local_ids) const
 {
   const Integer nbcell = this->nbCell();
   for(Integer icell = 0 ; icell < nbcell ; ++icell) {

@@ -488,6 +488,8 @@ class ARCANE_CORE_EXPORT ItemBase
   friend class ::Arcane::Materials::ComponentItemSharedInfo;
   friend class ::Arcane::ItemEnumerator;
   friend MutableItemBase;
+  // Pour _internalActiveCells2.
+  friend class ::Arcane::Node;
 
  private:
 
@@ -774,8 +776,11 @@ class ARCANE_CORE_EXPORT ItemBase
   ARCANE_DEPRECATED_REASON("This method is internal to Arcane.")
   inline ItemInternal* itemInternal() const;
 
-  // TODO rendre obsolète
-  ItemInternalVectorView _internalActiveCells(Int32Array& local_ids) const;
+  ARCANE_DEPRECATED_REASON("This method is internal to Arcane.")
+  ItemInternalVectorView _internalActiveCells(Int32Array& local_ids) const
+  {
+    return _internalActiveCells2(local_ids);
+  }
 
  private:
 
@@ -809,6 +814,8 @@ class ARCANE_CORE_EXPORT ItemBase
     m_local_id = rhs.m_local_id;
     m_shared_info = rhs.m_shared_info;
   }
+  // TODO rendre obsolète
+  ItemInternalVectorView _internalActiveCells2(Int32Array& local_ids) const;
 };
 
 /*---------------------------------------------------------------------------*/
