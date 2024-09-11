@@ -772,7 +772,7 @@ class ARCANE_CORE_EXPORT ItemBase
 
  public:
 
-  // TODO: rendre obsolète
+  ARCANE_DEPRECATED_REASON("This method is internal to Arcane.")
   inline ItemInternal* itemInternal() const;
 
   // TODO rendre obsolète
