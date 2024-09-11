@@ -728,7 +728,7 @@ _addGhostLayer(Integer current_layer,Int32ConstArrayView node_layer)
       ++index;
       Int64 nb_cell = recv_infos[index];
       ++index;
-      Node current_node(nodes_map.lookupValue(node_uid));
+      Node current_node(nodes_map.findItem(node_uid));
       if (is_verbose)
         info() << "NODE uid=" << node_uid << " nb_cell=" << nb_cell << " idx=" << (index-2);
       my_cells.clear();

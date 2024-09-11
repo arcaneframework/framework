@@ -192,7 +192,7 @@ itemsUniqueIdToLocalId(ArrayView<Int64> ids,bool do_fatal) const
     if (do_fatal){
       for( Integer i=0, s=ids.size(); i<s; ++i ){
         Int64 unique_id = ids[i];
-        ids[i] =m_items_map.lookupValue(unique_id)->localId();
+        ids[i] = m_items_map.findLocalId(unique_id);
       }
     }
     else{
@@ -236,7 +236,7 @@ itemsUniqueIdToLocalId(Int32ArrayView local_ids,
     if (do_fatal){
       for( Integer i=0, s=unique_ids.size(); i<s; ++i ){
         Int64 unique_id = unique_ids[i];
-        local_ids[i] = (unique_id==NULL_ITEM_UNIQUE_ID) ? NULL_ITEM_LOCAL_ID : m_items_map.lookupValue(unique_id)->localId();
+        local_ids[i] = (unique_id == NULL_ITEM_UNIQUE_ID) ? NULL_ITEM_LOCAL_ID : m_items_map.findLocalId(unique_id);
       }
     }
     else{
@@ -280,7 +280,7 @@ itemsUniqueIdToLocalId(Int32ArrayView local_ids,
     if (do_fatal){
       for( Integer i=0, s=unique_ids.size(); i<s; ++i ){
         Int64 unique_id = unique_ids[i];
-        local_ids[i] = m_items_map.lookupValue(unique_id)->localId();
+        local_ids[i] = m_items_map.findLocalId(unique_id);
       }
     }
     else{
