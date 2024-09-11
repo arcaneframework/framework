@@ -71,8 +71,8 @@ notifyUniqueIdsChanged()
 /*---------------------------------------------------------------------------*/
 
 void ItemInternalMap::
-changeLocalIds(ArrayView<ItemInternal*> items_internal,
-               ConstArrayView<Int32> old_to_new_local_ids)
+_changeLocalIds(ArrayView<ItemInternal*> items_internal,
+                ConstArrayView<Int32> old_to_new_local_ids)
 {
   ItemInternalMap& c = *this;
 

@@ -62,8 +62,6 @@ class ItemInternalMap
   using BaseClass::add;
   using BaseClass::clear;
   using BaseClass::count;
-  using BaseClass::lookupAdd;
-  using BaseClass::lookupValue;
   using BaseClass::remove;
   using BaseClass::operator[];
   using BaseClass::hasKey;
@@ -116,6 +114,26 @@ class ItemInternalMap
     return (d ? d->value()->localId() : NULL_ITEM_LOCAL_ID);
   }
 
+  /*!
+   * \brief Retourne l'entité de numéro unique \a uid.
+   *
+   * Lève une exception si l'entité n'est pas dans la table.
+   */
+  impl::ItemBase findItem(Int64 uid) const
+  {
+    return impl::ItemBase(BaseClass::lookupValue(uid));
+  }
+
+  /*!
+   * \brief Retourne le numéro local de l'entité de numéro unique \a uid.
+   *
+   * Lève une exception si l'entité n'est pas dans la table.
+   */
+  Int32 findLocalId(Int64 uid) const
+  {
+    return BaseClass::lookupValue(uid)->localId();
+  }
+
  private:
 
   //! Retourne l'entité associée à \a key si trouvé ou nullptr sinon
@@ -142,6 +160,24 @@ class ItemInternalMap
   ARCANE_DEPRECATED_REASON("This method is internal to Arcane")
   ConstArrayView<BaseData*> buckets() const { return BaseClass::buckets(); }
 
+  ARCANE_DEPRECATED_REASON("This method is internal to Arcane")
+  BaseData* lookupAdd(Int64 id, ItemInternal* value, bool& is_add)
+  {
+    return BaseClass::lookupAdd(id, value, is_add);
+  }
+
+  ARCANE_DEPRECATED_REASON("This method is internal to Arcane")
+  BaseData* lookupAdd(Int64 uid)
+  {
+    return BaseClass::lookupAdd(uid);
+  }
+
+  ARCANE_DEPRECATED_REASON("Use findItem() instead")
+  ItemInternal* lookupValue(Int64 uid) const
+  {
+    return BaseClass::lookupValue(uid);
+  }
+
  private:
 
   /*!
@@ -149,14 +185,23 @@ class ItemInternalMap
    *
    * Cette méthode ne doit être appelée que par DynamicMeshKindInfos.
    */
-  void changeLocalIds(ArrayView<ItemInternal*> items_internal,
-                      ConstArrayView<Int32> old_to_new_local_ids);
+  void _changeLocalIds(ArrayView<ItemInternal*> items_internal,
+                       ConstArrayView<Int32> old_to_new_local_ids);
+
+  BaseData* _lookupAdd(Int64 id, ItemInternal* value, bool& is_add)
+  {
+    return BaseClass::lookupAdd(id, value, is_add);
+  }
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Macro pour itérer sur les valeurs d'un ItemInternalMap
+/*!
+ * \brief Macro pour itérer sur les valeurs d'un ItemInternalMap.
+ *
+ * \deprecated Utiliser ItemInternalMap::eachItem() à la place.
+ */
 #define ENUMERATE_ITEM_INTERNAL_MAP_DATA(iter,item_list) \
 for( auto __i__##iter : item_list .buckets() ) \
     for (auto* iter = __i__##iter; iter; iter = iter->next())

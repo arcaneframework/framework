@@ -651,7 +651,7 @@ finishCompactItems(ItemFamilyCompactInfos& compact_infos)
   // IMPORTANT: Cette opération doit toujours être la dernière car ensuite
   // on perd la relation entre les anciens local_ids et les nouveaux à
   // travers cette structure
-  m_items_map.changeLocalIds(m_internals, old_to_new_local_ids);
+  m_items_map._changeLocalIds(m_internals, old_to_new_local_ids);
 
   if (m_is_verbose){
     info() << "DumpItemsBefore:";
