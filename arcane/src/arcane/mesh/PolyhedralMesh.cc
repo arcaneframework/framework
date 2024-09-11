@@ -30,15 +30,15 @@
 
 #ifdef ARCANE_HAS_POLYHEDRAL_MESH_TOOLS
 
-#include "arcane/IMeshMng.h"
-#include "arcane/MeshHandle.h"
-#include "arcane/IItemFamily.h"
-#include "arcane/mesh/ItemFamily.h"
+#include "arcane/core/IMeshMng.h"
+#include "arcane/core/MeshHandle.h"
+#include "arcane/core/IItemFamily.h"
+#include "arcane/core/internal/IMeshInternal.h"
 #include "arcane/utils/Collection.h"
 #include "arcane/utils/List.h"
 
 #include "neo/Mesh.h"
-
+#include "ItemConnectivityMng.h"
 
 #endif
 
@@ -482,6 +482,42 @@ namespace mesh
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+class mesh::PolyhedralMesh::InternalApi
+: public IMeshInternal
+{
+ public:
+
+  explicit InternalApi(PolyhedralMesh* mesh)
+  : m_mesh(mesh)
+  , m_connectivity_mng(std::make_unique<ItemConnectivityMng>(mesh->traceMng()))
+  {}
+
+ public:
+
+  void setMeshKind(const MeshKind& v) override
+  {
+    if (v.meshStructure() != eMeshStructure::Polyhedral && v.meshAMRKind() != eMeshAMRKind::None) {
+      ARCANE_FATAL("Incompatible mesh structure ({0}) and amr kind ({1}) for Polyhedral mesh {2}. Must be (Polyhedral,None). ",
+                   v.meshStructure(),v.meshAMRKind(), m_mesh->name());
+    }
+    m_mesh->m_mesh_kind = v;
+  }
+
+  IItemConnectivityMng* dofConnectivityMng() const noexcept override
+  {
+    return m_connectivity_mng.get();
+  }
+
+ private:
+
+  PolyhedralMesh* m_mesh = nullptr;
+  std::unique_ptr<IItemConnectivityMng> m_connectivity_mng = nullptr;
+};
+
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 mesh::PolyhedralMesh::
 ~PolyhedralMesh()
 {
@@ -524,6 +560,7 @@ PolyhedralMesh(ISubDomain* subdomain, const MeshBuildInfo& mbi)
 , m_initial_allocator(*this)
 , m_variable_mng{ subdomain->variableMng() }
 , m_mesh_checker{ this }
+, m_internal_api{std::make_unique<InternalApi>(this)}
 {
   m_mesh_handle._setMesh(this);
   m_mesh_item_internal_list.mesh = this;
@@ -1046,6 +1083,15 @@ IItemFamilyCollection mesh::PolyhedralMesh::
 itemFamilies()
 {
   return m_item_family_collection;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+IMeshInternal* mesh::PolyhedralMesh::
+_internalApi()
+{
+  return m_internal_api.get();
 }
 
 /*---------------------------------------------------------------------------*/
