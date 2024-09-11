@@ -13,17 +13,16 @@
 
 #include "arcane/mesh/OneMeshItemAdder.h"
 
+#include "arcane/utils/NotSupportedException.h"
+
+#include "arcane/core/MeshUtils.h"
+#include "arcane/core/MeshToMeshTransposer.h"
+#include "arcane/core/IParallelMng.h"
+#include "arcane/core/ItemPrinter.h"
+
 #include "arcane/mesh/DynamicMesh.h"
 #include "arcane/mesh/DynamicMeshIncrementalBuilder.h"
 #include "arcane/mesh/ItemTools.h"
-
-#include "arcane/MeshUtils.h"
-#include "arcane/MeshToMeshTransposer.h"
-#include "arcane/IParallelMng.h"
-#include "arcane/ItemPrinter.h"
-
-#include "arcane/utils/NotSupportedException.h"
-
 #include "arcane/mesh/ConnectivityNewWithDependenciesTypes.h"
 #include "arcane/mesh/GraphDoFs.h"
 
@@ -222,7 +221,7 @@ template<>
 Face OneMeshItemAdder::
 _findInternalFace(Integer i_face, const CellInfoProxy& cell_info, bool& is_add)
 {
-  DynamicMeshIncrementalBuilder::ItemInternalMap& nodes_map = m_mesh->nodesMap();
+  ItemInternalMap& nodes_map = m_mesh->nodesMap();
   ItemTypeInfo* cell_type_info = cell_info.typeInfo();
   const ItemTypeInfo::LocalFace& lf = cell_type_info->localFace(i_face);
   ItemInternal* nbi = nodes_map.lookupValue(m_work_face_sorted_nodes[0]);
@@ -272,7 +271,7 @@ _findInternalEdge(Integer i_edge, const CellInfoProxy& cell_info, Int64 first_no
 {
   ARCANE_UNUSED(i_edge);
 
-  DynamicMeshIncrementalBuilder::ItemInternalMap& nodes_map = m_mesh->nodesMap();
+  ItemInternalMap& nodes_map = m_mesh->nodesMap();
   ItemInternal* nbi = nodes_map.lookupValue(first_node);
   Edge edge_internal = ItemTools::findEdgeInNode2(nbi,first_node,second_node);
   if (edge_internal.null()){
@@ -609,8 +608,8 @@ _addOneCell(const CellInfo& cell_info)
   }
 
   //! Type la table de hashage uniqueId()->ItemInternal*
-  DynamicMeshIncrementalBuilder::ItemInternalMap& nodes_map = m_node_family.itemsMap();
-  
+  ItemInternalMap& nodes_map = m_node_family.itemsMap();
+
   _addNodesToCell(inew_cell,cell_info);
   
   if (m_mesh_builder->hasEdge()) {

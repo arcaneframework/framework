@@ -474,15 +474,14 @@ _computeEdgesUniqueIdsParallel3()
       for (Int64 z=0; z<nb_item; ++z ){
         Int64 old_uid = received_infos[(z*3)];
         Int64 new_uid = received_infos[(z*3)+1];
-        Int32 new_owner = (Int32)received_infos[(z*3)+2];
+        Int32 new_owner = static_cast<Int32>(received_infos[(z * 3) + 2]);
         //info() << "EDGE old_uid=" << old_uid << " new_uid=" << new_uid;
-        ItemInternalMapData* edge_data = edges_map.lookup(old_uid);
-        if (!edge_data)
+        impl::MutableItemBase iedge(edges_map.tryFind(old_uid));
+        if (iedge.null())
           ARCANE_FATAL("Can not find own edge uid={0}",old_uid);
-        ItemInternal* iedge = edge_data->value();
+        iedge.setUniqueId(new_uid);
+        iedge.setOwner(new_owner, my_rank);
         Edge edge{iedge};
-        iedge->setUniqueId(new_uid);
-        iedge->setOwner(new_owner,my_rank);
         if (is_verbose)
           info() << "SetEdgeOwner uid=" << new_uid << " owner=" << new_owner
                  << " n0,n1=" << edge.node(0).uniqueId() << "," << edge.node(1).uniqueId()
@@ -494,7 +493,6 @@ _computeEdgesUniqueIdsParallel3()
   traceMng()->flush();
   pm->barrier();
   info() << "END OF TEST NEW EDGE COMPUTE";
-  return;
 }
 
 /*---------------------------------------------------------------------------*/

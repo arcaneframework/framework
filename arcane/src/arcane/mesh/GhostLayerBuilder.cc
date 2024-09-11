@@ -433,9 +433,9 @@ _addOneGhostLayerV2()
         z += nb_rank;
         for( Integer z2=0; z2<nb_cell; ++z2 ){
           Int64 cell_uid = received_infos[z+z2];
-          ItemInternalMap::Data* dcell = cells_map.lookup(cell_uid);
-          if (dcell)
-            cells.add(dcell->value()->localId());
+          impl::ItemBase dcell = cells_map.tryFind(cell_uid);
+          if (!dcell.null())
+            cells.add(dcell.localId());
         }
         for( Integer z2=0,zs=ranks.size(); z2<zs; ++z2 ){
           SubDomainItemMap::Data* d = cells_to_send.lookupAdd(ranks[z2]);
@@ -524,7 +524,7 @@ addGhostChildFromParent()
   cells_map.eachItem([&](Item cell) {
     ARCANE_ASSERT((cell.owner() != -1), (""));
     if (cell.itemBase().level() == 0 && cell.owner() != sid) {
-      ARCANE_ASSERT((cell->owner() != -1),(""));
+      ARCANE_ASSERT((cell.owner() != -1), (""));
       Int64Array& v = boundary_infos_to_send.lookupAdd(cell.owner())->value();
       v.add(sid);
       v.add(cell.uniqueId());

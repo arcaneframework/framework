@@ -85,11 +85,6 @@ class FaceUniqueIdBuilder2
 
  public:
 
-  using ItemInternalMap = DynamicMeshKindInfos::ItemInternalMap;
-  using ItemInternalMapData = ItemInternalMap::Data;
-
- public:
-
   //! Construit une instance pour le maillage \a mesh
   explicit FaceUniqueIdBuilder2(DynamicMesh* mesh);
 
@@ -992,11 +987,10 @@ _resendCellsAndComputeFacesUniqueId(ConstArrayView<AnyFaceInfo> all_csi)
         Int32 full_local_index = rci.m_face_local_index_and_owner_rank;
         Int32 face_local_index = full_local_index / nb_rank;
         Int32 owner_rank = full_local_index % nb_rank;
-        
-        ItemInternalMapData* cell_data = cells_map.lookup(cell_uid);
-        if (!cell_data)
+
+        Cell cell = cells_map.tryFind(cell_uid);
+        if (cell.null())
           ARCANE_FATAL("Can not find cell data for '{0}'",cell_uid);
-        Cell cell(cell_data->value());
         Face face = cell.face(face_local_index);
         Int64 face_uid = all_first_face_uid[rank] + rci.m_index_in_rank_list;
         face.mutableItemBase().setUniqueId(face_uid);

@@ -747,16 +747,16 @@ _addGhostLayer(Integer current_layer,Int32ConstArrayView node_layer)
         if (is_verbose)
           info() << " CELL=" << cell_uid << " owner=" << cell_owner;
         if (cell_owner==my_rank){
-          ItemInternalMap::Data* dcell = cells_map.lookup(cell_uid);
-          if (!dcell)
-            throw FatalErrorException(A_FUNCINFO,"Internal error: cell not in our mesh");
+          impl::ItemBase dcell = cells_map.tryFind(cell_uid);
+          if (dcell.null())
+            ARCANE_FATAL("Internal error: cell uid={0} is not in our mesh", cell_uid);
           if (do_only_minimal_uid){
             // Ajoute toutes les mailles autour de mon noeud
             for( CellLocalId c : current_node.cellIds() )
               my_cells.add(c);
           }
           else
-            my_cells.add(dcell->value()->localId());
+            my_cells.add(dcell.localId());
         }
         else{
           if (ranks_done.find(cell_owner)==ranks_done.end()){

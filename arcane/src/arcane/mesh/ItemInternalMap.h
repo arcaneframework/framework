@@ -45,18 +45,24 @@ namespace Arcane::mesh
 class ItemInternalMap
 : private HashTableMapT<Int64, ItemInternal*>
 {
+  // Pour accès aux méthodes qui utilisent ItemInternal.
+  friend class DynamicMeshKindInfos;
+
  private:
 
   using BaseClass = HashTableMapT<Int64, ItemInternal*>;
+  using BaseData = BaseClass::Data;
 
  public:
 
-  using Data = BaseClass::Data;
+  using Data ARCANE_DEPRECATED_REASON("Data type is internal to Arcane") = BaseClass::Data;
+
+ public:
+
   using BaseClass::add;
   using BaseClass::buckets;
   using BaseClass::clear;
   using BaseClass::count;
-  using BaseClass::lookup;
   using BaseClass::lookupAdd;
   using BaseClass::lookupValue;
   using BaseClass::remove;
@@ -71,6 +77,7 @@ class ItemInternalMap
  public:
 
   void notifyUniqueIdsChanged();
+
   /*!
    * \brief Fonction template pour itérer sur les entités de l'instance.
    *
@@ -86,13 +93,51 @@ class ItemInternalMap
   template <class Lambda> void
   eachItem(const Lambda& lambda)
   {
-    ConstArrayView<BaseClass::Data*> b = buckets();
-    for (Integer k = 0, n = b.size(); k < n; ++k) {
-      Data* nbid = b[k];
+    ConstArrayView<BaseData*> b = buckets();
+    for (Int32 k = 0, n = b.size(); k < n; ++k) {
+      BaseData* nbid = b[k];
       for (; nbid; nbid = nbid->next()) {
         lambda(Arcane::impl::ItemBase(nbid->value()));
       }
     }
+  }
+
+ public:
+
+  //! Retourne l'entité associée à \a key si trouvé ou l'entité nulle sinon
+  impl::ItemBase tryFind(Int64 key) const
+  {
+    const BaseData* d = BaseClass::lookup(key);
+    return (d ? impl::ItemBase(d->value()) : impl::ItemBase{});
+  }
+  //! Retourne le localId() associé à \a key si trouvé ou NULL_ITEM_LOCAL_ID sinon aucun
+  Int32 tryFindLocalId(Int64 key) const
+  {
+    const BaseData* d = BaseClass::lookup(key);
+    return (d ? d->value()->localId() : NULL_ITEM_LOCAL_ID);
+  }
+
+ private:
+
+  //! Retourne l'entité associée à \a key si trouvé ou nullptr sinon
+  ItemInternal* tryFindItemInternal(Int64 key) const
+  {
+    const BaseData* d = BaseClass::lookup(key);
+    return (d ? d->value() : nullptr);
+  }
+
+ private:
+
+  ARCANE_DEPRECATED_REASON("This method is internal to Arcane")
+  Data* lookup(Int64 key)
+  {
+    return BaseClass::lookup(key);
+  }
+
+  ARCANE_DEPRECATED_REASON("This method is internal to Arcane")
+  const Data* lookup(Int64 key) const
+  {
+    return BaseClass::lookup(key);
   }
 };
 
@@ -102,7 +147,7 @@ class ItemInternalMap
 //! Macro pour itérer sur les valeurs d'un ItemInternalMap
 #define ENUMERATE_ITEM_INTERNAL_MAP_DATA(iter,item_list) \
 for( auto __i__##iter : item_list .buckets() ) \
-  for( Arcane::mesh::ItemInternalMap::Data* iter = __i__##iter; iter; iter = iter->next() )
+    for (auto* iter = __i__##iter; iter; iter = iter->next())
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

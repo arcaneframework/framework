@@ -7,16 +7,16 @@
 /*---------------------------------------------------------------------------*/
 /* DoFFamily.cc                                                (C) 2000-2024 */
 /*                                                                           */
-/* Famille de degre de liberte                                               */
+/* Famille de degré de liberté                                               */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 #include "arcane/mesh/DoFFamily.h"
 
-#include "arcane/ISubDomain.h"
-#include "arcane/IMesh.h"
-#include "arcane/ItemTypeMng.h"
-#include "arcane/ItemTypeInfo.h"
-#include "arcane/IExtraGhostItemsBuilder.h"
+#include "arcane/core/IMesh.h"
+#include "arcane/core/ItemTypeMng.h"
+#include "arcane/core/ItemTypeInfo.h"
+#include "arcane/core/IExtraGhostItemsBuilder.h"
 
 #include "arcane/mesh/ExtraGhostItemsManager.h"
 
@@ -152,12 +152,7 @@ void
 DoFFamily::
 _printInfos(Integer nb_added)
 {
-  Integer nb_in_map = 0;
-  for( auto i : itemsMap().buckets() ){
-    for( ItemInternalMap::Data* nbid = i; nbid; nbid = nbid->next() ){
-      ++nb_in_map;
-    }
-  }
+  Integer nb_in_map = itemsMap().count();
 
   info() << "DoFFamily: added=" << nb_added
          << " nb_internal=" << infos().m_internals.size()

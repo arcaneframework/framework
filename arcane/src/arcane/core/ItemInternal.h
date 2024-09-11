@@ -399,7 +399,7 @@ class ARCANE_CORE_EXPORT ItemInternalConnectivityList
 
  private:
 
-  // NOTE: à terme, il faudra fusionné cette classe avec ItemConnectivityContainerView
+  // NOTE : à terme, il faudra fusionner cette classe avec ItemConnectivityContainerView
   //! Conteneur des vues pour les informations de connectivité d'une famille
   struct Container
   {
@@ -498,8 +498,12 @@ class ARCANE_CORE_EXPORT ItemBase
  public:
 
   ItemBase() : m_shared_info(ItemSharedInfo::nullItemSharedInfoPointer) {}
-  ItemBase(ItemBase* x) : m_local_id(x->m_local_id), m_shared_info(x->m_shared_info) {}
   ItemBase(ItemBaseBuildInfo x) : m_local_id(x.m_local_id), m_shared_info(x.m_shared_info) {}
+
+ public:
+
+  // TODO: A supprimer à terme
+  inline ItemBase(ItemInternal* x);
 
  public:
 
@@ -829,8 +833,15 @@ class ARCANE_CORE_EXPORT MutableItemBase
  public:
 
   MutableItemBase() = default;
-  MutableItemBase(ItemBase* x) : ItemBase(x) {}
   MutableItemBase(ItemBaseBuildInfo x) : ItemBase(x) {}
+  explicit MutableItemBase(const ItemBase& x)
+  : ItemBase(x)
+  {}
+
+ public:
+
+  // TODO: A supprimer à terme
+  inline MutableItemBase(ItemInternal* x);
 
  public:
 
@@ -1138,6 +1149,23 @@ class ARCANE_CORE_EXPORT ItemInternal
   ItemInternal* _internalHChild(Int32 index) const { return _connectivity()->_hChildV2(m_local_id,index); }
   ItemInternal* _parent(Integer index) const { return m_shared_info->_parentV2(m_local_id,index); }
 };
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+impl::ItemBase::
+ItemBase(ItemInternal* x)
+: m_local_id(x->m_local_id)
+, m_shared_info(x->m_shared_info)
+{}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+impl::MutableItemBase::
+MutableItemBase(ItemInternal* x)
+: ItemBase(x)
+{}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
