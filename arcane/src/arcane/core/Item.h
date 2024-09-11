@@ -331,6 +331,7 @@ class ARCANE_CORE_EXPORT Item
    * \deprecated Utiliser itemBase() ou mutableItemBase() à la place pour
    * les cas l'instance retournée n'est pas conservée.
    */
+  ARCANE_DEPRECATED_REASON("This method is internal to Arcane. use itemBase() or mutableItemBase() instead")
   ItemInternal* internal() const
   {
     if (m_local_id!=NULL_ITEM_LOCAL_ID)
@@ -678,7 +679,7 @@ class ARCANE_CORE_EXPORT Node
   //! Enumére les mailles connectées au noeud
   CellVectorView _internalActiveCells(Int32Array& local_ids) const
   {
-    return _toItemBase()._internalActiveCells(local_ids);
+    return _toItemBase()._internalActiveCells2(local_ids);
   }
 
   ARCANE_DEPRECATED_REASON("Y2022: Do not use this operator. Use operator '.' instead")
