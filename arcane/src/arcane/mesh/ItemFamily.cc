@@ -543,15 +543,33 @@ _endAllocate()
     m_internal_variables->setUsed();
   }
   if (m_do_shrink_after_allocate)
-    _shrinkConnectiviyAndPrintInfos();
+    _shrinkConnectivityAndPrintInfos();
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void ItemFamily::
-_shrinkConnectiviyAndPrintInfos()
+_shrinkConnectivityAndPrintInfos()
 {
+  {
+    ItemConnectivityMemoryInfo mem_info;
+    for (ItemConnectivitySelector* cs : m_connectivity_selector_list) {
+      IIncrementalItemConnectivity* c = cs->customConnectivity();
+      c->_internalApi()->addMemoryInfos(mem_info);
+    }
+    const Int64 total_capacity = mem_info.m_total_capacity;
+    const Int64 total_size = mem_info.m_total_size;
+    Int64 ratio = 100 * (total_capacity - total_size);
+    ratio /= (total_size + 1); // Ajoute 1 pour éviter la division par zéro
+    const Int64 sizeof_int32 = sizeof(Int32);
+    const Int64 mega_byte = 1024 * 1024;
+    Int64 capacity_mega_byte = (mem_info.m_total_capacity * sizeof_int32) / mega_byte;
+    info() << "MemoryUsed for family name=" << name() << " size=" << mem_info.m_total_size
+           << " capacity=" << mem_info.m_total_capacity
+           << " capacity (MegaByte)=" << capacity_mega_byte
+           << " ratio=" << ratio;
+  }
   OStringStream ostr;
   std::ostream& o = ostr();
   o << "Mem=" << platform::getMemoryUsed();

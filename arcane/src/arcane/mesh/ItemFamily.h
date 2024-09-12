@@ -544,7 +544,7 @@ class ARCANE_MESH_EXPORT ItemFamily
   void _addVariable(IVariable* var);
   void _removeVariable(IVariable* var);
   void _resizeVariables(bool force_resize);
-  void _shrinkConnectiviyAndPrintInfos();
+  void _shrinkConnectivityAndPrintInfos();
 };
 
 /*---------------------------------------------------------------------------*/
