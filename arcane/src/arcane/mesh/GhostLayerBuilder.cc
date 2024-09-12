@@ -111,15 +111,6 @@ addGhostLayers(bool is_allocate)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void GhostLayerBuilder::
-_printItem(ItemInternal* ii,std::ostream& o)
-{
-  o << ItemPrinter(ii);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 class NodeCellList
 {
  public:
@@ -215,13 +206,13 @@ _addOneGhostLayerV2()
   const int shared_and_boundary_flags = ItemFlags::II_Shared | ItemFlags::II_SubDomainBoundary;
   // Parcours les faces et marque les nœuds, arêtes et faces frontières
   faces_map.eachItem([&](Face face) {
-    ItemInternal* face_internal = face.internal();
+    impl::ItemBase face_base = face.itemBase();
     if (is_verbose){
-      _printItem(face_internal,ostr());
+      ostr() << ItemPrinter(face);
       ostr() << '\n';
     }
     bool is_sub_domain_boundary_face = false;
-    if (face_internal->flags() & ItemFlags::II_Boundary){
+    if (face_base.flags() & ItemFlags::II_Boundary) {
       is_sub_domain_boundary_face = true;
     }
     else{
@@ -229,7 +220,7 @@ _addOneGhostLayerV2()
         is_sub_domain_boundary_face = true;
     }
     if (is_sub_domain_boundary_face){
-      face_internal->addFlags(shared_and_boundary_flags);
+      face_base.toMutable().addFlags(shared_and_boundary_flags);
       ++nb_sub_domain_boundary_face;
       for( Item inode : face.nodes() )
         inode.mutableItemBase().addFlags(shared_and_boundary_flags);
@@ -240,7 +231,7 @@ _addOneGhostLayerV2()
 
   Integer boundary_nodes_uid_count = 0;
 
-  // Parcours les noeuds et ajoute les noeuds frontières
+  // Parcours les nœuds et ajoute les nœuds frontières
   Int64 my_max_node_uid = NULL_ITEM_UNIQUE_ID;
   nodes_map.eachItem([&](Node node) {
     Int32 f = node.itemBase().flags();

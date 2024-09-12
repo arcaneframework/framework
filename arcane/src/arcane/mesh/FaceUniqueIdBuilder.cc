@@ -252,15 +252,15 @@ _computeFacesUniqueIdsParallelV1()
   {
     ItemTypeMng* itm = m_mesh->itemTypeMng();
 
-    UniqueArray<ItemInternal*> faces;
+    UniqueArray<Int32> faces_local_id;
 
     faces_map.eachItem([&](Face face) {
       bool boundary_val = face.isSubDomainBoundary();
       if (boundary_val)
-        faces.add(face.internal());
+        faces_local_id.add(face.localId());
     });
 
-    Integer nb_sub_domain_boundary_face = faces.size();
+    Integer nb_sub_domain_boundary_face = faces_local_id.size();
     Int64 global_nb_boundary_face = pm->reduce(Parallel::ReduceSum,(Int64)nb_sub_domain_boundary_face);
     debug() << "NB BOUNDARY FACE=" << nb_sub_domain_boundary_face
             << " NB_FACE=" << nb_local_face
@@ -270,7 +270,7 @@ _computeFacesUniqueIdsParallelV1()
     Int64UniqueArray faces_infos2;
     Int64UniqueArray recv_faces_infos;
 
-    // Calcule la taille d'un bloc d'envoie
+    // Calcule la taille d'un bloc d'envoi
     // La mémoire nécessaire pour une face est égale à nb_node + 4.
     // Si on suppose qu'on a des quadrangles en général, cela
     // fait 8 Int64 par face, soit 64 octets par face.
@@ -280,6 +280,7 @@ _computeFacesUniqueIdsParallelV1()
     // soit de l'ordre de 100 Mo pour chaque message.
     Int64 step_size = 1500000;
     Integer nb_phase = CheckedConvert::toInteger((global_nb_boundary_face / step_size) + 1);
+    FaceInfoListView faces(m_mesh->faceFamily());
     for( Integer i_phase=0; i_phase<nb_phase; ++i_phase ){
       Integer nb_face_to_send = nb_sub_domain_boundary_face / nb_phase;
       Integer first_face_to_send = nb_face_to_send * i_phase;
@@ -290,7 +291,7 @@ _computeFacesUniqueIdsParallelV1()
 
       faces_infos2.clear();
       for( Integer i_face=first_face_to_send; i_face<first_face_to_send+real_nb_face_to_send; ++i_face ){
-        Face face(faces[i_face]);
+        Face face(faces[faces_local_id[i_face]]);
         face.mutableItemBase().addFlags(ItemFlags::II_Shared | ItemFlags::II_SubDomainBoundary);
         bool has_back_cell = face.itemBase().flags() & ItemFlags::II_HasBackCell;
         faces_infos2.add(face.type());

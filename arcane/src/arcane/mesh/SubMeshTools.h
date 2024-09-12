@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* SubMeshTools.h                                              (C) 2000-2017 */
+/* SubMeshTools.h                                              (C) 2000-2024 */
 /*                                                                           */
 /* Algorithmes spécifiques aux sous-maillages.                               */
 /*---------------------------------------------------------------------------*/
@@ -63,8 +63,9 @@ class SubMeshTools
   static void display(IMesh * mesh, const String msg = String());
 
  private:
-  SharedArray<ItemInternal*> _ghostItems(ItemFamily * family);
-  SharedArray<ItemInternal*> _floatingItems(ItemFamily * family);
+
+  void _fillGhostItems(ItemFamily* family, Array<Int32>& items_local_id);
+  void _fillFloatingItems(ItemFamily* family, Array<Int32>& items_local_id);
   void _checkValidItemOwner();
   void _checkFloatingItems();
 

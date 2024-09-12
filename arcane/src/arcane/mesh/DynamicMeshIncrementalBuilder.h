@@ -205,8 +205,8 @@ class DynamicMeshIncrementalBuilder
  private:
   
   void _printCellFaceInfos(ItemInternal* cell,const String& str);
-  
-  SharedArray<ItemInternal*> _removeNeedRemoveMarkedItems(ItemInternalMap& map);
+
+  void _removeNeedRemoveMarkedItems(ItemInternalMap& map, UniqueArray<Int32>& items_local_id);
 
   void _fillFaceInfo(Integer& nb_face, Integer nb_cell,Int64Array& faces_infos, Int64ConstArrayView cells_infos, std::map<Int64,Int64SharedArray>& cell_to_face_connectivity_info);
   void _fillEdgeInfo(Integer& nb_edge, Integer nb_face,Int64Array& edges_infos, Int64ConstArrayView faces_infos, std::map<std::pair<Int64,Int64>, Int64>& edge_uid_map);
