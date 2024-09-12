@@ -46,12 +46,10 @@ ItemInternalMap()
 void ItemInternalMap::
 notifyUniqueIdsChanged()
 {
-  ItemInternalMap& c = *this;
-
   if (arcaneIsCheck()){
     // Vérifie qu'on n'a pas deux fois la même clé.
     std::unordered_set<Int64> uids;
-    c.eachItem([&](Item item) {
+    this->eachItem([&](Item item) {
       Int64 uid = item.uniqueId().asInt64();
       if (uids.find(uid)!=uids.end())
         ARCANE_FATAL("Duplicated uniqueId '{0}'",uid);
@@ -59,6 +57,7 @@ notifyUniqueIdsChanged()
     });
   }
 
+  BaseClass& c = *this;
   ENUMERATE_ITEM_INTERNAL_MAP_DATA2(nbid, c)
   {
     nbid->setKey(nbid->value()->uniqueId().asInt64());
@@ -74,7 +73,7 @@ void ItemInternalMap::
 _changeLocalIds(ArrayView<ItemInternal*> items_internal,
                 ConstArrayView<Int32> old_to_new_local_ids)
 {
-  ItemInternalMap& c = *this;
+  BaseClass& c = *this;
 
   ENUMERATE_ITEM_INTERNAL_MAP_DATA2(nbid, c)
   {
