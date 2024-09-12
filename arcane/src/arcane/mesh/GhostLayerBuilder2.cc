@@ -743,7 +743,7 @@ _addGhostLayer(Integer current_layer,Int32ConstArrayView node_layer)
           // Je suis la maille de plus petit uid et donc je
           // positionne le propriétaire du noeud.
           // TODO: ne pas faire cela ici, mais le faire dans une routine à part.
-          nodes_map[node_uid]->setOwner(cell_owner,my_rank);
+          nodes_map.findItem(node_uid).toMutable().setOwner(cell_owner, my_rank);
         if (is_verbose)
           info() << " CELL=" << cell_uid << " owner=" << cell_owner;
         if (cell_owner==my_rank){
