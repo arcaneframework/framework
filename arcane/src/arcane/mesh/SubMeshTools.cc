@@ -115,19 +115,16 @@ _fillGhostItems(ItemFamily* family, Array<Int32>& items_local_id)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-SharedArray<ItemInternal*> SubMeshTools::
-_floatingItems(ItemFamily * family)
+void SubMeshTools::
+_fillFloatingItems(ItemFamily* family, Array<Int32>& items_local_id)
 {
-  SharedArray<ItemInternal*> items_to_remove;
-  items_to_remove.reserve(1000);
-  DynamicMeshKindInfos::ItemInternalMap& items_map = family->itemsMap();
+  items_local_id.reserve(1000);
+  ItemInternalMap& items_map = family->itemsMap();
   items_map.eachItem([&](impl::ItemBase item) {
     if (!item.isSuppressed() && item.nbCell() == 0 && !item.isOwn()) {
-      debug(Trace::High) << "Floating item to remove " << ItemPrinter(Item(item));
-      items_to_remove.add(item.itemInternal());
+      items_local_id.add(item.localId());
     }
   });
-  return items_to_remove;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -278,23 +275,24 @@ removeFloatingItems()
   // ne tiennent pas compte du mécanisme fantome particulier des sous-maillages
   // où un sous-item peuvent vivre sans sur-item rattaché à celui-ic
   // (ex: Face 'own' sans Cell autour)
-  SharedArray<ItemInternal*> items_to_remove;
-  items_to_remove = _floatingItems(&face_family);
-  for( ItemInternal* item : items_to_remove ){
-    if (item->nbCell()==0)
-      face_family.removeFaceIfNotConnected(item);
+  SharedArray<Int32> items_to_remove;
+  _fillFloatingItems(&face_family, items_to_remove);
+  ENUMERATE_ (Face, iface, face_family.view(items_to_remove)) {
+    Face face(*iface);
+    if (face.nbCell() == 0)
+      face_family.removeFaceIfNotConnected(face);
   }
-  items_to_remove = _floatingItems(&edge_family);
-  for( Integer i=0, is=items_to_remove.size(); i<is; ++i ){
-    ItemInternal * item = items_to_remove[i];
-    if (item->nbCell()==0 && item->nbFace()==0)
-      edge_family.removeEdgeIfNotConnected(item);
+  _fillFloatingItems(&edge_family, items_to_remove);
+  ENUMERATE_ (Edge, iedge, edge_family.view(items_to_remove)) {
+    Edge edge(*iedge);
+    if (edge.nbCell() == 0 && edge.nbFace() == 0)
+      edge_family.removeEdgeIfNotConnected(edge);
   }
-  items_to_remove = _floatingItems(&node_family);
-  for( Integer i=0, is=items_to_remove.size(); i<is; ++i ){
-    ItemInternal * item = items_to_remove[i];
-    if (item->nbCell()==0 && item->nbFace()==0 && item->nbEdge()==0)
-      node_family.removeItem(item);
+  _fillFloatingItems(&node_family, items_to_remove);
+  ENUMERATE_ (Node, inode, node_family.view(items_to_remove)) {
+    Node node(*inode);
+    if (node.nbCell() == 0 && node.nbFace() == 0 && node.nbEdge() == 0)
+      node_family.removeItem(node);
   }
 
   _updateGroups();

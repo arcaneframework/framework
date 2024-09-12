@@ -65,7 +65,7 @@ class SubMeshTools
  private:
 
   void _fillGhostItems(ItemFamily* family, Array<Int32>& items_local_id);
-  SharedArray<ItemInternal*> _floatingItems(ItemFamily * family);
+  void _fillFloatingItems(ItemFamily* family, Array<Int32>& items_local_id);
   void _checkValidItemOwner();
   void _checkFloatingItems();
 
