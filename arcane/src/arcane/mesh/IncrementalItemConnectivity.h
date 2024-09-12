@@ -28,6 +28,11 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+namespace Arcane
+{
+class ItemConnectivityMemoryInfo;
+}
+
 namespace Arcane::mesh
 {
 
@@ -193,6 +198,7 @@ class ARCANE_MESH_EXPORT IncrementalItemConnectivityBase
  private:
 
   void _shrinkMemory();
+  void _addMemoryInfos(ItemConnectivityMemoryInfo& mem_info);
 };
 
 /*---------------------------------------------------------------------------*/

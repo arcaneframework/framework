@@ -198,6 +198,10 @@ class IncrementalItemConnectivityBase::InternalApi
  public:
 
   void shrinkMemory() override { return m_internal_api->_shrinkMemory(); }
+  void addMemoryInfos(ItemConnectivityMemoryInfo& mem_info) override
+  {
+    m_internal_api->_addMemoryInfos(mem_info);
+  }
 
  private:
 
@@ -211,8 +215,6 @@ IncrementalItemConnectivityBase::
 IncrementalItemConnectivityBase(IItemFamily* source_family,IItemFamily* target_family,
                                 const String& aname)
 : AbstractIncrementalItemConnectivity(source_family,target_family,aname)
-, m_item_connectivity_list(nullptr)
-, m_item_connectivity_index(-1)
 , m_internal_api(std::make_unique<InternalApi>(this))
 {
   StringBuilder var_name("Connectivity");
@@ -223,7 +225,7 @@ IncrementalItemConnectivityBase(IItemFamily* source_family,IItemFamily* target_f
   IMesh* mesh = source_family->mesh();
   m_p = new IncrementalItemConnectivityContainer(mesh,var_name);
 
-  typedef IncrementalItemConnectivityBase ThatClass;
+  using ThatClass = IncrementalItemConnectivityBase;
   // Récupère les évènements de lecture pour indiquer qu'il faut mettre
   // à jour les vues.
   m_p->m_observers.addObserver(this,&ThatClass::_notifyConnectivityNbItemChangedFromObservable,
@@ -840,6 +842,23 @@ _shrinkMemory()
   _notifyConnectivityIndexChanged();
   _notifyConnectivityNbItemChanged();
   _notifyConnectivityListChanged();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void IncrementalItemConnectivityBase::
+_addMemoryInfos(ItemConnectivityMemoryInfo& mem_info)
+{
+  Int64 s1 = m_p->m_connectivity_list_array.size();
+  Int64 s2 = m_p->m_connectivity_index_array.size();
+  Int64 s3 = m_p->m_connectivity_nb_item_array.size();
+  mem_info.m_total_size += s1 + s2 + s3;
+
+  Int64 c1 = m_p->m_connectivity_list_array.capacity();
+  Int64 c2 = m_p->m_connectivity_index_array.capacity();
+  Int64 c3 = m_p->m_connectivity_nb_item_array.capacity();
+  mem_info.m_total_capacity += c1 + c2 + c3;
 }
 
 /*---------------------------------------------------------------------------*/

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* IIncrementalItemConnectivityInternal.h                      (C) 2000-2024 */
 /*                                                                           */
-/* API Arcane de l'interface de connectivité incrémentale des entités.       */
+/* API interne à Arcane de IncrementalItemConnectivity                       */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_INTERNAL_IINCREMENTALITEMCONNECTIVITYINTERNAL_H
 #define ARCANE_CORE_INTERNAL_IINCREMENTALITEMCONNECTIVITYINTERNAL_H
@@ -27,31 +27,43 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+/*!
+ * \brief Informations sur l'utilisation mémoire pour les connectivités.
+ */
+class ItemConnectivityMemoryInfo
+{
+ public:
+
+  //! Nombre total de Int32 utilisés (correspoind à la somme des size())
+  Int64 m_total_size = 0;
+  //! Nombre total de Int32 allouées (correspond à la somme des capacity())
+  Int64 m_total_capacity = 0;
+};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Interface pour gérer une connectivité incrémentale.
- *
- * Une connectivité relie deux familles, une source (sourceFamily()) et
- * une cible (targetFamily()).
+ * \brief API interne à Arcane de IIncrementalItemConnectivity.
  */
 class ARCANE_CORE_EXPORT IIncrementalItemConnectivityInternal
 {
  public:
 
-  //TODO rendre 'protected' une fois que tout le monde utilisera le compteur de référence
   virtual ~IIncrementalItemConnectivityInternal() = default;
 
  public:
 
+  //! Réduit au minimum l'utilisation mémoire pour les connectivités
   virtual void shrinkMemory() = 0;
+
+  //! Ajoute \a mem_info les informations mémoire de l'instance.
+  virtual void addMemoryInfos(ItemConnectivityMemoryInfo& mem_info) = 0;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arcane
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
