@@ -38,9 +38,14 @@ namespace Arcane::mesh
 /*!
  * \brief Tableau associatif de ItemInternal.
  *
+ * Cette classe est interne à Arcane.
+ *
  * La clé de ce tableau associatif est le UniqueId des entités.
  * S'il change, il faut appeler notifyUniqueIdsChanged() pour remettre
  * à jour le tableau associatif.
+ *
+ * \note Toutes les méthodes qui utilisent ou retournent un 'ItemInternal*'
+ * sont obsolètes et ne doivent pas être utilisées.
  */
 class ItemInternalMap
 : private HashTableMapT<Int64, ItemInternal*>
@@ -63,7 +68,6 @@ class ItemInternalMap
   using BaseClass::clear;
   using BaseClass::count;
   using BaseClass::remove;
-  using BaseClass::operator[];
   using BaseClass::hasKey;
   using BaseClass::resize;
 
@@ -73,6 +77,11 @@ class ItemInternalMap
 
  public:
 
+  /*!
+   * \brief Notifie que les numéros uniques des entités ont changés.
+   *
+   * Cet appel peut provoquer un recalcul complet du tableau associatif.
+   */
   void notifyUniqueIdsChanged();
 
   /*!
@@ -82,7 +91,7 @@ class ItemInternalMap
    * qui peut être construit à partir d'un impl::ItemBase.
    * \code
    * ItemInternalMap item_map = ...
-   * item_map.eachItemBase([&](Item item){
+   * item_map.eachItem([&](Item item){
    *   std::cout << "LID=" << item_base.localId() << "\n";
    * });
    * \endcode
@@ -176,6 +185,12 @@ class ItemInternalMap
 
   ARCANE_DEPRECATED_REASON("Y2024: Use findItem() instead")
   ItemInternal* lookupValue(Int64 uid) const
+  {
+    return BaseClass::lookupValue(uid);
+  }
+
+  ARCANE_DEPRECATED_REASON("Y2024: Use findItem() instead")
+  ItemInternal* operator[](Int64 uid) const
   {
     return BaseClass::lookupValue(uid);
   }
