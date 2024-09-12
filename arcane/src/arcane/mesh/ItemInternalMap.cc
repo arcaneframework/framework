@@ -36,7 +36,7 @@ namespace Arcane::mesh
 
 ItemInternalMap::
 ItemInternalMap()
-: BaseClass(5000,false)
+: m_impl(5000, false)
 {
 }
 
@@ -57,13 +57,12 @@ notifyUniqueIdsChanged()
     });
   }
 
-  BaseClass& c = *this;
-  ENUMERATE_ITEM_INTERNAL_MAP_DATA2(nbid, c)
+  ENUMERATE_ITEM_INTERNAL_MAP_DATA2(nbid, m_impl)
   {
     nbid->setKey(nbid->value()->uniqueId().asInt64());
   }
 
-  this->rehash();
+  m_impl.rehash();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -73,9 +72,7 @@ void ItemInternalMap::
 _changeLocalIds(ArrayView<ItemInternal*> items_internal,
                 ConstArrayView<Int32> old_to_new_local_ids)
 {
-  BaseClass& c = *this;
-
-  ENUMERATE_ITEM_INTERNAL_MAP_DATA2(nbid, c)
+  ENUMERATE_ITEM_INTERNAL_MAP_DATA2(nbid, m_impl)
   {
     ItemInternal* item = nbid->value();
     Int32 current_local_id = item->localId();
