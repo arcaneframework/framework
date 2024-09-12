@@ -63,7 +63,8 @@ class SubMeshTools
   static void display(IMesh * mesh, const String msg = String());
 
  private:
-  SharedArray<ItemInternal*> _ghostItems(ItemFamily * family);
+
+  void _fillGhostItems(ItemFamily* family, Array<Int32>& items_local_id);
   SharedArray<ItemInternal*> _floatingItems(ItemFamily * family);
   void _checkValidItemOwner();
   void _checkFloatingItems();
