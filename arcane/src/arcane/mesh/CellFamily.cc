@@ -302,6 +302,17 @@ removeCell(Cell icell)
 /*---------------------------------------------------------------------------*/
 
 void CellFamily::
+removeCells(ConstArrayView<Int32> cells_local_id)
+{
+  CellInfoListView cells(this);
+  for (Int32 lid : cells_local_id)
+    removeCell(cells[lid]);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void CellFamily::
 detachCell(Cell icell)
 {
 #ifdef ARCANE_CHECK

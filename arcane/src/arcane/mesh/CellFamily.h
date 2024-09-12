@@ -77,6 +77,9 @@ class ARCANE_MESH_EXPORT CellFamily
    */
   void removeCell(Cell cell);
 
+  //! Supprime les mailles dont les numéros locaux sont \a cells_local_id
+  void removeCells(ConstArrayView<Int32> cells_local_id);
+
   /*!
    * Detache la maille \a cell du maillage sans la supprimer
    *
