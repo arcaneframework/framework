@@ -202,7 +202,7 @@ class ARCANE_MESH_EXPORT DynamicMeshKindInfos
     if (!m_has_unique_id_map)
       _badUniqueIdMap();
 #endif
-    return m_items_map.tryFindItemInternal(uid);
+    return m_items_map._tryFindItemInternal(uid);
   }
 
   //! Vérifie si les structures internes de l'instance sont valides

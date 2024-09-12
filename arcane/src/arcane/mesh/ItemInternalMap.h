@@ -147,13 +147,6 @@ class ItemInternalMap
 
  private:
 
-  //! Retourne l'entité associée à \a key si trouvé ou nullptr sinon
-  ItemInternal* tryFindItemInternal(Int64 key) const
-  {
-    const BaseData* d = BaseClass::lookup(key);
-    return (d ? d->value() : nullptr);
-  }
-
  public:
 
   ARCANE_DEPRECATED_REASON("Y2024: This method is internal to Arcane")
@@ -197,17 +190,24 @@ class ItemInternalMap
 
  private:
 
-  /*!
-   * \brief Change la valeurs des localId(0.
-   *
-   * Cette méthode ne doit être appelée que par DynamicMeshKindInfos.
-   */
+  // Les 3 méthodes suivantes sont uniquement pour la
+  // classe DynamicMeshKindInfos.
+
+  //! Change la valeurs des localId()
   void _changeLocalIds(ArrayView<ItemInternal*> items_internal,
                        ConstArrayView<Int32> old_to_new_local_ids);
 
   BaseData* _lookupAdd(Int64 id, ItemInternal* value, bool& is_add)
   {
     return BaseClass::lookupAdd(id, value, is_add);
+  }
+
+
+  //! Retourne l'entité associée à \a key si trouvé ou nullptr sinon
+  ItemInternal* _tryFindItemInternal(Int64 key) const
+  {
+    const BaseData* d = BaseClass::lookup(key);
+    return (d ? d->value() : nullptr);
   }
 };
 
