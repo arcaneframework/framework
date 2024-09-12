@@ -421,7 +421,7 @@ _addOneGhostLayerV2()
         Int32 nb_rank = CheckedConvert::toInt32(received_infos[z+2]);
         Int32 nb_cell = CheckedConvert::toInt32(received_infos[z+3]);
         //info() << "RECEIVE NODE uid="<< node_uid << " nb_rank=" << nb_rank << " nb_cell=" << nb_cell;
-        nodes_map[node_uid]->setOwner(node_new_owner,my_rank);
+        nodes_map.findItem(node_uid).toMutable().setOwner(node_new_owner, my_rank);
         ranks.clear();
         cells.clear();
         z += 4;
@@ -560,13 +560,13 @@ addGhostChildFromParent()
         Int32 cell_owner = CheckedConvert::toInt32(received_infos[(z*2)+0]);
         Int64 cell_uid = received_infos[(z*2)+1];
 
-        ItemInternal* cell= cells_map[cell_uid];
-        ARCANE_ASSERT((cell->uniqueId() == cell_uid),(""));
-        if (!cell->hasHChildren())
+        impl::ItemBase cell = cells_map.findItem(cell_uid);
+        ARCANE_ASSERT((cell.uniqueId() == cell_uid), (""));
+        if (!cell.hasHChildren())
           continue;
         UniqueArray<ItemInternal*> cell_family;
-        ARCANE_ASSERT((cell->level() == 0),(""));
-        ARCANE_ASSERT((cell->owner() != -1),("CELL"));
+        ARCANE_ASSERT((cell.level() == 0), (""));
+        ARCANE_ASSERT((cell.owner() != -1), ("CELL"));
         ARCANE_ASSERT((cell_owner != -1),("CELL"));
         true_face_family.familyTree(cell_family,cell);
         SubDomainItemMap::Data* d = cells_to_send.lookupAdd(cell_owner);
@@ -658,7 +658,7 @@ addGhostChildFromParent2(Array<Int64>& ghost_cell_to_refine)
         Int32 cell_owner = CheckedConvert::toInt32(received_infos[(z*2)+0]);
         Int64 cell_uid = received_infos[(z*2)+1];
 
-        Cell cell= cells_map[cell_uid];
+        Cell cell = cells_map.findItem(cell_uid);
         ARCANE_ASSERT((cell.uniqueId() == cell_uid),(""));
         ARCANE_ASSERT((cell.owner() != -1),("CELL"));
         ARCANE_ASSERT((cell_owner != -1),("CELL"));

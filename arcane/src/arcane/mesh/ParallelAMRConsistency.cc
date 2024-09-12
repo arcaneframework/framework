@@ -209,7 +209,7 @@ makeNewItemsConsistent(NodeMapCoordToUid& node_finder, FaceMapCoordToUid& face_f
 
   for(Integer iface=0;iface<m_shared_face_uids.size();++iface){
     Int64 face_uid = m_shared_face_uids[iface];
-    Face face = faces_map[face_uid] ;
+    Face face = faces_map.findItem(face_uid);
     {
       UniqueArray<ItemInternal*> subfaces;
       true_face_family->allSubFaces(face, subfaces);
@@ -239,7 +239,7 @@ makeNewItemsConsistent(NodeMapCoordToUid& node_finder, FaceMapCoordToUid& face_f
   }
   for(Integer iface=0;iface<m_connected_shared_face_uids.size();++iface){
     Int64 face_uid = m_connected_shared_face_uids[iface];
-    Face face(faces_map[face_uid]);
+    Face face(faces_map.findItem(face_uid));
 
     {
       Integer nb_node = face.nbNode() ;
