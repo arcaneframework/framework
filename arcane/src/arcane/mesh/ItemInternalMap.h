@@ -48,34 +48,75 @@ namespace Arcane::mesh
  * sont obsolètes et ne doivent pas être utilisées.
  */
 class ItemInternalMap
-: private HashTableMapT<Int64, ItemInternal*>
 {
   // Pour accès aux méthodes qui utilisent ItemInternal.
   friend class DynamicMeshKindInfos;
 
  private:
 
-  using BaseClass = HashTableMapT<Int64, ItemInternal*>;
-  using BaseData = BaseClass::Data;
+  using Impl = HashTableMapT<Int64, ItemInternal*>;
+  using BaseData = Impl::Data;
 
  public:
 
-  using Data ARCANE_DEPRECATED_REASON("Y2024: Data type is internal to Arcane") = BaseClass::Data;
+  using Data ARCANE_DEPRECATED_REASON("Y2024: Data type is internal to Arcane") = Impl::Data;
 
  public:
 
-  using BaseClass::add;
-  using BaseClass::clear;
-  using BaseClass::count;
-  using BaseClass::remove;
-  using BaseClass::hasKey;
-  using BaseClass::resize;
+  using ValueType = ItemInternal*;
 
  public:
 
   ItemInternalMap();
 
  public:
+
+  /*!
+   * \brief Ajoute la valeur \a v correspondant à la clé \a key
+   *
+   * Si une valeur correspondant à \a id existe déjà, elle est remplacée.
+   *
+   * \retval true si la clé est ajoutée
+   * \retval false si la clé existe déjà et est remplacée
+   */
+  bool add(Int64 key, ItemInternal* v)
+  {
+    return m_impl.add(key, v);
+  }
+
+  //! Supprime tous les éléments de la table
+  void clear()
+  {
+    return m_impl.clear();
+  }
+
+  //! Nombre d'éléments de la table
+  Int32 count() const
+  {
+    return m_impl.count();
+  }
+
+  /*!
+   * \brief Supprime la valeur associée à la clé \a key
+   *
+   * Lève une exception s'il n'y a pas de valeurs associées à la clé
+   */
+  void remove(Int64 key)
+  {
+    m_impl.remove(key);
+  }
+
+  //! \a true si une valeur avec la clé \a id est présente
+  bool hasKey(Int64 key)
+  {
+    return m_impl.hasKey(key);
+  }
+
+  //! Redimensionne la table de hachage
+  void resize(Int32 new_size, bool use_prime = false)
+  {
+    m_impl.resize(new_size, use_prime);
+  }
 
   /*!
    * \brief Notifie que les numéros uniques des entités ont changés.
@@ -99,7 +140,7 @@ class ItemInternalMap
   template <class Lambda> void
   eachItem(const Lambda& lambda)
   {
-    ConstArrayView<BaseData*> b = BaseClass::buckets();
+    ConstArrayView<BaseData*> b = m_impl.buckets();
     for (Int32 k = 0, n = b.size(); k < n; ++k) {
       BaseData* nbid = b[k];
       for (; nbid; nbid = nbid->next()) {
@@ -108,20 +149,23 @@ class ItemInternalMap
     }
   }
   //! Nombre de buckets
-  Int32 nbBucket() const { return BaseClass::buckets().size(); }
+  Int32 nbBucket() const
+  {
+    return m_impl.buckets().size();
+  }
 
  public:
 
   //! Retourne l'entité associée à \a key si trouvé ou l'entité nulle sinon
   impl::ItemBase tryFind(Int64 key) const
   {
-    const BaseData* d = BaseClass::lookup(key);
+    const BaseData* d = m_impl.lookup(key);
     return (d ? impl::ItemBase(d->value()) : impl::ItemBase{});
   }
   //! Retourne le localId() associé à \a key si trouvé ou NULL_ITEM_LOCAL_ID sinon aucun
   Int32 tryFindLocalId(Int64 key) const
   {
-    const BaseData* d = BaseClass::lookup(key);
+    const BaseData* d = m_impl.lookup(key);
     return (d ? d->value()->localId() : NULL_ITEM_LOCAL_ID);
   }
 
@@ -132,7 +176,7 @@ class ItemInternalMap
    */
   impl::ItemBase findItem(Int64 uid) const
   {
-    return impl::ItemBase(BaseClass::lookupValue(uid));
+    return impl::ItemBase(m_impl.lookupValue(uid));
   }
 
   /*!
@@ -142,55 +186,60 @@ class ItemInternalMap
    */
   Int32 findLocalId(Int64 uid) const
   {
-    return BaseClass::lookupValue(uid)->localId();
+    return m_impl.lookupValue(uid)->localId();
   }
-
- private:
 
  public:
 
   ARCANE_DEPRECATED_REASON("Y2024: This method is internal to Arcane")
   Data* lookup(Int64 key)
   {
-    return BaseClass::lookup(key);
+    return m_impl.lookup(key);
   }
 
   ARCANE_DEPRECATED_REASON("Y2024: This method is internal to Arcane")
   const Data* lookup(Int64 key) const
   {
-    return BaseClass::lookup(key);
+    return m_impl.lookup(key);
   }
 
   ARCANE_DEPRECATED_REASON("Y2024: This method is internal to Arcane")
-  ConstArrayView<BaseData*> buckets() const { return BaseClass::buckets(); }
+  ConstArrayView<BaseData*> buckets() const
+  {
+    return m_impl.buckets();
+  }
 
   ARCANE_DEPRECATED_REASON("This method is internal to Arcane")
   BaseData* lookupAdd(Int64 id, ItemInternal* value, bool& is_add)
   {
-    return BaseClass::lookupAdd(id, value, is_add);
+    return m_impl.lookupAdd(id, value, is_add);
   }
 
   ARCANE_DEPRECATED_REASON("Y2024: This method is internal to Arcane")
   BaseData* lookupAdd(Int64 uid)
   {
-    return BaseClass::lookupAdd(uid);
+    return m_impl.lookupAdd(uid);
   }
 
   ARCANE_DEPRECATED_REASON("Y2024: Use findItem() instead")
   ItemInternal* lookupValue(Int64 uid) const
   {
-    return BaseClass::lookupValue(uid);
+    return m_impl.lookupValue(uid);
   }
 
   ARCANE_DEPRECATED_REASON("Y2024: Use findItem() instead")
   ItemInternal* operator[](Int64 uid) const
   {
-    return BaseClass::lookupValue(uid);
+    return m_impl.lookupValue(uid);
   }
 
  private:
 
-  // Les 3 méthodes suivantes sont uniquement pour la
+  Impl m_impl;
+
+ private:
+
+  // Les trois méthodes suivantes sont uniquement pour la
   // classe DynamicMeshKindInfos.
 
   //! Change la valeurs des localId()
@@ -199,14 +248,14 @@ class ItemInternalMap
 
   BaseData* _lookupAdd(Int64 id, ItemInternal* value, bool& is_add)
   {
-    return BaseClass::lookupAdd(id, value, is_add);
+    return m_impl.lookupAdd(id, value, is_add);
   }
 
 
   //! Retourne l'entité associée à \a key si trouvé ou nullptr sinon
   ItemInternal* _tryFindItemInternal(Int64 key) const
   {
-    const BaseData* d = BaseClass::lookup(key);
+    const BaseData* d = m_impl.lookup(key);
     return (d ? d->value() : nullptr);
   }
 };
