@@ -454,9 +454,10 @@ class FaceUniqueIdBuilder2::AnyFaceBitonicSortTraits
 class FaceUniqueIdBuilder2::UniqueIdSorter
 {
  public:
-  bool operator()(ItemInternal* i1,ItemInternal* i2) const
+
+  bool operator()(const Item& i1, const Item& i2) const
   {
-    return i1->uniqueId() < i2->uniqueId();
+    return i1.uniqueId() < i2.uniqueId();
   }
 };
 
@@ -506,12 +507,12 @@ _computeSequential()
 
   ItemInternalMap& cells_map = m_mesh->cellsMap();
   Integer nb_cell = cells_map.count();
-  UniqueArray<ItemInternal*> cells;
+  UniqueArray<Cell> cells;
   cells.reserve(nb_cell);
   // D'abord, il faut trier les mailles par leur uniqueId()
   // en ordre croissant
-  cells_map.eachItem([&](Item item) {
-    cells.add(item.internal());
+  cells_map.eachItem([&](Cell item) {
+    cells.add(item);
   });
   std::sort(std::begin(cells),std::end(cells),UniqueIdSorter());
 

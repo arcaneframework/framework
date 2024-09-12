@@ -1640,8 +1640,8 @@ addGhostChildFromParent(Array<Int64>& ghost_cell_to_refine)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-SharedArray<ItemInternal*> DynamicMeshIncrementalBuilder::
-_removeNeedRemoveMarkedItems(ItemInternalMap& map)
+void DynamicMeshIncrementalBuilder::
+_removeNeedRemoveMarkedItems(ItemInternalMap& map, UniqueArray<Int32>& items_local_id)
 {
   // Suppression des liaisons
   SharedArray<ItemInternal*> items_to_remove;
@@ -1653,10 +1653,9 @@ _removeNeedRemoveMarkedItems(ItemInternalMap& map)
     if (f & ItemFlags::II_NeedRemove){
       f &= ~ItemFlags::II_NeedRemove;
       mb_item.setFlags(f);
-      items_to_remove.add(item.internal());
+      items_local_id.add(item.localId());
     }
   });
-  return items_to_remove;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1721,9 +1720,10 @@ removeNeedRemoveMarkedItems()
 
     // Suppression des mailles
     CellFamily& cell_family = m_mesh->trueCellFamily();
-  
-    SharedArray<ItemInternal*> cells_to_remove = _removeNeedRemoveMarkedItems(cell_family.itemsMap());
-  
+    UniqueArray<Int32> cells_to_remove;
+    cells_to_remove.reserve(1000);
+    _removeNeedRemoveMarkedItems(cell_family.itemsMap(), cells_to_remove);
+
     info() << "Number of cells to remove: " << cells_to_remove.size();
 
 #ifdef ARCANE_DEBUG_DYNAMIC_MESH
@@ -1733,8 +1733,7 @@ removeNeedRemoveMarkedItems()
              << ",owner=" << cells_to_remove[i]->owner();
 #endif /* ARCANE_DEBUG_DYNAMIC_MESH */
 
-    for( Integer i=0, is=cells_to_remove.size(); i<is; ++i )
-      cell_family.removeCell(cells_to_remove[i]);
+    cell_family.removeCells(cells_to_remove);
   }
   // With ItemFamilyNetwork
   else
