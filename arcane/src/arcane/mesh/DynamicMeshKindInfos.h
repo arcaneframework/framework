@@ -187,12 +187,12 @@ class ARCANE_MESH_EXPORT DynamicMeshKindInfos
     if (!m_has_unique_id_map)
       _badUniqueIdMap();
 #endif
-    ItemInternalMapData* item_data = m_items_map._lookupAdd(uid, 0, is_alloc);
+    ItemInternalMap::LookupData item_data = m_items_map._lookupAdd(uid, 0, is_alloc);
     if (is_alloc){
       bool need_alloc;
-      item_data->setValue(_allocOne(need_alloc));
+      item_data.setValue(_allocOne(need_alloc));
     }
-    return item_data->value();
+    return item_data.value();
   }
 
   //! Recherche l'entité de numéro unique \a uid

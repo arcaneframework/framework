@@ -629,7 +629,7 @@ _endUpdate(bool need_check_remove)
 
   _resizeVariables(false);
   info(4) << "ItemFamily:endUpdate(): " << fullName()
-          << " hashmapsize=" << itemsMap().buckets().size()
+          << " hashmapsize=" << itemsMap().nbBucket()
           << " nb_group=" << m_item_groups.count();
 
   _updateGroups(need_check_remove);
