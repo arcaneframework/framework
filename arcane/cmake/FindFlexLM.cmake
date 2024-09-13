@@ -11,6 +11,9 @@ if(NOT FLEXLM_ROOT)
   set(FLEXLM_ROOT $ENV{FLEXLM_ROOT})
 endif()
 
+# Replace \ by / in FLEXLM_ROOT
+string(REPLACE "\\" "/" FLEXLM_ROOT ${FLEXLM_ROOT})
+
 # HINTS can be removed when using find_package for flexlm
 FIND_PATH(FLEXLM_INCLUDE_DIR FlexlmAPI.h HINTS ${FLEXLM_ROOT}/include)
 
