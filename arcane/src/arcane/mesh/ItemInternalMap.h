@@ -321,7 +321,7 @@ class ItemInternalMap
   ConstArrayView<BaseData*> buckets() const
   {
     if constexpr (UseNewImpl) {
-      _throwNotSupported("lookup");
+      _throwNotSupported("buckets");
     }
     else
       return m_impl.buckets();
@@ -331,7 +331,7 @@ class ItemInternalMap
   BaseData* lookupAdd(Int64 id, ItemInternal* value, bool& is_add)
   {
     if constexpr (UseNewImpl) {
-      _throwNotSupported("lookup");
+      _throwNotSupported("lookupAdd(id,value,is_add)");
     }
     else
       return m_impl.lookupAdd(id, value, is_add);
@@ -341,7 +341,7 @@ class ItemInternalMap
   BaseData* lookupAdd(Int64 uid)
   {
     if constexpr (UseNewImpl) {
-      _throwNotSupported("lookup");
+      _throwNotSupported("lookupAdd(uid)");
     }
     else
       return m_impl.lookupAdd(uid);
@@ -351,7 +351,7 @@ class ItemInternalMap
   ItemInternal* lookupValue(Int64 uid) const
   {
     if constexpr (UseNewImpl) {
-      _throwNotSupported("lookup");
+      _throwNotSupported("lookupValue");
     }
     else
       return m_impl.lookupValue(uid);
@@ -361,7 +361,7 @@ class ItemInternalMap
   ItemInternal* operator[](Int64 uid) const
   {
     if constexpr (UseNewImpl) {
-      _throwNotSupported("lookup");
+      _throwNotSupported("operator[]");
     }
     else
       return m_impl.lookupValue(uid);
