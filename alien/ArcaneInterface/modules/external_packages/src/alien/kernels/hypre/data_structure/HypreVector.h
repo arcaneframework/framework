@@ -7,6 +7,8 @@
 /*---------------------------------------------------------------------------*/
 
 class SimpleCSR_to_Hypre_VectorConverter;
+class HCSR_to_Hypre_VectorConverter;
+class SYCL_to_Hypre_VectorConverter;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -40,8 +42,13 @@ class HypreVector : public IVectorImpl
 {
  public:
   friend class ::SimpleCSR_to_Hypre_VectorConverter;
+  friend class ::HCSR_to_Hypre_VectorConverter;
+  friend class ::SYCL_to_Hypre_VectorConverter;
 
   typedef Internal::VectorInternal VectorInternal;
+
+  typedef Integer IndexType ;
+  typedef double  ValueType ;
 
  public:
   HypreVector(const MultiVectorImpl* multi_impl);

@@ -44,7 +44,7 @@
 #include <alien/ref/import_export/MatrixMarketSystemWriter.h>
 
 #include <alien/expression/solver/SolverStater.h>
-
+#include <alien/AlienLegacyConfig.h>
 
 #ifdef ALIEN_USE_PETSC
 #include <alien/kernels/petsc/io/AsciiDumper.h>
@@ -64,6 +64,12 @@
 #include <alien/kernels/trilinos/data_structure/TrilinosMatrix.h>
 #include <alien/kernels/trilinos/algebra/TrilinosLinearAlgebra.h>
 #endif
+#ifdef ALIEN_USE_HYPRE
+#include <alien/kernels/hypre/HypreBackEnd.h>
+#include <alien/kernels/hypre/data_structure/HypreMatrix.h>
+#include <alien/kernels/hypre/data_structure/HypreVector.h>
+#include <alien/kernels/hypre/algebra/HypreLinearAlgebra.h>
+#endif
 
 #ifdef ALIEN_USE_SYCL
 #include <arccore/base/Span.h>
@@ -73,6 +79,7 @@
 
 #include <alien/kernels/sycl/data/SYCLBEllPackMatrix.h>
 #include <alien/kernels/sycl/data/SYCLVector.h>
+#include <alien/kernels/sycl/data/SYCLVectorInternal.h>
 #include <alien/kernels/sycl/algebra/SYCLLinearAlgebra.h>
 
 #include <alien/kernels/sycl/algebra/SYCLInternalLinearAlgebra.h>
@@ -103,6 +110,7 @@ using namespace Alien;
 void
 AlienBenchModule::init()
 {
+  info()<<"ALIEN BENCH INIT";
   Alien::setTraceMng(traceMng());
   Alien::setVerbosityLevel(Alien::Verbosity::Debug);
   m_parallel_mng = subDomain()->parallelMng();
@@ -136,6 +144,7 @@ AlienBenchModule::init()
 void
 AlienBenchModule::test()
 {
+  info()<<"ALIEN BENCH TEST";
 
   Timer pbuild_timer(subDomain(), "PBuildPhase", Timer::TimerReal);
   Timer psolve_timer(subDomain(), "PSolvePhase", Timer::TimerReal);
@@ -192,9 +201,12 @@ AlienBenchModule::test()
                                   // (however, you can reuse a matrix with several
                                   // builder)
 
+  info() << "USE ACCELERATOR "<<m_use_accelerator;
 #ifdef ALIEN_USE_SYCL
+  info() << "ALIEN USE SYCL";
   if(m_use_accelerator)
   {
+    info() << "SYCL ASSEMBLY : usm="<<m_with_usm;
     if(m_with_usm)
       _testSYCLWithUSM(pbuild_timer,
                 areaU,
@@ -225,6 +237,9 @@ AlienBenchModule::test()
   }
   else
 #endif
+    {
+      info() << " CPU ASSEMPBLY ";
+
     _test(pbuild_timer,
           areaU,
           cell_cell_connection,
@@ -237,6 +252,7 @@ AlienBenchModule::test()
           coordY,
           coordZ,
           matrixA) ;
+    }
 
 
 #ifdef ALIEN_USE_HTSSOLVER
@@ -695,33 +711,40 @@ AlienBenchModule::test()
   {
     Alien::ILinearSolver* solver = options()->linearSolver[0];
     solver->init();
+    {
+      auto const& true_A = matrixA.impl()->get<Alien::BackEnd::tag::hypre>() ;
+      auto const& true_b = vectorB.impl()->get<Alien::BackEnd::tag::hypre>() ;
+      auto const& true_x = vectorX.impl()->get<Alien::BackEnd::tag::hypre>() ;
+      HypreLinearAlgebra alg;
+      info()<<"HYPRE NORM B : "<<alg.norm2(vectorB);
+      info()<<"HYPRE NORM X : "<<alg.norm2(vectorX);
+    }
 #ifdef ALIEN_USE_TRILINOS
-      if(solver->getBackEndName().contains("tpetraserial"))
-      {
-        auto& mat = matrixA.impl()->get<Alien::BackEnd::tag::tpetraserial>(false) ;
-        mat.setMatrixCoordinate(coordX,coordY,coordZ) ;
-      }
+    if(solver->getBackEndName().contains("tpetraserial"))
+    {
+      auto& mat = matrixA.impl()->get<Alien::BackEnd::tag::tpetraserial>(false) ;
+      mat.setMatrixCoordinate(coordX,coordY,coordZ) ;
+    }
 #ifdef KOKKOS_ENABLE_OPENMP
-      if(solver->getBackEndName().contains("tpetraomp"))
-      {
-        auto& mat = matrixA.impl()->get<Alien::BackEnd::tag::tpetraomp>(false) ;
-        mat.setMatrixCoordinate(coordX,coordY,coordZ) ;
-      }
+    if(solver->getBackEndName().contains("tpetraomp"))
+    {
+      auto& mat = matrixA.impl()->get<Alien::BackEnd::tag::tpetraomp>(false) ;
+      mat.setMatrixCoordinate(coordX,coordY,coordZ) ;
+    }
 #endif
 #ifdef KOKKOS_ENABLE_THREADS
-
-      if(solver->getBackEndName().contains("tpetrapth"))
-      {
-        auto& mat = matrixA.impl()->get<Alien::BackEnd::tag::tpetrapth>(false) ;
-        mat.setMatrixCoordinate(coordX,coordY,coordZ) ;
-      }
+    if(solver->getBackEndName().contains("tpetrapth"))
+    {
+      auto& mat = matrixA.impl()->get<Alien::BackEnd::tag::tpetrapth>(false) ;
+      mat.setMatrixCoordinate(coordX,coordY,coordZ) ;
+    }
 #endif
 #ifdef KOKKOS_ENABLE_CUDA
-      if(solver->getBackEndName().contains("tpetracuda"))
-      {
-        auto& mat = matrixA.impl()->get<Alien::BackEnd::tag::tpetracuda>(true) ;
-        mat->setCoordinate(coordX,coordY,coordZ) ;
-      }
+    if(solver->getBackEndName().contains("tpetracuda"))
+    {
+      auto& mat = matrixA.impl()->get<Alien::BackEnd::tag::tpetracuda>(true) ;
+      mat->setCoordinate(coordX,coordY,coordZ) ;
+    }
 #endif
 #endif
     
@@ -802,7 +825,7 @@ AlienBenchModule::test()
         }
 
         // Réinitialisation de vectorX
-        // if(i>0)  // i=0, vector allready filled
+        if(i>0)  // i=0, vector allready filled
         {
           Alien::LocalVectorReader reader(vectorBB);
           Alien::LocalVectorWriter vb(vectorB);
@@ -812,20 +835,25 @@ AlienBenchModule::test()
             vb[i] = reader[i];
           }
         }
+        /*
         if(i==0)
         {
           Alien::MatrixMarketSystemWriter matrix_exporter("AlienBenchMatrixA.mtx",m_parallel_mng->messagePassingMng()) ;
-//          matrix_exporter.dump(matrixA,description.str()) ;
+          matrix_exporter.dump(matrixA,description.str()) ;
           Alien::MatrixMarketSystemWriter vector_exporter("AlienBenchVectorB.mtx",m_parallel_mng->messagePassingMng()) ;
-//          vector_exporter.dump(vectorB,description.str()) ;
-        }
+          vector_exporter.dump(vectorB,description.str()) ;
+        }*/
 
         Timer::Sentry ts(&psolve_timer);
+        info()<<"START RESOLUTION";
         solver->solve(matrixA, vectorB, vectorX);
+        info()<<"END RESOLUTION";
       }
       Alien::SolverStatus status = solver->getStatus();
+
       if (status.succeeded) {
         info()<<"RESOLUTION SUCCEED";
+        
         Alien::VectorReader reader(vectorX);
         ENUMERATE_CELL (icell, areaU.own()) {
           const Integer iIndex = allUIndex[icell->localId()];

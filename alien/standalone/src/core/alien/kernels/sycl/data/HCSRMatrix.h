@@ -159,6 +159,9 @@ class ALIEN_EXPORT HCSRMatrix : public IMatrixImpl
   MatrixInternal* internal() { return m_internal.get(); }
 
   MatrixInternal const* internal() const { return m_internal.get(); }
+  
+  void initDevicePointers(int** ncols, int** rows, int** cols, ValueType** values) const ;
+  void freeDevicePointers(int* ncols, int* rows, int* cols, ValueType* values) const ;
 
  private:
   class IsLocal

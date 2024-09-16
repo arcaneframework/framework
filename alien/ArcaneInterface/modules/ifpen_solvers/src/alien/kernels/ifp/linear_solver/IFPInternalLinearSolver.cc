@@ -127,10 +127,10 @@ IFPInternalLinearSolver::init()
        ptr = mpi_mng->getMPIComm();
     if (ptr) {
       auto* comm = static_cast<const MPI_Comm*>(ptr);
-      fcomm = static_cast<Integer>(*comm);
+      fcomm = MPI_Comm_c2f(*comm);
       needMpiInit = 1;
     } else {
-      fcomm = static_cast<Integer>(MPI_COMM_WORLD);
+      fcomm = MPI_Comm_c2f(MPI_COMM_WORLD);
       needMpiInit = 0;
     }
   }

@@ -108,6 +108,8 @@ IF(ALIEN_USE_INTELSYCL)
    add_sycl_to_target(TARGET  alien_kernel_sycl 
                       SOURCES data/SYCLVector.cc 
                               data/SYCLBEllPackMatrix.cc
+                              data/HCSRVector.cc
+                              data/HCSRMatrix.cc
                               algebra/SYCLInternalLinearAlgebra.cc)
 ENDIF()
 

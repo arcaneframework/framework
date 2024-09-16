@@ -36,7 +36,7 @@ class HypreVector;
 class HypreLibrary
 {
   public :
-  HypreLibrary() ;
+  HypreLibrary(bool use_gpu=false) ;
   virtual ~HypreLibrary() ;
 } ;
 

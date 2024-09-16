@@ -18,7 +18,9 @@ struct HypreOptionTypes
     DiagPC,
     AMGPC,
     ParaSailsPC,
-    EuclidPC
+    EuclidPC,
+    ILUPC,
+    FSAIPC
   };
 };
 

@@ -32,7 +32,8 @@ MatrixInternal::init(const int ilower, const int iupper, const int jlower,
   ierr = HYPRE_IJMatrixCreate(m_comm, ilower, iupper, jlower, jupper, &m_internal);
   ierr |= HYPRE_IJMatrixSetObjectType(m_internal, HYPRE_PARCSR);
   ierr |= HYPRE_IJMatrixInitialize(m_internal);
-  ierr |= HYPRE_IJMatrixSetRowSizes(m_internal, lineSizes.unguardedBasePointer());
+  if(lineSizes.size()>0)
+     ierr |= HYPRE_IJMatrixSetRowSizes(m_internal, lineSizes.unguardedBasePointer());
 
   return (ierr == 0);
 }
