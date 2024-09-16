@@ -105,6 +105,58 @@ install(
         RUNTIME DESTINATION bin
 )
 
+if(ALIEN_USE_SYCL)
+if (TARGET hypre)
+if (TARGET CUDA::cudart)
+createExecutable(alien_hypre_sycl.exe)
+
+addSources(alien_hypre_sycl.exe
+           test_hypre_sycl.cpp
+           hypre_sycl.cpp
+          )
+
+if(ALIEN_USE_SYCL)
+    IF(ALIEN_USE_HIPSYCL)
+        add_sycl_to_target(TARGET  alien_hypre_sycl.exe
+                           SOURCES hypre_sycl.cpp)
+    ENDIF()
+
+    IF(ALIEN_USE_INTELSYCL)
+        set(CMAKE_CXX_COMPILER ${ONEAPI_CXX_COMPILER})
+        IF(ALIEN_USE_HIP)
+          set(DPCPP_FLAGS -fsycl -Xsycl-target-backend=amdgcn-amd-amdhsa --offload-arch=gfx90a -Wno-linker-warnings)
+          target_compile_options(alien_hypre_sycl.exe PRIVATE $<$<COMPILE_LANGUAGE:CXX>:${DPCPP_FLAGS}>)
+        ENDIF()
+        IF(ALIEN_USE_CUDA)
+          set(DPCPP_FLAGS -fsycl -fsycl-targets=nvptx64-nvidia-cuda -Xsycl-target-backend=nvptx64-nvidia-cuda --cuda-gpu-arch=sm_80 -Wno-linker-warnings )
+          target_compile_options(alien_bench.exe PRIVATE $<$<COMPILE_LANGUAGE:CXX>:${DPCPP_FLAGS}>)
+          target_link_options(alien_hypre_sycl.exe PRIVATE ${DPCPP_FLAGS})
+        ENDIF()
+        add_sycl_to_target(TARGET  alien_hypre_sycl.exe
+                           SOURCES hypre_sycl.cpp)
+    ENDIF()
+     
+ENDIF()
+
+linkLibraries(alien_hypre_sycl.exe mpi)
+
+linkLibraries(alien_hypre_sycl.exe 
+              Boost::program_options)
+
+linkLibraries(alien_hypre_sycl.exe hypre)
+
+linkLibraries(alien_hypre_sycl.exe CUDA::cudart)
+
+commit(alien_hypre_sycl.exe)
+
+install(
+        TARGETS alien_hypre_sycl.exe
+        RUNTIME DESTINATION bin
+)
+endif ()
+endif ()
+endif ()
+
 configure_file(AlienBench.config ${CMAKE_BINARY_DIR}/${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench/AlienBench.config COPYONLY)
 configure_file(AlienBench-aliensolver.arc ${CMAKE_BINARY_DIR}/${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench/AlienBench-aliensolver.arc COPYONLY)
 

@@ -50,7 +50,7 @@ bool HypreInternalLinearSolver::m_library_plugin_is_initialized = false ;
 
 std::unique_ptr<HypreLibrary> HypreInternalLinearSolver::m_library_plugin ;
 
-HypreLibrary::HypreLibrary()
+HypreLibrary::HypreLibrary(bool use_memory_device)
 {
   // NOTE: A partir de la 2.29, on peut utiliser
   // HYPRE_Initialize() et tester si l'initialisation
@@ -62,10 +62,35 @@ HypreLibrary::HypreLibrary()
 #elif HYPRE_RELEASE_NUMBER >= 22700
   HYPRE_Init();
 #endif
-
 #if HYPRE_RELEASE_NUMBER >= 22700
-  HYPRE_SetMemoryLocation(HYPRE_MEMORY_HOST);
-  HYPRE_SetExecutionPolicy(HYPRE_EXEC_HOST);
+  if(use_memory_device) {
+      std::cout<<"HYPRE USE DEVICE MEMORY"<<std::endl ;
+      HYPRE_SetMemoryLocation(HYPRE_MEMORY_DEVICE);
+      /* setup AMG on GPUs */
+      HYPRE_SetExecutionPolicy(HYPRE_EXEC_DEVICE);
+      /* use hypre's SpGEMM instead of cuSPARSE */
+      HYPRE_SetSpGemmUseCusparse(true);
+      /* use GPU RNG */
+      HYPRE_SetUseGpuRand(true);
+      bool useHypreGpuMemPool = false ;
+      bool useUmpireGpuMemPool = false ;
+      if (useHypreGpuMemPool) {
+        /* use hypre's GPU memory pool */
+        //HYPRE_SetGPUMemoryPoolSize(bin_growth, min_bin, max_bin, max_bytes);
+      }
+      else if (useUmpireGpuMemPool) {
+         /* or use Umpire GPU memory pool */
+         //HYPRE_SetUmpireUMPoolName("HYPRE_UM_POOL_TEST");
+         //HYPRE_SetUmpireDevicePoolName("HYPRE_DEVICE_POOL_TEST");
+       }
+
+  }
+  else {
+    std::cout<<"HYPRE USE HOST MEMORY"<<std::endl ;
+
+    HYPRE_SetMemoryLocation(HYPRE_MEMORY_HOST);
+    HYPRE_SetExecutionPolicy(HYPRE_EXEC_HOST);
+  }
 #endif
 }
 
@@ -102,33 +127,13 @@ HypreInternalLinearSolver::init()
 #ifdef HYPRE_USING_CUDA
   if(m_options->useGpu() )
   {
-    hypre_SetDevice(m_gpu_device_id,nullptr);
-    HypreInternalLinearSolver::m_library_plugin.reset(new HypreLibrary()) ;
-    HYPRE_SetMemoryLocation(HYPRE_MEMORY_DEVICE);
-    /* setup AMG on GPUs */
-    HYPRE_SetExecutionPolicy(HYPRE_EXEC_DEVICE);
-    /* use hypre's SpGEMM instead of cuSPARSE */
-    HYPRE_SetSpGemmUseCusparse(false);
-    /* use GPU RNG */
-    HYPRE_SetUseGpuRand(true);
-    bool useHypreGpuMemPool = false ;
-    bool useUmpireGpuMemPool = false ;
-    if (useHypreGpuMemPool)
-    {
-      /* use hypre's GPU memory pool */
-      //HYPRE_SetGPUMemoryPoolSize(bin_growth, min_bin, max_bin, max_bytes);
-    }
-    else if (useUmpireGpuMemPool)
-     {
-       /* or use Umpire GPU memory pool */
-       //HYPRE_SetUmpireUMPoolName("HYPRE_UM_POOL_TEST");
-       //HYPRE_SetUmpireDevicePoolName("HYPRE_DEVICE_POOL_TEST");
-     }
+    //hypre_SetDevice(m_gpu_device_id,nullptr);
+    HypreInternalLinearSolver::m_library_plugin.reset(new HypreLibrary(true)) ;
    }
    else
 #endif
    {
-     HypreInternalLinearSolver::m_library_plugin.reset(new HypreLibrary()) ;
+     HypreInternalLinearSolver::m_library_plugin.reset(new HypreLibrary(false)) ;
    }
    HypreInternalLinearSolver::m_library_plugin_is_initialized = true ;
 }
@@ -287,20 +292,63 @@ HypreInternalLinearSolver::solve(
     }
     break;
   case HypreOptionTypes::ParaSailsPC:
-    precond_name = "parasails";
-    checkError(
-        "Hypre ParaSails preconditioner", HYPRE_ParaSailsCreate(comm, &preconditioner));
-    precond_solve_function = HYPRE_ParaSailsSolve;
-    precond_setup_function = HYPRE_ParaSailsSetup;
-    precond_destroy_function = HYPRE_ParaSailsDestroy;
+    {
+      precond_name = "parasails";
+      checkError(
+          "Hypre ParaSails preconditioner", HYPRE_ParaSailsCreate(comm, &preconditioner));
+      precond_solve_function = HYPRE_ParaSailsSolve;
+      precond_setup_function = HYPRE_ParaSailsSetup;
+      precond_destroy_function = HYPRE_ParaSailsDestroy;
+    }
     break;
   case HypreOptionTypes::EuclidPC:
-    precond_name = "euclid";
-    checkError("Hypre Euclid preconditioner", HYPRE_EuclidCreate(comm, &preconditioner));
-    precond_solve_function = HYPRE_EuclidSolve;
-    precond_setup_function = HYPRE_EuclidSetup;
-    precond_destroy_function = HYPRE_EuclidDestroy;
+    {
+      precond_name = "euclid";
+      checkError("Hypre Euclid preconditioner", HYPRE_EuclidCreate(comm, &preconditioner));
+      precond_solve_function = HYPRE_EuclidSolve;
+      precond_setup_function = HYPRE_EuclidSetup;
+      precond_destroy_function = HYPRE_EuclidDestroy;
+    }
     break;
+#if HYPRE_RELEASE_NUMBER >= 23100
+  case HypreOptionTypes::ILUPC:
+    {
+      precond_name = "ilu";
+      checkError("Hypre ILU preconditioner", HYPRE_ILUCreate(&preconditioner));
+      /* (Recommended) General solver options */
+      int ilu_type = 0 ;
+      int max_iter = 1 ;
+      double tol = 0. ;
+      int reordering = 0 ;
+      int print_level = 3 ;
+      checkError("Hypre ILU preconditioner Type SetUp     ", HYPRE_ILUSetType(preconditioner, ilu_type)); /* 0, 1, 10, 11, 20, 21, 30, 31, 40, 41, 50 */
+      checkError("Hypre ILU preconditioner Max Iter Set Up", HYPRE_ILUSetMaxIter(preconditioner, max_iter));
+      checkError("Hypre ILU preconditioner Tol SetUp      ", HYPRE_ILUSetTol(preconditioner, tol));
+      checkError("Hypre ILU preconditioner Reodering SetUp", HYPRE_ILUSetLocalReordering(preconditioner, reordering)); /* 0: none, 1: RCM */
+      if (output_level > 2) {
+          checkError("Hypre ILU preconditioner PrintLevel SetUp", HYPRE_ILUSetPrintLevel(preconditioner, print_level));
+      }
+      precond_solve_function = HYPRE_ILUSolve;
+      precond_setup_function = HYPRE_ILUSetup;
+      precond_destroy_function = HYPRE_ILUDestroy;
+    }
+    break;
+  case HypreOptionTypes::FSAIPC:
+    {
+      precond_name = "fsai";
+      int max_steps = 5 ;
+      int max_step_size = 3;
+      double kap_tolerance = 1.e-3 ;
+      checkError("Hypre FSAI preconditioner", HYPRE_FSAICreate(&preconditioner));
+      checkError("Hypre FSAI preconditioner", HYPRE_FSAISetMaxSteps(preconditioner, max_steps));
+      checkError("Hypre FSAI preconditioner", HYPRE_FSAISetMaxStepSize(preconditioner, max_step_size));
+      checkError("Hypre FSAI preconditioner", HYPRE_FSAISetKapTolerance(preconditioner, kap_tolerance));
+      precond_solve_function = HYPRE_FSAISolve;
+      precond_setup_function = HYPRE_FSAISetup;
+      precond_destroy_function = HYPRE_FSAIDestroy;
+    }
+    break;
+#endif
   default:
     alien_fatal([&] { cout() << "Undefined Hypre preconditioner option"; });
     break;

@@ -32,7 +32,8 @@ template <typename ValueT>
 class HCSRVector : public IVectorImpl
 {
  public:
-  typedef ValueT ValueType;
+  typedef ValueT  ValueType;
+  typedef Integer IndexType;
   typedef HCSRInternal::VectorInternal<ValueType> InternalType ;
 
   //! Constructeur sans association ? un MultiImpl
@@ -84,6 +85,18 @@ class HCSRVector : public IVectorImpl
     else
       return m_own_distribution.offset();
   }
+
+  Arccore::Integer allocSize() const {
+    return m_local_size ;
+  }
+
+  Arccore::Integer getAllocSize() const {
+    return m_local_size ;
+  }
+
+  ValueType const* dataPtr() const ;
+  void initDevicePointers(int** rows, ValueType** values) const ;
+  void freeDevicePointers(int* rows, ValueType* values) const ;
 
   InternalType* internal() {
     return m_internal.get() ;

@@ -166,7 +166,7 @@ class MatrixInternal
 
   ValueBufferType const getValues() const { return m_values; }
 
-  ProfileType* getProfile() { return m_profile; }
+  //ProfileType* getProfile() { return m_profile; }
 
   ProfileType const* getProfile() const { return m_profile; }
 

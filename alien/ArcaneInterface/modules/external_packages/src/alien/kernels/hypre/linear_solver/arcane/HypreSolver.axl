@@ -17,39 +17,45 @@
       </simple>    
       <enumeration name="solver" type="HypreOptionTypes::eSolver">
             <description>Solver type</description>
-      <enumvalue name="AMG" genvalue="HypreOptionTypes::AMG">
+            <enumvalue name="AMG" genvalue="HypreOptionTypes::AMG">
                <description>Algebraic Multigrid Method</description>
-      </enumvalue>
-      <enumvalue name="CG" genvalue="HypreOptionTypes::CG">
+            </enumvalue>
+            <enumvalue name="CG" genvalue="HypreOptionTypes::CG">
                <description>Conjugate Gradient Method</description>
-      </enumvalue>
-      <enumvalue name="GMRES" genvalue="HypreOptionTypes::GMRES">
+            </enumvalue>
+            <enumvalue name="GMRES" genvalue="HypreOptionTypes::GMRES">
                <description>GMRES Solver</description>
-      </enumvalue>
-      <enumvalue name="BiCGStab" genvalue="HypreOptionTypes::BiCGStab">
+            </enumvalue>
+            <enumvalue name="BiCGStab" genvalue="HypreOptionTypes::BiCGStab">
                <description>BiCGStab Solver</description>
-      </enumvalue>
-      <enumvalue name="Hybrid" genvalue="HypreOptionTypes::Hybrid">
+            </enumvalue>
+            <enumvalue name="Hybrid" genvalue="HypreOptionTypes::Hybrid">
                <description>Hybrid solver combining CG and multigrid solver (for nonsymmetric system GMRES must be used: not implemented)</description>
-      </enumvalue>
+            </enumvalue>
         </enumeration>
         <enumeration name="preconditioner" type="HypreOptionTypes::ePreconditioner">
             <description>Preconditioner type</description>
-      <enumvalue name="None" genvalue="HypreOptionTypes::NoPC">
+            <enumvalue name="None" genvalue="HypreOptionTypes::NoPC">
                <description>No preconditioner</description>
-      </enumvalue>
-      <enumvalue name="Diag" genvalue="HypreOptionTypes::DiagPC">
+            </enumvalue>
+            <enumvalue name="Diag" genvalue="HypreOptionTypes::DiagPC">
                <description>Diagonal preconditioner</description>
-      </enumvalue>
-      <enumvalue name="AMG" genvalue="HypreOptionTypes::AMGPC">
+            </enumvalue>
+            <enumvalue name="AMG" genvalue="HypreOptionTypes::AMGPC">
                <description>Algebraic Multi Grid preconditioner</description>
-      </enumvalue>
-      <enumvalue name="ParaSails" genvalue="HypreOptionTypes::ParaSailsPC">
+            </enumvalue>
+            <enumvalue name="ParaSails" genvalue="HypreOptionTypes::ParaSailsPC">
                <description>SPAI preconditioner</description>
-      </enumvalue>
-      <enumvalue name="Euclid" genvalue="HypreOptionTypes::EuclidPC">
+            </enumvalue>
+            <enumvalue name="Euclid" genvalue="HypreOptionTypes::EuclidPC">
                <description>Parallel ILU preconditioner</description>
-      </enumvalue>
+            </enumvalue>
+            <enumvalue name="ILU" genvalue="HypreOptionTypes::ILUPC">
+               <description>ILU preconditioner</description>
+            </enumvalue>
+            <enumvalue name="FSAI" genvalue="HypreOptionTypes::FSAIPC">
+               <description>FSAI preconditioner</description>
+            </enumvalue>
         </enumeration>
         <simple name="verbose" type="bool" default="false">
             <description>Verbosity flag</description>

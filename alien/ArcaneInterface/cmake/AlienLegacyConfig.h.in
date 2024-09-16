@@ -138,6 +138,9 @@
 // HPDDM
 #cmakedefine ALIEN_USE_HPDDM
 
+// SYCL
+#cmakedefine ALIEN_USE_SYCL
+
 #ifndef ALIEN_USE_ARCANE
 #include "alien/ServiceOptions.h"
 #endif

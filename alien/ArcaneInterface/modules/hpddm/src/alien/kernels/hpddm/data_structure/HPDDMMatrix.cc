@@ -537,7 +537,7 @@ MatrixInternal<ValueT>::_compute(HPDDM::MatrixCSR<ValueT>* matrix_dirichlet,
     assert(pm);
     MPI_Comm const* comm = static_cast<MPI_Comm const*>(pm->getMPIComm());
     // m_hpddm_matrix.Subdomain::initialize(&DiriCSR, m_overlap, m_mapping);
-    m_matrix.HPDDM::Subdomain<ValueT>::initialize(
+    m_matrix.HPDDM::template Subdomain<ValueT>::initialize(
         matrix_dirichlet, m_overlap, m_mapping, const_cast<MPI_Comm*>(comm));
     // m_matrix.Subdomain::initialize(&m_matrix_dirichlet, m_overlap, m_mapping);
     decltype(m_mapping)().swap(m_mapping);
