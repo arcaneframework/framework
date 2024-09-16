@@ -332,6 +332,7 @@ HypreInternalLinearSolver::solve(
       precond_destroy_function = HYPRE_ILUDestroy;
     }
     break;
+#if HYPRE_RELEASE_NUMBER >= 23100
   case HypreOptionTypes::FSAIPC:
     {
       precond_name = "fsai";
@@ -347,6 +348,7 @@ HypreInternalLinearSolver::solve(
       precond_destroy_function = HYPRE_FSAIDestroy;
     }
     break;
+#endif
   default:
     alien_fatal([&] { cout() << "Undefined Hypre preconditioner option"; });
     break;
