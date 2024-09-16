@@ -310,6 +310,7 @@ HypreInternalLinearSolver::solve(
       precond_destroy_function = HYPRE_EuclidDestroy;
     }
     break;
+#if HYPRE_RELEASE_NUMBER >= 23100
   case HypreOptionTypes::ILUPC:
     {
       precond_name = "ilu";
@@ -332,7 +333,6 @@ HypreInternalLinearSolver::solve(
       precond_destroy_function = HYPRE_ILUDestroy;
     }
     break;
-#if HYPRE_RELEASE_NUMBER >= 23100
   case HypreOptionTypes::FSAIPC:
     {
       precond_name = "fsai";
