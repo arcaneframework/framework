@@ -9,7 +9,6 @@
 #include <boost/program_options/cmdline.hpp>
 #include <boost/program_options/variables_map.hpp>
 
-#ifdef ALIEN_USE_HYPRE
 #include <_hypre_utilities.h>
 #include <HYPRE_utilities.h>
 #include <HYPRE.h>
@@ -18,16 +17,14 @@
 #include <HYPRE_IJ_mv.h>
 #include <HYPRE_parcsr_ls.h>
 #include <HYPRE_parcsr_mv.h>
-#endif
 
 #include <vector>
 #include <iostream>
 #include <cstdio>
 
-#ifdef ALIEN_USE_CUDA
+
 #include <cuda.h>
 #include <cuda_runtime_api.h>
-#endif
 
 int hypre_sycl(int num_rows,
                int** num_cols_d, int** rows_d, int** cols_d, double** data_d, double** x_data_d,
@@ -115,7 +112,6 @@ int main(int argc, char *argv[])
        x_values[i] = 1. ;
    }
 
-#ifdef ALIEN_USE_HYPRE
    HYPRE_IJMatrix ij_A;
    HYPRE_ParCSRMatrix  parcsr_A;
    HYPRE_IJMatrixCreate(MPI_COMM_WORLD, first_row, last_row, first_col, last_col, &ij_A);
@@ -127,7 +123,6 @@ int main(int argc, char *argv[])
    HYPRE_IJVectorCreate(MPI_COMM_WORLD, first_row, last_row, &ij_X);
    HYPRE_IJVectorSetObjectType(ij_X, HYPRE_PARCSR);
    HYPRE_IJVectorInitialize(ij_X);
-#endif
 
 
    if(use_mem_device)
@@ -139,7 +134,6 @@ int main(int argc, char *argv[])
      double* data_d  = nullptr;
      double* x_values_d  = nullptr;
 
-#ifdef ALIEN_USE_CUDA
      if(use_cuda)
      {
        std::cout<<"TEST WITH CUDA"<<std::endl;
@@ -161,7 +155,6 @@ int main(int argc, char *argv[])
 
        HYPRE_IJVectorSetValues(ij_X, num_rows, rows_d, x_values_d);
      }
-#endif
      
      if(use_sycl_ptr)
      {
@@ -170,13 +163,11 @@ int main(int argc, char *argv[])
                   &num_cols_d,&rows_d,&cols_d,&data_d,&x_values_d,
                   num_cols.data(), rows.data(), cols.data(), data.data(), x_values.data()) ;
         
-#ifdef ALIEN_USE_HYPRE
         std::cout<<"HYPRE SET VALUES"<<std::endl;
         int ierr = HYPRE_IJMatrixSetValues(ij_A, num_rows, num_cols_d, rows_d, cols_d, data_d);
         std::cout<<"HYPRE SET VALUES ERR="<<ierr<<std::endl;
 
         HYPRE_IJVectorSetValues(ij_X, num_rows, rows_d, x_values_d);
-#endif
       }
 
      if(use_sycl_buffer)
@@ -186,17 +177,14 @@ int main(int argc, char *argv[])
                   &num_cols_d,&rows_d,&cols_d,&data_d,
                   num_cols.data(), rows.data(), cols.data(), data.data()) ;
 
-#ifdef ALIEN_USE_HYPRE
         std::cout<<"HYPRE SET VALUES"<<std::endl;
         int ierr = HYPRE_IJMatrixSetValues(ij_A, num_rows, num_cols_d, rows_d, cols_d, data_d);
         std::cout<<"HYPRE SET VALUES ERR="<<ierr<<std::endl;
-#endif
       }
    }
    else
    {
      
-#ifdef ALIEN_USE_HYPRE
       std::cout<<"TEST ON HOST"<<std::endl;
       //HYPRE_IJMatrixSetRowSizes(m_internal, lineSizes.unguardedBasePointer());
       std::cout<<"HYPRE SET VALUES"<<std::endl;
@@ -204,9 +192,7 @@ int main(int argc, char *argv[])
       std::cout<<"HYPRE SET VALUES ERR="<<ierr<<std::endl;
 
       HYPRE_IJVectorSetValues(ij_X, num_rows, rows.data(), x_values.data());
-#endif
    }
-#ifdef ALIEN_USE_HYPRE
    HYPRE_IJMatrixAssemble(ij_A);
    HYPRE_IJVectorAssemble(ij_X);
 
@@ -217,7 +203,6 @@ int main(int argc, char *argv[])
    HYPRE_ParVectorInnerProd(par_X, par_X, &dot_prod);
    std::cout<<"DOT_PROD(X) : "<<dot_prod<<std::endl ;
    HYPRE_Finalize(); /* must be the last HYPRE function call */
-#endif
 
    MPI_Finalize();
 }

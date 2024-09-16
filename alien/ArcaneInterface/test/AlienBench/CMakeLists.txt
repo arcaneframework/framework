@@ -106,6 +106,7 @@ install(
 )
 
 if (TARGET hypre)
+if (TARGET CUDA::cudart)
 createExecutable(alien_hypre_sycl.exe)
 
 addSources(alien_hypre_sycl.exe
@@ -143,9 +144,7 @@ linkLibraries(alien_hypre_sycl.exe
 
 linkLibraries(alien_hypre_sycl.exe hypre)
 
-if (TARGET CUDA::cudart)
-    linkLibraries(alien_hypre_sycl.exe CUDA::cudart)
-endif ()
+linkLibraries(alien_hypre_sycl.exe CUDA::cudart)
 
 commit(alien_hypre_sycl.exe)
 
@@ -153,6 +152,7 @@ install(
         TARGETS alien_hypre_sycl.exe
         RUNTIME DESTINATION bin
 )
+endif ()
 endif ()
 
 configure_file(AlienBench.config ${CMAKE_BINARY_DIR}/${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench/AlienBench.config COPYONLY)
