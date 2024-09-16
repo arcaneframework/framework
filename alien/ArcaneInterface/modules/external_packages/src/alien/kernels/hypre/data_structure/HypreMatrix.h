@@ -30,7 +30,7 @@ namespace Internal {
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class HypreMatrix : public IMatrixImpl
+class ALIEN_EXTERNAL_PACKAGES_EXPORT HypreMatrix : public IMatrixImpl
 {
  public:
   typedef Internal::MatrixInternal MatrixInternal;

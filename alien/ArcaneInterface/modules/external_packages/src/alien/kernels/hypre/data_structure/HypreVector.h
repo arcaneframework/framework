@@ -44,7 +44,7 @@ namespace Internal {
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class HypreVector : public IVectorImpl
+class ALIEN_EXTERNAL_PACKAGES_EXPORT HypreVector : public IVectorImpl
 {
  public:
   friend class ::SimpleCSR_to_Hypre_VectorConverter;
