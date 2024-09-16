@@ -6,6 +6,7 @@
 //-----------------------------------------------------------------------------
 #pragma once
 
+#include <alien/AlienExternalPackagesPrecomp.h>
 #include <alien/core/impl/IVectorImpl.h>
 #include <alien/distribution/VectorDistribution.h>
 
