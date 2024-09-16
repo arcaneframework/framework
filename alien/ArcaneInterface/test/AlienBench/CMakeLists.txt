@@ -105,6 +105,7 @@ install(
         RUNTIME DESTINATION bin
 )
 
+if(ALIEN_USE_SYCL)
 if (TARGET hypre)
 if (TARGET CUDA::cudart)
 createExecutable(alien_hypre_sycl.exe)
@@ -152,6 +153,7 @@ install(
         TARGETS alien_hypre_sycl.exe
         RUNTIME DESTINATION bin
 )
+endif ()
 endif ()
 endif ()
 
