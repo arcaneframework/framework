@@ -133,6 +133,7 @@ HypreVector::getValues([[maybe_unused]] const int nrow, double* values) const
     return m_internal->getValues(m_rows.size(), m_rows.data(), values);
   else
   {
+#ifdef ALIEN_USE_SYCL
       Alien::HypreVector::IndexType* rows_d = nullptr;
       Alien::HypreVector::ValueType* values_d = nullptr ;
       Alien::SYCLVector<Arccore::Real>::allocateDevicePointers(m_rows.size(),
@@ -142,6 +143,12 @@ HypreVector::getValues([[maybe_unused]] const int nrow, double* values) const
       Alien::SYCLVector<Arccore::Real>::copyDeviceToHost(m_rows.size(), values_d, values) ;
       Alien::SYCLVector<Arccore::Real>::freeDevicePointers(rows_d, values_d) ;
       return true ;
+#else
+      alien_fatal([&] {
+        cout()<<"Error SYCL Support is required to get values of Hypre Vector from Device Memory";
+      });
+      return false ;
+#endif
   }
 }
 

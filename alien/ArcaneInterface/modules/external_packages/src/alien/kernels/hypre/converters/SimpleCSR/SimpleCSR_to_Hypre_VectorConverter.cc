@@ -63,9 +63,9 @@ SimpleCSR_to_Hypre_VectorConverter::convert(
   Arccore::ConstArrayView<Arccore::Real> values = v.values();
   if(v2.getMemoryType()==Alien::BackEnd::Memory::Host)
     v2.setValues(values.size(), values.unguardedBasePointer());
-#ifdef ALIEN_USE_SYCL
   else
   {
+#ifdef ALIEN_USE_SYCL
       Alien::HypreVector::IndexType* rows_d = nullptr;
       Alien::HypreVector::ValueType* values_d = nullptr ;
       Alien::SYCLVector<Arccore::Real>::initDevicePointers(values.size(),
@@ -75,8 +75,12 @@ SimpleCSR_to_Hypre_VectorConverter::convert(
       v2.setValues(v.getAllocSize(), rows_d, values_d);
       v2.assemble() ;
       Alien::SYCLVector<Arccore::Real>::freeDevicePointers(rows_d, values_d) ;
-  }
+#else
+      alien_fatal([&] {
+        cout()<<"Error SYCL Support is required to Buid Hypre Vector on Device Memory";
+      });
 #endif
+  }
 }
 
 /*---------------------------------------------------------------------------*/
