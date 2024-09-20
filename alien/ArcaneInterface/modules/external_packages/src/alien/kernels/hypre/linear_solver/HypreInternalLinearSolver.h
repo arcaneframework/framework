@@ -14,6 +14,7 @@
 #include <alien/core/backend/BackEnd.h>
 #include <alien/core/backend/IInternalLinearSolverT.h>
 #include <alien/utils/ObjectWithTrace.h>
+#include <alien/AlienExternalPackagesPrecomp.h>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -55,8 +56,9 @@ class HypreLibrary
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class HypreInternalLinearSolver : public IInternalLinearSolver<HypreMatrix, HypreVector>,
-                                  public ObjectWithTrace
+class ALIEN_EXTERNAL_PACKAGES_EXPORT HypreInternalLinearSolver 
+: public IInternalLinearSolver<HypreMatrix, HypreVector>
+, public ObjectWithTrace
 {
  public:
   typedef SolverStatus Status;
