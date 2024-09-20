@@ -11,6 +11,7 @@
 
 #include <alien/utils/Precomp.h>
 #include <alien/expression/solver/SolverStat.h>
+#include <alien/core/backend/BackEnd.h>
 #include <alien/core/backend/IInternalLinearSolverT.h>
 #include <alien/utils/ObjectWithTrace.h>
 
@@ -35,8 +36,20 @@ class HypreVector;
 class HypreLibrary
 {
   public :
-  HypreLibrary(bool use_gpu=false) ;
+  HypreLibrary(bool exec_on_device, bool use_device_momory) ;
   virtual ~HypreLibrary() ;
+
+  BackEnd::Memory::eType getMemoryType() const {
+    return m_memory_type ;
+  }
+
+  BackEnd::Exec::eSpaceType getExecSpace() const {
+    return m_exec_space  ;
+  }
+
+  private:
+  BackEnd::Memory::eType m_memory_type = BackEnd::Memory::Host ;
+  BackEnd::Exec::eSpaceType m_exec_space = BackEnd::Exec::Host ;
 } ;
 
 /*---------------------------------------------------------------------------*/

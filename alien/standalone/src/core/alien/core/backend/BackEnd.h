@@ -41,6 +41,14 @@ namespace BackEnd
       Shared
     } eType;
   }
+
+  namespace Exec
+  {
+    typedef enum {
+      Host,
+      Device
+    } eSpaceType;
+  }
 } // namespace BackEnd
 
 /*---------------------------------------------------------------------------*/

@@ -860,12 +860,24 @@ AlienBenchModule::test()
           m_x[icell] = reader[iIndex];
         }
 
-        SimpleCSRLinearAlgebra alg;
-        Alien::Vector vectorR(m_vdist);
-        alg.mult(matrixA, vectorX, vectorR);
-        alg.axpy(-1., vectorB, vectorR);
-        Real res = alg.norm2(vectorR);
-        info() << "RES : " << res;
+        if(m_use_accelerator)
+        {
+          SYCLLinearAlgebra alg;
+          Alien::Vector vectorR(m_vdist);
+          alg.mult(matrixA, vectorX, vectorR);
+          alg.axpy(-1., vectorB, vectorR);
+          Real res = alg.norm2(vectorR);
+          info() << "RES : " << res;
+        }
+        else
+        {
+          SimpleCSRLinearAlgebra alg;
+          Alien::Vector vectorR(m_vdist);
+          alg.mult(matrixA, vectorX, vectorR);
+          alg.axpy(-1., vectorB, vectorR);
+          Real res = alg.norm2(vectorR);
+          info() << "RES : " << res;
+        }
       }
       else
         info()<<"SOLVER FAILED";
@@ -1080,6 +1092,10 @@ AlienBenchModule::_test(Timer& pbuild_timer,
     csrAlg.mult(matrixA, vectorX, vectorBB);
     Real normeb = csrAlg.norm2(vectorB);
     std::cout << "||b||=" << normeb<<std::endl;
+  }
+  {
+    Alien::LocalVectorWriter vx(vectorX);
+    vx = 0. ;
   }
 
 }

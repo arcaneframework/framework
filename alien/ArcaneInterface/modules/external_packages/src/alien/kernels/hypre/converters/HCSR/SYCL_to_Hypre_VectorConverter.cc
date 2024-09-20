@@ -70,9 +70,7 @@ SYCL_to_Hypre_VectorConverter::convert(
   v.initDevicePointers(&rows_d, &values_d) ;
   v2.setValues(v.getAllocSize(), rows_d, values_d);
   v2.assemble() ;
-  v.freeDevicePointers(rows_d, values_d) ;
-
-  std::cout<<"END SYCL TO HYPRE CONVERSION"<<std::endl ;
+  Alien::SYCLVector<Arccore::Real>::freeDevicePointers(rows_d, values_d) ;
 }
 /*---------------------------------------------------------------------------*/
 

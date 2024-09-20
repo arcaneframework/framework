@@ -29,7 +29,7 @@
 
 
   <alien-bench>
-    <use-accelerator>true</use-accelerator>
+    <use-accelerator>false</use-accelerator>
     <!-- big diagonal-coefficient keep diagonal dominant matrix -->
     <diagonal-coefficient>1.</diagonal-coefficient>
     <!--lambdax>0.125</lambdax>
@@ -50,11 +50,12 @@
     </alien-core-solver-->
     
      <linear-solver name="HypreSolver">
-        <use-gpu>true</use-gpu>
+        <exec-space>Host</exec-space>
+        <memory-type>Host</memory-type>
         <solver>BiCGStab</solver>
         <num-iterations-max>1000</num-iterations-max>
         <stop-criteria-value>1e-6</stop-criteria-value>
-        <preconditioner>ILU</preconditioner>
+        <preconditioner>BJ-ILUK</preconditioner>
         <verbose>true</verbose>
       </linear-solver>
   </alien-bench>

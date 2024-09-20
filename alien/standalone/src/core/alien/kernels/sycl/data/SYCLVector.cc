@@ -106,6 +106,7 @@ namespace Alien
     auto& queue = env->internal()->queue() ;
     auto max_num_treads = env->maxNumThreads() ;
 
+    std::cout<<"VECTOR ALLOCATE : "<<m_local_size<<std::endl ;
     auto values_ptr = malloc_device<ValueT>(m_local_size, queue);
     auto rows_ptr   = malloc_device<IndexType>(m_local_size, queue);
 
@@ -123,24 +124,113 @@ namespace Alien
                                                           }
                                                       });
                   });
-
     queue.wait() ;
-    sycl::host_accessor values_h(m_internal->m_values) ;
-    for(int i=0;i<m_local_size;++i)
-    {
-       std::cout<<"SYCL VECTOR VALUES["<<i<<"]"<<values_h[i]<<std::endl ;
-    }
     *values = values_ptr;
     *rows   = rows_ptr;
   }
 
   template <typename ValueT>
-  void SYCLVector<ValueT>::freeDevicePointers(int* rows, ValueType* values) const
+  void SYCLVector<ValueT>::freeDevicePointers(int* rows, ValueType* values)
   {
     auto env = SYCLEnv::instance() ;
     auto& queue = env->internal()->queue() ;
     sycl::free(values,queue) ;
     sycl::free(rows,queue) ;
+  }
+
+  template <typename ValueT>
+  void SYCLVector<ValueT>::allocateDevicePointers(std::size_t local_size,
+                                                  int** rows,
+                                                  ValueType** values)
+  {
+
+    auto env = SYCLEnv::instance() ;
+    auto& queue = env->internal()->queue() ;
+    auto max_num_treads = env->maxNumThreads() ;
+
+    auto values_ptr = malloc_device<ValueT>(local_size, queue);
+    auto rows_ptr   = malloc_device<IndexType>(local_size, queue);
+    queue.submit( [&](sycl::handler& cgh)
+                  {
+                    std::size_t y_length = local_size ;
+                    cgh.parallel_for<class init2_vector_ptr>(sycl::range<1>{max_num_treads}, [=] (sycl::item<1> itemId)
+                                                      {
+                                                          auto id = itemId.get_id(0);
+                                                          for (auto i = id; i < y_length; i += itemId.get_range()[0])
+                                                          {
+                                                            values_ptr[i] = 0.;
+                                                            rows_ptr[i] = i ;
+                                                          }
+                                                      });
+                  });
+
+    queue.wait() ;
+    *values = values_ptr;
+    *rows   = rows_ptr;
+  }
+
+  template <typename ValueT>
+  void SYCLVector<ValueT>::initDevicePointers(std::size_t local_size,
+                                              ValueType const* host_values,
+                                              int** rows,
+                                              ValueType** values)
+  {
+
+    auto env = SYCLEnv::instance() ;
+    auto& queue = env->internal()->queue() ;
+    auto max_num_treads = env->maxNumThreads() ;
+
+    auto values_ptr = malloc_device<ValueT>(local_size, queue);
+    auto rows_ptr   = malloc_device<IndexType>(local_size, queue);
+    sycl::buffer<ValueT, 1> values_buf(host_values, sycl::range<1>(local_size)) ;
+    queue.submit( [&](sycl::handler& cgh)
+                  {
+                    auto access_x = values_buf.template get_access<sycl::access::mode::read>(cgh);
+                    std::size_t y_length = local_size ;
+                    cgh.parallel_for<class init3_vector_ptr>(sycl::range<1>{max_num_treads}, [=] (sycl::item<1> itemId)
+                                                      {
+                                                          auto id = itemId.get_id(0);
+                                                          for (auto i = id; i < y_length; i += itemId.get_range()[0])
+                                                          {
+                                                            values_ptr[i] = access_x[i];
+                                                            rows_ptr[i] = i ;
+                                                          }
+                                                      });
+                  });
+
+    queue.wait() ;
+    *values = values_ptr;
+    *rows   = rows_ptr;
+  }
+
+
+  template <typename ValueT>
+  void SYCLVector<ValueT>::copyDeviceToHost(std::size_t local_size,
+                                            ValueType const* device_values,
+                                            ValueType* host_values)
+  {
+
+    auto env = SYCLEnv::instance() ;
+    auto& queue = env->internal()->queue() ;
+    auto max_num_treads = env->maxNumThreads() ;
+
+    sycl::buffer<ValueT, 1> values_buf(host_values, sycl::range<1>(local_size)) ;
+    queue.submit( [&](sycl::handler& cgh)
+                  {
+                    auto access_x = sycl::accessor { values_buf, cgh, sycl::write_only, sycl::property::no_init{}};
+                    //auto access_x = values_buf.template get_access<sycl::access::mode::write>(cgh);
+                    std::size_t y_length = local_size ;
+                    cgh.parallel_for<class copy_vector_ptr>(sycl::range<1>{max_num_treads}, [=] (sycl::item<1> itemId)
+                                                      {
+                                                          auto id = itemId.get_id(0);
+                                                          for (auto i = id; i < y_length; i += itemId.get_range()[0])
+                                                          {
+                                                              access_x[i] = device_values[i];
+                                                          }
+                                                      });
+                  });
+
+    queue.wait() ;
   }
 
   /*---------------------------------------------------------------------------*/

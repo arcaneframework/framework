@@ -144,8 +144,20 @@ class ALIEN_EXPORT SYCLVector : public IVectorImpl
   ValueType const* getAddressData() const { return m_h_values.data(); }
 
   void initDevicePointers(int** rows, ValueType** values) const ;
-  void freeDevicePointers(int* rows, ValueType* values) const ;
 
+  static void allocateDevicePointers(std::size_t local_size,
+                                     int** rows,
+                                     ValueType** values);
+  static void freeDevicePointers(int* rows, ValueType* values);
+
+  static void initDevicePointers(std::size_t local_size,
+                                 ValueType const* host_values,
+                                 int** rows,
+                                 ValueType** values) ;
+
+  static void copyDeviceToHost(std::size_t local_size,
+                               ValueType const* device_values,
+                               ValueType* host_values) ;
 
   template <typename LambdaT>
   void apply(LambdaT const& lambda)
