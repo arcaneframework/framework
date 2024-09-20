@@ -860,6 +860,7 @@ AlienBenchModule::test()
           m_x[icell] = reader[iIndex];
         }
 
+#ifdef ALIEN_USE_SYCL
         if(m_use_accelerator)
         {
           SYCLLinearAlgebra alg;
@@ -870,6 +871,7 @@ AlienBenchModule::test()
           info() << "RES : " << res;
         }
         else
+#endif
         {
           SimpleCSRLinearAlgebra alg;
           Alien::Vector vectorR(m_vdist);
