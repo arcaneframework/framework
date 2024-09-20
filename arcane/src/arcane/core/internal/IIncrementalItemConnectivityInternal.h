@@ -5,16 +5,19 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshKind.h                                                  (C) 2000-2024 */
+/* IIncrementalItemConnectivityInternal.h                      (C) 2000-2024 */
 /*                                                                           */
-/* Caractéristiques d'un maillage.                                           */
+/* API interne à Arcane de IncrementalItemConnectivity                       */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_MESHKIND_H
-#define ARCANE_MESHKIND_H
+#ifndef ARCANE_CORE_INTERNAL_IINCREMENTALITEMCONNECTIVITYINTERNAL_H
+#define ARCANE_CORE_INTERNAL_IINCREMENTALITEMCONNECTIVITYINTERNAL_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/core/ArcaneTypes.h"
+#include "arcane/utils/ArrayView.h"
+
+#include "arcane/core/ItemTypes.h"
+#include "arcane/core/IItemConnectivityAccessor.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -24,50 +27,37 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-//! Structure du maillage
-enum class eMeshStructure
+/*!
+ * \brief Informations sur l'utilisation mémoire pour les connectivités.
+ */
+class ItemConnectivityMemoryInfo
 {
-  Unknown,
-  Unstructured,
-  Cartesian,
-  Polyhedral
-};
-extern "C++" ARCANE_CORE_EXPORT std::ostream&
-operator<<(std::ostream& o, eMeshStructure r);
+ public:
 
-//! Type de maillage AMR
-enum class eMeshAMRKind
-{
-  None,
-  Cell,
-  Patch,
-  PatchCartesianMeshOnly
+  //! Nombre total de Int32 utilisés (correspoind à la somme des size())
+  Int64 m_total_size = 0;
+  //! Nombre total de Int32 allouées (correspond à la somme des capacity())
+  Int64 m_total_capacity = 0;
 };
-extern "C++" ARCANE_CORE_EXPORT std::ostream&
-operator<<(std::ostream& o, eMeshAMRKind r);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Caractéristiques d'un maillage.
- *
- * Pour l'instant les caractéristiques sont:
- * - la structure du maillage (eMeshStructure)
- * - le type d'AMR
+ * \brief API interne à Arcane de IIncrementalItemConnectivity.
  */
-class ARCANE_CORE_EXPORT MeshKind
+class ARCANE_CORE_EXPORT IIncrementalItemConnectivityInternal
 {
  public:
 
-  eMeshStructure meshStructure() const { return m_structure; }
-  eMeshAMRKind meshAMRKind() const { return m_amr_kind; }
-  void setMeshStructure(eMeshStructure v) { m_structure = v; }
-  void setMeshAMRKind(eMeshAMRKind v) { m_amr_kind = v; }
+  virtual ~IIncrementalItemConnectivityInternal() = default;
 
- private:
+ public:
 
-  eMeshStructure m_structure = eMeshStructure::Unknown;
-  eMeshAMRKind m_amr_kind = eMeshAMRKind::None;
+  //! Réduit au minimum l'utilisation mémoire pour les connectivités
+  virtual void shrinkMemory() = 0;
+
+  //! Ajoute \a mem_info les informations mémoire de l'instance.
+  virtual void addMemoryInfos(ItemConnectivityMemoryInfo& mem_info) = 0;
 };
 
 /*---------------------------------------------------------------------------*/

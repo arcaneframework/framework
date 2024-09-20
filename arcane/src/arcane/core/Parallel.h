@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Parallel.h                                                  (C) 2000-2023 */
+/* Parallel.h                                                  (C) 2000-2024 */
 /*                                                                           */
 /* Espace de nom des types gérant le parallélisme.                           */
 /*---------------------------------------------------------------------------*/
@@ -25,61 +25,64 @@
 
 #include "arcane/core/ArcaneTypes.h"
 
-#define ARCANE_BEGIN_NAMESPACE_PARALLEL namespace Parallel {
-#define ARCANE_END_NAMESPACE_PARALLEL   }
+#define ARCANE_BEGIN_NAMESPACE_PARALLEL \
+  namespace Parallel \
+  {
+#define ARCANE_END_NAMESPACE_PARALLEL }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 namespace Arcane
 {
-using Arccore::MessagePassing::IMessagePassingMng;
-using Arccore::MessagePassing::ITypeDispatcher;
 using Arccore::MessagePassing::IControlDispatcher;
+using Arccore::MessagePassing::IMessagePassingMng;
 using Arccore::MessagePassing::ISerializeMessage;
 using Arccore::MessagePassing::ISerializeMessageList;
+using Arccore::MessagePassing::ITypeDispatcher;
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
  * \brief Types des classes du parallélisme.
  */
-namespace Parallel
+namespace Arcane::Parallel
 {
 
 using Arccore::MessagePassing::eReduceType;
-using Arccore::MessagePassing::ReduceMin;
 using Arccore::MessagePassing::ReduceMax;
+using Arccore::MessagePassing::ReduceMin;
 using Arccore::MessagePassing::ReduceSum;
 
 using Arccore::MessagePassing::eWaitType;
+using Arccore::MessagePassing::TestSome;
 using Arccore::MessagePassing::WaitAll;
 using Arccore::MessagePassing::WaitSome;
-using Arccore::MessagePassing::TestSome;
 using Arccore::MessagePassing::WaitSomeNonBlocking;
 
-using Arccore::MessagePassing::eBlockingType;
 using Arccore::MessagePassing::Blocking;
+using Arccore::MessagePassing::eBlockingType;
 using Arccore::MessagePassing::NonBlocking;
 
 using Arccore::MessagePassing::ePointToPointMessageType;
-using Arccore::MessagePassing::MsgSend;
 using Arccore::MessagePassing::MsgReceive;
+using Arccore::MessagePassing::MsgSend;
 
-using Arccore::MessagePassing::Request;
 using Arccore::MessagePassing::IRequestCreator;
 using Arccore::MessagePassing::IRequestList;
 using Arccore::MessagePassing::ISubRequest;
 using Arccore::MessagePassing::MessageId;
-using Arccore::MessagePassing::MessageTag;
 using Arccore::MessagePassing::MessageRank;
 using Arccore::MessagePassing::MessageSourceInfo;
+using Arccore::MessagePassing::MessageTag;
 using Arccore::MessagePassing::PointToPointMessageInfo;
+using Arccore::MessagePassing::Request;
 
 using Arccore::MessagePassing::Communicator;
 
 class IStat;
-} // End namespace Parallel
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -87,7 +90,7 @@ class IStat;
  * \brief Déclarations des types et méthodes utilisés par les mécanismes
  * d'échange de messages.
  */
-namespace MessagePassing
+namespace Arcane::MessagePassing
 {
 /*!
  * \brief Effectue une barrière nommée de nom \a name
@@ -105,8 +108,10 @@ namespace MessagePassing
  * \note Seuls les 1024 premiers caractères de \a name sont utilisés.
  */
 extern "C++" ARCANE_CORE_EXPORT void
-namedBarrier(IParallelMng* pm,const String& name);
+namedBarrier(IParallelMng* pm, const String& name);
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 /*!
  * \brief Filtre les chaînes de caractères communes à tous les rangs de \a pm.
  *
@@ -116,16 +121,37 @@ namedBarrier(IParallelMng* pm,const String& name);
  * par ordre alphabétique.
  */
 extern "C++" ARCANE_CORE_EXPORT void
-filterCommonStrings(IParallelMng* pm,ConstArrayView<String> input_strings,
+filterCommonStrings(IParallelMng* pm, ConstArrayView<String> input_strings,
                     Array<String>& common_strings);
 
-} // End namespace MessagePassing
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Écrit dans \a tm la date et la mémoire consommée.
+ *
+ * L'opération est collective sur \a pm et affiche la mémoire minimimale,
+ * moyenne et maximale consommée ainsi que les rangs de ceux qui consomment
+ * le moins et le plus de mémoire.
+ */
+extern "C++" ARCANE_CORE_EXPORT void
+dumpDateAndMemoryUsage(IParallelMng* pm, ITraceMng* tm);
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+} // namespace Arcane::MessagePassing
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 inline std::ostream&
-operator<<(std::ostream& o,const Parallel::Request prequest)
+operator<<(std::ostream& o, const Parallel::Request prequest)
 {
   prequest.print(o);
   return o;

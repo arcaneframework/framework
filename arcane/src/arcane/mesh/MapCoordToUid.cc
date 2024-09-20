@@ -1,32 +1,28 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MapCoordToUid.cc                                            (C) 2000-2023 */
+/* MapCoordToUid.cc                                            (C) 2000-2024 */
 /*                                                                           */
 /* Recherche d'entités à partir de ses coordonnées.                          */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/ArcanePrecomp.h"
-#include "arcane/utils/UtilsTypes.h"
 #include "arcane/utils/Real3.h"
 #include "arcane/utils/ITraceMng.h"
 
-#include "arcane/VariableTypes.h"
-#include "arcane/IMesh.h"
-#include "arcane/SharedVariable.h"
-#include "arcane/IParallelMng.h"
+#include "arcane/core/IMesh.h"
+#include "arcane/core/SharedVariable.h"
+#include "arcane/core/IParallelMng.h"
 
 #include "arcane/mesh/DynamicMesh.h"
 #include "arcane/mesh/MapCoordToUid.h"
 
 #include <limits>
 #include <utility>
-#include <cmath>
 #include <set>
 
 /*---------------------------------------------------------------------------*/
@@ -112,18 +108,17 @@ init2(IMesh* mesh)
   DynamicMesh* dmesh = ARCANE_CHECK_POINTER(dynamic_cast<DynamicMesh*>(mesh));
   ItemInternalMap& nodes_map = dmesh->nodesMap();
 
-  ENUMERATE_ITEM_INTERNAL_MAP_DATA(ncd,nodes_map){
-    ItemInternal* node = ncd->value();
-    Int64 uid = node->uniqueId().asInt64();
+  nodes_map.eachItem([&](Node node) {
+    Int64 uid = node.uniqueId().asInt64();
     if(uid == NULL_ITEM_ID)
-      continue;
+      return;
     m_lower_bound[0] = std::min(m_lower_bound[0],nodes_coords[node].x);
     m_lower_bound[1] = std::min(m_lower_bound[1],nodes_coords[node].y);
     m_lower_bound[2] = std::min(m_lower_bound[2],nodes_coords[node].z);
     m_upper_bound[0] = std::max(m_upper_bound[0],nodes_coords[node].x);
     m_upper_bound[1] = std::max(m_upper_bound[1],nodes_coords[node].y);
     m_upper_bound[2] = std::max(m_upper_bound[2],nodes_coords[node].z);
-  }
+  });
   // la box du maillage entier
   if (mesh->parallelMng()->isParallel())  {
     mesh->parallelMng()->reduce(Parallel::ReduceMin,m_lower_bound);
@@ -604,13 +599,12 @@ fill2()
   // Populate the nodes map
   DynamicMesh* dmesh = ARCANE_CHECK_POINTER(dynamic_cast<DynamicMesh*>(m_mesh));
   ItemInternalMap& nodes_map = dmesh->nodesMap();
-  ENUMERATE_ITEM_INTERNAL_MAP_DATA(ncd,nodes_map){
-    ItemInternal* node = ncd->value();
-    Int64 uid = node->uniqueId().asInt64();
+  nodes_map.eachItem([&](Node node) {
+    Int64 uid = node.uniqueId().asInt64();
     if(uid == NULL_ITEM_ID)
-      continue;
+      return;
     this->insert(m_nodes_coords[node],uid);
-  }
+  });
   CHECKPERF( m_perf_counter.stop(PerfCounter::Fill2) )
 }
 
@@ -623,13 +617,12 @@ check2()
   // Populate the nodes map
   DynamicMesh* dmesh = ARCANE_CHECK_POINTER(dynamic_cast<DynamicMesh*>(m_mesh));
   ItemInternalMap& nodes_map = dmesh->nodesMap();
-  ENUMERATE_ITEM_INTERNAL_MAP_DATA(ncd,nodes_map){
-    ItemInternal* node = ncd->value();
-    Int64 uid = node->uniqueId().asInt64();
+  nodes_map.eachItem([&](Node node) {
+    Int64 uid = node.uniqueId().asInt64();
     Int64 map_uid = find(m_nodes_coords[node]);
     if(uid!=map_uid)
       ARCANE_FATAL("MAP NODE ERROR : '{0}' found, expected uid '{1}'",map_uid,uid);
-  }
+  });
 }
 
 /*---------------------------------------------------------------------------*/
@@ -641,13 +634,12 @@ fill2()
   CHECKPERF( m_perf_counter.stop(PerfCounter::Fill2) )
   DynamicMesh* dmesh = ARCANE_CHECK_POINTER(dynamic_cast<DynamicMesh*>(m_mesh));
   ItemInternalMap& faces_map = dmesh->facesMap();
-  ENUMERATE_ITEM_INTERNAL_MAP_DATA(ncd,faces_map){
-    ItemInternal* face = ncd->value();
-    Int64 face_uid = face->uniqueId().asInt64();
+  faces_map.eachItem([&](Face face) {
+    Int64 face_uid = face.uniqueId().asInt64();
     if(face_uid == NULL_ITEM_ID)
-      continue;
+      return;
     this->insert(faceCenter(face),face_uid);
-  }
+  });
   CHECKPERF( m_perf_counter.stop(PerfCounter::Fill2) )
 }
 
@@ -659,13 +651,12 @@ check2()
 {
   DynamicMesh* dmesh = ARCANE_CHECK_POINTER(dynamic_cast<DynamicMesh*>(m_mesh));
   ItemInternalMap& faces_map = dmesh->facesMap();
-  ENUMERATE_ITEM_INTERNAL_MAP_DATA(ncd,faces_map){
-    ItemInternal* face = ncd->value();
-    Int64 face_uid = face->uniqueId().asInt64();
+  faces_map.eachItem([&](Face face) {
+    Int64 face_uid = face.uniqueId().asInt64();
     Int64 map_uid = find(faceCenter(face));
-    if(face_uid!=map_uid)
+    if (face_uid != map_uid)
       ARCANE_FATAL("MAP NODE ERROR : '{0}' found, expected uid '{1}'",map_uid,face_uid);
-  }
+  });
 }
 
 /*---------------------------------------------------------------------------*/

@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IndexedIncrementalItemConnectivityMng.cc                    (C) 2000-2022 */
+/* IndexedIncrementalItemConnectivityMng.cc                    (C) 2000-2024 */
 /*                                                                           */
 /* Gestionnaire de 'IIndexedIncrementalItemConnectivity'.                    */
 /*---------------------------------------------------------------------------*/
@@ -13,8 +13,8 @@
 
 #include "arcane/mesh/IndexedIncrementalItemConnectivityMng.h"
 
-#include "arcane/IndexedItemConnectivityView.h"
-#include "arcane/IIndexedIncrementalItemConnectivity.h"
+#include "arcane/core/IndexedItemConnectivityView.h"
+#include "arcane/core/IIndexedIncrementalItemConnectivity.h"
 #include "arcane/mesh/IncrementalItemConnectivity.h"
 
 /*---------------------------------------------------------------------------*/
@@ -79,15 +79,13 @@ findOrCreateConnectivity(IItemFamily* source, IItemFamily* target, const String&
                    name, old_target->name(), target->name());
   }
   else {
-    // Les connectivités créés sont désallouées automatiquement par les familles
+    // Les connectivités créées sont désallouées automatiquement par les familles
     auto* true_connectivity = new mesh::IncrementalItemConnectivity(source, target, name);
     connectivity = makeRef<IIndexedIncrementalItemConnectivity>(new IndexedIncrementalItemConnectivity(true_connectivity));
     m_connectivity_map.insert(std::make_pair(name, connectivity));
 
     // Ajoute les entités existantes dans la connectivité.
-    ENUMERATE_(Item,iitem,source->allItems()){
-      true_connectivity->notifySourceItemAdded(*iitem);
-    }
+    true_connectivity->_internalNotifySourceItemsAdded(source->allItems().view().localIds());
   }
   return connectivity;
 }

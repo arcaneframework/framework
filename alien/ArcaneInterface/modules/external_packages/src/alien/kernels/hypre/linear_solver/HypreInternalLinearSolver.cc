@@ -391,7 +391,6 @@ HypreInternalLinearSolver::solve(
       precond_destroy_function = HYPRE_ILUDestroy;
     }
     break;
-
   case HypreOptionTypes::FSAIPC:
     {
       precond_name = "fsai";

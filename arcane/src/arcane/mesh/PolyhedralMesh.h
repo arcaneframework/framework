@@ -122,6 +122,8 @@ class PolyhedralMesh
     IPolyhedralMeshInitialAllocator* polyhedralMeshAllocator() override { return &m_mesh; }
   };
 
+  class InternalApi;
+
  private:
 
   std::vector<std::unique_ptr<PolyhedralFamily>> m_arcane_families;
@@ -134,6 +136,7 @@ class PolyhedralMesh
   IVariableMng* m_variable_mng;
   DynamicMeshChecker m_mesh_checker;
   List<IItemFamily*> m_item_family_collection;
+  std::unique_ptr<InternalApi> m_internal_api;
 
   // IPrimaryMeshBase interface
   IMeshInitialAllocator* initialAllocator() override { return &m_initial_allocator; }
@@ -235,6 +238,8 @@ class PolyhedralMesh
   IItemFamilyCollection itemFamilies() override;
 
   String factoryName() const override;
+
+  IMeshInternal* _internalApi() override;
 
  private:
 

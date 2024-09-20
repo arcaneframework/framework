@@ -7,23 +7,17 @@
 /*---------------------------------------------------------------------------*/
 /* MeshUnitTest.cc                                             (C) 2000-2024 */
 /*                                                                           */
-/* Service du test du maillage.                                              */
+/* Service de test du maillage.                                              */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/Array.h"
 #include "arcane/utils/StringBuilder.h"
-#include "arcane/utils/ScopedPtr.h"
 #include "arcane/utils/List.h"
 #include "arcane/utils/ArithmeticException.h"
 #include "arcane/utils/ValueChecker.h"
 #include "arcane/utils/TestLogger.h"
 
 #include "arcane/core/BasicUnitTest.h"
-
-#include "arcane/tests/ArcaneTestGlobal.h"
-#include "arcane/tests/MeshUnitTest_axl.h"
-
 #include "arcane/core/AbstractItemOperationByBasicType.h"
 #include "arcane/core/IMeshWriter.h"
 #include "arcane/core/IParallelMng.h"
@@ -47,45 +41,35 @@
 #include "arcane/core/IIndexedIncrementalItemConnectivityMng.h"
 #include "arcane/core/IIndexedIncrementalItemConnectivity.h"
 #include "arcane/core/IIncrementalItemConnectivity.h"
-
 #include "arcane/core/ServiceFinder2.h"
 #include "arcane/core/SerializeBuffer.h"
 #include "arcane/core/IMeshPartitioner.h"
 #include "arcane/core/IMainFactory.h"
-#include "arcane/core/IMeshModifier.h"
 #include "arcane/core/Properties.h"
-#include "arcane/core/Timer.h"
-
-#include "arcane/core/ItemArrayEnumerator.h"
 #include "arcane/core/ItemPairGroup.h"
 #include "arcane/core/ItemPairEnumerator.h"
 #include "arcane/core/ItemPairGroupBuilder.h"
-
 #include "arcane/core/IPostProcessorWriter.h"
-
 #include "arcane/core/ItemVectorView.h"
 #include "arcane/core/ItemVector.h"
-
 #include "arcane/core/GeometricUtilities.h"
-
-#include "arcane/core/MeshVisitor.h"
-
 #include "arcane/core/IMeshReader.h"
 #include "arcane/core/IXmlDocumentHolder.h"
 #include "arcane/core/IIOMng.h"
 #include "arcane/core/MeshReaderMng.h"
 #include "arcane/core/UnstructuredMeshConnectivity.h"
-#include "arcane/core/MeshVisitor.h"
 #include "arcane/core/MeshKind.h"
 #include "arcane/core/MeshEvents.h"
+#include "arcane/core/BlockIndexList.h"
+#include "arcane/core/Connectivity.h"
 
-#include <set>
+#include "arcane/tests/MeshUnitTest_axl.h"
 
 #ifdef ARCANE_HAS_POLYHEDRAL_MESH_TOOLS
 #include "neo/Mesh.h"
 #endif
 
-#include "arcane/core/BlockIndexList.h"
+#include <set>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -165,11 +149,10 @@ class MeshUnitTest
  public:
 
   explicit MeshUnitTest(const ServiceBuildInfo& cb);
-  ~MeshUnitTest();
 
  public:
 
-  void initializeTest() override;
+  void buildInitializeTest() override;
   void executeTest() override;
 
  private:
@@ -213,6 +196,7 @@ class MeshUnitTest
   void _testCoherency();
   void _testFindOneItem();
   void _testEvents();
+  void _testNodeNodeViaEdgeConnectivity();
 };
 
 /*---------------------------------------------------------------------------*/
@@ -232,9 +216,13 @@ MeshUnitTest(const ServiceBuildInfo& mb)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-MeshUnitTest::
-~MeshUnitTest()
+void MeshUnitTest::
+buildInitializeTest()
 {
+  if (options()->createEdges()) {
+    Connectivity c(mesh()->connectivity());
+    c.enableConnectivity(Connectivity::CT_HasEdge);
+  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -244,7 +232,7 @@ void MeshUnitTest::
 executeTest()
 {
   bool do_sort_faces_and_edges = options()->testSortNodeFacesAndEdges();
-  if (do_sort_faces_and_edges){
+  if (do_sort_faces_and_edges) {
     mesh()->nodeFamily()->properties()->setBool("sort-connected-faces-edges",true);
     mesh()->modifier()->endUpdate();
   }
@@ -317,18 +305,12 @@ executeTest()
   _testCoherency();
   _testFindOneItem();
   _testEvents();
+  if (options()->createEdges()) {
+    // Appelle 2 fois la méthode pour vérifier que le recalcul est correct.
+    _testNodeNodeViaEdgeConnectivity();
+    _testNodeNodeViaEdgeConnectivity();
+  }
 }
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void MeshUnitTest::
-initializeTest()
-{
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -1018,7 +1000,7 @@ _testVisitors()
   // Vérifie que le nombre de passage dans le visiteur est égal au nombre
   // de groupes de la famille.
   info() << "TEST Visit CellFamily";
-  meshvisitor::visitGroups(item_family,func);
+  MeshUtils::visitGroups(item_family, func);
   vc.areEqual(nb_group,item_family->groups().count(),"Bad number of group for cell family");
   info() << "Nb group=" << nb_group;
 
@@ -1028,7 +1010,7 @@ _testVisitors()
   for( IItemFamilyCollection::Enumerator ifamily(mesh()->itemFamilies()); ++ifamily; ){
     nb_expected_group += (*ifamily)->groups().count();
   }
-  meshvisitor::visitGroups(mesh(),func);
+  MeshUtils::visitGroups(mesh(), func);
   vc.areEqual(nb_group,nb_expected_group,"Bad number of group for mesh");
   info() << "Nb group=" << nb_group;
 
@@ -1045,7 +1027,7 @@ _testVisitors()
       else
         info() << "group not sorted name=" << g.name();
     };
-    meshvisitor::visitGroups(mesh(),check_sorted_func);
+    MeshUtils::visitGroups(mesh(), check_sorted_func);
     info() << "Nb group=" << nb_group << " nb_sorted=" << nb_sorted_group;
   }
 }
@@ -1343,8 +1325,8 @@ _testAdditionnalConnectivity()
   info() << A_FUNCINFO;
   ValueChecker vc(A_FUNCINFO);
 
-  // Créé une connectivité maille->face contenant pour chaque mailles la liste
-  // des faces n'étant pas à la frontière: il s'agit donc des faces qui ont
+  // Créé une connectivité maille <-> face contenant pour chaque maille la liste
+  // des faces n'étant pas à la frontière : il s'agit donc des faces qui ont
   // deux mailles connectées.
   IItemFamily* cell_family = mesh()->cellFamily();
   IItemFamily* face_family = mesh()->faceFamily();
@@ -1619,7 +1601,7 @@ _testGroupsAsBlocks()
     bli.fillArray(computed_values);
     vc.areEqualArray(computed_values.constView(),group.view().localIds(),group.name());
   };
-  meshvisitor::visitGroups(mesh(),xx);
+  MeshUtils::visitGroups(mesh(), xx);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1707,6 +1689,47 @@ _testEvents()
     ARCANE_FATAL("Event BeginPrepareDump has not been called");
   if (!has_call_end_prepare_dump)
     ARCANE_FATAL("Event EndPrepareDump has not been called");
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MeshUnitTest::
+_testNodeNodeViaEdgeConnectivity()
+{
+  info() << "Test: _testNodeNodeViaEdgeConnectivity";
+  auto x = Arcane::MeshUtils::computeNodeNodeViaEdgeConnectivity(mesh(), "NodeNodeViaEdge");
+  IndexedNodeNodeConnectivityView nn_cv = x->view();
+
+  // Tableau contenant la liste triée des nœuds connectés à un nœud.
+  UniqueArray<Int32> ref_cx_nodes;
+
+  ENUMERATE_ (Node, inode, allNodes()) {
+    Node node = *inode;
+    Int32 nb_edge = node.nbEdge();
+    Int32 nb_connectivity_node = nn_cv.nbNode(node);
+    if (nb_edge != nb_connectivity_node)
+      ARCANE_FATAL("Bad number of connected node uid={0} nb_edge={1} nb_connected={2}",
+                   node.uniqueId(), nb_edge, nb_connectivity_node);
+    ref_cx_nodes.resize(nb_edge);
+    for (Int32 i = 0; i < nb_edge; ++i) {
+      Edge edge = node.edge(i);
+      Int32 connected_node_lid = (edge.node(0) == node) ? edge.node(1).localId() : edge.node(0).localId();
+      ref_cx_nodes[i] = connected_node_lid;
+    }
+    std::sort(ref_cx_nodes.begin(), ref_cx_nodes.end());
+    // Les nœuds de la connectivité 'nn_cv' sont bien triés par indice croissant des nœuds,
+    // mais ce n'est pas forcément le cas de node.edges() car ces derniers sont triés par
+    // uniqueId() des arêtes. On passe par un tableau temporaire qu'on trie pour tester les
+    // valeurs.
+    for (Int32 i = 0; i < nb_edge; ++i) {
+      Int32 ref_cx_node_lid = ref_cx_nodes[i];
+      Int32 cx_node_lid = nn_cv.nodeId(node, i);
+      if (ref_cx_node_lid != cx_node_lid)
+        ARCANE_FATAL("Bad connected node uid={0} index={1} ref={2} current={3}",
+                     node.uniqueId(), i, ref_cx_node_lid, cx_node_lid);
+    }
+  }
 }
 
 /*---------------------------------------------------------------------------*/

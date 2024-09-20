@@ -106,7 +106,6 @@ namespace Alien
     auto& queue = env->internal()->queue() ;
     auto max_num_treads = env->maxNumThreads() ;
 
-    std::cout<<"VECTOR ALLOCATE : "<<m_local_size<<std::endl ;
     auto values_ptr = malloc_device<ValueT>(m_local_size, queue);
     auto rows_ptr   = malloc_device<IndexType>(m_local_size, queue);
 

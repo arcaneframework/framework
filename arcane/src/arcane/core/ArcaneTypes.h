@@ -122,6 +122,7 @@ class IMeshInitialAllocator;
 class UnstructuredMeshAllocateBuildInfo;
 class CartesianMeshAllocateBuildInfo;
 class IIncrementalItemConnectivity;
+class IIncrementalItemConnectivityInternal;
 class IIncrementalItemTargetConnectivity;
 class IIncrementalItemSourceConnectivity;
 class VariableSynchronizerEventArgs;

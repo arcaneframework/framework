@@ -571,7 +571,7 @@ getGDBStack()
   //sprintf (cmd, "gdb --ex 'attach %ld' --ex 'info threads' --ex 'thread apply all bt'", (long)getpid ());
   //sprintf (cmd, "gdb --ex 'attach %ld' --ex 'info threads' --ex 'thread apply all bt' --batch", (long)getpid ());
   long pid = (long)getpid();
-  snprintf(cmd, cmd_size, "gdb --ex 'attach %ld' --ex 'info threads' --ex 'thread apply all bt full' --batch", pid);
+  snprintf(cmd, cmd_size, "gdb --ex 'set debuginfod enabled off' --ex 'attach %ld' --ex 'info threads' --ex 'thread apply all bt full' --batch", pid);
   result = _getDebuggerStack(cmd);
 #endif
   return result;

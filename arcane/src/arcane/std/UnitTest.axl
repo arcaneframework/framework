@@ -12,6 +12,10 @@
   </description>
 
   <entry-points>
+    <entry-point method-name="unitTestBuild"
+                 name="UnitTestBuild"
+                 where="build"
+                 property="none"/>
     <entry-point method-name="unitTestInit" 
                  name="UnitTestInit" 
                  where="init" 

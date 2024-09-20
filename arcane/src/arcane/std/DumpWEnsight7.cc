@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* DumpWEnsight7.cc                                            (C) 2000-2023 */
+/* DumpWEnsight7.cc                                            (C) 2000-2024 */
 /*                                                                           */
 /* Exportations des fichiers au format Ensight7 gold.                        */
 /*---------------------------------------------------------------------------*/
@@ -175,7 +175,7 @@ class DumpWEnsight7
     : m_group(grp)
     , m_part_id(id)
     {
-      m_general_item_types = std::make_unique<VariableItemInt32>(VariableBuildInfo{ m_group.mesh(), "GeneralItemTypesGroup" + m_group.name() }, m_group.itemKind());
+      m_general_item_types = std::make_unique<VariableItemInt32>(VariableBuildInfo{ m_group.mesh(), "GeneralItemTypesGroup" + m_group.name(), m_group.itemFamily()->name() }, m_group.itemKind());
       _init(use_degenerated_hexa);
     }
     Integer totalNbElement() const

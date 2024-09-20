@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ModuleSimpleHydro.cc                                        (C) 2000-2023 */
+/* ModuleSimpleHydro.cc                                        (C) 2000-2024 */
 /*                                                                           */
 /* Module Hydrodynamique simple.                                             */
 /*---------------------------------------------------------------------------*/
@@ -154,6 +154,7 @@ class ModuleSimpleHydro
   void computeDeltaT();
   void computeSecondaryVariables();
   void doOneIteration(){ ARCANE_THROW(NotImplementedException,""); }
+  void onMeshChanged();
 
  private:
   
@@ -1019,6 +1020,24 @@ _specialInit()
     m_pressure[icell] = pressure;
     m_adiabatic_cst[icell] = adiabatic_cst;
   }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Point d'entrée appelé après un changement de maillage (par exemple
+ * suite à un équilibrage de charge).
+ *
+ * Dans ce cas on remet à jour les informations sur le rang propriétaire des mailles.
+ */
+void ModuleSimpleHydro::
+onMeshChanged()
+{
+  Int32 rank = parallelMng()->commRank();
+  ENUMERATE_(Cell,icell,ownCells()){
+    m_sub_domain_id[icell] = rank;
+  }
+  m_sub_domain_id.synchronize();
 }
 
 /*---------------------------------------------------------------------------*/

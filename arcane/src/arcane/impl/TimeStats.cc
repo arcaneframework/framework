@@ -813,18 +813,7 @@ isGathering() const
 void TimeStats::
 dumpTimeAndMemoryUsage(IParallelMng* pm)
 {
-  Real mem_used = platform::getMemoryUsed();
-  Real mem_sum = 0.0;
-  Real mem_min = 0.0;
-  Real mem_max = 0.0;
-  Int32 mem_min_rank = 0;
-  Int32 mem_max_rank = 0;
-  pm->computeMinMaxSum(mem_used,mem_min,mem_max,mem_sum,mem_min_rank,mem_max_rank);
-  info() << "Date: " << platform::getCurrentDateTime() << " MEM=" << (Int64)(mem_used/1e6)
-         << " MAX_MEM=" << (Int64)(mem_max/1e6)
-         << " MIN_MEM=" << (Int64)(mem_min/1e6)
-         << " AVG_MEM=" << (Int64)(mem_sum/1e6) / pm->commSize()
-         << " MIN_RANK=" << mem_min_rank << " MAX_RANK=" << mem_max_rank;
+  MessagePassing::dumpDateAndMemoryUsage(pm, traceMng());
 }
 
 /*---------------------------------------------------------------------------*/

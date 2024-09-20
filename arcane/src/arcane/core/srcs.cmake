@@ -512,6 +512,7 @@ set(ARCANE_ORIGINAL_SOURCES
   MeshToMeshTransposer.cc
   MeshToMeshTransposer.h
   MeshUtils.cc
+  MeshUtils2.cc
   MeshUtils.h
   MeshVariable.h
   MeshVariableArrayRef.h

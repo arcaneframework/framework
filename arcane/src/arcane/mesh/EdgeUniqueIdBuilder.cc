@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* EdgeUniqueIdBuilder.cc                                      (C) 2000-2024 */
 /*                                                                           */
-/* Construction des indentifiants uniques des edges.                         */
+/* Construction des identifiants uniques des arêtes.                         */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -21,12 +21,12 @@
 #include "arcane/mesh/GhostLayerBuilder.h"
 #include "arcane/mesh/OneMeshItemAdder.h"
 
-#include "arcane/IParallelExchanger.h"
-#include "arcane/IParallelMng.h"
-#include "arcane/ISerializeMessage.h"
-#include "arcane/ISerializer.h"
-#include "arcane/ParallelMngUtils.h"
-#include "arcane/IMeshUniqueIdMng.h"
+#include "arcane/core/IParallelExchanger.h"
+#include "arcane/core/IParallelMng.h"
+#include "arcane/core/ISerializeMessage.h"
+#include "arcane/core/ISerializer.h"
+#include "arcane/core/ParallelMngUtils.h"
+#include "arcane/core/IMeshUniqueIdMng.h"
 
 #include <functional>
 
@@ -94,10 +94,9 @@ computeEdgesUniqueIds()
 
   if (m_mesh_builder->isVerbose()){
     info() << "NEW EDGES_MAP after re-indexing";
-    ENUMERATE_ITEM_INTERNAL_MAP_DATA(nbid,edges_map){
-      ItemInternal* edge = nbid->value();
-      info() << "Edge uid=" << edge->uniqueId() << " lid=" << edge->localId();
-    }
+    edges_map.eachItem([&](Item edge) {
+      info() << "Edge uid=" << edge.uniqueId() << " lid=" << edge.localId();
+    });
   }
 }
 
@@ -283,12 +282,11 @@ _computeEdgesUniqueIdsParallel3()
 
   // Détermine le unique id max des noeuds
   Int64 my_max_node_uid = NULL_ITEM_UNIQUE_ID;
-  ENUMERATE_ITEM_INTERNAL_MAP_DATA(nbid,nodes_map){
-    ItemInternal* node = nbid->value();
-    Int64 node_uid = node->uniqueId();
+  nodes_map.eachItem([&](Item item) {
+    Int64 node_uid = item.uniqueId();
     if (node_uid>my_max_node_uid)
       my_max_node_uid = node_uid;
-  }
+  });
   Int64 global_max_node_uid = pm->reduce(Parallel::ReduceMax,my_max_node_uid);
   debug() << "NODE_UID_INFO: MY_MAX_UID=" << my_max_node_uid
          << " GLOBAL=" << global_max_node_uid;
@@ -302,18 +300,16 @@ _computeEdgesUniqueIdsParallel3()
   UniqueArray<bool> is_boundary_nodes(node_family->maxLocalId(),false);
 
   // Marque tous les noeuds frontieres car ce sont ceux qu'il faudra envoyer
-  ENUMERATE_ITEM_INTERNAL_MAP_DATA(nbid,faces_map){
-    Face face = nbid->value();
+  faces_map.eachItem([&](Face face) {
     Integer face_nb_cell = face.nbCell();
     if (face_nb_cell==1){
       for( Int32 ilid : face.nodeIds() )
         is_boundary_nodes[ilid] = true;
     }
-  }
+  });
 
   // Détermine la liste des edges frontières
-  ENUMERATE_ITEM_INTERNAL_MAP_DATA(nbid,edges_map){
-    Edge edge = nbid->value();
+  edges_map.eachItem([&](Edge edge) {
     Node first_node = edge.node(0);
     Int64 first_node_uid = first_node.uniqueId();
     SharedArray<Int64> v;
@@ -336,7 +332,7 @@ _computeEdgesUniqueIdsParallel3()
              << " n0=" << ItemPrinter(edge.node(0)) << " n1=" << ItemPrinter(edge.node(1)) << " dest_rank=" << dest_rank;
     for( Node edge_node : edge.nodes() )
       v.add(edge_node.uniqueId());
-  }
+  });
 
   // Positionne la liste des envoies
   Ref<IParallelExchanger> exchanger{ParallelMngUtils::createExchangerRef(pm)};
@@ -478,15 +474,14 @@ _computeEdgesUniqueIdsParallel3()
       for (Int64 z=0; z<nb_item; ++z ){
         Int64 old_uid = received_infos[(z*3)];
         Int64 new_uid = received_infos[(z*3)+1];
-        Int32 new_owner = (Int32)received_infos[(z*3)+2];
+        Int32 new_owner = static_cast<Int32>(received_infos[(z * 3) + 2]);
         //info() << "EDGE old_uid=" << old_uid << " new_uid=" << new_uid;
-        ItemInternalMapData* edge_data = edges_map.lookup(old_uid);
-        if (!edge_data)
+        impl::MutableItemBase iedge(edges_map.tryFind(old_uid));
+        if (iedge.null())
           ARCANE_FATAL("Can not find own edge uid={0}",old_uid);
-        ItemInternal* iedge = edge_data->value();
+        iedge.setUniqueId(new_uid);
+        iedge.setOwner(new_owner, my_rank);
         Edge edge{iedge};
-        iedge->setUniqueId(new_uid);
-        iedge->setOwner(new_owner,my_rank);
         if (is_verbose)
           info() << "SetEdgeOwner uid=" << new_uid << " owner=" << new_owner
                  << " n0,n1=" << edge.node(0).uniqueId() << "," << edge.node(1).uniqueId()
@@ -498,7 +493,6 @@ _computeEdgesUniqueIdsParallel3()
   traceMng()->flush();
   pm->barrier();
   info() << "END OF TEST NEW EDGE COMPUTE";
-  return;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -519,19 +513,17 @@ _computeEdgesUniqueIdsSequential()
   // En séquentiel, les uniqueId() des mailles ne peuvent dépasser la
   // taille des Integers même en 32bits.
   Int32 max_uid = 0;
-  ENUMERATE_ITEM_INTERNAL_MAP_DATA(nbid,cells_map){
-    ItemInternal* cell = nbid->value();
-    Int32 cell_uid = cell->uniqueId().asInt32();
+  cells_map.eachItem([&](Item cell) {
+    Int32 cell_uid = cell.uniqueId().asInt32();
     if (cell_uid>max_uid)
       max_uid = cell_uid;
-  }
+  });
   info() << "Max uid=" << max_uid;
   Int32UniqueArray cell_first_edge_uid(max_uid+1);
   Int32UniqueArray cell_nb_num_back_edge(max_uid+1);
   Int32UniqueArray cell_true_boundary_edge(max_uid+1);
 
-  ENUMERATE_ITEM_INTERNAL_MAP_DATA(nbid,cells_map){
-    Cell cell = nbid->value();
+  cells_map.eachItem([&](Cell cell) {
     Int32 cell_uid = cell.uniqueId().asInt32();
     Integer nb_num_back_edge = 0;
     Integer nb_true_boundary_edge = 0;
@@ -544,7 +536,7 @@ _computeEdgesUniqueIdsSequential()
     }
     cell_nb_num_back_edge[cell_uid] = nb_num_back_edge;
     cell_true_boundary_edge[cell_uid] = nb_true_boundary_edge;
-  }
+  });
 
   Integer current_edge_uid = 0;
   for( Integer i=0; i<nb_cell; ++i ){
@@ -561,8 +553,7 @@ _computeEdgesUniqueIdsSequential()
     }
   }
 
-  ENUMERATE_ITEM_INTERNAL_MAP_DATA(nbid,cells_map){
-    Cell cell = nbid->value();
+  cells_map.eachItem([&](Cell cell) {
     Int32 cell_uid = cell.uniqueId().asInt32();
     Integer nb_num_back_edge = 0;
     Integer nb_true_boundary_edge = 0;
@@ -583,12 +574,11 @@ _computeEdgesUniqueIdsSequential()
         edge.mutableItemBase().setUniqueId(edge_new_uid);
       }
     }
-  }
+  });
 
   if (is_verbose){
     OStringStream ostr;
-    ENUMERATE_ITEM_INTERNAL_MAP_DATA(nbid,cells_map){
-      Cell cell = nbid->value();
+    cells_map.eachItem([&](Cell cell) {
       Int32 cell_uid = cell.uniqueId().asInt32();
       Integer index = 0;
       for( Edge edge : cell.edges() ){
@@ -619,7 +609,7 @@ _computeEdgesUniqueIdsSequential()
         ostr() << '\n';
         ++index;
       }
-    }
+    });
     info() << ostr.str();
   }
 }
@@ -644,22 +634,20 @@ _computeEdgesUniqueIdsParallelV2()
   ItemInternalMap& edges_map = m_mesh->edgesMap();
 
   Int64 max_uid = 0;
-  ENUMERATE_ITEM_INTERNAL_MAP_DATA(nbid,nodes_map){
-    ItemInternal* node = nbid->value();
-    if (node->uniqueId()>max_uid)
-      max_uid = node->uniqueId();
-  }
+  nodes_map.eachItem([&](Item node) {
+    if (node.uniqueId() > max_uid)
+      max_uid = node.uniqueId();
+  });
   Int64 total_max_uid = pm->reduce(Parallel::ReduceMax,max_uid);
   if (total_max_uid>INT32_MAX)
     ARCANE_FATAL("Max uniqueId() for node is too big v={0} max_allowed={1}",total_max_uid,INT32_MAX);
 
-  ENUMERATE_ITEM_INTERNAL_MAP_DATA(ebid,edges_map){
-    Edge edge{ebid->value()};
+  edges_map.eachItem([&](Edge edge) {
     Node node0{edge.node(0)};
     Node node1{edge.node(1)};
     Int64 new_uid = (node0.uniqueId().asInt64() * total_max_uid) + node1.uniqueId().asInt64();
     edge.mutableItemBase().setUniqueId(new_uid);
-  }
+  });
 }
 
 /*---------------------------------------------------------------------------*/
@@ -669,13 +657,12 @@ void EdgeUniqueIdBuilder::
 _computeEdgesUniqueIdsParallel64bit()
 {
   // Positionne les uniqueId() des arêtes
-  // en utilisant un hash des 2 noeuds de l'arête.
+  // en utilisant un hash des deux nœuds de l'arête.
   ItemInternalMap& edges_map = m_mesh->edgesMap();
 
   std::hash<Int64> hasher;
 
-  ENUMERATE_ITEM_INTERNAL_MAP_DATA(ebid,edges_map){
-    Edge edge{ebid->value()};
+  edges_map.eachItem([&](Edge edge) {
     Node node0{edge.node(0)};
     Node node1{edge.node(1)};
     size_t hash0 = hasher(node0.uniqueId().asInt64());
@@ -683,7 +670,7 @@ _computeEdgesUniqueIdsParallel64bit()
     hash0 ^= hash1 + 0x9e3779b9 + (hash0 << 6) + (hash0 >> 2);
     Int64 new_uid = hash0 & 0x7fffffff;
     edge.mutableItemBase().setUniqueId(new_uid);
-  }
+  });
 }
 
 /*---------------------------------------------------------------------------*/

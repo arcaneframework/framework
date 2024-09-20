@@ -20,6 +20,8 @@
 #include "arcane/utils/ArgumentException.h"
 #include "arcane/utils/CheckedConvert.h"
 #include "arcane/utils/PlatformUtils.h"
+#include "arcane/utils/OStringStream.h"
+#include "arcane/utils/ValueConvert.h"
 
 #include "arcane/core/IParallelMng.h"
 #include "arcane/core/ISubDomain.h"
@@ -45,6 +47,7 @@
 #include "arcane/core/ParallelMngUtils.h"
 #include "arcane/core/internal/IDataInternal.h"
 #include "arcane/core/internal/IItemFamilyInternal.h"
+#include "arcane/core/internal/IIncrementalItemConnectivityInternal.h"
 #include "arcane/core/datatype/IDataOperation.h"
 
 #include "arcane/mesh/ItemFamily.h"
@@ -370,6 +373,10 @@ build()
       m_use_legacy_compact_item = true;
     }
   }
+  {
+    if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_ITEMFAMILY_SHRINK_AFTER_ALLOCATE", true))
+      m_do_shrink_after_allocate = (v.value()!=0);
+  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -535,6 +542,47 @@ _endAllocate()
   if (!m_parent_family) {
     m_internal_variables->setUsed();
   }
+  if (m_do_shrink_after_allocate)
+    _shrinkConnectivityAndPrintInfos();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ItemFamily::
+_shrinkConnectivityAndPrintInfos()
+{
+  {
+    ItemConnectivityMemoryInfo mem_info;
+    for (ItemConnectivitySelector* cs : m_connectivity_selector_list) {
+      IIncrementalItemConnectivity* c = cs->customConnectivity();
+      c->_internalApi()->addMemoryInfos(mem_info);
+    }
+    const Int64 total_capacity = mem_info.m_total_capacity;
+    const Int64 total_size = mem_info.m_total_size;
+    Int64 ratio = 100 * (total_capacity - total_size);
+    ratio /= (total_size + 1); // Ajoute 1 pour éviter la division par zéro
+    const Int64 sizeof_int32 = sizeof(Int32);
+    const Int64 mega_byte = 1024 * 1024;
+    Int64 capacity_mega_byte = (mem_info.m_total_capacity * sizeof_int32) / mega_byte;
+    info() << "MemoryUsed for family name=" << name() << " size=" << mem_info.m_total_size
+           << " capacity=" << mem_info.m_total_capacity
+           << " capacity (MegaByte)=" << capacity_mega_byte
+           << " ratio=" << ratio;
+  }
+  OStringStream ostr;
+  std::ostream& o = ostr();
+  o << "Mem=" << platform::getMemoryUsed();
+  for (ItemConnectivitySelector* cs : m_connectivity_selector_list) {
+    IIncrementalItemConnectivity* c = cs->customConnectivity();
+    c->dumpStats(o);
+    o << "\n";
+    c->_internalApi()->shrinkMemory();
+    c->dumpStats(o);
+    o << "\n";
+  }
+  o << "Mem=" << platform::getMemoryUsed();
+  info() <<  ostr.str();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -581,7 +629,7 @@ _endUpdate(bool need_check_remove)
 
   _resizeVariables(false);
   info(4) << "ItemFamily:endUpdate(): " << fullName()
-          << " hashmapsize=" << itemsMap().buckets().size()
+          << " hashmapsize=" << itemsMap().nbBucket()
           << " nb_group=" << m_item_groups.count();
 
   _updateGroups(need_check_remove);
@@ -2187,23 +2235,22 @@ removeNeedRemoveMarkedItems()
   if (!m_mesh->itemFamilyNetwork())
     ARCANE_FATAL("Family name='{0}': IMesh::itemFamilyNetwork() is null",name());
   if (!IItemFamilyNetwork::plug_serializer)
-    ARCANE_FATAL("family name='{0}': removeNeedMarkedItems() cannot be called if ItemFamilyNetwork is unplugged.");
+    ARCANE_FATAL("family name='{0}': removeNeedMarkedItems() cannot be called if ItemFamilyNetwork is unplugged.",name());
 
   UniqueArray<ItemInternal*> items_to_remove;
   UniqueArray<Int32> items_to_remove_lids;
   items_to_remove.reserve(1000);
   items_to_remove_lids.reserve(1000);
 
-  ENUMERATE_ITEM_INTERNAL_MAP_DATA(nbid,item_map){
-    ItemInternal* item = nbid->value();
-    Integer f = item->flags();
+  item_map.eachItem([&](impl::ItemBase item) {
+    Integer f = item.flags();
     if (f & ItemFlags::II_NeedRemove){
       f &= ~ItemFlags::II_NeedRemove & ItemFlags::II_Suppressed;
-      item->setFlags(f);
-      items_to_remove.add(item);
-      items_to_remove_lids.add(item->localId());
+      item.toMutable().setFlags(f);
+      items_to_remove.add(item.itemInternal());
+      items_to_remove_lids.add(item.localId());
     }
-  }
+  });
   info() << "Number of " << itemKind() << " of family "<< name()<<" to remove: " << items_to_remove.size();
   if (items_to_remove.size() == 0)
     return;

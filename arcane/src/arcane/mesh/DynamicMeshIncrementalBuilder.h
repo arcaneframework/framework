@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* DynamicMeshIncrementalBuilder.h                             (C) 2000-2021 */
+/* DynamicMeshIncrementalBuilder.h                             (C) 2000-2024 */
 /*                                                                           */
 /* Construction d'un maillage de manière incrémentale.                       */
 /*---------------------------------------------------------------------------*/
@@ -14,20 +14,18 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include <list>
-
-#include "arcane/mesh/FullItemInfo.h"
-
 #include "arcane/utils/HashTableMap.h"
 #include "arcane/utils/TraceAccessor.h"
 
-#include "arcane/IItemFamilyNetwork.h"
-
-#include "arcane/ArcaneTypes.h"
-#include "arcane/ItemInternal.h"
+#include "arcane/core/IItemFamilyNetwork.h"
+#include "arcane/core/ArcaneTypes.h"
+#include "arcane/core/ItemInternal.h"
 
 #include "arcane/mesh/DynamicMeshKindInfos.h"
 #include "arcane/mesh/ItemData.h"
+#include "arcane/mesh/FullItemInfo.h"
+
+#include <list>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -59,14 +57,8 @@ class DynamicMeshIncrementalBuilder
 {
  public:
 
-  //! Type la table de hashage uniqueId()->ItemInternal*
-  typedef DynamicMeshKindInfos::ItemInternalMap ItemInternalMap;
-  typedef ItemInternalMap::Data ItemInternalMapData;
-  
- public:
-
   //! Construit une instance pour le maillage \a mesh
-  DynamicMeshIncrementalBuilder(DynamicMesh* mesh);
+  explicit DynamicMeshIncrementalBuilder(DynamicMesh* mesh);
   ~DynamicMeshIncrementalBuilder();
 
  public:
@@ -213,8 +205,8 @@ class DynamicMeshIncrementalBuilder
  private:
   
   void _printCellFaceInfos(ItemInternal* cell,const String& str);
-  
-  SharedArray<ItemInternal*> _removeNeedRemoveMarkedItems(ItemInternalMap& map);
+
+  void _removeNeedRemoveMarkedItems(ItemInternalMap& map, UniqueArray<Int32>& items_local_id);
 
   void _fillFaceInfo(Integer& nb_face, Integer nb_cell,Int64Array& faces_infos, Int64ConstArrayView cells_infos, std::map<Int64,Int64SharedArray>& cell_to_face_connectivity_info);
   void _fillEdgeInfo(Integer& nb_edge, Integer nb_face,Int64Array& edges_infos, Int64ConstArrayView faces_infos, std::map<std::pair<Int64,Int64>, Int64>& edge_uid_map);

@@ -7,16 +7,16 @@
 /*---------------------------------------------------------------------------*/
 /* DoFFamily.cc                                                (C) 2000-2024 */
 /*                                                                           */
-/* Famille de degre de liberte                                               */
+/* Famille de degré de liberté                                               */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 #include "arcane/mesh/DoFFamily.h"
 
-#include "arcane/ISubDomain.h"
-#include "arcane/IMesh.h"
-#include "arcane/ItemTypeMng.h"
-#include "arcane/ItemTypeInfo.h"
-#include "arcane/IExtraGhostItemsBuilder.h"
+#include "arcane/core/IMesh.h"
+#include "arcane/core/ItemTypeMng.h"
+#include "arcane/core/ItemTypeInfo.h"
+#include "arcane/core/IExtraGhostItemsBuilder.h"
 
 #include "arcane/mesh/ExtraGhostItemsManager.h"
 
@@ -26,13 +26,28 @@
 namespace Arcane::mesh
 {
 
+Int64 DoFUids::
+getMaxItemUid(IItemFamily* family)
+{
+  Int64 max_uid = 0;
+  // This method can be used within IItemFamily::endUpdate when new items have been created but the groups are not yet updated.
+  // Therefore we use internal map enumeration instead of group enumeration
+  ItemFamily* item_family = ARCANE_CHECK_POINTER(dynamic_cast<ItemFamily*>(family));
+  item_family->itemsMap().eachItem([&](Item item) {
+    if (max_uid < item.uniqueId().asInt64())
+      max_uid = item.uniqueId().asInt64();
+  });
+  Int64 pmax_uid = family->mesh()->parallelMng()->reduce(Parallel::ReduceMax, max_uid);
+  return pmax_uid;
+}
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 DoFFamily::
 DoFFamily(IMesh* mesh, const String& name)
   : ItemFamily(mesh,IK_DoF,name)
-  , m_shared_info(0)
+, m_shared_info(nullptr)
 {}
 
 /*---------------------------------------------------------------------------*/
@@ -152,33 +167,26 @@ void
 DoFFamily::
 _printInfos(Integer nb_added)
 {
-  Integer nb_in_map = 0;
-  for( auto i : itemsMap().buckets() ){
-    for( ItemInternalMap::Data* nbid = i; nbid; nbid = nbid->next() ){
-      ++nb_in_map;
-    }
-  }
+  Integer nb_in_map = itemsMap().count();
 
   info() << "DoFFamily: added=" << nb_added
          << " nb_internal=" << infos().m_internals.size()
          << " nb_free=" << infos().m_free_internals.size()
-         << " map_nb_bucket=" << itemsMap().buckets().size()
+         << " map_nb_bucket=" << itemsMap().nbBucket()
          << " map_size=" << nb_in_map;
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void
-DoFFamily::
+void DoFFamily::
 preAllocate(Integer nb_item)
 {
   // Copy paste de particle, pas utilise pour l'instant
-  Integer nb_hash = itemsMap().buckets().size();
+  Integer nb_hash = itemsMap().nbBucket();
   Integer wanted_size = 2*(nb_item+infos().nbItem());
   if (nb_hash<wanted_size)
     itemsMap().resize(wanted_size,true);
-
 }
 
 /*---------------------------------------------------------------------------*/
