@@ -63,6 +63,7 @@ SimpleCSR_to_Hypre_VectorConverter::convert(
   Arccore::ConstArrayView<Arccore::Real> values = v.values();
   if(v2.getMemoryType()==Alien::BackEnd::Memory::Host)
     v2.setValues(values.size(), values.unguardedBasePointer());
+#ifdef ALIEN_USE_SYCL
   else
   {
       Alien::HypreVector::IndexType* rows_d = nullptr;
@@ -75,6 +76,7 @@ SimpleCSR_to_Hypre_VectorConverter::convert(
       v2.assemble() ;
       Alien::SYCLVector<Arccore::Real>::freeDevicePointers(rows_d, values_d) ;
   }
+#endif
 }
 
 /*---------------------------------------------------------------------------*/
