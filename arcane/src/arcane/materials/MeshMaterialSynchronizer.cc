@@ -38,11 +38,11 @@ MeshMaterialSynchronizer(IMeshMaterialMng* material_mng)
 , m_material_mng(material_mng)
 {
   if(Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_ACC_MAT_SYNCHRONIZER", true)){
-    m_synchronizer = new MeshMaterialSynchronizerImplAcc(material_mng);
+    m_synchronizer = new AcceleratorMeshMaterialSynchronizerImpl(material_mng);
     info() << "using ACC material synchronizer";
   }else
   {
-    m_synchronizer = new MeshMaterialSynchronizerImpl(material_mng);
+    m_synchronizer = new LegacyMeshMaterialSynchronizerImpl(material_mng);
     info() << "using DEFAULT material synchronizer";
   }
 }

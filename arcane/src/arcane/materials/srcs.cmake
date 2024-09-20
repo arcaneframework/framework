@@ -46,8 +46,8 @@ set(ARCANE_SOURCES
   MeshMaterialInfo.cc
   MeshMaterialInfo.h
   MeshMaterialSynchronizer.cc
-  MeshMaterialSynchronizerImpl.cc
-  MeshMaterialSynchronizerImplAcc.cc
+  LegacyMeshMaterialSynchronizerImpl.cc
+  AcceleratorMeshMaterialSynchronizerImpl.cc
   MeshMaterialIndirectModifier.cc
   MeshMaterialIndirectModifier.h
   MeshMaterialModifier.cc

@@ -5,13 +5,13 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshMaterialSynchronizerImplAcc.cc                          (C) 2000-2023 */
+/* AcceleratorMeshMaterialSynchronizerImpl.cc                          (C) 2000-2023 */
 /*                                                                           */
 /* Synchronisation des entités des matériaux.                                */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/materials/internal/MeshMaterialSynchronizerImplAcc.h"
+#include "arcane/materials/internal/AcceleratorMeshMaterialSynchronizerImpl.h"
 
 #include "arcane/VariableTypes.h"
 #include "arcane/IParallelMng.h"
@@ -33,27 +33,30 @@ namespace Arcane::Materials
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-MeshMaterialSynchronizerImplAcc::
-MeshMaterialSynchronizerImplAcc(IMeshMaterialMng* material_mng)
+AcceleratorMeshMaterialSynchronizerImpl::
+AcceleratorMeshMaterialSynchronizerImpl(IMeshMaterialMng* material_mng)
 : TraceAccessor(material_mng->traceMng())
 , m_material_mng(material_mng)
-, m_idx_selecter(material_mng->mesh()->parallelMng())
 , m_mat_presence(VariableBuildInfo(material_mng->mesh(),"ArcaneMaterialSyncPresence"))
 {
+  IMesh* mesh = m_material_mng->mesh();
+  auto* internal_pm = mesh->parallelMng()->_internalApi();
+  Arcane::Accelerator::RunQueue*m_queue = internal_pm->defaultQueue();
+  m_idx_selecter = Arcane::Accelerator::IndexSelecter(m_queue);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-MeshMaterialSynchronizerImplAcc::
-~MeshMaterialSynchronizerImplAcc()
+AcceleratorMeshMaterialSynchronizerImpl::
+~AcceleratorMeshMaterialSynchronizerImpl()
 {
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-inline void MeshMaterialSynchronizerImplAcc::
+inline void AcceleratorMeshMaterialSynchronizerImpl::
 _setBit(Arcane::DataViewGetterSetter<unsigned char> bytes,Integer position)
 {
   Integer bit = position % 8;
@@ -62,7 +65,7 @@ _setBit(Arcane::DataViewGetterSetter<unsigned char> bytes,Integer position)
   bytes = temp;
 }
 
-inline bool MeshMaterialSynchronizerImplAcc::
+inline bool AcceleratorMeshMaterialSynchronizerImpl::
 _hasBit(Arcane::DataViewGetterSetter<unsigned char> bytes,Integer position)
 {
   Integer bit = position % 8;
@@ -77,7 +80,7 @@ _hasBit(Arcane::DataViewGetterSetter<unsigned char> bytes,Integer position)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-bool MeshMaterialSynchronizerImplAcc::
+bool AcceleratorMeshMaterialSynchronizerImpl::
 synchronizeMaterialsInCells()
 {
   /*

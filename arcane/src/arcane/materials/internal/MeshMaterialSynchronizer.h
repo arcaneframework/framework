@@ -21,32 +21,11 @@
 
 #include "arcane/materials/MaterialsGlobal.h"
 #include "arcane/materials/MatItem.h"
-
-#include "arcane/materials/CellToAllEnvCellConverter.h"
-#include "arcane/accelerator/core/RunQueue.h"
-
-#include "arcane/accelerator/Accelerator.h"
-#include "arcane/accelerator/IndexSelecter.h"
-#include "arcane/accelerator/SpanViews.h"
-#include "arcane/IApplication.h"
-#include "arcane/core/ISubDomain.h"
-#include "arcane/accelerator/Reduce.h"
-#include "arcane/accelerator/Runner.h"
-#include "arcane/accelerator/VariableViews.h"
-#include "arcane/accelerator/Accelerator.h"
-#include "arcane/accelerator/RunCommandLoop.h"
-#include "arcane/accelerator/RunCommandEnumerate.h"
-#include "arcane/accelerator/core/RunQueueBuildInfo.h"
-#include "arcane/accelerator/core/Memory.h"
-#include "arcane/accelerator/MaterialVariableViews.h"
-#include "arcane/accelerator/RunCommandMaterialEnumerate.h"
-#include "arcane/accelerator/core/IAcceleratorMng.h"
-#include "arcane/accelerator/core/RunQueueEvent.h"
 #include "arcane/utils/ValueConvert.h"
 
 #include "arcane/materials/internal/IMeshMaterialSynchronizerImpl.h"
-#include "arcane/materials/internal/MeshMaterialSynchronizerImplAcc.h"
-#include "arcane/materials/internal/MeshMaterialSynchronizerImpl.h"
+#include "arcane/materials/internal/AcceleratorMeshMaterialSynchronizerImpl.h"
+#include "arcane/materials/internal/LegacyMeshMaterialSynchronizerImpl.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

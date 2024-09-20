@@ -28,33 +28,28 @@ namespace Arcane::Accelerator {
 class IndexSelecter {
  public:
   IndexSelecter(){}
-  IndexSelecter(IParallelMng*pm)
+  IndexSelecter(RunQueue*runqueue)
     // -------------------------------------------------------
   {
-    if(pm->_internalApi()->defaultRunner() == nullptr){
-      Arcane::Runner*def_runner = new Runner(Arcane::Accelerator::eExecutionPolicy::Sequential);
-      pm->_internalApi()->setDefaultRunner(def_runner);
-
-    }
-    m_is_acc_avl = isAcceleratorPolicy(pm->_internalApi()->defaultRunner()->executionPolicy());
-    m_mem_h = eMemoryRessource( m_is_acc_avl ? eMemoryRessource::HostPinned : eMemoryRessource::Host);
-    m_mem_d = eMemoryRessource( m_is_acc_avl ? eMemoryRessource::Device : eMemoryRessource::Host);
-    m_lid_select_d =  UniqueArray<Int32>(platform::getDataMemoryRessourceMng()->getAllocator(m_mem_d));
-    m_lid_select_h  =  UniqueArray<Int32>(platform::getDataMemoryRessourceMng()->getAllocator(m_mem_h));
+    m_is_accelerator_policy = isAcceleratorPolicy(runqueue->executionPolicy());
+    m_memory_host = eMemoryRessource( m_is_accelerator_policy ? eMemoryRessource::HostPinned : eMemoryRessource::Host);
+    m_memory_device = eMemoryRessource( m_is_accelerator_policy ? eMemoryRessource::Device : eMemoryRessource::Host);
+    m_localid_select_device =  UniqueArray<Int32>(platform::getDataMemoryRessourceMng()->getAllocator(m_memory_device));
+    m_localid_select_host  =  UniqueArray<Int32>(platform::getDataMemoryRessourceMng()->getAllocator(m_memory_host));
   }
 
   ~IndexSelecter() 
   {
-    delete m_gen_filterer_inst;
+    delete m_generic_filterer_instance;
   }
 
   /*!
    * \brief Définit l'intervalle [0,nb_idx[ sur lequel va s'opérer la sélection
    */
   void resize(Int32 nb_idx) {
-    m_nb_idx = nb_idx;
-    m_lid_select_d.resize(m_nb_idx);
-    m_lid_select_h.resize(m_nb_idx);
+    m_index_number = nb_idx;
+    m_localid_select_device.resize(m_index_number);
+    m_localid_select_host.resize(m_index_number);
   }
 
   /*!
@@ -68,33 +63,33 @@ class IndexSelecter {
     // afin de minimiser des allocations dynamiques dans cette classe.
     // L'instance du GenericFilterer dépend du pointeur de RunQueue donc
     // si ce pointeur change, il faut détruire et réallouer une nouvelle instance.
-    bool to_instantiate=(m_gen_filterer_inst==nullptr);
-    if (m_async_queue_ptr!=rqueue_async) 
+    bool to_instantiate=(m_generic_filterer_instance==nullptr);
+    if (m_asynchronous_queue_pointer!=rqueue_async) 
     {
-      m_async_queue_ptr=rqueue_async;
-      delete m_gen_filterer_inst;
+      m_asynchronous_queue_pointer=rqueue_async;
+      delete m_generic_filterer_instance;
       to_instantiate=true;
     }
     if (to_instantiate) {
-      m_gen_filterer_inst = new GenericFilterer(m_async_queue_ptr);
+      m_generic_filterer_instance = new GenericFilterer(m_asynchronous_queue_pointer);
     }
 
-    // On sélectionne dans [0,m_nb_idx[ les indices i pour lesquels pred(i) est vrai
+    // On sélectionne dans [0,m_index_number[ les indices i pour lesquels pred(i) est vrai
     //  et on les copie dans out_lid_select.
     //  Le nb d'indices sélectionnés est donné par nbOutputElement()
-    SmallSpan<Int32> out_lid_select(m_lid_select_d.data(), m_nb_idx);
+    SmallSpan<Int32> out_lid_select(m_localid_select_device.data(), m_index_number);
 
-    m_gen_filterer_inst->applyWithIndex(m_nb_idx, pred, 
+    m_generic_filterer_instance->applyWithIndex(m_index_number, pred, 
         [=] ARCCORE_HOST_DEVICE(Int32 input_index, Int32 output_index) -> void {
           out_lid_select[output_index] = input_index;
         });
-    Int32 nb_idx_selected = m_gen_filterer_inst->nbOutputElement();
+    Int32 nb_idx_selected = m_generic_filterer_instance->nbOutputElement();
 
     if (nb_idx_selected && host_view) 
     {
-      // Copie asynchrone Device to Host (m_lid_select_d ==> m_lid_select_h)
-      rqueue_async->copyMemory(MemoryCopyArgs(m_lid_select_h.subView(0, nb_idx_selected).data(),
-                                              m_lid_select_d.subView(0, nb_idx_selected).data(),
+      // Copie asynchrone Device to Host (m_localid_select_device ==> m_localid_select_host)
+      rqueue_async->copyMemory(MemoryCopyArgs(m_localid_select_host.subView(0, nb_idx_selected).data(),
+                                              m_localid_select_device.subView(0, nb_idx_selected).data(),
                                               nb_idx_selected * sizeof(Int32))
                                    .addAsync());
 
@@ -107,23 +102,23 @@ class IndexSelecter {
 
     ConstArrayView<Int32> lid_select_view = (
       host_view ? 
-      m_lid_select_h.subConstView(0, nb_idx_selected) : 
-      m_lid_select_d.subConstView(0, nb_idx_selected));
+      m_localid_select_host.subConstView(0, nb_idx_selected) : 
+      m_localid_select_device.subConstView(0, nb_idx_selected));
 
     return lid_select_view;
   }
 
  private:
-  bool m_is_acc_avl = false;  // indique si l'accélérateur est disponible ou non
-  eMemoryRessource m_mem_h; // identification de l'allocateur HOST
-  eMemoryRessource m_mem_d; // identification de l'allocateur DEVICE
-  UniqueArray<Int32> m_lid_select_d; // liste des identifiants sélectionnés avec un Filterer (alloué sur DEVICE)
-  UniqueArray<Int32> m_lid_select_h; // liste des identifiants sélectionnés avec un Filterer (alloué sur HOST)
+  bool m_is_accelerator_policy = false;  // indique si l'accélérateur est disponible ou non
+  eMemoryRessource m_memory_host; // identification de l'allocateur HOST
+  eMemoryRessource m_memory_device; // identification de l'allocateur DEVICE
+  UniqueArray<Int32> m_localid_select_device; // liste des identifiants sélectionnés avec un Filterer (alloué sur DEVICE)
+  UniqueArray<Int32> m_localid_select_host; // liste des identifiants sélectionnés avec un Filterer (alloué sur HOST)
 
-  Int32 m_nb_idx=0;  //!< Intervalle [0, m_nb_idx[ sur lequel on va opérer la sélection
+  Int32 m_index_number=0;  //!< Intervalle [0, m_index_number[ sur lequel on va opérer la sélection
 
-  RunQueue* m_async_queue_ptr=nullptr; //!< Pointeur sur la queue du GenericFilterer
-  GenericFilterer* m_gen_filterer_inst=nullptr; //!< Instance du GenericFilterer
+  RunQueue* m_asynchronous_queue_pointer=nullptr; //!< Pointeur sur la queue du GenericFilterer
+  GenericFilterer* m_generic_filterer_instance=nullptr; //!< Instance du GenericFilterer
 };
 
 /*---------------------------------------------------------------------------*/

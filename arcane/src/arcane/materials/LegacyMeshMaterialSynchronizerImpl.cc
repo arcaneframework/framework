@@ -11,7 +11,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/materials/internal/MeshMaterialSynchronizerImpl.h"
+#include "arcane/materials/internal/LegacyMeshMaterialSynchronizerImpl.h"
 
 #include "arcane/VariableTypes.h"
 #include "arcane/IParallelMng.h"
@@ -32,8 +32,8 @@ namespace Arcane::Materials
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-MeshMaterialSynchronizerImpl::
-MeshMaterialSynchronizerImpl(IMeshMaterialMng* material_mng)
+LegacyMeshMaterialSynchronizerImpl::
+LegacyMeshMaterialSynchronizerImpl(IMeshMaterialMng* material_mng)
 : TraceAccessor(material_mng->traceMng())
 , m_material_mng(material_mng)
 {
@@ -42,15 +42,15 @@ MeshMaterialSynchronizerImpl(IMeshMaterialMng* material_mng)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-MeshMaterialSynchronizerImpl::
-~MeshMaterialSynchronizerImpl()
+LegacyMeshMaterialSynchronizerImpl::
+~LegacyMeshMaterialSynchronizerImpl()
 {
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-inline void MeshMaterialSynchronizerImpl::
+inline void LegacyMeshMaterialSynchronizerImpl::
 _setBit(ByteArrayView bytes,Integer position)
 {
   Integer offset = position / 8;
@@ -58,7 +58,7 @@ _setBit(ByteArrayView bytes,Integer position)
   bytes[offset] |= (Byte)(1 << bit);
 }
 
-inline bool MeshMaterialSynchronizerImpl::
+inline bool LegacyMeshMaterialSynchronizerImpl::
 _hasBit(ByteConstArrayView bytes,Integer position)
 {
   Integer offset = position / 8;
@@ -69,7 +69,7 @@ _hasBit(ByteConstArrayView bytes,Integer position)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void MeshMaterialSynchronizerImpl::
+void LegacyMeshMaterialSynchronizerImpl::
 _fillPresence(AllEnvCell all_env_cell,ByteArrayView presence)
 {
   ENUMERATE_CELL_ENVCELL(ienvcell,all_env_cell){
@@ -84,7 +84,7 @@ _fillPresence(AllEnvCell all_env_cell,ByteArrayView presence)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-bool MeshMaterialSynchronizerImpl::
+bool LegacyMeshMaterialSynchronizerImpl::
 synchronizeMaterialsInCells()
 {
   /*
