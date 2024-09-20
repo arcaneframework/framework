@@ -73,7 +73,6 @@ HCSR_to_Hypre_VectorConverter::convert(
   v2.setValues(v.getAllocSize(), rows_d, values_d);
   v2.assemble() ;
   v.freeDevicePointers(rows_d, values_d) ;
-  std::cout<<"END HCSR TO HYPRE CONVERSION"<<std::endl ;
 }
 /*---------------------------------------------------------------------------*/
 

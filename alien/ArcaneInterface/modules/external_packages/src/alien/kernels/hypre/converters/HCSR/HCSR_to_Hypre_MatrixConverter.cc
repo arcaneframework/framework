@@ -125,7 +125,6 @@ HCSR_to_Hypre_MatrixConverter::_build(
       ValueType* values_d = nullptr ;
       sourceImpl.initDevicePointers(&ncols_d, &rows_d, &cols_d, &values_d) ;
       const bool success = targetImpl.setMatrixValues(localSize, rows_d, ncols_d, cols_d, values_d) ;
-      std::cout<<"AFTER HYPRE SET VALUES : "<<std::endl ;
       sourceImpl.freeDevicePointers(ncols_d, rows_d, cols_d, values_d) ;
     }
   }

@@ -188,11 +188,24 @@ endif ()
 if (TARGET hypre)
     configure_file(AlienBench-hypre.arc ${CMAKE_BINARY_DIR}/${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench/AlienBench-hypre.arc COPYONLY)
     configure_file(AlienBench-hypre-2P.arc ${CMAKE_BINARY_DIR}/${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench/AlienBench-hypre-2P.arc COPYONLY)
+    configure_file(AlienBench-hypreilu.arc ${CMAKE_BINARY_DIR}/${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench/AlienBench-hypreilu.arc COPYONLY)
+    configure_file(AlienBench-hypreilu-sycl.arc ${CMAKE_BINARY_DIR}/${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench/AlienBench-hypreilu-sycl.arc COPYONLY)
+    configure_file(AlienBench-hyprefsai.arc ${CMAKE_BINARY_DIR}/${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench/AlienBench-hyprefsai.arc COPYONLY)
+    configure_file(AlienBench-hyprefsai-sycl.arc ${CMAKE_BINARY_DIR}/${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench/AlienBench-hyprefsai-sycl.arc COPYONLY)
 
     list(APPEND ALIEN_EXAMPLE_FILES
             AlienBench-hypre.arc
             AlienBench-hypre-2P.arc
             )
+if(ALIEN_USE_SYCL)
+  if(TARGET CUDA::cudart)
+    list(APPEND ALIEN_EXAMPLE_FILES
+            AlienBench-hypreilu.arc
+            AlienBench-hyprefsai.arc
+            AlienBench-hypreilu-sycl.arc
+            AlienBench-hyprefsai-sycl.arc)
+  endif()
+endif(ALIEN_USE_SYCL)
 endif ()
 
 if (TARGET trilinos)
@@ -294,6 +307,43 @@ if (TARGET hypre)
             COMMAND alien_bench.exe
             OPTIONS AlienBench-hypre-2P.arc
             WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
+            
+if(ALIEN_USE_SYCL)
+    alien_test(
+            BENCH alien.bench.hypre.ilu
+            NAME seq
+            PROCS 1
+            COMMAND alien_bench.exe
+            OPTIONS AlienBench-hypreilu.arc
+            WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
+     
+    alien_test(
+            BENCH alien.bench.hypre.fsai
+            NAME seq
+            PROCS 1
+            COMMAND alien_bench.exe
+            OPTIONS AlienBench-hyprefsai.arc
+            WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
+
+  if(TARGET CUDA::cudart)
+    alien_test(
+            BENCH alien.bench.hypre.ilu.sycl
+            NAME seq
+            PROCS 1
+            COMMAND alien_bench.exe
+            OPTIONS AlienBench-hypreilu-sycl.arc
+            WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
+     
+    alien_test(
+            BENCH alien.bench.hypre.fsai.sycl
+            NAME seq
+            PROCS 1
+            COMMAND alien_bench.exe
+            OPTIONS AlienBench-hyprefsai-sycl.arc
+            WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
+  endif()
+endif(ALIEN_USE_SYCL)
+
 endif ()
 
 if (TARGET trilinos)

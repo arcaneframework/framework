@@ -23,10 +23,10 @@ initDevicePointers(int** ncols, int** rows, int** cols, ValueT** values) const
    auto max_num_treads = env->maxNumThreads() ;
    auto nnz = m_profile->getNnz() ;
    auto& queue = env->internal()->queue() ;
-   auto values_ptr = malloc_device<ValueT>(nnz, queue);
    auto ncols_ptr  = malloc_device<IndexType>(m_local_size, queue);
    auto rows_ptr   = malloc_device<IndexType>(m_local_size, queue);
    auto cols_ptr   = malloc_device<IndexType>(nnz, queue);
+   auto values_ptr = malloc_device<ValueT>(nnz, queue);
   
    queue.submit( [&](sycl::handler& cgh)
                 {
@@ -43,6 +43,7 @@ initDevicePointers(int** ncols, int** rows, int** cols, ValueT** values) const
                                                         }
                                                     });
                 });
+   queue.wait() ;
   
 
    queue.submit( [&](sycl::handler& cgh)

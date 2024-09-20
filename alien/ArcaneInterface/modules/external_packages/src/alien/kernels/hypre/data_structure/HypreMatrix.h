@@ -42,6 +42,10 @@ class ALIEN_EXTERNAL_PACKAGES_EXPORT HypreMatrix : public IMatrixImpl
   HypreMatrix(const MultiMatrixImpl* multi_impl);
   virtual ~HypreMatrix();
 
+  BackEnd::Memory::eType getMemoryType() const ;
+
+  BackEnd::Exec::eSpaceType getExecSpace() const ;
+
  public:
   void clear() {}
 

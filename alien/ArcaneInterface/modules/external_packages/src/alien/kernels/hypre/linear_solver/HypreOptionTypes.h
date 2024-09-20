@@ -9,6 +9,19 @@
 
 struct HypreOptionTypes
 {
+  enum eMemoryType
+  {
+    HostMemory,
+    DeviceMemory,
+    ShareMemory
+  };
+
+  enum eExecSpace
+  {
+    Host,
+    Device
+  };
+
   enum eSolver
   {
     AMG,
@@ -25,7 +38,8 @@ struct HypreOptionTypes
     AMGPC,
     ParaSailsPC,
     EuclidPC,
-    ILUPC,
+    BJILUKPC,
+    BJILUTPC,
     FSAIPC
   };
 };

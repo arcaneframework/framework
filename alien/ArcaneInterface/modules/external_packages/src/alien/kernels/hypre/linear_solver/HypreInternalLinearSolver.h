@@ -11,8 +11,10 @@
 
 #include <alien/utils/Precomp.h>
 #include <alien/expression/solver/SolverStat.h>
+#include <alien/core/backend/BackEnd.h>
 #include <alien/core/backend/IInternalLinearSolverT.h>
 #include <alien/utils/ObjectWithTrace.h>
+#include <alien/AlienExternalPackagesPrecomp.h>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -35,15 +37,28 @@ class HypreVector;
 class HypreLibrary
 {
   public :
-  HypreLibrary(bool use_gpu=false) ;
+  HypreLibrary(bool exec_on_device, bool use_device_momory) ;
   virtual ~HypreLibrary() ;
+
+  BackEnd::Memory::eType getMemoryType() const {
+    return m_memory_type ;
+  }
+
+  BackEnd::Exec::eSpaceType getExecSpace() const {
+    return m_exec_space  ;
+  }
+
+  private:
+  BackEnd::Memory::eType m_memory_type = BackEnd::Memory::Host ;
+  BackEnd::Exec::eSpaceType m_exec_space = BackEnd::Exec::Host ;
 } ;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class HypreInternalLinearSolver : public IInternalLinearSolver<HypreMatrix, HypreVector>,
-                                  public ObjectWithTrace
+class ALIEN_EXTERNAL_PACKAGES_EXPORT HypreInternalLinearSolver 
+: public IInternalLinearSolver<HypreMatrix, HypreVector>
+, public ObjectWithTrace
 {
  public:
   typedef SolverStatus Status;
@@ -58,6 +73,8 @@ class HypreInternalLinearSolver : public IInternalLinearSolver<HypreMatrix, Hypr
   static bool m_library_plugin_is_initialized ;
 
   static std::unique_ptr<HypreLibrary> m_library_plugin ;
+
+  static void initializeLibrary(bool exec_on_device=false, bool use_device_momory=false) ;
 
   virtual void init();
 

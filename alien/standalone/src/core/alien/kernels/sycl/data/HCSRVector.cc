@@ -25,24 +25,6 @@ HCSRVector<ValueT>::dataPtr() const
   auto max_num_treads = env->maxNumThreads() ;
 
   auto values = malloc_device<ValueT>(m_local_size, queue);
-  /*
-  sycl::host_accessor values_h(m_internal->m_values) ;
-  std::vector<ValueT> h_v(m_local_size) ;
-  for(int i=0;i<m_local_size;++i)
-  {
-     h_v[i] = values_h[i] ;
-     values[i] = values_h[i] ;
-     //std::cout<<"VECTOR VALUES["<<i<<"]"<<values_h[i]<<std::endl ;
-  }
-  
-  queue.submit([&](sycl::handler& cgh)
-               {
-                //auto data_acc  = m_internal->m_values.template get_access<sycl::access::mode::read>(cgh) ;
-                cgh.memcpy(values, h_v.data(), m_local_size*sizeof(ValueT));
-                //cgh.copy(data_acc,*values) ;
-               }) ;
-  queue.wait() ;
-  */
   
   queue.submit( [&](sycl::handler& cgh)
                 {
@@ -56,11 +38,6 @@ HCSRVector<ValueT>::dataPtr() const
                                                     });
                 });
   queue.wait() ;
-  sycl::host_accessor values_h(m_internal->m_values) ;
-  for(int i=0;i<m_local_size;++i)
-  {
-     std::cout<<"HCSR VECTOR VALUES["<<i<<"]"<<values_h[i]<<std::endl ;
-  }
   return values ;
 }
 template <typename ValueT>
@@ -90,7 +67,7 @@ void HCSRVector<ValueT>::initDevicePointers(int** rows, ValueType** values) cons
                                                         }
                                                     });
                 });
-                
+  queue.wait() ;
   *values = values_ptr;
   *rows   = rows_ptr;
 }

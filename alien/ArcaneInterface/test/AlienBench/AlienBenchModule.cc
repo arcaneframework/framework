@@ -711,6 +711,7 @@ AlienBenchModule::test()
   {
     Alien::ILinearSolver* solver = options()->linearSolver[0];
     solver->init();
+    /*
     {
       auto const& true_A = matrixA.impl()->get<Alien::BackEnd::tag::hypre>() ;
       auto const& true_b = vectorB.impl()->get<Alien::BackEnd::tag::hypre>() ;
@@ -718,7 +719,7 @@ AlienBenchModule::test()
       HypreLinearAlgebra alg;
       info()<<"HYPRE NORM B : "<<alg.norm2(vectorB);
       info()<<"HYPRE NORM X : "<<alg.norm2(vectorX);
-    }
+    }*/
 #ifdef ALIEN_USE_TRILINOS
     if(solver->getBackEndName().contains("tpetraserial"))
     {
@@ -860,12 +861,26 @@ AlienBenchModule::test()
           m_x[icell] = reader[iIndex];
         }
 
-        SimpleCSRLinearAlgebra alg;
-        Alien::Vector vectorR(m_vdist);
-        alg.mult(matrixA, vectorX, vectorR);
-        alg.axpy(-1., vectorB, vectorR);
-        Real res = alg.norm2(vectorR);
-        info() << "RES : " << res;
+#ifdef ALIEN_USE_SYCL
+        if(m_use_accelerator)
+        {
+          SYCLLinearAlgebra alg;
+          Alien::Vector vectorR(m_vdist);
+          alg.mult(matrixA, vectorX, vectorR);
+          alg.axpy(-1., vectorB, vectorR);
+          Real res = alg.norm2(vectorR);
+          info() << "RES : " << res;
+        }
+        else
+#endif
+        {
+          SimpleCSRLinearAlgebra alg;
+          Alien::Vector vectorR(m_vdist);
+          alg.mult(matrixA, vectorX, vectorR);
+          alg.axpy(-1., vectorB, vectorR);
+          Real res = alg.norm2(vectorR);
+          info() << "RES : " << res;
+        }
       }
       else
         info()<<"SOLVER FAILED";
@@ -1080,6 +1095,10 @@ AlienBenchModule::_test(Timer& pbuild_timer,
     csrAlg.mult(matrixA, vectorX, vectorBB);
     Real normeb = csrAlg.norm2(vectorB);
     std::cout << "||b||=" << normeb<<std::endl;
+  }
+  {
+    Alien::LocalVectorWriter vx(vectorX);
+    vx = 0. ;
   }
 
 }

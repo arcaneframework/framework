@@ -6,15 +6,49 @@
   <interface name="Alien::ILinearSolver" inherited="false"/>
 
     <options>
-      <simple name="use-gpu" type="bool" default="false">
-            <description>enable GPU support</description>
-      </simple>
+      <enumeration name="memory-type" type="HypreOptionTypes::eMemoryType" default="Host">
+            <description>Memory Type</description>
+            <enumvalue name="Host" genvalue="HypreOptionTypes::HostMemory">
+               <description>Host Memory type</description>
+            </enumvalue>
+            <enumvalue name="Device" genvalue="HypreOptionTypes::DeviceMemory">
+               <description>Device memorry type</description>
+            </enumvalue>
+            <enumvalue name="Share" genvalue="HypreOptionTypes::ShareMemory">
+               <description>Share memory type</description>
+            </enumvalue>
+      </enumeration>
+    
+      <enumeration name="exec-space" type="HypreOptionTypes::eExecSpace" default="Host">
+            <description>Exec space</description>
+            <enumvalue name="Host" genvalue="HypreOptionTypes::Host">
+               <description>Exec Space on Host</description>
+            </enumvalue>
+            <enumvalue name="Device" genvalue="HypreOptionTypes::Device">
+               <description>Exec on Device</description>
+            </enumvalue>
+      </enumeration>
+      
       <simple name="num-iterations-max" type="integer">
             <description>Maximal number of iterations</description>
       </simple>
+      
       <simple name="stop-criteria-value" type="real">
             <description>Requested accuracy</description>
-      </simple>    
+      </simple>
+      
+      <simple name="iluk-level" type="integer" default="0">
+            <description>ilu fill in level</description>
+      </simple>
+      
+      <simple name="ilut-threshold" type="real" default="0.">
+            <description>ilut threshold</description>
+      </simple>
+      
+      <simple name="ilut-max-nnz" type="integer" default="0">
+            <description>ilut max nnz per row</description>
+      </simple>
+      
       <enumeration name="solver" type="HypreOptionTypes::eSolver">
             <description>Solver type</description>
             <enumvalue name="AMG" genvalue="HypreOptionTypes::AMG">
@@ -50,7 +84,10 @@
             <enumvalue name="Euclid" genvalue="HypreOptionTypes::EuclidPC">
                <description>Parallel ILU preconditioner</description>
             </enumvalue>
-            <enumvalue name="ILU" genvalue="HypreOptionTypes::ILUPC">
+            <enumvalue name="BJ-ILUK" genvalue="HypreOptionTypes::BJILUKPC">
+               <description>ILU preconditioner</description>
+            </enumvalue>
+            <enumvalue name="BJ-ILUT" genvalue="HypreOptionTypes::BJILUTPC">
                <description>ILU preconditioner</description>
             </enumvalue>
             <enumvalue name="FSAI" genvalue="HypreOptionTypes::FSAIPC">
