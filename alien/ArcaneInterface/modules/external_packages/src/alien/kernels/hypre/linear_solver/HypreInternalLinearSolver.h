@@ -72,6 +72,8 @@ class HypreInternalLinearSolver : public IInternalLinearSolver<HypreMatrix, Hypr
 
   static std::unique_ptr<HypreLibrary> m_library_plugin ;
 
+  static void initializeLibrary(bool exec_on_device=false, bool use_device_momory=false) ;
+
   virtual void init();
 
   void updateParallelMng(Arccore::MessagePassing::IMessagePassingMng* pm);

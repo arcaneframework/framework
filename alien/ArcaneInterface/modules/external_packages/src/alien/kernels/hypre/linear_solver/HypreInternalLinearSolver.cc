@@ -123,7 +123,13 @@ HypreInternalLinearSolver::~HypreInternalLinearSolver()
 }
 
 /*---------------------------------------------------------------------------*/
-
+void
+HypreInternalLinearSolver::initializeLibrary(bool exec_on_device, bool use_device_momory)
+{
+  if(Alien::HypreInternalLinearSolver::m_library_plugin_is_initialized) return ;
+  HypreInternalLinearSolver::m_library_plugin.reset(new HypreLibrary(exec_on_device,use_device_momory)) ;
+}
+ 
 void
 HypreInternalLinearSolver::init()
 {
