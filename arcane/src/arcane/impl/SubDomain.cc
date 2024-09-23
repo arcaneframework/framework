@@ -351,7 +351,7 @@ class SubDomain
  private:
 
   void _doInitialPartition();
-  void _doInitialPartitionForMesh(IMesh* mesh,const String& service_name,bool is_required);
+  void _doInitialPartitionForMesh(IMesh* mesh, const String& service_name);
   void _notifyWriteCheckpoint();
   void _printCPUAffinity();
   void _setDefaultAcceleratorDevice(Accelerator::AcceleratorRuntimeInitialisationInfo& config);
@@ -850,13 +850,13 @@ _doInitialPartition()
       Int64 min_nb_cell = parallelMng()->reduce(Parallel::ReduceMin,nb_cell);
       info() << "Min nb cell=" << min_nb_cell;
       if (min_nb_cell==0)
-        _doInitialPartitionForMesh(mesh,test_service,true);
+        _doInitialPartitionForMesh(mesh, test_service);
       else
         info() << "Mesh name=" << mesh->name() << " have cells. Do not use " << test_service;
     }
     else
       info() << "No basic partition first needed";
-    _doInitialPartitionForMesh(mesh,m_legacy_mesh_builder->m_internal_partitioner_name,false);
+    _doInitialPartitionForMesh(mesh, m_legacy_mesh_builder->m_internal_partitioner_name);
   }
 }
 
@@ -864,12 +864,11 @@ _doInitialPartition()
 /*---------------------------------------------------------------------------*/
 
 void SubDomain::
-_doInitialPartitionForMesh(IMesh* mesh,const String& service_name,bool is_required)
+_doInitialPartitionForMesh(IMesh* mesh, const String& service_name)
 {
   info() << "DoInitialPartition. mesh=" << mesh->name() << " service=" << service_name;
 
   String lib_name = service_name;
-
   IMeshPartitionerBase* mesh_partitioner_base = nullptr;
   Ref<IMeshPartitionerBase> mesh_partitioner_base_ref;
   Ref<IMeshPartitioner> mesh_partitioner_ref;
@@ -898,13 +897,7 @@ _doInitialPartitionForMesh(IMesh* mesh,const String& service_name,bool is_requir
                                 "is not available (valid_values={1}). This service has to implement "
                                 "interface Arcane::IMeshPartitionerBase",
                                 lib_name,valid_values);
-    if (is_required){
-      pfatal() << msg;
-    }
-    else{
-      pwarning() << msg;
-    }
-		return;
+    ARCANE_THROW(ParallelFatalErrorException, msg);
   }
 
   bool is_dynamic = mesh->isDynamic();
