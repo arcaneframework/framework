@@ -318,7 +318,11 @@ void SubMeshTestModule::
 init()
 {
   info() << "SubMesh Test started";
-  
+
+//  ENUMERATE_EDGE (iedge,mesh()->allEdges()) {
+//    info() << " Test edge " << FullItemPrinter(*iedge);
+//  }
+
   // Génération d'un sous-maillage du genre demandé
   parentKind = options()->submeshKind(); 
 
@@ -502,8 +506,9 @@ _compute2RemoveItems()
   } else 
     fatal() << "Not implemented sub-mesh kind " << parentKind;
 
+  // SdC add ghost rebuild layer in tests (usage in IFPEN applications)
   if (new_mesh)
-    new_mesh->modifier()->endUpdate(); // RELOCALISER LE CONCEPT DANS ARCANE
+    new_mesh->modifier()->endUpdate(true, true); // RELOCALISER LE CONCEPT DANS ARCANE
 }
 
 /*---------------------------------------------------------------------------*/
@@ -518,7 +523,7 @@ _compute3AddItems()
   myParentItems.addItems(myNewParentItems.view().localIds());
 
   if (new_mesh){
-    new_mesh->modifier()->endUpdate(); // RELOCALISER LE CONCEPT DANS ARCANE
+    new_mesh->modifier()->endUpdate(true,true); // RELOCALISER LE CONCEPT DANS ARCANE
       
     // Not sync after addItems (step 3)
     ItemVector parent2sub = MeshToMeshTransposer::transpose(mesh(),new_mesh,myNewParentItems.view(),true);
@@ -608,7 +613,7 @@ _compute5MoveItems()
   //     ENUMERATE_CELL(icell,mesh()->ownCells()) info() << icell.index() << ": " << ItemPrinter(*icell);
 
   if (new_mesh)
-    new_mesh->modifier()->endUpdate(); // RELOCALISER LE CONCEPT DANS ARCANE
+    new_mesh->modifier()->endUpdate(true,true); // RELOCALISER LE CONCEPT DANS ARCANE
 }
 
 /*---------------------------------------------------------------------------*/
