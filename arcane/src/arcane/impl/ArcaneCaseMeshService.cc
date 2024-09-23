@@ -59,6 +59,7 @@ class ArcaneCaseMeshService
   void createMesh(const String& default_name) override;
   void allocateMeshItems() override;
   void partitionMesh() override;
+  void applyAdditionalOperations() override;
 
  private:
 
@@ -77,6 +78,7 @@ class ArcaneCaseMeshService
   void _doInitialPartition();
   void _doInitialPartition2(const String& name);
   void _setGhostLayerInfos();
+  void _checkMeshCreationAndAllocation(bool is_check_allocated);
 };
 
 /*---------------------------------------------------------------------------*/
@@ -156,17 +158,15 @@ createMesh(const String& default_name)
 void ArcaneCaseMeshService::
 allocateMeshItems()
 {
-  if (!m_mesh)
-    ARCANE_FATAL("Mesh is not created. You should call createMesh() before");
+  _checkMeshCreationAndAllocation(false);
+
   ARCANE_CHECK_POINTER(m_mesh_builder);
 
   _setGhostLayerInfos();
 
   m_mesh_builder->allocateMeshItems(m_mesh);
-  IMeshSubdivider* subdivider = options()->subdivider();
-  if (subdivider)
-    subdivider->subdivideMesh(m_mesh);
-  
+
+  // TODO: Faire cela après les opérations additionnelles
   _initializeVariables();
 }
 
@@ -176,14 +176,36 @@ allocateMeshItems()
 void ArcaneCaseMeshService::
 partitionMesh()
 {
-  if (!m_mesh)
-    ARCANE_FATAL("Mesh is not created. You should call createMesh() before");
-  if (!m_mesh->isAllocated())
-    ARCANE_FATAL("Mesh is not allocated. You should call initializeMesh() before");
+  _checkMeshCreationAndAllocation(true);
 
-  if (m_mesh->meshPartInfo().nbPart()>1)
+  if (m_mesh->meshPartInfo().nbPart() > 1)
     if (!m_partitioner_name.empty())
       _doInitialPartition();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ArcaneCaseMeshService::
+applyAdditionalOperations()
+{
+  _checkMeshCreationAndAllocation(true);
+
+  IMeshSubdivider* subdivider = options()->subdivider();
+  if (subdivider)
+    subdivider->subdivideMesh(m_mesh);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ArcaneCaseMeshService::
+_checkMeshCreationAndAllocation(bool is_check_allocated)
+{
+  if (!m_mesh)
+    ARCANE_FATAL("Mesh is not created. You should call createMesh() before");
+  if (is_check_allocated && !m_mesh->isAllocated())
+    ARCANE_FATAL("Mesh is not allocated. You should call initializeMesh() before");
 }
 
 /*---------------------------------------------------------------------------*/

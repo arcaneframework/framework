@@ -1,20 +1,20 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ICaseMeshMasterService.h                                    (C) 2000-2020 */
+/* ICaseMeshMasterService.h                                    (C) 2000-2024 */
 /*                                                                           */
 /* Interface du service gérant les maillages du jeu de données.              */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_ICASEMESHMASTERSERVICE_H
-#define ARCANE_ICASEMESHMASTERSERVICE_H
+#ifndef ARCANE_CORE_ICASEMESHMASTERSERVICE_H
+#define ARCANE_CORE_ICASEMESHMASTERSERVICE_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/ArcaneTypes.h"
+#include "arcane/core/ArcaneTypes.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -42,26 +42,38 @@ namespace Arcane
  * Il existe une troisième phase optionnelle qui n'est effectuée que en
  * parallèle et qui consiste à partitionner les maillages, via l'appel
  * à partitionMeshes().
+ *
+ * Enfin, il est possible d'appliquer à la fin de la création du maillage
+ * un traitement supplémentaire sur le maillage. Par exemple, il est possible
+ * de subdiviser le maillage actuel. Cela se fait par l'appel à
+ * applyAdditionalOperationsOnMeshes().
  */
 class ICaseMeshMasterService
 {
  public:
+
   virtual ~ICaseMeshMasterService() = default;
+
  public:
+
   //! Créé les maillages
   virtual void createMeshes() =0;
   //! Créé les maillages
   virtual void allocateMeshes() =0;
   //! Partitionne les maillages
   virtual void partitionMeshes() =0;
+  //! Applique les éventuelles opérations additionnelles sur le maillage crée.
+  virtual void applyAdditionalOperationsOnMeshes() {}
+
  public:
-  virtual ICaseOptions* _options() =0;
+
+  virtual ICaseOptions* _options() = 0;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arcane
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
