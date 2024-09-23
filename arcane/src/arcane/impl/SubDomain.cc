@@ -800,6 +800,7 @@ doInitMeshPartition()
     else{
       if (m_case_mesh_master_service.get()){
         m_case_mesh_master_service->partitionMeshes();
+        m_case_mesh_master_service->applyAdditionalOperationsOnMeshes();
       }
       else
         if (m_legacy_mesh_builder->m_use_internal_mesh_partitioner)

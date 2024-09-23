@@ -53,7 +53,7 @@ ArcaneBasicMeshSubdividerService(const ServiceBuildInfo& sbi)
 void ArcaneBasicMeshSubdividerService::
 subdivideMesh([[maybe_unused]] IPrimaryMesh* mesh)
 {
-  warning() << "Function not implemented";
+  warning() << "SubdivideMesh: Function not implemented";
 }
 
 /*---------------------------------------------------------------------------*/
