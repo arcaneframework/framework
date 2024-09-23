@@ -282,12 +282,14 @@ removeFloatingItems()
     if (face.nbCell() == 0)
       face_family.removeFaceIfNotConnected(face);
   }
+  items_to_remove.clear();
   _fillFloatingItems(&edge_family, items_to_remove);
   ENUMERATE_ (Edge, iedge, edge_family.view(items_to_remove)) {
     Edge edge(*iedge);
     if (edge.nbCell() == 0 && edge.nbFace() == 0)
       edge_family.removeEdgeIfNotConnected(edge);
   }
+  items_to_remove.clear();
   _fillFloatingItems(&node_family, items_to_remove);
   ENUMERATE_ (Node, inode, node_family.view(items_to_remove)) {
     Node node(*inode);
