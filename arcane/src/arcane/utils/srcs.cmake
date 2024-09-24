@@ -278,6 +278,7 @@ set(ARCANE_SOURCES
   NotSupportedException.h
   NullThreadMng.h
   HashTableMap.h
+  HashTableMap2.h
   ObjectImpl.h
   ParameterList.h
   ParameterList.cc
