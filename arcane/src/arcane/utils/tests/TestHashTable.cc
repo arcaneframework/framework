@@ -236,5 +236,32 @@ TEST(TestHashTable, ArcaneHashMap2)
   _addMultiple<true>("ArcaneHashMap2", arcane_map, num_keys);
 }
 
+TEST(TestArcaneHashMap2, Misc)
+{
+  std::cout << "STRUCT_SIZE=" << sizeof(impl::HashTableMap2<Int64, Int32>) << "\n";
+  impl::HashTableMap2<Int64, Int32> arcane_map;
+  arcane_map.add(5, 23);
+  arcane_map.add(29, 12);
+  arcane_map.add(97, 3);
+  ASSERT_EQ(arcane_map.size(), 3);
+
+  impl::HashTableMap2<Int64, Int32> arcane_map2;
+  ASSERT_EQ(arcane_map2.size(), 0);
+
+  arcane_map2 = arcane_map;
+  ASSERT_EQ(arcane_map2.size(), arcane_map.size());
+  ASSERT_EQ(arcane_map2[5], 23);
+  ASSERT_EQ(arcane_map2[29], 12);
+  ASSERT_EQ(arcane_map2[97], 3);
+  ASSERT_EQ(arcane_map2, arcane_map);
+
+  impl::HashTableMap2<Int64, Int32> arcane_map3;
+  arcane_map3.clone(arcane_map);
+  ASSERT_EQ(arcane_map3, arcane_map);
+
+  arcane_map3.clear();
+  ASSERT_EQ(arcane_map3.size(), 0);
+}
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
