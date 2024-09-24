@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* SubMeshTestModule.cc                                        (C) 2000-2022 */
+/* SubMeshTestModule.cc                                        (C) 2000-2024 */
 /*                                                                           */
 /* Module de test du sous-maillage                                           */
 /*---------------------------------------------------------------------------*/
@@ -318,7 +318,11 @@ void SubMeshTestModule::
 init()
 {
   info() << "SubMesh Test started";
-  
+
+//  ENUMERATE_EDGE (iedge,mesh()->allEdges()) {
+//    info() << " Test edge " << FullItemPrinter(*iedge);
+//  }
+
   // Génération d'un sous-maillage du genre demandé
   parentKind = options()->submeshKind(); 
 
@@ -502,8 +506,9 @@ _compute2RemoveItems()
   } else 
     fatal() << "Not implemented sub-mesh kind " << parentKind;
 
+  // SdC add ghost rebuild layer in tests (usage in IFPEN applications)
   if (new_mesh)
-    new_mesh->modifier()->endUpdate(); // RELOCALISER LE CONCEPT DANS ARCANE
+    new_mesh->modifier()->endUpdate(true, true); // RELOCALISER LE CONCEPT DANS ARCANE
 }
 
 /*---------------------------------------------------------------------------*/
@@ -518,7 +523,7 @@ _compute3AddItems()
   myParentItems.addItems(myNewParentItems.view().localIds());
 
   if (new_mesh){
-    new_mesh->modifier()->endUpdate(); // RELOCALISER LE CONCEPT DANS ARCANE
+    new_mesh->modifier()->endUpdate(true,true); // RELOCALISER LE CONCEPT DANS ARCANE
       
     // Not sync after addItems (step 3)
     ItemVector parent2sub = MeshToMeshTransposer::transpose(mesh(),new_mesh,myNewParentItems.view(),true);
@@ -608,7 +613,7 @@ _compute5MoveItems()
   //     ENUMERATE_CELL(icell,mesh()->ownCells()) info() << icell.index() << ": " << ItemPrinter(*icell);
 
   if (new_mesh)
-    new_mesh->modifier()->endUpdate(); // RELOCALISER LE CONCEPT DANS ARCANE
+    new_mesh->modifier()->endUpdate(true,true); // RELOCALISER LE CONCEPT DANS ARCANE
 }
 
 /*---------------------------------------------------------------------------*/
