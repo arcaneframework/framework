@@ -102,9 +102,8 @@ print(std::ostream& ostr) const
       if (m_item.nbEdge() != 0)
         ItemPrinter::Internal::_printItemSubItems(ostr, "Edges", m_item.edgeList());
     ostr << "\n\t";
-    if (ik != IK_Face)
-      if (m_item.nbFace() != 0)
-        ItemPrinter::Internal::_printItemSubItems(ostr, "Faces", m_item.faceList());
+    if (m_item.nbFace() != 0)
+      ItemPrinter::Internal::_printItemSubItems(ostr, "Faces", m_item.faceList());
     ostr << "\n\t";
     if (ik != IK_Cell)
       if (m_item.nbCell() != 0)
