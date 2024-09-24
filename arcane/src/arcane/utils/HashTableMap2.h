@@ -855,6 +855,11 @@ class HashTableMap2
     return { { this, slot }, bempty };
   }
 
+  std::pair<iterator, bool> add(const KeyT& key, const ValueT& value)
+  {
+    return insert(std::make_pair(key, value));
+  }
+
   std::pair<iterator, bool> insert(const value_type& p)
   {
     check_expand_need();
