@@ -97,13 +97,12 @@ class HashTableMap2
   using mapped_type = ValueT;
 
   using size_type = uint32_t;
-  using signed_size_type = int32_t;
 
   using hasher = HashT;
   using key_equal = EqT;
 
-  constexpr static signed_size_type INACTIVE = -1;
-  constexpr static signed_size_type END = -1;
+  constexpr static size_type INACTIVE = 0xFFFFFFFF;
+  constexpr static size_type END = 0xFFFFFFFF;
   constexpr static size_type EAD = 2;
 
   struct Index
@@ -519,11 +518,6 @@ class HashTableMap2
     return max_size();
   }
 
-  void pack_zero(ValueT zero)
-  {
-    m_pairs[m_num_filled] = { KeyT(), zero };
-  }
-
   // ------------------------------------------------------------
   template <typename K = KeyT>
   iterator find(const K& key) noexcept
@@ -604,119 +598,6 @@ class HashTableMap2
     }
   }
 
-  /// Returns the matching ValueT or nullptr if k isn't found.
-  bool try_get(const KeyT& key, ValueT& val) const noexcept
-  {
-    const auto slot = find_filled_slot(key);
-    const auto found = slot != m_num_filled;
-    if (found) {
-      val = m_pairs[slot].second;
-    }
-    return found;
-  }
-
-  /// Returns the matching ValueT or nullptr if k isn't found.
-  ValueT* try_get(const KeyT& key) noexcept
-  {
-    const auto slot = find_filled_slot(key);
-    return slot != m_num_filled ? &m_pairs[slot].second : nullptr;
-  }
-
-  /// Const version of the above
-  ValueT* try_get(const KeyT& key) const noexcept
-  {
-    const auto slot = find_filled_slot(key);
-    return slot != m_num_filled ? &m_pairs[slot].second : nullptr;
-  }
-
-  /// set value if key exist
-  bool try_set(const KeyT& key, const ValueT& val) noexcept
-  {
-    const auto slot = find_filled_slot(key);
-    if (slot == m_num_filled)
-      return false;
-
-    m_pairs[slot].second = val;
-    return true;
-  }
-
-  /// set value if key exist
-  bool try_set(const KeyT& key, ValueT&& val) noexcept
-  {
-    const auto slot = find_filled_slot(key);
-    if (slot == m_num_filled)
-      return false;
-
-    m_pairs[slot].second = std::move(val);
-    return true;
-  }
-
-  /// Convenience function.
-  ValueT get_or_return_default(const KeyT& key) const noexcept
-  {
-    const auto slot = find_filled_slot(key);
-    return slot == m_num_filled ? ValueT() : m_pairs[slot].second;
-  }
-
-  // -----------------------------------------------------
-  std::pair<iterator, bool> do_insert(const value_type& value) noexcept
-  {
-    const auto key_hash = hash_key(value.first);
-    const auto bucket = find_or_allocate(value.first, key_hash);
-    const auto bempty = EMH_EMPTY(bucket);
-    if (bempty) {
-      EMH_NEW(value.first, value.second, bucket, key_hash);
-    }
-
-    const auto slot = m_index[bucket].slot & m_mask;
-    return { { this, slot }, bempty };
-  }
-
-  std::pair<iterator, bool> do_insert(value_type&& value) noexcept
-  {
-    const auto key_hash = hash_key(value.first);
-    const auto bucket = find_or_allocate(value.first, key_hash);
-    const auto bempty = EMH_EMPTY(bucket);
-    if (bempty) {
-      EMH_NEW(std::move(value.first), std::move(value.second), bucket, key_hash);
-    }
-
-    const auto slot = m_index[bucket].slot & m_mask;
-    return { { this, slot }, bempty };
-  }
-
-  template <typename K, typename V>
-  std::pair<iterator, bool> do_insert(K&& key, V&& val) noexcept
-  {
-    const auto key_hash = hash_key(key);
-    const auto bucket = find_or_allocate(key, key_hash);
-    const auto bempty = EMH_EMPTY(bucket);
-    if (bempty) {
-      EMH_NEW(std::forward<K>(key), std::forward<V>(val), bucket, key_hash);
-    }
-
-    const auto slot = m_index[bucket].slot & m_mask;
-    return { { this, slot }, bempty };
-  }
-
-  template <typename K, typename V>
-  std::pair<iterator, bool> do_assign(K&& key, V&& val) noexcept
-  {
-    check_expand_need();
-    const auto key_hash = hash_key(key);
-    const auto bucket = find_or_allocate(key, key_hash);
-    const auto bempty = EMH_EMPTY(bucket);
-    if (bempty) {
-      EMH_NEW(std::forward<K>(key), std::forward<V>(val), bucket, key_hash);
-    }
-    else {
-      m_pairs[m_index[bucket].slot & m_mask].second = std::forward(val);
-    }
-
-    const auto slot = m_index[bucket].slot & m_mask;
-    return { { this, slot }, bempty };
-  }
-
   std::pair<iterator, bool> add(const KeyT& key, const ValueT& value)
   {
     return insert(std::make_pair(key, value));
@@ -747,26 +628,6 @@ class HashTableMap2
     reserve(std::distance(first, last) + m_num_filled, false);
     for (; first != last; ++first)
       do_insert(first->first, first->second);
-  }
-
-  template <typename K, typename V>
-  size_type insert_unique(K&& key, V&& val)
-  {
-    check_expand_need();
-    const auto key_hash = hash_key(key);
-    auto bucket = find_unique_bucket(key_hash);
-    EMH_NEW(std::forward<K>(key), std::forward<V>(val), bucket, key_hash);
-    return bucket;
-  }
-
-  size_type insert_unique(value_type&& value)
-  {
-    return insert_unique(std::move(value.first), std::move(value.second));
-  }
-
-  size_type insert_unique(const value_type& value)
-  {
-    return insert_unique(value.first, value.second);
   }
 
   template <class... Args>
@@ -935,14 +796,6 @@ class HashTableMap2
 #endif
   }
 
-  void clearkv()
-  {
-    if (is_triviall_destructable()) {
-      while (m_num_filled--)
-        m_pairs[m_num_filled].~value_type();
-    }
-  }
-
   /// Remove all elements, keeping full capacity.
   void clear() noexcept
   {
@@ -1059,22 +912,6 @@ class HashTableMap2
     return true;
   }
 
-  static value_type* alloc_bucket(size_type num_buckets)
-  {
-#ifdef EMH_ALLOC
-    auto new_pairs = aligned_alloc(32, (uint64_t)num_buckets * sizeof(value_type));
-#else
-    auto new_pairs = malloc((uint64_t)num_buckets * sizeof(value_type));
-#endif
-    return (value_type*)(new_pairs);
-  }
-
-  static Index* alloc_index(size_type num_buckets)
-  {
-    auto new_index = (char*)malloc((uint64_t)(EAD + num_buckets) * sizeof(Index));
-    return (Index*)(new_index);
-  }
-
   bool reserve(size_type required_buckets) noexcept
   {
     if (m_num_filled != required_buckets)
@@ -1099,29 +936,6 @@ class HashTableMap2
       }
     }
     return true;
-  }
-
-  void rebuild(size_type num_buckets) noexcept
-  {
-    free(m_index);
-    auto new_pairs = (value_type*)alloc_bucket((size_type)(num_buckets * max_load_factor()) + 4);
-    if (is_copy_trivially()) {
-      if (m_pairs)
-        memcpy((char*)new_pairs, (char*)m_pairs, m_num_filled * sizeof(value_type));
-    }
-    else {
-      for (size_type slot = 0; slot < m_num_filled; slot++) {
-        new (new_pairs + slot) value_type(std::move(m_pairs[slot]));
-        if (is_triviall_destructable())
-          m_pairs[slot].~value_type();
-      }
-    }
-    free(m_pairs);
-    m_pairs = new_pairs;
-    m_index = (Index*)alloc_index(num_buckets);
-
-    memset((char*)m_index, INACTIVE, sizeof(m_index[0]) * num_buckets);
-    memset((char*)(m_index + num_buckets), 0, sizeof(m_index[0]) * EAD);
   }
 
   void rehash(uint64_t required_buckets)
@@ -1158,6 +972,191 @@ class HashTableMap2
   }
 
  private:
+
+  void clearkv()
+  {
+    if (is_triviall_destructable()) {
+      while (m_num_filled--)
+        m_pairs[m_num_filled].~value_type();
+    }
+  }
+
+  void rebuild(size_type num_buckets) noexcept
+  {
+    free(m_index);
+    auto new_pairs = (value_type*)alloc_bucket((size_type)(num_buckets * max_load_factor()) + 4);
+    if (is_copy_trivially()) {
+      if (m_pairs)
+        memcpy((char*)new_pairs, (char*)m_pairs, m_num_filled * sizeof(value_type));
+    }
+    else {
+      for (size_type slot = 0; slot < m_num_filled; slot++) {
+        new (new_pairs + slot) value_type(std::move(m_pairs[slot]));
+        if (is_triviall_destructable())
+          m_pairs[slot].~value_type();
+      }
+    }
+    free(m_pairs);
+    m_pairs = new_pairs;
+    m_index = (Index*)alloc_index(num_buckets);
+
+    memset((char*)m_index, INACTIVE, sizeof(m_index[0]) * num_buckets);
+    memset((char*)(m_index + num_buckets), 0, sizeof(m_index[0]) * EAD);
+  }
+
+  static value_type* alloc_bucket(size_type num_buckets)
+  {
+#ifdef EMH_ALLOC
+    auto new_pairs = aligned_alloc(32, (uint64_t)num_buckets * sizeof(value_type));
+#else
+    auto new_pairs = malloc((uint64_t)num_buckets * sizeof(value_type));
+#endif
+    return (value_type*)(new_pairs);
+  }
+
+  static Index* alloc_index(size_type num_buckets)
+  {
+    auto new_index = (char*)malloc((uint64_t)(EAD + num_buckets) * sizeof(Index));
+    return (Index*)(new_index);
+  }
+
+  void pack_zero(ValueT zero)
+  {
+    m_pairs[m_num_filled] = { KeyT(), zero };
+  }
+
+  /// Returns the matching ValueT or nullptr if k isn't found.
+  bool try_get(const KeyT& key, ValueT& val) const noexcept
+  {
+    const auto slot = find_filled_slot(key);
+    const auto found = slot != m_num_filled;
+    if (found) {
+      val = m_pairs[slot].second;
+    }
+    return found;
+  }
+
+  /// Returns the matching ValueT or nullptr if k isn't found.
+  ValueT* try_get(const KeyT& key) noexcept
+  {
+    const auto slot = find_filled_slot(key);
+    return slot != m_num_filled ? &m_pairs[slot].second : nullptr;
+  }
+
+  /// Const version of the above
+  ValueT* try_get(const KeyT& key) const noexcept
+  {
+    const auto slot = find_filled_slot(key);
+    return slot != m_num_filled ? &m_pairs[slot].second : nullptr;
+  }
+
+  /// set value if key exist
+  bool try_set(const KeyT& key, const ValueT& val) noexcept
+  {
+    const auto slot = find_filled_slot(key);
+    if (slot == m_num_filled)
+      return false;
+
+    m_pairs[slot].second = val;
+    return true;
+  }
+
+  /// set value if key exist
+  bool try_set(const KeyT& key, ValueT&& val) noexcept
+  {
+    const auto slot = find_filled_slot(key);
+    if (slot == m_num_filled)
+      return false;
+
+    m_pairs[slot].second = std::move(val);
+    return true;
+  }
+
+  /// Convenience function.
+  ValueT get_or_return_default(const KeyT& key) const noexcept
+  {
+    const auto slot = find_filled_slot(key);
+    return slot == m_num_filled ? ValueT() : m_pairs[slot].second;
+  }
+
+  // -----------------------------------------------------
+  std::pair<iterator, bool> do_insert(const value_type& value) noexcept
+  {
+    const auto key_hash = hash_key(value.first);
+    const auto bucket = find_or_allocate(value.first, key_hash);
+    const auto bempty = EMH_EMPTY(bucket);
+    if (bempty) {
+      EMH_NEW(value.first, value.second, bucket, key_hash);
+    }
+
+    const auto slot = m_index[bucket].slot & m_mask;
+    return { { this, slot }, bempty };
+  }
+
+  std::pair<iterator, bool> do_insert(value_type&& value) noexcept
+  {
+    const auto key_hash = hash_key(value.first);
+    const auto bucket = find_or_allocate(value.first, key_hash);
+    const auto bempty = EMH_EMPTY(bucket);
+    if (bempty) {
+      EMH_NEW(std::move(value.first), std::move(value.second), bucket, key_hash);
+    }
+
+    const auto slot = m_index[bucket].slot & m_mask;
+    return { { this, slot }, bempty };
+  }
+
+  template <typename K, typename V>
+  std::pair<iterator, bool> do_insert(K&& key, V&& val) noexcept
+  {
+    const auto key_hash = hash_key(key);
+    const auto bucket = find_or_allocate(key, key_hash);
+    const auto bempty = EMH_EMPTY(bucket);
+    if (bempty) {
+      EMH_NEW(std::forward<K>(key), std::forward<V>(val), bucket, key_hash);
+    }
+
+    const auto slot = m_index[bucket].slot & m_mask;
+    return { { this, slot }, bempty };
+  }
+
+  template <typename K, typename V>
+  std::pair<iterator, bool> do_assign(K&& key, V&& val) noexcept
+  {
+    check_expand_need();
+    const auto key_hash = hash_key(key);
+    const auto bucket = find_or_allocate(key, key_hash);
+    const auto bempty = EMH_EMPTY(bucket);
+    if (bempty) {
+      EMH_NEW(std::forward<K>(key), std::forward<V>(val), bucket, key_hash);
+    }
+    else {
+      m_pairs[m_index[bucket].slot & m_mask].second = std::forward(val);
+    }
+
+    const auto slot = m_index[bucket].slot & m_mask;
+    return { { this, slot }, bempty };
+  }
+
+  template <typename K, typename V>
+  size_type insert_unique(K&& key, V&& val)
+  {
+    check_expand_need();
+    const auto key_hash = hash_key(key);
+    auto bucket = find_unique_bucket(key_hash);
+    EMH_NEW(std::forward<K>(key), std::forward<V>(val), bucket, key_hash);
+    return bucket;
+  }
+
+  size_type insert_unique(value_type&& value)
+  {
+    return insert_unique(std::move(value.first), std::move(value.second));
+  }
+
+  size_type insert_unique(const value_type& value)
+  {
+    return insert_unique(value.first, value.second);
+  }
 
   // Can we fit another element?
   bool check_expand_need()
