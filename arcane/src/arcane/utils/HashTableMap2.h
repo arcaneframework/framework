@@ -79,15 +79,11 @@ struct DefaultPolicy
 
 template <typename KeyT, typename ValueT,
           typename HashT = std::hash<KeyT>,
-          typename EqT = std::equal_to<KeyT>,
-          typename Allocator = std::allocator<std::pair<KeyT, ValueT>>, //never used
-          typename Policy = DefaultPolicy> //never used
+          typename EqT = std::equal_to<KeyT>>
 class HashTableMap2
 {
-#ifndef EMH_DEFAULT_LOAD_FACTOR
-  constexpr static float EMH_DEFAULT_LOAD_FACTOR = 0.80f;
-#endif
-  constexpr static float EMH_MIN_LOAD_FACTOR = 0.25f; //< 0.5
+  constexpr static double EMH_DEFAULT_LOAD_FACTOR = 0.80f;
+  constexpr static double EMH_MIN_LOAD_FACTOR = 0.25f; //< 0.5
   constexpr static uint32_t EMH_CACHE_LINE_SIZE = 64; //debug only
 
  public:
@@ -96,24 +92,13 @@ class HashTableMap2
   using value_type = std::pair<KeyT, ValueT>;
   using key_type = KeyT;
   using mapped_type = ValueT;
-  //using dPolicy = Policy;
 
-#ifdef EMH_SMALL_TYPE
-  using size_type = uint16_t;
-#elif EMH_SIZE_TYPE == 0
   using size_type = uint32_t;
-#else
-  using size_type = size_t;
-#endif
-
-  //using size_type = uint32_t;
-  //using size_type = size_t;
 
   using hasher = HashT;
   using key_equal = EqT;
 
   constexpr static size_type INACTIVE = 0 - 1u;
-  //constexpr uint32_t END      = 0-0x1u;
   constexpr static size_type EAD = 2;
 
   struct Index
@@ -493,9 +478,9 @@ class HashTableMap2
   }
 
   /// Returns average number of elements per bucket.
-  float load_factor() const
+  double load_factor() const
   {
-    return static_cast<float>(_num_filled) / (_mask + 1);
+    return static_cast<double>(_num_filled) / (_mask + 1);
   }
 
   HashT& hash_function() const
@@ -507,7 +492,7 @@ class HashTableMap2
     return _eq;
   }
 
-  void max_load_factor(float mlf)
+  void max_load_factor(double mlf)
   {
     if (mlf < 0.992 && mlf > EMH_MIN_LOAD_FACTOR) {
       _mlf = (uint32_t)((1 << 27) / mlf);
@@ -516,9 +501,9 @@ class HashTableMap2
     }
   }
 
-  constexpr float max_load_factor() const
+  constexpr double max_load_factor() const
   {
-    return (1 << 27) / (float)_mlf;
+    return (1 << 27) / static_cast<double>(_mlf);
   }
   constexpr size_type max_size() const
   {
@@ -528,132 +513,6 @@ class HashTableMap2
   {
     return max_size();
   }
-
-#if EMH_STATIS
-  //Returns the bucket number where the element with key k is located.
-  size_type bucket(const KeyT& key) const
-  {
-    const auto bucket = hash_bucket(key);
-    const auto next_bucket = _index[bucket].next;
-    if ((int)next_bucket < 0)
-      return 0;
-    else if (bucket == next_bucket)
-      return bucket + 1;
-
-    return hash_main(bucket) + 1;
-  }
-
-  //Returns the number of elements in bucket n.
-  size_type bucket_size(const size_type bucket) const
-  {
-    auto next_bucket = _index[bucket].next;
-    if ((int)next_bucket < 0)
-      return 0;
-
-    next_bucket = hash_main(bucket);
-    size_type ibucket_size = 1;
-
-    //iterator each item in current main bucket
-    while (true) {
-      const auto nbucket = _index[next_bucket].next;
-      if (nbucket == next_bucket) {
-        break;
-      }
-      ibucket_size++;
-      next_bucket = nbucket;
-    }
-    return ibucket_size;
-  }
-
-  size_type get_main_bucket(const size_type bucket) const
-  {
-    auto next_bucket = _index[bucket].next;
-    if ((int)next_bucket < 0)
-      return INACTIVE;
-
-    return hash_main(bucket);
-  }
-
-  size_type get_diss(size_type bucket, size_type next_bucket, const size_type slots) const
-  {
-    auto pbucket = reinterpret_cast<uint64_t>(&_pairs[bucket]);
-    auto pnext = reinterpret_cast<uint64_t>(&_pairs[next_bucket]);
-    if (pbucket / EMH_CACHE_LINE_SIZE == pnext / EMH_CACHE_LINE_SIZE)
-      return 0;
-    size_type diff = pbucket > pnext ? (pbucket - pnext) : (pnext - pbucket);
-    if (diff / EMH_CACHE_LINE_SIZE < slots - 1)
-      return diff / EMH_CACHE_LINE_SIZE + 1;
-    return slots - 1;
-  }
-
-  int get_bucket_info(const size_type bucket, size_type steps[], const size_type slots) const
-  {
-    auto next_bucket = _index[bucket].next;
-    if ((int)next_bucket < 0)
-      return -1;
-
-    const auto main_bucket = hash_main(bucket);
-    if (next_bucket == main_bucket)
-      return 1;
-    else if (main_bucket != bucket)
-      return 0;
-
-    steps[get_diss(bucket, next_bucket, slots)]++;
-    size_type ibucket_size = 2;
-    //find a empty and linked it to tail
-    while (true) {
-      const auto nbucket = _index[next_bucket].next;
-      if (nbucket == next_bucket)
-        break;
-
-      steps[get_diss(nbucket, next_bucket, slots)]++;
-      ibucket_size++;
-      next_bucket = nbucket;
-    }
-    return (int)ibucket_size;
-  }
-
-  void dump_statics() const
-  {
-    const size_type slots = 128;
-    size_type buckets[slots + 1] = { 0 };
-    size_type steps[slots + 1] = { 0 };
-    for (size_type bucket = 0; bucket < _num_buckets; ++bucket) {
-      auto bsize = get_bucket_info(bucket, steps, slots);
-      if (bsize > 0)
-        buckets[bsize]++;
-    }
-
-    size_type sumb = 0, collision = 0, sumc = 0, finds = 0, sumn = 0;
-    puts("============== buckets size ration =========");
-    for (size_type i = 0; i < sizeof(buckets) / sizeof(buckets[0]); i++) {
-      const auto bucketsi = buckets[i];
-      if (bucketsi == 0)
-        continue;
-      sumb += bucketsi;
-      sumn += bucketsi * i;
-      collision += bucketsi * (i - 1);
-      finds += bucketsi * i * (i + 1) / 2;
-      printf("  %2u  %8u  %2.2lf|  %.2lf\n", i, bucketsi, bucketsi * 100.0 * i / _num_filled, sumn * 100.0 / _num_filled);
-    }
-
-    puts("========== collision miss ration ===========");
-    for (size_type i = 0; i < sizeof(steps) / sizeof(steps[0]); i++) {
-      sumc += steps[i];
-      if (steps[i] <= 2)
-        continue;
-      printf("  %2u  %8u  %.2lf  %.2lf\n", i, steps[i], steps[i] * 100.0 / collision, sumc * 100.0 / collision);
-    }
-
-    if (sumb == 0)
-      return;
-    printf("    _num_filled/bucket_size/packed collision/cache_miss/hit_find = %u/%.2lf/%zd/ %.2lf%%/%.2lf%%/%.2lf\n",
-           _num_filled, _num_filled * 1.0 / sumb, sizeof(value_type), (collision * 100.0 / _num_filled), (collision - steps[0]) * 100.0 / _num_filled, finds * 1.0 / _num_filled);
-    assert(sumn == _num_filled);
-    assert(sumc == collision);
-    puts("============== buckets size end =============");
-  }
-#endif
 
   void pack_zero(ValueT zero)
   {
@@ -1201,10 +1060,6 @@ class HashTableMap2
         return false;
       }
     }
-#endif
-#if EMH_STATIS
-    if (_num_filled > EMH_STATIS)
-      dump_statics();
 #endif
 
     //assert(required_buckets < max_size());
