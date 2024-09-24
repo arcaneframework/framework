@@ -10,6 +10,7 @@
 #include "arcane/utils/HashTableMap.h"
 #include "arcane/utils/String.h"
 #include "arcane/utils/PlatformUtils.h"
+#include "arcane/utils/HashTableMap2.h"
 
 #include <chrono>
 #include <unordered_map>
@@ -93,13 +94,12 @@ TEST(TestHashTable, Misc)
 
     {
       int nx = 2000000;
-      HashTableMapT<Int64, Int32> hashx(nx/2, true);
+      HashTableMapT<Int64, Int32> hashx(nx / 2, true);
       std::cout << "Test Hash n=" << nx << "\n";
       for (int i = 0; i < nx; ++i)
         hash2.add((i + 1), (i + 1) * 5);
       std::cout << "MEM=" << platform::getMemoryUsed() << "\n";
     }
-
   }
 }
 
@@ -228,6 +228,12 @@ TEST(TestHashTable, ArcaneLegacyMap)
 {
   ArcaneLegacyMap<Int64, Int32> arcane_map;
   _addMultiple<false>("ArcaneLegacyMap", arcane_map, num_keys);
+}
+
+TEST(TestHashTable, ArcaneHashMap2)
+{
+  impl::HashTableMap2<Int64, Int32> arcane_map;
+  _addMultiple<true>("ArcaneHashMap2", arcane_map, num_keys);
 }
 
 /*---------------------------------------------------------------------------*/
