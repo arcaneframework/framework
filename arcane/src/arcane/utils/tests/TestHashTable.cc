@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -9,6 +9,10 @@
 
 #include "arcane/utils/HashTableMap.h"
 #include "arcane/utils/String.h"
+#include "arcane/utils/PlatformUtils.h"
+
+#include <chrono>
+#include <unordered_map>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -86,7 +90,144 @@ TEST(TestHashTable, Misc)
     ASSERT_EQ(hash3.count(), n2);
     for (int i = 0; i < n2; ++i)
       ASSERT_EQ(hash3[i + 1], (i + 1) * 10);
+
+    {
+      int nx = 2000000;
+      HashTableMapT<Int64, Int32> hashx(nx/2, true);
+      std::cout << "Test Hash n=" << nx << "\n";
+      for (int i = 0; i < nx; ++i)
+        hash2.add((i + 1), (i + 1) * 5);
+      std::cout << "MEM=" << platform::getMemoryUsed() << "\n";
+    }
+
   }
+}
+
+Int64 _getRealTimeUS()
+{
+  auto x = std::chrono::high_resolution_clock::now();
+  // Converti la valeur en microsecondes.
+  auto y = std::chrono::time_point_cast<std::chrono::microseconds>(x);
+  return static_cast<Int64>(y.time_since_epoch().count());
+}
+
+template <typename Key, typename Value>
+class ArcaneLegacyMap
+{
+ public:
+
+  using Data = typename Arcane::HashTableMapT<Key, Value>::Data;
+  using value_type = std::pair<Key, Value>;
+
+ public:
+
+  ArcaneLegacyMap()
+  : m_map(100, true)
+  {}
+
+ public:
+
+  void insert(std::pair<Key, Value> v)
+  {
+    m_map.add(v.first, v.second);
+  }
+  void clear() { m_map.clear(); }
+  const Data* end() const { return nullptr; }
+  const Data* find(const Key& k) const
+  {
+    return m_map.lookup(k);
+  }
+  void erase(const Data* d)
+  {
+    if (d) {
+      Data* dd = const_cast<Data*>(d);
+      Key v = dd->key();
+      m_map.remove(v);
+    }
+  }
+  size_t size() const { return m_map.count(); }
+  template <typename Lambda> void eachValue(const Lambda& v)
+  {
+    m_map.eachValue(v);
+  }
+
+ private:
+
+  Arcane::HashTableMapT<Key, Value> m_map;
+};
+
+template <bool HasIter, typename HashType> void
+_addMultiple(const char* name, HashType& map_instance, int nb_key)
+{
+  using value_type = typename HashType::value_type;
+  std::cout << "ADD_MULTIPLE name=" << name << "\n";
+  map_instance.clear();
+
+  // Teste l'ajout
+  Int64 t0 = _getRealTimeUS();
+  for (Int32 i = 0; i < nb_key; i++) {
+    Int32 value = (i + 1) * 5;
+    map_instance.insert(value_type(i, value));
+  }
+  Int64 t1 = _getRealTimeUS();
+  std::cout << "ADD_TIME=" << (t1 - t0) << "\n";
+
+  // Teste le find
+  int nb_found = 0;
+  auto map_end = map_instance.end();
+  for (Int32 i = (2 * nb_key - 1); i >= 0; i -= 2) {
+    if (map_instance.find(i) != map_end)
+      ++nb_found;
+  }
+  Int64 t2 = _getRealTimeUS();
+  std::cout << "FIND_TIME=" << (t2 - t1) << " nb_found=" << nb_found << "\n";
+  ASSERT_EQ(nb_found, nb_key / 2);
+  {
+    Int64 total = 0;
+    if constexpr (HasIter) {
+      auto iter_begin = map_instance.begin();
+      auto iter_end = map_instance.end();
+      for (; iter_begin != iter_end; ++iter_begin)
+        total += iter_begin->second;
+    }
+    else {
+      map_instance.eachValue([&](Int32 v) {
+        total += v;
+      });
+    }
+    Int64 t3 = _getRealTimeUS();
+    Int64 i64_nb_key = nb_key;
+    Int64 expected_total = 5 * ((i64_nb_key) * (i64_nb_key + 1) / 2);
+
+    std::cout << "ITER_TIME=" << (t3 - t2) << " total=" << total << " T2=" << expected_total << "\n";
+    ASSERT_EQ(total, expected_total);
+  }
+
+  // Teste la suppression
+  Int64 t5 = _getRealTimeUS();
+  for (Int32 i = nb_key - 1; i >= 0; i -= 2) {
+    auto x = map_instance.find(i);
+    if (x != map_instance.end())
+      map_instance.erase(x);
+  }
+  Int64 t6 = _getRealTimeUS();
+  std::cout << "ERASE_TIME=" << (t6 - t5) << " remaining_size=" << map_instance.size() << "\n";
+  ASSERT_EQ(map_instance.size(), nb_key / 2);
+  std::cout << "MEM (MB)=" << static_cast<Int64>(platform::getMemoryUsed() / 1000000.0) << "\n";
+}
+
+int num_keys = 100000;
+
+TEST(TestHashTable, StdMap)
+{
+  std::unordered_map<Int64, Int32> std_map;
+  _addMultiple<true>("std::unordered_map", std_map, num_keys);
+}
+
+TEST(TestHashTable, ArcaneLegacyMap)
+{
+  ArcaneLegacyMap<Int64, Int32> arcane_map;
+  _addMultiple<false>("ArcaneLegacyMap", arcane_map, num_keys);
 }
 
 /*---------------------------------------------------------------------------*/
