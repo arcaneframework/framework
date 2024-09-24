@@ -61,7 +61,6 @@
 
 #define EMH_EMPTY(n) (0 > (int)(_index[n].next))
 #define EMH_EQHASH(n, key_hash) (((size_type)(key_hash) & ~_mask) == (_index[n].slot & ~_mask))
-//#define EMH_EQHASH(n, key_hash) ((size_type)(key_hash - _index[n].slot) & ~_mask) == 0
 #define EMH_NEW(key, val, bucket, key_hash) \
   new (_pairs + _num_filled) value_type(key, val); \
   _etail = bucket; \
@@ -99,6 +98,7 @@ class HashTableMap2
   using key_equal = EqT;
 
   constexpr static size_type INACTIVE = 0 - 1u;
+  constexpr static uint32_t END = 0 - 0x1u;
   constexpr static size_type EAD = 2;
 
   struct Index
@@ -568,8 +568,6 @@ class HashTableMap2
   size_type count(const K& key) const noexcept
   {
     return find_filled_slot(key) == _num_filled ? 0 : 1;
-    //return find_sorted_bucket(key) == END ? 0 : 1;
-    //return find_hash_bucket(key) == END ? 0 : 1;
   }
 
   template <typename K = KeyT>
@@ -745,17 +743,6 @@ class HashTableMap2
     for (; first != last; ++first)
       do_insert(first->first, first->second);
   }
-
-#if 0
-    template <typename Iter>
-    void insert_unique(Iter begin, Iter end)
-    {
-        reserve(std::distance(begin, end) + _num_filled, false);
-        for (; begin != end; ++begin) {
-            insert_unique(*begin);
-        }
-    }
-#endif
 
   template <typename K, typename V>
   size_type insert_unique(K&& key, V&& val)
@@ -1093,14 +1080,6 @@ class HashTableMap2
     _ehead = 0;
 #endif
 
-#if EMH_SORT
-    std::sort(_pairs, _pairs + _num_filled, [this](const value_type& l, const value_type& r) {
-      const auto hashl = (size_type)hash_key(l.first) & _mask, hashr = (size_type)hash_key(r.first) & _mask;
-      return hashl < hashr;
-      //return l.first < r.first;
-    });
-#endif
-
     memset((char*)_index, INACTIVE, sizeof(_index[0]) * _num_buckets);
     for (size_type slot = 0; slot < _num_filled; slot++) {
       const auto& key = _pairs[slot].first;
@@ -1150,16 +1129,6 @@ class HashTableMap2
     while (num_buckets < required_buckets) {
       num_buckets *= 2;
     }
-#if EMH_SAVE_MEM
-    if (sizeof(KeyT) < sizeof(size_type) && num_buckets >= (1ul << (2 * 8)))
-      num_buckets = 2ul << (sizeof(KeyT) * 8);
-#endif
-
-#if EMH_REHASH_LOG
-    auto last = _last;
-    size_type collision = 0;
-#endif
-
 #if EMH_HIGH_LOAD
     _ehead = 0;
 #endif
@@ -1174,44 +1143,13 @@ class HashTableMap2
 
     rebuild(num_buckets);
 
-#ifdef EMH_SORT
-    std::sort(_pairs, _pairs + _num_filled, [this](const value_type& l, const value_type& r) {
-      const auto hashl = hash_key(l.first), hashr = hash_key(r.first);
-      auto diff = int64_t((hashl & _mask) - (hashr & _mask));
-      if (diff != 0)
-        return diff < 0;
-      return hashl < hashr;
-      //          return l.first < r.first;
-    });
-#endif
-
     _etail = INACTIVE;
     for (size_type slot = 0; slot < _num_filled; ++slot) {
       const auto& key = _pairs[slot].first;
       const auto key_hash = hash_key(key);
       const auto bucket = find_unique_bucket(key_hash);
       _index[bucket] = { bucket, slot | ((size_type)(key_hash) & ~_mask) };
-
-#if EMH_REHASH_LOG
-      if (bucket != hash_main(bucket))
-        collision++;
-#endif
     }
-
-#if EMH_REHASH_LOG
-    if (_num_filled > EMH_REHASH_LOG) {
-      auto mbucket = _num_filled - collision;
-      char buff[255] = { 0 };
-      sprintf(buff, "    _num_filled/aver_size/K.V/pack/collision|last = %u/%.2lf/%s.%s/%zd|%.2lf%%,%.2lf%%",
-              _num_filled, double(_num_filled) / mbucket, typeid(KeyT).name(), typeid(ValueT).name(), sizeof(_pairs[0]), collision * 100.0 / _num_filled, last * 100.0 / _num_buckets);
-#ifdef EMH_LOG
-      static uint32_t ihashs = 0;
-      EMH_LOG() << "hash_nums = " << ihashs++ << "|" << __FUNCTION__ << "|" << buff << endl;
-#else
-      puts(buff);
-#endif
-    }
-#endif
   }
 
  private:
@@ -1376,74 +1314,6 @@ class HashTableMap2
     return _num_filled;
   }
 
-#if EMH_SORT
-  size_type find_hash_bucket(const KeyT& key) const noexcept
-  {
-    const auto key_hash = hash_key(key);
-    const auto bucket = size_type(key_hash & _mask);
-    const auto next_bucket = _index[bucket].next;
-    if ((int)next_bucket < 0)
-      return END;
-
-    auto slot = _index[bucket].slot & _mask;
-    if (_eq(key, _pairs[slot++].first))
-      return slot;
-    else if (next_bucket == bucket)
-      return END;
-
-    while (true) {
-      const auto& okey = _pairs[slot++].first;
-      if (_eq(key, okey))
-        return slot;
-
-      const auto hasho = hash_key(okey);
-      if ((hasho & _mask) != bucket)
-        break;
-      else if (hasho > key_hash)
-        break;
-      else if (EMH_UNLIKELY(slot >= _num_filled))
-        break;
-    }
-
-    return END;
-  }
-
-  //only for find/can not insert
-  size_type find_sorted_bucket(const KeyT& key) const noexcept
-  {
-    const auto key_hash = hash_key(key);
-    const auto bucket = size_type(key_hash & _mask);
-    const auto slots = (int)(_index[bucket].next); //TODO
-    if (slots < 0 /**|| key < _pairs[slot].first*/)
-      return END;
-
-    const auto slot = _index[bucket].slot & _mask;
-    auto ormask = _index[bucket].slot & ~_mask;
-    auto hmask = (size_type)(key_hash) & ~_mask;
-    if ((hmask | ormask) != ormask)
-      return END;
-
-    if (_eq(key, _pairs[slot].first))
-      return slot;
-    else if (slots == 1 || key < _pairs[slot].first)
-      return END;
-
-#if EMH_SORT
-    if (key < _pairs[slot].first || key > _pairs[slots + slot - 1].first)
-      return END;
-#endif
-
-    for (size_type i = 1; i < slots; ++i) {
-      const auto& okey = _pairs[slot + i].first;
-      if (_eq(key, okey))
-        return slot + i;
-      //            else if (okey > key)
-      //                return END;
-    }
-
-    return END;
-  }
-#endif
 
   //kick out bucket and find empty to occpuy
   //it will break the orgin link and relnik again.
@@ -1590,18 +1460,6 @@ class HashTableMap2
 #endif
 
     for (;;) {
-#if EMH_PACK_TAIL
-      //find empty bucket and skip next
-      if (EMH_EMPTY(_last++)) // || EMH_EMPTY(_last++))
-        return _last++ - 1;
-
-      if (EMH_UNLIKELY(_last >= _num_buckets))
-        _last = 0;
-
-      auto medium = (_mask / 4 + _last++) & _mask;
-      if (EMH_EMPTY(medium))
-        return medium;
-#else
       _last &= _mask;
       if (EMH_EMPTY(++_last)) // || EMH_EMPTY(++_last))
         return _last;
@@ -1609,7 +1467,6 @@ class HashTableMap2
       auto medium = (_num_buckets / 2 + _last) & _mask;
       if (EMH_EMPTY(medium)) // || EMH_EMPTY(++medium))
         return medium;
-#endif
     }
 
     return 0;
@@ -1654,177 +1511,18 @@ class HashTableMap2
     return (size_type)hash_key(_pairs[slot].first) & _mask;
   }
 
-#if EMH_INT_HASH
-  static constexpr uint64_t KC = UINT64_C(11400714819323198485);
-  static uint64_t hash64(uint64_t key)
-  {
-#if __SIZEOF_INT128__ && EMH_INT_HASH == 1
-    __uint128_t r = key;
-    r *= KC;
-    return (uint64_t)(r >> 64) + (uint64_t)r;
-#elif EMH_INT_HASH == 2
-    //MurmurHash3Mixer
-    uint64_t h = key;
-    h ^= h >> 33;
-    h *= 0xff51afd7ed558ccd;
-    h ^= h >> 33;
-    h *= 0xc4ceb9fe1a85ec53;
-    h ^= h >> 33;
-    return h;
-#elif _WIN64 && EMH_INT_HASH == 1
-    uint64_t high;
-    return _umul128(key, KC, &high) + high;
-#elif EMH_INT_HASH == 3
-    auto ror = (key >> 32) | (key << 32);
-    auto low = key * 0xA24BAED4963EE407ull;
-    auto high = ror * 0x9FB21C651E98DF25ull;
-    auto mix = low + high;
-    return mix;
-#elif EMH_INT_HASH == 1
-    uint64_t r = key * UINT64_C(0xca4bcaa75ec3f625);
-    return (r >> 32) + r;
-#elif EMH_WYHASH64
-    return wyhash64(key, KC);
-#else
-    uint64_t x = key;
-    x = (x ^ (x >> 30)) * UINT64_C(0xbf58476d1ce4e5b9);
-    x = (x ^ (x >> 27)) * UINT64_C(0x94d049bb133111eb);
-    x = x ^ (x >> 31);
-    return x;
-#endif
-  }
-#endif
-
-#if EMH_WYHASH_HASH
-  //#define WYHASH_CONDOM 1
-  static uint64_t wymix(uint64_t A, uint64_t B)
-  {
-#if defined(__SIZEOF_INT128__)
-    __uint128_t r = A;
-    r *= B;
-#if WYHASH_CONDOM2
-    A ^= (uint64_t)r;
-    B ^= (uint64_t)(r >> 64);
-#else
-    A = (uint64_t)r;
-    B = (uint64_t)(r >> 64);
-#endif
-
-#elif defined(_MSC_VER) && defined(_M_X64)
-#if WYHASH_CONDOM2
-    uint64_t a, b;
-    a = _umul128(A, B, &b);
-    A ^= a;
-    B ^= b;
-#else
-    A = _umul128(A, B, &B);
-#endif
-#else
-    uint64_t ha = A >> 32, hb = B >> 32, la = (uint32_t)A, lb = (uint32_t)B, hi, lo;
-    uint64_t rh = ha * hb, rm0 = ha * lb, rm1 = hb * la, rl = la * lb, t = rl + (rm0 << 32), c = t < rl;
-    lo = t + (rm1 << 32);
-    c += lo < t;
-    hi = rh + (rm0 >> 32) + (rm1 >> 32) + c;
-#if WYHASH_CONDOM2
-    A ^= lo;
-    B ^= hi;
-#else
-    A = lo;
-    B = hi;
-#endif
-#endif
-    return A ^ B;
-  }
-
-  //multiply and xor mix function, aka MUM
-  static inline uint64_t wyr8(const uint8_t* p)
-  {
-    uint64_t v;
-    memcpy(&v, p, 8);
-    return v;
-  }
-  static inline uint64_t wyr4(const uint8_t* p)
-  {
-    uint32_t v;
-    memcpy(&v, p, 4);
-    return v;
-  }
-  static inline uint64_t wyr3(const uint8_t* p, size_t k)
-  {
-    return (((uint64_t)p[0]) << 16) | (((uint64_t)p[k >> 1]) << 8) | p[k - 1];
-  }
-
-  inline static const uint64_t secret[4] = {
-    0x2d358dccaa6c78a5ull, 0x8bb84b93962eacc9ull,
-    0x4b33a62ed433d4a3ull, 0x4d5a2da51de1aa47ull
-  };
-
- public:
-
-  //wyhash main function https://github.com/wangyi-fudan/wyhash
-  static uint64_t wyhashstr(const char* key, const size_t len)
-  {
-    uint64_t a = 0, b = 0, seed = secret[0];
-    const uint8_t* p = (const uint8_t*)key;
-    if (EMH_LIKELY(len <= 16)) {
-      if (EMH_LIKELY(len >= 4)) {
-        const auto half = (len >> 3) << 2;
-        a = (wyr4(p) << 32U) | wyr4(p + half);
-        p += len - 4;
-        b = (wyr4(p) << 32U) | wyr4(p - half);
-      }
-      else if (len) {
-        a = wyr3(p, len);
-      }
-    }
-    else {
-      size_t i = len;
-      if (EMH_UNLIKELY(i > 48)) {
-        uint64_t see1 = seed, see2 = seed;
-        do {
-          seed = wymix(wyr8(p + 0) ^ secret[1], wyr8(p + 8) ^ seed);
-          see1 = wymix(wyr8(p + 16) ^ secret[2], wyr8(p + 24) ^ see1);
-          see2 = wymix(wyr8(p + 32) ^ secret[3], wyr8(p + 40) ^ see2);
-          p += 48;
-          i -= 48;
-        } while (EMH_LIKELY(i > 48));
-        seed ^= see1 ^ see2;
-      }
-      while (i > 16) {
-        seed = wymix(wyr8(p) ^ secret[1], wyr8(p + 8) ^ seed);
-        i -= 16;
-        p += 16;
-      }
-      a = wyr8(p + i - 16);
-      b = wyr8(p + i - 8);
-    }
-
-    return wymix(secret[1] ^ len, wymix(a ^ secret[1], b ^ seed));
-  }
-#endif
-
  private:
 
   template <typename UType, typename std::enable_if<std::is_integral<UType>::value, uint32_t>::type = 0>
   inline uint64_t hash_key(const UType key) const
   {
-#if EMH_INT_HASH
-    return hash64(key);
-#elif EMH_IDENTITY_HASH
-    return key + (key >> 24);
-#else
     return _hasher(key);
-#endif
   }
 
   template <typename UType, typename std::enable_if<std::is_same<UType, std::string>::value, uint32_t>::type = 0>
   inline uint64_t hash_key(const UType& key) const
   {
-#if EMH_WYHASH_HASH
-    return wyhashstr(key.data(), key.size());
-#else
     return _hasher(key);
-#endif
   }
 
   template <typename UType, typename std::enable_if<!std::is_integral<UType>::value && !std::is_same<UType, std::string>::value, uint32_t>::type = 0>
