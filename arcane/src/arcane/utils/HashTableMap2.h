@@ -75,16 +75,6 @@ namespace Arcane::impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-struct DefaultPolicy
-{
-  static constexpr float load_factor = 0.80f;
-  static constexpr float min_load_factor = 0.20f;
-  static constexpr size_t cacheline_size = 64U;
-};
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 /*!
  * \brief Implementation of std::unordered_map.
  *
@@ -107,12 +97,13 @@ class HashTableMap2
   using mapped_type = ValueT;
 
   using size_type = uint32_t;
+  using signed_size_type = int32_t;
 
   using hasher = HashT;
   using key_equal = EqT;
 
-  constexpr static size_type INACTIVE = 0 - 1u;
-  constexpr static uint32_t END = 0 - 0x1u;
+  constexpr static signed_size_type INACTIVE = -1;
+  constexpr static signed_size_type END = -1;
   constexpr static size_type EAD = 2;
 
   struct Index
@@ -719,7 +710,7 @@ class HashTableMap2
       EMH_NEW(std::forward<K>(key), std::forward<V>(val), bucket, key_hash);
     }
     else {
-      m_pairs[m_index[bucket].slot & m_mask].second = std::move(val);
+      m_pairs[m_index[bucket].slot & m_mask].second = std::forward(val);
     }
 
     const auto slot = m_index[bucket].slot & m_mask;
@@ -1546,20 +1537,20 @@ class HashTableMap2
 
  private:
 
-  Index* m_index;
-  value_type* m_pairs;
+  Index* m_index = nullptr;
+  value_type* m_pairs = nullptr;
 
   HashT m_hasher;
   EqT m_eq;
-  uint32_t m_mlf;
-  size_type m_mask;
-  size_type m_num_buckets;
-  size_type m_num_filled;
-  size_type m_last;
+  uint32_t m_mlf = 0;
+  size_type m_mask = 0;
+  size_type m_num_buckets = 0;
+  size_type m_num_filled = 0;
+  size_type m_last = 0;
 #if EMH_HIGH_LOAD
   size_type _ehead;
 #endif
-  size_type m_etail;
+  size_type m_etail = 0;
 };
 
 /*---------------------------------------------------------------------------*/
