@@ -1369,7 +1369,9 @@ class HashTableMap2
 #if __linux__
     __builtin_prefetch(static_cast<const void*>(ctrl));
 #elif _WIN32
-    _mm_prefetch((const char*)ctrl, _MM_HINT_T0);
+    // TODO: need to fix error:
+    // error C2065: '_MM_HINT_T0': undeclared identifier
+    //_mm_prefetch((const char*)ctrl, _MM_HINT_T0);
 #endif
   }
 
