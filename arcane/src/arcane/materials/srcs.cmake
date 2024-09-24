@@ -137,6 +137,6 @@ set(ARCANE_SOURCES
   internal/MeshMaterialVariableIndexer.h
   internal/MeshMaterialSynchronizer.h
   internal/IMeshMaterialSynchronizerImpl.h
-  internal/MeshMaterialSynchronizerImpl.h
-  internal/MeshMaterialSynchronizerImplAcc.h
+  internal/LegacyMeshMaterialSynchronizerImpl.h
+  internal/AcceleratorMeshMaterialSynchronizerImpl.h
   )

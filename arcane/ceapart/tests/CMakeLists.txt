@@ -12,7 +12,7 @@ set_target_properties(arcanecea_tests_exec PROPERTIES RUNTIME_OUTPUT_DIRECTORY $
 if (WIN32)
   set_target_properties(arcanecea_tests_exec PROPERTIES SUFFIX ".exe")
 endif()
-  
+
 target_link_libraries(arcanecea_tests_exec PRIVATE ${ADD_NO_AS_NEEDED} arcane_tests_lib arcane_cea_tests)
 
 set(ARCANE_TEST_PATH ${CMAKE_BINARY_DIR}/src/arcane/tests)
@@ -98,6 +98,7 @@ if (ARCANE_HAS_ACCELERATOR_API)
   arcane_add_accelerator_test_parallel(material_sync2_v6 testMaterial-sync-2.arc 4 -We,ARCANE_MATSYNCHRONIZE_VERSION,6)
   arcane_add_accelerator_test_parallel(material_sync2_v7 testMaterial-sync-2.arc 4 -We,ARCANE_MATSYNCHRONIZE_VERSION,7)
   arcane_add_accelerator_test_parallel(material_sync2_v8 testMaterial-sync-2.arc 4 -We,ARCANE_MATSYNCHRONIZE_VERSION,8)
+  arcane_add_accelerator_test_parallel(material_sync2_vacc testMaterial-sync-2.arc 4 -We,ARCANE_ACC_MAT_SYNCHRONIZER,8)
   arcane_add_accelerator_test_parallel_thread(material_sync2_v7 testMaterial-sync-2.arc 4 -We,ARCANE_MATSYNCHRONIZE_VERSION,7)
 
   ARCANE_ADD_TEST(material3 testMaterial-3.arc "-m 20")

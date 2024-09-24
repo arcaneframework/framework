@@ -6,15 +6,7 @@
 
 #include "arcane/accelerator/Filter.h"
 #include "arcane/utils/IMemoryRessourceMng.h"
-#include "arcane/ISubDomain.h"
-#include "arcane/accelerator/core/IAcceleratorMng.h"
-#include "arcane/accelerator/Runner.h"
-#include "arcane/accelerator/RunCommandLoop.h"
 #include "arcane/accelerator/core/Memory.h"
-#include "arcane/IParallelMng.h"
-#include "arcane/core/internal/IParallelMngInternal.h"
-#include "arcane/accelerator/core/Runner.h"
-#include "arcane/accelerator/core/RunQueueBuildInfo.h"
 
 namespace Arcane::Accelerator {
 
