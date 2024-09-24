@@ -39,12 +39,13 @@ namespace Arcane::Materials
  */
 class IMeshMaterialSynchronizerImpl
 {
-protected:
+ protected:
 
-explicit IMeshMaterialSynchronizerImpl(){};
+  explicit IMeshMaterialSynchronizerImpl() {};
 
-public:
-  virtual ~IMeshMaterialSynchronizerImpl(){};
+ public:
+
+  virtual ~IMeshMaterialSynchronizerImpl() {};
 
   /*!
    * \brief Synchronisation de la liste des matériaux/milieux des entités.
@@ -55,8 +56,6 @@ public:
    * ou d'un milieu lors de cette opération pour ce sous-domaine.
    */
   virtual bool synchronizeMaterialsInCells() = 0;
-
-
 };
 
 /*---------------------------------------------------------------------------*/

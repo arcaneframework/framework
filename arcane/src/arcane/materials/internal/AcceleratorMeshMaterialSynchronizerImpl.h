@@ -73,13 +73,16 @@ class AcceleratorMeshMaterialSynchronizerImpl
  private:
 
   IMeshMaterialMng* m_material_mng;
-public:
-  ARCCORE_HOST_DEVICE inline static void _setBit(Arcane::DataViewGetterSetter<unsigned char> bytes,Integer position);
-  ARCCORE_HOST_DEVICE inline static bool _hasBit(Arcane::DataViewGetterSetter<unsigned char> bytes,Integer position);
-private:
+
+ public:
+
+  ARCCORE_HOST_DEVICE inline static void _setBit(Arcane::DataViewGetterSetter<unsigned char> bytes, Integer position);
+  ARCCORE_HOST_DEVICE inline static bool _hasBit(Arcane::DataViewGetterSetter<unsigned char> bytes, Integer position);
+
+ private:
+
   Arcane::Accelerator::IndexSelecter m_idx_selecter;
   VariableCellArrayByte m_mat_presence;
-
 };
 
 /*---------------------------------------------------------------------------*/

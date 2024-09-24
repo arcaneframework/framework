@@ -51,7 +51,7 @@ LegacyMeshMaterialSynchronizerImpl::
 /*---------------------------------------------------------------------------*/
 
 inline void LegacyMeshMaterialSynchronizerImpl::
-_setBit(ByteArrayView bytes,Integer position)
+_setBit(ByteArrayView bytes, Integer position)
 {
   Integer offset = position / 8;
   Integer bit = position % 8;
@@ -59,7 +59,7 @@ _setBit(ByteArrayView bytes,Integer position)
 }
 
 inline bool LegacyMeshMaterialSynchronizerImpl::
-_hasBit(ByteConstArrayView bytes,Integer position)
+_hasBit(ByteConstArrayView bytes, Integer position)
 {
   Integer offset = position / 8;
   Integer bit = position % 8;
@@ -70,13 +70,13 @@ _hasBit(ByteConstArrayView bytes,Integer position)
 /*---------------------------------------------------------------------------*/
 
 void LegacyMeshMaterialSynchronizerImpl::
-_fillPresence(AllEnvCell all_env_cell,ByteArrayView presence)
+_fillPresence(AllEnvCell all_env_cell, ByteArrayView presence)
 {
-  ENUMERATE_CELL_ENVCELL(ienvcell,all_env_cell){
-    ENUMERATE_CELL_MATCELL(imatcell,(*ienvcell)){
+  ENUMERATE_CELL_ENVCELL (ienvcell, all_env_cell) {
+    ENUMERATE_CELL_MATCELL (imatcell, (*ienvcell)) {
       MatCell mc = *imatcell;
       Integer mat_index = mc.materialId();
-      _setBit(presence,mat_index);
+      _setBit(presence, mat_index);
     }
   }
 }
@@ -108,19 +108,18 @@ synchronizeMaterialsInCells()
 
   ConstArrayView<IMeshMaterial*> materials = m_material_mng->materials();
   Integer nb_mat = materials.size();
-  VariableCellArrayByte mat_presence(VariableBuildInfo(mesh,"ArcaneMaterialSyncPresence"));
+  VariableCellArrayByte mat_presence(VariableBuildInfo(mesh, "ArcaneMaterialSyncPresence"));
   Integer dim2_size = nb_mat / 8;
-  if ((nb_mat % 8)!=0)
+  if ((nb_mat % 8) != 0)
     ++dim2_size;
   mat_presence.resize(dim2_size);
   info(4) << "Resize presence variable nb_mat=" << nb_mat << " dim2=" << dim2_size;
   CellToAllEnvCellConverter cell_converter = m_material_mng->cellToAllEnvCellConverter();
-  ENUMERATE_CELL(icell,mesh->ownCells()){
+  ENUMERATE_CELL (icell, mesh->ownCells()) {
     ByteArrayView presence = mat_presence[icell];
     presence.fill(0);
     AllEnvCell all_env_cell = cell_converter[*icell];
-    _fillPresence(all_env_cell,presence);
-
+    _fillPresence(all_env_cell, presence);
   }
 
   bool has_changed = false;
@@ -128,9 +127,9 @@ synchronizeMaterialsInCells()
   mat_presence.synchronize();
   {
     ByteUniqueArray before_presence(dim2_size);
-    UniqueArray< UniqueArray<Int32> > to_add(nb_mat);
-    UniqueArray< UniqueArray<Int32> > to_remove(nb_mat);
-    ENUMERATE_CELL(icell,mesh->allCells()){
+    UniqueArray<UniqueArray<Int32>> to_add(nb_mat);
+    UniqueArray<UniqueArray<Int32>> to_remove(nb_mat);
+    ENUMERATE_CELL (icell, mesh->allCells()) {
       Cell cell = *icell;
       // Ne traite que les mailles fantomes.
       if (cell.isOwn())
@@ -138,13 +137,13 @@ synchronizeMaterialsInCells()
       Int32 cell_lid = cell.localId();
       AllEnvCell all_env_cell = cell_converter[cell];
       before_presence.fill(0);
-      _fillPresence(all_env_cell,before_presence);
+      _fillPresence(all_env_cell, before_presence);
       ByteConstArrayView after_presence = mat_presence[cell];
       // Ajoute/Supprime cette maille des matériaux si besoin.
-      for( Integer imat=0; imat<nb_mat; ++imat ){
-        bool has_before = _hasBit(before_presence,imat);
-        bool has_after = _hasBit(after_presence,imat);
-        if (has_before && !has_after){
+      for (Integer imat = 0; imat < nb_mat; ++imat) {
+        bool has_before = _hasBit(before_presence, imat);
+        bool has_after = _hasBit(after_presence, imat);
+        if (has_before && !has_after) {
           to_remove[imat].add(cell_lid);
         }
         else if (has_after && !has_before)
@@ -153,20 +152,19 @@ synchronizeMaterialsInCells()
     }
 
     MeshMaterialModifier modifier(m_material_mng);
-    for( Integer i=0; i<nb_mat; ++i ){
-      if (!to_add[i].empty()){
-        modifier.addCells(materials[i],to_add[i]);
+    for (Integer i = 0; i < nb_mat; ++i) {
+      if (!to_add[i].empty()) {
+        modifier.addCells(materials[i], to_add[i]);
         has_changed = true;
       }
-      if (!to_remove[i].empty()){
-        modifier.removeCells(materials[i],to_remove[i]);
+      if (!to_remove[i].empty()) {
+        modifier.removeCells(materials[i], to_remove[i]);
         has_changed = true;
       }
     }
   }
   return has_changed;
 }
-
 
 } // End namespace Arcane::Materials
 

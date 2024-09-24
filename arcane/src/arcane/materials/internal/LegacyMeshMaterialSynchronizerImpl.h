@@ -71,10 +71,9 @@ class LegacyMeshMaterialSynchronizerImpl
 
   IMeshMaterialMng* m_material_mng;
 
-  inline static void _setBit(ByteArrayView bytes,Integer position);
-  inline static bool _hasBit(ByteConstArrayView bytes,Integer position);
-  void _fillPresence(AllEnvCell all_env_cell,ByteArrayView presence);
-
+  inline static void _setBit(ByteArrayView bytes, Integer position);
+  inline static bool _hasBit(ByteConstArrayView bytes, Integer position);
+  void _fillPresence(AllEnvCell all_env_cell, ByteArrayView presence);
 };
 
 /*---------------------------------------------------------------------------*/

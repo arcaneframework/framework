@@ -71,7 +71,7 @@ class MeshMaterialSynchronizer
 
  private:
 
-  IMeshMaterialSynchronizerImpl*m_synchronizer;
+  IMeshMaterialSynchronizerImpl* m_synchronizer;
   IMeshMaterialMng* m_material_mng;
 
   void _checkComponents(VariableCellInt32& indexes,
