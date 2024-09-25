@@ -82,6 +82,7 @@ if (ARCANE_HAS_ACCELERATOR_API)
   ARCANE_ADD_TEST_PARALLEL(material2_opt3_syncv6 testMaterial-2-opt3.arc 4 -m 13 -We,ARCANE_MATSYNCHRONIZE_VERSION,6)
   ARCANE_ADD_TEST_PARALLEL(material2_opt3_syncv7 testMaterial-2-opt3.arc 4 -m 13 -We,ARCANE_MATSYNCHRONIZE_VERSION,7)
   ARCANE_ADD_TEST_PARALLEL(material2_opt3_syncv8 testMaterial-2-opt3.arc 4 -m 13 -We,ARCANE_MATSYNCHRONIZE_VERSION,8)
+  ARCANE_ADD_TEST_PARALLEL(material2_opt3_syncvacc testMaterial-2-opt3.arc 4 -m 13 -We,ARCANE_ACC_MAT_SYNCHRONIZER,1)
   ARCANE_ADD_TEST_CHECKPOINT_SEQUENTIAL(material_checkpoint testMaterial-checkpoint.arc 3 3)
   ARCANE_ADD_TEST_CHECKPOINT_SEQUENTIAL(material_checkpoint_recreate testMaterial-checkpoint-recreate.arc 3 3)
 
@@ -98,8 +99,9 @@ if (ARCANE_HAS_ACCELERATOR_API)
   arcane_add_accelerator_test_parallel(material_sync2_v6 testMaterial-sync-2.arc 4 -We,ARCANE_MATSYNCHRONIZE_VERSION,6)
   arcane_add_accelerator_test_parallel(material_sync2_v7 testMaterial-sync-2.arc 4 -We,ARCANE_MATSYNCHRONIZE_VERSION,7)
   arcane_add_accelerator_test_parallel(material_sync2_v8 testMaterial-sync-2.arc 4 -We,ARCANE_MATSYNCHRONIZE_VERSION,8)
-  arcane_add_accelerator_test_parallel(material_sync2_vacc testMaterial-sync-2.arc 4 -We,ARCANE_ACC_MAT_SYNCHRONIZER,8)
+  arcane_add_accelerator_test_parallel(material_sync2_vacc testMaterial-sync-2.arc 4 -We,ARCANE_ACC_MAT_SYNCHRONIZER,1)
   arcane_add_accelerator_test_parallel_thread(material_sync2_v7 testMaterial-sync-2.arc 4 -We,ARCANE_MATSYNCHRONIZE_VERSION,7)
+  arcane_add_accelerator_test_parallel_thread(material_sync2_vacc testMaterial-sync-2.arc 4 -We,ARCANE_ACC_MAT_SYNCHRONIZER,1)
 
   ARCANE_ADD_TEST(material3 testMaterial-3.arc "-m 20")
   # NOTE Ajoute test optmisation uniquement en sequentiel car pour l'instant cela

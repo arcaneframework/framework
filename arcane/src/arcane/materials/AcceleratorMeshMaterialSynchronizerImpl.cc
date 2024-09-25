@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* AcceleratorMeshMaterialSynchronizerImpl.cc                          (C) 2000-2023 */
+/* AcceleratorMeshMaterialSynchronizerImpl.cc                          (C) 2000-2024 */
 /*                                                                           */
 /* Synchronisation des entités des matériaux.                                */
 /*---------------------------------------------------------------------------*/
@@ -41,6 +41,10 @@ AcceleratorMeshMaterialSynchronizerImpl(IMeshMaterialMng* material_mng)
 {
   IMesh* mesh = m_material_mng->mesh();
   auto* internal_pm = mesh->parallelMng()->_internalApi();
+  if (internal_pm->defaultRunner() == nullptr) {
+    Arcane::Runner* default_runner = new Runner(Arcane::Accelerator::eExecutionPolicy::Sequential);
+    internal_pm->setDefaultRunner(default_runner);
+  }
   Arcane::Accelerator::RunQueue* m_queue = internal_pm->defaultQueue();
   m_idx_selecter = Arcane::Accelerator::IndexSelecter(m_queue);
 }

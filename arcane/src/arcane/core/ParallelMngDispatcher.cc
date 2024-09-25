@@ -242,6 +242,8 @@ class ParallelMngDispatcher::Impl
       return false;
     if (!m_queue.get())
       return false;
+    if (!m_queue->isAcceleratorPolicy())
+      return false;
     return m_parallel_mng->_isAcceleratorAware();
   }
   void setDefaultRunner(Runner* runner) override
