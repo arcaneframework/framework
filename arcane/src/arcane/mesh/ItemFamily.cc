@@ -2247,7 +2247,7 @@ removeNeedRemoveMarkedItems()
     if (f & ItemFlags::II_NeedRemove){
       f &= ~ItemFlags::II_NeedRemove & ItemFlags::II_Suppressed;
       item.toMutable().setFlags(f);
-      items_to_remove.add(item.itemInternal());
+      items_to_remove.add(item._itemInternal());
       items_to_remove_lids.add(item.localId());
     }
   });
