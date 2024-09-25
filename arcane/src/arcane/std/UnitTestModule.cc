@@ -11,19 +11,21 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+#include "arcane/utils/ScopedPtr.h"
+
 #include "arcane/core/IUnitTest.h"
 #include "arcane/core/ISubDomain.h"
 #include "arcane/core/IApplication.h"
 #include "arcane/core/ITimeLoop.h"
 #include "arcane/core/ITimeLoopMng.h"
 #include "arcane/core/IXmlDocumentHolder.h"
-#include "arcane/core/IRessourceMng.h"
 #include "arcane/core/IIOMng.h"
 #include "arcane/core/ArcaneException.h"
 #include "arcane/core/TimeLoopEntryPointInfo.h"
 #include "arcane/core/Directory.h"
 #include "arcane/core/XmlNode.h"
 #include "arcane/core/IParallelMng.h"
+#include "arcane/core/DomUtils.h"
 
 #include "arcane/std/UnitTest_axl.h"
 
@@ -44,12 +46,11 @@ class UnitTestModule
  public:
 
   explicit UnitTestModule(const ModuleBuildInfo& cb);
-  ~UnitTestModule() override;
 
  public:
-	
+
   static void staticInitialize(ISubDomain* sd);
-  VersionInfo versionInfo() const override { return VersionInfo(2,0,0); }
+  VersionInfo versionInfo() const override { return VersionInfo(2, 0, 0); }
 
  public:
 
@@ -60,10 +61,12 @@ class UnitTestModule
 
  private:
 
-  IXmlDocumentHolder* m_tests_doc; //!< Traces des tests unitaires
-  bool m_success; //!< Vrai tant qu'un test unitaire n'a pas retourné d'erreur.
+  ScopedPtrT<IXmlDocumentHolder> m_tests_doc; //!< Traces des tests unitaires
+  bool m_success = true; //!< Vrai tant qu'un test unitaire n'a pas retourné d'erreur.
 
  private:
+
+  void _checkCreateXmlTestDocument();
 };
 
 /*---------------------------------------------------------------------------*/
@@ -77,18 +80,10 @@ ARCANE_REGISTER_MODULE_UNITTEST(UnitTestModule);
 UnitTestModule::
 UnitTestModule(const ModuleBuildInfo& mb)
 : ArcaneUnitTestObject(mb)
-, m_tests_doc(0)
-, m_success(true)
+, m_tests_doc(domutils::createXmlDocument())
 {
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-UnitTestModule::
-~UnitTestModule()
-{
-  delete m_tests_doc;
+  XmlNode doc = m_tests_doc->documentNode();
+  XmlElement root(doc, "unit-tests-results");
 }
 
 /*---------------------------------------------------------------------------*/
@@ -104,25 +99,25 @@ staticInitialize(ISubDomain* sd)
   {
     List<TimeLoopEntryPointInfo> clist;
     clist.add(TimeLoopEntryPointInfo("UnitTest.UnitTestBuild"));
-    time_loop->setEntryPoints(ITimeLoop::WBuild,clist);
+    time_loop->setEntryPoints(ITimeLoop::WBuild, clist);
   }
 
   {
     List<TimeLoopEntryPointInfo> clist;
     clist.add(TimeLoopEntryPointInfo("UnitTest.UnitTestInit"));
-    time_loop->setEntryPoints(ITimeLoop::WInit,clist);
+    time_loop->setEntryPoints(ITimeLoop::WInit, clist);
   }
 
   {
     List<TimeLoopEntryPointInfo> clist;
     clist.add(TimeLoopEntryPointInfo("UnitTest.UnitTestDoTest"));
-    time_loop->setEntryPoints(ITimeLoop::WComputeLoop,clist);
+    time_loop->setEntryPoints(ITimeLoop::WComputeLoop, clist);
   }
 
   {
     List<TimeLoopEntryPointInfo> clist;
     clist.add(TimeLoopEntryPointInfo("UnitTest.UnitTestExit"));
-    time_loop->setEntryPoints(ITimeLoop::WExit,clist);
+    time_loop->setEntryPoints(ITimeLoop::WExit, clist);
   }
 
   {
@@ -141,18 +136,10 @@ staticInitialize(ISubDomain* sd)
 void UnitTestModule::
 unitTestBuild()
 {
-  // creation du rapport XML
-  if (options()->xmlTest.size() > 0) {
-    m_success = true;
-    m_tests_doc = subDomain()->application()->ressourceMng()->createXmlDocument();
-    XmlNode doc = m_tests_doc->documentNode();
-    XmlElement root(doc, "unit-tests-results");
-  }
-
-  for( IUnitTest* service : options()->test )
+  for (IUnitTest* service : options()->test)
     service->buildInitializeTest();
 
-  for( IXmlUnitTest* service : options()->xmlTest )
+  for (IXmlUnitTest* service : options()->xmlTest)
     service->buildInitializeTest();
 }
 
@@ -165,10 +152,10 @@ unitTestInit()
   // Initialise au cas où aucun test ne le fait
   m_global_deltat = 1.0;
 
-  for( IUnitTest* service : options()->test )
+  for (IUnitTest* service : options()->test)
     service->initializeTest();
 
-  for( IXmlUnitTest* service : options()->xmlTest )
+  for (IXmlUnitTest* service : options()->xmlTest)
     service->initializeTest();
 }
 
@@ -180,12 +167,12 @@ unitTestDoTest()
 {
   subDomain()->timeLoopMng()->stopComputeLoop(false);
 
-  for( IUnitTest* service : options()->test )
+  for (IUnitTest* service : options()->test)
     service->executeTest();
 
   if (options()->xmlTest.size() > 0) {
     XmlNode xtests = m_tests_doc->documentNode().documentElement();
-    for( IXmlUnitTest* service : options()->xmlTest ){
+    for (IXmlUnitTest* service : options()->xmlTest) {
       XmlNode xservice = xtests.createAndAppendElement("service");
       if (!service->executeTest(xservice))
         m_success = false;
@@ -199,21 +186,21 @@ unitTestDoTest()
 void UnitTestModule::
 unitTestExit()
 {
-  for( IUnitTest* service : options()->test )
+  for (IUnitTest* service : options()->test)
     service->finalizeTest();
 
-  for( IXmlUnitTest* service : options()->xmlTest )
+  for (IXmlUnitTest* service : options()->xmlTest)
     service->finalizeTest();
 
   if (options()->xmlTest.size() > 0) {
     // ecriture du rapport XML.
     // En parallèle, seul le processeur maitre écrit le fichier
     IParallelMng* pm = subDomain()->parallelMng();
-    if (pm->isMasterIO()){
+    if (pm->isMasterIO()) {
       Directory listing_dir(subDomain()->listingDirectory());
       String filename(listing_dir.file("unittests.xml"));
       info() << "Output of the report of the unit test in '" << filename << "'";
-      subDomain()->ioMng()->writeXmlFile(m_tests_doc, filename);
+      subDomain()->ioMng()->writeXmlFile(m_tests_doc.get(), filename);
     }
 
     // sortie en exception si demandé
