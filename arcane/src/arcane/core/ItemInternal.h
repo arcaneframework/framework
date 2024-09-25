@@ -55,6 +55,7 @@ class IncrementalItemConnectivityBase;
 class PolyhedralFamily;
 class PolyhedralMeshImpl;
 class FaceFamily;
+class MeshRefinement;
 }
 namespace Arcane::Materials
 {
@@ -446,8 +447,11 @@ class ARCANE_CORE_EXPORT ItemBase
   friend class ::Arcane::Materials::ComponentItemSharedInfo;
   friend class ::Arcane::ItemEnumerator;
   friend MutableItemBase;
-  // Pour _internalActiveCells2.
+  // Pour _internalActiveCells2().
   friend class ::Arcane::Node;
+  // Pour _itemInternal()
+  friend class ::Arcane::mesh::ItemFamily;
+  friend class ::Arcane::mesh::MeshRefinement;
 
  private:
 
@@ -762,6 +766,7 @@ class ARCANE_CORE_EXPORT ItemBase
     m_shared_info = rhs.m_shared_info;
   }
   ItemInternalVectorView _internalActiveCells2(Int32Array& local_ids) const;
+  inline ItemInternal* _itemInternal() const;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -1123,6 +1128,17 @@ ItemLocalIdT(ItemInternal* item)
 
 inline ItemInternal* impl::ItemBase::
 itemInternal() const
+{
+  if (m_local_id!=NULL_ITEM_LOCAL_ID)
+    return m_shared_info->m_items_internal[m_local_id];
+  return ItemInternal::nullItem();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+inline ItemInternal* impl::ItemBase::
+_itemInternal() const
 {
   if (m_local_id!=NULL_ITEM_LOCAL_ID)
     return m_shared_info->m_items_internal[m_local_id];

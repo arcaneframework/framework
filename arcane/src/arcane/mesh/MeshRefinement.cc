@@ -1765,7 +1765,7 @@ _contract()
           }
         }
         if (active_parent){
-          parent_cells.add(iitem.itemInternal());
+          parent_cells.add(iitem._itemInternal());
           ARCANE_ASSERT((iitem.flags() & ItemFlags::II_JustCoarsened), ("Incoherent JustCoarsened flag"));
         }
         // informe le client du changement de maillage
@@ -2085,7 +2085,7 @@ _removeGhostChildren()
       for (Integer c = 0, cs = cell.nbHChildren(); c < cs; c++) {
         cells_to_remove.add(cell.hChildBase(c).localId());
       }
-      parent_cells.add(cell.itemInternal());
+      parent_cells.add(cell._itemInternal());
     }
   });
 
