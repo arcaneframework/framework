@@ -31,6 +31,7 @@
 #include "arcane/materials/AllCellToAllEnvCellConverter.h"
 #include "arcane/materials/internal/MeshMaterial.h"
 #include "arcane/materials/internal/MeshEnvironment.h"
+#include "arcane/materials/internal/MeshMaterialSynchronizer.h"
 
 #include <map>
 #include <memory>
@@ -371,6 +372,7 @@ class MeshMaterialMng
   IMeshMaterialVariableFactoryMng* m_variable_factory_mng = nullptr;
   std::unique_ptr<ObserverPool> m_observer_pool;
   String m_data_compressor_service_name;
+  MeshMaterialSynchronizer* m_mms = nullptr;
 
   AllCellToAllEnvCell* m_allcell_2_allenvcell = nullptr;
   bool m_is_allcell_2_allenvcell = false;
@@ -417,4 +419,4 @@ class MeshMaterialMng
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

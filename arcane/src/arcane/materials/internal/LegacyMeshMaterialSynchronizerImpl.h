@@ -5,12 +5,12 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshMaterialSynchronizer.h                                  (C) 2000-2024 */
+/* LegacyMeshMaterialSynchronizerImpl.h                                  (C) 2000-2024 */
 /*                                                                           */
 /* Synchronisation de la liste des matériaux/milieux des entités.            */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_MATERIALS_INTERNAL_MESHMATERIALSYNCHRONIZER_H
-#define ARCANE_MATERIALS_INTERNAL_MESHMATERIALSYNCHRONIZER_H
+#ifndef ARCANE_MATERIALS_INTERNAL_MESHMATERIALSYNCHRONIZERIMPL_H
+#define ARCANE_MATERIALS_INTERNAL_MESHMATERIALSYNCHRONIZERIMPL_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -21,11 +21,8 @@
 
 #include "arcane/materials/MaterialsGlobal.h"
 #include "arcane/materials/MatItem.h"
-#include "arcane/utils/ValueConvert.h"
 
 #include "arcane/materials/internal/IMeshMaterialSynchronizerImpl.h"
-#include "arcane/materials/internal/AcceleratorMeshMaterialSynchronizerImpl.h"
-#include "arcane/materials/internal/LegacyMeshMaterialSynchronizerImpl.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -38,7 +35,7 @@ class MeshMaterialModifierImpl;
 /*---------------------------------------------------------------------------*/
 /*!
  * \internal
- * \brief Synchronisation de la liste des matériaux/milieux des entités.
+ * \brief Stratégie de synchronisation de la liste des matériaux/milieux des entités.
  *
  * Cette classe permet de syncrhoniser entre les sous-domaines la liste
  * des matériaux/milieux auxquelles une maille appartient.
@@ -48,13 +45,14 @@ class MeshMaterialModifierImpl;
  * être ajoutés ou retirer des matériaux et milieux actuels pour être en cohérence
  * avec cette liste issue des mailles propres.
  */
-class MeshMaterialSynchronizer
+class LegacyMeshMaterialSynchronizerImpl
 : public TraceAccessor
+, public IMeshMaterialSynchronizerImpl
 {
  public:
 
-  explicit MeshMaterialSynchronizer(IMeshMaterialMng* material_mng);
-  ~MeshMaterialSynchronizer();
+  explicit LegacyMeshMaterialSynchronizerImpl(IMeshMaterialMng* material_mng);
+  ~LegacyMeshMaterialSynchronizerImpl();
 
  public:
 
@@ -71,12 +69,11 @@ class MeshMaterialSynchronizer
 
  private:
 
-  IMeshMaterialSynchronizerImpl* m_synchronizer;
   IMeshMaterialMng* m_material_mng;
 
-  void _checkComponents(VariableCellInt32& indexes,
-                        ConstArrayView<IMeshComponent*> components,
-                        Integer max_print);
+  inline static void _setBit(ByteArrayView bytes, Integer position);
+  inline static bool _hasBit(ByteConstArrayView bytes, Integer position);
+  void _fillPresence(AllEnvCell all_env_cell, ByteArrayView presence);
 };
 
 /*---------------------------------------------------------------------------*/
