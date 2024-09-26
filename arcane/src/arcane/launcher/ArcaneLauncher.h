@@ -137,7 +137,8 @@ class ARCANE_LAUNCHER_EXPORT ArcaneLauncher
    * \brief Positionne la fabrique par défaut pour créer les différents gestionnaires
    *
    * Cette méthode doit être appelée avant run(). L'instance passée en argument doit
-   * rester valide durant l'exécution de run().
+   * rester valide durant l'exécution de run(). L'appelant reste propriétaire
+   * de l'instance.
    */
   static void setDefaultMainFactory(IMainFactory* mf);
 
