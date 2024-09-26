@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* StandaloneSubDomain.cc                                      (C) 2000-2023 */
+/* StandaloneSubDomain.cc                                      (C) 2000-2024 */
 /*                                                                           */
 /* Sample for ArcaneLauncher::createStandaloneSubDomain().                   */
 /*---------------------------------------------------------------------------*/
@@ -35,13 +35,13 @@
 
 using namespace Arcane;
 
-void executeSample()
+void executeSample(const String& case_file)
 {
 
   // Create a standalone subdomain
   // Arcane will automatically call finalization when the variable
   // goes out of scope.
-  Arcane::StandaloneSubDomain launcher{ ArcaneLauncher::createStandaloneSubDomain(String{}) };
+  Arcane::StandaloneSubDomain launcher{ ArcaneLauncher::createStandaloneSubDomain(case_file) };
   Arcane::ISubDomain* sd = launcher.subDomain();
 
   // Get the trace class to display messages
@@ -52,7 +52,7 @@ void executeSample()
 
   // Create a mesh named 'Mesh1' from the file 'plancher.msh'.
   // The format is automatically choosen from the extension
-  Arcane::IMesh* mesh = mrm.readMesh("Mesh1", "plancher.msh");
+  Arcane::IMesh* mesh = mrm.readMesh("AdditionalMesh", "plancher.msh", sd->parallelMng());
 
   Int32 nb_cell = mesh->nbCell();
   tm->info() << "NB_CELL=" << nb_cell;
@@ -76,13 +76,16 @@ void executeSample()
 
 int main(int argc, char* argv[])
 {
-  auto func = [&]{
+  String case_file;
+
+  auto func = [&] {
     std::cout << "Sample: StandaloneSubDomain\n";
     // Initialize Arcane
     Arcane::CommandLineArguments cmd_line_args(&argc, &argv);
     Arcane::ArcaneLauncher::init(cmd_line_args);
-
-    executeSample();
+    if (argc > 1)
+      case_file = argv[argc - 1];
+    executeSample(case_file);
   };
 
   return arcaneCallFunctionAndCatchException(func);
