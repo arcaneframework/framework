@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -21,9 +21,10 @@
 #endif
 
 #include "arcane/impl/ArcaneSimpleExecutor.h"
+#include "arcane/impl/MainFactory.h"
 
-#include "arcane/MeshReaderMng.h"
-#include "arcane/IMesh.h"
+#include "arcane/core/MeshReaderMng.h"
+#include "arcane/core/IMesh.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -62,10 +63,22 @@ arcaneTestStandaloneAcceleratorLauncher(const CommandLineArguments& cmd_line_arg
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+//! Classe utilisée pour tester l'appel à ArcaneLauncher::setDefaultMainFactory()
+class TestMainFactory
+: public MainFactory
+{
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 int
 _mainHelper(int argc,char* argv[])
 {
   CommandLineArguments cmd_line_args(&argc,&argv);
+
+  TestMainFactory main_factory;
+  ArcaneLauncher::setDefaultMainFactory(&main_factory);
 
   String standalone_subdomain_method = cmd_line_args.getParameter("StandaloneSubDomainMethod");
   if (!standalone_subdomain_method.null())

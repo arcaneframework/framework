@@ -896,8 +896,8 @@ arcaneMain(const ApplicationInfo& app_info, IMainFactory* factory)
     factory = m_default_main_factory;
     if (!factory) {
       factory = new ArcaneBatchMainFactory();
+      default_factory = factory;
     }
-    default_factory = factory;
   }
 
   int ret = _arcaneMain(app_info, factory);
