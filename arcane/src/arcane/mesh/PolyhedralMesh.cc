@@ -96,7 +96,7 @@ namespace mesh
     void preAllocate(Integer nb_item)
     {
       Integer nb_hash = itemsMap().nbBucket();
-      Integer wanted_size = 2 * (nb_item + infos().nbItem());
+      Integer wanted_size = 2 * (nb_item + nbItem());
       if (nb_hash < wanted_size)
         itemsMap().resize(wanted_size, true);
       m_empty_connectivity_indexes.resize(nb_item + nbItem(), 0);

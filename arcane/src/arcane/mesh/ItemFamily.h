@@ -216,10 +216,14 @@ class ARCANE_MESH_EXPORT ItemFamily
   void compactItems(bool do_sort) override;
   void clearItems() override;
 
-  const DynamicMeshKindInfos& infos() const;
   Int64ArrayView* uniqueIds();
 
   ItemSharedInfo* commonItemSharedInfo() { return m_common_item_shared_info; }
+
+ public:
+
+  ARCANE_DEPRECATED_REASON("Y2024: This method is internal to Arcane. Use _infos() instead.")
+  const DynamicMeshKindInfos& infos() const;
 
  public:
 
@@ -237,10 +241,6 @@ class ARCANE_MESH_EXPORT ItemFamily
   void reduceFromGhostItems(IVariable* v,IDataOperation* operation) override;
   void reduceFromGhostItems(IVariable* v,Parallel::eReduceType operation) override;
 
- public:
-  
-  GroupIndexTable* localIdToIndex(ItemGroup group);
- 
  public:
 
   ItemPairGroup findAdjencyItems(const ItemGroup& group,
@@ -279,7 +279,7 @@ class ARCANE_MESH_EXPORT ItemFamily
   {
     _removeOne(item);
   }
-  //! Accesseur pour les connectités via Item et ItemInternal
+  //! Accesseur pour les connectivités via Item et ItemInternal
   ItemInternalConnectivityList* itemInternalConnectivityList()
   {
     return &m_item_connectivity_list;
@@ -297,6 +297,7 @@ class ARCANE_MESH_EXPORT ItemFamily
   void _setHasUniqueIdMap(bool v);
   void _removeMany(Int32ConstArrayView local_ids);
   void _removeDetachedOne(Item item);
+  const DynamicMeshKindInfos& _infos() const;
 
   void _detachCells2(Int32ConstArrayView local_ids);
 

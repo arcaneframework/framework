@@ -399,6 +399,12 @@ infos() const
   return *m_infos;
 }
 
+const DynamicMeshKindInfos& ItemFamily::
+_infos() const
+{
+  return *m_infos;
+}
+
 void ItemFamily::
 _removeOne(Item item)
 {
