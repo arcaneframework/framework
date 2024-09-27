@@ -21,6 +21,7 @@
 #include "arcane/core/MeshBuildInfo.h"
 #include "arcane/core/ServiceFactory.h"
 #include "arcane/mesh/ItemFamily.h"
+#include "arcane/mesh/DynamicMeshKindInfos.h"
 #include "arcane/utils/ITraceMng.h"
 #include "arcane/utils/FatalErrorException.h"
 #include "arcane/core/AbstractService.h"

@@ -17,6 +17,8 @@
 #include "arcane/core/IParallelMng.h"
 #include "arcane/core/CartesianGridDimension.h"
 
+#include "arcane/mesh/ItemInternalMap.h"
+
 #include <array>
 
 /*---------------------------------------------------------------------------*/

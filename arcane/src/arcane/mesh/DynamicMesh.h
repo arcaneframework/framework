@@ -103,8 +103,6 @@ class ARCANE_MESH_EXPORT DynamicMesh
  public:
 
   typedef ItemInternal* ItemInternalPtr;
-  typedef DynamicMeshKindInfos::ItemInternalMap ItemInternalMap;
-
   typedef List<IItemFamily*> ItemFamilyList;
 
   class InitialAllocator

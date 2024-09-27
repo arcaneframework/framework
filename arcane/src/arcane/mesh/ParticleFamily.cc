@@ -24,8 +24,8 @@
 
 #include "arcane/mesh/ItemsExchangeInfo2.h"
 #include "arcane/mesh/DynamicMesh.h"
-#include "arcane/mesh/IncrementalItemConnectivity.h"
 #include "arcane/mesh/ItemConnectivitySelector.h"
+#include "arcane/mesh/DynamicMeshKindInfos.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
