@@ -55,6 +55,7 @@
 #include "arcane/mesh/ItemConnectivityInfo.h"
 #include "arcane/mesh/ItemConnectivitySelector.h"
 #include "arcane/mesh/AbstractItemFamilyTopologyModifier.h"
+#include "arcane/mesh/DynamicMeshKindInfos.h"
 
 #include "arcane/core/parallel/GhostItemsVariableParallelOperation.h"
 #include "arcane/core/parallel/IStat.h"
@@ -252,7 +253,7 @@ ItemFamily(IMesh* mesh,eItemKind ik,const String& name)
 , m_mesh(mesh)
 , m_internal_api(new InternalApi(this))
 , m_sub_domain(mesh->subDomain())
-, m_infos(mesh,ik,name)
+, m_infos(std::make_unique<DynamicMeshKindInfos>(mesh, ik, name))
 , m_item_internal_list(mesh->meshItemInternalList())
 , m_common_item_shared_info(new ItemSharedInfo(this,m_item_internal_list,&m_item_connectivity_list))
 , m_item_shared_infos(new ItemSharedInfoList(this,m_common_item_shared_info))
@@ -260,7 +261,7 @@ ItemFamily(IMesh* mesh,eItemKind ik,const String& name)
 , m_sub_domain_id(mesh->meshPartInfo().partRank())
 {
   m_item_connectivity_list.m_items = mesh->meshItemInternalList();
-  m_infos.setItemFamily(this);
+  m_infos->setItemFamily(this);
   m_connectivity_selector_list_by_item_kind.resize(ItemInternalConnectivityList::MAX_ITEM_KIND);
 }
 
@@ -323,7 +324,7 @@ build()
 
   // D'abord initialiser les infos car cela créé les groupes d'entités
   // et c'est indispensable avant de créer des variables dessus.
-  m_infos.build();
+  m_infos->build();
 
   // Construit l'instance qui contiendra les variables
   // NOTE: si on change les noms ici, il faut aussi les changer dans MeshStats.cc
@@ -382,10 +383,87 @@ build()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+ItemInternal* ItemFamily::
+findOneItem(Int64 uid)
+{
+  return m_infos->findOne(uid);
+}
+ItemInternalMap& ItemFamily::
+itemsMap()
+{
+  return m_infos->itemsMap();
+}
+const DynamicMeshKindInfos& ItemFamily::
+infos() const
+{
+  return *m_infos;
+}
+
+void ItemFamily::
+_removeOne(Item item)
+{
+  // TODO: vérifier en mode check avec les nouvelles connectivités que l'entité supprimée
+  // n'a pas d'objets connectés.
+  m_infos->removeOne(ItemCompatibility::_itemInternal(item));
+}
+void ItemFamily::
+_detachOne(Item item)
+{
+  m_infos->detachOne(ItemCompatibility::_itemInternal(item));
+}
+ItemInternalList ItemFamily::
+_itemsInternal()
+{
+  return m_infos->itemsInternal();
+}
+ItemInternal* ItemFamily::
+_itemInternal(Int32 local_id)
+{
+  return m_infos->itemInternal(local_id);
+}
+ItemInternal* ItemFamily::
+_allocOne(Int64 unique_id)
+{
+  return m_infos->allocOne(unique_id);
+}
+ItemInternal* ItemFamily::
+_allocOne(Int64 unique_id, bool& need_alloc)
+{
+  return m_infos->allocOne(unique_id, need_alloc);
+}
+ItemInternal* ItemFamily::
+_findOrAllocOne(Int64 uid, bool& is_alloc)
+{
+  return m_infos->findOrAllocOne(uid, is_alloc);
+}
+void ItemFamily::
+_setHasUniqueIdMap(bool v)
+{
+  m_infos->setHasUniqueIdMap(v);
+}
+void ItemFamily::
+_removeMany(Int32ConstArrayView local_ids)
+{
+  m_infos->removeMany(local_ids);
+}
+void ItemFamily::
+_removeDetachedOne(Item item)
+{
+  m_infos->removeDetachedOne(ItemCompatibility::_itemInternal(item));
+}
+eItemKind ItemFamily::
+itemKind() const
+{
+  return m_infos->kind();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 Integer ItemFamily::
 nbItem() const
 {
-  return m_infos.nbItem();
+  return m_infos->nbItem();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -394,7 +472,7 @@ nbItem() const
 Int32 ItemFamily::
 maxLocalId() const
 {
-  return m_infos.maxUsedLocalId();
+  return m_infos->maxUsedLocalId();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -403,7 +481,7 @@ maxLocalId() const
 ItemInternalList ItemFamily::
 itemsInternal()
 {
-  return m_infos.itemsInternal();
+  return m_infos->itemsInternal();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -591,7 +669,7 @@ _shrinkConnectivityAndPrintInfos()
 bool ItemFamily::
 _partialEndUpdate()
 {
-  bool need_end_update = m_infos.changed();
+  bool need_end_update = m_infos->changed();
   info(4) << "ItemFamily::endUpdate() " << fullName() << " need_end_update?=" << need_end_update;
   if (!need_end_update){
     // Même si aucune entité n'est ajoutée ou supprimée, si \a m_need_prepare_dump
@@ -611,9 +689,9 @@ _partialEndUpdate()
 
   // Update "external" connectivities
   if (m_connectivity_mng)
-    m_connectivity_mng->setModifiedItems(this,m_infos.addedItems(), m_infos.removedItems());
+    m_connectivity_mng->setModifiedItems(this, m_infos->addedItems(), m_infos->removedItems());
   //
-  m_infos.finalizeMeshChanged();
+  m_infos->finalizeMeshChanged();
 
   return false;
 }
@@ -660,7 +738,7 @@ void ItemFamily::
 _updateGroup(ItemGroup group,bool need_check_remove)
 {
   // Pas besoin de recalculer le groupe des entités globales
-  if (group==m_infos.allItems())
+  if (group == m_infos->allItems())
     return;
 
   if (group.internal()->hasComputeFunctor())
@@ -735,7 +813,7 @@ _resizeVariables(bool force_resize)
 void ItemFamily::
 itemsUniqueIdToLocalId(ArrayView<Int64> ids,bool do_fatal) const
 {
-  m_infos.itemsUniqueIdToLocalId(ids,do_fatal);
+  m_infos->itemsUniqueIdToLocalId(ids, do_fatal);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -746,7 +824,7 @@ itemsUniqueIdToLocalId(Int32ArrayView local_ids,
                        Int64ConstArrayView unique_ids,
                        bool do_fatal) const
 {
-  m_infos.itemsUniqueIdToLocalId(local_ids,unique_ids,do_fatal);
+  m_infos->itemsUniqueIdToLocalId(local_ids, unique_ids, do_fatal);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -757,7 +835,7 @@ itemsUniqueIdToLocalId(Int32ArrayView local_ids,
                        ConstArrayView<ItemUniqueId> unique_ids,
                        bool do_fatal) const
 {
-  m_infos.itemsUniqueIdToLocalId(local_ids,unique_ids,do_fatal);
+  m_infos->itemsUniqueIdToLocalId(local_ids, unique_ids, do_fatal);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -803,7 +881,7 @@ ItemGroup ItemFamily::
 allItems() const
 {
   _checkNeedEndUpdate();
-  return m_infos.allItems();
+  return m_infos->allItems();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1000,7 +1078,7 @@ notifyItemsUniqueIdChanged()
 void ItemFamily::
 _checkNeedEndUpdate() const
 {
-  if (m_infos.changed())
+  if (m_infos->changed())
     ARCANE_FATAL("missing call to endUpdate() after modification");
 }
 
@@ -1014,12 +1092,12 @@ prepareForDump()
           << " need=" << m_need_prepare_dump
           << " item-need=" << m_item_need_prepare_dump
           << " m_item_shared_infos->hasChanged()=" << m_item_shared_infos->hasChanged()
-          << " nb_item=" << m_infos.nbItem();
+          << " nb_item=" << m_infos->nbItem();
 
   {
     auto* p = m_properties;
     p->setInt32("dump-version",0x0307);
-    p->setInt32("nb-item",m_infos.nbItem());
+    p->setInt32("nb-item", m_infos->nbItem());
     p->setInt32("current-change-id",m_current_id);
   }
 
@@ -1033,19 +1111,19 @@ prepareForDump()
     _compactOnlyItems(false);
 
     // Suppose compression
-    m_infos.prepareForDump();
+    m_infos->prepareForDump();
     m_item_shared_infos->prepareForDump();
     m_need_prepare_dump = true;
   }
   m_item_need_prepare_dump = false;
   if (m_need_prepare_dump){
-    Integer nb_item = m_infos.nbItem();
+    Integer nb_item = m_infos->nbItem();
     // TODO: regarder si ce ne serait pas mieux de faire cela dans finishCompactItem()
     _resizeItemVariables(nb_item,true);
     m_internal_variables->m_current_id = m_current_id;
     info(4) << " SET FAMILY ID name=" << name() << " id= " << m_current_id
             << " saveid=" << m_internal_variables->m_current_id();
-    ItemInternalList items(m_infos.itemsInternal());
+    ItemInternalList items(m_infos->itemsInternal());
     m_internal_variables->m_items_shared_data_index.resize(nb_item);
     IntegerArrayView items_shared_data_index(m_internal_variables->m_items_shared_data_index);
     info(4) << "ItemFamily::prepareForDump(): " << m_name
@@ -1167,8 +1245,8 @@ readFromDump()
   // du groupe de toutes les entités.
   const MeshPartInfo& part_info = m_mesh->meshPartInfo();
   m_sub_domain_id = part_info.partRank();
-  if (m_infos.allItems().isOwn() && part_info.nbPart()>1)
-    m_infos.allItems().setOwn(false);
+  if (m_infos->allItems().isOwn() && part_info.nbPart() > 1)
+    m_infos->allItems().setOwn(false);
 
   // NOTE: l'implémentation actuelle suppose que les dataIndex() des
   // entites sont consécutifs et croissants avec le localId() des entités
@@ -1235,10 +1313,10 @@ readFromDump()
   }
 
   m_item_shared_infos->readFromDump();
-  m_infos.readFromDump();
+  m_infos->readFromDump();
 
   // En relecture les entités sont compactées donc la valeur max du localId()
-  // est égal au nombre d'entité.
+  // est égal au nombre d'entités.
 
   if (use_type_variable){
     ItemTypeMng* type_mng = mesh()->itemTypeMng();
@@ -1246,7 +1324,7 @@ readFromDump()
       ItemTypeId type_id{m_common_item_shared_info->m_type_ids[i]};
       ItemSharedInfoWithType* isi = _findSharedInfo(type_mng->typeFromId(type_id));
       Int64 uid = m_items_unique_id_view[i];
-      ItemInternal* item = m_infos.allocOne(uid);
+      ItemInternal* item = m_infos->allocOne(uid);
       item->_setSharedInfo(isi->sharedInfo(),type_id);
     }
   }
@@ -1257,14 +1335,14 @@ readFromDump()
       Integer shared_data_index = items_shared_data_index[i];
       ItemSharedInfoWithType* isi = item_shared_infos[shared_data_index];
       Int64 uid = m_items_unique_id_view[i];
-      ItemInternal* item = m_infos.allocOne(uid);
+      ItemInternal* item = m_infos->allocOne(uid);
       item->_setSharedInfo(isi->sharedInfo(),isi->itemTypeId());
     }
   }
 
   // Supprime les entités du groupe total car elles vont être remises à jour
   // lors de l'appel à _endUpdate()
-  m_infos.allItems().clear();
+  m_infos->allItems().clear();
 
   // Notifie les connectivités sources qu'on vient de faire une relecture.
   for( auto& c : m_source_incremental_item_connectivities )
@@ -1290,7 +1368,7 @@ _applyCheckNeedUpdateOnGroups()
   for( ItemGroupList::Enumerator i(m_item_groups); ++i; ){
     ItemGroup group = *i;
     // Pas besoin de recalculer le groupe des entités globales
-    if (group==m_infos.allItems())
+    if (group == m_infos->allItems())
       continue;
     group.internal()->checkNeedUpdate();
   }
@@ -1422,10 +1500,10 @@ _compactItems(bool do_sort)
 void ItemFamily::
 beginCompactItems(ItemFamilyCompactInfos& compact_infos)
 {
-  m_infos.beginCompactItems(compact_infos);
+  m_infos->beginCompactItems(compact_infos);
 
   if (arcaneIsCheck())
-    m_infos.checkValid();
+    m_infos->checkValid();
 
   Int32ConstArrayView new_to_old_ids = compact_infos.newToOldLocalIds();
   Int32ConstArrayView old_to_new_ids = compact_infos.oldToNewLocalIds();
@@ -1461,9 +1539,9 @@ void ItemFamily::
 finishCompactItems(ItemFamilyCompactInfos& compact_infos)
 {
   if (arcaneIsCheck())
-    m_infos.checkValid();
+    m_infos->checkValid();
 
-  m_infos.finishCompactItems(compact_infos);
+  m_infos->finishCompactItems(compact_infos);
 
   for( ItemConnectivitySelector* ics : m_connectivity_selector_list )
     ics->compactConnectivities();
@@ -1531,7 +1609,7 @@ copyItemsMeanValues(Int32ConstArrayView first_source,
  * \brief Compacte les variables et les groupes.
  *
  * \warning: Cette méthode doit être appelée durant un compactage
- * (entre un appel à m_infos.beginCompactItems() et m_infos.endCompactItems()).
+ * (entre un appel à m_infos->beginCompactItems() et m_info->endCompactItems()).
  */
 void ItemFamily::
 compactVariablesAndGroups(const ItemFamilyCompactInfos& compact_infos)
@@ -1755,7 +1833,7 @@ void ItemFamily::
 _preAllocate(Int32 nb_item,bool pre_alloc_connectivity)
 {
   if (nb_item>1000)
-    m_infos.itemsMap().resize(nb_item,true);
+    m_infos->itemsMap().resize(nb_item, true);
   _resizeItemVariables(nb_item,false);
   for( auto& c : m_source_incremental_item_connectivities )
     c->reserveMemoryForNbSourceItems(nb_item,pre_alloc_connectivity);
@@ -1859,7 +1937,7 @@ findVariable(const String& var_name,bool throw_exception)
 void ItemFamily::
 clearItems()
 {
-  m_infos.clear();
+  m_infos->clear();
 
   endUpdate();
 }
@@ -2146,12 +2224,12 @@ removeItems2(ItemDataList& item_data_list)
   // 4-Remove items. Child items will be removed by an automatic call of removeItems2 on their family...
   for (auto removed_item_lid_int64 : removed_item_lids) {
     Int32 removed_item_lid = CheckedConvert::toInt32(removed_item_lid_int64);
-    ItemInternal* removed_item = m_infos.itemInternal(removed_item_lid);
+    ItemInternal* removed_item = m_infos->itemInternal(removed_item_lid);
     if (removed_item->isDetached()) {
-      m_infos.removeDetachedOne(removed_item);
+      m_infos->removeDetachedOne(removed_item);
     }
     else {
-      m_infos.removeOne(removed_item);
+      m_infos->removeOne(removed_item);
     }
   }
   this->endUpdate();// endUpdate is needed since we then go deeper in the dependency graph and will need to enumerate this changed family.
@@ -2218,7 +2296,7 @@ _detachCells2(Int32ConstArrayView local_ids)
   }
   // 4-Detach items.
   for (auto detached_item_lid : local_ids) {
-    m_infos.detachOne(m_infos.itemInternal(detached_item_lid)); // when family/mesh endUpdate is done ? needed ?
+    m_infos->detachOne(m_infos->itemInternal(detached_item_lid)); // when family/mesh endUpdate is done ? needed ?
   }
 }
 
@@ -2275,7 +2353,7 @@ removeNeedRemoveMarkedItems()
     }
   }
   // Remove items
-  m_infos.removeMany(items_to_remove_lids);
+  m_infos->removeMany(items_to_remove_lids);
 }
 
 /*---------------------------------------------------------------------------*/
