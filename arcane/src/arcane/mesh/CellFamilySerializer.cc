@@ -1,25 +1,26 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CellFamilySerializer.cc                                     (C) 2000-2021 */
+/* CellFamilySerializer.cc                                     (C) 2000-2024 */
 /*                                                                           */
 /* Sérialisation/Désérialisation des familles de mailles.                    */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/ISerializer.h"
-#include "arcane/ItemPrinter.h"
-#include "arcane/IMesh.h"
-#include "arcane/MeshPartInfo.h"
+#include "arcane/mesh/CellFamilySerializer.h"
+
+#include "arcane/core/ISerializer.h"
+#include "arcane/core/ItemPrinter.h"
+#include "arcane/core/IMesh.h"
+#include "arcane/core/MeshPartInfo.h"
 
 #include "arcane/mesh/FullItemInfo.h"
 #include "arcane/mesh/DynamicMeshIncrementalBuilder.h"
 #include "arcane/mesh/OneMeshItemAdder.h"
-#include "arcane/mesh/CellFamilySerializer.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
