@@ -354,7 +354,7 @@ removeParticles(Int32ConstArrayView items_local_id)
 void ParticleFamily::
 prepareForDump()
 {
-  Integer nb_item = infos().nbItem();
+  Integer nb_item = nbItem();
   info(4) << "ParticleFamily::prepareForDump: " << name()
           << " n=" << nb_item;
   ItemFamily::prepareForDump();
@@ -378,7 +378,7 @@ void ParticleFamily::
 preAllocate(Integer nb_item)
 {
   Integer nb_hash = itemsMap().nbBucket();
-  Integer wanted_size = 2 * (nb_item + infos().nbItem());
+  Integer wanted_size = 2 * (nb_item + nbItem());
   if (nb_hash < wanted_size)
     itemsMap().resize(wanted_size, true);
 }
@@ -399,7 +399,7 @@ setHasUniqueIdMap(bool v)
 bool ParticleFamily::
 hasUniqueIdMap() const
 {
-  return infos().hasUniqueIdMap();
+  return _infos().hasUniqueIdMap();
 }
 
 /*---------------------------------------------------------------------------*/

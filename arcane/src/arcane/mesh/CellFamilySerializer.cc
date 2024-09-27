@@ -209,8 +209,7 @@ deserializeItems(ISerializer* buf,Int32Array* cells_local_id)
       }
     }
   }
-  info(4) << "EndDeserializeCells: nb_cell=" << nb_cell << " orig=" << orig_rank
-          << " nb_added=" << m_family->infos().addedItems().size();
+  info(4) << "EndDeserializeCells: nb_cell=" << nb_cell << " orig=" << orig_rank;
 }
 
 /*---------------------------------------------------------------------------*/

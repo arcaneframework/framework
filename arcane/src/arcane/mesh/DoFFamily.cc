@@ -163,15 +163,14 @@ computeSynchronizeInfos()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void
-DoFFamily::
+void DoFFamily::
 _printInfos(Integer nb_added)
 {
   Integer nb_in_map = itemsMap().count();
 
   info() << "DoFFamily: added=" << nb_added
-         << " nb_internal=" << infos().m_internals.size()
-         << " nb_free=" << infos().m_free_internals.size()
+         << " nb_internal=" << _infos().m_internals.size()
+         << " nb_free=" << _infos().m_free_internals.size()
          << " map_nb_bucket=" << itemsMap().nbBucket()
          << " map_size=" << nb_in_map;
 }
@@ -184,7 +183,7 @@ preAllocate(Integer nb_item)
 {
   // Copy paste de particle, pas utilise pour l'instant
   Integer nb_hash = itemsMap().nbBucket();
-  Integer wanted_size = 2*(nb_item+infos().nbItem());
+  Integer wanted_size = 2 * (nb_item + nbItem());
   if (nb_hash<wanted_size)
     itemsMap().resize(wanted_size,true);
 }
