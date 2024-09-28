@@ -34,11 +34,11 @@
 
 #include <map>
 
-// Ce format est décrit sur la page web suivante:
+// Ce format est décrit sur la page web suivante :
 //
 // https://kitware.github.io/vtk-examples/site/VTKFileFormats/#hdf-file-formats
 //
-// Le format 2.0 avec le support intégrée de l'évolution temporelle n'est
+// Le format 2.0 avec le support intégré de l'évolution temporelle n'est
 // disponible que dans la branche master de VTK à partir d'avril 2023.
 
 /*---------------------------------------------------------------------------*/
@@ -107,13 +107,13 @@ class VtkHdfV2DataWriter
    * Les instances de cette classe utilisent une référence sur un groupe HDF5
    * et ce dernier doit donc vivre plus longtemps que l'instance.
    */
-  struct OffsetInfo
+  struct DatasetInfo
   {
-    OffsetInfo() = default;
-    explicit OffsetInfo(const String& name)
+    DatasetInfo() = default;
+    explicit DatasetInfo(const String& name)
     : m_name(name)
     {}
-    OffsetInfo(HGroup& _group, const String& name)
+    DatasetInfo(HGroup& _group, const String& name)
     : m_group(&_group)
     , m_name(name)
     {}
@@ -122,9 +122,9 @@ class VtkHdfV2DataWriter
     HGroup* group() const { return m_group; }
     const String& name() const { return m_name; }
     //! Valeur de l'offset. (-1) si on écrit à la fin du tableau
-    Int64 value() const { return m_value; }
-    void setValue(Int64 v) { m_value = v; }
-    friend bool operator<(const OffsetInfo& s1, const OffsetInfo& s2)
+    Int64 offset() const { return m_offset; }
+    void setOffset(Int64 v) { m_offset = v; }
+    friend bool operator<(const DatasetInfo& s1, const DatasetInfo& s2)
     {
       return (s1.m_name < s2.m_name);
     }
@@ -133,7 +133,7 @@ class VtkHdfV2DataWriter
 
     HGroup* m_group = nullptr;
     String m_name;
-    Int64 m_value = -1;
+    Int64 m_offset = -1;
   };
 
   //! Informations collectives sur un ItemGroup;
@@ -150,7 +150,7 @@ class VtkHdfV2DataWriter
     //! Groupe associé
     ItemGroup m_item_group;
     //! Nombre de valeur pour chaque rang.
-    UniqueArray<Int64> m_ranks_size;
+    //UniqueArray<Int64> m_ranks_size;
     //! Nombre total d'éléments sur tous les rangs
     Int64 m_total_size = 0;
     //! Offset dans le tableau du rang courant
@@ -164,29 +164,33 @@ class VtkHdfV2DataWriter
   {
    public:
 
-    DataInfo(const DatasetGroupAndName& dname, const OffsetInfo& offset_info)
+    DataInfo(const DatasetGroupAndName& dname, const DatasetInfo& dataset_info)
     : dataset(dname)
-    , offset(offset_info)
+    , m_dataset_info(dataset_info)
     {
     }
-    DataInfo(const DatasetGroupAndName& dname, const OffsetInfo& offset_info,
+    DataInfo(const DatasetGroupAndName& dname, const DatasetInfo& dataset_info,
              ItemGroupCollectiveInfo* group_info)
     : dataset(dname)
-    , offset(offset_info)
+    , m_dataset_info(dataset_info)
     , m_group_info(group_info)
     {
     }
 
    public:
 
+    DatasetInfo datasetInfo() const { return m_dataset_info; }
+
+   public:
+
     DatasetGroupAndName dataset;
-    OffsetInfo offset;
+    DatasetInfo m_dataset_info;
     ItemGroupCollectiveInfo* m_group_info = nullptr;
   };
 
  public:
 
-  VtkHdfV2DataWriter(IMesh* mesh, ItemGroupCollection groups, bool use_collective_io);
+  VtkHdfV2DataWriter(IMesh* mesh, const ItemGroupCollection& groups, bool use_collective_io);
 
  public:
 
@@ -234,13 +238,13 @@ class VtkHdfV2DataWriter
   bool m_is_first_call = false;
   bool m_is_writer = false;
 
-  OffsetInfo m_cell_offset_info;
-  OffsetInfo m_point_offset_info;
-  OffsetInfo m_connectivity_offset_info;
-  OffsetInfo m_offset_for_cell_offset_info;
-  OffsetInfo m_part_offset_info;
-  OffsetInfo m_time_offset_info;
-  std::map<OffsetInfo, Int64> m_offset_info_list;
+  DatasetInfo m_cell_offset_info;
+  DatasetInfo m_point_offset_info;
+  DatasetInfo m_connectivity_offset_info;
+  DatasetInfo m_offset_for_cell_offset_info;
+  DatasetInfo m_part_offset_info;
+  DatasetInfo m_time_offset_info;
+  std::map<DatasetInfo, Int64> m_offset_info_list;
 
   StandardTypes m_standard_types{ false };
 
@@ -282,11 +286,11 @@ class VtkHdfV2DataWriter
   void _writeDataSetGeneric(const DataInfo& data_info, Int32 nb_dim,
                             Int64 dim1_size, Int64 dim2_size, const void* values_data,
                             const hid_t hdf_datatype_type, bool is_collective);
-  void _addInt64ttribute(Hid& hid, const char* name, Int64 value);
+  void _addInt64Attribute(Hid& hid, const char* name, Int64 value);
   Int64 _readInt64Attribute(Hid& hid, const char* name);
   void _openOrCreateGroups();
   void _closeGroups();
-  void _readAndSetOffset(OffsetInfo& offset_info, Int32 wanted_step);
+  void _readAndSetOffset(DatasetInfo& offset_info, Int32 wanted_step);
   void _initializeOffsets();
   void _initializeItemGroupCollectiveInfos(ItemGroupCollectiveInfo& group_info);
 };
@@ -295,7 +299,7 @@ class VtkHdfV2DataWriter
 /*---------------------------------------------------------------------------*/
 
 VtkHdfV2DataWriter::
-VtkHdfV2DataWriter(IMesh* mesh, ItemGroupCollection groups, bool is_collective_io)
+VtkHdfV2DataWriter(IMesh* mesh, const ItemGroupCollection& groups, bool is_collective_io)
 : TraceAccessor(mesh->traceMng())
 , m_mesh(mesh)
 , m_groups(groups)
@@ -499,7 +503,7 @@ beginWrite(const VariableCollection& vars)
     _writeDataSet1D<Int64>({ { m_steps_group, "PartOffsets" }, m_time_offset_info }, asConstSpan(&part_offset));
 
     // Nombre de temps
-    _addInt64ttribute(m_steps_group, "NSteps", time_index);
+    _addInt64Attribute(m_steps_group, "NSteps", time_index);
   }
 }
 
@@ -513,8 +517,8 @@ _initializeItemGroupCollectiveInfos(ItemGroupCollectiveInfo& group_info)
   Int32 nb_rank = pm->commSize();
   Int32 my_rank = pm->commRank();
 
-  group_info.m_ranks_size.resize(nb_rank);
-  ArrayView<Int64> all_sizes(group_info.m_ranks_size);
+  UniqueArray<Int64> ranks_size(nb_rank);
+  ArrayView<Int64> all_sizes(ranks_size);
   Int64 dim1_size = group_info.m_item_group.size();
   pm->allGather(ConstArrayView<Int64>(1, &dim1_size), all_sizes);
 
@@ -547,7 +551,7 @@ _writeDataSetGeneric(const DataInfo& data_info, Int32 nb_dim,
 
   // Si positif ou nul, indique l'offset d'écriture.
   // Sinon, on écrit à la fin du dataset actuel.
-  Int64 wanted_offset = data_info.offset.value();
+  Int64 wanted_offset = data_info.datasetInfo().offset();
 
   static constexpr int MAX_DIM = 2;
   HDataset dataset;
@@ -654,7 +658,7 @@ _writeDataSetGeneric(const DataInfo& data_info, Int32 nb_dim,
     FixedArray<hsize_t, MAX_DIM> original_dims;
     file_space.getDimensions(original_dims.data(), nullptr);
     hsize_t offset0 = original_dims[0];
-    // Si on a un offset positif issu de OffsetInfo alors on le prend.
+    // Si on a un offset positif issu de DatasetInfo alors on le prend.
     // Cela signifie qu'on a fait un retour arrière.
     if (wanted_offset >= 0) {
       offset0 = wanted_offset;
@@ -688,8 +692,8 @@ _writeDataSetGeneric(const DataInfo& data_info, Int32 nb_dim,
   if (dataset.isBad())
     ARCANE_THROW(IOException, "Can not write dataset '{0}'", name);
 
-  if (!data_info.offset.isNull())
-    m_offset_info_list.insert(std::make_pair(data_info.offset, write_offset));
+  if (!data_info.datasetInfo().isNull())
+    m_offset_info_list.insert(std::make_pair(data_info.datasetInfo(), write_offset));
 }
 
 /*---------------------------------------------------------------------------*/
@@ -804,7 +808,7 @@ _addInt64ArrayAttribute(Hid& hid, const char* name, Span<const Int64> values)
 /*---------------------------------------------------------------------------*/
 
 void VtkHdfV2DataWriter::
-_addInt64ttribute(Hid& hid, const char* name, Int64 value)
+_addInt64Attribute(Hid& hid, const char* name, Int64 value)
 {
   HSpace aid(H5Screate(H5S_SCALAR));
   HAttribute attr;
@@ -867,7 +871,7 @@ endWrite()
   if (m_is_writer) {
     for (const auto& i : m_offset_info_list) {
       Int64 offset = i.second;
-      const OffsetInfo& offset_info = i.first;
+      const DatasetInfo& offset_info = i.first;
       HGroup* hdf_group = offset_info.group();
       //info() << "OFFSET_INFO name=" << offset_info.name() << " offset=" << offset;
       if (hdf_group)
@@ -934,7 +938,7 @@ write(IVariable* var, IData* data)
     ARCANE_FATAL("Export of partial variable is not implemented");
 
   HGroup* group = nullptr;
-  OffsetInfo offset_info;
+  DatasetInfo offset_info;
   ItemGroupCollectiveInfo* group_info = nullptr;
   switch (item_kind) {
   case IK_Cell:
@@ -1035,7 +1039,7 @@ _writeReal2Dataset(const DataInfo& data_info, IData* data)
 /*---------------------------------------------------------------------------*/
 
 void VtkHdfV2DataWriter::
-_readAndSetOffset(OffsetInfo& offset_info, Int32 wanted_step)
+_readAndSetOffset(DatasetInfo& offset_info, Int32 wanted_step)
 {
   HGroup* hgroup = offset_info.group();
   ARCANE_CHECK_POINTER(hgroup);
@@ -1043,7 +1047,7 @@ _readAndSetOffset(OffsetInfo& offset_info, Int32 wanted_step)
   UniqueArray<Int64> values;
   a.directRead(m_standard_types, values);
   Int64 offset_value = values[wanted_step];
-  offset_info.setValue(offset_value);
+  offset_info.setOffset(offset_value);
   info() << "VALUES name=" << offset_info.name() << " values=" << values
          << " wanted_step=" << wanted_step << " v=" << offset_value;
 }
@@ -1071,13 +1075,13 @@ _initializeOffsets()
   //   mais comme ce champ à un nombre de valeur égale au nombre de mailles plus 1 il est possible
   //   de le déduire de "CellOffsets" (il vaut "CellOffsets" plus l'index du temps courant).
 
-  m_cell_offset_info = OffsetInfo(m_steps_group, "CellOffsets");
-  m_point_offset_info = OffsetInfo(m_steps_group, "PointOffsets");
-  m_connectivity_offset_info = OffsetInfo(m_steps_group, "ConnectivityIdOffsets");
+  m_cell_offset_info = DatasetInfo(m_steps_group, "CellOffsets");
+  m_point_offset_info = DatasetInfo(m_steps_group, "PointOffsets");
+  m_connectivity_offset_info = DatasetInfo(m_steps_group, "ConnectivityIdOffsets");
   // Ces trois offsets ne sont pas sauvegardés dans le format VTK
-  m_offset_for_cell_offset_info = OffsetInfo("_OffsetForCellOffsetInfo");
-  m_part_offset_info = OffsetInfo("_PartOffsetInfo");
-  m_time_offset_info = OffsetInfo("_TimeOffsetInfo");
+  m_offset_for_cell_offset_info = DatasetInfo("_OffsetForCellOffsetInfo");
+  m_part_offset_info = DatasetInfo("_PartOffsetInfo");
+  m_time_offset_info = DatasetInfo("_TimeOffsetInfo");
 
   // Regarde si on n'a pas fait de retour-arrière.
   // C'est le cas si le nombre de temps sauvés est supérieur au nombre
@@ -1100,13 +1104,13 @@ _initializeOffsets()
       info() << "[VtkHdf] go_backward detected";
       Int32 wanted_step = time_index - 1;
       // Signifie qu'on a fait un retour arrière.
-      // Dans ce cas il faut relire les offsets
+      // Dans ce cas, il faut relire les offsets
       _readAndSetOffset(m_cell_offset_info, wanted_step);
       _readAndSetOffset(m_point_offset_info, wanted_step);
       _readAndSetOffset(m_connectivity_offset_info, wanted_step);
-      m_part_offset_info.setValue(wanted_step * nb_rank);
-      m_time_offset_info.setValue(wanted_step);
-      m_offset_for_cell_offset_info.setValue(m_cell_offset_info.value() + wanted_step * nb_rank);
+      m_part_offset_info.setOffset(wanted_step * nb_rank);
+      m_time_offset_info.setOffset(wanted_step);
+      m_offset_for_cell_offset_info.setOffset(m_cell_offset_info.offset() + wanted_step * nb_rank);
     }
   }
 }
@@ -1117,7 +1121,7 @@ _initializeOffsets()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Post-traitement au format Ensight Hdf.
+ * \brief Post-traitement au format VtkHdf V2.
  */
 class VtkHdfV2PostProcessor
 : public ArcaneVtkHdfV2PostProcessorObject
