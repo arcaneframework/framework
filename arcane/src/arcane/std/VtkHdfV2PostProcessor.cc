@@ -136,6 +136,29 @@ class VtkHdfV2DataWriter
     Int64 m_offset = -1;
   };
 
+  //! Informations sur l'offset de la partie à écrire associée à un rang
+  struct WritePartInfo
+  {
+   public:
+
+    void setTotalSize(Int64 v) { m_total_size = v; }
+    void setSize(Int64 v) { m_size = v; }
+    void setOffset(Int64 v) { m_offset = v; }
+
+    Int64 totalSize() const { return m_total_size; }
+    Int64 size() const { return m_size; }
+    Int64 offset() const { return m_offset; }
+
+   private:
+
+    //! Nombre d'éléments sur tous les rangs
+    Int64 m_total_size = 0;
+    //! Nombre d'éléments de mon rang
+    Int64 m_size = 0;
+    //! Offset de mon rang
+    Int64 m_offset = -1;
+  };
+
   //! Informations collectives sur un ItemGroup;
   struct ItemGroupCollectiveInfo
   {
@@ -147,14 +170,15 @@ class VtkHdfV2DataWriter
 
    public:
 
+    void setWritePartInfo(const WritePartInfo& part_info) { m_write_part_info = part_info; }
+    const WritePartInfo& writePartInfo() const { return m_write_part_info; }
+
+   public:
+
     //! Groupe associé
     ItemGroup m_item_group;
-    //! Nombre de valeur pour chaque rang.
-    //UniqueArray<Int64> m_ranks_size;
-    //! Nombre total d'éléments sur tous les rangs
-    Int64 m_total_size = 0;
-    //! Offset dans le tableau du rang courant
-    Int64 m_my_offset = -1;
+    //! Informations sur l'écriture.
+    WritePartInfo m_write_part_info;
   };
 
   /*!
@@ -293,6 +317,7 @@ class VtkHdfV2DataWriter
   void _readAndSetOffset(DatasetInfo& offset_info, Int32 wanted_step);
   void _initializeOffsets();
   void _initializeItemGroupCollectiveInfos(ItemGroupCollectiveInfo& group_info);
+  WritePartInfo _computeWritePartInfo(Int64 local_size);
 };
 
 /*---------------------------------------------------------------------------*/
@@ -509,34 +534,51 @@ beginWrite(const VariableCollection& vars)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-void VtkHdfV2DataWriter::
-_initializeItemGroupCollectiveInfos(ItemGroupCollectiveInfo& group_info)
+/*!
+ * \brief Calcule l'offset de notre partie et le nombre total d'éléments.
+ */
+VtkHdfV2DataWriter::WritePartInfo VtkHdfV2DataWriter::
+_computeWritePartInfo(Int64 local_size)
 {
+  // TODO: regarder pour utiliser un scan.
   IParallelMng* pm = m_mesh->parallelMng();
   Int32 nb_rank = pm->commSize();
   Int32 my_rank = pm->commRank();
 
   UniqueArray<Int64> ranks_size(nb_rank);
   ArrayView<Int64> all_sizes(ranks_size);
-  Int64 dim1_size = group_info.m_item_group.size();
+  Int64 dim1_size = local_size;
   pm->allGather(ConstArrayView<Int64>(1, &dim1_size), all_sizes);
 
   Int64 total_size = 0;
   for (Integer i = 0; i < nb_rank; ++i)
     total_size += all_sizes[i];
-  group_info.m_total_size = total_size;
 
   Int64 my_index = 0;
   for (Integer i = 0; i < my_rank; ++i)
     my_index += all_sizes[i];
-  group_info.m_my_offset = my_index;
+
+  WritePartInfo part_info;
+  part_info.setTotalSize(total_size);
+  part_info.setSize(local_size);
+  part_info.setOffset(my_index);
+  return part_info;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void VtkHdfV2DataWriter::
+_initializeItemGroupCollectiveInfos(ItemGroupCollectiveInfo& group_info)
+{
+  Int64 dim1_size = group_info.m_item_group.size();
+  group_info.setWritePartInfo(_computeWritePartInfo(dim1_size));
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Ecrit une donnée 1D ou 2D.
+ * \brief Écrit une donnée 1D ou 2D.
  *
  * Pour chaque temps ajouté, la donnée est écrite à la fin des valeurs précédentes
  * sauf en cas de retour arrière où l'offset est dans data_info.
@@ -581,29 +623,20 @@ _writeDataSetGeneric(const DataInfo& data_info, Int32 nb_dim,
   Int64 my_index = 0;
   Int64 global_dim1_size = dim1_size;
   Int32 nb_participating_rank = 1;
+
   if (is_collective) {
+    nb_participating_rank = m_mesh->parallelMng()->commSize();
+    WritePartInfo part_info;
     if (data_info.m_group_info) {
       // Si la donnée est associée à un groupe, alors les informations
       // sur l'offset ont déjà été calculées
-      global_dim1_size = data_info.m_group_info->m_total_size;
-      my_index = data_info.m_group_info->m_my_offset;
+      part_info = data_info.m_group_info->writePartInfo();
     }
     else {
-      // En mode collectif, il faut récupérer les index de chaque rang.
-      IParallelMng* pm = m_mesh->parallelMng();
-      nb_participating_rank = pm->commSize();
-      Int32 my_rank = pm->commRank();
-
-      UniqueArray<Int64> all_sizes(nb_participating_rank);
-      pm->allGather(ConstArrayView<Int64>(1, &dim1_size), all_sizes);
-
-      global_dim1_size = 0;
-      for (Integer i = 0; i < nb_participating_rank; ++i)
-        global_dim1_size += all_sizes[i];
-      my_index = 0;
-      for (Integer i = 0; i < my_rank; ++i)
-        my_index += all_sizes[i];
+      part_info = _computeWritePartInfo(dim1_size);
     }
+    global_dim1_size = part_info.totalSize();
+    my_index = part_info.offset();
   }
 
   HProperty write_plist_id;
