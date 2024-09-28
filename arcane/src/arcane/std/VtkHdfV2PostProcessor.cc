@@ -17,6 +17,7 @@
 #include "arcane/utils/StringBuilder.h"
 #include "arcane/utils/IOException.h"
 #include "arcane/utils/FixedArray.h"
+#include "arcane/utils/MemoryView.h"
 
 #include "arcane/core/PostProcessorWriterBase.h"
 #include "arcane/core/Directory.h"
@@ -34,11 +35,11 @@
 
 #include <map>
 
-// Ce format est décrit sur la page web suivante:
+// Ce format est décrit sur la page web suivante :
 //
 // https://kitware.github.io/vtk-examples/site/VTKFileFormats/#hdf-file-formats
 //
-// Le format 2.0 avec le support intégrée de l'évolution temporelle n'est
+// Le format 2.0 avec le support intégré de l'évolution temporelle n'est
 // disponible que dans la branche master de VTK à partir d'avril 2023.
 
 /*---------------------------------------------------------------------------*/
@@ -107,13 +108,13 @@ class VtkHdfV2DataWriter
    * Les instances de cette classe utilisent une référence sur un groupe HDF5
    * et ce dernier doit donc vivre plus longtemps que l'instance.
    */
-  struct OffsetInfo
+  struct DatasetInfo
   {
-    OffsetInfo() = default;
-    explicit OffsetInfo(const String& name)
+    DatasetInfo() = default;
+    explicit DatasetInfo(const String& name)
     : m_name(name)
     {}
-    OffsetInfo(HGroup& _group, const String& name)
+    DatasetInfo(HGroup& _group, const String& name)
     : m_group(&_group)
     , m_name(name)
     {}
@@ -122,9 +123,9 @@ class VtkHdfV2DataWriter
     HGroup* group() const { return m_group; }
     const String& name() const { return m_name; }
     //! Valeur de l'offset. (-1) si on écrit à la fin du tableau
-    Int64 value() const { return m_value; }
-    void setValue(Int64 v) { m_value = v; }
-    friend bool operator<(const OffsetInfo& s1, const OffsetInfo& s2)
+    Int64 offset() const { return m_offset; }
+    void setOffset(Int64 v) { m_offset = v; }
+    friend bool operator<(const DatasetInfo& s1, const DatasetInfo& s2)
     {
       return (s1.m_name < s2.m_name);
     }
@@ -133,7 +134,30 @@ class VtkHdfV2DataWriter
 
     HGroup* m_group = nullptr;
     String m_name;
-    Int64 m_value = -1;
+    Int64 m_offset = -1;
+  };
+
+  //! Informations sur l'offset de la partie à écrire associée à un rang
+  struct WritePartInfo
+  {
+   public:
+
+    void setTotalSize(Int64 v) { m_total_size = v; }
+    void setSize(Int64 v) { m_size = v; }
+    void setOffset(Int64 v) { m_offset = v; }
+
+    Int64 totalSize() const { return m_total_size; }
+    Int64 size() const { return m_size; }
+    Int64 offset() const { return m_offset; }
+
+   private:
+
+    //! Nombre d'éléments sur tous les rangs
+    Int64 m_total_size = 0;
+    //! Nombre d'éléments de mon rang
+    Int64 m_size = 0;
+    //! Offset de mon rang
+    Int64 m_offset = -1;
   };
 
   //! Informations collectives sur un ItemGroup;
@@ -147,14 +171,15 @@ class VtkHdfV2DataWriter
 
    public:
 
+    void setWritePartInfo(const WritePartInfo& part_info) { m_write_part_info = part_info; }
+    const WritePartInfo& writePartInfo() const { return m_write_part_info; }
+
+   public:
+
     //! Groupe associé
     ItemGroup m_item_group;
-    //! Nombre de valeur pour chaque rang.
-    UniqueArray<Int64> m_ranks_size;
-    //! Nombre total d'éléments sur tous les rangs
-    Int64 m_total_size = 0;
-    //! Offset dans le tableau du rang courant
-    Int64 m_my_offset = -1;
+    //! Informations sur l'écriture.
+    WritePartInfo m_write_part_info;
   };
 
   /*!
@@ -164,29 +189,33 @@ class VtkHdfV2DataWriter
   {
    public:
 
-    DataInfo(const DatasetGroupAndName& dname, const OffsetInfo& offset_info)
+    DataInfo(const DatasetGroupAndName& dname, const DatasetInfo& dataset_info)
     : dataset(dname)
-    , offset(offset_info)
+    , m_dataset_info(dataset_info)
     {
     }
-    DataInfo(const DatasetGroupAndName& dname, const OffsetInfo& offset_info,
+    DataInfo(const DatasetGroupAndName& dname, const DatasetInfo& dataset_info,
              ItemGroupCollectiveInfo* group_info)
     : dataset(dname)
-    , offset(offset_info)
+    , m_dataset_info(dataset_info)
     , m_group_info(group_info)
     {
     }
 
    public:
 
+    DatasetInfo datasetInfo() const { return m_dataset_info; }
+
+   public:
+
     DatasetGroupAndName dataset;
-    OffsetInfo offset;
+    DatasetInfo m_dataset_info;
     ItemGroupCollectiveInfo* m_group_info = nullptr;
   };
 
  public:
 
-  VtkHdfV2DataWriter(IMesh* mesh, ItemGroupCollection groups, bool use_collective_io);
+  VtkHdfV2DataWriter(IMesh* mesh, const ItemGroupCollection& groups, bool use_collective_io);
 
  public:
 
@@ -199,6 +228,7 @@ class VtkHdfV2DataWriter
 
   void setTimes(RealConstArrayView times) { m_times = times; }
   void setDirectoryName(const String& dir_name) { m_directory_name = dir_name; }
+  void setMaxWriteSize(Int64 v) { m_max_write_size = v; }
 
  private:
 
@@ -234,18 +264,26 @@ class VtkHdfV2DataWriter
   bool m_is_first_call = false;
   bool m_is_writer = false;
 
-  OffsetInfo m_cell_offset_info;
-  OffsetInfo m_point_offset_info;
-  OffsetInfo m_connectivity_offset_info;
-  OffsetInfo m_offset_for_cell_offset_info;
-  OffsetInfo m_part_offset_info;
-  OffsetInfo m_time_offset_info;
-  std::map<OffsetInfo, Int64> m_offset_info_list;
+  DatasetInfo m_cell_offset_info;
+  DatasetInfo m_point_offset_info;
+  DatasetInfo m_connectivity_offset_info;
+  DatasetInfo m_offset_for_cell_offset_info;
+  DatasetInfo m_part_offset_info;
+  DatasetInfo m_time_offset_info;
+  std::map<DatasetInfo, Int64> m_offset_info_list;
 
   StandardTypes m_standard_types{ false };
 
   ItemGroupCollectiveInfo m_all_cells_info;
   ItemGroupCollectiveInfo m_all_nodes_info;
+
+  /*!
+   * \brief Taille maximum pour une écriture.
+   *
+   * Si l'écriture dépasse cette taille, elle est scindée en plusieurs écriture.
+   * Cela peut être nécessaire avec MPI-IO pour les gros volumes.
+   */
+  Int64 m_max_write_size = 0;
 
  private:
 
@@ -280,22 +318,23 @@ class VtkHdfV2DataWriter
                        Int64 dim1_size, Int64 dim2_size, const DataType* values_data,
                        bool is_collective);
   void _writeDataSetGeneric(const DataInfo& data_info, Int32 nb_dim,
-                            Int64 dim1_size, Int64 dim2_size, const void* values_data,
+                            Int64 dim1_size, Int64 dim2_size, ConstMemoryView values_data,
                             const hid_t hdf_datatype_type, bool is_collective);
-  void _addInt64ttribute(Hid& hid, const char* name, Int64 value);
+  void _addInt64Attribute(Hid& hid, const char* name, Int64 value);
   Int64 _readInt64Attribute(Hid& hid, const char* name);
   void _openOrCreateGroups();
   void _closeGroups();
-  void _readAndSetOffset(OffsetInfo& offset_info, Int32 wanted_step);
+  void _readAndSetOffset(DatasetInfo& offset_info, Int32 wanted_step);
   void _initializeOffsets();
   void _initializeItemGroupCollectiveInfos(ItemGroupCollectiveInfo& group_info);
+  WritePartInfo _computeWritePartInfo(Int64 local_size);
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 VtkHdfV2DataWriter::
-VtkHdfV2DataWriter(IMesh* mesh, ItemGroupCollection groups, bool is_collective_io)
+VtkHdfV2DataWriter(IMesh* mesh, const ItemGroupCollection& groups, bool is_collective_io)
 : TraceAccessor(mesh->traceMng())
 , m_mesh(mesh)
 , m_groups(groups)
@@ -499,8 +538,41 @@ beginWrite(const VariableCollection& vars)
     _writeDataSet1D<Int64>({ { m_steps_group, "PartOffsets" }, m_time_offset_info }, asConstSpan(&part_offset));
 
     // Nombre de temps
-    _addInt64ttribute(m_steps_group, "NSteps", time_index);
+    _addInt64Attribute(m_steps_group, "NSteps", time_index);
   }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Calcule l'offset de notre partie et le nombre total d'éléments.
+ */
+VtkHdfV2DataWriter::WritePartInfo VtkHdfV2DataWriter::
+_computeWritePartInfo(Int64 local_size)
+{
+  // TODO: regarder pour utiliser un scan.
+  IParallelMng* pm = m_mesh->parallelMng();
+  Int32 nb_rank = pm->commSize();
+  Int32 my_rank = pm->commRank();
+
+  UniqueArray<Int64> ranks_size(nb_rank);
+  ArrayView<Int64> all_sizes(ranks_size);
+  Int64 dim1_size = local_size;
+  pm->allGather(ConstArrayView<Int64>(1, &dim1_size), all_sizes);
+
+  Int64 total_size = 0;
+  for (Integer i = 0; i < nb_rank; ++i)
+    total_size += all_sizes[i];
+
+  Int64 my_index = 0;
+  for (Integer i = 0; i < my_rank; ++i)
+    my_index += all_sizes[i];
+
+  WritePartInfo part_info;
+  part_info.setTotalSize(total_size);
+  part_info.setSize(local_size);
+  part_info.setOffset(my_index);
+  return part_info;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -509,44 +581,47 @@ beginWrite(const VariableCollection& vars)
 void VtkHdfV2DataWriter::
 _initializeItemGroupCollectiveInfos(ItemGroupCollectiveInfo& group_info)
 {
-  IParallelMng* pm = m_mesh->parallelMng();
-  Int32 nb_rank = pm->commSize();
-  Int32 my_rank = pm->commRank();
-
-  group_info.m_ranks_size.resize(nb_rank);
-  ArrayView<Int64> all_sizes(group_info.m_ranks_size);
   Int64 dim1_size = group_info.m_item_group.size();
-  pm->allGather(ConstArrayView<Int64>(1, &dim1_size), all_sizes);
-
-  Int64 total_size = 0;
-  for (Integer i = 0; i < nb_rank; ++i)
-    total_size += all_sizes[i];
-  group_info.m_total_size = total_size;
-
-  Int64 my_index = 0;
-  for (Integer i = 0; i < my_rank; ++i)
-    my_index += all_sizes[i];
-  group_info.m_my_offset = my_index;
+  group_info.setWritePartInfo(_computeWritePartInfo(dim1_size));
 }
+
+namespace
+{
+  std::pair<Int64, Int64> _getInterval(Int64 index, Int64 nb_interval, Int64 total_size)
+  {
+    Int64 n = total_size;
+    Int64 isize = n / nb_interval;
+    Int64 ibegin = index * isize;
+    // Pour le dernier interval, prend les elements restants
+    if ((index + 1) == nb_interval)
+      isize = n - ibegin;
+    return { ibegin, isize };
+  }
+} // namespace
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Ecrit une donnée 1D ou 2D.
+ * \brief Écrit une donnée 1D ou 2D.
  *
  * Pour chaque temps ajouté, la donnée est écrite à la fin des valeurs précédentes
  * sauf en cas de retour arrière où l'offset est dans data_info.
  */
 void VtkHdfV2DataWriter::
 _writeDataSetGeneric(const DataInfo& data_info, Int32 nb_dim,
-                     Int64 dim1_size, Int64 dim2_size, const void* values_data,
+                     Int64 dim1_size, Int64 dim2_size,
+                     ConstMemoryView values_data,
                      const hid_t hdf_type, bool is_collective)
 {
+  if (nb_dim == 1)
+    dim2_size = 1;
+
   HGroup& group = data_info.dataset.group;
   const String& name = data_info.dataset.name;
 
-  // Si positif ou nul indique l'offset d'écriture. Sinon on écrit à la fin
-  Int64 wanted_offset = data_info.offset.value();
+  // Si positif ou nul, indique l'offset d'écriture.
+  // Sinon, on écrit à la fin du dataset actuel.
+  Int64 wanted_offset = data_info.datasetInfo().offset();
 
   static constexpr int MAX_DIM = 2;
   HDataset dataset;
@@ -576,39 +651,28 @@ _writeDataSetGeneric(const DataInfo& data_info, Int32 nb_dim,
   Int64 my_index = 0;
   Int64 global_dim1_size = dim1_size;
   Int32 nb_participating_rank = 1;
+
   if (is_collective) {
+    nb_participating_rank = m_mesh->parallelMng()->commSize();
+    WritePartInfo part_info;
     if (data_info.m_group_info) {
-      global_dim1_size = data_info.m_group_info->m_total_size;
-      my_index = data_info.m_group_info->m_my_offset;
+      // Si la donnée est associée à un groupe, alors les informations
+      // sur l'offset ont déjà été calculées
+      part_info = data_info.m_group_info->writePartInfo();
     }
     else {
-      // En mode collectif il faut récupérer les index de chaque rang.
-      // TODO: pour les variables, ces indices ne dépendent que du groupe associé
-      // et on peut donc conserver l'information pour éviter le gather à chaque fois.
-      IParallelMng* pm = m_mesh->parallelMng();
-      nb_participating_rank = pm->commSize();
-      Int32 my_rank = pm->commRank();
-
-      UniqueArray<Int64> all_sizes(nb_participating_rank);
-      pm->allGather(ConstArrayView<Int64>(1, &dim1_size), all_sizes);
-
-      global_dim1_size = 0;
-      for (Integer i = 0; i < nb_participating_rank; ++i)
-        global_dim1_size += all_sizes[i];
-      my_index = 0;
-      for (Integer i = 0; i < my_rank; ++i)
-        my_index += all_sizes[i];
+      part_info = _computeWritePartInfo(dim1_size);
     }
+    global_dim1_size = part_info.totalSize();
+    my_index = part_info.offset();
   }
 
   HProperty write_plist_id;
   if (is_collective)
     write_plist_id.createDatasetTransfertCollectiveMPIIO();
 
-  HSpace memory_space;
-  memory_space.createSimple(nb_dim, local_dims.data());
-
   HSpace file_space;
+  FixedArray<hsize_t, MAX_DIM> hyperslab_offsets;
 
   if (m_is_first_call) {
     // TODO: regarder comment mieux calculer le chunk
@@ -635,11 +699,8 @@ _writeDataSetGeneric(const DataInfo& data_info, Int32 nb_dim,
     dataset.create(group, name.localstr(), hdf_type, file_space, HProperty{}, plist_id, HProperty{});
 
     if (is_collective) {
-      FixedArray<hsize_t, MAX_DIM> offset;
-      offset[0] = my_index;
-      offset[1] = 0;
-      if ((herror = H5Sselect_hyperslab(file_space.id(), H5S_SELECT_SET, offset.data(), nullptr, local_dims.data(), nullptr)) < 0)
-        ARCANE_THROW(IOException, "Can not select hyperslab '{0}' (err={1})", name, herror);
+      hyperslab_offsets[0] = my_index;
+      hyperslab_offsets[1] = 0;
     }
   }
   else {
@@ -655,7 +716,7 @@ _writeDataSetGeneric(const DataInfo& data_info, Int32 nb_dim,
     FixedArray<hsize_t, MAX_DIM> original_dims;
     file_space.getDimensions(original_dims.data(), nullptr);
     hsize_t offset0 = original_dims[0];
-    // Si on a un offset positif issu de OffsetInfo alors on le prend.
+    // Si on a un offset positif issu de DatasetInfo alors on le prend.
     // Cela signifie qu'on a fait un retour arrière.
     if (wanted_offset >= 0) {
       offset0 = wanted_offset;
@@ -670,27 +731,49 @@ _writeDataSetGeneric(const DataInfo& data_info, Int32 nb_dim,
       ARCANE_THROW(IOException, "Can not extent dataset '{0}' (err={1})", name, herror);
     file_space = dataset.getSpace();
 
-    FixedArray<hsize_t, MAX_DIM> offsets;
-    offsets[0] = offset0 + my_index;
-    offsets[1] = 0;
+    hyperslab_offsets[0] = offset0 + my_index;
+    hyperslab_offsets[1] = 0;
     info(4) << "APPEND nb_dim=" << nb_dim
             << " dim0=" << global_dims[0]
             << " count0=" << local_dims[0]
-            << " offsets0=" << offsets[0] << " name=" << name;
-
-    if ((herror = H5Sselect_hyperslab(file_space.id(), H5S_SELECT_SET, offsets.data(), nullptr, local_dims.data(), nullptr)) < 0)
-      ARCANE_THROW(IOException, "Can not select hyperslab '{0}' (err={1})", name, herror);
+            << " offsets0=" << hyperslab_offsets[0] << " name=" << name;
   }
 
-  // Effectue l'écriture
-  if ((herror = dataset.write(hdf_type, values_data, memory_space, file_space, write_plist_id)) < 0)
-    ARCANE_THROW(IOException, "Can not write dataset '{0}' (err={1})", name, herror);
+  Int64 nb_write_byte = global_dim1_size * dim2_size * values_data.datatypeSize();
 
-  if (dataset.isBad())
-    ARCANE_THROW(IOException, "Can not write dataset '{0}'", name);
+  // Effectue l'écriture en plusieurs parties si demandé.
+  // Cela n'est possible que pour l'écriture collective.
+  Int64 nb_interval = 1;
+  if (is_collective && m_max_write_size > 0) {
+    nb_interval = 1 + nb_write_byte / m_max_write_size;
+  }
+  info(4) << "WRITE global_size=" << nb_write_byte << " max_size=" << m_max_write_size << " nb_interval=" << nb_interval;
 
-  if (!data_info.offset.isNull())
-    m_offset_info_list.insert(std::make_pair(data_info.offset, write_offset));
+  for (Int64 i = 0; i < nb_interval; ++i) {
+    auto [index, nb_element] = _getInterval(i, nb_interval, dim1_size);
+    // Sélectionne la partie de la donnée à écrire
+    FixedArray<hsize_t, 2> dims;
+    dims[0] = nb_element;
+    dims[1] = dim2_size;
+    FixedArray<hsize_t, 2> offsets;
+    offsets[0] = hyperslab_offsets[0] + index;
+    offsets[1] = 0;
+    if ((herror = H5Sselect_hyperslab(file_space.id(), H5S_SELECT_SET, offsets.data(), nullptr, dims.data(), nullptr)) < 0)
+      ARCANE_THROW(IOException, "Can not select hyperslab '{0}' (err={1})", name, herror);
+
+    HSpace memory_space;
+    memory_space.createSimple(nb_dim, dims.data());
+    Int64 data_offset = index * values_data.datatypeSize() * dim2_size;
+    // Effectue l'écriture
+    if ((herror = dataset.write(hdf_type, values_data.data() + data_offset, memory_space, file_space, write_plist_id)) < 0)
+      ARCANE_THROW(IOException, "Can not write dataset '{0}' (err={1})", name, herror);
+
+    if (dataset.isBad())
+      ARCANE_THROW(IOException, "Can not write dataset '{0}'", name);
+  }
+
+  if (!data_info.datasetInfo().isNull())
+    m_offset_info_list.insert(std::make_pair(data_info.datasetInfo(), write_offset));
 }
 
 /*---------------------------------------------------------------------------*/
@@ -702,7 +785,8 @@ _writeDataSetGeneric(const DataInfo& data_info, Int32 nb_dim,
                      bool is_collective)
 {
   const hid_t hdf_type = m_standard_types.nativeType(DataType{});
-  _writeDataSetGeneric(data_info, nb_dim, dim1_size, dim2_size, values_data, hdf_type, is_collective);
+  ConstMemoryView mem_view = makeConstMemoryView(values_data, sizeof(DataType), dim1_size * dim2_size);
+  _writeDataSetGeneric(data_info, nb_dim, dim1_size, dim2_size, mem_view, hdf_type, is_collective);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -805,7 +889,7 @@ _addInt64ArrayAttribute(Hid& hid, const char* name, Span<const Int64> values)
 /*---------------------------------------------------------------------------*/
 
 void VtkHdfV2DataWriter::
-_addInt64ttribute(Hid& hid, const char* name, Int64 value)
+_addInt64Attribute(Hid& hid, const char* name, Int64 value)
 {
   HSpace aid(H5Screate(H5S_SCALAR));
   HAttribute attr;
@@ -868,7 +952,7 @@ endWrite()
   if (m_is_writer) {
     for (const auto& i : m_offset_info_list) {
       Int64 offset = i.second;
-      const OffsetInfo& offset_info = i.first;
+      const DatasetInfo& offset_info = i.first;
       HGroup* hdf_group = offset_info.group();
       //info() << "OFFSET_INFO name=" << offset_info.name() << " offset=" << offset;
       if (hdf_group)
@@ -935,7 +1019,7 @@ write(IVariable* var, IData* data)
     ARCANE_FATAL("Export of partial variable is not implemented");
 
   HGroup* group = nullptr;
-  OffsetInfo offset_info;
+  DatasetInfo offset_info;
   ItemGroupCollectiveInfo* group_info = nullptr;
   switch (item_kind) {
   case IK_Cell:
@@ -1036,7 +1120,7 @@ _writeReal2Dataset(const DataInfo& data_info, IData* data)
 /*---------------------------------------------------------------------------*/
 
 void VtkHdfV2DataWriter::
-_readAndSetOffset(OffsetInfo& offset_info, Int32 wanted_step)
+_readAndSetOffset(DatasetInfo& offset_info, Int32 wanted_step)
 {
   HGroup* hgroup = offset_info.group();
   ARCANE_CHECK_POINTER(hgroup);
@@ -1044,7 +1128,7 @@ _readAndSetOffset(OffsetInfo& offset_info, Int32 wanted_step)
   UniqueArray<Int64> values;
   a.directRead(m_standard_types, values);
   Int64 offset_value = values[wanted_step];
-  offset_info.setValue(offset_value);
+  offset_info.setOffset(offset_value);
   info() << "VALUES name=" << offset_info.name() << " values=" << values
          << " wanted_step=" << wanted_step << " v=" << offset_value;
 }
@@ -1072,13 +1156,13 @@ _initializeOffsets()
   //   mais comme ce champ à un nombre de valeur égale au nombre de mailles plus 1 il est possible
   //   de le déduire de "CellOffsets" (il vaut "CellOffsets" plus l'index du temps courant).
 
-  m_cell_offset_info = OffsetInfo(m_steps_group, "CellOffsets");
-  m_point_offset_info = OffsetInfo(m_steps_group, "PointOffsets");
-  m_connectivity_offset_info = OffsetInfo(m_steps_group, "ConnectivityIdOffsets");
+  m_cell_offset_info = DatasetInfo(m_steps_group, "CellOffsets");
+  m_point_offset_info = DatasetInfo(m_steps_group, "PointOffsets");
+  m_connectivity_offset_info = DatasetInfo(m_steps_group, "ConnectivityIdOffsets");
   // Ces trois offsets ne sont pas sauvegardés dans le format VTK
-  m_offset_for_cell_offset_info = OffsetInfo("_OffsetForCellOffsetInfo");
-  m_part_offset_info = OffsetInfo("_PartOffsetInfo");
-  m_time_offset_info = OffsetInfo("_TimeOffsetInfo");
+  m_offset_for_cell_offset_info = DatasetInfo("_OffsetForCellOffsetInfo");
+  m_part_offset_info = DatasetInfo("_PartOffsetInfo");
+  m_time_offset_info = DatasetInfo("_TimeOffsetInfo");
 
   // Regarde si on n'a pas fait de retour-arrière.
   // C'est le cas si le nombre de temps sauvés est supérieur au nombre
@@ -1101,13 +1185,13 @@ _initializeOffsets()
       info() << "[VtkHdf] go_backward detected";
       Int32 wanted_step = time_index - 1;
       // Signifie qu'on a fait un retour arrière.
-      // Dans ce cas il faut relire les offsets
+      // Dans ce cas, il faut relire les offsets
       _readAndSetOffset(m_cell_offset_info, wanted_step);
       _readAndSetOffset(m_point_offset_info, wanted_step);
       _readAndSetOffset(m_connectivity_offset_info, wanted_step);
-      m_part_offset_info.setValue(wanted_step * nb_rank);
-      m_time_offset_info.setValue(wanted_step);
-      m_offset_for_cell_offset_info.setValue(m_cell_offset_info.value() + wanted_step * nb_rank);
+      m_part_offset_info.setOffset(wanted_step * nb_rank);
+      m_time_offset_info.setOffset(wanted_step);
+      m_offset_for_cell_offset_info.setOffset(m_cell_offset_info.offset() + wanted_step * nb_rank);
     }
   }
 }
@@ -1118,7 +1202,7 @@ _initializeOffsets()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Post-traitement au format Ensight Hdf.
+ * \brief Post-traitement au format VtkHdf V2.
  */
 class VtkHdfV2PostProcessor
 : public ArcaneVtkHdfV2PostProcessorObject
@@ -1134,10 +1218,13 @@ class VtkHdfV2PostProcessor
   void notifyBeginWrite() override
   {
     bool use_collective_io = true;
+    Int64 max_write_size = 0;
     if (options()) {
       use_collective_io = options()->useCollectiveWrite();
+      max_write_size = options()->maxWriteSize();
     }
     auto w = std::make_unique<VtkHdfV2DataWriter>(mesh(), groups(), use_collective_io);
+    w->setMaxWriteSize(max_write_size);
     w->setTimes(times());
     Directory dir(baseDirectoryName());
     w->setDirectoryName(dir.file("vtkhdfv2"));
