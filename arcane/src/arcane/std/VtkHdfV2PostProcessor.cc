@@ -17,6 +17,7 @@
 #include "arcane/utils/StringBuilder.h"
 #include "arcane/utils/IOException.h"
 #include "arcane/utils/FixedArray.h"
+#include "arcane/utils/MemoryView.h"
 
 #include "arcane/core/PostProcessorWriterBase.h"
 #include "arcane/core/Directory.h"
@@ -275,6 +276,14 @@ class VtkHdfV2DataWriter
   ItemGroupCollectiveInfo m_all_cells_info;
   ItemGroupCollectiveInfo m_all_nodes_info;
 
+  /*!
+   * \brief Taille maximum pour une écriture.
+   *
+   * Si l'écriture dépasse cette taille, elle est scindée en plusieurs écriture.
+   * Cela peut être nécessaire avec MPI-IO pour les gros volumes.
+   */
+  Int64 m_max_write_size = 0;
+
  private:
 
   void _addInt64ArrayAttribute(Hid& hid, const char* name, Span<const Int64> values);
@@ -308,7 +317,7 @@ class VtkHdfV2DataWriter
                        Int64 dim1_size, Int64 dim2_size, const DataType* values_data,
                        bool is_collective);
   void _writeDataSetGeneric(const DataInfo& data_info, Int32 nb_dim,
-                            Int64 dim1_size, Int64 dim2_size, const void* values_data,
+                            Int64 dim1_size, Int64 dim2_size, ConstMemoryView values_data,
                             const hid_t hdf_datatype_type, bool is_collective);
   void _addInt64Attribute(Hid& hid, const char* name, Int64 value);
   Int64 _readInt64Attribute(Hid& hid, const char* name);
@@ -575,6 +584,20 @@ _initializeItemGroupCollectiveInfos(ItemGroupCollectiveInfo& group_info)
   group_info.setWritePartInfo(_computeWritePartInfo(dim1_size));
 }
 
+namespace
+{
+  std::pair<Int64, Int64> _getInterval(Int64 index, Int64 nb_interval, Int64 total_size)
+  {
+    Int64 n = total_size;
+    Int64 isize = n / nb_interval;
+    Int64 ibegin = index * isize;
+    // Pour le dernier interval, prend les elements restants
+    if ((index + 1) == nb_interval)
+      isize = n - ibegin;
+    return { ibegin, isize };
+  }
+} // namespace
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
@@ -585,9 +608,13 @@ _initializeItemGroupCollectiveInfos(ItemGroupCollectiveInfo& group_info)
  */
 void VtkHdfV2DataWriter::
 _writeDataSetGeneric(const DataInfo& data_info, Int32 nb_dim,
-                     Int64 dim1_size, Int64 dim2_size, const void* values_data,
+                     Int64 dim1_size, Int64 dim2_size,
+                     ConstMemoryView values_data,
                      const hid_t hdf_type, bool is_collective)
 {
+  if (nb_dim == 1)
+    dim2_size = 1;
+
   HGroup& group = data_info.dataset.group;
   const String& name = data_info.dataset.name;
 
@@ -642,9 +669,6 @@ _writeDataSetGeneric(const DataInfo& data_info, Int32 nb_dim,
   HProperty write_plist_id;
   if (is_collective)
     write_plist_id.createDatasetTransfertCollectiveMPIIO();
-
-  HSpace memory_space;
-  memory_space.createSimple(nb_dim, local_dims.data());
 
   HSpace file_space;
   FixedArray<hsize_t, MAX_DIM> hyperslab_offsets;
@@ -714,16 +738,38 @@ _writeDataSetGeneric(const DataInfo& data_info, Int32 nb_dim,
             << " offsets0=" << hyperslab_offsets[0] << " name=" << name;
   }
 
-  // Sélectionne la partie de la donnée à écrire
-  if ((herror = H5Sselect_hyperslab(file_space.id(), H5S_SELECT_SET, hyperslab_offsets.data(), nullptr, local_dims.data(), nullptr)) < 0)
-    ARCANE_THROW(IOException, "Can not select hyperslab '{0}' (err={1})", name, herror);
+  Int64 nb_write_byte = global_dim1_size * dim2_size * values_data.datatypeSize();
 
-  // Effectue l'écriture
-  if ((herror = dataset.write(hdf_type, values_data, memory_space, file_space, write_plist_id)) < 0)
-    ARCANE_THROW(IOException, "Can not write dataset '{0}' (err={1})", name, herror);
+  // Effectue l'écriture en plusieurs parties si demandé.
+  // Cela n'est possible que pour l'écriture collective.
+  Int64 nb_interval = 1;
+  if (is_collective && m_max_write_size > 0) {
+    nb_interval = 1 + nb_write_byte / m_max_write_size;
+  }
+  info(4) << "WRITE global_size=" << nb_write_byte << " max_size=" << m_max_write_size << " nb_interval=" << nb_interval;
 
-  if (dataset.isBad())
-    ARCANE_THROW(IOException, "Can not write dataset '{0}'", name);
+  for (Int64 i = 0; i < nb_interval; ++i) {
+    auto [index, nb_element] = _getInterval(i, nb_interval, dim1_size);
+    // Sélectionne la partie de la donnée à écrire
+    FixedArray<hsize_t, 2> dims;
+    dims[0] = nb_element;
+    dims[1] = dim2_size;
+    FixedArray<hsize_t, 2> offsets;
+    offsets[0] = hyperslab_offsets[0] + index;
+    offsets[1] = 0;
+    if ((herror = H5Sselect_hyperslab(file_space.id(), H5S_SELECT_SET, offsets.data(), nullptr, dims.data(), nullptr)) < 0)
+      ARCANE_THROW(IOException, "Can not select hyperslab '{0}' (err={1})", name, herror);
+
+    HSpace memory_space;
+    memory_space.createSimple(nb_dim, dims.data());
+    Int64 data_offset = index * values_data.datatypeSize() * dim2_size;
+    // Effectue l'écriture
+    if ((herror = dataset.write(hdf_type, values_data.data() + data_offset, memory_space, file_space, write_plist_id)) < 0)
+      ARCANE_THROW(IOException, "Can not write dataset '{0}' (err={1})", name, herror);
+
+    if (dataset.isBad())
+      ARCANE_THROW(IOException, "Can not write dataset '{0}'", name);
+  }
 
   if (!data_info.datasetInfo().isNull())
     m_offset_info_list.insert(std::make_pair(data_info.datasetInfo(), write_offset));
@@ -738,7 +784,8 @@ _writeDataSetGeneric(const DataInfo& data_info, Int32 nb_dim,
                      bool is_collective)
 {
   const hid_t hdf_type = m_standard_types.nativeType(DataType{});
-  _writeDataSetGeneric(data_info, nb_dim, dim1_size, dim2_size, values_data, hdf_type, is_collective);
+  ConstMemoryView mem_view = makeConstMemoryView(values_data, sizeof(DataType), dim1_size * dim2_size);
+  _writeDataSetGeneric(data_info, nb_dim, dim1_size, dim2_size, mem_view, hdf_type, is_collective);
 }
 
 /*---------------------------------------------------------------------------*/
