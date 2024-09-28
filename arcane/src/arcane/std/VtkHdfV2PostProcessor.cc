@@ -545,7 +545,8 @@ _writeDataSetGeneric(const DataInfo& data_info, Int32 nb_dim,
   HGroup& group = data_info.dataset.group;
   const String& name = data_info.dataset.name;
 
-  // Si positif ou nul indique l'offset d'écriture. Sinon on écrit à la fin
+  // Si positif ou nul, indique l'offset d'écriture.
+  // Sinon, on écrit à la fin du dataset actuel.
   Int64 wanted_offset = data_info.offset.value();
 
   static constexpr int MAX_DIM = 2;
@@ -578,13 +579,13 @@ _writeDataSetGeneric(const DataInfo& data_info, Int32 nb_dim,
   Int32 nb_participating_rank = 1;
   if (is_collective) {
     if (data_info.m_group_info) {
+      // Si la donnée est associée à un groupe, alors les informations
+      // sur l'offset ont déjà été calculées
       global_dim1_size = data_info.m_group_info->m_total_size;
       my_index = data_info.m_group_info->m_my_offset;
     }
     else {
-      // En mode collectif il faut récupérer les index de chaque rang.
-      // TODO: pour les variables, ces indices ne dépendent que du groupe associé
-      // et on peut donc conserver l'information pour éviter le gather à chaque fois.
+      // En mode collectif, il faut récupérer les index de chaque rang.
       IParallelMng* pm = m_mesh->parallelMng();
       nb_participating_rank = pm->commSize();
       Int32 my_rank = pm->commRank();
@@ -609,6 +610,7 @@ _writeDataSetGeneric(const DataInfo& data_info, Int32 nb_dim,
   memory_space.createSimple(nb_dim, local_dims.data());
 
   HSpace file_space;
+  FixedArray<hsize_t, MAX_DIM> hyperslab_offsets;
 
   if (m_is_first_call) {
     // TODO: regarder comment mieux calculer le chunk
@@ -635,11 +637,8 @@ _writeDataSetGeneric(const DataInfo& data_info, Int32 nb_dim,
     dataset.create(group, name.localstr(), hdf_type, file_space, HProperty{}, plist_id, HProperty{});
 
     if (is_collective) {
-      FixedArray<hsize_t, MAX_DIM> offset;
-      offset[0] = my_index;
-      offset[1] = 0;
-      if ((herror = H5Sselect_hyperslab(file_space.id(), H5S_SELECT_SET, offset.data(), nullptr, local_dims.data(), nullptr)) < 0)
-        ARCANE_THROW(IOException, "Can not select hyperslab '{0}' (err={1})", name, herror);
+      hyperslab_offsets[0] = my_index;
+      hyperslab_offsets[1] = 0;
     }
   }
   else {
@@ -670,17 +669,17 @@ _writeDataSetGeneric(const DataInfo& data_info, Int32 nb_dim,
       ARCANE_THROW(IOException, "Can not extent dataset '{0}' (err={1})", name, herror);
     file_space = dataset.getSpace();
 
-    FixedArray<hsize_t, MAX_DIM> offsets;
-    offsets[0] = offset0 + my_index;
-    offsets[1] = 0;
+    hyperslab_offsets[0] = offset0 + my_index;
+    hyperslab_offsets[1] = 0;
     info(4) << "APPEND nb_dim=" << nb_dim
             << " dim0=" << global_dims[0]
             << " count0=" << local_dims[0]
-            << " offsets0=" << offsets[0] << " name=" << name;
-
-    if ((herror = H5Sselect_hyperslab(file_space.id(), H5S_SELECT_SET, offsets.data(), nullptr, local_dims.data(), nullptr)) < 0)
-      ARCANE_THROW(IOException, "Can not select hyperslab '{0}' (err={1})", name, herror);
+            << " offsets0=" << hyperslab_offsets[0] << " name=" << name;
   }
+
+  // Sélectionne la partie de la donnée à écrire
+  if ((herror = H5Sselect_hyperslab(file_space.id(), H5S_SELECT_SET, hyperslab_offsets.data(), nullptr, local_dims.data(), nullptr)) < 0)
+    ARCANE_THROW(IOException, "Can not select hyperslab '{0}' (err={1})", name, herror);
 
   // Effectue l'écriture
   if ((herror = dataset.write(hdf_type, values_data, memory_space, file_space, write_plist_id)) < 0)
