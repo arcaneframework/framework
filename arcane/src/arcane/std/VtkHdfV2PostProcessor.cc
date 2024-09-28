@@ -228,6 +228,7 @@ class VtkHdfV2DataWriter
 
   void setTimes(RealConstArrayView times) { m_times = times; }
   void setDirectoryName(const String& dir_name) { m_directory_name = dir_name; }
+  void setMaxWriteSize(Int64 v) { m_max_write_size = v; }
 
  private:
 
@@ -1217,10 +1218,13 @@ class VtkHdfV2PostProcessor
   void notifyBeginWrite() override
   {
     bool use_collective_io = true;
+    Int64 max_write_size = 0;
     if (options()) {
       use_collective_io = options()->useCollectiveWrite();
+      max_write_size = options()->maxWriteSize();
     }
     auto w = std::make_unique<VtkHdfV2DataWriter>(mesh(), groups(), use_collective_io);
+    w->setMaxWriteSize(max_write_size);
     w->setTimes(times());
     Directory dir(baseDirectoryName());
     w->setDirectoryName(dir.file("vtkhdfv2"));

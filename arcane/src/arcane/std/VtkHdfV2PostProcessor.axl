@@ -19,6 +19,16 @@
         pas le cas alors l'écriture ne sera pas collective.
     </description>
    </simple>
+
+    <simple name="max-write-size" type="int64" default="0">
+      <userclass>User</userclass>
+      <description>
+        Taille maximale en octet d'un bloc pour une écriture collective.
+        Si la taille maximale dépasse cette valeur, l'écriture est scindée en
+        plusieurs écritures. Cela n'est actif que pour les écritures avec MPI-IO.
+      </description>
+    </simple>
+
   </options>
 
 </service>
