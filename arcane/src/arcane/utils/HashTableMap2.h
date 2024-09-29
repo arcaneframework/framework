@@ -105,22 +105,21 @@ class ARCANE_UTILS_EXPORT HashTableMap2Base
 
  private:
 
-  AllocatedMemoryInfo m_index_allocated_info;
+  Int64 m_index_allocated_size = 0;
 
  protected:
 
   void _allocIndex(size_type num_buckets)
   {
-    Int64 size = (uint64_t)(EAD + num_buckets) * sizeof(Index);
-    void* ptr = malloc(size);
-    m_index_allocated_info = AllocatedMemoryInfo(ptr, size);
-    m_index = reinterpret_cast<Index*>(ptr);
+    m_index_allocated_size = (uint64_t)(EAD + num_buckets) * sizeof(Index);
+    AllocatedMemoryInfo mem_info = m_memory_allocator->allocate({}, m_index_allocated_size);
+    m_index = reinterpret_cast<Index*>(mem_info.baseAddress());
   }
   void _freeIndex()
   {
-    free(m_index);
+    m_memory_allocator->deallocate({}, { m_index, m_index_allocated_size });
     m_index = nullptr;
-    m_index_allocated_info = {};
+    m_index_allocated_size = 0;
   }
 
   void _doSwap(HashTableMap2Base& rhs)
@@ -132,7 +131,8 @@ class ARCANE_UTILS_EXPORT HashTableMap2Base
     std::swap(m_mlf, rhs.m_mlf);
     std::swap(m_last, rhs.m_last);
     std::swap(m_etail, rhs.m_etail);
-    std::swap(m_index_allocated_info, rhs.m_index_allocated_info);
+    std::swap(m_index_allocated_size, rhs.m_index_allocated_size);
+    std::swap(m_memory_allocator, rhs.m_memory_allocator);
   }
 
   void _doClone(const HashTableMap2Base& rhs)
@@ -143,7 +143,8 @@ class ARCANE_UTILS_EXPORT HashTableMap2Base
     m_last = rhs.m_last;
     m_mask = rhs.m_mask;
     m_etail = rhs.m_etail;
-    m_index_allocated_info = rhs.m_index_allocated_info;
+    m_index_allocated_size = rhs.m_index_allocated_size;
+    m_memory_allocator = rhs.m_memory_allocator;
   };
 
  private:
@@ -326,7 +327,7 @@ class HashTableMap2
   {
     if (rhs.load_factor() > EMH_MIN_LOAD_FACTOR) {
       m_pairs = _allocBucket((size_type)(rhs.m_num_buckets * rhs.max_load_factor()) + 4);
-      m_index = _allocIndex(rhs.m_num_buckets);
+      _allocIndex(rhs.m_num_buckets);
       clone(rhs);
     }
     else {
