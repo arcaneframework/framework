@@ -96,9 +96,6 @@ class ARCANE_UTILS_EXPORT HashTableMap2Base
   size_type m_num_buckets = 0;
   size_type m_num_filled = 0;
   size_type m_last = 0;
-#if EMH_HIGH_LOAD
-  size_type _ehead = 0;
-#endif
   size_type m_etail = 0;
   IMemoryAllocator* m_memory_allocator = _defaultAllocator();
 
@@ -389,9 +386,6 @@ class HashTableMap2
     m_mlf = rhs.m_mlf;
     m_last = rhs.m_last;
     m_mask = rhs.m_mask;
-#if EMH_HIGH_LOAD
-    _ehead = rhs._ehead;
-#endif
     m_etail = rhs.m_etail;
 
     auto opairs = rhs.m_pairs;
@@ -417,9 +411,6 @@ class HashTableMap2
     std::swap(m_mask, rhs.m_mask);
     std::swap(m_mlf, rhs.m_mlf);
     std::swap(m_last, rhs.m_last);
-#if EMH_HIGH_LOAD
-    std::swap(_ehead, rhs._ehead);
-#endif
     std::swap(m_etail, rhs.m_etail);
   }
 
@@ -833,9 +824,6 @@ class HashTableMap2
     m_last = m_num_filled = 0;
     m_etail = INACTIVE;
 
-#if EMH_HIGH_LOAD
-    _ehead = 0;
-#endif
   }
 
   void shrink_to_fit(const float min_factor = EMH_DEFAULT_LOAD_FACTOR / 4)
@@ -844,94 +832,14 @@ class HashTableMap2
       rehash(m_num_filled + 1);
   }
 
-#if EMH_HIGH_LOAD
-#define EMH_PREVET(i, n) i[n].slot
-  void set_empty()
-  {
-    auto prev = 0;
-    for (int32_t bucket = 1; bucket < m_num_buckets; ++bucket) {
-      if (EMH_EMPTY(bucket)) {
-        if (prev != 0) {
-          EMH_PREVET(_index, bucket) = prev;
-          _index[_prev].next = -bucket;
-        }
-        else
-          _ehead = bucket;
-        prev = bucket;
-      }
-    }
-
-    EMH_PREVET(_index, _ehead) = prev;
-    _index[_prev].next = 0 - _ehead;
-    _ehead = 0 - _index[_ehead].next;
-  }
-
-  void clear_empty()
-  {
-    auto prev = EMH_PREVET(_index, _ehead);
-    while (prev != _ehead) {
-      _index[_prev].next = INACTIVE;
-      prev = EMH_PREVET(_index, prev);
-    }
-    _index[_ehead].next = INACTIVE;
-    _ehead = 0;
-  }
-
-  //prev-ehead->next
-  size_type pop_empty(const size_type bucket)
-  {
-    const auto prev_bucket = EMH_PREVET(_index, bucket);
-    const int next_bucket = 0 - _index[bucket].next;
-
-    EMH_PREVET(_index, next_bucket) = prev_bucket;
-    _index[prev_bucket].next = -next_bucket;
-
-    _ehead = next_bucket;
-    return bucket;
-  }
-
-  //ehead->bucket->next
-  void push_empty(const int32_t bucket)
-  {
-    const int next_bucket = 0 - _index[_ehead].next;
-    assert(next_bucket > 0);
-
-    EMH_PREVET(_index, bucket) = _ehead;
-    _index[bucket].next = -next_bucket;
-
-    EMH_PREVET(_index, next_bucket) = bucket;
-    _index[_ehead].next = -bucket;
-    //        _ehead = bucket;
-  }
-#endif
 
   /// Make room for this many elements
   bool reserve(uint64_t num_elems, bool force)
   {
     (void)force;
-#if EMH_HIGH_LOAD == 0
     const auto required_buckets = num_elems * m_mlf >> 27;
     if (EMH_LIKELY(required_buckets < m_mask)) // && !force
       return false;
-
-#elif EMH_HIGH_LOAD
-    const auto required_buckets = num_elems + num_elems * 1 / 9;
-    if (EMH_LIKELY(required_buckets < m_mask))
-      return false;
-
-    else if (m_num_buckets < 16 && m_num_filled < m_num_buckets)
-      return false;
-
-    else if (m_num_buckets > EMH_HIGH_LOAD) {
-      if (_ehead == 0) {
-        set_empty();
-        return false;
-      }
-      else if (/*m_num_filled + 100 < m_num_buckets && */ _index[_ehead].next != 0 - _ehead) {
-        return false;
-      }
-    }
-#endif
 
     //assert(required_buckets < max_size());
     rehash(required_buckets + 2);
@@ -944,9 +852,6 @@ class HashTableMap2
       return reserve(required_buckets, true);
 
     m_last = 0;
-#if EMH_HIGH_LOAD
-    _ehead = 0;
-#endif
 
     memset((char*)m_index, INACTIVE, sizeof(m_index[0]) * m_num_buckets);
     for (size_type slot = 0; slot < m_num_filled; slot++) {
@@ -974,9 +879,6 @@ class HashTableMap2
     while (num_buckets < required_buckets) {
       num_buckets *= 2;
     }
-#if EMH_HIGH_LOAD
-    _ehead = 0;
-#endif
     m_last = 0;
 
     m_mask = num_buckets - 1;
@@ -1229,14 +1131,6 @@ class HashTableMap2
 
     m_etail = INACTIVE;
     m_index[ebucket] = { INACTIVE, 0 };
-#if EMH_HIGH_LOAD
-    if (_ehead) {
-      if (10 * m_num_filled < 8 * m_num_buckets)
-        clear_empty();
-      else if (ebucket)
-        push_empty(ebucket);
-    }
-#endif
   }
 
   size_type erase_bucket(const size_type bucket, const size_type main_bucket) noexcept
@@ -1377,10 +1271,6 @@ class HashTableMap2
     auto next_bucket = m_index[bucket].next;
     prefetch_heap_block((char*)&m_pairs[bucket]);
     if ((int)next_bucket < 0) {
-#if EMH_HIGH_LOAD
-      if (next_bucket != INACTIVE)
-        pop_empty(bucket);
-#endif
       return bucket;
     }
 
@@ -1423,10 +1313,6 @@ class HashTableMap2
     const auto bucket = size_type(key_hash & m_mask);
     auto next_bucket = m_index[bucket].next;
     if ((int)next_bucket < 0) {
-#if EMH_HIGH_LOAD
-      if (next_bucket != INACTIVE)
-        pop_empty(bucket);
-#endif
       return bucket;
     }
 
@@ -1457,10 +1343,6 @@ class HashTableMap2
   size_type _findEmptyBucket(const size_type bucket_from, uint32_t csize) noexcept
   {
     (void)csize;
-#if EMH_HIGH_LOAD
-    if (_ehead)
-      return pop_empty(_ehead);
-#endif
 
     auto bucket = bucket_from;
     if (EMH_EMPTY(++bucket) || EMH_EMPTY(++bucket))
