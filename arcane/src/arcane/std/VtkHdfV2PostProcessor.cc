@@ -278,7 +278,7 @@ class VtkHdfV2DataWriter
   ItemGroupCollectiveInfo m_all_nodes_info;
 
   /*!
-   * \brief Taille maximum pour une écriture.
+   * \brief Taille maximale (en kilo-octet) pour une écriture.
    *
    * Si l'écriture dépasse cette taille, elle est scindée en plusieurs écriture.
    * Cela peut être nécessaire avec MPI-IO pour les gros volumes.
@@ -379,9 +379,10 @@ beginWrite(const VariableCollection& vars)
   if (pm->isHybridImplementation() || pm->isThreadImplementation())
     m_is_collective_io = false;
 
-  if (is_first_call)
+  if (is_first_call) {
     info() << "VtkHdfV2DataWriter: using collective MPI/IO ?=" << m_is_collective_io;
-
+    info() << "VtkHdfV2DataWriter: max_write_size (kB) =" << m_max_write_size;
+  }
   // Vrai si on doit participer aux écritures
   // Si on utilise MPI/IO avec HDF5, il faut tout de même que tous
   // les rangs fassent toutes les opérations d'écriture pour garantir
@@ -745,7 +746,7 @@ _writeDataSetGeneric(const DataInfo& data_info, Int32 nb_dim,
   // Cela n'est possible que pour l'écriture collective.
   Int64 nb_interval = 1;
   if (is_collective && m_max_write_size > 0) {
-    nb_interval = 1 + nb_write_byte / m_max_write_size;
+    nb_interval = 1 + nb_write_byte / (m_max_write_size * 1024);
   }
   info(4) << "WRITE global_size=" << nb_write_byte << " max_size=" << m_max_write_size << " nb_interval=" << nb_interval;
 
