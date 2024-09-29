@@ -1471,12 +1471,13 @@ class HashTableMap2
   value_type* _allocBucket(size_type num_buckets)
   {
     m_pairs_allocated_size = (uint64_t)num_buckets * sizeof(value_type);
-    return reinterpret_cast<value_type*>(malloc(m_pairs_allocated_size));
+    AllocatedMemoryInfo mem_info = m_memory_allocator->allocate({}, m_pairs_allocated_size);
+    return reinterpret_cast<value_type*>(mem_info.baseAddress());
   }
 
   void _freeBuckets()
   {
-    free(m_pairs);
+    m_memory_allocator->deallocate({}, { m_pairs, m_pairs_allocated_size });
     m_pairs = nullptr;
     m_pairs_allocated_size = 0;
   }
