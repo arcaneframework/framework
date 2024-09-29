@@ -9,6 +9,9 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+#include "arcane/utils/UtilsTypes.h"
+#include "arccore/collections/IMemoryAllocator.h"
+
 // Version initiale issue du commit bdebddbdce1b473bbc189178fd523ef4a876ea01 (27 aout 2024)
 // emhash8::HashMap for C++14/17
 // version 1.6.5
@@ -72,6 +75,82 @@
 
 namespace Arcane::impl
 {
+//! Base class for HashTableMap2
+class ARCANE_UTILS_EXPORT HashTableMap2Base
+{
+ public:
+
+  using size_type = uint32_t;
+
+  struct Index
+  {
+    size_type next;
+    size_type slot;
+  };
+
+ protected:
+
+  constexpr static size_type EAD = 2;
+
+ protected:
+
+  Index* m_index = nullptr;
+  uint32_t m_mlf = 0;
+  size_type m_mask = 0;
+  size_type m_num_buckets = 0;
+  size_type m_num_filled = 0;
+  size_type m_last = 0;
+  size_type m_etail = 0;
+  IMemoryAllocator* m_memory_allocator = _defaultAllocator();
+
+ private:
+
+  Int64 m_index_allocated_size = 0;
+
+ protected:
+
+  void _allocIndex(size_type num_buckets)
+  {
+    m_index_allocated_size = (uint64_t)(EAD + num_buckets) * sizeof(Index);
+    AllocatedMemoryInfo mem_info = m_memory_allocator->allocate({}, m_index_allocated_size);
+    m_index = reinterpret_cast<Index*>(mem_info.baseAddress());
+  }
+  void _freeIndex()
+  {
+    m_memory_allocator->deallocate({}, { m_index, m_index_allocated_size });
+    m_index = nullptr;
+    m_index_allocated_size = 0;
+  }
+
+  void _doSwap(HashTableMap2Base& rhs)
+  {
+    std::swap(m_index, rhs.m_index);
+    std::swap(m_num_buckets, rhs.m_num_buckets);
+    std::swap(m_num_filled, rhs.m_num_filled);
+    std::swap(m_mask, rhs.m_mask);
+    std::swap(m_mlf, rhs.m_mlf);
+    std::swap(m_last, rhs.m_last);
+    std::swap(m_etail, rhs.m_etail);
+    std::swap(m_index_allocated_size, rhs.m_index_allocated_size);
+    std::swap(m_memory_allocator, rhs.m_memory_allocator);
+  }
+
+  void _doClone(const HashTableMap2Base& rhs)
+  {
+    m_num_buckets = rhs.m_num_buckets;
+    m_num_filled = rhs.m_num_filled;
+    m_mlf = rhs.m_mlf;
+    m_last = rhs.m_last;
+    m_mask = rhs.m_mask;
+    m_etail = rhs.m_etail;
+    m_index_allocated_size = rhs.m_index_allocated_size;
+    m_memory_allocator = rhs.m_memory_allocator;
+  };
+
+ private:
+
+  static IMemoryAllocator* _defaultAllocator();
+};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -84,6 +163,7 @@ template <typename KeyT, typename ValueT,
           typename HashT = std::hash<KeyT>,
           typename EqT = std::equal_to<KeyT>>
 class HashTableMap2
+: public HashTableMap2Base
 {
   constexpr static double EMH_DEFAULT_LOAD_FACTOR = 0.80f;
   constexpr static double EMH_MIN_LOAD_FACTOR = 0.25f; //< 0.5
@@ -95,21 +175,11 @@ class HashTableMap2
   using value_type = std::pair<KeyT, ValueT>;
   using key_type = KeyT;
   using mapped_type = ValueT;
-
-  using size_type = uint32_t;
-
   using hasher = HashT;
   using key_equal = EqT;
 
   constexpr static size_type INACTIVE = 0xFFFFFFFF;
   constexpr static size_type END = 0xFFFFFFFF;
-  constexpr static size_type EAD = 2;
-
-  struct Index
-  {
-    size_type next;
-    size_type slot;
-  };
 
   class const_iterator;
   class iterator
@@ -256,8 +326,8 @@ class HashTableMap2
   HashTableMap2(const HashTableMap2& rhs)
   {
     if (rhs.load_factor() > EMH_MIN_LOAD_FACTOR) {
-      m_pairs = alloc_bucket((size_type)(rhs.m_num_buckets * rhs.max_load_factor()) + 4);
-      m_index = alloc_index(rhs.m_num_buckets);
+      m_pairs = _allocBucket((size_type)(rhs.m_num_buckets * rhs.max_load_factor()) + 4);
+      _allocIndex(rhs.m_num_buckets);
       clone(rhs);
     }
     else {
@@ -277,7 +347,7 @@ class HashTableMap2
   {
     init((size_type)ilist.size());
     for (auto it = ilist.begin(); it != ilist.end(); ++it)
-      do_insert(*it);
+      _doInsert(*it);
   }
 
   template <class InputIt>
@@ -295,8 +365,7 @@ class HashTableMap2
 
     if (rhs.load_factor() < EMH_MIN_LOAD_FACTOR) {
       clear();
-      free(m_pairs);
-      m_pairs = nullptr;
+      _freeBuckets();
       rehash(rhs.m_num_filled + 2);
       for (auto it = rhs.begin(); it != rhs.end(); ++it)
         insert_unique(it->first, it->second);
@@ -306,10 +375,10 @@ class HashTableMap2
     clearkv();
 
     if (m_num_buckets != rhs.m_num_buckets) {
-      free(m_pairs);
-      free(m_index);
-      m_index = alloc_index(rhs.m_num_buckets);
-      m_pairs = alloc_bucket((size_type)(rhs.m_num_buckets * rhs.max_load_factor()) + 4);
+      _freeIndex();
+      _freeBuckets();
+      _allocIndex(rhs.m_num_buckets);
+      m_pairs = _allocBucket((size_type)(rhs.m_num_buckets * rhs.max_load_factor()) + 4);
     }
 
     clone(rhs);
@@ -348,25 +417,15 @@ class HashTableMap2
   ~HashTableMap2() noexcept
   {
     clearkv();
-    free(m_pairs);
-    free(m_index);
-    m_index = nullptr;
-    m_pairs = nullptr;
+    _freeBuckets();
+    _freeIndex();
   }
 
   void clone(const HashTableMap2& rhs)
   {
+    _doClone(rhs);
     m_hasher = rhs.m_hasher;
-    //        m_eq          = rhs.m_eq;
-    m_num_buckets = rhs.m_num_buckets;
-    m_num_filled = rhs.m_num_filled;
-    m_mlf = rhs.m_mlf;
-    m_last = rhs.m_last;
-    m_mask = rhs.m_mask;
-#if EMH_HIGH_LOAD
-    _ehead = rhs._ehead;
-#endif
-    m_etail = rhs.m_etail;
+    m_pairs_allocated_size = rhs.m_pairs_allocated_size;
 
     auto opairs = rhs.m_pairs;
     memcpy((char*)m_index, (char*)rhs.m_index, (m_num_buckets + EAD) * sizeof(Index));
@@ -382,19 +441,10 @@ class HashTableMap2
 
   void swap(HashTableMap2& rhs)
   {
-    //      std::swap(m_eq, rhs.m_eq);
+    _doSwap(rhs);
     std::swap(m_hasher, rhs.m_hasher);
     std::swap(m_pairs, rhs.m_pairs);
-    std::swap(m_index, rhs.m_index);
-    std::swap(m_num_buckets, rhs.m_num_buckets);
-    std::swap(m_num_filled, rhs.m_num_filled);
-    std::swap(m_mask, rhs.m_mask);
-    std::swap(m_mlf, rhs.m_mlf);
-    std::swap(m_last, rhs.m_last);
-#if EMH_HIGH_LOAD
-    std::swap(_ehead, rhs._ehead);
-#endif
-    std::swap(m_etail, rhs.m_etail);
+    std::swap(m_pairs_allocated_size, rhs.m_pairs_allocated_size);
   }
 
   // -------------------------------------------------------------
@@ -606,20 +656,20 @@ class HashTableMap2
   std::pair<iterator, bool> insert(const value_type& p)
   {
     check_expand_need();
-    return do_insert(p);
+    return _doInsert(p);
   }
 
   std::pair<iterator, bool> insert(value_type&& p)
   {
     check_expand_need();
-    return do_insert(std::move(p));
+    return _doInsert(std::move(p));
   }
 
   void insert(std::initializer_list<value_type> ilist)
   {
     reserve(ilist.size() + m_num_filled, false);
     for (auto it = ilist.begin(); it != ilist.end(); ++it)
-      do_insert(*it);
+      _doInsert(*it);
   }
 
   template <typename Iter>
@@ -627,14 +677,14 @@ class HashTableMap2
   {
     reserve(std::distance(first, last) + m_num_filled, false);
     for (; first != last; ++first)
-      do_insert(first->first, first->second);
+      _doInsert(first->first, first->second);
   }
 
   template <class... Args>
   std::pair<iterator, bool> emplace(Args&&... args) noexcept
   {
     check_expand_need();
-    return do_insert(std::forward<Args>(args)...);
+    return _doInsert(std::forward<Args>(args)...);
   }
 
   //no any optimize for position
@@ -643,21 +693,21 @@ class HashTableMap2
   {
     (void)hint;
     check_expand_need();
-    return do_insert(std::forward<Args>(args)...).first;
+    return _doInsert(std::forward<Args>(args)...).first;
   }
 
   template <class... Args>
   std::pair<iterator, bool> try_emplace(const KeyT& k, Args&&... args)
   {
     check_expand_need();
-    return do_insert(k, std::forward<Args>(args)...);
+    return _doInsert(k, std::forward<Args>(args)...);
   }
 
   template <class... Args>
   std::pair<iterator, bool> try_emplace(KeyT&& k, Args&&... args)
   {
     check_expand_need();
-    return do_insert(std::move(k), std::forward<Args>(args)...);
+    return _doInsert(std::move(k), std::forward<Args>(args)...);
   }
 
   template <class... Args>
@@ -680,7 +730,7 @@ class HashTableMap2
   {
     check_expand_need();
     const auto key_hash = hash_key(key);
-    const auto bucket = find_or_allocate(key, key_hash);
+    const auto bucket = _findOrAllocate(key, key_hash);
     if (EMH_EMPTY(bucket)) {
       EMH_NEW(key, val, bucket, key_hash);
       return ValueT();
@@ -698,7 +748,7 @@ class HashTableMap2
   {
     check_expand_need();
     const auto key_hash = hash_key(key);
-    const auto bucket = find_or_allocate(key, key_hash);
+    const auto bucket = _findOrAllocate(key, key_hash);
     if (EMH_EMPTY(bucket)) {
       /* Check if inserting a value rather than overwriting an old entry */
       EMH_NEW(key, std::move(ValueT()), bucket, key_hash);
@@ -712,7 +762,7 @@ class HashTableMap2
   {
     check_expand_need();
     const auto key_hash = hash_key(key);
-    const auto bucket = find_or_allocate(key, key_hash);
+    const auto bucket = _findOrAllocate(key, key_hash);
     if (EMH_EMPTY(bucket)) {
       EMH_NEW(std::move(key), std::move(ValueT()), bucket, key_hash);
     }
@@ -807,9 +857,6 @@ class HashTableMap2
     m_last = m_num_filled = 0;
     m_etail = INACTIVE;
 
-#if EMH_HIGH_LOAD
-    _ehead = 0;
-#endif
   }
 
   void shrink_to_fit(const float min_factor = EMH_DEFAULT_LOAD_FACTOR / 4)
@@ -818,94 +865,14 @@ class HashTableMap2
       rehash(m_num_filled + 1);
   }
 
-#if EMH_HIGH_LOAD
-#define EMH_PREVET(i, n) i[n].slot
-  void set_empty()
-  {
-    auto prev = 0;
-    for (int32_t bucket = 1; bucket < m_num_buckets; ++bucket) {
-      if (EMH_EMPTY(bucket)) {
-        if (prev != 0) {
-          EMH_PREVET(_index, bucket) = prev;
-          _index[_prev].next = -bucket;
-        }
-        else
-          _ehead = bucket;
-        prev = bucket;
-      }
-    }
-
-    EMH_PREVET(_index, _ehead) = prev;
-    _index[_prev].next = 0 - _ehead;
-    _ehead = 0 - _index[_ehead].next;
-  }
-
-  void clear_empty()
-  {
-    auto prev = EMH_PREVET(_index, _ehead);
-    while (prev != _ehead) {
-      _index[_prev].next = INACTIVE;
-      prev = EMH_PREVET(_index, prev);
-    }
-    _index[_ehead].next = INACTIVE;
-    _ehead = 0;
-  }
-
-  //prev-ehead->next
-  size_type pop_empty(const size_type bucket)
-  {
-    const auto prev_bucket = EMH_PREVET(_index, bucket);
-    const int next_bucket = 0 - _index[bucket].next;
-
-    EMH_PREVET(_index, next_bucket) = prev_bucket;
-    _index[prev_bucket].next = -next_bucket;
-
-    _ehead = next_bucket;
-    return bucket;
-  }
-
-  //ehead->bucket->next
-  void push_empty(const int32_t bucket)
-  {
-    const int next_bucket = 0 - _index[_ehead].next;
-    assert(next_bucket > 0);
-
-    EMH_PREVET(_index, bucket) = _ehead;
-    _index[bucket].next = -next_bucket;
-
-    EMH_PREVET(_index, next_bucket) = bucket;
-    _index[_ehead].next = -bucket;
-    //        _ehead = bucket;
-  }
-#endif
 
   /// Make room for this many elements
   bool reserve(uint64_t num_elems, bool force)
   {
     (void)force;
-#if EMH_HIGH_LOAD == 0
     const auto required_buckets = num_elems * m_mlf >> 27;
     if (EMH_LIKELY(required_buckets < m_mask)) // && !force
       return false;
-
-#elif EMH_HIGH_LOAD
-    const auto required_buckets = num_elems + num_elems * 1 / 9;
-    if (EMH_LIKELY(required_buckets < m_mask))
-      return false;
-
-    else if (m_num_buckets < 16 && m_num_filled < m_num_buckets)
-      return false;
-
-    else if (m_num_buckets > EMH_HIGH_LOAD) {
-      if (_ehead == 0) {
-        set_empty();
-        return false;
-      }
-      else if (/*m_num_filled + 100 < m_num_buckets && */ _index[_ehead].next != 0 - _ehead) {
-        return false;
-      }
-    }
-#endif
 
     //assert(required_buckets < max_size());
     rehash(required_buckets + 2);
@@ -918,9 +885,6 @@ class HashTableMap2
       return reserve(required_buckets, true);
 
     m_last = 0;
-#if EMH_HIGH_LOAD
-    _ehead = 0;
-#endif
 
     memset((char*)m_index, INACTIVE, sizeof(m_index[0]) * m_num_buckets);
     for (size_type slot = 0; slot < m_num_filled; slot++) {
@@ -948,9 +912,6 @@ class HashTableMap2
     while (num_buckets < required_buckets) {
       num_buckets *= 2;
     }
-#if EMH_HIGH_LOAD
-    _ehead = 0;
-#endif
     m_last = 0;
 
     m_mask = num_buckets - 1;
@@ -966,7 +927,7 @@ class HashTableMap2
     for (size_type slot = 0; slot < m_num_filled; ++slot) {
       const auto& key = m_pairs[slot].first;
       const auto key_hash = hash_key(key);
-      const auto bucket = find_unique_bucket(key_hash);
+      const auto bucket = _findUniqueBucket(key_hash);
       m_index[bucket] = { bucket, slot | ((size_type)(key_hash) & ~m_mask) };
     }
   }
@@ -983,8 +944,8 @@ class HashTableMap2
 
   void rebuild(size_type num_buckets) noexcept
   {
-    free(m_index);
-    auto new_pairs = (value_type*)alloc_bucket((size_type)(num_buckets * max_load_factor()) + 4);
+    _freeIndex();
+    auto new_pairs = _allocBucket((size_type)(num_buckets * max_load_factor()) + 4);
     if (is_copy_trivially()) {
       if (m_pairs)
         memcpy((char*)new_pairs, (char*)m_pairs, m_num_filled * sizeof(value_type));
@@ -996,28 +957,12 @@ class HashTableMap2
           m_pairs[slot].~value_type();
       }
     }
-    free(m_pairs);
+    _freeBuckets();
     m_pairs = new_pairs;
-    m_index = (Index*)alloc_index(num_buckets);
+    _allocIndex(num_buckets);
 
     memset((char*)m_index, INACTIVE, sizeof(m_index[0]) * num_buckets);
     memset((char*)(m_index + num_buckets), 0, sizeof(m_index[0]) * EAD);
-  }
-
-  static value_type* alloc_bucket(size_type num_buckets)
-  {
-#ifdef EMH_ALLOC
-    auto new_pairs = aligned_alloc(32, (uint64_t)num_buckets * sizeof(value_type));
-#else
-    auto new_pairs = malloc((uint64_t)num_buckets * sizeof(value_type));
-#endif
-    return (value_type*)(new_pairs);
-  }
-
-  static Index* alloc_index(size_type num_buckets)
-  {
-    auto new_index = (char*)malloc((uint64_t)(EAD + num_buckets) * sizeof(Index));
-    return (Index*)(new_index);
   }
 
   void pack_zero(ValueT zero)
@@ -1080,10 +1025,10 @@ class HashTableMap2
   }
 
   // -----------------------------------------------------
-  std::pair<iterator, bool> do_insert(const value_type& value) noexcept
+  std::pair<iterator, bool> _doInsert(const value_type& value) noexcept
   {
     const auto key_hash = hash_key(value.first);
-    const auto bucket = find_or_allocate(value.first, key_hash);
+    const auto bucket = _findOrAllocate(value.first, key_hash);
     const auto bempty = EMH_EMPTY(bucket);
     if (bempty) {
       EMH_NEW(value.first, value.second, bucket, key_hash);
@@ -1093,10 +1038,10 @@ class HashTableMap2
     return { { this, slot }, bempty };
   }
 
-  std::pair<iterator, bool> do_insert(value_type&& value) noexcept
+  std::pair<iterator, bool> _doInsert(value_type&& value) noexcept
   {
     const auto key_hash = hash_key(value.first);
-    const auto bucket = find_or_allocate(value.first, key_hash);
+    const auto bucket = _findOrAllocate(value.first, key_hash);
     const auto bempty = EMH_EMPTY(bucket);
     if (bempty) {
       EMH_NEW(std::move(value.first), std::move(value.second), bucket, key_hash);
@@ -1107,10 +1052,10 @@ class HashTableMap2
   }
 
   template <typename K, typename V>
-  std::pair<iterator, bool> do_insert(K&& key, V&& val) noexcept
+  std::pair<iterator, bool> _doInsert(K&& key, V&& val) noexcept
   {
     const auto key_hash = hash_key(key);
-    const auto bucket = find_or_allocate(key, key_hash);
+    const auto bucket = _findOrAllocate(key, key_hash);
     const auto bempty = EMH_EMPTY(bucket);
     if (bempty) {
       EMH_NEW(std::forward<K>(key), std::forward<V>(val), bucket, key_hash);
@@ -1125,7 +1070,7 @@ class HashTableMap2
   {
     check_expand_need();
     const auto key_hash = hash_key(key);
-    const auto bucket = find_or_allocate(key, key_hash);
+    const auto bucket = _findOrAllocate(key, key_hash);
     const auto bempty = EMH_EMPTY(bucket);
     if (bempty) {
       EMH_NEW(std::forward<K>(key), std::forward<V>(val), bucket, key_hash);
@@ -1143,7 +1088,7 @@ class HashTableMap2
   {
     check_expand_need();
     const auto key_hash = hash_key(key);
-    auto bucket = find_unique_bucket(key_hash);
+    auto bucket = _findUniqueBucket(key_hash);
     EMH_NEW(std::forward<K>(key), std::forward<V>(val), bucket, key_hash);
     return bucket;
   }
@@ -1203,14 +1148,6 @@ class HashTableMap2
 
     m_etail = INACTIVE;
     m_index[ebucket] = { INACTIVE, 0 };
-#if EMH_HIGH_LOAD
-    if (_ehead) {
-      if (10 * m_num_filled < 8 * m_num_buckets)
-        clear_empty();
-      else if (ebucket)
-        push_empty(ebucket);
-    }
-#endif
   }
 
   size_type erase_bucket(const size_type bucket, const size_type main_bucket) noexcept
@@ -1325,7 +1262,7 @@ class HashTableMap2
   size_type kickout_bucket(const size_type kmain, const size_type bucket) noexcept
   {
     const auto next_bucket = m_index[bucket].next;
-    const auto new_bucket = find_empty_bucket(next_bucket, 2);
+    const auto new_bucket = _findEmptyBucket(next_bucket, 2);
     const auto prev_bucket = find_prev_bucket(kmain, bucket);
 
     const auto last = next_bucket == bucket ? new_bucket : next_bucket;
@@ -1338,23 +1275,19 @@ class HashTableMap2
   }
 
   /*
-     ** inserts a new key into a hash table; first, check whether key's main
-     ** bucket/position is free. If not, check whether colliding node/bucket is in its main
-     ** position or not: if it is not, move colliding bucket to an empty place and
-     ** put new key in its main position; otherwise (colliding bucket is in its main
-     ** position), new key goes to an empty position.
-     */
+   ** inserts a new key into a hash table; first, check whether key's main
+   ** bucket/position is free. If not, check whether colliding node/bucket is in its main
+   ** position or not: if it is not, move colliding bucket to an empty place and
+   ** put new key in its main position; otherwise (colliding bucket is in its main
+   ** position), new key goes to an empty position.
+   */
   template <typename K = KeyT>
-  size_type find_or_allocate(const K& key, uint64_t key_hash) noexcept
+  size_type _findOrAllocate(const K& key, uint64_t key_hash) noexcept
   {
     const auto bucket = size_type(key_hash & m_mask);
     auto next_bucket = m_index[bucket].next;
     prefetch_heap_block((char*)&m_pairs[bucket]);
     if ((int)next_bucket < 0) {
-#if EMH_HIGH_LOAD
-      if (next_bucket != INACTIVE)
-        pop_empty(bucket);
-#endif
       return bucket;
     }
 
@@ -1368,7 +1301,7 @@ class HashTableMap2
     if (kmain != bucket)
       return kickout_bucket(kmain, bucket);
     else if (next_bucket == bucket)
-      return m_index[next_bucket].next = find_empty_bucket(next_bucket, 1);
+      return m_index[next_bucket].next = _findEmptyBucket(next_bucket, 1);
 
     uint32_t csize = 1;
     //find next linked bucket and check key
@@ -1387,20 +1320,16 @@ class HashTableMap2
     }
 
     //find a empty and link it to tail
-    const auto new_bucket = find_empty_bucket(next_bucket, csize);
+    const auto new_bucket = _findEmptyBucket(next_bucket, csize);
     prefetch_heap_block((char*)&m_pairs[new_bucket]);
     return m_index[next_bucket].next = new_bucket;
   }
 
-  size_type find_unique_bucket(uint64_t key_hash) noexcept
+  size_type _findUniqueBucket(uint64_t key_hash) noexcept
   {
     const auto bucket = size_type(key_hash & m_mask);
     auto next_bucket = m_index[bucket].next;
     if ((int)next_bucket < 0) {
-#if EMH_HIGH_LOAD
-      if (next_bucket != INACTIVE)
-        pop_empty(bucket);
-#endif
       return bucket;
     }
 
@@ -1411,7 +1340,7 @@ class HashTableMap2
     else if (EMH_UNLIKELY(next_bucket != bucket))
       next_bucket = find_last_bucket(next_bucket);
 
-    return m_index[next_bucket].next = find_empty_bucket(next_bucket, 2);
+    return m_index[next_bucket].next = _findEmptyBucket(next_bucket, 2);
   }
 
   /***
@@ -1428,13 +1357,9 @@ class HashTableMap2
       3. the second search slot from calculated pos "(m_num_filled + m_last) & m_mask", it's like a rand value
       */
   // key is not in this mavalue. Find a place to put it.
-  size_type find_empty_bucket(const size_type bucket_from, uint32_t csize) noexcept
+  size_type _findEmptyBucket(const size_type bucket_from, uint32_t csize) noexcept
   {
     (void)csize;
-#if EMH_HIGH_LOAD
-    if (_ehead)
-      return pop_empty(_ehead);
-#endif
 
     auto bucket = bucket_from;
     if (EMH_EMPTY(++bucket) || EMH_EMPTY(++bucket))
@@ -1536,20 +1461,26 @@ class HashTableMap2
 
  private:
 
-  Index* m_index = nullptr;
   value_type* m_pairs = nullptr;
-
   HashT m_hasher;
   EqT m_eq;
-  uint32_t m_mlf = 0;
-  size_type m_mask = 0;
-  size_type m_num_buckets = 0;
-  size_type m_num_filled = 0;
-  size_type m_last = 0;
-#if EMH_HIGH_LOAD
-  size_type _ehead;
-#endif
-  size_type m_etail = 0;
+  Int64 m_pairs_allocated_size = 0;
+
+ private:
+
+  value_type* _allocBucket(size_type num_buckets)
+  {
+    m_pairs_allocated_size = (uint64_t)num_buckets * sizeof(value_type);
+    AllocatedMemoryInfo mem_info = m_memory_allocator->allocate({}, m_pairs_allocated_size);
+    return reinterpret_cast<value_type*>(mem_info.baseAddress());
+  }
+
+  void _freeBuckets()
+  {
+    m_memory_allocator->deallocate({}, { m_pairs, m_pairs_allocated_size });
+    m_pairs = nullptr;
+    m_pairs_allocated_size = 0;
+  }
 };
 
 /*---------------------------------------------------------------------------*/

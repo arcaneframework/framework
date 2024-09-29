@@ -279,6 +279,7 @@ set(ARCANE_SOURCES
   NullThreadMng.h
   HashTableMap.h
   HashTableMap2.h
+  HashTableMap2.cc
   ObjectImpl.h
   ParameterList.h
   ParameterList.cc
