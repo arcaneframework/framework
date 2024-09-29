@@ -50,14 +50,6 @@ EdgeUniqueIdBuilder(DynamicMeshIncrementalBuilder* mesh_builder)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-EdgeUniqueIdBuilder::
-~EdgeUniqueIdBuilder()
-{
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -138,40 +130,6 @@ class T_CellEdgeInfo
   Int64 m_nb_true_boundary_edge;
 };
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
- * //COPIE DEPUIS GhostLayerBuilder.
- * Faire une classe unique.
- */
-void EdgeUniqueIdBuilder::
-_exchangeData(IParallelExchanger* exchanger,BoundaryInfosMap& boundary_infos_to_send)
-{
-  for( BoundaryInfosMapEnumerator i_map(boundary_infos_to_send); ++i_map; ){
-    Int32 sd = i_map.data()->key();
-    exchanger->addSender(sd);
-  }
-  exchanger->initializeCommunicationsMessages();
-  {
-    for( Integer i=0, ns=exchanger->nbSender(); i<ns; ++i ){
-      ISerializeMessage* sm = exchanger->messageToSend(i);
-      Int32 rank = sm->destination().value();
-      ISerializer* s = sm->serializer();
-      Int64ConstArrayView infos  = boundary_infos_to_send[rank];
-      Integer nb_info = infos.size();
-      s->setMode(ISerializer::ModeReserve);
-      s->reserve(DT_Int64,1); // Pour le nombre d'elements
-      s->reserveSpan(DT_Int64,nb_info); // Pour les elements
-      s->allocateBuffer();
-      s->setMode(ISerializer::ModePut);
-      //info() << " SEND1 rank=" << rank << " nb_info=" << nb_info;
-      s->putInt64(nb_info);
-      s->putSpan(infos);
-    }
-  }
-  exchanger->processExchange();
-  debug() << "END EXCHANGE";
-}
 
 template<typename DataType>
 class ItemInfoMultiList
@@ -211,8 +169,74 @@ class ItemInfoMultiList
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+class Parallel3EdgeUniqueIdBuilder
+: public TraceAccessor
+{
+  using BoundaryInfosMap = HashTableMapT<Int32, SharedArray<Int64>>;
+  using BoundaryInfosMapEnumerator = HashTableMapEnumeratorT<Int32, SharedArray<Int64>>;
+
+ public:
+
+  explicit Parallel3EdgeUniqueIdBuilder(ITraceMng* tm, DynamicMeshIncrementalBuilder* mesh_builder)
+  : TraceAccessor(tm)
+  , m_mesh(mesh_builder->mesh())
+  , m_mesh_builder(mesh_builder)
+  {}
+
+ public:
+
+  void compute();
+
+ private:
+
+  DynamicMesh* m_mesh;
+  DynamicMeshIncrementalBuilder* m_mesh_builder;
+
+ private:
+
+  void _exchangeData(IParallelExchanger* exchanger, BoundaryInfosMap& boundary_infos_to_send);
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 /*!
-  \brief Calcul les numéros uniques de chaque edge en parallèle.
+ * //COPIE DEPUIS GhostLayerBuilder.
+ * Faire une classe unique.
+ */
+void Parallel3EdgeUniqueIdBuilder::
+_exchangeData(IParallelExchanger* exchanger, BoundaryInfosMap& boundary_infos_to_send)
+{
+  for (BoundaryInfosMapEnumerator i_map(boundary_infos_to_send); ++i_map;) {
+    Int32 sd = i_map.data()->key();
+    exchanger->addSender(sd);
+  }
+  exchanger->initializeCommunicationsMessages();
+  {
+    for (Integer i = 0, ns = exchanger->nbSender(); i < ns; ++i) {
+      ISerializeMessage* sm = exchanger->messageToSend(i);
+      Int32 rank = sm->destination().value();
+      ISerializer* s = sm->serializer();
+      Int64ConstArrayView infos = boundary_infos_to_send[rank];
+      Integer nb_info = infos.size();
+      s->setMode(ISerializer::ModeReserve);
+      s->reserve(DT_Int64, 1); // Pour le nombre d'elements
+      s->reserveSpan(DT_Int64, nb_info); // Pour les elements
+      s->allocateBuffer();
+      s->setMode(ISerializer::ModePut);
+      //info() << " SEND1 rank=" << rank << " nb_info=" << nb_info;
+      s->putInt64(nb_info);
+      s->putSpan(infos);
+    }
+  }
+  exchanger->processExchange();
+  debug() << "END EXCHANGE";
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+  \brief Calcule les numéros uniques de chaque edge en parallèle.
   
   NEW VERSION.
 
@@ -224,9 +248,9 @@ class ItemInfoMultiList
   suppose qu'une face frontière n'existe que dans une seule partie (un seul rang)
   ce qui n'est pas le cas pour les arêtes. On se retrouve alors avec des sous-domaines
   qui n'ont pas leurs arêtes renumérotées.
-*/  
-void EdgeUniqueIdBuilder::
-_computeEdgesUniqueIdsParallel3()
+*/
+void Parallel3EdgeUniqueIdBuilder::
+compute()
 {
   const bool is_verbose = m_mesh_builder->isVerbose();
   IParallelMng* pm = m_mesh->parallelMng();
@@ -245,7 +269,7 @@ _computeEdgesUniqueIdsParallel3()
 
   // Pour vérification, s'assure que tous les éléments de ce tableau
   // sont valides, ce qui signifie que toutes les edges ont bien été
-  // renumérotés
+  // renumérotés.
   Int64UniqueArray edges_new_uid(nb_local_edge);
   edges_new_uid.fill(NULL_ITEM_ID);
 
@@ -299,7 +323,7 @@ _computeEdgesUniqueIdsParallel3()
   IItemFamily* node_family = m_mesh->nodeFamily();
   UniqueArray<bool> is_boundary_nodes(node_family->maxLocalId(),false);
 
-  // Marque tous les noeuds frontieres car ce sont ceux qu'il faudra envoyer
+  // Marque tous les noeuds frontières, car ce sont ceux qu'il faudra envoyer
   faces_map.eachItem([&](Face face) {
     Integer face_nb_cell = face.nbCell();
     if (face_nb_cell==1){
@@ -334,7 +358,7 @@ _computeEdgesUniqueIdsParallel3()
       v.add(edge_node.uniqueId());
   });
 
-  // Positionne la liste des envoies
+  // Positionne la liste des envois
   Ref<IParallelExchanger> exchanger{ParallelMngUtils::createExchangerRef(pm)};
   _exchangeData(exchanger.get(),boundary_infos_to_send);
 
@@ -648,6 +672,16 @@ _computeEdgesUniqueIdsParallelV2()
     Int64 new_uid = (node0.uniqueId().asInt64() * total_max_uid) + node1.uniqueId().asInt64();
     edge.mutableItemBase().setUniqueId(new_uid);
   });
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void EdgeUniqueIdBuilder::
+_computeEdgesUniqueIdsParallel3()
+{
+  Parallel3EdgeUniqueIdBuilder builder(traceMng(), m_mesh_builder);
+  builder.compute();
 }
 
 /*---------------------------------------------------------------------------*/

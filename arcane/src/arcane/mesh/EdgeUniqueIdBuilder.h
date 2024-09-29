@@ -52,7 +52,6 @@ class EdgeUniqueIdBuilder
 
   //! Construit une instance pour le maillage \a mesh
   explicit EdgeUniqueIdBuilder(DynamicMeshIncrementalBuilder* mesh_builder);
-  ~EdgeUniqueIdBuilder() override;
 
  public:
 
@@ -67,7 +66,6 @@ class EdgeUniqueIdBuilder
   
   void _computeEdgesUniqueIdsSequential();
   void _computeEdgesUniqueIdsParallel3();
-  void _exchangeData(IParallelExchanger* exchanger,BoundaryInfosMap& boundary_infos_to_send);
   void _computeEdgesUniqueIdsParallelV2();
   void _computeEdgesUniqueIdsParallel64bit();
 };
