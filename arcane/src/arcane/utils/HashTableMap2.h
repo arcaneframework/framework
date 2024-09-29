@@ -9,6 +9,9 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+#include "arcane/utils/UtilsTypes.h"
+#include "arccore/collections/IMemoryAllocator.h"
+
 // Version initiale issue du commit bdebddbdce1b473bbc189178fd523ef4a876ea01 (27 aout 2024)
 // emhash8::HashMap for C++14/17
 // version 1.6.5
@@ -73,7 +76,7 @@
 namespace Arcane::impl
 {
 //! Base class for HashTableMap2
-class HashTableMapBase2
+class ARCANE_UTILS_EXPORT HashTableMap2Base
 {
  public:
 
@@ -97,6 +100,11 @@ class HashTableMapBase2
   size_type _ehead = 0;
 #endif
   size_type m_etail = 0;
+  IMemoryAllocator* m_memory_allocator = _defaultAllocator();
+
+ private:
+
+  static IMemoryAllocator* _defaultAllocator();
 };
 
 /*---------------------------------------------------------------------------*/
@@ -110,7 +118,7 @@ template <typename KeyT, typename ValueT,
           typename HashT = std::hash<KeyT>,
           typename EqT = std::equal_to<KeyT>>
 class HashTableMap2
-: public HashTableMapBase2
+: public HashTableMap2Base
 {
   constexpr static double EMH_DEFAULT_LOAD_FACTOR = 0.80f;
   constexpr static double EMH_MIN_LOAD_FACTOR = 0.25f; //< 0.5
