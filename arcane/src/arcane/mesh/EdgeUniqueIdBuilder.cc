@@ -173,16 +173,12 @@ class ItemInfoMultiList
 class Parallel3EdgeUniqueIdBuilder
 : public TraceAccessor
 {
-  using BoundaryInfosMap = HashTableMapT<Int32, SharedArray<Int64>>;
-  using BoundaryInfosMapEnumerator = HashTableMapEnumeratorT<Int32, SharedArray<Int64>>;
+  using BoundaryInfosMap = std::unordered_map<Int32, SharedArray<Int64>>;
 
  public:
 
-  explicit Parallel3EdgeUniqueIdBuilder(ITraceMng* tm, DynamicMeshIncrementalBuilder* mesh_builder)
-  : TraceAccessor(tm)
-  , m_mesh(mesh_builder->mesh())
-  , m_mesh_builder(mesh_builder)
-  {}
+  Parallel3EdgeUniqueIdBuilder(ITraceMng* tm, DynamicMeshIncrementalBuilder* mesh_builder,
+                               Int64 max_node_uid);
 
  public:
 
@@ -190,13 +186,38 @@ class Parallel3EdgeUniqueIdBuilder
 
  private:
 
-  DynamicMesh* m_mesh;
-  DynamicMeshIncrementalBuilder* m_mesh_builder;
+  DynamicMesh* m_mesh = nullptr;
+  DynamicMeshIncrementalBuilder* m_mesh_builder = nullptr;
+  IParallelMng* m_parallel_mng = nullptr;
+  const Int32 m_my_rank = A_NULL_RANK;
+  const Int32 m_nb_rank = A_NULL_RANK;
+  BoundaryInfosMap m_boundary_infos_to_send;
+  NodeUidToSubDomain m_uid_to_subdomain_converter;
+  std::unordered_map<Int64, SharedArray<Int64>> m_nodes_info;
+  UniqueArray<bool> m_is_boundary_nodes;
+  bool m_is_verbose = false;
 
  private:
 
-  void _exchangeData(IParallelExchanger* exchanger, BoundaryInfosMap& boundary_infos_to_send);
+  void _exchangeData(IParallelExchanger* exchanger);
+  void _addEdgeBoundaryInfo(Edge edge);
 };
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Parallel3EdgeUniqueIdBuilder::
+Parallel3EdgeUniqueIdBuilder(ITraceMng* tm, DynamicMeshIncrementalBuilder* mesh_builder, Int64 max_node_uid)
+: TraceAccessor(tm)
+, m_mesh(mesh_builder->mesh())
+, m_mesh_builder(mesh_builder)
+, m_parallel_mng(m_mesh->parallelMng())
+, m_my_rank(m_parallel_mng->commRank())
+, m_nb_rank(m_parallel_mng->commSize())
+, m_uid_to_subdomain_converter(max_node_uid, m_nb_rank)
+, m_is_verbose(m_mesh_builder->isVerbose())
+{
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -205,11 +226,10 @@ class Parallel3EdgeUniqueIdBuilder
  * Faire une classe unique.
  */
 void Parallel3EdgeUniqueIdBuilder::
-_exchangeData(IParallelExchanger* exchanger, BoundaryInfosMap& boundary_infos_to_send)
+_exchangeData(IParallelExchanger* exchanger)
 {
-  for (BoundaryInfosMapEnumerator i_map(boundary_infos_to_send); ++i_map;) {
-    Int32 sd = i_map.data()->key();
-    exchanger->addSender(sd);
+  for (const auto& [key, value] : m_boundary_infos_to_send) {
+    exchanger->addSender(key);
   }
   exchanger->initializeCommunicationsMessages();
   {
@@ -217,10 +237,10 @@ _exchangeData(IParallelExchanger* exchanger, BoundaryInfosMap& boundary_infos_to
       ISerializeMessage* sm = exchanger->messageToSend(i);
       Int32 rank = sm->destination().value();
       ISerializer* s = sm->serializer();
-      Int64ConstArrayView infos = boundary_infos_to_send[rank];
+      ConstArrayView<Int64> infos = m_boundary_infos_to_send[rank];
       Integer nb_info = infos.size();
       s->setMode(ISerializer::ModeReserve);
-      s->reserve(DT_Int64, 1); // Pour le nombre d'elements
+      s->reserve(DT_Int64, 1); // Pour le nombre d'éléments
       s->reserveSpan(DT_Int64, nb_info); // Pour les elements
       s->allocateBuffer();
       s->setMode(ISerializer::ModePut);
@@ -231,6 +251,36 @@ _exchangeData(IParallelExchanger* exchanger, BoundaryInfosMap& boundary_infos_to
   }
   exchanger->processExchange();
   debug() << "END EXCHANGE";
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void Parallel3EdgeUniqueIdBuilder::
+_addEdgeBoundaryInfo(Edge edge)
+{
+  Node first_node = edge.node(0);
+  Int64 first_node_uid = first_node.uniqueId();
+  SharedArray<Int64> v;
+  Int32 dest_rank = -1;
+  if (!m_is_boundary_nodes[first_node.localId()]) {
+    v = m_nodes_info[first_node_uid];
+  }
+  else {
+    dest_rank = m_uid_to_subdomain_converter.uidToRank(first_node_uid);
+    v = m_boundary_infos_to_send[dest_rank];
+  }
+  v.add(first_node_uid); // 0
+  v.add(m_my_rank); // 1
+  v.add(edge.uniqueId()); // 2
+  v.add(edge.type()); // 3
+  v.add(NULL_ITEM_UNIQUE_ID); // 4 : only used for debug
+  v.add(NULL_ITEM_UNIQUE_ID); // 5 : only used for debug
+  if (m_is_verbose)
+    info() << "Edge uid=" << edge.uniqueId() << " n0,n1=" << edge.node(0).uniqueId() << "," << edge.node(1).uniqueId()
+           << " n0=" << ItemPrinter(edge.node(0)) << " n1=" << ItemPrinter(edge.node(1)) << " dest_rank=" << dest_rank;
+  for (Node edge_node : edge.nodes())
+    v.add(edge_node.uniqueId());
 }
 
 /*---------------------------------------------------------------------------*/
@@ -254,113 +304,64 @@ compute()
 {
   const bool is_verbose = m_mesh_builder->isVerbose();
   IParallelMng* pm = m_mesh->parallelMng();
-  Integer my_rank = pm->commRank();
-  Integer nb_rank = pm->commSize();
 
   Integer nb_local_edge = m_mesh_builder->oneMeshItemAdder()->nbEdge();
   info() << "ComputeEdgesUniqueIdsParallel3 nb_edge=" << nb_local_edge;
-  //Integer nb_local_cell = m_mesh_builder->nbCell();
-  //bool is_verbose = m_mesh_builder->isVerbose();
-  
-  Int64UniqueArray edges_opposite_cell_uid(nb_local_edge);
+
+  UniqueArray<Int64> edges_opposite_cell_uid(nb_local_edge);
   edges_opposite_cell_uid.fill(NULL_ITEM_ID);
-  IntegerUniqueArray edges_opposite_cell_index(nb_local_edge);
-  IntegerUniqueArray edges_opposite_cell_owner(nb_local_edge);
+  UniqueArray<Int32> edges_opposite_cell_index(nb_local_edge);
+  UniqueArray<Int32> edges_opposite_cell_owner(nb_local_edge);
 
   // Pour vérification, s'assure que tous les éléments de ce tableau
   // sont valides, ce qui signifie que toutes les edges ont bien été
   // renumérotés.
-  Int64UniqueArray edges_new_uid(nb_local_edge);
-  edges_new_uid.fill(NULL_ITEM_ID);
+  UniqueArray<Int64> edges_new_uid(nb_local_edge);
+  edges_new_uid.fill(NULL_ITEM_UNIQUE_ID);
 
-  //UniqueArray<T_EdgeInfo> edges_local_infos(m_mesh_nb_edge);
-
-  //Integer nb_recv_sub_domain_boundary_edge = 0;
-
-  Int64UniqueArray edges_infos;
+  UniqueArray<Int64> edges_infos;
   edges_infos.reserve(10000);
-  //ItemInternalMap& cells_map = m_mesh->cellsMap();
   ItemInternalMap& edges_map = m_mesh->edgesMap();
   ItemInternalMap& faces_map = m_mesh->facesMap(); // utilisé pour détecter le bord
-  ItemInternalMap& nodes_map = m_mesh->nodesMap();
 
-  // NOTE: ce tableau n'est pas utile sur toutes les mailles. Il
-  // suffit qu'il contienne les mailles dont on a besoin, c'est à dire
-  // les notres + celles connectées à une de nos edges.
+  // NOTE : ce tableau n'est pas utile sur toutes les mailles. Il
+  // suffit qu'il contienne les mailles dont on a besoin, c'est-à-dire
+  // les nôtres + celles connectées à une de nos edges.
   HashTableMapT<Int32,Int32> cell_first_edge_uid(m_mesh_builder->oneMeshItemAdder()->nbCell()*2,true);
-  //OLD Int64UniqueArray cell_first_edge_uid(global_max_cell_uid+1);
-  //OLD cell_first_edge_uid.fill(0);
 
   // Rassemble les données des autres processeurs dans recv_cells;
   // Pour éviter que les tableaux ne soient trop gros, on procède en plusieurs
   // étapes.
-  // Chaque sous-domaine construit sa liste de edges frontières, avec pour
-  // chaque edge:
-  // - son type
-  // - la liste de ses noeuds,
-  // - le numéro unique de sa maille
-  // - le propriétaire de sa maille
-  // - son indice dans sa maille
+  // Chaque sous-domaine construit sa liste des arêtes frontières, avec pour
+  // chaque arête :
+  //  - son type,
+  //  - la liste de ses noeuds,
+  //  - le numéro unique de sa maille,
+  //  - le propriétaire de sa maille,
+  //  - son indice dans sa maille,
   // Cette liste sera ensuite envoyée à tous les sous-domaines.
   ItemTypeMng* itm = m_mesh->itemTypeMng();
 
-  // Détermine le unique id max des noeuds
-  Int64 my_max_node_uid = NULL_ITEM_UNIQUE_ID;
-  nodes_map.eachItem([&](Item item) {
-    Int64 node_uid = item.uniqueId();
-    if (node_uid>my_max_node_uid)
-      my_max_node_uid = node_uid;
-  });
-  Int64 global_max_node_uid = pm->reduce(Parallel::ReduceMax,my_max_node_uid);
-  debug() << "NODE_UID_INFO: MY_MAX_UID=" << my_max_node_uid
-         << " GLOBAL=" << global_max_node_uid;
- 
-  //TODO: choisir bonne valeur pour initialiser la table
-  BoundaryInfosMap boundary_infos_to_send(nb_rank,true);
-  NodeUidToSubDomain uid_to_subdomain_converter(global_max_node_uid,nb_rank);
-
-  HashTableMapT<Int64,SharedArray<Int64> > nodes_info(100000,true);
   IItemFamily* node_family = m_mesh->nodeFamily();
-  UniqueArray<bool> is_boundary_nodes(node_family->maxLocalId(),false);
+  m_is_boundary_nodes.resize(node_family->maxLocalId(), false);
 
   // Marque tous les noeuds frontières, car ce sont ceux qu'il faudra envoyer
   faces_map.eachItem([&](Face face) {
     Integer face_nb_cell = face.nbCell();
     if (face_nb_cell==1){
       for( Int32 ilid : face.nodeIds() )
-        is_boundary_nodes[ilid] = true;
+        m_is_boundary_nodes[ilid] = true;
     }
   });
 
-  // Détermine la liste des edges frontières
+  // Détermine la liste des arêtes frontières
   edges_map.eachItem([&](Edge edge) {
-    Node first_node = edge.node(0);
-    Int64 first_node_uid = first_node.uniqueId();
-    SharedArray<Int64> v;
-    Int32 dest_rank = -1;
-    if (!is_boundary_nodes[first_node.localId()]){
-      v = nodes_info.lookupAdd(first_node_uid)->value();
-    }
-    else{
-      dest_rank = uid_to_subdomain_converter.uidToRank(first_node_uid);
-      v = boundary_infos_to_send.lookupAdd(dest_rank)->value();
-    }
-    v.add(first_node_uid);      // 0
-    v.add(my_rank);             // 1 
-    v.add(edge.uniqueId());    // 2
-    v.add(edge.type());      // 3
-    v.add(NULL_ITEM_UNIQUE_ID); // 4 : only used for debug
-    v.add(NULL_ITEM_UNIQUE_ID); // 5 : only used for debug
-    if (is_verbose)
-      info() << "Edge uid=" << edge.uniqueId() << " n0,n1=" << edge.node(0).uniqueId() << "," << edge.node(1).uniqueId()
-             << " n0=" << ItemPrinter(edge.node(0)) << " n1=" << ItemPrinter(edge.node(1)) << " dest_rank=" << dest_rank;
-    for( Node edge_node : edge.nodes() )
-      v.add(edge_node.uniqueId());
+    _addEdgeBoundaryInfo(edge);
   });
 
   // Positionne la liste des envois
   Ref<IParallelExchanger> exchanger{ParallelMngUtils::createExchangerRef(pm)};
-  _exchangeData(exchanger.get(),boundary_infos_to_send);
+  _exchangeData(exchanger.get());
 
   {
     Integer nb_receiver = exchanger->nbReceiver();
@@ -387,7 +388,7 @@ compute()
         // received_infos[z+5];
         ItemTypeInfo* itt = itm->typeFromId(edge_type);
         Integer edge_nb_node = itt->nbLocalNode();
-        Int64Array& a = nodes_info.lookupAdd(node_uid)->value();
+        Int64Array& a = m_nodes_info[node_uid];
         a.addRange(Int64ConstArrayView(6+edge_nb_node,&received_infos[z]));
         z += 6;
         z += edge_nb_node;
@@ -399,9 +400,9 @@ compute()
       }
     }
     Integer my_max_edge_node = 0;
-    for( HashTableMapT<Int64,SharedArray<Int64> >::Enumerator inode(nodes_info); ++inode; ){
+    for (const auto& [key, value] : m_nodes_info) {
       //Int64 key = inode.data()->key();
-      Int64ConstArrayView a = *inode;
+      Int64ConstArrayView a = value;
       //info() << "A key=" << key << " size=" << a.size();
       Integer nb_info = a.size();
       Integer z = 0;
@@ -429,12 +430,10 @@ compute()
     debug() << "GLOBAL MAX EDGE NODE=" << global_max_edge_node;
     // OK, maintenant donne comme uid de la edge (node_uid * global_max_edge_node + index)
     IntegerUniqueArray indexes;
-    boundary_infos_to_send = BoundaryInfosMap(nb_rank,true);
+    m_boundary_infos_to_send.clear();
 
-    for( HashTableMapT<Int64,SharedArray<Int64> >::Enumerator inode(nodes_info); ++inode; ){
-      //Int64 key = inode.data()->key();
-      Int64ConstArrayView a = *inode;
-      //info() << "A key=" << key << " size=" << a.size();
+    for (const auto& [key, value] : m_nodes_info) {
+      Int64ConstArrayView a = value;
       Integer nb_info = a.size();
       Integer z = 0;
       Integer node_nb_edge = 0;
@@ -459,17 +458,18 @@ compute()
           }
         }
         Int64 edge_new_uid = (node_uid * global_max_edge_node) + edge_index;
-        Int64Array& v = boundary_infos_to_send.lookupAdd(sender_rank)->value();
-        // Indique au propriétaire de cette edge son nouvel uid
+        Int64Array& v = m_boundary_infos_to_send[sender_rank];
+        // Indique au propriétaire de cette arête son nouvel uid
         v.add(edge_uid);
         v.add(edge_new_uid);
         v.add(edge_new_owner);
         indexes.add(z);
         z += 6;
         z += edge_nb_node;
-        /*info() << "NODE3 UID=" << node_uid << " sender=" << sender_rank
-          << " edge_uid=" << edge_uid
-          << " edge_index=" << edge_index;*/
+        /* info() << "NODE3 UID=" << node_uid << " sender=" << sender_rank
+               << " edge_uid=" << edge_uid
+               << " edge_index=" << edge_index
+               << " edge_new_uid=" << edge_new_uid; */
         ++node_nb_edge;
       }
       my_max_edge_node = math::max(node_nb_edge,my_max_edge_node);
@@ -477,7 +477,7 @@ compute()
   }
   exchanger = ParallelMngUtils::createExchangerRef(pm);
 
-  _exchangeData(exchanger.get(),boundary_infos_to_send);
+  _exchangeData(exchanger.get());
   {
     Integer nb_receiver = exchanger->nbReceiver();
     debug() << "NB RECEIVER=" << nb_receiver;
@@ -504,7 +504,7 @@ compute()
         if (iedge.null())
           ARCANE_FATAL("Can not find own edge uid={0}",old_uid);
         iedge.setUniqueId(new_uid);
-        iedge.setOwner(new_owner, my_rank);
+        iedge.setOwner(new_owner, m_my_rank);
         Edge edge{iedge};
         if (is_verbose)
           info() << "SetEdgeOwner uid=" << new_uid << " owner=" << new_owner
@@ -680,7 +680,21 @@ _computeEdgesUniqueIdsParallelV2()
 void EdgeUniqueIdBuilder::
 _computeEdgesUniqueIdsParallel3()
 {
-  Parallel3EdgeUniqueIdBuilder builder(traceMng(), m_mesh_builder);
+  IParallelMng* pm = m_mesh->parallelMng();
+  ItemInternalMap& nodes_map = m_mesh->nodesMap();
+
+  // Détermine le maximum des uniqueId() des noeuds
+  Int64 my_max_node_uid = NULL_ITEM_UNIQUE_ID;
+  nodes_map.eachItem([&](Item item) {
+    Int64 node_uid = item.uniqueId();
+    if (node_uid > my_max_node_uid)
+      my_max_node_uid = node_uid;
+  });
+  Int64 global_max_node_uid = pm->reduce(Parallel::ReduceMax, my_max_node_uid);
+  debug() << "NODE_UID_INFO: MY_MAX_UID=" << my_max_node_uid
+          << " GLOBAL=" << global_max_node_uid;
+
+  Parallel3EdgeUniqueIdBuilder builder(traceMng(), m_mesh_builder, global_max_node_uid);
   builder.compute();
 }
 
