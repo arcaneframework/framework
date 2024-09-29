@@ -34,7 +34,7 @@
  <arcane-post-processing>
    <output-period>5</output-period>
    <format name="VtkHdfV2PostProcessor">
-     <max-write-size>15000</max-write-size>
+     <max-write-size>15</max-write-size>
    </format>
    <output>
     <variable>CellMass</variable>
