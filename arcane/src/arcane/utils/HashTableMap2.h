@@ -105,14 +105,22 @@ class ARCANE_UTILS_EXPORT HashTableMap2Base
 
  private:
 
-  Int64 m_index_allocated_size = 0;
+  AllocatedMemoryInfo m_index_allocated_info;
 
  protected:
 
-  Index* _allocIndex(size_type num_buckets)
+  void _allocIndex(size_type num_buckets)
   {
-    m_index_allocated_size = (uint64_t)(EAD + num_buckets) * sizeof(Index);
-    return reinterpret_cast<Index*>(malloc(m_index_allocated_size));
+    Int64 size = (uint64_t)(EAD + num_buckets) * sizeof(Index);
+    void* ptr = malloc(size);
+    m_index_allocated_info = AllocatedMemoryInfo(ptr, size);
+    m_index = reinterpret_cast<Index*>(ptr);
+  }
+  void _freeIndex()
+  {
+    free(m_index);
+    m_index = nullptr;
+    m_index_allocated_info = {};
   }
 
   void _doSwap(HashTableMap2Base& rhs)
@@ -124,7 +132,7 @@ class ARCANE_UTILS_EXPORT HashTableMap2Base
     std::swap(m_mlf, rhs.m_mlf);
     std::swap(m_last, rhs.m_last);
     std::swap(m_etail, rhs.m_etail);
-    std::swap(m_index_allocated_size, rhs.m_index_allocated_size);
+    std::swap(m_index_allocated_info, rhs.m_index_allocated_info);
   }
 
   void _doClone(const HashTableMap2Base& rhs)
@@ -135,7 +143,7 @@ class ARCANE_UTILS_EXPORT HashTableMap2Base
     m_last = rhs.m_last;
     m_mask = rhs.m_mask;
     m_etail = rhs.m_etail;
-    m_index_allocated_size = rhs.m_index_allocated_size;
+    m_index_allocated_info = rhs.m_index_allocated_info;
   };
 
  private:
@@ -356,8 +364,7 @@ class HashTableMap2
 
     if (rhs.load_factor() < EMH_MIN_LOAD_FACTOR) {
       clear();
-      free(m_pairs);
-      m_pairs = nullptr;
+      _freeBuckets();
       rehash(rhs.m_num_filled + 2);
       for (auto it = rhs.begin(); it != rhs.end(); ++it)
         insert_unique(it->first, it->second);
@@ -367,9 +374,9 @@ class HashTableMap2
     clearkv();
 
     if (m_num_buckets != rhs.m_num_buckets) {
-      free(m_pairs);
-      free(m_index);
-      m_index = _allocIndex(rhs.m_num_buckets);
+      _freeIndex();
+      _freeBuckets();
+      _allocIndex(rhs.m_num_buckets);
       m_pairs = _allocBucket((size_type)(rhs.m_num_buckets * rhs.max_load_factor()) + 4);
     }
 
@@ -409,10 +416,8 @@ class HashTableMap2
   ~HashTableMap2() noexcept
   {
     clearkv();
-    free(m_pairs);
-    free(m_index);
-    m_index = nullptr;
-    m_pairs = nullptr;
+    _freeBuckets();
+    _freeIndex();
   }
 
   void clone(const HashTableMap2& rhs)
@@ -938,7 +943,7 @@ class HashTableMap2
 
   void rebuild(size_type num_buckets) noexcept
   {
-    free(m_index);
+    _freeIndex();
     auto new_pairs = _allocBucket((size_type)(num_buckets * max_load_factor()) + 4);
     if (is_copy_trivially()) {
       if (m_pairs)
@@ -951,9 +956,9 @@ class HashTableMap2
           m_pairs[slot].~value_type();
       }
     }
-    free(m_pairs);
+    _freeBuckets();
     m_pairs = new_pairs;
-    m_index = _allocIndex(num_buckets);
+    _allocIndex(num_buckets);
 
     memset((char*)m_index, INACTIVE, sizeof(m_index[0]) * num_buckets);
     memset((char*)(m_index + num_buckets), 0, sizeof(m_index[0]) * EAD);
@@ -1466,6 +1471,13 @@ class HashTableMap2
   {
     m_pairs_allocated_size = (uint64_t)num_buckets * sizeof(value_type);
     return reinterpret_cast<value_type*>(malloc(m_pairs_allocated_size));
+  }
+
+  void _freeBuckets()
+  {
+    free(m_pairs);
+    m_pairs = nullptr;
+    m_pairs_allocated_size = 0;
   }
 };
 
