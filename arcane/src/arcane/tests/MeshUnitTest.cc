@@ -361,24 +361,25 @@ _dumpMesh()
   IParallelMng* pm = subDomain()->parallelMng();
   bool is_parallel = pm->isParallel();
   Integer sid = pm->commRank();
+  Directory base_path(subDomain()->exportDirectory());
   StringBuilder sorted_file_name(options()->outputFile());
   sorted_file_name += "-sorted";
   if (is_parallel){
     sorted_file_name += "-";
     sorted_file_name += sid;
   }
-  mesh_utils::writeMeshInfosSorted(mesh(),sorted_file_name);
+  mesh_utils::writeMeshInfosSorted(mesh(), base_path.file(sorted_file_name));
   StringBuilder file_name_b(options()->outputFile());
   if (is_parallel){
     file_name_b += "-";
     file_name_b += sid;
   }
   String file_name(file_name_b.toString());
-  mesh_utils::writeMeshInfos(mesh(),file_name);
-  mesh_utils::writeMeshConnectivity(mesh(),file_name+".xml");
+  mesh_utils::writeMeshInfos(mesh(), base_path.file(file_name));
+  mesh_utils::writeMeshConnectivity(mesh(), base_path.file(file_name + ".xml"));
   if (mesh_io.get()){
     file_name = file_name + ".unf";
-    mesh_io->writeMeshToFile(mesh(),file_name);
+    mesh_io->writeMeshToFile(mesh(), base_path.file(file_name));
   }
   IItemFamily* cell_family = mesh()->cellFamily();
   info() << "Local connectivity infos:";
@@ -391,7 +392,7 @@ _dumpMesh()
                          mesh()->faceFamily()->globalConnectivityInfos(),
                          mesh()->nodeFamily()->globalConnectivityInfos());
 
-  mesh_utils::dumpSynchronizerTopologyJSON(cell_family->allItemsSynchronizer(),"sync_topology.json");
+  MeshUtils::dumpSynchronizerTopologyJSON(cell_family->allItemsSynchronizer(), base_path.file("sync_topology.json"));
 }
 
 /*---------------------------------------------------------------------------*/
