@@ -52,34 +52,6 @@ AcceleratorMeshMaterialSynchronizerImpl(IMeshMaterialMng* material_mng)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-AcceleratorMeshMaterialSynchronizerImpl::
-~AcceleratorMeshMaterialSynchronizerImpl()
-{
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-inline void AcceleratorMeshMaterialSynchronizerImpl::
-_setBit(Arcane::DataViewGetterSetter<unsigned char> bytes, Integer position)
-{
-  Integer bit = position % 8;
-  unsigned char temp = bytes;
-  temp |= (Byte)(1 << bit);
-  bytes = temp;
-}
-
-inline bool AcceleratorMeshMaterialSynchronizerImpl::
-_hasBit(Arcane::DataViewGetterSetter<unsigned char> bytes, Integer position)
-{
-  Integer bit = position % 8;
-  unsigned char temp = bytes;
-  return temp & (1 << bit);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
