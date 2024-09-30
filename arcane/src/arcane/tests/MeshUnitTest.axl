@@ -94,6 +94,28 @@ Vrai si on ecrit les informations de maillage dans un un fichier (dont le nom es
   </simple>
 
   <simple
+    name = "connectivity-file-checksum"
+    type = "string"
+    optional = "true"
+  >
+   <description>
+     Checksum au format SHA3-256 du fichier de connectivité trié pour les cas séquentiels
+   </description>
+  </simple>
+
+  <simple
+    name = "connectivity-file-checksum-parallel"
+    type = "string"
+    minOccurs = "0"
+    maxOccurs = "unbounded"
+    >
+   <description>
+     Checksum au format SHA3-256 du fichier de connectivité trié pour les cas parallèles.
+     La i-ème instance correspond à la checksum du rang i.
+   </description>
+  </simple>
+
+  <simple
    name = "additional-mesh"
    type = "string"
    minOccurs = "0"
