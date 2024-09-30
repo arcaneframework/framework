@@ -56,7 +56,6 @@ class AcceleratorMeshMaterialSynchronizerImpl
  public:
 
   explicit AcceleratorMeshMaterialSynchronizerImpl(IMeshMaterialMng* material_mng);
-  ~AcceleratorMeshMaterialSynchronizerImpl();
 
  public:
 
@@ -76,8 +75,19 @@ class AcceleratorMeshMaterialSynchronizerImpl
 
  public:
 
-  ARCCORE_HOST_DEVICE inline static void _setBit(Arcane::DataViewGetterSetter<unsigned char> bytes, Integer position);
-  ARCCORE_HOST_DEVICE inline static bool _hasBit(Arcane::DataViewGetterSetter<unsigned char> bytes, Integer position);
+  ARCCORE_HOST_DEVICE static void _setBit(Arcane::DataViewGetterSetter<unsigned char> bytes, Integer position)
+  {
+    Integer bit = position % 8;
+    unsigned char temp = bytes;
+    temp |= (Byte)(1 << bit);
+    bytes = temp;
+  }
+  ARCCORE_HOST_DEVICE static bool _hasBit(Arcane::DataViewGetterSetter<unsigned char> bytes, Integer position)
+  {
+    Integer bit = position % 8;
+    unsigned char temp = bytes;
+    return temp & (1 << bit);
+  }
 
  private:
 
