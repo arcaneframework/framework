@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* VtkMeshIOService.cc                                         (C) 2000-2023 */
+/* VtkMeshIOService.cc                                         (C) 2000-2024 */
 /*                                                                           */
 /* Lecture/Ecriture d'un maillage au format Vtk historique (legacy).         */
 /*---------------------------------------------------------------------------*/
@@ -22,29 +22,31 @@
 #include "arcane/utils/StdHeader.h"
 #include "arcane/utils/String.h"
 #include "arcane/utils/ValueConvert.h"
-
 #include "arcane/utils/Real3.h"
 
-#include "arcane/BasicService.h"
-#include "arcane/FactoryService.h"
-#include "arcane/ICaseMeshReader.h"
-#include "arcane/IItemFamily.h"
-#include "arcane/IPrimaryMesh.h"
-#include "arcane/IMeshBuilder.h"
-#include "arcane/IMeshReader.h"
-#include "arcane/IMeshUtilities.h"
-#include "arcane/IMeshWriter.h"
-#include "arcane/IParallelMng.h"
-#include "arcane/IVariableAccessor.h"
-#include "arcane/IXmlDocumentHolder.h"
-#include "arcane/Item.h"
-#include "arcane/ItemEnumerator.h"
-#include "arcane/VariableTypes.h"
-#include "arcane/XmlNode.h"
-#include "arcane/XmlNodeList.h"
+#include "arcane/core/BasicService.h"
+#include "arcane/core/FactoryService.h"
+#include "arcane/core/ICaseMeshReader.h"
+#include "arcane/core/IItemFamily.h"
+#include "arcane/core/IPrimaryMesh.h"
+#include "arcane/core/IMeshBuilder.h"
+#include "arcane/core/IMeshReader.h"
+#include "arcane/core/IMeshUtilities.h"
+#include "arcane/core/IMeshWriter.h"
+#include "arcane/core/IParallelMng.h"
+#include "arcane/core/IVariableAccessor.h"
+#include "arcane/core/IXmlDocumentHolder.h"
+#include "arcane/core/Item.h"
+#include "arcane/core/ItemEnumerator.h"
+#include "arcane/core/IVariableMng.h"
+#include "arcane/core/VariableTypes.h"
+#include "arcane/core/XmlNode.h"
+#include "arcane/core/XmlNodeList.h"
+#include "arcane/core/UnstructuredMeshAllocateBuildInfo.h"
+
+#include "arcane/core/internal/IVariableMngInternal.h"
 
 #include "arcane/std/internal/VtkCellTypes.h"
-#include "arcane/core/UnstructuredMeshAllocateBuildInfo.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -105,7 +107,6 @@ class VtkMeshIOService
   explicit VtkMeshIOService(ITraceMng* tm)
   : TraceAccessor(tm)
   {}
-  ~VtkMeshIOService();
 
  public:
 
@@ -158,11 +159,6 @@ class VtkMeshIOService
   void _readFacesMesh(IMesh* mesh, const String& file_name,
                       const String& dir_name, bool use_internal_partition);
   bool _readMetadata(IMesh* mesh, VtkFile& vtk_file);
-
- private:
-
-  //! Table des variables crées localement par lecture du maillage
-  UniqueArray<VariableCellReal*> m_variables;
 
  private:
 };
@@ -575,21 +571,6 @@ isEqualString(const String& current_value, const String& expected_value)
   String current_value_low = current_value.lower();
   String expected_value_low = expected_value.lower();
   return (current_value_low == expected_value_low);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-VtkMeshIOService::
-~VtkMeshIOService()
-{
-  const Integer size = m_variables.size();
-  for (Integer i = 0; i < size; ++i) {
-    delete m_variables[i];
-  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1474,6 +1455,8 @@ _readData(IMesh* mesh, VtkFile& vtk_file, bool use_internal_partition,
   // groupe
 
   IParallelMng* pm = mesh->parallelMng();
+  IVariableMng* variable_mng = mesh->variableMng();
+
   Int32 sid = pm->commRank();
 
   // Si pas de données, retourne immédiatement.
@@ -1698,7 +1681,7 @@ _readData(IMesh* mesh, VtkFile& vtk_file, bool use_internal_partition,
           String name = xnode.attrValue("name");
           info() << "Building variable: " << name;
           VariableCellReal* var = new VariableCellReal(VariableBuildInfo(mesh, name));
-          m_variables.add(var);
+          variable_mng->_internalApi()->addAutoDestroyVariable(var);
         }
       }
 
@@ -1764,7 +1747,7 @@ _readCellVariable(IMesh* mesh, VtkFile& vtk_file, const String& var_name, Intege
   //TODO Faire la conversion uniqueId() vers localId() correcte
   info() << "Reading values for variable: " << var_name << " n=" << nb_cell;
   auto* var = new VariableCellReal(VariableBuildInfo(mesh, var_name));
-  m_variables.add(var);
+  mesh->variableMng()->_internalApi()->addAutoDestroyVariable(var);
   RealArrayView values(var->asArray());
   for (Integer i = 0; i < nb_cell; ++i) {
     Real v = vtk_file.getDouble();
