@@ -925,7 +925,25 @@ writeMeshConnectivity(IMesh* mesh, const String& file_name)
       _writeSubItems(ofile, "nodes", cell.nodes());
       _writeSubItems(ofile, "edges", cell.edges());
       _writeSubItems(ofile, "faces", cell.faces());
-
+      if (mesh->isAmrActivated()) {
+        ofile << "<amr level='" << cell.level() << "'>";
+        // {
+        //   ofile << "<parent count='" << item.nbHParent() << "'>";
+        //   trace->info() << "Truc : " << item.nbHParent();
+        //   for (Integer j = 0; j < item.nbHParent(); ++j) {
+        //     ofile << ' ' << item.parent(j).uniqueId();
+        //   }
+        //   ofile << "</parent>";
+        // }
+        {
+          ofile << "<child count='" << cell.nbHChildren() << "'>";
+          for (Integer j = 0; j < cell.nbHChildren(); ++j) {
+            ofile << ' ' << cell.hChild(j)->uniqueId();
+          }
+          ofile << "</child>";
+        }
+        ofile << "</amr>";
+      }
       {
         ghost_cells_layer1.clear();
         for (Node node : cell.nodes()) {

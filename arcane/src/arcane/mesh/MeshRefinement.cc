@@ -33,6 +33,7 @@
 #include "arcane/core/SharedVariable.h"
 #include "arcane/core/ItemRefinementPattern.h"
 #include "arcane/core/Properties.h"
+#include "arcane/core/IGhostLayerMng.h"
 
 #include "arcane/mesh/DynamicMesh.h"
 #include "arcane/mesh/ItemRefinement.h"
@@ -43,7 +44,7 @@
 
 #include "arcane/mesh/NodeFamily.h"
 #include "arcane/mesh/EdgeFamily.h"
-#include "arcane/ItemVector.h"
+#include "arcane/core/ItemVector.h"
 
 #include <vector>
 
@@ -579,6 +580,67 @@ coarsenItems(const bool maintain_level_one)
   }
 
   return mesh_changed;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+bool MeshRefinement::
+coarsenItemsV2()
+{
+  // Nettoyage des flags de raffinement de l'étape précédente
+  this->_cleanRefinementFlags();
+
+  UniqueArray<Int32> to_coarse;
+
+  ENUMERATE_ (Cell, icell, m_mesh->allCells()) {
+    Cell cell = *icell;
+    if (cell.mutableItemBase().flags() & ItemFlags::II_Coarsen) {
+      if (cell.level() == 0) {
+        ARCANE_FATAL("Cannot coarse level-0 cell");
+      }
+      cell.hParent().mutableItemBase().addFlags(ItemFlags::II_JustCoarsened);
+      to_coarse.add(cell.localId());
+
+      if ((cell.hParent().mutableItemBase().flags() & ItemFlags::II_Coarsen) || (cell.mutableItemBase().flags() & ItemFlags::II_JustCoarsened)) {
+        ARCANE_FATAL("Cannot coarse parent and child in same time");
+      }
+    }
+  }
+
+  UniqueArray<Int64> needed_cell;
+  bool has_ghost_layer = m_mesh->ghostLayerMng()->nbGhostLayer() != 0;
+
+  ENUMERATE_ (Cell, icell, m_mesh->ownCells()) {
+    Cell cell = *icell;
+    if (cell.mutableItemBase().flags() & ItemFlags::II_Coarsen) {
+
+      for (Face face : cell.faces()) {
+        Cell other_cell = face.frontCell() == cell ? face.backCell() : face.frontCell();
+        if (!other_cell.null() && other_cell.level() != cell.level()) {
+          //warning() << "Bad connectivity";
+          continue;
+        }
+        if (other_cell.null() && !has_ghost_layer) {
+          needed_cell.add(face.uniqueId());
+        }
+        else if (other_cell.nbHChildren() != 0) {
+          ARCANE_FATAL("Once level diff between two cells needed");
+        }
+      }
+    }
+  }
+  if (!has_ghost_layer) {
+    // TODO
+    ARCANE_NOT_YET_IMPLEMENTED("Support des maillages sans mailles fantômes à faire");
+  }
+
+  // debug() << "Removed cells: " << to_coarse;
+
+  m_mesh->removeCells(to_coarse);
+  m_mesh->endUpdate();
+
+  return true;
 }
 
 /*---------------------------------------------------------------------------*/

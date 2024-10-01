@@ -161,7 +161,9 @@ public:
    * L'argument \p maintain_level_one est deprecated; utilisez plutôt l'option
    * face_level_mismatch_limit() .
    */
-  bool coarsenItems(const bool maintain_level_one=true);
+  bool coarsenItems(const bool maintain_level_one = true);
+
+  bool coarsenItemsV2();
 
   /*!
    * raffine seulement les items demandés par l'utilisateur.
