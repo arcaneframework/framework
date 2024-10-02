@@ -63,13 +63,13 @@ computeEdgesUniqueIds()
   info() << "Using version=" << edge_version << " to compute edges unique ids"
          << " mesh=" << m_mesh->name();
 
-  if (edge_version==1)
+  if (edge_version == 1)
     _computeEdgesUniqueIdsParallel3();
-  else if (edge_version==2)
+  else if (edge_version == 2)
     _computeEdgesUniqueIdsParallelV2();
-  else if (edge_version==3)
+  else if (edge_version == 3)
     _computeEdgesUniqueIdsParallel64bit();
-  else if (edge_version==0)
+  else if (edge_version == 0)
     info() << "No renumbering for edges";
   else
     ARCANE_FATAL("Invalid valid version '{0}'. Valid values are 0, 1, 2 or 3");
@@ -84,7 +84,7 @@ computeEdgesUniqueIds()
   // edges ont été modifiés
   edges_map.notifyUniqueIdsChanged();
 
-  if (m_mesh_builder->isVerbose()){
+  if (m_mesh_builder->isVerbose()) {
     info() << "NEW EDGES_MAP after re-indexing";
     edges_map.eachItem([&](Item edge) {
       info() << "Edge uid=" << edge.uniqueId() << " lid=" << edge.localId();
@@ -106,22 +106,26 @@ class T_CellEdgeInfo
 {
  public:
 
-  T_CellEdgeInfo(Int64 uid,Integer nb_back_edge,Integer nb_true_boundary_edge)
-  : m_unique_id(uid), m_nb_back_edge(nb_back_edge), m_nb_true_boundary_edge(nb_true_boundary_edge)
+  T_CellEdgeInfo(Int64 uid, Integer nb_back_edge, Integer nb_true_boundary_edge)
+  : m_unique_id(uid)
+  , m_nb_back_edge(nb_back_edge)
+  , m_nb_true_boundary_edge(nb_true_boundary_edge)
   {
   }
 
   T_CellEdgeInfo()
-  : m_unique_id(NULL_ITEM_ID), m_nb_back_edge(0), m_nb_true_boundary_edge(0)
+  : m_unique_id(NULL_ITEM_ID)
+  , m_nb_back_edge(0)
+  , m_nb_true_boundary_edge(0)
   {
   }
 
  public:
 
   bool operator<(const T_CellEdgeInfo& ci) const
-    {
-      return m_unique_id<ci.m_unique_id;
-    }
+  {
+    return m_unique_id < ci.m_unique_id;
+  }
 
  public:
 
@@ -130,8 +134,7 @@ class T_CellEdgeInfo
   Int64 m_nb_true_boundary_edge;
 };
 
-
-template<typename DataType>
+template <typename DataType>
 class ItemInfoMultiList
 {
  public:
@@ -140,31 +143,41 @@ class ItemInfoMultiList
   class MyInfo
   {
    public:
-    MyInfo(const DataType& d,Integer n) : data(d), next_index(n) {}
+
+    MyInfo(const DataType& d, Integer n)
+    : data(d)
+    , next_index(n)
+    {}
+
    public:
+
     DataType data;
     Integer next_index;
   };
 
  public:
-  ItemInfoMultiList() : m_last_index(5000,true) {}
+
+  ItemInfoMultiList()
+  : m_last_index(5000, true)
+  {}
 
  public:
 
-  void add(Int64 node_uid,const DataType& data)
+  void add(Int64 node_uid, const DataType& data)
   {
     Integer current_index = m_values.size();
 
     bool is_add = false;
-    HashTableMapT<Int64,Int32>::Data* d = m_last_index.lookupAdd(node_uid,-1,is_add);
+    HashTableMapT<Int64, Int32>::Data* d = m_last_index.lookupAdd(node_uid, -1, is_add);
 
-    m_values.add(MyInfo(data,d->value()));
+    m_values.add(MyInfo(data, d->value()));
     d->value() = current_index;
   }
 
  public:
+
   UniqueArray<MyInfo> m_values;
-  HashTableMapT<Int64,Int32> m_last_index;
+  HashTableMapT<Int64, Int32> m_last_index;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -201,6 +214,8 @@ class Parallel3EdgeUniqueIdBuilder
 
   void _exchangeData(IParallelExchanger* exchanger);
   void _addEdgeBoundaryInfo(Edge edge);
+  void _computeEdgesUniqueId();
+  void _sendInfosToOtherRanks();
 };
 
 /*---------------------------------------------------------------------------*/
@@ -302,7 +317,6 @@ _addEdgeBoundaryInfo(Edge edge)
 void Parallel3EdgeUniqueIdBuilder::
 compute()
 {
-  const bool is_verbose = m_mesh_builder->isVerbose();
   IParallelMng* pm = m_mesh->parallelMng();
 
   Integer nb_local_edge = m_mesh_builder->oneMeshItemAdder()->nbEdge();
@@ -327,7 +341,7 @@ compute()
   // NOTE : ce tableau n'est pas utile sur toutes les mailles. Il
   // suffit qu'il contienne les mailles dont on a besoin, c'est-à-dire
   // les nôtres + celles connectées à une de nos edges.
-  HashTableMapT<Int32,Int32> cell_first_edge_uid(m_mesh_builder->oneMeshItemAdder()->nbCell()*2,true);
+  HashTableMapT<Int32, Int32> cell_first_edge_uid(m_mesh_builder->oneMeshItemAdder()->nbCell() * 2, true);
 
   // Rassemble les données des autres processeurs dans recv_cells;
   // Pour éviter que les tableaux ne soient trop gros, on procède en plusieurs
@@ -340,7 +354,6 @@ compute()
   //  - le propriétaire de sa maille,
   //  - son indice dans sa maille,
   // Cette liste sera ensuite envoyée à tous les sous-domaines.
-  ItemTypeMng* itm = m_mesh->itemTypeMng();
 
   IItemFamily* node_family = m_mesh->nodeFamily();
   m_is_boundary_nodes.resize(node_family->maxLocalId(), false);
@@ -350,8 +363,8 @@ compute()
   // maille connectée.
   faces_map.eachItem([&](Face face) {
     Integer face_nb_cell = face.nbCell();
-    if (face_nb_cell==1){
-      for( Int32 ilid : face.nodeIds() )
+    if (face_nb_cell == 1) {
+      for (Int32 ilid : face.nodeIds())
         m_is_boundary_nodes[ilid] = true;
     }
   });
@@ -382,164 +395,184 @@ compute()
     });
   }
 
-  // Positionne la liste des envois
-  Ref<IParallelExchanger> exchanger{ParallelMngUtils::createExchangerRef(pm)};
-  _exchangeData(exchanger.get());
-
-  {
-    Integer nb_receiver = exchanger->nbReceiver();
-    debug() << "NB RECEIVER=" << nb_receiver;
-    SharedArray<Int64> received_infos;
-    for( Integer i=0; i<nb_receiver; ++i ){
-      ISerializeMessage* sm = exchanger->messageToReceive(i);
-      //Int32 orig_rank = sm->destSubDomain();
-      ISerializer* s = sm->serializer();
-      s->setMode(ISerializer::ModeGet);
-      Int64 nb_info = s->getInt64();
-      //info() << "RECEIVE NB_INFO=" << nb_info << " from=" << orig_rank;
-      received_infos.resize(nb_info);
-      s->getSpan(received_infos);
-      //if ((nb_info % 3)!=0)
-      //fatal() << "info size can not be divided by 3";
-      Integer z =0; 
-      while(z<nb_info){
-        Int64 node_uid = received_infos[z+0];
-        //Int64 sender_rank = received_infos[z+1];
-        //Int64 edge_uid = received_infos[z+2];
-        Int32 edge_type = (Int32)received_infos[z+3];
-        // received_infos[z+4];
-        // received_infos[z+5];
-        ItemTypeInfo* itt = itm->typeFromId(edge_type);
-        Integer edge_nb_node = itt->nbLocalNode();
-        Int64Array& a = m_nodes_info[node_uid];
-        a.addRange(Int64ConstArrayView(6+edge_nb_node,&received_infos[z]));
-        z += 6;
-        z += edge_nb_node;
-        //info() << "NODE UID=" << node_uid << " sender=" << sender_rank
-        //       << " edge_uid=" << edge_uid;
-        //node_cell_list.add(node_uid,cell_uid,cell_owner);
-        //HashTableMapT<Int64,Int32>::Data* v = nodes_nb_cell.lookupAdd(node_uid);
-        //++v->value();
-      }
-    }
-    Integer my_max_edge_node = 0;
-    for (const auto& [key, value] : m_nodes_info) {
-      //Int64 key = inode.data()->key();
-      Int64ConstArrayView a = value;
-      //info() << "A key=" << key << " size=" << a.size();
-      Integer nb_info = a.size();
-      Integer z = 0;
-      Integer node_nb_edge = 0;
-      while(z<nb_info){
-        ++node_nb_edge;
-        //Int64 node_uid = a[z+0];
-        //Int64 sender_rank = a[z+1];
-        //Int64 edge_uid = a[z+2];
-        Int32 edge_type = (Int32)a[z+3];
-        // a[z+4];
-        // a[z+5];
-        ItemTypeInfo* itt = itm->typeFromId(edge_type);
-        Integer edge_nb_node = itt->nbLocalNode();
-        /*info() << "NODE2 UID=" << node_uid << " sender=" << sender_rank
-          << " edge_uid=" << edge_uid */
-        //for( Integer y=0; y<edge_nb_node; ++y )
-        //info() << "Nodes = i="<< y << " " << a[z+6+y];
-        z += 6;
-        z += edge_nb_node;
-      }
-      my_max_edge_node = math::max(node_nb_edge,my_max_edge_node);
-    }
-    Integer global_max_edge_node = pm->reduce(Parallel::ReduceMax,my_max_edge_node);
-    debug() << "GLOBAL MAX EDGE NODE=" << global_max_edge_node;
-    // OK, maintenant donne comme uid de la edge (node_uid * global_max_edge_node + index)
-    IntegerUniqueArray indexes;
-    m_boundary_infos_to_send.clear();
-
-    for (const auto& [key, value] : m_nodes_info) {
-      Int64ConstArrayView a = value;
-      Integer nb_info = a.size();
-      Integer z = 0;
-      Integer node_nb_edge = 0;
-      indexes.clear();
-      while(z<nb_info){
-        Int64 node_uid = a[z+0];
-        Int32 sender_rank = (Int32)a[z+1];
-        Int64 edge_uid = a[z+2];
-        Int32 edge_type = (Int32)a[z+3];
-        // a[z+4];
-        // a[z+5];
-        ItemTypeInfo* itt = itm->typeFromId(edge_type);
-        Integer edge_nb_node = itt->nbLocalNode();
-
-        // Regarde si la edge est déjà dans la liste:
-        Integer edge_index = node_nb_edge;
-        Int32 edge_new_owner = sender_rank;
-        for( Integer y=0; y<node_nb_edge; ++y ){
-          if (memcmp(&a[indexes[y]+6],&a[z+6],sizeof(Int64)*edge_nb_node)==0){
-            edge_index = y;
-            edge_new_owner = (Int32)a[indexes[y]+1];
-          }
-        }
-        Int64 edge_new_uid = (node_uid * global_max_edge_node) + edge_index;
-        Int64Array& v = m_boundary_infos_to_send[sender_rank];
-        // Indique au propriétaire de cette arête son nouvel uid
-        v.add(edge_uid);
-        v.add(edge_new_uid);
-        v.add(edge_new_owner);
-        indexes.add(z);
-        z += 6;
-        z += edge_nb_node;
-        /* info() << "NODE3 UID=" << node_uid << " sender=" << sender_rank
-               << " edge_uid=" << edge_uid
-               << " edge_index=" << edge_index
-               << " edge_new_uid=" << edge_new_uid; */
-        ++node_nb_edge;
-      }
-      my_max_edge_node = math::max(node_nb_edge,my_max_edge_node);
-    }
-  }
-  exchanger = ParallelMngUtils::createExchangerRef(pm);
-
-  _exchangeData(exchanger.get());
-  {
-    Integer nb_receiver = exchanger->nbReceiver();
-    debug() << "NB RECEIVER=" << nb_receiver;
-    Int64UniqueArray received_infos;
-    for( Integer i=0; i<nb_receiver; ++i ){
-      ISerializeMessage* sm = exchanger->messageToReceive(i);
-      auto orig_rank = sm->destination();
-      ISerializer* s = sm->serializer();
-      s->setMode(ISerializer::ModeGet);
-      Int64 nb_info = s->getInt64();
-      if (is_verbose)
-        info() << "RECEIVE NB_INFO=" << nb_info << " from=" << orig_rank;
-      received_infos.resize(nb_info);
-      s->getSpan(received_infos);
-      if ((nb_info % 3)!=0)
-        ARCANE_FATAL("info size can not be divided by 3 x={0}",nb_info);
-      Int64 nb_item = nb_info / 3;
-      for (Int64 z=0; z<nb_item; ++z ){
-        Int64 old_uid = received_infos[(z*3)];
-        Int64 new_uid = received_infos[(z*3)+1];
-        Int32 new_owner = static_cast<Int32>(received_infos[(z * 3) + 2]);
-        //info() << "EDGE old_uid=" << old_uid << " new_uid=" << new_uid;
-        impl::MutableItemBase iedge(edges_map.tryFind(old_uid));
-        if (iedge.null())
-          ARCANE_FATAL("Can not find own edge uid={0}",old_uid);
-        iedge.setUniqueId(new_uid);
-        iedge.setOwner(new_owner, m_my_rank);
-        Edge edge{iedge};
-        if (is_verbose)
-          info() << "SetEdgeOwner uid=" << new_uid << " owner=" << new_owner
-                 << " n0,n1=" << edge.node(0).uniqueId() << "," << edge.node(1).uniqueId()
-                 << " n0=" << ItemPrinter(edge.node(0)) << " n1=" << ItemPrinter(edge.node(1));
-      }
-    }
-  }
+  _computeEdgesUniqueId();
+  _sendInfosToOtherRanks();
 
   traceMng()->flush();
   pm->barrier();
   info() << "END OF TEST NEW EDGE COMPUTE";
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void Parallel3EdgeUniqueIdBuilder::
+_computeEdgesUniqueId()
+{
+  ItemTypeMng* itm = m_mesh->itemTypeMng();
+  IParallelMng* pm = m_parallel_mng;
+  Ref<IParallelExchanger> exchanger{ ParallelMngUtils::createExchangerRef(pm) };
+  _exchangeData(exchanger.get());
+
+  Integer nb_receiver = exchanger->nbReceiver();
+  debug() << "NB RECEIVER=" << nb_receiver;
+  SharedArray<Int64> received_infos;
+  for (Integer i = 0; i < nb_receiver; ++i) {
+    ISerializeMessage* sm = exchanger->messageToReceive(i);
+    //Int32 orig_rank = sm->destSubDomain();
+    ISerializer* s = sm->serializer();
+    s->setMode(ISerializer::ModeGet);
+    Int64 nb_info = s->getInt64();
+    //info() << "RECEIVE NB_INFO=" << nb_info << " from=" << orig_rank;
+    received_infos.resize(nb_info);
+    s->getSpan(received_infos);
+    //if ((nb_info % 3)!=0)
+    //fatal() << "info size can not be divided by 3";
+    Integer z = 0;
+    while (z < nb_info) {
+      Int64 node_uid = received_infos[z + 0];
+      //Int64 sender_rank = received_infos[z+1];
+      //Int64 edge_uid = received_infos[z+2];
+      Int32 edge_type = (Int32)received_infos[z + 3];
+      // received_infos[z+4];
+      // received_infos[z+5];
+      ItemTypeInfo* itt = itm->typeFromId(edge_type);
+      Integer edge_nb_node = itt->nbLocalNode();
+      Int64Array& a = m_nodes_info[node_uid];
+      a.addRange(Int64ConstArrayView(6 + edge_nb_node, &received_infos[z]));
+      z += 6;
+      z += edge_nb_node;
+      //info() << "NODE UID=" << node_uid << " sender=" << sender_rank
+      //       << " edge_uid=" << edge_uid;
+      //node_cell_list.add(node_uid,cell_uid,cell_owner);
+      //HashTableMapT<Int64,Int32>::Data* v = nodes_nb_cell.lookupAdd(node_uid);
+      //++v->value();
+    }
+  }
+
+  Integer my_max_edge_node = 0;
+  for (const auto& [key, value] : m_nodes_info) {
+    //Int64 key = inode.data()->key();
+    Int64ConstArrayView a = value;
+    //info() << "A key=" << key << " size=" << a.size();
+    Integer nb_info = a.size();
+    Integer z = 0;
+    Integer node_nb_edge = 0;
+    while (z < nb_info) {
+      ++node_nb_edge;
+      //Int64 node_uid = a[z+0];
+      //Int64 sender_rank = a[z+1];
+      //Int64 edge_uid = a[z+2];
+      Int32 edge_type = (Int32)a[z + 3];
+      // a[z+4];
+      // a[z+5];
+      ItemTypeInfo* itt = itm->typeFromId(edge_type);
+      Integer edge_nb_node = itt->nbLocalNode();
+      /*info() << "NODE2 UID=" << node_uid << " sender=" << sender_rank
+          << " edge_uid=" << edge_uid */
+      //for( Integer y=0; y<edge_nb_node; ++y )
+      //info() << "Nodes = i="<< y << " " << a[z+6+y];
+      z += 6;
+      z += edge_nb_node;
+    }
+    my_max_edge_node = math::max(node_nb_edge, my_max_edge_node);
+  }
+  Integer global_max_edge_node = pm->reduce(Parallel::ReduceMax, my_max_edge_node);
+  debug() << "GLOBAL MAX EDGE NODE=" << global_max_edge_node;
+  // OK, maintenant donne comme uid de la edge (node_uid * global_max_edge_node + index)
+  IntegerUniqueArray indexes;
+  m_boundary_infos_to_send.clear();
+
+  for (const auto& [key, value] : m_nodes_info) {
+    Int64ConstArrayView a = value;
+    Integer nb_info = a.size();
+    Integer z = 0;
+    Integer node_nb_edge = 0;
+    indexes.clear();
+    while (z < nb_info) {
+      Int64 node_uid = a[z + 0];
+      Int32 sender_rank = (Int32)a[z + 1];
+      Int64 edge_uid = a[z + 2];
+      Int32 edge_type = (Int32)a[z + 3];
+      // a[z+4];
+      // a[z+5];
+      ItemTypeInfo* itt = itm->typeFromId(edge_type);
+      Integer edge_nb_node = itt->nbLocalNode();
+
+      // Regarde si la edge est déjà dans la liste:
+      Integer edge_index = node_nb_edge;
+      Int32 edge_new_owner = sender_rank;
+      for (Integer y = 0; y < node_nb_edge; ++y) {
+        if (memcmp(&a[indexes[y] + 6], &a[z + 6], sizeof(Int64) * edge_nb_node) == 0) {
+          edge_index = y;
+          edge_new_owner = (Int32)a[indexes[y] + 1];
+        }
+      }
+      Int64 edge_new_uid = (node_uid * global_max_edge_node) + edge_index;
+      Int64Array& v = m_boundary_infos_to_send[sender_rank];
+      // Indique au propriétaire de cette arête son nouvel uid
+      v.add(edge_uid);
+      v.add(edge_new_uid);
+      v.add(edge_new_owner);
+      indexes.add(z);
+      z += 6;
+      z += edge_nb_node;
+      /* info() << "NODE3 UID=" << node_uid << " sender=" << sender_rank
+               << " edge_uid=" << edge_uid
+               << " edge_index=" << edge_index
+               << " edge_new_uid=" << edge_new_uid; */
+      ++node_nb_edge;
+    }
+    my_max_edge_node = math::max(node_nb_edge, my_max_edge_node);
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void Parallel3EdgeUniqueIdBuilder::
+_sendInfosToOtherRanks()
+{
+  const bool is_verbose = m_mesh_builder->isVerbose();
+  IParallelMng* pm = m_parallel_mng;
+  Ref<IParallelExchanger> exchanger = ParallelMngUtils::createExchangerRef(pm);
+
+  _exchangeData(exchanger.get());
+
+  ItemInternalMap& edges_map = m_mesh->edgesMap();
+  Integer nb_receiver = exchanger->nbReceiver();
+  debug() << "NB RECEIVER=" << nb_receiver;
+  Int64UniqueArray received_infos;
+  for (Integer i = 0; i < nb_receiver; ++i) {
+    ISerializeMessage* sm = exchanger->messageToReceive(i);
+    auto orig_rank = sm->destination();
+    ISerializer* s = sm->serializer();
+    s->setMode(ISerializer::ModeGet);
+    Int64 nb_info = s->getInt64();
+    if (is_verbose)
+      info() << "RECEIVE NB_INFO=" << nb_info << " from=" << orig_rank;
+    received_infos.resize(nb_info);
+    s->getSpan(received_infos);
+    if ((nb_info % 3) != 0)
+      ARCANE_FATAL("info size can not be divided by 3 x={0}", nb_info);
+    Int64 nb_item = nb_info / 3;
+    for (Int64 z = 0; z < nb_item; ++z) {
+      Int64 old_uid = received_infos[(z * 3)];
+      Int64 new_uid = received_infos[(z * 3) + 1];
+      Int32 new_owner = static_cast<Int32>(received_infos[(z * 3) + 2]);
+      //info() << "EDGE old_uid=" << old_uid << " new_uid=" << new_uid;
+      impl::MutableItemBase iedge(edges_map.tryFind(old_uid));
+      if (iedge.null())
+        ARCANE_FATAL("Can not find own edge uid={0}", old_uid);
+      iedge.setUniqueId(new_uid);
+      iedge.setOwner(new_owner, m_my_rank);
+      Edge edge{ iedge };
+      if (is_verbose)
+        info() << "SetEdgeOwner uid=" << new_uid << " owner=" << new_owner
+               << " n0,n1=" << edge.node(0).uniqueId() << "," << edge.node(1).uniqueId()
+               << " n0=" << ItemPrinter(edge.node(0)) << " n1=" << ItemPrinter(edge.node(1));
+    }
+  }
 }
 
 /*---------------------------------------------------------------------------*/
