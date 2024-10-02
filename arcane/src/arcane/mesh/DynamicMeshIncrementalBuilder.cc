@@ -16,6 +16,7 @@
 #include "arcane/utils/NotImplementedException.h"
 #include "arcane/utils/NotSupportedException.h"
 #include "arcane/utils/ITraceMng.h"
+#include "arcane/utils/ValueConvert.h"
 
 #include "arcane/core/ItemTypeMng.h"
 #include "arcane/core/MeshUtils.h"
@@ -63,6 +64,8 @@ DynamicMeshIncrementalBuilder(DynamicMesh* mesh)
 , m_has_amr(mesh->isAmrActivated())
 , m_one_mesh_item_adder(new OneMeshItemAdder(this))
 {
+  if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_VERBOSE_MESH_BUILDER", true))
+    m_verbose = (v.value()!=0);
 }
 
 /*---------------------------------------------------------------------------*/
