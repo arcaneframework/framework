@@ -190,8 +190,10 @@ class UnifiedMemoryCudaMemoryAllocator
 {
  public:
 
-  ~UnifiedMemoryCudaMemoryAllocator()
+  UnifiedMemoryCudaMemoryAllocator()
   {
+    if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_CUDA_USE_ALLOC_ATS", true))
+      m_use_ats = v.value();
   }
 
   void initialize()
@@ -222,15 +224,26 @@ class UnifiedMemoryCudaMemoryAllocator
   {
     m_wrapper.doDeallocate(mem_info, args);
     void* ptr = mem_info.baseAddress();
+    if (m_use_ats) {
+      ::free(ptr);
+      return cudaSuccess;
+    }
     return ::cudaFree(ptr);
   }
 
   cudaError_t _allocate(void** ptr, size_t new_size, MemoryAllocationArgs args) override
   {
-    auto r = ::cudaMallocManaged(ptr, new_size, cudaMemAttachGlobal);
-    void* p = *ptr;
-    if (r != cudaSuccess)
-      return r;
+    void* p = nullptr;
+    if (m_use_ats) {
+      *ptr = ::aligned_alloc(128, new_size);
+      p = *ptr;
+    }
+    else {
+      auto r = ::cudaMallocManaged(ptr, new_size, cudaMemAttachGlobal);
+      p = *ptr;
+      if (r != cudaSuccess)
+        return r;
+    }
 
     m_wrapper.doAllocate(p, new_size, args);
 
@@ -266,6 +279,7 @@ class UnifiedMemoryCudaMemoryAllocator
  private:
 
   CommonUnifiedMemoryAllocatorWrapper m_wrapper;
+  bool m_use_ats = false;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -292,16 +306,40 @@ class HostPinnedCudaMemoryAllocator
 class DeviceCudaMemoryAllocator
 : public CudaMemoryAllocatorBase
 {
+ public:
+
+  DeviceCudaMemoryAllocator()
+  {
+    if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_CUDA_USE_ALLOC_ATS", true))
+      m_use_ats = v.value();
+  }
+
  protected:
 
   cudaError_t _allocate(void** ptr, size_t new_size, MemoryAllocationArgs) override
   {
+    if (m_use_ats) {
+      // FIXME: it does not work on WIN32
+      *ptr = std::aligned_alloc(128, new_size);
+      if (*ptr != nullptr)
+        return cudaSuccess;
+      else
+        return cudaErrorMemoryAllocation;
+    }
     return ::cudaMalloc(ptr, new_size);
   }
   cudaError_t _deallocate(AllocatedMemoryInfo mem_info, MemoryAllocationArgs) override
   {
+    if (m_use_ats) {
+      std::free(mem_info.baseAddress());
+      return cudaSuccess;
+    }
     return ::cudaFree(mem_info.baseAddress());
   }
+
+ private:
+
+  bool m_use_ats = false;
 };
 
 /*---------------------------------------------------------------------------*/
