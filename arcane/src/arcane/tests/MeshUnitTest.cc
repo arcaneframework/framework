@@ -16,6 +16,8 @@
 #include "arcane/utils/ArithmeticException.h"
 #include "arcane/utils/ValueChecker.h"
 #include "arcane/utils/TestLogger.h"
+#include "arcane/utils/PlatformUtils.h"
+#include "arcane/utils/SHA3HashAlgorithm.h"
 
 #include "arcane/core/BasicUnitTest.h"
 #include "arcane/core/AbstractItemOperationByBasicType.h"
@@ -360,23 +362,47 @@ _dumpMesh()
   auto mesh_io(sbu.createReference("Lima",SB_AllowNull));
   IParallelMng* pm = subDomain()->parallelMng();
   bool is_parallel = pm->isParallel();
-  Integer sid = pm->commRank();
+  Int32 my_rank = pm->commRank();
   Directory base_path(subDomain()->exportDirectory());
   StringBuilder sorted_file_name(options()->outputFile());
   sorted_file_name += "-sorted";
   if (is_parallel){
     sorted_file_name += "-";
-    sorted_file_name += sid;
+    sorted_file_name += my_rank;
   }
   mesh_utils::writeMeshInfosSorted(mesh(), base_path.file(sorted_file_name));
   StringBuilder file_name_b(options()->outputFile());
   if (is_parallel){
     file_name_b += "-";
-    file_name_b += sid;
+    file_name_b += my_rank;
   }
   String file_name(file_name_b.toString());
   mesh_utils::writeMeshInfos(mesh(), base_path.file(file_name));
-  mesh_utils::writeMeshConnectivity(mesh(), base_path.file(file_name + ".xml"));
+  String connectivity_file = base_path.file(file_name + ".xml");
+  mesh_utils::writeMeshConnectivity(mesh(), connectivity_file);
+
+  // Relit le fichier de connectivité et vérifie que la checksum est bonne
+  String connectivity_checksum;
+  if (pm->isParallel()) {
+    Int32 nb_checksum = options()->connectivityFileChecksumParallel.size();
+    if (nb_checksum > my_rank)
+      connectivity_checksum = options()->connectivityFileChecksumParallel[my_rank];
+  }
+  else
+    connectivity_checksum = options()->connectivityFileChecksum();
+  if (!connectivity_checksum.null()) {
+    SHA3_256HashAlgorithm hash_algo;
+    UniqueArray<std::byte> bytes;
+    if (platform::readAllFile(connectivity_file, false, bytes))
+      ARCANE_FATAL("Can not read file '{0}'", connectivity_file);
+    UniqueArray<Byte> hash_bytes;
+    hash_algo.computeHash64(bytes, hash_bytes);
+    String x = Convert::toHexaString(hash_bytes);
+    info() << "SHA=" << x;
+    if (x != connectivity_checksum)
+      ARCANE_FATAL("Bad connectivity checksum x={0} expected={1}", x, connectivity_checksum);
+  }
+
   if (mesh_io.get()){
     file_name = file_name + ".unf";
     mesh_io->writeMeshToFile(mesh(), base_path.file(file_name));
