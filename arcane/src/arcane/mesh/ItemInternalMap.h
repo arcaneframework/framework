@@ -64,6 +64,8 @@ class ItemInternalMap
   using NewImpl = std::unordered_map<Int64, ItemInternal*>;
   using BaseData = LegacyImpl::Data;
 
+ public:
+
 #ifdef ARCANE_USE_NEW_IMPL_FOR_ITEMINTERNALMAP
   static constexpr bool UseNewImpl = 1;
 #else
