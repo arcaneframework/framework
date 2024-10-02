@@ -449,10 +449,19 @@ _testUsedVariables()
   info() << "Cell variables:";
   VariableList vars;
   cell_family->usedVariables(vars);
+  std::set<String> var_names;
   for( VariableList::Enumerator i(vars); ++i; ){
     IVariable* var = *i;
-    info() << "name=" << var->name(); 
+    info() << "name=" << var->name();
+    var_names.insert(var->name());
   }
+  auto read_var_check_names = options()->checkReadProperty.view();
+  for (auto read_var_check_name : read_var_check_names) {
+    if (var_names.find(read_var_check_name) == var_names.end()) {
+      ARCANE_FATAL("Error while reading mesh {0}. Variable {1} is not kept after reading.", mesh()->name(), read_var_check_name);
+    }
+  }
+
 }
 
 /*---------------------------------------------------------------------------*/
