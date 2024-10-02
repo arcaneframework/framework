@@ -951,17 +951,24 @@ writeMeshConnectivity(IMesh* mesh, const String& file_name)
   }
 
   // Sauve les groupes
+
   {
     ofile << "<groups>\n";
+    // Trie les groupes par ordre alphabétique pour être certains qu'ils sont
+    // toujours écrits dans le même ordre.
+    std::map<String,ItemGroup> sorted_groups;
     for (ItemGroupCollection::Enumerator i_group(mesh->groups()); ++i_group;) {
       const ItemGroup& group = *i_group;
       if (group.isLocalToSubDomain())
         continue;
+      sorted_groups.insert(std::make_pair(group.name(),group));
+    }
+    for ( const auto& [name,group] : sorted_groups ){
       ofile << "<group name='" << group.name()
             << "' kind='" << itemKindName(group.itemKind())
             << "' count='" << group.size() << "'>\n";
-      ENUMERATE_ITEM (i_item, group) {
-        ofile << ' ' << (*i_item).uniqueId();
+      ENUMERATE_ (Item, i_item, group) {
+        ofile << ' ' << i_item->uniqueId();
       }
       ofile << "\n</group>\n";
     }
