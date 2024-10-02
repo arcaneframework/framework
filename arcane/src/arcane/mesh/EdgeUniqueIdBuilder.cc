@@ -346,6 +346,8 @@ compute()
   m_is_boundary_nodes.resize(node_family->maxLocalId(), false);
 
   // Marque tous les noeuds frontières, car ce sont ceux qu'il faudra envoyer
+  // Un noeud est considéré comme frontière s'il appartient à une face qui n'a qu'une
+  // maille connectée.
   faces_map.eachItem([&](Face face) {
     Integer face_nb_cell = face.nbCell();
     if (face_nb_cell==1){
@@ -354,10 +356,31 @@ compute()
     }
   });
 
-  // Détermine la liste des arêtes frontières
-  edges_map.eachItem([&](Edge edge) {
-    _addEdgeBoundaryInfo(edge);
-  });
+  // Détermine la liste des arêtes frontières.
+  // L'ordre de cette liste dépend de l'implémentation de la table de hashage.
+  // Afin d'avoir la même numérotation que la version historique (qui utilise HashTableMapT),
+  // on utilise une instance temporaire de cette classe pour ce calcul si
+  // l'implémentation utilisée est différente. C'est le cas à partir d'octobre 2024.
+  // A terme, il faudrait utiliser une autre version du calcul des uniqueId() des
+  // arêtes.
+  // TODO: Ce mécanisme est en test. A vérifier que cela donne ensuite
+  // la même numérotation.
+  const bool is_new_item_map_impl = ItemInternalMap::UseNewImpl;
+  if (is_new_item_map_impl) {
+    info() << "Edge: ItemInternalMap is using new implementation";
+    HashTableMapT<Int64, Edge> old_edges_map(5000, false);
+    edges_map.eachItem([&](Edge edge) {
+      old_edges_map.add(edge.uniqueId(), edge);
+    });
+    old_edges_map.eachValue([&](Edge edge) {
+      _addEdgeBoundaryInfo(edge);
+    });
+  }
+  else {
+    edges_map.eachItem([&](Edge edge) {
+      _addEdgeBoundaryInfo(edge);
+    });
+  }
 
   // Positionne la liste des envois
   Ref<IParallelExchanger> exchanger{ParallelMngUtils::createExchangerRef(pm)};
