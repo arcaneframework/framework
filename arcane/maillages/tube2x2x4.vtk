@@ -119,3 +119,21 @@ LOOKUP_TABLE default
 1
 1
 1
+SCALARS ReadCellProperty double 1
+LOOKUP_TABLE default
+1.0
+2.0
+3.0
+1.0
+2.0
+3.0
+1.0
+2.0
+3.0
+1.0
+2.0
+3.0
+1.0
+2.0
+3.0
+1.0
