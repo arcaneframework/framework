@@ -12,6 +12,7 @@
 #include <alien/core/impl/MultiMatrixImpl.h>
 #include <alien/data/ISpace.h>
 
+#include <arccore/message_passing/Communicator.h>
 #include <arccore/message_passing_mpi/MpiMessagePassingMng.h>
 
 /*---------------------------------------------------------------------------*/
@@ -58,15 +59,15 @@ HypreMatrix::initMatrix(const int ilower, const int iupper, const int jlower,
   delete m_internal;
   auto memory_type = HypreInternalLinearSolver::m_library_plugin->getMemoryType() ;
   auto exec_space = HypreInternalLinearSolver::m_library_plugin->getExecSpace() ;
-  auto* pm = dynamic_cast<Arccore::MessagePassing::Mpi::MpiMessagePassingMng*>(m_pm);
-  if (*static_cast<const MPI_Comm*>(pm->getMPIComm()) != MPI_COMM_NULL)
-    m_internal = new MatrixInternal(*static_cast<const MPI_Comm*>(pm->getMPIComm()),
-                                    memory_type,
-                                    exec_space);
-  else
-    m_internal = new MatrixInternal(MPI_COMM_WORLD,
-                                    memory_type,
-                                    exec_space);
+  auto pm = m_pm->communicator();
+  if (pm.isValid()) {
+    m_internal = new MatrixInternal(static_cast<MPI_Comm>(pm), memory_type, exec_space);
+  }
+  else {
+    alien_fatal([&] {
+      cout() << "Mpi is not initialized. Should be the case even in sequential";
+    });
+  }
   return m_internal->init(ilower, iupper, jlower, jupper, lineSizes);
 }
 

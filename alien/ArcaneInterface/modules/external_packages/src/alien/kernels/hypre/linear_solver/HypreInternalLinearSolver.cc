@@ -236,12 +236,11 @@ HypreInternalLinearSolver::solve(
   HYPRE_PtrToParSolverFcn precond_setup_function = NULL;
   int (*precond_destroy_function)(HYPRE_Solver) = NULL;
 
-  auto* pm = dynamic_cast<Arccore::MessagePassing::Mpi::MpiMessagePassingMng*>(
-      A.getParallelMng());
-  MPI_Comm comm = (*static_cast<const MPI_Comm*>(pm->getMPIComm()) == MPI_COMM_NULL)
-      ? MPI_COMM_WORLD
-      : *static_cast<const MPI_Comm*>(pm->getMPIComm());
-
+  auto pm = A.getParallelMng()->communicator();
+  if (!pm.isValid()) alien_fatal([&] {
+      cout() << "Mpi is not initialized. Should be the case even in sequential";
+    });
+  MPI_Comm comm = static_cast<const MPI_Comm>(pm);
   std::string precond_name = "undefined";
   switch (m_options->preconditioner()) {
   case HypreOptionTypes::NoPC:
