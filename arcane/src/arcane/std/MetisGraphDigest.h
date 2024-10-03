@@ -22,7 +22,6 @@
 #include "arcane/std/MetisGraph.h"
 
 #include <string>
-#include <mpi.h>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -50,7 +49,7 @@ class MetisGraphDigest
    * autres processeurs, la chaine retournee est vide. La somme de controle est
    * globale dans le sens ou tous les processeurs participent a sa construction.
    */
-  String computeInputDigest(MPI_Comm comm, const bool need_part, const int nb_options,
+  String computeInputDigest(const bool need_part, const int nb_options,
                             const MetisGraphView& my_graph, const idx_t* vtxdist, const idx_t* wgtflag,
                             const idx_t* numflag, const idx_t* ncon, const idx_t* nparts,
                             const real_t* tpwgts, const real_t* ubvec, const real_t* ipc2redist,
@@ -62,24 +61,26 @@ class MetisGraphDigest
    * autres processeurs, la chaine retournee est vide. La somme de controle est
    * globale dans le sens ou tous les processeurs participent a sa construction.
    */
-  String computeOutputDigest(MPI_Comm comm, const MetisGraphView& my_graph,
-                             const idx_t* edgecut);
+  String computeOutputDigest(const MetisGraphView& my_graph, const idx_t* edgecut);
 
  private:
 
   IParallelMng* m_parallel_mng = nullptr;
+  Int32 m_my_rank = A_NULL_RANK;
+  Int32 m_nb_rank = 0;
 
  private:
 
   void _computeHash(ConstArrayView<idx_t> data, ByteArray& output);
   void _computeHash(const idx_t* data, const Integer nb, ByteArray& output);
   void _computeHash(const real_t* data, const Integer nb, ByteArray& output);
+  String _digestString(ConstArrayView<Byte> my_digest);
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arcane
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -12,8 +12,6 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/ArrayView.h"
-
 #include "arcane/core/IParallelMng.h"
 
 #include "arcane/std/MetisGraph.h"
@@ -261,7 +259,7 @@ callPartKway(IParallelMng* pm, const bool print_digest, const bool gather,
   
   if (print_digest){
     MetisGraphDigest d(pm);
-    String digest = d.computeInputDigest(*comm, false, 3, my_graph, vtxdist, wgtflag, numflag,
+    String digest = d.computeInputDigest(false, 3, my_graph, vtxdist, wgtflag, numflag,
                                          ncon, nparts, tpwgts, ubvec, nullptr, options);
     if (my_rank == 0) {
       tm->info() << "signature des entrees Metis = " << digest;
@@ -284,7 +282,7 @@ callPartKway(IParallelMng* pm, const bool print_digest, const bool gather,
   tm->info() << "End Partionnement metis";
   if (print_digest){
     MetisGraphDigest d(pm);
-    String digest = d.computeOutputDigest(*comm, my_graph, edgecut);
+    String digest = d.computeOutputDigest(my_graph, edgecut);
     if (my_rank == 0) {
       tm->info() << "signature des sorties Metis = " << digest;
     }
@@ -364,7 +362,7 @@ callAdaptiveRepart(IParallelMng* pm, const bool print_digest, const bool gather,
   
   if (print_digest){
     MetisGraphDigest d(pm);
-    String digest = d.computeInputDigest(*comm, true, 4, my_graph, vtxdist, wgtflag, numflag,
+    String digest = d.computeInputDigest(true, 4, my_graph, vtxdist, wgtflag, numflag,
                                          ncon, nparts, tpwgts, ubvec, nullptr, options);
     if (my_rank == 0) {
       tm->info() << "signature des entrees Metis = " << digest;
@@ -382,7 +380,7 @@ callAdaptiveRepart(IParallelMng* pm, const bool print_digest, const bool gather,
 
   if (print_digest) {
     MetisGraphDigest d(pm);
-    String digest = d.computeOutputDigest(*comm, my_graph, edgecut);
+    String digest = d.computeOutputDigest(my_graph, edgecut);
     if (my_rank == 0) {
       tm->info() << "signature des sorties Metis = " << digest;
     }
