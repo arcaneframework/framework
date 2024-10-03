@@ -1,17 +1,21 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MetisGraphDigest.h                                          (C) 2000-2019 */
+/* MetisGraphDigest.cc                                         (C) 2000-2024 */
 /*                                                                           */
 /* Calcule une somme de contrôle globale des entrées/sorties Metis.          */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/MD5HashAlgorithm.h"
+#include "arcane/utils/FatalErrorException.h"
+
+#include "arcane/core/IParallelMng.h"
+
 #include "arcane/std/MetisGraphDigest.h"
 
 #include <vector>
@@ -31,33 +35,6 @@ namespace
 MD5HashAlgorithm hash_algo;
 const Integer idx_t_size = sizeof(idx_t);
 const Integer real_t_size = sizeof(real_t);
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void
-_computeHash(ConstArrayView<idx_t> data, ByteArray& output)
-{
-  hash_algo.computeHash64(ConstArrayView<Byte>(idx_t_size * data.size(), (Byte*)data.data()), output);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void
-_computeHash(const idx_t* data, const Integer nb, ByteArray& output)
-{
-  hash_algo.computeHash64(ConstArrayView<Byte>(idx_t_size * nb, (const Byte*)data), output);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void
-_computeHash(const real_t* data, const Integer nb, ByteArray& output)
-{
-  hash_algo.computeHash64(ConstArrayView<Byte>(real_t_size * nb, (const Byte*)data), output);
-}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -100,6 +77,43 @@ _digestString(MPI_Comm comm, const int my_rank, const int nb_rank, const int io_
   return String();
 }
 
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+MetisGraphDigest::
+MetisGraphDigest(IParallelMng* pm)
+: TraceAccessor(pm->traceMng())
+, m_parallel_mng(pm)
+{
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MetisGraphDigest::
+_computeHash(ConstArrayView<idx_t> data, ByteArray& output)
+{
+  hash_algo.computeHash64(ConstArrayView<Byte>(idx_t_size * data.size(), (Byte*)data.data()), output);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MetisGraphDigest::
+_computeHash(const idx_t* data, const Integer nb, ByteArray& output)
+{
+  hash_algo.computeHash64(ConstArrayView<Byte>(idx_t_size * nb, (const Byte*)data), output);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MetisGraphDigest::
+_computeHash(const real_t* data, const Integer nb, ByteArray& output)
+{
+  hash_algo.computeHash64(ConstArrayView<Byte>(real_t_size * nb, (const Byte*)data), output);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -162,6 +176,7 @@ computeInputDigest(MPI_Comm comm, const bool need_part, const int nb_options, co
 
   return _digestString(comm, my_rank, nb_rank, io_rank, hash_value);
 }
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 

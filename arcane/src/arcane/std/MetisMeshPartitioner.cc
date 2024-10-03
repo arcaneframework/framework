@@ -243,7 +243,9 @@ _partitionMesh(bool initial_partition,Int32 nb_part)
   info() << "Load balancing with Metis nb_weight=" << nb_weight << " initial=" << initial_partition
          << " call_strategy=" << (int)call_strategy
          << " is_shared_memory?=" << is_shared_memory
-         << " disabling_fpe?=" << m_disable_floatingexception;
+         << " disabling_fpe?=" << m_disable_floatingexception
+         << " sizeof(idxtype)==" << sizeof(idxtype);
+
   if (nb_weight==0)
     initial_partition = true;
 
@@ -369,7 +371,6 @@ _partitionMesh(bool initial_partition,Int32 nb_part)
       increase all load imbalances.
    */
   cells_weights = cellsWeightsWithConstraints(CheckedConvert::toInteger(nb_weight));
-
   // Déséquilibre autorisé pour chaque contrainte
   metis_ubvec.resize(CheckedConvert::toInteger(nb_weight));
   metis_ubvec.fill(tolerance_target);
@@ -545,7 +546,6 @@ _partitionMesh(bool initial_partition,Int32 nb_part)
   if (redistribute)
     do_call_metis = gd.contribute();
   if (do_call_metis) {
-
     if (dump_graph) {
       Integer iteration = sd->commonVariables().globalIteration();
       StringBuilder name("graph-");
@@ -571,7 +571,7 @@ _partitionMesh(bool initial_partition,Int32 nb_part)
       m_nb_refine = 0;
       if (force_partition) {
         info() << "Metis: use a complete partitioning.";
-        retval = wrapper.callPartKway(traceMng(),
+        retval = wrapper.callPartKway(pm,
                                       in_out_digest, 
                                       redistribute_by_wrapper,
                                       metis_vtkdist.data(),
@@ -588,7 +588,7 @@ _partitionMesh(bool initial_partition,Int32 nb_part)
       }
       else {
         info() << "Metis: use a complete REpartitioning.";
-        retval = wrapper.callAdaptiveRepart(traceMng(),
+        retval = wrapper.callAdaptiveRepart(pm,
                                             in_out_digest, 
                                             redistribute_by_wrapper,
                                             metis_vtkdist.data(),

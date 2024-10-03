@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MetisWrapper.h                                              (C) 2000-2019 */
+/* MetisWrapper.h                                              (C) 2000-2024 */
 /*                                                                           */
 /* Wrapper autour des appels de Parmetis.                                    */
 /*---------------------------------------------------------------------------*/
@@ -40,7 +40,7 @@ class MetisWrapper
    * a ParMETIS_V3_PartKway. Lorsque print_digest == true, la signature des
    * entrees / sorties de ParMETIS_V3_PartKway est affichee.
    */
-  int callPartKway(ITraceMng* tm, const bool print_digest, const bool gather,
+  int callPartKway(IParallelMng* pm, const bool print_digest, const bool gather,
                    idx_t *vtxdist, idx_t *xadj, idx_t *adjncy, idx_t *vwgt, 
                    idx_t *adjwgt, idx_t *wgtflag, idx_t *numflag, idx_t *ncon, idx_t *nparts, 
                    real_t *tpwgts, real_t *ubvec, idx_t *options, idx_t *edgecut, idx_t *part, 
@@ -54,7 +54,7 @@ class MetisWrapper
    * entrees / sorties de ParMETIS_V3_AdaptiveRepart est affichee.
    */
          
-  int callAdaptiveRepart(ITraceMng* tm, const bool print_digest, const bool gather,
+  int callAdaptiveRepart(IParallelMng* pm, const bool print_digest, const bool gather,
                          idx_t *vtxdist, idx_t *xadj, idx_t *adjncy, idx_t *vwgt, 
                          idx_t *vsize, idx_t *adjwgt, idx_t *wgtflag, idx_t *numflag, idx_t *ncon, 
                          idx_t *nparts, real_t *tpwgts, real_t *ubvec, real_t *ipc2redist, 

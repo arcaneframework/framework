@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MetisWrapper.cc                                             (C) 2000-2019 */
+/* MetisWrapper.cc                                             (C) 2000-2024 */
 /*                                                                           */
 /* Wrapper autour des appels de Parmetis.                                    */
 /* Calcule une somme de contrôle globale des entrées/sorties Metis.          */
@@ -13,6 +13,9 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/ArrayView.h"
+
+#include "arcane/core/IParallelMng.h"
+
 #include "arcane/std/MetisGraph.h"
 #include "arcane/std/MetisGraphDigest.h"
 #include "arcane/std/MetisGraphGather.h"
@@ -182,12 +185,13 @@ _callMetisWith1Processor(const idx_t ncon, const bool need_part, MPI_Comm comm,
 /*---------------------------------------------------------------------------*/
 
 int MetisWrapper::
-callPartKway(ITraceMng* tm, const bool print_digest, const bool gather,
+callPartKway(IParallelMng* pm, const bool print_digest, const bool gather,
              idx_t *vtxdist, idx_t *xadj, idx_t *adjncy, idx_t *vwgt, 
              idx_t *adjwgt, idx_t *wgtflag, idx_t *numflag, idx_t *ncon, idx_t *nparts, 
              real_t *tpwgts, real_t *ubvec, idx_t *options, idx_t *edgecut, idx_t *part, 
              MPI_Comm *comm)
 {
+  ITraceMng* tm = pm->traceMng();
   int ierr = 0;
   int nb_rank = -1;
   int my_rank = -1;
@@ -256,7 +260,7 @@ callPartKway(ITraceMng* tm, const bool print_digest, const bool gather,
   my_graph.have_adjwgt = true;
   
   if (print_digest){
-    MetisGraphDigest d;
+    MetisGraphDigest d(pm);
     String digest = d.computeInputDigest(*comm, false, 3, my_graph, vtxdist, wgtflag, numflag,
                                          ncon, nparts, tpwgts, ubvec, nullptr, options);
     if (my_rank == 0) {
@@ -279,7 +283,7 @@ callPartKway(ITraceMng* tm, const bool print_digest, const bool gather,
   
   tm->info() << "End Partionnement metis";
   if (print_digest){
-    MetisGraphDigest d;
+    MetisGraphDigest d(pm);
     String digest = d.computeOutputDigest(*comm, my_graph, edgecut);
     if (my_rank == 0) {
       tm->info() << "signature des sorties Metis = " << digest;
@@ -293,12 +297,13 @@ callPartKway(ITraceMng* tm, const bool print_digest, const bool gather,
 /*---------------------------------------------------------------------------*/
 
 int MetisWrapper::
-callAdaptiveRepart(ITraceMng* tm, const bool print_digest, const bool gather,
+callAdaptiveRepart(IParallelMng* pm, const bool print_digest, const bool gather,
                    idx_t *vtxdist, idx_t *xadj, idx_t *adjncy, idx_t *vwgt, 
                    idx_t *vsize, idx_t *adjwgt, idx_t *wgtflag, idx_t *numflag, idx_t *ncon, 
                    idx_t *nparts, real_t *tpwgts, real_t *ubvec, real_t *ipc2redist, 
                    idx_t *options, idx_t *edgecut, idx_t *part, MPI_Comm *comm)
 {
+  ITraceMng* tm = pm->traceMng();
   int ierr = 0;
   int nb_rank = -1;
   int my_rank = -1;
@@ -358,7 +363,7 @@ callAdaptiveRepart(ITraceMng* tm, const bool print_digest, const bool gather,
 
   
   if (print_digest){
-    MetisGraphDigest d;
+    MetisGraphDigest d(pm);
     String digest = d.computeInputDigest(*comm, true, 4, my_graph, vtxdist, wgtflag, numflag,
                                          ncon, nparts, tpwgts, ubvec, nullptr, options);
     if (my_rank == 0) {
@@ -376,7 +381,7 @@ callAdaptiveRepart(ITraceMng* tm, const bool print_digest, const bool gather,
   }
 
   if (print_digest) {
-    MetisGraphDigest d;
+    MetisGraphDigest d(pm);
     String digest = d.computeOutputDigest(*comm, my_graph, edgecut);
     if (my_rank == 0) {
       tm->info() << "signature des sorties Metis = " << digest;
