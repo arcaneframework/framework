@@ -26,25 +26,9 @@ namespace Arccore::MessagePassing::Mpi
 MpiMessagePassingMng::
 MpiMessagePassingMng(const BuildInfo& bi)
 : MessagePassingMng(bi.commRank(),bi.commSize(),bi.dispatchers())
-, m_communicator(bi.communicator())
+, m_mpi_communicator(bi.communicator())
 {
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-MpiMessagePassingMng::
-~MpiMessagePassingMng()
-{
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-Communicator MpiMessagePassingMng::
-communicator() const
-{
-  return Communicator(m_communicator);
+  setCommunicator(Communicator{m_mpi_communicator});
 }
 
 /*---------------------------------------------------------------------------*/

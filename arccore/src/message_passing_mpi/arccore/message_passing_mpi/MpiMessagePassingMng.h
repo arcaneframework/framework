@@ -62,27 +62,22 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiMessagePassingMng
  public:
 
   explicit MpiMessagePassingMng(const BuildInfo& bi);
-  ~MpiMessagePassingMng() override;
 
  public:
 
-  Communicator communicator() const override;
-  const MPI_Comm* getMPIComm() const
-  {
-    return &m_communicator;
-  }
+  const MPI_Comm* getMPIComm() const { return &m_mpi_communicator; }
 
  private:
 
-  MPI_Comm m_communicator;
+  MPI_Comm m_mpi_communicator;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arccore::MessagePassing::Mpi
+} // namespace Arccore::MessagePassing::Mpi
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif
