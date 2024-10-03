@@ -8,9 +8,10 @@
 /* MetisWrapper.cc                                             (C) 2000-2024 */
 /*                                                                           */
 /* Wrapper autour des appels de Parmetis.                                    */
-/* Calcule une somme de contrôle globale des entrées/sorties Metis.          */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+#include "arcane/utils/CheckedConvert.h"
 
 #include "arcane/core/IParallelMng.h"
 
@@ -29,22 +30,10 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-using MetisCall = std::function<int(MPI_Comm& comm, MetisGraphView graph,
-                                    ArrayView<idx_t> vtxdist)>;
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-namespace
-{
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 /*!
  * \brief Appelle Metis sans regroupement de graph.
  */
-int
+int MetisWrapper::
 _callMetis(MPI_Comm comm, ArrayView<idx_t> vtxdist, MetisGraphView my_graph,
            MetisCall& metis)
 {
@@ -56,8 +45,8 @@ _callMetis(MPI_Comm comm, ArrayView<idx_t> vtxdist, MetisGraphView my_graph,
 /*!
  * \brief Appelle Metis en regroupant le graph sur 2 processeurs.
  */
-int
-_callMetisWith2Processors(const idx_t ncon, const bool need_part, MPI_Comm comm,
+int MetisWrapper::
+_callMetisWith2Processors(const Int32 ncon, const bool need_part, MPI_Comm comm,
                           ConstArrayView<idx_t> vtxdist, MetisGraphView my_graph,
                           MetisCall& metis)
 {
@@ -131,56 +120,6 @@ _callMetisWith2Processors(const idx_t ncon, const bool need_part, MPI_Comm comm,
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-/*!
- * \brief Appelle Metis en regroupant le graph sur 1 seul processeur.
- *
- * \warning Cette méthode n'est pas compatible avec la routine AdaptiveRepart de ParMetis qui
- * est buggee lorsqu'il n'y a qu'un seul processeur.
- */
-int
-_callMetisWith1Processor(const idx_t ncon, const bool need_part, MPI_Comm comm,
-                         ConstArrayView<idx_t> vtxdist, MetisGraphView my_graph,
-                         MetisCall& metis)
-{
-  int my_rank = -1;
-  int nb_rank = -1;
-  
-  MPI_Comm_rank(comm, &my_rank);
-  MPI_Comm_size(comm, &nb_rank);
-  
-  MetisGraph metis_graph;
-  MetisGraphGather metis_gather;
-
-  metis_gather.gatherGraph(need_part, "maincomm", comm, vtxdist, ncon,
-                           my_graph, metis_graph);
-  
-  MPI_Comm metis_comm = MPI_COMM_SELF;
-  
-  UniqueArray<idx_t> metis_vtxdist(2);
-  metis_vtxdist[0] = 0;
-  metis_vtxdist[1] = vtxdist[vtxdist.size() - 1];
-  
-  int ierr = 0;
-  
-  if (my_rank == 0) {
-    MetisGraphView metis_graph_view(metis_graph);
-    ierr = metis(metis_comm, metis_graph_view, metis_vtxdist);
-  }
-  
-  MPI_Bcast(&ierr, 1, MPI_INT, 0, comm);
-  
-  metis_gather.scatterPart(comm, vtxdist, metis_graph.part, my_graph.part);
-
-  return ierr;
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 
 int MetisWrapper::
 callPartKway(IParallelMng* pm, const bool print_digest, const bool gather,
@@ -247,12 +186,13 @@ callPartKway(IParallelMng* pm, const bool print_digest, const bool gather,
   MetisGraphView my_graph;
   
   ArrayView<idx_t> offset(nb_rank + 1, vtxdist);
-  my_graph.nb_vertices = offset[my_rank+1] - offset[my_rank];
+  my_graph.nb_vertices = CheckedConvert::toInt32(offset[my_rank + 1] - offset[my_rank]);
   my_graph.xadj = ArrayView<idx_t>(my_graph.nb_vertices + 1, xadj);
-  idx_t adjncy_size = my_graph.xadj[my_graph.nb_vertices];
-  my_graph.adjncy = ArrayView<idx_t>(adjncy_size, adjncy);
-  my_graph.vwgt = ArrayView<idx_t>(my_graph.nb_vertices * (*ncon), vwgt);
-  my_graph.adjwgt = ArrayView<idx_t>(adjncy_size, adjwgt);
+  const Int32 adjacency_size = CheckedConvert::toInt32(my_graph.xadj[my_graph.nb_vertices]);
+  const Int32 nb_con = CheckedConvert::toInt32(*ncon);
+  my_graph.adjncy = ArrayView<idx_t>(adjacency_size, adjncy);
+  my_graph.vwgt = ArrayView<idx_t>(CheckedConvert::multiply(my_graph.nb_vertices, nb_con), vwgt);
+  my_graph.adjwgt = ArrayView<idx_t>(adjacency_size, adjwgt);
   my_graph.part = ArrayView<idx_t>(my_graph.nb_vertices, part);
   my_graph.have_vsize = false;
   my_graph.have_adjwgt = true;
@@ -267,24 +207,21 @@ callPartKway(IParallelMng* pm, const bool print_digest, const bool gather,
   }
   
   if (gather && nb_rank > 2) {
-    //     tm->info() << "Partionnement metis avec regroupement sur 1 processeur";
-    //     ierr = callMetisWith1Processor(*ncon, false, *comm, offset, my_graph, partkway);
-    
     // Normalement c'est plus rapide ...
-    tm->info() << "Partionnement metis : regroupement " << nb_rank << " -> 2 processeurs";
-    ierr = _callMetisWith2Processors(*ncon, false, *comm, offset, my_graph, partkway);
+    tm->info() << "Partitioning metis : re-grouping " << nb_rank << " -> 2 rank";
+    ierr = _callMetisWith2Processors(nb_con, false, *comm, offset, my_graph, partkway);
   }
   else {
-    tm->info() << "Partionnement metis : nb processeurs = " << nb_rank;
+    tm->info() << "Partitioning metis : nb rank = " << nb_rank;
     ierr = _callMetis(*comm, offset, my_graph, (nb_rank==1) ? partkway_seq : partkway);
   }
-  
-  tm->info() << "End Partionnement metis";
+
+  tm->info() << "End Partitioning metis";
   if (print_digest){
     MetisGraphDigest d(pm);
     String digest = d.computeOutputDigest(my_graph, edgecut);
     if (my_rank == 0) {
-      tm->info() << "signature des sorties Metis = " << digest;
+      tm->info() << "hash for Metis output = " << digest;
     }
   }
   
@@ -348,13 +285,14 @@ callAdaptiveRepart(IParallelMng* pm, const bool print_digest, const bool gather,
   
 
   ArrayView<idx_t> offset(nb_rank + 1, vtxdist);
-  my_graph.nb_vertices = offset[my_rank+1] - offset[my_rank];
+  my_graph.nb_vertices = CheckedConvert::toInt32(offset[my_rank + 1] - offset[my_rank]);
   my_graph.xadj = ArrayView<idx_t>(my_graph.nb_vertices + 1, xadj);
-  idx_t adjncy_size = my_graph.xadj[my_graph.nb_vertices];
-  my_graph.adjncy = ArrayView<idx_t>(adjncy_size, adjncy);
-  my_graph.vwgt = ArrayView<idx_t>(my_graph.nb_vertices * (*ncon), vwgt);
+  const Int32 adjacency_size = CheckedConvert::toInt32(my_graph.xadj[my_graph.nb_vertices]);
+  const Int32 nb_con = CheckedConvert::toInt32(*ncon);
+  my_graph.adjncy = ArrayView<idx_t>(adjacency_size, adjncy);
+  my_graph.vwgt = ArrayView<idx_t>(CheckedConvert::multiply(my_graph.nb_vertices, nb_con), vwgt);
   my_graph.vsize = ArrayView<idx_t>(my_graph.nb_vertices, vsize);
-  my_graph.adjwgt = ArrayView<idx_t>(adjncy_size, adjwgt);
+  my_graph.adjwgt = ArrayView<idx_t>(adjacency_size, adjwgt);
   my_graph.part = ArrayView<idx_t>(my_graph.nb_vertices, part);
   my_graph.have_vsize = true;
   my_graph.have_adjwgt = true;
@@ -371,7 +309,7 @@ callAdaptiveRepart(IParallelMng* pm, const bool print_digest, const bool gather,
 
   if (gather && nb_rank > 2) {
     tm->info() << "Partionnement metis : regroupement " << nb_rank << " -> 2 processeurs";
-    ierr = _callMetisWith2Processors(*ncon, true, *comm, offset, my_graph, repart_func);
+    ierr = _callMetisWith2Processors(nb_con, true, *comm, offset, my_graph, repart_func);
   }
   else {
     tm->info() << "Partionnement metis : nb processeurs = " << nb_rank;

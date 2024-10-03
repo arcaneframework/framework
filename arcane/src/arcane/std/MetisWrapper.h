@@ -18,12 +18,14 @@
 
 #include <parmetis.h>
 #include <mpi.h>
+#include <functional>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 namespace Arcane
 {
+class MetisGraphView;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -32,7 +34,13 @@ namespace Arcane
  */
 class MetisWrapper
 {
+ private:
+
+  using MetisCall = std::function<int(MPI_Comm& comm, MetisGraphView graph,
+                                      ArrayView<idx_t> vtxdist)>;
+
  public:
+
   /*!
    * \brief Simple wrapper autour de la routine ParMetis "ParMETIS_V3_PartKway".
    * 
@@ -59,6 +67,14 @@ class MetisWrapper
                          idx_t *vsize, idx_t *adjwgt, idx_t *wgtflag, idx_t *numflag, idx_t *ncon, 
                          idx_t *nparts, real_t *tpwgts, real_t *ubvec, real_t *ipc2redist, 
                          idx_t *options, idx_t *edgecut, idx_t *part, MPI_Comm *comm);
+
+ private:
+
+  int _callMetis(MPI_Comm comm, ArrayView<idx_t> vtxdist, MetisGraphView my_graph,
+                 MetisCall& metis);
+  int _callMetisWith2Processors(const Int32 ncon, const bool need_part, MPI_Comm comm,
+                                ConstArrayView<idx_t> vtxdist, MetisGraphView my_graph,
+                                MetisCall& metis);
 };
 
 /*---------------------------------------------------------------------------*/
