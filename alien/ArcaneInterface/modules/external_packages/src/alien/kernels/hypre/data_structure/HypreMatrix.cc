@@ -64,9 +64,9 @@ HypreMatrix::initMatrix(const int ilower, const int iupper, const int jlower,
     m_internal = new MatrixInternal(static_cast<MPI_Comm>(pm), memory_type, exec_space);
   }
   else {
-    alien_fatal([&] {
-      cout() << "Mpi is not initialized. Should be the case even in sequential";
-    });
+    m_internal = new MatrixInternal(MPI_COMM_WORLD,
+        memory_type,
+        exec_space);
   }
   return m_internal->init(ilower, iupper, jlower, jupper, lineSizes);
 }
