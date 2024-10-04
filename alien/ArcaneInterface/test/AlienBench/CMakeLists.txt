@@ -251,7 +251,6 @@ alien_test(
             WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
 
 if (TARGET petsc)
-    set(ENV (ARCANE_PARALLEL_SERVICE) "Mpi")
 
     alien_test(
             BENCH alien.bench
@@ -290,7 +289,6 @@ if (TARGET petsc)
 endif ()
 
 if (TARGET hypre)
-    set(ENV (ARCANE_PARALLEL_SERVICE) "Mpi")
 
     alien_test(
             BENCH alien.bench.hypre
@@ -347,7 +345,6 @@ endif(ALIEN_USE_SYCL)
 endif ()
 
 if (TARGET trilinos)
-    set(ENV (ARCANE_PARALLEL_SERVICE) "Mpi")
 
     alien_test(
             BENCH alien.bench.trilinos
