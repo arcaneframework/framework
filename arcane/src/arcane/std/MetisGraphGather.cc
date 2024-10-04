@@ -1,17 +1,20 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MetisGraphGather.h                                          (C) 2000-2023 */
+/* MetisGraphGather.cc                                         (C) 2000-2024 */
 /*                                                                           */
 /* Regroupement de graphes de 'Parmetis'.                                    */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+#include "arcane/utils/CheckedConvert.h"
+
 #include "arcane/std/MetisGraphGather.h"
+
 #include <algorithm>
 
 /*---------------------------------------------------------------------------*/
@@ -25,20 +28,21 @@ namespace Arcane
 
 namespace
 {
-template <class src_type, class dest_type>
-void convertVector(const int size, ConstArrayView<src_type> src, ArrayView<dest_type> dest)
-{
-  for (int i = 0; i < size; ++i) {
-    dest[i] = src[i];
+  template <class SourceType, class TargetType>
+  void convertVector(const int size, ConstArrayView<SourceType> src, ArrayView<TargetType> dest)
+  {
+    for (int i = 0; i < size; ++i) {
+      dest[i] = static_cast<TargetType>(src[i]);
+    }
   }
-}
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 void MetisGraphGather::
 gatherGraph(const bool need_part, const String&, MPI_Comm comm,
-            ConstArrayView<idx_t> vtxdist, const idx_t ncon, MetisGraphView my_graph,
+            ConstArrayView<idx_t> vtxdist, const int ncon, MetisGraphView my_graph,
             MetisGraph& graph)
 {
   int my_rank = -1;
@@ -57,7 +61,7 @@ gatherGraph(const bool need_part, const String&, MPI_Comm comm,
   // nombre de sommets du graph complet
   
   if (my_rank == io_rank) {
-    graph.nb_vertices = vtxdist[nb_rank];
+    graph.nb_vertices = CheckedConvert::toInt32(vtxdist[nb_rank]);
     graph.have_vsize = my_graph.have_vsize; // on suppose que tous les processeurs ont la meme valeur
     graph.have_adjwgt = my_graph.have_adjwgt; // on suppose que tous les processeurs ont la meme valeur
   } else {
@@ -65,8 +69,8 @@ gatherGraph(const bool need_part, const String&, MPI_Comm comm,
     graph.have_vsize = false;
     graph.have_adjwgt = false;
   }
-  
-  // recupere les dimensions caracterisant la repartition du graph sur les processeurs
+
+  // récupère les dimensions caractérisant la répartition du graphe sur les processeurs
 
   my_buffer.resize(2);
   if (my_rank == io_rank) {
@@ -166,7 +170,9 @@ gatherGraph(const bool need_part, const String&, MPI_Comm comm,
     for (int rank = 1; rank < nb_rank; ++rank) {
       start_adjncy_index += adjncy_size_per_rank[rank-1];
       //std::cerr << "rank " << rank << " offset " << start_adjncy_index << "  vtxdist[rank] " <<  vtxdist[rank] << " vtxdist[rank+1] " << vtxdist[rank+1] << std::endl;
-      for (int ixadj = vtxdist[rank]; ixadj < vtxdist[rank+1]; ++ixadj) {
+      Int32 vtxdist_rank = CheckedConvert::toInt32(vtxdist[rank]);
+      Int32 vtxdist_rank_plus_one = CheckedConvert::toInt32(vtxdist[rank + 1]);
+      for (Int32 ixadj = vtxdist_rank; ixadj < vtxdist_rank_plus_one; ++ixadj) {
         graph.xadj[ixadj] +=  start_adjncy_index;
       }
     }
@@ -236,13 +242,13 @@ scatterPart(MPI_Comm comm, ConstArrayView<idx_t> vtxdist, ConstArrayView<idx_t> 
   
   MPI_Comm_rank(comm, &my_rank);
   MPI_Comm_size(comm, &nb_rank);
-  
-  UniqueArray<int> nb_vertices(nb_rank);
-  UniqueArray<int> displ(nb_rank);
-  
+
+  UniqueArray<Int32> nb_vertices(nb_rank);
+  UniqueArray<Int32> displ(nb_rank);
+
   for (int rank = 0; rank < nb_rank; ++rank) {
-    displ[rank] = vtxdist[rank];
-    nb_vertices[rank] = vtxdist[rank+1] - vtxdist[rank];
+    displ[rank] = CheckedConvert::toInt32(vtxdist[rank]);
+    nb_vertices[rank] = CheckedConvert::toInt32(vtxdist[rank + 1] - vtxdist[rank]);
   }
   
   UniqueArray<int> send_buffer;

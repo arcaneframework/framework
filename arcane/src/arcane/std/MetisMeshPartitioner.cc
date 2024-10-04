@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MetisMeshPartitioner.cc                                     (C) 2000-2023 */
+/* MetisMeshPartitioner.cc                                     (C) 2000-2024 */
 /*                                                                           */
 /* Partitioneur de maillage utilisant la bibliothèque PARMetis.              */
 /*---------------------------------------------------------------------------*/
@@ -18,6 +18,7 @@
 #include "arcane/utils/NotImplementedException.h"
 #include "arcane/utils/ArgumentException.h"
 #include "arcane/utils/FloatingPointExceptionSentry.h"
+#include "arcane/utils/ValueConvert.h"
 
 #include "arcane/ISubDomain.h"
 #include "arcane/IParallelMng.h"
@@ -96,13 +97,13 @@ class MetisMeshPartitioner
   void _removeEmptyPartsV1(const Int32 nb_part,const Int32 nb_own_cell,ArrayView<idxtype> metis_part);
   void _removeEmptyPartsV2(Int32 nb_part,ArrayView<idxtype> metis_part);
   Int32 _removeEmptyPartsV2Helper(Int32 nb_part,ArrayView<idxtype> metis_part,Int32 algo_iteration);
-  int _writeGraph(ArrayView<idxtype> metis_vtkdist,
-                  ArrayView<idxtype> metis_xadj,
-                  ArrayView<idxtype> metis_adjncy,
-                  ArrayView<idxtype> metis_vwgt,
-                  ArrayView<idxtype> metis_ewgt,
-                  String Name,
-                  MPI_Comm metis_comm) const;
+  int _writeGraph(IParallelMng* pm,
+                  Span<const idxtype> metis_vtkdist,
+                  Span<const idxtype> metis_xadj,
+                  Span<const idxtype> metis_adjncy,
+                  Span<const idxtype> metis_vwgt,
+                  Span<const idxtype> metis_ewgt,
+                  const String& Name) const;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -208,11 +209,11 @@ _partitionMesh(bool initial_partition,Int32 nb_part)
     ARCANE_FATAL("Invalid value '{0}' for ARCANE_METIS_CALL_STRATEGY environment variable",call_strategy_env);
   }
   
-  String in_out_digest_env = platform::getEnvironmentVariable("ARCANE_METIS_INPUT_OUTPUT_DIGEST");
-  if (!in_out_digest_env.null()){
-    in_out_digest = true;
-  }
-  
+  if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_METIS_INPUT_OUTPUT_DIGEST", true)) 
+    in_out_digest = (v.value()!=0);
+  if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_METIS_DUMP_GRAPH", true))
+    dump_graph = (v.value()!=0);
+
   if (options()){
     max_diffusion_count = options()->maxDiffusiveCount();
     imbalance_relative_tolerance = options()->imbalanceRelativeTolerance();
@@ -226,7 +227,6 @@ _partitionMesh(bool initial_partition,Int32 nb_part)
     force_full_repartition |= (m_nb_refine>=max_diffusion_count);
   force_full_repartition |= (imbalance()>imbalance_relative_tolerance*maxImbalance());
   force_full_repartition |= (imbalance()>1.0);
-
 
   // initialisations pour la gestion des contraintes (sauf initUidRef)
   initConstraints(false);
@@ -243,7 +243,9 @@ _partitionMesh(bool initial_partition,Int32 nb_part)
   info() << "Load balancing with Metis nb_weight=" << nb_weight << " initial=" << initial_partition
          << " call_strategy=" << (int)call_strategy
          << " is_shared_memory?=" << is_shared_memory
-         << " disabling_fpe?=" << m_disable_floatingexception;
+         << " disabling_fpe?=" << m_disable_floatingexception
+         << " sizeof(idxtype)==" << sizeof(idxtype);
+
   if (nb_weight==0)
     initial_partition = true;
 
@@ -369,7 +371,6 @@ _partitionMesh(bool initial_partition,Int32 nb_part)
       increase all load imbalances.
    */
   cells_weights = cellsWeightsWithConstraints(CheckedConvert::toInteger(nb_weight));
-
   // Déséquilibre autorisé pour chaque contrainte
   metis_ubvec.resize(CheckedConvert::toInteger(nb_weight));
   metis_ubvec.fill(tolerance_target);
@@ -512,7 +513,8 @@ _partitionMesh(bool initial_partition,Int32 nb_part)
     gd.initWithOneRankPerNode(gd_allow_only_one_rank);
   }
   
-  MPI_Comm metis_mpicomm = MPI_COMM_NULL;
+  IParallelMng* metis_pm = pm;
+
   info() << "Using GraphDistributor?=" << redistribute;
   if (redistribute){
     metis_xadj = gd.convert<idxtype>(metis_xadj, &metis_part, true);
@@ -521,13 +523,13 @@ _partitionMesh(bool initial_partition,Int32 nb_part)
     metis_ewgt = gd.convert<idxtype>(metis_ewgt);
     if (!initial_partition)
       metis_vsize = gd.convert<idxtype>(metis_vsize);
-    metis_mpicomm = gd.getCommunicator();
+    metis_pm = gd.subParallelMng();
 
     metis_vtkdist.resize(gd.size()+1);
     if (gd.contribute()) {
       UniqueArray<Integer> buffer(gd.size());
       Integer nbVertices = metis_part.size();
-      gd.parallelManager()->allGather(ConstArrayView<Integer>(1,&nbVertices),buffer);
+      gd.subParallelMng()->allGather(ConstArrayView<Integer>(1,&nbVertices),buffer);
       metis_vtkdist[0] = 0;
       for (int i = 1 ; i < metis_vtkdist.size() ; ++i) {
         metis_vtkdist[i] = metis_vtkdist[i-1] + buffer[i-1];
@@ -536,24 +538,22 @@ _partitionMesh(bool initial_partition,Int32 nb_part)
     metis_options[3] = PARMETIS_PSR_UNCOUPLED ; // Initial distribution information is in metis_part
   }
   else{
+
     metis_part = UniqueArray<idxtype>(nb_own_cell, my_rank);
-    Parallel::Communicator comm = this->communicator();
-    metis_mpicomm = (MPI_Comm)comm;
   }
+  MPI_Comm metis_mpicomm = static_cast<MPI_Comm>(metis_pm->communicator());
 
   bool do_call_metis = true;
   if (redistribute)
     do_call_metis = gd.contribute();
-  if (do_call_metis) {
 
+  if (do_call_metis) {
     if (dump_graph) {
       Integer iteration = sd->commonVariables().globalIteration();
       StringBuilder name("graph-");
       name += iteration;
-      _writeGraph(metis_vtkdist, metis_xadj, metis_adjncy, metis_vwgt, metis_ewgt, name.toString(),
-                  metis_mpicomm);
+      _writeGraph(metis_pm, metis_vtkdist, metis_xadj, metis_adjncy, metis_vwgt, metis_ewgt, name.toString());
     }
-
 
     // ParMetis >= 4 requires to define tpwgt.
     const Integer tpwgt_size = CheckedConvert::toInteger(nb_part) * CheckedConvert::toInteger(nb_weight);
@@ -564,15 +564,14 @@ _partitionMesh(bool initial_partition,Int32 nb_part)
     int retval = METIS_OK;
     Timer::Action ts(sd,"Metis");
 
-    MetisWrapper wrapper;
+    MetisWrapper wrapper(metis_pm);
     force_partition |= initial_partition;
     force_full_repartition |= force_partition;
     if (force_full_repartition){
       m_nb_refine = 0;
       if (force_partition) {
         info() << "Metis: use a complete partitioning.";
-        retval = wrapper.callPartKway(traceMng(),
-                                      in_out_digest, 
+        retval = wrapper.callPartKway(in_out_digest,
                                       redistribute_by_wrapper,
                                       metis_vtkdist.data(),
                                       metis_xadj.data(),
@@ -583,13 +582,11 @@ _partitionMesh(bool initial_partition,Int32 nb_part)
                                       &nparts, tpwgt.data(),
                                       metis_ubvec.data(),
                                       metis_options,&metis_edgecut,
-                                      metis_part.data(),
-                                      &metis_mpicomm);
+                                      metis_part.data());
       }
       else {
         info() << "Metis: use a complete REpartitioning.";
-        retval = wrapper.callAdaptiveRepart(traceMng(),
-                                            in_out_digest, 
+        retval = wrapper.callAdaptiveRepart(in_out_digest,
                                             redistribute_by_wrapper,
                                             metis_vtkdist.data(),
                                             metis_xadj.data(),
@@ -601,8 +598,7 @@ _partitionMesh(bool initial_partition,Int32 nb_part)
                                             &nparts,tpwgt.data(),
                                             metis_ubvec.data(),
                                             &itr, metis_options,&metis_edgecut,
-                                            metis_part.data(),
-                                            &metis_mpicomm);
+                                            metis_part.data());
       }
     }
     else{
@@ -864,30 +860,31 @@ _removeEmptyPartsV2(const Int32 nb_part,ArrayView<idxtype> metis_part)
  * This function saves the graph in Scotch distributed file format.
  */
 int MetisMeshPartitioner::
-_writeGraph(ArrayView<idxtype> metis_vtkdist,
-            ArrayView<idxtype> metis_xadj,
-            ArrayView<idxtype> metis_adjncy,
-            ArrayView<idxtype> metis_vwgt,
-            ArrayView<idxtype> metis_ewgt,
-            String name,
-            MPI_Comm metis_comm) const
+_writeGraph(IParallelMng* pm,
+            Span<const idxtype> metis_vtkdist,
+            Span<const idxtype> metis_xadj,
+            Span<const idxtype> metis_adjncy,
+            Span<const idxtype> metis_vwgt,
+            Span<const idxtype> metis_ewgt,
+            const String& name) const
 {
-  int commsize;
-  int commrank;
   int retval = 0;
 
-  idxtype nvtx;
-  idxtype nwgt=0;
-  bool have_ewgt;
-  long long localEdges, globalEdges = -1;
+  idxtype nvtx = 0;
+  idxtype nwgt = 0;
+  bool have_ewgt = false;
 
-  MPI_Comm_size(metis_comm, &commsize);
-  MPI_Comm_rank(metis_comm ,&commrank);
+  Int32 commrank = pm->commRank();
+  Int32 commsize = pm->commSize();
+  info() << "COMM_SIZE=" << commsize << " RANK=" << commrank;
+  traceMng()->flush();
+  //MPI_Comm_size(metis_comm, &commsize);
+  //MPI_Comm_rank(metis_comm ,&commrank);
   // NOTE GG: la gestion des erreurs via METIS_ERROR ne fonctionne pas: cela produit un blocage
   // car il y a un MPI_Allreduce dans la partie sans erreur.
   // NOTE GG: Ne pas utiliser MPI directement.
 
-#define METIS_ERROR  do {retval = -1;  std::cerr << "_writeGraph : error line " << __LINE__ << std::endl; goto End;} while (0)
+#define METIS_ERROR  ARCANE_FATAL("_writeGraph")
 
   StringBuilder filename(name);
   filename += "_";
@@ -915,8 +912,8 @@ _writeGraph(ArrayView<idxtype> metis_vtkdist,
   if (!file.is_open())
     METIS_ERROR;
 
-  localEdges = metis_xadj[nvtx];
-  MPI_Allreduce(&localEdges, &globalEdges, 1, MPI_LONG_LONG, MPI_SUM, metis_comm);
+  Int64 localEdges = metis_xadj[nvtx];
+  Int64 globalEdges = pm->reduce(Parallel::ReduceSum,localEdges);
 
   file << "2" << std::endl;
   file << commsize << "\t" << commrank << std::endl;
@@ -948,10 +945,7 @@ _writeGraph(ArrayView<idxtype> metis_vtkdist,
   }
   file.close();
 
-
- End:
-  MPI_Barrier(metis_comm);
-
+  pm->barrier();
   return retval;
 }
 
