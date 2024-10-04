@@ -11,15 +11,15 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/std/MetisWrapper.h"
+#include "arcane/std/internal/MetisWrapper.h"
 
 #include "arcane/utils/CheckedConvert.h"
 
 #include "arcane/core/IParallelMng.h"
 
-#include "arcane/std/MetisGraph.h"
-#include "arcane/std/MetisGraphDigest.h"
-#include "arcane/std/MetisGraphGather.h"
+#include "arcane/std/internal/MetisGraph.h"
+#include "arcane/std/internal/MetisGraphDigest.h"
+#include "arcane/std/internal/MetisGraphGather.h"
 
 #include <functional>
 

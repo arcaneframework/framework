@@ -16,7 +16,7 @@
 
 #include "arcane/core/IParallelMng.h"
 
-#include "arcane/std/MetisGraphDigest.h"
+#include "arcane/std/internal/MetisGraphDigest.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

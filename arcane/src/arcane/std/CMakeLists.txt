@@ -77,10 +77,11 @@ if(Parmetis_FOUND)
     MetisGraphDigest.cc
     MetisGraphGather.cc
     MetisWrapper.cc
-    MetisGraph.h
-    MetisGraphDigest.h
-    MetisGraphGather.h
-    MetisWrapper.h
+    internal/MetisGraphDigest.h
+    internal/MetisGraphGather.h
+    internal/MetisGraph.h
+    internal/MetisWrapper.h
+
     )
 endif()
 if(ZOLTAN_FOUND)

@@ -52,7 +52,7 @@ typedef idx_t idxtype;
 
 #include "arcane/std/PartitionConverter.h"
 #include "arcane/std/GraphDistributor.h"
-#include "arcane/std/MetisWrapper.h"
+#include "arcane/std/internal/MetisWrapper.h"
 
 #include <chrono>
 
