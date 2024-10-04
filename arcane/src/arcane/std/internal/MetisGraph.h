@@ -5,52 +5,69 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MetisGraphGather.h                                          (C) 2000-2024 */
+/* MetisGraph.h                                                (C) 2000-2024 */
 /*                                                                           */
-/* Regroupement de graphes de 'Parmetis'.                                    */
+/* Gestion d'un graphe de Metis.                                             */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_STD_METISGRAPHGATHER
-#define ARCANE_STD_METISGRAPHGATHER
+#ifndef ARCANE_STD_METISGRAPH
+#define ARCANE_STD_METISGRAPH
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/Array.h"
 #include "arcane/utils/ArrayView.h"
-#include "arcane/utils/String.h"
-
-#include "arcane/std/MetisGraph.h"
-
 #include <parmetis.h>
-#include <mpi.h>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
 namespace Arcane
 {
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class MetisGraphGather
+struct MetisGraph
+{
+  int nb_vertices = 0;
+  bool have_vsize = false;
+  bool have_adjwgt = false;
+  UniqueArray<idx_t> xadj;
+  UniqueArray<idx_t> adjncy;
+  UniqueArray<idx_t> vwgt;
+  UniqueArray<idx_t> vsize;
+  UniqueArray<idx_t> adjwgt;
+  UniqueArray<idx_t> part;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+class MetisGraphView
 {
  public:
-
-  /*!
-   * \brief Effectue un regroupement du graphe ParMetis "my_graph" sur le processeur de
-   * rang 0 dans le communicateur "comm". Le graph résultat est "graph".
-   */
-  void gatherGraph(const bool need_part, const String& comm_name, MPI_Comm comm,
-                   ConstArrayView<idx_t> vtxdist, const int ncon, MetisGraphView my_graph,
-                   MetisGraph& graph);
-
-  /*!
-   * \brief Distribue le partitionnement "part" depuis le processeur de rang 0 dans le
-   * communicateur "comm" sur tous les processeurs de ce communicateur. Le resultat
-   * est "my_part", qui doit deja etre dimensionne avant appel.
-   */
-  void scatterPart(MPI_Comm comm, ConstArrayView<idx_t> vtxdist, ConstArrayView<idx_t> part,
-                   ArrayView<idx_t> my_part);
+  MetisGraphView()  = default;
+  
+  MetisGraphView(MetisGraph& graph)
+  : nb_vertices(graph.nb_vertices)
+  , have_vsize(graph.have_vsize)
+  , have_adjwgt(graph.have_adjwgt)
+  , xadj(graph.xadj)
+  , adjncy(graph.adjncy)
+  , vwgt(graph.vwgt)
+  , vsize(graph.vsize)
+  , adjwgt(graph.adjwgt)
+  , part(graph.part)
+  {}
+ public:
+  int nb_vertices = 0;
+  bool have_vsize = false;
+  bool have_adjwgt = false;
+  ArrayView<idx_t> xadj;
+  ArrayView<idx_t> adjncy;
+  ArrayView<idx_t> vwgt;
+  ArrayView<idx_t> vsize;
+  ArrayView<idx_t> adjwgt;
+  ArrayView<idx_t> part;
 };
 
 /*---------------------------------------------------------------------------*/

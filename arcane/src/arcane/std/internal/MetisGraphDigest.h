@@ -9,8 +9,8 @@
 /*                                                                           */
 /* Calcule une somme de contrôle globale des entrées/sorties Metis.          */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_STD_METISGRAPHDIGEST
-#define ARCANE_STD_METISGRAPHDIGEST
+#ifndef ARCANE_STD_INTERNAL_METISGRAPHDIGEST
+#define ARCANE_STD_INTERNAL_METISGRAPHDIGEST
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -19,7 +19,7 @@
 
 #include "arcane/core/ArcaneTypes.h"
 
-#include "arcane/std/MetisGraph.h"
+#include "arcane/std/internal/MetisGraph.h"
 
 #include <string>
 

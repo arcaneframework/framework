@@ -11,9 +11,9 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/CheckedConvert.h"
+#include "arcane/std/internal/MetisGraphGather.h"
 
-#include "arcane/std/MetisGraphGather.h"
+#include "arcane/utils/CheckedConvert.h"
 
 #include <algorithm>
 
