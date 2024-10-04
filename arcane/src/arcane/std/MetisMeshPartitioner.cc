@@ -564,15 +564,14 @@ _partitionMesh(bool initial_partition,Int32 nb_part)
     int retval = METIS_OK;
     Timer::Action ts(sd,"Metis");
 
-    MetisWrapper wrapper;
+    MetisWrapper wrapper(metis_pm);
     force_partition |= initial_partition;
     force_full_repartition |= force_partition;
     if (force_full_repartition){
       m_nb_refine = 0;
       if (force_partition) {
         info() << "Metis: use a complete partitioning.";
-        retval = wrapper.callPartKway(pm,
-                                      in_out_digest, 
+        retval = wrapper.callPartKway(in_out_digest,
                                       redistribute_by_wrapper,
                                       metis_vtkdist.data(),
                                       metis_xadj.data(),
@@ -583,13 +582,11 @@ _partitionMesh(bool initial_partition,Int32 nb_part)
                                       &nparts, tpwgt.data(),
                                       metis_ubvec.data(),
                                       metis_options,&metis_edgecut,
-                                      metis_part.data(),
-                                      &metis_mpicomm);
+                                      metis_part.data());
       }
       else {
         info() << "Metis: use a complete REpartitioning.";
-        retval = wrapper.callAdaptiveRepart(pm,
-                                            in_out_digest, 
+        retval = wrapper.callAdaptiveRepart(in_out_digest,
                                             redistribute_by_wrapper,
                                             metis_vtkdist.data(),
                                             metis_xadj.data(),
@@ -601,8 +598,7 @@ _partitionMesh(bool initial_partition,Int32 nb_part)
                                             &nparts,tpwgt.data(),
                                             metis_ubvec.data(),
                                             &itr, metis_options,&metis_edgecut,
-                                            metis_part.data(),
-                                            &metis_mpicomm);
+                                            metis_part.data());
       }
     }
     else{

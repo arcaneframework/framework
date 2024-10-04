@@ -14,7 +14,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/ITraceMng.h"
+#include "arcane/utils/TraceAccessor.h"
 
 #include <parmetis.h>
 #include <mpi.h>
@@ -26,6 +26,7 @@
 namespace Arcane
 {
 class MetisGraphView;
+class IParallelMng;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -33,11 +34,16 @@ class MetisGraphView;
  * \brief Wrapper autour des appels de Parmetis.
  */
 class MetisWrapper
+: public TraceAccessor
 {
  private:
 
   using MetisCall = std::function<int(MPI_Comm& comm, MetisGraphView graph,
                                       ArrayView<idx_t> vtxdist)>;
+
+ public:
+
+  explicit MetisWrapper(IParallelMng* pm);
 
  public:
 
@@ -48,11 +54,10 @@ class MetisWrapper
    * a ParMETIS_V3_PartKway. Lorsque print_digest == true, la signature des
    * entrees / sorties de ParMETIS_V3_PartKway est affichee.
    */
-  int callPartKway(IParallelMng* pm, const bool print_digest, const bool gather,
-                   idx_t *vtxdist, idx_t *xadj, idx_t *adjncy, idx_t *vwgt, 
-                   idx_t *adjwgt, idx_t *wgtflag, idx_t *numflag, idx_t *ncon, idx_t *nparts, 
-                   real_t *tpwgts, real_t *ubvec, idx_t *options, idx_t *edgecut, idx_t *part, 
-                   MPI_Comm *comm);
+  int callPartKway(const bool print_digest, const bool gather,
+                   idx_t* vtxdist, idx_t* xadj, idx_t* adjncy, idx_t* vwgt,
+                   idx_t* adjwgt, idx_t* wgtflag, idx_t* numflag, idx_t* ncon, idx_t* nparts,
+                   real_t* tpwgts, real_t* ubvec, idx_t* options, idx_t* edgecut, idx_t* part);
 
   /*!
    * \brief Simple wrapper autour de la routine ParMetis "ParMETIS_V3_AdaptiveRepart".
@@ -61,18 +66,21 @@ class MetisWrapper
    * a ParMETIS_V3_AdaptiveRepart. Lorsque print_digest == true, la signature des
    * entrees / sorties de ParMETIS_V3_AdaptiveRepart est affichee.
    */
-         
-  int callAdaptiveRepart(IParallelMng* pm, const bool print_digest, const bool gather,
-                         idx_t *vtxdist, idx_t *xadj, idx_t *adjncy, idx_t *vwgt, 
-                         idx_t *vsize, idx_t *adjwgt, idx_t *wgtflag, idx_t *numflag, idx_t *ncon, 
-                         idx_t *nparts, real_t *tpwgts, real_t *ubvec, real_t *ipc2redist, 
-                         idx_t *options, idx_t *edgecut, idx_t *part, MPI_Comm *comm);
+
+  int callAdaptiveRepart(const bool print_digest, const bool gather,
+                         idx_t* vtxdist, idx_t* xadj, idx_t* adjncy, idx_t* vwgt,
+                         idx_t* vsize, idx_t* adjwgt, idx_t* wgtflag, idx_t* numflag, idx_t* ncon,
+                         idx_t* nparts, real_t* tpwgts, real_t* ubvec, real_t* ipc2redist,
+                         idx_t* options, idx_t* edgecut, idx_t* part);
 
  private:
 
-  int _callMetis(MPI_Comm comm, ArrayView<idx_t> vtxdist, MetisGraphView my_graph,
-                 MetisCall& metis);
-  int _callMetisWith2Processors(const Int32 ncon, const bool need_part, MPI_Comm comm,
+  IParallelMng* m_parallel_mng = nullptr;
+
+ private:
+
+  int _callMetis(ArrayView<idx_t> vtxdist, MetisGraphView my_graph, MetisCall& metis);
+  int _callMetisWith2Processors(const Int32 ncon, const bool need_part,
                                 ConstArrayView<idx_t> vtxdist, MetisGraphView my_graph,
                                 MetisCall& metis);
 };

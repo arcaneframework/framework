@@ -11,6 +11,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+#include "arcane/std/MetisWrapper.h"
+
 #include "arcane/utils/CheckedConvert.h"
 
 #include "arcane/core/IParallelMng.h"
@@ -18,7 +20,6 @@
 #include "arcane/std/MetisGraph.h"
 #include "arcane/std/MetisGraphDigest.h"
 #include "arcane/std/MetisGraphGather.h"
-#include "arcane/std/MetisWrapper.h"
 
 #include <functional>
 
@@ -27,6 +28,23 @@
 
 namespace Arcane
 {
+namespace
+{
+MPI_Comm _getMPICommunicator(IParallelMng* pm)
+{
+  return static_cast<MPI_Comm>(pm->communicator());
+}
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+MetisWrapper::
+MetisWrapper(IParallelMng* pm)
+: TraceAccessor(pm->traceMng())
+, m_parallel_mng(pm)
+{
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -34,9 +52,9 @@ namespace Arcane
  * \brief Appelle Metis sans regroupement de graph.
  */
 int MetisWrapper::
-_callMetis(MPI_Comm comm, ArrayView<idx_t> vtxdist, MetisGraphView my_graph,
-           MetisCall& metis)
+_callMetis(ArrayView<idx_t> vtxdist, MetisGraphView my_graph, MetisCall& metis)
 {
+  MPI_Comm comm = _getMPICommunicator(m_parallel_mng);
   return metis(comm, my_graph, vtxdist);
 }
 
@@ -46,15 +64,14 @@ _callMetis(MPI_Comm comm, ArrayView<idx_t> vtxdist, MetisGraphView my_graph,
  * \brief Appelle Metis en regroupant le graph sur 2 processeurs.
  */
 int MetisWrapper::
-_callMetisWith2Processors(const Int32 ncon, const bool need_part, MPI_Comm comm,
+_callMetisWith2Processors(const Int32 ncon, const bool need_part,
                           ConstArrayView<idx_t> vtxdist, MetisGraphView my_graph,
                           MetisCall& metis)
 {
-  int my_rank = -1;
-  int nb_rank = -1;
-  
-  MPI_Comm_rank(comm, &my_rank);
-  MPI_Comm_size(comm, &nb_rank);
+  MPI_Comm comm = _getMPICommunicator(m_parallel_mng);
+
+  Int32 nb_rank = m_parallel_mng->commSize();
+  Int32 my_rank = m_parallel_mng->commRank();
   
   String half_comm_name = "first";
   UniqueArray<idx_t> half_vtxdist(vtxdist.size());
@@ -63,7 +80,8 @@ _callMetisWith2Processors(const Int32 ncon, const bool need_part, MPI_Comm comm,
   int comm_1_size = nb_rank / 2;
   int comm_0_io_rank = 0;
   int comm_1_io_rank = comm_0_size;
-  
+
+  // TODO: Utiliser un IParallelMng (on pourrait le conserver d'un appel à l'autre)
   MPI_Comm half_comm;
   
   for (int i = 0; i < nb_rank + 1; ++i) {
@@ -122,19 +140,14 @@ _callMetisWith2Processors(const Int32 ncon, const bool need_part, MPI_Comm comm,
 /*---------------------------------------------------------------------------*/
 
 int MetisWrapper::
-callPartKway(IParallelMng* pm, const bool print_digest, const bool gather,
+callPartKway(const bool print_digest, const bool gather,
              idx_t *vtxdist, idx_t *xadj, idx_t *adjncy, idx_t *vwgt, 
              idx_t *adjwgt, idx_t *wgtflag, idx_t *numflag, idx_t *ncon, idx_t *nparts, 
-             real_t *tpwgts, real_t *ubvec, idx_t *options, idx_t *edgecut, idx_t *part, 
-             MPI_Comm *comm)
+             real_t *tpwgts, real_t *ubvec, idx_t *options, idx_t *edgecut, idx_t *part)
 {
-  ITraceMng* tm = pm->traceMng();
   int ierr = 0;
-  int nb_rank = -1;
-  int my_rank = -1;
-  
-  MPI_Comm_size(*comm, &nb_rank);
-  MPI_Comm_rank(*comm, &my_rank);
+  Int32 nb_rank = m_parallel_mng->commSize();
+  Int32 my_rank = m_parallel_mng->commRank();
   
   MetisCall partkway = [&](MPI_Comm& graph_comm, MetisGraphView graph,
                            ArrayView<idx_t> graph_vtxdist)
@@ -173,7 +186,7 @@ callPartKway(IParallelMng* pm, const bool print_digest, const bool gather,
     options2[METIS_OPTION_MINCONN] = 0;
     options2[METIS_OPTION_OBJTYPE] = METIS_OBJTYPE_VOL;
     options2[METIS_OPTION_SEED] = 25; // TODO: pouvoir changer la graine
-    tm->pwarning() << "MetisWrapper: using user 'imbalance_factor' is not yet implemented. Using defaut value 30";
+    pwarning() << "MetisWrapper: using user 'imbalance_factor' is not yet implemented. Using defaut value 30";
 
     // Le nombre de sommets du graph est dans le premier indice de graph_vtxdist
     idx_t nvtxs = graph_vtxdist[1];
@@ -198,30 +211,30 @@ callPartKway(IParallelMng* pm, const bool print_digest, const bool gather,
   my_graph.have_adjwgt = true;
   
   if (print_digest){
-    MetisGraphDigest d(pm);
+    MetisGraphDigest d(m_parallel_mng);
     String digest = d.computeInputDigest(false, 3, my_graph, vtxdist, wgtflag, numflag,
                                          ncon, nparts, tpwgts, ubvec, nullptr, options);
     if (my_rank == 0) {
-      tm->info() << "signature des entrees Metis = " << digest;
+      info() << "signature des entrees Metis = " << digest;
     }
   }
   
   if (gather && nb_rank > 2) {
     // Normalement c'est plus rapide ...
-    tm->info() << "Partitioning metis : re-grouping " << nb_rank << " -> 2 rank";
-    ierr = _callMetisWith2Processors(nb_con, false, *comm, offset, my_graph, partkway);
+    info() << "Partitioning metis : re-grouping " << nb_rank << " -> 2 rank";
+    ierr = _callMetisWith2Processors(nb_con, false, offset, my_graph, partkway);
   }
   else {
-    tm->info() << "Partitioning metis : nb rank = " << nb_rank;
-    ierr = _callMetis(*comm, offset, my_graph, (nb_rank==1) ? partkway_seq : partkway);
+    info() << "Partitioning metis : nb rank = " << nb_rank;
+    ierr = _callMetis(offset, my_graph, (nb_rank==1) ? partkway_seq : partkway);
   }
 
-  tm->info() << "End Partitioning metis";
+  info() << "End Partitioning metis";
   if (print_digest){
-    MetisGraphDigest d(pm);
+    MetisGraphDigest d(m_parallel_mng);
     String digest = d.computeOutputDigest(my_graph, edgecut);
     if (my_rank == 0) {
-      tm->info() << "hash for Metis output = " << digest;
+      info() << "hash for Metis output = " << digest;
     }
   }
   
@@ -232,19 +245,15 @@ callPartKway(IParallelMng* pm, const bool print_digest, const bool gather,
 /*---------------------------------------------------------------------------*/
 
 int MetisWrapper::
-callAdaptiveRepart(IParallelMng* pm, const bool print_digest, const bool gather,
+callAdaptiveRepart(const bool print_digest, const bool gather,
                    idx_t *vtxdist, idx_t *xadj, idx_t *adjncy, idx_t *vwgt, 
                    idx_t *vsize, idx_t *adjwgt, idx_t *wgtflag, idx_t *numflag, idx_t *ncon, 
                    idx_t *nparts, real_t *tpwgts, real_t *ubvec, real_t *ipc2redist, 
-                   idx_t *options, idx_t *edgecut, idx_t *part, MPI_Comm *comm)
+                   idx_t *options, idx_t *edgecut, idx_t *part)
 {
-  ITraceMng* tm = pm->traceMng();
   int ierr = 0;
-  int nb_rank = -1;
-  int my_rank = -1;
-  
-  MPI_Comm_size(*comm, &nb_rank);
-  MPI_Comm_rank(*comm, &my_rank);
+  Int32 nb_rank = m_parallel_mng->commSize();
+  Int32 my_rank = m_parallel_mng->commRank();
   
   MetisCall repart_func = [&](MPI_Comm& graph_comm, MetisGraphView graph,
                               ArrayView<idx_t> graph_vtxdist)
@@ -272,7 +281,7 @@ callAdaptiveRepart(IParallelMng* pm, const bool print_digest, const bool gather,
     options2[METIS_OPTION_MINCONN] = 0;
     options2[METIS_OPTION_OBJTYPE] = METIS_OBJTYPE_VOL;
     options2[METIS_OPTION_SEED] = 25; // TODO: pouvoir changer la graine
-    tm->pwarning() << "MetisWrapper: using user 'imbalance_factor' is not yet implemented. Using defaut value 30";
+    pwarning() << "MetisWrapper: using user 'imbalance_factor' is not yet implemented. Using defaut value 30";
     // Le nombre de sommets du graph est dans le premier indice de graph_vtxdist
     idx_t nvtxs = graph_vtxdist[1];
     return METIS_PartGraphKway(&nvtxs /*graph_vtxdist.data()*/, ncon, graph.xadj.data(),
@@ -299,28 +308,28 @@ callAdaptiveRepart(IParallelMng* pm, const bool print_digest, const bool gather,
 
   
   if (print_digest){
-    MetisGraphDigest d(pm);
+    MetisGraphDigest d(m_parallel_mng);
     String digest = d.computeInputDigest(true, 4, my_graph, vtxdist, wgtflag, numflag,
                                          ncon, nparts, tpwgts, ubvec, nullptr, options);
     if (my_rank == 0) {
-      tm->info() << "signature des entrees Metis = " << digest;
+      info() << "signature des entrees Metis = " << digest;
     }
   }
 
   if (gather && nb_rank > 2) {
-    tm->info() << "Partionnement metis : regroupement " << nb_rank << " -> 2 processeurs";
-    ierr = _callMetisWith2Processors(nb_con, true, *comm, offset, my_graph, repart_func);
+    info() << "Partionnement metis : regroupement " << nb_rank << " -> 2 processeurs";
+    ierr = _callMetisWith2Processors(nb_con, true, offset, my_graph, repart_func);
   }
   else {
-    tm->info() << "Partionnement metis : nb processeurs = " << nb_rank;
-    ierr = _callMetis(*comm, offset, my_graph, (nb_rank==1) ? repart_seq_func : repart_func);
+    info() << "Partionnement metis : nb processeurs = " << nb_rank;
+    ierr = _callMetis(offset, my_graph, (nb_rank==1) ? repart_seq_func : repart_func);
   }
 
   if (print_digest) {
-    MetisGraphDigest d(pm);
+    MetisGraphDigest d(m_parallel_mng);
     String digest = d.computeOutputDigest(my_graph, edgecut);
     if (my_rank == 0) {
-      tm->info() << "signature des sorties Metis = " << digest;
+      info() << "signature des sorties Metis = " << digest;
     }
   }
   
