@@ -80,9 +80,9 @@ HypreVector::allocate()
         new VectorInternal(static_cast<const MPI_Comm>(pm), memory_type, exec_space);
   }
   else {
-    alien_fatal([&] {
-      cout() << "Mpi is not initialized. Should be the case even in sequential";
-    });
+    m_internal = new VectorInternal(MPI_COMM_WORLD,
+        memory_type,
+        exec_space);
   }
   int ilower = dist.offset() * m_block_size;
   int iupper = ilower + dist.localSize() * m_block_size - 1;

@@ -237,10 +237,9 @@ HypreInternalLinearSolver::solve(
   int (*precond_destroy_function)(HYPRE_Solver) = NULL;
 
   auto pm = A.getParallelMng()->communicator();
-  if (!pm.isValid()) alien_fatal([&] {
-      cout() << "Mpi is not initialized. Should be the case even in sequential";
-    });
-  MPI_Comm comm = static_cast<const MPI_Comm>(pm);
+  MPI_Comm comm = (pm.isValid())
+      ? static_cast<const MPI_Comm>(pm)
+      : MPI_COMM_WORLD;
   std::string precond_name = "undefined";
   switch (m_options->preconditioner()) {
   case HypreOptionTypes::NoPC:
