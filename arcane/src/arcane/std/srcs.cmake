@@ -129,7 +129,6 @@ set(ARCANE_SOURCES
 )
 
 set(AXL_FILES
-  EnsightHdfPostProcessor
   ArcaneBasicCheckpoint
   ArcaneLoadBalance
   Ensight7PostProcessor
