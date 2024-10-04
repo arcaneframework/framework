@@ -12,6 +12,7 @@
 
   <module-test-unitaire>
     <test name="MeshUnitTest">
+      <check-read-property>ReadCellProperty</check-read-property>
     </test>
   </module-test-unitaire>
 
