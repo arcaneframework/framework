@@ -833,6 +833,7 @@ arcane_add_test_parallel(loadbalance_test1_3exchange_v2 testLoadBalanceHydro-Mes
 if(Parmetis_FOUND)
   ARCANE_ADD_TEST_PARALLEL(loadbalance_metis1 testLoadBalanceHydro-Metis.arc 4 -m 30)
   ARCANE_ADD_TEST_PARALLEL_THREAD(loadbalance_metis3 testLoadBalanceHydro-Metis3.arc 4 -m 30)
+  ARCANE_ADD_TEST_PARALLEL(loadbalance_metis3 testLoadBalanceHydro-Metis3.arc 4 -m 30)
   ARCANE_ADD_TEST_PARALLEL(loadbalance_metis1_no_node testLoadBalanceHydro-Metis2.arc 4 -m 30)
   ARCANE_ADD_TEST_PARALLEL(loadbalance_metis1_rep3 testLoadBalanceHydro-Metis.arc 12 -m 30 -R 3)
 endif()
