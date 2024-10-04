@@ -55,9 +55,35 @@ class ARCCORE_COLLECTIONS_EXPORT MemoryAllocationOptions
 
  public:
 
-  MemoryAllocationOptions(const MemoryAllocationOptions& rhs);
-  MemoryAllocationOptions& operator=(const MemoryAllocationOptions& rhs);
-  ~MemoryAllocationOptions();
+  MemoryAllocationOptions(const MemoryAllocationOptions& rhs)
+  : m_allocator(rhs.m_allocator)
+  , m_debug_info(rhs.m_debug_info)
+  , m_device(rhs.m_device)
+  , m_memory_location_hint(rhs.m_memory_location_hint)
+  {
+    if (m_debug_info)
+      _addDebugReference();
+  }
+
+  ~MemoryAllocationOptions()
+  {
+    if (m_debug_info)
+      _removeDebugReference();
+  }
+  MemoryAllocationOptions& operator=(const MemoryAllocationOptions& rhs)
+  {
+    if (&rhs == this)
+      return (*this);
+    if (m_debug_info)
+      _removeDebugReference();
+    m_allocator = rhs.m_allocator;
+    m_memory_location_hint = rhs.m_memory_location_hint;
+    m_device = rhs.m_device;
+    m_debug_info = rhs.m_debug_info;
+    if (m_debug_info)
+      _addDebugReference();
+    return (*this);
+  }
 
  public:
 
@@ -95,6 +121,11 @@ class ARCCORE_COLLECTIONS_EXPORT MemoryAllocationOptions
   ArrayDebugInfo* m_debug_info = nullptr;
   Int16 m_device = -1;
   eMemoryLocationHint m_memory_location_hint = eMemoryLocationHint::None;
+
+ private:
+
+  void _addDebugReference();
+  void _removeDebugReference();
 };
 
 /*---------------------------------------------------------------------------*/
