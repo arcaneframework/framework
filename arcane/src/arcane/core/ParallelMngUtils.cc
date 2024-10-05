@@ -1,20 +1,21 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ParallelMngUtils.cc                                         (C) 2000-2021 */
+/* ParallelMngUtils.cc                                         (C) 2000-2024 */
 /*                                                                           */
 /* Fonctions utilitaires associées aux 'IParallelMng'.                       */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/ParallelMngUtils.h"
+#include "arcane/core/ParallelMngUtils.h"
 
-#include "arcane/IParallelMng.h"
-#include "arcane/IParallelMngUtilsFactory.h"
+#include "arcane/core/IParallelMng.h"
+#include "arcane/core/IParallelMngUtilsFactory.h"
+#include "arcane/core/internal/IParallelMngInternal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -58,19 +59,19 @@ class ParallelMngUtilsAccessor
   }
 
   static Ref<IVariableSynchronizer>
-  createSynchronizer(IParallelMng* pm,IItemFamily* family)
+  createSynchronizer(IParallelMng* pm, IItemFamily* family)
   {
     ARCANE_CHECK_POINTER(pm);
     auto f = pm->_internalUtilsFactory();
-    return f->createSynchronizer(pm,family);
+    return f->createSynchronizer(pm, family);
   }
 
   static Ref<IVariableSynchronizer>
-  createSynchronizer(IParallelMng* pm,const ItemGroup& group)
+  createSynchronizer(IParallelMng* pm, const ItemGroup& group)
   {
     ARCANE_CHECK_POINTER(pm);
     auto f = pm->_internalUtilsFactory();
-    return f->createSynchronizer(pm,group);
+    return f->createSynchronizer(pm, group);
   }
 
   static Ref<IParallelTopology>
@@ -79,6 +80,12 @@ class ParallelMngUtilsAccessor
     ARCANE_CHECK_POINTER(pm);
     auto f = pm->_internalUtilsFactory();
     return f->createTopology(pm);
+  }
+  static Ref<IParallelMng>
+  createSubParallelMngRef(IParallelMng* pm, Int32 color, Int32 key)
+  {
+    ARCANE_CHECK_POINTER(pm);
+    return pm->_internalApi()->createSubParallelMngRef(color, key);
   }
 };
 
@@ -130,6 +137,12 @@ Ref<IParallelTopology>
 createTopologyRef(IParallelMng* pm)
 {
   return ParallelMngUtilsAccessor::createTopology(pm);
+}
+
+Ref<IParallelMng>
+createSubParallelMngRef(IParallelMng* pm, Int32 color, Int32 key)
+{
+  return ParallelMngUtilsAccessor::createSubParallelMngRef(pm, color, key);
 }
 
 /*---------------------------------------------------------------------------*/

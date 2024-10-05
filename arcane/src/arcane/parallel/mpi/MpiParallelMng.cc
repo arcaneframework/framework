@@ -806,20 +806,8 @@ setReplication(IParallelReplication* v)
 /*---------------------------------------------------------------------------*/
 
 IParallelMng* MpiParallelMng::
-_createSubParallelMng(Int32ConstArrayView kept_ranks)
+_createSubParallelMng(MPI_Comm sub_communicator)
 {
-  MPI_Group mpi_group = MPI_GROUP_NULL;
-  MPI_Comm_group(m_communicator,&mpi_group);
-  Integer nb_sub_rank = kept_ranks.size();
-  UniqueArray<int> mpi_kept_ranks(nb_sub_rank);
-  for( Integer i=0; i<nb_sub_rank; ++i )
-    mpi_kept_ranks[i] = (int)kept_ranks[i];
-
-  MPI_Group final_group = MPI_GROUP_NULL;
-  MPI_Group_incl(mpi_group,nb_sub_rank,mpi_kept_ranks.data(),&final_group);
-  MPI_Comm sub_communicator = MPI_COMM_NULL;
-
-  MPI_Comm_create(m_communicator,final_group, &sub_communicator);
   // Si nul, ce rang ne fait pas partie du sous-communicateur
   if (sub_communicator==MPI_COMM_NULL)
     return nullptr;
@@ -839,6 +827,39 @@ _createSubParallelMng(Int32ConstArrayView kept_ranks)
   IParallelMng* sub_pm = new MpiParallelMng(bi);
   sub_pm->build();
   return sub_pm;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Ref<IParallelMng> MpiParallelMng::
+_createSubParallelMngRef(Int32 color, Int32 key)
+{
+  MPI_Comm sub_communicator = MPI_COMM_NULL;
+  MPI_Comm_split(m_communicator, color, key, &sub_communicator);
+  IParallelMng* sub_pm = _createSubParallelMng(sub_communicator);
+  return makeRef(sub_pm);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+IParallelMng* MpiParallelMng::
+_createSubParallelMng(Int32ConstArrayView kept_ranks)
+{
+  MPI_Group mpi_group = MPI_GROUP_NULL;
+  MPI_Comm_group(m_communicator, &mpi_group);
+  Integer nb_sub_rank = kept_ranks.size();
+  UniqueArray<int> mpi_kept_ranks(nb_sub_rank);
+  for (Integer i = 0; i < nb_sub_rank; ++i)
+    mpi_kept_ranks[i] = (int)kept_ranks[i];
+
+  MPI_Group final_group = MPI_GROUP_NULL;
+  MPI_Group_incl(mpi_group, nb_sub_rank, mpi_kept_ranks.data(), &final_group);
+  MPI_Comm sub_communicator = MPI_COMM_NULL;
+
+  MPI_Comm_create(m_communicator, final_group, &sub_communicator);
+  return _createSubParallelMng(sub_communicator);
 }
 
 /*---------------------------------------------------------------------------*/
