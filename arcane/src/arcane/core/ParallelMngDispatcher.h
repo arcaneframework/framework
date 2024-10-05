@@ -284,6 +284,7 @@ class ARCANE_CORE_EXPORT ParallelMngDispatcher
   virtual ISerializeMessageList* _createSerializeMessageList() =0;
   virtual IParallelMng* _createSubParallelMng(Int32ConstArrayView kept_ranks) =0;
   virtual bool _isAcceleratorAware() const { return false; }
+  virtual Ref<IParallelMng> _createSubParallelMngRef(Int32 color, Int32 key);
 
  protected:
 
