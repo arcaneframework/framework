@@ -70,7 +70,12 @@ createTopologyRef(IParallelMng* pm);
  * Cette opération est collective et est équivalent à MPI_Comm_split.
  *
  * Les rangs dont \a color vaut la même valeur seront dans le même communicateur.
- * \a key indique le rang de cette instance dans le nouveau communicateur.
+ * \a key permet d'ordonner les rangs dans le sous-communicateur créé. S'il vaut
+ * pm->commRank() alors les rangs dans le sous-communicateur auront le même ordre
+ * que dans \a pm.
+ *
+ * * Si \a color est négatif, alors le rang actuel ne sera associé à aucun
+ * communicateur et la valeur retournée sera nulle.
  */
 extern "C++" ARCANE_CORE_EXPORT Ref<IParallelMng>
 createSubParallelMngRef(IParallelMng* pm, Int32 color, Int32 key);

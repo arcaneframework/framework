@@ -486,8 +486,8 @@ build()
   if (m_mpi_lock)
     m_trace->info() << "Using mpi with locks.";
 
-  // Pour l'instant (avril 2020) on laisse l'implémentation historique le
-  // temps de valider l'ancienne.
+  // Utilise par défaut (janvier 2024) la nouvelle implémentation de la sérialisation,
+  // mais on laisse l'ancienne accessible au cas où.
   if (platform::getEnvironmentVariable("ARCANE_SYNCHRONIZE_LIST_VERSION") == "1") {
     m_use_serialize_list_v2 = false;
     m_trace->info() << "Using MPI SerializeList version 1";
@@ -835,6 +835,8 @@ _createSubParallelMng(MPI_Comm sub_communicator)
 Ref<IParallelMng> MpiParallelMng::
 _createSubParallelMngRef(Int32 color, Int32 key)
 {
+  if (color < 0)
+    color = MPI_UNDEFINED;
   MPI_Comm sub_communicator = MPI_COMM_NULL;
   MPI_Comm_split(m_communicator, color, key, &sub_communicator);
   IParallelMng* sub_pm = _createSubParallelMng(sub_communicator);

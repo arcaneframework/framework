@@ -84,7 +84,7 @@ _callMetisWith2Processors(const Int32 ncon, const bool need_part,
 
   metis_gather.gatherGraph(need_part, half_vtxdist, ncon, my_graph, metis_graph);
 
-  color = MPI_UNDEFINED;
+  color = -1;
   if (my_rank == comm_0_io_rank || my_rank == comm_1_io_rank) {
     color = 1;
   }
