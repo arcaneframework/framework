@@ -14,8 +14,10 @@
 #include "arcane/std/internal/MetisWrapper.h"
 
 #include "arcane/utils/CheckedConvert.h"
+#include "arcane/utils/ITraceMng.h"
 
 #include "arcane/core/IParallelMng.h"
+#include "arcane/core/ParallelMngUtils.h"
 
 #include "arcane/std/internal/MetisGraph.h"
 #include "arcane/std/internal/MetisGraphDigest.h"
@@ -28,13 +30,6 @@
 
 namespace Arcane
 {
-namespace
-{
-MPI_Comm _getMPICommunicator(IParallelMng* pm)
-{
-  return static_cast<MPI_Comm>(pm->communicator());
-}
-}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -48,15 +43,6 @@ MetisWrapper(IParallelMng* pm)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-/*!
- * \brief Appelle Metis sans regroupement de graph.
- */
-int MetisWrapper::
-_callMetis(ArrayView<idx_t> vtxdist, MetisGraphView my_graph, MetisCall& metis)
-{
-  MPI_Comm comm = _getMPICommunicator(m_parallel_mng);
-  return metis(comm, my_graph, vtxdist);
-}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -66,14 +52,11 @@ _callMetis(ArrayView<idx_t> vtxdist, MetisGraphView my_graph, MetisCall& metis)
 int MetisWrapper::
 _callMetisWith2Processors(const Int32 ncon, const bool need_part,
                           ConstArrayView<idx_t> vtxdist, MetisGraphView my_graph,
-                          MetisCall& metis)
+                          MetisCall& metis_call)
 {
-  MPI_Comm comm = _getMPICommunicator(m_parallel_mng);
-
   Int32 nb_rank = m_parallel_mng->commSize();
   Int32 my_rank = m_parallel_mng->commRank();
-  
-  String half_comm_name = "first";
+
   UniqueArray<idx_t> half_vtxdist(vtxdist.size());
   
   int comm_0_size = nb_rank / 2 + nb_rank % 2;
@@ -81,9 +64,6 @@ _callMetisWith2Processors(const Int32 ncon, const bool need_part,
   int comm_0_io_rank = 0;
   int comm_1_io_rank = comm_0_size;
 
-  // TODO: Utiliser un IParallelMng (on pourrait le conserver d'un appel à l'autre)
-  MPI_Comm half_comm;
-  
   for (int i = 0; i < nb_rank + 1; ++i) {
     half_vtxdist[i] = vtxdist[i];
   }
@@ -93,46 +73,41 @@ _callMetisWith2Processors(const Int32 ncon, const bool need_part,
   
   if (my_rank >= comm_0_size) {
     color = 2;
-    half_comm_name = "second";
     for (int i = 0; i < comm_1_size + 1; ++i) {
       half_vtxdist[i] = vtxdist[i + comm_0_size] - vtxdist[comm_0_size];
     }
   }
   
   MetisGraph metis_graph;
-  MetisGraphGather metis_gather;
+  Ref<IParallelMng> half_pm = ParallelMngUtils::createSubParallelMngRef(m_parallel_mng, color, key);
+  MetisGraphGather metis_gather(half_pm.get());
 
-  MPI_Comm_split(comm, color, key, &half_comm);
+  metis_gather.gatherGraph(need_part, half_vtxdist, ncon, my_graph, metis_graph);
 
-  metis_gather.gatherGraph(need_part, half_comm_name, half_comm, half_vtxdist,
-                           ncon, my_graph, metis_graph);
-  
   color = MPI_UNDEFINED;
   if (my_rank == comm_0_io_rank || my_rank == comm_1_io_rank) {
     color = 1;
   }
-  
-  MPI_Comm metis_comm;
-  MPI_Comm_split(comm, color, key, &metis_comm);
-  
+
+  Ref<IParallelMng> metis_pm = ParallelMngUtils::createSubParallelMngRef(m_parallel_mng, color, key);
+
   UniqueArray<idx_t> metis_vtxdist(3);
   metis_vtxdist[0] = 0;
   metis_vtxdist[1] = vtxdist[comm_0_size];
   metis_vtxdist[2] = vtxdist[vtxdist.size() - 1];
   
   int ierr = 0;
-  
-  if (metis_comm != MPI_COMM_NULL) {
-    MetisGraphView metis_graph_view(metis_graph);
-    ierr = metis(metis_comm, metis_graph_view, metis_vtxdist);
-    MPI_Comm_free(&metis_comm);
-  }
-  
-  MPI_Bcast(&ierr, 1, MPI_INT, 0, half_comm);
-  
-  metis_gather.scatterPart(half_comm, half_vtxdist, metis_graph.part, my_graph.part);
 
-  MPI_Comm_free(&half_comm); 
+  if (metis_pm.get()) {
+    MetisGraphView metis_graph_view(metis_graph);
+    ierr = metis_call(metis_pm.get(), metis_graph_view, metis_vtxdist);
+  }
+
+  // S'assure que tout le monde a la même valeur de l'erreur.
+  half_pm->broadcast(ArrayView<int>(1, &ierr), 0);
+
+  metis_gather.scatterPart(half_vtxdist, metis_graph.part, my_graph.part);
+
   return ierr;
 }
 
@@ -148,10 +123,11 @@ callPartKway(const bool print_digest, const bool gather,
   int ierr = 0;
   Int32 nb_rank = m_parallel_mng->commSize();
   Int32 my_rank = m_parallel_mng->commRank();
-  
-  MetisCall partkway = [&](MPI_Comm& graph_comm, MetisGraphView graph,
+
+  MetisCall partkway = [&](IParallelMng* pm, MetisGraphView graph,
                            ArrayView<idx_t> graph_vtxdist)
   {
+    MPI_Comm graph_comm = static_cast<MPI_Comm>(pm->communicator());
     // NOTE GG: il peut arriver que ces deux pointeurs soient nuls s'il n'y a pas
     // de voisins. Si tout le reste est cohérent cela ne pose pas de problèmes mais ParMetis
     // n'aime pas les tableaux vides donc si c'est le cas on met un 0.
@@ -164,7 +140,6 @@ callPartKway(const bool print_digest, const bool gather,
       adjncy_data = &null_idx;
     if (!adjwgt_data)
       adjwgt_data = &null_idx;
-
     return ParMETIS_V3_PartKway(graph_vtxdist.data(), graph.xadj.data(),
                                 adjncy_data, graph.vwgt.data(),
                                 adjwgt_data, wgtflag, numflag, ncon, nparts, tpwgts,
@@ -174,10 +149,9 @@ callPartKway(const bool print_digest, const bool gather,
   // Version séquentielle utilisant directement Metis
   // NOTE: Ce bout de code est le même que dans callAdaptativeRepart.
   // Il faudrait mutualiser les deux.
-  MetisCall partkway_seq = [&](MPI_Comm& graph_comm, MetisGraphView graph,
+  MetisCall partkway_seq = [&](IParallelMng*, MetisGraphView graph,
                                ArrayView<idx_t> graph_vtxdist)
   {
-    ARCANE_UNUSED(graph_comm);
     idx_t options2[METIS_NOPTIONS];
     METIS_SetDefaultOptions(options2);
     options2[METIS_OPTION_CTYPE] = METIS_CTYPE_SHEM;
@@ -226,7 +200,8 @@ callPartKway(const bool print_digest, const bool gather,
   }
   else {
     info() << "Partitioning metis : nb rank = " << nb_rank;
-    ierr = _callMetis(offset, my_graph, (nb_rank==1) ? partkway_seq : partkway);
+    MetisCall& metis_call = (nb_rank == 1) ? partkway_seq : partkway;
+    ierr = metis_call(m_parallel_mng, my_graph, offset);
   }
 
   info() << "End Partitioning metis";
@@ -254,10 +229,11 @@ callAdaptiveRepart(const bool print_digest, const bool gather,
   int ierr = 0;
   Int32 nb_rank = m_parallel_mng->commSize();
   Int32 my_rank = m_parallel_mng->commRank();
-  
-  MetisCall repart_func = [&](MPI_Comm& graph_comm, MetisGraphView graph,
+
+  MetisCall repart_func = [&](IParallelMng* pm, MetisGraphView graph,
                               ArrayView<idx_t> graph_vtxdist)
   {
+    MPI_Comm graph_comm = static_cast<MPI_Comm>(pm->communicator());
     return ParMETIS_V3_AdaptiveRepart(graph_vtxdist.data(), graph.xadj.data(),
                                       graph.adjncy.data(), graph.vwgt.data(), 
                                       graph.vsize.data(), graph.adjwgt.data(),
@@ -269,10 +245,9 @@ callAdaptiveRepart(const bool print_digest, const bool gather,
   // Version séquentielle utilisant directement Metis
   // NOTE: Ce bout de code est le même que dans callPartKWay
   // Il faudrait mutualiser les deux.
-  MetisCall repart_seq_func = [&](MPI_Comm& graph_comm, MetisGraphView graph,
+  MetisCall repart_seq_func = [&](IParallelMng*, MetisGraphView graph,
                                   ArrayView<idx_t> graph_vtxdist)
   {
-    ARCANE_UNUSED(graph_comm);
     idx_t options2[METIS_NOPTIONS];
     METIS_SetDefaultOptions(options2);
     options2[METIS_OPTION_CTYPE] = METIS_CTYPE_SHEM;
@@ -322,7 +297,8 @@ callAdaptiveRepart(const bool print_digest, const bool gather,
   }
   else {
     info() << "Partionnement metis : nb processeurs = " << nb_rank;
-    ierr = _callMetis(offset, my_graph, (nb_rank==1) ? repart_seq_func : repart_func);
+    MetisCall& metis_call = (nb_rank == 1) ? repart_seq_func : repart_func;
+    ierr = metis_call(m_parallel_mng, my_graph, offset);
   }
 
   if (print_digest) {

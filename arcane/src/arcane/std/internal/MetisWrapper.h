@@ -17,7 +17,6 @@
 #include "arcane/utils/TraceAccessor.h"
 
 #include <parmetis.h>
-#include <mpi.h>
 #include <functional>
 
 /*---------------------------------------------------------------------------*/
@@ -38,7 +37,7 @@ class MetisWrapper
 {
  private:
 
-  using MetisCall = std::function<int(MPI_Comm& comm, MetisGraphView graph,
+  using MetisCall = std::function<int(IParallelMng* pm, MetisGraphView graph,
                                       ArrayView<idx_t> vtxdist)>;
 
  public:
@@ -79,7 +78,6 @@ class MetisWrapper
 
  private:
 
-  int _callMetis(ArrayView<idx_t> vtxdist, MetisGraphView my_graph, MetisCall& metis);
   int _callMetisWith2Processors(const Int32 ncon, const bool need_part,
                                 ConstArrayView<idx_t> vtxdist, MetisGraphView my_graph,
                                 MetisCall& metis);
