@@ -248,7 +248,6 @@ void CriteriaMng::
 _computeComm()
 {
   VariableFaceReal& comm_costs = *m_comm_costs;
-  VariableCellReal& mass_res_weight = *m_mass_res_weight;
 
   Integer penalty = 2; // How many times we do synchronization ?
 
@@ -261,6 +260,7 @@ _computeComm()
     }
   }
   if (m_cell_comm) {
+    VariableCellReal& mass_res_weight = *m_mass_res_weight;
     ENUMERATE_CELL (icell, m_mesh->ownCells()) {
       Real mem = mass_res_weight[icell];
       for (Face face : icell->faces()) {
