@@ -332,7 +332,7 @@ _getCriteria(IMesh* mesh)
   auto x = m_mesh_criterion.find(mesh);
   if (x != m_mesh_criterion.end())
     return *(x->second.get());
-  auto c = createRef<CriteriaMng>(m_is_legacy_init);
+  auto c = createRef<CriteriaMng>(!m_is_legacy_init);
   auto v = m_mesh_criterion.emplace(mesh, c);
   x = v.first;
   return *(x->second.get());
@@ -365,7 +365,9 @@ initAccess(IMesh* mesh)
   mesh_criterion.init(mesh);
   mesh_criterion.defaultMassCriterion(m_default_mass_criterion);
 
-  mesh->traceMng()->info() << "LoadBalanceMngInternal::initAccess(): use_memory=" << mesh_criterion.useMassAsCriterion()
+  mesh->traceMng()->info() << "LoadBalanceMngInternal::initAccess():"
+                           << " use_memory=" << mesh_criterion.useMassAsCriterion()
+                           << " use_nb_cell=" << mesh_criterion.useNbCellsAsCriterion()
                            << " nb_criteria=" << mesh_criterion.nbCriteria();
 
   // Si aucun critère n'est défini, utilise le nombre de mailles.

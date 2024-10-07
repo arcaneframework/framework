@@ -329,6 +329,7 @@ class CriteriaMng
   }
 
   bool useMassAsCriterion() const { return m_use_mass_as_criterion; }
+  bool useNbCellsAsCriterion() const { return m_nb_cells_as_criterion; }
 
   void resetCriteria();
   void clearVariables();
