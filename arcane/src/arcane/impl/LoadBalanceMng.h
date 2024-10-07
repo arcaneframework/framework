@@ -34,11 +34,12 @@ class ARCANE_IMPL_EXPORT LoadBalanceMng
 {
  public:
 
-  explicit LoadBalanceMng(ISubDomain* sd, bool massAsCriterion = true);
+  explicit LoadBalanceMng(ISubDomain* sd, bool mass_as_criterion = false);
 
  public:
+
   /*!
-   * Methodes utilisees par les modules clients pour definir les criteres
+   * Méthodes utilisées par les modules clients pour définir les criteres
    * de partitionnement.
    */
   void addMass(VariableCellInt32& count, const String& entity="") override;

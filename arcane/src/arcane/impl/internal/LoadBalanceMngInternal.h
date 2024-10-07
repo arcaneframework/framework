@@ -45,9 +45,8 @@ class PartitionerMemoryInfo;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
 /*!
- * \brief Interface proxy pour acceder aux variables definissant les poids.
+ * \brief Interface proxy pour accéder aux variables définissant les poids.
  *
  * Est indépendante du type de variable (Integer, Real).
  * Est à libération automatique de mémoire (via ObjectImpl).
@@ -66,25 +65,26 @@ class ARCANE_IMPL_EXPORT IProxyItemVariable
   virtual Integer getPos() const =0;
 };
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 /*!
  *  @brief Classe pour accéder au proxy sans déférencement dans le code.
  *
- *  Est indepedante du type de variable (Integer, Real).
+ *  Est indepedant du type de variable (Integer, Real).
  *  Est à libération automatique de mémoire (via AutoRefT).
  */
 class ARCANE_IMPL_EXPORT StoreIProxyItemVariable
 {
  public:
-  StoreIProxyItemVariable(IVariable* var=NULL, Integer pos=0) {
+
+  StoreIProxyItemVariable(IVariable* var = nullptr, Integer pos = 0)
+  {
     m_var = StoreIProxyItemVariable::proxyItemVariableFactory(var,pos);
   }
 
   StoreIProxyItemVariable(const StoreIProxyItemVariable& src) {
     if (m_var != src.m_var)
       m_var = src.m_var;
-  }
-
-  ~StoreIProxyItemVariable() {
   }
 
   //! Accès à la valeur associée à une entité du maillage, sous forme d'un Real.
@@ -111,6 +111,8 @@ class ARCANE_IMPL_EXPORT StoreIProxyItemVariable
   AutoRefT<IProxyItemVariable> m_var;
 };
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 /*!
  * \brief Classe de gestion des criteres de partitionnement.
  *
@@ -306,32 +308,10 @@ class CriteriaMng
  public:
 
   CriteriaMng()
-  : m_use_mass_as_criterion(false)
-  , m_nb_cells_as_criterion(false)
-  , m_cell_comm(true)
-  , m_need_compute_comm(true)
-  , m_is_edited_mass_criterion(false)
-  , m_is_init(false)
-  , m_mesh(nullptr)
-  , m_criteria(new PartitionerMemoryInfo())
+  : m_criteria(new PartitionerMemoryInfo())
   {
-    m_mass_vars.clear();
-    m_comm_vars.clear();
-    m_event_vars.resize(1); // First slot booked by MemoryOverAll
-
-    m_event_weights = nullptr;
-    m_mass_res_weight = nullptr;
-    m_mass_over_weigth = nullptr;
-    m_comm_costs = nullptr;
+    resetCriteria();
   };
-
-  explicit CriteriaMng(IMesh* mesh)
-  : CriteriaMng()
-  {
-    init(mesh);
-  }
-
-  ~CriteriaMng() = default;
 
  public:
 
@@ -342,12 +322,12 @@ class CriteriaMng
 
     m_cell_new_owner = new VariableCellInt32(VariableBuildInfo(mesh_handle, "CellFamilyNewOwner", IVariable::PExecutionDepend | IVariable::PNoDump));
     m_comm_costs = new VariableFaceReal(VariableBuildInfo(mesh_handle, "LbMngCommCost", vflags));
-    m_mass_over_weigth = new VariableCellReal(VariableBuildInfo(mesh_handle, "LbMngOverallMass", vflags));
+    m_mass_over_weight = new VariableCellReal(VariableBuildInfo(mesh_handle, "LbMngOverallMass", vflags));
     m_mass_res_weight = new VariableCellReal(VariableBuildInfo(mesh_handle, "LbMngResidentMass", vflags));
     m_event_weights = new VariableCellArrayReal(VariableBuildInfo(mesh_handle, "LbMngMCriteriaWgt", vflags));
 
     m_comm_costs->fill(1);
-    m_mass_over_weigth->fill(1);
+    m_mass_over_weight->fill(1);
     m_mass_res_weight->fill(1);
     m_is_init = true;
     m_mesh = mesh;
@@ -383,7 +363,7 @@ class CriteriaMng
   {
     m_event_weights = nullptr;
     m_mass_res_weight = nullptr;
-    m_mass_over_weigth = nullptr;
+    m_mass_over_weight = nullptr;
     m_comm_costs = nullptr;
     m_is_init = false;
   }
@@ -406,7 +386,7 @@ class CriteriaMng
   ArrayView<StoreIProxyItemVariable> criteria()
   {
     if (m_use_mass_as_criterion) {
-      StoreIProxyItemVariable cvar(m_mass_over_weigth->variable());
+      StoreIProxyItemVariable cvar(m_mass_over_weight->variable());
       m_event_vars[0] = cvar;
       return m_event_vars;
     }
@@ -430,7 +410,7 @@ class CriteriaMng
 
   const VariableCellReal& massWeight() const
   {
-    return *m_mass_over_weigth;
+    return *m_mass_over_weight;
   }
 
   void fillCellNewOwner()
@@ -503,7 +483,7 @@ class CriteriaMng
 
   void _computeOverallMass()
   {
-    VariableCellReal& mass_over_weigth = *m_mass_over_weigth;
+    VariableCellReal& mass_over_weigth = *m_mass_over_weight;
     ENUMERATE_CELL (icell, m_mesh->ownCells()) {
       mass_over_weigth[icell] = m_criteria->getOverallMemory(*icell);
     }
@@ -574,20 +554,20 @@ class CriteriaMng
   UniqueArray<StoreIProxyItemVariable> m_comm_vars;
   UniqueArray<StoreIProxyItemVariable> m_event_vars;
 
-  bool m_use_mass_as_criterion;
-  bool m_nb_cells_as_criterion;
-  bool m_cell_comm;
-  bool m_need_compute_comm;
-  bool m_is_edited_mass_criterion;
-  bool m_is_init;
+  bool m_use_mass_as_criterion = false;
+  bool m_nb_cells_as_criterion = true;
+  bool m_cell_comm = true;
+  bool m_need_compute_comm = true;
+  bool m_is_edited_mass_criterion = false;
+  bool m_is_init = false;
 
   ScopedPtrT<VariableFaceReal> m_comm_costs;
-  ScopedPtrT<VariableCellReal> m_mass_over_weigth;
+  ScopedPtrT<VariableCellReal> m_mass_over_weight;
   ScopedPtrT<VariableCellReal> m_mass_res_weight;
   ScopedPtrT<VariableCellArrayReal> m_event_weights;
   ScopedPtrT<VariableCellInt32> m_cell_new_owner; // SdC This variable is a problem when using a custom mesh
 
-  IMesh* m_mesh;
+  IMesh* m_mesh = nullptr;
   ScopedPtrT<PartitionerMemoryInfo> m_criteria;
 };
 
@@ -599,7 +579,7 @@ class ARCANE_IMPL_EXPORT LoadBalanceMngInternal
 {
  public:
 
-  explicit LoadBalanceMngInternal(bool massAsCriterion);
+  explicit LoadBalanceMngInternal(bool mass_as_criterion);
 
  public:
 
@@ -628,7 +608,7 @@ class ARCANE_IMPL_EXPORT LoadBalanceMngInternal
  private:
 
   MeshHandle m_mesh_handle;
-  bool m_default_mass_criterion;
+  bool m_default_mass_criterion = false;
   std::unordered_map<IMesh*, CriteriaMng> m_mesh_criterion;
 };
 

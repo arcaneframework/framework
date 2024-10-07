@@ -7,8 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* LoadBalanceMng.cc                                           (C) 2000-2024 */
 /*                                                                           */
-/* Module standard de description du probleme pour l'equilibrage de charge.  */
-/* Est utilise par le MeshPartioner comme entree.                            */
+/* Gestionnaire pour les critères d'équilibrage de charge.                   */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 

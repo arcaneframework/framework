@@ -159,7 +159,13 @@ initAccess(IMesh* mesh)
   mesh_criterion.init(mesh);
   mesh_criterion.defaultMassCriterion(m_default_mass_criterion);
 
-  mesh->traceMng()->info() << "LoadBalanceMngInternal::initAccess(): use_memory=" << mesh_criterion.useMassAsCriterion();
+  mesh->traceMng()->info() << "LoadBalanceMngInternal::initAccess(): use_memory=" << mesh_criterion.useMassAsCriterion()
+                           << " nb_criteria=" << mesh_criterion.nbCriteria();
+
+  // Si aucun critère n'est défini, utilise le nombre de mailles.
+  // Il faut au moins un critère sinon il n'y aura pas de poids dans le graphe de partitionnement.
+  if (mesh_criterion.nbCriteria() == 0)
+    mesh_criterion.setNbCellsAsCriterion(true);
 
   mesh_criterion.computeCriteria();
 
