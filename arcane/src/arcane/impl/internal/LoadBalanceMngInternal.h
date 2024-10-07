@@ -114,7 +114,7 @@ class ARCANE_IMPL_EXPORT StoreIProxyItemVariable
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Classe de gestion des criteres de partitionnement.
+ * \brief Classe de gestion des critèes de partitionnement.
  *
  * Sert essentiellement à fournir les informations mémoire associées à chaque
  * entité.
@@ -303,6 +303,9 @@ class PartitionerMemoryInfo
   MemInfo m_buffer;
 };
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 class CriteriaMng
 {
  public:
@@ -315,23 +318,7 @@ class CriteriaMng
 
  public:
 
-  void init(IMesh* mesh)
-  {
-    MeshHandle mesh_handle = mesh->handle();
-    int vflags = IVariable::PExecutionDepend | IVariable::PNoDump | IVariable::PTemporary;
-
-    m_cell_new_owner = new VariableCellInt32(VariableBuildInfo(mesh_handle, "CellFamilyNewOwner", IVariable::PExecutionDepend | IVariable::PNoDump));
-    m_comm_costs = new VariableFaceReal(VariableBuildInfo(mesh_handle, "LbMngCommCost", vflags));
-    m_mass_over_weight = new VariableCellReal(VariableBuildInfo(mesh_handle, "LbMngOverallMass", vflags));
-    m_mass_res_weight = new VariableCellReal(VariableBuildInfo(mesh_handle, "LbMngResidentMass", vflags));
-    m_event_weights = new VariableCellArrayReal(VariableBuildInfo(mesh_handle, "LbMngMCriteriaWgt", vflags));
-
-    m_comm_costs->fill(1);
-    m_mass_over_weight->fill(1);
-    m_mass_res_weight->fill(1);
-    m_is_init = true;
-    m_mesh = mesh;
-  }
+  void init(IMesh* mesh);
 
   void defaultMassCriterion(bool mass_criterion)
   {
@@ -345,73 +332,27 @@ class CriteriaMng
     m_use_mass_as_criterion = mass_criterion;
   }
 
-  bool useMassAsCriterion() const
-  {
-    return m_use_mass_as_criterion;
-  }
+  bool useMassAsCriterion() const { return m_use_mass_as_criterion; }
 
-  void resetCriteria()
-  {
-    m_mass_vars.clear();
-    m_comm_vars.clear();
-    m_event_vars.resize(1); // First slot booked by MemoryOverAll
-
-    clearVariables();
-  }
-
-  void clearVariables()
-  {
-    m_event_weights = nullptr;
-    m_mass_res_weight = nullptr;
-    m_mass_over_weight = nullptr;
-    m_comm_costs = nullptr;
-    m_is_init = false;
-  }
+  void resetCriteria();
+  void clearVariables();
 
   void addCriterion(const StoreIProxyItemVariable& criterion)
   {
     m_event_vars.add(criterion);
   }
 
-  Integer nbCriteria()
-  {
-    Integer count;
-
-    count = m_event_vars.size();
-    count -= ((m_use_mass_as_criterion) ? 0 : 1); // First event is mass !
-    count += ((m_nb_cells_as_criterion) ? 1 : 0);
-    return count;
-  }
-
-  ArrayView<StoreIProxyItemVariable> criteria()
-  {
-    if (m_use_mass_as_criterion) {
-      StoreIProxyItemVariable cvar(m_mass_over_weight->variable());
-      m_event_vars[0] = cvar;
-      return m_event_vars;
-    }
-    return m_event_vars.subView(1, m_event_vars.size());
-  }
+  Integer nbCriteria();
+  ArrayView<StoreIProxyItemVariable> criteria();
 
   const VariableCellArrayReal& criteriaWeight() const
   {
     return *m_event_weights;
   }
 
-  void addCommCost(const StoreIProxyItemVariable& comm_cost)
-  {
-    m_comm_vars.add(comm_cost);
-  }
-
-  const VariableCellReal& massResWeight() const
-  {
-    return *m_mass_res_weight;
-  }
-
-  const VariableCellReal& massWeight() const
-  {
-    return *m_mass_over_weight;
-  }
+  void addCommCost(const StoreIProxyItemVariable& comm_cost) { m_comm_vars.add(comm_cost); }
+  const VariableCellReal& massResWeight() const { return *m_mass_res_weight; }
+  const VariableCellReal& massWeight() const { return *m_mass_over_weight; }
 
   void fillCellNewOwner()
   {
@@ -419,134 +360,24 @@ class CriteriaMng
       m_cell_new_owner->fill(m_mesh->parallelMng()->commRank(), m_mesh->ownCells());
   }
 
-  const VariableFaceReal& commCost() const
-  {
-    return *m_comm_costs;
-  }
+  const VariableFaceReal& commCost() const { return *m_comm_costs; }
 
-  void setComputeComm(bool active)
-  {
-    m_need_compute_comm = active;
-  }
-
-  bool cellCommContrib() const
-  {
-    return m_cell_comm;
-  }
-
-  void setCellCommContrib(bool active)
-  {
-    m_cell_comm = active;
-  }
-
-  void setNbCellsAsCriterion(bool active)
-  {
-    m_nb_cells_as_criterion = active;
-  }
-
-  void addMass(const StoreIProxyItemVariable& mass)
-  {
-    m_mass_vars.add(mass);
-  }
-
-  bool needComputeComm() const
-  {
-    return m_need_compute_comm;
-  }
-
-  bool isInit() const
-  {
-    return m_is_init;
-  }
-
-  Integer addEntity(const String& entity)
-  {
-    return m_criteria->addEntity(entity);
-  }
-
-  void computeCriteria()
-  {
-    if (needComputeComm() || useMassAsCriterion()) { // Memory useful only for communication cost or mass lb criterion
-      m_criteria->computeMemory(m_mesh->variableMng());
-      _computeResidentMass();
-    }
-    if (needComputeComm()) {
-      _computeComm();
-    }
-    if (useMassAsCriterion()) {
-      _computeOverallMass();
-    }
-    _computeEvents();
-  }
+  void setComputeComm(bool active) { m_need_compute_comm = active; }
+  bool cellCommContrib() const { return m_cell_comm; }
+  void setCellCommContrib(bool active) { m_cell_comm = active; }
+  void setNbCellsAsCriterion(bool active) { m_nb_cells_as_criterion = active; }
+  void addMass(const StoreIProxyItemVariable& mass) { m_mass_vars.add(mass); }
+  bool needComputeComm() const { return m_need_compute_comm; }
+  bool isInit() const { return m_is_init; }
+  Integer addEntity(const String& entity) { return m_criteria->addEntity(entity); }
+  void computeCriteria();
 
  private:
 
-  void _computeOverallMass()
-  {
-    VariableCellReal& mass_over_weigth = *m_mass_over_weight;
-    ENUMERATE_CELL (icell, m_mesh->ownCells()) {
-      mass_over_weigth[icell] = m_criteria->getOverallMemory(*icell);
-    }
-  }
-
-  void _computeComm()
-  {
-    VariableFaceReal& comm_costs = *m_comm_costs;
-    VariableCellReal& mass_res_weight = *m_mass_res_weight;
-
-    Integer penalty = 2; // How many times we do synchronization ?
-
-    if (!m_comm_vars.empty())
-      comm_costs.fill(0);
-
-    for (auto& commvar : m_comm_vars) {
-      ENUMERATE_FACE (iface, m_mesh->ownFaces()) {
-        comm_costs[iface] += commvar[iface] * m_criteria->getResidentMemory(commvar.getPos());
-      }
-    }
-    if (m_cell_comm) {
-      ENUMERATE_CELL (icell, m_mesh->ownCells()) {
-        Real mem = mass_res_weight[icell];
-        for (Face face : icell->faces()) {
-          comm_costs[face] += mem * penalty;
-        }
-      }
-    }
-
-    IVariable* ivar;
-    // Make sure that ghosts contribution is used
-    ivar = m_comm_costs->variable();
-    ivar->itemFamily()->reduceFromGhostItems(ivar, Parallel::ReduceSum);
-    m_comm_costs->synchronize();
-  }
-
-  void _computeResidentMass()
-  {
-    VariableCellReal& mass_res_weight = *m_mass_res_weight;
-    ENUMERATE_CELL (icell, m_mesh->ownCells()) {
-      mass_res_weight[icell] = m_criteria->getResidentMemory(*icell);
-    }
-  }
-
-  void _computeEvents()
-  {
-    m_event_weights->resize(nbCriteria());
-
-    ArrayView<StoreIProxyItemVariable> event_vars = criteria();
-
-    VariableCellArrayReal& event_weights = *(m_event_weights);
-
-    for (Integer i = 0; i < event_vars.size(); ++i) {
-      ENUMERATE_CELL (icell, m_mesh->ownCells()) {
-        Integer count = i;
-        if (m_nb_cells_as_criterion) {
-          count += 1;
-          event_weights(icell, 0) = 1;
-        }
-        event_weights(icell, count) = event_vars[i][icell];
-      }
-    }
-  }
+  void _computeOverallMass();
+  void _computeComm();
+  void _computeResidentMass();
+  void _computeEvents();
 
  private:
 
