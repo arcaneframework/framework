@@ -310,11 +310,7 @@ class CriteriaMng
 {
  public:
 
-  CriteriaMng()
-  : m_criteria(new PartitionerMemoryInfo())
-  {
-    resetCriteria();
-  };
+  CriteriaMng(bool use_nb_cell_as_criterion);
 
  public:
 
@@ -387,8 +383,8 @@ class CriteriaMng
 
   bool m_use_mass_as_criterion = false;
   bool m_nb_cells_as_criterion = true;
-  bool m_cell_comm = true;
-  bool m_need_compute_comm = true;
+  bool m_cell_comm = false;
+  bool m_need_compute_comm = false;
   bool m_is_edited_mass_criterion = false;
   bool m_is_init = false;
 
@@ -410,7 +406,7 @@ class ARCANE_IMPL_EXPORT LoadBalanceMngInternal
 {
  public:
 
-  explicit LoadBalanceMngInternal(bool mass_as_criterion);
+  explicit LoadBalanceMngInternal(bool mass_as_criterion, bool is_legacy_init);
 
  public:
 
@@ -423,12 +419,12 @@ class ARCANE_IMPL_EXPORT LoadBalanceMngInternal
   void setNbCellsAsCriterion(IMesh* mesh, bool active) override;
   void setCellCommContrib(IMesh* mesh, bool active) override;
   void setComputeComm(IMesh* mesh, bool active) override;
-  const VariableFaceReal& commCost(IMesh* mesh) const override;
-  const VariableCellReal& massWeight(IMesh* mesh) const override;
-  const VariableCellReal& massResWeight(IMesh* mesh) const override;
-  const VariableCellArrayReal& mCriteriaWeight(IMesh* mesh) const override;
+  const VariableFaceReal& commCost(IMesh* mesh) override;
+  const VariableCellReal& massWeight(IMesh* mesh) override;
+  const VariableCellReal& massResWeight(IMesh* mesh) override;
+  const VariableCellArrayReal& mCriteriaWeight(IMesh* mesh) override;
 
-  bool cellCommContrib(IMesh* mesh) const override;
+  bool cellCommContrib(IMesh* mesh) override;
   Integer nbCriteria(IMesh* mesh) override;
 
   void reset(IMesh* mesh) override;
@@ -440,7 +436,12 @@ class ARCANE_IMPL_EXPORT LoadBalanceMngInternal
 
   MeshHandle m_mesh_handle;
   bool m_default_mass_criterion = false;
-  std::unordered_map<IMesh*, CriteriaMng> m_mesh_criterion;
+  bool m_is_legacy_init = false;
+  std::unordered_map<IMesh*, Ref<CriteriaMng>> m_mesh_criterion;
+
+ private:
+
+  CriteriaMng& _getCriteria(IMesh* mesh);
 };
 
 /*---------------------------------------------------------------------------*/

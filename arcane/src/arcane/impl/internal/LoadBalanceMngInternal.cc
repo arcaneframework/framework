@@ -30,7 +30,6 @@
 namespace Arcane
 {
 
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
@@ -120,6 +119,17 @@ proxyItemVariableFactory(IVariable* var, Integer pos)
     return &nullProxy;
   }
 }
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+CriteriaMng::
+CriteriaMng(bool use_nb_cell_as_criterion)
+: m_nb_cells_as_criterion(use_nb_cell_as_criterion)
+, m_criteria(new PartitionerMemoryInfo())
+{
+  resetCriteria();
+};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -308,9 +318,25 @@ _computeEvents()
 /*---------------------------------------------------------------------------*/
 
 LoadBalanceMngInternal::
-LoadBalanceMngInternal(bool mass_as_criterion)
+LoadBalanceMngInternal(bool mass_as_criterion, bool is_legacy_init)
 : m_default_mass_criterion(mass_as_criterion)
+, m_is_legacy_init(is_legacy_init)
 {}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+CriteriaMng& LoadBalanceMngInternal::
+_getCriteria(IMesh* mesh)
+{
+  auto x = m_mesh_criterion.find(mesh);
+  if (x != m_mesh_criterion.end())
+    return *(x->second.get());
+  auto c = createRef<CriteriaMng>(m_is_legacy_init);
+  auto v = m_mesh_criterion.emplace(mesh, c);
+  x = v.first;
+  return *(x->second.get());
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -318,7 +344,7 @@ LoadBalanceMngInternal(bool mass_as_criterion)
 void LoadBalanceMngInternal::
 reset(IMesh* mesh)
 {
-  m_mesh_criterion[mesh].resetCriteria();
+  _getCriteria(mesh).resetCriteria();
   if(mesh) {
     mesh->traceMng()->debug() << "LoadBalanceInternal -- Mesh : " << mesh->name() << " -- reset()";
   }
@@ -335,7 +361,7 @@ initAccess(IMesh* mesh)
 
   m_mesh_handle = mesh->handle();
 
-  CriteriaMng& mesh_criterion = m_mesh_criterion[mesh];
+  CriteriaMng& mesh_criterion = _getCriteria(mesh);
   mesh_criterion.init(mesh);
   mesh_criterion.defaultMassCriterion(m_default_mass_criterion);
 
@@ -362,7 +388,7 @@ endAccess()
   if (!mesh)
     return;
 
-  m_mesh_criterion[mesh].clearVariables();
+  _getCriteria(mesh).clearVariables();
 
   mesh->traceMng()->debug() << "LoadBalanceInternal -- Mesh : " << mesh->name() << " -- clearVariables()";
 }
@@ -373,8 +399,9 @@ endAccess()
 void LoadBalanceMngInternal::
 addMass(VariableCellInt32& count, IMesh* mesh, const String& entity)
 {
-  StoreIProxyItemVariable cvar(count.variable(), m_mesh_criterion[mesh].addEntity(entity));
-  m_mesh_criterion[mesh].addMass(cvar);
+  CriteriaMng& criterion = _getCriteria(mesh);
+  StoreIProxyItemVariable cvar(count.variable(), criterion.addEntity(entity));
+  criterion.addMass(cvar);
   mesh->traceMng()->debug() << "Set mass (name=" << count.name() << ") criterion to mesh (name=" << mesh->name() << ")";
 }
 
@@ -385,7 +412,7 @@ void LoadBalanceMngInternal::
 addCriterion(VariableCellInt32& count, IMesh* mesh)
 {
   StoreIProxyItemVariable cvar(count.variable());
-  m_mesh_criterion[mesh].addCriterion(cvar);
+  _getCriteria(mesh).addCriterion(cvar);
   mesh->traceMng()->debug() << "Set criterion (name=" << count.name() << ") criterion to mesh (name=" << mesh->name() << ")";
 }
 
@@ -398,7 +425,7 @@ addCriterion(VariableCellReal& count, IMesh* mesh)
   //std::cerr << "Adding var " << count.variable()->fullName() << " ref # " << count.variable()->nbReference() << std::endl;
   StoreIProxyItemVariable cvar(count.variable());
   //std::cerr << "Adding var (2)" << count.variable()->fullName() << " ref # " << count.variable()->nbReference() << std::endl;
-  m_mesh_criterion[mesh].addCriterion(cvar);
+  _getCriteria(mesh).addCriterion(cvar);
   mesh->traceMng()->debug() << "Set criterion (name=" << count.name() << ") criterion to mesh (name=" << mesh->name() << ")";
 }
 
@@ -408,8 +435,9 @@ addCriterion(VariableCellReal& count, IMesh* mesh)
 void LoadBalanceMngInternal::
 addCommCost(VariableFaceInt32& count, IMesh* mesh, const String& entity)
 {
-  StoreIProxyItemVariable cvar(count.variable(), m_mesh_criterion[mesh].addEntity(entity));
-  m_mesh_criterion[mesh].addCommCost(cvar);
+  CriteriaMng& criterion = _getCriteria(mesh);
+  StoreIProxyItemVariable cvar(count.variable(), criterion.addEntity(entity));
+  criterion.addCommCost(cvar);
   mesh->traceMng()->debug() << "Set CommCost (name=" << count.name() << ") criterion to mesh (name=" << mesh->name() << ")";
 }
 
@@ -419,9 +447,8 @@ addCommCost(VariableFaceInt32& count, IMesh* mesh, const String& entity)
 Integer LoadBalanceMngInternal::
 nbCriteria(IMesh* mesh)
 {
-  return m_mesh_criterion[mesh].nbCriteria();
+  return _getCriteria(mesh).nbCriteria();
 }
-
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -429,7 +456,7 @@ nbCriteria(IMesh* mesh)
 void LoadBalanceMngInternal::
 setMassAsCriterion(IMesh* mesh, bool active)
 {
-  m_mesh_criterion[mesh].setMassCriterion(active);
+  _getCriteria(mesh).setMassCriterion(active);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -438,7 +465,7 @@ setMassAsCriterion(IMesh* mesh, bool active)
 void LoadBalanceMngInternal::
 setNbCellsAsCriterion(IMesh* mesh, bool active)
 {
-  m_mesh_criterion[mesh].setNbCellsAsCriterion(active);
+  _getCriteria(mesh).setNbCellsAsCriterion(active);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -447,19 +474,19 @@ setNbCellsAsCriterion(IMesh* mesh, bool active)
 void LoadBalanceMngInternal::
 setCellCommContrib(IMesh* mesh, bool active)
 {
-  m_mesh_criterion[mesh].setCellCommContrib(active);
+  _getCriteria(mesh).setCellCommContrib(active);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 bool LoadBalanceMngInternal::
-cellCommContrib(IMesh* mesh) const
+cellCommContrib(IMesh* mesh)
 {
   if(m_mesh_criterion.find(mesh) == m_mesh_criterion.end()){
     return true;
   }
-  return m_mesh_criterion.at(mesh).cellCommContrib();
+  return _getCriteria(mesh).cellCommContrib();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -468,67 +495,43 @@ cellCommContrib(IMesh* mesh) const
 void LoadBalanceMngInternal::
 setComputeComm(IMesh* mesh, bool active)
 {
-  m_mesh_criterion[mesh].setComputeComm(active);
+  _getCriteria(mesh).setComputeComm(active);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 const VariableFaceReal& LoadBalanceMngInternal::
-commCost(IMesh* mesh) const
+commCost(IMesh* mesh)
 {
-  if(m_mesh_criterion.find(mesh) == m_mesh_criterion.end()){
-    ARCANE_FATAL("CriteriaMng not found for the targeted mesh (name={0}). Use MeshCriteriaLoadBalanceMng class or call initAccess() before.", (mesh ? mesh->name() : "Unknown"));
-  }
-  if (!m_mesh_criterion.at(mesh).isInit()) {
-    ARCANE_FATAL("CriteriaMng is not initialized for the targeted mesh (name={0}). Use MeshCriteriaLoadBalanceMng class or call initAccess() before.", (mesh ? mesh->name() : "Unknown"));
-  }
-  return m_mesh_criterion.at(mesh).commCost();
+  return _getCriteria(mesh).commCost();
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 const VariableCellReal& LoadBalanceMngInternal::
-massWeight(IMesh* mesh) const
+massWeight(IMesh* mesh)
 {
-  if(m_mesh_criterion.find(mesh) == m_mesh_criterion.end()){
-    ARCANE_FATAL("CriteriaMng not found for the targeted mesh (name={0}). Use MeshCriteriaLoadBalanceMng class or call initAccess() before.", (mesh ? mesh->name() : "Unknown"));
-  }
-  if (!m_mesh_criterion.at(mesh).isInit()) {
-    ARCANE_FATAL("CriteriaMng is not initialized for the targeted mesh (name={0}). Use MeshCriteriaLoadBalanceMng class or call initAccess() before.", (mesh ? mesh->name() : "Unknown"));
-  }
-  return m_mesh_criterion.at(mesh).massWeight();
+  return _getCriteria(mesh).massWeight();
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 const VariableCellReal& LoadBalanceMngInternal::
-massResWeight(IMesh* mesh) const
+massResWeight(IMesh* mesh)
 {
-  if(m_mesh_criterion.find(mesh) == m_mesh_criterion.end()){
-    ARCANE_FATAL("CriteriaMng not found for the targeted mesh (name={0}). Use MeshCriteriaLoadBalanceMng class or call initAccess() before.", (mesh ? mesh->name() : "Unknown"));
-  }
-  if (!m_mesh_criterion.at(mesh).isInit()) {
-    ARCANE_FATAL("CriteriaMng is not initialized for the targeted mesh (name={0}). Use MeshCriteriaLoadBalanceMng class or call initAccess() before.", (mesh ? mesh->name() : "Unknown"));
-  }
-  return m_mesh_criterion.at(mesh).massResWeight();
+  return _getCriteria(mesh).massResWeight();
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 const VariableCellArrayReal& LoadBalanceMngInternal::
-mCriteriaWeight(IMesh* mesh) const
+mCriteriaWeight(IMesh* mesh)
 {
-  if(m_mesh_criterion.find(mesh) == m_mesh_criterion.end()){
-    ARCANE_FATAL("CriteriaMng not found for the targeted mesh (name={0}). Use MeshCriteriaLoadBalanceMng class or call initAccess() before.", (mesh ? mesh->name() : "Unknown"));
-  }
-  if (!m_mesh_criterion.at(mesh).isInit()) {
-    ARCANE_FATAL("CriteriaMng is not initialized for the targeted mesh (name={0}). Use MeshCriteriaLoadBalanceMng class or call initAccess() before.", (mesh ? mesh->name() : "Unknown"));
-  }
-  return m_mesh_criterion.at(mesh).criteriaWeight();
+  return _getCriteria(mesh).criteriaWeight();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -538,7 +541,7 @@ void LoadBalanceMngInternal::
 notifyEndPartition()
 {
   IMesh* mesh = m_mesh_handle.mesh();
-  m_mesh_criterion[mesh].fillCellNewOwner();
+  _getCriteria(mesh).fillCellNewOwner();
 }
 
 /*---------------------------------------------------------------------------*/
