@@ -124,8 +124,10 @@ proxyItemVariableFactory(IVariable* var, Integer pos)
 /*---------------------------------------------------------------------------*/
 
 CriteriaMng::
-CriteriaMng(bool use_nb_cell_as_criterion)
-: m_nb_cells_as_criterion(use_nb_cell_as_criterion)
+CriteriaMng(bool use_legacy_init)
+: m_nb_cells_as_criterion(!use_legacy_init)
+, m_cell_comm(use_legacy_init)
+, m_need_compute_comm(use_legacy_init)
 , m_criteria(new PartitionerMemoryInfo())
 {
   resetCriteria();
@@ -348,7 +350,7 @@ _getCriteria(IMesh* mesh)
   auto x = m_mesh_criterion.find(mesh);
   if (x != m_mesh_criterion.end())
     return *(x->second.get());
-  auto c = createRef<CriteriaMng>(!m_is_legacy_init);
+  auto c = createRef<CriteriaMng>(m_is_legacy_init);
   auto v = m_mesh_criterion.emplace(mesh, c);
   x = v.first;
   return *(x->second.get());

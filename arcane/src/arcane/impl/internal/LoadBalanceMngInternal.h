@@ -310,7 +310,7 @@ class CriteriaMng
 {
  public:
 
-  CriteriaMng(bool use_nb_cell_as_criterion);
+  CriteriaMng(bool use_legacy_init);
 
  public:
 
