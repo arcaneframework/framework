@@ -54,6 +54,7 @@ if (Lima_FOUND AND ARCANE_ADDITIONAL_MESHES_PATH)
 endif()
 
 ARCANE_ADD_TEST_PARALLEL(splitsd1 testPartition-SplitSD.arc 4)
+arcane_add_test_parallel(splitsd1_legacy_partition_init testPartition-SplitSD.arc 4 "-We,ARCANE_USE_LEGACY_INIT_LOADBALANCEMNG,1")
 ARCANE_ADD_TEST_PARALLEL(loadbalance_splitsd1 testLoadBalanceHydro-SplitSD.arc 4 "-m 30")
 
 if (Parmetis_FOUND AND Lima_FOUND)
