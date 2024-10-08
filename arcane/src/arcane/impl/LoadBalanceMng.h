@@ -7,14 +7,14 @@
 /*---------------------------------------------------------------------------*/
 /* LoadBalanceMng.h                                            (C) 2000-2024 */
 /*                                                                           */
-/* Module standard de description du probleme pour l'equilibrage de charge.  */
+/* Gestionnaire pour le partitionnement et l'équilibrage de charge.          */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_IMPL_LOADBALANCEMNG_H
 #define ARCANE_IMPL_LOADBALANCEMNG_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/ILoadBalanceMng.h"
+#include "arcane/core/ILoadBalanceMng.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -26,7 +26,7 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*!
  * \brief Implantation standard d'une interface d'enregistrement des variables
- * pour l'equilibrage de charge.
+ * pour l'équilibrage de charge.
  *
  */
 class ARCANE_IMPL_EXPORT LoadBalanceMng
@@ -34,11 +34,13 @@ class ARCANE_IMPL_EXPORT LoadBalanceMng
 {
  public:
 
-  explicit LoadBalanceMng(ISubDomain* sd, bool massAsCriterion = true);
+  explicit LoadBalanceMng(ISubDomain* sd);
+  LoadBalanceMng(ISubDomain* sd, bool mass_as_criterion);
 
  public:
+
   /*!
-   * Methodes utilisees par les modules clients pour definir les criteres
+   * Méthodes utilisées par les modules clients pour définir les critères
    * de partitionnement.
    */
   void addMass(VariableCellInt32& count, const String& entity="") override;
@@ -49,8 +51,8 @@ class ARCANE_IMPL_EXPORT LoadBalanceMng
   void reset() override;
 
   /*!
-   * Methodes utilisees par le MeshPartitioner pour acceder a la description
-   * du probleme.
+   * Méthodes utilisées par le MeshPartitioner pour accéder à la description
+   * du problème.
    */
   void setMassAsCriterion(bool active = true) override;
   void setNbCellsAsCriterion(bool active = true) override;
@@ -73,6 +75,10 @@ class ARCANE_IMPL_EXPORT LoadBalanceMng
   Ref<ILoadBalanceMngInternal> m_internal;
   MeshHandle m_mesh_handle;
 
+ private:
+
+  void _init(bool use_mass_as_criterion, bool is_legacy_init);
+  static bool _isLegacyInit();
 };
 
 /*---------------------------------------------------------------------------*/

@@ -51,7 +51,7 @@ MetisGraphDigest(IParallelMng* pm)
 /*---------------------------------------------------------------------------*/
 /*!
  * \brief  A partir de la somme locale, calcule la somme globale et retourne une chaine
- * de caractèes représentant cette somme (sur le processeur 0 seulement, les
+ * de caractères représentant cette somme (sur le processeur 0 seulement, les
  * autres processeurs ont une chaine vide).
  */
 String MetisGraphDigest::
@@ -80,31 +80,30 @@ _digestString(ConstArrayView<Byte> my_digest)
 /*---------------------------------------------------------------------------*/
 
 void MetisGraphDigest::
-_computeHash(ConstArrayView<idx_t> data, ByteArray& output)
+_computeHash(Span<const idx_t> data, ByteArray& output, const char* name)
 {
-  hash_algo.computeHash64(ConstArrayView<Byte>(idx_t_size * data.size(), (Byte*)data.data()), output);
+  UniqueArray<Byte> bytes;
+  hash_algo.computeHash64(Arccore::asBytes(data), bytes);
+  info() << "COMPUTE_HASH=" << name << " v=" << Convert::toHexaString(bytes);
+  output.addRange(bytes);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void MetisGraphDigest::
-_computeHash(const idx_t* data, const Integer nb, ByteArray& output)
+_computeHash(Span<const real_t> data, ByteArray& output, const char* name)
 {
-  hash_algo.computeHash64(ConstArrayView<Byte>(idx_t_size * nb, (const Byte*)data), output);
+  UniqueArray<Byte> bytes;
+  hash_algo.computeHash64(Arccore::asBytes(data), bytes);
+  info() << "COMPUTE_HASH=" << name << " v=" << Convert::toHexaString(bytes);
+  output.addRange(bytes);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-void MetisGraphDigest::
-_computeHash(const real_t* data, const Integer nb, ByteArray& output)
-{
-  hash_algo.computeHash64(ConstArrayView<Byte>(real_t_size * nb, (const Byte*)data), output);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
+#define COMPUTE_HASH1(array, output) _computeHash(array, output, #array)
+#define COMPUTE_HASH(array, n, output) _computeHash({ array, n }, output, #array)
 
 String MetisGraphDigest::
 computeInputDigest(const bool need_part, const int nb_options, const MetisGraphView& my_graph,
@@ -116,42 +115,42 @@ computeInputDigest(const bool need_part, const int nb_options, const MetisGraphV
 
   // Signature du graph lui-meme
 
-  _computeHash(my_graph.xadj, hash_value);
-  _computeHash(my_graph.adjncy, hash_value);
-  _computeHash(my_graph.vwgt, hash_value);
+  COMPUTE_HASH1(my_graph.xadj, hash_value);
+  COMPUTE_HASH1(my_graph.adjncy, hash_value);
+  COMPUTE_HASH1(my_graph.vwgt, hash_value);
 
   if (my_graph.have_vsize) {
-    _computeHash(my_graph.vsize, hash_value);
+    COMPUTE_HASH1(my_graph.vsize, hash_value);
   }
 
   if (my_graph.have_adjwgt) {
-    _computeHash(my_graph.adjwgt, hash_value);
+    COMPUTE_HASH1(my_graph.adjwgt, hash_value);
   }
 
   if (need_part) {
-    _computeHash(my_graph.part, hash_value);
+    COMPUTE_HASH1(my_graph.part, hash_value);
   }
 
   // Ajout de la signature des options, des dimensions
 
-  _computeHash(vtxdist, m_nb_rank + 1, hash_value);
-  _computeHash(wgtflag, 1, hash_value);
-  _computeHash(numflag, 1, hash_value);
-  _computeHash(ncon, 1, hash_value);
-  _computeHash(nparts, 1, hash_value);
-  _computeHash(tpwgts, (*nparts) * (*ncon), hash_value);
-  _computeHash(ubvec, (*ncon), hash_value);
+  COMPUTE_HASH(vtxdist, m_nb_rank + 1, hash_value);
+  COMPUTE_HASH(wgtflag, 1, hash_value);
+  COMPUTE_HASH(numflag, 1, hash_value);
+  COMPUTE_HASH(ncon, 1, hash_value);
+  COMPUTE_HASH(nparts, 1, hash_value);
+  COMPUTE_HASH(tpwgts, (*nparts) * (*ncon), hash_value);
+  COMPUTE_HASH(ubvec, (*ncon), hash_value);
 
   if (ipc2redist) {
-    _computeHash(ipc2redist, 1, hash_value);
+    COMPUTE_HASH(ipc2redist, 1, hash_value);
   }
 
   // Cf. doc Metis : si options[0] == 1 alors la taille de "options" est 3 ou 4
   if ((*options) == 1) {
-    _computeHash(options, nb_options, hash_value);
+    COMPUTE_HASH(options, nb_options, hash_value);
   }
   else {
-    _computeHash(options, 1, hash_value);
+    COMPUTE_HASH(options, 1, hash_value);
   }
 
   return _digestString(hash_value);
@@ -165,8 +164,8 @@ computeOutputDigest(const MetisGraphView& my_graph, const idx_t* edgecut)
 {
   UniqueArray<Byte> hash_value;
 
-  _computeHash(my_graph.part, hash_value);
-  _computeHash(edgecut, 1, hash_value);
+  COMPUTE_HASH1(my_graph.part, hash_value);
+  COMPUTE_HASH(edgecut, 1, hash_value);
 
   return _digestString(hash_value);
 }

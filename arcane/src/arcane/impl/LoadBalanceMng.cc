@@ -7,13 +7,16 @@
 /*---------------------------------------------------------------------------*/
 /* LoadBalanceMng.cc                                           (C) 2000-2024 */
 /*                                                                           */
-/* Module standard de description du probleme pour l'equilibrage de charge.  */
-/* Est utilise par le MeshPartioner comme entree.                            */
+/* Gestionnaire pour le partitionnement et l'équilibrage de charge.          */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/impl/LoadBalanceMng.h"
+
+#include "arcane/utils/ValueConvert.h"
+
 #include "arcane/impl/internal/LoadBalanceMngInternal.h"
+
 #include "arcane/core/ISubDomain.h"
 
 /*---------------------------------------------------------------------------*/
@@ -25,11 +28,54 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-LoadBalanceMng::
-LoadBalanceMng(ISubDomain* sd, bool mass_as_criterion)
-: m_internal(makeRef(new LoadBalanceMngInternal(mass_as_criterion)))
-, m_mesh_handle(sd->defaultMeshHandle())
+bool LoadBalanceMng::
+_isLegacyInit()
 {
+  // Si la variable d'environnement est définie, utilise l'initialisation historique
+  // (avant la version 3.14 d'octobre 2024). Cette initialisation utilisait par
+  // défaut la quantité de mémoire allouée par les variables pour le partitionnement ce
+  // qui faisait que le partitionnement n'était pas répétable entre mode check/release
+  // ou en fonction des modules chargés (car le nombre de variables est différent).
+  if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_USE_LEGACY_INIT_LOADBALANCEMNG", true))
+    return (v.value() != 0);
+  return false;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+LoadBalanceMng::
+LoadBalanceMng(ISubDomain* sd)
+: m_mesh_handle(sd->defaultMeshHandle())
+{
+  bool is_legacy_init = _isLegacyInit();
+  // Avec l'initialisation historique, la valeur par défaut est d'utiliser la
+  // mémoire comme critère.
+  bool use_mass_as_criterion = is_legacy_init;
+  _init(use_mass_as_criterion, is_legacy_init);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+LoadBalanceMng::
+LoadBalanceMng(ISubDomain* sd, bool use_mass_as_criterion)
+: m_mesh_handle(sd->defaultMeshHandle())
+{
+  bool is_legacy_init = _isLegacyInit();
+  _init(use_mass_as_criterion, is_legacy_init);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void LoadBalanceMng::
+_init(bool use_mass_as_criterion, bool is_legacy_init)
+{
+  m_internal = makeRef(new LoadBalanceMngInternal(use_mass_as_criterion, is_legacy_init));
   m_internal->reset(m_mesh_handle.mesh());
 }
 

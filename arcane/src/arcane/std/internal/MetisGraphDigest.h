@@ -71,9 +71,8 @@ class MetisGraphDigest
 
  private:
 
-  void _computeHash(ConstArrayView<idx_t> data, ByteArray& output);
-  void _computeHash(const idx_t* data, const Integer nb, ByteArray& output);
-  void _computeHash(const real_t* data, const Integer nb, ByteArray& output);
+  void _computeHash(Span<const idx_t> data, ByteArray& output, const char* name);
+  void _computeHash(Span<const real_t> data, ByteArray& output, const char* name);
   String _digestString(ConstArrayView<Byte> my_digest);
 };
 
