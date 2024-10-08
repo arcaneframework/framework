@@ -534,8 +534,8 @@ _coarsePatch()
 {
   Int32 dim = defaultMesh()->dimension();
 
-  UniqueArray<Int32> cells_in_patchs;
   if (dim == 2) {
+    UniqueArray<Int32> cells_in_patchs;
     for (auto& x : options()->coarseZone2d()) {
       _cellsInPatch(Real3(x->position()), Real3(x->length()), false, x->level(), cells_in_patchs);
       defaultMesh()->modifier()->flagCellToCoarsen(cells_in_patchs);
@@ -544,6 +544,7 @@ _coarsePatch()
     }
   }
   if (dim == 3) {
+    UniqueArray<Int32> cells_in_patchs;
     for (auto& x : options()->coarseZone3d()) {
       _cellsInPatch(x->position(), x->length(), true, x->level(), cells_in_patchs);
       defaultMesh()->modifier()->flagCellToCoarsen(cells_in_patchs);

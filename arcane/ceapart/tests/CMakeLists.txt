@@ -252,6 +252,7 @@ arcane_add_test_parallel_thread(amr-cartesian3D-V1-coarse-2 testAMRCartesianMesh
 # arcane_add_test_parallel(amr-cartesian2D-V1-coarse-lb-1 testAMRCartesianMesh2D-V1-coarse-lb-1.arc 4 "-m 20")
 
 arcane_add_test(amr-cartesian2D-cell-coarse-zone-1 testAMRCartesianMesh2D-Cell-CoarseZone-1.arc "-m 20")
+arcane_add_test(amr-cartesian2D-cell-coarse-zone-2 testAMRCartesianMesh2D-Cell-CoarseZone-2.arc "-m 20")
 
 
 # Ce test prend du temps (environ 30 secondes) donc on ne l'active pas par défaut

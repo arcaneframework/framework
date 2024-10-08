@@ -34,8 +34,8 @@
       <cartesian>
         <nsd>2 2</nsd>
         <origine>0.0 0.0</origine>
-        <lx nx='5' prx='1.0'>5.0</lx>
-        <ly ny='5' pry='1.0'>5.0</ly>
+        <lx nx='10' prx='1.0'>10.0</lx>
+        <ly ny='10' pry='1.0'>10.0</ly>
       </cartesian>
     </meshgenerator>
   </maillage>
@@ -45,27 +45,40 @@
 
     <refinement-2d>
       <position>1.0 1.0</position>
-      <length>3.0 3.0</length>
+      <length>8.0 8.0</length>
     </refinement-2d>
     <refinement-2d>
-      <position>2.0 2.0</position>
-      <length>1.0 1.0</length>
+      <position>3.0 3.0</position>
+      <length>4.0 4.0</length>
     </refinement-2d>
 
     <coarse-zone-2d>
-      <position>2.0 2.0</position>
-      <length>1.0 1.0</length>
+      <position>3.0 3.0</position>
+      <length>2.0 2.0</length>
     </coarse-zone-2d>
     <coarse-zone-2d>
-      <position>2.0 2.0</position>
-      <length>1.0 1.0</length>
+      <position>5.0 5.0</position>
+      <length>2.0 2.0</length>
+    </coarse-zone-2d>
+    <coarse-zone-2d>
+      <position>3.0 5.0</position>
+      <length>2.0 2.0</length>
+    </coarse-zone-2d>
+    <coarse-zone-2d>
+      <position>5.0 3.0</position>
+      <length>2.0 2.0</length>
+    </coarse-zone-2d>
+
+    <coarse-zone-2d>
+      <position>3.0 3.0</position>
+      <length>3.0 3.0</length>
       <level>1</level>
     </coarse-zone-2d>
 
-    <expected-number-of-cells-in-patchs>25 32 0</expected-number-of-cells-in-patchs>
-    <nodes-uid-hash>419ae016a6188b6fe2fce33111a0727b</nodes-uid-hash>
-    <faces-uid-hash>f21c0a9a3f794391796fced1db892419</faces-uid-hash>
-    <cells-uid-hash>77ff9dc6c92dc78592a5a0f522422acb</cells-uid-hash>
+    <expected-number-of-cells-in-patchs>100 220 0</expected-number-of-cells-in-patchs>
+    <nodes-uid-hash>fc8dd8d6d47a03fd7abe97fde5e74b94</nodes-uid-hash>
+    <faces-uid-hash>2a8a808d2c4ac5f760812c9b5b16c3f0</faces-uid-hash>
+    <cells-uid-hash>9b275bfdff8e4485ab746bab360d02d3</cells-uid-hash>
   </a-m-r-cartesian-mesh-tester>
 
   <arcane-protections-reprises>
