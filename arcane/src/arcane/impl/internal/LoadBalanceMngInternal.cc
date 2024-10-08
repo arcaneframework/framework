@@ -293,20 +293,36 @@ _computeResidentMass()
 void CriteriaMng::
 _computeEvents()
 {
+  ARCANE_CHECK_POINTER(m_mesh);
+
+  ITraceMng* tm = m_mesh->traceMng();
   m_event_weights->resize(nbCriteria());
 
   ArrayView<StoreIProxyItemVariable> event_vars = criteria();
 
-  VariableCellArrayReal& event_weights = *(m_event_weights);
+  const Int32 nb_event_var = event_vars.size();
+  const Int32 nb_criteria = nbCriteria();
 
-  for (Integer i = 0; i < event_vars.size(); ++i) {
+  tm->info() << "CriteriaMng: Compute Events nb_criteria=" << nb_criteria << " nb_event_var=" << nb_event_var;
+
+  VariableCellArrayReal& event_weights = *(m_event_weights);
+  // Si aucun poids de spécifier et qu'on prend les mailles comme critère, alors
+  // remplit directement les poids (sinon ils ne seront pas remplis)
+  if (nb_event_var == 0 && m_nb_cells_as_criterion) {
     ENUMERATE_CELL (icell, m_mesh->ownCells()) {
-      Integer count = i;
-      if (m_nb_cells_as_criterion) {
-        count += 1;
-        event_weights(icell, 0) = 1;
+      event_weights(icell, 0) = 1.0;
+    }
+  }
+  else {
+    for (Integer i = 0; i < event_vars.size(); ++i) {
+      ENUMERATE_CELL (icell, m_mesh->ownCells()) {
+        Integer count = i;
+        if (m_nb_cells_as_criterion) {
+          count += 1;
+          event_weights(icell, 0) = 1;
+        }
+        event_weights(icell, count) = event_vars[i][icell];
       }
-      event_weights(icell, count) = event_vars[i][icell];
     }
   }
 }
