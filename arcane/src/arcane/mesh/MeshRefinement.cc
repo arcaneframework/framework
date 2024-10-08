@@ -631,99 +631,102 @@ coarsenItemsV2()
     }
   }
 
-  bool has_ghost_layer = m_mesh->ghostLayerMng()->nbGhostLayer() != 0;
+  if (m_mesh->parallelMng()->isParallel()) {
+    bool has_ghost_layer = m_mesh->ghostLayerMng()->nbGhostLayer() != 0;
 
-  ENUMERATE_ (Cell, icell, m_mesh->allCells()) {
-    Cell cell = *icell;
-    if (cell.mutableItemBase().flags() & ItemFlags::II_Coarsen) {
-      for (Face face : cell.faces()) {
-        Cell other_cell = face.frontCell() == cell ? face.backCell() : face.frontCell();
-        debug() << "Check face uid : " << face.uniqueId();
-        if (!other_cell.null() && other_cell.level() != cell.level()) {
-          //warning() << "Bad connectivity";
-          continue;
-        }
-        // Si les deux mailles vont être supprimées, la face sera supprimée.
-        if (!other_cell.null() && (other_cell.mutableItemBase().flags() & ItemFlags::II_Coarsen)) {
-          continue;
-        }
-        // Si la face est au bord, elle sera supprimée.
-        if (other_cell.null()) { // && !has_ghost_layer) {
-          continue;
-          //needed_cell.add(face.uniqueId());
-        }
-        // Si la maille à côté est raffinée, on aura plus d'un niveau de décalage.
-        if (!other_cell.null() && other_cell.nbHChildren() != 0) {
-          ARCANE_FATAL("Once level diff between two cells needed");
-        }
-        // Si la maille d'à coté n'est pas à nous, elle prend la propriété de la face.
-        if (!other_cell.null() && (other_cell.owner() != cell.owner())) {
-          // debug() << "Face uid : " << face.uniqueId()
-          //         << " -- old owner: " << face.owner()
-          //         << " -- new owner: " << other_cell.owner();
-          face.mutableItemBase().setOwner(other_cell.owner(), cell.owner());
-        }
-      }
-      for (Node node : cell.nodes()) {
-        debug() << "Check node uid : " << node.uniqueId();
-
-        // Noeud sera supprimé ?
-        {
-          bool deleted = true;
-          for (Cell cell2 : node.cells()) {
-            if (!(cell2.mutableItemBase().flags() & ItemFlags::II_Coarsen)) {
-              deleted = false;
-              break;
-            }
-          }
-          if (deleted) {
+    ENUMERATE_ (Cell, icell, m_mesh->allCells()) {
+      Cell cell = *icell;
+      if (cell.mutableItemBase().flags() & ItemFlags::II_Coarsen) {
+        for (Face face : cell.faces()) {
+          Cell other_cell = face.frontCell() == cell ? face.backCell() : face.frontCell();
+          // debug() << "Check face uid : " << face.uniqueId();
+          if (!other_cell.null() && other_cell.level() != cell.level()) {
+            //warning() << "Bad connectivity";
             continue;
           }
+          // Si les deux mailles vont être supprimées, la face sera supprimée.
+          if (!other_cell.null() && (other_cell.mutableItemBase().flags() & ItemFlags::II_Coarsen)) {
+            continue;
+          }
+          // Si la face est au bord, elle sera supprimée.
+          if (other_cell.null()) { // && !has_ghost_layer) {
+            continue;
+            //needed_cell.add(face.uniqueId());
+          }
+          // Si la maille à côté est raffinée, on aura plus d'un niveau de décalage.
+          if (!other_cell.null() && other_cell.nbHChildren() != 0) {
+            ARCANE_FATAL("Once level diff between two cells needed");
+          }
+          // Si la maille d'à coté n'est pas à nous, elle prend la propriété de la face.
+          if (!other_cell.null() && (other_cell.owner() != cell.owner())) {
+            // debug() << "Face uid : " << face.uniqueId()
+            //         << " -- old owner: " << face.owner()
+            //         << " -- new owner: " << other_cell.owner();
+            face.mutableItemBase().setOwner(other_cell.owner(), cell.owner());
+          }
         }
+        for (Node node : cell.nodes()) {
+          // debug() << "Check node uid : " << node.uniqueId();
 
-        // Noeud devra changer de proprio ?
-        {
-          Integer node_owner = node.owner();
-          Integer new_owner = -1;
-          bool deleted = false;
-          for (Cell cell2 : node.cells()) {
-            if (!(cell2.mutableItemBase().flags() & ItemFlags::II_Coarsen)) {
-              if (cell2.owner() == node_owner) {
-                deleted = true;
+          // Noeud sera supprimé ?
+          {
+            bool will_deleted = true;
+            for (Cell cell2 : node.cells()) {
+              if (!(cell2.mutableItemBase().flags() & ItemFlags::II_Coarsen)) {
+                will_deleted = false;
                 break;
               }
-              new_owner = cell2.owner();
+            }
+            if (will_deleted) {
+              continue;
             }
           }
-          if (deleted) {
-            continue;
+
+          // Noeud devra changer de proprio ?
+          {
+            Integer node_owner = node.owner();
+            Integer new_owner = -1;
+            bool need_new_owner = true;
+            for (Cell cell2 : node.cells()) {
+              if (!(cell2.mutableItemBase().flags() & ItemFlags::II_Coarsen)) {
+                if (cell2.owner() == node_owner) {
+                  need_new_owner = false;
+                  break;
+                }
+                new_owner = cell2.owner();
+              }
+            }
+            if (!need_new_owner) {
+              continue;
+            }
+            // debug() << "Node uid : " << node.uniqueId()
+            //         << " -- old owner: " << node.owner()
+            //         << " -- new owner: " << new_owner;
+            node.mutableItemBase().setOwner(new_owner, cell.owner());
           }
-          // debug() << "Node uid : " << node.uniqueId()
-          //         << " -- old owner: " << node.owner()
-          //         << " -- new owner: " << new_owner;
-          node.mutableItemBase().setOwner(new_owner, cell.owner());
         }
       }
     }
+
+    if (!has_ghost_layer) {
+      // TODO
+      ARCANE_NOT_YET_IMPLEMENTED("Support des maillages sans mailles fantômes à faire");
+    }
   }
 
+  // debug() << "Removed cells: " << to_coarse;
 
-  if (!has_ghost_layer) {
-    // TODO
-    ARCANE_NOT_YET_IMPLEMENTED("Support des maillages sans mailles fantômes à faire");
+  if (!to_coarse.empty()) {
+    m_mesh->removeCells(to_coarse);
+    m_mesh->nodeFamily()->notifyItemsOwnerChanged();
+    m_mesh->faceFamily()->notifyItemsOwnerChanged();
+    m_mesh->endUpdate();
+    m_mesh->cellFamily()->computeSynchronizeInfos();
+    m_mesh->nodeFamily()->computeSynchronizeInfos();
+    m_mesh->faceFamily()->computeSynchronizeInfos();
+    return true;
   }
-
-  debug() << "Removed cells: " << to_coarse;
-
-  m_mesh->removeCells(to_coarse);
-  m_mesh->nodeFamily()->notifyItemsOwnerChanged();
-  m_mesh->faceFamily()->notifyItemsOwnerChanged();
-  m_mesh->endUpdate();
-  m_mesh->cellFamily()->computeSynchronizeInfos();
-  m_mesh->nodeFamily()->computeSynchronizeInfos();
-  m_mesh->faceFamily()->computeSynchronizeInfos();
-
-  return true;
+  return false;
 }
 
 /*---------------------------------------------------------------------------*/
