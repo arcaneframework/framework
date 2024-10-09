@@ -19,8 +19,7 @@
 
 #include "arcane/mesh/MeshGlobal.h"
 #include "arcane/core/ItemInternal.h"
-
-#include <unordered_map>
+#include "arcane/utils/HashTableMap2.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -61,12 +60,12 @@ class ItemInternalMap
  private:
 
   using LegacyImpl = HashTableMapT<Int64, ItemInternal*>;
-  using NewImpl = std::unordered_map<Int64, ItemInternal*>;
+  using NewImpl = impl::HashTableMap2<Int64, ItemInternal*>;
   using BaseData = LegacyImpl::Data;
 
  public:
 
-#ifdef ARCANE_USE_NEW_IMPL_FOR_ITEMINTERNALMAP
+#ifdef ARCANE_USE_HASHTABLEMAP2_FOR_ITEMINTERNALMAP
   static constexpr bool UseNewImpl = 1;
 #else
   static constexpr bool UseNewImpl = 0;

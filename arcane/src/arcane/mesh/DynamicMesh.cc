@@ -260,8 +260,8 @@ DynamicMesh(ISubDomain* sub_domain,const MeshBuildInfo& mbi, bool is_submesh)
   m_item_internal_list._internalSetFaceSharedInfo(m_face_family->commonItemSharedInfo());
   m_item_internal_list._internalSetCellSharedInfo(m_cell_family->commonItemSharedInfo());
 
-  info() << "Is AMR Activated? = " << m_is_amr_activated;
-  info() << "AMR type = " << m_amr_type;
+  info() << "Is AMR Activated? = " << m_is_amr_activated
+         << "AMR type = " << m_amr_type;
 
   _printConnectivityPolicy();
 
@@ -374,7 +374,8 @@ build()
 {
   Trace::Setter mci(traceMng(),_className());
 
-  info() << "Building DynamicMesh=" << this << " name=" << name();
+  info() << "Building DynamicMesh name=" << name()
+         << " ItemInternalMapImpl=" << ItemInternalMap::UseNewImpl;
 
   m_tied_interface_mng = new TiedInterfaceMng(this);
 
