@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <cas codename="ArcaneTest" xml:lang="fr" codeversion="1.0">
   <arcane>
-    <titre>Test CartesianMesh 2D Cell Coarse Zone (Variant 1)</titre>
+    <titre>Test CartesianMesh 2D Cell Coarse Zone (Variant 2)</titre>
 
     <description>
       Test du raffinement d'un maillage cartesian 2D avec le type d'AMR Cell puis du dé-raffinement de certaines zones

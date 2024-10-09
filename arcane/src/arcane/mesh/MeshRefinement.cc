@@ -640,25 +640,25 @@ coarsenItemsV2()
         for (Face face : cell.faces()) {
           Cell other_cell = face.frontCell() == cell ? face.backCell() : face.frontCell();
           // debug() << "Check face uid : " << face.uniqueId();
-          if (!other_cell.null() && other_cell.level() != cell.level()) {
-            //warning() << "Bad connectivity";
-            continue;
-          }
-          // Si les deux mailles vont être supprimées, la face sera supprimée.
-          if (!other_cell.null() && (other_cell.mutableItemBase().flags() & ItemFlags::II_Coarsen)) {
-            continue;
-          }
           // Si la face est au bord, elle sera supprimée.
           if (other_cell.null()) { // && !has_ghost_layer) {
             continue;
             //needed_cell.add(face.uniqueId());
           }
+          if (other_cell.level() != cell.level()) {
+            //warning() << "Bad connectivity";
+            continue;
+          }
+          // Si les deux mailles vont être supprimées, la face sera supprimée.
+          if (other_cell.mutableItemBase().flags() & ItemFlags::II_Coarsen) {
+            continue;
+          }
           // Si la maille à côté est raffinée, on aura plus d'un niveau de décalage.
-          if (!other_cell.null() && other_cell.nbHChildren() != 0) {
+          if (other_cell.nbHChildren() != 0) {
             ARCANE_FATAL("Once level diff between two cells needed");
           }
-          // Si la maille d'à coté n'est pas à nous, elle prend la propriété de la face.
-          if (!other_cell.null() && (other_cell.owner() != cell.owner())) {
+          // Si la maille d'à côté n'est pas à nous, elle prend la propriété de la maille d'à côté.
+          if (other_cell.owner() != cell.owner()) {
             // debug() << "Face uid : " << face.uniqueId()
             //         << " -- old owner: " << face.owner()
             //         << " -- new owner: " << other_cell.owner();
@@ -716,17 +716,15 @@ coarsenItemsV2()
 
   // debug() << "Removed cells: " << to_coarse;
 
-  if (!to_coarse.empty()) {
-    m_mesh->removeCells(to_coarse);
-    m_mesh->nodeFamily()->notifyItemsOwnerChanged();
-    m_mesh->faceFamily()->notifyItemsOwnerChanged();
-    m_mesh->endUpdate();
-    m_mesh->cellFamily()->computeSynchronizeInfos();
-    m_mesh->nodeFamily()->computeSynchronizeInfos();
-    m_mesh->faceFamily()->computeSynchronizeInfos();
-    return true;
-  }
-  return false;
+  m_mesh->removeCells(to_coarse);
+  m_mesh->nodeFamily()->notifyItemsOwnerChanged();
+  m_mesh->faceFamily()->notifyItemsOwnerChanged();
+  m_mesh->endUpdate();
+  m_mesh->cellFamily()->computeSynchronizeInfos();
+  m_mesh->nodeFamily()->computeSynchronizeInfos();
+  m_mesh->faceFamily()->computeSynchronizeInfos();
+
+  return m_mesh->parallelMng()->reduce(Parallel::ReduceMax, (!to_coarse.empty()));
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1126,7 +1124,7 @@ _makeFlagParallelConsistent()
   // Si nous ne sommes pas consistent sur chaque processeur alors
   // nous ne le sommes pas globalement
   parallel_consistent = m_mesh->parallelMng()->reduce(Parallel::ReduceMin, parallel_consistent);
-  debug() << "makeFlagsParallelConsistent()";
+  debug() << "makeFlagsParallelConsistent() end -- parallel_consistent : " << parallel_consistent;
 
   CHECKPERF( m_perf_counter.stop(PerfCounter::PCONSIST) )
   return parallel_consistent;
@@ -1196,7 +1194,7 @@ _makeFlagParallelConsistent2()
   // Si nous ne sommes pas consistent sur chaque processeur alors
   // nous ne le sommes pas globalement
   parallel_consistent = m_mesh->parallelMng()->reduce(Parallel::ReduceMin, parallel_consistent);
-  debug() << "makeFlagsParallelConsistent2()";
+  debug() << "makeFlagsParallelConsistent2() end";
 
   CHECKPERF( m_perf_counter.stop(PerfCounter::PCONSIST2) )
   return parallel_consistent;
