@@ -69,6 +69,41 @@
      </description>
    </simple>
 
+   <complex name="coarse-zone-2d" type="CoarseZone2D" minOccurs="0" maxOccurs="unbounded">
+     <simple name="position" type="real2">
+       <description>
+         Indique la taille de la zone de dé-raffinement
+       </description>
+     </simple>
+     <simple name="length" type="real2">
+       <description>
+         Indique la taille de la zone de dé-raffinement
+       </description>
+     </simple>
+     <simple name="level" type="int32" default="-1">
+       <description>
+         Indique le niveau à dé-raffiner. Par défaut, le niveau le plus haut est choisi.
+       </description>
+     </simple>
+   </complex>
+   <complex name="coarse-zone-3d" type="CoarseZone3D" minOccurs="0" maxOccurs="unbounded">
+     <simple name="position" type="real3">
+       <description>
+         Indique la taille de la zone de dé-raffinement
+       </description>
+     </simple>
+     <simple name="length" type="real3">
+       <description>
+         Indique la taille de la zone de dé-raffinement
+       </description>
+     </simple>
+     <simple name="level" type="int32" default="-1">
+       <description>
+         Indique le niveau à dé-raffiner. Par défaut, le niveau le plus haut est choisi.
+       </description>
+     </simple>
+   </complex>
+
  </options>
 
  <entry-points>
