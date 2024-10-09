@@ -5,7 +5,7 @@
   <timeloop>ArcaneHydroGenericLoop</timeloop>
  </arcane>
 
- <mesh>
+ <mesh face-numbering-version="2" ghostlayer-builder-version="3" nb-ghostlayer="1">
   <!-- La validite numerique suppose que le maillage est 100x15x15.
        Si ce n'est pas le cas, il faut desactiver l'option 'check-numerical-result' -->
 
