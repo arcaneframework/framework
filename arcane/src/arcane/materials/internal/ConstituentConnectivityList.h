@@ -88,9 +88,11 @@ class ConstituentConnectivityList
 
   /*!
    * \brief Replit \a cells_do_transform en indiquant is la maille passe de pure à partielle.
+   *
+   * Retourne le nombre de mailles transformées
    */
-  void fillCellsToTransform(SmallSpan<const Int32> cells_local_id, Int16 env_id,
-                            SmallSpan<bool> cells_do_transform, bool is_add, RunQueue& queue);
+  Int32 fillCellsToTransform(SmallSpan<const Int32> cells_local_id, Int16 env_id,
+                             SmallSpan<bool> cells_do_transform, bool is_add, RunQueue& queue);
 
   /*!
    * \brief Replit \a cells_is_partial en indiquant is la maille est partielle pour le milieu \a env_id

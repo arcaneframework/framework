@@ -23,6 +23,7 @@
 #include "arcane/accelerator/core/RunQueue.h"
 #include "arcane/accelerator/RunCommandLoop.h"
 #include "arcane/accelerator/Scan.h"
+#include "arcane/accelerator/Reduce.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -543,7 +544,7 @@ fillCellsNbMaterial(SmallSpan<const Int32> cells_local_id, Int16 env_id,
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void ConstituentConnectivityList::
+Int32 ConstituentConnectivityList::
 fillCellsToTransform(SmallSpan<const Int32> cells_local_id, Int16 env_id,
                      SmallSpan<bool> cells_do_transform, bool is_add, RunQueue& queue)
 {
@@ -556,7 +557,8 @@ fillCellsToTransform(SmallSpan<const Int32> cells_local_id, Int16 env_id,
   SmallSpan<const Int16> cells_nb_env = cellsNbEnvironment();
   const Int32 n = cells_local_id.size();
   auto command = makeCommand(queue);
-  command << RUNCOMMAND_LOOP1(iter, n)
+  Accelerator::ReducerSum2<Int32> sum_transformed(command);
+  command << RUNCOMMAND_LOOP1(iter, n, sum_transformed)
   {
     auto [i] = iter();
     Int32 local_id = cells_local_id[i];
@@ -576,8 +578,12 @@ fillCellsToTransform(SmallSpan<const Int32> cells_local_id, Int16 env_id,
       if (do_transform)
         do_transform = nb_mat_computer.cellNbMaterial(local_id, env_id) == 1;
     }
-    cells_do_transform[local_id] = do_transform;
+    if (do_transform) {
+      cells_do_transform[local_id] = do_transform;
+      sum_transformed.combine(1);
+    }
   };
+  return sum_transformed.reducedValue();
 }
 
 /*---------------------------------------------------------------------------*/
