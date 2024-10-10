@@ -31,6 +31,7 @@
 
 #include "arcane/accelerator/RunCommandLoop.h"
 #include "arcane/accelerator/Filter.h"
+#include "arcane/accelerator/Reduce.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -262,15 +263,20 @@ _switchCellsForMaterials(const MeshMaterial* modified_mat,
 
       info(4) << "TransformCells (V3) is_add?=" << is_add << " indexer=" << indexer->name();
 
-      _computeCellsToTransformForMaterial(mat, ids);
+      Int32 nb_transformed = _computeCellsToTransformForMaterial(mat, ids);
+      info(4) << "nb_transformed=" << nb_transformed;
+      if (nb_transformed==0)
+        continue;
       indexer->transformCellsV2(m_work_info, m_queue);
       _resetTransformedCells(ids);
 
       auto pure_local_ids = m_work_info.pure_local_ids.view(is_device);
       auto partial_indexes = m_work_info.partial_indexes.view(is_device);
 
-      info(4) << "NB_MAT_TRANSFORM pure=" << pure_local_ids.size()
-              << " partial=" << partial_indexes.size() << " name=" << mat->name()
+      Int32 nb_pure = pure_local_ids.size();
+      Int32 nb_partial = partial_indexes.size();
+      info(4) << "NB_MAT_TRANSFORM pure=" << nb_pure
+              << " partial=" << nb_partial << " name=" << mat->name()
               << " is_device?=" << is_device;
 
       CopyBetweenPartialAndGlobalArgs args(indexer->index(), pure_local_ids,
@@ -310,6 +316,11 @@ _switchCellsForEnvironments(const IMeshEnvironment* modified_env,
   // optimisation. Ce n'est pas actif par défaut pour compatibilité avec l'existant.
   const bool is_copy = is_add || !(m_material_mng->isUseMaterialValueWhenRemovingPartialValue());
 
+  Int32 nb_transformed = _computeCellsToTransformForEnvironments(ids);
+  info(4) << "Compute Cells for environments nb_transformed=" << nb_transformed;
+  if (nb_transformed == 0)
+    return;
+
   for (const MeshEnvironment* env : m_material_mng->trueEnvironments()) {
     // Ne traite pas le milieu en cours de modification.
     if (env == modified_env)
@@ -325,9 +336,7 @@ _switchCellsForEnvironments(const IMeshEnvironment* modified_env,
     info(4) << "TransformCells (V2) is_add?=" << is_add
             << " indexer=" << indexer->name() << " nb_item=" << ids.size();
 
-    _computeCellsToTransformForEnvironments(ids);
     indexer->transformCellsV2(m_work_info, m_queue);
-    _resetTransformedCells(ids);
 
     SmallSpan<const Int32> pure_local_ids = m_work_info.pure_local_ids.view(is_device);
     SmallSpan<const Int32> partial_indexes = m_work_info.partial_indexes.view(is_device);
@@ -343,6 +352,8 @@ _switchCellsForEnvironments(const IMeshEnvironment* modified_env,
       _copyBetweenPartialsAndGlobals(copy_args);
     }
   }
+
+  _resetTransformedCells(ids);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -350,7 +361,7 @@ _switchCellsForEnvironments(const IMeshEnvironment* modified_env,
 /*!
  * \brief Calcule les mailles à transformer pour le matériau \at mat.
  */
-void IncrementalComponentModifier::
+Int32 IncrementalComponentModifier::
 _computeCellsToTransformForMaterial(const MeshMaterial* mat, SmallSpan<const Int32> ids)
 {
   const MeshEnvironment* env = mat->trueEnvironment();
@@ -359,7 +370,7 @@ _computeCellsToTransformForMaterial(const MeshMaterial* mat, SmallSpan<const Int
 
   ConstituentConnectivityList* connectivity = m_all_env_data->componentConnectivityList();
   SmallSpan<bool> transformed_cells = m_work_info.transformedCells();
-  connectivity->fillCellsToTransform(ids, env_id, transformed_cells, is_add, m_queue);
+  return connectivity->fillCellsToTransform(ids, env_id, transformed_cells, is_add, m_queue);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -368,7 +379,7 @@ _computeCellsToTransformForMaterial(const MeshMaterial* mat, SmallSpan<const Int
  * \brief Calcule les mailles à transformer lorsqu'on modifie les mailles
  * d'un milieu.
  */
-void IncrementalComponentModifier::
+Int32 IncrementalComponentModifier::
 _computeCellsToTransformForEnvironments(SmallSpan<const Int32> ids)
 {
   ConstituentConnectivityList* connectivity = m_all_env_data->componentConnectivityList();
@@ -378,7 +389,8 @@ _computeCellsToTransformForEnvironments(SmallSpan<const Int32> ids)
 
   const Int32 n = ids.size();
   auto command = makeCommand(m_queue);
-  command << RUNCOMMAND_LOOP1(iter, n)
+  Accelerator::ReducerSum2<Int32> sum_transformed(command);
+  command << RUNCOMMAND_LOOP1(iter, n, sum_transformed)
   {
     auto [i] = iter();
     Int32 lid = ids[i];
@@ -389,8 +401,13 @@ _computeCellsToTransformForEnvironments(SmallSpan<const Int32> ids)
       do_transform = cells_nb_env[lid] > 1;
     else
       do_transform = cells_nb_env[lid] == 1;
-    transformed_cells[lid] = do_transform;
+    if (do_transform) {
+      transformed_cells[lid] = do_transform;
+      sum_transformed.combine(1);
+    }
   };
+  Int32 total_transformed = sum_transformed.reducedValue();
+  return total_transformed;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -706,7 +723,11 @@ _copyBetweenPartialsAndGlobals(const CopyBetweenPartialAndGlobalArgs& args)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
+/*!
+ * \brief Effectue la copie entre les valeurs partielles et globales.
+ *
+ * Cette méthode permet de faire la copie en utilisant une seule RunCommand.
+ */
 void IncrementalComponentModifier::
 _applyCopyBetweenPartialsAndGlobals(const CopyBetweenPartialAndGlobalArgs& args, RunQueue& queue)
 {
