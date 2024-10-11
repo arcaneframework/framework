@@ -216,8 +216,8 @@ _mergeProcessors(Int32 iproc1, Int32 iproc2)
   info() << "SORT iproc1=" << iproc1 << " iproc2=" << iproc2;
   ++m_nb_merge;
 
-  Int64 buf_size = m_size;
-
+  const Int64 buf_size = m_size;
+  const bool is_want_index_rank = m_want_index_and_rank;
   ////////////////////////////////////////////
   //traitement du processeur 2
   ////////////////////////////////////////////
@@ -227,13 +227,13 @@ _mergeProcessors(Int32 iproc1, Int32 iproc2)
     UniqueArray<KeyType> send_keys(m_keys);
     UniqueArray<Request> requests;
     requests.add(KeyTypeTraits::send(m_parallel_mng, iproc1, send_keys));
-    if (m_want_index_and_rank) {
+    if (is_want_index_rank) {
       requests.add(m_parallel_mng->send(m_key_indexes, iproc1, false));
       requests.add(m_parallel_mng->send(m_key_ranks, iproc1, false));
     }
     //reception de la fin de la liste fusionnee par le proc1
     requests.add(KeyTypeTraits::recv(m_parallel_mng, iproc1, m_keys));
-    if (m_want_index_and_rank) {
+    if (is_want_index_rank) {
       requests.add(m_parallel_mng->recv(m_key_indexes, iproc1, false));
       requests.add(m_parallel_mng->recv(m_key_ranks, iproc1, false));
     }
@@ -246,40 +246,40 @@ _mergeProcessors(Int32 iproc1, Int32 iproc2)
   if (is_proc1) {
     //reception de la liste du proc2
 
-    UniqueArray<KeyType> buf2;
+    UniqueArray<KeyType> buf2(buf_size);
     Int32UniqueArray buf2_proc;
     Int32UniqueArray buf2_local_id;
     //on alloue buf2 a la taille+1 afin de placer une sentinelle en
     //buf2[size]
     buf2.resize(buf_size);
-    buf2_proc.resize(buf_size);
-    buf2_local_id.resize(buf_size);
+    if (is_want_index_rank) {
+      buf2_proc.resize(buf_size);
+      buf2_local_id.resize(buf_size);
+    }
+
     Request recv_request = KeyTypeTraits::recv(m_parallel_mng, iproc2, buf2);
     m_parallel_mng->waitAllRequests(ArrayView<Request>(1, &recv_request));
-    if (m_want_index_and_rank) {
+    if (is_want_index_rank) {
       m_parallel_mng->recv(buf2_local_id, iproc2);
       m_parallel_mng->recv(buf2_proc, iproc2);
     }
 
-    //a remplacer par le plus grand nombre representable par un Integer
+    //à remplacer par le plus grand nombre representable par un Integer
     buf2.add(KeyTypeTraits::maxValue());
-    //buf2[buf_size] = KeyTypeTraits::maxValue();
 
     // allocation d'un buffer de travail pour la fusion des deux listes
     Int64 total_size = m_size + buf_size;
     UniqueArray<KeyType> buf_merge(total_size);
-    UniqueArray<Int32> buf_proc_merge(total_size);
-    UniqueArray<Int32> buf_local_id_merge(total_size);
+    UniqueArray<Int32> buf_proc_merge;
+    UniqueArray<Int32> buf_local_id_merge;
+    if (is_want_index_rank) {
+      buf_proc_merge.resize(total_size);
+      buf_local_id_merge.resize(total_size);
+    }
 
 #if 0
     info() << "SIZE=" << buf_size << " total=" << total_size << " m_size=" << m_size
            << " proc2=" << iproc2 << " init-size=" << m_init_size;
-    for( Integer i=0; i<buf_size; ++i ){
-      info() << "L1=" << i << " v=" << buf2[i];
-    }
-    for( Integer i=0; i<m_size; ++i ){
-      info() << "L2=" << i << " v=" << m_keys[i];
-    }
 #endif
 
     // Fusion des deux listes en partant du principe que chacune est
@@ -289,14 +289,18 @@ _mergeProcessors(Int32 iproc1, Int32 iproc2)
     for (Int64 i = 0; i < total_size; ++i) {
       if (cursor1 >= m_size || (KeyTypeTraits::compareLess(buf2[cursor2], m_keys[cursor1]) && cursor2 < buf_size)) {
         buf_merge[i] = buf2[cursor2];
-        buf_local_id_merge[i] = buf2_local_id[cursor2];
-        buf_proc_merge[i] = buf2_proc[cursor2];
+        if (is_want_index_rank) {
+          buf_local_id_merge[i] = buf2_local_id[cursor2];
+          buf_proc_merge[i] = buf2_proc[cursor2];
+        }
         ++cursor2;
       }
       else {
         buf_merge[i] = m_keys[cursor1];
-        buf_local_id_merge[i] = m_key_indexes[cursor1];
-        buf_proc_merge[i] = m_key_ranks[cursor1];
+        if (is_want_index_rank) {
+          buf_local_id_merge[i] = m_key_indexes[cursor1];
+          buf_proc_merge[i] = m_key_ranks[cursor1];
+        }
         ++cursor1;
       }
     }
@@ -305,21 +309,25 @@ _mergeProcessors(Int32 iproc1, Int32 iproc2)
     // Recopie et envoi de la fin de la liste vers le proc2
     for (Integer ii = 0; ii < buf_size; ii++) {
       buf2[ii] = buf_merge[m_size + ii];
-      buf2_local_id[ii] = buf_local_id_merge[m_size + ii];
-      buf2_proc[ii] = buf_proc_merge[m_size + ii];
+      if (is_want_index_rank) {
+        buf2_local_id[ii] = buf_local_id_merge[m_size + ii];
+        buf2_proc[ii] = buf_proc_merge[m_size + ii];
+      }
     }
     Request send_request = KeyTypeTraits::send(m_parallel_mng, iproc2, buf2);
     m_parallel_mng->waitAllRequests(ArrayView<Request>(1, &send_request));
-    if (m_want_index_and_rank) {
+    if (is_want_index_rank) {
       m_parallel_mng->send(buf2_local_id, iproc2);
       m_parallel_mng->send(buf2_proc, iproc2);
     }
 
     // recopie du debut de la liste dans la variable m_work_unique_id
-    for (Integer i = 0; i < m_size; i++) {
+    for (Integer i = 0; i < buf_size; i++) {
       m_keys[i] = buf_merge[i];
-      m_key_indexes[i] = buf_local_id_merge[i];
-      m_key_ranks[i] = buf_proc_merge[i];
+      if (is_want_index_rank) {
+        m_key_indexes[i] = buf_local_id_merge[i];
+        m_key_ranks[i] = buf_proc_merge[i];
+      }
     }
   }
 }
