@@ -81,11 +81,16 @@ namespace
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
+/*!
+ * \brief Conteneur des données de connectivité pour un type de constituant.
+ */
 class ConstituentConnectivityList::ConstituentContainer
 {
  public:
 
+  /*!
+   * \brief Vue sur une liste de constituants des mailles.
+   */
   class View
   {
    public:
@@ -230,6 +235,7 @@ class ConstituentConnectivityList::NumberOfMaterialComputer
  private:
 
   ConstituentConnectivityList::ConstituentContainer::View m_view;
+  //! Vue indiquant le milieu associé aux matériaux
   SmallSpan<const Int16> m_environment_for_materials;
 };
 
@@ -565,7 +571,7 @@ fillCellsToTransform(SmallSpan<const Int32> cells_local_id, Int16 env_id,
     bool do_transform = false;
     // En cas d'ajout on passe de pure à partiel s'il y a plusieurs milieux ou
     // plusieurs matériaux dans le milieu.
-    // En cas de supression, on passe de partiel à pure si on est le seul matériau
+    // En cas de suppression, on passe de partiel à pure si on est le seul matériau
     // et le seul milieu.
     const Int16 nb_env = cells_nb_env[local_id];
     if (is_add) {
@@ -609,6 +615,36 @@ fillCellsIsPartial(SmallSpan<const Int32> cells_local_id, Int16 env_id,
     // milieu de la maille. Sinon, on prend un indice multiple
     bool is_partial = (cells_nb_env[local_id] > 1 || nb_mat_computer.cellNbMaterial(local_id, env_id) > 1);
     cells_is_partial[i] = is_partial;
+  };
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ConstituentConnectivityList::
+fillModifiedConstituents(SmallSpan<const Int32> cells_local_id,
+                         SmallSpan<bool> is_modified_materials,
+                         SmallSpan<bool> is_modified_environments,
+                         RunQueue& queue)
+{
+  const Int32 n = cells_local_id.size();
+  if (n<=0)
+    return;
+
+  ConstituentContainer::View materials_view(m_container->m_material);
+  ConstituentContainer::View environments_view(m_container->m_environment);
+  auto command = makeCommand(queue);
+
+  command << RUNCOMMAND_LOOP1(iter, n)
+  {
+    auto [i] = iter();
+    Int32 local_id = cells_local_id[i];
+    SmallSpan<const Int16> cell_mats(materials_view.components(local_id));
+    for( Int16 x : cell_mats )
+      is_modified_materials[x] = true;
+    SmallSpan<const Int16> cell_envs(environments_view.components(local_id));
+    for( Int16 x : cell_envs )
+      is_modified_environments[x] = true;
   };
 }
 

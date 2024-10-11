@@ -48,8 +48,26 @@ class ARCANE_MATERIALS_EXPORT ConstituentModifierWorkInfo
 
  public:
 
+  /*!
+   * \brief Liste des mailles pures d'un constituant
+   * ajoutées/supprimées par l'opération en cours.
+   */
   DualUniqueArray<Int32> pure_local_ids;
+  /*!
+   * \brief Liste des mailles partielles d'un constituant
+   * ajoutées/supprimées par l'opération en cours.
+   */
   DualUniqueArray<Int32> partial_indexes;
+  /*!
+   * \brief Tableau dimensionné aux matériaux qui est vrai si un matériau est
+   * concerné par la modification en cours.
+   */
+  DualUniqueArray<bool> m_is_materials_modified;
+  /*!
+   * \brief Tableau dimensionné aux milieux qui est vrai si un milieu est
+   * concerné par la modification en cours.
+   */
+  DualUniqueArray<bool> m_is_environments_modified;
   bool is_verbose = false;
 
   //! Liste des mailles d'un milieu qui vont être ajoutées ou supprimées lors d'une opération
@@ -79,7 +97,7 @@ class ARCANE_MATERIALS_EXPORT ConstituentModifierWorkInfo
  public:
 
   //! Initialise l'instance.
-  void initialize(Int32 max_local_id, RunQueue& queue);
+  void initialize(Int32 max_local_id, Int32 nb_material, Int32 nb_environment, RunQueue& queue);
 
  public:
 
