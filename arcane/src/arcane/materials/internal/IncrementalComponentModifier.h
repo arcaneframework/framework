@@ -48,7 +48,7 @@ class ARCANE_MATERIALS_EXPORT IncrementalComponentModifier
 
  public:
 
-  void initialize();
+  void initialize(bool is_debug);
   void apply(MaterialModifierOperation* operation);
   void finalize();
   void setDoCopyBetweenPartialAndPure(bool v) { m_do_copy_between_partial_and_pure = v; }
@@ -62,7 +62,7 @@ class ARCANE_MATERIALS_EXPORT IncrementalComponentModifier
   RunQueue m_queue;
   bool m_do_copy_between_partial_and_pure = true;
   bool m_do_init_new_items = true;
-
+  bool m_is_debug = false;
   //! 1 ou 2 si on utilise une version générique pour les copies entre pure et partiel
   Int32 m_use_generic_copy_between_pure_and_partial = 0;
 

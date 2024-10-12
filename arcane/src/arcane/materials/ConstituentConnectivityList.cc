@@ -30,7 +30,6 @@
 
 namespace Arcane::Materials
 {
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -95,7 +94,7 @@ class ConstituentConnectivityList::ConstituentContainer
   {
    public:
 
-    View(ConstituentContainer& c)
+    explicit View(ConstituentContainer& c)
     : nb_components_view(c.m_nb_component_as_array.view())
     , component_indexes_view(c.m_component_index_as_array.view())
     , component_list_view(c.m_component_list_as_array.view())
@@ -180,7 +179,7 @@ class ConstituentConnectivityList::ConstituentContainer
 
  private:
 
-  //! Nombre de milieu par maille (dimensionné au nombre de mailles)
+  //! Nombre de milieux par maille (dimensionné au nombre de mailles)
   VariableArrayInt16 m_nb_component;
   //! Indice dans \a m_component_list (Dimensionné au nombre de mailles)
   VariableArrayInt32 m_component_index;
@@ -214,12 +213,15 @@ class ConstituentConnectivityList::NumberOfMaterialComputer
 {
  public:
 
-  NumberOfMaterialComputer(ConstituentConnectivityList::ConstituentContainer::View view,
+  NumberOfMaterialComputer(ConstituentContainer::View view,
                            SmallSpan<const Int16> environment_for_materials)
   : m_view(view)
   , m_environment_for_materials(environment_for_materials)
   {
   }
+
+ public:
+
   ARCCORE_HOST_DEVICE Int16 cellNbMaterial(Int32 cell_local_id, Int16 env_id) const
   {
     auto mats = m_view.components(cell_local_id);
@@ -234,7 +236,7 @@ class ConstituentConnectivityList::NumberOfMaterialComputer
 
  private:
 
-  ConstituentConnectivityList::ConstituentContainer::View m_view;
+  ConstituentContainer::View m_view;
   //! Vue indiquant le milieu associé aux matériaux
   SmallSpan<const Int16> m_environment_for_materials;
 };
@@ -620,25 +622,50 @@ fillCellsIsPartial(SmallSpan<const Int32> cells_local_id, Int16 env_id,
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+/*!
+ * \brief Affiche les constituants d'une liste d'entités
+ * @param cells_local_id Liste des numéros locaux des entitiés
+ */
+void ConstituentConnectivityList::
+printConstituents(SmallSpan<const Int32> cells_local_id) const
+{
+  const ConstituentContainer::View materials_view(m_container->m_material);
+  const ConstituentContainer::View environments_view(m_container->m_environment);
 
+  for (Int32 i = 0, n = cells_local_id.size(); i < n; ++i) {
+    Int32 lid = cells_local_id[i];
+    info() << "Cell index=" << i << " lid=" << lid
+           << " materials=" << materials_view.components(lid)
+           << " environments=" << environments_view.components(lid);
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Remplit les constituants concernés par les mailles \a cells_local_id.
+ *
+ * Met à \a true les valeurs de \a is_modified_materials et \a is_modified_environments
+ * s'ils sont dans une des mailles de \a cells_local_id.
+ */
 void ConstituentConnectivityList::
 fillModifiedConstituents(SmallSpan<const Int32> cells_local_id,
                          SmallSpan<bool> is_modified_materials,
                          SmallSpan<bool> is_modified_environments,
-                         RunQueue& queue)
+                         const RunQueue& queue) const
 {
   const Int32 n = cells_local_id.size();
-  if (n<=0)
+  if (n <= 0)
     return;
 
-  ConstituentContainer::View materials_view(m_container->m_material);
-  ConstituentContainer::View environments_view(m_container->m_environment);
+  const ConstituentContainer::View materials_view(m_container->m_material);
+  const ConstituentContainer::View environments_view(m_container->m_environment);
   auto command = makeCommand(queue);
 
   command << RUNCOMMAND_LOOP1(iter, n)
   {
     auto [i] = iter();
-    Int32 local_id = cells_local_id[i];
+    const Int32 local_id = cells_local_id[i];
     SmallSpan<const Int16> cell_mats(materials_view.components(local_id));
     for( Int16 x : cell_mats )
       is_modified_materials[x] = true;
