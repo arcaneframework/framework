@@ -100,16 +100,12 @@ class ConstituentConnectivityList
   void fillCellsIsPartial(SmallSpan<const Int32> cells_local_id, Int16 env_id,
                           SmallSpan<bool> cells_is_partial, RunQueue& queue);
 
-  /*!
-   * \brief Remplit les constituant concernés par les mailles \a cells_local_id.
-   *
-   * Met à \a true les valeurs de \a is_modified_materials et \a is_modified_environments
-   * s'ils sont dans une des mailles de \a cells_local_id.
-   */
   void fillModifiedConstituents(SmallSpan<const Int32> cells_local_id,
                                 SmallSpan<bool> is_modified_materials,
                                 SmallSpan<bool> is_modified_environments,
-                                RunQueue& queue);
+                                const RunQueue& queue) const;
+
+  void printConstituents(SmallSpan<const Int32> cells_local_id) const;
 
   /*!
    * \brief Indique si l'instance est activée.

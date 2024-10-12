@@ -68,13 +68,14 @@ IncrementalComponentModifier(AllEnvData* all_env_data, const RunQueue& queue)
 /*---------------------------------------------------------------------------*/
 
 void IncrementalComponentModifier::
-initialize()
+initialize(bool is_debug)
 {
+  m_is_debug = is_debug;
   Int32 max_local_id = m_material_mng->mesh()->cellFamily()->maxLocalId();
   Int32 nb_mat = m_material_mng->materials().size();
   Int32 nb_env = m_material_mng->environments().size();
   m_work_info.initialize(max_local_id, nb_mat, nb_env, m_queue);
-  m_work_info.is_verbose = traceMng()->verbosityLevel() >= 5;
+  m_work_info.is_verbose = is_debug || (traceMng()->verbosityLevel() >= 5);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -103,7 +104,7 @@ apply(MaterialModifierOperation* operation)
 
   const IMeshEnvironment* env = mat->environment();
   MeshEnvironment* true_env = true_mat->trueEnvironment();
-  Integer nb_mat = env->nbMaterial();
+  const Integer nb_mat = env->nbMaterial();
 
   ConstituentConnectivityList* connectivity = m_all_env_data->componentConnectivityList();
   const bool check_if_present = !m_queue.isAcceleratorPolicy();
@@ -120,6 +121,8 @@ apply(MaterialModifierOperation* operation)
     auto mat_modifier = m_work_info.m_is_materials_modified.modifier(is_device);
     auto env_modifier = m_work_info.m_is_environments_modified.modifier(is_device);
     connectivity->fillModifiedConstituents(orig_ids, mat_modifier.view(), env_modifier.view(), m_queue);
+    if (m_is_debug)
+      connectivity->printConstituents(orig_ids);
   }
 
   if (nb_mat != 1) {
@@ -330,7 +333,7 @@ _switchCellsForEnvironments(const IMeshEnvironment* modified_env,
 {
   const bool is_add = m_work_info.isAdd();
   const bool is_device = m_queue.isAcceleratorPolicy();
-  SmallSpan<const bool> is_environments_modified = m_work_info.m_is_materials_modified.view(false);
+  SmallSpan<const bool> is_environments_modified = m_work_info.m_is_environments_modified.view(false);
 
   // Ne copie pas les valeurs partielles des milieux vers les valeurs globales
   // en cas de suppression de mailles, car cela sera fait avec la valeur matériau
@@ -347,9 +350,10 @@ _switchCellsForEnvironments(const IMeshEnvironment* modified_env,
     // Ne traite pas le milieu en cours de modification.
     if (env == modified_env)
       continue;
+    const Int32 env_id = env->id();
 
-    //if (!is_environments_modified[env->id()])
-    //continue;
+    if (!is_environments_modified[env_id])
+      continue;
 
     if (!is_device) {
       m_work_info.pure_local_ids.clearHost();
@@ -359,16 +363,17 @@ _switchCellsForEnvironments(const IMeshEnvironment* modified_env,
     MeshMaterialVariableIndexer* indexer = env->variableIndexer();
 
     info(4) << "TransformCells (V2) is_add?=" << is_add
+            << " env_id=" << env_id
             << " indexer=" << indexer->name() << " nb_item=" << ids.size();
 
     indexer->transformCellsV2(m_work_info, m_queue);
 
     SmallSpan<const Int32> pure_local_ids = m_work_info.pure_local_ids.view(is_device);
     SmallSpan<const Int32> partial_indexes = m_work_info.partial_indexes.view(is_device);
+    const Int32 nb_pure = pure_local_ids.size();
 
-    info(4) << "NB_ENV_TRANSFORM nb_pure=" << pure_local_ids.size()
-            << " name=" << env->name()
-            << " is_modified=" << is_environments_modified[env->id()];
+    info(4) << "NB_ENV_TRANSFORM nb_pure=" << nb_pure << " name=" << env->name()
+            << " is_modified=" << is_environments_modified[env_id];
 
     if (is_copy) {
       CopyBetweenPartialAndGlobalArgs copy_args(indexer->index(), pure_local_ids,

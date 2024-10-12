@@ -107,6 +107,8 @@ class MeshMaterialModifierImpl
   bool m_do_init_new_items = true;
   bool m_is_keep_work_buffer = true;
 
+  bool m_is_debug = false;
+
  private:
 
   void _endUpdate();
