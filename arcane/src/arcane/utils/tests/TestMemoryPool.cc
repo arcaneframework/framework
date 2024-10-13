@@ -8,6 +8,7 @@
 #include <gtest/gtest.h>
 
 #include "arcane/utils/internal/MemoryPool.h"
+#include "arcane/utils/String.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -31,13 +32,15 @@ class MyMemoryPoolAllocator
 TEST(MemoryPool, Misc)
 {
   MyMemoryPoolAllocator my_allocator;
-  MemoryPool memory_pool(&my_allocator);
+  MemoryPool memory_pool(&my_allocator,"MyMemoryPool");
 
   void* a1 = memory_pool.allocateMemory(25);
   void* a2 = memory_pool.allocateMemory(47);
   memory_pool.freeMemory(a1, 25);
   memory_pool.freeMemory(a2, 47);
+  void* a3 = memory_pool.allocateMemory(25);
   memory_pool.dumpStats();
+  memory_pool.freeMemory(a3, 25);
 }
 
 /*---------------------------------------------------------------------------*/

@@ -31,8 +31,9 @@ class MemoryPool::Impl
 {
  public:
 
-  explicit Impl(IMemoryPoolAllocator* allocator)
+  explicit Impl(IMemoryPoolAllocator* allocator, const String& name)
   : m_allocator(allocator)
+  , m_name(name)
   {
   }
 
@@ -42,7 +43,7 @@ class MemoryPool::Impl
   void freeMemory(void* ptr, size_t size);
   void dumpStats();
 
- private:
+ public:
 
   IMemoryPoolAllocator* m_allocator = nullptr;
   // Contient une liste de couples (taille_mémoire,pointeur) de mémoire allouée.
@@ -52,6 +53,7 @@ class MemoryPool::Impl
   std::atomic<size_t> m_total_free = 0;
   std::atomic<Int32> m_nb_cached = 0;
   size_t m_max_memory_size_to_pool = 1024 * 64 * 4;
+  String m_name;
 
  private:
 
@@ -63,8 +65,8 @@ class MemoryPool::Impl
 /*---------------------------------------------------------------------------*/
 
 MemoryPool::
-MemoryPool(IMemoryPoolAllocator* allocator)
-: m_p(std::make_shared<Impl>(allocator))
+MemoryPool(IMemoryPoolAllocator* allocator, const String& name)
+: m_p(std::make_shared<Impl>(allocator, name))
 {
 }
 
@@ -140,7 +142,7 @@ _addAllocated(void* ptr, size_t size)
 void MemoryPool::Impl::
 dumpStats()
 {
-  std::cout << "Stats TotalAllocated=" << m_total_allocated
+  std::cout << "Stats '" << m_name << "' TotalAllocated=" << m_total_allocated
             << " TotalFree=" << m_total_free
             << " nb_allocated=" << m_allocated_memory_map.size()
             << " nb_free=" << m_free_memory_map.size()
@@ -162,6 +164,10 @@ void MemoryPool::freeMemory(void* ptr, size_t size)
 void MemoryPool::dumpStats()
 {
   m_p->dumpStats();
+}
+String MemoryPool::name() const
+{
+  return m_p->m_name;
 }
 
 /*---------------------------------------------------------------------------*/

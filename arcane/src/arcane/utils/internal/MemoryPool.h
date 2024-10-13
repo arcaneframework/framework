@@ -64,7 +64,7 @@ class ARCANE_UTILS_EXPORT MemoryPool
 
  public:
 
-  explicit MemoryPool(IMemoryPoolAllocator* allocator);
+  explicit MemoryPool(IMemoryPoolAllocator* allocator, const String& name);
   ~MemoryPool();
 
  public:
@@ -72,6 +72,7 @@ class ARCANE_UTILS_EXPORT MemoryPool
   void* allocateMemory(size_t size) override;
   void freeMemory(void* ptr, size_t size) override;
   void dumpStats();
+  String name() const;
 
  private:
 
