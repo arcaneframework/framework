@@ -107,7 +107,7 @@ class ARCANE_MATERIALS_EXPORT MeshMaterialVariableIndexer
 
  private:
 
-  void transformCellsV2(ConstituentModifierWorkInfo& args, RunQueue& queue);
+  void computeCellsToTransform(ConstituentModifierWorkInfo& args, RunQueue& queue);
 
  private:
 
@@ -153,17 +153,11 @@ class ARCANE_MATERIALS_EXPORT MeshMaterialVariableIndexer
   //! Indique si on affiche un message lors d'une transformation inutile
   bool m_is_print_useless_transform = false;
 
-private:
+ private:
 
   static void _changeLocalIdsV2(MeshMaterialVariableIndexer* var_indexer,
                                 Int32ConstArrayView old_to_new_ids);
   void _init();
-
- public:
-
-  void _switchBetweenPureAndPartial(ConstituentModifierWorkInfo& work_info,
-                                    RunQueue& queue,
-                                    bool is_pure_to_partial);
 };
 
 /*---------------------------------------------------------------------------*/

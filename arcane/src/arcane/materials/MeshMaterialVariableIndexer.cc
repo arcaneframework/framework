@@ -314,21 +314,9 @@ _changeLocalIdsV2(MeshMaterialVariableIndexer* var_indexer, Int32ConstArrayView 
 /*---------------------------------------------------------------------------*/
 
 void MeshMaterialVariableIndexer::
-transformCellsV2(ConstituentModifierWorkInfo& work_info, RunQueue& queue)
+computeCellsToTransform(ConstituentModifierWorkInfo& work_info, RunQueue& queue)
 {
-  _switchBetweenPureAndPartial(work_info, queue, work_info.isAdd());
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
- * \brief Échange des mailles entre pures et partielles.
- */
-void MeshMaterialVariableIndexer::
-_switchBetweenPureAndPartial(ConstituentModifierWorkInfo& work_info,
-                             RunQueue& queue,
-                             bool is_pure_to_partial)
-{
+  bool is_pure_to_partial = work_info.isAdd();
   bool is_device = isAcceleratorPolicy(queue.executionPolicy());
 
   Integer nb = nbItem();
