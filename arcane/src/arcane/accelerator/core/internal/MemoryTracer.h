@@ -57,6 +57,7 @@ class ARCANE_ACCELERATOR_CORE_EXPORT MemoryTracerWrapper
   bool isActive() const { return m_trace_level > 0; }
   void traceDeallocate(const AllocatedMemoryInfo& mem_info, const MemoryAllocationArgs& args);
   void traceAllocate(void* p, size_t new_size, MemoryAllocationArgs args);
+  void setTraceLevel(Int32 v) { m_trace_level = v; }
 
  private:
 
