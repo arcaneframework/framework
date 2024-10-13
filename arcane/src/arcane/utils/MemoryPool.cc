@@ -15,6 +15,9 @@
 
 #include "arcane/utils/FatalErrorException.h"
 
+#include <unordered_map>
+#include <atomic>
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -24,9 +27,44 @@ namespace Arcane::impl
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+class MemoryPool::Impl
+{
+ public:
+
+  explicit Impl(IMemoryPoolAllocator* allocator)
+  : m_allocator(allocator)
+  {
+  }
+
+ public:
+
+  void* allocateMemory(size_t size);
+  void freeMemory(void* ptr, size_t size);
+  void dumpStats();
+
+ private:
+
+  IMemoryPoolAllocator* m_allocator = nullptr;
+  // Contient une liste de couples (taille_mémoire,pointeur) de mémoire allouée.
+  std::unordered_multimap<size_t, void*> m_free_memory_map;
+  std::unordered_map<void*, size_t> m_allocated_memory_map;
+  std::atomic<size_t> m_total_allocated = 0;
+  std::atomic<size_t> m_total_free = 0;
+  std::atomic<Int32> m_nb_cached = 0;
+  size_t m_max_memory_size_to_pool = 1024 * 64 * 4;
+
+ private:
+
+  void _freeMemory(void* ptr);
+  void _addAllocated(void* ptr, size_t size);
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 MemoryPool::
 MemoryPool(IMemoryPoolAllocator* allocator)
-: m_allocator(allocator)
+: m_p(std::make_shared<Impl>(allocator))
 {
 }
 
@@ -41,15 +79,19 @@ MemoryPool::
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void* MemoryPool::
+void* MemoryPool::Impl::
 allocateMemory(size_t size)
 {
+  if (size > m_max_memory_size_to_pool)
+    return m_allocator->allocateMemory(size);
+
   auto x = m_free_memory_map.find(size);
   void* ptr = nullptr;
   if (x != m_free_memory_map.end()) {
     ptr = x->second;
     m_free_memory_map.erase(x);
     m_total_free -= size;
+    ++m_nb_cached;
   }
   else
     ptr = m_allocator->allocateMemory(size);
@@ -60,9 +102,12 @@ allocateMemory(size_t size)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void MemoryPool::
+void MemoryPool::Impl::
 freeMemory(void* ptr, size_t size)
 {
+  if (size > m_max_memory_size_to_pool)
+    return m_allocator->freeMemory(ptr, size);
+
   auto x = m_allocated_memory_map.find(ptr);
   if (x == m_allocated_memory_map.end())
     ARCANE_FATAL("pointer {0} is not in the allocated map", ptr);
@@ -78,7 +123,7 @@ freeMemory(void* ptr, size_t size)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void MemoryPool::
+void MemoryPool::Impl::
 _addAllocated(void* ptr, size_t size)
 {
 #ifdef ARCANE_CHECK
@@ -92,14 +137,31 @@ _addAllocated(void* ptr, size_t size)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void MemoryPool::
+void MemoryPool::Impl::
 dumpStats()
 {
   std::cout << "Stats TotalAllocated=" << m_total_allocated
             << " TotalFree=" << m_total_free
             << " nb_allocated=" << m_allocated_memory_map.size()
             << " nb_free=" << m_free_memory_map.size()
+            << " nb_cached=" << m_nb_cached
             << "\n";
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void* MemoryPool::allocateMemory(size_t size)
+{
+  return m_p->allocateMemory(size);
+}
+void MemoryPool::freeMemory(void* ptr, size_t size)
+{
+  m_p->freeMemory(ptr, size);
+}
+void MemoryPool::dumpStats()
+{
+  m_p->dumpStats();
 }
 
 /*---------------------------------------------------------------------------*/
