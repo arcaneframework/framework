@@ -88,6 +88,7 @@ class ARCANE_MATERIALS_EXPORT MeshMaterialVariableIndexer
   // Méthodes publiques car utilisées sur accélérateurs
   void endUpdateAdd(const ComponentItemListBuilder& builder, RunQueue& queue);
   void endUpdateRemoveV2(ConstituentModifierWorkInfo& work_info, Integer nb_remove, RunQueue& queue);
+  void computeCellsToTransform(ConstituentModifierWorkInfo& args, RunQueue& queue);
 
  private:
 
@@ -106,8 +107,6 @@ class ARCANE_MATERIALS_EXPORT MeshMaterialVariableIndexer
   //@}
 
  private:
-
-  void computeCellsToTransform(ConstituentModifierWorkInfo& args, RunQueue& queue);
 
  private:
 
