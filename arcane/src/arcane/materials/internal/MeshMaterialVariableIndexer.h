@@ -81,6 +81,7 @@ class ARCANE_MATERIALS_EXPORT MeshMaterialVariableIndexer
   void checkValid();
   //! Vrai si cet indexeur est celui d'un milieu.
   bool isEnvironment() const { return m_is_environment; }
+  void dumpStats() const;
 
  public:
 
@@ -90,7 +91,7 @@ class ARCANE_MATERIALS_EXPORT MeshMaterialVariableIndexer
 
  private:
 
-  //! Fonctions publiques mais réservées aux classes de Arcane.
+  //! Fonctions privées mais accessibles aux classes 'friend'.
   //@{
   void endUpdate(const ComponentItemListBuilderOld& builder);
   Array<MatVarIndex>& matvarIndexesArray() { return m_matvar_indexes; }
@@ -122,7 +123,7 @@ class ARCANE_MATERIALS_EXPORT MeshMaterialVariableIndexer
   //! Liste des mailles de cet indexer
   CellGroup m_cells;
 
-  //! Liste des indexes pour les variables matériaux.
+  //! Liste des indexs pour les variables matériaux.
   UniqueArray<MatVarIndex> m_matvar_indexes;
 
   /*!
@@ -138,7 +139,21 @@ class ARCANE_MATERIALS_EXPORT MeshMaterialVariableIndexer
   //! Vrai si l'indexeur est associé à un milieu.
   bool m_is_environment = false;
 
- private:
+  //! Nombre d'appels aux méthodes de transformation
+  Int32 m_nb_transform_called = 0;
+
+  /*!
+   * \brief  Nombre d'appels inutiles aux méthodes de transformation.
+   *
+   * Un appel est inutile si la liste des entités modifiées en sortie
+   * est vide.
+   */
+  Int32 m_nb_useless_transform = 0;
+
+  //! Indique si on affiche un message lors d'une transformation inutile
+  bool m_is_print_useless_transform = false;
+
+private:
 
   static void _changeLocalIdsV2(MeshMaterialVariableIndexer* var_indexer,
                                 Int32ConstArrayView old_to_new_ids);
