@@ -71,7 +71,8 @@ class ARCANE_UTILS_EXPORT MemoryPool
 
   void* allocateMemory(size_t size) override;
   void freeMemory(void* ptr, size_t size) override;
-  void dumpStats();
+  void dumpStats(std::ostream& ostr);
+  void dumpFreeMap(std::ostream& ostr);
   String name() const;
 
  private:

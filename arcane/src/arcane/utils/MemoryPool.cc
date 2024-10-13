@@ -16,6 +16,7 @@
 #include "arcane/utils/FatalErrorException.h"
 
 #include <unordered_map>
+#include <map>
 #include <atomic>
 
 /*---------------------------------------------------------------------------*/
@@ -41,7 +42,8 @@ class MemoryPool::Impl
 
   void* allocateMemory(size_t size);
   void freeMemory(void* ptr, size_t size);
-  void dumpStats();
+  void dumpStats(std::ostream& ostr);
+  void dumpFreeMap(std::ostream& ostr);
 
  public:
 
@@ -84,7 +86,7 @@ MemoryPool::
 void* MemoryPool::Impl::
 allocateMemory(size_t size)
 {
-  if (size > m_max_memory_size_to_pool)
+  if (m_max_memory_size_to_pool != 0 && size > m_max_memory_size_to_pool)
     return m_allocator->allocateMemory(size);
 
   auto x = m_free_memory_map.find(size);
@@ -107,7 +109,7 @@ allocateMemory(size_t size)
 void MemoryPool::Impl::
 freeMemory(void* ptr, size_t size)
 {
-  if (size > m_max_memory_size_to_pool)
+  if (m_max_memory_size_to_pool != 0 && size > m_max_memory_size_to_pool)
     return m_allocator->freeMemory(ptr, size);
 
   auto x = m_allocated_memory_map.find(ptr);
@@ -140,15 +142,37 @@ _addAllocated(void* ptr, size_t size)
 /*---------------------------------------------------------------------------*/
 
 void MemoryPool::Impl::
-dumpStats()
+dumpStats(std::ostream& ostr)
 {
-  std::cout << "Stats '" << m_name << "' TotalAllocated=" << m_total_allocated
-            << " TotalFree=" << m_total_free
-            << " nb_allocated=" << m_allocated_memory_map.size()
-            << " nb_free=" << m_free_memory_map.size()
-            << " nb_cached=" << m_nb_cached
-            << "\n";
+  ostr << "Stats '" << m_name << "' TotalAllocated=" << m_total_allocated
+       << " TotalFree=" << m_total_free
+       << " nb_allocated=" << m_allocated_memory_map.size()
+       << " nb_free=" << m_free_memory_map.size()
+       << " nb_cached=" << m_nb_cached
+       << "\n";
 }
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MemoryPool::Impl::
+dumpFreeMap(std::ostream& ostr)
+{
+  std::map<size_t, Int32> nb_alloc_per_size;
+  for (const auto& [key, value] : m_free_memory_map) {
+    auto x = nb_alloc_per_size.find(key);
+    if (x == nb_alloc_per_size.end())
+      nb_alloc_per_size.insert(std::make_pair(key, 1));
+    else
+      ++x->second;
+  }
+  ostr << "FreeMap '" << m_name << "\n";
+  for (const auto& [key, value] : nb_alloc_per_size)
+    ostr << "Map size=" << key << " nb_allocated=" << value << "\n";
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -161,9 +185,14 @@ void MemoryPool::freeMemory(void* ptr, size_t size)
 {
   m_p->freeMemory(ptr, size);
 }
-void MemoryPool::dumpStats()
+void MemoryPool::dumpStats(std::ostream& ostr)
 {
-  m_p->dumpStats();
+  m_p->dumpStats(ostr);
+}
+void MemoryPool::
+dumpFreeMap(std::ostream& ostr)
+{
+  m_p->dumpFreeMap(ostr);
 }
 String MemoryPool::name() const
 {

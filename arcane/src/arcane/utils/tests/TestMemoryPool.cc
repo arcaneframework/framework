@@ -39,7 +39,8 @@ TEST(MemoryPool, Misc)
   memory_pool.freeMemory(a1, 25);
   memory_pool.freeMemory(a2, 47);
   void* a3 = memory_pool.allocateMemory(25);
-  memory_pool.dumpStats();
+  memory_pool.dumpStats(std::cout);
+  memory_pool.dumpFreeMap(std::cout);
   memory_pool.freeMemory(a3, 25);
 }
 
