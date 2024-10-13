@@ -409,6 +409,7 @@ class MeshMaterialMng
   {
     return m_all_cells_env_only_synchronizer.get();
   }
+  void _dumpStats();
 };
 
 /*---------------------------------------------------------------------------*/

@@ -33,7 +33,6 @@
 
 namespace Arcane::Materials
 {
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -58,6 +57,8 @@ MeshMaterialVariableIndexer(ITraceMng* tm, const String& name)
 void MeshMaterialVariableIndexer::
 _init()
 {
+  if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_PRINT_USELESS_TRANSFORMATION", true))
+    m_is_print_useless_transform = (v.value() != 0);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -313,21 +314,9 @@ _changeLocalIdsV2(MeshMaterialVariableIndexer* var_indexer, Int32ConstArrayView 
 /*---------------------------------------------------------------------------*/
 
 void MeshMaterialVariableIndexer::
-transformCellsV2(ConstituentModifierWorkInfo& work_info, RunQueue& queue)
+computeCellsToTransform(ConstituentModifierWorkInfo& work_info, RunQueue& queue)
 {
-  _switchBetweenPureAndPartial(work_info, queue, work_info.isAdd());
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
- * \brief Échange des mailles entre pures et partielles.
- */
-void MeshMaterialVariableIndexer::
-_switchBetweenPureAndPartial(ConstituentModifierWorkInfo& work_info,
-                             RunQueue& queue,
-                             bool is_pure_to_partial)
-{
+  bool is_pure_to_partial = work_info.isAdd();
   bool is_device = isAcceleratorPolicy(queue.executionPolicy());
 
   Integer nb = nbItem();
@@ -387,9 +376,16 @@ _switchBetweenPureAndPartial(ConstituentModifierWorkInfo& work_info,
     filterer.applyWithIndex(nb, select_lambda, setter_lambda, A_FUNCINFO);
   }
 
-  Int32 nb_out = filterer.nbOutputElement();
+  const Int32 nb_out = filterer.nbOutputElement();
   pure_local_ids_modifier.resize(nb_out);
   partial_indexes_modifier.resize(nb_out);
+
+  ++m_nb_transform_called;
+  if (nb_out == 0) {
+    ++m_nb_useless_transform;
+    if (m_is_print_useless_transform)
+      info() << "VarIndex null transformation modified_name=" << name();
+  }
 
   if (is_pure_to_partial)
     m_max_index_in_multiple_array += nb_out;
@@ -409,6 +405,19 @@ checkValid()
 
   // TODO: vérifier que les m_local_ids pour les parties pures correspondent
   // au m_matvar_indexes.valueIndex() correspondant.
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MeshMaterialVariableIndexer::
+dumpStats() const
+{
+  if (m_nb_transform_called == 0)
+    return;
+  Int32 nb_useful_call = m_nb_transform_called - m_nb_useless_transform;
+  info() << "VariableIndexer name=" << name()
+         << " nb_useful_transform=" << nb_useful_call << " nb_useless=" << m_nb_useless_transform;
 }
 
 /*---------------------------------------------------------------------------*/

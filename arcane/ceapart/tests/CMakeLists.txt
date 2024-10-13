@@ -409,7 +409,7 @@ foreach(test_index 1 2 3 4)
   endforeach()
 endforeach()
 if (ARCANE_HAS_ACCELERATOR_API)
-  arcane_add_test_sequential(material_heat2_opt15_2small testMaterialHeat-2-small-opt15.arc "-We,ARCANE_DEBUG_MATERIAL_MODIFIER,2")
+  arcane_add_test_sequential(material_heat2_opt15_2small testMaterialHeat-2-small-opt15.arc "-We,ARCANE_DEBUG_MATERIAL_MODIFIER,2" "-We,ARCANE_PRINT_USELESS_TRANSFORMATION,1")
   arcane_add_test_sequential(material_heat2_accelerator
     "${ARCANE_TEST_PATH}/testMaterialHeat-2-opt15.arc"
     "-We,ARCANE_MATERIALMNG_ADDITIONAL_CAPACITY_RATIO,0.5"
