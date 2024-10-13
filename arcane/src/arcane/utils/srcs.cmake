@@ -77,6 +77,7 @@ set(ARCANE_SOURCES
   ISO88591Transcoder.h
   MDSpan.h
   MemoryAllocator.h
+  MemoryPool.cc
   MemoryView.h
   MemoryView.cc
   Misc.cc
@@ -339,6 +340,7 @@ set(ARCANE_SOURCES
   internal/ValueConvertInternal.h
   internal/SpecificMemoryCopyList.h
   internal/MemoryBuffer.h
+  internal/MemoryPool.h
   )
 
 if (ARCANE_HAS_CXX20)
