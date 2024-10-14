@@ -103,7 +103,7 @@ class ConstituentConnectivityList
   void fillModifiedConstituents(SmallSpan<const Int32> cells_local_id,
                                 SmallSpan<bool> is_modified_materials,
                                 SmallSpan<bool> is_modified_environments,
-                                const RunQueue& queue) const;
+                                int modified_mat_id, bool is_add, const RunQueue& queue);
 
   void printConstituents(SmallSpan<const Int32> cells_local_id) const;
 
@@ -137,6 +137,7 @@ class ConstituentConnectivityList
   //! Indice du milieu auquel appartient un matériau
   DualUniqueArray<Int16> m_environment_for_materials;
   bool m_is_active = false;
+  bool m_is_force_recompute_all_constituants = false;
 
  public:
 
