@@ -221,14 +221,22 @@ class DualUniqueArray
   Int64 size() const { return m_array.size(); }
   SmallSpan<const DataType> view(bool is_device)
   {
+    sync(is_device);
     if (is_device) {
-      _checkUpdateDeviceView();
       SmallSpan<const DataType> v = *(m_device_array.get());
       return v;
     }
     else {
-      _checkUpdateHostView();
       return hostSmallSpan();
+    }
+  }
+  void sync(bool is_device)
+  {
+    if (is_device) {
+      _checkUpdateDeviceView();
+    }
+    else {
+      _checkUpdateHostView();
     }
   }
   void endUpdateHost()
