@@ -118,6 +118,8 @@ apply(MaterialModifierOperation* operation)
   {
     m_work_info.m_is_materials_modified.fillHost(false);
     m_work_info.m_is_environments_modified.fillHost(false);
+    m_work_info.m_is_materials_modified.sync(is_device);
+    m_work_info.m_is_environments_modified.sync(is_device);
 
     {
       auto mat_modifier = m_work_info.m_is_materials_modified.modifier(is_device);
