@@ -98,10 +98,10 @@ class CudaMemoryAllocatorBase
 
  public:
 
-  CudaMemoryAllocatorBase()
+  CudaMemoryAllocatorBase(const String& allocator_name)
   : AlignedMemoryAllocator3(128)
   , m_direct_sub_allocator(this)
-  , m_memory_pool(&m_direct_sub_allocator)
+  , m_memory_pool(&m_direct_sub_allocator, allocator_name)
   , m_sub_allocator(&m_direct_sub_allocator)
   {
   }
@@ -109,7 +109,7 @@ class CudaMemoryAllocatorBase
   ~CudaMemoryAllocatorBase()
   {
     if (m_use_memory_pool)
-      m_memory_pool.dumpStats();
+      m_memory_pool.dumpStats(std::cout);
   }
 
  public:
@@ -266,6 +266,7 @@ class UnifiedMemoryCudaMemoryAllocator
  public:
 
   UnifiedMemoryCudaMemoryAllocator()
+  : CudaMemoryAllocatorBase("UnifiedMemoryCudaMemory")
   {
     if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_CUDA_USE_ALLOC_ATS", true))
       m_use_ats = v.value();
@@ -374,6 +375,13 @@ class UnifiedMemoryCudaMemoryAllocator
 class HostPinnedCudaMemoryAllocator
 : public CudaMemoryAllocatorBase
 {
+ public:
+
+  HostPinnedCudaMemoryAllocator()
+  : CudaMemoryAllocatorBase("HostPinnedCudaMemory")
+  {
+  }
+
  protected:
 
   cudaError_t _allocate(void** ptr, size_t new_size) final
@@ -395,6 +403,7 @@ class DeviceCudaMemoryAllocator
  public:
 
   DeviceCudaMemoryAllocator()
+  : CudaMemoryAllocatorBase("DeviceCudaMemoryAllocator")
   {
     if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_CUDA_USE_ALLOC_ATS", true))
       m_use_ats = v.value();

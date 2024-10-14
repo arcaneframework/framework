@@ -16,8 +16,7 @@
 
 #include "arcane/utils/ArcaneGlobal.h"
 
-#include <unordered_map>
-#include <atomic>
+#include <memory>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -55,34 +54,30 @@ class ARCANE_UTILS_EXPORT IMemoryPoolAllocator
 /*!
  * \internal
  * \brief Classe pour gérer une liste de zone allouées.
+ *
+ * Cette classe utilise une sémantique par référence.
  */
 class ARCANE_UTILS_EXPORT MemoryPool
 : public IMemoryPoolAllocator
 {
+  class Impl;
+
  public:
 
-  explicit MemoryPool(IMemoryPoolAllocator* allocator);
+  explicit MemoryPool(IMemoryPoolAllocator* allocator, const String& name);
   ~MemoryPool();
 
  public:
 
   void* allocateMemory(size_t size) override;
   void freeMemory(void* ptr, size_t size) override;
-  void dumpStats();
+  void dumpStats(std::ostream& ostr);
+  void dumpFreeMap(std::ostream& ostr);
+  String name() const;
 
  private:
 
-  IMemoryPoolAllocator* m_allocator = nullptr;
-  // Contient une liste de couples (taille_mémoire,pointeur) de mémoire allouée.
-  std::unordered_multimap<size_t, void*> m_free_memory_map;
-  std::unordered_map<void*, size_t> m_allocated_memory_map;
-  std::atomic<size_t> m_total_allocated = 0;
-  std::atomic<size_t> m_total_free = 0;
-
- private:
-
-  void _freeMemory(void* ptr);
-  void _addAllocated(void* ptr, size_t size);
+  std::shared_ptr<Impl> m_p;
 };
 
 /*---------------------------------------------------------------------------*/
