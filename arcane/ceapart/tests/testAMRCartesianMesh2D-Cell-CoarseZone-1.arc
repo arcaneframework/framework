@@ -59,7 +59,6 @@
     <coarse-zone-2d>
       <position>2.0 2.0</position>
       <length>1.0 1.0</length>
-      <level>1</level>
     </coarse-zone-2d>
 
     <expected-number-of-cells-in-patchs>25 32 0</expected-number-of-cells-in-patchs>
