@@ -99,30 +99,38 @@ apply(MaterialModifierOperation* operation)
 
   auto* true_mat = ARCANE_CHECK_POINTER(dynamic_cast<MeshMaterial*>(mat));
 
-  info(4) << "Using optimisation updateMaterialDirect is_add=" << is_add
-          << " mat=" << mat->name() << " nb_item=" << orig_ids.size();
-
   const IMeshEnvironment* env = mat->environment();
   MeshEnvironment* true_env = true_mat->trueEnvironment();
   const Integer nb_mat = env->nbMaterial();
 
+  info(4) << "-- ** -- Using optimisation updateMaterialDirect is_add=" << is_add
+          << " mat=" << mat->name() << " nb_item=" << orig_ids.size()
+          << " mat_id=" << mat->id() << " env_id=" << env->id();
+
   ConstituentConnectivityList* connectivity = m_all_env_data->componentConnectivityList();
   const bool check_if_present = !m_queue.isAcceleratorPolicy();
 
-  m_work_info.m_is_materials_modified.fillHost(false);
-  m_work_info.m_is_environments_modified.fillHost(false);
-
   const bool is_device = m_queue.isAcceleratorPolicy();
 
-  // Remplit les tableaux indicants si un constituant est concerné par
+  // Remplit les tableaux indiquants si un constituant est concerné par
   // la modification en cours. Si ce n'est pas le cas, on pourra éviter de le tester
   // dans la boucle des constituants.
   {
-    auto mat_modifier = m_work_info.m_is_materials_modified.modifier(is_device);
-    auto env_modifier = m_work_info.m_is_environments_modified.modifier(is_device);
-    connectivity->fillModifiedConstituents(orig_ids, mat_modifier.view(), env_modifier.view(), m_queue);
-    if (m_is_debug)
-      connectivity->printConstituents(orig_ids);
+    m_work_info.m_is_materials_modified.fillHost(false);
+    m_work_info.m_is_environments_modified.fillHost(false);
+
+    {
+      auto mat_modifier = m_work_info.m_is_materials_modified.modifier(is_device);
+      auto env_modifier = m_work_info.m_is_environments_modified.modifier(is_device);
+      connectivity->fillModifiedConstituents(orig_ids, mat_modifier.view(), env_modifier.view(), mat->id(), is_add, m_queue);
+      if (m_is_debug)
+        connectivity->printConstituents(orig_ids);
+    }
+    {
+      auto is_mat_modified = m_work_info.m_is_materials_modified.view(false);
+      auto is_env_modified = m_work_info.m_is_environments_modified.view(false);
+      info(4) << "ModifiedInfosAfter: mats=" << is_mat_modified << " envs=" << is_env_modified;
+    }
   }
 
   if (nb_mat != 1) {
@@ -284,7 +292,8 @@ _switchCellsForMaterials(const MeshMaterial* modified_mat,
 
       MeshMaterialVariableIndexer* indexer = mat->variableIndexer();
 
-      info(4) << "TransformCells (V3) is_add?=" << is_add << " indexer=" << indexer->name();
+      info(4) << "MatTransformCells is_add?=" << is_add << " indexer=" << indexer->name()
+              << " mat_id=" <<mat->id();
 
       Int32 nb_transformed = _computeCellsToTransformForMaterial(mat, ids);
       info(4) << "nb_transformed=" << nb_transformed;
@@ -362,7 +371,7 @@ _switchCellsForEnvironments(const IMeshEnvironment* modified_env,
 
     MeshMaterialVariableIndexer* indexer = env->variableIndexer();
 
-    info(4) << "TransformCells (V2) is_add?=" << is_add
+    info(4) << "EnvTransformCells is_add?=" << is_add
             << " env_id=" << env_id
             << " indexer=" << indexer->name() << " nb_item=" << ids.size();
 
