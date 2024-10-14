@@ -89,7 +89,6 @@
     <coarse-zone-3d>
       <position>0.0 3.0 3.0</position>
       <length>3.0 3.0 3.0</length>
-      <level>1</level>
     </coarse-zone-3d>
 
     <expected-number-of-cells-in-patchs>1000 3880 0</expected-number-of-cells-in-patchs>
