@@ -299,9 +299,9 @@ _switchCellsForMaterials(const MeshMaterial* modified_mat,
 
       Int32 nb_transformed = _computeCellsToTransformForMaterial(mat, ids);
       info(4) << "nb_transformed=" << nb_transformed;
-      if (nb_transformed==0)
+      if (nb_transformed == 0)
         continue;
-      indexer->computeCellsToTransform(m_work_info, m_queue);
+      indexer->transformCells(m_work_info, m_queue, false);
       _resetTransformedCells(ids);
 
       auto pure_local_ids = m_work_info.pure_local_ids.view(is_device);
@@ -377,7 +377,7 @@ _switchCellsForEnvironments(const IMeshEnvironment* modified_env,
             << " env_id=" << env_id
             << " indexer=" << indexer->name() << " nb_item=" << ids.size();
 
-    indexer->computeCellsToTransform(m_work_info, m_queue);
+    indexer->transformCells(m_work_info, m_queue, true);
 
     SmallSpan<const Int32> pure_local_ids = m_work_info.pure_local_ids.view(is_device);
     SmallSpan<const Int32> partial_indexes = m_work_info.partial_indexes.view(is_device);
