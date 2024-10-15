@@ -88,7 +88,7 @@ class ARCANE_MATERIALS_EXPORT MeshMaterialVariableIndexer
   // Méthodes publiques car utilisées sur accélérateurs
   void endUpdateAdd(const ComponentItemListBuilder& builder, RunQueue& queue);
   void endUpdateRemoveV2(ConstituentModifierWorkInfo& work_info, Integer nb_remove, RunQueue& queue);
-  void computeCellsToTransform(ConstituentModifierWorkInfo& args, RunQueue& queue);
+  void transformCells(ConstituentModifierWorkInfo& args, RunQueue& queue, bool is_from_env);
 
  private:
 
@@ -147,7 +147,8 @@ class ARCANE_MATERIALS_EXPORT MeshMaterialVariableIndexer
    * Un appel est inutile si la liste des entités modifiées en sortie
    * est vide.
    */
-  Int32 m_nb_useless_transform = 0;
+  Int32 m_nb_useless_add_transform = 0;
+  Int32 m_nb_useless_remove_transform = 0;
 
   //! Indique si on affiche un message lors d'une transformation inutile
   bool m_is_print_useless_transform = false;
