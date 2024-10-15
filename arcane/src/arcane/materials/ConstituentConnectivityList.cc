@@ -293,8 +293,10 @@ ConstituentConnectivityList(MeshMaterialMng* mm)
 , m_container(new Container(mm->meshHandle(), String("ComponentEnviroment") + mm->name()))
 {
   // Indique si on force la modification dans fillModifiedConstituents()
-  if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_MATERIAL_FORCE_RECOMPUTE_IN_CONNECTIVITY_LIST", true))
-    m_is_force_recompute_all_constituants = (v.value()!=0);
+  if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_MATERIAL_FORCE_TRANSFORM", true)) {
+    m_is_force_transform_all_constituants = (v.value() != 0);
+    info() << "Force transformation in 'ConstituentConnectivityList' v=" << m_is_force_transform_all_constituants;
+  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -663,7 +665,13 @@ printConstituents(SmallSpan<const Int32> cells_local_id) const
  *
  * Il est possible de revenir à l'ancien mécanisme et de supprimer cette optimisation
  * en remplissant \a is_modified_materials et \a is_modified_environments à \a true pour tout
- * le monde.
+ * le monde. Cela est le cas si m_is_force_transform_all_constituants est vrai.
+ *
+ * \note il est important que \a is_modified_materials et \a is_modified_environments soit
+ * vrai si le constituant correspondant est modifié. Sans cela, il y aura une incohérence
+ * dans les constituants. Par contre, ce n'est pas grave si on marque un constituant modifié
+ * et qu'il s'avère que ce n'est pas le cas. Cela signifie juste qu'on va faire des
+ * opérations inutiles (dans MeshMaterialVariableIndexer::transformCells()).
  */
 void ConstituentConnectivityList::
 fillModifiedConstituents(SmallSpan<const Int32> cells_local_id,
@@ -686,8 +694,25 @@ fillModifiedConstituents(SmallSpan<const Int32> cells_local_id,
   auto command = makeCommand(queue);
   ITraceMng* tm = traceMng();
   tm->info(4) << "FillModifiedConstituents modified_mat=" << modified_mat_id
-             << " modified_env=" << modified_env_id << " is_add=" << is_add;
-  const bool force_transform = m_is_force_recompute_all_constituants;
+              << " modified_env=" << modified_env_id << " is_add=" << is_add;
+  const bool force_transform = m_is_force_transform_all_constituants;
+
+  if (force_transform) {
+    // Si on force la modification pour tout le monde,
+    // remplit directement le tableau des milieux et matériaux modifiés
+    command << RUNCOMMAND_LOOP1(iter, n)
+    {
+      auto [i] = iter();
+      const Int32 local_id = cells_local_id[i];
+      SmallSpan<const Int16> cell_envs(environments_view.components(local_id));
+      for (Int16 x : cell_envs)
+        is_modified_environments[x] = true;
+      SmallSpan<const Int16> cell_mats(materials_view.components(local_id));
+      for (Int16 x : cell_mats)
+        is_modified_materials[x] = true;
+    };
+    return;
+  }
 
   command << RUNCOMMAND_LOOP1(iter, n)
   {
@@ -716,7 +741,7 @@ fillModifiedConstituents(SmallSpan<const Int32> cells_local_id,
         // si je suis dans la boucle)
         do_transform = nb_env == 2;
       }
-      if (do_transform || force_transform) {
+      if (do_transform) {
         //tm->info() << "FillModified:   SetTransform Cell lid=" << local_id << " env=" << x;
         is_modified_environments[x] = true;
       }
@@ -731,19 +756,26 @@ fillModifiedConstituents(SmallSpan<const Int32> cells_local_id,
       Int16 my_env_id = env_for_mat[x];
       // TODO: ne calculer que si nécessaire.
       Int16 my_mat_nb_env = nb_mat_computer.cellNbMaterial(local_id, my_env_id);
+      //tm->info() << "FillModified:   CheckMat lid=" << local_id
+      //           << " mat_id=" << x << " mat_env=" << my_env_id
+      //           << " my_mat_nb_env=" << my_mat_nb_env;
       if (is_add) {
-        //tm->info() << "FillModified:   CheckMat lid=" << local_id
-        //           << " mat_id=" << x << " mat_env=" << my_env_id
-        //           << " my_mat_nb_env=" << my_mat_nb_env;
         if (my_env_id != modified_env_id && (nb_mat_in_modified_env != 0))
           continue;
         do_transform = (nb_env == 1) && (my_mat_nb_env == 1);
       }
       else {
-        // Pour l'instant active toujours la modification en cas de suppression.
+        // Je me transforme si je suis le matériau du milieu modifié et qu'il n'y
+        // a que deux matériaux dans le milieu (car je vais me retrouver le seul matériau
+        // du milieu)
+        // NOTE: cette condition est nécessaire mais ne garantit par que je vais
+        // forcément me transformer. Pour l'instant on laisse cela pour ne pas être trop
+        // restrictif.
         do_transform = true;
+        if (nb_env == 1)
+          do_transform = (my_env_id == modified_env_id) && (my_mat_nb_env == 2);
       }
-      if (do_transform || force_transform) {
+      if (do_transform) {
         //tm->info() << "FillModified:   SetTransform Cell lid=" << local_id << " mat=" << x;
         is_modified_materials[x] = true;
       }

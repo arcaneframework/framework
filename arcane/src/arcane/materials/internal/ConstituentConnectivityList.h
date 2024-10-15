@@ -137,7 +137,7 @@ class ConstituentConnectivityList
   //! Indice du milieu auquel appartient un matériau
   DualUniqueArray<Int16> m_environment_for_materials;
   bool m_is_active = false;
-  bool m_is_force_recompute_all_constituants = false;
+  bool m_is_force_transform_all_constituants = false;
 
  public:
 
