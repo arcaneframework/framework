@@ -361,6 +361,10 @@ _switchCellsForEnvironments(const IMeshEnvironment* modified_env,
     // Ne traite pas le milieu en cours de modification.
     if (env == modified_env)
       continue;
+    // Si je suis mono matériau, la mise à jour de l'indexeur a été faite par le matériau
+    if (env->isMonoMaterial())
+      continue;
+
     const Int32 env_id = env->id();
 
     if (!is_environments_modified[env_id])
