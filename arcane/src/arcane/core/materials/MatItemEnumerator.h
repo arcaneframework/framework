@@ -658,6 +658,9 @@ class ComponentItemEnumeratorTraitsT<ComponentPartSimdCell>
 #define ENUMERATE_CELL_ENVCELL(iname,all_env_cell) \
   A_ENUMERATE_CELL_COMPONENTCELL(CellEnvCellEnumerator,iname,all_env_cell)
 
+#define ENUMERATE_CELL_MATENVCELL(matenv, iname, all_env_cell) \
+  A_ENUMERATE_CELL_COMPONENTCELL(CellComponentCellEnumeratorT<matenv>, iname, all_env_cell)
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 

@@ -642,12 +642,12 @@ startInit()
     ENUMERATE_ALLENVCELL(iallenvcell,m_material_mng,allCells()){
       AllEnvCell all_env_cell = *iallenvcell;
       info() << "Cell uid=" << ItemPrinter(all_env_cell.globalCell()) << " nb_env=" << all_env_cell.nbEnvironment();
-      ENUMERATE_CELL_ENVCELL(ienvcell,all_env_cell){
+      ENUMERATE_CELL_MATENVCELL(EnvCell, ienvcell,all_env_cell){
         EnvCell ec = *ienvcell;
         info() << "Cell   nb_mat=" << ec.nbMaterial()
                << " env=" << ec.environment()->name()
                << " (id=" << ec.environmentId() << ")";
-        ENUMERATE_CELL_MATCELL(imatcell,(*ienvcell)){
+        ENUMERATE_CELL_MATENVCELL(MatCell, imatcell,(*ienvcell)){
           MatCell mc = *imatcell;
           info() << "Cell     mat=" << mc.material()->name()
                  << " (id=" << mc.materialId() << ")"
