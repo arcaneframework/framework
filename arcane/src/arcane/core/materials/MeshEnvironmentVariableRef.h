@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshEnvironmentVariableRef.h                                (C) 2000-2023 */
+/* MeshEnvironmentVariableRef.h                                (C) 2000-2024 */
 /*                                                                           */
 /* Référence à une variable sur un milieu du maillage.                       */
 /*---------------------------------------------------------------------------*/
@@ -32,46 +32,45 @@ namespace Arcane::Materials
 /*!
  * \ingroup ArcaneMaterials
  * \brief Variable scalaire sur les mailles d'un milieu du maillage.
+ *
  * Ce type de variable est identique à ceci près qu'elle n'a de valeurs
  * que sur les milieux et les mailles globales mais pas sur les matériaux.
  */
-template<typename DataType>
+template <typename DataType_>
 class CellEnvironmentVariableScalarRef
 : public MeshMaterialVariableRef
 {
  public:
 
-  using PrivatePartType = IScalarMeshMaterialVariable<Cell,DataType>;
-  typedef Cell ItemType;
-  typedef MeshVariableScalarRefT<ItemType,DataType> GlobalVariableRefType;
+  using DataType = DataType_;
+  using PrivatePartType = IScalarMeshMaterialVariable<Cell, DataType>;
+  using ThatClass = CellEnvironmentVariableScalarRef<DataType>;
+  using ItemType = Cell;
+  using GlobalVariableRefType = MeshVariableScalarRefT<ItemType, DataType>;
 
  public:
 
-  ARCANE_CORE_EXPORT CellEnvironmentVariableScalarRef(const VariableBuildInfo& vb);
+  explicit ARCANE_CORE_EXPORT CellEnvironmentVariableScalarRef(const VariableBuildInfo& vb);
   //! Construit une référence à la variable spécifiée dans \a vb
-  ARCANE_CORE_EXPORT CellEnvironmentVariableScalarRef(const MaterialVariableBuildInfo& vb);
-  ARCANE_CORE_EXPORT CellEnvironmentVariableScalarRef(const CellEnvironmentVariableScalarRef<DataType>& rhs);
+  explicit ARCANE_CORE_EXPORT CellEnvironmentVariableScalarRef(const MaterialVariableBuildInfo& vb);
+  ARCANE_CORE_EXPORT CellEnvironmentVariableScalarRef(const ThatClass& rhs);
 
- private:
+ public:
 
   //! Opérateur de recopie (interdit)
-  ARCANE_CORE_EXPORT void operator=(const CellEnvironmentVariableScalarRef<DataType>& rhs);
+  ARCANE_CORE_EXPORT ThatClass& operator=(const ThatClass& rhs) = delete;
   //! Constructeur vide (interdit)
-  CellEnvironmentVariableScalarRef(){}
-
- public:
-
-  ~CellEnvironmentVariableScalarRef() {}
+  CellEnvironmentVariableScalarRef() = delete;
 
  public:
 
   //! Positionne la référence de l'instance à la variable \a rhs.
-  ARCANE_CORE_EXPORT virtual void refersTo(const CellEnvironmentVariableScalarRef<DataType>& rhs);
+  ARCANE_CORE_EXPORT virtual void refersTo(const ThatClass& rhs);
 
   /*!
    * \internal
    */
-  ARCANE_CORE_EXPORT virtual void updateFromInternal();
+  ARCANE_CORE_EXPORT void updateFromInternal() override;
 
  protected:
 
@@ -130,8 +129,8 @@ class CellEnvironmentVariableScalarRef
 
  private:
 
-  PrivatePartType* m_private_part;
-  ArrayView<DataType>* m_value;
+  PrivatePartType* m_private_part = nullptr;
+  ArrayView<DataType>* m_value = nullptr;
   ArrayView<ArrayView<DataType>> m_container_value;
 
  public:
@@ -152,45 +151,41 @@ class CellEnvironmentVariableScalarRef
  * \brief Variable tableau sur les mailles d'un matériau du maillage.
  * Pour l'instant, cette classe n'est instanciée que pour les mailles
  */
-template<typename DataType>
+template<typename DataType_>
 class CellEnvironmentVariableArrayRef
 : public MeshMaterialVariableRef
 {
  public:
 
+  using DataType = DataType_;
   using PrivatePartType = IArrayMeshMaterialVariable<Cell,DataType>;
   using ItemType = Cell;
-  using GlobalVariableRefType = MeshVariableArrayRefT<ItemType,DataType>;
+  using GlobalVariableRefType = MeshVariableArrayRefT<ItemType, DataType>;
+  using ThatClass = CellEnvironmentVariableArrayRef<DataType>;
 
  public:
 
-  ARCANE_CORE_EXPORT CellEnvironmentVariableArrayRef(const VariableBuildInfo& vb);
+  explicit ARCANE_CORE_EXPORT CellEnvironmentVariableArrayRef(const VariableBuildInfo& vb);
   //! Construit une référence à la variable spécifiée dans \a vb
-  ARCANE_CORE_EXPORT CellEnvironmentVariableArrayRef(const MaterialVariableBuildInfo& vb);
-  ARCANE_CORE_EXPORT CellEnvironmentVariableArrayRef(const CellEnvironmentVariableArrayRef<DataType>& rhs);
+  explicit ARCANE_CORE_EXPORT CellEnvironmentVariableArrayRef(const MaterialVariableBuildInfo& vb);
+  ARCANE_CORE_EXPORT CellEnvironmentVariableArrayRef(const ThatClass& rhs);
 
- private:
+ public:
 
   //! Opérateur de recopie (interdit)
-  ARCANE_CORE_EXPORT void operator=(const CellEnvironmentVariableArrayRef<DataType>& rhs);
+  ThatClass& operator=(const ThatClass& rhs) = delete;
   //! Constructeur vide (interdit)
-  CellEnvironmentVariableArrayRef(){}
-
- public:
-
-  ~CellEnvironmentVariableArrayRef() {}
+  CellEnvironmentVariableArrayRef() = delete;
 
  public:
 
   //! Positionne la référence de l'instance à la variable \a rhs.
-  ARCANE_CORE_EXPORT virtual void refersTo(const CellEnvironmentVariableArrayRef<DataType>& rhs);
+  ARCANE_CORE_EXPORT virtual void refersTo(const ThatClass& rhs);
 
   /*!
    * \internal
    */
-  ARCANE_CORE_EXPORT virtual void updateFromInternal();
-
- protected:
+  ARCANE_CORE_EXPORT void updateFromInternal() override;
 
  public:
 
@@ -249,8 +244,8 @@ class CellEnvironmentVariableArrayRef
 
  private:
 
-  PrivatePartType* m_private_part;
-  Array2View<DataType>* m_value;
+  PrivatePartType* m_private_part = nullptr;
+  Array2View<DataType>* m_value = nullptr;
   ArrayView<Array2View<DataType>> m_container_value;
 
  private:

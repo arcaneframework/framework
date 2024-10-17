@@ -49,7 +49,8 @@ class ARCANE_CORE_EXPORT MeshMaterialVariableRef
   class Enumerator
   {
    public:
-    Enumerator(const IMeshMaterialVariable* vp)
+
+    explicit Enumerator(const IMeshMaterialVariable* vp)
     : m_vref(vp->firstReference())
     {
     }
@@ -57,7 +58,7 @@ class ARCANE_CORE_EXPORT MeshMaterialVariableRef
     {
       m_vref = m_vref->nextReference();
     }
-    MeshMaterialVariableRef* operator*()
+    MeshMaterialVariableRef* operator*() const
     {
       return m_vref;
     }
@@ -65,8 +66,10 @@ class ARCANE_CORE_EXPORT MeshMaterialVariableRef
     {
       return m_vref;
     }
+
    private:
-    MeshMaterialVariableRef* m_vref;
+
+    MeshMaterialVariableRef* m_vref = nullptr;
   };
 
  public:
@@ -203,44 +206,41 @@ class ARCANE_CORE_EXPORT MeshMaterialVariableRef
  * \brief Variable scalaire sur les mailles d'un matériau du maillage.
  * Pour l'instant, cette classe n'est instanciée que pour les mailles
  */
-template<typename DataType>
+template<typename DataType_>
 class CellMaterialVariableScalarRef
 : public MeshMaterialVariableRef
 {
  public:
 
-  using PrivatePartType = IScalarMeshMaterialVariable<Cell,DataType>;
-
-  typedef Cell ItemType;
-  typedef MeshVariableScalarRefT<ItemType,DataType> GlobalVariableRefType;
+  using DataType = DataType_;
+  using PrivatePartType = IScalarMeshMaterialVariable<Cell, DataType>;
+  using ItemType = Cell;
+  using GlobalVariableRefType = MeshVariableScalarRefT<ItemType, DataType>;
+  using ThatClass = CellMaterialVariableScalarRef<DataType>;
 
  public:
 
-  ARCANE_CORE_EXPORT CellMaterialVariableScalarRef(const VariableBuildInfo& vb);
+  explicit ARCANE_CORE_EXPORT CellMaterialVariableScalarRef(const VariableBuildInfo& vb);
   //! Construit une référence à la variable spécifiée dans \a vb
-  ARCANE_CORE_EXPORT CellMaterialVariableScalarRef(const MaterialVariableBuildInfo& vb);
-  ARCANE_CORE_EXPORT CellMaterialVariableScalarRef(const CellMaterialVariableScalarRef<DataType>& rhs);
+  explicit ARCANE_CORE_EXPORT CellMaterialVariableScalarRef(const MaterialVariableBuildInfo& vb);
+  ARCANE_CORE_EXPORT CellMaterialVariableScalarRef(const ThatClass& rhs);
 
- private:
+ public:
 
   //! Opérateur de recopie (interdit)
-  ARCANE_CORE_EXPORT void operator=(const CellMaterialVariableScalarRef<DataType>& rhs);
+  ARCANE_CORE_EXPORT ThatClass& operator=(const ThatClass& rhs) = delete;
   //! Constructeur vide (interdit)
-  CellMaterialVariableScalarRef(){}
-
- public:
-
-  ~CellMaterialVariableScalarRef() {}
+  CellMaterialVariableScalarRef() = delete;
 
  public:
 
   //! Positionne la référence de l'instance à la variable \a rhs.
-  ARCANE_CORE_EXPORT virtual void refersTo(const CellMaterialVariableScalarRef<DataType>& rhs);
+  ARCANE_CORE_EXPORT virtual void refersTo(const ThatClass& rhs);
 
   /*!
    * \internal
    */
-  ARCANE_CORE_EXPORT virtual void updateFromInternal();
+  ARCANE_CORE_EXPORT void updateFromInternal() override;
 
  protected:
 
@@ -335,8 +335,8 @@ class CellMaterialVariableScalarRef
 
  private:
 
-  PrivatePartType* m_private_part;
-  ArrayView<DataType>* m_value;
+  PrivatePartType* m_private_part = nullptr;
+  ArrayView<DataType>* m_value = nullptr;
   ArrayView<ArrayView<DataType>> m_container_value;
 
  private:
@@ -365,45 +365,41 @@ class CellMaterialVariableScalarRef
  * \brief Variable tableau sur les mailles d'un matériau du maillage.
  * Pour l'instant, cette classe n'est instanciée que pour les mailles
  */
-template<typename DataType>
+template<typename DataType_>
 class CellMaterialVariableArrayRef
 : public MeshMaterialVariableRef
 {
  public:
 
-  using PrivatePartType = IArrayMeshMaterialVariable<Cell,DataType>;
+  using DataType = DataType_;
+  using PrivatePartType = IArrayMeshMaterialVariable<Cell, DataType>;
   using ItemType = Cell;
-  using GlobalVariableRefType = MeshVariableArrayRefT<ItemType,DataType>;
+  using GlobalVariableRefType = MeshVariableArrayRefT<ItemType, DataType>;
+  using ThatClass = CellMaterialVariableArrayRef<DataType>;
 
  public:
 
-  ARCANE_CORE_EXPORT CellMaterialVariableArrayRef(const VariableBuildInfo& vb);
+  explicit ARCANE_CORE_EXPORT CellMaterialVariableArrayRef(const VariableBuildInfo& vb);
   //! Construit une référence à la variable spécifiée dans \a vb
-  ARCANE_CORE_EXPORT CellMaterialVariableArrayRef(const MaterialVariableBuildInfo& vb);
-  ARCANE_CORE_EXPORT CellMaterialVariableArrayRef(const CellMaterialVariableArrayRef<DataType>& rhs);
+  explicit ARCANE_CORE_EXPORT CellMaterialVariableArrayRef(const MaterialVariableBuildInfo& vb);
+  ARCANE_CORE_EXPORT CellMaterialVariableArrayRef(const ThatClass& rhs);
 
- private:
+ public:
 
   //! Opérateur de recopie (interdit)
-  ARCANE_CORE_EXPORT void operator=(const CellMaterialVariableArrayRef<DataType>& rhs);
+  ARCANE_CORE_EXPORT ThatClass& operator=(const ThatClass& rhs) = delete;
   //! Constructeur vide (interdit)
-  CellMaterialVariableArrayRef(){}
-
- public:
-
-  ~CellMaterialVariableArrayRef() {}
+  CellMaterialVariableArrayRef() = delete;
 
  public:
 
   //! Positionne la référence de l'instance à la variable \a rhs.
-  ARCANE_CORE_EXPORT virtual void refersTo(const CellMaterialVariableArrayRef<DataType>& rhs);
+  ARCANE_CORE_EXPORT virtual void refersTo(const ThatClass& rhs);
 
   /*!
    * \internal
    */
-  ARCANE_CORE_EXPORT virtual void updateFromInternal();
-
- protected:
+  ARCANE_CORE_EXPORT void updateFromInternal() override;
 
  public:
 
@@ -473,8 +469,8 @@ class CellMaterialVariableArrayRef
 
  private:
 
-  PrivatePartType* m_private_part;
-  Array2View<DataType>* m_value;
+  PrivatePartType* m_private_part = nullptr;
+  Array2View<DataType>* m_value = nullptr;
   ArrayView<Array2View<DataType>> m_container_value;
 
  private:
