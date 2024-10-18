@@ -592,6 +592,7 @@ coarsenItemsV2()
   this->_cleanRefinementFlags();
 
   UniqueArray<Int32> to_coarse;
+  //UniqueArray<Int64> d_to_coarse_uid;
 
   ENUMERATE_ (Cell, icell, m_mesh->allCells()) {
     Cell cell = *icell;
@@ -615,6 +616,7 @@ coarsenItemsV2()
       }
 
       to_coarse.add(cell.localId());
+      //d_to_coarse_uid.add(cell.uniqueId());
 
       // Pour l'instant, il est impossible de dé-raffiner de plusieurs niveaux en une fois.
       if ((parent.mutableItemBase().flags() & ItemFlags::II_Coarsen) || (cell.mutableItemBase().flags() & ItemFlags::II_JustCoarsened)) {
@@ -706,17 +708,23 @@ coarsenItemsV2()
     }
   }
 
-  // debug() << "Removed cells: " << to_coarse;
+  //debug() << "Removed cells: " << d_to_coarse_uid;
 
-  m_mesh->removeCells(to_coarse);
+  m_mesh->modifier()->removeCells(to_coarse);
   m_mesh->nodeFamily()->notifyItemsOwnerChanged();
   m_mesh->faceFamily()->notifyItemsOwnerChanged();
-  m_mesh->endUpdate();
+  m_mesh->modifier()->endUpdate();
   m_mesh->cellFamily()->computeSynchronizeInfos();
   m_mesh->nodeFamily()->computeSynchronizeInfos();
   m_mesh->faceFamily()->computeSynchronizeInfos();
-  // m_mesh->setDynamic(true);
-  // m_mesh->updateGhostLayers();
+  m_mesh->modifier()->setDynamic(true);
+
+  UniqueArray<Int64> ghost_cell_to_refine;
+  UniqueArray<Int64> ghost_cell_to_coarsen;
+
+  m_mesh->modifier()->updateGhostLayerFromParent(ghost_cell_to_refine, ghost_cell_to_coarsen, false);
+
+  // _update(ghost_cell_to_refine);
 
   return m_mesh->parallelMng()->reduce(Parallel::ReduceMax, (!to_coarse.empty()));
 }
