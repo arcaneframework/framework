@@ -55,9 +55,10 @@
 #include <ALIEN/axl/PETScSolverConfigBiCGStab_StrongOptions.h>
 #include <ALIEN/axl/PETScSolverConfigLU_IOptions.h>
 #include <ALIEN/axl/PETScSolverConfigLU_StrongOptions.h>
+#ifdef PETSC_HAVE_MUMPS
 #include <alien/kernels/petsc/linear_solver/mumps/PETScSolverConfigMUMPSService.h>
 #include <ALIEN/axl/PETScSolverConfigMUMPS_IOptions.h>
-
+#endif
 // root linear solver instance
 #include <ALIEN/axl/PETScLinearSolver_IOptions.h>
 #include <ALIEN/axl/PETScLinearSolver_StrongOptions.h>
