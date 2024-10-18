@@ -88,15 +88,24 @@ class ConstituentConnectivityList
 
   /*!
    * \brief Replit \a cells_do_transform en indiquant is la maille passe de pure à partielle.
+   *
+   * Retourne le nombre de mailles transformées
    */
-  void fillCellsToTransform(SmallSpan<const Int32> cells_local_id, Int16 env_id,
-                            SmallSpan<bool> cells_do_transform, bool is_add, RunQueue& queue);
+  Int32 fillCellsToTransform(SmallSpan<const Int32> cells_local_id, Int16 env_id,
+                             SmallSpan<bool> cells_do_transform, bool is_add, RunQueue& queue);
 
   /*!
    * \brief Replit \a cells_is_partial en indiquant is la maille est partielle pour le milieu \a env_id
    */
   void fillCellsIsPartial(SmallSpan<const Int32> cells_local_id, Int16 env_id,
                           SmallSpan<bool> cells_is_partial, RunQueue& queue);
+
+  void fillModifiedConstituents(SmallSpan<const Int32> cells_local_id,
+                                SmallSpan<bool> is_modified_materials,
+                                SmallSpan<bool> is_modified_environments,
+                                int modified_mat_id, bool is_add, const RunQueue& queue);
+
+  void printConstituents(SmallSpan<const Int32> cells_local_id) const;
 
   /*!
    * \brief Indique si l'instance est activée.
@@ -128,6 +137,7 @@ class ConstituentConnectivityList
   //! Indice du milieu auquel appartient un matériau
   DualUniqueArray<Int16> m_environment_for_materials;
   bool m_is_active = false;
+  bool m_is_force_transform_all_constituants = false;
 
  public:
 

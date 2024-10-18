@@ -202,6 +202,11 @@ class DualUniqueArray
     m_array.resize(new_size);
     m_is_valid_numarray = false;
   }
+  void fillHost(const DataType& value)
+  {
+    m_array.fill(value);
+    m_is_valid_numarray = false;
+  }
   void resizeDevice(Int32 new_size)
   {
     _checkCreateNumArray();
@@ -216,14 +221,22 @@ class DualUniqueArray
   Int64 size() const { return m_array.size(); }
   SmallSpan<const DataType> view(bool is_device)
   {
+    sync(is_device);
     if (is_device) {
-      _checkUpdateDeviceView();
       SmallSpan<const DataType> v = *(m_device_array.get());
       return v;
     }
     else {
-      _checkUpdateHostView();
       return hostSmallSpan();
+    }
+  }
+  void sync(bool is_device)
+  {
+    if (is_device) {
+      _checkUpdateDeviceView();
+    }
+    else {
+      _checkUpdateHostView();
     }
   }
   void endUpdateHost()
@@ -285,6 +298,8 @@ class DualUniqueArray
   {
     if (!m_device_array) {
       m_device_array = std::make_unique<NumArrayType>(eMemoryRessource::Device);
+      if (m_is_valid_array)
+        m_device_array->resize(m_array.size());
     }
   }
 };

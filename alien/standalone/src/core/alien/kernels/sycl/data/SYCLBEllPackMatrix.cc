@@ -1460,6 +1460,7 @@ void SYCLBEllPackMatrix<ValueT>::computeInvDiag(SYCLVector<ValueType>& y) const
 
 template class ALIEN_EXPORT SYCLBEllPackMatrix<double>;
 template class ALIEN_EXPORT BEllPackStructInfo<1024, Integer>;
+template class ALIEN_EXPORT SYCLInternal::MatrixInternal<double,1024>;
 
 
 //template bool Alien::SYCLInternal::MatrixInternal<double,1014>::setMatrixValues(Alien::SYCLInternal::MatrixInternal<double,1014>::ValueBufferType& buffer) ;

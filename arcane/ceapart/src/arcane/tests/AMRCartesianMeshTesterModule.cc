@@ -103,12 +103,14 @@ class AMRCartesianMeshTesterModule
   void _compute1();
   void _compute2();
   void _initAMR();
+  void _coarsePatch();
   void _computeSubCellDensity(Cell cell);
   void _computeCenters();
   void _processPatches();
   void _writePostProcessing();
   void _checkUniqueIds();
   void _testDirections();
+  void _cellsInPatch(Real3 position, Real3 length, bool is_3d, Int32 level, UniqueArray<Int32>& cells_in_patch);
 };
 
 /*---------------------------------------------------------------------------*/
@@ -252,6 +254,8 @@ init()
     _initAMR();
 
   _computeCenters();
+
+  _coarsePatch();
 
   const bool do_coarse_at_init = options()->coarseAtInit();
 
@@ -526,6 +530,34 @@ _initAMR()
 /*---------------------------------------------------------------------------*/
 
 void AMRCartesianMeshTesterModule::
+_coarsePatch()
+{
+  Int32 dim = defaultMesh()->dimension();
+
+  if (dim == 2) {
+    UniqueArray<Int32> cells_in_patchs;
+    for (auto& x : options()->coarseZone2d()) {
+      _cellsInPatch(Real3(x->position()), Real3(x->length()), false, x->level(), cells_in_patchs);
+      defaultMesh()->modifier()->flagCellToCoarsen(cells_in_patchs);
+      defaultMesh()->modifier()->coarsenItemsV2();
+      cells_in_patchs.clear();
+    }
+  }
+  if (dim == 3) {
+    UniqueArray<Int32> cells_in_patchs;
+    for (auto& x : options()->coarseZone3d()) {
+      _cellsInPatch(x->position(), x->length(), true, x->level(), cells_in_patchs);
+      defaultMesh()->modifier()->flagCellToCoarsen(cells_in_patchs);
+      defaultMesh()->modifier()->coarsenItemsV2();
+      cells_in_patchs.clear();
+    }
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void AMRCartesianMeshTesterModule::
 compute()
 {
   _compute1();
@@ -712,6 +744,30 @@ _testDirections()
         Node next_node2 = dir_node2.next();
         m_utils->checkSameId(prev_node,prev_node2);
         m_utils->checkSameId(next_node,next_node2);
+      }
+    }
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void AMRCartesianMeshTesterModule::
+_cellsInPatch(Real3 position, Real3 length, bool is_3d, Int32 level, UniqueArray<Int32>& cells_in_patch)
+{
+  // Parcours les mailles actives et ajoute dans la liste des mailles
+  // à raffiner celles qui sont contenues dans le boîte englobante
+  // spécifiée dans le jeu de données.
+  Real3 min_pos = position;
+  Real3 max_pos = min_pos + length;
+  ENUMERATE_ (Cell, icell, mesh()->allCells()) {
+    if ((icell->level() == level) || (level == -1 && icell->nbHChildren() == 0)) {
+      Real3 center = m_cell_center[icell];
+      bool is_inside_x = center.x > min_pos.x && center.x < max_pos.x;
+      bool is_inside_y = center.y > min_pos.y && center.y < max_pos.y;
+      bool is_inside_z = (center.z > min_pos.z && center.z < max_pos.z) || !is_3d;
+      if (is_inside_x && is_inside_y && is_inside_z) {
+        cells_in_patch.add(icell.itemLocalId());
       }
     }
   }

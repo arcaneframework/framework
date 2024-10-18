@@ -262,6 +262,8 @@ markMeshConnectivitiesAsMostlyReadOnly(IMesh* mesh,RunQueue* q = nullptr,
  * \brief Retourne l'entité de la famille \a family de numéro unique \a unique_id.
  *
  * Si aucune entité avec cet \a unique_id n'est trouvé, retourne l'entité nulle.
+ *
+ * \pre family->hasUniqueIdMap() == true
  */
 extern "C++" ARCANE_CORE_EXPORT impl::ItemBase
 findOneItem(IItemFamily* family, Int64 unique_id);
@@ -272,6 +274,8 @@ findOneItem(IItemFamily* family, Int64 unique_id);
  * \brief Retourne l'entité de la famille \a family de numéro unique \a unique_id.
  *
  * Si aucune entité avec cet \a unique_id n'est trouvé, retourne l'entité nulle.
+ *
+ * \pre family->hasUniqueIdMap() == true
  */
 extern "C++" ARCANE_CORE_EXPORT impl::ItemBase
 findOneItem(IItemFamily* family, ItemUniqueId unique_id);
@@ -417,6 +421,17 @@ checkUniqueIdsHashCollective(IItemFamily* family, IHashAlgorithm* hash_algo,
  */
 extern "C++" ARCANE_CORE_EXPORT void
 fillUniqueIds(ItemVectorView items,Array<Int64>& uids);
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+/*!
+ * \brief Créé ou recréé une connectivité noeuds-noeuds via les arêtes.
+ *
+ * La connectivité aura pour nom \a connectivity_name.
+ */
+extern "C++" ARCANE_CORE_EXPORT Ref<IIndexedIncrementalItemConnectivity>
+computeNodeNodeViaEdgeConnectivity(IMesh* mesh, const String& connectivity_name);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

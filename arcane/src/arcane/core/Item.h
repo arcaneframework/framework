@@ -115,6 +115,10 @@ class ARCANE_CORE_EXPORT Item
    */
   class Index
   {
+    // TODO Rendre obsolète lorsqu'on aura supprimer
+    // les classes dérivées qui sont obsolètes.
+    // On ne peut pas le faire avant car cela génère trop
+    // d'avertissements de compilation.
    public:
     Index() : m_local_id(NULL_ITEM_LOCAL_ID){}
     explicit Index(Int32 id) : m_local_id(id){}
@@ -323,7 +327,7 @@ class ARCANE_CORE_EXPORT Item
 
  public:
 
-  /*!
+ /*!
    * \brief Partie interne de l'entité.
    *
    * \warning La partie interne de l'entité ne doit être modifiée que
@@ -331,6 +335,7 @@ class ARCANE_CORE_EXPORT Item
    * \deprecated Utiliser itemBase() ou mutableItemBase() à la place pour
    * les cas l'instance retournée n'est pas conservée.
    */
+  ARCANE_DEPRECATED_REASON("Y2024: This method is internal to Arcane. use itemBase() or mutableItemBase() instead")
   ItemInternal* internal() const
   {
     if (m_local_id!=NULL_ITEM_LOCAL_ID)
@@ -574,8 +579,8 @@ class ARCANE_CORE_EXPORT Node
   /*!
    * \brief Index d'un Node dans une variable.
    * \deprecated
-   */
-  class Index
+   */  
+  class ARCANE_DEPRECATED_REASON("Y2024: Use NodeLocalId instead") Index
   : public Item::Index
   {
    public:
@@ -678,7 +683,7 @@ class ARCANE_CORE_EXPORT Node
   //! Enumére les mailles connectées au noeud
   CellVectorView _internalActiveCells(Int32Array& local_ids) const
   {
-    return _toItemBase()._internalActiveCells(local_ids);
+    return _toItemBase()._internalActiveCells2(local_ids);
   }
 
   ARCANE_DEPRECATED_REASON("Y2022: Do not use this operator. Use operator '.' instead")
@@ -809,7 +814,7 @@ class ARCANE_CORE_EXPORT Edge
    * \brief Index d'une Edge dans une variable.
    * \deprecated
    */
-  class Index
+  class ARCANE_DEPRECATED_REASON("Y2024: Use EdgeLocalId instead") Index
   : public Item::Index
   {
    public:
@@ -943,7 +948,7 @@ class ARCANE_CORE_EXPORT Face
    * \brief Index d'une Face dans une variable.
    * \deprecated
    */
-  class Index
+  class ARCANE_DEPRECATED_REASON("Y2024: Use FaceLocalId instead") Index
   : public Item::Index
   {
    public:
@@ -1188,8 +1193,8 @@ class ARCANE_CORE_EXPORT Cell
   /*!
    * \brief Index d'une Cell dans une variable.
    * \deprecated
-   */
-  class Index
+   */  
+  class ARCANE_DEPRECATED_REASON("Y2024: Use CellLocalId instead") Index
   : public Item::Index
   {
    public:

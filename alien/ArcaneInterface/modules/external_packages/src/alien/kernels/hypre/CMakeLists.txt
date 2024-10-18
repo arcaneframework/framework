@@ -1,3 +1,5 @@
+
+
 addSources(alien_external_packages
         algebra/HypreInternalLinearAlgebra.cc
         linear_solver/HypreInternalLinearSolver.cc
@@ -24,9 +26,15 @@ endif()
 addSources(alien_external_packages
         linear_solver/arcane/HypreLinearSolver.cc
         )
+
+
 #boost is necessary for timings :(
 linkLibraries(alien_external_packages hypre Boost::boost)
 
-if(TARGET cuda)
-linkLibraries(alien_external_packages cuda)
-endif()
+IF(ALIEN_USE_SYCL)
+    addSources(alien_external_packages
+               converters/HCSR/HCSR_to_Hypre_VectorConverter.cc
+               converters/HCSR/SYCL_to_Hypre_VectorConverter.cc
+               converters/HCSR/HCSR_to_Hypre_MatrixConverter.cc
+              )
+ENDIF()

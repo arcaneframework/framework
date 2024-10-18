@@ -171,10 +171,7 @@ include(LoadBuildSystem)
 # Cherche 'ArcDependencies'
 
 find_package(ArcDependencies REQUIRED)
-set(ARCANE_ArcDependencies_NEEDED_VERSION "1.5.0")
-if (ARCANE_ENABLE_DOTNET_PYTHON_WRAPPER)
-  set(ARCANE_ArcDependencies_NEEDED_VERSION "1.7.0")
-endif()
+set(ARCANE_ArcDependencies_NEEDED_VERSION "1.8.0")
 message(STATUS "ArcDependencies_VERSION = ${ArcDependencies_VERSION}")
 if (ArcDependencies_VERSION VERSION_LESS ARCANE_ArcDependencies_NEEDED_VERSION)
   message(FATAL_ERROR "ArcDependencies version '${ArcDependencies_VERSION}' is too old."
@@ -367,7 +364,7 @@ if (ARCANE_WANT_CHECK)
   set(ARCCORE_CHECK TRUE)
 endif()
 
-set(ARCANE_ARCCORE_NEEDED_VERSION "2.7.0")
+set(ARCANE_ARCCORE_NEEDED_VERSION "2.7.1")
 if (NOT Arccore_FOUND)
   find_package(Arccore ${ARCANE_ARCCORE_NEEDED_VERSION} REQUIRED)
 endif ()
@@ -860,6 +857,15 @@ option(ARCANE_DISABLE_PERFCOUNTER_TESTS "True if we disable tests using perf cou
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
 
+# Option pour indiquer si on veut utiliser la nouvelle implémentation
+# de ItemInternalMap. Cette nouvelle implémentation est plus rapide et consomme
+# moins de mémoire que l'ancienne mais est en cours de validation.
+# Elle n'est donc pas active par défaut.
+option(ARCANE_USE_HASHTABLEMAP2_FOR_ITEMINTERNALMAP "True if we want to use new implementation of ItemInternalMap" OFF)
+
+# ----------------------------------------------------------------------------
+# ----------------------------------------------------------------------------
+
 message(STATUS "ARCANE_LIBRARIES '${ARCANE_LIBRARIES}'")
 
 add_subdirectory(src/arcane/utils)
@@ -1215,6 +1221,7 @@ function(ARCANE_GEN_CORE_CONFIG_FILE filename)
   ARCANE_WRITE_ONE_CONFIG(ARCANE_WANT_AVX512 ARCANE_HAS_AVX512)
   ARCANE_WRITE_ONE_CONFIG(ARCANE_WANT_LIBXML2 ARCANE_USE_LIBXML2)
   ARCANE_WRITE_ONE_CONFIG_VALUE(ARCANE_ITEM_CONNECTIVITY_SIZE_MODE ARCANE_ITEM_CONNECTIVITY_SIZE_MODE)
+  ARCANE_WRITE_ONE_CONFIG_VALUE(ARCANE_USE_HASHTABLEMAP2_FOR_ITEMINTERNALMAP ARCANE_USE_HASHTABLEMAP2_FOR_ITEMINTERNALMAP)
   ARCANE_WRITE_ONE_CONFIG(ARCANE_USE_MPC ARCANE_USE_MPC)
   ARCANE_WRITE_ONE_CONFIG(ARCANE_USE_HIDDEN_VISIBILITY ARCANE_USE_HIDDEN_VISIBILITY)
   ARCANE_WRITE_ONE_CONFIG(ARCANE_USE_STD_UNORDEREDMAP ARCANE_USE_STD_UNORDEREDMAP)

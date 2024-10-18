@@ -87,7 +87,7 @@
  <arcane-load-balance>
    <active>true</active>
    <partitioner name="Metis">
-     <metis-call-strategy>all-processors</metis-call-strategy>
+     <metis-call-strategy>two-scattered-processors</metis-call-strategy>
    </partitioner>
    <period>5</period>
    <statistics>true</statistics>

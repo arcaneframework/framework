@@ -155,6 +155,7 @@ class ARCANE_MPI_EXPORT MpiParallelMng
   ISerializeMessageList* _createSerializeMessageList() override;
   IParallelMng* _createSubParallelMng(Int32ConstArrayView kept_ranks) override;
   bool _isAcceleratorAware() const override;
+  Ref<IParallelMng> _createSubParallelMngRef(Int32 color, Int32 key) override;
 
  public:
 
@@ -199,6 +200,7 @@ class ARCANE_MPI_EXPORT MpiParallelMng
 
   void _checkFinishedSubRequests();
   UniqueArray<Integer> _waitSomeRequests(ArrayView<Request> requests, bool is_non_blocking);
+  IParallelMng* _createSubParallelMng(MPI_Comm sub_communicator);
 };
 
 /*---------------------------------------------------------------------------*/

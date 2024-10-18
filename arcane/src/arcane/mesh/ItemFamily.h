@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -18,16 +18,13 @@
 #include "arcane/utils/String.h"
 #include "arcane/utils/TraceAccessor.h"
 
-#include "arcane/IItemFamily.h"
-#include "arcane/ItemPairGroup.h"
-#include "arcane/ObserverPool.h"
-
-#include "arcane/mesh/DynamicMeshKindInfos.h"
-
-#include "arcane/IItemConnectivity.h"
-#include "arcane/IIncrementalItemConnectivity.h"
-
-#include "arcane/ItemSharedInfo.h"
+#include "arcane/core/IItemFamily.h"
+#include "arcane/core/ItemPairGroup.h"
+#include "arcane/core/ObserverPool.h"
+#include "arcane/core/IItemConnectivity.h"
+#include "arcane/core/IIncrementalItemConnectivity.h"
+#include "arcane/core/ItemSharedInfo.h"
+#include "arcane/core/ItemGroup.h"
 
 #include <map>
 #include <set>
@@ -54,12 +51,11 @@ template <typename T> class ItemScalarProperty;
 
 namespace Arcane::mesh
 {
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
+class ItemInternalMap;
+class DynamicMeshKindInfos;
 class ItemSharedInfoList;
 class ItemConnectivityInfo;
+class ItemConnectivitySelector;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -110,9 +106,10 @@ class ARCANE_MESH_EXPORT ItemFamily
 
   };
   typedef std::map<AdjencyInfo,ItemPairGroup> AdjencyGroupMap;
+
  public:
 
-  typedef DynamicMeshKindInfos::ItemInternalMap ItemInternalMap;
+  using ItemInternalMap = ::Arcane::mesh::ItemInternalMap;
 
  public:
 
@@ -127,7 +124,7 @@ class ARCANE_MESH_EXPORT ItemFamily
 
   String name() const override { return m_name; }
   String fullName() const override { return m_full_name; }
-  eItemKind itemKind() const override { return m_infos.kind(); }
+  eItemKind itemKind() const override;
   Integer nbItem() const override;
   Int32 maxLocalId() const override;
   ItemInternalList itemsInternal() override;
@@ -145,7 +142,7 @@ class ARCANE_MESH_EXPORT ItemFamily
 
  public:
 
-  ItemInternalMap& itemsMap() { return m_infos.itemsMap(); }
+  ItemInternalMap& itemsMap();
 
  public:
 
@@ -185,7 +182,7 @@ class ARCANE_MESH_EXPORT ItemFamily
   ItemVectorView view(Int32ConstArrayView local_ids) override;
   ItemVectorView view() override;
 
-  ItemInternal* findOneItem(Int64 uid) override { return m_infos.findOne(uid) ; }
+  ItemInternal* findOneItem(Int64 uid) override;
 
  public:
 
@@ -219,10 +216,14 @@ class ARCANE_MESH_EXPORT ItemFamily
   void compactItems(bool do_sort) override;
   void clearItems() override;
 
-  const DynamicMeshKindInfos& infos() const { return m_infos; }
   Int64ArrayView* uniqueIds();
 
   ItemSharedInfo* commonItemSharedInfo() { return m_common_item_shared_info; }
+
+ public:
+
+  ARCANE_DEPRECATED_REASON("Y2024: This method is internal to Arcane. Use _infos() instead.")
+  const DynamicMeshKindInfos& infos() const;
 
  public:
 
@@ -240,10 +241,6 @@ class ARCANE_MESH_EXPORT ItemFamily
   void reduceFromGhostItems(IVariable* v,IDataOperation* operation) override;
   void reduceFromGhostItems(IVariable* v,Parallel::eReduceType operation) override;
 
- public:
-  
-  GroupIndexTable* localIdToIndex(ItemGroup group);
- 
  public:
 
   ItemPairGroup findAdjencyItems(const ItemGroup& group,
@@ -282,7 +279,7 @@ class ARCANE_MESH_EXPORT ItemFamily
   {
     _removeOne(item);
   }
-  //! Accesseur pour les connectités via Item et ItemInternal
+  //! Accesseur pour les connectivités via Item et ItemInternal
   ItemInternalConnectivityList* itemInternalConnectivityList()
   {
     return &m_item_connectivity_list;
@@ -290,48 +287,17 @@ class ARCANE_MESH_EXPORT ItemFamily
 
  protected:
 
-  void _removeOne(Item item)
-  {
-    // TODO: vérifier en mode check avec les nouvelles connectivités que l'entité supprimée
-    // n'a pas d'objets connectés.
-    m_infos.removeOne(ItemCompatibility::_itemInternal(item));
-  }
-  void _detachOne(Item item)
-  {
-    m_infos.detachOne(ItemCompatibility::_itemInternal(item));
-  }
-  ItemInternalList _itemsInternal()
-  {
-    return m_infos.itemsInternal();
-  }
-  ItemInternal* _itemInternal(Int32 local_id)
-  {
-    return m_infos.itemInternal(local_id);
-  }
-  ItemInternal* _allocOne(Int64 unique_id)
-  {
-    return m_infos.allocOne(unique_id);
-  }
-  ItemInternal* _allocOne(Int64 unique_id,bool& need_alloc)
-  {
-    return m_infos.allocOne(unique_id,need_alloc);
-  }
-  ItemInternal* _findOrAllocOne(Int64 uid,bool& is_alloc)
-  {
-    return m_infos.findOrAllocOne(uid,is_alloc);
-  }
-  void _setHasUniqueIdMap(bool v)
-  {
-    m_infos.setHasUniqueIdMap(v);
-  }
-  void _removeMany(Int32ConstArrayView local_ids)
-  {
-    m_infos.removeMany(local_ids);
-  }
-  void _removeDetachedOne(Item item)
-  {
-    m_infos.removeDetachedOne(ItemCompatibility::_itemInternal(item));
-  }
+  void _removeOne(Item item);
+  void _detachOne(Item item);
+  ItemInternalList _itemsInternal();
+  ItemInternal* _itemInternal(Int32 local_id);
+  ItemInternal* _allocOne(Int64 unique_id);
+  ItemInternal* _allocOne(Int64 unique_id, bool& need_alloc);
+  ItemInternal* _findOrAllocOne(Int64 uid, bool& is_alloc);
+  void _setHasUniqueIdMap(bool v);
+  void _removeMany(Int32ConstArrayView local_ids);
+  void _removeDetachedOne(Item item);
+  const DynamicMeshKindInfos& _infos() const;
 
   void _detachCells2(Int32ConstArrayView local_ids);
 
@@ -350,7 +316,7 @@ class ARCANE_MESH_EXPORT ItemFamily
 
  private:
 
-  DynamicMeshKindInfos m_infos;
+  std::unique_ptr<DynamicMeshKindInfos> m_infos;
 
  protected:
 
@@ -465,6 +431,7 @@ class ARCANE_MESH_EXPORT ItemFamily
  private:
 
   ItemTypeMng* m_item_type_mng = nullptr;
+  bool m_do_shrink_after_allocate = false;
 
  protected:
 
@@ -543,6 +510,7 @@ class ARCANE_MESH_EXPORT ItemFamily
   void _addVariable(IVariable* var);
   void _removeVariable(IVariable* var);
   void _resizeVariables(bool force_resize);
+  void _shrinkConnectivityAndPrintInfos();
 };
 
 /*---------------------------------------------------------------------------*/

@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* SubMeshTools.cc                                             (C) 2000-2023 */
+/* SubMeshTools.cc                                             (C) 2000-2024 */
 /*                                                                           */
 /* Algorithmes spécifiques aux sous-maillages.                               */
 /*---------------------------------------------------------------------------*/
@@ -13,23 +13,23 @@
 
 #include "arcane/mesh/SubMeshTools.h"
 
-// Includes génériques non spécifiques à l'implémentation DynamicMesh
-#include "arcane/Variable.h"
-#include "arcane/SharedVariable.h"
-#include "arcane/IParallelMng.h"
-#include "arcane/MeshToMeshTransposer.h"
-#include "arcane/IVariableSynchronizer.h"
-#include "arcane/IParallelExchanger.h"
-#include "arcane/utils/ScopedPtr.h"
-#include "arcane/ISerializer.h"
-#include "arcane/ISerializeMessage.h"
-#include "arcane/IMeshModifier.h"
-#include "arcane/ItemPrinter.h"
 #include "arcane/utils/ITraceMng.h"
-#include "arcane/TemporaryVariableBuildInfo.h"
-#include "arcane/ParallelMngUtils.h"
+#include "arcane/utils/ScopedPtr.h"
 
-// Inlcudes spécifiques à l'implémentation à base de DynamicMesh
+// Includes génériques non spécifiques à l'implémentation DynamicMesh
+#include "arcane/core/Variable.h"
+#include "arcane/core/SharedVariable.h"
+#include "arcane/core/IParallelMng.h"
+#include "arcane/core/MeshToMeshTransposer.h"
+#include "arcane/core/IVariableSynchronizer.h"
+#include "arcane/core/IParallelExchanger.h"
+#include "arcane/core/ISerializer.h"
+#include "arcane/core/ISerializeMessage.h"
+#include "arcane/core/ItemPrinter.h"
+#include "arcane/core/TemporaryVariableBuildInfo.h"
+#include "arcane/core/ParallelMngUtils.h"
+
+// Includes spécifiques à l'implémentation à base de DynamicMesh
 #include "arcane/mesh/DynamicMesh.h"
 #include "arcane/mesh/DynamicMeshIncrementalBuilder.h"
 #include "arcane/mesh/ItemFamily.h"
@@ -97,41 +97,34 @@ _updateGroups()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-SharedArray<ItemInternal*> SubMeshTools::
-_ghostItems(ItemFamily * family)
+//! Remplit \a items_Local_id avec les entités fantomes de la famille \a family
+void SubMeshTools::
+_fillGhostItems(ItemFamily* family, Array<Int32>& items_local_id)
 {
-  SharedArray<ItemInternal*> items_to_remove;
-  items_to_remove.reserve(1000);
-  DynamicMeshKindInfos::ItemInternalMap& items_map = family->itemsMap();
-  Integer sid = m_parallel_mng->commRank();
+  items_local_id.clear();
+  ItemInternalMap& items_map = family->itemsMap();
+  Int32 rank = m_parallel_mng->commRank();
 
-  ENUMERATE_ITEM_INTERNAL_MAP_DATA(nbid,items_map){
-    ItemInternal* item = nbid->value();
-    if (item->owner() != sid){
-      items_to_remove.add(item);
+  items_map.eachItem([&](Item item) {
+    if (item.owner() != rank) {
+      items_local_id.add(item.localId());
     }
-  }
-  return items_to_remove;
+  });
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-SharedArray<ItemInternal*> SubMeshTools::
-_floatingItems(ItemFamily * family)
+void SubMeshTools::
+_fillFloatingItems(ItemFamily* family, Array<Int32>& items_local_id)
 {
-  SharedArray<ItemInternal*> items_to_remove;
-  items_to_remove.reserve(1000);
-  DynamicMeshKindInfos::ItemInternalMap& items_map = family->itemsMap();
-  ENUMERATE_ITEM_INTERNAL_MAP_DATA(nbid,items_map){
-    ItemInternal* item = nbid->value();
-    if (!item->isSuppressed() && item->nbCell() == 0 && !item->isOwn()){
-      debug(Trace::High) << "Floating item to remove " << ItemPrinter(item);
-      items_to_remove.add(item);
+  items_local_id.reserve(1000);
+  ItemInternalMap& items_map = family->itemsMap();
+  items_map.eachItem([&](impl::ItemBase item) {
+    if (!item.isSuppressed() && item.nbCell() == 0 && !item.isOwn()) {
+      items_local_id.add(item.localId());
     }
-  }
-  return items_to_remove;
+  });
 }
 
 /*---------------------------------------------------------------------------*/
@@ -166,12 +159,12 @@ removeDeadGhostCells()
   FaceFamily& face_family = m_mesh->trueFaceFamily();
   EdgeFamily& edge_family = m_mesh->trueEdgeFamily();
   NodeFamily& node_family = m_mesh->trueNodeFamily();
-  
-  // On cherche les items fantomes dont les parents sont supprimés
-  UniqueArray<ItemInternal*> items_to_remove;
-  items_to_remove = _ghostItems(&cell_family);
-  for( ItemInternal* item_internal : items_to_remove ){
-    impl::ItemBase item(item_internal);
+
+  // On cherche les items fantômes dont les parents sont supprimés
+  UniqueArray<Int32> items_to_remove;
+  _fillGhostItems(&cell_family, items_to_remove);
+  ENUMERATE_ (Cell, icell, cell_family.view(items_to_remove)) {
+    impl::ItemBase item(icell->itemBase());
     ARCANE_ASSERT((!item.parentBase(0).isSuppressed()),("SubMesh cell not synchronized with its support group"));
 
     // on met no_destroy=true => ce sont les sous-items qui s'occuperont de la destruction
@@ -179,27 +172,29 @@ removeDeadGhostCells()
       _removeCell(item);
   }
 
-  items_to_remove = _ghostItems(&face_family);
-  for( ItemInternal* item_internal : items_to_remove ){
-    impl::ItemBase item(item_internal);
+  _fillGhostItems(&face_family, items_to_remove);
+  ENUMERATE_ (Face, iface, face_family.view(items_to_remove)) {
+    impl::ItemBase item(iface->itemBase());
     if (item.parentBase(0).isSuppressed()) {
       ARCANE_ASSERT((item.nbCell() == 0),("Cannot remove connected sub-item"));
       face_family.removeFaceIfNotConnected(item);
     }
   }
 
-  items_to_remove = _ghostItems(&edge_family);
-  for( ItemInternal* item_internal : items_to_remove ){
-    impl::ItemBase item(item_internal);
+  _fillGhostItems(&edge_family, items_to_remove);
+  EdgeInfoListView edges(&edge_family);
+  ENUMERATE_ (Edge, iedge, edge_family.view(items_to_remove)) {
+    impl::ItemBase item(iedge->itemBase());
     if (item.parentBase(0).isSuppressed()) {
       ARCANE_ASSERT((item.nbCell() == 0 && item.nbFace() == 0),("Cannot remove connected sub-item"));
       edge_family.removeEdgeIfNotConnected(item);
     }
   }
 
-  items_to_remove = _ghostItems(&node_family);
-  for( ItemInternal* item_internal : items_to_remove ){
-    impl::ItemBase item(item_internal);
+  _fillGhostItems(&node_family, items_to_remove);
+  NodeInfoListView nodes(&node_family);
+  ENUMERATE_ (Node, inode, node_family.view(items_to_remove)) {
+    impl::ItemBase item(inode->itemBase());
     if (item.parentBase(0).isSuppressed()) {
       ARCANE_ASSERT((item.nbCell()==0 && item.nbFace()==0 && item.nbEdge()==0),("Cannot remove connected sub-item"));
       node_family.removeItem(item);
@@ -235,26 +230,30 @@ removeGhostMesh()
   // ne tiennent pas compte du mécanisme fantome particulier des sous-maillages
   // où un sous-item peuvent vivre sans sur-item rattaché à celui-ic
   // (ex: Face 'own' sans Cell autour)
-  UniqueArray<ItemInternal*> items_to_remove;
-  items_to_remove = _ghostItems(&cell_family);
-  for( ItemInternal* item : items_to_remove ){
-     _removeCell(item);
-  }
-  
-  items_to_remove = _ghostItems(&face_family);
-  for( ItemInternal* item : items_to_remove )
-    face_family.removeFaceIfNotConnected(item);
+  UniqueArray<Int32> items_to_remove;
 
-  items_to_remove = _ghostItems(&edge_family);
-  for( ItemInternal* item : items_to_remove ){
-    if (item->nbCell()==0 && item->nbFace()==0)
-      edge_family.removeEdgeIfNotConnected(item);
+  _fillGhostItems(&cell_family, items_to_remove);
+  ENUMERATE_ (Cell, icell, cell_family.view(items_to_remove)) {
+    _removeCell(*icell);
   }
 
-  items_to_remove = _ghostItems(&node_family);
-  for( ItemInternal* item : items_to_remove ){
-    if (item->nbCell()==0 && item->nbFace()==0 && item->nbEdge()==0)
-      node_family.removeItem(item);
+  _fillGhostItems(&face_family, items_to_remove);
+  ENUMERATE_ (Face, iface, face_family.view(items_to_remove)) {
+    face_family.removeFaceIfNotConnected(*iface);
+  }
+
+  _fillGhostItems(&edge_family, items_to_remove);
+  ENUMERATE_ (Edge, iedge, edge_family.view(items_to_remove)) {
+    Edge edge(*iedge);
+    if (edge.nbCell() == 0 && edge.nbFace() == 0)
+      edge_family.removeEdgeIfNotConnected(edge);
+  }
+
+  _fillGhostItems(&node_family, items_to_remove);
+  ENUMERATE_ (Node, inode, node_family.view(items_to_remove)) {
+    Node node(*inode);
+    if (node.nbCell() == 0 && node.nbFace() == 0 && node.nbEdge() == 0)
+      node_family.removeItem(node);
   }
 
   _updateGroups();
@@ -276,23 +275,26 @@ removeFloatingItems()
   // ne tiennent pas compte du mécanisme fantome particulier des sous-maillages
   // où un sous-item peuvent vivre sans sur-item rattaché à celui-ic
   // (ex: Face 'own' sans Cell autour)
-  SharedArray<ItemInternal*> items_to_remove;
-  items_to_remove = _floatingItems(&face_family);
-  for( ItemInternal* item : items_to_remove ){
-    if (item->nbCell()==0)
-      face_family.removeFaceIfNotConnected(item);
+  SharedArray<Int32> items_to_remove;
+  _fillFloatingItems(&face_family, items_to_remove);
+  ENUMERATE_ (Face, iface, face_family.view(items_to_remove)) {
+    Face face(*iface);
+    if (face.nbCell() == 0)
+      face_family.removeFaceIfNotConnected(face);
   }
-  items_to_remove = _floatingItems(&edge_family);
-  for( Integer i=0, is=items_to_remove.size(); i<is; ++i ){
-    ItemInternal * item = items_to_remove[i];
-    if (item->nbCell()==0 && item->nbFace()==0)
-      edge_family.removeEdgeIfNotConnected(item);
+  items_to_remove.clear();
+  _fillFloatingItems(&edge_family, items_to_remove);
+  ENUMERATE_ (Edge, iedge, edge_family.view(items_to_remove)) {
+    Edge edge(*iedge);
+    if (edge.nbCell() == 0 && edge.nbFace() == 0)
+      edge_family.removeEdgeIfNotConnected(edge);
   }
-  items_to_remove = _floatingItems(&node_family);
-  for( Integer i=0, is=items_to_remove.size(); i<is; ++i ){
-    ItemInternal * item = items_to_remove[i];
-    if (item->nbCell()==0 && item->nbFace()==0 && item->nbEdge()==0)
-      node_family.removeItem(item);
+  items_to_remove.clear();
+  _fillFloatingItems(&node_family, items_to_remove);
+  ENUMERATE_ (Node, inode, node_family.view(items_to_remove)) {
+    Node node(*inode);
+    if (node.nbCell() == 0 && node.nbFace() == 0 && node.nbEdge() == 0)
+      node_family.removeItem(node);
   }
 
   _updateGroups();

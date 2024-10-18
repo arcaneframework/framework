@@ -409,6 +409,18 @@ getGDBStack();
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+/*!
+ * \brief Récupère la pile d'appel via lldb.
+ *
+ * Cette méthode est similaire à getGDBStack() mais utilise 'lldb' pour
+ * récupérer la pile d'appel. Si `dotnet-sos` est installé, cela permet
+ * aussi de récupérer les informations sur les méthodes du runtime 'dotnet'.
+ */
+extern "C++" ARCANE_UTILS_EXPORT String
+getLLDBStack();
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 // Définition du pragma pour indiquer l'indépendance des itérations
 

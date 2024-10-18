@@ -84,6 +84,7 @@ class ALIEN_EXPORT SYCLInternalLinearAlgebra
   Real norm0(const Vector& x) const;
   Real norm1(const Vector& x) const;
   Real norm2(const Vector& x) const;
+  Real normInf(const Vector& x) const;
 
   void mult(const Matrix& a, const Vector& x, Vector& r) const;
   void addLMult(Real alpha, const Matrix& A, const Vector& x, Vector& y) const;
@@ -158,6 +159,7 @@ class SYCLInternalLinearAlgebraExpr
   Real norm0(const Vector& x) const;
   Real norm1(const Vector& x) const;
   Real norm2(const Vector& x) const;
+  Real normInf(const Vector& x) const;
   void mult(const Matrix& a, const Vector& x, Vector& r) const;
   void axpy(Real alpha, const Vector& x, Vector& r) const;
   void aypx(Real alpha, Vector& y, const Vector& x) const;

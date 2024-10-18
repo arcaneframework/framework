@@ -18,6 +18,7 @@
 #include "arcane/utils/MDDim.h"
 #include "arcane/utils/NumArrayContainer.h"
 #include "arcane/utils/ArcaneCxx20.h"
+#include "arcane/utils/String.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -251,6 +252,16 @@ class NumArray
 
   //! Allocateur mémoire associé
   IMemoryAllocator* memoryAllocator() const { return m_data.allocator(); }
+
+  /*!
+   * \brief Positionne le nom du tableau pour les informations de debug.
+   *
+   * Ce nom peut être utilisé par exemple pour les affichages listing.
+   */
+  void setDebugName(const String& str) { m_data.setDebugName(str); }
+
+  //! Nom de debug (nul si aucun nom spécifié)
+  String debugName() { return m_data.debugName(); }
 
  public:
 

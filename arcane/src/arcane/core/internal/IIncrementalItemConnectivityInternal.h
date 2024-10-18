@@ -1,79 +1,69 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MetisGraph.h                                                (C) 2000-2019 */
+/* IIncrementalItemConnectivityInternal.h                      (C) 2000-2024 */
 /*                                                                           */
-/* Gestion d'un graphe de Metis.                                             */
+/* API interne à Arcane de IncrementalItemConnectivity                       */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_STD_METISGRAPH
-#define ARCANE_STD_METISGRAPH
+#ifndef ARCANE_CORE_INTERNAL_IINCREMENTALITEMCONNECTIVITYINTERNAL_H
+#define ARCANE_CORE_INTERNAL_IINCREMENTALITEMCONNECTIVITYINTERNAL_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/Array.h"
 #include "arcane/utils/ArrayView.h"
-#include <parmetis.h>
+
+#include "arcane/core/ItemTypes.h"
+#include "arcane/core/IItemConnectivityAccessor.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 namespace Arcane
 {
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-struct MetisGraph
+/*!
+ * \brief Informations sur l'utilisation mémoire pour les connectivités.
+ */
+class ItemConnectivityMemoryInfo
 {
-  int nb_vertices = 0;
-  bool have_vsize = false;
-  bool have_adjwgt = false;
-  UniqueArray<idx_t> xadj;
-  UniqueArray<idx_t> adjncy;
-  UniqueArray<idx_t> vwgt;
-  UniqueArray<idx_t> vsize;
-  UniqueArray<idx_t> adjwgt;
-  UniqueArray<idx_t> part;
+ public:
+
+  //! Nombre total de Int32 utilisés (correspoind à la somme des size())
+  Int64 m_total_size = 0;
+  //! Nombre total de Int32 allouées (correspond à la somme des capacity())
+  Int64 m_total_capacity = 0;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief API interne à Arcane de IIncrementalItemConnectivity.
+ */
+class ARCANE_CORE_EXPORT IIncrementalItemConnectivityInternal
+{
+ public:
+
+  virtual ~IIncrementalItemConnectivityInternal() = default;
+
+ public:
+
+  //! Réduit au minimum l'utilisation mémoire pour les connectivités
+  virtual void shrinkMemory() = 0;
+
+  //! Ajoute \a mem_info les informations mémoire de l'instance.
+  virtual void addMemoryInfos(ItemConnectivityMemoryInfo& mem_info) = 0;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class MetisGraphView
-{
- public:
-  MetisGraphView()  = default;
-  
-  MetisGraphView(MetisGraph& graph)
-  : nb_vertices(graph.nb_vertices)
-  , have_vsize(graph.have_vsize)
-  , have_adjwgt(graph.have_adjwgt)
-  , xadj(graph.xadj)
-  , adjncy(graph.adjncy)
-  , vwgt(graph.vwgt)
-  , vsize(graph.vsize)
-  , adjwgt(graph.adjwgt)
-  , part(graph.part)
-  {}
- public:
-  int nb_vertices = 0;
-  bool have_vsize = false;
-  bool have_adjwgt = false;
-  ArrayView<idx_t> xadj;
-  ArrayView<idx_t> adjncy;
-  ArrayView<idx_t> vwgt;
-  ArrayView<idx_t> vsize;
-  ArrayView<idx_t> adjwgt;
-  ArrayView<idx_t> part;
-};
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-} // End namespace Arcane
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

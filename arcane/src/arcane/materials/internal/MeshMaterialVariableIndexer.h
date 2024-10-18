@@ -81,16 +81,18 @@ class ARCANE_MATERIALS_EXPORT MeshMaterialVariableIndexer
   void checkValid();
   //! Vrai si cet indexeur est celui d'un milieu.
   bool isEnvironment() const { return m_is_environment; }
+  void dumpStats() const;
 
  public:
 
   // Méthodes publiques car utilisées sur accélérateurs
   void endUpdateAdd(const ComponentItemListBuilder& builder, RunQueue& queue);
   void endUpdateRemoveV2(ConstituentModifierWorkInfo& work_info, Integer nb_remove, RunQueue& queue);
+  void transformCells(ConstituentModifierWorkInfo& args, RunQueue& queue, bool is_from_env);
 
  private:
 
-  //! Fonctions publiques mais réservées aux classes de Arcane.
+  //! Fonctions privées mais accessibles aux classes 'friend'.
   //@{
   void endUpdate(const ComponentItemListBuilderOld& builder);
   Array<MatVarIndex>& matvarIndexesArray() { return m_matvar_indexes; }
@@ -106,8 +108,6 @@ class ARCANE_MATERIALS_EXPORT MeshMaterialVariableIndexer
 
  private:
 
-  void transformCellsV2(ConstituentModifierWorkInfo& args, RunQueue& queue);
-
  private:
 
   //! Index de cette instance dans la liste des indexeurs.
@@ -122,7 +122,7 @@ class ARCANE_MATERIALS_EXPORT MeshMaterialVariableIndexer
   //! Liste des mailles de cet indexer
   CellGroup m_cells;
 
-  //! Liste des indexes pour les variables matériaux.
+  //! Liste des indexs pour les variables matériaux.
   UniqueArray<MatVarIndex> m_matvar_indexes;
 
   /*!
@@ -138,17 +138,26 @@ class ARCANE_MATERIALS_EXPORT MeshMaterialVariableIndexer
   //! Vrai si l'indexeur est associé à un milieu.
   bool m_is_environment = false;
 
+  //! Nombre d'appels aux méthodes de transformation
+  Int32 m_nb_transform_called = 0;
+
+  /*!
+   * \brief  Nombre d'appels inutiles aux méthodes de transformation.
+   *
+   * Un appel est inutile si la liste des entités modifiées en sortie
+   * est vide.
+   */
+  Int32 m_nb_useless_add_transform = 0;
+  Int32 m_nb_useless_remove_transform = 0;
+
+  //! Indique si on affiche un message lors d'une transformation inutile
+  bool m_is_print_useless_transform = false;
+
  private:
 
   static void _changeLocalIdsV2(MeshMaterialVariableIndexer* var_indexer,
                                 Int32ConstArrayView old_to_new_ids);
   void _init();
-
- public:
-
-  void _switchBetweenPureAndPartial(ConstituentModifierWorkInfo& work_info,
-                                    RunQueue& queue,
-                                    bool is_pure_to_partial);
 };
 
 /*---------------------------------------------------------------------------*/

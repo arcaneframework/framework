@@ -119,6 +119,7 @@
 #include "arcane/core/IMeshModifier.h"
 #include "arcane/core/MeshEvents.h"
 #include "arcane/core/IExternalPlugin.h"
+#include "arcane/core/IMeshSubdivider.h"
 
 #include "arcane/core/IMeshInitialAllocator.h"
 #include "arcane/core/internal/IItemFamilyInternal.h"
@@ -127,6 +128,7 @@
 #include "arcane/core/internal/IMeshModifierInternal.h"
 #include "arcane/core/internal/IVariableMngInternal.h"
 #include "arcane/core/internal/IVariableSynchronizerMngInternal.h"
+#include "arcane/core/internal/IIncrementalItemConnectivityInternal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -223,6 +225,27 @@ void IIncrementalItemSourceConnectivity::
 reserveMemoryForNbSourceItems([[maybe_unused]] Int32 n,
                               [[maybe_unused]] bool pre_alloc_connectivity)
 {
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void IIncrementalItemSourceConnectivity::
+_internalNotifySourceItemsAdded(Int32ConstArrayView local_ids)
+{
+  for (Int32 lid : local_ids)
+    notifySourceItemAdded(ItemLocalId(lid));
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void IIncrementalItemConnectivity::
+setConnectedItems(ItemLocalId source_item, Int32ConstArrayView target_local_ids)
+{
+  removeConnectedItems(source_item);
+  for (Int32 x : target_local_ids)
+    addConnectedItem(source_item, ItemLocalId{ x });
 }
 
 /*---------------------------------------------------------------------------*/

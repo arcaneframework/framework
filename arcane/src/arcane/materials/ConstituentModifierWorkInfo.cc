@@ -45,8 +45,10 @@ ConstituentModifierWorkInfo(const MemoryAllocationOptions& opts, eMemoryRessourc
 /*---------------------------------------------------------------------------*/
 
 void ConstituentModifierWorkInfo::
-initialize(Int32 max_local_id, RunQueue& queue)
+initialize(Int32 max_local_id, Int32 nb_material, Int32 nb_environment, RunQueue& queue)
 {
+  m_is_materials_modified.resizeHost(nb_material);
+  m_is_environments_modified.resizeHost(nb_environment);
   m_cells_to_transform.resize(max_local_id);
   m_cells_to_transform.fill(false, &queue);
   m_removed_local_ids_filter.resize(max_local_id);

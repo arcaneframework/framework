@@ -1,30 +1,30 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshReaderMng.h                                             (C) 2000-2021 */
+/* MeshReaderMng.h                                             (C) 2000-2024 */
 /*                                                                           */
 /* Gestionnaire de lecteurs de maillage.                                     */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/MeshReaderMng.h"
+#include "arcane/core/MeshReaderMng.h"
 
 #include "arcane/utils/UniqueArray.h"
 #include "arcane/utils/ScopedPtr.h"
 
-#include "arcane/ISubDomain.h"
-#include "arcane/IMainFactory.h"
-#include "arcane/IMeshReader.h"
-#include "arcane/ServiceBuilder.h"
-#include "arcane/IPrimaryMesh.h"
-#include "arcane/XmlNode.h"
-#include "arcane/Properties.h"
-#include "arcane/IXmlDocumentHolder.h"
-#include "arcane/IParallelMng.h"
+#include "arcane/core/ISubDomain.h"
+#include "arcane/core/IMainFactory.h"
+#include "arcane/core/IMeshReader.h"
+#include "arcane/core/ServiceBuilder.h"
+#include "arcane/core/IPrimaryMesh.h"
+#include "arcane/core/XmlNode.h"
+#include "arcane/core/Properties.h"
+#include "arcane/core/IXmlDocumentHolder.h"
+#include "arcane/core/IParallelMng.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -43,9 +43,14 @@ class IMeshReader;
 class MeshReaderMng::Impl
 {
  public:
-  Impl(ISubDomain* sd) : m_sub_domain(sd){}
+
+  explicit Impl(ISubDomain* sd)
+  : m_sub_domain(sd)
+  {}
   ~Impl() = default;
+
  public:
+
   void checkInit()
   {
     if (m_is_init)
@@ -54,9 +59,13 @@ class MeshReaderMng::Impl
     ServiceBuilder<IMeshReader> builder(m_sub_domain);
     m_mesh_readers = builder.createAllInstances();
   }
+
  public:
+
   ConstArrayView<Ref<IMeshReader>> readers() const { return m_mesh_readers; }
+
  public:
+
   ISubDomain* m_sub_domain = nullptr;
   UniqueArray<Ref<IMeshReader>> m_mesh_readers;
   bool m_is_init = false;
@@ -114,6 +123,13 @@ readMesh(const String& mesh_name,const String& file_name,IParallelMng* parallel_
   ISubDomain* sd = m_p->m_sub_domain;
   IParallelMng* pm = parallel_mng;
   IPrimaryMesh* mesh = sd->mainFactory()->createMesh(sd,pm,mesh_name);
+
+  // Créé le maillage.
+  // Le maillage peut déjà exister.
+  // Dans notre cas, c'est une erreur s'il est déjà alloué.
+  if (mesh->isAllocated())
+    ARCANE_FATAL("Mesh '{0}' already exists and is allocated", mesh_name);
+
   mesh->properties()->setBool("dump", false);
 
   String use_unit_str = (m_p->m_is_use_unit) ? "true" : "false";

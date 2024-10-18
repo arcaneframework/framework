@@ -195,6 +195,14 @@ class FaceInfoListView
   {
     return ItemFlags::isSubDomainBoundaryOutside(m_flags[local_id]);
   }
+  constexpr ARCCORE_HOST_DEVICE Int32 backCellIndex(FaceLocalId local_id) const
+  {
+    return ItemFlags::backCellIndex(m_flags[local_id]);
+  }
+  constexpr ARCCORE_HOST_DEVICE Int32 frontCellIndex(FaceLocalId local_id) const
+  {
+    return ItemFlags::frontCellIndex(m_flags[local_id]);
+  }
 };
 
 /*---------------------------------------------------------------------------*/

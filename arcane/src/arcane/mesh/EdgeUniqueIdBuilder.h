@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* EdgeUniqueIdBuilder.h                                       (C) 2000-2024 */
 /*                                                                           */
-/* Construction des indentifiants uniques des edges.                         */
+/* Construction des identifiants uniques des edges.                          */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MESH_EDGEUNIQUEIDBUILDER_H
 #define ARCANE_MESH_EDGEUNIQUEIDBUILDER_H
@@ -45,9 +45,6 @@ class EdgeUniqueIdBuilder
 {
  public:
 
-  typedef DynamicMeshKindInfos::ItemInternalMap ItemInternalMap;
-  typedef ItemInternalMap::Data ItemInternalMapData;
-
   typedef HashTableMapT<Int32,SharedArray<Int64> > BoundaryInfosMap;
   typedef HashTableMapEnumeratorT<Int32,SharedArray<Int64> > BoundaryInfosMapEnumerator;
   
@@ -55,7 +52,6 @@ class EdgeUniqueIdBuilder
 
   //! Construit une instance pour le maillage \a mesh
   explicit EdgeUniqueIdBuilder(DynamicMeshIncrementalBuilder* mesh_builder);
-  ~EdgeUniqueIdBuilder() override;
 
  public:
 
@@ -70,7 +66,6 @@ class EdgeUniqueIdBuilder
   
   void _computeEdgesUniqueIdsSequential();
   void _computeEdgesUniqueIdsParallel3();
-  void _exchangeData(IParallelExchanger* exchanger,BoundaryInfosMap& boundary_infos_to_send);
   void _computeEdgesUniqueIdsParallelV2();
   void _computeEdgesUniqueIdsParallel64bit();
 };

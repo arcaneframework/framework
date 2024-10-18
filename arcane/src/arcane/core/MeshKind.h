@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshKind.h                                                  (C) 2000-2023 */
+/* MeshKind.h                                                  (C) 2000-2024 */
 /*                                                                           */
 /* Caractéristiques d'un maillage.                                           */
 /*---------------------------------------------------------------------------*/
@@ -29,7 +29,8 @@ enum class eMeshStructure
 {
   Unknown,
   Unstructured,
-  Cartesian
+  Cartesian,
+  Polyhedral
 };
 extern "C++" ARCANE_CORE_EXPORT std::ostream&
 operator<<(std::ostream& o, eMeshStructure r);

@@ -590,19 +590,11 @@ class AbstractArray
 
   void _directFirstAllocateWithAllocator(Int64 new_capacity,MemoryAllocationOptions options)
   {
-#ifdef ARCCORE_CHECK
-    if (!_isUseOwnMetaData())
-      ArrayMetaData::throwUnsupportedSpecificAllocator();
-#endif
     IMemoryAllocator* wanted_allocator = options.allocator();
     if (!wanted_allocator) {
       wanted_allocator = ArrayMetaData::_defaultAllocator();
       options.setAllocator(wanted_allocator);
     }
-    // TODO: Comme cette méthode ne peut être appelé que
-    // si _isUseOwnMetaData() est vrai, on peut simplifier l'allocation
-    // et ne pas appeler _updateReference() et mettre automatiquement à 1 le
-    // nombre de références.
     _allocateMetaData();
     m_md->allocation_options = options;
     if (new_capacity>0)
@@ -1554,6 +1546,52 @@ class SharedArray
   }
   //! Créé un tableau en recopiant les valeurs \a rhs.
   inline SharedArray(const UniqueArray<T>& rhs);
+
+  /*!
+   * \brief Créé un tableau de \a asize éléments avec un
+   * allocateur spécifique \a allocator.
+   *
+   * Si ArrayTraits<T>::IsPODType vaut TrueType, les éléments ne sont pas
+   * initialisés. Sinon, c'est le constructeur par défaut de T qui est utilisé.
+   *
+   * \warning Using specific allocator for SharedArray is experimental
+   */
+  explicit SharedArray(IMemoryAllocator* allocator)
+  : Array<T>()
+  {
+    this->_initFromAllocator(allocator,0);
+    this->_checkValidSharedArray();
+  }
+
+  /*!
+   * \brief Créé un tableau de \a asize éléments avec un
+   * allocateur spécifique \a allocator.
+   *
+   * Si ArrayTraits<T>::IsPODType vaut TrueType, les éléments ne sont pas
+   * initialisés. Sinon, c'est le constructeur par défaut de T qui est utilisé.
+   *
+   * \warning Using specific allocator for SharedArray is experimental
+   */
+  SharedArray(IMemoryAllocator* allocator,Int64 asize)
+  : Array<T>()
+  {
+    this->_initFromAllocator(allocator,asize);
+    this->_resize(asize);
+    this->_checkValidSharedArray();
+  }
+
+  /*!
+   * \brief Créé un tableau avec l'allocateur \a allocator en recopiant les valeurs \a rhs.
+   *
+   * \warning Using specific allocator for SharedArray is experimental
+   */
+  SharedArray(IMemoryAllocator* allocator,Span<const T> rhs)
+  {
+    this->_initFromAllocator(allocator,0);
+    this->_initFromSpan(rhs);
+    this->_checkValidSharedArray();
+  }
+
   //! Change la référence de cette instance pour qu'elle soit celle de \a rhs.
   void operator=(const SharedArray<T>& rhs)
   {
@@ -1604,7 +1642,7 @@ class SharedArray
   //! Clone le tableau
   SharedArray<T> clone() const
   {
-    return SharedArray<T>(this->constSpan());
+    return SharedArray<T>(this->allocator(),this->constSpan());
   }
 
  protected:

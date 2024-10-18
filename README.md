@@ -258,11 +258,12 @@ Very simple codes to test Finite Element Methods using Arcane.
 
 ## [MaHyCo](https://github.com/cea-hpc/MaHyCo)
 
-TODO
+Finite volume code for solving hydrodynamic equations:
+Lagrangian or Eulerian simulations.
 
 # Rencontres Arcanes
 
-The next Rencontres Arcane are scheduled for 2025.
+The next Rencontres Arcane are scheduled on Monday, the 24th March, 2025.
 
 <p align="center">
   <a href="https://github.com/arcaneframework/events">

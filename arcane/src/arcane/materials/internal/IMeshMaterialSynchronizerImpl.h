@@ -1,60 +1,67 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MetisGraphGather.h                                          (C) 2000-2019 */
+/* IMeshMaterialSynchronizerImpl.h                                  (C) 2000-2024 */
 /*                                                                           */
-/* Regroupement de graphes de 'Parmetis'.                                    */
+/* Synchronisation de la liste des matériaux/milieux des entités.            */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_STD_METISGRAPHGATHER
-#define ARCANE_STD_METISGRAPHGATHER
+#ifndef ARCANE_MATERIALS_INTERNAL_IMESHMATERIALSYNCHRONIZERIMPL_H
+#define ARCANE_MATERIALS_INTERNAL_IMESHMATERIALSYNCHRONIZERIMPL_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/Array.h"
+#include "arcane/utils/TraceAccessor.h"
 #include "arcane/utils/ArrayView.h"
-#include "arcane/utils/String.h"
-#include "arcane/std/MetisGraph.h"
 
-#include <parmetis.h>
-#include <mpi.h>
+#include "arcane/VariableTypedef.h"
+
+#include "arcane/materials/MaterialsGlobal.h"
+#include "arcane/materials/MatItem.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arcane
+namespace Arcane::Materials
 {
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-class MetisGraphGather
+/*!
+ * \internal
+ * \brief Stratégie de synchronisation de la liste des matériaux/milieux des entités.
+ *
+ * Cette classe abstraite determine la méthode de syncrhonisation entre les sous-domaines la liste
+ * des matériaux/milieux auxquelles une maille appartient.
+ *
+ */
+class IMeshMaterialSynchronizerImpl
 {
+ protected:
+
+  explicit IMeshMaterialSynchronizerImpl() {};
+
  public:
-  /*!
-   * \brief Effectue un regroupement du graphe ParMetis "my_graph" sur le processeur de
-   * rang 0 dans le communicateur "comm". Le graph resultat est "graph".
-   */
-  void gatherGraph(const bool need_part, const String& comm_name, MPI_Comm comm,
-                   ConstArrayView<idx_t> vtxdist, const idx_t ncon, MetisGraphView my_graph,
-                   MetisGraph& graph);
+
+  virtual ~IMeshMaterialSynchronizerImpl() {};
 
   /*!
-   * \brief Distribue le partitionnement "part" depuis le processeur de rang 0 dans le
-   * communicateur "comm" sur tous les processeurs de ce communicateur. Le resultat
-   * est "my_part", qui doit deja etre dimensionne avant appel.
+   * \brief Synchronisation de la liste des matériaux/milieux des entités.
+   *
+   * Cette opération est collective.
+   *
+   * Retourne \a true si des mailles ont été ajoutées ou supprimées d'un matériau
+   * ou d'un milieu lors de cette opération pour ce sous-domaine.
    */
-  void scatterPart(MPI_Comm comm, ConstArrayView<idx_t> vtxdist, ConstArrayView<idx_t> part,
-                   ArrayView<idx_t> my_part);
+  virtual bool synchronizeMaterialsInCells() = 0;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arcane
+} // End namespace Arcane::Materials
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

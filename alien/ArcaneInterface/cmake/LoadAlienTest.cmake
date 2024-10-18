@@ -73,14 +73,6 @@ macro(alien_test)
             )
         endif ()
 
-        if (TARGET arcane_core)
-
-            set_tests_properties(${ARGS_BENCH}.${ARGS_NAME} PROPERTIES
-                    ENVIRONMENT "ARCANE_PARALLEL_SERVICE=Mpi"
-                    )
-
-        endif ()
-
         if (WIN32)
             # ajout de bin/sys_dlls au PATH
             set(PATH ${CMAKE_BINARY_DIR}/bin/sys_dlls)
@@ -119,14 +111,6 @@ macro(alien_test)
                         ${ARGS_OPTIONS}
                         WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/${ARGS_WORKING_DIRECTORY}
                 )
-            endif ()
-
-            if (TARGET arcane_core)
-
-                set_tests_properties(${ARGS_BENCH}.${ARGS_NAME}.mpi-${mpi} PROPERTIES
-                        ENVIRONMENT "ARCANE_PARALLEL_SERVICE=Mpi"
-                        )
-
             endif ()
 
             if (WIN32)

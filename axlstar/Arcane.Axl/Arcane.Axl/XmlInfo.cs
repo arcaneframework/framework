@@ -1,10 +1,10 @@
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* XmlInfo.h                                                   (C) 2000-2007 */
+/* XmlInfo.h                                                   (C) 2000-2024 */
 /*                                                                           */
 /* Informations sur un fichier XML.                                          */
 /*---------------------------------------------------------------------------*/
@@ -102,11 +102,11 @@ namespace Arcane.Axl
     public static XmlElement RootNode(string file_name, Stream schema_stream)
     {
       // Note: avec la version de mono apres 1.1.16.1, la validation ne fonctionne pas
-      // � cause d'un probl�me de namespace. On la désactive donc.
+      // à cause d'un problème de namespace. On la désactive donc.
       XmlReaderSettings settings = new XmlReaderSettings();
       settings.XmlResolver = new MyXmlResolver();
-      // Necessaire sour Win32 pour eviter une exception de securite
-      settings.ProhibitDtd = false;
+      // Autorise la lecture des DtD.
+      settings.DtdProcessing = DtdProcessing.Parse;
 
       bool do_validation = false;
       if (do_validation){

@@ -33,7 +33,6 @@
 
 namespace Arcane::Materials
 {
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -58,6 +57,8 @@ MeshMaterialVariableIndexer(ITraceMng* tm, const String& name)
 void MeshMaterialVariableIndexer::
 _init()
 {
+  if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_PRINT_USELESS_TRANSFORMATION", true))
+    m_is_print_useless_transform = (v.value() != 0);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -311,23 +312,24 @@ _changeLocalIdsV2(MeshMaterialVariableIndexer* var_indexer, Int32ConstArrayView 
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-void MeshMaterialVariableIndexer::
-transformCellsV2(ConstituentModifierWorkInfo& work_info, RunQueue& queue)
-{
-  _switchBetweenPureAndPartial(work_info, queue, work_info.isAdd());
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 /*!
- * \brief Échange des mailles entre pures et partielles.
+ * \brief Transforme des mailles entre pure et partielle.
+ *
+ * Les mailles à transformer sont celles pour lesquelles
+ * work_info.transformedCells() est vrai.
+ *
+ * En retour, remplit \a work_info.pure_local_ids et \a work_info.partial_indexes
+ * avec les valeurs des transformées. Si \a work_info.isAdd() est vrai,
+ * alors on transforme de pure en partial, sinon on transforme de partiel en
+ * pure.
+ * Si \a is_from_env est vrai, alors cette méthode est appelée depuis une mise
+ * à jour des milieux. Sinon c'est depuis une mise à jour des matériaux. Cela
+ * n'est utile que pour le debug.
  */
 void MeshMaterialVariableIndexer::
-_switchBetweenPureAndPartial(ConstituentModifierWorkInfo& work_info,
-                             RunQueue& queue,
-                             bool is_pure_to_partial)
+transformCells(ConstituentModifierWorkInfo& work_info, RunQueue& queue,bool is_from_env)
 {
+  bool is_pure_to_partial = work_info.isAdd();
   bool is_device = isAcceleratorPolicy(queue.executionPolicy());
 
   Integer nb = nbItem();
@@ -364,7 +366,8 @@ _switchBetweenPureAndPartial(ConstituentModifierWorkInfo& work_info,
       partial_indexes[output_index] = current_index;
       matvar_indexes[input_index] = MatVarIndex(var_index, current_index);
     };
-    filterer.applyWithIndex(nb, select_lambda, setter_lambda, A_FUNCINFO);
+    filterer.applyWithIndex(nb, select_lambda, setter_lambda,
+                            A_FUNCINFO1("ConstituentsTranformCellsFromPureToPartial"));
   }
   else {
     // Transformation Partial -> Pure
@@ -384,12 +387,29 @@ _switchBetweenPureAndPartial(ConstituentModifierWorkInfo& work_info,
       partial_indexes[output_index] = var_index;
       matvar_indexes[input_index] = MatVarIndex(0, local_id);
     };
-    filterer.applyWithIndex(nb, select_lambda, setter_lambda, A_FUNCINFO);
+    filterer.applyWithIndex(nb, select_lambda, setter_lambda,
+                            A_FUNCINFO1("ConstituentsTranformCellsFromPartialToPure"));
   }
 
-  Int32 nb_out = filterer.nbOutputElement();
+  const Int32 nb_out = filterer.nbOutputElement();
   pure_local_ids_modifier.resize(nb_out);
   partial_indexes_modifier.resize(nb_out);
+
+  ++m_nb_transform_called;
+
+  // Normalement la liste retournée ne devrait pas être vide.
+  // Si c'est le cas, cela signifie que l'appel à cette méthode était inutile et que
+  // le calcul des constituants modifiés (via ConstituentConnectivityList::fillModifiedConstituents())
+  // était trop permissif.
+  if (nb_out == 0) {
+    if (is_pure_to_partial)
+      ++m_nb_useless_add_transform;
+    else
+      ++m_nb_useless_remove_transform;
+    if (m_is_print_useless_transform)
+      info() << "VarIndex null transformation modified_name=" << name()
+             << " is_add=" << is_pure_to_partial << " is_from_env=" << is_from_env;
+  }
 
   if (is_pure_to_partial)
     m_max_index_in_multiple_array += nb_out;
@@ -409,6 +429,22 @@ checkValid()
 
   // TODO: vérifier que les m_local_ids pour les parties pures correspondent
   // au m_matvar_indexes.valueIndex() correspondant.
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MeshMaterialVariableIndexer::
+dumpStats() const
+{
+  if (m_nb_transform_called == 0)
+    return;
+  Int32 nb_useless_call = m_nb_useless_add_transform + m_nb_useless_remove_transform;
+  Int32 nb_useful_call = m_nb_transform_called - nb_useless_call;
+  info() << "VariableIndexer name=" << name()
+         << " nb_useful_transform=" << nb_useful_call
+         << " nb_useless_add=" << m_nb_useless_add_transform
+         << " nb_useless_remove=" << m_nb_useless_remove_transform;
 }
 
 /*---------------------------------------------------------------------------*/

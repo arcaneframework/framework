@@ -76,11 +76,11 @@ class ARCANE_IMPL_EXPORT VariableSynchronizer
   void synchronize(IVariable* var) override;
 
   void synchronize(IVariable* var, Int32ConstArrayView local_ids) override;
-  
+
   void synchronize(VariableCollection vars) override;
 
   void synchronize(VariableCollection vars, Int32ConstArrayView local_ids) override;
-  
+
   Int32ConstArrayView communicatingRanks() override;
 
   Int32ConstArrayView sharedItems(Int32 index) override;
@@ -116,7 +116,8 @@ class ARCANE_IMPL_EXPORT VariableSynchronizer
   Ref<DataSynchronizeInfo> m_partial_sync_info;
   Ref<SyncMessage> m_partial_message;
   UniqueArray<Int32> m_partial_local_ids;
-  
+  bool m_is_check_coherence = false;
+
  private:
 
   void _synchronize(IVariable* var, SyncMessage* message);

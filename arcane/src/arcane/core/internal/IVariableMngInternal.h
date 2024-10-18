@@ -123,6 +123,15 @@ class ARCANE_CORE_EXPORT IVariableMngInternal
    */
   virtual void initializeVariables(bool is_continue) = 0;
 
+  /*!
+   * \brief Ajoute la variable à la liste des variables qui sont conservées
+   * jusqu'à la fin de l'exécution.
+   *
+   * La variable sera détruite par l'appel à l'opérateur operator delete()
+   * lors de l'appel à IVariableMng::removeAllVariables().
+   */
+  virtual void addAutoDestroyVariable(VariableRef* var) =0;
+
  public:
 
   //! Fonction interne temporaire pour récupérer le sous-domaine.

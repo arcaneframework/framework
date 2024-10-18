@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemFamilyCompactPolicy.h                                   (C) 2000-2016 */
+/* ItemFamilyCompactPolicy.h                                   (C) 2000-2024 */
 /*                                                                           */
 /* Politique de compactage des entités d'une famille.                        */
 /*---------------------------------------------------------------------------*/
@@ -17,15 +17,15 @@
 #include "arcane/utils/TraceAccessor.h"
 #include "arcane/utils/ArrayView.h"
 
-#include "arcane/IItemFamilyCompactPolicy.h"
+#include "arcane/core/IItemFamilyCompactPolicy.h"
 
 #include "arcane/mesh/ItemFamily.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-ARCANE_MESH_BEGIN_NAMESPACE
+namespace Arcane::mesh
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -45,8 +45,11 @@ class ARCANE_MESH_EXPORT ItemFamilyCompactPolicy
 , public IItemFamilyCompactPolicy
 {
  public:
-  ItemFamilyCompactPolicy(ItemFamily* family);
+
+  explicit ItemFamilyCompactPolicy(ItemFamily* family);
+
  public:
+
   void beginCompact(ItemFamilyCompactInfos& compact_infos) override;
   void compactVariablesAndGroups(const ItemFamilyCompactInfos& compact_infos) override;
   void endCompact(ItemFamilyCompactInfos& compact_infos) override;
@@ -56,17 +59,23 @@ class ARCANE_MESH_EXPORT ItemFamilyCompactPolicy
   }
   IItemFamily* family() const override;
   void compactConnectivityData() override;
+
  protected:
-  void _changeItem(Int32* items,Integer nb_item,Int32ConstArrayView old_to_new)
+
+  void _changeItem(Int32* items, Integer nb_item, Int32ConstArrayView old_to_new)
   {
-    for( Integer i=0; i<nb_item; ++i ){
+    for (Integer i = 0; i < nb_item; ++i) {
       Integer item_local_id = items[i];
       items[i] = old_to_new[item_local_id];
     }
   }
+
  protected:
+
   ItemFamily* _family() const { return m_family; }
+
  private:
+
   ItemFamily* m_family;
 };
 
@@ -79,10 +88,15 @@ class StandardItemFamilyCompactPolicy
 : public ItemFamilyCompactPolicy
 {
  public:
+
   StandardItemFamilyCompactPolicy(ItemFamily* family);
+
  public:
+
   void updateInternalReferences(IMeshCompacter* compacter) override;
+
  public:
+
   IItemFamily* m_node_family;
   IItemFamily* m_edge_family;
   IItemFamily* m_face_family;
@@ -92,8 +106,7 @@ class StandardItemFamilyCompactPolicy
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_MESH_END_NAMESPACE
-ARCANE_END_NAMESPACE
+} // namespace Arcane::mesh
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

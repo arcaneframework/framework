@@ -12,7 +12,7 @@ set_target_properties(arcanecea_tests_exec PROPERTIES RUNTIME_OUTPUT_DIRECTORY $
 if (WIN32)
   set_target_properties(arcanecea_tests_exec PROPERTIES SUFFIX ".exe")
 endif()
-  
+
 target_link_libraries(arcanecea_tests_exec PRIVATE ${ADD_NO_AS_NEEDED} arcane_tests_lib arcane_cea_tests)
 
 set(ARCANE_TEST_PATH ${CMAKE_BINARY_DIR}/src/arcane/tests)
@@ -54,6 +54,7 @@ if (Lima_FOUND AND ARCANE_ADDITIONAL_MESHES_PATH)
 endif()
 
 ARCANE_ADD_TEST_PARALLEL(splitsd1 testPartition-SplitSD.arc 4)
+arcane_add_test_parallel(splitsd1_legacy_partition_init testPartition-SplitSD.arc 4 "-We,ARCANE_USE_LEGACY_INIT_LOADBALANCEMNG,1")
 ARCANE_ADD_TEST_PARALLEL(loadbalance_splitsd1 testLoadBalanceHydro-SplitSD.arc 4 "-m 30")
 
 if (Parmetis_FOUND AND Lima_FOUND)
@@ -82,6 +83,7 @@ if (ARCANE_HAS_ACCELERATOR_API)
   ARCANE_ADD_TEST_PARALLEL(material2_opt3_syncv6 testMaterial-2-opt3.arc 4 -m 13 -We,ARCANE_MATSYNCHRONIZE_VERSION,6)
   ARCANE_ADD_TEST_PARALLEL(material2_opt3_syncv7 testMaterial-2-opt3.arc 4 -m 13 -We,ARCANE_MATSYNCHRONIZE_VERSION,7)
   ARCANE_ADD_TEST_PARALLEL(material2_opt3_syncv8 testMaterial-2-opt3.arc 4 -m 13 -We,ARCANE_MATSYNCHRONIZE_VERSION,8)
+  ARCANE_ADD_TEST_PARALLEL(material2_opt3_syncvacc testMaterial-2-opt3.arc 4 -m 13 -We,ARCANE_ACC_MAT_SYNCHRONIZER,1)
   ARCANE_ADD_TEST_CHECKPOINT_SEQUENTIAL(material_checkpoint testMaterial-checkpoint.arc 3 3)
   ARCANE_ADD_TEST_CHECKPOINT_SEQUENTIAL(material_checkpoint_recreate testMaterial-checkpoint-recreate.arc 3 3)
 
@@ -98,7 +100,9 @@ if (ARCANE_HAS_ACCELERATOR_API)
   arcane_add_accelerator_test_parallel(material_sync2_v6 testMaterial-sync-2.arc 4 -We,ARCANE_MATSYNCHRONIZE_VERSION,6)
   arcane_add_accelerator_test_parallel(material_sync2_v7 testMaterial-sync-2.arc 4 -We,ARCANE_MATSYNCHRONIZE_VERSION,7)
   arcane_add_accelerator_test_parallel(material_sync2_v8 testMaterial-sync-2.arc 4 -We,ARCANE_MATSYNCHRONIZE_VERSION,8)
+  arcane_add_accelerator_test_parallel(material_sync2_vacc testMaterial-sync-2.arc 4 -We,ARCANE_ACC_MAT_SYNCHRONIZER,1)
   arcane_add_accelerator_test_parallel_thread(material_sync2_v7 testMaterial-sync-2.arc 4 -We,ARCANE_MATSYNCHRONIZE_VERSION,7)
+  arcane_add_accelerator_test_parallel_thread(material_sync2_vacc testMaterial-sync-2.arc 4 -We,ARCANE_ACC_MAT_SYNCHRONIZER,1)
 
   ARCANE_ADD_TEST(material3 testMaterial-3.arc "-m 20")
   # NOTE Ajoute test optmisation uniquement en sequentiel car pour l'instant cela
@@ -247,6 +251,21 @@ arcane_add_test_parallel_thread(amr-cartesian3D-V1-coarse-2 testAMRCartesianMesh
 # Pas encore actif car ne fonctionne pas
 # arcane_add_test_parallel(amr-cartesian2D-V1-coarse-lb-1 testAMRCartesianMesh2D-V1-coarse-lb-1.arc 4 "-m 20")
 
+arcane_add_test(amr-cartesian2D-cell-coarse-zone-1 testAMRCartesianMesh2D-Cell-CoarseZone-1.arc "-m 20")
+arcane_add_test(amr-cartesian2D-cell-coarse-zone-2 testAMRCartesianMesh2D-Cell-CoarseZone-2.arc "-m 20")
+
+arcane_add_test_sequential(amr-cartesian3D-cell-coarse-zone-1 testAMRCartesianMesh3D-Cell-CoarseZone-1.arc "-m 20")
+arcane_add_test_parallel(amr-cartesian3D-cell-coarse-zone-1 testAMRCartesianMesh3D-Cell-CoarseZone-1.arc 8 "-m 20")
+
+arcane_add_test_sequential(amr-cartesian3D-cell-coarse-zone-2 testAMRCartesianMesh3D-Cell-CoarseZone-2.arc "-m 20")
+arcane_add_test_parallel(amr-cartesian3D-cell-coarse-zone-2 testAMRCartesianMesh3D-Cell-CoarseZone-2.arc 8 "-m 20")
+
+arcane_add_test_sequential(amr-cartesian3D-cell-coarse-zone-3 testAMRCartesianMesh3D-Cell-CoarseZone-3.arc "-m 20")
+arcane_add_test_parallel(amr-cartesian3D-cell-coarse-zone-3 testAMRCartesianMesh3D-Cell-CoarseZone-3.arc 8 "-m 20")
+
+arcane_add_test_sequential(amr-cartesian3D-cell-coarse-zone-4 testAMRCartesianMesh3D-Cell-CoarseZone-4.arc "-m 20")
+arcane_add_test_parallel(amr-cartesian3D-cell-coarse-zone-4 testAMRCartesianMesh3D-Cell-CoarseZone-4.arc 8 "-m 20")
+
 # Ce test prend du temps (environ 30 secondes) donc on ne l'active pas par défaut
 if (BIG_TEST)
   arcane_add_test_sequential(amr-cartesian3D-V1-coarse-3 testAMRCartesianMesh3D-V1-coarse-3.arc "-m 10")
@@ -390,7 +409,8 @@ foreach(test_index 1 2 3 4)
   endforeach()
 endforeach()
 if (ARCANE_HAS_ACCELERATOR_API)
-  arcane_add_test_sequential(material_heat2_opt15_2small testMaterialHeat-2-small-opt15.arc "-We,ARCANE_DEBUG_MATERIAL_MODIFIER,2")
+  arcane_add_test_sequential(material_heat2_opt15_2small testMaterialHeat-2-small-opt15.arc "-We,ARCANE_DEBUG_MATERIAL_MODIFIER,2" "-We,ARCANE_PRINT_USELESS_TRANSFORMATION,1")
+  arcane_add_test_sequential(material_heat2_opt15_2small_force_transform testMaterialHeat-2-small-opt15.arc "-We,ARCANE_MATERIAL_FORCE_TRANSFORM,1")
   arcane_add_test_sequential(material_heat2_accelerator
     "${ARCANE_TEST_PATH}/testMaterialHeat-2-opt15.arc"
     "-We,ARCANE_MATERIALMNG_ADDITIONAL_CAPACITY_RATIO,0.5"

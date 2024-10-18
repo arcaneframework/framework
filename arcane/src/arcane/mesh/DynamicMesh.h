@@ -103,8 +103,6 @@ class ARCANE_MESH_EXPORT DynamicMesh
  public:
 
   typedef ItemInternal* ItemInternalPtr;
-  typedef DynamicMeshKindInfos::ItemInternalMap ItemInternalMap;
-
   typedef List<IItemFamily*> ItemFamilyList;
 
   class InitialAllocator
@@ -262,6 +260,7 @@ class ARCANE_MESH_EXPORT DynamicMesh
   void flagCellToCoarsen(Int32ConstArrayView cells_lids) override;
   void refineItems() override;
   void coarsenItems() override;
+  void coarsenItemsV2() override;
   void compact() ;
   bool adapt() override;
   void registerCallBack(IAMRTransportFunctor* f) override;

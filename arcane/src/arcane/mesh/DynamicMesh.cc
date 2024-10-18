@@ -164,9 +164,8 @@ class DynamicMesh::InternalApi
 
   explicit InternalApi(DynamicMesh* mesh)
   : m_mesh(mesh)
-  {
-    m_connectivity_mng = std::make_unique<ItemConnectivityMng>(mesh->traceMng());
-  }
+  , m_connectivity_mng(std::make_unique<ItemConnectivityMng>(mesh->traceMng()))
+  {}
 
  public:
 
@@ -261,8 +260,8 @@ DynamicMesh(ISubDomain* sub_domain,const MeshBuildInfo& mbi, bool is_submesh)
   m_item_internal_list._internalSetFaceSharedInfo(m_face_family->commonItemSharedInfo());
   m_item_internal_list._internalSetCellSharedInfo(m_cell_family->commonItemSharedInfo());
 
-  info() << "Is AMR Activated? = " << m_is_amr_activated;
-  info() << "AMR type = " << m_amr_type;
+  info() << "Is AMR Activated? = " << m_is_amr_activated
+         << "AMR type = " << m_amr_type;
 
   _printConnectivityPolicy();
 
@@ -375,7 +374,8 @@ build()
 {
   Trace::Setter mci(traceMng(),_className());
 
-  info() << "Building DynamicMesh=" << this << " name=" << name();
+  info() << "Building DynamicMesh name=" << name()
+         << " ItemInternalMapImpl=" << ItemInternalMap::UseNewImpl;
 
   m_tied_interface_mng = new TiedInterfaceMng(this);
 
@@ -1353,6 +1353,22 @@ coarsenItems()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+void DynamicMesh::
+coarsenItemsV2()
+{
+  Trace::Setter mci(traceMng(), _className());
+  _checkDimension();
+  _checkConnectivity();
+  _checkAMR();
+  if (m_amr_type != eMeshAMRKind::Cell) {
+    ARCANE_FATAL("This method is not compatible with Cartesian Mesh Patch AMR");
+  }
+  m_mesh_refinement->coarsenItemsV2();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 bool DynamicMesh::
 adapt()
 {
@@ -2128,25 +2144,21 @@ void DynamicMesh::
 _removeGhostItems()
 {
   const Int32 sid = meshRank();
-  
-  // Suppression des liaisons
-  UniqueArray<ItemInternal*> links_to_remove;
-  links_to_remove.reserve(1000);
 
-  // Suppression des mailles
-  UniqueArray<ItemInternal*> cells_to_remove;
+  // Suppression des mailles fantômes.
+  // Il faut passer par un tableau intermédiaire, car supprimer
+  // des mailles invalide les itérateurs sur 'cells_map'.
+  UniqueArray<Int32> cells_to_remove;
   cells_to_remove.reserve(1000);
 
   ItemInternalMap& cells_map = m_cell_family->itemsMap();
-
-  cells_map.eachValue([&](ItemInternal* cell){
-      if (cell->owner() != sid)
-        cells_to_remove.add(cell);
-    });
+  cells_map.eachItem([&](Item cell) {
+    if (cell.owner() != sid)
+      cells_to_remove.add(cell.localId());
+  });
 
   info() << "Number of cells to remove: " << cells_to_remove.size();
-  for( Integer i=0, is=cells_to_remove.size(); i<is; ++i )
-    m_cell_family->removeCell(cells_to_remove[i]);
+  m_cell_family->removeCells(cells_to_remove);
 
   // Réajuste les groupes en supprimant les entités qui ne sont plus dans le maillage
   _updateGroupsAfterRemove();
@@ -2208,28 +2220,27 @@ _removeGhostChildItems()
   const Int32 sid = meshRank();
 
   // Suppression des mailles
-  UniqueArray<ItemInternal*> cells_to_remove;
+  UniqueArray<Int32> cells_to_remove;
   cells_to_remove.reserve(1000);
 
   ItemInternalMap& cells_map = m_cell_family->itemsMap();
   Integer max_level=0;
-  cells_map.eachValue([&](ItemInternal* cell){
-      if ((cell->owner() != sid) && (cell->level() != 0))
-        max_level= (cell->level() > max_level) ? cell->level() : max_level;
-    });
+  cells_map.eachItem([&](impl::ItemBase cell) {
+    if ((cell.owner() != sid) && (cell.level() != 0))
+      max_level = math::max(cell.level(),max_level);
+  });
 
   if (max_level==0)
     return;
 
-  cells_map.eachValue([&](ItemInternal* cell){
-      if ((cell->owner() != sid) && (cell->level() == max_level)){
-        cells_to_remove.add(cell);
-      }
-    });
+  cells_map.eachItem([&](impl::ItemBase cell) {
+    if ((cell.owner() != sid) && (cell.level() == max_level)) {
+      cells_to_remove.add(cell.localId());
+    }
+  });
 
   info() << "Number of cells to remove: " << cells_to_remove.size();
-  for( Integer i=0, is=cells_to_remove.size(); i<is; ++i )
-    m_cell_family->removeCell(cells_to_remove[i]);
+  m_cell_family->removeCells(cells_to_remove);
 
   // Réajuste les groupes en supprimant les entités qui ne sont plus dans le maillage
   _updateGroupsAfterRemove();
@@ -2251,18 +2262,17 @@ _removeGhostChildItems2(Array<Int64>& cells_to_coarsen)
 
   ItemInternalMap& cells_map = m_cell_family->itemsMap();
   Integer counter=0;
-  cells_map.eachValue([&](ItemInternal* icell){
-      Cell cell(icell);
-      if (cell.owner() != sid)
-        return;
-      if (icell->flags() & ItemFlags::II_JustCoarsened){
-        cells_to_coarsen.add(cell.uniqueId()) ;
-        for(Integer c=0,cs=cell.nbHChildren();c<cs;c++){
-          cells_to_remove.add(cell.hChild(c));
-          counter++;
-        }
+  cells_map.eachItem([&](Cell cell) {
+    if (cell.owner() != sid)
+      return;
+    if (cell.itemBase().flags() & ItemFlags::II_JustCoarsened) {
+      cells_to_coarsen.add(cell.uniqueId());
+      for (Integer c = 0, cs = cell.nbHChildren(); c < cs; c++) {
+        cells_to_remove.add(cell.hChild(c));
+        counter++;
       }
-    });
+    }
+  });
 
   if (counter==0)
     return;

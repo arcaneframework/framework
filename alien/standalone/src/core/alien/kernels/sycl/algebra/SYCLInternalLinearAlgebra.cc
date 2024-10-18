@@ -145,6 +145,14 @@ Real SYCLInternalLinearAlgebra::norm2(const SYCLVector<Real>& vx) const
   return std::sqrt(m_internal->dot(vx.internal()->values(), vx.internal()->values()));
 }
 
+Real SYCLInternalLinearAlgebra::normInf(const SYCLVector<Real>& vx) const
+{
+#ifdef ALIEN_USE_PERF_TIMER
+  SentryType s(m_timer, "SYCL-NORMINF");
+#endif
+  throw NotImplementedException(
+  A_FUNCINFO, "SYCLLinearAlgebra::normInf not implemented");
+}
 /*---------------------------------------------------------------------------*/
 
 void SYCLInternalLinearAlgebra::mult(const SYCLBEllPackMatrix<Real>& ma,
@@ -344,6 +352,14 @@ Real SYCLInternalLinearAlgebraExpr::norm2(const SYCLVector<Real>& vx) const
   return std::sqrt(m_internal->dot(vx.internal()->values(), vx.internal()->values()));
 }
 
+Real SYCLInternalLinearAlgebraExpr::normInf(const SYCLVector<Real>& vx) const
+{
+#ifdef ALIEN_USE_PERF_TIMER
+  SentryType s(m_timer, "SYCL-NORMINF");
+#endif
+  throw NotImplementedException(
+  A_FUNCINFO, "SYCLLinearAlgebra::normInf not implemented");
+}
 /*---------------------------------------------------------------------------*/
 
 void SYCLInternalLinearAlgebraExpr::mult(

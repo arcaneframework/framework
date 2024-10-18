@@ -30,6 +30,7 @@
 #include <arccore/base/NotImplementedException.h>
 #include <arccore/collections/Array2.h>
 #include <arccore/message_passing_mpi/MpiMessagePassingMng.h>
+#include <arccore/message_passing/Communicator.h>
 #include <arccore/trace/ITraceMng.h>
 
 #include <fstream>
@@ -68,18 +69,12 @@ class AsciiDumper::Internal
       throw Arccore::FatalErrorException("dist parallel mng ptr is nullptr");
     std::cout << dist.isParallel() << std::endl;
     std::cout << dist.parallelMng() << std::endl;
-    auto* parallel_mng =
-        dynamic_cast<Arccore::MessagePassing::Mpi::MpiMessagePassingMng*>(
-            dist.parallelMng());
-    if (parallel_mng == nullptr)
-      throw Arccore::FatalErrorException(
-          "parallel mng ptr is nullptr : not a MpiMessagePassingMng impl");
-    const MPI_Comm* arcane_mpi_comm = parallel_mng->getMPIComm();
-    if (arcane_mpi_comm == 0) {
+    auto arcane_mpi_comm = dist.parallelMng()->communicator();
+    if (arcane_mpi_comm.isValid()) {
+      PetscViewerASCIIOpen(arcane_mpi_comm, filename.localstr(), &viewer);
+    }
+    else {
       PetscViewerASCIIOpen(PETSC_COMM_SELF, filename.localstr(), &viewer);
-    } else {
-      const MPI_Comm* comm = arcane_mpi_comm;
-      PetscViewerASCIIOpen(*comm, filename.localstr(), &viewer);
     }
     _pushFormat(viewer, style);
   }

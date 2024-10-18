@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MessagePassingMng.h                                         (C) 2000-2022 */
+/* MessagePassingMng.h                                         (C) 2000-2024 */
 /*                                                                           */
 /* Gestionnaire des échanges de messages.                                    */
 /*---------------------------------------------------------------------------*/
@@ -17,6 +17,7 @@
 #include "arccore/base/ReferenceCounterImpl.h"
 
 #include "arccore/message_passing/IMessagePassingMng.h"
+#include "arccore/message_passing/Communicator.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -50,7 +51,12 @@ class ARCCORE_MESSAGEPASSING_EXPORT MessagePassingMng
   Int32 commSize() const override { return m_comm_size; }
   IDispatchers* dispatchers() override;
   ITimeMetricCollector* timeMetricCollector() const override;
+  Communicator communicator() const override;
+
+ public:
+
   void setTimeMetricCollector(ITimeMetricCollector* c);
+  void setCommunicator(Communicator c);
 
  private:
 
@@ -58,6 +64,7 @@ class ARCCORE_MESSAGEPASSING_EXPORT MessagePassingMng
   Int32 m_comm_size;
   IDispatchers* m_dispatchers = nullptr;
   ITimeMetricCollector* m_time_metric_collector = nullptr;
+  Communicator m_communicator;
 };
 
 /*---------------------------------------------------------------------------*/

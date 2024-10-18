@@ -1,0 +1,22 @@
+<?xml version="1.0" ?><!-- -*- SGML -*- -->
+<service name="ArcaneBasicMeshSubdividerService" parent-name="AbstractService" type="caseoption">
+  <userclass>User</userclass>
+  <description>
+    Service %Arcane permettant de subdiviser les entités d'un maillage.
+  </description>
+    
+  <interface name="Arcane::IMeshSubdivider" />
+
+  <options>
+    <simple name="nb-subdivision"
+            type="int32"
+            >
+      <userclass>User</userclass>
+      <description>
+        Nom de subdivision à effectuer.
+      </description>
+    </simple>
+
+  </options>
+
+</service>

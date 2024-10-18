@@ -643,65 +643,80 @@ TEST(Array, Misc3)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-TEST(Array, Misc4)
+template<typename ArrayType>
+class AllocatorTest
 {
-  using namespace Arccore;
-
-  IMemoryAllocator* allocator1 = AlignedMemoryAllocator::Simd();
-  PrintableMemoryAllocator printable_allocator2;
-  IMemoryAllocator* allocator2 = &printable_allocator2;
-
+ public:
+  static void doTestBase()
   {
-    std::cout << "Array a\n";
-    UniqueArray<Int32> a(allocator1);
-    ASSERT_EQ(a.allocator(),allocator1);
-    a.add(27);
-    a.add(38);
-    a.add(13);
-    a.add(-5);
+    using namespace Arccore;
 
-    std::cout << "Array b\n";
-    UniqueArray<Int32> b(allocator2);
-    ASSERT_EQ(b.capacity(),0);
-    ASSERT_EQ(b.size(),0);
-    ASSERT_EQ(b.allocator(),allocator2);
+    IMemoryAllocator* allocator1 = AlignedMemoryAllocator::Simd();
+    PrintableMemoryAllocator printable_allocator2;
+    IMemoryAllocator* allocator2 = &printable_allocator2;
 
-    b = a;
-    ASSERT_EQ(b.size(),a.size());
-    ASSERT_EQ(b.allocator(),a.allocator());
+    {
+      std::cout << "Array a\n";
+      ArrayType a(allocator1);
+      ASSERT_EQ(a.allocator(),allocator1);
+      a.add(27);
+      a.add(38);
+      a.add(13);
+      a.add(-5);
 
-    std::cout << "Array c\n";
-    UniqueArray<Int32> c(a.clone());
-    ASSERT_EQ(c.allocator(),a.allocator());
-    ASSERT_EQ(c.size(),a.size());
-    ASSERT_EQ(c.constSpan(),a.constSpan());
+      std::cout << "Array b\n";
+      ArrayType b(allocator2);
+      ASSERT_EQ(b.capacity(),0);
+      ASSERT_EQ(b.size(),0);
+      ASSERT_EQ(b.allocator(),allocator2);
 
-    std::cout << "Array d\n";
-    UniqueArray<Int32> d(allocator2,a);
-    ASSERT_EQ(d.allocator(),allocator2);
-    ASSERT_EQ(d.size(),a.size());
-    ASSERT_EQ(d.constSpan(),a.constSpan());
+      b = a;
+      ASSERT_EQ(b.size(),a.size());
+      ASSERT_EQ(b.allocator(),a.allocator());
 
-    std::cout << "Array e\n";
-    UniqueArray<Int32> e(allocator2,25);
-    ASSERT_EQ(e.allocator(),allocator2);
-    ASSERT_EQ(e.size(),25);
+      std::cout << "Array c\n";
+      ArrayType c(a.clone());
+      ASSERT_EQ(c.allocator(),a.allocator());
+      ASSERT_EQ(c.size(),a.size());
+      ASSERT_EQ(c.constSpan(),a.constSpan());
 
-    UniqueArray<Int32> f(allocator2);
-    f = e;
-    ASSERT_EQ(f.allocator(),e.allocator());
-    ASSERT_EQ(f.size(),e.size());
+      std::cout << "Array d\n";
+      ArrayType d(allocator2,a);
+      ASSERT_EQ(d.allocator(),allocator2);
+      ASSERT_EQ(d.size(),a.size());
+      ASSERT_EQ(d.constSpan(),a.constSpan());
 
-    f = f;
-    ASSERT_EQ(f.allocator(),e.allocator());
-    ASSERT_EQ(f.size(),e.size());
+      std::cout << "Array e\n";
+      ArrayType e(allocator2,25);
+      ASSERT_EQ(e.allocator(),allocator2);
+      ASSERT_EQ(e.size(),25);
+
+      ArrayType f(allocator2);
+      f = e;
+      ASSERT_EQ(f.allocator(),e.allocator());
+      ASSERT_EQ(f.size(),e.size());
+
+      f = f;
+      ASSERT_EQ(f.allocator(),e.allocator());
+      ASSERT_EQ(f.size(),e.size());
+    }
   }
+};
+
+TEST(UniqueArray, AllocatorBase)
+{
+  AllocatorTest<UniqueArray<Int32>>::doTestBase();
+}
+
+TEST(SharedArray, AllocatorBase)
+{
+  AllocatorTest<SharedArray<Int32>>::doTestBase();
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-TEST(Array, Allocator)
+TEST(UniqueArray, Allocator)
 {
   using namespace Arccore;
   std::cout << "Sizeof(MemoryAllocationOptions)=" << sizeof(MemoryAllocationOptions) << "\n";
@@ -760,6 +775,74 @@ TEST(Array, Allocator)
     IMemoryAllocator* allocator3 = allocator1;
     for( Integer i=0; i<2; ++i ){
       array[i] = UniqueArray<Int32>(allocator3);
+    }
+    ASSERT_EQ(array[0].allocator(), allocator3);
+    ASSERT_EQ(array[1].allocator(), allocator3);
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+TEST(SharedArray, Allocator)
+{
+  using namespace Arccore;
+  std::cout << "Sizeof(MemoryAllocationOptions)=" << sizeof(MemoryAllocationOptions) << "\n";
+  std::cout << "Sizeof(ArrayMetaData)=" << sizeof(ArrayMetaData) << "\n";
+  std::cout << "Sizeof(UniqueArray<Int32>)=" << sizeof(UniqueArray<Int32>) << "\n";
+  std::cout << "Sizeof(SharedArray<Int32>)=" << sizeof(SharedArray<Int32>) << "\n";
+
+  PrintableMemoryAllocator printable_allocator;
+  PrintableMemoryAllocator printable_allocator2;
+  IMemoryAllocator* allocator1 = AlignedMemoryAllocator3::Simd();
+  IMemoryAllocator* allocator2 = AlignedMemoryAllocator::Simd();
+  {
+    std::cout << "Array a1\n";
+    SharedArray<Int32> a1(allocator2);
+    ASSERT_EQ(a1.allocator(), allocator2);
+    ASSERT_EQ(a1.size(), 0);
+    ASSERT_EQ(a1.capacity(), 0);
+    ASSERT_EQ(a1.data(), nullptr);
+
+    std::cout << "Array a2\n";
+    SharedArray<Int32> a2(a1);
+    ASSERT_EQ(a1.allocator(), a2.allocator());
+    ASSERT_EQ(a2.capacity(), 0);
+    ASSERT_EQ(a2.data(), nullptr);
+    a1.reserve(3);
+    a1.add(5);
+    a1.add(7);
+    a1.add(12);
+    a1.add(3);
+    a1.add(1);
+    ASSERT_EQ(a1.size(), 5);
+
+    std::cout << "Array a3\n";
+    SharedArray<Int32> a3(allocator1);
+    a3.add(4);
+    a3.add(6);
+    a3.add(2);
+    ASSERT_EQ(a3.size(), 3);
+    a3 = a1;
+    ASSERT_EQ(a3.allocator(), a1.allocator());
+    ASSERT_EQ(a3.size(), a1.size());
+    ASSERT_EQ(a3.constSpan(), a1.constSpan());
+
+    std::cout << "Array a4\n";
+    SharedArray<Int32> a4(allocator1);
+    a4.add(4);
+    a4.add(6);
+    a4.add(2);
+    ASSERT_EQ(a4.size(), 3);
+    a4 = a1.span();
+    ASSERT_EQ(a4.allocator(), allocator1);
+
+    a4 = SharedArray<Int32>(&printable_allocator2);
+
+    SharedArray<Int32> array[2];
+    IMemoryAllocator* allocator3 = allocator1;
+    for( Integer i=0; i<2; ++i ){
+      array[i] = SharedArray<Int32>(allocator3);
     }
     ASSERT_EQ(array[0].allocator(), allocator3);
     ASSERT_EQ(array[1].allocator(), allocator3);

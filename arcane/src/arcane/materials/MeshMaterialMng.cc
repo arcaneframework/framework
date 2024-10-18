@@ -140,6 +140,7 @@ MeshMaterialMng(const MeshHandle& mesh_handle,const String& name)
   String s = platform::getEnvironmentVariable("ARCANE_ALLENVCELL_FOR_RUNCOMMAND");
   if (!s.null())
     m_is_allcell_2_allenvcell = true;
+  m_mms = new MeshMaterialSynchronizer(this);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -149,10 +150,9 @@ MeshMaterialMng::
 ~MeshMaterialMng()
 {
   //std::cout << "DESTROY MESH MATERIAL MNG this=" << this << '\n';
-  IEnumeratorTracer* tracer = IEnumeratorTracer::singleton();
-  if (tracer)
-    tracer->dumpStats();
+  _dumpStats();
 
+  delete m_mms;
   delete m_variable_factory_mng;
   m_exchange_mng.reset();
   m_all_cells_env_only_synchronizer.reset();
@@ -168,20 +168,16 @@ MeshMaterialMng::
     delete e;
   m_true_environments.clear();
 
-  for( IMeshBlock* b : m_true_blocks )
+  for (IMeshBlock* b : m_true_blocks)
     delete b;
 
-  for( MeshMaterialInfo* mmi : m_materials_info )
+  for (MeshMaterialInfo* mmi : m_materials_info)
     delete mmi;
 
-  for( MeshMaterialVariableIndexer* mvi : m_variables_indexer_to_destroy )
+  for (MeshMaterialVariableIndexer* mvi : m_variables_indexer_to_destroy)
     delete mvi;
 
-  if (m_modifier){
-    m_modifier->dumpStats();
-    m_modifier.reset();
-  }
-
+  m_modifier.reset();
   m_internal_api.reset();
 
   if (m_allcell_2_allenvcell)
@@ -958,8 +954,7 @@ dumpInfos2(std::ostream& o)
 bool MeshMaterialMng::
 synchronizeMaterialsInCells()
 {
-  MeshMaterialSynchronizer mms(this);
-  return mms.synchronizeMaterialsInCells();
+  return m_mms->synchronizeMaterialsInCells();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -968,8 +963,7 @@ synchronizeMaterialsInCells()
 void MeshMaterialMng::
 checkMaterialsInCells(Integer max_print)
 {
-  MeshMaterialSynchronizer mms(this);
-  mms.checkMaterialsInCells(max_print);
+  m_mms->checkMaterialsInCells(max_print);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1051,7 +1045,7 @@ getTrueReference(const MeshHandle& mesh_handle,bool is_create)
 {
   //TODO: faire lock pour multi-thread
   typedef AutoDestroyUserData<Ref<IMeshMaterialMng>> UserDataType;
-  
+
   const char* name = "MeshMaterialMng_StdMat";
   IUserDataList* udlist = mesh_handle.meshUserDataList();
 
@@ -1227,7 +1221,7 @@ recreateFromDump()
     }
     this->createBlock(mbbi);
   }
-  
+
   endCreate(true);
 }
 
@@ -1288,6 +1282,31 @@ componentItemSharedInfo(Int32 level) const
     ARCANE_FATAL("Bad internal type of component");
 
   return shared_info;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MeshMaterialMng::
+_dumpStats()
+{
+  IEnumeratorTracer* tracer = IEnumeratorTracer::singleton();
+  if (tracer)
+    tracer->dumpStats();
+
+  if (m_modifier)
+    m_modifier->dumpStats();
+
+  for (IMeshEnvironment* env : m_environments) {
+    // N'affiche pas les statistiques si le milieu n'a qu'un seul matériau
+    // car il utilise le même indexeur que la matériau et les statistiques
+    // pour ce dernier seront affichées lors du parcours des matériaux.
+    if (env->nbMaterial() > 1)
+      env->_internalApi()->variableIndexer()->dumpStats();
+  }
+  for (IMeshMaterial* mat : m_materials) {
+    mat->_internalApi()->variableIndexer()->dumpStats();
+  }
 }
 
 /*---------------------------------------------------------------------------*/

@@ -7,17 +7,17 @@
 /*---------------------------------------------------------------------------*/
 /* DoFFamily.h                                                 (C) 2000-2024 */
 /*                                                                           */
-/* Famille de degres de liberte (DoF)                                        */
+/* Famille de degrés de liberté (DoF)                                        */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MESH_DOFFAMILY_H
 #define ARCANE_MESH_DOFFAMILY_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/ItemTypes.h"
-#include "arcane/IMesh.h"
-#include "arcane/IParallelMng.h"
-#include "arcane/IDoFFamily.h"
+#include "arcane/core/ItemTypes.h"
+#include "arcane/core/IMesh.h"
+#include "arcane/core/IParallelMng.h"
+#include "arcane/core/IDoFFamily.h"
 
 #include "arcane/mesh/ItemFamily.h"
 
@@ -34,7 +34,7 @@ class DynamicMesh;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class DoFUids
+class ARCANE_MESH_EXPORT DoFUids
 {
   /*!
    * Utilitaire d'obtention d'identifiant unique. Version triviale pour experimentation.
@@ -54,20 +54,7 @@ class DoFUids
   } // very temporary solution...
 
   // utilities
-  static Int64 getMaxItemUid(IItemFamily* family)
-  {
-    Int64 max_uid = 0;
-    // This method can be used within IItemFamily::endUpdate when new items have been created but the groups are not yet updated.
-    // Therefore we use internal map enumeration instead of group enumeration
-    ItemFamily* item_family = static_cast<ItemFamily*>(family);
-    ENUMERATE_ITEM_INTERNAL_MAP_DATA(item, item_family->itemsMap())
-    {
-      if (max_uid < item->value()->uniqueId().asInt64())
-        max_uid = item->value()->uniqueId().asInt64();
-    }
-    Int64 pmax_uid = family->mesh()->parallelMng()->reduce(Parallel::ReduceMax, max_uid);
-    return pmax_uid;
-  }
+  static Int64 getMaxItemUid(IItemFamily* family);
 };
 
 /*---------------------------------------------------------------------------*/

@@ -603,6 +603,7 @@ initialize()
   m_trace->info() << "** -- ** -- ** -- ** -- ** -- ** -- ** -- ** -- ** -- **";
   m_trace->info() << "** -- ** -- ** -- ** -- ** -- ** -- ** -- ** -- ** -- **";
   m_trace->info() << "Date: " << platform::getCurrentDateTime();
+  m_trace->info() << "MemoryUsage: " << static_cast<Int64>(platform::getMemoryUsed() / 1.0e6) << " (MegaBytes)";
   m_trace->info() << "ArccoreVersion: " << ARCCORE_VERSION_STR_FULL;
   m_trace->info() << "ArcaneVersion: " << ARCANE_VERSION_STR_FULL
                   << " (Compiler: " << platform::getCompilerId() << ")";

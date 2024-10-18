@@ -1,23 +1,27 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MetisGraphDigest.h                                          (C) 2000-2019 */
+/* MetisGraphDigest.h                                          (C) 2000-2024 */
 /*                                                                           */
 /* Calcule une somme de contrôle globale des entrées/sorties Metis.          */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_STD_METISGRAPHDIGEST
-#define ARCANE_STD_METISGRAPHDIGEST
+#ifndef ARCANE_STD_INTERNAL_METISGRAPHDIGEST
+#define ARCANE_STD_INTERNAL_METISGRAPHDIGEST
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include <string>
-#include <mpi.h>
 #include "arcane/utils/String.h"
-#include "arcane/std/MetisGraph.h"
+#include "arcane/utils/TraceAccessor.h"
+
+#include "arcane/core/ArcaneTypes.h"
+
+#include "arcane/std/internal/MetisGraph.h"
+
+#include <string>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -31,34 +35,51 @@ namespace Arcane
  * \brief Calcule une somme de contrôle globale des entrées/sorties Metis.
  */
 class MetisGraphDigest
+: public TraceAccessor
 {
  public:
-  /**
+
+  explicit MetisGraphDigest(IParallelMng* pm);
+
+ public:
+
+  /*!
    * Calcule une somme de controle "globale" des entrees de Metis et la retourne
    * seulement pour le processeur de rang 0 dans le communicateur comm. Pour les
    * autres processeurs, la chaine retournee est vide. La somme de controle est
    * globale dans le sens ou tous les processeurs participent a sa construction.
    */
-  String computeInputDigest(MPI_Comm comm, const bool need_part, const int nb_options,
+  String computeInputDigest(const bool need_part, const int nb_options,
                             const MetisGraphView& my_graph, const idx_t* vtxdist, const idx_t* wgtflag,
                             const idx_t* numflag, const idx_t* ncon, const idx_t* nparts,
                             const real_t* tpwgts, const real_t* ubvec, const real_t* ipc2redist,
                             const idx_t* options);
 
-  /**
+  /*!
    * Calcule une somme de controle "globale" des sorties de Metis et la retourne
    * seulement pour le processeur de rang 0 dans le communicateur comm. Pour les
    * autres processeurs, la chaine retournee est vide. La somme de controle est
    * globale dans le sens ou tous les processeurs participent a sa construction.
    */
-  String computeOutputDigest(MPI_Comm comm, const MetisGraphView& my_graph,
-                             const idx_t* edgecut);
+  String computeOutputDigest(const MetisGraphView& my_graph, const idx_t* edgecut);
+
+ private:
+
+  IParallelMng* m_parallel_mng = nullptr;
+  Int32 m_my_rank = A_NULL_RANK;
+  Int32 m_nb_rank = 0;
+
+ private:
+
+  void _computeHash(Span<const idx_t> data, ByteArray& output, const char* name);
+  void _computeHash(Span<const real_t> data, ByteArray& output, const char* name);
+  String _digestString(ConstArrayView<Byte> my_digest);
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arcane
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

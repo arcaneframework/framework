@@ -1,5 +1,12 @@
+﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
+//-----------------------------------------------------------------------------
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// See the top-level COPYRIGHT file for details.
+// SPDX-License-Identifier: Apache-2.0
+//-----------------------------------------------------------------------------
 #pragma once
 
+#include <alien/AlienExternalPackagesPrecomp.h>
 #include <alien/core/impl/IVectorImpl.h>
 #include <alien/distribution/VectorDistribution.h>
 
@@ -7,6 +14,8 @@
 /*---------------------------------------------------------------------------*/
 
 class SimpleCSR_to_Hypre_VectorConverter;
+class HCSR_to_Hypre_VectorConverter;
+class SYCL_to_Hypre_VectorConverter;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -36,17 +45,26 @@ namespace Internal {
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class HypreVector : public IVectorImpl
+class ALIEN_EXTERNAL_PACKAGES_EXPORT HypreVector : public IVectorImpl
 {
  public:
   friend class ::SimpleCSR_to_Hypre_VectorConverter;
+  friend class ::HCSR_to_Hypre_VectorConverter;
+  friend class ::SYCL_to_Hypre_VectorConverter;
 
   typedef Internal::VectorInternal VectorInternal;
+
+  typedef Integer IndexType ;
+  typedef double  ValueType ;
 
  public:
   HypreVector(const MultiVectorImpl* multi_impl);
 
   virtual ~HypreVector();
+
+  BackEnd::Memory::eType getMemoryType() const ;
+
+  BackEnd::Exec::eSpaceType getExecSpace() const ;
 
  public:
   void init(const VectorDistribution& dist, const bool need_allocate);

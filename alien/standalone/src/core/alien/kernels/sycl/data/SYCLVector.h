@@ -52,30 +52,27 @@ template <typename ValueT>
 class ALIEN_EXPORT SYCLVector : public IVectorImpl
 {
  public:
-  typedef ValueT ValueType;
+  typedef ValueT  ValueType;
+  typedef Integer IndexType;
 
   typedef SYCLInternal::VectorInternal<ValueType> VectorInternal;
 
   //! Constructeur sans association un MultiImpl
-  SYCLVector()
-  : IVectorImpl(nullptr, AlgebraTraits<BackEnd::tag::sycl>::name())
-  {}
+  SYCLVector() ;
 
   //! Constructeur avec association ? un MultiImpl
-  SYCLVector(const MultiVectorImpl* multi_impl)
-  : IVectorImpl(multi_impl, AlgebraTraits<BackEnd::tag::sycl>::name())
-  {}
+  SYCLVector(const MultiVectorImpl* multi_impl) ;
 
-  virtual ~SYCLVector();
+  //virtual ~SYCLVector();
 
   VectorInternal* internal()
   {
-    return m_internal;
+    return m_internal.get();
   }
 
   VectorInternal const* internal() const
   {
-    return m_internal;
+    return m_internal.get();
   }
 
   Integer getAllocSize() const
@@ -146,6 +143,22 @@ class ALIEN_EXPORT SYCLVector : public IVectorImpl
   ValueType const* data() const { return m_h_values.data(); }
   ValueType const* getAddressData() const { return m_h_values.data(); }
 
+  void initDevicePointers(int** rows, ValueType** values) const ;
+
+  static void allocateDevicePointers(std::size_t local_size,
+                                     int** rows,
+                                     ValueType** values);
+  static void freeDevicePointers(int* rows, ValueType* values);
+
+  static void initDevicePointers(std::size_t local_size,
+                                 ValueType const* host_values,
+                                 int** rows,
+                                 ValueType** values) ;
+
+  static void copyDeviceToHost(std::size_t local_size,
+                               ValueType const* device_values,
+                               ValueType* host_values) ;
+
   template <typename LambdaT>
   void apply(LambdaT const& lambda)
   {
@@ -167,10 +180,11 @@ class ALIEN_EXPORT SYCLVector : public IVectorImpl
 
  private:
   // clang-format off
-  mutable VectorInternal*        m_internal = nullptr;
-  mutable std::vector<ValueType> m_h_values ;
-  std::size_t                    m_local_size = 0;
-  VectorDistribution             m_own_distribution ;
+  //mutable VectorInternal*        m_internal = nullptr;
+  mutable std::unique_ptr<VectorInternal> m_internal ;
+  mutable std::vector<ValueType>          m_h_values ;
+  std::size_t                             m_local_size = 0;
+  VectorDistribution                      m_own_distribution ;
   // clang-format on
 };
 

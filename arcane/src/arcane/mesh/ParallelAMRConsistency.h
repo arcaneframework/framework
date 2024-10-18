@@ -1,18 +1,18 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
-/*
- * ParallelAMRConsistency.h
- *
- *  Created on: Dec 22, 2010
- *      Author: mesriy
- */
-
-#ifndef PARALLELAMRCONSISTENCY_H_
-#define PARALLELAMRCONSISTENCY_H_
+/*---------------------------------------------------------------------------*/
+/* ParallelAMRConsistency.h                                    (C) 2000-2024 */
+/*                                                                           */
+/* Gestion de la consistance de l'AMR en parallèle.                          */
+/*---------------------------------------------------------------------------*/
+#ifndef ARCANE_MESH_PARALLELAMRCONSISTENCY_H
+#define ARCANE_MESH_PARALLELAMRCONSISTENCY_H
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/String.h"
 #include "arcane/utils/HashTableMap.h"
@@ -229,11 +229,8 @@ class FaceInfo2
 class ParallelAMRConsistency
 : public TraceAccessor
 {
-public:
-  //! Type la table de hashage uniqueId()->ItemInternal*
-  typedef DynamicMeshKindInfos::ItemInternalMap ItemInternalMap;
-  typedef ItemInternalMap::Data ItemInternalMapData;
-public:
+ public:
+
   typedef HashTableMapT<ItemUniqueId, NodeInfo> NodeInfoList;
   typedef HashTableMapT<ItemUniqueId, FaceInfo> FaceInfoMap;
   typedef HashTableMapT<ItemUniqueId, FaceInfo2> FaceInfoMap2;

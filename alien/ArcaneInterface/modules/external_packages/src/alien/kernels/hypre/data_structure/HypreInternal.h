@@ -1,3 +1,9 @@
+﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
+//-----------------------------------------------------------------------------
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// See the top-level COPYRIGHT file for details.
+// SPDX-License-Identifier: Apache-2.0
+//-----------------------------------------------------------------------------
 #pragma once
 
 #define MPICH_SKIP_MPICXX 1
@@ -18,6 +24,7 @@
 
 #include <alien/utils/Precomp.h>
 
+#include <alien/core/backend/BackEnd.h>
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -29,9 +36,13 @@ namespace Alien::Internal {
 class MatrixInternal
 {
  public:
-  MatrixInternal(const MPI_Comm comm)
+  MatrixInternal(const MPI_Comm comm,
+                 Alien::BackEnd::Memory::eType memory_type,
+                 Alien::BackEnd::Exec::eSpaceType exec_space)
   : m_internal(nullptr)
   , m_comm(comm)
+  , m_memory_type(memory_type)
+  , m_exec_space(exec_space)
   {
   }
 
@@ -53,9 +64,19 @@ class MatrixInternal
 
   bool assemble();
 
+  BackEnd::Memory::eType getMemoryType() const {
+    return m_memory_type ;
+  }
+
+  BackEnd::Exec::eSpaceType getExecSpace() const {
+    return m_exec_space  ;
+  }
+
  private:
   matrix_type m_internal;
   MPI_Comm m_comm;
+  Alien::BackEnd::Memory::eType m_memory_type = BackEnd::Memory::Host ;
+  Alien::BackEnd::Exec::eSpaceType m_exec_space = BackEnd::Exec::Host ;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -63,9 +84,13 @@ class MatrixInternal
 class VectorInternal
 {
  public:
-  VectorInternal(const MPI_Comm comm)
+  VectorInternal(const MPI_Comm comm,
+                 BackEnd::Memory::eType memory_type,
+                 BackEnd::Exec::eSpaceType exec_space)
   : m_internal(nullptr)
   , m_comm(comm)
+  , m_memory_type(memory_type)
+  , m_exec_space(exec_space)
   {
   }
 
@@ -88,9 +113,18 @@ class VectorInternal
 
   bool getValues(const int nrow, const int* rows, Arccore::Real* values);
 
+  BackEnd::Memory::eType getMemoryType() const {
+    return m_memory_type ;
+  }
+
+  BackEnd::Exec::eSpaceType getExecSpace() const {
+    return m_exec_space  ;
+  }
  private:
   vector_type m_internal;
   MPI_Comm m_comm;
+  BackEnd::Memory::eType m_memory_type = BackEnd::Memory::Host ;
+  BackEnd::Exec::eSpaceType m_exec_space = BackEnd::Exec::Host ;
 };
 
 /*---------------------------------------------------------------------------*/

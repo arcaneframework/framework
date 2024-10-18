@@ -347,6 +347,8 @@ ARCANE_END_NAMESPACE
  <#+ }
      foreach(var e in opt.Simple.Where(p => p.IsSingle)) { #>
    <#= e.type.QualifiedReturnName (true) #> get<#= e.Name.ToClassName () #>() { return <#= e.Name.ToFuncName () #>(); }
+   Arcane::ICaseFunction* get<#= e.Name.ToClassName () #>Function() { return <#= e.Name.ToFuncName () #>.function(); }
+   Arcane::IStandardFunction* get<#= e.Name.ToClassName () #>StandardFunction() { return <#= e.Name.ToFuncName () #>.standardFunction(); }
  <#+ } #>
 
  <#+ foreach(var e in opt.Extended.Where(p => p.IsMulti)) { #>

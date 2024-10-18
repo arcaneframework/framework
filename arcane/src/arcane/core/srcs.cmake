@@ -118,6 +118,7 @@ set(ARCANE_ORIGINAL_SOURCES
   IMeshInitialAllocator.h
   IMeshModifier.h
   IMeshReader.h
+  IMeshSubdivider.h
   IMeshUtilities.h
   IModule.h
   IModuleFactory.h
@@ -511,6 +512,7 @@ set(ARCANE_ORIGINAL_SOURCES
   MeshToMeshTransposer.cc
   MeshToMeshTransposer.h
   MeshUtils.cc
+  MeshUtils2.cc
   MeshUtils.h
   MeshVariable.h
   MeshVariableArrayRef.h

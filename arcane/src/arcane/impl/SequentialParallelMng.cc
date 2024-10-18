@@ -655,6 +655,7 @@ SequentialParallelMng(const SequentialParallelMngBuildInfo& bi)
   if (!m_world_parallel_mng)
     m_world_parallel_mng = this;
   m_stat = Parallel::createDefaultStat();
+  _messagePassingMng()->setCommunicator(m_communicator);
 }
 
 /*---------------------------------------------------------------------------*/

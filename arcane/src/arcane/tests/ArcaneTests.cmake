@@ -144,6 +144,8 @@ macro(arcane_add_test_parallel_thread test_name case_file nb_proc)
   endif()
 endmacro()
 
+
+# ----------------------------------------------------------------------------
 # Ajoute un test message_passing en mode hybride (MPI+SHM).
 # Le test n'est ajouté que si le mode hybride est disponible.
 #
@@ -195,6 +197,75 @@ function(arcane_add_test_message_passing_hybrid test_name)
     set_tests_properties(${_arcane_test_name} PROPERTIES LABELS LARGE_HYBRID)
   endif()
 endfunction()
+
+
+# ----------------------------------------------------------------------------
+# Fonction générique pour ajouter un test pour un ou plusieurs modes d'échange
+# de message. Les tests ne sont ajoutés que si le mode d'échange de message
+# concerné est disponible.
+#
+# Usage:
+#
+# arcane_add_test_message_generic(test_name
+#    [CASE_FILE case_file]
+#    [NB_MPI nb_mpi]
+#    [NB_SHM nb_shm]
+#    [ARGS args]
+#    [MP_SEQUENTIAL]
+#    [MP_SHM]
+#    [MP_MPI]
+#    [MP_HYBRID]
+#
+# Si une des valeurs MP_SEQUENTIAL, MP_SHM, MP_MPI ou MPI_HYBRID est spécifiée,
+# alors le test correspond sera exécuté. Sinon on exécute le test les 4
+# modes d'échange de message. Si NB_MPI n'est pas spécifié, il aura pour valeur 4.
+# Si NB_SHM n'est pas spécifié, il aura pour valeur 3.
+# )
+
+function(arcane_add_test_generic test_name)
+  set(options        MP_SEQUENTIAL MP_SHM MP_MPI MP_HYBRID)
+  set(oneValueArgs   TYPE NB_MPI NB_SHM CASE_FILE)
+  set(multiValueArgs ARGS)
+
+  cmake_parse_arguments(ARGS "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+
+  message(VERBOSE "    ADD GENERIC TEST Hybrid OPT=${test_name} ${ARGS_CASE_NAME} nb_mpi=${ARGS_NB_MPI} nb_shm=${ARGS_NB_SHM} type=${ARGS_TYPE}")
+
+  set(HAS_MP_VALUE FALSE)
+
+  # Si un des types de 'message passing' est spécifié, on l'utilise.
+  # Sinon on considère qu'on utilise toutes les mécanismes de message passing disponibles
+  if (ARGS_MP_SEQUENTIAL OR ARGS_MP_SHM OR ARGS_MP_MPI OR ARGS_MP_HYBRID)
+    set(HAS_MP_VALUE TRUE)
+  else()
+    set(ARGS_MP_SEQUENTIAL TRUE)
+    set(ARGS_MP_SHM TRUE)
+    set(ARGS_MP_MPI TRUE)
+    set(ARGS_MP_HYBRID TRUE)
+  endif()
+
+  if (NOT ARGS_NB_MPI)
+    set(ARGS_NB_MPI 4)
+  endif()
+  if (NOT ARGS_NB_SHM)
+    set(ARGS_NB_SHM 3)
+  endif()
+
+  if (ARGS_MP_SEQUENTIAL)
+    arcane_add_test_sequential(${test_name} ${ARGS_CASE_FILE} ${ARGS_ARGS})
+  endif()
+  if (ARGS_MP_MPI)
+    arcane_add_test_parallel(${test_name} ${ARGS_CASE_FILE} ${ARGS_NB_MPI} ${ARGS_ARGS})
+  endif()
+  if (ARGS_MP_SHM)
+    arcane_add_test_parallel_thread(${test_name} ${ARGS_CASE_FILE} ${ARGS_NB_SHM} ${ARGS_ARGS})
+  endif()
+  if (ARGS_MP_HYBRID)
+    arcane_add_test_message_passing_hybrid(${test_name} CASE_FILE ${ARGS_CASE_FILE} NB_MPI ${ARGS_NB_MPI} NB_SHM ${ARGS_NB_SHM} ARGS ${ARGS_ARGS})
+  endif()
+endfunction()
+
+# ----------------------------------------------------------------------------
 
 # Ajoute un test parallele avec MPI+threads
 macro(ARCANE_ADD_TEST_PARALLEL_MPITHREAD test_name case_file nb_proc nb_thread)

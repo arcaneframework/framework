@@ -94,6 +94,7 @@
    <active>true</active>
    <partitioner name="Metis">
      <metis-call-strategy>all-processors</metis-call-strategy>
+     <input-output-digest>true</input-output-digest>
    </partitioner>
    <period>5</period>
    <statistics>true</statistics>

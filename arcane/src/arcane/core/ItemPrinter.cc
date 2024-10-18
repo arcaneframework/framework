@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemPrinter.cc                                              (C) 2000-2023 */
+/* ItemPrinter.cc                                              (C) 2000-2024 */
 /*                                                                           */
 /* Ecriture d'Item sur flux.                                                 */
 /*---------------------------------------------------------------------------*/
@@ -98,8 +98,9 @@ print(std::ostream& ostr) const
       if (m_item.nbNode() != 0)
         ItemPrinter::Internal::_printItemSubItems(ostr, "Nodes", m_item.nodeList());
     ostr << "\n\t";
-    if (m_item.nbEdge() != 0)
-      ItemPrinter::Internal::_printItemSubItems(ostr, "Edges", m_item.edgeList());
+    if (ik != IK_Edge)
+      if (m_item.nbEdge() != 0)
+        ItemPrinter::Internal::_printItemSubItems(ostr, "Edges", m_item.edgeList());
     ostr << "\n\t";
     if (m_item.nbFace() != 0)
       ItemPrinter::Internal::_printItemSubItems(ostr, "Faces", m_item.faceList());
