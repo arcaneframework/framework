@@ -7,10 +7,6 @@
 #include <alien/kernels/petsc/linear_solver/mumps/PETScPrecConfigMUMPSService.h>
 #include <ALIEN/axl/PETScPrecConfigMUMPS_StrongOptions.h>
 
-/* Pour debugger le ILU, utiliser l'option:
- * <cmd-line-param>-mat_superlu_printstat 1 </cmd-line-param>
- */
-
 /*---------------------------------------------------------------------------*/
 #if ((PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR >= 3) || (PETSC_VERSION_MAJOR > 3))
 /*---------------------------------------------------------------------------*/
