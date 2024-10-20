@@ -47,10 +47,13 @@ class ARCANE_ACCELERATOR_CORE_EXPORT IRunnerRuntime
   virtual void unsetMemoryAdvice(ConstMemoryView buffer, eMemoryAdvice advice, DeviceId device_id) = 0;
   virtual void setCurrentDevice(DeviceId device_id) = 0;
   virtual const IDeviceInfoList* deviceInfoList() = 0;
+  virtual void getPointerAttribute(PointerAttribute& attribute, const void* ptr) = 0;
+
   virtual void startProfiling() {}
   virtual void stopProfiling() {}
   virtual bool isProfilingActive() { return false; }
-  virtual void getPointerAttribute(PointerAttribute& attribute, const void* ptr) = 0;
+  virtual void pushProfilerRange(const String&) {}
+  virtual void popProfilerRange() {}
 
  protected:
 
