@@ -21,6 +21,7 @@
 
 #include "arcane/accelerator/core/RunQueueBuildInfo.h"
 #include "arcane/accelerator/core/PointerAttribute.h"
+#include "arcane/accelerator/core/internal/ProfileRegion.h"
 #include "arcane/accelerator/Runner.h"
 #include "arcane/accelerator/NumArrayViews.h"
 #include "arcane/accelerator/SpanViews.h"
@@ -285,6 +286,7 @@ _executeTest1(eMemoryRessource mem_kind)
   info() << "Execute Test1 memory_ressource=" << mem_kind;
 
   auto queue = makeQueue(m_runner);
+  Accelerator::ProfileRegion ps(queue,"NumArrayUniTest_Test1");
 
   // Ne pas changer les dimensions du tableau sinon
   // il faut aussi changer le calcul des sommes
@@ -609,13 +611,17 @@ _executeTest4(eMemoryRessource mem_kind)
   IMemoryAllocator* allocator = platform::getDataMemoryRessourceMng()->getAllocator(mem_kind);
 
   {
-    UniqueArray<double> t1(allocator);
-    t1.resize(n1);
+    SharedArray<double> t1;
+    {
+      SharedArray<double> t1_bis(allocator);
+      t1_bis.resize(n1);
+      t1 = t1_bis;
+    }
 
-    UniqueArray<double> t2(allocator);
+    SharedArray<double> t2(allocator);
     t2.resize(n1);
 
-    UniqueArray<double> t3(allocator);
+    SharedArray<double> t3(allocator);
     t3.resize(n1);
 
     {
