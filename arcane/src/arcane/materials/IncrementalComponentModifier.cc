@@ -32,6 +32,7 @@
 #include "arcane/accelerator/RunCommandLoop.h"
 #include "arcane/accelerator/Filter.h"
 #include "arcane/accelerator/Reduce.h"
+#include "arcane/accelerator/core/internal/ProfileRegion.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -92,6 +93,8 @@ finalize()
 void IncrementalComponentModifier::
 apply(MaterialModifierOperation* operation)
 {
+  Accelerator::ProfileRegion ps(m_queue,"ApplyConstituentOperation");
+
   bool is_add = operation->isAdd();
   IMeshMaterial* mat = operation->material();
   SmallSpan<const Int32> orig_ids = operation->ids();

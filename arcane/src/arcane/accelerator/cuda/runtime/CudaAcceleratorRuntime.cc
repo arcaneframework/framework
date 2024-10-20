@@ -382,6 +382,19 @@ class CudaRunnerRuntime
                           ptr, ca.devicePointer, ca.hostPointer);
   }
 
+  void pushProfilerRange(const String& name) override
+  {
+#ifdef ARCANE_HAS_CUDA_NVTOOLSEXT
+    nvtxRangePush(name.localstr());
+#endif
+  }
+  void popProfilerRange() override
+  {
+#ifdef ARCANE_HAS_CUDA_NVTOOLSEXT
+    nvtxRangePop();
+#endif
+  }
+
  public:
 
   void fillDevices();

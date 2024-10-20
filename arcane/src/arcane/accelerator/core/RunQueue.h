@@ -51,6 +51,7 @@ namespace Arcane::Accelerator
 class ARCANE_ACCELERATOR_CORE_EXPORT RunQueue
 {
   friend class RunCommand;
+  friend class ProfileRegion;
   friend class impl::RunCommandLaunchInfo;
   friend RunCommand makeCommand(const RunQueue& run_queue);
   friend RunCommand makeCommand(const RunQueue* run_queue);

@@ -20,6 +20,8 @@
 #include "arcane/core/IData.h"
 #include "arcane/core/materials/internal/IMeshComponentInternal.h"
 
+#include "arcane/accelerator/core/internal/ProfileRegion.h"
+
 #include "arcane/materials/IMeshMaterial.h"
 #include "arcane/materials/IMeshMaterialVariable.h"
 #include "arcane/materials/MeshMaterialBackup.h"
@@ -221,6 +223,8 @@ endUpdate()
 void MeshMaterialModifierImpl::
 _endUpdate()
 {
+  Accelerator::ProfileRegion ps(m_queue,"ConstituentsEndUpdate");
+
   bool is_keep_value = m_material_mng->isKeepValuesAfterChange();
   Integer nb_operation = m_operations.values().size();
 

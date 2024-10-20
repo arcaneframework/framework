@@ -327,6 +327,21 @@ class HipRunnerRuntime
                           ptr, pa.devicePointer, pa.hostPointer);
   }
 
+  void pushProfilerRange(const String& name) override
+  {
+#ifdef ARCANE_HAS_ROCTX
+    roctxRangePush(name.localstr());
+#endif
+  }
+  void popProfilerRange() override
+  {
+#ifdef ARCANE_HAS_ROCTX
+    roctxRangePop();
+#endif
+  }
+
+ public:
+
   void fillDevices();
 
  private:
