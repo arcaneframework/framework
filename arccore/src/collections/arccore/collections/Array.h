@@ -95,16 +95,20 @@ class ARCCORE_COLLECTIONS_EXPORT ArrayMetaData
 
   using MemoryPointer = void*;
   using ConstMemoryPointer = const void*;
-  MemoryPointer _allocate(Int64 nb,Int64 sizeof_true_type);
-  MemoryPointer _reallocate(Int64 nb,Int64 sizeof_true_type,MemoryPointer current);
-  void _deallocate(MemoryPointer current,Int64 sizeof_true_type) ARCCORE_NOEXCEPT;
-  void _setMemoryLocationHint(eMemoryLocationHint new_hint,void* ptr,Int64 sizeof_true_type);
-  void _copyFromMemory(MemoryPointer destination,ConstMemoryPointer source,Int64 sizeof_true_type);
+
+ protected:
+
+  MemoryPointer _allocate(Int64 nb, Int64 sizeof_true_type, RunQueue* queue);
+  MemoryPointer _reallocate(Int64 nb, Int64 sizeof_true_type, MemoryPointer current, RunQueue* queue);
+  void _deallocate(MemoryPointer current, Int64 sizeof_true_type, RunQueue* queue) ARCCORE_NOEXCEPT;
+  void _setMemoryLocationHint(eMemoryLocationHint new_hint, void* ptr, Int64 sizeof_true_type);
+  void _copyFromMemory(MemoryPointer destination, ConstMemoryPointer source, Int64 sizeof_true_type, RunQueue* queue);
 
  private:
 
   void _checkAllocator() const;
   MemoryAllocationArgs _getAllocationArgs() const;
+  MemoryAllocationArgs _getAllocationArgs(RunQueue* queue) const;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -142,11 +146,11 @@ class ArrayImplT
  * \a m_md est un pointeur contenant les meta-donné du tableau. Si le
  * tableau est partagé (SharedArray, SharedArray2), alors ce pointeur
  * est alloué dynamiquement et dans ce cas _isUseOwnMetaData() doit
- * retourné \a false. Si le tableau n'est pas partagé (UniqueArray ou
+ * retourner \a false. Si le tableau n'est pas partagé (UniqueArray ou
  * UniqueArray2), alors les meta-données sont conservées directement
- * dans le l'instance du tableau pour éviter des allocations inutiles
- * et alors \a m_md pointe vers \a m_meta_data. Dans tous les cas il
- * ne faut pas utiliser \a m_meta_data directement mais toujours passer
+ * dans l'instance du tableau pour éviter des allocations inutiles
+ * et \a m_md pointe alors vers \a m_meta_data. Dans tous les cas, il
+ * ne faut pas utiliser \a m_meta_data directement, mais toujours passer
  * par \a m_md.
  */
 class ARCCORE_COLLECTIONS_EXPORT AbstractArrayBase
@@ -185,12 +189,15 @@ class ARCCORE_COLLECTIONS_EXPORT AbstractArrayBase
 
  protected:
 
- /*!
-  * \brief Indique si \a m_md fait référence à \a m_meta_data.
-  *
-  * C'est le cas pour les UniqueArray et UniqueArray2 mais
-  * pas pour les SharedArray et SharedArray2.
-  */
+  //! Méthode explicite pour une RunQueue nulle.
+  static constexpr RunQueue* _nullRunQueue() { return nullptr; }
+
+  /*!
+   * \brief Indique si \a m_md fait référence à \a m_meta_data.
+   *
+   * C'est le cas pour les UniqueArray et UniqueArray2 mais
+   * pas pour les SharedArray et SharedArray2.
+   */
   virtual bool _isUseOwnMetaData() const
   {
     return true;
@@ -279,7 +286,7 @@ class AbstractArray
   using TrueImpl = T; //typedef ArrayImplT<T> TrueImpl;
 
  public:
-	
+
   //! Type des éléments du tableau
   typedef T value_type;
   //! Type pointeur d'un élément du tableau
@@ -315,14 +322,17 @@ class AbstractArray
     _copyMetaData(rhs);
     rhs._reset();
   }
-  AbstractArray(const AbstractArray<T>& rhs) = delete;
-  AbstractArray<T>& operator=(const AbstractArray<T>& rhs) = delete;
 
-  virtual ~AbstractArray()
+  ~AbstractArray() override
   {
     --m_md->nb_ref;
     _checkFreeMemory();
   }
+
+ public:
+
+  AbstractArray(const AbstractArray<T>& rhs) = delete;
+  AbstractArray<T>& operator=(const AbstractArray<T>& rhs) = delete;
 
  protected:
 
@@ -335,7 +345,7 @@ class AbstractArray
   {
     Int64 asize = view.size();
     if (asize!=0){
-      _internalAllocate(asize);
+      _internalAllocate(asize,_nullRunQueue());
       _createRange(0,asize,view.data());
       m_md->size = asize;
     }
@@ -510,11 +520,11 @@ class AbstractArray
    * Si la nouvelle capacité est inférieure à l'ancienne, rien ne se passe.
    */
   template<typename PodType>
-  void _internalRealloc(Int64 new_capacity,bool compute_capacity,PodType pod_type)
+  void _internalRealloc(Int64 new_capacity, bool compute_capacity, PodType pod_type, RunQueue* queue = nullptr)
   {
     if (_isSharedNull()){
       if (new_capacity!=0)
-        _internalAllocate(new_capacity);
+        _internalAllocate(new_capacity,queue);
       return;
     }
 
@@ -529,61 +539,61 @@ class AbstractArray
     // Si la nouvelle capacité est inférieure à la courante,ne fait rien.
     if (acapacity <= m_md->capacity)
       return;
-    _internalReallocate(acapacity,pod_type);
+    _internalReallocate(acapacity, pod_type, queue);
   }
 
-  void _internalRealloc(Int64 new_capacity,bool compute_capacity)
+  void _internalRealloc(Int64 new_capacity, bool compute_capacity)
   {
-    _internalRealloc(new_capacity,compute_capacity,IsPODType());
+    _internalRealloc(new_capacity, compute_capacity,IsPODType());
   }
 
   //! Réallocation pour un type POD
-  void _internalReallocate(Int64 new_capacity,TrueType)
+  void _internalReallocate(Int64 new_capacity, TrueType,RunQueue* queue)
   {
     T* old_ptr = m_ptr;
     Int64 old_capacity = m_md->capacity;
-    _directReAllocate(new_capacity);
+    _directReAllocate(new_capacity, queue);
     bool update = (new_capacity < old_capacity) || (m_ptr != old_ptr);
-    if (update){
+    if (update) {
       _updateReferences();
     }
   }
 
   //! Réallocation pour un type complexe (non POD)
-  void _internalReallocate(Int64 new_capacity,FalseType)
+  void _internalReallocate(Int64 new_capacity, FalseType, RunQueue* queue)
   {
     T* old_ptr = m_ptr;
     ArrayMetaData* old_md = m_md;
     Int64 old_size = m_md->size;
-    _directAllocate(new_capacity);
+    _directAllocate(new_capacity, queue);
     if (m_ptr!=old_ptr){
-      for( Int64 i=0; i<old_size; ++i ){
-        new (m_ptr+i) T(old_ptr[i]);
+      for (Int64 i = 0; i < old_size; ++i) {
+        new (m_ptr + i) T(old_ptr[i]);
         old_ptr[i].~T();
       }
       m_md->nb_ref = old_md->nb_ref;
-      m_md->_deallocate(old_ptr,sizeof(T));
+      m_md->_deallocate(old_ptr, sizeof(T), queue);
       _updateReferences();
     }
   }
   // Libère la mémoire
-  void _internalDeallocate()
+  void _internalDeallocate(RunQueue* queue = nullptr)
   {
     if (!_isSharedNull())
-      m_md->_deallocate(m_ptr,sizeof(T));
+      m_md->_deallocate(m_ptr, sizeof(T), queue);
     if (m_md->is_not_null)
       _deallocateMetaData(m_md);
   }
-  void _internalAllocate(Int64 new_capacity)
+  void _internalAllocate(Int64 new_capacity,RunQueue* queue)
   {
-    _directAllocate(new_capacity);
+    _directAllocate(new_capacity, queue);
     m_md->nb_ref = _getNbRef();
     _updateReferences();
   }
 
   void _copyFromMemory(const T* source)
   {
-    m_md->_copyFromMemory(m_ptr,source,sizeof(T));
+    m_md->_copyFromMemory(m_ptr, source,sizeof(T),_nullRunQueue());
   }
 
  private:
@@ -597,28 +607,28 @@ class AbstractArray
     }
     _allocateMetaData();
     m_md->allocation_options = options;
-    if (new_capacity>0)
-      _allocateMP(new_capacity);
+    if (new_capacity > 0)
+      _allocateMP(new_capacity, options.runQueue());
     m_md->nb_ref = _getNbRef();
     m_md->size = 0;
     _updateReferences();
   }
 
-  void _directAllocate(Int64 new_capacity)
+  void _directAllocate(Int64 new_capacity, RunQueue* queue)
   {
     if (!m_md->is_not_null)
       _allocateMetaData();
-    _allocateMP(new_capacity);
+    _allocateMP(new_capacity, queue);
   }
 
-  void _allocateMP(Int64 new_capacity)
+  void _allocateMP(Int64 new_capacity, RunQueue* queue)
   {
-    _setMP(reinterpret_cast<TrueImpl*>(m_md->_allocate(new_capacity,sizeof(T))));
+    _setMP(reinterpret_cast<TrueImpl*>(m_md->_allocate(new_capacity, sizeof(T), queue)));
   }
 
-  void _directReAllocate(Int64 new_capacity)
+  void _directReAllocate(Int64 new_capacity,RunQueue* queue)
   {
-    _setMP(reinterpret_cast<TrueImpl*>(m_md->_reallocate(new_capacity,sizeof(T),m_ptr)));
+    _setMP(reinterpret_cast<TrueImpl*>(m_md->_reallocate(new_capacity,sizeof(T),m_ptr, queue)));
   }
 
  public:
@@ -657,103 +667,103 @@ class AbstractArray
     const T* ptr = val.data();
     Int64 s = m_md->size;
     if ((s+n) > m_md->capacity)
-      _internalRealloc(s+n,true);
-    _createRange(s,s+n,ptr);
+      _internalRealloc(s + n, true);
+    _createRange(s, s + n, ptr);
     m_md->size += n;
   }
 
   //! Détruit l'instance si plus personne ne la référence
   void _checkFreeMemory()
   {
-    if (m_md->nb_ref==0){
+    if (m_md->nb_ref == 0) {
       _destroy();
-      _internalDeallocate();
+      _internalDeallocate(_nullRunQueue());
     }
   }
   void _destroy()
   {
-    _destroyRange(0,m_md->size,IsPODType());
+    _destroyRange(0, m_md->size, IsPODType());
   }
-  void _destroyRange(Int64,Int64,TrueType)
+  void _destroyRange(Int64, Int64, TrueType)
   {
     // Rien à faire pour un type POD.
   }
-  void _destroyRange(Int64 abegin,Int64 aend,FalseType)
+  void _destroyRange(Int64 abegin, Int64 aend, FalseType)
   {
-    if (abegin<0)
+    if (abegin < 0)
       abegin = 0;
-    for( Int64 i=abegin; i<aend; ++i )
+    for (Int64 i = abegin; i < aend; ++i)
       m_ptr[i].~T();
   }
-  void _createRangeDefault(Int64,Int64,TrueType)
+  void _createRangeDefault(Int64, Int64, TrueType)
   {
   }
-  void _createRangeDefault(Int64 abegin,Int64 aend,FalseType)
+  void _createRangeDefault(Int64 abegin, Int64 aend, FalseType)
   {
-    if (abegin<0)
+    if (abegin < 0)
       abegin = 0;
-    for( Int64 i=abegin; i<aend; ++i )
-      new (m_ptr+i) T();
+    for (Int64 i = abegin; i < aend; ++i)
+      new (m_ptr + i) T();
   }
-  void _createRange(Int64 abegin,Int64 aend,ConstReferenceType value,TrueType)
+  void _createRange(Int64 abegin, Int64 aend, ConstReferenceType value, TrueType)
   {
-    if (abegin<0)
+    if (abegin < 0)
       abegin = 0;
-    for( Int64 i=abegin; i<aend; ++i )
+    for (Int64 i = abegin; i < aend; ++i)
       m_ptr[i] = value;
   }
-  void _createRange(Int64 abegin,Int64 aend,ConstReferenceType value,FalseType)
+  void _createRange(Int64 abegin, Int64 aend,ConstReferenceType value,FalseType)
   {
-    if (abegin<0)
+    if (abegin < 0)
       abegin = 0;
-    for( Int64 i=abegin; i<aend; ++i )
-      new (m_ptr+i) T(value);
+    for (Int64 i = abegin; i < aend; ++i)
+      new (m_ptr + i) T(value);
   }
   void _createRange(Int64 abegin,Int64 aend,const T* values)
   {
-    if (abegin<0)
+    if (abegin < 0)
       abegin = 0;
-    for( Int64 i=abegin; i<aend; ++i ){
+    for (Int64 i = abegin; i < aend; ++i ){
       new (m_ptr+i) T(*values);
       ++values;
     }
   }
   void _fill(ConstReferenceType value)
   {
-    for( Int64 i=0, n=size(); i<n; ++i )
+    for (Int64 i = 0, n = size(); i < n; ++i)
       m_ptr[i] = value;
   }
   void _clone(const ThatClassType& orig_array)
   {
     Int64 that_size = orig_array.size();
-    _internalAllocate(that_size);
+    _internalAllocate(that_size, _nullRunQueue());
     m_md->size = that_size;
     m_md->dim1_size = orig_array.m_md->dim1_size;
     m_md->dim2_size = orig_array.m_md->dim2_size;
-    _createRange(0,that_size,orig_array.m_ptr);
+    _createRange(0, that_size, orig_array.m_ptr);
   }
-  template<typename PodType>
-  void _resizeHelper(Int64 s,PodType pod_type)
+  template <typename PodType>
+  void _resizeHelper(Int64 s, PodType pod_type, RunQueue* queue)
   {
-    if (s<0)
+    if (s < 0)
       s = 0;
-    if (s>m_md->size) {
-      this->_internalRealloc(s,false,pod_type);
-      this->_createRangeDefault(m_md->size,s,pod_type);
+    if (s > m_md->size) {
+      this->_internalRealloc(s,false,pod_type,queue);
+      this->_createRangeDefault(m_md->size, s, pod_type);
     }
-    else{
-      this->_destroyRange(s,m_md->size,pod_type);
+    else {
+      this->_destroyRange(s, m_md->size, pod_type);
     }
     m_md->size = s;
   }
   void _resize(Int64 s)
   {
-    _resizeHelper(s,IsPODType());
+    _resizeHelper(s, IsPODType(), _nullRunQueue());
   }
   //! Redimensionne sans initialiser les nouvelles valeurs
-  void _resizeNoInit(Int64 s)
+  void _resizeNoInit(Int64 s,RunQueue* queue = nullptr)
   {
-    _resizeHelper(s,TrueType{});
+    _resizeHelper(s,TrueType{},queue);
   }
   void _clear()
   {
@@ -830,13 +840,13 @@ class AbstractArray
    */
   void _move(ThatClassType& rhs) ARCCORE_NOEXCEPT
   {
-    if (&rhs==this)
+    if (&rhs == this)
       return;
 
     // Comme il n'y a qu'une seule référence sur le tableau actuel, on peut
     // directement libérer la mémoire.
     _destroy();
-    _internalDeallocate();
+    _internalDeallocate(_nullRunQueue());
 
     _setMP(rhs.m_ptr);
 
@@ -873,7 +883,7 @@ class AbstractArray
       return;
     if (new_capacity<4)
       new_capacity = 4;
-    _internalReallocate(new_capacity,IsPODType());
+    _internalReallocate(new_capacity,IsPODType(),_nullRunQueue());
   }
 
   /*!
@@ -898,7 +908,7 @@ class AbstractArray
   // Uniquement pour UniqueArray et UniqueArray2
   void _assignFromArray(const AbstractArray<T>& rhs)
   {
-    if (&rhs==this)
+    if (&rhs == this)
       return;
     Span<const T> rhs_span(rhs);
     if (rhs.allocator()==this->allocator()){
@@ -906,7 +916,7 @@ class AbstractArray
     }
     else{
       _destroy();
-      _internalDeallocate();
+      _internalDeallocate(_nullRunQueue());
       _reset();
       _initFromAllocator(rhs.allocationOptions(),0);
       _initFromSpan(rhs_span);
@@ -973,7 +983,7 @@ class Array
   using typename BaseClassType::ConstReferenceType;
 
  public:
-	
+
   using typename BaseClassType::value_type;
   using typename BaseClassType::iterator;
   using typename BaseClassType::const_iterator;
@@ -1173,21 +1183,22 @@ class Array
    * Si le nouveau tableau est plus grand que l'ancien, les nouveaux
    * éléments sont initialisé avec la valeur \a fill_value.
    */
-  void resize(Int64 s,ConstReferenceType fill_value)
+  void resize(Int64 s, ConstReferenceType fill_value)
   {
-    this->_resize(s,fill_value);
+    this->_resize(s, fill_value);
   }
 
   /*!
    * \brief Redimensionne sans initialiser les nouvelles valeurs.
    *
-   * \warning Cela peut provoquer un comportement indéfini si les
-   * valeurs ne sont pas initialisées par la suite car le destructeur
+   * \warning Cela peut provoquer un comportement indéfini si le type
+   * \a T n'est pas copiable trivialement car les
+   * valeurs ne sont pas initialisées par la suite et le destructeur
    * de \a T sera appelé lors de la destruction de l'instance.
    */
   void resizeNoInit(Int64 s)
   {
-    this->_resizeNoInit(s);
+    this->_resizeNoInit(s, nullptr);
   }
 
   //! Réserve le mémoire pour \a new_capacity éléments
@@ -1258,7 +1269,7 @@ class Array
   //! Positionne l'élément d'indice \a i. Vérifie toujours les débordements
   void setAt(Int64 i,ConstReferenceType value)
   {
-    arccoreCheckAt(i,m_md->size);
+    arccoreCheckAt(i, m_md->size);
     m_ptr[i] = value;
   }
   //! Elément d'indice \a i
@@ -1268,7 +1279,7 @@ class Array
   //! Elément d'indice \a i
   ConstReferenceType operator[](Int64 i) const
   {
-    ARCCORE_CHECK_AT(i,m_md->size);
+    ARCCORE_CHECK_AT(i, m_md->size);
     return m_ptr[i];
   }
   //! Elément d'indice \a i
@@ -1279,13 +1290,13 @@ class Array
   }
   ConstReferenceType operator()(Int64 i) const
   {
-    ARCCORE_CHECK_AT(i,m_md->size);
+    ARCCORE_CHECK_AT(i, m_md->size);
     return m_ptr[i];
   }
   //! Elément d'indice \a i
   T& operator()(Int64 i)
   {
-    ARCCORE_CHECK_AT(i,m_md->size);
+    ARCCORE_CHECK_AT(i, m_md->size);
     return m_ptr[i];
   }
   //! Dernier élément du tableau
@@ -1293,21 +1304,21 @@ class Array
   T& back()
   {
     ARCCORE_CHECK_AT(m_md->size-1,m_md->size);
-    return m_ptr[m_md->size-1];
+    return m_ptr[m_md->size - 1];
   }
   //! Dernier élément du tableau (const)
   /*! Le tableau ne doit pas être vide */
   ConstReferenceType back() const
   {
-    ARCCORE_CHECK_AT(m_md->size-1,m_md->size);
-    return m_ptr[m_md->size-1];
+    ARCCORE_CHECK_AT(m_md->size - 1, m_md->size);
+    return m_ptr[m_md->size - 1];
   }
 
   //! Premier élément du tableau
   /*! Le tableau ne doit pas être vide */
   T& front()
   {
-    ARCCORE_CHECK_AT(0,m_md->size);
+    ARCCORE_CHECK_AT(0, m_md->size);
     return m_ptr[0];
   }
 
@@ -1315,7 +1326,7 @@ class Array
   /*! Le tableau ne doit pas être vide */
   ConstReferenceType front() const
   {
-    ARCCORE_CHECK_AT(0,m_md->size);
+    ARCCORE_CHECK_AT(0, m_md->size);
     return m_ptr[0];
   }
 
@@ -1324,18 +1335,18 @@ class Array
   {
     this->_clear();
   }
-  
+
   //! Remplit le tableau avec la valeur \a value
   void fill(ConstReferenceType value)
   {
     this->_fill(value);
   }
-  
+
   /*!
    * \brief Copie les valeurs de \a rhs dans l'instance.
    *
    * L'instance est redimensionnée pour que this->size()==rhs.size().
-   */  
+   */
   void copy(Span<const T> rhs)
   {
     this->_resizeAndCopyView(rhs);
@@ -2033,7 +2044,9 @@ operator=(const UniqueArray<T>& rhs)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Converti la vue en un tableau d'octets non modifiables.
+ * \brief Vue d'un tableau sous la forme d'octets non modifiables 
+ *
+ * T doit être un type POD.
  */
 template<typename T> inline Span<const std::byte>
 asBytes(const Array<T>& v)
@@ -2044,9 +2057,9 @@ asBytes(const Array<T>& v)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Converti la vue en un tableau d'octets modifiables.
+ * \brief Vu d'un ableau sous la forme d'un tableau d'octets modifiables.
  *
- * Cela ne doit être que si T est un type POD.
+ * T doit être un type POD.
  */
 template<typename T> inline Span<std::byte>
 asWritableBytes(Array<T>& v)

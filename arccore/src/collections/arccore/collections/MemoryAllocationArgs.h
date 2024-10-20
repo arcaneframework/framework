@@ -40,12 +40,17 @@ class ARCCORE_COLLECTIONS_EXPORT MemoryAllocationArgs
   ArrayDebugInfo* debugInfo() const { return m_debug_info; }
   void setDebugInfo(ArrayDebugInfo* v) { m_debug_info = v; }
 
+  // RunQueue associée à l'allocation. Peut-être nulle.
+  RunQueue* runQueue() const { return m_run_queue; }
+  void setRunQueue(RunQueue* v) { m_run_queue = v; }
+
   String arrayName() const;
 
  private:
 
   eMemoryLocationHint m_memory_location_hint = eMemoryLocationHint::None;
   Int16 m_device = (-1);
+  RunQueue* m_run_queue = nullptr;
   ArrayDebugInfo* m_debug_info = nullptr;
 };
 
