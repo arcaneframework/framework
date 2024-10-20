@@ -99,8 +99,10 @@ class ARCCORE_COLLECTIONS_EXPORT MemoryAllocationOptions
   void setArrayName(const String& name);
   String arrayName() const;
 
-  //! Arguments pour 'IMemoryAllocator' associés à ces options
-  MemoryAllocationArgs allocationArgs() const;
+  RunQueue* runQueue() const { return m_queue; }
+
+  //! Arguments pour 'IMemoryAllocator' associés à ces options et à la file \a queue
+  MemoryAllocationArgs allocationArgs(RunQueue* queue = nullptr) const;
 
  public:
 
@@ -112,6 +114,8 @@ class ARCCORE_COLLECTIONS_EXPORT MemoryAllocationOptions
       return false;
     if (a.m_device != b.m_device)
       return false;
+    if (a.m_queue != b.m_queue)
+      return false;
     return true;
   }
 
@@ -121,6 +125,7 @@ class ARCCORE_COLLECTIONS_EXPORT MemoryAllocationOptions
   ArrayDebugInfo* m_debug_info = nullptr;
   Int16 m_device = -1;
   eMemoryLocationHint m_memory_location_hint = eMemoryLocationHint::None;
+  RunQueue* m_queue = nullptr;
 
  private:
 
