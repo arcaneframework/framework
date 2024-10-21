@@ -14,7 +14,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/ArrayView.h"
+#include "arcane/utils/Array.h"
 
 #include "arcane/accelerator/AcceleratorGlobal.h"
 #include "arcane/accelerator/core/RunQueue.h"
@@ -85,10 +85,11 @@ class ARCANE_ACCELERATOR_EXPORT SyclUtils
  * \internal
  * \brief Gère l'allocation interne sur le device.
  */
-class GenericDeviceStorage
+class ARCANE_ACCELERATOR_EXPORT GenericDeviceStorage
 {
  public:
 
+  GenericDeviceStorage();
   ~GenericDeviceStorage()
   {
     deallocate();
@@ -96,47 +97,27 @@ class GenericDeviceStorage
 
  public:
 
-  void* address() { return m_ptr; }
-  size_t size() const { return m_size; }
+  void* address() { return m_storage.data(); }
+  size_t size() const { return m_storage.largeSize(); }
   void* allocate(size_t new_size)
   {
-    if (new_size < m_size)
-      return m_ptr;
-    deallocate();
-#if defined(ARCANE_COMPILING_CUDA)
-    ARCANE_CHECK_CUDA(::cudaMalloc(&m_ptr, new_size));
-#endif
-#if defined(ARCANE_COMPILING_HIP)
-    ARCANE_CHECK_HIP(::hipMallocManaged(&m_ptr, new_size, hipMemAttachGlobal));
-#endif
-    ARCANE_CHECK_PTR(m_ptr);
-    m_size = new_size;
-    return m_ptr;
+    m_storage.resize(new_size);
+    return m_storage.data();
   }
 
   void deallocate()
   {
-    if (!m_ptr)
-      return;
-#if defined(ARCANE_COMPILING_CUDA)
-    ARCANE_CHECK_CUDA_NOTHROW(::cudaFree(m_ptr));
-#endif
-#if defined(ARCANE_COMPILING_HIP)
-    ARCANE_CHECK_HIP_NOTHROW(::hipFree(m_ptr));
-#endif
-    m_ptr = nullptr;
-    m_size = 0;
+    m_storage.clear();
   }
 
   Span<const std::byte> bytes() const
   {
-    return { reinterpret_cast<const std::byte*>(m_ptr), static_cast<Int64>(m_size) };
+    return m_storage.span();
   }
 
  private:
 
-  void* m_ptr = nullptr;
-  size_t m_size = 0;
+  UniqueArray<std::byte> m_storage;
 };
 
 /*---------------------------------------------------------------------------*/
