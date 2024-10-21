@@ -75,21 +75,19 @@ class BlockAllocatorWrapper
 {
  public:
 
-  ~BlockAllocatorWrapper()
-  {
-    std::cout << "NB_ALLOCATE=" << m_nb_allocate
-              << " NB_UNALIGNED=" << m_nb_unaligned_allocate
-              << "\n";
-  }
-
- public:
-
   void initialize(Int64 block_size, bool do_block_alloc)
   {
     m_block_size = block_size;
     if (m_block_size <= 0)
       m_block_size = 128;
     m_do_block_allocate = do_block_alloc;
+  }
+
+  void dumpStats(std::ostream& ostr, const String& name)
+  {
+    ostr << "Allocator '" << name << "' : nb_allocate=" << m_nb_allocate
+         << " nb_unaligned=" << m_nb_unaligned_allocate
+         << "\n";
   }
 
   Int64 adjustedCapacity(Int64 wanted_capacity, Int64 element_size) const
@@ -183,6 +181,7 @@ class CudaMemoryAllocatorBase
     {
       void* out = nullptr;
       ARCANE_CHECK_CUDA(m_base->_allocate(&out, size));
+      m_base->m_block_wrapper.doAllocate(out, size);
       return out;
     }
     void freeMemory(void* ptr, [[maybe_unused]] size_t size) override
@@ -204,16 +203,21 @@ class CudaMemoryAllocatorBase
   , m_sub_allocator(&m_direct_sub_allocator)
   , m_allocator_name(allocator_name)
   {
+    if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_CUDA_MALLOC_PRINT_LEVEL", true))
+      m_print_level = v.value();
   }
 
   ~CudaMemoryAllocatorBase()
   {
-    if (m_use_memory_pool) {
-      m_memory_pool.dumpStats(std::cout);
-      m_memory_pool.dumpFreeMap(std::cout);
+    if (m_print_level >= 1) {
+      if (m_use_memory_pool) {
+        m_memory_pool.dumpStats(std::cout);
+        m_memory_pool.dumpFreeMap(std::cout);
+      }
+      std::cout << "Allocator '" << m_allocator_name << "' nb_realloc=" << m_nb_reallocate
+                << " realloc_copy=" << m_reallocate_size << "\n";
+      m_block_wrapper.dumpStats(std::cout, m_allocator_name);
     }
-    std::cout << " Allocator '" << m_allocator_name << "' nb_realloc=" << m_nb_reallocate
-              << " realloc_copy=" << m_reallocate_size << "\n";
   }
 
  public:
@@ -235,7 +239,7 @@ class CudaMemoryAllocatorBase
     Int64 current_size = current_info.size();
     m_reallocate_size += current_size;
     String array_name = args.arrayName();
-    const bool do_print = false;
+    const bool do_print = (m_print_level >= 2);
     if (do_print) {
       std::cout << "Reallocate allocator=" << m_allocator_name
                 << " current_size=" << current_size
@@ -269,6 +273,12 @@ class CudaMemoryAllocatorBase
     m_sub_allocator->freeMemory(ptr, mem_size);
   }
 
+  Int64 adjustedCapacity(MemoryAllocationArgs args, Int64 wanted_capacity, Int64 element_size) const final
+  {
+    wanted_capacity = AlignedMemoryAllocator3::adjustedCapacity(args, wanted_capacity, element_size);
+    return m_block_wrapper.adjustedCapacity(wanted_capacity, element_size);
+  }
+
  protected:
 
   virtual cudaError_t _allocate(void** ptr, size_t new_size) = 0;
@@ -288,6 +298,7 @@ class CudaMemoryAllocatorBase
   String m_allocator_name;
   std::atomic<Int32> m_nb_reallocate = 0;
   std::atomic<Int64> m_reallocate_size = 0;
+  Int32 m_print_level = 0;
 
  protected:
 
@@ -336,6 +347,7 @@ class UnifiedMemoryCudaMemoryAllocator
       do_page_allocate = (v.value() != 0);
     Int64 page_size = platform::getPageSize();
     m_block_wrapper.initialize(page_size, do_page_allocate);
+
     bool use_memory_pool = false;
     if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_CUDA_MALLOCMANAGED_POOL", true))
       use_memory_pool = (v.value() != 0);
@@ -353,12 +365,6 @@ class UnifiedMemoryCudaMemoryAllocator
       _applyHint(ptr.baseAddress(), ptr.size(), new_args);
   }
 
-  Int64 adjustedCapacity(MemoryAllocationArgs args, Int64 wanted_capacity, Int64 element_size) const final
-  {
-    wanted_capacity = AlignedMemoryAllocator3::adjustedCapacity(args, wanted_capacity, element_size);
-    return m_block_wrapper.adjustedCapacity(wanted_capacity, element_size);
-  }
-
  protected:
 
   cudaError_t _deallocate(void* ptr) final
@@ -372,19 +378,14 @@ class UnifiedMemoryCudaMemoryAllocator
 
   cudaError_t _allocate(void** ptr, size_t new_size) final
   {
-    void* p = nullptr;
     if (m_use_ats) {
       *ptr = ::aligned_alloc(128, new_size);
-      p = *ptr;
     }
     else {
       auto r = ::cudaMallocManaged(ptr, new_size, cudaMemAttachGlobal);
-      p = *ptr;
       if (r != cudaSuccess)
         return r;
     }
-
-    m_block_wrapper.doAllocate(p, new_size);
 
     return cudaSuccess;
   }
@@ -440,6 +441,17 @@ class HostPinnedCudaMemoryAllocator
   {
   }
 
+ public:
+
+  void initialize()
+  {
+    bool use_memory_pool = false;
+    if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_CUDA_HOSTPINNED_POOL", true))
+      use_memory_pool = (v.value() != 0);
+    _setUseMemoryPool(use_memory_pool);
+    m_block_wrapper.initialize(128, use_memory_pool);
+  }
+
  protected:
 
   cudaError_t _allocate(void** ptr, size_t new_size) final
@@ -465,6 +477,17 @@ class DeviceCudaMemoryAllocator
   {
     if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_CUDA_USE_ALLOC_ATS", true))
       m_use_ats = v.value();
+  }
+
+ public:
+
+  void initialize()
+  {
+    bool use_memory_pool = false;
+    if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_CUDA_DEVICE_POOL", true))
+      use_memory_pool = (v.value() != 0);
+    _setUseMemoryPool(use_memory_pool);
+    m_block_wrapper.initialize(128, use_memory_pool);
   }
 
  protected:
@@ -537,6 +560,8 @@ getCudaHostPinnedMemoryAllocator()
 void initializeCudaMemoryAllocators()
 {
   unified_memory_cuda_memory_allocator.initialize();
+  device_cuda_memory_allocator.initialize();
+  host_pinned_cuda_memory_allocator.initialize();
 }
 
 /*---------------------------------------------------------------------------*/
