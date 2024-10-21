@@ -91,7 +91,7 @@
       <length>3.0 3.0 3.0</length>
     </coarse-zone-3d>
 
-    <expected-number-of-cells-in-patchs>1000 3880 0</expected-number-of-cells-in-patchs>
+    <expected-number-of-cells-in-patchs>1000 3880</expected-number-of-cells-in-patchs>
     <nodes-uid-hash>aebfb1a98f6e90d452ac6f007628564a</nodes-uid-hash>
     <faces-uid-hash>dab2908cc09b1572c08793666b2ebe10</faces-uid-hash>
     <cells-uid-hash>5148e6e7af0ae779041a8bb42a7ca637</cells-uid-hash>

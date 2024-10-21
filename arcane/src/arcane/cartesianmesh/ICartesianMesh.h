@@ -171,6 +171,9 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMesh
    * Toutes les mailles dans la zone de dé-raffinement doivent être du même
    * niveau.
    *
+   * Les patchs ne contenant plus de mailles après l'appel à cette méthode
+   * seront supprimés.
+   *
    * Cette opération est collective.
    */
   virtual void coarseZone2D(Real2 position, Real2 length) = 0;
@@ -187,6 +190,9 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMesh
    *
    * Toutes les mailles dans la zone de dé-raffinement doivent être du même
    * niveau.
+   *
+   * Les patchs ne contenant plus de mailles après l'appel à cette méthode
+   * seront supprimés.
    *
    * Cette opération est collective.
    */

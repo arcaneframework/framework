@@ -62,7 +62,7 @@
       <length>1.0 1.0 1.0</length>
     </coarse-zone-3d>
 
-    <expected-number-of-cells-in-patchs>125 208 0</expected-number-of-cells-in-patchs>
+    <expected-number-of-cells-in-patchs>125 208</expected-number-of-cells-in-patchs>
     <nodes-uid-hash>e3774827d2b951cb6b7c36e3cdd04540</nodes-uid-hash>
     <faces-uid-hash>b0a24dbeeea1bba8b887155109d5a312</faces-uid-hash>
     <cells-uid-hash>0e51a40d9d1a79d115f4bb5ddeefd827</cells-uid-hash>

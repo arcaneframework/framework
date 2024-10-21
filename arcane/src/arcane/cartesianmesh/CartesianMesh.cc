@@ -808,6 +808,11 @@ _removeCellsInPatches(ConstArrayView<Int32> const_array_view)
   for (CellGroup cells : m_amr_patch_cell_groups) {
     cells.removeItems(const_array_view);
   }
+
+  auto new_end = std::remove_if(m_amr_patch_cell_groups.begin(), m_amr_patch_cell_groups.end(),
+                                [](const CellGroup& cells) { return cells.empty(); });
+
+  m_amr_patch_cell_groups.resize(new_end - m_amr_patch_cell_groups.begin());
 }
 
 /*---------------------------------------------------------------------------*/
