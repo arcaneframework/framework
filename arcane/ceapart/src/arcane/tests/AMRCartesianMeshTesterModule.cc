@@ -541,7 +541,7 @@ _coarsePatch()
       // defaultMesh()->modifier()->flagCellToCoarsen(cells_in_patchs);
       // defaultMesh()->modifier()->coarsenItemsV2();
       // cells_in_patchs.clear();
-      m_cartesian_mesh->coarsePatch2D(x->position(), x->length());
+      m_cartesian_mesh->coarseZone2D(x->position(), x->length());
       m_cartesian_mesh->computeDirections();
     }
   }
@@ -552,7 +552,7 @@ _coarsePatch()
       // defaultMesh()->modifier()->flagCellToCoarsen(cells_in_patchs);
       // defaultMesh()->modifier()->coarsenItemsV2();
       // cells_in_patchs.clear();
-      m_cartesian_mesh->coarsePatch3D(x->position(), x->length());
+      m_cartesian_mesh->coarseZone3D(x->position(), x->length());
       m_cartesian_mesh->computeDirections();
     }
   }

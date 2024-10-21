@@ -170,8 +170,8 @@ class CartesianMeshImpl
   void refinePatch2D(Real2 position,Real2 length) override;
   void refinePatch3D(Real3 position,Real3 length) override;
 
-  void coarsePatch2D(Real2 position, Real2 length) override;
-  void coarsePatch3D(Real3 position, Real3 length) override;
+  void coarseZone2D(Real2 position, Real2 length) override;
+  void coarseZone3D(Real3 position, Real3 length) override;
 
   void renumberItemsUniqueId(const CartesianMeshRenumberingInfo& v) override;
 
@@ -227,8 +227,8 @@ class CartesianMeshImpl
   std::tuple<CellGroup, NodeGroup>
   _buildPatchGroups(const CellGroup& cells, Integer patch_level);
   void _refinePatch(Real3 position, Real3 length, bool is_3d);
-  void _coarsePatch(Real3 position, Real3 length, bool is_3d);
-  void _cellsInPatch(Real3 position, Real3 length, bool is_3d, UniqueArray<Int32>& cells_local_id);
+  void _coarseZone(Real3 position, Real3 length, bool is_3d);
+  void _cellsInZone(Real3 position, Real3 length, bool is_3d, UniqueArray<Int32>& cells_local_id);
   void _checkNeedComputeDirections();
   void _checkAddObservableMeshChanged();
   void _addPatchInstance(const Ref<CartesianMeshPatch>& v)
@@ -667,10 +667,10 @@ _computeMeshDirection(CartesianMeshPatch& cdi,eMeshDirection dir,VariableCellRea
 /*---------------------------------------------------------------------------*/
 
 void CartesianMeshImpl::
-_refinePatch(Real3 position,Real3 length,bool is_3d)
+_refinePatch(Real3 position,Real3 length, bool is_3d)
 {
   UniqueArray<Int32> cells_local_id;
-  _cellsInPatch(position, length, is_3d, cells_local_id);
+  _cellsInZone(position, length, is_3d, cells_local_id);
 
   _applyRefine(cells_local_id);
   _saveInfosInProperties();
@@ -680,10 +680,10 @@ _refinePatch(Real3 position,Real3 length,bool is_3d)
 /*---------------------------------------------------------------------------*/
 
 void CartesianMeshImpl::
-_coarsePatch(Real3 position, Real3 length, bool is_3d)
+_coarseZone(Real3 position, Real3 length, bool is_3d)
 {
   UniqueArray<Int32> cells_local_id;
-  _cellsInPatch(position, length, is_3d, cells_local_id);
+  _cellsInZone(position, length, is_3d, cells_local_id);
 
   _applyCoarse(cells_local_id);
   _saveInfosInProperties();
@@ -693,7 +693,7 @@ _coarsePatch(Real3 position, Real3 length, bool is_3d)
 /*---------------------------------------------------------------------------*/
 
 void CartesianMeshImpl::
-_cellsInPatch(Real3 position, Real3 length, bool is_3d, UniqueArray<Int32>& cells_local_id)
+_cellsInZone(Real3 position, Real3 length, bool is_3d, UniqueArray<Int32>& cells_local_id)
 {
   VariableNodeReal3& nodes_coord = m_mesh->nodesCoordinates();
   // Parcours les mailles actives et ajoute dans la liste des mailles
@@ -743,22 +743,22 @@ refinePatch3D(Real3 position,Real3 length)
 /*---------------------------------------------------------------------------*/
 
 void CartesianMeshImpl::
-coarsePatch2D(Real2 position, Real2 length)
+coarseZone2D(Real2 position, Real2 length)
 {
   info() << "COARSEN 2D position=" << position << " length=" << length;
   Real3 position_3d(position.x, position.y, 0.0);
   Real3 length_3d(length.x, length.y, 0.0);
-  _coarsePatch(position_3d, length_3d, false);
+  _coarseZone(position_3d, length_3d, false);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void CartesianMeshImpl::
-coarsePatch3D(Real3 position, Real3 length)
+coarseZone3D(Real3 position, Real3 length)
 {
   info() << "COARSEN 3D position=" << position << " length=" << length;
-  _coarsePatch(position, length, true);
+  _coarseZone(position, length, true);
 }
 
 /*---------------------------------------------------------------------------*/

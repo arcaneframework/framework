@@ -158,8 +158,39 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMesh
    */
   virtual void refinePatch3D(Real3 position, Real3 length) = 0;
 
-  virtual void coarsePatch2D(Real2 position, Real2 length) = 0;
-  virtual void coarsePatch3D(Real3 position, Real3 length) = 0;
+  /*!
+   * \brief Dé-raffine en 2D un bloc du maillage cartésien.
+   *
+   * Cette méthode ne peut être appelée que si le maillage est un maillage
+   * AMR (IMesh::isAmrActivated()==true).
+   *
+   * Les mailles dont les positions des centres sont comprises entre
+   * \a position et \a (position+length) sont dé-raffinées et les informations
+   * de connectivité correspondantes sont mises à jour.
+   *
+   * Toutes les mailles dans la zone de dé-raffinement doivent être du même
+   * niveau.
+   *
+   * Cette opération est collective.
+   */
+  virtual void coarseZone2D(Real2 position, Real2 length) = 0;
+
+  /*!
+   * \brief Dé-raffine en 3D un bloc du maillage cartésien.
+   *
+   * Cette méthode ne peut être appelée que si le maillage est un maillage
+   * AMR (IMesh::isAmrActivated()==true).
+   *
+   * Les mailles dont les positions des centres sont comprises entre
+   * \a position et \a (position+length) sont dé-raffinées et les informations
+   * de connectivité correspondantes sont mises à jour.
+   *
+   * Toutes les mailles dans la zone de dé-raffinement doivent être du même
+   * niveau.
+   *
+   * Cette opération est collective.
+   */
+  virtual void coarseZone3D(Real3 position, Real3 length) = 0;
 
   /*!
    * \brief Renumérote les uniqueId() des entités.
