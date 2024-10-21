@@ -353,14 +353,23 @@ _processPatches()
   const bool is_verbose = options()->verbosityLevel()>=1;
 
   const Int32 dimension = defaultMesh()->dimension();
+
+  bool without_coarse_zone = true;
+  if (dimension == 2)
+    without_coarse_zone = options()->coarseZone2d().empty();
+  else if (dimension == 3)
+    without_coarse_zone = options()->coarseZone3d().empty();
+
   // Vérifie qu'il y a autant de patchs que d'options raffinement dans
   // le jeu de données (en comptant le patch 0 qui est le maillage cartésien).
   // Cela permet de vérifier que les appels successifs
   // à computeDirections() n'ajoutent pas de patchs.
+  // Cette vérification ne s'applique que s'il n'y a pas de zone de dé-raffinement.
+  // En effet, dé-raffiner un patch complet le supprime de la liste des patchs.
   Integer nb_expected_patch = m_nb_expected_patch;
     
   Integer nb_patch = m_cartesian_mesh->nbPatch();
-  if (nb_expected_patch!=nb_patch)
+  if (without_coarse_zone && nb_expected_patch != nb_patch)
     ARCANE_FATAL("Bad number of patchs expected={0} value={1}",nb_expected_patch,nb_patch);
 
   IParallelMng* pm = parallelMng();
@@ -535,21 +544,25 @@ _coarsePatch()
   Int32 dim = defaultMesh()->dimension();
 
   if (dim == 2) {
-    UniqueArray<Int32> cells_in_patchs;
+    //UniqueArray<Int32> cells_in_patchs;
     for (auto& x : options()->coarseZone2d()) {
-      _cellsInPatch(Real3(x->position()), Real3(x->length()), false, x->level(), cells_in_patchs);
-      defaultMesh()->modifier()->flagCellToCoarsen(cells_in_patchs);
-      defaultMesh()->modifier()->coarsenItemsV2();
-      cells_in_patchs.clear();
+      // _cellsInPatch(Real3(x->position()), Real3(x->length()), false, x->level(), cells_in_patchs);
+      // defaultMesh()->modifier()->flagCellToCoarsen(cells_in_patchs);
+      // defaultMesh()->modifier()->coarsenItemsV2();
+      // cells_in_patchs.clear();
+      m_cartesian_mesh->coarseZone2D(x->position(), x->length());
+      m_cartesian_mesh->computeDirections();
     }
   }
   if (dim == 3) {
-    UniqueArray<Int32> cells_in_patchs;
+    // UniqueArray<Int32> cells_in_patchs;
     for (auto& x : options()->coarseZone3d()) {
-      _cellsInPatch(x->position(), x->length(), true, x->level(), cells_in_patchs);
-      defaultMesh()->modifier()->flagCellToCoarsen(cells_in_patchs);
-      defaultMesh()->modifier()->coarsenItemsV2();
-      cells_in_patchs.clear();
+      // _cellsInPatch(x->position(), x->length(), true, x->level(), cells_in_patchs);
+      // defaultMesh()->modifier()->flagCellToCoarsen(cells_in_patchs);
+      // defaultMesh()->modifier()->coarsenItemsV2();
+      // cells_in_patchs.clear();
+      m_cartesian_mesh->coarseZone3D(x->position(), x->length());
+      m_cartesian_mesh->computeDirections();
     }
   }
 }

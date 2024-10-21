@@ -260,11 +260,16 @@ arcane_add_test_parallel(amr-cartesian3D-cell-coarse-zone-1 testAMRCartesianMesh
 arcane_add_test_sequential(amr-cartesian3D-cell-coarse-zone-2 testAMRCartesianMesh3D-Cell-CoarseZone-2.arc "-m 20")
 arcane_add_test_parallel(amr-cartesian3D-cell-coarse-zone-2 testAMRCartesianMesh3D-Cell-CoarseZone-2.arc 8 "-m 20")
 
+set_tests_properties(amr-cartesian3D-cell-coarse-zone-2 PROPERTIES LABELS LARGE_HYBRID)
+
 arcane_add_test_sequential(amr-cartesian3D-cell-coarse-zone-3 testAMRCartesianMesh3D-Cell-CoarseZone-3.arc "-m 20")
 arcane_add_test_parallel(amr-cartesian3D-cell-coarse-zone-3 testAMRCartesianMesh3D-Cell-CoarseZone-3.arc 8 "-m 20")
 
 arcane_add_test_sequential(amr-cartesian3D-cell-coarse-zone-4 testAMRCartesianMesh3D-Cell-CoarseZone-4.arc "-m 20")
 arcane_add_test_parallel(amr-cartesian3D-cell-coarse-zone-4 testAMRCartesianMesh3D-Cell-CoarseZone-4.arc 8 "-m 20")
+
+set_tests_properties(amr-cartesian3D-cell-coarse-zone-4 PROPERTIES LABELS LARGE_HYBRID)
+
 
 # Ce test prend du temps (environ 30 secondes) donc on ne l'active pas par défaut
 if (BIG_TEST)

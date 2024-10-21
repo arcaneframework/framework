@@ -60,10 +60,9 @@
     <coarse-zone-3d>
       <position>0.0 2.0 2.0</position>
       <length>1.0 1.0 1.0</length>
-      <level>1</level>
     </coarse-zone-3d>
 
-    <expected-number-of-cells-in-patchs>125 208 0</expected-number-of-cells-in-patchs>
+    <expected-number-of-cells-in-patchs>125 208</expected-number-of-cells-in-patchs>
     <nodes-uid-hash>e917a08bd9b68ac06e626bd78226e939</nodes-uid-hash>
     <faces-uid-hash>2408a4cfc18f1c81c1238708ee7a7219</faces-uid-hash>
     <cells-uid-hash>67073338e696ff7e73e429ed9965fd28</cells-uid-hash>
