@@ -61,11 +61,108 @@ void arcaneCheckCudaErrorsNoThrow(const TraceInfo& ti, cudaError_t e)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
+ * \brief Classe commune pour gérer l'allocation par bloc.
+ *
+ * Cette classe permet de garantir qu'on alloue la mémoire sur des
+ * multiples de la taille d'un bloc.
+ * Cela est notamment utilisé pour la mémoire unifiée ce qui permet d'éviter
+ * des effets de bord entre les allocations pour les transferts
+ * entre l'accélérateur CPU et l'hôte.
+ *
+ * Par défaut on alloue un multiple de 128 octets.
+ */
+class BlockAllocatorWrapper
+{
+ public:
+
+  void initialize(Int64 block_size, bool do_block_alloc)
+  {
+    m_block_size = block_size;
+    if (m_block_size <= 0)
+      m_block_size = 128;
+    m_do_block_allocate = do_block_alloc;
+  }
+
+  void dumpStats(std::ostream& ostr, const String& name)
+  {
+    ostr << "Allocator '" << name << "' : nb_allocate=" << m_nb_allocate
+         << " nb_unaligned=" << m_nb_unaligned_allocate
+         << "\n";
+  }
+
+  Int64 adjustedCapacity(Int64 wanted_capacity, Int64 element_size) const
+  {
+    const bool do_page = m_do_block_allocate;
+    if (!do_page)
+      return wanted_capacity;
+    // Alloue un multiple de la taille d'une page
+    // Comme les transfers de la mémoire unifiée se font par page,
+    // cela permet de détecter quelles allocations provoquent le transfert
+    Int64 orig_capacity = wanted_capacity;
+    Int64 new_size = orig_capacity * element_size;
+    Int64 block_size = m_block_size;
+    if (new_size >= (4 * block_size))
+      block_size *= 4;
+    if (new_size >= (4 * block_size))
+      block_size = 4 * block_size;
+    if (new_size >= (4 * block_size))
+      block_size = 4 * block_size;
+    if (new_size >= (4 * block_size))
+      block_size = 4 * block_size;
+    new_size = _computeNextMultiple(new_size, block_size);
+    wanted_capacity = new_size / element_size;
+    if (wanted_capacity < orig_capacity)
+      wanted_capacity = orig_capacity;
+    //std::cout << "Adjust capacity=" << wanted_capacity << " elem_size=" << element_size << " bs=" << block_size << "\n";
+    return wanted_capacity;
+  }
+
+  void doAllocate(void* ptr, [[maybe_unused]] size_t new_size)
+  {
+    ++m_nb_allocate;
+    if (m_do_block_allocate) {
+      uintptr_t addr = reinterpret_cast<uintptr_t>(ptr);
+      if ((addr % m_block_size) != 0) {
+        ++m_nb_unaligned_allocate;
+      }
+    }
+  }
+
+ private:
+
+  //! Taille d'un bloc. L'allocation sera un multiple de cette taille
+  Int64 m_block_size = 128;
+  //! Indique si l'allocation en utilisant \a m_block_size
+  bool m_do_block_allocate = true;
+  //! Nombre d'allocations
+  std::atomic<Int32> m_nb_allocate = 0;
+  //! Nombre d'allocations non alignées
+  std::atomic<Int32> m_nb_unaligned_allocate = 0;
+
+ private:
+
+  // Calcule la plus petite valeur de \a multiple de \a multiple
+  static Int64 _computeNextMultiple(Int64 n, Int64 multiple)
+  {
+    Int64 new_n = n / multiple;
+    if ((n % multiple) != 0)
+      ++new_n;
+    return (new_n * multiple);
+  }
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
  * \brief Classe de base d'un allocateur spécifique pour 'Cuda'.
  */
 class CudaMemoryAllocatorBase
 : public Arccore::AlignedMemoryAllocator3
 {
+ public:
+
+  using BaseClass = Arccore::AlignedMemoryAllocator3;
+
  public:
 
   class UnderlyingAllocator
@@ -84,9 +181,10 @@ class CudaMemoryAllocatorBase
     {
       void* out = nullptr;
       ARCANE_CHECK_CUDA(m_base->_allocate(&out, size));
+      m_base->m_block_wrapper.doAllocate(out, size);
       return out;
     }
-    void freeMemory(void* ptr,[[maybe_unused]] size_t size) override
+    void freeMemory(void* ptr, [[maybe_unused]] size_t size) override
     {
       ARCANE_CHECK_CUDA_NOTHROW(m_base->_deallocate(ptr));
     }
@@ -103,13 +201,23 @@ class CudaMemoryAllocatorBase
   , m_direct_sub_allocator(this)
   , m_memory_pool(&m_direct_sub_allocator, allocator_name)
   , m_sub_allocator(&m_direct_sub_allocator)
+  , m_allocator_name(allocator_name)
   {
+    if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_CUDA_MALLOC_PRINT_LEVEL", true))
+      m_print_level = v.value();
   }
 
   ~CudaMemoryAllocatorBase()
   {
-    if (m_use_memory_pool)
-      m_memory_pool.dumpStats(std::cout);
+    if (m_print_level >= 1) {
+      if (m_use_memory_pool) {
+        m_memory_pool.dumpStats(std::cout);
+        m_memory_pool.dumpFreeMap(std::cout);
+      }
+      std::cout << "Allocator '" << m_allocator_name << "' nb_realloc=" << m_nb_reallocate
+                << " realloc_copy=" << m_reallocate_size << "\n";
+      m_block_wrapper.dumpStats(std::cout, m_allocator_name);
+    }
   }
 
  public:
@@ -125,14 +233,31 @@ class CudaMemoryAllocatorBase
     _applyHint(out, new_size, args);
     return { out, new_size };
   }
-  AllocatedMemoryInfo reallocate(MemoryAllocationArgs args, AllocatedMemoryInfo current_ptr, Int64 new_size) final
+  AllocatedMemoryInfo reallocate(MemoryAllocationArgs args, AllocatedMemoryInfo current_info, Int64 new_size) final
   {
+    ++m_nb_reallocate;
+    Int64 current_size = current_info.size();
+    m_reallocate_size += current_size;
+    String array_name = args.arrayName();
+    const bool do_print = (m_print_level >= 2);
+    if (do_print) {
+      std::cout << "Reallocate allocator=" << m_allocator_name
+                << " current_size=" << current_size
+                << " current_capacity=" << current_info.capacity()
+                << " new_capacity=" << new_size;
+      if (array_name.null()) {
+        std::cout << " stack=" << platform::getStackTrace() << "\n";
+        std::cout << "\n";
+      }
+      else
+        std::cout << " name=" << array_name << "\n";
+    }
     if (m_use_memory_pool)
-      _removeHint(current_ptr.baseAddress(), current_ptr.size(), args);
+      _removeHint(current_info.baseAddress(), current_size, args);
     AllocatedMemoryInfo a = allocate(args, new_size);
     // TODO: supprimer les Hint après le deallocate car la zone mémoire peut être réutilisée.
-    ARCANE_CHECK_CUDA(cudaMemcpy(a.baseAddress(), current_ptr.baseAddress(), current_ptr.size(), cudaMemcpyDefault));
-    deallocate(args, current_ptr);
+    ARCANE_CHECK_CUDA(cudaMemcpy(a.baseAddress(), current_info.baseAddress(), current_size, cudaMemcpyDefault));
+    deallocate(args, current_info);
     return a;
   }
   void deallocate(MemoryAllocationArgs args, AllocatedMemoryInfo mem_info) final
@@ -146,6 +271,12 @@ class CudaMemoryAllocatorBase
     // un arrêt du code par std::terminate().
     m_tracer.traceDeallocate(mem_info, args);
     m_sub_allocator->freeMemory(ptr, mem_size);
+  }
+
+  Int64 adjustedCapacity(MemoryAllocationArgs args, Int64 wanted_capacity, Int64 element_size) const final
+  {
+    wanted_capacity = AlignedMemoryAllocator3::adjustedCapacity(args, wanted_capacity, element_size);
+    return m_block_wrapper.adjustedCapacity(wanted_capacity, element_size);
   }
 
  protected:
@@ -164,6 +295,14 @@ class CudaMemoryAllocatorBase
   MemoryPool m_memory_pool;
   IMemoryPoolAllocator* m_sub_allocator = nullptr;
   bool m_use_memory_pool = false;
+  String m_allocator_name;
+  std::atomic<Int32> m_nb_reallocate = 0;
+  std::atomic<Int64> m_reallocate_size = 0;
+  Int32 m_print_level = 0;
+
+ protected:
+
+  BlockAllocatorWrapper m_block_wrapper;
 
  protected:
 
@@ -181,85 +320,12 @@ class CudaMemoryAllocatorBase
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Classe commune pour gérer l'allocation en mémoire unifiée.
+ * \brief Allocateur pour la mémoire unifiée.
  *
- * Cette classe permet de garantir qu'on alloue la mémoire unifiée sur des
- * multiples de la taille d'une page ce qui permet d'éviter des effets de bord
- * entre les allocations pour les transferts entre l'accélérateur CPU et l'hôte.
- *
- * Par défaut on alloue un multiple de la taille de la page.
+ * Pour éviter des effets de bord du driver NVIDIA qui effectue les transferts
+ * entre le CPU et le GPU par page. on alloue la mémoire par bloc multiple
+ * de la taille d'une page.
  */
-class CommonUnifiedMemoryAllocatorWrapper
-{
- public:
-
-  CommonUnifiedMemoryAllocatorWrapper()
-  : m_page_size(platform::getPageSize())
-  {
-    if (m_page_size <= 0)
-      m_page_size = 4096;
-  }
-
-  ~CommonUnifiedMemoryAllocatorWrapper()
-  {
-    std::cout << "NB_ALLOCATE=" << m_nb_allocate
-              << " NB_UNALIGNED=" << m_nb_unaligned_allocate
-              << "\n";
-  }
-
- public:
-
-  void initialize()
-  {
-    if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_CUDA_UM_PAGE_ALLOC", true))
-      m_page_allocate_level = v.value();
-  }
-
-  Int64 adjustedCapacity(Int64 wanted_capacity, Int64 element_size) const
-  {
-    const bool do_page = m_page_allocate_level > 0;
-    if (!do_page)
-      return wanted_capacity;
-    // Alloue un multiple de la taille d'une page
-    // Comme les transfers de la mémoire unifiée se font par page,
-    // cela permet de détecter quelles allocations provoquent le transfert
-    Int64 orig_capacity = wanted_capacity;
-    Int64 new_size = orig_capacity * element_size;
-    size_t n = new_size / m_page_size;
-    if ((new_size % m_page_size) != 0)
-      ++n;
-    new_size = (n + 1) * m_page_size;
-    wanted_capacity = new_size / element_size;
-    if (wanted_capacity < orig_capacity)
-      wanted_capacity = orig_capacity;
-    return wanted_capacity;
-  }
-
-  void doAllocate(void* ptr, [[maybe_unused]] size_t new_size)
-  {
-    ++m_nb_allocate;
-    const bool do_page = m_page_allocate_level > 0;
-    if (do_page) {
-      uintptr_t addr = reinterpret_cast<uintptr_t>(ptr);
-      if ((addr % m_page_size) != 0) {
-        ++m_nb_unaligned_allocate;
-      }
-    }
-  }
-
- private:
-
-  Int64 m_page_size = 4096;
-  Int32 m_page_allocate_level = 1;
-  //! Nombre d'allocations
-  std::atomic<Int32> m_nb_allocate = 0;
-  //! Nombre d'allocations non alignées
-  std::atomic<Int32> m_nb_unaligned_allocate = 0;
-};
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 class UnifiedMemoryCudaMemoryAllocator
 : public CudaMemoryAllocatorBase
 {
@@ -276,7 +342,12 @@ class UnifiedMemoryCudaMemoryAllocator
 
   void initialize()
   {
-    m_wrapper.initialize();
+    bool do_page_allocate = true;
+    if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_CUDA_UM_PAGE_ALLOC", true))
+      do_page_allocate = (v.value() != 0);
+    Int64 page_size = platform::getPageSize();
+    m_block_wrapper.initialize(page_size, do_page_allocate);
+
     bool use_memory_pool = false;
     if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_CUDA_MALLOCMANAGED_POOL", true))
       use_memory_pool = (v.value() != 0);
@@ -294,12 +365,6 @@ class UnifiedMemoryCudaMemoryAllocator
       _applyHint(ptr.baseAddress(), ptr.size(), new_args);
   }
 
-  Int64 adjustedCapacity(MemoryAllocationArgs args, Int64 wanted_capacity, Int64 element_size) const final
-  {
-    wanted_capacity = AlignedMemoryAllocator3::adjustedCapacity(args, wanted_capacity, element_size);
-    return m_wrapper.adjustedCapacity(wanted_capacity, element_size);
-  }
-
  protected:
 
   cudaError_t _deallocate(void* ptr) final
@@ -313,19 +378,14 @@ class UnifiedMemoryCudaMemoryAllocator
 
   cudaError_t _allocate(void** ptr, size_t new_size) final
   {
-    void* p = nullptr;
     if (m_use_ats) {
       *ptr = ::aligned_alloc(128, new_size);
-      p = *ptr;
     }
     else {
       auto r = ::cudaMallocManaged(ptr, new_size, cudaMemAttachGlobal);
-      p = *ptr;
       if (r != cudaSuccess)
         return r;
     }
-
-    m_wrapper.doAllocate(p, new_size);
 
     return cudaSuccess;
   }
@@ -365,7 +425,6 @@ class UnifiedMemoryCudaMemoryAllocator
 
  private:
 
-  CommonUnifiedMemoryAllocatorWrapper m_wrapper;
   bool m_use_ats = false;
 };
 
@@ -380,6 +439,17 @@ class HostPinnedCudaMemoryAllocator
   HostPinnedCudaMemoryAllocator()
   : CudaMemoryAllocatorBase("HostPinnedCudaMemory")
   {
+  }
+
+ public:
+
+  void initialize()
+  {
+    bool use_memory_pool = false;
+    if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_CUDA_HOSTPINNED_POOL", true))
+      use_memory_pool = (v.value() != 0);
+    _setUseMemoryPool(use_memory_pool);
+    m_block_wrapper.initialize(128, use_memory_pool);
   }
 
  protected:
@@ -407,6 +477,17 @@ class DeviceCudaMemoryAllocator
   {
     if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_CUDA_USE_ALLOC_ATS", true))
       m_use_ats = v.value();
+  }
+
+ public:
+
+  void initialize()
+  {
+    bool use_memory_pool = false;
+    if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_CUDA_DEVICE_POOL", true))
+      use_memory_pool = (v.value() != 0);
+    _setUseMemoryPool(use_memory_pool);
+    m_block_wrapper.initialize(128, use_memory_pool);
   }
 
  protected:
@@ -479,6 +560,8 @@ getCudaHostPinnedMemoryAllocator()
 void initializeCudaMemoryAllocators()
 {
   unified_memory_cuda_memory_allocator.initialize();
+  device_cuda_memory_allocator.initialize();
+  host_pinned_cuda_memory_allocator.initialize();
 }
 
 /*---------------------------------------------------------------------------*/

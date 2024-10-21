@@ -36,6 +36,7 @@ class MemoryPool::Impl
   : m_allocator(allocator)
   , m_name(name)
   {
+    //m_max_memory_size_to_pool = 0;
   }
 
  public:
@@ -54,7 +55,7 @@ class MemoryPool::Impl
   std::atomic<size_t> m_total_allocated = 0;
   std::atomic<size_t> m_total_free = 0;
   std::atomic<Int32> m_nb_cached = 0;
-  size_t m_max_memory_size_to_pool = 1024 * 64 * 4;
+  size_t m_max_memory_size_to_pool = 1024 * 64 * 4 * 4;
   String m_name;
 
  private:
@@ -168,7 +169,7 @@ dumpFreeMap(std::ostream& ostr)
   }
   ostr << "FreeMap '" << m_name << "\n";
   for (const auto& [key, value] : nb_alloc_per_size)
-    ostr << "Map size=" << key << " nb_allocated=" << value << "\n";
+    ostr << "Map size=" << key << " nb_allocated=" << value << " page_modulo=" << (key % 4096) << "\n";
 }
 
 /*---------------------------------------------------------------------------*/
