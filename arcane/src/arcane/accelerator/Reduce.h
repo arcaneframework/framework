@@ -757,7 +757,7 @@ class ReducerSum2
 
  public:
 
-  ReducerSum2(RunCommand& command)
+  explicit ReducerSum2(RunCommand& command)
   : BaseClass(command)
   {}
 
