@@ -101,6 +101,7 @@ set(ARCANE_ORIGINAL_SOURCES
   ICaseOptionList.h
   ICheckpointReader.h
   ICheckpointWriter.h
+  ICriteriaLoadBalanceMng.h
   IData.h
   IDataReader.h
   IDataVisitor.h
