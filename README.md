@@ -258,8 +258,14 @@ Very simple codes to test Finite Element Methods using Arcane.
 
 ## [MaHyCo](https://github.com/cea-hpc/MaHyCo)
 
+<p>
+<a href="https://github.com/cea-hpc/MaHyCo">
+  <img alt="t=28" src="https://raw.githubusercontent.com/arcaneframework/resources/master/screenshots/mahyco/logo_MaHyCo.png" height="50">
+</a>
+
 Finite volume code for solving hydrodynamic equations:
 Lagrangian or Eulerian simulations.
+</p>
 
 # Rencontres Arcanes
 
@@ -361,3 +367,14 @@ The previous presentations are stored [here](https://github.com/arcaneframework/
 </p>
 
 </details>
+
+<p align="center">
+  <a href="https://github.com/cea-hpc/MaHyCo">
+    <img alt="t=28" src="https://raw.githubusercontent.com/arcaneframework/resources/master/screenshots/mahyco/image1.png" width="400px">
+  </a>
+</p>
+<p align="center">
+  <a href="https://github.com/cea-hpc/MaHyCo">
+    <img alt="t=28" src="https://raw.githubusercontent.com/arcaneframework/resources/master/screenshots/mahyco/bulle2.png" width="400px">
+  </a>
+</p>
