@@ -128,7 +128,7 @@ class ARCANE_ACCELERATOR_EXPORT GenericFilteringBase
     SetterLambda m_lambda;
   };
 
- public:
+ protected:
 
   GenericFilteringBase();
 
@@ -136,13 +136,28 @@ class ARCANE_ACCELERATOR_EXPORT GenericFilteringBase
 
   Int32 _nbOutputElement() const;
   void _allocate();
+  void _allocateTemporaryStorage(size_t size);
+  int* _getDeviceNbOutPointer();
+  void _copyDeviceNbOutToHostNbOut();
 
  protected:
 
+  //! File d'exécution. Ne doit pas être nulle.
   RunQueue* m_queue = nullptr;
+  // Mémoire de travail pour l'algorithme de filtrage.
   GenericDeviceStorage m_algo_storage;
+  //! Mémoire sur le device du nombre de valeurs filtrées
   DeviceStorage<int> m_device_nb_out_storage;
+  //! Mémoire hôte pour le nombre de valeurs filtrées
   NumArray<Int32, MDDim1> m_host_nb_out_storage;
+  /*!
+   * \brief Indique quelle mémoire est utilisée pour le nombre de valeurs filtrées.
+   *
+   * Si vrai utilise directement \a m_host_nb_out_storage. Sinon, utilise
+   * m_device_nb_out_storage et fait une copie asynchrone après le filtrage pour
+   * recopier la valeur dans m_host_nb_out_storage.
+   */
+  bool m_use_direct_host_storage = true;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -260,11 +275,11 @@ class GenericFilteringFlag
       ARCANE_CHECK_CUDA(::cub::DeviceSelect::Flagged(nullptr, temp_storage_size,
                                                      input_data, flag_data, output_data, nb_out_ptr, nb_item, stream));
 
-      s.m_algo_storage.allocate(temp_storage_size);
-      nb_out_ptr = s.m_device_nb_out_storage.allocate();
+      s._allocateTemporaryStorage(temp_storage_size);
+      nb_out_ptr = s._getDeviceNbOutPointer();
       ARCANE_CHECK_CUDA(::cub::DeviceSelect::Flagged(s.m_algo_storage.address(), temp_storage_size,
                                                      input_data, flag_data, output_data, nb_out_ptr, nb_item, stream));
-      s.m_device_nb_out_storage.copyToAsync(s.m_host_nb_out_storage, queue);
+      s._copyDeviceNbOutToHostNbOut();
     } break;
 #endif
 #if defined(ARCANE_COMPILING_HIP)
@@ -276,12 +291,12 @@ class GenericFilteringFlag
       ARCANE_CHECK_HIP(rocprim::select(nullptr, temp_storage_size, input_data, flag_data, output_data,
                                        nb_out_ptr, nb_item, stream));
 
-      s.m_algo_storage.allocate(temp_storage_size);
-      nb_out_ptr = s.m_device_nb_out_storage.allocate();
+      s._allocateTemporaryStorage(temp_storage_size);
+      nb_out_ptr = s._getDeviceNbOutPointer();
 
       ARCANE_CHECK_HIP(rocprim::select(s.m_algo_storage.address(), temp_storage_size, input_data, flag_data, output_data,
                                        nb_out_ptr, nb_item, stream));
-      s.m_device_nb_out_storage.copyToAsync(s.m_host_nb_out_storage, queue);
+      s._copyDeviceNbOutToHostNbOut();
     } break;
 #endif
 #if defined(ARCANE_COMPILING_SYCL)
@@ -348,13 +363,12 @@ class GenericFilteringIf
                                                 input_iter, output_iter, nb_out_ptr, nb_item,
                                                 select_lambda, stream));
 
-      s.m_algo_storage.allocate(temp_storage_size);
-      s.m_device_nb_out_storage.allocate();
-      nb_out_ptr = s.m_device_nb_out_storage.address();
+      s._allocateTemporaryStorage(temp_storage_size);
+      nb_out_ptr = s._getDeviceNbOutPointer();
       ARCANE_CHECK_CUDA(::cub::DeviceSelect::If(s.m_algo_storage.address(), temp_storage_size,
                                                 input_iter, output_iter, nb_out_ptr, nb_item,
                                                 select_lambda, stream));
-      s.m_device_nb_out_storage.copyToAsync(s.m_host_nb_out_storage, queue);
+      s._copyDeviceNbOutToHostNbOut();
     } break;
 #endif
 #if defined(ARCANE_COMPILING_HIP)
@@ -366,11 +380,11 @@ class GenericFilteringIf
       ARCANE_CHECK_HIP(rocprim::select(nullptr, temp_storage_size, input_iter, output_iter,
                                        nb_out_ptr, nb_item, select_lambda, stream));
 
-      s.m_algo_storage.allocate(temp_storage_size);
-      nb_out_ptr = s.m_device_nb_out_storage.allocate();
+      s._allocateTemporaryStorage(temp_storage_size);
+      nb_out_ptr = s._getDeviceNbOutPointer();
       ARCANE_CHECK_HIP(rocprim::select(s.m_algo_storage.address(), temp_storage_size, input_iter, output_iter,
                                        nb_out_ptr, nb_item, select_lambda, 0));
-      s.m_device_nb_out_storage.copyToAsync(s.m_host_nb_out_storage, queue);
+      s._copyDeviceNbOutToHostNbOut();
     } break;
 #endif
 #if defined(ARCANE_COMPILING_SYCL)
