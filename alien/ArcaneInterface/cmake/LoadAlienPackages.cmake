@@ -118,15 +118,23 @@ if(TARGET petsc)
 
     get_target_property(INC_DIR petsc INTERFACE_INCLUDE_DIRECTORIES)
 
-    # check for SPAI in PETSc
-    file(READ ${INC_DIR}/petscconf.h PETSCCONF_H)
-    if("${PETSCCONF_H}" MATCHES "PETSC_HAVE_SPAI")
-        add_library(petsc::spai INTERFACE IMPORTED)
-    endif()
+    # TODO: petscconf.h is supposed to exist in petsc include dir
+    # but for some obvious reasons this file is not found on IFPEN
+    # windows build.
+    if(EXISTS ${INC_DIR}/petscconf.h)
+        file(READ ${INC_DIR}/petscconf.h PETSCCONF_H)
 
-    # check for MUMPS in PETSc
-    if("${PETSCCONF_H}" MATCHES "PETSC_HAVE_MUMPS")
-        add_library(petsc::mumps INTERFACE IMPORTED)
+        # check for SPAI in PETSc
+        if("${PETSCCONF_H}" MATCHES "PETSC_HAVE_SPAI")
+            add_library(petsc::spai INTERFACE IMPORTED)
+        endif()
+
+        # check for MUMPS in PETSc
+        if("${PETSCCONF_H}" MATCHES "PETSC_HAVE_MUMPS")
+            add_library(petsc::mumps INTERFACE IMPORTED)
+        endif()
+    else()
+        MESSAGE(WARNING "target petsc: file ${INC_DIR}/petscconf.h not found")
     endif()
 
 endif()
