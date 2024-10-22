@@ -14,6 +14,7 @@
 #include "arcane/accelerator/CommonUtils.h"
 
 #include "arcane/utils/FatalErrorException.h"
+#include "arcane/utils/MemoryUtils.h"
 
 #if defined(ARCANE_COMPILING_HIP)
 #include "arcane/accelerator/hip/HipAccelerator.h"
@@ -109,6 +110,15 @@ _copyToAsync(Span<std::byte> destination, Span<const std::byte> source, RunQueue
   ARCANE_UNUSED(queue);
   ARCANE_FATAL("No valid implementation for copy");
 #endif
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+GenericDeviceStorage::
+GenericDeviceStorage()
+: m_storage(MemoryUtils::getDeviceOrHostAllocator())
+{
 }
 
 /*---------------------------------------------------------------------------*/
