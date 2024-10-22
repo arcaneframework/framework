@@ -128,7 +128,7 @@ class ARCANE_ACCELERATOR_EXPORT GenericFilteringBase
     SetterLambda m_lambda;
   };
 
- public:
+ protected:
 
   GenericFilteringBase();
 
@@ -142,10 +142,22 @@ class ARCANE_ACCELERATOR_EXPORT GenericFilteringBase
 
  protected:
 
+  //! File d'exécution. Ne doit pas être nulle.
   RunQueue* m_queue = nullptr;
+  // Mémoire de travail pour l'algorithme de filtrage.
   GenericDeviceStorage m_algo_storage;
+  //! Mémoire sur le device du nombre de valeurs filtrées
   DeviceStorage<int> m_device_nb_out_storage;
+  //! Mémoire hôte pour le nombre de valeurs filtrées
   NumArray<Int32, MDDim1> m_host_nb_out_storage;
+  /*!
+   * \brief Indique quelle mémoire est utilisée pour le nombre de valeurs filtrées.
+   *
+   * Si vrai utilise directement \a m_host_nb_out_storage. Sinon, utilise
+   * m_device_nb_out_storage et fait une copie asynchrone après le filtrage pour
+   * recopier la valeur dans m_host_nb_out_storage.
+   */
+  bool m_use_direct_host_storage = true;
 };
 
 /*---------------------------------------------------------------------------*/
