@@ -96,6 +96,15 @@ _updateValues(IMeshMaterialMng* material_mng,
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+AllCellToAllEnvCell::
+AllCellToAllEnvCell(IMeshMaterialMng* mm)
+: m_material_mng(mm)
+{
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 void AllCellToAllEnvCell::
 reset()
 {
@@ -113,17 +122,6 @@ reset()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void AllCellToAllEnvCell::
-destroy(AllCellToAllEnvCell* instance)
-{
-  IMemoryAllocator* alloc(instance->m_alloc);
-  instance->reset();
-  alloc->deallocate(instance);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 Int32 AllCellToAllEnvCell::
 maxNbEnvPerCell() const
 {
@@ -133,15 +131,11 @@ maxNbEnvPerCell() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-AllCellToAllEnvCell* AllCellToAllEnvCell::
-create(IMeshMaterialMng* mm, IMemoryAllocator* alloc)
+void AllCellToAllEnvCell::
+initialize(IMeshMaterialMng* mm, IMemoryAllocator* alloc)
 {
-  AllCellToAllEnvCell* _instance(nullptr);
-  _instance = reinterpret_cast<AllCellToAllEnvCell*>(alloc->allocate(sizeof(AllCellToAllEnvCell)));
-  if (!_instance)
-    ARCANE_FATAL("Unable to allocate memory for AllCellToAllEnvCell instance");
-  _instance = new (_instance) AllCellToAllEnvCell();
-  _instance->m_material_mng = mm;
+  AllCellToAllEnvCell* _instance = this;
+
   _instance->m_alloc = alloc;
   _instance->m_size = mm->mesh()->cellFamily()->maxLocalId() + 1;
 
@@ -173,7 +167,6 @@ create(IMeshMaterialMng* mm, IMemoryAllocator* alloc)
       _instance->m_allcell_allenvcell[cid] = Span<ComponentItemLocalId>(mem_pool_view.ptrAt(offset), nb_env);
     }
   }
-  return _instance;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -184,34 +177,27 @@ bruteForceUpdate()
 {
   // Si les ids ont changé, on doit tout refaire
   if (m_size != m_material_mng->mesh()->allCells().itemFamily()->maxLocalId() + 1) {
-    AllCellToAllEnvCell* swap_ptr(create(m_material_mng, m_alloc));
-    std::swap(this->m_material_mng, swap_ptr->m_material_mng);
-    std::swap(this->m_alloc, swap_ptr->m_alloc);
-    std::swap(this->m_size, swap_ptr->m_size);
-    std::swap(this->m_allcell_allenvcell, swap_ptr->m_allcell_allenvcell);
-    std::swap(this->m_mem_pool, swap_ptr->m_mem_pool);
-    std::swap(this->m_current_max_nb_env, swap_ptr->m_current_max_nb_env);
-    destroy(swap_ptr);
+    initialize(this->m_material_mng, this->m_alloc);
+    return;
   }
-  else {
-    Int32 current_max_nb_env(maxNbEnvPerCell());
-    // Si les ids n'ont pas changé, on regarde si à cet instant, le nb max d'env par maille a changé
-    // Si ca a changé, refaire le mem pool, sinon, juste update les valeurs
-    if (current_max_nb_env != m_current_max_nb_env) {
-      // On n'oublie pas de mettre a jour la nouvelle valeur !
-      m_current_max_nb_env = current_max_nb_env;
-      // Si le nb max d'env pour les mailles a changé à cet instant, on doit refaire le memory pool
-      ARCANE_ASSERT((m_allcell_allenvcell_ptr), ("Trying to change memory pool within a null structure"));
-      // on reinit a un span vide
-      m_allcell_allenvcell.fill(Span<ComponentItemLocalId>());
-      // on recrée le pool
-      auto pool_size(m_current_max_nb_env * m_size);
-      m_mem_pool.resize(pool_size);
-      m_mem_pool.fill(ComponentItemLocalId());
-    }
-    // Mise a jour des valeurs
-    Impl::_updateValues(m_material_mng, m_mem_pool.to1DSpan().data(), m_allcell_allenvcell_ptr, m_current_max_nb_env);
+
+  Int32 current_max_nb_env(maxNbEnvPerCell());
+  // Si les ids n'ont pas changé, on regarde si à cet instant, le nb max d'env par maille a changé
+  // Si ca a changé, refaire le mem pool, sinon, juste update les valeurs
+  if (current_max_nb_env != m_current_max_nb_env) {
+    // On n'oublie pas de mettre a jour la nouvelle valeur !
+    m_current_max_nb_env = current_max_nb_env;
+    // Si le nb max d'env pour les mailles a changé à cet instant, on doit refaire le memory pool
+    ARCANE_ASSERT((m_allcell_allenvcell_ptr), ("Trying to change memory pool within a null structure"));
+    // on reinit a un span vide
+    m_allcell_allenvcell.fill(Span<ComponentItemLocalId>());
+    // on recrée le pool
+    auto pool_size(m_current_max_nb_env * m_size);
+    m_mem_pool.resize(pool_size);
+    m_mem_pool.fill(ComponentItemLocalId());
   }
+  // Mise a jour des valeurs
+  Impl::_updateValues(m_material_mng, m_mem_pool.to1DSpan().data(), m_allcell_allenvcell_ptr, m_current_max_nb_env);
 }
 
 /*---------------------------------------------------------------------------*/

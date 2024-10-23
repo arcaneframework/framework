@@ -44,7 +44,7 @@ namespace Arcane::Materials
  * \brief Table de connectivité des 'Cell' vers leur(s) 'AllEnvCell' destinée
  *        à une utilisation sur accélérateur.
  *
- * Classe qui stoque la connectivité de toutes les mailles
+ * Classe qui conserve la connectivité de toutes les mailles
  * \a Cell vers toutes leurs mailles \a AllEnvCell.
  *
  * On crée une instance via la méthode create().
@@ -74,12 +74,11 @@ class ARCANE_MATERIALS_EXPORT AllCellToAllEnvCell
 
  private:
 
-  AllCellToAllEnvCell() = default;
+  explicit AllCellToAllEnvCell(IMeshMaterialMng* mm);
 
  public:
 
   //! Copies interdites
-  AllCellToAllEnvCell(const AllCellToAllEnvCell&) = delete;
   AllCellToAllEnvCell& operator=(const AllCellToAllEnvCell&) = delete;
 
  private:
@@ -96,10 +95,7 @@ class ARCANE_MATERIALS_EXPORT AllCellToAllEnvCell
    * façon systématique.
    * => Gain de perf à évaluer.
    */
-  static AllCellToAllEnvCell* create(IMeshMaterialMng* mm, IMemoryAllocator* alloc);
-
-  //! Fonction de destruction
-  static void destroy(AllCellToAllEnvCell* instance);
+  void initialize(IMeshMaterialMng* mm, IMemoryAllocator* alloc);
 
   //! Méthode d'accès à la table de "connectivité" cell -> all env cells
   ARCCORE_HOST_DEVICE Span<ComponentItemLocalId>* internal() const

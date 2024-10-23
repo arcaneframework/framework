@@ -311,11 +311,7 @@ class MeshMaterialMng
  private:
 
   AllCellToAllEnvCell* getAllCellToAllEnvCell() const { return m_allcell_2_allenvcell; }
-  void createAllCellToAllEnvCell(IMemoryAllocator* alloc)
-  {
-    if (!m_allcell_2_allenvcell)
-      m_allcell_2_allenvcell = AllCellToAllEnvCell::create(this, alloc);
-  }
+  void createAllCellToAllEnvCell(IMemoryAllocator* alloc);
 
  private:
 
@@ -374,10 +370,16 @@ class MeshMaterialMng
   String m_data_compressor_service_name;
   MeshMaterialSynchronizer* m_mms = nullptr;
 
+  std::unique_ptr<RunnerInfo> m_runner_info;
+
+  /*!
+   * \brief Contient une instance de AllCellToAllEnvCell.
+   *
+   * On utilise un tableau avec un seul élément pour l'allouer en mémoire unifiée.
+   */
+  UniqueArray<AllCellToAllEnvCell> m_all_cell_to_all_env_cell;
   AllCellToAllEnvCell* m_allcell_2_allenvcell = nullptr;
   bool m_is_allcell_2_allenvcell = false;
-
-  std::unique_ptr<RunnerInfo> m_runner_info;
 
  private:
 
