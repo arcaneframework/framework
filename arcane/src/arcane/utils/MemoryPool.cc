@@ -19,6 +19,7 @@
 #include <unordered_map>
 #include <map>
 #include <atomic>
+#include <mutex>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -50,6 +51,7 @@ class MemoryPool::Impl
 
     void removePointer(void* ptr, size_t size)
     {
+      std::unique_lock<std::mutex> lg(m_mutex);
       auto x = m_allocated_memory_map.find(ptr);
       if (x == m_allocated_memory_map.end())
         ARCANE_FATAL("MemoryPool '{0}': pointer {1} is not in the allocated map", m_name, ptr);
@@ -64,6 +66,7 @@ class MemoryPool::Impl
 
     void addPointer(void* ptr, size_t size)
     {
+      std::unique_lock<std::mutex> lg(m_mutex);
       auto x = m_allocated_memory_map.find(ptr);
       if (x != m_allocated_memory_map.end())
         ARCANE_FATAL("MemoryPool '{0}': pointer {1} (for size={2}) is already in the allocated map (with size={3})",
@@ -72,12 +75,17 @@ class MemoryPool::Impl
       m_allocated_memory_map.insert(std::make_pair(ptr, size));
     }
 
-    size_t size() const { return m_allocated_memory_map.size(); }
+    size_t size() const
+    {
+      std::unique_lock<std::mutex> lg(m_mutex);
+      return m_allocated_memory_map.size();
+    }
 
    private:
 
     MapType m_allocated_memory_map;
     String m_name;
+    mutable std::mutex m_mutex;
   };
 
  public:
@@ -105,6 +113,7 @@ class MemoryPool::Impl
      */
     void* getPointer(size_t size)
     {
+      std::unique_lock<std::mutex> lg(m_mutex);
       void* ptr = nullptr;
       auto x = m_free_memory_map.find(size);
       if (x != m_free_memory_map.end()) {
@@ -116,20 +125,28 @@ class MemoryPool::Impl
 
     void addPointer(void* ptr, size_t size)
     {
+      std::unique_lock<std::mutex> lg(m_mutex);
       m_free_memory_map.insert(std::make_pair(size, ptr));
     }
 
-    size_t size() const { return m_free_memory_map.size(); }
+    size_t size() const
+    {
+      std::unique_lock<std::mutex> lg(m_mutex);
+      return m_free_memory_map.size();
+    }
 
     void dump(std::ostream& ostr)
     {
       std::map<size_t, Int32> nb_alloc_per_size;
-      for (const auto& [key, value] : m_free_memory_map) {
-        auto x = nb_alloc_per_size.find(key);
-        if (x == nb_alloc_per_size.end())
-          nb_alloc_per_size.insert(std::make_pair(key, 1));
-        else
-          ++x->second;
+      {
+        std::unique_lock<std::mutex> lg(m_mutex);
+        for (const auto& [key, value] : m_free_memory_map) {
+          auto x = nb_alloc_per_size.find(key);
+          if (x == nb_alloc_per_size.end())
+            nb_alloc_per_size.insert(std::make_pair(key, 1));
+          else
+            ++x->second;
+        }
       }
       ostr << "FreedMap '" << m_name << "\n";
       for (const auto& [key, value] : nb_alloc_per_size)
@@ -140,6 +157,7 @@ class MemoryPool::Impl
 
     MapType m_free_memory_map;
     String m_name;
+    mutable std::mutex m_mutex;
   };
 
  public:
