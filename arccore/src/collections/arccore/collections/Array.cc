@@ -126,10 +126,8 @@ _allocate(Int64 new_capacity, Int64 sizeof_true_type, RunQueue* queue)
   _checkAllocator();
   MemoryAllocationArgs alloc_args = _getAllocationArgs(queue);
   IMemoryAllocator* a = _allocator();
-  size_t s_new_capacity = static_cast<size_t>(new_capacity);
-  s_new_capacity = a->adjustedCapacity(alloc_args, s_new_capacity, sizeof_true_type);
-  size_t s_sizeof_true_type = (size_t)sizeof_true_type;
-  size_t elem_size = s_new_capacity * s_sizeof_true_type;
+  new_capacity = a->adjustedCapacity(alloc_args, new_capacity, sizeof_true_type);
+  Int64 elem_size = new_capacity * sizeof_true_type;
   MemoryPointer p = a->allocate(alloc_args, elem_size).baseAddress();
 #ifdef ARCCORE_DEBUG_ARRAY
   std::cout << "ArrayImplBase::ALLOCATE: elemsize=" << elem_size
@@ -144,7 +142,7 @@ _allocate(Int64 new_capacity, Int64 sizeof_true_type, RunQueue* queue)
     throw BadAllocException(ostr.str());
   }
 
-  this->capacity = (Int64)s_new_capacity;
+  this->capacity = new_capacity;
 
   return p;
 }
@@ -153,19 +151,16 @@ _allocate(Int64 new_capacity, Int64 sizeof_true_type, RunQueue* queue)
 /*---------------------------------------------------------------------------*/
 
 ArrayMetaData::MemoryPointer ArrayMetaData::
-_reallocate(Int64 new_capacity, Int64 sizeof_true_type, MemoryPointer current,RunQueue* queue)
+_reallocate(const AllocatedMemoryInfo& current_info, Int64 new_capacity, Int64 sizeof_true_type, RunQueue* queue)
 {
   _checkAllocator();
+  MemoryPointer current = current_info.baseAddress();
   MemoryAllocationArgs alloc_args = _getAllocationArgs(queue);
   IMemoryAllocator* a = _allocator();
-  const Int64 current_allocated_size = capacity * sizeof_true_type;
-  const Int64 current_size = this->size * sizeof_true_type;
   new_capacity = a->adjustedCapacity(alloc_args, new_capacity, sizeof_true_type);
   size_t elem_size = new_capacity * sizeof_true_type;
-
   MemoryPointer p = nullptr;
   {
-    AllocatedMemoryInfo current_info(current, current_size, current_allocated_size);
     const bool use_realloc = a->hasRealloc(alloc_args);
     // Lorsqu'on voudra implémenter un realloc avec alignement, il faut passer
     // par use_realloc = false car sous Linux il n'existe pas de méthode realloc
@@ -206,12 +201,9 @@ _reallocate(Int64 new_capacity, Int64 sizeof_true_type, MemoryPointer current,Ru
 /*---------------------------------------------------------------------------*/
 
 void ArrayMetaData::
-_deallocate(MemoryPointer current, Int64 sizeof_true_type,RunQueue* queue) noexcept
+_deallocate(const AllocatedMemoryInfo& mem_info, RunQueue* queue) noexcept
 {
   if (_allocator()) {
-    Int64 current_size = this->size * sizeof_true_type;
-    Int64 current_capacity = this->capacity * sizeof_true_type;
-    AllocatedMemoryInfo mem_info(current, current_size, current_capacity);
     MemoryAllocationArgs alloc_args = _getAllocationArgs(queue);
     _allocator()->deallocate(alloc_args, mem_info);
   }
