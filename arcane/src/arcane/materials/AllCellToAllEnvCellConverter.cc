@@ -28,53 +28,59 @@
 
 namespace Arcane::Materials
 {
-namespace
-{
-  Int32 _computeMaxNbEnvPerCell(IMeshMaterialMng* material_mng)
-  {
-    CellToAllEnvCellConverter allenvcell_converter(material_mng);
-    RunQueue& queue = material_mng->_internalApi()->runQueue();
-    Accelerator::GenericReducer<Int32> reducer(queue);
-    auto local_ids = material_mng->mesh()->allCells().internal()->itemsLocalId();
-    Int32 nb_item = local_ids.size();
-    auto select_func = [=] ARCCORE_HOST_DEVICE(Int32 i) -> Int32 {
-      CellLocalId lid(local_ids[i]);
-      AllEnvCell all_env_cell = allenvcell_converter[lid];
-      return all_env_cell.nbEnvironment();
-    };
-    reducer.applyMaxWithIndex(nb_item, select_func);
-    Int32 max_nb_env = reducer.reducedValue();
-    return max_nb_env;
-  }
 
-  void _updateValues(IMeshMaterialMng* material_mng,
-                     ComponentItemLocalId* mem_pool,
-                     Span<ComponentItemLocalId>* allcell_allenvcell,
-                     Int32 max_nb_env)
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Int32 AllCellToAllEnvCell::
+_computeMaxNbEnvPerCell(IMeshMaterialMng* material_mng)
+{
+  CellToAllEnvCellConverter allenvcell_converter(material_mng);
+  RunQueue& queue = material_mng->_internalApi()->runQueue();
+  Accelerator::GenericReducer<Int32> reducer(queue);
+  auto local_ids = material_mng->mesh()->allCells().internal()->itemsLocalId();
+  Int32 nb_item = local_ids.size();
+  auto select_func = [=] ARCCORE_HOST_DEVICE(Int32 i) -> Int32 {
+    CellLocalId lid(local_ids[i]);
+    AllEnvCell all_env_cell = allenvcell_converter[lid];
+    return all_env_cell.nbEnvironment();
+  };
+  reducer.applyMaxWithIndex(nb_item, select_func);
+  Int32 max_nb_env = reducer.reducedValue();
+  return max_nb_env;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void AllCellToAllEnvCell::
+_updateValues(IMeshMaterialMng* material_mng,
+              ComponentItemLocalId* mem_pool,
+              Span<ComponentItemLocalId>* allcell_allenvcell,
+              Int32 max_nb_env)
+{
+  // mise a jour des valeurs
+  CellToAllEnvCellConverter all_env_cell_converter(material_mng);
+  RunQueue& queue = material_mng->_internalApi()->runQueue();
+  auto command = makeCommand(queue);
+  command << RUNCOMMAND_ENUMERATE (CellLocalId, cid, material_mng->mesh()->allCells())
   {
-    // mise a jour des valeurs
-    CellToAllEnvCellConverter all_env_cell_converter(material_mng);
-    RunQueue& queue = material_mng->_internalApi()->runQueue();
-    auto command = makeCommand(queue);
-    command << RUNCOMMAND_ENUMERATE (CellLocalId, cid, material_mng->mesh()->allCells())
-    {
-      AllEnvCell all_env_cell = all_env_cell_converter[cid];
-      Int32 nb_env = all_env_cell.nbEnvironment();
-      if (nb_env != 0) {
-        Integer i = 0;
-        Integer offset = cid * max_nb_env;
-        for (EnvCell ev : all_env_cell.subEnvItems()) {
-          mem_pool[offset + i] = ComponentItemLocalId(ev._varIndex());
-          ++i;
-        }
-        allcell_allenvcell[cid] = Span<ComponentItemLocalId>(mem_pool + offset, nb_env);
+    AllEnvCell all_env_cell = all_env_cell_converter[cid];
+    Int32 nb_env = all_env_cell.nbEnvironment();
+    if (nb_env != 0) {
+      Integer i = 0;
+      Integer offset = cid * max_nb_env;
+      for (EnvCell ev : all_env_cell.subEnvItems()) {
+        mem_pool[offset + i] = ComponentItemLocalId(ev._varIndex());
+        ++i;
       }
-      else {
-        allcell_allenvcell[cid] = Span<ComponentItemLocalId>();
-      }
-    };
-  }
-} // namespace
+      allcell_allenvcell[cid] = Span<ComponentItemLocalId>(mem_pool + offset, nb_env);
+    }
+    else {
+      allcell_allenvcell[cid] = Span<ComponentItemLocalId>();
+    }
+  };
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

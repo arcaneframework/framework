@@ -131,6 +131,14 @@ class ARCANE_MATERIALS_EXPORT AllCellToAllEnvCell
   Span<ComponentItemLocalId>* m_allcell_allenvcell = nullptr;
   ComponentItemLocalId* m_mem_pool = nullptr;
   Int32 m_current_max_nb_env = 0;
+
+ private:
+
+  static Int32 _computeMaxNbEnvPerCell(IMeshMaterialMng* material_mng);
+  static void _updateValues(IMeshMaterialMng* material_mng,
+                            ComponentItemLocalId* mem_pool,
+                            Span<ComponentItemLocalId>* allcell_allenvcell,
+                            Int32 max_nb_env);
 };
 
 /*---------------------------------------------------------------------------*/
