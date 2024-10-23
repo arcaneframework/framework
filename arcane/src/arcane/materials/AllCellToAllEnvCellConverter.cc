@@ -114,7 +114,6 @@ reset()
     m_mem_pool.resize(0);
   }
   m_material_mng = nullptr;
-  m_alloc = nullptr;
   m_size = 0;
   m_current_max_nb_env = 0;
 }
@@ -132,25 +131,25 @@ maxNbEnvPerCell() const
 /*---------------------------------------------------------------------------*/
 
 void AllCellToAllEnvCell::
-initialize(IMeshMaterialMng* mm, IMemoryAllocator* alloc)
+initialize()
 {
-  AllCellToAllEnvCell* _instance = this;
+  IMeshMaterialMng* mm = m_material_mng;
+  m_size = mm->mesh()->cellFamily()->maxLocalId() + 1;
 
-  _instance->m_alloc = alloc;
-  _instance->m_size = mm->mesh()->cellFamily()->maxLocalId() + 1;
-
-  _instance->m_allcell_allenvcell.resize(_instance->m_size);
-  _instance->m_allcell_allenvcell_ptr = _instance->m_allcell_allenvcell.to1DSpan().data();
+  m_allcell_allenvcell.resize(m_size);
+  m_allcell_allenvcell_ptr = m_allcell_allenvcell.to1DSpan().data();
 
   // On force la valeur initiale sur tous les elmts car dans le ENUMERATE_CELL ci-dessous
   // il se peut que m_size (qui vaut maxLocalId()+1) soit different de allCells().size()
-  _instance->m_allcell_allenvcell.fill(Span<ComponentItemLocalId>());
+  m_allcell_allenvcell.fill(Span<ComponentItemLocalId>());
 
-  _instance->m_current_max_nb_env = _instance->maxNbEnvPerCell();
-  auto pool_size(_instance->m_current_max_nb_env * _instance->m_size);
-  _instance->m_mem_pool.resize(pool_size);
-  _instance->m_mem_pool.fill(ComponentItemLocalId());
-  Span<ComponentItemLocalId> mem_pool_view(_instance->m_mem_pool.to1DSpan());
+  m_current_max_nb_env = maxNbEnvPerCell();
+  // TODO: vérifier débordement
+  Int32 pool_size = m_current_max_nb_env * m_size;
+  m_mem_pool.resize(pool_size);
+  m_mem_pool.fill(ComponentItemLocalId());
+
+  Span<ComponentItemLocalId> mem_pool_view(m_mem_pool.to1DSpan());
   CellToAllEnvCellConverter all_env_cell_converter(mm);
   ENUMERATE_CELL (icell, mm->mesh()->allCells()) {
     Int32 cid = icell->itemLocalId();
@@ -158,13 +157,13 @@ initialize(IMeshMaterialMng* mm, IMemoryAllocator* alloc)
     Integer nb_env(all_env_cell.nbEnvironment());
     if (nb_env != 0) {
       Integer i = 0;
-      Integer offset(cid * _instance->m_current_max_nb_env);
+      Integer offset(cid * m_current_max_nb_env);
       ENUMERATE_CELL_ENVCELL (ienvcell, all_env_cell) {
         EnvCell ev = *ienvcell;
-        _instance->m_mem_pool[offset + i] = ComponentItemLocalId(ev._varIndex());
+        m_mem_pool[offset + i] = ComponentItemLocalId(ev._varIndex());
         ++i;
       }
-      _instance->m_allcell_allenvcell[cid] = Span<ComponentItemLocalId>(mem_pool_view.ptrAt(offset), nb_env);
+      m_allcell_allenvcell[cid] = Span<ComponentItemLocalId>(mem_pool_view.ptrAt(offset), nb_env);
     }
   }
 }
@@ -177,7 +176,7 @@ bruteForceUpdate()
 {
   // Si les ids ont changé, on doit tout refaire
   if (m_size != m_material_mng->mesh()->allCells().itemFamily()->maxLocalId() + 1) {
-    initialize(this->m_material_mng, this->m_alloc);
+    initialize();
     return;
   }
 

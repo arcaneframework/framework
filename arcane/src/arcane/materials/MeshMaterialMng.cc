@@ -1317,13 +1317,13 @@ _dumpStats()
 /*---------------------------------------------------------------------------*/
 
 void MeshMaterialMng::
-createAllCellToAllEnvCell(IMemoryAllocator* alloc)
+createAllCellToAllEnvCell()
 {
   if (!m_allcell_2_allenvcell){
     m_all_cell_to_all_env_cell.reserve(1);
     m_all_cell_to_all_env_cell.add(AllCellToAllEnvCell(this));
     m_allcell_2_allenvcell = m_all_cell_to_all_env_cell.view().ptrAt(0);
-    m_allcell_2_allenvcell->initialize(this, alloc);
+    m_allcell_2_allenvcell->initialize();
   }
 }
 

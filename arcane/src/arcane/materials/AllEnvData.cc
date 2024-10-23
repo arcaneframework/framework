@@ -525,7 +525,7 @@ forceRecompute(bool compute_all)
     if (all_cell_to_all_env_cell)
       all_cell_to_all_env_cell->bruteForceUpdate();
     else
-      m_material_mng->_internalApi()->createAllCellToAllEnvCell(platform::getDefaultDataAllocator());
+      m_material_mng->_internalApi()->createAllCellToAllEnvCell();
   }
 }
 

@@ -100,9 +100,9 @@ class MeshMaterialMng
     {
       return m_material_mng->getAllCellToAllEnvCell();
     }
-    void createAllCellToAllEnvCell(IMemoryAllocator* alloc) override
+    void createAllCellToAllEnvCell() override
     {
-      return m_material_mng->createAllCellToAllEnvCell(alloc);
+      return m_material_mng->createAllCellToAllEnvCell();
     }
     ConstArrayView<MeshMaterialVariableIndexer*> variablesIndexer() override
     {
@@ -293,7 +293,7 @@ class MeshMaterialMng
   {
     m_is_allcell_2_allenvcell = is_enable;
     if (force_create)
-      createAllCellToAllEnvCell(platform::getDefaultDataAllocator());
+      createAllCellToAllEnvCell();
   }
   bool isCellToAllEnvCellForRunCommand() const override { return m_is_allcell_2_allenvcell; }
 
@@ -311,7 +311,7 @@ class MeshMaterialMng
  private:
 
   AllCellToAllEnvCell* getAllCellToAllEnvCell() const { return m_allcell_2_allenvcell; }
-  void createAllCellToAllEnvCell(IMemoryAllocator* alloc);
+  void createAllCellToAllEnvCell();
 
  private:
 

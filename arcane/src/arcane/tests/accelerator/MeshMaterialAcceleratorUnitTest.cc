@@ -741,7 +741,7 @@ _executeTest4(Integer nb_z)
   {
     UniqueArray<AllCellToAllEnvCell> useless;
     useless.add(AllCellToAllEnvCell(m_mm_mng));
-    useless[0].initialize(m_mm_mng, platform::getDefaultDataAllocator());
+    useless[0].initialize();
   }
 
   // Call to forceRecompute to test bruteForceUpdate

@@ -17,7 +17,6 @@
 #include "arcane/materials/MaterialsGlobal.h"
 
 #include "arcane/utils/PlatformUtils.h"
-#include "arcane/utils/IMemoryAllocator.h"
 #include "arcane/utils/NumArray.h"
 
 #include "arcane/core/IMesh.h"
@@ -95,7 +94,7 @@ class ARCANE_MATERIALS_EXPORT AllCellToAllEnvCell
    * façon systématique.
    * => Gain de perf à évaluer.
    */
-  void initialize(IMeshMaterialMng* mm, IMemoryAllocator* alloc);
+  void initialize();
 
   //! Méthode d'accès à la table de "connectivité" cell -> all env cells
   ARCCORE_HOST_DEVICE Span<ComponentItemLocalId>* internal() const
@@ -127,7 +126,6 @@ class ARCANE_MATERIALS_EXPORT AllCellToAllEnvCell
  private:
 
   IMeshMaterialMng* m_material_mng = nullptr;
-  IMemoryAllocator* m_alloc = nullptr;
   Integer m_size = 0;
   NumArray<Span<ComponentItemLocalId>, MDDim1> m_allcell_allenvcell;
   Span<ComponentItemLocalId>* m_allcell_allenvcell_ptr = nullptr;
