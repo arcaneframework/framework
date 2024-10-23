@@ -82,12 +82,74 @@ class MemoryPool::Impl
 
  public:
 
+  //! Tableau associatif des emplacements mémoire libres par taille
+  class FreedMap
+  {
+   public:
+
+    using MapType = std::unordered_multimap<size_t, void*>;
+
+   public:
+
+    FreedMap(const String& name)
+    : m_name(name)
+    {}
+
+   public:
+
+    /*!
+     * \brief Récupère un pointeur pour une taille \a size.
+     *
+     * Retourne nullptr s'il n'y a aucune valeur dans le cache
+     * pour cette taille. Sinon, le pointeur retourné est supprimé du cache.
+     */
+    void* getPointer(size_t size)
+    {
+      void* ptr = nullptr;
+      auto x = m_free_memory_map.find(size);
+      if (x != m_free_memory_map.end()) {
+        ptr = x->second;
+        m_free_memory_map.erase(x);
+      }
+      return ptr;
+    }
+
+    void addPointer(void* ptr, size_t size)
+    {
+      m_free_memory_map.insert(std::make_pair(size, ptr));
+    }
+
+    size_t size() const { return m_free_memory_map.size(); }
+
+    void dump(std::ostream& ostr)
+    {
+      std::map<size_t, Int32> nb_alloc_per_size;
+      for (const auto& [key, value] : m_free_memory_map) {
+        auto x = nb_alloc_per_size.find(key);
+        if (x == nb_alloc_per_size.end())
+          nb_alloc_per_size.insert(std::make_pair(key, 1));
+        else
+          ++x->second;
+      }
+      ostr << "FreedMap '" << m_name << "\n";
+      for (const auto& [key, value] : nb_alloc_per_size)
+        ostr << "Map size=" << key << " nb_allocated=" << value << " page_modulo=" << (key % 4096) << "\n";
+    }
+
+   private:
+
+    MapType m_free_memory_map;
+    String m_name;
+  };
+
+ public:
+
   explicit Impl(IMemoryPoolAllocator* allocator, const String& name)
   : m_allocator(allocator)
   , m_allocated_map(name)
+  , m_free_map(name)
   , m_name(name)
   {
-    //m_max_memory_size_to_pool = 0;
   }
 
  public:
@@ -102,8 +164,8 @@ class MemoryPool::Impl
   IMemoryPoolAllocator* m_allocator = nullptr;
   // Contient une liste de couples (taille_mémoire,pointeur) de mémoire allouée.
   AllocatedMap m_allocated_map;
-
-  std::unordered_multimap<size_t, void*> m_free_memory_map;
+  //! Liste des allocations libres dans le cache
+  FreedMap m_free_map;
   std::atomic<size_t> m_total_allocated = 0;
   std::atomic<size_t> m_total_free = 0;
   std::atomic<Int32> m_nb_cached = 0;
@@ -142,11 +204,8 @@ allocateMemory(size_t size)
   if (m_max_memory_size_to_pool != 0 && size > m_max_memory_size_to_pool)
     return m_allocator->allocateMemory(size);
 
-  auto x = m_free_memory_map.find(size);
-  void* ptr = nullptr;
-  if (x != m_free_memory_map.end()) {
-    ptr = x->second;
-    m_free_memory_map.erase(x);
+  void* ptr = m_free_map.getPointer(size);
+  if (ptr) {
     m_total_free -= size;
     ++m_nb_cached;
   }
@@ -168,7 +227,7 @@ freeMemory(void* ptr, size_t size)
 
   m_allocated_map.removePointer(ptr, size);
 
-  m_free_memory_map.insert(std::make_pair(size, ptr));
+  m_free_map.addPointer(ptr, size);
   m_total_allocated -= size;
   m_total_free += size;
 }
@@ -192,7 +251,7 @@ dumpStats(std::ostream& ostr)
   ostr << "Stats '" << m_name << "' TotalAllocated=" << m_total_allocated
        << " TotalFree=" << m_total_free
        << " nb_allocated=" << m_allocated_map.size()
-       << " nb_free=" << m_free_memory_map.size()
+       << " nb_free=" << m_free_map.size()
        << " nb_cached=" << m_nb_cached
        << "\n";
 }
@@ -203,17 +262,7 @@ dumpStats(std::ostream& ostr)
 void MemoryPool::Impl::
 dumpFreeMap(std::ostream& ostr)
 {
-  std::map<size_t, Int32> nb_alloc_per_size;
-  for (const auto& [key, value] : m_free_memory_map) {
-    auto x = nb_alloc_per_size.find(key);
-    if (x == nb_alloc_per_size.end())
-      nb_alloc_per_size.insert(std::make_pair(key, 1));
-    else
-      ++x->second;
-  }
-  ostr << "FreeMap '" << m_name << "\n";
-  for (const auto& [key, value] : nb_alloc_per_size)
-    ostr << "Map size=" << key << " nb_allocated=" << value << " page_modulo=" << (key % 4096) << "\n";
+  m_free_map.dump(ostr);
 }
 
 /*---------------------------------------------------------------------------*/
