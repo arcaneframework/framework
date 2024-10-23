@@ -737,10 +737,12 @@ _executeTest4(Integer nb_z)
 
   _checkEnvValues1();
 
-    // Some further functions testing, not really usefull here, but it improves cover
-  AllCellToAllEnvCell *useless(nullptr);
-  useless = AllCellToAllEnvCell::create(m_mm_mng, platform::getDefaultDataAllocator());
-  AllCellToAllEnvCell::destroy(useless);
+  // Some further functions testing, not really usefull here, but it improves cover
+  {
+    UniqueArray<AllCellToAllEnvCell> useless;
+    useless.add(AllCellToAllEnvCell(m_mm_mng));
+    useless[0].initialize();
+  }
 
   // Call to forceRecompute to test bruteForceUpdate
   m_mm_mng->forceRecompute();

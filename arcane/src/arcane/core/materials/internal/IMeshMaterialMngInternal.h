@@ -98,7 +98,7 @@ class ARCANE_CORE_EXPORT IMeshMaterialMngInternal
    * Si aucun allocateur n'est spécifié alors la méthode
    * platform::getDefaultDataAllocator() est utilisée
    */
-  virtual void createAllCellToAllEnvCell(IMemoryAllocator* alloc) = 0;
+  virtual void createAllCellToAllEnvCell() = 0;
 
   /*!
    * \briefInstance de ComponentItemSharedInfo pour un constituant
