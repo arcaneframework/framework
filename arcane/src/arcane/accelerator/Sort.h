@@ -22,6 +22,8 @@
 #include "arcane/accelerator/core/RunQueue.h"
 #include "arcane/accelerator/CommonUtils.h"
 
+#include <algorithm>
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
