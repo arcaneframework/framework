@@ -73,6 +73,25 @@ class GenericSorterIf
     RunQueue queue = s.m_queue;
     eExecutionPolicy exec_policy = queue.executionPolicy();
     switch (exec_policy) {
+#if defined(ARCANE_COMPILING_CUDA)
+    case eExecutionPolicy::CUDA: {
+      size_t temp_storage_size = 0;
+      cudaStream_t stream = impl::CudaUtils::toNativeStream(&queue);
+      using KeyType = typename InputIterator::value_type;
+      auto select_lambda = [] __device__(const KeyType& a, const KeyType& b) {
+        return a < b;
+      };
+      // Premier appel pour connaitre la taille pour l'allocation
+      ARCANE_CHECK_CUDA(::cub::DeviceMergeSort::SortKeysCopy(nullptr, temp_storage_size,
+                                                             input_iter, output_iter, nb_item,
+                                                             select_lambda, stream));
+
+      s.m_algo_storage.allocate(temp_storage_size);
+      ARCANE_CHECK_CUDA(::cub::DeviceMergeSort::SortKeysCopy(s.m_algo_storage.address(), temp_storage_size,
+                                                             input_iter, output_iter, nb_item,
+                                                             select_lambda, stream));
+    } break;
+#endif
     case eExecutionPolicy::Thread:
       // Pas encore implémenté en multi-thread
       [[fallthrough]];
