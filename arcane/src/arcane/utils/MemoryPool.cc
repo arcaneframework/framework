@@ -14,6 +14,7 @@
 #include "arcane/utils/internal/MemoryPool.h"
 
 #include "arcane/utils/FatalErrorException.h"
+#include "arcane/utils/PlatformUtils.h"
 
 #include <unordered_map>
 #include <map>
@@ -30,10 +31,60 @@ namespace Arcane::impl
 
 class MemoryPool::Impl
 {
+  //! Tableau associatif des pointeurs alloués et la taille associée
+  class AllocatedMap
+  {
+   public:
+
+    using MapType = std::unordered_map<void*, size_t>;
+    using ValueType = MapType::value_type;
+    using MapIterator = MapType::iterator;
+
+   public:
+
+    AllocatedMap(const String& name)
+    : m_name(name)
+    {}
+
+   public:
+
+    void removePointer(void* ptr, size_t size)
+    {
+      auto x = m_allocated_memory_map.find(ptr);
+      if (x == m_allocated_memory_map.end())
+        ARCANE_FATAL("MemoryPool '{0}': pointer {1} is not in the allocated map", m_name, ptr);
+
+      size_t allocated_size = x->second;
+      if (size != allocated_size)
+        ARCANE_FATAL("MemoryPool '{0}': Incoherent size saved_size={1} arg_size={2}",
+                     m_name, allocated_size, size);
+
+      m_allocated_memory_map.erase(x);
+    }
+
+    void addPointer(void* ptr, size_t size)
+    {
+      auto x = m_allocated_memory_map.find(ptr);
+      if (x != m_allocated_memory_map.end())
+        ARCANE_FATAL("MemoryPool '{0}': pointer {1} (for size={2}) is already in the allocated map (with size={3})",
+                     m_name, ptr, size, x->second);
+
+      m_allocated_memory_map.insert(std::make_pair(ptr, size));
+    }
+
+    size_t size() const { return m_allocated_memory_map.size(); }
+
+   private:
+
+    MapType m_allocated_memory_map;
+    String m_name;
+  };
+
  public:
 
   explicit Impl(IMemoryPoolAllocator* allocator, const String& name)
   : m_allocator(allocator)
+  , m_allocated_map(name)
   , m_name(name)
   {
     //m_max_memory_size_to_pool = 0;
@@ -50,8 +101,9 @@ class MemoryPool::Impl
 
   IMemoryPoolAllocator* m_allocator = nullptr;
   // Contient une liste de couples (taille_mémoire,pointeur) de mémoire allouée.
+  AllocatedMap m_allocated_map;
+
   std::unordered_multimap<size_t, void*> m_free_memory_map;
-  std::unordered_map<void*, size_t> m_allocated_memory_map;
   std::atomic<size_t> m_total_allocated = 0;
   std::atomic<size_t> m_total_free = 0;
   std::atomic<Int32> m_nb_cached = 0;
@@ -98,8 +150,9 @@ allocateMemory(size_t size)
     m_total_free -= size;
     ++m_nb_cached;
   }
-  else
+  else {
     ptr = m_allocator->allocateMemory(size);
+  }
   _addAllocated(ptr, size);
   return ptr;
 }
@@ -113,16 +166,11 @@ freeMemory(void* ptr, size_t size)
   if (m_max_memory_size_to_pool != 0 && size > m_max_memory_size_to_pool)
     return m_allocator->freeMemory(ptr, size);
 
-  auto x = m_allocated_memory_map.find(ptr);
-  if (x == m_allocated_memory_map.end())
-    ARCANE_FATAL("pointer {0} is not in the allocated map", ptr);
-  size_t allocated_size = x->second;
-  if (size != allocated_size)
-    ARCANE_FATAL("Incoherent size saved_size={0} arg_size={1}", allocated_size, size);
-  m_allocated_memory_map.erase(x);
-  m_free_memory_map.insert(std::make_pair(allocated_size, ptr));
-  m_total_allocated -= allocated_size;
-  m_total_free += allocated_size;
+  m_allocated_map.removePointer(ptr, size);
+
+  m_free_memory_map.insert(std::make_pair(size, ptr));
+  m_total_allocated -= size;
+  m_total_free += size;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -131,11 +179,7 @@ freeMemory(void* ptr, size_t size)
 void MemoryPool::Impl::
 _addAllocated(void* ptr, size_t size)
 {
-#ifdef ARCANE_CHECK
-  if (m_allocated_memory_map.find(ptr) != m_allocated_memory_map.end())
-    ARCANE_FATAL("pointer {0} (for size={1}) is already in the allocated map", ptr, size);
-#endif
-  m_allocated_memory_map.insert(std::make_pair(ptr, size));
+  m_allocated_map.addPointer(ptr, size);
   m_total_allocated += size;
 }
 
@@ -147,7 +191,7 @@ dumpStats(std::ostream& ostr)
 {
   ostr << "Stats '" << m_name << "' TotalAllocated=" << m_total_allocated
        << " TotalFree=" << m_total_free
-       << " nb_allocated=" << m_allocated_memory_map.size()
+       << " nb_allocated=" << m_allocated_map.size()
        << " nb_free=" << m_free_memory_map.size()
        << " nb_cached=" << m_nb_cached
        << "\n";
