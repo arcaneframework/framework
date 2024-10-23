@@ -1,32 +1,42 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemVector.cc                                               (C) 2000-2023 */
+/* ItemVector.cc                                               (C) 2000-2024 */
 /*                                                                           */
-/* Vecteur (tableau indirect) d'entités.                                     */
+/* Vecteur d'entités de même genre.                                          */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/ItemVector.h"
+#include "arcane/core/ItemVector.h"
 
-#include "arcane/IItemFamily.h"
+#include "arcane/utils/MemoryUtils.h"
+
+#include "arcane/core/IItemFamily.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 namespace Arcane
 {
+namespace
+{
+IMemoryAllocator* _getAllocator()
+{
+  return MemoryUtils::getDefaultDataAllocator();
+}
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 ItemVector::
 ItemVector(IItemFamily* afamily)
-: m_family(afamily)
+: m_local_ids(_getAllocator())
+, m_family(afamily)
 {
   _init();
 }
@@ -36,7 +46,7 @@ ItemVector(IItemFamily* afamily)
 
 ItemVector::
 ItemVector(IItemFamily* afamily, Int32ConstArrayView local_ids)
-: m_local_ids(local_ids)
+: m_local_ids(_getAllocator(),local_ids)
 , m_family(afamily)
 {
   _init();
@@ -47,10 +57,20 @@ ItemVector(IItemFamily* afamily, Int32ConstArrayView local_ids)
 
 ItemVector::
 ItemVector(IItemFamily* afamily, Integer asize)
-: m_family(afamily)
+: m_local_ids(_getAllocator())
+, m_family(afamily)
 {
   m_local_ids.resize(asize);
   _init();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+ItemVector::
+ItemVector()
+: m_local_ids(_getAllocator())
+{
 }
 
 /*---------------------------------------------------------------------------*/
