@@ -141,26 +141,25 @@ _executeTestDataType(Int32 size, Int32 test_id)
 
   NumArray<DataType, MDDim1> t1(n1);
   NumArray<DataType, MDDim1> t2(n1);
+  UniqueArray<DataType> t2_ref(n1);
 
   std::seed_seq rng_seed{ 37, 49, 23 };
   std::mt19937 randomizer(rng_seed);
   std::uniform_int_distribution<> rng_distrib(0, 32);
   for (Int32 i = 0; i < n1; ++i) {
     int to_add = 2 + (rng_distrib(randomizer));
-    DataType v = static_cast<DataType>(to_add + ((i * 2) % 2348));
+    DataType v = static_cast<DataType>(to_add + ((i * 2) % 5832));
     t1[i] = v;
-    t2[i] = 0;
+    t2_ref[i] = v;
   }
+  std::sort(t2_ref.begin(), t2_ref.end());
   switch (test_id) {
   case 0: {
     Arcane::Accelerator::GenericSorter generic_partitioner(m_queue);
-    generic_partitioner.apply(n1, t1.to1DSpan().begin(), t2.to1DSpan().begin());
+    generic_partitioner.apply(t1.to1DConstSmallSpan(), t2.to1DSmallSpan());
   } break;
   }
-  for (Int32 i = 1; i < size; ++i) {
-    if (t2[i - 1] > t2[i])
-      ARCANE_FATAL("Bad sort i={0} t[i-1]={1} t[i]={2}", i, t2[i - 1], t2[i]);
-  }
+  vc.areEqualArray(t2.to1DSpan(), t2_ref.constSpan(), "SortedArray");
 }
 
 /*---------------------------------------------------------------------------*/
