@@ -186,8 +186,8 @@ IXmlDocumentHolder* IOMng::
 parseXmlString(const String& str, const String& name)
 {
   dom::DOMImplementation domimp;
-  UCharConstArrayView utf16_buf(str.utf16());
-  ByteConstSpan buffer(reinterpret_cast<const std::byte*>(utf16_buf.data()),utf16_buf.size() * 2);
+  ByteConstArrayView utf8_buf(str.utf8());
+  ByteConstSpan buffer(reinterpret_cast<const std::byte*>(utf8_buf.data()), utf8_buf.size());
   // Lecture du fichier contenant les informations internes.
   return domimp._load(buffer, name, m_trace_mng);
 }

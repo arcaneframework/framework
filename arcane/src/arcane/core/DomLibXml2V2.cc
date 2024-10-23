@@ -370,7 +370,9 @@ class LibXml2_MemoryReader
     // qui fonctionne aussi sur les anciennes versions de LibXml2
     // (pour le support RHEL6)
     int buf_size = CheckedConvert::toInt32(m_buffer.size());
-    while (buf_size > 0 && static_cast<char>(m_buffer[--buf_size]) == '\0');
+    while (buf_size > 0 && static_cast<char>(m_buffer[buf_size - 1]) == '\0') {
+      buf_size--;
+    }
     const String& name = parser.fileName();
     ::xmlParserCtxtPtr ctxt = ::xmlNewParserCtxt();
     ::xmlDocPtr doc = ::xmlCtxtReadMemory(ctxt,buf_base,buf_size,
