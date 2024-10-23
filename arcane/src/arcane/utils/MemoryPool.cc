@@ -43,7 +43,7 @@ class MemoryPool::Impl
 
    public:
 
-    AllocatedMap(const String& name)
+    explicit AllocatedMap(const String& name)
     : m_name(name)
     {}
 
@@ -99,7 +99,7 @@ class MemoryPool::Impl
 
    public:
 
-    FreedMap(const String& name)
+    explicit FreedMap(const String& name)
     : m_name(name)
     {}
 
