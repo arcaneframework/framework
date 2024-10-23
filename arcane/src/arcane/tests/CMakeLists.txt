@@ -43,6 +43,7 @@ set(ARCANE_ACCELERATOR_SOURCES
   accelerator/AcceleratorScanUnitTest.cc
   accelerator/AcceleratorFilterUnitTest.cc
   accelerator/AcceleratorPartitionerUnitTest.cc
+  accelerator/AcceleratorSorterUnitTest.cc
   accelerator/RunQueueUnitTest.cc
   accelerator/AcceleratorMathUnitTest.cc
   accelerator/AcceleratorViewsUnitTest.cc
@@ -760,6 +761,10 @@ if (ARCANE_HAS_ACCELERATOR_API)
   arcane_add_test_sequential(accelerator_partitioner1 testAcceleratorPartitioner-1.arc)
   arcane_add_test_sequential_task(accelerator_partitioner1 testAcceleratorPartitioner-1.arc 4)
   arcane_add_accelerator_test_sequential(accelerator_partitioner1 testAcceleratorPartitioner-1.arc)
+
+  arcane_add_test_sequential(accelerator_sorter1 testAcceleratorSorter-1.arc)
+  arcane_add_test_sequential_task(accelerator_sorter1 testAcceleratorSorter-1.arc 4)
+  arcane_add_accelerator_test_sequential(accelerator_sorter1 testAcceleratorSorter-1.arc)
 
   arcane_add_test_sequential(accelerator_material1 testAcceleratorMaterials-1.arc)
   arcane_add_test_sequential_task(accelerator_material1 testAcceleratorMaterials-1.arc 4)
