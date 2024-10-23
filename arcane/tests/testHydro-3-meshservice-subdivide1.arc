@@ -7,21 +7,47 @@
 
   <meshes>
     <mesh>
-      <filename internal-partition="true">sod.vtk</filename>
-      <subdivider>
-        <nb-subdivision>1</nb-subdivision>
-      </subdivider>
-      <partitioner>MeshPartitionerTester</partitioner>
-      <initialization>
-        <variable><name>Density</name><value>1.0</value><group>ZG</group></variable>
-        <variable><name>Density</name><value>0.125</value><group>ZD</group></variable>
+    <generator name="Cartesian3D" >
+      <nb-part-x>2</nb-part-x>
+      <nb-part-y>0</nb-part-y>
+      <nb-part-z>0</nb-part-z>
+      <origin>1.0 2.0 3.0</origin>
+      <x><n>2</n><length>4.0</length></x>
+      <y><n>1</n><length>4.0</length></y>
+      <z><n>1</n><length>4.0</length></z>
+      <face-numbering-version>1</face-numbering-version>
+    </generator>
+    <subdivider>
+      <nb-subdivision>1</nb-subdivision>
+    </subdivider>
+    <partitioner>MeshPartitionerTester</partitioner>
+    <initialization>
+      <variable><name>Density</name><value>1.0</value><group>ZG</group></variable>
+      <variable><name>Density</name><value>0.125</value><group>ZD</group></variable>
 
-        <variable><name>Pressure</name><value>1.0</value><group>ZG</group></variable>
-        <variable><name>Pressure</name><value>0.1</value><group>ZD</group></variable>
+      <variable><name>Pressure</name><value>1.0</value><group>ZG</group></variable>
+      <variable><name>Pressure</name><value>0.1</value><group>ZD</group></variable>
 
-        <variable><name>AdiabaticCst</name><value>1.4</value><group>ZG</group></variable>
-        <variable><name>AdiabaticCst</name><value>1.4</value><group>ZD</group></variable>
-      </initialization>
+      <variable><name>AdiabaticCst</name><value>1.4</value><group>ZG</group></variable>
+      <variable><name>AdiabaticCst</name><value>1.4</value><group>ZD</group></variable>
+    </initialization>
+    <!---
+    <filename internal-partition="true">sod.vtk</filename>
+    <subdivider>
+      <nb-subdivision>1</nb-subdivision>
+    </subdivider>
+    <partitioner>MeshPartitionerTester</partitioner>
+    <initialization>
+      <variable><name>Density</name><value>1.0</value><group>ZG</group></variable>
+      <variable><name>Density</name><value>0.125</value><group>ZD</group></variable>
+
+      <variable><name>Pressure</name><value>1.0</value><group>ZG</group></variable>
+      <variable><name>Pressure</name><value>0.1</value><group>ZD</group></variable>
+
+      <variable><name>AdiabaticCst</name><value>1.4</value><group>ZG</group></variable>
+      <variable><name>AdiabaticCst</name><value>1.4</value><group>ZD</group></variable>
+    </initialization>
+    -->
     </mesh>
   </meshes>
 
