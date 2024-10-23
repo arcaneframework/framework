@@ -67,15 +67,12 @@ class GenericSorterMergeSort
 
  public:
 
-  template <typename InputIterator, typename OutputIterator>
-  void apply(GenericSorterBase& s, Int32 nb_item, InputIterator input_iter, OutputIterator output_iter)
+  template <typename CompareLambda, typename InputIterator, typename OutputIterator>
+  void apply(GenericSorterBase& s, Int32 nb_item, InputIterator input_iter,
+             OutputIterator output_iter, const CompareLambda& compare_lambda)
   {
     RunQueue queue = s.m_queue;
     eExecutionPolicy exec_policy = queue.executionPolicy();
-    using KeyType = typename InputIterator::value_type;
-    auto select_lambda = [] ARCCORE_HOST_DEVICE(const KeyType& a, const KeyType& b) {
-      return a < b;
-    };
     switch (exec_policy) {
 #if defined(ARCANE_COMPILING_CUDA)
     case eExecutionPolicy::CUDA: {
@@ -84,12 +81,12 @@ class GenericSorterMergeSort
       // Premier appel pour connaitre la taille pour l'allocation
       ARCANE_CHECK_CUDA(::cub::DeviceMergeSort::SortKeysCopy(nullptr, temp_storage_size,
                                                              input_iter, output_iter, nb_item,
-                                                             select_lambda, stream));
+                                                             compare_lambda, stream));
 
       s.m_algo_storage.allocate(temp_storage_size);
       ARCANE_CHECK_CUDA(::cub::DeviceMergeSort::SortKeysCopy(s.m_algo_storage.address(), temp_storage_size,
                                                              input_iter, output_iter, nb_item,
-                                                             select_lambda, stream));
+                                                             compare_lambda, stream));
     } break;
 #endif
 #if defined(ARCANE_COMPILING_HIP)
@@ -98,12 +95,12 @@ class GenericSorterMergeSort
       hipStream_t stream = impl::HipUtils::toNativeStream(&queue);
       // Premier appel pour connaitre la taille pour l'allocation
       ARCANE_CHECK_HIP(rocprim::merge_sort(nullptr, temp_storage_size, input_iter, output_iter,
-                                           nb_item, select_lambda, stream));
+                                           nb_item, compare_lambda, stream));
 
       s.m_algo_storage.allocate(temp_storage_size);
 
       ARCANE_CHECK_HIP(rocprim::merge_sort(s.m_algo_storage.address(), temp_storage_size, input_iter, output_iter,
-                                           nb_item, select_lambda, stream));
+                                           nb_item, compare_lambda, stream));
     } break;
 #endif
     case eExecutionPolicy::Thread:
@@ -117,7 +114,7 @@ class GenericSorterMergeSort
         ++output_iter;
         ++input_iter;
       }
-      std::sort(output_iter_begin, output_iter, select_lambda);
+      std::sort(output_iter_begin, output_iter, compare_lambda);
     } break;
     default:
       ARCANE_FATAL(getBadPolicyMessage(exec_policy));
@@ -152,12 +149,27 @@ class GenericSorter
 
  public:
 
-  template <typename InputIterator, typename OutputIterator>
-  void apply(Int32 nb_item, InputIterator input_iter, OutputIterator output_iter)
+  /*!
+   * \brief Tri les entités.
+   *
+   * Remplit \a output avec les valeurs de \a input triées via le comparateur
+   * par défaut pour le type \a DataType. Le tableau \a input n'est pas modifié.
+   *
+   * \pre output.size() >= input.size()
+   */
+  template <typename DataType>
+  void apply(SmallSpan<const DataType> input, SmallSpan<DataType> output)
   {
     impl::GenericSorterBase* base_ptr = this;
     impl::GenericSorterMergeSort gf;
-    gf.apply(*base_ptr, nb_item, input_iter, output_iter);
+    Int32 nb_item = input.size();
+    if (output.size() < nb_item)
+      ARCANE_FATAL("Output size '{0}' is smaller than input size '{1}'",
+                   output.size(), nb_item);
+    auto compare_lambda = [] ARCCORE_HOST_DEVICE(const DataType& a, const DataType& b) {
+      return a < b;
+    };
+    gf.apply(*base_ptr, nb_item, input.data(), output.data(), compare_lambda);
   }
 };
 
