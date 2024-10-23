@@ -38,9 +38,7 @@ namespace Arcane::Accelerator::impl
  */
 class ARCANE_ACCELERATOR_EXPORT GenericSorterBase
 {
-  template <typename DataType, typename FlagType>
-  friend class GenericSorterFlag;
-  friend class GenericSorterIf;
+  friend class GenericSorterMergeSort;
 
  public:
 
@@ -60,7 +58,7 @@ class ARCANE_ACCELERATOR_EXPORT GenericSorterBase
  *
  * La classe utilisateur associée est GenericSorter
  */
-class GenericSorterIf
+class GenericSorterMergeSort
 {
   // TODO: Faire le malloc sur le device associé à la queue.
   //       et aussi regarder si on peut utiliser mallocAsync().
@@ -72,15 +70,15 @@ class GenericSorterIf
   {
     RunQueue queue = s.m_queue;
     eExecutionPolicy exec_policy = queue.executionPolicy();
+    using KeyType = typename InputIterator::value_type;
+    auto select_lambda = [] ARCCORE_HOST_DEVICE(const KeyType& a, const KeyType& b) {
+      return a < b;
+    };
     switch (exec_policy) {
 #if defined(ARCANE_COMPILING_CUDA)
     case eExecutionPolicy::CUDA: {
       size_t temp_storage_size = 0;
       cudaStream_t stream = impl::CudaUtils::toNativeStream(&queue);
-      using KeyType = typename InputIterator::value_type;
-      auto select_lambda = [] __device__(const KeyType& a, const KeyType& b) {
-        return a < b;
-      };
       // Premier appel pour connaitre la taille pour l'allocation
       ARCANE_CHECK_CUDA(::cub::DeviceMergeSort::SortKeysCopy(nullptr, temp_storage_size,
                                                              input_iter, output_iter, nb_item,
@@ -90,6 +88,20 @@ class GenericSorterIf
       ARCANE_CHECK_CUDA(::cub::DeviceMergeSort::SortKeysCopy(s.m_algo_storage.address(), temp_storage_size,
                                                              input_iter, output_iter, nb_item,
                                                              select_lambda, stream));
+    } break;
+#endif
+#if defined(ARCANE_COMPILING_HIP)
+    case eExecutionPolicy::HIP: {
+      size_t temp_storage_size = 0;
+      hipStream_t stream = impl::HipUtils::toNativeStream(&queue);
+      // Premier appel pour connaitre la taille pour l'allocation
+      ARCANE_CHECK_HIP(rocprim::merge_sort(nullptr, temp_storage_size, input_iter, output_iter,
+                                           nb_item, select_lambda, stream));
+
+      s.m_algo_storage.allocate(temp_storage_size);
+
+      ARCANE_CHECK_HIP(rocprim::merge_sort(s.m_algo_storage.address(), temp_storage_size, input_iter, output_iter,
+                                           nb_item, select_lambda, stream));
     } break;
 #endif
     case eExecutionPolicy::Thread:
@@ -103,7 +115,7 @@ class GenericSorterIf
         ++output_iter;
         ++input_iter;
       }
-      std::sort(output_iter_begin, output_iter);
+      std::sort(output_iter_begin, output_iter, select_lambda);
     } break;
     default:
       ARCANE_FATAL(getBadPolicyMessage(exec_policy));
@@ -142,7 +154,7 @@ class GenericSorter
   void apply(Int32 nb_item, InputIterator input_iter, OutputIterator output_iter)
   {
     impl::GenericSorterBase* base_ptr = this;
-    impl::GenericSorterIf gf;
+    impl::GenericSorterMergeSort gf;
     gf.apply(*base_ptr, nb_item, input_iter, output_iter);
   }
 };
