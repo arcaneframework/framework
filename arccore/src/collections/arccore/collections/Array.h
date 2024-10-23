@@ -100,7 +100,7 @@ class ARCCORE_COLLECTIONS_EXPORT ArrayMetaData
 
   MemoryPointer _allocate(Int64 nb, Int64 sizeof_true_type, RunQueue* queue);
   MemoryPointer _reallocate(Int64 nb, Int64 sizeof_true_type, MemoryPointer current, RunQueue* queue);
-  void _deallocate(MemoryPointer current, Int64 sizeof_true_type, RunQueue* queue) ARCCORE_NOEXCEPT;
+  void _deallocate(const AllocatedMemoryInfo& mem_info, RunQueue* queue) ARCCORE_NOEXCEPT;
   void _setMemoryLocationHint(eMemoryLocationHint new_hint, void* ptr, Int64 sizeof_true_type);
   void _copyFromMemory(MemoryPointer destination, ConstMemoryPointer source, Int64 sizeof_true_type, RunQueue* queue);
 
@@ -336,6 +336,14 @@ class AbstractArray
 
  protected:
 
+  static constexpr Int64 typeSize() { return static_cast<Int64>(sizeof(T)); }
+  AllocatedMemoryInfo _currentMemoryInfo() const
+  {
+    return AllocatedMemoryInfo(m_ptr, m_md->size * typeSize(), m_md->capacity * typeSize());
+  }
+
+ protected:
+
   /*!
    * \brief Initialise le tableau avec la vue \a view.
    *
@@ -564,6 +572,7 @@ class AbstractArray
   {
     T* old_ptr = m_ptr;
     ArrayMetaData* old_md = m_md;
+    AllocatedMemoryInfo old_mem_info = _currentMemoryInfo();
     Int64 old_size = m_md->size;
     _directAllocate(new_capacity, queue);
     if (m_ptr!=old_ptr){
@@ -572,7 +581,7 @@ class AbstractArray
         old_ptr[i].~T();
       }
       m_md->nb_ref = old_md->nb_ref;
-      m_md->_deallocate(old_ptr, sizeof(T), queue);
+      m_md->_deallocate(old_mem_info, queue);
       _updateReferences();
     }
   }
@@ -580,7 +589,7 @@ class AbstractArray
   void _internalDeallocate(RunQueue* queue = nullptr)
   {
     if (!_isSharedNull())
-      m_md->_deallocate(m_ptr, sizeof(T), queue);
+      m_md->_deallocate(_currentMemoryInfo(), queue);
     if (m_md->is_not_null)
       _deallocateMetaData(m_md);
   }
