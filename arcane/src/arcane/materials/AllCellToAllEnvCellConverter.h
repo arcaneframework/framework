@@ -104,7 +104,7 @@ class ARCANE_MATERIALS_EXPORT AllCellToAllEnvCell
   //! Méthode d'accès à la table de "connectivité" cell -> all env cells
   ARCCORE_HOST_DEVICE Span<ComponentItemLocalId>* internal() const
   {
-    return m_allcell_allenvcell;
+    return m_allcell_allenvcell_ptr;
   }
 
   /*!
@@ -133,7 +133,8 @@ class ARCANE_MATERIALS_EXPORT AllCellToAllEnvCell
   IMeshMaterialMng* m_material_mng = nullptr;
   IMemoryAllocator* m_alloc = nullptr;
   Integer m_size = 0;
-  Span<ComponentItemLocalId>* m_allcell_allenvcell = nullptr;
+  NumArray<Span<ComponentItemLocalId>, MDDim1> m_allcell_allenvcell;
+  Span<ComponentItemLocalId>* m_allcell_allenvcell_ptr = nullptr;
   NumArray<ComponentItemLocalId, MDDim1> m_mem_pool;
   Int32 m_current_max_nb_env = 0;
 };

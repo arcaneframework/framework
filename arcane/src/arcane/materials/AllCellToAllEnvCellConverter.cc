@@ -99,11 +99,9 @@ _updateValues(IMeshMaterialMng* material_mng,
 void AllCellToAllEnvCell::
 reset()
 {
-  if (m_allcell_allenvcell) {
-    for (auto i(m_size - 1); i >= 0; --i)
-      m_allcell_allenvcell[i].~Span<ComponentItemLocalId>();
-    m_alloc->deallocate(m_allcell_allenvcell);
-    m_allcell_allenvcell = nullptr;
+  if (m_allcell_allenvcell_ptr) {
+    m_allcell_allenvcell.resize(0);
+    m_allcell_allenvcell_ptr = nullptr;
     m_mem_pool.resize(0);
   }
   m_material_mng = nullptr;
@@ -147,11 +145,12 @@ create(IMeshMaterialMng* mm, IMemoryAllocator* alloc)
   _instance->m_alloc = alloc;
   _instance->m_size = mm->mesh()->cellFamily()->maxLocalId() + 1;
 
-  _instance->m_allcell_allenvcell = reinterpret_cast<Span<ComponentItemLocalId>*>(
-  alloc->allocate(sizeof(Span<ComponentItemLocalId>) * _instance->m_size));
+  _instance->m_allcell_allenvcell.resize(_instance->m_size);
+  _instance->m_allcell_allenvcell_ptr = _instance->m_allcell_allenvcell.to1DSpan().data();
+
   // On force la valeur initiale sur tous les elmts car dans le ENUMERATE_CELL ci-dessous
   // il se peut que m_size (qui vaut maxLocalId()+1) soit different de allCells().size()
-  std::fill_n(_instance->m_allcell_allenvcell, _instance->m_size, Span<ComponentItemLocalId>());
+  _instance->m_allcell_allenvcell.fill(Span<ComponentItemLocalId>());
 
   _instance->m_current_max_nb_env = _instance->maxNbEnvPerCell();
   auto pool_size(_instance->m_current_max_nb_env * _instance->m_size);
@@ -202,16 +201,16 @@ bruteForceUpdate()
       // On n'oublie pas de mettre a jour la nouvelle valeur !
       m_current_max_nb_env = current_max_nb_env;
       // Si le nb max d'env pour les mailles a changé à cet instant, on doit refaire le memory pool
-      ARCANE_ASSERT((m_allcell_allenvcell), ("Trying to change memory pool within a null structure"));
+      ARCANE_ASSERT((m_allcell_allenvcell_ptr), ("Trying to change memory pool within a null structure"));
       // on reinit a un span vide
-      std::fill_n(m_allcell_allenvcell, m_size, Span<ComponentItemLocalId>());
+      m_allcell_allenvcell.fill(Span<ComponentItemLocalId>());
       // on recrée le pool
       auto pool_size(m_current_max_nb_env * m_size);
       m_mem_pool.resize(pool_size);
       m_mem_pool.fill(ComponentItemLocalId());
     }
     // Mise a jour des valeurs
-    Impl::_updateValues(m_material_mng, m_mem_pool.to1DSpan().data(), m_allcell_allenvcell, m_current_max_nb_env);
+    Impl::_updateValues(m_material_mng, m_mem_pool.to1DSpan().data(), m_allcell_allenvcell_ptr, m_current_max_nb_env);
   }
 }
 
