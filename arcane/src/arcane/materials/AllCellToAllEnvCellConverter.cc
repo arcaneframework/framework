@@ -29,10 +29,21 @@
 namespace Arcane::Materials
 {
 
+class AllCellToAllEnvCell::Impl
+{
+ public:
+
+  static Int32 _computeMaxNbEnvPerCell(IMeshMaterialMng* material_mng);
+  static void _updateValues(IMeshMaterialMng* material_mng,
+                            ComponentItemLocalId* mem_pool,
+                            Span<ComponentItemLocalId>* allcell_allenvcell,
+                            Int32 max_nb_env);
+};
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Int32 AllCellToAllEnvCell::
+Int32 AllCellToAllEnvCell::Impl::
 _computeMaxNbEnvPerCell(IMeshMaterialMng* material_mng)
 {
   CellToAllEnvCellConverter allenvcell_converter(material_mng);
@@ -53,7 +64,7 @@ _computeMaxNbEnvPerCell(IMeshMaterialMng* material_mng)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void AllCellToAllEnvCell::
+void AllCellToAllEnvCell::Impl::
 _updateValues(IMeshMaterialMng* material_mng,
               ComponentItemLocalId* mem_pool,
               Span<ComponentItemLocalId>* allcell_allenvcell,
@@ -93,8 +104,7 @@ reset()
       m_allcell_allenvcell[i].~Span<ComponentItemLocalId>();
     m_alloc->deallocate(m_allcell_allenvcell);
     m_allcell_allenvcell = nullptr;
-    m_alloc->deallocate(m_mem_pool);
-    m_mem_pool = nullptr;
+    m_mem_pool.resize(0);
   }
   m_material_mng = nullptr;
   m_alloc = nullptr;
@@ -119,7 +129,7 @@ destroy(AllCellToAllEnvCell* instance)
 Int32 AllCellToAllEnvCell::
 maxNbEnvPerCell() const
 {
-  return _computeMaxNbEnvPerCell(m_material_mng);
+  return Impl::_computeMaxNbEnvPerCell(m_material_mng);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -145,9 +155,9 @@ create(IMeshMaterialMng* mm, IMemoryAllocator* alloc)
 
   _instance->m_current_max_nb_env = _instance->maxNbEnvPerCell();
   auto pool_size(_instance->m_current_max_nb_env * _instance->m_size);
-  _instance->m_mem_pool = reinterpret_cast<ComponentItemLocalId*>(alloc->allocate(sizeof(ComponentItemLocalId) * pool_size));
-  std::fill_n(_instance->m_mem_pool, pool_size, ComponentItemLocalId());
-
+  _instance->m_mem_pool.resize(pool_size);
+  _instance->m_mem_pool.fill(ComponentItemLocalId());
+  Span<ComponentItemLocalId> mem_pool_view(_instance->m_mem_pool.to1DSpan());
   CellToAllEnvCellConverter all_env_cell_converter(mm);
   ENUMERATE_CELL (icell, mm->mesh()->allCells()) {
     Int32 cid = icell->itemLocalId();
@@ -161,7 +171,7 @@ create(IMeshMaterialMng* mm, IMemoryAllocator* alloc)
         _instance->m_mem_pool[offset + i] = ComponentItemLocalId(ev._varIndex());
         ++i;
       }
-      _instance->m_allcell_allenvcell[cid] = Span<ComponentItemLocalId>(_instance->m_mem_pool + offset, nb_env);
+      _instance->m_allcell_allenvcell[cid] = Span<ComponentItemLocalId>(mem_pool_view.ptrAt(offset), nb_env);
     }
   }
   return _instance;
@@ -195,14 +205,13 @@ bruteForceUpdate()
       ARCANE_ASSERT((m_allcell_allenvcell), ("Trying to change memory pool within a null structure"));
       // on reinit a un span vide
       std::fill_n(m_allcell_allenvcell, m_size, Span<ComponentItemLocalId>());
-      // on recree le pool
-      m_alloc->deallocate(m_mem_pool);
+      // on recrée le pool
       auto pool_size(m_current_max_nb_env * m_size);
-      m_mem_pool = reinterpret_cast<ComponentItemLocalId*>(m_alloc->allocate(sizeof(ComponentItemLocalId) * pool_size));
-      std::fill_n(m_mem_pool, pool_size, ComponentItemLocalId());
+      m_mem_pool.resize(pool_size);
+      m_mem_pool.fill(ComponentItemLocalId());
     }
     // Mise a jour des valeurs
-    _updateValues(m_material_mng, m_mem_pool, m_allcell_allenvcell, m_current_max_nb_env);
+    Impl::_updateValues(m_material_mng, m_mem_pool.to1DSpan().data(), m_allcell_allenvcell, m_current_max_nb_env);
   }
 }
 

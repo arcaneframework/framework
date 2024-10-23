@@ -18,6 +18,7 @@
 
 #include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/IMemoryAllocator.h"
+#include "arcane/utils/NumArray.h"
 
 #include "arcane/core/IMesh.h"
 #include "arcane/core/materials/MatItem.h"
@@ -66,6 +67,10 @@ class ARCANE_MATERIALS_EXPORT AllCellToAllEnvCell
   friend class MeshMaterialMng;
   friend class AllEnvData;
   friend ArcaneTest::MeshMaterialAcceleratorUnitTest;
+
+ public:
+
+  class Impl;
 
  private:
 
@@ -129,16 +134,8 @@ class ARCANE_MATERIALS_EXPORT AllCellToAllEnvCell
   IMemoryAllocator* m_alloc = nullptr;
   Integer m_size = 0;
   Span<ComponentItemLocalId>* m_allcell_allenvcell = nullptr;
-  ComponentItemLocalId* m_mem_pool = nullptr;
+  NumArray<ComponentItemLocalId, MDDim1> m_mem_pool;
   Int32 m_current_max_nb_env = 0;
-
- private:
-
-  static Int32 _computeMaxNbEnvPerCell(IMeshMaterialMng* material_mng);
-  static void _updateValues(IMeshMaterialMng* material_mng,
-                            ComponentItemLocalId* mem_pool,
-                            Span<ComponentItemLocalId>* allcell_allenvcell,
-                            Int32 max_nb_env);
 };
 
 /*---------------------------------------------------------------------------*/
