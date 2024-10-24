@@ -79,20 +79,61 @@ ConstituentItemVectorImpl(const ComponentItemVectorView& rhs)
 void ConstituentItemVectorImpl::
 _setItems(SmallSpan<const Int32> local_ids)
 {
-  const Int32 nb_local_id = local_ids.size();
-  Int32 pure_index = 0;
-  Int32 impure_index = nb_local_id;
-  // Tableau qui contiendra les indices des mailles pures et partielles.
-  // La première partie de 0 à nb_pure contiendra la partie pure.
-  // La seconde partie de nb_local_id à nb_local_id+nb_impure contiendra les mailles partielles
-  UniqueArray<ConstituentItemIndex> item_indexes(nb_local_id * 2);
   IMeshComponent* component = m_component;
   const bool is_env = component->isEnvironment();
   AllEnvCellVectorView all_env_cell_view = m_material_mng->view(local_ids);
   const Int32 component_id = m_component->id();
+
+  Int32 nb_pure = 0;
+  Int32 nb_impure = 0;
+
+  // Calcule le nombre de mailles pures et partielles
+  if (is_env) {
+    // Calcule le nombre de mailles pures et partielles
+    ENUMERATE_ALLENVCELL (iallenvcell, all_env_cell_view) {
+      AllEnvCell all_env_cell = *iallenvcell;
+      for (EnvCell ec : all_env_cell.subEnvItems()) {
+        if (ec.componentId() == component_id) {
+          MatVarIndex idx = ec._varIndex();
+          if (idx.arrayIndex() == 0)
+            ++nb_pure;
+          else
+            ++nb_impure;
+        }
+      }
+    }
+  }
+  else {
+    ENUMERATE_ALLENVCELL (iallenvcell, all_env_cell_view) {
+      AllEnvCell all_env_cell = *iallenvcell;
+      for (EnvCell env_cell : all_env_cell.subEnvItems()) {
+        for (MatCell mc : env_cell.subMatItems()) {
+          if (mc.componentId() == component_id) {
+            MatVarIndex idx = mc._varIndex();
+            if (idx.arrayIndex() == 0)
+              ++nb_pure;
+            else
+              ++nb_impure;
+          }
+        }
+      }
+    }
+  }
+
+  const Int32 total_nb_pure_and_impure = nb_pure + nb_impure;
+
+  // Tableau qui contiendra les indices des mailles pures et partielles.
+  // La première partie de 0 à nb_pure contiendra la partie pure.
+  // La seconde partie de nb_pure à (nb_pure+nb_impure) contiendra les mailles partielles
+  // A noter que (nb_pure + nb_impure) peut être différent de local_ids.size()
+  // si certaines mailles de \a local_ids n'ont pas le constituant.
+  UniqueArray<ConstituentItemIndex> item_indexes(total_nb_pure_and_impure);
+
+  Int32 pure_index = 0;
+  Int32 impure_index = nb_pure;
+
   if (is_env) {
     // Filtre les milieux correspondants aux local_ids
-
     ENUMERATE_ALLENVCELL (iallenvcell, all_env_cell_view) {
       AllEnvCell all_env_cell = *iallenvcell;
       for (EnvCell ec : all_env_cell.subEnvItems()) {
@@ -124,10 +165,8 @@ _setItems(SmallSpan<const Int32> local_ids)
       }
     }
   }
-  Int32 nb_pure = pure_index;
-  Int32 nb_impure = impure_index - nb_local_id;
   ConstArrayView<ConstituentItemIndex> globals = item_indexes.subView(0, nb_pure);
-  ConstArrayView<ConstituentItemIndex> multiples = item_indexes.subConstView(nb_local_id, nb_impure);
+  ConstArrayView<ConstituentItemIndex> multiples = item_indexes.subConstView(nb_pure, nb_impure);
 
   m_constituent_list->copyPureAndPartial(globals, multiples);
 
@@ -135,8 +174,8 @@ _setItems(SmallSpan<const Int32> local_ids)
   // 'm_items_local_id' mais ne le faire qu'à la demande
   // car ils ne sont pas utilisés souvent.
 
-  m_matvar_indexes.resize(nb_pure + nb_impure);
-  m_items_local_id.resize(nb_pure + nb_impure);
+  m_matvar_indexes.resize(total_nb_pure_and_impure);
+  m_items_local_id.resize(total_nb_pure_and_impure);
 
   ComponentItemSharedInfo* cisi = m_component_shared_info;
 
