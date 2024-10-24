@@ -47,10 +47,9 @@ ComponentItemVector(ComponentItemVectorView rhs)
 /*---------------------------------------------------------------------------*/
 
 void ComponentItemVector::
-_setItems(ConstArrayView<ConstituentItemIndex> globals,
-          ConstArrayView<ConstituentItemIndex> multiples)
+_setItems(SmallSpan<const Int32> local_ids)
 {
-  m_p->_setItems(globals, multiples);
+  m_p->_setItems(local_ids);
 }
 
 /*---------------------------------------------------------------------------*/

@@ -31,7 +31,7 @@ EnvCellVector::
 EnvCellVector(const CellGroup& group,IMeshEnvironment* environment)
 : ComponentItemVector(environment)
 {
-  _build(group.view());
+  _build(group.view().localIds());
 }
 
 /*---------------------------------------------------------------------------*/
@@ -41,7 +41,17 @@ EnvCellVector::
 EnvCellVector(CellVectorView view,IMeshEnvironment* environment)
 : ComponentItemVector(environment)
 {
-  _build(view);
+  _build(view.localIds());
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+EnvCellVector::
+EnvCellVector(SmallSpan<const Int32> local_ids, IMeshEnvironment* environment)
+: ComponentItemVector(environment)
+{
+  _build(local_ids);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -51,24 +61,9 @@ EnvCellVector(CellVectorView view,IMeshEnvironment* environment)
 /*---------------------------------------------------------------------------*/
 
 void EnvCellVector::
-_build(CellVectorView view)
+_build(SmallSpan<const Int32> local_ids)
 {
-  FixedArray<UniqueArray<ConstituentItemIndex>, 2> item_indexes;
-  IMeshComponent* my_component = _component();
-
-  ENUMERATE_ALLENVCELL(iallenvcell,_materialMng()->view(view)){
-    AllEnvCell all_env_cell = *iallenvcell;
-    ENUMERATE_CELL_ENVCELL(ienvcell,all_env_cell){
-      EnvCell ec = *ienvcell;
-      if (ec.component()==my_component){
-        MatVarIndex idx = ec._varIndex();
-        ConstituentItemIndex cii = ec._constituentItemIndex();
-        Int32 array_index = (idx.arrayIndex() == 0) ? 0 : 1;
-        item_indexes[array_index].add(cii);
-      }
-    }
-  }
-  this->_setItems(item_indexes[0], item_indexes[1]);
+  this->_setItems(local_ids);
 }
 
 /*---------------------------------------------------------------------------*/

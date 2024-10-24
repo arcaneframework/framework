@@ -55,8 +55,7 @@ class IConstituentItemVectorImpl
   virtual IMeshComponent* _component() const = 0;
   virtual ConstArrayView<MatVarIndex> _matvarIndexes() const = 0;
   virtual ConstituentItemLocalIdListView _constituentItemListView() const = 0;
-  virtual void _setItems(ConstArrayView<ConstituentItemIndex> globals,
-                         ConstArrayView<ConstituentItemIndex> multiples) = 0;
+  virtual void _setItems(SmallSpan<const Int32> local_ids) = 0;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -129,8 +128,7 @@ class ARCANE_CORE_EXPORT ComponentItemVector
 
  protected:
 
-  void _setItems(ConstArrayView<ConstituentItemIndex> globals,
-                 ConstArrayView<ConstituentItemIndex> multiples);
+  void _setItems(SmallSpan<const Int32> local_ids);
   ConstArrayView<Int32> _localIds() const;
   IMeshMaterialMng* _materialMng() const;
   IMeshComponent* _component() const;

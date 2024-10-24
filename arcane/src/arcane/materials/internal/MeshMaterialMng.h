@@ -234,16 +234,21 @@ class MeshMaterialMng
 
  public:
 
-  AllEnvCellVectorView view(Int32ConstArrayView local_ids);
+  AllEnvCellVectorView _view(SmallSpan<const Int32> cells_local_id);
 
-  AllEnvCellVectorView view(const CellGroup& cells) override
+  AllEnvCellVectorView view(const CellGroup& cells) final
   {
-    return this->view(cells.view().localIds());
+    return this->_view(cells.view().localIds());
   }
 
-  AllEnvCellVectorView view(CellVectorView cells) override
+  AllEnvCellVectorView view(CellVectorView cells) final
   {
-    return this->view(cells.localIds());
+    return this->_view(cells.localIds());
+  }
+
+  AllEnvCellVectorView view(SmallSpan<const Int32> cells_local_id) final
+  {
+    return this->_view(cells_local_id);
   }
 
   CellToAllEnvCellConverter cellToAllEnvCellConverter() override;
