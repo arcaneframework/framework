@@ -31,7 +31,7 @@ MatCellVector::
 MatCellVector(const CellGroup& group,IMeshMaterial* material)
 : ComponentItemVector(material)
 {
-  _build(group.view());
+  _build(group.view().localIds());
 }
 
 /*---------------------------------------------------------------------------*/
@@ -41,19 +41,29 @@ MatCellVector::
 MatCellVector(CellVectorView view,IMeshMaterial* material)
 : ComponentItemVector(material)
 {
-  _build(view);
+  _build(view.localIds());
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+MatCellVector::
+MatCellVector(SmallSpan<const Int32> local_ids, IMeshMaterial* material)
+: ComponentItemVector(material)
+{
+  _build(local_ids);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void MatCellVector::
-_build(CellVectorView view)
+_build(SmallSpan<const Int32> local_ids)
 {
   FixedArray<UniqueArray<ConstituentItemIndex>, 2> item_indexes;
   IMeshComponent* my_component = _component();
 
-  ENUMERATE_ALLENVCELL(iallenvcell,_materialMng()->view(view)){
+  ENUMERATE_ALLENVCELL (iallenvcell, _materialMng()->view(local_ids)) {
     AllEnvCell all_env_cell = *iallenvcell;
     ENUMERATE_CELL_ENVCELL(ienvcell,all_env_cell){
       ENUMERATE_CELL_MATCELL(imatcell,(*ienvcell)){

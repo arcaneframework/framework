@@ -31,7 +31,7 @@ EnvCellVector::
 EnvCellVector(const CellGroup& group,IMeshEnvironment* environment)
 : ComponentItemVector(environment)
 {
-  _build(group.view());
+  _build(group.view().localIds());
 }
 
 /*---------------------------------------------------------------------------*/
@@ -41,7 +41,17 @@ EnvCellVector::
 EnvCellVector(CellVectorView view,IMeshEnvironment* environment)
 : ComponentItemVector(environment)
 {
-  _build(view);
+  _build(view.localIds());
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+EnvCellVector::
+EnvCellVector(SmallSpan<const Int32> local_ids, IMeshEnvironment* environment)
+: ComponentItemVector(environment)
+{
+  _build(local_ids);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -51,12 +61,12 @@ EnvCellVector(CellVectorView view,IMeshEnvironment* environment)
 /*---------------------------------------------------------------------------*/
 
 void EnvCellVector::
-_build(CellVectorView view)
+_build(SmallSpan<const Int32> local_ids)
 {
   FixedArray<UniqueArray<ConstituentItemIndex>, 2> item_indexes;
   IMeshComponent* my_component = _component();
 
-  ENUMERATE_ALLENVCELL(iallenvcell,_materialMng()->view(view)){
+  ENUMERATE_ALLENVCELL (iallenvcell, _materialMng()->view(local_ids)) {
     AllEnvCell all_env_cell = *iallenvcell;
     ENUMERATE_CELL_ENVCELL(ienvcell,all_env_cell){
       EnvCell ec = *ienvcell;
