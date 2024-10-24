@@ -17,6 +17,7 @@
 #include "arcane/utils/FatalErrorException.h"
 
 #include "arcane/core/materials/IMeshMaterialMng.h"
+#include "arcane/core/materials/MatItemEnumerator.h"
 #include "arcane/core/materials/internal/IMeshComponentInternal.h"
 #include "arcane/core/materials/internal/IMeshMaterialMngInternal.h"
 
@@ -69,11 +70,55 @@ ConstituentItemVectorImpl(const ComponentItemVectorView& rhs)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
+/*!
+ * \brief Positionne les entités du vecteur
+ *
+ * Les entités du vecteur seront les entités de numéro locaux localId() et
+ * qui appartiennent à notre matériau ou notre milieu.
+ */
 void ConstituentItemVectorImpl::
-_setItems(ConstArrayView<ConstituentItemIndex> globals,
-          ConstArrayView<ConstituentItemIndex> multiples)
+_setItems(SmallSpan<const Int32> local_ids)
 {
+  FixedArray<UniqueArray<ConstituentItemIndex>, 2> item_indexes;
+  const bool is_env = m_component->isEnvironment();
+  if (is_env) {
+    IMeshComponent* my_component = _component();
+
+    ENUMERATE_ALLENVCELL (iallenvcell, _materialMng()->view(local_ids)) {
+      AllEnvCell all_env_cell = *iallenvcell;
+      ENUMERATE_CELL_ENVCELL (ienvcell, all_env_cell) {
+        EnvCell ec = *ienvcell;
+        if (ec.component() == my_component) {
+          MatVarIndex idx = ec._varIndex();
+          ConstituentItemIndex cii = ec._constituentItemIndex();
+          Int32 array_index = (idx.arrayIndex() == 0) ? 0 : 1;
+          item_indexes[array_index].add(cii);
+        }
+      }
+    }
+  }
+  else {
+    // Filtre les matériaux correspondants aux local_ids
+    IMeshComponent* my_component = _component();
+
+    ENUMERATE_ALLENVCELL (iallenvcell, _materialMng()->view(local_ids)) {
+      AllEnvCell all_env_cell = *iallenvcell;
+      ENUMERATE_CELL_ENVCELL (ienvcell, all_env_cell) {
+        ENUMERATE_CELL_MATCELL (imatcell, (*ienvcell)) {
+          MatCell mc = *imatcell;
+          if (mc.component() == my_component) {
+            MatVarIndex idx = mc._varIndex();
+            ConstituentItemIndex cii = mc._constituentItemIndex();
+            Int32 array_index = (idx.arrayIndex() == 0) ? 0 : 1;
+            item_indexes[array_index].add(cii);
+          }
+        }
+      }
+    }
+  }
+  ConstArrayView<ConstituentItemIndex> globals = item_indexes[0];
+  ConstArrayView<ConstituentItemIndex> multiples = item_indexes[1];
+
   m_constituent_list->copyPureAndPartial(globals, multiples);
 
   // TODO: Ne pas remettre à jour systématiquement les

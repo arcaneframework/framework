@@ -60,24 +60,7 @@ MatCellVector(SmallSpan<const Int32> local_ids, IMeshMaterial* material)
 void MatCellVector::
 _build(SmallSpan<const Int32> local_ids)
 {
-  FixedArray<UniqueArray<ConstituentItemIndex>, 2> item_indexes;
-  IMeshComponent* my_component = _component();
-
-  ENUMERATE_ALLENVCELL (iallenvcell, _materialMng()->view(local_ids)) {
-    AllEnvCell all_env_cell = *iallenvcell;
-    ENUMERATE_CELL_ENVCELL(ienvcell,all_env_cell){
-      ENUMERATE_CELL_MATCELL(imatcell,(*ienvcell)){
-        MatCell mc = *imatcell;
-        if (mc.component()==my_component){
-          MatVarIndex idx = mc._varIndex();
-          ConstituentItemIndex cii = mc._constituentItemIndex();
-          Int32 array_index = (idx.arrayIndex() == 0) ? 0 : 1;
-          item_indexes[array_index].add(cii);
-        }
-      }
-    }
-  }
-  this->_setItems(item_indexes[0], item_indexes[1]);
+  this->_setItems(local_ids);
 }
 
 /*---------------------------------------------------------------------------*/

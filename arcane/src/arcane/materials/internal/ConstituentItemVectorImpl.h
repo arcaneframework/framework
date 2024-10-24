@@ -75,8 +75,7 @@ class ConstituentItemVectorImpl
   {
     return m_matvar_indexes;
   }
-  void _setItems(ConstArrayView<ConstituentItemIndex> globals,
-                 ConstArrayView<ConstituentItemIndex> multiples) override;
+  void _setItems(SmallSpan<const Int32> local_ids) override;
 
  private:
 
