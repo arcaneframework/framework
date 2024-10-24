@@ -1013,9 +1013,9 @@ _checkEndCreate()
 /*---------------------------------------------------------------------------*/
 
 AllEnvCellVectorView MeshMaterialMng::
-view(Int32ConstArrayView local_ids)
+_view(SmallSpan<const Int32> local_ids)
 {
-  return AllEnvCellVectorView(local_ids, componentItemSharedInfo(LEVEL_ALLENVIRONMENT));
+  return AllEnvCellVectorView(local_ids.constSmallView(), componentItemSharedInfo(LEVEL_ALLENVIRONMENT));
 }
 
 /*---------------------------------------------------------------------------*/
