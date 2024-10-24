@@ -151,6 +151,8 @@ _setItems(SmallSpan<const Int32> local_ids)
           ConstituentItemIndex cii = ec._constituentItemIndex();
           Int32& base_index = (idx.arrayIndex() == 0) ? pure_index : impure_index;
           item_indexes[base_index] = cii;
+          m_matvar_indexes[base_index] = idx;
+          m_items_local_id[base_index] = all_env_cell.globalCellLocalId();
           ++base_index;
         }
       }
@@ -168,19 +170,13 @@ _setItems(SmallSpan<const Int32> local_ids)
             ConstituentItemIndex cii = mc._constituentItemIndex();
             Int32& base_index = (idx.arrayIndex() == 0) ? pure_index : impure_index;
             item_indexes[base_index] = cii;
+            m_matvar_indexes[base_index] = idx;
+            m_items_local_id[base_index] = all_env_cell.globalCellLocalId();
             ++base_index;
           }
         }
       }
     }
-  }
-
-  ComponentItemSharedInfo* cisi = m_component_shared_info;
-
-  for (Int32 i = 0; i < total_nb_pure_and_impure; ++i) {
-    ConstituentItemIndex cii = item_indexes[i];
-    m_matvar_indexes[i] = cisi->_varIndex(cii);
-    m_items_local_id[i] = cisi->_globalItemBase(cii).localId();
   }
 
   // Mise à jour de MeshComponentPartData
