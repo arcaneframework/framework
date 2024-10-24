@@ -7,7 +7,7 @@
 
   <meshes>
     <mesh>
-    <generator name="Cartesian3D" >
+    <!--<generator name="Cartesian3D" >
       <nb-part-x>2</nb-part-x>
       <nb-part-y>0</nb-part-y>
       <nb-part-z>0</nb-part-z>
@@ -30,8 +30,8 @@
 
       <variable><name>AdiabaticCst</name><value>1.4</value><group>ZG</group></variable>
       <variable><name>AdiabaticCst</name><value>1.4</value><group>ZD</group></variable>
-    </initialization>
-    <!---
+    </initialization>-->
+
     <filename internal-partition="true">sod.vtk</filename>
     <subdivider>
       <nb-subdivision>1</nb-subdivision>
@@ -47,7 +47,7 @@
       <variable><name>AdiabaticCst</name><value>1.4</value><group>ZG</group></variable>
       <variable><name>AdiabaticCst</name><value>1.4</value><group>ZD</group></variable>
     </initialization>
-    -->
+
     </mesh>
   </meshes>
 
