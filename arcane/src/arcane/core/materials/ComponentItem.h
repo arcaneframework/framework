@@ -107,10 +107,16 @@ class ARCANE_CORE_EXPORT ComponentCell
   //! Nombre de sous-éléments
   ARCCORE_HOST_DEVICE Int32 nbSubItem() const { return m_shared_info->_nbSubConstituent(m_constituent_item_index); }
 
-  //! Maille arcane
+  //! Maille globale
   Cell globalCell() const
   {
     return Cell(m_shared_info->_globalItemBase(m_constituent_item_index));
+  }
+
+  //! localId() de la maille globale
+  Int32 globalCellLocalId() const
+  {
+    return m_shared_info->_globalItemLocalId(m_constituent_item_index);
   }
 
   /*!
