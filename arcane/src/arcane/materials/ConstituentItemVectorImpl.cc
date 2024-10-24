@@ -129,6 +129,13 @@ _setItems(SmallSpan<const Int32> local_ids)
   // si certaines mailles de \a local_ids n'ont pas le constituant.
   UniqueArray<ConstituentItemIndex> item_indexes(total_nb_pure_and_impure);
 
+  // TODO: Ne pas remettre à jour systématiquement les
+  // 'm_items_local_id' mais ne le faire qu'à la demande
+  // car ils ne sont pas utilisés souvent.
+
+  m_matvar_indexes.resize(total_nb_pure_and_impure);
+  m_items_local_id.resize(total_nb_pure_and_impure);
+
   Int32 pure_index = 0;
   Int32 impure_index = nb_pure;
 
@@ -165,30 +172,15 @@ _setItems(SmallSpan<const Int32> local_ids)
       }
     }
   }
-  ConstArrayView<ConstituentItemIndex> globals = item_indexes.subView(0, nb_pure);
-  ConstArrayView<ConstituentItemIndex> multiples = item_indexes.subConstView(nb_pure, nb_impure);
 
-  m_constituent_list->copyPureAndPartial(globals, multiples);
-
-  // TODO: Ne pas remettre à jour systématiquement les
-  // 'm_items_local_id' mais ne le faire qu'à la demande
-  // car ils ne sont pas utilisés souvent.
-
-  m_matvar_indexes.resize(total_nb_pure_and_impure);
-  m_items_local_id.resize(total_nb_pure_and_impure);
+  m_constituent_list->copyPureAndPartial(item_indexes);
 
   ComponentItemSharedInfo* cisi = m_component_shared_info;
 
-  for (Int32 i = 0; i < nb_pure; ++i) {
-    ConstituentItemIndex cii = globals[i];
+  for (Int32 i = 0; i < total_nb_pure_and_impure; ++i) {
+    ConstituentItemIndex cii = item_indexes[i];
     m_matvar_indexes[i] = cisi->_varIndex(cii);
     m_items_local_id[i] = cisi->_globalItemBase(cii).localId();
-  }
-
-  for (Int32 i = 0; i < nb_impure; ++i) {
-    ConstituentItemIndex cii = multiples[i];
-    m_matvar_indexes[nb_pure + i] = cisi->_varIndex(cii);
-    m_items_local_id[nb_pure + i] = cisi->_globalItemBase(cii).localId();
   }
 
   // Mise à jour de MeshComponentPartData
