@@ -34,6 +34,9 @@ namespace Arcane::Materials
  */
 class ARCANE_CORE_EXPORT ConstituentItemLocalIdList
 {
+  // Pour accéder en écriture à m_constituent_item_index_list
+  friend class ConstituentItemVectorImpl;
+
  public:
 
   ConstituentItemLocalIdList(ComponentItemSharedInfo* shared_info, const String& debug_name);
@@ -66,22 +69,6 @@ class ARCANE_CORE_EXPORT ConstituentItemLocalIdList
       setConstituentItem(i, view.m_ids[i]);
   }
 
-  /*!
-   * \brief Copie les constituents partitionnés en partie pure et partielle.
-   */
-  void copyPureAndPartial(ConstArrayView<ConstituentItemIndex> pure_ids,
-                          ConstArrayView<ConstituentItemIndex> partial_ids)
-  {
-    Int32 nb_pure = pure_ids.size();
-    Int32 nb_partial = partial_ids.size();
-
-    resize(nb_pure + nb_partial);
-    for (Int32 i = 0; i < nb_pure; ++i)
-      setConstituentItem(i, pure_ids[i]);
-    for (Int32 i = 0; i < nb_partial; ++i)
-      setConstituentItem(nb_pure + i, partial_ids[i]);
-  }
-
   ConstArrayView<ConstituentItemIndex> localIds() const
   {
     return m_constituent_item_index_list;
@@ -110,6 +97,8 @@ class ARCANE_CORE_EXPORT ConstituentItemLocalIdList
   }
 
  private:
+
+  SmallSpan<ConstituentItemIndex> _mutableItemIndexList() { return m_constituent_item_index_list.smallSpan(); }
 
   //! Liste des ConstituentItemIndex pour ce constituant.
   UniqueArray<ConstituentItemIndex> m_constituent_item_index_list;

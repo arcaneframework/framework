@@ -13,8 +13,6 @@
 
 #include "arcane/core/materials/MatItemVector.h"
 
-#include "arcane/utils/FixedArray.h"
-
 #include "arcane/core/materials/MatItemEnumerator.h"
 #include "arcane/core/materials/IMeshMaterialMng.h"
 
@@ -29,9 +27,8 @@ namespace Arcane::Materials
 
 MatCellVector::
 MatCellVector(const CellGroup& group,IMeshMaterial* material)
-: ComponentItemVector(material)
+: MatCellVector(group.view().localIds(), material)
 {
-  _build(group.view().localIds());
 }
 
 /*---------------------------------------------------------------------------*/
@@ -39,9 +36,8 @@ MatCellVector(const CellGroup& group,IMeshMaterial* material)
 
 MatCellVector::
 MatCellVector(CellVectorView view,IMeshMaterial* material)
-: ComponentItemVector(material)
+: MatCellVector(view.localIds(), material)
 {
-  _build(view.localIds());
 }
 
 /*---------------------------------------------------------------------------*/
