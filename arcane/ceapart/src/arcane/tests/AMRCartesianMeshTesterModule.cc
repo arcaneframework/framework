@@ -250,12 +250,13 @@ init()
   m_cartesian_mesh = ICartesianMesh::getReference(mesh);
   m_utils = makeRef(new CartesianMeshTestUtils(m_cartesian_mesh,acceleratorMng()));
 
-  if (!subDomain()->isContinue())
+  if (!subDomain()->isContinue()) {
     _initAMR();
+    _coarsePatch();
+  }
 
   _computeCenters();
 
-  _coarsePatch();
 
   const bool do_coarse_at_init = options()->coarseAtInit();
 
