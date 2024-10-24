@@ -127,7 +127,9 @@ _setItems(SmallSpan<const Int32> local_ids)
   // La seconde partie de nb_pure à (nb_pure+nb_impure) contiendra les mailles partielles
   // A noter que (nb_pure + nb_impure) peut être différent de local_ids.size()
   // si certaines mailles de \a local_ids n'ont pas le constituant.
-  UniqueArray<ConstituentItemIndex> item_indexes(total_nb_pure_and_impure);
+  m_constituent_list->resize(total_nb_pure_and_impure);
+
+  SmallSpan<ConstituentItemIndex> item_indexes = m_constituent_list->_mutableItemIndexList();
 
   // TODO: Ne pas remettre à jour systématiquement les
   // 'm_items_local_id' mais ne le faire qu'à la demande
@@ -172,8 +174,6 @@ _setItems(SmallSpan<const Int32> local_ids)
       }
     }
   }
-
-  m_constituent_list->copyPureAndPartial(item_indexes);
 
   ComponentItemSharedInfo* cisi = m_component_shared_info;
 
