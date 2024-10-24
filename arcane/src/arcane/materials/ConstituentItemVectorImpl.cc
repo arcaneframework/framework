@@ -79,53 +79,61 @@ ConstituentItemVectorImpl(const ComponentItemVectorView& rhs)
 void ConstituentItemVectorImpl::
 _setItems(SmallSpan<const Int32> local_ids)
 {
-  FixedArray<UniqueArray<ConstituentItemIndex>, 2> item_indexes;
-  const bool is_env = m_component->isEnvironment();
+  const Int32 nb_local_id = local_ids.size();
+  Int32 pure_index = 0;
+  Int32 impure_index = nb_local_id;
+  // Tableau qui contiendra les indices des mailles pures et partielles.
+  // La première partie de 0 à nb_pure contiendra la partie pure.
+  // La seconde partie de nb_local_id à nb_local_id+nb_impure contiendra les mailles partielles
+  UniqueArray<ConstituentItemIndex> item_indexes(nb_local_id * 2);
+  IMeshComponent* component = m_component;
+  const bool is_env = component->isEnvironment();
+  AllEnvCellVectorView all_env_cell_view = m_material_mng->view(local_ids);
+  const Int32 component_id = m_component->id();
   if (is_env) {
-    IMeshComponent* my_component = _component();
+    // Filtre les milieux correspondants aux local_ids
 
-    ENUMERATE_ALLENVCELL (iallenvcell, _materialMng()->view(local_ids)) {
+    ENUMERATE_ALLENVCELL (iallenvcell, all_env_cell_view) {
       AllEnvCell all_env_cell = *iallenvcell;
-      ENUMERATE_CELL_ENVCELL (ienvcell, all_env_cell) {
-        EnvCell ec = *ienvcell;
-        if (ec.component() == my_component) {
+      for (EnvCell ec : all_env_cell.subEnvItems()) {
+        if (ec.componentId() == component_id) {
           MatVarIndex idx = ec._varIndex();
           ConstituentItemIndex cii = ec._constituentItemIndex();
-          Int32 array_index = (idx.arrayIndex() == 0) ? 0 : 1;
-          item_indexes[array_index].add(cii);
+          Int32& base_index = (idx.arrayIndex() == 0) ? pure_index : impure_index;
+          item_indexes[base_index] = cii;
+          ++base_index;
         }
       }
     }
   }
   else {
     // Filtre les matériaux correspondants aux local_ids
-    IMeshComponent* my_component = _component();
 
-    ENUMERATE_ALLENVCELL (iallenvcell, _materialMng()->view(local_ids)) {
+    ENUMERATE_ALLENVCELL (iallenvcell, all_env_cell_view) {
       AllEnvCell all_env_cell = *iallenvcell;
-      ENUMERATE_CELL_ENVCELL (ienvcell, all_env_cell) {
-        ENUMERATE_CELL_MATCELL (imatcell, (*ienvcell)) {
-          MatCell mc = *imatcell;
-          if (mc.component() == my_component) {
+      for (EnvCell env_cell : all_env_cell.subEnvItems()) {
+        for (MatCell mc : env_cell.subMatItems()) {
+          if (mc.componentId() == component_id) {
             MatVarIndex idx = mc._varIndex();
             ConstituentItemIndex cii = mc._constituentItemIndex();
-            Int32 array_index = (idx.arrayIndex() == 0) ? 0 : 1;
-            item_indexes[array_index].add(cii);
+            Int32& base_index = (idx.arrayIndex() == 0) ? pure_index : impure_index;
+            item_indexes[base_index] = cii;
+            ++base_index;
           }
         }
       }
     }
   }
-  ConstArrayView<ConstituentItemIndex> globals = item_indexes[0];
-  ConstArrayView<ConstituentItemIndex> multiples = item_indexes[1];
+  Int32 nb_pure = pure_index;
+  Int32 nb_impure = impure_index - nb_local_id;
+  ConstArrayView<ConstituentItemIndex> globals = item_indexes.subView(0, nb_pure);
+  ConstArrayView<ConstituentItemIndex> multiples = item_indexes.subConstView(nb_local_id, nb_impure);
 
   m_constituent_list->copyPureAndPartial(globals, multiples);
 
   // TODO: Ne pas remettre à jour systématiquement les
   // 'm_items_local_id' mais ne le faire qu'à la demande
   // car ils ne sont pas utilisés souvent.
-  Int32 nb_pure = globals.size();
-  Int32 nb_impure = multiples.size();
 
   m_matvar_indexes.resize(nb_pure + nb_impure);
   m_items_local_id.resize(nb_pure + nb_impure);
