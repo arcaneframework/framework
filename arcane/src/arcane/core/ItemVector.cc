@@ -14,6 +14,7 @@
 #include "arcane/core/ItemVector.h"
 
 #include "arcane/utils/MemoryUtils.h"
+#include "arcane/utils/FatalErrorException.h"
 
 #include "arcane/core/IItemFamily.h"
 
@@ -46,10 +47,12 @@ ItemVector(IItemFamily* afamily)
 
 ItemVector::
 ItemVector(IItemFamily* afamily, Int32ConstArrayView local_ids)
-: m_local_ids(_getAllocator(),local_ids)
+: m_local_ids(_getAllocator())
 , m_family(afamily)
 {
   _init();
+  m_local_ids.resize(local_ids.size());
+  MemoryUtils::copy(m_local_ids.span(),Span<const Int32>(local_ids));
 }
 
 /*---------------------------------------------------------------------------*/
