@@ -209,12 +209,12 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMesh
    * \param level Le niveau de raffinement concerné par la suppression
    * des mailles fantômes.
    *
-   * \param target_nb_ghost_layer Le nombre de couches souhaité après
+   * \param target_nb_ghost_layers Le nombre de couches souhaité après
    * appel à cette méthode. ATTENTION : Il peut être ajusté par la méthode.
    *
    * \return Le nombre de couches de mailles fantômes final.
    */
-  virtual Integer reduceNbGhostLayer(Integer level, Integer target_nb_ghost_layer) = 0;
+  virtual Integer reduceNbGhostLayers(Integer level, Integer target_nb_ghost_layers) = 0;
 
   /*!
    * \brief Renumérote les uniqueId() des entités.

@@ -174,7 +174,7 @@ class CartesianMeshImpl
   void coarseZone2D(Real2 position, Real2 length) override;
   void coarseZone3D(Real3 position, Real3 length) override;
 
-  Integer reduceNbGhostLayer(Integer level, Integer target_nb_ghost_layer) override;
+  Integer reduceNbGhostLayers(Integer level, Integer target_nb_ghost_layers) override;
 
   void renumberItemsUniqueId(const CartesianMeshRenumberingInfo& v) override;
 
@@ -768,7 +768,7 @@ coarseZone3D(Real3 position, Real3 length)
 /*---------------------------------------------------------------------------*/
 
 Integer CartesianMeshImpl::
-reduceNbGhostLayer(Integer level, Integer target_nb_ghost_layer)
+reduceNbGhostLayers(Integer level, Integer target_nb_ghost_layers)
 {
   if (level < 1) {
     ARCANE_FATAL("You cannot reduce number of ghost layer of level 0 with this method");
@@ -782,19 +782,24 @@ reduceNbGhostLayer(Integer level, Integer target_nb_ghost_layer)
   UniqueArray<Int32> cell_lid;
 
   Integer level_0_nb_ghost_layer = m_mesh->ghostLayerMng()->nbGhostLayer();
+
+  if (level_0_nb_ghost_layer == 0) {
+    return 0;
+  }
+
   Integer nb_ghost_layer = Convert::toInt32(level_0_nb_ghost_layer * pow(2, level));
 
   // On considère qu'on a toujours 2*2 mailles filles (2*2*2 en 3D).
-  if (target_nb_ghost_layer % 2 != 0) {
-    target_nb_ghost_layer++;
+  if (target_nb_ghost_layers % 2 != 0) {
+    target_nb_ghost_layers++;
   }
 
-  if (target_nb_ghost_layer == nb_ghost_layer) {
+  if (target_nb_ghost_layers == nb_ghost_layer) {
     return nb_ghost_layer;
   }
 
   Integer parent_level = level - 1;
-  Integer parent_target_nb_ghost_layer = target_nb_ghost_layer / 2;
+  Integer parent_target_nb_ghost_layer = target_nb_ghost_layers / 2;
 
   // Algorithme de numérotation des couches de mailles fantômes.
   {
@@ -881,7 +886,7 @@ reduceNbGhostLayer(Integer level, Integer target_nb_ghost_layer)
 
   m_mesh->modifier()->flagCellToCoarsen(cell_lid);
   m_mesh->modifier()->coarsenItemsV2(false);
-  return target_nb_ghost_layer;
+  return target_nb_ghost_layers;
 }
 
 /*---------------------------------------------------------------------------*/
