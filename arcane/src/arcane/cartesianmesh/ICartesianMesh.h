@@ -199,6 +199,24 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMesh
   virtual void coarseZone3D(Real3 position, Real3 length) = 0;
 
   /*!
+   * \brief Méthode permettant de supprimer une ou plusieurs couches
+   * de mailles fantômes sur un niveau de raffinement défini.
+   *
+   * Le nombre de couches de mailles fantômes souhaité peut être augmenté
+   * par la méthode. Il est nécessaire de récupérer la valeur retournée
+   * pour avoir le nombre de couches de mailles fantômes final.
+   *
+   * \param level Le niveau de raffinement concerné par la suppression
+   * des mailles fantômes.
+   *
+   * \param target_nb_ghost_layer Le nombre de couches souhaité après
+   * appel à cette méthode. ATTENTION : Il peut être ajusté par la méthode.
+   *
+   * \return Le nombre de couches de mailles fantômes final.
+   */
+  virtual Integer reduceNbGhostLayer(Integer level, Integer target_nb_ghost_layer) = 0;
+
+  /*!
    * \brief Renumérote les uniqueId() des entités.
    *
    * Suivant les valeurs de \a v, on renumérote les uniqueId() des faces et/ou 

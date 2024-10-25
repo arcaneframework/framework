@@ -46,6 +46,7 @@
 #include "arcane/cartesianmesh/v2/CartesianMeshUniqueIdRenumberingV2.h"
 
 #include "arcane/cartesianmesh/CartesianMeshAMRPatchMng.h"
+#include "arcane/core/IGhostLayerMng.h"
 
 #include <set>
 
@@ -172,6 +173,8 @@ class CartesianMeshImpl
 
   void coarseZone2D(Real2 position, Real2 length) override;
   void coarseZone3D(Real3 position, Real3 length) override;
+
+  Integer reduceNbGhostLayer(Integer level, Integer target_nb_ghost_layer) override;
 
   void renumberItemsUniqueId(const CartesianMeshRenumberingInfo& v) override;
 
@@ -759,6 +762,126 @@ coarseZone3D(Real3 position, Real3 length)
 {
   info() << "COARSEN 3D position=" << position << " length=" << length;
   _coarseZone(position, length, true);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Integer CartesianMeshImpl::
+reduceNbGhostLayer(Integer level, Integer target_nb_ghost_layer)
+{
+  if (level < 1) {
+    ARCANE_FATAL("You cannot reduce number of ghost layer of level 0 with this method");
+  }
+
+  // Nombre de couche de maille fantôme max. Bof; à modifier.
+  const Int32 max_nb_layer = 128;
+
+  computeDirections();
+
+  UniqueArray<Int32> cell_lid;
+
+  Integer level_0_nb_ghost_layer = m_mesh->ghostLayerMng()->nbGhostLayer();
+  Integer nb_ghost_layer = Convert::toInt32(level_0_nb_ghost_layer * pow(2, level));
+
+  // On considère qu'on a toujours 2*2 mailles filles (2*2*2 en 3D).
+  if (target_nb_ghost_layer % 2 != 0) {
+    target_nb_ghost_layer++;
+  }
+
+  if (target_nb_ghost_layer == nb_ghost_layer) {
+    return nb_ghost_layer;
+  }
+
+  Integer parent_level = level - 1;
+  Integer parent_target_nb_ghost_layer = target_nb_ghost_layer / 2;
+
+  // Algorithme de numérotation des couches de mailles fantômes.
+  {
+    VariableNodeInt32 level_node{ VariableBuildInfo{ m_mesh, "LevelNode" } };
+    level_node.fill(-1);
+
+    VariableCellInt32 level_cell{ VariableBuildInfo{ m_mesh, "LevelCell" } };
+    level_cell.fill(-1);
+
+    ENUMERATE_ (Face, iface, m_mesh->allFaces()) {
+      Cell front_cell = iface->frontCell();
+      Cell back_cell = iface->backCell();
+      if (
+      ((front_cell.null() || (!front_cell.isOwn() && front_cell.level() == parent_level)) && ((!back_cell.null()) && (back_cell.isOwn() && back_cell.level() == parent_level))) ||
+      ((back_cell.null() || (!back_cell.isOwn() && back_cell.level() == parent_level)) && ((!front_cell.null()) && (front_cell.isOwn() && front_cell.level() == parent_level)))) {
+        for (Node node : iface->nodes()) {
+          level_node[node] = 0;
+          debug() << "Node layer 0 : " << node.uniqueId();
+        }
+      }
+    }
+
+    bool is_modif = true;
+    Int32 current_layer = 0;
+    while (is_modif) {
+      is_modif = false;
+
+      ENUMERATE_ (Cell, icell, m_mesh->allCells()) {
+        if (icell->isOwn() || icell->level() != parent_level || level_cell[icell] != -1) {
+          continue;
+        }
+
+        Int32 min = max_nb_layer;
+        Int32 max = -1;
+
+        for (Node node : icell->nodes()) {
+          Int32 nlevel = level_node[node];
+          if (nlevel != -1) {
+            min = std::min(min, nlevel);
+            max = std::max(max, nlevel);
+          }
+        }
+
+        // On fait couche par couche (voir pour enlever cette limitation).
+        if (min != current_layer) {
+          continue;
+        }
+
+        // Maille n'ayant pas de nodes déjà traités.
+        if (min == 10 && max == -1) {
+          continue;
+        }
+
+        Integer new_level = ((min == max) ? min + 1 : max);
+
+        for (Node node : icell->nodes()) {
+          Int32 nlevel = level_node[node];
+          if (nlevel == -1) {
+            level_node[node] = new_level;
+            debug() << "Node layer " << new_level << " : " << node.uniqueId();
+            is_modif = true;
+          }
+        }
+
+        level_cell[icell] = min;
+
+        debug() << "Cell uid : " << icell->uniqueId()
+                << " -- Layer : " << min;
+
+        if (min >= parent_target_nb_ghost_layer) {
+          for (Integer i = 0; i < icell->nbHChildren(); ++i) {
+            cell_lid.add(icell->hChild(i).localId());
+          }
+        }
+      }
+      current_layer++;
+      if (current_layer >= max_nb_layer) {
+        ARCANE_FATAL("Error in ghost layer counter algo. Report it plz.");
+      }
+    }
+  }
+
+  debug() << "Ghost cells to remove (localIds) : " << cell_lid;
+
+  m_mesh->modifier()->flagCellToCoarsen(cell_lid);
+  m_mesh->modifier()->coarsenItemsV2(false);
+  return target_nb_ghost_layer;
 }
 
 /*---------------------------------------------------------------------------*/
