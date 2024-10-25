@@ -51,82 +51,6 @@ class ARCANE_ACCELERATOR_EXPORT GenericFilteringBase
 
  public:
 
-  // NOTE: cette classe devrait être privée mais ce n'est pas possible avec CUDA.
-  //! Itérateur sur la lambda via un index
-  template <typename SetterLambda>
-  class SetterLambdaIterator
-  {
-   public:
-
-    //! Permet de positionner un élément de l'itérateur de sortie
-    class Setter
-    {
-     public:
-
-      ARCCORE_HOST_DEVICE explicit Setter(const SetterLambda& s, Int32 output_index)
-      : m_output_index(output_index)
-      , m_lambda(s)
-      {}
-      ARCCORE_HOST_DEVICE void operator=(Int32 input_index)
-      {
-        m_lambda(input_index, m_output_index);
-      }
-      Int32 m_output_index = 0;
-      SetterLambda m_lambda;
-    };
-
-    using value_type = Int32;
-    using iterator_category = std::random_access_iterator_tag;
-    using reference = Setter;
-    using difference_type = ptrdiff_t;
-    using pointer = void;
-
-    using ThatClass = SetterLambdaIterator<SetterLambda>;
-
-   public:
-
-    ARCCORE_HOST_DEVICE SetterLambdaIterator(const SetterLambda& s)
-    : m_lambda(s)
-    {}
-    ARCCORE_HOST_DEVICE explicit SetterLambdaIterator(const SetterLambda& s, Int32 v)
-    : m_lambda(s)
-    , m_index(v)
-    {}
-
-   public:
-
-    ARCCORE_HOST_DEVICE SetterLambdaIterator<SetterLambda>& operator++()
-    {
-      ++m_index;
-      return (*this);
-    }
-    ARCCORE_HOST_DEVICE reference operator*() const
-    {
-      return Setter(m_lambda, m_index);
-    }
-    ARCCORE_HOST_DEVICE reference operator[](Int32 x) const { return Setter(m_lambda, m_index + x); }
-    ARCCORE_HOST_DEVICE friend ThatClass operator+(Int32 x, const ThatClass& iter)
-    {
-      return ThatClass(iter.m_lambda, iter.m_index + x);
-    }
-    ARCCORE_HOST_DEVICE friend ThatClass operator+(const ThatClass& iter, Int32 x)
-    {
-      return ThatClass(iter.m_lambda, iter.m_index + x);
-    }
-    ARCCORE_HOST_DEVICE Int32 operator-(const ThatClass& x) const
-    {
-      return m_index - x.m_index;
-    }
-    ARCCORE_HOST_DEVICE friend bool operator<(const ThatClass& iter1, const ThatClass& iter2)
-    {
-      return iter1.m_index < iter2.m_index;
-    }
-
-   private:
-
-    Int32 m_index = 0;
-    SetterLambda m_lambda;
-  };
 
  protected:
 
@@ -598,7 +522,7 @@ class GenericFilterer
     impl::GenericFilteringBase* base_ptr = this;
     impl::GenericFilteringIf gf;
     impl::IndexIterator input_iter;
-    SetterLambdaIterator<SetterLambda> out(setter_lambda);
+    impl::SetterLambdaIterator<SetterLambda> out(setter_lambda);
     gf.apply(*base_ptr, nb_value, input_iter, out, select_lambda, trace_info);
   }
 

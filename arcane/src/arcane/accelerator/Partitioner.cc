@@ -23,7 +23,8 @@ namespace Arcane::Accelerator::impl
 /*---------------------------------------------------------------------------*/
 
 GenericPartitionerBase::
-GenericPartitionerBase()
+GenericPartitionerBase(const RunQueue& queue)
+: m_queue(queue)
 {
 }
 
@@ -33,8 +34,7 @@ GenericPartitionerBase()
 Int32 GenericPartitionerBase::
 _nbFirstPart() const
 {
-  if (m_queue)
-    m_queue->barrier();
+  m_queue.barrier();
   // Peut arriver si on n'a pas encore appelé _allocate()
   return m_host_nb_list1_storage[0];
 }

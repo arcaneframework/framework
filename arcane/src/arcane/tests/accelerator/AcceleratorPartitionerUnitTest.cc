@@ -62,7 +62,7 @@ class AcceleratorPartitionerUnitTest
 
  private:
 
-  ax::RunQueue* m_queue = nullptr;
+  ax::RunQueue m_queue;
 
  public:
 
@@ -99,7 +99,7 @@ AcceleratorPartitionerUnitTest(const ServiceBuildInfo& sb)
 void AcceleratorPartitionerUnitTest::
 initializeTest()
 {
-  m_queue = subDomain()->acceleratorMng()->defaultQueue();
+  m_queue = *(subDomain()->acceleratorMng()->defaultQueue());
 }
 
 /*---------------------------------------------------------------------------*/
@@ -108,7 +108,7 @@ initializeTest()
 void AcceleratorPartitionerUnitTest::
 executeTest()
 {
-  for (Int32 i = 0; i < 1; ++i) {
+  for (Int32 i = 0; i < 2; ++i) {
     executeTest2(400, i);
     executeTest2(1000000, i);
   }
@@ -159,13 +159,12 @@ _executeTestDataType(Int32 size, Int32 test_id)
     DataType v = static_cast<DataType>(to_add + ((i * 2) % 2348));
     t1[i] = v;
     t2[i] = 0;
-
     bool is_filter = (v > static_cast<DataType>(569));
     if (is_filter) {
       expected_t2[list1_index] = v;
       ++list1_index;
     }
-    else{
+    else {
       --list2_index;
       expected_t2[list2_index] = v;
     }
@@ -179,7 +178,7 @@ _executeTestDataType(Int32 size, Int32 test_id)
   switch (test_id) {
   case 0: // Mode avec lambda de filtrage
   {
-    auto filter_lambda = [] ARCCORE_HOST_DEVICE(const DataType& x) -> bool {
+    auto filter_lambda = [] ARCCORE_HOST_DEVICE(DataType x) -> bool {
       return (x > static_cast<DataType>(569));
     };
     //PartitionerLambda filter_lambda;
@@ -191,7 +190,27 @@ _executeTestDataType(Int32 size, Int32 test_id)
     vc.areEqual(nb_list1, expected_nb_list1, "NbList1");
     if (n1 < min_size_display)
       info() << "Out T2=" << t2.to1DSpan();
-    vc.areEqualArray(t2.to1DSpan(), expected_t2.to1DSpan(), "OutputList");
+    vc.areEqualArray(t2.to1DSpan(), expected_t2.to1DSpan(), "OutputList (1)");
+  } break;
+  case 1: // Mode avec lambda de filtrage pour index
+  {
+    SmallSpan<const DataType> t1_view(t1.to1DSmallSpan());
+    SmallSpan<DataType> t2_view(t2.to1DSmallSpan());
+    auto filter_lambda = [=] ARCCORE_HOST_DEVICE(Int32 index) -> bool {
+      return (t1_view[index] > static_cast<DataType>(569));
+    };
+    auto setter_lambda = [=] ARCCORE_HOST_DEVICE(Int32 input_index, Int32 output_index) {
+      t2_view[output_index] = t1_view[input_index];
+    };
+    Arcane::Accelerator::GenericPartitioner generic_partitioner(m_queue);
+    Int32 nb_list1 = 0;
+    generic_partitioner.applyWithIndex<DataType>(n1, setter_lambda, filter_lambda);
+    nb_list1 = generic_partitioner.nbFirstPart();
+    info() << "NB_List1_accelerator2=" << nb_list1;
+    vc.areEqual(nb_list1, expected_nb_list1, "NbList1");
+    if (n1 < min_size_display)
+      info() << "Out T2=" << t2.to1DSpan();
+    vc.areEqualArray(t2.to1DSpan(), expected_t2.to1DSpan(), "OutputList (2)");
   } break;
   }
 }

@@ -21,6 +21,7 @@
 #include "arcane/accelerator/AcceleratorGlobal.h"
 #include "arcane/accelerator/core/RunQueue.h"
 #include "arcane/accelerator/CommonUtils.h"
+#include "arcane/accelerator/RunCommandLaunchInfo.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -44,7 +45,7 @@ class ARCANE_ACCELERATOR_EXPORT GenericPartitionerBase
 
  public:
 
-  GenericPartitionerBase();
+  GenericPartitionerBase(const RunQueue& queue);
 
  protected:
 
@@ -53,7 +54,7 @@ class ARCANE_ACCELERATOR_EXPORT GenericPartitionerBase
 
  protected:
 
-  RunQueue* m_queue = nullptr;
+  RunQueue m_queue;
   GenericDeviceStorage m_algo_storage;
   DeviceStorage<int> m_device_nb_list1_storage;
   NumArray<Int32, MDDim1> m_host_nb_list1_storage;
@@ -79,17 +80,19 @@ class GenericPartitionerIf
 
   template <typename SelectLambda, typename InputIterator, typename OutputIterator>
   void apply(GenericPartitionerBase& s, Int32 nb_item, InputIterator input_iter, OutputIterator output_iter,
-             const SelectLambda& select_lambda)
+             const SelectLambda& select_lambda, const TraceInfo& trace_info = TraceInfo())
   {
-    eExecutionPolicy exec_policy = eExecutionPolicy::Sequential;
-    RunQueue* queue = s.m_queue;
-    if (queue)
-      exec_policy = queue->executionPolicy();
+    RunQueue queue = s.m_queue;
+    eExecutionPolicy exec_policy = queue.executionPolicy();
+    RunCommand command = makeCommand(queue);
+    command << trace_info;
+    impl::RunCommandLaunchInfo launch_info(command, nb_item);
+    launch_info.beginExecute();
     switch (exec_policy) {
 #if defined(ARCANE_COMPILING_CUDA)
     case eExecutionPolicy::CUDA: {
       size_t temp_storage_size = 0;
-      cudaStream_t stream = impl::CudaUtils::toNativeStream(queue);
+      cudaStream_t stream = impl::CudaUtils::toNativeStream(&queue);
       // Premier appel pour connaitre la taille pour l'allocation
       int* nb_list1_ptr = nullptr;
       ARCANE_CHECK_CUDA(::cub::DevicePartition::If(nullptr, temp_storage_size,
@@ -101,14 +104,14 @@ class GenericPartitionerIf
       ARCANE_CHECK_CUDA(::cub::DevicePartition::If(s.m_algo_storage.address(), temp_storage_size,
                                                    input_iter, output_iter, nb_list1_ptr, nb_item,
                                                    select_lambda, stream));
-      s.m_device_nb_list1_storage.copyToAsync(s.m_host_nb_list1_storage, queue);
+      s.m_device_nb_list1_storage.copyToAsync(s.m_host_nb_list1_storage, &queue);
     } break;
 #endif
 #if defined(ARCANE_COMPILING_HIP)
     case eExecutionPolicy::HIP: {
       size_t temp_storage_size = 0;
       // Premier appel pour connaitre la taille pour l'allocation
-      hipStream_t stream = impl::HipUtils::toNativeStream(queue);
+      hipStream_t stream = impl::HipUtils::toNativeStream(&queue);
       int* nb_list1_ptr = nullptr;
       ARCANE_CHECK_HIP(rocprim::partition(nullptr, temp_storage_size, input_iter, output_iter,
                                           nb_list1_ptr, nb_item, select_lambda, stream));
@@ -118,7 +121,7 @@ class GenericPartitionerIf
 
       ARCANE_CHECK_HIP(rocprim::partition(s.m_algo_storage.address(), temp_storage_size, input_iter, output_iter,
                                           nb_list1_ptr, nb_item, select_lambda, stream));
-      s.m_device_nb_list1_storage.copyToAsync(s.m_host_nb_list1_storage, queue);
+      s.m_device_nb_list1_storage.copyToAsync(s.m_host_nb_list1_storage, &queue);
     } break;
 #endif
     case eExecutionPolicy::Thread:
@@ -146,6 +149,7 @@ class GenericPartitionerIf
     default:
       ARCANE_FATAL(getBadPolicyMessage(exec_policy));
     }
+    launch_info.endExecute();
   }
 };
 
@@ -161,31 +165,63 @@ namespace Arcane::Accelerator
 /*---------------------------------------------------------------------------*/
 /*!
  * \brief Algorithme générique de filtrage sur accélérateur.
- *
- * Dans les méthodes suivantes, l'argument \a queue peut être nul auquel cas
- * l'algorithme s'applique sur l'hôte en séquentiel.
  */
 class GenericPartitioner
 : private impl::GenericPartitionerBase
 {
  public:
 
-  explicit GenericPartitioner(RunQueue* queue)
+  explicit GenericPartitioner(const RunQueue& queue)
+  : impl::GenericPartitionerBase(queue)
   {
-    m_queue = queue;
     _allocate();
   }
 
  public:
 
+  template <typename SelectLambda>
+  class SelectLambdaWrapper
+  {
+   public:
+
+    SelectLambdaWrapper(const SelectLambda& s)
+    : m_lambda(s)
+    {}
+    ARCCORE_HOST_DEVICE bool operator()(Int32 x) const
+    {
+      return m_lambda(x);
+    }
+
+   private:
+
+    SelectLambda m_lambda;
+  };
+
+ public:
+
+  template <typename DataType, typename SelectLambda, typename SetterLambda>
+  void applyWithIndex(Int32 nb_value, const SetterLambda& setter_lambda,
+                      const SelectLambda& select_lambda, const TraceInfo& trace_info = TraceInfo())
+  {
+    if (nb_value == 0)
+      return;
+    _setCalled();
+    impl::GenericPartitionerBase* base_ptr = this;
+    impl::GenericPartitionerIf gf;
+
+    impl::IndexIterator input_iter;
+    impl::SetterLambdaIterator<SetterLambda> out(setter_lambda);
+    gf.apply(*base_ptr, nb_value, input_iter, out, select_lambda, trace_info);
+  }
+
   template <typename InputIterator, typename OutputIterator, typename SelectLambda>
   void applyIf(Int32 nb_item, InputIterator input_iter, OutputIterator output_iter,
-               const SelectLambda& select_lambda)
+               const SelectLambda& select_lambda, const TraceInfo& trace_info = TraceInfo())
   {
     _setCalled();
     impl::GenericPartitionerBase* base_ptr = this;
     impl::GenericPartitionerIf gf;
-    gf.apply(*base_ptr, nb_item, input_iter, output_iter, select_lambda);
+    gf.apply(*base_ptr, nb_item, input_iter, output_iter, select_lambda, trace_info);
   }
 
   //! Nombre d'éléments de la première partie de la liste.
