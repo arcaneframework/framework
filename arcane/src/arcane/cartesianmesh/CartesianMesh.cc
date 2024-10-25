@@ -879,7 +879,7 @@ _applyCoarse(ConstArrayView<Int32> cells_local_id)
   if (m_amr_type == eMeshAMRKind::Cell) {
     debug() << "Coarse with modifier() (for all mesh types)";
     m_mesh->modifier()->flagCellToCoarsen(cells_local_id);
-    m_mesh->modifier()->coarsenItemsV2();
+    m_mesh->modifier()->coarsenItemsV2(true);
   }
   else if (m_amr_type == eMeshAMRKind::PatchCartesianMeshOnly) {
     ARCANE_NOT_YET_IMPLEMENTED("Patch AMR for Cartesian only is not implemented yet");

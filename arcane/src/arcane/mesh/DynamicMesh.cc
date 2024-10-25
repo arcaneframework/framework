@@ -1354,7 +1354,7 @@ coarsenItems()
 /*---------------------------------------------------------------------------*/
 
 void DynamicMesh::
-coarsenItemsV2()
+coarsenItemsV2(bool update_parent_flag)
 {
   Trace::Setter mci(traceMng(), _className());
   _checkDimension();
@@ -1363,7 +1363,7 @@ coarsenItemsV2()
   if (m_amr_type != eMeshAMRKind::Cell) {
     ARCANE_FATAL("This method is not compatible with Cartesian Mesh Patch AMR");
   }
-  m_mesh_refinement->coarsenItemsV2();
+  m_mesh_refinement->coarsenItemsV2(update_parent_flag);
 }
 
 /*---------------------------------------------------------------------------*/

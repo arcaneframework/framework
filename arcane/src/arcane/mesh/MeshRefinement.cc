@@ -586,7 +586,7 @@ coarsenItems(const bool maintain_level_one)
 /*---------------------------------------------------------------------------*/
 
 bool MeshRefinement::
-coarsenItemsV2()
+coarsenItemsV2(bool update_parent_flag)
 {
   // Nettoyage des flags de raffinement de l'étape précédente
   this->_cleanRefinementFlags();
@@ -602,9 +602,11 @@ coarsenItemsV2()
         ARCANE_FATAL("Cannot coarse level-0 cell");
       }
       Cell parent = cell.hParent();
-      parent.mutableItemBase().addFlags(ItemFlags::II_JustCoarsened);
-      parent.mutableItemBase().removeFlags(ItemFlags::II_Inactive);
-      parent.mutableItemBase().removeFlags(ItemFlags::II_CoarsenInactive);
+      if (update_parent_flag) {
+        parent.mutableItemBase().addFlags(ItemFlags::II_JustCoarsened);
+        parent.mutableItemBase().removeFlags(ItemFlags::II_Inactive);
+        parent.mutableItemBase().removeFlags(ItemFlags::II_CoarsenInactive);
+      }
 
       // Pour une maille de niveau n-1, si une de ses mailles filles doit être dé-raffinée,
       // alors toutes ses mailles filles doivent être dé-raffinées.
@@ -619,8 +621,11 @@ coarsenItemsV2()
       //d_to_coarse_uid.add(cell.uniqueId());
 
       // Pour l'instant, il est impossible de dé-raffiner de plusieurs niveaux en une fois.
-      if ((parent.mutableItemBase().flags() & ItemFlags::II_Coarsen) || (cell.mutableItemBase().flags() & ItemFlags::II_JustCoarsened)) {
+      if (parent.mutableItemBase().flags() & ItemFlags::II_Coarsen) {
         ARCANE_FATAL("Cannot coarse parent and child in same time");
+      }
+      if (cell.nbHChildren() != 0) {
+        ARCANE_FATAL("Cannot coarse cell with children");
       }
     }
   }
@@ -722,7 +727,7 @@ coarsenItemsV2()
   UniqueArray<Int64> ghost_cell_to_refine;
   UniqueArray<Int64> ghost_cell_to_coarsen;
 
-  m_mesh->modifier()->updateGhostLayerFromParent(ghost_cell_to_refine, ghost_cell_to_coarsen, false);
+  m_mesh->modifier()->updateGhostLayerFromParent(ghost_cell_to_refine, ghost_cell_to_coarsen, true);
 
   // _update(ghost_cell_to_refine);
 
