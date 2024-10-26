@@ -162,7 +162,7 @@ apply(MaterialModifierOperation* operation)
     connectivity->fillCellsNbMaterial(ids, env_id, cells_current_nb_material.view(), m_queue);
 
     {
-      Accelerator::GenericFilterer filterer(&m_queue);
+      Accelerator::GenericFilterer filterer(m_queue);
       SmallSpan<Int32> cells_unchanged_in_env_view = cells_unchanged_in_env.view();
       SmallSpan<Int32> cells_changed_in_env_view = cells_changed_in_env.view();
       SmallSpan<const Int16> cells_current_nb_material_view = m_work_info.m_cells_current_nb_material.view();
@@ -559,7 +559,7 @@ _addItemsToIndexer(MeshMaterialVariableIndexer* var_indexer,
 
   SmallSpan<const bool> cells_is_partial = m_work_info.m_cells_is_partial;
 
-  Accelerator::GenericFilterer filterer(&m_queue);
+  Accelerator::GenericFilterer filterer(m_queue);
 
   // TODO: pour l'instant on remplit en deux fois mais il serait
   // possible de le faire en une seule fois en utilisation l'algorithme de Partition.
@@ -687,7 +687,7 @@ _removeItemsInGroup(ItemGroup cells, SmallSpan<const Int32> removed_ids)
     SmallSpan<const Int32> input_ids(items_local_id);
     SmallSpan<Int32> output_ids_view(items_local_id);
     SmallSpan<const bool> filtered_cells(m_work_info.removedCells());
-    Accelerator::GenericFilterer filterer(&m_queue);
+    Accelerator::GenericFilterer filterer(m_queue);
     auto select_filter = [=] ARCCORE_HOST_DEVICE(Int32 local_id) -> bool {
       return !filtered_cells[local_id];
     };

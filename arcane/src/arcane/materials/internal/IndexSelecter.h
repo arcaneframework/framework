@@ -75,7 +75,7 @@ class IndexSelecter
       to_instantiate = true;
     }
     if (to_instantiate) {
-      m_generic_filterer_instance = new GenericFilterer(m_asynchronous_queue_pointer);
+      m_generic_filterer_instance = new GenericFilterer(*m_asynchronous_queue_pointer);
     }
 
     // On sélectionne dans [0,m_index_number[ les indices i pour lesquels pred(i) est vrai
