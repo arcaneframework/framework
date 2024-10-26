@@ -186,7 +186,7 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RunQueue
    * Avec CUDA, le pointeur retourné est un 'cudaStream_t*'. Avec HIP, il
    * s'agit d'un 'hipStream_t*'.
    */
-  void* platformStream();
+  void* platformStream() const;
 
  private:
 

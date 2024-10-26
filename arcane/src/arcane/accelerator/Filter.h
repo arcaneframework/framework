@@ -67,7 +67,7 @@ class ARCANE_ACCELERATOR_EXPORT GenericFilteringBase
  protected:
 
   //! File d'exécution. Ne doit pas être nulle.
-  RunQueue* m_queue = nullptr;
+  RunQueue m_queue;
   // Mémoire de travail pour l'algorithme de filtrage.
   GenericDeviceStorage m_algo_storage;
   //! Mémoire sur le device du nombre de valeurs filtrées
@@ -97,7 +97,7 @@ class SyclGenericFilteringImpl
   static void apply(GenericFilteringBase& s, Int32 nb_item, InputIterator input_iter,
                     OutputIterator output_iter, SelectLambda select_lambda)
   {
-    RunQueue* queue = s.m_queue;
+    RunQueue queue = s.m_queue;
     using DataType = std::iterator_traits<OutputIterator>::value_type;
 #if defined(ARCANE_USE_SCAN_ONEDPL) && defined(__INTEL_LLVM_COMPILER)
     sycl::queue true_queue = impl::SyclUtils::toNativeStream(queue);
@@ -118,9 +118,9 @@ class SyclGenericFilteringImpl
         in_scan_data[i] = select_lambda(input_iter[i]) ? 1 : 0;
       };
     }
-    queue->barrier();
+    queue.barrier();
     SyclScanner<false /*is_exclusive*/, Int32, ScannerSumOperator<Int32>> scanner;
-    scanner.doScan(*queue, in_scan_data, out_scan_data, 0);
+    scanner.doScan(queue, in_scan_data, out_scan_data, 0);
     // La valeur de 'out_data' pour le dernier élément (nb_item-1) contient la taille du filtre
     Int32 nb_output = out_scan_data[nb_item - 1];
     s.m_host_nb_out_storage[0] = nb_output;
@@ -157,7 +157,7 @@ class SyclGenericFilteringImpl
     }
     // Obligatoire à cause de 'out_copy'. On pourra le supprimer avec une
     // allocation temporaire.
-    queue->barrier();
+    queue.barrier();
 #endif
   }
 };
@@ -186,9 +186,8 @@ class GenericFilteringFlag
     [[maybe_unused]] DataType* output_data = output.data();
     [[maybe_unused]] const FlagType* flag_data = flag.data();
     eExecutionPolicy exec_policy = eExecutionPolicy::Sequential;
-    RunQueue* queue = s.m_queue;
-    ARCANE_CHECK_POINTER(queue);
-    exec_policy = queue->executionPolicy();
+    RunQueue queue = s.m_queue;
+    exec_policy = queue.executionPolicy();
     switch (exec_policy) {
 #if defined(ARCANE_COMPILING_CUDA)
     case eExecutionPolicy::CUDA: {
@@ -228,7 +227,7 @@ class GenericFilteringFlag
       impl::IndexIterator iter2(0);
       auto filter_lambda = [=](Int32 input_index) -> bool { return flag[input_index] != 0; };
       auto setter_lambda = [=](Int32 input_index, Int32 output_index) { output[output_index] = input[input_index]; };
-      GenericFilteringBase::SetterLambdaIterator<decltype(setter_lambda)> out(setter_lambda);
+      impl::SetterLambdaIterator<decltype(setter_lambda)> out(setter_lambda);
       SyclGenericFilteringImpl::apply(s, nb_item, iter2, out, filter_lambda);
     } break;
 #endif
@@ -269,10 +268,9 @@ class GenericFilteringIf
              const SelectLambda& select_lambda, const TraceInfo& trace_info)
   {
     eExecutionPolicy exec_policy = eExecutionPolicy::Sequential;
-    RunQueue* queue = s.m_queue;
-    ARCANE_CHECK_POINTER(queue);
-    exec_policy = queue->executionPolicy();
-    RunCommand command = makeCommand(*queue);
+    RunQueue queue = s.m_queue;
+    exec_policy = queue.executionPolicy();
+    RunCommand command = makeCommand(queue);
     command << trace_info;
     impl::RunCommandLaunchInfo launch_info(command, nb_item);
     launch_info.beginExecute();
@@ -362,9 +360,21 @@ class GenericFilterer
    *
    * \pre queue!=nullptr
    */
+  ARCANE_DEPRECATED_REASON("Y2024: Use GenericFilterer(const RunQueue&) instead")
   explicit GenericFilterer(RunQueue* queue)
   {
     ARCANE_CHECK_POINTER(queue);
+    m_queue = *queue;
+    _allocate();
+  }
+
+  /*!
+   * \brief Créé une instance.
+   *
+   * \pre queue!=nullptr
+   */
+  explicit GenericFilterer(const RunQueue& queue)
+  {
     m_queue = queue;
     _allocate();
   }

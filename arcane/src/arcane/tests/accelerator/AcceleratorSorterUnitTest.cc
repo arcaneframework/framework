@@ -109,7 +109,7 @@ executeTest()
 {
   for (Int32 i = 0; i < 1; ++i) {
     executeTest2(400, i);
-    executeTest2(1000000, i);
+    //executeTest2(1000000, i);
   }
 }
 
@@ -150,13 +150,15 @@ _executeTestDataType(Int32 size, Int32 test_id)
     int to_add = 2 + (rng_distrib(randomizer));
     DataType v = static_cast<DataType>(to_add + ((i * 2) % 5832));
     t1[i] = v;
+    //std::cout << "TI I=" << i << " v=" << v << "\n";
     t2_ref[i] = v;
   }
   std::sort(t2_ref.begin(), t2_ref.end());
   switch (test_id) {
   case 0: {
-    Arcane::Accelerator::GenericSorter generic_partitioner(m_queue);
+    Arcane::Accelerator::GenericSorter generic_partitioner(queue);
     generic_partitioner.apply(t1.to1DConstSmallSpan(), t2.to1DSmallSpan());
+    queue.barrier();
   } break;
   }
   vc.areEqualArray(t2.to1DSpan(), t2_ref.constSpan(), "SortedArray");

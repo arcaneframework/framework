@@ -35,8 +35,7 @@ GenericFilteringBase()
 Int32 GenericFilteringBase::
 _nbOutputElement() const
 {
-  if (m_queue)
-    m_queue->barrier();
+  m_queue.barrier();
   return m_host_nb_out_storage[0];
 }
 
@@ -50,7 +49,7 @@ _allocate()
     m_use_direct_host_storage = (v.value() != 0);
 
   // Pour l'instant l'usage direct de l'hôte n'est testé qu'avec CUDA.
-  if (m_queue && m_queue->executionPolicy() != eExecutionPolicy::CUDA)
+  if (m_queue.executionPolicy() != eExecutionPolicy::CUDA)
     m_use_direct_host_storage = false;
 
   eMemoryRessource r = eMemoryRessource::HostPinned;

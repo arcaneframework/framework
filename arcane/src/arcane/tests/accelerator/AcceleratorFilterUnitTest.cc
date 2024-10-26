@@ -59,10 +59,6 @@ class AcceleratorFilterUnitTest
   void initializeTest() override;
   void executeTest() override;
 
- private:
-
-  ax::RunQueue* m_queue = nullptr;
-
  public:
 
   void _executeTest1();
@@ -104,7 +100,6 @@ AcceleratorFilterUnitTest::
 void AcceleratorFilterUnitTest::
 initializeTest()
 {
-  m_queue = subDomain()->acceleratorMng()->defaultQueue();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -183,7 +178,7 @@ _executeTestDataType(Int32 size, Int32 test_id)
     };
     NumArray<DataType, MDDim1> t1_bis(t1);
     NumArray<DataType, MDDim1> t2_bis(t2);
-    Arcane::Accelerator::GenericFilterer generic_filterer(m_queue);
+    Arcane::Accelerator::GenericFilterer generic_filterer(queue);
     Int32 nb_out = 0;
     if (test_id == 3) {
       generic_filterer.applyIf(n1, t1.to1DSpan().begin(), t2.to1DSpan().begin(), filter_lambda);
@@ -215,7 +210,7 @@ _executeTestDataType(Int32 size, Int32 test_id)
     NumArray<DataType, MDDim1> t1_bis(t1);
     NumArray<DataType, MDDim1> t2_bis(t2);
 
-    Arcane::Accelerator::GenericFilterer filterer(m_queue);
+    Arcane::Accelerator::GenericFilterer filterer(queue);
     SmallSpan<const Int16> filter_flags_view = filter_flags;
     filterer.apply(t1.to1DConstSmallSpan(), t2.to1DSmallSpan(), filter_flags_view);
     Int32 nb_out = filterer.nbOutputElement();
