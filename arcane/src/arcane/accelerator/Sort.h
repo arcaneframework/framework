@@ -44,7 +44,7 @@ class ARCANE_ACCELERATOR_EXPORT GenericSorterBase
 
  public:
 
-  GenericSorterBase(const RunQueue& queue);
+  explicit GenericSorterBase(const RunQueue& queue);
 
  protected:
 

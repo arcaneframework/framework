@@ -39,13 +39,11 @@ namespace Arcane::Accelerator::impl
  */
 class ARCANE_ACCELERATOR_EXPORT GenericPartitionerBase
 {
-  template <typename DataType, typename FlagType>
-  friend class GenericPartitionerFlag;
   friend class GenericPartitionerIf;
 
  public:
 
-  GenericPartitionerBase(const RunQueue& queue);
+  explicit GenericPartitionerBase(const RunQueue& queue);
 
  protected:
 
@@ -104,7 +102,7 @@ class GenericPartitionerIf
       ARCANE_CHECK_CUDA(::cub::DevicePartition::If(s.m_algo_storage.address(), temp_storage_size,
                                                    input_iter, output_iter, nb_list1_ptr, nb_item,
                                                    select_lambda, stream));
-      s.m_device_nb_list1_storage.copyToAsync(s.m_host_nb_list1_storage, &queue);
+      s.m_device_nb_list1_storage.copyToAsync(s.m_host_nb_list1_storage, queue);
     } break;
 #endif
 #if defined(ARCANE_COMPILING_HIP)
@@ -121,7 +119,7 @@ class GenericPartitionerIf
 
       ARCANE_CHECK_HIP(rocprim::partition(s.m_algo_storage.address(), temp_storage_size, input_iter, output_iter,
                                           nb_list1_ptr, nb_item, select_lambda, stream));
-      s.m_device_nb_list1_storage.copyToAsync(s.m_host_nb_list1_storage, &queue);
+      s.m_device_nb_list1_storage.copyToAsync(s.m_host_nb_list1_storage, queue);
     } break;
 #endif
     case eExecutionPolicy::Thread:
@@ -176,26 +174,6 @@ class GenericPartitioner
   {
     _allocate();
   }
-
- public:
-
-  template <typename SelectLambda>
-  class SelectLambdaWrapper
-  {
-   public:
-
-    SelectLambdaWrapper(const SelectLambda& s)
-    : m_lambda(s)
-    {}
-    ARCCORE_HOST_DEVICE bool operator()(Int32 x) const
-    {
-      return m_lambda(x);
-    }
-
-   private:
-
-    SelectLambda m_lambda;
-  };
 
  public:
 

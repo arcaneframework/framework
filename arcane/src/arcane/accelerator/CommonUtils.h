@@ -51,7 +51,8 @@ class ARCANE_ACCELERATOR_EXPORT CudaUtils
 {
  public:
 
-  static cudaStream_t toNativeStream(RunQueue* queue);
+  static cudaStream_t toNativeStream(const RunQueue* queue);
+  static cudaStream_t toNativeStream(const RunQueue& queue);
 };
 #endif
 
@@ -63,7 +64,8 @@ class ARCANE_ACCELERATOR_EXPORT HipUtils
 {
  public:
 
-  static hipStream_t toNativeStream(RunQueue* queue);
+  static hipStream_t toNativeStream(const RunQueue* queue);
+  static hipStream_t toNativeStream(const RunQueue& queue);
 };
 #endif
 
@@ -75,7 +77,8 @@ class ARCANE_ACCELERATOR_EXPORT SyclUtils
 {
  public:
 
-  static sycl::queue toNativeStream(RunQueue* queue);
+  static sycl::queue toNativeStream(const RunQueue* queue);
+  static sycl::queue toNativeStream(const RunQueue& queue);
 };
 #endif
 
@@ -135,7 +138,7 @@ class ARCANE_ACCELERATOR_EXPORT DeviceStorageBase
  protected:
 
   //! Copie l'instance dans \a dest_ptr
-  void _copyToAsync(Span<std::byte> destination, Span<const std::byte> source, RunQueue* queue);
+  void _copyToAsync(Span<std::byte> destination, Span<const std::byte> source, const RunQueue& queue);
 };
 
 /*---------------------------------------------------------------------------*/
@@ -150,10 +153,6 @@ class DeviceStorage
 {
  public:
 
-  ~DeviceStorage()
-  {
-  }
-
   DataType* address() { return reinterpret_cast<DataType*>(m_storage.address()); }
   size_t size() const { return m_storage.size(); }
   DataType* allocate()
@@ -164,7 +163,7 @@ class DeviceStorage
   void deallocate() { m_storage.deallocate(); }
 
   //! Copie l'instance dans \a dest_ptr
-  void copyToAsync(SmallSpan<DataType> dest_ptr, RunQueue* queue)
+  void copyToAsync(SmallSpan<DataType> dest_ptr, const RunQueue& queue)
   {
     _copyToAsync(asWritableBytes(dest_ptr), m_storage.bytes(), queue);
   }
