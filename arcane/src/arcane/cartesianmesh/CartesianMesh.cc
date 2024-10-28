@@ -782,6 +782,8 @@ reduceNbGhostLayers(Integer level, Integer target_nb_ghost_layers)
     level_max = std::max(level_max, icell->level());
   }
 
+  level_max = m_mesh->parallelMng()->reduce(Parallel::ReduceMax, level_max);
+
   computeDirections();
 
   Integer level_0_nb_ghost_layer = m_mesh->ghostLayerMng()->nbGhostLayer();
@@ -897,8 +899,9 @@ reduceNbGhostLayers(Integer level, Integer target_nb_ghost_layers)
     }
   }
 
-  for (Integer i = cell_lid2.size() - 1; i >= 0; --i) {
-    if (cell_lid2[i].empty()) {
+  for (Integer i = level_max - 1; i >= 0; --i) {
+    // Une comm pour en éviter plein d'autres.
+    if (m_mesh->parallelMng()->reduce(Parallel::ReduceMax, cell_lid2[i].size()) == 0) {
       continue;
     }
     //debug() << "Ghost cells to remove (level=" << i << ") (localIds) : " << cell_lid2[i];
