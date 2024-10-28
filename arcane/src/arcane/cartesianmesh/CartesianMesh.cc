@@ -776,12 +776,16 @@ reduceNbGhostLayers(Integer level, Integer target_nb_ghost_layers)
 
   // Nombre de couche de maille fantôme max. Bof; à modifier.
   const Int32 max_nb_layer = 128;
+  Int32 level_max = 0;
+
+  ENUMERATE_ (Cell, icell, m_mesh->allCells()) {
+    level_max = std::max(level_max, icell->level());
+  }
 
   computeDirections();
 
-  UniqueArray<Int32> cell_lid;
-
   Integer level_0_nb_ghost_layer = m_mesh->ghostLayerMng()->nbGhostLayer();
+  //info() << "NbGhostLayers : " << level_0_nb_ghost_layer;
 
   if (level_0_nb_ghost_layer == 0) {
     return 0;
@@ -801,6 +805,19 @@ reduceNbGhostLayers(Integer level, Integer target_nb_ghost_layers)
   Integer parent_level = level - 1;
   Integer parent_target_nb_ghost_layer = target_nb_ghost_layers / 2;
 
+  // TODO AH : On est forcé de dé-raffiner niveau par niveau. À changer.
+  UniqueArray<UniqueArray<Int32>> cell_lid2(level_max);
+
+  //UniqueArray<Int32> cell_lid;
+  std::function<void(Cell)> children_list;
+
+  children_list = [&cell_lid2, &children_list](Cell cell) -> void {
+    for (Integer i = 0; i < cell.nbHChildren(); ++i) {
+      cell_lid2[cell.level()].add(cell.hChild(i).localId());
+      children_list(cell.hChild(i));
+    }
+  };
+
   // Algorithme de numérotation des couches de mailles fantômes.
   {
     VariableNodeInt32 level_node{ VariableBuildInfo{ m_mesh, "LevelNode" } };
@@ -817,7 +834,7 @@ reduceNbGhostLayers(Integer level, Integer target_nb_ghost_layers)
       ((back_cell.null() || (!back_cell.isOwn() && back_cell.level() == parent_level)) && ((!front_cell.null()) && (front_cell.isOwn() && front_cell.level() == parent_level)))) {
         for (Node node : iface->nodes()) {
           level_node[node] = 0;
-          debug() << "Node layer 0 : " << node.uniqueId();
+          //debug() << "Node layer 0 : " << node.uniqueId();
         }
       }
     }
@@ -859,20 +876,18 @@ reduceNbGhostLayers(Integer level, Integer target_nb_ghost_layers)
           Int32 nlevel = level_node[node];
           if (nlevel == -1) {
             level_node[node] = new_level;
-            debug() << "Node layer " << new_level << " : " << node.uniqueId();
+            //debug() << "Node layer " << new_level << " : " << node.uniqueId();
             is_modif = true;
           }
         }
 
         level_cell[icell] = min;
 
-        debug() << "Cell uid : " << icell->uniqueId()
-                << " -- Layer : " << min;
+        //debug() << "Cell uid : " << icell->uniqueId()
+        //        << " -- Layer : " << min;
 
         if (min >= parent_target_nb_ghost_layer) {
-          for (Integer i = 0; i < icell->nbHChildren(); ++i) {
-            cell_lid.add(icell->hChild(i).localId());
-          }
+          children_list(*icell);
         }
       }
       current_layer++;
@@ -882,10 +897,18 @@ reduceNbGhostLayers(Integer level, Integer target_nb_ghost_layers)
     }
   }
 
-  debug() << "Ghost cells to remove (localIds) : " << cell_lid;
+  for (Integer i = cell_lid2.size() - 1; i >= 0; --i) {
+    if (cell_lid2[i].empty()) {
+      continue;
+    }
+    //debug() << "Ghost cells to remove (level=" << i << ") (localIds) : " << cell_lid2[i];
 
-  m_mesh->modifier()->flagCellToCoarsen(cell_lid);
-  m_mesh->modifier()->coarsenItemsV2(false);
+    m_mesh->modifier()->flagCellToCoarsen(cell_lid2[i]);
+    m_mesh->modifier()->coarsenItemsV2(false);
+  }
+
+  info() << "Nb ghost layer for level " << level << " : " << target_nb_ghost_layers;
+
   return target_nb_ghost_layers;
 }
 
@@ -937,8 +960,10 @@ _removeCellsInPatches(ConstArrayView<Int32> const_array_view)
     cells.removeItems(const_array_view);
   }
 
+  IParallelMng* pm = m_mesh->parallelMng();
+
   auto new_end = std::remove_if(m_amr_patch_cell_groups.begin(), m_amr_patch_cell_groups.end(),
-                                [](const CellGroup& cells) { return cells.empty(); });
+                                [&pm](const CellGroup& cells) { return pm->reduce(Parallel::ReduceMax, cells.size()) == 0; });
 
   m_amr_patch_cell_groups.resize(new_end - m_amr_patch_cell_groups.begin());
 }
