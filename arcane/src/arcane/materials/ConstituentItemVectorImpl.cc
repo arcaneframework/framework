@@ -71,7 +71,7 @@ ConstituentItemVectorImpl(const ComponentItemVectorView& rhs)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Positionne les entités du vecteur
+ * \brief Positionne les entités du vecteur.
  *
  * Les entités du vecteur seront les entités de numéro locaux localId() et
  * qui appartiennent à notre matériau ou notre milieu.
@@ -84,41 +84,7 @@ _setItems(SmallSpan<const Int32> local_ids)
   AllEnvCellVectorView all_env_cell_view = m_material_mng->view(local_ids);
   const Int32 component_id = m_component->id();
 
-  Int32 nb_pure = 0;
-  Int32 nb_impure = 0;
-
-  // Calcule le nombre de mailles pures et partielles
-  if (is_env) {
-    // Calcule le nombre de mailles pures et partielles
-    ENUMERATE_ALLENVCELL (iallenvcell, all_env_cell_view) {
-      AllEnvCell all_env_cell = *iallenvcell;
-      for (EnvCell ec : all_env_cell.subEnvItems()) {
-        if (ec.componentId() == component_id) {
-          MatVarIndex idx = ec._varIndex();
-          if (idx.arrayIndex() == 0)
-            ++nb_pure;
-          else
-            ++nb_impure;
-        }
-      }
-    }
-  }
-  else {
-    ENUMERATE_ALLENVCELL (iallenvcell, all_env_cell_view) {
-      AllEnvCell all_env_cell = *iallenvcell;
-      for (EnvCell env_cell : all_env_cell.subEnvItems()) {
-        for (MatCell mc : env_cell.subMatItems()) {
-          if (mc.componentId() == component_id) {
-            MatVarIndex idx = mc._varIndex();
-            if (idx.arrayIndex() == 0)
-              ++nb_pure;
-            else
-              ++nb_impure;
-          }
-        }
-      }
-    }
-  }
+  auto [nb_pure, nb_impure] = _computeNbPureAndImpure(local_ids);
 
   const Int32 total_nb_pure_and_impure = nb_pure + nb_impure;
 
@@ -188,6 +154,57 @@ _setItems(SmallSpan<const Int32> local_ids)
   else
     _recomputePartData();
 }
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+std::pair<Int32, Int32> ConstituentItemVectorImpl::
+_computeNbPureAndImpure(SmallSpan<const Int32> local_ids)
+{
+  IMeshComponent* component = m_component;
+  const bool is_env = component->isEnvironment();
+  AllEnvCellVectorView all_env_cell_view = m_material_mng->view(local_ids);
+  const Int32 component_id = m_component->id();
+
+  Int32 nb_pure = 0;
+  Int32 nb_impure = 0;
+
+  // Calcule le nombre de mailles pures et partielles
+  if (is_env) {
+    // Calcule le nombre de mailles pures et partielles
+    ENUMERATE_ALLENVCELL (iallenvcell, all_env_cell_view) {
+      AllEnvCell all_env_cell = *iallenvcell;
+      for (EnvCell ec : all_env_cell.subEnvItems()) {
+        if (ec.componentId() == component_id) {
+          MatVarIndex idx = ec._varIndex();
+          if (idx.arrayIndex() == 0)
+            ++nb_pure;
+          else
+            ++nb_impure;
+        }
+      }
+    }
+  }
+  else {
+    ENUMERATE_ALLENVCELL (iallenvcell, all_env_cell_view) {
+      AllEnvCell all_env_cell = *iallenvcell;
+      for (EnvCell env_cell : all_env_cell.subEnvItems()) {
+        for (MatCell mc : env_cell.subMatItems()) {
+          if (mc.componentId() == component_id) {
+            MatVarIndex idx = mc._varIndex();
+            if (idx.arrayIndex() == 0)
+              ++nb_pure;
+            else
+              ++nb_impure;
+          }
+        }
+      }
+    }
+  }
+
+  return std::make_pair(nb_pure, nb_impure);
+}
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 

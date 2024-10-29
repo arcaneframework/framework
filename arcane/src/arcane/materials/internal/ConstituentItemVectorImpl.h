@@ -24,6 +24,8 @@
 
 #include "arcane/materials/internal/MeshComponentPartData.h"
 
+#include <tuple>
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -76,6 +78,10 @@ class ConstituentItemVectorImpl
     return m_matvar_indexes;
   }
   void _setItems(SmallSpan<const Int32> local_ids) override;
+
+ private:
+
+  std::pair<Int32, Int32> _computeNbPureAndImpure(SmallSpan<const Int32> local_ids);
 
  private:
 
