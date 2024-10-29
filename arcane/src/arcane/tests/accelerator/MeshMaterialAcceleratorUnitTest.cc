@@ -886,7 +886,7 @@ _executeTest6()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Test passage CellVector -> EnvCellVector -> EnvCellVectorView.
+ * \brief Tests passages CellVector vers EnvCellVectorView ou MatCellVectorView
  */
 void MeshMaterialAcceleratorUnitTest::
 _executeTest7()
@@ -916,10 +916,19 @@ _executeTest7()
   Int32 nb_cell_in_vector = cell_vector1.size();
   vc.areEqual(nb_cell_in_vector, nb_cell_to_add, "CellInVector");
 
-  EnvCellVector env_vector(cell_vector1.view(), m_env1);
-  EnvCellVectorView sub_env_view(env_vector.view());
-  Int32 nb_sub_item = sub_env_view.nbItem();
-  info() << "NB_SUB_ITEM=" << nb_sub_item;
+  {
+    EnvCellVector env_vector(cell_vector1.view(), m_env1);
+    EnvCellVectorView sub_env_view(env_vector.view());
+    Int32 nb_sub_item = sub_env_view.nbItem();
+    info() << "NB_SUB_ITEM (env)=" << nb_sub_item;
+    // TODO: Vérifier la validité
+  }
+  {
+    MatCellVector mat_vector(cell_vector1.view(), m_env1->materials()[1]);
+    MatCellVectorView sub_mat_view(mat_vector.view());
+    Int32 nb_sub_item = sub_mat_view.nbItem();
+    info() << "NB_SUB_ITEM (mat)=" << nb_sub_item;
+  }
 }
 
 /*---------------------------------------------------------------------------*/

@@ -186,7 +186,7 @@ class ARCANE_CORE_EXPORT ComponentItemSharedInfo
     ARCCORE_CHECK_RANGE(id.localId(), -1, m_storage_size);
     return impl::ItemBase(m_global_item_local_id_data[id.localId()], m_item_shared_info);
   }
-  ARCCORE_HOST_DEVICE Int32 _globalItemLocalId(ConstituentItemIndex id) const
+  ARCCORE_HOST_DEVICE Int32 _globalItemId(ConstituentItemIndex id) const
   {
     ARCCORE_CHECK_RANGE(id.localId(), -1, m_storage_size);
     return m_global_item_local_id_data[id.localId()];

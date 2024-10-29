@@ -144,6 +144,10 @@ class MeshMaterialMng
     {
       return m_material_mng->additionalCapacityRatio();
     }
+    bool isUseAcceleratorForConstituentItemVector() const override
+    {
+      return m_material_mng->m_is_use_accelerator_for_constituent_item_vector;
+    }
 
    private:
 
@@ -385,6 +389,8 @@ class MeshMaterialMng
   UniqueArray<AllCellToAllEnvCell> m_all_cell_to_all_env_cell;
   AllCellToAllEnvCell* m_allcell_2_allenvcell = nullptr;
   bool m_is_allcell_2_allenvcell = false;
+
+  bool m_is_use_accelerator_for_constituent_item_vector = true;
 
  private:
 

@@ -115,6 +115,9 @@ class ARCANE_CORE_EXPORT IMeshMaterialMngInternal
 
   //! Ratio pour la capacité additionnelle à allouer lors du redimensionnement des variables.
   virtual Real additionalCapacityRatio() const = 0;
+
+  //! Indique si on utilise l'API accélérateur pour positionner les valeurs de ConstituentItemVectorImpl
+  virtual bool isUseAcceleratorForConstituentItemVector() const =0;
 };
 
 /*---------------------------------------------------------------------------*/
