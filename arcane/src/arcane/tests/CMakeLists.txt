@@ -770,6 +770,9 @@ if (ARCANE_HAS_ACCELERATOR_API)
   arcane_add_test_sequential_task(accelerator_material1 testAcceleratorMaterials-1.arc 4)
   arcane_add_accelerator_test_sequential(accelerator_material1 testAcceleratorMaterials-1.arc)
 
+  arcane_add_test_sequential(accelerator_material1_old testAcceleratorMaterials-1.arc "-We,ARCANE_MATERIALMNG_USE_ACCELERATOR_FOR_CONSTITUENTITEMVECTOR,0")
+  arcane_add_accelerator_test_sequential(accelerator_material1_old testAcceleratorMaterials-1.arc "-We,ARCANE_MATERIALMNG_USE_ACCELERATOR_FOR_CONSTITUENTITEMVECTOR,0")
+
   arcane_add_test_sequential(memorycopy1 testMemoryCopy-1.arc)
   arcane_add_test_sequential_task(memorycopy1 testMemoryCopy-1.arc 4)
   arcane_add_accelerator_test_sequential(memorycopy1 testMemoryCopy-1.arc)
