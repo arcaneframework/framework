@@ -77,12 +77,13 @@ class ConstituentItemVectorImpl
   {
     return m_matvar_indexes;
   }
-  void _setItems(SmallSpan<const Int32> local_ids) override;
 
  public:
 
-  // Méthode devant être publique pour compilation avec NVCC.
-  std::pair<Int32, Int32> _computeNbPureAndImpure(SmallSpan<const Int32> local_ids, RunQueue& queue);
+  class SetItemHelper;
+  // Méthodes devant être publiques pour compilation avec NVCC.
+  void _setItems(SmallSpan<const Int32> local_ids) override;
+  void _computeNbPureAndImpure(SmallSpan<const Int32> local_ids, RunQueue& queue);
 
  private:
 
