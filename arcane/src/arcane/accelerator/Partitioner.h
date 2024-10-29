@@ -48,13 +48,14 @@ class ARCANE_ACCELERATOR_EXPORT GenericPartitionerBase
  protected:
 
   Int32 _nbFirstPart() const;
+  SmallSpan<const Int32> _nbParts() const;
   void _allocate();
 
  protected:
 
   RunQueue m_queue;
   GenericDeviceStorage m_algo_storage;
-  DeviceStorage<int> m_device_nb_list1_storage;
+  DeviceStorage<int, 2> m_device_nb_list1_storage;
   NumArray<Int32, MDDim1> m_host_nb_list1_storage;
 };
 
@@ -63,19 +64,14 @@ class ARCANE_ACCELERATOR_EXPORT GenericPartitionerBase
 /*!
  * \internal
  * \brief Classe pour effectuer un partitionnement d'une liste.
- *
- * La liste est partitionnée en deux listes.
- *
- * \a DataType est le type de donnée.
- * \a FlagType est le type du tableau de filtre.
  */
 class GenericPartitionerIf
 {
-  // TODO: Faire le malloc sur le device associé à la queue.
-  //       et aussi regarder si on peut utiliser mallocAsync().
-
  public:
 
+  /*!
+   * \brief Effectue le partitionnement d'une liste en deux parties.
+   */
   template <typename SelectLambda, typename InputIterator, typename OutputIterator>
   void apply(GenericPartitionerBase& s, Int32 nb_item, InputIterator input_iter, OutputIterator output_iter,
              const SelectLambda& select_lambda, const TraceInfo& trace_info = TraceInfo())
@@ -131,7 +127,7 @@ class GenericPartitionerIf
       auto output2_iter = output_iter + nb_item;
       for (Int32 i = 0; i < nb_item; ++i) {
         auto v = *input_iter;
-        if (select_lambda(*input_iter)) {
+        if (select_lambda(v)) {
           *output_iter = v;
           ++output_iter;
         }
@@ -143,6 +139,86 @@ class GenericPartitionerIf
       }
       Int32 nb_list1 = static_cast<Int32>(output_iter - saved_output_iter);
       s.m_host_nb_list1_storage[0] = nb_list1;
+    } break;
+    default:
+      ARCANE_FATAL(getBadPolicyMessage(exec_policy));
+    }
+    launch_info.endExecute();
+  }
+
+  /*!
+   * \brief Effectue le partitionnement d'une liste en trois parties.
+   */
+  template <typename Select1Lambda, typename Select2Lambda,
+            typename InputIterator, typename FirstOutputIterator,
+            typename SecondOutputIterator, typename UnselectedIterator>
+  void apply3(GenericPartitionerBase& s, Int32 nb_item,
+              InputIterator input_iter,
+              FirstOutputIterator first_output_iter,
+              SecondOutputIterator second_output_iter,
+              UnselectedIterator unselected_iter,
+              const Select1Lambda& select1_lambda,
+              const Select2Lambda& select2_lambda,
+              const TraceInfo& trace_info = TraceInfo())
+  {
+    RunQueue queue = s.m_queue;
+    eExecutionPolicy exec_policy = queue.executionPolicy();
+    RunCommand command = makeCommand(queue);
+    command << trace_info;
+    impl::RunCommandLaunchInfo launch_info(command, nb_item);
+    launch_info.beginExecute();
+    switch (exec_policy) {
+#if defined(ARCANE_COMPILING_CUDA)
+    case eExecutionPolicy::CUDA: {
+      size_t temp_storage_size = 0;
+      cudaStream_t stream = impl::CudaUtils::toNativeStream(&queue);
+      // Premier appel pour connaitre la taille pour l'allocation
+      int* nb_list1_ptr = nullptr;
+      ARCANE_CHECK_CUDA(::cub::DevicePartition::If(nullptr, temp_storage_size,
+                                                   input_iter, first_output_iter, second_output_iter,
+                                                   unselected_iter, nb_list1_ptr, nb_item,
+                                                   select1_lambda, select2_lambda, stream));
+
+      s.m_algo_storage.allocate(temp_storage_size);
+      nb_list1_ptr = s.m_device_nb_list1_storage.allocate();
+      ARCANE_CHECK_CUDA(::cub::DevicePartition::If(s.m_algo_storage.address(), temp_storage_size,
+                                                   input_iter, first_output_iter, second_output_iter,
+                                                   unselected_iter, nb_list1_ptr, nb_item,
+                                                   select1_lambda, select2_lambda, stream));
+      s.m_device_nb_list1_storage.copyToAsync(s.m_host_nb_list1_storage, queue);
+    } break;
+#endif
+    case eExecutionPolicy::Thread:
+      // Pas encore implémenté en multi-thread
+      [[fallthrough]];
+    case eExecutionPolicy::Sequential: {
+      UniqueArray<bool> filter_index(nb_item);
+      Int32 nb_first = 0;
+      Int32 nb_second = 0;
+      for (Int32 i = 0; i < nb_item; ++i) {
+        auto v = *input_iter;
+        ++input_iter;
+        bool is_1 = select1_lambda(v);
+        bool is_2 = select2_lambda(v);
+        if (is_1) {
+          *first_output_iter = v;
+          ++first_output_iter;
+          ++nb_first;
+        }
+        else {
+          if (is_2) {
+            *second_output_iter = v;
+            ++second_output_iter;
+            ++nb_second;
+          }
+          else {
+            *unselected_iter = v;
+            ++unselected_iter;
+          }
+        }
+      }
+      s.m_host_nb_list1_storage[0] = nb_first;
+      s.m_host_nb_list1_storage[1] = nb_second;
     } break;
     default:
       ARCANE_FATAL(getBadPolicyMessage(exec_policy));
@@ -202,11 +278,47 @@ class GenericPartitioner
     gf.apply(*base_ptr, nb_item, input_iter, output_iter, select_lambda, trace_info);
   }
 
-  //! Nombre d'éléments de la première partie de la liste.
+  template <typename InputIterator, typename FirstOutputIterator,
+            typename SecondOutputIterator, typename UnselectedIterator,
+            typename Select1Lambda, typename Select2Lambda>
+  void applyIf(Int32 nb_item, InputIterator input_iter,
+               FirstOutputIterator first_output_iter,
+               SecondOutputIterator second_output_iter,
+               UnselectedIterator unselected_iter,
+               const Select1Lambda& select1_lambda,
+               const Select2Lambda& select2_lambda,
+               const TraceInfo& trace_info = TraceInfo())
+  {
+    _setCalled();
+    impl::GenericPartitionerBase* base_ptr = this;
+    impl::GenericPartitionerIf gf;
+    gf.apply3(*base_ptr, nb_item, input_iter, first_output_iter, second_output_iter,
+              unselected_iter, select1_lambda, select2_lambda, trace_info);
+  }
+
+  /*!
+   * \brief Nombre d'éléments de la première partie de la liste.
+   */
   Int32 nbFirstPart()
   {
     m_is_already_called = false;
     return _nbFirstPart();
+  }
+
+  /*!
+   * \brief Nombre d'éléments de la première et deuxième partie de la liste.
+   *
+   * Retourne une vue de deux valeurs. La première valeur contient le nombre
+   * d'éléments de la première liste et la seconde valeur le
+   * nombre d'éléments de la deuxième liste.
+   *
+   * Cette méthode n'est valide qu'après avoir appelé une méthode de partitionnement
+   * comportement deux filtres.
+   */
+  SmallSpan<const Int32> nbParts()
+  {
+    m_is_already_called = false;
+    return _nbParts();
   }
 
  private:
