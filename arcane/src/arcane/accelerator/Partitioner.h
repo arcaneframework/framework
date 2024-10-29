@@ -188,6 +188,26 @@ class GenericPartitionerIf
       s.m_device_nb_list1_storage.copyToAsync(s.m_host_nb_list1_storage, queue);
     } break;
 #endif
+#if defined(ARCANE_COMPILING_HIP)
+    case eExecutionPolicy::HIP: {
+      size_t temp_storage_size = 0;
+      // Premier appel pour connaitre la taille pour l'allocation
+      hipStream_t stream = impl::HipUtils::toNativeStream(&queue);
+      int* nb_list1_ptr = nullptr;
+      using namespace rocprim;
+      ARCANE_CHECK_HIP(::rocprim::partition_three_way(nullptr, temp_storage_size, input_iter, first_output_iter,
+                                                      second_output_iter, unselected_iter,
+                                                      nb_list1_ptr, nb_item, select1_lambda, select2_lambda, stream));
+
+      s.m_algo_storage.allocate(temp_storage_size);
+      nb_list1_ptr = s.m_device_nb_list1_storage.allocate();
+
+      ARCANE_CHECK_HIP(partition_three_way(s.m_algo_storage.address(), temp_storage_size, input_iter, first_output_iter,
+                                           second_output_iter, unselected_iter, nb_list1_ptr, nb_item,
+                                           select1_lambda, select2_lambda, stream));
+      s.m_device_nb_list1_storage.copyToAsync(s.m_host_nb_list1_storage, queue);
+    } break;
+#endif
     case eExecutionPolicy::Thread:
       // Pas encore implémenté en multi-thread
       [[fallthrough]];
