@@ -79,9 +79,10 @@ class ConstituentItemVectorImpl
   }
   void _setItems(SmallSpan<const Int32> local_ids) override;
 
- private:
+ public:
 
-  std::pair<Int32, Int32> _computeNbPureAndImpure(SmallSpan<const Int32> local_ids);
+  // Méthode devant être publique pour compilation avec NVCC.
+  std::pair<Int32, Int32> _computeNbPureAndImpure(SmallSpan<const Int32> local_ids, RunQueue& queue);
 
  private:
 

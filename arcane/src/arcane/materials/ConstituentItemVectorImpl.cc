@@ -21,6 +21,10 @@
 #include "arcane/core/materials/internal/IMeshComponentInternal.h"
 #include "arcane/core/materials/internal/IMeshMaterialMngInternal.h"
 
+#include "arcane/accelerator/core/RunQueue.h"
+#include "arcane/accelerator/RunCommandLoop.h"
+#include "arcane/accelerator/Reduce.h"
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -79,12 +83,14 @@ ConstituentItemVectorImpl(const ComponentItemVectorView& rhs)
 void ConstituentItemVectorImpl::
 _setItems(SmallSpan<const Int32> local_ids)
 {
+  RunQueue queue = m_material_mng->_internalApi()->runQueue();
+
   IMeshComponent* component = m_component;
   const bool is_env = component->isEnvironment();
   AllEnvCellVectorView all_env_cell_view = m_material_mng->view(local_ids);
   const Int32 component_id = m_component->id();
 
-  auto [nb_pure, nb_impure] = _computeNbPureAndImpure(local_ids);
+  auto [nb_pure, nb_impure] = _computeNbPureAndImpure(local_ids, queue);
 
   const Int32 total_nb_pure_and_impure = nb_pure + nb_impure;
 
@@ -159,50 +165,59 @@ _setItems(SmallSpan<const Int32> local_ids)
 /*---------------------------------------------------------------------------*/
 
 std::pair<Int32, Int32> ConstituentItemVectorImpl::
-_computeNbPureAndImpure(SmallSpan<const Int32> local_ids)
+_computeNbPureAndImpure(SmallSpan<const Int32> local_ids, RunQueue& queue)
 {
   IMeshComponent* component = m_component;
   const bool is_env = component->isEnvironment();
   AllEnvCellVectorView all_env_cell_view = m_material_mng->view(local_ids);
   const Int32 component_id = m_component->id();
 
-  Int32 nb_pure = 0;
-  Int32 nb_impure = 0;
+  const Int32 nb_id = local_ids.size();
+
+  auto command = makeCommand(queue);
+  Accelerator::ReducerSum2<Int32> nb_pure(command);
+  Accelerator::ReducerSum2<Int32> nb_impure(command);
 
   // Calcule le nombre de mailles pures et partielles
   if (is_env) {
-    // Calcule le nombre de mailles pures et partielles
-    ENUMERATE_ALLENVCELL (iallenvcell, all_env_cell_view) {
-      AllEnvCell all_env_cell = *iallenvcell;
+    command << RUNCOMMAND_LOOP1(iter, nb_id, nb_pure, nb_impure)
+    {
+      auto [i] = iter();
+      AllEnvCell all_env_cell = all_env_cell_view[i];
       for (EnvCell ec : all_env_cell.subEnvItems()) {
         if (ec.componentId() == component_id) {
           MatVarIndex idx = ec._varIndex();
           if (idx.arrayIndex() == 0)
-            ++nb_pure;
+            nb_pure.combine(1);
           else
-            ++nb_impure;
+            nb_impure.combine(1);
         }
       }
-    }
+    };
   }
   else {
-    ENUMERATE_ALLENVCELL (iallenvcell, all_env_cell_view) {
-      AllEnvCell all_env_cell = *iallenvcell;
+    command << RUNCOMMAND_LOOP1(iter, nb_id, nb_pure, nb_impure)
+    {
+      auto [i] = iter();
+      AllEnvCell all_env_cell = all_env_cell_view[i];
       for (EnvCell env_cell : all_env_cell.subEnvItems()) {
         for (MatCell mc : env_cell.subMatItems()) {
           if (mc.componentId() == component_id) {
             MatVarIndex idx = mc._varIndex();
             if (idx.arrayIndex() == 0)
-              ++nb_pure;
+              nb_pure.combine(1);
             else
-              ++nb_impure;
+              nb_impure.combine(1);
           }
         }
       }
-    }
+    };
   }
 
-  return std::make_pair(nb_pure, nb_impure);
+  Int32 final_nb_pure = nb_pure.reducedValue();
+  Int32 final_nb_impure = nb_impure.reducedValue();
+
+  return std::make_pair(final_nb_pure, final_nb_impure);
 }
 
 /*---------------------------------------------------------------------------*/

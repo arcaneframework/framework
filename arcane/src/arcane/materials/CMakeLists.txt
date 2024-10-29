@@ -12,6 +12,7 @@ arcane_accelerator_add_source_files(
   AllEnvData.cc
   AllCellToAllEnvCellConverter.cc
   ConstituentConnectivityList.cc
+  ConstituentItemVectorImpl.cc
   ComponentItemInternalData.cc
   IncrementalComponentModifier.cc
   MeshComponentPartData.cc
