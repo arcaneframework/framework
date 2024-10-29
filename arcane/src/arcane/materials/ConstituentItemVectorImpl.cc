@@ -264,7 +264,7 @@ _setItems(SmallSpan<const Int32> local_ids)
   };
 
   {
-    const bool do_new = true;
+    const bool do_new = m_material_mng->_internalApi()->isUseAcceleratorForConstituentItemVector();
     SetItemHelper helper(do_new);
     if (is_env)
       helper.setItems(this, env_component_getter_lambda, local_ids, queue);

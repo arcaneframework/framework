@@ -306,6 +306,15 @@ build()
     }
   }
 
+  // Indique si on utilise l'API accélérateur pour le calcul des entités
+  // de ConstituentItemVectorImpl
+  {
+    if (auto v = Convert::Type<Real>::tryParseFromEnvironment("ARCANE_MATERIALMNG_USE_ACCELERATOR_FOR_CONSTITUENTITEMVECTOR", true)){
+      m_is_use_accelerator_for_constituent_item_vector = (v.value()!=0);
+      info() << "Use accelerator APU for 'ConstituentItemVectorImpl' = " << m_is_use_accelerator_for_constituent_item_vector;
+    }
+  }
+
   m_exchange_mng->build();
   // Si les traces des énumérateurs sur les entités sont actives, active celles
   // sur les matériaux.
