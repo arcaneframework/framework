@@ -70,6 +70,8 @@ class AcceleratorPartitionerUnitTest
   template <typename DataType> void _executeTestDataType2(Int32 size, Int32 test_id);
   template <typename DataType> void _executeTestDataType3(Int32 size, Int32 test_id);
 
+  void samples1();
+
  private:
 
   void executeTest2(Int32 size, Int32 test_id);
@@ -113,6 +115,7 @@ executeTest()
     executeTest2(400, i);
     executeTest2(1000000, i);
   }
+  samples1();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -185,15 +188,16 @@ _executeTestDataType2(Int32 size, Int32 test_id)
   switch (test_id) {
   case 0: // Mode avec lambda de filtrage
   {
+    //![TestSampleListPartitionerTwoWayIf]
     auto filter_lambda = [] ARCCORE_HOST_DEVICE(DataType x) -> bool {
       return (x > static_cast<DataType>(569));
     };
-    //PartitionerLambda filter_lambda;
     Arcane::Accelerator::GenericPartitioner generic_partitioner(m_queue);
     Int32 nb_list1 = 0;
     generic_partitioner.applyIf(n1, t1.to1DSpan().begin(), t2.to1DSpan().begin(), filter_lambda);
     nb_list1 = generic_partitioner.nbFirstPart();
     info() << "NB_List1_accelerator1=" << nb_list1;
+    //![TestSampleListPartitionerTwoWayIf]
     vc.areEqual(nb_list1, expected_nb_list1, "NbList1");
     if (n1 < min_size_display)
       info() << "Out T2=" << t2.to1DSpan();
@@ -201,6 +205,7 @@ _executeTestDataType2(Int32 size, Int32 test_id)
   } break;
   case 1: // Mode avec lambda de filtrage et index
   {
+    //![TestSampleListPartitionerTwoWayIndex]
     SmallSpan<const DataType> t1_view(t1.to1DSmallSpan());
     SmallSpan<DataType> t2_view(t2.to1DSmallSpan());
     auto filter_lambda = [=] ARCCORE_HOST_DEVICE(Int32 index) -> bool {
@@ -214,6 +219,7 @@ _executeTestDataType2(Int32 size, Int32 test_id)
     generic_partitioner.applyWithIndex<DataType>(n1, setter_lambda, filter_lambda);
     nb_list1 = generic_partitioner.nbFirstPart();
     info() << "NB_List1_accelerator2=" << nb_list1;
+    //![TestSampleListPartitionerTwoWayIndex]
     vc.areEqual(nb_list1, expected_nb_list1, "NbList1");
     if (n1 < min_size_display)
       info() << "Out T2=" << t2.to1DSpan();
@@ -306,6 +312,7 @@ _executeTestDataType3(Int32 size, Int32 test_id)
   switch (test_id) {
   case 0: // Mode avec lambda de filtrage
   {
+    //![TestSampleListPartitionerThreeWayIf]
     auto filter1_lambda = [] ARCCORE_HOST_DEVICE(DataType x) -> bool {
       return (x > static_cast<DataType>(655));
     };
@@ -319,9 +326,11 @@ _executeTestDataType3(Int32 size, Int32 test_id)
     SmallSpan<const Int32> nb_parts = generic_partitioner.nbParts();
     nb_part1 = nb_parts[0];
     nb_part2 = nb_parts[1];
+    //![TestSampleListPartitionerThreeWayIf]
   } break;
   case 1: // Mode avec lambda de filtrage et index
   {
+    //![TestSampleListPartitionerThreeWayIndex]
     info() << "Doing test with index and setter/lambda";
     SmallSpan<const DataType> t1_view(t1.to1DSmallSpan());
     SmallSpan<DataType> t2_view(t2.to1DSmallSpan());
@@ -350,6 +359,7 @@ _executeTestDataType3(Int32 size, Int32 test_id)
     SmallSpan<const Int32> nb_parts = generic_partitioner.nbParts();
     nb_part1 = nb_parts[0];
     nb_part2 = nb_parts[1];
+    //![TestSampleListPartitionerThreeWayIndex]
   } break;
   }
 
@@ -370,6 +380,39 @@ _executeTestDataType3(Int32 size, Int32 test_id)
   vc.areEqualArray(t2.to1DSpan(), expected_t2.to1DSpan(), "OutputList1 (1)");
   vc.areEqualArray(t3.to1DSpan(), expected_t3.to1DSpan(), "OutputList2 (1)");
   vc.areEqualArray(t4.to1DSpan(), expected_t4.to1DSpan(), "OutputList3 (1)");
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void AcceleratorPartitionerUnitTest::
+samples1()
+{
+  info() << "Sample1";
+  //![SampleListPartitionerTwoWayIndex]
+  // Sample to do a partition of an array.
+  // All elements greater than 2.0 will be put at the beginning of the list
+  // The remaining elements will be at the end of the list in reverse order
+  Arcane::Accelerator::RunQueue queue(*subDomain()->acceleratorMng()->defaultQueue());
+  const Int32 nb_value = 6;
+  Arcane::NumArray<Real, MDDim1> input(nb_value, { 1.3, 4.5, -1.2, 3.5, 7.0, 4.2 });
+  Arcane::NumArray<Real, MDDim1> output(nb_value);
+  auto input_values = viewIn(queue, input);
+  auto output_values = viewOut(queue, output);
+  auto select_lambda = [=] ARCCORE_HOST_DEVICE(Int32 input_index) {
+    return input_values[input_index] > 2.0;
+  };
+  auto setter_lambda = [=] ARCCORE_HOST_DEVICE(Int32 input_index, Int32 output_index) {
+    output_values[output_index] = input_values[input_index];
+  };
+  Arcane::Accelerator::GenericPartitioner partitioner(queue);
+  partitioner.applyWithIndex<Real>(nb_value, setter_lambda, select_lambda, A_FUNCINFO);
+  Int32 nb_first_part = partitioner.nbFirstPart();
+  info() << "NbFirstPart = " << nb_first_part;
+  info() << "Ouput=" << output.to1DSmallSpan();
+  // Expected nb_first_part = 4
+  // Expected output : [0]="4.5" [1]="3.5" [2]="7" [3]="4.2" [4]="-1.2" [5]="1.3"
+  //![SampleListPartitionerTwoWayIndex]
 }
 
 /*---------------------------------------------------------------------------*/

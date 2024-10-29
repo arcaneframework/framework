@@ -274,6 +274,18 @@ class GenericPartitioner
 
  public:
 
+  /*!
+   * \brief Effectue un partitionnement d'une liste en deux parties.
+   *
+   * Le nombre de valeurs de la liste est donné par \a nb_value.
+   * Les deux fonctions lambda \a select_lambda et \a setter_lambda permettent
+   * de filtrer et de positionner les valeurs de la liste.
+   *
+   * Après exécution, il est possible de récupérer le nombre d'éléments
+   * de la première partie de la liste via la méthode \a nbFirstPart().
+   *
+   * \snippet AcceleratorPartitionerUnitTest.cc SampleListPartitionerTwoWayIndex
+   */
   template <typename DataType, typename SelectLambda, typename SetterLambda>
   void applyWithIndex(Int32 nb_value, const SetterLambda& setter_lambda,
                       const SelectLambda& select_lambda, const TraceInfo& trace_info = TraceInfo())
