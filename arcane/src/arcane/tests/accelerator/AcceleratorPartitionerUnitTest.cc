@@ -67,7 +67,8 @@ class AcceleratorPartitionerUnitTest
  public:
 
   void _executeTest1();
-  template <typename DataType> void _executeTestDataType(Int32 size, Int32 test_id);
+  template <typename DataType> void _executeTestDataType2(Int32 size, Int32 test_id);
+  template <typename DataType> void _executeTestDataType3(Int32 size, Int32 test_id);
 
  private:
 
@@ -120,16 +121,22 @@ executeTest()
 void AcceleratorPartitionerUnitTest::
 executeTest2(Int32 size, Int32 test_id)
 {
-  _executeTestDataType<Int64>(size, test_id);
-  _executeTestDataType<Int32>(size, test_id);
-  _executeTestDataType<double>(size, test_id);
+  _executeTestDataType2<Int64>(size, test_id);
+  _executeTestDataType2<Int32>(size, test_id);
+  _executeTestDataType2<double>(size, test_id);
+
+  _executeTestDataType3<Int64>(size, test_id);
+  _executeTestDataType3<Int32>(size, test_id);
+  _executeTestDataType3<double>(size, test_id);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
+/*!
+ * \brief Teste le partitionnement en 2 parties.
+ */
 template <typename DataType> void AcceleratorPartitionerUnitTest::
-_executeTestDataType(Int32 size, Int32 test_id)
+_executeTestDataType2(Int32 size, Int32 test_id)
 {
   ValueChecker vc(A_FUNCINFO);
 
@@ -215,8 +222,118 @@ _executeTestDataType(Int32 size, Int32 test_id)
   }
 }
 
-  /*---------------------------------------------------------------------------*/
-  /*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Teste le partitionnement en 3 parties.
+ */
+template <typename DataType> void AcceleratorPartitionerUnitTest::
+_executeTestDataType3(Int32 size, Int32 test_id)
+{
+  ValueChecker vc(A_FUNCINFO);
+
+  RunQueue queue(makeQueue(subDomain()->acceleratorMng()->defaultRunner()));
+  queue.setAsync(true);
+
+  info() << "Execute Partitioner Test1 size=" << size << " test_id=" << test_id;
+
+  constexpr Int32 min_size_display = 100;
+  const Int32 n1 = size;
+
+  NumArray<DataType, MDDim1> t1(n1);
+  NumArray<DataType, MDDim1> t2(n1);
+  NumArray<DataType, MDDim1> t3(n1);
+  NumArray<DataType, MDDim1> t4(n1);
+  NumArray<DataType, MDDim1> expected_t2(n1);
+  NumArray<DataType, MDDim1> expected_t3(n1);
+  NumArray<DataType, MDDim1> expected_t4(n1);
+  NumArray<Int16, MDDim1> filter_flags(n1);
+
+  UniqueArray<DataType> result_part1;
+  UniqueArray<DataType> result_part2;
+
+  std::seed_seq rng_seed{ 37, 49, 23 };
+  std::mt19937 randomizer(rng_seed);
+  std::uniform_int_distribution<> rng_distrib(0, 32);
+  Int32 list2_index = 0;
+  Int32 list1_index = 0;
+  Int32 unselected_index = 0;
+  for (Int32 i = 0; i < n1; ++i) {
+    int to_add = 2 + (rng_distrib(randomizer));
+    DataType v = static_cast<DataType>(to_add + ((i * 2) % 2348));
+    t1[i] = v;
+    DataType unset_value = static_cast<DataType>(-1);
+    t2[i] = unset_value;
+    t3[i] = unset_value;
+    t4[i] = unset_value;
+    bool is_filter1 = (v > static_cast<DataType>(655));
+    bool is_filter2 = (v < static_cast<DataType>(469));
+    //info() << "Value I=" << i << " v=" << v << " is_1=" << is_filter1 << " is_2=" << is_filter2;
+    if (is_filter1) {
+      expected_t2[list1_index] = v;
+      ++list1_index;
+    }
+    else {
+      if (is_filter2) {
+        ++list2_index;
+        expected_t3[list2_index] = v;
+      }
+      else {
+        expected_t4[unselected_index] = v;
+        ++unselected_index;
+      }
+    }
+  }
+  Int32 expected_nb_list1 = list1_index;
+  Int32 expected_nb_list2 = list2_index;
+  Int32 expected_nb_unselected = unselected_index;
+  expected_t2.resize(expected_nb_list1);
+  expected_t3.resize(expected_nb_list2);
+  expected_t4.resize(expected_nb_unselected);
+  info() << "Expected NbList1=" << expected_nb_list1;
+  info() << "Expected NbList2=" << expected_nb_list2;
+  info() << "Expected NbUnselectedList1=" << expected_nb_unselected;
+  if (n1 < min_size_display) {
+    info() << "T1=" << t1.to1DSpan();
+    info() << "Expected T2=" << expected_t2.to1DSpan();
+  }
+  switch (test_id) {
+  case 0: // Mode avec lambda de filtrage
+  {
+    auto filter1_lambda = [] ARCCORE_HOST_DEVICE(DataType x) -> bool {
+      return (x > static_cast<DataType>(655));
+    };
+    auto filter2_lambda = [] ARCCORE_HOST_DEVICE(DataType x) -> bool {
+      return (x < static_cast<DataType>(469));
+    };
+    Arcane::Accelerator::GenericPartitioner generic_partitioner(m_queue);
+    generic_partitioner.applyIf(n1, t1.to1DSpan().begin(), t2.to1DSpan().begin(),
+                                t3.to1DSpan().begin(), t4.to1DSpan().begin(),
+                                filter1_lambda, filter2_lambda, A_FUNCINFO);
+    SmallSpan<const Int32> nb_parts = generic_partitioner.nbParts();
+    const Int32 nb_part1 = nb_parts[0];
+    const Int32 nb_part2 = nb_parts[1];
+    const Int32 nb_unselected = n1 - (nb_part1 + nb_part2);
+    info() << "NB_List1_1=" << nb_part1;
+    t2.resize(nb_part1);
+    info() << "NB_List1_2=" << nb_part2;
+    t3.resize(nb_part2);
+    t4.resize(nb_unselected);
+    if (n1 < min_size_display) {
+      info() << "Out T2=" << t2.to1DSpan();
+      info() << "Out T3=" << t3.to1DSpan();
+      info() << "Out T4=" << t4.to1DSpan();
+    }
+    vc.areEqual(nb_part1, expected_nb_list1, "NbList1");
+    vc.areEqual(nb_part2, expected_nb_list2, "NbList2");
+    vc.areEqual(nb_unselected, expected_nb_unselected, "NbUnselected");
+    vc.areEqualArray(t2.to1DSpan(), expected_t2.to1DSpan(), "OutputList (1)");
+  } break;
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 } // End namespace ArcaneTest
 

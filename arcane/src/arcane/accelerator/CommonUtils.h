@@ -147,7 +147,7 @@ class ARCANE_ACCELERATOR_EXPORT DeviceStorageBase
  * \internal
  * \brief Gère l'allocation interne sur le device pour un type donné.
  */
-template <typename DataType>
+template <typename DataType,Int32 N = 1>
 class DeviceStorage
 : public DeviceStorageBase
 {
@@ -157,7 +157,7 @@ class DeviceStorage
   size_t size() const { return m_storage.size(); }
   DataType* allocate()
   {
-    m_storage.allocate(sizeof(DataType));
+    m_storage.allocate(sizeof(DataType) * N);
     return address();
   }
   void deallocate() { m_storage.deallocate(); }
