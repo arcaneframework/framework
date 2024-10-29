@@ -143,7 +143,7 @@ _executeTestDataType2(Int32 size, Int32 test_id)
   RunQueue queue(makeQueue(subDomain()->acceleratorMng()->defaultRunner()));
   queue.setAsync(true);
 
-  info() << "Execute Partitioner Test1 size=" << size << " test_id=" << test_id;
+  info() << "Execute Partitioner TestDataType2 size=" << size << " test_id=" << test_id;
 
   constexpr Int32 min_size_display = 100;
   const Int32 n1 = size;
@@ -199,7 +199,7 @@ _executeTestDataType2(Int32 size, Int32 test_id)
       info() << "Out T2=" << t2.to1DSpan();
     vc.areEqualArray(t2.to1DSpan(), expected_t2.to1DSpan(), "OutputList (1)");
   } break;
-  case 1: // Mode avec lambda de filtrage pour index
+  case 1: // Mode avec lambda de filtrage et index
   {
     SmallSpan<const DataType> t1_view(t1.to1DSmallSpan());
     SmallSpan<DataType> t2_view(t2.to1DSmallSpan());
@@ -235,7 +235,7 @@ _executeTestDataType3(Int32 size, Int32 test_id)
   RunQueue queue(makeQueue(subDomain()->acceleratorMng()->defaultRunner()));
   queue.setAsync(true);
 
-  info() << "Execute Partitioner Test1 size=" << size << " test_id=" << test_id;
+  info() << "Execute Partitioner TestDataType3 size=" << size << " test_id=" << test_id;
 
   constexpr Int32 min_size_display = 100;
   const Int32 n1 = size;
@@ -275,8 +275,8 @@ _executeTestDataType3(Int32 size, Int32 test_id)
     }
     else {
       if (is_filter2) {
-        ++list2_index;
         expected_t3[list2_index] = v;
+        ++list2_index;
       }
       else {
         expected_t4[unselected_index] = v;
@@ -296,7 +296,13 @@ _executeTestDataType3(Int32 size, Int32 test_id)
   if (n1 < min_size_display) {
     info() << "T1=" << t1.to1DSpan();
     info() << "Expected T2=" << expected_t2.to1DSpan();
+    info() << "Expected T3=" << expected_t3.to1DSpan();
+    info() << "Expected T4=" << expected_t4.to1DSpan();
   }
+
+  Int32 nb_part1 = -1;
+  Int32 nb_part2 = -2;
+
   switch (test_id) {
   case 0: // Mode avec lambda de filtrage
   {
@@ -311,25 +317,59 @@ _executeTestDataType3(Int32 size, Int32 test_id)
                                 t3.to1DSpan().begin(), t4.to1DSpan().begin(),
                                 filter1_lambda, filter2_lambda, A_FUNCINFO);
     SmallSpan<const Int32> nb_parts = generic_partitioner.nbParts();
-    const Int32 nb_part1 = nb_parts[0];
-    const Int32 nb_part2 = nb_parts[1];
-    const Int32 nb_unselected = n1 - (nb_part1 + nb_part2);
-    info() << "NB_List1_1=" << nb_part1;
-    t2.resize(nb_part1);
-    info() << "NB_List1_2=" << nb_part2;
-    t3.resize(nb_part2);
-    t4.resize(nb_unselected);
-    if (n1 < min_size_display) {
-      info() << "Out T2=" << t2.to1DSpan();
-      info() << "Out T3=" << t3.to1DSpan();
-      info() << "Out T4=" << t4.to1DSpan();
-    }
-    vc.areEqual(nb_part1, expected_nb_list1, "NbList1");
-    vc.areEqual(nb_part2, expected_nb_list2, "NbList2");
-    vc.areEqual(nb_unselected, expected_nb_unselected, "NbUnselected");
-    vc.areEqualArray(t2.to1DSpan(), expected_t2.to1DSpan(), "OutputList (1)");
+    nb_part1 = nb_parts[0];
+    nb_part2 = nb_parts[1];
+  } break;
+  case 1: // Mode avec lambda de filtrage et index
+  {
+    info() << "Doing test with index and setter/lambda";
+    SmallSpan<const DataType> t1_view(t1.to1DSmallSpan());
+    SmallSpan<DataType> t2_view(t2.to1DSmallSpan());
+    SmallSpan<DataType> t3_view(t3.to1DSmallSpan());
+    SmallSpan<DataType> t4_view(t4.to1DSmallSpan());
+    auto filter1_lambda = [=] ARCCORE_HOST_DEVICE(Int32 index) -> bool {
+      return (t1_view[index] > static_cast<DataType>(655));
+    };
+    auto filter2_lambda = [=] ARCCORE_HOST_DEVICE(Int32 index) -> bool {
+      return (t1_view[index] < static_cast<DataType>(469));
+    };
+    auto first_setter_lambda = [=] ARCCORE_HOST_DEVICE(Int32 input_index, Int32 output_index) {
+      t2_view[output_index] = t1_view[input_index];
+    };
+    auto second_setter_lambda = [=] ARCCORE_HOST_DEVICE(Int32 input_index, Int32 output_index) {
+      t3_view[output_index] = t1_view[input_index];
+    };
+    auto unselected_setter_lambda = [=] ARCCORE_HOST_DEVICE(Int32 input_index, Int32 output_index) {
+      t4_view[output_index] = t1_view[input_index];
+    };
+
+    Arcane::Accelerator::GenericPartitioner generic_partitioner(m_queue);
+    generic_partitioner.applyWithIndex(n1, first_setter_lambda,
+                                       second_setter_lambda, unselected_setter_lambda,
+                                       filter1_lambda, filter2_lambda, A_FUNCINFO);
+    SmallSpan<const Int32> nb_parts = generic_partitioner.nbParts();
+    nb_part1 = nb_parts[0];
+    nb_part2 = nb_parts[1];
   } break;
   }
+
+  const Int32 nb_unselected = n1 - (nb_part1 + nb_part2);
+  info() << "NB_List1_1=" << nb_part1;
+  t2.resize(nb_part1);
+  info() << "NB_List1_2=" << nb_part2;
+  t3.resize(nb_part2);
+  t4.resize(nb_unselected);
+  if (n1 < min_size_display) {
+    info() << "Out T2=" << t2.to1DSpan();
+    info() << "Out T3=" << t3.to1DSpan();
+    info() << "Out T4=" << t4.to1DSpan();
+  }
+  vc.areEqual(nb_part1, expected_nb_list1, "NbList1");
+  vc.areEqual(nb_part2, expected_nb_list2, "NbList2");
+  vc.areEqual(nb_unselected, expected_nb_unselected, "NbUnselected");
+  vc.areEqualArray(t2.to1DSpan(), expected_t2.to1DSpan(), "OutputList1 (1)");
+  vc.areEqualArray(t3.to1DSpan(), expected_t3.to1DSpan(), "OutputList2 (1)");
+  vc.areEqualArray(t4.to1DSpan(), expected_t4.to1DSpan(), "OutputList3 (1)");
 }
 
 /*---------------------------------------------------------------------------*/
