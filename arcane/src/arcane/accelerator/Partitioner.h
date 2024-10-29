@@ -197,7 +197,6 @@ class GenericPartitionerIf
       Int32 nb_second = 0;
       for (Int32 i = 0; i < nb_item; ++i) {
         auto v = *input_iter;
-        ++input_iter;
         bool is_1 = select1_lambda(v);
         bool is_2 = select2_lambda(v);
         if (is_1) {
@@ -216,6 +215,8 @@ class GenericPartitionerIf
             ++unselected_iter;
           }
         }
+        // Incrémenter l'itérateur à la fin car il est utilisé pour le positionnement
+        ++input_iter;
       }
       s.m_host_nb_list1_storage[0] = nb_first;
       s.m_host_nb_list1_storage[1] = nb_second;
@@ -269,19 +270,44 @@ class GenericPartitioner
   }
 
   template <typename InputIterator, typename OutputIterator, typename SelectLambda>
-  void applyIf(Int32 nb_item, InputIterator input_iter, OutputIterator output_iter,
+  void applyIf(Int32 nb_value, InputIterator input_iter, OutputIterator output_iter,
                const SelectLambda& select_lambda, const TraceInfo& trace_info = TraceInfo())
   {
+    if (nb_value == 0)
+      return;
     _setCalled();
     impl::GenericPartitionerBase* base_ptr = this;
     impl::GenericPartitionerIf gf;
-    gf.apply(*base_ptr, nb_item, input_iter, output_iter, select_lambda, trace_info);
+    gf.apply(*base_ptr, nb_value, input_iter, output_iter, select_lambda, trace_info);
+  }
+
+  template <typename Setter1Lambda, typename Setter2Lambda,
+            typename UnselectedSetterLambda, typename Select1Lambda, typename Select2Lambda>
+  void applyWithIndex(Int32 nb_value,
+                      const Setter1Lambda setter1_lambda,
+                      const Setter2Lambda setter2_lambda,
+                      const UnselectedSetterLambda& unselected_setter_lambda,
+                      const Select1Lambda& select1_lambda,
+                      const Select2Lambda& select2_lambda,
+                      const TraceInfo& trace_info = TraceInfo())
+  {
+    if (nb_value == 0)
+      return;
+    _setCalled();
+    impl::GenericPartitionerBase* base_ptr = this;
+    impl::GenericPartitionerIf gf;
+    impl::IndexIterator input_iter;
+    impl::SetterLambdaIterator<Setter1Lambda> setter1_wrapper(setter1_lambda);
+    impl::SetterLambdaIterator<Setter2Lambda> setter2_wrapper(setter2_lambda);
+    impl::SetterLambdaIterator<UnselectedSetterLambda> unselected_setter_wrapper(unselected_setter_lambda);
+    gf.apply3(*base_ptr, nb_value, input_iter, setter1_wrapper, setter2_wrapper,
+              unselected_setter_wrapper, select1_lambda, select2_lambda, trace_info);
   }
 
   template <typename InputIterator, typename FirstOutputIterator,
             typename SecondOutputIterator, typename UnselectedIterator,
             typename Select1Lambda, typename Select2Lambda>
-  void applyIf(Int32 nb_item, InputIterator input_iter,
+  void applyIf(Int32 nb_value, InputIterator input_iter,
                FirstOutputIterator first_output_iter,
                SecondOutputIterator second_output_iter,
                UnselectedIterator unselected_iter,
@@ -289,10 +315,12 @@ class GenericPartitioner
                const Select2Lambda& select2_lambda,
                const TraceInfo& trace_info = TraceInfo())
   {
+    if (nb_value == 0)
+      return;
     _setCalled();
     impl::GenericPartitionerBase* base_ptr = this;
     impl::GenericPartitionerIf gf;
-    gf.apply3(*base_ptr, nb_item, input_iter, first_output_iter, second_output_iter,
+    gf.apply3(*base_ptr, nb_value, input_iter, first_output_iter, second_output_iter,
               unselected_iter, select1_lambda, select2_lambda, trace_info);
   }
 
