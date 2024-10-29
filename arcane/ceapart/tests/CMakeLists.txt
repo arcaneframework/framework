@@ -290,6 +290,13 @@ if (BIG_TEST)
   arcane_add_test_checkpoint_parallel(amr-checkpoint-cartesian3D-cell-coarse-zone-4 testAMRCartesianMesh3D-Cell-CoarseZone-4.arc 8 3 5)
 endif()
 
+arcane_add_test_parallel(amr-cartesian2D-cell-reduce-nb-ghost-layers-1 testAMRCartesianMesh2D-Cell-ReduceNbGhostLayers-1.arc 4 "-m 20")
+arcane_add_test_parallel(amr-cartesian2D-cell-reduce-nb-ghost-layers-2 testAMRCartesianMesh2D-Cell-ReduceNbGhostLayers-2.arc 4 "-m 20")
+arcane_add_test_parallel(amr-cartesian2D-cell-reduce-nb-ghost-layers-3 testAMRCartesianMesh2D-Cell-ReduceNbGhostLayers-3.arc 4 "-m 20")
+arcane_add_test_parallel(amr-cartesian2D-cell-reduce-nb-ghost-layers-4 testAMRCartesianMesh2D-Cell-ReduceNbGhostLayers-4.arc 4 "-m 20")
+
+arcane_add_test_parallel(amr-cartesian3D-cell-reduce-nb-ghost-layers-1 testAMRCartesianMesh3D-Cell-ReduceNbGhostLayers-1.arc 8 "-m 20")
+
 
 # Tests sur le renumérotation des faces en cartésien
 # L'idéal est d'avoir pas mal de sous-domaines pour être sur que le

@@ -586,7 +586,7 @@ coarsenItems(const bool maintain_level_one)
 /*---------------------------------------------------------------------------*/
 
 bool MeshRefinement::
-coarsenItemsV2()
+coarsenItemsV2(bool update_parent_flag)
 {
   // Nettoyage des flags de raffinement de l'étape précédente
   this->_cleanRefinementFlags();
@@ -602,26 +602,41 @@ coarsenItemsV2()
         ARCANE_FATAL("Cannot coarse level-0 cell");
       }
       Cell parent = cell.hParent();
-      parent.mutableItemBase().addFlags(ItemFlags::II_JustCoarsened);
-      parent.mutableItemBase().removeFlags(ItemFlags::II_Inactive);
-      parent.mutableItemBase().removeFlags(ItemFlags::II_CoarsenInactive);
+
+      // TODO AH : Pour faire le dé-raffinement de plusieurs niveau en une fois,
+      // le flag II_Inactive doit être retiré (pour la méthode FaceFamily::removeCellFromFace()).
+      if (update_parent_flag) {
+        parent.mutableItemBase().addFlags(ItemFlags::II_JustCoarsened);
+        parent.mutableItemBase().removeFlags(ItemFlags::II_Inactive);
+        parent.mutableItemBase().removeFlags(ItemFlags::II_CoarsenInactive);
+      }
 
       // Pour une maille de niveau n-1, si une de ses mailles filles doit être dé-raffinée,
       // alors toutes ses mailles filles doivent être dé-raffinées.
       for (Integer i = 0; i < parent.nbHChildren(); ++i) {
         Cell child = parent.hChild(i);
         if (!(child.mutableItemBase().flags() & ItemFlags::II_Coarsen)) {
-          ARCANE_FATAL("Parent cannot have children with coarse flag and children without coarse flag");
+          ARCANE_FATAL("Parent cannot have children with coarse flag and children without coarse flag -- Parent uid: {0} -- Child uid: {1}", parent.uniqueId(), child.uniqueId());
         }
       }
 
-      to_coarse.add(cell.localId());
-      //d_to_coarse_uid.add(cell.uniqueId());
-
       // Pour l'instant, il est impossible de dé-raffiner de plusieurs niveaux en une fois.
-      if ((parent.mutableItemBase().flags() & ItemFlags::II_Coarsen) || (cell.mutableItemBase().flags() & ItemFlags::II_JustCoarsened)) {
+      // TODO AH : La méthode FaceReorienter::checkAndChangeOrientationAMR() va vérifier une
+      // face sensée être supprimée, voir pourquoi.
+      if (parent.mutableItemBase().flags() & ItemFlags::II_Coarsen) {
         ARCANE_FATAL("Cannot coarse parent and child in same time");
       }
+      if (cell.nbHChildren() != 0) {
+        ARCANE_FATAL("For now, cannot coarse cell with children");
+        // for (Integer i = 0; i < cell.nbHChildren(); ++i) {
+        //   Cell child = cell.hChild(i);
+        //   if (!(child.mutableItemBase().flags() & ItemFlags::II_Coarsen)) {
+        //     ARCANE_FATAL("Cannot coarse cell with non-coarsen children -- Parent uid: {0} -- Child uid: {1}", cell.uniqueId(), child.uniqueId());
+        //   }
+        // }
+      }
+      to_coarse.add(cell.localId());
+      //d_to_coarse_uid.add(cell.uniqueId());
     }
   }
 
@@ -632,7 +647,7 @@ coarsenItemsV2()
       Cell cell = *icell;
       if (cell.mutableItemBase().flags() & ItemFlags::II_Coarsen) {
         for (Face face : cell.faces()) {
-          Cell other_cell = face.frontCell() == cell ? face.backCell() : face.frontCell();
+          Cell other_cell = face.oppositeCell(cell);
           // debug() << "Check face uid : " << face.uniqueId();
           // Si la face est au bord, elle sera supprimée.
           if (other_cell.null()) { // && !has_ghost_layer) {
@@ -648,8 +663,8 @@ coarsenItemsV2()
             continue;
           }
           // Si la maille à côté est raffinée, on aura plus d'un niveau de décalage.
-          if (other_cell.nbHChildren() != 0) {
-            ARCANE_FATAL("Once level diff between two cells needed");
+          if (other_cell.nbHChildren() != 0) { // && !(other_cell.mutableItemBase().flags() & ItemFlags::II_Coarsen)) { // Impossible de dé-raffiner plusieurs niveaux.
+            ARCANE_FATAL("Once level diff between two cells needed -- Cell uid: {0} -- Opposite cell uid: {1}", cell.uniqueId(), other_cell.uniqueId());
           }
           // Si la maille d'à côté n'est pas à nous, elle prend la propriété de la maille d'à côté.
           if (other_cell.owner() != cell.owner()) {
@@ -657,6 +672,7 @@ coarsenItemsV2()
             //         << " -- old owner: " << face.owner()
             //         << " -- new owner: " << other_cell.owner();
             face.mutableItemBase().setOwner(other_cell.owner(), cell.owner());
+            // debug() << "Set owner face uid: " << face.uniqueId() << " -- New owner: " << other_cell.owner();
           }
         }
         for (Node node : cell.nodes()) {
@@ -697,6 +713,7 @@ coarsenItemsV2()
             //         << " -- old owner: " << node.owner()
             //         << " -- new owner: " << new_owner;
             node.mutableItemBase().setOwner(new_owner, cell.owner());
+            // debug() << "Set owner node uid: " << node.uniqueId() << " -- New owner: " << new_owner;
           }
         }
       }
@@ -722,9 +739,7 @@ coarsenItemsV2()
   UniqueArray<Int64> ghost_cell_to_refine;
   UniqueArray<Int64> ghost_cell_to_coarsen;
 
-  m_mesh->modifier()->updateGhostLayerFromParent(ghost_cell_to_refine, ghost_cell_to_coarsen, false);
-
-  // _update(ghost_cell_to_refine);
+  m_mesh->modifier()->updateGhostLayerFromParent(ghost_cell_to_refine, ghost_cell_to_coarsen, true);
 
   return m_mesh->parallelMng()->reduce(Parallel::ReduceMax, (!to_coarse.empty()));
 }
