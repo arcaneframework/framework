@@ -455,7 +455,7 @@ subdivideMesh([[maybe_unused]] IPrimaryMesh* mesh)
         UniqueArray<Int64> tmp;
         tmp.reserve(8);
         for( Integer j = 0 ; j < 8 ; j++){
-          tmp.add(node_in_cell[new_hex_nodes_index[i][0]]);
+          tmp.add(node_in_cell[new_hex_nodes_index[i][j]]);
         }
         std::sort(tmp.begin(),tmp.end());
         Int64 cell_uid = Arcane::MeshUtils::generateHashUniqueId(tmp.constView());//max_cell_uid+ind_new_cell;
