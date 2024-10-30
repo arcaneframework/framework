@@ -9,6 +9,7 @@
   <meshes>
     <mesh>
       <filename>sod.vtk</filename>
+      <partitioner>MeshPartitionerTester</partitioner>
     </mesh>
   </meshes>
   <subdivider>
