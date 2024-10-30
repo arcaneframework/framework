@@ -391,7 +391,7 @@ class NumArray
    */
   void copy(const ThatClass& rhs, RunQueue* queue)
   {
-    _resizeAndCopy(rhs.constSpan(), rhs.memoryRessource(), queue);
+    _resizeAndCopy(rhs.constMDSpan(), rhs.memoryRessource(), queue);
   }
 
  public:
@@ -487,24 +487,48 @@ class NumArray
 
  public:
 
+  //! Vue multi-dimension sur l'instance
+  ARCANE_DEPRECATED_REASON("Y2024: Use mdspan() instead")
   MDSpanType span() { return m_span; }
+
+  //! Vue constante multi-dimension sur l'instance
+  ARCANE_DEPRECATED_REASON("Y2024: Use mdspan() instead")
   ConstMDSpanType span() const { return m_span.constMDSpan(); }
+
+  //! Vue constante multi-dimension sur l'instance
+  ARCANE_DEPRECATED_REASON("Y2024: Use constMDSpan() instead")
   ConstMDSpanType constSpan() const { return m_span.constMDSpan(); }
 
+  //! Vue multi-dimension sur l'instance
   MDSpanType mdspan() { return m_span; }
+
+  //! Vue constante multi-dimension sur l'instance
   ConstMDSpanType mdspan() const { return m_span.constMDSpan(); }
+
+  //! Vue constante multi-dimension sur l'instance
   ConstMDSpanType constMDSpan() const { return m_span.constMDSpan(); }
 
+  //! Vue 1D constante sur l'instance
   Span<const DataType> to1DSpan() const { return m_span.to1DSpan(); }
+
+  //! Vue 1D sur l'instance
   Span<DataType> to1DSpan() { return m_span.to1DSpan(); }
 
-  constexpr operator MDSpanType() { return this->span(); }
-  constexpr operator ConstMDSpanType() const { return this->constSpan(); }
+  //! Conversion vers une vue multi-dimension sur l'instance
+  constexpr operator MDSpanType() { return this->mdspan(); }
+  //! Conversion vers une vue constante multi-dimension sur l'instance
+  constexpr operator ConstMDSpanType() const { return this->constMDSpan(); }
+
+  //! Conversion vers une vue 1D sur l'instance (uniquement si rank == 1)
   constexpr operator SmallSpan<DataType>() requires(Extents::rank() == 1) { return this->to1DSpan().smallView(); }
+  //! Conversion vers une vue constante 1D sur l'instance (uniquement si rank == 1)
   constexpr operator SmallSpan<const DataType>() const requires(Extents::rank() == 1) { return this->to1DSpan().constSmallView(); }
 
+  //! Vue 1D sur l'instance (uniquement si rank == 1)
   constexpr SmallSpan<DataType> to1DSmallSpan() requires(Extents::rank() == 1) { return m_span.to1DSmallSpan(); }
+  //! Vue constante 1D sur l'instance (uniquement si rank == 1)
   constexpr SmallSpan<const DataType> to1DSmallSpan() const requires(Extents::rank() == 1) { return m_span.to1DSmallSpan(); }
+  //! Vue constante 1D sur l'instance (uniquement si rank == 1)
   constexpr SmallSpan<const DataType> to1DConstSmallSpan() const requires(Extents::rank() == 1) { return m_span.to1DConstSmallSpan(); }
 
  public:

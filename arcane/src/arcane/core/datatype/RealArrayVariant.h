@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* RealArrayVariant.h                                          (C) 2000-2023 */
+/* RealArrayVariant.h                                          (C) 2000-2024 */
 /*                                                                           */
 /* Variant pouvant contenir les types ConstArrayView, Real2 et Real3.        */
 /*---------------------------------------------------------------------------*/
@@ -52,7 +52,7 @@ class RealArrayVariant
 #if defined(ARCANE_HAS_ACCELERATOR_API)
   template<typename LayoutType>
   RealArrayVariant(const NumArray<Real,MDDim1,LayoutType>& v)
-  : RealArrayVariant(v.span())
+  : RealArrayVariant(v.mdspan())
   {}
   template<typename LayoutType>
   RealArrayVariant(MDSpan<Real,MDDim1,LayoutType> v)

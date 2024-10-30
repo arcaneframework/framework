@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* NumArrayData.cc                                             (C) 2000-2023 */
+/* NumArrayData.cc                                             (C) 2000-2024 */
 /*                                                                           */
 /* Donnée de type 'NumArray'.                                                */
 /*---------------------------------------------------------------------------*/
@@ -129,8 +129,8 @@ class NumArrayDataT
   eDataType dataType() const override { return DataTypeTraitsT<DataType>::type(); }
   void serialize(ISerializer* sbuf, IDataOperation* operation) override;
   void serialize(ISerializer* sbuf, Int32ConstArrayView ids, IDataOperation* operation) override;
-  MDSpan<DataType,ExtentType> view() override { return m_value.span(); }
-  MDSpan<const DataType,ExtentType> view() const override { return m_value.span(); }
+  MDSpan<DataType,ExtentType> view() override { return m_value.mdspan(); }
+  MDSpan<const DataType,ExtentType> view() const override { return m_value.mdspan(); }
   void resize(Integer new_size) override;
   IData* clone() override { return _cloneTrue(); }
   IData* cloneEmpty() override { return _cloneTrueEmpty(); };
