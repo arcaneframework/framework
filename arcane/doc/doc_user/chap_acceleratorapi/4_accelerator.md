@@ -592,7 +592,7 @@ l'énumération \arcaneacc{eAtomicOperation}. Par exemple:
 
 \snippet AtomicUnitTest.cc SampleAtomicAdd
 
-## Réductions, Scan, Filtrage et Tri
+## Algorithmes avancés: Réductions, Scan, Filtrage, Partitionnement et Tri
 
 %Arcane propose plusieurs classes permettant d'effectuer des
 algorithmes plus avancés. Sur accélérateur, ces algorithmes utilisent
@@ -607,7 +607,8 @@ Les classes disponibles sont:
 - \arcaneacc{GenericFilterer} pour filtrer les éléments d'un tableau.
 - \arcaneacc{GenericScanner} pour effectuer des algorithmes de scan inclusifs ou exclusifs (voir
   [Algorithmes de Scan](https://en.wikipedia.org/wiki/Prefix_sum) sur wikipedia)
-- \arcaneacc{GenericSorter} pour trier les éléments d'un tableau.
+- \arcaneacc{GenericSorter} pour trier les éléments d'une liste
+- \arcaneacc{GenericPartitioner} pour partitionner les éléments d'une liste
 - \arcaneacc{GenericReducer} pour effectuer des réduction. Il existe
   aussi d'autres manières de réaliser des réductions qui sont
   décrites dans la page (\ref arcanedoc_acceleratorapi_reduction)
