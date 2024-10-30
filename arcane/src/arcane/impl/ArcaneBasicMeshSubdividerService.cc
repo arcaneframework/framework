@@ -106,8 +106,6 @@ subdivideMesh([[maybe_unused]] IPrimaryMesh* mesh)
   if( !is_hex )
     return ;
 
-
-
   Int32 my_rank = mesh->parallelMng()->commRank();
   IMeshModifier* mesh_modifier = mesh->modifier();
 
@@ -124,7 +122,7 @@ subdivideMesh([[maybe_unused]] IPrimaryMesh* mesh)
   mesh_modifier->setDynamic(true);
   mesh_modifier->updateGhostLayers();
 
-  // Uniquement pour les asserts à la fin
+  // Uniquement pour les vérifications asserts à la fin
   Integer nb_cell_init = mesh->nbCell();
   Integer nb_face_init = mesh->nbFace();
   Integer nb_edge_init = mesh->nbEdge();
@@ -149,17 +147,17 @@ subdivideMesh([[maybe_unused]] IPrimaryMesh* mesh)
   std::unordered_map<Int64, Real3> nodes_to_add_coords;
   std::cout << "ARRAY SIZE " << nodes_coords.arraySize() << std::endl;
   // Nodes on entities
-  std::set<Int64> new_nodes; // Using a map to ensure that we don't add nodes multiple times (maybe consider doing a different way)
-  std::set<Int64> new_faces; // ^--- same for faces
+  std::set<Int64> new_nodes; // Utiliser une map permet s'assurer qu'on ajoute une seule fois un noeud avec un uniqueId()
+  std::set<Int64> new_faces; // ^--- Pareil pour les faces
   // Maps owners
   std::unordered_map<Int64, Int32> node_uid_to_owner;
-  std::unordered_map<Int64, Int32> edge_uid_to_owner;
+  std::unordered_map<Int64, Int32> edge_uid_to_owner; // pas utilisé
   std::unordered_map<Int64, Int32> face_uid_to_owner;
-  std::unordered_map<Int64,Int32> child_cell_owner;
-  std::unordered_map<Int32, Int32> old_face_lid_to_owner;
+  std::unordered_map<Int64,Int32> child_cell_owner;   // pas utilisé
+  std::unordered_map<Int32, Int32> old_face_lid_to_owner; // pas utilisé
 
 
-  UniqueArray<Int32> cells_to_detach;
+  UniqueArray<Int32> cells_to_detach; // Cellules à détacher
 
   UniqueArray<Int64> faces_uids; // Contient uniquement les uids pas les connectivités
   UniqueArray<Int64> edges_uids; // Idem
@@ -211,19 +209,33 @@ subdivideMesh([[maybe_unused]] IPrimaryMesh* mesh)
 
   ARCANE_ASSERT((mesh->nbEdge() == 0 ),("Wrong number of edge"));
 
-  // Saving owner for new nodes on edges
-  ENUMERATE_FACE(iface,mesh->ownFaces()){
-    const Face& face = *iface;
-    old_face_lid_to_owner[face.localId()] = face.owner();
-  }
-
   // Traitement pour une cellule
   ENUMERATE_CELL(icell,mesh->ownCells())
   {
+      // Génération des nouveaux noeuds (uid et coordonnées)
+      // Sur Arrêtes
+      // Sur Faces
+      // Sur Cellule
+
+      // Génération des Faces (uid et composants (Noeuds))
+      // Internes
+      // Externes
+
+      // Génération des Cellules (uid et composants (Noeuds))
+      // Détachement des cellules
+      // Ajout des noeuds enfants
+      // Ajout des faces enfants
+      // Ajout des cellules enfants (et assignation propriétaire)
+
+      // Ajout d'une couche fantome
+      // Calcul des propriétaires des noeuds
+      // Calcul des propriétaires des faces
+      // Supression de la couche fantome
+
+      // Assignation des noeuds au propriétaire
+      // Assignation des faces au propriétaire
+
       const Cell& cell = *icell;
-
-
-
       debug() << "CELL_OWNER " << cell.owner() ;
       cells_to_detach.add(cell.localId());
       // Génération des noeuds
@@ -238,9 +250,9 @@ subdivideMesh([[maybe_unused]] IPrimaryMesh* mesh)
       node_in_cell[6] = cell.node(6).uniqueId().asInt64();
       node_in_cell[7] = cell.node(7).uniqueId().asInt64();
       Integer index_27 = 8;
-      // Noeuds sur arrêtes
+      // Génération des nouveaux noeuds sur arrêtes
       Integer new_nodes_on_edges_couple[][2] = {{0, 1},{0, 3},{0, 4},{1, 2},{1, 5},{2, 3},{2, 6},{3, 7},{4, 5},{4, 7},{5, 6},{6, 7}};
-
+      // ^--- Tableau d'arretes
       for( Integer i = 0 ; i < 12 ; i++ ){
         // uid
         UniqueArray<Int64> tmp = {
@@ -258,23 +270,7 @@ subdivideMesh([[maybe_unused]] IPrimaryMesh* mesh)
         Arcane::Real3 middle_coord(0.0,0.0,0.0);
         middle_coord = (nodes_coordinates[cell.node(new_nodes_on_edges_couple[i][0])] + nodes_coordinates[cell.node(new_nodes_on_edges_couple[i][1])] ) / 2.0;
         nodes_to_add_coords[node_in_cell[index_27]] = middle_coord;
-        // Now we use the owner of the lower id as owner
 
-        node_uid_to_owner[node_in_cell[index_27]] = cell.node(new_nodes_on_edges_couple[i][min_index]).owner();
-        /*
-        FaceLocalIdView fa = cell.node(new_nodes_on_edges_couple[i][0]).faceIds() ;
-        FaceLocalIdView fb = cell.node(new_nodes_on_edges_couple[i][1]).faceIds() ;
-        std::set<Int32> sta( fa.begin(), fa.end() );
-        std::set<Int32> stb( fb.begin(), fb.end() );
-        std::vector<Int32> res;
-
-        std::set_intersection(sta.begin(), sta.end(), stb.begin(), stb.end(), std::back_inserter(res.begin()));
-        Int32 min_rank = old_face_lid_to_owner[res[0]];
-
-        for( auto it = res.begin()+1 ; it != res.end() ; ++it ){
-            min_rank = std::min(min_rank ,old_face_lid_to_owner[*it]);
-        }
-        node_uid_to_owner[node_in_cell[index_27]] = min_rank;*/
         index_27++;
       }
       ARCANE_ASSERT((index_27 == 20),("wrong number"));
@@ -297,9 +293,6 @@ subdivideMesh([[maybe_unused]] IPrimaryMesh* mesh)
         };
         std::sort(tmp.begin(),tmp.end());
         Int64 nuid = Arcane::MeshUtils::generateHashUniqueId(tmp.constView());
-        // Is the node already compute ? compute coord : don't compute coord ;
-        //
-
         node_in_cell[index_27] = nuid;
         // Coord on face
         Arcane::Real3 middle_coord(0.0,0.0,0.0);
@@ -322,12 +315,11 @@ subdivideMesh([[maybe_unused]] IPrimaryMesh* mesh)
         node_in_cell[new_nodes_on_cell_oct[6]],
         node_in_cell[new_nodes_on_cell_oct[7]]
       };
-      //std::sort(tmp.begin(),tmp.end());
+
+      // Le noeud central à son uid généré a partir des uid de la cellule parent
       node_in_cell[index_27] = Arcane::MeshUtils::generateHashUniqueId(tmp.constView());
 
-      node_uid_to_owner[node_in_cell[index_27]] = cell.owner();
-
-      // Coord on cell
+      // Calcul des coordonnées du noeud central
       Arcane::Real3 middle_coord(0.0,0.0,0.0);
       for( Integer i = 0 ; i < 8 ; i++ ){
         middle_coord += nodes_coordinates[cell.node(new_nodes_on_cell_oct[i])];
@@ -335,14 +327,11 @@ subdivideMesh([[maybe_unused]] IPrimaryMesh* mesh)
       middle_coord /= 8.0;
       nodes_to_add_coords[node_in_cell[index_27]] = middle_coord;
 
-
       // Génération des Edges
-      // not mandatory
-
-      // !here
+      // Pas obligatoire
       for( Integer i = 8 ; i < 27 ; i++){
-        // We compute multiple times coordinates of a node TODO improve that
-        // We add new node if it is not already in node
+        // Nous calculons plusieurs fois les noeuds pour chaque Cellule (TODO améliorer ça)
+        // Si un noeud n'est pas dans la map, on l'ajoute
         if( new_nodes.find(node_in_cell[i]) == new_nodes.end()  ){
           nodes_to_add.add(node_in_cell[i]);
           new_nodes.insert(node_in_cell[i]);
@@ -352,7 +341,6 @@ subdivideMesh([[maybe_unused]] IPrimaryMesh* mesh)
 
       ARCANE_ASSERT((nodes_to_add_coords.size() == static_cast<size_t>(nodes_to_add.size())),("Has to be same"));
       // Génération des Faces
-
       // - Internes 12
       Int64 internal_faces[][4]=
       {
@@ -370,6 +358,8 @@ subdivideMesh([[maybe_unused]] IPrimaryMesh* mesh)
         {26, 23, 14, 24}, //  17 : 26 23 14 24 // ici BUG
       };
 
+      // Génération des faces enfants
+      // L'uid d'une nouvelle face est généré avec un hash utilisant les uid des noeuds triés
       for( Integer i = 0 ; i < 12 ; i++ ){
         UniqueArray<Int64> tmp = {node_in_cell[internal_faces[i][0]],node_in_cell[internal_faces[i][1]],node_in_cell[internal_faces[i][2]],node_in_cell[internal_faces[i][3]]};
         std::sort(tmp.begin(),tmp.end());
@@ -393,7 +383,7 @@ subdivideMesh([[maybe_unused]] IPrimaryMesh* mesh)
 
       // - Externes 6*4
       const Int64 faces[][4] = {
-        {0, 8, 20, 9},    //  Arr
+        {0, 8, 20, 9},    // Arr
         {9, 20, 13, 3},
         {8, 1, 11, 20},
         {20, 11, 2, 13},
@@ -421,9 +411,9 @@ subdivideMesh([[maybe_unused]] IPrimaryMesh* mesh)
 
         for(Integer i = 0 ; i < 24 ; i++){
           UniqueArray<Int64> tmp = {node_in_cell[faces[i][0]],node_in_cell[faces[i][1]],node_in_cell[faces[i][2]],node_in_cell[faces[i][3]]};
-          std::sort(tmp.begin(),tmp.end());// maybe to generate the same uid we will need to sort ids ?
+          std::sort(tmp.begin(),tmp.end());
           Int64 uidface =  Arcane::MeshUtils::generateHashUniqueId(tmp.constView());
-          if( new_faces.find(uidface) == new_faces.end() ){ // Not already in map pas utile ici normalement
+          if( new_faces.find(uidface) == new_faces.end() ){
             faces_to_add.add(IT_Quad4);
             faces_to_add.add(uidface);
             faces_to_add.add(node_in_cell[faces[i][0]]);
@@ -450,8 +440,10 @@ subdivideMesh([[maybe_unused]] IPrimaryMesh* mesh)
         {26, 23, 14, 24, 25, 18, 6, 19 }
       };
 
+      // Génération des cellules enfants
+      // L'uid est généré à partir du hash de chaque noeuds triés par ordre croissant
       for( Integer i = 0 ; i < 8 ; i++ ){
-        // An other policy to generate celluid
+        // Le nouvel uid est généré avec le hash des nouveaux noeuds qui compose la nouvelle cellule
         UniqueArray<Int64> tmp;
         tmp.reserve(8);
         for( Integer j = 0 ; j < 8 ; j++){
@@ -476,122 +468,95 @@ subdivideMesh([[maybe_unused]] IPrimaryMesh* mesh)
         ind_new_cell++;
       }
     }
-    // Add nodes
+    // Ajout des nouveaux Noeuds
     Integer nb_node_added = nodes_to_add.size();
     UniqueArray<Int32> nodes_lid(nb_node_added);
 
     mesh->modifier()->addNodes(nodes_to_add, nodes_lid.view());
-    // Gestion ownership noeuds ici
-    // - Assign to the new nodes on faces the owner of the cell (recompute hash)
 
-    std::cout << "NOEUDS" << std::endl;
-
-    ENUMERATE_(Face, iface, mesh->allFaces()){
-        Face face = *iface;
-        UniqueArray<Int64> tmp;
-        tmp.reserve(4);
-        for(Node node : face.nodes()){
-          tmp.add(node.uniqueId());
-        }
-        std::sort(tmp.begin(),tmp.end());
-        Int64 uidface =  Arcane::MeshUtils::generateHashUniqueId(tmp.constView());
-        node_uid_to_owner[uidface] = face.owner();
-    }
-    ENUMERATE_ (Node, inode, mesh->nodeFamily()->view(nodes_lid)) {
-        Node node = *inode;
-        std::cout << node.uniqueId() << " " ;
-        node.mutableItemBase().setOwner( node_uid_to_owner[node.uniqueId()] ,my_rank);   //
-    }
-
-    mesh->nodeFamily()->notifyItemsOwnerChanged();
     // Edges: Pas de génération d'arrête
 
-    debug() <<  "#NBNODE " <<mesh->nbNode() <<  " nb_node_init " << nb_node_init << " nb_node_added "  << nb_node_added <<  " " ;
-    debug() << "#SIZES" << nodes_to_add.size() << " new_nodes " << new_nodes.size() << " " << edges_to_add.size() << " " << faces_to_add.size() << " " << cells_to_add.size() << " " << nodes_to_add_coords.size() << " " << nodes_lid.size() << " " << nodes_coordinates.arraySize() ;
-    for( auto x=cells_to_add.begin() ; x != cells_to_add.end(); ++x ){
-      if( std::distance(cells_to_add.begin(),x) % 10 == 0 )
-        std::cout << std::endl;
-      std::cout << *x << std::endl;
-    }
-
-    // Faces
+    // Ajout des Faces enfants
     UniqueArray<Int32> face_lid(faces_uids.size());
 
-    std::cout << "NB_FACE " << mesh->nbFace() ;
-
-    std::cout << "addOneFac" << nb_face_to_add << std::endl;
     mesh->modifier()->addFaces(MeshModifierAddFacesArgs(nb_face_to_add, faces_to_add.constView(),face_lid.view()));
     std::cout << "addOneFac" << nb_face_to_add << std::endl;
     mesh->faceFamily()->itemsUniqueIdToLocalId(face_lid,faces_uids,true);
     std::cout << "NB_FACE_ADDED AFTER " << face_lid.size() << " " << new_faces.size() << std::endl ;
 
-    // Gestion ownership faces ici
-    ENUMERATE_ (Face, iface, mesh->faceFamily()->view(face_lid)){
-        Face face = *iface;
-        face.mutableItemBase().setOwner(face_uid_to_owner[face.uniqueId()],my_rank);
-        std::cout << ItemPrinter(face) << std::endl;
-    }
-    std::cout << "Debug" << std::endl;
-    // Debug
-
-    ENUMERATE_ (Face, iface, mesh->faceFamily()->view(face_lid)){
-        Face face = *iface;
-        std::cout << ItemPrinter(face) << "\nNodes:" << std::endl;
-        for(Node node : face.nodes()){
-          std::cout << node.uniqueId() << std::endl;
-        }
-    }
-
-    // Faces supprimées quand toute les cells sont supprimées
-    mesh->faceFamily()->notifyItemsOwnerChanged();
     ARCANE_ASSERT((nb_face_to_add == (faces_to_add.size()/6)),("non consistant number of faces"));
-    // Cells
+
+    // Ajout des cellules enfants
     UniqueArray<Int32> cells_lid(nb_cell_to_add);
     mesh->modifier()->addCells(nb_cell_to_add, cells_to_add.constView(),cells_lid);
     mesh->modifier()->removeCells(cells_to_detach.constView());
-    std::cout << "FinalNbfaces" << mesh->nbFace() << std::endl ;
-    // Gestion ownership cells ici
+
     mesh->modifier()->endUpdate();
 
+    // Gestion et assignation du propriétaire pour chaque cellule
+    // Le propriétaire est simplement le sous domaine qui a générer les nouvelles cellules
     ENUMERATE_ (Cell, icell, mesh->allCells()){
         Cell cell = *icell;
         cell.mutableItemBase().setOwner(my_rank, my_rank);
     }
     mesh->cellFamily()->notifyItemsOwnerChanged();
 
-    // On peut laisser la gestion des owners au primary mesh
-    //mesh->endAllocate();
-    /*Arcane::IGhostLayerMng * gm2 = mesh->ghostLayerMng();
-    gm2->setNbGhostLayer(1);
-    mesh->updateGhostLayers(true);
-    Arcane::IPrimaryMesh * pmesh = mesh->toPrimarymesh;
-    pmesh->setOwnersFromCells();
-    */
-
-    //mesh->utilities()->changeOwnersFromCells();
-    // Assignement des coords aux noeuds
+    // Assignation des coords aux noeuds
     ENUMERATE_(Node, inode, mesh->nodeFamily()->view(nodes_lid)){
       Node node = *inode;
       nodes_coords[node] = nodes_to_add_coords[node.uniqueId()];
     }
 
+    // Ajout d'une couche fantôme
+    Arcane::IGhostLayerMng * gm2 = mesh->ghostLayerMng();
+    gm2->setNbGhostLayer(1);
+    mesh->updateGhostLayers(true);
 
+    // Gestion des propriétaires de noeuds
+    // Le propriétaire est la cellule incidente au noeud avec le plus petit uniqueID()
+    ENUMERATE_(Node, inode, mesh->allNodes()){
+      Node node = *inode;
+      auto it = std::min_element(node.cells().begin(),node.cells().end());
+      Cell cell = node.cell(std::distance(node.cells().begin(),it));
+      node_uid_to_owner[node.uniqueId().asInt64()] = cell.owner();
+    }
+
+    // Gestion des propriétaires des faces
+    // Le propriétaire est la cellule incidente à la face avec le plus petit uniqueID()
+    ENUMERATE_(Face, iface, mesh->allFaces()){
+      Face face = *iface;
+      auto it = std::min_element(face.cells().begin(),face.cells().end());
+      Cell cell = face.cell(std::distance(face.cells().begin(),it));
+      face_uid_to_owner[face.uniqueId().asInt64()] = cell.owner();
+    }
+
+    // Supression de la couche fantôme
+    gm2->setNbGhostLayer(0);
+    mesh->updateGhostLayers(true);
+
+    // Assignation du nouveau propriétaire pour chaque noeud
+    ENUMERATE_ (Node, inode, mesh->allNodes()){
+      Node node = *inode;
+      node.mutableItemBase().setOwner(node_uid_to_owner[node.uniqueId().asInt64()], my_rank);
+    }
+    mesh->nodeFamily()->notifyItemsOwnerChanged();
+
+    // Assignation du nouveaux propriétaires pour chaque face
+    ENUMERATE_ (Face, iface, mesh->allFaces()){
+      Face face = *iface;
+      face.mutableItemBase().setOwner(face_uid_to_owner[face.uniqueId().asInt64()], my_rank);
+    }
+    mesh->faceFamily()->notifyItemsOwnerChanged();
+
+    // Ecriture au format VTK
     mesh->utilities()->writeToFile("3Drefined"+std::to_string(my_rank)+".vtk", "VtkLegacyMeshWriter");
-
 
     debug() << "END 3D fun" ;
     debug() << "NB CELL " << mesh->nbCell() << " " << nb_cell_init*8 ;
     debug() << mesh->nbNode() << " " << nb_node_init << " " << nb_edge_init << " " << nb_face_init << " " << nb_cell_init;
     debug() << mesh->nbFace() << "nb_face_init " << nb_face_init <<  " " <<  nb_face_init << " " << nb_cell_init ;
     debug() << "Faces: " << mesh->nbFace() << " theorical nb_face_to add: " << nb_face_init*4 + nb_cell_init*12 <<  " nb_face_init " <<  nb_face_init << " nb_cell_init " << nb_cell_init ;
-    /* Debug
-    Integer cpt2 = 0;
-    std::cout << "Node_coordinate: " << mesh->nbNode() << std::endl ;
-    ENUMERATE_ (Node, inode, mesh->allNodes()) {
-        Node node = *inode;
-        std::cout << nodes_coordinates[node] << " " << cpt2++ << " N:" << node.uniqueId() << std::endl;
-    }
-    */
+
     // ARCANE_ASSERT((mesh->nbNode() == nb_edge_init + nb_face_init + nb_cell_init ),("Wrong number of node added")) // Ajouter en debug uniquement pour savoir combien de noeud on à la fin
     ARCANE_ASSERT((mesh->nbCell() == nb_cell_init*8 ),("Wrong number of cell added"));
     ARCANE_ASSERT((mesh->nbFace() <= nb_face_init*4 + 12 * nb_cell_init ),("Wrong number of face added"));
