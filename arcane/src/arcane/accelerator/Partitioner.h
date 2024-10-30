@@ -259,7 +259,10 @@ namespace Arcane::Accelerator
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Algorithme générique de filtrage sur accélérateur.
+ * \brief Algorithme générique de partitionnement d'une liste.
+ *
+ * Cette classe fournit des algorithmes pour partitionner une liste en deux
+ * ou trois parties selon un critère fixé par l'utilisateur.
  */
 class GenericPartitioner
 : private impl::GenericPartitionerBase
@@ -279,14 +282,14 @@ class GenericPartitioner
    *
    * Le nombre de valeurs de la liste est donné par \a nb_value.
    * Les deux fonctions lambda \a select_lambda et \a setter_lambda permettent
-   * de filtrer et de positionner les valeurs de la liste.
+   * de partitionner et de positionner les valeurs de la liste.
    *
    * Après exécution, il est possible de récupérer le nombre d'éléments
    * de la première partie de la liste via la méthode \a nbFirstPart().
    *
    * \snippet AcceleratorPartitionerUnitTest.cc SampleListPartitionerTwoWayIndex
    */
-  template <typename DataType, typename SelectLambda, typename SetterLambda>
+  template <typename SelectLambda, typename SetterLambda>
   void applyWithIndex(Int32 nb_value, const SetterLambda& setter_lambda,
                       const SelectLambda& select_lambda, const TraceInfo& trace_info = TraceInfo())
   {
@@ -301,6 +304,22 @@ class GenericPartitioner
     gf.apply(*base_ptr, nb_value, input_iter, out, select_lambda, trace_info);
   }
 
+  /*!
+   * \brief Effectue un partitionnement d'une liste en deux parties.
+   *
+   * Le nombre de valeurs de la liste est donné par \a nb_value.
+   * Les valeurs en entrée sont fournies par l'itérateur \a input_iter et
+   * les valeurs en sorties par l'itérateur \a output_iterator. La fonction
+   * lambda \a select_lambda permet de sélectionner la partition utilisée :
+   * si le retour est \a true, la valeur sera dans la première partie de la liste,
+   * sinon elle sera dans la seconde. En sortie les valeurs de la deuxième
+   * partie sont rangées en ordre inverse de la liste d'entrée.
+   *
+   * Après exécution, il est possible de récupérer le nombre d'éléments
+   * de la première partie de la liste via la méthode \a nbFirstPart().
+   *
+   * \snippet AcceleratorPartitionerUnitTest.cc SampleListPartitionerTwoWayIf
+   */
   template <typename InputIterator, typename OutputIterator, typename SelectLambda>
   void applyIf(Int32 nb_value, InputIterator input_iter, OutputIterator output_iter,
                const SelectLambda& select_lambda, const TraceInfo& trace_info = TraceInfo())
@@ -313,8 +332,25 @@ class GenericPartitioner
     gf.apply(*base_ptr, nb_value, input_iter, output_iter, select_lambda, trace_info);
   }
 
-  template <typename Setter1Lambda, typename Setter2Lambda,
-            typename UnselectedSetterLambda, typename Select1Lambda, typename Select2Lambda>
+  /*!
+   * \brief Effectue un partitionnement d'une liste en trois parties.
+   *
+   * Le nombre de valeurs de la liste est donné par \a nb_value.
+   * Les deux fonctions lambda \a select1_lambda et \a select2_lambda permettent
+   * de partitionner la liste avec l'algorithme suivant:
+   * - si select1_lambda() est vrai, la valeur sera positionnée via \a setter1_lambda,
+   * - sinon si select2_lambda() est vrai, la valeur sera positionnée via \a setter2_lambda,
+   * - sinon la valeur sera positionnée via \a unselected_setter_lambda.
+   *
+   * Les listes en sortie sont dans le même ordre qu'en entrée.
+   *
+   * Après exécution, il est possible de récupérer le nombre d'éléments
+   * de la première et de la deuxième liste la méthode \a nbParts().
+   *
+   * \snippet AcceleratorPartitionerUnitTest.cc SampleListPartitionerThreeWayIndex
+   */
+  template <typename Setter1Lambda, typename Setter2Lambda, typename UnselectedSetterLambda,
+            typename Select1Lambda, typename Select2Lambda>
   void applyWithIndex(Int32 nb_value,
                       const Setter1Lambda setter1_lambda,
                       const Setter2Lambda setter2_lambda,
@@ -336,6 +372,23 @@ class GenericPartitioner
               unselected_setter_wrapper, select1_lambda, select2_lambda, trace_info);
   }
 
+  /*!
+   * \brief Effectue un partitionnement d'une liste en trois parties.
+   *
+   * Le nombre de valeurs de la liste est donné par \a nb_value.
+   * Les deux fonctions lambda \a select1_lambda et \a select2_lambda permettent
+   * de partitionner la liste avec l'algorithme suivant:
+   * - si select1_lambda() est vrai, la valeur ajoutée \a first_output_iter,
+   * - sinon si select2_lambda() est vrai, la valeur sera ajoutée à \a second_output_iter,
+   * - sinon la valeur sera ajoutée à \a unselected_iter.
+   *
+   * Les listes en sortie sont dans le même ordre qu'en entrée.
+   *
+   * Après exécution, il est possible de récupérer le nombre d'éléments
+   * de la première et de la deuxième liste la méthode \a nbParts().
+   *
+   * \snippet AcceleratorPartitionerUnitTest.cc SampleListPartitionerThreeWayIf
+   */
   template <typename InputIterator, typename FirstOutputIterator,
             typename SecondOutputIterator, typename UnselectedIterator,
             typename Select1Lambda, typename Select2Lambda>
@@ -373,7 +426,7 @@ class GenericPartitioner
    * nombre d'éléments de la deuxième liste.
    *
    * Cette méthode n'est valide qu'après avoir appelé une méthode de partitionnement
-   * comportement deux filtres.
+   * en trois parties.
    */
   SmallSpan<const Int32> nbParts()
   {
