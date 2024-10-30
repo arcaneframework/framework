@@ -902,7 +902,7 @@ doExit(RealArrayView reduced_values)
   NumArray3Type host_nstate(eMemoryRessource::Host);
   host_nstate.copy(nstate);
 
-  auto ns = host_nstate.constSpan();
+  auto ns = host_nstate.constMDSpan();
 
   for (ll = 0; ll < NUM_VARS; ll++)
     sum_v[ll] = 0.0;

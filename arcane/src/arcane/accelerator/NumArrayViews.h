@@ -153,7 +153,7 @@ template <typename DataType, typename Extents, typename LayoutPolicy> auto
 viewOut(const ViewBuildInfo& command, NumArray<DataType, Extents, LayoutPolicy>& var)
 {
   using Accessor = DataViewSetter<DataType>;
-  return NumArrayView<Accessor, Extents, LayoutPolicy>(command, var.span());
+  return NumArrayView<Accessor, Extents, LayoutPolicy>(command, var.mdspan());
 }
 
 /*---------------------------------------------------------------------------*/
@@ -166,7 +166,7 @@ template <typename DataType, typename Extents, typename LayoutPolicy> auto
 viewInOut(const ViewBuildInfo& command, NumArray<DataType, Extents, LayoutPolicy>& v)
 {
   using Accessor = DataViewGetterSetter<DataType>;
-  return NumArrayView<Accessor, Extents, LayoutPolicy>(command, v.span());
+  return NumArrayView<Accessor, Extents, LayoutPolicy>(command, v.mdspan());
 }
 
 /*----------------------------------------------1-----------------------------*/
@@ -178,7 +178,7 @@ template <typename DataType, typename Extents, typename LayoutType> auto
 viewIn(const ViewBuildInfo& command, const NumArray<DataType, Extents, LayoutType>& v)
 {
   using Accessor = DataViewGetter<DataType>;
-  return NumArrayView<Accessor, Extents, LayoutType>(command, v.constSpan());
+  return NumArrayView<Accessor, Extents, LayoutType>(command, v.constMDSpan());
 }
 
 /*---------------------------------------------------------------------------*/

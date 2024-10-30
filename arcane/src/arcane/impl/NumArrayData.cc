@@ -129,8 +129,8 @@ class NumArrayDataT
   eDataType dataType() const override { return DataTypeTraitsT<DataType>::type(); }
   void serialize(ISerializer* sbuf, IDataOperation* operation) override;
   void serialize(ISerializer* sbuf, Int32ConstArrayView ids, IDataOperation* operation) override;
-  MDSpan<DataType,ExtentType> view() override { return m_value.span(); }
-  MDSpan<const DataType,ExtentType> view() const override { return m_value.span(); }
+  MDSpan<DataType,ExtentType> view() override { return m_value.mdspan(); }
+  MDSpan<const DataType,ExtentType> view() const override { return m_value.mdspan(); }
   void resize(Integer new_size) override;
   IData* clone() override { return _cloneTrue(); }
   IData* cloneEmpty() override { return _cloneTrueEmpty(); };

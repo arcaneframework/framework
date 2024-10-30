@@ -251,7 +251,7 @@ _executeTestReduceDirect(Int32 nb_iteration, const NumArray<DataType, MDDim1>& t
   // Utilisation des kernels spécifiques
   for (int z = 0; z < nb_iteration; ++z) {
     ax::GenericReducer<DataType> reducer(m_queue);
-    reducer.applySum(t1.to1DSmallSpan(), A_FUNCINFO);
+    reducer.applySum(t1, A_FUNCINFO);
     DataType reduced_sum = reducer.reducedValue();
     if (z == 0)
       info() << "REDUCED_SUM (direct)=" << reduced_sum;
@@ -260,7 +260,7 @@ _executeTestReduceDirect(Int32 nb_iteration, const NumArray<DataType, MDDim1>& t
 
   for (int z = 0; z < nb_iteration; ++z) {
     ax::GenericReducer<DataType> reducer(m_queue);
-    reducer.applyMin(t1.to1DSmallSpan(), A_FUNCINFO);
+    reducer.applyMin(t1, A_FUNCINFO);
     DataType reduced_min = reducer.reducedValue();
     if (z == 0)
       info() << "REDUCED_MIN (direct)=" << reduced_min;
@@ -270,7 +270,7 @@ _executeTestReduceDirect(Int32 nb_iteration, const NumArray<DataType, MDDim1>& t
 
   for (int z = 0; z < nb_iteration; ++z) {
     ax::GenericReducer<DataType> reducer(m_queue);
-    reducer.applyMax(t1.to1DSmallSpan(), A_FUNCINFO);
+    reducer.applyMax(t1, A_FUNCINFO);
     DataType reduced_max = reducer.reducedValue();
     if (z == 0)
       info() << "REDUCED_MAX (direct)=" << reduced_max;

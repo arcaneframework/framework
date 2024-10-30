@@ -62,7 +62,7 @@ class RealArray2Variant
 #if defined(ARCANE_HAS_ACCELERATOR_API)
   template<typename LayoutType>
   RealArray2Variant(const NumArray<Real,MDDim2,LayoutType>& v)
-  : RealArray2Variant(v.span())
+  : RealArray2Variant(v.mdspan())
   {}
   template<typename LayoutType>
   RealArray2Variant(MDSpan<Real,MDDim2,LayoutType> v)
