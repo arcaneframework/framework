@@ -15,6 +15,7 @@
 
 #include "arcane/utils/FatalErrorException.h"
 #include "arcane/utils/PlatformUtils.h"
+#include "arcane/utils/ValueConvert.h"
 
 #include <unordered_map>
 #include <map>
@@ -53,13 +54,27 @@ class MemoryPool::Impl
     {
       std::unique_lock<std::mutex> lg(m_mutex);
       auto x = m_allocated_memory_map.find(ptr);
-      if (x == m_allocated_memory_map.end())
-        ARCANE_FATAL("MemoryPool '{0}': pointer {1} is not in the allocated map", m_name, ptr);
+      if (x == m_allocated_memory_map.end()) {
+        ++m_nb_error;
+        String str = String::format("MemoryPool '{0}': pointer {1} is not in the allocated map", m_name, ptr);
+        if (m_is_throw_on_error)
+          ARCANE_FATAL(str);
+        else {
+          std::cerr << "ERROR: " << str << "\n";
+          return;
+        }
+      }
 
       size_t allocated_size = x->second;
-      if (size != allocated_size)
-        ARCANE_FATAL("MemoryPool '{0}': Incoherent size saved_size={1} arg_size={2}",
-                     m_name, allocated_size, size);
+      if (size != allocated_size) {
+        ++m_nb_error;
+        String str = String::format("MemoryPool '{0}': Incoherent size saved_size={1} arg_size={2}",
+                                    m_name, allocated_size, size);
+        if (m_is_throw_on_error)
+          ARCANE_FATAL(str);
+        else
+          std::cerr << "ERROR: " << str << "\n";
+      }
 
       m_allocated_memory_map.erase(x);
     }
@@ -81,10 +96,16 @@ class MemoryPool::Impl
       return m_allocated_memory_map.size();
     }
 
+    bool isThrowOnError() const { return m_is_throw_on_error; }
+    void setIsThrowOnError(bool v) { m_is_throw_on_error = v; }
+    Int32 nbError() const { return m_nb_error; }
+
    private:
 
     MapType m_allocated_memory_map;
     String m_name;
+    std::atomic<Int32> m_nb_error = 0;
+    bool m_is_throw_on_error = false;
     mutable std::mutex m_mutex;
   };
 
@@ -168,6 +189,10 @@ class MemoryPool::Impl
   , m_free_map(name)
   , m_name(name)
   {
+    if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_MEMORY_POOL_THROW_ON_ERROR", true)) {
+      bool throw_on_error = (v.value() != 0);
+      m_allocated_map.setIsThrowOnError(throw_on_error);
+    }
   }
 
  public:
@@ -271,6 +296,7 @@ dumpStats(std::ostream& ostr)
        << " nb_allocated=" << m_allocated_map.size()
        << " nb_free=" << m_free_map.size()
        << " nb_cached=" << m_nb_cached
+       << " nb_error=" << m_allocated_map.nbError()
        << "\n";
 }
 
