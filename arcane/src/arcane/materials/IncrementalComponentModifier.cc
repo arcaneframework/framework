@@ -93,9 +93,12 @@ finalize()
 void IncrementalComponentModifier::
 apply(MaterialModifierOperation* operation)
 {
-  Accelerator::ProfileRegion ps(m_queue,"ApplyConstituentOperation");
-
+  const char* str_add = "ApplyConstituentOperationAdd";
+  const char* str_remove = "ApplyConstituentOperationRemove";
   bool is_add = operation->isAdd();
+
+  Accelerator::ProfileRegion ps(m_queue,is_add ? str_add : str_remove);
+
   IMeshMaterial* mat = operation->material();
   SmallSpan<const Int32> orig_ids = operation->ids();
   SmallSpan<const Int32> ids = orig_ids;
@@ -613,6 +616,7 @@ _addItemsToIndexer(MeshMaterialVariableIndexer* var_indexer,
     // TODO: Comme tout est indépendant par variable, on pourrait
     // éventuellement utiliser plusieurs files.
     if (m_do_init_new_items) {
+      Accelerator::ProfileRegion ps(m_queue,"InitializeNewItems");
       RunQueue::ScopedAsync sc(&m_queue);
       IMeshMaterialMng* mm = m_material_mng;
       auto func = [&](IMeshMaterialVariable* mv) {
@@ -711,6 +715,7 @@ void IncrementalComponentModifier::
 _resizeVariablesIndexer(Int32 var_index)
 {
   Accelerator::RunQueuePool& queue_pool = m_material_mng->_internalApi()->asyncRunQueuePool();
+  Accelerator::ProfileRegion ps(queue_pool[0],"ResizeVariableIndexer");
 
   Int32 index = 0;
   auto func1 = [&](IMeshMaterialVariable* mv) {
@@ -719,7 +724,7 @@ _resizeVariablesIndexer(Int32 var_index)
     ++index;
   };
   functor::apply(m_material_mng, &MeshMaterialMng::visitVariables, func1);
-    queue_pool.barrier();
+  queue_pool.barrier();
 }
 
 /*---------------------------------------------------------------------------*/
