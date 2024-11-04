@@ -213,6 +213,7 @@ class MemoryPool::Impl
   std::atomic<size_t> m_total_allocated = 0;
   std::atomic<size_t> m_total_free = 0;
   std::atomic<Int32> m_nb_cached = 0;
+  std::atomic<Int32> m_nb_no_cached = 0;
   size_t m_max_memory_size_to_pool = 1024 * 64 * 4 * 4;
   String m_name;
 
@@ -245,8 +246,10 @@ MemoryPool::
 void* MemoryPool::Impl::
 allocateMemory(size_t size)
 {
-  if (m_max_memory_size_to_pool != 0 && size > m_max_memory_size_to_pool)
+  if (m_max_memory_size_to_pool != 0 && size > m_max_memory_size_to_pool) {
+    ++m_nb_no_cached;
     return m_allocator->allocateMemory(size);
+  }
 
   void* ptr = m_free_map.getPointer(size);
   if (ptr) {
@@ -298,6 +301,7 @@ dumpStats(std::ostream& ostr)
        << " nb_allocated=" << m_allocated_map.size()
        << " nb_free=" << m_free_map.size()
        << " nb_cached=" << m_nb_cached
+       << " nb_no_cached=" << m_nb_no_cached
        << " nb_error=" << m_allocated_map.nbError()
        << "\n";
 }
