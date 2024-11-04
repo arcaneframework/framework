@@ -2,7 +2,7 @@
 <case codename="ArcaneTest" codeversion="1.0" xml:lang="en">
   <arcane>
     <title>Test subdivision d'un maillage 3D hexahédrique</title>
-    <description>Subdivision d'un maillage 3D uniquement hexahédrique</description>
+    <description>Subdivision d'un maillage 3D uniquement hexahédrique avec le partitionneur par défaut</description>
     <timeloop>UnitTest</timeloop>
   </arcane>
 
