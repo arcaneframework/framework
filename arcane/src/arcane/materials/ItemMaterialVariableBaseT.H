@@ -53,7 +53,8 @@ ItemMaterialVariableBase(const MaterialVariableBuildInfo& v,
 : MeshMaterialVariable(v,mvs)
 , m_global_variable(global_var)
 , m_global_variable_ref(global_var_ref)
-, m_views(MemoryUtils::getAllocatorForMostlyReadOnlyData())
+, m_views(MemoryUtils::getDefaultDataAllocator())
+, m_host_views(MemoryUtils::getAllocationOptions(eMemoryRessource::HostPinned))
 {
   m_views.setDebugName(String("ItemMaterialVariableViews") + v.name());
 }
