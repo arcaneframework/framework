@@ -174,6 +174,16 @@ class MemoryPool::Impl
         ostr << "Map size=" << key << " nb_allocated=" << value << " page_modulo=" << (key % 4096) << "\n";
     }
 
+    //! Remplit \a values avec les valeurs de \a m_free_memory_map et vide cette dernière
+    void fillFreeMapAndClear(Array<std::pair<void*, size_t>>& values)
+    {
+      std::unique_lock<std::mutex> lg(m_mutex);
+      values.reserve(m_free_memory_map.size());
+      for (const auto& [size, ptr] : m_free_memory_map)
+        values.add(std::make_pair(ptr, size));
+      m_free_memory_map.clear();
+    }
+
    private:
 
     MapType m_free_memory_map;
@@ -194,6 +204,13 @@ class MemoryPool::Impl
       m_allocated_map.setIsThrowOnError(throw_on_error);
     }
   }
+  ~Impl()
+  {
+    // Ne libère pas la mémoire dans m_free_map
+    // car ce destructeur peut être appelé en fin d'exécution
+    // et sur accélérateur on ne peut plus à ce moment la
+    // appeler des fonctions du runtime.
+  }
 
  public:
 
@@ -201,6 +218,8 @@ class MemoryPool::Impl
   void freeMemory(void* ptr, size_t size);
   void dumpStats(std::ostream& ostr);
   void dumpFreeMap(std::ostream& ostr);
+  void setMaxCachedBlockSize(size_t v);
+  void freeCachedMemory();
 
  public:
 
@@ -212,6 +231,7 @@ class MemoryPool::Impl
   std::atomic<size_t> m_total_allocated = 0;
   std::atomic<size_t> m_total_free = 0;
   std::atomic<Int32> m_nb_cached = 0;
+  std::atomic<Int32> m_nb_no_cached = 0;
   size_t m_max_memory_size_to_pool = 1024 * 64 * 4 * 4;
   String m_name;
 
@@ -224,28 +244,13 @@ class MemoryPool::Impl
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-MemoryPool::
-MemoryPool(IMemoryPoolAllocator* allocator, const String& name)
-: m_p(std::make_shared<Impl>(allocator, name))
-{
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-MemoryPool::
-~MemoryPool()
-{
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 void* MemoryPool::Impl::
 allocateMemory(size_t size)
 {
-  if (m_max_memory_size_to_pool != 0 && size > m_max_memory_size_to_pool)
+  if (m_max_memory_size_to_pool != 0 && size > m_max_memory_size_to_pool) {
+    ++m_nb_no_cached;
     return m_allocator->allocateMemory(size);
+  }
 
   void* ptr = m_free_map.getPointer(size);
   if (ptr) {
@@ -291,11 +296,13 @@ _addAllocated(void* ptr, size_t size)
 void MemoryPool::Impl::
 dumpStats(std::ostream& ostr)
 {
-  ostr << "Stats '" << m_name << "' TotalAllocated=" << m_total_allocated
+  ostr << "Stats '" << m_name << "' max_block=" << m_max_memory_size_to_pool
+       << " TotalAllocated=" << m_total_allocated
        << " TotalFree=" << m_total_free
        << " nb_allocated=" << m_allocated_map.size()
        << " nb_free=" << m_free_map.size()
        << " nb_cached=" << m_nb_cached
+       << " nb_no_cached=" << m_nb_no_cached
        << " nb_error=" << m_allocated_map.nbError()
        << "\n";
 }
@@ -311,6 +318,47 @@ dumpFreeMap(std::ostream& ostr)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+void MemoryPool::Impl::
+setMaxCachedBlockSize(size_t v)
+{
+  if (m_allocated_map.size() != 0 || m_free_map.size() != 0)
+    ARCANE_FATAL("Can not change maximum cached block size on non empty pool");
+  m_max_memory_size_to_pool = v;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MemoryPool::Impl::
+freeCachedMemory()
+{
+  UniqueArray<std::pair<void*, size_t>> values_to_free;
+  m_free_map.fillFreeMapAndClear(values_to_free);
+  for (const auto& v : values_to_free) {
+    m_allocator->freeMemory(v.first, v.second);
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+MemoryPool::
+MemoryPool(IMemoryPoolAllocator* allocator, const String& name)
+: m_p(std::make_shared<Impl>(allocator, name))
+{
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+MemoryPool::
+~MemoryPool()
+{
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -335,6 +383,16 @@ dumpFreeMap(std::ostream& ostr)
 String MemoryPool::name() const
 {
   return m_p->m_name;
+}
+void MemoryPool::
+setMaxCachedBlockSize(size_t v)
+{
+  m_p->setMaxCachedBlockSize(v);
+}
+void MemoryPool::
+freeCachedMemory()
+{
+  m_p->freeCachedMemory();
 }
 
 /*---------------------------------------------------------------------------*/
