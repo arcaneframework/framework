@@ -20,6 +20,8 @@
 #include "arcane/utils/FatalErrorException.h"
 #include "arcane/utils/ValueConvert.h"
 #include "arcane/utils/IMemoryAllocator.h"
+#include "arcane/utils/OStringStream.h"
+#include "arcane/utils/ITraceMng.h"
 #include "arcane/utils/internal/MemoryPool.h"
 
 #include "arcane/accelerator/core/internal/MemoryTracer.h"
@@ -118,7 +120,7 @@ class BlockAllocatorWrapper
     Int64 new_size = orig_capacity * element_size;
     Int64 block_size = m_block_size;
     Int64 nb_iter = 4 + (4096 / block_size);
-    for (Int64 i=0; i<nb_iter; ++i ){
+    for (Int64 i = 0; i < nb_iter; ++i) {
       if (new_size >= (4 * block_size))
         block_size *= 4;
       else
@@ -236,15 +238,28 @@ class CudaMemoryAllocatorBase
 
   ~CudaMemoryAllocatorBase()
   {
+  }
+
+ public:
+
+  void finalize(ITraceMng* tm)
+  {
     if (m_print_level >= 1) {
+      OStringStream ostr;
       if (m_use_memory_pool) {
-        m_memory_pool.dumpStats(std::cout);
-        m_memory_pool.dumpFreeMap(std::cout);
+        m_memory_pool.dumpStats(ostr());
+        m_memory_pool.dumpFreeMap(ostr());
       }
-      std::cout << "Allocator '" << m_allocator_name << "' nb_realloc=" << m_nb_reallocate
-                << " realloc_copy=" << m_reallocate_size << "\n";
-      m_block_wrapper.dumpStats(std::cout, m_allocator_name);
+      ostr() << "Allocator '" << m_allocator_name << "' nb_realloc=" << m_nb_reallocate
+             << " realloc_copy=" << m_reallocate_size << "\n";
+      m_block_wrapper.dumpStats(ostr(), m_allocator_name);
+      if (tm)
+        tm->info() << ostr.str();
+      else
+        std::cout << ostr.str();
     }
+
+    m_memory_pool.freeCachedMemory();
   }
 
  public:
@@ -344,9 +359,9 @@ class CudaMemoryAllocatorBase
     IMemoryPoolAllocator* direct = &m_direct_sub_allocator;
     m_sub_allocator = (is_used) ? mem_pool : direct;
     m_use_memory_pool = is_used;
-    if (is_used){
-      if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_ACCELERATOR_MEMORY_POOL_MAX_BLOCK_SIZE", true)){
-        if (v.value()<0)
+    if (is_used) {
+      if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_ACCELERATOR_MEMORY_POOL_MAX_BLOCK_SIZE", true)) {
+        if (v.value() < 0)
           ARCANE_FATAL("Invalid value '{0}' for memory pool max block size");
         size_t block_size = static_cast<size_t>(v.value());
         m_memory_pool.setMaxCachedBlockSize(block_size);
@@ -639,6 +654,13 @@ void initializeCudaMemoryAllocators()
   unified_memory_cuda_memory_allocator.initialize();
   device_cuda_memory_allocator.initialize();
   host_pinned_cuda_memory_allocator.initialize();
+}
+
+void finalizeCudaMemoryAllocators(ITraceMng* tm)
+{
+  unified_memory_cuda_memory_allocator.finalize(tm);
+  device_cuda_memory_allocator.finalize(tm);
+  host_pinned_cuda_memory_allocator.finalize(tm);
 }
 
 /*---------------------------------------------------------------------------*/
