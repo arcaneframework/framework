@@ -37,6 +37,17 @@ using namespace Arccore;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+//! Liste des flags pour le pool mémoire à activer
+enum class MemoryPoolFlags
+{
+  UVM = 1,
+  Device = 2,
+  HostPinned = 4
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 void arcaneCheckCudaErrors(const TraceInfo& ti, cudaError_t e)
 {
   if (e != cudaSuccess)
@@ -203,7 +214,7 @@ class CudaMemoryAllocatorBase
   , m_sub_allocator(&m_direct_sub_allocator)
   , m_allocator_name(allocator_name)
   {
-    if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_CUDA_MALLOC_PRINT_LEVEL", true))
+    if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_ACCELERATOR_MEMORY_PRINT_LEVEL", true))
       m_print_level = v.value();
   }
 
@@ -349,8 +360,8 @@ class UnifiedMemoryCudaMemoryAllocator
     m_block_wrapper.initialize(page_size, do_page_allocate);
 
     bool use_memory_pool = false;
-    if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_CUDA_MALLOCMANAGED_POOL", true))
-      use_memory_pool = (v.value() != 0);
+    if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_ACCELERATOR_MEMORY_POOL", true))
+      use_memory_pool = (v.value() & static_cast<int>(MemoryPoolFlags::UVM)) != 0;
     _setUseMemoryPool(use_memory_pool);
   }
 
@@ -446,8 +457,8 @@ class HostPinnedCudaMemoryAllocator
   void initialize()
   {
     bool use_memory_pool = false;
-    if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_CUDA_HOSTPINNED_POOL", true))
-      use_memory_pool = (v.value() != 0);
+    if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_ACCELERATOR_MEMORY_POOL", true))
+      use_memory_pool = (v.value() & static_cast<int>(MemoryPoolFlags::HostPinned)) != 0;
     _setUseMemoryPool(use_memory_pool);
     m_block_wrapper.initialize(128, use_memory_pool);
   }
@@ -484,8 +495,8 @@ class DeviceCudaMemoryAllocator
   void initialize()
   {
     bool use_memory_pool = false;
-    if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_CUDA_DEVICE_POOL", true))
-      use_memory_pool = (v.value() != 0);
+    if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_ACCELERATOR_MEMORY_POOL", true))
+      use_memory_pool = (v.value() & static_cast<int>(MemoryPoolFlags::Device)) != 0;
     _setUseMemoryPool(use_memory_pool);
     m_block_wrapper.initialize(128, use_memory_pool);
   }
