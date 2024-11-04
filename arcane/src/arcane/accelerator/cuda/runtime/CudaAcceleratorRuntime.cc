@@ -395,6 +395,11 @@ class CudaRunnerRuntime
 #endif
   }
 
+  void finalize(ITraceMng* tm) override
+  {
+    finalizeCudaMemoryAllocators(tm);
+  }
+
  public:
 
   void fillDevices();

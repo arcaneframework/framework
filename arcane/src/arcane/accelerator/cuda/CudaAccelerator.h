@@ -75,6 +75,9 @@ getCudaHostPinnedMemoryAllocator();
 extern "C++" ARCANE_CUDA_EXPORT void
 initializeCudaMemoryAllocators();
 
+extern "C++" ARCANE_CUDA_EXPORT void
+finalizeCudaMemoryAllocators(ITraceMng* tm);
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
