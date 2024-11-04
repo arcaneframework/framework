@@ -22,12 +22,11 @@
 #include "arcane/core/IItemFamily.h"
 #include "arcane/IGhostLayerMng.h"
 #include "arcane/MeshUtils.h"
-#include "arcane/IMesh.h"
 #include "arcane/IMeshModifier.h"
 
 #include "arcane/core/SimpleSVGMeshExporter.h" // Write au format svg pour le 2D
 // Write variables
-#include "arcane/core/IPostProcessorWriter.h"
+
 #include "arcane/core/ServiceBuilder.h"
 #include "arcane/core/Directory.h"
 #include "arcane/core/IVariableMng.h"
@@ -89,12 +88,6 @@ void ArcaneBasicMeshSubdividerService::
 subdivideMesh([[maybe_unused]] IPrimaryMesh* mesh)
 {
   info() << "#subdivide mesh";
-  warning() << "SubdivideMesh: Function not implemented";
-
-  //Arcane::ParameterList cmd = subDomain()->applicationInfo().commandLineArguments().parameters();
-  //String m_mesh_file_name = StringVariableReplace::replaceWithCmdLineArgs(subDomain()->applicationInfo().commandLineArguments().parameters(), options()->filename);
-  // getParameter("nb_refine")
-  //applicationInfo().commandLineArguments();
   // Est-ce qu'on est en 3D ?
   // Si non on fait rien;
   bool is_hex=true;
@@ -236,7 +229,7 @@ subdivideMesh([[maybe_unused]] IPrimaryMesh* mesh)
       // Assignation des faces au propriétaire
 
       const Cell& cell = *icell;
-      debug() << "CELL_OWNER " << cell.owner() ;
+      //debug() << "CELL_OWNER " << cell.owner() ;
       cells_to_detach.add(cell.localId());
       // Génération des noeuds
       Int64  node_in_cell[27];
@@ -550,7 +543,7 @@ subdivideMesh([[maybe_unused]] IPrimaryMesh* mesh)
 
     // Ecriture au format VTK
     mesh->utilities()->writeToFile("3Drefined"+std::to_string(my_rank)+".vtk", "VtkLegacyMeshWriter");
-
+    info() << "Writing VTK 3Drefine" ;
     debug() << "END 3D fun" ;
     debug() << "NB CELL " << mesh->nbCell() << " " << nb_cell_init*8 ;
     debug() << mesh->nbNode() << " " << nb_node_init << " " << nb_edge_init << " " << nb_face_init << " " << nb_cell_init;
