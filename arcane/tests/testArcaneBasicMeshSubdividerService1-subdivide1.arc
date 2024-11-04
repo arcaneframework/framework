@@ -10,11 +10,12 @@
     <mesh>
       <filename>sod.vtk</filename>
       <partitioner>MeshPartitionerTester</partitioner>
+      <subdivider>
+          <nb-subdivision>1</nb-subdivision>
+      </subdivider>
     </mesh>
   </meshes>
-  <subdivider>
-      <nb-subdivision>1</nb-subdivision>
-  </subdivider>
+
   <unit-test-module>
     <test name="MeshUnitTest">
       <test-adjency>0</test-adjency>
