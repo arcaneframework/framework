@@ -41,6 +41,15 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RunnerInternal
   //! Stoppe toutes les activités de profiling.
   static void stopAllProfiling();
 
+  /*!
+   * \brief Finalise l'exécution.
+   *
+   * Cela sert à afficher certaines statistiques et libérer les ressources.
+   */
+  static void finalize(ITraceMng* tm);
+
+ public:
+
   // Les méthodes suivantes qui gèrent le profiling agissent sur
   // le runtime  (CUDA, ROCM, ...) associé au runner. Par exemple si on
   // a deux runners associés à CUDA, si on appelle startProfiling() pour l'un
