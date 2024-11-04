@@ -47,6 +47,11 @@ TEST(MemoryPool, Misc)
 
   void* a4 = memory_pool.allocateMemory(max_block_size * 2);
   memory_pool.freeMemory(a4, max_block_size * 2);
+
+  std::cout << "End Of Test\n";
+  memory_pool.dumpStats(std::cout);
+  memory_pool.dumpFreeMap(std::cout);
+  memory_pool.freeCachedMemory();
 }
 
 /*---------------------------------------------------------------------------*/

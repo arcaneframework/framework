@@ -56,6 +56,9 @@ class ARCANE_UTILS_EXPORT IMemoryPoolAllocator
  * \brief Classe pour gérer une liste de zone allouées.
  *
  * Cette classe utilise une sémantique par référence.
+ *
+ * L'allocateur passé en argument du constructeur doit rester valide
+ * durant toute la vie de l'instance.
  */
 class ARCANE_UTILS_EXPORT MemoryPool
 : public IMemoryPoolAllocator
@@ -83,6 +86,9 @@ class ARCANE_UTILS_EXPORT MemoryPool
    * cache.
    */
   void setMaxCachedBlockSize(size_t v);
+
+  //! Libère la mémoire dans le cache
+  void freeCachedMemory();
 
  private:
 
