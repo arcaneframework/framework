@@ -201,6 +201,7 @@ class MemoryPool::Impl
   void freeMemory(void* ptr, size_t size);
   void dumpStats(std::ostream& ostr);
   void dumpFreeMap(std::ostream& ostr);
+  void setMaxCachedBlockSize(size_t v);
 
  public:
 
@@ -291,7 +292,8 @@ _addAllocated(void* ptr, size_t size)
 void MemoryPool::Impl::
 dumpStats(std::ostream& ostr)
 {
-  ostr << "Stats '" << m_name << "' TotalAllocated=" << m_total_allocated
+  ostr << "Stats '" << m_name << "' max_block=" << m_max_memory_size_to_pool
+       << " TotalAllocated=" << m_total_allocated
        << " TotalFree=" << m_total_free
        << " nb_allocated=" << m_allocated_map.size()
        << " nb_free=" << m_free_map.size()
@@ -307,6 +309,17 @@ void MemoryPool::Impl::
 dumpFreeMap(std::ostream& ostr)
 {
   m_free_map.dump(ostr);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MemoryPool::Impl::
+setMaxCachedBlockSize(size_t v)
+{
+  if (m_allocated_map.size() != 0 || m_free_map.size() != 0)
+    ARCANE_FATAL("Can not change maximum cached block size on non empty pool");
+  m_max_memory_size_to_pool = v;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -335,6 +348,11 @@ dumpFreeMap(std::ostream& ostr)
 String MemoryPool::name() const
 {
   return m_p->m_name;
+}
+void MemoryPool::
+setMaxCachedBlockSize(size_t v)
+{
+  m_p->setMaxCachedBlockSize(v);
 }
 
 /*---------------------------------------------------------------------------*/

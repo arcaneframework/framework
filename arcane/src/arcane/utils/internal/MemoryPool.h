@@ -75,6 +75,15 @@ class ARCANE_UTILS_EXPORT MemoryPool
   void dumpFreeMap(std::ostream& ostr);
   String name() const;
 
+  /*!
+   * \brief Positionne la taille en octet à partir de laquelle
+   * on ne conserve pas un bloc dans le cache.
+   *
+   * Cette méthode ne peut être appelé que s'il n'y a aucun bloc dans le
+   * cache.
+   */
+  void setMaxCachedBlockSize(size_t v);
+
  private:
 
   std::shared_ptr<Impl> m_p;
