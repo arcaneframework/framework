@@ -91,6 +91,7 @@ class ARCANE_MATERIALS_EXPORT IncrementalComponentModifier
   void _addItemsToEnvironment(MeshEnvironment* env, MeshMaterial* mat,
                               SmallSpan<const Int32> local_ids, bool update_env_indexer);
   void _copyBetweenPartialsAndGlobals(const CopyBetweenPartialAndGlobalArgs& args);
+  void _resizeVariablesIndexer(Int32 var_index);
 };
 
 /*---------------------------------------------------------------------------*/
