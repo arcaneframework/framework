@@ -53,7 +53,7 @@ ItemMaterialVariableBase(const MaterialVariableBuildInfo& v,
 : MeshMaterialVariable(v,mvs)
 , m_global_variable(global_var)
 , m_global_variable_ref(global_var_ref)
-, m_views(MemoryUtils::getDefaultDataAllocator())
+, m_views(MemoryUtils::getDeviceOrHostAllocator())
 , m_host_views(MemoryUtils::getAllocationOptions(eMemoryRessource::HostPinned))
 {
   m_views.setDebugName(String("ItemMaterialVariableViews") + v.name());
@@ -97,7 +97,7 @@ _init(ArrayView<PrivatePartType*> vars)
     ARCANE_FATAL("Internal error: _init() already called");
   m_vars.addRange(vars);
   Integer nb_var = m_vars.size();
-  m_views.resize(nb_var);
+  m_views.resizeNoInit(nb_var);
   m_host_views.resize(nb_var);
   m_views_as_bytes.resize(nb_var);
   // Il faut maintenir une référence sur les variables qu'on possède pour
