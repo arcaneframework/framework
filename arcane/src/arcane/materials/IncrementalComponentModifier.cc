@@ -870,17 +870,20 @@ _applyCopyVariableViews(RunQueue& queue)
   if (nb_copy == 0)
     return;
 
-  for (Int32 i = 0; i < nb_copy; ++i) {
-    ARCANE_CHECK_ACCESSIBLE_POINTER(queue, host_copy_data[i].m_output.data());
-    ARCANE_CHECK_ACCESSIBLE_POINTER(queue, host_copy_data[i].m_input.data());
-  }
-
   // Suppose que toutes les vues ont les mêmes tailles.
   // C'est le cas car les vues sont composées de 'ArrayView<>' et 'Array2View' et ces
   // deux classes ont la même taille.
   // TODO: il serait préférable de prendre le max des tailles et dans la commande
   // de ne faire la copie que si on ne dépasse pas la taille.
-  Int32 nb_value = host_copy_data[0].m_input.constSmallView().size();
+  Int32 nb_value = host_copy_data[0].m_input.size();
+
+  for (Int32 i = 0; i < nb_copy; ++i) {
+    const CopyBetweenDataInfo& h = host_copy_data[i];
+    ARCANE_CHECK_ACCESSIBLE_POINTER(queue, h.m_output.data());
+    ARCANE_CHECK_ACCESSIBLE_POINTER(queue, h.m_input.data());
+    if (h.m_input.size() != nb_value)
+      ARCANE_FATAL("Invalid nb_value '{0} i={1} expected={2}", h.m_input.size(), nb_value);
+  }
 
   auto command = makeCommand(queue);
   command << RUNCOMMAND_LOOP2(iter, nb_copy, nb_value)

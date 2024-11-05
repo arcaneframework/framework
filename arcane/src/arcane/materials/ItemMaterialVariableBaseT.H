@@ -393,8 +393,8 @@ _resizeForIndexer(ResizeVariableIndexerArgs& args)
     this->_setView(index + 1);
   }
   if (args.isUseOneCommand()) {
-    auto dest = asWritableBytes(m_device_views);
-    auto source = asBytes(m_host_views);
+    auto dest = asWritableBytes(m_device_views).smallView();
+    auto source = asBytes(m_host_views).smallView();
     args.addOneCopyData(source,dest,1);
   }
   else
@@ -445,8 +445,8 @@ _copyBetweenPartialAndGlobal(const CopyBetweenPartialAndGlobalArgs& args)
   }
   if (use_generic) {
     Int32 data_type_size = dataTypeSize();
-    Span<const std::byte> input_bytes(Traits::toBytes(input));
-    Span<std::byte> output_bytes(Traits::toBytes(output));
+    SmallSpan<const std::byte> input_bytes(Traits::toBytes(input));
+    SmallSpan<std::byte> output_bytes(Traits::toBytes(output));
     if (args.isUseOneCommand())
       args.addOneCopyData(input_bytes, output_bytes, data_type_size);
     else

@@ -209,10 +209,10 @@ class MaterialVariableScalarTraits
   ARCANE_MATERIALS_EXPORT static void
   resizeWithReserve(PrivatePartType* var, Int32 new_size, Real reserve_ratio);
   static Integer dimension() { return 0; }
-  static Span<std::byte> toBytes(ArrayView<DataType> view)
+  static SmallSpan<std::byte> toBytes(ArrayView<DataType> view)
   {
-    Span<DataType> s(view);
-    return asWritableBytes(s);
+    SmallSpan<DataType> s(view);
+    return asWritableBytes(s).smallView();
   }
 
 };
@@ -260,10 +260,10 @@ class MaterialVariableArrayTraits
   }
   ARCANE_MATERIALS_EXPORT
   static void resizeWithReserve(PrivatePartType* var, Integer new_size, Real resize_ratio);
-  static Span<std::byte> toBytes(Array2View<DataType> view)
+  static SmallSpan<std::byte> toBytes(Array2View<DataType> view)
   {
-    Span<DataType> s(view.data(),view.totalNbElement());
-    return asWritableBytes(s);
+    SmallSpan<DataType> s(view.data(), view.totalNbElement());
+    return asWritableBytes(s).smallView();
   }
 
   static Integer dimension() { return 0; }

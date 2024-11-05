@@ -34,7 +34,7 @@ struct ARCANE_CORE_EXPORT CopyBetweenDataInfo
 {
  public:
 
-  CopyBetweenDataInfo(Span<const std::byte> input, Span<std::byte> output, Int32 data_size)
+  CopyBetweenDataInfo(SmallSpan<const std::byte> input, SmallSpan<std::byte> output, Int32 data_size)
   : m_input(input)
   , m_output(output)
   , m_data_size(data_size)
@@ -42,8 +42,8 @@ struct ARCANE_CORE_EXPORT CopyBetweenDataInfo
 
  public:
 
-  Span<const std::byte> m_input;
-  Span<std::byte> m_output;
+  SmallSpan<const std::byte> m_input;
+  SmallSpan<std::byte> m_output;
   Int32 m_data_size = 0;
 };
 
@@ -72,8 +72,8 @@ class ARCANE_CORE_EXPORT CopyBetweenPartialAndGlobalArgs
 
  public:
 
-  void addOneCopyData(Span<const std::byte> input,
-                      Span<std::byte> output,
+  void addOneCopyData(SmallSpan<const std::byte> input,
+                      SmallSpan<std::byte> output,
                       Int32 data_size) const
   {
     if (m_copy_data) {
@@ -113,8 +113,8 @@ class ARCANE_CORE_EXPORT ResizeVariableIndexerArgs
 
  public:
 
-  void addOneCopyData(Span<const std::byte> input,
-                      Span<std::byte> output,
+  void addOneCopyData(SmallSpan<const std::byte> input,
+                      SmallSpan<std::byte> output,
                       Int32 data_size) const
   {
     if (m_copy_data) {
