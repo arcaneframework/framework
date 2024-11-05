@@ -296,10 +296,10 @@ IFPInternalLinearSolver::internalPrintInfo() const
       Universe().traceMng(), m_status, String("Linear Solver : IFPLinearSolver"));
   Real init_solver_count = 0;
   Real init_precond_count = 0;
-  Real normalyze_count = 0;
+  Real normalize_count = 0;
   Real loop_solver_count = 0;
   F2C(ifpsolvergetperfcount)
-  (&init_solver_count, &init_precond_count, &normalyze_count, &loop_solver_count);
+  (&init_solver_count, &init_precond_count, &normalize_count, &loop_solver_count);
 
   // TODO: find a way to automatically set spaces
   alien_info([&]{
@@ -308,7 +308,7 @@ IFPInternalLinearSolver::internalPrintInfo() const
     "              |--------------------------------------------------------|\n"
     "              | init solver time      : " << Arccore::Trace::Precision(4,init_solver_count,true) << "\n"
     "              | init precond time     : " << Arccore::Trace::Precision(4,init_precond_count,true) << "\n"
-    "              | normalisation time    : " << Arccore::Trace::Precision(4,normalyze_count,true) << "\n"
+    "              | normalisation time    : " << Arccore::Trace::Precision(4, normalize_count,true) << "\n"
     "              | loop solver time      : " << Arccore::Trace::Precision(4,loop_solver_count,true) << "\n"
     "              |--------------------------------------------------------|";
   });
