@@ -374,8 +374,10 @@ _isValidAndUsedAndGlobalUsed(PrivatePartType* partial_var)
 
 template <typename Traits> void
 ItemMaterialVariableBase<Traits>::
-_resizeForIndexer(Int32 index, RunQueue& queue)
+_resizeForIndexer(ResizeVariableIndexerArgs& args)
 {
+  Int32 index = args.m_var_index;
+  RunQueue& queue = args.m_queue;
   _setView(0);
   PrivatePartType* partial_var = m_vars[index + 1];
   if (_isValidAndUsedAndGlobalUsed(partial_var)) {
@@ -400,13 +402,15 @@ template <typename Traits> void
 ItemMaterialVariableBase<Traits>::
 _copyHostViewsToViews(RunQueue* queue)
 {
+  auto dest = asWritableBytes(m_device_views);
+  auto source = asBytes(m_host_views);
   if (queue) {
-    Accelerator::MemoryCopyArgs copy_args(asWritableBytes(m_device_views),asBytes(m_host_views));
+    Accelerator::MemoryCopyArgs copy_args(dest,source);
     copy_args.addAsync(true);
     queue->copyMemory(copy_args);
   }
   else
-    MemoryUtils::copy(asWritableBytes(m_device_views),asBytes(m_host_views));
+    MemoryUtils::copy(dest,source);
 }
 
 /*---------------------------------------------------------------------------*/

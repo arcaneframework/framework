@@ -714,17 +714,16 @@ _removeItemsInGroup(ItemGroup cells, SmallSpan<const Int32> removed_ids)
 void IncrementalComponentModifier::
 _resizeVariablesIndexer(Int32 var_index)
 {
-  Accelerator::RunQueuePool& queue_pool = m_material_mng->_internalApi()->asyncRunQueuePool();
-  Accelerator::ProfileRegion ps(queue_pool[0],"ResizeVariableIndexer");
-
-  Int32 index = 0;
+  RunQueue& queue = m_material_mng->_internalApi()->runQueue();
+  RunQueue::ScopedAsync sc(&m_queue);
+  Accelerator::ProfileRegion ps(queue, "ResizeVariableIndexer");
+  ResizeVariableIndexerArgs resize_args(var_index, queue);
   auto func1 = [&](IMeshMaterialVariable* mv) {
     auto* mvi = mv->_internalApi();
-    mvi->resizeForIndexer(var_index, queue_pool[index]);
-    ++index;
+    mvi->resizeForIndexer(resize_args);
   };
   functor::apply(m_material_mng, &MeshMaterialMng::visitVariables, func1);
-  queue_pool.barrier();
+  queue.barrier();
 }
 
 /*---------------------------------------------------------------------------*/

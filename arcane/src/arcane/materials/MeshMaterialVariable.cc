@@ -168,9 +168,9 @@ syncReferences(bool check_resize)
 /*---------------------------------------------------------------------------*/
 
 void MeshMaterialVariablePrivate::
-resizeForIndexer(Int32 index, RunQueue& queue)
+resizeForIndexer(ResizeVariableIndexerArgs& args)
 {
-  m_variable->_resizeForIndexer(index, queue);
+  m_variable->_resizeForIndexer(args);
 }
 
 /*---------------------------------------------------------------------------*/

@@ -47,6 +47,8 @@ struct ARCANE_CORE_EXPORT CopyBetweenPartialAndGlobalOneData
   Int32 m_data_size = 0;
 };
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 /*!
  * \brief Arguments des méthodes de copie entre valeurs partielles et globales
  */
@@ -93,6 +95,35 @@ class ARCANE_CORE_EXPORT CopyBetweenPartialAndGlobalArgs
   RunQueue m_queue;
   //! Informations de copie si on n'utilise qu'une seule commande
   UniqueArray<CopyBetweenPartialAndGlobalOneData>* m_copy_data = nullptr;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Arguments des méthodes de copie entre valeurs partielles et globales
+ */
+class ARCANE_CORE_EXPORT ResizeVariableIndexerArgs
+{
+ public:
+
+  ResizeVariableIndexerArgs(Int32 var_index, const RunQueue& queue)
+  : m_var_index(var_index)
+  , m_queue(queue)
+  {}
+
+ public:
+
+  void addOneCopyData(Span<std::byte> input, Span<std::byte> output)
+  {
+    m_copy_data.add(input);
+    m_copy_data.add(output);
+  }
+
+ public:
+
+  Int32 m_var_index = -1;
+  RunQueue m_queue;
+  UniqueArray<Span<std::byte>> m_copy_data;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -156,7 +187,7 @@ class ARCANE_CORE_EXPORT IMeshMaterialVariableInternal
   virtual void syncReferences(bool check_resize) = 0;
 
   //! Redimensionne la valeur partielle associée à l'indexer \a index
-  virtual void resizeForIndexer(Int32 index, RunQueue& queue) = 0;
+  virtual void resizeForIndexer(ResizeVariableIndexerArgs& args) = 0;
 };
 
 /*---------------------------------------------------------------------------*/
