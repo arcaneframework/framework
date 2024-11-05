@@ -411,9 +411,9 @@ int arcaneTestCudaNumArray()
 
     dim3 dimGrid(threadsPerBlock, 1, 1), dimBlock(blocksPerGrid, 1, 1);
 
-    MDSpan<const double,MDDim1> d_a_span = d_a.constSpan();
-    MDSpan<const double,MDDim1> d_b_span = d_b.constSpan();
-    MDSpan<double,MDDim1> d_out_view = d_out.span();
+    MDSpan<const double,MDDim1> d_a_span = d_a.constMDSpan();
+    MDSpan<const double,MDDim1> d_b_span = d_b.constMDSpan();
+    MDSpan<double,MDDim1> d_out_view = d_out.mdspan();
 
     void *kernelArgs[] = {
       (void*)&d_a_span,
@@ -432,9 +432,9 @@ int arcaneTestCudaNumArray()
   // Lance une lambda
   {
     _initArrays(d_a,d_b,d_out,3);
-    MDSpan<const double,MDDim1> d_a_span = d_a.constSpan();
-    MDSpan<const double,MDDim1> d_b_span = d_b.constSpan();
-    MDSpan<double,MDDim1> d_out_span = d_out.span();
+    MDSpan<const double,MDDim1> d_a_span = d_a.constMDSpan();
+    MDSpan<const double,MDDim1> d_b_span = d_b.constMDSpan();
+    MDSpan<double,MDDim1> d_out_span = d_out.mdspan();
     auto func = [=] ARCCORE_HOST_DEVICE (int i)
                 {
                   d_out_span(i) = d_a_span(i) + d_b_span(i);
@@ -473,9 +473,9 @@ int arcaneTestCudaNumArray()
       d_b3(i,2) = b + 2.0;
     }
 
-    MDSpan<const Real,MDDim2> d_a3_span = d_a3.constSpan();
-    MDSpan<const Real,MDDim2> d_b3_span = d_b3.constSpan();
-    MDSpan<double,MDDim1> d_out_span = d_out.span();
+    MDSpan<const Real,MDDim2> d_a3_span = d_a3.constMDSpan();
+    MDSpan<const Real,MDDim2> d_b3_span = d_b3.constMDSpan();
+    MDSpan<double,MDDim1> d_out_span = d_out.mdspan();
     auto func2 = [=] ARCCORE_HOST_DEVICE (int i) {
                    Real3 xa(d_a3_span(i,0),d_a3_span(i,1),d_a3_span(i,2));
                    Real3 xb(d_b3_span(i,0),d_b3_span(i,1),d_b3_span(i,2));

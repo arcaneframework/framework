@@ -247,35 +247,56 @@ arcane_add_test(amr-cartesian3D-V1-coarse-1 testAMRCartesianMesh3D-V1-coarse-1.a
 arcane_add_test_sequential(amr-cartesian3D-V1-coarse-2 testAMRCartesianMesh3D-V1-coarse-2.arc "-m 10")
 arcane_add_test_parallel_thread(amr-cartesian3D-V1-coarse-2 testAMRCartesianMesh3D-V1-coarse-2.arc 8 "-m 10")
 
+
 # Test AMR dé-raffinement avec équilibrage.
 # Pas encore actif car ne fonctionne pas
 # arcane_add_test_parallel(amr-cartesian2D-V1-coarse-lb-1 testAMRCartesianMesh2D-V1-coarse-lb-1.arc 4 "-m 20")
-
-arcane_add_test(amr-cartesian2D-cell-coarse-zone-1 testAMRCartesianMesh2D-Cell-CoarseZone-1.arc "-m 20")
-arcane_add_test(amr-cartesian2D-cell-coarse-zone-2 testAMRCartesianMesh2D-Cell-CoarseZone-2.arc "-m 20")
-
-arcane_add_test_sequential(amr-cartesian3D-cell-coarse-zone-1 testAMRCartesianMesh3D-Cell-CoarseZone-1.arc "-m 20")
-arcane_add_test_parallel(amr-cartesian3D-cell-coarse-zone-1 testAMRCartesianMesh3D-Cell-CoarseZone-1.arc 8 "-m 20")
-
-arcane_add_test_sequential(amr-cartesian3D-cell-coarse-zone-2 testAMRCartesianMesh3D-Cell-CoarseZone-2.arc "-m 20")
-arcane_add_test_parallel(amr-cartesian3D-cell-coarse-zone-2 testAMRCartesianMesh3D-Cell-CoarseZone-2.arc 8 "-m 20")
-
-set_tests_properties(amr-cartesian3D-cell-coarse-zone-2 PROPERTIES LABELS LARGE_HYBRID)
-
-arcane_add_test_sequential(amr-cartesian3D-cell-coarse-zone-3 testAMRCartesianMesh3D-Cell-CoarseZone-3.arc "-m 20")
-arcane_add_test_parallel(amr-cartesian3D-cell-coarse-zone-3 testAMRCartesianMesh3D-Cell-CoarseZone-3.arc 8 "-m 20")
-
-arcane_add_test_sequential(amr-cartesian3D-cell-coarse-zone-4 testAMRCartesianMesh3D-Cell-CoarseZone-4.arc "-m 20")
-arcane_add_test_parallel(amr-cartesian3D-cell-coarse-zone-4 testAMRCartesianMesh3D-Cell-CoarseZone-4.arc 8 "-m 20")
-
-set_tests_properties(amr-cartesian3D-cell-coarse-zone-4 PROPERTIES LABELS LARGE_HYBRID)
-
 
 # Ce test prend du temps (environ 30 secondes) donc on ne l'active pas par défaut
 if (BIG_TEST)
   arcane_add_test_sequential(amr-cartesian3D-V1-coarse-3 testAMRCartesianMesh3D-V1-coarse-3.arc "-m 10")
   arcane_add_test_parallel_thread(amr-cartesian3D-V1-coarse-3 testAMRCartesianMesh3D-V1-coarse-3.arc 8 "-m 10")
+endif ()
+
+
+arcane_add_test(amr-cartesian2D-cell-coarse-zone-1 testAMRCartesianMesh2D-Cell-CoarseZone-1.arc "-m 20")
+arcane_add_test(amr-cartesian2D-cell-coarse-zone-2 testAMRCartesianMesh2D-Cell-CoarseZone-2.arc "-m 20")
+arcane_add_test_checkpoint(amr-checkpoint-cartesian2D-cell-coarse-zone-1 testAMRCartesianMesh2D-Cell-CoarseZone-1.arc 3 5)
+arcane_add_test_checkpoint(amr-checkpoint-cartesian2D-cell-coarse-zone-2 testAMRCartesianMesh2D-Cell-CoarseZone-2.arc 3 5)
+
+arcane_add_test_sequential(amr-cartesian3D-cell-coarse-zone-1 testAMRCartesianMesh3D-Cell-CoarseZone-1.arc "-m 20")
+arcane_add_test_parallel(amr-cartesian3D-cell-coarse-zone-1 testAMRCartesianMesh3D-Cell-CoarseZone-1.arc 8 "-m 20")
+
+arcane_add_test_sequential(amr-cartesian3D-cell-coarse-zone-3 testAMRCartesianMesh3D-Cell-CoarseZone-3.arc "-m 20")
+arcane_add_test_parallel(amr-cartesian3D-cell-coarse-zone-3 testAMRCartesianMesh3D-Cell-CoarseZone-3.arc 8 "-m 20")
+
+arcane_add_test_checkpoint_sequential(amr-checkpoint-cartesian3D-cell-coarse-zone-1 testAMRCartesianMesh3D-Cell-CoarseZone-1.arc 3 5)
+arcane_add_test_checkpoint_parallel(amr-checkpoint-cartesian3D-cell-coarse-zone-1 testAMRCartesianMesh3D-Cell-CoarseZone-1.arc 8 3 5)
+
+arcane_add_test_checkpoint_sequential(amr-checkpoint-cartesian3D-cell-coarse-zone-3 testAMRCartesianMesh3D-Cell-CoarseZone-3.arc 3 5)
+arcane_add_test_checkpoint_parallel(amr-checkpoint-cartesian3D-cell-coarse-zone-3 testAMRCartesianMesh3D-Cell-CoarseZone-3.arc 8 3 5)
+
+if (BIG_TEST)
+  arcane_add_test_sequential(amr-cartesian3D-cell-coarse-zone-2 testAMRCartesianMesh3D-Cell-CoarseZone-2.arc "-m 20")
+  arcane_add_test_parallel(amr-cartesian3D-cell-coarse-zone-2 testAMRCartesianMesh3D-Cell-CoarseZone-2.arc 8 "-m 20")
+
+  arcane_add_test_sequential(amr-cartesian3D-cell-coarse-zone-4 testAMRCartesianMesh3D-Cell-CoarseZone-4.arc "-m 20")
+  arcane_add_test_parallel(amr-cartesian3D-cell-coarse-zone-4 testAMRCartesianMesh3D-Cell-CoarseZone-4.arc 8 "-m 20")
+
+  arcane_add_test_checkpoint_sequential(amr-checkpoint-cartesian3D-cell-coarse-zone-2 testAMRCartesianMesh3D-Cell-CoarseZone-2.arc 3 5)
+  arcane_add_test_checkpoint_parallel(amr-checkpoint-cartesian3D-cell-coarse-zone-2 testAMRCartesianMesh3D-Cell-CoarseZone-2.arc 8 3 5)
+
+  arcane_add_test_checkpoint_sequential(amr-checkpoint-cartesian3D-cell-coarse-zone-4 testAMRCartesianMesh3D-Cell-CoarseZone-4.arc 3 5)
+  arcane_add_test_checkpoint_parallel(amr-checkpoint-cartesian3D-cell-coarse-zone-4 testAMRCartesianMesh3D-Cell-CoarseZone-4.arc 8 3 5)
 endif()
+
+arcane_add_test_parallel(amr-cartesian2D-cell-reduce-nb-ghost-layers-1 testAMRCartesianMesh2D-Cell-ReduceNbGhostLayers-1.arc 4 "-m 20")
+arcane_add_test_parallel(amr-cartesian2D-cell-reduce-nb-ghost-layers-2 testAMRCartesianMesh2D-Cell-ReduceNbGhostLayers-2.arc 4 "-m 20")
+arcane_add_test_parallel(amr-cartesian2D-cell-reduce-nb-ghost-layers-3 testAMRCartesianMesh2D-Cell-ReduceNbGhostLayers-3.arc 4 "-m 20")
+arcane_add_test_parallel(amr-cartesian2D-cell-reduce-nb-ghost-layers-4 testAMRCartesianMesh2D-Cell-ReduceNbGhostLayers-4.arc 4 "-m 20")
+
+arcane_add_test_parallel(amr-cartesian3D-cell-reduce-nb-ghost-layers-1 testAMRCartesianMesh3D-Cell-ReduceNbGhostLayers-1.arc 8 "-m 20")
+
 
 # Tests sur le renumérotation des faces en cartésien
 # L'idéal est d'avoir pas mal de sous-domaines pour être sur que le

@@ -35,7 +35,7 @@ namespace Arcane::Accelerator::impl
 #if defined(ARCANE_COMPILING_CUDA)
 
 cudaStream_t CudaUtils::
-toNativeStream(RunQueue* queue)
+toNativeStream(const RunQueue* queue)
 {
   eExecutionPolicy p = eExecutionPolicy::None;
   if (queue)
@@ -48,6 +48,12 @@ toNativeStream(RunQueue* queue)
   return *s;
 }
 
+cudaStream_t CudaUtils::
+toNativeStream(const RunQueue& queue)
+{
+  return toNativeStream(&queue);
+}
+
 #endif
 
 /*---------------------------------------------------------------------------*/
@@ -56,7 +62,7 @@ toNativeStream(RunQueue* queue)
 #if defined(ARCANE_COMPILING_HIP)
 
 hipStream_t HipUtils::
-toNativeStream(RunQueue* queue)
+toNativeStream(const RunQueue* queue)
 {
   eExecutionPolicy p = eExecutionPolicy::None;
   if (queue)
@@ -69,6 +75,12 @@ toNativeStream(RunQueue* queue)
   return *s;
 }
 
+hipStream_t HipUtils::
+toNativeStream(const RunQueue& queue)
+{
+  return toNativeStream(&queue);
+}
+
 #endif
 
 /*---------------------------------------------------------------------------*/
@@ -77,7 +89,7 @@ toNativeStream(RunQueue* queue)
 #if defined(ARCANE_COMPILING_SYCL)
 
 sycl::queue SyclUtils::
-toNativeStream(RunQueue* queue)
+toNativeStream(const RunQueue* queue)
 {
   eExecutionPolicy p = eExecutionPolicy::None;
   if (queue)
@@ -90,13 +102,19 @@ toNativeStream(RunQueue* queue)
   return *s;
 }
 
+sycl::queue SyclUtils::
+toNativeStream(const RunQueue& queue)
+{
+  return toNativeStream(&queue);
+}
+
 #endif
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void DeviceStorageBase::
-_copyToAsync(Span<std::byte> destination, Span<const std::byte> source, RunQueue* queue)
+_copyToAsync(Span<std::byte> destination, Span<const std::byte> source, const RunQueue& queue)
 {
 #if defined(ARCANE_COMPILING_CUDA)
   cudaStream_t stream = CudaUtils::toNativeStream(queue);

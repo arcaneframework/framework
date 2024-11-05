@@ -51,84 +51,8 @@ class ARCANE_ACCELERATOR_EXPORT GenericFilteringBase
 
  public:
 
-  // NOTE: cette classe devrait être privée mais ce n'est pas possible avec CUDA.
-  //! Itérateur sur la lambda via un index
-  template <typename SetterLambda>
-  class SetterLambdaIterator
-  {
-   public:
 
-    //! Permet de positionner un élément de l'itérateur de sortie
-    class Setter
-    {
-     public:
-
-      ARCCORE_HOST_DEVICE explicit Setter(const SetterLambda& s, Int32 output_index)
-      : m_output_index(output_index)
-      , m_lambda(s)
-      {}
-      ARCCORE_HOST_DEVICE void operator=(Int32 input_index)
-      {
-        m_lambda(input_index, m_output_index);
-      }
-      Int32 m_output_index = 0;
-      SetterLambda m_lambda;
-    };
-
-    using value_type = Int32;
-    using iterator_category = std::random_access_iterator_tag;
-    using reference = Setter;
-    using difference_type = ptrdiff_t;
-    using pointer = void;
-
-    using ThatClass = SetterLambdaIterator<SetterLambda>;
-
-   public:
-
-    ARCCORE_HOST_DEVICE SetterLambdaIterator(const SetterLambda& s)
-    : m_lambda(s)
-    {}
-    ARCCORE_HOST_DEVICE explicit SetterLambdaIterator(const SetterLambda& s, Int32 v)
-    : m_lambda(s)
-    , m_index(v)
-    {}
-
-   public:
-
-    ARCCORE_HOST_DEVICE SetterLambdaIterator<SetterLambda>& operator++()
-    {
-      ++m_index;
-      return (*this);
-    }
-    ARCCORE_HOST_DEVICE reference operator*() const
-    {
-      return Setter(m_lambda, m_index);
-    }
-    ARCCORE_HOST_DEVICE reference operator[](Int32 x) const { return Setter(m_lambda, m_index + x); }
-    ARCCORE_HOST_DEVICE friend ThatClass operator+(Int32 x, const ThatClass& iter)
-    {
-      return ThatClass(iter.m_lambda, iter.m_index + x);
-    }
-    ARCCORE_HOST_DEVICE friend ThatClass operator+(const ThatClass& iter, Int32 x)
-    {
-      return ThatClass(iter.m_lambda, iter.m_index + x);
-    }
-    ARCCORE_HOST_DEVICE Int32 operator-(const ThatClass& x) const
-    {
-      return m_index - x.m_index;
-    }
-    ARCCORE_HOST_DEVICE friend bool operator<(const ThatClass& iter1, const ThatClass& iter2)
-    {
-      return iter1.m_index < iter2.m_index;
-    }
-
-   private:
-
-    Int32 m_index = 0;
-    SetterLambda m_lambda;
-  };
-
- public:
+ protected:
 
   GenericFilteringBase();
 
@@ -136,13 +60,28 @@ class ARCANE_ACCELERATOR_EXPORT GenericFilteringBase
 
   Int32 _nbOutputElement() const;
   void _allocate();
+  void _allocateTemporaryStorage(size_t size);
+  int* _getDeviceNbOutPointer();
+  void _copyDeviceNbOutToHostNbOut();
 
  protected:
 
-  RunQueue* m_queue = nullptr;
+  //! File d'exécution. Ne doit pas être nulle.
+  RunQueue m_queue;
+  // Mémoire de travail pour l'algorithme de filtrage.
   GenericDeviceStorage m_algo_storage;
+  //! Mémoire sur le device du nombre de valeurs filtrées
   DeviceStorage<int> m_device_nb_out_storage;
+  //! Mémoire hôte pour le nombre de valeurs filtrées
   NumArray<Int32, MDDim1> m_host_nb_out_storage;
+  /*!
+   * \brief Indique quelle mémoire est utilisée pour le nombre de valeurs filtrées.
+   *
+   * Si vrai utilise directement \a m_host_nb_out_storage. Sinon, utilise
+   * m_device_nb_out_storage et fait une copie asynchrone après le filtrage pour
+   * recopier la valeur dans m_host_nb_out_storage.
+   */
+  bool m_use_direct_host_storage = true;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -158,7 +97,7 @@ class SyclGenericFilteringImpl
   static void apply(GenericFilteringBase& s, Int32 nb_item, InputIterator input_iter,
                     OutputIterator output_iter, SelectLambda select_lambda)
   {
-    RunQueue* queue = s.m_queue;
+    RunQueue queue = s.m_queue;
     using DataType = std::iterator_traits<OutputIterator>::value_type;
 #if defined(ARCANE_USE_SCAN_ONEDPL) && defined(__INTEL_LLVM_COMPILER)
     sycl::queue true_queue = impl::SyclUtils::toNativeStream(queue);
@@ -179,9 +118,9 @@ class SyclGenericFilteringImpl
         in_scan_data[i] = select_lambda(input_iter[i]) ? 1 : 0;
       };
     }
-    queue->barrier();
+    queue.barrier();
     SyclScanner<false /*is_exclusive*/, Int32, ScannerSumOperator<Int32>> scanner;
-    scanner.doScan(*queue, in_scan_data, out_scan_data, 0);
+    scanner.doScan(queue, in_scan_data, out_scan_data, 0);
     // La valeur de 'out_data' pour le dernier élément (nb_item-1) contient la taille du filtre
     Int32 nb_output = out_scan_data[nb_item - 1];
     s.m_host_nb_out_storage[0] = nb_output;
@@ -218,7 +157,7 @@ class SyclGenericFilteringImpl
     }
     // Obligatoire à cause de 'out_copy'. On pourra le supprimer avec une
     // allocation temporaire.
-    queue->barrier();
+    queue.barrier();
 #endif
   }
 };
@@ -247,9 +186,8 @@ class GenericFilteringFlag
     [[maybe_unused]] DataType* output_data = output.data();
     [[maybe_unused]] const FlagType* flag_data = flag.data();
     eExecutionPolicy exec_policy = eExecutionPolicy::Sequential;
-    RunQueue* queue = s.m_queue;
-    ARCANE_CHECK_POINTER(queue);
-    exec_policy = queue->executionPolicy();
+    RunQueue queue = s.m_queue;
+    exec_policy = queue.executionPolicy();
     switch (exec_policy) {
 #if defined(ARCANE_COMPILING_CUDA)
     case eExecutionPolicy::CUDA: {
@@ -260,11 +198,11 @@ class GenericFilteringFlag
       ARCANE_CHECK_CUDA(::cub::DeviceSelect::Flagged(nullptr, temp_storage_size,
                                                      input_data, flag_data, output_data, nb_out_ptr, nb_item, stream));
 
-      s.m_algo_storage.allocate(temp_storage_size);
-      nb_out_ptr = s.m_device_nb_out_storage.allocate();
+      s._allocateTemporaryStorage(temp_storage_size);
+      nb_out_ptr = s._getDeviceNbOutPointer();
       ARCANE_CHECK_CUDA(::cub::DeviceSelect::Flagged(s.m_algo_storage.address(), temp_storage_size,
                                                      input_data, flag_data, output_data, nb_out_ptr, nb_item, stream));
-      s.m_device_nb_out_storage.copyToAsync(s.m_host_nb_out_storage, queue);
+      s._copyDeviceNbOutToHostNbOut();
     } break;
 #endif
 #if defined(ARCANE_COMPILING_HIP)
@@ -276,12 +214,12 @@ class GenericFilteringFlag
       ARCANE_CHECK_HIP(rocprim::select(nullptr, temp_storage_size, input_data, flag_data, output_data,
                                        nb_out_ptr, nb_item, stream));
 
-      s.m_algo_storage.allocate(temp_storage_size);
-      nb_out_ptr = s.m_device_nb_out_storage.allocate();
+      s._allocateTemporaryStorage(temp_storage_size);
+      nb_out_ptr = s._getDeviceNbOutPointer();
 
       ARCANE_CHECK_HIP(rocprim::select(s.m_algo_storage.address(), temp_storage_size, input_data, flag_data, output_data,
                                        nb_out_ptr, nb_item, stream));
-      s.m_device_nb_out_storage.copyToAsync(s.m_host_nb_out_storage, queue);
+      s._copyDeviceNbOutToHostNbOut();
     } break;
 #endif
 #if defined(ARCANE_COMPILING_SYCL)
@@ -289,7 +227,7 @@ class GenericFilteringFlag
       impl::IndexIterator iter2(0);
       auto filter_lambda = [=](Int32 input_index) -> bool { return flag[input_index] != 0; };
       auto setter_lambda = [=](Int32 input_index, Int32 output_index) { output[output_index] = input[input_index]; };
-      GenericFilteringBase::SetterLambdaIterator<decltype(setter_lambda)> out(setter_lambda);
+      impl::SetterLambdaIterator<decltype(setter_lambda)> out(setter_lambda);
       SyclGenericFilteringImpl::apply(s, nb_item, iter2, out, filter_lambda);
     } break;
 #endif
@@ -330,10 +268,9 @@ class GenericFilteringIf
              const SelectLambda& select_lambda, const TraceInfo& trace_info)
   {
     eExecutionPolicy exec_policy = eExecutionPolicy::Sequential;
-    RunQueue* queue = s.m_queue;
-    ARCANE_CHECK_POINTER(queue);
-    exec_policy = queue->executionPolicy();
-    RunCommand command = makeCommand(*queue);
+    RunQueue queue = s.m_queue;
+    exec_policy = queue.executionPolicy();
+    RunCommand command = makeCommand(queue);
     command << trace_info;
     impl::RunCommandLaunchInfo launch_info(command, nb_item);
     launch_info.beginExecute();
@@ -348,13 +285,12 @@ class GenericFilteringIf
                                                 input_iter, output_iter, nb_out_ptr, nb_item,
                                                 select_lambda, stream));
 
-      s.m_algo_storage.allocate(temp_storage_size);
-      s.m_device_nb_out_storage.allocate();
-      nb_out_ptr = s.m_device_nb_out_storage.address();
+      s._allocateTemporaryStorage(temp_storage_size);
+      nb_out_ptr = s._getDeviceNbOutPointer();
       ARCANE_CHECK_CUDA(::cub::DeviceSelect::If(s.m_algo_storage.address(), temp_storage_size,
                                                 input_iter, output_iter, nb_out_ptr, nb_item,
                                                 select_lambda, stream));
-      s.m_device_nb_out_storage.copyToAsync(s.m_host_nb_out_storage, queue);
+      s._copyDeviceNbOutToHostNbOut();
     } break;
 #endif
 #if defined(ARCANE_COMPILING_HIP)
@@ -366,11 +302,11 @@ class GenericFilteringIf
       ARCANE_CHECK_HIP(rocprim::select(nullptr, temp_storage_size, input_iter, output_iter,
                                        nb_out_ptr, nb_item, select_lambda, stream));
 
-      s.m_algo_storage.allocate(temp_storage_size);
-      nb_out_ptr = s.m_device_nb_out_storage.allocate();
+      s._allocateTemporaryStorage(temp_storage_size);
+      nb_out_ptr = s._getDeviceNbOutPointer();
       ARCANE_CHECK_HIP(rocprim::select(s.m_algo_storage.address(), temp_storage_size, input_iter, output_iter,
                                        nb_out_ptr, nb_item, select_lambda, 0));
-      s.m_device_nb_out_storage.copyToAsync(s.m_host_nb_out_storage, queue);
+      s._copyDeviceNbOutToHostNbOut();
     } break;
 #endif
 #if defined(ARCANE_COMPILING_SYCL)
@@ -411,107 +347,6 @@ namespace Arcane::Accelerator
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Algorithme de filtrage sur accélérateur.
- *
- * Dans les méthodes suivantes, l'argument \a queue peut être nul auquel cas
- * l'algorithme s'applique sur l'hôte en séquentiel.
- *
- * \deprecated Cette classe est obsolète. Utiliser GenericFilterer à la place.
- */
-template <typename DataType>
-class Filterer
-: private impl::GenericFilteringBase
-{
- public:
-
-  ARCANE_DEPRECATED_REASON("Y2023: Use Filterer(RunQueue*) instead")
-  Filterer()
-  : m_is_deprecated_usage(true)
-  {
-  }
-
- public:
-
-  explicit Filterer(RunQueue* queue)
-  {
-    m_queue = queue;
-    _allocate();
-  }
-
- public:
-
-  template <typename FlagType>
-  ARCANE_DEPRECATED_REASON("Y2024: Use GenericFilterer::apply() instead")
-  void apply(SmallSpan<const DataType> input, SmallSpan<DataType> output, SmallSpan<const FlagType> flag)
-  {
-    const Int32 nb_item = input.size();
-    if (output.size() != nb_item)
-      ARCANE_FATAL("Sizes are not equals: input={0} output={1}", nb_item, output.size());
-
-    _setCalled();
-    impl::GenericFilteringBase* base_ptr = this;
-    impl::GenericFilteringFlag<DataType, FlagType, DataType> gf;
-    gf.apply(*base_ptr, input, output, flag);
-  }
-
-  template <typename SelectLambda>
-  ARCANE_DEPRECATED_REASON("Y2024: Use GenericFilterer::applyIf() instead")
-  void applyIf(SmallSpan<const DataType> input, SmallSpan<DataType> output,
-               const SelectLambda& select_lambda)
-  {
-    const Int32 nb_item = input.size();
-    if (output.size() != nb_item)
-      ARCANE_FATAL("Sizes are not equals: input={0} output={1}", nb_item, output.size());
-
-    _setCalled();
-    impl::GenericFilteringBase* base_ptr = this;
-    impl::GenericFilteringIf gf;
-    gf.apply(*base_ptr, nb_item, input.data(), output.data(), select_lambda, TraceInfo());
-  }
-
-  template <typename FlagType>
-  ARCANE_DEPRECATED_REASON("Y2023: Use apply() without RunQueue argument instead")
-  void apply(RunQueue* queue, SmallSpan<const DataType> input, SmallSpan<DataType> output, SmallSpan<const FlagType> flag)
-  {
-    if (!m_is_deprecated_usage)
-      ARCANE_FATAL("This overload of apply() is only valid when using default constructor");
-    if (m_is_already_called)
-      ARCANE_FATAL("apply() has already been called for this instance");
-    m_is_already_called = true;
-    m_queue = queue;
-    _allocate();
-    impl::GenericFilteringBase* base_ptr = this;
-    impl::GenericFilteringFlag<DataType, FlagType, DataType> gf;
-    gf.apply(*base_ptr, input, output, flag);
-  }
-
-  //! Nombre d'éléments en sortie.
-  Int32 nbOutputElement()
-  {
-    m_is_already_called = false;
-    return _nbOutputElement();
-  }
-
- private:
-
-  bool m_is_already_called = false;
-  bool m_is_deprecated_usage = false;
-
- private:
-
-  void _setCalled()
-  {
-    if (m_is_deprecated_usage)
-      ARCANE_FATAL("You need to create instance with Filterer(RunQueue*) to use this overload of apply()");
-    if (m_is_already_called)
-      ARCANE_FATAL("apply() has already been called for this instance");
-    m_is_already_called = true;
-  }
-};
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
  * \brief Algorithme générique de filtrage sur accélérateur.
  */
 class GenericFilterer
@@ -525,9 +360,21 @@ class GenericFilterer
    *
    * \pre queue!=nullptr
    */
+  ARCANE_DEPRECATED_REASON("Y2024: Use GenericFilterer(const RunQueue&) instead")
   explicit GenericFilterer(RunQueue* queue)
   {
     ARCANE_CHECK_POINTER(queue);
+    m_queue = *queue;
+    _allocate();
+  }
+
+  /*!
+   * \brief Créé une instance.
+   *
+   * \pre queue!=nullptr
+   */
+  explicit GenericFilterer(const RunQueue& queue)
+  {
     m_queue = queue;
     _allocate();
   }
@@ -685,7 +532,7 @@ class GenericFilterer
     impl::GenericFilteringBase* base_ptr = this;
     impl::GenericFilteringIf gf;
     impl::IndexIterator input_iter;
-    SetterLambdaIterator<SetterLambda> out(setter_lambda);
+    impl::SetterLambdaIterator<SetterLambda> out(setter_lambda);
     gf.apply(*base_ptr, nb_value, input_iter, out, select_lambda, trace_info);
   }
 

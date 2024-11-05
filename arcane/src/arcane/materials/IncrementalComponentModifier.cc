@@ -93,9 +93,12 @@ finalize()
 void IncrementalComponentModifier::
 apply(MaterialModifierOperation* operation)
 {
-  Accelerator::ProfileRegion ps(m_queue,"ApplyConstituentOperation");
-
+  const char* str_add = "ApplyConstituentOperationAdd";
+  const char* str_remove = "ApplyConstituentOperationRemove";
   bool is_add = operation->isAdd();
+
+  Accelerator::ProfileRegion ps(m_queue,is_add ? str_add : str_remove);
+
   IMeshMaterial* mat = operation->material();
   SmallSpan<const Int32> orig_ids = operation->ids();
   SmallSpan<const Int32> ids = orig_ids;
@@ -162,7 +165,7 @@ apply(MaterialModifierOperation* operation)
     connectivity->fillCellsNbMaterial(ids, env_id, cells_current_nb_material.view(), m_queue);
 
     {
-      Accelerator::GenericFilterer filterer(&m_queue);
+      Accelerator::GenericFilterer filterer(m_queue);
       SmallSpan<Int32> cells_unchanged_in_env_view = cells_unchanged_in_env.view();
       SmallSpan<Int32> cells_changed_in_env_view = cells_changed_in_env.view();
       SmallSpan<const Int16> cells_current_nb_material_view = m_work_info.m_cells_current_nb_material.view();
@@ -559,7 +562,7 @@ _addItemsToIndexer(MeshMaterialVariableIndexer* var_indexer,
 
   SmallSpan<const bool> cells_is_partial = m_work_info.m_cells_is_partial;
 
-  Accelerator::GenericFilterer filterer(&m_queue);
+  Accelerator::GenericFilterer filterer(m_queue);
 
   // TODO: pour l'instant on remplit en deux fois mais il serait
   // possible de le faire en une seule fois en utilisation l'algorithme de Partition.
@@ -609,18 +612,19 @@ _addItemsToIndexer(MeshMaterialVariableIndexer* var_indexer,
   // Maintenant que les nouveaux MatVar sont créés, il faut les
   // initialiser avec les bonnes valeurs.
   {
+    _resizeVariablesIndexer(var_indexer->index());
     // TODO: Comme tout est indépendant par variable, on pourrait
     // éventuellement utiliser plusieurs files.
-    RunQueue::ScopedAsync sc(&m_queue);
-    IMeshMaterialMng* mm = m_material_mng;
-    bool do_init = m_do_init_new_items;
-    auto func = [&](IMeshMaterialVariable* mv) {
-      mv->_internalApi()->resizeForIndexer(var_indexer->index(), m_queue);
-      if (do_init)
+    if (m_do_init_new_items) {
+      Accelerator::ProfileRegion ps(m_queue,"InitializeNewItems");
+      RunQueue::ScopedAsync sc(&m_queue);
+      IMeshMaterialMng* mm = m_material_mng;
+      auto func = [&](IMeshMaterialVariable* mv) {
         mv->_internalApi()->initializeNewItems(list_builder, m_queue);
-    };
-    functor::apply(mm, &IMeshMaterialMng::visitVariables, func);
-    m_queue.barrier();
+      };
+      functor::apply(mm, &IMeshMaterialMng::visitVariables, func);
+      m_queue.barrier();
+    }
   }
 }
 
@@ -687,7 +691,7 @@ _removeItemsInGroup(ItemGroup cells, SmallSpan<const Int32> removed_ids)
     SmallSpan<const Int32> input_ids(items_local_id);
     SmallSpan<Int32> output_ids_view(items_local_id);
     SmallSpan<const bool> filtered_cells(m_work_info.removedCells());
-    Accelerator::GenericFilterer filterer(&m_queue);
+    Accelerator::GenericFilterer filterer(m_queue);
     auto select_filter = [=] ARCCORE_HOST_DEVICE(Int32 local_id) -> bool {
       return !filtered_cells[local_id];
     };
@@ -702,6 +706,26 @@ _removeItemsInGroup(ItemGroup cells, SmallSpan<const Int32> removed_ids)
   }
 }
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Redimensionne l'index \a var_index des variables
+ */
+void IncrementalComponentModifier::
+_resizeVariablesIndexer(Int32 var_index)
+{
+  Accelerator::RunQueuePool& queue_pool = m_material_mng->_internalApi()->asyncRunQueuePool();
+  Accelerator::ProfileRegion ps(queue_pool[0],"ResizeVariableIndexer");
+
+  Int32 index = 0;
+  auto func1 = [&](IMeshMaterialVariable* mv) {
+    auto* mvi = mv->_internalApi();
+    mvi->resizeForIndexer(var_index, queue_pool[index]);
+    ++index;
+  };
+  functor::apply(m_material_mng, &MeshMaterialMng::visitVariables, func1);
+  queue_pool.barrier();
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -730,14 +754,7 @@ _copyBetweenPartialsAndGlobals(const CopyBetweenPartialAndGlobalArgs& args)
 
   // Redimensionne les variables si nécessaire
   if (is_add_operation) {
-    Int32 index = 0;
-    auto func1 = [&](IMeshMaterialVariable* mv) {
-      auto* mvi = mv->_internalApi();
-      mvi->resizeForIndexer(args.m_var_index, queue_pool[index]);
-      ++index;
-    };
-    functor::apply(m_material_mng, &MeshMaterialMng::visitVariables, func1);
-    queue_pool.barrier();
+    _resizeVariablesIndexer(args.m_var_index);
   }
 
   if (do_copy) {

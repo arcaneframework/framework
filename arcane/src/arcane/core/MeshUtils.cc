@@ -1883,7 +1883,8 @@ getMaxItemUniqueIdCollective(IMesh* mesh)
 
 void MeshUtils::
 checkUniqueIdsHashCollective(IItemFamily* family, IHashAlgorithm* hash_algo,
-                             const String& expected_hash, bool print_hash)
+                             const String& expected_hash, bool print_hash,
+                             bool include_ghost)
 {
   ARCANE_CHECK_POINTER(family);
   ARCANE_CHECK_POINTER(hash_algo);
@@ -1892,7 +1893,8 @@ checkUniqueIdsHashCollective(IItemFamily* family, IHashAlgorithm* hash_algo,
   ITraceMng* tm = family->traceMng();
 
   UniqueArray<Int64> own_items_uid;
-  ENUMERATE_ (Item, iitem, family->allItems().own()) {
+  ItemGroup own_items_group = (include_ghost ? family->allItems() : family->allItems().own());
+  ENUMERATE_ (Item, iitem, own_items_group) {
     Item item{ *iitem };
     own_items_uid.add(item.uniqueId());
   }

@@ -32,7 +32,9 @@ class MyMemoryPoolAllocator
 TEST(MemoryPool, Misc)
 {
   MyMemoryPoolAllocator my_allocator;
-  MemoryPool memory_pool(&my_allocator,"MyMemoryPool");
+  MemoryPool memory_pool(&my_allocator, "MyMemoryPool");
+  size_t max_block_size = 1024 * 8;
+  memory_pool.setMaxCachedBlockSize(1024 * 8);
 
   void* a1 = memory_pool.allocateMemory(25);
   void* a2 = memory_pool.allocateMemory(47);
@@ -42,6 +44,14 @@ TEST(MemoryPool, Misc)
   memory_pool.dumpStats(std::cout);
   memory_pool.dumpFreeMap(std::cout);
   memory_pool.freeMemory(a3, 25);
+
+  void* a4 = memory_pool.allocateMemory(max_block_size * 2);
+  memory_pool.freeMemory(a4, max_block_size * 2);
+
+  std::cout << "End Of Test\n";
+  memory_pool.dumpStats(std::cout);
+  memory_pool.dumpFreeMap(std::cout);
+  memory_pool.freeCachedMemory();
 }
 
 /*---------------------------------------------------------------------------*/

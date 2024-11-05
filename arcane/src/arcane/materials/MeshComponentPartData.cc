@@ -119,7 +119,7 @@ _setFromMatVarIndexes(ConstArrayView<MatVarIndex> matvar_indexes, RunQueue& queu
   // TODO: Faire une première passe pour calculer le nombre de valeurs pures
   // et ainsi allouer directement à la bonne taille.
   info(4) << "BEGIN_BUILD_PART_DATA_FOR_COMPONENT c=" << m_component->name();
-  Accelerator::GenericFilterer filterer(&queue);
+  Accelerator::GenericFilterer filterer(queue);
 
   Int32 nb_impure = 0;
   {

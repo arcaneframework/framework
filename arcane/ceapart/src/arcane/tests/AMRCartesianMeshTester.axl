@@ -39,6 +39,13 @@
      <description>Si présent, total sur tous les sous-domaines du nombre de mailles fantôme que doit avoir chaque patch</description>
    </simple>
 
+   <simple name="hash-with-ghost" type="bool" default="false">
+     <description>
+       Doit-on include les items fantômes dans les comparaisons de hash ?
+       Attention néanmoins à gérer le séquentiel/parallèle.
+     </description>
+   </simple>
+
    <simple name = "nodes-uid-hash" type = "string" >
      <description>Hash des uniqueId() des noeuds</description>
    </simple>
@@ -90,6 +97,19 @@
      <simple name="length" type="real3">
        <description>
          Indique la taille de la zone de dé-raffinement
+       </description>
+     </simple>
+   </complex>
+
+   <complex name="reduce-nb-ghost-layers" type="ReduceNbGhostLayers" minOccurs="0" maxOccurs="unbounded">
+     <simple name="level" type="int32">
+       <description>
+         Indique le niveau de raffinement où retirer les couches.
+       </description>
+     </simple>
+     <simple name="nb-ghost-layers" type="int32">
+       <description>
+         Indique le nombre de couche qu'il devra y avoir au final.
        </description>
      </simple>
    </complex>

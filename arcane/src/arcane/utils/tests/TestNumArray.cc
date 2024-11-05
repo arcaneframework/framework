@@ -84,7 +84,7 @@ TEST(NumArray, Basic)
     MDSpan<Real, MDDim2> span_array2(array2.mdspan());
     std::cout << "Array2: extents=" << array2.extent0() << "," << array2.extent1() << "\n";
     for (Int32 i = 0; i < array2.extent0(); ++i) {
-      MDSpan<Real, MDDim1> span_array1 = array2.span().slice(i);
+      MDSpan<Real, MDDim1> span_array1 = array2.mdspan().slice(i);
       ASSERT_EQ(span_array1.extent0(), span_array2.extent1());
       std::cout << " MDDim1 slice i=" << i << " X=" << span_array2.extent0() << "\n";
       for (Int32 x = 0, xn = span_array1.extent0(); x < xn; ++x) {
@@ -269,7 +269,7 @@ TEST(NumArray3, Copy)
   v.fill(3.2);
   NumArray<Real, MDDim3> v2(nb_x * 2, nb_y / 2, nb_z * 3);
 
-  v.copy(v2.span());
+  v.copy(v2.mdspan());
 
   {
     NumArray<int, MDDim1> vi0(4, { 1, 3, 5, 7 });

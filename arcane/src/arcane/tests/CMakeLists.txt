@@ -43,6 +43,7 @@ set(ARCANE_ACCELERATOR_SOURCES
   accelerator/AcceleratorScanUnitTest.cc
   accelerator/AcceleratorFilterUnitTest.cc
   accelerator/AcceleratorPartitionerUnitTest.cc
+  accelerator/AcceleratorSorterUnitTest.cc
   accelerator/RunQueueUnitTest.cc
   accelerator/AcceleratorMathUnitTest.cc
   accelerator/AcceleratorViewsUnitTest.cc
@@ -454,13 +455,52 @@ else()
   arcane_add_test_parallel(face-submesh_2d testSubMesh2-2D.arc 2 2)
 endif()
 
+ARCANE_ADD_TEST_PARALLEL(meshcriterialoadbalancemng_meshpartitionertester1 testMeshCriteriaLoadBalanceMng-MeshPartitionerTester-1.arc 8 -m 10)
+ARCANE_ADD_TEST_PARALLEL(meshcriterialoadbalancemng_meshpartitionertester_4_1 testMeshCriteriaLoadBalanceMng-MeshPartitionerTester-4-1.arc 4 -m 10)
+
 if(PARTITIONER_FOUND)
   ARCANE_ADD_TEST_PARALLEL(loadbalance testLoadBalance-1.arc 4)
   ARCANE_ADD_TEST_PARALLEL_THREAD(loadbalance testParticle.arc 4)
   ARCANE_ADD_TEST_PARALLEL(loadbalance_rep3 testLoadBalance-1.arc 12 -R 3)
   ARCANE_ADD_TEST_PARALLEL(loadbalance_collective testLoadBalance-1.arc 4 -We,ARCANE_MESH_EXCHANGE_USE_COLLECTIVE,1 -We,ARCANE_PRINT_CPUAFFINITY,1)
 
-  ARCANE_ADD_TEST_PARALLEL(meshcriterialoadbalancemng testMeshCriteriaLoadBalanceMng-1.arc 8 -m 2)
+  ARCANE_ADD_TEST_PARALLEL(meshcriterialoadbalancemng_defaultpartitioner1 testMeshCriteriaLoadBalanceMng-DefaultPartitioner-1.arc 8 -m 10)
+  ARCANE_ADD_TEST_PARALLEL(meshcriterialoadbalancemng_defaultpartitioner_4_1 testMeshCriteriaLoadBalanceMng-DefaultPartitioner-4-1.arc 4 -m 10)
+  ARCANE_ADD_TEST_PARALLEL(meshcriterialoadbalancemng_defaultpartitioner_meshpartitionertester1 testMeshCriteriaLoadBalanceMng-DefaultPartitioner-MeshPartitionerTester-1.arc 8 -m 10)
+  ARCANE_ADD_TEST_PARALLEL(meshcriterialoadbalancemng_defaultpartitioner_meshpartitionertester_4_1 testMeshCriteriaLoadBalanceMng-DefaultPartitioner-MeshPartitionerTester-4-1.arc 4 -m 10)
+
+  if (Parmetis_FOUND)
+    ARCANE_ADD_TEST_PARALLEL(meshcriterialoadbalancemng_metis1 testMeshCriteriaLoadBalanceMng-Metis-1.arc 8 -m 10)
+    ARCANE_ADD_TEST_PARALLEL(meshcriterialoadbalancemng_metis_4_1 testMeshCriteriaLoadBalanceMng-Metis-4-1.arc 4 -m 10)
+    if (PTScotch_FOUND)
+      ARCANE_ADD_TEST_PARALLEL(meshcriterialoadbalancemng_metis_ptscotch1 testMeshCriteriaLoadBalanceMng-Metis-PTScotch-1.arc 8 -m 10)
+      ARCANE_ADD_TEST_PARALLEL(meshcriterialoadbalancemng_metis_ptscotch_4_1 testMeshCriteriaLoadBalanceMng-Metis-PTScotch-4-1.arc 4 -m 10)
+      ARCANE_ADD_TEST_PARALLEL(meshcriterialoadbalancemng_metis_ptscotch2 testMeshCriteriaLoadBalanceMng-Metis-PTScotch-2.arc 8 -m 10)
+      ARCANE_ADD_TEST_PARALLEL(meshcriterialoadbalancemng_metis_ptscotch_4_2 testMeshCriteriaLoadBalanceMng-Metis-PTScotch-4-2.arc 4 -m 10)
+    endif ()
+    if (Zoltan_FOUND)
+      ARCANE_ADD_TEST_PARALLEL(meshcriterialoadbalancemng_metis_zoltan1 testMeshCriteriaLoadBalanceMng-Metis-Zoltan-1.arc 8 -m 10)
+      ARCANE_ADD_TEST_PARALLEL(meshcriterialoadbalancemng_metis_zoltan_4_1 testMeshCriteriaLoadBalanceMng-Metis-Zoltan-4-1.arc 4 -m 10)
+      ARCANE_ADD_TEST_PARALLEL(meshcriterialoadbalancemng_metis_zoltan2 testMeshCriteriaLoadBalanceMng-Metis-Zoltan-2.arc 8 -m 10)
+      ARCANE_ADD_TEST_PARALLEL(meshcriterialoadbalancemng_metis_zoltan_4_2 testMeshCriteriaLoadBalanceMng-Metis-Zoltan-4-2.arc 4 -m 10)
+    endif ()
+  endif ()
+
+  if (PTScotch_FOUND)
+    ARCANE_ADD_TEST_PARALLEL(meshcriterialoadbalancemng_ptscotch1 testMeshCriteriaLoadBalanceMng-PTScotch-1.arc 8 -m 10)
+    ARCANE_ADD_TEST_PARALLEL(meshcriterialoadbalancemng_ptscotch_4_1 testMeshCriteriaLoadBalanceMng-PTScotch-4-1.arc 4 -m 10)
+    if (Zoltan_FOUND)
+      ARCANE_ADD_TEST_PARALLEL(meshcriterialoadbalancemng_ptscotch_zoltan1 testMeshCriteriaLoadBalanceMng-PTScotch-Zoltan-1.arc 8 -m 10)
+      ARCANE_ADD_TEST_PARALLEL(meshcriterialoadbalancemng_ptscotch_zoltan_4_1 testMeshCriteriaLoadBalanceMng-PTScotch-Zoltan-4-1.arc 4 -m 10)
+      ARCANE_ADD_TEST_PARALLEL(meshcriterialoadbalancemng_ptscotch_zoltan2 testMeshCriteriaLoadBalanceMng-PTScotch-Zoltan-2.arc 8 -m 10)
+      ARCANE_ADD_TEST_PARALLEL(meshcriterialoadbalancemng_ptscotch_zoltan_4_2 testMeshCriteriaLoadBalanceMng-PTScotch-Zoltan-4-2.arc 4 -m 10)
+    endif ()
+  endif ()
+
+  if (Zoltan_FOUND)
+    ARCANE_ADD_TEST_PARALLEL(meshcriterialoadbalancemng_zoltan1 testMeshCriteriaLoadBalanceMng-Zoltan-1.arc 8 -m 10)
+    ARCANE_ADD_TEST_PARALLEL(meshcriterialoadbalancemng_zoltan_4_1 testMeshCriteriaLoadBalanceMng-Zoltan-4-1.arc 4 -m 10)
+  endif ()
 endif()
 
 arcane_add_test_parallel_all(particle testParticle.arc 3 4)
@@ -761,9 +801,16 @@ if (ARCANE_HAS_ACCELERATOR_API)
   arcane_add_test_sequential_task(accelerator_partitioner1 testAcceleratorPartitioner-1.arc 4)
   arcane_add_accelerator_test_sequential(accelerator_partitioner1 testAcceleratorPartitioner-1.arc)
 
+  arcane_add_test_sequential(accelerator_sorter1 testAcceleratorSorter-1.arc)
+  arcane_add_test_sequential_task(accelerator_sorter1 testAcceleratorSorter-1.arc 4)
+  arcane_add_accelerator_test_sequential(accelerator_sorter1 testAcceleratorSorter-1.arc)
+
   arcane_add_test_sequential(accelerator_material1 testAcceleratorMaterials-1.arc)
   arcane_add_test_sequential_task(accelerator_material1 testAcceleratorMaterials-1.arc 4)
   arcane_add_accelerator_test_sequential(accelerator_material1 testAcceleratorMaterials-1.arc)
+
+  arcane_add_test_sequential(accelerator_material1_old testAcceleratorMaterials-1.arc "-We,ARCANE_MATERIALMNG_USE_ACCELERATOR_FOR_CONSTITUENTITEMVECTOR,0")
+  arcane_add_accelerator_test_sequential(accelerator_material1_old testAcceleratorMaterials-1.arc "-We,ARCANE_MATERIALMNG_USE_ACCELERATOR_FOR_CONSTITUENTITEMVECTOR,0")
 
   arcane_add_test_sequential(memorycopy1 testMemoryCopy-1.arc)
   arcane_add_test_sequential_task(memorycopy1 testMemoryCopy-1.arc 4)

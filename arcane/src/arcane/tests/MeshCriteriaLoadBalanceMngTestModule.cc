@@ -18,6 +18,7 @@
 #include "arcane/core/ITimeLoopMng.h"
 #include "arcane/core/ServiceBuilder.h"
 #include "arcane/core/MeshCriteriaLoadBalanceMng.h"
+#include "arcane/core/IMeshPartitionerBase.h"
 #include "arcane/tests/MeshCriteriaLoadBalanceMngTest_axl.h"
 
 /*---------------------------------------------------------------------------*/
@@ -72,6 +73,10 @@ MeshCriteriaLoadBalanceMngTestModule(const ModuleBuildInfo& mbi)
 void MeshCriteriaLoadBalanceMngTestModule::
 init()
 {
+  if (subDomain()->meshes().size() != options()->meshParams.size()) {
+    ARCANE_FATAL("Le nombre de paramètres de maillages doit correspondre au nombre de maillages.");
+  }
+
   m_density_meshes_ref.resize(subDomain()->meshes().size());
   m_faces_density_meshes_ref.resize(subDomain()->meshes().size());
   m_sum.resize(subDomain()->meshes().size());
@@ -104,7 +109,12 @@ init()
 
     m_quality[imesh] = (max - target) * 100 / (m_sum[imesh] - target);
 
+    String partitioner = options()->meshParams[imesh].getPartitioner();
+
+    m_partitioners[imesh] = ServiceBuilder<IMeshPartitionerBase>::createReference(subDomain(), partitioner, mesh);
+
     debug() << "Initial Balancing"
+            << " -- Partitioner : " << partitioner
             << " -- Mesh : " << mesh->name()
             << " -- NbCells : " << mesh->ownCells().size()
             << " -- Quality of LoadBalance (between 0 and 100, lower is better) : " << m_quality[imesh];
@@ -112,8 +122,18 @@ init()
             << " -- Target density per SubDomain : " << target
             << " -- ReduceMax density : " << max
             << " -- ReduceSum density : " << m_sum[imesh];
+  }
 
-    m_partitioners[imesh] = ServiceBuilder<IMeshPartitionerBase>::createReference(subDomain(), "DefaultPartitioner", mesh);
+  // On enregistre les critères. On peut le faire ici ou dans loop avec un reset à chaque fois si
+  // l'on change de variables à chaque repartitionnement.
+  for (Integer imesh = 0; imesh < subDomain()->meshes().size(); ++imesh) {
+    VariableCellInt32& density = *(m_density_meshes_ref[imesh].get());
+    VariableFaceInt32& face_density = *(m_faces_density_meshes_ref[imesh].get());
+    IMesh* mesh = subDomain()->meshes()[imesh];
+
+    MeshCriteriaLoadBalanceMng mesh_criteria = MeshCriteriaLoadBalanceMng(subDomain(), mesh->handle());
+    mesh_criteria.addCriterion(density);
+    mesh_criteria.addCommCost(face_density, "Face");
   }
 }
 
@@ -124,16 +144,9 @@ void MeshCriteriaLoadBalanceMngTestModule::
 loop()
 {
   for (Integer imesh = 0; imesh < subDomain()->meshes().size(); ++imesh) {
-    VariableCellInt32& density = *(m_density_meshes_ref[imesh].get());
-    VariableFaceInt32& face_density = *(m_faces_density_meshes_ref[imesh].get());
-    IMesh* mesh = subDomain()->meshes()[imesh];
-
-    MeshCriteriaLoadBalanceMng mesh_criteria = MeshCriteriaLoadBalanceMng(subDomain(), mesh->handle());
-    mesh_criteria.addCriterion(density);
-    mesh_criteria.addCommCost(face_density, "Face");
-  }
-
-  for (Integer imesh = 0; imesh < subDomain()->meshes().size(); ++imesh) {
+    if (globalIteration() % options()->meshParams[imesh].getIteration() != 0) {
+      continue;
+    }
     IMesh* mesh = subDomain()->meshes()[imesh];
     VariableCellInt32& density = *(m_density_meshes_ref[imesh].get());
 
@@ -150,6 +163,7 @@ loop()
     Real lb_quality = (Real(max) - target) * 100 / (sum_sum - target);
 
     debug() << "Actual Balancing"
+            << " -- Partitioner : " << options()->meshParams[imesh].getPartitioner()
             << " -- Mesh : " << mesh->name()
             << " -- NbCells : " << mesh->ownCells().size()
             << " -- Quality of LoadBalance (between 0 and 100, lower is better) : " << lb_quality

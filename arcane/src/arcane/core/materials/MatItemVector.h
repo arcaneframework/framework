@@ -43,6 +43,8 @@ class ARCANE_CORE_EXPORT MatCellVector
   MatCellVector(const CellGroup& group, IMeshMaterial* material);
   //! Construit un vecteur contenant les entités de \a view pour le matériau \a material.
   MatCellVector(CellVectorView view, IMeshMaterial* material);
+  //! Construit un vecteur contenant les entités \a local_ids pour le matériau \a material.
+  MatCellVector(SmallSpan<const Int32> local_ids, IMeshMaterial* material);
   //! Constructeur par recopie. L'instance fera référence à \a rhs
   MatCellVector(const MatCellVector& rhs) = default;
   //! Constructeur de recopie. Cette instance est une copie de \a rhs.
@@ -72,7 +74,7 @@ class ARCANE_CORE_EXPORT MatCellVector
 
  private:
 
-  void _build(CellVectorView view);
+  void _build(SmallSpan<const Int32> view);
 };
 
 /*---------------------------------------------------------------------------*/

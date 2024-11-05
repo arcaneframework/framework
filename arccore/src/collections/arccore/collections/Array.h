@@ -99,8 +99,8 @@ class ARCCORE_COLLECTIONS_EXPORT ArrayMetaData
  protected:
 
   MemoryPointer _allocate(Int64 nb, Int64 sizeof_true_type, RunQueue* queue);
-  MemoryPointer _reallocate(Int64 nb, Int64 sizeof_true_type, MemoryPointer current, RunQueue* queue);
-  void _deallocate(MemoryPointer current, Int64 sizeof_true_type, RunQueue* queue) ARCCORE_NOEXCEPT;
+  MemoryPointer _reallocate(const AllocatedMemoryInfo& mem_info, Int64 new_capacity, Int64 sizeof_true_type, RunQueue* queue);
+  void _deallocate(const AllocatedMemoryInfo& mem_info, RunQueue* queue) ARCCORE_NOEXCEPT;
   void _setMemoryLocationHint(eMemoryLocationHint new_hint, void* ptr, Int64 sizeof_true_type);
   void _copyFromMemory(MemoryPointer destination, ConstMemoryPointer source, Int64 sizeof_true_type, RunQueue* queue);
 
@@ -336,6 +336,14 @@ class AbstractArray
 
  protected:
 
+  static constexpr Int64 typeSize() { return static_cast<Int64>(sizeof(T)); }
+  AllocatedMemoryInfo _currentMemoryInfo() const
+  {
+    return AllocatedMemoryInfo(m_ptr, m_md->size * typeSize(), m_md->capacity * typeSize());
+  }
+
+ protected:
+
   /*!
    * \brief Initialise le tableau avec la vue \a view.
    *
@@ -357,9 +365,9 @@ class AbstractArray
    * \sa _initFromAllocator(MemoryAllocationOptions o,Int64 acapacity);
    */
   // TODO A supprimer. Utiliser la surcharge avec MemoryAllocationOptions à la place.
-  void _initFromAllocator(IMemoryAllocator* a,Int64 acapacity)
+  void _initFromAllocator(IMemoryAllocator* a, Int64 acapacity)
   {
-    _initFromAllocator(MemoryAllocationOptions(a),acapacity);
+    _initFromAllocator(MemoryAllocationOptions(a), acapacity);
   }
 
   /*!
@@ -371,7 +379,7 @@ class AbstractArray
    * Cette méthode ne doit être appelée que dans un constructeur de la classe dérivée
    * et uniquement par les classes utilisant une sémantique à la UniqueArray.
    */
-  void _initFromAllocator(MemoryAllocationOptions o,Int64 acapacity)
+  void _initFromAllocator(MemoryAllocationOptions o, Int64 acapacity)
   {
     _directFirstAllocateWithAllocator(acapacity,o);
   }
@@ -427,24 +435,25 @@ class AbstractArray
   bool contains(ConstReferenceType v) const
   {
     const T* ptr = m_ptr;
-    for( Int64 i=0, n=m_md->size; i<n; ++i ){
+    for (Int64 i = 0, n = m_md->size; i < n; ++i) {
       if (ptr[i]==v)
         return true;
     }
     return false;
   }
+
  public:
 
   //! Elément d'indice \a i
   ConstReferenceType operator[](Int64 i) const
   {
-    ARCCORE_CHECK_AT(i,m_md->size);
+    ARCCORE_CHECK_AT(i, m_md->size);
     return m_ptr[i];
   }
   //! Elément d'indice \a i
   ConstReferenceType operator()(Int64 i) const
   {
-    ARCCORE_CHECK_AT(i,m_md->size);
+    ARCCORE_CHECK_AT(i, m_md->size);
     return m_ptr[i];
   }
 
@@ -564,6 +573,7 @@ class AbstractArray
   {
     T* old_ptr = m_ptr;
     ArrayMetaData* old_md = m_md;
+    AllocatedMemoryInfo old_mem_info = _currentMemoryInfo();
     Int64 old_size = m_md->size;
     _directAllocate(new_capacity, queue);
     if (m_ptr!=old_ptr){
@@ -572,7 +582,7 @@ class AbstractArray
         old_ptr[i].~T();
       }
       m_md->nb_ref = old_md->nb_ref;
-      m_md->_deallocate(old_ptr, sizeof(T), queue);
+      m_md->_deallocate(old_mem_info, queue);
       _updateReferences();
     }
   }
@@ -580,7 +590,7 @@ class AbstractArray
   void _internalDeallocate(RunQueue* queue = nullptr)
   {
     if (!_isSharedNull())
-      m_md->_deallocate(m_ptr, sizeof(T), queue);
+      m_md->_deallocate(_currentMemoryInfo(), queue);
     if (m_md->is_not_null)
       _deallocateMetaData(m_md);
   }
@@ -623,12 +633,12 @@ class AbstractArray
 
   void _allocateMP(Int64 new_capacity, RunQueue* queue)
   {
-    _setMP(reinterpret_cast<TrueImpl*>(m_md->_allocate(new_capacity, sizeof(T), queue)));
+    _setMPCast(m_md->_allocate(new_capacity, typeSize(), queue));
   }
 
-  void _directReAllocate(Int64 new_capacity,RunQueue* queue)
+  void _directReAllocate(Int64 new_capacity, RunQueue* queue)
   {
-    _setMP(reinterpret_cast<TrueImpl*>(m_md->_reallocate(new_capacity,sizeof(T),m_ptr, queue)));
+    _setMPCast(m_md->_reallocate(_currentMemoryInfo(), new_capacity, typeSize(), queue));
   }
 
  public:
@@ -896,7 +906,7 @@ class AbstractArray
     _setToSharedNull();
   }
 
-  constexpr Integer _clampSizeOffet(Int64 offset,Int32 asize) const
+  constexpr Integer _clampSizeOffet(Int64 offset, Int32 asize) const
   {
     Int64 max_size = m_md->size - offset;
     if (asize>max_size)
@@ -942,7 +952,7 @@ class AbstractArray
 
   bool _isSharedNull()
   {
-    return m_ptr==nullptr;
+    return m_ptr == nullptr;
   }
 
  private:
@@ -952,6 +962,10 @@ class AbstractArray
     m_ptr = nullptr;
     m_meta_data = ArrayMetaData();
     m_md = &m_meta_data;
+  }
+  void _setMPCast(void* p)
+  {
+    _setMP(reinterpret_cast<TrueImpl*>(p));
   }
 };
 
@@ -995,6 +1009,7 @@ class Array
   using typename BaseClassType::const_reference;
   using typename BaseClassType::size_type;
   using typename BaseClassType::difference_type;
+
  protected:
 
   Array() {}

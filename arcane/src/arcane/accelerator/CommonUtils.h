@@ -51,7 +51,8 @@ class ARCANE_ACCELERATOR_EXPORT CudaUtils
 {
  public:
 
-  static cudaStream_t toNativeStream(RunQueue* queue);
+  static cudaStream_t toNativeStream(const RunQueue* queue);
+  static cudaStream_t toNativeStream(const RunQueue& queue);
 };
 #endif
 
@@ -63,7 +64,8 @@ class ARCANE_ACCELERATOR_EXPORT HipUtils
 {
  public:
 
-  static hipStream_t toNativeStream(RunQueue* queue);
+  static hipStream_t toNativeStream(const RunQueue* queue);
+  static hipStream_t toNativeStream(const RunQueue& queue);
 };
 #endif
 
@@ -75,7 +77,8 @@ class ARCANE_ACCELERATOR_EXPORT SyclUtils
 {
  public:
 
-  static sycl::queue toNativeStream(RunQueue* queue);
+  static sycl::queue toNativeStream(const RunQueue* queue);
+  static sycl::queue toNativeStream(const RunQueue& queue);
 };
 #endif
 
@@ -135,7 +138,7 @@ class ARCANE_ACCELERATOR_EXPORT DeviceStorageBase
  protected:
 
   //! Copie l'instance dans \a dest_ptr
-  void _copyToAsync(Span<std::byte> destination, Span<const std::byte> source, RunQueue* queue);
+  void _copyToAsync(Span<std::byte> destination, Span<const std::byte> source, const RunQueue& queue);
 };
 
 /*---------------------------------------------------------------------------*/
@@ -144,27 +147,23 @@ class ARCANE_ACCELERATOR_EXPORT DeviceStorageBase
  * \internal
  * \brief Gère l'allocation interne sur le device pour un type donné.
  */
-template <typename DataType>
+template <typename DataType,Int32 N = 1>
 class DeviceStorage
 : public DeviceStorageBase
 {
  public:
 
-  ~DeviceStorage()
-  {
-  }
-
   DataType* address() { return reinterpret_cast<DataType*>(m_storage.address()); }
   size_t size() const { return m_storage.size(); }
   DataType* allocate()
   {
-    m_storage.allocate(sizeof(DataType));
+    m_storage.allocate(sizeof(DataType) * N);
     return address();
   }
   void deallocate() { m_storage.deallocate(); }
 
   //! Copie l'instance dans \a dest_ptr
-  void copyToAsync(SmallSpan<DataType> dest_ptr, RunQueue* queue)
+  void copyToAsync(SmallSpan<DataType> dest_ptr, const RunQueue& queue)
   {
     _copyToAsync(asWritableBytes(dest_ptr), m_storage.bytes(), queue);
   }
@@ -370,6 +369,93 @@ class GetterLambdaIterator
 
   Int32 m_index = 0;
   GetterLambda m_lambda;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Itérateur sur une lambda pour positionner une valeur via un index.
+ *
+ * Le positionnement se fait via Setter::operator=().
+ */
+template <typename SetterLambda>
+class SetterLambdaIterator
+{
+ public:
+
+  //! Permet de positionner un élément de l'itérateur de sortie
+  class Setter
+  {
+   public:
+
+    ARCCORE_HOST_DEVICE explicit Setter(const SetterLambda& s, Int32 output_index)
+    : m_output_index(output_index)
+    , m_lambda(s)
+    {}
+    ARCCORE_HOST_DEVICE void operator=(Int32 input_index)
+    {
+      m_lambda(input_index, m_output_index);
+    }
+    Int32 m_output_index = 0;
+    SetterLambda m_lambda;
+  };
+
+  using value_type = Int32;
+  using iterator_category = std::random_access_iterator_tag;
+  using reference = Setter;
+  using difference_type = ptrdiff_t;
+  using pointer = void;
+
+  using ThatClass = SetterLambdaIterator<SetterLambda>;
+
+ public:
+
+  ARCCORE_HOST_DEVICE SetterLambdaIterator(const SetterLambda& s)
+  : m_lambda(s)
+  {}
+  ARCCORE_HOST_DEVICE explicit SetterLambdaIterator(const SetterLambda& s, Int32 v)
+  : m_index(v)
+  , m_lambda(s)
+  {}
+
+ public:
+
+  ARCCORE_HOST_DEVICE SetterLambdaIterator<SetterLambda>& operator++()
+  {
+    ++m_index;
+    return (*this);
+  }
+  ARCCORE_HOST_DEVICE SetterLambdaIterator<SetterLambda>& operator--()
+  {
+    --m_index;
+    return (*this);
+  }
+  ARCCORE_HOST_DEVICE reference operator*() const
+  {
+    return Setter(m_lambda, m_index);
+  }
+  ARCCORE_HOST_DEVICE reference operator[](Int32 x) const { return Setter(m_lambda, m_index + x); }
+  ARCCORE_HOST_DEVICE friend ThatClass operator+(Int32 x, const ThatClass& iter)
+  {
+    return ThatClass(iter.m_lambda, iter.m_index + x);
+  }
+  ARCCORE_HOST_DEVICE friend ThatClass operator+(const ThatClass& iter, Int32 x)
+  {
+    return ThatClass(iter.m_lambda, iter.m_index + x);
+  }
+  ARCCORE_HOST_DEVICE Int32 operator-(const ThatClass& x) const
+  {
+    return m_index - x.m_index;
+  }
+  ARCCORE_HOST_DEVICE friend bool operator<(const ThatClass& iter1, const ThatClass& iter2)
+  {
+    return iter1.m_index < iter2.m_index;
+  }
+
+ private:
+
+  Int32 m_index = 0;
+  SetterLambda m_lambda;
 };
 
 /*---------------------------------------------------------------------------*/

@@ -21,6 +21,7 @@
 #include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/ValueConvert.h"
 #include "arcane/utils/CheckedConvert.h"
+#include "arcane/utils/MemoryUtils.h"
 
 #include "arcane/core/IMesh.h"
 #include "arcane/core/IItemFamily.h"
@@ -130,6 +131,7 @@ MeshMaterialMng(const MeshHandle& mesh_handle,const String& name)
 , m_internal_api(std::make_unique<InternalApi>(this))
 , m_variable_mng(mesh_handle.variableMng())
 , m_name(name)
+, m_all_cell_to_all_env_cell(MemoryUtils::getDefaultDataAllocator())
 {
   m_all_env_data = std::make_unique<AllEnvData>(this);
   m_exchange_mng = std::make_unique<MeshMaterialExchangeMng>(this);
@@ -180,8 +182,10 @@ MeshMaterialMng::
   m_modifier.reset();
   m_internal_api.reset();
 
-  if (m_allcell_2_allenvcell)
-    AllCellToAllEnvCell::destroy(m_allcell_2_allenvcell);
+  if (m_allcell_2_allenvcell){
+    m_all_cell_to_all_env_cell.clear();
+    m_allcell_2_allenvcell = nullptr;
+  }
 
   // On détruit le Runner à la fin pour être sur qu'il n'y a plus de
   // références dessus dans les autres instances.
@@ -299,6 +303,15 @@ build()
         m_additional_capacity_ratio = v.value();
         info() << "Set additional capacity ratio to " << m_additional_capacity_ratio;
       }
+    }
+  }
+
+  // Indique si on utilise l'API accélérateur pour le calcul des entités
+  // de ConstituentItemVectorImpl
+  {
+    if (auto v = Convert::Type<Real>::tryParseFromEnvironment("ARCANE_MATERIALMNG_USE_ACCELERATOR_FOR_CONSTITUENTITEMVECTOR", true)){
+      m_is_use_accelerator_for_constituent_item_vector = (v.value()!=0);
+      info() << "Use accelerator APU for 'ConstituentItemVectorImpl' = " << m_is_use_accelerator_for_constituent_item_vector;
     }
   }
 
@@ -1009,9 +1022,9 @@ _checkEndCreate()
 /*---------------------------------------------------------------------------*/
 
 AllEnvCellVectorView MeshMaterialMng::
-view(Int32ConstArrayView local_ids)
+_view(SmallSpan<const Int32> local_ids)
 {
-  return AllEnvCellVectorView(local_ids, componentItemSharedInfo(LEVEL_ALLENVIRONMENT));
+  return AllEnvCellVectorView(local_ids.constSmallView(), componentItemSharedInfo(LEVEL_ALLENVIRONMENT));
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1306,6 +1319,20 @@ _dumpStats()
   }
   for (IMeshMaterial* mat : m_materials) {
     mat->_internalApi()->variableIndexer()->dumpStats();
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MeshMaterialMng::
+createAllCellToAllEnvCell()
+{
+  if (!m_allcell_2_allenvcell){
+    m_all_cell_to_all_env_cell.reserve(1);
+    m_all_cell_to_all_env_cell.add(AllCellToAllEnvCell(this));
+    m_allcell_2_allenvcell = m_all_cell_to_all_env_cell.view().ptrAt(0);
+    m_allcell_2_allenvcell->initialize();
   }
 }
 

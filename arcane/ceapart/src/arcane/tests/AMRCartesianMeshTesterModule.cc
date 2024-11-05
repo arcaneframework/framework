@@ -103,7 +103,8 @@ class AMRCartesianMeshTesterModule
   void _compute1();
   void _compute2();
   void _initAMR();
-  void _coarsePatch();
+  void _coarseZone();
+  void _reduceNbGhostLayers();
   void _computeSubCellDensity(Cell cell);
   void _computeCenters();
   void _processPatches();
@@ -250,12 +251,14 @@ init()
   m_cartesian_mesh = ICartesianMesh::getReference(mesh);
   m_utils = makeRef(new CartesianMeshTestUtils(m_cartesian_mesh,acceleratorMng()));
 
-  if (!subDomain()->isContinue())
+  if (!subDomain()->isContinue()) {
     _initAMR();
+    _coarseZone();
+    _reduceNbGhostLayers();
+  }
 
   _computeCenters();
 
-  _coarsePatch();
 
   const bool do_coarse_at_init = options()->coarseAtInit();
 
@@ -334,13 +337,14 @@ _checkUniqueIds()
 {
   IMesh* mesh = m_cartesian_mesh->mesh();
   bool print_hash = true;
+  bool with_ghost = options()->hashWithGhost();
   MD5HashAlgorithm hash_algo;
-  MeshUtils::checkUniqueIdsHashCollective(mesh->nodeFamily(),&hash_algo,
-                                          options()->nodesUidHash(), print_hash);
-  MeshUtils::checkUniqueIdsHashCollective(mesh->faceFamily(),&hash_algo,
-                                          options()->facesUidHash(), print_hash);
-  MeshUtils::checkUniqueIdsHashCollective(mesh->cellFamily(),&hash_algo,
-                                          options()->cellsUidHash(), print_hash);
+  MeshUtils::checkUniqueIdsHashCollective(mesh->nodeFamily(), &hash_algo, options()->nodesUidHash(),
+                                          print_hash, with_ghost);
+  MeshUtils::checkUniqueIdsHashCollective(mesh->faceFamily(), &hash_algo, options()->facesUidHash(),
+                                          print_hash, with_ghost);
+  MeshUtils::checkUniqueIdsHashCollective(mesh->cellFamily(), &hash_algo, options()->cellsUidHash(),
+                                          print_hash, with_ghost);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -539,7 +543,7 @@ _initAMR()
 /*---------------------------------------------------------------------------*/
 
 void AMRCartesianMeshTesterModule::
-_coarsePatch()
+_coarseZone()
 {
   Int32 dim = defaultMesh()->dimension();
 
@@ -548,7 +552,7 @@ _coarsePatch()
     for (auto& x : options()->coarseZone2d()) {
       // _cellsInPatch(Real3(x->position()), Real3(x->length()), false, x->level(), cells_in_patchs);
       // defaultMesh()->modifier()->flagCellToCoarsen(cells_in_patchs);
-      // defaultMesh()->modifier()->coarsenItemsV2();
+      // defaultMesh()->modifier()->coarsenItemsV2(true);
       // cells_in_patchs.clear();
       m_cartesian_mesh->coarseZone2D(x->position(), x->length());
       m_cartesian_mesh->computeDirections();
@@ -559,11 +563,27 @@ _coarsePatch()
     for (auto& x : options()->coarseZone3d()) {
       // _cellsInPatch(x->position(), x->length(), true, x->level(), cells_in_patchs);
       // defaultMesh()->modifier()->flagCellToCoarsen(cells_in_patchs);
-      // defaultMesh()->modifier()->coarsenItemsV2();
+      // defaultMesh()->modifier()->coarsenItemsV2(true);
       // cells_in_patchs.clear();
       m_cartesian_mesh->coarseZone3D(x->position(), x->length());
       m_cartesian_mesh->computeDirections();
     }
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void AMRCartesianMeshTesterModule::
+_reduceNbGhostLayers()
+{
+  for (auto& x : options()->reduceNbGhostLayers()) {
+    Integer final_nb_ghost_layer{ m_cartesian_mesh->reduceNbGhostLayers(x->level(), x->nbGhostLayers()) };
+
+    if (parallelMng()->commSize() != 1 && final_nb_ghost_layer != x->nbGhostLayers()) {
+      ARCANE_FATAL("Bad nb ghost layers");
+    }
+    //info() << "Final nb ghost layer : " << final_nb_ghost_layer;
   }
 }
 

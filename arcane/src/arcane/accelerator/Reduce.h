@@ -968,7 +968,7 @@ class GenericReducerIf
 #if defined(ARCANE_COMPILING_CUDA)
     case eExecutionPolicy::CUDA: {
       size_t temp_storage_size = 0;
-      cudaStream_t stream = impl::CudaUtils::toNativeStream(&queue);
+      cudaStream_t stream = impl::CudaUtils::toNativeStream(queue);
       DataType* reduced_value_ptr = nullptr;
       // Premier appel pour connaitre la taille pour l'allocation
       ARCANE_CHECK_CUDA(::cub::DeviceReduce::Reduce(nullptr, temp_storage_size, input_iter, reduced_value_ptr,
@@ -979,13 +979,13 @@ class GenericReducerIf
       ARCANE_CHECK_CUDA(::cub::DeviceReduce::Reduce(s.m_algo_storage.address(), temp_storage_size,
                                                     input_iter, reduced_value_ptr, nb_item,
                                                     reduce_op, init_value, stream));
-      s.m_device_reduce_storage.copyToAsync(s.m_host_reduce_storage, &queue);
+      s.m_device_reduce_storage.copyToAsync(s.m_host_reduce_storage, queue);
     } break;
 #endif
 #if defined(ARCANE_COMPILING_HIP)
     case eExecutionPolicy::HIP: {
       size_t temp_storage_size = 0;
-      hipStream_t stream = impl::HipUtils::toNativeStream(&queue);
+      hipStream_t stream = impl::HipUtils::toNativeStream(queue);
       DataType* reduced_value_ptr = nullptr;
       // Premier appel pour connaitre la taille pour l'allocation
       ARCANE_CHECK_HIP(rocprim::reduce(nullptr, temp_storage_size, input_iter, reduced_value_ptr, init_value,
@@ -996,7 +996,7 @@ class GenericReducerIf
 
       ARCANE_CHECK_HIP(rocprim::reduce(s.m_algo_storage.address(), temp_storage_size, input_iter, reduced_value_ptr, init_value,
                                        nb_item, reduce_op, stream));
-      s.m_device_reduce_storage.copyToAsync(s.m_host_reduce_storage, &queue);
+      s.m_device_reduce_storage.copyToAsync(s.m_host_reduce_storage, queue);
     } break;
 #endif
 #if defined(ARCANE_COMPILING_SYCL)

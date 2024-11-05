@@ -98,7 +98,7 @@ class ARCANE_CORE_EXPORT IMeshMaterialMngInternal
    * Si aucun allocateur n'est spécifié alors la méthode
    * platform::getDefaultDataAllocator() est utilisée
    */
-  virtual void createAllCellToAllEnvCell(IMemoryAllocator* alloc) = 0;
+  virtual void createAllCellToAllEnvCell() = 0;
 
   /*!
    * \briefInstance de ComponentItemSharedInfo pour un constituant
@@ -115,6 +115,9 @@ class ARCANE_CORE_EXPORT IMeshMaterialMngInternal
 
   //! Ratio pour la capacité additionnelle à allouer lors du redimensionnement des variables.
   virtual Real additionalCapacityRatio() const = 0;
+
+  //! Indique si on utilise l'API accélérateur pour positionner les valeurs de ConstituentItemVectorImpl
+  virtual bool isUseAcceleratorForConstituentItemVector() const =0;
 };
 
 /*---------------------------------------------------------------------------*/

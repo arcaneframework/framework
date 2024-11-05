@@ -189,7 +189,7 @@ endUpdateRemoveV2(ConstituentModifierWorkInfo& work_info, Integer nb_remove, Run
   saved_matvar_indexes_modifier.resize(nb_remove);
   saved_local_ids_modifier.resize(nb_remove);
 
-  Accelerator::GenericFilterer filterer(&queue);
+  Accelerator::GenericFilterer filterer(queue);
   SmallSpan<const bool> removed_cells = work_info.removedCells();
   Span<MatVarIndex> last_matvar_indexes(saved_matvar_indexes_modifier.view());
   Span<Int32> last_local_ids(saved_local_ids_modifier.view());
@@ -344,7 +344,7 @@ transformCells(ConstituentModifierWorkInfo& work_info, RunQueue& queue,bool is_f
   SmallSpan<Int32> local_ids = m_local_ids.view();
   SmallSpan<const bool> transformed_cells = work_info.transformedCells();
 
-  Accelerator::GenericFilterer filterer(&queue);
+  Accelerator::GenericFilterer filterer(queue);
 
   if (is_pure_to_partial) {
     // Transformation Pure -> Partial

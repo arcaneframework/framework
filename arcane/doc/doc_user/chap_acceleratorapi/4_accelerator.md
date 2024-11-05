@@ -592,16 +592,26 @@ l'énumération \arcaneacc{eAtomicOperation}. Par exemple:
 
 \snippet AtomicUnitTest.cc SampleAtomicAdd
 
-## Réductions, Scan et Filtrage
+## Algorithmes avancés: Réductions, Scan, Filtrage, Partitionnement et Tri
 
-La classe \arcaneacc{Filterer} permet de filtrer les éléments d'un tableau.
+%Arcane propose plusieurs classes permettant d'effectuer des
+algorithmes plus avancés. Sur accélérateur, ces algorithmes utilisent
+en général les bibliothèques proposées par le constructeur
+([CUB](https://nvidia.github.io/cccl/cub/index.html) pour NVIDIA et
+[rocprim](https://rocm.docs.amd.com/projects/rocPRIM/en/develop/reference/reference.html)
+pour AMD). Les algorithmes proposés par %Arcane possèdent donc les
+mêmes limitations que l'implémentation constructeur sous-jacente.
 
-La classe \arcaneacc{Scanner} permet d'effectuer des algorithmes de
-scan inclusifs ou exclusifs (voir
-[Algorithmes de Scan](https://en.wikipedia.org/wiki/Prefix_sum) sur wikipedia)
+Les classes disponibles sont:
 
-Les réductions peuvent être gérées de plusieurs manières qui sont
-décrites dans la page (\ref arcanedoc_acceleratorapi_reduction)
+- \arcaneacc{GenericFilterer} pour filtrer les éléments d'un tableau.
+- \arcaneacc{GenericScanner} pour effectuer des algorithmes de scan inclusifs ou exclusifs (voir
+  [Algorithmes de Scan](https://en.wikipedia.org/wiki/Prefix_sum) sur wikipedia)
+- \arcaneacc{GenericSorter} pour trier les éléments d'une liste
+- \arcaneacc{GenericPartitioner} pour partitionner les éléments d'une liste
+- \arcaneacc{GenericReducer} pour effectuer des réduction. Il existe
+  aussi d'autres manières de réaliser des réductions qui sont
+  décrites dans la page (\ref arcanedoc_acceleratorapi_reduction)
 
 ## Mode Autonome accélérateur {#arcanedoc_parallel_accelerator_standalone}
 

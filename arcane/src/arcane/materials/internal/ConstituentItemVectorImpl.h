@@ -24,6 +24,8 @@
 
 #include "arcane/materials/internal/MeshComponentPartData.h"
 
+#include <tuple>
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -75,8 +77,13 @@ class ConstituentItemVectorImpl
   {
     return m_matvar_indexes;
   }
-  void _setItems(ConstArrayView<ConstituentItemIndex> globals,
-                 ConstArrayView<ConstituentItemIndex> multiples) override;
+
+ public:
+
+  class SetItemHelper;
+  // Méthodes devant être publiques pour compilation avec NVCC.
+  void _setItems(SmallSpan<const Int32> local_ids) override;
+  void _computeNbPureAndImpure(SmallSpan<const Int32> local_ids, RunQueue& queue);
 
  private:
 

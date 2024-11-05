@@ -17,7 +17,7 @@
 #include "arcane/materials/MaterialsGlobal.h"
 
 #include "arcane/utils/PlatformUtils.h"
-#include "arcane/utils/IMemoryAllocator.h"
+#include "arcane/utils/NumArray.h"
 
 #include "arcane/core/IMesh.h"
 #include "arcane/core/materials/MatItem.h"
@@ -43,7 +43,7 @@ namespace Arcane::Materials
  * \brief Table de connectivité des 'Cell' vers leur(s) 'AllEnvCell' destinée
  *        à une utilisation sur accélérateur.
  *
- * Classe qui stoque la connectivité de toutes les mailles
+ * Classe qui conserve la connectivité de toutes les mailles
  * \a Cell vers toutes leurs mailles \a AllEnvCell.
  *
  * On crée une instance via la méthode create().
@@ -67,14 +67,17 @@ class ARCANE_MATERIALS_EXPORT AllCellToAllEnvCell
   friend class AllEnvData;
   friend ArcaneTest::MeshMaterialAcceleratorUnitTest;
 
+ public:
+
+  class Impl;
+
  private:
 
-  AllCellToAllEnvCell() = default;
+  explicit AllCellToAllEnvCell(IMeshMaterialMng* mm);
 
  public:
 
   //! Copies interdites
-  AllCellToAllEnvCell(const AllCellToAllEnvCell&) = delete;
   AllCellToAllEnvCell& operator=(const AllCellToAllEnvCell&) = delete;
 
  private:
@@ -91,15 +94,12 @@ class ARCANE_MATERIALS_EXPORT AllCellToAllEnvCell
    * façon systématique.
    * => Gain de perf à évaluer.
    */
-  static AllCellToAllEnvCell* create(IMeshMaterialMng* mm, IMemoryAllocator* alloc);
-
-  //! Fonction de destruction
-  static void destroy(AllCellToAllEnvCell* instance);
+  void initialize();
 
   //! Méthode d'accès à la table de "connectivité" cell -> all env cells
   ARCCORE_HOST_DEVICE Span<ComponentItemLocalId>* internal() const
   {
-    return m_allcell_allenvcell;
+    return m_allcell_allenvcell_ptr;
   }
 
   /*!
@@ -126,10 +126,10 @@ class ARCANE_MATERIALS_EXPORT AllCellToAllEnvCell
  private:
 
   IMeshMaterialMng* m_material_mng = nullptr;
-  IMemoryAllocator* m_alloc = nullptr;
   Integer m_size = 0;
-  Span<ComponentItemLocalId>* m_allcell_allenvcell = nullptr;
-  ComponentItemLocalId* m_mem_pool = nullptr;
+  NumArray<Span<ComponentItemLocalId>, MDDim1> m_allcell_allenvcell;
+  Span<ComponentItemLocalId>* m_allcell_allenvcell_ptr = nullptr;
+  NumArray<ComponentItemLocalId, MDDim1> m_mem_pool;
   Int32 m_current_max_nb_env = 0;
 };
 
