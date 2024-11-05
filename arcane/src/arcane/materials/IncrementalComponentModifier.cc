@@ -718,11 +718,27 @@ _resizeVariablesIndexer(Int32 var_index)
   RunQueue::ScopedAsync sc(&m_queue);
   Accelerator::ProfileRegion ps(queue, "ResizeVariableIndexer");
   ResizeVariableIndexerArgs resize_args(var_index, queue);
+  bool do_one_command = true;
+  UniqueArray<CopyBetweenDataInfo>& copy_data = m_work_info.m_host_variables_copy_data;
+  if (do_one_command) {
+    copy_data.clear();
+    copy_data.reserve(m_material_mng->nbVariable());
+    resize_args.m_copy_data = &copy_data;
+  }
+
   auto func1 = [&](IMeshMaterialVariable* mv) {
     auto* mvi = mv->_internalApi();
     mvi->resizeForIndexer(resize_args);
   };
   functor::apply(m_material_mng, &MeshMaterialMng::visitVariables, func1);
+
+  if (do_one_command) {
+    // Copie 'copy_data' dans le tableau correspondant pour le device éventuel.
+    MDSpan<CopyBetweenDataInfo, MDDim1> x(copy_data.data(), MDIndex<1>(copy_data.size()));
+    m_work_info.m_variables_copy_data.copy(x, &queue);
+    _applyCopyVariableViews(queue);
+  }
+
   queue.barrier();
 }
 
@@ -833,6 +849,46 @@ _applyCopyBetweenPartialsAndGlobals(const CopyBetweenPartialAndGlobalArgs& args,
     Int32 input_base = input_indexes[i] * dim2_size;
     for (Int32 j = 0; j < dim2_size; ++j)
       output[output_base + j] = input[input_base + j];
+  };
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Effectue la copie des vues pour les variables.
+ *
+ * Cette méthode permet de faire en une seule RunCommand les copies entre
+ * les vues CPU et accélérateurs des variables
+ */
+void IncrementalComponentModifier::
+_applyCopyVariableViews(RunQueue& queue)
+{
+  SmallSpan<const CopyBetweenDataInfo> host_copy_data(m_work_info.m_host_variables_copy_data);
+  SmallSpan<const CopyBetweenDataInfo> copy_data(m_work_info.m_variables_copy_data.to1DSmallSpan());
+
+  const Int32 nb_copy = host_copy_data.size();
+  if (nb_copy == 0)
+    return;
+
+  for (Int32 i = 0; i < nb_copy; ++i) {
+    ARCANE_CHECK_ACCESSIBLE_POINTER(queue, host_copy_data[i].m_output.data());
+    ARCANE_CHECK_ACCESSIBLE_POINTER(queue, host_copy_data[i].m_input.data());
+  }
+
+  // Suppose que toutes les vues ont les mêmes tailles.
+  // C'est le cas car les vues sont composées de 'ArrayView<>' et 'Array2View' et ces
+  // deux classes ont la même taille.
+  // TODO: il serait préférable de prendre le max des tailles et dans la commande
+  // de ne faire la copie que si on ne dépasse pas la taille.
+  Int32 nb_value = host_copy_data[0].m_input.constSmallView().size();
+
+  auto command = makeCommand(queue);
+  command << RUNCOMMAND_LOOP2(iter, nb_copy, nb_value)
+  {
+    auto [icopy, i] = iter();
+    auto input = copy_data[icopy].m_input;
+    auto output = copy_data[icopy].m_output;
+    output[i] = input[i];
   };
 }
 

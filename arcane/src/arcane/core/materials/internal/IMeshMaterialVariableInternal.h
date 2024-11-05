@@ -113,17 +113,24 @@ class ARCANE_CORE_EXPORT ResizeVariableIndexerArgs
 
  public:
 
-  void addOneCopyData(Span<std::byte> input, Span<std::byte> output)
+  void addOneCopyData(Span<const std::byte> input,
+                      Span<std::byte> output,
+                      Int32 data_size) const
   {
-    m_copy_data.add(input);
-    m_copy_data.add(output);
+    if (m_copy_data) {
+      CopyBetweenDataInfo x(input, output, data_size);
+      m_copy_data->add(x);
+    }
   }
+
+  bool isUseOneCommand() const { return m_copy_data; }
 
  public:
 
   Int32 m_var_index = -1;
   RunQueue m_queue;
-  UniqueArray<Span<std::byte>> m_copy_data;
+  //! Informations de copie si on n'utilise qu'une seule commande
+  UniqueArray<CopyBetweenDataInfo>* m_copy_data = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/

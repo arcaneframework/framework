@@ -392,7 +392,13 @@ _resizeForIndexer(ResizeVariableIndexerArgs& args)
     Traits::resizeWithReserve(partial_var, indexers[index]->maxIndexInMultipleArray(), ratio);
     this->_setView(index + 1);
   }
-  _copyHostViewsToViews(&queue);
+  if (args.isUseOneCommand()) {
+    auto dest = asWritableBytes(m_device_views);
+    auto source = asBytes(m_host_views);
+    args.addOneCopyData(source,dest,1);
+  }
+  else
+    _copyHostViewsToViews(&queue);
 }
 
 /*---------------------------------------------------------------------------*/
