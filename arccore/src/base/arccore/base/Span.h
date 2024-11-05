@@ -27,19 +27,42 @@ namespace Arccore
 namespace detail
 {
 // Pour indiquer que Span<T>::view() retourne un ArrayView
-// et Span<const T>::view() retourn un ConstArrayView.
-template<typename T>
-class ViewTypeT
-{
- public:
-  using view_type = ArrayView<T>;
-};
-template<typename T>
-class ViewTypeT<const T>
-{
- public:
-  using view_type = ConstArrayView<T>;
-};
+  // et Span<const T>::view() retourne un ConstArrayView.
+  template <typename T>
+  class ViewTypeT
+  {
+   public:
+
+    using view_type = ArrayView<T>;
+  };
+  template <typename T>
+  class ViewTypeT<const T>
+  {
+   public:
+
+    using view_type = ConstArrayView<T>;
+  };
+
+  //! Pour avoir le type (SmallSpan ou Span) en fonction de la taille (Int32 ou Int64)
+  template <typename T, typename SizeType>
+  class SpanTypeFromSize;
+
+  template <typename T>
+  class SpanTypeFromSize<T, Int32>
+  {
+   public:
+
+    using SpanType = SmallSpan<T>;
+  };
+
+  template <typename T>
+  class SpanTypeFromSize<T, Int64>
+  {
+   public:
+
+    using SpanType = Span<T>;
+  };
+
 }
 
 /*---------------------------------------------------------------------------*/
@@ -185,7 +208,7 @@ class SpanImpl
   //! Retourne la taille du tableau
   constexpr ARCCORE_HOST_DEVICE SizeType size() const noexcept { return m_size; }
   //! Retourne la taille du tableau en octets
-  constexpr ARCCORE_HOST_DEVICE Int64 sizeBytes() const noexcept { return m_size * sizeof(value_type); }
+  constexpr ARCCORE_HOST_DEVICE SizeType sizeBytes() const noexcept { return static_cast<SizeType>(m_size * sizeof(value_type)); }
   //! Nombre d'éléments du tableau
   constexpr ARCCORE_HOST_DEVICE SizeType length() const noexcept { return m_size; }
 
@@ -633,9 +656,13 @@ class Span
  * \brief Vue d'un tableau d'éléments de type \a T.
  *
  * La vue est non modifiable si l'argument template est de type 'const T'.
+ *
  * Cette classe permet d'accéder et d'utiliser un tableau d'éléments du
  * type \a T de la même manière qu'un tableau C standard. Elle est similaire à
  * Span à ceci près que le nombre d'éléments est stocké sur un 'Int32'.
+ *
+ * \note Pour être valide, il faut aussi que le nombre d'octets associés à la vue
+ * (sizeBytes()) puisse tenir dans un \a Int32.
  */
 template <typename T, Int32 Extent, Int32 MinValue>
 class SmallSpan
@@ -849,10 +876,31 @@ sampleSpan(Span<const DataType> values,Span<const Int32> indexes,Span<DataType> 
 /*!
  * \brief Converti la vue en un tableau d'octets non modifiables.
  */
-template<typename DataType,typename SizeType,SizeType Extent> inline Span<const std::byte>
+template <typename DataType, typename SizeType, SizeType Extent>
+inline typename detail::SpanTypeFromSize<const std::byte, SizeType>::SpanType
 asBytes(const SpanImpl<DataType,SizeType,Extent>& s)
 {
   return {reinterpret_cast<const std::byte*>(s.data()), s.sizeBytes()};
+}
+
+/*!
+ * \brief Converti la vue en un tableau d'octets non modifiables.
+ */
+template <typename DataType>
+inline SmallSpan<const std::byte>
+asBytes(const ArrayView<DataType>& s)
+{
+  return asBytes(SmallSpan<DataType>(s));
+}
+
+/*!
+ * \brief Converti la vue en un tableau d'octets non modifiables.
+ */
+template <typename DataType>
+inline SmallSpan<const std::byte>
+asBytes(const ConstArrayView<DataType>& s)
+{
+  return asBytes(SmallSpan<const DataType>(s));
 }
 
 /*---------------------------------------------------------------------------*/
@@ -864,16 +912,27 @@ asBytes(const SpanImpl<DataType,SizeType,Extent>& s)
  */
 template<typename DataType,typename SizeType,SizeType Extent,
          typename std::enable_if_t<!std::is_const<DataType>::value, int> = 0>
-inline Span<std::byte>
-asWritableBytes(const SpanImpl<DataType,SizeType,Extent>& s)
+inline typename detail::SpanTypeFromSize<std::byte, SizeType>::SpanType
+asWritableBytes(const SpanImpl<DataType, SizeType, Extent>& s)
 {
   return {reinterpret_cast<std::byte*>(s.data()), s.sizeBytes()};
+}
+
+/*!
+ * \brief Converti la vue en un tableau d'octets modifiables.
+ *
+ * Cette méthode n'est accessible que si \a DataType n'est pas `const`.
+ */
+template<typename DataType> inline SmallSpan<std::byte>
+asWritableBytes(const ArrayView<DataType>& s)
+{
+  return asWritableBytes(SmallSpan<DataType>(s));
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace impl
+namespace detail
 {
 
 template<typename ByteType, typename DataType,Int64 Extent> inline Span<DataType>
@@ -883,6 +942,19 @@ asSpanInternal(Span<ByteType,Extent> bytes)
   if (size==0)
     return {};
   static constexpr Int64 data_type_size = static_cast<Int64>(sizeof(DataType));
+  static_assert(data_type_size>0,"Bad datatype size");
+  ARCCORE_ASSERT((size%data_type_size)==0,("Size is not a multiple of sizeof(DataType)"));
+  auto* ptr = reinterpret_cast<DataType*>(bytes.data());
+  return { ptr, size / data_type_size };
+}
+
+template<typename ByteType, typename DataType,Int32 Extent> inline SmallSpan<DataType>
+asSmallSpanInternal(SmallSpan<ByteType,Extent> bytes)
+{
+  Int32 size = bytes.size();
+  if (size==0)
+    return {};
+  static constexpr Int32 data_type_size = static_cast<Int32>(sizeof(DataType));
   static_assert(data_type_size>0,"Bad datatype size");
   ARCCORE_ASSERT((size%data_type_size)==0,("Size is not a multiple of sizeof(DataType)"));
   auto* ptr = reinterpret_cast<DataType*>(bytes.data());
@@ -900,7 +972,7 @@ asSpanInternal(Span<ByteType,Extent> bytes)
 template<typename DataType,Int64 Extent> inline Span<DataType>
 asSpan(Span<std::byte,Extent> bytes)
 {
-  return impl::asSpanInternal<std::byte,DataType,Extent>(bytes);
+  return detail::asSpanInternal<std::byte,DataType,Extent>(bytes);
 }
 /*!
  * \brief Converti un Span<std::byte> en un Span<DataType>.
@@ -909,7 +981,25 @@ asSpan(Span<std::byte,Extent> bytes)
 template<typename DataType,Int64 Extent> inline Span<const DataType>
 asSpan(Span<const std::byte,Extent> bytes)
 {
-  return impl::asSpanInternal<const std::byte,const DataType,Extent>(bytes);
+  return detail::asSpanInternal<const std::byte,const DataType,Extent>(bytes);
+}
+/*!
+ * \brief Converti un SmallSpan<std::byte> en un SmallSpan<DataType>.
+ * \pre bytes.size() % sizeof(DataType) == 0;
+ */
+template<typename DataType,Int32 Extent> inline SmallSpan<DataType>
+asSmallSpan(SmallSpan<std::byte,Extent> bytes)
+{
+  return detail::asSmallSpanInternal<std::byte,DataType,Extent>(bytes);
+}
+/*!
+ * \brief Converti un SmallSpan<const std::byte> en un SmallSpan<const DataType>.
+ * \pre bytes.size() % sizeof(DataType) == 0;
+ */
+template<typename DataType,Int32 Extent> inline SmallSpan<const DataType>
+asSmallSpan(SmallSpan<const std::byte,Extent> bytes)
+{
+  return detail::asSmallSpanInternal<const std::byte,const DataType,Extent>(bytes);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -921,6 +1011,15 @@ template<typename DataType,size_t SizeType> inline Span<DataType,SizeType>
 asSpan(std::array<DataType,SizeType>& s)
 {
   Int64 size = static_cast<Int64>(s.size());
+  return { s.data(), size };
+}
+/*!
+ * \brief Retourne un Span associé au std::array.
+ */
+template<typename DataType,size_t SizeType> inline SmallSpan<DataType,SizeType>
+asSmallSpan(std::array<DataType,SizeType>& s)
+{
+  Int32 size = static_cast<Int32>(s.size());
   return { s.data(), size };
 }
 
