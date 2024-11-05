@@ -17,12 +17,12 @@
 
 
 
-#include "arcane/ItemGroup.h"
-#include "arcane/ItemPrinter.h"
+#include "arcane/core/ItemGroup.h"
+#include "arcane/core/ItemPrinter.h"
 #include "arcane/core/IItemFamily.h"
-#include "arcane/IGhostLayerMng.h"
-#include "arcane/MeshUtils.h"
-#include "arcane/IMeshModifier.h"
+#include "arcane/core/IGhostLayerMng.h"
+#include "arcane/core/MeshUtils.h"
+#include "arcane/core/IMeshModifier.h"
 
 #include "arcane/core/SimpleSVGMeshExporter.h" // Write au format svg pour le 2D
 // Write variables
@@ -30,21 +30,18 @@
 #include "arcane/core/ServiceBuilder.h"
 #include "arcane/core/Directory.h"
 #include "arcane/core/IVariableMng.h"
-#include "arcane/IParallelMng.h"
-#include "arcane/BasicService.h"
-#include<arcane/IPrimaryMesh.h>
+#include "arcane/core/IParallelMng.h"
+#include "arcane/core/BasicService.h"
+#include "arcane/core/IPrimaryMesh.h"
 
 // get parameter
 #include "arcane/utils/ApplicationInfo.h"
 #include "arcane/utils/CommandLineArguments.h"
 
 // utils
-#include <map>
 #include <unordered_set>
 #include <algorithm>
-#include <iostream>
 #include <iterator>
-#include <vector>
 
 #include "arcane/core/IMeshUtilities.h"
 
@@ -110,7 +107,6 @@ subdivideMesh([[maybe_unused]] IPrimaryMesh* mesh)
   Int32 version = gm->builderVersion();
   if (version < 3)
     gm->setBuilderVersion(3);
-  Int32 nb_ghost_layer = gm->nbGhostLayer();
   gm->setNbGhostLayer(0);
   mesh_modifier->setDynamic(true);
   mesh_modifier->updateGhostLayers();
@@ -124,7 +120,7 @@ subdivideMesh([[maybe_unused]] IPrimaryMesh* mesh)
   // Compter les arrêtes
   // On cherche un moyen de compter les arrêtes pour faire un test facile sur le nombre de noeud inséré.
   // ARCANE_ASSERT((nb_edge_init+ nb_cell_init + nb_face_init)== nb_node_added,("Mauvais nombre de noeuds insérés"));
-  //std::cout << "#NOMBRE INITS " << nb_node_init << " " << mesh->allEdges().size() << " " << edg.size() << " " << nb_face_init << " " << nb_cell_init << std::endl;
+  //debug() << "#NOMBRE INITS " << nb_node_init << " " << mesh->allEdges().size() << " " << edg.size() << " " << nb_face_init << " " << nb_cell_init ;
 
   // VARIABLES
   // Items à ajouter avec connectivités pour E F et C
@@ -138,7 +134,7 @@ subdivideMesh([[maybe_unused]] IPrimaryMesh* mesh)
 
   VariableNodeReal3& nodes_coords = mesh->nodesCoordinates();
   std::unordered_map<Int64, Real3> nodes_to_add_coords;
-  std::cout << "ARRAY SIZE " << nodes_coords.arraySize() << std::endl;
+  debug() << "ARRAY SIZE " << nodes_coords.arraySize() ;
   // Nodes on entities
   std::set<Int64> new_nodes; // Utiliser une map permet s'assurer qu'on ajoute une seule fois un noeud avec un uniqueId()
   std::set<Int64> new_faces; // ^--- Pareil pour les faces
@@ -160,44 +156,7 @@ subdivideMesh([[maybe_unused]] IPrimaryMesh* mesh)
   nodes_to_add.reserve(nb_node_to_add_total);
   nodes_to_add_coords.reserve(nb_node_to_add_total);
 
-  IParallelMng* pm = mesh->parallelMng();
-  // Calcul max_node_uid
-
-  Int64 max_node_uid = 0;
   Arcane::VariableNodeReal3& nodes_coordinates = mesh->nodesCoordinates();
-
-  ENUMERATE_NODE(inode,mesh->allNodes())
-  {
-    const Node& node = *inode;
-    const Int64 uid = node.uniqueId();
-    if (uid>max_node_uid)
-    max_node_uid = uid;
-  }
-  Integer m_max_node_uid = 0, m_next_node_uid;
-  if (pm->commSize() > 1)
-    m_max_node_uid = pm->reduce(Parallel::ReduceMax, max_node_uid);
-  else
-    m_max_node_uid = max_node_uid;
-  info() << "NODE_UID_INFO: MY_MAX_UID=" << max_node_uid << " GLOBAL=" << m_max_node_uid;
-  m_next_node_uid = m_max_node_uid + 1 + my_rank;
-
-  // Calcul max_cell_uid
-  Int64 max_cell_uid = 0;
-  ENUMERATE_CELL(icell,mesh->allCells())
-  {
-    const Cell& cell = *icell;
-    const Int64 uid = cell.uniqueId();
-    if (uid>max_cell_uid)
-    max_cell_uid = uid;
-  }
-  Integer m_max_cell_uid = 0;
-  if (pm->commSize() > 1)
-    m_max_cell_uid = pm->reduce(Parallel::ReduceMax, max_cell_uid);
-  else
-    m_max_cell_uid = max_cell_uid;
-
-  std::cout << "MAXCELLUID " << max_cell_uid << " " << m_max_cell_uid << std::endl;
-  max_cell_uid ++;
   Integer ind_new_cell = 0 ;
 
   ARCANE_ASSERT((mesh->nbEdge() == 0 ),("Wrong number of edge"));
@@ -252,12 +211,10 @@ subdivideMesh([[maybe_unused]] IPrimaryMesh* mesh)
           node_in_cell[new_nodes_on_edges_couple[i][0]],
           node_in_cell[new_nodes_on_edges_couple[i][1]],
         };
-        Int32 min_index=0; // tmp[0]
         if( tmp[0] > tmp[1]   ){
             std::swap(tmp[0],tmp[1]);
-            min_index=1;
         }
-        std::cout << "#TMP " << "cell" << cell.uniqueId() << ' ' << tmp << std::endl;
+        debug() << "#TMP " << "cell" << cell.uniqueId() << ' ' << tmp ;
         node_in_cell[index_27] = Arcane::MeshUtils::generateHashUniqueId(tmp.constView());
         // Coord on edge
         Arcane::Real3 middle_coord(0.0,0.0,0.0);
@@ -330,7 +287,7 @@ subdivideMesh([[maybe_unused]] IPrimaryMesh* mesh)
           new_nodes.insert(node_in_cell[i]);
         }
       }
-      std::cout << nodes_to_add_coords.size() << " " << nodes_to_add.size() << std::endl;
+      debug() << nodes_to_add_coords.size() << " " << nodes_to_add.size() ;
 
       ARCANE_ASSERT((nodes_to_add_coords.size() == static_cast<size_t>(nodes_to_add.size())),("Has to be same"));
       // Génération des Faces
@@ -368,7 +325,7 @@ subdivideMesh([[maybe_unused]] IPrimaryMesh* mesh)
           faces_to_add.add(node_in_cell[internal_faces[i][3]]);
           // Ajouter dans tableau uids faces
           faces_uids.add(uidface);
-          std::cout << 6+ nb_face_to_add << " " << uidface << std::endl;
+          debug() << 6+ nb_face_to_add << " " << uidface ;
           nb_face_to_add++;
           new_faces.insert(uidface);
         }
@@ -473,9 +430,9 @@ subdivideMesh([[maybe_unused]] IPrimaryMesh* mesh)
     UniqueArray<Int32> face_lid(faces_uids.size());
 
     mesh->modifier()->addFaces(MeshModifierAddFacesArgs(nb_face_to_add, faces_to_add.constView(),face_lid.view()));
-    std::cout << "addOneFac" << nb_face_to_add << std::endl;
+    debug() << "addOneFac" << nb_face_to_add ;
     mesh->faceFamily()->itemsUniqueIdToLocalId(face_lid,faces_uids,true);
-    std::cout << "NB_FACE_ADDED AFTER " << face_lid.size() << " " << new_faces.size() << std::endl ;
+    debug() << "NB_FACE_ADDED AFTER " << face_lid.size() << " " << new_faces.size()  ;
 
     ARCANE_ASSERT((nb_face_to_add == (faces_to_add.size()/6)),("non consistant number of faces"));
 
@@ -510,7 +467,7 @@ subdivideMesh([[maybe_unused]] IPrimaryMesh* mesh)
     ENUMERATE_(Node, inode, mesh->allNodes()){
       Node node = *inode;
       auto it = std::min_element(node.cells().begin(),node.cells().end());
-      Cell cell = node.cell(std::distance(node.cells().begin(),it));
+      Cell cell = node.cell(static_cast<Int32>(std::distance(node.cells().begin(),it)));
       node_uid_to_owner[node.uniqueId().asInt64()] = cell.owner();
     }
 
@@ -519,7 +476,7 @@ subdivideMesh([[maybe_unused]] IPrimaryMesh* mesh)
     ENUMERATE_(Face, iface, mesh->allFaces()){
       Face face = *iface;
       auto it = std::min_element(face.cells().begin(),face.cells().end());
-      Cell cell = face.cell(std::distance(face.cells().begin(),it));
+      Cell cell = face.cell(static_cast<Int32>(std::distance(face.cells().begin(),it)));
       face_uid_to_owner[face.uniqueId().asInt64()] = cell.owner();
     }
 
