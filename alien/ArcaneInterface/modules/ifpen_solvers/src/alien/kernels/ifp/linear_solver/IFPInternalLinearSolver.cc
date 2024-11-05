@@ -297,15 +297,17 @@ IFPInternalLinearSolver::internalPrintInfo() const
   Real loop_solver_count = 0;
   F2C(ifpsolvergetperfcount)
   (&init_solver_count, &init_precond_count, &normalyze_count, &loop_solver_count);
-  alien_info([&] {
-    cout() << "|--------------------------------------------------------|";
-    cout() << "| IFPSolver             :                                |";
-    cout() << "|--------------------------------------------------------|";
-    cout() << "| init solver time      : " << init_solver_count;
-    cout() << "| init precond time     : " << init_precond_count;
-    cout() << "| normalisation time    : " << normalyze_count;
-    cout() << "| loop solver time      : " << loop_solver_count;
-    cout() << "|--------------------------------------------------------|";
+
+  // TODO: find a way to automatically set spaces
+  alien_info([&]{
+    cout() <<     "|--------------------------------------------------------|\n"
+    "              | IFPSolver             :                                |\n"
+    "              |--------------------------------------------------------|\n"
+    "              | init solver time      : " << Arccore::Trace::Precision(4,init_solver_count,true) << "\n"
+    "              | init precond time     : " << Arccore::Trace::Precision(4,init_precond_count,true) << "\n"
+    "              | normalisation time    : " << Arccore::Trace::Precision(4,normalyze_count,true) << "\n"
+    "              | loop solver time      : " << Arccore::Trace::Precision(4,loop_solver_count,true) << "\n"
+    "              |--------------------------------------------------------|";
   });
 }
 
