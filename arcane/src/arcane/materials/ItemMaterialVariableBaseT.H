@@ -374,8 +374,10 @@ _isValidAndUsedAndGlobalUsed(PrivatePartType* partial_var)
 
 template <typename Traits> void
 ItemMaterialVariableBase<Traits>::
-_resizeForIndexer(Int32 index, RunQueue& queue)
+_resizeForIndexer(ResizeVariableIndexerArgs& args)
 {
+  Int32 index = args.m_var_index;
+  RunQueue& queue = args.m_queue;
   _setView(0);
   PrivatePartType* partial_var = m_vars[index + 1];
   if (_isValidAndUsedAndGlobalUsed(partial_var)) {
@@ -390,7 +392,13 @@ _resizeForIndexer(Int32 index, RunQueue& queue)
     Traits::resizeWithReserve(partial_var, indexers[index]->maxIndexInMultipleArray(), ratio);
     this->_setView(index + 1);
   }
-  _copyHostViewsToViews(&queue);
+  if (args.isUseOneCommand()) {
+    auto dest = asWritableBytes(m_device_views).smallView();
+    auto source = asBytes(m_host_views).smallView();
+    args.addOneCopyData(source,dest,1);
+  }
+  else
+    _copyHostViewsToViews(&queue);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -400,13 +408,15 @@ template <typename Traits> void
 ItemMaterialVariableBase<Traits>::
 _copyHostViewsToViews(RunQueue* queue)
 {
+  auto dest = asWritableBytes(m_device_views);
+  auto source = asBytes(m_host_views);
   if (queue) {
-    Accelerator::MemoryCopyArgs copy_args(asWritableBytes(m_device_views),asBytes(m_host_views));
+    Accelerator::MemoryCopyArgs copy_args(dest,source);
     copy_args.addAsync(true);
     queue->copyMemory(copy_args);
   }
   else
-    MemoryUtils::copy(asWritableBytes(m_device_views),asBytes(m_host_views));
+    MemoryUtils::copy(dest,source);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -435,8 +445,8 @@ _copyBetweenPartialAndGlobal(const CopyBetweenPartialAndGlobalArgs& args)
   }
   if (use_generic) {
     Int32 data_type_size = dataTypeSize();
-    Span<const std::byte> input_bytes(Traits::toBytes(input));
-    Span<std::byte> output_bytes(Traits::toBytes(output));
+    SmallSpan<const std::byte> input_bytes(Traits::toBytes(input));
+    SmallSpan<std::byte> output_bytes(Traits::toBytes(output));
     if (args.isUseOneCommand())
       args.addOneCopyData(input_bytes, output_bytes, data_type_size);
     else

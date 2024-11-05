@@ -709,22 +709,40 @@ _removeItemsInGroup(ItemGroup cells, SmallSpan<const Int32> removed_ids)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Redimensionne l'index \a var_index des variables
+ * \brief Redimensionne l'index \a var_index des variables.
  */
 void IncrementalComponentModifier::
 _resizeVariablesIndexer(Int32 var_index)
 {
-  Accelerator::RunQueuePool& queue_pool = m_material_mng->_internalApi()->asyncRunQueuePool();
-  Accelerator::ProfileRegion ps(queue_pool[0],"ResizeVariableIndexer");
+  RunQueue& queue = m_material_mng->_internalApi()->runQueue();
+  RunQueue::ScopedAsync sc(&m_queue);
+  Accelerator::ProfileRegion ps(queue, "ResizeVariableIndexer");
+  ResizeVariableIndexerArgs resize_args(var_index, queue);
+  // Regarde si on n'utilise qu'une seule commande pour les copies des vues.
+  // Pour l'instant (novembre 2024) on ne l'utilise par défaut que si
+  // on est sur accélérateur.
+  bool do_one_command = (m_use_generic_copy_between_pure_and_partial == 2);
+  UniqueArray<CopyBetweenDataInfo>& copy_data = m_work_info.m_host_variables_copy_data;
+  if (do_one_command) {
+    copy_data.clear();
+    copy_data.reserve(m_material_mng->nbVariable());
+    resize_args.m_copy_data = &copy_data;
+  }
 
-  Int32 index = 0;
   auto func1 = [&](IMeshMaterialVariable* mv) {
     auto* mvi = mv->_internalApi();
-    mvi->resizeForIndexer(var_index, queue_pool[index]);
-    ++index;
+    mvi->resizeForIndexer(resize_args);
   };
   functor::apply(m_material_mng, &MeshMaterialMng::visitVariables, func1);
-  queue_pool.barrier();
+
+  if (do_one_command) {
+    // Copie 'copy_data' dans le tableau correspondant pour le device éventuel.
+    MDSpan<CopyBetweenDataInfo, MDDim1> x(copy_data.data(), MDIndex<1>(copy_data.size()));
+    m_work_info.m_variables_copy_data.copy(x, &queue);
+    _applyCopyVariableViews(queue);
+  }
+
+  queue.barrier();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -759,7 +777,7 @@ _copyBetweenPartialsAndGlobals(const CopyBetweenPartialAndGlobalArgs& args)
 
   if (do_copy) {
     bool do_one_command = (m_use_generic_copy_between_pure_and_partial == 2);
-    UniqueArray<CopyBetweenPartialAndGlobalOneData>& copy_data = m_work_info.m_host_variables_copy_data;
+    UniqueArray<CopyBetweenDataInfo>& copy_data = m_work_info.m_host_variables_copy_data;
     copy_data.clear();
     copy_data.reserve(m_material_mng->nbVariable());
 
@@ -778,7 +796,7 @@ _copyBetweenPartialsAndGlobals(const CopyBetweenPartialAndGlobalArgs& args)
     functor::apply(m_material_mng, &MeshMaterialMng::visitVariables, func2);
     if (do_one_command) {
       // Copie 'copy_data' dans le tableau correspondant pour le device éventuel.
-      MDSpan<CopyBetweenPartialAndGlobalOneData, MDDim1> x(copy_data.data(), MDIndex<1>(copy_data.size()));
+      MDSpan<CopyBetweenDataInfo, MDDim1> x(copy_data.data(), MDIndex<1>(copy_data.size()));
       m_work_info.m_variables_copy_data.copy(x, &queue);
       _applyCopyBetweenPartialsAndGlobals(args2, queue);
     }
@@ -805,8 +823,8 @@ _applyCopyBetweenPartialsAndGlobals(const CopyBetweenPartialAndGlobalArgs& args,
 
   if (is_global_to_partial)
     std::swap(output_indexes, input_indexes);
-  SmallSpan<const CopyBetweenPartialAndGlobalOneData> host_copy_data(m_work_info.m_host_variables_copy_data);
-  SmallSpan<const CopyBetweenPartialAndGlobalOneData> copy_data(m_work_info.m_variables_copy_data.to1DSmallSpan());
+  SmallSpan<const CopyBetweenDataInfo> host_copy_data(m_work_info.m_host_variables_copy_data);
+  SmallSpan<const CopyBetweenDataInfo> copy_data(m_work_info.m_variables_copy_data.to1DSmallSpan());
   const Int32 nb_value = input_indexes.size();
   if (nb_value != output_indexes.size())
     ARCANE_FATAL("input_indexes ({0}) and output_indexes ({1}) are different", nb_value, output_indexes);
@@ -834,6 +852,49 @@ _applyCopyBetweenPartialsAndGlobals(const CopyBetweenPartialAndGlobalArgs& args,
     Int32 input_base = input_indexes[i] * dim2_size;
     for (Int32 j = 0; j < dim2_size; ++j)
       output[output_base + j] = input[input_base + j];
+  };
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Effectue la copie des vues pour les variables.
+ *
+ * Cette méthode permet de faire en une seule RunCommand les copies entre
+ * les vues CPU et accélérateurs des variables
+ */
+void IncrementalComponentModifier::
+_applyCopyVariableViews(RunQueue& queue)
+{
+  SmallSpan<const CopyBetweenDataInfo> host_copy_data(m_work_info.m_host_variables_copy_data);
+  SmallSpan<const CopyBetweenDataInfo> copy_data(m_work_info.m_variables_copy_data.to1DSmallSpan());
+
+  const Int32 nb_copy = host_copy_data.size();
+  if (nb_copy == 0)
+    return;
+
+  // Suppose que toutes les vues ont les mêmes tailles.
+  // C'est le cas car les vues sont composées de 'ArrayView<>' et 'Array2View' et ces
+  // deux classes ont la même taille.
+  // TODO: il serait préférable de prendre le max des tailles et dans la commande
+  // de ne faire la copie que si on ne dépasse pas la taille.
+  Int32 nb_value = host_copy_data[0].m_input.size();
+
+  for (Int32 i = 0; i < nb_copy; ++i) {
+    const CopyBetweenDataInfo& h = host_copy_data[i];
+    ARCANE_CHECK_ACCESSIBLE_POINTER(queue, h.m_output.data());
+    ARCANE_CHECK_ACCESSIBLE_POINTER(queue, h.m_input.data());
+    if (h.m_input.size() != nb_value)
+      ARCANE_FATAL("Invalid nb_value '{0} i={1} expected={2}", h.m_input.size(), nb_value);
+  }
+
+  auto command = makeCommand(queue);
+  command << RUNCOMMAND_LOOP2(iter, nb_copy, nb_value)
+  {
+    auto [icopy, i] = iter();
+    auto input = copy_data[icopy].m_input;
+    auto output = copy_data[icopy].m_output;
+    output[i] = input[i];
   };
 }
 

@@ -59,7 +59,7 @@ initialize(Int32 max_local_id, Int32 nb_material, Int32 nb_environment, RunQueue
 
   // Utilise toujours la mémoire du device pour le tableau contenant les données de copie
   if (queue.isAcceleratorPolicy())
-    m_variables_copy_data = NumArray<CopyBetweenPartialAndGlobalOneData, MDDim1>(eMemoryRessource::Device);
+    m_variables_copy_data = NumArray<CopyBetweenDataInfo, MDDim1>(eMemoryRessource::Device);
 }
 
 /*---------------------------------------------------------------------------*/
