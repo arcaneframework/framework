@@ -366,7 +366,8 @@ class ItemMaterialVariableBase
   VariableRef* m_global_variable_ref = nullptr;
   //! Variables pour les différents matériaux.
   UniqueArray<PrivatePartType*> m_vars;
-  UniqueArray<ContainerViewType> m_views;
+  //! Liste des vues visibles uniquement depuis l'accélérateur
+  UniqueArray<ContainerViewType> m_device_views;
   //! Liste des vues visibles uniquement depuis l'ĥote
   UniqueArray<ContainerViewType> m_host_views;
 
