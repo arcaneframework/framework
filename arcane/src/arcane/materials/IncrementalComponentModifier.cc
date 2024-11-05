@@ -709,7 +709,7 @@ _removeItemsInGroup(ItemGroup cells, SmallSpan<const Int32> removed_ids)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Redimensionne l'index \a var_index des variables
+ * \brief Redimensionne l'index \a var_index des variables.
  */
 void IncrementalComponentModifier::
 _resizeVariablesIndexer(Int32 var_index)
@@ -718,7 +718,10 @@ _resizeVariablesIndexer(Int32 var_index)
   RunQueue::ScopedAsync sc(&m_queue);
   Accelerator::ProfileRegion ps(queue, "ResizeVariableIndexer");
   ResizeVariableIndexerArgs resize_args(var_index, queue);
-  bool do_one_command = true;
+  // Regarde si on n'utilise qu'une seule commande pour les copies des vues.
+  // Pour l'instant (novembre 2024) on ne l'utilise par défaut que si
+  // on est sur accélérateur.
+  bool do_one_command = (m_use_generic_copy_between_pure_and_partial == 2);
   UniqueArray<CopyBetweenDataInfo>& copy_data = m_work_info.m_host_variables_copy_data;
   if (do_one_command) {
     copy_data.clear();
