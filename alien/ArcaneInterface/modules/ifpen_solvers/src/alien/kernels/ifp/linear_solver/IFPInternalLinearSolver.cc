@@ -182,14 +182,17 @@ IFPInternalLinearSolver::getStatus() const
 bool
 IFPInternalLinearSolver::solve(const MatrixType& A, const VectorType& b, VectorSolType& x)
 {
+  alien_info(m_print_info, [&] {
+    cout() << "|--------------------------------------------------------|";
+    cout() << "| Start Linear Solver #" << m_stat.solveCount();
+  });
+
   if (m_parallel_mng == nullptr)
     return true;
 
   bool isSolverOk = false;
 
   SolverStatSentry<IFPInternalLinearSolver> sentry(m_stater, BaseSolverStater::ePrepare);
-
-  // m_stater.startPrepareMeasure();
 
   using namespace Alien;
   // C'est a ce moment la, que la IFP matrice est construite.
@@ -221,21 +224,31 @@ IFPInternalLinearSolver::solve(const MatrixType& A, const VectorType& b, VectorS
     m_ilu0_algo = 4;
   sentry.release();
 
-  SolverStatSentry<IFPInternalLinearSolver> sentry2(m_stater, BaseSolverStater::eSolve);
-  if (matrix.internal()->m_system_is_resizeable == true)
-    isSolverOk = _solveRs(matrix.internal()->m_system_is_resizeable);
-  else
-    isSolverOk = _solve();
+  {
+    SolverStatSentry<IFPInternalLinearSolver> sentry2(m_stater, BaseSolverStater::eSolve);
+    if (matrix.internal()->m_system_is_resizeable == true)
+      isSolverOk = _solveRs(matrix.internal()->m_system_is_resizeable);
+    else
+      isSolverOk = _solve();
 
-  if (isSolverOk) {
-    Alien::IFPSolverInternal::VectorInternal::setRepresentationSwitch(true);
-    IFPVector& sol = x.impl()->get<BackEnd::tag::ifpsolver>(true);
-    sol.setResizable(rhs.isResizable());
-    Alien::IFPSolverInternal::VectorInternal::setRepresentationSwitch(false);
-    sol.internal()->m_filled = true;
-  } else {
-    // La valeur de b en cas d'échec n'est actuellement pas bien définie : à tester.
+    if (isSolverOk) {
+      Alien::IFPSolverInternal::VectorInternal::setRepresentationSwitch(true);
+      IFPVector& sol = x.impl()->get<BackEnd::tag::ifpsolver>(true);
+      sol.setResizable(rhs.isResizable());
+      Alien::IFPSolverInternal::VectorInternal::setRepresentationSwitch(false);
+      sol.internal()->m_filled = true;
+    } else {
+      // La valeur de b en cas d'échec n'est actuellement pas bien définie : à tester.
+    }
   }
+
+  if(m_print_info)
+    internalPrintInfo();
+
+  alien_info(m_print_info, [&] {
+    cout() << "| End Linear Solver";
+    cout() << "|--------------------------------------------------------|";
+  });
 
   return isSolverOk;
 }
@@ -247,24 +260,12 @@ IFPInternalLinearSolver::_solve()
 {
   bool m_resizeable = false;
 
-  alien_info(m_print_info, [&] {
-    cout() << "|--------------------------------------------------------|";
-    cout() << "| Start Linear Solver #" << m_stat.solveCount();
-  });
-
   F2C(ifpsolversolve)
   (&m_max_iteration, &m_stop_criteria_value, &m_precond_option, &m_precond_pressure,
       &m_normalisation_pivot, &m_ilu0_algo, &m_resizeable);
   F2C(ifpsolvergetsolverstatus)
   (&m_status.error, &m_status.iteration_count, &m_status.residual);
   m_status.succeeded = (m_status.error == 0);
-
-  // m_stater.stopSolveMeasure(m_status);
-
-  alien_info(m_print_info, [&] {
-    cout() << "| End Linear Solver";
-    cout() << "|--------------------------------------------------------|";
-  });
 
   return m_status.succeeded;
 }
@@ -273,27 +274,12 @@ IFPInternalLinearSolver::_solve()
 bool
 IFPInternalLinearSolver::_solveRs(bool m_resizeable)
 {
-  alien_info(m_print_info, [&] {
-    cout() << "|--------------------------------------------------------|";
-    cout() << "| Start Linear Solver #" << m_stat.solveCount();
-  });
-
-  // m_stater.startSolveMeasure();
-
   F2C(ifpsolversolve)
   (&m_max_iteration, &m_stop_criteria_value, &m_precond_option, &m_precond_pressure,
       &m_normalisation_pivot, &m_ilu0_algo, &m_resizeable);
   F2C(ifpsolvergetsolverstatus)
   (&m_status.error, &m_status.iteration_count, &m_status.residual);
   m_status.succeeded = (m_status.error == 0);
-
-  // m_stater.stopSolveMeasure(m_status);
-
-  alien_info(m_print_info, [&] {
-    cout() << "| End Linear Solver";
-    cout() << "|--------------------------------------------------------|";
-    internalPrintInfo();
-  });
 
   return m_status.succeeded;
 }
@@ -338,7 +324,6 @@ IFPInternalLinearSolverFactory(
 #include <alien/kernels/ifp/linear_solver/IFPSolverProperty.h>
 #include <ALIEN/axl/IFPLinearSolver_IOptions.h>
 #include <ALIEN/axl/IFPLinearSolver_StrongOptions.h>
-
 
 namespace Alien {
 
