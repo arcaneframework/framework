@@ -327,19 +327,19 @@ class ItemMaterialVariableBase
 
  public:
 
-  void setValue(MatVarIndex mvi,SubInputViewType v)
+  void setValue(MatVarIndex mvi, SubInputViewType v)
   {
-    Traits::setValue(m_views[mvi.arrayIndex()][mvi.valueIndex()],v);
+    Traits::setValue(m_host_views[mvi.arrayIndex()][mvi.valueIndex()],v);
   }
 
-  void setFillValue(MatVarIndex mvi,const DataType& v)
+  void setFillValue(MatVarIndex mvi, const DataType& v)
   {
-    Traits::setValue(m_views[mvi.arrayIndex()][mvi.valueIndex()],v);
+    Traits::setValue(m_host_views[mvi.arrayIndex()][mvi.valueIndex()],v);
   }
 
   SubConstViewType value(MatVarIndex mvi) const
   {
-    return m_views[mvi.arrayIndex()][mvi.valueIndex()];
+    return m_host_views[mvi.arrayIndex()][mvi.valueIndex()];
   }
 
  protected:
@@ -366,7 +366,8 @@ class ItemMaterialVariableBase
   VariableRef* m_global_variable_ref = nullptr;
   //! Variables pour les différents matériaux.
   UniqueArray<PrivatePartType*> m_vars;
-  UniqueArray<ContainerViewType> m_views;
+  //! Liste des vues visibles uniquement depuis l'accélérateur
+  UniqueArray<ContainerViewType> m_device_views;
   //! Liste des vues visibles uniquement depuis l'ĥote
   UniqueArray<ContainerViewType> m_host_views;
 
@@ -434,17 +435,17 @@ class ItemMaterialVariableScalar
 
  public:
 
-  ArrayView<DataType>* views() { return this->m_views.data(); }
+  ArrayView<DataType>* views() { return this->m_host_views.data(); }
 
  protected:
 
-  ArrayView<ArrayView<DataType>> _containerView() { return this->m_views; }
+  ArrayView<ArrayView<DataType>> _containerView() { return this->m_host_views; }
 
  public:
   
   DataType operator[](MatVarIndex mvi) const
   {
-    return this->m_views[mvi.arrayIndex()][mvi.valueIndex()];
+    return this->m_host_views[mvi.arrayIndex()][mvi.valueIndex()];
   }
 
   using BaseClass::setValue;
@@ -487,7 +488,7 @@ class ItemMaterialVariableScalar
   using BaseClass::m_global_variable;
   using BaseClass::m_global_variable_ref;
   using BaseClass::m_vars;
-  using BaseClass::m_views;
+  using BaseClass::m_host_views;
 
  private:
 
@@ -605,7 +606,7 @@ class ItemMaterialVariableArray
  public:
 
   ARCANE_DEPRECATED_REASON("Y2022: Do not use internal storage accessor")
-  Array2View<DataType>* views() { return m_views.data(); }
+  Array2View<DataType>* views() { return m_host_views.data(); }
 
  public:
 
@@ -635,7 +636,7 @@ class ItemMaterialVariableArray
 
   ConstArrayView<DataType> operator[](MatVarIndex mvi) const
   {
-    return m_views[mvi.arrayIndex()][mvi.valueIndex()];
+    return m_host_views[mvi.arrayIndex()][mvi.valueIndex()];
   }
 
   using BaseClass::setValue;
@@ -644,14 +645,14 @@ class ItemMaterialVariableArray
  protected:
 
   using BaseClass::m_p;
-  ArrayView<Array2View<DataType>> _containerView() { return m_views; }
+  ArrayView<Array2View<DataType>> _containerView() { return m_host_views; }
 
  private:
 
   using BaseClass::m_global_variable;
   using BaseClass::m_global_variable_ref;
   using BaseClass::m_vars;
-  using BaseClass::m_views;
+  using BaseClass::m_host_views;
 
   void _copyToBufferLegacy(SmallSpan<const MatVarIndex> matvar_indexes,
                            Span<std::byte> bytes) const;

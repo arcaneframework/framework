@@ -42,6 +42,22 @@
 namespace Arcane::Materials
 {
 
+namespace
+{
+
+// Allocateur utilisé pour les vues
+// On utilise la mémoire de l'accélérateur si l'exécution se fait sur accélérateur
+MemoryAllocationOptions
+_getViewAllocator(IMeshMaterialMng* mm)
+{
+  eMemoryRessource r = eMemoryRessource::Host;
+  if (mm->_internalApi()->runQueue().isAcceleratorPolicy())
+    r = eMemoryRessource::Device;
+  return MemoryUtils::getAllocationOptions(r);
+}
+
+}
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -53,9 +69,10 @@ ItemMaterialVariableBase(const MaterialVariableBuildInfo& v,
 : MeshMaterialVariable(v,mvs)
 , m_global_variable(global_var)
 , m_global_variable_ref(global_var_ref)
-, m_views(MemoryUtils::getAllocatorForMostlyReadOnlyData())
+, m_device_views(_getViewAllocator(m_p->materialMng()))
+, m_host_views(MemoryUtils::getAllocationOptions(eMemoryRessource::HostPinned))
 {
-  m_views.setDebugName(String("ItemMaterialVariableViews") + v.name());
+  m_device_views.setDebugName(String("ItemMaterialVariableViews") + v.name());
 }
 
 
@@ -96,7 +113,7 @@ _init(ArrayView<PrivatePartType*> vars)
     ARCANE_FATAL("Internal error: _init() already called");
   m_vars.addRange(vars);
   Integer nb_var = m_vars.size();
-  m_views.resize(nb_var);
+  m_device_views.resizeNoInit(nb_var);
   m_host_views.resize(nb_var);
   m_views_as_bytes.resize(nb_var);
   // Il faut maintenir une référence sur les variables qu'on possède pour
@@ -383,14 +400,13 @@ template <typename Traits> void
 ItemMaterialVariableBase<Traits>::
 _copyHostViewsToViews(RunQueue* queue)
 {
-  const bool use_queue = true;
-  if (queue && use_queue){
-    Accelerator::MemoryCopyArgs copy_args(asWritableBytes(m_views),asBytes(m_host_views));
+  if (queue) {
+    Accelerator::MemoryCopyArgs copy_args(asWritableBytes(m_device_views),asBytes(m_host_views));
     copy_args.addAsync(true);
     queue->copyMemory(copy_args);
   }
   else
-    MemoryUtils::copy(asWritableBytes(m_views),asBytes(m_host_views));
+    MemoryUtils::copy(asWritableBytes(m_device_views),asBytes(m_host_views));
 }
 
 /*---------------------------------------------------------------------------*/
@@ -457,7 +473,7 @@ _initializeNewItems(const ComponentItemListBuilder& list_builder, RunQueue& queu
   DataType zero = DataType();
 
   auto command = makeCommand(queue);
-  SmallSpan<ContainerViewType> views = m_views.smallSpan();
+  SmallSpan<ContainerViewType> views = m_device_views.smallSpan();
 
   ARCANE_CHECK_ACCESSIBLE_POINTER(queue, views.data());
   ARCANE_CHECK_ACCESSIBLE_POINTER(queue, partial_matvar.data());
