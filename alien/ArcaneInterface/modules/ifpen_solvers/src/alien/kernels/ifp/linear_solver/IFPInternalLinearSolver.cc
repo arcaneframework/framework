@@ -222,25 +222,28 @@ IFPInternalLinearSolver::solve(const MatrixType& A, const VectorType& b, VectorS
   if (!matrix.getSymmetricProfile()
       && m_options->ilu0Algo() == IFPSolverProperty::Optimized)
     m_ilu0_algo = 4;
+
   sentry.release();
 
-  {
-    SolverStatSentry<IFPInternalLinearSolver> sentry2(m_stater, BaseSolverStater::eSolve);
-    if (matrix.internal()->m_system_is_resizeable == true)
-      isSolverOk = _solveRs(matrix.internal()->m_system_is_resizeable);
-    else
-      isSolverOk = _solve();
 
-    if (isSolverOk) {
-      Alien::IFPSolverInternal::VectorInternal::setRepresentationSwitch(true);
-      IFPVector& sol = x.impl()->get<BackEnd::tag::ifpsolver>(true);
-      sol.setResizable(rhs.isResizable());
-      Alien::IFPSolverInternal::VectorInternal::setRepresentationSwitch(false);
-      sol.internal()->m_filled = true;
-    } else {
-      // La valeur de b en cas d'échec n'est actuellement pas bien définie : à tester.
-    }
+  SolverStatSentry<IFPInternalLinearSolver> sentry2(m_stater, BaseSolverStater::eSolve);
+
+  if (matrix.internal()->m_system_is_resizeable == true)
+    isSolverOk = _solveRs(matrix.internal()->m_system_is_resizeable);
+  else
+    isSolverOk = _solve();
+
+  if (isSolverOk) {
+    Alien::IFPSolverInternal::VectorInternal::setRepresentationSwitch(true);
+    IFPVector& sol = x.impl()->get<BackEnd::tag::ifpsolver>(true);
+    sol.setResizable(rhs.isResizable());
+    Alien::IFPSolverInternal::VectorInternal::setRepresentationSwitch(false);
+    sol.internal()->m_filled = true;
+  } else {
+    // La valeur de b en cas d'échec n'est actuellement pas bien définie : à tester.
   }
+
+  sentry2.release();
 
   if(m_print_info)
     internalPrintInfo();
