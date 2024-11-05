@@ -758,7 +758,7 @@ _copyBetweenPartialsAndGlobals(const CopyBetweenPartialAndGlobalArgs& args)
 
   if (do_copy) {
     bool do_one_command = (m_use_generic_copy_between_pure_and_partial == 2);
-    UniqueArray<CopyBetweenPartialAndGlobalOneData>& copy_data = m_work_info.m_host_variables_copy_data;
+    UniqueArray<CopyBetweenDataInfo>& copy_data = m_work_info.m_host_variables_copy_data;
     copy_data.clear();
     copy_data.reserve(m_material_mng->nbVariable());
 
@@ -777,7 +777,7 @@ _copyBetweenPartialsAndGlobals(const CopyBetweenPartialAndGlobalArgs& args)
     functor::apply(m_material_mng, &MeshMaterialMng::visitVariables, func2);
     if (do_one_command) {
       // Copie 'copy_data' dans le tableau correspondant pour le device éventuel.
-      MDSpan<CopyBetweenPartialAndGlobalOneData, MDDim1> x(copy_data.data(), MDIndex<1>(copy_data.size()));
+      MDSpan<CopyBetweenDataInfo, MDDim1> x(copy_data.data(), MDIndex<1>(copy_data.size()));
       m_work_info.m_variables_copy_data.copy(x, &queue);
       _applyCopyBetweenPartialsAndGlobals(args2, queue);
     }
@@ -804,8 +804,8 @@ _applyCopyBetweenPartialsAndGlobals(const CopyBetweenPartialAndGlobalArgs& args,
 
   if (is_global_to_partial)
     std::swap(output_indexes, input_indexes);
-  SmallSpan<const CopyBetweenPartialAndGlobalOneData> host_copy_data(m_work_info.m_host_variables_copy_data);
-  SmallSpan<const CopyBetweenPartialAndGlobalOneData> copy_data(m_work_info.m_variables_copy_data.to1DSmallSpan());
+  SmallSpan<const CopyBetweenDataInfo> host_copy_data(m_work_info.m_host_variables_copy_data);
+  SmallSpan<const CopyBetweenDataInfo> copy_data(m_work_info.m_variables_copy_data.to1DSmallSpan());
   const Int32 nb_value = input_indexes.size();
   if (nb_value != output_indexes.size())
     ARCANE_FATAL("input_indexes ({0}) and output_indexes ({1}) are different", nb_value, output_indexes);
