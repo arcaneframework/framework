@@ -42,6 +42,22 @@
 namespace Arcane::Materials
 {
 
+namespace
+{
+
+// Allocateur utilisé pour les vues
+// On utilise la mémoire de l'accélérateur si l'exécution se fait sur accélérateur
+MemoryAllocationOptions
+_getViewAllocator(IMeshMaterialMng* mm)
+{
+  eMemoryRessource r = eMemoryRessource::Host;
+  if (mm->_internalApi()->runQueue().isAcceleratorPolicy())
+    r = eMemoryRessource::Device;
+  return MemoryUtils::getAllocationOptions(r);
+}
+
+}
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -53,7 +69,7 @@ ItemMaterialVariableBase(const MaterialVariableBuildInfo& v,
 : MeshMaterialVariable(v,mvs)
 , m_global_variable(global_var)
 , m_global_variable_ref(global_var_ref)
-, m_views(MemoryUtils::getDeviceOrHostAllocator())
+, m_views(_getViewAllocator(m_p->materialMng()))
 , m_host_views(MemoryUtils::getAllocationOptions(eMemoryRessource::HostPinned))
 {
   m_views.setDebugName(String("ItemMaterialVariableViews") + v.name());
