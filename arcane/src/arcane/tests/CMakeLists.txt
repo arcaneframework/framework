@@ -674,7 +674,9 @@ arcane_add_test_parallel(hydro3_cartesian_8proc testHydro-3-cartesian.arc 8 "-m 
 
 arcane_add_test(ArcaneBasicMeshsubdividerservice1-subdivide1 testArcaneBasicMeshSubdividerService1-subdivide1.arc -m 1)
 arcane_add_test_parallel_thread(arcanebasicmeshsubdividerservice1-subdivide1 testArcaneBasicMeshSubdividerService1-subdivide1.arc 4 -m 1)
-arcane_add_test_parallel_thread(arcanebasicmeshsubdividerservice1-subdivide1-parmetis testArcaneBasicMeshSubdividerService1-subdivide1-parmetis.arc 4 -m 1)
+if( Parmetis_FOUND )
+  arcane_add_test_parallel_thread(arcanebasicmeshsubdividerservice1-subdivide1-parmetis testArcaneBasicMeshSubdividerService1-subdivide1-parmetis.arc 4 -m 1)
+endif()
 
 arcane_add_test_parallel_all(hydro3_checkpoint_meshservice testHydro-3-checkpoint-meshservice.arc 3 4 -c 3 -m 10)
 arcane_add_test(hydro5 testHydro-5.arc -m 50 -We,ARCANE_MASTER_HAS_OUTPUT_FILE,1)
