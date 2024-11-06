@@ -562,7 +562,19 @@ if (NOT ARCANE_WANT_NOMPI)
   arcane_find_package(MPI)
 endif()
 arcane_find_package(Valgrind)
-include(${CMAKE_CURRENT_LIST_DIR}/cmake/FindFlexLM.cmake)
+
+# Définir la variable PROTECTION comme valeur par défaut : FLEXLM
+set(PROTECTION "FLEXLM" CACHE STRING "Specify the license system (FLEXLM or RLM)")
+
+# Vérifiez la valeur de PROTECTION
+if(PROTECTION STREQUAL "FLEXLM")
+    include(${CMAKE_CURRENT_LIST_DIR}/cmake/FindFlexLM.cmake)
+elseif(PROTECTION STREQUAL "RLM")
+    include(${CMAKE_CURRENT_LIST_DIR}/cmake/FindRLM.cmake)
+else()
+    message(FATAL_ERROR "Invalid value for PROTECTION: ${PROTECTION}. Please use FLEXLM or RLM.")
+endif()
+
 message(STATUS "----------------------------------------------------")
 
 # default package list
@@ -662,9 +674,9 @@ if(ARCANE_WANT_LONGDOUBLE)
 endif()
 
 IF(NOT FLEXLM_FOUND)
-  MESSAGE(STATUS "PACKAGE: FlexLM         : not found")
+  MESSAGE(STATUS "PACKAGE: ${PROTECTION_TYPE}         : not found")
 ELSE(NOT FLEXLM_FOUND)
-  MESSAGE(STATUS "PACKAGE: FlexLM         : ${FLEXLM_LIBRARIES}")
+  MESSAGE(STATUS "PACKAGE: ${PROTECTION_TYPE}         : ${FLEXLM_LIBRARIES}")
 ENDIF(NOT FLEXLM_FOUND)
 
 IF(ARCANE_CONFIGURE_WANT_MPC)
@@ -764,6 +776,14 @@ if(FLEXLM_FOUND)
   list(APPEND ARCANE_EXTERNAL_LIBRARIES ${FLEXLM_LIBRARIES})
   # TODO: a priori cette variable n'est plust utilisée donc on devrait pouvoir la supprimer
   list(APPEND ARCANE_EXTERNAL_LIBRARY_DIRS ${FLEXLM_LIBRARY_DIRS})
+  # TODO: à retirer lors de la migration vers RLM
+  #       cette définition a pour but d'utiliser la feature Arcane de la license de test RLM
+  #       qui ne contient pas de feature ArcaneCore, voir :
+  #       - arcane/src/arcane/impl/FlexLMTools.h
+  #       - arcane/src/arcane/impl/FlexLMTools.cc
+  if("${PROTECTION_TYPE}" STREQUAL "RLM")
+    ADD_DEFINITIONS(-DARCANE_TEST_${PROTECTION_TYPE})
+  endif()
 endif()
 
 if(ARCANE_USE_MPC)
