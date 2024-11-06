@@ -151,7 +151,11 @@ init(IParallelSuperMng * parallel_super_mng)
   m_parallel_super_mng = parallel_super_mng;
 
   FlexLMTools<ArcaneFeatureModel> license_tool;
+#ifndef ARCANE_TEST_RLM
   license_tool.checkLicense(ArcaneFeatureModel::ArcaneCore,true); // do_fatal=true
+#else
+  license_tool.checkLicense(ArcaneFeatureModel::Arcane,true); // do_fatal=true
+#endif
 }
 
 /*---------------------------------------------------------------------------*/
@@ -314,7 +318,11 @@ featureInfo(const String name, const Real version) const
 
 const String ArcaneFeatureModel::m_arcane_feature_name[] = 
   {
+#ifndef ARCANE_TEST_RLM
     "ArcaneCore",
+#else
+    "Arcane",
+#endif
   };
 
 /*---------------------------------------------------------------------------*/

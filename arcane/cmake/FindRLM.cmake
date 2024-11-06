@@ -1,34 +1,33 @@
 #
-# Find the FlexlmAPI includes and library
+# Find the FLEXLM includes and library (FlexlmAPI)
 #
 # This module defines
-# FLEXLM_INCLUDE_DIR, where to find headers,
-# FLEXLM_LIBRARIES, the libraries to link against to use FlexlmAPI.
-# FLEXLM_LIBRARY_DIRS, the library path to link against to use FlexlmAPI.
-# FLEXLM_FOUND, If false, do not try to use FlexlmAPI.
-# PROTECTION_TYPE, return the protection type : FLEXLM
+# FLEXLM_INCLUDE_DIR, where to find headers to use RLM (FlexlmAPI)
+# FLEXLM_LIBRARIES, the libraries to link against to use RLM (FlexlmAPI)
+# FLEXLM_LIBRARY_DIRS, the library path to link against to use RLM (FlexlmAPI)
+# FLEXLM_FOUND, if false, do not try to use RLM (FlexlmAPI)
+# PROTECTION_TYPE, return the protection type : RLM
 
-if(NOT FLEXLM_ROOT)
-  set(FLEXLM_ROOT $ENV{FLEXLM_ROOT})
+if(NOT RLM_ROOT)
+  set(RLM_ROOT $ENV{RLM_ROOT})
 endif()
 
-# Replace \ by / in FLEXLM_ROOT
-if(FLEXLM_ROOT)
-  string(REPLACE "\\" "/" FLEXLM_ROOT ${FLEXLM_ROOT})
+# Replace \ by / in RLM_ROOT
+if(RLM_ROOT)
+  string(REPLACE "\\" "/" RLM_ROOT ${RLM_ROOT})
 endif()
 
-# HINTS can be removed when using find_package for flexlm
-FIND_PATH(FLEXLM_INCLUDE_DIR FlexlmAPI.h HINTS ${FLEXLM_ROOT}/include)
+# HINTS can be removed when using find_package for FLEXLM
+FIND_PATH(FLEXLM_INCLUDE_DIR FlexlmAPI.h HINTS ${RLM_ROOT}/include)
 
 
 SET(FLEXLM_LIBRARY)
 SET(FLEXLM_LIBRARY_FAILED)
 
-# par l'inclusion de la lib noact, nous ne visons ici que FlexNet v11 et +
 IF(WIN32)
-  FOREACH(WANTED_LIB FlexlmAPI lmgr_dongle_stub lmgr libsb libnoact libcrvs)
-    FIND_LIBRARY(FLEXLM_SUB_LIBRARY_${WANTED_LIB} ${WANTED_LIB})
-    # MESSAGE(STATUS "Look for FlexNet lib ${WANTED_LIB} : ${FLEXLM_SUB_LIBRARY_${WANTED_LIB}}")
+  FOREACH(WANTED_LIB licenseapi rlm)
+    FIND_LIBRARY(FLEXLM_SUB_LIBRARY_${WANTED_LIB} ${WANTED_LIB} HINTS ${RLM_ROOT}/lib)
+    MESSAGE(STATUS "Look for RLM lib ${WANTED_LIB} : ${FLEXLM_SUB_LIBRARY_${WANTED_LIB}}")
     IF(FLEXLM_SUB_LIBRARY_${WANTED_LIB})
       SET(FLEXLM_LIBRARY ${FLEXLM_LIBRARY} ${FLEXLM_SUB_LIBRARY_${WANTED_LIB}})
       GET_FILENAME_COMPONENT(FLEXLM_SUB_PATHLIB_${WANTED_LIB} ${FLEXLM_SUB_LIBRARY_${WANTED_LIB}} PATH)
@@ -38,9 +37,9 @@ IF(WIN32)
     ENDIF(FLEXLM_SUB_LIBRARY_${WANTED_LIB})
   ENDFOREACH(WANTED_LIB)
 ELSE(WIN32)
-  FOREACH(WANTED_LIB FlexlmAPI lmgr_pic lmgr_dongle_stub_pic crvs_pic sb_pic noact_pic)
-    FIND_LIBRARY(FLEXLM_SUB_LIBRARY_${WANTED_LIB} ${WANTED_LIB} HINTS ${FLEXLM_ROOT}/Linux__x86_64/lib)
-    MESSAGE(STATUS "Look for FlexNet lib ${WANTED_LIB} : ${FLEXLM_SUB_LIBRARY_${WANTED_LIB}}")
+  FOREACH(WANTED_LIB licenseapi rlm)
+    FIND_LIBRARY(FLEXLM_SUB_LIBRARY_${WANTED_LIB} ${WANTED_LIB} HINTS ${RLM_ROOT}/lib)
+    MESSAGE(STATUS "Look for RLM lib ${WANTED_LIB} : ${FLEXLM_SUB_LIBRARY_${WANTED_LIB}}")
     IF(FLEXLM_SUB_LIBRARY_${WANTED_LIB})
       GET_FILENAME_COMPONENT(FLEXLM_SUB_NAMELIB_${WANTED_LIB} ${FLEXLM_SUB_LIBRARY_${WANTED_LIB}} NAME_WE)
       STRING(REGEX REPLACE "^lib" "" FLEXLM_SUB_NAMELIB_${WANTED_LIB} ${FLEXLM_SUB_NAMELIB_${WANTED_LIB}})
@@ -60,7 +59,7 @@ IF(FLEXLM_INCLUDE_DIR)
     # erreur dans une recherche de lib
   ELSE(FLEXLM_LIBRARY_FAILED)
     SET(FLEXLM_FOUND "YES")
-    SET(PROTECTION_TYPE "FLEXLM")
+    SET(PROTECTION_TYPE "RLM")
     # Biblioth�ques syst�mes suppl�mentaires
     if(WIN32)
       SET(FLEXLM_LIBRARIES ${FLEXLM_LIBRARY} oldnames.lib kernel32.lib user32.lib netapi32.lib
