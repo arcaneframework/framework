@@ -44,8 +44,8 @@ apply(MaterialModifierOperation* operation)
   const char* str_add = "ApplyConstituentOperationAdd";
   const char* str_remove = "ApplyConstituentOperationRemove";
   bool is_add = operation->isAdd();
-
-  Accelerator::ProfileRegion ps(m_queue, is_add ? str_add : str_remove);
+  Int32 color = (is_add) ? 0x00FFFF : 0x007FFF;
+  Accelerator::ProfileRegion ps(m_queue, is_add ? str_add : str_remove, color);
 
   IMeshMaterial* mat = operation->material();
   SmallSpan<const Int32> orig_ids = operation->ids();
@@ -326,7 +326,7 @@ _addItemsToIndexer(MeshMaterialVariableIndexer* var_indexer,
     // TODO: Comme tout est indépendant par variable, on pourrait
     // éventuellement utiliser plusieurs files.
     if (m_do_init_new_items) {
-      Accelerator::ProfileRegion ps(m_queue, "InitializeNewItems");
+      Accelerator::ProfileRegion ps(m_queue, "InitializeNewItems", 0xFFFF00);
       RunQueue::ScopedAsync sc(&m_queue);
       IMeshMaterialMng* mm = m_material_mng;
       auto func = [&](IMeshMaterialVariable* mv) {

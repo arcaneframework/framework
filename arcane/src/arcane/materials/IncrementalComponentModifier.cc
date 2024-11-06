@@ -328,7 +328,7 @@ _resizeVariablesIndexer(Int32 var_index)
 {
   RunQueue& queue = m_material_mng->_internalApi()->runQueue();
   RunQueue::ScopedAsync sc(&m_queue);
-  Accelerator::ProfileRegion ps(queue, "ResizeVariableIndexer");
+  Accelerator::ProfileRegion ps(queue, "ResizeVariableIndexer", 0xFF00FF);
   ResizeVariableIndexerArgs resize_args(var_index, queue);
   // Regarde si on n'utilise qu'une seule commande pour les copies des vues.
   // Pour l'instant (novembre 2024) on ne l'utilise par défaut que si
