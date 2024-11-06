@@ -171,6 +171,8 @@ class MaterialHeatTestModule
   RunQueue m_queue;
   Runner m_sequential_runner;
   UniqueArray<MeshMaterialVariableRef*> m_additional_variables;
+  bool m_is_init_with_zero = false;
+  bool m_is_check_init_new_cells = false;
 
  private:
 
@@ -210,6 +212,15 @@ MaterialHeatTestModule(const ModuleBuildInfo& mbi)
   if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_PROFILE_HEATTEST", true))
     if (v.value() != 0)
       m_profiling_service = platform::getProfilingService();
+  if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_MATERIAL_NEW_ITEM_INIT", true)) {
+    Int32 vv = v.value();
+    // 0 -> initialisation à partir de la maille globale et pas de vérification
+    // 1 -> initialisation à zéro et pas de vérification
+    // 2 -> initialisation à zéro et vérification
+    // 3 -> initialisation à partir de la maille globale et vérification
+    m_is_init_with_zero = (vv == 1 || vv == 2);
+    m_is_check_init_new_cells = (vv == 2 || vv == 3);
+  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -248,6 +259,7 @@ buildInit()
   m_material_mng->setModificationFlags(flags);
   m_material_mng->setMeshModificationNotified(true);
   m_material_mng->setUseMaterialValueWhenRemovingPartialValue(true);
+  m_material_mng->setDataInitialisationWithZero(m_is_init_with_zero);
   if (subDomain()->isContinue()) {
     mm->recreateFromDump();
   }
@@ -305,7 +317,7 @@ buildInit()
     for (Int32 i = 0; i < nb_var_to_add; ++i) {
       String var_name = "MaterialAdditionalArrayVar" + String::fromNumber(i);
       auto* v = new MaterialVariableCellArrayInt32(VariableBuildInfo(mesh, var_name));
-      v->resize(1 + (i% 3));
+      v->resize(1 + (i % 3));
       m_additional_variables.add(v);
       v->globalVariable().fill(i + 5);
       v->fillPartialValuesWithSuperValues(LEVEL_ALLENVIRONMENT);
@@ -512,12 +524,46 @@ _initNewCells(const HeatObject& heat_object, MaterialWorkArray& wa)
 {
   RunQueue* queue = this->acceleratorMng()->defaultQueue();
 
+  bool init_with_zero = m_material_mng->isDataInitialisationWithZero();
+
   // Initialise les nouvelles valeurs partielles
   IMeshMaterial* current_mat = heat_object.material;
   Int32 mat_id = current_mat->id();
   CellToAllEnvCellConverter all_env_cell_converter(m_material_mng);
   SmallSpan<const Int32> ids(wa.mat_cells_to_add.constView());
   const Int32 nb_id = ids.size();
+  const bool do_check = m_is_check_init_new_cells;
+  if (do_check) {
+    // Vérifie que la nouvelle valeur est initialisée avec 0 (si init_with_zero
+    // est vrai) où qu'elle est initialisée avec la valeur globale
+    auto command = makeCommand(queue);
+    auto out_mat_temperature = viewInOut(command, m_mat_temperature);
+    Accelerator::ReducerSum2<Int32> sum_error(command);
+    command << RUNCOMMAND_LOOP1(iter, nb_id, sum_error)
+    {
+      auto [i] = iter();
+      AllEnvCell all_env_cell = all_env_cell_converter[CellLocalId(ids[i])];
+      MatCell mc = _getMatCell(all_env_cell, mat_id);
+      MatVarIndex mvi = mc._varIndex();
+      if (mvi.arrayIndex() != 0) {
+        Real v = out_mat_temperature[mc];
+        if (init_with_zero) {
+          if (v != 0.0)
+            sum_error.combine(1);
+          //ARCANE_FATAL("Bad mat temperature (should be 0) i={0} v={1} mc={2}", i, v, mc);
+        }
+        else {
+          Real global_v = out_mat_temperature[CellLocalId(mc.globalCellId())];
+          if (v != global_v)
+            sum_error.combine(1);
+          //ARCANE_FATAL("Bad mat temperature i={0} v={1} mc={2} expected_v={3}", i, v, mc, global_v);
+        }
+      }
+    };
+    Int32 nb_error = sum_error.reducedValue();
+    if (nb_error != 0)
+      ARCANE_FATAL("Errors with new cells nb_error={0}", nb_error);
+  }
   {
     auto command = makeCommand(queue);
     auto in_value_to_add = viewIn(command, wa.mat_cells_to_add_value);
@@ -525,16 +571,9 @@ _initNewCells(const HeatObject& heat_object, MaterialWorkArray& wa)
     command << RUNCOMMAND_LOOP1(iter, nb_id)
     {
       auto [i] = iter();
-
-      // for (Int32 i = 0, n = ids.size(); i < n; ++i) {
       AllEnvCell all_env_cell = all_env_cell_converter[CellLocalId(ids[i])];
       MatCell mc = _getMatCell(all_env_cell, mat_id);
-      // Teste que la maille n'est pas nulle.
-      // Ne devrait pas arriver car on l'a ajouté juste avant
-      //if (mc.null())
-      //ARCANE_FATAL("Internal invalid null mat cell");
       out_mat_temperature[mc] = in_value_to_add[i];
-      //}
     };
   }
 }
