@@ -78,6 +78,7 @@ class ARCANE_MATERIALS_EXPORT IncrementalComponentModifier
                           SmallSpan<const Int32> local_ids);
   void _removeItemsInGroup(ItemGroup cells,SmallSpan<const Int32> removed_ids);
   void _applyCopyBetweenPartialsAndGlobals(const CopyBetweenPartialAndGlobalArgs& args, RunQueue& queue);
+  void _applyCopyVariableViews(RunQueue& queue);
 
  private:
 

@@ -28,13 +28,13 @@ class ComponentItemListBuilder;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Informations pour la copie entre valeurs globales et partielles d'une variable
+ * \brief Informations pour la copie entre deux zones mémoire.
  */
-struct ARCANE_CORE_EXPORT CopyBetweenPartialAndGlobalOneData
+struct ARCANE_CORE_EXPORT CopyBetweenDataInfo
 {
  public:
 
-  CopyBetweenPartialAndGlobalOneData(Span<const std::byte> input, Span<std::byte> output, Int32 data_size)
+  CopyBetweenDataInfo(SmallSpan<const std::byte> input, SmallSpan<std::byte> output, Int32 data_size)
   : m_input(input)
   , m_output(output)
   , m_data_size(data_size)
@@ -42,11 +42,13 @@ struct ARCANE_CORE_EXPORT CopyBetweenPartialAndGlobalOneData
 
  public:
 
-  Span<const std::byte> m_input;
-  Span<std::byte> m_output;
+  SmallSpan<const std::byte> m_input;
+  SmallSpan<std::byte> m_output;
   Int32 m_data_size = 0;
 };
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 /*!
  * \brief Arguments des méthodes de copie entre valeurs partielles et globales
  */
@@ -70,12 +72,12 @@ class ARCANE_CORE_EXPORT CopyBetweenPartialAndGlobalArgs
 
  public:
 
-  void addOneCopyData(Span<const std::byte> input,
-                      Span<std::byte> output,
+  void addOneCopyData(SmallSpan<const std::byte> input,
+                      SmallSpan<std::byte> output,
                       Int32 data_size) const
   {
     if (m_copy_data) {
-      CopyBetweenPartialAndGlobalOneData x(input, output, data_size);
+      CopyBetweenDataInfo x(input, output, data_size);
       m_copy_data->add(x);
     }
   }
@@ -92,7 +94,43 @@ class ARCANE_CORE_EXPORT CopyBetweenPartialAndGlobalArgs
   bool m_use_generic_copy = false;
   RunQueue m_queue;
   //! Informations de copie si on n'utilise qu'une seule commande
-  UniqueArray<CopyBetweenPartialAndGlobalOneData>* m_copy_data = nullptr;
+  UniqueArray<CopyBetweenDataInfo>* m_copy_data = nullptr;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Arguments des méthodes de copie entre valeurs partielles et globales
+ */
+class ARCANE_CORE_EXPORT ResizeVariableIndexerArgs
+{
+ public:
+
+  ResizeVariableIndexerArgs(Int32 var_index, const RunQueue& queue)
+  : m_var_index(var_index)
+  , m_queue(queue)
+  {}
+
+ public:
+
+  void addOneCopyData(SmallSpan<const std::byte> input,
+                      SmallSpan<std::byte> output,
+                      Int32 data_size) const
+  {
+    if (m_copy_data) {
+      CopyBetweenDataInfo x(input, output, data_size);
+      m_copy_data->add(x);
+    }
+  }
+
+  bool isUseOneCommand() const { return m_copy_data; }
+
+ public:
+
+  Int32 m_var_index = -1;
+  RunQueue m_queue;
+  //! Informations de copie si on n'utilise qu'une seule commande
+  UniqueArray<CopyBetweenDataInfo>* m_copy_data = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -156,7 +194,7 @@ class ARCANE_CORE_EXPORT IMeshMaterialVariableInternal
   virtual void syncReferences(bool check_resize) = 0;
 
   //! Redimensionne la valeur partielle associée à l'indexer \a index
-  virtual void resizeForIndexer(Int32 index, RunQueue& queue) = 0;
+  virtual void resizeForIndexer(ResizeVariableIndexerArgs& args) = 0;
 };
 
 /*---------------------------------------------------------------------------*/

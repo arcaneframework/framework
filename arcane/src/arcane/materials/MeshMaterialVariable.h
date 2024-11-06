@@ -52,6 +52,7 @@ class MaterialVariableBuildInfo;
 class MeshMaterialVariablePrivate;
 class MeshMaterialVariableSynchronizerList;
 class CopyBetweenPartialAndGlobalArgs;
+class ResizeVariableIndexerArgs;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -153,7 +154,7 @@ class ARCANE_MATERIALS_EXPORT MeshMaterialVariable
   virtual void _copyBetweenPartialAndGlobal(const CopyBetweenPartialAndGlobalArgs& args) = 0;
   virtual void _initializeNewItems(const ComponentItemListBuilder& list_builder, RunQueue& queue) = 0;
   virtual void _syncReferences(bool update_views) = 0;
-  virtual void _resizeForIndexer(Int32 index, RunQueue& queue) = 0;
+  virtual void _resizeForIndexer(ResizeVariableIndexerArgs& args) = 0;
 
  private:
 
@@ -208,10 +209,10 @@ class MaterialVariableScalarTraits
   ARCANE_MATERIALS_EXPORT static void
   resizeWithReserve(PrivatePartType* var, Int32 new_size, Real reserve_ratio);
   static Integer dimension() { return 0; }
-  static Span<std::byte> toBytes(ArrayView<DataType> view)
+  static SmallSpan<std::byte> toBytes(ArrayView<DataType> view)
   {
-    Span<DataType> s(view);
-    return asWritableBytes(s);
+    SmallSpan<DataType> s(view);
+    return asWritableBytes(s).smallView();
   }
 
 };
@@ -259,10 +260,10 @@ class MaterialVariableArrayTraits
   }
   ARCANE_MATERIALS_EXPORT
   static void resizeWithReserve(PrivatePartType* var, Integer new_size, Real resize_ratio);
-  static Span<std::byte> toBytes(Array2View<DataType> view)
+  static SmallSpan<std::byte> toBytes(Array2View<DataType> view)
   {
-    Span<DataType> s(view.data(),view.totalNbElement());
-    return asWritableBytes(s);
+    SmallSpan<DataType> s(view.data(), view.totalNbElement());
+    return asWritableBytes(s).smallView();
   }
 
   static Integer dimension() { return 0; }
@@ -354,7 +355,7 @@ class ItemMaterialVariableBase
   ARCANE_MATERIALS_EXPORT void
   _fillPartialValuesWithSuperValues(MeshComponentList components);
   ARCANE_MATERIALS_EXPORT void _syncReferences(bool check_resize) override;
-  ARCANE_MATERIALS_EXPORT void _resizeForIndexer(Int32 index, RunQueue& queue) override;
+  ARCANE_MATERIALS_EXPORT void _resizeForIndexer(ResizeVariableIndexerArgs& args) override;
   ARCANE_MATERIALS_EXPORT void _copyHostViewsToViews(RunQueue* queue);
 
  public:

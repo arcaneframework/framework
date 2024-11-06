@@ -286,7 +286,7 @@ buildInit()
     }
   }
 
-  // Créé les éventuelles variables additionnelles.
+  // Créé les éventuelles variables scalaires additionnelles.
   {
     Int32 nb_var_to_add = options()->nbAdditionalVariable();
     info() << "NbVariableToAdd = " << nb_var_to_add;
@@ -295,6 +295,20 @@ buildInit()
       auto* v = new MaterialVariableCellInt32(VariableBuildInfo(mesh, var_name));
       m_additional_variables.add(v);
       v->fill(i + 2);
+    }
+  }
+
+  // Créé les éventuelles variables tableaux additionnelles.
+  {
+    Int32 nb_var_to_add = options()->nbAdditionalArrayVariable();
+    info() << "NbArrayVariableToAdd = " << nb_var_to_add;
+    for (Int32 i = 0; i < nb_var_to_add; ++i) {
+      String var_name = "MaterialAdditionalArrayVar" + String::fromNumber(i);
+      auto* v = new MaterialVariableCellArrayInt32(VariableBuildInfo(mesh, var_name));
+      v->resize(1 + (i% 3));
+      m_additional_variables.add(v);
+      v->globalVariable().fill(i + 5);
+      v->fillPartialValuesWithSuperValues(LEVEL_ALLENVIRONMENT);
     }
   }
 }
@@ -612,7 +626,7 @@ _computeCellsToAdd(const HeatObject& heat_object, MaterialWorkArray& wa)
 
     const Int32 nb_item = all_cells.size();
     wa.resizeNbAdd(nb_item);
-    Accelerator::GenericFilterer filterer(&m_queue);
+    Accelerator::GenericFilterer filterer(m_queue);
     auto in_cell_center = viewIn(m_queue, m_cell_center);
     auto cells_ids = viewIn(m_queue, all_cells.localIds());
 
@@ -680,7 +694,7 @@ _computeCellsToRemove(const HeatObject& heat_object, MaterialWorkArray& wa)
   }
 
   {
-    Accelerator::GenericFilterer filterer(&m_queue);
+    Accelerator::GenericFilterer filterer(m_queue);
     SmallSpan<const Int32> in_remove_view = wa.mat_cells_to_remove.view();
     SmallSpan<Int32> out_remove_view = wa.mat_cells_to_remove.view();
     SmallSpan<const bool> filter_view = wa.mat_cells_remove_filter.to1DSmallSpan();
