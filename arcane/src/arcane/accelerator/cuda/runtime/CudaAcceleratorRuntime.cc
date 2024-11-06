@@ -382,10 +382,24 @@ class CudaRunnerRuntime
                           ptr, ca.devicePointer, ca.hostPointer);
   }
 
-  void pushProfilerRange(const String& name) override
+  void pushProfilerRange(const String& name, Int32 color_rgb) override
   {
 #ifdef ARCANE_HAS_CUDA_NVTOOLSEXT
-    nvtxRangePush(name.localstr());
+    if (color_rgb >= 0) {
+      // NOTE: Il faudrait faire: nvtxEventAttributes_t eventAttrib = { 0 };
+      // mais cela provoque pleins d'avertissement de type 'missing initializer for member'
+      nvtxEventAttributes_t eventAttrib;
+      std::memset(&eventAttrib, 0, sizeof(nvtxEventAttributes_t));
+      eventAttrib.version = NVTX_VERSION;
+      eventAttrib.size = NVTX_EVENT_ATTRIB_STRUCT_SIZE;
+      eventAttrib.colorType = NVTX_COLOR_ARGB;
+      eventAttrib.color = color_rgb;
+      eventAttrib.messageType = NVTX_MESSAGE_TYPE_ASCII;
+      eventAttrib.message.ascii = name.localstr();
+      nvtxRangePushEx(&eventAttrib);
+    }
+    else
+      nvtxRangePush(name.localstr());
 #endif
   }
   void popProfilerRange() override

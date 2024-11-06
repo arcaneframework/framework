@@ -37,6 +37,7 @@ class ARCANE_ACCELERATOR_CORE_EXPORT ProfileRegion
  public:
 
   ProfileRegion(const RunQueue& queue, const String& name);
+  ProfileRegion(const RunQueue& queue, const String& name, Int32 color_rgb);
   ~ProfileRegion();
 
  private:
