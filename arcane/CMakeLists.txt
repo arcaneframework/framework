@@ -674,9 +674,9 @@ if(ARCANE_WANT_LONGDOUBLE)
 endif()
 
 IF(NOT FLEXLM_FOUND)
-  MESSAGE(STATUS "PACKAGE: ${PROTECTION_TYPE}         : not found")
+  MESSAGE(STATUS "PACKAGE: ${PROTECTION_NAME}         : not found")
 ELSE(NOT FLEXLM_FOUND)
-  MESSAGE(STATUS "PACKAGE: ${PROTECTION_TYPE}         : ${FLEXLM_LIBRARIES}")
+  MESSAGE(STATUS "PACKAGE: ${PROTECTION_NAME}         : ${FLEXLM_LIBRARIES}")
 ENDIF(NOT FLEXLM_FOUND)
 
 IF(ARCANE_CONFIGURE_WANT_MPC)
@@ -781,8 +781,8 @@ if(FLEXLM_FOUND)
   #       qui ne contient pas de feature ArcaneCore, voir :
   #       - arcane/src/arcane/impl/FlexLMTools.h
   #       - arcane/src/arcane/impl/FlexLMTools.cc
-  if("${PROTECTION_TYPE}" STREQUAL "RLM")
-    ADD_DEFINITIONS(-DARCANE_TEST_${PROTECTION_TYPE})
+  if("${PROTECTION_NAME}" STREQUAL "RLM")
+    ADD_DEFINITIONS(-DARCANE_TEST_${PROTECTION_NAME})
   endif()
 endif()
 
