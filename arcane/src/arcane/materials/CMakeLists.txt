@@ -14,7 +14,7 @@ arcane_accelerator_add_source_files(
   ConstituentConnectivityList.cc
   ConstituentItemVectorImpl.cc
   ComponentItemInternalData.cc
-  IncrementalComponentModifier.cc
+  IncrementalComponentModifier_Accelerator.cc
   MeshComponentPartData.cc
   MeshEnvironment.cc
   MeshMaterialVariable.cc
