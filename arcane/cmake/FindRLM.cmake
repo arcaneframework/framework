@@ -25,7 +25,7 @@ SET(FLEXLM_LIBRARY)
 SET(FLEXLM_LIBRARY_FAILED)
 
 IF(WIN32)
-  FOREACH(WANTED_LIB licenseapi rlm)
+  FOREACH(WANTED_LIB licenseapi rlm1603)
     FIND_LIBRARY(FLEXLM_SUB_LIBRARY_${WANTED_LIB} ${WANTED_LIB} HINTS ${RLM_ROOT}/lib)
     MESSAGE(STATUS "Look for RLM lib ${WANTED_LIB} : ${FLEXLM_SUB_LIBRARY_${WANTED_LIB}}")
     IF(FLEXLM_SUB_LIBRARY_${WANTED_LIB})
@@ -62,10 +62,7 @@ IF(FLEXLM_INCLUDE_DIR)
     SET(PROTECTION_NAME "RLM")
     # Biblioth�ques syst�mes suppl�mentaires
     if(WIN32)
-      SET(FLEXLM_LIBRARIES ${FLEXLM_LIBRARY} oldnames.lib kernel32.lib user32.lib netapi32.lib
-        advapi32.lib gdi32.lib comdlg32.lib comctl32.lib wsock32.lib shell32.lib
-        Rpcrt4.lib oleaut32.lib Ole32.lib Wbemuuid.lib wintrust.lib crypt32.lib Ws2_32.lib psapi.lib Shlwapi.lib dhcpcsvc.lib
-        userenv.lib legacy_stdio_definitions.lib vcruntime.lib ucrt.lib legacy_stdio_wide_specifiers.lib libvcruntime.lib)
+      SET(FLEXLM_LIBRARIES ${FLEXLM_LIBRARY})
     else(WIN32)
       SET(FLEXLM_LIBRARIES ${FLEXLM_LIBRARY} pthread)
     endif(WIN32)
