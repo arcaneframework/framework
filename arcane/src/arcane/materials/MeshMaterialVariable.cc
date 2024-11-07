@@ -159,15 +159,6 @@ initializeNewItemsWithZero(const ComponentItemListBuilder& list_builder, RunQueu
 /*---------------------------------------------------------------------------*/
 
 void MeshMaterialVariablePrivate::
-initializeNewItemsWithPureValues(const ComponentItemListBuilder& list_builder, RunQueue& queue)
-{
-  m_variable->_initializeNewItemsWithPureValues(list_builder, queue);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void MeshMaterialVariablePrivate::
 syncReferences(bool check_resize)
 {
   m_variable->_syncReferences(check_resize);

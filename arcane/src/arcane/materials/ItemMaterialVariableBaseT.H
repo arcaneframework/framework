@@ -492,29 +492,6 @@ _initializeNewItemsWithZero(const ComponentItemListBuilder& list_builder, RunQue
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template <typename Traits> void
-ItemMaterialVariableBase<Traits>::
-_initializeNewItemsWithPureValues(const ComponentItemListBuilder& list_builder, RunQueue& queue)
-{
-  MeshMaterialVariableIndexer* indexer = list_builder.indexer();
-  Int32 var_index = indexer->index();
-  PrivatePartType* partial_var = m_vars[var_index + 1];
-  if (!_isValidAndUsedAndGlobalUsed(partial_var))
-    return;
-
-  SmallSpan<const Int32> partial_indexes = list_builder.partialIndexes();
-  SmallSpan<const Int32> partial_local_ids = list_builder.partialLocalIds();
-
-  ContainerSpanType partial_view = m_host_views[var_index + 1];
-  ContainerSpanType pure_view = m_host_views[0];
-
-  ARCANE_CHECK_ACCESSIBLE_POINTER(queue, partial_indexes.data());
-  Traits::copyTo(pure_view,partial_local_ids,partial_view,partial_indexes,queue);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 template<typename Traits> void
 ItemMaterialVariableBase<Traits>::
 fillPartialValuesWithGlobalValues()
