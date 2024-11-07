@@ -46,6 +46,8 @@ class ARCANE_MATERIALS_EXPORT ComponentItemListBuilder
     m_pure_matvar_indexes.resize(nb_item);
     m_partial_matvar_indexes.resize(nb_item);
     m_partial_local_ids.resize(nb_item);
+    m_pure_indexes.resize(nb_item);
+    m_partial_indexes.resize(nb_item);
   }
 
   void resize(Int32 nb_pure, Int32 nb_partial)
@@ -53,16 +55,22 @@ class ARCANE_MATERIALS_EXPORT ComponentItemListBuilder
     m_pure_matvar_indexes.resize(nb_pure);
     m_partial_matvar_indexes.resize(nb_partial);
     m_partial_local_ids.resize(nb_partial);
+    m_pure_indexes.resize(nb_pure);
+    m_partial_indexes.resize(nb_partial);
   }
 
  public:
 
   SmallSpan<MatVarIndex> pureMatVarIndexes() { return m_pure_matvar_indexes; }
   SmallSpan<MatVarIndex> partialMatVarIndexes() { return m_partial_matvar_indexes; }
+  SmallSpan<Int32> pureIndexes() { return m_pure_indexes; }
+  SmallSpan<Int32> partialIndexes() { return m_partial_indexes; }
   SmallSpan<Int32> partialLocalIds() { return m_partial_local_ids; }
 
   SmallSpan<const MatVarIndex> pureMatVarIndexes() const { return m_pure_matvar_indexes; }
   SmallSpan<const MatVarIndex> partialMatVarIndexes() const { return m_partial_matvar_indexes; }
+  SmallSpan<const Int32> pureIndexes() const { return m_pure_indexes; }
+  SmallSpan<const Int32> partialIndexes() const { return m_partial_indexes; }
   SmallSpan<const Int32> partialLocalIds() const { return m_partial_local_ids; }
 
   MeshMaterialVariableIndexer* indexer() const { return m_indexer; }
@@ -73,6 +81,8 @@ class ARCANE_MATERIALS_EXPORT ComponentItemListBuilder
   NumArray<MatVarIndex, MDDim1> m_pure_matvar_indexes;
   NumArray<MatVarIndex, MDDim1> m_partial_matvar_indexes;
   NumArray<Int32, MDDim1> m_partial_local_ids;
+  NumArray<Int32, MDDim1> m_pure_indexes;
+  NumArray<Int32, MDDim1> m_partial_indexes;
 
   MeshMaterialVariableIndexer* m_indexer = nullptr;
 };

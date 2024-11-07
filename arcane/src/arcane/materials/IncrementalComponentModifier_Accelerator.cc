@@ -263,6 +263,8 @@ _addItemsToIndexer(MeshMaterialVariableIndexer* var_indexer,
 
   SmallSpan<MatVarIndex> pure_matvar_indexes = list_builder.pureMatVarIndexes();
   SmallSpan<MatVarIndex> partial_matvar_indexes = list_builder.partialMatVarIndexes();
+  SmallSpan<Int32> pure_indexes = list_builder.pureIndexes();
+  SmallSpan<Int32> partial_indexes = list_builder.partialIndexes();
   SmallSpan<Int32> partial_local_ids = list_builder.partialLocalIds();
   Int32 nb_pure_added = 0;
   Int32 nb_partial_added = 0;
@@ -286,6 +288,7 @@ _addItemsToIndexer(MeshMaterialVariableIndexer* var_indexer,
     };
     auto setter_lambda = [=] ARCCORE_HOST_DEVICE(Int32 input_index, Int32 output_index) {
       Int32 local_id = local_ids[input_index];
+      pure_indexes[output_index] = local_id;
       pure_matvar_indexes[output_index] = MatVarIndex(0, local_id);
     };
     filterer.applyWithIndex(n, select_lambda, setter_lambda, A_FUNCINFO);
@@ -298,6 +301,7 @@ _addItemsToIndexer(MeshMaterialVariableIndexer* var_indexer,
     };
     auto setter_lambda = [=] ARCCORE_HOST_DEVICE(Int32 input_index, Int32 output_index) {
       Int32 local_id = local_ids[input_index];
+      partial_indexes[output_index] = index_in_partial + output_index;
       partial_matvar_indexes[output_index] = MatVarIndex(component_index, index_in_partial + output_index);
       partial_local_ids[output_index] = local_id;
     };
