@@ -320,6 +320,59 @@ _addItemsToEnvironment(MeshEnvironment* env, MeshMaterial* mat,
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+void IncrementalComponentModifier::
+_addItemsToIndexer(MeshMaterialVariableIndexer* var_indexer,
+                   SmallSpan<const Int32> local_ids)
+{
+  // TODO Conserver l'instance au cours de toutes modifications
+  ComponentItemListBuilder& list_builder = m_work_info.list_builder;
+  list_builder.setIndexer(var_indexer);
+
+  const Int32 nb_id = local_ids.size();
+  list_builder.preAllocate(nb_id);
+
+  _computeItemsToAdd(list_builder, local_ids);
+
+  if (traceMng()->verbosityLevel() >= 5)
+    info() << "ADD_MATITEM_TO_INDEXER component=" << var_indexer->name()
+           << " nb_pure=" << list_builder.pureIndexes().size()
+           << " nb_partial=" << list_builder.partialIndexes().size()
+           << "\n pure=(" << list_builder.pureIndexes() << ")"
+           << "\n partial=(" << list_builder.partialIndexes() << ")";
+
+  // TODO: lors de cet appel, on connait le max de \a index_in_partial donc
+  // on peut éviter de faire une réduction pour le recalculer.
+
+  var_indexer->endUpdateAdd(list_builder, m_queue);
+
+  // Redimensionne les variables
+  _resizeVariablesIndexer(var_indexer->index());
+
+  // Maintenant que les nouveaux MatVar sont créés, il faut les
+  // initialiser avec les bonnes valeurs.
+  if (m_do_init_new_items) {
+    IMeshMaterialMng* mm = m_material_mng;
+    bool init_with_zero = mm->isDataInitialisationWithZero();
+
+    // TODO: Comme tout est indépendant par variable, on pourrait
+    // éventuellement utiliser plusieurs files.
+    Accelerator::ProfileRegion ps(m_queue, "InitializeNewItems", 0xFFFF00);
+    RunQueue::ScopedAsync sc(&m_queue);
+
+    auto func = [&](IMeshMaterialVariable* mv) {
+      if (init_with_zero)
+        mv->_internalApi()->initializeNewItemsWithZero(list_builder, m_queue);
+      else
+        mv->_internalApi()->initializeNewItemsWithPureValues(list_builder, m_queue);
+    };
+    functor::apply(mm, &IMeshMaterialMng::visitVariables, func);
+    m_queue.barrier();
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 /*!
  * \brief Redimensionne l'index \a var_index des variables.
  */
