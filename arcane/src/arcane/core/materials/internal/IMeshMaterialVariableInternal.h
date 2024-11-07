@@ -184,8 +184,11 @@ class ARCANE_CORE_EXPORT IMeshMaterialVariableInternal
   //! \internal
   virtual void copyBetweenPartialAndGlobal(const CopyBetweenPartialAndGlobalArgs& args) = 0;
 
-  //! \internal
-  virtual void initializeNewItems(const ComponentItemListBuilder& list_builder, RunQueue& queue) = 0;
+  //! Initialize les valeurs des nouveaux constituants avec la valeur zéro
+  virtual void initializeNewItemsWithZero(const ComponentItemListBuilder& list_builder, RunQueue& queue) = 0;
+
+  //! Initialize les valeurs des nouveaux constituants avec les valeurs des mailles pures
+  virtual void initializeNewItemsWithPureValues(const ComponentItemListBuilder& list_builder, RunQueue& queue) = 0;
 
   //! Liste des 'VariableRef' associées à cette variable.
   virtual ConstArrayView<VariableRef*> variableReferenceList() const =0;

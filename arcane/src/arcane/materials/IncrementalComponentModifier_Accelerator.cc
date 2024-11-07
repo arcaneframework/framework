@@ -327,8 +327,13 @@ _addItemsToIndexer(MeshMaterialVariableIndexer* var_indexer,
       Accelerator::ProfileRegion ps(m_queue, "InitializeNewItems", 0xFFFF00);
       RunQueue::ScopedAsync sc(&m_queue);
       IMeshMaterialMng* mm = m_material_mng;
+      bool init_with_zero = mm->isDataInitialisationWithZero();
+
       auto func = [&](IMeshMaterialVariable* mv) {
-        mv->_internalApi()->initializeNewItems(list_builder, m_queue);
+        if (init_with_zero)
+          mv->_internalApi()->initializeNewItemsWithZero(list_builder, m_queue);
+        else
+          mv->_internalApi()->initializeNewItemsWithPureValues(list_builder, m_queue);
       };
       functor::apply(mm, &IMeshMaterialMng::visitVariables, func);
       m_queue.barrier();
