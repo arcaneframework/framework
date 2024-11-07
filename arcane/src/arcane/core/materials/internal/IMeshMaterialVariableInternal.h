@@ -47,26 +47,15 @@ struct ARCANE_CORE_EXPORT CopyBetweenDataInfo
   Int32 m_data_size = 0;
 };
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 /*!
- * \brief Arguments des méthodes de copie entre valeurs partielles et globales
+ * \brief Arguments communs pour toutes les méthodes de MeshMaterialVariableIndexer.
  */
-class ARCANE_CORE_EXPORT CopyBetweenPartialAndGlobalArgs
+class ARCANE_CORE_EXPORT VariableIndexerCommonArgs
 {
  public:
 
-  CopyBetweenPartialAndGlobalArgs(Int32 var_index,
-                                  SmallSpan<const Int32> local_ids,
-                                  SmallSpan<const Int32> indexes_in_multiple,
-                                  bool do_copy,
-                                  bool is_global_to_partial,
-                                  const RunQueue& queue)
+  VariableIndexerCommonArgs(Int32 var_index, const RunQueue& queue)
   : m_var_index(var_index)
-  , m_local_ids(local_ids)
-  , m_indexes_in_multiple(indexes_in_multiple)
-  , m_do_copy_between_partial_and_pure(do_copy)
-  , m_is_global_to_partial(is_global_to_partial)
   , m_queue(queue)
   {}
 
@@ -87,11 +76,6 @@ class ARCANE_CORE_EXPORT CopyBetweenPartialAndGlobalArgs
  public:
 
   Int32 m_var_index = -1;
-  SmallSpan<const Int32> m_local_ids;
-  SmallSpan<const Int32> m_indexes_in_multiple;
-  bool m_do_copy_between_partial_and_pure = true;
-  bool m_is_global_to_partial = false;
-  bool m_use_generic_copy = false;
   RunQueue m_queue;
   //! Informations de copie si on n'utilise qu'une seule commande
   UniqueArray<CopyBetweenDataInfo>* m_copy_data = nullptr;
@@ -102,35 +86,48 @@ class ARCANE_CORE_EXPORT CopyBetweenPartialAndGlobalArgs
 /*!
  * \brief Arguments des méthodes de copie entre valeurs partielles et globales
  */
-class ARCANE_CORE_EXPORT ResizeVariableIndexerArgs
+class ARCANE_CORE_EXPORT CopyBetweenPartialAndGlobalArgs
+: public VariableIndexerCommonArgs
 {
  public:
 
-  ResizeVariableIndexerArgs(Int32 var_index, const RunQueue& queue)
-  : m_var_index(var_index)
-  , m_queue(queue)
+  CopyBetweenPartialAndGlobalArgs(Int32 var_index,
+                                  SmallSpan<const Int32> local_ids,
+                                  SmallSpan<const Int32> indexes_in_multiple,
+                                  bool do_copy,
+                                  bool is_global_to_partial,
+                                  const RunQueue& queue)
+  : VariableIndexerCommonArgs(var_index, queue)
+  , m_local_ids(local_ids)
+  , m_indexes_in_multiple(indexes_in_multiple)
+  , m_do_copy_between_partial_and_pure(do_copy)
+  , m_is_global_to_partial(is_global_to_partial)
   {}
 
  public:
 
-  void addOneCopyData(SmallSpan<const std::byte> input,
-                      SmallSpan<std::byte> output,
-                      Int32 data_size) const
-  {
-    if (m_copy_data) {
-      CopyBetweenDataInfo x(input, output, data_size);
-      m_copy_data->add(x);
-    }
-  }
+  SmallSpan<const Int32> m_local_ids;
+  SmallSpan<const Int32> m_indexes_in_multiple;
+  bool m_do_copy_between_partial_and_pure = true;
+  bool m_is_global_to_partial = false;
+  bool m_use_generic_copy = false;
+};
 
-  bool isUseOneCommand() const { return m_copy_data; }
-
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Arguments des méthodes de copie entre valeurs partielles et globales
+ */
+class ARCANE_CORE_EXPORT ResizeVariableIndexerArgs
+: public VariableIndexerCommonArgs
+{
  public:
 
-  Int32 m_var_index = -1;
-  RunQueue m_queue;
-  //! Informations de copie si on n'utilise qu'une seule commande
-  UniqueArray<CopyBetweenDataInfo>* m_copy_data = nullptr;
+  ResizeVariableIndexerArgs(Int32 var_index, const RunQueue& queue)
+  : VariableIndexerCommonArgs(var_index, queue)
+  {}
+
+ public:
 };
 
 /*---------------------------------------------------------------------------*/
@@ -158,7 +155,7 @@ class ARCANE_CORE_EXPORT IMeshMaterialVariableInternal
   /*!
    * \brief Copie les valeurs de la variable dans un buffer.
    *
-   * \a queue peut être nul.
+   * \a queue peut être nulle.
    */
   virtual void copyToBuffer(SmallSpan<const MatVarIndex> matvar_indexes,
                             Span<std::byte> bytes, RunQueue* queue) const = 0;
@@ -166,7 +163,7 @@ class ARCANE_CORE_EXPORT IMeshMaterialVariableInternal
   /*!
    * \brief Copie les valeurs de la variable depuis un buffer.
    *
-   * \a queue peut être nul.
+   * \a queue peut être nulle.
    */
   virtual void copyFromBuffer(SmallSpan<const MatVarIndex> matvar_indexes,
                               Span<const std::byte> bytes, RunQueue* queue) = 0;
