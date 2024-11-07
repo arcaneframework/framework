@@ -38,9 +38,6 @@
 #include "arcane/core/Item.h"
 #include "arcane/mesh/ParticleFamily.h"
 #include "arcane/mesh/NodeFamily.h"
-#include "arcane/IParallelMng.h"
-#include "arcane/IMeshModifier.h"
-#include "arcane/VariableCollection.h"
 #include "arcane/core/IParallelMng.h"
 #include "arcane/core/IMeshModifier.h"
 #include "arcane/core/VariableCollection.h"
@@ -1225,7 +1222,7 @@ _removeNodes(Int32ConstArray2View new_nodes_lids,
              Int64SharedArray2& remaining_node_uids)
 {
   ARCANE_ASSERT((nb_removed_nodes <= new_nodes_lids.dim2Size()),("Cannot removed more nodes than available"));
-  auto* node_family = mesh()->nodeFamily();
+  auto* node_family = dynamic_cast<mesh::NodeFamily*>(mesh()->nodeFamily());
   Integer nb_subdomain = subDomain()->parallelMng()->commSize();
   Integer nb_remaining_nodes = remaining_node_lids.dim2Size();
   UniqueArray<ItemVectorView> removed_nodes(nb_subdomain);
