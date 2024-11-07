@@ -393,8 +393,8 @@ _resizeForIndexer(ResizeVariableIndexerArgs& args)
     this->_setView(index + 1);
   }
   if (args.isUseOneCommand()) {
-    auto dest = asWritableBytes(m_device_views).smallView();
-    auto source = asBytes(m_host_views).smallView();
+    auto dest = asWritableBytes(m_device_views.view());
+    auto source = asBytes(m_host_views.view());
     args.addOneCopyData(source,dest,1);
   }
   else
@@ -467,7 +467,7 @@ _initializeNewItems(const ComponentItemListBuilder& list_builder, RunQueue& queu
 {
   MeshMaterialVariableIndexer* indexer = list_builder.indexer();
   Integer var_index = indexer->index();
-  PrivatePartType* partial_var = m_vars[var_index+1];
+  PrivatePartType* partial_var = m_vars[var_index + 1];
   if (!_isValidAndUsedAndGlobalUsed(partial_var))
     return;
 
@@ -485,30 +485,31 @@ _initializeNewItems(const ComponentItemListBuilder& list_builder, RunQueue& queu
   auto command = makeCommand(queue);
   SmallSpan<ContainerViewType> views = m_device_views.smallSpan();
 
+  ContainerSpanType partial_view = m_host_views[var_index + 1];
+  ContainerSpanType pure_view = m_host_views[0];
+
   ARCANE_CHECK_ACCESSIBLE_POINTER(queue, views.data());
   ARCANE_CHECK_ACCESSIBLE_POINTER(queue, partial_matvar.data());
 
-  if (init_with_zero){
+  if (init_with_zero) {
     command << RUNCOMMAND_LOOP1(iter, nb_partial)
     {
       auto [i] = iter();
       MatVarIndex mvi = partial_matvar[i];
-      Traits::setValue(views[mvi.arrayIndex()][mvi.valueIndex()],zero);
+      Traits::setValue(partial_view[mvi.valueIndex()], zero);
     };
   }
-  else{
+  else {
     SmallSpan<const Int32> partial_local_ids = list_builder.partialLocalIds();
     ARCANE_CHECK_ACCESSIBLE_POINTER(queue, partial_local_ids.data());
     command << RUNCOMMAND_LOOP1(iter, nb_partial)
     {
       auto [i] = iter();
-      const auto& v = views[0][partial_local_ids[i]];
       MatVarIndex mvi = partial_matvar[i];
-      Traits::setValue(views[mvi.arrayIndex()][mvi.valueIndex()],v);
+      Traits::setValue(partial_view[mvi.valueIndex()], pure_view[partial_local_ids[i]]);
     };
   }
 }
-
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
