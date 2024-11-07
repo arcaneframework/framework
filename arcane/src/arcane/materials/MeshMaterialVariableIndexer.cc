@@ -111,11 +111,11 @@ endUpdate(const ComponentItemListBuilderOld& builder)
 void MeshMaterialVariableIndexer::
 endUpdateAdd(const ComponentItemListBuilder& builder, RunQueue& queue)
 {
-  SmallSpan<const MatVarIndex> pure_matvar = builder.pureMatVarIndexes();
-  SmallSpan<const MatVarIndex> partial_matvar = builder.partialMatVarIndexes();
+  SmallSpan<const Int32> pure_indexes = builder.pureIndexes();
+  SmallSpan<const Int32> partial_indexes = builder.partialIndexes();
 
-  Integer nb_pure_to_add = pure_matvar.size();
-  Integer nb_partial_to_add = partial_matvar.size();
+  Integer nb_pure_to_add = pure_indexes.size();
+  Integer nb_partial_to_add = partial_indexes.size();
   Integer total_to_add = nb_pure_to_add + nb_partial_to_add;
   Integer current_nb_item = nbItem();
   const Int32 new_size = current_nb_item + total_to_add;
@@ -132,17 +132,20 @@ endUpdateAdd(const ComponentItemListBuilder& builder, RunQueue& queue)
     auto command = makeCommand(queue);
     Arcane::Accelerator::ReducerMax2<Int32> max_index_reducer(command);
     Int32 max_to_add = math::max(nb_pure_to_add, nb_partial_to_add);
+    const Int32 component_index = m_index + 1;
     command << RUNCOMMAND_LOOP1(iter, max_to_add, max_index_reducer)
     {
       auto [i] = iter();
       if (i < nb_pure_to_add) {
-        local_ids_view[i] = pure_matvar[i].valueIndex();
-        matvar_indexes[i] = pure_matvar[i];
+        Int32 index = pure_indexes[i];
+        local_ids_view[i] = index;
+        matvar_indexes[i] = MatVarIndex(0, index);
       }
       if (i < nb_partial_to_add) {
+        Int32 index = partial_indexes[i];
         local_ids_view[nb_pure_to_add + i] = local_ids_in_multiple[i];
-        matvar_indexes[nb_pure_to_add + i] = partial_matvar[i];
-        max_index_reducer.combine(partial_matvar[i].valueIndex());
+        matvar_indexes[nb_pure_to_add + i] = MatVarIndex(component_index, index);
+        max_index_reducer.combine(index);
       }
     };
     max_index_in_multiple = math::max(max_index_reducer.reducedValue(), m_max_index_in_multiple_array);
