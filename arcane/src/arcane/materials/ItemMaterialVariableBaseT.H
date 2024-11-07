@@ -483,12 +483,10 @@ _initializeNewItems(const ComponentItemListBuilder& list_builder, RunQueue& queu
   DataType zero = DataType();
 
   auto command = makeCommand(queue);
-  SmallSpan<ContainerViewType> views = m_device_views.smallSpan();
 
   ContainerSpanType partial_view = m_host_views[var_index + 1];
   ContainerSpanType pure_view = m_host_views[0];
 
-  ARCANE_CHECK_ACCESSIBLE_POINTER(queue, views.data());
   ARCANE_CHECK_ACCESSIBLE_POINTER(queue, partial_indexes.data());
 
   if (init_with_zero) {
