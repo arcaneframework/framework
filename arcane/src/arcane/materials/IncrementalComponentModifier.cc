@@ -320,6 +320,64 @@ _addItemsToEnvironment(MeshEnvironment* env, MeshMaterial* mat,
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+void IncrementalComponentModifier::
+_addItemsToIndexer(MeshMaterialVariableIndexer* var_indexer,
+                   SmallSpan<const Int32> local_ids)
+{
+  // TODO Conserver l'instance au cours de toutes modifications
+  ComponentItemListBuilder& list_builder = m_work_info.list_builder;
+  list_builder.setIndexer(var_indexer);
+
+  const Int32 nb_id = local_ids.size();
+  list_builder.preAllocate(nb_id);
+
+  _computeItemsToAdd(list_builder, local_ids);
+
+  if (traceMng()->verbosityLevel() >= 5)
+    info() << "ADD_MATITEM_TO_INDEXER component=" << var_indexer->name()
+           << " nb_pure=" << list_builder.pureIndexes().size()
+           << " nb_partial=" << list_builder.partialIndexes().size()
+           << "\n pure=(" << list_builder.pureIndexes() << ")"
+           << "\n partial=(" << list_builder.partialIndexes() << ")";
+
+  // TODO: lors de cet appel, on connait le max de \a index_in_partial donc
+  // on peut éviter de faire une réduction pour le recalculer.
+
+  var_indexer->endUpdateAdd(list_builder, m_queue);
+
+  // Redimensionne les variables
+  _resizeVariablesIndexer(var_indexer->index());
+
+  // Maintenant que les nouveaux MatVar sont créés, il faut les
+  // initialiser avec les bonnes valeurs.
+  if (m_do_init_new_items) {
+    IMeshMaterialMng* mm = m_material_mng;
+    bool init_with_zero = mm->isDataInitialisationWithZero();
+
+    Accelerator::ProfileRegion ps(m_queue, "InitializeNewItems", 0xFFFF00);
+
+    if (init_with_zero) {
+      RunQueue::ScopedAsync sc(&m_queue);
+      auto func_zero = [&](IMeshMaterialVariable* mv) {
+        mv->_internalApi()->initializeNewItemsWithZero(list_builder, m_queue);
+      };
+      functor::apply(mm, &IMeshMaterialMng::visitVariables, func_zero);
+      m_queue.barrier();
+    }
+    else {
+      SmallSpan<Int32> partial_indexes = list_builder.partialIndexes();
+      SmallSpan<Int32> partial_local_ids = list_builder.partialLocalIds();
+
+      CopyBetweenPartialAndGlobalArgs args(var_indexer->index(), partial_local_ids,
+                                           partial_indexes, true, true, m_queue);
+      _copyBetweenPartialsAndGlobals(args);
+    }
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 /*!
  * \brief Redimensionne l'index \a var_index des variables.
  */

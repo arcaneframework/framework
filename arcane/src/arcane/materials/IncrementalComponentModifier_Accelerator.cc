@@ -251,15 +251,15 @@ _computeCellsToTransformForEnvironments(SmallSpan<const Int32> ids)
 /*---------------------------------------------------------------------------*/
 
 void IncrementalComponentModifier::
-_addItemsToIndexer(MeshMaterialVariableIndexer* var_indexer,
-                   SmallSpan<const Int32> local_ids)
+_computeItemsToAdd(ComponentItemListBuilder& list_builder, SmallSpan<const Int32> local_ids)
 {
-  // TODO Conserver l'instance au cours de toutes modifications
-  ComponentItemListBuilder& list_builder = m_work_info.list_builder;
-  list_builder.setIndexer(var_indexer);
+  SmallSpan<const bool> cells_is_partial = m_work_info.m_cells_is_partial;
 
-  const Int32 n = local_ids.size();
-  list_builder.preAllocate(n);
+  Accelerator::GenericFilterer filterer(m_queue);
+
+  MeshMaterialVariableIndexer* var_indexer = list_builder.indexer();
+
+  const Int32 nb_id = local_ids.size();
 
   SmallSpan<Int32> pure_indexes = list_builder.pureIndexes();
   SmallSpan<Int32> partial_indexes = list_builder.partialIndexes();
@@ -267,10 +267,6 @@ _addItemsToIndexer(MeshMaterialVariableIndexer* var_indexer,
   Int32 nb_pure_added = 0;
   Int32 nb_partial_added = 0;
   Int32 index_in_partial = var_indexer->maxIndexInMultipleArray();
-
-  SmallSpan<const bool> cells_is_partial = m_work_info.m_cells_is_partial;
-
-  Accelerator::GenericFilterer filterer(m_queue);
 
   // TODO: pour l'instant on remplit en deux fois mais il serait
   // possible de le faire en une seule fois en utilisation l'algorithme de Partition.
@@ -286,7 +282,7 @@ _addItemsToIndexer(MeshMaterialVariableIndexer* var_indexer,
       Int32 local_id = local_ids[input_index];
       pure_indexes[output_index] = local_id;
     };
-    filterer.applyWithIndex(n, select_lambda, setter_lambda, A_FUNCINFO);
+    filterer.applyWithIndex(nb_id, select_lambda, setter_lambda, A_FUNCINFO);
     nb_pure_added = filterer.nbOutputElement();
   }
   // Remplit la liste des mailles partielles
@@ -299,41 +295,11 @@ _addItemsToIndexer(MeshMaterialVariableIndexer* var_indexer,
       partial_indexes[output_index] = index_in_partial + output_index;
       partial_local_ids[output_index] = local_id;
     };
-    filterer.applyWithIndex(n, select_lambda, setter_lambda, A_FUNCINFO);
+    filterer.applyWithIndex(nb_id, select_lambda, setter_lambda, A_FUNCINFO);
     nb_partial_added = filterer.nbOutputElement();
   }
 
   list_builder.resize(nb_pure_added, nb_partial_added);
-
-  if (traceMng()->verbosityLevel() >= 5)
-    info() << "ADD_MATITEM_TO_INDEXER component=" << var_indexer->name()
-           << " nb_pure=" << list_builder.pureIndexes().size()
-           << " nb_partial=" << list_builder.partialIndexes().size()
-           << "\n pure=(" << list_builder.pureIndexes() << ")"
-           << "\n partial=(" << list_builder.partialIndexes() << ")";
-
-  // TODO: lors de cet appel, on connait le max de \a index_in_partial donc
-  // on peut éviter de faire une réduction pour le recalculer.
-
-  var_indexer->endUpdateAdd(list_builder, m_queue);
-
-  // Maintenant que les nouveaux MatVar sont créés, il faut les
-  // initialiser avec les bonnes valeurs.
-  {
-    _resizeVariablesIndexer(var_indexer->index());
-    // TODO: Comme tout est indépendant par variable, on pourrait
-    // éventuellement utiliser plusieurs files.
-    if (m_do_init_new_items) {
-      Accelerator::ProfileRegion ps(m_queue, "InitializeNewItems", 0xFFFF00);
-      RunQueue::ScopedAsync sc(&m_queue);
-      IMeshMaterialMng* mm = m_material_mng;
-      auto func = [&](IMeshMaterialVariable* mv) {
-        mv->_internalApi()->initializeNewItems(list_builder, m_queue);
-      };
-      functor::apply(mm, &IMeshMaterialMng::visitVariables, func);
-      m_queue.barrier();
-    }
-  }
 }
 
 /*---------------------------------------------------------------------------*/
