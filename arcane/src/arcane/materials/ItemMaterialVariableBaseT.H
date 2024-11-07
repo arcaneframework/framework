@@ -463,15 +463,15 @@ _copyBetweenPartialAndGlobal(const CopyBetweenPartialAndGlobalArgs& args)
 
 template <typename Traits> void
 ItemMaterialVariableBase<Traits>::
-_initializeNewItemsWithZero(const ComponentItemListBuilder& list_builder, RunQueue& queue)
+_initializeNewItemsWithZero(InitializeWithZeroArgs& args)
 {
-  MeshMaterialVariableIndexer* indexer = list_builder.indexer();
-  Integer var_index = indexer->index();
+  RunQueue& queue = args.m_queue;
+  Int32 var_index = args.m_var_index;
   PrivatePartType* partial_var = m_vars[var_index + 1];
   if (!_isValidAndUsedAndGlobalUsed(partial_var))
     return;
 
-  SmallSpan<const Int32> partial_indexes = list_builder.partialIndexes();
+  SmallSpan<const Int32> partial_indexes = args.m_indexes_in_multiple;
 
   Integer nb_partial = partial_indexes.size();
 

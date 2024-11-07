@@ -118,6 +118,27 @@ class ARCANE_CORE_EXPORT CopyBetweenPartialAndGlobalArgs
 /*!
  * \brief Arguments des méthodes de copie entre valeurs partielles et globales
  */
+class ARCANE_CORE_EXPORT InitializeWithZeroArgs
+: public VariableIndexerCommonArgs
+{
+ public:
+
+  InitializeWithZeroArgs(Int32 var_index, SmallSpan<const Int32> indexes_in_multiple,
+                         const RunQueue& queue)
+  : VariableIndexerCommonArgs(var_index, queue)
+  , m_indexes_in_multiple(indexes_in_multiple)
+  {}
+
+ public:
+
+  SmallSpan<const Int32> m_indexes_in_multiple;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Arguments des méthodes de copie entre valeurs partielles et globales
+ */
 class ARCANE_CORE_EXPORT ResizeVariableIndexerArgs
 : public VariableIndexerCommonArgs
 {
@@ -182,7 +203,7 @@ class ARCANE_CORE_EXPORT IMeshMaterialVariableInternal
   virtual void copyBetweenPartialAndGlobal(const CopyBetweenPartialAndGlobalArgs& args) = 0;
 
   //! Initialize les valeurs des nouveaux constituants avec la valeur zéro
-  virtual void initializeNewItemsWithZero(const ComponentItemListBuilder& list_builder, RunQueue& queue) = 0;
+  virtual void initializeNewItemsWithZero(InitializeWithZeroArgs& args) = 0;
 
   //! Liste des 'VariableRef' associées à cette variable.
   virtual ConstArrayView<VariableRef*> variableReferenceList() const =0;

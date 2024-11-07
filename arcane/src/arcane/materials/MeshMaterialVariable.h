@@ -53,6 +53,7 @@ class MeshMaterialVariablePrivate;
 class MeshMaterialVariableSynchronizerList;
 class CopyBetweenPartialAndGlobalArgs;
 class ResizeVariableIndexerArgs;
+class InitializeWithZeroArgs;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -152,7 +153,7 @@ class ARCANE_MATERIALS_EXPORT MeshMaterialVariable
   virtual void _restoreData(IMeshComponent* component,IData* data,Integer data_index,
                             Int32ConstArrayView ids,bool allow_null_id) =0;
   virtual void _copyBetweenPartialAndGlobal(const CopyBetweenPartialAndGlobalArgs& args) = 0;
-  virtual void _initializeNewItemsWithZero(const ComponentItemListBuilder& list_builder, RunQueue& queue) = 0;
+  virtual void _initializeNewItemsWithZero(InitializeWithZeroArgs& args) = 0;
   virtual void _syncReferences(bool update_views) = 0;
   virtual void _resizeForIndexer(ResizeVariableIndexerArgs& args) = 0;
 
@@ -323,7 +324,7 @@ class ItemMaterialVariableBase
   ARCANE_MATERIALS_EXPORT
   void _copyBetweenPartialAndGlobal(const CopyBetweenPartialAndGlobalArgs& args) override;
   ARCANE_MATERIALS_EXPORT
-  void _initializeNewItemsWithZero(const ComponentItemListBuilder& list_builder, RunQueue& queue) override;
+  void _initializeNewItemsWithZero(InitializeWithZeroArgs& args) override;
 
   ARCANE_MATERIALS_EXPORT void fillPartialValuesWithGlobalValues() override;
   ARCANE_MATERIALS_EXPORT void

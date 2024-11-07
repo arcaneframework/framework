@@ -74,7 +74,7 @@ class MeshMaterialVariablePrivate
 
   void copyBetweenPartialAndGlobal(const CopyBetweenPartialAndGlobalArgs& args) override;
 
-  void initializeNewItemsWithZero(const ComponentItemListBuilder& list_builder, RunQueue& queue) override;
+  void initializeNewItemsWithZero(InitializeWithZeroArgs& args) override;
 
   ConstArrayView<VariableRef*> variableReferenceList() const override
   {

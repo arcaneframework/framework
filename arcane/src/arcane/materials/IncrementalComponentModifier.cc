@@ -357,16 +357,17 @@ _addItemsToIndexer(MeshMaterialVariableIndexer* var_indexer,
 
     Accelerator::ProfileRegion ps(m_queue, "InitializeNewItems", 0xFFFF00);
 
+    SmallSpan<Int32> partial_indexes = list_builder.partialIndexes();
     if (init_with_zero) {
       RunQueue::ScopedAsync sc(&m_queue);
+      InitializeWithZeroArgs init_args(var_indexer->index(), partial_indexes, m_queue);
       auto func_zero = [&](IMeshMaterialVariable* mv) {
-        mv->_internalApi()->initializeNewItemsWithZero(list_builder, m_queue);
+        mv->_internalApi()->initializeNewItemsWithZero(init_args);
       };
       functor::apply(mm, &IMeshMaterialMng::visitVariables, func_zero);
       m_queue.barrier();
     }
     else {
-      SmallSpan<Int32> partial_indexes = list_builder.partialIndexes();
       SmallSpan<Int32> partial_local_ids = list_builder.partialLocalIds();
 
       CopyBetweenPartialAndGlobalArgs args(var_indexer->index(), partial_local_ids,
