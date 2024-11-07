@@ -25,22 +25,26 @@
 #include "arcane/mesh/ItemConnectivityMng.h"
 #include "arcane/mesh/GhostLayerFromConnectivityComputer.h"
 
-#include "arcane/IItemConnectivitySynchronizer.h"
-#include "arcane/IMesh.h"
-#include "arcane/VariableTypedef.h"
-#include "arcane/VariableBuildInfo.h"
-#include "arcane/ItemEnumerator.h"
-#include "arcane/ItemUniqueId.h"
-#include "arcane/VariableTypes.h"
-#include "arcane/ItemTypes.h"
+#include "arcane/core/IItemConnectivitySynchronizer.h"
+#include "arcane/core/IMesh.h"
+#include "arcane/core/VariableTypedef.h"
+#include "arcane/core/VariableBuildInfo.h"
+#include "arcane/core/ItemEnumerator.h"
+#include "arcane/core/ItemUniqueId.h"
+#include "arcane/core/VariableTypes.h"
+#include "arcane/core/ItemTypes.h"
 #include "arcane/mesh/CellFamily.h"
-#include "arcane/ItemVector.h"
-#include "arcane/Item.h"
+#include "arcane/core/ItemVector.h"
+#include "arcane/core/Item.h"
 #include "arcane/mesh/ParticleFamily.h"
 #include "arcane/mesh/NodeFamily.h"
 #include "arcane/IParallelMng.h"
 #include "arcane/IMeshModifier.h"
 #include "arcane/VariableCollection.h"
+#include "arcane/core/IParallelMng.h"
+#include "arcane/core/IMeshModifier.h"
+#include "arcane/core/VariableCollection.h"
+
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -169,6 +173,7 @@ addDoF(const Integer size, const Integer begin_index)
 
   IDoFFamily* dof_family = dofMng().getFamily(m_dof_family_name); // Lazy
   info() << "=== add items to family " << dof_family->name();
+  info() << "=== add items to family " << dof_family;
 
   Int32UniqueArray dof_lids(size);
 
@@ -402,14 +407,14 @@ _cell2DoFsConnectivity()
   info() << "================================";
 
   // Create a DoF Family to link with mesh cells
-  mesh::DoFFamily& dofs_on_cell_family = dofMng().family(m_dofs_on_cell_family_name);
+  IDoFFamily* dofs_on_cell_family = dofMng().getFamily(m_dofs_on_cell_family_name);
 
   Integer nb_dof_per_cell = 3;
 
   // Generation des uids
   Int64UniqueArray uids;
   Int64 max_cell_uid = mesh::DoFUids::getMaxItemUid(mesh()->cellFamily());
-  Int64 max_dof_uid  = mesh::DoFUids::getMaxItemUid(&dofs_on_cell_family);
+  Int64 max_dof_uid  = mesh::DoFUids::getMaxItemUid(dofs_on_cell_family->itemFamily());
   ENUMERATE_CELL(icell,ownCells())
   {
     for (Integer i = 0; i < nb_dof_per_cell; ++i)
@@ -419,11 +424,11 @@ _cell2DoFsConnectivity()
   }
 
   Int32UniqueArray lids(uids.size());
-  dofs_on_cell_family.addDoFs(uids,lids);
-  dofs_on_cell_family.endUpdate();
+  dofs_on_cell_family->addDoFs(uids,lids);
+  dofs_on_cell_family->endUpdate();
 
   // Create connectivity
-  CellToDoFsConnectivity cell2dofs(mesh()->cellFamily(),&dofs_on_cell_family,nb_dof_per_cell,"CellToDoFs");
+  CellToDoFsConnectivity cell2dofs(mesh()->cellFamily(),dofs_on_cell_family->itemFamily(),nb_dof_per_cell,"CellToDoFs");
 
   info() << "== Create connectivity " << cell2dofs.name();
 
@@ -470,7 +475,7 @@ _cell2DoFsConnectivity()
   }
 
   // Test constructor by item_property
-  CellToDoFsConnectivity cell2dofs_2(mesh()->cellFamily(),&dofs_on_cell_family,cell2dofs.itemProperty(),"CellToDoFs2");
+  CellToDoFsConnectivity cell2dofs_2(mesh()->cellFamily(),dofs_on_cell_family->itemFamily(),cell2dofs.itemProperty(),"CellToDoFs2");
   if (!_checkIsSame(&cell2dofs,&cell2dofs_2)) fatal() << "Error in connectivity construction from ItemArrayProperty";
 
 }
@@ -487,13 +492,13 @@ _Face2DoFsMultiConnectivity()
   info() << "================================";
 
   // Create a DoF Family to link with mesh Faces : variable number of DoFs per face
-  mesh::DoFFamily& dofs_multi_on_face_family = dofMng().family(m_dofs_multi_on_face_family_name);
+  IDoFFamily* dofs_multi_on_face_family = dofMng().getFamily(m_dofs_multi_on_face_family_name);
 
   // Generation des uids
   Int64UniqueArray uids;
   IntegerUniqueArray nb_dof_per_faces(mesh()->faceFamily()->maxLocalId(),0); // Be careful not to have any non initialized values in this size array
   Int64 max_face_uid = mesh::DoFUids::getMaxItemUid(mesh()->faceFamily());
-  Int64 max_dof_uid  = mesh::DoFUids::getMaxItemUid(&dofs_multi_on_face_family);
+  Int64 max_dof_uid  = mesh::DoFUids::getMaxItemUid(dofs_multi_on_face_family->itemFamily());
   // silly construction for demo : one dof on face with odd local_id, two on faces with even local_id
   Integer nb_dof_on_face ;
   ENUMERATE_FACE(iface,ownFaces())
@@ -504,11 +509,11 @@ _Face2DoFsMultiConnectivity()
   }
 
   Int32UniqueArray lids(uids.size());
-  dofs_multi_on_face_family.addDoFs(uids,lids);
-  dofs_multi_on_face_family.endUpdate();
+  dofs_multi_on_face_family->addDoFs(uids,lids);
+  dofs_multi_on_face_family->endUpdate();
 
   // Create connectivity
-  FaceToDoFsMultiConnectivity face2dofs(mesh()->faceFamily(),&dofs_multi_on_face_family,nb_dof_per_faces,"FaceToDoFsMulti");
+  FaceToDoFsMultiConnectivity face2dofs(mesh()->faceFamily(),dofs_multi_on_face_family->itemFamily(),nb_dof_per_faces,"FaceToDoFsMulti");
 
   info() << "== Create connectivity " << face2dofs.name();
 
@@ -552,7 +557,7 @@ _Face2DoFsMultiConnectivity()
    }
 
   // Test constructor by item_property
-  FaceToDoFsMultiConnectivity face2dofs_2(mesh()->faceFamily(),&dofs_multi_on_face_family,face2dofs.itemProperty(),"FaceToDoFsMulti2");
+  FaceToDoFsMultiConnectivity face2dofs_2(mesh()->faceFamily(),dofs_multi_on_face_family->itemFamily(),face2dofs.itemProperty(),"FaceToDoFsMulti2");
   if (!_checkIsSame(&face2dofs,&face2dofs_2)) fatal() << "Error in connectivity construction from ItemMultiArrayProperty";
 }
 
@@ -568,10 +573,10 @@ _node2DoFConnectivityRegistered()
   info() << "====================================================";
 
   // Done for node since it's easier to add new items
-  mesh::DoFFamily& dof_on_node_family = dofMng().family(m_dof_on_node_family_name);
+  IDoFFamily* dof_on_node_family = dofMng().getFamily(m_dof_on_node_family_name);
   IItemFamily* node_family = mesh()->nodeFamily();
 
-  NodeToDoFConnectivity node2dof(node_family,&dof_on_node_family,"NodeToDoF");
+  NodeToDoFConnectivity node2dof(node_family,dof_on_node_family->itemFamily(),"NodeToDoF");
   GhostLayerFromConnectivityComputer ghost_builder(&node2dof);
   IItemConnectivitySynchronizer* synchronizer = dofMng().connectivityMng()->createSynchronizer(&node2dof,&ghost_builder);
   synchronizer->synchronize();
@@ -607,8 +612,8 @@ _node2DoFConnectivityRegistered()
       Integer i = 0;
       ENUMERATE_NODE(inode,source_family_added_items_own) {uids[i++] = mesh::DoFUids::uid(inode->uniqueId().asInt64());}
       Int32SharedArray lids(uids.size());
-      dof_on_node_family.addDoFs(uids,lids);
-      dof_on_node_family.endUpdate();
+      dof_on_node_family->addDoFs(uids,lids);
+      dof_on_node_family->endUpdate();
       // Update connectivity
       node2dof.updateConnectivity(source_family_added_items_own_lids,lids);
       // Update ghost
@@ -616,7 +621,7 @@ _node2DoFConnectivityRegistered()
       // For test purpose only : try getSourceFamilyModifiedItem (must give back the new dofs created)
       Int32ArrayView target_family_added_item_lids, target_family_removed_item_lids;
       connectivity_mng->getTargetFamilyModifiedItems(&node2dof,target_family_added_item_lids,target_family_removed_item_lids);
-      _checkTargetFamilyInfo(dof_on_node_family.view(target_family_added_item_lids),lids);
+      _checkTargetFamilyInfo(dof_on_node_family->itemFamily()->view(target_family_added_item_lids),lids);
       // Finalize connectivity update
       connectivity_mng->setUpToDate(&node2dof);
     }
@@ -658,8 +663,8 @@ _node2DoFConnectivityRegistered()
        connectivity_mng->setUpToDate(&node2dof);
        // remove unused dof
        debug() << "REMOVED DOF " << removed_dofs;
-       dof_on_node_family.removeDoFs(removed_dofs);
-       dof_on_node_family.endUpdate();
+       dof_on_node_family->removeDoFs(removed_dofs);
+       dof_on_node_family->endUpdate();
   }
 
   // Check Connectivity update
@@ -675,11 +680,11 @@ _node2DoFConnectivityRegistered()
   }
 
   // Compact Target family
-  debug() << "DOFS " << dof_on_node_family.view().localIds();
-  debug() << "DOF family size " << dof_on_node_family.nbItem();
-  dof_on_node_family.compactItems(true);
-  debug() << "DOF family size " << dof_on_node_family.nbItem();
-  debug() << "DOFS " << dof_on_node_family.view().localIds();
+  debug() << "DOFS " << dof_on_node_family->itemFamily()->view().localIds();
+  debug() << "DOF family size " << dof_on_node_family->nbItem();
+  dof_on_node_family->itemFamily()->compactItems(true);
+  debug() << "DOF family size " << dof_on_node_family->nbItem();
+  debug() << "DOFS " << dof_on_node_family->itemFamily()->view().localIds();
 
   _checkConnectivityUpdateAfterCompact(node2dof, remaining_node_lids, remaining_node_uids, node2dof.itemProperty().size());
 
@@ -719,24 +724,24 @@ _node2DoFsConnectivityRegistered()
   info() << "====================================================";
 
   // Done for node since it's easier to add new items
-  mesh::DoFFamily& dofs_on_node_family = dofMng().family(m_dofs_on_node_family_name);
+  IDoFFamily* dofs_on_node_family = dofMng().getFamily(m_dofs_on_node_family_name);
   Integer nb_dof_per_node = 3;
   // Create the DoFs
   Int64UniqueArray uids(ownNodes().size()*nb_dof_per_node);
   Int64 max_node_uid = mesh::DoFUids::getMaxItemUid(mesh()->nodeFamily());
-  Int64 max_dof_uid  = mesh::DoFUids::getMaxItemUid(&dofs_on_node_family);
+  Int64 max_dof_uid  = mesh::DoFUids::getMaxItemUid(dofs_on_node_family->itemFamily());
   Integer j = 0;
   ENUMERATE_NODE(inode,ownNodes())
   {
     for (Integer i = 0; i < nb_dof_per_node; ++i) uids[j++] = mesh::DoFUids::uid(max_dof_uid,max_node_uid,inode->uniqueId().asInt64(),i);
   }
   Int32UniqueArray lids(uids.size());
-  dofs_on_node_family.addDoFs(uids,lids);
-  dofs_on_node_family.endUpdate();
+  dofs_on_node_family->addDoFs(uids,lids);
+  dofs_on_node_family->endUpdate();
 
   IItemFamily* node_family = mesh()->nodeFamily();
 
-  NodeToDoFsConnectivity node2dofs(node_family,&dofs_on_node_family,nb_dof_per_node,"NodeToDoFs");
+  NodeToDoFsConnectivity node2dofs(node_family,dofs_on_node_family->itemFamily(),nb_dof_per_node,"NodeToDoFs");
 
   // Create the ghosts
   GhostLayerFromConnectivityComputer ghost_builder(&node2dofs);
@@ -772,7 +777,7 @@ _node2DoFsConnectivityRegistered()
       Integer j = 0;
       Int32SharedArray source_family_lids_in_connectivity(source_family_added_items_own.size()*nb_dof_per_node);
       Int64 max_item_uid= mesh::DoFUids::getMaxItemUid(node_family);
-      Int64 max_dof_uid = mesh::DoFUids::getMaxItemUid(&dofs_on_node_family);
+      Int64 max_dof_uid = mesh::DoFUids::getMaxItemUid(dofs_on_node_family->itemFamily());
       ENUMERATE_NODE(inode,source_family_added_items_own)
       {
         for (Integer i = 0; i < nb_dof_per_node; ++i)
@@ -782,8 +787,8 @@ _node2DoFsConnectivityRegistered()
           }
       }
       Int32SharedArray lids(uids.size());
-      dofs_on_node_family.addDoFs(uids,lids);
-      dofs_on_node_family.endUpdate();
+      dofs_on_node_family->addDoFs(uids,lids);
+      dofs_on_node_family->endUpdate();
       // Update connectivity
       node2dofs.updateConnectivity(source_family_lids_in_connectivity,lids);
       // Update ghost
@@ -836,8 +841,8 @@ _node2DoFsConnectivityRegistered()
       node2dofs.updateConnectivity(source_family_removed_items_lids_in_connectivity,null_item_lids);
       connectivity_mng->setUpToDate(&node2dofs);
       // Unused dof can be removed if desired. Usefull to remove them to test compaction
-      dofs_on_node_family.removeDoFs(removed_dofs);
-      dofs_on_node_family.endUpdate();
+      dofs_on_node_family->removeDoFs(removed_dofs);
+      dofs_on_node_family->endUpdate();
       debug() << "*** REMOVED DOFS " << removed_dofs;
   }
 
@@ -853,11 +858,11 @@ _node2DoFsConnectivityRegistered()
   }
 
   // Compact Target family
-  debug() << "DOFS " << dofs_on_node_family.view().localIds();
-  debug() << "DOF family size " << dofs_on_node_family.nbItem();
-  dofs_on_node_family.compactItems(true);
-  debug() << "DOF family size " << dofs_on_node_family.nbItem();
-  debug() << "DOFS " << dofs_on_node_family.view().localIds();
+  debug() << "DOFS " << dofs_on_node_family->itemFamily()->view().localIds();
+  debug() << "DOF family size " << dofs_on_node_family->nbItem();
+  dofs_on_node_family->itemFamily()->compactItems(true);
+  debug() << "DOF family size " << dofs_on_node_family->nbItem();
+  debug() << "DOFS " << dofs_on_node_family->itemFamily()->view().localIds();
   _checkConnectivityUpdateAfterCompact(node2dofs, remaining_nodes_lids, remaining_nodes_uids, node2dofs.itemProperty().dim1Size(), false);
 
   // Check if compaction works when add&remove
@@ -884,23 +889,23 @@ _node2DoFsMultiConnectivityRegistered()
   info() << "== REGISTER A CONNECTIVITY (MULTI ARRAY) AND FOLLOW MESH EVOLUTION ";
   info() << "====================================================";
   // Done for node since it's easier to add new items
-  mesh::DoFFamily& dofs_multi_on_node_family = dofMng().family(m_dofs_multi_on_node_family_name);
+  IDoFFamily* dofs_multi_on_node_family = dofMng().getFamily(m_dofs_multi_on_node_family_name);
   IItemFamily* node_family = mesh()->nodeFamily();
   IntegerUniqueArray nb_dof_per_node(node_family->maxLocalId(),0);
   // Create the DoFs
   Int64UniqueArray uids;
   Int64 max_node_uid = mesh::DoFUids::getMaxItemUid(mesh()->nodeFamily());
-  Int64 max_dof_uid =  mesh::DoFUids::getMaxItemUid(&dofs_multi_on_node_family);
+  Int64 max_dof_uid =  mesh::DoFUids::getMaxItemUid(dofs_multi_on_node_family->itemFamily());
   ENUMERATE_NODE(inode,ownNodes())
   {
     nb_dof_per_node[inode->localId()] = 2; // constant size in initialization
     for (Integer i = 0; i < nb_dof_per_node[inode->localId()]; ++i) uids.add(mesh::DoFUids::uid(max_dof_uid,max_node_uid,inode->uniqueId().asInt64(),i));
   }
   Int32UniqueArray lids(uids.size());
-  dofs_multi_on_node_family.addDoFs(uids,lids);
-  dofs_multi_on_node_family.endUpdate();
+  dofs_multi_on_node_family->addDoFs(uids,lids);
+  dofs_multi_on_node_family->endUpdate();
 
-  NodeToDoFsMultiConnectivity node2dofs(node_family,&dofs_multi_on_node_family,nb_dof_per_node,"NodeToDoFsMulti");
+  NodeToDoFsMultiConnectivity node2dofs(node_family,dofs_multi_on_node_family->itemFamily(),nb_dof_per_node,"NodeToDoFsMulti");
 
   // Create the ghosts
   GhostLayerFromConnectivityComputer ghost_builder(&node2dofs);
@@ -946,7 +951,7 @@ _node2DoFsMultiConnectivityRegistered()
       Integer j = 0;
       Int32SharedArray source_family_lids_in_connectivity(nb_connections);
       Int64 max_item_uid= mesh::DoFUids::getMaxItemUid(node_family);
-      Int64 max_dof_uid = mesh::DoFUids::getMaxItemUid(&dofs_multi_on_node_family);
+      Int64 max_dof_uid = mesh::DoFUids::getMaxItemUid(dofs_multi_on_node_family->itemFamily());
       ENUMERATE_NODE(inode,source_family_added_items_own)
       {
         for (Integer i = 0; i < nb_dof_per_new_node[inode.index()]; ++i)
@@ -956,8 +961,8 @@ _node2DoFsMultiConnectivityRegistered()
           }
       }
       Int32SharedArray lids(uids.size());
-      dofs_multi_on_node_family.addDoFs(uids,lids);
-      dofs_multi_on_node_family.endUpdate();
+      dofs_multi_on_node_family->addDoFs(uids,lids);
+      dofs_multi_on_node_family->endUpdate();
       // Update connectivity
       node2dofs.updateConnectivity(source_family_lids_in_connectivity,lids);
       // Update ghost
@@ -1019,8 +1024,8 @@ _node2DoFsMultiConnectivityRegistered()
       // Update connectivity
       node2dofs.updateConnectivity(source_family_removed_items_lids_in_connectivity,null_item_lids);
       // unused dof can be removed if desired. Usefull to remove them to test compaction
-      dofs_multi_on_node_family.removeDoFs(removed_dofs);
-      dofs_multi_on_node_family.endUpdate();
+      dofs_multi_on_node_family->removeDoFs(removed_dofs);
+      dofs_multi_on_node_family->endUpdate();
       connectivity_mng->setUpToDate(&node2dofs);
     }
 
@@ -1037,11 +1042,11 @@ _node2DoFsMultiConnectivityRegistered()
     }
 
   // Compact Target family
-  debug() << "DOFS " << dofs_multi_on_node_family.view().localIds();
-  debug() << "DOF family size " << dofs_multi_on_node_family.nbItem();
-  dofs_multi_on_node_family.compactItems(true);
-  debug() << "DOF family size " << dofs_multi_on_node_family.nbItem();
-  debug() << "DOFS " << dofs_multi_on_node_family.view().localIds();
+  debug() << "DOFS " << dofs_multi_on_node_family->itemFamily()->view().localIds();
+  debug() << "DOF family size " << dofs_multi_on_node_family->nbItem();
+  dofs_multi_on_node_family->itemFamily()->compactItems(true);
+  debug() << "DOF family size " << dofs_multi_on_node_family->nbItem();
+  debug() << "DOFS " << dofs_multi_on_node_family->itemFamily()->view().localIds();
 
   _checkConnectivityUpdateAfterCompact(node2dofs, remaining_nodes_lids, remaining_nodes_uids, node2dofs.itemProperty().dim1Size(), false);
 
@@ -1220,7 +1225,7 @@ _removeNodes(Int32ConstArray2View new_nodes_lids,
              Int64SharedArray2& remaining_node_uids)
 {
   ARCANE_ASSERT((nb_removed_nodes <= new_nodes_lids.dim2Size()),("Cannot removed more nodes than available"));
-  mesh::NodeFamily* node_family = static_cast<mesh::NodeFamily*> (mesh()->nodeFamily());
+  auto* node_family = mesh()->nodeFamily();
   Integer nb_subdomain = subDomain()->parallelMng()->commSize();
   Integer nb_remaining_nodes = remaining_node_lids.dim2Size();
   UniqueArray<ItemVectorView> removed_nodes(nb_subdomain);
@@ -1274,14 +1279,14 @@ void
 DoFTester::
 doFVariable()
 {
-  mesh::DoFFamily& dof_family = dofMng().family(m_dofs_on_cell_family_name);
+  IDoFFamily* dof_family = dofMng().getFamily(m_dofs_on_cell_family_name);
 
   // Create and fillDoF Scalar Variable (with internal support)
   info() << "=== CreateDoFVariable : ";
   VariableDoFReal dof_variable(VariableBuildInfo(mesh(),"DoFVariable",m_dofs_on_cell_family_name));
 
   dof_variable.fill(-1);
-  ENUMERATE_DOF(idof,dof_family.ownDoFs())
+  ENUMERATE_DOF(idof,dof_family->allItems().own())
   {
     dof_variable[idof] = (Real)(idof->uniqueId().asInt64());
     info() << "= dof_variable[idof] = " << dof_variable[idof];
@@ -1297,7 +1302,7 @@ doFVariable()
 
 
   VariableCollection var_collection;
-  dof_family.usedVariables(var_collection);
+  dof_family->itemFamily()->usedVariables(var_collection);
   info() << "==Used variables in family";
   for(VariableCollection::Enumerator ite = var_collection.enumerator();++ite ; )
     {
@@ -1311,9 +1316,9 @@ doFVariable()
   Integer size =2;
   dof_array_variable.resize(size);
   // Initialize with -1
-  ENUMERATE_DOF(idof,dof_family.allDoFs()) {dof_array_variable[idof].fill(-1);}
+  ENUMERATE_DOF(idof,dof_family->allItems()) {dof_array_variable[idof].fill(-1);}
 
-  ENUMERATE_DOF(idof,dof_family.ownDoFs())
+  ENUMERATE_DOF(idof,dof_family->allItems().own())
   {
     for (Integer i = 0; i < size; ++i)
       {
