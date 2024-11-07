@@ -52,7 +52,7 @@ class ARCANE_ACCELERATOR_CORE_EXPORT IRunnerRuntime
   virtual void startProfiling() {}
   virtual void stopProfiling() {}
   virtual bool isProfilingActive() { return false; }
-  virtual void pushProfilerRange(const String&) {}
+  virtual void pushProfilerRange([[maybe_unused]] const String& name, [[maybe_unused]] Int32 color_gdb) {}
   virtual void popProfilerRange() {}
   virtual void finalize(ITraceMng*) {}
 

@@ -327,7 +327,7 @@ class HipRunnerRuntime
                           ptr, pa.devicePointer, pa.hostPointer);
   }
 
-  void pushProfilerRange(const String& name) override
+  void pushProfilerRange(const String& name, [[maybe_unused]] Int32 color) override
   {
 #ifdef ARCANE_HAS_ROCTX
     roctxRangePush(name.localstr());

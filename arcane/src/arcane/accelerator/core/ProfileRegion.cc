@@ -31,7 +31,19 @@ ProfileRegion(const RunQueue& queue, const String& name)
   if (queue.isNull())
     return;
   m_runtime = queue._internalRuntime();
-  m_runtime->pushProfilerRange(name);
+  m_runtime->pushProfilerRange(name, -1);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+ProfileRegion::
+ProfileRegion(const RunQueue& queue, const String& name, Int32 color_rgb)
+{
+  if (queue.isNull())
+    return;
+  m_runtime = queue._internalRuntime();
+  m_runtime->pushProfilerRange(name, color_rgb);
 }
 
 /*---------------------------------------------------------------------------*/

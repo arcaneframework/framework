@@ -31,14 +31,13 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arcane::impl
+namespace Arcane
 {
 class ItemBase;
 }
-
 namespace Arcane::Materials::matimpl
 {
-using Arcane::impl::ItemBase;
+using ::Arcane::ItemBase;
 class ConstituentItemBase;
 }
 

@@ -44,11 +44,6 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arcane::impl
-{
-class ItemBase;
-}
-
 namespace Arcane::mesh
 {
 class IncrementalItemConnectivityBase;
@@ -95,7 +90,7 @@ class ARCANE_CORE_EXPORT ItemInternalConnectivityList
   // IMPORTANT: Cette structure doit avoir le même agencement mémoire
   // que la structure C# de même nom.
 
-  friend class impl::ItemBase;
+  friend class ItemBase;
   friend class ItemInternal;
   friend class Item;
 
@@ -417,11 +412,6 @@ class ARCANE_CORE_EXPORT ItemInternalConnectivityList
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-namespace impl
-{
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 /*!
  * \brief Classe de base pour les entités du maillage.
  *
@@ -685,15 +675,15 @@ class ARCANE_CORE_EXPORT ItemBase
    * se traduit par un débordement de tableau.
    */
   //@{
-  ItemIndexedListView<DynExtent> nodeList() const { return _connectivity()->nodeList(m_local_id); }
-  ItemIndexedListView<DynExtent> edgeList() const { return _connectivity()->edgeList(m_local_id); }
-  ItemIndexedListView<DynExtent> faceList() const { return _connectivity()->faceList(m_local_id); }
-  ItemIndexedListView<DynExtent> cellList() const { return _connectivity()->cellList(m_local_id); }
+  impl::ItemIndexedListView<DynExtent> nodeList() const { return _connectivity()->nodeList(m_local_id); }
+  impl::ItemIndexedListView<DynExtent> edgeList() const { return _connectivity()->edgeList(m_local_id); }
+  impl::ItemIndexedListView<DynExtent> faceList() const { return _connectivity()->faceList(m_local_id); }
+  impl::ItemIndexedListView<DynExtent> cellList() const { return _connectivity()->cellList(m_local_id); }
 
-  ItemIndexedListView<DynExtent> itemList(Node*) const { return nodeList(); }
-  ItemIndexedListView<DynExtent> itemList(Edge*) const { return edgeList(); }
-  ItemIndexedListView<DynExtent> itemList(Face*) const { return faceList(); }
-  ItemIndexedListView<DynExtent> itemList(Cell*) const { return cellList(); }
+  impl::ItemIndexedListView<DynExtent> itemList(Node*) const { return nodeList(); }
+  impl::ItemIndexedListView<DynExtent> itemList(Edge*) const { return edgeList(); }
+  impl::ItemIndexedListView<DynExtent> itemList(Face*) const { return faceList(); }
+  impl::ItemIndexedListView<DynExtent> itemList(Cell*) const { return cellList(); }
   //@}
 
   ItemBase nodeBase(Int32 index) const { return _connectivity()->nodeBase(m_local_id,index); }
@@ -891,11 +881,6 @@ class ARCANE_CORE_EXPORT MutableItemBase
 
   inline void _setFaceInfos(Int32 mod_flags);
 };
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-} // End namespace impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

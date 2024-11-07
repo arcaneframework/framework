@@ -393,8 +393,8 @@ _resizeForIndexer(ResizeVariableIndexerArgs& args)
     this->_setView(index + 1);
   }
   if (args.isUseOneCommand()) {
-    auto dest = asWritableBytes(m_device_views).smallView();
-    auto source = asBytes(m_host_views).smallView();
+    auto dest = asWritableBytes(m_device_views.view());
+    auto source = asBytes(m_host_views.view());
     args.addOneCopyData(source,dest,1);
   }
   else
@@ -461,54 +461,33 @@ _copyBetweenPartialAndGlobal(const CopyBetweenPartialAndGlobalArgs& args)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename Traits> void
+template <typename Traits> void
 ItemMaterialVariableBase<Traits>::
-_initializeNewItems(const ComponentItemListBuilder& list_builder, RunQueue& queue)
+_initializeNewItemsWithZero(const ComponentItemListBuilder& list_builder, RunQueue& queue)
 {
   MeshMaterialVariableIndexer* indexer = list_builder.indexer();
   Integer var_index = indexer->index();
-  PrivatePartType* partial_var = m_vars[var_index+1];
+  PrivatePartType* partial_var = m_vars[var_index + 1];
   if (!_isValidAndUsedAndGlobalUsed(partial_var))
     return;
 
-  bool init_with_zero = m_p->materialMng()->isDataInitialisationWithZero();
+  SmallSpan<const Int32> partial_indexes = list_builder.partialIndexes();
 
-  SmallSpan<const MatVarIndex> partial_matvar = list_builder.partialMatVarIndexes();
+  Integer nb_partial = partial_indexes.size();
 
-  Integer nb_partial = partial_matvar.size();
+  ContainerSpanType partial_view = m_host_views[var_index + 1];
 
-  // TODO: regarder s'il faut initialiser les mailles pure avec zéro.
-  // En effet, normalement il n'y a pas de maille pure si on ajoute un matériau
-  // (sauf lors de l'init).
+  ARCANE_CHECK_ACCESSIBLE_POINTER(queue, partial_indexes.data());
+
   DataType zero = DataType();
-
   auto command = makeCommand(queue);
-  SmallSpan<ContainerViewType> views = m_device_views.smallSpan();
-
-  ARCANE_CHECK_ACCESSIBLE_POINTER(queue, views.data());
-  ARCANE_CHECK_ACCESSIBLE_POINTER(queue, partial_matvar.data());
-
-  if (init_with_zero){
-    command << RUNCOMMAND_LOOP1(iter, nb_partial)
-    {
-      auto [i] = iter();
-      MatVarIndex mvi = partial_matvar[i];
-      Traits::setValue(views[mvi.arrayIndex()][mvi.valueIndex()],zero);
-    };
-  }
-  else{
-    SmallSpan<const Int32> partial_local_ids = list_builder.partialLocalIds();
-    ARCANE_CHECK_ACCESSIBLE_POINTER(queue, partial_local_ids.data());
-    command << RUNCOMMAND_LOOP1(iter, nb_partial)
-    {
-      auto [i] = iter();
-      const auto& v = views[0][partial_local_ids[i]];
-      MatVarIndex mvi = partial_matvar[i];
-      Traits::setValue(views[mvi.arrayIndex()][mvi.valueIndex()],v);
-    };
-  }
+  command << RUNCOMMAND_LOOP1(iter, nb_partial)
+  {
+    auto [i] = iter();
+    Int32 index = partial_indexes[i];
+    Traits::setValue(partial_view[index], zero);
+  };
 }
-
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

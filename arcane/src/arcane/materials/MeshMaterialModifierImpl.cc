@@ -223,7 +223,7 @@ endUpdate()
 void MeshMaterialModifierImpl::
 _endUpdate()
 {
-  Accelerator::ProfileRegion ps(m_queue,"ConstituentsEndUpdate");
+  Accelerator::ProfileRegion ps(m_queue,"ConstituentsEndUpdate", 0x97599A);
 
   bool is_keep_value = m_material_mng->isKeepValuesAfterChange();
   Integer nb_operation = m_operations.values().size();

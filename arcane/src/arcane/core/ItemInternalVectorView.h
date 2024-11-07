@@ -1,23 +1,23 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemInternalVectorView.h                                    (C) 2000-2023 */
+/* ItemInternalVectorView.h                                    (C) 2000-2024 */
 /*                                                                           */
 /* Vue sur un vecteur (tableau indirect) d'entités.                          */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_ITEMINTERNALVECTORVIEW_H
-#define ARCANE_ITEMINTERNALVECTORVIEW_H
+#ifndef ARCANE_CORE_ITEMINTERNALVECTORVIEW_H
+#define ARCANE_CORE_ITEMINTERNALVECTORVIEW_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/ArrayView.h"
-#include "arcane/ItemTypes.h"
-#include "arcane/ItemSharedInfo.h"
-#include "arcane/ItemIndexedListView.h"
+#include "arcane/core/ItemTypes.h"
+#include "arcane/core/ItemSharedInfo.h"
+#include "arcane/core/ItemIndexedListView.h"
 
 #include <iterator>
 
@@ -126,7 +126,7 @@ class ARCANE_CORE_EXPORT ItemInternalVectorView
 
   friend class ItemVectorView;
   friend class ItemInternalConnectivityList;
-  friend class impl::ItemBase;
+  friend class ItemBase;
   friend class ItemEnumeratorBase;
   friend class SimdItemEnumeratorBase;
   friend class ItemInternalEnumerator;
