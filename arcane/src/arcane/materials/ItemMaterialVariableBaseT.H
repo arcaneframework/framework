@@ -473,9 +473,9 @@ _initializeNewItems(const ComponentItemListBuilder& list_builder, RunQueue& queu
 
   bool init_with_zero = m_p->materialMng()->isDataInitialisationWithZero();
 
-  SmallSpan<const MatVarIndex> partial_matvar = list_builder.partialMatVarIndexes();
+  SmallSpan<const Int32> partial_indexes = list_builder.partialIndexes();
 
-  Integer nb_partial = partial_matvar.size();
+  Integer nb_partial = partial_indexes.size();
 
   // TODO: regarder s'il faut initialiser les mailles pure avec zéro.
   // En effet, normalement il n'y a pas de maille pure si on ajoute un matériau
@@ -483,20 +483,18 @@ _initializeNewItems(const ComponentItemListBuilder& list_builder, RunQueue& queu
   DataType zero = DataType();
 
   auto command = makeCommand(queue);
-  SmallSpan<ContainerViewType> views = m_device_views.smallSpan();
 
   ContainerSpanType partial_view = m_host_views[var_index + 1];
   ContainerSpanType pure_view = m_host_views[0];
 
-  ARCANE_CHECK_ACCESSIBLE_POINTER(queue, views.data());
-  ARCANE_CHECK_ACCESSIBLE_POINTER(queue, partial_matvar.data());
+  ARCANE_CHECK_ACCESSIBLE_POINTER(queue, partial_indexes.data());
 
   if (init_with_zero) {
     command << RUNCOMMAND_LOOP1(iter, nb_partial)
     {
       auto [i] = iter();
-      MatVarIndex mvi = partial_matvar[i];
-      Traits::setValue(partial_view[mvi.valueIndex()], zero);
+      Int32 index = partial_indexes[i];
+      Traits::setValue(partial_view[index], zero);
     };
   }
   else {
@@ -505,8 +503,8 @@ _initializeNewItems(const ComponentItemListBuilder& list_builder, RunQueue& queu
     command << RUNCOMMAND_LOOP1(iter, nb_partial)
     {
       auto [i] = iter();
-      MatVarIndex mvi = partial_matvar[i];
-      Traits::setValue(partial_view[mvi.valueIndex()], pure_view[partial_local_ids[i]]);
+      Int32 index = partial_indexes[i];
+      Traits::setValue(partial_view[index], pure_view[partial_local_ids[i]]);
     };
   }
 }

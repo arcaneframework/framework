@@ -261,14 +261,12 @@ _addItemsToIndexer(MeshMaterialVariableIndexer* var_indexer,
   const Int32 n = local_ids.size();
   list_builder.preAllocate(n);
 
-  SmallSpan<MatVarIndex> pure_matvar_indexes = list_builder.pureMatVarIndexes();
-  SmallSpan<MatVarIndex> partial_matvar_indexes = list_builder.partialMatVarIndexes();
+  SmallSpan<Int32> pure_indexes = list_builder.pureIndexes();
+  SmallSpan<Int32> partial_indexes = list_builder.partialIndexes();
   SmallSpan<Int32> partial_local_ids = list_builder.partialLocalIds();
   Int32 nb_pure_added = 0;
   Int32 nb_partial_added = 0;
   Int32 index_in_partial = var_indexer->maxIndexInMultipleArray();
-
-  const Int32 component_index = var_indexer->index() + 1;
 
   SmallSpan<const bool> cells_is_partial = m_work_info.m_cells_is_partial;
 
@@ -286,7 +284,7 @@ _addItemsToIndexer(MeshMaterialVariableIndexer* var_indexer,
     };
     auto setter_lambda = [=] ARCCORE_HOST_DEVICE(Int32 input_index, Int32 output_index) {
       Int32 local_id = local_ids[input_index];
-      pure_matvar_indexes[output_index] = MatVarIndex(0, local_id);
+      pure_indexes[output_index] = local_id;
     };
     filterer.applyWithIndex(n, select_lambda, setter_lambda, A_FUNCINFO);
     nb_pure_added = filterer.nbOutputElement();
@@ -298,7 +296,7 @@ _addItemsToIndexer(MeshMaterialVariableIndexer* var_indexer,
     };
     auto setter_lambda = [=] ARCCORE_HOST_DEVICE(Int32 input_index, Int32 output_index) {
       Int32 local_id = local_ids[input_index];
-      partial_matvar_indexes[output_index] = MatVarIndex(component_index, index_in_partial + output_index);
+      partial_indexes[output_index] = index_in_partial + output_index;
       partial_local_ids[output_index] = local_id;
     };
     filterer.applyWithIndex(n, select_lambda, setter_lambda, A_FUNCINFO);
@@ -309,10 +307,10 @@ _addItemsToIndexer(MeshMaterialVariableIndexer* var_indexer,
 
   if (traceMng()->verbosityLevel() >= 5)
     info() << "ADD_MATITEM_TO_INDEXER component=" << var_indexer->name()
-           << " nb_pure=" << list_builder.pureMatVarIndexes().size()
-           << " nb_partial=" << list_builder.partialMatVarIndexes().size()
-           << "\n pure=(" << list_builder.pureMatVarIndexes() << ")"
-           << "\n partial=(" << list_builder.partialMatVarIndexes() << ")";
+           << " nb_pure=" << list_builder.pureIndexes().size()
+           << " nb_partial=" << list_builder.partialIndexes().size()
+           << "\n pure=(" << list_builder.pureIndexes() << ")"
+           << "\n partial=(" << list_builder.partialIndexes() << ")";
 
   // TODO: lors de cet appel, on connait le max de \a index_in_partial donc
   // on peut éviter de faire une réduction pour le recalculer.
