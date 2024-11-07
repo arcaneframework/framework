@@ -503,23 +503,13 @@ _initializeNewItemsWithPureValues(const ComponentItemListBuilder& list_builder, 
     return;
 
   SmallSpan<const Int32> partial_indexes = list_builder.partialIndexes();
-
-  Int32 nb_partial = partial_indexes.size();
+  SmallSpan<const Int32> partial_local_ids = list_builder.partialLocalIds();
 
   ContainerSpanType partial_view = m_host_views[var_index + 1];
   ContainerSpanType pure_view = m_host_views[0];
 
   ARCANE_CHECK_ACCESSIBLE_POINTER(queue, partial_indexes.data());
-
-  auto command = makeCommand(queue);
-  SmallSpan<const Int32> partial_local_ids = list_builder.partialLocalIds();
-  ARCANE_CHECK_ACCESSIBLE_POINTER(queue, partial_local_ids.data());
-  command << RUNCOMMAND_LOOP1(iter, nb_partial)
-  {
-    auto [i] = iter();
-    Int32 index = partial_indexes[i];
-    Traits::setValue(partial_view[index], pure_view[partial_local_ids[i]]);
-  };
+  Traits::copyTo(pure_view,partial_local_ids,partial_view,partial_indexes,queue);
 }
 
 /*---------------------------------------------------------------------------*/
