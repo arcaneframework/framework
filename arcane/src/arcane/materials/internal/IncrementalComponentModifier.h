@@ -79,6 +79,7 @@ class ARCANE_MATERIALS_EXPORT IncrementalComponentModifier
   void _removeItemsInGroup(ItemGroup cells,SmallSpan<const Int32> removed_ids);
   void _applyCopyBetweenPartialsAndGlobals(const CopyBetweenPartialAndGlobalArgs& args, RunQueue& queue);
   void _applyCopyVariableViews(RunQueue& queue);
+  void _applyInitializeWithZero(const InitializeWithZeroArgs& args);
   void _computeItemsToAdd(ComponentItemListBuilder& list_builder, SmallSpan<const Int32> local_ids);
 
  private:

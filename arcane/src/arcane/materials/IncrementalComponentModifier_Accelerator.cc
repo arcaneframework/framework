@@ -432,6 +432,42 @@ _applyCopyBetweenPartialsAndGlobals(const CopyBetweenPartialAndGlobalArgs& args,
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+void IncrementalComponentModifier::
+_applyInitializeWithZero(const InitializeWithZeroArgs& args)
+{
+  ARCANE_CHECK_POINTER(args.m_copy_data);
+
+  const RunQueue& queue = args.m_queue;
+  auto output_indexes = args.m_indexes_in_multiple;
+
+  SmallSpan<const CopyBetweenDataInfo> host_copy_data(m_work_info.m_host_variables_copy_data);
+  SmallSpan<const CopyBetweenDataInfo> copy_data(m_work_info.m_variables_copy_data.to1DSmallSpan());
+  const Int32 nb_value = output_indexes.size();
+  const Int32 nb_copy = copy_data.size();
+
+  for (Int32 i = 0; i < nb_copy; ++i) {
+    ARCANE_CHECK_ACCESSIBLE_POINTER(queue, host_copy_data[i].m_output.data());
+  }
+  ARCANE_CHECK_ACCESSIBLE_POINTER(queue, output_indexes.data());
+
+  // TODO: Gérer la copie de manière à pouvoir utiliser la coalescence
+  // TODO: Faire des spécialisations si le dim2_size est de 4 ou 8
+  // (voire un multiple) pour éviter la boucle interne.
+  auto command = makeCommand(queue);
+  command << RUNCOMMAND_LOOP2(iter, nb_copy, nb_value)
+  {
+    auto [icopy, i] = iter();
+    auto output = copy_data[icopy].m_output;
+    Int32 dim2_size = copy_data[icopy].m_data_size;
+    Int32 output_base = output_indexes[i] * dim2_size;
+    for (Int32 j = 0; j < dim2_size; ++j)
+      output[output_base + j] = {};
+  };
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 /*!
  * \brief Effectue la copie des vues pour les variables.
  *
@@ -472,7 +508,6 @@ _applyCopyVariableViews(RunQueue& queue)
     output[i] = input[i];
   };
 }
-
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

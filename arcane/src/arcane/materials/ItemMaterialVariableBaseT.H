@@ -463,30 +463,37 @@ _copyBetweenPartialAndGlobal(const CopyBetweenPartialAndGlobalArgs& args)
 
 template <typename Traits> void
 ItemMaterialVariableBase<Traits>::
-_initializeNewItemsWithZero(const ComponentItemListBuilder& list_builder, RunQueue& queue)
+_initializeNewItemsWithZero(InitializeWithZeroArgs& args)
 {
-  MeshMaterialVariableIndexer* indexer = list_builder.indexer();
-  Integer var_index = indexer->index();
-  PrivatePartType* partial_var = m_vars[var_index + 1];
+  const Int32 var_index = args.m_var_index + 1;
+  RunQueue& queue = args.m_queue;
+  PrivatePartType* partial_var = m_vars[var_index];
   if (!_isValidAndUsedAndGlobalUsed(partial_var))
     return;
 
-  SmallSpan<const Int32> partial_indexes = list_builder.partialIndexes();
+  SmallSpan<const Int32> partial_indexes = args.m_indexes_in_multiple;
 
-  Integer nb_partial = partial_indexes.size();
-
-  ContainerSpanType partial_view = m_host_views[var_index + 1];
 
   ARCANE_CHECK_ACCESSIBLE_POINTER(queue, partial_indexes.data());
 
-  DataType zero = DataType();
-  auto command = makeCommand(queue);
-  command << RUNCOMMAND_LOOP1(iter, nb_partial)
-  {
-    auto [i] = iter();
-    Int32 index = partial_indexes[i];
-    Traits::setValue(partial_view[index], zero);
-  };
+  if (args.isUseOneCommand()){
+    Int32 data_type_size = dataTypeSize();
+    auto output = m_host_views[var_index];
+    SmallSpan<std::byte> output_bytes(Traits::toBytes(output));
+    args.addOneCopyData({}, output_bytes, data_type_size);
+  }
+  else{
+    ContainerSpanType partial_view = m_host_views[var_index];
+    Int32 nb_partial = partial_indexes.size();
+    DataType zero = DataType();
+    auto command = makeCommand(queue);
+    command << RUNCOMMAND_LOOP1(iter, nb_partial)
+    {
+      auto [i] = iter();
+      Int32 index = partial_indexes[i];
+      Traits::setValue(partial_view[index], zero);
+    };
+  }
 }
 
 /*---------------------------------------------------------------------------*/

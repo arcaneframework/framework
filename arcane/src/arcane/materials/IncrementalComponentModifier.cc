@@ -357,16 +357,32 @@ _addItemsToIndexer(MeshMaterialVariableIndexer* var_indexer,
 
     Accelerator::ProfileRegion ps(m_queue, "InitializeNewItems", 0xFFFF00);
 
+    SmallSpan<Int32> partial_indexes = list_builder.partialIndexes();
     if (init_with_zero) {
       RunQueue::ScopedAsync sc(&m_queue);
+      InitializeWithZeroArgs init_args(var_indexer->index(), partial_indexes, m_queue);
+
+      bool do_one_command = (m_use_generic_copy_between_pure_and_partial == 2);
+      UniqueArray<CopyBetweenDataInfo>& copy_data = m_work_info.m_host_variables_copy_data;
+      if (do_one_command) {
+        copy_data.clear();
+        copy_data.reserve(m_material_mng->nbVariable());
+        init_args.m_copy_data = &copy_data;
+      }
+
       auto func_zero = [&](IMeshMaterialVariable* mv) {
-        mv->_internalApi()->initializeNewItemsWithZero(list_builder, m_queue);
+        mv->_internalApi()->initializeNewItemsWithZero(init_args);
       };
       functor::apply(mm, &IMeshMaterialMng::visitVariables, func_zero);
+
+      if (do_one_command){
+        MDSpan<CopyBetweenDataInfo, MDDim1> x(copy_data.data(), MDIndex<1>(copy_data.size()));
+        m_work_info.m_variables_copy_data.copy(x, &m_queue);
+        _applyInitializeWithZero(init_args);
+      }
       m_queue.barrier();
     }
     else {
-      SmallSpan<Int32> partial_indexes = list_builder.partialIndexes();
       SmallSpan<Int32> partial_local_ids = list_builder.partialLocalIds();
 
       CopyBetweenPartialAndGlobalArgs args(var_indexer->index(), partial_local_ids,
