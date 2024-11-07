@@ -355,19 +355,24 @@ _addItemsToIndexer(MeshMaterialVariableIndexer* var_indexer,
     IMeshMaterialMng* mm = m_material_mng;
     bool init_with_zero = mm->isDataInitialisationWithZero();
 
-    // TODO: Comme tout est indépendant par variable, on pourrait
-    // éventuellement utiliser plusieurs files.
     Accelerator::ProfileRegion ps(m_queue, "InitializeNewItems", 0xFFFF00);
-    RunQueue::ScopedAsync sc(&m_queue);
 
-    auto func = [&](IMeshMaterialVariable* mv) {
-      if (init_with_zero)
+    if (init_with_zero) {
+      RunQueue::ScopedAsync sc(&m_queue);
+      auto func_zero = [&](IMeshMaterialVariable* mv) {
         mv->_internalApi()->initializeNewItemsWithZero(list_builder, m_queue);
-      else
-        mv->_internalApi()->initializeNewItemsWithPureValues(list_builder, m_queue);
-    };
-    functor::apply(mm, &IMeshMaterialMng::visitVariables, func);
-    m_queue.barrier();
+      };
+      functor::apply(mm, &IMeshMaterialMng::visitVariables, func_zero);
+      m_queue.barrier();
+    }
+    else {
+      SmallSpan<Int32> partial_indexes = list_builder.partialIndexes();
+      SmallSpan<Int32> partial_local_ids = list_builder.partialLocalIds();
+
+      CopyBetweenPartialAndGlobalArgs args(var_indexer->index(), partial_local_ids,
+                                           partial_indexes, true, true, m_queue);
+      _copyBetweenPartialsAndGlobals(args);
+    }
   }
 }
 
