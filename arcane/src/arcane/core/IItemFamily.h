@@ -257,7 +257,7 @@ class ARCANE_CORE_EXPORT IItemFamily
    */
   virtual void removeNeedRemoveMarkedItems() =0;
 
-  /*
+  /*!
    * \brief Entité de numéro unique \a unique_id.
    *
    * Si aucune entité avec cet \a unique_id n'est trouvé, retourne \a nullptr.
