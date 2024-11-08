@@ -23,6 +23,7 @@ namespace Arcane
 {
 
 class IItemConnectivityMng;
+class IPolyhedralMeshModifier;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -54,7 +55,16 @@ class ARCANE_CORE_EXPORT IMeshInternal
    * automatiquement. A usage interne uniquement en attendant la suppression.
    */
   virtual IItemConnectivityMng* dofConnectivityMng() const noexcept = 0;
+
+  /*!
+   * \bief Renvoie l'interface de modification du maillage polyédrique
+   *
+   * Cette méthode retourne nullptr si l'implémentation du maillage n'est pas PolyhedralMesh
+   */
+  virtual IPolyhedralMeshModifier* polyhedralMeshModifier() const noexcept {return nullptr;}
 };
+
+
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
