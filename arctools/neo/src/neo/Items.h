@@ -224,8 +224,8 @@ struct FutureItemRange
   FutureItemRange() = default;
   virtual ~FutureItemRange() = default;
 
-  FutureItemRange(FutureItemRange&) = default;
-  FutureItemRange& operator=(FutureItemRange&) = default;
+  FutureItemRange(FutureItemRange const&) = default;
+  FutureItemRange& operator=(FutureItemRange const&) = default;
 
   FutureItemRange(FutureItemRange&&) = default;
   FutureItemRange& operator=(FutureItemRange&&) = default;
@@ -259,15 +259,15 @@ struct FilteredFutureItemRange : public FutureItemRange
 
   FilteredFutureItemRange() = delete;
 
-  FilteredFutureItemRange(FutureItemRange& future_item_range_ref,
+  FilteredFutureItemRange(FutureItemRange const& future_item_range_ref,
                           std::vector<int> filter)
   : m_future_range(future_item_range_ref)
   , m_filter(std::move(filter)) {}
 
   virtual ~FilteredFutureItemRange() = default;
 
-  FilteredFutureItemRange(FilteredFutureItemRange&) = default;
-  FilteredFutureItemRange& operator=(FilteredFutureItemRange&) = default;
+  FilteredFutureItemRange(FilteredFutureItemRange const&) = default;
+  FilteredFutureItemRange& operator=(FilteredFutureItemRange const&) = default;
 
   FilteredFutureItemRange(FilteredFutureItemRange&&) = default;
   FilteredFutureItemRange& operator=(FilteredFutureItemRange&&) = default;
