@@ -24,6 +24,8 @@
 #include "arcane/core/IMeshFactory.h"
 #include "arcane/core/ItemInternal.h"
 #include "arcane/core/IDoFFamily.h"
+#include "arcane/core/IMeshCompactMng.h"
+#include "arcane/core/IMeshCompacter.h"
 #include "arcane/core/internal/IVariableMngInternal.h"
 #include "arcane/core/internal/IPolyhedralMeshModifier.h"
 
@@ -622,6 +624,89 @@ class mesh::PolyhedralMesh::InternalApi
   std::unique_ptr<IPolyhedralMeshModifier> m_polyhedral_mesh_modifier = nullptr;
 };
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+class mesh::PolyhedralMesh::NoCompactionMeshCompacter
+: public IMeshCompacter
+{
+ public:
+  explicit NoCompactionMeshCompacter(PolyhedralMesh* mesh)
+  : m_mesh(mesh)
+  , m_trace_mng(mesh->traceMng()){}
+
+  void doAllActions() override {_info();};
+
+  void beginCompact() override {_info();};
+  void compactVariablesAndGroups() override {_info();};
+  void updateInternalReferences() override {_info();};
+  void endCompact() override {_info();};
+  void finalizeCompact() override {_info();};
+
+  IMesh* mesh() const override {return m_mesh;};
+
+  const ItemFamilyCompactInfos* findCompactInfos(IItemFamily* family) const override {_info(); return nullptr;}
+
+  ePhase phase() const override {_info(); return ePhase::Ended;}
+
+  void setSorted(bool v) override {_info();};
+
+  bool isSorted() const override {_info();return false;};
+
+  ItemFamilyCollection families() const override {_info();return ItemFamilyCollection {};};
+
+  void _setCompactVariablesAndGroups(bool v) override {_info();};
+
+ private:
+  PolyhedralMesh* m_mesh = nullptr;
+  ITraceMng* m_trace_mng = nullptr;
+
+  void _info() const {m_trace_mng->info() << A_FUNCINFO << "No compacting in PolyhedralMesh";}
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+class mesh::PolyhedralMesh::NoCompactionMeshCompactMng
+: public IMeshCompactMng
+{
+ public:
+  explicit NoCompactionMeshCompactMng(PolyhedralMesh* mesh)
+  : m_mesh(mesh)
+  , m_trace_mng(mesh->traceMng())
+  , m_mesh_compacter{std::make_unique<NoCompactionMeshCompacter>(m_mesh)}
+  {}
+
+  IMesh* mesh() const override {return m_mesh;}
+  IMeshCompacter* beginCompact() override
+  {
+    _info();
+    return m_mesh_compacter.get();
+  }
+
+  IMeshCompacter* beginCompact(IItemFamily* family) override
+  {
+    ARCANE_UNUSED(family);
+    _info();
+    return m_mesh_compacter.get();
+  };
+
+  void endCompact() override {_info();};
+
+  IMeshCompacter* compacter() override
+  {
+    _info();
+    return m_mesh_compacter.get();
+  };
+
+
+ private:
+  PolyhedralMesh* m_mesh = nullptr;
+  ITraceMng* m_trace_mng = nullptr;
+  std::unique_ptr<IMeshCompacter> m_mesh_compacter = nullptr;
+
+  void _info() const {m_trace_mng->info() << A_FUNCINFO << "No compacting in PolyhedralMesh";}
+};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -669,6 +754,7 @@ PolyhedralMesh(ISubDomain* subdomain, const MeshBuildInfo& mbi)
 , m_variable_mng{ subdomain->variableMng() }
 , m_mesh_checker{ this }
 , m_internal_api{std::make_unique<InternalApi>(this)}
+, m_compact_mng{std::make_unique<NoCompactionMeshCompactMng>(this)}
 {
   m_mesh_handle._setMesh(this);
   m_mesh_item_internal_list.mesh = this;
@@ -1202,6 +1288,15 @@ IMeshInternal* mesh::PolyhedralMesh::
 _internalApi()
 {
   return m_internal_api.get();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+IMeshCompactMng* mesh::PolyhedralMesh::
+_compactMng()
+{
+  return m_compact_mng.get();
 }
 
 /*---------------------------------------------------------------------------*/

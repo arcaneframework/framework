@@ -127,6 +127,8 @@ class PolyhedralMesh
 
   class InternalApi;
   class PolyhedralMeshModifier;
+  class NoCompactionMeshCompacter;
+  class NoCompactionMeshCompactMng;
 
  private:
 
@@ -141,6 +143,7 @@ class PolyhedralMesh
   DynamicMeshChecker m_mesh_checker;
   List<IItemFamily*> m_item_family_collection;
   std::unique_ptr<InternalApi> m_internal_api;
+  std::unique_ptr<IMeshCompactMng> m_compact_mng;
 
   // IPrimaryMeshBase interface
   IMeshInitialAllocator* initialAllocator() override { return &m_initial_allocator; }
@@ -244,6 +247,11 @@ class PolyhedralMesh
   String factoryName() const override;
 
   IMeshInternal* _internalApi() override;
+
+  IMeshCompactMng* _compactMng() override;
+
+  // For now, use _internalAPI()->polyhedralMeshModifier instead of IMeshModifier not implemented yet
+  IMeshModifier* modifier() override {return nullptr;}
 
  private:
 
