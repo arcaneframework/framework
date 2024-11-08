@@ -1,16 +1,16 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IParallelMng.h                                              (C) 2000-2023 */
+/* IParallelMng.h                                              (C) 2000-2024 */
 /*                                                                           */
 /* Interface du gestionnaire du parallélisme sur un sous-domaine.            */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_IPARALLELMNG_H
-#define ARCANE_IPARALLELMNG_H
+#ifndef ARCANE_CORE_IPARALLELMNG_H
+#define ARCANE_CORE_IPARALLELMNG_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
