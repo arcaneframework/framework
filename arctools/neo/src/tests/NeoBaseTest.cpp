@@ -78,6 +78,10 @@ void _testItemLocalIds(Neo::utils::Int32 const& first_lid,
   for (int i = 0; i < item_local_ids.size(); ++i) {
     EXPECT_EQ(item_local_ids(i), item_array_ref[i]);
   }
+  item_local_ids.clear();
+  EXPECT_EQ(item_local_ids.size(),0);
+  EXPECT_EQ(item_local_ids.itemArray().size(),0);
+  EXPECT_EQ(item_local_ids.maxLocalId(),Neo::utils::NULL_ITEM_LID);
 }
 
 /*-----------------------------------------------------------------------------*/
@@ -140,6 +144,18 @@ TEST(NeoTestItemRange, test_item_range) {
   // Internal test for out of bound
   std::cout << "Get out of bound values (index > size) " << ir.m_item_lids(100) << std::endl;
   std::cout << "Get out of bound values (index < 0) " << ir.m_item_lids(-100) << std::endl;
+  EXPECT_EQ(ir.m_item_lids(100),ir.m_item_lids.size()); // for iterator, past end is equal to size
+  EXPECT_EQ(ir.m_item_lids(-100),Neo::utils::NULL_ITEM_LID);
+  ir.clear();
+  EXPECT_EQ(ir.size(),0);
+  EXPECT_EQ(ir.localIds().size(),0);
+  auto check_null = 0;
+  for (auto item : ir) {
+    check_null += item;
+  }
+  EXPECT_EQ(check_null,0);
+  EXPECT_EQ(ir.maxLocalId(),Neo::utils::NULL_ITEM_LID);
+  EXPECT_TRUE(ir.isEmpty());
 
   // todo test out reverse range
 }
