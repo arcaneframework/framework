@@ -23,6 +23,7 @@
 #include "arcane/core/AbstractService.h"
 #include "arcane/core/IMeshFactory.h"
 #include "arcane/core/ItemInternal.h"
+#include "arcane/core/IDoFFamily.h"
 #include "arcane/core/internal/IVariableMngInternal.h"
 #include "arcane/core/internal/IPolyhedralMeshModifier.h"
 
@@ -69,7 +70,9 @@ namespace mesh
   /*---------------------------------------------------------------------------*/
   /*---------------------------------------------------------------------------*/
 
-  class PolyhedralFamily : public ItemFamily
+  class PolyhedralFamily
+    : public ItemFamily
+    , public IDoFFamily
   {
     ItemSharedInfoWithType* m_shared_info = nullptr;
     Int32UniqueArray m_empty_connectivity{ 0 };
@@ -85,14 +88,7 @@ namespace mesh
 
     PolyhedralFamily(IMesh* mesh, eItemKind ik, String name)
     : ItemFamily(mesh, ik, name)
-    {
-      ItemFamily::build();
-      m_sub_domain_id = subDomain()->subDomainId();
-      ItemTypeMng* itm = m_mesh->itemTypeMng();
-      ItemTypeInfo* dof_type_info = itm->typeFromId(IT_NullType);
-      m_shared_info = _findSharedInfo(dof_type_info);
-      _updateEmptyConnectivity();
-    }
+    {}
 
    public:
 
@@ -171,6 +167,51 @@ namespace mesh
         item_internal_connectivity_list->_setConnectivityIndex(item_kind, m_empty_connectivity_indexes);
         item_internal_connectivity_list->_setConnectivityNbItem(item_kind, m_empty_connectivity_nb_item);
       }
+    }
+
+    // IItemFamily
+    IDoFFamily* toDoFFamily() override {
+      return this;
+    }
+    // todo bloquer toutes les methodes d'allocation de IItemFamily
+
+    void build() override {
+      ItemFamily::build();
+      m_sub_domain_id = subDomain()->subDomainId();
+      ItemTypeMng* itm = m_mesh->itemTypeMng();
+      ItemTypeInfo* dof_type_info = itm->typeFromId(IT_NullType);
+      m_shared_info = _findSharedInfo(dof_type_info);
+      _updateEmptyConnectivity();
+    }
+
+    // IDoFFamily
+    String name() const override { return ItemFamily::name(); }
+    String fullName() const override { return ItemFamily::fullName(); }
+    Integer nbItem() const override { return ItemFamily::nbItem(); }
+    ItemGroup allItems() const override { return ItemFamily::allItems(); }
+    void endUpdate() override { info() << "END UPDATE "<< m_name ; return ItemFamily::endUpdate(); }
+    IItemFamily* itemFamily() override { return this; }
+
+
+    DoFVectorView addDoFs(Int64ConstArrayView dof_uids, Int32ArrayView dof_lids){
+      auto* polyhedral_mesh_modifier = m_mesh->_internalApi()->polyhedralMeshModifier();
+      ARCANE_CHECK_POINTER(polyhedral_mesh_modifier);
+      polyhedral_mesh_modifier->addItems(dof_uids, dof_lids, ItemFamily::itemKind(), name());
+      return ItemFamily::view(dof_lids);
+    }
+
+    DoFVectorView addGhostDoFs(Int64ConstArrayView dof_uids, Int32ArrayView dof_lids,
+                               Int32ConstArrayView owners)
+    {
+      ARCANE_NOT_YET_IMPLEMENTED("");
+      ARCANE_UNUSED(dof_uids);
+      ARCANE_UNUSED(owners);
+      return ItemFamily::view(dof_lids);
+    }
+
+    void removeDoFs(Int32ConstArrayView items_local_id){
+      auto* mesh_modifier = m_mesh->_internalApi()->polyhedralMeshModifier();
+      mesh_modifier->removeItems(items_local_id, ItemFamily::itemKind(), m_name);
     }
   };
 
@@ -909,6 +950,7 @@ _createItemFamily(eItemKind ik, const String& name)
     _updateMeshInternalList(ik);
   }
   m_item_family_collection.add(current_family);
+  current_family->build();
   return current_family;
 }
 
