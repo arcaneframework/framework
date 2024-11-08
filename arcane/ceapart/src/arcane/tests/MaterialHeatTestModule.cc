@@ -553,7 +553,7 @@ _initNewCells(const HeatObject& heat_object, MaterialWorkArray& wa)
           //ARCANE_FATAL("Bad mat temperature (should be 0) i={0} v={1} mc={2}", i, v, mc);
         }
         else {
-          Real global_v = out_mat_temperature[CellLocalId(mc.globalCellId())];
+          Real global_v = out_mat_temperature[mc.globalCellId()];
           if (v != global_v)
             sum_error.combine(1);
           //ARCANE_FATAL("Bad mat temperature i={0} v={1} mc={2} expected_v={3}", i, v, mc, global_v);
