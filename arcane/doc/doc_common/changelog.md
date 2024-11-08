@@ -9,6 +9,262 @@ antérieures à la version 3 sont listées ici : \ref arcanedoc_news_changelog20
 
 ___
 
+## Arcane Version 3.14.* (novembre 2024) {#arcanedoc_version3140}
+
+### Nouveautés/Améliorations
+
+- Ajoute mécanisme pour supprimer les mailles fantômes des mailles
+  raffinées (\pr{1716}
+- Ajoute méthodes \arcane{ICartesianMesh::coarseZone2D()} et
+  \arcane{ICartesianMesh::coarseZone3D()} pour déraffiner un bloc d'un
+  patch AMR (\pr{1697})
+- Ajoute support dans l'AMR par patch pour déraffiner le maillage
+  initial (\pr{1678})
+- Ajoute possibilité de choisir la version de numérotation des faces
+  dans le jeu de données (\pr{1674})
+- Ajoute une nouvelle implémentation de tableau associatif
+  \arcane{impl::HashTableMap2}. Cette implémentation est pour
+  l'instant interne à Arcane. La nouvelle implémentation est plus
+  rapide, consomme moins de mémoire que l'ancienne
+  (\arcane{HashTableMapT}). Elle a aussi une API compatible avec
+  `std::unordered_map` (\pr{1638}, \pr{1639}, \pr{1640}, \pr{1650})
+- Ajoute support de l'écriture MPI/IO par bloc dans l'écrivain
+  `VtkHdfV2PostProcessor` (\pr{1648}, \pr{1649})
+- Ajoute support des maillage polyédriques (\pr{1619}, \pr{1620})
+- Ajoute méthode utilitaire
+  \arcane{MeshUtils::computeNodeNodeViaEdgeConnectivity()} pour créer
+  les connectivités noeud-noeud via les arêtes (\pr{1614})
+- Ajoute mécanisme permettant de vérifier que tous les rangs
+  synchronisent bien la même variable. Cela se fait en positionnant la
+  variable d'environnement `ARCANE_CHECK_SYNCHRONIZE_COHERENCE`
+  (\pr{1604})
+- Ajoute support pour positionner le nom de débug pour
+  \arcane{NumArray} (\pr{1590})
+- Ajoute possibilité d'afficher la pile d'appel via le debugger
+  lorsqu'un signal (SIGSEGV, SIGBUS, ...) est recu (\pr{1573})
+- Ajoute nouvelle version du déraffinement initial qui conserve la
+  numérotation initiale et garanti la même numérotation quel que soit
+  le découpage (\pr{1557})
+- Ajoute implémetation de \arcane{IParallelMng::scan()} pour le mode
+  mémoire partagé et hybride (\pr{1548})
+
+#### API Accélérateur
+
+- Optimisations diverses dans la mise à jour des constituants
+  (\arcanemat{MeshMaterialModifier}) (\pr{1559}, \pr{1562}, \pr{1679},
+  \pr{1681}, \pr{1682}, \pr{1683}, \pr{1687}, \pr{1689}, \pr{1690},
+  \pr{1691}, \pr{1704}, \pr{1720}, \pr{1729}, \pr{1731}, \pr{1733},
+  \pr{1738}, \pr{1739}, \pr{1741}, \pr{1742})
+- Ajoute classe \arcaneacc{ProfileRegion} pour spécifier une région
+  pour le profilage sur accélérateur (\pr{1695}, \pr{1734})
+- Ajoute une classe interne \arcane{impl::MemoryPool} pour conserver
+  une liste de blocs alloués. Ce mécanisme ne fonctionne actuellement
+  qu'avec l'implémentation CUDA. Il n'est pas actif par défaut (TODO:
+  ADD LINK TO DOC FOR MEMORY POOL) (\pr{1684}, \pr{1685}, \pr{1686}, \pr{1699},
+  \pr{1703}, \pr{1724}, \pr{1725}, \pr{1726})
+- Ajoute algorithme de partitionnement \arcaneacc{GenericPartitioner}
+  (\pr{1713}, \pr{1717}, \pr{1718}, \pr{1721}, \pr{1722})
+- Uniformise les constructeurs des algorithmes accélérateurs pour
+  prendre une \arcaneacc{RunQueue} en argument (\pr{1714}
+- Utilise l'API accélérateur pour la création des
+  \arcanemat{EnvCellVector} et \arcanemat{MatCellVector} (\pr{1710},
+  \pr{1711})
+- Alloue la mémoire des \arcane{ItemVector} via l'UVM. Cela permet de
+  rendre accessible sur accélérateurs les éléments de cette classe
+  (\pr{1709})
+- Ajoute algorithme de tri \arcaneacc{GenericSorter} (\pr{1705},
+  \pr{1706})
+- Ajoute possibilité d'utiliser la mémoire hôte pour la valeur de
+  retour de \arcaneacc{GenericFilterer} (\pr{1701})
+- Ajoute synchronisation explicite pour \arcane{DualUniqueArray}
+  (\pr{1688})
+- Ajoute possibilité de récupérer sur accélérateur la `backCell()` et
+  `frontCell()` d'une face (\pr{1607})
+- Ajoute implémentation sur accélérateur de
+  \arcanemat{IMeshMaterialMng::synchronizeMaterialsInCells()}. Cette
+  implémentation est activée si la variable d'environnement
+  `ARCANE_ACC_MAT_SYNCHRONIZER` est positionnée à `1` (\pr{1584})
+- Ajoute possibilité d'utiliser le mécanisme ATS avec CUDA pour
+  l'allocation (\pr{1576}) 
+- S'assure que les messages affichés par l'intégration avec CUPTI ne
+  sont pas découpés en multi-thread (\pr{1571}) 
+- Ajoute possiblité d'afficher et d'interompre le profilage
+  (\pr{1561}, \pr{1569})
+- Ajoute macro RUNCOMMAND_SINGLE() pour effectuer une commande
+  accélérateur sur une seule itération (\pr{1565})
+- Alloue par défaut la mémoire managée (UVM) sur un multiple de la
+  taille d'une page système (\pr{1564})
+- Ajoute détection et affichage des 'Page Faults' dans l'intégration
+  CUPTI (\pr{1563})
+- Choisit automatiquement le device associé à un rang MPI sur un noeud
+  selon un mécanisme round-robin (\pr{1558})
+- Ajoute support pour compiler pour CUDA avec le compilateur
+  Clang (\pr{1552})
+
+### Changements
+
+- Utilise tous les rangs pour la lecture en parallèle des fichiers
+  GMSH. Cela permet d'éviter d'avoir des partitions vides par la suite
+  ce qui n'est pas supporté par ParMetis (\pr{1735})
+- Rend obsolète \arcane{NumArray::span()} and
+  \arcane{NumArray::constSpan()} \pr{1723}
+- Supprime la classe obsolète `Filterer` (\pr{1708})
+- Rend explicite les constructeurs des variables qui prennent un
+  \arcane{VariableBuildInfo} en argument (\pr{1693})
+- Change le comportement par défaut de \arcane{ILoadBalanceMng} pour
+  ne pas prendre en compte le nombre de variables allouées et ainsi
+  avoir un partitionnement qui dépend uniquement du maillage (\pr{1673})
+- Supprime le post-traitement au format `EnsighHdf`. Ce format était
+  expérimental et n'est plus disponible dans les versions récentes de
+  Ensight (\pr{1668})
+- Écrit les arêtes et les connectivités associées dans
+  \arcane{MeshUtils::writeMeshConnectivity()} (\pr{1651})
+- Rend obsolète \arcane{mesh::ItemFamily::infos()} (\pr{1647})
+- Lève une exception si on tente de lire un maillage déjà alloué
+  (\pr{1644})
+- Rend obsolete \arcane{Item::internal()} (\pr{1627}, \pr{1642})
+- Rend obsolète \arcane{IItemFamily::findOneItem()} (\pr{1623})
+- Lève une exception (au lieu d'un avertissement) si le partitionneur
+  spécifiée par l'utilisateur n'est pas disponible (\pr{1635})
+- Supprime possibilité de compiler avec `mono` (\pr{1583})
+- Rend obsolète la version 1 de \arcane{CartesianMeshCoarsening} (\pr{1580})
+
+### Corrections
+
+- Corrige compilation avec les version 2.13+ de libxml2 (\pr{1715})
+- Positionne correctement le communicateur de
+  \arccore{MessagePassing::MessagePassingMng} associé à l'implémentation séquentielle
+  \arcane{SequentialParallelMng}. Auparavant cela n'était fait que
+  pour l'implémentation MPI (\pr{1661})
+- Dans le lecteur VTK, conserve après la destruction du lecteur les
+  variables lues dans le fichier (\pr{1655})
+- Ne détruit en fin d'exécution pas l'instance utilisée dans
+  \arcane{ArcaneLauncher::setDefaultMainFactory()}. Cette instance
+  n'est pas forcément allouée via `new` (\pr{1643})
+- Corrige mauvais comportement dans la gestion des sous-maillages avec
+  les nouvelles connectivités (\pr{1636})
+- Corrige non prise en compte de la variable d'environnemnt
+  `ARCANE_DOTNET_USE_LEGACY_DESTROY` (\pr{1570})
+- Ajoute appel manquant à \arcane{ArcaneMain::arcaneFinalize()}
+  lorsqu'on utilise `.Net` (\pr{1567})
+- Corrige mauvaise prise en compte des options pour l'outil
+  `arcane_partition_mesh` (\pr{1555})
+
+### Interne
+
+- Libère les buffers de sérialisation dès que possible lors de
+  l'équilibrage de charge (\pr{1744})
+- Ajout d'un service expérimental permettant de subdiviser un maillage
+  lors de l'initialisation (\pr{1606}, \pr{1728})
+- Rend publique les classes \arcane{ItemBase} et
+  \arcane{MutableItemBase} \pr{1740}
+- Ajoute méthode interne de finalisation de l'API accélérateur. Cela
+  permet d'afficher des statistiques et de libérer les ressoures
+  associées (\pr{1727}
+- Ajoute tests pour l'utilisation de plusieurs critères avec le
+  partitionnement avec plusieurs maillages (\pr{1719})
+- Dans \arcane{BitonicSort}, n'alloue pas les tableaux des rangs et
+  des index s'ils ne sont pas utilisés (\pr{1680})
+- Utilise une nouvelle implémentation de table de hashage pour `ItemInternalMap`.
+  Cette implémentation est active par défaut mais il est possible
+  d'utiliser l'ancienne en positionant l'option
+  `ARCANE_USE_HASHTABLEMAP2_FOR_ITEMINTERNALMAP` lors de la
+  configuration (\pr{1611}, \pr{1617}, \pr{1622}, \pr{1624},
+  \pr{1625}, \pr{1628}, \pr{1629}, \pr{1631}, \pr{1677})
+- Nettoyage et refonte du partitionnement avec ParMetis pour utiliser
+  \arcane{IParallelMng} au lieu d'appeler MPI directement (\pr{1662},
+  \pr{1665}, \pr{1667}, \pr{1671})
+- Ajoute support pour créér un sous-communicateur à la manière de
+  `MPI_Comm_Split` (\pr{1669}, \pr{1672})
+- Nettoyage et refactoring des classes gérant la numérotation des
+  `uniqueId()` des arêtes (\pr{1658})
+- Utilise un pointeur sur \arcane{mesh::DynamicMeshKindInfos} à la
+  place d'une instance dans \arcane{mesh::ItemFamily} (\pr{1646})
+- Ajoute dans \arcane{ICaseMeshService} la possibilité d'effectuer des
+  opérations après le partitionnement (\pr{1637})
+- Ajoute API interne pour \arcane{IIncrementalItemConnectivity}
+  (\pr{1615}, \pr{1618}, \pr{1626})
+- Ajoute point d'entrée de type `build` pour le service de test
+  unitaire (\pr{1613})
+- Ajoute possibilité dans \arcane{IIncrementalItemConnectivity} de
+  notifier de l'ajout de plusieurs entités à la fois (\pr{1610})
+- Ajoute méthode pour récupérer la pile d'appel via LLVM ou GDB. Cela
+  permet notamment d'avoir les numéros de ligne dans la pile d'appel
+  (\pr{1572}, \pr{1597}, \pr{1616}) TODO INDIQUER METHOD
+- Ajoute support expérimental pour KDI (\pr{1594}, \pr{1595},
+  \pr{1599})
+- Optimisations diverses dans le service `VtkHdfV2PostProcessor`
+  (\pr{1575}, \pr{1600})
+- [EXPÉRIMENTAL] Ajoute nouvelle version de calcul des `uniqueId()` des
+  faces basée sur les `uniqueId()` des noeuds qui la compose. Cela ne
+  fonctionne qu'en séquentiel pour l'instant (\pr{1550})
+- Ajoute fonction pour générer un `uniqueId()` à partir d'une liste de
+  `uniqueId()` (\pr{1549})
+- Optimise le calcul de la version 3 des mailles fantômes (\pr{1547})
+
+### Compilation et Intégration Continue (CI)
+
+- Ajoute tests de protection/reprise pour le déraffinement (\pr{1707})
+- Corrige erreur de compilation lorsque PETSc n'est pas compilé avec
+  MUMPS (\pr{1694})
+- Ajoute test du lecteur VTK avec des propriétés (\pr{1656},
+  \pr{1659})
+- Ajoute support pour une somme de contrôle de la connectivité dans
+  les tests de maillage (\pr{1654})
+- Écrit les fichiers de sortie des tests dans le répertoire des tests
+  pour permettre de les lancer en parallèle (\pr{1541}, \pr{1653})
+- Mise à jour des images IFPEN 2021 (\pr{1542}, \pr{1579}, \pr{1587},
+  \pr{1588}, \pr{1592}, \pr{1593}, \pr{1598})
+- Supprime version interne de `hostfxr.h` et
+  `coreclr_delegates.h`. Ces fichiers sont maintenant dans le SDK
+  dotnet (\pr{1591})
+- Corrige détection et configuration de FlexLM (\pr{1602}, \pr{1630})
+- Supprime les répertoires de sortie des tests après exécution pour
+  réduire l'empreinte sur le stockage (\pr{1581})
+- Lance les tests de CI en parallèle pour plusieurs workflow (\pr{1553})
+- Refonte du système d'action du CI et des images pour le rendre plus
+  souple (\pr{1545})
+
+### Arccore
+
+- Ajoute conversions de \arccore{SmallSpan<std::byte>} vers et depuis
+  \arccore{SmallSpan<DataType>} {\pr{1731})
+- Corrige mauvaise valeur pour la taille passée en arguments de
+  \arccore{IMemoryAllocator::deallocate()} (\pr{1702})
+- Ajoute argument \arcaneacc{RunQueue} pour
+  \arccore{MemoryAllocationArgs} and
+  \arccore{MemoryAllocationOptions}. Cela n'est pas utilisé pour
+  l'instant mais cela permettra par la suite de faire des allocation
+  spécifiques à une file d'exécution (\pr{1696})
+- Ajoute support pour les allocateurs spécifiques pour
+  \arccore{SharedArray} (\pr{1692})
+- Rend `inline` les constructeurs et destructeurs de
+  \arccore{MemoryAllocationOptions} (\pr{1664})
+- Ajoute méthode pour positionner le communicateur associé à
+  \arccore{MessagePassing::MessagePassingMng} (\pr{1660})
+
+### Axlstar
+
+- Génère via l'interface spécifiée les méthodes pour récupérer les
+  fonctions associées aux options des jeux de données (\pr{1601})
+
+### Alien
+
+- Corrige sorties listings pour le backend IFPSolver (\pr{1730})
+- Corrige erreur d'exécution lorsqu'on utilise l'implémentation
+  séquentielle de \arcane{IParallelMng} (\pr{1666})
+- Utilise un nom de fichier unique pour les fichiers de sortie des
+  tests. Cela permet de les lancer en parallèle (\pr{1663})
+- Récupère le communicateur MPI via
+  \arccore{MessagePassing::MessagePassingMng::communicator()} (\pr{1657})
+- Ajoute support accélérateur pour certaines parties (\pr{1632},
+  \pr{1634})
+- Corrige initialisation avec les versions récentes (2.27+) de Hypre
+  (\pr{1603})
+- Ajoute support pour le solver SPAI via PETSc (\pr{1578})
+- Ajoute support pour les sorties au format 'Matrix Market' avec PETSc
+  (\pr{1577})
+
 ## Arcane Version 3.13.08 (19 juillet 2024) {#arcanedoc_version3130}
 
 ### Nouveautés/Améliorations

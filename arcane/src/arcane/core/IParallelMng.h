@@ -1,16 +1,16 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IParallelMng.h                                              (C) 2000-2023 */
+/* IParallelMng.h                                              (C) 2000-2024 */
 /*                                                                           */
 /* Interface du gestionnaire du parallélisme sur un sous-domaine.            */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_IPARALLELMNG_H
-#define ARCANE_IPARALLELMNG_H
+#ifndef ARCANE_CORE_IPARALLELMNG_H
+#define ARCANE_CORE_IPARALLELMNG_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -958,7 +958,6 @@ class ARCANE_CORE_EXPORT IParallelMng
   /*! @name allToAll variable
    *
    * \brief Effectue un allToAll variable
-   *
    */
   //@{
   virtual void allToAllVariable(ConstArrayView<char> send_buf,Int32ConstArrayView send_count,
@@ -1023,6 +1022,12 @@ class ARCANE_CORE_EXPORT IParallelMng
                                 Int32ConstArrayView recv_count,Int32ConstArrayView recv_index) =0;
   //@}
 
+  /*! @name scan
+   *
+   * \brief Effectue un algorithme de scan équivalent en sémantique à MPI_Scan
+   */
+  //@{
+  //! Applique un algorithme de prefix-um sur les valeurs de \a v via l'opération \a rt.
   virtual void scan(eReduceType rt,ArrayView<char> v) =0;
   virtual void scan(eReduceType rt,ArrayView<signed char> v) =0;
   virtual void scan(eReduceType rt,ArrayView<unsigned char> v) =0;
@@ -1043,6 +1048,7 @@ class ARCANE_CORE_EXPORT IParallelMng
   virtual void scan(eReduceType rt,ArrayView<Real2x2> v) =0;
   virtual void scan(eReduceType rt,ArrayView<Real3x3> v) =0;
   virtual void scan(eReduceType rt,ArrayView<HPReal> v) =0;
+  //@}
 
   /*!
    * \brief Créé une liste pour gérer les 'ISerializeMessage'.
