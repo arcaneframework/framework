@@ -61,7 +61,7 @@ class ARCANE_CORE_EXPORT IMeshInternal
    *
    * Cette méthode retourne nullptr si l'implémentation du maillage n'est pas PolyhedralMesh
    */
-  virtual IPolyhedralMeshModifier* polyhedralMeshModifier() const noexcept {return nullptr;}
+  virtual IPolyhedralMeshModifier* polyhedralMeshModifier() const noexcept = 0;
 };
 
 
