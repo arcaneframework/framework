@@ -114,9 +114,9 @@ class ARCANE_CORE_EXPORT ComponentCell
   }
 
   //! localId() de la maille globale
-  ARCCORE_HOST_DEVICE Int32 globalCellId() const
+  ARCCORE_HOST_DEVICE CellLocalId globalCellId() const
   {
-    return m_shared_info->_globalItemId(m_constituent_item_index);
+    return CellLocalId(m_shared_info->_globalItemId(m_constituent_item_index));
   }
 
   /*!
