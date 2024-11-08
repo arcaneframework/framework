@@ -337,7 +337,7 @@ namespace mesh
       item_family.addMeshScalarProperty<Neo::utils::Int32>(PolyhedralFamily::m_arcane_item_lids_property_name.localstr());
       mesh_graph.addAlgorithm(Neo::MeshKernel::InProperty{ item_family, item_family.lidPropName() },
                               Neo::MeshKernel::OutProperty{ item_family, PolyhedralFamily::m_arcane_item_lids_property_name.localstr() },
-                              [arcane_item_family, uids](Neo::ItemLidsProperty const& lids_property,
+                              [arcane_item_family, uids,added_items](Neo::ItemLidsProperty const& lids_property,
                                                          Neo::MeshScalarPropertyT<Neo::utils::Int32>&) {
                                 Int32UniqueArray arcane_items(uids.size());
                                 arcane_item_family->addItems(uids, arcane_items);
@@ -345,6 +345,7 @@ namespace mesh
                                 // debug check lid matching. maybe to remove if too coostly
                                 auto neo_lids = lids_property.values();
                                 if (!std::equal(neo_lids.begin(), neo_lids.end(), arcane_items.begin()))
+                                if (!std::equal(added_items.new_items.begin(), added_items.new_items.end(), arcane_items.begin()))
                                   arcane_item_family->traceMng()->fatal() << "Inconsistent item lids generation between Arcane and Neo.";
                               });
     }
