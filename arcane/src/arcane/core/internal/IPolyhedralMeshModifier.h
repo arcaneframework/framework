@@ -9,8 +9,10 @@
 /*                                                                           */
 /* Partie interne à Arcane de IMesh.                                         */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_CORE_INTERNAL_IMESHINTERNAL_H
-#define ARCANE_CORE_INTERNAL_IMESHINTERNAL_H
+
+#ifndef ARCANE_CORE_INTERNAL_IPOLYHEDRALMESHMODIFIER_H
+#define ARCANE_CORE_INTERNAL_IPOLYHEDRALMESHMODIFIER_H
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -31,45 +33,16 @@ class IPolyhedralMeshModifier;
  * \internal
  * \brief Partie interne de IMesh.
  */
-class ARCANE_CORE_EXPORT IMeshInternal
+class ARCANE_CORE_EXPORT IPolyhedralMeshModifier
 {
  public:
+  virtual ~IPolyhedralMeshModifier() = default;
 
-  virtual ~IMeshInternal() = default;
-
- public:
-
-  /*!
-   * \brief Positionne le type de maillage.
-   *
-   * Pour l'instant il ne faut utiliser cette méthode que pour spécifier
-   * la structure du maillage (eMeshStructure).
-   */
-  virtual void setMeshKind(const MeshKind& v) = 0;
-
-  /*!
-   * \brief Renvoie le gestionnaire de connectivités des dofs.
-   *
-   * Cette méthode est temporaire car ce gestionnaire de connectivités des dofs
-   * à vocation à disparaître, l'évolution des connectivités des dofs étant maintenant gérée
-   * automatiquement. A usage interne uniquement en attendant la suppression.
-   */
-  virtual IItemConnectivityMng* dofConnectivityMng() const noexcept = 0;
-
-  /*!
-   * \bief Renvoie l'interface de modification du maillage polyédrique
-   *
-   * Cette méthode retourne nullptr si l'implémentation du maillage n'est pas PolyhedralMesh
-   */
-  virtual IPolyhedralMeshModifier* polyhedralMeshModifier() const noexcept = 0;
+  virtual void addItems(Int64ConstArrayView unique_ids, Int32ArrayView local_ids, eItemKind ik, const String& family_name) = 0;
+  virtual void removeItems(Int32ConstArrayView local_ids, eItemKind ik, const String& family_name) = 0;
 };
 
-
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-} // namespace Arcane
+}// namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -67,6 +67,9 @@ class PolyhedralMesh
 : public EmptyMesh
 , public IPolyhedralMeshInitialAllocator
 {
+
+  friend class PolyhedralFamily;
+
  private:
 
   String m_name;
@@ -123,6 +126,7 @@ class PolyhedralMesh
   };
 
   class InternalApi;
+  class PolyhedralMeshModifier;
 
  private:
 
@@ -133,7 +137,7 @@ class PolyhedralMesh
   std::unique_ptr<VariableNodeReal3> m_arcane_node_coords = nullptr;
   ItemGroupList m_all_groups;
   InitialAllocator m_initial_allocator;
-  IVariableMng* m_variable_mng;
+  IVariableMng* m_variable_mng = nullptr;
   DynamicMeshChecker m_mesh_checker;
   List<IItemFamily*> m_item_family_collection;
   std::unique_ptr<InternalApi> m_internal_api;
@@ -242,6 +246,9 @@ class PolyhedralMesh
   IMeshInternal* _internalApi() override;
 
  private:
+
+  void addItems(Int64ConstArrayView unique_ids, Int32ArrayView local_ids, eItemKind ik, const String& family_name);
+  void removeItems(Int32ConstArrayView local_ids, eItemKind ik, const String& family_name);
 
   PolyhedralFamily* _createItemFamily(eItemKind ik, const String& name);
   PolyhedralFamily* _itemFamily(eItemKind ik);
