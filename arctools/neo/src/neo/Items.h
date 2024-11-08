@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Items                                     (C) 2000-2023                   */
+/* Items                                     (C) 2000-2024                   */
 /*                                                                           */
 /* Tooling to manipulate Mesh Items                                          */
 /*---------------------------------------------------------------------------*/
@@ -224,8 +224,8 @@ struct FutureItemRange
   FutureItemRange() = default;
   virtual ~FutureItemRange() = default;
 
-  FutureItemRange(FutureItemRange&) = default;
-  FutureItemRange& operator=(FutureItemRange&) = default;
+  FutureItemRange(FutureItemRange const&) = default;
+  FutureItemRange& operator=(FutureItemRange const&) = default;
 
   FutureItemRange(FutureItemRange&&) = default;
   FutureItemRange& operator=(FutureItemRange&&) = default;
@@ -259,15 +259,15 @@ struct FilteredFutureItemRange : public FutureItemRange
 
   FilteredFutureItemRange() = delete;
 
-  FilteredFutureItemRange(FutureItemRange& future_item_range_ref,
+  FilteredFutureItemRange(FutureItemRange const& future_item_range_ref,
                           std::vector<int> filter)
   : m_future_range(future_item_range_ref)
   , m_filter(std::move(filter)) {}
 
   virtual ~FilteredFutureItemRange() = default;
 
-  FilteredFutureItemRange(FilteredFutureItemRange&) = default;
-  FilteredFutureItemRange& operator=(FilteredFutureItemRange&) = default;
+  FilteredFutureItemRange(FilteredFutureItemRange const&) = default;
+  FilteredFutureItemRange& operator=(FilteredFutureItemRange const&) = default;
 
   FilteredFutureItemRange(FilteredFutureItemRange&&) = default;
   FilteredFutureItemRange& operator=(FilteredFutureItemRange&&) = default;

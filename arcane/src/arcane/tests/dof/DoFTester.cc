@@ -42,6 +42,8 @@
 #include "arcane/core/IMeshModifier.h"
 #include "arcane/core/VariableCollection.h"
 
+#include "arcane/core/internal/IPolyhedralMeshModifier.h"
+#include "arcane/core/internal/IMeshInternal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -119,13 +121,16 @@ private:
                    Int64SharedArray2& removed_node_uids,
                    Int32SharedArray2& remaining_node_lids,
                    Int64SharedArray2& remaining_node_uids);
- void _checkConnectivityUpdateAfterAdd    (IItemConnectivity& node2dof, Int32Array2View new_nodes_lids, Int64ConstArray2View new_nodes_uids, IntegerConstArrayView nb_dof_per_item);
+ void _checkConnectivityUpdateAfterAdd    (IItemConnectivity& node2dof, Int32Array2View new_nodes_lids, Int64ConstArray2View new_nodes_uids, IntegerConstArrayView nb_dof_per_item, bool is_scalar_connectivity=true);
  void _checkConnectivityUpdateAfterRemove (IItemConnectivity& node2dof, Int32Array2View new_nodes_lids, Int64ConstArray2View new_nodes_uids, bool is_scalar_connectivity=true);
  void _checkConnectivityUpdateAfterCompact(IItemConnectivity& node2dof, Int32Array2View remaining_nodes_lids,Int64ConstArray2View remaining_nodes_uids,Integer item_property_size, bool is_scalar_connectivity=true);
 
  void _checkTargetFamilyInfo(ItemVectorView tracked_new_dofs, Int32ConstArrayView new_dofs_lids);
 
  bool _checkIsSame(IItemConnectivity* connectivity1, IItemConnectivity* connectivity2);
+
+ template <typename Connectivity>
+ void _printNodeToDoFConnectivity(Connectivity& con, bool is_scalar_connectivity, bool do_check = false) ;
 
 
 private:
@@ -626,7 +631,7 @@ _node2DoFConnectivityRegistered()
   if (! connectivity_mng->isUpToDate(&node2dof)) fatal() << "Error in connectivity update tracking.";
 
   // Check Connectivity update
-  _checkConnectivityUpdateAfterAdd(node2dof, new_nodes_lids, new_nodes_uids,IntegerSharedArray(nb_new_nodes_per_subdomain,1));
+  _checkConnectivityUpdateAfterAdd(node2dof, new_nodes_lids, new_nodes_uids,IntegerSharedArray(nb_new_nodes_per_subdomain,1),true);
 
   // Remove a first node
   Integer nb_removed_nodes = 1;
@@ -794,7 +799,7 @@ _node2DoFsConnectivityRegistered()
     }
 
   // Check Connectivity update
-  _checkConnectivityUpdateAfterAdd(node2dofs, new_nodes_lids, new_nodes_uids,IntegerSharedArray(nb_new_nodes,nb_dof_per_node));
+  _checkConnectivityUpdateAfterAdd(node2dofs, new_nodes_lids, new_nodes_uids,IntegerSharedArray(nb_new_nodes,nb_dof_per_node),false);
 
 
   // Remove the added nodes
@@ -968,7 +973,7 @@ _node2DoFsMultiConnectivityRegistered()
     }
 
   // Check Connectivity update
-  _checkConnectivityUpdateAfterAdd(node2dofs, new_nodes_lids, new_nodes_uids,nb_dof_per_new_node);
+  _checkConnectivityUpdateAfterAdd(node2dofs, new_nodes_lids, new_nodes_uids,nb_dof_per_new_node,false);
 
   debug() << "NEW NODE LIDS " << new_nodes_lids[mesh()->parallelMng()->commRank()];
 
@@ -1090,21 +1095,28 @@ _addNodes(Int32Array2View new_nodes_lids, Int64Array2View new_nodes_uids)
   Integer nb_subdomain = subDomain()->parallelMng()->commSize();
   Integer local_rank   = subDomain()->parallelMng()->commRank();
   Int64 max_uid = mesh::DoFUids::getMaxItemUid(mesh()->nodeFamily());
-  IMeshModifier* mesh_modifier = mesh()->modifier();
   UniqueArray<ItemVectorView> added_items(nb_subdomain);
   // Add node and ghost nodes on each subdomain. Each subdomain has all the nodes of the other as ghosts (just for the demo)
   for (Integer rank = 0; rank < nb_subdomain; ++rank)
-    {
-      for (Integer i = 0; i < nb_new_nodes;++i) new_nodes_uids[rank][i] = max_uid*(rank+1) +i+1;
-      mesh_modifier->addNodes(new_nodes_uids[rank],new_nodes_lids[rank]);
-      added_items[rank] = mesh()->nodeFamily()->view(new_nodes_lids[rank]);
-      ENUMERATE_NODE(inode,added_items[rank])
-      {
-        inode->mutableItemBase().setOwner(rank,local_rank);
-        info() << "== Add item " << inode->localId() << " on rank " << local_rank << " with owner " << rank;
-      }
+  {
+    for (Integer i = 0; i < nb_new_nodes;++i) new_nodes_uids[rank][i] = max_uid*(rank+1) +i+1;
+    IMeshModifier* mesh_modifier = mesh()->modifier();
+    if (mesh_modifier) {
+      mesh_modifier->addNodes(new_nodes_uids[rank], new_nodes_lids[rank]);
     }
-
+    else {// no mesh modifier for now in polyhedral mesh, use polyhedral mesh modifier
+      info() << "Use polyhedral mesh modifier";
+      IPolyhedralMeshModifier* polyhedral_modifier = mesh()->_internalApi()->polyhedralMeshModifier();
+      ARCANE_CHECK_POINTER(polyhedral_modifier);
+      polyhedral_modifier->addItems(new_nodes_uids[rank], new_nodes_lids[rank], IK_Node, mesh()->nodeFamily()->name());
+    }
+    added_items[rank] = mesh()->nodeFamily()->view(new_nodes_lids[rank]);
+    ENUMERATE_NODE(inode,added_items[rank])
+    {
+      inode->mutableItemBase().setOwner(rank,local_rank);
+      info() << "== Add item " << inode->localId() << " on rank " << local_rank << " with owner " << rank;
+    }
+  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1112,7 +1124,7 @@ _addNodes(Int32Array2View new_nodes_lids, Int64Array2View new_nodes_uids)
 
 void
 DoFTester::
-_checkConnectivityUpdateAfterAdd(IItemConnectivity& node2dof, Int32Array2View new_nodes_lids, Int64ConstArray2View new_nodes_uids, IntegerConstArrayView nb_dof_per_item)
+_checkConnectivityUpdateAfterAdd(IItemConnectivity& node2dof, Int32Array2View new_nodes_lids, Int64ConstArray2View new_nodes_uids, IntegerConstArrayView nb_dof_per_item, bool is_scalar_connectivity)
 {
   // Your connectivity is up to date : i.e. new cells must be connected to a dof:
   Integer nb_subdomain = subDomain()->parallelMng()->commSize();
@@ -1133,6 +1145,7 @@ _checkConnectivityUpdateAfterAdd(IItemConnectivity& node2dof, Int32Array2View ne
       }
     }
   }
+  _printNodeToDoFConnectivity(node2dof,is_scalar_connectivity,true);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1169,6 +1182,7 @@ _checkConnectivityUpdateAfterRemove(IItemConnectivity& node2dof, Int32Array2View
       }
     }
   }
+  _printNodeToDoFConnectivity(node2dof,is_scalar_connectivity,true);
 }
 
 void
@@ -1176,6 +1190,10 @@ DoFTester::
 _checkConnectivityUpdateAfterCompact(IItemConnectivity& node2dof, Int32Array2View remaining_nodes_lids,
                                      Int64ConstArray2View remaining_nodes_uids, Integer item_property_size, bool is_scalar_connectivity)
 {
+  // Compacting not done for now with polyhedral mesh: an option can deactivate its check
+  bool do_check_compacting = options()->doCheckCompacting();
+  if (do_check_compacting)
+    info() << "--Do check Compacting";
   // Check target family compaction : remaining nodes must be associated to at least one dof
   ItemInternal internal; // for test
   Integer nb_subdomain = subDomain()->parallelMng()->commSize();
@@ -1191,7 +1209,7 @@ _checkConnectivityUpdateAfterCompact(IItemConnectivity& node2dof, Int32Array2Vie
         Int32 connected_dof_lids = concrete_node2dof.itemProperty()[remaining_node];
         info() << "== Connectivity value for node (uid) " << remaining_nodes_uids[rank][i] << " (lid=  " << remaining_nodes_lids[rank][i] << ")"
                << " = " << connected_dof_lids << " with nb item = " << dof_family->nbItem();
-        if (connected_dof_lids == NULL_ITEM_LOCAL_ID || connected_dof_lids+1 > dof_family->nbItem())
+        if (connected_dof_lids == NULL_ITEM_LOCAL_ID || connected_dof_lids+1 > dof_family->nbItem() && do_check_compacting)
           fatal() << "Error in check connectivity after compact";
       }
       else{
@@ -1200,13 +1218,14 @@ _checkConnectivityUpdateAfterCompact(IItemConnectivity& node2dof, Int32Array2Vie
         info() << "== Connectivity value for node (uid) " << remaining_nodes_uids[rank][i] << " (lid= " << remaining_nodes_lids[rank][i] << ")"
                << " = " << dofs_ids << " with nb item = " << dof_family->nbItem();
         for (Integer j = 0 ; j < dofs.size(); ++ j)
-          if (dofs_ids[j] == NULL_ITEM_LOCAL_ID || dofs_ids[j]+1 > dof_family->nbItem())
+          if (dofs_ids[j] == NULL_ITEM_LOCAL_ID || dofs_ids[j]+1 > dof_family->nbItem() && do_check_compacting)
             fatal() << "Error in check connectivity after compact";
       }
     }
   }
+  _printNodeToDoFConnectivity(node2dof, is_scalar_connectivity,true);
   // Check source family compaction : itemProperty must have family size
-  if (item_property_size != node2dof.sourceFamily()->nbItem()) fatal() << "Error : connectivity is not correctly impacted by change in source family";
+  if (item_property_size != node2dof.sourceFamily()->nbItem() && do_check_compacting) fatal() << "Error : connectivity is not correctly impacted by change in source family";
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1222,30 +1241,43 @@ _removeNodes(Int32ConstArray2View new_nodes_lids,
              Int64SharedArray2& remaining_node_uids)
 {
   ARCANE_ASSERT((nb_removed_nodes <= new_nodes_lids.dim2Size()),("Cannot removed more nodes than available"));
-  auto* node_family = dynamic_cast<mesh::NodeFamily*>(mesh()->nodeFamily());
+  auto* node_family = mesh()->nodeFamily();
   Integer nb_subdomain = subDomain()->parallelMng()->commSize();
   Integer nb_remaining_nodes = remaining_node_lids.dim2Size();
   UniqueArray<ItemVectorView> removed_nodes(nb_subdomain);
   UniqueArray<ItemVectorView> remaining_nodes(nb_subdomain);
   for (Integer rank = 0; rank < nb_subdomain; ++rank)
+  {
+    removed_node_lids[rank].copy(new_nodes_lids[rank].subConstView(0,nb_removed_nodes));
+    removed_nodes[rank] = node_family->view(removed_node_lids[rank]);
+    remaining_node_lids[rank].copy(new_nodes_lids[rank].subConstView(nb_removed_nodes,nb_remaining_nodes));
+    remaining_nodes[rank] = node_family->view(remaining_node_lids[rank]);
+    Int32 i = 0;
+    mesh::NodeFamily* node_family_internal = dynamic_cast<mesh::NodeFamily*>(node_family);
+    if (node_family_internal) {
+      ENUMERATE_NODE (inode, removed_nodes[rank]) {
+        removed_node_uids[rank][i++] = inode->uniqueId().asInt64();
+        info() << "== Remove item " << inode->localId() << " on rank " << mesh()->parallelMng()->commRank() << " with owner " << rank;
+        node_family_internal->removeNodeIfNotConnected(*inode);
+      }
+    }
+    else // no NodeFamily in PolyhedralMesh
     {
-      removed_node_lids[rank].copy(new_nodes_lids[rank].subConstView(0,nb_removed_nodes));
-      removed_nodes[rank] = node_family->view(removed_node_lids[rank]);
-      remaining_node_lids[rank].copy(new_nodes_lids[rank].subConstView(nb_removed_nodes,nb_remaining_nodes));
-      remaining_nodes[rank] = node_family->view(remaining_node_lids[rank]);
-      Int32 i = 0;
+      IPolyhedralMeshModifier* polyhedral_modifier = mesh()->_internalApi()->polyhedralMeshModifier();
+      info() << "POLYHEDRAL CASE";
       ENUMERATE_NODE(inode,removed_nodes[rank])
       {
-        node_family->removeNodeIfNotConnected(*inode);
         removed_node_uids[rank][i++] = inode->uniqueId().asInt64();
         info() << "== Remove item " << inode->localId() << " on rank " << mesh()->parallelMng()->commRank() << " with owner " << rank;
       }
-      i = 0;
-      ENUMERATE_NODE(inode,remaining_nodes[rank])
-      {
-        remaining_node_uids[rank][i++] = inode->uniqueId().asInt64();
-      }
+      polyhedral_modifier->removeItems(removed_node_lids[rank], IK_Node, node_family->name());
     }
+    i = 0;
+    ENUMERATE_NODE(inode,remaining_nodes[rank])
+    {
+      remaining_node_uids[rank][i++] = inode->uniqueId().asInt64();
+    }
+  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1415,6 +1447,37 @@ _checkIsSame(IItemConnectivity* connectivity1, IItemConnectivity* connectivity2)
   }
   return is_ok;
 
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template <typename Connectivity>
+void DoFTester::_printNodeToDoFConnectivity(Connectivity& node2dof, bool is_scalar_connectivity, bool do_check)
+{
+  bool has_error = false;
+  if (is_scalar_connectivity) {
+    NodeToDoFConnectivity& concrete_node2dof = static_cast<NodeToDoFConnectivity&>(node2dof);
+    ENUMERATE_NODE (inode, allNodes()) {
+      Int32 connected_dof_lid = concrete_node2dof.itemProperty()[*inode];
+      info() << "== Connectivity value for node (uid) " << inode->uniqueId().asInt64() << " (lid=  " << inode.localId() << ")"
+             << " = " << connected_dof_lid;
+      if (connected_dof_lid != inode.localId()) has_error = true;
+    }
+  }
+  else{
+    ConnectivityItemVector node2dof_vector(node2dof);
+    ENUMERATE_NODE(inode,allNodes()) {
+      ItemVectorView dofs = node2dof_vector.connectedItems(inode->itemLocalId());
+      Int32ConstArrayView dofs_ids = dofs.localIds();
+      info() << "== Connectivity value for node (uid = " << inode->uniqueId().asInt64() << ") (lid = " << inode.localId() << ")"
+             << " = " << dofs_ids;
+    }
+  }
+  // the check is only valid in sequential
+  if (subDomain()->parallelMng()->isParallel()) do_check = false;
+  if (has_error && do_check)
+    ARCANE_FATAL("The connectivity has error. Dof should be connected with dofs with the same local id");
 }
 
 

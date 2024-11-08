@@ -23,6 +23,9 @@
 #include "arcane/core/AbstractService.h"
 #include "arcane/core/IMeshFactory.h"
 #include "arcane/core/ItemInternal.h"
+#include "arcane/core/IDoFFamily.h"
+#include "arcane/core/IMeshCompactMng.h"
+#include "arcane/core/IMeshCompacter.h"
 #include "arcane/core/internal/IVariableMngInternal.h"
 #include "arcane/core/internal/IPolyhedralMeshModifier.h"
 
@@ -69,7 +72,9 @@ namespace mesh
   /*---------------------------------------------------------------------------*/
   /*---------------------------------------------------------------------------*/
 
-  class PolyhedralFamily : public ItemFamily
+  class PolyhedralFamily
+    : public ItemFamily
+    , public IDoFFamily
   {
     ItemSharedInfoWithType* m_shared_info = nullptr;
     Int32UniqueArray m_empty_connectivity{ 0 };
@@ -85,14 +90,7 @@ namespace mesh
 
     PolyhedralFamily(IMesh* mesh, eItemKind ik, String name)
     : ItemFamily(mesh, ik, name)
-    {
-      ItemFamily::build();
-      m_sub_domain_id = subDomain()->subDomainId();
-      ItemTypeMng* itm = m_mesh->itemTypeMng();
-      ItemTypeInfo* dof_type_info = itm->typeFromId(IT_NullType);
-      m_shared_info = _findSharedInfo(dof_type_info);
-      _updateEmptyConnectivity();
-    }
+    {}
 
    public:
 
@@ -171,6 +169,51 @@ namespace mesh
         item_internal_connectivity_list->_setConnectivityIndex(item_kind, m_empty_connectivity_indexes);
         item_internal_connectivity_list->_setConnectivityNbItem(item_kind, m_empty_connectivity_nb_item);
       }
+    }
+
+    // IItemFamily
+    IDoFFamily* toDoFFamily() override {
+      return this;
+    }
+    // todo bloquer toutes les methodes d'allocation de IItemFamily
+
+    void build() override {
+      ItemFamily::build();
+      m_sub_domain_id = subDomain()->subDomainId();
+      ItemTypeMng* itm = m_mesh->itemTypeMng();
+      ItemTypeInfo* dof_type_info = itm->typeFromId(IT_NullType);
+      m_shared_info = _findSharedInfo(dof_type_info);
+      _updateEmptyConnectivity();
+    }
+
+    // IDoFFamily
+    String name() const override { return ItemFamily::name(); }
+    String fullName() const override { return ItemFamily::fullName(); }
+    Integer nbItem() const override { return ItemFamily::nbItem(); }
+    ItemGroup allItems() const override { return ItemFamily::allItems(); }
+    void endUpdate() override { info() << "END UPDATE "<< m_name ; return ItemFamily::endUpdate(); }
+    IItemFamily* itemFamily() override { return this; }
+
+
+    DoFVectorView addDoFs(Int64ConstArrayView dof_uids, Int32ArrayView dof_lids){
+      auto* polyhedral_mesh_modifier = m_mesh->_internalApi()->polyhedralMeshModifier();
+      ARCANE_CHECK_POINTER(polyhedral_mesh_modifier);
+      polyhedral_mesh_modifier->addItems(dof_uids, dof_lids, ItemFamily::itemKind(), name());
+      return ItemFamily::view(dof_lids);
+    }
+
+    DoFVectorView addGhostDoFs(Int64ConstArrayView dof_uids, Int32ArrayView dof_lids,
+                               Int32ConstArrayView owners)
+    {
+      ARCANE_NOT_YET_IMPLEMENTED("");
+      ARCANE_UNUSED(dof_uids);
+      ARCANE_UNUSED(owners);
+      return ItemFamily::view(dof_lids);
+    }
+
+    void removeDoFs(Int32ConstArrayView items_local_id){
+      auto* mesh_modifier = m_mesh->_internalApi()->polyhedralMeshModifier();
+      mesh_modifier->removeItems(items_local_id, ItemFamily::itemKind(), m_name);
     }
   };
 
@@ -294,7 +337,7 @@ namespace mesh
       item_family.addMeshScalarProperty<Neo::utils::Int32>(PolyhedralFamily::m_arcane_item_lids_property_name.localstr());
       mesh_graph.addAlgorithm(Neo::MeshKernel::InProperty{ item_family, item_family.lidPropName() },
                               Neo::MeshKernel::OutProperty{ item_family, PolyhedralFamily::m_arcane_item_lids_property_name.localstr() },
-                              [arcane_item_family, uids](Neo::ItemLidsProperty const& lids_property,
+                              [arcane_item_family, uids,added_items](Neo::ItemLidsProperty const& lids_property,
                                                          Neo::MeshScalarPropertyT<Neo::utils::Int32>&) {
                                 Int32UniqueArray arcane_items(uids.size());
                                 arcane_item_family->addItems(uids, arcane_items);
@@ -302,6 +345,7 @@ namespace mesh
                                 // debug check lid matching. maybe to remove if too coostly
                                 auto neo_lids = lids_property.values();
                                 if (!std::equal(neo_lids.begin(), neo_lids.end(), arcane_items.begin()))
+                                if (!std::equal(added_items.new_items.begin(), added_items.new_items.end(), arcane_items.begin()))
                                   arcane_item_family->traceMng()->fatal() << "Inconsistent item lids generation between Arcane and Neo.";
                               });
     }
@@ -581,6 +625,89 @@ class mesh::PolyhedralMesh::InternalApi
   std::unique_ptr<IPolyhedralMeshModifier> m_polyhedral_mesh_modifier = nullptr;
 };
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+class mesh::PolyhedralMesh::NoCompactionMeshCompacter
+: public IMeshCompacter
+{
+ public:
+  explicit NoCompactionMeshCompacter(PolyhedralMesh* mesh)
+  : m_mesh(mesh)
+  , m_trace_mng(mesh->traceMng()){}
+
+  void doAllActions() override {_info();};
+
+  void beginCompact() override {_info();};
+  void compactVariablesAndGroups() override {_info();};
+  void updateInternalReferences() override {_info();};
+  void endCompact() override {_info();};
+  void finalizeCompact() override {_info();};
+
+  IMesh* mesh() const override {return m_mesh;};
+
+  const ItemFamilyCompactInfos* findCompactInfos(IItemFamily* family) const override {_info(); return nullptr;}
+
+  ePhase phase() const override {_info(); return ePhase::Ended;}
+
+  void setSorted(bool v) override {_info();};
+
+  bool isSorted() const override {_info();return false;};
+
+  ItemFamilyCollection families() const override {_info();return ItemFamilyCollection {};};
+
+  void _setCompactVariablesAndGroups(bool v) override {_info();};
+
+ private:
+  PolyhedralMesh* m_mesh = nullptr;
+  ITraceMng* m_trace_mng = nullptr;
+
+  void _info() const {m_trace_mng->info() << A_FUNCINFO << "No compacting in PolyhedralMesh";}
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+class mesh::PolyhedralMesh::NoCompactionMeshCompactMng
+: public IMeshCompactMng
+{
+ public:
+  explicit NoCompactionMeshCompactMng(PolyhedralMesh* mesh)
+  : m_mesh(mesh)
+  , m_trace_mng(mesh->traceMng())
+  , m_mesh_compacter{std::make_unique<NoCompactionMeshCompacter>(m_mesh)}
+  {}
+
+  IMesh* mesh() const override {return m_mesh;}
+  IMeshCompacter* beginCompact() override
+  {
+    _info();
+    return m_mesh_compacter.get();
+  }
+
+  IMeshCompacter* beginCompact(IItemFamily* family) override
+  {
+    ARCANE_UNUSED(family);
+    _info();
+    return m_mesh_compacter.get();
+  };
+
+  void endCompact() override {_info();};
+
+  IMeshCompacter* compacter() override
+  {
+    _info();
+    return m_mesh_compacter.get();
+  };
+
+
+ private:
+  PolyhedralMesh* m_mesh = nullptr;
+  ITraceMng* m_trace_mng = nullptr;
+  std::unique_ptr<IMeshCompacter> m_mesh_compacter = nullptr;
+
+  void _info() const {m_trace_mng->info() << A_FUNCINFO << "No compacting in PolyhedralMesh";}
+};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -628,6 +755,7 @@ PolyhedralMesh(ISubDomain* subdomain, const MeshBuildInfo& mbi)
 , m_variable_mng{ subdomain->variableMng() }
 , m_mesh_checker{ this }
 , m_internal_api{std::make_unique<InternalApi>(this)}
+, m_compact_mng{std::make_unique<NoCompactionMeshCompactMng>(this)}
 {
   m_mesh_handle._setMesh(this);
   m_mesh_item_internal_list.mesh = this;
@@ -909,6 +1037,7 @@ _createItemFamily(eItemKind ik, const String& name)
     _updateMeshInternalList(ik);
   }
   m_item_family_collection.add(current_family);
+  current_family->build();
   return current_family;
 }
 
@@ -1160,6 +1289,15 @@ IMeshInternal* mesh::PolyhedralMesh::
 _internalApi()
 {
   return m_internal_api.get();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+IMeshCompactMng* mesh::PolyhedralMesh::
+_compactMng()
+{
+  return m_compact_mng.get();
 }
 
 /*---------------------------------------------------------------------------*/
