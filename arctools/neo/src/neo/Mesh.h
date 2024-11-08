@@ -538,7 +538,7 @@ class Mesh
     return item_family.name() + "_item_coordinates";
   }
 
- private:
+ public:
   [[nodiscard]] std::string _removeItemPropertyName(Family const& item_family) const {
     return "removed_" + item_family.name() + "_items";
   }
