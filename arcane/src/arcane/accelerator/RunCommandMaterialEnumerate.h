@@ -20,6 +20,8 @@
 #include "arcane/core/materials/ComponentItemVectorView.h"
 #include "arcane/core/materials/MaterialsCoreGlobal.h"
 #include "arcane/core/materials/MatItem.h"
+#include "arcane/core/materials/MatItemEnumerator.h"
+
 #include "arcane/accelerator/RunQueueInternal.h"
 #include "arcane/accelerator/RunCommand.h"
 #include "arcane/accelerator/RunCommandLaunchInfo.h"
@@ -77,6 +79,71 @@ class MatCommandContainerBase
  */
 template <typename MatItemType>
 class RunCommandMatItemEnumeratorTraitsT;
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Commande pour itérer sur les AllEnvCell.
+ */
+class AllEnvCellRunCommand
+{
+ public:
+
+  using AllEnvCellVectorView = Arcane::Materials::AllEnvCellVectorView;
+  using ComponentItemVectorView = Arcane::Materials::ComponentItemVectorView;
+  using ComponentItemLocalId = Arcane::Materials::ComponentItemLocalId;
+  using AllEnvCell = Arcane::Materials::AllEnvCell;
+
+ public:
+
+  /*!
+   * \brief Conteneur contenant les informations nécessaires pour la commande.
+   */
+  class Container
+  {
+   public:
+
+    explicit Container(AllEnvCellVectorView view)
+    : m_view(view)
+    {
+    }
+
+   public:
+
+    AllEnvCellRunCommand createCommand(RunCommand& run_command) const
+    {
+      return AllEnvCellRunCommand(run_command, *this);
+    }
+
+   public:
+
+    ARCCORE_HOST_DEVICE Int32 size() const { return m_view.size(); }
+
+    //! Accesseur pour le i-ème élément de la liste
+    ARCCORE_HOST_DEVICE AllEnvCell operator[](Int32 i) const
+    {
+      return m_view[i];
+    }
+
+   private:
+
+    AllEnvCellVectorView m_view;
+  };
+
+ private:
+
+  // Uniquement appelable depuis 'Container'
+  explicit AllEnvCellRunCommand(RunCommand& command, const Container& items)
+  : m_command(command)
+  , m_items(items)
+  {
+  }
+
+ public:
+
+  RunCommand& m_command;
+  Container m_items;
+};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -501,6 +568,27 @@ class RunCommandMatItemEnumeratorTraitsT<Arcane::Materials::MatAndGlobalCell>
   static ContainerType createContainer(Arcane::Materials::IMeshMaterial* env)
   {
     return ContainerType{ env };
+  }
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+//! Spécialisation pour une vue sur les AllEvnCell
+template <>
+class RunCommandMatItemEnumeratorTraitsT<Arcane::Materials::AllEnvCell>
+{
+ public:
+
+  using EnumeratorType = Arcane::Materials::AllEnvCell;
+  using ContainerType = AllEnvCellRunCommand::Container;
+  using MatCommandType = AllEnvCellRunCommand;
+
+ public:
+
+  static ContainerType createContainer(const Arcane::Materials::AllEnvCellVectorView& items)
+  {
+    return ContainerType{ items };
   }
 };
 
