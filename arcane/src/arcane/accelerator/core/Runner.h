@@ -171,7 +171,7 @@ class ARCANE_ACCELERATOR_CORE_EXPORT Runner
  * Cet appel est thread-safe si runner.isConcurrentQueueCreation()==true.
  */
 inline RunQueue
-makeQueue(Runner& runner)
+makeQueue(const Runner& runner)
 {
   return RunQueue(runner);
 }
@@ -182,7 +182,7 @@ makeQueue(Runner& runner)
  * Cet appel est thread-safe si runner.isConcurrentQueueCreation()==true.
  */
 inline RunQueue
-makeQueue(Runner* runner)
+makeQueue(const Runner* runner)
 {
   ARCANE_CHECK_POINTER(runner);
   return RunQueue(*runner);
@@ -194,7 +194,7 @@ makeQueue(Runner* runner)
  * Cet appel est thread-safe si runner.isConcurrentQueueCreation()==true.
  */
 inline RunQueue
-makeQueue(Runner& runner, const RunQueueBuildInfo& bi)
+makeQueue(const Runner& runner, const RunQueueBuildInfo& bi)
 {
   return RunQueue(runner, bi);
 }
@@ -205,7 +205,7 @@ makeQueue(Runner& runner, const RunQueueBuildInfo& bi)
  * Cet appel est thread-safe si runner.isConcurrentQueueCreation()==true.
  */
 inline RunQueue
-makeQueue(Runner* runner, const RunQueueBuildInfo& bi)
+makeQueue(const Runner* runner, const RunQueueBuildInfo& bi)
 {
   ARCANE_CHECK_POINTER(runner);
   return RunQueue(*runner, bi);
