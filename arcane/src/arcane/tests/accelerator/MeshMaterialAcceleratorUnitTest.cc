@@ -128,7 +128,7 @@ class MeshMaterialAcceleratorUnitTest
   void _executeTest1(Integer nb_z, EnvCellVectorView env1);
   void _executeTest2(Integer nb_z);
   void _executeTest3(Integer nb_z);
-  void _executeTest4(Integer nb_z);
+  void _executeTest4(Integer nb_z, bool use_new_impl);
   void _executeTest5(Integer nb_z, MatCellVectorView mat);
   void _executeTest6();
   void _executeTest7();
@@ -339,7 +339,8 @@ executeTest()
   {
     _executeTest2(nb_z);
     _executeTest3(nb_z);
-    _executeTest4(nb_z);
+    _executeTest4(nb_z, false);
+    _executeTest4(nb_z, true);
   }
   {
     IMeshEnvironment* env2 = m_mm_mng->environments()[1];
@@ -674,7 +675,7 @@ _executeTest3(Integer nb_z)
  * de chaque maille.
  */
 void MeshMaterialAcceleratorUnitTest::
-_executeTest4(Integer nb_z)
+_executeTest4(Integer nb_z, bool use_new_impl)
 {
   MaterialVariableCellReal& a_ref(m_mat_a_ref);
   MaterialVariableCellReal& b_ref(m_mat_b_ref);
@@ -709,35 +710,60 @@ _executeTest4(Integer nb_z)
     auto queue = makeQueue(m_runner);
     auto cmd = makeCommand(queue);
 
-    auto in_b = ax::viewIn(cmd, m_mat_b);
-    auto out_c = ax::viewOut(cmd, m_mat_c);
-    auto in_c_g = ax::viewIn(cmd, m_mat_c.globalVariable());
-    auto out_a_g = ax::viewOut(cmd, m_mat_a);
+    auto in_b = viewIn(cmd, m_mat_b);
+    auto out_c = viewOut(cmd, m_mat_c);
+    auto in_c_g = viewIn(cmd, m_mat_c.globalVariable());
+    auto out_a_g = viewOut(cmd, m_mat_a);
 
-    m_mm_mng->enableCellToAllEnvCellForRunCommand(true, true);
-    CellToAllEnvCellAccessor cell2allenvcell(m_mm_mng);
-
-    for (Integer z = 0, iz = nb_z; z < iz; ++z) {
-      cmd << RUNCOMMAND_ENUMERATE_CELL_ALLENVCELL(cell2allenvcell, cid, allCells())
-      {
-
-        Real sum2 = 0.;
-        ENUMERATE_CELL_ALLENVCELL(iev, cid, cell2allenvcell)
+    if (use_new_impl) {
+      for (Integer z = 0, iz = nb_z; z < iz; ++z) {
+        AllEnvCellVectorView all_env_view = m_mm_mng->view(allCells());
+        cmd << RUNCOMMAND_MAT_ENUMERATE(AllEnvCell, all_env_cell, all_env_view)
         {
-          sum2 += in_b[*iev] + in_b[cid];
-        }
+          CellLocalId cid = all_env_cell.globalCellId();
+          Real sum2 = 0.0;
+          for (EnvCell ev : all_env_cell.subEnvItems()) {
+            sum2 += in_b[ev] + in_b[cid];
+          }
 
-        Real sum3 = 0.;
-        if (cell2allenvcell.nbEnvironment(cid) > 1) {
+          Real sum3 = 0.0;
+          if (all_env_cell.nbEnvironment() > 1) {
+            for (EnvCell ev : all_env_cell.subEnvItems()) {
+              Real contrib2 = (in_b[ev] + in_b[all_env_cell]) - (sum2 + 1.);
+              out_c[ev] = contrib2 * in_c_g[cid];
+              sum3 += contrib2;
+            }
+          }
+          out_a_g[cid] = sum3;
+        };
+      }
+    }
+    else {
+      m_mm_mng->enableCellToAllEnvCellForRunCommand(true, true);
+      CellToAllEnvCellAccessor cell2allenvcell(m_mm_mng);
+
+      for (Integer z = 0, iz = nb_z; z < iz; ++z) {
+        cmd << RUNCOMMAND_ENUMERATE_CELL_ALLENVCELL(cell2allenvcell, cid, allCells())
+        {
+
+          Real sum2 = 0.;
           ENUMERATE_CELL_ALLENVCELL(iev, cid, cell2allenvcell)
           {
-            Real contrib2 = (in_b[*iev] + in_b[cid]) - (sum2 + 1.);
-            out_c[*iev] = contrib2 * in_c_g[cid];
-            sum3 += contrib2;
+            sum2 += in_b[*iev] + in_b[cid];
           }
-        }
-        out_a_g[cid] = sum3;
-      };
+
+          Real sum3 = 0.;
+          if (cell2allenvcell.nbEnvironment(cid) > 1) {
+            ENUMERATE_CELL_ALLENVCELL(iev, cid, cell2allenvcell)
+            {
+              Real contrib2 = (in_b[*iev] + in_b[cid]) - (sum2 + 1.);
+              out_c[*iev] = contrib2 * in_c_g[cid];
+              sum3 += contrib2;
+            }
+          }
+          out_a_g[cid] = sum3;
+        };
+      }
     }
   }
 
