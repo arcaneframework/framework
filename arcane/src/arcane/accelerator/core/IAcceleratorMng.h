@@ -27,6 +27,10 @@ namespace Arcane::Accelerator
 /*!
  * \brief Interface du gestionnaire des accélérateurs.
  *
+ * Cette interface permet de récupérer une instance de Runner et RunQueue
+ * associée à un contexte. Il faut appeler initialize() pour créer ces deux
+ * instances qu'il est ensuite possible de récupérer via runner() ou queue().
+ *
  * Il est nécessaire d'appeler initialize() avant de pouvoir accéder aux
  * méthodes telles que defaultRunner() ou defaultQueue().
  */
@@ -51,6 +55,9 @@ class ARCANE_ACCELERATOR_CORE_EXPORT IAcceleratorMng
   /*!
    * \brief Exécuteur par défaut.
    *
+   * \note Cette méthode sera à terme obsolète.. Il est préférable d'utiliser
+   * la méthode runner() à la place car elle est toujours valide.
+   *
    * Le pointeur retourné reste la propriété de cette instance.
    *
    * \pre isInitialized()==true
@@ -62,9 +69,30 @@ class ARCANE_ACCELERATOR_CORE_EXPORT IAcceleratorMng
    *
    * Le pointeur retourné reste la propriété de cette instance.
    *
-   * \pre isInitialized()==true
+   * \note Cette méthode sera à terme obsolète.. Il est préférable d'utiliser
+   * la méthode queue() à la place car elle est toujours valide.
+   *
+   * * \pre isInitialized()==true
    */
   virtual RunQueue* defaultQueue() =0;
+
+ public:
+
+  /*!
+   * \brief Exécuteur associé à l'instance.
+   *
+   * Si l'instance a été initialisée, retourne *defaultRunner().
+   * Sinon, retourne une instance de Runner nulle.
+   */
+  virtual Runner runner() = 0;
+
+  /*!
+   * \brief File d'exécution associée à l'instance.
+   *
+   * Si l'instance a été initialisée, retourne *defaultQueue().
+   * Sinon, retourne une file nulle.
+   */
+  virtual RunQueue queue() = 0;
 };
 
 /*---------------------------------------------------------------------------*/
