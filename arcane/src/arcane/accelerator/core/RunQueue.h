@@ -90,9 +90,9 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RunQueue
   //! Créé une file nulle.
   RunQueue();
   //! Créé une file associée à \a runner avec les paramètres par défaut
-  explicit RunQueue(Runner& runner);
+  explicit RunQueue(const Runner& runner);
   //! Créé une file associée à \a runner avec les paramètres \a bi
-  RunQueue(Runner& runner, const RunQueueBuildInfo& bi);
+  RunQueue(const Runner& runner, const RunQueueBuildInfo& bi);
   ~RunQueue();
 
  public:

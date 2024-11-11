@@ -34,7 +34,7 @@ namespace Arcane::Accelerator
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// NOTE: Les constructeurs et destructeurs doivent être dans le fichier source
+// NOTE : Les constructeurs et destructeurs doivent être dans le fichier source,
 // car le type \a m_p est opaque pour l'utilisation n'est pas connu dans
 // la définition de la classe.
 
@@ -50,7 +50,7 @@ RunQueue()
 /*---------------------------------------------------------------------------*/
 
 RunQueue::
-RunQueue(Runner& runner)
+RunQueue(const Runner& runner)
 : m_p(impl::RunQueueImpl::create(runner._impl()))
 {
 }
@@ -59,7 +59,7 @@ RunQueue(Runner& runner)
 /*---------------------------------------------------------------------------*/
 
 RunQueue::
-RunQueue(Runner& runner, const RunQueueBuildInfo& bi)
+RunQueue(const Runner& runner, const RunQueueBuildInfo& bi)
 : m_p(impl::RunQueueImpl::create(runner._impl(), bi))
 {
 }
