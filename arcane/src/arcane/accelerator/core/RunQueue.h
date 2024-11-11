@@ -125,6 +125,16 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RunQueue
   //! Indique si la file d'exécution est asynchrone.
   bool isAsync() const;
 
+  /*!
+   * \brief Positionne l'asynchronisme de l'instance.
+   *
+   * Retourne l'instance.
+   *
+   * \pre !isNull()
+   * \sa setAsync().
+   */
+  const RunQueue& addAsync(bool is_async) const;
+
   //! Bloque tant que toutes les commandes associées à la file ne sont pas terminées.
   void barrier() const;
 
