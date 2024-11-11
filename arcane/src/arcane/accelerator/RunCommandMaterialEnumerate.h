@@ -903,10 +903,6 @@ operator<<(RunCommand& command, const impl::MatCellRunCommand::Container& view)
              << [=] ARCCORE_HOST_DEVICE(::Arcane::Accelerator::impl::RunCommandMatItemEnumeratorTraitsT<MatItemNameType>::EnumeratorType iter_name \
                                         __VA_OPT__(ARCANE_RUNCOMMAND_REDUCER_FOR_EACH(__VA_ARGS__)))
 
-//! Macro pour itérer sur un matériau ou un milieu
-#define RUNCOMMAND_MAT_ENUMERATE_EX(MatItemNameType, iter_name, env_or_mat_vector, ...) \
-  RUNCOMMAND_MAT_ENUMERATE(MatItemNameType, iter_name, env_or_mat_vector, __VA_ARGS__)
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
