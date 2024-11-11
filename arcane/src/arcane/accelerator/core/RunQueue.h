@@ -50,8 +50,9 @@ namespace Arcane::Accelerator
  */
 class ARCANE_ACCELERATOR_CORE_EXPORT RunQueue
 {
-  friend class RunCommand;
-  friend class ProfileRegion;
+  friend RunCommand;
+  friend ProfileRegion;
+  friend Runner;
   friend class impl::RunCommandLaunchInfo;
   friend RunCommand makeCommand(const RunQueue& run_queue);
   friend RunCommand makeCommand(const RunQueue* run_queue);
@@ -89,11 +90,16 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RunQueue
 
   //! Créé une file nulle.
   RunQueue();
+  ~RunQueue();
+
+ public:
+
   //! Créé une file associée à \a runner avec les paramètres par défaut
+  ARCANE_DEPRECATED_REASON("Y2024: Use makeQueue(runner) instead")
   explicit RunQueue(const Runner& runner);
   //! Créé une file associée à \a runner avec les paramètres \a bi
+  ARCANE_DEPRECATED_REASON("Y2024: Use makeQueue(runner,bi) instead")
   RunQueue(const Runner& runner, const RunQueueBuildInfo& bi);
-  ~RunQueue();
 
  public:
 
@@ -197,6 +203,15 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RunQueue
    * s'agit d'un 'hipStream_t*'.
    */
   void* platformStream() const;
+
+ private:
+
+  // Les méthodes de création sont réservée à Runner.
+  // On ajoute un argument supplémentaire non utilisé pour ne pas utiliser
+  // le constructeur obsolète.
+  RunQueue(const Runner& runner, bool);
+  //! Créé une file associée à \a runner avec les paramètres \a bi
+  RunQueue(const Runner& runner, const RunQueueBuildInfo& bi, bool);
 
  private:
 

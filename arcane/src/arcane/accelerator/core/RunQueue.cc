@@ -68,6 +68,24 @@ RunQueue(const Runner& runner, const RunQueueBuildInfo& bi)
 /*---------------------------------------------------------------------------*/
 
 RunQueue::
+RunQueue(const Runner& runner, bool)
+: m_p(impl::RunQueueImpl::create(runner._impl()))
+{
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+RunQueue::
+RunQueue(const Runner& runner, const RunQueueBuildInfo& bi, bool)
+: m_p(impl::RunQueueImpl::create(runner._impl(), bi))
+{
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+RunQueue::
 RunQueue(const RunQueue& x)
 : m_p(x.m_p)
 {
