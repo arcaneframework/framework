@@ -53,6 +53,7 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RunQueue
   friend RunCommand;
   friend ProfileRegion;
   friend Runner;
+  friend ViewBuildInfo;
   friend class impl::RunCommandLaunchInfo;
   friend RunCommand makeCommand(const RunQueue& run_queue);
   friend RunCommand makeCommand(const RunQueue* run_queue);
@@ -212,12 +213,14 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RunQueue
   RunQueue(const Runner& runner, bool);
   //! Créé une file associée à \a runner avec les paramètres \a bi
   RunQueue(const Runner& runner, const RunQueueBuildInfo& bi, bool);
+  explicit RunQueue(impl::RunQueueImpl* p);
 
  private:
 
   impl::IRunnerRuntime* _internalRuntime() const;
   impl::IRunQueueStream* _internalStream() const;
   impl::RunCommandImpl* _getCommandImpl() const;
+  impl::RunQueueImpl* _internalImpl() const;
   void _checkNotNull() const;
 
   // Pour VariableViewBase

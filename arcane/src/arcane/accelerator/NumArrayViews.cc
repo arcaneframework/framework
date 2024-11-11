@@ -16,8 +16,9 @@
 #include "arcane/utils/MemoryView.h"
 
 #include "arcane/accelerator/core/RunCommand.h"
-#include "arcane/accelerator/core/RunQueue.h"
 #include "arcane/accelerator/core/Memory.h"
+#include "arcane/accelerator/core/internal/RunQueueImpl.h"
+#include "arcane/accelerator/core/internal/IRunQueueStream.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -39,10 +40,10 @@ namespace Arcane::Accelerator
 NumArrayViewBase::
 NumArrayViewBase(const ViewBuildInfo& vbi, Span<const std::byte> bytes)
 {
-  const RunQueue& q = vbi.queue();
-  if (q._isAutoPrefetchCommand()) {
+  impl::RunQueueImpl* q = vbi._internalQueue();
+  if (q->isAutoPrefetchCommand()) {
     ConstMemoryView mem_view(bytes);
-    q.prefetchMemory(MemoryPrefetchArgs(mem_view).addAsync());
+    q->_internalStream()->prefetchMemory(MemoryPrefetchArgs(mem_view).addAsync());
   }
 }
 

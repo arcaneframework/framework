@@ -67,6 +67,8 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RunQueueImpl
   eExecutionPolicy executionPolicy() const { return m_execution_policy; }
   RunnerImpl* runner() const { return m_runner_impl; }
   MemoryAllocationOptions allocationOptions() const;
+  bool isAutoPrefetchCommand() const;
+  IRunQueueStream* _internalStream() const { return m_queue_stream; }
 
  public:
 
@@ -85,7 +87,6 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RunQueueImpl
 
   RunCommandImpl* _internalCreateOrGetRunCommandImpl();
   IRunnerRuntime* _internalRuntime() const { return m_runtime; }
-  IRunQueueStream* _internalStream() const { return m_queue_stream; }
   void _internalFreeRunningCommands();
   void _internalBarrier();
   bool _isInPool() const { return m_is_in_pool; }

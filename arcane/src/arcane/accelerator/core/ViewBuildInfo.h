@@ -33,26 +33,25 @@ namespace Arcane::Accelerator
  */
 class ARCANE_ACCELERATOR_CORE_EXPORT ViewBuildInfo
 {
+  friend class NumArrayViewBase;
+  friend class VariableViewBase;
+
  public:
 
   //! Créé instance associée a la file \a queue.
-  ViewBuildInfo(const RunQueue& queue)
-  : m_queue(queue)
-  {}
+  explicit(false) ViewBuildInfo(const RunQueue& queue);
   //! Créé instance associée a la file \a queue.
-  ViewBuildInfo(const RunQueue* queue)
-  : m_queue(*queue)
-  {}
+  explicit(false) ViewBuildInfo(const RunQueue* queue);
   //! Créé instance associée a la commande \a command.
-  ViewBuildInfo(RunCommand& command);
-
- public:
-
-  const RunQueue& queue() const { return m_queue; }
+  explicit(false) ViewBuildInfo(RunCommand& command);
 
  private:
 
-  const RunQueue& m_queue;
+  impl::RunQueueImpl* _internalQueue() const { return m_queue_impl; }
+
+ private:
+
+  impl::RunQueueImpl* m_queue_impl = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/
