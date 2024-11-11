@@ -43,7 +43,7 @@ NumArrayViewBase(const ViewBuildInfo& vbi, Span<const std::byte> bytes)
   impl::RunQueueImpl* q = vbi._internalQueue();
   if (q->isAutoPrefetchCommand()) {
     ConstMemoryView mem_view(bytes);
-    q->_internalStream()->prefetchMemory(MemoryPrefetchArgs(mem_view).addAsync());
+    q->prefetchMemory(MemoryPrefetchArgs(mem_view).addAsync());
   }
 }
 
