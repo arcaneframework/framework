@@ -38,12 +38,14 @@ class ARCANE_ACCELERATOR_CORE_EXPORT ViewBuildInfo
 
  public:
 
+  // NOTE: les constructeurs suivant doivent être implicites
+
   //! Créé instance associée a la file \a queue.
-  explicit(false) ViewBuildInfo(const RunQueue& queue);
+  ViewBuildInfo(const RunQueue& queue);
   //! Créé instance associée a la file \a queue.
-  explicit(false) ViewBuildInfo(const RunQueue* queue);
+  ViewBuildInfo(const RunQueue* queue);
   //! Créé instance associée a la commande \a command.
-  explicit(false) ViewBuildInfo(RunCommand& command);
+  ViewBuildInfo(RunCommand& command);
 
  private:
 
