@@ -16,14 +16,14 @@
 
 #include "arcane/utils/FatalErrorException.h"
 
-#include "arcane/accelerator/core/Runner.h"
 #include "arcane/accelerator/core/internal/IRunnerRuntime.h"
 #include "arcane/accelerator/core/internal/IRunQueueStream.h"
-#include "arcane/accelerator/core/RunQueueEvent.h"
 #include "arcane/accelerator/core/internal/IRunQueueEventImpl.h"
-#include "arcane/accelerator/core/Memory.h"
 #include "arcane/accelerator/core/internal/RunQueueImpl.h"
 #include "arcane/accelerator/core/internal/RunnerImpl.h"
+#include "arcane/accelerator/core/Runner.h"
+#include "arcane/accelerator/core/RunQueueEvent.h"
+#include "arcane/accelerator/core/Memory.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -230,7 +230,7 @@ void RunQueue::
 copyMemory(const MemoryCopyArgs& args) const
 {
   _checkNotNull();
-  _internalStream()->copyMemory(args);
+  m_p->copyMemory(args);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -240,7 +240,7 @@ void RunQueue::
 prefetchMemory(const MemoryPrefetchArgs& args) const
 {
   _checkNotNull();
-  _internalStream()->prefetchMemory(args);
+  m_p->prefetchMemory(args);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -250,8 +250,7 @@ void RunQueue::
 waitEvent(RunQueueEvent& event)
 {
   _checkNotNull();
-  auto* p = event._internalEventImpl();
-  return p->waitForEvent(_internalStream());
+  m_p->waitEvent(event);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -260,8 +259,9 @@ waitEvent(RunQueueEvent& event)
 void RunQueue::
 waitEvent(Ref<RunQueueEvent>& event)
 {
-  _checkNotNull();
-  waitEvent(*event.get());
+  RunQueueEvent* e = event.get();
+  ARCANE_CHECK_POINTER(e);
+  waitEvent(*e);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -271,8 +271,7 @@ void RunQueue::
 recordEvent(RunQueueEvent& event)
 {
   _checkNotNull();
-  auto* p = event._internalEventImpl();
-  return p->recordQueue(_internalStream());
+  m_p->recordEvent(event);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -281,8 +280,9 @@ recordEvent(RunQueueEvent& event)
 void RunQueue::
 recordEvent(Ref<RunQueueEvent>& event)
 {
-  _checkNotNull();
-  recordEvent(*event.get());
+  RunQueueEvent* e = event.get();
+  ARCANE_CHECK_POINTER(e);
+  recordEvent(*e);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -315,16 +315,6 @@ isAsync() const
   if (m_p)
     return m_p->m_is_async;
   return false;
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-bool RunQueue::
-_isAutoPrefetchCommand() const
-{
-  _checkNotNull();
-  return m_p->m_runner_impl->isAutoPrefetchCommand();
 }
 
 /*---------------------------------------------------------------------------*/

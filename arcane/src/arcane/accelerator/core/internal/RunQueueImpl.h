@@ -33,6 +33,9 @@ namespace Arcane::Accelerator::impl
 /*!
  * \internal
  * \brief File d'exécution pour accélérateur.
+ *
+ * Cette classe gère l'implémentation d'une RunQueue.
+ * La description des méthodes se trouve dans RunQueue.
  */
 class ARCANE_ACCELERATOR_CORE_EXPORT RunQueueImpl
 {
@@ -68,7 +71,12 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RunQueueImpl
   RunnerImpl* runner() const { return m_runner_impl; }
   MemoryAllocationOptions allocationOptions() const;
   bool isAutoPrefetchCommand() const;
-  IRunQueueStream* _internalStream() const { return m_queue_stream; }
+
+  void copyMemory(const MemoryCopyArgs& args) const;
+  void prefetchMemory(const MemoryPrefetchArgs& args) const;
+
+  void recordEvent(RunQueueEvent& event);
+  void waitEvent(RunQueueEvent& event);
 
  public:
 
@@ -87,6 +95,7 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RunQueueImpl
 
   RunCommandImpl* _internalCreateOrGetRunCommandImpl();
   IRunnerRuntime* _internalRuntime() const { return m_runtime; }
+  IRunQueueStream* _internalStream() const { return m_queue_stream; }
   void _internalFreeRunningCommands();
   void _internalBarrier();
   bool _isInPool() const { return m_is_in_pool; }
