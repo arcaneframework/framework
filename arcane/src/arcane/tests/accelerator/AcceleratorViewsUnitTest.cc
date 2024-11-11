@@ -743,8 +743,9 @@ _executeTestVariableCopy()
 
   ValueChecker vc(A_FUNCINFO);
 
-  auto queue = makeQueue(m_runner);
-  queue.setAsync(true);
+  auto queue = makeQueue(m_runner).addAsync(true);
+  if (!queue.isAsync())
+    ARCANE_FATAL("Queue is not asynchronous");
 
   VariableCellReal2 test_cell1_real2(VariableBuildInfo(mesh(), "TestCell1Real2"));
   VariableCellReal3 test_cell1_real3(VariableBuildInfo(mesh(), "TestCell1Real3"));
