@@ -57,6 +57,14 @@ class ARCANE_ACCELERATOR_CORE_EXPORT Runner
   friend RunQueueEvent;
   friend impl::RunnerImpl;
 
+  friend RunQueue makeQueue(const Runner& runner);
+  friend RunQueue makeQueue(const Runner* runner);
+  friend RunQueue makeQueue(const Runner& runner, const RunQueueBuildInfo& bi);
+  friend RunQueue makeQueue(const Runner* runner, const RunQueueBuildInfo& bi);
+  friend Ref<RunQueue> makeQueueRef(const Runner& runner);
+  friend Ref<RunQueue> makeQueueRef(Runner& runner, const RunQueueBuildInfo& bi);
+  friend Ref<RunQueue> makeQueueRef(Runner* runner);
+
  public:
 
   /*!
@@ -139,6 +147,26 @@ class ARCANE_ACCELERATOR_CORE_EXPORT Runner
    */
   static const IDeviceInfoList* deviceInfoList(eExecutionPolicy policy);
 
+ private:
+
+  // La création est réservée aux méthodes globales makeQueue()
+  static RunQueue _makeQueue(const Runner& runner)
+  {
+    return RunQueue(runner, true);
+  }
+  static RunQueue _makeQueue(const Runner& runner, const RunQueueBuildInfo& bi)
+  {
+    return RunQueue(runner, bi, true);
+  }
+  static Ref<RunQueue> _makeQueueRef(const Runner& runner)
+  {
+    return makeRef(new RunQueue(runner, true));
+  }
+  static Ref<RunQueue> _makeQueueRef(Runner& runner, const RunQueueBuildInfo& bi)
+  {
+    return makeRef(new RunQueue(runner, bi, true));
+  }
+
  public:
 
   //! API interne à Arcane
@@ -171,49 +199,54 @@ class ARCANE_ACCELERATOR_CORE_EXPORT Runner
  * Cet appel est thread-safe si runner.isConcurrentQueueCreation()==true.
  */
 inline RunQueue
-makeQueue(Runner& runner)
+makeQueue(const Runner& runner)
 {
-  return RunQueue(runner);
+  return Runner::_makeQueue(runner);
 }
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 /*!
  * \brief Créé une file associée à \a runner.
  *
  * Cet appel est thread-safe si runner.isConcurrentQueueCreation()==true.
  */
 inline RunQueue
-makeQueue(Runner* runner)
+makeQueue(const Runner* runner)
 {
   ARCANE_CHECK_POINTER(runner);
-  return RunQueue(*runner);
+  return Runner::_makeQueue(*runner);
 }
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 /*!
  * \brief Créé une file associée à \a runner avec les propriétés \a bi.
  *
  * Cet appel est thread-safe si runner.isConcurrentQueueCreation()==true.
  */
 inline RunQueue
-makeQueue(Runner& runner, const RunQueueBuildInfo& bi)
+makeQueue(const Runner& runner, const RunQueueBuildInfo& bi)
 {
-  return RunQueue(runner, bi);
+  return Runner::_makeQueue(runner, bi);
 }
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 /*!
  * \brief Créé une file associée à \a runner avec les propriétés \a bi.
  *
  * Cet appel est thread-safe si runner.isConcurrentQueueCreation()==true.
  */
 inline RunQueue
-makeQueue(Runner* runner, const RunQueueBuildInfo& bi)
+makeQueue(const Runner* runner, const RunQueueBuildInfo& bi)
 {
   ARCANE_CHECK_POINTER(runner);
-  return RunQueue(*runner, bi);
+  return Runner::_makeQueue(*runner, bi);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
 /*!
  * \brief Créé une référence sur file avec la politique d'exécution par défaut de \a runner.
  *
@@ -221,11 +254,13 @@ makeQueue(Runner* runner, const RunQueueBuildInfo& bi)
  * pour éviter une allocation inutile.
  */
 inline Ref<RunQueue>
-makeQueueRef(Runner& runner)
+makeQueueRef(const Runner& runner)
 {
-  return makeRef(new RunQueue(runner));
+  return Runner::_makeQueueRef(runner);
 }
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 /*!
  * \brief Créé une référence sur file avec la politique d'exécution par défaut de \a runner.
  *
@@ -235,12 +270,11 @@ makeQueueRef(Runner& runner)
 inline Ref<RunQueue>
 makeQueueRef(Runner& runner, const RunQueueBuildInfo& bi)
 {
-  return makeRef(new RunQueue(runner, bi));
+  return Runner::_makeQueueRef(runner, bi);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
 /*!
  * \brief Créé une référence sur file avec la politique d'exécution par défaut de \a runner.
  *
@@ -251,7 +285,7 @@ inline Ref<RunQueue>
 makeQueueRef(Runner* runner)
 {
   ARCANE_CHECK_POINTER(runner);
-  return makeRef(new RunQueue(*runner));
+  return Runner::_makeQueueRef(*runner);
 }
 
 /*---------------------------------------------------------------------------*/

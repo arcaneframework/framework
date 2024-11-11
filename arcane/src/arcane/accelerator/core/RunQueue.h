@@ -50,8 +50,10 @@ namespace Arcane::Accelerator
  */
 class ARCANE_ACCELERATOR_CORE_EXPORT RunQueue
 {
-  friend class RunCommand;
-  friend class ProfileRegion;
+  friend RunCommand;
+  friend ProfileRegion;
+  friend Runner;
+  friend ViewBuildInfo;
   friend class impl::RunCommandLaunchInfo;
   friend RunCommand makeCommand(const RunQueue& run_queue);
   friend RunCommand makeCommand(const RunQueue* run_queue);
@@ -89,11 +91,16 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RunQueue
 
   //! Créé une file nulle.
   RunQueue();
-  //! Créé une file associée à \a runner avec les paramètres par défaut
-  explicit RunQueue(Runner& runner);
-  //! Créé une file associée à \a runner avec les paramètres \a bi
-  RunQueue(Runner& runner, const RunQueueBuildInfo& bi);
   ~RunQueue();
+
+ public:
+
+  //! Créé une file associée à \a runner avec les paramètres par défaut
+  ARCANE_DEPRECATED_REASON("Y2024: Use makeQueue(runner) instead")
+  explicit RunQueue(const Runner& runner);
+  //! Créé une file associée à \a runner avec les paramètres \a bi
+  ARCANE_DEPRECATED_REASON("Y2024: Use makeQueue(runner,bi) instead")
+  RunQueue(const Runner& runner, const RunQueueBuildInfo& bi);
 
  public:
 
@@ -124,6 +131,16 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RunQueue
   void setAsync(bool v);
   //! Indique si la file d'exécution est asynchrone.
   bool isAsync() const;
+
+  /*!
+   * \brief Positionne l'asynchronisme de l'instance.
+   *
+   * Retourne l'instance.
+   *
+   * \pre !isNull()
+   * \sa setAsync().
+   */
+  const RunQueue& addAsync(bool is_async) const;
 
   //! Bloque tant que toutes les commandes associées à la file ne sont pas terminées.
   void barrier() const;
@@ -190,9 +207,20 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RunQueue
 
  private:
 
+  // Les méthodes de création sont réservée à Runner.
+  // On ajoute un argument supplémentaire non utilisé pour ne pas utiliser
+  // le constructeur obsolète.
+  RunQueue(const Runner& runner, bool);
+  //! Créé une file associée à \a runner avec les paramètres \a bi
+  RunQueue(const Runner& runner, const RunQueueBuildInfo& bi, bool);
+  explicit RunQueue(impl::RunQueueImpl* p);
+
+ private:
+
   impl::IRunnerRuntime* _internalRuntime() const;
   impl::IRunQueueStream* _internalStream() const;
   impl::RunCommandImpl* _getCommandImpl() const;
+  impl::RunQueueImpl* _internalImpl() const;
   void _checkNotNull() const;
 
   // Pour VariableViewBase

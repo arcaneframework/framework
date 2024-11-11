@@ -29,8 +29,7 @@ namespace Arcane::Accelerator
 
 RunCommand::
 RunCommand(const RunQueue& run_queue)
-: m_run_queue(run_queue)
-, m_p(run_queue._getCommandImpl())
+: m_p(run_queue._getCommandImpl())
 {
 }
 
@@ -132,6 +131,24 @@ RunCommand&
 operator<<(RunCommand& command, const TraceInfo& trace_info)
 {
   return command.addTraceInfo(trace_info);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+RunQueue RunCommand::
+_internalQueue() const
+{
+  return RunQueue(m_p->m_queue);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+impl::RunQueueImpl* RunCommand::
+_internalQueueImpl() const
+{
+  return m_p->m_queue;
 }
 
 /*---------------------------------------------------------------------------*/

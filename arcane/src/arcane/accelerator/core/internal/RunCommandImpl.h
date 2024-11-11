@@ -41,7 +41,7 @@ class RunCommandImpl
 
  public:
 
-  RunCommandImpl(RunQueueImpl* queue);
+  explicit RunCommandImpl(RunQueueImpl* queue);
   ~RunCommandImpl();
   RunCommandImpl(const RunCommandImpl&) = delete;
   RunCommandImpl& operator=(const RunCommandImpl&) = delete;

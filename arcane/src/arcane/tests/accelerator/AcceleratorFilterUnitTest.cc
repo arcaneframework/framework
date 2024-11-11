@@ -133,8 +133,9 @@ _executeTestDataType(Int32 size, Int32 test_id)
 {
   ValueChecker vc(A_FUNCINFO);
 
-  RunQueue queue(makeQueue(subDomain()->acceleratorMng()->defaultRunner()));
-  queue.setAsync(true);
+  RunQueue queue(makeQueue(subDomain()->acceleratorMng()->runner()).addAsync(true));
+  if (!queue.isAsync())
+    ARCANE_FATAL("Queue is not asynchronous");
 
   info() << "Execute Filter Test1 size=" << size << " test_id=" << test_id;
 

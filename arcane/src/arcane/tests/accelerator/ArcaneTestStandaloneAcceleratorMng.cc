@@ -113,7 +113,7 @@ void _testBinOp(IAcceleratorMng* acc_mng)
 
   // +=
   {
-    auto command = makeCommand(acc_mng->defaultQueue());
+    auto command = makeCommand(acc_mng->queue());
     auto out_a = viewOut(command, a);
     auto in_b = viewIn(command, b);
     command << RUNCOMMAND_LOOP1(iter, nb_value)
@@ -132,7 +132,7 @@ void _testBinOp(IAcceleratorMng* acc_mng)
 
   // -= et /=
   {
-    auto command = makeCommand(acc_mng->defaultQueue());
+    auto command = makeCommand(acc_mng->queue());
     auto in_out_a = viewInOut(command, a);
     auto in_b = viewIn(command, b);
     command << RUNCOMMAND_LOOP1(iter, nb_value)

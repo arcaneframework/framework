@@ -34,7 +34,7 @@ namespace Arcane::Accelerator
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// NOTE: Les constructeurs et destructeurs doivent être dans le fichier source
+// NOTE : Les constructeurs et destructeurs doivent être dans le fichier source,
 // car le type \a m_p est opaque pour l'utilisation n'est pas connu dans
 // la définition de la classe.
 
@@ -50,7 +50,7 @@ RunQueue()
 /*---------------------------------------------------------------------------*/
 
 RunQueue::
-RunQueue(Runner& runner)
+RunQueue(const Runner& runner)
 : m_p(impl::RunQueueImpl::create(runner._impl()))
 {
 }
@@ -59,7 +59,25 @@ RunQueue(Runner& runner)
 /*---------------------------------------------------------------------------*/
 
 RunQueue::
-RunQueue(Runner& runner, const RunQueueBuildInfo& bi)
+RunQueue(const Runner& runner, const RunQueueBuildInfo& bi)
+: m_p(impl::RunQueueImpl::create(runner._impl(), bi))
+{
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+RunQueue::
+RunQueue(const Runner& runner, bool)
+: m_p(impl::RunQueueImpl::create(runner._impl()))
+{
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+RunQueue::
+RunQueue(const Runner& runner, const RunQueueBuildInfo& bi, bool)
 : m_p(impl::RunQueueImpl::create(runner._impl(), bi))
 {
 }
@@ -79,6 +97,15 @@ RunQueue(const RunQueue& x)
 RunQueue::
 RunQueue(RunQueue&& x) noexcept
 : m_p(x.m_p)
+{
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+RunQueue::
+RunQueue(impl::RunQueueImpl* p)
+: m_p(p)
 {
 }
 
@@ -178,6 +205,16 @@ _getCommandImpl() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+impl::RunQueueImpl* RunQueue::
+_internalImpl() const
+{
+  _checkNotNull();
+  return m_p.get();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 void* RunQueue::
 platformStream() const
 {
@@ -256,6 +293,17 @@ setAsync(bool v)
 {
   _checkNotNull();
   m_p->m_is_async = v;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+const RunQueue& RunQueue::
+addAsync(bool is_async) const
+{
+  _checkNotNull();
+  m_p->m_is_async = is_async;
+  return (*this);
 }
 
 /*---------------------------------------------------------------------------*/

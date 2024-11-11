@@ -15,6 +15,8 @@
 
 #include "arcane/accelerator/core/RunCommand.h"
 #include "arcane/accelerator/core/RunQueue.h"
+#include "arcane/accelerator/core/internal/RunQueueImpl.h"
+#include "arcane/accelerator/core/internal/IRunQueueStream.h"
 
 #include "arcane/core/VariableUtils.h"
 
@@ -38,9 +40,11 @@ namespace Arcane::Accelerator
 VariableViewBase::
 VariableViewBase(const ViewBuildInfo& vbi, IVariable* var)
 {
-  const RunQueue& q = vbi.queue();
-  if (q._isAutoPrefetchCommand())
-    VariableUtils::prefetchVariableAsync(var, &q);
+  impl::RunQueueImpl* q = vbi._internalQueue();
+  if (q->isAutoPrefetchCommand()) {
+    RunQueue rq(q);
+    VariableUtils::prefetchVariableAsync(var, &rq);
+  }
 }
 
 /*---------------------------------------------------------------------------*/

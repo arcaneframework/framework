@@ -20,6 +20,7 @@
 #include "arcane/accelerator/core/PointerAttribute.h"
 #include "arcane/accelerator/core/ViewBuildInfo.h"
 #include "arcane/accelerator/core/RunCommand.h"
+#include "arcane/accelerator/core/RunQueue.h"
 
 #include <iostream>
 
@@ -309,10 +310,25 @@ operator<<(std::ostream& o, const PointerAttribute& a)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Créé instance associée a la commande \a command.
+ViewBuildInfo::
+ViewBuildInfo(const RunQueue& queue)
+: m_queue_impl(queue._internalImpl())
+{}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+ViewBuildInfo::
+ViewBuildInfo(const RunQueue* queue)
+: m_queue_impl(queue->_internalImpl())
+{}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 ViewBuildInfo::
 ViewBuildInfo(RunCommand& command)
-: m_queue(command._internalQueue())
+: m_queue_impl(command._internalQueueImpl())
 {
 }
 
