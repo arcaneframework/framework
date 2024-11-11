@@ -25,6 +25,7 @@
 #include "arcane/accelerator/RunCommandLoop.h"
 #include "arcane/accelerator/Reduce.h"
 #include "arcane/accelerator/Partitioner.h"
+#include "arcane/accelerator/RunCommandMaterialEnumerate.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -291,18 +292,14 @@ _computeNbPureAndImpure(SmallSpan<const Int32> local_ids, RunQueue& queue)
   AllEnvCellVectorView all_env_cell_view = m_material_mng->view(local_ids);
   const Int32 component_id = m_component->id();
 
-  const Int32 nb_id = local_ids.size();
-
   auto command = makeCommand(queue);
   Accelerator::ReducerSum2<Int32> nb_pure(command);
   Accelerator::ReducerSum2<Int32> nb_impure(command);
 
   // Calcule le nombre de mailles pures et partielles
   if (is_env) {
-    command << RUNCOMMAND_LOOP1(iter, nb_id, nb_pure, nb_impure)
+    command << RUNCOMMAND_MAT_ENUMERATE(AllEnvCell, all_env_cell, all_env_cell_view, nb_pure, nb_impure)
     {
-      auto [i] = iter();
-      AllEnvCell all_env_cell = all_env_cell_view[i];
       for (EnvCell ec : all_env_cell.subEnvItems()) {
         if (ec.componentId() == component_id) {
           MatVarIndex idx = ec._varIndex();
@@ -315,10 +312,8 @@ _computeNbPureAndImpure(SmallSpan<const Int32> local_ids, RunQueue& queue)
     };
   }
   else {
-    command << RUNCOMMAND_LOOP1(iter, nb_id, nb_pure, nb_impure)
+    command << RUNCOMMAND_MAT_ENUMERATE(AllEnvCell, all_env_cell, all_env_cell_view, nb_pure, nb_impure)
     {
-      auto [i] = iter();
-      AllEnvCell all_env_cell = all_env_cell_view[i];
       for (EnvCell env_cell : all_env_cell.subEnvItems()) {
         for (MatCell mc : env_cell.subMatItems()) {
           if (mc.componentId() == component_id) {
