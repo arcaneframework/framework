@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IItemFamilyExchanger.h                                      (C) 2000-2022 */
+/* IItemFamilyExchanger.h                                      (C) 2000-2024 */
 /*                                                                           */
 /* Echange entre sous-domaine les entités d'une famille.                     */
 /*---------------------------------------------------------------------------*/
@@ -97,7 +97,8 @@ class ARCANE_CORE_EXPORT IItemFamilyExchanger
 
   //! Prépare les structures d'envoie
   virtual void prepareToSend() =0;
-  
+  virtual void releaseBuffer() =0;
+
   /*!
    * \brief Après réception des messages, lit et créé les entités transférées.
    *
