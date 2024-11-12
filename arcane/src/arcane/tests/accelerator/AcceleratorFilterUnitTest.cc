@@ -12,24 +12,21 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/NumArray.h"
-
 #include "arcane/utils/ValueChecker.h"
 #include "arcane/utils/MemoryView.h"
 
-#include "arcane/BasicUnitTest.h"
-#include "arcane/ServiceFactory.h"
+#include "arcane/core/BasicUnitTest.h"
+#include "arcane/core/ServiceFactory.h"
 
 #include "arcane/accelerator/core/RunQueueBuildInfo.h"
 #include "arcane/accelerator/core/Runner.h"
 #include "arcane/accelerator/core/Memory.h"
-
+#include "arcane/accelerator/core/IAcceleratorMng.h"
 #include "arcane/accelerator/NumArrayViews.h"
 #include "arcane/accelerator/RunCommandLoop.h"
-
-#include "arcane/accelerator/core/IAcceleratorMng.h"
+#include "arcane/accelerator/GenericFilterer.h"
 
 #include "arcane/tests/accelerator/AcceleratorFilterUnitTest_axl.h"
-#include "arcane/accelerator/Filter.h"
 
 #include <random>
 

@@ -23,10 +23,10 @@
 #include "arcane/accelerator/core/Runner.h"
 #include "arcane/accelerator/core/Memory.h"
 #include "arcane/accelerator/core/IAcceleratorMng.h"
-
 #include "arcane/accelerator/Reduce.h"
 #include "arcane/accelerator/NumArrayViews.h"
 #include "arcane/accelerator/RunCommandLoop.h"
+#include "arcane/accelerator/GenericReducer.h"
 
 #include "arcane/tests/accelerator/AcceleratorReduceUnitTest_axl.h"
 

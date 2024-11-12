@@ -20,16 +20,13 @@
 #include "arcane/core/ServiceFactory.h"
 #include "arcane/core/IUnitTest.h"
 
+#include "arcane/accelerator/core/IAcceleratorMng.h"
 #include "arcane/accelerator/core/RunQueueBuildInfo.h"
 #include "arcane/accelerator/core/Runner.h"
 #include "arcane/accelerator/core/Memory.h"
-
 #include "arcane/accelerator/NumArrayViews.h"
 #include "arcane/accelerator/RunCommandLoop.h"
-
-#include "arcane/accelerator/core/IAcceleratorMng.h"
-
-#include "arcane/accelerator/Partitioner.h"
+#include "arcane/accelerator/GenericPartitioner.h"
 
 #include <random>
 
