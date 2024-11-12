@@ -32,7 +32,7 @@ concurrency:
 
 env:
   # CTest
-  CT_OPTS: "--timeout 600 --output-on-failure"
+  CT_OPTS: "-j4 --timeout 600 --output-on-failure"
   EXCLUDED_TESTS: '^.*(mumps).*$'
   EXCLUDED_TESTS_WITH_LABELS: 'LARGE_HYBRID'
 

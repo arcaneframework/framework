@@ -99,6 +99,12 @@ jobs:
           path: cov-int/build-log.txt
           retention-days: 3
 
+      - name: Install jq
+        shell: bash
+        run: |
+          apt-get update
+          apt-get install -y jq
+
       - name: Submit results to Coverity Scan
         shell: bash
         env:
@@ -106,11 +112,23 @@ jobs:
           COV_EMAIL: ${{ secrets.COVERITY_SCAN_EMAIL }}
         run: |
           tar -czvf cov-int.tgz cov-int
-          curl \
-            --form project="${{ inputs.project }}" \
-            --form token="$COV_TOKEN" \
-            --form email="$COV_EMAIL" \
-            --form file=@cov-int.tgz \
-            --form version="${{ github.sha }}" \
-            --form description="${{ github.repository }} / ${{ github.ref }}" \
-            "https://scan.coverity.com/builds?project=arcaneframework%2Fframework"
+          du -sh cov-int.tgz
+          curl -X POST \
+            -d version="${{ github.sha }}" \
+            -d description="${{ github.repository }} / ${{ github.ref }}" \
+            -d email="$COV_EMAIL" \
+            -d token="$COV_TOKEN" \
+            -d file_name="cov-int.tgz" \
+            -o response
+            https://scan.coverity.com/projects/24734/builds/init
+          echo "::add-mask::$(jq -r '.url' response)"
+          echo "::add-mask::$(jq -r '.build_id' response)"
+          upload_url=$(jq -r '.url' response)
+          build_id=$(jq -r '.build_id' response)
+          curl -X PUT \
+            --header 'Content-Type: application/json' \
+            --upload-file cov-int.tgz \
+            $upload_url
+          curl -X PUT \
+            -d token="$COV_TOKEN" \
+            https://scan.coverity.com/projects/24734/builds/$build_id/enqueue
