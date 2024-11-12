@@ -389,6 +389,7 @@ class ARCCORE_SERIALIZE_EXPORT BasicSerializer
   Int64ConstArrayView sizesBuffer();
   Int64 totalSize() const;
   void preallocate(Int64 size);
+  void releaseBuffer();
   void setFromSizes();
   void printSizes(std::ostream& o) const;
 

@@ -282,6 +282,11 @@ class BasicSerializerNewImpl
     m_sizes_view = Int64ArrayView(NB_SIZE_ELEM,(Int64*)&m_buffer_view[0]);
   }
 
+  void releaseBuffer() override
+  {
+    m_buffer.dispose();
+  }
+
   void setFromSizes() override
   {
     Int64 tag_id = m_sizes_view[IDX_TAG];
@@ -1293,6 +1298,15 @@ void BasicSerializer::
 preallocate(Int64 size)
 {
   return _p()->preallocate(size);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void BasicSerializer::
+releaseBuffer()
+{
+  _p()->releaseBuffer();
 }
 
 /*---------------------------------------------------------------------------*/
