@@ -775,6 +775,7 @@ struct MeshArrayPropertyProxyT {
 // special case of local ids property
 class ItemLidsProperty : public PropertyBase
 {
+  friend class Mesh;
  public:
   explicit ItemLidsProperty(std::string const& name)
   : PropertyBase{ name } {};
@@ -795,11 +796,18 @@ class ItemLidsProperty : public PropertyBase
 
   std::size_t size() const;
 
-  /*! Access to the item_lids stored in the property through an ItemRange object.
-   *
+  /*!
+   * Access to the item_lids stored in the property through an ItemRange object.
    * @return  the ItemRange containing the lids of the property.
    */
   ItemRange values() const;
+
+  /*!
+   * Access to the items created in the last call to \fn applyScheduledOperations.
+   * The ItemRange is cleared when \fn applyScheduledOperations starts.
+   * @return the ItemRange containing the lids of the last \fn applyScheduledOperations call.
+   */
+  ItemRange lastAddedItems() const;
 
   void debugPrint() const;
 
@@ -813,6 +821,9 @@ class ItemLidsProperty : public PropertyBase
   std::vector<Neo::utils::Int32> m_empty_lids;
   std::unordered_map<Neo::utils::Int64, Neo::utils::Int32> m_uid2lid;
   int m_last_id = -1;
+  ItemRange m_last_added_items;
+
+  void _clearLastAddedItems();
 };
 
 /*---------------------------------------------------------------------------*/

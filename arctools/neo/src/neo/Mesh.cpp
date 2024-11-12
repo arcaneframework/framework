@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Mesh.cpp                                        (C) 2000-2023             */
+/* Mesh.cpp                                        (C) 2000-2024             */
 /*                                                                           */
 /* Asynchronous Mesh structure based on Neo kernel                           */
 /*---------------------------------------------------------------------------*/
@@ -150,6 +150,10 @@ void Neo::Mesh::scheduleSetItemCoords(Neo::Family& item_family, Neo::FutureItemR
 /*-----------------------------------------------------------------------------*/
 
 Neo::EndOfMeshUpdate Neo::Mesh::applyScheduledOperations() {
+  // For all families, clear lastAddedItems range
+  for (auto& family : m_families) {
+    family.second->_lidProp()._clearLastAddedItems();
+  }
   return m_mesh_graph->applyAlgorithms();
 }
 

@@ -63,6 +63,8 @@ Neo::ItemRange Neo::ItemLidsProperty::append(std::vector<Neo::utils::Int64> cons
     non_contiguous_from_contigous_lids.begin(),
     non_contiguous_from_contigous_lids.end());
   }
+  // Todo : fill m_last_added_item = add a method ItemRange::add(ItemLids) ??
+  throw std::runtime_error{"TODO : fill m_last_added_items"};
   return ItemRange{ std::move(item_local_ids) };
 }
 
@@ -161,6 +163,18 @@ std::vector<Neo::utils::Int32> Neo::ItemLidsProperty::operator[](std::vector<uti
   std::vector<utils::Int32> lids;
   _getLidsFromUids(lids, uids);
   return lids;
+}
+
+/*---------------------------------------------------------------------------*/
+
+Neo::ItemRange Neo::ItemLidsProperty::lastAddedItems() const {
+  return m_last_added_items;
+}
+
+/*---------------------------------------------------------------------------*/
+
+void Neo::ItemLidsProperty::_clearLastAddedItems() {
+  m_last_added_items.clear();
 }
 
 /*---------------------------------------------------------------------------*/
