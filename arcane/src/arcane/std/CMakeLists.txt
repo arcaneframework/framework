@@ -1,5 +1,5 @@
-﻿set(PRIVATE_PKGS LibUnwind Papi Parmetis PTScotch Udunits Zoltan BZip2 LZ4 Otf2 DbgHelp HWLoc Hiredis)
-set(PUBLIC_PKGS HDF5 MPI)
+set(PRIVATE_PKGS LibUnwind Papi Parmetis PTScotch Udunits Zoltan BZip2 LZ4 Otf2 DbgHelp HWLoc Hiredis)
+set(PUBLIC_PKGS HDF5 MPI vtkIOXML vtkIOLegacy)
 set(PKGS ${PRIVATE_PKGS} ${PUBLIC_PKGS})
 
 foreach(package ${PKGS})
@@ -145,11 +145,10 @@ if(ARCANE_HAS_LINUX_PERF_COUNTERS)
     )
 endif()
 
-if(vtkIOXML_FOUND)
+if(vtkIOXML_FOUND AND vtkIOLegacy_FOUND)
   list(APPEND ARCANE_SOURCES
     VtkPolyhedralMeshIOService.cc
     )
-  list(APPEND PRIVATE_PKGS vtkIOXML)
 endif()
 
 if (ARCANE_HAS_KDI_PYTHON)
