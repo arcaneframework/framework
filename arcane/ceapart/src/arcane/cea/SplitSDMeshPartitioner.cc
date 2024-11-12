@@ -2174,11 +2174,19 @@ void SplitSDMeshPartitioner::UnpackEquil(void* TabTMP, int TailleTMP, MPI_Comm c
 /*---------------------------------------------------------------------------*/
 
 ARCANE_REGISTER_SERVICE(SplitSDMeshPartitioner,
-                        ServiceProperty("SplitSD",ST_SubDomain),
+                        ServiceProperty("SplitSD", ST_SubDomain),
                         ARCANE_SERVICE_INTERFACE(IMeshPartitioner),
                         ARCANE_SERVICE_INTERFACE(IMeshPartitionerBase));
 
-ARCANE_REGISTER_SERVICE_SPLITSDMESHPARTITIONER(SplitSD,SplitSDMeshPartitioner);
+ARCANE_REGISTER_SERVICE_SPLITSDMESHPARTITIONER(SplitSD, SplitSDMeshPartitioner);
+
+#if ARCANE_DEFAULT_PARTITIONER == SPLITSD_DEFAULT_PARTITIONER
+ARCANE_REGISTER_SERVICE(SplitSDMeshPartitioner,
+                        ServiceProperty("DefaultPartitioner",ST_SubDomain),
+                        ARCANE_SERVICE_INTERFACE(IMeshPartitioner),
+                        ARCANE_SERVICE_INTERFACE(IMeshPartitionerBase));
+ARCANE_REGISTER_SERVICE_SPLITSDMESHPARTITIONER(DefaultPartitioner,SplitSDMeshPartitioner);
+#endif
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
