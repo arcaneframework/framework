@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* NeoMeshAPITest.h                                (C) 2000-2020             */
+/* NeoMeshAPITest.h                                (C) 2000-2024             */
 /*                                                                           */
 /* First tests for mesh class using Neo                                      */
 /*---------------------------------------------------------------------------*/
@@ -643,4 +643,33 @@ TEST(NeoMeshApiTest, AddMeshOperationAfterSettingCoordinates) {
   auto& computed_sum = coord_sum();
   auto ref_sum = Neo::utils::Real3{ 1, 1, 1 };
   EXPECT_EQ(computed_sum, ref_sum);
+}
+
+/*---------------------------------------------------------------------------*/
+
+TEST(NeoMeshApiTest, GetLastAddedItems) {
+  auto mesh = Neo::Mesh{ "GestLastAddedItemsTestMesh" };
+  auto node_family = mesh.addFamily(Neo::ItemKind::IK_Node, "NodeFamily");
+  auto added_lids_property_name {"added_lids"};
+  node_family.addArrayProperty<Neo::utils::Int32>(added_lids_property_name);
+  auto added_nodes = Neo::FutureItemRange{};
+  auto added_nodes2 = Neo::FutureItemRange{};
+  std::vector<Neo::utils::Int64> node_uids{ 1, 10, 100 };
+//  std::vector<Neo::utils::Int64> node_uids2{ 2, 20, 200 };
+  mesh.scheduleAddItems(node_family, node_uids, added_nodes);
+//  mesh.scheduleAddItems(node_family, node_uids2, added_nodes2);
+  // Add an algo displaying local ids added
+  mesh.scheduleAddMeshOperation(node_family,node_family.lidPropName(),node_family,added_lids_property_name,
+                                [](Neo::Mesh::LocalIdPropertyType const& item_lids,
+                                   Neo::ArrayPropertyT<Neo::utils::Int32>& added_lids){
+                                  added_lids.reserve(added_lids.size());
+                                  for (auto item : item_lids.lastAddedItems()) {
+                                    added_lids.push_back(item);
+                                  }
+                                });
+
+  mesh.applyScheduledOperations();
+  auto& added_lids = node_family.getConcreteProperty<Neo::ArrayPropertyT<Neo::utils::Int32>>(added_lids_property_name);
+  EXPECT_EQ(added_lids.size(), added_nodes.new_items.size());
+  EXPECT_TRUE(std::equal(added_lids.begin(),added_lids.end(),added_nodes.new_items.begin()));
 }

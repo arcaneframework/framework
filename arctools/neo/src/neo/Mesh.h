@@ -54,12 +54,15 @@ class Mesh
 
   template <typename... DataTypes>
   using MeshOperationT = std::variant<std::function<void(LocalIdPropertyType const&, Neo::ScalarPropertyT<DataTypes>&)>...,
+                                      std::function<void(LocalIdPropertyType const&, Neo::ArrayPropertyT<DataTypes>&)>...,
                                       std::function<void(LocalIdPropertyType const&, Neo::MeshScalarPropertyT<DataTypes>&)>...,
                                       std::function<void(LocalIdPropertyType const&, Neo::MeshArrayPropertyT<DataTypes>&)>...,
                                       std::function<void(ConnectivityPropertyType const&, Neo::ScalarPropertyT<DataTypes>&)>...,
+                                      std::function<void(ConnectivityPropertyType const&, Neo::ArrayPropertyT<DataTypes>&)>...,
                                       std::function<void(ConnectivityPropertyType const&, Neo::MeshScalarPropertyT<DataTypes>&)>...,
                                       std::function<void(ConnectivityPropertyType const&, Neo::MeshArrayPropertyT<DataTypes>&)>...,
                                       std::function<void(CoordPropertyType const&, Neo::ScalarPropertyT<DataTypes>&)>...,
+                                      std::function<void(CoordPropertyType const&, Neo::ArrayPropertyT<DataTypes>&)>...,
                                       std::function<void(CoordPropertyType const&, Neo::MeshScalarPropertyT<DataTypes>&)>...,
                                       std::function<void(CoordPropertyType const&, Neo::MeshArrayPropertyT<DataTypes>&)>...>;
 
