@@ -36,45 +36,47 @@
 #include "arcane/utils/ApplicationInfo.h"
 #include "arcane/utils/TestLogger.h"
 
-#include "arcane/ArcaneException.h"
-#include "arcane/IMainFactory.h"
-#include "arcane/IApplication.h"
-#include "arcane/IServiceLoader.h"
-#include "arcane/IParallelMng.h"
-#include "arcane/IParallelSuperMng.h"
-#include "arcane/IIOMng.h"
-#include "arcane/ISession.h"
-#include "arcane/ISubDomain.h"
-#include "arcane/IRessourceMng.h"
-#include "arcane/IModuleMng.h"
-#include "arcane/IModule.h"
-#include "arcane/IVariableMng.h"
-#include "arcane/VariableRef.h"
-#include "arcane/ITimeLoopMng.h"
-#include "arcane/ITimeLoop.h"
-#include "arcane/Directory.h"
-#include "arcane/XmlNodeList.h"
-#include "arcane/IXmlDocumentHolder.h"
-#include "arcane/ItemTypeMng.h"
-#include "arcane/ServiceUtils.h"
-#include "arcane/ICodeService.h"
-#include "arcane/CaseOptions.h"
-#include "arcane/VariableCollection.h"
-#include "arcane/ItemGroupImpl.h"
-#include "arcane/SubDomainBuildInfo.h"
-#include "arcane/ICaseMng.h"
-#include "arcane/DotNetRuntimeInitialisationInfo.h"
-#include "arcane/AcceleratorRuntimeInitialisationInfo.h"
-#include "arcane/ApplicationBuildInfo.h"
+#include "arcane/core/ArcaneException.h"
+#include "arcane/core/IMainFactory.h"
+#include "arcane/core/IApplication.h"
+#include "arcane/core/IServiceLoader.h"
+#include "arcane/core/IParallelMng.h"
+#include "arcane/core/IParallelSuperMng.h"
+#include "arcane/core/IIOMng.h"
+#include "arcane/core/ISession.h"
+#include "arcane/core/ISubDomain.h"
+#include "arcane/core/IRessourceMng.h"
+#include "arcane/core/IModuleMng.h"
+#include "arcane/core/IModule.h"
+#include "arcane/core/IVariableMng.h"
+#include "arcane/core/VariableRef.h"
+#include "arcane/core/ITimeLoopMng.h"
+#include "arcane/core/ITimeLoop.h"
+#include "arcane/core/Directory.h"
+#include "arcane/core/XmlNodeList.h"
+#include "arcane/core/IXmlDocumentHolder.h"
+#include "arcane/core/ItemTypeMng.h"
+#include "arcane/core/ServiceUtils.h"
+#include "arcane/core/ICodeService.h"
+#include "arcane/core/CaseOptions.h"
+#include "arcane/core/VariableCollection.h"
+#include "arcane/core/ItemGroupImpl.h"
+#include "arcane/core/SubDomainBuildInfo.h"
+#include "arcane/core/ICaseMng.h"
+#include "arcane/core/DotNetRuntimeInitialisationInfo.h"
+#include "arcane/core/AcceleratorRuntimeInitialisationInfo.h"
+#include "arcane/core/ApplicationBuildInfo.h"
 
-#include "arcane/IServiceFactory.h"
-#include "arcane/IModuleFactory.h"
+#include "arcane/core/IServiceFactory.h"
+#include "arcane/core/IModuleFactory.h"
 
 #include "arcane/impl/TimeLoopReader.h"
 #include "arcane/impl/MainFactory.h"
 #include "arcane/impl/InternalInfosDumper.h"
 #include "arcane/impl/internal/ArcaneMainExecInfo.h"
 #include "arcane/impl/internal/ThreadBindingMng.h"
+
+#include "arcane/accelerator/core/internal/RegisterRuntimeInfo.h"
 
 #include <signal.h>
 #include <exception>
@@ -1136,7 +1138,7 @@ _checkAutoDetectAccelerator(bool& has_accelerator)
     // il faut appeler la méthode 'arcaneRegisterAcceleratorRuntime${NAME}' qui se trouve
     // dans la bibliothèque dynamique 'arcane_${NAME}'.
 
-    typedef void (*ArcaneAutoDetectAcceleratorFunctor)();
+    typedef void (*ArcaneAutoDetectAcceleratorFunctor)(Accelerator::RegisterRuntimeInfo&);
 
     _checkCreateDynamicLibraryLoader();
 
@@ -1157,7 +1159,13 @@ _checkAutoDetectAccelerator(bool& has_accelerator)
       ARCANE_FATAL("Can not find symbol '{0}' in library '{1}'", symbol_name, dll_name);
 
     auto my_functor = reinterpret_cast<ArcaneAutoDetectAcceleratorFunctor>(functor_addr);
-    (*my_functor)();
+    Accelerator::RegisterRuntimeInfo runtime_info;
+
+    String verbose_str = Arcane::platform::getEnvironmentVariable("ARCANE_DEBUG_ACCELERATOR");
+    if (!verbose_str.null())
+      runtime_info.setVerbose(true);
+
+    (*my_functor)(runtime_info);
     has_accelerator = true;
   }
   catch (const Exception& ex) {

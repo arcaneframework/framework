@@ -25,7 +25,7 @@
 #include "arcane/accelerator/core/RunQueueBuildInfo.h"
 #include "arcane/accelerator/core/Memory.h"
 #include "arcane/accelerator/core/internal/IRunnerRuntime.h"
-#include "arcane/accelerator/core/internal/AcceleratorCoreGlobalInternal.h"
+#include "arcane/accelerator/core/internal/RegisterRuntimeInfo.h"
 #include "arcane/accelerator/core/internal/IRunQueueStream.h"
 #include "arcane/accelerator/core/internal/IRunQueueEventImpl.h"
 #include "arcane/accelerator/core/DeviceInfoList.h"
@@ -442,7 +442,7 @@ Arcane::Accelerator::Hip::HipMemoryCopier global_hip_memory_copier;
 // Cette fonction est le point d'entrée utilisé lors du chargement
 // dynamique de cette bibliothèque
 extern "C" ARCANE_EXPORT void
-arcaneRegisterAcceleratorRuntimehip()
+arcaneRegisterAcceleratorRuntimehip(Arcane::Accelerator::RegisterRuntimeInfo&)
 {
   using namespace Arcane;
   using namespace Arcane::Accelerator::Hip;

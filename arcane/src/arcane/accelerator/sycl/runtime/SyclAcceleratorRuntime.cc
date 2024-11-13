@@ -23,7 +23,7 @@
 #include "arcane/accelerator/core/RunQueueBuildInfo.h"
 #include "arcane/accelerator/core/Memory.h"
 #include "arcane/accelerator/core/internal/IRunnerRuntime.h"
-#include "arcane/accelerator/core/internal/AcceleratorCoreGlobalInternal.h"
+#include "arcane/accelerator/core/internal/RegisterRuntimeInfo.h"
 #include "arcane/accelerator/core/internal/IRunQueueStream.h"
 #include "arcane/accelerator/core/internal/IRunQueueEventImpl.h"
 #include "arcane/accelerator/core/DeviceInfoList.h"
@@ -429,7 +429,7 @@ copy(ConstMemoryView from, [[maybe_unused]] eMemoryRessource from_mem,
 // Cette fonction est le point d'entrée utilisé lors du chargement
 // dynamique de cette bibliothèque
 extern "C" ARCANE_EXPORT void
-arcaneRegisterAcceleratorRuntimesycl()
+arcaneRegisterAcceleratorRuntimesycl(Arcane::Accelerator::RegisterRuntimeInfo&)
 {
   using namespace Arcane;
   using namespace Arcane::Accelerator::Sycl;

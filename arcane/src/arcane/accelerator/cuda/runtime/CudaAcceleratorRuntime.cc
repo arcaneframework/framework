@@ -30,7 +30,7 @@
 #include "arcane/accelerator/core/DeviceInfoList.h"
 
 #include "arcane/accelerator/core/internal/IRunnerRuntime.h"
-#include "arcane/accelerator/core/internal/AcceleratorCoreGlobalInternal.h"
+#include "arcane/accelerator/core/internal/RegisterRuntimeInfo.h"
 #include "arcane/accelerator/core/internal/RunCommandImpl.h"
 #include "arcane/accelerator/core/internal/IRunQueueStream.h"
 #include "arcane/accelerator/core/internal/IRunQueueEventImpl.h"
@@ -543,7 +543,7 @@ Arcane::Accelerator::Cuda::CudaMemoryCopier global_cuda_memory_copier;
 // Cette fonction est le point d'entrée utilisé lors du chargement
 // dynamique de cette bibliothèque
 extern "C" ARCANE_EXPORT void
-arcaneRegisterAcceleratorRuntimecuda()
+arcaneRegisterAcceleratorRuntimecuda(Arcane::Accelerator::RegisterRuntimeInfo&)
 {
   using namespace Arcane;
   using namespace Arcane::Accelerator::Cuda;
