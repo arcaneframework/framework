@@ -202,7 +202,11 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RunQueue
    *
    * Avec CUDA, le pointeur retourné est un 'cudaStream_t*'. Avec HIP, il
    * s'agit d'un 'hipStream_t*'.
+   *
+   * \deprecated Utiliser toCudaNativeStream(), toHipNativeStream()
+   * ou toSyclNativeStream() à la place
    */
+  ARCANE_DEPRECATED_REASON("Y2024: Use toCudaNativeStream(), toHipNativeStream() or toSyclNativeStream() instead")
   void* platformStream() const;
 
  private:
