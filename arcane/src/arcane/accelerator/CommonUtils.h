@@ -18,6 +18,7 @@
 
 #include "arcane/accelerator/AcceleratorGlobal.h"
 #include "arcane/accelerator/core/RunQueue.h"
+#include "arcane/accelerator/AcceleratorUtils.h"
 
 #if defined(ARCANE_COMPILING_HIP)
 #include "arcane/accelerator/hip/HipAccelerator.h"
@@ -28,13 +29,9 @@
 #include "arcane/accelerator/cuda/CudaAccelerator.h"
 #include <cub/cub.cuh>
 #endif
-#if defined(ARCANE_COMPILING_SYCL)
-#include "arcane/accelerator/sycl/SyclAccelerator.h"
-#include <sycl/sycl.hpp>
-#if defined(__INTEL_LLVM_COMPILER)
+#if defined(ARCANE_COMPILING_SYCL) && defined(__INTEL_LLVM_COMPILER)
 #include <oneapi/dpl/execution>
 #include <oneapi/dpl/algorithm>
-#endif
 #endif
 
 /*---------------------------------------------------------------------------*/
@@ -42,45 +39,6 @@
 
 namespace Arcane::Accelerator::impl
 {
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-#if defined(ARCANE_COMPILING_CUDA)
-class ARCANE_ACCELERATOR_EXPORT CudaUtils
-{
- public:
-
-  static cudaStream_t toNativeStream(const RunQueue* queue);
-  static cudaStream_t toNativeStream(const RunQueue& queue);
-};
-#endif
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-#if defined(ARCANE_COMPILING_HIP)
-class ARCANE_ACCELERATOR_EXPORT HipUtils
-{
- public:
-
-  static hipStream_t toNativeStream(const RunQueue* queue);
-  static hipStream_t toNativeStream(const RunQueue& queue);
-};
-#endif
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-#if defined(ARCANE_COMPILING_SYCL)
-class ARCANE_ACCELERATOR_EXPORT SyclUtils
-{
- public:
-
-  static sycl::queue toNativeStream(const RunQueue* queue);
-  static sycl::queue toNativeStream(const RunQueue& queue);
-};
-#endif
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -147,7 +105,7 @@ class ARCANE_ACCELERATOR_EXPORT DeviceStorageBase
  * \internal
  * \brief Gère l'allocation interne sur le device pour un type donné.
  */
-template <typename DataType,Int32 N = 1>
+template <typename DataType, Int32 N = 1>
 class DeviceStorage
 : public DeviceStorageBase
 {
@@ -468,9 +426,17 @@ class SetterLambdaIterator
 
 namespace Arcane::Accelerator
 {
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 template <typename DataType> using ScannerSumOperator = impl::SumOperator<DataType>;
 template <typename DataType> using ScannerMaxOperator = impl::MaxOperator<DataType>;
 template <typename DataType> using ScannerMinOperator = impl::MinOperator<DataType>;
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 } // namespace Arcane::Accelerator
 
 /*---------------------------------------------------------------------------*/
