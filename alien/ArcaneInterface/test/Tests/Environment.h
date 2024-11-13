@@ -14,7 +14,7 @@ struct Private
 {
   Arccore::ITraceMng* tm;
   Arccore::MessagePassing::IMessagePassingMng* pm;
-} __private;
+} global_alien_env_info;
 
 extern void
 initialize(int argc, char** argv)
@@ -22,21 +22,21 @@ initialize(int argc, char** argv)
   MPI_Init(&argc, &argv);
 
   // Gestionnaire de parallélisme
-  __private.pm = Arccore::MessagePassing::Mpi::StandaloneMpiMessagePassingMng::create(
+  global_alien_env_info.pm = Arccore::MessagePassing::Mpi::StandaloneMpiMessagePassingMng::create(
       MPI_COMM_WORLD);
 
   // Gestionnaire de trace
-  __private.tm = Arccore::arccoreCreateDefaultTraceMng();
+  global_alien_env_info.tm = Arccore::arccoreCreateDefaultTraceMng();
 
   // Initialize the instance of TraceMng.
   // Only the rank 0 will display the listing
-  bool is_master_io = (__private.pm->commRank()==0);
+  bool is_master_io = (global_alien_env_info.pm->commRank()==0);
   Arccore::TraceClassConfig trace_config;
   trace_config.setActivated(is_master_io);
 
-  __private.tm->setClassConfig("*",trace_config);
-  __private.tm->setMaster(is_master_io);
-  __private.tm->finishInitialize();
+  global_alien_env_info.tm->setClassConfig("*",trace_config);
+  global_alien_env_info.tm->setMaster(is_master_io);
+  global_alien_env_info.tm->finishInitialize();
 }
 
 extern void
@@ -48,14 +48,14 @@ finalize()
 extern Arccore::MessagePassing::IMessagePassingMng*
 parallelMng()
 {
-  Arccore::MessagePassing::IMessagePassingMng* pm = __private.pm;
+  Arccore::MessagePassing::IMessagePassingMng* pm = global_alien_env_info.pm;
   return pm;
 }
 
 extern Arccore::ITraceMng*
 traceMng()
 {
-  Arccore::ITraceMng* tm = __private.tm;
+  Arccore::ITraceMng* tm = global_alien_env_info.tm;
   return tm;
 }
 }
