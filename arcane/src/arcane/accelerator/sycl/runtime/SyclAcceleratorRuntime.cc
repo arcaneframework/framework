@@ -303,7 +303,7 @@ class SyclRunnerRuntime
     _fillPointerAttribute(attribute, mem_type, device_id, ptr, device_ptr, host_ptr);
   }
 
-  void fillDevicesAndSetDefaultQueue();
+  void fillDevicesAndSetDefaultQueue(bool is_verbose);
   sycl::queue& defaultQueue() const { return *m_default_queue; }
   sycl::device& defaultDevice() const { return *m_default_device; }
 
@@ -354,18 +354,21 @@ SyclRunQueueStream(SyclRunnerRuntime* runtime, const RunQueueBuildInfo& bi)
 /*---------------------------------------------------------------------------*/
 
 void SyclRunnerRuntime::
-fillDevicesAndSetDefaultQueue()
+fillDevicesAndSetDefaultQueue(bool is_verbose)
 {
-  for (auto platform : sycl::platform::get_platforms()) {
-    std::cout << "Platform: "
-              << platform.get_info<sycl::info::platform::name>()
-              << std::endl;
+  if (is_verbose){
+    for (auto platform : sycl::platform::get_platforms()) {
+      std::cout << "Platform: "
+                << platform.get_info<sycl::info::platform::name>()
+                << std::endl;
+    }
   }
 
   sycl::device device{ sycl::gpu_selector_v };
-  std::cout << "\nDevice: " << device.get_info<sycl::info::device::name>()
-            << "\nVersion=" << device.get_info<sycl::info::device::version>()
-            << std::endl;
+  if (is_verbose)
+    std::cout << "\nDevice: " << device.get_info<sycl::info::device::name>()
+              << "\nVersion=" << device.get_info<sycl::info::device::version>()
+              << std::endl;
   // Pour l'instant, on prend comme file par défaut la première trouvée
   // et on ne considère qu'un seul device accessible.
   _init(device);
@@ -429,7 +432,7 @@ copy(ConstMemoryView from, [[maybe_unused]] eMemoryRessource from_mem,
 // Cette fonction est le point d'entrée utilisé lors du chargement
 // dynamique de cette bibliothèque
 extern "C" ARCANE_EXPORT void
-arcaneRegisterAcceleratorRuntimesycl(Arcane::Accelerator::RegisterRuntimeInfo&)
+arcaneRegisterAcceleratorRuntimesycl(Arcane::Accelerator::RegisterRuntimeInfo& init_info)
 {
   using namespace Arcane;
   using namespace Arcane::Accelerator::Sycl;
@@ -442,7 +445,7 @@ arcaneRegisterAcceleratorRuntimesycl(Arcane::Accelerator::RegisterRuntimeInfo&)
   mrm->setAllocator(eMemoryRessource::HostPinned, getSyclHostPinnedMemoryAllocator());
   mrm->setAllocator(eMemoryRessource::Device, getSyclDeviceMemoryAllocator());
   mrm->setCopier(&global_sycl_memory_copier);
-  global_sycl_runtime.fillDevicesAndSetDefaultQueue();
+  global_sycl_runtime.fillDevicesAndSetDefaultQueue(init_info.isVerbose());
   setSyclMemoryQueue(global_sycl_runtime.defaultQueue());
 }
 
