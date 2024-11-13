@@ -30,7 +30,7 @@
 #include "arcane/accelerator/core/DeviceInfoList.h"
 
 #include "arcane/accelerator/core/internal/IRunnerRuntime.h"
-#include "arcane/accelerator/core/internal/AcceleratorCoreGlobalInternal.h"
+#include "arcane/accelerator/core/internal/RegisterRuntimeInfo.h"
 #include "arcane/accelerator/core/internal/RunCommandImpl.h"
 #include "arcane/accelerator/core/internal/IRunQueueStream.h"
 #include "arcane/accelerator/core/internal/IRunQueueEventImpl.h"
@@ -416,7 +416,7 @@ class CudaRunnerRuntime
 
  public:
 
-  void fillDevices();
+  void fillDevices(bool is_verbose);
 
  private:
 
@@ -429,12 +429,13 @@ class CudaRunnerRuntime
 /*---------------------------------------------------------------------------*/
 
 void CudaRunnerRuntime::
-fillDevices()
+fillDevices(bool is_verbose)
 {
   int nb_device = 0;
   ARCANE_CHECK_CUDA(cudaGetDeviceCount(&nb_device));
   std::ostream& omain = std::cout;
-  omain << "ArcaneCUDA: Initialize Arcane CUDA runtime nb_available_device=" << nb_device << "\n";
+  if (is_verbose)
+    omain << "ArcaneCUDA: Initialize Arcane CUDA runtime nb_available_device=" << nb_device << "\n";
   for (int i = 0; i < nb_device; ++i) {
     cudaDeviceProp dp;
     cudaGetDeviceProperties(&dp, i);
@@ -476,7 +477,8 @@ fillDevices()
       o << "\n";
     }
     String description(ostr.str());
-    omain << description;
+    if (is_verbose)
+      omain << description;
 
     DeviceInfo device_info;
     device_info.setDescription(description);
@@ -543,7 +545,7 @@ Arcane::Accelerator::Cuda::CudaMemoryCopier global_cuda_memory_copier;
 // Cette fonction est le point d'entrée utilisé lors du chargement
 // dynamique de cette bibliothèque
 extern "C" ARCANE_EXPORT void
-arcaneRegisterAcceleratorRuntimecuda()
+arcaneRegisterAcceleratorRuntimecuda(Arcane::Accelerator::RegisterRuntimeInfo& init_info)
 {
   using namespace Arcane;
   using namespace Arcane::Accelerator::Cuda;
@@ -557,7 +559,7 @@ arcaneRegisterAcceleratorRuntimecuda()
   mrm->setAllocator(eMemoryRessource::HostPinned, getCudaHostPinnedMemoryAllocator());
   mrm->setAllocator(eMemoryRessource::Device, getCudaDeviceMemoryAllocator());
   mrm->setCopier(&global_cuda_memory_copier);
-  global_cuda_runtime.fillDevices();
+  global_cuda_runtime.fillDevices(init_info.isVerbose());
 }
 
 /*---------------------------------------------------------------------------*/
