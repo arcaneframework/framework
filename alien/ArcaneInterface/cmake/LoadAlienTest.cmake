@@ -60,13 +60,13 @@ macro(alien_test)
 
         if (NOT ARGS_WORKING_DIRECTORY)
             add_test(
-                    NAME ${ARGS_BENCH}.${ARGS_NAME}
+                    NAME alien.${ARGS_BENCH}.${ARGS_NAME}
                     COMMAND ${ARGS_COMMAND}
                     ${ARGS_OPTIONS}
             )
         else ()
             add_test(
-                    NAME ${ARGS_BENCH}.${ARGS_NAME}
+                    NAME alien.${ARGS_BENCH}.${ARGS_NAME}
                     COMMAND ${ARGS_COMMAND}
                     ${ARGS_OPTIONS}
                     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/${ARGS_WORKING_DIRECTORY}
@@ -100,13 +100,13 @@ macro(alien_test)
 
             if (NOT ARGS_WORKING_DIRECTORY)
                 add_test(
-                        NAME ${ARGS_BENCH}.${ARGS_NAME}.mpi-${mpi}
+                        NAME alien.${ARGS_BENCH}.${ARGS_NAME}.mpi-${mpi}
                         COMMAND ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${mpi} ${MPIEXEC_PREFLAGS}$<TARGET_FILE:${ARGS_COMMAND}> ${MPIEXEC_POSTFLAGS}
                         ${ARGS_OPTIONS}
                 )
             else ()
                 add_test(
-                        NAME ${ARGS_BENCH}.${ARGS_NAME}.mpi-${mpi}
+                        NAME alien.${ARGS_BENCH}.${ARGS_NAME}.mpi-${mpi}
                         COMMAND ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${mpi} ${MPIEXEC_PREFLAGS}$<TARGET_FILE:${ARGS_COMMAND}> ${MPIEXEC_POSTFLAGS}
                         ${ARGS_OPTIONS}
                         WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/${ARGS_WORKING_DIRECTORY}
