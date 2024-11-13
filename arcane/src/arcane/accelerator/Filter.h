@@ -100,7 +100,7 @@ class SyclGenericFilteringImpl
     RunQueue queue = s.m_queue;
     using DataType = std::iterator_traits<OutputIterator>::value_type;
 #if defined(ARCANE_USE_SCAN_ONEDPL) && defined(__INTEL_LLVM_COMPILER)
-    sycl::queue true_queue = impl::SyclUtils::toNativeStream(queue);
+    sycl::queue true_queue = AcceleratorUtils::toSyclNativeStream(queue);
     auto policy = oneapi::dpl::execution::make_device_policy(true_queue);
     auto out_iter = oneapi::dpl::copy_if(policy, input_iter, input_iter + nb_item, output_iter, select_lambda);
     Int32 nb_output = out_iter - output_iter;
@@ -192,7 +192,7 @@ class GenericFilteringFlag
 #if defined(ARCANE_COMPILING_CUDA)
     case eExecutionPolicy::CUDA: {
       size_t temp_storage_size = 0;
-      cudaStream_t stream = impl::CudaUtils::toNativeStream(queue);
+      cudaStream_t stream = AcceleratorUtils::toCudaNativeStream(queue);
       // Premier appel pour connaitre la taille pour l'allocation
       int* nb_out_ptr = nullptr;
       ARCANE_CHECK_CUDA(::cub::DeviceSelect::Flagged(nullptr, temp_storage_size,
@@ -209,7 +209,7 @@ class GenericFilteringFlag
     case eExecutionPolicy::HIP: {
       size_t temp_storage_size = 0;
       // Premier appel pour connaitre la taille pour l'allocation
-      hipStream_t stream = impl::HipUtils::toNativeStream(queue);
+      hipStream_t stream = AcceleratorUtils::toHipNativeStream(queue);
       int* nb_out_ptr = nullptr;
       ARCANE_CHECK_HIP(rocprim::select(nullptr, temp_storage_size, input_data, flag_data, output_data,
                                        nb_out_ptr, nb_item, stream));
