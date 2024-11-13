@@ -6,6 +6,7 @@
 
 #include <arccore/message_passing_mpi/StandaloneMpiMessagePassingMng.h>
 #include <arccore/trace/ITraceMng.h>
+#include <arccore/trace/TraceClassConfig.h>
 
 namespace Environment {
 
@@ -26,6 +27,16 @@ initialize(int argc, char** argv)
 
   // Gestionnaire de trace
   __private.tm = Arccore::arccoreCreateDefaultTraceMng();
+
+  // Initialize the instance of TraceMng.
+  // Only the rank 0 will display the listing
+  bool is_master_io = (__private.pm->commRank()==0);
+  Arccore::TraceClassConfig trace_config;
+  trace_config.setActivated(is_master_io);
+
+  __private.tm->setClassConfig("*",trace_config);
+  __private.tm->setMaster(is_master_io);
+  __private.tm->finishInitialize();
 }
 
 extern void
