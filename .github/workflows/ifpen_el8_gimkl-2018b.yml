@@ -45,7 +45,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 120
     container:
-      image: ghcr.io/arcaneframework/arcane-ifpen-devenv-gimkl-2018b:el8
+      image: ghcr.io/cedricga91/arcane-ifpen-devenv-gimkl-2018b:el8
       #options: --user root  # Avoid to match github UID in container.
     strategy:
       fail-fast: false
@@ -159,7 +159,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 120
     container:
-      image: ghcr.io/arcaneframework/arcane-ifpen-devenv-gimkl-2018b-rt:el8
+      image: ghcr.io/cedricga91/arcane-ifpen-devenv-gimkl-2018b-rt:el8
       #options: --user root  # Avoid to match github UID in container.
     strategy:
       fail-fast: false
