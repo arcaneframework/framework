@@ -253,6 +253,16 @@ class PolyhedralMesh
   // For now, use _internalAPI()->polyhedralMeshModifier instead of IMeshModifier not implemented yet
   IMeshModifier* modifier() override {return nullptr;}
 
+  // AMR is not activated with Polyhedral mesh. All items are thus active.
+  CellGroup allActiveCells() override;
+  CellGroup ownActiveCells() override;
+  CellGroup allLevelCells(const Integer& level) override;
+  CellGroup ownLevelCells(const Integer& level) override;
+  FaceGroup allActiveFaces() override;
+  FaceGroup ownActiveFaces() override;
+  FaceGroup innerActiveFaces() override;
+  FaceGroup outerActiveFaces() override;
+
  private:
 
   void addItems(Int64ConstArrayView unique_ids, Int32ArrayView local_ids, eItemKind ik, const String& family_name);

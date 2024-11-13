@@ -1327,6 +1327,76 @@ removeItems(Int32ConstArrayView local_ids, eItemKind ik, const String& family_na
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+CellGroup mesh::PolyhedralMesh::
+allActiveCells()
+{
+  return allCells().activeCellGroup();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+CellGroup mesh::PolyhedralMesh::ownActiveCells()
+{
+  return allCells().ownActiveCellGroup();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+CellGroup mesh::PolyhedralMesh::
+allLevelCells(const Integer& level)
+{
+  return allCells().levelCellGroup(level);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+CellGroup mesh::PolyhedralMesh::
+ownLevelCells(const Integer& level)
+{
+  return allCells().ownLevelCellGroup(level);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+FaceGroup mesh::PolyhedralMesh::
+allActiveFaces()
+{
+  return allCells().activeFaceGroup();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+FaceGroup mesh::PolyhedralMesh::
+ownActiveFaces()
+{
+  return allCells().ownActiveFaceGroup();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+FaceGroup mesh::PolyhedralMesh::
+innerActiveFaces()
+{
+  return allCells().innerActiveFaceGroup();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+FaceGroup mesh::PolyhedralMesh::outerActiveFaces()
+{
+  return allCells().outerActiveFaceGroup();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 
 } // End namespace Arcane
 
