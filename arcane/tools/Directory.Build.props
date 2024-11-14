@@ -33,5 +33,8 @@
     <!-- Pour éviter une exception en fin d'exécution avec .Net 8 -->
     <!-- Le 'BinaryFormatter' est obsolète en '.Net 8' et supprimé en '.Net 9' -->
     <EnableUnsafeBinaryFormatterSerialization>true</EnableUnsafeBinaryFormatterSerialization>
+
+    <!-- Needed with .Net 9 to prevent FPE in profiling for PGO -->
+    <TieredPGO Condition="'$(TargetFramework)'=='net9' or $(TargetFramework)=='netcoreapp9.0'">false</TieredPGO>
   </PropertyGroup>
 </Project>
