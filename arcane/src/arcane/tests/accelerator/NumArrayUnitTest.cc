@@ -21,7 +21,7 @@
 
 #include "arcane/accelerator/core/RunQueueBuildInfo.h"
 #include "arcane/accelerator/core/PointerAttribute.h"
-#include "arcane/accelerator/core/internal/ProfileRegion.h"
+#include "arcane/accelerator/core/ProfileRegion.h"
 #include "arcane/accelerator/Runner.h"
 #include "arcane/accelerator/NumArrayViews.h"
 #include "arcane/accelerator/SpanViews.h"

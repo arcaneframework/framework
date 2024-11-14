@@ -14,6 +14,7 @@ set( ARCANE_SOURCES
   Memory.cc
   MemoryTracer.cc
   PointerAttribute.h
+  ProfileRegion.h
   ProfileRegion.cc
   ReduceMemoryImpl.cc
   Runner.h
@@ -38,7 +39,6 @@ set( ARCANE_SOURCES
   internal/IRunQueueStream.h
   internal/IRunQueueEventImpl.h
   internal/MemoryTracer.h
-  internal/ProfileRegion.h
   internal/RunCommandImpl.h
   internal/RunQueueImpl.h
   internal/ReduceMemoryImpl.h

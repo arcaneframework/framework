@@ -20,7 +20,7 @@
 #include "arcane/core/IData.h"
 #include "arcane/core/materials/internal/IMeshComponentInternal.h"
 
-#include "arcane/accelerator/core/internal/ProfileRegion.h"
+#include "arcane/accelerator/core/ProfileRegion.h"
 
 #include "arcane/materials/IMeshMaterial.h"
 #include "arcane/materials/IMeshMaterialVariable.h"
