@@ -25,7 +25,6 @@ namespace Arcane::Accelerator
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \internal
  * \brief Région pour le profiling.
  *
  * Cette classe permet d'associer des informations de profiling à tous les
@@ -36,8 +35,17 @@ class ARCANE_ACCELERATOR_CORE_EXPORT ProfileRegion
 {
  public:
 
+  //! Début une région de nom \a name
   ProfileRegion(const RunQueue& queue, const String& name);
+
+  /*!
+   * \brief Début une région de nom \a name avec la couleur \a color_rgb.
+   *
+   * La couleur est donné au format RGB hexadécimal. Par exemple 0xFF0000
+   * indique la couleur rouge et 0x7F00FF indique la couleur violette.
+   */
   ProfileRegion(const RunQueue& queue, const String& name, Int32 color_rgb);
+
   ~ProfileRegion();
 
  private:
