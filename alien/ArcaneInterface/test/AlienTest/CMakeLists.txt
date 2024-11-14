@@ -95,7 +95,7 @@ if (TARGET petsc)
     set(ENV (ARCANE_PARALLEL_SERVICE) "Mpi")
 
     alien_test(
-            BENCH alien.test.arcane
+            BENCH test.arcane
             NAME scalar
             PROCS 4
             COMMAND alien_arcane_test.exe
@@ -103,7 +103,7 @@ if (TARGET petsc)
             WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienTest)
 
     alien_test(
-            BENCH alien.test.arcane
+            BENCH test.arcane
             NAME block
             PROCS 4
             COMMAND alien_arcane_test.exe
@@ -111,7 +111,7 @@ if (TARGET petsc)
             WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienTest)
 
     alien_test(
-            BENCH alien.test.arcane
+            BENCH test.arcane
             NAME vblock
             PROCS 4
             COMMAND alien_arcane_test.exe
