@@ -984,7 +984,7 @@ _cellsUidAroundCells(UniqueArray<Int64>& own_cells_uid_around_cells)
     }
   }
 
-  return nb_dir * nb_items_per_dir;
+  return size_of_once_case_around-1;
 }
 
 /*!
@@ -1016,7 +1016,7 @@ _cellsUidAroundFaces(UniqueArray<Int64>& own_cells_uid_around_faces)
   constexpr Integer isucc = 1;
 
   // +1 car on a le uid dedans.
-  Integer size_of_once_case_around = nb_items_per_dir + 1;
+  Integer size_of_once_case_around = nb_items_per_dir * nb_patch + 1;
 
   own_cells_uid_around_faces.resize(nb_items * size_of_once_case_around, -1);
 
@@ -1026,7 +1026,7 @@ _cellsUidAroundFaces(UniqueArray<Int64>& own_cells_uid_around_faces)
     index += size_of_once_case_around;
   }
 
-  auto set_value = [&](Int64 uid, Int64 uid_pred, Int64 uid_succ) -> void {
+  auto set_value = [&](Integer ipatch, Int64 uid, Int64 uid_pred, Int64 uid_succ) -> void {
     // debug() << " -- uid : " << uid
     //         << " -- uid_pred : " << uid_pred
     //         << " -- uid_succ : " << uid_succ;
@@ -1035,7 +1035,7 @@ _cellsUidAroundFaces(UniqueArray<Int64>& own_cells_uid_around_faces)
 
     for (Integer i = 0; i < own_cells_uid_around_faces.size(); i += size_of_once_case_around) {
       if (own_cells_uid_around_faces[i] == uid) {
-        Integer pos_final = i + 1;
+        Integer pos_final = i + 1 + ipatch * nb_items_per_dir;
         Integer pos_pred = pos_final + ipred;
         Integer pos_succ = pos_final + isucc;
         if (own_cells_uid_around_faces[pos_pred] != -1 && own_cells_uid_around_faces[pos_pred] != uid_pred) {
@@ -1051,15 +1051,16 @@ _cellsUidAroundFaces(UniqueArray<Int64>& own_cells_uid_around_faces)
     }
   };
 
-  for (Integer idir = 0; idir < nb_dir; ++idir) {
-    FaceDirectionMng fdm(m_cartesian_mesh->faceDirection(idir));
-    ENUMERATE_ (Face, iface, fdm.allFaces().own()) {
-      DirFace cc(fdm.face(*iface));
-      Cell next = cc.nextCell();
-      Cell prev = cc.previousCell();
-      set_value(iface->uniqueId(), prev.uniqueId(), next.uniqueId());
-    }
-  }
+  // // TODO : Il faut pouvoir récupérer le patch correspondant.
+  // for (Integer idir = 0; idir < nb_dir; ++idir) {
+  //   FaceDirectionMng fdm(m_cartesian_mesh->faceDirection(idir));
+  //   ENUMERATE_ (Face, iface, fdm.allFaces().own()) {
+  //     DirFace cc(fdm.face(*iface));
+  //     Cell next = cc.nextCell();
+  //     Cell prev = cc.previousCell();
+  //     set_value(iface->uniqueId(), prev.uniqueId(), next.uniqueId());
+  //   }
+  // }
 
   for (Integer ipatch = 0; ipatch < nb_patch; ++ipatch) {
     ICartesianMeshPatch* p = m_cartesian_mesh->patch(ipatch);
@@ -1069,12 +1070,12 @@ _cellsUidAroundFaces(UniqueArray<Int64>& own_cells_uid_around_faces)
         DirFace cc(fdm.face(*iface));
         Cell next = cc.nextCell();
         Cell prev = cc.previousCell();
-        set_value(iface->uniqueId(), prev.uniqueId(), next.uniqueId());
+        set_value(ipatch, iface->uniqueId(), prev.uniqueId(), next.uniqueId());
       }
     }
   }
 
-  return nb_items_per_dir;
+  return size_of_once_case_around-1;
 }
 
 /*!
@@ -1172,7 +1173,7 @@ _nodesUidAroundNodes(UniqueArray<Int64>& own_nodes_uid_around_nodes)
     }
   }
 
-  return nb_dir * nb_items_per_dir * nb_patch;
+  return size_of_once_case_around-1;
 }
 
 /*---------------------------------------------------------------------------*/
