@@ -39,6 +39,7 @@
 #include "arcane/core/IPostProcessorWriter.h"
 #include "arcane/core/IVariableMng.h"
 #include "arcane/core/SimpleSVGMeshExporter.h"
+#include "arcane/core/IGhostLayerMng.h"
 
 #include "arcane/cartesianmesh/ICartesianMesh.h"
 #include "arcane/cartesianmesh/CellDirectionMng.h"
@@ -111,6 +112,11 @@ class AMRCartesianMeshTesterModule
   void _writePostProcessing();
   void _checkUniqueIds();
   void _testDirections();
+  void _checkDirections();
+  String _checkDirectionUniqueIdsHashCollective(ArrayView<Int64> own_items_uid_around, Integer nb_items_around);
+  Integer _cellsUidAroundCells(UniqueArray<Int64>& own_cells_uid_around_cells);
+  Integer _cellsUidAroundFaces(UniqueArray<Int64>& own_cells_uid_around_faces);
+  Integer _nodesUidAroundNodes(UniqueArray<Int64>& own_nodes_uid_around_nodes);
   void _cellsInPatch(Real3 position, Real3 length, bool is_3d, Int32 level, UniqueArray<Int32>& cells_in_patch);
 };
 
@@ -327,6 +333,7 @@ init()
   m_utils->testAll(is_amr);
   _writePostProcessing();
   _testDirections();
+  _checkDirections();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -775,11 +782,397 @@ _testDirections()
         Node next_node = dir_node.next();
         Node prev_node2 = dir_node2.previous();
         Node next_node2 = dir_node2.next();
-        m_utils->checkSameId(prev_node,prev_node2);
-        m_utils->checkSameId(next_node,next_node2);
+        m_utils->checkSameId(prev_node, prev_node2);
+        m_utils->checkSameId(next_node, next_node2);
       }
     }
   }
+}
+
+void AMRCartesianMeshTesterModule::
+_checkDirections()
+{
+  m_cartesian_mesh->computeDirections();
+  IMesh* mesh = m_cartesian_mesh->mesh();
+  bool print_hash = true;
+
+  auto check_hash = [&](const IItemFamily* item_family, const String& expected_hash, ArrayView<Int64> own_items_uid_around, Integer nb_items_around) {
+    String cell_hash = _checkDirectionUniqueIdsHashCollective(own_items_uid_around, nb_items_around);
+
+    if (print_hash) {
+      info() << "HASH_RESULT direction items of family=" << item_family->name()
+             << " v= " << cell_hash << " expected= " << expected_hash;
+    }
+
+    if (!expected_hash.empty() && cell_hash != expected_hash)
+      ARCANE_FATAL("Bad hash for uniqueId() for direction items of family '{0}' v= {1} expected='{2}'",
+                   item_family->fullName(), cell_hash, expected_hash);
+  };
+
+  {
+    debug() << "Check cells direction hash";
+    UniqueArray<Int64> own_cells_uid_around_cells;
+    Integer nb_items_around = _cellsUidAroundCells(own_cells_uid_around_cells);
+    check_hash(mesh->cellFamily(), options()->cellsDirectionHash(), own_cells_uid_around_cells, nb_items_around);
+  }
+  {
+    debug() << "Check faces direction hash";
+    UniqueArray<Int64> own_cells_uid_around_faces;
+    Integer nb_items_around = _cellsUidAroundFaces(own_cells_uid_around_faces);
+    check_hash(mesh->faceFamily(), options()->facesDirectionHash(), own_cells_uid_around_faces, nb_items_around);
+  }
+  {
+    debug() << "Check nodes direction hash";
+    UniqueArray<Int64> own_nodes_uid_around_nodes;
+    Integer nb_items_around = _nodesUidAroundNodes(own_nodes_uid_around_nodes);
+    check_hash(mesh->nodeFamily(), options()->nodesDirectionHash(), own_nodes_uid_around_nodes, nb_items_around);
+  }
+}
+
+/*!
+ * \brief Méthode permettant de calculer un hash à partir d'un tableau d'items "autour".
+ *
+ * Le tableau doit avoir la forme {uid_item, uid_item_aroundn, ...}.
+ * Le nombre de "uid_item_aroundn" pour chaque "uid_item" doit être donné en second paramètre.
+ *
+ * \param own_items_uid_around Le tableau d'items autour.
+ * \param nb_items_around Le nombre d'items autour de chaque item.
+ * \return Le hash.
+ */
+String AMRCartesianMeshTesterModule::
+_checkDirectionUniqueIdsHashCollective(ArrayView<Int64> own_items_uid_around, Integer nb_items_around)
+{
+  // +1 car on a le uid dedans.
+  Integer size_of_once_case_around = nb_items_around + 1;
+
+  UniqueArray<Int64> final_all_items_uid;
+  {
+    UniqueArray<Int64> global_items_uid_around;
+    parallelMng()->allGatherVariable(own_items_uid_around, global_items_uid_around);
+
+    UniqueArray<Int64> global_items_uid(global_items_uid_around.size() / size_of_once_case_around);
+    {
+      Int64 index = 0;
+      for (Int64 i = 0; i < global_items_uid_around.size(); i += size_of_once_case_around) {
+        Int64 uid = global_items_uid_around[i];
+        ARCANE_ASSERT((uid != -1), ("Un uid dans le tableau est = -1"));
+        global_items_uid[index++] = uid;
+      }
+    }
+
+    std::sort(global_items_uid.begin(), global_items_uid.end());
+
+    for (Integer i = 0; i < global_items_uid.size() - 1; ++i) {
+      if (global_items_uid[i] == global_items_uid[i + 1]) {
+        ARCANE_FATAL("Le uid {0} est dupliqué", global_items_uid[i]);
+      }
+    }
+
+    final_all_items_uid.resize(global_items_uid_around.size());
+
+    Int64 index = 0;
+    for (Int64 uid : global_items_uid) {
+      bool found = false;
+      for (Int64 i = 0; i < global_items_uid_around.size(); i += size_of_once_case_around) {
+        if (global_items_uid_around[i] == uid) {
+          ARCANE_ASSERT((!found), ("Uid %i dupliqué...", uid));
+          final_all_items_uid[index++] = uid;
+          for (Integer iaround = 1; iaround < size_of_once_case_around; ++iaround) {
+            final_all_items_uid[index++] = global_items_uid_around[i + iaround];
+          }
+          found = true;
+          // break;
+        }
+      }
+      ARCANE_ASSERT((found), ("Uid %i invalide", uid));
+    }
+  }
+
+  // info() << "final_all_items_uid : " << final_all_items_uid;
+
+  UniqueArray<Byte> hash_result;
+  MD5HashAlgorithm hash_algo;
+  hash_algo.computeHash64(asBytes(final_all_items_uid.constSpan()), hash_result);
+  return Convert::toHexaString(hash_result);
+}
+
+/*!
+ * \brief Méthode permettant de récupérer un tableau contenant les mailles
+ * autour des mailles.
+ *
+ * Le tableau aura la forme : {uid_cell, uid_cell_dir0_pred, uid_cell_dir0_succ, uid_cell_dir1_pred, ...}
+ *
+ * \param own_cells_uid_around_cells [OUT] Un tableau vide
+ * \return Le nombre de mailles autour de chaque maille (en 2D : 4 et en 3D : 6).
+ */
+Integer AMRCartesianMeshTesterModule::
+_cellsUidAroundCells(UniqueArray<Int64>& own_cells_uid_around_cells)
+{
+  IParallelMng* pm = parallelMng();
+  IMesh* mesh = m_cartesian_mesh->mesh();
+
+  if (pm->commSize() != 1 && mesh->ghostLayerMng()->nbGhostLayer() == 0) {
+    ARCANE_FATAL("Pas compatible sans ghost");
+  }
+
+  Integer nb_patch = m_cartesian_mesh->nbPatch();
+  Integer nb_dir = mesh->dimension();
+  Integer nb_items = mesh->cellFamily()->allItems().own().size();
+
+  // On a que pred et succ.
+  constexpr Integer nb_items_per_dir = 2;
+  constexpr Integer ipred = 0;
+  constexpr Integer isucc = 1;
+
+  // +1 car on a le uid dedans.
+  Integer size_of_once_case_around = nb_dir * nb_items_per_dir + 1;
+
+  own_cells_uid_around_cells.resize(nb_items * size_of_once_case_around, -1);
+
+  Integer index = 0;
+  ENUMERATE_ (Cell, icell, mesh->cellFamily()->allItems().own()) {
+    own_cells_uid_around_cells[index] = icell->uniqueId();
+    index += size_of_once_case_around;
+  }
+
+  auto set_value = [&](Integer dir, Int64 uid, Int64 uid_pred, Int64 uid_succ) -> void {
+    // debug() << " -- dir : " << dir
+    //         << " -- uid : " << uid
+    //         << " -- uid_pred : " << uid_pred
+    //         << " -- uid_succ : " << uid_succ;
+
+    ARCANE_ASSERT((uid != -1), ("Uid ne peut pas être égal à -1"));
+
+    for (Integer i = 0; i < own_cells_uid_around_cells.size(); i += size_of_once_case_around) {
+      if (own_cells_uid_around_cells[i] == uid) {
+        Integer pos_final = i + 1 + (dir * nb_items_per_dir);
+        Integer pos_pred = pos_final + ipred;
+        Integer pos_succ = pos_final + isucc;
+        if (own_cells_uid_around_cells[pos_pred] != -1 && own_cells_uid_around_cells[pos_pred] != uid_pred) {
+          ARCANE_FATAL("Problème de cohérence entre les patchs (uid={0} -- old_uid_pred={1} -- new_uid_pred={2})", uid, own_cells_uid_around_cells[pos_pred], uid_pred);
+        }
+        if (own_cells_uid_around_cells[pos_succ] != -1 && own_cells_uid_around_cells[pos_succ] != uid_succ) {
+          ARCANE_FATAL("Problème de cohérence entre les patchs (uid={0} -- old_uid_succ={1} -- new_uid_succ={2})", uid, own_cells_uid_around_cells[pos_succ], uid_succ);
+        }
+        own_cells_uid_around_cells[pos_pred] = uid_pred;
+        own_cells_uid_around_cells[pos_succ] = uid_succ;
+        return;
+      }
+    }
+  };
+
+  for (Integer idir = 0; idir < nb_dir; ++idir) {
+    CellDirectionMng cdm(m_cartesian_mesh->cellDirection(idir));
+    ENUMERATE_ (Cell, icell, cdm.allCells().own()) {
+      DirCell cc(cdm.cell(*icell));
+      Cell next = cc.next();
+      Cell prev = cc.previous();
+      set_value(idir, icell->uniqueId(), prev.uniqueId(), next.uniqueId());
+    }
+  }
+
+  for (Integer ipatch = 0; ipatch < nb_patch; ++ipatch) {
+    ICartesianMeshPatch* p = m_cartesian_mesh->patch(ipatch);
+    for (Integer idir = 0; idir < nb_dir; ++idir) {
+      CellDirectionMng cdm(p->cellDirection(idir));
+      ENUMERATE_ (Cell, icell, cdm.allCells().own()) {
+        DirCell cc(cdm.cell(*icell));
+        Cell next = cc.next();
+        Cell prev = cc.previous();
+        set_value(idir, icell->uniqueId(), prev.uniqueId(), next.uniqueId());
+      }
+    }
+  }
+
+  return nb_dir * nb_items_per_dir;
+}
+
+/*!
+ * \brief Méthode permettant de récupérer un tableau contenant les mailles
+ * autour des faces.
+ *
+ * Le tableau aura la forme : {uid_face, uid_cell_pred, uid_cell_succ, ...}
+ *
+ * \param own_cells_uid_around_faces [OUT] Un tableau vide
+ * \return Le nombre de mailles autour de chaque face (=2).
+ */
+Integer AMRCartesianMeshTesterModule::
+_cellsUidAroundFaces(UniqueArray<Int64>& own_cells_uid_around_faces)
+{
+  IParallelMng* pm = parallelMng();
+  IMesh* mesh = m_cartesian_mesh->mesh();
+
+  if (pm->commSize() != 1 && mesh->ghostLayerMng()->nbGhostLayer() == 0) {
+    ARCANE_FATAL("Pas compatible sans ghost");
+  }
+
+  Integer nb_patch = m_cartesian_mesh->nbPatch();
+  Integer nb_dir = mesh->dimension();
+  Integer nb_items = mesh->faceFamily()->allItems().own().size();
+
+  // On a que pred et succ.
+  constexpr Integer nb_items_per_dir = 2;
+  constexpr Integer ipred = 0;
+  constexpr Integer isucc = 1;
+
+  // +1 car on a le uid dedans.
+  Integer size_of_once_case_around = nb_items_per_dir + 1;
+
+  own_cells_uid_around_faces.resize(nb_items * size_of_once_case_around, -1);
+
+  Integer index = 0;
+  ENUMERATE_ (Item, iitem, mesh->faceFamily()->allItems().own()) {
+    own_cells_uid_around_faces[index] = iitem->uniqueId();
+    index += size_of_once_case_around;
+  }
+
+  auto set_value = [&](Int64 uid, Int64 uid_pred, Int64 uid_succ) -> void {
+    // debug() << " -- uid : " << uid
+    //         << " -- uid_pred : " << uid_pred
+    //         << " -- uid_succ : " << uid_succ;
+
+    ARCANE_ASSERT((uid != -1), ("Uid ne peut pas être égal à -1"));
+
+    for (Integer i = 0; i < own_cells_uid_around_faces.size(); i += size_of_once_case_around) {
+      if (own_cells_uid_around_faces[i] == uid) {
+        Integer pos_final = i + 1;
+        Integer pos_pred = pos_final + ipred;
+        Integer pos_succ = pos_final + isucc;
+        if (own_cells_uid_around_faces[pos_pred] != -1 && own_cells_uid_around_faces[pos_pred] != uid_pred) {
+          ARCANE_FATAL("Problème de cohérence entre les patchs (uid={0} -- old_uid_pred={1} -- new_uid_pred={2})", uid, own_cells_uid_around_faces[pos_pred], uid_pred);
+        }
+        if (own_cells_uid_around_faces[pos_succ] != -1 && own_cells_uid_around_faces[pos_succ] != uid_succ) {
+          ARCANE_FATAL("Problème de cohérence entre les patchs (uid={0} -- old_uid_succ={1} -- new_uid_succ={2})", uid, own_cells_uid_around_faces[pos_succ], uid_succ);
+        }
+        own_cells_uid_around_faces[pos_pred] = uid_pred;
+        own_cells_uid_around_faces[pos_succ] = uid_succ;
+        return;
+      }
+    }
+  };
+
+  for (Integer idir = 0; idir < nb_dir; ++idir) {
+    FaceDirectionMng fdm(m_cartesian_mesh->faceDirection(idir));
+    ENUMERATE_ (Face, iface, fdm.allFaces().own()) {
+      DirFace cc(fdm.face(*iface));
+      Cell next = cc.nextCell();
+      Cell prev = cc.previousCell();
+      set_value(iface->uniqueId(), prev.uniqueId(), next.uniqueId());
+    }
+  }
+
+  for (Integer ipatch = 0; ipatch < nb_patch; ++ipatch) {
+    ICartesianMeshPatch* p = m_cartesian_mesh->patch(ipatch);
+    for (Integer idir = 0; idir < nb_dir; ++idir) {
+      FaceDirectionMng fdm(p->faceDirection(idir));
+      ENUMERATE_ (Face, iface, fdm.allFaces().own()) {
+        DirFace cc(fdm.face(*iface));
+        Cell next = cc.nextCell();
+        Cell prev = cc.previousCell();
+        set_value(iface->uniqueId(), prev.uniqueId(), next.uniqueId());
+      }
+    }
+  }
+
+  return nb_items_per_dir;
+}
+
+/*!
+ * \brief Méthode permettant de récupérer un tableau contenant les noeuds
+ * autour des noeuds.
+ *
+ * Le tableau aura la forme : {uid_noeud, uid_noeud_patch0_dir0_pred,
+ * uid_noeud_patch0_dir0_succ, uid_noeud_patch0_dir1_pred, ...}
+ *
+ * Attention, chaque noeud aura possiblement un noeud pred et succ différent dans
+ * chaque patch (les noeuds n'étant pas dupliqués avec l'AMR classique).
+ *
+ * \param own_nodes_uid_around_nodes [OUT] Un tableau vide
+ * \return Le nombre de noeuds autour de chaque noeud
+ * (en 2D : 4 * nb_patch et en 3D : 6 * nb_patch).
+ */
+Integer AMRCartesianMeshTesterModule::
+_nodesUidAroundNodes(UniqueArray<Int64>& own_nodes_uid_around_nodes)
+{
+  IParallelMng* pm = parallelMng();
+  IMesh* mesh = m_cartesian_mesh->mesh();
+
+  if (pm->commSize() != 1 && mesh->ghostLayerMng()->nbGhostLayer() == 0) {
+    ARCANE_FATAL("Pas compatible sans ghost");
+  }
+
+  Integer nb_patch = m_cartesian_mesh->nbPatch();
+  Integer nb_dir = mesh->dimension();
+  Integer nb_items = mesh->nodeFamily()->allItems().own().size();
+
+  // On a que pred et succ.
+  constexpr Integer nb_items_per_dir = 2;
+  constexpr Integer ipred = 0;
+  constexpr Integer isucc = 1;
+
+  // +1 car on a le uid dedans.
+  Integer size_of_once_case_around = nb_dir * nb_items_per_dir * nb_patch + 1;
+
+  own_nodes_uid_around_nodes.resize(nb_items * size_of_once_case_around, -1);
+
+  Integer index = 0;
+  ENUMERATE_ (Item, iitem, mesh->nodeFamily()->allItems().own()) {
+    own_nodes_uid_around_nodes[index] = iitem->uniqueId();
+    index += size_of_once_case_around;
+  }
+
+  auto set_value = [&](Integer dir, Integer ipatch, Int64 uid, Int64 uid_pred, Int64 uid_succ) {
+    // debug() << " -- dir : " << dir
+    //         << " -- ipatch : " << ipatch
+    //         << " -- uid : " << uid
+    //         << " -- uid_pred : " << uid_pred
+    //         << " -- uid_succ : " << uid_succ;
+
+    ARCANE_ASSERT((uid != -1), ("Uid ne peut pas être égal à -1"));
+
+    for (Integer i = 0; i < own_nodes_uid_around_nodes.size(); i += size_of_once_case_around) {
+      if (own_nodes_uid_around_nodes[i] == uid) {
+        Integer pos_final = i + 1 + ipatch * (nb_items_per_dir * nb_dir) + dir * nb_items_per_dir;
+        Integer pos_pred = pos_final + ipred;
+        Integer pos_succ = pos_final + isucc;
+        if (own_nodes_uid_around_nodes[pos_pred] != -1 && own_nodes_uid_around_nodes[pos_pred] != uid_pred) {
+          ARCANE_FATAL("Problème de cohérence entre les patchs (uid={0} -- old_uid_pred={1} -- new_uid_pred={2})", uid, own_nodes_uid_around_nodes[pos_pred], uid_pred);
+        }
+        if (own_nodes_uid_around_nodes[pos_succ] != -1 && own_nodes_uid_around_nodes[pos_succ] != uid_succ) {
+          ARCANE_FATAL("Problème de cohérence entre les patchs (uid={0} -- old_uid_succ={1} -- new_uid_succ={2})", uid, own_nodes_uid_around_nodes[pos_succ], uid_succ);
+        }
+        own_nodes_uid_around_nodes[pos_pred] = uid_pred;
+        own_nodes_uid_around_nodes[pos_succ] = uid_succ;
+        return;
+      }
+    }
+  };
+
+  // // TODO : Il faut pouvoir récupérer le patch correspondant.
+  // for (Integer idir = 0; idir < nb_dir; ++idir) {
+  //   NodeDirectionMng ndm(m_cartesian_mesh->nodeDirection(idir));
+  //   ENUMERATE_ (Node, inode, ndm.allNodes().own()) {
+  //     DirNode cc(ndm.node(*inode));
+  //     Node next = cc.next();
+  //     Node prev = cc.previous();
+  //     set_value(idir, 0, inode->uniqueId(), prev.uniqueId(), next.uniqueId());
+  //   }
+  // }
+
+  for (Integer ipatch = 0; ipatch < nb_patch; ++ipatch) {
+    ICartesianMeshPatch* p = m_cartesian_mesh->patch(ipatch);
+    for (Integer idir = 0; idir < nb_dir; ++idir) {
+      NodeDirectionMng ndm(p->nodeDirection(idir));
+      ENUMERATE_ (Node, inode, ndm.allNodes().own()) {
+        DirNode cc(ndm.node(*inode));
+        Node next = cc.next();
+        Node prev = cc.previous();
+        set_value(idir, ipatch, inode->uniqueId(), prev.uniqueId(), next.uniqueId());
+      }
+    }
+  }
+
+  return nb_dir * nb_items_per_dir * nb_patch;
 }
 
 /*---------------------------------------------------------------------------*/
