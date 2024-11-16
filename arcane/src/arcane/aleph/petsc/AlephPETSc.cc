@@ -39,6 +39,18 @@ namespace Arcane
 
 namespace
 {
+// To convert from AlephInt data to PetscInt data
+PetscInt* _toPetscInt(AlephInt* v)
+{
+  static_assert(sizeof(PetscInt)==sizeof(AlephInt),"AlephInt and PetscInt should have the same size");
+  return reinterpret_cast<PetscInt*>(v);
+}
+// To convert from AlephInt data to PetscInt data
+const PetscInt* _toPetscInt(const AlephInt* v)
+{
+  static_assert(sizeof(PetscInt)==sizeof(AlephInt),"AlephInt and PetscInt should have the same size");
+  return reinterpret_cast<const PetscInt*>(v);
+}
 
 inline void
 petscCheck(PetscErrorCode error_code)
@@ -93,9 +105,9 @@ class AlephVectorPETSc
 
   AlephVectorPETSc(ITraceMng*, AlephKernel*, Integer);
   void AlephVectorCreate(void) override;
-  void AlephVectorSet(const double*, const int*, Integer) override;
+  void AlephVectorSet(const double*, const AlephInt*, Integer) override;
   int AlephVectorAssemble(void) override;
-  void AlephVectorGet(double*, const int*, Integer) override;
+  void AlephVectorGet(double*, const AlephInt*, Integer) override;
   void writeToFile(const String) override;
   Real LinftyNorm(void);
 
@@ -117,7 +129,7 @@ class AlephMatrixPETSc
   void AlephMatrixCreate(void) override;
   void AlephMatrixSetFilled(bool) override;
   int AlephMatrixAssemble(void) override;
-  void AlephMatrixFill(int, int*, int*, double*) override;
+  void AlephMatrixFill(int, AlephInt*, AlephInt*, double*) override;
   Real LinftyNormVectorProductAndSub(AlephVector*, AlephVector*);
   bool isAlreadySolved(AlephVectorPETSc*, AlephVectorPETSc*,
                        AlephVectorPETSc*, Real*, AlephParams*);
@@ -288,9 +300,9 @@ AlephVectorCreate(void)
 // * AlephVectorSet
 // ****************************************************************************
 void AlephVectorPETSc::
-AlephVectorSet(const double *bfr_val, const int *bfr_idx, Integer size)
+AlephVectorSet(const double *bfr_val, const AlephInt *bfr_idx, Integer size)
 {
-  VecSetValues(m_petsc_vector,size,bfr_idx,bfr_val,INSERT_VALUES);
+  VecSetValues(m_petsc_vector,size,_toPetscInt(bfr_idx),bfr_val,INSERT_VALUES);
   debug()<<"\t\t[AlephVectorPETSc::AlephVectorSet] "<<size<<" values inserted!";
   // En séquentiel, il faut le fair aussi avec PETSc
   AlephVectorAssemble();
@@ -314,9 +326,9 @@ AlephVectorAssemble(void)
 // * AlephVectorGet
 // ****************************************************************************
 void AlephVectorPETSc::
-AlephVectorGet(double *bfr_val, const int *bfr_idx, Integer size)
+AlephVectorGet(double* bfr_val, const AlephInt* bfr_idx, Integer size)
 {
-  VecGetValues(m_petsc_vector,size,bfr_idx,bfr_val);
+  VecGetValues(m_petsc_vector,size,_toPetscInt(bfr_idx),bfr_val);
   debug()<<"\t\t[AlephVectorPETSc::AlephVectorGet] fetched "<< size <<" values!";
 }
 
@@ -363,23 +375,24 @@ AlephMatrixPETSc(ITraceMng *tm,
 void AlephMatrixPETSc::
 AlephMatrixCreate(void)
 {
-  Integer ilower=-1;
-  Integer iupper=0;
+  AlephInt ilower=-1;
+  AlephInt iupper=0;
 
   for( int iCpu=0;iCpu<m_kernel->size();++iCpu ){
     if (m_kernel->rank()!=m_kernel->solverRanks(m_index)[iCpu]) continue;
     if (ilower==-1) ilower=m_kernel->topology()->gathered_nb_row(iCpu);
     iupper=m_kernel->topology()->gathered_nb_row(iCpu+1);
   }
-  Integer size = iupper-ilower;
-  Integer jlower=ilower;
-  Integer jupper=iupper;
+  AlephInt size = iupper-ilower;
+  AlephInt jlower=ilower;
+  AlephInt jupper=iupper;
 
 #if PETSC_VERSION_GE(3,3,0)
   #define PETSC_VERSION_MatCreate MatCreateAIJ
 #elif PETSC_VERSION_(3,0,0)
   #define PETSC_VERSION_MatCreate MatCreateMPIAIJ
 #endif
+  PetscInt* row_data = _toPetscInt(m_kernel->topology()->gathered_nb_row_elements().subView(ilower,size).data());
   PETSC_VERSION_MatCreate(MPI_COMM_SUB,
                           iupper-ilower, // m = number of rows
                           jupper-jlower, // n = number of columns
@@ -387,10 +400,10 @@ AlephMatrixCreate(void)
                           m_kernel->topology()->nb_row_size(), // N = number of global columns
                           0, // ignored (number of nonzeros per row in DIAGONAL portion of local submatrix)
                           // array containing the number of nonzeros in the various rows of the DIAGONAL portion of local submatrix
-                          m_kernel->topology()->gathered_nb_row_elements().subView(ilower,size).unguardedBasePointer(),
+                          row_data,
                           0, // ignored (number of nonzeros per row in the OFF-DIAGONAL portion of local submatrix)
                           // array containing the number of nonzeros in the various rows of the OFF-DIAGONAL portion of local submatrix
-                          m_kernel->topology()->gathered_nb_row_elements().subView(ilower,size).unguardedBasePointer(),
+                          row_data,
                           &m_petsc_matrix);
   MatSetOption(m_petsc_matrix, MAT_NEW_NONZERO_LOCATION_ERR, PETSC_FALSE);
   MatSetUp(m_petsc_matrix);
@@ -427,7 +440,7 @@ AlephMatrixAssemble(void)
 // * AlephMatrixFill
 // ****************************************************************************
 void AlephMatrixPETSc::
-AlephMatrixFill(int size, int *rows, int *cols, double *values)
+AlephMatrixFill(int size, AlephInt* rows, AlephInt* cols, double *values)
 {
   debug()<<"\t\t[AlephMatrixPETSc::AlephMatrixFill] size="<<size;
   for(int i=0;i<size;i++){
