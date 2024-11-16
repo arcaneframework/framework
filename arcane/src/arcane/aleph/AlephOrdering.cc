@@ -1,21 +1,23 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* AlephOrdering.cc                                                 (C) 2012 */
+/* AlephOrdering.cc                                            (C) 2000-2024 */
 /*                                                                           */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-#include "AlephArcane.h"
-#include "arcane/IMesh.h"
+
+#include "arcane/aleph/AlephArcane.h"
+#include "arcane/core/IMesh.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -289,7 +291,7 @@ initCellNodeOrder(void)
   m_swap.resize(m_swap_cell.size() + m_swap_node.size());
   Integer iCell = 0;
   for (Integer i = 0; i < m_kernel->size(); ++i) {
-    Integer offset = m_kernel->topology()->gathered_nb_row(i);
+    AlephInt offset = m_kernel->topology()->gathered_nb_row(i);
     for (Integer j = 0; j < gathered_nb_cells.at(i); ++j) {
       m_swap[offset + j] = m_swap_cell.at(iCell);
       iCell += 1;
@@ -297,7 +299,7 @@ initCellNodeOrder(void)
   }
   Integer iNode = 0;
   for (Integer i = 0; i < m_kernel->size(); ++i) {
-    Integer offset = 0;
+    AlephInt offset = 0;
     if (i > 0)
       offset = m_kernel->topology()->gathered_nb_row(i);
     offset += gathered_nb_cells.at(i);
@@ -365,7 +367,7 @@ initTwiceCellNodeOrder(void)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

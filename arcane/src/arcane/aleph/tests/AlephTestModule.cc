@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* AlephUnitTest.cc                                            (C) 2000-2023 */
+/* AlephUnitTest.cc                                            (C) 2000-2024 */
 /*                                                                           */
 /* Service du test du service Aleph.                                         */
 /*---------------------------------------------------------------------------*/
@@ -182,12 +182,12 @@ initAlgebra()
   // Et on prépare une fois pour toutes les indices des vecteurs
   m_cell_matrix_idx.fill(-1);
   {
-    Integer idx = 0;
+    AlephInt idx = 0;
     // Tres important, car on y revient lors de la reconfiguration!!
     m_vector_indexs.resize(0);
     m_vector_zeroes.resize(0);
     m_vector_lhs.resize(0);
-    const Integer row_offset = m_aleph_kernel->topology()->part()[m_aleph_kernel->rank()];
+    const AlephInt row_offset = m_aleph_kernel->topology()->part()[m_aleph_kernel->rank()];
     ENUMERATE_CELL (iCell, MESH_OWN_ACTIVE_CELLS(mesh())) {
       m_cell_matrix_idx[iCell] = row_offset + idx;
       m_vector_indexs.add(m_cell_matrix_idx[iCell] = row_offset + idx);
