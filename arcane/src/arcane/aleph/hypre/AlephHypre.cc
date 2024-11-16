@@ -31,6 +31,11 @@
 
 #include "arcane/aleph/AlephArcane.h"
 
+// Le type HYPRE_BigInt n'existe qu'à partir de Hypre 2.16.0
+#if HYPRE_RELEASE_NUMBER < 21600
+using HYPRE_BigInt = HYPRE_Int;
+#endif
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
