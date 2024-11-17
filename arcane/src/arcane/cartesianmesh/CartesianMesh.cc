@@ -430,72 +430,66 @@ computeDirections()
   // Par exemple, pour toutes les mailles, la face d'indice 0 est celle du haut, celle
   // d'indice 1 celle de droite.
   if (is_3d) {
+    Real max_x = -1;
+    Real max_y = -1;
+    Real max_z = -1;
+
     for (Integer i = 0; i < nb_face; ++i) {
       Face f = cell0.face(i);
 
       Real3 next_center = faces_center[f];
-
-      info(4) << "NEXT_FACE=" << ItemPrinter(f) << " center=" << next_center;
 
       Real diff_x = next_center.x - cell_center.x;
       Real diff_y = next_center.y - cell_center.y;
       Real diff_z = next_center.z - cell_center.z;
 
-      if (diff_x < 0)
-        diff_x = 0;
-      if (diff_y < 0)
-        diff_y = 0;
-      if (diff_z < 0)
-        diff_z = 0;
+      info(4) << "NEXT_FACE=" << ItemPrinter(f) << " center=" << next_center << " diff=" << Real3(diff_x, diff_y, diff_z);
 
-      info(4) << "NEXT_FACE=" << ItemPrinter(f) << " diff=" << Real3(diff_x, diff_y, diff_z);
-
-      if (diff_x > diff_y && diff_x > diff_z) {
-        // INC X
+      if (diff_x > max_x) {
+        max_x = diff_x;
         next_face_x = i;
-        info(4) << "Advance in direction X -> " << next_face_x;
       }
-      else if (diff_y > diff_x && diff_y > diff_z) {
-        // INC Y
+
+      if (diff_y > max_y) {
+        max_y = diff_y;
         next_face_y = i;
-        info(4) << "Advance in direction Y -> " << next_face_y;
       }
-      else if (diff_z > diff_x && diff_z > diff_y) {
-        // INC Z
+
+      if (diff_z > max_z) {
+        max_z = diff_z;
         next_face_z = i;
-        info(4) << "Advance in direction Z -> " << next_face_z;
       }
     }
+    info(4) << "Advance in direction X -> " << next_face_x;
+    info(4) << "Advance in direction Y -> " << next_face_y;
+    info(4) << "Advance in direction Z -> " << next_face_z;
   }
   else {
+    Real max_x = -1;
+    Real max_y = -1;
+
     for (Integer i = 0; i < nb_face; ++i) {
       Face f = cell0.face(i);
 
       Real3 next_center = faces_center[f];
 
-      info(4) << "NEXT_FACE=" << ItemPrinter(f) << " center=" << next_center;
-
       Real diff_x = next_center.x - cell_center.x;
       Real diff_y = next_center.y - cell_center.y;
 
-      if (diff_x < 0)
-        diff_x = 0;
-      if (diff_y < 0)
-        diff_y = 0;
+      info(4) << "NEXT_FACE=" << ItemPrinter(f) << " center=" << next_center << " diff=" << Real2(diff_x, diff_y);
 
-      info(4) << "NEXT_FACE=" << ItemPrinter(f) << " diff=" << Real2(diff_x, diff_y);
-
-      if (diff_x > diff_y) {
-        // INC X
+      if (diff_x > max_x) {
+        max_x = diff_x;
         next_face_x = i;
-        info(4) << "Advance in direction X -> " << next_face_x;
       }
-      else if (diff_y > diff_x) {
-        // INC Y
+
+      if (diff_y > max_y) {
+        max_y = diff_y;
         next_face_y = i;
-        info(4) << "Advance in direction Y -> " << next_face_y;
       }
     }
+    info(4) << "Advance in direction X -> " << next_face_x;
+    info(4) << "Advance in direction Y -> " << next_face_y;
   }
   m_all_items_direction_info->_internalComputeNodeCellInformations(cell0,cells_center[cell0],nodes_coord);
 
