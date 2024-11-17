@@ -850,41 +850,34 @@ _checkDirectionUniqueIdsHashCollective(ArrayView<Int64> own_items_uid_around, In
     UniqueArray<Int64> global_items_uid_around;
     parallelMng()->allGatherVariable(own_items_uid_around, global_items_uid_around);
 
-    UniqueArray<Int64> global_items_uid(global_items_uid_around.size() / size_of_once_case_around);
+    UniqueArray<Int64*> global_items_uid(global_items_uid_around.size() / size_of_once_case_around);
     {
       Int64 index = 0;
       for (Int64 i = 0; i < global_items_uid_around.size(); i += size_of_once_case_around) {
         Int64 uid = global_items_uid_around[i];
         ARCANE_ASSERT((uid != -1), ("Un uid dans le tableau est = -1"));
-        global_items_uid[index++] = uid;
+        global_items_uid[index++] = &(global_items_uid_around[i]);
       }
     }
 
-    std::sort(global_items_uid.begin(), global_items_uid.end());
-
-    for (Integer i = 0; i < global_items_uid.size() - 1; ++i) {
-      if (global_items_uid[i] == global_items_uid[i + 1]) {
-        ARCANE_FATAL("Le uid {0} est dupliqué", global_items_uid[i]);
-      }
-    }
+    std::sort(global_items_uid.begin(), global_items_uid.end(),
+              [](const Int64* a, const Int64* b) {
+                return *a < *b;
+    });
 
     final_all_items_uid.resize(global_items_uid_around.size());
 
     Int64 index = 0;
-    for (Int64 uid : global_items_uid) {
-      bool found = false;
-      for (Int64 i = 0; i < global_items_uid_around.size(); i += size_of_once_case_around) {
-        if (global_items_uid_around[i] == uid) {
-          ARCANE_ASSERT((!found), ("Uid %i dupliqué...", uid));
-          final_all_items_uid[index++] = uid;
-          for (Integer iaround = 1; iaround < size_of_once_case_around; ++iaround) {
-            final_all_items_uid[index++] = global_items_uid_around[i + iaround];
-          }
-          found = true;
-          // break;
-        }
+    Int64 previous_uid = -1;
+
+    for (Int64* ptr_uid : global_items_uid) {
+      if (*ptr_uid == previous_uid) {
+        ARCANE_FATAL("Le uid {0} est dupliqué", *ptr_uid);
       }
-      ARCANE_ASSERT((found), ("Uid %i invalide", uid));
+      previous_uid = *ptr_uid;
+      for (Integer iaround = 0; iaround < size_of_once_case_around; ++iaround) {
+        final_all_items_uid[index++] = ptr_uid[iaround];
+      }
     }
   }
 
