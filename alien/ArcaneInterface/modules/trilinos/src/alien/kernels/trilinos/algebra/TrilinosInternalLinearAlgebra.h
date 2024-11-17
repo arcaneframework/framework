@@ -30,7 +30,7 @@ class ALIEN_TRILINOS_EXPORT TrilinosInternalLinearAlgebra
     : public IInternalLinearAlgebra<TrilinosMatrixType, TrilinosVectorType>
 {
  public:
-  TrilinosInternalLinearAlgebra([[maybe_unused]] Arccore::MessagePassing::IMessagePassingMng* pm = nullptr)
+  TrilinosInternalLinearAlgebra(Arccore::MessagePassing::IMessagePassingMng* = nullptr)
   {
   }
 
