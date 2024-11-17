@@ -79,4 +79,8 @@
     </mesh-params>
   </mesh-criteria-load-balance-mng-test>
 
+  <arcane-checkpoint>
+    <checkpoint-service name="ArcaneBasic2CheckpointWriter" />
+  </arcane-checkpoint>
+
 </case>
