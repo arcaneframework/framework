@@ -18,7 +18,7 @@ BEGIN_TRILINOSINTERNAL_NAMESPACE
 template <typename ValueT, typename TagT>
 bool
 MatrixInternal<ValueT, TagT>::initMatrix(int local_offset, int nrows, int const* kcol,
-    int const* cols, int block_size, ValueT const* values)
+    int const* cols,[[maybe_unused]]  int block_size, ValueT const* values)
 {
   m_local_offset = local_offset;
   m_local_size = nrows;
@@ -76,7 +76,7 @@ MatrixInternal<ValueT, TagT>::mult(vector_type const& x, vector_type& y) const
 
 template <typename ValueT, typename TagT>
 void
-MatrixInternal<ValueT, TagT>::mult(ValueT const* x, ValueT* y) const
+MatrixInternal<ValueT, TagT>::mult([[maybe_unused]] ValueT const* x,[[maybe_unused]]  ValueT* y) const
 {
   // m_internal->apply(x,y) ;
 }

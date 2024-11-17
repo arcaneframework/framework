@@ -83,7 +83,7 @@ class ALIEN_TRILINOS_EXPORT TrilinosInternalLinearSolver
   String getName() const { return "trilinos"; }
 
   //! Etat du solveur
-  void setNullSpaceConstantOption(bool flag)
+  void setNullSpaceConstantOption([[maybe_unused]] bool flag)
   {
     alien_warning([&] { cout() << "Null Space Constant Option not yet implemented"; });
   }

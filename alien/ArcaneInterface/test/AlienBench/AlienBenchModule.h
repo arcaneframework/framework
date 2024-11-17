@@ -98,7 +98,7 @@ class AlienBenchModule : public ArcaneAlienBenchObject
   ARCCORE_HOST_DEVICE Real funcn(Real3 x) const;
   ARCCORE_HOST_DEVICE Real funck(Real3 x) const;
   Real dii(const Cell& ci) const;
-  ARCCORE_HOST_DEVICE Real dii(Integer ci) const {
+  ARCCORE_HOST_DEVICE Real dii([[maybe_unused]] Integer ci) const {
     return m_diag_coeff ;
   }
   Real fij(const Cell& ci, const Cell& cj) const;
