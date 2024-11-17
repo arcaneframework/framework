@@ -622,7 +622,7 @@ extern "C" {
 
   #include "alien/c/alienc.h"
 
-  int ALIEN_init(int argc, char** argv)
+  int ALIEN_init([[maybe_unused]] int argc,[[maybe_unused]]  char** argv)
   {
     AlienManager::initialize() ;
     return 0 ;

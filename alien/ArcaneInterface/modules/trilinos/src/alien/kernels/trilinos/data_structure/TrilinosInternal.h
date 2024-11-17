@@ -69,7 +69,7 @@ BEGIN_TRILINOSINTERNAL_NAMESPACE
 //! Check parallel feature for MTL
 struct Features
 {
-  static void checkParallel(const MatrixDistribution& dist) {}
+  static void checkParallel([[maybe_unused]] const MatrixDistribution& dist) {}
 };
 
 /*---------------------------------------------------------------------------*/

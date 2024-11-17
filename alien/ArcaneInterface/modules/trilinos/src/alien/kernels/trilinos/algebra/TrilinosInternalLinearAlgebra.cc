@@ -70,7 +70,7 @@ TpetraCudaInternalLinearAlgebraFactory(Arccore::MessagePassing::IMessagePassingM
 /*---------------------------------------------------------------------------*/
 
 Real
-TrilinosInternalLinearAlgebra::norm0(const Vector& x) const
+TrilinosInternalLinearAlgebra::norm0([[maybe_unused]] const Vector& x) const
 {
   return 0.;
 }
@@ -92,7 +92,7 @@ TrilinosInternalLinearAlgebra::norm2(const Vector& x) const
 }
 
 Real
-TrilinosInternalLinearAlgebra::normInf(const Vector& x) const
+TrilinosInternalLinearAlgebra::normInf([[maybe_unused]] const Vector& x) const
 {
   return 0.;
 }
@@ -119,7 +119,7 @@ TrilinosInternalLinearAlgebra::axpy(
 }
 
 void
-TrilinosInternalLinearAlgebra::axpy(Real alpha, const Vector& x, Vector& r) const
+TrilinosInternalLinearAlgebra::axpy([[maybe_unused]] Real alpha,[[maybe_unused]] const Vector& x,[[maybe_unused]] Vector& r) const
 {
   throw NotImplementedException(
       A_FUNCINFO, "TrilinosInternalLinearAlgebra::aypx not implemented");
@@ -128,14 +128,14 @@ TrilinosInternalLinearAlgebra::axpy(Real alpha, const Vector& x, Vector& r) cons
 /*---------------------------------------------------------------------------*/
 void
 TrilinosInternalLinearAlgebra::aypx(
-    Real alpha, UniqueArray<Real>& y, const UniqueArray<Real>& x) const
+    [[maybe_unused]] Real alpha, [[maybe_unused]] UniqueArray<Real>& y,[[maybe_unused]] const UniqueArray<Real>& x) const
 {
   throw NotImplementedException(
       A_FUNCINFO, "TrilinosInternalLinearAlgebra::aypx not implemented");
 }
 
 void
-TrilinosInternalLinearAlgebra::aypx(Real alpha, Vector& y, const Vector& x) const
+TrilinosInternalLinearAlgebra::aypx([[maybe_unused]] Real alpha,[[maybe_unused]] Vector& y,[[maybe_unused]] const Vector& x) const
 {
   throw NotImplementedException(
       A_FUNCINFO, "TrilinosInternalLinearAlgebra::aypx not implemented");
@@ -145,12 +145,12 @@ TrilinosInternalLinearAlgebra::aypx(Real alpha, Vector& y, const Vector& x) cons
 
 void
 TrilinosInternalLinearAlgebra::copy(
-    const UniqueArray<Real>& x, UniqueArray<Real>& r) const
+    [[maybe_unused]] const UniqueArray<Real>& x,[[maybe_unused]] UniqueArray<Real>& r) const
 {
   cblas::copy(x.size(), dataPtr(x), 1, dataPtr(r), 1);
 }
 void
-TrilinosInternalLinearAlgebra::copy(const Vector& x, Vector& r) const
+TrilinosInternalLinearAlgebra::copy([[maybe_unused]] const Vector& x,[[maybe_unused]] Vector& r) const
 {
   throw NotImplementedException(
       A_FUNCINFO, "TrilinosInternalLinearAlgebra::aypx not implemented");
@@ -171,14 +171,14 @@ TrilinosInternalLinearAlgebra::dot(const Vector& x, const Vector& y) const
 
 /*---------------------------------------------------------------------------*/
 void
-TrilinosInternalLinearAlgebra::scal(Real alpha, UniqueArray<Real>& x) const
+TrilinosInternalLinearAlgebra::scal([[maybe_unused]] Real alpha,[[maybe_unused]]  UniqueArray<Real>& x) const
 {
   throw NotImplementedException(
       A_FUNCINFO, "TrilinosInternalLinearAlgebra::scal not implemented");
 }
 
 void
-TrilinosInternalLinearAlgebra::scal(Real alpha, Vector& x) const
+TrilinosInternalLinearAlgebra::scal([[maybe_unused]] Real alpha,[[maybe_unused]] Vector& x) const
 {
   throw NotImplementedException(
       A_FUNCINFO, "TrilinosInternalLinearAlgebra::scal not implemented");
@@ -187,7 +187,7 @@ TrilinosInternalLinearAlgebra::scal(Real alpha, Vector& x) const
 /*---------------------------------------------------------------------------*/
 
 void
-TrilinosInternalLinearAlgebra::diagonal(const Matrix& a, Vector& x) const
+TrilinosInternalLinearAlgebra::diagonal([[maybe_unused]] const Matrix& a,[[maybe_unused]]  Vector& x) const
 {
   throw NotImplementedException(
       A_FUNCINFO, "TrilinosInternalLinearAlgebra::diagonal not implemented");
@@ -196,7 +196,7 @@ TrilinosInternalLinearAlgebra::diagonal(const Matrix& a, Vector& x) const
 /*---------------------------------------------------------------------------*/
 
 void
-TrilinosInternalLinearAlgebra::reciprocal(Vector& x) const
+TrilinosInternalLinearAlgebra::reciprocal([[maybe_unused]] Vector& x) const
 {
   throw NotImplementedException(
       A_FUNCINFO, "TrilinosInternalLinearAlgebra::reciprocal not implemented");
@@ -206,7 +206,7 @@ TrilinosInternalLinearAlgebra::reciprocal(Vector& x) const
 
 void
 TrilinosInternalLinearAlgebra::pointwiseMult(
-    const Vector& x, const Vector& y, Vector& w) const
+    [[maybe_unused]] const Vector& x,[[maybe_unused]]  const Vector& y,[[maybe_unused]]  Vector& w) const
 {
   throw NotImplementedException(
       A_FUNCINFO, "TrilinosInternalLinearAlgebra::pointwiseMult not implemented");
