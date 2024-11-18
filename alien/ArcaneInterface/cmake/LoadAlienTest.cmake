@@ -34,7 +34,7 @@ endmacro()
 
 macro(alien_test)
 
-    set(options PARALLEL_ONLY)
+  set(options PARALLEL_ONLY UNIQUE_OUTPUT_DIR)
     set(oneValueArgs BENCH NAME COMMAND WORKING_DIRECTORY)
     set(multiValueArgs OPTIONS PROCS)
 
@@ -65,12 +65,14 @@ macro(alien_test)
                     ${ARGS_OPTIONS}
             )
         else ()
-            set(OUTDIR ${CMAKE_BINARY_DIR}/${ARGS_WORKING_DIRECTORY}/alien.${ARGS_BENCH}.${ARGS_NAME})
-            file(MAKE_DIRECTORY ${OUTDIR})
+            if(UNIQUE_OUTPUT_DIR)
+              set(OUTDIR ${CMAKE_BINARY_DIR}/${ARGS_WORKING_DIRECTORY}/alien.${ARGS_BENCH}.${ARGS_NAME})
+              set(PARAM_OUTDIR -A,OutputDirectory=${OUTDIR})
+              file(MAKE_DIRECTORY ${OUTDIR})
+            endif()
             add_test(
                     NAME alien.${ARGS_BENCH}.${ARGS_NAME}
-                    COMMAND ${ARGS_COMMAND}
-                    -A,OutputDirectory=${OUTDIR}
+                    COMMAND ${ARGS_COMMAND} ${PARAM_OUTDIR}
                     ${ARGS_OPTIONS}
                     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/${ARGS_WORKING_DIRECTORY}
             )
@@ -108,12 +110,14 @@ macro(alien_test)
                         ${ARGS_OPTIONS}
                 )
             else ()
-                set(OUTDIR ${CMAKE_BINARY_DIR}/${ARGS_WORKING_DIRECTORY}/alien.${ARGS_BENCH}.${ARGS_NAME}.mpi-${mpi})
-                file(MAKE_DIRECTORY ${OUTDIR})
+                if(UNIQUE_OUTPUT_DIR)
+                  set(OUTDIR ${CMAKE_BINARY_DIR}/${ARGS_WORKING_DIRECTORY}/alien.${ARGS_BENCH}.${ARGS_NAME}.mpi-${mpi})
+                  set(PARAM_OUTDIR -A,OutputDirectory=${OUTDIR})
+                  file(MAKE_DIRECTORY ${OUTDIR})
+                endif ()
                 add_test(
                         NAME alien.${ARGS_BENCH}.${ARGS_NAME}.mpi-${mpi}
-                        COMMAND ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${mpi} ${MPIEXEC_PREFLAGS}$<TARGET_FILE:${ARGS_COMMAND}> ${MPIEXEC_POSTFLAGS}
-                        -A,OutputDirectory=${OUTDIR}
+                        COMMAND ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${mpi} ${MPIEXEC_PREFLAGS}$<TARGET_FILE:${ARGS_COMMAND}> ${MPIEXEC_POSTFLAGS} ${PARAM_OUTDIR}
                         ${ARGS_OPTIONS}
                         WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/${ARGS_WORKING_DIRECTORY}
                 )

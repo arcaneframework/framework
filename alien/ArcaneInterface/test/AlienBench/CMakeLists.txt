@@ -248,6 +248,7 @@ alien_test(
             PROCS 1
             COMMAND alien_bench.exe
             OPTIONS AlienBench-aliensolver.arc
+            UNIQUE_OUTPUT_DIR
             WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
 
 if (TARGET petsc)
@@ -258,6 +259,7 @@ if (TARGET petsc)
             PROCS 1
             COMMAND alien_bench.exe
             OPTIONS AlienBench.arc
+            UNIQUE_OUTPUT_DIR
             WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
 
     alien_test(
@@ -266,6 +268,7 @@ if (TARGET petsc)
             PROCS 4
             COMMAND alien_bench.exe
             OPTIONS AlienBench-4P.arc
+            UNIQUE_OUTPUT_DIR
             WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
 
     if(TARGET petsc::spai)
@@ -275,6 +278,7 @@ if (TARGET petsc)
                 PROCS 1
                 COMMAND alien_bench.exe
                 OPTIONS AlienBench-petsc-spai.arc
+                UNIQUE_OUTPUT_DIR
                 WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
 
         alien_test(
@@ -283,6 +287,7 @@ if (TARGET petsc)
                 PROCS 4
                 COMMAND alien_bench.exe
                 OPTIONS AlienBench-petsc-spai-4P.arc
+                UNIQUE_OUTPUT_DIR
                 WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
     endif()
 
@@ -296,6 +301,7 @@ if (TARGET hypre)
             PROCS 1
             COMMAND alien_bench.exe
             OPTIONS AlienBench-hypre.arc
+            UNIQUE_OUTPUT_DIR
             WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
 
     alien_test(
@@ -304,6 +310,7 @@ if (TARGET hypre)
             PROCS 2
             COMMAND alien_bench.exe
             OPTIONS AlienBench-hypre-2P.arc
+            UNIQUE_OUTPUT_DIR
             WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
             
 if(ALIEN_USE_SYCL)
@@ -313,6 +320,7 @@ if(ALIEN_USE_SYCL)
             PROCS 1
             COMMAND alien_bench.exe
             OPTIONS AlienBench-hypreilu.arc
+            UNIQUE_OUTPUT_DIR
             WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
      
     alien_test(
@@ -321,6 +329,7 @@ if(ALIEN_USE_SYCL)
             PROCS 1
             COMMAND alien_bench.exe
             OPTIONS AlienBench-hyprefsai.arc
+            UNIQUE_OUTPUT_DIR
             WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
 
   if(TARGET CUDA::cudart)
@@ -330,6 +339,7 @@ if(ALIEN_USE_SYCL)
             PROCS 1
             COMMAND alien_bench.exe
             OPTIONS AlienBench-hypreilu-sycl.arc
+            UNIQUE_OUTPUT_DIR
             WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
      
     alien_test(
@@ -338,6 +348,7 @@ if(ALIEN_USE_SYCL)
             PROCS 1
             COMMAND alien_bench.exe
             OPTIONS AlienBench-hyprefsai-sycl.arc
+            UNIQUE_OUTPUT_DIR
             WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
   endif()
 endif(ALIEN_USE_SYCL)
@@ -352,6 +363,7 @@ if (TARGET trilinos)
             PROCS 1
             COMMAND alien_bench.exe
             OPTIONS AlienBench-trilinos.arc
+            UNIQUE_OUTPUT_DIR
             WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
 
     alien_test(
@@ -360,6 +372,7 @@ if (TARGET trilinos)
             PROCS 1
             COMMAND alien_bench.exe
             OPTIONS AlienBench-trilinosmuelu.arc
+            UNIQUE_OUTPUT_DIR
             WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
 
     alien_test(
@@ -368,6 +381,7 @@ if (TARGET trilinos)
             PROCS 2
             COMMAND alien_bench.exe
             OPTIONS AlienBench-trilinos-2P.arc
+            UNIQUE_OUTPUT_DIR
             WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
 
     alien_test(
@@ -376,5 +390,6 @@ if (TARGET trilinos)
             PROCS 4
             COMMAND alien_bench.exe
             OPTIONS AlienBench-trilinosmuelu-4P.arc
+            UNIQUE_OUTPUT_DIR
             WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
 endif ()
