@@ -65,9 +65,12 @@ macro(alien_test)
                     ${ARGS_OPTIONS}
             )
         else ()
+            set(OUTDIR ${CMAKE_BINARY_DIR}/${ARGS_WORKING_DIRECTORY}/alien.${ARGS_BENCH}.${ARGS_NAME})
+            file(MAKE_DIRECTORY ${OUTDIR})
             add_test(
                     NAME alien.${ARGS_BENCH}.${ARGS_NAME}
                     COMMAND ${ARGS_COMMAND}
+                    -A,OutputDirectory=${OUTDIR}
                     ${ARGS_OPTIONS}
                     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/${ARGS_WORKING_DIRECTORY}
             )
@@ -105,9 +108,12 @@ macro(alien_test)
                         ${ARGS_OPTIONS}
                 )
             else ()
+                set(OUTDIR ${CMAKE_BINARY_DIR}/${ARGS_WORKING_DIRECTORY}/alien.${ARGS_BENCH}.${ARGS_NAME}.mpi-${mpi})
+                file(MAKE_DIRECTORY ${OUTDIR})
                 add_test(
                         NAME alien.${ARGS_BENCH}.${ARGS_NAME}.mpi-${mpi}
                         COMMAND ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${mpi} ${MPIEXEC_PREFLAGS}$<TARGET_FILE:${ARGS_COMMAND}> ${MPIEXEC_POSTFLAGS}
+                        -A,OutputDirectory=${OUTDIR}
                         ${ARGS_OPTIONS}
                         WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/${ARGS_WORKING_DIRECTORY}
                 )
