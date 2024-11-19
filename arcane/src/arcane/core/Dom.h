@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Dom.h                                                       (C) 2000-2018 */
+/* Dom.h                                                       (C) 2000-2024 */
 /*                                                                           */
 /* Implémentation d'un DOM1+DOM2+DOM3(core).                                 */
 /*---------------------------------------------------------------------------*/
@@ -20,13 +20,14 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 class IStringImpl;
 class IXmlDocumentHolder;
-ARCANE_END_NAMESPACE
+}
 
-ARCANE_BEGIN_NAMESPACE
-ARCANE_BEGIN_NAMESPACE_DOM
+namespace Arcane::dom
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -642,10 +643,8 @@ class ARCANE_CORE_EXPORT Attr
   friend class IDOM_Node;
   friend class Element;
  public:
-  Attr();
+  Attr() = default;
   Attr(const Node&);
-  Attr(const Attr&);
-  ~Attr();
   Attr(AttrPrv*);
  private:
   AttrPrv* _impl() const;
@@ -1244,8 +1243,7 @@ class XPathNamespace
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE_DOM
-ARCANE_END_NAMESPACE
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

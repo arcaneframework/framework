@@ -93,8 +93,7 @@ class VariableSynchronizer::SyncMessage
 
   SyncMessage(const DataSynchronizeDispatcherBuildInfo& bi, VariableSynchronizer* var_syncer,
               IMemoryAllocator* allocator)
-  : m_variable_synchronizer(var_syncer)
-  , m_variable_synchronizer_mng(var_syncer->synchronizeMng())
+  : m_variable_synchronizer_mng(var_syncer->synchronizeMng())
   , m_dispatcher(IDataSynchronizeDispatcher::create(bi))
   , m_multi_dispatcher(IDataSynchronizeMultiDispatcher::create(bi))
   , m_event_args(var_syncer)
@@ -167,7 +166,6 @@ class VariableSynchronizer::SyncMessage
 
  private:
 
-  IVariableSynchronizer* m_variable_synchronizer = nullptr;
   IVariableSynchronizerMng* m_variable_synchronizer_mng = nullptr;
   Ref<IDataSynchronizeDispatcher> m_dispatcher;
   IDataSynchronizeMultiDispatcher* m_multi_dispatcher = nullptr;
