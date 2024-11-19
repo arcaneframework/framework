@@ -701,7 +701,7 @@ arcane_add_test_script(continue_hydro3_cartesian_small continue_hydro3_cartesian
 #arcane_add_test_script(continue_hydro3_cartesian_small_4shm continue_hydro3_cartesian_small_4shm.xml)
 arcane_add_test_parallel(hydro3_cartesian_8proc testHydro-3-cartesian.arc 8 "-m 50")
 
-arcane_add_test_sequential(meshservice-subdivide1-hydro testHydro-3-meshservice-subdivide1.arc )
+arcane_add_test(meshservice-subdivide1-hydro testHydro-3-meshservice-subdivide1.arc )
 arcane_add_test(arcanebasicmeshsubdividerservice1-subdivide1 testArcaneBasicMeshSubdividerService1-subdivide1.arc -m 1)
 arcane_add_test_parallel_thread(arcanebasicmeshsubdividerservice1-subdivide1 testArcaneBasicMeshSubdividerService1-subdivide1.arc 4 -m 1)
 if( Parmetis_FOUND )
