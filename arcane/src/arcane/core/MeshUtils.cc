@@ -938,7 +938,7 @@ writeMeshConnectivity(IMesh* mesh, const String& file_name)
         {
           ofile << "<child count='" << cell.nbHChildren() << "'>";
           for (Integer j = 0; j < cell.nbHChildren(); ++j) {
-            ofile << ' ' << cell.hChild(j)->uniqueId();
+            ofile << ' ' << cell.hChild(j).uniqueId();
           }
           ofile << "</child>";
         }
