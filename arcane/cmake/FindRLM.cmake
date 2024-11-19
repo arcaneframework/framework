@@ -6,7 +6,7 @@
 # FLEXLM_LIBRARIES, the libraries to link against to use RLM (FlexlmAPI)
 # FLEXLM_LIBRARY_DIRS, the library path to link against to use RLM (FlexlmAPI)
 # FLEXLM_FOUND, if false, do not try to use RLM (FlexlmAPI)
-# PROTECTION_NAME, return the protection name : RLM
+# FLEXLM_PROTECTION_NAME, return the protection name : RLM
 
 if(NOT RLM_ROOT)
   set(RLM_ROOT $ENV{RLM_ROOT})
@@ -59,7 +59,7 @@ IF(FLEXLM_INCLUDE_DIR)
     # erreur dans une recherche de lib
   ELSE(FLEXLM_LIBRARY_FAILED)
     SET(FLEXLM_FOUND "YES")
-    SET(PROTECTION_NAME "RLM")
+    SET(FLEXLM_PROTECTION_NAME "RLM")
     # Biblioth�ques syst�mes suppl�mentaires
     if(WIN32)
       SET(FLEXLM_LIBRARIES ${FLEXLM_LIBRARY})
