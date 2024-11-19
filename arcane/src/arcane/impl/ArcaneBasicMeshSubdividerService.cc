@@ -95,21 +95,21 @@ subdivideMesh([[maybe_unused]] IPrimaryMesh* mesh)
   }
   if( !is_hex )
     return ;
-  
  
 
+  
   Int32 my_rank = mesh->parallelMng()->commRank();
   IMeshModifier* mesh_modifier = mesh->modifier();
-  
-  debug() << "PART 3D";
-  mesh->utilities()->writeToFile("3D_last_input"+std::to_string(my_rank)+".vtk", "VtkLegacyMeshWriter");
-
-  // PAS DE GHOST LAYER
   IGhostLayerMng* gm = mesh->ghostLayerMng();
+  debug() << "PART 3D nb ghostlayer" << gm->nbGhostLayer();
+  mesh->utilities()->writeToFile("3D_last_input"+std::to_string(my_rank)+".vtk", "VtkLegacyMeshWriter");
+  // PAS DE GHOST LAYER
+  
   Int32 version = gm->builderVersion();
   if (version < 3)
     gm->setBuilderVersion(3);
   gm->setNbGhostLayer(0);
+  
   mesh_modifier->setDynamic(true);
   mesh_modifier->updateGhostLayers();
 
@@ -561,7 +561,7 @@ subdivideMesh([[maybe_unused]] IPrimaryMesh* mesh)
       }
       group.addItems(to_add_to_group,true);
     }
-    
+  
     // Traiter les groupes pour les cellules
     for( ItemGroupCollection::Enumerator igroup(cell_family->groups()); ++igroup; ){
       ItemGroup group = *igroup;
@@ -572,10 +572,11 @@ subdivideMesh([[maybe_unused]] IPrimaryMesh* mesh)
         info() << "#groups: OWN";
         continue;
       }
-      if (group.isAllItems()  ){ // besoin de ça pour seq et //
+      if (group.isAllItems() ){ // besoin de ça pour seq et //
         info() << "#groups: ALLITEMS";
         continue;
       }
+      
       info() << "#groups: Added ";
       UniqueArray<Int32> to_add_to_group;
       // we don't look if it is present void Arcane::ItemGroup::addItems(Arcane::Int32ConstArrayView items_local_id, bool check_if_present = true)
@@ -633,10 +634,15 @@ subdivideMesh([[maybe_unused]] IPrimaryMesh* mesh)
       face_uid_to_owner[face.uniqueId().asInt64()] = cell.owner();
     }
 
-    
     // Supression de la couche fantôme
     gm2->setNbGhostLayer(0);
     mesh->updateGhostLayers(true);
+
+
+    // Quelques sur le nombres d'entités insérés
+    ARCANE_ASSERT((mesh->nbCell() == nb_cell_init*8 ),("Wrong number of cell added"));
+    ARCANE_ASSERT((mesh->nbFace() <= nb_face_init*4 + 12 * nb_cell_init ),("Wrong number of face added"));
+    //A ajouter pour vérifier le nombre de noeud
 
     // Assignation du nouveau propriétaire pour chaque noeud
     ENUMERATE_ (Node, inode, mesh->allNodes()){
@@ -651,6 +657,10 @@ subdivideMesh([[maybe_unused]] IPrimaryMesh* mesh)
       face.mutableItemBase().setOwner(face_uid_to_owner[face.uniqueId().asInt64()], my_rank);
     }
     mesh->faceFamily()->notifyItemsOwnerChanged();
+    
+    // On met de nouveau le ghost layer pour une future simulation
+    gm2->setNbGhostLayer(1);
+    mesh->updateGhostLayers(true);
 
     // Ecriture au format VTK
     mesh->utilities()->writeToFile("3Drefined"+std::to_string(my_rank)+".vtk", "VtkLegacyMeshWriter");
@@ -661,10 +671,9 @@ subdivideMesh([[maybe_unused]] IPrimaryMesh* mesh)
     debug() << mesh->nbFace() << "nb_face_init " << nb_face_init <<  " " <<  nb_face_init << " " << nb_cell_init ;
     debug() << "Faces: " << mesh->nbFace() << " theorical nb_face_to add: " << nb_face_init*4 + nb_cell_init*12 <<  " nb_face_init " <<  nb_face_init << " nb_cell_init " << nb_cell_init ;
 
-    // ARCANE_ASSERT((mesh->nbNode() == nb_edge_init + nb_face_init + nb_cell_init ),("Wrong number of node added")) // Ajouter en debug uniquement pour savoir combien de noeud on à la fin
+    // ARCANE_ASSERT((mesh->nbNode() == nb_edge_init + nb_face_init + nb_cell_init ),("Wrong number of node added"))
     info() << "#NODES_CHECK #all" << mesh->allNodes().size() << " #own " << mesh->ownNodes().size() ;
-    ARCANE_ASSERT((mesh->nbCell() == nb_cell_init*8 ),("Wrong number of cell added"));
-    ARCANE_ASSERT((mesh->nbFace() <= nb_face_init*4 + 12 * nb_cell_init ),("Wrong number of face added"));
+
 }
 
 /*---------------------------------------------------------------------------*/
