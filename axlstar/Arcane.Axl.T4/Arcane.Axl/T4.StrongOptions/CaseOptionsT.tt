@@ -7,24 +7,27 @@
 <#  Action<OptionHandler, String, String> getterSection = (OptionHandler _xml, String beginLineSpace, String redirectionPrefix) => { #>
 <# foreach(var simple in _xml.Simple) {
 	string return_type = simple.type.QualifiedName();
-	if (simple.IsSingle == false) {
+        string call_type = "()";
+        // Use view() for array type because 'operator()' is deprecated for these types.
+	if (!simple.IsSingle) {
 		return_type = return_type.ToArrayType();
+                call_type = ".view()";
 	}#>
 <#=beginLineSpace#><#= return_type #> <#= simple.Name.ToFuncName() #>() const
 <#=beginLineSpace#>{
-<#=beginLineSpace#>  return <#= redirectionPrefix #><#= simple.Name.ToFuncName() #>() ;
+<#=beginLineSpace#>  return <#= redirectionPrefix #><#= simple.Name.ToFuncName() #><#= call_type #>;
 <#=beginLineSpace#>}
 <# } #>
 <# foreach(var enumerator in _xml.Enumeration) {
 	string return_type = enumerator.type;
-	if (enumerator.IsSingle == true) { #>
+	if (enumerator.IsSingle) { #>
 <#=beginLineSpace#><#= return_type #> <#= enumerator.Name.ToFuncName() #>() const
 <#=beginLineSpace#>{
 <#=beginLineSpace#>  return <#= redirectionPrefix #><#= enumerator.Name.ToFuncName() #>();
 <#=beginLineSpace#>}
 <#	}
 	else{ #>
-<#=beginLineSpace#><#= return_type.ToArrayType() #> <#= enumerator.Name.ToFuncName() #>() const
+<#=beginLineSpace#><#= return_type.ToArrayType() #> <#= enumerator.Name.ToFuncName() #> const
 <#=beginLineSpace#>{
 <#=beginLineSpace#>  return <#= redirectionPrefix #><#= enumerator.Name.ToFuncName() #>;
 <#=beginLineSpace#>}
@@ -88,6 +91,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 // #WARNING#: This file has been generated automatically. Do not edit.
+// Generated from 'CaseOptionsT.tt' (version 2024.11.17)
 // Arcane version <#= Version #> : <#= DateTime.Now #>
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
