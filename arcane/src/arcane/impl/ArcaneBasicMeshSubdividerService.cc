@@ -95,9 +95,7 @@ subdivideMesh([[maybe_unused]] IPrimaryMesh* mesh)
   }
   if( !is_hex )
     return ;
- 
-
-  
+   
   Int32 my_rank = mesh->parallelMng()->commRank();
   IMeshModifier* mesh_modifier = mesh->modifier();
   IGhostLayerMng* gm = mesh->ghostLayerMng();
@@ -137,10 +135,10 @@ subdivideMesh([[maybe_unused]] IPrimaryMesh* mesh)
   VariableNodeReal3& nodes_coords = mesh->nodesCoordinates();
   std::unordered_map<Int64, Real3> nodes_to_add_coords;
   debug() << "ARRAY SIZE " << nodes_coords.arraySize() ;
-  // Nodes on entities
+  // Noeuds sur les entités
   std::set<Int64> new_nodes; // Utiliser une map permet s'assurer qu'on ajoute une seule fois un noeud avec un uniqueId()
   std::set<Int64> new_faces; // ^--- Pareil pour les faces
-  // Maps owners
+  // Maps pour la gestions des propriétaires
   std::unordered_map<Int64, Int32> node_uid_to_owner;
   std::unordered_map<Int64, Int32> edge_uid_to_owner; // pas utilisé
   std::unordered_map<Int64, Int32> face_uid_to_owner;
@@ -168,9 +166,9 @@ subdivideMesh([[maybe_unused]] IPrimaryMesh* mesh)
   UniqueArray<Int64> child_cells; // Toutes les nouvelles cells
   UniqueArray<Int64> child_faces; // Au bord de l'élément uniquement (pas de faces interne à l'élément)
 
-  // From a parent cell we get his child (pair<index and number of child>) 
-  std::unordered_map<Int64, std::pair<Int64,Int64>> parents_to_childs_cell; // Using a uid give the index of the first child (pair<index and number of child>) 
-  std::unordered_map<Int64,std::pair<Int64,Int64>> parents_to_childs_faces; // Using a uid give the index of the first child (pair<index and number of child>) 
+  // Permet de récupere les entités enfants à partir d'une cellule parent 
+  std::unordered_map<Int64, std::pair<Int64,Int64>> parents_to_childs_cell; // A partir d'un uid on récupère le premier enfant (pair<index,number of child>) 
+  std::unordered_map<Int64,std::pair<Int64,Int64>> parents_to_childs_faces; // A partir d'un uid on récupère le premier enfant (pair<index,number of child>) 
   // ^--- uniquement pour les faces "externes"
   Int64 childs_count=0; // A chaque nouvelle cellule on se décale du nombre d'enfant (  +4 si quad, +3 ou +4 pour les tri selon le pattern )
 
@@ -372,7 +370,6 @@ subdivideMesh([[maybe_unused]] IPrimaryMesh* mesh)
         {24, 14, 2, 13} 
       };
 
-      const Int64 parent_faces_nodes[][4] = {{0,1,2,3},{0,3,7,4},{1,2,5,6},{7,6,2,3},{4,5,0,1},{4,5,6,7}}; 
       // Pour chaque faces 
           // Générer hash 
           // associer hash uid face
@@ -471,62 +468,28 @@ subdivideMesh([[maybe_unused]] IPrimaryMesh* mesh)
     UniqueArray<Int32> cells_lid(nb_cell_to_add);
     mesh->modifier()->addCells(nb_cell_to_add, cells_to_add.constView(),cells_lid);
 
-    
     // Pour tout les itemgroups
-
-    /* Arcane::IItemFamily::createGroup 	( 	const String &  	name,
-    		Int32ConstArrayView  	local_ids,
-    		bool  	do_override = false
-    	)
-      UniqueArray<Int32> ua;
-      ENUMERATE_NODE( inode,mesh()->allNodes() ){
-        Node node = *inode;
-        ua.add(node.localId());
-      }
-      NodeGroup ng = mesh()->nodeFamily()->createGroup("toto",ua);
-    */
-    /*UniqueArray<Int32> parent_cells_lid(parent_cells.size());
-    mesh->cellFamily()->itemsUniqueIdToLocalId(parent_cells_lid,parent_cells,true);
-    */
-    
     UniqueArray<Int32> child_cells_lid(child_cells.size());
     mesh->cellFamily()->itemsUniqueIdToLocalId(child_cells_lid,child_cells,true);
     
-    /*
-    Gestion des itemgroups ici (différents matériaux par exemple)
-    - On cherche à ajouter les enfants dans les mêmes groupes que les parents pour :
-      - Faces
-      - Cells
-    - Pas de déduction automatique pour :
-      - Noeuds
-      - Arêtes
-    Algo
-    Pour chaque group 
-      Pour chaque cellules de ce group
-        ajouter cellules filles de ce group
-    */
-    // Affichage des groupes pour toute les entités
-    // Noeud
-    IItemFamily* node_family = mesh->nodeFamily();
-    info() << "#mygroupname node " << node_family->groups().count();
-    for( ItemGroupCollection::Enumerator igroup(node_family->groups()); ++igroup; ){ 
-      ItemGroup group = *igroup;
-      info() << "#mygroupname node " << group.fullName();
-    }
+    
+    // Gestion des itemgroups ici (différents matériaux par exemple)
+    // - On cherche à ajouter les enfants dans les mêmes groupes que les parents pour :
+    //   - Faces
+    //   - Cells
+    // - Pas de déduction automatique pour :
+    //   - Noeuds
+    //   - Arêtes
+    // Algo
+    // Pour chaque group 
+    //   Pour chaque cellules de ce group
+    //     ajouter cellules filles de ce group
+
     // Face
     IItemFamily* face_family = mesh->faceFamily();
-    info() << "#mygroupname face " << face_family->groups().count();
-    for( ItemGroupCollection::Enumerator igroup(face_family->groups()); ++igroup; ){ 
-      ItemGroup group = *igroup;
-      info() << "#mygroupname face " << group.fullName();
-    }
     // Cell
     IItemFamily* cell_family = mesh->cellFamily();
-    for( ItemGroupCollection::Enumerator igroup(cell_family->groups()); ++igroup; ){
-      ItemGroup group = *igroup;
-      info() << "#mygroupname cell " << group.fullName();
-      info() << "#mygroupname cell " << cell_family->nbItem();
-    }
+    
 
     // Traiter les groupes pour les faces
     // En fait on ne peut traiter que les faces externes. Est-ce qu'on doit/peut déduire les propriétés des faces internes ?
@@ -550,12 +513,10 @@ subdivideMesh([[maybe_unused]] IPrimaryMesh* mesh)
       }
       info() << "#groups: Added ";
       UniqueArray<Int32> to_add_to_group;
-      // we don't look if it is present void Arcane::ItemGroup::addItems(Arcane::Int32ConstArrayView items_local_id, bool check_if_present = true)
       ENUMERATE_ITEM(iitem,group){ // Pour chaque cellule du groupe on ajoute ses 8 enfants ( ou n )
-        //ARCANE_ASSERT(( parents_to_childs_face.size() == child_cells_lid.size()/8 ),("ARG!ARG!"));
-        Int64 step = parents_to_childs_faces[iitem.internal()->uniqueId().asInt64()].first; 
-        Int64 n_childs = parents_to_childs_faces[iitem.internal()->uniqueId().asInt64()].second; 
-        auto subview = face_lid.subView(step,n_childs);
+        Int64 step = parents_to_childs_faces[iitem._internalItemBase().uniqueId().asInt64()].first; 
+        Int64 n_childs = parents_to_childs_faces[iitem._internalItemBase().uniqueId().asInt64()].second; 
+        auto subview = face_lid.subView(step,static_cast<Integer>(n_childs));
         ARCANE_ASSERT((subview.size() == 4 ), ("SUBVIEW"));
         to_add_to_group.addRange(subview);
       }
@@ -579,12 +540,11 @@ subdivideMesh([[maybe_unused]] IPrimaryMesh* mesh)
       
       info() << "#groups: Added ";
       UniqueArray<Int32> to_add_to_group;
-      // we don't look if it is present void Arcane::ItemGroup::addItems(Arcane::Int32ConstArrayView items_local_id, bool check_if_present = true)
       ENUMERATE_ITEM(iitem,group){ // Pour chaque cellule du groupe on ajoute ses 8 enfants ( ou n )
-        ARCANE_ASSERT(( parents_to_childs_cell.size() == child_cells_lid.size()/8 ),("Wrong number of childs"));
-        Int64 step = parents_to_childs_cell[iitem.internal()->uniqueId().asInt64()].first; 
-        Int64 n_childs = parents_to_childs_cell[iitem.internal()->uniqueId().asInt64()].second; 
-        auto subview = child_cells_lid.subView(step,n_childs);
+        ARCANE_ASSERT(( static_cast<Integer>(parents_to_childs_cell.size()) == child_cells_lid.size()/8 ),("Wrong number of childs"));
+        Int64 step = parents_to_childs_cell[iitem._internalItemBase().uniqueId().asInt64()].first; 
+        Int64 n_childs = parents_to_childs_cell[iitem._internalItemBase().uniqueId().asInt64()].second; 
+        auto subview = child_cells_lid.subView(step,static_cast<Integer>(n_childs));
         ARCANE_ASSERT((subview.size() == 8 ), ("SUBVIEW"));
         to_add_to_group.addRange(subview);
       }
@@ -638,11 +598,11 @@ subdivideMesh([[maybe_unused]] IPrimaryMesh* mesh)
     gm2->setNbGhostLayer(0);
     mesh->updateGhostLayers(true);
 
-
     // Quelques sur le nombres d'entités insérés
     ARCANE_ASSERT((mesh->nbCell() == nb_cell_init*8 ),("Wrong number of cell added"));
     ARCANE_ASSERT((mesh->nbFace() <= nb_face_init*4 + 12 * nb_cell_init ),("Wrong number of face added"));
-    //A ajouter pour vérifier le nombre de noeud
+    // A ajouter pour vérifier le nombre de noeud si les arêtes sont crées
+    // ARCANE_ASSERT((mesh->nbNode() == nb_edge_init + nb_face_init + nb_cell_init ),("Wrong number of node added"))
 
     // Assignation du nouveau propriétaire pour chaque noeud
     ENUMERATE_ (Node, inode, mesh->allNodes()){
@@ -670,8 +630,6 @@ subdivideMesh([[maybe_unused]] IPrimaryMesh* mesh)
     debug() << mesh->nbNode() << " " << nb_node_init << " " << nb_edge_init << " " << nb_face_init << " " << nb_cell_init;
     debug() << mesh->nbFace() << "nb_face_init " << nb_face_init <<  " " <<  nb_face_init << " " << nb_cell_init ;
     debug() << "Faces: " << mesh->nbFace() << " theorical nb_face_to add: " << nb_face_init*4 + nb_cell_init*12 <<  " nb_face_init " <<  nb_face_init << " nb_cell_init " << nb_cell_init ;
-
-    // ARCANE_ASSERT((mesh->nbNode() == nb_edge_init + nb_face_init + nb_cell_init ),("Wrong number of node added"))
     info() << "#NODES_CHECK #all" << mesh->allNodes().size() << " #own " << mesh->ownNodes().size() ;
 
 }
