@@ -66,7 +66,7 @@ class ArcaneBasicMeshSubdividerService
   explicit ArcaneBasicMeshSubdividerService(const ServiceBuildInfo& sbi);
 
  public:
-
+  
   void subdivideMesh([[maybe_unused]] IPrimaryMesh* mesh) override;
 };
 
@@ -79,8 +79,31 @@ ArcaneBasicMeshSubdividerService(const ServiceBuildInfo& sbi)
 {
 }
 
+
+/*
+// Hex
+// Motifs pour rafiner
+static const Integer HextoHexRefinePatern_Hex27[27][8] = {
+};
+
+// Nouvelles faces 
+static const Integer HextoHexRefinePatern_Hex27_faces[][0] = {
+
+};
+// Nouvelles cellules
+static const Integer HextoHexRefinePatern_Hex27_cells[][0] = {};
+
+// Tet
+
+// Quad 
+
+// Tri
+
+static const Integer QuadToQuadRefinePatern_Quad9[9][4] = {};
+*/
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 
 void ArcaneBasicMeshSubdividerService::
 subdivideMesh([[maybe_unused]] IPrimaryMesh* mesh)
@@ -315,10 +338,10 @@ subdivideMesh([[maybe_unused]] IPrimaryMesh* mesh)
         {26, 25, 19, 24}, //  11
         {22, 17, 25, 26}, //  12
         {26, 25, 18, 23}, //  13
-        {10, 21, 26, 22}, //  22, 26, 21, 10}, //  14
+        {10, 21, 26, 22}, //  22, 26, 21, 10},
         {21, 12, 23, 26}, //  15 :21 12 23 26 ? 26, 23, 12, 21
-        {22, 26, 24, 15}, //  16 :22 26 24 15 ? // ici BUG
-        {26, 23, 14, 24}, //  17 : 26 23 14 24 // ici BUG
+        {22, 26, 24, 15}, //  16 :22 26 24 15 ?
+        {26, 23, 14, 24}, //  17 : 26 23 14 24
       };
 
       // Génération des faces enfants
@@ -515,11 +538,9 @@ subdivideMesh([[maybe_unused]] IPrimaryMesh* mesh)
       info() << "#groups: Added ";
       UniqueArray<Int32> to_add_to_group;
       
-      ENUMERATE_ITEM(iitem,group){ // Pour chaque cellule du groupe on ajoute ses 8 enfants ( ou n )
-        //ARCANE_ASSERT((iitem._internalItemBase().uniqueId().asInt64() == iitem.internal()->uniqueId().asInt64() ),("ITEM INTERNAL DIFFERENT"));
-        // ^--- Fail comment passer sur du internalItemBase() ?
-        Int64 step = parents_to_childs_faces[iitem.internal()->uniqueId().asInt64()].first; 
-        Int64 n_childs = parents_to_childs_faces[iitem.internal()->uniqueId().asInt64()].second; 
+      ENUMERATE_(Item,iitem,group){ // Pour chaque cellule du groupe on ajoute ses 8 enfants ( ou n )
+        Int64 step = parents_to_childs_faces[iitem->uniqueId().asInt64()].first; 
+        Int64 n_childs = parents_to_childs_faces[iitem->uniqueId().asInt64()].second; 
         auto subview = face_lid.subView(step,static_cast<Integer>(n_childs));
         ARCANE_ASSERT((subview.size() == 4 ), ("SUBVIEW"));
         to_add_to_group.addRange(subview);
@@ -529,7 +550,7 @@ subdivideMesh([[maybe_unused]] IPrimaryMesh* mesh)
   
     // Traiter les groupes pour les cellules
     for( ItemGroupCollection::Enumerator igroup(cell_family->groups()); ++igroup; ){
-      ItemGroup group = *igroup;
+      CellGroup group = *igroup;
       info() << "#mygroupname" << group.fullName();
       info() << "#mygroupname " << cell_family->nbItem();
       
@@ -545,12 +566,10 @@ subdivideMesh([[maybe_unused]] IPrimaryMesh* mesh)
       info() << "#groups: Added ";
       UniqueArray<Int32> to_add_to_group;
       
-      ENUMERATE_ITEM(iitem,group){ // Pour chaque cellule du groupe on ajoute ses 8 enfants ( ou n )
-        //ARCANE_ASSERT((iitem._internalItemBase().uniqueId().asInt64() == iitem.internal()->uniqueId().asInt64() ),("ITEM INTERNAL DIFFERENT"));
-        // ^--- même chose que plus haut
+      ENUMERATE_(Item,iitem,group){ // Pour chaque cellule du groupe on ajoute ses 8 enfants ( ou n )
         ARCANE_ASSERT(( static_cast<Integer>(parents_to_childs_cell.size()) == child_cells_lid.size()/8 ),("Wrong number of childs"));
-        Int64 step = parents_to_childs_cell[iitem.internal()->uniqueId().asInt64()].first; 
-        Int64 n_childs = parents_to_childs_cell[iitem.internal()->uniqueId().asInt64()].second; 
+        Int64 step = parents_to_childs_cell[iitem->uniqueId().asInt64()].first; 
+        Int64 n_childs = parents_to_childs_cell[iitem->uniqueId().asInt64()].second; 
         auto subview = child_cells_lid.subView(step,static_cast<Integer>(n_childs));
         ARCANE_ASSERT((subview.size() == 8 ), ("SUBVIEW"));
         to_add_to_group.addRange(subview);
