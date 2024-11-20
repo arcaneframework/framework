@@ -33,6 +33,7 @@
 #include "arcane/core/IParallelMng.h"
 #include "arcane/core/BasicService.h"
 #include "arcane/core/IPrimaryMesh.h"
+#include "arcane/core/Item.h"
 
 // get parameter
 #include "arcane/utils/ApplicationInfo.h"
@@ -84,6 +85,7 @@ ArcaneBasicMeshSubdividerService(const ServiceBuildInfo& sbi)
 void ArcaneBasicMeshSubdividerService::
 subdivideMesh([[maybe_unused]] IPrimaryMesh* mesh)
 {
+  
   info() << "#subdivide mesh";
   // Est-ce qu'on est en 3D ?
   // Si non on fait rien;
@@ -372,8 +374,7 @@ subdivideMesh([[maybe_unused]] IPrimaryMesh* mesh)
 
       // Pour chaque faces 
           // Générer hash 
-          // associer hash uid face
-      //node_in_cell[parent_faces_nodes[i][j]] // i < 6 , j < 4  
+          // associer hash uid facez
       // Parcours des faces parentes
       for(Integer i  = 0 ; i < 6 ; i++){
         parents_to_childs_faces[cell.face(i).uniqueId()] = std::pair<Int64,Int64>(faces_uids.size(),4);
@@ -489,7 +490,7 @@ subdivideMesh([[maybe_unused]] IPrimaryMesh* mesh)
     IItemFamily* face_family = mesh->faceFamily();
     // Cell
     IItemFamily* cell_family = mesh->cellFamily();
-    
+      
 
     // Traiter les groupes pour les faces
     // En fait on ne peut traiter que les faces externes. Est-ce qu'on doit/peut déduire les propriétés des faces internes ?
@@ -513,9 +514,12 @@ subdivideMesh([[maybe_unused]] IPrimaryMesh* mesh)
       }
       info() << "#groups: Added ";
       UniqueArray<Int32> to_add_to_group;
+      
       ENUMERATE_ITEM(iitem,group){ // Pour chaque cellule du groupe on ajoute ses 8 enfants ( ou n )
-        Int64 step = parents_to_childs_faces[iitem._internalItemBase().uniqueId().asInt64()].first; 
-        Int64 n_childs = parents_to_childs_faces[iitem._internalItemBase().uniqueId().asInt64()].second; 
+        //ARCANE_ASSERT((iitem._internalItemBase().uniqueId().asInt64() == iitem.internal()->uniqueId().asInt64() ),("ITEM INTERNAL DIFFERENT"));
+        // ^--- Fail comment passer sur du internalItemBase() ?
+        Int64 step = parents_to_childs_faces[iitem.internal()->uniqueId().asInt64()].first; 
+        Int64 n_childs = parents_to_childs_faces[iitem.internal()->uniqueId().asInt64()].second; 
         auto subview = face_lid.subView(step,static_cast<Integer>(n_childs));
         ARCANE_ASSERT((subview.size() == 4 ), ("SUBVIEW"));
         to_add_to_group.addRange(subview);
@@ -540,10 +544,13 @@ subdivideMesh([[maybe_unused]] IPrimaryMesh* mesh)
       
       info() << "#groups: Added ";
       UniqueArray<Int32> to_add_to_group;
+      
       ENUMERATE_ITEM(iitem,group){ // Pour chaque cellule du groupe on ajoute ses 8 enfants ( ou n )
+        //ARCANE_ASSERT((iitem._internalItemBase().uniqueId().asInt64() == iitem.internal()->uniqueId().asInt64() ),("ITEM INTERNAL DIFFERENT"));
+        // ^--- même chose que plus haut
         ARCANE_ASSERT(( static_cast<Integer>(parents_to_childs_cell.size()) == child_cells_lid.size()/8 ),("Wrong number of childs"));
-        Int64 step = parents_to_childs_cell[iitem._internalItemBase().uniqueId().asInt64()].first; 
-        Int64 n_childs = parents_to_childs_cell[iitem._internalItemBase().uniqueId().asInt64()].second; 
+        Int64 step = parents_to_childs_cell[iitem.internal()->uniqueId().asInt64()].first; 
+        Int64 n_childs = parents_to_childs_cell[iitem.internal()->uniqueId().asInt64()].second; 
         auto subview = child_cells_lid.subView(step,static_cast<Integer>(n_childs));
         ARCANE_ASSERT((subview.size() == 8 ), ("SUBVIEW"));
         to_add_to_group.addRange(subview);
@@ -575,7 +582,7 @@ subdivideMesh([[maybe_unused]] IPrimaryMesh* mesh)
     Arcane::IGhostLayerMng * gm2 = mesh->ghostLayerMng();
     gm2->setNbGhostLayer(1);
     mesh->updateGhostLayers(true);
-
+    
     // Gestion des propriétaires de noeuds
     // Le propriétaire est la cellule incidente au noeud avec le plus petit uniqueID()
     ENUMERATE_(Node, inode, mesh->allNodes()){
@@ -594,7 +601,11 @@ subdivideMesh([[maybe_unused]] IPrimaryMesh* mesh)
       face_uid_to_owner[face.uniqueId().asInt64()] = cell.owner();
     }
 
-    // Supression de la couche fantôme
+    // Utiliser les couches fantôme est couteux
+    // - Optim: pour les noeuds partager avoir une variable all to all (gather) qui permet de récuper le rank de l'owner 
+    // - Déduction possible des owners des faces enfants avec la face parent directement
+    // - Les cellules enfantes sont 
+    // Supression de la couche fantôme 
     gm2->setNbGhostLayer(0);
     mesh->updateGhostLayers(true);
 
