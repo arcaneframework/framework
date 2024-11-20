@@ -80,12 +80,31 @@ ArcaneBasicMeshSubdividerService(const ServiceBuildInfo& sbi)
 }
 
 
-/*
 // Hex
 // Motifs pour rafiner
-static const Integer HextoHexRefinePatern_Hex27[27][8] = {
+// TODO test
+static const double Hexto8HexRefinePatern_Hex27[19][8] = {
+  //0   1   2   3   4   5   6   7
+  {0.5, 0.0, 0.0, 0.5, 0.0, 0.0, 0.0, 0.0}, // 9
+  {0.5, 0.0, 0.0, 0.0, 0.5, 0.0, 0.0, 0.0}, // 10
+  {0.0, 0.5, 0.5, 0.0, 0.0, 0.0, 0.0, 0.0}, // 11
+  {0.0, 0.5, 0.0, 0.0, 0.0, 0.5, 0.0, 0.0}, // 12
+  {0.0, 0.0, 0.5, 0.5, 0.0, 0.0, 0.0, 0.0}, // 13
+  {0.0, 0.0, 0.5, 0.0, 0.0, 0.0, 0.5, 0.0}, // 14
+  {0.0, 0.0, 0.0, 0.5, 0.0, 0.0, 0.0, 0.5}, // 15
+  {0.0, 0.0, 0.0, 0.0, 0.5, 0.5, 0.0, 0.0}, // 16
+  {0.0, 0.0, 0.0, 0.0, 0.5, 0.0, 0.0, 0.5}, // 17
+  {0.0, 0.0, 0.0, 0.0, 0.0, 0.5, 0.5, 0.0}, // 18
+  {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.5, 0.5}, // 19
+  {0.25, 0.25, 0.25, 0.25, 0.0, 0.0, 0.0, 0.0}, // 20
+  {0.25, 0.25, 0.0, 0.0, 0.25, 0.25, 0.0, 0.0}, // 21
+  {0.25, 0.0, 0.0, 0.25, 0.25, 0.0, 0.0, 0.25}, // 22
+  {0.0, 0.25, 0.25, 0.0, 0.0, 0.25, 0.25, 0.0}, // 23
+  {0.0, 0.0, 0.25, 0.25, 0.0, 0.0, 0.25, 0.25}, // 24
+  {0.0, 0.0, 0.0, 0.0, 0.25, 0.25, 0.25, 0.25}, // 25
+  {0.125, 0.125, 0.125, 0.125, 0.125, 0.125, 0.125, 0.125}, // 26
 };
-
+/*
 // Nouvelles faces 
 static const Integer HextoHexRefinePatern_Hex27_faces[][0] = {
 
@@ -108,7 +127,8 @@ static const Integer QuadToQuadRefinePatern_Quad9[9][4] = {};
 void ArcaneBasicMeshSubdividerService::
 subdivideMesh([[maybe_unused]] IPrimaryMesh* mesh)
 {
-  
+
+  // options()->nbSubdivision();
   info() << "#subdivide mesh";
   // Est-ce qu'on est en 3D ?
   // Si non on fait rien;
