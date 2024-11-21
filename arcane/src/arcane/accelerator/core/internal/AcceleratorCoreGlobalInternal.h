@@ -97,6 +97,13 @@ getThreadRunQueueRuntime();
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+//! Affiche l'UUID d'un accélérateur
+extern "C++" ARCANE_ACCELERATOR_CORE_EXPORT void
+printUUID(std::ostream& o, char bytes[16]);
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 //! Classe statique fournissant des fonctions internes à Arcane.
 class ARCANE_ACCELERATOR_CORE_EXPORT RuntimeStaticInfo
 {
