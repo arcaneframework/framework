@@ -782,7 +782,7 @@ if(FLEXLM_FOUND)
   #       - arcane/src/arcane/impl/FlexLMTools.h
   #       - arcane/src/arcane/impl/FlexLMTools.cc
   if("${FLEXLM_PROTECTION_NAME}" STREQUAL "RLM")
-    ADD_DEFINITIONS(-DARCANE_TEST_${FLEXLM_PROTECTION_NAME})
+    ADD_DEFINITIONS(-DARCANE_TEST_RLM)
   endif()
 endif()
 
