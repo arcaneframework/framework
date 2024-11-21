@@ -777,17 +777,20 @@ reduceNbGhostLayers(Integer level, Integer target_nb_ghost_layers)
   }
 
   level_max = m_mesh->parallelMng()->reduce(Parallel::ReduceMax, level_max);
+  //debug() << "Level max : " << level_max;
 
   computeDirections();
 
   Integer level_0_nb_ghost_layer = m_mesh->ghostLayerMng()->nbGhostLayer();
-  //info() << "NbGhostLayers : " << level_0_nb_ghost_layer;
+  //debug() << "NbGhostLayers level 0 : " << level_0_nb_ghost_layer;
 
   if (level_0_nb_ghost_layer == 0) {
     return 0;
   }
 
   Integer nb_ghost_layer = Convert::toInt32(level_0_nb_ghost_layer * pow(2, level));
+
+  //debug() << "NbGhostLayers level " << level << " : " << nb_ghost_layer;
 
   // On considère qu'on a toujours 2*2 mailles filles (2*2*2 en 3D).
   if (target_nb_ghost_layers % 2 != 0) {
@@ -797,6 +800,8 @@ reduceNbGhostLayers(Integer level, Integer target_nb_ghost_layers)
   if (target_nb_ghost_layers == nb_ghost_layer) {
     return nb_ghost_layer;
   }
+
+  //debug() << "TargetNbGhostLayers level " << level << " : " << target_nb_ghost_layers;
 
   Integer parent_level = level - 1;
   Integer parent_target_nb_ghost_layer = target_nb_ghost_layers / 2;
@@ -809,6 +814,7 @@ reduceNbGhostLayers(Integer level, Integer target_nb_ghost_layers)
 
   children_list = [&cell_lid2, &children_list](Cell cell) -> void {
     for (Integer i = 0; i < cell.nbHChildren(); ++i) {
+      //debug() << "child of lid=" << cell.localId() << " : lid=" << cell.hChild(i).localId() << " -- level : " << cell.level();
       cell_lid2[cell.level()].add(cell.hChild(i).localId());
       children_list(cell.hChild(i));
     }
@@ -862,7 +868,7 @@ reduceNbGhostLayers(Integer level, Integer target_nb_ghost_layers)
         }
 
         // Maille n'ayant pas de nodes déjà traités.
-        if (min == 10 && max == -1) {
+        if (min == max_nb_layer && max == -1) {
           continue;
         }
 
@@ -898,7 +904,7 @@ reduceNbGhostLayers(Integer level, Integer target_nb_ghost_layers)
     if (m_mesh->parallelMng()->reduce(Parallel::ReduceMax, cell_lid2[i].size()) == 0) {
       continue;
     }
-    //debug() << "Ghost cells to remove (level=" << i << ") (localIds) : " << cell_lid2[i];
+    //debug() << "Removing children of ghost cell (parent level=" << i << ") (children localIds) : " << cell_lid2[i];
 
     m_mesh->modifier()->flagCellToCoarsen(cell_lid2[i]);
     m_mesh->modifier()->coarsenItemsV2(false);
