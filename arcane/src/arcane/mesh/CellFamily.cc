@@ -491,15 +491,18 @@ _addChildCellToCell2(Cell iparent_cell,Cell child_cell)
 /*---------------------------------------------------------------------------*/
 
 void CellFamily::
-_addChildCellToCell(Cell iparent_cell,Integer rank,Cell child_cell)
+_addChildCellToCell(Cell iparent_cell,Integer position,Cell child_cell)
 {
   Cell parent_cell(iparent_cell);
-  // NOTE GG: Cette méthode ne semble fonctionner que si \a rank
-  // correspond parent_cell->nbHChildren().
+  // NOTE GG: L'ancienne méthode ci-dessous en commentaire ne semble
+  // fonctionner que si \a position correspond parent_cell->nbHChildren().
   // Et dans ce cas il n'est pas nécessaire de faire 2 appels.
-  m_hchild_connectivity->addConnectedItem(parent_cell,ItemLocalId(NULL_ITEM_LOCAL_ID));
+  // m_hchild_connectivity->addConnectedItem(parent_cell,ItemLocalId(NULL_ITEM_LOCAL_ID));
+  Int32 nb_connected = m_hchild_connectivity->trueCustomConnectivity()->nbConnectedItem(parent_cell);
+  for( Int32 i=nb_connected; i<(position+1); ++i )
+    m_hchild_connectivity->addConnectedItem(parent_cell,ItemLocalId(NULL_ITEM_LOCAL_ID));
   auto x = _topologyModifier();
-  x->replaceHChild(ItemLocalId(iparent_cell),rank,child_cell);
+  x->replaceHChild(ItemLocalId(iparent_cell),position,child_cell);
   parent_cell.mutableItemBase().addFlags(ItemFlags::II_Inactive);
 }
 
