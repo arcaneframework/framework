@@ -394,6 +394,16 @@ fillDevices(bool is_verbose)
       << " " << dp.maxGridSize[2] << "\n";
     o << " hasManagedMemory = " << has_managed_memory << "\n";
 
+    {
+      hipDevice_t device;
+      ARCANE_CHECK_HIP(hipDeviceGet(&device, i));
+      hipUUID device_uuid;
+      ARCANE_CHECK_HIP(hipDeviceGetUuid(&device_uuid, device));
+      o << " deviceUuid=";
+      impl::printUUID(o, device_uuid.bytes);
+      o << "\n";
+    }
+
     String description(ostr.str());
     if (is_verbose)
       omain << description;
@@ -416,8 +426,8 @@ class HipMemoryCopier
             MutableMemoryView to, [[maybe_unused]] eMemoryRessource to_mem,
             const RunQueue* queue) override
   {
-    if (queue){
-      queue->copyMemory(MemoryCopyArgs(to.bytes(),from.bytes()).addAsync(queue->isAsync()));
+    if (queue) {
+      queue->copyMemory(MemoryCopyArgs(to.bytes(), from.bytes()).addAsync(queue->isAsync()));
       return;
     }
     // 'hipMemcpyDefault' sait automatiquement ce qu'il faut faire en tenant
