@@ -41,7 +41,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 120
     container:
-      image: ghcr.io/cedricga91/arcane-ifpen-devenv-foss-2021b:ubu2204
+      image: ghcr.io/arcaneframework/arcane-ifpen-devenv-foss-2021b:ubu2204
       #options: --user root  # Avoid to match github UID in container.
     strategy:
       fail-fast: false
@@ -155,7 +155,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 120
     container:
-      image: ghcr.io/cedricga91/arcane-ifpen-devenv-foss-2021b-rt:ubu2204
+      image: ghcr.io/arcaneframework/arcane-ifpen-devenv-foss-2021b-rt:ubu2204
       #options: --user root  # Avoid to match github UID in container.
     strategy:
       fail-fast: false
