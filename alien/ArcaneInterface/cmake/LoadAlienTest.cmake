@@ -34,7 +34,7 @@ endmacro()
 
 macro(alien_test)
 
-    set(options PARALLEL_ONLY)
+  set(options PARALLEL_ONLY UNIQUE_OUTPUT_DIR)
     set(oneValueArgs BENCH NAME COMMAND WORKING_DIRECTORY)
     set(multiValueArgs OPTIONS PROCS)
 
@@ -65,9 +65,16 @@ macro(alien_test)
                     ${ARGS_OPTIONS}
             )
         else ()
+            if(ARGS_UNIQUE_OUTPUT_DIR)
+              set(ALIEN_TEST_OUTDIR ${CMAKE_BINARY_DIR}/${ARGS_WORKING_DIRECTORY}/alien.${ARGS_BENCH}.${ARGS_NAME})
+              set(ALIEN_TEST_PARAM_OUTDIR -A,OutputDirectory=${ALIEN_TEST_OUTDIR})
+              file(MAKE_DIRECTORY ${ALIEN_TEST_OUTDIR})
+            else ()
+              set(ALIEN_TEST_PARAM_OUTDIR "")
+            endif()
             add_test(
                     NAME alien.${ARGS_BENCH}.${ARGS_NAME}
-                    COMMAND ${ARGS_COMMAND}
+                    COMMAND ${ARGS_COMMAND} ${ALIEN_TEST_PARAM_OUTDIR}
                     ${ARGS_OPTIONS}
                     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/${ARGS_WORKING_DIRECTORY}
             )
@@ -105,9 +112,16 @@ macro(alien_test)
                         ${ARGS_OPTIONS}
                 )
             else ()
+                if(ARGS_UNIQUE_OUTPUT_DIR)
+                  set(ALIEN_TEST_OUTDIR ${CMAKE_BINARY_DIR}/${ARGS_WORKING_DIRECTORY}/alien.${ARGS_BENCH}.${ARGS_NAME}.mpi-${mpi})
+                  set(ALIEN_TEST_PARAM_OUTDIR -A,OutputDirectory=${ALIEN_TEST_OUTDIR})
+                  file(MAKE_DIRECTORY ${ALIEN_TEST_OUTDIR})
+                else ()
+                  set(ALIEN_TEST_PARAM_OUTDIR "")
+                endif ()
                 add_test(
                         NAME alien.${ARGS_BENCH}.${ARGS_NAME}.mpi-${mpi}
-                        COMMAND ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${mpi} ${MPIEXEC_PREFLAGS}$<TARGET_FILE:${ARGS_COMMAND}> ${MPIEXEC_POSTFLAGS}
+                        COMMAND ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${mpi} ${MPIEXEC_PREFLAGS}$<TARGET_FILE:${ARGS_COMMAND}> ${MPIEXEC_POSTFLAGS} ${ALIEN_TEST_PARAM_OUTDIR}
                         ${ARGS_OPTIONS}
                         WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/${ARGS_WORKING_DIRECTORY}
                 )

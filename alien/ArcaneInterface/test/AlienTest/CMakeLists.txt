@@ -100,6 +100,7 @@ if (TARGET petsc)
             PROCS 4
             COMMAND alien_arcane_test.exe
             OPTIONS AlienTest.arc
+            UNIQUE_OUTPUT_DIR
             WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienTest)
 
     alien_test(
@@ -108,6 +109,7 @@ if (TARGET petsc)
             PROCS 4
             COMMAND alien_arcane_test.exe
             OPTIONS AlienTest-FBS.arc
+            UNIQUE_OUTPUT_DIR
             WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienTest)
 
     alien_test(
@@ -116,6 +118,7 @@ if (TARGET petsc)
             PROCS 4
             COMMAND alien_arcane_test.exe
             OPTIONS AlienTest-VBS.arc
+            UNIQUE_OUTPUT_DIR
             WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienTest)
 
 endif ()
