@@ -51,6 +51,8 @@ class SimpleCSRMatrixMultT
   virtual ~SimpleCSRMatrixMultT() {}
 
  public:
+  void synchronize(VectorType& x) const;
+
   //! Matrix vector product
   void mult(const VectorType& x, VectorType& y) const;
   void mult(const UniqueArray<Real>& x, UniqueArray<Real>& y) const;
@@ -62,6 +64,7 @@ class SimpleCSRMatrixMultT
   void multInvDiag(VectorType& y) const;
 
  private:
+  void _synchronize(VectorType& x) const;
   void _parallelMult(const VectorType& x, VectorType& y) const;
   void _parallelMult(const UniqueArray<Real>& x, UniqueArray<Real>& y) const;
 
@@ -71,10 +74,12 @@ class SimpleCSRMatrixMultT
   void _seqAddLMult(Real alpha, const VectorType& x, VectorType& y) const;
   void _seqAddUMult(Real alpha, const VectorType& x, VectorType& y) const;
 
+  void _synchronizeBlock(VectorType& x) const;
   void _parallelMultBlock(const VectorType& x, VectorType& y) const;
 
   void _seqMultBlock(const VectorType& x, VectorType& y) const;
 
+  void _synchronizeVariableBlock(VectorType& x) const;
   void _parallelMultVariableBlock(const VectorType& x, VectorType& y) const;
 
   void _seqMultVariableBlock(const VectorType& x, VectorType& y) const;
