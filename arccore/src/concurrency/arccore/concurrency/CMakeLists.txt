@@ -37,6 +37,11 @@ endif()
 
 target_link_libraries(arccore_concurrency PUBLIC arccore_base)
 
+find_package(Threads)
+if (TARGET Threads::Threads)
+  target_link_libraries(arccore_concurrency PRIVATE Threads::Threads)
+endif()
+
 # ----------------------------------------------------------------------------
 # Local Variables:
 # tab-width: 2
