@@ -93,9 +93,12 @@ if (TARGET  alien_trilinos)
     linkLibraries(alien_bench.exe alien_trilinos trilinos)
 endif ()
 
-
 if (TARGET alien_hpddm)
     linkLibraries(alien_bench.exe alien_hpddm)
+endif ()
+
+if (TARGET alien_composyx)
+    linkLibraries(alien_bench.exe alien_composyx)
 endif ()
 
 commit(alien_bench.exe)
@@ -104,6 +107,13 @@ install(
         TARGETS alien_bench.exe
         RUNTIME DESTINATION bin
 )
+
+if(TARGET COMPOSYX::composyx)
+  createExecutable(test_composyx.exe)
+  addSources(test_composyx.exe test_composyx.cpp )
+  linkLibraries(test_composyx.exe mpi COMPOSYX::composyx)
+  commit(test_composyx.exe)
+endif()
 
 if(ALIEN_USE_SYCL)
 if (TARGET hypre)
