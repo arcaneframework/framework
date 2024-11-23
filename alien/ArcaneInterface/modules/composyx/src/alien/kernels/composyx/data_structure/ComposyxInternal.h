@@ -109,6 +109,7 @@ class MatrixInternal
     });
 
     std::map<int, std::vector<int>> nei_map ;
+    std::map<int, std::vector<int>> nei_owner_map ;
     int local_size = m_n_dofs ;
     if(m_parallel)
     {
@@ -125,50 +126,59 @@ class MatrixInternal
       });
       for(int ineighb=0;ineighb<recv_info.m_first_upper_neighb;++ineighb)
       {
+          int neighb_rank = recv_info.m_ranks[ineighb] ;
           alien_info([&] {
-            cout() << "RECV NEIGHB : "<<ineighb<<" "<<recv_info.m_ranks[ineighb];
+            cout() << "RECV NEIGHB : "<<ineighb<<" "<<neighb_rank;
           });
-        auto& neibhb_nodes = nei_map[recv_info.m_ranks[ineighb]] ;
+        auto& neighb_nodes = nei_map[neighb_rank] ;
+        auto& neighb_owners = nei_owner_map[neighb_rank] ;
         for(int k=recv_info.m_ids_offset[ineighb];k<recv_info.m_ids_offset[ineighb+1];++k)
         {
           alien_info([&] {
-              cout() << "          RECV VERTEX : "<<k<<" "<<recv_info.m_uids[k-recv_info.m_ids_offset[0]];
+              cout() << "          RECV VERTEX : "<<k<<" "<<recv_info.m_uids[k-recv_info.m_ids_offset[0]]<<" "<<neighb_rank;
           });
-          neibhb_nodes.push_back(k) ;
+          neighb_nodes.push_back(k) ;
+          neighb_owners.push_back(neighb_rank) ;
         }
       }
       for(int ineighb=0;ineighb<send_info.m_num_neighbours;++ineighb)
       {
+        int neighb_rank = send_info.m_ranks[ineighb] ;
         alien_info([&] {
-          cout() << "SEND NEIGHB : "<<ineighb<<" "<<send_info.m_ranks[ineighb];
+          cout() << "SEND NEIGHB : "<<ineighb<<" "<<neighb_rank;
         });
-        auto& neibhb_nodes = nei_map[send_info.m_ranks[ineighb]] ;
+        auto& neighb_nodes = nei_map[neighb_rank] ;
+        auto& neighb_owners = nei_owner_map[neighb_rank] ;
         for(int k=send_info.m_ids_offset[ineighb];k<send_info.m_ids_offset[ineighb+1];++k)
         {
           alien_info([&] {
-            cout() << "          SEND VERTEX : "<<k<<" "<<m_local_offset+send_info.m_ids[k];
+            cout() << "          SEND VERTEX : "<<k<<" "<<m_local_offset+send_info.m_ids[k]<<" "<<m_sd_id;
           });
-          neibhb_nodes.push_back(send_info.m_ids[k]) ;
+          neighb_nodes.push_back(send_info.m_ids[k]) ;
+          neighb_owners.push_back(m_sd_id) ;
         }
       }
       for(int ineighb=recv_info.m_first_upper_neighb;ineighb<recv_info.m_num_neighbours;++ineighb)
       {
-          alien_info([&] {
-            cout() << "RECV NEIGHB : "<<ineighb<<" "<<recv_info.m_ranks[ineighb];
-          });
-        auto& neibhb_nodes = nei_map[recv_info.m_ranks[ineighb]] ;
+        int neighb_rank = recv_info.m_ranks[ineighb] ;
+        alien_info([&] {
+          cout() << "RECV NEIGHB : "<<ineighb<<" "<<neighb_rank;
+        });
+        auto& neighb_nodes = nei_map[neighb_rank] ;
+        auto& neighb_owners = nei_owner_map[neighb_rank] ;
         for(int k=recv_info.m_ids_offset[ineighb];k<recv_info.m_ids_offset[ineighb+1];++k)
         {
           alien_info([&] {
-              cout() << "          RECV VERTEX : "<<k<<" "<<recv_info.m_uids[k-recv_info.m_ids_offset[0]];
+              cout() << "          RECV VERTEX : "<<k<<" "<<recv_info.m_uids[k-recv_info.m_ids_offset[0]]<<" "<<neighb_rank;
           });
-          neibhb_nodes.push_back(k) ;
+          neighb_nodes.push_back(k) ;
+          neighb_owners.push_back(neighb_rank) ;
         }
       }
     }
 
 #ifdef ALIEN_USE_COMPOSYX
-    m_sd.emplace_back(m_sd_id, m_n_dofs, std::move(nei_map),false,local_size);
+    m_sd.emplace_back(m_sd_id, m_n_dofs, std::move(nei_map),nei_owner_map,false);
     auto p = ComposyxInternal::ComposyxEnv::instance()->process() ;
     p->load_subdomains(m_sd);
     alien_info([&] {

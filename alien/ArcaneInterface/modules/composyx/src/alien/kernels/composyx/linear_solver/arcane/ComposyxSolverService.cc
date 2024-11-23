@@ -30,7 +30,7 @@ class ALIEN_COMPOSYX_EXPORT ComposyxLinearSolver
 /** Constructeur de la classe */
 
 #ifdef ALIEN_USE_ARCANE
-  ComposyxLinearSolver(const Arcane::ServiceBuildInfo& sbi);
+  explicit ComposyxLinearSolver(const Arcane::ServiceBuildInfo& sbi);
 #endif
 
   ComposyxLinearSolver(

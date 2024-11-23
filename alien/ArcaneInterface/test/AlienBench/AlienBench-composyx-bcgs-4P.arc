@@ -19,7 +19,7 @@
     <meshgenerator>
       <cartesian>
         <origine>0. 0. 0.</origine>
-        <nsd>1 1 1</nsd>
+        <nsd>2 2 1</nsd>
         <lx nx="10">1.</lx>
         <ly ny="10">1.</ly>
         <lz nz="10">1.</lz>
@@ -39,7 +39,7 @@
       <epsilon>0.01</epsilon>
 
      <linear-solver name="ComposyxSolver">
-        <solver>gmres</solver>
+        <solver>bcgs</solver>
         <max-iteration-num>1000</max-iteration-num>
         <stop-criteria-value>1e-8</stop-criteria-value>
         <output-level>1</output-level>
