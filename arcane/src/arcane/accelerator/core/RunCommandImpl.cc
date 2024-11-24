@@ -17,6 +17,7 @@
 #include "arcane/utils/ForLoopTraceInfo.h"
 #include "arcane/utils/ConcurrencyUtils.h"
 #include "arcane/utils/PlatformUtils.h"
+#include "arcane/utils/ValueConvert.h"
 
 #include "arcane/accelerator/core/Runner.h"
 #include "arcane/accelerator/core/internal/IRunQueueEventImpl.h"
@@ -99,6 +100,9 @@ _init()
 
   m_start_event = _createEvent();
   m_stop_event = _createEvent();
+
+  if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_ACCELERATOR_ALLOW_REUSE_COMMAND", true))
+    m_is_allow_reuse_command = (v.value() != 0);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -107,7 +111,9 @@ _init()
 RunCommandImpl* RunCommandImpl::
 create(RunQueueImpl* r)
 {
-  return r->_internalCreateOrGetRunCommandImpl();
+  RunCommandImpl* c = r->_internalCreateOrGetRunCommandImpl();
+  c->_reset();
+  return c;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -118,6 +124,12 @@ create(RunQueueImpl* r)
 void RunCommandImpl::
 notifyBeginLaunchKernel()
 {
+  if (m_has_been_launched) {
+    if (!m_is_allow_reuse_command)
+      ARCANE_FATAL("Command has already been launched. You can not re-use the same command.\n"
+                   "  You can temporarily allow it if you set environment variable\n"
+                   "    ARCANE_ACCELERATOR_ALLOW_REUSE_COMMAND to 1\n");
+  }
   IRunQueueStream* stream = internalStream();
   stream->notifyBeginLaunchKernel(*this);
   // TODO: utiliser la bonne stream en séquentiel
@@ -193,8 +205,6 @@ notifyEndExecuteKernel()
     ForLoopTraceInfo flti(traceInfo(), kernelName());
     ProfilingRegistry::_threadLocalForLoopInstance()->merge(*exec_info, flti);
   }
-
-  _reset();
 }
 
 /*---------------------------------------------------------------------------*/
