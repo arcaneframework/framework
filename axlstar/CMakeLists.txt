@@ -35,10 +35,14 @@ message(STATUS "AXLSTAR_DOTNET_RUNNER is '${AXLSTAR_DOTNET_RUNNER}'")
 if (AXLSTAR_DOTNET_RUNNER STREQUAL mono)
   message(FATAL_ERROR "Building with 'mono' is no longer supported. Only 'coreclr' is supported")
 elseif (AXLSTAR_DOTNET_RUNNER STREQUAL coreclr)
-  # Fichier pour rechercher .NetCore.
-  include(CMake/FindDotNetCore.cmake)
+  if (NOT DOTNET_EXEC)
+    message(FATAL_ERROR
+      "no 'dotnet' exec found.\n"
+      " You can download a binary version of '.Net 8' at the following address:\n"
+      " 'https://dotnet.microsoft.com/en-us/download´")
+  endif()
+  # La variable DOTNET_RUNNER_EXEC est utilisée pour la configuration de 'launcher.in'
   set(DOTNET_RUNNER_EXEC ${DOTNET_EXEC})
-  set(DOTNET_BUILDER_EXEC ${DOTNET_EXEC})
   set(DLL_EXE_EXTENSION .dll)
 else()
   message(FATAL_ERROR "Invalid value '${AXLSTAR_DOTNET_RUNNER}' for AXLSTAR_DOTNET_RUNNER. Only 'coreclr' is supported")
@@ -103,7 +107,7 @@ set(AXLSTAR_BUILD_COMMAND_ARGS ${AXLSTAR_BUILD_COMMAND_ARGS} ${AXLSTAR_MSBUILD_C
 # spécifier que le nom de la solution et pas le chemin complet.
 add_custom_command(OUTPUT ${AXLSTAR_AXL2CC_EXE}
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-  COMMAND ${DOTNET_BUILDER_EXEC}
+  COMMAND ${ARCCON_MSBUILD_EXEC_coreclr}
   ARGS ${AXLSTAR_BUILD_COMMAND_ARGS}
   DEPENDS ${AXL_SOLUTION_FILE}
   )
@@ -112,7 +116,7 @@ add_custom_target(dotnet_axl_depend ALL DEPENDS ${AXLSTAR_AXL2CC_EXE})
 # Créé une cible pour forcer la recompilation
 add_custom_target(dotnet_axl
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-  COMMAND ${DOTNET_BUILDER_EXEC} ${AXLSTAR_BUILD_COMMAND_ARGS}
+  COMMAND ${ARCCON_MSBUILD_EXEC_coreclr} ${AXLSTAR_BUILD_COMMAND_ARGS}
   )
 
 configure_file(${AXLSTAR_ROOT}/Arcane.Axl/axl.xsd share/axl.xsd)
