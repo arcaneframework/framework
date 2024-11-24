@@ -38,6 +38,7 @@ namespace Arcane::Accelerator::impl
 class RunCommandImpl
 {
   friend RunCommand;
+  friend RunQueueImpl;
 
  public:
 
@@ -109,6 +110,15 @@ class RunCommandImpl
 
   //! Indique si la commande s'exécute sur accélérateur
   const bool m_use_accelerator = false;
+
+  /*!
+  * \brief Indique si on autorise à utiliser plusieurs fois la même commande.
+   *
+   * Normalement cela est interdit mais avant novembre 2024, il n'y avait pas
+   * de mécanisme pour détecter cela. On peut donc temporairement autoriser
+   * cela et dans un on supprimera cette possibilité.
+   */
+  bool m_is_allow_reuse_command = false;
 
  private:
 
