@@ -14,12 +14,12 @@ ___
 ### Nouveautés/Améliorations
 
 - Ajoute mécanisme pour supprimer les mailles fantômes des mailles
-  raffinées (\pr{1716}
+  raffinées (\pr{1716}, \pr{1785})
 - Ajoute méthodes \arcane{ICartesianMesh::coarseZone2D()} et
   \arcane{ICartesianMesh::coarseZone3D()} pour déraffiner un bloc d'un
   patch AMR (\pr{1697})
 - Ajoute support dans l'AMR par patch pour déraffiner le maillage
-  initial (\pr{1678})
+  initial (\pr{1678}, \pr{1774})
 - Ajoute possibilité de choisir la version de numérotation des faces
   dans le jeu de données (\pr{1674})
 - Ajoute une nouvelle implémentation de tableau associatif
@@ -30,7 +30,8 @@ ___
   `std::unordered_map` (\pr{1638}, \pr{1639}, \pr{1640}, \pr{1650})
 - Ajoute support de l'écriture MPI/IO par bloc dans l'écrivain
   `VtkHdfV2PostProcessor` (\pr{1648}, \pr{1649})
-- Ajoute support des maillage polyédriques (\pr{1619}, \pr{1620})
+- Ajoute support des maillage polyédriques (\pr{1619}, \pr{1620},
+  \pr{1496}, \pr{1746}, \pr{1747}, \pr{1748}, \pr{1761}, \pr{1762})
 - Ajoute méthode utilitaire
   \arcane{MeshUtils::computeNodeNodeViaEdgeConnectivity()} pour créer
   les connectivités noeud-noeud via les arêtes (\pr{1614})
@@ -50,18 +51,40 @@ ___
 
 #### API Accélérateur
 
+- Interdit d'utiliser deux fois une même instance de
+  \arcaneacc{RunCommand}. Il est temporairement possible d'autoriser
+  cela en positionnant la variable d'environnement
+  `ARCANE_ACCELERATOR_ALLOW_REUSE_COMMAND` à `1` (\pr{1790})
+- Ajoute classe \arcaneacc{RegisterRuntimeInfo} pour passer des arguments
+  pour l'initialisation du runtime accélérateur (\pr{1766})
+- Ajoute méthodes pour récupérer de manière propre l'implémentation
+  native correspondante à \arcaneacc{RunQueue} et rend obsolète
+  \arcaneacc{RunQueue::platformStream()} (\pr{1763})
+- Ajoute fichiers d'en-ête pour les algorithmes avancés dont le nom
+  est identique à celui de la classe (\pr{1757})
+- Ajoute implémetation de RUNCOMMAND_MAT_ENUMERATE() pour
+  \arcanemat{AllEnvCell} (\pr{1754})
+- Ajoute méthodes \arcaneacc{IAcceleratorMng::runner()} et
+  \arcaneacc{IAcceleratorMng::queue()} qui retournent des instances au
+  lieu de pointeurs sur \arcaneacc{Runner} et \arcaneacc{RunQueue}
+  (\pr{1752})
+- Rend privées les méthodes de construction de \arcaneacc{RunQueue} et
+  \arcaneacc{RunCommand}. Il faut passer par \arcaneacc{makeQueue} ou
+  \arcaneacc{makeCommand} pour créer des instances de ces classes
+  (\pr{1752})
 - Optimisations diverses dans la mise à jour des constituants
   (\arcanemat{MeshMaterialModifier}) (\pr{1559}, \pr{1562}, \pr{1679},
   \pr{1681}, \pr{1682}, \pr{1683}, \pr{1687}, \pr{1689}, \pr{1690},
   \pr{1691}, \pr{1704}, \pr{1720}, \pr{1729}, \pr{1731}, \pr{1733},
   \pr{1738}, \pr{1739}, \pr{1741}, \pr{1742})
 - Ajoute classe \arcaneacc{ProfileRegion} pour spécifier une région
-  pour le profilage sur accélérateur (\pr{1695}, \pr{1734})
+  pour le profilage sur accélérateur (\pr{1695}, \pr{1734}, \pr{1768})
 - Ajoute une classe interne \arcane{impl::MemoryPool} pour conserver
   une liste de blocs alloués. Ce mécanisme ne fonctionne actuellement
-  qu'avec l'implémentation CUDA. Il n'est pas actif par défaut (TODO:
-  ADD LINK TO DOC FOR MEMORY POOL) (\pr{1684}, \pr{1685}, \pr{1686}, \pr{1699},
-  \pr{1703}, \pr{1724}, \pr{1725}, \pr{1726})
+  qu'avec l'implémentation CUDA. Il n'est pas actif par défaut (voir
+  \ref arcanedoc_acceleratorapi_memorypool) (\pr{1684}, \pr{1685},
+  \pr{1686}, \pr{1699}, \pr{1703}, \pr{1724}, \pr{1725}, \pr{1726},
+  \pr{1776})
 - Ajoute algorithme de partitionnement \arcaneacc{GenericPartitioner}
   (\pr{1713}, \pr{1717}, \pr{1718}, \pr{1721}, \pr{1722})
 - Uniformise les constructeurs des algorithmes accélérateurs pour
@@ -103,6 +126,9 @@ ___
 
 ### Changements
 
+- Dans le service \arcane{ArcaneCaseMeshService}, Initialise les variables
+  spécifiées dans le jeu de données après application du
+  partitionnement au lieu de le faire avant (\pr{1751})
 - Utilise tous les rangs pour la lecture en parallèle des fichiers
   GMSH. Cela permet d'éviter d'avoir des partitions vides par la suite
   ce qui n'est pas supporté par ParMetis (\pr{1735})
@@ -131,6 +157,7 @@ ___
 
 ### Corrections
 
+- Corrige erreur de compilation avec CRAY MPICH (\pr{1778})
 - Corrige compilation avec les version 2.13+ de libxml2 (\pr{1715})
 - Positionne correctement le communicateur de
   \arccore{MessagePassing::MessagePassingMng} associé à l'implémentation séquentielle
@@ -152,8 +179,12 @@ ___
 
 ### Interne
 
+- Ajoute typedef `AlephInt` qui sert pour spécifier les index
+  des lignes et colonnes des matrices et vecteurs. Pour l'instant ce
+  type est `int` mais lorsque le support 64 bit sera actif il sera
+  `long int` ou `long long int` (\pr{1770})
 - Libère les buffers de sérialisation dès que possible lors de
-  l'équilibrage de charge (\pr{1744})
+  l'équilibrage de charge (\pr{1744}, \pr{1756})
 - Ajout d'un service expérimental permettant de subdiviser un maillage
   lors de l'initialisation (\pr{1606}, \pr{1728})
 - Rend publique les classes \arcane{ItemBase} et
@@ -162,15 +193,15 @@ ___
   permet d'afficher des statistiques et de libérer les ressoures
   associées (\pr{1727}
 - Ajoute tests pour l'utilisation de plusieurs critères avec le
-  partitionnement avec plusieurs maillages (\pr{1719})
+  partitionnement avec plusieurs maillages (\pr{1719}, \pr{1772})
 - Dans \arcane{BitonicSort}, n'alloue pas les tableaux des rangs et
   des index s'ils ne sont pas utilisés (\pr{1680})
 - Utilise une nouvelle implémentation de table de hashage pour `ItemInternalMap`.
   Cette implémentation est active par défaut mais il est possible
   d'utiliser l'ancienne en positionant l'option
-  `ARCANE_USE_HASHTABLEMAP2_FOR_ITEMINTERNALMAP` lors de la
+  `ARCANE_USE_HASHTABLEMAP2_FOR_ITEMINTERNALMAP` à `OFF` lors de la
   configuration (\pr{1611}, \pr{1617}, \pr{1622}, \pr{1624},
-  \pr{1625}, \pr{1628}, \pr{1629}, \pr{1631}, \pr{1677})
+  \pr{1625}, \pr{1628}, \pr{1629}, \pr{1631}, \pr{1677}, \pr{1745})
 - Nettoyage et refonte du partitionnement avec ParMetis pour utiliser
   \arcane{IParallelMng} au lieu d'appeler MPI directement (\pr{1662},
   \pr{1665}, \pr{1667}, \pr{1671})
@@ -204,6 +235,18 @@ ___
 
 ### Compilation et Intégration Continue (CI)
 
+- Utilise un wrapper de `dotnet` pour la compilation. Ce wrapper
+  s'assure qu'on ne va pas modifier le HOME de l'utilisateur ce qui
+  pouvait poser des problèmes de verrou lorsque plusieurs instances de
+  `dotnet` se lancent en même temps (\pr{1789}, \pr{1791}, \pr{1792})
+- Ajoute possibilité d'ajouter des bibliothèques lors de l'édition de
+  lien de `arccore_message_passing_mpi`. Cela permet de garantir que
+  certaines bibliothèques seront bien ajoutées à l´édition de lien et
+  est notamment utilisé pour le support du MPI 'GPU-Aware' avec CRAY
+  MPICH (\pr{1786})
+- Ajoute workflow 'ubuntu 22.04' pour les dockers IFPEN (\pr{1781})
+- Ajoute variable CMake `ARCCON_NO_TBB_CONFIG` pour forcer à ne pas
+  utiliser le fichier de configuration CMake pour les TBB (\pr{1779})
 - Ajoute tests de protection/reprise pour le déraffinement (\pr{1707})
 - Corrige erreur de compilation lorsque PETSc n'est pas compilé avec
   MUMPS (\pr{1694})
@@ -245,11 +288,16 @@ ___
 
 ### Axlstar
 
+- Remplace `std::move()` par `std::forward()` dans la génération
+  de certaines méthodes (\pr{1773})
 - Génère via l'interface spécifiée les méthodes pour récupérer les
   fonctions associées aux options des jeux de données (\pr{1601})
 
 ### Alien
 
+- Utilise un répertoire de sortie différent pour chaque test afin
+  qu'on puisse les lancer en parallèle (\pr{1775})
+- Corrige sorties listings pour certains tests (\pr{1765})
 - Corrige sorties listings pour le backend IFPSolver (\pr{1730})
 - Corrige erreur d'exécution lorsqu'on utilise l'implémentation
   séquentielle de \arcane{IParallelMng} (\pr{1666})
@@ -356,7 +404,7 @@ ___
   \pr{1412}, \pr{1414}, \pr{1425}, \pr{1427}, \pr{1428}, \pr{1429},
   \pr{1455}, \pr{1480}, \pr{1487}, \pr{1495}, \pr{1497}, \pr{1498})
 - Améliorations diverses dans la gestion des maillages polyédriques
-  (\pr{1435}, \pr{1436}, \pr{1438}, \pr{1463}, \pr{1496})
+  (\pr{1435}, \pr{1436}, \pr{1438}, \pr{1463})
 
 ### Compilation et Intégration Continue (CI)
 
