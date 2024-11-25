@@ -16,6 +16,7 @@ set( ARCANE_SOURCES
   GenericSorter.h
   IReduceMemoryImpl.h
   MaterialVariableViews.h
+  MaterialVariableViews.cc
   MemoryCopier.cc
   NumArray.h
   NumArrayViews.h
