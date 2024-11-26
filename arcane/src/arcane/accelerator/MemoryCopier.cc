@@ -77,7 +77,7 @@ class AcceleratorSpecificMemoryCopy
 
  public:
 
-  void _copyFrom(RunQueue* queue, SmallSpan<const Int32> indexes,
+  void _copyFrom(const RunQueue* queue, SmallSpan<const Int32> indexes,
                  Span<const DataType> source, Span<DataType> destination)
   {
     ARCANE_CHECK_POINTER(queue);
@@ -100,7 +100,7 @@ class AcceleratorSpecificMemoryCopy
     };
   }
 
-  void _copyFrom(RunQueue* queue, SmallSpan<const Int32> indexes, SmallSpan<Span<std::byte>> multi_views,
+  void _copyFrom(const RunQueue* queue, SmallSpan<const Int32> indexes, SmallSpan<Span<std::byte>> multi_views,
                  Span<const DataType> source)
   {
     ARCANE_CHECK_POINTER(queue);
@@ -141,7 +141,7 @@ class AcceleratorSpecificMemoryCopy
    *
    * Si \a indexes est vide, remplit toutes les valeurs.
    */
-  void _fill(RunQueue* queue, SmallSpan<const Int32> indexes, Span<const DataType> source,
+  void _fill(const RunQueue* queue, SmallSpan<const Int32> indexes, Span<const DataType> source,
              Span<DataType> destination)
   {
     ARCANE_CHECK_POINTER(queue);
@@ -189,7 +189,7 @@ class AcceleratorSpecificMemoryCopy
     }
   }
 
-  void _fill(RunQueue* queue, SmallSpan<const Int32> indexes, SmallSpan<Span<std::byte>> multi_views,
+  void _fill(const RunQueue* queue, SmallSpan<const Int32> indexes, SmallSpan<Span<std::byte>> multi_views,
              Span<const DataType> source)
   {
     ARCANE_CHECK_POINTER(queue);
@@ -224,7 +224,8 @@ class AcceleratorSpecificMemoryCopy
       // Remplit toutes les valeurs du tableau avec la source.
       // Comme le nombre d'éléments de la deuxième dimension dépend de la première,
       // on utilise un noyau par dimension.
-      RunQueue::ScopedAsync sc(queue);
+      RunQueue q(*queue);
+      RunQueue::ScopedAsync sc(&q);
       const Int32 nb_dim1 = multi_views.size();
       for (Int32 zz = 0; zz < nb_dim1; ++zz) {
         Span<DataType> orig_view = Arccore::asSpan<DataType>(multi_views[zz]);
@@ -256,7 +257,7 @@ class AcceleratorSpecificMemoryCopy
     }
   }
 
-  void _copyTo(RunQueue* queue, SmallSpan<const Int32> indexes, Span<const DataType> source,
+  void _copyTo(const RunQueue* queue, SmallSpan<const Int32> indexes, Span<const DataType> source,
                Span<DataType> destination)
   {
     ARCANE_CHECK_POINTER(queue);
@@ -279,7 +280,7 @@ class AcceleratorSpecificMemoryCopy
     };
   }
 
-  void _copyTo(RunQueue* queue, SmallSpan<const Int32> indexes, SmallSpan<const Span<const std::byte>> multi_views,
+  void _copyTo(const RunQueue* queue, SmallSpan<const Int32> indexes, SmallSpan<const Span<const std::byte>> multi_views,
                Span<DataType> destination)
   {
     ARCANE_CHECK_POINTER(queue);

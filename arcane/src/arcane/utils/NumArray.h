@@ -331,13 +331,14 @@ class NumArray
     _checkHost(memoryRessource());
     m_data.fill(v);
   }
+
   /*!
    * \brief Remplit via la file \a queue, les valeurs du tableau d'indices
    * données par \a indexes par la valeur \a v .
    *
    * La mémoire associée à l'instance doit être accessible depuis la file \a queue.
    */
-  void fill(const DataType& v, SmallSpan<const Int32> indexes, RunQueue* queue)
+  void fill(const DataType& v, SmallSpan<const Int32> indexes, const RunQueue* queue)
   {
     m_data.fill(v, indexes, queue);
   }
@@ -345,7 +346,7 @@ class NumArray
   /*!
    * \brief Remplit les éléments de l'instance la valeur \a v.
    */
-  void fill(const DataType& v, RunQueue* queue)
+  void fill(const DataType& v, const RunQueue* queue)
   {
     m_data.fill(v, queue);
   }
