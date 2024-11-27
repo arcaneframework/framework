@@ -23,6 +23,8 @@ set( ARCANE_SOURCES
   RunCommandImpl.h
   RunCommand.cc
   RunCommandImpl.cc
+  RunCommandLaunchInfo.cc
+  RunCommandLaunchInfo.h
   RunQueue.h
   RunQueue.cc
   RunQueueBuildInfo.h
