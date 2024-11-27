@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* JSONPropertyReader.h                                        (C) 2000-2020 */
+/* JSONPropertyReader.h                                        (C) 2000-2024 */
 /*                                                                           */
 /* Lecture de propriétés au format JSON.                                     */
 /*---------------------------------------------------------------------------*/
@@ -59,15 +59,15 @@ class JSONPropertyReader
  * Les valeurs de la propriété doivent être dans un élément fils de \a jv
  * dont le nom est celui de la classe \a T.
  */
-template<typename T> inline void
+template<typename T, typename PropertyType = T> inline void
 readFromJSON(JSONValue jv,T& instance)
 {
-  const char* instance_property_name = T :: propertyClassName();
+  const char* instance_property_name = PropertyType :: propertyClassName();
   JSONValue child_value = jv.child(instance_property_name);
   if (child_value.null())
     return;
   JSONPropertyReader reader(child_value,instance);
-  T :: applyPropertyVisitor(reader);
+  PropertyType :: applyPropertyVisitor(reader);
 }
 
 /*---------------------------------------------------------------------------*/

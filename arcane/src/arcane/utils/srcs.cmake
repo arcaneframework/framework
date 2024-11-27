@@ -333,6 +333,7 @@ set(ARCANE_SOURCES
   GraphBaseT.h
   DirectedGraphT.h
   DirectedAcyclicGraphT.h
+  internal/ApplicationInfoProperties.h
   internal/MemoryRessourceMng.h
   internal/IMemoryRessourceMngInternal.h
   internal/IMemoryCopier.h
@@ -341,6 +342,7 @@ set(ARCANE_SOURCES
   internal/SpecificMemoryCopyList.h
   internal/MemoryBuffer.h
   internal/MemoryPool.h
+  internal/ParallelLoopOptionsProperties.h
   )
 
 if (ARCANE_HAS_CXX20)

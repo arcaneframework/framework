@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* PropertyDeclarations.h                                      (C) 2000-2020 */
+/* PropertyDeclarations.h                                      (C) 2000-2024 */
 /*                                                                           */
 /* Déclaration des types et macros pour la gestion des propriétés.           */
 /*---------------------------------------------------------------------------*/
@@ -57,12 +57,13 @@ class PropertyDeclaration
  * class MyClass
  * {
  *  public:
- *   ARCANE_DECLARE_PROPERTY_CLASS(MyClass);
+ *   ARCANE_DECLARE_PROPERTY_CLASS(MyClass,InstanceType);
  * };
  * \endcode
  */
-#define ARCANE_DECLARE_PROPERTY_CLASS(class_name)\
+#define ARCANE_DECLARE_PROPERTY_CLASS(class_name)  \
  public:\
+  using PropertyInstanceType = class_name; \
   static const char* propertyClassName() { return #class_name; }\
   template<typename V> static void _applyPropertyVisitor(V& visitor);\
   static void applyPropertyVisitor(Arcane::properties::PropertyVisitor<class_name>& p); \
@@ -109,7 +110,7 @@ namespace\
   }\
 }\
 void aclass :: \
-applyPropertyVisitor(Arcane::properties::PropertyVisitor<aclass>& p)\
+ applyPropertyVisitor(Arcane::properties::PropertyVisitor<typename aclass :: PropertyInstanceType >& p) \
 {\
   aclass :: _applyPropertyVisitor(p);\
 }\
