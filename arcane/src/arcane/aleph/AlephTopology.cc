@@ -1,20 +1,25 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* AlephTopology.cc                                                 (C) 2010 */
+/* AlephTopology.cc                                            (C) 2000-2024 */
 /*                                                                           */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-#include "AlephArcane.h"
+
+#include "arcane/aleph/AlephTopology.h"
+
+#include "arcane/aleph/AlephKernel.h"
+#include "arcane/aleph/AlephArcane.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -134,7 +139,7 @@ create(Integer setValue_idx)
   }
 
   // Nous allons nous échanger tous les setValue_idx
-  UniqueArray<Integer> all;
+  UniqueArray<AlephInt> all;
   all.add(setValue_idx);
   m_kernel->parallel()->allGather(all, m_gathered_nb_setValued);
 
@@ -183,7 +188,7 @@ setRowNbElements(IntegerConstArrayView row_nb_element)
     return;
   }
 
-  UniqueArray<Integer> local_row_nb_element(m_nb_row_rank);
+  UniqueArray<AlephInt> local_row_nb_element(m_nb_row_rank);
   for (int i = 0; i < m_nb_row_rank; ++i)
     local_row_nb_element[i] = row_nb_element[i];
   m_kernel->parallel()->allGatherVariable(local_row_nb_element, m_gathered_nb_row_elements);
@@ -208,7 +213,7 @@ ptr_low_up_array()
 
 /******************************************************************************
  *****************************************************************************/
-IntegerConstArrayView AlephTopology::
+ConstArrayView<AlephInt> AlephTopology::
 part()
 {
   checkForInit();
@@ -264,7 +269,7 @@ rowLocalRange(const Integer index)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -335,7 +335,7 @@ class ARCANE_UTILS_EXPORT MutableMemoryView
    * \pre this.nbElement() >= indexes.size();
    */
   void fillIndexes(ConstMemoryView v, SmallSpan<const Int32> indexes,
-                   RunQueue* run_queue = nullptr) const;
+                   const RunQueue* run_queue = nullptr) const;
 
   /*!
    * \brief Remplit les éléments de l'instance avec la valeur \a v.
@@ -354,7 +354,7 @@ class ARCANE_UTILS_EXPORT MutableMemoryView
    *
    * \pre this.datatypeSize() == v.datatypeSize();
    */
-  void fill(ConstMemoryView v, RunQueue* run_queue = nullptr) const;
+  void fill(ConstMemoryView v, const RunQueue* run_queue = nullptr) const;
 
  public:
 

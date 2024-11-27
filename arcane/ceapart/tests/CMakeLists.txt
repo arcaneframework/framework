@@ -222,8 +222,10 @@ arcane_add_test_sequential(amr-cartesian3D-coarse-patch-cartesian-mesh-only-5 te
 arcane_add_test_parallel(amr-cartesian3D-coarse-patch-cartesian-mesh-only-5 testAMRCartesianMesh3D-WithInitialCoarse-PatchCartesianMeshOnly-5.arc 4 "-m 20")
 arcane_add_test_sequential(amr-cartesian3D-coarse-patch-cartesian-mesh-only-6 testAMRCartesianMesh3D-WithInitialCoarse-PatchCartesianMeshOnly-6.arc "-m 20")
 arcane_add_test_parallel(amr-cartesian3D-coarse-patch-cartesian-mesh-only-6 testAMRCartesianMesh3D-WithInitialCoarse-PatchCartesianMeshOnly-6.arc 8 "-m 20")
-arcane_add_test_sequential(amr-cartesian3D-coarse-patch-cartesian-mesh-only-7 testAMRCartesianMesh3D-WithInitialCoarse-PatchCartesianMeshOnly-7.arc "-m 20")
-arcane_add_test_parallel(amr-cartesian3D-coarse-patch-cartesian-mesh-only-7 testAMRCartesianMesh3D-WithInitialCoarse-PatchCartesianMeshOnly-7.arc 8 "-m 20")
+if (BIG_TEST)
+  arcane_add_test_sequential(amr-cartesian3D-coarse-patch-cartesian-mesh-only-7 testAMRCartesianMesh3D-WithInitialCoarse-PatchCartesianMeshOnly-7.arc "-m 20")
+  arcane_add_test_parallel(amr-cartesian3D-coarse-patch-cartesian-mesh-only-7 testAMRCartesianMesh3D-WithInitialCoarse-PatchCartesianMeshOnly-7.arc 8 "-m 20")
+endif ()
 
 arcane_add_test_checkpoint_sequential(amr-checkpoint-cartesian3D-coarse-patch-cartesian-mesh-only-1 testAMRCartesianMesh3D-WithInitialCoarse-PatchCartesianMeshOnly-1.arc 3 5)
 arcane_add_test_checkpoint_parallel(amr-checkpoint-cartesian3D-coarse-patch-cartesian-mesh-only-1 testAMRCartesianMesh3D-WithInitialCoarse-PatchCartesianMeshOnly-1.arc 8 3 5)
@@ -236,8 +238,10 @@ arcane_add_test_checkpoint_parallel(amr-checkpoint-cartesian3D-coarse-patch-cart
 arcane_add_test_checkpoint(amr-checkpoint-cartesian3D-coarse-patch-cartesian-mesh-only-5 testAMRCartesianMesh3D-WithInitialCoarse-PatchCartesianMeshOnly-5.arc 3 5)
 arcane_add_test_checkpoint_sequential(amr-checkpoint-cartesian3D-coarse-patch-cartesian-mesh-only-6 testAMRCartesianMesh3D-WithInitialCoarse-PatchCartesianMeshOnly-6.arc 3 5)
 arcane_add_test_checkpoint_parallel(amr-checkpoint-cartesian3D-coarse-patch-cartesian-mesh-only-6 testAMRCartesianMesh3D-WithInitialCoarse-PatchCartesianMeshOnly-6.arc 8 3 5)
-arcane_add_test_checkpoint_sequential(amr-checkpoint-cartesian3D-coarse-patch-cartesian-mesh-only-7 testAMRCartesianMesh3D-WithInitialCoarse-PatchCartesianMeshOnly-7.arc 3 5)
-arcane_add_test_checkpoint_parallel(amr-checkpoint-cartesian3D-coarse-patch-cartesian-mesh-only-7 testAMRCartesianMesh3D-WithInitialCoarse-PatchCartesianMeshOnly-7.arc 8 3 5)
+if (BIG_TEST)
+  arcane_add_test_checkpoint_sequential(amr-checkpoint-cartesian3D-coarse-patch-cartesian-mesh-only-7 testAMRCartesianMesh3D-WithInitialCoarse-PatchCartesianMeshOnly-7.arc 3 5)
+  arcane_add_test_checkpoint_parallel(amr-checkpoint-cartesian3D-coarse-patch-cartesian-mesh-only-7 testAMRCartesianMesh3D-WithInitialCoarse-PatchCartesianMeshOnly-7.arc 8 3 5)
+endif ()
 
 arcane_add_test(amr-cartesian2D-V1-coarse-1 testAMRCartesianMesh2D-V1-coarse-1.arc "-m 20" "-We,ARCANE_CARTESIANMESH_COARSENING_VERBOSITY_LEVEL,2")
 arcane_add_test(amr-cartesian2D-V1-coarse-2 testAMRCartesianMesh2D-V1-coarse-2.arc "-m 20")
@@ -452,6 +456,11 @@ if (ARCANE_HAS_ACCELERATOR_API)
 
   arcane_add_test_sequential(material_heat4_accelerator "${ARCANE_TEST_PATH}/testMaterialHeat-4-opt15.arc" "-m 20")
   arcane_add_accelerator_test_sequential(material_heat4_accelerator "${ARCANE_TEST_PATH}/testMaterialHeat-4-opt15.arc" "-m 20")
+  arcane_add_test_sequential_host_and_accelerator(material_heat4_init1_accelerator "${ARCANE_TEST_PATH}/testMaterialHeat-4-opt15.arc" "-m 20" "-We,ARCANE_MATERIAL_NEW_ITEM_INIT,1")
+  arcane_add_test_sequential_host_and_accelerator(material_heat4_init2_accelerator "${ARCANE_TEST_PATH}/testMaterialHeat-4-opt15.arc" "-m 20"
+    "-We,ARCANE_MATERIAL_NEW_ITEM_INIT,2"  "-We,ARCANE_USE_GENERIC_COPY_BETWEEN_PURE_AND_PARTIAL,2")
+  arcane_add_test_sequential_host_and_accelerator(material_heat4_init3_accelerator "${ARCANE_TEST_PATH}/testMaterialHeat-4-opt15.arc" "-m 20"
+    "-We,ARCANE_MATERIAL_NEW_ITEM_INIT,3")
 endif()
 
 ###################

@@ -73,6 +73,9 @@
    <nodes-uid-hash>3cbd376d768e895a0b8e33d091bb3ff5</nodes-uid-hash>
    <faces-uid-hash>2582173a840acc76dabb2abf8528410b</faces-uid-hash>
    <cells-uid-hash>a39d1e99166f13d23ffb74d4965b06a2</cells-uid-hash>
+   <nodes-direction-hash>a7b637176f0ef9d990b6c516494aa9ac</nodes-direction-hash>
+   <faces-direction-hash>213c4b9e07dbe47ed61920b06a8bd0bf</faces-direction-hash>
+   <cells-direction-hash>3a7d81687858cd6957d92f6f08ee3cf5</cells-direction-hash>
  </a-m-r-cartesian-mesh-tester>
 
  <arcane-protections-reprises>

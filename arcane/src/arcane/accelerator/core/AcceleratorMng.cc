@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* AcceleratorMng.cc                                           (C) 2000-2021 */
+/* AcceleratorMng.cc                                           (C) 2000-2024 */
 /*                                                                           */
 /* Implémentation de 'IAcceleratorMng'                                       */
 /*---------------------------------------------------------------------------*/
@@ -16,6 +16,7 @@
 #include "arcane/utils/TraceAccessor.h"
 #include "arcane/utils/FatalErrorException.h"
 #include "arcane/utils/Ref.h"
+#include "arcane/utils/ScopedPtr.h"
 
 #include "arcane/accelerator/core/Runner.h"
 #include "arcane/accelerator/core/RunQueue.h"
@@ -45,7 +46,7 @@ class AcceleratorMng
 {
  public:
 
-  AcceleratorMng(ITraceMng* tm)
+  explicit AcceleratorMng(ITraceMng* tm)
   : TraceAccessor(tm)
   {
   }
@@ -54,13 +55,28 @@ class AcceleratorMng
 
   void initialize(const AcceleratorRuntimeInitialisationInfo& runtime_info) override;
   bool isInitialized() const override { return m_has_init; }
-  Runner* defaultRunner() override { CHECK_HAS_INIT(); return &m_default_runner; }
-  RunQueue* defaultQueue() override { CHECK_HAS_INIT(); return m_default_queue.get(); }
+  Runner* defaultRunner() override
+  {
+    CHECK_HAS_INIT();
+    return m_default_runner_ref.get();
+  }
+  RunQueue* defaultQueue() override
+  {
+    CHECK_HAS_INIT();
+    return m_default_queue_ref.get();
+  }
+  Runner runner() override
+  {
+    return m_default_runner;
+  }
+  RunQueue queue() override { return m_default_queue; }
 
  private:
 
+  ScopedPtrT<Runner> m_default_runner_ref;
   Runner m_default_runner;
-  Ref<RunQueue> m_default_queue;
+  Ref<RunQueue> m_default_queue_ref;
+  RunQueue m_default_queue;
   bool m_has_init = false;
 };
 
@@ -76,7 +92,9 @@ initialize(const AcceleratorRuntimeInitialisationInfo& runtime_info)
   arcaneInitializeRunner(m_default_runner,traceMng(),runtime_info);
   m_has_init = true;
 
-  m_default_queue = makeQueueRef(m_default_runner);
+  m_default_runner_ref = new Runner(m_default_runner);
+  m_default_queue_ref = makeQueueRef(m_default_runner);
+  m_default_queue = *m_default_queue_ref.get();
 }
 
 /*---------------------------------------------------------------------------*/

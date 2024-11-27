@@ -67,6 +67,9 @@ class PolyhedralMesh
 : public EmptyMesh
 , public IPolyhedralMeshInitialAllocator
 {
+
+  friend class PolyhedralFamily;
+
  private:
 
   String m_name;
@@ -123,6 +126,9 @@ class PolyhedralMesh
   };
 
   class InternalApi;
+  class PolyhedralMeshModifier;
+  class NoCompactionMeshCompacter;
+  class NoCompactionMeshCompactMng;
 
  private:
 
@@ -133,10 +139,11 @@ class PolyhedralMesh
   std::unique_ptr<VariableNodeReal3> m_arcane_node_coords = nullptr;
   ItemGroupList m_all_groups;
   InitialAllocator m_initial_allocator;
-  IVariableMng* m_variable_mng;
+  IVariableMng* m_variable_mng = nullptr;
   DynamicMeshChecker m_mesh_checker;
   List<IItemFamily*> m_item_family_collection;
   std::unique_ptr<InternalApi> m_internal_api;
+  std::unique_ptr<IMeshCompactMng> m_compact_mng;
 
   // IPrimaryMeshBase interface
   IMeshInitialAllocator* initialAllocator() override { return &m_initial_allocator; }
@@ -241,7 +248,28 @@ class PolyhedralMesh
 
   IMeshInternal* _internalApi() override;
 
+  IMeshCompactMng* _compactMng() override;
+
+  // For now, use _internalAPI()->polyhedralMeshModifier instead of IMeshModifier not implemented yet
+  IMeshModifier* modifier() override {return nullptr;}
+
+  // AMR is not activated with Polyhedral mesh. All items are thus active.
+  CellGroup allActiveCells() override;
+  CellGroup ownActiveCells() override;
+  CellGroup allLevelCells(const Integer& level) override;
+  CellGroup ownLevelCells(const Integer& level) override;
+  FaceGroup allActiveFaces() override;
+  FaceGroup ownActiveFaces() override;
+  FaceGroup innerActiveFaces() override;
+  FaceGroup outerActiveFaces() override;
+
+
+  IUserDataList* userDataList() override { return m_mesh_handle.meshUserDataList(); }
+  const IUserDataList* userDataList() const override { return m_mesh_handle.meshUserDataList(); }
  private:
+
+  void addItems(Int64ConstArrayView unique_ids, Int32ArrayView local_ids, eItemKind ik, const String& family_name);
+  void removeItems(Int32ConstArrayView local_ids, eItemKind ik, const String& family_name);
 
   PolyhedralFamily* _createItemFamily(eItemKind ik, const String& name);
   PolyhedralFamily* _itemFamily(eItemKind ik);

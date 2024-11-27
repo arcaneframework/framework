@@ -49,7 +49,7 @@
 
 
 /* print callback (could be customized) */
-void print_callback(const char *msg, int length)
+void print_callback(const char *msg,[[maybe_unused]]  int length)
 {
     int rank;
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
@@ -116,7 +116,7 @@ TrilinosInternal::getEnv<std::string>(std::string const& key, std::string defaul
 
 void
 TrilinosInternal::initialize(Arccore::MessagePassing::IMessagePassingMng* parallel_mng,
-    std::string const& execution_space, int nb_threads, bool use_amgx)
+    std::string const& execution_space, int nb_threads,[[maybe_unused]]  bool use_amgx)
 {
   if (m_is_initialized)
     return;
@@ -569,7 +569,7 @@ void initAMGX(AMGXEnv& amgx_env,
 #endif
 
 void
-TrilinosInternal::initMPIEnv(MPI_Comm comm)
+TrilinosInternal::initMPIEnv([[maybe_unused]] MPI_Comm comm)
 {
 }
 

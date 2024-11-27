@@ -155,7 +155,7 @@ int main(int argc, char** argv)
   solver_id = ALIEN_create_solver(comm,"./solver_config.xml") ;
 
   printf("INIT SOLVER \n") ;
-  ALIEN_init_solver(solver_id,argc,argv) ;
+  ALIEN_init_solver(solver_id,argc,(const char**)(argv)) ;
 
   /*
    * LINEAR SYSTEM RESOLUTION

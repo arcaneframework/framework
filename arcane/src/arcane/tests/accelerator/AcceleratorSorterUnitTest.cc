@@ -19,16 +19,14 @@
 #include "arcane/core/ServiceFactory.h"
 #include "arcane/core/IUnitTest.h"
 
+#include "arcane/accelerator/core/IAcceleratorMng.h"
+
 #include "arcane/accelerator/core/RunQueueBuildInfo.h"
 #include "arcane/accelerator/core/Runner.h"
 #include "arcane/accelerator/core/Memory.h"
-
 #include "arcane/accelerator/NumArrayViews.h"
 #include "arcane/accelerator/RunCommandLoop.h"
-
-#include "arcane/accelerator/core/IAcceleratorMng.h"
-
-#include "arcane/accelerator/Sort.h"
+#include "arcane/accelerator/GenericSorter.h"
 
 #include <random>
 
@@ -98,7 +96,7 @@ AcceleratorSorterUnitTest(const ServiceBuildInfo& sb)
 void AcceleratorSorterUnitTest::
 initializeTest()
 {
-  m_queue = *subDomain()->acceleratorMng()->defaultQueue();
+  m_queue = subDomain()->acceleratorMng()->queue();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -109,7 +107,7 @@ executeTest()
 {
   for (Int32 i = 0; i < 1; ++i) {
     executeTest2(400, i);
-    //executeTest2(1000000, i);
+    executeTest2(1000000, i);
   }
 }
 
@@ -132,8 +130,9 @@ _executeTestDataType(Int32 size, Int32 test_id)
 {
   ValueChecker vc(A_FUNCINFO);
 
-  RunQueue queue(makeQueue(subDomain()->acceleratorMng()->defaultRunner()));
-  queue.setAsync(true);
+  RunQueue queue(makeQueue(subDomain()->acceleratorMng()->runner()).addAsync(true));
+  if (!queue.isAsync())
+    ARCANE_FATAL("Queue is not asynchronous");
 
   info() << "Execute Sorter Test1 size=" << size << " test_id=" << test_id;
 

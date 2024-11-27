@@ -2,14 +2,21 @@ set( ARCANE_SOURCES
   Accelerator.cc
   Accelerator.h
   AcceleratorGlobal.h
+  AcceleratorUtils.h
   AsyncRunQueuePool.h
   Atomic.h
   CommonCudaHipReduceImpl.h
   CommonCudaHipAtomicImpl.h
   CommonUtils.h
   CommonUtils.cc
+  GenericFilterer.h
+  GenericPartitioner.h
+  GenericReducer.h
+  GenericScanner.h
+  GenericSorter.h
   IReduceMemoryImpl.h
   MaterialVariableViews.h
+  MaterialVariableViews.cc
   MemoryCopier.cc
   NumArray.h
   NumArrayViews.h

@@ -16,14 +16,14 @@
 
 #include "arcane/utils/FatalErrorException.h"
 
-#include "arcane/accelerator/core/Runner.h"
 #include "arcane/accelerator/core/internal/IRunnerRuntime.h"
 #include "arcane/accelerator/core/internal/IRunQueueStream.h"
-#include "arcane/accelerator/core/RunQueueEvent.h"
 #include "arcane/accelerator/core/internal/IRunQueueEventImpl.h"
-#include "arcane/accelerator/core/Memory.h"
 #include "arcane/accelerator/core/internal/RunQueueImpl.h"
 #include "arcane/accelerator/core/internal/RunnerImpl.h"
+#include "arcane/accelerator/core/Runner.h"
+#include "arcane/accelerator/core/RunQueueEvent.h"
+#include "arcane/accelerator/core/Memory.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -34,7 +34,7 @@ namespace Arcane::Accelerator
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// NOTE: Les constructeurs et destructeurs doivent être dans le fichier source
+// NOTE : Les constructeurs et destructeurs doivent être dans le fichier source,
 // car le type \a m_p est opaque pour l'utilisation n'est pas connu dans
 // la définition de la classe.
 
@@ -50,7 +50,7 @@ RunQueue()
 /*---------------------------------------------------------------------------*/
 
 RunQueue::
-RunQueue(Runner& runner)
+RunQueue(const Runner& runner)
 : m_p(impl::RunQueueImpl::create(runner._impl()))
 {
 }
@@ -59,7 +59,25 @@ RunQueue(Runner& runner)
 /*---------------------------------------------------------------------------*/
 
 RunQueue::
-RunQueue(Runner& runner, const RunQueueBuildInfo& bi)
+RunQueue(const Runner& runner, const RunQueueBuildInfo& bi)
+: m_p(impl::RunQueueImpl::create(runner._impl(), bi))
+{
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+RunQueue::
+RunQueue(const Runner& runner, bool)
+: m_p(impl::RunQueueImpl::create(runner._impl()))
+{
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+RunQueue::
+RunQueue(const Runner& runner, const RunQueueBuildInfo& bi, bool)
 : m_p(impl::RunQueueImpl::create(runner._impl(), bi))
 {
 }
@@ -79,6 +97,15 @@ RunQueue(const RunQueue& x)
 RunQueue::
 RunQueue(RunQueue&& x) noexcept
 : m_p(x.m_p)
+{
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+RunQueue::
+RunQueue(impl::RunQueueImpl* p)
+: m_p(p)
 {
 }
 
@@ -178,6 +205,16 @@ _getCommandImpl() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+impl::RunQueueImpl* RunQueue::
+_internalImpl() const
+{
+  _checkNotNull();
+  return m_p.get();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 void* RunQueue::
 platformStream() const
 {
@@ -193,7 +230,7 @@ void RunQueue::
 copyMemory(const MemoryCopyArgs& args) const
 {
   _checkNotNull();
-  _internalStream()->copyMemory(args);
+  m_p->copyMemory(args);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -203,7 +240,7 @@ void RunQueue::
 prefetchMemory(const MemoryPrefetchArgs& args) const
 {
   _checkNotNull();
-  _internalStream()->prefetchMemory(args);
+  m_p->prefetchMemory(args);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -213,8 +250,7 @@ void RunQueue::
 waitEvent(RunQueueEvent& event)
 {
   _checkNotNull();
-  auto* p = event._internalEventImpl();
-  return p->waitForEvent(_internalStream());
+  m_p->waitEvent(event);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -223,8 +259,9 @@ waitEvent(RunQueueEvent& event)
 void RunQueue::
 waitEvent(Ref<RunQueueEvent>& event)
 {
-  _checkNotNull();
-  waitEvent(*event.get());
+  RunQueueEvent* e = event.get();
+  ARCANE_CHECK_POINTER(e);
+  waitEvent(*e);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -234,8 +271,7 @@ void RunQueue::
 recordEvent(RunQueueEvent& event)
 {
   _checkNotNull();
-  auto* p = event._internalEventImpl();
-  return p->recordQueue(_internalStream());
+  m_p->recordEvent(event);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -244,8 +280,9 @@ recordEvent(RunQueueEvent& event)
 void RunQueue::
 recordEvent(Ref<RunQueueEvent>& event)
 {
-  _checkNotNull();
-  recordEvent(*event.get());
+  RunQueueEvent* e = event.get();
+  ARCANE_CHECK_POINTER(e);
+  recordEvent(*e);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -261,22 +298,23 @@ setAsync(bool v)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-bool RunQueue::
-isAsync() const
+const RunQueue& RunQueue::
+addAsync(bool is_async) const
 {
-  if (m_p)
-    return m_p->m_is_async;
-  return false;
+  _checkNotNull();
+  m_p->m_is_async = is_async;
+  return (*this);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 bool RunQueue::
-_isAutoPrefetchCommand() const
+isAsync() const
 {
-  _checkNotNull();
-  return m_p->m_runner_impl->isAutoPrefetchCommand();
+  if (m_p)
+    return m_p->m_is_async;
+  return false;
 }
 
 /*---------------------------------------------------------------------------*/

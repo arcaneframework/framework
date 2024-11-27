@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CartesianMeshTestUtils.cc                                   (C) 2000-2023 */
+/* CartesianMeshTestUtils.cc                                   (C) 2000-2024 */
 /*                                                                           */
 /* Fonctions utilitaires pour les tests de 'CartesianMesh'.                  */
 /*---------------------------------------------------------------------------*/
@@ -245,12 +245,10 @@ _testDirCellAccelerator()
   CellDirectionMng cdm2;
   CellDirectionMng cdm3;
 
-  auto queue = m_accelerator_mng->defaultQueue();
-  auto command = makeCommand(*queue);
+  auto queue = m_accelerator_mng->queue();
 
   VariableCellInt32 dummy_var(VariableBuildInfo(mesh, "DummyCellVariable"));
   dummy_var.fill(0);
-  auto inout_dummy_var = viewInOut(command, dummy_var);
 
   for (Integer idir = 0; idir < nb_dir; ++idir) {
     CellDirectionMng cdm(m_cartesian_mesh->cellDirection(idir));
@@ -258,6 +256,8 @@ _testDirCellAccelerator()
     cdm3 = cdm;
     info() << "ACCELERATOR_DIRECTION=" << idir << " Cells=" << cdm.allCells().name();
     _checkItemGroupIsSorted(cdm.allCells());
+    auto command = makeCommand(queue);
+    auto inout_dummy_var = viewInOut(command, dummy_var);
     command << RUNCOMMAND_ENUMERATE(Cell, icell, cdm.allCells())
     {
       DirCellLocalId dir_cell(cdm.dirCellId(icell));

@@ -89,10 +89,10 @@ class ARCANE_MATERIALS_EXPORT ConstituentModifierWorkInfo
   ComponentItemListBuilder list_builder;
 
   //! Informations pour les copies entre valeurs partielles et globales.
-  UniqueArray<CopyBetweenPartialAndGlobalOneData> m_host_variables_copy_data;
+  UniqueArray<CopyBetweenDataInfo> m_host_variables_copy_data;
 
   //! Informations pour les copies entre valeurs partielles et globales.
-  NumArray<CopyBetweenPartialAndGlobalOneData, MDDim1> m_variables_copy_data;
+  NumArray<CopyBetweenDataInfo, MDDim1> m_variables_copy_data;
 
  public:
 

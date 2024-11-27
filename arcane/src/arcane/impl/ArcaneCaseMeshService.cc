@@ -166,8 +166,6 @@ allocateMeshItems()
 
   m_mesh_builder->allocateMeshItems(m_mesh);
 
-  // TODO: Faire cela après les opérations additionnelles
-  _initializeVariables();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -194,6 +192,8 @@ applyAdditionalOperations()
   IMeshSubdivider* subdivider = options()->subdivider();
   if (subdivider)
     subdivider->subdivideMesh(m_mesh);
+
+  _initializeVariables();
 }
 
 /*---------------------------------------------------------------------------*/

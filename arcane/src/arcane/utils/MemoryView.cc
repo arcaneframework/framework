@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MemoryView.cc                                               (C) 2000-2023 */
+/* MemoryView.cc                                               (C) 2000-2024 */
 /*                                                                           */
 /* Vues constantes ou modifiables sur une zone mémoire.                      */
 /*---------------------------------------------------------------------------*/
@@ -55,7 +55,7 @@ namespace
   impl::SpecificMemoryCopyList<impl::IndexedCopyTraits> global_copy_list;
   impl::ISpecificMemoryCopyList* default_global_copy_list = nullptr;
 
-  impl::ISpecificMemoryCopyList* _getDefaultCopyList(RunQueue* queue)
+  impl::ISpecificMemoryCopyList* _getDefaultCopyList(const RunQueue* queue)
   {
     if (queue && !default_global_copy_list)
       ARCANE_FATAL("No instance of copier is available for RunQueue");
@@ -135,7 +135,7 @@ copyFromIndexes(ConstMemoryView v, SmallSpan<const Int32> indexes,
 
 void MutableMemoryView::
 fillIndexes(ConstMemoryView v, SmallSpan<const Int32> indexes,
-            RunQueue* queue) const
+            const RunQueue* queue) const
 {
   Int32 one_data_size = _checkDataTypeSize(A_FUNCINFO, m_datatype_size, v.datatypeSize());
 
@@ -153,7 +153,7 @@ fillIndexes(ConstMemoryView v, SmallSpan<const Int32> indexes,
 /*---------------------------------------------------------------------------*/
 
 void MutableMemoryView::
-fill(ConstMemoryView v, RunQueue* queue) const
+fill(ConstMemoryView v, const RunQueue* queue) const
 {
   Int32 one_data_size = _checkDataTypeSize(A_FUNCINFO, m_datatype_size, v.datatypeSize());
 

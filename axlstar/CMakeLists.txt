@@ -35,10 +35,12 @@ message(STATUS "AXLSTAR_DOTNET_RUNNER is '${AXLSTAR_DOTNET_RUNNER}'")
 if (AXLSTAR_DOTNET_RUNNER STREQUAL mono)
   message(FATAL_ERROR "Building with 'mono' is no longer supported. Only 'coreclr' is supported")
 elseif (AXLSTAR_DOTNET_RUNNER STREQUAL coreclr)
-  # Fichier pour rechercher .NetCore.
-  include(CMake/FindDotNetCore.cmake)
-  set(DOTNET_RUNNER_EXEC ${DOTNET_EXEC})
-  set(DOTNET_BUILDER_EXEC ${DOTNET_EXEC})
+  if (NOT DOTNET_EXEC)
+    message(FATAL_ERROR
+      "no 'dotnet' exec found.\n"
+      " You can download a binary version of '.Net 8' at the following address:\n"
+      " 'https://dotnet.microsoft.com/en-us/download´")
+  endif()
   set(DLL_EXE_EXTENSION .dll)
 else()
   message(FATAL_ERROR "Invalid value '${AXLSTAR_DOTNET_RUNNER}' for AXLSTAR_DOTNET_RUNNER. Only 'coreclr' is supported")
@@ -103,7 +105,7 @@ set(AXLSTAR_BUILD_COMMAND_ARGS ${AXLSTAR_BUILD_COMMAND_ARGS} ${AXLSTAR_MSBUILD_C
 # spécifier que le nom de la solution et pas le chemin complet.
 add_custom_command(OUTPUT ${AXLSTAR_AXL2CC_EXE}
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-  COMMAND ${DOTNET_BUILDER_EXEC}
+  COMMAND ${ARCCON_MSBUILD_EXEC_coreclr}
   ARGS ${AXLSTAR_BUILD_COMMAND_ARGS}
   DEPENDS ${AXL_SOLUTION_FILE}
   )
@@ -112,7 +114,7 @@ add_custom_target(dotnet_axl_depend ALL DEPENDS ${AXLSTAR_AXL2CC_EXE})
 # Créé une cible pour forcer la recompilation
 add_custom_target(dotnet_axl
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-  COMMAND ${DOTNET_BUILDER_EXEC} ${AXLSTAR_BUILD_COMMAND_ARGS}
+  COMMAND ${ARCCON_MSBUILD_EXEC_coreclr} ${AXLSTAR_BUILD_COMMAND_ARGS}
   )
 
 configure_file(${AXLSTAR_ROOT}/Arcane.Axl/axl.xsd share/axl.xsd)
@@ -131,6 +133,16 @@ arccon_dotnet_install_publish_directory(DIRECTORY ${AXLSTAR_PUBLISH_DIR}
 # Function pour configurer un script permettant de lancer une commande C#.
 # Le script préfixe la commande par le lanceur utilisé
 function(axlstar_configure_runner_script file_name command_name)
+  # Cette variable est normalement définie dans Arccon s'il est compilé
+  # en même temps que ce projet. Mais au cas où on utiliserait une ancienne
+  # version de Arccon, on la définit.
+  # Le wrapper est utilisé uniquement quand on compile axlstar (car il n'est
+  # pas installé). Pour la version installée on utilise l'exécutable 'dotnet'
+  # classique.
+  if (NOT DOTNET_EXEC_WRAPPER)
+    set (DOTNET_EXEC_WRAPPER "${DOTNET_EXEC}")
+  endif()
+
   set(DLL_NAME Axlstar.Driver${DLL_EXE_EXTENSION})
   set(COMMAND_NAME ${command_name})
   set(AXLSTAR_INSTALL_BIN ${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_BINDIR})
@@ -141,9 +153,11 @@ function(axlstar_configure_runner_script file_name command_name)
     set(file_name ${file_name}.bat)
   endif()
 
+  set(AXLSTAR_DOTNET_EXEC "${DOTNET_EXEC_WRAPPER}")
   configure_file(${LAUNCHER_NAME} ${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_BINDIR}/${file_name} @ONLY)
 
   set(AXLSTAR_INSTALL_BIN ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR})
+  set(AXLSTAR_DOTNET_EXEC "${DOTNET_EXEC}")
   configure_file(${LAUNCHER_NAME} ${CMAKE_BINARY_DIR}/bin_install/${file_name} @ONLY)
   install(PROGRAMS ${CMAKE_BINARY_DIR}/bin_install/${file_name} DESTINATION ${CMAKE_INSTALL_BINDIR})
 endfunction()

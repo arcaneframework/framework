@@ -22,15 +22,34 @@ set(ARCCON_MSBUILD_COMMON_ARGS /nodeReuse:false ${ARCCON_MSBUILD_RESTORE_ARGS})
 find_program(DOTNET_EXEC NAMES dotnet)
 message(STATUS "[.Net] DOTNET exe: ${DOTNET_EXEC}")
 if (DOTNET_EXEC)
+  # Avec '.Net' (au moins pour les versions 6 à 8), il y a un conflit
+  # potentiel de lock sur les fichiers lors d'une premier appel de 'dotnet'
+  # si plusieurs instances sont lancées à la fois
+  # (voir par exemple https://github.com/dotnet/runtime/issues/91987 ou
+  # https://github.com/dotnet/runtime/issues/80619)
+  # Pour éviter cela, on créé un wrapper à 'dotnet' qui utilise un HOME local
+  # au projet et on utiliser ce wrapper
+  if (UNIX AND NOT ARCCON_NO_WRAPPER_FOR_DOTNET)
+    set(ARCCON_DOTNET_FAKEHOME "${CMAKE_CURRENT_BINARY_DIR}/fakehome")
+    set(ARCCON_DOTNET_WRAPPER "${ARCCON_DOTNET_FAKEHOME}/arccon_dotnet")
+    cmake_path(GET DOTNET_EXEC PARENT_PATH ARCCON_DOTNET_PATH)
+    file(MAKE_DIRECTORY ${ARCCON_DOTNET_FAKEHOME})
+    configure_file(${CMAKE_CURRENT_LIST_DIR}/arccon_dotnet.in ${ARCCON_DOTNET_WRAPPER} USE_SOURCE_PERMISSIONS @ONLY)
+    message(STATUS "Using wrapper '${ARCCON_DOTNET_WRAPPER}' for '${DOTNET_EXEC}'")
+    set(DOTNET_EXEC_WRAPPER "${ARCCON_DOTNET_WRAPPER}")
+  else()
+    set(DOTNET_EXEC_WRAPPER "${DOTNET_EXEC}")
+  endif()
+
   set(ARCCON_DOTNET_HAS_RUNTIME_coreclr TRUE)
-  set(ARCCON_MSBUILD_EXEC_coreclr ${DOTNET_EXEC})
+  set(ARCCON_MSBUILD_EXEC_coreclr ${DOTNET_EXEC_WRAPPER})
   # Pour les options, voir le CMakeLists.txt de 'axlstar'
   set(ARCCON_MSBUILD_ARGS_coreclr publish /p:UseSharedCompilation=false ${ARCCON_MSBUILD_COMMON_ARGS})
   # Arguments pour fabriquer les packages NuGet
   set(ARCCON_DOTNET_PACK_ARGS_coreclr pack --no-build --no-restore --no-dependencies /nodeReuse:false)
 
   # Récupère le numéro de version 'dotnet'
-  execute_process(COMMAND ${DOTNET_EXEC} "--version" OUTPUT_VARIABLE CORECLR_EXEC_VERSION_OUTPUT OUTPUT_STRIP_TRAILING_WHITESPACE)
+  execute_process(COMMAND ${DOTNET_EXEC_WRAPPER} "--version" OUTPUT_VARIABLE CORECLR_EXEC_VERSION_OUTPUT OUTPUT_STRIP_TRAILING_WHITESPACE)
   string(REGEX MATCH "([0-9]+)\.([0-9]+)\.(.*)" CORECLR_VERSION_REGEX_MATCH ${CORECLR_EXEC_VERSION_OUTPUT})
   set(CORECLR_VERSION ${CMAKE_MATCH_1}.${CMAKE_MATCH_2})
   set(CORECLR_VERSION_FULL ${CORECLR_VERSION}.${CMAKE_MATCH_3})

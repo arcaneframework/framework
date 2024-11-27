@@ -20,6 +20,8 @@
 #include "arcane/utils/FatalErrorException.h"
 #include "arcane/utils/ValueConvert.h"
 #include "arcane/utils/IMemoryAllocator.h"
+#include "arcane/utils/OStringStream.h"
+#include "arcane/utils/ITraceMng.h"
 #include "arcane/utils/internal/MemoryPool.h"
 
 #include "arcane/accelerator/core/internal/MemoryTracer.h"
@@ -63,7 +65,7 @@ void arcaneCheckCudaErrorsNoThrow(const TraceInfo& ti, cudaError_t e)
     return;
   String str = String::format("CUDA Error trace={0} e={1} str={2}", ti, e, cudaGetErrorString(e));
   FatalErrorException ex(ti, str);
-  ex.explain(std::cerr);
+  ex.write(std::cerr);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -106,25 +108,28 @@ class BlockAllocatorWrapper
     const bool do_page = m_do_block_allocate;
     if (!do_page)
       return wanted_capacity;
-    // Alloue un multiple de la taille d'une page
+    // Alloue un multiple de la taille d'un bloc
+    // Pour la mémoire unifiée, la taille de bloc est une page mémoire.
     // Comme les transfers de la mémoire unifiée se font par page,
-    // cela permet de détecter quelles allocations provoquent le transfert
+    // cela permet de détecter quelles allocations provoquent le transfert.
+    // On se débrouille aussi pour limiter les différentes taille
+    // de bloc alloué pour éviter d'avoir trop de blocs de taille
+    // différente pour que l'éventuel MemoryPool ne contienne trop
+    // de valeurs.
     Int64 orig_capacity = wanted_capacity;
     Int64 new_size = orig_capacity * element_size;
     Int64 block_size = m_block_size;
-    if (new_size >= (4 * block_size))
-      block_size *= 4;
-    if (new_size >= (4 * block_size))
-      block_size = 4 * block_size;
-    if (new_size >= (4 * block_size))
-      block_size = 4 * block_size;
-    if (new_size >= (4 * block_size))
-      block_size = 4 * block_size;
+    Int64 nb_iter = 4 + (4096 / block_size);
+    for (Int64 i = 0; i < nb_iter; ++i) {
+      if (new_size >= (4 * block_size))
+        block_size *= 4;
+      else
+        break;
+    }
     new_size = _computeNextMultiple(new_size, block_size);
     wanted_capacity = new_size / element_size;
     if (wanted_capacity < orig_capacity)
       wanted_capacity = orig_capacity;
-    //std::cout << "Adjust capacity=" << wanted_capacity << " elem_size=" << element_size << " bs=" << block_size << "\n";
     return wanted_capacity;
   }
 
@@ -176,6 +181,18 @@ class CudaMemoryAllocatorBase
 
  public:
 
+  class ConcreteAllocator
+  {
+   public:
+
+    virtual ~ConcreteAllocator() = default;
+
+   public:
+
+    virtual cudaError_t _allocate(void** ptr, size_t new_size) = 0;
+    virtual cudaError_t _deallocate(void* ptr) = 0;
+  };
+
   class UnderlyingAllocator
   : public IMemoryPoolAllocator
   {
@@ -191,13 +208,13 @@ class CudaMemoryAllocatorBase
     void* allocateMemory(size_t size) override
     {
       void* out = nullptr;
-      ARCANE_CHECK_CUDA(m_base->_allocate(&out, size));
+      ARCANE_CHECK_CUDA(m_base->m_concrete_allocator->_allocate(&out, size));
       m_base->m_block_wrapper.doAllocate(out, size);
       return out;
     }
     void freeMemory(void* ptr, [[maybe_unused]] size_t size) override
     {
-      ARCANE_CHECK_CUDA_NOTHROW(m_base->_deallocate(ptr));
+      ARCANE_CHECK_CUDA_NOTHROW(m_base->m_concrete_allocator->_deallocate(ptr));
     }
 
    public:
@@ -207,8 +224,9 @@ class CudaMemoryAllocatorBase
 
  public:
 
-  CudaMemoryAllocatorBase(const String& allocator_name)
+  CudaMemoryAllocatorBase(const String& allocator_name, ConcreteAllocator* concrete_allocator)
   : AlignedMemoryAllocator3(128)
+  , m_concrete_allocator(concrete_allocator)
   , m_direct_sub_allocator(this)
   , m_memory_pool(&m_direct_sub_allocator, allocator_name)
   , m_sub_allocator(&m_direct_sub_allocator)
@@ -220,15 +238,28 @@ class CudaMemoryAllocatorBase
 
   ~CudaMemoryAllocatorBase()
   {
+  }
+
+ public:
+
+  void finalize(ITraceMng* tm)
+  {
     if (m_print_level >= 1) {
+      OStringStream ostr;
       if (m_use_memory_pool) {
-        m_memory_pool.dumpStats(std::cout);
-        m_memory_pool.dumpFreeMap(std::cout);
+        m_memory_pool.dumpStats(ostr());
+        m_memory_pool.dumpFreeMap(ostr());
       }
-      std::cout << "Allocator '" << m_allocator_name << "' nb_realloc=" << m_nb_reallocate
-                << " realloc_copy=" << m_reallocate_size << "\n";
-      m_block_wrapper.dumpStats(std::cout, m_allocator_name);
+      ostr() << "Allocator '" << m_allocator_name << "' nb_realloc=" << m_nb_reallocate
+             << " realloc_copy=" << m_reallocate_size << "\n";
+      m_block_wrapper.dumpStats(ostr(), m_allocator_name);
+      if (tm)
+        tm->info() << ostr.str();
+      else
+        std::cout << ostr.str();
     }
+
+    m_memory_pool.freeCachedMemory();
   }
 
  public:
@@ -255,13 +286,17 @@ class CudaMemoryAllocatorBase
       std::cout << "Reallocate allocator=" << m_allocator_name
                 << " current_size=" << current_size
                 << " current_capacity=" << current_info.capacity()
-                << " new_capacity=" << new_size;
-      if (array_name.null()) {
-        std::cout << " stack=" << platform::getStackTrace() << "\n";
-        std::cout << "\n";
+                << " new_capacity=" << new_size
+                << " ptr=" << current_info.baseAddress();
+      if (array_name.null() && m_print_level >= 3) {
+        std::cout << " stack=" << platform::getStackTrace();
       }
-      else
-        std::cout << " name=" << array_name << "\n";
+      else {
+        std::cout << " name=" << array_name;
+        if (m_print_level >= 4)
+          std::cout << " stack=" << platform::getStackTrace();
+      }
+      std::cout << "\n";
     }
     if (m_use_memory_pool)
       _removeHint(current_info.baseAddress(), current_size, args);
@@ -292,8 +327,6 @@ class CudaMemoryAllocatorBase
 
  protected:
 
-  virtual cudaError_t _allocate(void** ptr, size_t new_size) = 0;
-  virtual cudaError_t _deallocate(void* ptr) = 0;
   virtual void _applyHint([[maybe_unused]] void* ptr, [[maybe_unused]] size_t new_size,
                           [[maybe_unused]] MemoryAllocationArgs args) {}
   virtual void _removeHint([[maybe_unused]] void* ptr, [[maybe_unused]] size_t new_size,
@@ -302,6 +335,7 @@ class CudaMemoryAllocatorBase
  private:
 
   impl::MemoryTracerWrapper m_tracer;
+  std::unique_ptr<ConcreteAllocator> m_concrete_allocator;
   UnderlyingAllocator m_direct_sub_allocator;
   MemoryPool m_memory_pool;
   IMemoryPoolAllocator* m_sub_allocator = nullptr;
@@ -325,6 +359,14 @@ class CudaMemoryAllocatorBase
     IMemoryPoolAllocator* direct = &m_direct_sub_allocator;
     m_sub_allocator = (is_used) ? mem_pool : direct;
     m_use_memory_pool = is_used;
+    if (is_used) {
+      if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_ACCELERATOR_MEMORY_POOL_MAX_BLOCK_SIZE", true)) {
+        if (v.value() < 0)
+          ARCANE_FATAL("Invalid value '{0}' for memory pool max block size");
+        size_t block_size = static_cast<size_t>(v.value());
+        m_memory_pool.setMaxCachedBlockSize(block_size);
+      }
+    }
   }
 };
 
@@ -342,11 +384,55 @@ class UnifiedMemoryCudaMemoryAllocator
 {
  public:
 
-  UnifiedMemoryCudaMemoryAllocator()
-  : CudaMemoryAllocatorBase("UnifiedMemoryCudaMemory")
+  class Allocator
+  : public ConcreteAllocator
   {
-    if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_CUDA_USE_ALLOC_ATS", true))
-      m_use_ats = v.value();
+   public:
+
+    Allocator()
+    {
+      if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_CUDA_USE_ALLOC_ATS", true))
+        m_use_ats = v.value();
+    }
+
+    cudaError_t _deallocate(void* ptr) final
+    {
+      if (m_use_ats) {
+        ::free(ptr);
+        return cudaSuccess;
+      }
+      //std::cout << "CUDA_MANAGED_FREE ptr=" << ptr << "\n";
+      return ::cudaFree(ptr);
+    }
+
+    cudaError_t _allocate(void** ptr, size_t new_size) final
+    {
+      if (m_use_ats) {
+        *ptr = ::aligned_alloc(128, new_size);
+      }
+      else {
+        auto r = ::cudaMallocManaged(ptr, new_size, cudaMemAttachGlobal);
+        //std::cout << "CUDA_MANAGED_MALLOC ptr=" << (*ptr) << " size=" << new_size << "\n";
+        //if (new_size < 4000)
+        //std::cout << "STACK=" << platform::getStackTrace() << "\n";
+
+        if (r != cudaSuccess)
+          return r;
+      }
+
+      return cudaSuccess;
+    }
+
+   public:
+
+    bool m_use_ats = false;
+  };
+
+ public:
+
+  UnifiedMemoryCudaMemoryAllocator()
+  : CudaMemoryAllocatorBase("UnifiedMemoryCudaMemory", new Allocator())
+  {
     if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_CUDA_MALLOC_TRACE", true))
       _setTraceLevel(v.value());
   }
@@ -377,29 +463,6 @@ class UnifiedMemoryCudaMemoryAllocator
   }
 
  protected:
-
-  cudaError_t _deallocate(void* ptr) final
-  {
-    if (m_use_ats) {
-      ::free(ptr);
-      return cudaSuccess;
-    }
-    return ::cudaFree(ptr);
-  }
-
-  cudaError_t _allocate(void** ptr, size_t new_size) final
-  {
-    if (m_use_ats) {
-      *ptr = ::aligned_alloc(128, new_size);
-    }
-    else {
-      auto r = ::cudaMallocManaged(ptr, new_size, cudaMemAttachGlobal);
-      if (r != cudaSuccess)
-        return r;
-    }
-
-    return cudaSuccess;
-  }
 
   void _applyHint(void* p, size_t new_size, MemoryAllocationArgs args)
   {
@@ -447,8 +510,25 @@ class HostPinnedCudaMemoryAllocator
 {
  public:
 
+  class Allocator
+  : public ConcreteAllocator
+  {
+   public:
+
+    cudaError_t _allocate(void** ptr, size_t new_size) final
+    {
+      return ::cudaMallocHost(ptr, new_size);
+    }
+    cudaError_t _deallocate(void* ptr) final
+    {
+      return ::cudaFreeHost(ptr);
+    }
+  };
+
+ public:
+
   HostPinnedCudaMemoryAllocator()
-  : CudaMemoryAllocatorBase("HostPinnedCudaMemory")
+  : CudaMemoryAllocatorBase("HostPinnedCudaMemory", new Allocator())
   {
   }
 
@@ -462,17 +542,6 @@ class HostPinnedCudaMemoryAllocator
     _setUseMemoryPool(use_memory_pool);
     m_block_wrapper.initialize(128, use_memory_pool);
   }
-
- protected:
-
-  cudaError_t _allocate(void** ptr, size_t new_size) final
-  {
-    return ::cudaMallocHost(ptr, new_size);
-  }
-  cudaError_t _deallocate(void* ptr) final
-  {
-    return ::cudaFreeHost(ptr);
-  }
 };
 
 /*---------------------------------------------------------------------------*/
@@ -481,13 +550,51 @@ class HostPinnedCudaMemoryAllocator
 class DeviceCudaMemoryAllocator
 : public CudaMemoryAllocatorBase
 {
+
+  class Allocator
+  : public ConcreteAllocator
+  {
+   public:
+
+    Allocator()
+    {
+      if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_CUDA_USE_ALLOC_ATS", true))
+        m_use_ats = v.value();
+    }
+
+    cudaError_t _allocate(void** ptr, size_t new_size) final
+    {
+      if (m_use_ats) {
+        // FIXME: it does not work on WIN32
+        *ptr = std::aligned_alloc(128, new_size);
+        if (*ptr)
+          return cudaSuccess;
+        return cudaErrorMemoryAllocation;
+      }
+      cudaError_t r = ::cudaMalloc(ptr, new_size);
+      //std::cout << "ALLOCATE_DEVICE ptr=" << (*ptr) << " size=" << new_size << " r=" << (int)r << "\n";
+      return r;
+    }
+    cudaError_t _deallocate(void* ptr) final
+    {
+      if (m_use_ats) {
+        std::free(ptr);
+        return cudaSuccess;
+      }
+      //std::cout << "FREE_DEVICE ptr=" << ptr << "\n";
+      return ::cudaFree(ptr);
+    }
+
+   private:
+
+    bool m_use_ats = false;
+  };
+
  public:
 
   DeviceCudaMemoryAllocator()
-  : CudaMemoryAllocatorBase("DeviceCudaMemoryAllocator")
+  : CudaMemoryAllocatorBase("DeviceCudaMemoryAllocator", new Allocator())
   {
-    if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_CUDA_USE_ALLOC_ATS", true))
-      m_use_ats = v.value();
   }
 
  public:
@@ -500,32 +607,6 @@ class DeviceCudaMemoryAllocator
     _setUseMemoryPool(use_memory_pool);
     m_block_wrapper.initialize(128, use_memory_pool);
   }
-
- protected:
-
-  cudaError_t _allocate(void** ptr, size_t new_size) final
-  {
-    if (m_use_ats) {
-      // FIXME: it does not work on WIN32
-      *ptr = std::aligned_alloc(128, new_size);
-      if (*ptr)
-        return cudaSuccess;
-      return cudaErrorMemoryAllocation;
-    }
-    return ::cudaMalloc(ptr, new_size);
-  }
-  cudaError_t _deallocate(void* ptr) final
-  {
-    if (m_use_ats) {
-      std::free(ptr);
-      return cudaSuccess;
-    }
-    return ::cudaFree(ptr);
-  }
-
- private:
-
-  bool m_use_ats = false;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -573,6 +654,13 @@ void initializeCudaMemoryAllocators()
   unified_memory_cuda_memory_allocator.initialize();
   device_cuda_memory_allocator.initialize();
   host_pinned_cuda_memory_allocator.initialize();
+}
+
+void finalizeCudaMemoryAllocators(ITraceMng* tm)
+{
+  unified_memory_cuda_memory_allocator.finalize(tm);
+  device_cuda_memory_allocator.finalize(tm);
+  host_pinned_cuda_memory_allocator.finalize(tm);
 }
 
 /*---------------------------------------------------------------------------*/

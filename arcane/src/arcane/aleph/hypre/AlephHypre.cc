@@ -31,6 +31,11 @@
 
 #include "arcane/aleph/AlephArcane.h"
 
+// Le type HYPRE_BigInt n'existe qu'à partir de Hypre 2.16.0
+#if HYPRE_RELEASE_NUMBER < 21600
+using HYPRE_BigInt = HYPRE_Int;
+#endif
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -52,7 +57,7 @@ namespace Arcane
 namespace
 {
 inline void
-check(const char* hypre_func, int error_code)
+check(const char* hypre_func, HYPRE_Int error_code)
 {
   if (error_code == 0)
     return;
@@ -86,10 +91,10 @@ _callocHypre(Integer size)
 }
 
 inline void
-hypreCheck(const char* hypre_func, int error_code)
+hypreCheck(const char* hypre_func, HYPRE_Int error_code)
 {
   check(hypre_func, error_code);
-  int r = HYPRE_GetError();
+  HYPRE_Int r = HYPRE_GetError();
   if (r != 0)
     cout << "HYPRE GET ERROR r=" << r
          << " error_code=" << error_code << " func=" << hypre_func << '\n';
@@ -162,7 +167,7 @@ class AlephVectorHypre
 
   /******************************************************************************
    *****************************************************************************/
-  void AlephVectorSet(const double* bfr_val, const int* bfr_idx, Integer size)
+  void AlephVectorSet(const double* bfr_val, const AlephInt* bfr_idx, Integer size)
   {
     debug() << "[AlephVectorHypre::AlephVectorSet] size=" << size;
     hypreCheck("IJVectorSetValues", HYPRE_IJVectorSetValues(m_hypre_ijvector, size, bfr_idx, bfr_val));
@@ -179,8 +184,9 @@ class AlephVectorHypre
 
   /******************************************************************************
    *****************************************************************************/
-  void AlephVectorGet(double* bfr_val, const int* bfr_idx, Integer size)
+  void AlephVectorGet(double* bfr_val, const AlephInt* bfr_idx, Integer size)
   {
+    //HYPRE_Int* hypre_bfr_idx = static
     debug() << "[AlephVectorHypre::AlephVectorGet] size=" << size;
     hypreCheck("HYPRE_IJVectorGetValues", HYPRE_IJVectorGetValues(m_hypre_ijvector, size, bfr_idx, bfr_val));
   }
@@ -191,13 +197,13 @@ class AlephVectorHypre
   Real norm_max()
   {
     Real normInf = 0.0;
-    UniqueArray<HYPRE_Int> bfr_idx(jSize);
+    UniqueArray<HYPRE_BigInt> bfr_idx(jSize);
     UniqueArray<double> bfr_val(jSize);
 
     for (HYPRE_Int i = 0; i < jSize; ++i)
       bfr_idx[i] = jLower + i;
 
-    hypreCheck("HYPRE_IJVectorGetValues", HYPRE_IJVectorGetValues(m_hypre_ijvector, jSize, bfr_idx.unguardedBasePointer(), bfr_val.unguardedBasePointer()));
+    hypreCheck("HYPRE_IJVectorGetValues", HYPRE_IJVectorGetValues(m_hypre_ijvector, jSize, bfr_idx.data(), bfr_val.data()));
     for (HYPRE_Int i = 0; i < jSize; ++i) {
       const Real abs_val = math::abs(bfr_val[i]);
       if (abs_val > normInf)
@@ -263,8 +269,8 @@ class AlephMatrixHypre
   {
     debug() << "[AlephMatrixHypre::AlephMatrixCreate] HYPRE MatrixCreate idx:" << m_index;
     void* object;
-    Integer ilower = -1;
-    Integer iupper = 0;
+    AlephInt ilower = -1;
+    AlephInt iupper = 0;
     for (int iCpu = 0; iCpu < m_kernel->size(); ++iCpu) {
       if (m_kernel->rank() != m_kernel->solverRanks(m_index)[iCpu])
         continue;
@@ -274,8 +280,8 @@ class AlephMatrixHypre
     }
     debug() << "[AlephMatrixHypre::AlephMatrixCreate] ilower=" << ilower << ", iupper=" << iupper;
 
-    Integer jlower = ilower; //0;
-    Integer jupper = iupper; //m_kernel->topology()->gathered_nb_row(m_kernel->size())-1;
+    AlephInt jlower = ilower; //0;
+    AlephInt jupper = iupper; //m_kernel->topology()->gathered_nb_row(m_kernel->size())-1;
     debug() << "[AlephMatrixHypre::AlephMatrixCreate] jlower=" << jlower << ", jupper=" << jupper;
 
     hypreCheck("HYPRE_IJMatrixCreate",
@@ -310,11 +316,11 @@ class AlephMatrixHypre
 
   /******************************************************************************
    *****************************************************************************/
-  void AlephMatrixFill(int size, int* rows, int* cols, double* values)
+  void AlephMatrixFill(int size, HYPRE_Int* rows, HYPRE_Int* cols, double* values)
   {
     debug() << "[AlephMatrixHypre::AlephMatrixFill] size=" << size;
-    int rtn = 0;
-    int col[1] = { 1 };
+    HYPRE_Int rtn = 0;
+    HYPRE_Int col[1] = { 1 };
     for (int i = 0; i < size; i++) {
       rtn += HYPRE_IJMatrixSetValues(m_hypre_ijmatrix, 1, col, &rows[i], &cols[i], &values[i]);
     }
@@ -481,7 +487,7 @@ class AlephMatrixHypre
     }
 
     // résolution du système algébrique
-    int iteration = 0;
+    HYPRE_Int iteration = 0;
     double residue = 0.0;
 
     switch (solver_method) {
@@ -728,9 +734,9 @@ class AlephMatrixHypre
     // news
     Integer output_level = solver_param->getOutputLevel();
 
-    int* num_grid_sweeps = _allocHypre<int>(4);
-    int* grid_relax_type = _allocHypre<int>(4);
-    int** grid_relax_points = _allocHypre<int*>(4);
+    HYPRE_Int* num_grid_sweeps = _allocHypre<HYPRE_Int>(4);
+    HYPRE_Int* grid_relax_type = _allocHypre<HYPRE_Int>(4);
+    HYPRE_Int** grid_relax_points = _allocHypre<HYPRE_Int*>(4);
     double* relax_weight = _allocHypre<double>(max_levels);
 
     for (int i = 0; i < max_levels; i++)
@@ -740,7 +746,7 @@ class AlephMatrixHypre
       /* fine grid */
       num_grid_sweeps[0] = 3;
       grid_relax_type[0] = relax_default;
-      grid_relax_points[0] = _allocHypre<int>(3);
+      grid_relax_points[0] = _allocHypre<HYPRE_Int>(3);
       grid_relax_points[0][0] = -2;
       grid_relax_points[0][1] = -1;
       grid_relax_points[0][2] = 1;
@@ -748,7 +754,7 @@ class AlephMatrixHypre
       /* down cycle */
       num_grid_sweeps[1] = 4;
       grid_relax_type[1] = relax_default;
-      grid_relax_points[1] = _callocHypre<int>(4);
+      grid_relax_points[1] = _callocHypre<HYPRE_Int>(4);
       grid_relax_points[1][0] = -1;
       grid_relax_points[1][1] = 1;
       grid_relax_points[1][2] = -2;
@@ -757,7 +763,7 @@ class AlephMatrixHypre
       /* up cycle */
       num_grid_sweeps[2] = 4;
       grid_relax_type[2] = relax_default;
-      grid_relax_points[2] = _allocHypre<int>(4);
+      grid_relax_points[2] = _allocHypre<HYPRE_Int>(4);
       grid_relax_points[2][0] = -2;
       grid_relax_points[2][1] = -2;
       grid_relax_points[2][2] = 1;
@@ -767,7 +773,7 @@ class AlephMatrixHypre
       /* fine grid */
       num_grid_sweeps[0] = 2 * num_sweep;
       grid_relax_type[0] = relax_default;
-      grid_relax_points[0] = _allocHypre<int>(2 * num_sweep);
+      grid_relax_points[0] = _allocHypre<HYPRE_Int>(2 * num_sweep);
       for (int i = 0; i < 2 * num_sweep; i += 2) {
         grid_relax_points[0][i] = -1;
         grid_relax_points[0][i + 1] = 1;
@@ -776,7 +782,7 @@ class AlephMatrixHypre
       /* down cycle */
       num_grid_sweeps[1] = 2 * num_sweep;
       grid_relax_type[1] = relax_default;
-      grid_relax_points[1] = _allocHypre<int>(2 * num_sweep);
+      grid_relax_points[1] = _allocHypre<HYPRE_Int>(2 * num_sweep);
       for (int i = 0; i < 2 * num_sweep; i += 2) {
         grid_relax_points[1][i] = -1;
         grid_relax_points[1][i + 1] = 1;
@@ -785,7 +791,7 @@ class AlephMatrixHypre
       /* up cycle */
       num_grid_sweeps[2] = 2 * num_sweep;
       grid_relax_type[2] = relax_default;
-      grid_relax_points[2] = _allocHypre<int>(2 * num_sweep);
+      grid_relax_points[2] = _allocHypre<HYPRE_Int>(2 * num_sweep);
       for (int i = 0; i < 2 * num_sweep; i += 2) {
         grid_relax_points[2][i] = -1;
         grid_relax_points[2][i + 1] = 1;
@@ -795,7 +801,7 @@ class AlephMatrixHypre
     /* coarsest grid */
     num_grid_sweeps[3] = 1;
     grid_relax_type[3] = 9;
-    grid_relax_points[3] = _allocHypre<int>(1);
+    grid_relax_points[3] = _allocHypre<HYPRE_Int>(1);
     grid_relax_points[3][0] = 0;
 
     // end of default seting
@@ -847,7 +853,7 @@ class AlephMatrixHypre
                 HYPRE_ParCSRMatrix& M,
                 HYPRE_ParVector& B,
                 HYPRE_ParVector& X,
-                int& iteration,
+                HYPRE_Int& iteration,
                 double& residue)
   {
     const String func_name = "SolverMatrixHypre::solvePCG";
@@ -861,7 +867,7 @@ class AlephMatrixHypre
     HYPRE_ParCSRPCGGetNumIterations(solver, &iteration);
     HYPRE_ParCSRPCGGetFinalRelativeResidualNorm(solver, &residue);
 
-    int converged = 0;
+    HYPRE_Int converged = 0;
     HYPRE_PCGGetConverged(solver, &converged);
     error |= (!converged);
 
@@ -876,7 +882,7 @@ class AlephMatrixHypre
                      HYPRE_ParCSRMatrix& M,
                      HYPRE_ParVector& B,
                      HYPRE_ParVector& X,
-                     int& iteration,
+                     HYPRE_Int& iteration,
                      double& residue)
   {
     const String func_name = "SolverMatrixHypre::solveBiCGStab";
@@ -887,7 +893,7 @@ class AlephMatrixHypre
     HYPRE_ParCSRBiCGSTABGetNumIterations(solver, &iteration);
     HYPRE_ParCSRBiCGSTABGetFinalRelativeResidualNorm(solver, &residue);
 
-    int converged = 0;
+    HYPRE_Int converged = 0;
     hypre_BiCGSTABGetConverged(solver, &converged);
     error |= (!converged);
 
@@ -902,7 +908,7 @@ class AlephMatrixHypre
                   HYPRE_ParCSRMatrix& M,
                   HYPRE_ParVector& B,
                   HYPRE_ParVector& X,
-                  int& iteration,
+                  HYPRE_Int& iteration,
                   double& residue)
   {
     const String func_name = "SolverMatrixHypre::solveGMRES";
@@ -912,7 +918,7 @@ class AlephMatrixHypre
     HYPRE_ParCSRGMRESGetNumIterations(solver, &iteration);
     HYPRE_ParCSRGMRESGetFinalRelativeResidualNorm(solver, &residue);
 
-    int converged = 0;
+    HYPRE_Int converged = 0;
     HYPRE_GMRESGetConverged(solver, &converged);
     error |= (!converged);
 

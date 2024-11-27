@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* RunQueueEvent.h                                             (C) 2000-2022 */
+/* RunQueueEvent.h                                             (C) 2000-2024 */
 /*                                                                           */
 /* Evènement sur une file d'exécution.                                       */
 /*---------------------------------------------------------------------------*/
@@ -37,7 +37,8 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RunQueueEvent
 {
   friend RunQueueEvent makeEvent(Runner& runner);
   friend Ref<RunQueueEvent> makeEventRef(Runner& runner);
-  friend class RunQueue;
+  friend RunQueue;
+  friend impl::RunQueueImpl;
 
  private:
 

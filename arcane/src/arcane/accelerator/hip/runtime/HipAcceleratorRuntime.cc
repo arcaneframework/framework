@@ -25,7 +25,7 @@
 #include "arcane/accelerator/core/RunQueueBuildInfo.h"
 #include "arcane/accelerator/core/Memory.h"
 #include "arcane/accelerator/core/internal/IRunnerRuntime.h"
-#include "arcane/accelerator/core/internal/AcceleratorCoreGlobalInternal.h"
+#include "arcane/accelerator/core/internal/RegisterRuntimeInfo.h"
 #include "arcane/accelerator/core/internal/IRunQueueStream.h"
 #include "arcane/accelerator/core/internal/IRunQueueEventImpl.h"
 #include "arcane/accelerator/core/DeviceInfoList.h"
@@ -92,7 +92,7 @@ class HipRunQueueStream
   }
   bool _barrierNoException() override
   {
-    return hipStreamSynchronize(m_hip_stream) != HIP_SUCCESS;
+    return hipStreamSynchronize(m_hip_stream) != hipSuccess;
   }
   void copyMemory(const MemoryCopyArgs& args) override
   {
@@ -327,7 +327,7 @@ class HipRunnerRuntime
                           ptr, pa.devicePointer, pa.hostPointer);
   }
 
-  void pushProfilerRange(const String& name) override
+  void pushProfilerRange(const String& name, [[maybe_unused]] Int32 color) override
   {
 #ifdef ARCANE_HAS_ROCTX
     roctxRangePush(name.localstr());
@@ -342,7 +342,7 @@ class HipRunnerRuntime
 
  public:
 
-  void fillDevices();
+  void fillDevices(bool is_verbose);
 
  private:
 
@@ -355,12 +355,13 @@ class HipRunnerRuntime
 /*---------------------------------------------------------------------------*/
 
 void HipRunnerRuntime::
-fillDevices()
+fillDevices(bool is_verbose)
 {
   int nb_device = 0;
   ARCANE_CHECK_HIP(hipGetDeviceCount(&nb_device));
   std::ostream& omain = std::cout;
-  omain << "ArcaneHIP: Initialize Arcane HIP runtime nb_available_device=" << nb_device << "\n";
+  if (is_verbose)
+    omain << "ArcaneHIP: Initialize Arcane HIP runtime nb_available_device=" << nb_device << "\n";
   for (int i = 0; i < nb_device; ++i) {
     OStringStream ostr;
     std::ostream& o = ostr.stream();
@@ -393,8 +394,19 @@ fillDevices()
       << " " << dp.maxGridSize[2] << "\n";
     o << " hasManagedMemory = " << has_managed_memory << "\n";
 
+    {
+      hipDevice_t device;
+      ARCANE_CHECK_HIP(hipDeviceGet(&device, i));
+      hipUUID device_uuid;
+      ARCANE_CHECK_HIP(hipDeviceGetUuid(&device_uuid, device));
+      o << " deviceUuid=";
+      impl::printUUID(o, device_uuid.bytes);
+      o << "\n";
+    }
+
     String description(ostr.str());
-    omain << description;
+    if (is_verbose)
+      omain << description;
 
     DeviceInfo device_info;
     device_info.setDescription(description);
@@ -414,8 +426,8 @@ class HipMemoryCopier
             MutableMemoryView to, [[maybe_unused]] eMemoryRessource to_mem,
             const RunQueue* queue) override
   {
-    if (queue){
-      queue->copyMemory(MemoryCopyArgs(to.bytes(),from.bytes()).addAsync(queue->isAsync()));
+    if (queue) {
+      queue->copyMemory(MemoryCopyArgs(to.bytes(), from.bytes()).addAsync(queue->isAsync()));
       return;
     }
     // 'hipMemcpyDefault' sait automatiquement ce qu'il faut faire en tenant
@@ -442,7 +454,7 @@ Arcane::Accelerator::Hip::HipMemoryCopier global_hip_memory_copier;
 // Cette fonction est le point d'entrée utilisé lors du chargement
 // dynamique de cette bibliothèque
 extern "C" ARCANE_EXPORT void
-arcaneRegisterAcceleratorRuntimehip()
+arcaneRegisterAcceleratorRuntimehip(Arcane::Accelerator::RegisterRuntimeInfo& init_info)
 {
   using namespace Arcane;
   using namespace Arcane::Accelerator::Hip;
@@ -455,7 +467,7 @@ arcaneRegisterAcceleratorRuntimehip()
   mrm->setAllocator(eMemoryRessource::HostPinned, getHipHostPinnedMemoryAllocator());
   mrm->setAllocator(eMemoryRessource::Device, getHipDeviceMemoryAllocator());
   mrm->setCopier(&global_hip_memory_copier);
-  global_hip_runtime.fillDevices();
+  global_hip_runtime.fillDevices(init_info.isVerbose());
 }
 
 /*---------------------------------------------------------------------------*/

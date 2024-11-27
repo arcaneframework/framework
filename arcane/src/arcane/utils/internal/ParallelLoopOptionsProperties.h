@@ -5,51 +5,41 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ProfileRegion.h                                             (C) 2000-2024 */
+/* ParallelLoopOptionsProperties.h                             (C) 2000-2024 */
 /*                                                                           */
-/* Région pour le profiling.                                                 */
+/* Options de configuration pour les boucles parallèles en multi-thread.     */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_ACCELERATOR_CORE_INTERNAL_PROFILEREGION_H
-#define ARCANE_ACCELERATOR_CORE_INTERNAL_PROFILEREGION_H
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-#include "arcane/accelerator/core/AcceleratorCoreGlobal.h"
-
+#ifndef ARCANE_UTILS_INTERNAL_PARALLELLOOPOPTIONSPROPERTIES_H
+#define ARCANE_UTILS_INTERANL_PARALLELLOOPOPTIONSPROPERTIES_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arcane::Accelerator
+#include "arcane/utils/ParallelLoopOptions.h"
+#include "arcane/utils/PropertyDeclarations.h"
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace Arcane
 {
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \internal
- * \brief Région pour le profiling.
- *
- * Cette classe permet d'associer des informations de profiling à tous les
- * noyaux de calcul exécutés entre le constructeur et le destructeur d'une
- * instance de cette classe.
+ * \brief Classe pour fixer les valeurs de ParallelLoopOptions via des propriétés.
  */
-class ARCANE_ACCELERATOR_CORE_EXPORT ProfileRegion
+class ARCANE_UTILS_EXPORT ParallelLoopOptionsProperties
+: public ParallelLoopOptions
 {
- public:
-
-  ProfileRegion(const RunQueue& queue, const String& name);
-  ~ProfileRegion();
-
- private:
-
-  impl::IRunnerRuntime* m_runtime = nullptr;
+  ARCANE_DECLARE_PROPERTY_CLASS(ParallelLoopOptions);
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // namespace Arcane::Accelerator
+} // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif
+#endif  

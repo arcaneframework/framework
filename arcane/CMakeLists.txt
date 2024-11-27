@@ -632,8 +632,6 @@ if(MSVC12)
  add_definitions(/EHs)
 endif()
 
-# set(ARCANE_USE_STD_UNORDEREDMAP YES)
-
 # Oblige à declarer les symboles externes des bibliotheques
 set(ARCANE_USE_HIDDEN_VISIBILITY TRUE)
 
@@ -859,9 +857,9 @@ option(ARCANE_DISABLE_PERFCOUNTER_TESTS "True if we disable tests using perf cou
 
 # Option pour indiquer si on veut utiliser la nouvelle implémentation
 # de ItemInternalMap. Cette nouvelle implémentation est plus rapide et consomme
-# moins de mémoire que l'ancienne mais est en cours de validation.
-# Elle n'est donc pas active par défaut.
-option(ARCANE_USE_HASHTABLEMAP2_FOR_ITEMINTERNALMAP "True if we want to use new implementation of ItemInternalMap" OFF)
+# moins de mémoire que l'ancienne.
+# L'ancienne version est conservée tant que la validation est en cours
+option(ARCANE_USE_HASHTABLEMAP2_FOR_ITEMINTERNALMAP "True if we want to use new implementation of ItemInternalMap" ON)
 
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------

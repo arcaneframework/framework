@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* BasicSerializer.cc                                          (C) 2000-2023 */
+/* BasicSerializer.cc                                          (C) 2000-2024 */
 /*                                                                           */
 /* Implémentation simple de 'ISerializer'.                                   */
 /*---------------------------------------------------------------------------*/
@@ -280,6 +280,11 @@ class BasicSerializerNewImpl
   {
     _allocBuffer(size);
     m_sizes_view = Int64ArrayView(NB_SIZE_ELEM,(Int64*)&m_buffer_view[0]);
+  }
+
+  void releaseBuffer() override
+  {
+    m_buffer.dispose();
   }
 
   void setFromSizes() override
@@ -1293,6 +1298,15 @@ void BasicSerializer::
 preallocate(Int64 size)
 {
   return _p()->preallocate(size);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void BasicSerializer::
+releaseBuffer()
+{
+  _p()->releaseBuffer();
 }
 
 /*---------------------------------------------------------------------------*/

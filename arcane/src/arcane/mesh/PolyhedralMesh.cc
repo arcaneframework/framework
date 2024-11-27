@@ -20,14 +20,19 @@
 #include "arcane/core/VariableBuildInfo.h"
 #include "arcane/core/MeshBuildInfo.h"
 #include "arcane/core/ServiceFactory.h"
+#include "arcane/core/AbstractService.h"
+#include "arcane/core/IMeshFactory.h"
+#include "arcane/core/ItemInternal.h"
+#include "arcane/core/IDoFFamily.h"
+#include "arcane/core/IMeshCompactMng.h"
+#include "arcane/core/IMeshCompacter.h"
+#include "arcane/core/internal/IVariableMngInternal.h"
+#include "arcane/core/internal/IPolyhedralMeshModifier.h"
+
 #include "arcane/mesh/ItemFamily.h"
 #include "arcane/mesh/DynamicMeshKindInfos.h"
 #include "arcane/utils/ITraceMng.h"
 #include "arcane/utils/FatalErrorException.h"
-#include "arcane/core/AbstractService.h"
-#include "arcane/core/IMeshFactory.h"
-#include "arcane/core/ItemInternal.h"
-#include "arcane/core/internal/IVariableMngInternal.h"
 
 #ifdef ARCANE_HAS_POLYHEDRAL_MESH_TOOLS
 
@@ -67,7 +72,9 @@ namespace mesh
   /*---------------------------------------------------------------------------*/
   /*---------------------------------------------------------------------------*/
 
-  class PolyhedralFamily : public ItemFamily
+  class PolyhedralFamily
+    : public ItemFamily
+    , public IDoFFamily
   {
     ItemSharedInfoWithType* m_shared_info = nullptr;
     Int32UniqueArray m_empty_connectivity{ 0 };
@@ -77,19 +84,13 @@ namespace mesh
    public:
 
     inline static const String m_arcane_item_lids_property_name{ "Arcane_Item_Lids" }; // inline used to initialize within the declaration
+    inline static const String m_arcane_remove_item_property_name{ "Arcane_Remove_Items" }; // inline used to initialize within the declaration
 
    public:
 
     PolyhedralFamily(IMesh* mesh, eItemKind ik, String name)
     : ItemFamily(mesh, ik, name)
-    {
-      ItemFamily::build();
-      m_sub_domain_id = subDomain()->subDomainId();
-      ItemTypeMng* itm = m_mesh->itemTypeMng();
-      ItemTypeInfo* dof_type_info = itm->typeFromId(IT_NullType);
-      m_shared_info = _findSharedInfo(dof_type_info);
-      _updateEmptyConnectivity();
-    }
+    {}
 
    public:
 
@@ -133,6 +134,11 @@ namespace mesh
       _updateItemInternalList();
     }
 
+    void removeItems(Int32ConstArrayView local_ids)
+    {
+      _removeMany(local_ids);
+    }
+
     void _updateItemInternalList()
     {
       switch (itemKind()) {
@@ -163,6 +169,51 @@ namespace mesh
         item_internal_connectivity_list->_setConnectivityIndex(item_kind, m_empty_connectivity_indexes);
         item_internal_connectivity_list->_setConnectivityNbItem(item_kind, m_empty_connectivity_nb_item);
       }
+    }
+
+    // IItemFamily
+    IDoFFamily* toDoFFamily() override {
+      return this;
+    }
+    // todo bloquer toutes les methodes d'allocation de IItemFamily
+
+    void build() override {
+      ItemFamily::build();
+      m_sub_domain_id = subDomain()->subDomainId();
+      ItemTypeMng* itm = m_mesh->itemTypeMng();
+      ItemTypeInfo* dof_type_info = itm->typeFromId(IT_NullType);
+      m_shared_info = _findSharedInfo(dof_type_info);
+      _updateEmptyConnectivity();
+    }
+
+    // IDoFFamily
+    String name() const override { return ItemFamily::name(); }
+    String fullName() const override { return ItemFamily::fullName(); }
+    Integer nbItem() const override { return ItemFamily::nbItem(); }
+    ItemGroup allItems() const override { return ItemFamily::allItems(); }
+    void endUpdate() override { info() << "END UPDATE "<< m_name ; return ItemFamily::endUpdate(); }
+    IItemFamily* itemFamily() override { return this; }
+
+
+    DoFVectorView addDoFs(Int64ConstArrayView dof_uids, Int32ArrayView dof_lids){
+      auto* polyhedral_mesh_modifier = m_mesh->_internalApi()->polyhedralMeshModifier();
+      ARCANE_CHECK_POINTER(polyhedral_mesh_modifier);
+      polyhedral_mesh_modifier->addItems(dof_uids, dof_lids, ItemFamily::itemKind(), name());
+      return ItemFamily::view(dof_lids);
+    }
+
+    DoFVectorView addGhostDoFs(Int64ConstArrayView dof_uids, Int32ArrayView dof_lids,
+                               Int32ConstArrayView owners)
+    {
+      ARCANE_NOT_YET_IMPLEMENTED("");
+      ARCANE_UNUSED(dof_uids);
+      ARCANE_UNUSED(owners);
+      return ItemFamily::view(dof_lids);
+    }
+
+    void removeDoFs(Int32ConstArrayView items_local_id){
+      auto* mesh_modifier = m_mesh->_internalApi()->polyhedralMeshModifier();
+      mesh_modifier->removeItems(items_local_id, ItemFamily::itemKind(), m_name);
     }
   };
 
@@ -230,7 +281,11 @@ namespace mesh
       Neo::FutureItemRange m_future_items;
 
      public:
-
+      void fillArrayView(Int32ArrayView local_ids, Neo::EndOfMeshUpdate mesh_state)
+      {
+        auto lids = m_future_items.get(mesh_state);
+        std::copy(lids.begin(),lids.end(),local_ids.begin());
+      }
       friend class PolyhedralMeshImpl;
     };
 
@@ -282,7 +337,7 @@ namespace mesh
       item_family.addMeshScalarProperty<Neo::utils::Int32>(PolyhedralFamily::m_arcane_item_lids_property_name.localstr());
       mesh_graph.addAlgorithm(Neo::MeshKernel::InProperty{ item_family, item_family.lidPropName() },
                               Neo::MeshKernel::OutProperty{ item_family, PolyhedralFamily::m_arcane_item_lids_property_name.localstr() },
-                              [arcane_item_family, uids](Neo::ItemLidsProperty const& lids_property,
+                              [arcane_item_family, uids,added_items](Neo::ItemLidsProperty const& lids_property,
                                                          Neo::MeshScalarPropertyT<Neo::utils::Int32>&) {
                                 Int32UniqueArray arcane_items(uids.size());
                                 arcane_item_family->addItems(uids, arcane_items);
@@ -290,7 +345,29 @@ namespace mesh
                                 // debug check lid matching. maybe to remove if too coostly
                                 auto neo_lids = lids_property.values();
                                 if (!std::equal(neo_lids.begin(), neo_lids.end(), arcane_items.begin()))
+                                if (!std::equal(added_items.new_items.begin(), added_items.new_items.end(), arcane_items.begin()))
                                   arcane_item_family->traceMng()->fatal() << "Inconsistent item lids generation between Arcane and Neo.";
+                              });
+    }
+
+    /*---------------------------------------------------------------------------*/
+
+    void scheduleRemoveItems(PolyhedralFamily* arcane_item_family,
+                             Int32ConstArrayView local_ids)
+    {
+      auto& item_family = m_mesh.findFamily(itemKindArcaneToNeo(arcane_item_family->itemKind()),
+                                            arcane_item_family->name().localstr());
+      Neo::ItemRange removed_items{Neo::ItemLocalIds{{local_ids.begin(),local_ids.end()},0,0}};
+      m_mesh.scheduleRemoveItems(item_family, removed_items);
+      // Remove Arcane items
+      auto& mesh_graph = m_mesh.internalMeshGraph();
+      item_family.addMeshScalarProperty<Neo::utils::Int32>(PolyhedralFamily::m_arcane_remove_item_property_name.localstr());
+      mesh_graph.addAlgorithm(Neo::MeshKernel::InProperty{ item_family, m_mesh._removeItemPropertyName(item_family) },
+                              Neo::MeshKernel::OutProperty{ item_family, PolyhedralFamily::m_arcane_remove_item_property_name.localstr() },
+                              [arcane_item_family,local_ids](Neo::MeshScalarPropertyT<Neo::utils::Int32> const&,
+                                                             Neo::MeshScalarPropertyT<Neo::utils::Int32>&) {
+                                // plutôt utiliser remove property ?
+                                arcane_item_family->removeItems(local_ids);
                               });
     }
 
@@ -450,9 +527,9 @@ namespace mesh
 
     /*---------------------------------------------------------------------------*/
 
-    void applyScheduledOperations() noexcept
+    Neo::EndOfMeshUpdate applyScheduledOperations() noexcept
     {
-      m_mesh.applyScheduledOperations();
+      return m_mesh.applyScheduledOperations();
     }
 
   };
@@ -483,6 +560,32 @@ namespace mesh
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+class mesh::PolyhedralMesh::PolyhedralMeshModifier
+: public IPolyhedralMeshModifier
+{
+ public:
+
+  explicit PolyhedralMeshModifier(PolyhedralMesh* mesh)
+  : m_mesh(mesh)
+  {}
+
+  void addItems(Int64ConstArrayView unique_ids, Int32ArrayView local_ids, eItemKind ik, const String& family_name) override
+  {
+    m_mesh->addItems(unique_ids,local_ids,ik,family_name);
+  }
+
+  void removeItems(Int32ConstArrayView local_ids, eItemKind ik, const String& family_name) override
+  {
+    m_mesh->removeItems(local_ids, ik, family_name);
+  }
+
+ private:
+  PolyhedralMesh* m_mesh;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 class mesh::PolyhedralMesh::InternalApi
 : public IMeshInternal
 {
@@ -491,6 +594,7 @@ class mesh::PolyhedralMesh::InternalApi
   explicit InternalApi(PolyhedralMesh* mesh)
   : m_mesh(mesh)
   , m_connectivity_mng(std::make_unique<ItemConnectivityMng>(mesh->traceMng()))
+  , m_polyhedral_mesh_modifier(std::make_unique<PolyhedralMeshModifier>(mesh))
   {}
 
  public:
@@ -509,12 +613,101 @@ class mesh::PolyhedralMesh::InternalApi
     return m_connectivity_mng.get();
   }
 
+  IPolyhedralMeshModifier* polyhedralMeshModifier() const noexcept override
+  {
+    return m_polyhedral_mesh_modifier.get();
+  }
+
  private:
 
   PolyhedralMesh* m_mesh = nullptr;
   std::unique_ptr<IItemConnectivityMng> m_connectivity_mng = nullptr;
+  std::unique_ptr<IPolyhedralMeshModifier> m_polyhedral_mesh_modifier = nullptr;
 };
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+class mesh::PolyhedralMesh::NoCompactionMeshCompacter
+: public IMeshCompacter
+{
+ public:
+  explicit NoCompactionMeshCompacter(PolyhedralMesh* mesh)
+  : m_mesh(mesh)
+  , m_trace_mng(mesh->traceMng()){}
+
+  void doAllActions() override {_info();};
+
+  void beginCompact() override {_info();};
+  void compactVariablesAndGroups() override {_info();};
+  void updateInternalReferences() override {_info();};
+  void endCompact() override {_info();};
+  void finalizeCompact() override {_info();};
+
+  IMesh* mesh() const override {return m_mesh;};
+
+  const ItemFamilyCompactInfos* findCompactInfos(IItemFamily* family) const override {_info(); return nullptr;}
+
+  ePhase phase() const override {_info(); return ePhase::Ended;}
+
+  void setSorted(bool v) override {_info();};
+
+  bool isSorted() const override {_info();return false;};
+
+  ItemFamilyCollection families() const override {_info();return ItemFamilyCollection {};};
+
+  void _setCompactVariablesAndGroups(bool v) override {_info();};
+
+ private:
+  PolyhedralMesh* m_mesh = nullptr;
+  ITraceMng* m_trace_mng = nullptr;
+
+  void _info() const {m_trace_mng->info() << A_FUNCINFO << "No compacting in PolyhedralMesh";}
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+class mesh::PolyhedralMesh::NoCompactionMeshCompactMng
+: public IMeshCompactMng
+{
+ public:
+  explicit NoCompactionMeshCompactMng(PolyhedralMesh* mesh)
+  : m_mesh(mesh)
+  , m_trace_mng(mesh->traceMng())
+  , m_mesh_compacter{std::make_unique<NoCompactionMeshCompacter>(m_mesh)}
+  {}
+
+  IMesh* mesh() const override {return m_mesh;}
+  IMeshCompacter* beginCompact() override
+  {
+    _info();
+    return m_mesh_compacter.get();
+  }
+
+  IMeshCompacter* beginCompact(IItemFamily* family) override
+  {
+    ARCANE_UNUSED(family);
+    _info();
+    return m_mesh_compacter.get();
+  };
+
+  void endCompact() override {_info();};
+
+  IMeshCompacter* compacter() override
+  {
+    _info();
+    return m_mesh_compacter.get();
+  };
+
+
+ private:
+  PolyhedralMesh* m_mesh = nullptr;
+  ITraceMng* m_trace_mng = nullptr;
+  std::unique_ptr<IMeshCompacter> m_mesh_compacter = nullptr;
+
+  void _info() const {m_trace_mng->info() << A_FUNCINFO << "No compacting in PolyhedralMesh";}
+};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -562,6 +755,7 @@ PolyhedralMesh(ISubDomain* subdomain, const MeshBuildInfo& mbi)
 , m_variable_mng{ subdomain->variableMng() }
 , m_mesh_checker{ this }
 , m_internal_api{std::make_unique<InternalApi>(this)}
+, m_compact_mng{std::make_unique<NoCompactionMeshCompactMng>(this)}
 {
   m_mesh_handle._setMesh(this);
   m_mesh_item_internal_list.mesh = this;
@@ -580,14 +774,15 @@ allocateItems(const Arcane::ItemAllocationInfo& item_allocation_info)
   auto family_index = 0;
   // Prepare item creation
   for (auto& family_info : item_allocation_info.family_infos) {
-    auto item_family = _createItemFamily(family_info.item_kind, family_info.name);
-    m_trace_mng->debug(Trace::High) << " Create items " << family_info.name;
+    bool create_if_needed = true;
+    auto* item_family = _findItemFamily(family_info.item_kind, family_info.name,create_if_needed);
+    m_trace_mng->debug() << " Create items " << family_info.name;
     m_mesh->scheduleAddItems(item_family, family_info.item_uids, item_local_ids[family_index++]);
   }
   // Prepare connectivity creation
   family_index = 0;
   for (auto& family_info : item_allocation_info.family_infos) {
-    auto item_family = _findItemFamily(family_info.item_kind, family_info.name);
+    auto* item_family = _findItemFamily(family_info.item_kind, family_info.name);
     m_trace_mng->debug(Trace::High) << "Current family " << family_info.name;
     for (auto& current_connected_family_info : family_info.connected_family_info) {
       auto connected_family = _findItemFamily(current_connected_family_info.item_kind, current_connected_family_info.name);
@@ -619,7 +814,7 @@ allocateItems(const Arcane::ItemAllocationInfo& item_allocation_info)
       ++family_index;
       continue;
     }
-    auto item_family = _findItemFamily(family_info.item_kind, family_info.name);
+    auto* item_family = _findItemFamily(family_info.item_kind, family_info.name);
     if (item_family == itemFamily(IK_Node)) { // mesh node coords
       m_arcane_node_coords = std::make_unique<VariableNodeReal3>(VariableBuildInfo(this, family_info.item_coordinates_variable_name));
       m_arcane_node_coords->setUsed(true);
@@ -644,7 +839,7 @@ allocateItems(const Arcane::ItemAllocationInfo& item_allocation_info)
       ++family_index;
       continue;
     }
-    auto item_family = _findItemFamily(family_info.item_kind, family_info.name);
+    auto* item_family = _findItemFamily(family_info.item_kind, family_info.name);
     if (item_family == itemFamily(IK_Node)) { // mesh node coords
       m_mesh->scheduleSetItemCoordinates(item_family, item_local_ids[family_index], family_info.item_coordinates, *m_arcane_node_coords);
     }
@@ -842,6 +1037,7 @@ _createItemFamily(eItemKind ik, const String& name)
     _updateMeshInternalList(ik);
   }
   m_item_family_collection.add(current_family);
+  current_family->build();
   return current_family;
 }
 
@@ -1097,6 +1293,110 @@ _internalApi()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+IMeshCompactMng* mesh::PolyhedralMesh::
+_compactMng()
+{
+  return m_compact_mng.get();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void mesh::PolyhedralMesh::
+addItems(Int64ConstArrayView unique_ids, Int32ArrayView local_ids, eItemKind ik, const String& family_name)
+{
+  auto* item_family = _findItemFamily(ik, family_name, false);
+  PolyhedralMeshImpl::ItemLocalIds item_local_ids;
+  m_mesh->scheduleAddItems(item_family,unique_ids,item_local_ids);
+  auto mesh_state = m_mesh->applyScheduledOperations();
+  item_local_ids.fillArrayView(local_ids,mesh_state);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void mesh::PolyhedralMesh::
+removeItems(Int32ConstArrayView local_ids, eItemKind ik, const String& family_name)
+{
+  auto* item_family = _findItemFamily(ik, family_name, false);
+  m_mesh->scheduleRemoveItems(item_family,local_ids);
+  m_mesh->applyScheduledOperations();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+CellGroup mesh::PolyhedralMesh::
+allActiveCells()
+{
+  return allCells().activeCellGroup();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+CellGroup mesh::PolyhedralMesh::ownActiveCells()
+{
+  return allCells().ownActiveCellGroup();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+CellGroup mesh::PolyhedralMesh::
+allLevelCells(const Integer& level)
+{
+  return allCells().levelCellGroup(level);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+CellGroup mesh::PolyhedralMesh::
+ownLevelCells(const Integer& level)
+{
+  return allCells().ownLevelCellGroup(level);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+FaceGroup mesh::PolyhedralMesh::
+allActiveFaces()
+{
+  return allCells().activeFaceGroup();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+FaceGroup mesh::PolyhedralMesh::
+ownActiveFaces()
+{
+  return allCells().ownActiveFaceGroup();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+FaceGroup mesh::PolyhedralMesh::
+innerActiveFaces()
+{
+  return allCells().innerActiveFaceGroup();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+FaceGroup mesh::PolyhedralMesh::outerActiveFaces()
+{
+  return allCells().outerActiveFaceGroup();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 
 } // End namespace Arcane
 

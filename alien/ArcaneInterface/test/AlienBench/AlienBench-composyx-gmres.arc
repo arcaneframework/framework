@@ -20,9 +20,9 @@
       <cartesian>
         <origine>0. 0. 0.</origine>
         <nsd>1 1 1</nsd>
-        <lx nx="2">1.</lx>
-        <ly ny="2">1.</ly>
-        <lz nz="1">1.</lz>
+        <lx nx="10">1.</lx>
+        <ly ny="10">1.</ly>
+        <lz nz="10">1.</lz>
       </cartesian>
     </meshgenerator>
   </mesh>

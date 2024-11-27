@@ -208,6 +208,19 @@ _testEnumerationAndConnectivities(IMesh* mesh)
       debug(Trace::High) << "edge node lid " << node.localId() << " uid " << node.uniqueId();
     }
   }
+  // Active items : no AMR available with polyhedral mesh but must return all items
+  bool is_active_ok = (mesh->allActiveCells().size() == mesh->allCells().size());
+  is_active_ok &= (mesh->ownActiveCells().size() == mesh->ownCells().size());
+  is_active_ok &= (mesh->allActiveFaces().size() == mesh->allFaces().size());
+  is_active_ok &= (mesh->ownFaces().size() == mesh->ownFaces().size());
+  is_active_ok &= (mesh->innerActiveFaces().size() == mesh->allCells().innerFaceGroup().size());
+  is_active_ok &= (mesh->outerActiveFaces().size() == mesh->outerFaces().size());
+  is_active_ok &= (mesh->allLevelCells(0).size() == mesh->allCells().size());
+  is_active_ok &= (mesh->ownLevelCells(0).size() == mesh->ownCells().size());
+  is_active_ok &= (mesh->allLevelCells(1).empty());
+  is_active_ok &= (mesh->ownLevelCells(1).empty());
+  if (!is_active_ok)
+    ARCANE_FATAL("Polyhedral mesh implem does not handle correctly activeCells methods. Should return all items.");
 }
 
 /*---------------------------------------------------------------------------*/
@@ -370,7 +383,8 @@ _testGroups(IMesh* mesh)
     vc.areEqual(group.size(), group_infos->getSize(), "check group size");
   }
   ValueChecker vc{ A_FUNCINFO };
-  auto nb_group = 8 + options()->nbMeshGroup;
+  auto nb_internal_group = 19;
+  auto nb_group = nb_internal_group + options()->nbMeshGroup;
   vc.areEqual(nb_group, mesh->groups().count(), "check number of groups in the mesh");
 
   for (const auto& boundary_face_group_name : options()->getCheckBoundaryFaceGroup()) {

@@ -76,6 +76,15 @@ namespace
     if (x)
       x->stopProfiling();
   }
+  inline void
+  _finalize(eExecutionPolicy p, ITraceMng* tm)
+  {
+    auto* x = _getRuntimeNoCheck(p);
+    if (x) {
+      x->stopProfiling();
+      x->finalize(tm);
+    }
+  }
 } // namespace
 
 } // namespace Arcane::Accelerator
@@ -486,6 +495,18 @@ stopAllProfiling()
   _stopProfiling(eExecutionPolicy::HIP);
   _stopProfiling(eExecutionPolicy::Sequential);
   _stopProfiling(eExecutionPolicy::Thread);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void RunnerInternal::
+finalize(ITraceMng* tm)
+{
+  _finalize(eExecutionPolicy::CUDA, tm);
+  _finalize(eExecutionPolicy::HIP, tm);
+  _finalize(eExecutionPolicy::Sequential, tm);
+  _finalize(eExecutionPolicy::Thread, tm);
 }
 
 /*---------------------------------------------------------------------------*/

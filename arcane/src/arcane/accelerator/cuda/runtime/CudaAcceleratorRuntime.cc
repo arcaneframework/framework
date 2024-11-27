@@ -30,7 +30,7 @@
 #include "arcane/accelerator/core/DeviceInfoList.h"
 
 #include "arcane/accelerator/core/internal/IRunnerRuntime.h"
-#include "arcane/accelerator/core/internal/AcceleratorCoreGlobalInternal.h"
+#include "arcane/accelerator/core/internal/RegisterRuntimeInfo.h"
 #include "arcane/accelerator/core/internal/RunCommandImpl.h"
 #include "arcane/accelerator/core/internal/IRunQueueStream.h"
 #include "arcane/accelerator/core/internal/IRunQueueEventImpl.h"
@@ -75,21 +75,6 @@ void arcaneCheckCudaErrors(const TraceInfo& ti, CUresult e)
 
   ARCANE_FATAL("CUDA Error trace={0} e={1} name={2} message={3}",
                ti, e, error_name, error_message);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void _printUUID(std::ostream& o, char bytes[16])
-{
-  static const char hexa_chars[16] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f' };
-
-  for (int i = 0; i < 16; ++i) {
-    o << hexa_chars[(bytes[i] >> 4) & 0xf];
-    o << hexa_chars[bytes[i] & 0xf];
-    if (i == 4 || i == 6 || i == 8 || i == 10)
-      o << '-';
-  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -382,10 +367,24 @@ class CudaRunnerRuntime
                           ptr, ca.devicePointer, ca.hostPointer);
   }
 
-  void pushProfilerRange(const String& name) override
+  void pushProfilerRange(const String& name, Int32 color_rgb) override
   {
 #ifdef ARCANE_HAS_CUDA_NVTOOLSEXT
-    nvtxRangePush(name.localstr());
+    if (color_rgb >= 0) {
+      // NOTE: Il faudrait faire: nvtxEventAttributes_t eventAttrib = { 0 };
+      // mais cela provoque pleins d'avertissement de type 'missing initializer for member'
+      nvtxEventAttributes_t eventAttrib;
+      std::memset(&eventAttrib, 0, sizeof(nvtxEventAttributes_t));
+      eventAttrib.version = NVTX_VERSION;
+      eventAttrib.size = NVTX_EVENT_ATTRIB_STRUCT_SIZE;
+      eventAttrib.colorType = NVTX_COLOR_ARGB;
+      eventAttrib.color = color_rgb;
+      eventAttrib.messageType = NVTX_MESSAGE_TYPE_ASCII;
+      eventAttrib.message.ascii = name.localstr();
+      nvtxRangePushEx(&eventAttrib);
+    }
+    else
+      nvtxRangePush(name.localstr());
 #endif
   }
   void popProfilerRange() override
@@ -395,9 +394,14 @@ class CudaRunnerRuntime
 #endif
   }
 
+  void finalize(ITraceMng* tm) override
+  {
+    finalizeCudaMemoryAllocators(tm);
+  }
+
  public:
 
-  void fillDevices();
+  void fillDevices(bool is_verbose);
 
  private:
 
@@ -410,12 +414,13 @@ class CudaRunnerRuntime
 /*---------------------------------------------------------------------------*/
 
 void CudaRunnerRuntime::
-fillDevices()
+fillDevices(bool is_verbose)
 {
   int nb_device = 0;
   ARCANE_CHECK_CUDA(cudaGetDeviceCount(&nb_device));
   std::ostream& omain = std::cout;
-  omain << "ArcaneCUDA: Initialize Arcane CUDA runtime nb_available_device=" << nb_device << "\n";
+  if (is_verbose)
+    omain << "ArcaneCUDA: Initialize Arcane CUDA runtime nb_available_device=" << nb_device << "\n";
   for (int i = 0; i < nb_device; ++i) {
     cudaDeviceProp dp;
     cudaGetDeviceProperties(&dp, i);
@@ -453,11 +458,12 @@ fillDevices()
       CUuuid device_uuid;
       ARCANE_CHECK_CUDA(cuDeviceGetUuid(&device_uuid, device));
       o << " deviceUuid=";
-      _printUUID(o, device_uuid.bytes);
+      impl::printUUID(o, device_uuid.bytes);
       o << "\n";
     }
     String description(ostr.str());
-    omain << description;
+    if (is_verbose)
+      omain << description;
 
     DeviceInfo device_info;
     device_info.setDescription(description);
@@ -524,7 +530,7 @@ Arcane::Accelerator::Cuda::CudaMemoryCopier global_cuda_memory_copier;
 // Cette fonction est le point d'entrée utilisé lors du chargement
 // dynamique de cette bibliothèque
 extern "C" ARCANE_EXPORT void
-arcaneRegisterAcceleratorRuntimecuda()
+arcaneRegisterAcceleratorRuntimecuda(Arcane::Accelerator::RegisterRuntimeInfo& init_info)
 {
   using namespace Arcane;
   using namespace Arcane::Accelerator::Cuda;
@@ -538,7 +544,7 @@ arcaneRegisterAcceleratorRuntimecuda()
   mrm->setAllocator(eMemoryRessource::HostPinned, getCudaHostPinnedMemoryAllocator());
   mrm->setAllocator(eMemoryRessource::Device, getCudaDeviceMemoryAllocator());
   mrm->setCopier(&global_cuda_memory_copier);
-  global_cuda_runtime.fillDevices();
+  global_cuda_runtime.fillDevices(init_info.isVerbose());
 }
 
 /*---------------------------------------------------------------------------*/

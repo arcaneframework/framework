@@ -511,14 +511,12 @@ public:
   typedef composyx::ConjugateGradient<ParMatrixType,
                                       ParVectorType,
                                       ParDiagPrecondType>          ParDiagCGSolverType ;
-
   typedef composyx::ConjugateGradient<LocMatrixType,
                                       LocVectorType,
                                       SeqJacobiSolverType>         SeqASCGSolverType ;
   typedef composyx::ConjugateGradient<ParMatrixType,
                                       ParVectorType,
                                       ParAScharzPrecondType>       ParASCGSolverType ;
-
 
   typedef composyx::BiCGSTAB<LocMatrixType,LocVectorType>          SeqBCGSSolverType ;
   typedef composyx::BiCGSTAB<ParMatrixType,ParVectorType>          ParBCGSSolverType ;

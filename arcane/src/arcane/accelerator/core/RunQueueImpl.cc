@@ -16,13 +16,15 @@
 #include "arcane/utils/FatalErrorException.h"
 #include "arcane/utils/MemoryUtils.h"
 
-#include "arcane/accelerator/core/Runner.h"
-#include "arcane/accelerator/core/RunQueueBuildInfo.h"
 #include "arcane/accelerator/core/internal/IRunnerRuntime.h"
 #include "arcane/accelerator/core/internal/IRunQueueStream.h"
-#include "arcane/accelerator/core/DeviceId.h"
 #include "arcane/accelerator/core/internal/RunCommandImpl.h"
 #include "arcane/accelerator/core/internal/RunnerImpl.h"
+#include "arcane/accelerator/core/internal/IRunQueueEventImpl.h"
+#include "arcane/accelerator/core/Runner.h"
+#include "arcane/accelerator/core/RunQueueBuildInfo.h"
+#include "arcane/accelerator/core/DeviceId.h"
+#include "arcane/accelerator/core/RunQueueEvent.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -110,6 +112,53 @@ allocationOptions() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+bool RunQueueImpl::
+isAutoPrefetchCommand() const
+{
+  return m_runner_impl->isAutoPrefetchCommand();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void RunQueueImpl::
+copyMemory(const MemoryCopyArgs& args) const
+{
+  _internalStream()->copyMemory(args);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void RunQueueImpl::
+prefetchMemory(const MemoryPrefetchArgs& args) const
+{
+  _internalStream()->prefetchMemory(args);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void RunQueueImpl::
+recordEvent(RunQueueEvent& event)
+{
+  auto* p = event._internalEventImpl();
+  return p->recordQueue(_internalStream());
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void RunQueueImpl::
+waitEvent(RunQueueEvent& event)
+{
+  auto* p = event._internalEventImpl();
+  return p->waitForEvent(_internalStream());
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 RunQueueImpl* RunQueueImpl::
 create(RunnerImpl* r)
 {
@@ -142,6 +191,7 @@ _internalCreateOrGetRunCommandImpl()
   else {
     p = RunCommand::_internalCreateImpl(this);
   }
+  p->_reset();
   m_active_run_command_list.add(p);
   return p;
 }

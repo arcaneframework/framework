@@ -179,6 +179,10 @@ class DynamicMesh::InternalApi
     return m_connectivity_mng.get();
   }
 
+  IPolyhedralMeshModifier* polyhedralMeshModifier() const noexcept override
+  {
+    return nullptr;
+  }
  private:
 
   DynamicMesh* m_mesh = nullptr;

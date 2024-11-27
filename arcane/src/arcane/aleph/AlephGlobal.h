@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* AlephGlobal.h                                               (C) 2000-2023 */
+/* AlephGlobal.h                                               (C) 2000-2024 */
 /*                                                                           */
 /* Déclarations générales de la composante 'arcane_aleph'.                   */
 /*---------------------------------------------------------------------------*/
@@ -36,12 +36,18 @@ namespace Arcane
 
 class IAlephFactory;
 class IAlephTopology;
+class IAlephMatrix;
+class IAlephVector;
+class AlephKernel;
 class AlephTopology;
 class AlephMatrix;
 class AlephOrdering;
 class AlephIndexing;
 class AlephVector;
 class AlephParams;
+
+//! Type par défaut pour indexer les lignes et les colonnes des matrices et vecteurs
+using AlephInt = int;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

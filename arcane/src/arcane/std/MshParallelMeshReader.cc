@@ -522,7 +522,8 @@ _readNodesFromFileAscii()
          << " total_nb_node=" << total_nb_node
          << " min_tag=" << min_node_tag
          << " max_tag=" << max_node_tag
-         << " read_nb_part=" << m_nb_part;
+         << " read_nb_part=" << m_nb_part
+         << " nb_rank=" << m_parallel_mng->commSize();
 
   for (Integer i_entity = 0; i_entity < nb_entity; ++i_entity) {
     _readNodesOneEntity(i_entity);
@@ -968,6 +969,8 @@ _setNodesCoordinates()
 void MshParallelMeshReader::
 _allocateCells()
 {
+  // TODO: Allouer par bloc de 100000 mailles pour éviter de faire
+  // une trop grosse allocation
   IMesh* mesh = m_mesh;
   Integer nb_elements = m_mesh_info.cells_type.size();
   info() << "nb_of_elements=cells_type.size()=" << nb_elements;
@@ -1482,14 +1485,6 @@ readMeshFromMshFile(IMesh* mesh, const String& filename)
 
   // Détermine les rangs qui vont conserver les données
   m_nb_part = nb_rank;
-  if (nb_rank > 64)
-    m_nb_part = nb_rank / 2;
-  if (nb_rank > 128)
-    m_nb_part = nb_rank / 4;
-  if (nb_rank > 512)
-    m_nb_part = nb_rank / 8;
-  if (nb_rank > 2048)
-    m_nb_part = nb_rank / 16;
   m_parts_rank.resize(m_nb_part);
   for (Int32 i = 0; i < m_nb_part; ++i) {
     m_parts_rank[i] = i % nb_rank;
