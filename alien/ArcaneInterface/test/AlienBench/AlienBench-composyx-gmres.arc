@@ -20,9 +20,9 @@
       <cartesian>
         <origine>0. 0. 0.</origine>
         <nsd>1 1 1</nsd>
-        <lx nx="10">1.</lx>
-        <ly ny="10">1.</ly>
-        <lz nz="10">1.</lz>
+        <lx nx="2">1.</lx>
+        <ly ny="2">1.</ly>
+        <lz nz="1">1.</lz>
       </cartesian>
     </meshgenerator>
   </mesh>
@@ -31,7 +31,8 @@
     <alien-bench>
       <!-- big diagonal-coefficient keep diagonal dominant matrix -->
       <redistribution>false</redistribution>
-      <diagonal-coefficient>0.</diagonal-coefficient>
+      <homogeneous>true</homogeneous>
+      <diagonal-coefficient>10.</diagonal-coefficient>
       <lambdax>0.125</lambdax>
       <lambday>0.25</lambday>
       <alpha>10.</alpha>
@@ -40,8 +41,11 @@
 
      <linear-solver name="ComposyxSolver">
         <solver>gmres</solver>
+        <preconditioner>none</preconditioner>
         <max-iteration-num>1000</max-iteration-num>
         <stop-criteria-value>1e-8</stop-criteria-value>
+        <gmres-restart>2</gmres-restart>
+        <gmres-ortho>CGS</gmres-ortho>
         <output-level>1</output-level>
       </linear-solver>
 

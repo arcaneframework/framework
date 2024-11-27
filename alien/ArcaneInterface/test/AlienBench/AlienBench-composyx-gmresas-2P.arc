@@ -19,10 +19,10 @@
     <meshgenerator>
       <cartesian>
         <origine>0. 0. 0.</origine>
-        <nsd>2 2 1</nsd>
+        <nsd>2 1 1</nsd>
         <lx nx="10">1.</lx>
         <ly ny="10">1.</ly>
-        <lz nz="1">1.</lz>
+        <lz nz="10">1.</lz>
       </cartesian>
     </meshgenerator>
   </mesh>
@@ -44,7 +44,7 @@
         <preconditioner>none</preconditioner>
         <max-iteration-num>1000</max-iteration-num>
         <stop-criteria-value>1e-8</stop-criteria-value>
-        <gmres-restart>2</gmres-restart>
+        <gmres-restart>10</gmres-restart>
         <gmres-ortho>CGS</gmres-ortho>
         <output-level>1</output-level>
       </linear-solver>
