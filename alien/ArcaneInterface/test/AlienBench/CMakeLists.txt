@@ -231,6 +231,23 @@ if (TARGET trilinos)
             AlienBench-trilinosmuelu-4P.arc
             )
 endif ()
+
+if(TARGET COMPOSYX::composyx)
+
+    configure_file(AlienBench-composyx.arc ${CMAKE_BINARY_DIR}/${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench/AlienBench-composyx.arc COPYONLY)
+    configure_file(AlienBench-composyx-gmres.arc ${CMAKE_BINARY_DIR}/${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench/AlienBench-composyx-gmres.arc COPYONLY)
+    configure_file(AlienBench-composyx-4P.arc ${CMAKE_BINARY_DIR}/${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench/AlienBench-composyx-4P.arc COPYONLY)
+    configure_file(AlienBench-composyx-bcgsas-4P.arc ${CMAKE_BINARY_DIR}/${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench/AlienBench-composyx-bcgsas-4P.arc COPYONLY)
+    configure_file(AlienBench-composyx-gmres-4P.arc ${CMAKE_BINARY_DIR}/${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench/AlienBench-composyx-gmres-4P.arc COPYONLY)
+    configure_file(AlienBench-composyx-gmresas-4P.arc ${CMAKE_BINARY_DIR}/${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench/AlienBench-composyx-gmresas-4P.arc COPYONLY)
+
+    list(APPEND ALIEN_EXAMPLE_FILES AlienBench-composyx.arc
+                                    AlienBench-composyx-gmres.arc
+                                    AlienBench-composyx-4P.arc
+                                    AlienBench-composyx-gmres-4P.arc)
+
+endif()
+
 #Examples !
 
 get_property(ALIEN_COMPILE_DEFS SOURCE main.cc PROPERTY COMPILE_DEFINITIONS)
@@ -403,3 +420,56 @@ if (TARGET trilinos)
             UNIQUE_OUTPUT_DIR
             WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
 endif ()
+
+
+if (TARGET COMPOSYX::composyx)
+
+    alien_test(
+            BENCH alien.bench.composyx.bcgs
+            NAME seq
+            PROCS 1
+            COMMAND alien_bench.exe
+            OPTIONS AlienBench-composyx.arc
+            WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
+
+    alien_test(
+            BENCH alien.bench.composyx.gmres
+            NAME seq
+            PROCS 1
+            COMMAND alien_bench.exe
+            OPTIONS AlienBench-composyx-gmres.arc
+            WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
+
+    alien_test(
+            BENCH alien.bench.composyx.bcgs
+            NAME parallel
+            PROCS 4
+            COMMAND alien_bench.exe
+            OPTIONS AlienBench-composyx-4P.arc
+            WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
+
+    alien_test(
+            BENCH alien.bench.composyx.bcgs.as
+            NAME parallel
+            PROCS 4
+            COMMAND alien_bench.exe
+            OPTIONS AlienBench-composyx-bcgsas-4P.arc
+            WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
+
+    alien_test(
+            BENCH alien.bench.composyx.gmres
+            NAME parallel
+            PROCS 4
+            COMMAND alien_bench.exe
+            OPTIONS AlienBench-composyx-gmres-4P.arc
+            WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
+
+    alien_test(
+            BENCH alien.bench.composyx.gmres.as
+            NAME parallel
+            PROCS 4
+            COMMAND alien_bench.exe
+            OPTIONS AlienBench-composyx-gmresas-4P.arc
+            WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
+
+endif()

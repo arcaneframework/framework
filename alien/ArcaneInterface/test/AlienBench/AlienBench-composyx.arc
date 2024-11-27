@@ -22,7 +22,7 @@
         <nsd>1 1 1</nsd>
         <lx nx="10">1.</lx>
         <ly ny="10">1.</ly>
-        <lz nz="10">1.</lz>
+        <lz nz="1">1.</lz>
       </cartesian>
     </meshgenerator>
   </mesh>
@@ -31,7 +31,8 @@
     <alien-bench>
       <!-- big diagonal-coefficient keep diagonal dominant matrix -->
       <redistribution>false</redistribution>
-      <diagonal-coefficient>0.</diagonal-coefficient>
+      <homogeneous>true</homogeneous>
+      <diagonal-coefficient>10.</diagonal-coefficient>
       <lambdax>0.125</lambdax>
       <lambday>0.25</lambday>
       <alpha>10.</alpha>

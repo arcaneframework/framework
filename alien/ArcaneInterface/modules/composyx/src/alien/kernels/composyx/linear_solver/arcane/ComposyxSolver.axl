@@ -16,6 +16,15 @@
     <simple name="output-level" type="integer" default="0">
       <description>Verbosity indicator (min=0, max=3)</description>
     </simple>
+    <simple name="gmres-restart" type="integer" default="10">
+      <description>GMRES restart param</description>
+    </simple>
+    <simple name="gmres-zeta" type="real" default="-1.">
+      <description>GMRES compression param</description>
+    </simple>
+    <simple name="gmres-ortho" type="string" default="CGS">
+      <description>GMRES ortho param</description>
+    </simple>
     <simple name="solver" type="string" default="bcg">
       <description>gmres|cg|bcgs</description>
     </simple>

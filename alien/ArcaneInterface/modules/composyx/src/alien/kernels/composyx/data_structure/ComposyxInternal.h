@@ -18,9 +18,21 @@
 #include <composyx/solver/BiCGSTAB.hpp>
 #include <composyx/solver/GMRES.hpp>
 #include <composyx/solver/Jacobi.hpp>
+#if defined(COMPOSYX_USE_QRMUMPS)
+#include <composyx/solver/QrMumps.hpp>
+#endif
+#include <composyx/solver/Mumps.hpp>
+#include <composyx/solver/Pastix.hpp>
+
 #include <composyx/precond/DiagonalPrecond.hpp>
 #include <composyx/precond/AbstractSchwarz.hpp>
 #include <composyx/precond/TwoLevelAbstractSchwarz.hpp>
+
+
+#include <composyx/wrappers/Eigen/Eigen_header.hpp>
+#include <composyx/wrappers/Eigen/Eigen.hpp>
+#include <composyx/wrappers/Eigen/EigenSparseSolver.hpp>
+
 #endif
 
 BEGIN_COMPOSYXINTERNAL_NAMESPACE
@@ -127,16 +139,17 @@ class MatrixInternal
       for(int ineighb=0;ineighb<recv_info.m_first_upper_neighb;++ineighb)
       {
           int neighb_rank = recv_info.m_ranks[ineighb] ;
-          alien_info([&] {
-            cout() << "RECV NEIGHB : "<<ineighb<<" "<<neighb_rank;
-          });
+          //alien_info([&] {
+          //  cout() << "RECV NEIGHB : "<<ineighb<<" "<<neighb_rank;
+          //});
         auto& neighb_nodes = nei_map[neighb_rank] ;
         auto& neighb_owners = nei_owner_map[neighb_rank] ;
         for(int k=recv_info.m_ids_offset[ineighb];k<recv_info.m_ids_offset[ineighb+1];++k)
         {
+          /*
           alien_info([&] {
               cout() << "          RECV VERTEX : "<<k<<" "<<recv_info.m_uids[k-recv_info.m_ids_offset[0]]<<" "<<neighb_rank;
-          });
+          });*/
           neighb_nodes.push_back(k) ;
           neighb_owners.push_back(neighb_rank) ;
         }
@@ -144,16 +157,17 @@ class MatrixInternal
       for(int ineighb=0;ineighb<send_info.m_num_neighbours;++ineighb)
       {
         int neighb_rank = send_info.m_ranks[ineighb] ;
-        alien_info([&] {
-          cout() << "SEND NEIGHB : "<<ineighb<<" "<<neighb_rank;
-        });
+        //alien_info([&] {
+        //  cout() << "SEND NEIGHB : "<<ineighb<<" "<<neighb_rank;
+        //});
         auto& neighb_nodes = nei_map[neighb_rank] ;
         auto& neighb_owners = nei_owner_map[neighb_rank] ;
         for(int k=send_info.m_ids_offset[ineighb];k<send_info.m_ids_offset[ineighb+1];++k)
         {
+          /*
           alien_info([&] {
             cout() << "          SEND VERTEX : "<<k<<" "<<m_local_offset+send_info.m_ids[k]<<" "<<m_sd_id;
-          });
+          });*/
           neighb_nodes.push_back(send_info.m_ids[k]) ;
           neighb_owners.push_back(m_sd_id) ;
         }
@@ -161,16 +175,17 @@ class MatrixInternal
       for(int ineighb=recv_info.m_first_upper_neighb;ineighb<recv_info.m_num_neighbours;++ineighb)
       {
         int neighb_rank = recv_info.m_ranks[ineighb] ;
-        alien_info([&] {
-          cout() << "RECV NEIGHB : "<<ineighb<<" "<<neighb_rank;
-        });
+        //alien_info([&] {
+        //  cout() << "RECV NEIGHB : "<<ineighb<<" "<<neighb_rank;
+        //});
         auto& neighb_nodes = nei_map[neighb_rank] ;
         auto& neighb_owners = nei_owner_map[neighb_rank] ;
         for(int k=recv_info.m_ids_offset[ineighb];k<recv_info.m_ids_offset[ineighb+1];++k)
         {
+          /*
           alien_info([&] {
               cout() << "          RECV VERTEX : "<<k<<" "<<recv_info.m_uids[k-recv_info.m_ids_offset[0]]<<" "<<neighb_rank;
-          });
+          });*/
           neighb_nodes.push_back(k) ;
           neighb_owners.push_back(neighb_rank) ;
         }
@@ -181,9 +196,10 @@ class MatrixInternal
     m_sd.emplace_back(m_sd_id, m_n_dofs, std::move(nei_map),nei_owner_map,false);
     auto p = ComposyxInternal::ComposyxEnv::instance()->process() ;
     p->load_subdomains(m_sd);
+    /*
     alien_info([&] {
       p->display("PROCESS",cout().file()) ;
-    });
+    });*/
 
     int              nrows          = matrix_profile.getNRow();
     int const*       kcol           = matrix_profile.kcol();
@@ -216,15 +232,12 @@ class MatrixInternal
         {
             m_a_i.push_back(irow) ;
             m_a_j.push_back(irow) ;
-            m_a_v.push_back(0.) ;
+            m_a_v.push_back(1.) ;
             /*
             alien_info([&] {
               cout() << "ADD ENTRY : "<<irow<<" "<<irow<<" "<<0.;
             });*/
         }
-        alien_info([&] {
-          cout() << "CREATE LOC MATRIX : ";
-        });
         m_A_loc.reset(new LocMatrixType(m_n_dofs, m_n_dofs, m_nnz, m_a_i.data(), m_a_j.data(), m_a_v.data()));
     }
     else
@@ -250,9 +263,6 @@ class MatrixInternal
 
           }
         }
-        alien_info([&] {
-          cout() << "CREATE ALOC ";
-        });
         m_A_loc.reset(new LocMatrixType(m_n_dofs, m_n_dofs, m_nnz, m_a_i.data(), m_a_j.data(), m_a_v.data()));
     }
 
@@ -481,9 +491,17 @@ public:
 
   typedef composyx::Jacobi<LocMatrixType,LocVectorType>            SeqJacobiSolverType ;
   typedef composyx::Jacobi<ParMatrixType,ParVectorType>            ParJacobiSolverType ;
+
+  typedef Eigen::SparseMatrix<ValueType>                           EigenMatrixtype ;
+  typedef Eigen::Matrix<ValueType, Eigen::Dynamic, 1>              EigenVectorType ;
+  typedef composyx::EigenSparseSolver<EigenMatrixtype,
+                                      EigenVectorType>             EigenDirectSolverType ;
+  typedef composyx::Pastix<LocMatrixType,LocVectorType>            PastixDirectSolverType ;
+  typedef PastixDirectSolverType                                   DirectSolverType;
+
   typedef composyx::AbstractSchwarz<ParMatrixType,
                                     ParVectorType,
-                                    ParJacobiSolverType>           ParAScharzPrecondType ;
+                                    DirectSolverType>              ParAScharzPrecondType ;
 
   typedef composyx::ConjugateGradient<LocMatrixType,LocVectorType> SeqCGSolverType ;
   typedef composyx::ConjugateGradient<ParMatrixType,ParVectorType> ParCGSolverType ;
@@ -493,14 +511,12 @@ public:
   typedef composyx::ConjugateGradient<ParMatrixType,
                                       ParVectorType,
                                       ParDiagPrecondType>          ParDiagCGSolverType ;
-  /*
   typedef composyx::ConjugateGradient<LocMatrixType,
                                       LocVectorType,
                                       SeqJacobiSolverType>         SeqASCGSolverType ;
   typedef composyx::ConjugateGradient<ParMatrixType,
                                       ParVectorType,
                                       ParAScharzPrecondType>       ParASCGSolverType ;
-                                      */
 
   typedef composyx::BiCGSTAB<LocMatrixType,LocVectorType>          SeqBCGSSolverType ;
   typedef composyx::BiCGSTAB<ParMatrixType,ParVectorType>          ParBCGSSolverType ;
@@ -510,14 +526,12 @@ public:
   typedef composyx::BiCGSTAB<ParMatrixType,
                              ParVectorType,
                              ParDiagPrecondType>                   ParDiagBCGSSolverType ;
-  typedef composyx::BiCGSTAB<ParMatrixType,
+  typedef composyx::BiCGSTAB<LocMatrixType,
                              LocVectorType,
-                             SeqJacobiSolverType>                  SeqASBCGSSolverType ;
-  /*
+                             SeqDiagPrecondType>                   SeqASBCGSSolverType ;
   typedef composyx::BiCGSTAB<ParMatrixType,
                              ParVectorType,
                              ParAScharzPrecondType>                ParASBCGSSolverType ;
-                             */
 
   typedef composyx::GMRES<LocMatrixType,LocVectorType>             SeqGMRESSolverType ;
   typedef composyx::GMRES<ParMatrixType,ParVectorType>             ParGMRESSolverType ;
@@ -527,19 +541,17 @@ public:
   typedef composyx::GMRES<ParMatrixType,
                           ParVectorType,
                           ParDiagPrecondType>                      ParDiagGMRESSolverType ;
-  /*
-  typedef composyx::GMRES<ParMatrixType,
+  typedef composyx::GMRES<LocMatrixType,
                           LocVectorType,
-                          SeqJacobiSolverType>                     SeqASGMRESSolverType ;
+                          SeqDiagPrecondType>                      SeqASGMRESSolverType ;
   typedef composyx::GMRES<ParMatrixType,
                           ParVectorType,
                           ParAScharzPrecondType>                   ParASGMRESSolverType ;
-                          */
+
 
   class IComposyxSolver
   {
   public:
-    virtual void init(int max_iter,double tol,bool verbose) = 0 ;
     virtual ParVectorType solve(ParMatrixType const& A, ParVectorType const& b) = 0 ;
     virtual LocVectorType solve(LocMatrixType const& A, LocVectorType const& b) = 0 ;
     virtual int getNiter(bool is_parallel) const = 0 ;
@@ -550,16 +562,10 @@ public:
         : public IComposyxSolver
   {
   public:
-    void init(int max_iter,
-              double tol,
-              bool verbose)
-    {
-      m_par_solver.setup(composyx::parameters::max_iter{max_iter},
-                         composyx::parameters::tolerance{tol},
-                         composyx::parameters::verbose{verbose});
-      m_seq_solver.setup(composyx::parameters::max_iter{max_iter},
-                         composyx::parameters::tolerance{tol},
-                         composyx::parameters::verbose{verbose});
+    template <typename... Types>
+    void setup(const Types&... args) noexcept {
+      m_par_solver.setup(args...) ;
+      m_seq_solver.setup(args...) ;
     }
 
     ParVectorType solve(ParMatrixType const& A, ParVectorType const& b)
@@ -591,68 +597,135 @@ public:
     SeqSolverT m_seq_solver ;
   };
 
+  void setParam(std::string const& key,int value)
+  {
+    m_int_param[key] = value ;
+  }
+
+  void setParam(std::string const& key,double value)
+  {
+    m_double_param[key] = value ;
+  }
+
+  void setParam(std::string const& key,std::string value)
+  {
+    m_str_param[key] = value ;
+  }
+
   void init(int max_iter,
             double tol,
             std::string const& solver,
             std::string const& preconditioner,
             bool verbose)
   {
+    using namespace composyx ;
     m_max_iter = max_iter ;
     m_tol      = tol;
     m_verbose  = verbose;
     if(solver.compare("cg")==0)
     {
-        if(preconditioner.compare("none"))
+        if(preconditioner.compare("none")==0)
         {
-          m_solver.reset(new ComposyxSolverT<ParCGSolverType,SeqCGSolverType>{}) ;
-          m_solver->init(max_iter,tol,verbose) ;
+          auto* solver = new ComposyxSolverT<ParCGSolverType,SeqCGSolverType>{} ;
+          m_solver.reset(solver) ;
+          solver->setup(parameters::tolerance<Real>{tol},
+                        parameters::max_iter<int>{max_iter},
+                        parameters::verbose<bool>{verbose});
         }
-        if(preconditioner.compare("diag"))
+        if(preconditioner.compare("diag")==0)
         {
-          m_solver.reset(new ComposyxSolverT<ParDiagCGSolverType,SeqDiagCGSolverType>{}) ;
-          m_solver->init(max_iter,tol,verbose) ;
+          auto* solver = new ComposyxSolverT<ParDiagCGSolverType,SeqDiagCGSolverType>{} ;
+          m_solver.reset(solver) ;
+          solver->setup(parameters::tolerance<Real>{tol},
+                        parameters::max_iter<int>{max_iter},
+                        parameters::verbose<bool>{verbose});
         }
-        /*
-        if(preconditioner.compare("as"))
+        if(preconditioner.compare("as")==0)
         {
-          m_solver.reset(new ComposyxSolverT<ParASCGSolverType,SeqASCGSolverType>{}) ;
-          m_solver->init(max_iter,tol,verbose) ;
-        }*/
+          auto* solver = new ComposyxSolverT<ParASCGSolverType,SeqASCGSolverType>{} ;
+          m_solver.reset(solver) ;
+          solver->setup(parameters::tolerance<Real>{tol},
+                        parameters::max_iter<int>{max_iter},
+                        parameters::verbose<bool>{verbose});
+        }
     }
     if(solver.compare("bcgs")==0)
     {
-        if(preconditioner.compare("none"))
+        if(preconditioner.compare("none")==0)
         {
-          m_solver.reset(new ComposyxSolverT<ParBCGSSolverType,SeqBCGSSolverType>{}) ;
-          m_solver->init(max_iter,tol,verbose) ;
+          auto* solver = new ComposyxSolverT<ParBCGSSolverType,SeqBCGSSolverType>{} ;
+          m_solver.reset(solver) ;
+          solver->setup(parameters::tolerance<Real>{tol},
+                        parameters::max_iter<int>{max_iter},
+                        parameters::verbose<bool>{verbose});
         }
-        if(preconditioner.compare("diag"))
+        if(preconditioner.compare("diag")==0)
         {
-          m_solver.reset(new ComposyxSolverT<ParDiagBCGSSolverType,SeqDiagBCGSSolverType>{}) ;
-          m_solver->init(max_iter,tol,verbose) ;
+          auto* solver = new ComposyxSolverT<ParDiagBCGSSolverType,SeqDiagBCGSSolverType>{} ;
+          m_solver.reset(solver) ;
+          solver->setup(parameters::tolerance<Real>{tol},
+                        parameters::max_iter<int>{max_iter},
+                        parameters::verbose<bool>{verbose});
         }
-        if(preconditioner.compare("as"))
+        if(preconditioner.compare("as")==0)
         {
-          //m_solver.reset(new ComposyxSolverT<ParASBCGSSolverType,SeqASBCGSSolverType>{}) ;
-          //m_solver->init(max_iter,tol,verbose) ;
+          auto* solver = new ComposyxSolverT<ParASBCGSSolverType,SeqASBCGSSolverType>{} ;
+          m_solver.reset(solver) ;
+          solver->setup(parameters::tolerance<Real>{tol},
+                        parameters::max_iter<int>{max_iter},
+                        parameters::verbose<bool>{verbose});
         }
     }
     if(solver.compare("gmres")==0)
     {
-        if(preconditioner.compare("none"))
+        int restart = m_int_param["gmres-restart"] ;
+        double zeta = m_double_param["gmres-zeta"] ;
+        const std::string ortho_str = m_str_param["gmres-ortho"] ;
+        bool trace_be = false;
+        Ortho ortho = Ortho::CGS;
+        if(ortho_str == std::string("CGS")) { ortho = Ortho::CGS; }
+        else if(ortho_str == std::string("CGS2")) { ortho = Ortho::CGS2; }
+        else if(ortho_str == std::string("MGS")) { ortho = Ortho::MGS; }
+        else if(ortho_str == std::string("MGS2")) { ortho = Ortho::MGS2; }
+        if(preconditioner.compare("none")==0)
         {
-          m_solver.reset(new ComposyxSolverT<ParGMRESSolverType,SeqGMRESSolverType>{}) ;
-          m_solver->init(max_iter,tol,verbose) ;
+            auto* solver = new ComposyxSolverT<ParGMRESSolverType,SeqGMRESSolverType>{} ;
+            m_solver.reset(solver) ;
+
+            solver->setup(parameters::tolerance<Real>{tol},
+                          parameters::max_iter<int>{max_iter},
+                          parameters::restart<int>{restart},
+                          parameters::compression_accuracy<double>{zeta},
+                          parameters::orthogonalization<Ortho>{ortho},
+                          parameters::verbose_mem<bool>{true},
+                          //parameters::always_true_residual<bool>{trace_be},
+                          parameters::verbose<bool>{verbose});
         }
-        if(preconditioner.compare("diag"))
+        if(preconditioner.compare("diag")==0)
         {
-          m_solver.reset(new ComposyxSolverT<ParDiagGMRESSolverType,SeqDiagGMRESSolverType>{}) ;
-          m_solver->init(max_iter,tol,verbose) ;
+          auto* solver = new ComposyxSolverT<ParDiagGMRESSolverType,SeqDiagGMRESSolverType>{} ;
+          m_solver.reset(solver) ;
+          solver->setup(parameters::tolerance<Real>{tol},
+                        parameters::max_iter<int>{max_iter},
+                        parameters::restart<int>{restart},
+                        parameters::compression_accuracy<double>{zeta},
+                        parameters::orthogonalization<Ortho>{ortho},
+                        parameters::verbose_mem<bool>{true},
+                        parameters::always_true_residual<bool>{trace_be},
+                        parameters::verbose<bool>{verbose});
         }
-        if(preconditioner.compare("as"))
+        if(preconditioner.compare("as")==0)
         {
-          //m_solver.reset(new ComposyxSolverT<ParASGMRESSolverType,SeqASGMRESSolverType>{}) ;
-          //m_solver->init(max_iter,tol,verbose) ;
+          auto* solver = new ComposyxSolverT<ParASGMRESSolverType,SeqDiagGMRESSolverType>{} ;
+          m_solver.reset(solver) ;
+          solver->setup(parameters::tolerance<Real>{tol},
+                        parameters::max_iter<int>{max_iter},
+                        parameters::restart<int>{restart},
+                        parameters::compression_accuracy<double>{zeta},
+                        parameters::orthogonalization<Ortho>{ortho},
+                        parameters::verbose_mem<bool>{true},
+                        parameters::always_true_residual<bool>{trace_be},
+                        parameters::verbose<bool>{verbose});
         }
     }
     m_verbose = verbose ;
@@ -676,6 +749,55 @@ public:
   {
     assert(m_solver.get() != nullptr) ;
     return m_solver->solve(A,b);
+
+#ifdef TEST_DEBUG
+    auto xx = m_solver->solve(A,b);
+    auto yy = A*xx ;
+    auto rr = b - yy ;
+    alien_info([&] {
+      xx.display("XX=",cout().file()) ;
+      yy.display("YY=",cout().file()) ;
+      rr.display("RR=",cout().file()) ;
+    });
+
+
+    DirectSolverType invA ;
+    invA.setup(A);
+    auto x = invA*b ;
+    auto y = A*x ;
+    auto r = b - y ;
+    alien_info([&] {
+      b.display("B=",cout().file()) ;
+      x.display("X=",cout().file()) ;
+      y.display("Y=",cout().file()) ;
+      r.display("R=",cout().file()) ;
+    });
+    using namespace composyx ;
+    using Scalar = ValueType ;
+    Eigen::SparseMatrix<Scalar> A_eigen;
+    build_matrix<Scalar>(A_eigen, n_rows(A), n_cols(A), n_nonzero(A),
+                         A.get_i_ptr(), A.get_j_ptr(), A.get_v_ptr(),
+                         /*fill_symmetry*/ false);
+    alien_info([&] {
+      cout()<<"A EIGEN";
+      cout() << A_eigen;
+    });
+
+    using E_Vector = Eigen::Matrix<Scalar, Eigen::Dynamic, 1>;
+    E_Vector b_e(n_rows(b));
+    std::memcpy(get_ptr(b_e), get_ptr(b), sizeof(Scalar) * n_rows(b));
+    MatrixProperties<Scalar> prop;
+    EigenSparseSolver<Eigen::SparseMatrix<Scalar>, E_Vector> eigen_solver(A_eigen,prop);
+    auto x_e = eigen_solver * b_e ;
+
+    alien_info([&] {
+      cout()<<"X EIGEN";
+      for(int k = 0; k < n_rows(A); ++k){
+        cout() << x_e[k];
+      }
+    });
+    return xx;
+#endif
   }
 
   int getNiter(bool is_parallel) const {
@@ -691,6 +813,10 @@ private:
   int    m_max_iter = 0 ;
   double m_tol      = 1e-12;
   bool   m_verbose  = false ;
+
+  std::map<std::string,int>         m_int_param ;
+  std::map<std::string,double>      m_double_param ;
+  std::map<std::string,std::string> m_str_param ;
 
 };
 /*---------------------------------------------------------------------------*/

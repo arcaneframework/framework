@@ -123,6 +123,12 @@ ComposyxInternalSolver::init()
   m_output_level = m_options->outputLevel();
   bool verbose = (m_parallel_mng->commRank()== 0) &&  m_output_level>0 ;
   m_internal.reset(new InternalType()) ;
+  if(m_options->solver()=="gmres")
+  {
+      m_internal->setParam("gmres-restart",m_options->gmresRestart()) ;
+      m_internal->setParam("gmres-zeta",   m_options->gmresZeta()) ;
+      m_internal->setParam("gmres-ortho",  m_options->gmresOrtho().localstr()) ;
+  }
   m_internal->init(m_options->maxIterationNum(),
                    m_options->stopCriteriaValue(),
                    m_options->solver().localstr(),

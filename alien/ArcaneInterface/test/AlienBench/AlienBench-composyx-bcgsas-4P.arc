@@ -40,12 +40,10 @@
       <epsilon>0.01</epsilon>
 
      <linear-solver name="ComposyxSolver">
-        <solver>gmres</solver>
+        <solver>bcgs</solver>
         <preconditioner>none</preconditioner>
         <max-iteration-num>1000</max-iteration-num>
         <stop-criteria-value>1e-8</stop-criteria-value>
-        <gmres-restart>2</gmres-restart>
-        <gmres-ortho>CGS</gmres-ortho>
         <output-level>1</output-level>
       </linear-solver>
 

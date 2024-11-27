@@ -31,7 +31,8 @@
     <alien-bench>
       <!-- big diagonal-coefficient keep diagonal dominant matrix -->
       <redistribution>false</redistribution>
-      <diagonal-coefficient>0.</diagonal-coefficient>
+      <homogeneous>true</homogeneous>
+      <diagonal-coefficient>10.</diagonal-coefficient>
       <lambdax>0.125</lambdax>
       <lambday>0.25</lambday>
       <alpha>10.</alpha>
@@ -40,8 +41,11 @@
 
      <linear-solver name="ComposyxSolver">
         <solver>gmres</solver>
+        <preconditioner>none</preconditioner>
         <max-iteration-num>1000</max-iteration-num>
         <stop-criteria-value>1e-8</stop-criteria-value>
+        <gmres-restart>2</gmres-restart>
+        <gmres-ortho>CGS</gmres-ortho>
         <output-level>1</output-level>
       </linear-solver>
 

@@ -41,10 +41,11 @@
 
      <linear-solver name="ComposyxSolver">
         <solver>gmres</solver>
-        <preconditioner>none</preconditioner>
+        <preconditioner>as</preconditioner>
         <max-iteration-num>1000</max-iteration-num>
         <stop-criteria-value>1e-8</stop-criteria-value>
         <gmres-restart>2</gmres-restart>
+        <gmres-zeta>-1</gmres-zeta>
         <gmres-ortho>CGS</gmres-ortho>
         <output-level>1</output-level>
       </linear-solver>
