@@ -43,18 +43,18 @@ namespace
     return "Invalid";
   }
 
-  const char* _toName(eMemoryRessource r)
+  const char* _toName(eMemoryResource r)
   {
     switch (r) {
-    case eMemoryRessource::Unknown:
+    case eMemoryResource::Unknown:
       return "Unknown";
-    case eMemoryRessource::Host:
+    case eMemoryResource::Host:
       return "Host";
-    case eMemoryRessource::HostPinned:
+    case eMemoryResource::HostPinned:
       return "HostPinned";
-    case eMemoryRessource::Device:
+    case eMemoryResource::Device:
       return "Device";
-    case eMemoryRessource::UnifiedMemory:
+    case eMemoryResource::UnifiedMemory:
       return "UnifiedMemory";
     }
     return "Invalid";
@@ -70,7 +70,7 @@ operator<<(std::ostream& o, eHostDeviceMemoryLocation v)
 }
 
 extern "C++" ARCCORE_COLLECTIONS_EXPORT std::ostream&
-operator<<(std::ostream& o, eMemoryRessource v)
+operator<<(std::ostream& o, eMemoryResource v)
 {
   o << _toName(v);
   return o;

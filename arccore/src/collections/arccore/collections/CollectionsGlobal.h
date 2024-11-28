@@ -118,7 +118,7 @@ operator<<(std::ostream& o, eHostDeviceMemoryLocation r);
 /*!
  * \brief Liste des ressources mémoire disponibles.
  */
-enum class eMemoryRessource
+enum class eMemoryResource
 {
   //! Valeur inconnue ou non initialisée
   Unknown = 0,
@@ -133,13 +133,13 @@ enum class eMemoryRessource
 };
 
 //! Nombre de valeurs valides pour eMemoryRessource
-static constexpr int ARCCORE_NB_MEMORY_RESSOURCE = 5;
+static constexpr int ARCCORE_NB_MEMORY_RESOURCE = 5;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 extern "C++" ARCCORE_COLLECTIONS_EXPORT std::ostream&
-operator<<(std::ostream& o, eMemoryRessource r);
+operator<<(std::ostream& o, eMemoryResource r);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
