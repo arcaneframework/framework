@@ -139,6 +139,9 @@ class ARCCORE_COLLECTIONS_EXPORT IMemoryAllocator
    */
   virtual void copyMemory(MemoryAllocationArgs args, AllocatedMemoryInfo destination, AllocatedMemoryInfo source);
 
+  //! Ressource mémoire fournie par l'allocateur
+  virtual eMemoryRessource memoryRessource() const { return eMemoryRessource::Unknown; }
+
  public:
 
   // Méthodes historiques (avant 2023) sans arguments supplémentaires.
