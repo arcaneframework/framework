@@ -63,6 +63,7 @@ enum class eMemoryAdvice;
 
 namespace impl
 {
+  class KernelLaunchArgs;
   class RuntimeStaticInfo;
   class IRunnerRuntime;
   // typedef pour compatibilité avec anciennes versions (octobre 2022)

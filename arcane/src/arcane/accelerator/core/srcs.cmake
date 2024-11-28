@@ -10,6 +10,7 @@ set( ARCANE_SOURCES
   DeviceInfoList.h
   IReduceMemoryImpl.h
   IDeviceInfoList.h
+  KernelLaunchArgs.h
   Memory.h
   Memory.cc
   MemoryTracer.cc

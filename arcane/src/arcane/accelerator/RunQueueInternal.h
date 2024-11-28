@@ -322,10 +322,10 @@ _applyKernelCUDA(impl::RunCommandLaunchInfo& launch_info, const CudaKernel& kern
 {
 #if defined(ARCANE_COMPILING_CUDA)
   Int32 wanted_shared_memory = 0;
-  auto [b, t] = launch_info._threadBlockInfo(reinterpret_cast<const void*>(kernel), wanted_shared_memory);
+  auto tbi = launch_info._threadBlockInfo(reinterpret_cast<const void*>(kernel), wanted_shared_memory);
   cudaStream_t* s = reinterpret_cast<cudaStream_t*>(launch_info._internalStreamImpl());
   // TODO: utiliser cudaLaunchKernel() à la place.
-  kernel<<<b, t, wanted_shared_memory, *s>>>(args, func, other_args...);
+  kernel<<<tbi.nbBlockPerGrid(), tbi.nbThreadPerBlock(), wanted_shared_memory, *s>>>(args, func, other_args...);
 #else
   ARCANE_UNUSED(launch_info);
   ARCANE_UNUSED(kernel);
@@ -350,9 +350,9 @@ _applyKernelHIP(impl::RunCommandLaunchInfo& launch_info, const HipKernel& kernel
 {
 #if defined(ARCANE_COMPILING_HIP)
   Int32 wanted_shared_memory = 0;
-  auto [b, t] = launch_info._threadBlockInfo(reinterpret_cast<const void*>(kernel), wanted_shared_memory);
+  auto tbi = launch_info._threadBlockInfo(reinterpret_cast<const void*>(kernel), wanted_shared_memory);
   hipStream_t* s = reinterpret_cast<hipStream_t*>(launch_info._internalStreamImpl());
-  hipLaunchKernelGGL(kernel, b, t, wanted_shared_memory, *s, args, func, other_args...);
+  hipLaunchKernelGGL(kernel, tbi.nbBlockPerGrid(), tbi.nbThreadPerBlock(), wanted_shared_memory, *s, args, func, other_args...);
 #else
   ARCANE_UNUSED(launch_info);
   ARCANE_UNUSED(kernel);
@@ -379,7 +379,9 @@ void _applyKernelSYCL(impl::RunCommandLaunchInfo& launch_info, SyclKernel kernel
   sycl::queue* s = reinterpret_cast<sycl::queue*>(launch_info._internalStreamImpl());
   sycl::event event;
   if constexpr (sizeof...(ReducerArgs) > 0) {
-    auto [b, t] = launch_info.threadBlockInfo();
+    auto tbi = launch_info.kernelLaunchArgs();
+    Int32 b = tbi.nbBlockPerGrid();
+    Int32 t = tbi.nbThreadPerBlock();
     sycl::nd_range<1> loop_size(b * t, t);
     event = s->parallel_for(loop_size, [=](sycl::nd_item<1> i) { kernel(i, args, func, reducer_args...); });
   }
