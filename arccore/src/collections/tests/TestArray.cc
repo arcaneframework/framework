@@ -23,20 +23,28 @@ void _testArraySwap(bool use_own_swap)
 {
   std::cout << "** TestArraySwap is_own=" << use_own_swap << "\n";
 
+  String c1_name = "TestC1";
   UniqueArray<IntSubClass> c1(7);
-  IntSubClass* x1 = c1.unguardedBasePointer();
+  c1.setDebugName(c1_name);
+  IntSubClass* x1 = c1.data();
   std::cout << "** C1_this = " << &c1 << "\n";
   std::cout << "** C1_BASE = " << x1 << "\n";
   UniqueArray<IntSubClass> c2(3);
-  IntSubClass* x2 = c2.unguardedBasePointer();
+  IntSubClass* x2 = c2.data();
   std::cout << "** C2_this = " << &c2 << "\n";
   std::cout << "** C2_BASE = " << x2 << "\n";
+
+  ASSERT_EQ(c1.debugName(), c1_name);
+  ASSERT_EQ(c2.debugName(), String{});
 
   if (use_own_swap) {
     swap(c1, c2);
   }
   else
     std::swap(c1, c2);
+
+  ASSERT_EQ(c2.debugName(), c1_name);
+  ASSERT_EQ(c1.debugName(), String{});
 
   IntSubClass* after_x1 = c1.data();
   IntSubClass* after_x2 = c2.data();
@@ -990,6 +998,9 @@ TEST(Array, AllocatorV2)
   }
 }
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 TEST(Array, DebugInfo)
 {
   using namespace Arccore;
@@ -1029,6 +1040,30 @@ TEST(Array, DebugInfo)
   }
   ASSERT_EQ(a3.debugName(), a1_name);
   ASSERT_EQ(a3.size(), 2);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+TEST(Collections, Memory)
+{
+  using namespace Arccore;
+  std::cout << eHostDeviceMemoryLocation::Unknown << " "
+            << eHostDeviceMemoryLocation::Device << " "
+            << eHostDeviceMemoryLocation::Host << " "
+            << eHostDeviceMemoryLocation::ManagedMemoryDevice << " "
+            << eHostDeviceMemoryLocation::ManagedMemoryHost << "\n";
+
+  std::cout << eMemoryResource::Unknown << " "
+            << eMemoryResource::Host << " "
+            << eMemoryResource::HostPinned << " "
+            << eMemoryResource::Device << " "
+            << eMemoryResource::UnifiedMemory << "\n";
+
+  UniqueArray<Int32> a1;
+  ASSERT_EQ(a1.hostDeviceMemoryLocation(), eHostDeviceMemoryLocation::Unknown);
+  a1._internalSetHostDeviceMemoryLocation(eHostDeviceMemoryLocation::Host);
+  ASSERT_EQ(a1.hostDeviceMemoryLocation(), eHostDeviceMemoryLocation::Host);
 }
 
 /*---------------------------------------------------------------------------*/
