@@ -14,11 +14,10 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/CheckedConvert.h"
 #include "arcane/utils/ConcurrencyUtils.h"
 #include "arcane/utils/Profiling.h"
 
-#include "arcane/accelerator/core/AcceleratorCoreGlobal.h"
+#include "arcane/accelerator/core/KernelLaunchArgs.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -35,17 +34,20 @@ namespace Arcane::Accelerator::impl
  */
 class ARCANE_ACCELERATOR_CORE_EXPORT RunCommandLaunchInfo
 {
+  // Les fonctions suivantes permettent de lancer les kernels.
   template <typename SyclKernel, typename Lambda, typename LambdaArgs, typename... ReducerArgs>
   friend void _applyKernelSYCL(impl::RunCommandLaunchInfo& launch_info, SyclKernel kernel, Lambda& func,
                                const LambdaArgs& args, const ReducerArgs&... reducer_args);
+  template <typename CudaKernel, typename Lambda, typename LambdaArgs, typename... RemainingArgs>
+  friend void _applyKernelCUDA(impl::RunCommandLaunchInfo& launch_info, const CudaKernel& kernel, Lambda& func,
+                               const LambdaArgs& args, [[maybe_unused]] const RemainingArgs&... other_args);
+  template <typename HipKernel, typename Lambda, typename LambdaArgs, typename... RemainingArgs>
+  friend void _applyKernelHIP(impl::RunCommandLaunchInfo& launch_info, const HipKernel& kernel, const Lambda& func,
+                              const LambdaArgs& args, [[maybe_unused]] const RemainingArgs&... other_args);
 
  public:
 
-  struct ThreadBlockInfo
-  {
-    int nb_block_per_grid = 0;
-    int nb_thread_per_block = 0;
-  };
+  using ThreadBlockInfo = KernelLaunchArgs;
 
  public:
 
@@ -75,7 +77,7 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RunCommandLaunchInfo
   void endExecute();
 
   //! Informations sur le nombre de block/thread/grille du noyau à lancer.
-  ThreadBlockInfo threadBlockInfo() const { return m_thread_block_info; }
+  KernelLaunchArgs kernelLaunchArgs() const { return m_kernel_launch_args; }
 
   //! Calcul les informations pour les boucles multi-thread
   ParallelLoopOptions computeParallelLoopOptions() const;
@@ -89,10 +91,6 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RunCommandLaunchInfo
   //! Taille totale de la boucle
   Int64 totalLoopSize() const { return m_total_loop_size; }
 
- public:
-
-  void* _internalStreamImpl();
-
  private:
 
   RunCommand& m_command;
@@ -101,15 +99,23 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RunCommandLaunchInfo
   IRunnerRuntime* m_runtime = nullptr;
   IRunQueueStream* m_queue_stream = nullptr;
   eExecutionPolicy m_exec_policy = eExecutionPolicy::Sequential;
-  ThreadBlockInfo m_thread_block_info;
+  KernelLaunchArgs m_kernel_launch_args;
   ForLoopRunInfo m_loop_run_info;
   Int64 m_total_loop_size = 0;
 
  private:
 
+  /*!
+   * \brief Informations dynamiques sur le nombre de block/thread/grille du noyau à lancer.
+   *
+   * Ces informations sont calculées à partir de méthodes fournies par le runtime accélérateur
+   * sous-jacent.
+   */
+  KernelLaunchArgs _threadBlockInfo(const void* func, Int64 shared_memory_size) const;
+  void* _internalStreamImpl();
   void _begin();
   void _doEndKernelLaunch();
-  ThreadBlockInfo _computeThreadBlockInfo() const;
+  KernelLaunchArgs _computeKernelLaunchArgs() const;
 
  private:
 
