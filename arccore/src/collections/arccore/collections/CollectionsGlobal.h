@@ -114,6 +114,35 @@ operator<<(std::ostream& o, eHostDeviceMemoryLocation r);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+/*!
+ * \brief Liste des ressources mémoire disponibles.
+ */
+enum class eMemoryRessource
+{
+  //! Valeur inconnue ou non initialisée
+  Unknown = 0,
+  //! Alloue sur l'hôte.
+  Host,
+  //! Alloue sur l'hôte.
+  HostPinned,
+  //! Alloue sur le device
+  Device,
+  //! Alloue en utilisant la mémoire unifiée.
+  UnifiedMemory
+};
+
+//! Nombre de valeurs valides pour eMemoryRessource
+static constexpr int ARCCORE_NB_MEMORY_RESSOURCE = 5;
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+extern "C++" ARCCORE_COLLECTIONS_EXPORT std::ostream&
+operator<<(std::ostream& o, eMemoryRessource r);
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 /*!
  * \brief Informations sur une zone mémoire allouée.
  */

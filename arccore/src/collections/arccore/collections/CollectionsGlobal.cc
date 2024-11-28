@@ -42,10 +42,35 @@ namespace
     }
     return "Invalid";
   }
+
+  const char* _toName(eMemoryRessource r)
+  {
+    switch (r) {
+    case eMemoryRessource::Unknown:
+      return "Unknown";
+    case eMemoryRessource::Host:
+      return "Host";
+    case eMemoryRessource::HostPinned:
+      return "HostPinned";
+    case eMemoryRessource::Device:
+      return "Device";
+    case eMemoryRessource::UnifiedMemory:
+      return "UnifiedMemory";
+    }
+    return "Invalid";
+  }
+
 } // namespace
 
 extern "C++" ARCCORE_COLLECTIONS_EXPORT std::ostream&
 operator<<(std::ostream& o, eHostDeviceMemoryLocation v)
+{
+  o << _toName(v);
+  return o;
+}
+
+extern "C++" ARCCORE_COLLECTIONS_EXPORT std::ostream&
+operator<<(std::ostream& o, eMemoryRessource v)
 {
   o << _toName(v);
   return o;
