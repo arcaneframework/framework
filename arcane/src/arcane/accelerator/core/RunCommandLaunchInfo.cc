@@ -167,6 +167,15 @@ computeLoopRunInfo()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+RunCommandLaunchInfo::ThreadBlockInfo RunCommandLaunchInfo::
+_threadBlockInfo([[maybe_unused]] const void* func,[[maybe_unused]] Int64 shared_memory_size) const
+{
+  return m_thread_block_info;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 void RunCommandLaunchInfo::
 _addSyclEvent(void* sycl_event_ptr)
 {

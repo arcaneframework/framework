@@ -35,9 +35,16 @@ namespace Arcane::Accelerator::impl
  */
 class ARCANE_ACCELERATOR_CORE_EXPORT RunCommandLaunchInfo
 {
+  // Les fonctions suivantes permettent de lancer les kernels.
   template <typename SyclKernel, typename Lambda, typename LambdaArgs, typename... ReducerArgs>
   friend void _applyKernelSYCL(impl::RunCommandLaunchInfo& launch_info, SyclKernel kernel, Lambda& func,
                                const LambdaArgs& args, const ReducerArgs&... reducer_args);
+  template <typename CudaKernel, typename Lambda, typename LambdaArgs, typename... RemainingArgs>
+  friend void _applyKernelCUDA(impl::RunCommandLaunchInfo& launch_info, const CudaKernel& kernel, Lambda& func,
+                               const LambdaArgs& args, [[maybe_unused]] const RemainingArgs&... other_args);
+  template <typename HipKernel, typename Lambda, typename LambdaArgs, typename... RemainingArgs>
+  friend void _applyKernelHIP(impl::RunCommandLaunchInfo& launch_info, const HipKernel& kernel, const Lambda& func,
+                              const LambdaArgs& args, [[maybe_unused]] const RemainingArgs&... other_args);
 
  public:
 
@@ -89,10 +96,6 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RunCommandLaunchInfo
   //! Taille totale de la boucle
   Int64 totalLoopSize() const { return m_total_loop_size; }
 
- public:
-
-  void* _internalStreamImpl();
-
  private:
 
   RunCommand& m_command;
@@ -107,6 +110,14 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RunCommandLaunchInfo
 
  private:
 
+  /*!
+   * \brief Informations dynamiques sur le nombre de block/thread/grille du noyau à lancer.
+   *
+   * Ces informations sont calculées à partir de méthodes fournies par le runtime accélérateur
+   * sous-jacent.
+   */
+  ThreadBlockInfo _threadBlockInfo(const void* func, Int64 shared_memory_size) const;
+  void* _internalStreamImpl();
   void _begin();
   void _doEndKernelLaunch();
   ThreadBlockInfo _computeThreadBlockInfo() const;
