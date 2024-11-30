@@ -117,6 +117,14 @@ class ARCCORE_COLLECTIONS_EXPORT IMemoryAllocator
    *
    * S'il n'y a aucune garantie, retourne 0.
    */
+  virtual size_t guaranteedAlignment(MemoryAllocationArgs args) const;
+
+  /*!
+   * \brief Valeur de l'alignement garanti par l'allocateur.
+   *
+   * \sa guaranteedAlignment()
+   */
+  ARCCORE_DEPRECATED_REASON("Y2024: Use guaranteedAlignment() instead")
   virtual size_t guarantedAlignment(MemoryAllocationArgs args) const;
 
   /*!
@@ -157,7 +165,7 @@ class ARCCORE_COLLECTIONS_EXPORT IMemoryAllocator
   virtual void deallocate(void* ptr) = 0;
   ARCCORE_DEPRECATED_REASON("Y2023: use adjustedCapacity(MemoryAllocationArgs,Int64,Int64) instead")
   virtual size_t adjustCapacity(size_t wanted_capacity, size_t element_size) = 0;
-  ARCCORE_DEPRECATED_REASON("Y2023: use guarantedAlignment(MemoryAllocationArgs) instead")
+  ARCCORE_DEPRECATED_REASON("Y2023: use guaranteedAlignment(MemoryAllocationArgs) instead")
   virtual size_t guarantedAlignment() = 0;
 };
 

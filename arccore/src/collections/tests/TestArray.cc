@@ -897,7 +897,7 @@ class TesterMemoryAllocatorV3
   size_t guarantedAlignment(MemoryAllocationArgs args) const override
   {
     _checkValid(args);
-    return m_default_allocator.guarantedAlignment(args);
+    return m_default_allocator.guaranteedAlignment(args);
   }
 
   void notifyMemoryArgsChanged(MemoryAllocationArgs old_args, MemoryAllocationArgs new_args, AllocatedMemoryInfo ptr) override
