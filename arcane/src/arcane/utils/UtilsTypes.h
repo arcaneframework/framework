@@ -257,7 +257,11 @@ inline constexpr Int32 DynExtent = -1;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-enum class eMemoryRessource;
+using Arccore::eMemoryResource;
+//! Typedef pour la version Arcane historique (avec 2's')
+// TODO: A rendre obsolète (juin 2025)
+using eMemoryRessource = Arccore::eMemoryResource;
+
 class DefaultLayout;
 template<int RankValue> class RightLayoutN;
 template<int RankValue> class LeftLayoutN;
