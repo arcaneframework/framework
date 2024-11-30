@@ -140,7 +140,7 @@ class ARCCORE_COLLECTIONS_EXPORT IMemoryAllocator
   virtual void copyMemory(MemoryAllocationArgs args, AllocatedMemoryInfo destination, AllocatedMemoryInfo source);
 
   //! Ressource mémoire fournie par l'allocateur
-  virtual eMemoryResource memoryRessource() const { return eMemoryResource::Unknown; }
+  virtual eMemoryResource memoryResource() const { return eMemoryResource::Unknown; }
 
  public:
 
@@ -278,6 +278,7 @@ class ARCCORE_COLLECTIONS_EXPORT DefaultMemoryAllocator
   void deallocate(void* ptr) override;
   size_t adjustCapacity(size_t wanted_capacity, size_t element_size) override;
   size_t guarantedAlignment() override { return 0; }
+  eMemoryResource memoryResource() const override { return eMemoryResource::Host; }
 };
 
 /*---------------------------------------------------------------------------*/
@@ -313,6 +314,7 @@ class ARCCORE_COLLECTIONS_EXPORT DefaultMemoryAllocator3
   void deallocate(MemoryAllocationArgs, AllocatedMemoryInfo ptr) override;
   Int64 adjustedCapacity(MemoryAllocationArgs, Int64 wanted_capacity, Int64 element_size) const override;
   size_t guarantedAlignment(MemoryAllocationArgs) const override { return 0; }
+  eMemoryResource memoryResource() const override { return eMemoryResource::Host; }
 };
 
 /*---------------------------------------------------------------------------*/
@@ -407,6 +409,7 @@ class ARCCORE_COLLECTIONS_EXPORT AlignedMemoryAllocator
   void deallocate(void* ptr) override;
   size_t adjustCapacity(size_t wanted_capacity, size_t element_size) override;
   size_t guarantedAlignment() override { return m_alignment; }
+  eMemoryResource memoryResource() const override { return eMemoryResource::Host; }
 
  private:
 
@@ -494,6 +497,7 @@ class ARCCORE_COLLECTIONS_EXPORT AlignedMemoryAllocator3
   void deallocate(MemoryAllocationArgs args, AllocatedMemoryInfo ptr) override;
   Int64 adjustedCapacity(MemoryAllocationArgs args, Int64 wanted_capacity, Int64 element_size) const override;
   size_t guarantedAlignment(MemoryAllocationArgs) const override { return m_alignment; }
+  eMemoryResource memoryResource() const override { return eMemoryResource::Host; }
 
  private:
 
