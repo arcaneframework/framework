@@ -255,18 +255,24 @@ callDotNETGarbageCollector();
  *
  * Si non nul, cet allocateur permet d'allouer de la mémoire sur l'hôte en
  * utilisant le runtime spécique de l'allocateur.
+ *
+ * \todo rendre obsolète (utiliser MemoryUtils::getAcceleratorHostMemoryAllocator()
+ * à la place).
  */
-extern "C++" ARCANE_UTILS_EXPORT IMemoryAllocator*
-getAcceleratorHostMemoryAllocator();
+extern "C++" ARCANE_UTILS_EXPORT
+IMemoryAllocator* getAcceleratorHostMemoryAllocator();
 
 /*!
  * \brief Positionne l'allocateur spécifique pour les accélérateurs.
  *
  * Retourne l'ancien allocateur utilisé. L'allocateur spécifié doit rester
  * valide durant toute la durée de vie de l'application.
+ *
+ * \deprecated Cette méthode est interne à Arcane.
  */
-extern "C++" ARCANE_UTILS_EXPORT IMemoryAllocator*
-setAcceleratorHostMemoryAllocator(IMemoryAllocator* a);
+extern "C++" ARCANE_UTILS_EXPORT
+ARCANE_DEPRECATED_REASON("Y2024: This method is internal to Arcane")
+IMemoryAllocator* setAcceleratorHostMemoryAllocator(IMemoryAllocator* a);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -293,9 +299,12 @@ getDefaultDataAllocator();
  * Le gestionnaire doit rester valide durant toute l'exécution du programme.
  *
  * Retourne l'ancien gestionnaire.
+ *
+ * * \deprecated Cette méthode est interne à Arcane.
  */
-extern "C++" ARCANE_UTILS_EXPORT IMemoryRessourceMng*
-setDataMemoryRessourceMng(IMemoryRessourceMng* mng);
+extern "C++" ARCANE_UTILS_EXPORT
+ARCANE_DEPRECATED_REASON("Y2024: This method is internal to Arcane")
+IMemoryRessourceMng* setDataMemoryRessourceMng(IMemoryRessourceMng* mng);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -304,9 +313,12 @@ setDataMemoryRessourceMng(IMemoryRessourceMng* mng);
  *
  * Il est garanti que l'alignement est au moins celui retourné par
  * AlignedMemoryAllocator::Simd().
+ *
+ * \deprecated Cette méthode est interne à Arcane.
  */
-extern "C++" ARCANE_UTILS_EXPORT IMemoryRessourceMng*
-getDataMemoryRessourceMng();
+extern "C++" ARCANE_UTILS_EXPORT
+ARCANE_DEPRECATED_REASON("Y2024: This method is internal to Arcane. Use methods from MemoryUtils instead.")
+IMemoryRessourceMng* getDataMemoryRessourceMng();
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

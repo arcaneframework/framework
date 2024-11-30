@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -17,8 +17,8 @@
 #include "arcane/utils/NotSupportedException.h"
 #include "arcane/utils/FatalErrorException.h"
 #include "arcane/utils/ITraceMng.h"
-#include "arcane/utils/IMemoryRessourceMng.h"
 #include "arcane/utils/ValueConvert.h"
+#include "arcane/utils/MemoryUtils.h"
 #include "arcane/utils/internal/MemoryBuffer.h"
 
 #include "arcane/core/VariableSynchronizerEventArgs.h"
@@ -282,7 +282,7 @@ _buildMessage(Ref<DataSynchronizeInfo>& sync_info)
   // implémentations MPI (i.e: BXI) ne le supportent pas.
   if (m_runner) {
     buffer_copier->setRunQueue(internal_pm->defaultQueue());
-    allocator = platform::getDataMemoryRessourceMng()->getAllocator(eMemoryRessource::Device);
+    allocator = MemoryUtils::getAllocator(eMemoryRessource::Device);
   }
 
   // Créé une instance de l'implémentation

@@ -15,6 +15,7 @@
 #include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/ValueChecker.h"
 #include "arcane/utils/IMemoryRessourceMng.h"
+#include "arcane/utils/MemoryUtils.h"
 
 #include "arcane/core/BasicUnitTest.h"
 #include "arcane/core/ServiceFactory.h"
@@ -608,7 +609,7 @@ _executeTest4(eMemoryRessource mem_kind)
   constexpr int n1 = 1000;
 
   constexpr double expected_sum1 = 999000.0;
-  IMemoryAllocator* allocator = platform::getDataMemoryRessourceMng()->getAllocator(mem_kind);
+  IMemoryAllocator* allocator = MemoryUtils::getAllocator(mem_kind);
 
   {
     SharedArray<double> t1;

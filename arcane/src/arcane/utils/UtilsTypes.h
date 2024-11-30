@@ -266,7 +266,8 @@ class DefaultLayout;
 template<int RankValue> class RightLayoutN;
 template<int RankValue> class LeftLayoutN;
 template<int RankValue> class MDDimType;
-class IMemoryRessourceMng;
+class IMemoryResourceMng;
+using IMemoryRessourceMng = IMemoryResourceMng;
 template <typename IndexType_ = Int32, Int32... RankSize> class ExtentsV;
 template<class DataType,typename Extents,typename LayoutPolicy = DefaultLayout >
 class MDSpan;
