@@ -18,7 +18,7 @@
 #include "arcane/utils/ITraceMng.h"
 #include "arcane/utils/ValueConvert.h"
 
-#include "arcane/utils/internal/MemoryRessourceMng.h"
+#include "arcane/utils/internal/MemoryResourceMng.h"
 
 #include "arcane/parallel/thread/SharedMemoryMessageQueue.h"
 #include "arcane/parallel/thread/IAsyncQueue.h"
@@ -73,7 +73,7 @@ copyFromSender(SharedMemoryMessageRequest* sender)
     ARCANE_FATAL("Not enough memory for receiving message receive={0} send={1}",
                  receive_size,send_size);
 
-  MemoryRessourceMng::genericCopy(ConstMemoryView(send_span), MutableMemoryView(receive_span));
+  MemoryResourceMng::genericCopy(ConstMemoryView(send_span), MutableMemoryView(receive_span));
 }
 
 /*---------------------------------------------------------------------------*/

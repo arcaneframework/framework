@@ -32,27 +32,27 @@ namespace Arcane
 /*!
  * \brief Gestion des ressources mémoire pour les CPU et accélérateurs.
  */
-class ARCANE_UTILS_EXPORT MemoryRessourceMng
-: public IMemoryRessourceMng
+class ARCANE_UTILS_EXPORT MemoryResourceMng
+: public IMemoryResourceMng
 , public IMemoryRessourceMngInternal
 {
  public:
 
-  MemoryRessourceMng();
+  MemoryResourceMng();
 
  public:
 
-  IMemoryAllocator* getAllocator(eMemoryRessource r) override;
-  IMemoryAllocator* getAllocator(eMemoryRessource r, bool throw_if_not_found) override;
+  IMemoryAllocator* getAllocator(eMemoryResource r) override;
+  IMemoryAllocator* getAllocator(eMemoryResource r, bool throw_if_not_found) override;
 
  public:
 
-  void copy(ConstMemoryView from, eMemoryRessource from_mem,
-            MutableMemoryView to, eMemoryRessource to_mem, const RunQueue* queue) override;
+  void copy(ConstMemoryView from, eMemoryResource from_mem,
+            MutableMemoryView to, eMemoryResource to_mem, const RunQueue* queue) override;
 
  public:
 
-  void setAllocator(eMemoryRessource r, IMemoryAllocator* allocator) override;
+  void setAllocator(eMemoryResource r, IMemoryAllocator* allocator) override;
   void setCopier(IMemoryCopier* copier) override { m_copier = copier; }
   void setIsAccelerator(bool v) override { m_is_accelerator = v; }
 
@@ -68,14 +68,14 @@ class ARCANE_UTILS_EXPORT MemoryRessourceMng
 
  private:
 
-  FixedArray<IMemoryAllocator*, NB_MEMORY_RESSOURCE> m_allocators;
+  FixedArray<IMemoryAllocator*, Arccore::ARCCORE_NB_MEMORY_RESOURCE> m_allocators;
   std::unique_ptr<IMemoryCopier> m_default_memory_copier;
   IMemoryCopier* m_copier = nullptr;
   bool m_is_accelerator = false;
 
  private:
 
-  inline int _checkValidRessource(eMemoryRessource r);
+  inline int _checkValidResource(eMemoryResource r);
 };
 
 /*---------------------------------------------------------------------------*/

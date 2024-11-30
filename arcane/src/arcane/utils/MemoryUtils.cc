@@ -18,7 +18,7 @@
 #include "arcane/utils/IMemoryRessourceMng.h"
 #include "arcane/utils/internal/IMemoryRessourceMngInternal.h"
 #include "arcane/utils/internal/MemoryUtilsInternal.h"
-#include "arcane/utils/internal/MemoryRessourceMng.h"
+#include "arcane/utils/internal/MemoryResourceMng.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -29,7 +29,7 @@ namespace Arcane
 namespace
 {
   IMemoryAllocator* global_accelerator_host_memory_allocator = nullptr;
-  MemoryRessourceMng global_default_data_memory_resource_mng;
+  MemoryResourceMng global_default_data_memory_resource_mng;
   IMemoryRessourceMng* global_data_memory_resource_mng = nullptr;
 } // namespace
 
@@ -157,7 +157,7 @@ void MemoryUtils::
 copy(MutableMemoryView destination, eMemoryRessource destination_mem,
      ConstMemoryView source, eMemoryRessource source_mem, const RunQueue* queue)
 {
-  IMemoryRessourceMng* mrm = platform::getDataMemoryRessourceMng();
+  IMemoryRessourceMng* mrm = getDataMemoryResourceMng();
   mrm->_internal()->copy(source, destination_mem, destination, source_mem, queue);
 }
 
