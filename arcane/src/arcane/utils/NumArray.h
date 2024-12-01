@@ -376,6 +376,7 @@ class NumArray
    * données par \a indexes par la valeur \a v .
    *
    * La mémoire associée à l'instance doit être accessible depuis la file \a queue.
+   * \a queue peut être nulle, auquel cas le remplissage se fait sur l'hôte.
    */
   void fill(const DataType& v, SmallSpan<const Int32> indexes, const RunQueue* queue)
   {
@@ -383,11 +384,34 @@ class NumArray
   }
 
   /*!
-   * \brief Remplit les éléments de l'instance la valeur \a v.
+   * \brief Remplit via la file \a queue, les valeurs du tableau d'indices
+   * données par \a indexes par la valeur \a v .
+   *
+   * La mémoire associée à l'instance doit être accessible depuis la file \a queue.
+   */
+  void fill(const DataType& v, SmallSpan<const Int32> indexes, const RunQueue& queue)
+  {
+    m_data.fill(v, indexes, &queue);
+  }
+
+  /*!
+   * \brief Remplit les éléments de l'instance la valeur \a v en utilisant la file \a queue.
+   *
+   * \a queue peut être nulle, auquel cas le remplissage se fait sur l'hôte.
    */
   void fill(const DataType& v, const RunQueue* queue)
   {
     m_data.fill(v, queue);
+  }
+
+  /*!
+   * \brief Remplit les éléments de l'instance la valeur \a v en utilisant la file \a queue.
+   *
+   * \a queue peut être nulle, auquel cas le remplissage se fait sur l'hôte.
+   */
+  void fill(const DataType& v, const RunQueue& queue)
+  {
+    m_data.fill(v, &queue);
   }
 
   /*!
@@ -421,29 +445,55 @@ class NumArray
   void copy(const ThatClass& rhs) { copy(rhs, nullptr); }
 
   /*!
-   * \brief Copie dans l'instance les valeurs de \a rhs via la file \a queue
+   * \brief Copie dans l'instance les valeurs de \a rhs via la file \a queue.
    *
    * Cette opération est valide quelle que soit la mêmoire associée
    * associée à l'instance.
    * \a queue peut être nul. Si la file est asynchrone, il faudra la
    * synchroniser avant de pouvoir utiliser l'instance.
    */
-  void copy(ConstMDSpanType rhs, RunQueue* queue)
+  void copy(ConstMDSpanType rhs, const RunQueue* queue)
   {
     _resizeAndCopy(rhs, eMemoryRessource::Unknown, queue);
   }
 
   /*!
-   * \brief Copie dans l'instance les valeurs de \a rhs via la file \a queue
+   * \brief Copie dans l'instance les valeurs de \a rhs via la file \a queue.
+   *
+   * Cette opération est valide quelle que soit la mêmoire associée
+   * associée à l'instance.
+   * \a queue peut être nulle, auquel cas la copie se fait sur l'hôte.
+   * Si la file est asynchrone, il faudra la synchroniser avant de pouvoir utiliser l'instance.
+   */
+  void copy(ConstMDSpanType rhs, const RunQueue& queue)
+  {
+    _resizeAndCopy(rhs, eMemoryRessource::Unknown, &queue);
+  }
+
+  /*!
+   * \brief Copie dans l'instance les valeurs de \a rhs via la file \a queue.
+   *
+   * Cette opération est valide quelle que soit la mêmoire associée
+   * associée à l'instance.
+   * \a queue peut être nulle, auquel cas la copie se fait sur l'hôte.
+   * Si la file est asynchrone, il faudra la synchroniser avant de pouvoir utiliser l'instance.
+   */
+  void copy(const ThatClass& rhs, const RunQueue* queue)
+  {
+    _resizeAndCopy(rhs.constMDSpan(), rhs.memoryRessource(), queue);
+  }
+
+  /*!
+   * \brief Copie dans l'instance les valeurs de \a rhs via la file \a queue.
    *
    * Cette opération est valide quelle que soit la mêmoire associée
    * associée à l'instance.
    * \a queue peut être nul. Si la file est asynchrone, il faudra la
    * synchroniser avant de pouvoir utiliser l'instance.
    */
-  void copy(const ThatClass& rhs, RunQueue* queue)
+  void copy(const ThatClass& rhs, const RunQueue& queue)
   {
-    _resizeAndCopy(rhs.constMDSpan(), rhs.memoryRessource(), queue);
+    _resizeAndCopy(rhs.constMDSpan(), rhs.memoryRessource(), &queue);
   }
 
  public:
@@ -601,7 +651,7 @@ class NumArray
     m_span.m_ptr = m_data.to1DSpan().data();
   }
 
-  void _resizeAndCopy(ConstMDSpanType rhs, eMemoryRessource input_ressource, RunQueue* queue)
+  void _resizeAndCopy(ConstMDSpanType rhs, eMemoryRessource input_ressource, const RunQueue* queue)
   {
     this->resize(rhs.extents().dynamicExtents());
     m_data.copyOnly(rhs.to1DSpan(), input_ressource, queue);
