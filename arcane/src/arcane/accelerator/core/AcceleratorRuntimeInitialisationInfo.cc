@@ -16,6 +16,7 @@
 #include "arcane/utils/ITraceMng.h"
 #include "arcane/utils/String.h"
 #include "arcane/utils/Property.h"
+#include "arcane/utils/MemoryUtils.h"
 
 #include "arcane/accelerator/core/Runner.h"
 #include "arcane/accelerator/core/DeviceId.h"
@@ -175,6 +176,7 @@ arcaneInitializeRunner(Accelerator::Runner& runner,ITraceMng* tm,
   if (policy==eExecutionPolicy::None)
     ARCANE_FATAL("Invalid policy eExecutionPolicy::None");
   tm->info() << "AcceleratorRuntime=" << accelerator_runtime;
+  tm->info() << "DefaultDataAllocator MemoryResource=" << MemoryUtils::getDefaultDataMemoryResource();
   if (impl::isAcceleratorPolicy(policy)){
     tm->info() << "Using accelerator runtime=" << policy << " device=" << acc_info.deviceId();
     runner.initialize(policy,acc_info.deviceId());
