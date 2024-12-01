@@ -35,6 +35,7 @@
 #include "arcane/utils/CommandLineArguments.h"
 #include "arcane/utils/ApplicationInfo.h"
 #include "arcane/utils/TestLogger.h"
+#include "arcane/utils/MemoryUtils.h"
 #include "arcane/utils/internal/MemoryUtilsInternal.h"
 
 #include "arcane/core/ArcaneException.h"
@@ -1172,6 +1173,14 @@ _checkAutoDetectAccelerator(bool& has_accelerator)
 
     (*my_functor)(runtime_info);
     has_accelerator = true;
+
+    // Permet de surcharger le choix de l'allocateur des données
+    String data_allocator_str = Arcane::platform::getEnvironmentVariable("ARCANE_DEFAULT_DATA_MEMORY_RESOURCE");
+    if (!data_allocator_str.null()){
+      eMemoryResource v = MemoryUtils::getMemoryResourceFromName(data_allocator_str);
+      if (v!=eMemoryResource::Unknown)
+        MemoryUtils::setDefaultDataMemoryResource(v);
+    }
   }
   catch (const Exception& ex) {
     return arcanePrintArcaneException(ex, nullptr);
