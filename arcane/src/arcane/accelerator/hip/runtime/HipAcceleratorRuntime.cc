@@ -111,7 +111,13 @@ class HipRunQueueStream
     int device = hipCpuDeviceId;
     if (!d.isHost())
       device = d.asInt32();
-    auto r = hipMemPrefetchAsync(src.data(), src.size(), device, m_hip_stream);
+    //    std::cout << "PREFETCH device=" << device << " host=" << hipCpuDeviceId
+    //          << " size=" << args.source().bytes().size() << " is_async=" << args.isAsync() << "\n";
+    hipError_t r = hipMemPrefetchAsync(src.data(), src.size(), device, m_hip_stream);
+    // hipErrorNotSupported arrive si la zone mémoire n'est pas accessible sur le device
+    // Dans ce cas on ne fait rien
+    if (r==hipErrorNotSupported)
+      return;
     ARCANE_CHECK_HIP(r);
     if (!args.isAsync())
       barrier();
@@ -375,12 +381,12 @@ fillDevices(bool is_verbose)
     o << "\nDevice " << i << " name=" << dp.name << "\n";
     o << " computeCapability = " << dp.major << "." << dp.minor << "\n";
     o << " totalGlobalMem = " << dp.totalGlobalMem << "\n";
+    o << " totalConstMem = " << dp.totalConstMem << "\n";
     o << " sharedMemPerBlock = " << dp.sharedMemPerBlock << "\n";
     o << " regsPerBlock = " << dp.regsPerBlock << "\n";
     o << " warpSize = " << dp.warpSize << "\n";
     o << " memPitch = " << dp.memPitch << "\n";
     o << " maxThreadsPerBlock = " << dp.maxThreadsPerBlock << "\n";
-    o << " totalConstMem = " << dp.totalConstMem << "\n";
     o << " clockRate = " << dp.clockRate << "\n";
     //o << " deviceOverlap = " << dp.deviceOverlap<< "\n";
     o << " multiProcessorCount = " << dp.multiProcessorCount << "\n";
@@ -392,6 +398,14 @@ fillDevices(bool is_verbose)
       << " " << dp.maxThreadsDim[2] << "\n";
     o << " maxGridSize = " << dp.maxGridSize[0] << " " << dp.maxGridSize[1]
       << " " << dp.maxGridSize[2] << "\n";
+    o << " concurrentManagedAccess = " << dp.concurrentManagedAccess << "\n";
+    o << " directManagedMemAccessFromHost = " << dp.directManagedMemAccessFromHost << "\n";
+    o << " gcnArchName = " << dp.gcnArchName << "\n";
+    o << " gpuDirectRDMASupported = " << dp.gpuDirectRDMASupported << "\n";
+    o << " hostNativeAtomicSupported = " << dp.hostNativeAtomicSupported << "\n";
+    o << " pageableMemoryAccess = " << dp.pageableMemoryAccess << "\n";
+    o << " pageableMemoryAccessUsesHostPageTables = " << dp.pageableMemoryAccessUsesHostPageTables << "\n";
+    o << " unifiedFunctionPointers = " << dp.unifiedFunctionPointers << "\n";
     o << " hasManagedMemory = " << has_managed_memory << "\n";
 
     {
