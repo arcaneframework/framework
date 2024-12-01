@@ -35,6 +35,7 @@
 #include "arcane/utils/CommandLineArguments.h"
 #include "arcane/utils/ApplicationInfo.h"
 #include "arcane/utils/TestLogger.h"
+#include "arcane/utils/internal/MemoryUtilsInternal.h"
 
 #include "arcane/core/ArcaneException.h"
 #include "arcane/core/IMainFactory.h"
@@ -1113,7 +1114,7 @@ _checkAutoDetectMPI()
  *
  * \retval 0 si tout est OK
  *
- * \note Ne pas appeler directement cette méthode mais
+ * \note Il ne faut pas appeler directement cette méthode mais
  * passer par ArcaneMainAutoDetectHelper.
  */
 int ArcaneMain::
@@ -1130,7 +1131,7 @@ _checkAutoDetectAccelerator(bool& has_accelerator)
     return 0;
 
   try {
-    // Pour l'instant, seul les runtimes 'cuda' et 'hip' sont autorisés
+    // Pour l'instant, seul les runtimes 'cuda', 'hip' et 'sycl' sont autorisés
     if (runtime_name != "cuda" && runtime_name != "hip" && runtime_name != "sycl")
       ARCANE_FATAL("Invalid accelerator runtime '{0}'. Only 'cuda', 'hip' or 'sycl' is allowed", runtime_name);
 
@@ -1164,6 +1165,10 @@ _checkAutoDetectAccelerator(bool& has_accelerator)
     String verbose_str = Arcane::platform::getEnvironmentVariable("ARCANE_DEBUG_ACCELERATOR");
     if (!verbose_str.null())
       runtime_info.setVerbose(true);
+
+    // Par défaut utilise la mémoire unifiée pour les données.
+    // Le runtime accélérateur pourra changer cela.
+    MemoryUtils::setDefaultDataMemoryResource(eMemoryResource::UnifiedMemory);
 
     (*my_functor)(runtime_info);
     has_accelerator = true;

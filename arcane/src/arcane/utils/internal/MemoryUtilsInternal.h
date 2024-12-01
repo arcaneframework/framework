@@ -58,6 +58,17 @@ setAcceleratorHostMemoryAllocator(IMemoryAllocator* a);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+/*!
+ * \brief Positionne la ressource mémoire utilisée pour l'allocateur
+ * mémoire des données.
+ *
+ * \sa getDefaultDataMemoryResource();
+ */
+extern "C++" ARCANE_UTILS_EXPORT void
+setDefaultDataMemoryResource(eMemoryResource mem_resource);
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 } // namespace Arcane::MemoryUtils
 

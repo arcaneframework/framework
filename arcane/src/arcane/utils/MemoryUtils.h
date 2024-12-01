@@ -29,29 +29,35 @@ namespace Arcane::MemoryUtils
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
+ * \brief Ressource mémoire utilisée par l'allocateur par défaut pour les données.
+ *
+ * Par défaut, si un runtime accélérateur est initialisé, la ressource
+ * associé est eMemoryResource::UnifiedMemory. Sinon, il s'agit de
+ * eMemoryResource::Host.
+ *
+ * \sa getDefaultDataAllocator();
+ */
+extern "C++" ARCANE_UTILS_EXPORT eMemoryResource
+getDefaultDataMemoryResource();
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
  * \brief Allocateur par défaut pour les données.
  *
- * Si un runtime accélérateur est initialisé, l'allocateur retourné permet
- * d'allouer en mémoire unifiée et donc la zone allouée sera accessible à la
- * fois sur l'accélérateur et sur l'hôte. Sinon, retourne un allocateur
- * aligné.
+ * L'allocateur par défaut pour les données est un allocateur qui permet
+ * d'accéder à la zone mémoire à la fois par l'hôte et l'accélérateur.
+ *
+ * Il est possible de récupérer la ressource mémoire associée via
+ * getDefaultDataMemoryResource();
+ *
+ * Cet appel est équivalent à getAllocator(getDefaultDataMemoryResource()).
  *
  * Il est garanti que l'alignement est au moins celui retourné par
  * AlignedMemoryAllocator::Simd().
  */
 extern "C++" ARCANE_UTILS_EXPORT IMemoryAllocator*
 getDefaultDataAllocator();
-
-/*!
- * \brief Retourne l'allocateur sur l'hôte ou sur le device.
- *
- * Si un runtime accélérateur est initialisé, l'allocateur retourné permet
- * d'allouer en utilisant la mémoire de l'accélérateur par défaut
- * (eMemoryResource::Device). Sinon, utilise l'allocateur de l'hôte
- * (eMemoryResource::Host).
- */
-extern "C++" ARCANE_UTILS_EXPORT IMemoryAllocator*
-getDeviceOrHostAllocator();
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -64,6 +70,19 @@ getDeviceOrHostAllocator();
  */
 extern "C++" ARCANE_UTILS_EXPORT MemoryAllocationOptions
 getDefaultDataAllocator(eMemoryLocationHint hint);
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Retourne l'allocateur sur l'hôte ou sur le device.
+ *
+ * Si un runtime accélérateur est initialisé, l'allocateur retourné permet
+ * d'allouer en utilisant la mémoire de l'accélérateur par défaut
+ * (eMemoryResource::Device). Sinon, utilise l'allocateur de l'hôte
+ * (eMemoryResource::Host).
+ */
+extern "C++" ARCANE_UTILS_EXPORT IMemoryAllocator*
+getDeviceOrHostAllocator();
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

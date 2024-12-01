@@ -31,7 +31,26 @@ namespace
   IMemoryAllocator* global_accelerator_host_memory_allocator = nullptr;
   MemoryResourceMng global_default_data_memory_resource_mng;
   IMemoryRessourceMng* global_data_memory_resource_mng = nullptr;
+  eMemoryResource global_data_memory_resource = eMemoryResource::Host;
 } // namespace
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+eMemoryResource MemoryUtils::
+getDefaultDataMemoryResource()
+{
+  return global_data_memory_resource;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MemoryUtils::
+setDefaultDataMemoryResource(eMemoryResource v)
+{
+  global_data_memory_resource = v;
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -63,7 +82,7 @@ getDataMemoryResourceMng()
 IMemoryAllocator* MemoryUtils::
 getDefaultDataAllocator()
 {
-  return getDataMemoryResourceMng()->getAllocator(eMemoryResource::UnifiedMemory);
+  return getDataMemoryResourceMng()->getAllocator(getDefaultDataMemoryResource());
 }
 
 /*---------------------------------------------------------------------------*/
