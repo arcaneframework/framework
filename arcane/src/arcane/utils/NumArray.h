@@ -285,33 +285,73 @@ class NumArray
 
  public:
 
+  //! Modifie la taille du tableau en gardant pas les valeurs actuelles
+  void resize(Int32 dim1_size) requires(Extents::nb_dynamic == 1)
+  {
+    m_span.m_extents = DynamicDimsType(dim1_size);
+    _resize();
+  }
+
+  // TODO: Rendre obsolète (juin 2025)
+  //! Modifie la taille du tableau en ne gardant pas les valeurs actuelles
+  void resize(Int32 dim1_size, Int32 dim2_size, Int32 dim3_size, Int32 dim4_size) requires(Extents::nb_dynamic == 4)
+  {
+    this->resizeDestructive(DynamicDimsType(dim1_size, dim2_size, dim3_size, dim4_size));
+  }
+
+  // TODO: Rendre obsolète (juin 2025)
+  //! Modifie la taille du tableau en ne gardant pas les valeurs actuelles
+  void resize(Int32 dim1_size, Int32 dim2_size, Int32 dim3_size) requires(Extents::nb_dynamic == 3)
+  {
+    this->resizeDestructive(DynamicDimsType(dim1_size, dim2_size, dim3_size));
+  }
+
+  // TODO: Rendre obsolète (juin 2025)
+  //! Modifie la taille du tableau en ne gardant pas les valeurs actuelles
+  void resize(Int32 dim1_size, Int32 dim2_size) requires(Extents::nb_dynamic == 2)
+  {
+    this->resizeDestructive(DynamicDimsType(dim1_size, dim2_size));
+  }
+
   /*!
    * \brief Modifie la taille du tableau.
    * \warning Les valeurs actuelles ne sont pas conservées lors de cette opération
    * et les nouvelles valeurs ne sont pas initialisées.
    */
   //@{
-  void resize(Int32 dim1_size, Int32 dim2_size, Int32 dim3_size, Int32 dim4_size) requires(Extents::nb_dynamic == 4)
+  //! Modifie la taille du tableau en ne gardant pas les valeurs actuelles
+  void resizeDestructive(Int32 dim1_size, Int32 dim2_size, Int32 dim3_size, Int32 dim4_size) requires(Extents::nb_dynamic == 4)
   {
-    this->resize(DynamicDimsType(dim1_size, dim2_size, dim3_size, dim4_size));
+    this->resizeDestructive(DynamicDimsType(dim1_size, dim2_size, dim3_size, dim4_size));
   }
 
-  void resize(Int32 dim1_size, Int32 dim2_size, Int32 dim3_size) requires(Extents::nb_dynamic == 3)
+  //! Modifie la taille du tableau en ne gardant pas les valeurs actuelles
+  void resizeDestructive(Int32 dim1_size, Int32 dim2_size, Int32 dim3_size) requires(Extents::nb_dynamic == 3)
   {
-    this->resize(DynamicDimsType(dim1_size, dim2_size, dim3_size));
+    this->resizeDestructive(DynamicDimsType(dim1_size, dim2_size, dim3_size));
   }
 
-  void resize(Int32 dim1_size, Int32 dim2_size) requires(Extents::nb_dynamic == 2)
+  //! Modifie la taille du tableau en ne gardant pas les valeurs actuelles
+  void resizeDestructive(Int32 dim1_size, Int32 dim2_size) requires(Extents::nb_dynamic == 2)
   {
-    this->resize(DynamicDimsType(dim1_size, dim2_size));
+    this->resizeDestructive(DynamicDimsType(dim1_size, dim2_size));
   }
 
-  void resize(Int32 dim1_size) requires(Extents::nb_dynamic == 1)
+  //! Modifie la taille du tableau en ne gardant pas les valeurs actuelles
+  void resizeDestructive(Int32 dim1_size) requires(Extents::nb_dynamic == 1)
   {
-    this->resize(DynamicDimsType(dim1_size));
+    this->resizeDestructive(DynamicDimsType(dim1_size));
   }
 
+  // TODO: Rendre obsolète (juin 2025)
+  //! Modifie la taille du tableau en ne gardant pas les valeurs actuelles
   void resize(const DynamicDimsType& dims)
+  {
+    resizeDestructive(dims);
+  }
+
+  //! Modifie la taille du tableau en ne gardant pas les valeurs actuelles
+  void resizeDestructive(const DynamicDimsType& dims)
   {
     m_span.m_extents = dims;
     _resize();
@@ -328,8 +368,7 @@ class NumArray
    */
   void fill(const DataType& v)
   {
-    _checkHost(memoryRessource());
-    m_data.fill(v);
+    fillHost(v);
   }
 
   /*!
@@ -349,6 +388,18 @@ class NumArray
   void fill(const DataType& v, const RunQueue* queue)
   {
     m_data.fill(v, queue);
+  }
+
+  /*!
+   * \brief Remplit les valeurs du tableau par \a v.
+   *
+   * L'opération se fait sur l'hôte donc la mémoire associée
+   * à l'instance doit être accessible sur l'hôte.
+   */
+  void fillHost(const DataType& v)
+  {
+    _checkHost(memoryRessource());
+    m_data.fill(v);
   }
 
  public:
