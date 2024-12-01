@@ -1,4 +1,4 @@
-set(TEST_DIRS . anyitem dof inout)
+﻿set(TEST_DIRS . anyitem dof inout)
 
 set(TEST_LIBS ${ARCANE_ADDITIONNAL_TEST_LIBRARIES})
 if(MPI_FOUND AND NOT WIN32)
@@ -365,6 +365,7 @@ if (ARCANE_HAS_ACCELERATOR_API)
   arcane_add_test_sequential(standalone_accelerator_testsum dummy.arc "-A,StandaloneAcceleratorMethod=TestSum")
   arcane_add_test_sequential(standalone_accelerator_testbinop dummy.arc "-A,StandaloneAcceleratorMethod=TestBinOp")
   arcane_add_accelerator_test_sequential(standalone_accelerator_testsum dummy.arc "-A,StandaloneAcceleratorMethod=TestSum")
+  arcane_add_accelerator_test_sequential(standalone_accelerator_testsum_hostpinned dummy.arc "-A,StandaloneAcceleratorMethod=TestSum" "-We,ARCANE_DEFAULT_DATA_MEMORY_RESOURCE,HostPinned")
   arcane_add_accelerator_test_sequential(standalone_accelerator_testbinop dummy.arc "-A,StandaloneAcceleratorMethod=TestBinOp")
   arcane_add_accelerator_test_sequential(standalone_accelerator_testemptykernel dummy.arc "-A,StandaloneAcceleratorMethod=TestEmptyKernel")
 endif()
