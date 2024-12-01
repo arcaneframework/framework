@@ -12,6 +12,7 @@
 #include "arcane/utils/Exception.h"
 #include "arcane/utils/MemoryUtils.h"
 #include "arcane/utils/NumericTypes.h"
+#include "arcane/utils/internal/MemoryUtilsInternal.h"
 
 #include <random>
 
@@ -171,6 +172,28 @@ TEST(Memory, Basic)
     std::cerr << "ERROR=" << ex << "\n";
     throw;
   }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+namespace
+{
+void _checkSetDataMemoryResource(const String& name, eMemoryResource expected_mem_resource)
+{
+  eMemoryResource v = MemoryUtils::getMemoryResourceFromName(name);
+  ASSERT_EQ(v, expected_mem_resource);
+  MemoryUtils::setDefaultDataMemoryResource(v);
+  eMemoryResource v2 = MemoryUtils::getDefaultDataMemoryResource();
+  ASSERT_EQ(v2, expected_mem_resource);
+}
+} // namespace
+
+TEST(Memory, Allocator)
+{
+  _checkSetDataMemoryResource("Device", eMemoryResource::Device);
+  _checkSetDataMemoryResource("HostPinned", eMemoryResource::HostPinned);
+  _checkSetDataMemoryResource("Host", eMemoryResource::Host);
+  _checkSetDataMemoryResource("UnifiedMemory", eMemoryResource::UnifiedMemory);
 }
 
 /*---------------------------------------------------------------------------*/

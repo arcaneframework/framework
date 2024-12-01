@@ -13,9 +13,10 @@
 
 #include "arcane/utils/MemoryUtils.h"
 
-#include "arcane/utils/PlatformUtils.h"
+#include "arcane/utils/FatalErrorException.h"
 #include "arcane/utils/MemoryAllocator.h"
 #include "arcane/utils/IMemoryRessourceMng.h"
+#include "arcane/utils/String.h"
 #include "arcane/utils/internal/IMemoryRessourceMngInternal.h"
 #include "arcane/utils/internal/MemoryUtilsInternal.h"
 #include "arcane/utils/internal/MemoryResourceMng.h"
@@ -50,6 +51,30 @@ void MemoryUtils::
 setDefaultDataMemoryResource(eMemoryResource v)
 {
   global_data_memory_resource = v;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+eMemoryResource MemoryUtils::
+getMemoryResourceFromName(const String& name)
+{
+  eMemoryResource v = eMemoryResource::Unknown;
+  if (name.null())
+    return v;
+  if (name == "Device")
+    v = eMemoryResource::Device;
+  else if (name == "Host")
+    v = eMemoryResource::Host;
+  else if (name == "HostPinned")
+    v = eMemoryResource::HostPinned;
+  else if (name == "UnifiedMemory")
+    v = eMemoryResource::UnifiedMemory;
+  else
+    ARCANE_FATAL("Invalid name '{0}' for memory resource. Valid names are "
+                 "'Device', 'Host', 'HostPinned' or 'UnifieMemory'.",
+                 name);
+  return v;
 }
 
 /*---------------------------------------------------------------------------*/

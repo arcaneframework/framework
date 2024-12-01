@@ -43,6 +43,20 @@ getDefaultDataMemoryResource();
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
+ * \brief Retourne la ressource mémoire par son nom.
+ *
+ * Le nom correspond au nom de la valeur de l'énumération (par exemple
+ * 'Device' pour eMemoryResource::Device.
+ *
+ * Si \a name est nul, retourn eMemoryResource::Unknown.
+ * Si \a name ne correspondant pas à une valeur valide, lève une exception.
+ */
+extern "C++" ARCANE_UTILS_EXPORT eMemoryResource
+getMemoryResourceFromName(const String& name);
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
  * \brief Allocateur par défaut pour les données.
  *
  * L'allocateur par défaut pour les données est un allocateur qui permet
