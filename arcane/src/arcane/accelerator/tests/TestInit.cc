@@ -7,6 +7,8 @@
 
 #include <gtest/gtest.h>
 
+#include "arcane/utils/MemoryUtils.h"
+#include "arcane/utils/MemoryAllocator.h"
 #include "arcane/accelerator/core/Runner.h"
 #include "arcane/accelerator/core/RunQueue.h"
 
@@ -38,6 +40,20 @@ void _doTest1()
   Runner runner(exec_policy);
   RunQueue queue(makeQueue(runner));
   ASSERT_TRUE(queue.executionPolicy() == exec_policy);
+
+  eMemoryResource mr = eMemoryResource::Host;
+  ASSERT_EQ(MemoryUtils::getAllocator(mr)->memoryResource(),mr);
+
+  if (queue.isAcceleratorPolicy()){
+    mr = eMemoryResource::HostPinned;
+    ASSERT_EQ(MemoryUtils::getAllocator(mr)->memoryResource(),mr);
+
+    mr = eMemoryResource::Device;
+    ASSERT_EQ(MemoryUtils::getAllocator(mr)->memoryResource(),mr);
+
+    mr = eMemoryResource::UnifiedMemory;
+    ASSERT_EQ(MemoryUtils::getAllocator(mr)->memoryResource(),mr);
+  }
 }
 
 /*---------------------------------------------------------------------------*/

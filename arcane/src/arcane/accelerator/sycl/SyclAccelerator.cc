@@ -107,6 +107,7 @@ class UnifiedMemorySyclMemoryAllocator
   {
     sycl::free(ptr, q);
   }
+  eMemoryResource memoryResource() const override { return eMemoryResource::UnifiedMemory; }
 };
 
 /*---------------------------------------------------------------------------*/
@@ -126,6 +127,7 @@ class HostPinnedSyclMemoryAllocator
   {
     sycl::free(ptr, q);
   }
+  eMemoryResource memoryResource() const override { return eMemoryResource::HostPinned; }
 };
 
 /*---------------------------------------------------------------------------*/
@@ -144,6 +146,7 @@ class DeviceSyclMemoryAllocator
   {
     sycl::free(ptr, q);
   }
+  eMemoryResource memoryResource() const override { return eMemoryResource::Device; }
 };
 
 /*---------------------------------------------------------------------------*/
