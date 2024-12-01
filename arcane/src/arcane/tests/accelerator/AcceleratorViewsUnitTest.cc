@@ -455,7 +455,7 @@ _executeTest3()
   CellGroup own_cells = allCells().own();
   Int32 max_local_id = own_cells.itemFamily()->maxLocalId();
   NumArray<Int32, MDDim1> checked_local_ids(max_local_id);
-  checked_local_ids.fill(-1, &queue);
+  checked_local_ids.fill(-1, queue);
   {
     // Remplit out_checked_local_ids avec le i-ème localId() du groupe.
     auto out_checked_local_ids = ax::viewOut(command, checked_local_ids);
