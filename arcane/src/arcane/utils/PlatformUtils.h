@@ -270,9 +270,9 @@ IMemoryAllocator* getAcceleratorHostMemoryAllocator();
  *
  * \deprecated Cette méthode est interne à Arcane.
  */
-extern "C++" ARCANE_UTILS_EXPORT
-ARCANE_DEPRECATED_REASON("Y2024: This method is internal to Arcane")
-IMemoryAllocator* setAcceleratorHostMemoryAllocator(IMemoryAllocator* a);
+extern "C++" ARCANE_DEPRECATED_REASON("Y2024: This method is internal to Arcane")
+ARCANE_UTILS_EXPORT IMemoryAllocator*
+setAcceleratorHostMemoryAllocator(IMemoryAllocator* a);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -302,9 +302,10 @@ getDefaultDataAllocator();
  *
  * * \deprecated Cette méthode est interne à Arcane.
  */
-extern "C++" ARCANE_UTILS_EXPORT
-ARCANE_DEPRECATED_REASON("Y2024: This method is internal to Arcane")
-IMemoryRessourceMng* setDataMemoryRessourceMng(IMemoryRessourceMng* mng);
+extern "C++" ARCANE_DEPRECATED_REASON("Y2024: This method is internal to Arcane")
+ARCANE_UTILS_EXPORT IMemoryRessourceMng*
+setDataMemoryRessourceMng(IMemoryRessourceMng* mng);
+
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -316,9 +317,9 @@ IMemoryRessourceMng* setDataMemoryRessourceMng(IMemoryRessourceMng* mng);
  *
  * \deprecated Cette méthode est interne à Arcane.
  */
-extern "C++" ARCANE_UTILS_EXPORT
-ARCANE_DEPRECATED_REASON("Y2024: This method is internal to Arcane. Use methods from MemoryUtils instead.")
-IMemoryRessourceMng* getDataMemoryRessourceMng();
+extern "C++" ARCANE_DEPRECATED_REASON("Y2024: This method is internal to Arcane. Use methods from MemoryUtils instead.")
+ARCANE_UTILS_EXPORT IMemoryRessourceMng*
+getDataMemoryRessourceMng();
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
