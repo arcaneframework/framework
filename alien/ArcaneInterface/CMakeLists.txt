@@ -96,7 +96,7 @@ include(${ALIEN_BUILDSYSTEM_PATH}/LoadDefaultPackages.cmake)
 # default languages  (axl)
 # NB: after packages
 # Incompatible avec axlstar !!
-#include(LoadDefaultLanguages)
+#include(LoadDefaultLanguagesr
 
 # Alien Options
 include(${ALIEN_CMAKE_CONFIG_PATH}/LoadAlienOptions.cmake)
