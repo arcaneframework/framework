@@ -47,10 +47,11 @@ class ARCANE_ACCELERATOR_CORE_EXPORT AcceleratorRuntimeInitialisationInfo
 
  public:
 
+  //! Indique si on utilise un runtime accélérateur
   void setIsUsingAcceleratorRuntime(bool v);
   bool isUsingAcceleratorRuntime() const;
 
-  //! Nom du runtime utilisé (pour l'instant uniquement 'cuda')
+  //! Nom du runtime utilisé (pour l'instant uniquement 'cuda', 'hip' ou 'sycl')
   void setAcceleratorRuntime(StringView name);
   String acceleratorRuntime() const;
 
