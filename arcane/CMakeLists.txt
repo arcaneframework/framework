@@ -897,7 +897,7 @@ add_subdirectory(src/arcane/driver)
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
 # Gestion du support des accélérateurs.
-# Les modes supportés sont 'CUDA', 'ROCM' et 'SYCL'
+# Les modes supportés sont 'CUDA', 'ROCM' (ou 'HIP') et 'SYCL'
 
 # Pour des raisons de compatibilité avec les configurations 2021, on
 # regarde d'abord si ARCANE_WANT_CUDA est défini
@@ -909,6 +909,9 @@ endif()
 # Cela est fait pour compatibilité avec les versions antérieures à la 3.14.
 if (ARCANE_ACCELERATOR_MODE STREQUAL "CUDANVCC" )
   set (ARCANE_ACCELERATOR_MODE "CUDA" )
+endif()
+if (ARCANE_ACCELERATOR_MODE STREQUAL "HIP" )
+  set (ARCANE_ACCELERATOR_MODE "ROCM" )
 endif()
 if (ARCANE_ACCELERATOR_MODE STREQUAL "ROCMHIP" )
   set (ARCANE_ACCELERATOR_MODE "ROCM" )
@@ -924,16 +927,20 @@ if(DEFINED ARCANE_ACCELERATOR_MODE)
 
   if (ARCANE_ACCELERATOR_MODE STREQUAL "CUDA" )
     set (ARCANE_WANT_CUDA TRUE)
+    set (ARCANE_ACCELERATOR_RUNTIME cuda)
   elseif (ARCANE_ACCELERATOR_MODE STREQUAL "ROCM" )
     set (ARCANE_WANT_HIP TRUE)
+    set (ARCANE_ACCELERATOR_RUNTIME hip)
     # TODO: vérifier qu'on utilise bien 'hipcc'
   elseif (ARCANE_ACCELERATOR_MODE STREQUAL "SYCL" )
     set (ARCANE_WANT_SYCL TRUE)
+    set (ARCANE_ACCELERATOR_RUNTIME sycl)
   else()
     message(FATAL_ERROR "Unsupported ARCANE_ACCELERATOR_MODE '${ARCANE_ACCELERATOR_MODE}'."
-      "Valid values are 'CUDA', 'ROCM' ou 'SYCL")
+      "Valid values are 'CUDA', 'ROCM'/'HIP' or 'SYCL")
   endif()
   set (ARCANE_ACCELERATOR_MODE ${ARCANE_ACCELERATOR_MODE} CACHE STRING "Accelerator Mode" FORCE)
+  set (ARCANE_ACCELERATOR_RUNTIME ${ARCANE_ACCELERATOR_RUNTIME} CACHE STRING "Accelerator runtime" FORCE)
   set (ARCANE_HAS_ACCELERATOR TRUE)
   message(STATUS "Arcane has accelerator mode enabled : ${ARCANE_ACCELERATOR_MODE}")
 endif()
@@ -941,10 +948,12 @@ endif()
 # ----------------------------------------------------------------------------
 
 if (ARCANE_HAS_ACCELERATOR)
+  if (NOT ARCANE_ACCELERATOR_RUNTIME)
+    message(FATAL_ERROR "ARCANE_HAS_ACCELERATOR is true but ARCANE_ACCELERATOR_RUNTIME is not set")
+  endif()
   if (ARCANE_ACCELERATOR_MODE STREQUAL "ROCM")
     # Il faut au moins CMake 3.21 pour qu'il reconnaisse langage HIP
     enable_language(HIP)
-    add_subdirectory(src/arcane/accelerator/hip)
   elseif(ARCANE_ACCELERATOR_MODE STREQUAL "CUDA")
     # Pour le support du C++20 avec NVCC, il faut au moins cmake 3.26
     message(STATUS "CMake 3.26 is required for CUDA C++20 support in Arcane. Checking it")
@@ -958,12 +967,12 @@ if (ARCANE_HAS_ACCELERATOR)
       set(CMAKE_CUDA_HOST_COMPILER "${CMAKE_CXX_COMPILER}")
     endif()
     enable_language(CUDA)
-    add_subdirectory(src/arcane/accelerator/cuda)
   elseif(ARCANE_ACCELERATOR_MODE STREQUAL "SYCL")
-    add_subdirectory(src/arcane/accelerator/sycl)
+    # Rien à faire de spécial pour SYCL.
   else()
     message(FATAL_ERROR "Unsupported Accelerator Mode : ${ARCANE_ACCELERATOR_MODE}")
   endif()
+  add_subdirectory(src/arcane/accelerator/${ARCANE_ACCELERATOR_RUNTIME})
 endif()
 
 add_subdirectory(src/arcane/accelerator/core)
@@ -972,15 +981,7 @@ if (ARCANE_HAS_ACCELERATOR_API)
 endif()
 
 if (ARCANE_HAS_ACCELERATOR)
-  if (ARCANE_ACCELERATOR_MODE STREQUAL "ROCM" )
-    add_subdirectory(src/arcane/accelerator/hip/runtime)
-  elseif(ARCANE_ACCELERATOR_MODE STREQUAL "CUDA")
-    add_subdirectory(src/arcane/accelerator/cuda/runtime)
-  elseif(ARCANE_ACCELERATOR_MODE STREQUAL "SYCL")
-    add_subdirectory(src/arcane/accelerator/sycl/runtime)
-  else()
-    message(FATAL_ERROR "Unsupported Accelerator Mode : ${ARCANE_ACCELERATOR_MODE}")
-  endif()
+  add_subdirectory(src/arcane/accelerator/${ARCANE_ACCELERATOR_RUNTIME}/runtime)
 endif()
 
 # ----------------------------------------------------------------------------
@@ -1179,7 +1180,7 @@ macro(ARCANE_WRITE_ONE_CONFIG_VALUE varname configname)
   endif()
 endmacro()
 
-function(ARCANE_WRITE_CONFIG_STR str filename)
+function(arcane_write_config_str str filename)
   file(WRITE ${CMAKE_BINARY_DIR}/lib/${filename}.gen ${str})
   execute_process(COMMAND ${CMAKE_COMMAND} -E copy_if_different ${CMAKE_BINARY_DIR}/lib/${filename}.gen ${CMAKE_BINARY_DIR}/${filename})
   install(FILES ${CMAKE_BINARY_DIR}/${filename} DESTINATION include)
@@ -1187,7 +1188,7 @@ endfunction()
 
 # Fonction pour générer le fichier 'arcane_config_core.h' indiquant la disponibilité
 # de telle ou telle option
-function(ARCANE_GEN_CORE_CONFIG_FILE filename)
+function(arcane_gen_core_config_file filename)
   set(_STR "// # File generated from configure. Do not edit\n")
   set(_STR "${_STR}// # Options\n")
   set(_STR "${_STR}#ifndef ARCANE_CORE_CONFIG_H\n")
@@ -1237,7 +1238,7 @@ endfunction()
 
 # Fonction pour générer le fichier 'arcane_packages.h' indiquant la disponibilité
 # de tel ou tel package ou composante
-function(ARCANE_GEN_PACKAGE_CONFIG_FILE filename)
+function(arcane_gen_package_config_file filename)
   SET(_STR "// # File generated from configure. Do not edit\n")
   SET(_STR "${_STR}// # Packages list\n")
   foreach(package ${ARCANE_PACKAGE_LIST})
@@ -1260,6 +1261,8 @@ function(ARCANE_GEN_PACKAGE_CONFIG_FILE filename)
   endforeach()
   ARCANE_WRITE_CONFIG_STR(${_STR} ${filename})
 endfunction()
+
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/arcane_internal_config.h.in ${CMAKE_BINARY_DIR}/arcane_internal_config.h)
 
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
