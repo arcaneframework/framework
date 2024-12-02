@@ -34,17 +34,17 @@
 #include "arcane/core/ItemRefinementPattern.h"
 #include "arcane/core/Properties.h"
 #include "arcane/core/IGhostLayerMng.h"
+#include "arcane/core/ItemVector.h"
 
 #include "arcane/mesh/DynamicMesh.h"
 #include "arcane/mesh/ItemRefinement.h"
 #include "arcane/mesh/MeshRefinement.h"
-
 #include "arcane/mesh/ParallelAMRConsistency.h"
 #include "arcane/mesh/FaceReorienter.h"
-
 #include "arcane/mesh/NodeFamily.h"
 #include "arcane/mesh/EdgeFamily.h"
-#include "arcane/core/ItemVector.h"
+
+#include "arcane/core/materials/IMeshMaterialMng.h"
 
 #include <vector>
 
@@ -738,6 +738,14 @@ coarsenItemsV2(bool update_parent_flag)
 
   UniqueArray<Int64> ghost_cell_to_refine;
   UniqueArray<Int64> ghost_cell_to_coarsen;
+
+  if (!update_parent_flag) {
+    // Si les matériaux sont actifs, il faut forcer un recalcul des matériaux car les groupes
+    // de mailles ont été modifiés et donc la liste des constituants aussi
+    Materials::IMeshMaterialMng* mm = Materials::IMeshMaterialMng::getReference(m_mesh, false);
+    if (mm)
+      mm->forceRecompute();
+  }
 
   m_mesh->modifier()->updateGhostLayerFromParent(ghost_cell_to_refine, ghost_cell_to_coarsen, true);
 
