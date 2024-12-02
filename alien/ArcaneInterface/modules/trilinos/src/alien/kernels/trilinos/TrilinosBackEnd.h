@@ -93,7 +93,7 @@ template <> struct AlgebraTraits<BackEnd::tag::tpetraserial>
   typedef IInternalLinearSolver<matrix_type, vector_type> solver_type;
 
   static algebra_type* algebra_factory(
-      Arccore::MessagePassing::IMessagePassingMng* p_mng = nullptr)
+      [[maybe_unused]] Arccore::MessagePassing::IMessagePassingMng* p_mng = nullptr)
   {
     return TrilinosInternalLinearAlgebraFactory();
   }

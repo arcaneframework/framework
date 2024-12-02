@@ -414,15 +414,15 @@ _executeTest1(Integer nb_z, EnvCellVectorView env1)
   // GPU
   {
     auto queue = makeQueue(m_runner);
-    auto cmd = makeCommand(queue);
-
-    auto out_a = ax::viewOut(cmd, m_mat_a);
-    auto in_b = ax::viewIn(cmd, m_mat_b);
-    auto in_c = ax::viewIn(cmd, m_mat_c);
-    auto in_d = ax::viewIn(cmd, m_mat_d);
-    auto in_e = ax::viewIn(cmd, m_mat_e);
 
     for (Integer z = 0, iz = nb_z; z < iz; ++z) {
+      auto cmd = makeCommand(queue);
+
+      auto out_a = viewOut(cmd, m_mat_a);
+      auto in_b = viewIn(cmd, m_mat_b);
+      auto in_c = viewIn(cmd, m_mat_c);
+      auto in_d = viewIn(cmd, m_mat_d);
+      auto in_e = viewIn(cmd, m_mat_e);
       cmd << RUNCOMMAND_MAT_ENUMERATE(EnvCell, evi, env1)
       {
         out_a[evi] = in_b[evi] + in_c[evi] * in_d[evi] + in_e[evi];
@@ -538,23 +538,21 @@ _executeTest2(Integer nb_z)
   // GPU
   {
     auto queue = makeQueue(m_runner);
-    auto cmd = makeCommand(queue);
-
-    auto inout_a = ax::viewInOut(cmd, m_mat_a);
-    auto in_b = ax::viewIn(cmd, m_mat_b);
-    auto out_c = ax::viewOut(cmd, m_mat_c);
-    auto in_d = ax::viewIn(cmd, m_mat_d.globalVariable());
-    auto in_e = ax::viewIn(cmd, m_mat_e.globalVariable());
-
-    auto inout_env_a = ax::viewInOut(cmd, m_env_a);
-    auto in_env_b = ax::viewIn(cmd, m_env_b);
-    auto out_env_c = ax::viewOut(cmd, m_env_c);
 
     for (Integer z = 0, iz = nb_z; z < iz; ++z) {
+
       ENUMERATE_ENV (ienv, m_mm_mng) {
         IMeshEnvironment* env = *ienv;
         EnvCellVectorView envcellsv = env->envView();
         {
+          auto cmd = makeCommand(queue);
+
+          auto inout_a = viewInOut(cmd, m_mat_a);
+          auto in_b = viewIn(cmd, m_mat_b);
+          auto in_e = viewIn(cmd, m_mat_e.globalVariable());
+
+          auto inout_env_a = viewInOut(cmd, m_env_a);
+          auto in_env_b = viewIn(cmd, m_env_b);
           cmd << RUNCOMMAND_MAT_ENUMERATE(EnvAndGlobalCell, evi, envcellsv)
           {
             auto [mvi, cid] = evi();
@@ -570,13 +568,19 @@ _executeTest2(Integer nb_z)
           };
         }
         {
+          auto cmd = makeCommand(queue);
+          auto inout_env_a = viewInOut(cmd, m_env_a);
+          auto out_c = viewOut(cmd, m_mat_c);
+          auto in_d = viewIn(cmd, m_mat_d.globalVariable());
+          auto out_env_c = viewOut(cmd, m_env_c);
           ax::ReducerSum2<Real> reducer2(cmd);
           cmd << RUNCOMMAND_MAT_ENUMERATE(EnvAndGlobalCell, evi, envcellsv, reducer2)
           {
             auto [mvi, cid] = evi();
             Real value_to_add = inout_env_a[mvi] * in_d[cid];
+            EnvCell ev0(envcellsv.envCell(evi.index()));
             out_c[mvi] += value_to_add;
-            out_env_c[mvi] += inout_env_a[mvi] * in_d[cid];
+            out_env_c[ev0] += inout_env_a[mvi] * in_d[cid];
             reducer2.combine(value_to_add);
           };
           Real reduced_value = reducer2.reducedValue();
@@ -636,15 +640,12 @@ _executeTest3(Integer nb_z)
         IMeshEnvironment* env = *ienv;
         EnvCellVectorView envcellsv = env->envView();
 
-        auto cmd = makeCommand(async_queues[env->id()]);
-
-        auto inout_a = ax::viewInOut(cmd, m_mat_a);
-        auto in_b = ax::viewIn(cmd, m_mat_b);
-        auto out_c = ax::viewOut(cmd, m_mat_c);
-        auto in_d = ax::viewIn(cmd, m_mat_d.globalVariable());
-        auto in_e = ax::viewIn(cmd, m_mat_e.globalVariable());
-
         {
+          auto cmd = makeCommand(async_queues[env->id()]);
+          auto inout_a = viewInOut(cmd, m_mat_a);
+          auto in_b = viewIn(cmd, m_mat_b);
+          auto in_e = viewIn(cmd, m_mat_e.globalVariable());
+
           cmd << RUNCOMMAND_MAT_ENUMERATE(EnvAndGlobalCell, evi, envcellsv)
           {
             auto [mvi, cid] = evi();
@@ -653,6 +654,11 @@ _executeTest3(Integer nb_z)
           };
         }
         {
+          auto cmd = makeCommand(async_queues[env->id()]);
+          auto inout_a = viewInOut(cmd, m_mat_a);
+          auto out_c = viewOut(cmd, m_mat_c);
+          auto in_d = viewIn(cmd, m_mat_d.globalVariable());
+
           cmd << RUNCOMMAND_MAT_ENUMERATE(EnvAndGlobalCell, evi, envcellsv)
           {
             auto [mvi, cid] = evi();
@@ -708,16 +714,15 @@ _executeTest4(Integer nb_z, bool use_new_impl)
   // GPU
   {
     auto queue = makeQueue(m_runner);
-    auto cmd = makeCommand(queue);
-
-    auto in_b = viewIn(cmd, m_mat_b);
-    auto out_c = viewOut(cmd, m_mat_c);
-    auto in_c_g = viewIn(cmd, m_mat_c.globalVariable());
-    auto out_a_g = viewOut(cmd, m_mat_a);
 
     if (use_new_impl) {
       for (Integer z = 0, iz = nb_z; z < iz; ++z) {
         AllEnvCellVectorView all_env_view = m_mm_mng->view(allCells());
+        auto cmd = makeCommand(queue);
+        auto in_b = viewIn(cmd, m_mat_b);
+        auto out_c = viewOut(cmd, m_mat_c);
+        auto in_c_g = viewIn(cmd, m_mat_c.globalVariable());
+        auto out_a_g = viewOut(cmd, m_mat_a);
         cmd << RUNCOMMAND_MAT_ENUMERATE(AllEnvCell, all_env_cell, all_env_view)
         {
           CellLocalId cid = all_env_cell.globalCellId();
@@ -743,6 +748,11 @@ _executeTest4(Integer nb_z, bool use_new_impl)
       CellToAllEnvCellAccessor cell2allenvcell(m_mm_mng);
 
       for (Integer z = 0, iz = nb_z; z < iz; ++z) {
+        auto cmd = makeCommand(queue);
+        auto in_b = viewIn(cmd, m_mat_b);
+        auto out_c = viewOut(cmd, m_mat_c);
+        auto in_c_g = viewIn(cmd, m_mat_c.globalVariable());
+        auto out_a_g = viewOut(cmd, m_mat_a);
         cmd << RUNCOMMAND_ENUMERATE_CELL_ALLENVCELL(cell2allenvcell, cid, allCells())
         {
 
@@ -836,17 +846,17 @@ _executeTest4(Integer nb_z, bool use_new_impl)
   // GPU
   {
     auto queue = makeQueue(m_runner);
-    auto cmd = makeCommand(queue);
-
-    auto in_b = ax::viewIn(cmd, m_mat_b);
-    auto out_c = ax::viewOut(cmd, m_mat_c);
-    auto in_c_g = ax::viewIn(cmd, m_mat_c.globalVariable());
-    auto out_a_g = ax::viewOut(cmd, m_mat_a);
 
     m_mm_mng->enableCellToAllEnvCellForRunCommand(true, true);
     CellToAllEnvCellAccessor cell2allenvcell(m_mm_mng);
 
     for (Integer z = 0, iz = nb_z; z < iz; ++z) {
+      auto cmd = makeCommand(queue);
+
+      auto in_b = ax::viewIn(cmd, m_mat_b);
+      auto out_c = ax::viewOut(cmd, m_mat_c);
+      auto in_c_g = ax::viewIn(cmd, m_mat_c.globalVariable());
+      auto out_a_g = ax::viewOut(cmd, m_mat_a);
       cmd << RUNCOMMAND_ENUMERATE_CELL_ALLENVCELL(cell2allenvcell, cid, allCells())
       {
 
@@ -948,12 +958,23 @@ _executeTest7()
     Int32 nb_sub_item = sub_env_view.nbItem();
     info() << "NB_SUB_ITEM (env)=" << nb_sub_item;
     // TODO: Vérifier la validité
+
+    ENUMERATE_ENVCELL (ienvcell, sub_env_view) {
+      EnvCell ec = *ienvcell;
+      if ((ec.globalCellId() % 2) != 0)
+        ARCANE_FATAL("Bad env cell lid={0}", ec.globalCellId());
+    }
   }
   {
     MatCellVector mat_vector(cell_vector1.view(), m_env1->materials()[1]);
     MatCellVectorView sub_mat_view(mat_vector.view());
     Int32 nb_sub_item = sub_mat_view.nbItem();
     info() << "NB_SUB_ITEM (mat)=" << nb_sub_item;
+    ENUMERATE_MATCELL (imatcell, sub_mat_view) {
+      MatCell mc = *imatcell;
+      if ((mc.globalCellId() % 2) != 0)
+        ARCANE_FATAL("Bad mat cell lid={0}", mc.globalCellId());
+    }
   }
 }
 

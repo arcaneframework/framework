@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ApplicationInfo.cc                                          (C) 2000-2020 */
+/* ApplicationInfo.cc                                          (C) 2000-2024 */
 /*                                                                           */
 /* Informations sur une application.                                         */
 /*---------------------------------------------------------------------------*/
@@ -17,6 +17,7 @@
 #include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/List.h"
 #include "arcane/utils/Property.h"
+#include "arcane/utils/internal/ApplicationInfoProperties.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -443,7 +444,10 @@ addParameterLine(const String& line)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename V> void ApplicationInfo::
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<typename V> void ApplicationInfoProperties::
 _applyPropertyVisitor(V& p)
 {
   auto b = p.builder();
@@ -486,7 +490,7 @@ _applyPropertyVisitor(V& p)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_REGISTER_PROPERTY_CLASS(ApplicationInfo,());
+ARCANE_REGISTER_PROPERTY_CLASS(ApplicationInfoProperties,());
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

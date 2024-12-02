@@ -5,17 +5,19 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IndexSelecter.h                                              (C) 2000-2024 */
+/* IndexSelecter.h                                             (C) 2000-2024 */
 /*                                                                           */
 /* Selection d'index avec API accélérateur                                   */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 
-#include "arcane/accelerator/Filter.h"
-#include "arcane/utils/IMemoryRessourceMng.h"
+#include "arcane/utils/MemoryUtils.h"
+
 #include "arcane/accelerator/core/Memory.h"
+#include "arcane/accelerator/GenericFilterer.h"
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 namespace Arcane::Accelerator
 {
@@ -38,8 +40,8 @@ class IndexSelecter
     m_is_accelerator_policy = isAcceleratorPolicy(runqueue->executionPolicy());
     m_memory_host = eMemoryRessource(m_is_accelerator_policy ? eMemoryRessource::HostPinned : eMemoryRessource::Host);
     m_memory_device = eMemoryRessource(m_is_accelerator_policy ? eMemoryRessource::Device : eMemoryRessource::Host);
-    m_localid_select_device = UniqueArray<Int32>(platform::getDataMemoryRessourceMng()->getAllocator(m_memory_device));
-    m_localid_select_host = UniqueArray<Int32>(platform::getDataMemoryRessourceMng()->getAllocator(m_memory_host));
+    m_localid_select_device = UniqueArray<Int32>(MemoryUtils::getAllocator(m_memory_device));
+    m_localid_select_host = UniqueArray<Int32>(MemoryUtils::getAllocator(m_memory_host));
   }
 
   ~IndexSelecter()

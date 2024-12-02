@@ -20,7 +20,7 @@
 #include "arcane/core/IData.h"
 #include "arcane/core/materials/internal/IMeshComponentInternal.h"
 
-#include "arcane/accelerator/core/internal/ProfileRegion.h"
+#include "arcane/accelerator/core/ProfileRegion.h"
 
 #include "arcane/materials/IMeshMaterial.h"
 #include "arcane/materials/IMeshMaterialVariable.h"
@@ -121,7 +121,7 @@ initOptimizationFlags()
     m_allow_optimize_multiple_operation = true;
   }
 
-  info() << "MeshMaterialModifier::optimization: "
+  info() << "MeshMaterialModifier::optimization:"
          << " allow?=" << m_allow_optimization
          << " allow_multiple?=" << m_allow_optimize_multiple_operation
          << " allow_multiple_mat?=" << m_allow_optimize_multiple_material
@@ -428,7 +428,8 @@ beginUpdate()
 void MeshMaterialModifierImpl::
 dumpStats()
 {
-  info() << "MeshMaterialModifierImpl statistics:";
+  info() << "MeshMaterialModifierImpl statistics mesh=" << m_material_mng->mesh()->name();
+
   info() << " Nb update : " << nb_update;
   info() << " Nb save/restore : " << nb_save_restore;
   info() << " Nb optimized add : " << nb_optimize_add;

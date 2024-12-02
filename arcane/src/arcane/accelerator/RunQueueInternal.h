@@ -311,7 +311,7 @@ class InvalidKernelClass
  * \param func fonction à exécuter par le noyau
  * \param args arguments de la fonction lambda
  * 
- * TODO: Tester si Lambda est bien un fonction, le SFINAE étant peu lisible :
+ * TODO: Tester si Lambda est bien une fonction, le SFINAE étant peu lisible :
  * typename std::enable_if_t<std::is_function_v<std::decay_t<Lambda> > >* = nullptr
  * attendons les concepts c++20 (requires)
  * 
@@ -321,10 +321,11 @@ _applyKernelCUDA(impl::RunCommandLaunchInfo& launch_info, const CudaKernel& kern
                  const LambdaArgs& args, [[maybe_unused]] const RemainingArgs&... other_args)
 {
 #if defined(ARCANE_COMPILING_CUDA)
-  auto [b, t] = launch_info.threadBlockInfo();
+  Int32 wanted_shared_memory = 0;
+  auto tbi = launch_info._threadBlockInfo(reinterpret_cast<const void*>(kernel), wanted_shared_memory);
   cudaStream_t* s = reinterpret_cast<cudaStream_t*>(launch_info._internalStreamImpl());
   // TODO: utiliser cudaLaunchKernel() à la place.
-  kernel<<<b, t, 0, *s>>>(args, func, other_args...);
+  kernel<<<tbi.nbBlockPerGrid(), tbi.nbThreadPerBlock(), wanted_shared_memory, *s>>>(args, func, other_args...);
 #else
   ARCANE_UNUSED(launch_info);
   ARCANE_UNUSED(kernel);
@@ -348,9 +349,10 @@ _applyKernelHIP(impl::RunCommandLaunchInfo& launch_info, const HipKernel& kernel
                 const LambdaArgs& args, [[maybe_unused]] const RemainingArgs&... other_args)
 {
 #if defined(ARCANE_COMPILING_HIP)
-  auto [b, t] = launch_info.threadBlockInfo();
+  Int32 wanted_shared_memory = 0;
+  auto tbi = launch_info._threadBlockInfo(reinterpret_cast<const void*>(kernel), wanted_shared_memory);
   hipStream_t* s = reinterpret_cast<hipStream_t*>(launch_info._internalStreamImpl());
-  hipLaunchKernelGGL(kernel, b, t, 0, *s, args, func, other_args...);
+  hipLaunchKernelGGL(kernel, tbi.nbBlockPerGrid(), tbi.nbThreadPerBlock(), wanted_shared_memory, *s, args, func, other_args...);
 #else
   ARCANE_UNUSED(launch_info);
   ARCANE_UNUSED(kernel);
@@ -377,7 +379,9 @@ void _applyKernelSYCL(impl::RunCommandLaunchInfo& launch_info, SyclKernel kernel
   sycl::queue* s = reinterpret_cast<sycl::queue*>(launch_info._internalStreamImpl());
   sycl::event event;
   if constexpr (sizeof...(ReducerArgs) > 0) {
-    auto [b, t] = launch_info.threadBlockInfo();
+    auto tbi = launch_info.kernelLaunchArgs();
+    Int32 b = tbi.nbBlockPerGrid();
+    Int32 t = tbi.nbThreadPerBlock();
     sycl::nd_range<1> loop_size(b * t, t);
     event = s->parallel_for(loop_size, [=](sycl::nd_item<1> i) { kernel(i, args, func, reducer_args...); });
   }

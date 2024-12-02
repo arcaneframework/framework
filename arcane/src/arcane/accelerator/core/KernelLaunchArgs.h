@@ -5,12 +5,12 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ProfileRegion.h                                             (C) 2000-2024 */
+/* KernelLaunchArgs.h                                          (C) 2000-2024 */
 /*                                                                           */
-/* Région pour le profiling.                                                 */
+/* Arguments pour lancer un kernel.                                          */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_ACCELERATOR_CORE_INTERNAL_PROFILEREGION_H
-#define ARCANE_ACCELERATOR_CORE_INTERNAL_PROFILEREGION_H
+#ifndef ARCANE_ACCELERATOR_CORE_KERNELLAUNCHARGS_H
+#define ARCANE_ACCELERATOR_CORE_KERNELLAUNCHARGS_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -19,38 +19,45 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arcane::Accelerator
+namespace Arcane::Accelerator::impl
 {
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
  * \internal
- * \brief Région pour le profiling.
- *
- * Cette classe permet d'associer des informations de profiling à tous les
- * noyaux de calcul exécutés entre le constructeur et le destructeur d'une
- * instance de cette classe.
+ * \brief Arguments pour lancer un kernel.
  */
-class ARCANE_ACCELERATOR_CORE_EXPORT ProfileRegion
+class ARCANE_ACCELERATOR_CORE_EXPORT KernelLaunchArgs
 {
+  friend RunCommandLaunchInfo;
+
  public:
 
-  ProfileRegion(const RunQueue& queue, const String& name);
-  ProfileRegion(const RunQueue& queue, const String& name, Int32 color_rgb);
-  ~ProfileRegion();
+  KernelLaunchArgs() = default;
+  KernelLaunchArgs(Int32 nb_block_per_grid, Int32 nb_thread_per_block)
+  : m_nb_block_per_grid(nb_block_per_grid)
+  , m_nb_thread_per_block(nb_thread_per_block)
+  {
+  }
+
+ public:
+
+  int nbBlockPerGrid() const { return m_nb_block_per_grid; }
+  int nbThreadPerBlock() const { return m_nb_thread_per_block; }
 
  private:
 
-  impl::IRunnerRuntime* m_runtime = nullptr;
+  int m_nb_block_per_grid = 0;
+  int m_nb_thread_per_block = 0;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // namespace Arcane::Accelerator
+} // End namespace Arcane::Accelerator::impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif
+#endif  

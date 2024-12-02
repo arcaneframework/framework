@@ -27,7 +27,7 @@
 #include "arcane/accelerator/RunCommandLoop.h"
 #include "arcane/accelerator/Filter.h"
 #include "arcane/accelerator/Reduce.h"
-#include "arcane/accelerator/core/internal/ProfileRegion.h"
+#include "arcane/accelerator/core/ProfileRegion.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

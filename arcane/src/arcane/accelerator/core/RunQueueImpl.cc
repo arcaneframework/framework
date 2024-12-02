@@ -191,6 +191,7 @@ _internalCreateOrGetRunCommandImpl()
   else {
     p = RunCommand::_internalCreateImpl(this);
   }
+  p->_reset();
   m_active_run_command_list.add(p);
   return p;
 }

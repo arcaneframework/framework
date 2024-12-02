@@ -664,7 +664,7 @@ coarsenItemsV2(bool update_parent_flag)
           }
           // Si la maille à côté est raffinée, on aura plus d'un niveau de décalage.
           if (other_cell.nbHChildren() != 0) { // && !(other_cell.mutableItemBase().flags() & ItemFlags::II_Coarsen)) { // Impossible de dé-raffiner plusieurs niveaux.
-            ARCANE_FATAL("Once level diff between two cells needed -- Cell uid: {0} -- Opposite cell uid: {1}", cell.uniqueId(), other_cell.uniqueId());
+            ARCANE_FATAL("Max one level diff between two cells is allowed -- Uid of Cell to be coarseing: {0} -- Uid of Opposite cell with children: {1}", cell.uniqueId(), other_cell.uniqueId());
           }
           // Si la maille d'à côté n'est pas à nous, elle prend la propriété de la maille d'à côté.
           if (other_cell.owner() != cell.owner()) {

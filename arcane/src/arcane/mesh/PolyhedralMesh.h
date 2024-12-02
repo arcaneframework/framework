@@ -263,6 +263,9 @@ class PolyhedralMesh
   FaceGroup innerActiveFaces() override;
   FaceGroup outerActiveFaces() override;
 
+
+  IUserDataList* userDataList() override { return m_mesh_handle.meshUserDataList(); }
+  const IUserDataList* userDataList() const override { return m_mesh_handle.meshUserDataList(); }
  private:
 
   void addItems(Int64ConstArrayView unique_ids, Int32ArrayView local_ids, eItemKind ik, const String& family_name);

@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Hdf5Utils.h                                                 (C) 2000-2023 */
+/* Hdf5Utils.h                                                 (C) 2000-2024 */
 /*                                                                           */
 /* Fonctions utilitaires pour hdf5.                                          */
 /*---------------------------------------------------------------------------*/
@@ -577,8 +577,7 @@ class ARCANE_HDF5_EXPORT StandardTypes
 
   ~StandardTypes();
 
-  ARCANE_DEPRECATED_REASON("Y2023: Copy operator is deprecated. This class has unique ownership")
-  StandardTypes& operator=(const StandardTypes& rhs) = default;
+  StandardTypes& operator=(const StandardTypes& rhs) = delete;
 
  public:
 

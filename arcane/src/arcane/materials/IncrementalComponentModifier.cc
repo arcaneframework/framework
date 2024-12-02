@@ -24,7 +24,7 @@
 #include "arcane/materials/internal/ConstituentConnectivityList.h"
 #include "arcane/materials/internal/AllEnvData.h"
 
-#include "arcane/accelerator/core/internal/ProfileRegion.h"
+#include "arcane/accelerator/core/ProfileRegion.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -34,6 +34,9 @@ class ARCCORE_COLLECTIONS_EXPORT MemoryAllocationArgs
   void setMemoryLocationHint(eMemoryLocationHint mem_advice) { m_memory_location_hint = mem_advice; }
   eMemoryLocationHint memoryLocationHint() const { return m_memory_location_hint; }
 
+  void setHostDeviceMemoryLocation(eHostDeviceMemoryLocation v) { m_host_device_memory_location = v; }
+  eHostDeviceMemoryLocation hostDeviceMemoryLocation() const { return m_host_device_memory_location; }
+
   Int16 device() const { return m_device; }
   void setDevice(Int16 device) { m_device = device; }
 
@@ -49,6 +52,7 @@ class ARCCORE_COLLECTIONS_EXPORT MemoryAllocationArgs
  private:
 
   eMemoryLocationHint m_memory_location_hint = eMemoryLocationHint::None;
+  eHostDeviceMemoryLocation m_host_device_memory_location = eHostDeviceMemoryLocation::Unknown;
   Int16 m_device = (-1);
   RunQueue* m_run_queue = nullptr;
   ArrayDebugInfo* m_debug_info = nullptr;

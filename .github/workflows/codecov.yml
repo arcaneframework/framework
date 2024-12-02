@@ -142,6 +142,28 @@ jobs:
           mkdir -p ${{ env.CT_RESULT_DIR }}
           ARCANE_CHECK=1 ctest --test-dir ${{ env.BUILD_DIR }} --output-junit ${{ env.CT_RESULT_DIR }}/results.xml ${{ env.CT_OPTS }} -E '${{ env.EXCLUDED_TESTS }}' -LE '${{ env.EXCLUDED_TESTS_WITH_LABELS }}'
 
+      # https://www.ibm.com/docs/en/developer-for-zos/9.1.1?topic=formats-junit-xml-format
+      - name: Edit results.xml for Codecov (need valid JUnit XML)
+        shell: bash
+        run: |
+          RESULT_ORI=${{ env.CT_RESULT_DIR }}/results.xml
+          RESULT_TMP=${{ env.CT_RESULT_DIR }}/results_ori.xml
+          mv $RESULT_ORI $RESULT_TMP
+          sed -e '/<testcase.*>/,/<\/testcase>/d' -e 's:</testsuite>::' -e 's/(empty)/CTest Arcane/' -e 's/hostname=""/hostname="GHA"/' $RESULT_TMP > $RESULT_ORI
+          sed -n '/<testcase.*status="fail">/,/<\/testcase>/p' $RESULT_TMP | sed -e 's:<failure message="".*/>::M' -e 's/<system-out>/<failure message="Logs Arcane:">\n/M' -e 's:</system-out>:</failure>:M' >> $RESULT_ORI
+          sed -n '/<testcase.*status="run">/,/<\/testcase>/p' $RESULT_TMP >> $RESULT_ORI
+          echo '</testsuite>' >> $RESULT_ORI
+          rm $RESULT_TMP
+
+      - name: Upload test results to Codecov
+        uses: codecov/test-results-action@v1
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+        with:
+          verbose: true
+          fail_ci_if_error: true
+          file: ${{ env.CT_RESULT_DIR }}/results.xml
+
       - name: Display disks infos
         shell: bash
         run: |

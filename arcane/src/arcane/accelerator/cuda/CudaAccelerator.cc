@@ -461,6 +461,7 @@ class UnifiedMemoryCudaMemoryAllocator
     if (p && s > 0)
       _applyHint(ptr.baseAddress(), ptr.size(), new_args);
   }
+  eMemoryResource memoryResource() const override { return eMemoryResource::UnifiedMemory; }
 
  protected:
 
@@ -542,6 +543,7 @@ class HostPinnedCudaMemoryAllocator
     _setUseMemoryPool(use_memory_pool);
     m_block_wrapper.initialize(128, use_memory_pool);
   }
+  eMemoryResource memoryResource() const override { return eMemoryResource::HostPinned; }
 };
 
 /*---------------------------------------------------------------------------*/
@@ -607,6 +609,7 @@ class DeviceCudaMemoryAllocator
     _setUseMemoryPool(use_memory_pool);
     m_block_wrapper.initialize(128, use_memory_pool);
   }
+  eMemoryResource memoryResource() const override { return eMemoryResource::Device; }
 };
 
 /*---------------------------------------------------------------------------*/

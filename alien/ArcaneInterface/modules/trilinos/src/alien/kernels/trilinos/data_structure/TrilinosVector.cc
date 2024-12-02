@@ -34,7 +34,7 @@ template <typename ValueT, typename TagT> TrilinosVector<ValueT, TagT>::~Trilino
 template <typename ValueT, typename TagT>
 void
 TrilinosVector<ValueT, TagT>::init(
-    const VectorDistribution& dist, const bool need_allocate)
+    [[maybe_unused]] const VectorDistribution& dist, const bool need_allocate)
 {
   if (need_allocate)
     allocate();
@@ -73,12 +73,10 @@ TrilinosVector<ValueT, TagT>::setValues(const int nrow, const ValueT* values)
   x.sync_host();
   auto x_2d = x.getLocalViewHost();
   auto x_1d = Kokkos::subview(x_2d, Kokkos::ALL(), 0);
-  const size_t localLength = x.getLocalLength();
   x.modify_host();
 #else
   auto x_2d = x.getLocalViewHost(Tpetra::Access::ReadWrite);
   auto x_1d = Kokkos::subview(x_2d, Kokkos::ALL(), 0);
-  const size_t localLength = x.getLocalLength();
 #endif
   
   for (int i = 0; i < nrow; ++i) {
@@ -104,7 +102,6 @@ TrilinosVector<ValueT, TagT>::getValues(const int nrow, ValueT* values) const
   auto x_2d = x.getLocalViewHost(Tpetra::Access::ReadWrite);
 #endif
   auto x_1d = Kokkos::subview(x_2d, Kokkos::ALL(), 0);
-  const size_t localLength = x.getLocalLength();
   for (int i = 0; i < nrow; ++i) {
     values[i] = x_1d(i);
     // std::cout<<"GET X["<<i<<"]"<<values[i]<<std::endl ;

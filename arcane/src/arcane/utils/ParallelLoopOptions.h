@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ParallelLoopOptions.h                                       (C) 2000-2022 */
+/* ParallelLoopOptions.h                                       (C) 2000-2024 */
 /*                                                                           */
 /* Options de configuration pour les boucles parallèles en multi-thread.     */
 /*---------------------------------------------------------------------------*/
@@ -15,7 +15,6 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/UtilsTypes.h"
-#include "arcane/utils/PropertyDeclarations.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -34,8 +33,6 @@ namespace Arcane
  */
 class ARCANE_UTILS_EXPORT ParallelLoopOptions
 {
-  ARCANE_DECLARE_PROPERTY_CLASS(ParallelLoopOptions);
-
  private:
 
   //! Drapeau pour indiquer quels champs ont été positionnés.

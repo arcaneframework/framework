@@ -316,12 +316,18 @@ auto out_c = viewOut(command,var_c);
 
 ### Gestion mémoire des données gérées par Arcane
 
-Lorqu'on utilise les accélérateurs, %Arcane utilise la mémoire unifée
-(aussi appelée mémoire "managée") pour toutes les variables
-(\arcane{VariableRef}), pour les groupes d'entités
-(\arcane{ItemGroup}) et par défaut pour les \arcane{NumArray}. Cela
-signifie que les données correspondantes à ces objets sont accessibles
-à la fois sur l'hôte (CPU) et sur les accélérateurs.
+Par défaut, %Arcane utilise l'allocateur retourné par
+\arcane{MeshUtils::getDefaultDataAllocator()} pour le type
+\arcane{NumArray} ainsi que toutes les variables
+(\arcane{VariableRef}), les groupes d'entités
+(\arcane{ItemGroup}) et les connectivités.
+
+Lorsqu'on utilise les accélérateurs, %Arcane requiert que cet
+allocateur alloue de la mémoire qui soit accessible à la fois sur
+l'hôte et l'accélérateur. Cela signifie que les données
+correspondantes à ces objets sont accessibles à la fois sur l'hôte
+(CPU) et sur les accélérateurs. Pour cela, %Arcane utilise par défaut
+la mémoire unifiée (\arccore{eMemoryResource::UnifiedMemory}).
 
 Avec la mémoire unifiée, c'est l'accélérateur qui gère automatiquement
 les éventules transferts mémoire entre l'accélérateur et l'hôte. Ces
@@ -330,16 +336,29 @@ une donnée n'est utilisée que sur CPU ou que sur accélérateur, il n'y
 aura pas de transferts mémoire et donc les performances ne seront pas
 impactées.
 
+A partir de la version 3.14.12 de %Arcane, il est possible de changer
+la ressoure mémoire utilisée par défaut via la variable
+d'environnement `ARCANE_DEFAULT_DATA_MEMORY_RESOURCE`. Sur les
+accélérateurs où la mémoire \arccore{eMemoryResource::Device} est
+accessible directement depuis l'hôte (par exemple MI250X, MI300A,
+GH200), cela permet d'éviter les transferts que peut provoquer la
+mémoire unifiée.
+
+Dans tous les cas, il est possible de spécifier un allocateur
+spécifique pour \arccore{UniqueArray} et \arcane{NumArray} via les
+méthodes \arcane{MemoryUtils::getAllocator()} ou
+\arcane{MemoryUtils::getAllocationOptions()}.
+
 %Arcane fournit des mécanismes permettant de donner des informations
 permettant d'optimiser la gestion de cette mémoire. Ces mécanismes
 sont dépendants du type de l'accélérateur et peuvent ne pas être
 disponible partout. Ils sont accessibles via la méthode
 \arcaneacc{Runner::setMemoryAdvice()}.
 
-A partir de la version 3.10 de %Arcane et avec les accélérateurs NVIDIA, %Arcame
-propose des fonctionnalités pour détecter les transferts mémoire entre
-le CPU et l'accélérateur. La page \ref arcanedoc_debug_perf_cupti
-décrit ce fonctionnement.
+A partir de la version 3.10 de %Arcane et avec les accélérateurs
+NVIDIA, %Arcane propose des fonctionnalités pour détecter les
+transferts mémoire entre le CPU et l'accélérateur. La page \ref
+arcanedoc_debug_perf_cupti décrit ce fonctionnement.
 
 ### Exemple d'utilisation d'une boucle complexe {#arcanedoc_parallel_accelerator_complexloop}
 

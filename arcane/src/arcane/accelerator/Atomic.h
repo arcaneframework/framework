@@ -46,11 +46,11 @@ class HostAtomic<eAtomicOperation::Add>
 {
  public:
 
-  template <AcceleratorAtomicConcept DataType> static void
+  template <AcceleratorAtomicConcept DataType> static DataType
   apply(DataType* ptr, DataType value)
   {
     std::atomic_ref<DataType> v(*ptr);
-    v.fetch_add(value);
+    return v.fetch_add(value);
   }
 };
 
@@ -59,13 +59,14 @@ class HostAtomic<eAtomicOperation::Max>
 {
  public:
 
-  template <AcceleratorAtomicConcept DataType> static void
+  template <AcceleratorAtomicConcept DataType> static DataType
   apply(DataType* ptr, DataType value)
   {
     std::atomic_ref<DataType> v(*ptr);
     DataType prev_value = v;
     while (prev_value < value && !v.compare_exchange_weak(prev_value, value)) {
     }
+    return prev_value;
   }
 };
 
@@ -74,13 +75,14 @@ class HostAtomic<eAtomicOperation::Min>
 {
  public:
 
-  template <AcceleratorAtomicConcept DataType> static void
+  template <AcceleratorAtomicConcept DataType> static DataType
   apply(DataType* ptr, DataType value)
   {
     std::atomic_ref<DataType> v(*ptr);
     DataType prev_value = v;
     while (prev_value > value && !v.compare_exchange_weak(prev_value, value)) {
     }
+    return prev_value;
   }
 };
 
@@ -94,11 +96,11 @@ class SyclAtomic<eAtomicOperation::Add>
 {
  public:
 
-  template <AcceleratorAtomicConcept DataType> static void
+  template <AcceleratorAtomicConcept DataType> static DataType
   apply(DataType* ptr, DataType value)
   {
     sycl::atomic_ref<DataType, sycl::memory_order::relaxed, sycl::memory_scope::device> v(*ptr);
-    v.fetch_add(value);
+    return v.fetch_add(value);
   }
 };
 
@@ -107,11 +109,11 @@ class SyclAtomic<eAtomicOperation::Max>
 {
  public:
 
-  template <AcceleratorAtomicConcept DataType> static void
+  template <AcceleratorAtomicConcept DataType> static DataType
   apply(DataType* ptr, DataType value)
   {
     sycl::atomic_ref<DataType, sycl::memory_order::relaxed, sycl::memory_scope::device> v(*ptr);
-    v.fetch_max(value);
+    return v.fetch_max(value);
   }
 };
 
@@ -120,11 +122,11 @@ class SyclAtomic<eAtomicOperation::Min>
 {
  public:
 
-  template <AcceleratorAtomicConcept DataType> static void
+  template <AcceleratorAtomicConcept DataType> static DataType
   apply(DataType* ptr, DataType value)
   {
     sycl::atomic_ref<DataType, sycl::memory_order::relaxed, sycl::memory_scope::device> v(*ptr);
-    v.fetch_min(value);
+    return v.fetch_min(value);
   }
 };
 
@@ -138,23 +140,23 @@ class AtomicImpl
  public:
 
   template <AcceleratorAtomicConcept DataType, enum eAtomicOperation Operation>
-  ARCCORE_HOST_DEVICE static inline void
+  ARCCORE_HOST_DEVICE static inline DataType
   doAtomic(DataType* ptr, DataType value)
   {
 #if defined(ARCCORE_DEVICE_TARGET_CUDA) || defined(ARCCORE_DEVICE_TARGET_HIP)
-    impl::CommonCudaHipAtomic<DataType, Operation>::apply(ptr, value);
+    return impl::CommonCudaHipAtomic<DataType, Operation>::apply(ptr, value);
 #elif defined(ARCCORE_DEVICE_TARGET_SYCL)
-    SyclAtomic<Operation>::apply(ptr, value);
+    return SyclAtomic<Operation>::apply(ptr, value);
 #else
-    HostAtomic<Operation>::apply(ptr, value);
+    return HostAtomic<Operation>::apply(ptr, value);
 #endif
   }
 
   template <AcceleratorAtomicConcept DataType, enum eAtomicOperation Operation>
-  ARCCORE_HOST_DEVICE static inline void
+  ARCCORE_HOST_DEVICE static inline DataType
   doAtomic(const DataViewGetterSetter<DataType>& view, DataType value)
   {
-    doAtomic<DataType, Operation>(view._address(), value);
+    return doAtomic<DataType, Operation>(view._address(), value);
   }
 };
 
@@ -168,25 +170,34 @@ namespace Arcane::Accelerator
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-//! Applique l'opération atomique \a Operation à la valeur à l'adresse \a ptr avec la valeur \a value
+/*!
+ * \brief Applique l'opération atomique \a Operation à la valeur à l'adresse \a ptr avec la valeur \a value.
+ *
+ * \retval l'ancienne valeur avant ajout.
+ */
 template <enum eAtomicOperation Operation, AcceleratorAtomicConcept DataType, typename ValueType>
-ARCCORE_HOST_DEVICE inline void
+ARCCORE_HOST_DEVICE inline DataType
 doAtomic(DataType* ptr, ValueType value)
 requires(std::convertible_to<ValueType, DataType>)
 {
   DataType v = value;
-  impl::AtomicImpl::doAtomic<DataType, Operation>(ptr, v);
+  return impl::AtomicImpl::doAtomic<DataType, Operation>(ptr, v);
 }
 
-//! Applique l'opération atomique \a Operation à la vue \a view avec la valeur \a value
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Applique l'opération atomique \a Operation à la vue \a view avec la valeur \a value.
+ *
+ * \retval l'ancienne valeur avant ajout.
+ */
 template <enum eAtomicOperation Operation, AcceleratorAtomicConcept DataType, typename ValueType>
-ARCCORE_HOST_DEVICE inline void
+ARCCORE_HOST_DEVICE inline DataType
 doAtomic(const DataViewGetterSetter<DataType>& view, ValueType value)
 requires(std::convertible_to<ValueType, DataType>)
 {
   DataType v = value;
-  impl::AtomicImpl::doAtomic<DataType, Operation>(view, v);
+  return impl::AtomicImpl::doAtomic<DataType, Operation>(view, v);
 }
 
 /*---------------------------------------------------------------------------*/

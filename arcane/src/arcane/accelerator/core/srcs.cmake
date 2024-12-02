@@ -10,10 +10,12 @@ set( ARCANE_SOURCES
   DeviceInfoList.h
   IReduceMemoryImpl.h
   IDeviceInfoList.h
+  KernelLaunchArgs.h
   Memory.h
   Memory.cc
   MemoryTracer.cc
   PointerAttribute.h
+  ProfileRegion.h
   ProfileRegion.cc
   ReduceMemoryImpl.cc
   Runner.h
@@ -22,6 +24,8 @@ set( ARCANE_SOURCES
   RunCommandImpl.h
   RunCommand.cc
   RunCommandImpl.cc
+  RunCommandLaunchInfo.cc
+  RunCommandLaunchInfo.h
   RunQueue.h
   RunQueue.cc
   RunQueueBuildInfo.h
@@ -38,7 +42,6 @@ set( ARCANE_SOURCES
   internal/IRunQueueStream.h
   internal/IRunQueueEventImpl.h
   internal/MemoryTracer.h
-  internal/ProfileRegion.h
   internal/RunCommandImpl.h
   internal/RunQueueImpl.h
   internal/ReduceMemoryImpl.h

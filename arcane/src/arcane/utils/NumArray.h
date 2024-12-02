@@ -285,33 +285,73 @@ class NumArray
 
  public:
 
+  //! Modifie la taille du tableau en gardant pas les valeurs actuelles
+  void resize(Int32 dim1_size) requires(Extents::nb_dynamic == 1)
+  {
+    m_span.m_extents = DynamicDimsType(dim1_size);
+    _resize();
+  }
+
+  // TODO: Rendre obsolète (juin 2025)
+  //! Modifie la taille du tableau en ne gardant pas les valeurs actuelles
+  void resize(Int32 dim1_size, Int32 dim2_size, Int32 dim3_size, Int32 dim4_size) requires(Extents::nb_dynamic == 4)
+  {
+    this->resizeDestructive(DynamicDimsType(dim1_size, dim2_size, dim3_size, dim4_size));
+  }
+
+  // TODO: Rendre obsolète (juin 2025)
+  //! Modifie la taille du tableau en ne gardant pas les valeurs actuelles
+  void resize(Int32 dim1_size, Int32 dim2_size, Int32 dim3_size) requires(Extents::nb_dynamic == 3)
+  {
+    this->resizeDestructive(DynamicDimsType(dim1_size, dim2_size, dim3_size));
+  }
+
+  // TODO: Rendre obsolète (juin 2025)
+  //! Modifie la taille du tableau en ne gardant pas les valeurs actuelles
+  void resize(Int32 dim1_size, Int32 dim2_size) requires(Extents::nb_dynamic == 2)
+  {
+    this->resizeDestructive(DynamicDimsType(dim1_size, dim2_size));
+  }
+
   /*!
    * \brief Modifie la taille du tableau.
    * \warning Les valeurs actuelles ne sont pas conservées lors de cette opération
    * et les nouvelles valeurs ne sont pas initialisées.
    */
   //@{
-  void resize(Int32 dim1_size, Int32 dim2_size, Int32 dim3_size, Int32 dim4_size) requires(Extents::nb_dynamic == 4)
+  //! Modifie la taille du tableau en ne gardant pas les valeurs actuelles
+  void resizeDestructive(Int32 dim1_size, Int32 dim2_size, Int32 dim3_size, Int32 dim4_size) requires(Extents::nb_dynamic == 4)
   {
-    this->resize(DynamicDimsType(dim1_size, dim2_size, dim3_size, dim4_size));
+    this->resizeDestructive(DynamicDimsType(dim1_size, dim2_size, dim3_size, dim4_size));
   }
 
-  void resize(Int32 dim1_size, Int32 dim2_size, Int32 dim3_size) requires(Extents::nb_dynamic == 3)
+  //! Modifie la taille du tableau en ne gardant pas les valeurs actuelles
+  void resizeDestructive(Int32 dim1_size, Int32 dim2_size, Int32 dim3_size) requires(Extents::nb_dynamic == 3)
   {
-    this->resize(DynamicDimsType(dim1_size, dim2_size, dim3_size));
+    this->resizeDestructive(DynamicDimsType(dim1_size, dim2_size, dim3_size));
   }
 
-  void resize(Int32 dim1_size, Int32 dim2_size) requires(Extents::nb_dynamic == 2)
+  //! Modifie la taille du tableau en ne gardant pas les valeurs actuelles
+  void resizeDestructive(Int32 dim1_size, Int32 dim2_size) requires(Extents::nb_dynamic == 2)
   {
-    this->resize(DynamicDimsType(dim1_size, dim2_size));
+    this->resizeDestructive(DynamicDimsType(dim1_size, dim2_size));
   }
 
-  void resize(Int32 dim1_size) requires(Extents::nb_dynamic == 1)
+  //! Modifie la taille du tableau en ne gardant pas les valeurs actuelles
+  void resizeDestructive(Int32 dim1_size) requires(Extents::nb_dynamic == 1)
   {
-    this->resize(DynamicDimsType(dim1_size));
+    this->resizeDestructive(DynamicDimsType(dim1_size));
   }
 
+  // TODO: Rendre obsolète (juin 2025)
+  //! Modifie la taille du tableau en ne gardant pas les valeurs actuelles
   void resize(const DynamicDimsType& dims)
+  {
+    resizeDestructive(dims);
+  }
+
+  //! Modifie la taille du tableau en ne gardant pas les valeurs actuelles
+  void resizeDestructive(const DynamicDimsType& dims)
   {
     m_span.m_extents = dims;
     _resize();
@@ -328,26 +368,62 @@ class NumArray
    */
   void fill(const DataType& v)
   {
-    _checkHost(memoryRessource());
-    m_data.fill(v);
+    fillHost(v);
   }
+
+  /*!
+   * \brief Remplit via la file \a queue, les valeurs du tableau d'indices
+   * données par \a indexes par la valeur \a v .
+   *
+   * La mémoire associée à l'instance doit être accessible depuis la file \a queue.
+   * \a queue peut être nulle, auquel cas le remplissage se fait sur l'hôte.
+   */
+  void fill(const DataType& v, SmallSpan<const Int32> indexes, const RunQueue* queue)
+  {
+    m_data.fill(v, indexes, queue);
+  }
+
   /*!
    * \brief Remplit via la file \a queue, les valeurs du tableau d'indices
    * données par \a indexes par la valeur \a v .
    *
    * La mémoire associée à l'instance doit être accessible depuis la file \a queue.
    */
-  void fill(const DataType& v, SmallSpan<const Int32> indexes, RunQueue* queue)
+  void fill(const DataType& v, SmallSpan<const Int32> indexes, const RunQueue& queue)
   {
-    m_data.fill(v, indexes, queue);
+    m_data.fill(v, indexes, &queue);
   }
 
   /*!
-   * \brief Remplit les éléments de l'instance la valeur \a v.
+   * \brief Remplit les éléments de l'instance la valeur \a v en utilisant la file \a queue.
+   *
+   * \a queue peut être nulle, auquel cas le remplissage se fait sur l'hôte.
    */
-  void fill(const DataType& v, RunQueue* queue)
+  void fill(const DataType& v, const RunQueue* queue)
   {
     m_data.fill(v, queue);
+  }
+
+  /*!
+   * \brief Remplit les éléments de l'instance la valeur \a v en utilisant la file \a queue.
+   *
+   * \a queue peut être nulle, auquel cas le remplissage se fait sur l'hôte.
+   */
+  void fill(const DataType& v, const RunQueue& queue)
+  {
+    m_data.fill(v, &queue);
+  }
+
+  /*!
+   * \brief Remplit les valeurs du tableau par \a v.
+   *
+   * L'opération se fait sur l'hôte donc la mémoire associée
+   * à l'instance doit être accessible sur l'hôte.
+   */
+  void fillHost(const DataType& v)
+  {
+    _checkHost(memoryRessource());
+    m_data.fill(v);
   }
 
  public:
@@ -369,29 +445,55 @@ class NumArray
   void copy(const ThatClass& rhs) { copy(rhs, nullptr); }
 
   /*!
-   * \brief Copie dans l'instance les valeurs de \a rhs via la file \a queue
+   * \brief Copie dans l'instance les valeurs de \a rhs via la file \a queue.
    *
    * Cette opération est valide quelle que soit la mêmoire associée
    * associée à l'instance.
    * \a queue peut être nul. Si la file est asynchrone, il faudra la
    * synchroniser avant de pouvoir utiliser l'instance.
    */
-  void copy(ConstMDSpanType rhs, RunQueue* queue)
+  void copy(ConstMDSpanType rhs, const RunQueue* queue)
   {
     _resizeAndCopy(rhs, eMemoryRessource::Unknown, queue);
   }
 
   /*!
-   * \brief Copie dans l'instance les valeurs de \a rhs via la file \a queue
+   * \brief Copie dans l'instance les valeurs de \a rhs via la file \a queue.
+   *
+   * Cette opération est valide quelle que soit la mêmoire associée
+   * associée à l'instance.
+   * \a queue peut être nulle, auquel cas la copie se fait sur l'hôte.
+   * Si la file est asynchrone, il faudra la synchroniser avant de pouvoir utiliser l'instance.
+   */
+  void copy(ConstMDSpanType rhs, const RunQueue& queue)
+  {
+    _resizeAndCopy(rhs, eMemoryRessource::Unknown, &queue);
+  }
+
+  /*!
+   * \brief Copie dans l'instance les valeurs de \a rhs via la file \a queue.
+   *
+   * Cette opération est valide quelle que soit la mêmoire associée
+   * associée à l'instance.
+   * \a queue peut être nulle, auquel cas la copie se fait sur l'hôte.
+   * Si la file est asynchrone, il faudra la synchroniser avant de pouvoir utiliser l'instance.
+   */
+  void copy(const ThatClass& rhs, const RunQueue* queue)
+  {
+    _resizeAndCopy(rhs.constMDSpan(), rhs.memoryRessource(), queue);
+  }
+
+  /*!
+   * \brief Copie dans l'instance les valeurs de \a rhs via la file \a queue.
    *
    * Cette opération est valide quelle que soit la mêmoire associée
    * associée à l'instance.
    * \a queue peut être nul. Si la file est asynchrone, il faudra la
    * synchroniser avant de pouvoir utiliser l'instance.
    */
-  void copy(const ThatClass& rhs, RunQueue* queue)
+  void copy(const ThatClass& rhs, const RunQueue& queue)
   {
-    _resizeAndCopy(rhs.constMDSpan(), rhs.memoryRessource(), queue);
+    _resizeAndCopy(rhs.constMDSpan(), rhs.memoryRessource(), &queue);
   }
 
  public:
@@ -549,7 +651,7 @@ class NumArray
     m_span.m_ptr = m_data.to1DSpan().data();
   }
 
-  void _resizeAndCopy(ConstMDSpanType rhs, eMemoryRessource input_ressource, RunQueue* queue)
+  void _resizeAndCopy(ConstMDSpanType rhs, eMemoryRessource input_ressource, const RunQueue* queue)
   {
     this->resize(rhs.extents().dynamicExtents());
     m_data.copyOnly(rhs.to1DSpan(), input_ressource, queue);
