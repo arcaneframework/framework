@@ -578,8 +578,9 @@ _executeTest2(Integer nb_z)
           {
             auto [mvi, cid] = evi();
             Real value_to_add = inout_env_a[mvi] * in_d[cid];
+            EnvCell ev0(envcellsv.envCell(evi.index()));
             out_c[mvi] += value_to_add;
-            out_env_c[mvi] += inout_env_a[mvi] * in_d[cid];
+            out_env_c[ev0] += inout_env_a[mvi] * in_d[cid];
             reducer2.combine(value_to_add);
           };
           Real reduced_value = reducer2.reducedValue();
@@ -957,12 +958,23 @@ _executeTest7()
     Int32 nb_sub_item = sub_env_view.nbItem();
     info() << "NB_SUB_ITEM (env)=" << nb_sub_item;
     // TODO: Vérifier la validité
+
+    ENUMERATE_ENVCELL (ienvcell, sub_env_view) {
+      EnvCell ec = *ienvcell;
+      if ((ec.globalCellId() % 2) != 0)
+        ARCANE_FATAL("Bad env cell lid={0}", ec.globalCellId());
+    }
   }
   {
     MatCellVector mat_vector(cell_vector1.view(), m_env1->materials()[1]);
     MatCellVectorView sub_mat_view(mat_vector.view());
     Int32 nb_sub_item = sub_mat_view.nbItem();
     info() << "NB_SUB_ITEM (mat)=" << nb_sub_item;
+    ENUMERATE_MATCELL (imatcell, sub_mat_view) {
+      MatCell mc = *imatcell;
+      if ((mc.globalCellId() % 2) != 0)
+        ARCANE_FATAL("Bad mat cell lid={0}", mc.globalCellId());
+    }
   }
 }
 
