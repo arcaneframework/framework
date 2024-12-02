@@ -51,6 +51,11 @@ _applyPropertyVisitor(V& p)
         .addCommandLineArgument("AcceleratorRuntime")
         .addGetter([](auto a) { return a.x.acceleratorRuntime(); })
         .addSetter([](auto a) { a.x.setAcceleratorRuntime(a.v); });
+  p << b.addBool("UseAccelerator")
+       .addDescription("activate/deactivate accelerator runtime")
+       .addCommandLineArgument("UseAccelerator")
+       .addGetter([](auto a) { return a.x.isUsingAcceleratorRuntime(); })
+       .addSetter([](auto a) { a.x.setIsUsingAcceleratorRuntime(a.v); });
 }
 
 /*---------------------------------------------------------------------------*/
