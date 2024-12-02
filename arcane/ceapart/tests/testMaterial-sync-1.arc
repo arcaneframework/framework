@@ -6,15 +6,20 @@
   <boucle-en-temps>UnitTest</boucle-en-temps>
  </arcane>
 
- <maillage>
+ <maillage amr-type="1" nb-ghostlayer="3" ghostlayer-builder-version="3">
   <meshgenerator>
-   <sod><x>100</x><y>5</y><z>5</z></sod>
+   <cartesian>
+    <nsd>2 2</nsd>
+    <origine>0.0 0.0</origine>
+    <lx nx='8'>8.0</lx>
+    <ly ny='8'>8.0</ly>
+   </cartesian>
   </meshgenerator>
  </maillage>
 
  <module-test-unitaire>
   <test name="MeshMaterialSyncUnitTest">
-   <nb-material>45</nb-material>
+   <nb-material>24</nb-material>
   </test>
  </module-test-unitaire>
 </cas>

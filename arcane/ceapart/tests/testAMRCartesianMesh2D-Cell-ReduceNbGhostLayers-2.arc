@@ -42,25 +42,27 @@
   </maillage>
 
   <a-m-r-cartesian-mesh-tester>
-    <renumber-patch-method>1</renumber-patch-method>
-    <reduce-nb-ghost-layers>
-      <level>1</level>
-      <nb-ghost-layers>4</nb-ghost-layers>
-    </reduce-nb-ghost-layers>
+    <renumber-patch-method>0</renumber-patch-method>
+
 
     <refinement-2d>
-      <position>1.0 1.0</position>
-      <length>2.0 4.0</length>
+      <position>2.0 2.0</position>
+      <length>3.0 3.0</length>
     </refinement-2d>
 
-    <expected-number-of-cells-in-patchs>64 32</expected-number-of-cells-in-patchs>
+    <refinement-2d>
+      <position>3.5 3.5</position>
+      <length>0.5 0.5</length>
+    </refinement-2d>
+
+    <expected-number-of-cells-in-patchs>64 36 4</expected-number-of-cells-in-patchs>
     <hash-with-ghost>true</hash-with-ghost>
-    <nodes-uid-hash>5ab97ac37a25e08ce148397befdac15e</nodes-uid-hash>
-    <faces-uid-hash>efc046f4cdd163112b2b6244b1d70e4f</faces-uid-hash>
-    <cells-uid-hash>666cbb9c97ab2b2c5564ca6e4421e9e3</cells-uid-hash>
-    <nodes-direction-hash>ad218132864b669309cbb129416e53c8</nodes-direction-hash>
-    <faces-direction-hash>4f24e631c3fba651b80adff0c2b9f94a</faces-direction-hash>
-    <cells-direction-hash>ef35e66f91198a5a2b53d2812915c81c</cells-direction-hash>
+    <nodes-uid-hash></nodes-uid-hash>
+    <faces-uid-hash></faces-uid-hash>
+    <cells-uid-hash></cells-uid-hash>
+    <nodes-direction-hash></nodes-direction-hash>
+    <faces-direction-hash></faces-direction-hash>
+    <cells-direction-hash></cells-direction-hash>
   </a-m-r-cartesian-mesh-tester>
 
   <arcane-protections-reprises>

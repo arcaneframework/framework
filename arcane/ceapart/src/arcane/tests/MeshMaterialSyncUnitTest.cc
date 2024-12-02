@@ -26,6 +26,9 @@
 #include "arcane/accelerator/VariableViews.h"
 #endif
 
+#include "arcane/cartesianmesh/CartesianMeshCoarsening2.h"
+#include "arcane/cartesianmesh/CartesianMeshUtils.h"
+#include "arcane/cartesianmesh/ICartesianMesh.h"
 #include "arcane/materials/IMeshMaterialMng.h"
 #include "arcane/materials/MeshMaterialInfo.h"
 #include "arcane/materials/MeshEnvironmentBuildInfo.h"
@@ -33,6 +36,7 @@
 #include "arcane/materials/MatItemEnumerator.h"
 #include "arcane/materials/MeshMaterialVariableRef.h"
 #include "arcane/materials/MaterialVariableBuildInfo.h"
+#include "arcane/materials/MeshMaterialIndirectModifier.h"
 #include "arcane/materials/MeshMaterialVariableSynchronizerList.h"
 
 #include "arcane/tests/ArcaneTestGlobal.h"
@@ -107,6 +111,26 @@ MeshMaterialSyncUnitTest(const ServiceBuildInfo& sbi)
 void MeshMaterialSyncUnitTest::
 initializeTest()
 {
+  ICartesianMesh* cartesian_mesh = ICartesianMesh::getReference(mesh());
+  info() << "Nb cells before patch: " << allCells().size();
+
+  cartesian_mesh->computeDirections();
+  // Ref<CartesianMeshCoarsening2> coarser = CartesianMeshUtils::createCartesianMeshCoarsening2(cartesian_mesh);
+  // coarser->createCoarseCells();
+  //
+  // Ref<ICartesianMeshAMRPatchMng> coarser = CartesianMeshUtils::cartesianMeshAMRPatchMng(cartesian_mesh);
+  // coarser->coarse();
+
+  cartesian_mesh->refinePatch2D({ 2, 2 }, { 3, 3 });
+  cartesian_mesh->computeDirections();
+
+  cartesian_mesh->refinePatch2D({ 3.5, 3.5 }, { 0.5, 0.5 });
+  cartesian_mesh->computeDirections();
+
+  info() << "Nb cells after patch: " << allCells().size();
+
+  m_material_mng->setMeshModificationNotified(true);
+
   IMeshMaterialMng* mm = m_material_mng;
   Integer nb_mat = options()->nbMaterial();
   info() << "Number of wanted materials: " << nb_mat;
@@ -185,28 +209,107 @@ _doPhase1()
   IMeshMaterialMng* mm = m_material_mng;
   Integer nb_mat = options()->nbMaterial();
 
+  UniqueArray<Int64> d_cells_uid;
+
   {
     CellGroup cells = ownCells();
+    info() << "cells.size() : " << cells.size();
+    //info() << "cell : " << cells.view().localIds();
     MeshMaterialModifier mmodifier(m_material_mng);
     Int32UniqueArray ids;
     // TODO: calculer en fonction du max des uid.
-    for( Integer imat=0; imat<nb_mat; ++imat ){
+    for (Integer imat = 0; imat < nb_mat; ++imat) {
       ids.clear();
+      d_cells_uid.clear();
       Int64 min_uid = imat*10;
       Int64 max_uid = min_uid + 10 + imat*10;
       ENUMERATE_CELL(icell,cells){
         Cell cell = *icell;
         Int64 uid = cell.uniqueId();
-        if (uid<max_uid && uid>min_uid)
+        if (uid < max_uid && uid >min_uid) {
           ids.add(cell.localId());
+          d_cells_uid.add(cell.uniqueId());
+        }
       }
       info() << "Adding cells n=" << ids.size() << " to mat " << imat << " (min_uid="
              << min_uid << " max_uid=" << max_uid << ")";
+      //info() << "ids: " << ids;
+      info() << "d_cells_uid : " << d_cells_uid;
       mmodifier.addCells(mm->materials()[imat],ids);
     }
   }
 
   m_material_mng->synchronizeMaterialsInCells();
+
+  ENUMERATE_ALLENVCELL (iallenvcell, m_material_mng, allCells()) {
+    AllEnvCell all_env_cell = *iallenvcell;
+    Cell cell = all_env_cell.globalCell();
+
+    Int32 nb_env = all_env_cell.nbEnvironment();
+    // info()
+    // << "Check cell uid: " << cell.uniqueId()
+    // << " -- nb_env: " << nb_env;
+
+    for (Integer i = 0; i < nb_env; ++i) {
+      EnvCell env_cell = all_env_cell.cell(i);
+      Int32 nb_matt = env_cell.nbMaterial();
+      // info()
+      // << "Check cell uid: " << cell.uniqueId()
+      // << " -- env #" << i
+      // << " -- nb_matt: " << nb_matt;
+
+      for (Integer j = 0; j < nb_matt; ++j) {
+        MatCell mat = env_cell.cell(j);
+        // info()
+        // << "Check cell uid: " << cell.uniqueId()
+        // << " -- env #" << i
+        // << " -- mat #" << j
+        // << " -- mat_id: " << mat.materialId();
+      }
+    }
+  }
+  m_material_mng->checkMaterialsInCells();
+
+  _checkVariableSync1();
+
+  info() << "Nb cells before reduce: " << allCells().size();
+
+  MeshMaterialIndirectModifier imodifier{ m_material_mng };
+  imodifier.beginUpdate();
+
+  ICartesianMesh* cartesian_mesh = ICartesianMesh::getReference(mesh());
+  cartesian_mesh->reduceNbGhostLayers(1, 2);
+
+  imodifier.endUpdateWithSort();
+  info() << "Nb cells after reduce: " << allCells().size();
+
+  ENUMERATE_ALLENVCELL (iallenvcell, m_material_mng, allCells()) {
+    AllEnvCell all_env_cell = *iallenvcell;
+    Cell cell = all_env_cell.globalCell();
+
+    Int32 nb_env = all_env_cell.nbEnvironment();
+    info()
+    << "Check cell uid: " << cell.uniqueId()
+    << " -- nb_env: " << nb_env;
+
+    for (Integer i = 0; i < nb_env; ++i) {
+      EnvCell env_cell = all_env_cell.cell(i);
+      Int32 nb_matt = env_cell.nbMaterial();
+      info()
+      << "Check cell uid: " << cell.uniqueId()
+      << " -- env #" << i
+      << " -- nb_matt: " << nb_matt;
+
+      for (Integer j = 0; j < nb_matt; ++j) {
+        MatCell mat = env_cell.cell(j);
+        info()
+        << "Check cell uid: " << cell.uniqueId()
+        << " -- env #" << i
+        << " -- mat #" << j
+        << " -- mat_id: " << mat.materialId();
+      }
+    }
+  }
   m_material_mng->checkMaterialsInCells();
   _checkVariableSync1();
 }

@@ -904,7 +904,7 @@ reduceNbGhostLayers(Integer level, Integer target_nb_ghost_layers)
     if (m_mesh->parallelMng()->reduce(Parallel::ReduceMax, cell_lid2[i].size()) == 0) {
       continue;
     }
-    //debug() << "Removing children of ghost cell (parent level=" << i << ") (children localIds) : " << cell_lid2[i];
+    debug() << "Removing children of ghost cell (parent level=" << i << ") (children localIds) : " << cell_lid2[i];
 
     m_mesh->modifier()->flagCellToCoarsen(cell_lid2[i]);
     m_mesh->modifier()->coarsenItemsV2(false);

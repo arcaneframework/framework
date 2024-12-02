@@ -134,6 +134,12 @@ _changeLocalIdsForInternalList(Int32ConstArrayView old_to_new_ids)
 
   Int32ConstArrayView local_ids = variableIndexer()->localIds();
 
+  debug() << "Size local_ids : " << local_ids.size();
+  debug() << "Size old_to_new_ids : " << old_to_new_ids.size();
+  debug() << "Size current_internals : " << current_internals.size();
+
+  debug() << old_to_new_ids;
+
   for (Integer i = 0, nb = current_internals.size(); i < nb; ++i) {
     Int32 lid = local_ids[i];
     Int32 new_lid = old_to_new_ids[lid];
@@ -218,9 +224,9 @@ checkValid()
         continue;
       Cell cell(items_internal[i]);
       ++nb_error;
-      info(4) << "WARNING: Incoherence between group and internals "
-              << " component=" << name() << " v=" << v
-              << " cell=" << ItemPrinter(cell);
+      info() << "WARNING: Incoherence between group and internals "
+             << " component=" << name() << " v=" << v
+             << " cell=" << ItemPrinter(cell);
     }
     if (nb_error!=0){
       warning() << "WARNING: Incoherence between group and internals "
