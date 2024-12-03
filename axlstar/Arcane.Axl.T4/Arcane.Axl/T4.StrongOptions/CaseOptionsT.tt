@@ -27,7 +27,7 @@
 <#=beginLineSpace#>}
 <#	}
 	else{ #>
-<#=beginLineSpace#><#= return_type.ToArrayType() #> <#= enumerator.Name.ToFuncName() #> const
+<#=beginLineSpace#><#= return_type.ToArrayType() #> <#= enumerator.Name.ToFuncName() #> () const
 <#=beginLineSpace#>{
 <#=beginLineSpace#>  return <#= redirectionPrefix #><#= enumerator.Name.ToFuncName() #>;
 <#=beginLineSpace#>}
