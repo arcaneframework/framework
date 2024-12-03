@@ -40,8 +40,8 @@ MeshMaterialVariableIndexer::
 MeshMaterialVariableIndexer(ITraceMng* tm, const String& name)
 : TraceAccessor(tm)
 , m_name(name)
-, m_matvar_indexes(platform::getAcceleratorHostMemoryAllocator())
-, m_local_ids(platform::getAcceleratorHostMemoryAllocator())
+, m_matvar_indexes(MemoryUtils::getDefaultDataAllocator())
+, m_local_ids(MemoryUtils::getDefaultDataAllocator())
 {
   _init();
   m_matvar_indexes.setDebugName(String("VariableIndexerMatVarIndexes")+name);

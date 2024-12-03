@@ -15,7 +15,6 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/MemoryRessource.h"
-#include "arcane/utils/UtilsTypes.h"
 #include "arcane/utils/MemoryView.h"
 
 #include "arccore/collections/MemoryAllocationArgs.h"
@@ -114,10 +113,10 @@ getAllocatorForMostlyReadOnlyData();
 /*!
  * \brief Allocateur spécifique pour les accélérateurs.
  *
- * Si non nul, cet allocateur permet d'allouer de la mémoire sur l'hôte en
- * utilisant le runtime spécique de l'allocateur.
+ * \deprecated Use MemoryUtils::getDefaultDataAllocator() instead.
  */
-extern "C++" ARCANE_UTILS_EXPORT IMemoryAllocator*
+extern "C++" ARCANE_DEPRECATED_REASON("Y2024: Use getDefaultDataAllocator() instead.")
+ARCANE_UTILS_EXPORT IMemoryAllocator*
 getAcceleratorHostMemoryAllocator();
 
 /*---------------------------------------------------------------------------*/
