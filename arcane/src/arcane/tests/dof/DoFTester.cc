@@ -1101,15 +1101,8 @@ _addNodes(Int32Array2View new_nodes_lids, Int64Array2View new_nodes_uids)
   {
     for (Integer i = 0; i < nb_new_nodes;++i) new_nodes_uids[rank][i] = max_uid*(rank+1) +i+1;
     IMeshModifier* mesh_modifier = mesh()->modifier();
-    if (mesh_modifier) {
+    ARCANE_CHECK_POINTER(mesh_modifier);
       mesh_modifier->addNodes(new_nodes_uids[rank], new_nodes_lids[rank]);
-    }
-    else {// no mesh modifier for now in polyhedral mesh, use polyhedral mesh modifier
-      info() << "Use polyhedral mesh modifier";
-      IPolyhedralMeshModifier* polyhedral_modifier = mesh()->_internalApi()->polyhedralMeshModifier();
-      ARCANE_CHECK_POINTER(polyhedral_modifier);
-      polyhedral_modifier->addItems(new_nodes_uids[rank], new_nodes_lids[rank], IK_Node, mesh()->nodeFamily()->name());
-    }
     added_items[rank] = mesh()->nodeFamily()->view(new_nodes_lids[rank]);
     ENUMERATE_NODE(inode,added_items[rank])
     {
