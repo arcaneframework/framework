@@ -118,7 +118,7 @@ changeOwnersFromCells()
       const Node node = *i_node;
       const Cell cell = owner_builder.connectedCellOfItem(node);
 #ifdef ARCANE_DEBUG_LOAD_BALANCING
-      if (m_nodes_owner[node]!=m_cells_owner[cell]){
+      if (nodes_owner[node]!= cells_owner[cell]){
         info() << "New owner for node: " << ItemPrinter(node) << " cell=" << ItemPrinter(cell)
                << " old_owner=" << nodes_owner[node]
                << " current_cell_owner=" << cell.owner()
@@ -136,11 +136,11 @@ changeOwnersFromCells()
       const Edge edge = *i_edge;
       const Cell cell = owner_builder.connectedCellOfItem(edge);
 #ifdef ARCANE_DEBUG_LOAD_BALANCING
-      if (m_edges_owner[edge]!=m_cells_owner[cell]){
+      if (edges_owner[edge] != cells_owner[cell]) {
         info() << "New owner for edge: " << ItemPrinter(edge) << " cell=" << ItemPrinter(cell)
-               << " old_owner=" << edges_owner[edge]
-               << " current_cell_owner=" << cell.owner()
-               << " new_owner=" << cells_owner[cell];
+            << " old_owner=" << edges_owner[edge]
+            << " current_cell_owner=" << cell.owner()
+            << " new_owner=" << cells_owner[cell];
       }
 #endif /* ARCANE_DEBUG_LOAD_BALANCING */
       edges_owner[edge] = cells_owner[cell];
