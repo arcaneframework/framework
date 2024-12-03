@@ -256,7 +256,8 @@ callDotNETGarbageCollector();
  * \deprecated Use MemoryUtils::getDefaultDataAllocator() instead.
  */
 extern "C++" ARCANE_DEPRECATED_REASON("Y2024: Use MemoryUtils::getDefaultDataAllocator() instead.")
-IMemoryAllocator* getAcceleratorHostMemoryAllocator();
+ARCANE_UTILS_EXPORT IMemoryAllocator*
+getAcceleratorHostMemoryAllocator();
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
