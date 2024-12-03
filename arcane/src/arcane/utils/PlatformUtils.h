@@ -253,15 +253,13 @@ callDotNETGarbageCollector();
 /*!
  * \brief Allocateur spécifique pour les accélérateurs.
  *
- * Si non nul, cet allocateur permet d'allouer de la mémoire sur l'hôte en
- * utilisant le runtime spécique de l'allocateur.
- *
- * \todo rendre obsolète (utiliser MemoryUtils::getAcceleratorHostMemoryAllocator()
- * à la place).
+ * \deprecated Use MemoryUtils::getDefaultDataAllocator() instead.
  */
-extern "C++" ARCANE_UTILS_EXPORT
+extern "C++" ARCANE_DEPRECATED_REASON("Y2024: Use MemoryUtils::getDefaultDataAllocator() instead.")
 IMemoryAllocator* getAcceleratorHostMemoryAllocator();
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 /*!
  * \brief Positionne l'allocateur spécifique pour les accélérateurs.
  *
