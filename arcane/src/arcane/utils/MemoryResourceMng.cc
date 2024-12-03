@@ -18,6 +18,7 @@
 #include "arcane/utils/Array.h"
 #include "arcane/utils/MemoryView.h"
 #include "arcane/utils/MemoryAllocator.h"
+#include "arcane/utils/MemoryUtils.h"
 #include "arcane/utils/internal/MemoryUtilsInternal.h"
 
 /*---------------------------------------------------------------------------*/
@@ -109,15 +110,15 @@ getAllocator(eMemoryResource r, bool throw_if_not_found)
   // Si pas d'allocateur spécifique et qu'on n'est pas sur accélérateur,
   // utilise platform::getAcceleratorHostMemoryAllocator().
   if (!a && !m_is_accelerator) {
-    if (r == eMemoryRessource::UnifiedMemory || r == eMemoryRessource::HostPinned) {
-      a = platform::getAcceleratorHostMemoryAllocator();
+    if (r == eMemoryResource::UnifiedMemory || r == eMemoryResource::HostPinned) {
+      a = MemoryUtils::getDefaultDataAllocator();
       if (!a)
-        a = m_allocators[(int)eMemoryRessource::Host];
+        a = m_allocators[(int)eMemoryResource::Host];
     }
   }
 
   if (!a && throw_if_not_found)
-    ARCANE_FATAL("Allocator for ressource '{0}' is not available", r);
+    ARCANE_FATAL("Allocator for resource '{0}' is not available", r);
 
   return a;
 }
