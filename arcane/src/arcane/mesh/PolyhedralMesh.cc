@@ -31,6 +31,7 @@
 
 #include "arcane/mesh/ItemFamily.h"
 #include "arcane/mesh/DynamicMeshKindInfos.h"
+#include "arcane/mesh/UnstructuredMeshUtilities.h"
 #include "arcane/utils/ITraceMng.h"
 #include "arcane/utils/FatalErrorException.h"
 
@@ -756,6 +757,7 @@ PolyhedralMesh(ISubDomain* subdomain, const MeshBuildInfo& mbi)
 , m_mesh_checker{ this }
 , m_internal_api{std::make_unique<InternalApi>(this)}
 , m_compact_mng{std::make_unique<NoCompactionMeshCompactMng>(this)}
+, m_mesh_utilities{std::make_unique<UnstructuredMeshUtilities>(this)}
 {
   m_mesh_handle._setMesh(this);
   m_mesh_item_internal_list.mesh = this;
@@ -1398,9 +1400,19 @@ innerActiveFaces()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-FaceGroup mesh::PolyhedralMesh::outerActiveFaces()
+FaceGroup mesh::PolyhedralMesh::
+outerActiveFaces()
 {
   return allCells().outerActiveFaceGroup();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+IMeshUtilities* mesh::PolyhedralMesh::
+utilities()
+{
+  return m_mesh_utilities.get();
 }
 
 /*---------------------------------------------------------------------------*/

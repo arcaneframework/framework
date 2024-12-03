@@ -146,6 +146,7 @@ class PolyhedralMesh
   List<IItemFamily*> m_item_family_collection;
   std::unique_ptr<InternalApi> m_internal_api;
   std::unique_ptr<IMeshCompactMng> m_compact_mng;
+  std::unique_ptr<IMeshUtilities> m_mesh_utilities;
 
   // IPrimaryMeshBase interface
   IMeshInitialAllocator* initialAllocator() override { return &m_initial_allocator; }
@@ -253,10 +254,11 @@ class PolyhedralMesh
   IMeshCompactMng* _compactMng() override;
 
   // For now, use _internalAPI()->polyhedralMeshModifier instead of IMeshModifier not implemented yet
-  IMeshModifier* modifier() override {return nullptr;}
   IMeshModifier* modifier() override {return this;}
   bool isDynamic() const override {return true;} // wip parallel, IMesh API
   void setDynamic(bool) override {} // wip parallel, IMeshModifier API
+
+  IMeshUtilities* utilities() override;
 
   void addNodes(Int64ConstArrayView nodes_uid, Int32ArrayView nodes_lid) override; // wip: add IMeshModifierAPI
 
