@@ -1327,6 +1327,15 @@ removeItems(Int32ConstArrayView local_ids, eItemKind ik, const String& family_na
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+void mesh::PolyhedralMesh::
+addNodes(Int64ConstArrayView nodes_uid, Int32ArrayView nodes_lid)
+{
+  addItems(nodes_uid, nodes_lid, IK_Node, nodeFamily()->name());
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 CellGroup mesh::PolyhedralMesh::
 allActiveCells()
 {

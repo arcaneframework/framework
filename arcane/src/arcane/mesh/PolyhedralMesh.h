@@ -23,6 +23,7 @@
 #include "arcane/core/ArcaneTypes.h"
 
 #include "arcane/mesh/EmptyMesh.h"
+#include "arcane/mesh/EmptyMeshModifier.h"
 #include "arcane/mesh/MeshEventsImpl.h"
 
 #include "arcane/core/ItemAllocationInfo.h"
@@ -65,6 +66,7 @@ class PolyhedralFamily;
 
 class PolyhedralMesh
 : public EmptyMesh
+, public EmptyMeshModifier
 , public IPolyhedralMeshInitialAllocator
 {
 
@@ -252,6 +254,11 @@ class PolyhedralMesh
 
   // For now, use _internalAPI()->polyhedralMeshModifier instead of IMeshModifier not implemented yet
   IMeshModifier* modifier() override {return nullptr;}
+  IMeshModifier* modifier() override {return this;}
+  bool isDynamic() const override {return true;} // wip parallel, IMesh API
+  void setDynamic(bool) override {} // wip parallel, IMeshModifier API
+
+  void addNodes(Int64ConstArrayView nodes_uid, Int32ArrayView nodes_lid) override; // wip: add IMeshModifierAPI
 
   // AMR is not activated with Polyhedral mesh. All items are thus active.
   CellGroup allActiveCells() override;
