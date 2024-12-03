@@ -392,6 +392,14 @@ fillDevices(bool is_verbose)
       << " " << dp.maxThreadsDim[2] << "\n";
     o << " maxGridSize = " << dp.maxGridSize[0] << " " << dp.maxGridSize[1]
       << " " << dp.maxGridSize[2] << "\n";
+    o << " concurrentManagedAccess = " << dp.concurrentManagedAccess << "\n";
+    o << " directManagedMemAccessFromHost = " << dp.directManagedMemAccessFromHost << "\n";
+    o << " gcnArchName = " << dp.gcnArchName << "\n";
+    o << " gpuDirectRDMASupported = " << dp.gpuDirectRDMASupported << "\n";
+    o << " hostNativeAtomicSupported = " << dp.hostNativeAtomicSupported << "\n";
+    o << " pageableMemoryAccess = " << dp.pageableMemoryAccess << "\n";
+    o << " pageableMemoryAccessUsesHostPageTables = " << dp.pageableMemoryAccessUsesHostPageTables << "\n";
+    o << " unifiedFunctionPointers = " << dp.unifiedFunctionPointers << "\n";
     o << " hasManagedMemory = " << has_managed_memory << "\n";
 
     {
