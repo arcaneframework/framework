@@ -54,6 +54,7 @@ class MeshPolyhedralTestModule : public ArcaneMeshPolyhedralTestObject
       _testEnumerationAndConnectivities(mesh());
       _testVariables(mesh());
       _testGroups(mesh());
+      _testMeshUtilities(mesh());
     }
     else
       info() << "No Mesh";
@@ -69,6 +70,7 @@ class MeshPolyhedralTestModule : public ArcaneMeshPolyhedralTestObject
   void _testGroups(IMesh* mesh);
   void _testDimensions(IMesh* mesh);
   void _testCoordinates(IMesh* mesh);
+  void _testMeshUtilities(IMesh* mesh);
   void _buildGroup(IItemFamily* family, String const& group_name);
   void _checkBoundaryFaceGroup(IMesh* mesh, String const& boundary_face_group_name) const;
   void _checkInternalFaceGroup(IMesh* mesh, String const& internal_face_group_name) const;
@@ -384,6 +386,9 @@ _testGroups(IMesh* mesh)
   }
   ValueChecker vc{ A_FUNCINFO };
   auto nb_internal_group = 19;
+  if (subDomain()->parallelMng()->isParallel()) {
+    nb_internal_group = 23;
+  }
   auto nb_group = nb_internal_group + options()->nbMeshGroup;
   vc.areEqual(nb_group, mesh->groups().count(), "check number of groups in the mesh");
 
@@ -429,6 +434,41 @@ _testCoordinates(Arcane::IMesh* mesh)
         debug(Trace::High) << " node coords  " << node_coords[inode];
       }
     }
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MeshPolyhedralTestModule::
+_testMeshUtilities(Arcane::IMesh* mesh)
+{
+  auto* mesh_utilities = mesh->utilities();
+  ARCANE_CHECK_POINTER(mesh_utilities);
+  // Test change owner from cells
+  // wip test in sequential: virtually change all cell owners to 1 and check all items have 1 as owner
+  auto& cell_owners = mesh->cellFamily()->itemsNewOwner();
+  auto& face_owners = mesh->faceFamily()->itemsNewOwner();
+  auto& edge_owners = mesh->edgeFamily()->itemsNewOwner();
+  auto& node_owners = mesh->nodeFamily()->itemsNewOwner();
+  ENUMERATE_(Cell,icell,allCells()) {
+    cell_owners[icell] = 1;
+    info() << "Cell uid " << icell->uniqueId() << " cell_owner[icell] "  << cell_owners[icell];
+    info() << "Cell uid " << icell->uniqueId() << " has owner "  << icell->owner();
+  }
+  mesh_utilities->changeOwnersFromCells();
+  bool has_error = false;
+  ENUMERATE_ (Face,iface,allFaces()) {
+    has_error |= face_owners[iface] != 1;
+  }
+  ENUMERATE_ (Node,inode,allNodes()) {
+    has_error |= node_owners[inode] != 1;
+  }
+  ENUMERATE_ (Edge,iedge,allEdges()) {
+    has_error |= edge_owners[iedge] != 1;
+  }
+  if (has_error) {
+    ARCANE_FATAL("changeOwnerFromCells does not work with PolyhedralMesh");
   }
 }
 
