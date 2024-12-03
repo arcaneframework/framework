@@ -43,6 +43,7 @@
 #include "arcane/core/internal/IMeshInternal.h"
 #include "arcane/utils/Collection.h"
 #include "arcane/utils/List.h"
+#include "arcane/utils/PlatformUtils.h"
 
 #include "neo/Mesh.h"
 #include "ItemConnectivityMng.h"
@@ -1338,6 +1339,70 @@ addNodes(Int64ConstArrayView nodes_uid, Int32ArrayView nodes_lid)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+void mesh::PolyhedralMesh::
+exchangeItems()
+{
+  m_trace_mng->info() << "PolyhedralMesh::_exchangeItems() do_compact?=" << "false"
+      << " nb_exchange=" << 0 << " version=" << 0;
+  _exchangeItems();
+  String check_exchange = platform::getEnvironmentVariable("ARCANE_CHECK_EXCHANGE");
+  if (!check_exchange.null()){
+    m_mesh_checker.checkGhostCells();
+    m_trace_mng->pwarning() << "CHECKING SYNCHRONISATION !";
+    m_mesh_checker.checkVariablesSynchronization();
+    m_mesh_checker.checkItemGroupsSynchronization();
+  }
+  if (checkLevel()>=2)
+    m_mesh_checker.checkValidMesh();
+  else if (checkLevel()>=1)
+    m_mesh_checker.checkValidConnectivity();
+
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void mesh::PolyhedralMesh::
+_exchangeItems()
+{
+ ; //todo
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void mesh::PolyhedralMesh::
+prepareForDump()
+{
+  // do nothing for now
+  auto want_dump = false;
+  auto need_compact = false;
+  m_trace_mng->info(4) << "DynamicMesh::prepareForDump() name=" << name()
+          << " need_compact?=" << need_compact
+          << " want_dump?=" << want_dump
+          << " timestamp=" << 0;
+
+  {
+    eMeshEventType t = eMeshEventType::BeginPrepareDump;
+    m_mesh_events.eventObservable(t).notify(MeshEventArgs(this,t));
+  }
+
+  // todo use Properties
+  if (want_dump) {
+    for (auto& family : m_arcane_families) {
+      family->prepareForDump();
+    }
+  }
+
+  {
+    eMeshEventType t = eMeshEventType::EndPrepareDump;
+    m_mesh_events.eventObservable(t).notify(MeshEventArgs(this,t));
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 CellGroup mesh::PolyhedralMesh::
 allActiveCells()
 {
@@ -1414,6 +1479,27 @@ utilities()
 {
   return m_mesh_utilities.get();
 }
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+VariableItemInt32& mesh::PolyhedralMesh::
+itemsNewOwner(eItemKind ik)
+{
+  IItemFamily* item_family = _itemFamily(ik);
+  ARCANE_CHECK_POINTER(item_family);
+  return item_family->itemsNewOwner();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Integer mesh::PolyhedralMesh::
+checkLevel() const
+{
+  return m_mesh_checker.checkLevel();
+}
+
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

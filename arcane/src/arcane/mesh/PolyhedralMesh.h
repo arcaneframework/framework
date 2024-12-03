@@ -253,6 +253,8 @@ class PolyhedralMesh
 
   IMeshCompactMng* _compactMng() override;
 
+  void exchangeItems() override;
+
   // For now, use _internalAPI()->polyhedralMeshModifier instead of IMeshModifier not implemented yet
   IMeshModifier* modifier() override {return this;}
   bool isDynamic() const override {return true;} // wip parallel, IMesh API
@@ -272,9 +274,19 @@ class PolyhedralMesh
   FaceGroup innerActiveFaces() override;
   FaceGroup outerActiveFaces() override;
 
+  IMeshPartitionConstraintMng* partitionConstraintMng() override { return nullptr; }
+
+  VariableItemInt32& itemsNewOwner(eItemKind ik) override;
+
+  IItemFamilyNetwork* itemFamilyNetwork() override { return nullptr; }
+
+  Integer checkLevel() const override;
 
   IUserDataList* userDataList() override { return m_mesh_handle.meshUserDataList(); }
   const IUserDataList* userDataList() const override { return m_mesh_handle.meshUserDataList(); }
+
+  void prepareForDump() override;
+
  private:
 
   void addItems(Int64ConstArrayView unique_ids, Int32ArrayView local_ids, eItemKind ik, const String& family_name);
@@ -283,6 +295,8 @@ class PolyhedralMesh
   PolyhedralFamily* _createItemFamily(eItemKind ik, const String& name);
   PolyhedralFamily* _itemFamily(eItemKind ik);
   PolyhedralFamily* _findItemFamily(eItemKind ik, const String& name, bool create_if_needed = false);
+
+ void _exchangeItems();
 
 #endif // ARCANE_HAS_POLYHEDRAL_MESH_TOOLS
 
