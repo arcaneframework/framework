@@ -54,6 +54,7 @@ class MemoryCopyArgs;
 class MemoryPrefetchArgs;
 class DeviceId;
 class DeviceInfo;
+class DeviceMemoryInfo;
 class ProfileRegion;
 class IDeviceInfoList;
 class PointerAttribute;

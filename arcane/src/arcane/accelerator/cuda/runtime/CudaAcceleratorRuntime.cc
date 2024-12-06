@@ -36,6 +36,7 @@
 #include "arcane/accelerator/core/internal/IRunQueueEventImpl.h"
 #include "arcane/accelerator/core/PointerAttribute.h"
 #include "arcane/accelerator/core/RunQueue.h"
+#include "arcane/accelerator/core/DeviceMemoryInfo.h"
 #include "arcane/accelerator/cuda/runtime/internal/Cupti.h"
 
 #include <iostream>
@@ -366,6 +367,24 @@ class CudaRunnerRuntime
     auto mem_type = static_cast<ePointerMemoryType>(ca.type);
     _fillPointerAttribute(attribute, mem_type, ca.device,
                           ptr, ca.devicePointer, ca.hostPointer);
+  }
+
+  DeviceMemoryInfo getDeviceMemoryInfo(DeviceId device_id) override
+  {
+    int d = 0;
+    int wanted_d = device_id.asInt32();
+    ARCANE_CHECK_CUDA(cudaGetDevice(&d));
+    if (d != wanted_d)
+      ARCANE_CHECK_CUDA(cudaSetDevice(wanted_d));
+    size_t free_mem = 0;
+    size_t total_mem = 0;
+    ARCANE_CHECK_CUDA(cudaMemGetInfo(&free_mem, &total_mem));
+    if (d != wanted_d)
+      ARCANE_CHECK_CUDA(cudaSetDevice(d));
+    DeviceMemoryInfo dmi;
+    dmi.setFreeMemory(free_mem);
+    dmi.setTotalMemory(total_mem);
+    return dmi;
   }
 
   void pushProfilerRange(const String& name, Int32 color_rgb) override

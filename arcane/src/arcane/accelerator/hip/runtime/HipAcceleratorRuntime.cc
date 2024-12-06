@@ -30,6 +30,7 @@
 #include "arcane/accelerator/core/internal/IRunQueueEventImpl.h"
 #include "arcane/accelerator/core/DeviceInfoList.h"
 #include "arcane/accelerator/core/RunQueue.h"
+#include "arcane/accelerator/core/DeviceMemoryInfo.h"
 #include "arcane/accelerator/core/internal/RunCommandImpl.h"
 
 #include <iostream>
@@ -325,6 +326,24 @@ class HipRunnerRuntime
     //          << "\n";
     _fillPointerAttribute(attribute, mem_type, pa.device,
                           ptr, pa.devicePointer, pa.hostPointer);
+  }
+
+  DeviceMemoryInfo getDeviceMemoryInfo(DeviceId device_id) override
+  {
+    int d = 0;
+    int wanted_d = device_id.asInt32();
+    ARCANE_CHECK_HIP(hipGetDevice(&d));
+    if (d != wanted_d)
+      ARCANE_CHECK_HIP(hipSetDevice(wanted_d));
+    size_t free_mem = 0;
+    size_t total_mem = 0;
+    ARCANE_CHECK_HIP(hipMemGetInfo(&free_mem, &total_mem));
+    if (d != wanted_d)
+      ARCANE_CHECK_HIP(hipSetDevice(d));
+    DeviceMemoryInfo dmi;
+    dmi.setFreeMemory(free_mem);
+    dmi.setTotalMemory(total_mem);
+    return dmi;
   }
 
   void pushProfilerRange(const String& name, [[maybe_unused]] Int32 color) override
