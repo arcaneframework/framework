@@ -79,6 +79,7 @@ class Mesh
 
     int maxNbConnectedItems() const {
       auto nb_connected_elements = connectivity_value.sizes();
+      if (nb_connected_elements.size() == 0) {return 0;}
       return *std::max_element(nb_connected_elements.begin(), nb_connected_elements.end());
     }
   };
