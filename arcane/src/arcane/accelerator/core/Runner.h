@@ -135,6 +135,9 @@ class ARCANE_ACCELERATOR_CORE_EXPORT Runner
   //! Information sur le device associé à cette instance.
   const DeviceInfo& deviceInfo() const;
 
+  //! Information sur le device associé à cette instance.
+  DeviceMemoryInfo deviceMemoryInfo() const;
+
   //! Remplit \a attr avec les informations concernant la zone mémoire pointée par \a ptr
   void fillPointerAttribute(PointerAttribute& attr, const void* ptr);
 

@@ -28,6 +28,7 @@
 #include "arcane/accelerator/core/internal/IRunQueueEventImpl.h"
 #include "arcane/accelerator/core/DeviceInfoList.h"
 #include "arcane/accelerator/core/RunQueue.h"
+#include "arcane/accelerator/core/DeviceMemoryInfo.h"
 
 #include <iostream>
 
@@ -301,6 +302,11 @@ class SyclRunnerRuntime
     // TODO: à corriger
     Int32 device_id = 0;
     _fillPointerAttribute(attribute, mem_type, device_id, ptr, device_ptr, host_ptr);
+  }
+
+  DeviceMemoryInfo getDeviceMemoryInfo(DeviceId device_id) override
+  {
+    return {};
   }
 
   void fillDevicesAndSetDefaultQueue(bool is_verbose);

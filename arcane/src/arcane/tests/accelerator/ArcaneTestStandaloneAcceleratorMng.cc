@@ -13,11 +13,13 @@
 #include "arcane/utils/MemoryUtils.h"
 
 #include "arcane/launcher/ArcaneLauncher.h"
+
 #include "arcane/accelerator/core/IAcceleratorMng.h"
+#include "arcane/accelerator/core/RunQueue.h"
+#include "arcane/accelerator/core/Runner.h"
+#include "arcane/accelerator/core/DeviceMemoryInfo.h"
 
 #include "arcane/accelerator/NumArrayViews.h"
-#include "arcane/accelerator/RunQueue.h"
-#include "arcane/accelerator/Runner.h"
 #include "arcane/accelerator/RunCommandLoop.h"
 
 /*---------------------------------------------------------------------------*/
@@ -44,6 +46,9 @@ void _printAvailableAllocators()
   _printAllocator(mrm, eMemoryRessource::Device);
 }
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 void _testSum(IAcceleratorMng* acc_mng)
 {
   // Test la somme de deux tableaux 'a' et 'b' dans un tableau 'c'.
@@ -58,7 +63,7 @@ void _testSum(IAcceleratorMng* acc_mng)
   }
 
   {
-    auto command = makeCommand(acc_mng->defaultQueue());
+    auto command = makeCommand(acc_mng->queue());
     auto in_a = viewIn(command, a);
     auto in_b = viewIn(command, b);
     auto out_c = viewOut(command, c);
@@ -76,6 +81,10 @@ void _testSum(IAcceleratorMng* acc_mng)
   Int64 expected_total = 100040000;
   if (total != expected_total)
     ARCANE_FATAL("Bad value for sum={0} (expected={1})", total, expected_total);
+
+  Accelerator::DeviceMemoryInfo dmi = acc_mng->runner().deviceMemoryInfo();
+  std::cout << "DeviceMemoryInfo: free_mem=" << dmi.freeMemory()
+            << " total=" << dmi.totalMemory() << "\n";
 }
 
 /*---------------------------------------------------------------------------*/
