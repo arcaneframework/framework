@@ -164,12 +164,32 @@ class MshParallelMeshReader
     Int64 physical_tag;
   };
 
+  class PeriodicOneInfo
+  {
+   public:
+
+    Int32 m_entity_dim = -1;
+    Int32 m_entity_tag = -1;
+    Int32 m_entity_tag_master = -1;
+    UniqueArray<double> m_affine_values;
+    Int32 m_nb_corresponding_node = 0;
+    UniqueArray<Int64> m_corresponding_nodes;
+  };
+
+  //! Informations sur la périodicité
+  class PeriodicInfo
+  {
+   public:
+
+    UniqueArray<PeriodicOneInfo> m_periodic_list;
+  };
+
   //! Informations sur le maillage créé
   class MeshInfo
   {
    public:
 
-    void findEntities(Int32 dimension, Int64 tag,Array<MeshV4EntitiesWithNodes>& entities)
+    void findEntities(Int32 dimension, Int64 tag, Array<MeshV4EntitiesWithNodes>& entities)
     {
       entities.clear();
       for (auto& x : entities_with_nodes_list[dimension - 1])
@@ -202,8 +222,9 @@ class MshParallelMeshReader
     Real3 m_node_max_bounding_box;
     MeshPhysicalNameList physical_name_list;
     UniqueArray<MeshV4EntitiesNodes> entities_nodes_list;
-    FixedArray<UniqueArray<MeshV4EntitiesWithNodes>,3> entities_with_nodes_list;
+    FixedArray<UniqueArray<MeshV4EntitiesWithNodes>, 3> entities_with_nodes_list;
     UniqueArray<MeshV4ElementsBlock> blocks;
+    PeriodicInfo m_periodic_info;
   };
 
  public:
@@ -245,10 +266,15 @@ class MshParallelMeshReader
   Int32 _switchMshType(Int64, Int32&) const;
   void _readPhysicalNames();
   void _readEntities();
+  void _readPeriodic();
   void _readOneEntity(Int32 entity_dim);
+  bool _getIsEndOfFileAndBroadcast();
   String _getNextLineAndBroadcast();
   Int32 _getIntegerAndBroadcast();
+  Int64 _getInt64AndBroadcast();
   void _getInt64ArrayAndBroadcast(ArrayView<Int64> values);
+  void _getInt32ArrayAndBroadcast(ArrayView<Int32> values);
+  void _getDoubleArrayAndBroadcast(ArrayView<double> values);
   void _readOneElementBlock(MeshV4ElementsBlock& block);
   void _computeNodesPartition();
   void _computeOwnCells(MeshV4ElementsBlock& block);
@@ -302,6 +328,30 @@ _getNextLineAndBroadcast()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+/*!
+ * \brief Retourne \a true si on est à la fin du fichier.
+ */
+bool MshParallelMeshReader::
+_getIsEndOfFileAndBroadcast()
+{
+  IosFile* f = m_ios_file.get();
+  Int32 is_end_int = 0;
+  if (f) {
+    is_end_int = f->isEnd() ? 1 : 0;
+    info() << "IsEndOfFile_Master: " << is_end_int;
+  }
+  if (m_is_parallel) {
+    if (f)
+      info() << "IsEndOfFile: " << is_end_int;
+    m_parallel_mng->broadcast(ArrayView<Int32>(1, &is_end_int), m_master_io_rank);
+  }
+  bool is_end = (is_end_int != 0);
+  info() << "IsEnd: " << is_end;
+  return is_end;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 Int32 MshParallelMeshReader::
 _getIntegerAndBroadcast()
@@ -319,6 +369,22 @@ _getIntegerAndBroadcast()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+Int64 MshParallelMeshReader::
+_getInt64AndBroadcast()
+{
+  IosFile* f = m_ios_file.get();
+  FixedArray<Int64, 1> v;
+  if (f)
+    v[0] = f->getInt64();
+  if (m_is_parallel) {
+    m_parallel_mng->broadcast(v.view(), m_master_io_rank);
+  }
+  return v[0];
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 void MshParallelMeshReader::
 _getInt64ArrayAndBroadcast(ArrayView<Int64> values)
 {
@@ -326,6 +392,34 @@ _getInt64ArrayAndBroadcast(ArrayView<Int64> values)
   if (f)
     for (Int64& v : values)
       v = f->getInt64();
+  if (m_is_parallel)
+    m_parallel_mng->broadcast(values, m_master_io_rank);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MshParallelMeshReader::
+_getInt32ArrayAndBroadcast(ArrayView<Int32> values)
+{
+  IosFile* f = m_ios_file.get();
+  if (f)
+    for (Int32& v : values)
+      v = f->getInteger();
+  if (m_is_parallel)
+    m_parallel_mng->broadcast(values, m_master_io_rank);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MshParallelMeshReader::
+_getDoubleArrayAndBroadcast(ArrayView<double> values)
+{
+  IosFile* f = m_ios_file.get();
+  if (f)
+    for (double& v : values)
+      v = f->getReal();
   if (m_is_parallel)
     m_parallel_mng->broadcast(values, m_master_io_rank);
 }
@@ -399,8 +493,12 @@ _switchMshType(Int64 mshElemType, Int32& nNodes) const
   case MSH_TRI_12:
     nNodes = 12;
     return IT_Octaedron12;
-
   case MSH_TRI_6:
+    nNodes = 6;
+    return IT_Triangle6;
+  case MSH_TET_10:
+    nNodes = 10;
+    return IT_Tetraedron10;
   case MSH_QUA_9:
   case MSH_HEX_27:
   case MSH_PRI_18:
@@ -698,17 +796,17 @@ _readOneElementBlock(MeshV4ElementsBlock& block)
  *
  * Voici la description du format:
  *
- * \code
- *$Elements
- *  numEntityBlocks(size_t) numElements(size_t)
- *    minElementTag(size_t) maxElementTag(size_t)
- *  entityDim(int) entityTag(int) elementType(int; see below)
- *    numElementsInBlock(size_t)
- *    elementTag(size_t) nodeTag(size_t) ...
- *    ...
- *  ...
- *$EndElements
- * \endcode
+ * \verbatim
+ * $Elements
+ *   numEntityBlocks(size_t) numElements(size_t)
+ *     minElementTag(size_t) maxElementTag(size_t)
+ *   entityDim(int) entityTag(int) elementType(int; see below)
+ *     numElementsInBlock(size_t)
+ *     elementTag(size_t) nodeTag(size_t) ...
+ *     ...
+ *   ...
+ * $EndElements
+ * \endverbatim
  *
  * Dans la version 4, les éléments sont rangés par genre (eItemKind).
  * Chaque bloc d'entité peut-être de dimension différente Il n'y a pas
@@ -1257,7 +1355,6 @@ _readPhysicalNames()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
 /*!
  * \brief Lecture des entités.
  *
@@ -1395,6 +1492,65 @@ _readOneEntity(Int32 entity_dim)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
+ * \brief Lecture des informations périodiques.
+ *
+ * Le format est:
+ *
+ * \verbatim
+ *   $Periodic
+ *     numPeriodicLinks(size_t)
+ *     entityDim(int) entityTag(int) entityTagMaster(int)
+ *     numAffine(size_t) value(double) ...
+ *     numCorrespondingNodes(size_t)
+ *       nodeTag(size_t) nodeTagMaster(size_t)
+ *       ...
+ *     ...
+ *   $EndPeriodic
+ * \endverbatim
+ */
+void MshParallelMeshReader::
+_readPeriodic()
+{
+  Int64 nb_link = _getInt64AndBroadcast();
+  info() << "[Periodic] nb_link=" << nb_link;
+
+  // TODO: pour l'instant, tous les rangs conservent les
+  // données car on suppose qu'il n'y en a pas beaucoup.
+  // A terme, il faudra aussi distribuer ces informations.
+  PeriodicInfo& periodic_info = m_mesh_info.m_periodic_info;
+  periodic_info.m_periodic_list.resize(nb_link);
+  for (Int64 ilink = 0; ilink < nb_link; ++ilink) {
+    PeriodicOneInfo& one_info = periodic_info.m_periodic_list[ilink];
+    FixedArray<Int32, 3> entity_info;
+    _getInt32ArrayAndBroadcast(entity_info.view());
+
+    info() << "[Periodic] dim=" << entity_info[0] << " tag=" << entity_info[1]
+           << " tag_master=" << entity_info[2];
+    one_info.m_entity_dim = entity_info[0];
+    one_info.m_entity_tag = entity_info[1];
+    one_info.m_entity_tag_master = entity_info[2];
+
+    Int64 num_affine = _getInt64AndBroadcast();
+    info() << "[Periodic] num_affine=" << num_affine;
+    one_info.m_affine_values.resize(num_affine);
+    _getDoubleArrayAndBroadcast(one_info.m_affine_values);
+    one_info.m_nb_corresponding_node = CheckedConvert::toInt32(_getInt64AndBroadcast());
+    info() << "[Periodic] nb_corresponding_node=" << one_info.m_nb_corresponding_node;
+    one_info.m_corresponding_nodes.resize(one_info.m_nb_corresponding_node * 2);
+    _getInt64ArrayAndBroadcast(one_info.m_corresponding_nodes);
+    //info() << "[Periodic] corresponding_nodes=" << corresponding_nodes;
+  }
+
+  _goToNextLine();
+
+  String s = _getNextLineAndBroadcast();
+  if (s != "$EndPeriodic")
+    ARCANE_FATAL("found '{0}' and expected '$EndPeriodic'", s);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
  */
 void MshParallelMeshReader::
 _readMeshFromFile()
@@ -1465,6 +1621,17 @@ _readMeshFromFile()
   IPrimaryMesh* pmesh = mesh->toPrimaryMesh();
   pmesh->setDimension(mesh_dimension);
 
+  info() << "NextLine=" << next_line;
+
+  bool is_end = _getIsEndOfFileAndBroadcast();
+  if (!is_end) {
+    next_line = _getNextLineAndBroadcast();
+    // $Periodic
+    if (next_line == "$Periodic") {
+      _readPeriodic();
+    }
+  }
+
   _allocateCells();
   _allocateGroups();
 }
@@ -1484,6 +1651,14 @@ readMeshFromMshFile(IMesh* mesh, const String& filename)
   const Int32 nb_rank = pm->commSize();
 
   // Détermine les rangs qui vont conserver les données
+  // Il n'est pas obligatoire que tous les rangs participent
+  // à la conservation des données. L'idéal avec un
+  // grand nombre de rangs serait qu'un rang sur 2 ou 4 participent.
+  // Cependant, cela génère alors des partitions vides (pour
+  // les rangs qui ne participent pas) et cela peut
+  // faire planter certains partitionneurs (comme ParMetis)
+  // lorsqu'il y a des partitions vides. Il faudrait d'abord
+  // corriger ce problème.
   m_nb_part = nb_rank;
   m_parts_rank.resize(m_nb_part);
   for (Int32 i = 0; i < m_nb_part; ++i) {
