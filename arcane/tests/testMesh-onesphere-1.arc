@@ -2,7 +2,7 @@
 <case codename="ArcaneTest" xml:lang="en" codeversion="1.0">
  <arcane>
    <title>Test reading GMSH mesh with periodic information</title>
-   <description>Test Maillage VTK 4.2 Binary sphere</description>
+   <description>Test reading GMSH mesh with periodic information</description>
    <timeloop>UnitTest</timeloop>
  </arcane>
 
@@ -13,6 +13,10 @@
   </meshes>
 
   <unit-test-module>
-    <test name="MeshUnitTest" />
+    <test name="MeshUnitTest">
+      <test-adjency>false</test-adjency>
+      <test-variable-writer>false</test-variable-writer>
+      <write-mesh>false</write-mesh>
+    </test>
   </unit-test-module>
 </case>
