@@ -1984,15 +1984,15 @@ ItemPairGroup ItemFamily::
 findAdjencyItems(const ItemGroup& group,const ItemGroup& sub_group,
                  eItemKind link_kind,Integer layer)
 {
-  AdjencyInfo at(group,sub_group,link_kind,layer);
-  AdjencyGroupMap::const_iterator i = m_adjency_groups.find(at);
+  AdjacencyInfo at(group, sub_group, link_kind, layer);
+  AdjacencyGroupMap::const_iterator i = m_adjacency_groups.find(at);
 
-  if (i==m_adjency_groups.end()){
+  if (i == m_adjacency_groups.end()) {
     debug() << "** BUILD ADJENCY_ITEMS : " << group.name() << " x "
             << sub_group.name() << " link=" << link_kind << " nblayer=" << layer;
     ItemPairGroup v(new ItemPairGroupImpl(group,sub_group));
     mesh()->utilities()->computeAdjency(v,link_kind,layer);
-    m_adjency_groups.insert(std::make_pair(at,v));
+    m_adjacency_groups.insert(std::make_pair(at, v));
     return v;
   }
   debug() << "** FOUND KNOWN ADJENCY_ITEMS! : " << group.name() << " x "
