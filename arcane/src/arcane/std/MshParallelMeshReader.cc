@@ -399,8 +399,12 @@ _switchMshType(Int64 mshElemType, Int32& nNodes) const
   case MSH_TRI_12:
     nNodes = 12;
     return IT_Octaedron12;
-
   case MSH_TRI_6:
+    nNodes = 6;
+    return IT_Triangle6;
+  case MSH_TET_10:
+    nNodes = 10;
+    return IT_Tetraedron10;
   case MSH_QUA_9:
   case MSH_HEX_27:
   case MSH_PRI_18:
@@ -1484,6 +1488,14 @@ readMeshFromMshFile(IMesh* mesh, const String& filename)
   const Int32 nb_rank = pm->commSize();
 
   // Détermine les rangs qui vont conserver les données
+  // Il n'est pas obligatoire que tous les rangs participent
+  // à la conservation des données. L'idéal avec un
+  // grand nombre de rangs serait qu'un rang sur 2 ou 4 participent.
+  // Cependant, cela génère alors des partitions vides (pour
+  // les rangs qui ne participent pas) et cela peut
+  // faire planter certains partitionneurs (comme ParMetis)
+  // lorsqu'il y a des partitions vides. Il faudrait d'abord
+  // corriger ce problème.
   m_nb_part = nb_rank;
   m_parts_rank.resize(m_nb_part);
   for (Int32 i = 0; i < m_nb_part; ++i) {
