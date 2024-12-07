@@ -67,7 +67,7 @@ UnstructuredMeshUtilities::
 UnstructuredMeshUtilities(IMesh* mesh)
 : TraceAccessor(mesh->traceMng())
 , m_mesh(mesh)
-, m_compute_adjency_functor(new BasicItemPairGroupComputeFunctor(traceMng()))
+, m_compute_adjacency_functor(new BasicItemPairGroupComputeFunctor(traceMng()))
 {
 }
 
@@ -77,7 +77,7 @@ UnstructuredMeshUtilities(IMesh* mesh)
 UnstructuredMeshUtilities::
 ~UnstructuredMeshUtilities()
 {
-  delete m_compute_adjency_functor;
+  delete m_compute_adjacency_functor;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -708,7 +708,7 @@ _broadcastFarthestNode(Real distance,const Node& farthest_node,
 void UnstructuredMeshUtilities::
 computeAdjency(ItemPairGroup adjency_array,eItemKind link_kind,Integer nb_layer)
 {
-  m_compute_adjency_functor->computeAdjency(adjency_array,link_kind,nb_layer);
+  m_compute_adjacency_functor->computeAdjacency(adjency_array, link_kind, nb_layer);
 }
 
 /*---------------------------------------------------------------------------*/

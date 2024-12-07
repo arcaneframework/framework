@@ -98,8 +98,12 @@ class MeshUnitTest
   : public TraceAccessor, public AbstractItemOperationByBasicType
   {
   public:
-    CountOperationByBasicType(ITraceMng* m) : TraceAccessor(m) {}
-  public:
+
+    explicit CountOperationByBasicType(ITraceMng* m)
+    : TraceAccessor(m)
+    {}
+
+   public:
     virtual void applyVertex(ItemVectorView group)
     { info() << "NB Vertex = " << group.size(); }
     virtual void applyLine2(ItemVectorView group)
@@ -164,10 +168,10 @@ class MeshUnitTest
   void _testGroups();
   void _dumpComputeFaceGroupNormal();
   void _dumpComputeNodeGroupDirection();
-  void _testItemAdjency();
-  void _testItemAdjency2();
-  void _testItemAdjency3();
-  void _testItemPartialAdjency();
+  void _testItemAdjacency();
+  void _testItemAdjacency2();
+  void _testItemAdjacency3();
+  void _testItemPartialAdjacency();
   void _testVariableWriter();
   void _testItemArray();
   void _testProjection();
@@ -180,8 +184,8 @@ class MeshUnitTest
   void _testSharedItems();
   void _testVisitors();
   template<typename ItemKind,typename SubItemKind>
-  void _testItemAdjency(ItemGroupT<ItemKind> items,ItemGroupT<SubItemKind> subitems,
-                        eItemKind link_kind);
+  void _testItemAdjacency(ItemGroupT<ItemKind> items, ItemGroupT<SubItemKind> subitems,
+                          eItemKind link_kind);
   void _testAdditionalMeshes();
   void _testNullItem();
   void _testCustomMeshTools();
@@ -258,10 +262,10 @@ executeTest()
     _testSortedNodeFaces();
   _testGroups();
   if (options()->testAdjency()){
-    _testItemAdjency();
-    _testItemAdjency2();
-    _testItemAdjency3();
-    _testItemPartialAdjency();
+    _testItemAdjacency();
+    _testItemAdjacency2();
+    _testItemAdjacency3();
+    _testItemPartialAdjacency();
   }
   _dumpConnections();
   {
@@ -708,7 +712,7 @@ _dumpComputeNodeGroupDirection()
 /*---------------------------------------------------------------------------*/
 
 void MeshUnitTest::
-_testItemAdjency2()
+_testItemAdjacency2()
 {
   FaceFaceGroup ad_list(allFaces(),outerFaces(),IK_Node);
   info() << " COMPUTE ITEM ADJENCY LIST2!";
@@ -744,7 +748,7 @@ _testItemAdjency2()
 /*---------------------------------------------------------------------------*/
 
 void MeshUnitTest::
-_testItemAdjency3()
+_testItemAdjacency3()
 {
   // Teste les fonctors pour le calcul des infos des ItemPairGroup.
   // Le fonctor calcule les mailles voisines aux mailles par les faces
@@ -828,13 +832,13 @@ _testItemAdjency3()
 /*---------------------------------------------------------------------------*/
 
 template<typename ItemKind,typename SubItemKind> void MeshUnitTest::
-_testItemAdjency(ItemGroupT<ItemKind> items,ItemGroupT<SubItemKind> sub_items,
-                 eItemKind link_kind)
+_testItemAdjacency(ItemGroupT<ItemKind> items, ItemGroupT<SubItemKind> subitems,
+                   eItemKind link_kind)
 {
-  ItemPairGroupT<ItemKind,SubItemKind> ad_list(items,sub_items,link_kind);
+  ItemPairGroupT<ItemKind, SubItemKind> ad_list(items, subitems, link_kind);
   info() << " COMPUTE ITEM ADJENCY LIST link_kind=" << link_kind
-         << " items=" << items.name() << " sub_items=" << sub_items.name()
-         << " nb_item=" << items.size() << " nb_sub_item=" << sub_items.size()
+         << " items=" << items.name() << " sub_items=" << subitems.name()
+         << " nb_item=" << items.size() << " nb_sub_item=" << subitems.size()
          << " dim=" << items.mesh()->dimension();
   
   Int64 total_uid = 0;
@@ -865,29 +869,29 @@ _testItemAdjency(ItemGroupT<ItemKind> items,ItemGroupT<SubItemKind> sub_items,
 /*---------------------------------------------------------------------------*/
 
 void MeshUnitTest::
-_testItemAdjency()
+_testItemAdjacency()
 {
-  _testItemAdjency(allCells(),allCells(),IK_Node);
-  _testItemAdjency(allCells(),allCells(),IK_Face);
+  _testItemAdjacency(allCells(), allCells(), IK_Node);
+  _testItemAdjacency(allCells(), allCells(), IK_Face);
 
-  _testItemAdjency(allNodes(),allNodes(),IK_Cell);
-  _testItemAdjency(allNodes(),allNodes(),IK_Face);
-  _testItemAdjency(allNodes(),allNodes(),IK_Edge);
+  _testItemAdjacency(allNodes(), allNodes(), IK_Cell);
+  _testItemAdjacency(allNodes(), allNodes(), IK_Face);
+  _testItemAdjacency(allNodes(), allNodes(), IK_Edge);
 
-  _testItemAdjency(allFaces(),allCells(),IK_Node);
+  _testItemAdjacency(allFaces(), allCells(), IK_Node);
 
-  _testItemAdjency(allFaces(),allFaces(),IK_Node);
-  _testItemAdjency(allFaces(),allFaces(),IK_Edge);
-  _testItemAdjency(allFaces(),allFaces(),IK_Cell);
+  _testItemAdjacency(allFaces(), allFaces(), IK_Node);
+  _testItemAdjacency(allFaces(), allFaces(), IK_Edge);
+  _testItemAdjacency(allFaces(), allFaces(), IK_Cell);
 
-  _testItemAdjency(allCells(),allFaces(),IK_Face);
+  _testItemAdjacency(allCells(), allFaces(), IK_Face);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void MeshUnitTest::
-_testItemPartialAdjency()
+_testItemPartialAdjacency()
 {
   info() << " COMPUTE ITEM PARTIAL ADJENCY LIST!";
   
