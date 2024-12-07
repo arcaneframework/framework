@@ -31,9 +31,9 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*
  * TODO: Regarder pourquoi les méthodes de calcul suivantes:
- * _computeCellCellFaceAdjency(ItemPairGroupImpl* array)
- * _computeFaceCellNodeAdjency(ItemPairGroupImpl* array)
- * _computeCellFaceFaceAdjency(ItemPairGroupImpl* array)
+ * _computeCellCellFaceAdjacency(ItemPairGroupImpl* array)
+ * _computeFaceCellNodeAdjacency(ItemPairGroupImpl* array)
+ * _computeCellFaceFaceAdjacency(ItemPairGroupImpl* array)
  * sont spéciales et les fusionner avec les autres.
  */
 /*---------------------------------------------------------------------------*/
@@ -43,47 +43,47 @@ BasicItemPairGroupComputeFunctor::
 BasicItemPairGroupComputeFunctor(ITraceMng* tm)
 : TraceAccessor(tm)
 {
-  _addComputeAdjency(IK_Cell,IK_Cell,IK_Node,
-                     &BasicItemPairGroupComputeFunctor::_computeCellCellNodeAdjency);
-  _addComputeAdjency(IK_Cell,IK_Cell,IK_Face,
-                     &BasicItemPairGroupComputeFunctor::_computeCellCellFaceAdjency);
-  _addComputeAdjency(IK_Node,IK_Node,IK_Cell,
-                     &BasicItemPairGroupComputeFunctor::_computeNodeNodeCellAdjency);
-  _addComputeAdjency(IK_Face,IK_Cell,IK_Node,
-                     &BasicItemPairGroupComputeFunctor::_computeFaceCellNodeAdjency);
-  _addComputeAdjency(IK_Face,IK_Face,IK_Node,
-                     &BasicItemPairGroupComputeFunctor::_computeFaceFaceNodeAdjency);
-  _addComputeAdjency(IK_Cell,IK_Face,IK_Face,
-                     &BasicItemPairGroupComputeFunctor::_computeCellFaceFaceAdjency);
-  _addComputeAdjency(IK_Node,IK_Node,IK_Face,
-                     &BasicItemPairGroupComputeFunctor::_computeNodeNodeFaceAdjency);
-  _addComputeAdjency(IK_Node,IK_Node,IK_Edge,
-                     &BasicItemPairGroupComputeFunctor::_computeNodeNodeEdgeAdjency);
-  _addComputeAdjency(IK_Face,IK_Face,IK_Edge,
-                     &BasicItemPairGroupComputeFunctor::_computeFaceFaceEdgeAdjency);
-  _addComputeAdjency(IK_Face,IK_Face,IK_Cell,
-                     &BasicItemPairGroupComputeFunctor::_computeFaceFaceCellAdjency);
+  _addComputeAdjacency(IK_Cell, IK_Cell, IK_Node,
+                       &BasicItemPairGroupComputeFunctor::_computeCellCellNodeAdjacency);
+  _addComputeAdjacency(IK_Cell, IK_Cell, IK_Face,
+                       &BasicItemPairGroupComputeFunctor::_computeCellCellFaceAdjacency);
+  _addComputeAdjacency(IK_Node, IK_Node, IK_Cell,
+                       &BasicItemPairGroupComputeFunctor::_computeNodeNodeCellAdjacency);
+  _addComputeAdjacency(IK_Face, IK_Cell, IK_Node,
+                       &BasicItemPairGroupComputeFunctor::_computeFaceCellNodeAdjacency);
+  _addComputeAdjacency(IK_Face, IK_Face, IK_Node,
+                       &BasicItemPairGroupComputeFunctor::_computeFaceFaceNodeAdjacency);
+  _addComputeAdjacency(IK_Cell, IK_Face, IK_Face,
+                       &BasicItemPairGroupComputeFunctor::_computeCellFaceFaceAdjacency);
+  _addComputeAdjacency(IK_Node, IK_Node, IK_Face,
+                       &BasicItemPairGroupComputeFunctor::_computeNodeNodeFaceAdjacency);
+  _addComputeAdjacency(IK_Node, IK_Node, IK_Edge,
+                       &BasicItemPairGroupComputeFunctor::_computeNodeNodeEdgeAdjacency);
+  _addComputeAdjacency(IK_Face, IK_Face, IK_Edge,
+                       &BasicItemPairGroupComputeFunctor::_computeFaceFaceEdgeAdjacency);
+  _addComputeAdjacency(IK_Face, IK_Face, IK_Cell,
+                       &BasicItemPairGroupComputeFunctor::_computeFaceFaceCellAdjacency);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void BasicItemPairGroupComputeFunctor::
-computeAdjency(ItemPairGroup adjency_array,eItemKind link_kind,
-               Integer nb_layer)
+computeAdjacency(ItemPairGroup adjency_array, eItemKind link_kind,
+                 Integer nb_layer)
 {
   if (nb_layer!=1)
     throw ArgumentException(A_FUNCINFO,"nb_layer should be 1");
   eItemKind item_kind = adjency_array.itemKind();
   eItemKind sub_item_kind = adjency_array.subItemKind();
-  AdjencyType atype(item_kind,sub_item_kind,link_kind);
-  auto i = m_compute_adjency_functions.find(atype);
-  if (i==m_compute_adjency_functions.end()){
+  AdjacencyType atype(item_kind, sub_item_kind, link_kind);
+  auto i = m_compute_adjacency_functions.find(atype);
+  if (i == m_compute_adjacency_functions.end()) {
     String s = String::format("Invalid adjency computation item_kind={0} sub_item_kind={1} link_item_kind={2}",
                             item_kind,sub_item_kind,link_kind);
     throw NotImplementedException(A_FUNCINFO,s);
   }
-  auto acf = new AdjencyComputeFunctor(this,adjency_array.internal(),i->second);
+  auto acf = new AdjacencyComputeFunctor(this, adjency_array.internal(), i->second);
   adjency_array.internal()->setComputeFunctor(acf);
   adjency_array.invalidate();
 }
@@ -92,18 +92,18 @@ computeAdjency(ItemPairGroup adjency_array,eItemKind link_kind,
 /*---------------------------------------------------------------------------*/
 
 void BasicItemPairGroupComputeFunctor::
-_addComputeAdjency(eItemKind ik,eItemKind sik,eItemKind lik,ComputeFunctor f)
+_addComputeAdjacency(eItemKind ik, eItemKind sik, eItemKind lik, ComputeFunctor f)
 {
-  m_compute_adjency_functions.insert(std::make_pair(AdjencyType(ik,sik,lik),f));
+  m_compute_adjacency_functions.insert(std::make_pair(AdjacencyType(ik, sik, lik), f));
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void BasicItemPairGroupComputeFunctor::
-_computeAdjency(ItemPairGroupImpl* array,
-                GetItemVectorViewFunctor get_link_item_enumerator,
-                GetItemVectorViewFunctor get_sub_item_enumerator)
+_computeAdjacency(ItemPairGroupImpl* array,
+                  GetItemVectorViewFunctor get_link_item_enumerator,
+                  GetItemVectorViewFunctor get_sub_item_enumerator)
 {
   const ItemGroup& group = array->itemGroup();
   const ItemGroup& sub_group = array->subItemGroup();
@@ -151,7 +151,7 @@ _computeAdjency(ItemPairGroupImpl* array,
 /*---------------------------------------------------------------------------*/
 
 void BasicItemPairGroupComputeFunctor::
-_computeCellCellFaceAdjency(ItemPairGroupImpl* array)
+_computeCellCellFaceAdjacency(ItemPairGroupImpl* array)
 {
   const ItemGroup& group = array->itemGroup();
   const ItemGroup& sub_group = array->subItemGroup();
@@ -199,7 +199,7 @@ _computeCellCellFaceAdjency(ItemPairGroupImpl* array)
 /*---------------------------------------------------------------------------*/
 
 void BasicItemPairGroupComputeFunctor::
-_computeFaceCellNodeAdjency(ItemPairGroupImpl* array)
+_computeFaceCellNodeAdjacency(ItemPairGroupImpl* array)
 {
   const ItemGroup& group = array->itemGroup();
   const ItemGroup& sub_group = array->subItemGroup();
@@ -244,7 +244,7 @@ _computeFaceCellNodeAdjency(ItemPairGroupImpl* array)
 /*---------------------------------------------------------------------------*/
 
 void BasicItemPairGroupComputeFunctor::
-_computeCellFaceFaceAdjency(ItemPairGroupImpl* array)
+_computeCellFaceFaceAdjacency(ItemPairGroupImpl* array)
 {
   const ItemGroup& group = array->itemGroup();
   const ItemGroup& sub_group = array->subItemGroup();
@@ -287,84 +287,84 @@ _computeCellFaceFaceAdjency(ItemPairGroupImpl* array)
 /*---------------------------------------------------------------------------*/
 
 void BasicItemPairGroupComputeFunctor::
-_computeCellCellNodeAdjency(ItemPairGroupImpl* array)
+_computeCellCellNodeAdjacency(ItemPairGroupImpl* array)
 {
   GetItemVectorViewFunctor x = [](Item cell){ return cell.toCell().nodes(); };
   GetItemVectorViewFunctor y = [](Item node){ return node.toNode().cells(); };
 
-  return _computeAdjency(array,x,y);
+  return _computeAdjacency(array, x, y);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void BasicItemPairGroupComputeFunctor::
-_computeNodeNodeCellAdjency(ItemPairGroupImpl* array)
+_computeNodeNodeCellAdjacency(ItemPairGroupImpl* array)
 {
   GetItemVectorViewFunctor x = [](Item node){ return node.toNode().cells(); };
   GetItemVectorViewFunctor y = [](Item cell){ return cell.toCell().nodes(); };
 
-  return _computeAdjency(array,x,y);
+  return _computeAdjacency(array, x, y);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void BasicItemPairGroupComputeFunctor::
-_computeFaceFaceNodeAdjency(ItemPairGroupImpl* array)
+_computeFaceFaceNodeAdjacency(ItemPairGroupImpl* array)
 {
   GetItemVectorViewFunctor x = [](Item face){ return face.toFace().nodes(); };
   GetItemVectorViewFunctor y = [](Item node){ return node.toNode().faces(); };
 
-  return _computeAdjency(array,x,y);
+  return _computeAdjacency(array, x, y);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void BasicItemPairGroupComputeFunctor::
-_computeNodeNodeFaceAdjency(ItemPairGroupImpl* array)
+_computeNodeNodeFaceAdjacency(ItemPairGroupImpl* array)
 {
   GetItemVectorViewFunctor x = [](Item node){ return node.toNode().faces(); };
   GetItemVectorViewFunctor y = [](Item face){ return face.toFace().nodes(); };
 
-  return _computeAdjency(array,x,y);
+  return _computeAdjacency(array, x, y);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void BasicItemPairGroupComputeFunctor::
-_computeNodeNodeEdgeAdjency(ItemPairGroupImpl* array)
+_computeNodeNodeEdgeAdjacency(ItemPairGroupImpl* array)
 {
   GetItemVectorViewFunctor x = [](Item node){ return node.toNode().edges(); };
   GetItemVectorViewFunctor y = [](Item edge){ return edge.toEdge().nodes(); };
 
-  return _computeAdjency(array,x,y);
+  return _computeAdjacency(array, x, y);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void BasicItemPairGroupComputeFunctor::
-_computeFaceFaceEdgeAdjency(ItemPairGroupImpl* array)
+_computeFaceFaceEdgeAdjacency(ItemPairGroupImpl* array)
 {
   GetItemVectorViewFunctor x = [](Item face){ return face.toFace().edges(); };
   GetItemVectorViewFunctor y = [](Item edge){ return edge.toEdge().faces(); };
 
-  return _computeAdjency(array,x,y);
+  return _computeAdjacency(array, x, y);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void BasicItemPairGroupComputeFunctor::
-_computeFaceFaceCellAdjency(ItemPairGroupImpl* array)
+_computeFaceFaceCellAdjacency(ItemPairGroupImpl* array)
 {
   GetItemVectorViewFunctor x = [](Item face){ return face.toFace().cells(); };
   GetItemVectorViewFunctor y = [](Item cell){ return cell.toCell().faces(); };
 
-  return _computeAdjency(array,x,y);
+  return _computeAdjacency(array, x, y);
 }
 
 /*---------------------------------------------------------------------------*/
