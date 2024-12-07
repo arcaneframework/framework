@@ -41,8 +41,8 @@ class UnstructuredMeshUtilities
 {
  public:
 
-  UnstructuredMeshUtilities(IMesh* mesh);
-  ~UnstructuredMeshUtilities(); //!< Libère les ressources.
+  explicit UnstructuredMeshUtilities(IMesh* mesh);
+  ~UnstructuredMeshUtilities() override; //!< Libère les ressources.
 
  public:
 
@@ -94,7 +94,7 @@ class UnstructuredMeshUtilities
  private:
 
   IMesh* m_mesh;
-  BasicItemPairGroupComputeFunctor* m_compute_adjency_functor;
+  BasicItemPairGroupComputeFunctor* m_compute_adjacency_functor;
 
  private:
 

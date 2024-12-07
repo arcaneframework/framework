@@ -115,9 +115,14 @@ class ARCANE_CORE_EXPORT IMeshUtilities
                                  const VariableNodeReal3& nodes_coord,
                                  Real3* n1,Real3* n2) =0;
 
-  //! Calcul des adjacences, rangées dans \a adjency_array
-  virtual void computeAdjency(ItemPairGroup adjency_array,eItemKind link_kind,
+  //! Calcul des adjacences, rangées dans \a adjacency_array
+  ARCANE_DEPRECATED_REASON("Y2020: Use computeAdjacency() instead")
+  virtual void computeAdjency(ItemPairGroup adjacency_array, eItemKind link_kind,
                               Integer nb_layer) =0;
+
+  //! Calcul des adjacences, rangées dans \a adjacency_array
+  virtual void computeAdjacency(const ItemPairGroup& adjacency_array, eItemKind link_kind,
+                                Integer nb_layer);
 
   /*!
    * \brief Positionne les nouveaux propriétaires des noeuds, arêtes

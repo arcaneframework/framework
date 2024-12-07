@@ -248,9 +248,13 @@ class ARCANE_MESH_EXPORT ItemFamily
 
  public:
 
+  ARCANE_DEPRECATED_REASON("Y2024: use findAdjacencyItems() instead")
   ItemPairGroup findAdjencyItems(const ItemGroup& group,
                                  const ItemGroup& sub_group,eItemKind link_kind,
                                  Integer layer) override;
+  ItemPairGroup findAdjacencyItems(const ItemGroup& group,
+                                   const ItemGroup& sub_group, eItemKind link_kind,
+                                   Integer layer) override;
   IParticleFamily* toParticleFamily() override { return nullptr; }
   void setItemSortFunction(IItemInternalSortFunction* sort_function) override;
   IItemInternalSortFunction* itemSortFunction() const override;

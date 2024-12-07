@@ -86,15 +86,15 @@ namespace Arcane::mesh
 namespace
 {
 
-template<typename DataType> void
-_offsetArrayByOne(Array<DataType>* array)
-{
-  Array<DataType>& v = *array;
-  MeshUtils::checkResizeArray(v,v.size()+1,false);
-  Int32 n = v.size();
-  for( Int32 i=(n-1); i>=1; --i )
-    v[i] = v[i-1];
-}
+  template <typename DataType> void
+  _offsetArrayByOne(Array<DataType>* array)
+  {
+    Array<DataType>& v = *array;
+    MeshUtils::checkResizeArray(v, v.size() + 1, false);
+    Int32 n = v.size();
+    for (Int32 i = (n - 1); i >= 1; --i)
+      v[i] = v[i - 1];
+  }
 
 }
 
@@ -106,7 +106,9 @@ class ItemFamily::InternalApi
 {
  public:
 
-  explicit InternalApi(ItemFamily* family): m_family(family){}
+  explicit InternalApi(ItemFamily* family)
+  : m_family(family)
+  {}
 
  public:
 
@@ -162,6 +164,7 @@ class ItemFamily::InternalApi
 class ItemFamily::Variables
 {
  public:
+
   Variables(IMesh* mesh,
             const String& family_name,
             eItemKind item_kind,
@@ -179,27 +182,31 @@ class ItemFamily::Variables
             const String& parent_family_depth_name,
             const String& child_meshes_name,
             const String& child_families_name)
-  : m_items_shared_data_index(VariableBuildInfo(mesh,shared_data_name,IVariable::PPrivate)),
-    m_items_unique_id(VariableBuildInfo(mesh,unique_ids_name,IVariable::PPrivate)),
-    m_items_owner(VariableBuildInfo(mesh,items_owner_name,IVariable::PPrivate)),
-    m_items_flags(VariableBuildInfo(mesh,items_flags_name,IVariable::PPrivate)),
-    m_items_type_id(VariableBuildInfo(mesh,items_type_id_name,IVariable::PPrivate)),
-    m_items_nb_parent(VariableBuildInfo(mesh,items_nb_parent_name,IVariable::PPrivate)),
-    m_groups_name(VariableBuildInfo(mesh,groups_name)),
-    m_current_id(VariableBuildInfo(mesh,current_id_name)),
-    m_items_new_owner(VariableBuildInfo(mesh,new_owner_name,family_name,IVariable::PNoDump|IVariable::PSubDomainDepend|IVariable::PExecutionDepend),item_kind),
-    m_parent_mesh_name(VariableBuildInfo(mesh,parent_mesh_name,IVariable::PPrivate)),
-    m_parent_family_name(VariableBuildInfo(mesh,parent_family_name,IVariable::PPrivate)),
-    m_parent_family_depth(VariableBuildInfo(mesh,parent_family_depth_name,IVariable::PPrivate)),
-    m_child_meshes_name(VariableBuildInfo(mesh,child_meshes_name,IVariable::PPrivate)),
-    m_child_families_name(VariableBuildInfo(mesh,child_families_name,IVariable::PPrivate))
-    {}
+  : m_items_shared_data_index(VariableBuildInfo(mesh, shared_data_name, IVariable::PPrivate))
+  , m_items_unique_id(VariableBuildInfo(mesh, unique_ids_name, IVariable::PPrivate))
+  , m_items_owner(VariableBuildInfo(mesh, items_owner_name, IVariable::PPrivate))
+  , m_items_flags(VariableBuildInfo(mesh, items_flags_name, IVariable::PPrivate))
+  , m_items_type_id(VariableBuildInfo(mesh, items_type_id_name, IVariable::PPrivate))
+  , m_items_nb_parent(VariableBuildInfo(mesh, items_nb_parent_name, IVariable::PPrivate))
+  , m_groups_name(VariableBuildInfo(mesh, groups_name))
+  , m_current_id(VariableBuildInfo(mesh, current_id_name))
+  , m_items_new_owner(VariableBuildInfo(mesh, new_owner_name, family_name, IVariable::PNoDump | IVariable::PSubDomainDepend | IVariable::PExecutionDepend), item_kind)
+  , m_parent_mesh_name(VariableBuildInfo(mesh, parent_mesh_name, IVariable::PPrivate))
+  , m_parent_family_name(VariableBuildInfo(mesh, parent_family_name, IVariable::PPrivate))
+  , m_parent_family_depth(VariableBuildInfo(mesh, parent_family_depth_name, IVariable::PPrivate))
+  , m_child_meshes_name(VariableBuildInfo(mesh, child_meshes_name, IVariable::PPrivate))
+  , m_child_families_name(VariableBuildInfo(mesh, child_families_name, IVariable::PPrivate))
+  {}
+
  public:
+
   void setUsed()
   {
     m_items_new_owner.setUsed(true);
   }
+
  public:
+
   //! Indice dans le tableau des ItemSharedInfo pour chaque entité.
   // TODO: utiliser un Int16 lorsqu'on aura limité le nombre de ItemSharedInfo sur un Int16
   VariableArrayInteger m_items_shared_data_index;
@@ -242,12 +249,11 @@ class ItemFamily::Variables
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 ItemFamily::
-ItemFamily(IMesh* mesh,eItemKind ik,const String& name)
+ItemFamily(IMesh* mesh, eItemKind ik, const String& name)
 : TraceAccessor(mesh->traceMng())
 , m_name(name)
 , m_mesh(mesh)
@@ -255,9 +261,9 @@ ItemFamily(IMesh* mesh,eItemKind ik,const String& name)
 , m_sub_domain(mesh->subDomain())
 , m_infos(std::make_unique<DynamicMeshKindInfos>(mesh, ik, name))
 , m_item_internal_list(mesh->meshItemInternalList())
-, m_common_item_shared_info(new ItemSharedInfo(this,m_item_internal_list,&m_item_connectivity_list))
-, m_item_shared_infos(new ItemSharedInfoList(this,m_common_item_shared_info))
-, m_properties(new Properties(*mesh->properties(),name))
+, m_common_item_shared_info(new ItemSharedInfo(this, m_item_internal_list, &m_item_connectivity_list))
+, m_item_shared_infos(new ItemSharedInfoList(this, m_common_item_shared_info))
+, m_properties(new Properties(*mesh->properties(), name))
 , m_sub_domain_id(mesh->meshPartInfo().partRank())
 {
   m_item_connectivity_list.m_items = mesh->meshItemInternalList();
@@ -280,7 +286,7 @@ ItemFamily::
   delete m_internal_variables;
   delete m_item_shared_infos;
 
-  for( ItemConnectivitySelector* ics : m_connectivity_selector_list )
+  for (ItemConnectivitySelector* ics : m_connectivity_selector_list)
     delete ics;
 
   delete m_common_item_shared_info;
@@ -315,7 +321,7 @@ build()
   m_global_connectivity_info = new ItemConnectivityInfo();
 
   IParallelMng* pm = m_mesh->parallelMng();
-  if (!pm->isParallel()){
+  if (!pm->isParallel()) {
     m_default_sub_domain_owner = 0;
     m_is_parallel = false;
   }
@@ -344,11 +350,11 @@ build()
     String var_parent_family_depth_name(_variableName("ParentFamilyDepthName"));
     String var_child_meshes_name(_variableName("ChildMeshesName"));
     String var_child_families_name(_variableName("ChildFamiliesName"));
-    m_internal_variables = new Variables(m_mesh,name(),itemKind(),var_count_name,
-                                         var_unique_ids_name,var_owner_name,
-                                         var_flags_name,var_typeid_name,var_nb_parent_name,var_groups_name,
-                                         var_current_id_name,var_new_owner_name,
-                                         var_parent_mesh_name,var_parent_family_name,
+    m_internal_variables = new Variables(m_mesh, name(), itemKind(), var_count_name,
+                                         var_unique_ids_name, var_owner_name,
+                                         var_flags_name, var_typeid_name, var_nb_parent_name, var_groups_name,
+                                         var_current_id_name, var_new_owner_name,
+                                         var_parent_mesh_name, var_parent_family_name,
                                          var_parent_family_depth_name,
                                          var_child_meshes_name,
                                          var_child_families_name);
@@ -363,20 +369,20 @@ build()
     _updateItemViews();
   }
 
-  m_variable_synchronizer = ParallelMngUtils::createSynchronizerRef(pm,this);
+  m_variable_synchronizer = ParallelMngUtils::createSynchronizerRef(pm, this);
 
   m_item_sort_function = _defaultItemSortFunction();
 
   {
     String s = platform::getEnvironmentVariable("ARCANE_USE_LEGACY_COMPACT_ITEMS");
-    if (s=="TRUE" || s=="1"){
+    if (s == "TRUE" || s == "1") {
       info() << "WARNING: Using legacy 'compactItem()' without compactReference()'";
       m_use_legacy_compact_item = true;
     }
   }
   {
     if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_ITEMFAMILY_SHRINK_AFTER_ALLOCATE", true))
-      m_do_shrink_after_allocate = (v.value()!=0);
+      m_do_shrink_after_allocate = (v.value() != 0);
   }
 }
 
@@ -502,7 +508,7 @@ itemInfoListView()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-IItemFamily * ItemFamily::
+IItemFamily* ItemFamily::
 parentFamily() const
 {
   return m_parent_family;
@@ -512,7 +518,7 @@ parentFamily() const
 /*---------------------------------------------------------------------------*/
 
 void ItemFamily::
-setParentFamily(IItemFamily * parent)
+setParentFamily(IItemFamily* parent)
 {
   m_parent_family = parent;
   if (parent == this) // Auto-référencement
@@ -520,10 +526,10 @@ setParentFamily(IItemFamily * parent)
   else if (!parent) // Pas de parent
     m_parent_family_depth = 0;
   else { // Référencement croisé
-    m_parent_family_depth = parent->parentFamilyDepth()+1;
+    m_parent_family_depth = parent->parentFamilyDepth() + 1;
     m_parent_family->addChildFamily(this);
   }
-  ARCANE_ASSERT((m_parent_family_depth < 2),("Not test if more than one depth level"));
+  ARCANE_ASSERT((m_parent_family_depth < 2), ("Not test if more than one depth level"));
 }
 
 /*---------------------------------------------------------------------------*/
@@ -552,7 +558,7 @@ IItemFamilyCollection ItemFamily::
 childFamilies()
 {
   IItemFamilyCollection collection = List<IItemFamily*>();
-  for(Integer i=0;i<m_child_families.size(); ++i) {
+  for (Integer i = 0; i < m_child_families.size(); ++i) {
     collection.add(m_child_families[i]);
   }
   return collection;
@@ -666,7 +672,7 @@ _shrinkConnectivityAndPrintInfos()
     o << "\n";
   }
   o << "Mem=" << platform::getMemoryUsed();
-  info() <<  ostr.str();
+  info() << ostr.str();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -677,13 +683,13 @@ _partialEndUpdate()
 {
   bool need_end_update = m_infos->changed();
   info(4) << "ItemFamily::endUpdate() " << fullName() << " need_end_update?=" << need_end_update;
-  if (!need_end_update){
+  if (!need_end_update) {
     // Même si aucune entité n'est ajoutée ou supprimée, si \a m_need_prepare_dump
     // est vrai cela signifie que quelque chose a changé dans la famille. Dans ce
     // cas il est préférable d'incrémenter le current_id. Sans cela, si on appelle
     // readFromDump() (par exemple suite à un retour-arrière), les données ne seront
     // pas restaurées si entre temps current_id n'a pas changé.
-    if (m_need_prepare_dump){
+    if (m_need_prepare_dump) {
       _computeConnectivityInfo(m_local_connectivity_info);
       ++m_current_id;
     }
@@ -734,14 +740,14 @@ partialEndUpdate()
 void ItemFamily::
 partialEndUpdateGroup(const ItemGroup& group)
 {
-  _updateGroup(group,true);
+  _updateGroup(group, true);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void ItemFamily::
-_updateGroup(ItemGroup group,bool need_check_remove)
+_updateGroup(ItemGroup group, bool need_check_remove)
 {
   // Pas besoin de recalculer le groupe des entités globales
   if (group == m_infos->allItems())
@@ -749,7 +755,7 @@ _updateGroup(ItemGroup group,bool need_check_remove)
 
   if (group.internal()->hasComputeFunctor())
     group.invalidate();
-  if (need_check_remove){
+  if (need_check_remove) {
     debug(Trace::High) << "Reset SuppressedItems: " << group.name();
     group.internal()->removeSuppressedItems();
   }
@@ -763,9 +769,9 @@ _updateGroup(ItemGroup group,bool need_check_remove)
 void ItemFamily::
 _updateGroups(bool need_check_remove)
 {
-  for( ItemGroupList::Enumerator i(m_item_groups); ++i; ){
+  for (ItemGroupList::Enumerator i(m_item_groups); ++i;) {
     ItemGroup group = *i;
-    _updateGroup(group,need_check_remove);
+    _updateGroup(group, need_check_remove);
   }
 }
 
@@ -797,7 +803,7 @@ _resizeVariables(bool force_resize)
                      << " varsize=" << maxLocalId()
                      << " nb_item=" << nbItem()
                      << " currentsize=" << m_current_variable_item_size;
-  if (force_resize || (maxLocalId()!=m_current_variable_item_size)){
+  if (force_resize || (maxLocalId() != m_current_variable_item_size)) {
     info(4) << "ItemFamily::resizeVariables: name=" << fullName()
             << " varsize=" << maxLocalId()
             << " nb_item=" << nbItem()
@@ -807,7 +813,7 @@ _resizeVariables(bool force_resize)
 
     m_current_variable_item_size = maxLocalId();
 
-    for( IVariable* var : m_used_variables ){
+    for (IVariable* var : m_used_variables) {
       _updateVariable(var);
     }
   }
@@ -817,7 +823,7 @@ _resizeVariables(bool force_resize)
 /*---------------------------------------------------------------------------*/
 
 void ItemFamily::
-itemsUniqueIdToLocalId(ArrayView<Int64> ids,bool do_fatal) const
+itemsUniqueIdToLocalId(ArrayView<Int64> ids, bool do_fatal) const
 {
   m_infos->itemsUniqueIdToLocalId(ids, do_fatal);
 }
@@ -894,7 +900,7 @@ allItems() const
 /*---------------------------------------------------------------------------*/
 
 ItemGroup ItemFamily::
-createGroup(const String& name,Int32ConstArrayView elements,bool do_override)
+createGroup(const String& name, Int32ConstArrayView elements, bool do_override)
 {
   debug(Trace::High) << "ItemFamily:createGroup(name,Int32ConstArrayView): " << m_name << ":"
                      << " group_name=" << name
@@ -905,12 +911,12 @@ createGroup(const String& name,Int32ConstArrayView elements,bool do_override)
 
   {
     ItemGroup group;
-    if (do_override){
+    if (do_override) {
       group = findGroup(name);
       if (group.null())
         group = createGroup(name);
     }
-    else{
+    else {
       group = createGroup(name);
     }
     group.setItems(elements);
@@ -934,7 +940,7 @@ createGroup(const String& name)
   }
   debug() << "ItemFamily:createGroup(name): " << m_name << ":"
           << " name=" << name;
-  ItemGroup group(new ItemGroupImpl(this,name));
+  ItemGroup group(new ItemGroupImpl(this, name));
   _processNewGroup(group);
   return group;
 }
@@ -943,14 +949,14 @@ createGroup(const String& name)
 /*---------------------------------------------------------------------------*/
 
 ItemGroup ItemFamily::
-createGroup(const String& name,const ItemGroup& parent,bool do_override)
+createGroup(const String& name, const ItemGroup& parent, bool do_override)
 {
   ItemGroup group = findGroup(name);
   if (!group.null()) {
-    if (do_override){
-      if (group.internal()->parentGroup()!=parent)
+    if (do_override) {
+      if (group.internal()->parentGroup() != parent)
         fatal() << "Group already existing but with a different parent";
-      if (group==parent)
+      if (group == parent)
         fatal() << "A group can not be its own parent name=" << name;
       return group;
     }
@@ -961,7 +967,7 @@ createGroup(const String& name,const ItemGroup& parent,bool do_override)
   debug() << "ItemFamily:createGroup(name,parent): " << m_name << ":"
           << " name=" << name
           << " parent=" << parent.name();
-  group = ItemGroup(new ItemGroupImpl(this,parent.internal(),name));
+  group = ItemGroup(new ItemGroupImpl(this, parent.internal(), name));
   _processNewGroup(group);
   return group;
 }
@@ -975,7 +981,7 @@ destroyGroups()
   _invalidateComputedGroups();
   ItemGroupList current_groups(m_item_groups.clone());
   m_item_groups.clear();
-  for( ItemGroupList::Enumerator i(current_groups); ++i; ){
+  for (ItemGroupList::Enumerator i(current_groups); ++i;) {
     ItemGroup group(*i);
     if (group.isAllItems())
       m_item_groups.add(group);
@@ -992,21 +998,21 @@ void ItemFamily::
 notifyItemsOwnerChanged()
 {
   debug() << "ItemFamily::notifyItemsOwnerChanged()";
-  for( ItemGroup group : m_item_groups ){
+  for (ItemGroup group : m_item_groups) {
     if (m_is_parallel && group.internal()->hasComputeFunctor())
       group.invalidate();
   }
 
   // Propage les modifications sur les sous-familles
-  for(Integer i=0;i<m_child_families.size(); ++i){
-    IItemFamily * family = m_child_families[i];
+  for (Integer i = 0; i < m_child_families.size(); ++i) {
+    IItemFamily* family = m_child_families[i];
     ItemInternalArrayView items(family->itemsInternal());
-    for( Integer z=0, zs=items.size(); z<zs; ++z ){
+    for (Integer z = 0, zs = items.size(); z < zs; ++z) {
       impl::MutableItemBase item(items[z]);
       if (item.isSuppressed())
         continue;
       Item parent_item = item.parentBase(0);
-      ARCANE_ASSERT((parent_item.uniqueId() == item.uniqueId()),("Inconsistent parent uid"));
+      ARCANE_ASSERT((parent_item.uniqueId() == item.uniqueId()), ("Inconsistent parent uid"));
       item.setOwner(parent_item.owner(), m_sub_domain_id);
     }
     family->notifyItemsOwnerChanged();
@@ -1020,16 +1026,16 @@ void ItemFamily::
 _processNewGroup(ItemGroup group)
 {
   // Vérifie que le groupe à le bon type
-  if (group.itemKind()!=itemKind()){
+  if (group.itemKind() != itemKind()) {
     ARCANE_FATAL("Incoherent family name={0} wanted={1} current={2}",
-                 fullName(),itemKind(),group.itemKind());
+                 fullName(), itemKind(), group.itemKind());
   }
   m_item_groups.add(group);
   m_need_prepare_dump = true;
   // En séquentiel, tous les groupes sont des groupes propres
   // TODO: regarder pour supprimer le test avec 'm_is_parallel' mais
   // si on le fait ca fait planter certains tests avec aleph_kappa.
-  if (!m_is_parallel && m_mesh->meshPartInfo().nbPart()==1)
+  if (!m_is_parallel && m_mesh->meshPartInfo().nbPart() == 1)
     group.setOwn(true);
 }
 
@@ -1048,8 +1054,8 @@ groups() const
 ItemGroup ItemFamily::
 findGroup(const String& name) const
 {
-  for( const ItemGroup& group : m_item_groups ){
-    if (group.name()==name)
+  for (const ItemGroup& group : m_item_groups) {
+    if (group.name() == name)
       return group;
   }
   return ItemGroup();
@@ -1059,10 +1065,10 @@ findGroup(const String& name) const
 /*---------------------------------------------------------------------------*/
 
 ItemGroup ItemFamily::
-findGroup(const String& name,bool create_if_needed)
+findGroup(const String& name, bool create_if_needed)
 {
   ItemGroup group = findGroup(name);
-  if (group.null()){
+  if (group.null()) {
     if (create_if_needed)
       group = createGroup(name);
   }
@@ -1102,16 +1108,16 @@ prepareForDump()
 
   {
     auto* p = m_properties;
-    p->setInt32("dump-version",0x0307);
+    p->setInt32("dump-version", 0x0307);
     p->setInt32("nb-item", m_infos->nbItem());
-    p->setInt32("current-change-id",m_current_id);
+    p->setInt32("current-change-id", m_current_id);
   }
 
   // TODO: ajoute flag vérification si nécessaire
-  if (m_item_need_prepare_dump || m_item_shared_infos->hasChanged()){
+  if (m_item_need_prepare_dump || m_item_shared_infos->hasChanged()) {
     info(4) << "Prepare for dump:2: name=" << m_name << " nb_alloc=" << m_nb_allocate_info
             << " uid_size=" << m_items_unique_id->size() << " cap=" << m_items_unique_id->capacity()
-            << " byte=" << m_items_unique_id->capacity()*sizeof(Int64);
+            << " byte=" << m_items_unique_id->capacity() * sizeof(Int64);
 
     // TODO: pouvoir spécifier si on souhaite compacter ou pas.
     _compactOnlyItems(false);
@@ -1122,10 +1128,10 @@ prepareForDump()
     m_need_prepare_dump = true;
   }
   m_item_need_prepare_dump = false;
-  if (m_need_prepare_dump){
+  if (m_need_prepare_dump) {
     Integer nb_item = m_infos->nbItem();
     // TODO: regarder si ce ne serait pas mieux de faire cela dans finishCompactItem()
-    _resizeItemVariables(nb_item,true);
+    _resizeItemVariables(nb_item, true);
     m_internal_variables->m_current_id = m_current_id;
     info(4) << " SET FAMILY ID name=" << name() << " id= " << m_current_id
             << " saveid=" << m_internal_variables->m_current_id();
@@ -1135,14 +1141,14 @@ prepareForDump()
     info(4) << "ItemFamily::prepareForDump(): " << m_name
             << " count=" << nb_item << " currentid=" << m_current_id;
     // Normalement items[i]->localId()==i pour toute les entités car on a effectué un compactage
-    if (arcaneIsCheck()){
-      for( Integer i=0; i<nb_item; ++i ){
+    if (arcaneIsCheck()) {
+      for (Integer i = 0; i < nb_item; ++i) {
         ItemInternal* item = items[i];
-        if (item->localId()!=i)
-          ARCANE_FATAL("Incoherence between index ({0}) and localId() ({1})",i,item->localId());
+        if (item->localId() != i)
+          ARCANE_FATAL("Incoherence between index ({0}) and localId() ({1})", i, item->localId());
       }
     }
-    for( Integer i=0; i<nb_item; ++i ){
+    for (Integer i = 0; i < nb_item; ++i) {
       ItemInternal* item = items[i];
       ItemSharedInfoWithType* isi = m_item_shared_infos->findSharedInfo(item->typeInfo());
       items_shared_data_index[i] = isi->index();
@@ -1169,7 +1175,7 @@ prepareForDump()
       const Integer child_count = m_child_families.size();
       m_internal_variables->m_child_meshes_name.resize(child_count);
       m_internal_variables->m_child_families_name.resize(child_count);
-      for(Integer i=0;i<child_count;++i) {
+      for (Integer i = 0; i < child_count; ++i) {
         m_internal_variables->m_child_meshes_name[i] = m_child_families[i]->mesh()->name();
         m_internal_variables->m_child_families_name[i] = m_child_families[i]->name();
       }
@@ -1179,7 +1185,7 @@ prepareForDump()
       // Détermine le nombre de groupes et d'entités à sauver.
       // On ne sauve pas les groupes générés dynamiquement
       Integer nb_group_to_save = 0;
-      for( ItemGroupList::Enumerator i(m_item_groups); ++i; ){
+      for (ItemGroupList::Enumerator i(m_item_groups); ++i;) {
         const ItemGroup& group = *i;
         if (group.internal()->hasComputeFunctor() || group.isLocalToSubDomain())
           continue;
@@ -1189,7 +1195,7 @@ prepareForDump()
       m_internal_variables->m_groups_name.resize(nb_group_to_save);
       {
         Integer current_group_index = 0;
-        for( ItemGroupList::Enumerator i(m_item_groups); ++i; ){
+        for (ItemGroupList::Enumerator i(m_item_groups); ++i;) {
           const ItemGroup& group = *i;
           if (group.internal()->hasComputeFunctor() || group.isLocalToSubDomain())
             continue;
@@ -1227,22 +1233,22 @@ readFromDump()
   {
     Int32 x = 0;
     auto* p = m_properties;
-    if (p->get("dump-version",x))
+    if (p->get("dump-version", x))
       dump_version = x;
-    if (dump_version>=0x0307){
+    if (dump_version >= 0x0307) {
       use_type_variable = true;
       nb_item = p->getInt32("nb-item");
       Int32 cid = p->getInt32("current-change-id");
       Int32 expected_cid = m_internal_variables->m_current_id();
-      if (cid!=expected_cid)
+      if (cid != expected_cid)
         ARCANE_FATAL("Bad value for current id mesh={0} id={1} expected={2}",
-                     fullName(),cid,expected_cid);
+                     fullName(), cid, expected_cid);
     }
   }
 
   const bool allow_old_version = true;
   if (!allow_old_version)
-    if (dump_version<0x0307)
+    if (dump_version < 0x0307)
       ARCANE_FATAL("Your checkpoint is from a version of Arcane which is too old (mininum version is 3.7)");
 
   // Le numéro de la partie peut changer en reprise. Il faut donc le
@@ -1272,18 +1278,18 @@ readFromDump()
           << " use_type_variable?=" << use_type_variable
           << " dump_version=" << dump_version;
 
-  if (!use_type_variable){
+  if (!use_type_variable) {
     // Avec les anciennes protections il n'y a pas la variable pour le type de l'entité.
     // Il faut donc l'allouer ici car on s'en sert lorsqu'on appelle ItemInternal::setSharedInfo().
-    if (nb_item>0)
-      MeshUtils::checkResizeArray(*m_items_type_id,nb_item+1,false);
+    if (nb_item > 0)
+      MeshUtils::checkResizeArray(*m_items_type_id, nb_item + 1, false);
     // Il n'y a pas non plus le décalage de 1 pour les flags, owner et uniqueId.
     // On fait ce décalage ici.
     _handleOldCheckpoint();
   }
   _updateItemViews();
 
-  if (m_internal_variables->m_current_id()==m_current_id){
+  if (m_internal_variables->m_current_id() == m_current_id) {
     debug() << "Family unchanged. Nothing to do.";
     //GG: il faut quand meme recalculer les infos de synchro car cette famille
     // sur les autres sous-domaine peut avoir changee et dans ce cas cette
@@ -1305,15 +1311,15 @@ readFromDump()
     IMeshMng* mesh_mng = m_mesh->meshMng();
     if (!m_internal_variables->m_parent_mesh_name().null()) {
       IMesh* parent_mesh = mesh_mng->findMeshHandle(m_internal_variables->m_parent_mesh_name()).mesh();
-      m_parent_family = parent_mesh->findItemFamily(m_internal_variables->m_parent_family_name(),true); // true=> fatal si non trouvé
+      m_parent_family = parent_mesh->findItemFamily(m_internal_variables->m_parent_family_name(), true); // true=> fatal si non trouvé
     }
     m_parent_family_depth = m_internal_variables->m_parent_family_depth();
     ARCANE_ASSERT((m_internal_variables->m_child_meshes_name.size() == m_internal_variables->m_child_families_name.size()),
                   ("Incompatible child mesh/family sizes"));
     Integer child_count = m_internal_variables->m_child_families_name.size();
-    for(Integer i=0;i<child_count;++i) {
+    for (Integer i = 0; i < child_count; ++i) {
       IMesh* child_mesh = mesh_mng->findMeshHandle(m_internal_variables->m_child_meshes_name[i]).mesh();
-      IItemFamily * child_family = child_mesh->findItemFamily(m_internal_variables->m_child_families_name[i],true); // true=> fatal si non trouvé
+      IItemFamily* child_family = child_mesh->findItemFamily(m_internal_variables->m_child_families_name[i], true); // true=> fatal si non trouvé
       m_child_families.add(dynamic_cast<ItemFamily*>(child_family));
     }
   }
@@ -1324,25 +1330,26 @@ readFromDump()
   // En relecture les entités sont compactées donc la valeur max du localId()
   // est égal au nombre d'entités.
 
-  if (use_type_variable){
+  if (use_type_variable) {
     ItemTypeMng* type_mng = mesh()->itemTypeMng();
-    for( Integer i=0; i<nb_item; ++i ){;
-      ItemTypeId type_id{m_common_item_shared_info->m_type_ids[i]};
+    for (Integer i = 0; i < nb_item; ++i) {
+      ;
+      ItemTypeId type_id{ m_common_item_shared_info->m_type_ids[i] };
       ItemSharedInfoWithType* isi = _findSharedInfo(type_mng->typeFromId(type_id));
       Int64 uid = m_items_unique_id_view[i];
       ItemInternal* item = m_infos->allocOne(uid);
-      item->_setSharedInfo(isi->sharedInfo(),type_id);
+      item->_setSharedInfo(isi->sharedInfo(), type_id);
     }
   }
-  else{
+  else {
     // Méthode utilisée pour les protections issues des versions 3.6 et antérieure de Arcane.
     auto item_shared_infos = m_item_shared_infos->itemSharedInfos();
-    for( Integer i=0; i<nb_item; ++i ){
+    for (Integer i = 0; i < nb_item; ++i) {
       Integer shared_data_index = items_shared_data_index[i];
       ItemSharedInfoWithType* isi = item_shared_infos[shared_data_index];
       Int64 uid = m_items_unique_id_view[i];
       ItemInternal* item = m_infos->allocOne(uid);
-      item->_setSharedInfo(isi->sharedInfo(),isi->itemTypeId());
+      item->_setSharedInfo(isi->sharedInfo(), isi->itemTypeId());
     }
   }
 
@@ -1351,7 +1358,7 @@ readFromDump()
   m_infos->allItems().clear();
 
   // Notifie les connectivités sources qu'on vient de faire une relecture.
-  for( auto& c : m_source_incremental_item_connectivities )
+  for (auto& c : m_source_incremental_item_connectivities)
     c->notifyReadFromDump();
 
   // Recréation des groupes si nécessaire
@@ -1371,7 +1378,7 @@ readFromDump()
 void ItemFamily::
 _applyCheckNeedUpdateOnGroups()
 {
-  for( ItemGroupList::Enumerator i(m_item_groups); ++i; ){
+  for (ItemGroupList::Enumerator i(m_item_groups); ++i;) {
     ItemGroup group = *i;
     // Pas besoin de recalculer le groupe des entités globales
     if (group == m_infos->allItems())
@@ -1389,9 +1396,9 @@ _invalidateComputedGroups()
   // Si le groupe a un parent, il n'a pas de variable associée et
   // de plus peut contenir des valeurs invalides suite à un retour-arrière.
   // Dans ce cas, on le vide et on l'invalide.
-  for( ItemGroupList::Enumerator i(m_item_groups); ++i; ){
+  for (ItemGroupList::Enumerator i(m_item_groups); ++i;) {
     ItemGroup group = *i;
-    if (!group.internal()->parentGroup().null()){
+    if (!group.internal()->parentGroup().null()) {
       group.clear();
       group.invalidate();
     }
@@ -1409,7 +1416,7 @@ _readGroups()
   // Recréation des groupes si nécessaire
   VariableArrayString& groups_var = m_internal_variables->m_groups_name;
   debug() << "ItemFamily::readFromDump(): number of group: " << groups_var.size();
-  for( Integer i=0, is=groups_var.size(); i<is; ++i ){
+  for (Integer i = 0, is = groups_var.size(); i < is; ++i) {
     String name(groups_var[i]);
     debug() << "Readign group again: " << name;
     ItemGroup group = findGroup(name);
@@ -1429,8 +1436,8 @@ _readGroups()
 void ItemFamily::
 _checkComputeSynchronizeInfos(Int32 changed)
 {
-  Int32 global_changed = parallelMng()->reduce(Parallel::ReduceMax,changed);
-  if (global_changed!=0)
+  Int32 global_changed = parallelMng()->reduce(Parallel::ReduceMax, changed);
+  if (global_changed != 0)
     computeSynchronizeInfos();
 }
 
@@ -1471,7 +1478,7 @@ compactItems(bool do_sort)
 {
   _compactOnlyItems(do_sort);
 
-  if (!m_use_legacy_compact_item){
+  if (!m_use_legacy_compact_item) {
     // Il est nécessaire de mettre à jour les groupes
     // après un compactReferences().
     _applyCheckNeedUpdateOnGroups();
@@ -1489,11 +1496,11 @@ _compactItems(bool do_sort)
   IMeshCompactMng* compact_mng = mesh()->_compactMng();
   IMeshCompacter* compacter = compact_mng->beginCompact(this);
 
-  try{
+  try {
     compacter->setSorted(do_sort);
     compacter->doAllActions();
   }
-  catch(...){
+  catch (...) {
     compact_mng->endCompact();
     throw;
   }
@@ -1514,24 +1521,24 @@ beginCompactItems(ItemFamilyCompactInfos& compact_infos)
   Int32ConstArrayView new_to_old_ids = compact_infos.newToOldLocalIds();
   Int32ConstArrayView old_to_new_ids = compact_infos.oldToNewLocalIds();
 
-  for( auto& c : m_source_incremental_item_connectivities )
+  for (auto& c : m_source_incremental_item_connectivities)
     c->notifySourceFamilyLocalIdChanged(new_to_old_ids);
 
-  for( auto& c : m_target_incremental_item_connectivities )
+  for (auto& c : m_target_incremental_item_connectivities)
     c->notifyTargetFamilyLocalIdChanged(old_to_new_ids);
 
-  for (IItemConnectivity* c : m_source_item_connectivities )
+  for (IItemConnectivity* c : m_source_item_connectivities)
     c->notifySourceFamilyLocalIdChanged(new_to_old_ids);
 
-  for( IItemConnectivity* c : m_target_item_connectivities )
+  for (IItemConnectivity* c : m_target_item_connectivities)
     c->notifyTargetFamilyLocalIdChanged(old_to_new_ids);
 
   if (m_connectivity_mng)
-    m_connectivity_mng->notifyLocalIdChanged(this,old_to_new_ids, nbItem());
+    m_connectivity_mng->notifyLocalIdChanged(this, old_to_new_ids, nbItem());
 
   // Compactage des variables internes associées aux entités
   {
-    if (m_parent_family_depth>0)
+    if (m_parent_family_depth > 0)
       m_internal_variables->m_items_nb_parent.variable()->compact(new_to_old_ids);
 
     _updateItemViews();
@@ -1549,7 +1556,7 @@ finishCompactItems(ItemFamilyCompactInfos& compact_infos)
 
   m_infos->finishCompactItems(compact_infos);
 
-  for( ItemConnectivitySelector* ics : m_connectivity_selector_list )
+  for (ItemConnectivitySelector* ics : m_connectivity_selector_list)
     ics->compactConnectivities();
 }
 
@@ -1563,18 +1570,18 @@ finishCompactItems(ItemFamilyCompactInfos& compact_infos)
  * @param destination liste des @b localId destination
  */
 void ItemFamily::
-copyItemsValues(Int32ConstArrayView source,Int32ConstArrayView destination)
+copyItemsValues(Int32ConstArrayView source, Int32ConstArrayView destination)
 {
-  ARCANE_ASSERT(source.size()==destination.size(),
-		("Can't copy. Source and destination have different size !"));
+  ARCANE_ASSERT(source.size() == destination.size(),
+                ("Can't copy. Source and destination have different size !"));
 
-  if (source.size()!=0){
-    for( IVariable* var : m_used_variables ){
+  if (source.size() != 0) {
+    for (IVariable* var : m_used_variables) {
       // (HP) : comme vu avec Gilles et Stéphane, on ne met pas de filtre à ce niveau
       // // si la variable est temporaire ou no restore, on ne la copie pas
       // if (!(var->property() & (IVariable::PTemporary | IVariable::PNoRestore))) {
       //if (var->itemFamily()==this) {
-      var->copyItemsValues(source,destination);
+      var->copyItemsValues(source, destination);
     }
   }
 }
@@ -1595,15 +1602,15 @@ copyItemsMeanValues(Int32ConstArrayView first_source,
                     Int32ConstArrayView second_source,
                     Int32ConstArrayView destination)
 {
-  ARCANE_ASSERT(first_source.size()==destination.size(),
-		("Can't copy. : first_source and destination have different size !"));
-  ARCANE_ASSERT(second_source.size()==destination.size(),
-		("Can't copy : second_source and destination have different size !"));
+  ARCANE_ASSERT(first_source.size() == destination.size(),
+                ("Can't copy. : first_source and destination have different size !"));
+  ARCANE_ASSERT(second_source.size() == destination.size(),
+                ("Can't copy : second_source and destination have different size !"));
 
   if (first_source.size() != 0) {
-    for( IVariable* var : m_used_variables ){
-      if (!(var->property() & (IVariable::PTemporary | IVariable::PNoRestore))){
-        var->copyItemsMeanValues(first_source,second_source,destination);
+    for (IVariable* var : m_used_variables) {
+      if (!(var->property() & (IVariable::PTemporary | IVariable::PNoRestore))) {
+        var->copyItemsMeanValues(first_source, second_source, destination);
       }
     }
   }
@@ -1623,14 +1630,14 @@ compactVariablesAndGroups(const ItemFamilyCompactInfos& compact_infos)
   Int32ConstArrayView new_to_old_ids = compact_infos.newToOldLocalIds();
   Int32ConstArrayView old_to_new_ids = compact_infos.oldToNewLocalIds();
 
-  for( IVariable* var : m_used_variables ){
+  for (IVariable* var : m_used_variables) {
     debug(Trace::High) << "Compact variable " << var->fullName();
     var->compact(new_to_old_ids);
   }
 
   m_variable_synchronizer->changeLocalIds(old_to_new_ids);
 
-  for( ItemGroupList::Enumerator i(m_item_groups); ++i; ){
+  for (ItemGroupList::Enumerator i(m_item_groups); ++i;) {
     ItemGroup group = *i;
     debug(Trace::High) << "Change group Ids: " << group.name();
     group.internal()->changeIds(old_to_new_ids);
@@ -1638,7 +1645,7 @@ compactVariablesAndGroups(const ItemFamilyCompactInfos& compact_infos)
       group.synchronizer()->changeLocalIds(old_to_new_ids);
   }
 
-  for(Integer i=0;i<m_child_families.size();++i)
+  for (Integer i = 0; i < m_child_families.size(); ++i)
     m_child_families[i]->_compactFromParentFamily(compact_infos);
 
   info(4) << "End compact family=" << fullName()
@@ -1668,14 +1675,13 @@ compactConnectivities()
   for (IItemConnectivity* c : m_source_connectivities)
     c->notifySourceFamilyLocalIdChanged(new_to_old_ids);
 
-  for( IItemConnectivity* c : m_target_connectivities )
-      c->notifyTargetFamilyLocalIdChanged(old_to_new_ids);
+  for (IItemConnectivity* c : m_target_connectivities)
+    c->notifyTargetFamilyLocalIdChanged(old_to_new_ids);
 
   if (m_connectivity_mng)
-    m_connectivity_mng->notifyLocalIdChanged(this,old_to_new_ids, nbItem());
+    m_connectivity_mng->notifyLocalIdChanged(this, old_to_new_ids, nbItem());
 }
 #endif
-
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -1684,18 +1690,18 @@ void ItemFamily::
 _compactFromParentFamily(const ItemFamilyCompactInfos& compact_infos)
 {
   debug() << "Compacting child family " << fullName();
-  if (m_parent_family_depth>1)
-    throw NotImplementedException(A_FUNCINFO,"Too deep parent family: not yet implemented");
+  if (m_parent_family_depth > 1)
+    throw NotImplementedException(A_FUNCINFO, "Too deep parent family: not yet implemented");
   Int32ConstArrayView old_to_new_lids(compact_infos.oldToNewLocalIds());
-  ARCANE_ASSERT((nbItem()==0 || !old_to_new_lids.empty()),("Empty oldToNewLocalIds"));
+  ARCANE_ASSERT((nbItem() == 0 || !old_to_new_lids.empty()), ("Empty oldToNewLocalIds"));
   debug() << "\tfrom parent family " << m_parent_family->name();
   if (this == m_parent_family)
     return; // already self compacted
   ItemInternalArrayView items(itemsInternal());
-  for( Integer z=0, zs=items.size(); z<zs; ++z ){
+  for (Integer z = 0, zs = items.size(); z < zs; ++z) {
     ItemInternal* item = items[z];
     Int32 old_parent_lid = item->parentId(0); // depth==1 only !!
-    item->setParent(0,old_to_new_lids[old_parent_lid]);
+    item->setParent(0, old_to_new_lids[old_parent_lid]);
   }
   // Si depth>1, il faudrait plutot propager le compactage en modifiant les
   // oldToNewLocalIds des familles du sous-maillage courant et en appelant
@@ -1706,11 +1712,11 @@ _compactFromParentFamily(const ItemFamilyCompactInfos& compact_infos)
 /*---------------------------------------------------------------------------*/
 
 void ItemFamily::
-internalRemoveItems(Int32ConstArrayView local_ids,bool keep_ghost)
+internalRemoveItems(Int32ConstArrayView local_ids, bool keep_ghost)
 {
   ARCANE_UNUSED(local_ids);
   ARCANE_UNUSED(keep_ghost);
-  ARCANE_THROW(NotSupportedException,"this kind of family doesn't support this operation");
+  ARCANE_THROW(NotSupportedException, "this kind of family doesn't support this operation");
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1722,9 +1728,9 @@ _checkValid()
   // Vérifie que le numéro de la partie est le même que celui du maillage
   {
     Int32 part_rank = m_mesh->meshPartInfo().partRank();
-    if (m_sub_domain_id!=part_rank)
+    if (m_sub_domain_id != part_rank)
       ARCANE_FATAL("Family {0} Bad value for partRank ({1}) expected={2}",
-                   fullName(),m_sub_domain_id,part_rank);
+                   fullName(), m_sub_domain_id, part_rank);
   }
 }
 
@@ -1779,24 +1785,24 @@ _updateSharedInfo()
 /*---------------------------------------------------------------------------*/
 
 void ItemFamily::
-_allocateInfos(ItemInternal* item,Int64 uid,ItemTypeInfo* type)
+_allocateInfos(ItemInternal* item, Int64 uid, ItemTypeInfo* type)
 {
   ItemSharedInfoWithType* isi = _findSharedInfo(type);
-  _allocateInfos(item,uid,isi);
+  _allocateInfos(item, uid, isi);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void ItemFamily::
-_resizeItemVariables(Int32 new_size,bool force_resize)
+_resizeItemVariables(Int32 new_size, bool force_resize)
 {
-  bool is_resize = MeshUtils::checkResizeArray(*m_items_unique_id,new_size+1,force_resize);
-  is_resize |= MeshUtils::checkResizeArray(*m_items_owner,new_size+1,force_resize);
-  is_resize |= MeshUtils::checkResizeArray(*m_items_flags,new_size+1,force_resize);
-  is_resize |= MeshUtils::checkResizeArray(*m_items_type_id,new_size+1,force_resize);
-  if (m_parent_family_depth>0)
-    is_resize |= MeshUtils::checkResizeArray(*m_items_nb_parent,new_size,force_resize);
+  bool is_resize = MeshUtils::checkResizeArray(*m_items_unique_id, new_size + 1, force_resize);
+  is_resize |= MeshUtils::checkResizeArray(*m_items_owner, new_size + 1, force_resize);
+  is_resize |= MeshUtils::checkResizeArray(*m_items_flags, new_size + 1, force_resize);
+  is_resize |= MeshUtils::checkResizeArray(*m_items_type_id, new_size + 1, force_resize);
+  if (m_parent_family_depth > 0)
+    is_resize |= MeshUtils::checkResizeArray(*m_items_nb_parent, new_size, force_resize);
   if (is_resize)
     _updateItemViews();
 
@@ -1812,23 +1818,23 @@ _resizeItemVariables(Int32 new_size,bool force_resize)
 /*---------------------------------------------------------------------------*/
 
 void ItemFamily::
-_allocateInfos(ItemInternal* item,Int64 uid,ItemSharedInfoWithType* isi)
+_allocateInfos(ItemInternal* item, Int64 uid, ItemSharedInfoWithType* isi)
 {
   // TODO: faire en même temps que le réalloc de la variable uniqueId()
   //  le réalloc des m_source_incremental_item_connectivities.
   Int32 local_id = item->localId();
-  _resizeItemVariables(local_id+1,false);
+  _resizeItemVariables(local_id + 1, false);
 
   // TODO: regarder si encore utile car ItemInternal::reinitialize() doit le faire
   //(*m_items_unique_id)[local_id] = uid;
 
   ItemTypeId iti = isi->itemTypeId();
-  item->_setSharedInfo(isi->sharedInfo(),iti);
-  
-  item->reinitialize(uid,m_default_sub_domain_owner,m_sub_domain_id);
+  item->_setSharedInfo(isi->sharedInfo(), iti);
+
+  item->reinitialize(uid, m_default_sub_domain_owner, m_sub_domain_id);
   ++m_nb_allocate_info;
   // Notifie les connectivitées incrémentales qu'on a ajouté un élément à la source
-  for( auto& c : m_source_incremental_item_connectivities )
+  for (auto& c : m_source_incremental_item_connectivities)
     c->notifySourceItemAdded(ItemLocalId(local_id));
 }
 
@@ -1836,13 +1842,13 @@ _allocateInfos(ItemInternal* item,Int64 uid,ItemSharedInfoWithType* isi)
 /*---------------------------------------------------------------------------*/
 
 void ItemFamily::
-_preAllocate(Int32 nb_item,bool pre_alloc_connectivity)
+_preAllocate(Int32 nb_item, bool pre_alloc_connectivity)
 {
-  if (nb_item>1000)
+  if (nb_item > 1000)
     m_infos->itemsMap().resize(nb_item, true);
-  _resizeItemVariables(nb_item,false);
-  for( auto& c : m_source_incremental_item_connectivities )
-    c->reserveMemoryForNbSourceItems(nb_item,pre_alloc_connectivity);
+  _resizeItemVariables(nb_item, false);
+  for (auto& c : m_source_incremental_item_connectivities)
+    c->reserveMemoryForNbSourceItems(nb_item, pre_alloc_connectivity);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1876,7 +1882,7 @@ computeSynchronizeInfos()
   // et que le nombre de parties est égal au nombre de rang du parallelMng(),
   // ce qui n'est pas le cas en reprise lors d'un changement du nombre de
   // sous-domaines.
-  if (m_is_parallel && m_mesh->meshPartInfo().nbPart()==parallelMng()->commSize()){
+  if (m_is_parallel && m_mesh->meshPartInfo().nbPart() == parallelMng()->commSize()) {
     m_variable_synchronizer->compute();
     _updateItemsSharedFlag();
   }
@@ -1886,12 +1892,12 @@ computeSynchronizeInfos()
 /*---------------------------------------------------------------------------*/
 // TODO déplacer cette méthode en dehors de ItemFamily
 void ItemFamily::
-reduceFromGhostItems(IVariable* v,IDataOperation* operation)
+reduceFromGhostItems(IVariable* v, IDataOperation* operation)
 {
   if (!v)
     return;
-  if (v->itemFamily()!=this && v->itemGroup().itemFamily()!=this)
-    throw ArgumentException(A_FUNCINFO,"Variable not in this family");
+  if (v->itemFamily() != this && v->itemGroup().itemFamily() != this)
+    throw ArgumentException(A_FUNCINFO, "Variable not in this family");
   Parallel::GhostItemsVariableParallelOperation op(this);
   op.setItemFamily(this);
   op.addVariable(v);
@@ -1902,11 +1908,11 @@ reduceFromGhostItems(IVariable* v,IDataOperation* operation)
 /*---------------------------------------------------------------------------*/
 // TODO déplacer cette méthode en dehors de ItemFamily
 void ItemFamily::
-reduceFromGhostItems(IVariable* v,Parallel::eReduceType reduction)
+reduceFromGhostItems(IVariable* v, Parallel::eReduceType reduction)
 {
   ScopedPtrT<IDataOperation> operation;
   operation = v->dataFactoryMng()->createDataOperation(reduction);
-  reduceFromGhostItems(v,operation.get());
+  reduceFromGhostItems(v, operation.get());
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1922,7 +1928,7 @@ uniqueIds()
 /*---------------------------------------------------------------------------*/
 
 IVariable* ItemFamily::
-findVariable(const String& var_name,bool throw_exception)
+findVariable(const String& var_name, bool throw_exception)
 {
   IVariableMng* vm = subDomain()->variableMng();
   StringBuilder vname = mesh()->name();
@@ -1931,8 +1937,8 @@ findVariable(const String& var_name,bool throw_exception)
   vname += "_";
   vname += var_name;
   IVariable* var = vm->findVariableFullyQualified(vname.toString());
-  if (!var && throw_exception){
-    ARCANE_FATAL("No variable named '{0}' in family '{1}'",var_name,name());
+  if (!var && throw_exception) {
+    ARCANE_FATAL("No variable named '{0}' in family '{1}'", var_name, name());
   }
   return var;
 }
@@ -1957,41 +1963,47 @@ checkUniqueIds(Int64ConstArrayView unique_ids)
   Integer nb_item = unique_ids.size();
   Int64UniqueArray all_unique_ids;
   IParallelMng* pm = m_mesh->parallelMng();
-  pm->allGatherVariable(unique_ids,all_unique_ids);
-  HashTableMapT<Int64,Integer> items_map(nb_item*2,true);
+  pm->allGatherVariable(unique_ids, all_unique_ids);
+  HashTableMapT<Int64, Integer> items_map(nb_item * 2, true);
   info() << "ItemFamily::checkUniqueIds name=" << name() << " n=" << nb_item
          << " total=" << all_unique_ids.size();
-  for( Integer i=0; i<nb_item; ++i )
-    items_map.add(unique_ids[i],0);
-  for( Integer i=0, is= all_unique_ids.size(); i<is; ++i ){
-    HashTableMapT<Int64,Integer>::Data* data = items_map.lookup(all_unique_ids[i]);
+  for (Integer i = 0; i < nb_item; ++i)
+    items_map.add(unique_ids[i], 0);
+  for (Integer i = 0, is = all_unique_ids.size(); i < is; ++i) {
+    HashTableMapT<Int64, Integer>::Data* data = items_map.lookup(all_unique_ids[i]);
     if (data)
       ++data->value();
   }
-  for( Integer i=0; i<nb_item; ++i ){
+  for (Integer i = 0; i < nb_item; ++i) {
     Integer nb_ref = items_map[unique_ids[i]];
-    if (nb_ref!=1){
+    if (nb_ref != 1) {
       fatal() << "Duplicate unique_id=" << unique_ids[i];
     }
   }
-
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 ItemPairGroup ItemFamily::
-findAdjencyItems(const ItemGroup& group,const ItemGroup& sub_group,
-                 eItemKind link_kind,Integer layer)
+findAdjencyItems(const ItemGroup& group, const ItemGroup& sub_group,
+                 eItemKind link_kind, Integer layer)
+{
+  return findAdjacencyItems(group, sub_group, link_kind, layer);
+}
+
+ItemPairGroup ItemFamily::
+findAdjacencyItems(const ItemGroup& group, const ItemGroup& sub_group,
+                   eItemKind link_kind, Integer layer)
 {
   AdjacencyInfo at(group, sub_group, link_kind, layer);
-  AdjacencyGroupMap::const_iterator i = m_adjacency_groups.find(at);
+  auto i = m_adjacency_groups.find(at);
 
   if (i == m_adjacency_groups.end()) {
     debug() << "** BUILD ADJENCY_ITEMS : " << group.name() << " x "
             << sub_group.name() << " link=" << link_kind << " nblayer=" << layer;
     ItemPairGroup v(new ItemPairGroupImpl(group,sub_group));
-    mesh()->utilities()->computeAdjency(v,link_kind,layer);
+    mesh()->utilities()->computeAdjacency(v, link_kind, layer);
     m_adjacency_groups.insert(std::make_pair(at, v));
     return v;
   }

@@ -162,7 +162,7 @@ ItemPairGroup(const ItemGroup& group,const ItemGroup& sub_item_group,
 : m_impl(nullptr)
 {
   IItemFamily* item_family = group.itemFamily();
-  ItemPairGroup v = item_family->findAdjencyItems(group,sub_item_group,link_kind,1);
+  ItemPairGroup v = item_family->findAdjacencyItems(group, sub_item_group, link_kind, 1);
   m_impl = v.internal();
 }
 
