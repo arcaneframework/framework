@@ -1,30 +1,30 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemPairGroup.cc                                            (C) 2000-2016 */
+/* ItemPairGroup.cc                                            (C) 2000-2024 */
 /*                                                                           */
 /* Tableau de listes d'entités.                                              */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/ArcanePrecomp.h"
 #include "arcane/utils/IFunctor.h"
 #include "arcane/utils/NotImplementedException.h"
 
-#include "arcane/ItemPairGroup.h"
-#include "arcane/IItemFamily.h"
-#include "arcane/ItemGroup.h"
-#include "arcane/ItemPairEnumerator.h"
-#include "arcane/ItemPairGroupBuilder.h"
+#include "arcane/core/ItemPairGroup.h"
+#include "arcane/core/IItemFamily.h"
+#include "arcane/core/ItemGroup.h"
+#include "arcane/core/ItemPairEnumerator.h"
+#include "arcane/core/ItemPairGroupBuilder.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -211,7 +211,7 @@ enumerator() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -1,24 +1,24 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IMeshUtilities.h                                            (C) 2000-2021 */
+/* IMeshUtilities.h                                            (C) 2000-2024 */
 /*                                                                           */
 /* Interface d'une classe proposant des fonctions utilitaires sur maillage.  */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_IMESHUTILITIES_H
-#define ARCANE_IMESHUTILITIES_H
+#ifndef ARCANE_CORE_IMESHUTILITIES_H
+#define ARCANE_CORE_IMESHUTILITIES_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/Real3.h"
 
-#include "arcane/ArcaneTypes.h"
-#include "arcane/ItemTypes.h"
-#include "arcane/VariableTypedef.h"
+#include "arcane/core/ArcaneTypes.h"
+#include "arcane/core/ItemTypes.h"
+#include "arcane/core/VariableTypedef.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* BasicItemPairGroupComputeFunctor.h                          (C) 2000-2022 */
+/* BasicItemPairGroupComputeFunctor.h                          (C) 2000-2024 */
 /*                                                                           */
 /* Fonctions utilitaires sur un maillage.                                    */
 /*---------------------------------------------------------------------------*/
@@ -16,8 +16,8 @@
 
 #include "arcane/utils/TraceAccessor.h"
 #include "arcane/utils/IFunctor.h"
-#include "arcane/IMeshUtilities.h"
-#include "arcane/Item.h"
+#include "arcane/core/IMeshUtilities.h"
+#include "arcane/core/Item.h"
 
 #include <map>
 #include <functional>
