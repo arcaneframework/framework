@@ -164,12 +164,32 @@ class MshParallelMeshReader
     Int64 physical_tag;
   };
 
+  class PeriodicOneInfo
+  {
+   public:
+
+    Int32 m_entity_dim = -1;
+    Int32 m_entity_tag = -1;
+    Int32 m_entity_tag_master = -1;
+    UniqueArray<double> m_affine_values;
+    Int32 m_nb_corresponding_node = 0;
+    UniqueArray<Int64> m_corresponding_nodes;
+  };
+
+  //! Informations sur la périodicité
+  class PeriodicInfo
+  {
+   public:
+
+    UniqueArray<PeriodicOneInfo> m_periodic_list;
+  };
+
   //! Informations sur le maillage créé
   class MeshInfo
   {
    public:
 
-    void findEntities(Int32 dimension, Int64 tag,Array<MeshV4EntitiesWithNodes>& entities)
+    void findEntities(Int32 dimension, Int64 tag, Array<MeshV4EntitiesWithNodes>& entities)
     {
       entities.clear();
       for (auto& x : entities_with_nodes_list[dimension - 1])
@@ -202,8 +222,9 @@ class MshParallelMeshReader
     Real3 m_node_max_bounding_box;
     MeshPhysicalNameList physical_name_list;
     UniqueArray<MeshV4EntitiesNodes> entities_nodes_list;
-    FixedArray<UniqueArray<MeshV4EntitiesWithNodes>,3> entities_with_nodes_list;
+    FixedArray<UniqueArray<MeshV4EntitiesWithNodes>, 3> entities_with_nodes_list;
     UniqueArray<MeshV4ElementsBlock> blocks;
+    PeriodicInfo m_periodic_info;
   };
 
  public:
@@ -1490,29 +1511,34 @@ _readOneEntity(Int32 entity_dim)
 void MshParallelMeshReader::
 _readPeriodic()
 {
-  IParallelMng* pm = m_parallel_mng;
-
-  IosFile* ios_file = m_ios_file.get();
   Int64 nb_link = _getInt64AndBroadcast();
   info() << "[Periodic] nb_link=" << nb_link;
-  UniqueArray<double> affine_values;
-  UniqueArray<Int64> corresponding_nodes;
 
-  for (Int64 i = 0; i < nb_link; ++i) {
+  // TODO: pour l'instant, tous les rangs conservent les
+  // données car on suppose qu'il n'y en a pas beaucoup.
+  // A terme, il faudra aussi distribuer ces informations.
+  PeriodicInfo& periodic_info = m_mesh_info.m_periodic_info;
+  periodic_info.m_periodic_list.resize(nb_link);
+  for (Int64 ilink = 0; ilink < nb_link; ++ilink) {
+    PeriodicOneInfo& one_info = periodic_info.m_periodic_list[ilink];
     FixedArray<Int32, 3> entity_info;
     _getInt32ArrayAndBroadcast(entity_info.view());
 
     info() << "[Periodic] dim=" << entity_info[0] << " tag=" << entity_info[1]
            << " tag_master=" << entity_info[2];
+    one_info.m_entity_dim = entity_info[0];
+    one_info.m_entity_tag = entity_info[1];
+    one_info.m_entity_tag_master = entity_info[2];
+
     Int64 num_affine = _getInt64AndBroadcast();
     info() << "[Periodic] num_affine=" << num_affine;
-    affine_values.resize(num_affine);
-    _getDoubleArrayAndBroadcast(affine_values);
-    Int64 nb_corresponding_node = _getInt64AndBroadcast();
-    info() << "[Periodic] nb_corresponding_node=" << nb_corresponding_node;
-    corresponding_nodes.resize(nb_corresponding_node * 2);
-    _getInt64ArrayAndBroadcast(corresponding_nodes);
-    info() << "[Periodic] corresponding_nodes=" << corresponding_nodes;
+    one_info.m_affine_values.resize(num_affine);
+    _getDoubleArrayAndBroadcast(one_info.m_affine_values);
+    one_info.m_nb_corresponding_node = CheckedConvert::toInt32(_getInt64AndBroadcast());
+    info() << "[Periodic] nb_corresponding_node=" << one_info.m_nb_corresponding_node;
+    one_info.m_corresponding_nodes.resize(one_info.m_nb_corresponding_node * 2);
+    _getInt64ArrayAndBroadcast(one_info.m_corresponding_nodes);
+    //info() << "[Periodic] corresponding_nodes=" << corresponding_nodes;
   }
 
   _goToNextLine();
