@@ -401,13 +401,13 @@ _setGhostLayerInfos()
 void ArcaneCaseMeshService::
 _setUniqueIdNumberingVersion()
 {
-  IMeshUniqueIdMng* mum = m_mesh->meshUniqueIdMng();
-  IGhostLayerMng* gm = m_mesh->ghostLayerMng();
-  if (!gm)
-    return;
+  // NOTE: actuellement (12/2024) l'implémentation 'PolyedralMesh' lève une
+  // exception si on appelle meshUniqueIdMng(). On ne le fait que si
+  // l'option est présente.
   if (options()->faceNumberingVersion.isPresent()) {
     Int32 v = options()->faceNumberingVersion.value();
     info() << "Set face uniqueId numbering version to '" << v << "' from caseoption";
+    IMeshUniqueIdMng* mum = m_mesh->meshUniqueIdMng();
     mum->setFaceBuilderVersion(v);
   }
 }
