@@ -22,7 +22,7 @@
 #include "arcane/core/materials/MatItem.h"
 #include "arcane/core/materials/MatItemEnumerator.h"
 
-#include "arcane/accelerator/RunQueueInternal.h"
+#include "arcane/accelerator/KernelLauncher.h"
 #include "arcane/accelerator/RunCommand.h"
 #include "arcane/accelerator/RunCommandLaunchInfo.h"
 
