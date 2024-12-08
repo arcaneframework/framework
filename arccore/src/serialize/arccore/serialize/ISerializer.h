@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ISerializer.h                                               (C) 2000-2023 */
+/* ISerializer.h                                               (C) 2000-2024 */
 /*                                                                           */
 /* Interface d'un serialiseur.                                               */
 /*---------------------------------------------------------------------------*/
@@ -79,10 +79,10 @@ class ARCCORE_SERIALIZE_EXPORT ISerializer
     DT_Int16 = 2, //!< Donnée de type entier 16 bits
     DT_Int32 = 3, //!< Donnée de type entier 32 bits
     DT_Int64 = 4, //!< Donnée de type entier 64 bits
-    DT_Float32 = 5, //!< Donnée de type flottant 32 bits
-    DT_Float16 = 6, //!< Donnée de type flottant 16 bits
-    DT_BFloat16 = 7, //!< Donnée de type 'brain float'
-    DT_Int8 = 8, //!< Donnée de type entier 8 bits
+    DT_Float32 = 12, //!< Donnée de type flottant 32 bits
+    DT_Float16 = 11, //!< Donnée de type flottant 16 bits
+    DT_BFloat16 = 10, //!< Donnée de type 'brain float'
+    DT_Int8 = 13, //!< Donnée de type entier 8 bits
   };
 
   virtual ~ISerializer(){} //!< Libère les ressources
@@ -101,7 +101,7 @@ class ARCCORE_SERIALIZE_EXPORT ISerializer
   virtual void reserveSpan(eDataType dt, Int64 n) =0;
 
   //! \sa reserve(eDataType dt,Int64 n)
-  void reserveSpan(int dt,Int64 n) { reserveSpan((eDataType)dt,n); }
+  void reserveSpan(int dt,Int64 n) { reserveSpan(static_cast<eDataType>(dt),n); }
 
   //! Réserve pour une vue de \a values éléments
   virtual void reserveSpan(Span<const Real> values);
