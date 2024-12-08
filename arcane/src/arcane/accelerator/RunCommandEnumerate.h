@@ -464,12 +464,6 @@ makeExtendedItemEnumeratorLoop(const ItemContainerType& container_type,
              << [=] ARCCORE_HOST_DEVICE(::Arcane::Accelerator::impl::RunCommandItemEnumeratorTraitsT<ItemTypeName>::ValueType iter_name \
                                         __VA_OPT__(ARCANE_RUNCOMMAND_REDUCER_FOR_EACH(__VA_ARGS__)))
 
-/*!
- * \deprecated Utiliser RUNCOMMAN_ENUMERATE à la place.
- */
-#define RUNCOMMAND_ENUMERATE_EX(ItemTypeName, iter_name, item_group, ...) \
-  RUNCOMMAND_ENUMERATE (ItemTypeName, iter_name, item_group, __VA_ARGS__)
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
