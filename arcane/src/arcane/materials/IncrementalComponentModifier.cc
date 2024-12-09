@@ -55,6 +55,10 @@ IncrementalComponentModifier(AllEnvData* all_env_data, const RunQueue& queue)
     if (queue.isAcceleratorPolicy())
       m_use_generic_copy_between_pure_and_partial = 2;
   }
+  if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_FORCE_MULTIPLE_COMMAND_FOR_MATERIAL_RESIZE", true)) {
+    m_force_multiple_command_for_resize = (v.value());
+    info() << "Force using multiple command for resize = " << m_force_multiple_command_for_resize;
+  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -400,14 +404,16 @@ _addItemsToIndexer(MeshMaterialVariableIndexer* var_indexer,
 void IncrementalComponentModifier::
 _resizeVariablesIndexer(Int32 var_index)
 {
-  RunQueue& queue = m_material_mng->_internalApi()->runQueue();
-  RunQueue::ScopedAsync sc(&m_queue);
-  Accelerator::ProfileRegion ps(queue, "ResizeVariableIndexer", 0xFF00FF);
-  ResizeVariableIndexerArgs resize_args(var_index, queue);
+  Accelerator::ProfileRegion ps(m_queue, "ResizeVariableIndexer", 0xFF00FF);
+  ResizeVariableIndexerArgs resize_args(var_index, m_queue);
   // Regarde si on n'utilise qu'une seule commande pour les copies des vues.
   // Pour l'instant (novembre 2024) on ne l'utilise par défaut que si
   // on est sur accélérateur.
   bool do_one_command = (m_use_generic_copy_between_pure_and_partial == 2);
+
+  if (m_force_multiple_command_for_resize)
+    do_one_command = false;
+
   UniqueArray<CopyBetweenDataInfo>& copy_data = m_work_info.m_host_variables_copy_data;
   if (do_one_command) {
     copy_data.clear();
@@ -415,20 +421,37 @@ _resizeVariablesIndexer(Int32 var_index)
     resize_args.m_copy_data = &copy_data;
   }
 
-  auto func1 = [&](IMeshMaterialVariable* mv) {
-    auto* mvi = mv->_internalApi();
-    mvi->resizeForIndexer(resize_args);
-  };
-  functor::apply(m_material_mng, &MeshMaterialMng::visitVariables, func1);
+  if (m_force_multiple_command_for_resize) {
+    // Le mode de commandes multiples sert à identifier quelles variables
+    // sont encore sur CPU via le déclenchement de PageFault.
+    // C'est pour cela qu'on met le nom de la variable dans la région de profiling
+    // pour avoir les traces avec 'nsys' par exemple. Il faut aussi ajouter
+    // une barrière pour sérialiser les opérations.
+    auto func2 = [&](IMeshMaterialVariable* mv) {
+      Accelerator::ProfileRegion ps2(m_queue, String("Resize_") + mv->name());
+      auto* mvi = mv->_internalApi();
+      mvi->resizeForIndexer(resize_args);
+      m_queue.barrier();
+    };
+    functor::apply(m_material_mng, &MeshMaterialMng::visitVariables, func2);
+  }
+  else {
+    RunQueue::ScopedAsync sc(&m_queue);
+    auto func1 = [&](IMeshMaterialVariable* mv) {
+      auto* mvi = mv->_internalApi();
+      mvi->resizeForIndexer(resize_args);
+    };
+    functor::apply(m_material_mng, &MeshMaterialMng::visitVariables, func1);
+  }
 
   if (do_one_command) {
     // Copie 'copy_data' dans le tableau correspondant pour le device éventuel.
     MDSpan<CopyBetweenDataInfo, MDDim1> x(copy_data.data(), MDIndex<1>(copy_data.size()));
-    m_work_info.m_variables_copy_data.copy(x, &queue);
-    _applyCopyVariableViews(queue);
+    m_work_info.m_variables_copy_data.copy(x, &m_queue);
+    _applyCopyVariableViews(m_queue);
   }
 
-  queue.barrier();
+  m_queue.barrier();
 }
 
 /*---------------------------------------------------------------------------*/
