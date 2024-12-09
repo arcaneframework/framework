@@ -231,7 +231,6 @@ class VtkPolyhedralMeshIOService
 
  private:
 
-  UniqueArray<VariableRef*> m_read_variables;
   VtkPolyhedralTools::PrintInfoLevel m_print_info_level;
 
   void _readVariablesAndGroups(IPrimaryMesh* mesh, VtkReader& reader);
@@ -613,7 +612,7 @@ _createVariable(vtkDataArray* item_values, const String& variable_name, IMesh* m
     VariableBuildInfo vbi{ mesh, variable_name };
     using ValueType = typename std::remove_pointer_t<decltype(values)>::ValueType;
     auto* var = new ItemVariableScalarRefT<to_arcane_type_t<ValueType>>{ vbi, item_family->itemKind() };
-    m_read_variables.add(var);
+    mesh->variableMng()->_internalApi()->addAutoDestroyVariable(var);
     vtkDataArrayAccessor<std::remove_pointer_t<decltype(values)>> values_accessor{ values };
     ENUMERATE_ITEM (item, item_family->allItems()) {
       (*var)[item] = (to_arcane_type_t<ValueType>)values_accessor.Get(arcane_to_vtk_lids[item.localId()], 0);
@@ -623,7 +622,7 @@ _createVariable(vtkDataArray* item_values, const String& variable_name, IMesh* m
     VariableBuildInfo vbi{ mesh, variable_name };
     using ValueType = typename std::remove_pointer_t<decltype(values)>::ValueType;
     auto* var = new ItemVariableArrayRefT<to_arcane_type_t<ValueType>>{ vbi, item_family->itemKind() };
-    m_read_variables.add(var);
+    mesh->variableMng()->_internalApi()->addAutoDestroyVariable(var);
     vtkDataArrayAccessor<std::remove_pointer_t<decltype(values)>> values_accessor{ values };
     var->resize(values->GetNumberOfComponents());
     ENUMERATE_ITEM (item, item_family->allItems()) {
