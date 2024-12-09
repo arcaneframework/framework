@@ -228,7 +228,7 @@ class ARCANE_CORE_EXPORT Variable
 
   // Accès via VariablePrivate pour l'API interne
   friend class VariablePrivate;
-  void _resizeWithReserve(const VariableResizeArgs& resize_args);
+  void _resize(const VariableResizeArgs& resize_args);
 
  private:
 

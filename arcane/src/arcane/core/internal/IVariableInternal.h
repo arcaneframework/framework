@@ -101,7 +101,7 @@ class ARCANE_CORE_EXPORT IVariableInternal
   virtual void changeAllocator(const MemoryAllocationOptions& alloc_info) = 0;
 
   //! Redimensionne la variable en ajoutant une capacité additionnelle
-  virtual void resizeWithReserve(const VariableResizeArgs& resize_args) = 0;
+  virtual void resize(const VariableResizeArgs& resize_args) = 0;
 };
 
 /*---------------------------------------------------------------------------*/

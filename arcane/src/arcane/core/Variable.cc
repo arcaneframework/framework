@@ -153,7 +153,7 @@ class VariablePrivate
   //!@{ \name Implémentation de IVariableInternal
   String computeComparisonHashCollective(IHashAlgorithm* hash_algo, IData* sorted_data) override;
   void changeAllocator(const MemoryAllocationOptions& alloc_info) override;
-  void resizeWithReserve(const VariableResizeArgs& resize_args) override;
+  void resize(const VariableResizeArgs& resize_args) override;
   //!@}
 
  private:
@@ -940,7 +940,7 @@ serialize(ISerializer* sbuffer,IDataOperation* operation)
 /*---------------------------------------------------------------------------*/
 
 void Variable::
-_resizeWithReserve(const VariableResizeArgs& resize_args)
+_resize(const VariableResizeArgs& resize_args)
 {
   eItemKind ik = itemKind();
   if (ik!=IK_Unknown){
@@ -956,7 +956,7 @@ _resizeWithReserve(const VariableResizeArgs& resize_args)
 void Variable::
 resize(Integer new_size)
 {
-  _resizeWithReserve(VariableResizeArgs(new_size));
+  _resize(VariableResizeArgs(new_size));
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1442,9 +1442,9 @@ changeAllocator(const MemoryAllocationOptions& mem_options)
 /*---------------------------------------------------------------------------*/
 
 void VariablePrivate::
-resizeWithReserve(const VariableResizeArgs& resize_args)
+resize(const VariableResizeArgs& resize_args)
 {
-  return m_variable->_resizeWithReserve(resize_args);
+  return m_variable->_resize(resize_args);
 }
 
 /*---------------------------------------------------------------------------*/

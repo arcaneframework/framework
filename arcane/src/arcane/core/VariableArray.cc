@@ -623,7 +623,7 @@ _internalResize(const VariableResizeArgs& resize_args)
 template<typename DataType> void VariableArrayT<DataType>::
 resizeWithReserve(Integer n,Integer nb_additional)
 {
-  _resizeWithReserve(VariableResizeArgs(n,nb_additional));
+  _resize(VariableResizeArgs(n,nb_additional));
 }
 
 /*---------------------------------------------------------------------------*/
