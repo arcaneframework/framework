@@ -813,8 +813,7 @@ allocateItems(const Arcane::ItemAllocationInfo& item_allocation_info)
   m_mesh->applyScheduledOperations();
   // Create variable for coordinates. This has to be done before call to family::endUpdate. Todo add to the graph
   for (auto& family_info : item_allocation_info.family_infos) {
-    if (family_info.item_coordinates.empty()) {
-      ++family_index;
+    if (family_info.item_kind != IK_Node && family_info.item_coordinates.empty()) { // variable is created for node even if no coords (parallel)
       continue;
     }
     auto* item_family = _findItemFamily(family_info.item_kind, family_info.name);

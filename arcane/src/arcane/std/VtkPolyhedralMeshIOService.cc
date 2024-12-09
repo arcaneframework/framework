@@ -16,6 +16,7 @@
 #include <iostream>
 #include <numeric>
 #include <functional>
+#include <memory>
 
 #include <vtkUnstructuredGrid.h>
 #include <vtkUnstructuredGridReader.h>
@@ -45,6 +46,7 @@
 #include "arcane/core/IPrimaryMesh.h"
 #include "arcane/core/MeshUtils.h"
 #include "arcane/core/IMeshInitialAllocator.h"
+#include "arcane/core/IVariableMng.h"
 #include "arcane/utils/ArcaneGlobal.h"
 #include "arcane/utils/ITraceMng.h"
 #include "arcane/utils/UniqueArray.h"
@@ -55,6 +57,12 @@
 
 #include "arcane/core/ItemAllocationInfo.h"
 #include "arcane/core/VariableBuildInfo.h"
+
+#include "arcane/utils/OStringStream.h"
+
+#include "arcane/core/IXmlDocumentHolder.h"
+#include "arcane/core/XmlNode.h"
+#include "arcane/core/internal/IVariableMngInternal.h"
 
 #include "arcane/std/VtkPolyhedralMeshIO_axl.h"
 
@@ -96,6 +104,8 @@ class VtkPolyhedralMeshIOService
    public:
 
     explicit VtkReader(const String& filename, VtkPolyhedralTools::PrintInfoLevel print_info_level = VtkPolyhedralTools::PrintInfoLevel{});
+
+    VtkReader() = default;
 
     static String supportedVtkExtensions() noexcept {return "vtk,vtu";};
 
@@ -151,9 +161,14 @@ class VtkPolyhedralMeshIOService
     vtkPointData* pointData();
     vtkCellData* faceData();
 
+    bool isEmpty() const noexcept { return m_is_empty; }
+    bool doRead()  const noexcept { return m_do_read; }
+
    private:
 
-    const String& m_filename;
+    bool m_is_empty = true;
+    bool m_do_read = false;
+    String m_filename;
     VtkPolyhedralTools::PrintInfoLevel m_print_info_level;
     VtkPolyhedralTools::ReadStatus m_read_status;
     vtkNew<vtkUnstructuredGridReader> m_vtk_grid_reader;
@@ -195,18 +210,23 @@ class VtkPolyhedralMeshIOService
 
  public:
 
-  VtkPolyhedralTools::ReadStatus read(IPrimaryMesh* mesh, const String& filename)
+  VtkPolyhedralTools::ReadStatus read(IPrimaryMesh* mesh, const String& filename, bool is_parallel_read)
   {
     ARCANE_CHECK_POINTER(mesh);
-    VtkReader reader{ filename, m_print_info_level };
-    if (reader.readHasFailed())
-      return reader.readStatus();
+    // warning meaning of parallel_read not obvious :
+    // if is parallel_read => master reads + broadcast, if not all ranks read a pre-distributed mesh
+    bool do_read = is_parallel_read ? mesh->parallelMng()->isMasterIO() : true;
+    using VtkReaderPtr = std::unique_ptr<VtkReader>;
+    VtkReaderPtr reader = std::make_unique<VtkReader>();
+    if (do_read) reader = std::make_unique<VtkReader>( filename, m_print_info_level );
+    if (reader->readHasFailed())
+      return reader->readStatus();
     ItemAllocationInfo item_allocation_info;
-    _fillItemAllocationInfo(item_allocation_info, reader);
+    _fillItemAllocationInfo(item_allocation_info, *reader);
     auto polyhedral_mesh_allocator = mesh->initialAllocator()->polyhedralMeshAllocator();
     polyhedral_mesh_allocator->allocateItems(item_allocation_info);
-    _readVariablesAndGroups(mesh, reader);
-    return reader.readStatus();
+    _readVariablesAndGroups(mesh, *reader);
+    return reader->readStatus();
   }
 
  private:
@@ -220,6 +240,7 @@ class VtkPolyhedralMeshIOService
 
   static void _fillItemAllocationInfo(ItemAllocationInfo& item_allocation_info, VtkReader& vtk_reader);
   void _computeFaceVtkArcaneLidConversion(Int32Span face_vtk_to_arcane_lids, Int32Span arcane_to_vtk_lids, VtkPolyhedralMeshIOService::VtkReader& reader, IPrimaryMesh* mesh) const;
+  void _createEmptyVariablesAndGroups(IMesh* mesh, XmlNode::const_reference xml_node) const;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -255,7 +276,7 @@ class VtkPolyhedralCaseMeshReader
       m_trace_mng->info() << "---Create Polyhedral mesh: " << pm->name() << "---";
       m_trace_mng->info() << "--Read mesh file " << m_read_info.fileName();
       VtkPolyhedralMeshIOService polyhedral_vtk_service{ m_trace_mng, m_print_info_level };
-      auto read_status = polyhedral_vtk_service.read(pm, m_read_info.fileName());
+      auto read_status = polyhedral_vtk_service.read(pm, m_read_info.fileName(),m_read_info.isParallelRead());
       if (read_status.failure)
         ARCANE_FATAL(read_status.failure_message);
       m_trace_mng->info() << read_status.info_message;
@@ -418,6 +439,10 @@ _fillItemAllocationInfo(ItemAllocationInfo& item_allocation_info, VtkReader& vtk
 void VtkPolyhedralMeshIOService::
 _readVariablesAndGroups(IPrimaryMesh* mesh, VtkReader& reader)
 {
+  // Register variable and group info in an xml for non reader ranks
+  OStringStream created_infos_str;
+  created_infos_str() << "<?xml version='1.0' ?>\n";
+  created_infos_str() << "<infos>";
   // Cell data
   if (auto* cell_data = reader.cellData(); cell_data) {
     // Read cell groups and variables
@@ -428,10 +453,14 @@ _readVariablesAndGroups(IPrimaryMesh* mesh, VtkReader& reader)
       auto* cell_array = cell_data->GetArray(array_index);
       if (!cell_array)
         continue;
-      if (String name = cell_array->GetName(); name.substring(0, 6) == "GROUP_")
+      if (String name = cell_array->GetName(); name.substring(0, 6) == "GROUP_") {
         _createGroup(cell_array, name.substring(6), mesh, mesh->cellFamily(), vtk_to_arcane_lids.constSpan());
-      else
+        created_infos_str() << "<cell-group name='" << name.substring(6) << "'/>";
+      }
+      else {
         _createVariable(cell_array, name, mesh, mesh->cellFamily(), arcane_to_vtk_lids);
+        created_infos_str() << "<cell-variable name='" << name << "'/>";
+      }
       if (m_print_info_level.print_debug_info) {
         debug(Trace::High) << "Reading property " << cell_array->GetName();
         for (auto tuple_index = 0; tuple_index < cell_array->GetNumberOfTuples(); ++tuple_index) {
@@ -450,10 +479,14 @@ _readVariablesAndGroups(IPrimaryMesh* mesh, VtkReader& reader)
     Int32SharedArray arcane_to_vtk_lids{ vtk_to_arcane_lids };
     for (auto array_index = 0; array_index < point_data->GetNumberOfArrays(); ++array_index) {
       auto* point_array = point_data->GetArray(array_index);
-      if (String name = point_array->GetName(); name.substring(0, 6) == "GROUP_")
+      if (String name = point_array->GetName(); name.substring(0, 6) == "GROUP_") {
         _createGroup(point_array, name.substring(6), mesh, mesh->nodeFamily(), vtk_to_arcane_lids.constSpan());
-      else
+        created_infos_str() << "<node-group name='" << name.substring(6) << "'/>";
+      }
+      else {
         _createVariable(point_array, name, mesh, mesh->nodeFamily(), arcane_to_vtk_lids);
+        created_infos_str() << "<node-variable name='" << name << "'/>";
+      }
       if (m_print_info_level.print_debug_info) {
         debug(Trace::High) << "Reading property " << point_array->GetName();
         for (auto tuple_index = 0; tuple_index < point_array->GetNumberOfTuples(); ++tuple_index) {
@@ -472,10 +505,14 @@ _readVariablesAndGroups(IPrimaryMesh* mesh, VtkReader& reader)
     _computeFaceVtkArcaneLidConversion(vtk_to_Arcane_lids, arcane_to_vtk_lids, reader, mesh);
     for (auto array_index = 0; array_index < face_data->GetNumberOfArrays(); ++array_index) {
       auto* face_array = face_data->GetArray(array_index);
-      if (String name = face_array->GetName(); name.substring(0, 6) == "GROUP_")
+      if (String name = face_array->GetName(); name.substring(0, 6) == "GROUP_") {
         _createGroup(face_array, name.substring(6), mesh, mesh->faceFamily(), vtk_to_Arcane_lids);
-      else
+        created_infos_str() << "<face-group name='" << name << "'/>";
+      }
+      else {
         _createVariable(face_array, name, mesh, mesh->faceFamily(), arcane_to_vtk_lids);
+        created_infos_str() << "<face-variable name='" << name << "'/>";
+      }
       if (m_print_info_level.print_debug_info) {
         debug(Trace::High) << "Reading property " << face_array->GetName();
         for (auto tuple_index = 0; tuple_index < face_array->GetNumberOfTuples(); ++tuple_index) {
@@ -485,6 +522,24 @@ _readVariablesAndGroups(IPrimaryMesh* mesh, VtkReader& reader)
         }
       }
     }
+  }
+  created_infos_str() << "</infos>";
+  // Create empty group and variables in non reader subdomain
+  ByteUniqueArray bytes;
+  auto* pm = mesh->parallelMng();
+  if (!reader.isEmpty() && pm->isMasterIO()) {
+    String str = created_infos_str.str();
+    ByteConstArrayView bv = str.utf8();
+    Integer len = bv.size();
+    bytes.resize(len + 1);
+    bytes.copy(bv);
+  }
+  pm->broadcastMemoryBuffer(bytes, pm->masterIORank());
+  if (reader.isEmpty()) {
+    std::unique_ptr<IXmlDocumentHolder> doc(IXmlDocumentHolder::loadFromBuffer(bytes, "InternalBuffer", traceMng()));
+    XmlNode doc_node = doc->documentNode();
+    _createEmptyVariablesAndGroups(mesh,doc_node);
+
   }
 }
 
@@ -553,7 +608,7 @@ _createVariable(vtkDataArray* item_values, const String& variable_name, IMesh* m
   if (item_values->GetNumberOfTuples() != item_family->nbItem())
     ARCANE_FATAL("Cannot create variable {0}, {1} values are given for {2} items in {3} family",
                  variable_name, item_values->GetNumberOfTuples(), item_family->nbItem(), item_family->name());
-  debug(Trace::High) << "Create mesh variable " << variable_name;
+  debug() << "Create mesh variable " << variable_name;
   auto variable_creator = [mesh, variable_name, item_family, arcane_to_vtk_lids, this](auto* values) {
     VariableBuildInfo vbi{ mesh, variable_name };
     using ValueType = typename std::remove_pointer_t<decltype(values)>::ValueType;
@@ -623,11 +678,43 @@ _computeFaceVtkArcaneLidConversion(Int32Span face_vtk_to_arcane_lids, Int32Span 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+void VtkPolyhedralMeshIOService::
+_createEmptyVariablesAndGroups(IMesh* mesh, XmlNode::const_reference variable_and_group_info) const
+{
+  // todo generaliser pour tous les kind
+  ARCANE_CHECK_PTR(mesh);
+  {
+    XmlNodeList vars = variable_and_group_info.documentElement().children("cell-variable");
+    for (XmlNode xnode : vars) {
+      String name = xnode.attrValue("name");
+      debug() << "Create mesh variable: " << name;
+      VariableCellReal* var = new VariableCellReal(VariableBuildInfo(mesh, name));
+      mesh->variableMng()->_internalApi()->addAutoDestroyVariable(var);
+    }
+  }
+
+  // Lecture des groupes de mailles
+  {
+    XmlNodeList vars = variable_and_group_info.documentElement().children("cell-group");
+    IItemFamily* cell_family = mesh->itemFamily(IK_Cell);
+    for (XmlNode xnode : vars) {
+      String name = xnode.attrValue("name");
+      info() << "Building group: " << name;
+      cell_family->createGroup(name);
+    }
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 VtkPolyhedralMeshIOService::VtkReader::
 VtkReader(const String& filename, VtkPolyhedralTools::PrintInfoLevel print_info_level)
 : m_filename{ filename }
 , m_print_info_level{ print_info_level }
 {
+  m_is_empty = false;
+  m_do_read = true;
   if (filename.empty()) {
     m_read_status.failure = true;
     m_read_status.failure_message = "filename for polyhedral vtk mesh is empty.";
@@ -712,6 +799,7 @@ VtkReader(const String& filename, VtkPolyhedralTools::PrintInfoLevel print_info_
 Int64ConstArrayView VtkPolyhedralMeshIOService::VtkReader::
 cellUids()
 {
+  if (!doRead()) return m_cell_uids;
   if (m_cell_uids.empty()) {
     _checkVtkGrid();
     m_cell_uids.reserve(m_vtk_grid->GetNumberOfCells());
@@ -736,6 +824,7 @@ cellUids()
 Int64ConstArrayView VtkPolyhedralMeshIOService::VtkReader::
 nodeUids()
 {
+  if (!doRead()) return m_node_uids;
   if (m_node_uids.empty()) {
     _checkVtkGrid();
     auto nb_nodes = m_vtk_grid->GetNumberOfPoints();
@@ -768,6 +857,7 @@ faceUids()
   // Needs nodeUids to be called first (no work done if already called)
   nodeUids();
 
+  if (!doRead()) return m_face_uids;
   if (!m_face_uids.empty())
     return m_face_uids;
   _checkVtkGrid();
@@ -904,6 +994,7 @@ faceUids()
 Int64ConstArrayView VtkPolyhedralMeshIOService::VtkReader::
 edgeUids()
 {
+  if (!doRead()) return m_edge_uids;
   if (!m_edge_uids.empty())
     return m_edge_uids;
 
@@ -1394,6 +1485,7 @@ nodeEdges()
 Real3ArrayView VtkPolyhedralMeshIOService::VtkReader::
 nodeCoords()
 {
+  if (!doRead()) return m_node_coordinates;
   if (m_node_coordinates.empty()) {
     _checkVtkGrid();
     auto point_coords = m_vtk_grid->GetPoints()->GetData();
