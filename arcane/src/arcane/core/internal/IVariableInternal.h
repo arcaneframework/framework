@@ -21,6 +21,43 @@
 
 namespace Arcane
 {
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Arguments pour redimensionner une variable.
+ */
+class VariableResizeArgs
+{
+ public:
+
+  explicit VariableResizeArgs(Int32 new_size)
+  : m_new_size(new_size)
+  {
+  }
+
+  explicit VariableResizeArgs(Int32 new_size, Int32 additional_capacity)
+  : m_new_size(new_size)
+  , m_additional_capacity(additional_capacity)
+  {
+  }
+
+  explicit VariableResizeArgs(Int32 new_size, Int32 additional_capacity, bool use_no_init)
+  : m_new_size(new_size)
+  , m_additional_capacity(additional_capacity)
+  , m_is_use_no_init(use_no_init)
+  {
+  }
+
+  Int32 newSize() const { return m_new_size; }
+  Int32 nbAdditionalCapacity() const { return m_additional_capacity; }
+  bool isUseNoInit() const { return m_is_use_no_init; }
+
+ private:
+
+  Int32 m_new_size = 0;
+  Int32 m_additional_capacity = 0;
+  bool m_is_use_no_init = false;
+};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -64,7 +101,7 @@ class ARCANE_CORE_EXPORT IVariableInternal
   virtual void changeAllocator(const MemoryAllocationOptions& alloc_info) = 0;
 
   //! Redimensionne la variable en ajoutant une capacité additionnelle
-  virtual void resizeWithReserve(Int32 new_size,Int32 additional_capacity) =0;
+  virtual void resizeWithReserve(const VariableResizeArgs& resize_args) = 0;
 };
 
 /*---------------------------------------------------------------------------*/

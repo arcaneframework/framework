@@ -40,6 +40,7 @@
 
 #include "arcane/core/internal/IDataInternal.h"
 #include "arcane/core/internal/IVariableMngInternal.h"
+#include "arcane/core/internal/IVariableInternal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -474,8 +475,12 @@ _checkIfSameOnAllReplica(IParallelMng* replica_pm,Integer max_print)
 /*---------------------------------------------------------------------------*/
 
 template<typename T> void Array2VariableT<T>::
-_internalResize(Integer new_size,Integer nb_additional_element)
+_internalResize(const VariableResizeArgs& resize_args)
 {
+  Int32 new_size = resize_args.newSize();
+  Int32 nb_additional_element = resize_args.nbAdditionalCapacity();
+  bool use_no_init = resize_args.isUseNoInit();
+
   // Exception deplace de ItemGroupImpl::removeItems.
   // C'est un probleme d'implementation des variables partielles Arcane et non
   // du concept de variable partielle (cf ItemGroupMap qui l'implemente).
