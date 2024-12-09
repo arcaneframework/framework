@@ -509,10 +509,10 @@ _internalResize(const VariableResizeArgs& resize_args)
          << " dim1_size=" << value().dim1Size()
          << " dim2size=" << dim2_size
          << " total=" << value().totalNbElement();*/
-  if (init_policy==DIP_InitWithDefault)
-    data_values.resize(new_size,dim2_size);
-  else
+  if (use_no_init || (init_policy!=DIP_InitWithDefault))
     data_values.resizeNoInit(new_size,dim2_size);
+  else
+    data_values.resize(new_size,dim2_size);
 
   if (new_size>current_size){
     bool use_nan = (init_policy==DIP_InitWithNan);

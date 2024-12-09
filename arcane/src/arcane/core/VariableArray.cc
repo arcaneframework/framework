@@ -579,7 +579,10 @@ _internalResize(const VariableResizeArgs& resize_args)
     // associée.
     value_internal->dispose();
   }
-  value_internal->resize(new_size);
+  if (use_no_init)
+    value_internal->_internalDeprecatedValue().resizeNoInit(new_size);
+  else
+    value_internal->resize(new_size);
   if (new_size>current_size){
     if (init_policy==DIP_InitWithDefault){
       ArrayView<T> values = this->valueView();
