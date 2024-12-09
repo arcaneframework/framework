@@ -93,7 +93,7 @@ resizeWithReserve(PrivatePartType* var, Integer dim1_size, Real reserve_ratio)
   // nombre de mailles matériaux, alloue un petit peu plus que nécessaire.
   // Par défaut, on alloue 5% de plus.
   Int32 nb_add = static_cast<Int32>(dim1_size * reserve_ratio);
-  var->_internalApi()->resizeWithReserve(dim1_size, nb_add);
+  var->_internalApi()->resize(VariableResizeArgs(dim1_size, nb_add, true));
 }
 
 /*---------------------------------------------------------------------------*/

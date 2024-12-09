@@ -153,7 +153,7 @@ class VariablePrivate
   //!@{ \name Implémentation de IVariableInternal
   String computeComparisonHashCollective(IHashAlgorithm* hash_algo, IData* sorted_data) override;
   void changeAllocator(const MemoryAllocationOptions& alloc_info) override;
-  void resizeWithReserve(Int32 new_size,Int32 additional_capacity) override;
+  void resize(const VariableResizeArgs& resize_args) override;
   //!@}
 
  private:
@@ -940,13 +940,13 @@ serialize(ISerializer* sbuffer,IDataOperation* operation)
 /*---------------------------------------------------------------------------*/
 
 void Variable::
-_resizeWithReserve(Int32 new_size,Int32 additional_capacity)
+_resize(const VariableResizeArgs& resize_args)
 {
   eItemKind ik = itemKind();
   if (ik!=IK_Unknown){
     ARCANE_FATAL("This call is invalid for item variable. Use resizeFromGroup() instead");
   }
-  _internalResize(new_size, additional_capacity);
+  _internalResize(resize_args);
   syncReferences();
 }
 
@@ -956,7 +956,7 @@ _resizeWithReserve(Int32 new_size,Int32 additional_capacity)
 void Variable::
 resize(Integer new_size)
 {
-  _resizeWithReserve(new_size,0);
+  _resize(VariableResizeArgs(new_size));
 }
 
 /*---------------------------------------------------------------------------*/
@@ -985,7 +985,7 @@ resizeFromGroup()
   debug(Trace::High) << "Variable::resizeFromGroup() var='" << fullName()
                      << "' with " << new_size << " items "
                      << " this=" << this;
-  _internalResize(new_size,new_size/20);
+  _internalResize(VariableResizeArgs(new_size,new_size/20));
   syncReferences();
 }
 
@@ -1442,9 +1442,9 @@ changeAllocator(const MemoryAllocationOptions& mem_options)
 /*---------------------------------------------------------------------------*/
 
 void VariablePrivate::
-resizeWithReserve(Int32 new_size,Int32 additional_capacity)
+resize(const VariableResizeArgs& resize_args)
 {
-  return m_variable->_resizeWithReserve(new_size,additional_capacity);
+  return m_variable->_resize(resize_args);
 }
 
 /*---------------------------------------------------------------------------*/

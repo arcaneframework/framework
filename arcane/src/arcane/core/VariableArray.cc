@@ -41,6 +41,7 @@
 
 #include "arcane/core/internal/IDataInternal.h"
 #include "arcane/core/internal/IVariableMngInternal.h"
+#include "arcane/core/internal/IVariableInternal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -555,8 +556,12 @@ setIsSynchronized(const ItemGroup& group)
 /*---------------------------------------------------------------------------*/
 
 template<typename T> void VariableArrayT<T>::
-_internalResize(Integer new_size,Integer nb_additional_element)
+_internalResize(const VariableResizeArgs& resize_args)
 {
+  Int32 new_size = resize_args.newSize();
+  Int32 nb_additional_element = resize_args.nbAdditionalCapacity();
+  bool use_no_init = resize_args.isUseNoInit();
+
   auto* value_internal = m_value->_internal();
 
   if (nb_additional_element!=0){
@@ -574,7 +579,10 @@ _internalResize(Integer new_size,Integer nb_additional_element)
     // associée.
     value_internal->dispose();
   }
-  value_internal->resize(new_size);
+  if (use_no_init)
+    value_internal->_internalDeprecatedValue().resizeNoInit(new_size);
+  else
+    value_internal->resize(new_size);
   if (new_size>current_size){
     if (init_policy==DIP_InitWithDefault){
       ArrayView<T> values = this->valueView();
@@ -615,7 +623,7 @@ _internalResize(Integer new_size,Integer nb_additional_element)
 template<typename DataType> void VariableArrayT<DataType>::
 resizeWithReserve(Integer n,Integer nb_additional)
 {
-  _resizeWithReserve(n,nb_additional);
+  _resize(VariableResizeArgs(n,nb_additional));
 }
 
 /*---------------------------------------------------------------------------*/
