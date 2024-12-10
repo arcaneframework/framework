@@ -13,8 +13,12 @@ ___
 
 ### Nouveautés/Améliorations
 
+- Ajoute possibilité de choisir dans le jeu de données la version
+  utilisée pour le calcul des identifiants des faces (\pr{1826})
+- Ajoute support expérimental pour la lecture des fichiers MSH version
+  4.1 au format binaire (\pr{1824})
 - Ajoute mécanisme pour supprimer les mailles fantômes des mailles
-  raffinées (\pr{1716}, \pr{1785})
+  raffinées (\pr{1716}, \pr{1785}, \pr{1818})
 - Ajoute méthodes \arcane{ICartesianMesh::coarseZone2D()} et
   \arcane{ICartesianMesh::coarseZone3D()} pour déraffiner un bloc d'un
   patch AMR (\pr{1697})
@@ -31,7 +35,8 @@ ___
 - Ajoute support de l'écriture MPI/IO par bloc dans l'écrivain
   `VtkHdfV2PostProcessor` (\pr{1648}, \pr{1649})
 - Ajoute support des maillage polyédriques (\pr{1619}, \pr{1620},
-  \pr{1496}, \pr{1746}, \pr{1747}, \pr{1748}, \pr{1761}, \pr{1762})
+  \pr{1496}, \pr{1746}, \pr{1747}, \pr{1748}, \pr{1761}, \pr{1762},
+  \pr{1795}, \pr{1816}, \pr{1829})
 - Ajoute méthode utilitaire
   \arcane{MeshUtils::computeNodeNodeViaEdgeConnectivity()} pour créer
   les connectivités noeud-noeud via les arêtes (\pr{1614})
@@ -51,6 +56,15 @@ ___
 
 #### API Accélérateur
 
+- Ajoute méthode \arcaneacc{Runner::deviceMemoryInfo()} pour récupérer
+  la mémoire libre et la mémoire totale d'un accélérateur (\pr{1821})
+- Affiche plus de propriétés lors de la description de l'accélérateur
+  utilisé (\pr{1819})
+- Ajoute possibilité de changer la ressource mémoire associée à
+  \arcane{MemoryUtils::getDefaultDataAllocator()} (\pr{1808})
+- Utilise `const RunQueue&` ou `const RunQueue*` au lieu de
+  `RunQueue&` et `RunQueue*` pour certains arguments des méthodes qui
+  utilisent des \arcaneacc{RunQueue} (\pr{1798})
 - Interdit d'utiliser deux fois une même instance de
   \arcaneacc{RunCommand}. Il est temporairement possible d'autoriser
   cela en positionnant la variable d'environnement
@@ -76,7 +90,7 @@ ___
   (\arcanemat{MeshMaterialModifier}) (\pr{1559}, \pr{1562}, \pr{1679},
   \pr{1681}, \pr{1682}, \pr{1683}, \pr{1687}, \pr{1689}, \pr{1690},
   \pr{1691}, \pr{1704}, \pr{1720}, \pr{1729}, \pr{1731}, \pr{1733},
-  \pr{1738}, \pr{1739}, \pr{1741}, \pr{1742})
+  \pr{1738}, \pr{1739}, \pr{1741}, \pr{1742}, \pr{1831})
 - Ajoute classe \arcaneacc{ProfileRegion} pour spécifier une région
   pour le profilage sur accélérateur (\pr{1695}, \pr{1734}, \pr{1768})
 - Ajoute une classe interne \arcane{impl::MemoryPool} pour conserver
@@ -126,6 +140,12 @@ ___
 
 ### Changements
 
+- Renomme \arcane{NumArray::resize()} en
+  \arcane{NumArray::resizeDestructive()} et \arcane{NumArray::fill()}
+  en \arcane{NumArray::fillHost()} (\pr{1809})
+- Déplace les méthodes de \arcane{platform} gérant les allocateurs dans
+  \arcane{MemoryUtils} et rend obsolètes certaines d'entre
+  elles (\pr{1806}, \pr{1817})
 - Dans le service \arcane{ArcaneCaseMeshService}, Initialise les variables
   spécifiées dans le jeu de données après application du
   partitionnement au lieu de le faire avant (\pr{1751})
@@ -157,6 +177,8 @@ ___
 
 ### Corrections
 
+- Utilise les mêmes valeurs pour \arccore{ISerializer::eDataType} et
+  \arcane{eDataType} (\pr{1827}, \pr{1828})
 - Corrige erreur de compilation avec CRAY MPICH (\pr{1778})
 - Corrige compilation avec les version 2.13+ de libxml2 (\pr{1715})
 - Positionne correctement le communicateur de
@@ -179,6 +201,19 @@ ___
 
 ### Interne
 
+- Ajoute variable d'environnement `ARCANE_CUDA_MEMORY_HINT_ON_DEVICE`
+  pour appeler automatiquement `cudaMemAdvise()` sur la mémoire
+  unifiée pour la forcer à aller sur un allocateur spécifique (\pr{1833})
+- Appelle \arccore{Array::resizeNoInit()} au lieu de
+  \arccore{Array::resize()} lors du redimensionnement des variables
+  matériaux. L'initialisation est faite par la suite et cela évite
+  d'initialiser deux fois (\pr{1832})
+- Renomme `Adjency` en `Adjacency` dans certaines classes et méthodes
+  (\pr{1823})
+- Ajoute option de la ligne de commande `-A,UseAccelerator=1` pour
+  spécifier qu'on souhaite une exécution sur accélérateur. Le backend
+  utilisé sera automatiquement choisi en fonctions de la configuration
+  lors de la compilation (\pr{1815})
 - Ajoute typedef `AlephInt` qui sert pour spécifier les index
   des lignes et colonnes des matrices et vecteurs. Pour l'instant ce
   type est `int` mais lorsque le support 64 bit sera actif il sera
@@ -238,7 +273,8 @@ ___
 - Utilise un wrapper de `dotnet` pour la compilation. Ce wrapper
   s'assure qu'on ne va pas modifier le HOME de l'utilisateur ce qui
   pouvait poser des problèmes de verrou lorsque plusieurs instances de
-  `dotnet` se lancent en même temps (\pr{1789}, \pr{1791}, \pr{1792})
+  `dotnet` se lancent en même temps (\pr{1789}, \pr{1791}, \pr{1792},
+  \pr{1830})
 - Ajoute possibilité d'ajouter des bibliothèques lors de l'édition de
   lien de `arccore_message_passing_mpi`. Cela permet de garantir que
   certaines bibliothèques seront bien ajoutées à l´édition de lien et
@@ -292,9 +328,13 @@ ___
   de certaines méthodes (\pr{1773})
 - Génère via l'interface spécifiée les méthodes pour récupérer les
   fonctions associées aux options des jeux de données (\pr{1601})
+- Supprime la date dans les fichiers générés afin de ne pas les
+  modifier s'ils sont re-générés à l'identique (\pr{1797}
 
 ### Alien
 
+- Ajoute pluggin basé sur la bibliothèque
+  [composyx](https://gitlab.inria.fr/composyx/composyx) (\pr{1801})
 - Utilise un répertoire de sortie différent pour chaque test afin
   qu'on puisse les lancer en parallèle (\pr{1775})
 - Corrige sorties listings pour certains tests (\pr{1765})
@@ -425,6 +465,8 @@ ___
 
 ### Arccore
 
+- Ajoute dans \arccore{AbstractArray} la possibilité de spécifier la
+  localisation mémoire de la zone allouée (\pr{1803}, \pr{1804})
 - Utilise \arccore{MessagePassing::MessageRank::anySourceRank()} au
   lieu du constructeur par défaut pour spécifier
   `MPI_ANY_SOURCE`. L'ancien mécanisme reste temporairement valide
