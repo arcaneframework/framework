@@ -704,12 +704,14 @@ initialize()
   {
     hid_t type_id = H5Tcopy(H5T_NATIVE_CHAR);
     m_char_id.setId(type_id);
-    //H5Tset_precision(m_int_id,8*1);
   }
   {
     hid_t type_id = H5Tcopy(H5T_NATIVE_UCHAR);
     m_uchar_id.setId(type_id);
-    //H5Tset_precision(m_int_id,8*1);
+  }
+  {
+    hid_t type_id = H5Tcopy(H5T_NATIVE_SCHAR);
+    m_schar_id.setId(type_id);
   }
   {
     hid_t type_id = H5Tcopy(H5T_NATIVE_SHORT);

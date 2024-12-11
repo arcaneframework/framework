@@ -681,7 +681,7 @@ class ARCANE_HDF5_EXPORT StandardTypes
   }
   hid_t saveType(signed char) const
   {
-    return m_char_id.id();
+    return m_schar_id.id();
   }
   hid_t saveType(BFloat16) const
   {
@@ -712,8 +712,9 @@ class ARCANE_HDF5_EXPORT StandardTypes
 
  public:
 
-  HType m_char_id; //!< Identifiant HDF des entiers signés
+  HType m_char_id; //!< Identifiant HDF des charactères
   HType m_uchar_id; //!< Identifiant HDF des caractères non-signés
+  HType m_schar_id; //!< Identifiant HDF des caractères signés
   HType m_short_id; //!< Identifiant HDF des entiers signés
   HType m_ushort_id; //!< Identifiant HDF des entiers long signés
   HType m_int_id; //!< Identifiant HDF des entiers signés
