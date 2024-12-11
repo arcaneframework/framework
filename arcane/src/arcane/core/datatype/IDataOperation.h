@@ -1,16 +1,16 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IDataOperation.h                                            (C) 2000-2020 */
+/* IDataOperation.h                                            (C) 2000-2024 */
 /*                                                                           */
 /* Interface d'une opération sur une donnée.                                 */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_DATATYPE_IDATAOPERATION_H
-#define ARCANE_DATATYPE_IDATAOPERATION_H
+#ifndef ARCANE_CORE_DATATYPE_IDATAOPERATION_H
+#define ARCANE_CORE_DATATYPE_IDATAOPERATION_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -50,6 +50,10 @@ class IDataOperation
   virtual void apply(Real3ArrayView output,Real3ConstArrayView input) =0;
   virtual void apply(Real2x2ArrayView output,Real2x2ConstArrayView input) =0;
   virtual void apply(Real3x3ArrayView output,Real3x3ConstArrayView input) =0;
+  virtual void apply(ArrayView<Int8> output,ConstArrayView<Int8> input) =0;
+  virtual void apply(ArrayView<Float16> output,ConstArrayView<Float16> input) =0;
+  virtual void apply(ArrayView<BFloat16> output,ConstArrayView<BFloat16> input) =0;
+  virtual void apply(ArrayView<Float32> output,ConstArrayView<Float32> input) =0;
 
   virtual void applySpan(Span<Byte> output,Span<const Byte> input) =0;
   virtual void applySpan(Span<Real> output,Span<const Real> input) =0;
@@ -60,6 +64,10 @@ class IDataOperation
   virtual void applySpan(Span<Real3> output,Span<const Real3> input) =0;
   virtual void applySpan(Span<Real2x2> output,Span<const Real2x2> input) =0;
   virtual void applySpan(Span<Real3x3> output,Span<const Real3x3> input) =0;
+  virtual void applySpan(Span<Int8> output,Span<const Int8> input) =0;
+  virtual void applySpan(Span<Float16> output,Span<const Float16> input) =0;
+  virtual void applySpan(Span<BFloat16> output,Span<const BFloat16> input) =0;
+  virtual void applySpan(Span<Float32> output,Span<const Float32> input) =0;
 };
 
 /*---------------------------------------------------------------------------*/

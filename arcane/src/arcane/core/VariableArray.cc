@@ -32,12 +32,12 @@
 #include "arcane/core/IParallelMng.h"
 #include "arcane/core/IMesh.h"
 
-#include "arcane/datatype/DataTracer.h"
-#include "arcane/datatype/DataTypeTraits.h"
-#include "arcane/datatype/DataStorageBuildInfo.h"
+#include "arcane/core/datatype/DataTracer.h"
+#include "arcane/core/datatype/DataTypeTraits.h"
+#include "arcane/core/datatype/DataStorageBuildInfo.h"
 
-#include "arcane/VariableArray.h"
-#include "arcane/RawCopy.h"
+#include "arcane/core/VariableArray.h"
+#include "arcane/core/RawCopy.h"
 
 #include "arcane/core/internal/IDataInternal.h"
 #include "arcane/core/internal/IVariableMngInternal.h"
@@ -713,15 +713,7 @@ value() -> ValueType&
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template class VariableArrayT<Byte>;
-template class VariableArrayT<Real>;
-template class VariableArrayT<Int16>;
-template class VariableArrayT<Int32>;
-template class VariableArrayT<Int64>;
-template class VariableArrayT<Real2>;
-template class VariableArrayT<Real2x2>;
-template class VariableArrayT<Real3>;
-template class VariableArrayT<Real3x3>;
+ARCANE_INTERNAL_INSTANTIATE_TEMPLATE_FOR_NUMERIC_DATATYPE(VariableArrayT);
 template class VariableArrayT<String>;
 
 /*---------------------------------------------------------------------------*/

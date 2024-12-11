@@ -17,10 +17,8 @@
 #include "arcane/utils/UtilsTypes.h"
 #include "arcane/utils/String.h"
 #include "arcane/utils/Array.h"
-#include "arcane/utils/Real2.h"
-#include "arcane/utils/Real3.h"
-#include "arcane/utils/Real2x2.h"
-#include "arcane/utils/Real3x3.h"
+#include "arcane/utils/NumericTypes.h"
+
 #include "arcane/datatype/DataTypes.h"
 
 #include "arcane/hdf5/ArcaneHdf5Global.h"
@@ -608,6 +606,8 @@ class ARCANE_HDF5_EXPORT StandardTypes
   hid_t nativeType(Real) const;
 #endif
   hid_t nativeType(eDataType sd) const;
+  hid_t nativeType(BFloat16) const { return m_bfloat16_id.id(); }
+  hid_t nativeType(Float16) const { return m_float16_id.id(); }
 
  public:
 
@@ -681,7 +681,15 @@ class ARCANE_HDF5_EXPORT StandardTypes
   }
   hid_t saveType(signed char) const
   {
-    return m_char_id.id();
+    return m_schar_id.id();
+  }
+  hid_t saveType(BFloat16) const
+  {
+    return m_bfloat16_id.id();
+  }
+  hid_t saveType(Float16) const
+  {
+    return m_float16_id.id();
   }
 #ifdef ARCANE_REAL_NOT_BUILTIN
   hid_t saveType(Real) const
@@ -704,8 +712,9 @@ class ARCANE_HDF5_EXPORT StandardTypes
 
  public:
 
-  HType m_char_id; //!< Identifiant HDF des entiers signés
+  HType m_char_id; //!< Identifiant HDF des charactères
   HType m_uchar_id; //!< Identifiant HDF des caractères non-signés
+  HType m_schar_id; //!< Identifiant HDF des caractères signés
   HType m_short_id; //!< Identifiant HDF des entiers signés
   HType m_ushort_id; //!< Identifiant HDF des entiers long signés
   HType m_int_id; //!< Identifiant HDF des entiers signés
@@ -717,6 +726,8 @@ class ARCANE_HDF5_EXPORT StandardTypes
   HType m_real3_id; //!< Identifiant HDF pour les Real3
   HType m_real2x2_id; //!< Identifiant HDF pour les Real2x2
   HType m_real3x3_id; //!< Identifiant HDF pour les Real3x3
+  HType m_float16_id; //!< Identifiant HDF pour les Float16
+  HType m_bfloat16_id; //!< Identifiant HDF pour les BFloat16
 
  private:
 

@@ -83,6 +83,10 @@ class MeshMaterialVariableTraits
   typedef CellMaterialVariableScalarRef<Int64> VariableInt64Type;
   typedef CellMaterialVariableScalarRef<Int32> VariableInt32Type;
   typedef CellMaterialVariableScalarRef<Int16> VariableInt16Type;
+  typedef CellMaterialVariableScalarRef<Int8> VariableInt8Type;
+  typedef CellMaterialVariableScalarRef<BFloat16> VariableBFloat16Type;
+  typedef CellMaterialVariableScalarRef<Float16> VariableFloat16Type;
+  typedef CellMaterialVariableScalarRef<Float32> VariableFloat32Type;
   typedef CellMaterialVariableScalarRef<Real3> VariableReal3Type;
   typedef CellMaterialVariableScalarRef<Real3x3> VariableReal3x3Type;
   typedef CellMaterialVariableScalarRef<Real2> VariableReal2Type;

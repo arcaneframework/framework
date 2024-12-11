@@ -1,22 +1,22 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* VariableInfo.cc                                             (C) 2000-2020 */
+/* VariableInfo.cc                                             (C) 2000-2024 */
 /*                                                                           */
 /* Infos caractérisant une variable.                                         */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/VariableInfo.h"
+#include "arcane/core/VariableInfo.h"
 
 #include "arcane/utils/FatalErrorException.h"
 #include "arcane/utils/StringBuilder.h"
 
-#include "arcane/datatype/DataTypeTraits.h"
+#include "arcane/core/datatype/DataTypeTraits.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -34,6 +34,10 @@ _internalGetStorageTypeInfo(eDataType data_type,Integer dimension,Integer multi_
      nb_basic = DataTypeTraitsT<Byte>::nbBasicType();
      basic_data_type = DataTypeTraitsT<Byte>::basicDataType();
      break;
+   case DT_Int8:
+     nb_basic = DataTypeTraitsT<Int8>::nbBasicType();
+     basic_data_type = DataTypeTraitsT<Int8>::basicDataType();
+     break;
    case DT_Int16:
      nb_basic = DataTypeTraitsT<Int16>::nbBasicType();
      basic_data_type = DataTypeTraitsT<Int16>::basicDataType();
@@ -49,6 +53,18 @@ _internalGetStorageTypeInfo(eDataType data_type,Integer dimension,Integer multi_
    case DT_Real:
      nb_basic = DataTypeTraitsT<Real>::nbBasicType();
      basic_data_type = DataTypeTraitsT<Real>::basicDataType();
+     break;
+   case DT_Float32:
+     nb_basic = DataTypeTraitsT<Float32>::nbBasicType();
+     basic_data_type = DataTypeTraitsT<Float32>::basicDataType();
+     break;
+   case DT_Float16:
+     nb_basic = DataTypeTraitsT<Float16>::nbBasicType();
+     basic_data_type = DataTypeTraitsT<Float16>::basicDataType();
+     break;
+   case DT_BFloat16:
+     nb_basic = DataTypeTraitsT<BFloat16>::nbBasicType();
+     basic_data_type = DataTypeTraitsT<BFloat16>::basicDataType();
      break;
    case DT_Real2:
      nb_basic = DataTypeTraitsT<Real2>::nbBasicType();
