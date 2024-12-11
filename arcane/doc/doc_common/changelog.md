@@ -9,7 +9,7 @@ antérieures à la version 3 sont listées ici : \ref arcanedoc_news_changelog20
 
 ___
 
-## Arcane Version 3.14.* (novembre 2024) {#arcanedoc_version3140}
+## Arcane Version 3.14.15 (11 décembre 2024) {#arcanedoc_version3140}
 
 ### Nouveautés/Améliorations
 
