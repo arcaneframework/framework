@@ -61,8 +61,13 @@ set(ARCANE_SOURCES
   MeshMaterialVariableFactoryRegisterer.cc
   MeshMaterialVariableFactoryRegisterer.h
   MeshEnvironmentVariableRef.h
-  MeshMaterialVariableScalar.cc
-  MeshMaterialVariableArray.cc
+  MeshMaterialVariableScalar.inst.h
+  MeshMaterialVariableScalarTpl1.cc
+  MeshMaterialVariableScalarTpl2.cc
+  MeshMaterialVariableScalarTpl3.cc
+  MeshMaterialVariableArray.inst.h
+  MeshMaterialVariableArrayTpl1.cc
+  MeshMaterialVariableArrayTpl2.cc
   MeshMaterialVariableSynchronizer.cc
   MeshMaterialVariableSynchronizerList.cc
   MeshMaterialVariableSynchronizerList.h
