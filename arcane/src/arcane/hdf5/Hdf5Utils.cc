@@ -750,6 +750,12 @@ initialize()
     m_ulong_id.setId(type_id);
   }
   {
+    hid_t type_id = H5Tcopy(H5T_NATIVE_FLOAT);
+    H5Tset_precision(type_id,8*sizeof(float));
+    H5Tset_order(type_id,H5T_ORDER_LE);
+    m_float32_id.setId(type_id);
+  }
+  {
     hid_t type_id = H5Tcopy(H5T_NATIVE_DOUBLE);
     H5Tset_precision(type_id,8*sizeof(double));
     H5Tset_order(type_id,H5T_ORDER_LE);
@@ -1204,6 +1210,13 @@ template class StandardArrayT<Int16>;
 template class StandardArrayT<Int32>;
 template class StandardArrayT<Int64>;
 template class StandardArrayT<Byte>;
+template class StandardArrayT<Int8>;
+template class StandardArrayT<Float32>;
+// NOTE: on ne peut pas encore instantier ces types car ils nécessitent
+// de pouvoir faire des send/receive via le IParallelMng et cela n'est pas
+// encore implémenté.
+//template class StandardArrayT<Float16>;
+//template class StandardArrayT<BFloat16>;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -1309,6 +1322,7 @@ write(Hdf5Utils::StandardTypes & st, const String & s)
 
 /*---------------------------------------------------------------------------*/
 
+template class StandardScalarT<String>;
 template class StandardScalarT<Real>;
 template class StandardScalarT<Real3>;
 template class StandardScalarT<Real3x3>;
@@ -1318,7 +1332,10 @@ template class StandardScalarT<Int16>;
 template class StandardScalarT<Int32>;
 template class StandardScalarT<Int64>;
 template class StandardScalarT<Byte>;
-template class StandardScalarT<String>;
+template class StandardScalarT<Int8>;
+template class StandardScalarT<Float16>;
+template class StandardScalarT<BFloat16>;
+template class StandardScalarT<Float32>;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

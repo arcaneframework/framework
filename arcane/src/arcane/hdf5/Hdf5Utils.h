@@ -613,7 +613,7 @@ class ARCANE_HDF5_EXPORT StandardTypes
 
   hid_t saveType(float) const
   {
-    return m_real_id.id();
+    return m_float32_id.id();
   }
   hid_t saveType(double) const
   {
@@ -728,6 +728,7 @@ class ARCANE_HDF5_EXPORT StandardTypes
   HType m_real3x3_id; //!< Identifiant HDF pour les Real3x3
   HType m_float16_id; //!< Identifiant HDF pour les Float16
   HType m_bfloat16_id; //!< Identifiant HDF pour les BFloat16
+  HType m_float32_id; //!< Identifiant HDF pour les Float16
 
  private:
 
