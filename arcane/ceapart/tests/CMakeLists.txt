@@ -462,7 +462,7 @@ if (ARCANE_HAS_ACCELERATOR_API)
   arcane_add_test_sequential_host_and_accelerator(material_heat4_init2_accelerator "${ARCANE_TEST_PATH}/testMaterialHeat-4-opt15.arc" "-m 20"
     "-We,ARCANE_MATERIAL_NEW_ITEM_INIT,2"  "-We,ARCANE_USE_GENERIC_COPY_BETWEEN_PURE_AND_PARTIAL,2")
   arcane_add_test_sequential_host_and_accelerator(material_heat4_init3_accelerator "${ARCANE_TEST_PATH}/testMaterialHeat-4-opt15.arc" "-m 20"
-    "-We,ARCANE_MATERIAL_NEW_ITEM_INIT,3")
+    "-We,ARCANE_MATERIAL_NEW_ITEM_INIT,3" "-We,ARCANE_ALLENVCELL_FOR_RUNCOMMAND,1")
 endif()
 
 ###################
