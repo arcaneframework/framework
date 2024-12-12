@@ -210,6 +210,21 @@ build()
     }
   }
 
+  // Indique si on utilise l'API accélérateur pour le calcul des entités
+  // de ConstituentItemVectorImpl
+  {
+    if (auto v = Convert::Type<Real>::tryParseFromEnvironment("ARCANE_MATERIALMNG_USE_ACCELERATOR_FOR_CONSTITUENTITEMVECTOR", true)){
+      m_is_use_accelerator_for_constituent_item_vector = (v.value()!=0);
+    }
+    // N'active pas l'utilisation des RunQueue pour le calcul
+    // des 'ComponentItemVector' si le multi-threading est actif actuellement
+    // l'utilisation d'une même RunQueue n'est pas multi-thread (et donc
+    // on ne peut pas créer des ComponentItemVector en concurrence)
+    if (TaskFactory::isActive())
+      m_is_use_accelerator_for_constituent_item_vector = false;
+    info() << "Use accelerator API for 'ConstituentItemVectorImpl' = " << m_is_use_accelerator_for_constituent_item_vector;
+  }
+
   // Positionne le runner par défaut
   {
     IAcceleratorMng* acc_mng = m_variable_mng->_internalApi()->acceleratorMng();
@@ -303,15 +318,6 @@ build()
         m_additional_capacity_ratio = v.value();
         info() << "Set additional capacity ratio to " << m_additional_capacity_ratio;
       }
-    }
-  }
-
-  // Indique si on utilise l'API accélérateur pour le calcul des entités
-  // de ConstituentItemVectorImpl
-  {
-    if (auto v = Convert::Type<Real>::tryParseFromEnvironment("ARCANE_MATERIALMNG_USE_ACCELERATOR_FOR_CONSTITUENTITEMVECTOR", true)){
-      m_is_use_accelerator_for_constituent_item_vector = (v.value()!=0);
-      info() << "Use accelerator APU for 'ConstituentItemVectorImpl' = " << m_is_use_accelerator_for_constituent_item_vector;
     }
   }
 
@@ -748,7 +754,7 @@ checkValid()
         MatCell mc = ec.cell(k);
         matimpl::ConstituentItemBase mci = mc.constituentItemBase();
         if (eii!=mci._superItemBase())
-          ARCANE_FATAL("Bad corresponding env_item in mat_item");
+          ARCANE_FATAL("Bad corresponding env_item in mat_item k={0} mc={1}",k,mc);
         if (mci.globalItemBase()!=cell)
           ARCANE_FATAL("Bad corresponding globalItem() in mat_item");
         if (mci.level()!=LEVEL_MATERIAL)

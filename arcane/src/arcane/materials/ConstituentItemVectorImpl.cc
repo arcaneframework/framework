@@ -217,9 +217,14 @@ setItems(ConstituentItemVectorImpl* vector_impl, ConstituentGetterLambda constit
 void ConstituentItemVectorImpl::
 _setItems(SmallSpan<const Int32> local_ids)
 {
+  const bool do_new_impl = m_material_mng->_internalApi()->isUseAcceleratorForConstituentItemVector();
+
   RunQueue queue = m_material_mng->_internalApi()->runQueue();
 
-  _computeNbPureAndImpure(local_ids, queue);
+  if (do_new_impl)
+    _computeNbPureAndImpure(local_ids, queue);
+  else
+    _computeNbPureAndImpureLegacy(local_ids);
 
   const Int32 nb_pure = m_nb_pure;
   const Int32 nb_impure = m_nb_impure;
@@ -265,8 +270,7 @@ _setItems(SmallSpan<const Int32> local_ids)
   };
 
   {
-    const bool do_new = m_material_mng->_internalApi()->isUseAcceleratorForConstituentItemVector();
-    SetItemHelper helper(do_new);
+    SetItemHelper helper(do_new_impl);
     if (is_env)
       helper.setItems(this, env_component_getter_lambda, local_ids, queue);
     else
@@ -330,6 +334,58 @@ _computeNbPureAndImpure(SmallSpan<const Int32> local_ids, RunQueue& queue)
 
   m_nb_pure = nb_pure.reducedValue();
   m_nb_impure = nb_impure.reducedValue();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Calcul du nombre de mailles pures et impures sans API accélérateur.
+ */
+void ConstituentItemVectorImpl::
+_computeNbPureAndImpureLegacy(SmallSpan<const Int32> local_ids)
+{
+  IMeshComponent* component = m_component;
+  const bool is_env = component->isEnvironment();
+  AllEnvCellVectorView all_env_cell_view = m_material_mng->view(local_ids);
+  const Int32 component_id = m_component->id();
+
+  Int32 nb_pure = 0;
+  Int32 nb_impure = 0;
+
+  // Calcule le nombre de mailles pures et partielles
+  if (is_env) {
+    ENUMERATE_ALLENVCELL (iallenvcell, all_env_cell_view) {
+      AllEnvCell all_env_cell = *iallenvcell;
+      for (EnvCell ec : all_env_cell.subEnvItems()) {
+        if (ec.componentId() == component_id) {
+          MatVarIndex idx = ec._varIndex();
+          if (idx.arrayIndex() == 0)
+            ++nb_pure;
+          else
+            ++nb_impure;
+        }
+      }
+    }
+  }
+  else {
+    ENUMERATE_ALLENVCELL (iallenvcell, all_env_cell_view) {
+      AllEnvCell all_env_cell = *iallenvcell;
+      for (EnvCell env_cell : all_env_cell.subEnvItems()) {
+        for (MatCell mc : env_cell.subMatItems()) {
+          if (mc.componentId() == component_id) {
+            MatVarIndex idx = mc._varIndex();
+            if (idx.arrayIndex() == 0)
+              ++nb_pure;
+            else
+              ++nb_impure;
+          }
+        }
+      }
+    }
+  }
+
+  m_nb_pure = nb_pure;
+  m_nb_impure = nb_impure;
 }
 
 /*---------------------------------------------------------------------------*/
