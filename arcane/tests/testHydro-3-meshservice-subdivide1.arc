@@ -3,6 +3,10 @@
   <arcane>
     <title>Tube a choc de Sod</title>
     <timeloop>ArcaneHydroLoop</timeloop>
+    <!---<modules>
+      <module name="ArcanePostProcessing" need="required" />
+      <module name="ArcanePostProcessing" active="true" />
+    </modules>-->
   </arcane>
 
   <meshes>
@@ -35,6 +39,7 @@
     <filename internal-partition="true">sod.vtk</filename>
     <subdivider>
       <nb-subdivision>1</nb-subdivision>
+
     </subdivider>
     <partitioner>MeshPartitionerTester</partitioner>
     <initialization>
@@ -47,13 +52,29 @@
       <variable><name>AdiabaticCst</name><value>1.4</value><group>ZG</group></variable>
       <variable><name>AdiabaticCst</name><value>1.4</value><group>ZD</group></variable>
     </initialization>
-
     </mesh>
   </meshes>
 
   <arcane-checkpoint>
     <do-dump-at-end>false</do-dump-at-end>
   </arcane-checkpoint>
+  <!--Postprocessing-->
+  <arcane-post-processing>
+    <output-period>1</output-period>
+    <output>
+      <variable>Pressure</variable>
+      <variable>Density</variable>
+      <group>ZG</group>
+      <group>ZD</group>
+      <group>AllFaces</group>
+      <group>XMIN</group>
+      <group>XMAX</group>
+      <group>YMIN</group>
+      <group>YMAX</group>
+      <group>ZMIN</group>
+      <group>ZMAX</group>
+    </output>
+  </arcane-post-processing>
 
   <!-- Configuration du module hydrodynamique -->
   <simple-hydro>
