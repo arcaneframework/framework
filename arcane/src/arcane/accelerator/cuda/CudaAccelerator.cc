@@ -393,6 +393,8 @@ class UnifiedMemoryCudaMemoryAllocator
     {
       if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_CUDA_USE_ALLOC_ATS", true))
         m_use_ats = v.value();
+      if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_CUDA_MEMORY_HINT_ON_DEVICE", true))
+        m_use_hint_as_mainly_device = (v.value() != 0);
     }
 
     cudaError_t _deallocate(void* ptr) final
@@ -418,6 +420,21 @@ class UnifiedMemoryCudaMemoryAllocator
 
         if (r != cudaSuccess)
           return r;
+
+        // Si demandé, indique qu'on préfère allouer sur le GPU.
+        // NOTE: Dans ce cas, on récupère le device actuel pour positionner la localisation
+        // préférée. Dans le cas où on utilise MemoryPool, cette allocation ne sera effectuée
+        // qu'une seule fois. Si le device par défaut pour un thread change au cours du calcul
+        // il y aura une incohérence. Pour éviter cela, on pourrait faire un cudaMemAdvise()
+        // pour chaque allocation (via _applyHint()) mais ces opérations sont assez couteuses
+        // et s'il y a beaucoup d'allocation il peut en résulter une perte de performance.
+        if (m_use_hint_as_mainly_device) {
+          int device_id = 0;
+          void* p = *ptr;
+          cudaGetDevice(&device_id);
+          ARCANE_CHECK_CUDA(cudaMemAdvise(p, new_size, cudaMemAdviseSetPreferredLocation, device_id));
+          ARCANE_CHECK_CUDA(cudaMemAdvise(p, new_size, cudaMemAdviseSetAccessedBy, cudaCpuDeviceId));
+        }
       }
 
       return cudaSuccess;
@@ -426,6 +443,8 @@ class UnifiedMemoryCudaMemoryAllocator
    public:
 
     bool m_use_ats = false;
+    //! Si vrai, par défaut on considère toutes les allocations comme eMemoryLocationHint::MainlyDevice
+    bool m_use_hint_as_mainly_device = false;
   };
 
  public:
@@ -449,9 +468,6 @@ class UnifiedMemoryCudaMemoryAllocator
     if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_ACCELERATOR_MEMORY_POOL", true))
       use_memory_pool = (v.value() & static_cast<int>(MemoryPoolFlags::UVM)) != 0;
     _setUseMemoryPool(use_memory_pool);
-
-    if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_CUDA_MEMORY_HINT_ON_DEVICE", true))
-      m_use_hint_as_mainly_device = (v.value() != 0);
   }
 
  public:
@@ -471,8 +487,6 @@ class UnifiedMemoryCudaMemoryAllocator
   void _applyHint(void* p, size_t new_size, MemoryAllocationArgs args)
   {
     eMemoryLocationHint hint = args.memoryLocationHint();
-    if (m_use_hint_as_mainly_device)
-      hint = eMemoryLocationHint::MainlyDevice;
     // Utilise le device actif pour positionner le GPU par défaut
     // On ne le fait que si le \a hint le nécessite pour éviter d'appeler
     // cudaGetDevice() à chaque fois.
@@ -505,8 +519,6 @@ class UnifiedMemoryCudaMemoryAllocator
  private:
 
   bool m_use_ats = false;
-  //! Si vrai, par défaut on considère toutes les allocations comme eMemoryLocationHint::MainlyDevice
-  bool m_use_hint_as_mainly_device = false;
 };
 
 /*---------------------------------------------------------------------------*/
