@@ -25,7 +25,7 @@
 #include "arcane/mesh/MeshExchanger.h"
 #include "arcane/mesh/DynamicMesh.h"
 #include "arcane/mesh/MeshExchange.h"
-#include "arcane/mesh/DynamicMeshIncrementalBuilder.h"
+#include "arcane/core/internal/IMeshModifierInternal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -37,7 +37,7 @@ namespace Arcane::mesh
 /*---------------------------------------------------------------------------*/
 
 MeshExchanger::
-MeshExchanger(DynamicMesh* mesh,ITimeStats* stats)
+MeshExchanger(IMesh* mesh,ITimeStats* stats)
 : TraceAccessor(mesh->traceMng())
 , m_mesh(mesh)
 , m_time_stats(stats)
@@ -330,7 +330,7 @@ removeNeededItems()
   }
 
   // Supprime les entités qui ne sont plus liées au sous-domaine
-  m_mesh->incrementalBuilder()->removeNeedRemoveMarkedItems();
+  m_mesh->modifier()->_modifierInternalApi()->removeNeedRemoveMarkedItems();
 
   m_phase = ePhase::AllocateItems;
 }
@@ -450,7 +450,7 @@ findExchanger(IItemFamily* family)
 IPrimaryMesh* MeshExchanger::
 mesh() const
 {
-  return m_mesh;
+  return m_mesh->toPrimaryMesh();
 }
 
 /*---------------------------------------------------------------------------*/
