@@ -361,6 +361,29 @@ memoryRessource() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+void RunQueue::
+setConcurrentCommandCreation(bool v)
+{
+  _checkNotNull();
+  if (isAcceleratorPolicy())
+    ARCANE_FATAL("setting concurrent command creation is not supported for RunQueue running on accelerator");
+  m_p->setConcurrentCommandCreation(v);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+bool RunQueue::
+isConcurrentCommandCreation() const
+{
+  if (m_p)
+    return m_p->isConcurrentCommandCreation();
+  return false;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 extern "C++" ePointerAccessibility
 getPointerAccessibility(RunQueue* queue, const void* ptr, PointerAttribute* ptr_attr)
 {

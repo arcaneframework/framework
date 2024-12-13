@@ -195,6 +195,22 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RunQueue
  public:
 
   /*!
+   * \brief Indique si on autorise la création de RunCommand pour cette instance
+   * depuis plusieurs threads.
+   *
+   * Cela nécessite d'utiliser un verrou (comme std::mutex) et peut dégrader les
+   * performances. Le défaut est \a false.
+   *
+   * Cette méthode n'est pas supportée pour les files qui sont associées
+   * à des accélérateurs (isAcceleratorPolicy()==true)
+   */
+  void setConcurrentCommandCreation(bool v);
+  //! Indique si la création concurrente de plusieurs RunCommand est autorisée
+  bool isConcurrentCommandCreation() const;
+
+ public:
+
+  /*!
    * \brief Pointeur sur la structure interne dépendante de l'implémentation.
    *
    * Cette méthode est réservée à un usage avancée.
@@ -208,6 +224,10 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RunQueue
    */
   ARCANE_DEPRECATED_REASON("Y2024: Use toCudaNativeStream(), toHipNativeStream() or toSyclNativeStream() instead")
   void* platformStream() const;
+
+ public:
+
+  impl::RunQueueImpl* _internalImpl() const;
 
  private:
 
@@ -224,7 +244,6 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RunQueue
   impl::IRunnerRuntime* _internalRuntime() const;
   impl::IRunQueueStream* _internalStream() const;
   impl::RunCommandImpl* _getCommandImpl() const;
-  impl::RunQueueImpl* _internalImpl() const;
   void _checkNotNull() const;
 
   // Pour VariableViewBase

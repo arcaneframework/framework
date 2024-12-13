@@ -141,7 +141,8 @@ _freePool()
 {
   RunQueueImplStack& s = m_run_queue_pool;
   while (!s.empty()) {
-    delete s.top();
+    RunQueueImpl* q = s.top();
+    RunQueueImpl::_destroy(q);
     s.pop();
   }
 }

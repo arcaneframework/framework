@@ -31,6 +31,7 @@ RunCommand::
 RunCommand(const RunQueue& run_queue)
 : m_p(run_queue._getCommandImpl())
 {
+  m_p->m_has_living_run_command = true;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -39,6 +40,8 @@ RunCommand(const RunQueue& run_queue)
 RunCommand::
 ~RunCommand()
 {
+  m_p->m_has_living_run_command = false;
+  m_p->_notifyDestroyRunCommand();
 }
 
 /*---------------------------------------------------------------------------*/

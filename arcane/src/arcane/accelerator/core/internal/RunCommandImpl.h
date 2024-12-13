@@ -120,12 +120,19 @@ class RunCommandImpl
    */
   bool m_is_allow_reuse_command = false;
 
+  //! Indique si une RunCommand a une référence sur cette instance.
+  bool m_has_living_run_command = false;
+
+  //! Indique si on peut remettre la commande dans le pool associé à la RunQueue.
+  bool m_may_be_put_in_pool = false;
+
  private:
 
   void _freePools();
   void _reset();
   void _init();
   IRunQueueEventImpl* _createEvent();
+  void _notifyDestroyRunCommand();
 };
 
 /*---------------------------------------------------------------------------*/

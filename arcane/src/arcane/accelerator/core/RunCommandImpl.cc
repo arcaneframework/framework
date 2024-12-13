@@ -156,6 +156,7 @@ notifyEndLaunchKernel()
   // TODO: utiliser la bonne stream en séquentiel
   m_stop_event->recordQueue(stream);
   stream->notifyEndLaunchKernel(*this);
+  m_queue->_addRunningCommand(this);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -221,6 +222,8 @@ _reset()
   m_loop_one_exec_stat.reset();
   m_loop_one_exec_stat_ptr = nullptr;
   m_has_been_launched = false;
+  m_has_living_run_command = false;
+  m_may_be_put_in_pool = false;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -286,6 +289,20 @@ _getOrCreateReduceMemoryImpl()
     return p;
   }
   return new ReduceMemoryImpl(this);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Méthode appelée quand l'instance RunCommand associée est détruite.
+ */
+void RunCommandImpl::
+_notifyDestroyRunCommand()
+{
+  // Si la commande n'a pas été lancé, il faut la remettre dans le pool
+  // des commandes de la file (sinon on aura une fuite mémoire)
+  if (!m_has_been_launched || m_may_be_put_in_pool)
+    m_queue->_putInCommandPool(this);
 }
 
 /*---------------------------------------------------------------------------*/
