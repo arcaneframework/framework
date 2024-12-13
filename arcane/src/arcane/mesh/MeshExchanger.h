@@ -16,9 +16,9 @@
 
 #include "arcane/utils/TraceAccessor.h"
 #include "arcane/utils/List.h"
-#include "arcane/IMeshExchanger.h"
-#include "arcane/ParallelExchangerOptions.h"
-#include "arcane/mesh/MeshGlobal.h"
+#include "arcane/core/IMeshExchanger.h"
+#include "arcane/core/ParallelExchangerOptions.h"
+#include "arcane/core/IMesh.h"
 
 #include <map>
 
@@ -35,11 +35,6 @@ namespace Arcane::mesh
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-class DynamicMesh;
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 /*!
  * \brief Informations pour un échange de maillage entre sous-domaines.
  */
@@ -53,7 +48,7 @@ class ARCANE_MESH_EXPORT MeshExchanger
 
  public:
 
-  MeshExchanger(DynamicMesh* mesh,ITimeStats* stats);
+  MeshExchanger(IMesh* mesh,ITimeStats* stats);
   ~MeshExchanger();
 
  public:
@@ -76,7 +71,7 @@ class ARCANE_MESH_EXPORT MeshExchanger
 
  private:
 
-  DynamicMesh* m_mesh;
+  IMesh* m_mesh;
   List<IItemFamilyExchanger*> m_family_exchangers;
   ItemFamilyExchangerMap m_family_exchanger_map;
   ITimeStats* m_time_stats;
