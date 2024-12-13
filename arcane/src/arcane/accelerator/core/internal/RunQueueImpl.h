@@ -21,6 +21,7 @@
 
 #include <stack>
 #include <atomic>
+#include <mutex>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -45,12 +46,15 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RunQueueImpl
   friend class RunQueueImplStack;
   friend class RunnerImpl;
 
+  class Lock;
+
  private:
 
   RunQueueImpl(RunnerImpl* runner_impl, Int32 id, const RunQueueBuildInfo& bi);
 
- public:
+ private:
 
+  // Il faut utiliser _destroy() pour détruire l'instance.
   ~RunQueueImpl();
 
  public:
@@ -78,6 +82,11 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RunQueueImpl
   void recordEvent(RunQueueEvent& event);
   void waitEvent(RunQueueEvent& event);
 
+  void setConcurrentCommandCreation(bool v);
+  bool isConcurrentCommandCreation() const { return m_use_pool_mutex; }
+
+  void dumpStats(std::ostream& ostr) const;
+
  public:
 
   void addRef()
@@ -101,7 +110,12 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RunQueueImpl
   bool _isInPool() const { return m_is_in_pool; }
   void _release();
   void _setDefaultMemoryRessource();
+  void _addRunningCommand(RunCommandImpl* p);
+  void _putInCommandPool(RunCommandImpl* p);
+  void _freeCommandsInPool();
+  void _checkPutCommandInPoolNoLock(RunCommandImpl* p);
   static RunQueueImpl* _reset(RunQueueImpl* p);
+  static void _destroy(RunQueueImpl* q);
 
  private:
 
@@ -123,6 +137,10 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RunQueueImpl
   bool m_is_async = false;
   //! Ressource mémoire par défaut
   eMemoryRessource m_memory_ressource = eMemoryRessource::Unknown;
+
+  // Mutex pour les commandes (actif si \a m_use_pool_mutex est vrai)
+  std::unique_ptr<std::mutex> m_pool_mutex;
+  bool m_use_pool_mutex = false;
 };
 
 /*---------------------------------------------------------------------------*/

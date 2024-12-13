@@ -93,7 +93,7 @@ class MeshMaterialAcceleratorUnitTest
 
  private:
 
-  ax::Runner* m_runner = nullptr;
+  ax::Runner m_runner;
 
   IMeshMaterialMng* m_mm_mng;
   IMeshEnvironment* m_env1;
@@ -131,7 +131,7 @@ class MeshMaterialAcceleratorUnitTest
   void _executeTest4(Integer nb_z, bool use_new_impl);
   void _executeTest5(Integer nb_z, MatCellVectorView mat);
   void _executeTest6();
-  void _executeTest7();
+  void _executeTest7(RunQueue& queue);
   void _checkEnvValues1();
   void _checkMatValues1();
   void _checkEnvironmentValues();
@@ -181,8 +181,7 @@ MeshMaterialAcceleratorUnitTest::
 void MeshMaterialAcceleratorUnitTest::
 initializeTest()
 {
-  m_runner = subDomain()->acceleratorMng()->defaultRunner();
-
+  m_runner = subDomain()->acceleratorMng()->runner();
   m_mm_mng = IMeshMaterialMng::getReference(mesh());
 
   // Lit les infos des matériaux du JDD et les enregistre dans le gestionnaire
@@ -349,7 +348,25 @@ executeTest()
   }
   {
     _executeTest6();
-    _executeTest7();
+  }
+  {
+    RunQueue queue = makeQueue(m_runner);
+    if (!queue.isAcceleratorPolicy()) {
+      // Le mode concurrent n'est pas supporté avec les accélérateurs
+      // (uniquement le multi-threading ou le séquentiel)
+      queue.setConcurrentCommandCreation(true);
+      if (!queue.isConcurrentCommandCreation())
+        ARCANE_FATAL("Can not create concurrent commands");
+      // Teste l'exécution multhread de la création de MatCellVector/EnvCellVector
+      ParallelLoopOptions loop_options;
+      loop_options.setGrainSize(1);
+      arcaneParallelFor(1, 20, loop_options,
+                        [&](Integer a, Integer n) {
+                          for (Int32 i = a; i < (a + n); ++i)
+                            _executeTest7(queue);
+                        });
+    }
+    _executeTest7(queue);
   }
 }
 
@@ -925,11 +942,9 @@ _executeTest6()
  * \brief Tests passages CellVector vers EnvCellVectorView ou MatCellVectorView
  */
 void MeshMaterialAcceleratorUnitTest::
-_executeTest7()
+_executeTest7(RunQueue& queue)
 {
   ValueChecker vc(A_FUNCINFO);
-
-  auto queue = makeQueue(m_runner);
 
   // Créé un CellVector contenant une maille sur 2
   IItemFamily* cell_family = mesh()->cellFamily();
