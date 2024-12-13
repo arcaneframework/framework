@@ -183,6 +183,12 @@ class DynamicMesh::InternalApi
   {
     return nullptr;
   }
+
+  void removeNeedRemoveMarkedItems() override
+  {
+    m_mesh->incrementalBuilder()->removeNeedRemoveMarkedItems();
+  }
+
  private:
 
   DynamicMesh* m_mesh = nullptr;
