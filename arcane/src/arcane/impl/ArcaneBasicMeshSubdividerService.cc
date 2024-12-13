@@ -430,11 +430,13 @@ void ArcaneBasicMeshSubdividerService::_refineOnce(IPrimaryMesh* mesh)
   UniqueArray<Int64> face_external_uid; // Toutes les faces externes du proc uid
 
   // ATTENTION DEBUG NODE #TAG
-  /*ENUMERATE_NODE(inode,mesh->ownNodes())
+  /*
+  ENUMERATE_NODE(inode,mesh->ownNodes())
   {
     const Node & node = *inode;
     nodes_to_add_coords[node.uniqueId().asInt64()] = nodes_coords[node];
-  }*/
+  }
+  */
   // Traitement pour une cellule
   ENUMERATE_CELL(icell,mesh->ownCells())
   {
@@ -526,10 +528,12 @@ void ArcaneBasicMeshSubdividerService::_refineOnce(IPrimaryMesh* mesh)
       }
       // Est-ce qu'on doit ajouter les anciens noeuds ? Normalement non
       // #TAG
-      /*for(Integer i = 0 ; i < cell.nbNode() ; i++ ) {
+      /*
+      for(Integer i = 0 ; i < cell.nbNode() ; i++ ) {
         nodes_to_add.add(cell.node(i).uniqueId().asInt64());
         new_nodes.insert(cell.node(i).uniqueId().asInt64());
-      }*/
+      }
+      */
 
       debug() << "nodetoadd size " << nodes_to_add.size() << " " << nodes_to_add_coords.size();
       debug() << "Node coord & uid TRUC" << nodes_to_add_coords.size() << " " << nodes_to_add.size() ;
@@ -755,7 +759,11 @@ void ArcaneBasicMeshSubdividerService::_refineOnce(IPrimaryMesh* mesh)
     ARCANE_ASSERT((nodes_lid.size() != 0),("End"));
     ARCANE_ASSERT((nodes_lid.size() == nodes_to_add.size()),("End"));
     // Assignation des coords aux noeuds
-    ENUMERATE_(Node, inode, mesh->nodeFamily()->view(nodes_lid)){
+
+    UniqueArray<Int32> to_add_to_nodes(nodes_to_add.size()); // Bis
+    mesh->nodeFamily()->itemsUniqueIdToLocalId(to_add_to_nodes,nodes_to_add,true);
+
+    ENUMERATE_(Node, inode, mesh->nodeFamily()->view(to_add_to_nodes)){ // recalculer nodes_lid
       Node node = *inode;
       debug() << node.uniqueId().asInt64() ;
       //ARCANE_ASSERT((new_nodes.find(node.uniqueId().asInt64()) != new_nodes.end()),("Not found in set !"))
