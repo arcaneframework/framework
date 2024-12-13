@@ -18,6 +18,7 @@
 #include "arcane/accelerator/core/RunQueue.h"
 #include "arcane/accelerator/core/Runner.h"
 #include "arcane/accelerator/core/DeviceMemoryInfo.h"
+#include "arcane/accelerator/core/internal/RunQueueImpl.h"
 
 #include "arcane/accelerator/NumArrayViews.h"
 #include "arcane/accelerator/RunCommandLoop.h"
@@ -163,23 +164,59 @@ void _testBinOp(IAcceleratorMng* acc_mng)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void _testEmptyKernel(IAcceleratorMng* acc_mng)
+RunQueue*
+_testEmptyKernelHelper(IAcceleratorMng* acc_mng, bool use_async, bool use_concurrent, bool use_no_launch_command)
 {
   // Lance un kernel vide pour évaluer le coup du lancement.
-  int nb_value = 2000;
   int nb_iteration = 10000;
 
-  auto queue = Accelerator::makeQueue(acc_mng->defaultRunner());
-  queue.setAsync(true);
+  auto queue = makeQueue(acc_mng->defaultRunner());
+  RunQueue* q2 = new RunQueue(queue);
+  if (use_async)
+    queue.setAsync(true);
+  if (use_concurrent)
+    queue.setConcurrentCommandCreation(use_concurrent);
   Int64 xbegin = platform::getRealTimeNS();
   for (int i = 0; i < nb_iteration; ++i) {
     auto command = makeCommand(queue);
-    command << RUNCOMMAND_LOOP1(, nb_value){};
+    if (!use_no_launch_command)
+      command << RUNCOMMAND_SINGLE(){};
   }
   Int64 xend = platform::getRealTimeNS();
   queue.barrier();
   Int64 xend2 = platform::getRealTimeNS();
-  std::cout << "Time1 = " << (xend - xbegin) / nb_iteration << " Time2=" << (xend2 - xbegin) / nb_iteration << "\n";
+  std::cout << "Time "
+            << (use_async ? "ASYNC " : "SYNC  ")
+            << (use_concurrent ? " CONCURRENT " : "            ")
+            << (use_no_launch_command ? " NOLAUNCH " : "   LAUNCH ");
+
+  std::cout << "Time1 (us) = " << std::setw(6) << (xend - xbegin) / 1000 << " Time2=" << std::setw(6) << (xend2 - xbegin) / 1000;
+  std::cout << "  Time1/Iter (ns) = " << std::setw(6) << (xend - xbegin) / nb_iteration << " Time2=" << std::setw(6) << (xend2 - xbegin) / nb_iteration;
+  std::cout << "\n";
+  queue._internalImpl()->dumpStats(std::cout);
+  std::cout << "\n";
+  return q2;
+}
+
+void _testEmptyKernel(IAcceleratorMng* acc_mng)
+{
+  // On garde les références sur les files créées pour ne pas les
+  // réutiliser. Cela permet d'avoir des mesures fiables sur les temps.
+  Runner runner = acc_mng->runner();
+  UniqueArray<RunQueue*> queues;
+  queues.reserve(8);
+  queues.add(_testEmptyKernelHelper(acc_mng, false, false, false));
+  queues.add(_testEmptyKernelHelper(acc_mng, false, false, true));
+  queues.add(_testEmptyKernelHelper(acc_mng, true, false, false));
+  queues.add(_testEmptyKernelHelper(acc_mng, true, false, true));
+  if (!isAcceleratorPolicy(runner.executionPolicy())) {
+    queues.add(_testEmptyKernelHelper(acc_mng, false, true, false));
+    queues.add(_testEmptyKernelHelper(acc_mng, false, true, true));
+    queues.add(_testEmptyKernelHelper(acc_mng, true, true, false));
+    queues.add(_testEmptyKernelHelper(acc_mng, true, true, true));
+  }
+  for (RunQueue* q : queues)
+    delete q;
 }
 
 /*---------------------------------------------------------------------------*/

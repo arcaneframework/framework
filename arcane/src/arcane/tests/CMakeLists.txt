@@ -296,6 +296,15 @@ file(COPY ${TEST_PATH}/data/test_output_continue_hydro3_cartesian_small_4shm
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
 
+macro(arcane_add_accelerator_test_all_policies TEST_NAME CASE_FILE)
+  arcane_add_test_sequential(${TEST_NAME} ${CASE_FILE} ${ARGN})
+  arcane_add_test_sequential_task(${TEST_NAME} ${CASE_FILE} 4 ${ARGN})
+  arcane_add_accelerator_test_sequential(${TEST_NAME} ${CASE_FILE} ${ARGN})
+endmacro()
+
+# ----------------------------------------------------------------------------
+# ----------------------------------------------------------------------------
+
 message(STATUS "ADD AUTOMATED TESTS")
 ARCANE_ADD_TEST_SEQUENTIAL(utils1 testUtils-1.arc)
 ARCANE_ADD_TEST_SEQUENTIAL(json1 testJSON-1.arc)
@@ -365,12 +374,13 @@ add_test(dump_database ${ARCANE_TEST_DRIVER} launch -We,STDENV_CODE_NAME,Arcane 
 # ----------------------------------------------------------------------------
 
 if (ARCANE_HAS_ACCELERATOR_API)
-  arcane_add_test_sequential(standalone_accelerator_testsum dummy.arc "-A,StandaloneAcceleratorMethod=TestSum")
-  arcane_add_test_sequential(standalone_accelerator_testbinop dummy.arc "-A,StandaloneAcceleratorMethod=TestBinOp")
-  arcane_add_accelerator_test_sequential(standalone_accelerator_testsum dummy.arc "-A,StandaloneAcceleratorMethod=TestSum")
+  arcane_add_accelerator_test_all_policies(standalone_accelerator_testsum dummy.arc "-A,StandaloneAcceleratorMethod=TestSum")
+  arcane_add_accelerator_test_all_policies(standalone_accelerator_testbinop dummy.arc "-A,StandaloneAcceleratorMethod=TestBinOp")
+  #  arcane_add_accelerator_test_sequential(standalone_accelerator_testsum dummy.arc "-A,StandaloneAcceleratorMethod=TestSum")
+  #arcane_add_accelerator_test_sequential(standalone_accelerator_testbinop dummy.arc "-A,StandaloneAcceleratorMethod=TestBinOp")
+  #arcane_add_accelerator_test_sequential(standalone_accelerator_testemptykernel dummy.arc "-A,StandaloneAcceleratorMethod=TestEmptyKernel")
+  arcane_add_accelerator_test_all_policies(standalone_accelerator_testemptykernel dummy.arc "-A,StandaloneAcceleratorMethod=TestEmptyKernel")
   arcane_add_accelerator_test_sequential(standalone_accelerator_testsum_hostpinned dummy.arc "-A,StandaloneAcceleratorMethod=TestSum" "-We,ARCANE_DEFAULT_DATA_MEMORY_RESOURCE,HostPinned")
-  arcane_add_accelerator_test_sequential(standalone_accelerator_testbinop dummy.arc "-A,StandaloneAcceleratorMethod=TestBinOp")
-  arcane_add_accelerator_test_sequential(standalone_accelerator_testemptykernel dummy.arc "-A,StandaloneAcceleratorMethod=TestEmptyKernel")
 endif()
 
 arcane_add_test_sequential(standalone_subdomain1 dummy.arc "-A,StandaloneSubDomainMethod=Test1")
@@ -780,12 +790,6 @@ if (HDF5_FOUND)
   ARCANE_ADD_TEST_SEQUENTIAL(hydro6_checkpoint testHydro-6.arc -c 2 -m 25)
   ARCANE_ADD_TEST_PARALLEL(hydro1_checkpoint_3proc_rep4 testHydro-1-checkpoint.arc 12 -c 2 -m 25 -R 4)
 endif()
-
-macro(arcane_add_accelerator_test_all_policies TEST_NAME CASE_FILE)
-  arcane_add_test_sequential(${TEST_NAME} ${CASE_FILE})
-  arcane_add_test_sequential_task(${TEST_NAME} ${CASE_FILE} 4)
-  arcane_add_accelerator_test_sequential(${TEST_NAME} ${CASE_FILE})
-endmacro()
 
 if (ARCANE_HAS_ACCELERATOR_API)
   arcane_add_test_sequential(numarray1 testNumArray-1.arc)
