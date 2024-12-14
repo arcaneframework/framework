@@ -49,6 +49,7 @@
 #include "arcane/materials/internal/MeshMaterialSynchronizer.h"
 #include "arcane/materials/internal/MeshMaterialVariableSynchronizer.h"
 #include "arcane/materials/internal/ConstituentConnectivityList.h"
+#include "arcane/materials/internal/AllCellToAllEnvCellContainer.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -131,7 +132,6 @@ MeshMaterialMng(const MeshHandle& mesh_handle,const String& name)
 , m_internal_api(std::make_unique<InternalApi>(this))
 , m_variable_mng(mesh_handle.variableMng())
 , m_name(name)
-, m_all_cell_to_all_env_cell(MemoryUtils::getDefaultDataAllocator())
 {
   m_all_env_data = std::make_unique<AllEnvData>(this);
   m_exchange_mng = std::make_unique<MeshMaterialExchangeMng>(this);
@@ -182,10 +182,7 @@ MeshMaterialMng::
   m_modifier.reset();
   m_internal_api.reset();
 
-  if (m_allcell_2_allenvcell){
-    m_all_cell_to_all_env_cell.clear();
-    m_allcell_2_allenvcell = nullptr;
-  }
+  m_allcell_2_allenvcell.reset();
 
   // On détruit le Runner à la fin pour être sur qu'il n'y a plus de
   // références dessus dans les autres instances.
@@ -1335,9 +1332,7 @@ void MeshMaterialMng::
 createAllCellToAllEnvCell()
 {
   if (!m_allcell_2_allenvcell){
-    m_all_cell_to_all_env_cell.reserve(1);
-    m_all_cell_to_all_env_cell.add(AllCellToAllEnvCellContainer(this));
-    m_allcell_2_allenvcell = m_all_cell_to_all_env_cell.view().ptrAt(0);
+    m_allcell_2_allenvcell = std::make_unique<AllCellToAllEnvCellContainer>(this);
     m_allcell_2_allenvcell->initialize();
   }
 }

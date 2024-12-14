@@ -35,6 +35,7 @@
 #include "arcane/materials/internal/MaterialModifierOperation.h"
 #include "arcane/materials/internal/ConstituentConnectivityList.h"
 #include "arcane/materials/internal/ComponentItemListBuilder.h"
+#include "arcane/materials/internal/AllCellToAllEnvCellContainer.h"
 
 #include "arcane/accelerator/Scan.h"
 #include "arcane/accelerator/RunCommandLoop.h"

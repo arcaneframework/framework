@@ -32,7 +32,6 @@
 #include "arcane/materials/internal/MeshMaterial.h"
 #include "arcane/materials/internal/MeshEnvironment.h"
 #include "arcane/materials/internal/MeshMaterialSynchronizer.h"
-#include "arcane/materials/internal/AllCellToAllEnvCellContainer.h"
 
 #include <map>
 #include <memory>
@@ -320,7 +319,7 @@ class MeshMaterialMng
 
  private:
 
-  AllCellToAllEnvCellContainer* getAllCellToAllEnvCellContainer() const { return m_allcell_2_allenvcell; }
+  AllCellToAllEnvCellContainer* getAllCellToAllEnvCellContainer() const { return m_allcell_2_allenvcell.get(); }
   void createAllCellToAllEnvCell();
 
  private:
@@ -382,13 +381,8 @@ class MeshMaterialMng
 
   std::unique_ptr<RunnerInfo> m_runner_info;
 
-  /*!
-   * \brief Contient une instance de AllCellToAllEnvCell.
-   *
-   * On utilise un tableau avec un seul élément pour l'allouer en mémoire unifiée.
-   */
-  UniqueArray<AllCellToAllEnvCellContainer> m_all_cell_to_all_env_cell;
-  AllCellToAllEnvCellContainer* m_allcell_2_allenvcell = nullptr;
+  //! Conteneur pour AllEnvCellToAllEnvCell
+  std::unique_ptr<AllCellToAllEnvCellContainer> m_allcell_2_allenvcell;
   bool m_is_allcell_2_allenvcell = false;
 
   bool m_is_use_accelerator_for_constituent_item_vector = true;

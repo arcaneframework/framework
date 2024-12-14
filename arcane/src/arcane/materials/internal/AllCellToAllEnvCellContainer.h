@@ -117,7 +117,6 @@ class ARCANE_MATERIALS_EXPORT AllCellToAllEnvCellContainer
   IMeshMaterialMng* m_material_mng = nullptr;
   Integer m_size = 0;
   NumArray<Span<ComponentItemLocalId>, MDDim1> m_allcell_allenvcell;
-  //Span<ComponentItemLocalId>* m_allcell_allenvcell_ptr = nullptr;
   NumArray<ComponentItemLocalId, MDDim1> m_mem_pool;
   Int32 m_current_max_nb_env = 0;
   AllCellToAllEnvCell m_all_cell_to_all_env_cell;
