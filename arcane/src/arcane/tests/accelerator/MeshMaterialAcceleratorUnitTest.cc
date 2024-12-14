@@ -799,9 +799,8 @@ _executeTest4(Integer nb_z, bool use_new_impl)
 
   // Some further functions testing, not really usefull here, but it improves cover
   {
-    UniqueArray<AllCellToAllEnvCellContainer> useless;
-    useless.add(AllCellToAllEnvCellContainer(m_mm_mng));
-    useless[0].initialize();
+    AllCellToAllEnvCellContainer useless(m_mm_mng);
+    useless.initialize();
   }
 
   // Call to forceRecompute to test bruteForceUpdate

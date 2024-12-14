@@ -16,22 +16,12 @@
 
 #include "arcane/materials/MaterialsGlobal.h"
 
-#include "arcane/utils/PlatformUtils.h"
-#include "arcane/utils/NumArray.h"
-
-#include "arcane/core/IMesh.h"
 #include "arcane/core/materials/MatItem.h"
-#include "arcane/core/materials/IMeshMaterialMng.h"
 #include "arcane/core/materials/MatItemEnumerator.h"
 #include "arcane/core/materials/CellToAllEnvCellConverter.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-namespace ArcaneTest
-{
-class MeshMaterialAcceleratorUnitTest;
-}
 
 namespace Arcane::Materials
 {

@@ -16,8 +16,6 @@
 
 #include "arcane/materials/MaterialsGlobal.h"
 
-#include "arcane/utils/NumArray.h"
-
 #include "arcane/materials/AllCellToAllEnvCellConverter.h"
 
 /*---------------------------------------------------------------------------*/
@@ -63,11 +61,14 @@ class ARCANE_MATERIALS_EXPORT AllCellToAllEnvCellContainer
  public:
 
   explicit AllCellToAllEnvCellContainer(IMeshMaterialMng* mm);
+  ~AllCellToAllEnvCellContainer();
 
  public:
 
   //! Copies interdites
+  AllCellToAllEnvCellContainer(const AllCellToAllEnvCellContainer&) = delete;
   AllCellToAllEnvCellContainer& operator=(const AllCellToAllEnvCellContainer&) = delete;
+  AllCellToAllEnvCellContainer& operator=(AllCellToAllEnvCellContainer&&) = delete;
 
  public:
 
@@ -104,16 +105,11 @@ class ARCANE_MATERIALS_EXPORT AllCellToAllEnvCellContainer
 
   void reset();
 
-  const AllCellToAllEnvCell& view() const { return m_all_cell_to_all_env_cell; }
+  AllCellToAllEnvCell view() const;
 
  private:
 
-  IMeshMaterialMng* m_material_mng = nullptr;
-  Int32 m_size = 0;
-  NumArray<Span<ComponentItemLocalId>, MDDim1> m_envcell_container;
-  NumArray<ComponentItemLocalId, MDDim1> m_mem_pool;
-  Int32 m_current_max_nb_env = 0;
-  AllCellToAllEnvCell m_all_cell_to_all_env_cell;
+  Impl* m_p = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/
