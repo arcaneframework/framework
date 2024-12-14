@@ -300,11 +300,11 @@ class MeshMaterialMng
 
   void enableCellToAllEnvCellForRunCommand(bool is_enable, bool force_create=false) override
   {
-    m_is_allcell_2_allenvcell = is_enable;
+    m_is_use_accelerator_envcell_container = is_enable;
     if (force_create)
       createAllCellToAllEnvCell();
   }
-  bool isCellToAllEnvCellForRunCommand() const override { return m_is_allcell_2_allenvcell; }
+  bool isCellToAllEnvCellForRunCommand() const override { return m_is_use_accelerator_envcell_container; }
 
   IMeshMaterialMngInternal* _internalApi() const override { return m_internal_api.get(); }
 
@@ -319,7 +319,7 @@ class MeshMaterialMng
 
  private:
 
-  AllCellToAllEnvCellContainer* getAllCellToAllEnvCellContainer() const { return m_allcell_2_allenvcell.get(); }
+  AllCellToAllEnvCellContainer* getAllCellToAllEnvCellContainer() const { return m_accelerator_envcell_container.get(); }
   void createAllCellToAllEnvCell();
 
  private:
@@ -381,9 +381,9 @@ class MeshMaterialMng
 
   std::unique_ptr<RunnerInfo> m_runner_info;
 
-  //! Conteneur pour AllEnvCellToAllEnvCell
-  std::unique_ptr<AllCellToAllEnvCellContainer> m_allcell_2_allenvcell;
-  bool m_is_allcell_2_allenvcell = false;
+  //! Conteneur pour AllEnvCellToAllEnvCell pour accélerateur
+  std::unique_ptr<AllCellToAllEnvCellContainer> m_accelerator_envcell_container;
+  bool m_is_use_accelerator_envcell_container = false;
 
   bool m_is_use_accelerator_for_constituent_item_vector = true;
 

@@ -141,7 +141,7 @@ MeshMaterialMng(const MeshHandle& mesh_handle,const String& name)
 
   String s = platform::getEnvironmentVariable("ARCANE_ALLENVCELL_FOR_RUNCOMMAND");
   if (!s.null())
-    m_is_allcell_2_allenvcell = true;
+    m_is_use_accelerator_envcell_container = true;
   m_mms = new MeshMaterialSynchronizer(this);
 }
 
@@ -182,7 +182,7 @@ MeshMaterialMng::
   m_modifier.reset();
   m_internal_api.reset();
 
-  m_allcell_2_allenvcell.reset();
+  m_accelerator_envcell_container.reset();
 
   // On détruit le Runner à la fin pour être sur qu'il n'y a plus de
   // références dessus dans les autres instances.
@@ -1331,9 +1331,9 @@ _dumpStats()
 void MeshMaterialMng::
 createAllCellToAllEnvCell()
 {
-  if (!m_allcell_2_allenvcell){
-    m_allcell_2_allenvcell = std::make_unique<AllCellToAllEnvCellContainer>(this);
-    m_allcell_2_allenvcell->initialize();
+  if (!m_accelerator_envcell_container) {
+    m_accelerator_envcell_container = std::make_unique<AllCellToAllEnvCellContainer>(this);
+    m_accelerator_envcell_container->initialize();
   }
 }
 

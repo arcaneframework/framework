@@ -85,12 +85,6 @@ class ARCANE_MATERIALS_EXPORT AllCellToAllEnvCellContainer
    */
   void initialize();
 
-  //! Méthode d'accès à la table de "connectivité" cell -> all env cells
-  ARCCORE_HOST_DEVICE Span<ComponentItemLocalId>* internal() const
-  {
-    return m_all_cell_to_all_env_cell._internal();
-  }
-
   /*!
    * \brief Méthode pour donner le nombre maximal d'environnements
    * présents sur une maille à l'instant t.
@@ -99,7 +93,7 @@ class ARCANE_MATERIALS_EXPORT AllCellToAllEnvCellContainer
    * d'avoir une valeur max <= au nombre total d'environnement présents
    * dans le jdd (et donc d'économiser un peu de mémoire).
    */
-  Int32 maxNbEnvPerCell() const;
+  Int32 computeMaxNbEnvPerCell() const;
 
   /*!
    * On regarde si le nb max d'env par cell à l'instant t a changé,
@@ -115,8 +109,8 @@ class ARCANE_MATERIALS_EXPORT AllCellToAllEnvCellContainer
  private:
 
   IMeshMaterialMng* m_material_mng = nullptr;
-  Integer m_size = 0;
-  NumArray<Span<ComponentItemLocalId>, MDDim1> m_allcell_allenvcell;
+  Int32 m_size = 0;
+  NumArray<Span<ComponentItemLocalId>, MDDim1> m_envcell_container;
   NumArray<ComponentItemLocalId, MDDim1> m_mem_pool;
   Int32 m_current_max_nb_env = 0;
   AllCellToAllEnvCell m_all_cell_to_all_env_cell;
