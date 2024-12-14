@@ -32,6 +32,7 @@
 #include "arcane/materials/internal/MeshMaterial.h"
 #include "arcane/materials/internal/MeshEnvironment.h"
 #include "arcane/materials/internal/MeshMaterialSynchronizer.h"
+#include "arcane/materials/internal/AllCellToAllEnvCellContainer.h"
 
 #include <map>
 #include <memory>
@@ -96,9 +97,9 @@ class MeshMaterialMng
 
    public:
 
-    AllCellToAllEnvCell* getAllCellToAllEnvCell() const override
+    AllCellToAllEnvCellContainer* getAllCellToAllEnvCellContainer() const override
     {
-      return m_material_mng->getAllCellToAllEnvCell();
+      return m_material_mng->getAllCellToAllEnvCellContainer();
     }
     void createAllCellToAllEnvCell() override
     {
@@ -319,7 +320,7 @@ class MeshMaterialMng
 
  private:
 
-  AllCellToAllEnvCell* getAllCellToAllEnvCell() const { return m_allcell_2_allenvcell; }
+  AllCellToAllEnvCellContainer* getAllCellToAllEnvCellContainer() const { return m_allcell_2_allenvcell; }
   void createAllCellToAllEnvCell();
 
  private:
@@ -386,8 +387,8 @@ class MeshMaterialMng
    *
    * On utilise un tableau avec un seul élément pour l'allouer en mémoire unifiée.
    */
-  UniqueArray<AllCellToAllEnvCell> m_all_cell_to_all_env_cell;
-  AllCellToAllEnvCell* m_allcell_2_allenvcell = nullptr;
+  UniqueArray<AllCellToAllEnvCellContainer> m_all_cell_to_all_env_cell;
+  AllCellToAllEnvCellContainer* m_allcell_2_allenvcell = nullptr;
   bool m_is_allcell_2_allenvcell = false;
 
   bool m_is_use_accelerator_for_constituent_item_vector = true;

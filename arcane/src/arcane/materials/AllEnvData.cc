@@ -253,7 +253,7 @@ _computeInfosForAllEnvCells1(RecomputeConstituentCellInfos& work_info)
   // en considérant que les milieux de chaque maille sont rangés consécutivement
   // dans m_env_items_internal.
 
-  work_info.env_cell_indexes.resize(cells_nb_env.size());
+  MemoryUtils::checkResizeArrayWithCapacity(work_info.env_cell_indexes, cells_nb_env.size());
 
   bool do_old = (max_local_id != nb_cell);
   if (do_old) {
@@ -521,7 +521,7 @@ forceRecompute(bool compute_all)
 
   // Met à jour le AllCellToAllEnvCell s'il a été initialisé si la fonctionnalité est activé
   if (m_material_mng->isCellToAllEnvCellForRunCommand()) {
-    auto* all_cell_to_all_env_cell(m_material_mng->_internalApi()->getAllCellToAllEnvCell());
+    auto* all_cell_to_all_env_cell(m_material_mng->_internalApi()->getAllCellToAllEnvCellContainer());
     if (all_cell_to_all_env_cell)
       all_cell_to_all_env_cell->bruteForceUpdate();
     else

@@ -123,6 +123,7 @@ set(ARCANE_SOURCES
   IMeshMaterialSynchronizeBuffer.h
   ItemMaterialVariableBaseT.H
 
+  internal/AllCellToAllEnvCellContainer.h
   internal/AllEnvData.h
   internal/ConstituentConnectivityList.h
   internal/ComponentItemInternalData.h

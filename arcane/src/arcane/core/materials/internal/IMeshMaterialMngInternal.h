@@ -88,7 +88,7 @@ class ARCANE_CORE_EXPORT IMeshMaterialMngInternal
    * destinée à être utilisée dans un RUNCOMMAND_ENUMERATE_CELL_ALLENVCELL
    * en conjonction de la macro ENUMERATE_CELL_ALLENVCELL
    */
-  virtual AllCellToAllEnvCell* getAllCellToAllEnvCell() const = 0;
+  virtual AllCellToAllEnvCellContainer* getAllCellToAllEnvCellContainer() const = 0;
 
   /*!
    * \brief Construit la table de "connectivité" CellLocalId -> AllEnvCell

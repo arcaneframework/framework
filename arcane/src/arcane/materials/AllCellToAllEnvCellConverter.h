@@ -63,17 +63,7 @@ class ARCANE_MATERIALS_EXPORT AllCellToAllEnvCell
 {
   friend class CellToAllEnvCellAccessor;
   friend class CellToAllComponentCellEnumerator;
-  friend class MeshMaterialMng;
-  friend class AllEnvData;
-  friend ArcaneTest::MeshMaterialAcceleratorUnitTest;
-
- public:
-
-  class Impl;
-
- private:
-
-  explicit AllCellToAllEnvCell(IMeshMaterialMng* mm);
+  friend AllCellToAllEnvCellContainer;
 
  public:
 
@@ -82,55 +72,15 @@ class ARCANE_MATERIALS_EXPORT AllCellToAllEnvCell
 
  private:
 
-  /*!
-   * \brief Fonction de création alternative. Il faut attendre que les données
-   * relatives aux matériaux soient finalisées.
-   *
-   * La différence réside dans la gestion de la mémoire.
-   * Ici, on applique un compromis sur la taille de la table cid -> envcells
-   * où la taille du tableau pour ranger les envcells d'une cell est égale à la taille
-   * max du nb d'environnement présent à un instant t dans un maille.
-   * Celà permet de ne pas faire les allocations mémoire dans la boucle interne et de
-   * façon systématique.
-   * => Gain de perf à évaluer.
-   */
-  void initialize();
-
   //! Méthode d'accès à la table de "connectivité" cell -> all env cells
-  ARCCORE_HOST_DEVICE Span<ComponentItemLocalId>* internal() const
+  ARCCORE_HOST_DEVICE Span<ComponentItemLocalId>* _internal() const
   {
     return m_allcell_allenvcell_ptr;
   }
 
-  /*!
-   * \brief Méthode pour donner le nombre maximal d'environnements
-   * présents sur une maille à l'instant t.
-   *
-   * Le fait d'effectuer cette opération à un instant donné, permet
-   * d'avoir une valeur max <= au nombre total d'environnement présents
-   * dans le jdd (et donc d'économiser un peu de mémoire).
-   */
-  Int32 maxNbEnvPerCell() const;
-
-  /*
-   * On regarde si le nb max d'env par cell à l'instant t a changé,
-   * et si c'est le cas, on force la reconstruction de la table.
-   * Est appelé par le forceRecompute du ImeshMaterialMng
-   */
-  void bruteForceUpdate();
-
  private:
 
-  void reset();
-
- private:
-
-  IMeshMaterialMng* m_material_mng = nullptr;
-  Integer m_size = 0;
-  NumArray<Span<ComponentItemLocalId>, MDDim1> m_allcell_allenvcell;
   Span<ComponentItemLocalId>* m_allcell_allenvcell_ptr = nullptr;
-  NumArray<ComponentItemLocalId, MDDim1> m_mem_pool;
-  Int32 m_current_max_nb_env = 0;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -163,7 +113,7 @@ class ARCANE_MATERIALS_EXPORT CellToAllEnvCellAccessor
 
   ARCCORE_HOST_DEVICE size_type nbEnvironment(Integer cid) const
   {
-    return m_cell_allenvcell->internal()[cid].size();
+    return m_cell_allenvcell->_internal()[cid].size();
   }
 
  private:
@@ -190,11 +140,11 @@ class ARCANE_MATERIALS_EXPORT CellToAllComponentCellEnumerator
   : m_cid(cell_id)
   {
 #if defined(ARCCORE_DEVICE_CODE)
-    m_ptr = &(acc.getAllCellToAllEnvCell()->internal()[cell_id]);
+    m_ptr = &(acc.getAllCellToAllEnvCell()->_internal()[cell_id]);
     m_size = m_ptr->size();
 #else
     if (acc.getAllCellToAllEnvCell()) {
-      m_ptr = &(acc.getAllCellToAllEnvCell()->internal()[cell_id]);
+      m_ptr = &(acc.getAllCellToAllEnvCell()->_internal()[cell_id]);
       m_size = m_ptr->size();
     }
     else

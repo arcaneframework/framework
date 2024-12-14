@@ -18,6 +18,8 @@
 #include "arcane/core/ItemGroup.h"
 #include "arcane/core/materials/internal/IMeshMaterialMngInternal.h"
 
+#include "arcane/materials/internal/AllCellToAllEnvCellContainer.h"
+
 #include "arcane/accelerator/Reduce.h"
 #include "arcane/accelerator/RunCommandEnumerate.h"
 #include "arcane/accelerator/NumArrayViews.h"
@@ -30,7 +32,7 @@
 namespace Arcane::Materials
 {
 
-class AllCellToAllEnvCell::Impl
+class AllCellToAllEnvCellContainer::Impl
 {
  public:
 
@@ -39,13 +41,13 @@ class AllCellToAllEnvCell::Impl
                             ComponentItemLocalId* mem_pool,
                             Span<ComponentItemLocalId>* allcell_allenvcell,
                             Int32 max_nb_env);
-  static void _initialize(AllCellToAllEnvCell* instance);
+  static void _initialize(AllCellToAllEnvCellContainer* instance);
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Int32 AllCellToAllEnvCell::Impl::
+Int32 AllCellToAllEnvCellContainer::Impl::
 _computeMaxNbEnvPerCell(IMeshMaterialMng* material_mng)
 {
   CellToAllEnvCellConverter allenvcell_converter(material_mng);
@@ -66,7 +68,7 @@ _computeMaxNbEnvPerCell(IMeshMaterialMng* material_mng)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void AllCellToAllEnvCell::Impl::
+void AllCellToAllEnvCellContainer::Impl::
 _updateValues(IMeshMaterialMng* material_mng,
               ComponentItemLocalId* mem_pool,
               Span<ComponentItemLocalId>* allcell_allenvcell,
@@ -101,8 +103,8 @@ _updateValues(IMeshMaterialMng* material_mng,
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void AllCellToAllEnvCell::Impl::
-_initialize(AllCellToAllEnvCell* instance)
+void AllCellToAllEnvCellContainer::Impl::
+_initialize(AllCellToAllEnvCellContainer* instance)
 {
   IMeshMaterialMng* mm = instance->m_material_mng;
   RunQueue queue = mm->_internalApi()->runQueue();
@@ -150,8 +152,8 @@ _initialize(AllCellToAllEnvCell* instance)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-AllCellToAllEnvCell::
-AllCellToAllEnvCell(IMeshMaterialMng* mm)
+AllCellToAllEnvCellContainer::
+AllCellToAllEnvCellContainer(IMeshMaterialMng* mm)
 : m_material_mng(mm)
 {
   m_mem_pool.setDebugName("AllCellToAllEnvCellMemPool");
@@ -161,7 +163,7 @@ AllCellToAllEnvCell(IMeshMaterialMng* mm)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void AllCellToAllEnvCell::
+void AllCellToAllEnvCellContainer::
 reset()
 {
   if (m_allcell_allenvcell_ptr) {
@@ -177,7 +179,7 @@ reset()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Int32 AllCellToAllEnvCell::
+Int32 AllCellToAllEnvCellContainer::
 maxNbEnvPerCell() const
 {
   return Impl::_computeMaxNbEnvPerCell(m_material_mng);
@@ -186,7 +188,7 @@ maxNbEnvPerCell() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void AllCellToAllEnvCell::
+void AllCellToAllEnvCellContainer::
 initialize()
 {
   Impl::_initialize(this);
@@ -195,7 +197,7 @@ initialize()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void AllCellToAllEnvCell::
+void AllCellToAllEnvCellContainer::
 bruteForceUpdate()
 {
   // Si les ids ont changé, on doit tout refaire
@@ -225,7 +227,7 @@ bruteForceUpdate()
 
 CellToAllEnvCellAccessor::
 CellToAllEnvCellAccessor(const IMeshMaterialMng* mmmng)
-: m_cell_allenvcell(mmmng->_internalApi()->getAllCellToAllEnvCell())
+: m_cell_allenvcell(mmmng->_internalApi()->getAllCellToAllEnvCellContainer())
 {
 }
 

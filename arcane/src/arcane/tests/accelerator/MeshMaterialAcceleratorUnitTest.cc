@@ -45,6 +45,7 @@
 #include "arcane/materials/MeshEnvironmentVariableRef.h"
 #include "arcane/materials/EnvItemVector.h"
 #include "arcane/materials/CellToAllEnvCellConverter.h"
+#include "arcane/materials/internal/AllCellToAllEnvCellContainer.h"
 
 #include "arcane/accelerator/core/Runner.h"
 #include "arcane/accelerator/core/IAcceleratorMng.h"
@@ -798,8 +799,8 @@ _executeTest4(Integer nb_z, bool use_new_impl)
 
   // Some further functions testing, not really usefull here, but it improves cover
   {
-    UniqueArray<AllCellToAllEnvCell> useless;
-    useless.add(AllCellToAllEnvCell(m_mm_mng));
+    UniqueArray<AllCellToAllEnvCellContainer> useless;
+    useless.add(AllCellToAllEnvCellContainer(m_mm_mng));
     useless[0].initialize();
   }
 

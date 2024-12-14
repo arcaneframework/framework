@@ -217,7 +217,7 @@ build()
       m_is_use_accelerator_for_constituent_item_vector = (v.value()!=0);
     }
     // N'active pas l'utilisation des RunQueue pour le calcul
-    // des 'ComponentItemVector' si le multi-threading est actif actuellement
+    // des 'ComponentItemVector' si le multi-threading est actif. Actuellement
     // l'utilisation d'une même RunQueue n'est pas multi-thread (et donc
     // on ne peut pas créer des ComponentItemVector en concurrence)
     if (TaskFactory::isActive())
@@ -1336,7 +1336,7 @@ createAllCellToAllEnvCell()
 {
   if (!m_allcell_2_allenvcell){
     m_all_cell_to_all_env_cell.reserve(1);
-    m_all_cell_to_all_env_cell.add(AllCellToAllEnvCell(this));
+    m_all_cell_to_all_env_cell.add(AllCellToAllEnvCellContainer(this));
     m_allcell_2_allenvcell = m_all_cell_to_all_env_cell.view().ptrAt(0);
     m_allcell_2_allenvcell->initialize();
   }
