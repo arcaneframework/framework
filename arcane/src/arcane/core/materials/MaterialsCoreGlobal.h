@@ -47,6 +47,7 @@ namespace Arcane::Materials
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+class AllCellToAllEnvCellContainer;
 class AllEnvCellVectorView;
 class ComponentCell;
 class IMeshBlock;
