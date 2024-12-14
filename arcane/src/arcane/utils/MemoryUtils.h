@@ -189,6 +189,19 @@ checkResizeArrayWithCapacity(Array<DataType>& array, Int64 new_size, bool force_
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
+ * \brief Redimensionne un tableau en ajoutant une réserve de mémoire.
+ *
+ * Cet appel est équivalent à checkResizeArrayWithCapacity(array, new_size, false).
+ */
+template <typename DataType> inline Int32
+checkResizeArrayWithCapacity(Array<DataType>& array, Int64 new_size)
+{
+  return checkResizeArrayWithCapacity(array, new_size, false);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
  * \brief Copie de \a source vers \a destination en utilisant la file \a queue.
  *
  * Il est possible de spécifier la ressource mémoire où se trouve la source
