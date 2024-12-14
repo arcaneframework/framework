@@ -111,7 +111,7 @@ _initialize(AllCellToAllEnvCellContainer* instance)
   instance->m_size = mm->mesh()->cellFamily()->maxLocalId() + 1;
 
   instance->m_allcell_allenvcell.resize(instance->m_size);
-  instance->m_allcell_allenvcell_ptr = instance->m_allcell_allenvcell.to1DSpan().data();
+  instance->m_all_cell_to_all_env_cell.m_allcell_allenvcell_ptr = instance->m_allcell_allenvcell.to1DSpan().data();
 
   // On force la valeur initiale sur tous les elmts car dans le ENUMERATE_CELL ci-dessous
   // il se peut que m_size (qui vaut maxLocalId()+1) soit different de allCells().size()
@@ -166,9 +166,9 @@ AllCellToAllEnvCellContainer(IMeshMaterialMng* mm)
 void AllCellToAllEnvCellContainer::
 reset()
 {
-  if (m_allcell_allenvcell_ptr) {
+  if (m_all_cell_to_all_env_cell.m_allcell_allenvcell_ptr) {
     m_allcell_allenvcell.resize(0);
-    m_allcell_allenvcell_ptr = nullptr;
+    m_all_cell_to_all_env_cell.m_allcell_allenvcell_ptr = nullptr;
     m_mem_pool.resize(0);
   }
   m_material_mng = nullptr;
@@ -213,13 +213,13 @@ bruteForceUpdate()
     // On n'oublie pas de mettre a jour la nouvelle valeur !
     m_current_max_nb_env = current_max_nb_env;
     // Si le nb max d'env pour les mailles a changé à cet instant, on doit refaire le memory pool
-    ARCANE_CHECK_POINTER(m_allcell_allenvcell_ptr);
+    ARCANE_CHECK_POINTER(m_all_cell_to_all_env_cell.m_allcell_allenvcell_ptr);
     // on recrée le pool
     Int32 pool_size = CheckedConvert::multiply(m_current_max_nb_env, m_size);
     m_mem_pool.resize(pool_size);
   }
   // Mise a jour des valeurs
-  Impl::_updateValues(m_material_mng, m_mem_pool.to1DSpan().data(), m_allcell_allenvcell_ptr, m_current_max_nb_env);
+  Impl::_updateValues(m_material_mng, m_mem_pool.to1DSpan().data(), m_all_cell_to_all_env_cell.m_allcell_allenvcell_ptr, m_current_max_nb_env);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -227,7 +227,7 @@ bruteForceUpdate()
 
 CellToAllEnvCellAccessor::
 CellToAllEnvCellAccessor(const IMeshMaterialMng* mmmng)
-: m_cell_allenvcell(mmmng->_internalApi()->getAllCellToAllEnvCellContainer())
+: m_cell_allenvcell(mmmng->_internalApi()->getAllCellToAllEnvCellContainer()->view())
 {
 }
 

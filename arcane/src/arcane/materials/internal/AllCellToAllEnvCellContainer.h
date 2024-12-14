@@ -55,7 +55,6 @@ namespace Arcane::Materials
  * la classe CellToAllEnvCellAccessor.
  */
 class ARCANE_MATERIALS_EXPORT AllCellToAllEnvCellContainer
-: public AllCellToAllEnvCell
 {
  public:
 
@@ -89,7 +88,7 @@ class ARCANE_MATERIALS_EXPORT AllCellToAllEnvCellContainer
   //! Méthode d'accès à la table de "connectivité" cell -> all env cells
   ARCCORE_HOST_DEVICE Span<ComponentItemLocalId>* internal() const
   {
-    return m_allcell_allenvcell_ptr;
+    return m_all_cell_to_all_env_cell._internal();
   }
 
   /*!
@@ -111,6 +110,8 @@ class ARCANE_MATERIALS_EXPORT AllCellToAllEnvCellContainer
 
   void reset();
 
+  const AllCellToAllEnvCell& view() const { return m_all_cell_to_all_env_cell; }
+
  private:
 
   IMeshMaterialMng* m_material_mng = nullptr;
@@ -119,6 +120,7 @@ class ARCANE_MATERIALS_EXPORT AllCellToAllEnvCellContainer
   //Span<ComponentItemLocalId>* m_allcell_allenvcell_ptr = nullptr;
   NumArray<ComponentItemLocalId, MDDim1> m_mem_pool;
   Int32 m_current_max_nb_env = 0;
+  AllCellToAllEnvCell m_all_cell_to_all_env_cell;
 };
 
 /*---------------------------------------------------------------------------*/

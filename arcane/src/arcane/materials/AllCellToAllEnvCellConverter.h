@@ -65,11 +65,6 @@ class ARCANE_MATERIALS_EXPORT AllCellToAllEnvCell
   friend class CellToAllComponentCellEnumerator;
   friend AllCellToAllEnvCellContainer;
 
- public:
-
-  //! Copies interdites
-  AllCellToAllEnvCell& operator=(const AllCellToAllEnvCell&) = delete;
-
  private:
 
   //! Méthode d'accès à la table de "connectivité" cell -> all env cells
@@ -97,6 +92,8 @@ class ARCANE_MATERIALS_EXPORT AllCellToAllEnvCell
  */
 class ARCANE_MATERIALS_EXPORT CellToAllEnvCellAccessor
 {
+  friend class CellToAllComponentCellEnumerator;
+
  public:
 
   using size_type = Span<ComponentItemLocalId>::size_type;
@@ -106,19 +103,21 @@ class ARCANE_MATERIALS_EXPORT CellToAllEnvCellAccessor
   CellToAllEnvCellAccessor() = default;
   explicit CellToAllEnvCellAccessor(const IMeshMaterialMng* mm);
 
-  ARCCORE_HOST_DEVICE const AllCellToAllEnvCell* getAllCellToAllEnvCell() const
+  ARCCORE_HOST_DEVICE size_type nbEnvironment(Int32 cid) const
   {
-    return m_cell_allenvcell;
-  }
-
-  ARCCORE_HOST_DEVICE size_type nbEnvironment(Integer cid) const
-  {
-    return m_cell_allenvcell->_internal()[cid].size();
+    return m_cell_allenvcell._internal()[cid].size();
   }
 
  private:
 
-  AllCellToAllEnvCell* m_cell_allenvcell = nullptr;
+  ARCCORE_HOST_DEVICE const AllCellToAllEnvCell* _getAllCellToAllEnvCell() const
+  {
+    return &m_cell_allenvcell;
+  }
+
+ private:
+
+  AllCellToAllEnvCell m_cell_allenvcell;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -136,15 +135,16 @@ class ARCANE_MATERIALS_EXPORT CellToAllComponentCellEnumerator
  public:
 
   // La version CPU permet de vérifier qu'on a bien fait l'init avant l'ENUMERATE
-  ARCCORE_HOST_DEVICE explicit CellToAllComponentCellEnumerator(Integer cell_id, const CellToAllEnvCellAccessor& acc)
+  ARCCORE_HOST_DEVICE explicit CellToAllComponentCellEnumerator(Int32 cell_id, const CellToAllEnvCellAccessor& acc)
   : m_cid(cell_id)
   {
+    const AllCellToAllEnvCell* all_env_ptr = acc._getAllCellToAllEnvCell();
 #if defined(ARCCORE_DEVICE_CODE)
-    m_ptr = &(acc.getAllCellToAllEnvCell()->_internal()[cell_id]);
+    m_ptr = &(all_env_ptr->_internal()[cell_id]);
     m_size = m_ptr->size();
 #else
-    if (acc.getAllCellToAllEnvCell()) {
-      m_ptr = &(acc.getAllCellToAllEnvCell()->_internal()[cell_id]);
+    if (all_env_ptr) {
+      m_ptr = &(all_env_ptr->_internal()[cell_id]);
       m_size = m_ptr->size();
     }
     else
@@ -168,7 +168,7 @@ class ARCANE_MATERIALS_EXPORT CellToAllComponentCellEnumerator
 
  private:
 
-  Integer m_cid = 0;
+  Int32 m_cid = 0;
   index_type m_index = 0;
   Span<ComponentItemLocalId>* m_ptr = nullptr;
   size_type m_size = 0;
