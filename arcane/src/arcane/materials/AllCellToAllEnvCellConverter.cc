@@ -59,8 +59,8 @@ class AllCellToAllEnvCellContainer::Impl
  public:
 
   static void updateValues(IMeshMaterialMng* material_mng,
-                           ComponentItemLocalId* mem_pool,
-                           Span<ComponentItemLocalId>* allcell_allenvcell,
+                           Span<ComponentItemLocalId> mem_pool,
+                           Span<Span<ComponentItemLocalId>> allcell_allenvcell,
                            Int32 max_nb_env);
 
  private:
@@ -100,8 +100,8 @@ computeMaxNbEnvPerCell()
 
 void AllCellToAllEnvCellContainer::Impl::
 updateValues(IMeshMaterialMng* material_mng,
-             ComponentItemLocalId* mem_pool,
-             Span<ComponentItemLocalId>* allcell_allenvcell,
+             Span<ComponentItemLocalId> mem_pool,
+             Span<Span<ComponentItemLocalId>> allcell_allenvcell,
              Int32 max_nb_env)
 {
   // mise a jour des valeurs
@@ -122,10 +122,10 @@ updateValues(IMeshMaterialMng* material_mng,
         mem_pool[offset + i] = ComponentItemLocalId(ev._varIndex());
         ++i;
       }
-      allcell_allenvcell[cid] = Span<ComponentItemLocalId>(mem_pool + offset, nb_env);
+      allcell_allenvcell[cid] = Span<ComponentItemLocalId>(mem_pool.ptrAt(offset), nb_env);
     }
     else {
-      allcell_allenvcell[cid] = Span<ComponentItemLocalId>();
+      allcell_allenvcell[cid] = {};
     }
   };
 }
@@ -141,7 +141,7 @@ initialize()
   m_size = mm->mesh()->cellFamily()->maxLocalId() + 1;
 
   m_envcell_container.resize(m_size);
-  m_all_cell_to_all_env_cell.m_allcell_allenvcell_ptr = m_envcell_container.to1DSpan().data();
+  m_all_cell_to_all_env_cell.m_allcell_allenvcell_ptr = m_envcell_container.to1DSpan();
 
   // On force la valeur initiale sur tous les éléments car dans le ENUMERATE_CELL ci-dessous
   // il se peut que m_size (qui vaut maxLocalId()+1) soit different de allCells().size()
@@ -194,14 +194,12 @@ bruteForceUpdate()
   if (current_max_nb_env != m_current_max_nb_env) {
     // On n'oublie pas de mettre a jour la nouvelle valeur !
     m_current_max_nb_env = current_max_nb_env;
-    // Si le nb max d'env pour les mailles a changé à cet instant, on doit refaire le memory pool
-    ARCANE_CHECK_POINTER(m_all_cell_to_all_env_cell.m_allcell_allenvcell_ptr);
     // on recrée le pool
     Int32 pool_size = CheckedConvert::multiply(m_current_max_nb_env, m_size);
     m_mem_pool.resize(pool_size);
   }
   // Mise a jour des valeurs
-  updateValues(m_material_mng, m_mem_pool.to1DSpan().data(), m_all_cell_to_all_env_cell.m_allcell_allenvcell_ptr, m_current_max_nb_env);
+  updateValues(m_material_mng, m_mem_pool.to1DSpan(), m_all_cell_to_all_env_cell.m_allcell_allenvcell_ptr, m_current_max_nb_env);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -210,11 +208,9 @@ bruteForceUpdate()
 void AllCellToAllEnvCellContainer::Impl::
 reset()
 {
-  if (m_all_cell_to_all_env_cell.m_allcell_allenvcell_ptr) {
-    m_envcell_container.resize(0);
-    m_all_cell_to_all_env_cell.m_allcell_allenvcell_ptr = nullptr;
-    m_mem_pool.resize(0);
-  }
+  m_envcell_container.resize(0);
+  m_all_cell_to_all_env_cell.m_allcell_allenvcell_ptr = {};
+  m_mem_pool.resize(0);
   m_material_mng = nullptr;
   m_size = 0;
   m_current_max_nb_env = 0;
@@ -293,9 +289,11 @@ view() const
 /*---------------------------------------------------------------------------*/
 
 CellToAllEnvCellAccessor::
-CellToAllEnvCellAccessor(const IMeshMaterialMng* mmmng)
-: m_cell_allenvcell(mmmng->_internalApi()->getAllCellToAllEnvCellContainer()->view())
+CellToAllEnvCellAccessor(const IMeshMaterialMng* mm)
 {
+  AllCellToAllEnvCellContainer* c = mm->_internalApi()->getAllCellToAllEnvCellContainer();
+  if (c)
+    m_cell_allenvcell = c->view();
 }
 
 /*---------------------------------------------------------------------------*/

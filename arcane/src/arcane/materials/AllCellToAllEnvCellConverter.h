@@ -58,14 +58,14 @@ class ARCANE_MATERIALS_EXPORT AllCellToAllEnvCell
  private:
 
   //! Méthode d'accès à la table de "connectivité" cell -> all env cells
-  ARCCORE_HOST_DEVICE Span<ComponentItemLocalId>* _internal() const
+  ARCCORE_HOST_DEVICE Span<ComponentItemLocalId> operator[](Int32 cell_id) const
   {
-    return m_allcell_allenvcell_ptr;
+    return m_allcell_allenvcell_ptr[cell_id];
   }
 
  private:
 
-  Span<ComponentItemLocalId>* m_allcell_allenvcell_ptr = nullptr;
+  Span<Span<ComponentItemLocalId>> m_allcell_allenvcell_ptr;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -95,14 +95,14 @@ class ARCANE_MATERIALS_EXPORT CellToAllEnvCellAccessor
 
   ARCCORE_HOST_DEVICE size_type nbEnvironment(Int32 cid) const
   {
-    return m_cell_allenvcell._internal()[cid].size();
+    return m_cell_allenvcell[cid].size();
   }
 
  private:
 
-  ARCCORE_HOST_DEVICE const AllCellToAllEnvCell* _getAllCellToAllEnvCell() const
+  ARCCORE_HOST_DEVICE AllCellToAllEnvCell _getAllCellToAllEnvCell() const
   {
-    return &m_cell_allenvcell;
+    return m_cell_allenvcell;
   }
 
  private:
@@ -126,20 +126,9 @@ class ARCANE_MATERIALS_EXPORT CellToAllComponentCellEnumerator
 
   // La version CPU permet de vérifier qu'on a bien fait l'init avant l'ENUMERATE
   ARCCORE_HOST_DEVICE explicit CellToAllComponentCellEnumerator(Int32 cell_id, const CellToAllEnvCellAccessor& acc)
-  : m_cid(cell_id)
   {
-    const AllCellToAllEnvCell* all_env_ptr = acc._getAllCellToAllEnvCell();
-#if defined(ARCCORE_DEVICE_CODE)
-    m_ptr = &(all_env_ptr->_internal()[cell_id]);
-    m_size = m_ptr->size();
-#else
-    if (all_env_ptr) {
-      m_ptr = &(all_env_ptr->_internal()[cell_id]);
-      m_size = m_ptr->size();
-    }
-    else
-      ARCANE_FATAL("Must create AllCellToAllEnvCell before using ENUMERATE_ALLENVCELL");
-#endif
+    AllCellToAllEnvCell all_env_view = acc._getAllCellToAllEnvCell();
+    m_ptr = all_env_view[cell_id];
   }
   ARCCORE_HOST_DEVICE void operator++()
   {
@@ -148,20 +137,18 @@ class ARCANE_MATERIALS_EXPORT CellToAllComponentCellEnumerator
 
   ARCCORE_HOST_DEVICE bool hasNext() const
   {
-    return m_index < m_size;
+    return m_index < m_ptr.size();
   }
 
   ARCCORE_HOST_DEVICE ComponentItemLocalId operator*() const
   {
-    return (*m_ptr)[m_index];
+    return m_ptr[m_index];
   }
 
  private:
 
-  Int32 m_cid = 0;
   index_type m_index = 0;
-  Span<ComponentItemLocalId>* m_ptr = nullptr;
-  size_type m_size = 0;
+  Span<ComponentItemLocalId> m_ptr;
 };
 
 /*---------------------------------------------------------------------------*/
