@@ -29,6 +29,7 @@
 #include "arcane/core/IMeshCompacter.h"
 #include "arcane/core/internal/IVariableMngInternal.h"
 #include "arcane/core/internal/IPolyhedralMeshModifier.h"
+#include "arcane/core/internal/IMeshModifierInternal.h"
 
 #include "arcane/mesh/ItemFamily.h"
 #include "arcane/mesh/DynamicMeshKindInfos.h"
@@ -612,6 +613,7 @@ class mesh::PolyhedralMesh::PolyhedralMeshModifier
 
 class mesh::PolyhedralMesh::InternalApi
 : public IMeshInternal
+, public IMeshModifierInternal
 {
  public:
 
@@ -640,6 +642,11 @@ class mesh::PolyhedralMesh::InternalApi
   IPolyhedralMeshModifier* polyhedralMeshModifier() const noexcept override
   {
     return m_polyhedral_mesh_modifier.get();
+  }
+
+  void removeNeedRemoveMarkedItems() override
+  {
+    m_mesh->traceMng()->warning() << "PolyhedralMesh::removeNeedRemoveMarkedItems() not yet implemented in PolyhedralMesh";
   }
 
  private:
