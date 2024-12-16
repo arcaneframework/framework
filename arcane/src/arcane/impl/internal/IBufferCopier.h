@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IBufferCopier.h                                             (C) 2000-2023 */
+/* IBufferCopier.h                                             (C) 2000-2024 */
 /*                                                                           */
 /* Interface pour la copie de buffer.                                        */
 /*---------------------------------------------------------------------------*/
@@ -18,6 +18,7 @@
 #include "arcane/utils/MemoryView.h"
 
 #include "arcane/core/GroupIndexTable.h"
+#include "arcane/accelerator/core/RunQueue.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -56,7 +57,7 @@ class IBufferCopier
 
  public:
 
-  virtual void setRunQueue(RunQueue* queue) = 0;
+  virtual void setRunQueue(const RunQueue& queue) = 0;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -74,22 +75,24 @@ class DirectBufferCopier
                            ConstMemoryView buffer,
                            MutableMemoryView var_value) override
   {
-    buffer.copyToIndexes(var_value, indexes, m_queue);
+    RunQueue* q = (m_queue.isNull()) ? nullptr : &m_queue;
+    buffer.copyToIndexes(var_value, indexes, q);
   }
 
   void copyToBufferAsync(Int32ConstArrayView indexes,
                          MutableMemoryView buffer,
                          ConstMemoryView var_value) override
   {
-    buffer.copyFromIndexes(var_value, indexes, m_queue);
+    RunQueue* q = (m_queue.isNull()) ? nullptr : &m_queue;
+    buffer.copyFromIndexes(var_value, indexes, q);
   }
 
   void barrier() override;
-  void setRunQueue(RunQueue* queue) override { m_queue = queue; }
+  void setRunQueue(const RunQueue& queue) override { m_queue = queue; }
 
  private:
 
-  RunQueue* m_queue = nullptr;
+  RunQueue m_queue;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -123,7 +126,7 @@ class TableBufferCopier
   }
   void barrier() override { m_base_copier.barrier(); }
 
-  void setRunQueue(RunQueue* queue) override { m_base_copier.setRunQueue(queue); }
+  void setRunQueue(const RunQueue& queue) override { m_base_copier.setRunQueue(queue); }
 
  private:
 
