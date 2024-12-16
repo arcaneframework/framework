@@ -13,6 +13,7 @@
 
 #include "arcane/mesh/PolyhedralMesh.h"
 
+#include "ItemFamilyPolicyMng.h"
 #include "arcane/core/ISubDomain.h"
 #include "arcane/core/ItemSharedInfo.h"
 #include "arcane/core/ItemTypeInfo.h"
@@ -70,6 +71,25 @@ namespace Arcane
 
 namespace mesh
 {
+
+  /*---------------------------------------------------------------------------*/
+  /*---------------------------------------------------------------------------*/
+
+  class PolyhedralFamilyPolicyMng
+    : public ItemFamilyPolicyMng
+  {
+    public:
+      PolyhedralFamilyPolicyMng(ItemFamily* family)
+        : ItemFamilyPolicyMng(family)
+        , m_family(family){}
+  public:
+    IItemFamilySerializer* createSerializer(bool use_flags) override
+    {
+      return new ItemFamilySerializer(m_family, nullptr, nullptr); // todo handle mesh incremental builder interface and IItemFamilyModifier
+    }
+  private:
+    ItemFamily* m_family;
+  };
 
   /*---------------------------------------------------------------------------*/
   /*---------------------------------------------------------------------------*/
@@ -186,6 +206,8 @@ namespace mesh
       ItemTypeInfo* dof_type_info = itm->typeFromId(IT_NullType);
       m_shared_info = _findSharedInfo(dof_type_info);
       _updateEmptyConnectivity();
+      ItemFamily::setPolicyMng(new PolyhedralFamilyPolicyMng{this});
+
     }
 
     // IDoFFamily
