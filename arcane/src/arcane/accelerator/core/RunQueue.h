@@ -227,6 +227,17 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RunQueue
 
  public:
 
+  friend bool operator==(const RunQueue& q1, const RunQueue& q2)
+  {
+    return q1.m_p.get() == q2.m_p.get();
+  }
+  friend bool operator!=(const RunQueue& q1, const RunQueue& q2)
+  {
+    return q1.m_p.get() != q2.m_p.get();
+  }
+
+ public:
+
   impl::RunQueueImpl* _internalImpl() const;
 
  private:
