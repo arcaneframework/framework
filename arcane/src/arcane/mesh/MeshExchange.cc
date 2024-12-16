@@ -934,7 +934,7 @@ _propagatesToChildConnectivities(IItemFamily* family)
   //auto child_connectivities = m_mesh->itemFamilyNetwork()->getChildConnectivities(family);
   auto child_connectivities = m_mesh->itemFamilyNetwork()->getChildDependencies(family); // Only dependencies are required to propagate owner
   for (const auto& child_connectivity : child_connectivities){
-    //if(!child_connectivity->isEmpty())
+    if(child_connectivity)
     {
       VariableItemInt32& conn_item_new_owner = child_connectivity->targetFamily()->itemsNewOwner();
       auto accessor = IndexedItemConnectivityAccessor(child_connectivity);
@@ -991,7 +991,7 @@ _propagatesToChildDependencies(IItemFamily* family)
   //    => thus we would need to add to the DAG a method children(const Edge&) (see for the name firstRankChildren ??)
   auto child_dependencies =  m_mesh->itemFamilyNetwork()->getChildDependencies(family);
   for (const auto& child_dependency :child_dependencies){
-    //if(!child_dependency->isEmpty())
+    if(child_dependency)
     {
       auto accessor = IndexedItemConnectivityAccessor(child_dependency);
       ENUMERATE_ITEM(item, family->allItems()){
