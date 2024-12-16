@@ -274,8 +274,8 @@ class ARCANE_MESH_EXPORT ItemFamily
 
  public:
 
-  //NOTE: Cette méthode n'est pas virtuelle et seul pour l'instant DynamicMesh peut modifier la politique.
-  void setPolicyMng(IItemFamilyPolicyMng* policy_mng);
+  //NOTE: Cette méthode doit être virtuelle pour que PolyhedralMesh puisse positionner la politique.
+  virtual void setPolicyMng(IItemFamilyPolicyMng* policy_mng);
 
  public:
 
