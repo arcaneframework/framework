@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* GraphBaseT.h                                                (C) 2000-2017 */
+/* GraphBaseT.h                                                (C) 2000-2024 */
 /*                                                                           */
 /* Common base of graph implementation                                       */
 /*---------------------------------------------------------------------------*/
@@ -105,6 +105,13 @@ public :
   typedef IterableEnsembleT<EdgeList> EdgeSet;
   typedef IterableEnsembleT<EdgeTypeRefArray> ConnectedEdgeSet;
 
+private:
+
+  bool isNull(EdgeType const& edge)
+  {
+    if (std::is_pointer_v<EdgeType> && edge == nullptr) return true;
+    else return false;
+  }
 public:
 
   typedef VertexType VertexRef;
@@ -126,7 +133,8 @@ public:
   template <class Vertex, class Edge>
   void _addEdge(Vertex source_vertex, Vertex target_vertex, Edge source_to_target_edge)
   {
-    bool has_edge = (_getEdgeIndex(source_vertex,target_vertex).first != -1 || m_edge_to_vertex_map.find(source_to_target_edge) != m_edge_to_vertex_map.end());
+    bool has_edge = (_getEdgeIndex(source_vertex,target_vertex).first != -1 ||
+      m_edge_to_vertex_map.find(source_to_target_edge) != m_edge_to_vertex_map.end() && !isNull(source_to_target_edge));
     if (has_edge) throw FatalErrorException("Cannot insert existing edge."); // TODO print edge and vertices values if possible (enable_if)
     m_edges.push_back(source_to_target_edge);
     EdgeType& inserted_edge = m_edges.back(); // Get a reference to the inserted objects (since objects are only stored in list, other structures handle references)
