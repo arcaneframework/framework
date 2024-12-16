@@ -51,6 +51,9 @@
 namespace Arcane
 {
 class ISubDomain;
+class IItemFamilyNetwork;
+class IGhostLayerMng;
+class IMeshExchangeMng;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -147,6 +150,10 @@ class PolyhedralMesh
   std::unique_ptr<InternalApi> m_internal_api;
   std::unique_ptr<IMeshCompactMng> m_compact_mng;
   std::unique_ptr<IMeshUtilities> m_mesh_utilities;
+  std::unique_ptr<IMeshExchangeMng> m_mesh_exchange_mng;
+  std::unique_ptr<IItemFamilyNetwork> m_item_family_network;
+  std::unique_ptr<IGhostLayerMng> m_ghost_layer_mng;
+  bool m_is_dynamic = false;
 
   // IPrimaryMeshBase interface
   IMeshInitialAllocator* initialAllocator() override { return &m_initial_allocator; }
@@ -234,7 +241,7 @@ class PolyhedralMesh
 
   void destroyGroups() override;
 
-  IGhostLayerMng* ghostLayerMng() const override { return nullptr; }
+  IGhostLayerMng* ghostLayerMng() const override;
 
   void checkValidMesh() override
   {
@@ -257,8 +264,8 @@ class PolyhedralMesh
 
   // For now, use _internalAPI()->polyhedralMeshModifier instead of IMeshModifier not implemented yet
   IMeshModifier* modifier() override {return this;}
-  bool isDynamic() const override {return true;} // wip parallel, IMesh API
-  void setDynamic(bool) override {} // wip parallel, IMeshModifier API
+  bool isDynamic() const override {return m_is_dynamic;}
+  void setDynamic(bool is_dynamic) override { m_is_dynamic = is_dynamic;}
 
   IMeshUtilities* utilities() override;
 
@@ -278,7 +285,7 @@ class PolyhedralMesh
 
   VariableItemInt32& itemsNewOwner(eItemKind ik) override;
 
-  IItemFamilyNetwork* itemFamilyNetwork() override { return nullptr; }
+  IItemFamilyNetwork* itemFamilyNetwork() override;
 
   Integer checkLevel() const override;
 
@@ -286,6 +293,10 @@ class PolyhedralMesh
   const IUserDataList* userDataList() const override { return m_mesh_handle.meshUserDataList(); }
 
   void prepareForDump() override;
+
+  bool useMeshItemFamilyDependencies() const override {return true;}
+
+  IMeshModifierInternal* _modifierInternalApi() override;
 
  private:
 
@@ -295,6 +306,7 @@ class PolyhedralMesh
   PolyhedralFamily* _createItemFamily(eItemKind ik, const String& name);
   PolyhedralFamily* _itemFamily(eItemKind ik);
   PolyhedralFamily* _findItemFamily(eItemKind ik, const String& name, bool create_if_needed = false);
+  const char* _className() const { return "PolyhedralMesh"; }
 
  void _exchangeItems();
 
