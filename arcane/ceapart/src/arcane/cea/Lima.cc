@@ -61,6 +61,7 @@
 
 #include <memory>
 #include <algorithm>
+#include <mutex>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -74,6 +75,34 @@ namespace Arcane
 namespace LimaUtils
 {
 void createGroup(IItemFamily* family,const String& name,Int32ArrayView local_ids);
+
+// Mutex pour protéger les appels à Lima dans le cas où on utilise MLI2
+// car ce format utilise HDF5 qui n'est thread-safe dans la plupart des cas
+// (cela dépend des options de compilation de HDF5 mais la version thread-safe
+// est incompatible avec la version MPI et en général on a besoin de cette
+// dernière)
+std::mutex global_lima_mutex;
+class GlobalLimaMutex
+{
+ public:
+
+  explicit GlobalLimaMutex(bool is_active)
+  : m_is_active(is_active)
+  {
+    if (m_is_active)
+      global_lima_mutex.lock();
+  }
+  ~GlobalLimaMutex()
+  {
+    if (m_is_active)
+      global_lima_mutex.unlock();
+  }
+
+ private:
+
+  bool m_is_active = false;
+};
+
 }
 
 /*---------------------------------------------------------------------------*/
@@ -523,12 +552,20 @@ readMesh(IPrimaryMesh* mesh,const String& filename,const String& dir_name,
   std::string loc_file_name = filename.localstr();
   size_t rpos = loc_file_name.rfind(".mli");
   size_t rpos2 = loc_file_name.rfind(".mli2");
+  const bool need_mutex = rpos2 != std::string::npos;
   info() << " FILE_NAME=" << loc_file_name;
   info() << " RPOS MLI=" << rpos << " s=" << loc_file_name.length();
   info() << " RPOS MLI2=" << rpos2 << " s=" << loc_file_name.length();
-  //TODO mettre has_thread = true que si on utilise le gestionnaire de parallelisme
-  // via les threads
-  bool has_thread = false; //arcaneHasThread();
+
+  // Si chaque PE lit le maillage et qu'on utilise la mémoire partagée,
+  // la lecture des fichiers Lima se fera en concurrence.
+  // Comme l'API 'Malipp' de Lima ne supporte pas le multi-threading,
+  // on bascule vers l'API classique dans ce cas.
+  // Même avec l'API classique, il y a des plantages avec certaines
+  // versions de Lima (au moins la 7.11.2) lorsqu'on utilise le format MLI2
+  // (car il utilise HDF5). Pour éviter tout problème on met un verrou
+  // autour de la lecture/écriture dans ce cas.
+  bool has_thread = !use_internal_partition && mesh->parallelMng()->isThreadImplementation();
   // On ne peut pas utiliser l'api mali pp avec les threads
   if (!has_thread && use_internal_partition && ((rpos+4)==loc_file_name.length())){
     info() << "Use direct partitioning with mli";
@@ -565,6 +602,7 @@ readMesh(IPrimaryMesh* mesh,const String& filename,const String& dir_name,
       {
         Timer::Sentry sentry(&time_to_read);
         Timer::Phase t_action(sd,TP_InputOutput);
+        LimaUtils::GlobalLimaMutex sc(need_mutex);
         lima.lire(filename.localstr(),Lima::SUFFIXE,true);
         //warning() << "Preparation lima supprimée";
         lima.preparation_parametrable(preparation);
@@ -1355,9 +1393,12 @@ writeMeshToFile(IMesh* mesh,const String& file_name)
 	//TODO: FAIRE EXTENSION si non presente
   // Regarde si le fichier a l'extension '.unf', '.mli' ou '.mli2'.
   // Sinon, ajoute '.mli2'
+  const size_t rpos2 = std_file_name.rfind(".mli2");
   std::string::size_type std_end = std::string::npos;
-  if (std_file_name.rfind(".mli2")==std_end && std_file_name.rfind(".mli")==std_end && std_file_name.rfind(".unf")==std_end){
+  bool need_mutex = rpos2!=std_end;
+  if (rpos2==std_end && std_file_name.rfind(".mli")==std_end && std_file_name.rfind(".unf")==std_end){
     std_file_name += ".mli2";
+    need_mutex = true;
   }
   info() << "FINAL_FILE_NAME=" << std_file_name;
   Lima::Maillage lima(std_file_name);
@@ -1480,7 +1521,10 @@ writeMeshToFile(IMesh* mesh,const String& file_name)
     }
     info(4) << "Writing file '" << std_file_name << "'";
 
-    lima.ecrire(std_file_name);
+    {
+      LimaUtils::GlobalLimaMutex sc(need_mutex);
+      lima.ecrire(std_file_name);
+    }
   }
   catch(const std::exception& ex){
     trace->warning() << "Exception (std::exception) in LIMA: Can not write file <" << std_file_name << ">"
