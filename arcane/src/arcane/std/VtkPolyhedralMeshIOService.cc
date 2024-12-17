@@ -63,6 +63,7 @@
 #include "arcane/core/IXmlDocumentHolder.h"
 #include "arcane/core/XmlNode.h"
 #include "arcane/core/internal/IVariableMngInternal.h"
+#include "arcane/core/datatype/DataTypeTraits.h"
 
 #include "arcane/std/VtkPolyhedralMeshIO_axl.h"
 
@@ -233,13 +234,22 @@ class VtkPolyhedralMeshIOService
 
   VtkPolyhedralTools::PrintInfoLevel m_print_info_level;
 
+  struct VariableInfo
+  {
+    eDataType m_type = DT_Unknown;
+    bool is_array = false;
+  };
+
   void _readVariablesAndGroups(IPrimaryMesh* mesh, VtkReader& reader);
   void _createGroup(vtkDataArray* group_items, const String& group_name, IPrimaryMesh* mesh, IItemFamily* item_family, Int32ConstSpan vtkToArcaneLid) const;
-  void _createVariable(vtkDataArray* item_values, const String& variable_name, IMesh* mesh, IItemFamily* item_family, Int32ConstSpan arcane_to_vtk_lids);
+  VariableInfo _createVariable(vtkDataArray* item_values, const String& variable_name, IMesh* mesh, IItemFamily* item_family, Int32ConstSpan arcane_to_vtk_lids) const;
 
   static void _fillItemAllocationInfo(ItemAllocationInfo& item_allocation_info, VtkReader& vtk_reader);
   void _computeFaceVtkArcaneLidConversion(Int32Span face_vtk_to_arcane_lids, Int32Span arcane_to_vtk_lids, VtkPolyhedralMeshIOService::VtkReader& reader, IPrimaryMesh* mesh) const;
   void _createEmptyVariablesAndGroups(IMesh* mesh, XmlNode::const_reference xml_node) const;
+  template <template <class> class  VariableRootType , template <class> class  ArrayVariableRootType>
+  void _createEmptyVariables(IMesh* mesh, const XmlNodeList& cell_variables_node, eItemKind item_kind) const;
+  void _createEmptyGroups(IMesh* mesh, const XmlNodeList& children, IItemFamily* item_family) const;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -457,8 +467,10 @@ _readVariablesAndGroups(IPrimaryMesh* mesh, VtkReader& reader)
         created_infos_str() << "<cell-group name='" << name.substring(6) << "'/>";
       }
       else {
-        _createVariable(cell_array, name, mesh, mesh->cellFamily(), arcane_to_vtk_lids);
-        created_infos_str() << "<cell-variable name='" << name << "'/>";
+        auto var_info = _createVariable(cell_array, name, mesh, mesh->cellFamily(), arcane_to_vtk_lids);
+        created_infos_str() << "<cell-variable name='" << name << "' "
+                            << " data-type='" << dataTypeName(var_info.m_type) << "' "
+                            << " is_array='" << std::boolalpha << var_info.is_array << "'/>";
       }
       if (m_print_info_level.print_debug_info) {
         debug(Trace::High) << "Reading property " << cell_array->GetName();
@@ -483,8 +495,10 @@ _readVariablesAndGroups(IPrimaryMesh* mesh, VtkReader& reader)
         created_infos_str() << "<node-group name='" << name.substring(6) << "'/>";
       }
       else {
-        _createVariable(point_array, name, mesh, mesh->nodeFamily(), arcane_to_vtk_lids);
-        created_infos_str() << "<node-variable name='" << name << "'/>";
+        auto var_info = _createVariable(point_array, name, mesh, mesh->nodeFamily(), arcane_to_vtk_lids);
+        created_infos_str() << "<node-variable name='" << name << "' "
+                            << " data-type='" << dataTypeName(var_info.m_type) << "' "
+                            << " is_array='" << std::boolalpha << var_info.is_array << "'/>";
       }
       if (m_print_info_level.print_debug_info) {
         debug(Trace::High) << "Reading property " << point_array->GetName();
@@ -509,8 +523,10 @@ _readVariablesAndGroups(IPrimaryMesh* mesh, VtkReader& reader)
         created_infos_str() << "<face-group name='" << name << "'/>";
       }
       else {
-        _createVariable(face_array, name, mesh, mesh->faceFamily(), arcane_to_vtk_lids);
-        created_infos_str() << "<face-variable name='" << name << "'/>";
+        auto var_info = _createVariable(face_array, name, mesh, mesh->faceFamily(), arcane_to_vtk_lids);
+        created_infos_str() << "<face-variable name='" << name << "' "
+                            << " data-type='" << dataTypeName(var_info.m_type) << "' "
+                            << " is_array='" << std::boolalpha << var_info.is_array << "'/>";
       }
       if (m_print_info_level.print_debug_info) {
         debug(Trace::High) << "Reading property " << face_array->GetName();
@@ -598,8 +614,8 @@ struct ToArcaneType<long long>
 template <typename T> using to_arcane_type_t = typename ToArcaneType<T>::type;
 /*---------------------------------------------------------------------------*/
 
-void VtkPolyhedralMeshIOService::
-_createVariable(vtkDataArray* item_values, const String& variable_name, IMesh* mesh, IItemFamily* item_family, Int32ConstSpan arcane_to_vtk_lids)
+VtkPolyhedralMeshIOService::VariableInfo VtkPolyhedralMeshIOService::
+_createVariable(vtkDataArray* item_values, const String& variable_name, IMesh* mesh, IItemFamily* item_family, Int32ConstSpan arcane_to_vtk_lids) const
 {
   ARCANE_CHECK_POINTER(item_values);
   ARCANE_CHECK_POINTER(mesh);
@@ -608,7 +624,8 @@ _createVariable(vtkDataArray* item_values, const String& variable_name, IMesh* m
     ARCANE_FATAL("Cannot create variable {0}, {1} values are given for {2} items in {3} family",
                  variable_name, item_values->GetNumberOfTuples(), item_family->nbItem(), item_family->name());
   debug() << "Create mesh variable " << variable_name;
-  auto variable_creator = [mesh, variable_name, item_family, arcane_to_vtk_lids, this](auto* values) {
+  VariableInfo var_info;
+  auto variable_creator = [mesh, variable_name, item_family, arcane_to_vtk_lids, this, &var_info](auto* values) {
     VariableBuildInfo vbi{ mesh, variable_name };
     using ValueType = typename std::remove_pointer_t<decltype(values)>::ValueType;
     auto* var = new ItemVariableScalarRefT<to_arcane_type_t<ValueType>>{ vbi, item_family->itemKind() };
@@ -617,8 +634,10 @@ _createVariable(vtkDataArray* item_values, const String& variable_name, IMesh* m
     ENUMERATE_ITEM (item, item_family->allItems()) {
       (*var)[item] = (to_arcane_type_t<ValueType>)values_accessor.Get(arcane_to_vtk_lids[item.localId()], 0);
     }
+    var_info.m_type = DataTypeTraitsT<to_arcane_type_t<ValueType>>::type();
+    var_info.is_array = false;
   };
-  auto array_variable_creator = [mesh, variable_name, item_family, arcane_to_vtk_lids, this](auto* values) {
+  auto array_variable_creator = [mesh, variable_name, item_family, arcane_to_vtk_lids, this, &var_info](auto* values) {
     VariableBuildInfo vbi{ mesh, variable_name };
     using ValueType = typename std::remove_pointer_t<decltype(values)>::ValueType;
     auto* var = new ItemVariableArrayRefT<to_arcane_type_t<ValueType>>{ vbi, item_family->itemKind() };
@@ -631,6 +650,8 @@ _createVariable(vtkDataArray* item_values, const String& variable_name, IMesh* m
         var_value = (to_arcane_type_t<ValueType>)values_accessor.Get(arcane_to_vtk_lids[item.localId()], index++);
       }
     }
+    var_info.m_type = DataTypeTraitsT<to_arcane_type_t<ValueType>>::type();
+    var_info.is_array = true;
   };
   // Restrict to int and real values
   using ValueTypes = vtkTypeList_Create_6(double, float, int, long, long long, short);
@@ -646,6 +667,7 @@ _createVariable(vtkDataArray* item_values, const String& variable_name, IMesh* m
   }
   if (!is_variable_created)
     ARCANE_FATAL("Cannot create variable {0}, it's data type is not supported. Only real and integral types are supported", variable_name);
+  return var_info;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -677,31 +699,85 @@ _computeFaceVtkArcaneLidConversion(Int32Span face_vtk_to_arcane_lids, Int32Span 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void VtkPolyhedralMeshIOService::
-_createEmptyVariablesAndGroups(IMesh* mesh, XmlNode::const_reference variable_and_group_info) const
+template <template <class> class  VariableRootType>
+VariableRef* _createVar(IMesh* mesh, const String& var_name, const String& var_data_type_name, eItemKind var_kind)
 {
-  // todo generaliser pour tous les kind
+  bool has_error = false;
+  eDataType var_data_type = dataTypeFromName(var_data_type_name.localstr(),has_error);
+  if (has_error) {
+    ARCANE_FATAL("Invalid data type name {0} for Variable creation in VtkPolyhedralMeshIOService");
+  }
+  switch (var_data_type){
+  case DT_Int32:
+    return new VariableRootType<Int32>{VariableBuildInfo{mesh,var_name},var_kind};
+    break;
+  case DT_Int64:
+    return new VariableRootType<Int64>{VariableBuildInfo{mesh,var_name},var_kind};
+    break;
+  case DT_Real:
+    return new VariableRootType<Real>{VariableBuildInfo{mesh,var_name},var_kind};
+    break;
+  default :
+    ARCANE_FATAL("Handle only DT_Int32, DT_Int64, DT_Real in VtkPolyhedralMeshIOService");
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template <template <class> class  VariableRootType , template <class> class  ArrayVariableRootType>
+void VtkPolyhedralMeshIOService::
+_createEmptyVariables(IMesh* mesh, const XmlNodeList& item_variables_node, eItemKind item_kind) const
+{
   ARCANE_CHECK_PTR(mesh);
   {
-    XmlNodeList vars = variable_and_group_info.documentElement().children("cell-variable");
-    for (XmlNode xnode : vars) {
+    for (XmlNode xnode : item_variables_node) {
       String name = xnode.attrValue("name");
       debug() << "Create mesh variable: " << name;
-      VariableCellReal* var = new VariableCellReal(VariableBuildInfo(mesh, name));
+      String data_type_name = xnode.attrValue("data-type");
+      bool is_array = xnode.attrValue("is_array") == "true";
+      VariableRef* var = nullptr;
+      if (is_array) {
+        var = _createVar<ArrayVariableRootType>(mesh,name,data_type_name,item_kind);
+      }
+      else {
+        var = _createVar<VariableRootType>(mesh,name, data_type_name,item_kind);
+      }
       mesh->variableMng()->_internalApi()->addAutoDestroyVariable(var);
     }
   }
+}
 
-  // Lecture des groupes de mailles
-  {
-    XmlNodeList vars = variable_and_group_info.documentElement().children("cell-group");
-    IItemFamily* cell_family = mesh->itemFamily(IK_Cell);
-    for (XmlNode xnode : vars) {
-      String name = xnode.attrValue("name");
-      info() << "Building group: " << name;
-      cell_family->createGroup(name);
-    }
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void VtkPolyhedralMeshIOService::
+_createEmptyGroups(IMesh* mesh, const XmlNodeList& groups_node, IItemFamily* item_family) const
+{
+  for (XmlNode xnode : groups_node) {
+    String name = xnode.attrValue("name");
+    info() << "Building group: " << name;
+    item_family->createGroup(name);
   }
+}
+
+
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void VtkPolyhedralMeshIOService::
+_createEmptyVariablesAndGroups(IMesh* mesh, XmlNode::const_reference variable_and_group_info) const
+{
+  ARCANE_CHECK_PTR(mesh);
+  auto document_node = variable_and_group_info.documentElement();
+  _createEmptyVariables<ItemVariableScalarRefT,ItemVariableArrayRefT>(mesh, document_node.children("cell-variable"), IK_Cell);
+  _createEmptyVariables<ItemVariableScalarRefT,ItemVariableArrayRefT>(mesh, document_node.children("node-variable"), IK_Node);
+  _createEmptyVariables<ItemVariableScalarRefT,ItemVariableArrayRefT>(mesh, document_node.children("face-variable"), IK_Face);
+
+  _createEmptyGroups(mesh, document_node.children("cell-group"), mesh->itemFamily(IK_Cell));
+  _createEmptyGroups(mesh, document_node.children("node-group"), mesh->itemFamily(IK_Node));
+  _createEmptyGroups(mesh, document_node.children("face-group"), mesh->itemFamily(IK_Face));
 }
 
 /*---------------------------------------------------------------------------*/
