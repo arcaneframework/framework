@@ -1949,7 +1949,7 @@ generateHashUniqueId(SmallSpan<const Int64> nodes_unique_id)
   Int64 truncated_uid0 = uid0 & ((1 << 30) - 1);
   Int64 truncated_hash = hash & ((1LL << 31) - 1);
   Int64 new_uid = truncated_uid0 + (truncated_hash << 31);
-  ARCANE_ASSERT(new_uid > 0, ("UniqueId is not > 0"));
+  ARCANE_ASSERT(new_uid >= 0, ("UniqueId is not >= 0"));
   return new_uid;
 }
 

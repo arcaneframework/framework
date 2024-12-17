@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* OneMeshItemAdder.h                                          (C) 2000-2022 */
+/* OneMeshItemAdder.h                                          (C) 2000-2024 */
 /*                                                                           */
 /* Outil de création d'une maille                                            */
 /*---------------------------------------------------------------------------*/
@@ -14,7 +14,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/Item.h"
+#include "arcane/core/Item.h"
 
 #include "arcane/mesh/MeshGlobal.h"
 #include "arcane/mesh/FullItemInfo.h"
@@ -44,17 +44,19 @@ class DynamicMeshIncrementalBuilder;
 class OneMeshItemAdder
   : public TraceAccessor
 {
-private:
+ private:
   
   // Classe servant à rendre compatible les données FullCellInfo
   // et les données fragmentées de description d'une maille
   class CellInfoProxy;
   
-public:
+ public:
   
-  OneMeshItemAdder(DynamicMeshIncrementalBuilder* mesh_builder);
+  explicit OneMeshItemAdder(DynamicMeshIncrementalBuilder* mesh_builder);
   ~OneMeshItemAdder() {}
   
+ public:
+
   ItemInternal* addOneNode(Int64 node_uid,Int32 owner);
 
   // DEPRECATED
@@ -150,26 +152,29 @@ public:
 
  private:
  
-  DynamicMesh* m_mesh;
-  DynamicMeshIncrementalBuilder* m_mesh_builder;
+  DynamicMesh* m_mesh = nullptr;
+  DynamicMeshIncrementalBuilder* m_mesh_builder = nullptr;
  
   CellFamily& m_cell_family;
   NodeFamily& m_node_family;
   FaceFamily& m_face_family;
   EdgeFamily& m_edge_family;
   
-  ItemTypeMng* m_item_type_mng;
+  ItemTypeMng* m_item_type_mng = nullptr;
  
   MeshInfos m_mesh_info;//!<  Info générale sur le maillage (numéro de sous-domaine, nombre d'items...)
   
-  Int64 m_next_face_uid; //!< Numéro du uniqueId() suivant utilisé pour générer les faces
-  Int64 m_next_edge_uid; //!< Numéro du uniqueId() suivant utilisé pour générer les arêtes
+  Int64 m_next_face_uid = 0; //!< Numéro du uniqueId() suivant utilisé pour générer les faces
+  Int64 m_next_edge_uid = 0; //!< Numéro du uniqueId() suivant utilisé pour générer les arêtes
   
   //! Tableaux de travail
-  Int64UniqueArray m_work_face_sorted_nodes;
-  Int64UniqueArray m_work_face_orig_nodes_uid;
-  Int64UniqueArray m_work_edge_sorted_nodes;
-  Int64UniqueArray m_work_edge_orig_nodes_uid;
+  UniqueArray<Int64> m_work_face_sorted_nodes;
+  UniqueArray<Int64> m_work_face_orig_nodes_uid;
+  UniqueArray<Int64> m_work_edge_sorted_nodes;
+  UniqueArray<Int64> m_work_edge_orig_nodes_uid;
+
+  //! Si vrai, génère les uniqueId() des faces à partir de ceux des noeuds.
+  bool m_use_hash_for_face_unique_id = false;
 };
 
 /*---------------------------------------------------------------------------*/
