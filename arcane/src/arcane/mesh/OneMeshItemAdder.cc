@@ -14,6 +14,7 @@
 #include "arcane/mesh/OneMeshItemAdder.h"
 
 #include "arcane/utils/NotSupportedException.h"
+#include "arcane/utils/ValueConvert.h"
 
 #include "arcane/core/MeshUtils.h"
 #include "arcane/core/MeshToMeshTransposer.h"
@@ -87,11 +88,14 @@ OneMeshItemAdder(DynamicMeshIncrementalBuilder* mesh_builder)
 , m_edge_family(m_mesh->trueEdgeFamily())
 , m_item_type_mng(m_mesh->itemTypeMng())
 , m_mesh_info(m_mesh->meshPartInfo().partRank())
-, m_next_face_uid(0)
-, m_next_edge_uid(0)
 {
   m_work_face_sorted_nodes.reserve(100);
   m_work_face_orig_nodes_uid.reserve(100); 
+
+  if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_GENERATE_UNIQUE_ID_FROM_NODES", true)){
+    m_use_hash_for_face_unique_id = (v.value()!=0);
+    info() << "Is generate Face uniqueId() from Nodes=" << m_use_hash_for_face_unique_id;
+  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -227,7 +231,9 @@ _findInternalFace(Integer i_face, const CellInfoProxy& cell_info, bool& is_add)
   Node nbi = nodes_map.findItem(m_work_face_sorted_nodes[0]);
   Face face_internal = ItemTools::findFaceInNode2(nbi,lf.typeId(),m_work_face_sorted_nodes);
   if (face_internal.null()) {
-    if (!cell_info.allowBuildFace()){
+    // La face n'est pas trouvée. Elle n'existe donc pas dans notre sous-domaine.
+    // Si cela est autorisé, on créée la nouvelle face.
+    if (!cell_info.allowBuildFace() && !m_use_hash_for_face_unique_id){
       info() << "BadCell uid=" << cell_info.uniqueId();
       for( Int32 i=0; i<cell_info.nbNode(); ++i )
         info() << "Cell node I=" << i << " uid=" << cell_info.nodeUniqueId(i);
@@ -237,7 +243,9 @@ _findInternalFace(Integer i_face, const CellInfoProxy& cell_info, bool& is_add)
                    cell_info.uniqueId(),i_face,m_work_face_sorted_nodes);
     }
     ItemTypeInfo* face_type = m_item_type_mng->typeFromId(lf.typeId());
-    const Int64 face_unique_id = m_next_face_uid++;
+    Int64 face_unique_id = m_next_face_uid++;
+    if (m_use_hash_for_face_unique_id)
+      face_unique_id = MeshUtils::generateHashUniqueId(m_work_face_sorted_nodes);
     is_add = true;
     return m_face_family.allocOne(face_unique_id,face_type);
   }
