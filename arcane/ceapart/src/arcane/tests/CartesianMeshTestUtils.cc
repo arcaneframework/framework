@@ -200,8 +200,9 @@ _testDirCell()
       DirCell dir_cell(cdm[icell]);
       Cell prev_cell = dir_cell.previous();
       Cell next_cell = dir_cell.next();
-      if (prev_cell.null() && next_cell.null())
-        ARCANE_FATAL("Null previous and next cell");
+      // AH: Désactivation de ce if : bloquant s'il n'y a qu'une seule couche de mailles.
+      // if (prev_cell.null() && next_cell.null())
+      //   ARCANE_FATAL("Null previous and next cell");
       DirCell dir_cell2(cdm2[icell]);
       Cell prev_cell2 = dir_cell2.previous();
       Cell next_cell2 = dir_cell2.next();
@@ -263,10 +264,11 @@ _testDirCellAccelerator()
       DirCellLocalId dir_cell(cdm.dirCellId(icell));
       CellLocalId prev_cell = dir_cell.previous();
       CellLocalId next_cell = dir_cell.next();
-      if (prev_cell.isNull() && next_cell.isNull()) {
-        inout_dummy_var[icell] = -5;
-        return;
-      }
+      // AH: Désactivation de ce if : bloquant s'il n'y a qu'une seule couche de mailles.
+      // if (prev_cell.isNull() && next_cell.isNull()) {
+      //   inout_dummy_var[icell] = -5;
+      //   return;
+      // }
 
       DirCellLocalId dir_cell2(cdm2.dirCellId(icell));
       CellLocalId prev_cell2 = dir_cell2.previous();
