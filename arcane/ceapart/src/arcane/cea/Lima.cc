@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Lima.cc                                                     (C) 2000-2023 */
+/* Lima.cc                                                     (C) 2000-2024 */
 /*                                                                           */
 /* Lecture/Ecriture d'un fichier au format Lima.                             */
 /*---------------------------------------------------------------------------*/
@@ -1353,11 +1353,11 @@ writeMeshToFile(IMesh* mesh,const String& file_name)
 
   std::string std_file_name = file_name.localstr();
 	//TODO: FAIRE EXTENSION si non presente
-  // Regarde si le fichier a l'extension '.unf' ou '.mli'.
-  // Sinon, ajoute '.mli'
+  // Regarde si le fichier a l'extension '.unf', '.mli' ou '.mli2'.
+  // Sinon, ajoute '.mli2'
   std::string::size_type std_end = std::string::npos;
-  if (std_file_name.rfind(".mli")==std_end && std_file_name.rfind(".unf")==std_end){
-    std_file_name += ".mli";
+  if (std_file_name.rfind(".mli2")==std_end && std_file_name.rfind(".mli")==std_end && std_file_name.rfind(".unf")==std_end){
+    std_file_name += ".mli2";
   }
   info() << "FINAL_FILE_NAME=" << std_file_name;
   Lima::Maillage lima(std_file_name);
