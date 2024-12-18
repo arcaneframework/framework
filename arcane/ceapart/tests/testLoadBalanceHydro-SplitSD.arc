@@ -97,7 +97,7 @@
    <period>1</period>
    <statistics>true</statistics>
    <max-imbalance>0.01</max-imbalance>
-   <min-cpu-time>1</min-cpu-time>
+   <min-cpu-time>0</min-cpu-time>
  </arcane-load-balance>
 
 
