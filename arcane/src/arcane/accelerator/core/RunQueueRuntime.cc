@@ -22,6 +22,7 @@
 #include "arcane/accelerator/core/Memory.h"
 #include "arcane/accelerator/core/DeviceInfoList.h"
 #include "arcane/accelerator/core/DeviceMemoryInfo.h"
+#include "arcane/accelerator/core/NativeStream.h"
 
 #include <cstring>
 
@@ -53,7 +54,7 @@ class ARCANE_ACCELERATOR_CORE_EXPORT HostRunQueueStream
     args.destination().copyHost(args.source());
   }
   void prefetchMemory(const MemoryPrefetchArgs&) override {}
-  void* _internalImpl() override { return nullptr; }
+  NativeStream nativeStream() override { return {}; }
   bool _barrierNoException() override { return false; }
 
  private:

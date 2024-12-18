@@ -115,7 +115,7 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RunCommandLaunchInfo
    * sous-jacent.
    */
   KernelLaunchArgs _threadBlockInfo(const void* func, Int64 shared_memory_size) const;
-  void* _internalPlatformStream();
+  NativeStream _internalNativeStream();
   void _doEndKernelLaunch();
   KernelLaunchArgs _computeKernelLaunchArgs() const;
 

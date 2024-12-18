@@ -57,6 +57,10 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RunQueue
   friend class impl::RunCommandLaunchInfo;
   friend RunCommand makeCommand(const RunQueue& run_queue);
   friend RunCommand makeCommand(const RunQueue* run_queue);
+  // Pour _internalNativeStream()
+  friend class impl::CudaUtils;
+  friend class impl::HipUtils;
+  friend class impl::SyclUtils;
 
  public:
 
@@ -255,6 +259,7 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RunQueue
   impl::IRunnerRuntime* _internalRuntime() const;
   impl::IRunQueueStream* _internalStream() const;
   impl::RunCommandImpl* _getCommandImpl() const;
+  impl::NativeStream _internalNativeStream() const;
   void _checkNotNull() const;
 
   // Pour VariableViewBase

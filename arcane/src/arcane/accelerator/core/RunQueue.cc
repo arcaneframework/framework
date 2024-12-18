@@ -24,6 +24,7 @@
 #include "arcane/accelerator/core/Runner.h"
 #include "arcane/accelerator/core/RunQueueEvent.h"
 #include "arcane/accelerator/core/Memory.h"
+#include "arcane/accelerator/core/NativeStream.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -212,12 +213,21 @@ _internalImpl() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+impl::NativeStream RunQueue::
+_internalNativeStream() const
+{
+  if (m_p)
+    return m_p->_internalStream()->nativeStream();
+  return {};
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 void* RunQueue::
 platformStream() const
 {
-  if (m_p)
-    return m_p->_internalStream()->_internalImpl();
-  return nullptr;
+  return _internalNativeStream().m_native_pointer;
 }
 
 /*---------------------------------------------------------------------------*/

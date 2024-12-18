@@ -22,17 +22,20 @@
 
 #if defined(ARCANE_COMPILING_HIP)
 #include "arcane/accelerator/hip/HipAccelerator.h"
-#include <hip/hip_runtime.h>
 #include <rocprim/rocprim.hpp>
 #endif
 #if defined(ARCANE_COMPILING_CUDA)
 #include "arcane/accelerator/cuda/CudaAccelerator.h"
 #include <cub/cub.cuh>
 #endif
-#if defined(ARCANE_COMPILING_SYCL) && defined(__INTEL_LLVM_COMPILER)
+#if defined(ARCANE_COMPILING_SYCL)
+#include "arcane/accelerator/sycl/SyclAccelerator.h"
+#if defined(__INTEL_LLVM_COMPILER)
 #include <oneapi/dpl/execution>
 #include <oneapi/dpl/algorithm>
 #endif
+#endif
+
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
