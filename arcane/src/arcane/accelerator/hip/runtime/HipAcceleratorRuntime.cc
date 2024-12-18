@@ -414,13 +414,14 @@ fillDevices(bool is_verbose)
     o << " concurrentManagedAccess = " << dp.concurrentManagedAccess << "\n";
     o << " directManagedMemAccessFromHost = " << dp.directManagedMemAccessFromHost << "\n";
     o << " gcnArchName = " << dp.gcnArchName << "\n";
-    o << " gpuDirectRDMASupported = " << dp.gpuDirectRDMASupported << "\n";
-    o << " hostNativeAtomicSupported = " << dp.hostNativeAtomicSupported << "\n";
     o << " pageableMemoryAccess = " << dp.pageableMemoryAccess << "\n";
     o << " pageableMemoryAccessUsesHostPageTables = " << dp.pageableMemoryAccessUsesHostPageTables << "\n";
-    o << " unifiedFunctionPointers = " << dp.unifiedFunctionPointers << "\n";
     o << " hasManagedMemory = " << has_managed_memory << "\n";
-
+#if HIP_VERSION_MAJOR >= 6
+    o << " gpuDirectRDMASupported = " << dp.gpuDirectRDMASupported << "\n";
+    o << " hostNativeAtomicSupported = " << dp.hostNativeAtomicSupported << "\n";
+    o << " unifiedFunctionPointers = " << dp.unifiedFunctionPointers << "\n";
+#endif
     {
       hipDevice_t device;
       ARCANE_CHECK_HIP(hipDeviceGet(&device, i));
