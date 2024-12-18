@@ -269,8 +269,8 @@ _internalCreateOrGetRunCommandImpl()
 void RunQueueImpl::
 _internalFreeRunningCommands()
 {
-  SmallArray<RunCommandImpl*> command_list;
   if (m_use_pool_mutex) {
+    SmallArray<RunCommandImpl*> command_list;
     // Recopie les commandes dans un tableau local car m_active_run_command_list
     // peut être modifié par un autre thread.
     {

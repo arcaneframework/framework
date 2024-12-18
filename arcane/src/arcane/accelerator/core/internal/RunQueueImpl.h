@@ -86,6 +86,11 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RunQueueImpl
   bool isConcurrentCommandCreation() const { return m_use_pool_mutex; }
 
   void dumpStats(std::ostream& ostr) const;
+  bool isAsync() const { return m_is_async; }
+
+  void _internalBarrier();
+  IRunnerRuntime* _internalRuntime() const { return m_runtime; }
+  IRunQueueStream* _internalStream() const { return m_queue_stream; }
 
  public:
 
@@ -103,10 +108,7 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RunQueueImpl
  private:
 
   RunCommandImpl* _internalCreateOrGetRunCommandImpl();
-  IRunnerRuntime* _internalRuntime() const { return m_runtime; }
-  IRunQueueStream* _internalStream() const { return m_queue_stream; }
   void _internalFreeRunningCommands();
-  void _internalBarrier();
   bool _isInPool() const { return m_is_in_pool; }
   void _release();
   void _setDefaultMemoryRessource();

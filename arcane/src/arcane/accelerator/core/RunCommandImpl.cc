@@ -133,9 +133,9 @@ notifyBeginLaunchKernel()
   IRunQueueStream* stream = internalStream();
   stream->notifyBeginLaunchKernel(*this);
   // TODO: utiliser la bonne stream en séquentiel
-  m_start_event->recordQueue(stream);
   m_has_been_launched = true;
-  if (ProfilingRegistry::hasProfiling()) {
+  if (m_use_profiling) {
+    m_start_event->recordQueue(stream);
     m_begin_time = platform::getRealTimeNS();
     m_loop_one_exec_stat_ptr = &m_loop_one_exec_stat;
     m_loop_one_exec_stat.setBeginTime(m_begin_time);
@@ -154,7 +154,8 @@ notifyEndLaunchKernel()
 {
   IRunQueueStream* stream = internalStream();
   // TODO: utiliser la bonne stream en séquentiel
-  m_stop_event->recordQueue(stream);
+  if (m_use_profiling)
+    m_stop_event->recordQueue(stream);
   stream->notifyEndLaunchKernel(*this);
   m_queue->_addRunningCommand(this);
 }
@@ -195,9 +196,11 @@ notifyEndExecuteKernel()
   if (!m_has_been_launched)
     return;
 
-  Int64 diff_time_ns = m_stop_event->elapsedTime(m_start_event);
-
-  runner()->addTime((double)diff_time_ns / 1.0e9);
+  Int64 diff_time_ns = 0;
+  if (m_use_profiling){
+    diff_time_ns = m_stop_event->elapsedTime(m_start_event);
+    runner()->addTime((double)diff_time_ns / 1.0e9);
+  }
 
   ForLoopOneExecStat* exec_info = m_loop_one_exec_stat_ptr;
   if (exec_info) {
@@ -217,6 +220,7 @@ _reset()
   m_kernel_name = String();
   m_trace_info = TraceInfo();
   m_nb_thread_per_block = 0;
+  m_use_profiling = ProfilingRegistry::hasProfiling();
   m_parallel_loop_options = TaskFactory::defaultParallelLoopOptions();
   m_begin_time = 0;
   m_loop_one_exec_stat.reset();

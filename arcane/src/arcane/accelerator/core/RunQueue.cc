@@ -178,7 +178,6 @@ executionPolicy() const
 impl::IRunnerRuntime* RunQueue::
 _internalRuntime() const
 {
-  _checkNotNull();
   return m_p->_internalRuntime();
 }
 
@@ -188,7 +187,6 @@ _internalRuntime() const
 impl::IRunQueueStream* RunQueue::
 _internalStream() const
 {
-  _checkNotNull();
   return m_p->_internalStream();
 }
 
@@ -198,7 +196,6 @@ _internalStream() const
 impl::RunCommandImpl* RunQueue::
 _getCommandImpl() const
 {
-  _checkNotNull();
   return m_p->_internalCreateOrGetRunCommandImpl();
 }
 

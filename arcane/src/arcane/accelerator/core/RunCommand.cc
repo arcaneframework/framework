@@ -17,6 +17,7 @@
 #include "arcane/accelerator/core/internal/RunQueueImpl.h"
 #include "arcane/accelerator/core/internal/ReduceMemoryImpl.h"
 #include "arcane/accelerator/core/internal/RunCommandImpl.h"
+#include "arcane/accelerator/core/internal/IRunQueueStream.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -139,10 +140,10 @@ operator<<(RunCommand& command, const TraceInfo& trace_info)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-RunQueue RunCommand::
-_internalQueue() const
+void* RunCommand::
+_internalPlatformStream() const
 {
-  return RunQueue(m_p->m_queue);
+  return m_p->internalStream()->_internalImpl();
 }
 
 /*---------------------------------------------------------------------------*/
