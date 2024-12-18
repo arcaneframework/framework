@@ -18,6 +18,7 @@
 
 #include "arcane/accelerator/core/RunQueue.h"
 #include "arcane/accelerator/core/internal/IRunQueueStream.h"
+#include "arcane/accelerator/core/internal/RunQueueImpl.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -33,8 +34,14 @@ RunCommandLaunchInfo(RunCommand& command, Int64 total_loop_size)
 : m_command(command)
 , m_total_loop_size(total_loop_size)
 {
-  m_kernel_launch_args = _computeKernelLaunchArgs();
-  _begin();
+  m_queue_impl = m_command._internalQueueImpl();
+  m_exec_policy = m_queue_impl->executionPolicy();
+
+  // Le calcul des informations de kernel n'est utile que sur accélérateur
+  if (isAcceleratorPolicy(m_exec_policy)) {
+    m_kernel_launch_args = _computeKernelLaunchArgs();
+    m_command._allocateReduceMemory(m_kernel_launch_args.nbBlockPerGrid());
+  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -43,22 +50,9 @@ RunCommandLaunchInfo(RunCommand& command, Int64 total_loop_size)
 RunCommandLaunchInfo::
 ~RunCommandLaunchInfo()
 {
-  // Notifie de la fin de lancement du noyau. Normalement cela est déjà fait
+  // Notifie de la fin de lancement du noyau. Normalement, cela est déjà fait
   // sauf s'il y a eu une exception pendant le lancement du noyau de calcul.
   _doEndKernelLaunch();
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void RunCommandLaunchInfo::
-_begin()
-{
-  const RunQueue& queue = m_command._internalQueue();
-  m_exec_policy = queue.executionPolicy();
-  m_queue_stream = queue._internalStream();
-  m_runtime = queue._internalRuntime();
-  m_command._allocateReduceMemory(m_kernel_launch_args.nbBlockPerGrid());
 }
 
 /*---------------------------------------------------------------------------*/
@@ -100,18 +94,18 @@ _doEndKernelLaunch()
   m_is_notify_end_kernel_done = true;
   m_command._internalNotifyEndLaunchKernel();
 
-  const RunQueue& q = m_command._internalQueue();
-  if (!q.isAsync())
-    q.barrier();
+  impl::RunQueueImpl* q = m_queue_impl;
+  if (!q->isAsync())
+    q->_internalBarrier();
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void* RunCommandLaunchInfo::
-_internalStreamImpl()
+_internalPlatformStream()
 {
-  return m_queue_stream->_internalImpl();
+  return m_command._internalPlatformStream();
 }
 
 /*---------------------------------------------------------------------------*/

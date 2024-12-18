@@ -123,8 +123,8 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RunCommand
  private:
 
   //! \internal
-  RunQueue _internalQueue() const;
   impl::RunQueueImpl* _internalQueueImpl() const;
+  void* _internalPlatformStream() const;
   static impl::RunCommandImpl* _internalCreateImpl(impl::RunQueueImpl* queue);
   static void _internalDestroyImpl(impl::RunCommandImpl* p);
 

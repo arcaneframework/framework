@@ -323,7 +323,7 @@ _applyKernelCUDA(impl::RunCommandLaunchInfo& launch_info, const CudaKernel& kern
 #if defined(ARCANE_COMPILING_CUDA)
   Int32 wanted_shared_memory = 0;
   auto tbi = launch_info._threadBlockInfo(reinterpret_cast<const void*>(kernel), wanted_shared_memory);
-  cudaStream_t* s = reinterpret_cast<cudaStream_t*>(launch_info._internalStreamImpl());
+  cudaStream_t* s = reinterpret_cast<cudaStream_t*>(launch_info._internalPlatformStream());
   // TODO: utiliser cudaLaunchKernel() à la place.
   kernel<<<tbi.nbBlockPerGrid(), tbi.nbThreadPerBlock(), wanted_shared_memory, *s>>>(args, func, other_args...);
 #else
@@ -351,7 +351,7 @@ _applyKernelHIP(impl::RunCommandLaunchInfo& launch_info, const HipKernel& kernel
 #if defined(ARCANE_COMPILING_HIP)
   Int32 wanted_shared_memory = 0;
   auto tbi = launch_info._threadBlockInfo(reinterpret_cast<const void*>(kernel), wanted_shared_memory);
-  hipStream_t* s = reinterpret_cast<hipStream_t*>(launch_info._internalStreamImpl());
+  hipStream_t* s = reinterpret_cast<hipStream_t*>(launch_info._internalPlatformStream());
   hipLaunchKernelGGL(kernel, tbi.nbBlockPerGrid(), tbi.nbThreadPerBlock(), wanted_shared_memory, *s, args, func, other_args...);
 #else
   ARCANE_UNUSED(launch_info);
@@ -376,7 +376,7 @@ void _applyKernelSYCL(impl::RunCommandLaunchInfo& launch_info, SyclKernel kernel
                       const LambdaArgs& args, [[maybe_unused]] const ReducerArgs&... reducer_args)
 {
 #if defined(ARCANE_COMPILING_SYCL)
-  sycl::queue* s = reinterpret_cast<sycl::queue*>(launch_info._internalStreamImpl());
+  sycl::queue* s = reinterpret_cast<sycl::queue*>(launch_info._internalPlatformStream());
   sycl::event event;
   if constexpr (sizeof...(ReducerArgs) > 0) {
     auto tbi = launch_info.kernelLaunchArgs();
