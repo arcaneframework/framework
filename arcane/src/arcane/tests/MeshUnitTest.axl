@@ -154,11 +154,17 @@ Teste la désallocation du maillage
     </description>
   </simple>
 
-     <simple name = "check-read-property" type = "string" minOccurs="0" maxOccurs="unbounded">
-         <description>
-             Indique que l'on veut vérifier si la variable dont le nom est donnée a bien été créée et conservée.
-         </description>
-     </simple>
+  <simple name = "check-read-property" type = "string" minOccurs="0" maxOccurs="unbounded">
+    <description>
+      Indique que l'on veut vérifier si la variable dont le nom est donnée a bien été créée et conservée.
+    </description>
+  </simple>
+
+  <simple name = "compact-mesh" type = "bool" default = "true">
+    <description>
+      Indique si on applique la propriété 'compact' et 'compact-after-allocate' au maillage.
+    </description>
+  </simple>
 
  </options>
 </service>

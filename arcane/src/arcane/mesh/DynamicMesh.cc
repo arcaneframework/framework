@@ -102,6 +102,19 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+namespace
+{
+// Propritétés publiques que l'utilisateur peut positionner
+const char* PROPERTY_SORT = "sort";
+const char* PROPERTY_COMPACT = "compact";
+const char* PROPERTY_COMPACT_AFTER_ALLOCATE = "compact-after-allocate";
+const char* PROPERTY_DUMP = "dump";
+const char* PROPERTY_DISPLAY_STATS = "display-stats";
+
+// Propritétés internes à Arcane
+const char* PROPERTY_MESH_VERSION = "mesh-version";
+}
+
 namespace Arcane::mesh
 {
 
@@ -258,11 +271,12 @@ DynamicMesh(ISubDomain* sub_domain,const MeshBuildInfo& mbi, bool is_submesh)
   _addFamily(m_face_family);
   _addFamily(m_cell_family);
  
-  m_properties->setBool("sort",true);
-  m_properties->setBool("compact",true);
-  m_properties->setBool("dump",true);
-  m_properties->setBool("display-stats",true);
-  m_properties->setInt32("mesh-version",1);
+  m_properties->setBool(PROPERTY_SORT,true);
+  m_properties->setBool(PROPERTY_COMPACT,true);
+  m_properties->setBool(PROPERTY_COMPACT_AFTER_ALLOCATE,true);
+  m_properties->setBool(PROPERTY_DUMP,true);
+  m_properties->setBool(PROPERTY_DISPLAY_STATS,true);
+  m_properties->setInt32(PROPERTY_MESH_VERSION,1);
 
   m_item_internal_list.mesh = this;
   m_item_internal_list._internalSetNodeSharedInfo(m_node_family->commonItemSharedInfo());
@@ -418,8 +432,8 @@ build()
     //! AMR
     m_mesh_refinement = 0;
 
-    this->properties()->setBool("compact",true);
-    this->properties()->setBool("sort",true);
+    this->properties()->setBool(PROPERTY_COMPACT,true);
+    this->properties()->setBool(PROPERTY_SORT,true);
 
     ItemGroupDynamicMeshObserver * obs = NULL;
     m_parent_group->attachObserver(this, (obs = new ItemGroupDynamicMeshObserver(this)));
@@ -813,7 +827,9 @@ endAllocate()
   }
   _allocateCells2(m_mesh_builder);
 
-  _compactItems(true,false);
+  if (m_properties->getBool(PROPERTY_COMPACT_AFTER_ALLOCATE))
+    _compactItems(true,false);
+
   _compactItemInternalReferences();
   for( IItemFamily* family : m_item_families )
     family->_internalApi()->endAllocate();
@@ -1517,7 +1533,7 @@ _loadProperties()
   auto p = m_properties;
 
   info(4) << "DynamicMesh::_readProperties() name=" << name()
-          << " mesh-version=" << p->getInt32WithDefault("mesh-version",-1);
+          << " mesh-version=" << p->getInt32WithDefault(PROPERTY_MESH_VERSION,-1);
 
   {
     // Relit les infos sur le gestionnaire de mailles fantômes.
@@ -1553,7 +1569,7 @@ _loadProperties()
 void DynamicMesh::
 _prepareForDump()
 {
-  bool want_dump = m_properties->getBool("dump");
+  bool want_dump = m_properties->getBool(PROPERTY_DUMP);
   info(4) << "DynamicMesh::prepareForDump() name=" << name()
           << " need_compact?=" << m_need_compact
           << " want_dump?=" << want_dump
@@ -1921,7 +1937,7 @@ _multipleExchangeItems(Integer nb_exchange,Integer version,bool do_compact)
 
   if (do_compact){
     Timer::Action ts_action1(m_sub_domain,"CompactItems",true);
-    bool do_sort = m_properties->getBool("sort");
+    bool do_sort = m_properties->getBool(PROPERTY_SORT);
     _compactItems(do_sort,true);
   }
 }
@@ -1932,7 +1948,7 @@ _multipleExchangeItems(Integer nb_exchange,Integer version,bool do_compact)
 void DynamicMesh::
 exchangeItems()
 {
-  _exchangeItems(m_properties->getBool("compact"));
+  _exchangeItems(m_properties->getBool(PROPERTY_COMPACT));
 }
 
 /*---------------------------------------------------------------------------*/
@@ -2397,9 +2413,9 @@ updateGhostLayerFromParent(Array<Int64>& ghost_cell_to_refine_uid,
   // NOTE: ce n'est en théorie pas indispensable mais actuellement si
   // car on ne sauve pas le #m_data_index des ItemInternal.
   //_compactItemInternalReferences();
-  bool do_compact = m_properties->getBool("compact");
+  bool do_compact = m_properties->getBool(PROPERTY_COMPACT);
   if (do_compact){
-    bool do_sort = m_properties->getBool("sort");
+    bool do_sort = m_properties->getBool(PROPERTY_SORT);
     _compactItems(do_sort,do_compact);
   }
   CHECKPERF( m_perf_counter.stop(PerfCounter::UPGHOSTLAYER6) )
@@ -2510,10 +2526,10 @@ _internalEndUpdateFinal(bool print_stat)
     _compactItemInternalReferences(); // Utilité à confirmer
     
     {
-      bool do_compact = m_properties->getBool("compact");
-      info(4) << "DynamicMesh::_internalEndUpdateFinal() compact?=" << do_compact << " sort?=" << m_properties->getBool("sort");
+      bool do_compact = m_properties->getBool(PROPERTY_COMPACT);
+      info(4) << "DynamicMesh::_internalEndUpdateFinal() compact?=" << do_compact << " sort?=" << m_properties->getBool(PROPERTY_SORT);
       if (do_compact){
-        bool do_sort = m_properties->getBool("sort");
+        bool do_sort = m_properties->getBool(PROPERTY_SORT);
         _compactItems(do_sort,do_compact);
       }
     }
@@ -2523,7 +2539,7 @@ _internalEndUpdateFinal(bool print_stat)
 
   // Affiche les statistiques du nouveau maillage
   if (print_stat){
-    if (m_properties->getBool("display-stats")){
+    if (m_properties->getBool(PROPERTY_DISPLAY_STATS)){
       MeshStats ms(traceMng(),this,m_parallel_mng);
       ms.dumpStats();
     }
@@ -2730,7 +2746,7 @@ _finalizeMeshChanged()
     family->endUpdate();
   }
 
-  bool do_sort = m_properties->getBool("sort");
+  bool do_sort = m_properties->getBool(PROPERTY_SORT);
   if (do_sort)
     _sortInternalReferences();
   m_tied_interface_need_prepare_dump = true;

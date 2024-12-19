@@ -229,6 +229,11 @@ buildInitializeTest()
     Connectivity c(mesh()->connectivity());
     c.enableConnectivity(Connectivity::CT_HasEdge);
   }
+  if (!options()->compactMesh()) {
+    Properties* p = mesh()->properties();
+    p->setBool("compact",false);
+    p->setBool("compact-after-allocate",false);
+  }
 }
 
 /*---------------------------------------------------------------------------*/
