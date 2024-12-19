@@ -24,13 +24,14 @@
 
 #include "arcane/accelerator/core/RunQueueBuildInfo.h"
 #include "arcane/accelerator/core/Memory.h"
+#include "arcane/accelerator/core/DeviceInfoList.h"
+#include "arcane/accelerator/core/RunQueue.h"
+#include "arcane/accelerator/core/DeviceMemoryInfo.h"
+#include "arcane/accelerator/core/NativeStream.h"
 #include "arcane/accelerator/core/internal/IRunnerRuntime.h"
 #include "arcane/accelerator/core/internal/RegisterRuntimeInfo.h"
 #include "arcane/accelerator/core/internal/IRunQueueStream.h"
 #include "arcane/accelerator/core/internal/IRunQueueEventImpl.h"
-#include "arcane/accelerator/core/DeviceInfoList.h"
-#include "arcane/accelerator/core/RunQueue.h"
-#include "arcane/accelerator/core/DeviceMemoryInfo.h"
 #include "arcane/accelerator/core/internal/RunCommandImpl.h"
 
 #include <iostream>
@@ -117,9 +118,9 @@ class HipRunQueueStream
     if (!args.isAsync())
       barrier();
   }
-  void* _internalImpl() override
+  impl::NativeStream nativeStream() override
   {
-    return &m_hip_stream;
+    return impl::NativeStream(&m_hip_stream);
   }
 
  public:

@@ -19,6 +19,7 @@
 #include "arcane/accelerator/core/RunQueue.h"
 #include "arcane/accelerator/core/internal/IRunQueueStream.h"
 #include "arcane/accelerator/core/internal/RunQueueImpl.h"
+#include "arcane/accelerator/core/NativeStream.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -102,10 +103,10 @@ _doEndKernelLaunch()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void* RunCommandLaunchInfo::
-_internalPlatformStream()
+NativeStream RunCommandLaunchInfo::
+_internalNativeStream()
 {
-  return m_command._internalPlatformStream();
+  return m_command._internalNativeStream();
 }
 
 /*---------------------------------------------------------------------------*/

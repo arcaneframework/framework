@@ -78,6 +78,10 @@ namespace impl
   class RunCommandLaunchInfo;
   class RunnerImpl;
   class RunQueueImplStack;
+  class NativeStream;
+  class CudaUtils;
+  class HipUtils;
+  class SyclUtils;
 } // namespace impl
 
 /*---------------------------------------------------------------------------*/

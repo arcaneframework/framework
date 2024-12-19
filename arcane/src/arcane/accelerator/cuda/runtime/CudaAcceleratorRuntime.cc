@@ -37,6 +37,8 @@
 #include "arcane/accelerator/core/PointerAttribute.h"
 #include "arcane/accelerator/core/RunQueue.h"
 #include "arcane/accelerator/core/DeviceMemoryInfo.h"
+#include "arcane/accelerator/core/NativeStream.h"
+
 #include "arcane/accelerator/cuda/runtime/internal/Cupti.h"
 
 #include <iostream>
@@ -156,9 +158,9 @@ class CudaRunQueueStream
     if (!args.isAsync())
       barrier();
   }
-  void* _internalImpl() override
+  impl::NativeStream nativeStream() override
   {
-    return &m_cuda_stream;
+    return impl::NativeStream(&m_cuda_stream);
   }
 
  public:
