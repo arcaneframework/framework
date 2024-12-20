@@ -22,6 +22,9 @@
 #include "arcane/accelerator/core/RunQueue.h"
 #include "arcane/accelerator/CommonUtils.h"
 #include "arcane/accelerator/RunCommandLaunchInfo.h"
+#if defined(ARCANE_COMPILING_SYCL)
+#include "arcane/accelerator/RunCommandLoop.h"
+#endif
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -118,11 +121,73 @@ class GenericPartitionerIf
       s.m_device_nb_list1_storage.copyToAsync(s.m_host_nb_list1_storage, queue);
     } break;
 #endif
+#if defined(ARCANE_COMPILING_SYCL) && defined(__INTEL_LLVM_COMPILER)
+    case eExecutionPolicy::SYCL: {
+      // Seulement implémenté pour DPC++.
+      // Actuellement (dpc++ 2025.0), il n'y a pas l'équivalent avec SYCL de
+      // la méthode de partition de cub ou rocprim.
+      // Utilise la fonction 'stable_partition'. Cependant, cette fonction
+      // ne supporte pas si la mémoire uniquement sur accélérateur. De plus,
+      // il faut que InputIterator et OutputIterator remplissent le concept
+      // std::random_access_iterator ce qui n'est pas (notamment car il n'y a
+      // pas les opérateurs de copie ni de constructeur vide à cause de la lambda).
+      // Pour éviter tous ces problèmes, on alloue donc des tableaux temporaires
+      // pour l'appel à 'stable_sort' et on recopie les valerus en sortie.
+      using InputDataType = typename InputIterator::value_type;
+      using DataType = typename OutputIterator::value_type;
+      NumArray<DataType, MDDim1> tmp_output_numarray(nb_item);
+      NumArray<bool, MDDim1> tmp_select_numarray(nb_item);
+      auto tmp_output = tmp_output_numarray.to1DSmallSpan();
+      auto tmp_select = tmp_select_numarray.to1DSmallSpan();
+      {
+        auto command = makeCommand(queue);
+        command << RUNCOMMAND_LOOP1(iter, nb_item)
+        {
+          auto [i] = iter();
+          tmp_output[i] = input_iter[i];
+        };
+      }
+      auto tmp_select_lambda = [=](Int32 i) { return tmp_select[i]; };
+      sycl::queue sycl_queue = impl::SyclUtils::toNativeStream(queue);
+      auto policy = oneapi::dpl::execution::make_device_policy(sycl_queue);
+      auto output_after = oneapi::dpl::stable_partition(policy, tmp_output.begin(), tmp_output.end(), select_lambda);
+      queue.barrier();
+      Int32 nb_list1 = (output_after - tmp_output.begin());
+      Int32 nb_list2 = nb_item - nb_list1;
+      s.m_host_nb_list1_storage[0] = nb_list1;
+      //std::cerr << "NbList1=" << nb_list1 << " NbList2=" << nb_list2 << "\n";
+      {
+        // Recopie dans output les valeurs filtrées.
+        // Pour être cohérent avec 'cub' et 'rocprim', il faut inverser l'ordre des
+        // des valeurs de la liste pour les éléments ne remplissant pas la condition.
+        // Pour cela, on fait une boucle de taille (nb_list1 + nb_list/2) et chaque
+        // itération pour i>=nb_list1 gère deux éléments.
+        auto command = makeCommand(queue);
+        Int32 nb_iter2 = (nb_list2 / 2) + (nb_list2 % 2);
+        //std::cout << "NB_ITER2=" << nb_iter2 << "\n";
+        command << RUNCOMMAND_LOOP1(iter, (nb_list1 + nb_iter2))
+        {
+          auto [i] = iter();
+          if (i >= nb_list1) {
+            // Partie de la liste pour les valeurs ne remplissant par le critère.
+            Int32 j = i - nb_list1;
+            Int32 reverse_i = (nb_item - (j + 1));
+            auto x1 = tmp_output[i];
+            auto x2 = tmp_output[reverse_i];
+            output_iter[i] = tmp_output[reverse_i];
+            output_iter[reverse_i] = tmp_output[i];
+          }
+          else
+            output_iter[i] = tmp_output[i];
+        };
+      }
+      queue.barrier();
+    } break;
+#endif
     case eExecutionPolicy::Thread:
       // Pas encore implémenté en multi-thread
       [[fallthrough]];
     case eExecutionPolicy::Sequential: {
-      UniqueArray<bool> filter_index(nb_item);
       auto saved_output_iter = output_iter;
       auto output2_iter = output_iter + nb_item;
       for (Int32 i = 0; i < nb_item; ++i) {
@@ -212,7 +277,6 @@ class GenericPartitionerIf
       // Pas encore implémenté en multi-thread
       [[fallthrough]];
     case eExecutionPolicy::Sequential: {
-      UniqueArray<bool> filter_index(nb_item);
       Int32 nb_first = 0;
       Int32 nb_second = 0;
       for (Int32 i = 0; i < nb_item; ++i) {

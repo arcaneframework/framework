@@ -41,13 +41,13 @@ void _doReduce1()
   {
     RunCommand command(makeCommand(queue));
     Int32 nb_iter = 96;
-    ReducerSum<Int64> reducer_sum(command);
-    command << RUNCOMMAND_LOOP1(iter, nb_iter)
+    ReducerSum2<Int64> reducer_sum(command);
+    command << RUNCOMMAND_LOOP1(iter, nb_iter, reducer_sum)
     {
       auto [i] = iter();
       reducer_sum.combine(i + 1);
     };
-    Int64 computed_sum = reducer_sum.reduce();
+    Int64 computed_sum = reducer_sum.reducedValue();
     std::cout << "NB_ITER=" << nb_iter << "\n";
     std::cout << "VALUE sum=" << computed_sum
               << "\n";
