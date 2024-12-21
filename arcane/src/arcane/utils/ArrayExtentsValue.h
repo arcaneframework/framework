@@ -81,8 +81,7 @@ class ArrayExtentsValue<IndexType_, X0>
   using DynamicDimsType = typename ExtentsType::DynamicDimsType;
   using MDIndexType = MDIndex<1>;
 
-  // TODO: Rendre obsolète mi-2024
-  using IndexType = ArrayIndex<1>;
+  using IndexType ARCANE_DEPRECATED_REASON("Use 'MDIndexType' instead") = ArrayIndex<1>;
 
   ArrayExtentsValue() = default;
 
@@ -166,8 +165,7 @@ class ArrayExtentsValue<IndexType_, X0, X1>
   using MDIndexType = MDIndex<2>;
   using DynamicDimsType = typename ExtentsType::DynamicDimsType;
 
-  // TODO: Rendre obsolète mi-2024
-  using IndexType = ArrayIndex<2>;
+  using IndexType ARCANE_DEPRECATED_REASON("Use 'MDIndexType' instead") = ArrayIndex<2>;
 
  public:
 
@@ -268,8 +266,7 @@ class ArrayExtentsValue<IndexType_, X0, X1, X2>
   using MDIndexType = MDIndex<3>;
   using DynamicDimsType = typename ExtentsType::DynamicDimsType;
 
-  // TODO: Rendre obsolète mi-2024
-  using IndexType = ArrayIndex<3>;
+  using IndexType ARCANE_DEPRECATED_REASON("Use 'MDIndexType' instead") = ArrayIndex<3>;
 
  public:
 
@@ -384,8 +381,7 @@ class ArrayExtentsValue<IndexType_, X0, X1, X2, X3>
   using MDIndexType = MDIndex<4>;
   using DynamicDimsType = typename ExtentsType::DynamicDimsType;
 
-  // TODO: Rendre obsolète mi-2024
-  using IndexType = ArrayIndex<4>;
+  using IndexType ARCANE_DEPRECATED_REASON("Use 'MDIndexType' instead") = ArrayIndex<4>;
 
  public:
 

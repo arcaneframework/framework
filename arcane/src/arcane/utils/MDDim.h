@@ -16,12 +16,6 @@
 
 #include "arcane/utils/UtilsTypes.h"
 
-/*
- * ATTENTION:
- *
- * Toutes les classes de ce fichier sont expérimentales et l'API n'est pas
- * figée. A NE PAS UTILISER EN DEHORS DE ARCANE.
- */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -89,8 +83,7 @@ class ExtentsV<IndexType_, X0>
   template <int X, int Last> using AddedFirstLastExtentsType = ExtentsV<IndexType_, X, X0, Last>;
   template <int X, int Last1, int Last2> using AddedFirstLastLastExtentsType = ExtentsV<IndexType_, X, X0, Last1, Last2>;
 
-  // TODO: rendre obsolète (mi-2024). Utiliser MDIndexType à la place
-  using IndexType = ArrayIndex<1>;
+  using IndexType ARCANE_DEPRECATED_REASON("Use 'MDIndexType' instead") = ArrayIndex<1>;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -115,8 +108,7 @@ class ExtentsV<IndexType_, X0, X1>
   template <int X> using AddedFirstExtentsType = ExtentsV<IndexType_, X, X0, X1>;
   template <int X, int Last> using AddedFirstLastExtentsType = ExtentsV<IndexType_, X, X0, X1, Last>;
 
-  // TODO: rendre obsolète (mi-2024). Utiliser MDIndexType à la place
-  using IndexType = ArrayIndex<2>;
+  using IndexType ARCANE_DEPRECATED_REASON("Use 'MDIndexType' instead") = ArrayIndex<2>;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -140,8 +132,7 @@ class ExtentsV<IndexType_, X0, X1, X2>
   using DynamicDimsType = MDIndex<nb_dynamic>;
   template <int X> using AddedFirstExtentsType = ExtentsV<IndexType_, X, X0, X1, X2>;
 
-  // TODO: rendre obsolète (mi-2024). Utiliser MDIndexType à la place
-  using IndexType = MDIndex<3>;
+  using IndexType ARCANE_DEPRECATED_REASON("Use 'MDIndexType' instead") = MDIndex<3>;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -164,8 +155,7 @@ class ExtentsV<IndexType_, X0, X1, X2, X3>
   using RemovedFirstExtentsType = ExtentsV<IndexType_, X1, X2, X3>;
   using DynamicDimsType = MDIndex<nb_dynamic>;
 
-  // TODO: rendre obsolète (mi-2024). Utiliser MDIndexType à la place
-  using IndexType = MDIndex<4>;
+  using IndexType ARCANE_DEPRECATED_REASON("Use 'MDIndexType' instead") = MDIndex<4>;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -244,4 +234,4 @@ class MDDimType<4>
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif
