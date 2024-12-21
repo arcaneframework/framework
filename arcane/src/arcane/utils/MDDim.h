@@ -59,6 +59,7 @@ class ExtentsV<IndexType_>
 
   static constexpr int rank() { return 0; }
   static constexpr int nb_dynamic = 0;
+  static constexpr bool isDynamic1D() { return false; }
 
   template <int X> using AddedFirstExtentsType = ExtentsV<IndexType_, X>;
   template <int X, int Last> using AddedFirstLastExtentsType = ExtentsV<IndexType_, X, Last>;
@@ -78,6 +79,7 @@ class ExtentsV<IndexType_, X0>
   static constexpr int rank() { return 1; }
   static constexpr int nb_dynamic = impl::extent::nbDynamic(X0);
   static constexpr bool is_full_dynamic() { return (nb_dynamic == 1); }
+  static constexpr bool isDynamic1D() { return (nb_dynamic == 1); }
 
   using MDIndexType = MDIndex<1>;
   using ArrayExtentsValueType = impl::ArrayExtentsValue<IndexType_, X0>;
@@ -104,6 +106,7 @@ class ExtentsV<IndexType_, X0, X1>
   static constexpr int rank() { return 2; }
   static constexpr int nb_dynamic = impl::extent::nbDynamic(X0, X1);
   static constexpr bool is_full_dynamic() { return (nb_dynamic == 2); }
+  static constexpr bool isDynamic1D() { return false; }
 
   using MDIndexType = MDIndex<2>;
   using ArrayExtentsValueType = impl::ArrayExtentsValue<IndexType_, X0, X1>;
@@ -129,6 +132,7 @@ class ExtentsV<IndexType_, X0, X1, X2>
   static constexpr int rank() { return 3; }
   static constexpr int nb_dynamic = impl::extent::nbDynamic(X0, X1, X2);
   static constexpr bool is_full_dynamic() { return (nb_dynamic == 3); }
+  static constexpr bool isDynamic1D() { return false; }
 
   using MDIndexType = MDIndex<3>;
   using ArrayExtentsValueType = impl::ArrayExtentsValue<IndexType_, X0, X1, X2>;
@@ -153,6 +157,7 @@ class ExtentsV<IndexType_, X0, X1, X2, X3>
   static constexpr int rank() { return 4; }
   static constexpr int nb_dynamic = impl::extent::nbDynamic(X0, X1, X2, X3);
   static constexpr bool is_full_dynamic() { return (nb_dynamic == 4); }
+  static constexpr bool isDynamic1D() { return false; }
 
   using MDIndexType = MDIndex<4>;
   using ArrayExtentsValueType = impl::ArrayExtentsValue<IndexType_, X0, X1, X2, X3>;
