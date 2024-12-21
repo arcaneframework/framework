@@ -39,6 +39,7 @@ set(ARCANE_SOURCES
   ExternalRef.h
   Exception.h
   Exception.cc
+  ExtentsV.h
   Event.cc
   Event.h
   FixedArray.h

@@ -81,8 +81,7 @@ class ArrayExtentsValue<IndexType_, X0>
   using DynamicDimsType = typename ExtentsType::DynamicDimsType;
   using MDIndexType = MDIndex<1>;
 
-  // TODO: Rendre obsolète mi-2024
-  using IndexType = ArrayIndex<1>;
+  using IndexType ARCANE_DEPRECATED_REASON("Use 'MDIndexType' instead") = ArrayIndex<1>;
 
   ArrayExtentsValue() = default;
 
@@ -102,7 +101,7 @@ class ArrayExtentsValue<IndexType_, X0>
     return m_extent0.v;
   }
 
-  constexpr ARCCORE_HOST_DEVICE IndexType getIndices(Int32 i) const
+  constexpr ARCCORE_HOST_DEVICE MDIndexType getIndices(Int32 i) const
   {
     return { i };
   }
@@ -141,7 +140,7 @@ class ArrayExtentsValue<IndexType_, X0>
     return {};
   }
 
-  ARCCORE_HOST_DEVICE void _checkIndex(IndexType idx) const
+  ARCCORE_HOST_DEVICE void _checkIndex(MDIndexType idx) const
   {
     ARCANE_UNUSED(idx);
     ARCCORE_CHECK_AT(idx.id0(), m_extent0.v);
@@ -166,8 +165,7 @@ class ArrayExtentsValue<IndexType_, X0, X1>
   using MDIndexType = MDIndex<2>;
   using DynamicDimsType = typename ExtentsType::DynamicDimsType;
 
-  // TODO: Rendre obsolète mi-2024
-  using IndexType = ArrayIndex<2>;
+  using IndexType ARCANE_DEPRECATED_REASON("Use 'MDIndexType' instead") = ArrayIndex<2>;
 
  public:
 
@@ -193,7 +191,7 @@ class ArrayExtentsValue<IndexType_, X0, X1>
     return m_extent0.size() * m_extent1.size();
   }
 
-  constexpr ARCCORE_HOST_DEVICE IndexType getIndices(Int32 i) const
+  constexpr ARCCORE_HOST_DEVICE MDIndexType getIndices(Int32 i) const
   {
     Int32 i1 = impl::fastmod(i, m_extent1.v);
     Int32 i0 = i / m_extent1.v;
@@ -241,7 +239,7 @@ class ArrayExtentsValue<IndexType_, X0, X1>
     return std::array<Int32, 1>{ m_extent1.v };
   }
 
-  ARCCORE_HOST_DEVICE void _checkIndex(IndexType idx) const
+  ARCCORE_HOST_DEVICE void _checkIndex(MDIndexType idx) const
   {
     ARCANE_UNUSED(idx);
     ARCCORE_CHECK_AT(idx.id0(), m_extent0.v);
@@ -268,8 +266,7 @@ class ArrayExtentsValue<IndexType_, X0, X1, X2>
   using MDIndexType = MDIndex<3>;
   using DynamicDimsType = typename ExtentsType::DynamicDimsType;
 
-  // TODO: Rendre obsolète mi-2024
-  using IndexType = ArrayIndex<3>;
+  using IndexType ARCANE_DEPRECATED_REASON("Use 'MDIndexType' instead") = ArrayIndex<3>;
 
  public:
 
@@ -297,7 +294,7 @@ class ArrayExtentsValue<IndexType_, X0, X1, X2>
     return m_extent0.size() * m_extent1.size() * m_extent2.size();
   }
 
-  constexpr ARCCORE_HOST_DEVICE IndexType getIndices(Int32 i) const
+  constexpr ARCCORE_HOST_DEVICE MDIndexType getIndices(Int32 i) const
   {
     Int32 i2 = impl::fastmod(i, m_extent2.v);
     Int32 fac = m_extent2.v;
@@ -355,7 +352,7 @@ class ArrayExtentsValue<IndexType_, X0, X1, X2>
     return { m_extent1.v, m_extent2.v };
   }
 
-  ARCCORE_HOST_DEVICE void _checkIndex(IndexType idx) const
+  ARCCORE_HOST_DEVICE void _checkIndex(MDIndexType idx) const
   {
     ARCANE_UNUSED(idx);
     ARCCORE_CHECK_AT(idx.id0(), m_extent0.v);
@@ -384,8 +381,7 @@ class ArrayExtentsValue<IndexType_, X0, X1, X2, X3>
   using MDIndexType = MDIndex<4>;
   using DynamicDimsType = typename ExtentsType::DynamicDimsType;
 
-  // TODO: Rendre obsolète mi-2024
-  using IndexType = ArrayIndex<4>;
+  using IndexType ARCANE_DEPRECATED_REASON("Use 'MDIndexType' instead") = ArrayIndex<4>;
 
  public:
 
@@ -415,7 +411,7 @@ class ArrayExtentsValue<IndexType_, X0, X1, X2, X3>
     return m_extent0.size() * m_extent1.size() * m_extent2.size() * m_extent3.size();
   }
 
-  constexpr ARCCORE_HOST_DEVICE IndexType getIndices(Int32 i) const
+  constexpr ARCCORE_HOST_DEVICE MDIndexType getIndices(Int32 i) const
   {
     // Compute base indices
     Int32 i3 = impl::fastmod(i, m_extent3.v);
@@ -483,7 +479,7 @@ class ArrayExtentsValue<IndexType_, X0, X1, X2, X3>
     return { m_extent1.v, m_extent2.v, m_extent3.v };
   }
 
-  ARCCORE_HOST_DEVICE void _checkIndex(IndexType idx) const
+  ARCCORE_HOST_DEVICE void _checkIndex(MDIndexType idx) const
   {
     ARCANE_UNUSED(idx);
     ARCCORE_CHECK_AT(idx.id0(), m_extent0.v);
