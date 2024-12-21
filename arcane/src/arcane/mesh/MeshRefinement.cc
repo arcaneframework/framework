@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshRefinement.cc                                           (C) 2000-2023 */
+/* MeshRefinement.cc                                           (C) 2000-2024 */
 /*                                                                           */
 /* Manipulation d'un maillage AMR.                                           */
 /*---------------------------------------------------------------------------*/
@@ -23,31 +23,29 @@
 #include "arcane/utils/Real3.h"
 #include "arcane/utils/ArgumentException.h"
 
-#include "arcane/IParallelMng.h"
-#include "arcane/IMesh.h"
-#include "arcane/IMeshModifier.h"
-#include "arcane/IItemFamily.h"
-#include "arcane/Item.h"
+#include "arcane/core/IParallelMng.h"
+#include "arcane/core/IMesh.h"
+#include "arcane/core/IItemFamily.h"
+#include "arcane/core/Item.h"
 
-#include "arcane/VariableTypes.h"
-#include "arcane/GeometricUtilities.h"
-#include "arcane/ItemPrinter.h"
-#include "arcane/SharedVariable.h"
-#include "arcane/ItemRefinementPattern.h"
+#include "arcane/core/VariableTypes.h"
+#include "arcane/core/ItemPrinter.h"
+#include "arcane/core/SharedVariable.h"
+#include "arcane/core/ItemRefinementPattern.h"
+#include "arcane/core/Properties.h"
+#include "arcane/core/IGhostLayerMng.h"
 
 #include "arcane/mesh/DynamicMesh.h"
 #include "arcane/mesh/ItemRefinement.h"
 #include "arcane/mesh/MeshRefinement.h"
 
-#include "arcane/Properties.h"
 #include "arcane/mesh/ParallelAMRConsistency.h"
 #include "arcane/mesh/FaceReorienter.h"
 
 #include "arcane/mesh/NodeFamily.h"
 #include "arcane/mesh/EdgeFamily.h"
-#include "arcane/mesh/FaceFamily.h"
-#include "arcane/mesh/CellFamily.h"
-#include "arcane/ItemVector.h"
+#include "arcane/core/ItemVector.h"
+
 #include <vector>
 
 /*---------------------------------------------------------------------------*/
@@ -587,6 +585,151 @@ coarsenItems(const bool maintain_level_one)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+bool MeshRefinement::
+coarsenItemsV2()
+{
+  // Nettoyage des flags de raffinement de l'étape précédente
+  this->_cleanRefinementFlags();
+
+  // La consistence parallêle doit venir en premier, ou le déraffinement
+  // le long des interfaces entre processeurs pourrait de temps en temps être
+  // faussement empéché
+  if (m_mesh->parallelMng()->isParallel())
+    this->_makeFlagParallelConsistent();
+
+  // Repete jusqu'au matching du changement de flags sur chaque processeur
+  do {
+    // Repete jusqu'au matching des flags localement.
+    bool satisfied = false;
+    do {
+      const bool coarsening_satisfied = this->_makeCoarseningCompatible(true);
+      satisfied = coarsening_satisfied;
+#ifdef ARCANE_DEBUG
+      bool max_satisfied = satisfied, min_satisfied = satisfied;
+      max_satisfied = m_mesh->parallelMng()->reduce(Parallel::ReduceMax, max_satisfied);
+      min_satisfied = m_mesh->parallelMng()->reduce(Parallel::ReduceMin, min_satisfied);
+      ARCANE_ASSERT((satisfied == max_satisfied), ("parallel max_satisfied failed"));
+      ARCANE_ASSERT((satisfied == min_satisfied), ("parallel min_satisfied failed"));
+#endif
+    } while (!satisfied);
+  } while (m_mesh->parallelMng()->isParallel() && !this->_makeFlagParallelConsistent());
+
+  UniqueArray<Int32> to_coarse;
+
+  ENUMERATE_ (Cell, icell, m_mesh->allCells()) {
+    Cell cell = *icell;
+    if (cell.mutableItemBase().flags() & ItemFlags::II_Coarsen) {
+      if (cell.level() == 0) {
+        ARCANE_FATAL("Cannot coarse level-0 cell");
+      }
+      cell.hParent().mutableItemBase().addFlags(ItemFlags::II_JustCoarsened);
+      to_coarse.add(cell.localId());
+
+      if ((cell.hParent().mutableItemBase().flags() & ItemFlags::II_Coarsen) || (cell.mutableItemBase().flags() & ItemFlags::II_JustCoarsened)) {
+        ARCANE_FATAL("Cannot coarse parent and child in same time");
+      }
+    }
+  }
+
+  if (m_mesh->parallelMng()->isParallel()) {
+    bool has_ghost_layer = m_mesh->ghostLayerMng()->nbGhostLayer() != 0;
+
+    ENUMERATE_ (Cell, icell, m_mesh->allCells()) {
+      Cell cell = *icell;
+      if (cell.mutableItemBase().flags() & ItemFlags::II_Coarsen) {
+        for (Face face : cell.faces()) {
+          Cell other_cell = face.frontCell() == cell ? face.backCell() : face.frontCell();
+          // debug() << "Check face uid : " << face.uniqueId();
+          // Si la face est au bord, elle sera supprimée.
+          if (other_cell.null()) { // && !has_ghost_layer) {
+            continue;
+            //needed_cell.add(face.uniqueId());
+          }
+          if (other_cell.level() != cell.level()) {
+            //warning() << "Bad connectivity";
+            continue;
+          }
+          // Si les deux mailles vont être supprimées, la face sera supprimée.
+          if (other_cell.mutableItemBase().flags() & ItemFlags::II_Coarsen) {
+            continue;
+          }
+          // Si la maille à côté est raffinée, on aura plus d'un niveau de décalage.
+          if (other_cell.nbHChildren() != 0) {
+            ARCANE_FATAL("Once level diff between two cells needed");
+          }
+          // Si la maille d'à côté n'est pas à nous, elle prend la propriété de la maille d'à côté.
+          if (other_cell.owner() != cell.owner()) {
+            // debug() << "Face uid : " << face.uniqueId()
+            //         << " -- old owner: " << face.owner()
+            //         << " -- new owner: " << other_cell.owner();
+            face.mutableItemBase().setOwner(other_cell.owner(), cell.owner());
+          }
+        }
+        for (Node node : cell.nodes()) {
+          // debug() << "Check node uid : " << node.uniqueId();
+
+          // Noeud sera supprimé ?
+          {
+            bool will_deleted = true;
+            for (Cell cell2 : node.cells()) {
+              if (!(cell2.mutableItemBase().flags() & ItemFlags::II_Coarsen)) {
+                will_deleted = false;
+                break;
+              }
+            }
+            if (will_deleted) {
+              continue;
+            }
+          }
+
+          // Noeud devra changer de proprio ?
+          {
+            Integer node_owner = node.owner();
+            Integer new_owner = -1;
+            bool need_new_owner = true;
+            for (Cell cell2 : node.cells()) {
+              if (!(cell2.mutableItemBase().flags() & ItemFlags::II_Coarsen)) {
+                if (cell2.owner() == node_owner) {
+                  need_new_owner = false;
+                  break;
+                }
+                new_owner = cell2.owner();
+              }
+            }
+            if (!need_new_owner) {
+              continue;
+            }
+            // debug() << "Node uid : " << node.uniqueId()
+            //         << " -- old owner: " << node.owner()
+            //         << " -- new owner: " << new_owner;
+            node.mutableItemBase().setOwner(new_owner, cell.owner());
+          }
+        }
+      }
+    }
+
+    if (!has_ghost_layer) {
+      // TODO
+      ARCANE_NOT_YET_IMPLEMENTED("Support des maillages sans mailles fantômes à faire");
+    }
+  }
+
+  // debug() << "Removed cells: " << to_coarse;
+
+  m_mesh->removeCells(to_coarse);
+  m_mesh->nodeFamily()->notifyItemsOwnerChanged();
+  m_mesh->faceFamily()->notifyItemsOwnerChanged();
+  m_mesh->endUpdate();
+  m_mesh->cellFamily()->computeSynchronizeInfos();
+  m_mesh->nodeFamily()->computeSynchronizeInfos();
+  m_mesh->faceFamily()->computeSynchronizeInfos();
+
+  return m_mesh->parallelMng()->reduce(Parallel::ReduceMax, (!to_coarse.empty()));
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 bool
 MeshRefinement::
 refineItems(const bool maintain_level_one)
@@ -981,7 +1124,7 @@ _makeFlagParallelConsistent()
   // Si nous ne sommes pas consistent sur chaque processeur alors
   // nous ne le sommes pas globalement
   parallel_consistent = m_mesh->parallelMng()->reduce(Parallel::ReduceMin, parallel_consistent);
-  debug() << "makeFlagsParallelConsistent()";
+  debug() << "makeFlagsParallelConsistent() end -- parallel_consistent : " << parallel_consistent;
 
   CHECKPERF( m_perf_counter.stop(PerfCounter::PCONSIST) )
   return parallel_consistent;
@@ -1051,7 +1194,7 @@ _makeFlagParallelConsistent2()
   // Si nous ne sommes pas consistent sur chaque processeur alors
   // nous ne le sommes pas globalement
   parallel_consistent = m_mesh->parallelMng()->reduce(Parallel::ReduceMin, parallel_consistent);
-  debug() << "makeFlagsParallelConsistent2()";
+  debug() << "makeFlagsParallelConsistent2() end";
 
   CHECKPERF( m_perf_counter.stop(PerfCounter::PCONSIST2) )
   return parallel_consistent;
@@ -1730,59 +1873,57 @@ _contract()
   bool mesh_changed = false;
 
   if (arcaneIsDebug()){
-    ENUMERATE_ITEM_INTERNAL_MAP_DATA(nbid,cells_map){
-      ItemInternal* iitem = nbid->value();
-      if(iitem->isOwn())
+    cells_map.eachItem([&](impl::ItemBase item) {
+      if (item.isOwn())
         // une maille est soit active, subactive ou ancestor
-        ARCANE_ASSERT((iitem->isActive() || iitem->isSubactive() || iitem->isAncestor()),(" "));
-    }
+        ARCANE_ASSERT((item.isActive() || item.isSubactive() || item.isAncestor()), (" "));
+    });
   }
 
   //
   std::set < Int32 > cells_to_remove_set;
   UniqueArray<ItemInternal*> parent_cells;
 
-  ENUMERATE_ITEM_INTERNAL_MAP_DATA(nbid,cells_map){
-    ItemInternal* iitem = nbid->value();
-    if (!iitem->isOwn())
-      continue;
+  cells_map.eachItem([&](impl::ItemBase iitem) {
+    if (!iitem.isOwn())
+      return;
 
     // suppression des subactives
-    if (iitem->isSubactive()){
+    if (iitem.isSubactive()) {
       // aucune maille de niveau 0 ne doit être subactive.
-      ARCANE_ASSERT((iitem->nbHParent() != 0), (""));
-      cells_to_remove_set.insert(iitem->localId());
+      ARCANE_ASSERT((iitem.nbHParent() != 0), (""));
+      cells_to_remove_set.insert(iitem.localId());
       // informe le client du changement de maillage
       mesh_changed = true;
     }
     else{
       // Compression des mailles actives
-      if (iitem->isActive()){
+      if (iitem.isActive()) {
         bool active_parent = false;
-        for (Integer c = 0; c < iitem->nbHChildren(); c++){
-          ItemInternal *ichild = iitem->internalHChild(c);
-          if (!ichild->isSuppressed()){
+        for (Integer c = 0; c < iitem.nbHChildren(); c++) {
+          impl::ItemBase ichild = iitem.hChildBase(c);
+          if (!ichild.isSuppressed()) {
             //debug() << "[\tMeshRefinement::contract]PARENT UID=" << iitem->uniqueId() << " " << iitem->owner() << " "
             //    << iitem->level();
-            cells_to_remove_set.insert(ichild->localId());
+            cells_to_remove_set.insert(ichild.localId());
             //debug() << "[\tMeshRefinement::contract]CHILD UID=" << ichild->uniqueId() << " " << ichild->owner();
             active_parent = true;
           }
         }
         if (active_parent){
-          parent_cells.add(iitem);
-          ARCANE_ASSERT((iitem->flags() & ItemFlags::II_JustCoarsened), ("Incoherent JustCoarsened flag"));
+          parent_cells.add(iitem._itemInternal());
+          ARCANE_ASSERT((iitem.flags() & ItemFlags::II_JustCoarsened), ("Incoherent JustCoarsened flag"));
         }
         // informe le client du changement de maillage
         mesh_changed = true;
       }
       else{
-        ARCANE_ASSERT((iitem->isAncestor()), (""));
+        ARCANE_ASSERT((iitem.isAncestor()), (""));
       }
     }
-  }
+  });
   //
-  Int32UniqueArray cell_lids(arcaneCheckArraySize(cells_to_remove_set.size()));
+  UniqueArray<Int32> cell_lids(arcaneCheckArraySize(cells_to_remove_set.size()));
   std::copy(std::begin(cells_to_remove_set), std::end(cells_to_remove_set),std::begin(cell_lids));
 
   if (m_mesh->parallelMng()->isParallel()){
@@ -1805,6 +1946,7 @@ _contract()
 
   return mesh_changed;
 }
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -1985,17 +2127,6 @@ _updateItemOwner(Int32ArrayView cell_to_remove_lids)
   node_owner_changed = m_mesh->parallelMng()->reduce(Parallel::ReduceMax, node_owner_changed);
   if (node_owner_changed){
     // nodes_owner.synchronize(); // SDC Surtout pas la synchro est KO à ce moment là (fantômes non raffinés/déraffinés)
-
-#ifndef NO_USER_WARNING
-    #warning "Ce bout de code de sert plus : vérifier et virer. SDC"
-#endif
-    ItemInternalMap& nodes_map = m_mesh->trueNodeFamily().itemsMap();
-    ENUMERATE_ITEM_INTERNAL_MAP_DATA(nbid,nodes_map){
-        ItemInternal* iinode = nbid->value();
-        if (iinode->owner() == m_mesh->parallelMng()->commRank())
-          continue;
-        //iinode->setOwner(nodes_owner[iinode],m_mesh->parallelMng()->commRank());
-    }
     m_mesh->nodeFamily()->notifyItemsOwnerChanged();
     m_mesh->nodeFamily()->endUpdate();
   }
@@ -2092,20 +2223,18 @@ _removeGhostChildren()
   UniqueArray<ItemInternal*> parent_cells;
   parent_cells.reserve(1000);
 
-  ENUMERATE_ITEM_INTERNAL_MAP_DATA(nbid,cells_map){
-    ItemInternal* cell = nbid->value();
-    if (cell->owner() == sid)
-      continue;
+  cells_map.eachItem([&](impl::ItemBase cell) {
+    if (cell.owner() == sid)
+      return;
 
-    if (cell->flags() & ItemFlags::II_JustCoarsened){
-      for (Integer c = 0, cs = cell->nbHChildren(); c < cs; c++){
-        cells_to_remove.add(cell->hChildBase(c).localId());
+    if (cell.flags() & ItemFlags::II_JustCoarsened) {
+      for (Integer c = 0, cs = cell.nbHChildren(); c < cs; c++) {
+        cells_to_remove.add(cell.hChildBase(c).localId());
       }
-      parent_cells.add(cell);
+      parent_cells.add(cell._itemInternal());
     }
-  }
-  //if(counter==0) return;
-  //info()<<"INVALIDATE GHOST "<<parent_cells.size();
+  });
+
   _invalidate(parent_cells) ;
 
   // Avant suppression, mettre a jour les owner de Node/Face isoles

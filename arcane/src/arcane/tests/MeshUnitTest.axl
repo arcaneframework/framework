@@ -8,7 +8,7 @@
 <service name="MeshUnitTest" version="1.0" type="caseoption" parent-name="Arcane::BasicUnitTest" namespace-name="ArcaneTest">
  <interface name="Arcane::IUnitTest" inherited="false" />
 
-	<variables>
+ <variables>
     <variable
       field-name="cell_flag"
       name="MeshUnitTest_CellFlags"
@@ -94,6 +94,28 @@ Vrai si on ecrit les informations de maillage dans un un fichier (dont le nom es
   </simple>
 
   <simple
+    name = "connectivity-file-checksum"
+    type = "string"
+    optional = "true"
+  >
+   <description>
+     Checksum au format SHA3-256 du fichier de connectivité trié pour les cas séquentiels
+   </description>
+  </simple>
+
+  <simple
+    name = "connectivity-file-checksum-parallel"
+    type = "string"
+    minOccurs = "0"
+    maxOccurs = "unbounded"
+    >
+   <description>
+     Checksum au format SHA3-256 du fichier de connectivité trié pour les cas parallèles.
+     La i-ème instance correspond à la checksum du rang i.
+   </description>
+  </simple>
+
+  <simple
    name = "additional-mesh"
    type = "string"
    minOccurs = "0"
@@ -125,6 +147,18 @@ Teste la désallocation du maillage
      Indique si on tri les faces et les arêtes connectées aux noeuds
    </description>
   </simple>
+
+  <simple name = "create-edges" type = "bool" default = "false">
+    <description>
+      Indique si en 3D on créé les arêtes.
+    </description>
+  </simple>
+
+     <simple name = "check-read-property" type = "string" minOccurs="0" maxOccurs="unbounded">
+         <description>
+             Indique que l'on veut vérifier si la variable dont le nom est donnée a bien été créée et conservée.
+         </description>
+     </simple>
 
  </options>
 </service>

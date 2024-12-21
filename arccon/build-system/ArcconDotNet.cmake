@@ -16,11 +16,8 @@ set(ARCCON_MSBUILD_COMMON_ARGS /nodeReuse:false ${ARCCON_MSBUILD_RESTORE_ARGS})
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
 
-# Regarde si les frameworks 'dotnet' et 'mono' sont disponibles.
-# Si au moins un des deux est présent, alors 'ARCCON_HAS_DOTNET' est mis à TRUE.
-# Le code ci-dessous permet d'avoir simultanément 'mono' et 'dotnet' et d'utiliser
-# l'un ou l'autre dans le même projet CMake. Dans le cas de '.NetCore', la
-# version minimal requise est '2.2'. Pour mono, c'est 5.4.
+# Regarde si le framework 'dotnet' est disponible.
+# Si c'est le cas, alors 'ARCCON_HAS_DOTNET' est mis à TRUE.
 #
 find_program(DOTNET_EXEC NAMES dotnet)
 message(STATUS "[.Net] DOTNET exe: ${DOTNET_EXEC}")
@@ -43,92 +40,13 @@ else()
   set(ARCCON_DOTNET_HAS_RUNTIME_coreclr FALSE)
 endif()
 
-find_package(Mono)
-if (MONO_EXEC_PATH)
-  # TODO: vérifier que 'msbuild' est bien la
-  set(ARCCON_DOTNET_HAS_RUNTIME_mono TRUE)
-  find_program(ARCCON_MSBUILD_EXEC_mono NAMES msbuild PATH ${MONO_EXEC_PATH})
-  set(ARCCON_MSBUILD_ARGS_mono /Restore ${ARCCON_MSBUILD_COMMON_ARGS})
-  # Arguments pour fabriquer les packages NuGet
-  set(ARCCON_DOTNET_PACK_ARGS_mono /t:Pack)
-else()
-  message(STATUS "[.Net]: no 'mono' exec found")
-  set(ARCCON_DOTNET_HAS_RUNTIME_mono FALSE)
-endif()
+# Mono is no longer supported (09/2024)
+set(ARCCON_DOTNET_HAS_RUNTIME_mono FALSE)
 
-if (ARCCON_DOTNET_HAS_RUNTIME_mono OR ARCCON_DOTNET_HAS_RUNTIME_coreclr)
+if (ARCCON_DOTNET_HAS_RUNTIME_coreclr)
   set(ARCCON_HAS_DOTNET TRUE)
 endif()
 set(ARCCON_HAS_DOTNET ${ARCCON_HAS_DOTNET} CACHE BOOL "True if .NET environment ('coreclr' or 'mono') is found" FORCE)
-
-# ----------------------------------------------------------------------------
-# ----------------------------------------------------------------------------
-# Fonction pour installer une assembly .NET
-# Les fichiers sont installés dans le chemin relatif 'rel_path'
-# Obsolète: ne plus utiliser. Utiliser 'arccon_add_csharp_target' à la place
-# avec 'arccon_dotnet_install_publish_directory'
-function(arccon_install_clr assembly_name rel_path)
-  set(full_output_name "${CMAKE_BINARY_DIR}/${rel_path}/${assembly_name}")
-  install(FILES ${full_output_name} DESTINATION ${rel_path})
-  # Installe les fichiers de debug s'ils existent
-  # Si l'extension est 'mdb', alors elle s'ajoute au nom de l'assembly.
-  # Si l'extension est 'pdb', alors elle la remplace.
-  # Par exemple, pour 'toto.dll', alors c'est 'toto.dll.mdb' ou 'toto.pdb'
-  if (CSC_DEBUG_EXTENSION STREQUAL "mdb")
-    install(FILES ${full_output_name}.mdb DESTINATION ${rel_path} OPTIONAL)
-  endif()
-  if (CSC_DEBUG_EXTENSION STREQUAL "pdb")
-    string(REGEX REPLACE ".(dll|exe)$" "" _name_without_extension ${full_output_name})
-    install(FILES ${_name_without_extension}.pdb DESTINATION ${rel_path} OPTIONAL)
-  endif()
-endfunction()
-
-# ----------------------------------------------------------------------------
-# ----------------------------------------------------------------------------
-# Fonction pour appeler 'mkbundle' sur un exe.
-#
-# NOTE: Avec l'utilisation de 'coreclr', cette function ne doit plus être
-# utilisée.
-#
-# 'mkbundle' est un outil de 'mono' qui permet de transformer un exe .NET en
-# en executable C classique qui est autonome et n'a pas besoin d'avoir 'mono'
-# installé pour fonctionner.
-#
-# Usage:
-#   arccon_dotnet_mkbundle(
-#     BUNDLE out_exe
-#     EXE    dotnet_exe
-#     DLLs   dotnet_dlls_to_embed
-#   )
-function(arccon_dotnet_mkbundle)
-  set(options)
-  set(oneValueArgs BUNDLE EXE)
-  set(multiValueArgs DLLs)
-  cmake_parse_arguments(ARGS "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
-  if(ARGS_UNPARSED_ARGUMENTS)
-    logFatalError("unparsed arguments '${ARGS_UNPARSED_ARGUMENTS}'")
-  endif()
-  get_filename_component(File ${ARGS_BUNDLE} NAME)
-  if(WIN32)
-    add_custom_command(
-      OUTPUT  ${ARGS_BUNDLE}
-      COMMAND ${CMAKE_COMMAND} -E copy_if_different ${ARGS_EXE} ${ARGS_BUNDLE}
-      DEPENDS ${ARGS_EXE} ${ARGS_DLLs}
-      )
-  else()
-    # mkbundle ne peut être lancé en parallèle dans un même répertoire
-    # on utilise un répertoire temporaire et WORKING_DIRECTORY de add_custom_command
-    # L'option '--skip-scan' permet à mkbundle de ne pas lever d'exceptions si une des assembly
-    # n'est pas lisible.
-    file(MAKE_DIRECTORY ${PROJECT_BINARY_DIR}/dotnet/tmp/${File})
-    add_custom_command(
-      OUTPUT  ${ARGS_BUNDLE}
-      COMMAND ${Mkbundle_EXEC} ${ARGS_EXE} ${ARGS_DLLs} -o ${ARGS_BUNDLE} --deps --static --skip-scan
-      DEPENDS ${ARGS_EXE} ${ARGS_DLLs} ${Mkbundle_EXEC}
-      WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/dotnet/tmp/${File}
-      )
-  endif()
-endfunction()
 
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------

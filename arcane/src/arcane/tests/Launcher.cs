@@ -20,7 +20,7 @@ public class Launcher
     app_info.SetDataDir(this_assembly_path);
     app_info.SetDataOsDir(this_assembly_path);
 
-    ArcaneLauncher.SetCommandLineArguments(cmd_line_args);
+    ArcaneLauncher.Init(cmd_line_args);
     InitCommonApplicationInfo();
     var dotnet_info = ArcaneLauncher.DotNetRuntimeInitialisationInfo;
 

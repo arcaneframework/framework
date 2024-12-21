@@ -69,6 +69,17 @@
       </description>
     </simple>
 
+    <simple name="files-in-output-dir" type="bool" default="false">
+      <name lang='fr'>fichiers-dans-dossier-output</name>
+      <userclass>User</userclass>
+      <description>
+        Si vrai, permet d'enregistrer les fichiers de référence et de lire les résultats dans
+        le dossier 'output' contenant, entre autres, le listing et les courbes.
+        Utile dans le cas où le même jeu de données est lancé depuis le même dossier, plusieurs fois
+        en parallèle (et à condition que les dossiers 'output' définis à l'exécution soit différents).
+      </description>
+    </simple>
+
     <complex name="trace" type="Trace" minOccurs="0" maxOccurs="unbounded" >
       <name lang='fr'>trace</name>
       <userclass>User</userclass>

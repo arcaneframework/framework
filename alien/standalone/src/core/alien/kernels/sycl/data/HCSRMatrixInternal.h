@@ -49,6 +49,17 @@ namespace Alien
     typedef typename ProfileType::IndexType  IndexType ;
     typedef sycl::buffer<ValueType, 1>       ValueBufferType;
     typedef sycl::buffer<IndexType, 1>       IndexBufferType;
+
+    class HypreProfile
+    {
+    public:
+      HypreProfile(std::size_t nrows, IndexType* rows, IndexType* ncols)
+      : m_rows(rows,nrows)
+      , m_ncols(ncols,nrows)
+      {}
+      mutable IndexBufferType m_rows;
+      mutable IndexBufferType m_ncols;
+    };
     // clang-format on
 
    public:
@@ -121,6 +132,24 @@ namespace Alien
       return m_cols;
     }
 
+    HypreProfile& getHypreProfile(IndexType local_offset) const {
+      if(m_hypre_profile.get()==nullptr)
+      {
+          assert(m_profile) ;
+          auto nrows = m_profile->getNRow();
+          auto kcol = m_profile->kcol() ;
+          m_global_rows_ids.resize(nrows) ;
+          m_row_sizes.resize(nrows) ;
+          for(IndexType irow=0;irow<nrows;++irow)
+            {
+              m_global_rows_ids[irow] = local_offset + irow;
+              m_row_sizes[irow] = kcol[irow+1] - kcol[irow];
+            }
+          m_hypre_profile.reset(new HypreProfile(nrows,m_global_rows_ids.data(),m_row_sizes.data()));
+      }
+      return *m_hypre_profile ;
+    }
+
 
     void copyValuesToHost(std::size_t nnz, ValueT* ptr)
     {
@@ -130,9 +159,12 @@ namespace Alien
     }
     ProfileType* m_profile = nullptr ;
 
-    mutable ValueBufferType        m_values;
-    mutable IndexBufferType        m_kcol;
-    mutable IndexBufferType        m_cols;
+    mutable ValueBufferType                m_values;
+    mutable IndexBufferType                m_kcol;
+    mutable IndexBufferType                m_cols;
+    mutable std::vector<IndexType>         m_global_rows_ids;
+    mutable std::vector<IndexType>         m_row_sizes;
+    mutable std::unique_ptr<HypreProfile>  m_hypre_profile ;
   };
 
   /*---------------------------------------------------------------------------*/

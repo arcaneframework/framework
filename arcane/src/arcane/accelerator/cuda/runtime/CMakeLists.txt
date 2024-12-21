@@ -4,6 +4,7 @@
 
 set(ARCANE_SOURCES
   CudaAcceleratorRuntime.cc
+  internal/Cupti.h
   )
 
 arcane_find_package(CUDAToolkit REQUIRED)
@@ -18,20 +19,16 @@ target_link_libraries(arcane_accelerator_cuda_runtime PUBLIC
   arcane_accelerator arcane_cuda_compile_flags CUDA::cudart CUDA::cuda_driver
   )
 
-# Note: à partir de CMake 3.25 'nvToolsExt' devient 'nvtx3'
-#
-# NB: Avec CMake 3.25.2 le remplacement de 'nvToolsExt' par 'nvtx3' produit des erreurs de link :
-# /usr/bin/ld : ../../../../../../../../lib/libarcane_accelerator_cuda_runtime.so : référence indéfinie vers « nvtxRangePop »
-# /usr/bin/ld : ../../../../../../../../lib/libarcane_accelerator_cuda_runtime.so : référence indéfinie vers « nvtxRangePushA »
-#
-#if (TARGET CUDA::nvtx3)
-#  target_compile_definitions(arcane_accelerator_cuda_runtime PRIVATE ARCANE_HAS_CUDA_NVTOOLSEXT)
-#  target_link_libraries(arcane_accelerator_cuda_runtime PRIVATE CUDA::nvtx3)
-if (TARGET CUDA::nvToolsExt)
-  message(STATUS "CUDA: 'nvToolsExt' is available")
+# ----------------------------------------------------------------------------
+
+if (TARGET CUDA::nvtx3)
+  message(STATUS "CUDA: 'nvtx3' is available")
   target_compile_definitions(arcane_accelerator_cuda_runtime PRIVATE ARCANE_HAS_CUDA_NVTOOLSEXT)
-  target_link_libraries(arcane_accelerator_cuda_runtime PRIVATE CUDA::nvToolsExt)
+  target_link_libraries(arcane_accelerator_cuda_runtime PRIVATE CUDA::nvtx3)
 endif()
+
+# ----------------------------------------------------------------------------
+
 if (TARGET CUDA::cupti)
   message(STATUS "CUDA: 'cupti' is available")
   target_sources(arcane_accelerator_cuda_runtime PRIVATE Cupti.cc)

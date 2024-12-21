@@ -1,9 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
-#pragma once
+
+#ifndef ALIEN_MCGIMPL_MCGINTERNAL_H
+#define ALIEN_MCGIMPL_MCGINTERNAL_H
 
 //! Internal struct for MCG implementation
 /*! Separate data from header;
@@ -11,78 +13,79 @@
  */
 
 #include <chrono>
-
 #if defined(__x86_64__) || defined(__amd64__)
-
 #include <x86intrin.h>
-
 #endif
 
-#include "Common/index.h"
-#include "Common/Utils/UniqueKey.h"
-#include "BCSR/BCSRMatrix.h"
-#include "BCSRgpu/BCSRgpuMatrix.h"
-#include "MCGSolver/LinearSystem/BVector.h"
-#include "MCGSolver/GPULinearSystem/GPUBVector.h"
-#include "Precond/PrecondEquation.h"
+#include <Common/index.h>
+#include <MCGSolver/LinearSystem/LinearSystem.h>
+#include <Precond/PrecondEquation.h>
 
 #include <alien/kernels/mcg/MCGPrecomp.h>
 
 BEGIN_MCGINTERNAL_NAMESPACE
 
+//! Check parallel feature for MCG
+inline void
+checkParallel(bool)
+{
+  // This behaviour may be changed when Parallel MCG will be plugged
+}
 
-    class MatrixInternal {
-    public:
-        typedef MCGSolver::CSRProfile<MCGSolver::Int32SparseIndex> ProfileType;
-        typedef MCGSolver::BCSRMatrix<double, MCGSolver::Int32SparseIndex> MatrixType;
+/*---------------------------------------------------------------------------*/
+class UniqueKey
+{
+ public:
+  UniqueKey()
+  : m_rand(std::rand())
+  ,
+#if defined(__x86_64__) || defined(__amd64__)
+  m_ts(_rdtsc())
+#else
+  m_ts(std::chrono::system_clock::now())
+#endif
 
-        bool m_elliptic_split_tag = false;
-        std::shared_ptr<MCGSolver::BVector<MCGSolver::Equation::eType>> m_equation_type;
+  {}
 
-        MCGSolver::UniqueKey m_key;
-        std::shared_ptr<MatrixType> m_matrix;
+  bool operator==(const UniqueKey& k) const
+  {
+    return m_rand == k.m_rand && m_ts == k.m_ts;
+  }
 
-        std::vector<int> m_elem_perm;
+  bool operator!=(const UniqueKey& k) const { return !operator==(k); }
 
-        MatrixInternal() = default;
+ private:
+  int m_rand = 0;
+#if defined(__x86_64__) || defined(__amd64__)
+  uint64_t m_ts;
+#else
+  std::chrono::time_point<std::chrono::system_clock> m_ts;
+#endif
+};
 
-        ~MatrixInternal() = default;
-    };
+class MatrixInternal
+{
+ public:
+  using MatrixType = MCGSolver::BCSRMatrix<double,MCGSolver::Int32SparseIndex>;
 
-    class VectorInternal {
-    public:
-        VectorInternal(int nrow, int block_size)
-                : m_bvector(std::make_shared<MCGSolver::BVector<double>>(nrow, block_size)) {}
+  bool m_elliptic_split_tag = false;
+  std::shared_ptr<MCGSolver::BVector<MCGSolver::Equation::eType>> m_equation_type;
 
-        MCGSolver::UniqueKey m_key;
-        std::shared_ptr<MCGSolver::BVector<double>> m_bvector;
-    };
+  UniqueKey m_key;
+  std::shared_ptr<MatrixType> m_matrix;
 
-    class GpuMatrixInternal {
-    public:
-        typedef MCGSolver::CSRgpuProfile<MCGSolver::Int32SparseIndex> ProfileType;
-        typedef MCGSolver::BCSRgpuMatrix<double, MCGSolver::Int32SparseIndex> MatrixType;
+  std::vector<int> m_elem_perm;
+};
 
-        bool m_elliptic_split_tag = false;
-        std::shared_ptr<MCGSolver::BVector<MCGSolver::Equation::eType>> m_equation_type;
+class VectorInternal
+{
+ public:
+  VectorInternal(int nrow, int block_size)
+  : m_vector(new MCGSolver::BVector<double>(nrow, block_size))
+  {}
 
-        MCGSolver::UniqueKey m_key;
-        std::shared_ptr<MatrixType> m_matrix;
-
-        std::vector<int> m_elem_perm;
-
-        GpuMatrixInternal() = default;
-
-        ~GpuMatrixInternal() = default;
-    };
-
-    class GpuVectorInternal {
-    public:
-        GpuVectorInternal(int nrow, int block_size)
-                : m_bvector(std::make_shared<MCGSolver::GPUBVector<double>>(nrow, block_size)) {}
-
-        MCGSolver::UniqueKey m_key;
-        std::shared_ptr<MCGSolver::GPUBVector<double>> m_bvector;
-    };
+  UniqueKey m_key;
+  std::shared_ptr<MCGSolver::BVector<double>> m_vector;
+};
 
 END_MCGINTERNAL_NAMESPACE

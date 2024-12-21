@@ -104,6 +104,7 @@
 #include "arcane/accelerator/core/DeviceInfo.h"
 #include "arcane/accelerator/core/Runner.h"
 #include "arcane/accelerator/core/AcceleratorRuntimeInitialisationInfo.h"
+#include "arcane/accelerator/core/IDeviceInfoList.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -350,9 +351,10 @@ class SubDomain
  private:
 
   void _doInitialPartition();
-  void _doInitialPartitionForMesh(IMesh* mesh,const String& service_name,bool is_required);
+  void _doInitialPartitionForMesh(IMesh* mesh, const String& service_name);
   void _notifyWriteCheckpoint();
   void _printCPUAffinity();
+  void _setDefaultAcceleratorDevice(Accelerator::AcceleratorRuntimeInitialisationInfo& config);
 };
 
 /*---------------------------------------------------------------------------*/
@@ -470,15 +472,8 @@ initialize()
     // donnés par l'utilisateur.
     IApplication* app = application();
     ax::AcceleratorRuntimeInitialisationInfo config = app->acceleratorRuntimeInitialisationInfo();
-    // TODO: faire cela ailleurs
-    if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_ACCELERATOR_PARALLELMNG_RANK_FOR_DEVICE",true)){
-      Int32 modulo = v.value();
-      if (modulo==0)
-        modulo = 1;
-      info() << "Use commRank() to choose accelerator device with modulo=" << modulo;
-      Int32 device_rank = m_parallel_mng->commRank() % modulo;
-      config.setDeviceId(ax::DeviceId(device_rank));
-    }
+    _setDefaultAcceleratorDevice(config);
+
     m_accelerator_mng->initialize(config);
     Runner* runner = m_accelerator_mng->defaultRunner();
     const auto& device_info = runner->deviceInfo();
@@ -551,7 +546,49 @@ initialize()
   m_observers.addObserver(this,
                           &SubDomain::_notifyWriteCheckpoint,
                           m_checkpoint_mng->writeObservable());
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void SubDomain::
+_setDefaultAcceleratorDevice(Accelerator::AcceleratorRuntimeInitialisationInfo& config)
+{
+  // Choix de l'accélérateur à utiliser
+  // Si plusieurs accélérateurs sont disponibles, il faut en choisir un par défaut.
+  // On considère que tous les noeuds ont le même nombre d'accélérateur.
+  // Dans ce cas, on prend comme accélérateur par défaut le i-ème accélérateur disponible,
+  // avec \a i choisi comme étant notre rang modulo le nombre d'accélérateur disponible sur
+  // le noeud.
+  // NOTE: cela fonctionne bien si on utilise un seul processus par accélérateur.
+  // Si on en utilise plus, il faudrait plutôt prendre les rangs consécutifs pour
+  // le même accélérateur.
+  // TODO: Regarder aussi pour voir comment utiliser plutôt l'accélérateur le plus proche
+  // de notre rang. Pour cela il faudrait utiliser des bibliothèque comme HWLOC
+  //
+  auto* device_list = Runner::deviceInfoList(config.executionPolicy());
+
+  Int32 modulo_device = 0;
+  if (device_list){
+    Int32 nb_device = device_list->nbDevice();
+    info() << "DeviceInfo: nb_device=" << nb_device;
+    modulo_device = nb_device;
   }
+
+  // TODO: faire cela ailleurs
+  if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_ACCELERATOR_PARALLELMNG_RANK_FOR_DEVICE",true)){
+    Int32 modulo = v.value();
+    if (modulo==0)
+      modulo = 1;
+    modulo_device = modulo;
+    info() << "Use commRank() to choose accelerator device with modulo=" << modulo;
+  }
+  if (modulo_device!=0){
+    Int32 device_rank = m_parallel_mng->commRank() % modulo_device;
+    info() << "Using device number=" << device_rank;
+    config.setDeviceId(Accelerator::DeviceId(device_rank));
+  }
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -636,6 +673,9 @@ dumpInfo(std::ostream& o)
 void SubDomain::
 allocateMeshes()
 {
+  info() << "SubDomain: Allocating meshes";
+  MessagePassing::dumpDateAndMemoryUsage(parallelMng(), traceMng());
+
   Timer::Action ts_action2(this,"AllocateMesh");
   Trace::Setter mci(traceMng(),_msgClassName());
 
@@ -666,6 +706,8 @@ allocateMeshes()
 void SubDomain::
 readOrReloadMeshes()
 {
+  info() << "SubDomain: read or reload meshes";
+  MessagePassing::dumpDateAndMemoryUsage(parallelMng(), traceMng());
   logdate() << "Initialisation du code.";
 
   Integer nb_mesh = m_mesh_mng->meshes().size();
@@ -758,6 +800,7 @@ doInitMeshPartition()
     else{
       if (m_case_mesh_master_service.get()){
         m_case_mesh_master_service->partitionMeshes();
+        m_case_mesh_master_service->applyAdditionalOperationsOnMeshes();
       }
       else
         if (m_legacy_mesh_builder->m_use_internal_mesh_partitioner)
@@ -808,13 +851,13 @@ _doInitialPartition()
       Int64 min_nb_cell = parallelMng()->reduce(Parallel::ReduceMin,nb_cell);
       info() << "Min nb cell=" << min_nb_cell;
       if (min_nb_cell==0)
-        _doInitialPartitionForMesh(mesh,test_service,true);
+        _doInitialPartitionForMesh(mesh, test_service);
       else
         info() << "Mesh name=" << mesh->name() << " have cells. Do not use " << test_service;
     }
     else
       info() << "No basic partition first needed";
-    _doInitialPartitionForMesh(mesh,m_legacy_mesh_builder->m_internal_partitioner_name,false);
+    _doInitialPartitionForMesh(mesh, m_legacy_mesh_builder->m_internal_partitioner_name);
   }
 }
 
@@ -822,12 +865,11 @@ _doInitialPartition()
 /*---------------------------------------------------------------------------*/
 
 void SubDomain::
-_doInitialPartitionForMesh(IMesh* mesh,const String& service_name,bool is_required)
+_doInitialPartitionForMesh(IMesh* mesh, const String& service_name)
 {
   info() << "DoInitialPartition. mesh=" << mesh->name() << " service=" << service_name;
 
   String lib_name = service_name;
-
   IMeshPartitionerBase* mesh_partitioner_base = nullptr;
   Ref<IMeshPartitionerBase> mesh_partitioner_base_ref;
   Ref<IMeshPartitioner> mesh_partitioner_ref;
@@ -856,13 +898,7 @@ _doInitialPartitionForMesh(IMesh* mesh,const String& service_name,bool is_requir
                                 "is not available (valid_values={1}). This service has to implement "
                                 "interface Arcane::IMeshPartitionerBase",
                                 lib_name,valid_values);
-    if (is_required){
-      pfatal() << msg;
-    }
-    else{
-      pwarning() << msg;
-    }
-		return;
+    ARCANE_THROW(ParallelFatalErrorException, msg);
   }
 
   bool is_dynamic = mesh->isDynamic();

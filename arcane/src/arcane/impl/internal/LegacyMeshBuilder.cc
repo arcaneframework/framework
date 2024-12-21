@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* LegacyMeshBuilder.cc                                        (C) 2000-2023 */
+/* LegacyMeshBuilder.cc                                        (C) 2000-2024 */
 /*                                                                           */
 /* Construction du maillage via la méthode "historique".                     */
 /*---------------------------------------------------------------------------*/
@@ -27,6 +27,7 @@
 #include "arcane/core/IGhostLayerMng.h"
 #include "arcane/core/IMeshReader.h"
 #include "arcane/core/IMeshMng.h"
+#include "arcane/core/IMeshUniqueIdMng.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -322,6 +323,14 @@ _readMesh(ConstArrayView<Ref<IMeshReader>> mesh_readers,const MeshBuildInfo& mbi
     mesh->ghostLayerMng()->setBuilderVersion(builder_version);
   }
 
+  XmlNode face_numbering_version_node = mbi.m_xml_node.attr("face-numbering-version");
+  if (!face_numbering_version_node.null()) {
+    Int32 v = face_numbering_version_node.valueAsInteger();
+    if (v >= 0) {
+      info() << "Set face numbering version to '" << v << "' from caseoption";
+      mesh->meshUniqueIdMng()->setFaceBuilderVersion(v);
+    }
+  }
   bool is_bad = true;
   String extension;
   {

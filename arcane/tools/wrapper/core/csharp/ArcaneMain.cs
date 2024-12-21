@@ -16,6 +16,9 @@ using System.Runtime.CompilerServices;
 // besoin de ItemInternal
 [assembly: InternalsVisibleToAttribute("Arcane.Cea.Materials")]
 
+// Pour accéder aux constructeurs internes de ConstMemoryView
+[assembly: InternalsVisibleToAttribute("Arcane.Python")]
+
 namespace Arcane
 {
   public static class ArcaneMain
@@ -159,7 +162,9 @@ namespace Arcane
 
     class DirectMethodInfo
     {
+#pragma warning disable 0649
       public MethodInfo m_method;
+#pragma warning restore 0649
     }
 
     static Type _GetTypeFromLoadededAssemblies(string class_name)

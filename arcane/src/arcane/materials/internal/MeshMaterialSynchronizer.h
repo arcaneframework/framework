@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshMaterialSynchronizer.h                                  (C) 2000-2023 */
+/* MeshMaterialSynchronizer.h                                  (C) 2000-2024 */
 /*                                                                           */
 /* Synchronisation de la liste des matériaux/milieux des entités.            */
 /*---------------------------------------------------------------------------*/
@@ -21,6 +21,11 @@
 
 #include "arcane/materials/MaterialsGlobal.h"
 #include "arcane/materials/MatItem.h"
+#include "arcane/utils/ValueConvert.h"
+
+#include "arcane/materials/internal/IMeshMaterialSynchronizerImpl.h"
+#include "arcane/materials/internal/AcceleratorMeshMaterialSynchronizerImpl.h"
+#include "arcane/materials/internal/LegacyMeshMaterialSynchronizerImpl.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -66,11 +71,9 @@ class MeshMaterialSynchronizer
 
  private:
 
+  IMeshMaterialSynchronizerImpl* m_synchronizer;
   IMeshMaterialMng* m_material_mng;
 
-  inline static void _setBit(ByteArrayView bytes,Integer position);
-  inline static bool _hasBit(ByteConstArrayView bytes,Integer position);
-  void _fillPresence(AllEnvCell all_env_cell,ByteArrayView presence);
   void _checkComponents(VariableCellInt32& indexes,
                         ConstArrayView<IMeshComponent*> components,
                         Integer max_print);
@@ -84,4 +87,4 @@ class MeshMaterialSynchronizer
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

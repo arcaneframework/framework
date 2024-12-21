@@ -1,3 +1,9 @@
+﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
+//-----------------------------------------------------------------------------
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// See the top-level COPYRIGHT file for details.
+// SPDX-License-Identifier: Apache-2.0
+//-----------------------------------------------------------------------------
 #include <alien/core/backend/IVectorConverter.h>
 #include <alien/core/backend/VectorConverterRegisterer.h>
 
@@ -8,6 +14,9 @@
 #include <alien/kernels/simple_csr/CSRStructInfo.h>
 #include <alien/kernels/simple_csr/SimpleCSRVector.h>
 #include <alien/kernels/simple_csr/SimpleCSRBackEnd.h>
+
+#include <alien/kernels/sycl/SYCLBackEnd.h>
+#include <alien/kernels/sycl/data/SYCLVector.h>
 
 using namespace Alien;
 using namespace Alien::SimpleCSRInternal;
@@ -52,7 +61,26 @@ SimpleCSR_to_Hypre_VectorConverter::convert(
     cout() << "Converting SimpleCSRVector: " << &v << " to HypreVector " << &v2;
   });
   Arccore::ConstArrayView<Arccore::Real> values = v.values();
-  v2.setValues(values.size(), values.unguardedBasePointer());
+  if(v2.getMemoryType()==Alien::BackEnd::Memory::Host)
+    v2.setValues(values.size(), values.unguardedBasePointer());
+  else
+  {
+#ifdef ALIEN_USE_SYCL
+      Alien::HypreVector::IndexType* rows_d = nullptr;
+      Alien::HypreVector::ValueType* values_d = nullptr ;
+      Alien::SYCLVector<Arccore::Real>::initDevicePointers(values.size(),
+                                                           values.unguardedBasePointer(),&
+                                                           rows_d,
+                                                           &values_d) ;
+      v2.setValues(v.getAllocSize(), rows_d, values_d);
+      v2.assemble() ;
+      Alien::SYCLVector<Arccore::Real>::freeDevicePointers(rows_d, values_d) ;
+#else
+      alien_fatal([&] {
+        cout()<<"Error SYCL Support is required to Buid Hypre Vector on Device Memory";
+      });
+#endif
+  }
 }
 
 /*---------------------------------------------------------------------------*/

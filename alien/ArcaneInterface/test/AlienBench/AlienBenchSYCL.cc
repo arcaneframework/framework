@@ -218,8 +218,8 @@ AlienBenchModule::_testSYCLWithUSM( Timer& pbuild_timer,
     }
   }
 
-  Arcane::NumArray<Arccore::Integer,MDDim1> accAllUIndex(allUIndex) ;
-  //Arccore::SmallSpan<const Int32> accAllUIndex = index_manager.getIndexes(indexSetU);
+  //Arcane::NumArray<Arccore::Integer,MDDim1> accAllUIndex(allUIndex.constView()) ;
+  Arccore::SmallSpan<const Int32> accAllUIndex = allUIndex ;//index_manager.getIndexes(indexSetU);
   //Arccore::SmallSpan<const Int32> cell_conn_lids = cell_cell_connection.itemGroup().view().localIds() ;
   //Arccore::SmallSpan<const Integer> cell_lids = areaU.view().localIds() ;
   //Arccore::SmallSpan<const Integer> own_cell_lids = areaU.own().view().localIds() ;
@@ -540,7 +540,7 @@ AlienBenchModule::_testSYCLWithUSM( Timer& pbuild_timer,
     syclAlg.mult(matrixA, vectorX, vectorB);
     syclAlg.mult(matrixA, vectorX, vectorBB);
     Real normeb = syclAlg.norm2(vectorB);
-    std::cout << "||b||=" << normeb<<std::endl ;
+    std::cout << "sycl ||b||=" << normeb<<std::endl ;
   }
 }
 
@@ -581,8 +581,8 @@ AlienBenchModule::_testSYCL(Timer& pbuild_timer,
     }
   }
 
-  Arcane::NumArray<Arccore::Integer,MDDim1> accAllUIndex(allUIndex) ;
-  //Arccore::SmallSpan<const Int32> accAllUIndex = index_manager.getIndexes(indexSetU);
+  //Arcane::NumArray<Arccore::Integer,MDDim1> accAllUIndex = allUIndex ;
+  Arccore::SmallSpan<const Int32> accAllUIndex = allUIndex ;//index_manager.getIndexes(indexSetU);
   //Arccore::SmallSpan<const Int32> cell_conn_lids = cell_cell_connection.itemGroup().view().localIds() ;
   //Arccore::SmallSpan<const Integer> cell_lids = areaU.view().localIds() ;
   //Arccore::SmallSpan<const Integer> own_cell_lids = areaU.own().view().localIds() ;
@@ -924,13 +924,21 @@ AlienBenchModule::_testSYCL(Timer& pbuild_timer,
         builder.finalize() ;
       }
   }
+  
   {
     info()<<"COMPUTE SYCL NORME B";
+    std::cout << "COMPUTE SYCL NORME B"<<std::endl ;
     Alien::SYCLLinearAlgebra syclAlg;
     syclAlg.mult(matrixA, vectorX, vectorB);
     syclAlg.mult(matrixA, vectorX, vectorBB);
     Real normeb = syclAlg.norm2(vectorB);
     std::cout << "||b||=" << normeb<<std::endl ;
+    {
+      SYCLInternalLinearAlgebra alg ;
+
+      auto&  sycl_x = vectorX.impl()->get<Alien::BackEnd::tag::sycl>(true) ;
+      alg.assign(sycl_x,0.) ;
+    }
   }
 }
 /*---------------------------------------------------------------------------*/

@@ -24,11 +24,11 @@ env:
   CCACHE_DIR: '/__w/framework/framework/ccache'
   CCACHE_MAXSIZE: 5G
   # CMake
-  CM_BUILD_OPTS: "-j2"
+  CM_BUILD_OPTS: "-j4"
   CM_BUILD_TYPE: Release
   CM_CCACHE_OPTS: "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache"
   # CTest
-  CT_OPTS: "--timeout 30 --output-on-failure ${{ github.event.inputs.ctest_options }}"
+  CT_OPTS: "--timeout 60 --output-on-failure ${{ github.event.inputs.ctest_options }}"
   # OpenMPI
   OMPI_MCA_rmaps_base_oversubscribe : true
   # To remove test output directory to reduce disk usage
@@ -74,13 +74,21 @@ jobs:
           path: ${{ env.SOURCE_DIR }}
           submodules: true
 
+      - name: Modules information
+        id: modules_information
+        if: |
+          (success() || failure()) &&
+          steps.checkout.outcome == 'success'
+        shell: bash
+        run: module --terse list 2>&1 | sort
+
       - name: Configure
         id: configure
         if: |
           (success() || failure()) &&
           steps.checkout.outcome == 'success'
         shell: bash
-        run: cmake -S ${{ env.SOURCE_DIR }} -B ${{ env.BUILD_DIR }} -DCMAKE_INSTALL_PREFIX=${{ env.INSTALL_DIR }} ${{ env.CM_CCACHE_OPTS }} -DCMAKE_BUILD_TYPE=${{ env.CM_BUILD_TYPE }} -DARCCORE_BUILD_MODE=Check -DREMOVE_UID_ON_DETACH=ON -DUSE_GTEST_DEATH_TEST=ON -DCMAKE_DISABLE_FIND_PACKAGE_Papi=ON -DALIEN_BUILD_COMPONENT=all -DALIEN_PLUGIN_HYPRE=ON -DALIEN_PLUGIN_PETSC=ON -DUSE_GRAPH_CONNECTIVITY_POLICY=ON
+        run: cmake -S ${{ env.SOURCE_DIR }} -B ${{ env.BUILD_DIR }} -DCMAKE_INSTALL_PREFIX=${{ env.INSTALL_DIR }} ${{ env.CM_CCACHE_OPTS }} -DCMAKE_BUILD_TYPE=${{ env.CM_BUILD_TYPE }} -DARCCORE_BUILD_MODE=Check -DREMOVE_UID_ON_DETACH=ON -DUSE_GTEST_DEATH_TEST=ON -DCMAKE_DISABLE_FIND_PACKAGE_Papi=ON -DALIEN_BUILD_COMPONENT=all -DALIEN_PLUGIN_HYPRE=ON -DALIEN_PLUGIN_PETSC=ON -DUSE_GRAPH_CONNECTIVITY_POLICY=ON -DARCANE_DISABLE_PERFCOUNTER_TESTS=ON
 
       - name: Build
         id: build
@@ -113,14 +121,11 @@ jobs:
           steps.install.outcome == 'success'
         shell: bash
         run: |
-           osdir=el_`lsb_release -r | awk -F ":" '{print $2}' | awk -F "." '{print $1}' | tr -d '\t'`-x86_64
-           mkdir -p ${{ env.BUILD_DIR }}/${{ env.EXT_LIB_SUBDIR }}
-           export LD_LIBRARY_PATH="${{ env.INSTALL_DIR }}/lib:${LD_LIBRARY_PATH}"
-           # Copy libraries
-           while read line; do \cp -avn ${line} ${{ env.BUILD_DIR }}/${{ env.EXT_LIB_SUBDIR }}/.; if [ -L ${line} ]; then \cp -avn `readlink -f ${line}` ${{ env.BUILD_DIR }}/${{ env.EXT_LIB_SUBDIR }}/.; fi; done < <(ldd ${{ env.INSTALL_DIR }}/bin/alien* ${{ env.INSTALL_DIR }}/bin/gtest* ${{ env.INSTALL_DIR }}/lib/*.so ${{ env.INSTALL_DIR }}/lib/arcane_driver | awk 'NF == 4 { print $3 }' | grep -v -e "^/lib64/" -e "^${EBROOTOPENMPI}" -e "^${EBROOTUDUNITS}" -e "^${EBROOTMONO}" -e "^${EBROOTCMAKE}" -e "^${EBROOTDOTNETMINSDK}" -e "${EBROOTFLEXIBLAS}" -e "${EBROOTOPENBLAS}" -e "${EBROOTUCX}" -e "${EBROOTLIBFABRIC}" -e "${EBROOTPMIX}" -e "^/__w/")
-           # Copy googletest
-           \rm -vf ${{ env.BUILD_DIR }}/${{ env.EXT_LIB_SUBDIR }}/libgtest.so
-           \cp -avf /soft/irsrvsoft1/expl/eb/r11/${osdir}/easybuild/software/googletest/1.11.0-GCCcore-11.2.0/lib/*.so* ${{ env.BUILD_DIR }}/${{ env.EXT_LIB_SUBDIR }}/.
+          cd ${{ env.BUILD_DIR }}
+          echo '--'
+          cat /scripts/copyextlib_github.sh
+          echo '--'
+          bash /scripts/copyextlib_github.sh
 
       - name: Tar build artifact
         shell: bash
@@ -150,7 +155,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 120
     container:
-      image: ghcr.io/arcaneframework/arcane-ifpen-devenv-foss-2021b:el8-rt
+      image: ghcr.io/arcaneframework/arcane-ifpen-devenv-foss-2021b-rt:el8
       #options: --user root  # Avoid to match github UID in container.
     strategy:
       fail-fast: false

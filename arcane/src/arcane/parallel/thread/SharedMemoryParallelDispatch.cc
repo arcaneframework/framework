@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* SharedMemoryParallelDispatch.cc                             (C) 2000-2023 */
+/* SharedMemoryParallelDispatch.cc                             (C) 2000-2024 */
 /*                                                                           */
 /* Implémentation des messages en mémoire partagée.                          */
 /*---------------------------------------------------------------------------*/
@@ -617,7 +617,7 @@ allReduce(eReduceType op,Type send_buf)
 /*---------------------------------------------------------------------------*/
 
 template<class Type> void SharedMemoryParallelDispatch<Type>::
-allReduce(eReduceType op,Span<Type> send_buf)
+_allReduceOrScan(eReduceType op, Span<Type> send_buf, bool is_scan)
 {
   m_reduce_infos.reduce_buf = send_buf;
   ++m_reduce_infos.m_index;
@@ -636,22 +636,24 @@ allReduce(eReduceType op,Span<Type> send_buf)
       }
     }
   }
-
+  Int32 nb_rank = m_nb_rank;
+  if (is_scan)
+    nb_rank = m_rank + 1;
   for( Integer j=0; j<buf_size; ++j )
     ret[j] = m_all_dispatchs[0]->m_reduce_infos.reduce_buf[j];
   switch(op){
   case Parallel::ReduceMin:
-    for( Integer i=1; i<m_nb_rank; ++i )
+    for (Integer i = 1; i < nb_rank; ++i)
       for( Integer j=0; j<buf_size; ++j )
         ret[j] = math::min(ret[j],m_all_dispatchs[i]->m_reduce_infos.reduce_buf[j]);
     break;
   case Parallel::ReduceMax:
-    for( Integer i=1; i<m_nb_rank; ++i )
+    for (Integer i = 1; i < nb_rank; ++i)
       for( Integer j=0; j<buf_size; ++j )
         ret[j] = math::max(ret[j],m_all_dispatchs[i]->m_reduce_infos.reduce_buf[j]);
     break;
   case Parallel::ReduceSum:
-    for( Integer i=1; i<m_nb_rank; ++i )
+    for (Integer i = 1; i < nb_rank; ++i)
       for( Integer j=0; j<buf_size; ++j )
         ret[j] = (Type)(ret[j] + m_all_dispatchs[i]->m_reduce_infos.reduce_buf[j]);
     break;
@@ -662,6 +664,15 @@ allReduce(eReduceType op,Span<Type> send_buf)
   _collectiveBarrier();
   for( Integer j=0; j<buf_size; ++j )
     send_buf[j] = ret[j];
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template <class Type> void SharedMemoryParallelDispatch<Type>::
+allReduce(eReduceType op, Span<Type> send_buf)
+{
+  _allReduceOrScan(op, send_buf, false);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -756,9 +767,7 @@ scan(eReduceType op,Type send_buf)
 template<class Type> void SharedMemoryParallelDispatch<Type>::
 scan(eReduceType op,ArrayView<Type> send_buf)
 {
-  ARCANE_UNUSED(op);
-  ARCANE_UNUSED(send_buf);
-  throw NotImplementedException(A_FUNCINFO);
+  _allReduceOrScan(op, send_buf, true);
 }
 
 /*---------------------------------------------------------------------------*/

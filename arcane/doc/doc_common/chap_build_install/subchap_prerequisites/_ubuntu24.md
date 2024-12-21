@@ -14,7 +14,7 @@ nécessaires pour %Arcane (ainsi que les dépendances optionnelles `HDF5` et `Pa
 sudo apt update
 sudo apt install -y apt-utils build-essential iputils-ping python3 \
   git gfortran libglib2.0-dev libxml2-dev libhdf5-openmpi-dev \
-  libparmetis-dev dotnet8 cmake
+  libparmetis-dev libunwind-dev dotnet8 cmake
 ~~~
 
 Pour compiler Alien en plus d'%Arcane, il est nécessaire d'installer un package en plus :

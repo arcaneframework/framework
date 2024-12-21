@@ -72,7 +72,9 @@ Options générales :
     - `ROCMHIP` pour les GPU AMD
   </td>
   <td>
-    Permet de spécifier le type d'accélerateur qu'on souhaite utiliser
+    Permet de spécifier le type d'accélerateur qu'on souhaite utiliser.
+    A partir de la version 3.14 de Arcane, il est possible d'utiliser `CUDA` au lieu
+    de `CUDANVCC` et `ROCM` au lieu de `ROCMHIP`
   </td>
 </tr>
 <tr><td>`CMAKE_CUDA_COMPILER` <td>Compilateur CUDA (exemple : `nvcc`) <td>Permet de spécifier le chemin vers le compilateur `nvcc`
@@ -89,8 +91,8 @@ La variable CMake `ARCANE_ACCELERATOR_MODE` permet de spécifier le
 type d'accélerateur qu'on souhaite utiliser. Il y a actuellement deux
 valeurs supportées:
 
-- `CUDANVCC` pour les GPU NVIDIA
-- `ROCMHIP` pour les GPU AMD
+- `CUDANVCC` ou `CUDA` pour les GPU NVIDIA
+- `ROCMHIP` ou `ROCM` pour les GPU AMD
 
 #### Compilation CUDA
 

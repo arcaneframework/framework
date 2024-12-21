@@ -76,7 +76,7 @@ public class MeshModificationService
   public MeshModificationService(ServiceBuildInfo sbi) : base(sbi)
   {
     Console.WriteLine("CREATE MeshModificationServiceInstance");
-   
+
     m_trace_accessor = new TraceAccessor(sbi.SubDomain().TraceMng());
   }
   public override void InitializeTest()
@@ -115,7 +115,10 @@ public class MeshModificationService
   {
     IItemFamily cell_family = Mesh().CellFamily();
     CellGroup all_cells = cell_family.AllItems().CellGroup();
-    foreach(Cell c in all_cells){
+    ItemVectorView all_cells_view = all_cells.View();
+    ItemVectorView<Cell> all_cells_view2 = new ItemVectorView<Cell>(all_cells_view);
+    Console.WriteLine("PrintCells");
+    foreach(Cell c in all_cells_view2){
       int nb_node = c.NbNode;
       Console.WriteLine("Cell: c={0}",c.LocalId, nb_node);
       for( int i=0; i<nb_node; ++i )
@@ -133,19 +136,20 @@ public class MeshModificationService
 
     ItemVectorView cell_view = all_cells.View();
     int n = cell_view.Size;
+    Console.WriteLine($"RemoveCells n={n}");
     for( int i=0; i<n; ++i ){
-      Console.WriteLine("CELL_VIEW i={0} id={1}",i,cell_view.LocalIds[i]);
+      Console.WriteLine("CELL_VIEW i={0} id={1}",i,cell_view.Indexes[i]);
     }
     foreach(Item ie in cell_view){
-      Console.WriteLine("CELL_VIEW2 ie={0}",ie.LocalId);      
+      Console.WriteLine("CELL_VIEW2 ie={0}",ie.LocalId);
     }
     ItemGroup all_items = all_cells;
     foreach(Item ie in all_items){
       Console.WriteLine("CELL_VIEW3 ie={0}",ie.LocalId);
     }
-      
+
     //Int32Array to_destroy_array = new Int32Array();
-    //Int32Array.Wrapper to_destroy_array = 
+    //Int32Array.Wrapper to_destroy_array =
     Int32Array to_destroy_array = new Int32Array();
     Int32 modulo_to_remove = Options.RemoveFraction.Value();
     foreach(Cell c in all_cells){
@@ -180,7 +184,7 @@ public class MeshModificationService
     Int64 max_node_uid = _SearchMaxUniqueId(mesh.AllNodes());
     Int64 max_cell_uid = _SearchMaxUniqueId(mesh.AllCells());
     Trace.Info("MAX UID NODE={0} CELL={1}",max_node_uid,max_cell_uid);
-    
+
     CellGroup all_cells = Mesh().AllCells();
     int index = 0;
     Integer nb_cell_to_add = 0;
@@ -195,7 +199,7 @@ public class MeshModificationService
       ++index;
       if ((index % 3) == 0){
         cells_to_detach.Add(c.LocalId);
-        
+
         to_add_cells.Add(8); // Pour une pyramide
         //to_add_cells.Add(max_cell_uid + index); // Pour le uid
         to_add_cells.Add(c.UniqueId + max_cell_uid); // Pour le uid, reutilise celui de la maille supprimée
@@ -223,7 +227,7 @@ public class MeshModificationService
         ++nb_cell_to_add;
       }
     }
-    
+
     IMeshModifier modifier = mesh.Modifier();
     Integer nb_node_added = nodes_to_add.Length;
     Int32Array new_nodes_local_id = new Int32Array(nb_node_added);
@@ -248,7 +252,7 @@ public class MeshModificationService
       Console.Write(uid_view[i]);
     }
     Console.WriteLine(".");
-    
+
     // Avant d'ajouter les nouvelles mailles, il faut détacher les anciennes
     modifier.DetachCells(cells_to_detach.ConstView);
     modifier.AddCells(nb_cell_to_add,to_add_cells.ConstView);
@@ -257,7 +261,7 @@ public class MeshModificationService
     // Pour l'instant indispensable. Il faudra le supprimer par la suite
     //nodes_coords.Dispose();
   }
-  
+
   void _CheckGC()
   {
     CellGroup all_cells = Mesh().AllCells();
@@ -272,7 +276,7 @@ public class MeshModificationService
     }
     Trace.Info("TOTAL={0}",total);
   }
-  
+
   Int64 _SearchMaxUniqueId(ItemGroup group)
   {
     Int64 max_uid = 0;

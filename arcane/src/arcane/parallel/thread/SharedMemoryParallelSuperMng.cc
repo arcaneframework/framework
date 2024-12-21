@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* SharedMemoryParallelSuperMng.cc                             (C) 2000-2020 */
+/* SharedMemoryParallelSuperMng.cc                             (C) 2000-2024 */
 /*                                                                           */
 /* Gestionnaire de messages utilisant uniquement la mémoire partagée.        */
 /*---------------------------------------------------------------------------*/
@@ -30,16 +30,16 @@
 #include "arcane/parallel/thread/SharedMemoryParallelMng.h"
 #include "arcane/parallel/thread/SharedMemoryParallelDispatch.h"
 #include "arcane/parallel/thread/SharedMemoryMessageQueue.h"
-#include "arcane/parallel/thread/GlibThreadMng.h"
+#include "arcane/parallel/thread/internal/SharedMemoryThreadMng.h"
 
-#include "arcane/FactoryService.h"
-#include "arcane/IApplication.h"
-#include "arcane/ParallelSuperMngDispatcher.h"
-#include "arcane/ApplicationBuildInfo.h"
-#include "arcane/AbstractService.h"
-#include "arcane/ServiceBuilder.h"
+#include "arcane/core/FactoryService.h"
+#include "arcane/core/IApplication.h"
+#include "arcane/core/ParallelSuperMngDispatcher.h"
+#include "arcane/core/ApplicationBuildInfo.h"
+#include "arcane/core/AbstractService.h"
+#include "arcane/core/ServiceBuilder.h"
 
-#include "arcane/IMainFactory.h"
+#include "arcane/core/IMainFactory.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -67,15 +67,18 @@ class SharedMemoryParallelMngContainer
   Ref<IParallelMng> _createParallelMng(Int32 local_rank,ITraceMng* tm) override;
 
  public:
+
   IApplication* m_application; //!< Gestionnaire principal
   Int32 m_nb_local_rank;
-  GlibThreadMng* m_thread_mng;
+  SharedMemoryThreadMng* m_thread_mng;
   ISharedMemoryMessageQueue* m_message_queue = nullptr;
   Mutex* m_internal_create_mutex = nullptr;
   IThreadBarrier* m_thread_barrier = nullptr;
   SharedMemoryAllDispatcher* m_all_dispatchers = nullptr;
   IParallelMngContainerFactory* m_sub_factory_builder = nullptr;
+
  private:
+
   MP::Communicator m_communicator;
 };
 
@@ -87,7 +90,7 @@ SharedMemoryParallelMngContainer(IApplication* app,Int32 nb_local_rank,
                                  MP::Communicator mpi_comm,
                                  IParallelMngContainerFactory* factory)
 : m_application(app), m_nb_local_rank(nb_local_rank)
-, m_thread_mng(new GlibThreadMng())
+, m_thread_mng(new SharedMemoryThreadMng())
 , m_sub_factory_builder(factory)
 , m_communicator(mpi_comm)
 {

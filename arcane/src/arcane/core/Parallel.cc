@@ -1,27 +1,29 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Parallel.cc                                                 (C) 2000-2022 */
+/* Parallel.cc                                                 (C) 2000-2024 */
 /*                                                                           */
 /* Espace de nom des types gérant le parallélisme.                           */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/Parallel.h"
+#include "arcane/core/Parallel.h"
 
 #include "arcane/utils/String.h"
 #include "arcane/utils/ArrayView.h"
 #include "arcane/utils/FatalErrorException.h"
+#include "arcane/utils/PlatformUtils.h"
+#include "arcane/utils/ITraceMng.h"
 
-#include "arcane/IParallelMng.h"
-#include "arcane/IParallelMng.h"
-#include "arcane/IParallelTopology.h"
-#include "arcane/IParallelReplication.h"
-#include "arcane/SerializeBuffer.h"
+#include "arcane/core/IParallelMng.h"
+#include "arcane/core/IParallelMng.h"
+#include "arcane/core/IParallelTopology.h"
+#include "arcane/core/IParallelReplication.h"
+#include "arcane/core/SerializeBuffer.h"
 
 #include <iostream>
 #include <map>
@@ -151,6 +153,29 @@ filterCommonStrings(IParallelMng* pm,ConstArrayView<String> input_strings,
   common_strings.clear();
   for( const String& s : common_set )
     common_strings.add(s);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MessagePassing::
+dumpDateAndMemoryUsage(IParallelMng* pm, ITraceMng* tm)
+{
+  ARCANE_CHECK_POINTER(pm);
+  ARCANE_CHECK_POINTER(tm);
+
+  Real mem_used = platform::getMemoryUsed();
+  Real mem_sum = 0.0;
+  Real mem_min = 0.0;
+  Real mem_max = 0.0;
+  Int32 mem_min_rank = 0;
+  Int32 mem_max_rank = 0;
+  pm->computeMinMaxSum(mem_used, mem_min, mem_max, mem_sum, mem_min_rank, mem_max_rank);
+  tm->info() << "Date: " << platform::getCurrentDateTime() << " MEM=" << (Int64)(mem_used / 1e6)
+             << " MAX_MEM=" << (Int64)(mem_max / 1e6)
+             << " MIN_MEM=" << (Int64)(mem_min / 1e6)
+             << " AVG_MEM=" << (Int64)(mem_sum / 1e6) / pm->commSize()
+             << " MIN_RANK=" << mem_min_rank << " MAX_RANK=" << mem_max_rank;
 }
 
 /*---------------------------------------------------------------------------*/

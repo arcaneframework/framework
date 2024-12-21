@@ -284,6 +284,7 @@ class ARCANE_CORE_EXPORT IMeshModifier
   virtual void flagCellToCoarsen(Int32ConstArrayView cells_lids) = 0;
   virtual void refineItems() = 0;
   virtual void coarsenItems() = 0;
+  virtual void coarsenItemsV2() = 0;
   virtual bool adapt() = 0;
   virtual void registerCallBack(IAMRTransportFunctor* f) = 0;
   virtual void unRegisterCallBack(IAMRTransportFunctor* f) = 0;

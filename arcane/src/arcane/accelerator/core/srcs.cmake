@@ -41,4 +41,5 @@ set( ARCANE_SOURCES
   internal/RunQueueImpl.h
   internal/ReduceMemoryImpl.h
   internal/RunnerImpl.h
+  internal/RunnerInternal.h
 )

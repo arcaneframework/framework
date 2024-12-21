@@ -1,0 +1,18 @@
+<?xml version="1.0" ?><!-- -*- SGML -*- -->
+
+<service name="KdiPostProcessor" parent-name="PostProcessorWriterBase"
+         type="caseoption" type2="subdomain">
+  <name lang='fr'>kdi-post-processeur</name>
+  <description>
+    Post Processeur utilisant KDI
+  </description>
+    
+  <interface name="Arcane::IPostProcessorWriter" inherited="false"/>
+
+  <variables>
+  </variables>
+
+  <options>
+  </options>
+
+</service>

@@ -1,26 +1,22 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
-#pragma once
+
+#ifndef ALIEN_MCGIMPL_MCGINTERNALLINEARSOLVER_H
+#define ALIEN_MCGIMPL_MCGINTERNALLINEARSOLVER_H
 
 #include <memory>
 #include <chrono>
 
-#include "Common/index.h"
-#include "Common/Utils/ParallelEnv.h"
-#include "Common/Utils/LogMng.h"
-
-#include "Graph/OrderingType.h"
-#include "Precond/PrecondOptionsEnum.h"
-#include "Solvers/AMG/AMGProperty.h"
-#include "Solvers/SolverProperty.h"
-
-#include "MCGSolver/Status.h"
-#include "MCGSolver/SolverOptionsEnum.h"
-#include "MCGSolver/MCGSolver.h"
-
+#include <Common/index.h>
+#include <MCGSolver/MCGSolver.h>
+#include <Graph/OrderingType.h>
+#include <Precond/PrecondOptionsEnum.h>
+#include <Solvers/AMG/AMGProperty.h>
+#include <Solvers/SolverProperty.h>
+#include <MCGSolver/SolverOptionsEnum.h>
 
 #include <alien/utils/Precomp.h>
 #include <alien/core/backend/IInternalLinearSolverT.h>
@@ -141,15 +137,15 @@ class ALIEN_IFPEN_SOLVERS_EXPORT MCGInternalLinearSolver : public ILinearSolver,
     alien_warning([&] { cout() << "Null Space Constant Option not yet implemented"; });
   }
 
-  virtual void setEdgeWeight(const IMatrix& E) final;
-
   void printInfo() const;
 
  private:
+
   Integer _solve(const MCGMatrixType& A, const MCGVectorType& b, MCGVectorType& x,
-      const std::shared_ptr<const MCGSolver::PartitionInfo<int>>& part_info);
+      std::shared_ptr<MCGSolver::PartitionInfo<int32_t>> part_info);
+
   Integer _solve(const MCGMatrixType& A, const MCGVectorType& b, const MCGVectorType& x0,
-      MCGVectorType& x,const std::shared_ptr<const MCGSolver::PartitionInfo<int>>& part_info);
+      MCGVectorType& x, std::shared_ptr<MCGSolver::PartitionInfo<int32_t>> part_info);
 
   bool _systemChanged(
       const MCGMatrixType& A, const MCGVectorType& b, const MCGVectorType& x);
@@ -161,11 +157,12 @@ class ALIEN_IFPEN_SOLVERS_EXPORT MCGInternalLinearSolver : public ILinearSolver,
 
   // bool _systemChanged(const MCGMatrixType& A,const MCGVectorType& b,const
   // MCGVectorType& x0,const MCGVectorType& x);
-  void _registerKey(const MCGMatrixType& A, const MCGVectorType& b, const MCGVectorType& x);
-  void _registerKey(const MCGMatrixType& A, const MCGVectorType& b,const MCGVectorType& x0, const MCGVectorType& x);
+  void _registerKey(
+      const MCGMatrixType& A, const MCGVectorType& b, const MCGVectorType& x);
+  void _registerKey(const MCGMatrixType& A, const MCGVectorType& b,
+      const MCGVectorType& x0, const MCGVectorType& x);
 
-  typedef MCGSolver::LinearSystem<double,MCGSolver::IntSparseIndex>
-      MCGSolverLinearSystem;
+  typedef MCGSolver::LinearSystem<double, MCGSolver::Int32SparseIndex> MCGSolverLinearSystem;
 
  protected:
   std::unique_ptr<MCGSolver::LinearSolver> m_solver;
@@ -177,7 +174,7 @@ class ALIEN_IFPEN_SOLVERS_EXPORT MCGInternalLinearSolver : public ILinearSolver,
   Arccore::MessagePassing::IMessagePassingMng* m_parallel_mng = nullptr;
   MCGSolver::MachineInfo* m_machine_info = nullptr; // TODO: use shared_ptr
   mpi::MPIInfo* m_mpi_info = nullptr; // TODO: use shared_ptr
-  std::shared_ptr<MCGSolver::PartitionInfo<int>> m_part_info;
+  std::shared_ptr<MCGSolver::PartitionInfo<int32_t>> m_part_info;
 
   MCGSolver::Status m_mcg_status;
   Alien::SolverStatus m_status;
@@ -246,4 +243,6 @@ class ALIEN_IFPEN_SOLVERS_EXPORT MCGInternalLinearSolver : public ILinearSolver,
 #endif
 };
 
-} // namespace Alien
+}
+
+#endif /* ALIEN_MCGIMPL_MCGINTERNALLINEARSOLVER_H */

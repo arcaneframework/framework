@@ -1,37 +1,35 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ModuleSimpleHydroDepend.cc                                  (C) 2000-2013 */
+/* ModuleSimpleHydroDepend.cc                                  (C) 2000-2024 */
 /*                                                                           */
 /* Module Hydrodynamique simple utilisant les dépendances.                   */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/ArcanePrecomp.h"
-
 #include "arcane/utils/List.h"
 #include "arcane/utils/IOnlineDebuggerService.h"
 #include "arcane/utils/PlatformUtils.h"
 
-#include "arcane/BasicModule.h"
-#include "arcane/ITimeLoop.h"
-#include "arcane/ISubDomain.h"
-#include "arcane/EntryPoint.h"
-#include "arcane/MathUtils.h"
-#include "arcane/ITimeLoopMng.h"
-#include "arcane/VariableTypes.h"
-#include "arcane/ItemEnumerator.h"
-#include "arcane/IParallelMng.h"
-#include "arcane/ModuleFactory.h"
-#include "arcane/VariableComputeFunction.h"
-#include "arcane/TimeLoopEntryPointInfo.h"
-#include "arcane/IVariableMng.h"
-#include "arcane/VariableDependInfo.h"
-#include "arcane/IVariableUtilities.h"
+#include "arcane/core/BasicModule.h"
+#include "arcane/core/ITimeLoop.h"
+#include "arcane/core/ISubDomain.h"
+#include "arcane/core/EntryPoint.h"
+#include "arcane/core/MathUtils.h"
+#include "arcane/core/ITimeLoopMng.h"
+#include "arcane/core/VariableTypes.h"
+#include "arcane/core/ItemEnumerator.h"
+#include "arcane/core/IParallelMng.h"
+#include "arcane/core/ModuleFactory.h"
+#include "arcane/core/VariableComputeFunction.h"
+#include "arcane/core/TimeLoopEntryPointInfo.h"
+#include "arcane/core/IVariableMng.h"
+#include "arcane/core/VariableDependInfo.h"
+#include "arcane/core/IVariableUtilities.h"
 
 #include "arcane/tests/TypesSimpleHydro.h"
 #include "arcane/tests/SimpleHydro_axl.h"
@@ -39,7 +37,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-SIMPLE_HYDRO_BEGIN_NAMESPACE
+namespace SimpleHydro
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -65,7 +64,7 @@ class ModuleSimpleHydroDepend
   class SecondaryVariables
   {
    public:
-    SecondaryVariables(IModule* module)
+    explicit SecondaryVariables(IModule* module)
     : m_faces_density(VariableBuilder(module,"FacesDensity"))
       {
         //m_faces_density.doInit(false);
@@ -77,7 +76,7 @@ class ModuleSimpleHydroDepend
  public:
 
   //! Constructeur
-  ModuleSimpleHydroDepend(const ModuleBuilder& cb);
+  explicit ModuleSimpleHydroDepend(const ModuleBuilder& cb);
   ~ModuleSimpleHydroDepend(); //!< Destructeur
 
  public:
@@ -124,6 +123,7 @@ class ModuleSimpleHydroDepend
   void hydroContinueInit(){}
   void applyBoundaryCondition(){}
   void doOneIteration(){ ARCANE_THROW(NotImplementedException,""); }
+  void onMeshChanged(){}
 
  private:
   
@@ -941,7 +941,7 @@ computeSecondaryVariables()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-SIMPLE_HYDRO_END_NAMESPACE
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -15,6 +15,7 @@
 #endif
 #ifdef ALIEN_USE_HYPRE
 #include <alien/kernels/hypre/algebra/HypreLinearAlgebra.h>
+#include <alien/kernels/hypre/linear_solver/HypreInternalLinearSolver.h>
 #endif
 
 // Méthode de construction de la matrice
@@ -193,6 +194,7 @@ main(int argc, char** argv)
 #endif
 #ifdef ALIEN_USE_HYPRE
     tm->info() << "Testing HypreLinearAlgebra";
+    Alien::HypreInternalLinearSolver::initializeLibrary() ;
     Alien::HypreLinearAlgebra hypreAlg;
     testAlgebra(algebraName::hypre, hypreAlg, Aa, bb, xx);
     tm->info() << "HypreLinearAlgebra OK";

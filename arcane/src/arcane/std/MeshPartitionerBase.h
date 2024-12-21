@@ -19,7 +19,6 @@
 #include "arcane/core/IMeshPartitioner.h"
 #include "arcane/core/AbstractService.h"
 #include "arcane/core/ILoadBalanceMng.h"
-#include "arcane/core/internal/ILoadBalanceMngInternal.h"
 
 #include "arcane/utils/Array.h"
 #include "arcane/utils/HashTableMap.h"
@@ -49,8 +48,8 @@ class ARCANE_STD_EXPORT MeshPartitionerBase
 {
  public:
 
-  MeshPartitionerBase(const ServiceBuildInfo& sbi);
-  virtual ~MeshPartitionerBase();
+  explicit MeshPartitionerBase(const ServiceBuildInfo& sbi);
+  ~MeshPartitionerBase() override;
 
  public:
 
@@ -58,7 +57,7 @@ class ARCANE_STD_EXPORT MeshPartitionerBase
   IMesh* mesh() const { return m_mesh; }
 
   // DEPRECATED
-  virtual void setMaximumComputationTime(Real v){ m_maximum_computation_time = v; }
+  void setMaximumComputationTime(Real v) override { m_maximum_computation_time = v; }
   virtual Real maximumComputationTime() const { return m_maximum_computation_time; }
 
   virtual void setImbalance(Real v){ m_imbalance = v; }
@@ -74,7 +73,7 @@ class ARCANE_STD_EXPORT MeshPartitionerBase
   virtual ArrayView<float> cellsWeight() const;
 
   // CORRECT
-  virtual Integer nbCellWeight() const { return math::max(m_lb_mng_internal->nbCriteria(m_mesh), 1); }
+  virtual Integer nbCellWeight() const;
   virtual void setILoadBalanceMng(ILoadBalanceMng* mng) { m_lbMng = mng; }
   virtual ILoadBalanceMng* loadBalanceMng() const { return m_lbMng; }
 
@@ -147,11 +146,9 @@ class ARCANE_STD_EXPORT MeshPartitionerBase
   virtual bool haveWeakConstraints() {return m_cells_with_weak_constraints.size() > 0;}
 
  protected:
-#ifdef ARCANE_PART_DUMP
-  /* \brief Dump les informations de repartitionnement sur le disque
-   */
+
+  //! Dump les informations de repartitionnement sur le disque
   virtual void dumpObject(String filename="toto");
-#endif // ARCANE_PART_DUMP
 
   virtual void* getCommunicator() const;
   virtual Parallel::Communicator communicator() const;

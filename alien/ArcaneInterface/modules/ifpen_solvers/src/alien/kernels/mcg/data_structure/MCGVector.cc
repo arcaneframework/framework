@@ -1,6 +1,6 @@
 // -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -58,10 +58,10 @@ MCGVector::setValues(double const* values)
   else if (this->vblock())
     throw FatalErrorException(A_FUNCINFO, "Not implemented yet for vblock");
 
-  assert(block_size == m_internal->m_bvector->blockSize());
-  assert(dist.localSize() == m_internal->m_bvector->size());
+  assert(block_size == m_internal->m_vector->blockSize());
+  assert(dist.localSize() == m_internal->m_vector->size());
 
-  double* data = m_internal->m_bvector->data();
+  double* data = m_internal->m_vector->data();
   for (int i = 0; i < dist.localSize() * block_size; ++i)
     data[i] = values[i];
 }
@@ -78,10 +78,10 @@ MCGVector::getValues(double* values) const
   else if (this->vblock())
     throw FatalErrorException(A_FUNCINFO, "Not implemented yet for vblock");
 
-  assert(block_size == m_internal->m_bvector->blockSize());
-  assert(dist.localSize() == m_internal->m_bvector->size());
+  assert(block_size == m_internal->m_vector->blockSize());
+  assert(dist.localSize() == m_internal->m_vector->size());
 
-  const double* data = m_internal->m_bvector->data();
+  const double* data = m_internal->m_vector->data();
   for (int i = 0; i < dist.localSize() * block_size; i++)
     values[i] = data[i];
 }
@@ -89,6 +89,7 @@ MCGVector::getValues(double* values) const
 void
 MCGVector::update(const MCGVector& v)
 {
+  MCGInternal::checkParallel(this->distribution().isParallel());
   ALIEN_ASSERT((this == &v), ("Unexpected error"));
 }
 

@@ -13,7 +13,7 @@ using Integer = System.Int32;
 #endif
 
 namespace Arcane
-{  
+{
   //-----------------------------------------------------------------------------
 
   public unsafe interface IItem
@@ -127,12 +127,6 @@ namespace Arcane
   {
     private ItemBase m_item_base;
 
-    [Obsolete("This method is internal to Arcane. Use constructor with ItemBase() instead.")]
-    public Cell(ItemInternal* ii)
-    {
-      m_item_base = new ItemBase(ii);
-    }
-
     [Obsolete("This method is internal to Arcane. Use ItemBase() instead.")]
     public ItemInternal* Internal
     {
@@ -140,7 +134,7 @@ namespace Arcane
       set { m_item_base = new ItemBase(value); }
     }
 
-    // TODO: a supprimer. Utiliser constructeur avec 'ItemBase' à la place
+    [Obsolete("Use Cell(ItemBase) instead.")]
     public Cell(Item ii)
     {
       m_item_base = ii.ItemBase;
@@ -216,12 +210,6 @@ namespace Arcane
   {
     private ItemBase m_item_base;
 
-    [Obsolete("This method is internal to Arcane. Use constructor with ItemBase() instead.")]
-    public Face(ItemInternal* ii)
-    {
-      m_item_base = new ItemBase(ii);
-    }
-
     [Obsolete("This method is internal to Arcane. Use ItemBase() instead.")]
     public ItemInternal* Internal
     {
@@ -239,8 +227,8 @@ namespace Arcane
       set { m_item_base = value; }
     }
 
-    // TODO: a supprimer. Utiliser constructeur avec 'ItemBase' à la place
-    public Face(Item ii)
+    [Obsolete("Use Face(ItemBase) instead")]
+     public Face(Item ii)
     {
       m_item_base = ii.ItemBase;
     }
@@ -314,12 +302,6 @@ namespace Arcane
   {
     private ItemBase m_item_base;
 
-    [Obsolete("This method is internal to Arcane. Use constructor with ItemBase() instead.")]
-    public Edge(ItemInternal* ii)
-    {
-      m_item_base = new ItemBase(ii);
-    }
-
     [Obsolete("This method is internal to Arcane. Use ItemBase() instead.")]
     public ItemInternal* Internal
     {
@@ -363,16 +345,10 @@ namespace Arcane
   {
     ItemBase m_item_base;
 
-    // TODO: a supprimer. Utiliser constructeur avec 'ItemBase' à la place
+    [Obsolete("Use Node(ItemBase) instead.")]
     public Node(Item ii)
     {
       m_item_base = ii.ItemBase;
-    }
-
-    [Obsolete("This method is internal to Arcane. Use constructor with ItemBase() instead.")]
-    public Node(ItemInternal* ii)
-    {
-      m_item_base = new ItemBase(ii);
     }
 
     [Obsolete("This method is internal to Arcane. Use ItemBase() instead.")]
@@ -442,14 +418,6 @@ namespace Arcane
 
     public Integer Index { get { return m_index; } }
 
-    [Obsolete("This method is internal to Arcane")]
-    public IndexedItem(ItemInternal* ii,Integer index)
-    {
-      m_item = new _ItemKind();
-      m_item.Internal = ii;
-      m_index = index;
-    }
-
     public IndexedItem(ItemBase ii,Integer index)
     {
       m_item = new _ItemKind();
@@ -463,9 +431,9 @@ namespace Arcane
       m_index = index;
     }
 
-    internal void _Set(ItemInternal* ii,Integer index)
+    internal void _Set(ItemBase ii,Integer index)
     {
-      m_item.Internal = ii;
+      m_item.ItemBase = ii;
       m_index = index;
     }
   }
@@ -484,14 +452,6 @@ namespace Arcane
     public Node Item { get { return m_item; } }
 
     public Integer Index { get { return m_index; } }
-
-    [Obsolete("This method is internal to Arcane")]
-    public IndexedNode(ItemInternal* ii,Integer index)
-    {
-      m_item = new Node();
-      m_item.Internal = ii;
-      m_index = index;
-    }
 
     public IndexedNode(ItemBase ii,Integer index)
     {

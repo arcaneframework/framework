@@ -31,8 +31,6 @@
 #include "arcane/utils/MemoryView.h"
 
 #include "arcane/core/ItemGroupObserver.h"
-#include "arcane/core/expr/Expression.h"
-#include "arcane/core/VariableExpressionImpl.h"
 #include "arcane/core/Variable.h"
 #include "arcane/core/VarRefEnumerator.h"
 #include "arcane/core/IVariableAccessor.h"
@@ -63,6 +61,7 @@
 
 #include <map>
 #include <set>
+#include <atomic>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -84,7 +83,7 @@ class VariablePrivate
 
  public:
 
-  static Int64 modified_time_global_value;
+  static std::atomic<Int64> modified_time_global_value;
 
  public:
 
@@ -189,7 +188,7 @@ class VariablePrivate
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Int64 VariablePrivate::modified_time_global_value = 1;
+std::atomic<Int64> VariablePrivate::modified_time_global_value = 1;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -197,7 +196,6 @@ Int64 VariablePrivate::modified_time_global_value = 1;
 Int64 IVariable::
 incrementModifiedTime()
 {
-  //TODO: Utiliser version atomique.
   Int64 v = VariablePrivate::modified_time_global_value;
   ++VariablePrivate::modified_time_global_value;
   return v;
@@ -520,15 +518,6 @@ eDataType Variable::
 dataType() const
 {
   return m_p->m_infos.dataType();
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-Expression Variable::
-expression()
-{
-  return Expression(new VariableExpressionImpl(this));
 }
 
 /*---------------------------------------------------------------------------*/

@@ -1,13 +1,11 @@
 // -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
-#pragma once
 
-#ifdef ARCGEOSIM_COMP
-#include "Appli/IInfoModel.h"
-#endif
+#ifndef ALIEN_MCGIMPL_MCGLINEARSOLVER_H
+#define ALIEN_MCGIMPL_MCGLINEARSOLVER_H
 
 #include <alien/utils/Precomp.h>
 #include <alien/core/backend/LinearSolver.h>
@@ -45,5 +43,7 @@ class ALIEN_IFPEN_SOLVERS_EXPORT MCGLinearSolver : public ArcaneMCGSolverObject,
   /** Destructeur de la classe */
   virtual ~MCGLinearSolver(){};
 };
-} // namespace Alien
 
+}
+
+#endif /* ALIEN_MCGIMPL_MCGLINEARSOLVER_H */

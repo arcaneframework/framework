@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ArcaneLauncher.h                                            (C) 2000-2023 */
+/* ArcaneLauncher.h                                            (C) 2000-2024 */
 /*                                                                           */
 /* Classe gérant l'exécution.                                                */
 /*---------------------------------------------------------------------------*/
@@ -21,9 +21,11 @@
 // que 'ArcaneLauncher.h'.
 #include "arcane/utils/ApplicationInfo.h"
 #include "arcane/utils/CommandLineArguments.h"
-#include "arcane/ApplicationBuildInfo.h"
-#include "arcane/DotNetRuntimeInitialisationInfo.h"
-#include "arcane/AcceleratorRuntimeInitialisationInfo.h"
+
+#include "arcane/core/ApplicationBuildInfo.h"
+#include "arcane/core/DotNetRuntimeInitialisationInfo.h"
+#include "arcane/core/AcceleratorRuntimeInitialisationInfo.h"
+
 #include "arcane/launcher/DirectExecutionContext.h"
 #include "arcane/launcher/DirectSubDomainExecutionContext.h"
 #include "arcane/launcher/IDirectExecutionContext.h"
@@ -137,7 +139,8 @@ class ARCANE_LAUNCHER_EXPORT ArcaneLauncher
    * \brief Positionne la fabrique par défaut pour créer les différents gestionnaires
    *
    * Cette méthode doit être appelée avant run(). L'instance passée en argument doit
-   * rester valide durant l'exécution de run().
+   * rester valide durant l'exécution de run(). L'appelant reste propriétaire
+   * de l'instance.
    */
   static void setDefaultMainFactory(IMainFactory* mf);
 

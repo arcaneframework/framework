@@ -14,7 +14,6 @@
 #include "arcane/utils/CheckedConvert.h"
 #include "arcane/utils/List.h"
 #include "arcane/utils/ScopedPtr.h"
-#include "arcane/utils/Iterator.h"
 #include "arcane/utils/OStringStream.h"
 #include "arcane/utils/StringBuilder.h"
 #include "arcane/utils/ITraceMng.h"
@@ -780,19 +779,19 @@ writeMeshInfos(IMesh* mesh, const String& file_name)
 
 namespace
 {
-  void
-  _sortByUniqueIds(IMesh* mesh, eItemKind ik, Array<Item>& items_internal)
+  template <typename ItemType> void
+  _sortByUniqueIds(IMesh* mesh, eItemKind ik, Array<ItemType>& items)
   {
     ItemGroup all_items(mesh->itemFamily(ik)->allItems());
-    items_internal.resize(all_items.size());
+    items.resize(all_items.size());
 
     Integer index = 0;
-    ENUMERATE_ITEM (i, all_items) {
-      Item item = *i;
-      items_internal[index] = item;
+    ENUMERATE_ (ItemType, i, all_items) {
+      ItemType item = *i;
+      items[index] = item;
       ++index;
     }
-    std::sort(std::begin(items_internal), std::end(items_internal), ItemCompare());
+    std::sort(std::begin(items), std::end(items), ItemCompare());
   }
 
   void
@@ -809,7 +808,21 @@ namespace
     }
   }
 
+  template <typename SubItemType> void
+  _writeSubItems(std::ostream& ofile, const char* item_name, ItemConnectedListViewT<SubItemType> sub_list)
+  {
+    Int32 n = sub_list.size();
+    if (n == 0)
+      return;
+    ofile << "<" << item_name << " count='" << n << "'>";
+    for (SubItemType sub_item : sub_list)
+      ofile << ' ' << sub_item.uniqueId();
+    ofile << "</" << item_name << ">";
+  }
 } // namespace
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 void MeshUtils::
 writeMeshConnectivity(IMesh* mesh, const String& file_name)
@@ -825,115 +838,130 @@ writeMeshConnectivity(IMesh* mesh, const String& file_name)
 
   ofile << "<?xml version='1.0' ?>\n";
   ofile << "<mesh-connectivity>\n";
-  UniqueArray<Item> nodes_internal;
-  UniqueArray<Item> edges_internal;
-  UniqueArray<Item> faces_internal;
-  UniqueArray<Item> cells_internal;
+  UniqueArray<Node> nodes;
+  UniqueArray<Edge> edges;
+  UniqueArray<Face> faces;
+  UniqueArray<Cell> cells;
 
-  _sortByUniqueIds(mesh, IK_Node, nodes_internal);
-  _sortByUniqueIds(mesh, IK_Edge, edges_internal);
-  _sortByUniqueIds(mesh, IK_Face, faces_internal);
-  _sortByUniqueIds(mesh, IK_Cell, cells_internal);
+  _sortByUniqueIds(mesh, IK_Node, nodes);
+  _sortByUniqueIds(mesh, IK_Edge, edges);
+  _sortByUniqueIds(mesh, IK_Face, faces);
+  _sortByUniqueIds(mesh, IK_Cell, cells);
 
+  // Écrit les noeuds
   {
-    ofile << "<nodes count='" << nodes_internal.size() << "'>\n";
-    for (Integer i = 0, n = nodes_internal.size(); i < n; ++i) {
-      Node item(nodes_internal[i]);
-      Integer item_nb_cell = item.nbCell();
+    ofile << "<nodes count='" << nodes.size() << "'>\n";
+    for (Node item : nodes) {
       ofile << " <node uid='" << item.uniqueId() << "' owner='" << item.owner() << "'>";
-      {
-        // Infos sur les mailles
-        ofile << "<cells count='" << item_nb_cell << "'>";
-        for (CellEnumerator i_cell(item.cells()); i_cell(); ++i_cell)
-          ofile << ' ' << i_cell->uniqueId();
-        ofile << "</cells>";
-      }
+      _writeSubItems(ofile, "cells", item.cells());
+      _writeSubItems(ofile, "faces", item.faces());
+      _writeSubItems(ofile, "edges", item.edges());
       ofile << "</node>\n";
     }
     ofile << "</nodes>\n";
+  }
 
-    ofile << "<faces count='" << faces_internal.size() << "'>\n";
-    for (Integer i = 0, is = faces_internal.size(); i < is; ++i) {
-      Face item(faces_internal[i]);
-      Integer item_nb_node = item.nbNode();
+  // Écrit les arêtes
+  {
+    ofile << "<edges count='" << edges.size() << "'>\n";
+    for (Edge edge : edges) {
+      ofile << " <edge uid='" << edge.uniqueId() << "' owner='" << edge.owner() << "'>";
+      _writeSubItems(ofile, "nodes", edge.nodes());
+      _writeSubItems(ofile, "cells", edge.cells());
+      _writeSubItems(ofile, "faces", edge.faces());
+      ofile << "</edge>\n";
+    }
+    ofile << "</edges>\n";
+  }
+
+  // Écrit les faces
+  {
+    ofile << "<faces count='" << faces.size() << "'>\n";
+    for (Face face : faces) {
       //      Integer item_nb_face = item.nbFace();
-      ofile << " <face uid='" << item.uniqueId()
-            << "' typeid='" << item.type()
-            << "' owner='" << item.owner() << "'>";
-      {
-        // Infos sur les noeuds
-        ofile << "<nodes count='" << item_nb_node << "'>";
-        for (NodeEnumerator i_node(item.nodes()); i_node(); ++i_node)
-          ofile << ' ' << i_node->uniqueId();
-        ofile << "</nodes>";
-      }
+      ofile << " <face uid='" << face.uniqueId()
+            << "' typeid='" << face.type()
+            << "' owner='" << face.owner() << "'>";
+      _writeSubItems(ofile, "nodes", face.nodes());
+      _writeSubItems(ofile, "edges", face.edges());
       {
         // Infos sur les mailles
         ofile << "<cells";
-        Cell back_cell = item.backCell();
+        Cell back_cell = face.backCell();
         if (!back_cell.null())
           ofile << " back='" << back_cell.uniqueId() << "'";
-        Cell front_cell = item.frontCell();
+        Cell front_cell = face.frontCell();
         if (!front_cell.null())
           ofile << " front='" << front_cell.uniqueId() << "'";
         ofile << "/>";
       }
-      // Infos sur les facess
-      if (item.isSlaveFace()) {
-        ofile << "<faces count='" << item.slaveFaces().size() << "'>";
-        for (FaceEnumerator i_face(item.slaveFaces()); i_face(); ++i_face)
-          ofile << ' ' << i_face->uniqueId();
-        ofile << "</faces>";
-      }
-      if (item.isMasterFace()) {
+
+      // Infos sur les maitres/esclaves
+      if (face.isSlaveFace())
+        _writeSubItems(ofile, "slave-faces", face.slaveFaces());
+      if (face.isMasterFace()) {
         ofile << "<faces count='1'>";
-        ofile << ' ' << item.masterFace().uniqueId();
+        ofile << ' ' << face.masterFace().uniqueId();
         ofile << "</faces>";
       }
 
       ofile << "</face>\n";
     }
     ofile << "</faces>\n";
+  }
 
-    ofile << "<cells count='" << cells_internal.size() << "'>\n";
+  // Écrit les mailles
+  {
+    ofile << "<cells count='" << cells.size() << "'>\n";
     // Pour les mailles autour d'une maille.
     // Une maille est autour d'une autre, si elle est connectée par
     // au moins un noeud
     Int64UniqueArray ghost_cells_layer1;
     ghost_cells_layer1.reserve(100);
-    for (Integer i = 0, is = cells_internal.size(); i < is; ++i) {
-      Cell item(cells_internal[i]);
-      Integer item_nb_node = item.nbNode();
-      Integer item_nb_face = item.nbFace();
-      ofile << " <cell uid='" << item.uniqueId()
-            << "' typeid='" << item.type()
-            << "' owner='" << item.owner() << "'>";
-      ghost_cells_layer1.clear();
+    for (Cell cell : cells) {
+      ofile << " <cell uid='" << cell.uniqueId()
+            << "' typeid='" << cell.type()
+            << "' owner='" << cell.owner() << "'>";
+      _writeSubItems(ofile, "nodes", cell.nodes());
+      _writeSubItems(ofile, "edges", cell.edges());
+      _writeSubItems(ofile, "faces", cell.faces());
+      if (mesh->isAmrActivated()) {
+        ofile << "<amr level='" << cell.level() << "'>";
+        // {
+        //   ofile << "<parent count='" << item.nbHParent() << "'>";
+        //   trace->info() << "Truc : " << item.nbHParent();
+        //   for (Integer j = 0; j < item.nbHParent(); ++j) {
+        //     ofile << ' ' << item.parent(j).uniqueId();
+        //   }
+        //   ofile << "</parent>";
+        // }
+        {
+          ofile << "<child count='" << cell.nbHChildren() << "'>";
+          for (Integer j = 0; j < cell.nbHChildren(); ++j) {
+            ofile << ' ' << cell.hChild(j)->uniqueId();
+          }
+          ofile << "</child>";
+        }
+        ofile << "</amr>";
+      }
       {
-        ofile << "<nodes count='" << item_nb_node << "'>";
-        for (NodeEnumerator i_node(item.nodes()); i_node(); ++i_node) {
-          Node node(*i_node);
-          ofile << ' ' << node.uniqueId();
-          for (CellEnumerator i_node_cell(node.cells()); i_node_cell(); ++i_node_cell) {
-            ghost_cells_layer1.add(i_node_cell->uniqueId().asInt64());
+        ghost_cells_layer1.clear();
+        for (Node node : cell.nodes()) {
+          for (Cell sub_cell : node.cells()) {
+            ghost_cells_layer1.add(sub_cell.uniqueId().asInt64());
           }
         }
-        ofile << "</nodes>";
-      }
-      {
-        ofile << "<faces count='" << item_nb_face << "'>";
-        for (FaceEnumerator i_face(item.faces()); i_face(); ++i_face)
-          ofile << ' ' << i_face->uniqueId();
-        ofile << "</faces>";
-      }
-      {
-        std::sort(std::begin(ghost_cells_layer1), std::end(ghost_cells_layer1));
-        auto new_end = std::unique(std::begin(ghost_cells_layer1), std::end(ghost_cells_layer1));
-        ghost_cells_layer1.resize(arcaneCheckArraySize(new_end - std::begin(ghost_cells_layer1)));
-        ofile << "<ghost1 count='" << ghost_cells_layer1.size() << "'>";
-        for (auto j : ghost_cells_layer1)
-          ofile << ' ' << j;
-        ofile << "</ghost1>\n";
+
+        {
+          // Trie la liste des mailles fantômes et retire les doublons.
+          std::sort(std::begin(ghost_cells_layer1), std::end(ghost_cells_layer1));
+          auto new_end = std::unique(std::begin(ghost_cells_layer1), std::end(ghost_cells_layer1));
+          ghost_cells_layer1.resize(arcaneCheckArraySize(new_end - std::begin(ghost_cells_layer1)));
+          ofile << "<ghost1 count='" << ghost_cells_layer1.size() << "'>";
+          for (auto j : ghost_cells_layer1)
+            ofile << ' ' << j;
+          ofile << "</ghost1>\n";
+        }
       }
       ofile << "</cell>\n";
     }
@@ -941,17 +969,24 @@ writeMeshConnectivity(IMesh* mesh, const String& file_name)
   }
 
   // Sauve les groupes
+
   {
     ofile << "<groups>\n";
+    // Trie les groupes par ordre alphabétique pour être certains qu'ils sont
+    // toujours écrits dans le même ordre.
+    std::map<String,ItemGroup> sorted_groups;
     for (ItemGroupCollection::Enumerator i_group(mesh->groups()); ++i_group;) {
       const ItemGroup& group = *i_group;
       if (group.isLocalToSubDomain())
         continue;
+      sorted_groups.insert(std::make_pair(group.name(),group));
+    }
+    for ( const auto& [name,group] : sorted_groups ){
       ofile << "<group name='" << group.name()
             << "' kind='" << itemKindName(group.itemKind())
             << "' count='" << group.size() << "'>\n";
-      ENUMERATE_ITEM (i_item, group) {
-        ofile << ' ' << (*i_item).uniqueId();
+      ENUMERATE_ (Item, i_item, group) {
+        ofile << ' ' << i_item->uniqueId();
       }
       ofile << "\n</group>\n";
     }
@@ -975,11 +1010,11 @@ writeMeshConnectivity(IMesh* mesh, const String& file_name)
         //FaceVectorView slave_faces = face.slaveFaces();
         ofile << "<master-face uid='" << face.uniqueId() << "'>\n";
         for (Integer zz = 0, zs = tied_nodes[iface.index()].size(); zz < zs; ++zz) {
-          const TiedNode& tn = tied_nodes[iface.index()][zz];
+          TiedNode tn = tied_nodes[iface.index()][zz];
           ofile << "<node uid='" << tn.node().uniqueId() << "' iso='" << tn.isoCoordinates() << "' />\n";
         }
         for (Integer zz = 0, zs = tied_faces[iface.index()].size(); zz < zs; ++zz) {
-          const TiedFace& tf = tied_faces[iface.index()][zz];
+          TiedFace tf = tied_faces[iface.index()][zz];
           ofile << "<face uid='" << tf.face().uniqueId() << "'/>\n";
         }
         ofile << "</master-face>\n";
@@ -1886,6 +1921,34 @@ fillUniqueIds(ItemVectorView items,Array<Int64>& uids)
   uids.resize(nb_item);
   ENUMERATE_ITEM (iitem, items)
     uids[iitem.index()] = iitem->uniqueId();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Int64 MeshUtils::
+generateHashUniqueId(SmallSpan<const Int64> nodes_unique_id)
+{
+  // Prend les 30 premiers bits du premier nœud pour former
+  // les 30 premiers bits de la fonction de hash.
+  // Les 32 bits suivants sont formées avec la fonction de hash.
+  // Le uniqueId() généré doit toujours être strictement positif
+  // sauf pour l'entité nulle.
+  Int32 nb_node = nodes_unique_id.size();
+  if (nb_node == 0)
+    return -1;
+  using Hasher = IntegerHashFunctionT<Int64>;
+  Int64 uid0 = nodes_unique_id[0];
+  Int64 hash = Hasher::hashfunc(uid0);
+  for (Int32 i = 1; i < nb_node; ++i) {
+    Int64 next_hash = Hasher::hashfunc(nodes_unique_id[i]);
+    hash ^= next_hash + 0x9e3779b9 + (hash << 6) + (hash >> 2);
+  }
+  Int64 truncated_uid0 = uid0 & ((1 << 30) - 1);
+  Int64 truncated_hash = hash & ((1LL << 31) - 1);
+  Int64 new_uid = truncated_uid0 + (truncated_hash << 31);
+  ARCANE_ASSERT(new_uid > 0, ("UniqueId is not > 0"));
+  return new_uid;
 }
 
 /*---------------------------------------------------------------------------*/

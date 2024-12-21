@@ -192,6 +192,8 @@ class ItemGroupInternal
   bool m_is_contigous = false; //! Vrai si les localIds sont consécutifs.
   bool m_is_check_simd_padding = true;
   bool m_is_print_check_simd_padding = false;
+  bool m_is_print_apply_simd_padding = false;
+  bool m_is_print_stack_apply_simd_padding = false;
 
  private:
 

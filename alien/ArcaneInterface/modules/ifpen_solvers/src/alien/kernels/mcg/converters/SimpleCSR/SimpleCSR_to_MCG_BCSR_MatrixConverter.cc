@@ -66,6 +66,7 @@ SimpleCSR_to_MCG_BCSR_MatrixConverter::_build(
   const MatrixDistribution& dist = targetImpl.distribution();
   const CSRStructInfo& profile = sourceImpl.getCSRProfile();
   const Integer local_size = profile.getNRow();
+  const Integer global_size = dist.globalColSize();
   ConstArrayView<Integer> row_offset = profile.getRowOffset();
   ConstArrayView<Integer> cols = profile.getCols();
 
@@ -82,7 +83,7 @@ SimpleCSR_to_MCG_BCSR_MatrixConverter::_build(
   }
 
   if (!targetImpl.isInit()) {
-    if (not targetImpl.initMatrix(block_size, block_size2, local_size,
+    if (not targetImpl.initMatrix(block_size, block_size2, local_size, global_size,
             row_offset.unguardedBasePointer(), cols.unguardedBasePointer(),
             partition_offset)) {
       throw FatalErrorException(A_FUNCINFO, "MCGSolver Initialisation failed");

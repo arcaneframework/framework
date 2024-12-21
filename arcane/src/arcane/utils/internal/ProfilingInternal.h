@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ProfilingInternal.h                                         (C) 2000-2022 */
+/* ProfilingInternal.h                                         (C) 2000-2024 */
 /*                                                                           */
 /* Classes internes pour gérer le profilage.                                 */
 /*---------------------------------------------------------------------------*/
@@ -18,6 +18,7 @@
 // Il ne faut donc pas l'inclure dans un fichier d'en-tête public.
 
 #include "arcane/utils/String.h"
+#include "arcane/utils/FixedArray.h"
 
 #include <map>
 #include <atomic>
@@ -54,7 +55,7 @@ struct ARCANE_UTILS_EXPORT ForLoopProfilingStat
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class ForLoopStatInfoListImpl
+class ARCANE_UTILS_EXPORT ForLoopStatInfoListImpl
 {
  public:
 
@@ -66,13 +67,12 @@ class ForLoopStatInfoListImpl
   std::map<String, ForLoopProfilingStat> m_stat_map;
 };
 
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
  * \brief Statistiques cumulées sur le nombre de boucles exécutées.
  */
-class ForLoopCumulativeStat
+class ARCANE_UTILS_EXPORT ForLoopCumulativeStat
 {
  public:
 
@@ -104,10 +104,11 @@ class ForLoopCumulativeStat
  * TODO: regarder comment rendre cela plus générique et permettre à
  * l'implémentation d'ajouter ses évènements
  */
-class AcceleratorStatInfoList
+class ARCANE_UTILS_EXPORT AcceleratorStatInfoList
 {
  public:
 
+  //! Informations sur les transferts mémoire entre CPU et GPU
   class MemoryTransferInfo
   {
    public:
@@ -124,10 +125,32 @@ class AcceleratorStatInfoList
     Int64 m_nb_call = 0;
   };
 
+  //! Informations sur les défauts de page sur CPU ou GPU
+  class MemoryPageFaultInfo
+  {
+   public:
+
+    void merge(const MemoryPageFaultInfo& mem_info)
+    {
+      m_nb_fault += mem_info.m_nb_fault;
+      m_nb_call += mem_info.m_nb_call;
+    }
+
+   public:
+
+    Int64 m_nb_fault = 0;
+    Int64 m_nb_call = 0;
+  };
+
   enum class eMemoryTransferType
   {
     HostToDevice = 0,
     DeviceToHost = 1
+  };
+  enum class eMemoryPageFaultType
+  {
+    Gpu = 0,
+    Cpu = 1
   };
 
  public:
@@ -141,11 +164,27 @@ class AcceleratorStatInfoList
   {
     return m_managed_memory_transfer_list[(int)type];
   }
+  void addMemoryPageFault(eMemoryPageFaultType type, Int64 nb_byte)
+  {
+    MemoryPageFaultInfo mem_info{ nb_byte, 1 };
+    m_managed_memory_page_fault_list[(int)type].merge(mem_info);
+  }
+  const MemoryPageFaultInfo& memoryPageFault(eMemoryPageFaultType type) const
+  {
+    return m_managed_memory_page_fault_list[(int)type];
+  }
+
+ public:
+
+  void print(std::ostream& ostr) const;
 
  private:
 
   // Doit avoir le même nombre d'éléments que 'eMemoryTransfertType'
-  std::array<MemoryTransferInfo, 2> m_managed_memory_transfer_list;
+  FixedArray<MemoryTransferInfo, 2> m_managed_memory_transfer_list;
+
+  // Doit avoir le même nombre d'éléments que 'eMemoryPageFaultType'
+  FixedArray<MemoryPageFaultInfo, 2> m_managed_memory_page_fault_list;
 };
 
 /*---------------------------------------------------------------------------*/

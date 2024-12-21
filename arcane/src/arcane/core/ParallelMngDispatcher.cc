@@ -19,7 +19,6 @@
 #include "arcane/utils/HPReal.h"
 #include "arcane/utils/NotImplementedException.h"
 #include "arcane/utils/ScopedPtr.h"
-#include "arcane/utils/Ref.h"
 #include "arcane/utils/ITraceMng.h"
 #include "arcane/utils/ValueConvert.h"
 
@@ -196,7 +195,11 @@ class ParallelMngDispatcher::SerializeDispatcher
 : public MP::ISerializeDispatcher
 {
  public:
-  SerializeDispatcher(IParallelMng* pm) : m_parallel_mng(pm){}
+
+  explicit SerializeDispatcher(IParallelMng* pm)
+  : m_parallel_mng(pm)
+  {}
+
  public:
   Ref<ISerializeMessageList> createSerializeMessageListRef() override
   {
@@ -242,6 +245,8 @@ class ParallelMngDispatcher::Impl
       return false;
     if (!m_queue.get())
       return false;
+    if (!m_queue->isAcceleratorPolicy())
+      return false;
     return m_parallel_mng->_isAcceleratorAware();
   }
   void setDefaultRunner(Runner* runner) override
@@ -256,6 +261,10 @@ class ParallelMngDispatcher::Impl
     }
     else
       m_queue.reset();
+  }
+  Ref<IParallelMng> createSubParallelMngRef(Int32 color, Int32 key) override
+  {
+    return m_parallel_mng->_createSubParallelMngRef(color, key);
   }
 
  private:
@@ -535,6 +544,15 @@ Ref<IParallelMng> ParallelMngDispatcher::
 createSubParallelMngRef(Int32ConstArrayView kept_ranks)
 {
   return makeRef(_createSubParallelMng(kept_ranks));
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Ref<IParallelMng> ParallelMngDispatcher::
+_createSubParallelMngRef([[maybe_unused]] Int32 color, [[maybe_unused]] Int32 key)
+{
+  ARCANE_THROW(NotImplementedException, "Create sub-parallelmng with split semantic");
 }
 
 /*---------------------------------------------------------------------------*/

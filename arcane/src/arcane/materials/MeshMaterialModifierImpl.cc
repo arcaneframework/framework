@@ -78,13 +78,15 @@ MeshMaterialModifierImpl::
 MeshMaterialModifierImpl(MeshMaterialMng* mm)
 : TraceAccessor(mm->traceMng())
 , m_material_mng(mm)
-, m_queue(makeQueue(m_material_mng->runner()))
+, m_queue(m_material_mng->runQueue())
 {
   _setLocalVerboseLevel(4);
   if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_DEBUG_MATERIAL_MODIFIER", true)) {
     Int32 value = v.value();
-    if (value > 0)
+    if (value > 0) {
       _setLocalVerboseLevel(3);
+      m_is_debug = true;
+    }
     if (value > 1)
       m_print_component_list = true;
   }
@@ -262,7 +264,7 @@ _endUpdate()
     m_incremental_modifier = std::make_unique<IncrementalComponentModifier>(all_env_data, m_queue);
   }
   if (is_optimization_active && m_use_incremental_recompute) {
-    m_incremental_modifier->initialize();
+    m_incremental_modifier->initialize(m_is_debug);
     m_incremental_modifier->setDoCopyBetweenPartialAndPure(m_do_copy_between_partial_and_pure);
     m_incremental_modifier->setDoInitNewItems(m_do_init_new_items);
   }

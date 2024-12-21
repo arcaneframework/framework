@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ParticleFamily.cc                                           (C) 2000-2022 */
+/* ParticleFamily.cc                                           (C) 2000-2024 */
 /*                                                                           */
 /* Famille de particules.                                                    */
 /*---------------------------------------------------------------------------*/
@@ -16,18 +16,16 @@
 #include "arcane/utils/FatalErrorException.h"
 #include "arcane/utils/PlatformUtils.h"
 
+#include "arcane/core/ISubDomain.h"
+#include "arcane/core/IMesh.h"
+#include "arcane/core/IVariableMng.h"
+#include "arcane/core/Properties.h"
+#include "arcane/core/ItemPrinter.h"
+
 #include "arcane/mesh/ItemsExchangeInfo2.h"
 #include "arcane/mesh/DynamicMesh.h"
-#include "arcane/mesh/IncrementalItemConnectivity.h"
-#include "arcane/mesh/CompactIncrementalItemConnectivity.h"
-#include "arcane/mesh/CompactIncrementalItemConnectivity.h"
 #include "arcane/mesh/ItemConnectivitySelector.h"
-
-#include "arcane/ISubDomain.h"
-#include "arcane/IMesh.h"
-#include "arcane/IVariableMng.h"
-#include "arcane/Properties.h"
-#include "arcane/ItemPrinter.h"
+#include "arcane/mesh/DynamicMeshKindInfos.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -356,7 +354,7 @@ removeParticles(Int32ConstArrayView items_local_id)
 void ParticleFamily::
 prepareForDump()
 {
-  Integer nb_item = infos().nbItem();
+  Integer nb_item = nbItem();
   info(4) << "ParticleFamily::prepareForDump: " << name()
           << " n=" << nb_item;
   ItemFamily::prepareForDump();
@@ -379,8 +377,8 @@ readFromDump()
 void ParticleFamily::
 preAllocate(Integer nb_item)
 {
-  Integer nb_hash = itemsMap().buckets().size();
-  Integer wanted_size = 2 * (nb_item + infos().nbItem());
+  Integer nb_hash = itemsMap().nbBucket();
+  Integer wanted_size = 2 * (nb_item + nbItem());
   if (nb_hash < wanted_size)
     itemsMap().resize(wanted_size, true);
 }
@@ -401,7 +399,7 @@ setHasUniqueIdMap(bool v)
 bool ParticleFamily::
 hasUniqueIdMap() const
 {
-  return infos().hasUniqueIdMap();
+  return _infos().hasUniqueIdMap();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -428,21 +426,19 @@ checkValidConnectivity()
 void ParticleFamily::
 removeNeedRemoveMarkedItems()
 {
-  if (getEnableGhostItems() == true) {
+  if (getEnableGhostItems()) {
     UniqueArray<Integer> lids_to_remove;
     lids_to_remove.reserve(1000);
 
     ItemInternalMap& particle_map = itemsMap();
-    ENUMERATE_ITEM_INTERNAL_MAP_DATA(nbid, particle_map)
-    {
-      ItemInternal* item = nbid->value();
-      Integer f = item->flags();
+    particle_map.eachItem([&](Item item) {
+      Integer f = item.itemBase().flags();
       if (f & ItemFlags::II_NeedRemove) {
         f &= ~ItemFlags::II_NeedRemove;
-        item->setFlags(f);
-        lids_to_remove.add(item->localId());
+        item.mutableItemBase().setFlags(f);
+        lids_to_remove.add(item.localId());
       }
-    }
+    });
 
     info() << "Number of particles of family " << name() << " to remove: " << lids_to_remove.size();
     if (lids_to_remove.size() > 0)

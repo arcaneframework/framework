@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Misc.cc                                                     (C) 2000-2023 */
+/* Misc.cc                                                     (C) 2000-2024 */
 /*                                                                           */
 /* Diverses fonctions                                                        */
 /*---------------------------------------------------------------------------*/
@@ -407,7 +407,7 @@ arcaneRedirectSignals(fSignalFunc sig_func)
 
 #ifdef USE_SIGACTION
   struct sigaction sa;
-  sa.sa_flags = SA_SIGINFO;
+  sa.sa_flags = SA_SIGINFO | SA_NODEFER;
   sigemptyset(&sa.sa_mask);
   sa.sa_sigaction = _MiscSigactionFunc;
 
@@ -438,29 +438,22 @@ arcaneCallDefaultSignal(int val)
 
   switch(val){
   case SIGSEGV:
-    //func = default_signal_func_sigsegv;
     signal_type = SignalException::ST_SegmentationFault;
     break;
   case SIGFPE:
-    //func = default_signal_func_sigfpe;
     signal_type = SignalException::ST_FloatingException;
     break;
   case SIGBUS:
-    //func = default_signal_func_sigbus;
     signal_type = SignalException::ST_BusError;
     break;
   case SIGALRM:
   case SIGVTALRM:
-    // func = default_signal_func_sigalrm;
     signal_type = SignalException::ST_Alarm;
     break;
   }
 
-  //cerr << "** SIGVAL " << func << ' ' << SIG_DFL << ' '
-  //<< SIG_IGN << ' ' << global_already_in_signal << '\n';
-
-  //if (val==SIGSEGV || val==SIGBUS)
-  //::abort();
+  // cerr << "** SIGVAL " << val << ' ' << SIG_DFL
+  // << ' ' << SIG_IGN << " is_in_signal?=" << global_already_in_signal << '\n';
 
   // En cas de nouveau signal alors qu'on est déja dans un handler, ou
   // s'il s'agit d'un signal d'erreur memoire (SIGBUS ou SIGSEGV), on fait un abort.
@@ -481,7 +474,19 @@ arcaneCallDefaultSignal(int val)
   }
   else
     cerr << " No stack trace service\n";
-  
+
+  // Si demandé, affiche la pile d'appel via le debugger. Cela permet d'avoir
+  // plus d'informations (mais c'est plus long à exécuter)
+  bool do_debug_stack = false;
+  if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_DUMP_DEBUGGER_STACK_IN_SIGNAL", true))
+    do_debug_stack = (v.value()!=0);
+  if (do_debug_stack){
+    std::cerr << "GBDStack pid=" << platform::getProcessId() << " stack=" << platform::getGDBStack() << "\n";
+  }
+  else
+    std::cerr << "SignalCaught: You can dump full stacktrace of the process if environment "
+    "variable ARCANE_DUMP_DEBUGGER_STACK_IN_SIGNAL is set to 1\n";
+
   if (signal_type==SignalException::ST_Alarm){
     global_already_in_signal = false;
     throw TimeoutException("Arcane.Signal",stack_trace);

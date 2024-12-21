@@ -9,7 +9,7 @@
 %typemap(csbody) Arcane::ItemVectorView %{ %}
 %typemap(SWIG_DISPOSING, methodname="Dispose", methodmodifiers="private") Arcane::ItemVectorView ""
 %typemap(SWIG_DISPOSE, methodname="Dispose", methodmodifiers="private") Arcane::ItemVectorView ""
-%typemap(csclassmodifiers) Arcane::ItemVectorView "public struct"
+%typemap(csclassmodifiers) Arcane::ItemVectorView "public unsafe struct"
 %typemap(csattributes) Arcane::ItemVectorView "[StructLayout(LayoutKind.Sequential)]"
 %typemap(cstype) Arcane::ItemVectorView "Arcane.ItemVectorView"
 %typemap(imtype) Arcane::ItemVectorView "Arcane.ItemVectorView"
@@ -22,62 +22,59 @@
 %typemap(out) Arcane::ItemVectorView
 %{
    Arcane::ItemVectorView result_ref = ($1);
-   $result . m_local_ids.m_local_ids.m_size = result_ref.localIds().size();
-   $result . m_local_ids.m_local_ids.m_ptr = result_ref.localIds().unguardedBasePointer();
-   $result . m_local_ids.m_flags = result_ref.indexes().flags();
-   Arcane::ItemInternalArrayView av = result_ref.items();
-   $result . m_items.m_size = av.size();
-   $result . m_items.m_ptr = const_cast<Arcane::ItemInternal**>(av.unguardedBasePointer());
+   result_ref._internalSwigSet(& $result);
 %}
+
 %typemap(in) Arcane::ItemVectorView %{$1 = $input; %}
 %typemap(cscode) Arcane::ItemVectorView
 %{
-  internal ItemInternalArrayView m_items;
   internal ItemIndexArrayView m_local_ids;
+  internal ItemSharedInfo* m_shared_info;
 
-  public ItemVectorView(ItemInternalArrayView items,Int32ConstArrayView local_ids)
+  public ItemVectorView()
   {
-    m_items = items;
-    m_local_ids = new ItemIndexArrayView(local_ids);
+    m_shared_info = ItemSharedInfo.Zero;
+    m_local_ids = new ItemIndexArrayView();
   }
 
+  internal ItemVectorView(ItemSharedInfo* shared_info,ItemIndexArrayView indexes)
+  {
+    m_local_ids = indexes;
+    m_shared_info = shared_info;
+  }
+
+  [Obsolete("Use another constructor")]
   public ItemVectorView(ItemInternalArrayView items,ItemIndexArrayView indexes)
   {
-    m_items = items;
     m_local_ids = indexes;
+    bool is_valid = (m_local_ids.Size>0 && items.Size>0);
+    m_shared_info = (is_valid) ? items.m_ptr[0]->m_shared_info : ItemSharedInfo.Zero;
   }
 
-  public Integer Size { get { return m_local_ids.Length; } }
+  public Int32 Size { get { return m_local_ids.Length; } }
 
-  public Item this[Integer index]
-  {
-    get { return m_items[m_local_ids[index]]; }
-  }
+  public Item this[Int32 index] { get { return new Item(new ItemBase(m_shared_info,m_local_ids[index])); } }
 
-  public Int32ConstArrayView LocalIds
-  {
-    get { return m_local_ids.LocalIds; }
-  }
-
-  public ItemIndexArrayView Indexes
-  {
-    get { return m_local_ids; }
-  }
-
-  public ItemInternalArrayView Items
-  {
-    get { return m_items; }
-  }
+  public ItemIndexArrayView Indexes { get { return m_local_ids; } }
 
   public ItemEnumerator GetEnumerator()
   {
-    unsafe{return new ItemEnumerator(m_items.m_ptr,m_local_ids.m_local_ids._UnguardedBasePointer(),m_local_ids.Length);}
+    unsafe{return new ItemEnumerator(m_shared_info,m_local_ids.m_local_ids._InternalData(),m_local_ids.Length);}
   }
 
   public ItemVectorView SubViewInterval(Integer interval,Integer nb_interval)
   {
-    return new ItemVectorView(m_items,m_local_ids.SubViewInterval(interval,nb_interval));
+    return new ItemVectorView(m_shared_info,m_local_ids.SubViewInterval(interval,nb_interval));
   }
+
+  [Obsolete("Use Indexes property instead")]
+  public Int32ConstArrayView LocalIds { get { return m_local_ids.LocalIds; } }
+  [Obsolete("This method is internal to Arcane. Use Indexes or operator[] instead.")]
+  public ItemInternalArrayView Items { get { return _Items; } }
+
+  // TODO: pour compatibilité avec l'existant. A supprimer
+  internal Int32ConstArrayView _LocalIds { get { return m_local_ids.LocalIds; } }
+  internal ItemInternalArrayView _Items { get { return new ItemInternalArrayView(m_shared_info->m_items_internal); } }
 %}
 
 /*---------------------------------------------------------------------------*/
@@ -103,22 +100,19 @@
 %typemap(out) Arcane::ItemEnumerator
 %{
   Arcane::ItemEnumerator result_ref = ($1);
-  $result . m_items = result_ref.unguardedItems();
-  $result . m_local_ids = result_ref.unguardedLocalIds();
-  $result . m_index = result_ref.index();
-  $result . m_count = result_ref.count();
+   _arcaneInternalItemEnumeratorSwigSet(&result_ref, & $result);
 %}
 %typemap(in) Arcane::ItemEnumerator %{$1 = $input; %}
 %typemap(cscode) Arcane::ItemEnumerator
 %{
-  internal ItemInternal** m_items;
+  ItemSharedInfo* m_shared_info;
   internal Int32* m_local_ids;
   internal Integer m_current;
   internal Integer m_end;
 
-  public ItemEnumerator(ItemInternal** items,Int32* local_ids,Integer end)
+  public ItemEnumerator(ItemSharedInfo* shared_info,Int32* local_ids,Integer end)
   {
-    m_items = items;
+    m_shared_info = shared_info;
     m_local_ids = local_ids;
     m_current = -1;
     m_end = end;
@@ -131,7 +125,7 @@
 
   public Item Current
   {
-    get{ return new Item(m_items[m_local_ids[m_current]]); }
+    get{ return new Item(new ItemBase(m_shared_info,m_local_ids[m_current])); }
   }
 
   public bool MoveNext()
@@ -139,6 +133,7 @@
     ++m_current;
     return m_current<m_end;
   }
+  internal ItemSharedInfo* _SharedInfo{ get { return m_shared_info; }}
 %}
 
 /*---------------------------------------------------------------------------*/
@@ -146,7 +141,7 @@
 
 %typemap(cscode) Arcane::ItemGroup
 %{
-  public new ItemEnumerator GetEnumerator()
+  public ItemEnumerator GetEnumerator()
   {
     ItemEnumerator e = _enumerator();
     e.Reset();

@@ -14,6 +14,7 @@
 #include "arcane/core/internal/ItemGroupInternal.h"
 
 #include "arcane/utils/ValueConvert.h"
+#include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/ITraceMng.h"
 #include "arcane/utils/ArrayUtils.h"
 #include "arcane/utils/ArgumentException.h"
@@ -122,6 +123,12 @@ _init()
     m_is_check_simd_padding = (v.value()>0);
     m_is_print_check_simd_padding = (v.value()>1);
   }
+
+  if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_PRINT_APPLYSIMDPADDING", true)){
+    m_is_print_apply_simd_padding = (v.value()>0);
+    m_is_print_stack_apply_simd_padding = (v.value()>1);
+  }
+
 }
 
 /*---------------------------------------------------------------------------*/
@@ -283,6 +290,13 @@ checkIsContigous()
 void ItemGroupInternal::
 applySimdPadding()
 {
+  if (m_is_print_apply_simd_padding){
+    String stack;
+    if (m_is_print_stack_apply_simd_padding)
+      stack = String(" stack=") + platform::getStackTrace();
+    ITraceMng* tm = m_item_family->traceMng();
+    tm->info() << "ApplySimdPadding group_name=" << m_name << stack;
+  }
   // Fait un padding des derniers éléments du tableau en recopiant la
   // dernière valeurs.
   m_internal_api.notifySimdPaddingDone();

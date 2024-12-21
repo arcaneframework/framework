@@ -138,7 +138,7 @@ _dumpProfiling(std::ostream& o)
   // qu'il est désactivé. Normalement c'est le cas si on utilise ArcaneMainBatch.
   {
     auto f = [&](const impl::AcceleratorStatInfoList& stat_list) {
-      _dumpOneAcceleratorListStat(o, stat_list);
+      stat_list.print(o);
     };
     ProfilingRegistry::visitAcceleratorStat(f);
   }
@@ -220,18 +220,6 @@ _printGlobalLoopInfos(std::ostream& o, const impl::ForLoopCumulativeStat& cumula
   o << "LoopStat: global_time (ms) = " << x / 1.0e6 << "\n";
   o << "LoopStat: global_nb_loop   = " << std::setw(10) << nb_loop_parallel_for << " time=" << x1 << "\n";
   o << "LoopStat: global_nb_chunk  = " << std::setw(10) << nb_chunk_parallel_for << " time=" << x2 << "\n";
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void ExecutionStatsDumper::
-_dumpOneAcceleratorListStat(std::ostream& o, const impl::AcceleratorStatInfoList& stat_list)
-{
-  const auto& htod = stat_list.memoryTransfer(impl::AcceleratorStatInfoList::eMemoryTransferType::HostToDevice);
-  const auto& dtoh = stat_list.memoryTransfer(impl::AcceleratorStatInfoList::eMemoryTransferType::DeviceToHost);
-  o << "MemoryTransferSTATS: HTOD = " << htod.m_nb_byte << " (" << htod.m_nb_call << ")"
-    << " DTOH = " << dtoh.m_nb_byte << " (" << dtoh.m_nb_call << ")";
 }
 
 /*---------------------------------------------------------------------------*/

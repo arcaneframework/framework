@@ -1,4 +1,4 @@
-name: '[Check] Build/Install/Test Arcane Framework (Ubuntu 22.04-24.04 / GCC 12-14 / CLang 15-16-18 / CUDA 12.2 / Minimal-Full)'
+name: '[Check] Build/Install/Test Arcane Framework (Ubuntu 22.04-24.04 / GCC 12-14 / CLang 16-17-18 / CUDA 12.5 / Minimal-Full)'
 
 on:
   push:
@@ -35,64 +35,94 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        image_short: [ 'U22_G12_C16', 'U22_G12_C15_CU122', 'U24_G14_C18' ]
-        version_short: [ 'F', 'M' ]
-        compilo: [ 'CLang', 'GCC' ]
-        type_build: [ 'Check' ]
-        mpi: [ 'OpenMPI', 'MPICH' ]
+        image:
+          - short: 'U22_G12'
+            long: 'ubuntu-2204'
+            compilo_name: 'gcc'
+            compilo_version: '12'
+            date: '20240717'
+            args: '-DARCCORE_CXX_STANDARD=23'
+            cuda: 'false'
+            acpp: false
+            execute_tests: true
 
-        include:
-          - image_short: 'U22_G12_C16'
-            image_long: 'ubuntu-2204:gcc-12_clang-16'
-            image_date: '20230906'
-            image_args: '-DARCCORE_CXX_STANDARD=23'
-            image_cuda: false
+          - short: 'U24_G14'
+            long: 'ubuntu-2404'
+            compilo_name: 'gcc'
+            compilo_version: '14'
+            date: '20240717'
+            args: '-DARCCORE_CXX_STANDARD=23'
+            cuda: 'false'
+            acpp: false
+            execute_tests: true
 
-          - image_short: 'U22_G12_C15_CU122'
-            image_long: 'ubuntu-2204:gcc-12_clang-15_cuda-122'
-            image_date: '20231127'
+          - short: 'U24_C18'
+            long: 'ubuntu-2404'
+            compilo_name: 'clang'
+            compilo_version: '18'
+            date: '20240717'
+            args: '-DARCCORE_CXX_STANDARD=23'
+            cuda: 'false'
+            acpp: false
+            execute_tests: true
+
+          - short: 'U24_G13_CU125'
+            long: 'ubuntu-2404'
+            compilo_name: 'gcc'
+            compilo_version: '13'
+            date: '20240717'
             # Disable googletest with CUDA because it requires a GPU driver
-            image_args: '-DARCCORE_CXX_STANDARD=20 -DARCANE_EXECUTE_ACCELERATOR_GOOGLETEST=OFF'
-            image_cuda: true
+            args: '-DARCCORE_CXX_STANDARD=20 -DARCANE_EXECUTE_ACCELERATOR_GOOGLETEST=OFF'
+            cuda: 'cuda-125'
+            acpp: false
+            execute_tests: false
 
-          - image_short: 'U24_G14_C18'
-            image_long: 'ubuntu-2404:gcc-14_clang-18'
-            image_date: '20240703'
-            image_args: '-DARCCORE_CXX_STANDARD=23'
-            image_cuda: false
+        version:
+          - short: 'M'
+            long: 'minimal'
+            args: '-DARCANE_DISABLE_PERFCOUNTER_TESTS=ON'
 
-          - version_short: 'M'
-            version_long: 'minimal'
-            version_args: '-DARCANE_DISABLE_PERFCOUNTER_TESTS=ON'
-
-          - version_short: 'F'
-            version_long: 'full'
-            version_args: '-DARCANE_DISABLE_PERFCOUNTER_TESTS=ON
+          - short: 'F'
+            long: 'full'
+            args: '-DARCANE_DISABLE_PERFCOUNTER_TESTS=ON
               -DARCANE_DEFAULT_PARTITIONER=Metis
+              -DARCANE_USE_HASHTABLEMAP2_FOR_ITEMINTERNALMAP=ON
               -DPTScotch_INCLUDE_DIR="/usr/include/scotch"'
 
-          - type_build: 'Check'
-            excluded_tests: '^.*([3-9]proc|[1-9][0-9]+proc|[5-9]thread|[1-9][0-9]+thread).*$'
+        config:
+          - type: 'Check'
+            excluded_tests: '^.*([5-9]proc|[1-9][0-9]+proc|[5-9]thread|[1-9][0-9]+thread).*$'
             excluded_tests_with_labels: 'LARGE_HYBRID'
+            ctest_args: '-j4 --timeout 1200'
+
+        mpi:
+          - implementation: 'OMPI'
+          - implementation: 'MPICH'
 
         exclude:
-          - version_short: 'F'
-            mpi: 'MPICH'
+          - { version: { short: 'F' }, mpi: { implementation: 'MPICH' } }
+          - { version: { short: 'M' }, image: { short: 'U24_G13_CU125' } }
+          - { version: { short: 'M' }, image: { short: 'U24_C17_CU125' } }
+          - { version: { short: 'M' }, image: { short: 'U24_ACPP' } }
 
 
-    name: '[${{matrix.image_short}}_${{matrix.version_short}}]_${{matrix.compilo}}_${{matrix.mpi}}_${{matrix.type_build}}'
+    name: '[${{matrix.image.short}}_${{matrix.version.short}}]_${{matrix.mpi.implementation}}_${{matrix.config.type}}'
     # La partie 'uses' est déterminée à la compilation, donc on ne peut pas mettre de variable ${{}}.
-    uses: 'arcaneframework/gh_actions/.github/workflows/reusable_test_framework.yml@v1'
+    uses: 'arcaneframework/gh_actions/.github/workflows/reusable_test_framework.yml@v2'
     with:
-      image: ghcr.io/arcaneframework/${{matrix.image_long}}_${{matrix.version_long}}_${{matrix.image_date}}
-      compilo: ${{ matrix.compilo }}
-      mpi: ${{ matrix.mpi }}
-      with_cuda: ${{ matrix.image_cuda }}
-      type_build: ${{ matrix.type_build }}
-      cmake_additionnal_args: '${{ matrix.image_args }} ${{ matrix.version_args }}'
+      image: ghcr.io/arcaneframework/${{matrix.image.long}}:${{matrix.image.compilo_name}}-${{matrix.image.compilo_version}}_${{matrix.version.long}}_${{matrix.image.date}}
+      compilo_name: ${{ matrix.image.compilo_name }}
+      compilo_version: ${{ matrix.image.compilo_version }}
+      mpi: ${{ matrix.mpi.implementation }}
+      cuda: ${{ matrix.image.cuda }}
+      use_acpp: ${{ matrix.image.acpp }}
+      type_build: ${{ matrix.config.type }}
+      cmake_additionnal_args: '${{ matrix.image.args }} ${{ matrix.version.args }}'
       verbose: true
+      ccache_debug_mode: false
       with_samples: true
-      execute_tests: ${{ !matrix.image_cuda }}
-      excluded_tests: ${{ matrix.excluded_tests }}
-      excluded_tests_with_labels: ${{ matrix.excluded_tests_with_labels }}
-      cache_key_prefix: ${{matrix.image_short}}_${{matrix.version_short}}_${{matrix.compilo}}_${{matrix.mpi}}_${{matrix.type_build}}
+      execute_tests: ${{ matrix.image.execute_tests }}
+      excluded_tests: ${{ matrix.config.excluded_tests }}
+      excluded_tests_with_labels: ${{ matrix.config.excluded_tests_with_labels }}
+      ctest_additionnal_args: ${{ matrix.config.ctest_args }}
+      cache_key_prefix: ${{matrix.image.short}}_${{matrix.version.short}}

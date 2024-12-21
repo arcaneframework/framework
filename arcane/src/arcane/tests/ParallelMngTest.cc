@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ParallelMngTest.cc                                          (C) 2000-2020 */
+/* ParallelMngTest.cc                                          (C) 2000-2024 */
 /*                                                                           */
 /* Test des opérations de base du parallèlisme.                              */
 /*---------------------------------------------------------------------------*/
@@ -1328,6 +1328,32 @@ _doExecuteSub(IParallelMng* pm)
           _doExecute(sub_pm.get());
       }
     }
+  }
+
+  // Teste le sous-communicateur à la MPI_Comm_split.
+  // Ne fonctionne qu'avec MPI.
+  if (((nb_rank % 2) == 0) && !pm->isThreadImplementation() && !pm->isHybridImplementation()) {
+    info() << "Test SubParallelMng with (color,key) nb_rank=" << nb_rank;
+    Int32 my_rank = pm->commRank();
+    Int32 middle = nb_rank / 2;
+    // Créé deux instances. Une avec les (nb_rank/2) premiers rangs et une avec les autres.
+    Int32 color = 1;
+    Int32 expected_total = (middle * (middle + 1)) / 2;
+    if (my_rank >= middle) {
+      color = 2;
+      expected_total = ((nb_rank * (nb_rank + 1)) / 2) - expected_total;
+    }
+    Ref<IParallelMng> sub_pm = ParallelMngUtils::createSubParallelMngRef(pm, color, my_rank);
+    ARCANE_CHECK_POINTER(sub_pm.get());
+    // Pour vérifier que tout est Ok, on fait une réduction avec comme valeur
+    // notre (rang+1) et on doit trouver la somme de N entiers consécutifs.
+    Int32 total = sub_pm->reduce(ReduceSum, my_rank + 1);
+    Int32 sub_nb_rank = sub_pm->commSize();
+    if (sub_nb_rank != middle)
+      ARCANE_FATAL("Bad number of rank n={0} expected={1}", sub_nb_rank, middle);
+    info() << "Total=" << total << " expected=" << expected_total;
+    if (total != expected_total)
+      ARCANE_FATAL("Bad value total={0} expected={1}", total, expected_total);
   }
 }  
 

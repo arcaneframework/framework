@@ -11,7 +11,7 @@ nécessaires pour %Arcane (ainsi que les dépendances optionnelles `HDF5` et `Pa
 sudo apt update
 sudo apt install apt-utils build-essential iputils-ping python3 \
 git gfortran libglib2.0-dev libxml2-dev libhdf5-openmpi-dev \
-libparmetis-dev wget gcc-11 g++-11
+libparmetis-dev libunwind-dev wget gcc-11 g++-11
 
 wget https://packages.microsoft.com/config/ubuntu/20.04/packages-microsoft-prod.deb -O packages-microsoft-prod.deb
 sudo dpkg -i packages-microsoft-prod.deb

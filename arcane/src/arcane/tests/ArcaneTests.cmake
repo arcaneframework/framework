@@ -144,6 +144,8 @@ macro(arcane_add_test_parallel_thread test_name case_file nb_proc)
   endif()
 endmacro()
 
+
+# ----------------------------------------------------------------------------
 # Ajoute un test message_passing en mode hybride (MPI+SHM).
 # Le test n'est ajouté que si le mode hybride est disponible.
 #
@@ -195,6 +197,75 @@ function(arcane_add_test_message_passing_hybrid test_name)
     set_tests_properties(${_arcane_test_name} PROPERTIES LABELS LARGE_HYBRID)
   endif()
 endfunction()
+
+
+# ----------------------------------------------------------------------------
+# Fonction générique pour ajouter un test pour un ou plusieurs modes d'échange
+# de message. Les tests ne sont ajoutés que si le mode d'échange de message
+# concerné est disponible.
+#
+# Usage:
+#
+# arcane_add_test_message_generic(test_name
+#    [CASE_FILE case_file]
+#    [NB_MPI nb_mpi]
+#    [NB_SHM nb_shm]
+#    [ARGS args]
+#    [MP_SEQUENTIAL]
+#    [MP_SHM]
+#    [MP_MPI]
+#    [MP_HYBRID]
+#
+# Si une des valeurs MP_SEQUENTIAL, MP_SHM, MP_MPI ou MPI_HYBRID est spécifiée,
+# alors le test correspond sera exécuté. Sinon on exécute le test les 4
+# modes d'échange de message. Si NB_MPI n'est pas spécifié, il aura pour valeur 4.
+# Si NB_SHM n'est pas spécifié, il aura pour valeur 3.
+# )
+
+function(arcane_add_test_generic test_name)
+  set(options        MP_SEQUENTIAL MP_SHM MP_MPI MP_HYBRID)
+  set(oneValueArgs   TYPE NB_MPI NB_SHM CASE_FILE)
+  set(multiValueArgs ARGS)
+
+  cmake_parse_arguments(ARGS "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+
+  message(VERBOSE "    ADD GENERIC TEST Hybrid OPT=${test_name} ${ARGS_CASE_NAME} nb_mpi=${ARGS_NB_MPI} nb_shm=${ARGS_NB_SHM} type=${ARGS_TYPE}")
+
+  set(HAS_MP_VALUE FALSE)
+
+  # Si un des types de 'message passing' est spécifié, on l'utilise.
+  # Sinon on considère qu'on utilise toutes les mécanismes de message passing disponibles
+  if (ARGS_MP_SEQUENTIAL OR ARGS_MP_SHM OR ARGS_MP_MPI OR ARGS_MP_HYBRID)
+    set(HAS_MP_VALUE TRUE)
+  else()
+    set(ARGS_MP_SEQUENTIAL TRUE)
+    set(ARGS_MP_SHM TRUE)
+    set(ARGS_MP_MPI TRUE)
+    set(ARGS_MP_HYBRID TRUE)
+  endif()
+
+  if (NOT ARGS_NB_MPI)
+    set(ARGS_NB_MPI 4)
+  endif()
+  if (NOT ARGS_NB_SHM)
+    set(ARGS_NB_SHM 3)
+  endif()
+
+  if (ARGS_MP_SEQUENTIAL)
+    arcane_add_test_sequential(${test_name} ${ARGS_CASE_FILE} ${ARGS_ARGS})
+  endif()
+  if (ARGS_MP_MPI)
+    arcane_add_test_parallel(${test_name} ${ARGS_CASE_FILE} ${ARGS_NB_MPI} ${ARGS_ARGS})
+  endif()
+  if (ARGS_MP_SHM)
+    arcane_add_test_parallel_thread(${test_name} ${ARGS_CASE_FILE} ${ARGS_NB_SHM} ${ARGS_ARGS})
+  endif()
+  if (ARGS_MP_HYBRID)
+    arcane_add_test_message_passing_hybrid(${test_name} CASE_FILE ${ARGS_CASE_FILE} NB_MPI ${ARGS_NB_MPI} NB_SHM ${ARGS_NB_SHM} ARGS ${ARGS_ARGS})
+  endif()
+endfunction()
+
+# ----------------------------------------------------------------------------
 
 # Ajoute un test parallele avec MPI+threads
 macro(ARCANE_ADD_TEST_PARALLEL_MPITHREAD test_name case_file nb_proc nb_thread)
@@ -269,7 +340,7 @@ endmacro()
 #
 function(arcane_add_csharp_test_direct)
   set(options        )
-  set(oneValueArgs   CASE_FILE_PATH TEST_NAME WORKING_DIRECTORY ASSEMBLY)
+  set(oneValueArgs CASE_FILE_PATH TEST_NAME WORKING_DIRECTORY ASSEMBLY EXTERNAL_ASSEMBLY)
   set(multiValueArgs LAUNCH_COMMAND ARGS)
   cmake_parse_arguments(ARGS "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
@@ -277,25 +348,53 @@ function(arcane_add_csharp_test_direct)
     message(FATAL_ERROR "No 'TEST_NAME' argument")
   endif()
 
-  # Il faut mettre d'abord les arguments de la fonction car ils peuvent contenir
-  # des arguments à passer en premier
-  set(_ALL_ARGS ${ARGS_ARGS})
-  list(APPEND _ALL_ARGS ${ARGS_CASE_FILE_PATH})
+  cmake_path(GET ARGS_CASE_FILE_PATH EXTENSION LAST_ONLY _EXTENSION_ARC)
+
+  # Si l'extension du fichier est .in, alors on a un EXTERNAL_ASSEMBLY à situer.
+  # On récupère le nom du fichier sans extension.
+  # Sinon, on garde le répertoire du .arc d'origine.
+  if (_EXTENSION_ARC STREQUAL ".in")
+    cmake_path(GET ARGS_CASE_FILE_PATH STEM _FILENAME)
+  else ()
+    set(_FILE_ARC ${ARGS_CASE_FILE_PATH})
+  endif ()
+
   if (ARGS_ASSEMBLY)
-    list(APPEND _ALL_ARGS "--dotnet-assembly=${ARGS_ASSEMBLY}")
-  endif()
+    set(_ALL_ARGS "--dotnet-assembly=${ARGS_ASSEMBLY}")
+  endif ()
 
   if (DOTNET_EXEC)
     # Test avec coreclr direct
+    if (ARGS_EXTERNAL_ASSEMBLY)
+      set(_OUTPUT_DLL ${ARGS_WORKING_DIRECTORY}/${ARGS_EXTERNAL_ASSEMBLY}_coreclr.dll)
+      if (_EXTENSION_ARC STREQUAL ".in")
+        set(_FILE_ARC ${ARGS_WORKING_DIRECTORY}/${_FILENAME}_coreclr.arc)
+        # Dans ce fichier, il n'y a que le _OUTPUT_DLL à définir.
+        configure_file(${ARGS_CASE_FILE_PATH} ${_FILE_ARC} @ONLY)
+      endif ()
+      set(_EXTERNAL_ARGS "--dotnet-compile=${TEST_PATH}/${ARGS_EXTERNAL_ASSEMBLY}.cs")
+      list(APPEND _EXTERNAL_ARGS "--dotnet-output-dll=${_OUTPUT_DLL}")
+    endif ()
+
     arcane_add_test_direct(NAME ${ARGS_TEST_NAME}_coreclr
-      COMMAND ${ARGS_LAUNCH_COMMAND} -Z --dotnet-runtime=coreclr ${_ALL_ARGS}
+      COMMAND ${ARGS_LAUNCH_COMMAND} -Z --dotnet-runtime=coreclr ${ARGS_ARGS} ${_FILE_ARC} ${_ALL_ARGS} ${_EXTERNAL_ARGS}
       WORKING_DIRECTORY ${ARGS_WORKING_DIRECTORY})
   endif()
 
   if (TARGET arcane_dotnet_coreclr)
     # Test avec coreclr embedded
+    if (ARGS_EXTERNAL_ASSEMBLY)
+      set(_OUTPUT_DLL ${ARGS_WORKING_DIRECTORY}/${ARGS_EXTERNAL_ASSEMBLY}_coreclr_embedded.dll)
+      if (_EXTENSION_ARC STREQUAL ".in")
+        set(_FILE_ARC ${ARGS_WORKING_DIRECTORY}/${_FILENAME}_coreclr_embedded.arc)
+        configure_file(${ARGS_CASE_FILE_PATH} ${_FILE_ARC} @ONLY)
+      endif ()
+      set(_EXTERNAL_ARGS "--dotnet-compile=${TEST_PATH}/${ARGS_EXTERNAL_ASSEMBLY}.cs")
+      list(APPEND _EXTERNAL_ARGS "--dotnet-output-dll=${_OUTPUT_DLL}")
+    endif ()
+
     arcane_add_test_direct(NAME ${ARGS_TEST_NAME}_coreclr_embedded
-      COMMAND ${ARGS_LAUNCH_COMMAND} -We,ARCANE_USE_DOTNET_WRAPPER,1 --dotnet-runtime=coreclr ${_ALL_ARGS}
+      COMMAND ${ARGS_LAUNCH_COMMAND} -We,ARCANE_USE_DOTNET_WRAPPER,1 --dotnet-runtime=coreclr ${ARGS_ARGS} ${_FILE_ARC} ${_ALL_ARGS} ${_EXTERNAL_ARGS}
       WORKING_DIRECTORY ${ARGS_WORKING_DIRECTORY})
   endif()
 
@@ -317,6 +416,26 @@ macro(arcane_add_csharp_test_sequential test_name case_file)
     ASSEMBLY ${ARCANE_TEST_DOTNET_ASSEMBLY}
     ARGS ${ARGN}
     )
+endmacro()
+
+# ----------------------------------------------------------------------------
+# Ajoute un test séquentiel en C# avec chargement d'une dll externe.
+#
+macro(arcane_add_csharp_test_sequential_external_assembly test_name case_file assembly_file)
+  if (VERBOSE)
+    message(STATUS "    ADD C# SEQUENTIAL TEST=${ARCANE_TEST_CASEPATH} ${case_file} WITH EXTERNAL ASSEMBLY=${assembly_file}")
+  endif ()
+  arcane_get_case_path(${case_file})
+  message(STATUS "ADD C# test name=${test_name} assembly=${ARCANE_TEST_DOTNET_ASSEMBLY} external assembly=${assembly_file}")
+  arcane_add_csharp_test_direct(
+          TEST_NAME ${test_name}
+          WORKING_DIRECTORY ${ARCANE_TEST_WORKDIR}
+          LAUNCH_COMMAND ${ARCANE_TEST_LAUNCH_COMMAND}
+          CASE_FILE_PATH ${full_case_file}
+          ASSEMBLY ${ARCANE_TEST_DOTNET_ASSEMBLY}
+          EXTERNAL_ASSEMBLY ${assembly_file}
+          ARGS ${ARGN}
+  )
 endmacro()
 
 # ----------------------------------------------------------------------------
@@ -342,13 +461,13 @@ endmacro()
 # ----------------------------------------------------------------------------
 
 set(ARCANE_ACCELERATOR_RUNTIME_NAME)
-if (ARCANE_ACCELERATOR_MODE STREQUAL "ROCMHIP" )
+if (ARCANE_ACCELERATOR_MODE STREQUAL "ROCM" )
   set(ARCANE_ACCELERATOR_RUNTIME_NAME hip)
 endif()
-if (ARCANE_ACCELERATOR_MODE STREQUAL "CUDANVCC" )
+if (ARCANE_ACCELERATOR_MODE STREQUAL "CUDA" )
   set(ARCANE_ACCELERATOR_RUNTIME_NAME cuda)
 endif()
-if (ARCANE_ACCELERATOR_MODE STREQUAL "SYCLDPCPP" )
+if (ARCANE_ACCELERATOR_MODE STREQUAL "SYCL" )
   set(ARCANE_ACCELERATOR_RUNTIME_NAME sycl)
 endif()
 

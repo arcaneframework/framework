@@ -82,6 +82,36 @@ class ARCANE_CORE_EXPORT ItemFlags
   {
     return isSubDomainBoundary(f) && hasBackCell(f);
   }
+  /*!
+   * \brief Index dans la face la maille derrière.
+   *
+   * \retval -1 si pas de maillage derrière.
+   * \retval 0 ou 1 pour l'index de la maille derrière.
+   *
+   * Si l'index est positif, il est possible de récupérer
+   * la maille derrière via Face::cell(ItemFlags::backCellIndex(f)).
+   */
+  static constexpr Int32 backCellIndex(FlagType f)
+  {
+    if (f & II_HasBackCell)
+      return (f & II_BackCellIsFirst) ? 0 : 1;
+    return -1;
+  }
+  /*!
+   * \brief Index dans la face la maille devant.
+   *
+   * \retval -1 si pas de maillage devant.
+   * \retval 0 ou 1 pour l'index de la maille devant.
+   *
+   * Si l'index est positif, il est possible de récupérer
+   * la maille devant via Face::cell(ItemFlags::frontCellIndex(f)).
+   */
+  static constexpr Int32 frontCellIndex(FlagType f)
+  {
+    if (f & II_HasFrontCell)
+      return (f & II_FrontCellIsFirst) ? 0 : 1;
+    return -1;
+  }
 };
 
 /*---------------------------------------------------------------------------*/

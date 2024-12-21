@@ -102,9 +102,6 @@ findMemory(const void* ptr)
 MemoryTracerWrapper::
 MemoryTracerWrapper()
 {
-  // TODO: Utiliser une autre variable d'environnement que CUDA
-  if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_CUDA_MALLOC_TRACE", true))
-    m_trace_level = v.value();
 }
 
 /*---------------------------------------------------------------------------*/

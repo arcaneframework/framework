@@ -383,6 +383,8 @@ class SharedMemoryParallelDispatch
   ReduceInfo m_reduce_infos;
 
  private:
+
+  void _allReduceOrScan(eReduceType op, Span<Type> send_buf, bool is_scan);
 };
 
 /*---------------------------------------------------------------------------*/

@@ -129,7 +129,6 @@ set(ARCANE_SOURCES
 )
 
 set(AXL_FILES
-  EnsightHdfPostProcessor
   ArcaneBasicCheckpoint
   ArcaneLoadBalance
   Ensight7PostProcessor
@@ -151,6 +150,7 @@ set(AXL_FILES
   PDESRandomNumberGenerator
   SimpleCsvOutput
   SimpleCsvComparator
+  KdiPostProcessor
   VtkHdfPostProcessor
   VtkHdfV2PostProcessor
   VtkPolyhedralMeshIO

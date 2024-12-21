@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemConnectivity.cc                                         (C) 2000-2015 */
+/* ItemConnectivity.cc                                         (C) 2000-2024 */
 /*                                                                           */
 /* External connectivities. First version with DoF                           */
 /*---------------------------------------------------------------------------*/
@@ -152,10 +152,11 @@ updateConnectivity(Int32ConstArrayView from_items, Int32ConstArrayView to_items)
 void ItemConnectivity::
 notifyTargetFamilyLocalIdChanged(Int32ConstArrayView old_to_new_ids)
 {
-  ENUMERATE_ITEM(item,_sourceFamily()->view().subView(0,m_item_property.size()))
+  m_item_property.resize(_sourceFamily(), NULL_ITEM_LOCAL_ID);
+  ENUMERATE_ITEM(item,_sourceFamily()->allItems())
   {
     if (m_item_property[item] != NULL_ITEM_LOCAL_ID)
-    m_item_property[item] = old_to_new_ids[m_item_property[item]];
+      m_item_property[item] = old_to_new_ids[m_item_property[item]];
   }
 }
 

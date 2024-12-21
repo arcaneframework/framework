@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemLocalIdListContainerView.h                              (C) 2000-2023 */
+/* ItemLocalIdListContainerView.h                              (C) 2000-2024 */
 /*                                                                           */
 /* Vue sur le conteneur d'une liste de ItemLocalId.                          */
 /*---------------------------------------------------------------------------*/
@@ -37,6 +37,8 @@ namespace Arcane::impl
  */
 class ARCANE_CORE_EXPORT ItemLocalIdListContainerView
 {
+  // NOTE: Cette classe est mappée en C# et si on change sa structure il
+  // faut mettre à jour la version C# correspondante.
   template <typename ItemType> friend class ::Arcane::ItemLocalIdListViewT;
   template <int Extent> friend class ::Arcane::impl::ItemIndexedListView;
   friend ItemVectorView;

@@ -202,9 +202,7 @@ namespace Arcane
   class ItemEnumeratorPOD
   {
    public:
-    typedef ItemInternal* Ptr;
-   public:
-    const Ptr* m_items;
+    ItemSharedInfo* m_shared_info;
     const Int32* m_local_ids;
     Integer m_index;
     Integer m_count;
@@ -219,11 +217,13 @@ namespace Arcane
   };
 
   // Cette classe sert de type de retour pour wrapper la classe 'ItemVectorView'
+  // Note: cette structure doit avoir le même layout que la
+  // version qui est dans NumericWrapper.h
   class ItemVectorViewPOD
   {
    public:
-    ArrayViewPOD_T<ItemInternal*> m_items;
     ItemIndexArrayViewPOD m_local_ids;
+    ItemSharedInfo* m_shared_info;
   };
 }
 

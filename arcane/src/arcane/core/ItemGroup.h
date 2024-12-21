@@ -309,6 +309,14 @@ class ARCANE_CORE_EXPORT ItemGroup
   //! Vue sur les entités du groupe avec padding pour la vectorisation
   ItemVectorView _paddedView() const;
 
+  /*!
+   * \brief Vue sur les entités du groupe sans padding pour la vectorisation.
+   *
+   * La vue retournée NE doit PAS être utilisée dans les macros de vectorisation
+   * telles ENUMERATE_SIMD_CELL().
+   */
+  ItemVectorView _unpaddedView() const;
+
  public:
 
   //! API interne à Arcane

@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CartesianFaceUniqueIdBuilder.cc                             (C) 2000-2023 */
+/* CartesianFaceUniqueIdBuilder.cc                             (C) 2000-2024 */
 /*                                                                           */
 /* Construction des indentifiants uniques des faces en cartésien.            */
 /*---------------------------------------------------------------------------*/
@@ -16,6 +16,8 @@
 #include "arcane/core/ICartesianMeshGenerationInfo.h"
 #include "arcane/core/IParallelMng.h"
 #include "arcane/core/CartesianGridDimension.h"
+
+#include "arcane/mesh/ItemInternalMap.h"
 
 #include <array>
 
@@ -36,7 +38,7 @@ class CartesianFaceUniqueIdBuilder
  public:
 
   //! Construit une instance pour le maillage \a mesh
-  CartesianFaceUniqueIdBuilder(DynamicMesh* mesh);
+  explicit CartesianFaceUniqueIdBuilder(DynamicMesh* mesh);
 
  public:
 
@@ -44,9 +46,9 @@ class CartesianFaceUniqueIdBuilder
 
  private:
 
-  DynamicMesh* m_mesh;
-  IParallelMng* m_parallel_mng;
-  bool m_is_verbose;
+  DynamicMesh* m_mesh = nullptr;
+  IParallelMng* m_parallel_mng = nullptr;
+  bool m_is_verbose = false;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -57,7 +59,6 @@ CartesianFaceUniqueIdBuilder(DynamicMesh* mesh)
 : TraceAccessor(mesh->traceMng())
 , m_mesh(mesh)
 , m_parallel_mng(mesh->parallelMng())
-, m_is_verbose(false)
 {
 }
 
@@ -149,10 +150,8 @@ computeFacesUniqueIdAndOwner()
     // Les mailles sont des quadrangles
     std::array<Int64, 4> face_uids;
     std::array<Int64, 4> face_uids2;
-    ENUMERATE_ITEM_INTERNAL_MAP_DATA(iid, cells_map)
-    {
+    cells_map.eachItem([&](Cell cell) {
       // Récupère l'indice (I,J) de la maille
-      Cell cell{ iid->value() };
       Int64 uid = cell.uniqueId();
       const Int64 y2 = uid / nb_cell.x;
       const Int64 x2 = uid % nb_cell.x;
@@ -198,7 +197,7 @@ computeFacesUniqueIdAndOwner()
       // Positionne le propriétaire de la face inférieure en Y
       if (y == own_cell_offset_y && previous_rank_y != my_rank)
         cell.face(0).mutableItemBase().setOwner(previous_rank_y, my_rank);
-    }
+    });
   }
   else if (dimension == 3) {
     if (sub_domain_offset_x > 0)
@@ -213,10 +212,8 @@ computeFacesUniqueIdAndOwner()
     // Les mailles sont des hexaèdres
     std::array<Int64, 6> face_uids;
     std::array<Int64, 6> face_uids2;
-    ENUMERATE_ITEM_INTERNAL_MAP_DATA(iid, cells_map)
-    {
+    cells_map.eachItem([&](Cell cell) {
       // Récupère l'indice (I,J) de la maille
-      Cell cell{ iid->value() };
       Int64 uid = cell.uniqueId();
       Int64 z2 = uid / nb_cell_xy;
       Int64 v2 = uid - (z2 * nb_cell_xy);
@@ -283,7 +280,7 @@ computeFacesUniqueIdAndOwner()
       // Positionne le propriétaire de la face inférieure en Z
       if (z == own_cell_offset_z && previous_rank_z != my_rank)
         cell.face(0).mutableItemBase().setOwner(previous_rank_z, my_rank);
-    }
+    });
   }
   else
     ARCANE_FATAL("Invalid dimension");

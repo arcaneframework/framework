@@ -155,6 +155,51 @@ requires std::derived_from<T, ItemLocalId> class RunCommandItemEnumeratorSubTrai
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
+ * \brief Conteneur pour RunCommandEnumerate.
+ *
+ * Le conteneur peut être soit un ItemVectorView, soit un ItemGroup.
+ *
+ * Le but de ce conteneur est d'éviter de faire le padding SIMD pour un
+ * ItemGroup s'il est utilisé sur accélérateur. Comme le padding est
+ * fait sur le CPU, cela induirait des transferts mémoire lorsqu'on utilise
+ * la mémoire unifiée (ce qui est le cas par défaut).
+ */
+template <typename ItemType>
+class RunCommandItemContainer
+{
+ public:
+
+  explicit RunCommandItemContainer(const ItemGroupT<ItemType>& group)
+  : m_item_group(group)
+  , m_unpadded_vector_view(group._unpaddedView())
+  {}
+  explicit RunCommandItemContainer(const ItemVectorViewT<ItemType>& item_vector_view)
+  : m_item_vector_view(item_vector_view)
+  , m_unpadded_vector_view(item_vector_view)
+  {
+  }
+
+ public:
+
+  Int32 size() const { return m_unpadded_vector_view.size(); }
+  SmallSpan<const Int32> localIds() const { return m_unpadded_vector_view.localIds(); }
+  ItemVectorView paddedView() const
+  {
+    if (!m_item_group.null())
+      return m_item_group._paddedView();
+    return m_item_vector_view;
+  }
+
+ private:
+
+  ItemVectorViewT<ItemType> m_item_vector_view;
+  ItemGroupT<ItemType> m_item_group;
+  ItemVectorViewT<ItemType> m_unpadded_vector_view;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
  * \brief Caractéristiques d'un énumérateur d'une commande sur les entités.
  *
  * Cette classe doit être spécialisée et définir un type \a ValueType
@@ -172,22 +217,22 @@ class RunCommandItemEnumeratorTraitsT
   using ItemType = typename SubTraitsType::ItemType;
   using LocalIdType = ItemTraitsT<ItemType>::LocalIdType;
   using ValueType = typename SubTraitsType::ValueType;
-  using ContainerType = ItemVectorViewT<ItemType>;
+  using ContainerType = RunCommandItemContainer<ItemType>;
   using BuilderType = SubTraitsType::BuilderType;
 
  public:
 
   explicit RunCommandItemEnumeratorTraitsT(const ItemGroupT<ItemType>& group)
-  : m_items(group.view())
+  : m_item_container(group)
   {}
   explicit RunCommandItemEnumeratorTraitsT(const ItemVectorViewT<ItemType>& vector_view)
-  : m_items(vector_view)
+  : m_item_container(vector_view)
   {
   }
 
  public:
 
-  ItemVectorViewT<ItemType> m_items;
+  RunCommandItemContainer<ItemType> m_item_container;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -226,21 +271,22 @@ _applyItems(RunCommand& command, typename TraitsType::ContainerType items,
   const eExecutionPolicy exec_policy = launch_info.executionPolicy();
   launch_info.computeLoopRunInfo();
   launch_info.beginExecute();
+  SmallSpan<const Int32> ids = items.localIds();
   switch (exec_policy) {
   case eExecutionPolicy::CUDA:
-    _applyKernelCUDA(launch_info, ARCANE_KERNEL_CUDA_FUNC(doIndirectGPULambda2) < TraitsType, Lambda, ReducerArgs... >, func, items.localIds(), reducer_args...);
+    _applyKernelCUDA(launch_info, ARCANE_KERNEL_CUDA_FUNC(doIndirectGPULambda2) < TraitsType, Lambda, ReducerArgs... >, func, ids, reducer_args...);
     break;
   case eExecutionPolicy::HIP:
-    _applyKernelHIP(launch_info, ARCANE_KERNEL_HIP_FUNC(doIndirectGPULambda2) < TraitsType, Lambda, ReducerArgs... >, func, items.localIds(), reducer_args...);
+    _applyKernelHIP(launch_info, ARCANE_KERNEL_HIP_FUNC(doIndirectGPULambda2) < TraitsType, Lambda, ReducerArgs... >, func, ids, reducer_args...);
     break;
   case eExecutionPolicy::SYCL:
-    _applyKernelSYCL(launch_info, ARCANE_KERNEL_SYCL_FUNC(impl::DoIndirectSYCLLambda) < TraitsType, Lambda, ReducerArgs... > {}, func, items.localIds(), reducer_args...);
+    _applyKernelSYCL(launch_info, ARCANE_KERNEL_SYCL_FUNC(impl::DoIndirectSYCLLambda) < TraitsType, Lambda, ReducerArgs... > {}, func, ids, reducer_args...);
     break;
   case eExecutionPolicy::Sequential:
-    impl::_doItemsLambda<TraitsType>(0, items, func, reducer_args...);
+    impl::_doItemsLambda<TraitsType>(0, items.paddedView(), func, reducer_args...);
     break;
   case eExecutionPolicy::Thread:
-    arcaneParallelForeach(items, launch_info.loopRunInfo(),
+    arcaneParallelForeach(items.paddedView(), launch_info.loopRunInfo(),
                           [&](ItemVectorViewT<ItemType> sub_items, Int32 base_index) {
                             impl::_doItemsLambda<TraitsType>(base_index, sub_items, func, reducer_args...);
                           });
@@ -285,7 +331,7 @@ namespace Arcane::Accelerator
 template <typename TraitsType, typename Lambda> void
 run(RunCommand& command, const TraitsType& traits, const Lambda& func)
 {
-  impl::_applyItems<TraitsType>(command, traits.m_items, func);
+  impl::_applyItems<TraitsType>(command, traits.m_item_container, func);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -346,15 +392,6 @@ operator<<(RunCommand& command, const ItemGroupT<ItemType>& items)
   return ItemRunCommand<TraitsType>(command, TraitsType(items));
 }
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-//template <typename TraitsType, typename Lambda>
-//void operator<<(ItemRunCommand<TraitsType>&& nr, const Lambda& f)
-//{
-//  run(nr.m_command, nr.m_traits, f);
-//}
-
 template <typename TraitsType, typename Lambda>
 void operator<<(ItemRunCommand<TraitsType>& nr, const Lambda& f)
 {
@@ -371,7 +408,7 @@ template <typename TraitsType, typename Lambda, typename... ReducerArgs>
 void operator<<(ItemRunCommand<TraitsType, ReducerArgs...>&& nr, const Lambda& f)
 {
   if constexpr (sizeof...(ReducerArgs) > 0) {
-    std::apply([&](auto... vs) { impl::_applyItems<TraitsType>(nr.m_command, nr.m_traits.m_items, f, vs...); }, nr.m_reducer_args);
+    std::apply([&](auto... vs) { impl::_applyItems<TraitsType>(nr.m_command, nr.m_traits.m_item_container, f, vs...); }, nr.m_reducer_args);
   }
   else
     run(nr.m_command, nr.m_traits, f);
@@ -391,7 +428,6 @@ namespace Arcane::Accelerator::impl
 template <typename ItemTypeName, typename ItemContainerType, typename... ReducerArgs> auto
 makeExtendedItemEnumeratorLoop(const ItemContainerType& container_type,
                                const ReducerArgs&... reducer_args)
-//-> ItemRunCommandArgs<RunCommandItemEnumeratorTraitsT<ItemTypeName>, ReducerArgs...>
 {
   using TraitsType = RunCommandItemEnumeratorTraitsT<ItemTypeName>;
   return ItemRunCommandArgs<TraitsType, ReducerArgs...>(TraitsType(container_type), reducer_args...);

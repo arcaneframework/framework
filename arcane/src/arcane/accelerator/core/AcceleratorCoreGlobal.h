@@ -57,6 +57,7 @@ class DeviceInfo;
 class IDeviceInfoList;
 class PointerAttribute;
 class ViewBuildInfo;
+class RunnerInternal;
 enum class eMemoryAdvice;
 
 namespace impl

@@ -128,6 +128,10 @@ _doDoubleGhostLayers()
 void CartesianMeshCoarsening2::
 createCoarseCells()
 {
+  if (m_is_create_coarse_called)
+    ARCANE_FATAL("This method has already been called");
+  m_is_create_coarse_called = true;
+
   const bool is_verbose = m_verbosity_level > 0;
   IMesh* mesh = m_cartesian_mesh->mesh();
   IParallelMng* pm = mesh->parallelMng();
@@ -267,7 +271,6 @@ _createCoarseCells2D()
   UniqueArray<Cell> first_child_cells;
 
   UniqueArray<Int64> refined_cells_lids;
-  UniqueArray<Int64> coarse_cells_uids;
   UniqueArray<Int32> coarse_cells_owner;
   UniqueArray<Int32> coarse_faces_owner;
 
@@ -322,7 +325,7 @@ _createCoarseCells2D()
       cells_infos.add(coarse_cell_uid);
       if (is_verbose)
         info() << "CoarseCellUid=" << coarse_cell_uid;
-      coarse_cells_uids.add(coarse_cell_uid);
+      m_coarse_cells_uid.add(coarse_cell_uid);
       for (Int32 z = 0; z < 4; ++z)
         cells_infos.add(node_uids[z]);
       ++nb_coarse_cell;
@@ -464,7 +467,6 @@ _createCoarseCells3D()
   UniqueArray<Cell> first_child_cells;
 
   UniqueArray<Int64> refined_cells_lids;
-  UniqueArray<Int64> coarse_cells_uids;
   UniqueArray<Int32> coarse_cells_owner;
   UniqueArray<Int32> coarse_faces_owner;
 
@@ -533,7 +535,7 @@ _createCoarseCells3D()
       cells_infos.add(coarse_cell_uid);
       if (is_verbose)
         info() << "CoarseCellUid=" << coarse_cell_uid;
-      coarse_cells_uids.add(coarse_cell_uid);
+      m_coarse_cells_uid.add(coarse_cell_uid);
       for (Int32 z = 0; z < const_cell_nb_node; ++z)
         cells_infos.add(node_uids[z]);
       ++nb_coarse_cell;
@@ -697,6 +699,59 @@ _recomputeMeshGenerationInfo()
     cmgi->setOwnNbCells(v[0] / cf, v[1] / cf, v[2] / cf);
   }
   cmgi->setFirstOwnCellUniqueId(m_first_own_cell_unique_id_offset);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void CartesianMeshCoarsening2::
+removeRefinedCells()
+{
+  if (!m_is_create_coarse_called)
+    ARCANE_FATAL("You need to call createCoarseCells() before");
+  if (m_is_remove_refined_called)
+    ARCANE_FATAL("This method has already been called");
+  m_is_remove_refined_called = true;
+
+  const bool is_verbose = m_verbosity_level > 0;
+
+  IMesh* mesh = m_cartesian_mesh->mesh();
+  IMeshModifier* mesh_modifier = mesh->modifier();
+
+  info() << "RemoveRefinedCells nb_coarse_cell=" << m_coarse_cells_uid.size();
+  if (is_verbose)
+    info() << "CoarseCells=" << m_coarse_cells_uid;
+
+  // Supprime toutes les mailles raffinées ainsi que toutes les mailles fantômes
+  {
+    std::unordered_set<Int64> coarse_cells_set;
+    for (Int64 cell_uid : m_coarse_cells_uid)
+      coarse_cells_set.insert(cell_uid);
+    UniqueArray<Int32> cells_to_remove;
+    ENUMERATE_ (Cell, icell, mesh->allCells()) {
+      Int32 local_id = icell.itemLocalId();
+      Cell cell = *icell;
+      if (coarse_cells_set.find(cell.uniqueId()) == coarse_cells_set.end())
+        cells_to_remove.add(local_id);
+    }
+    if (is_verbose)
+      info() << "CellsToRemove n=" << cells_to_remove.size() << " list=" << cells_to_remove;
+    mesh_modifier->removeCells(cells_to_remove);
+    mesh_modifier->endUpdate();
+  }
+
+  // Reconstruit les mailles fantômes
+  mesh_modifier->setDynamic(true);
+  mesh_modifier->updateGhostLayers();
+
+  // Affiche les statistiques du nouveau maillage
+  {
+    MeshStats ms(traceMng(), mesh, mesh->parallelMng());
+    ms.dumpStats();
+  }
+
+  // Il faut recalculer les nouvelles directions
+  m_cartesian_mesh->computeDirections();
 }
 
 /*---------------------------------------------------------------------------*/

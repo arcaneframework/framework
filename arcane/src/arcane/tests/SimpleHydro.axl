@@ -193,6 +193,7 @@
     <entry-point method-name="applyEquationOfState" name="SH_ApplyEquationOfState" where="compute-loop" property="none" />
     <entry-point method-name="computeDeltaT" name="SH_ComputeDeltaT" where="compute-loop" property="none" />
     <entry-point method-name="doOneIteration" name="SH_DoOneIteration" where="compute-loop" property="none" />
+    <entry-point method-name="onMeshChanged" name="SH_OnMeshChanged" where="on-mesh-changed" property="none" />
   </entry-points>
 
   <options>

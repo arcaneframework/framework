@@ -21,23 +21,23 @@
 
 #define INSURE_CONSTRAINTS
 
-#include "arcane/ServiceBuildInfo.h"
-#include "arcane/IMesh.h"
-#include "arcane/IMeshModifier.h"
-#include "arcane/IMeshSubMeshTransition.h"
-#include "arcane/IMeshUtilities.h"
-#include "arcane/IItemFamily.h"
-#include "arcane/ItemGroup.h"
-#include "arcane/ItemPrinter.h"
-#include "arcane/ISubDomain.h"
-#include "arcane/IParallelMng.h"
-#include "arcane/ItemEnumerator.h"
-#include "arcane/IVariableMng.h"
-#include "arcane/VariableTypes.h"
-#include "arcane/CommonVariables.h"
-
-#include "arcane/IMeshPartitionConstraintMng.h"
-#include "arcane/ILoadBalanceMng.h"
+#include "arcane/core/ServiceBuildInfo.h"
+#include "arcane/core/IMesh.h"
+#include "arcane/core/IMeshModifier.h"
+#include "arcane/core/IMeshSubMeshTransition.h"
+#include "arcane/core/IMeshUtilities.h"
+#include "arcane/core/IItemFamily.h"
+#include "arcane/core/ItemGroup.h"
+#include "arcane/core/ItemPrinter.h"
+#include "arcane/core/ISubDomain.h"
+#include "arcane/core/IParallelMng.h"
+#include "arcane/core/ItemEnumerator.h"
+#include "arcane/core/IVariableMng.h"
+#include "arcane/core/VariableTypes.h"
+#include "arcane/core/CommonVariables.h"
+#include "arcane/core/IMeshPartitionConstraintMng.h"
+#include "arcane/core/ILoadBalanceMng.h"
+#include "arcane/core/internal/ILoadBalanceMngInternal.h"
 
 #include "arcane/std/MeshPartitionerBase.h"
 
@@ -652,25 +652,25 @@ _cellsProjectWeights(VariableCellArrayReal& cellWgtIn, Int32 nbWgt) const
 {
   SharedArray<float> cellWgtOut(nbOwnCellsWithConstraints()*nbWgt);
   if (nbWgt > cellWgtIn.arraySize()) {
-    throw FatalErrorException("MeshPartitionerBase: asked for too many weights");
+    ARCANE_FATAL("Asked for too many weights n={0} array_size={1}",nbWgt,cellWgtIn.arraySize());
   }
 
   ENUMERATE_CELL(icell, m_mesh->ownCells()){
     if(m_filter_lid_cells[icell->localId()]==eCellClassical)
-      for ( int i = 0 ; i < nbWgt ; ++i)
-      cellWgtOut[m_local_id_2_local_id_compacted[icell->localId()]*nbWgt+i]
-      = static_cast<float>(cellWgtIn[icell][i]);
+      for ( int i = 0 ; i < nbWgt ; ++i){
+        float v = static_cast<float>(cellWgtIn[icell][i]);
+        cellWgtOut[m_local_id_2_local_id_compacted[icell->localId()]*nbWgt+i] = v;
+      }
   }
+  RealUniqueArray w(nbWgt);
   for( auto& ptr : m_cells_with_constraints ){
-    RealUniqueArray w(nbWgt);
     w.fill(0);
     for( const auto& cell : ptr ){
       for (int i = 0 ; i <nbWgt ; ++i)
         w[i] += cellWgtIn[cell][i];
     }
     for (int i=0 ; i<nbWgt ; ++i)
-      cellWgtOut[m_local_id_2_local_id_compacted[ptr[0].localId()]*nbWgt+i]
-      = (float)(w[i]);
+      cellWgtOut[m_local_id_2_local_id_compacted[ptr[0].localId()]*nbWgt+i] = (float)(w[i]);
   }
 
   return cellWgtOut;
@@ -767,6 +767,15 @@ MeshPartitionerBase::setCellsWeight(ArrayView<float> weights,Integer nb_weight)
   m_lb_mng_internal->setNbCellsAsCriterion(m_mesh, false);
 }
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Integer MeshPartitionerBase::
+nbCellWeight() const
+{
+  return math::max(m_lb_mng_internal->nbCriteria(m_mesh), 1);
+}
+
 ArrayView<float>
 MeshPartitionerBase::cellsWeight() const
 {
@@ -778,12 +787,13 @@ MeshPartitionerBase::_clearCellWgt() {
   //m_cell_wgt.clear();
 }
 
-#ifdef ARCANE_PART_DUMP
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 //! Fonction auxiliaire pour dumper le graphe.
-template <class ArrayType>
-Parallel::Request centralizePartInfo(String filename, IParallelMng *pm,
-                                     UniqueArray<ArrayType> data, String header, int step=1 )
+template <class ArrayType> Parallel::Request
+centralizePartInfo(String filename, IParallelMng *pm,
+                   UniqueArray<ArrayType> data, String header, int step=1 )
 {
   Parallel::Request req;
   UniqueArray<Integer> sizes(pm->commSize());
@@ -873,13 +883,13 @@ MeshPartitionerBase::dumpObject(String filebase)
         &&(m_filter_lid_cells[icell->localId()]!=eCellReference))
       continue;
 
-      // on calcul un barycentre
-      for( Integer z=0, zs = (*icell).nbNode(); z<zs; ++z ){
-        const Node& node = (*icell).node(z);
-        my_coords[i] += coords[node];
-      }
-      my_coords[i] /= Convert::toDouble((*icell).nbNode());
-      i++;
+    // on calcul un barycentre
+    for( Integer z=0, zs = (*icell).nbNode(); z<zs; ++z ){
+      const Node& node = (*icell).node(z);
+      my_coords[i] += coords[node];
+    }
+    my_coords[i] /= Convert::toDouble((*icell).nbNode());
+    i++;
   }
   req = centralizePartInfo<Real3>(filebase+".xyz", pm, my_coords, header);
   reqs.add(req);
@@ -899,7 +909,7 @@ MeshPartitionerBase::dumpObject(String filebase)
     for (Integer j = 0 ; j < neighbourcells.size() ; ++j) {
       if (neighbourcells[j] > my_uid)
         continue;
-      Real3 tmp(my_uid+1, neighbourcells[j]+1, commWeights[j]);
+      Real3 tmp(static_cast<Real>(my_uid+1), static_cast<Real>(neighbourcells[j]+1), commWeights[j]);
       nnz.add(tmp);
     }
   }
@@ -915,7 +925,6 @@ MeshPartitionerBase::dumpObject(String filebase)
 
   pm->waitAllRequests(reqs);
 }
-#endif // ARCANE_PART_DUMP
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

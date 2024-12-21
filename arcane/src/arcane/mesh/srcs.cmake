@@ -230,6 +230,7 @@ set( ARCANE_SOURCES
   ItemConnectivitySynchronizer.h
   MeshGlobal.h
   DoFManager.h
+  DoFManager.cc
   ItemProperty.h
   IItemConnectivityGhostPolicy.h
   NewItemOwnerBuilder.h

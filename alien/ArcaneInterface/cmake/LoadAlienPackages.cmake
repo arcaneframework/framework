@@ -114,6 +114,22 @@ endif()
 # load package can't deal with this...
 find_package(Boost COMPONENTS program_options REQUIRED)
 
+if(TARGET petsc)
+
+    get_target_property(INC_DIR petsc INTERFACE_INCLUDE_DIRECTORIES)
+
+    # check for SPAI in PETSc
+    file(READ ${INC_DIR}/petscconf.h PETSCCONF_H)
+    if("${PETSCCONF_H}" MATCHES "PETSC_HAVE_SPAI")
+        add_library(petsc::spai INTERFACE IMPORTED)
+    endif()
+
+    # check for MUMPS in PETSc
+    if("${PETSCCONF_H}" MATCHES "PETSC_HAVE_MUMPS")
+        add_library(petsc::mumps INTERFACE IMPORTED)
+    endif()
+
+endif()
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
 

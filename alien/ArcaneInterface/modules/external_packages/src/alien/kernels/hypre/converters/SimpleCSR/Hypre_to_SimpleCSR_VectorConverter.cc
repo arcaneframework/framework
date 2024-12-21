@@ -1,3 +1,9 @@
+﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
+//-----------------------------------------------------------------------------
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// See the top-level COPYRIGHT file for details.
+// SPDX-License-Identifier: Apache-2.0
+//-----------------------------------------------------------------------------
 #include <alien/core/backend/IVectorConverter.h>
 #include <alien/core/backend/VectorConverterRegisterer.h>
 
@@ -8,6 +14,9 @@
 #include <alien/kernels/simple_csr/CSRStructInfo.h>
 #include <alien/kernels/simple_csr/SimpleCSRVector.h>
 #include <alien/kernels/simple_csr/SimpleCSRBackEnd.h>
+
+#include <alien/kernels/sycl/SYCLBackEnd.h>
+#include <alien/kernels/sycl/data/SYCLVector.h>
 
 using namespace Alien;
 using namespace Alien::SimpleCSRInternal;
@@ -51,6 +60,7 @@ Hypre_to_SimpleCSR_VectorConverter::convert(
   alien_debug([&] {
     cout() << "Converting HypreVector: " << &v << " to SimpleCSRVector " << &v2;
   });
+
   Arccore::ArrayView<Arccore::Real> values = v2.values();
   v.getValues(values.size(), values.unguardedBasePointer());
 }

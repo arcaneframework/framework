@@ -11,8 +11,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#ifndef ARCANE_ILOADBALANCEMNGINTERNAL_H
-#define ARCANE_ILOADBALANCEMNGINTERNAL_H
+#ifndef ARCANE_CORE_INTERNAL_ILOADBALANCEMNGINTERNAL_H
+#define ARCANE_CORE_INTERNAL_ILOADBALANCEMNGINTERNAL_H
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -28,7 +28,12 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-
+/*!
+ * \brief API interne à %Arcane de ILoadBalanceMng.
+ *
+ * Elle permet de conserver des critères d'équilibrage en fonction du maillage
+ * ce qui est nécessaire pour les cas avec plusieurs maillages.
+ */
 class ARCANE_CORE_EXPORT ILoadBalanceMngInternal
 {
  public:
@@ -48,12 +53,12 @@ class ARCANE_CORE_EXPORT ILoadBalanceMngInternal
   virtual void setNbCellsAsCriterion(IMesh* mesh, bool active) =0;
   virtual void setCellCommContrib(IMesh* mesh, bool active) = 0;
   virtual void setComputeComm(IMesh* mesh, bool active) = 0;
-  virtual const VariableFaceReal& commCost(IMesh* mesh) const = 0;
-  virtual const VariableCellReal& massWeight(IMesh* mesh) const = 0;
-  virtual const VariableCellReal& massResWeight(IMesh* mesh) const = 0;
-  virtual const VariableCellArrayReal& mCriteriaWeight(IMesh* mesh) const = 0;
+  virtual const VariableFaceReal& commCost(IMesh* mesh) = 0;
+  virtual const VariableCellReal& massWeight(IMesh* mesh) = 0;
+  virtual const VariableCellReal& massResWeight(IMesh* mesh) = 0;
+  virtual const VariableCellArrayReal& mCriteriaWeight(IMesh* mesh) = 0;
 
-  virtual bool cellCommContrib(IMesh* mesh) const = 0;
+  virtual bool cellCommContrib(IMesh* mesh) = 0;
   virtual Integer nbCriteria(IMesh* mesh) =0;
 
   virtual void reset(IMesh* mesh) = 0;

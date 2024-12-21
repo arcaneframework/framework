@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ICartesianMesh.h                                            (C) 2000-2023 */
+/* ICartesianMesh.h                                            (C) 2000-2024 */
 /*                                                                           */
 /* Interface d'un maillage cartésien.                                        */
 /*---------------------------------------------------------------------------*/
@@ -172,8 +172,9 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMesh
 
   /*!
    * \brief Créé une instance pour gérer le déraffinement du maillage.
-   * \warning Experimental method !
+   * \deprecated Utiliser Arcane::CartesianMeshUtils::createCartesianMeshCoarsening2() à la place.
    */
+  ARCANE_DEPRECATED_REASON("Y2024: Use Arcane::CartesianMeshUtils::createCartesianMeshCoarsening2() instead")
   virtual Ref<CartesianMeshCoarsening> createCartesianMeshCoarsening() = 0;
 
  public:

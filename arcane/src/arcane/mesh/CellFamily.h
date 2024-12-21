@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CellFamily.h                                                (C) 2000-2023 */
+/* CellFamily.h                                                (C) 2000-2024 */
 /*                                                                           */
 /* Famille de mailles.                                                       */
 /*---------------------------------------------------------------------------*/
@@ -76,6 +76,9 @@ class ARCANE_MESH_EXPORT CellFamily
    * @param cell la maille à supprimer
    */
   void removeCell(Cell cell);
+
+  //! Supprime les mailles dont les numéros locaux sont \a cells_local_id
+  void removeCells(ConstArrayView<Int32> cells_local_id);
 
   /*!
    * Detache la maille \a cell du maillage sans la supprimer

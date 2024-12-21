@@ -1,5 +1,6 @@
+﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 /*
- * Copyright 2020 IFPEN-CEA
+ * Copyright 2024 IFPEN-CEA
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +18,8 @@
  */
 #include <gtest/gtest.h>
 
+#include <arccore/base/PlatformUtils.h>
+
 #include <alien/import_export/MatrixMarketSystemReader.h>
 #ifdef ALIEN_USE_LIBARCHIVE
 #include <alien/import_export/SuiteSparseArchiveSystemReader.h>
@@ -31,6 +34,19 @@
 
 using namespace Arccore;
 
+namespace
+{
+
+std::string _getProcessUniqueFilename(const char* base_name,const char* extension = "")
+{
+  // Use a unique filename because tests are running in parallel and we do not want
+  // to overwrite files from other tests
+  Int32 pid = Platform::getProcessId();
+  String file_name = String::format("{0}.{1}{2}",base_name,pid,extension);
+  return file_name.localstr();
+}
+
+}
 TEST(TestImportExport, ImportExportMatrix)
 {
   Alien::Space row_space(10, "RowSpace");
@@ -132,7 +148,7 @@ TEST(TestImportExport, ExportSystem)
     }
   }
   {
-    Alien::SystemWriter writer("SystemAb.txt");
+    Alien::SystemWriter writer(_getProcessUniqueFilename("SystemAb",".txt"));
     writer.dump(A, b);
   }
 
@@ -144,7 +160,7 @@ TEST(TestImportExport, ExportSystem)
     }
   }
   {
-    Alien::SystemWriter writer("SystemAbx.txt");
+    Alien::SystemWriter writer(_getProcessUniqueFilename("SystemAbx",".txt"));
     Alien::SolutionInfo sol_info(Alien::SolutionInfo::N2_RELATIVE2RHS_RES, 1e-7, "fake");
     writer.dump(A, b, x, sol_info);
   }
@@ -153,11 +169,12 @@ TEST(TestImportExport, ExportSystem)
 TEST(TestImportExport, ImportMatrixMarketMatrix)
 {
   if (AlienTest::Environment::parallelMng()->commRank() == 0) {
-    createMMMatrixFile("cage4.mtx");
+    std::string file_name = _getProcessUniqueFilename("cage4",".mtx");
+    createMMMatrixFile(file_name);
 
     Alien::Matrix A;
 
-    Alien::MatrixMarketSystemReader reader("cage4.mtx");
+    Alien::MatrixMarketSystemReader reader(file_name);
 
     reader.readMatrix(A);
 
@@ -168,24 +185,25 @@ TEST(TestImportExport, ImportMatrixMarketMatrix)
 
     ASSERT_EQ(49, A_csr.getProfile().getNElems());
 
-    system("rm cage4.mtx");
+    Platform::removeFile(file_name);
   }
 }
 
 TEST(TestImportExport, ImportMatrixMarketRhs)
 {
   if (AlienTest::Environment::parallelMng()->commRank() == 0) {
-    createMMRhsFile("vec_b.mtx");
+    std::string file_name = _getProcessUniqueFilename("vec_b",".mtx");
+    createMMRhsFile(file_name);
 
     Alien::Vector vec;
 
-    Alien::MatrixMarketSystemReader reader("vec_b.mtx");
+    Alien::MatrixMarketSystemReader reader(file_name);
 
     reader.readVector(vec);
 
     ASSERT_EQ(9, vec.space().size());
 
-    system("rm vec_b.mtx");
+    Platform::removeFile(file_name);
   }
 }
 
@@ -193,9 +211,12 @@ TEST(TestImportExport, ImportMatrixMarketRhs)
 TEST(TestImportExport, ImportSuiteSparseArchive)
 {
   if (AlienTest::Environment::parallelMng()->commRank() == 0) {
-    createSSArchive("b1_ss");
 
-    Alien::SuiteSparseArchiveSystemReader archive_system_reader("b1_ss.tar.gz");
+    std::string file_name = _getProcessUniqueFilename("b1_ss");
+    createSSArchive(file_name);
+    std::string tar_file_name = file_name + ".tar.gz";
+
+    Alien::SuiteSparseArchiveSystemReader archive_system_reader(tar_file_name);
 
     Alien::Matrix A;
     Alien::Vector vec;
@@ -207,8 +228,7 @@ TEST(TestImportExport, ImportSuiteSparseArchive)
     ASSERT_EQ(7, A.colSpace().size());
 
     ASSERT_EQ(7, vec.space().size());
-
-    system("rm b1_ss.tar.gz");
+    Platform::removeFile(tar_file_name);
   }
 }
 #endif

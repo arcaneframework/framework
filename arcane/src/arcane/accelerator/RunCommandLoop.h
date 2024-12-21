@@ -228,9 +228,7 @@ void operator<<(ArrayBoundRunCommand<N, ForLoopBoundType<N, Int32>, RemainingArg
 /*!
  * \brief Boucle sur accélérateur avec arguments supplémentaires pour les réductions.
  *
- * \warning Ce mode est expérimental et ne doit pas être utilisé en dehors de Arcane.
- *
- * Cette macro est indentique à RUNCOMMAND_LOOP1() mais permet d'ajouter des arguments
+ * Cette macro permet d'ajouter des arguments
  * pour chaque valeur à réduire. Les arguments doivent être des instances des
  * classes Arcane::Accelerator::ReducerSum2, Arcane::Accelerator::ReducerMax2 ou Arcane::Accelerator::ReducerMin2.
  */
@@ -238,7 +236,18 @@ void operator<<(ArrayBoundRunCommand<N, ForLoopBoundType<N, Int32>, RemainingArg
   A_FUNCINFO << ::Arcane::Accelerator::impl::makeExtendedArrayBoundLoop(Arcane::ArrayBounds<MDDim1>(x1) __VA_OPT__(, __VA_ARGS__)) \
              << [=] ARCCORE_HOST_DEVICE(Arcane::ArrayIndex<1> iter_name __VA_OPT__(ARCANE_RUNCOMMAND_REDUCER_FOR_EACH(__VA_ARGS__)))
 
-//! Boucle sur accélérateur
+/*!
+ * \brief Boucle sur accélérateur pour exécution avec un seul thread.
+ */
+#define RUNCOMMAND_SINGLE(...) \
+  A_FUNCINFO << ::Arcane::Accelerator::impl::makeExtendedArrayBoundLoop(Arcane::ArrayBounds<MDDim1>(1) __VA_OPT__(, __VA_ARGS__)) \
+             << [=] ARCCORE_HOST_DEVICE(Arcane::ArrayIndex<1> __VA_OPT__(ARCANE_RUNCOMMAND_REDUCER_FOR_EACH(__VA_ARGS__)))
+
+/*!
+ * \brief Boucle sur accélérateur.
+ *
+ * \deprecated Utiliser RUNCOMMAND_LOOP1() à la place.
+ */
 #define RUNCOMMAND_LOOP1_EX(iter_name, x1, ...) \
   RUNCOMMAND_LOOP1(iter_name, x1, __VA_ARGS__)
 

@@ -288,7 +288,24 @@ foreach (REFMVTESTS
                 --solver=lu
         )
 
-        if (TARGET mumps)
+        if (TARGET petsc::spai)
+            alien_test(
+                    BENCH refmvhandlers.scalar
+                    NAME ${REFMVTESTS}.petsc.spai
+                    PROCS 4
+                    COMMAND refmvhandlers.Scalar${REFMVTESTS}
+                    OPTIONS
+                    --size=100
+                    --solver-package=petsc
+                    --solver=bicgs
+                    --precond=spai
+                    --tol=1.e-10
+                    --max-iter=100
+
+            )
+        endif()
+
+        if (TARGET petsc::mumps)
             alien_test(
                     BENCH refmvhandlers.scalar
                     NAME ${REFMVTESTS}.petsc.mumps
@@ -300,7 +317,6 @@ foreach (REFMVTESTS
                     --solver=mumps
             )
         endif ()
-
     endif (TARGET petsc)
 
     if (TARGET hypre)

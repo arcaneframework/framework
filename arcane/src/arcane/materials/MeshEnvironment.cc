@@ -223,9 +223,8 @@ _computeMaterialIndexes(ComponentItemInternalData* item_internal_data, RunQueue&
 {
   IItemFamily* cell_family = cells().itemFamily();
   Integer max_local_id = cell_family->maxLocalId();
-  const Int16 env_id = componentId();
 
-  ComponentItemInternalRange mat_items_internal_range = item_internal_data->matItemsInternalRange(id());
+  ComponentItemInternalRange mat_items_internal_range = m_mat_internal_data_range;
 
   UniqueArray<Int32> cells_index(platform::getDefaultDataAllocator());
   cells_index.resize(max_local_id);
@@ -274,7 +273,6 @@ _computeMaterialIndexes(ComponentItemInternalData* item_internal_data, RunQueue&
     auto cells_index_view = viewIn(command, cells_index);
     auto cells_pos_view = viewOut(command, cells_pos);
     Int32 nb_id = local_ids.size();
-
     command << RUNCOMMAND_LOOP1(iter, nb_id)
     {
       auto [z] = iter();
@@ -291,6 +289,7 @@ _computeMaterialIndexes(ComponentItemInternalData* item_internal_data, RunQueue&
   }
   {
     Integer nb_mat = m_true_materials.size();
+    ComponentItemInternalRange mat_item_internal_range = m_mat_internal_data_range;
     for (Integer i = 0; i < nb_mat; ++i) {
       MeshMaterial* mat = m_true_materials[i];
       Int16 mat_id = mat->componentId();
@@ -307,7 +306,6 @@ _computeMaterialIndexes(ComponentItemInternalData* item_internal_data, RunQueue&
       SmallSpan<Int32> cells_pos_view(cells_pos);
       auto cells_env_view = viewIn(command, cells_env);
       ComponentItemSharedInfo* mat_shared_info = item_internal_data->matSharedInfo();
-      ComponentItemInternalRange mat_item_internal_range(item_internal_data->matItemsInternalRange(env_id));
       SmallSpan<ConstituentItemIndex> mat_id_list = mat->componentData()->m_constituent_local_id_list.mutableLocalIds();
       const Int32 nb_id = local_ids.size();
       Span<Int32> mat_cells_local_id = mat_cells._internalApi()->itemsLocalId();
@@ -343,8 +341,6 @@ _computeMaterialIndexes(ComponentItemInternalData* item_internal_data, RunQueue&
 void MeshEnvironment::
 _computeMaterialIndexesMonoMat(ComponentItemInternalData* item_internal_data, RunQueue& queue)
 {
-  const Int16 env_id = componentId();
-
   ConstituentItemLocalIdListView constituent_item_list_view = m_data.constituentItemListView();
 
   MeshMaterial* mat = m_true_materials[0];
@@ -360,7 +356,7 @@ _computeMaterialIndexesMonoMat(ComponentItemInternalData* item_internal_data, Ru
   auto matvar_indexes = viewIn(command, var_indexer->matvarIndexes());
   auto local_ids = viewIn(command, var_indexer->localIds());
   ComponentItemSharedInfo* mat_shared_info = item_internal_data->matSharedInfo();
-  ComponentItemInternalRange mat_item_internal_range(item_internal_data->matItemsInternalRange(env_id));
+  ComponentItemInternalRange mat_item_internal_range = m_mat_internal_data_range;
   SmallSpan<ConstituentItemIndex> mat_id_list = mat->componentData()->m_constituent_local_id_list.mutableLocalIds();
   const Int32 nb_id = local_ids.size();
   Span<Int32> mat_cells_local_id = mat_cells._internalApi()->itemsLocalId();

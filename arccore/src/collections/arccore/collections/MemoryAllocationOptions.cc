@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MemoryAllocationOptions.cc                                  (C) 2000-2023 */
+/* MemoryAllocationOptions.cc                                  (C) 2000-2024 */
 /*                                                                           */
 /* Options pour configurer les allocations.                                  */
 /*---------------------------------------------------------------------------*/
@@ -28,49 +28,6 @@ String MemoryAllocationArgs::
 arrayName() const
 {
   return (m_debug_info) ? m_debug_info->name() : String();
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-MemoryAllocationOptions::
-MemoryAllocationOptions(const MemoryAllocationOptions& rhs)
-: m_allocator(rhs.m_allocator)
-, m_memory_location_hint(rhs.m_memory_location_hint)
-, m_device(rhs.m_device)
-, m_debug_info(rhs.m_debug_info)
-{
-  if (m_debug_info)
-    m_debug_info->addReference();
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-MemoryAllocationOptions& MemoryAllocationOptions::
-operator=(const MemoryAllocationOptions& rhs)
-{
-  if (&rhs == this)
-    return (*this);
-  if (m_debug_info)
-    m_debug_info->removeReference();
-  m_allocator = rhs.m_allocator;
-  m_memory_location_hint = rhs.m_memory_location_hint;
-  m_device = rhs.m_device;
-  m_debug_info = rhs.m_debug_info;
-  if (m_debug_info)
-    m_debug_info->addReference();
-  return (*this);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-MemoryAllocationOptions::
-~MemoryAllocationOptions()
-{
-  if (m_debug_info)
-    m_debug_info->removeReference();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -106,6 +63,24 @@ String MemoryAllocationOptions::
 arrayName() const
 {
   return (m_debug_info) ? m_debug_info->name() : String{};
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MemoryAllocationOptions::
+_addDebugReference()
+{
+  m_debug_info->addReference();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MemoryAllocationOptions::
+_removeDebugReference()
+{
+  m_debug_info->removeReference();
 }
 
 /*---------------------------------------------------------------------------*/

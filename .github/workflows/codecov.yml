@@ -32,8 +32,8 @@ concurrency:
 
 env:
   # CTest
-  CT_OPTS: "--timeout 300 --output-on-failure"
-  EXCLUDED_TESTS: ''
+  CT_OPTS: "--timeout 600 --output-on-failure"
+  EXCLUDED_TESTS: '^.*(mumps).*$'
   EXCLUDED_TESTS_WITH_LABELS: 'LARGE_HYBRID'
 
   # OpenMPI
@@ -41,14 +41,27 @@ env:
   OMPI_ALLOW_RUN_AS_ROOT_CONFIRM: 1
   OMPI_MCA_rmaps_base_oversubscribe : true
 
+  # Remove test output file after run to reduce disk usage
+  ARCANE_TEST_CLEANUP_AFTER_RUN: 1
+
 jobs:
   build:
     name: Codecov
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/arcaneframework/ubuntu-2404:gcc-14_clang-18_full_20240703
+      image: ghcr.io/arcaneframework/ubuntu-2404:gcc-13_full_20240717
 
     steps:
+      - name: Display CPU infos
+        shell: bash
+        run: |
+          cat /proc/cpuinfo
+
+      - name: Display disks infos
+        shell: bash
+        run: |
+          df -h
+
       # On place la source à la racine pour éviter
       # un sous-répertoire en plus dans Codecov.
       - name: Define environment paths
@@ -59,6 +72,12 @@ jobs:
           echo "CCACHE_DIR=${GITHUB_WORKSPACE}/ccache" >> $GITHUB_ENV
           echo "LOG_DIR=${GITHUB_WORKSPACE}/log" >> $GITHUB_ENV
           echo "CT_RESULT_DIR=${GITHUB_WORKSPACE}/test" >> $GITHUB_ENV
+
+      - name: Set C++ compiler and default MPI
+        shell: bash
+        run: |
+          source /root/scripts/use_openmpi.sh
+          source /root/scripts/use_gcc-13.sh
 
       - name: Get date
         shell: bash
@@ -78,19 +97,28 @@ jobs:
           restore-keys: codecov-
 
       - name: Build framework
-        uses: arcaneframework/gh_actions/build_install_framework@v1
+        uses: arcaneframework/gh_actions/build_install_framework@v2
         with:
           source_dir: ${{ env.SOURCE_DIR }}
           build_dir: ${{ env.BUILD_DIR }}
           log_dir: ${{ env.LOG_DIR }}
           cache_dir: ${{ env.CCACHE_DIR }}
+          max_size_cache_dir: 1G
+          ccache_debug_mode: false
           cmake_additionnal_args: '-DCMAKE_CXX_FLAGS_RELEASE="-O2 -g"
             -DARCCORE_CXX_STANDARD=20
             -DARCCORE_ENABLE_CODE_COVERAGE=ON
+            -DARCANE_ENABLE_DOTNET_PYTHON_WRAPPER=ON
             -DARCANE_DISABLE_PERFCOUNTER_TESTS=ON
-            -DARCANE_DISABLE_HYODA=TRUE'
+            -DARCANE_DISABLE_HYODA=TRUE
+            -DCMAKE_DISABLE_FIND_PACKAGE_Trilinos=ON
+            -DARCANE_USE_HASHTABLEMAP2_FOR_ITEMINTERNALMAP=ON
+            -DALIEN_BUILD_COMPONENT=all
+            -DALIEN_PLUGIN_HYPRE=ON
+            -DALIEN_PLUGIN_PETSC=ON
+            -DGFORTRAN_LIBRARY=/usr/lib/gcc/x86_64-linux-gnu/13/libgfortran.so'
           type_build: 'Release'
-          compilo: 'GCC'
+          compilo: 'gcc'
           verbose: true
           with_cuda: false
           with_samples: false
@@ -103,11 +131,21 @@ jobs:
           path: ${{ env.LOG_DIR }}
           retention-days: 7
 
+      - name: Display disks infos
+        shell: bash
+        run: |
+          df -h
+
       - name: Test
         shell: bash
         run: |
           mkdir -p ${{ env.CT_RESULT_DIR }}
           ARCANE_CHECK=1 ctest --test-dir ${{ env.BUILD_DIR }} --output-junit ${{ env.CT_RESULT_DIR }}/results.xml ${{ env.CT_OPTS }} -E '${{ env.EXCLUDED_TESTS }}' -LE '${{ env.EXCLUDED_TESTS_WITH_LABELS }}'
+
+      - name: Display disks infos
+        shell: bash
+        run: |
+          df -h
 
       - name: Apply coverage
         shell: bash

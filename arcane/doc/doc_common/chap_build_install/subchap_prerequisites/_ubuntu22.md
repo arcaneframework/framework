@@ -14,7 +14,7 @@ nécessaires pour %Arcane (ainsi que les dépendances optionnelles `HDF5` et `Pa
 sudo apt update
 sudo apt install apt-utils build-essential iputils-ping python3 \
   git gfortran libglib2.0-dev libxml2-dev libhdf5-openmpi-dev \
-  libparmetis-dev dotnet6 cmake
+  libparmetis-dev libunwind-dev dotnet6 cmake
 ~~~
 
 ## Installation des packages optionnels

@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* DynamicMeshKindInfos.cc                                     (C) 2000-2019 */
+/* DynamicMeshKindInfos.cc                                     (C) 2000-2024 */
 /*                                                                           */
 /* Infos de maillage pour un genre d'entité donnée.                          */
 /*---------------------------------------------------------------------------*/
@@ -16,18 +16,17 @@
 #include "arcane/utils/NotImplementedException.h"
 #include "arcane/utils/StringBuilder.h"
 
-#include "arcane/IMesh.h"
-#include "arcane/IItemFamily.h"
-#include "arcane/ItemEnumerator.h"
-#include "arcane/IParallelMng.h"
-#include "arcane/ItemCompare.h"
-#include "arcane/ItemPrinter.h"
-#include "arcane/VariableTypes.h"
-#include "arcane/Timer.h"
-#include "arcane/IItemInternalSortFunction.h"
-#include "arcane/ItemFamilyCompactInfos.h"
-#include "arcane/IMeshCompacter.h"
-#include "arcane/MeshPartInfo.h"
+#include "arcane/core/IMesh.h"
+#include "arcane/core/IItemFamily.h"
+#include "arcane/core/ItemEnumerator.h"
+#include "arcane/core/IParallelMng.h"
+#include "arcane/core/ItemPrinter.h"
+#include "arcane/core/VariableTypes.h"
+#include "arcane/core/Timer.h"
+#include "arcane/core/IItemInternalSortFunction.h"
+#include "arcane/core/ItemFamilyCompactInfos.h"
+#include "arcane/core/IMeshCompacter.h"
+#include "arcane/core/MeshPartInfo.h"
 
 #include "arcane/mesh/DynamicMeshKindInfos.h"
 #include "arcane/mesh/ItemFamily.h"
@@ -193,14 +192,13 @@ itemsUniqueIdToLocalId(ArrayView<Int64> ids,bool do_fatal) const
     if (do_fatal){
       for( Integer i=0, s=ids.size(); i<s; ++i ){
         Int64 unique_id = ids[i];
-        ids[i] =m_items_map.lookupValue(unique_id)->localId();
+        ids[i] = m_items_map.findLocalId(unique_id);
       }
     }
     else{
       for( Integer i=0, s=ids.size(); i<s; ++i ){
         Int64 unique_id = ids[i];
-        const ItemInternalMap::Data* data = m_items_map.lookup(unique_id);
-        ids[i] = (data) ? data->value()->localId() : NULL_ITEM_LOCAL_ID;
+        ids[i] = m_items_map.tryFindLocalId(unique_id);
       }
     }
   }
@@ -208,9 +206,8 @@ itemsUniqueIdToLocalId(ArrayView<Int64> ids,bool do_fatal) const
     Integer nb_error = 0;
     for( Integer i=0, s=ids.size(); i<s; ++i ){
       Int64 unique_id = ids[i];
-      const ItemInternalMap::Data* data = m_items_map.lookup(unique_id);
-      ids[i] = (data) ? data->value()->localId() : NULL_ITEM_LOCAL_ID;
-      if (!data && do_fatal){
+      ids[i] = m_items_map.tryFindLocalId(unique_id);
+      if ((ids[i] == NULL_ITEM_LOCAL_ID) && do_fatal) {
         if (nb_error<10){
           error() << "DynamicMeshKindInfos::itemsUniqueIdToLocalId() can't find "
                   << "entity " << m_kind_name << " with global id "
@@ -239,14 +236,13 @@ itemsUniqueIdToLocalId(Int32ArrayView local_ids,
     if (do_fatal){
       for( Integer i=0, s=unique_ids.size(); i<s; ++i ){
         Int64 unique_id = unique_ids[i];
-        local_ids[i] = (unique_id==NULL_ITEM_UNIQUE_ID) ? NULL_ITEM_LOCAL_ID : m_items_map.lookupValue(unique_id)->localId();
+        local_ids[i] = (unique_id == NULL_ITEM_UNIQUE_ID) ? NULL_ITEM_LOCAL_ID : m_items_map.findLocalId(unique_id);
       }
     }
     else{
       for( Integer i=0, s=unique_ids.size(); i<s; ++i ){
         Int64 unique_id = unique_ids[i];
-        const ItemInternalMap::Data* data = m_items_map.lookup(unique_id);
-        local_ids[i] = (data) ? data->value()->localId() : NULL_ITEM_LOCAL_ID;
+        local_ids[i] = m_items_map.tryFindLocalId(unique_id);
       }
     }
   }
@@ -254,9 +250,8 @@ itemsUniqueIdToLocalId(Int32ArrayView local_ids,
     Integer nb_error = 0;
     for( Integer i=0, s=unique_ids.size(); i<s; ++i ){
       Int64 unique_id = unique_ids[i];
-      const ItemInternalMap::Data* data = m_items_map.lookup(unique_id);
-      local_ids[i] = (data) ? data->value()->localId() : NULL_ITEM_LOCAL_ID;
-      if (!data && do_fatal && unique_id!=NULL_ITEM_UNIQUE_ID){
+      local_ids[i] = m_items_map.tryFindLocalId(unique_id);
+      if ((local_ids[i] == NULL_ITEM_LOCAL_ID) && do_fatal && unique_id != NULL_ITEM_UNIQUE_ID) {
         if (nb_error<10){
           error() << "DynamicMeshKindInfos::itemsUniqueIdToLocalId() can't find "
                   << "entity " << m_kind_name << " with global id "
@@ -285,14 +280,13 @@ itemsUniqueIdToLocalId(Int32ArrayView local_ids,
     if (do_fatal){
       for( Integer i=0, s=unique_ids.size(); i<s; ++i ){
         Int64 unique_id = unique_ids[i];
-        local_ids[i] = m_items_map.lookupValue(unique_id)->localId();
+        local_ids[i] = m_items_map.findLocalId(unique_id);
       }
     }
     else{
       for( Integer i=0, s=unique_ids.size(); i<s; ++i ){
         Int64 unique_id = unique_ids[i];
-        const ItemInternalMap::Data* data = m_items_map.lookup(unique_id);
-        local_ids[i] = (data) ? data->value()->localId() : NULL_ITEM_LOCAL_ID;
+        local_ids[i] = m_items_map.tryFindLocalId(unique_id);
       }
     }
   }
@@ -300,9 +294,8 @@ itemsUniqueIdToLocalId(Int32ArrayView local_ids,
     Integer nb_error = 0;
     for( Integer i=0, s=unique_ids.size(); i<s; ++i ){
       Int64 unique_id = unique_ids[i];
-      const ItemInternalMap::Data* data = m_items_map.lookup(unique_id);
-      local_ids[i] = (data) ? data->value()->localId() : NULL_ITEM_LOCAL_ID;
-      if (!data && do_fatal){
+      local_ids[i] = m_items_map.tryFindLocalId(unique_id);
+      if ((local_ids[i] == NULL_ITEM_LOCAL_ID) && do_fatal) {
         if (nb_error<10){
           error() << "DynamicMeshKindInfos::itemsUniqueIdToLocalId() can't find "
                   << "entity " << m_kind_name << " with global id "
@@ -654,15 +647,11 @@ finishCompactItems(ItemFamilyCompactInfos& compact_infos)
   // 1. Il faut mettre à jour la structure m_items_map pour référencer
   // le nouveau local_id
   // 2. Il faut recopier les valeurs de chaque ItemInternal pour qu'il
-  // soit bien placé dans la nouvelle numéroration.
+  // soit bien placé dans la nouvelle numérotation.
   // IMPORTANT: Cette opération doit toujours être la dernière car ensuite
   // on perd la relation entre les anciens local_ids et les nouveaux à
   // travers cette structure
-  ENUMERATE_ITEM_INTERNAL_MAP_DATA(nbid,m_items_map){
-    ItemInternal* item = nbid->value();
-    Integer current_local_id = item->localId();
-    nbid->setValue(m_internals[ old_to_new_local_ids[ current_local_id ] ]);
-  }
+  m_items_map._changeLocalIds(m_internals, old_to_new_local_ids);
 
   if (m_is_verbose){
     info() << "DumpItemsBefore:";
