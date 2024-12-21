@@ -27,7 +27,7 @@ extern "C++" void _doPartition1(RunQueue queue, SmallSpan<Real> values, SmallSpa
   const Int32 nb_value = values.size();
   NumArray<Real, MDDim1> input(nb_value);
   //, { 1.3, 4.5, -1.2, 3.5, 7.0, 4.2, 2.3, 1.6 });
-  input.copy(MDSpan<Real, MDDim1>(values.data(), values.size()));
+  input.copy(values, queue);
   NumArray<Real, MDDim1> output(nb_value);
   auto input_values = viewIn(queue, input);
   auto output_values = viewOut(queue, output);
