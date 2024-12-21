@@ -218,17 +218,6 @@ class MDDimType<4>
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// Ces trois macros pourront être supprimées après la 3.8
-
-// A définir lorsqu'on voudra que le rang des classes NumArray et associées
-// soit spécifié par une classe au lieu d'un entier
-#define ARCANE_USE_TYPE_FOR_EXTENT
-#define A_MDRANK_TYPE(rank_name) typename rank_name
-#define A_MDRANK_RANK_VALUE(rank_name) (rank_name ::rank())
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 } // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/
