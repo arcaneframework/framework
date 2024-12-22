@@ -79,7 +79,7 @@ class ARCANE_CORE_EXPORT ComponentItemSharedInfoStorageView
   // TODO: Utiliser stockage avec un seul élément pour le nullComponent
 
   friend class ComponentItemInternalData;
-  friend class ComponentItemSharedInfo;
+  friend ConstituentItemSharedInfo;
 
  private:
 
@@ -110,7 +110,7 @@ class ARCANE_CORE_EXPORT ComponentItemSharedInfoStorageView
  * les intances de cette classe car ils sont valides durant toute la vie
  * d'un MeshMaterialMng.
  */
-class ARCANE_CORE_EXPORT ComponentItemSharedInfo
+class ARCANE_CORE_EXPORT ConstituentItemSharedInfo
 : private ComponentItemSharedInfoStorageView
 {
   friend ComponentItemInternalData;
