@@ -44,7 +44,7 @@ class MatVarIndex
   , m_value_index(value_index)
   {
   }
-  constexpr ARCCORE_HOST_DEVICE MatVarIndex() {}
+  ARCCORE_HOST_DEVICE MatVarIndex() {}
 
  public:
 
