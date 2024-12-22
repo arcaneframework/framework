@@ -2,6 +2,11 @@
 
 set(ARCANE_MATERIALS_SOURCES
   materials/CellToAllEnvCellConverter.h
+  materials/ConstituentItem.h
+  materials/ConstituentItemBase.h
+  materials/ConstituentItemSharedInfo.h
+  materials/ConstituentItemLocalId.h
+  materials/ConstituentItemLocalId.cc
   materials/MaterialsCoreGlobal.h
   materials/MaterialsCoreGlobal.cc
   materials/MatItem.h

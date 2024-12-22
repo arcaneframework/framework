@@ -5,13 +5,13 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MatVarIndex.cc                                              (C) 2000-2024 */
+/* ConstituentItemLocalId.cc                                   (C) 2000-2024 */
 /*                                                                           */
 /* Index sur les variables matériaux.                                        */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/core/materials/MatVarIndex.h"
+#include "arcane/core/materials/ConstituentItemLocalId.h"
 
 #include "arcane/utils/Iostream.h"
 
@@ -25,9 +25,9 @@ namespace Arcane::Materials
 /*---------------------------------------------------------------------------*/
 
 std::ostream&
-operator<<(std::ostream& o,const MatVarIndex& mvi)
+operator<<(std::ostream& o,const ConstituentItemLocalId& mvi)
 {
-  o << mvi.arrayIndex() << ":" << mvi.valueIndex();
+  o << mvi.localId();
   return o;
 }
 
