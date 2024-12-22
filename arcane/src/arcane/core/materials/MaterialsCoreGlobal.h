@@ -99,6 +99,10 @@ class AllCellToAllEnvCell;
 class ConstituentItemIndex;
 class IConstituentItemVectorImpl;
 class ComponentItemSharedInfo;
+class ConstituentItemLocalId;
+class MatItemLocalId;
+class EnvItemLocalId;
+using ComponentItemLocalId = ConstituentItemLocalId;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -103,33 +103,50 @@ inline bool ARCCORE_HOST_DEVICE operator!=(MatVarIndex mv1,MatVarIndex mv2)
 /*---------------------------------------------------------------------------*/
 /*!
  * \ingroup ArcaneMaterials
- * \brief Index d'un Item matériaux dans une variable.
+ * \brief Index d'un Item matériaux pure dans une variable.
  */
-class ARCANE_CORE_EXPORT ComponentItemLocalId
+class ARCANE_CORE_EXPORT PureMatVarIndex
 {
  public:
-  constexpr ARCCORE_HOST_DEVICE ComponentItemLocalId() : m_local_id(-1,-1){}
-  constexpr ARCCORE_HOST_DEVICE explicit ComponentItemLocalId(MatVarIndex mvi) : m_local_id(mvi){}
+
+  explicit ARCCORE_HOST_DEVICE PureMatVarIndex(Int32 idx)
+  : m_index(idx)
+  {}
+
  public:
-  MatVarIndex ARCCORE_HOST_DEVICE localId() const { return m_local_id; }
+
+  Int32 ARCCORE_HOST_DEVICE valueIndex() const { return m_index; }
+
  private:
-  MatVarIndex m_local_id;
+
+  Int32 m_index;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
  * \ingroup ArcaneMaterials
- * \brief Index d'un Item matériaux pure dans une variable.
+ * \brief Index d'un ComponentItem dans une variable.
  */
-class ARCANE_CORE_EXPORT PureMatVarIndex
+class ARCANE_CORE_EXPORT ConstituentItemLocalId
 {
  public:
-  explicit ARCCORE_HOST_DEVICE PureMatVarIndex(Int32 idx) : m_index(idx){}
+
+  constexpr ARCCORE_HOST_DEVICE ConstituentItemLocalId()
+  : m_local_id(-1, -1)
+  {}
+  constexpr ARCCORE_HOST_DEVICE explicit ConstituentItemLocalId(MatVarIndex mvi)
+  : m_local_id(mvi)
+  {}
+
  public:
-  Int32 ARCCORE_HOST_DEVICE valueIndex() const { return m_index; }
+
+  //! Index générique pour accéder aux valeurs d'une variable.
+  MatVarIndex ARCCORE_HOST_DEVICE localId() const { return m_local_id; }
+
  private:
-  Int32 m_index;
+
+  MatVarIndex m_local_id;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -137,6 +154,46 @@ class ARCANE_CORE_EXPORT PureMatVarIndex
 
 ARCANE_CORE_EXPORT ARCCORE_HOST_DEVICE std::ostream&
 operator<<(std::ostream& o,const ComponentItemLocalId& mvi);
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \ingroup ArcaneMaterials
+ * \brief Index d'un MatItem dans une variable.
+ */
+class MatItemLocalId
+: public ConstituentItemLocalId
+{
+ public:
+
+  MatItemLocalId() = default;
+  constexpr ARCCORE_HOST_DEVICE explicit MatItemLocalId(MatVarIndex mvi)
+  : ConstituentItemLocalId(mvi)
+  {}
+  constexpr ARCCORE_HOST_DEVICE MatItemLocalId(ComponentItemLocalId lid)
+  : ConstituentItemLocalId(lid)
+  {}
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \ingroup ArcaneMaterials
+ * \brief Index d'un EnvItem dans une variable.
+ */
+class EnvItemLocalId
+: public ConstituentItemLocalId
+{
+ public:
+
+  EnvItemLocalId() = default;
+  constexpr ARCCORE_HOST_DEVICE explicit EnvItemLocalId(MatVarIndex mvi)
+  : ConstituentItemLocalId(mvi)
+  {}
+  constexpr ARCCORE_HOST_DEVICE EnvItemLocalId(ComponentItemLocalId lid)
+  : ConstituentItemLocalId(lid)
+  {}
+};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
