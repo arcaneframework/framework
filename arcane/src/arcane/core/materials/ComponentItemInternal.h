@@ -16,7 +16,7 @@
 
 #include "arcane/core/ItemInternal.h"
 #include "arcane/core/Item.h"
-#include "arcane/core/materials/MatVarIndex.h"
+#include "arcane/core/materials/ConstituentItemLocalId.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

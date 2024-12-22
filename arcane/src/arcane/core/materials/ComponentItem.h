@@ -132,6 +132,10 @@ class ARCANE_CORE_EXPORT ComponentCell
   //! Liste des sous-constituents de cette entité
   ARCCORE_HOST_DEVICE inline CellComponentCellEnumerator subItems() const;
 
+  //! Opérateur d'écriture
+  ARCANE_CORE_EXPORT friend std::ostream&
+  operator<<(std::ostream& o, const ComponentCell& mvi);
+
  protected:
 
   static ARCCORE_HOST_DEVICE void _checkLevel([[maybe_unused]] matimpl::ConstituentItemBase item_base,

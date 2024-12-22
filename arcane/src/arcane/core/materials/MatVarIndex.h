@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MatVarIndex.h                                               (C) 2000-2022 */
+/* MatVarIndex.h                                               (C) 2000-2024 */
 /*                                                                           */
 /* Index sur les variables matériaux.                                        */
 /*---------------------------------------------------------------------------*/
@@ -35,16 +35,17 @@ namespace Arcane::Materials
  * n'initialise par les membres de cette classe. Il faut donc appeler
  * reset() pour initialiser à une valeur invalide.
  */
-class ARCANE_CORE_EXPORT MatVarIndex
+class MatVarIndex
 {
  public:
 
-  constexpr ARCCORE_HOST_DEVICE MatVarIndex(Int32 array_index,Int32 value_index)
-  : m_array_index(array_index), m_value_index(value_index)
+  constexpr ARCCORE_HOST_DEVICE MatVarIndex(Int32 array_index, Int32 value_index)
+  : m_array_index(array_index)
+  , m_value_index(value_index)
   {
   }
-  ARCCORE_HOST_DEVICE MatVarIndex(){}
- 
+  constexpr ARCCORE_HOST_DEVICE MatVarIndex() {}
+
  public:
 
   //! Retourne l'indice du tableau de valeur dans la liste des variables.
@@ -54,50 +55,56 @@ class ARCANE_CORE_EXPORT MatVarIndex
   constexpr ARCCORE_HOST_DEVICE Int32 valueIndex() const { return m_value_index; }
 
   //! Positionne l'index
-  constexpr ARCCORE_HOST_DEVICE void setIndex(Int32 array_index,Int32 value_index)
+  constexpr ARCCORE_HOST_DEVICE void setIndex(Int32 array_index, Int32 value_index)
   {
     m_array_index = array_index;
     m_value_index = value_index;
   }
 
+  //! Positionne l'entité à l'instance nulle.
   constexpr ARCCORE_HOST_DEVICE void reset()
   {
     m_array_index = (-1);
     m_value_index = (-1);
   }
 
+  //! Indique si l'instance représente l'entité nulle
   constexpr ARCCORE_HOST_DEVICE bool null() const
   {
-    return m_value_index==(-1);
+    return m_value_index == (-1);
   }
 
+  //! Indique si l'instance représente l'entité nulle
+  constexpr ARCCORE_HOST_DEVICE bool isNull() const
+  {
+    return m_value_index == (-1);
+  }
+
+  //! Opérateur de comparaison
+  constexpr ARCCORE_HOST_DEVICE friend bool
+  operator==(MatVarIndex mv1, MatVarIndex mv2)
+  {
+    if (mv1.arrayIndex() != mv2.arrayIndex())
+      return false;
+    return mv1.valueIndex() == mv2.valueIndex();
+  }
+
+  //! Opérateur de comparaison
+  constexpr ARCCORE_HOST_DEVICE friend bool
+  operator!=(MatVarIndex mv1, MatVarIndex mv2)
+  {
+    return !(operator==(mv1, mv2));
+  }
+
+  //! Opérateur d'écriture
+  ARCANE_CORE_EXPORT friend std::ostream&
+  operator<<(std::ostream& o, const MatVarIndex& mvi);
+
  private:
-  
+
   Int32 m_array_index;
   Int32 m_value_index;
 };
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ARCANE_CORE_EXPORT ARCCORE_HOST_DEVICE std::ostream&
-operator<<(std::ostream& o,const MatVarIndex& mvi);
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-inline ARCCORE_HOST_DEVICE bool
-operator==(MatVarIndex mv1,MatVarIndex mv2)
-{
-  if (mv1.arrayIndex() != mv2.arrayIndex())
-    return false;
-  return mv1.valueIndex() == mv2.valueIndex();
-}
-
-inline bool ARCCORE_HOST_DEVICE operator!=(MatVarIndex mv1,MatVarIndex mv2)
-{
-  return !(operator==(mv1,mv2));
-}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -105,7 +112,7 @@ inline bool ARCCORE_HOST_DEVICE operator!=(MatVarIndex mv1,MatVarIndex mv2)
  * \ingroup ArcaneMaterials
  * \brief Index d'un Item matériaux pure dans une variable.
  */
-class ARCANE_CORE_EXPORT PureMatVarIndex
+class PureMatVarIndex
 {
  public:
 
@@ -124,84 +131,10 @@ class ARCANE_CORE_EXPORT PureMatVarIndex
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-/*!
- * \ingroup ArcaneMaterials
- * \brief Index d'un ComponentItem dans une variable.
- */
-class ARCANE_CORE_EXPORT ConstituentItemLocalId
-{
- public:
 
-  constexpr ARCCORE_HOST_DEVICE ConstituentItemLocalId()
-  : m_local_id(-1, -1)
-  {}
-  constexpr ARCCORE_HOST_DEVICE explicit ConstituentItemLocalId(MatVarIndex mvi)
-  : m_local_id(mvi)
-  {}
-
- public:
-
-  //! Index générique pour accéder aux valeurs d'une variable.
-  MatVarIndex ARCCORE_HOST_DEVICE localId() const { return m_local_id; }
-
- private:
-
-  MatVarIndex m_local_id;
-};
+} // namespace Arcane::Materials
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_CORE_EXPORT ARCCORE_HOST_DEVICE std::ostream&
-operator<<(std::ostream& o,const ComponentItemLocalId& mvi);
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
- * \ingroup ArcaneMaterials
- * \brief Index d'un MatItem dans une variable.
- */
-class MatItemLocalId
-: public ConstituentItemLocalId
-{
- public:
-
-  MatItemLocalId() = default;
-  constexpr ARCCORE_HOST_DEVICE explicit MatItemLocalId(MatVarIndex mvi)
-  : ConstituentItemLocalId(mvi)
-  {}
-  constexpr ARCCORE_HOST_DEVICE MatItemLocalId(ComponentItemLocalId lid)
-  : ConstituentItemLocalId(lid)
-  {}
-};
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
- * \ingroup ArcaneMaterials
- * \brief Index d'un EnvItem dans une variable.
- */
-class EnvItemLocalId
-: public ConstituentItemLocalId
-{
- public:
-
-  EnvItemLocalId() = default;
-  constexpr ARCCORE_HOST_DEVICE explicit EnvItemLocalId(MatVarIndex mvi)
-  : ConstituentItemLocalId(mvi)
-  {}
-  constexpr ARCCORE_HOST_DEVICE EnvItemLocalId(ComponentItemLocalId lid)
-  : ConstituentItemLocalId(lid)
-  {}
-};
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-} // End namespace Arcane::Materials
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-#endif  
-
+#endif
