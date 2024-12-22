@@ -49,7 +49,11 @@ namespace Arcane::Materials
 
 class AllCellToAllEnvCellContainer;
 class AllEnvCellVectorView;
-class ComponentCell;
+class ComponentItemInternalData;
+class ConstituentItem;
+using ComponentCell = ConstituentItem;
+class ConstituentItemVectorImpl;
+class ConstituentItemLocalIdList;
 class IMeshBlock;
 class IMeshComponent;
 class IMeshMaterial;
@@ -103,6 +107,13 @@ class ConstituentItemLocalId;
 class MatItemLocalId;
 class EnvItemLocalId;
 using ComponentItemLocalId = ConstituentItemLocalId;
+
+class AllEnvData;
+class MeshMaterialMng;
+class MeshEnvironment;
+class MeshComponentData;
+class EnvCellVector;
+class MatCellVector;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -23,16 +23,6 @@
 
 namespace Arcane::Materials
 {
-class MeshEnvironment;
-class MeshComponentData;
-class AllEnvData;
-class MeshMaterialMng;
-class ComponentItemInternalData;
-
-namespace matimpl
-{
-  class ConstituentItemBase;
-}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -123,15 +113,15 @@ class ARCANE_CORE_EXPORT ComponentItemSharedInfoStorageView
 class ARCANE_CORE_EXPORT ComponentItemSharedInfo
 : private ComponentItemSharedInfoStorageView
 {
-  friend class ComponentItemInternalData;
-  friend class CellComponentCellEnumerator;
-  friend class ConstituentItemLocalIdList;
-  friend class ConstituentItemLocalIdListView;
+  friend ComponentItemInternalData;
+  friend CellComponentCellEnumerator;
+  friend ConstituentItemLocalIdList;
+  friend ConstituentItemLocalIdListView;
   friend matimpl::ConstituentItemBase;
-  friend class ComponentCell;
-  friend class CellToAllEnvCellConverter;
-  friend class AllEnvCellVectorView;
-  friend class ConstituentItemVectorImpl;
+  friend ConstituentItem;
+  friend CellToAllEnvCellConverter;
+  friend AllEnvCellVectorView;
+  friend ConstituentItemVectorImpl;
 
   static const int MAT_INDEX_OFFSET = 10;
 
@@ -270,17 +260,17 @@ namespace Arcane::Materials::matimpl
  */
 class ARCANE_CORE_EXPORT ConstituentItemBase
 {
-  friend Arcane::Materials::ComponentCell;
-  friend Arcane::Materials::AllEnvCell;
-  friend Arcane::Materials::EnvCell;
-  friend Arcane::Materials::MatCell;
-  friend Arcane::Materials::AllEnvData;
-  friend Arcane::Materials::MeshMaterialMng;
-  friend Arcane::Materials::ComponentItemSharedInfo;
+  friend ComponentCell;
+  friend AllEnvCell;
+  friend EnvCell;
+  friend MatCell;
+  friend AllEnvData;
+  friend MeshMaterialMng;
+  friend ComponentItemSharedInfo;
 
-  friend Arcane::Materials::MeshEnvironment;
-  friend Arcane::Materials::MeshComponentData;
-  friend Arcane::Materials::ComponentItemInternalData;
+  friend MeshEnvironment;
+  friend MeshComponentData;
+  friend ComponentItemInternalData;
 
  private:
 
