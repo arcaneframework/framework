@@ -1,53 +1,60 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshGlobal.h                                                (C) 2000-2021 */
+/* ItemsOwnerBuilder.h                                         (C) 2000-2024 */
 /*                                                                           */
-/* Déclarations générales de la composante Maillage de Arcane.               */
+/* Classe pour calculer les propriétaires des entités.                       */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_MESH_MESHGLOBAL_H
-#define ARCANE_MESH_MESHGLOBAL_H
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-#include "arcane/utils/ArcaneGlobal.h"
-
+#ifndef ARCANE_MESH_ITESMOWNERBUILDER_H
+#define ARCANE_MESH_ITESMOWNERBUILDER_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#define ARCANE_MESH_BEGIN_NAMESPACE  namespace mesh {
-#define ARCANE_MESH_END_NAMESPACE    }
+#include "arcane/mesh/MeshGlobal.h"
+
+#include <memory>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 namespace Arcane::mesh
 {
+class ItemsOwnerBuilderImpl;
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Classe générique pour calculer les propriétaires des entités.
+ *
+ * Pour toutes les méthodes, on suppose que les propriétaires des mailles
+ * sont correctement valides et sont synchronisés.
+ */
+class ARCANE_MESH_EXPORT ItemsOwnerBuilder
+{
+  class Impl;
+
+ public:
+
+  explicit ItemsOwnerBuilder(DynamicMesh* mesh);
+  ~ItemsOwnerBuilder();
+
+ public:
+
+  void computeFacesOwner();
+
+ private:
+
+  std::unique_ptr<ItemsOwnerBuilderImpl> m_p;
+};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class ItemFamily;
-class NodeFamily;
-class EdgeFamily;
-class FaceFamily;
-class CellFamily;
-class DynamicMesh;
-
-class IncrementalItemConnectivity;
-
-class ItemConnectivitySelector;
-template<typename LeagcyType,typename CustomType>
-class ItemConnectivitySelectorT;
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-} // End namespace Arcane::mesh
+} // namespace Arcane::mesh
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

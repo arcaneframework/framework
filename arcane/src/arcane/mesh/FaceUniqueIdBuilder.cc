@@ -17,18 +17,19 @@
 #include "arcane/utils/OStringStream.h"
 #include "arcane/utils/CheckedConvert.h"
 
-#include "arcane/mesh/DynamicMesh.h"
-#include "arcane/mesh/OneMeshItemAdder.h"
-#include "arcane/mesh/GhostLayerBuilder.h"
-#include "arcane/mesh/FaceUniqueIdBuilder.h"
-#include "arcane/mesh/ItemTools.h"
-
 #include "arcane/core/IMeshUniqueIdMng.h"
 #include "arcane/core/IParallelExchanger.h"
 #include "arcane/core/IParallelMng.h"
 #include "arcane/core/ISerializeMessage.h"
 #include "arcane/core/ISerializer.h"
 #include "arcane/core/ParallelMngUtils.h"
+
+#include "arcane/mesh/DynamicMesh.h"
+#include "arcane/mesh/OneMeshItemAdder.h"
+#include "arcane/mesh/GhostLayerBuilder.h"
+#include "arcane/mesh/FaceUniqueIdBuilder.h"
+#include "arcane/mesh/ItemTools.h"
+#include "arcane/mesh/ItemsOwnerBuilder.h"
 
 #include <unordered_set>
 
@@ -121,6 +122,12 @@ computeFacesUniqueIds()
     faces_map.eachItem([&](Item face) {
       info() << "Face uid=" << face.uniqueId() << " lid=" << face.localId();
     });
+  }
+  // Avec la version 5, les propriétaires ne sont positionnées
+  // Il faut le faire maintenant
+  if (face_version == 5){
+    ItemsOwnerBuilder owner_builder(m_mesh);
+    owner_builder.computeFacesOwner();
   }
 }
 
