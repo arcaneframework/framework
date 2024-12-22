@@ -5,18 +5,18 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemVector.h                                                (C) 2000-2023 */
+/* ItemVector.h                                                (C) 2000-2024 */
 /*                                                                           */
-/* Vecteur (tableau indirect) d'entités.                                     */
+/* Vecteur d'entités de même genre.                                          */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_ITEMVECTOR_H
-#define ARCANE_ITEMVECTOR_H
+#ifndef ARCANE_CORE_ITEMVECTOR_H
+#define ARCANE_CORE_ITEMVECTOR_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/ItemEnumerator.h"
-#include "arcane/ItemVectorView.h"
-#include "arcane/IItemFamily.h"
+#include "arcane/core/ItemEnumerator.h"
+#include "arcane/core/ItemVectorView.h"
+#include "arcane/core/IItemFamily.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -28,6 +28,19 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*!
  * \brief Vecteur d'entités.
+ *
+ * La classe ItemVector utilise une sémantique par référence.
+ *
+ * \note Cette classe n'est pas thread-safe et ne doit pas être utilisée par
+ * différents threads en même temps.
+ *
+ * \warning Un vecteur doit nécessairement être associée à une famille d'entité
+ * (ItemFamily*) avant d'être utilisé. Il est possible de le faire soit via
+ * l'appel à setFamily(), soit via un constructeur qui prend une famille
+ * en argument.
+ *
+ * \a ItemVector est la classe générique. Il est possible d'avoir une
+ * version spécialisée par genre d'entité via ItemVectorT.
  *
  * Le fonctionnement du vecteur d'entité est similaire à celui
  * du groupe d'entité ItemGroup à la différence suivante:
@@ -41,15 +54,12 @@ namespace Arcane
  * d'entités. Il reprend les fonctionnalités similaires à la classe
  * Array et il est donc possible par exemple d'ajouter des éléments un par un,
  * soit via un localId(), soit via une entité.
- *
- * Un vecteur doit nécessairement être associée à une famille (setFamily())
- * avant d'être utilisé.
  */
 class ARCANE_CORE_EXPORT ItemVector
 {
  public:
 
-  typedef Item ItemType;
+  using ItemType = Item;
 
  public:
 
@@ -63,7 +73,7 @@ class ARCANE_CORE_EXPORT ItemVector
   ItemVector(IItemFamily* afamily, Integer asize);
 
   //! Créé un vecteur nul. Il faudra ensuite appeler setFamily() pour l'utiliser
-  ItemVector() = default;
+  ItemVector();
 
  public:
 

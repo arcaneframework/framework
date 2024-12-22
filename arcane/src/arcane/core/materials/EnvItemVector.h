@@ -39,6 +39,8 @@ class ARCANE_CORE_EXPORT EnvCellVector
   EnvCellVector(const CellGroup& group, IMeshEnvironment* environment);
   //! Construit un vecteur contenant les entités de \a view pour le milieu \a environment
   EnvCellVector(CellVectorView view, IMeshEnvironment* environment);
+  //! Construit un vecteur contenant les entités \a local_ids pour le milieu \a environment
+  EnvCellVector(SmallSpan<const Int32> local_ids, IMeshEnvironment* environment);
   //! Constructeur par recopie. L'instance fera référence à \a rhs
   EnvCellVector(const EnvCellVector& rhs) = default;
   //! Constructeur de recopie. Cette instance est une copie de \a rhs.
@@ -68,7 +70,7 @@ class ARCANE_CORE_EXPORT EnvCellVector
 
  private:
 
-  void _build(CellVectorView view);
+  void _build(SmallSpan<const Int32> view);
 };
 
 /*---------------------------------------------------------------------------*/

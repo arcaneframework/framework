@@ -42,6 +42,22 @@
 namespace Arcane::Materials
 {
 
+namespace
+{
+
+// Allocateur utilisé pour les vues
+// On utilise la mémoire de l'accélérateur si l'exécution se fait sur accélérateur
+MemoryAllocationOptions
+_getViewAllocator(IMeshMaterialMng* mm)
+{
+  eMemoryRessource r = eMemoryRessource::Host;
+  if (mm->_internalApi()->runQueue().isAcceleratorPolicy())
+    r = eMemoryRessource::Device;
+  return MemoryUtils::getAllocationOptions(r);
+}
+
+}
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -53,9 +69,10 @@ ItemMaterialVariableBase(const MaterialVariableBuildInfo& v,
 : MeshMaterialVariable(v,mvs)
 , m_global_variable(global_var)
 , m_global_variable_ref(global_var_ref)
-, m_views(MemoryUtils::getAllocatorForMostlyReadOnlyData())
+, m_device_views(_getViewAllocator(m_p->materialMng()))
+, m_host_views(MemoryUtils::getAllocationOptions(eMemoryRessource::HostPinned))
 {
-  m_views.setDebugName(String("ItemMaterialVariableViews") + v.name());
+  m_device_views.setDebugName(String("ItemMaterialVariableViews") + v.name());
 }
 
 
@@ -96,7 +113,7 @@ _init(ArrayView<PrivatePartType*> vars)
     ARCANE_FATAL("Internal error: _init() already called");
   m_vars.addRange(vars);
   Integer nb_var = m_vars.size();
-  m_views.resize(nb_var);
+  m_device_views.resizeNoInit(nb_var);
   m_host_views.resize(nb_var);
   m_views_as_bytes.resize(nb_var);
   // Il faut maintenir une référence sur les variables qu'on possède pour
@@ -357,8 +374,10 @@ _isValidAndUsedAndGlobalUsed(PrivatePartType* partial_var)
 
 template <typename Traits> void
 ItemMaterialVariableBase<Traits>::
-_resizeForIndexer(Int32 index, RunQueue& queue)
+_resizeForIndexer(ResizeVariableIndexerArgs& args)
 {
+  Int32 index = args.m_var_index;
+  RunQueue& queue = args.m_queue;
   _setView(0);
   PrivatePartType* partial_var = m_vars[index + 1];
   if (_isValidAndUsedAndGlobalUsed(partial_var)) {
@@ -373,7 +392,13 @@ _resizeForIndexer(Int32 index, RunQueue& queue)
     Traits::resizeWithReserve(partial_var, indexers[index]->maxIndexInMultipleArray(), ratio);
     this->_setView(index + 1);
   }
-  _copyHostViewsToViews(&queue);
+  if (args.isUseOneCommand()) {
+    auto dest = asWritableBytes(m_device_views.view());
+    auto source = asBytes(m_host_views.view());
+    args.addOneCopyData(source,dest,1);
+  }
+  else
+    _copyHostViewsToViews(&queue);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -383,14 +408,15 @@ template <typename Traits> void
 ItemMaterialVariableBase<Traits>::
 _copyHostViewsToViews(RunQueue* queue)
 {
-  const bool use_queue = true;
-  if (queue && use_queue){
-    Accelerator::MemoryCopyArgs copy_args(asWritableBytes(m_views),asBytes(m_host_views));
+  auto dest = asWritableBytes(m_device_views);
+  auto source = asBytes(m_host_views);
+  if (queue) {
+    Accelerator::MemoryCopyArgs copy_args(dest,source);
     copy_args.addAsync(true);
     queue->copyMemory(copy_args);
   }
   else
-    MemoryUtils::copy(asWritableBytes(m_views),asBytes(m_host_views));
+    MemoryUtils::copy(dest,source);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -419,8 +445,8 @@ _copyBetweenPartialAndGlobal(const CopyBetweenPartialAndGlobalArgs& args)
   }
   if (use_generic) {
     Int32 data_type_size = dataTypeSize();
-    Span<const std::byte> input_bytes(Traits::toBytes(input));
-    Span<std::byte> output_bytes(Traits::toBytes(output));
+    SmallSpan<const std::byte> input_bytes(Traits::toBytes(input));
+    SmallSpan<std::byte> output_bytes(Traits::toBytes(output));
     if (args.isUseOneCommand())
       args.addOneCopyData(input_bytes, output_bytes, data_type_size);
     else
@@ -435,54 +461,40 @@ _copyBetweenPartialAndGlobal(const CopyBetweenPartialAndGlobalArgs& args)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename Traits> void
+template <typename Traits> void
 ItemMaterialVariableBase<Traits>::
-_initializeNewItems(const ComponentItemListBuilder& list_builder, RunQueue& queue)
+_initializeNewItemsWithZero(InitializeWithZeroArgs& args)
 {
-  MeshMaterialVariableIndexer* indexer = list_builder.indexer();
-  Integer var_index = indexer->index();
-  PrivatePartType* partial_var = m_vars[var_index+1];
+  const Int32 var_index = args.m_var_index + 1;
+  RunQueue& queue = args.m_queue;
+  PrivatePartType* partial_var = m_vars[var_index];
   if (!_isValidAndUsedAndGlobalUsed(partial_var))
     return;
 
-  bool init_with_zero = m_p->materialMng()->isDataInitialisationWithZero();
+  SmallSpan<const Int32> partial_indexes = args.m_indexes_in_multiple;
 
-  SmallSpan<const MatVarIndex> partial_matvar = list_builder.partialMatVarIndexes();
 
-  Integer nb_partial = partial_matvar.size();
+  ARCANE_CHECK_ACCESSIBLE_POINTER(queue, partial_indexes.data());
 
-  // TODO: regarder s'il faut initialiser les mailles pure avec zéro.
-  // En effet, normalement il n'y a pas de maille pure si on ajoute un matériau
-  // (sauf lors de l'init).
-  DataType zero = DataType();
-
-  auto command = makeCommand(queue);
-  SmallSpan<ContainerViewType> views = m_views.smallSpan();
-
-  ARCANE_CHECK_ACCESSIBLE_POINTER(queue, views.data());
-  ARCANE_CHECK_ACCESSIBLE_POINTER(queue, partial_matvar.data());
-
-  if (init_with_zero){
-    command << RUNCOMMAND_LOOP1(iter, nb_partial)
-    {
-      auto [i] = iter();
-      MatVarIndex mvi = partial_matvar[i];
-      Traits::setValue(views[mvi.arrayIndex()][mvi.valueIndex()],zero);
-    };
+  if (args.isUseOneCommand()){
+    Int32 data_type_size = dataTypeSize();
+    auto output = m_host_views[var_index];
+    SmallSpan<std::byte> output_bytes(Traits::toBytes(output));
+    args.addOneCopyData({}, output_bytes, data_type_size);
   }
   else{
-    SmallSpan<const Int32> partial_local_ids = list_builder.partialLocalIds();
-    ARCANE_CHECK_ACCESSIBLE_POINTER(queue, partial_local_ids.data());
+    ContainerSpanType partial_view = m_host_views[var_index];
+    Int32 nb_partial = partial_indexes.size();
+    DataType zero = DataType();
+    auto command = makeCommand(queue);
     command << RUNCOMMAND_LOOP1(iter, nb_partial)
     {
       auto [i] = iter();
-      const auto& v = views[0][partial_local_ids[i]];
-      MatVarIndex mvi = partial_matvar[i];
-      Traits::setValue(views[mvi.arrayIndex()][mvi.valueIndex()],v);
+      Int32 index = partial_indexes[i];
+      Traits::setValue(partial_view[index], zero);
     };
   }
 }
-
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

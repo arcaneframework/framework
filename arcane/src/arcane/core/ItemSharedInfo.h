@@ -1,23 +1,23 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemSharedInfo.h                                            (C) 2000-2023 */
+/* ItemSharedInfo.h                                            (C) 2000-2024 */
 /*                                                                           */
 /* Informations communes à plusieurs entités.                                */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_ITEMSHAREDINFO_H
-#define ARCANE_ITEMSHAREDINFO_H
+#ifndef ARCANE_CORE_ITEMSHAREDINFO_H
+#define ARCANE_CORE_ITEMSHAREDINFO_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/ArcaneTypes.h"
-#include "arcane/ItemTypes.h"
-#include "arcane/ItemTypeInfo.h"
-#include "arcane/MeshItemInternalList.h"
+#include "arcane/core/ArcaneTypes.h"
+#include "arcane/core/ItemTypes.h"
+#include "arcane/core/ItemTypeInfo.h"
+#include "arcane/core/MeshItemInternalList.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -53,8 +53,8 @@ class ItemInternalConnectivityList;
  */
 class ARCANE_CORE_EXPORT ItemSharedInfo
 {
-  friend class impl::ItemBase;
-  friend class impl::MutableItemBase;
+  friend class ItemBase;
+  friend class MutableItemBase;
   friend class Item;
   friend class ItemGenericInfoListView;
   friend class ItemInternal;

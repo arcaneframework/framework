@@ -89,13 +89,15 @@
     <coarse-zone-3d>
       <position>0.0 3.0 3.0</position>
       <length>3.0 3.0 3.0</length>
-      <level>1</level>
     </coarse-zone-3d>
 
-    <expected-number-of-cells-in-patchs>1000 3880 0</expected-number-of-cells-in-patchs>
+    <expected-number-of-cells-in-patchs>1000 3880</expected-number-of-cells-in-patchs>
     <nodes-uid-hash>aebfb1a98f6e90d452ac6f007628564a</nodes-uid-hash>
     <faces-uid-hash>dab2908cc09b1572c08793666b2ebe10</faces-uid-hash>
     <cells-uid-hash>5148e6e7af0ae779041a8bb42a7ca637</cells-uid-hash>
+    <nodes-direction-hash>1e19f0aa5f439cfa4105c42d905bb1a6</nodes-direction-hash>
+    <faces-direction-hash>fbdc6e058df75c4e0b7f5508111a9826</faces-direction-hash>
+    <cells-direction-hash>1b83ea2ac7d60e6b4723162d6c09da68</cells-direction-hash>
   </a-m-r-cartesian-mesh-tester>
 
   <arcane-protections-reprises>

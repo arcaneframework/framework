@@ -17,6 +17,7 @@
 #include "arcane/utils/ForLoopTraceInfo.h"
 #include "arcane/utils/ConcurrencyUtils.h"
 #include "arcane/utils/PlatformUtils.h"
+#include "arcane/utils/ValueConvert.h"
 
 #include "arcane/accelerator/core/Runner.h"
 #include "arcane/accelerator/core/internal/IRunQueueEventImpl.h"
@@ -99,6 +100,9 @@ _init()
 
   m_start_event = _createEvent();
   m_stop_event = _createEvent();
+
+  if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_ACCELERATOR_ALLOW_REUSE_COMMAND", true))
+    m_is_allow_reuse_command = (v.value() != 0);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -107,7 +111,9 @@ _init()
 RunCommandImpl* RunCommandImpl::
 create(RunQueueImpl* r)
 {
-  return r->_internalCreateOrGetRunCommandImpl();
+  RunCommandImpl* c = r->_internalCreateOrGetRunCommandImpl();
+  c->_reset();
+  return c;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -118,12 +124,18 @@ create(RunQueueImpl* r)
 void RunCommandImpl::
 notifyBeginLaunchKernel()
 {
+  if (m_has_been_launched) {
+    if (!m_is_allow_reuse_command)
+      ARCANE_FATAL("Command has already been launched. You can not re-use the same command.\n"
+                   "  You can temporarily allow it if you set environment variable\n"
+                   "    ARCANE_ACCELERATOR_ALLOW_REUSE_COMMAND to 1\n");
+  }
   IRunQueueStream* stream = internalStream();
   stream->notifyBeginLaunchKernel(*this);
   // TODO: utiliser la bonne stream en séquentiel
-  m_start_event->recordQueue(stream);
   m_has_been_launched = true;
-  if (ProfilingRegistry::hasProfiling()) {
+  if (m_use_profiling) {
+    m_start_event->recordQueue(stream);
     m_begin_time = platform::getRealTimeNS();
     m_loop_one_exec_stat_ptr = &m_loop_one_exec_stat;
     m_loop_one_exec_stat.setBeginTime(m_begin_time);
@@ -142,8 +154,10 @@ notifyEndLaunchKernel()
 {
   IRunQueueStream* stream = internalStream();
   // TODO: utiliser la bonne stream en séquentiel
-  m_stop_event->recordQueue(stream);
+  if (m_use_profiling)
+    m_stop_event->recordQueue(stream);
   stream->notifyEndLaunchKernel(*this);
+  m_queue->_addRunningCommand(this);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -182,9 +196,11 @@ notifyEndExecuteKernel()
   if (!m_has_been_launched)
     return;
 
-  Int64 diff_time_ns = m_stop_event->elapsedTime(m_start_event);
-
-  runner()->addTime((double)diff_time_ns / 1.0e9);
+  Int64 diff_time_ns = 0;
+  if (m_use_profiling){
+    diff_time_ns = m_stop_event->elapsedTime(m_start_event);
+    runner()->addTime((double)diff_time_ns / 1.0e9);
+  }
 
   ForLoopOneExecStat* exec_info = m_loop_one_exec_stat_ptr;
   if (exec_info) {
@@ -193,8 +209,6 @@ notifyEndExecuteKernel()
     ForLoopTraceInfo flti(traceInfo(), kernelName());
     ProfilingRegistry::_threadLocalForLoopInstance()->merge(*exec_info, flti);
   }
-
-  _reset();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -206,11 +220,14 @@ _reset()
   m_kernel_name = String();
   m_trace_info = TraceInfo();
   m_nb_thread_per_block = 0;
+  m_use_profiling = ProfilingRegistry::hasProfiling();
   m_parallel_loop_options = TaskFactory::defaultParallelLoopOptions();
   m_begin_time = 0;
   m_loop_one_exec_stat.reset();
   m_loop_one_exec_stat_ptr = nullptr;
   m_has_been_launched = false;
+  m_has_living_run_command = false;
+  m_may_be_put_in_pool = false;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -276,6 +293,20 @@ _getOrCreateReduceMemoryImpl()
     return p;
   }
   return new ReduceMemoryImpl(this);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Méthode appelée quand l'instance RunCommand associée est détruite.
+ */
+void RunCommandImpl::
+_notifyDestroyRunCommand()
+{
+  // Si la commande n'a pas été lancé, il faut la remettre dans le pool
+  // des commandes de la file (sinon on aura une fuite mémoire)
+  if (!m_has_been_launched || m_may_be_put_in_pool)
+    m_queue->_putInCommandPool(this);
 }
 
 /*---------------------------------------------------------------------------*/

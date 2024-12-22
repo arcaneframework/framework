@@ -55,7 +55,8 @@ class AcceleratorViewsUnitTest
 
  private:
 
-  ax::Runner* m_runner = nullptr;
+  ax::Runner m_runner;
+  ax::RunQueue m_queue;
   VariableCellArrayReal m_cell_array1;
   VariableCellArrayReal m_cell_array2;
   VariableCellReal2 m_cell1_real2;
@@ -136,7 +137,8 @@ AcceleratorViewsUnitTest::
 void AcceleratorViewsUnitTest::
 initializeTest()
 {
-  m_runner = subDomain()->acceleratorMng()->defaultRunner();
+  m_runner = subDomain()->acceleratorMng()->runner();
+  m_queue = subDomain()->acceleratorMng()->queue();
 
   m_cell_array1.resize(12);
   m_cell_array2.resize(12);
@@ -217,7 +219,6 @@ _executeTest1()
 {
   info() << "Test1";
   auto queue = makeQueue(m_runner);
-  auto command = makeCommand(queue);
 
   Integer dim2_size = m_cell_array1.arraySize();
 
@@ -225,56 +226,63 @@ _executeTest1()
     int seed = 37;
     _setCellArrayValue(seed);
 
-    auto in_cell_array1 = ax::viewIn(command, m_cell_array1);
-    auto out_cell_array2 = ax::viewOut(command, m_cell_array2);
-    auto in_partial_cell_array1 = ax::viewIn(command, m_partial_cell_array1);
-    auto out_partial_cell_array2 = ax::viewOut(command, m_partial_cell_array2);
-    auto inout_partial_cell_array2 = ax::viewInOut(command, m_partial_cell_array2);
-
-    auto in_partial_cell1 = ax::viewIn(command, m_partial_cell1);
-    auto out_partial_cell2 = ax::viewOut(command, m_partial_cell2);
-    auto inout_partial_cell2 = ax::viewOut(command, m_partial_cell2);
-
-    auto in_partial_cell1_real3 = ax::viewIn(command, m_partial_cell1_real3);
-    auto out_partial_cell2_real3 = ax::viewOut(command, m_partial_cell2_real3);
-    auto inout_partial_cell2_real3 = ax::viewInOut(command, m_partial_cell2_real3);
-
-    command << RUNCOMMAND_ENUMERATE (CellLocalId, vi, allCells())
     {
-      out_cell_array2[vi].copy(in_cell_array1[vi]);
-    };
+      auto command = makeCommand(m_queue);
+      auto in_cell_array1 = viewIn(command, m_cell_array1);
+      auto out_cell_array2 = viewOut(command, m_cell_array2);
+
+      command << RUNCOMMAND_ENUMERATE (CellLocalId, vi, allCells())
+      {
+        out_cell_array2[vi].copy(in_cell_array1[vi]);
+      };
+    }
 
     _checkCellArrayValue("View1");
 
-    command << RUNCOMMAND_ENUMERATE (IteratorWithIndex<CellLocalId>, vi, m_partial_cell_array1.itemGroup())
     {
-      CellEnumeratorIndex iter_index(vi.index());
-      CellLocalId cell_lid(vi.value());
-      out_partial_cell_array2[iter_index].copy(in_cell_array1[cell_lid]);
-      out_partial_cell_array2[iter_index][0] = in_partial_cell_array1[cell_lid][1];
-      Real3 xyz(in_partial_cell1_real3[iter_index].y, in_partial_cell1_real3[iter_index].z, in_partial_cell1_real3[iter_index].x);
-      Int32 modulo = vi.index() % 4;
-      if (modulo == 3) {
-        out_partial_cell_array2[iter_index][1] = in_partial_cell1[iter_index];
-        out_partial_cell2[iter_index] = in_partial_cell1[iter_index];
-        out_partial_cell2_real3[iter_index] = xyz;
-      }
-      else if (modulo == 2) {
-        inout_partial_cell_array2[cell_lid][1] = in_partial_cell1[cell_lid];
-        inout_partial_cell2[cell_lid] = in_partial_cell1[iter_index];
-        inout_partial_cell2_real3[cell_lid] = xyz;
-      }
-      else if (modulo == 1) {
-        out_partial_cell_array2[cell_lid][1] = in_partial_cell1[iter_index];
-        out_partial_cell2[cell_lid] = in_partial_cell1[iter_index];
-        out_partial_cell2_real3[cell_lid] = xyz;
-      }
-      else {
-        inout_partial_cell_array2[iter_index][1] = in_partial_cell1[cell_lid];
-        inout_partial_cell2[iter_index] = in_partial_cell1[iter_index];
-        inout_partial_cell2_real3[iter_index] = xyz;
-      }
-    };
+      auto command = makeCommand(m_queue);
+      auto in_cell_array1 = viewIn(command, m_cell_array1);
+      auto in_partial_cell_array1 = viewIn(command, m_partial_cell_array1);
+      auto out_partial_cell_array2 = viewOut(command, m_partial_cell_array2);
+      auto inout_partial_cell_array2 = viewInOut(command, m_partial_cell_array2);
+
+      auto in_partial_cell1 = viewIn(command, m_partial_cell1);
+      auto out_partial_cell2 = viewOut(command, m_partial_cell2);
+      auto inout_partial_cell2 = viewOut(command, m_partial_cell2);
+
+      auto in_partial_cell1_real3 = viewIn(command, m_partial_cell1_real3);
+      auto out_partial_cell2_real3 = viewOut(command, m_partial_cell2_real3);
+      auto inout_partial_cell2_real3 = viewInOut(command, m_partial_cell2_real3);
+      command << RUNCOMMAND_ENUMERATE (IteratorWithIndex<CellLocalId>, vi, m_partial_cell_array1.itemGroup())
+      {
+        CellEnumeratorIndex iter_index(vi.index());
+        CellLocalId cell_lid(vi.value());
+        out_partial_cell_array2[iter_index].copy(in_cell_array1[cell_lid]);
+        out_partial_cell_array2[iter_index][0] = in_partial_cell_array1[cell_lid][1];
+        Real3 xyz(in_partial_cell1_real3[iter_index].y, in_partial_cell1_real3[iter_index].z, in_partial_cell1_real3[iter_index].x);
+        Int32 modulo = vi.index() % 4;
+        if (modulo == 3) {
+          out_partial_cell_array2[iter_index][1] = in_partial_cell1[iter_index];
+          out_partial_cell2[iter_index] = in_partial_cell1[iter_index];
+          out_partial_cell2_real3[iter_index] = xyz;
+        }
+        else if (modulo == 2) {
+          inout_partial_cell_array2[cell_lid][1] = in_partial_cell1[cell_lid];
+          inout_partial_cell2[cell_lid] = in_partial_cell1[iter_index];
+          inout_partial_cell2_real3[cell_lid] = xyz;
+        }
+        else if (modulo == 1) {
+          out_partial_cell_array2[cell_lid][1] = in_partial_cell1[iter_index];
+          out_partial_cell2[cell_lid] = in_partial_cell1[iter_index];
+          out_partial_cell2_real3[cell_lid] = xyz;
+        }
+        else {
+          inout_partial_cell_array2[iter_index][1] = in_partial_cell1[cell_lid];
+          inout_partial_cell2[iter_index] = in_partial_cell1[iter_index];
+          inout_partial_cell2_real3[iter_index] = xyz;
+        }
+      };
+    }
     info() << "Check Partial values";
     ENUMERATE_ (Cell, iter, m_partial_cell_array1.itemGroup()) {
       CellEnumeratorIndex iter_index(iter.index());
@@ -289,6 +297,8 @@ _executeTest1()
   {
     int seed = 23;
     _setCellArrayValue(seed);
+
+    auto command = makeCommand(m_queue);
 
     auto in_cell_array1 = viewIn(command, m_cell_array1);
     auto out_cell_array2 = viewOut(command, m_cell_array2);
@@ -305,6 +315,8 @@ _executeTest1()
     int seed = 53;
     _setCellArrayValue(seed);
 
+    auto command = makeCommand(m_queue);
+
     auto in_cell_array1 = viewInOut(command, m_cell_array1);
     auto out_cell_array2 = viewOut(command, m_cell_array2);
 
@@ -320,6 +332,8 @@ _executeTest1()
     int seed = 93;
     _setCellArrayValue(seed);
 
+    auto command = makeCommand(m_queue);
+
     auto in_cell_array1 = ax::viewIn(command, m_cell_array1);
     auto out_cell_array2 = ax::viewInOut(command, m_cell_array2);
 
@@ -334,6 +348,8 @@ _executeTest1()
   {
     int seed = 43;
     _setCellArrayValue(seed);
+
+    auto command = makeCommand(m_queue);
 
     auto inout_cell_array1 = ax::viewInOut(command, m_cell_array1);
     auto out_cell_array2 = ax::viewInOut(command, m_cell_array2);
@@ -439,7 +455,7 @@ _executeTest3()
   CellGroup own_cells = allCells().own();
   Int32 max_local_id = own_cells.itemFamily()->maxLocalId();
   NumArray<Int32, MDDim1> checked_local_ids(max_local_id);
-  checked_local_ids.fill(-1, &queue);
+  checked_local_ids.fill(-1, queue);
   {
     // Remplit out_checked_local_ids avec le i-ème localId() du groupe.
     auto out_checked_local_ids = ax::viewOut(command, checked_local_ids);
@@ -686,7 +702,7 @@ _executeTestMemoryCopy()
   info() << "Execute Test MemoryCopy";
   eMemoryRessource source_mem = eMemoryRessource::Host;
   eMemoryRessource dest_mem = eMemoryRessource::Host;
-  if (ax::impl::isAcceleratorPolicy(m_runner->executionPolicy()))
+  if (ax::impl::isAcceleratorPolicy(m_runner.executionPolicy()))
     dest_mem = eMemoryRessource::Device;
 
   const int nb_value = 100000;
@@ -743,8 +759,9 @@ _executeTestVariableCopy()
 
   ValueChecker vc(A_FUNCINFO);
 
-  auto queue = makeQueue(m_runner);
-  queue.setAsync(true);
+  auto queue = makeQueue(m_runner).addAsync(true);
+  if (!queue.isAsync())
+    ARCANE_FATAL("Queue is not asynchronous");
 
   VariableCellReal2 test_cell1_real2(VariableBuildInfo(mesh(), "TestCell1Real2"));
   VariableCellReal3 test_cell1_real3(VariableBuildInfo(mesh(), "TestCell1Real3"));

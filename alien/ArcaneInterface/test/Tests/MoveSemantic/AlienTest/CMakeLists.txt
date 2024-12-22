@@ -38,7 +38,7 @@ install(
 
 if (TARGET petsc)
     alien_test(
-            BENCH alien.test
+            BENCH test
             NAME petsc
             COMMAND alien_test.exe
             PROCS 4
@@ -56,7 +56,7 @@ endif ()
 
 if (TARGET hypre)
     alien_test(
-            BENCH alien.test
+            BENCH test
             NAME hypre
             PROCS 4
             COMMAND alien_test.exe
@@ -71,7 +71,7 @@ if (TARGET hypre)
             --builder=1
     )
     alien_test(
-            BENCH alien.test
+            BENCH test
             NAME hypre.diag
             PROCS 4
             COMMAND alien_test.exe
@@ -89,7 +89,7 @@ endif ()
 
 if (TARGET ifpsolver)
     alien_test(
-            BENCH alien.test
+            BENCH test
             NAME ifpsolver
             PROCS 4
             COMMAND alien_test.exe
@@ -101,14 +101,14 @@ if (TARGET ifpsolver)
             --precond=ilu0
             --tol=1.e-10
             --max-iter=100
-            --output-level=1
+            --output-level=2
             --builder=1
     )
 endif ()
 
 if (TARGET mcgsolver)
     alien_test(
-            BENCH alien.test
+            BENCH test
             NAME mcgsolver
             PROCS 4
             COMMAND alien_test.exe
@@ -127,7 +127,7 @@ endif ()
 
 if (TARGET mtl)
     alien_test(
-            BENCH alien.test
+            BENCH test
             NAME mtl
             COMMAND alien_test.exe
             OPTIONS

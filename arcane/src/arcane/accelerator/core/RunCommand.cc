@@ -14,9 +14,11 @@
 #include "arcane/accelerator/core/RunCommand.h"
 
 #include "arcane/accelerator/core/RunQueue.h"
+#include "arcane/accelerator/core/NativeStream.h"
 #include "arcane/accelerator/core/internal/RunQueueImpl.h"
 #include "arcane/accelerator/core/internal/ReduceMemoryImpl.h"
 #include "arcane/accelerator/core/internal/RunCommandImpl.h"
+#include "arcane/accelerator/core/internal/IRunQueueStream.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -29,9 +31,9 @@ namespace Arcane::Accelerator
 
 RunCommand::
 RunCommand(const RunQueue& run_queue)
-: m_run_queue(run_queue)
-, m_p(run_queue._getCommandImpl())
+: m_p(run_queue._getCommandImpl())
 {
+  m_p->m_has_living_run_command = true;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -40,6 +42,8 @@ RunCommand(const RunQueue& run_queue)
 RunCommand::
 ~RunCommand()
 {
+  m_p->m_has_living_run_command = false;
+  m_p->_notifyDestroyRunCommand();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -132,6 +136,24 @@ RunCommand&
 operator<<(RunCommand& command, const TraceInfo& trace_info)
 {
   return command.addTraceInfo(trace_info);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+impl::NativeStream RunCommand::
+_internalNativeStream() const
+{
+  return m_p->internalStream()->nativeStream();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+impl::RunQueueImpl* RunCommand::
+_internalQueueImpl() const
+{
+  return m_p->m_queue;
 }
 
 /*---------------------------------------------------------------------------*/

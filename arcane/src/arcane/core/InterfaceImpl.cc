@@ -50,6 +50,7 @@
 #include "arcane/core/IMeshFactoryMng.h"
 #include "arcane/core/IMeshMng.h"
 #include "arcane/core/IMeshPartitioner.h"
+#include "arcane/core/IMeshUtilities.h"
 #include "arcane/core/IGridMeshPartitioner.h"
 #include "arcane/core/IDataStorageFactory.h"
 #include "arcane/core/IDirectExecution.h"
@@ -100,6 +101,7 @@
 #include "arcane/core/IPhysicalUnitConverter.h"
 #include "arcane/core/IPhysicalUnit.h"
 #include "arcane/core/IStandardFunction.h"
+#include "arcane/core/ItemPairGroup.h"
 #include "arcane/core/CaseFunction2.h"
 #include "arcane/core/IServiceAndModuleFactoryMng.h"
 #include "arcane/core/IGhostLayerMng.h"
@@ -129,6 +131,7 @@
 #include "arcane/core/internal/IVariableMngInternal.h"
 #include "arcane/core/internal/IVariableSynchronizerMngInternal.h"
 #include "arcane/core/internal/IIncrementalItemConnectivityInternal.h"
+#include "arcane/core/internal/IPolyhedralMeshModifier.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -302,6 +305,27 @@ void IVariableSynchronizer::
 synchronize(VariableCollection, Int32ConstArrayView)
 {
   ARCANE_THROW(NotImplementedException,"synchronize() with specific local ids");
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void IMeshUtilities::
+computeAdjacency(const ItemPairGroup& adjacency_array, eItemKind link_kind, Integer nb_layer)
+{
+  computeAdjency(adjacency_array, link_kind, nb_layer);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+ItemPairGroup IItemFamily::
+findAdjacencyItems(const ItemGroup& group,
+                   const ItemGroup& sub_group,
+                   eItemKind link_kind,
+                   Integer nb_layer)
+{
+  return findAdjencyItems(group, sub_group, link_kind, nb_layer);
 }
 
 /*---------------------------------------------------------------------------*/

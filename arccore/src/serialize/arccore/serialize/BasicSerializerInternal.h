@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* BasicSerializerInternal.h                                   (C) 2000-2023 */
+/* BasicSerializerInternal.h                                   (C) 2000-2024 */
 /*                                                                           */
 /* Partie interne de 'BasicSerializer'.                                      */
 /*---------------------------------------------------------------------------*/
@@ -53,6 +53,7 @@ class ARCCORE_SERIALIZE_EXPORT BasicSerializer::Impl
   virtual Int64ConstArrayView sizesBuffer() const = 0;
   virtual ByteConstArrayView copyAndGetSizesBuffer() = 0;
   virtual void preallocate(Int64 size) = 0;
+  virtual void releaseBuffer() = 0;
   virtual void setFromSizes() = 0;
   virtual Int64 totalSize() const = 0;
   virtual void printSizes(std::ostream& o) const = 0;

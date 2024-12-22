@@ -1,21 +1,23 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* AlephMatrix.cc                                             (C) 2010 */
+/* AlephMatrix.cc                                              (C) 2000-2024 */
 /*                                                                           */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-#include "AlephArcane.h"
+
+#include "arcane/aleph/AlephArcane.h"
 #include "arcane/MeshVariableScalarRef.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -124,10 +126,10 @@ void AlephMatrix::addValue(const VariableRef& rowVar, const Item& rowItm,
                            const VariableRef& colVar, const Item& colItm,
                            const Real val)
 {
-  Integer row = m_kernel->indexing()->get(rowVar, rowItm);
-  Integer col = m_kernel->indexing()->get(colVar, colItm);
+  AlephInt row = m_kernel->indexing()->get(rowVar, rowItm);
+  AlephInt col = m_kernel->indexing()->get(colVar, colItm);
   if (m_kernel->isInitialized()) {
-    const Integer row_offset = m_kernel->topology()->part()[m_kernel->rank()];
+    const AlephInt row_offset = m_kernel->topology()->part()[m_kernel->rank()];
     row += row_offset;
     col += row_offset;
   }
@@ -496,25 +498,25 @@ assemble_waitAndFill(void)
       m_implementation->AlephMatrixSetFilled(false); // Activation de la protection de remplissage
     debug() << "\33[1;32m[AlephMatrix::assemble_waitAndFill] " << m_index << " fill"
             << "\33[0m";
-    int* bfr_row_implem;
-    int* bfr_col_implem;
+    AlephInt* bfr_row_implem;
+    AlephInt* bfr_col_implem;
     double* bfr_val_implem;
     for (int iCpu = 0; iCpu < m_kernel->size(); ++iCpu) {
       if (m_kernel->rank() != m_ranks[iCpu])
         continue;
       if (iCpu == m_kernel->rank()) {
-        bfr_row_implem = reinterpret_cast<int*>(m_setValue_row.unguardedBasePointer());
-        bfr_col_implem = reinterpret_cast<int*>(m_setValue_col.unguardedBasePointer());
-        bfr_val_implem = reinterpret_cast<double*>(m_setValue_val.unguardedBasePointer());
+        bfr_row_implem = m_setValue_row.data();
+        bfr_col_implem = m_setValue_col.data();
+        bfr_val_implem = m_setValue_val.data();
         m_implementation->AlephMatrixFill(m_setValue_val.size(),
                                           bfr_row_implem,
                                           bfr_col_implem,
                                           bfr_val_implem);
       }
       else {
-        bfr_row_implem = reinterpret_cast<int*>(m_aleph_matrix_buffer_rows[iCpu].unguardedBasePointer());
-        bfr_col_implem = reinterpret_cast<int*>(m_aleph_matrix_buffer_cols[iCpu].unguardedBasePointer());
-        bfr_val_implem = reinterpret_cast<double*>(m_aleph_matrix_buffer_vals[iCpu].unguardedBasePointer());
+        bfr_row_implem = m_aleph_matrix_buffer_rows[iCpu].data();
+        bfr_col_implem = m_aleph_matrix_buffer_cols[iCpu].data();
+        bfr_val_implem = m_aleph_matrix_buffer_vals[iCpu].data();
         m_implementation->AlephMatrixFill(m_aleph_matrix_buffer_vals[iCpu].size(),
                                           bfr_row_implem,
                                           bfr_col_implem,
@@ -719,7 +721,7 @@ writeToFile(const String file_name)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

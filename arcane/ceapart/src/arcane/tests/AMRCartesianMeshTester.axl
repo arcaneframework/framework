@@ -39,6 +39,13 @@
      <description>Si présent, total sur tous les sous-domaines du nombre de mailles fantôme que doit avoir chaque patch</description>
    </simple>
 
+   <simple name="hash-with-ghost" type="bool" default="false">
+     <description>
+       Doit-on include les items fantômes dans les comparaisons de hash ?
+       Attention néanmoins à gérer le séquentiel/parallèle.
+     </description>
+   </simple>
+
    <simple name = "nodes-uid-hash" type = "string" >
      <description>Hash des uniqueId() des noeuds</description>
    </simple>
@@ -47,6 +54,15 @@
    </simple>
    <simple name = "cells-uid-hash" type = "string" >
      <description>Hash des uniqueId() des mailles</description>
+   </simple>
+   <simple name="nodes-direction-hash" type="string" default="">
+     <description>Hash des uniqueId() des noeuds incluant les uniqueId() des noeuds autour</description>
+   </simple>
+   <simple name="faces-direction-hash" type="string" default="">
+     <description>Hash des uniqueId() des faces incluant les uniqueId() des mailles autour</description>
+   </simple>
+   <simple name="cells-direction-hash" type="string" default="">
+     <description>Hash des uniqueId() des mailles incluant les uniqueId() des mailles autour</description>
    </simple>
    <simple name="renumber-patch-method" type="integer" default="1">
      <description>
@@ -80,11 +96,6 @@
          Indique la taille de la zone de dé-raffinement
        </description>
      </simple>
-     <simple name="level" type="int32" default="-1">
-       <description>
-         Indique le niveau à dé-raffiner. Par défaut, le niveau le plus haut est choisi.
-       </description>
-     </simple>
    </complex>
    <complex name="coarse-zone-3d" type="CoarseZone3D" minOccurs="0" maxOccurs="unbounded">
      <simple name="position" type="real3">
@@ -97,9 +108,17 @@
          Indique la taille de la zone de dé-raffinement
        </description>
      </simple>
-     <simple name="level" type="int32" default="-1">
+   </complex>
+
+   <complex name="reduce-nb-ghost-layers" type="ReduceNbGhostLayers" minOccurs="0" maxOccurs="unbounded">
+     <simple name="level" type="int32">
        <description>
-         Indique le niveau à dé-raffiner. Par défaut, le niveau le plus haut est choisi.
+         Indique le niveau de raffinement où retirer les couches.
+       </description>
+     </simple>
+     <simple name="nb-ghost-layers" type="int32">
+       <description>
+         Indique le nombre de couche qu'il devra y avoir au final.
        </description>
      </simple>
    </complex>

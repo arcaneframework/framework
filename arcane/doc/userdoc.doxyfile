@@ -2431,6 +2431,7 @@ PREDEFINED             = DOXYGEN_DOC=1 \
                          ARCANE_UTILS_EXPORT= \
                          ARCANE_IMPL_EXPORT= \
                          ARCANE_GEOMETRY_EXPORT= \
+                         ARCCORE_MESSAGEPASSING_EXPORT= \
                          "ARCCORE_HOST_DEVICE=__host__ __device__" \
                          ARCCORE_DEPRECATED_2019(a)=[[deprecated(a)]] \
                          ARCCORE_DEPRECATED_2020(a)=[[deprecated(a)]] \

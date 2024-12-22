@@ -14,6 +14,7 @@
     <test name="MeshUnitTest">
       <maillage-additionnel>sod.vtk</maillage-additionnel>
       <test-sort-node-faces-and-edges>true</test-sort-node-faces-and-edges>
+      <compact-mesh>false</compact-mesh>
     </test>
   </module-test-unitaire>
 

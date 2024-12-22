@@ -182,14 +182,17 @@ IFPInternalLinearSolver::getStatus() const
 bool
 IFPInternalLinearSolver::solve(const MatrixType& A, const VectorType& b, VectorSolType& x)
 {
+  alien_info(m_print_info, [&] {
+    cout() << "|--------------------------------------------------------|";
+    cout() << "| Start Linear Solver #" << m_stat.solveCount();
+  });
+
   if (m_parallel_mng == nullptr)
     return true;
 
   bool isSolverOk = false;
 
   SolverStatSentry<IFPInternalLinearSolver> sentry(m_stater, BaseSolverStater::ePrepare);
-
-  // m_stater.startPrepareMeasure();
 
   using namespace Alien;
   // C'est a ce moment la, que la IFP matrice est construite.
@@ -219,9 +222,12 @@ IFPInternalLinearSolver::solve(const MatrixType& A, const VectorType& b, VectorS
   if (!matrix.getSymmetricProfile()
       && m_options->ilu0Algo() == IFPSolverProperty::Optimized)
     m_ilu0_algo = 4;
+
   sentry.release();
 
+
   SolverStatSentry<IFPInternalLinearSolver> sentry2(m_stater, BaseSolverStater::eSolve);
+
   if (matrix.internal()->m_system_is_resizeable == true)
     isSolverOk = _solveRs(matrix.internal()->m_system_is_resizeable);
   else
@@ -237,6 +243,16 @@ IFPInternalLinearSolver::solve(const MatrixType& A, const VectorType& b, VectorS
     // La valeur de b en cas d'échec n'est actuellement pas bien définie : à tester.
   }
 
+  sentry2.release();
+
+  if(m_print_info)
+    internalPrintInfo();
+
+  alien_info(m_print_info, [&] {
+    cout() << "| End Linear Solver";
+    cout() << "|--------------------------------------------------------|";
+  });
+
   return isSolverOk;
 }
 
@@ -247,24 +263,12 @@ IFPInternalLinearSolver::_solve()
 {
   bool m_resizeable = false;
 
-  alien_info(m_print_info, [&] {
-    cout() << "|--------------------------------------------------------|";
-    cout() << "| Start Linear Solver #" << m_stat.solveCount();
-  });
-
   F2C(ifpsolversolve)
   (&m_max_iteration, &m_stop_criteria_value, &m_precond_option, &m_precond_pressure,
       &m_normalisation_pivot, &m_ilu0_algo, &m_resizeable);
   F2C(ifpsolvergetsolverstatus)
   (&m_status.error, &m_status.iteration_count, &m_status.residual);
   m_status.succeeded = (m_status.error == 0);
-
-  // m_stater.stopSolveMeasure(m_status);
-
-  alien_info(m_print_info, [&] {
-    cout() << "| End Linear Solver";
-    cout() << "|--------------------------------------------------------|";
-  });
 
   return m_status.succeeded;
 }
@@ -273,27 +277,12 @@ IFPInternalLinearSolver::_solve()
 bool
 IFPInternalLinearSolver::_solveRs(bool m_resizeable)
 {
-  alien_info(m_print_info, [&] {
-    cout() << "|--------------------------------------------------------|";
-    cout() << "| Start Linear Solver #" << m_stat.solveCount();
-  });
-
-  // m_stater.startSolveMeasure();
-
   F2C(ifpsolversolve)
   (&m_max_iteration, &m_stop_criteria_value, &m_precond_option, &m_precond_pressure,
       &m_normalisation_pivot, &m_ilu0_algo, &m_resizeable);
   F2C(ifpsolvergetsolverstatus)
   (&m_status.error, &m_status.iteration_count, &m_status.residual);
   m_status.succeeded = (m_status.error == 0);
-
-  // m_stater.stopSolveMeasure(m_status);
-
-  alien_info(m_print_info, [&] {
-    cout() << "| End Linear Solver";
-    cout() << "|--------------------------------------------------------|";
-    internalPrintInfo();
-  });
 
   return m_status.succeeded;
 }
@@ -307,19 +296,21 @@ IFPInternalLinearSolver::internalPrintInfo() const
       Universe().traceMng(), m_status, String("Linear Solver : IFPLinearSolver"));
   Real init_solver_count = 0;
   Real init_precond_count = 0;
-  Real normalyze_count = 0;
+  Real normalize_count = 0;
   Real loop_solver_count = 0;
   F2C(ifpsolvergetperfcount)
-  (&init_solver_count, &init_precond_count, &normalyze_count, &loop_solver_count);
-  alien_info([&] {
-    cout() << "|--------------------------------------------------------|";
-    cout() << "| IFPSolver             :                                |";
-    cout() << "|--------------------------------------------------------|";
-    cout() << "| init solver time      : " << init_solver_count;
-    cout() << "| init precond time     : " << init_precond_count;
-    cout() << "| normalisation time    : " << normalyze_count;
-    cout() << "| loop solver time      : " << loop_solver_count;
-    cout() << "|--------------------------------------------------------|";
+  (&init_solver_count, &init_precond_count, &normalize_count, &loop_solver_count);
+
+  // TODO: find a way to automatically set spaces
+  alien_info([&]{
+    cout() <<     "|--------------------------------------------------------|\n"
+    "              | IFPSolver             :                                |\n"
+    "              |--------------------------------------------------------|\n"
+    "              | init solver time      : " << Arccore::Trace::Precision(4,init_solver_count,true) << "\n"
+    "              | init precond time     : " << Arccore::Trace::Precision(4,init_precond_count,true) << "\n"
+    "              | normalisation time    : " << Arccore::Trace::Precision(4, normalize_count,true) << "\n"
+    "              | loop solver time      : " << Arccore::Trace::Precision(4,loop_solver_count,true) << "\n"
+    "              |--------------------------------------------------------|";
   });
 }
 
@@ -338,7 +329,6 @@ IFPInternalLinearSolverFactory(
 #include <alien/kernels/ifp/linear_solver/IFPSolverProperty.h>
 #include <ALIEN/axl/IFPLinearSolver_IOptions.h>
 #include <ALIEN/axl/IFPLinearSolver_StrongOptions.h>
-
 
 namespace Alien {
 

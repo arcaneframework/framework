@@ -1,27 +1,9 @@
-/*
- * Copyright 2020 IFPEN-CEA
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *
- * SPDX-License-Identifier: Apache-2.0
- */
-
-/*
-
-
-
-*/
-
+﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
+//-----------------------------------------------------------------------------
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// See the top-level COPYRIGHT file for details.
+// SPDX-License-Identifier: Apache-2.0
+//-----------------------------------------------------------------------------
 #pragma once
 
 #include <alien/kernels/simple_csr/SimpleCSRMatrix.h>
@@ -51,6 +33,8 @@ class SimpleCSRMatrixMultT
   virtual ~SimpleCSRMatrixMultT() {}
 
  public:
+  void synchronize(VectorType& x) const;
+
   //! Matrix vector product
   void mult(const VectorType& x, VectorType& y) const;
   void mult(const UniqueArray<Real>& x, UniqueArray<Real>& y) const;
@@ -62,6 +46,7 @@ class SimpleCSRMatrixMultT
   void multInvDiag(VectorType& y) const;
 
  private:
+  void _synchronize(VectorType& x) const;
   void _parallelMult(const VectorType& x, VectorType& y) const;
   void _parallelMult(const UniqueArray<Real>& x, UniqueArray<Real>& y) const;
 
@@ -71,10 +56,12 @@ class SimpleCSRMatrixMultT
   void _seqAddLMult(Real alpha, const VectorType& x, VectorType& y) const;
   void _seqAddUMult(Real alpha, const VectorType& x, VectorType& y) const;
 
+  void _synchronizeBlock(VectorType& x) const;
   void _parallelMultBlock(const VectorType& x, VectorType& y) const;
 
   void _seqMultBlock(const VectorType& x, VectorType& y) const;
 
+  void _synchronizeVariableBlock(VectorType& x) const;
   void _parallelMultVariableBlock(const VectorType& x, VectorType& y) const;
 
   void _seqMultVariableBlock(const VectorType& x, VectorType& y) const;

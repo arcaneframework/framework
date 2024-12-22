@@ -11,13 +11,15 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/accelerator/RunCommandLaunchInfo.h"
+#include "arcane/accelerator/core/RunCommandLaunchInfo.h"
 
 #include "arcane/utils/CheckedConvert.h"
 #include "arcane/utils/PlatformUtils.h"
 
 #include "arcane/accelerator/core/RunQueue.h"
 #include "arcane/accelerator/core/internal/IRunQueueStream.h"
+#include "arcane/accelerator/core/internal/RunQueueImpl.h"
+#include "arcane/accelerator/core/NativeStream.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -33,8 +35,14 @@ RunCommandLaunchInfo(RunCommand& command, Int64 total_loop_size)
 : m_command(command)
 , m_total_loop_size(total_loop_size)
 {
-  m_thread_block_info = _computeThreadBlockInfo();
-  _begin();
+  m_queue_impl = m_command._internalQueueImpl();
+  m_exec_policy = m_queue_impl->executionPolicy();
+
+  // Le calcul des informations de kernel n'est utile que sur accélérateur
+  if (isAcceleratorPolicy(m_exec_policy)) {
+    m_kernel_launch_args = _computeKernelLaunchArgs();
+    m_command._allocateReduceMemory(m_kernel_launch_args.nbBlockPerGrid());
+  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -43,22 +51,9 @@ RunCommandLaunchInfo(RunCommand& command, Int64 total_loop_size)
 RunCommandLaunchInfo::
 ~RunCommandLaunchInfo()
 {
-  // Notifie de la fin de lancement du noyau. Normalement cela est déjà fait
+  // Notifie de la fin de lancement du noyau. Normalement, cela est déjà fait
   // sauf s'il y a eu une exception pendant le lancement du noyau de calcul.
   _doEndKernelLaunch();
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void RunCommandLaunchInfo::
-_begin()
-{
-  const RunQueue& queue = m_command._internalQueue();
-  m_exec_policy = queue.executionPolicy();
-  m_queue_stream = queue._internalStream();
-  m_runtime = queue._internalRuntime();
-  m_command._allocateReduceMemory(m_thread_block_info.nb_block_per_grid);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -100,26 +95,26 @@ _doEndKernelLaunch()
   m_is_notify_end_kernel_done = true;
   m_command._internalNotifyEndLaunchKernel();
 
-  const RunQueue& q = m_command._internalQueue();
-  if (!q.isAsync())
-    q.barrier();
+  impl::RunQueueImpl* q = m_queue_impl;
+  if (!q->isAsync())
+    q->_internalBarrier();
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void* RunCommandLaunchInfo::
-_internalStreamImpl()
+NativeStream RunCommandLaunchInfo::
+_internalNativeStream()
 {
-  return m_queue_stream->_internalImpl();
+  return m_command._internalNativeStream();
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 //! Calcule le nombre de block/thread/grille du noyau en fonction de \a full_size
-auto RunCommandLaunchInfo::
-_computeThreadBlockInfo() const -> ThreadBlockInfo
+KernelLaunchArgs RunCommandLaunchInfo::
+_computeKernelLaunchArgs() const
 {
   int threads_per_block = m_command.nbThreadPerBlock();
   if (threads_per_block<=0)
@@ -162,6 +157,15 @@ computeLoopRunInfo()
   ForLoopTraceInfo lti(m_command.traceInfo(), m_command.kernelName());
   m_loop_run_info = ForLoopRunInfo(computeParallelLoopOptions(), lti);
   m_loop_run_info.setExecStat(m_command._internalCommandExecStat());
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+KernelLaunchArgs RunCommandLaunchInfo::
+_threadBlockInfo([[maybe_unused]] const void* func,[[maybe_unused]] Int64 shared_memory_size) const
+{
+  return m_kernel_launch_args;
 }
 
 /*---------------------------------------------------------------------------*/

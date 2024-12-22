@@ -14,6 +14,8 @@ Sommaire de ce chapitre :
 2. \subpage arcanedoc_acceleratorapi_reduction <br>
   Présente les mécanismes disponibles pour effectuer des réductions.
 
+3. \subpage arcanedoc_acceleratorapi_memorypool <br>
+  Présente le mécanisme de pool de mémoire.
 ____
 
 <div class="section_buttons">

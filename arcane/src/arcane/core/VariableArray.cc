@@ -32,15 +32,16 @@
 #include "arcane/core/IParallelMng.h"
 #include "arcane/core/IMesh.h"
 
-#include "arcane/datatype/DataTracer.h"
-#include "arcane/datatype/DataTypeTraits.h"
-#include "arcane/datatype/DataStorageBuildInfo.h"
+#include "arcane/core/datatype/DataTracer.h"
+#include "arcane/core/datatype/DataTypeTraits.h"
+#include "arcane/core/datatype/DataStorageBuildInfo.h"
 
-#include "arcane/VariableArray.h"
-#include "arcane/RawCopy.h"
+#include "arcane/core/VariableArray.h"
+#include "arcane/core/RawCopy.h"
 
 #include "arcane/core/internal/IDataInternal.h"
 #include "arcane/core/internal/IVariableMngInternal.h"
+#include "arcane/core/internal/IVariableInternal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -555,8 +556,12 @@ setIsSynchronized(const ItemGroup& group)
 /*---------------------------------------------------------------------------*/
 
 template<typename T> void VariableArrayT<T>::
-_internalResize(Integer new_size,Integer nb_additional_element)
+_internalResize(const VariableResizeArgs& resize_args)
 {
+  Int32 new_size = resize_args.newSize();
+  Int32 nb_additional_element = resize_args.nbAdditionalCapacity();
+  bool use_no_init = resize_args.isUseNoInit();
+
   auto* value_internal = m_value->_internal();
 
   if (nb_additional_element!=0){
@@ -574,7 +579,10 @@ _internalResize(Integer new_size,Integer nb_additional_element)
     // associée.
     value_internal->dispose();
   }
-  value_internal->resize(new_size);
+  if (use_no_init)
+    value_internal->_internalDeprecatedValue().resizeNoInit(new_size);
+  else
+    value_internal->resize(new_size);
   if (new_size>current_size){
     if (init_policy==DIP_InitWithDefault){
       ArrayView<T> values = this->valueView();
@@ -615,7 +623,7 @@ _internalResize(Integer new_size,Integer nb_additional_element)
 template<typename DataType> void VariableArrayT<DataType>::
 resizeWithReserve(Integer n,Integer nb_additional)
 {
-  _resizeWithReserve(n,nb_additional);
+  _resize(VariableResizeArgs(n,nb_additional));
 }
 
 /*---------------------------------------------------------------------------*/
@@ -705,15 +713,7 @@ value() -> ValueType&
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template class VariableArrayT<Byte>;
-template class VariableArrayT<Real>;
-template class VariableArrayT<Int16>;
-template class VariableArrayT<Int32>;
-template class VariableArrayT<Int64>;
-template class VariableArrayT<Real2>;
-template class VariableArrayT<Real2x2>;
-template class VariableArrayT<Real3>;
-template class VariableArrayT<Real3x3>;
+ARCANE_INTERNAL_INSTANTIATE_TEMPLATE_FOR_NUMERIC_DATATYPE(VariableArrayT);
 template class VariableArrayT<String>;
 
 /*---------------------------------------------------------------------------*/

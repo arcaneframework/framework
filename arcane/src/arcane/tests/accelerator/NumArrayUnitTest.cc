@@ -15,12 +15,14 @@
 #include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/ValueChecker.h"
 #include "arcane/utils/IMemoryRessourceMng.h"
+#include "arcane/utils/MemoryUtils.h"
 
 #include "arcane/core/BasicUnitTest.h"
 #include "arcane/core/ServiceFactory.h"
 
 #include "arcane/accelerator/core/RunQueueBuildInfo.h"
 #include "arcane/accelerator/core/PointerAttribute.h"
+#include "arcane/accelerator/core/ProfileRegion.h"
 #include "arcane/accelerator/Runner.h"
 #include "arcane/accelerator/NumArrayViews.h"
 #include "arcane/accelerator/SpanViews.h"
@@ -285,6 +287,7 @@ _executeTest1(eMemoryRessource mem_kind)
   info() << "Execute Test1 memory_ressource=" << mem_kind;
 
   auto queue = makeQueue(m_runner);
+  Accelerator::ProfileRegion ps(queue,"NumArrayUniTest_Test1");
 
   // Ne pas changer les dimensions du tableau sinon
   // il faut aussi changer le calcul des sommes
@@ -310,7 +313,7 @@ _executeTest1(eMemoryRessource mem_kind)
     t3.resize(n1);
 
     {
-      [[maybe_unused]] auto span_value = t1.span();
+      [[maybe_unused]] auto span_value = t1.mdspan();
       using ValueType1 = NumArray<double, MDDim1>::value_type;
       using ValueType2 = decltype(span_value)::value_type;
       bool is_same_type = std::is_same_v<ValueType1, ValueType2>;
@@ -347,8 +350,8 @@ _executeTest1(eMemoryRessource mem_kind)
     }
     {
       auto command = makeCommand(queue);
-      auto in_t1 = t1.constSpan();
-      MDSpan<double, MDDim1> out_t2 = t2.span();
+      auto in_t1 = t1.constMDSpan();
+      MDSpan<double, MDDim1> out_t2 = t2.mdspan();
 
       command << RUNCOMMAND_LOOP1(iter, n1)
       {
@@ -386,7 +389,7 @@ _executeTest1(eMemoryRessource mem_kind)
   // Tableaux 2D
   {
     NumArray<double, MDDim2> t1(mem_kind);
-    t1.resize(n1, n2);
+    t1.resizeDestructive(n1, n2);
     _doRank2(queue, t1, expected_sum2);
   }
   {
@@ -407,12 +410,12 @@ _executeTest1(eMemoryRessource mem_kind)
   // Tableaux 3D
   {
     NumArray<double, MDDim3, LeftLayout> t1(mem_kind);
-    t1.resize(n1, n2, n3);
+    t1.resizeDestructive(n1, n2, n3);
     _doRank3(queue, t1, expected_sum3);
   }
   {
     NumArray<double, MDDim3, RightLayout> t1(mem_kind);
-    t1.resize(n1, n2, n3);
+    t1.resizeDestructive(n1, n2, n3);
     _doRank3(queue, t1, expected_sum3);
   }
   {
@@ -606,16 +609,20 @@ _executeTest4(eMemoryRessource mem_kind)
   constexpr int n1 = 1000;
 
   constexpr double expected_sum1 = 999000.0;
-  IMemoryAllocator* allocator = platform::getDataMemoryRessourceMng()->getAllocator(mem_kind);
+  IMemoryAllocator* allocator = MemoryUtils::getAllocator(mem_kind);
 
   {
-    UniqueArray<double> t1(allocator);
-    t1.resize(n1);
+    SharedArray<double> t1;
+    {
+      SharedArray<double> t1_bis(allocator);
+      t1_bis.resize(n1);
+      t1 = t1_bis;
+    }
 
-    UniqueArray<double> t2(allocator);
+    SharedArray<double> t2(allocator);
     t2.resize(n1);
 
-    UniqueArray<double> t3(allocator);
+    SharedArray<double> t3(allocator);
     t3.resize(n1);
 
     {
@@ -631,7 +638,7 @@ _executeTest4(eMemoryRessource mem_kind)
           out_t1[i] = _getValue(i);
       };
       NumArray<double, MDDim1> host_t1(eMemoryRessource::Host);
-      host_t1.copy(_toMDSpan(t1), &queue);
+      host_t1.copy(_toMDSpan(t1), queue);
       double s1 = _doSum(host_t1, { n1 }, &queue);
       info() << "SUM1 = " << s1;
       vc.areEqual(s1, expected_sum1, "SUM1");
@@ -650,7 +657,7 @@ _executeTest4(eMemoryRessource mem_kind)
       };
 
       NumArray<double, MDDim1> host_t2(eMemoryRessource::Host);
-      host_t2.copy(_toMDSpan(t2), &queue);
+      host_t2.copy(_toMDSpan(t2), queue);
       double s2 = _doSum(host_t2, { n1 }, &queue);
       info() << "SUM1_2 = " << s2;
       vc.areEqual(s2, expected_sum1, "SUM1_2");
@@ -777,15 +784,15 @@ _arcaneNumArraySamples()
   // Redimensionne t2 avec 6x5 valeurs
   t2.resize(6);
   // Redimensionne t3 avec 2x7x4 valeurs
-  t3.resize(2, 4);
+  t3.resizeDestructive(2, 4);
   // Redimensionne a1 avec 12 valeurs
-  a1.resize(12);
+  a1.resizeDestructive(12);
   // Redimensionne a2 avec 3x4 valeurs
-  a2.resize(3, 4);
+  a2.resizeDestructive(3, 4);
   // Redimensionne a3 avec 2x7x6 valeurs
-  a3.resize(2, 7, 6);
+  a3.resizeDestructive(2, 7, 6);
   // Redimensionne a1 avec 2x9x4x6 valeurs
-  a4.resize(2, 9, 4, 6);
+  a4.resizeDestructive(2, 9, 4, 6);
   //![SampleNumArrayResize]
 
   //![SampleNumArrayDeclarationsMemory]
@@ -814,10 +821,10 @@ _arcaneNumArraySamples()
 
   {
     Arcane::NumArray<Arcane::Int32, Arcane::MDDim2> aaa(5, 4);
-    Arcane::MDSpan<Arcane::Int32, Arcane::MDDim1> bbb(aaa.span().slice(0));
+    Arcane::MDSpan<Arcane::Int32, Arcane::MDDim1> bbb(aaa.mdspan().slice(0));
 
-    Arcane::MDSpan<Arcane::Real, Arcane::MDDim3> a3_span(a3.span());
-    Arcane::MDSpan<Arcane::Real, Arcane::MDDim1> a2_span1(a2.span().slice(0));
+    Arcane::MDSpan<Arcane::Real, Arcane::MDDim3> a3_span(a3.mdspan());
+    Arcane::MDSpan<Arcane::Real, Arcane::MDDim1> a2_span1(a2.mdspan().slice(0));
     for (Arcane::Int32 i = 0; i < a3.extent0(); ++i) {
       Arcane::MDSpan<Arcane::Real, Arcane::MDDim2> span_array2 = a3_span.slice(i);
       std::cout << " MDDim2 slice i=" << i << " X=" << span_array2.extent0()

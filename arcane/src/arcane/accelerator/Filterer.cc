@@ -13,6 +13,8 @@
 
 #include "arcane/accelerator/Filter.h"
 
+#include "arcane/utils/ValueConvert.h"
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -33,8 +35,7 @@ GenericFilteringBase()
 Int32 GenericFilteringBase::
 _nbOutputElement() const
 {
-  if (m_queue)
-    m_queue->barrier();
+  m_queue.barrier();
   return m_host_nb_out_storage[0];
 }
 
@@ -44,10 +45,48 @@ _nbOutputElement() const
 void GenericFilteringBase::
 _allocate()
 {
+  if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_FILTERER_USE_HOSTPINNED_STORAGE", true))
+    m_use_direct_host_storage = (v.value() != 0);
+
+  // Pour l'instant l'usage direct de l'hôte n'est testé qu'avec CUDA.
+  if (m_queue.executionPolicy() != eExecutionPolicy::CUDA)
+    m_use_direct_host_storage = false;
+
   eMemoryRessource r = eMemoryRessource::HostPinned;
-  if (m_host_nb_out_storage.memoryRessource()!=r)
-    m_host_nb_out_storage = NumArray<Int32,MDDim1>(r);
-  m_host_nb_out_storage.resize(1);    
+  if (m_host_nb_out_storage.memoryRessource() != r)
+    m_host_nb_out_storage = NumArray<Int32, MDDim1>(r);
+  m_host_nb_out_storage.resize(1);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void GenericFilteringBase::
+_allocateTemporaryStorage(size_t size)
+{
+  m_algo_storage.allocate(size);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+int* GenericFilteringBase::
+_getDeviceNbOutPointer()
+{
+  if (m_use_direct_host_storage)
+    return m_host_nb_out_storage.to1DSpan().data();
+
+  return m_device_nb_out_storage.allocate();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void GenericFilteringBase::
+_copyDeviceNbOutToHostNbOut()
+{
+  if (!m_use_direct_host_storage)
+    m_device_nb_out_storage.copyToAsync(m_host_nb_out_storage, m_queue);
 }
 
 /*---------------------------------------------------------------------------*/

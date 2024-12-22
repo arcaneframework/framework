@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshMaterialVariableArray.cc                                (C) 2000-2024 */
+/* MeshMaterialVariableArray.inst.h                            (C) 2000-2024 */
 /*                                                                           */
 /* Variable tableau sur un matériau du maillage.                             */
 /*---------------------------------------------------------------------------*/
@@ -93,7 +93,7 @@ resizeWithReserve(PrivatePartType* var, Integer dim1_size, Real reserve_ratio)
   // nombre de mailles matériaux, alloue un petit peu plus que nécessaire.
   // Par défaut, on alloue 5% de plus.
   Int32 nb_add = static_cast<Int32>(dim1_size * reserve_ratio);
-  var->_internalApi()->resizeWithReserve(dim1_size, nb_add);
+  var->_internalApi()->resize(VariableResizeArgs(dim1_size, nb_add, true));
 }
 
 /*---------------------------------------------------------------------------*/
@@ -386,20 +386,10 @@ MeshMaterialVariableArray(const MaterialVariableBuildInfo& v,PrivatePartType* gl
 /*---------------------------------------------------------------------------*/
 
 #define ARCANE_INSTANTIATE_MAT(type) \
-  template class ItemMaterialVariableBase< MaterialVariableArrayTraits<type> >;\
-  template class ItemMaterialVariableArray<type>;\
-  template class MeshMaterialVariableArray<Cell,type>;\
-  template class MeshMaterialVariableCommonStaticImpl<MeshMaterialVariableArray<Cell,type>>
-
-ARCANE_INSTANTIATE_MAT(Byte);
-ARCANE_INSTANTIATE_MAT(Int16);
-ARCANE_INSTANTIATE_MAT(Int32);
-ARCANE_INSTANTIATE_MAT(Int64);
-ARCANE_INSTANTIATE_MAT(Real);
-ARCANE_INSTANTIATE_MAT(Real2);
-ARCANE_INSTANTIATE_MAT(Real3);
-ARCANE_INSTANTIATE_MAT(Real2x2);
-ARCANE_INSTANTIATE_MAT(Real3x3);
+  template class ItemMaterialVariableBase<MaterialVariableArrayTraits<type>>; \
+  template class ItemMaterialVariableArray<type>; \
+  template class MeshMaterialVariableArray<Cell, type>; \
+  template class MeshMaterialVariableCommonStaticImpl<MeshMaterialVariableArray<Cell, type>>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -74,6 +74,7 @@ set(ARCANE_INTERNAL_SOURCES
   internal/StringVariableReplace.cc
   internal/ITimeHistoryMngInternal.h
   internal/VariableUtilsInternal.h
+  internal/IPolyhedralMeshModifier.h
   )
 
 set(ARCANE_ORIGINAL_SOURCES
@@ -101,6 +102,7 @@ set(ARCANE_ORIGINAL_SOURCES
   ICaseOptionList.h
   ICheckpointReader.h
   ICheckpointWriter.h
+  ICriteriaLoadBalanceMng.h
   IData.h
   IDataReader.h
   IDataVisitor.h

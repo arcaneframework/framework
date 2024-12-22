@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshExchangeMng.h                                           (C) 2000-2016 */
+/* MeshExchangeMng.h                                           (C) 2000-2024 */
 /*                                                                           */
 /* Gestionnaire des échanges de maillages entre sous-domaines.               */
 /*---------------------------------------------------------------------------*/
@@ -15,7 +15,8 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/TraceAccessor.h"
-#include "arcane/IMeshExchangeMng.h"
+#include "arcane/core/IMeshExchangeMng.h"
+#include "arcane/core/IMesh.h"
 #include "arcane/mesh/MeshGlobal.h"
 
 /*---------------------------------------------------------------------------*/
@@ -23,11 +24,6 @@
 
 ARCANE_BEGIN_NAMESPACE
 ARCANE_MESH_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-class DynamicMesh;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -42,7 +38,7 @@ class ARCANE_MESH_EXPORT MeshExchangeMng
 {
  public:
 
-  MeshExchangeMng(DynamicMesh* mesh);
+  MeshExchangeMng(IMesh* mesh);
   ~MeshExchangeMng();
 
  public:
@@ -58,7 +54,7 @@ class ARCANE_MESH_EXPORT MeshExchangeMng
 
  private:
 
-  DynamicMesh* m_mesh;
+  IMesh* m_mesh;
   IMeshExchanger* m_exchanger;
 };
 

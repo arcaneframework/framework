@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* DataTypeTraits.h                                            (C) 2000-2020 */
+/* DataTypeTraits.h                                            (C) 2000-2024 */
 /*                                                                           */
 /* Caractéristiques d'un type de donnée.                                     */
 /*---------------------------------------------------------------------------*/
@@ -14,8 +14,11 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/ArcaneTypes.h"
 #include "arcane/utils/BasicDataType.h"
+#include "arcane/utils/BFloat16.h"
+#include "arcane/utils/Float16.h"
+
+#include "arcane/core/ArcaneTypes.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -161,6 +164,165 @@ class DataTypeTraitsT<Real>
 
   //! Valeur par défaut.
   static constexpr Type defaultValue() { return 0.0; }
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \internal
+ * \brief Spécialisation de DataTypeTraitsT pour le type \c Float32.
+ */
+template<>
+class DataTypeTraitsT<Float32>
+{
+ public:
+
+  //! Type de donnée
+  typedef Float32 Type;
+
+  //! Type de donnée de base de ce type de donnée
+  typedef Float32 BasicType;
+
+  //! Nombre d'éléments du type de base
+  static constexpr int nbBasicType() { return 1; }
+
+  //! Nom du type de donnée
+  static constexpr const char* name() { return "Float32"; }
+
+  //! Type de donnée
+  static constexpr eDataType type() { return DT_Float32; }
+
+  //! Type de donnée de base.
+  // TODO: calculer automatiquement la taille
+  static constexpr eBasicDataType basicDataType() { return eBasicDataType::Float32; }
+
+  //! Type du proxy associé
+  typedef BuiltInProxy<Float32> ProxyType;
+
+  //! Remplit les éléments de \a values avec des Nan.
+  static void fillNan(ArrayView<Type> values);
+
+  //! Valeur par défaut.
+  static constexpr Type defaultValue() { return 0.0f; }
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \internal
+ * \brief Spécialisation de DataTypeTraitsT pour le type \c BFloat16.
+ */
+template<>
+class DataTypeTraitsT<BFloat16>
+{
+ public:
+
+  //! Type de donnée
+  typedef BFloat16 Type;
+
+  //! Type de donnée de base de ce type de donnée
+  typedef BFloat16 BasicType;
+
+  //! Nombre d'éléments du type de base
+  static constexpr int nbBasicType() { return 1; }
+
+  //! Nom du type de donnée
+  static constexpr const char* name() { return "BFloat16"; }
+
+  //! Type de donnée
+  static constexpr eDataType type() { return DT_BFloat16; }
+
+  //! Type de donnée de base.
+  // TODO: calculer automatiquement la taille
+  static constexpr eBasicDataType basicDataType() { return eBasicDataType::BFloat16; }
+
+  //! Type du proxy associé
+  typedef BuiltInProxy<BFloat16> ProxyType;
+
+  //! Remplit les éléments de \a values avec des Nan.
+  static void fillNan(ArrayView<Type> values);
+
+  //! Valeur par défaut.
+  static constexpr Type defaultValue() { return {}; }
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \internal
+ * \brief Spécialisation de DataTypeTraitsT pour le type \c Float16.
+ */
+template<>
+class DataTypeTraitsT<Float16>
+{
+ public:
+
+  //! Type de donnée
+  typedef Float16 Type;
+
+  //! Type de donnée de base de ce type de donnée
+  typedef Float16 BasicType;
+
+  //! Nombre d'éléments du type de base
+  static constexpr int nbBasicType() { return 1; }
+
+  //! Nom du type de donnée
+  static constexpr const char* name() { return "Float16"; }
+
+  //! Type de donnée
+  static constexpr eDataType type() { return DT_Float16; }
+
+  //! Type de donnée de base.
+  // TODO: calculer automatiquement la taille
+  static constexpr eBasicDataType basicDataType() { return eBasicDataType::Float16; }
+
+  //! Type du proxy associé
+  typedef BuiltInProxy<Float16> ProxyType;
+
+  //! Remplit les éléments de \a values avec des Nan.
+  static void fillNan(ArrayView<Type> values);
+
+  //! Valeur par défaut.
+  static constexpr Type defaultValue() { return {}; }
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \internal
+ * \brief Spécialisation de DataTypeTraitsT pour le type <tt>Integer</tt>.
+ */
+template<>
+class DataTypeTraitsT<Int8>
+{
+ public:
+
+  //! Type de donnée
+  typedef Int8 Type;
+
+  //! Type de donnée de base de ce type de donnée
+  typedef Int8 BasicType;
+
+  //! Nombre d'éléments du type de base
+  static constexpr int nbBasicType() { return 1; }
+
+  //! Nom du type de donnée
+  static constexpr const char* name() { return "Int8"; }
+
+  //! Type de donnée
+  static constexpr eDataType type() { return DT_Int8; }
+
+  //! Type de donnée de base.
+  static constexpr eBasicDataType basicDataType() { return eBasicDataType::Int8; }
+
+  //! Type du proxy associé
+  typedef BuiltInProxy<Int8> ProxyType;
+
+  //! Remplit les éléments de \a values avec des Nan.
+  static void fillNan(ArrayView<Type> values);
+
+  //! Valeur par défaut.
+  static constexpr Type defaultValue() { return 0; }
 };
 
 /*---------------------------------------------------------------------------*/

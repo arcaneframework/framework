@@ -26,7 +26,10 @@ namespace Arcane::Accelerator::impl
 /*---------------------------------------------------------------------------*/
 /*!
  * \internal
- * \brief Interface du runtime associé à une RunQueue.
+ * \brief Interface du runtime associé à un accélérateur.
+ *
+ * Il existe actuellement trois implémentations accélérateurs pour cette
+ * interface: CUDA, ROCM, SYCL.
  */
 class ARCANE_ACCELERATOR_CORE_EXPORT IRunnerRuntime
 {
@@ -47,10 +50,15 @@ class ARCANE_ACCELERATOR_CORE_EXPORT IRunnerRuntime
   virtual void unsetMemoryAdvice(ConstMemoryView buffer, eMemoryAdvice advice, DeviceId device_id) = 0;
   virtual void setCurrentDevice(DeviceId device_id) = 0;
   virtual const IDeviceInfoList* deviceInfoList() = 0;
+  virtual void getPointerAttribute(PointerAttribute& attribute, const void* ptr) = 0;
+  virtual DeviceMemoryInfo getDeviceMemoryInfo(DeviceId device_id) =0;
+
   virtual void startProfiling() {}
   virtual void stopProfiling() {}
   virtual bool isProfilingActive() { return false; }
-  virtual void getPointerAttribute(PointerAttribute& attribute, const void* ptr) = 0;
+  virtual void pushProfilerRange([[maybe_unused]] const String& name, [[maybe_unused]] Int32 color_gdb) {}
+  virtual void popProfilerRange() {}
+  virtual void finalize(ITraceMng*) {}
 
  protected:
 

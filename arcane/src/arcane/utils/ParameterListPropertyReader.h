@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ParameterListPropertyReader.h                               (C) 2000-2021 */
+/* ParameterListPropertyReader.h                               (C) 2000-2024 */
 /*                                                                           */
 /* Lecture de propriétés au format JSON.                                     */
 /*---------------------------------------------------------------------------*/
@@ -30,7 +30,7 @@ namespace Arcane::properties
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 //! \internal
-template<typename T>
+template<typename T, typename PropertyType = T>
 class ParameterListPropertyVisitor
 : public properties::PropertyVisitor<T>
 {
@@ -61,11 +61,11 @@ class ParameterListPropertyVisitor
 /*!
  * \brief Remplit les valeurs de \a instance à partir des paramètres \a args.
  */
-template<typename T> inline void
+template<typename T, typename PropertyType = T> inline void
 readFromParameterList(const ParameterList& args,T& instance)
 {
-  ParameterListPropertyVisitor reader(args,instance);
-  T :: applyPropertyVisitor(reader);
+  ParameterListPropertyVisitor<T,PropertyType> reader(args,instance);
+  PropertyType :: applyPropertyVisitor(reader);
 }
 
 /*---------------------------------------------------------------------------*/

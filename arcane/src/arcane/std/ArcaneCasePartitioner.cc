@@ -194,7 +194,7 @@ _mergeConstraints(ConstArrayView<IMesh*> meshes)
 
   StringBuilder filename = "cut_mesh_after_";
   filename += my_rank;
-  filename += ".mli";
+  filename += ".mli2";
   mesh_writer->writeMeshToFile(mesh,filename);
 #endif
 #endif
@@ -509,7 +509,7 @@ _partitionMesh(Int32 nb_part)
     if (pattern.empty()){
       StringBuilder sfilename = "cut_mesh_";
       sfilename += i;
-      sfilename += ".mli";
+      sfilename += ".mli2";
       filename = sfilename;
     }
     else{

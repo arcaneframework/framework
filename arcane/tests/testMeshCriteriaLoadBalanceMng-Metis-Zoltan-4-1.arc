@@ -2,7 +2,7 @@
 <case codename="ArcaneTest" xml:lang="en" codeversion="1.0">
   <arcane>
     <titre>Test MeshCriteriaLoadBalanceMng</titre>
-    <description>Test MeshCriteriaLoadBalanceMng</description>
+    <description>Test MeshCriteriaLoadBalanceMng avec Metis et Zoltan (Variant 1 / 4 proc)</description>
     <timeloop>MeshCriteriaLoadBalanceMngTestModuleLoop</timeloop>
     <modules>
       <module name="MeshCriteriaLoadBalanceMngTest" active="true"/>
@@ -12,7 +12,7 @@
   <meshes>
     <mesh>
       <generator name="Cartesian2D" >
-        <nb-part-x>4</nb-part-x>
+        <nb-part-x>2</nb-part-x>
         <nb-part-y>2</nb-part-y>
         <origin>0.0 0.0</origin>
         <x>
@@ -29,7 +29,7 @@
     <mesh>
       <generator name="Cartesian3D">
         <nb-part-x>2</nb-part-x>
-        <nb-part-y>2</nb-part-y>
+        <nb-part-y>1</nb-part-y>
         <nb-part-z>2</nb-part-z>
         <origin>0.0 0.0 0.0</origin>
         <x>
@@ -61,6 +61,26 @@
   </meshes>
 
   <mesh-criteria-load-balance-mng-test>
+    <mesh-params>
+      <partitioner>Metis</partitioner>
+      <iteration>2</iteration>
+    </mesh-params>
+    <mesh-params>
+      <partitioner>Zoltan</partitioner>
+      <iteration>3</iteration>
+    </mesh-params>
+    <mesh-params>
+      <partitioner>Metis</partitioner>
+      <iteration>5</iteration>
+    </mesh-params>
+    <mesh-params>
+      <partitioner>Zoltan</partitioner>
+      <iteration>2</iteration>
+    </mesh-params>
   </mesh-criteria-load-balance-mng-test>
+
+  <arcane-checkpoint>
+    <checkpoint-service name="ArcaneBasic2CheckpointWriter" />
+  </arcane-checkpoint>
 
 </case>

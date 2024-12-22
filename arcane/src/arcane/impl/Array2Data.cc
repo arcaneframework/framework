@@ -746,6 +746,10 @@ registerArray2DataFactory(IDataFactoryMng* dfm)
 {
   DataStorageFactory<Array2DataT<Byte>>::registerDataFactory(dfm);
   DataStorageFactory<Array2DataT<Real>>::registerDataFactory(dfm);
+  DataStorageFactory<Array2DataT<BFloat16>>::registerDataFactory(dfm);
+  DataStorageFactory<Array2DataT<Float16>>::registerDataFactory(dfm);
+  DataStorageFactory<Array2DataT<Float32>>::registerDataFactory(dfm);
+  DataStorageFactory<Array2DataT<Int8>>::registerDataFactory(dfm);
   DataStorageFactory<Array2DataT<Int16>>::registerDataFactory(dfm);
   DataStorageFactory<Array2DataT<Int32>>::registerDataFactory(dfm);
   DataStorageFactory<Array2DataT<Int64>>::registerDataFactory(dfm);
@@ -760,6 +764,10 @@ registerArray2DataFactory(IDataFactoryMng* dfm)
 
 template class Array2DataT<Byte>;
 template class Array2DataT<Real>;
+template class Array2DataT<Float16>;
+template class Array2DataT<BFloat16>;
+template class Array2DataT<Float32>;
+template class Array2DataT<Int8>;
 template class Array2DataT<Int16>;
 template class Array2DataT<Int32>;
 template class Array2DataT<Int64>;

@@ -23,7 +23,8 @@ namespace Arcane::Accelerator::impl
 /*---------------------------------------------------------------------------*/
 
 GenericPartitionerBase::
-GenericPartitionerBase()
+GenericPartitionerBase(const RunQueue& queue)
+: m_queue(queue)
 {
 }
 
@@ -33,10 +34,18 @@ GenericPartitionerBase()
 Int32 GenericPartitionerBase::
 _nbFirstPart() const
 {
-  if (m_queue)
-    m_queue->barrier();
-  // Peut arriver si on n'a pas encore appelé _allocate()
+  m_queue.barrier();
   return m_host_nb_list1_storage[0];
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+SmallSpan<const Int32> GenericPartitionerBase::
+_nbParts() const
+{
+  m_queue.barrier();
+  return m_host_nb_list1_storage.to1DSmallSpan();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -48,7 +57,9 @@ _allocate()
   eMemoryRessource r = eMemoryRessource::HostPinned;
   if (m_host_nb_list1_storage.memoryRessource() != r)
     m_host_nb_list1_storage = NumArray<Int32, MDDim1>(r);
-  m_host_nb_list1_storage.resize(1);
+  // Il faut deux valeurs pour la version qui décompose la liste en trois
+  // parties
+  m_host_nb_list1_storage.resize(2);
 }
 
 /*---------------------------------------------------------------------------*/

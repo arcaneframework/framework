@@ -1005,6 +1005,9 @@ finalize()
   m_code_service.reset();
   delete m_session_exec;
   m_session_exec = nullptr;
+
+  ITraceMng* tm = _application()->traceMng();
+  Accelerator::RunnerInternal::finalize(tm);
 }
 
 /*---------------------------------------------------------------------------*/

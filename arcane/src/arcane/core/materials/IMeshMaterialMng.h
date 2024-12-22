@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IMeshMaterialMng.h                                          (C) 2000-2023 */
+/* IMeshMaterialMng.h                                          (C) 2000-2024 */
 /*                                                                           */
 /* Interface du gestionnaire des matériaux d'un maillage.                    */
 /*---------------------------------------------------------------------------*/
@@ -325,6 +325,9 @@ class ARCANE_CORE_EXPORT IMeshMaterialMng
 
   //! Vue sur les mailles milieux correspondant au groupe \a cells
   virtual AllEnvCellVectorView view(CellVectorView cells) =0;
+
+  //! Vue sur les mailles milieux correspondant aux mailles de numéro locaux cells_local_id
+  virtual AllEnvCellVectorView view(SmallSpan<const Int32> cell_local_id) =0;
 
   //! Créée une instance pour convertir de 'Cell' en 'AllEnvCell'
   virtual CellToAllEnvCellConverter cellToAllEnvCellConverter() =0;

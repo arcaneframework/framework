@@ -5,19 +5,21 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MemoryRessourceMng.cc                                       (C) 2000-2024 */
+/* MemoryResourceMng.cc                                       (C) 2000-2024 */
 /*                                                                           */
 /* Gestion des ressources mémoire pour les CPU et accélérateurs.             */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/internal/MemoryRessourceMng.h"
+#include "arcane/utils/internal/MemoryResourceMng.h"
 
 #include "arcane/utils/FatalErrorException.h"
 #include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/Array.h"
 #include "arcane/utils/MemoryView.h"
 #include "arcane/utils/MemoryAllocator.h"
+#include "arcane/utils/MemoryUtils.h"
+#include "arcane/utils/internal/MemoryUtilsInternal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -30,41 +32,17 @@ namespace Arcane
 
 namespace
 {
-  const char* _toName(eMemoryRessource r)
-  {
-    switch (r) {
-    case eMemoryRessource::Unknown:
-      return "Unknown";
-    case eMemoryRessource::Host:
-      return "Host";
-    case eMemoryRessource::HostPinned:
-      return "HostPinned";
-    case eMemoryRessource::Device:
-      return "Device";
-    case eMemoryRessource::UnifiedMemory:
-      return "UnifiedMemory";
-    }
-    return "Invalid";
-  }
-
   inline bool _isHost(eMemoryRessource r)
   {
     // Si on sait pas, considère qu'on est accessible de puis l'hôte.
-    if (r == eMemoryRessource::Unknown)
+    if (r == eMemoryResource::Unknown)
       return true;
-    if (r == eMemoryRessource::Host || r == eMemoryRessource::UnifiedMemory || r == eMemoryRessource::HostPinned)
+    if (r == eMemoryResource::Host || r == eMemoryResource::UnifiedMemory || r == eMemoryResource::HostPinned)
       return true;
     return false;
   }
 
 } // namespace
-
-extern "C++" ARCANE_UTILS_EXPORT std::ostream&
-operator<<(std::ostream& o, eMemoryRessource r)
-{
-  o << _toName(r);
-  return o;
-}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -74,8 +52,8 @@ class DefaultHostMemoryCopier
 {
  public:
 
-  void copy(ConstMemoryView from, eMemoryRessource from_mem,
-            MutableMemoryView to, eMemoryRessource to_mem,
+  void copy(ConstMemoryView from, eMemoryResource from_mem,
+            MutableMemoryView to, eMemoryResource to_mem,
             [[maybe_unused]] const RunQueue* queue) override
   {
     // Sans support accélérateur, on peut juste faire un 'memcpy' si la mémoire
@@ -96,8 +74,8 @@ class DefaultHostMemoryCopier
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-MemoryRessourceMng::
-MemoryRessourceMng()
+MemoryResourceMng::
+MemoryResourceMng()
 : m_default_memory_copier(new DefaultHostMemoryCopier())
 , m_copier(m_default_memory_copier.get())
 {
@@ -111,36 +89,36 @@ MemoryRessourceMng()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-int MemoryRessourceMng::
-_checkValidRessource(eMemoryRessource r)
+int MemoryResourceMng::
+_checkValidResource(eMemoryResource r)
 {
   int x = (int)r;
-  if (x <= 0 || x >= NB_MEMORY_RESSOURCE)
-    ARCANE_FATAL("Invalid value '{0}'. Valid range is '1' to '{1}'", x, NB_MEMORY_RESSOURCE - 1);
+  if (x <= 0 || x >= Arccore::ARCCORE_NB_MEMORY_RESOURCE)
+    ARCANE_FATAL("Invalid value '{0}'. Valid range is '1' to '{1}'", x, Arccore::ARCCORE_NB_MEMORY_RESOURCE - 1);
   return x;
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-IMemoryAllocator* MemoryRessourceMng::
-getAllocator(eMemoryRessource r, bool throw_if_not_found)
+IMemoryAllocator* MemoryResourceMng::
+getAllocator(eMemoryResource r, bool throw_if_not_found)
 {
-  int x = _checkValidRessource(r);
+  int x = _checkValidResource(r);
   IMemoryAllocator* a = m_allocators[x];
 
   // Si pas d'allocateur spécifique et qu'on n'est pas sur accélérateur,
   // utilise platform::getAcceleratorHostMemoryAllocator().
   if (!a && !m_is_accelerator) {
-    if (r == eMemoryRessource::UnifiedMemory || r == eMemoryRessource::HostPinned) {
-      a = platform::getAcceleratorHostMemoryAllocator();
+    if (r == eMemoryResource::UnifiedMemory || r == eMemoryResource::HostPinned) {
+      a = MemoryUtils::getDefaultDataAllocator();
       if (!a)
-        a = m_allocators[(int)eMemoryRessource::Host];
+        a = m_allocators[(int)eMemoryResource::Host];
     }
   }
 
   if (!a && throw_if_not_found)
-    ARCANE_FATAL("Allocator for ressource '{0}' is not available", r);
+    ARCANE_FATAL("Allocator for resource '{0}' is not available", r);
 
   return a;
 }
@@ -148,8 +126,8 @@ getAllocator(eMemoryRessource r, bool throw_if_not_found)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-IMemoryAllocator* MemoryRessourceMng::
-getAllocator(eMemoryRessource r)
+IMemoryAllocator* MemoryResourceMng::
+getAllocator(eMemoryResource r)
 {
   return getAllocator(r, true);
 }
@@ -157,19 +135,19 @@ getAllocator(eMemoryRessource r)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void MemoryRessourceMng::
-setAllocator(eMemoryRessource r, IMemoryAllocator* allocator)
+void MemoryResourceMng::
+setAllocator(eMemoryResource r, IMemoryAllocator* allocator)
 {
-  int x = _checkValidRessource(r);
+  int x = _checkValidResource(r);
   m_allocators[x] = allocator;
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void MemoryRessourceMng::
-copy(ConstMemoryView from, eMemoryRessource from_mem,
-     MutableMemoryView to, eMemoryRessource to_mem, const RunQueue* queue)
+void MemoryResourceMng::
+copy(ConstMemoryView from, eMemoryResource from_mem,
+     MutableMemoryView to, eMemoryResource to_mem, const RunQueue* queue)
 {
   Int64 from_size = from.bytes().size();
   Int64 to_size = to.bytes().size();
@@ -182,11 +160,11 @@ copy(ConstMemoryView from, eMemoryRessource from_mem,
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void MemoryRessourceMng::
+void MemoryResourceMng::
 genericCopy(ConstMemoryView from, MutableMemoryView to)
 {
-  IMemoryRessourceMng* mrm = platform::getDataMemoryRessourceMng();
-  eMemoryRessource mem_type = eMemoryRessource::Unknown;
+  IMemoryResourceMng* mrm = MemoryUtils::getDataMemoryResourceMng();
+  eMemoryResource mem_type = eMemoryResource::Unknown;
   mrm->_internal()->copy(from, mem_type, to, mem_type, nullptr);
 }
 

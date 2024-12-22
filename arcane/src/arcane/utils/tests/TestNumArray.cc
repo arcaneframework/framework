@@ -28,6 +28,17 @@ using namespace Arcane;
 
 using namespace Arcane;
 
+TEST(NumArray, Empty)
+{
+  std::cout << "TEST_NUMARRAY Empty\n";
+  NumArray<Real, MDDim1> array1;
+  NumArray<Real, MDDim1> array2(array1);
+  NumArray<Real, MDDim1> array3;
+  array1 = array3;
+  NumArray<Real, MDDim1> array4;
+  array4 = array1;
+}
+
 TEST(NumArray, Basic)
 {
   std::cout << "TEST_NUMARRAY Basic\n";
@@ -84,7 +95,7 @@ TEST(NumArray, Basic)
     MDSpan<Real, MDDim2> span_array2(array2.mdspan());
     std::cout << "Array2: extents=" << array2.extent0() << "," << array2.extent1() << "\n";
     for (Int32 i = 0; i < array2.extent0(); ++i) {
-      MDSpan<Real, MDDim1> span_array1 = array2.span().slice(i);
+      MDSpan<Real, MDDim1> span_array1 = array2.mdspan().slice(i);
       ASSERT_EQ(span_array1.extent0(), span_array2.extent1());
       std::cout << " MDDim1 slice i=" << i << " X=" << span_array2.extent0() << "\n";
       for (Int32 x = 0, xn = span_array1.extent0(); x < xn; ++x) {
@@ -269,7 +280,7 @@ TEST(NumArray3, Copy)
   v.fill(3.2);
   NumArray<Real, MDDim3> v2(nb_x * 2, nb_y / 2, nb_z * 3);
 
-  v.copy(v2.span());
+  v.copy(v2.mdspan());
 
   {
     NumArray<int, MDDim1> vi0(4, { 1, 3, 5, 7 });
@@ -606,6 +617,36 @@ TEST(NumArray, TestCopy)
   auto test5 = bar2();
   std::cout << "Val 5 = " << &test5 << " " << test5.to1DSpan() << "\n";
   ASSERT_EQ(test4.a_.to1DSpan(), test5.to1DSpan());
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+TEST(NumArray, SpanUsage)
+{
+  std::cout << "Test_SpanUsage";
+  UniqueArray<Int32> ua1 = { 0, 1, 2, 3, 4, 253, 254, 255, 256, 25 };
+  NumArray<Int32, MDDim1> a1;
+  SmallSpan<const Int32> const_span_ua1 = ua1.smallSpan();
+  SmallSpan<Int32> span_ua1 = ua1.smallSpan();
+  a1.copy(span_ua1);
+  ASSERT_EQ(span_ua1, a1.to1DSmallSpan());
+
+  a1.fill(3);
+  a1.copy(span_ua1, nullptr);
+  ASSERT_EQ(span_ua1, a1.to1DSmallSpan());
+
+  MDSpan<const Int32, MDDim1> md_a1(span_ua1);
+  ASSERT_EQ(span_ua1, md_a1.to1DSmallSpan());
+
+  MDSpan<const Int32, MDDim1> md_a2(const_span_ua1);
+  ASSERT_EQ(const_span_ua1, md_a2.to1DSmallSpan());
+
+  MDSpan<Int32, MDDim1> md_a3(span_ua1);
+  ASSERT_EQ(span_ua1, md_a3.to1DSmallSpan());
+
+  md_a3 = a1.to1DSmallSpan();
+  ASSERT_EQ(a1.to1DSmallSpan(), md_a3.to1DSmallSpan());
 }
 
 /*---------------------------------------------------------------------------*/

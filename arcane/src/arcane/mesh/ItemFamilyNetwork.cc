@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemFamilyNetwork.cc                                        (C) 2000-2022 */
+/* ItemFamilyNetwork.cc                                        (C) 2000-2024 */
 /*                                                                           */
 /* ItemFamily relations through their connectivities.                        */
 /*---------------------------------------------------------------------------*/
@@ -62,6 +62,28 @@ getConnectivity(IItemFamily* source_family, IItemFamily* target_family, const St
 {
   bool is_dependency;
   return getConnectivity(source_family,target_family,name,is_dependency);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+IIncrementalItemConnectivity* ItemFamilyNetwork::
+getDependency(IItemFamily* source_family, IItemFamily* target_family)
+{
+  auto* dependency = m_dependency_graph.getEdge(source_family,target_family);
+  if (dependency) return *dependency;
+  else return nullptr;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+IIncrementalItemConnectivity* ItemFamilyNetwork::
+getRelation(IItemFamily* source_family, IItemFamily* target_family)
+{
+  auto* relation = m_relation_graph.getEdge(source_family,target_family);
+  if (relation) return *relation;
+  else return nullptr;
 }
 
 /*---------------------------------------------------------------------------*/

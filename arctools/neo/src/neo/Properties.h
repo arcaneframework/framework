@@ -550,6 +550,7 @@ class MeshArrayPropertyT : public PropertyBase
    * This method tries to avoid copy via move construct. Work only if a rvalue is passed for \a values argument. Property must be empty.
    */
   void init(const ItemRange& item_range, std::vector<DataType> values) {
+    if (item_range.isEmpty() && values.empty()) return;
     assert(("Property must be empty and item range contiguous to call init", isInitializableFrom(item_range)));
     assert(("call resize before init", !item_range.isEmpty() && m_data_size != 0));
     m_data = std::move(values);

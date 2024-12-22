@@ -43,6 +43,7 @@ set(ARCANE_ACCELERATOR_SOURCES
   accelerator/AcceleratorScanUnitTest.cc
   accelerator/AcceleratorFilterUnitTest.cc
   accelerator/AcceleratorPartitionerUnitTest.cc
+  accelerator/AcceleratorSorterUnitTest.cc
   accelerator/RunQueueUnitTest.cc
   accelerator/AcceleratorMathUnitTest.cc
   accelerator/AcceleratorViewsUnitTest.cc
@@ -266,7 +267,10 @@ arcane_copy_mesh_direct(fan_2x1x3.vtkfaces.vtk)
 arcane_copy_mesh_direct(cross_a_2x1x1.vtu)
 arcane_copy_mesh_direct(cross_a_2x1x1.vtufaces.vtu)
 arcane_copy_mesh_direct(plancher.msh)
+arcane_copy_mesh_direct(plancher.binary.msh)
 arcane_copy_mesh_direct(hex_tetra_pyramics.msh)
+arcane_copy_mesh_direct(onesphere.msh)
+arcane_copy_mesh_direct(onesphere.binary.msh)
 arcane_copy_mesh(tied_interface_1 tied_interface_1 vtk)
 arcane_copy_mesh(tied_interface_2 tied_interface_2 vtk)
 arcane_copy_mesh(tied_interface_2d_1 tied_interface_2d_1 vtk)
@@ -288,6 +292,15 @@ file(COPY ${TEST_PATH}/data/test_output_continue_hydro3_cartesian_small
 # La protection pour ce test est issue du test hydro3_cartesian_small_4thread
 file(COPY ${TEST_PATH}/data/test_output_continue_hydro3_cartesian_small_4shm
   DESTINATION ${ARCANE_TEST_WORKDIR} USE_SOURCE_PERMISSIONS)
+
+# ----------------------------------------------------------------------------
+# ----------------------------------------------------------------------------
+
+macro(arcane_add_accelerator_test_all_policies TEST_NAME CASE_FILE)
+  arcane_add_test_sequential(${TEST_NAME} ${CASE_FILE} ${ARGN})
+  arcane_add_test_sequential_task(${TEST_NAME} ${CASE_FILE} 4 ${ARGN})
+  arcane_add_accelerator_test_sequential(${TEST_NAME} ${CASE_FILE} ${ARGN})
+endmacro()
 
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
@@ -361,11 +374,13 @@ add_test(dump_database ${ARCANE_TEST_DRIVER} launch -We,STDENV_CODE_NAME,Arcane 
 # ----------------------------------------------------------------------------
 
 if (ARCANE_HAS_ACCELERATOR_API)
-  arcane_add_test_sequential(standalone_accelerator_testsum dummy.arc "-A,StandaloneAcceleratorMethod=TestSum")
-  arcane_add_test_sequential(standalone_accelerator_testbinop dummy.arc "-A,StandaloneAcceleratorMethod=TestBinOp")
-  arcane_add_accelerator_test_sequential(standalone_accelerator_testsum dummy.arc "-A,StandaloneAcceleratorMethod=TestSum")
-  arcane_add_accelerator_test_sequential(standalone_accelerator_testbinop dummy.arc "-A,StandaloneAcceleratorMethod=TestBinOp")
-  arcane_add_accelerator_test_sequential(standalone_accelerator_testemptykernel dummy.arc "-A,StandaloneAcceleratorMethod=TestEmptyKernel")
+  arcane_add_accelerator_test_all_policies(standalone_accelerator_testsum dummy.arc "-A,StandaloneAcceleratorMethod=TestSum")
+  arcane_add_accelerator_test_all_policies(standalone_accelerator_testbinop dummy.arc "-A,StandaloneAcceleratorMethod=TestBinOp")
+  #  arcane_add_accelerator_test_sequential(standalone_accelerator_testsum dummy.arc "-A,StandaloneAcceleratorMethod=TestSum")
+  #arcane_add_accelerator_test_sequential(standalone_accelerator_testbinop dummy.arc "-A,StandaloneAcceleratorMethod=TestBinOp")
+  #arcane_add_accelerator_test_sequential(standalone_accelerator_testemptykernel dummy.arc "-A,StandaloneAcceleratorMethod=TestEmptyKernel")
+  arcane_add_accelerator_test_all_policies(standalone_accelerator_testemptykernel dummy.arc "-A,StandaloneAcceleratorMethod=TestEmptyKernel")
+  arcane_add_accelerator_test_sequential(standalone_accelerator_testsum_hostpinned dummy.arc "-A,StandaloneAcceleratorMethod=TestSum" "-We,ARCANE_DEFAULT_DATA_MEMORY_RESOURCE,HostPinned")
 endif()
 
 arcane_add_test_sequential(standalone_subdomain1 dummy.arc "-A,StandaloneSubDomainMethod=Test1")
@@ -454,13 +469,52 @@ else()
   arcane_add_test_parallel(face-submesh_2d testSubMesh2-2D.arc 2 2)
 endif()
 
+ARCANE_ADD_TEST_PARALLEL(meshcriterialoadbalancemng_meshpartitionertester1 testMeshCriteriaLoadBalanceMng-MeshPartitionerTester-1.arc 8 -m 10)
+ARCANE_ADD_TEST_PARALLEL(meshcriterialoadbalancemng_meshpartitionertester_4_1 testMeshCriteriaLoadBalanceMng-MeshPartitionerTester-4-1.arc 4 -m 10)
+
 if(PARTITIONER_FOUND)
   ARCANE_ADD_TEST_PARALLEL(loadbalance testLoadBalance-1.arc 4)
   ARCANE_ADD_TEST_PARALLEL_THREAD(loadbalance testParticle.arc 4)
   ARCANE_ADD_TEST_PARALLEL(loadbalance_rep3 testLoadBalance-1.arc 12 -R 3)
   ARCANE_ADD_TEST_PARALLEL(loadbalance_collective testLoadBalance-1.arc 4 -We,ARCANE_MESH_EXCHANGE_USE_COLLECTIVE,1 -We,ARCANE_PRINT_CPUAFFINITY,1)
 
-  ARCANE_ADD_TEST_PARALLEL(meshcriterialoadbalancemng testMeshCriteriaLoadBalanceMng-1.arc 8 -m 2)
+  ARCANE_ADD_TEST_PARALLEL(meshcriterialoadbalancemng_defaultpartitioner1 testMeshCriteriaLoadBalanceMng-DefaultPartitioner-1.arc 8 -m 10)
+  ARCANE_ADD_TEST_PARALLEL(meshcriterialoadbalancemng_defaultpartitioner_4_1 testMeshCriteriaLoadBalanceMng-DefaultPartitioner-4-1.arc 4 -m 10)
+  ARCANE_ADD_TEST_PARALLEL(meshcriterialoadbalancemng_defaultpartitioner_meshpartitionertester1 testMeshCriteriaLoadBalanceMng-DefaultPartitioner-MeshPartitionerTester-1.arc 8 -m 10)
+  ARCANE_ADD_TEST_PARALLEL(meshcriterialoadbalancemng_defaultpartitioner_meshpartitionertester_4_1 testMeshCriteriaLoadBalanceMng-DefaultPartitioner-MeshPartitionerTester-4-1.arc 4 -m 10)
+
+  if (Parmetis_FOUND)
+    ARCANE_ADD_TEST_PARALLEL(meshcriterialoadbalancemng_metis1 testMeshCriteriaLoadBalanceMng-Metis-1.arc 8 -m 10)
+    ARCANE_ADD_TEST_PARALLEL(meshcriterialoadbalancemng_metis_4_1 testMeshCriteriaLoadBalanceMng-Metis-4-1.arc 4 -m 10)
+    if (PTScotch_FOUND)
+      ARCANE_ADD_TEST_PARALLEL(meshcriterialoadbalancemng_metis_ptscotch1 testMeshCriteriaLoadBalanceMng-Metis-PTScotch-1.arc 8 -m 10)
+      ARCANE_ADD_TEST_PARALLEL(meshcriterialoadbalancemng_metis_ptscotch_4_1 testMeshCriteriaLoadBalanceMng-Metis-PTScotch-4-1.arc 4 -m 10)
+      ARCANE_ADD_TEST_PARALLEL(meshcriterialoadbalancemng_metis_ptscotch2 testMeshCriteriaLoadBalanceMng-Metis-PTScotch-2.arc 8 -m 10)
+      ARCANE_ADD_TEST_PARALLEL(meshcriterialoadbalancemng_metis_ptscotch_4_2 testMeshCriteriaLoadBalanceMng-Metis-PTScotch-4-2.arc 4 -m 10)
+    endif ()
+    if (Zoltan_FOUND)
+      ARCANE_ADD_TEST_PARALLEL(meshcriterialoadbalancemng_metis_zoltan1 testMeshCriteriaLoadBalanceMng-Metis-Zoltan-1.arc 8 -m 10)
+      ARCANE_ADD_TEST_PARALLEL(meshcriterialoadbalancemng_metis_zoltan_4_1 testMeshCriteriaLoadBalanceMng-Metis-Zoltan-4-1.arc 4 -m 10)
+      ARCANE_ADD_TEST_PARALLEL(meshcriterialoadbalancemng_metis_zoltan2 testMeshCriteriaLoadBalanceMng-Metis-Zoltan-2.arc 8 -m 10)
+      ARCANE_ADD_TEST_PARALLEL(meshcriterialoadbalancemng_metis_zoltan_4_2 testMeshCriteriaLoadBalanceMng-Metis-Zoltan-4-2.arc 4 -m 10)
+    endif ()
+  endif ()
+
+  if (PTScotch_FOUND)
+    ARCANE_ADD_TEST_PARALLEL(meshcriterialoadbalancemng_ptscotch1 testMeshCriteriaLoadBalanceMng-PTScotch-1.arc 8 -m 10)
+    ARCANE_ADD_TEST_PARALLEL(meshcriterialoadbalancemng_ptscotch_4_1 testMeshCriteriaLoadBalanceMng-PTScotch-4-1.arc 4 -m 10)
+    if (Zoltan_FOUND)
+      ARCANE_ADD_TEST_PARALLEL(meshcriterialoadbalancemng_ptscotch_zoltan1 testMeshCriteriaLoadBalanceMng-PTScotch-Zoltan-1.arc 8 -m 10)
+      ARCANE_ADD_TEST_PARALLEL(meshcriterialoadbalancemng_ptscotch_zoltan_4_1 testMeshCriteriaLoadBalanceMng-PTScotch-Zoltan-4-1.arc 4 -m 10)
+      ARCANE_ADD_TEST_PARALLEL(meshcriterialoadbalancemng_ptscotch_zoltan2 testMeshCriteriaLoadBalanceMng-PTScotch-Zoltan-2.arc 8 -m 10)
+      ARCANE_ADD_TEST_PARALLEL(meshcriterialoadbalancemng_ptscotch_zoltan_4_2 testMeshCriteriaLoadBalanceMng-PTScotch-Zoltan-4-2.arc 4 -m 10)
+    endif ()
+  endif ()
+
+  if (Zoltan_FOUND)
+    ARCANE_ADD_TEST_PARALLEL(meshcriterialoadbalancemng_zoltan1 testMeshCriteriaLoadBalanceMng-Zoltan-1.arc 8 -m 10)
+    ARCANE_ADD_TEST_PARALLEL(meshcriterialoadbalancemng_zoltan_4_1 testMeshCriteriaLoadBalanceMng-Zoltan-4-1.arc 4 -m 10)
+  endif ()
 endif()
 
 arcane_add_test_parallel_all(particle testParticle.arc 3 4)
@@ -503,6 +557,7 @@ if(PARTITIONER_FOUND)
 endif()
 
 arcane_add_test(mesh2 testMesh-2.arc "-We,ARCANE_METIS_INPUT_OUTPUT_DIGEST,1")
+arcane_add_test(mesh2_generate_face_uid testMesh-2.arc "-We,ARCANE_GENERATE_UNIQUE_ID_FROM_NODES,1")
 arcane_add_test_sequential(mesh2_sort_faces testMesh-2-sorted-faces.arc)
 arcane_add_test_sequential(mesh2_init_nan testMesh-2.arc "-We,ARCANE_DATA_INIT_POLICY,NAN")
 arcane_add_test_sequential(mesh2_init_default testMesh-2.arc "-We,ARCANE_DATA_INIT_POLICY,DEFAULT" "-We,ARCANE_ITEMFAMILY_SHRINK_AFTER_ALLOCATE,1")
@@ -520,11 +575,12 @@ if(HDF5_FOUND)
 endif()
 if(vtkIOXML_FOUND)
   ARCANE_ADD_TEST_SEQUENTIAL(vtk_vtu testMesh-format_vtu.arc)
-  if (Neo_FOUND)
+  if (vtkIOLegacy_FOUND AND Neo_FOUND)
     arcane_add_test_sequential(polyhedral_vtk1 testMeshPolyhedral-1.arc)
     arcane_add_test_sequential(polyhedral_vtk2 testMeshPolyhedral-2.arc)
     arcane_add_test_sequential(polyhedral_vtk3 testMeshPolyhedral-3.arc)
     arcane_add_test_sequential(polyhedral_vtk4 testMeshPolyhedral-4.arc)
+    arcane_add_test_sequential(polyhedral_with_dofs testMeshPolyhedralWithDoFs.arc)
   endif()
 endif()
 if(MEDFile_FOUND)
@@ -538,9 +594,13 @@ ARCANE_ADD_TEST(mesh_sphere_vtk42 testMesh-sphere-vtk42.arc)
 ARCANE_ADD_TEST(mesh_sphere_vtk42_binary testMesh-sphere-vtk42-binary.arc)
 arcane_add_test_sequential(mesh1_honeycomb2d testMesh-honeycomb2D-1.arc "-We,ARCANE_PRINT_APPLYSIMDPADDING,2")
 arcane_add_test_sequential(mesh1_honeycomb3d testMesh-honeycomb3D-1.arc)
+arcane_add_test_sequential(mesh1_onesphere_msh testMesh-onesphere-1.arc)
+arcane_add_test_sequential(mesh1_onesphere_binary_msh testMesh-onesphere-binary-1.arc)
 if (ARCANE_DEFAULT_PARTITIONER_IS_METIS)
   arcane_add_test_parallel_thread(mesh1_honeycomb2d testMesh-honeycomb2D-1.arc 4)
   arcane_add_test_parallel_thread(mesh1_honeycomb3d testMesh-honeycomb3D-1.arc 4)
+  arcane_add_test_parallel_thread(mesh1_onesphere_msh testMesh-onesphere-1.arc 4)
+  arcane_add_test_parallel_thread(mesh1_onesphere_binary_msh testMesh-onesphere-binary-1.arc 4)
 endif()
 
 ##############
@@ -577,11 +637,14 @@ arcane_add_test_sequential(ios_msh4 testIos-msh4.arc)
 arcane_add_test_sequential(ios_msh5 testIos-msh5.arc "-We,ARCANE_USE_PARALLEL_MSH_READER,0")
 arcane_add_test_sequential(ios_msh5_parallel testIos-msh5.arc)
 arcane_add_test_sequential(ios_msh6_parallel testIos-msh6.arc "-We,ARCANE_FACE_UNIQUE_ID_BUILDER_VERSION,5")
+arcane_add_test_sequential(ios_msh_binary1 testIos-msh-binary-1.arc)
 if (ARCANE_DEFAULT_PARTITIONER_IS_METIS)
   arcane_add_test_parallel_thread(ios_msh4 testIos-msh4.arc 4)
   arcane_add_test_parallel_thread(ios_msh5 testIos-msh5.arc 5 "-We,ARCANE_USE_PARALLEL_MSH_READER,0")
   arcane_add_test_parallel(ios_msh5_parallel testIos-msh5.arc 4)
   arcane_add_test_parallel(ios_msh6_parallel testIos-msh6.arc 4)
+  arcane_add_test_parallel_thread(ios_msh_binary1 testIos-msh-binary-1.arc 4)
+  arcane_add_test_parallel(ios_msh_binary1 testIos-msh-binary-1.arc 4)
   # Ne fonctionne pas encore
   # arcane_add_test_parallel(ios_msh6_parallel_face5 testIos-msh6.arc 4 "-We,ARCANE_FACE_UNIQUE_ID_BUILDER_VERSION,5")
 endif()
@@ -631,8 +694,13 @@ arcane_add_test_script(continue_hydro3_cartesian_small continue_hydro3_cartesian
 # TODO : À réactiver.
 #arcane_add_test_script(continue_hydro3_cartesian_small_4shm continue_hydro3_cartesian_small_4shm.xml)
 arcane_add_test_parallel(hydro3_cartesian_8proc testHydro-3-cartesian.arc 8 "-m 50")
-arcane_add_test_parallel_all(hydro3_meshservice testHydro-3-meshservice.arc 3 4 -m 50)
-arcane_add_test_generic(hydro3_meshservice_subdivide1 CASE_FILE testHydro-3-meshservice-subdivide1.arc MP_SEQUENTIAL MP_SHM ARGS "-m 50")
+
+arcane_add_test(ArcaneBasicMeshsubdividerservice1-subdivide1 testArcaneBasicMeshSubdividerService1-subdivide1.arc -m 1)
+arcane_add_test_parallel_thread(arcanebasicmeshsubdividerservice1-subdivide1 testArcaneBasicMeshSubdividerService1-subdivide1.arc 4 -m 1)
+if( Parmetis_FOUND )
+  arcane_add_test_parallel_thread(arcanebasicmeshsubdividerservice1-subdivide1-parmetis testArcaneBasicMeshSubdividerService1-subdivide1-parmetis.arc 4 -m 1)
+endif()
+
 arcane_add_test_parallel_all(hydro3_checkpoint_meshservice testHydro-3-checkpoint-meshservice.arc 3 4 -c 3 -m 10)
 arcane_add_test(hydro5 testHydro-5.arc -m 50 -We,ARCANE_MASTER_HAS_OUTPUT_FILE,1)
 arcane_add_test(hydro5_message_passing_prof testHydro-5.arc -m 50 -We,ARCANE_MESSAGE_PASSING_PROFILING,JSON)
@@ -724,12 +792,6 @@ if (HDF5_FOUND)
   ARCANE_ADD_TEST_PARALLEL(hydro1_checkpoint_3proc_rep4 testHydro-1-checkpoint.arc 12 -c 2 -m 25 -R 4)
 endif()
 
-macro(arcane_add_accelerator_test_all_policies TEST_NAME CASE_FILE)
-  arcane_add_test_sequential(${TEST_NAME} ${CASE_FILE})
-  arcane_add_test_sequential_task(${TEST_NAME} ${CASE_FILE} 4)
-  arcane_add_accelerator_test_sequential(${TEST_NAME} ${CASE_FILE})
-endmacro()
-
 if (ARCANE_HAS_ACCELERATOR_API)
   arcane_add_test_sequential(numarray1 testNumArray-1.arc)
   arcane_add_test_sequential_task(numarray1 testNumArray-1.arc 4)
@@ -761,9 +823,16 @@ if (ARCANE_HAS_ACCELERATOR_API)
   arcane_add_test_sequential_task(accelerator_partitioner1 testAcceleratorPartitioner-1.arc 4)
   arcane_add_accelerator_test_sequential(accelerator_partitioner1 testAcceleratorPartitioner-1.arc)
 
+  arcane_add_test_sequential(accelerator_sorter1 testAcceleratorSorter-1.arc)
+  arcane_add_test_sequential_task(accelerator_sorter1 testAcceleratorSorter-1.arc 4)
+  arcane_add_accelerator_test_sequential(accelerator_sorter1 testAcceleratorSorter-1.arc)
+
   arcane_add_test_sequential(accelerator_material1 testAcceleratorMaterials-1.arc)
   arcane_add_test_sequential_task(accelerator_material1 testAcceleratorMaterials-1.arc 4)
   arcane_add_accelerator_test_sequential(accelerator_material1 testAcceleratorMaterials-1.arc)
+
+  arcane_add_test_sequential(accelerator_material1_old testAcceleratorMaterials-1.arc "-We,ARCANE_MATERIALMNG_USE_ACCELERATOR_FOR_CONSTITUENTITEMVECTOR,0")
+  arcane_add_accelerator_test_sequential(accelerator_material1_old testAcceleratorMaterials-1.arc "-We,ARCANE_MATERIALMNG_USE_ACCELERATOR_FOR_CONSTITUENTITEMVECTOR,0")
 
   arcane_add_test_sequential(memorycopy1 testMemoryCopy-1.arc)
   arcane_add_test_sequential_task(memorycopy1 testMemoryCopy-1.arc 4)

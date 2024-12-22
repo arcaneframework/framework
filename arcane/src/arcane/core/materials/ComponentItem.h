@@ -58,6 +58,7 @@ class ARCANE_CORE_EXPORT ComponentCell
   friend class AllEnvCell;
   friend class EnvCell;
   friend class MatCell;
+  friend class ConstituentItemVectorImpl;
 
  public:
 
@@ -106,10 +107,16 @@ class ARCANE_CORE_EXPORT ComponentCell
   //! Nombre de sous-éléments
   ARCCORE_HOST_DEVICE Int32 nbSubItem() const { return m_shared_info->_nbSubConstituent(m_constituent_item_index); }
 
-  //! Maille arcane
+  //! Maille globale
   Cell globalCell() const
   {
     return Cell(m_shared_info->_globalItemBase(m_constituent_item_index));
+  }
+
+  //! localId() de la maille globale
+  ARCCORE_HOST_DEVICE CellLocalId globalCellId() const
+  {
+    return CellLocalId(m_shared_info->_globalItemId(m_constituent_item_index));
   }
 
   /*!

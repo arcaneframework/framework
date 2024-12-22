@@ -17,8 +17,15 @@
 #include "arcane/utils/FatalErrorException.h"
 
 #include "arcane/core/materials/IMeshMaterialMng.h"
+#include "arcane/core/materials/MatItemEnumerator.h"
 #include "arcane/core/materials/internal/IMeshComponentInternal.h"
 #include "arcane/core/materials/internal/IMeshMaterialMngInternal.h"
+
+#include "arcane/accelerator/core/RunQueue.h"
+#include "arcane/accelerator/RunCommandLoop.h"
+#include "arcane/accelerator/Reduce.h"
+#include "arcane/accelerator/Partitioner.h"
+#include "arcane/accelerator/RunCommandMaterialEnumerate.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -69,45 +76,318 @@ ConstituentItemVectorImpl(const ComponentItemVectorView& rhs)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-void ConstituentItemVectorImpl::
-_setItems(ConstArrayView<ConstituentItemIndex> globals,
-          ConstArrayView<ConstituentItemIndex> multiples)
+/*!
+ * \brief Helper pour positionner les entités du vecteur.
+ */
+class ConstituentItemVectorImpl::SetItemHelper
 {
-  m_constituent_list->copyPureAndPartial(globals, multiples);
+ public:
+
+  SetItemHelper(bool use_new_impl)
+  : m_use_new_impl(use_new_impl)
+  {}
+
+ public:
+
+  template <typename ConstituentGetterLambda>
+  void setItems(ConstituentItemVectorImpl* vector_impl,
+                ConstituentGetterLambda constituent_getter_lambda,
+                SmallSpan<const Int32> local_ids, RunQueue& queue);
+
+ private:
+
+  bool m_use_new_impl = true;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template <typename ConstituentGetterLambda> void
+ConstituentItemVectorImpl::SetItemHelper::
+setItems(ConstituentItemVectorImpl* vector_impl, ConstituentGetterLambda constituent_getter_lambda,
+         SmallSpan<const Int32> local_ids, RunQueue& queue)
+{
+  SmallSpan<ConstituentItemIndex> item_indexes = vector_impl->m_constituent_list->_mutableItemIndexList();
+  SmallSpan<MatVarIndex> matvar_indexes = vector_impl->m_matvar_indexes.smallSpan();
+  SmallSpan<Int32> items_local_id = vector_impl->m_items_local_id.smallSpan();
+  AllEnvCellVectorView all_env_cell_view = vector_impl->m_material_mng->view(local_ids);
+  const bool is_env = vector_impl->m_component->isEnvironment();
+  const Int32 component_id = vector_impl->m_component->id();
+
+  const Int32 nb_pure = vector_impl->m_nb_pure;
+
+  Int32 pure_index = 0;
+  Int32 impure_index = nb_pure;
+
+  const Int32 nb_id = local_ids.size();
+
+  // Pas besoin de conserver les informations pour les mailles pour lesquelles
+  // le constituant est absent.
+  auto setter_unselected = [=] ARCCORE_HOST_DEVICE(Int32, Int32) {
+  };
+  auto generic_setter_lambda = [=] ARCCORE_HOST_DEVICE(Int32 index, ComponentCell cc) {
+    MatVarIndex idx = cc._varIndex();
+    ConstituentItemIndex cii = cc._constituentItemIndex();
+    item_indexes[index] = cii;
+    matvar_indexes[index] = idx;
+    items_local_id[index] = cc.globalCellId();
+  };
+
+  // Implémentation utilisant l'API accélérateur
+  if (m_use_new_impl) {
+    // Lambda pour sélectionner les mailles pures
+    auto select_pure = [=] ARCCORE_HOST_DEVICE(Int32 index) {
+      ComponentCell cc = constituent_getter_lambda(index);
+      if (cc.null())
+        return false;
+      return (cc._varIndex().arrayIndex() == 0);
+    };
+    // Lambda pour sélectionner les mailles impures
+    auto select_impure = [=] ARCCORE_HOST_DEVICE(Int32 index) {
+      ComponentCell cc = constituent_getter_lambda(index);
+      if (cc.null())
+        return false;
+      return (cc._varIndex().arrayIndex() != 0);
+    };
+    auto setter_lambda = [=] ARCCORE_HOST_DEVICE(Int32 index, Int32 output_index) {
+      ComponentCell cc = constituent_getter_lambda(index);
+      if (!cc.null())
+        generic_setter_lambda(output_index, cc);
+    };
+    auto setter_pure = [=] ARCCORE_HOST_DEVICE(Int32 index, Int32 output_index) {
+      setter_lambda(index, output_index);
+    };
+    auto setter_impure = [=] ARCCORE_HOST_DEVICE(Int32 index, Int32 output_index) {
+      setter_lambda(index, output_index + nb_pure);
+    };
+    Arcane::Accelerator::GenericPartitioner generic_partitioner(queue);
+    generic_partitioner.applyWithIndex(nb_id, setter_pure, setter_impure, setter_unselected,
+                                       select_pure, select_impure, A_FUNCINFO);
+    //SmallSpan<const Int32> nb_parts = generic_partitioner.nbParts();
+    //std::cout << "NB_PART=" << nb_parts[0] << " " << nb_parts[1] << "\n";
+  }
+  else {
+    // Ancien mécanisme qui n'utilise pas l'API accélérateur
+    if (is_env) {
+      ENUMERATE_ALLENVCELL (iallenvcell, all_env_cell_view) {
+        AllEnvCell all_env_cell = *iallenvcell;
+        for (EnvCell ec : all_env_cell.subEnvItems()) {
+          if (ec.componentId() == component_id) {
+            MatVarIndex idx = ec._varIndex();
+            ConstituentItemIndex cii = ec._constituentItemIndex();
+            Int32& base_index = (idx.arrayIndex() == 0) ? pure_index : impure_index;
+            item_indexes[base_index] = cii;
+            matvar_indexes[base_index] = idx;
+            items_local_id[base_index] = all_env_cell.globalCellId();
+            ++base_index;
+          }
+        }
+      }
+    }
+    else {
+      // Filtre les matériaux correspondants aux local_ids
+      ENUMERATE_ALLENVCELL (iallenvcell, all_env_cell_view) {
+        AllEnvCell all_env_cell = *iallenvcell;
+        for (EnvCell env_cell : all_env_cell.subEnvItems()) {
+          for (MatCell mc : env_cell.subMatItems()) {
+            if (mc.componentId() == component_id) {
+              MatVarIndex idx = mc._varIndex();
+              ConstituentItemIndex cii = mc._constituentItemIndex();
+              Int32& base_index = (idx.arrayIndex() == 0) ? pure_index : impure_index;
+              item_indexes[base_index] = cii;
+              matvar_indexes[base_index] = idx;
+              items_local_id[base_index] = all_env_cell.globalCellId();
+              ++base_index;
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Positionne les entités du vecteur.
+ *
+ * Les entités du vecteur seront les entités de numéro locaux localId() et
+ * qui appartiennent à notre matériau ou notre milieu.
+ */
+void ConstituentItemVectorImpl::
+_setItems(SmallSpan<const Int32> local_ids)
+{
+  const bool do_new_impl = m_material_mng->_internalApi()->isUseAcceleratorForConstituentItemVector();
+
+  RunQueue queue = m_material_mng->_internalApi()->runQueue();
+
+  if (do_new_impl)
+    _computeNbPureAndImpure(local_ids, queue);
+  else
+    _computeNbPureAndImpureLegacy(local_ids);
+
+  const Int32 nb_pure = m_nb_pure;
+  const Int32 nb_impure = m_nb_impure;
+  const Int32 total_nb_pure_and_impure = nb_pure + nb_impure;
+
+  // Tableau qui contiendra les indices des mailles pures et partielles.
+  // La première partie de 0 à nb_pure contiendra la partie pure.
+  // La seconde partie de nb_pure à (nb_pure+nb_impure) contiendra les mailles partielles
+  // A noter que (nb_pure + nb_impure) peut être différent de local_ids.size()
+  // si certaines mailles de \a local_ids n'ont pas le constituant.
+  m_constituent_list->resize(total_nb_pure_and_impure);
 
   // TODO: Ne pas remettre à jour systématiquement les
   // 'm_items_local_id' mais ne le faire qu'à la demande
   // car ils ne sont pas utilisés souvent.
-  Int32 nb_pure = globals.size();
-  Int32 nb_impure = multiples.size();
 
-  m_matvar_indexes.resize(nb_pure + nb_impure);
-  m_items_local_id.resize(nb_pure + nb_impure);
+  m_matvar_indexes.resize(total_nb_pure_and_impure);
+  m_items_local_id.resize(total_nb_pure_and_impure);
 
-  ComponentItemSharedInfo* cisi = m_component_shared_info;
+  const bool is_env = m_component->isEnvironment();
+  AllEnvCellVectorView all_env_cell_view = m_material_mng->view(local_ids);
+  const Int32 component_id = m_component->id();
 
-  for (Int32 i = 0; i < nb_pure; ++i) {
-    ConstituentItemIndex cii = globals[i];
-    m_matvar_indexes[i] = cisi->_varIndex(cii);
-    m_items_local_id[i] = cisi->_globalItemBase(cii).localId();
-  }
+  // Lambda pour récupérer le milieu associé à la maille
+  auto env_component_getter_lambda = [=] ARCCORE_HOST_DEVICE(Int32 index) -> ComponentCell {
+    AllEnvCell all_env_cell = all_env_cell_view[index];
+    for (EnvCell ec : all_env_cell.subEnvItems()) {
+      if (ec.componentId() == component_id)
+        return ec;
+    }
+    return {};
+  };
 
-  for (Int32 i = 0; i < nb_impure; ++i) {
-    ConstituentItemIndex cii = multiples[i];
-    m_matvar_indexes[nb_pure + i] = cisi->_varIndex(cii);
-    m_items_local_id[nb_pure + i] = cisi->_globalItemBase(cii).localId();
+  // Lambda pour récupérer le matériau associé à la maille
+  auto mat_component_getter_lambda = [=] ARCCORE_HOST_DEVICE(Int32 index) -> ComponentCell {
+    AllEnvCell all_env_cell = all_env_cell_view[index];
+    for (EnvCell ec : all_env_cell.subEnvItems()) {
+      for (MatCell mc : ec.subMatItems())
+        if (mc.componentId() == component_id)
+          return mc;
+    }
+    return {};
+  };
+
+  {
+    SetItemHelper helper(do_new_impl);
+    if (is_env)
+      helper.setItems(this, env_component_getter_lambda, local_ids, queue);
+    else
+      helper.setItems(this, mat_component_getter_lambda, local_ids, queue);
   }
 
   // Mise à jour de MeshComponentPartData
-  m_nb_pure = nb_pure;
-  m_nb_impure = nb_impure;
   const bool do_lazy_evaluation = true;
   if (do_lazy_evaluation)
     m_part_data->setNeedRecompute();
   else
     _recomputePartData();
 }
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ConstituentItemVectorImpl::
+_computeNbPureAndImpure(SmallSpan<const Int32> local_ids, RunQueue& queue)
+{
+  IMeshComponent* component = m_component;
+  const bool is_env = component->isEnvironment();
+  AllEnvCellVectorView all_env_cell_view = m_material_mng->view(local_ids);
+  const Int32 component_id = m_component->id();
+
+  auto command = makeCommand(queue);
+  Accelerator::ReducerSum2<Int32> nb_pure(command);
+  Accelerator::ReducerSum2<Int32> nb_impure(command);
+
+  // Calcule le nombre de mailles pures et partielles
+  if (is_env) {
+    command << RUNCOMMAND_MAT_ENUMERATE(AllEnvCell, all_env_cell, all_env_cell_view, nb_pure, nb_impure)
+    {
+      for (EnvCell ec : all_env_cell.subEnvItems()) {
+        if (ec.componentId() == component_id) {
+          MatVarIndex idx = ec._varIndex();
+          if (idx.arrayIndex() == 0)
+            nb_pure.combine(1);
+          else
+            nb_impure.combine(1);
+        }
+      }
+    };
+  }
+  else {
+    command << RUNCOMMAND_MAT_ENUMERATE(AllEnvCell, all_env_cell, all_env_cell_view, nb_pure, nb_impure)
+    {
+      for (EnvCell env_cell : all_env_cell.subEnvItems()) {
+        for (MatCell mc : env_cell.subMatItems()) {
+          if (mc.componentId() == component_id) {
+            MatVarIndex idx = mc._varIndex();
+            if (idx.arrayIndex() == 0)
+              nb_pure.combine(1);
+            else
+              nb_impure.combine(1);
+          }
+        }
+      }
+    };
+  }
+
+  m_nb_pure = nb_pure.reducedValue();
+  m_nb_impure = nb_impure.reducedValue();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Calcul du nombre de mailles pures et impures sans API accélérateur.
+ */
+void ConstituentItemVectorImpl::
+_computeNbPureAndImpureLegacy(SmallSpan<const Int32> local_ids)
+{
+  IMeshComponent* component = m_component;
+  const bool is_env = component->isEnvironment();
+  AllEnvCellVectorView all_env_cell_view = m_material_mng->view(local_ids);
+  const Int32 component_id = m_component->id();
+
+  Int32 nb_pure = 0;
+  Int32 nb_impure = 0;
+
+  // Calcule le nombre de mailles pures et partielles
+  if (is_env) {
+    ENUMERATE_ALLENVCELL (iallenvcell, all_env_cell_view) {
+      AllEnvCell all_env_cell = *iallenvcell;
+      for (EnvCell ec : all_env_cell.subEnvItems()) {
+        if (ec.componentId() == component_id) {
+          MatVarIndex idx = ec._varIndex();
+          if (idx.arrayIndex() == 0)
+            ++nb_pure;
+          else
+            ++nb_impure;
+        }
+      }
+    }
+  }
+  else {
+    ENUMERATE_ALLENVCELL (iallenvcell, all_env_cell_view) {
+      AllEnvCell all_env_cell = *iallenvcell;
+      for (EnvCell env_cell : all_env_cell.subEnvItems()) {
+        for (MatCell mc : env_cell.subMatItems()) {
+          if (mc.componentId() == component_id) {
+            MatVarIndex idx = mc._varIndex();
+            if (idx.arrayIndex() == 0)
+              ++nb_pure;
+            else
+              ++nb_impure;
+          }
+        }
+      }
+    }
+  }
+
+  m_nb_pure = nb_pure;
+  m_nb_impure = nb_impure;
+}
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 

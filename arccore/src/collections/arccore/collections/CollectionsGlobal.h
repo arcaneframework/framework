@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CollectionsGlobal.h                                         (C) 2000-2023 */
+/* CollectionsGlobal.h                                         (C) 2000-2024 */
 /*                                                                           */
 /* Définitions globales de la composante 'Collections' de 'Arccore'.         */
 /*---------------------------------------------------------------------------*/
@@ -15,6 +15,8 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arccore/base/ArccoreGlobal.h"
+
+#include <iosfwd>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -54,11 +56,17 @@ template<typename DataType> class UniqueArray2;
 template<typename DataType> class SharedArray2;
 }
 
+namespace Arcane::Accelerator
+{
+class RunQueue;
+};
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 namespace Arccore
 {
+using Arcane::Accelerator::RunQueue;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -78,6 +86,60 @@ enum class eMemoryLocationHint : int8_t
    */
   HostAndDeviceMostlyRead = 3
 };
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Localisation physique d'une adresse mémoire.
+ *
+ * Pour les valeurs ManagedMemoryDevice et ManagedMemoryHost il s'agit d'une
+ * indication car il n'y a pas de moyen simple de savoir où se trouve
+ * réellement la mémoire.
+ */
+enum class eHostDeviceMemoryLocation : int8_t
+{
+  //! Localisation inconnue
+  Unknown = 0,
+  //! La mémoire est sur accélérateur
+  Device = 1,
+  //! La mémoire est sur l'hôte.
+  Host = 2,
+  //! La mémoire est de la mémoire managée sur accélérateur
+  ManagedMemoryDevice = 3,
+  //! La mémoire est de la mémoire managée sur l'hôte.
+  ManagedMemoryHost = 4,
+};
+extern "C++" ARCCORE_COLLECTIONS_EXPORT std::ostream&
+operator<<(std::ostream& o, eHostDeviceMemoryLocation r);
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+/*!
+ * \brief Liste des ressources mémoire disponibles.
+ */
+enum class eMemoryResource
+{
+  //! Valeur inconnue ou non initialisée
+  Unknown = 0,
+  //! Alloue sur l'hôte.
+  Host,
+  //! Alloue sur l'hôte.
+  HostPinned,
+  //! Alloue sur le device
+  Device,
+  //! Alloue en utilisant la mémoire unifiée.
+  UnifiedMemory
+};
+
+//! Nombre de valeurs valides pour eMemoryRessource
+static constexpr int ARCCORE_NB_MEMORY_RESOURCE = 5;
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+extern "C++" ARCCORE_COLLECTIONS_EXPORT std::ostream&
+operator<<(std::ostream& o, eMemoryResource r);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

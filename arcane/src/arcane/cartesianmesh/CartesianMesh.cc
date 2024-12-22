@@ -46,6 +46,7 @@
 #include "arcane/cartesianmesh/v2/CartesianMeshUniqueIdRenumberingV2.h"
 
 #include "arcane/cartesianmesh/CartesianMeshAMRPatchMng.h"
+#include "arcane/core/IGhostLayerMng.h"
 
 #include <set>
 
@@ -170,6 +171,11 @@ class CartesianMeshImpl
   void refinePatch2D(Real2 position,Real2 length) override;
   void refinePatch3D(Real3 position,Real3 length) override;
 
+  void coarseZone2D(Real2 position, Real2 length) override;
+  void coarseZone3D(Real3 position, Real3 length) override;
+
+  Integer reduceNbGhostLayers(Integer level, Integer target_nb_ghost_layers) override;
+
   void renumberItemsUniqueId(const CartesianMeshRenumberingInfo& v) override;
 
   void checkValid() const override;
@@ -198,7 +204,7 @@ class CartesianMeshImpl
   UniqueArray<CartesianConnectivity::Index> m_cells_to_node_storage;
   UniqueArray<CartesianConnectivity::Permutation> m_permutation_storage;
   bool m_is_amr = false;
-  //! Groupe de mailles parentes pour chaque patch AMR.
+  //! Groupe de mailles pour chaque patch AMR.
   UniqueArray<CellGroup> m_amr_patch_cell_groups;
   UniqueArray<Ref<CartesianMeshPatch>> m_amr_patches;
   UniqueArray<ICartesianMeshPatch*> m_amr_patches_pointer;
@@ -216,12 +222,16 @@ class CartesianMeshImpl
                              VariableFaceReal3& faces_center,CellGroup all_cells,
                              NodeGroup all_nodes);
   void _applyRefine(ConstArrayView<Int32> cells_local_id);
+  void _removeCellsInPatches(ConstArrayView<Int32> const_array_view);
+  void _applyCoarse(ConstArrayView<Int32> cells_local_id);
   void _addPatch(const CellGroup& parent_group);
   void _saveInfosInProperties();
 
-  std::tuple<CellGroup,NodeGroup>
-  _buildPatchGroups(const CellGroup& cells,Integer patch_level);
-  void _refinePatch(Real3 position,Real3 length,bool is_3d);
+  std::tuple<CellGroup, NodeGroup>
+  _buildPatchGroups(const CellGroup& cells, Integer patch_level);
+  void _refinePatch(Real3 position, Real3 length, bool is_3d);
+  void _coarseZone(Real3 position, Real3 length, bool is_3d);
+  void _cellsInZone(Real3 position, Real3 length, bool is_3d, UniqueArray<Int32>& cells_local_id);
   void _checkNeedComputeDirections();
   void _checkAddObservableMeshChanged();
   void _addPatchInstance(const Ref<CartesianMeshPatch>& v)
@@ -420,72 +430,66 @@ computeDirections()
   // Par exemple, pour toutes les mailles, la face d'indice 0 est celle du haut, celle
   // d'indice 1 celle de droite.
   if (is_3d) {
+    Real max_x = -1;
+    Real max_y = -1;
+    Real max_z = -1;
+
     for (Integer i = 0; i < nb_face; ++i) {
       Face f = cell0.face(i);
 
       Real3 next_center = faces_center[f];
-
-      info(4) << "NEXT_FACE=" << ItemPrinter(f) << " center=" << next_center;
 
       Real diff_x = next_center.x - cell_center.x;
       Real diff_y = next_center.y - cell_center.y;
       Real diff_z = next_center.z - cell_center.z;
 
-      if (diff_x < 0)
-        diff_x = 0;
-      if (diff_y < 0)
-        diff_y = 0;
-      if (diff_z < 0)
-        diff_z = 0;
+      info(4) << "NEXT_FACE=" << ItemPrinter(f) << " center=" << next_center << " diff=" << Real3(diff_x, diff_y, diff_z);
 
-      info(4) << "NEXT_FACE=" << ItemPrinter(f) << " diff=" << Real3(diff_x, diff_y, diff_z);
-
-      if (diff_x > diff_y && diff_x > diff_z) {
-        // INC X
+      if (diff_x > max_x) {
+        max_x = diff_x;
         next_face_x = i;
-        info(4) << "Advance in direction X -> " << next_face_x;
       }
-      else if (diff_y > diff_x && diff_y > diff_z) {
-        // INC Y
+
+      if (diff_y > max_y) {
+        max_y = diff_y;
         next_face_y = i;
-        info(4) << "Advance in direction Y -> " << next_face_y;
       }
-      else if (diff_z > diff_x && diff_z > diff_y) {
-        // INC Z
+
+      if (diff_z > max_z) {
+        max_z = diff_z;
         next_face_z = i;
-        info(4) << "Advance in direction Z -> " << next_face_z;
       }
     }
+    info(4) << "Advance in direction X -> " << next_face_x;
+    info(4) << "Advance in direction Y -> " << next_face_y;
+    info(4) << "Advance in direction Z -> " << next_face_z;
   }
   else {
+    Real max_x = -1;
+    Real max_y = -1;
+
     for (Integer i = 0; i < nb_face; ++i) {
       Face f = cell0.face(i);
 
       Real3 next_center = faces_center[f];
 
-      info(4) << "NEXT_FACE=" << ItemPrinter(f) << " center=" << next_center;
-
       Real diff_x = next_center.x - cell_center.x;
       Real diff_y = next_center.y - cell_center.y;
 
-      if (diff_x < 0)
-        diff_x = 0;
-      if (diff_y < 0)
-        diff_y = 0;
+      info(4) << "NEXT_FACE=" << ItemPrinter(f) << " center=" << next_center << " diff=" << Real2(diff_x, diff_y);
 
-      info(4) << "NEXT_FACE=" << ItemPrinter(f) << " diff=" << Real2(diff_x, diff_y);
-
-      if (diff_x > diff_y) {
-        // INC X
+      if (diff_x > max_x) {
+        max_x = diff_x;
         next_face_x = i;
-        info(4) << "Advance in direction X -> " << next_face_x;
       }
-      else if (diff_y > diff_x) {
-        // INC Y
+
+      if (diff_y > max_y) {
+        max_y = diff_y;
         next_face_y = i;
-        info(4) << "Advance in direction Y -> " << next_face_y;
       }
     }
+    info(4) << "Advance in direction X -> " << next_face_x;
+    info(4) << "Advance in direction Y -> " << next_face_y;
   }
   m_all_items_direction_info->_internalComputeNodeCellInformations(cell0,cells_center[cell0],nodes_coord);
 
@@ -660,30 +664,54 @@ _computeMeshDirection(CartesianMeshPatch& cdi,eMeshDirection dir,VariableCellRea
 /*---------------------------------------------------------------------------*/
 
 void CartesianMeshImpl::
-_refinePatch(Real3 position,Real3 length,bool is_3d)
+_refinePatch(Real3 position,Real3 length, bool is_3d)
+{
+  UniqueArray<Int32> cells_local_id;
+  _cellsInZone(position, length, is_3d, cells_local_id);
+
+  _applyRefine(cells_local_id);
+  _saveInfosInProperties();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void CartesianMeshImpl::
+_coarseZone(Real3 position, Real3 length, bool is_3d)
+{
+  UniqueArray<Int32> cells_local_id;
+  _cellsInZone(position, length, is_3d, cells_local_id);
+
+  _applyCoarse(cells_local_id);
+  _saveInfosInProperties();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void CartesianMeshImpl::
+_cellsInZone(Real3 position, Real3 length, bool is_3d, UniqueArray<Int32>& cells_local_id)
 {
   VariableNodeReal3& nodes_coord = m_mesh->nodesCoordinates();
-  UniqueArray<Int32> cells_local_id;
   // Parcours les mailles actives et ajoute dans la liste des mailles
-  // à raffiner celles qui sont contenues dans le boîte englobante
+  // à raffiner celles qui sont contenues dans la boîte englobante
   // spécifiée dans le jeu de données.
   Real3 min_pos = position;
   Real3 max_pos = min_pos + length;
   cells_local_id.clear();
-  ENUMERATE_CELL(icell,m_mesh->allActiveCells()){
+  ENUMERATE_CELL (icell, m_mesh->allActiveCells()) {
     Cell cell = *icell;
     Real3 center;
-    for( NodeLocalId inode : cell.nodeIds() )
+    for (NodeLocalId inode : cell.nodeIds())
       center += nodes_coord[inode];
     center /= cell.nbNode();
-    bool is_inside_x = center.x>min_pos.x && center.x<max_pos.x;
-    bool is_inside_y = center.y>min_pos.y && center.y<max_pos.y;
-    bool is_inside_z = (center.z>min_pos.z && center.z<max_pos.z) || !is_3d;
-    if (is_inside_x && is_inside_y && is_inside_z)
+    bool is_inside_x = center.x > min_pos.x && center.x < max_pos.x;
+    bool is_inside_y = center.y > min_pos.y && center.y < max_pos.y;
+    bool is_inside_z = (center.z > min_pos.z && center.z < max_pos.z) || !is_3d;
+    if (is_inside_x && is_inside_y && is_inside_z) {
       cells_local_id.add(icell.itemLocalId());
+    }
   }
-  _applyRefine(cells_local_id);
-  _saveInfosInProperties();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -706,6 +734,185 @@ refinePatch3D(Real3 position,Real3 length)
 {
   info() << "REFINEMENT 3D position=" << position << " length=" << length;
   _refinePatch(position,length,true);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void CartesianMeshImpl::
+coarseZone2D(Real2 position, Real2 length)
+{
+  info() << "COARSEN 2D position=" << position << " length=" << length;
+  Real3 position_3d(position.x, position.y, 0.0);
+  Real3 length_3d(length.x, length.y, 0.0);
+  _coarseZone(position_3d, length_3d, false);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void CartesianMeshImpl::
+coarseZone3D(Real3 position, Real3 length)
+{
+  info() << "COARSEN 3D position=" << position << " length=" << length;
+  _coarseZone(position, length, true);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Integer CartesianMeshImpl::
+reduceNbGhostLayers(Integer level, Integer target_nb_ghost_layers)
+{
+  if (level < 1) {
+    ARCANE_FATAL("You cannot reduce number of ghost layer of level 0 with this method");
+  }
+
+  // Nombre de couche de maille fantôme max. Bof; à modifier.
+  const Int32 max_nb_layer = 128;
+  Int32 level_max = 0;
+
+  ENUMERATE_ (Cell, icell, m_mesh->allCells()) {
+    level_max = std::max(level_max, icell->level());
+  }
+
+  level_max = m_mesh->parallelMng()->reduce(Parallel::ReduceMax, level_max);
+  //debug() << "Level max : " << level_max;
+
+  computeDirections();
+
+  Integer level_0_nb_ghost_layer = m_mesh->ghostLayerMng()->nbGhostLayer();
+  //debug() << "NbGhostLayers level 0 : " << level_0_nb_ghost_layer;
+
+  if (level_0_nb_ghost_layer == 0) {
+    return 0;
+  }
+
+  Integer nb_ghost_layer = Convert::toInt32(level_0_nb_ghost_layer * pow(2, level));
+
+  //debug() << "NbGhostLayers level " << level << " : " << nb_ghost_layer;
+
+  // On considère qu'on a toujours 2*2 mailles filles (2*2*2 en 3D).
+  if (target_nb_ghost_layers % 2 != 0) {
+    target_nb_ghost_layers++;
+  }
+
+  if (target_nb_ghost_layers == nb_ghost_layer) {
+    return nb_ghost_layer;
+  }
+
+  //debug() << "TargetNbGhostLayers level " << level << " : " << target_nb_ghost_layers;
+
+  Integer parent_level = level - 1;
+  Integer parent_target_nb_ghost_layer = target_nb_ghost_layers / 2;
+
+  // TODO AH : On est forcé de dé-raffiner niveau par niveau. À changer.
+  UniqueArray<UniqueArray<Int32>> cell_lid2(level_max);
+
+  //UniqueArray<Int32> cell_lid;
+  std::function<void(Cell)> children_list;
+
+  children_list = [&cell_lid2, &children_list](Cell cell) -> void {
+    for (Integer i = 0; i < cell.nbHChildren(); ++i) {
+      //debug() << "child of lid=" << cell.localId() << " : lid=" << cell.hChild(i).localId() << " -- level : " << cell.level();
+      cell_lid2[cell.level()].add(cell.hChild(i).localId());
+      children_list(cell.hChild(i));
+    }
+  };
+
+  // Algorithme de numérotation des couches de mailles fantômes.
+  {
+    VariableNodeInt32 level_node{ VariableBuildInfo{ m_mesh, "LevelNode" } };
+    level_node.fill(-1);
+
+    VariableCellInt32 level_cell{ VariableBuildInfo{ m_mesh, "LevelCell" } };
+    level_cell.fill(-1);
+
+    ENUMERATE_ (Face, iface, m_mesh->allFaces()) {
+      Cell front_cell = iface->frontCell();
+      Cell back_cell = iface->backCell();
+      if (
+      ((front_cell.null() || (!front_cell.isOwn() && front_cell.level() == parent_level)) && ((!back_cell.null()) && (back_cell.isOwn() && back_cell.level() == parent_level))) ||
+      ((back_cell.null() || (!back_cell.isOwn() && back_cell.level() == parent_level)) && ((!front_cell.null()) && (front_cell.isOwn() && front_cell.level() == parent_level)))) {
+        for (Node node : iface->nodes()) {
+          level_node[node] = 0;
+          //debug() << "Node layer 0 : " << node.uniqueId();
+        }
+      }
+    }
+
+    bool is_modif = true;
+    Int32 current_layer = 0;
+    while (is_modif) {
+      is_modif = false;
+
+      ENUMERATE_ (Cell, icell, m_mesh->allCells()) {
+        if (icell->isOwn() || icell->level() != parent_level || level_cell[icell] != -1) {
+          continue;
+        }
+
+        Int32 min = max_nb_layer;
+        Int32 max = -1;
+
+        for (Node node : icell->nodes()) {
+          Int32 nlevel = level_node[node];
+          if (nlevel != -1) {
+            min = std::min(min, nlevel);
+            max = std::max(max, nlevel);
+          }
+        }
+
+        // On fait couche par couche (voir pour enlever cette limitation).
+        if (min != current_layer) {
+          continue;
+        }
+
+        // Maille n'ayant pas de nodes déjà traités.
+        if (min == max_nb_layer && max == -1) {
+          continue;
+        }
+
+        Integer new_level = ((min == max) ? min + 1 : max);
+
+        for (Node node : icell->nodes()) {
+          Int32 nlevel = level_node[node];
+          if (nlevel == -1) {
+            level_node[node] = new_level;
+            //debug() << "Node layer " << new_level << " : " << node.uniqueId();
+            is_modif = true;
+          }
+        }
+
+        level_cell[icell] = min;
+
+        //debug() << "Cell uid : " << icell->uniqueId()
+        //        << " -- Layer : " << min;
+
+        if (min >= parent_target_nb_ghost_layer) {
+          children_list(*icell);
+        }
+      }
+      current_layer++;
+      if (current_layer >= max_nb_layer) {
+        ARCANE_FATAL("Error in ghost layer counter algo. Report it plz.");
+      }
+    }
+  }
+
+  for (Integer i = level_max - 1; i >= 0; --i) {
+    // Une comm pour en éviter plein d'autres.
+    if (m_mesh->parallelMng()->reduce(Parallel::ReduceMax, cell_lid2[i].size()) == 0) {
+      continue;
+    }
+    //debug() << "Removing children of ghost cell (parent level=" << i << ") (children localIds) : " << cell_lid2[i];
+
+    m_mesh->modifier()->flagCellToCoarsen(cell_lid2[i]);
+    m_mesh->modifier()->coarsenItemsV2(false);
+  }
+
+  info() << "Nb ghost layer for level " << level << " : " << target_nb_ghost_layers;
+
+  return target_nb_ghost_layers;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -750,6 +957,24 @@ _addPatch(const CellGroup& parent_cells)
 /*---------------------------------------------------------------------------*/
 
 void CartesianMeshImpl::
+_removeCellsInPatches(ConstArrayView<Int32> const_array_view)
+{
+  for (CellGroup cells : m_amr_patch_cell_groups) {
+    cells.removeItems(const_array_view);
+  }
+
+  IParallelMng* pm = m_mesh->parallelMng();
+
+  auto new_end = std::remove_if(m_amr_patch_cell_groups.begin(), m_amr_patch_cell_groups.end(),
+                                [&pm](const CellGroup& cells) { return pm->reduce(Parallel::ReduceMax, cells.size()) == 0; });
+
+  m_amr_patch_cell_groups.resize(new_end - m_amr_patch_cell_groups.begin());
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void CartesianMeshImpl::
 _applyRefine(ConstArrayView<Int32> cells_local_id)
 {
   IItemFamily* cell_family = m_mesh->cellFamily();
@@ -788,6 +1013,44 @@ _applyRefine(ConstArrayView<Int32> cells_local_id)
     ms.dumpStats();
   }
   _addPatch(parent_cells);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void CartesianMeshImpl::
+_applyCoarse(ConstArrayView<Int32> cells_local_id)
+{
+  Integer nb_cell = cells_local_id.size();
+  info(4) << "Local_NbCellToCoarsen = " << nb_cell;
+
+  IParallelMng* pm = m_mesh->parallelMng();
+  Int64 total_nb_cell = pm->reduce(Parallel::ReduceSum, nb_cell);
+  info(4) << "Global_NbCellToCoarsen = " << total_nb_cell;
+  if (total_nb_cell == 0)
+    return;
+
+  _removeCellsInPatches(cells_local_id);
+
+  if (m_amr_type == eMeshAMRKind::Cell) {
+    debug() << "Coarse with modifier() (for all mesh types)";
+    m_mesh->modifier()->flagCellToCoarsen(cells_local_id);
+    m_mesh->modifier()->coarsenItemsV2(true);
+  }
+  else if (m_amr_type == eMeshAMRKind::PatchCartesianMeshOnly) {
+    ARCANE_NOT_YET_IMPLEMENTED("Patch AMR for Cartesian only is not implemented yet");
+  }
+  else if (m_amr_type == eMeshAMRKind::Patch) {
+    ARCANE_FATAL("General patch AMR is not implemented. Please use PatchCartesianMeshOnly (3)");
+  }
+  else {
+    ARCANE_FATAL("AMR is not enabled");
+  }
+
+  {
+    MeshStats ms(traceMng(), m_mesh, m_mesh->parallelMng());
+    ms.dumpStats();
+  }
 }
 
 /*---------------------------------------------------------------------------*/

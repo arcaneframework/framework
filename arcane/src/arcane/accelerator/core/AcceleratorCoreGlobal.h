@@ -54,6 +54,8 @@ class MemoryCopyArgs;
 class MemoryPrefetchArgs;
 class DeviceId;
 class DeviceInfo;
+class DeviceMemoryInfo;
+class ProfileRegion;
 class IDeviceInfoList;
 class PointerAttribute;
 class ViewBuildInfo;
@@ -62,6 +64,7 @@ enum class eMemoryAdvice;
 
 namespace impl
 {
+  class KernelLaunchArgs;
   class RuntimeStaticInfo;
   class IRunnerRuntime;
   // typedef pour compatibilité avec anciennes versions (octobre 2022)
@@ -75,6 +78,10 @@ namespace impl
   class RunCommandLaunchInfo;
   class RunnerImpl;
   class RunQueueImplStack;
+  class NativeStream;
+  class CudaUtils;
+  class HipUtils;
+  class SyclUtils;
 } // namespace impl
 
 /*---------------------------------------------------------------------------*/

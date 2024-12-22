@@ -15,6 +15,7 @@
 #include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/ValueChecker.h"
 #include "arcane/utils/IMemoryRessourceMng.h"
+#include "arcane/utils/ITraceMng.h"
 
 #include "arcane/core/BasicUnitTest.h"
 #include "arcane/core/ServiceFactory.h"
@@ -224,12 +225,13 @@ _executeTest1(eMemoryRessource mem_ressource)
 
   auto queue = makeQueue(m_runner);
   NumArray<DataType, MDDim1> v_sum(1, mem_ressource);
+  NumArray<bool, MDDim1> is_ok_array(nb_value);
   v_sum.fill(init_value, &queue);
   DataType* device_sum_ptr = &v_sum[0];
   {
     auto command = makeCommand(queue);
     auto inout_a = viewInOut(command, v0);
-
+    auto out_is_ok = viewOut(command, is_ok_array);
     command << RUNCOMMAND_LOOP1(iter, nb_value)
     {
       auto [i] = iter();
@@ -237,7 +239,15 @@ _executeTest1(eMemoryRessource mem_ressource)
       if ((i % 2) == 0)
         x = -x;
       DataType v = x + add0;
-      ax::doAtomic<Operation>(inout_a(iter), v);
+      DataType old_v = ax::doAtomic<Operation>(inout_a(iter), v);
+      DataType new_v = inout_a(iter);
+      // Si l'opération est l'ajout, teste que l'ancienne valeur plus
+      // la valeur ajoutée vaut la nouvelle
+      if (Operation == ax::eAtomicOperation::Add) {
+        out_is_ok[i] = (new_v == (old_v + v));
+      }
+      else
+        out_is_ok[i] = true;
       ax::doAtomic<Operation>(device_sum_ptr, inout_a(iter));
     };
   }
@@ -245,8 +255,10 @@ _executeTest1(eMemoryRessource mem_ressource)
   DataType cumulative = init_value;
   for (Int32 i = 0; i < nb_value; ++i) {
     if (i < 10)
-      info() << "V[" << i << "] = " << v0[i];
+      info() << "V[" << i << "] = " << v0[i] << " is_ok=" << is_ok_array[i];
     ax::doAtomic<Operation>(&cumulative, v0[i]);
+    if (!is_ok_array[i])
+      ARCANE_FATAL("Bad old value for index '{0}'", i);
   }
   NumArray<DataType, MDDim1> host_cumulative(1);
   host_cumulative.copy(v_sum);

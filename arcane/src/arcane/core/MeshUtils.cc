@@ -938,7 +938,7 @@ writeMeshConnectivity(IMesh* mesh, const String& file_name)
         {
           ofile << "<child count='" << cell.nbHChildren() << "'>";
           for (Integer j = 0; j < cell.nbHChildren(); ++j) {
-            ofile << ' ' << cell.hChild(j)->uniqueId();
+            ofile << ' ' << cell.hChild(j).uniqueId();
           }
           ofile << "</child>";
         }
@@ -1883,7 +1883,8 @@ getMaxItemUniqueIdCollective(IMesh* mesh)
 
 void MeshUtils::
 checkUniqueIdsHashCollective(IItemFamily* family, IHashAlgorithm* hash_algo,
-                             const String& expected_hash, bool print_hash)
+                             const String& expected_hash, bool print_hash,
+                             bool include_ghost)
 {
   ARCANE_CHECK_POINTER(family);
   ARCANE_CHECK_POINTER(hash_algo);
@@ -1892,7 +1893,8 @@ checkUniqueIdsHashCollective(IItemFamily* family, IHashAlgorithm* hash_algo,
   ITraceMng* tm = family->traceMng();
 
   UniqueArray<Int64> own_items_uid;
-  ENUMERATE_ (Item, iitem, family->allItems().own()) {
+  ItemGroup own_items_group = (include_ghost ? family->allItems() : family->allItems().own());
+  ENUMERATE_ (Item, iitem, own_items_group) {
     Item item{ *iitem };
     own_items_uid.add(item.uniqueId());
   }
@@ -1947,7 +1949,7 @@ generateHashUniqueId(SmallSpan<const Int64> nodes_unique_id)
   Int64 truncated_uid0 = uid0 & ((1 << 30) - 1);
   Int64 truncated_hash = hash & ((1LL << 31) - 1);
   Int64 new_uid = truncated_uid0 + (truncated_hash << 31);
-  ARCANE_ASSERT(new_uid > 0, ("UniqueId is not > 0"));
+  ARCANE_ASSERT(new_uid >= 0, ("UniqueId is not >= 0"));
   return new_uid;
 }
 

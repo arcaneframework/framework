@@ -93,9 +93,12 @@ if (TARGET  alien_trilinos)
     linkLibraries(alien_bench.exe alien_trilinos trilinos)
 endif ()
 
-
 if (TARGET alien_hpddm)
     linkLibraries(alien_bench.exe alien_hpddm)
+endif ()
+
+if (TARGET alien_composyx)
+    linkLibraries(alien_bench.exe alien_composyx)
 endif ()
 
 commit(alien_bench.exe)
@@ -104,6 +107,13 @@ install(
         TARGETS alien_bench.exe
         RUNTIME DESTINATION bin
 )
+
+if(TARGET COMPOSYX::composyx)
+  createExecutable(test_composyx.exe)
+  addSources(test_composyx.exe test_composyx.cpp )
+  linkLibraries(test_composyx.exe mpi COMPOSYX::composyx)
+  commit(test_composyx.exe)
+endif()
 
 if(ALIEN_USE_SYCL)
 if (TARGET hypre)
@@ -221,6 +231,23 @@ if (TARGET trilinos)
             AlienBench-trilinosmuelu-4P.arc
             )
 endif ()
+
+if(TARGET COMPOSYX::composyx)
+
+    configure_file(AlienBench-composyx.arc ${CMAKE_BINARY_DIR}/${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench/AlienBench-composyx.arc COPYONLY)
+    configure_file(AlienBench-composyx-gmres.arc ${CMAKE_BINARY_DIR}/${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench/AlienBench-composyx-gmres.arc COPYONLY)
+    configure_file(AlienBench-composyx-4P.arc ${CMAKE_BINARY_DIR}/${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench/AlienBench-composyx-4P.arc COPYONLY)
+    configure_file(AlienBench-composyx-bcgsas-4P.arc ${CMAKE_BINARY_DIR}/${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench/AlienBench-composyx-bcgsas-4P.arc COPYONLY)
+    configure_file(AlienBench-composyx-gmres-4P.arc ${CMAKE_BINARY_DIR}/${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench/AlienBench-composyx-gmres-4P.arc COPYONLY)
+    configure_file(AlienBench-composyx-gmresas-4P.arc ${CMAKE_BINARY_DIR}/${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench/AlienBench-composyx-gmresas-4P.arc COPYONLY)
+
+    list(APPEND ALIEN_EXAMPLE_FILES AlienBench-composyx.arc
+                                    AlienBench-composyx-gmres.arc
+                                    AlienBench-composyx-4P.arc
+                                    AlienBench-composyx-gmres-4P.arc)
+
+endif()
+
 #Examples !
 
 get_property(ALIEN_COMPILE_DEFS SOURCE main.cc PROPERTY COMPILE_DEFINITIONS)
@@ -243,46 +270,51 @@ install(FILES
         )
 
 alien_test(
-            BENCH alien.bench.aliensolver
+            BENCH bench.aliensolver
             NAME seq
             PROCS 1
             COMMAND alien_bench.exe
             OPTIONS AlienBench-aliensolver.arc
+            UNIQUE_OUTPUT_DIR
             WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
 
 if (TARGET petsc)
 
     alien_test(
-            BENCH alien.bench
+            BENCH bench
             NAME seq
             PROCS 1
             COMMAND alien_bench.exe
             OPTIONS AlienBench.arc
+            UNIQUE_OUTPUT_DIR
             WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
 
     alien_test(
-            BENCH alien.bench
+            BENCH bench
             NAME parallel
             PROCS 4
             COMMAND alien_bench.exe
             OPTIONS AlienBench-4P.arc
+            UNIQUE_OUTPUT_DIR
             WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
 
     if(TARGET petsc::spai)
         alien_test(
-                BENCH alien.bench.petsc-spai
+                BENCH bench.petsc-spai
                 NAME seq
                 PROCS 1
                 COMMAND alien_bench.exe
                 OPTIONS AlienBench-petsc-spai.arc
+                UNIQUE_OUTPUT_DIR
                 WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
 
         alien_test(
-                BENCH alien.bench.petsc-spai
+                BENCH bench.petsc-spai
                 NAME parallel
                 PROCS 4
                 COMMAND alien_bench.exe
                 OPTIONS AlienBench-petsc-spai-4P.arc
+                UNIQUE_OUTPUT_DIR
                 WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
     endif()
 
@@ -291,53 +323,59 @@ endif ()
 if (TARGET hypre)
 
     alien_test(
-            BENCH alien.bench.hypre
+            BENCH bench.hypre
             NAME seq
             PROCS 1
             COMMAND alien_bench.exe
             OPTIONS AlienBench-hypre.arc
+            UNIQUE_OUTPUT_DIR
             WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
 
     alien_test(
-            BENCH alien.bench.hypre
+            BENCH bench.hypre
             NAME parallel
             PROCS 2
             COMMAND alien_bench.exe
             OPTIONS AlienBench-hypre-2P.arc
+            UNIQUE_OUTPUT_DIR
             WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
             
 if(ALIEN_USE_SYCL)
     alien_test(
-            BENCH alien.bench.hypre.ilu
+            BENCH bench.hypre.ilu
             NAME seq
             PROCS 1
             COMMAND alien_bench.exe
             OPTIONS AlienBench-hypreilu.arc
+            UNIQUE_OUTPUT_DIR
             WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
      
     alien_test(
-            BENCH alien.bench.hypre.fsai
+            BENCH bench.hypre.fsai
             NAME seq
             PROCS 1
             COMMAND alien_bench.exe
             OPTIONS AlienBench-hyprefsai.arc
+            UNIQUE_OUTPUT_DIR
             WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
 
   if(TARGET CUDA::cudart)
     alien_test(
-            BENCH alien.bench.hypre.ilu.sycl
+            BENCH bench.hypre.ilu.sycl
             NAME seq
             PROCS 1
             COMMAND alien_bench.exe
             OPTIONS AlienBench-hypreilu-sycl.arc
+            UNIQUE_OUTPUT_DIR
             WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
      
     alien_test(
-            BENCH alien.bench.hypre.fsai.sycl
+            BENCH bench.hypre.fsai.sycl
             NAME seq
             PROCS 1
             COMMAND alien_bench.exe
             OPTIONS AlienBench-hyprefsai-sycl.arc
+            UNIQUE_OUTPUT_DIR
             WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
   endif()
 endif(ALIEN_USE_SYCL)
@@ -347,34 +385,91 @@ endif ()
 if (TARGET trilinos)
 
     alien_test(
-            BENCH alien.bench.trilinos
+            BENCH bench.trilinos
             NAME seq
             PROCS 1
             COMMAND alien_bench.exe
             OPTIONS AlienBench-trilinos.arc
+            UNIQUE_OUTPUT_DIR
             WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
 
     alien_test(
-            BENCH alien.bench.trilinosmuelu
+            BENCH bench.trilinosmuelu
             NAME seq
             PROCS 1
             COMMAND alien_bench.exe
             OPTIONS AlienBench-trilinosmuelu.arc
+            UNIQUE_OUTPUT_DIR
             WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
 
     alien_test(
-            BENCH alien.bench.trilinos
+            BENCH bench.trilinos
             NAME parallel
             PROCS 2
             COMMAND alien_bench.exe
             OPTIONS AlienBench-trilinos-2P.arc
+            UNIQUE_OUTPUT_DIR
             WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
 
     alien_test(
-            BENCH alien.bench.trilinosmuelu
+            BENCH bench.trilinosmuelu
             NAME parallel
             PROCS 4
             COMMAND alien_bench.exe
             OPTIONS AlienBench-trilinosmuelu-4P.arc
+            UNIQUE_OUTPUT_DIR
             WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
 endif ()
+
+
+if (TARGET COMPOSYX::composyx)
+
+    alien_test(
+            BENCH alien.bench.composyx.bcgs
+            NAME seq
+            PROCS 1
+            COMMAND alien_bench.exe
+            OPTIONS AlienBench-composyx.arc
+            WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
+
+    alien_test(
+            BENCH alien.bench.composyx.gmres
+            NAME seq
+            PROCS 1
+            COMMAND alien_bench.exe
+            OPTIONS AlienBench-composyx-gmres.arc
+            WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
+
+    alien_test(
+            BENCH alien.bench.composyx.bcgs
+            NAME parallel
+            PROCS 4
+            COMMAND alien_bench.exe
+            OPTIONS AlienBench-composyx-4P.arc
+            WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
+
+    alien_test(
+            BENCH alien.bench.composyx.bcgs.as
+            NAME parallel
+            PROCS 4
+            COMMAND alien_bench.exe
+            OPTIONS AlienBench-composyx-bcgsas-4P.arc
+            WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
+
+    alien_test(
+            BENCH alien.bench.composyx.gmres
+            NAME parallel
+            PROCS 4
+            COMMAND alien_bench.exe
+            OPTIONS AlienBench-composyx-gmres-4P.arc
+            WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
+
+    alien_test(
+            BENCH alien.bench.composyx.gmres.as
+            NAME parallel
+            PROCS 4
+            COMMAND alien_bench.exe
+            OPTIONS AlienBench-composyx-gmresas-4P.arc
+            WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
+
+endif()

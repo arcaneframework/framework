@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Items                                     (C) 2000-2023                   */
+/* Items                                     (C) 2000-2024                   */
 /*                                                                           */
 /* Tooling to manipulate Mesh Items                                          */
 /*---------------------------------------------------------------------------*/
@@ -78,15 +78,15 @@ struct ItemLocalIds
   utils::Int32 m_first_contiguous_lid = 0;
   int m_nb_contiguous_lids = 0;
 
-  int size() const { return (int)m_non_contiguous_lids.size() + m_nb_contiguous_lids; }
+  int size() const { return m_non_contiguous_lids.size() + m_nb_contiguous_lids; }
 
   int operator()(int index) const {
-    if (index >= int(size()))
+    if (index >= size())
       return size();
     if (index < 0)
       return -1;
     auto item_lid = 0;
-    (index >= (int)m_non_contiguous_lids.size() || m_non_contiguous_lids.size() == 0) ? item_lid = m_first_contiguous_lid + (index - (int)m_non_contiguous_lids.size()) : // work on fluency
+    (index >= m_non_contiguous_lids.size() || m_non_contiguous_lids.size() == 0) ? item_lid = m_first_contiguous_lid + (index - m_non_contiguous_lids.size()) : // work on fluency
     item_lid = m_non_contiguous_lids[index];
     return item_lid;
   }
@@ -114,6 +114,12 @@ struct ItemLocalIds
     std::vector<utils::Int32> indexes{};
     std::copy_if(item_lids.begin(), item_lids.end(), std::back_inserter(indexes), [](auto const& lid) { return lid != utils::NULL_ITEM_LID; });
     return indexes;
+  }
+
+  void clear() {
+    m_non_contiguous_lids.clear();
+    m_first_contiguous_lid = 0;
+    m_nb_contiguous_lids = 0;
   }
 };
 
@@ -155,10 +161,11 @@ struct ItemRange
   std::vector<utils::Int32> localIds() const { return m_item_lids.itemArray(); }
   bool isContiguous() const { return m_item_lids.m_non_contiguous_lids.empty(); };
   ItemIterator begin() const { return ItemIterator{ m_item_lids, 0 }; }
-  ItemIterator end() const { return ItemIterator{ m_item_lids, int(m_item_lids.size()) }; } // todo : consider reverse range : constructeur (ItemLocalIds, traversal_order=forward) enum à faire
+  ItemIterator end() const { return ItemIterator{ m_item_lids, m_item_lids.size() }; } // todo : consider reverse range : constructeur (ItemLocalIds, traversal_order=forward) enum à faire
   size_type size() const { return (size_type)m_item_lids.size(); }
   bool isEmpty() const { return size() == 0; }
   utils::Int32 maxLocalId() const noexcept { return m_item_lids.maxLocalId(); }
+  void clear() noexcept { m_item_lids.clear(); }
 
   friend inline std::ostream& operator<<(std::ostream& os, const Neo::ItemRange& item_range) {
     os << "Item Range : lids ";
@@ -224,8 +231,8 @@ struct FutureItemRange
   FutureItemRange() = default;
   virtual ~FutureItemRange() = default;
 
-  FutureItemRange(FutureItemRange&) = default;
-  FutureItemRange& operator=(FutureItemRange&) = default;
+  FutureItemRange(FutureItemRange const&) = default;
+  FutureItemRange& operator=(FutureItemRange const&) = default;
 
   FutureItemRange(FutureItemRange&&) = default;
   FutureItemRange& operator=(FutureItemRange&&) = default;
@@ -259,15 +266,15 @@ struct FilteredFutureItemRange : public FutureItemRange
 
   FilteredFutureItemRange() = delete;
 
-  FilteredFutureItemRange(FutureItemRange& future_item_range_ref,
+  FilteredFutureItemRange(FutureItemRange const& future_item_range_ref,
                           std::vector<int> filter)
   : m_future_range(future_item_range_ref)
   , m_filter(std::move(filter)) {}
 
   virtual ~FilteredFutureItemRange() = default;
 
-  FilteredFutureItemRange(FilteredFutureItemRange&) = default;
-  FilteredFutureItemRange& operator=(FilteredFutureItemRange&) = default;
+  FilteredFutureItemRange(FilteredFutureItemRange const&) = default;
+  FilteredFutureItemRange& operator=(FilteredFutureItemRange const&) = default;
 
   FilteredFutureItemRange(FilteredFutureItemRange&&) = default;
   FilteredFutureItemRange& operator=(FilteredFutureItemRange&&) = default;

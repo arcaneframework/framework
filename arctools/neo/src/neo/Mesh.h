@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Mesh.h                                          (C) 2000-2023             */
+/* Mesh.h                                          (C) 2000-2024             */
 /*                                                                           */
 /* Asynchronous Mesh structure based on Neo kernel                           */
 /*---------------------------------------------------------------------------*/
@@ -79,6 +79,7 @@ class Mesh
 
     int maxNbConnectedItems() const {
       auto nb_connected_elements = connectivity_value.sizes();
+      if (nb_connected_elements.size() == 0) {return 0;}
       return *std::max_element(nb_connected_elements.begin(), nb_connected_elements.end());
     }
   };
@@ -538,7 +539,7 @@ class Mesh
     return item_family.name() + "_item_coordinates";
   }
 
- private:
+ public:
   [[nodiscard]] std::string _removeItemPropertyName(Family const& item_family) const {
     return "removed_" + item_family.name() + "_items";
   }

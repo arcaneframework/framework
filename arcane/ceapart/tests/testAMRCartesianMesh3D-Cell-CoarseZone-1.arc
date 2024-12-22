@@ -60,17 +60,15 @@
     <coarse-zone-3d>
       <position>2.0 2.0 2.0</position>
       <length>1.0 1.0 1.0</length>
-      <level>1</level>
     </coarse-zone-3d>
 
-    <expected-number-of-cells-in-patchs>125 208 0</expected-number-of-cells-in-patchs>
+    <expected-number-of-cells-in-patchs>125 208</expected-number-of-cells-in-patchs>
     <nodes-uid-hash>e3774827d2b951cb6b7c36e3cdd04540</nodes-uid-hash>
     <faces-uid-hash>b0a24dbeeea1bba8b887155109d5a312</faces-uid-hash>
     <cells-uid-hash>0e51a40d9d1a79d115f4bb5ddeefd827</cells-uid-hash>
-<!--    <expected-number-of-cells-in-patchs>125 216 64</expected-number-of-cells-in-patchs>-->
-<!--    <nodes-uid-hash></nodes-uid-hash>-->
-<!--    <faces-uid-hash></faces-uid-hash>-->
-<!--    <cells-uid-hash></cells-uid-hash>-->
+    <nodes-direction-hash>7e4d7e87ae23945f827ee8ade330760d</nodes-direction-hash>
+    <faces-direction-hash>a4a2370619cd30637fec8a9baea03b9b</faces-direction-hash>
+    <cells-direction-hash>9df145d5cd32ba170267fd6044210e03</cells-direction-hash>
   </a-m-r-cartesian-mesh-tester>
 
   <arcane-protections-reprises>

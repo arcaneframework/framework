@@ -21,6 +21,7 @@
 #include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/ValueConvert.h"
 #include "arcane/utils/CheckedConvert.h"
+#include "arcane/utils/MemoryUtils.h"
 
 #include "arcane/core/IMesh.h"
 #include "arcane/core/IItemFamily.h"
@@ -48,6 +49,7 @@
 #include "arcane/materials/internal/MeshMaterialSynchronizer.h"
 #include "arcane/materials/internal/MeshMaterialVariableSynchronizer.h"
 #include "arcane/materials/internal/ConstituentConnectivityList.h"
+#include "arcane/materials/internal/AllCellToAllEnvCellContainer.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -139,7 +141,7 @@ MeshMaterialMng(const MeshHandle& mesh_handle,const String& name)
 
   String s = platform::getEnvironmentVariable("ARCANE_ALLENVCELL_FOR_RUNCOMMAND");
   if (!s.null())
-    m_is_allcell_2_allenvcell = true;
+    m_is_use_accelerator_envcell_container = true;
   m_mms = new MeshMaterialSynchronizer(this);
 }
 
@@ -180,8 +182,7 @@ MeshMaterialMng::
   m_modifier.reset();
   m_internal_api.reset();
 
-  if (m_allcell_2_allenvcell)
-    AllCellToAllEnvCell::destroy(m_allcell_2_allenvcell);
+  m_accelerator_envcell_container.reset();
 
   // On détruit le Runner à la fin pour être sur qu'il n'y a plus de
   // références dessus dans les autres instances.
@@ -204,6 +205,21 @@ build()
       m_variable_factory_mng->registerFactory(x->createFactory());
       x = x->nextRegisterer();
     }
+  }
+
+  // Indique si on utilise l'API accélérateur pour le calcul des entités
+  // de ConstituentItemVectorImpl
+  {
+    if (auto v = Convert::Type<Real>::tryParseFromEnvironment("ARCANE_MATERIALMNG_USE_ACCELERATOR_FOR_CONSTITUENTITEMVECTOR", true)){
+      m_is_use_accelerator_for_constituent_item_vector = (v.value()!=0);
+    }
+    // N'active pas l'utilisation des RunQueue pour le calcul
+    // des 'ComponentItemVector' si le multi-threading est actif. Actuellement
+    // l'utilisation d'une même RunQueue n'est pas multi-thread (et donc
+    // on ne peut pas créer des ComponentItemVector en concurrence)
+    if (TaskFactory::isActive())
+      m_is_use_accelerator_for_constituent_item_vector = false;
+    info() << "Use accelerator API for 'ConstituentItemVectorImpl' = " << m_is_use_accelerator_for_constituent_item_vector;
   }
 
   // Positionne le runner par défaut
@@ -735,7 +751,7 @@ checkValid()
         MatCell mc = ec.cell(k);
         matimpl::ConstituentItemBase mci = mc.constituentItemBase();
         if (eii!=mci._superItemBase())
-          ARCANE_FATAL("Bad corresponding env_item in mat_item");
+          ARCANE_FATAL("Bad corresponding env_item in mat_item k={0} mc={1}",k,mc);
         if (mci.globalItemBase()!=cell)
           ARCANE_FATAL("Bad corresponding globalItem() in mat_item");
         if (mci.level()!=LEVEL_MATERIAL)
@@ -1009,9 +1025,9 @@ _checkEndCreate()
 /*---------------------------------------------------------------------------*/
 
 AllEnvCellVectorView MeshMaterialMng::
-view(Int32ConstArrayView local_ids)
+_view(SmallSpan<const Int32> local_ids)
 {
-  return AllEnvCellVectorView(local_ids, componentItemSharedInfo(LEVEL_ALLENVIRONMENT));
+  return AllEnvCellVectorView(local_ids.constSmallView(), componentItemSharedInfo(LEVEL_ALLENVIRONMENT));
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1306,6 +1322,18 @@ _dumpStats()
   }
   for (IMeshMaterial* mat : m_materials) {
     mat->_internalApi()->variableIndexer()->dumpStats();
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MeshMaterialMng::
+createAllCellToAllEnvCell()
+{
+  if (!m_accelerator_envcell_container) {
+    m_accelerator_envcell_container = std::make_unique<AllCellToAllEnvCellContainer>(this);
+    m_accelerator_envcell_container->initialize();
   }
 }
 

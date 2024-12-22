@@ -257,12 +257,17 @@ inline constexpr Int32 DynExtent = -1;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-enum class eMemoryRessource;
+using Arccore::eMemoryResource;
+//! Typedef pour la version Arcane historique (avec 2's')
+// TODO: A rendre obsolète (juin 2025)
+using eMemoryRessource = Arccore::eMemoryResource;
+
 class DefaultLayout;
 template<int RankValue> class RightLayoutN;
 template<int RankValue> class LeftLayoutN;
 template<int RankValue> class MDDimType;
-class IMemoryRessourceMng;
+class IMemoryResourceMng;
+using IMemoryRessourceMng = IMemoryResourceMng;
 template <typename IndexType_ = Int32, Int32... RankSize> class ExtentsV;
 template<class DataType,typename Extents,typename LayoutPolicy = DefaultLayout >
 class MDSpan;
@@ -327,10 +332,18 @@ typedef Array<Int64> Int64Array;
 typedef Array<Int32> Int32Array;
 //! Tableau dynamique à une dimension d'entiers 16 bits
 typedef Array<Int16> Int16Array;
+//! Tableau dynamique à une dimension d'entiers 8 bits
+typedef Array<Int8> Int8Array;
 //! Tableau dynamique à une dimension d'entiers
 typedef Array<Integer> IntegerArray;
 //! Tableau dynamique à une dimension de réels
 typedef Array<Real> RealArray;
+//! Tableau dynamique à une dimension de 'bfloat16'
+typedef Array<BFloat16> BFloat16Array;
+//! Tableau dynamique à une dimension de 'float16'
+typedef Array<Float16> Float16Array;
+//! Tableau dynamique à une dimension de 'float'
+typedef Array<Float32> Float32Array;
 //! Tableau dynamique à une dimension de booléens
 typedef Array<bool> BoolArray;
 //! Tableau dynamique à une dimension de chaînes de caractères
@@ -359,10 +372,18 @@ typedef Array2<Int64> Int64Array2;
 typedef Array2<Int32> Int32Array2;
 //! Tableau dynamique 2D d'entiers 16 bits
 typedef Array2<Int16> Int16Array2;
+//! Tableau dynamique 2D d'entiers 8 bits
+typedef Array2<Int8> Int8Array2;
 //! Tableau dynamique 2D d'entiers
 typedef Array2<Integer> IntegerArray2;
 //! Tableau dynamique 2D de réels
 typedef Array2<Real> RealArray2;
+//! Tableau dynamique 2D de 'bfloat16'
+typedef Array2<BFloat16> BFloat16Array2;
+//! Tableau dynamique 2D de 'float16'
+typedef Array2<Float16> Float16Array2;
+//! Tableau dynamique 2D de 'float'
+typedef Array2<Float32> Float32Array2;
 //! Tableau dynamique 2D de booléens
 typedef Array2<bool> BoolArray2;
 //! Tableau dynamique 2D de chaînes de caractères
@@ -389,10 +410,20 @@ typedef SharedArray2<UChar> UCharSharedArray2;
 typedef SharedArray2<Int64> Int64SharedArray2;
 //! Tableau dynamique 2D d'entiers 32 bits
 typedef SharedArray2<Int32> Int32SharedArray2;
+//! Tableau dynamique 2D d'entiers 16 bits
+typedef SharedArray2<Int16> Int16SharedArray2;
+//! Tableau dynamique 2D d'entiers 8 bits
+typedef SharedArray2<Int8> Int8SharedArray2;
 //! Tableau dynamique 2D d'entiers
 typedef SharedArray2<Integer> IntegerSharedArray2;
 //! Tableau dynamique 2D de réels
 typedef SharedArray2<Real> RealSharedArray2;
+//! Tableau dynamique 2D de 'bfloat16'
+typedef SharedArray2<BFloat16> BFloat16SharedArray2;
+//! Tableau dynamique 2D de 'float16'
+typedef SharedArray2<Float16> Float16SharedArray2;
+//! Tableau dynamique 2D de 'float'
+typedef SharedArray2<Float32> Float32SharedArray2;
 //! Tableau dynamique 2D de booléens
 typedef SharedArray2<bool> BoolSharedArray2;
 //! Tableau dynamique 2D de chaînes de caractères
@@ -515,10 +546,18 @@ typedef UniqueArray<Int64> Int64UniqueArray;
 typedef UniqueArray<Int32> Int32UniqueArray;
 //! Tableau dynamique à une dimension d'entiers 16 bits
 typedef UniqueArray<Int16> Int16UniqueArray;
+//! Tableau dynamique à une dimension d'entiers 16 bits
+typedef UniqueArray<Int8> Int8UniqueArray;
 //! Tableau dynamique à une dimension d'entiers
 typedef UniqueArray<Integer> IntegerUniqueArray;
 //! Tableau dynamique à une dimension de réels
 typedef UniqueArray<Real> RealUniqueArray;
+//! Tableau dynamique à une dimension de 'bfloat16'
+typedef UniqueArray<BFloat16> BFloat16UniqueArray;
+//! Tableau dynamique à une dimension de 'float16'
+typedef UniqueArray<Float16> Float16UniqueArray;
+//! Tableau dynamique à une dimension de 'float'
+typedef UniqueArray<Float32> Float32UniqueArray;
 //! Tableau dynamique à une dimension de booléens
 typedef UniqueArray<bool> BoolUniqueArray;
 //! Tableau dynamique à une dimension de chaînes de caractères
@@ -547,10 +586,18 @@ typedef SharedArray<Int64> Int64SharedArray;
 typedef SharedArray<Int32> Int32SharedArray;
 //! Tableau dynamique à une dimension d'entiers 16 bits
 typedef SharedArray<Int16> Int16SharedArray;
+//! Tableau dynamique à une dimension d'entiers 16 bits
+typedef SharedArray<Int8> Int8SharedArray;
 //! Tableau dynamique à une dimension d'entiers
 typedef SharedArray<Integer> IntegerSharedArray;
 //! Tableau dynamique à une dimension de réels
 typedef SharedArray<Real> RealSharedArray;
+//! Tableau dynamique à une dimension de 'bfloat16'
+typedef SharedArray<BFloat16> BFloat16SharedArray;
+//! Tableau dynamique à une dimension de 'float16'
+typedef SharedArray<Float16> Float16SharedArray;
+//! Tableau dynamique à une dimension de 'float'
+typedef SharedArray<Float32> Float32SharedArray;
 //! Tableau dynamique à une dimension de booléens
 typedef SharedArray<bool> BoolSharedArray;
 //! Tableau dynamique à une dimension de chaînes de caractères

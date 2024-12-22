@@ -5,17 +5,19 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IndexSelecter.h                                              (C) 2000-2024 */
+/* IndexSelecter.h                                             (C) 2000-2024 */
 /*                                                                           */
 /* Selection d'index avec API accélérateur                                   */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 
-#include "arcane/accelerator/Filter.h"
-#include "arcane/utils/IMemoryRessourceMng.h"
+#include "arcane/utils/MemoryUtils.h"
+
 #include "arcane/accelerator/core/Memory.h"
+#include "arcane/accelerator/GenericFilterer.h"
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 namespace Arcane::Accelerator
 {
@@ -32,14 +34,14 @@ class IndexSelecter
  public:
 
   IndexSelecter() {}
-  IndexSelecter(RunQueue* runqueue)
+  IndexSelecter(const RunQueue& runqueue)
   // -------------------------------------------------------
   {
-    m_is_accelerator_policy = isAcceleratorPolicy(runqueue->executionPolicy());
+    m_is_accelerator_policy = isAcceleratorPolicy(runqueue.executionPolicy());
     m_memory_host = eMemoryRessource(m_is_accelerator_policy ? eMemoryRessource::HostPinned : eMemoryRessource::Host);
     m_memory_device = eMemoryRessource(m_is_accelerator_policy ? eMemoryRessource::Device : eMemoryRessource::Host);
-    m_localid_select_device = UniqueArray<Int32>(platform::getDataMemoryRessourceMng()->getAllocator(m_memory_device));
-    m_localid_select_host = UniqueArray<Int32>(platform::getDataMemoryRessourceMng()->getAllocator(m_memory_host));
+    m_localid_select_device = UniqueArray<Int32>(MemoryUtils::getAllocator(m_memory_device));
+    m_localid_select_host = UniqueArray<Int32>(MemoryUtils::getAllocator(m_memory_host));
   }
 
   ~IndexSelecter()
@@ -62,7 +64,7 @@ class IndexSelecter
    * \return Si host_view, retourne une vue HOST sur les éléments sélectionnés, sinon vue DEVICE
    */
   template <typename PredicateType>
-  ConstArrayView<Int32> syncSelectIf(RunQueue* rqueue_async, PredicateType pred, bool host_view = false)
+  ConstArrayView<Int32> syncSelectIf(const RunQueue& rqueue_async, PredicateType pred, bool host_view = false)
   {
     // On essaie de réutiliser au maximum la même instance de GenericFilterer
     // afin de minimiser des allocations dynamiques dans cette classe.
@@ -91,16 +93,12 @@ class IndexSelecter
 
     if (nb_idx_selected && host_view) {
       // Copie asynchrone Device to Host (m_localid_select_device ==> m_localid_select_host)
-      rqueue_async->copyMemory(MemoryCopyArgs(m_localid_select_host.subView(0, nb_idx_selected).data(),
-                                              m_localid_select_device.subView(0, nb_idx_selected).data(),
-                                              nb_idx_selected * sizeof(Int32))
-                               .addAsync());
-
-      rqueue_async->barrier();
+      rqueue_async.copyMemory(MemoryCopyArgs(m_localid_select_host.subView(0, nb_idx_selected).data(),
+                                             m_localid_select_device.subView(0, nb_idx_selected).data(),
+                                             nb_idx_selected * sizeof(Int32))
+                              .addAsync());
     }
-    else {
-      rqueue_async->barrier();
-    }
+    rqueue_async.barrier();
 
     ConstArrayView<Int32> lid_select_view = (host_view ? m_localid_select_host.subConstView(0, nb_idx_selected) : m_localid_select_device.subConstView(0, nb_idx_selected));
 
@@ -117,7 +115,7 @@ class IndexSelecter
 
   Int32 m_index_number = 0; //!< Intervalle [0, m_index_number[ sur lequel on va opérer la sélection
 
-  RunQueue* m_asynchronous_queue_pointer = nullptr; //!< Pointeur sur la queue du GenericFilterer
+  RunQueue m_asynchronous_queue_pointer; //!< Pointeur sur la queue du GenericFilterer
   GenericFilterer* m_generic_filterer_instance = nullptr; //!< Instance du GenericFilterer
 };
 

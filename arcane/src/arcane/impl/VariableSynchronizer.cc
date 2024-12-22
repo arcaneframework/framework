@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -17,8 +17,8 @@
 #include "arcane/utils/NotSupportedException.h"
 #include "arcane/utils/FatalErrorException.h"
 #include "arcane/utils/ITraceMng.h"
-#include "arcane/utils/IMemoryRessourceMng.h"
 #include "arcane/utils/ValueConvert.h"
+#include "arcane/utils/MemoryUtils.h"
 #include "arcane/utils/internal/MemoryBuffer.h"
 
 #include "arcane/core/VariableSynchronizerEventArgs.h"
@@ -36,8 +36,6 @@
 #include "arcane/core/internal/IDataInternal.h"
 #include "arcane/core/internal/IParallelMngInternal.h"
 #include "arcane/core/internal/IVariableSynchronizerMngInternal.h"
-
-#include "arcane/accelerator/core/Runner.h"
 
 #include "arcane/impl/DataSynchronizeInfo.h"
 #include "arcane/impl/internal/VariableSynchronizerComputeList.h"
@@ -93,8 +91,7 @@ class VariableSynchronizer::SyncMessage
 
   SyncMessage(const DataSynchronizeDispatcherBuildInfo& bi, VariableSynchronizer* var_syncer,
               IMemoryAllocator* allocator)
-  : m_variable_synchronizer(var_syncer)
-  , m_variable_synchronizer_mng(var_syncer->synchronizeMng())
+  : m_variable_synchronizer_mng(var_syncer->synchronizeMng())
   , m_dispatcher(IDataSynchronizeDispatcher::create(bi))
   , m_multi_dispatcher(IDataSynchronizeMultiDispatcher::create(bi))
   , m_event_args(var_syncer)
@@ -167,7 +164,6 @@ class VariableSynchronizer::SyncMessage
 
  private:
 
-  IVariableSynchronizer* m_variable_synchronizer = nullptr;
   IVariableSynchronizerMng* m_variable_synchronizer_mng = nullptr;
   Ref<IDataSynchronizeDispatcher> m_dispatcher;
   IDataSynchronizeMultiDispatcher* m_multi_dispatcher = nullptr;
@@ -250,10 +246,10 @@ VariableSynchronizer::SyncMessage* VariableSynchronizer::
 _buildMessage()
 {
   auto* internal_pm = m_parallel_mng->_internalApi();
-  Runner* runner = internal_pm->defaultRunner();
+  Runner runner = internal_pm->runner();
   bool is_accelerator_aware = internal_pm->isAcceleratorAware();
 
-  if (runner && is_accelerator_aware) {
+  if (runner.isInitialized() && is_accelerator_aware) {
     m_runner = runner;
   }
   
@@ -282,9 +278,9 @@ _buildMessage(Ref<DataSynchronizeInfo>& sync_info)
   // Si le IParallelMng gère la mémoire des accélérateurs alors on alloue le
   // buffer sur le device. On pourrait utiliser la mémoire managée mais certaines
   // implémentations MPI (i.e: BXI) ne le supportent pas.
-  if (m_runner) {
-    buffer_copier->setRunQueue(internal_pm->defaultQueue());
-    allocator = platform::getDataMemoryRessourceMng()->getAllocator(eMemoryRessource::Device);
+  if (m_runner.isInitialized()) {
+    buffer_copier->setRunQueue(internal_pm->queue());
+    allocator = MemoryUtils::getAllocator(eMemoryRessource::Device);
   }
 
   // Créé une instance de l'implémentation
@@ -669,8 +665,8 @@ _checkCreateTimer()
 void VariableSynchronizer::
 _setCurrentDevice()
 {
-  if (m_runner)
-    m_runner->setAsCurrentDevice();
+  if (m_runner.isInitialized())
+    m_runner.setAsCurrentDevice();
 }
 
 /*---------------------------------------------------------------------------*/

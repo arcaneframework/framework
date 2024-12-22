@@ -13,6 +13,8 @@
 
 #include "arcane/core/datatype/DataTypes.h"
 
+#include "arccore/serialize/ISerializer.h"
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -48,6 +50,16 @@ TEST(ArcaneDataTypes, Misc)
 
   EXPECT_THROW(dataTypeSize((eDataType)50), ArgumentException);
   ASSERT_EQ(dataTypeFromName("Toto"), DT_Unknown);
+
+  ASSERT_EQ((int)eDataType::DT_Byte, (int)Arccore::ISerializer::DT_Byte);
+  ASSERT_EQ((int)eDataType::DT_Real, (int)Arccore::ISerializer::DT_Real);
+  ASSERT_EQ((int)eDataType::DT_Int16, (int)Arccore::ISerializer::DT_Int16);
+  ASSERT_EQ((int)eDataType::DT_Int32, (int)Arccore::ISerializer::DT_Int32);
+  ASSERT_EQ((int)eDataType::DT_Int64, (int)Arccore::ISerializer::DT_Int64);
+  ASSERT_EQ((int)eDataType::DT_Float32, (int)Arccore::ISerializer::DT_Float32);
+  ASSERT_EQ((int)eDataType::DT_Float16, (int)Arccore::ISerializer::DT_Float16);
+  ASSERT_EQ((int)eDataType::DT_BFloat16, (int)Arccore::ISerializer::DT_BFloat16);
+  ASSERT_EQ((int)eDataType::DT_Int8, (int)Arccore::ISerializer::DT_Int8);
 }
 
 /*---------------------------------------------------------------------------*/

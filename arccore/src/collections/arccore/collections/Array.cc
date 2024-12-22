@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Array.cc                                                    (C) 2000-2023 */
+/* Array.cc                                                    (C) 2000-2024 */
 /*                                                                           */
 /* Vecteur de données 1D.                                                    */
 /*---------------------------------------------------------------------------*/
@@ -73,6 +73,15 @@ _getAllocationArgs() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+MemoryAllocationArgs ArrayMetaData::
+_getAllocationArgs(RunQueue* queue) const
+{
+  return allocation_options.allocationArgs(queue);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 /*
  * TODO: pour les allocations, faire en sorte que le
  * début du tableau soit aligné sur 16 octets dans tous les cas.
@@ -99,9 +108,18 @@ _setMemoryLocationHint(eMemoryLocationHint new_hint,void* ptr,Int64 sizeof_true_
 /*---------------------------------------------------------------------------*/
 
 void ArrayMetaData::
-_copyFromMemory(MemoryPointer destination, ConstMemoryPointer source, Int64 sizeof_true_type)
+_setHostDeviceMemoryLocation(eHostDeviceMemoryLocation location)
 {
-  MemoryAllocationArgs args = _getAllocationArgs();
+  allocation_options.setHostDeviceMemoryLocation(location);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ArrayMetaData::
+_copyFromMemory(MemoryPointer destination, ConstMemoryPointer source, Int64 sizeof_true_type, RunQueue* queue)
+{
+  MemoryAllocationArgs args = _getAllocationArgs(queue);
   Int64 full_size = size * sizeof_true_type;
   AllocatedMemoryInfo source_info(const_cast<void*>(source), full_size, full_size);
   AllocatedMemoryInfo destination_info(destination, full_size, full_size);
@@ -112,15 +130,13 @@ _copyFromMemory(MemoryPointer destination, ConstMemoryPointer source, Int64 size
 /*---------------------------------------------------------------------------*/
 
 ArrayMetaData::MemoryPointer ArrayMetaData::
-_allocate(Int64 new_capacity, Int64 sizeof_true_type)
+_allocate(Int64 new_capacity, Int64 sizeof_true_type, RunQueue* queue)
 {
   _checkAllocator();
-  MemoryAllocationArgs alloc_args = _getAllocationArgs();
+  MemoryAllocationArgs alloc_args = _getAllocationArgs(queue);
   IMemoryAllocator* a = _allocator();
-  size_t s_new_capacity = (size_t)new_capacity;
-  s_new_capacity = a->adjustedCapacity(alloc_args, s_new_capacity, sizeof_true_type);
-  size_t s_sizeof_true_type = (size_t)sizeof_true_type;
-  size_t elem_size = s_new_capacity * s_sizeof_true_type;
+  new_capacity = a->adjustedCapacity(alloc_args, new_capacity, sizeof_true_type);
+  Int64 elem_size = new_capacity * sizeof_true_type;
   MemoryPointer p = a->allocate(alloc_args, elem_size).baseAddress();
 #ifdef ARCCORE_DEBUG_ARRAY
   std::cout << "ArrayImplBase::ALLOCATE: elemsize=" << elem_size
@@ -135,7 +151,7 @@ _allocate(Int64 new_capacity, Int64 sizeof_true_type)
     throw BadAllocException(ostr.str());
   }
 
-  this->capacity = (Int64)s_new_capacity;
+  this->capacity = new_capacity;
 
   return p;
 }
@@ -144,19 +160,16 @@ _allocate(Int64 new_capacity, Int64 sizeof_true_type)
 /*---------------------------------------------------------------------------*/
 
 ArrayMetaData::MemoryPointer ArrayMetaData::
-_reallocate(Int64 new_capacity, Int64 sizeof_true_type, MemoryPointer current)
+_reallocate(const AllocatedMemoryInfo& current_info, Int64 new_capacity, Int64 sizeof_true_type, RunQueue* queue)
 {
   _checkAllocator();
-  MemoryAllocationArgs alloc_args = _getAllocationArgs();
+  MemoryPointer current = current_info.baseAddress();
+  MemoryAllocationArgs alloc_args = _getAllocationArgs(queue);
   IMemoryAllocator* a = _allocator();
-  const Int64 current_allocated_size = capacity * sizeof_true_type;
-  const Int64 current_size = this->size * sizeof_true_type;
   new_capacity = a->adjustedCapacity(alloc_args, new_capacity, sizeof_true_type);
   size_t elem_size = new_capacity * sizeof_true_type;
-
   MemoryPointer p = nullptr;
   {
-    AllocatedMemoryInfo current_info(current, current_size, current_allocated_size);
     const bool use_realloc = a->hasRealloc(alloc_args);
     // Lorsqu'on voudra implémenter un realloc avec alignement, il faut passer
     // par use_realloc = false car sous Linux il n'existe pas de méthode realloc
@@ -197,13 +210,10 @@ _reallocate(Int64 new_capacity, Int64 sizeof_true_type, MemoryPointer current)
 /*---------------------------------------------------------------------------*/
 
 void ArrayMetaData::
-_deallocate(MemoryPointer current, Int64 sizeof_true_type) noexcept
+_deallocate(const AllocatedMemoryInfo& mem_info, RunQueue* queue) noexcept
 {
   if (_allocator()) {
-    Int64 current_size = this->size * sizeof_true_type;
-    Int64 current_capacity = this->capacity * sizeof_true_type;
-    AllocatedMemoryInfo mem_info(current, current_size, current_capacity);
-    MemoryAllocationArgs alloc_args = _getAllocationArgs();
+    MemoryAllocationArgs alloc_args = _getAllocationArgs(queue);
     _allocator()->deallocate(alloc_args, mem_info);
   }
 }

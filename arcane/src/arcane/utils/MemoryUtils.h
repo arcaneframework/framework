@@ -15,7 +15,6 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/MemoryRessource.h"
-#include "arcane/utils/UtilsTypes.h"
 #include "arcane/utils/MemoryView.h"
 
 #include "arccore/collections/MemoryAllocationArgs.h"
@@ -29,29 +28,49 @@ namespace Arcane::MemoryUtils
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
+ * \brief Ressource mémoire utilisée par l'allocateur par défaut pour les données.
+ *
+ * Par défaut, si un runtime accélérateur est initialisé, la ressource
+ * associé est eMemoryResource::UnifiedMemory. Sinon, il s'agit de
+ * eMemoryResource::Host.
+ *
+ * \sa getDefaultDataAllocator();
+ */
+extern "C++" ARCANE_UTILS_EXPORT eMemoryResource
+getDefaultDataMemoryResource();
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Retourne la ressource mémoire par son nom.
+ *
+ * Le nom correspond au nom de la valeur de l'énumération (par exemple
+ * 'Device' pour eMemoryResource::Device.
+ *
+ * Si \a name est nul, retourn eMemoryResource::Unknown.
+ * Si \a name ne correspondant pas à une valeur valide, lève une exception.
+ */
+extern "C++" ARCANE_UTILS_EXPORT eMemoryResource
+getMemoryResourceFromName(const String& name);
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
  * \brief Allocateur par défaut pour les données.
  *
- * Si un runtime accélérateur est initialisé, l'allocateur retourné permet
- * d'allouer en mémoire unifiée et donc la zone allouée sera accessible à la
- * fois sur l'accélérateur et sur l'hôte. Sinon, retourne un allocateur
- * aligné.
+ * L'allocateur par défaut pour les données est un allocateur qui permet
+ * d'accéder à la zone mémoire à la fois par l'hôte et l'accélérateur.
+ *
+ * Il est possible de récupérer la ressource mémoire associée via
+ * getDefaultDataMemoryResource();
+ *
+ * Cet appel est équivalent à getAllocator(getDefaultDataMemoryResource()).
  *
  * Il est garanti que l'alignement est au moins celui retourné par
  * AlignedMemoryAllocator::Simd().
  */
 extern "C++" ARCANE_UTILS_EXPORT IMemoryAllocator*
 getDefaultDataAllocator();
-
-/*!
- * \brief Retourne l'allocateur sur l'hôte ou sur le device.
- *
- * Si un runtime accélérateur est initialisé, l'allocateur retourné permet
- * d'allouer en utilisant la mémoire de l'accélérateur par défaut
- * (eMemoryRessource::Device). Sinon, utilise l'allocateur de l'hôte
- * (eMemoryRessource::Host).
- */
-extern "C++" ARCANE_UTILS_EXPORT IMemoryAllocator*
-getDeviceOrHostAllocator();
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -68,6 +87,19 @@ getDefaultDataAllocator(eMemoryLocationHint hint);
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
+ * \brief Retourne l'allocateur sur l'hôte ou sur le device.
+ *
+ * Si un runtime accélérateur est initialisé, l'allocateur retourné permet
+ * d'allouer en utilisant la mémoire de l'accélérateur par défaut
+ * (eMemoryResource::Device). Sinon, utilise l'allocateur de l'hôte
+ * (eMemoryResource::Host).
+ */
+extern "C++" ARCANE_UTILS_EXPORT IMemoryAllocator*
+getDeviceOrHostAllocator();
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
  * \brief Allocateur par défaut pour les données essentiellement en
  * lecture.
  *
@@ -79,18 +111,39 @@ getAllocatorForMostlyReadOnlyData();
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Allocateur par défaut pour la ressource \a mem_ressource.
+ * \brief Allocateur spécifique pour les accélérateurs.
+ *
+ * \deprecated Use MemoryUtils::getDefaultDataAllocator() instead.
+ */
+extern "C++" ARCANE_DEPRECATED_REASON("Y2024: Use getDefaultDataAllocator() instead.")
+ARCANE_UTILS_EXPORT IMemoryAllocator*
+getAcceleratorHostMemoryAllocator();
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Allocation par défaut pour la ressource \a mem_resource.
  *
  * Lève une exception si aucune allocateur n'est disponible pour la ressource
- * (par exemple si on demande eMemoryRessource::Device et qu'il n'y a pas de
+ * (par exemple si on demande eMemoryResource::Device et qu'il n'y a pas de
  * support pour les accélérateurs.
  *
- * La ressource eMemoryRessource::UnifiedMemory est toujours disponible. Si
+ * La ressource eMemoryResource::UnifiedMemory est toujours disponible. Si
  * aucun runtime accélérateur n'est chargé, alors c'est équivalent à
- * eMemoryRessource::Host.
+ * eMemoryResource::Host.
  */
 extern "C++" ARCANE_UTILS_EXPORT MemoryAllocationOptions
-getAllocationOptions(eMemoryRessource mem_ressource);
+getAllocationOptions(eMemoryResource mem_resource);
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Allocateur par défaut pour la ressource \a mem_resource.
+ *
+ * \sa getAllocationOptions().
+ */
+extern "C++" ARCANE_UTILS_EXPORT IMemoryAllocator*
+getAllocator(eMemoryResource mem_resource);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -136,6 +189,19 @@ checkResizeArrayWithCapacity(Array<DataType>& array, Int64 new_size, bool force_
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
+ * \brief Redimensionne un tableau en ajoutant une réserve de mémoire.
+ *
+ * Cet appel est équivalent à checkResizeArrayWithCapacity(array, new_size, false).
+ */
+template <typename DataType> inline Int32
+checkResizeArrayWithCapacity(Array<DataType>& array, Int64 new_size)
+{
+  return checkResizeArrayWithCapacity(array, new_size, false);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
  * \brief Copie de \a source vers \a destination en utilisant la file \a queue.
  *
  * Il est possible de spécifier la ressource mémoire où se trouve la source
@@ -143,8 +209,8 @@ checkResizeArrayWithCapacity(Array<DataType>& array, Int64 new_size, bool force_
  * la surcharge copy(MutableMemoryView destination, ConstMemoryView source, const RunQueue* queue).
  */
 extern "C++" ARCANE_UTILS_EXPORT void
-copy(MutableMemoryView destination, eMemoryRessource destination_mem,
-     ConstMemoryView source, eMemoryRessource source_mem,
+copy(MutableMemoryView destination, eMemoryResource destination_mem,
+     ConstMemoryView source, eMemoryResource source_mem,
      const RunQueue* queue = nullptr);
 
 /*---------------------------------------------------------------------------*/
@@ -154,7 +220,7 @@ copy(MutableMemoryView destination, eMemoryRessource destination_mem,
 inline void
 copy(MutableMemoryView destination, ConstMemoryView source, const RunQueue* queue = nullptr)
 {
-  eMemoryRessource mem_type = eMemoryRessource::Unknown;
+  eMemoryResource mem_type = eMemoryResource::Unknown;
   copy(destination, mem_type, source, mem_type, queue);
 }
 

@@ -365,11 +365,14 @@ class LibXml2_MemoryReader
   {
     const char* encoding = nullptr;
     int options = parser.options();
-    const char* buf_base = (const char*)m_buffer.data();
+    const char* buf_base = reinterpret_cast<const char*>(m_buffer.data());
     // TODO: regarder s'il n'y a pas une version 64 bits de lecture
     // qui fonctionne aussi sur les anciennes versions de LibXml2
     // (pour le support RHEL6)
     int buf_size = CheckedConvert::toInt32(m_buffer.size());
+    while (buf_size > 0 && static_cast<char>(m_buffer[buf_size - 1]) == '\0') {
+      buf_size--;
+    }
     const String& name = parser.fileName();
     ::xmlParserCtxtPtr ctxt = ::xmlNewParserCtxt();
     ::xmlDocPtr doc = ::xmlCtxtReadMemory(ctxt,buf_base,buf_size,
@@ -1553,20 +1556,11 @@ replaceData(ULong offset,ULong count,const DOMString& arg) const
 /*---------------------------------------------------------------------------*/
 
 Attr::
-Attr()
-: Node()
-{
-}
-Attr::
 Attr(AttrPrv* p)
 : Node(cvt((xmlNodePtr)impl(p)))
 {
 }
-Attr::
-Attr(const Attr& f)
-: Node((const Node&)f)
-{
-}
+
 Attr::
 Attr(const Node& node)
 : Node()
@@ -1577,10 +1571,7 @@ Attr(const Node& node)
   //if (ni && impl(ni)->getNodeType()==ATTRIBUTE_NODE)
   //_assign(node);
 }
-Attr::
-~Attr()
-{
-}
+
 AttrPrv* Attr::
 _impl() const
 {

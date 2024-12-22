@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IOMng.cc                                                    (C) 2000-2015 */
+/* IOMng.cc                                                    (C) 2000-2024 */
 /*                                                                           */
 /* Gestionnaire des entrées-sorties.                                         */
 /*---------------------------------------------------------------------------*/
@@ -186,8 +186,8 @@ IXmlDocumentHolder* IOMng::
 parseXmlString(const String& str, const String& name)
 {
   dom::DOMImplementation domimp;
-  UCharConstArrayView utf16_buf(str.utf16());
-  ByteConstSpan buffer(reinterpret_cast<const std::byte*>(utf16_buf.data()),utf16_buf.size() * 2);
+  ByteConstArrayView utf8_buf(str.utf8());
+  ByteConstSpan buffer(reinterpret_cast<const std::byte*>(utf8_buf.data()), utf8_buf.size());
   // Lecture du fichier contenant les informations internes.
   return domimp._load(buffer, name, m_trace_mng);
 }

@@ -38,20 +38,20 @@ enum eDataType
 #endif
 {
   DT_Byte = 0, //!< Donnée de type octet
-  DT_Real, //!< Donnée de type réel
-  DT_Int16, //!< Donnée de type entier 16 bits
-  DT_Int32, //!< Donnée de type entier 32 bits
-  DT_Int64, //!< Donnée de type entier 64 bits
-  DT_String, //!< Donnée de type chaîne de caractère UTF-8
-  DT_Real2, //!< Donnée de type vecteur 2
-  DT_Real3, //!< Donnée de type vecteur 3
-  DT_Real2x2, //!< Donnée de type tenseur 3x3
-  DT_Real3x3, //!< Donnée de type tenseur 3x3
-  DT_BFloat16, //!< Donnée de type 'BFloat16'
-  DT_Float16, //!< Donnée de type 'Float16'
-  DT_Float32, //!< Donnée de type 'Float32'
-  DT_Int8, //!< Donnée de type entier sur 8 bits
-  DT_Unknown //!< Donnée de type inconnue ou non initialisée
+  DT_Real = 1, //!< Donnée de type réel
+  DT_Int16 = 2, //!< Donnée de type entier 16 bits
+  DT_Int32 = 3, //!< Donnée de type entier 32 bits
+  DT_Int64 = 4, //!< Donnée de type entier 64 bits
+  DT_String = 5, //!< Donnée de type chaîne de caractère UTF-8
+  DT_Real2 = 6, //!< Donnée de type vecteur 2
+  DT_Real3 = 7, //!< Donnée de type vecteur 3
+  DT_Real2x2 = 8, //!< Donnée de type tenseur 3x3
+  DT_Real3x3 = 9, //!< Donnée de type tenseur 3x3
+  DT_BFloat16 = 10, //!< Donnée de type 'BFloat16'
+  DT_Float16 = 11, //!< Donnée de type 'Float16'
+  DT_Float32 = 12, //!< Donnée de type 'Float32'
+  DT_Int8 = 13, //!< Donnée de type entier sur 8 bits
+  DT_Unknown = 14 //!< Donnée de type inconnue ou non initialisée
 };
 
 //! Nombre de valeurs de eDataType
@@ -191,6 +191,22 @@ enum eTraceType
 /*---------------------------------------------------------------------------*/
 
 } // End namespace Arcane
+
+// Macro pour instantier une classe template pour tous les types numériques
+#define ARCANE_INTERNAL_INSTANTIATE_TEMPLATE_FOR_NUMERIC_DATATYPE(class_name)\
+template class class_name <Real>;\
+template class class_name <Real3>;\
+template class class_name <Real3x3>;\
+template class class_name <Real2>;\
+template class class_name <Real2x2>;\
+template class class_name <BFloat16>;\
+template class class_name <Float16>;\
+template class class_name <Float32>;\
+template class class_name <Int8>;\
+template class class_name <Int16>;\
+template class class_name <Int32>;\
+template class class_name <Int64>;\
+template class class_name <Byte>;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
