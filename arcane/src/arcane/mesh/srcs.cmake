@@ -45,6 +45,8 @@ set( ARCANE_SOURCES
   ItemGroupsSynchronize.h
   ItemGroupsSerializer2.cc
   ItemGroupsSerializer2.h
+  ItemsOwnerBuilder.h
+  ItemsOwnerBuilder.cc
   ItemsExchangeInfo2.cc
   ItemsExchangeInfo2.h
   ItemGroupDynamicMeshObserver.cc
