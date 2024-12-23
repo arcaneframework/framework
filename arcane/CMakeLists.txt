@@ -380,24 +380,18 @@ if (ARCANE_WANT_CHECK)
   set(ARCCORE_CHECK TRUE)
 endif()
 
-set(ARCANE_ARCCORE_NEEDED_VERSION "2.8.0")
+# ----------------------------------------------------------------------------
+# ----------------------------------------------------------------------------
+# Charge 'Arccore' depuis le répertoire de base.
 if (NOT Arccore_FOUND)
-  find_package(Arccore ${ARCANE_ARCCORE_NEEDED_VERSION} REQUIRED)
-endif ()
-message(STATUS "Arccore_DIR = ${Arccore_DIR}")
-if (Arccore_VERSION VERSION_LESS ARCANE_ARCCORE_NEEDED_VERSION)
-  message(FATAL_ERROR "Arccore version '${Arccore_VERSION}' is too old."
-    " Version ${ARCANE_ARCCORE_NEEDED_VERSION} required")
+  add_subdirectory(${CMAKE_SOURCE_DIR}/arccore arccore)
+  set(Arccore_FOUND YES)
+  set(Arccore_FOUND YES PARENT_SCOPE)
 endif()
 
-# Si arccore a déjà été installé, on prend le mode check de arccore
-# pour garantir la cohérence avec Arcane.
-if (Arccore_DIR)
-  # TODO: à terme, supprimer ces deux variables 'ARCANE_WANT_CHECK' et 'ARCANE_WANT_DEBUG'
-  message(STATUS "[arcane] Setting 'ARCANE_WANT_CHECK' and 'ARCANE_WANT_DEBUG' from arccore")
-  set(ARCANE_WANT_CHECK ${ARCCORE_CHECK})
-  set(ARCANE_WANT_DEBUG ${ARCCORE_DEBUG})
-endif()
+# ----------------------------------------------------------------------------
+# ----------------------------------------------------------------------------
+
 message(STATUS "[arcane] Is Check mode enabled ? ${ARCANE_WANT_CHECK} (from arccore: ${ARCCORE_CHECK})")
 message(STATUS "[arcane] Is Debug mode enabled ? ${ARCANE_WANT_DEBUG} (from arccore: ${ARCCORE_DEBUG})")
 
