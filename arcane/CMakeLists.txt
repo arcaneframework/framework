@@ -4,11 +4,10 @@ message(STATUS "CMAKE_SOURCE_DIR=${CMAKE_SOURCE_DIR} CMAKE_CURRENT_SOURCE_DIR=${
 
 # ----------------------------------------------------------------------------
 # Vérifie qu'on a bien lancé la configuration depuis le répertoire racine
-# du dépot. Il faut la politique CMP0139 pour pouvoir utilier 'PATH_EQUAL'
-if(POLICY CMP0139)
-  cmake_policy(SET CMP0139 NEW)
-endif()
-if (CMAKE_SOURCE_DIR PATH_EQUAL CMAKE_CURRENT_SOURCE_DIR)
+# du dépot.
+cmake_path(COMPARE "${CMAKE_SOURCE_DIR}" EQUAL "${CMAKE_CURRENT_SOURCE_DIR}" IS_NOT_FROM_BASE_REPO)
+message(STATUS "IS_NOT_FROM_BASE_REPO=${IS_NOT_FROM_BASE_REPO}")
+if (IS_NOT_FROM_BASE_REPO)
   cmake_path(GET CMAKE_CURRENT_SOURCE_DIR PARENT_PATH PARENT_SOURCE_DIR)
   message(FATAL_ERROR
       "Compiling in 'arcane' subdirectory is not supported."
