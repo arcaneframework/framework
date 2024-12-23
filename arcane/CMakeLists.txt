@@ -1,6 +1,20 @@
 ﻿cmake_minimum_required(VERSION 3.21 FATAL_ERROR)
 
-message(STATUS "CMAKE_SOURCE_DIR=${CMAKE_SOURCE_DIR} CMAKE_VERSION=${CMAKE_VERSION}")
+message(STATUS "CMAKE_SOURCE_DIR=${CMAKE_SOURCE_DIR} CMAKE_CURRENT_SOURCE_DIR=${CMAKE_CURRENT_SOURCE_DIR}  CMAKE_VERSION=${CMAKE_VERSION}")
+
+# ----------------------------------------------------------------------------
+# Vérifie qu'on a bien lancé la configuration depuis le répertoire racine
+# du dépot. Il faut la politique CMP0139 pour pouvoir utilier 'PATH_EQUAL'
+if(POLICY CMP0139)
+  cmake_policy(SET CMP0139 NEW)
+endif()
+if (CMAKE_SOURCE_DIR PATH_EQUAL CMAKE_CURRENT_SOURCE_DIR)
+  cmake_path(GET CMAKE_CURRENT_SOURCE_DIR PARENT_PATH PARENT_SOURCE_DIR)
+  message(FATAL_ERROR
+      "Compiling in 'arcane' subdirectory is not supported."
+      " Use CMakeLists.txt from repository base directory: '${PARENT_SOURCE_DIR}'"
+    )
+endif()
 
 # ----------------------------------------------------------------------------
 # Récupère numéro de version de Arcane à partir du fichier 'version' et
@@ -15,6 +29,8 @@ project(Arcane VERSION ${ARCANE_VERSION} LANGUAGES C CXX)
 math(EXPR ARCANE_VERSION_NUMERIC "((10000 * ${Arcane_VERSION_MAJOR}) + 100 * ${Arcane_VERSION_MINOR}) + ${Arcane_VERSION_PATCH}")
 configure_file(arcane_version.h.in ${CMAKE_BINARY_DIR}/arcane_version.h @ONLY)
 install(FILES ${CMAKE_BINARY_DIR}/arcane_version.h DESTINATION include)
+
+# ----------------------------------------------------------------------------
 
 if (NOT BUILD_SHARED_LIBS)
   message(FATAL_ERROR "Arcane has to be compiled with BUILD_SHARED_LIBS=TRUE. Static linking does not work")
