@@ -15,6 +15,7 @@
 
 #include "arccore/base/Ref.h"
 #include "arccore/base/Span.h"
+#include "arccore/base/BasicDataType.h"
 
 namespace Arccore
 {
@@ -107,6 +108,18 @@ void ISerializer::
 reserveSpan(Span<const Float32> values)
 {
   reserveSpan(DT_Float32, values.size());
+}
+
+void ISerializer::
+reserveSpan(Span<const Float128> values)
+{
+  reserveSpan(eBasicDataType::Float128, values.size());
+}
+
+void ISerializer::
+reserveSpan(Span<const Int128> values)
+{
+  reserveSpan(eBasicDataType::Int128, values.size());
 }
 
 /*---------------------------------------------------------------------------*/

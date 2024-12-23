@@ -43,10 +43,12 @@ class ARCCORE_SERIALIZE_EXPORT BasicSerializer::Impl
   virtual Span<Float16> getFloat16Buffer() = 0;
   virtual Span<BFloat16> getBFloat16Buffer() = 0;
   virtual Span<Float32> getFloat32Buffer() = 0;
+  virtual Span<Float128> getFloat128Buffer() = 0;
+  virtual Span<Int128> getInt128Buffer() = 0;
 
   virtual void allocateBuffer(Int64 nb_real, Int64 nb_int16, Int64 nb_int32,
                               Int64 nb_int64, Int64 nb_byte, Int64 nb_int8, Int64 nb_float16,
-                              Int64 nb_bfloat16, Int64 nb_float32) = 0;
+                              Int64 nb_bfloat16, Int64 nb_float32, Int64 nb_float128, Int64 nb_int128) = 0;
   virtual void copy(Impl* rhs) = 0;
   virtual Span<Byte> globalBuffer() = 0;
   virtual Span<const Byte> globalBuffer() const = 0;
@@ -86,6 +88,8 @@ class ARCCORE_SERIALIZE_EXPORT BasicSerializer::Impl2
   Span<const Float16> float16Bytes() const { return m_float16.m_buffer; }
   Span<const BFloat16> bfloat16Bytes() const { return m_bfloat16.m_buffer; }
   Span<const Float32> float32Bytes() const { return m_float32.m_buffer; }
+  Span<const Float128> float128Bytes() const { return m_float128.m_buffer; }
+  Span<const Int128> int128Bytes() const { return m_int128.m_buffer; }
 
  public:
 
@@ -97,7 +101,7 @@ class ARCCORE_SERIALIZE_EXPORT BasicSerializer::Impl2
   void allocateBuffer();
   void allocateBuffer(Int64 nb_real, Int64 nb_int16, Int64 nb_int32,
                       Int64 nb_int64, Int64 nb_byte, Int64 nb_int8, Int64 nb_float16,
-                      Int64 nb_bfloat16, Int64 nb_float32);
+                      Int64 nb_bfloat16, Int64 nb_float32, Int64 nb_float128, Int64 nb_int128);
   void copy(const BasicSerializer& rhs);
   void setMode(eMode new_mode);
   void setFromSizes();
@@ -128,6 +132,8 @@ class ARCCORE_SERIALIZE_EXPORT BasicSerializer::Impl2
   BasicSerializerDataT<Float16> m_float16;
   BasicSerializerDataT<BFloat16> m_bfloat16;
   BasicSerializerDataT<Float32> m_float32;
+  BasicSerializerDataT<Float128> m_float128;
+  BasicSerializerDataT<Int128> m_int128;
 
  private:
 
