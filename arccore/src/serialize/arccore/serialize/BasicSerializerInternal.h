@@ -89,7 +89,9 @@ class ARCCORE_SERIALIZE_EXPORT BasicSerializer::Impl2
 
  public:
 
+  ARCCORE_DEPRECATED_REASON("Y2024: Use reserve(eBasicDataType) instead")
   void reserve(eDataType dt, Int64 n, Int64 nb_put);
+  void reserve(eBasicDataType dt, Int64 n, Int64 nb_put);
   void putType(eBasicDataType t);
   void getAndCheckType(eBasicDataType expected_type);
   void allocateBuffer();

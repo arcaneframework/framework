@@ -41,8 +41,8 @@ namespace Arccore
  * Lorsque cette classe est utilisée dans le cadre d'un appel MPI,
  * on utilise le tableau \a m_size_copy_buffer pour envoyer les tailles.
  * lors du premier message lorsque le message complet est envoyé en plusieurs fois.
- * La norme MPI indique effectivement qu'un buffer utilisé lors d'un appel MPI ne doit plus être
- * utilisé tant que cet appel n'est pas terminé.
+ * La norme MPI indique effectivement qu'un buffer utilisé lors d'un appel
+ * MPI ne doit plus être utilisé tant que cet appel n'est pas terminé.
  */
 class BasicSerializerNewImpl
 : public BasicSerializer::Impl
@@ -129,6 +129,7 @@ class BasicSerializerNewImpl
   Int64 m_size_copy_buffer[NB_SIZE_ELEM];
 
  public:
+
   Span<Real> getRealBuffer() override { return m_real_view; }
   Span<Int16> getInt16Buffer() override { return m_int16_view; }
   Span<Int32> getInt32Buffer() override { return m_int32_view; }
@@ -523,6 +524,31 @@ reserve(eDataType dt,Int64 n,Int64 nb_put)
 /*---------------------------------------------------------------------------*/
 
 void BasicSerializer::Impl2::
+reserve(eBasicDataType bdt,Int64 n,Int64 nb_put)
+{
+  ARCCORE_ASSERT((m_mode==ModeReserve),("Bad mode"));
+  switch(bdt){
+  case eBasicDataType::Float64: m_real.m_reserved_size += n; break;
+  case eBasicDataType::Int64: m_int64.m_reserved_size += n; break;
+  case eBasicDataType::Int32: m_int32.m_reserved_size += n; break;
+  case eBasicDataType::Int16: m_int16.m_reserved_size += n; break;
+  case eBasicDataType::Byte: m_byte.m_reserved_size += n; break;
+  case eBasicDataType::Int8: m_int8.m_reserved_size += n; break;
+  case eBasicDataType::Float16: m_float16.m_reserved_size += n; break;
+  case eBasicDataType::BFloat16: m_bfloat16.m_reserved_size += n; break;
+  case eBasicDataType::Float32: m_float32.m_reserved_size += n; break;
+  default:
+    ARCCORE_THROW(ArgumentException,"Bad basic datatype v={0}",(int)bdt);
+  }
+  if (m_is_serialize_typeinfo)
+    // Pour le type de la donnée.
+    m_byte.m_reserved_size += nb_put;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void BasicSerializer::Impl2::
 putType(eBasicDataType t)
 {
   if (m_is_serialize_typeinfo){
@@ -741,7 +767,25 @@ reserveSpan(eDataType dt, Int64 n)
 /*---------------------------------------------------------------------------*/
 
 void BasicSerializer::
+reserveSpan(eBasicDataType dt, Int64 n)
+{
+  m_p2->reserve(dt,n,1);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void BasicSerializer::
 reserve(eDataType dt,Int64 n)
+{
+  m_p2->reserve(dt,n,n);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void BasicSerializer::
+reserve(eBasicDataType dt,Int64 n)
 {
   m_p2->reserve(dt,n,n);
 }

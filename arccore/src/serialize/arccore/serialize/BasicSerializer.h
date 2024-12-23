@@ -123,6 +123,8 @@ class ARCCORE_SERIALIZE_EXPORT BasicSerializer
 
  public:
   void reserveSpan(eDataType dt, Int64 n) override;
+  void reserveSpan(eBasicDataType dt, Int64 n) override;
+  void reserve(eBasicDataType dt, Int64 n) override;
   void reserve(eDataType dt, Int64 n) override;
   void reserveInteger(Int64 n) override
   {

@@ -97,11 +97,23 @@ class ARCCORE_SERIALIZE_EXPORT ISerializer
    *
    * Il faudra effectuer un appel à une méthode putSpan()
    * pour que la sérialisation soit correcte.
+   *
+   * \deprecated Utiliser reserveSpan(eBasicDataType) à la place
    */
+  ARCCORE_DEPRECATED_REASON("Y2024: Use reserveSpan(eBasicDataType) instead")
   virtual void reserveSpan(eDataType dt, Int64 n) =0;
 
+  /*!
+  * \brief Réserve de la mémoire pour \a n valeurs de \a dt.
+  *
+  * Il faudra effectuer un appel à une méthode putSpan()
+  * pour que la sérialisation soit correcte.
+  */
+  virtual void reserveSpan(eBasicDataType dt, Int64 n) = 0;
+
   //! \sa reserve(eDataType dt,Int64 n)
-  void reserveSpan(int dt,Int64 n) { reserveSpan(static_cast<eDataType>(dt),n); }
+  ARCCORE_DEPRECATED_REASON("Y2024: Use reserveSpan(eBasicDataType) instead")
+  void reserveSpan(int dt,Int64 n);
 
   //! Réserve pour une vue de \a values éléments
   virtual void reserveSpan(Span<const Real> values);
@@ -153,10 +165,23 @@ class ARCCORE_SERIALIZE_EXPORT ISerializer
    * Si on souhaite sérialiser plusieurs valeurs avec un seul
    * appel à put(), il faut utiliser la méthode reserveSpan().
    */
+  ARCCORE_DEPRECATED_REASON("Y2024: Use reserveSpan(eBasicDataType) instead")
   virtual void reserve(eDataType dt,Int64 n) =0;
 
+  /*!
+   * \brief Réserve de la mémoire pour \a n objets de type \a dt.
+   *
+   * Il faudra effectuer \a n appels à une méthode put() avec une
+   * seule valeur pour que la sérialisation soit correcte.
+   *
+   * Si on souhaite sérialiser plusieurs valeurs avec un seul
+   * appel à put(), il faut utiliser la méthode reserveSpan().
+   */
+  virtual void reserve(eBasicDataType dt, Int64 n) = 0;
+
   //! \sa reserve(eDataType dt,Int64 n)
-  void reserve(int dt,Int64 n) { reserve((eDataType)dt,n); }
+  ARCCORE_DEPRECATED_REASON("Y2024: Use reserveSpan(eBasicDataType) instead")
+  void reserve(int dt,Int64 n);
 
   virtual void reserveInteger(Int64 n) =0;
 
