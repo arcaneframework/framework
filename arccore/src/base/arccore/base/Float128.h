@@ -61,8 +61,12 @@ class alignas(16) Float128
  private:
 
 #ifdef ARCCORE_HAS_NATIVE_FLOAT128
+#if defined(__aarch64__)
+  using NativeType = _Float128;
+#else
   using NativeType = __float128;
-  explicit Float128(__float128 x)
+#endif
+  explicit Float128(NativeType x)
   : m_v(x)
   {}
 #else
