@@ -915,7 +915,7 @@ reserve(eBasicDataType dt, Int64 n)
 void BasicSerializer::
 reserve(const String& str)
 {
-  reserve(DT_Int64, 1);
+  reserveInt64(1);
   reserveSpan(str.bytes());
 }
 
@@ -925,77 +925,77 @@ reserve(const String& str)
 void BasicSerializer::
 reserveArray(Span<const Real> values)
 {
-  reserve(DT_Int64, 1);
+  reserveInt64(1);
   reserveSpan(values);
 }
 
 void BasicSerializer::
 reserveArray(Span<const Int16> values)
 {
-  reserve(DT_Int64, 1);
+  reserveInt64(1);
   reserveSpan(values);
 }
 
 void BasicSerializer::
 reserveArray(Span<const Int32> values)
 {
-  reserve(DT_Int64, 1);
+  reserveInt64(1);
   reserveSpan(values);
 }
 
 void BasicSerializer::
 reserveArray(Span<const Int64> values)
 {
-  reserve(DT_Int64, 1);
+  reserveInt64(1);
   reserveSpan(values);
 }
 
 void BasicSerializer::
 reserveArray(Span<const Byte> values)
 {
-  reserve(DT_Int64, 1);
+  reserveInt64(1);
   reserveSpan(values);
 }
 
 void BasicSerializer::
 reserveArray(Span<const Int8> values)
 {
-  reserve(DT_Int64, 1);
+  reserveInt64(1);
   reserveSpan(values);
 }
 
 void BasicSerializer::
 reserveArray(Span<const Float16> values)
 {
-  reserve(DT_Int64, 1);
+  reserveInt64(1);
   reserveSpan(values);
 }
 
 void BasicSerializer::
 reserveArray(Span<const BFloat16> values)
 {
-  reserve(DT_Int64, 1);
+  reserveInt64(1);
   reserveSpan(values);
 }
 
 void BasicSerializer::
 reserveArray(Span<const Float32> values)
 {
-  reserve(DT_Int64, 1);
+  reserveInt64(1);
   reserveSpan(values);
 }
 
 void BasicSerializer::
 reserveArray(Span<const Float128> values)
 {
-  reserve(DT_Int64, 1);
+  reserveInt64(1);
   reserveSpan(values);
 }
 
 void BasicSerializer::
 reserveArray(Span<const Int128> values)
 {
-  reserve(DT_Int64, 1);
+  reserveInt64(1);
   reserveSpan(values);
 }
 
