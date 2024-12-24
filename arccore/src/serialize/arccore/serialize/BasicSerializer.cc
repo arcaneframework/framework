@@ -16,7 +16,7 @@
 #include "arccore/base/ArgumentException.h"
 #include "arccore/base/FatalErrorException.h"
 
-#include "arccore/serialize/BasicSerializerInternal.h"
+#include "arccore/serialize/internal/BasicSerializerInternal.h"
 
 #include <iostream>
 

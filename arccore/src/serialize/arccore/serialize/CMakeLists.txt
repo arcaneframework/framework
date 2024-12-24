@@ -4,7 +4,7 @@ set(SOURCES
   BasicSerializer.cc
   SerializeGlobal.h
   SerializeGlobal.cc
-  BasicSerializerInternal.h
+  internal/BasicSerializerInternal.h
 )
 
 arccore_add_component_library(serialize
