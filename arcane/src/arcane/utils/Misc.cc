@@ -86,6 +86,16 @@ template<> ARCANE_UTILS_EXPORT bool builtInGetValue(Float16& v,const String& s)
   v = z;
   return r;
 }
+template<> ARCANE_UTILS_EXPORT bool builtInGetValue(Float128& v,const String& s)
+{
+  // Pour l'instant (12/2024), il n'y a pas de fonctions natives pour lire un Float128.
+  // On utilise donc un 'long double'.
+  // TODO: à implémenter correctement
+  long double z = 0.0;
+  bool r = builtInGetValue(z,s);
+  v = z;
+  return r;
+}
 template<> ARCANE_UTILS_EXPORT bool builtInGetValue(float& v,const String& s)
 {
   double z = 0.;
@@ -140,6 +150,18 @@ template<> ARCANE_UTILS_EXPORT bool builtInGetValue(long long& v,const String& s
   const char* ptr = s.localstr();
   char* ptr2 = 0;
   v = ::strtoll(ptr,&ptr2,0);
+  return (ptr2!=(ptr+s.length()));
+}
+template<> ARCANE_UTILS_EXPORT bool builtInGetValue(Int128& v,const String& s)
+{
+  // Pour l'instant (12/2024), il n'y a pas de fonctions natives pour lire un Int128.
+  // On utilise donc un 'Int64' en attendant.
+  // TODO: il existe des exemples sur internet. A implémenter correctement
+  long long v2 = 0;
+  const char* ptr = s.localstr();
+  char* ptr2 = 0;
+  v2 = ::strtoll(ptr,&ptr2,0);
+  v = v2;
   return (ptr2!=(ptr+s.length()));
 }
 template<> ARCANE_UTILS_EXPORT bool builtInGetValue(unsigned long long& v,const String& s)
