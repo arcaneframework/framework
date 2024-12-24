@@ -18,7 +18,7 @@
 #include "arccore/base/NotImplementedException.h"
 
 #include "arccore/serialize/BasicSerializer.h"
-#include "arccore/serialize/BasicSerializerInternal.h"
+#include "arccore/serialize/internal/BasicSerializerInternal.h"
 
 #include "arccore/message_passing/ISerializeDispatcher.h"
 #include "arccore/message_passing/IControlDispatcher.h"
