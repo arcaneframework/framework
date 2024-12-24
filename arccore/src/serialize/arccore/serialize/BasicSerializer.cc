@@ -569,6 +569,12 @@ reserve(eDataType dt, Int64 n, Int64 nb_put)
   case DT_Float32:
     m_float32.m_reserved_size += n;
     break;
+  case DT_Float128:
+    m_float128.m_reserved_size += n;
+    break;
+  case DT_Int128:
+    m_int128.m_reserved_size += n;
+    break;
   default:
     ARCCORE_THROW(ArgumentException, "bad datatype v={0}", (int)dt);
   }

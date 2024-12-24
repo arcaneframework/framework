@@ -83,9 +83,12 @@ class ARCCORE_SERIALIZE_EXPORT ISerializer
     DT_Float16 = 11, //!< Donnée de type flottant 16 bits
     DT_BFloat16 = 10, //!< Donnée de type 'brain float'
     DT_Int8 = 13, //!< Donnée de type entier 8 bits
+    DT_Float128 = 14, //!< Donnée de type flottant 128 bits
+    DT_Int128 = 15, //!< Donnée de type entier 128 bits
+    DT_Float64 = DT_Real
   };
 
-  virtual ~ISerializer(){} //!< Libère les ressources
+  virtual ~ISerializer() = default; //!< Libère les ressources
 
  public:
 
