@@ -47,6 +47,7 @@ enum class eBasicDataType : unsigned char
   Int128 = 9, //!< Donnée de type entier 128 bits
   BFloat16 = 10, //! < Donnée de type BFloat16
   Int8 = 11, //! Donnée de type entier 8 bits
+  Real = Float64 //! Donnée de type Float64
 };
 //! Nombre de types de base supportés
 constexpr unsigned char NB_BASIC_DATA_TYPE = 12;
