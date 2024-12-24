@@ -17,12 +17,7 @@
 #include "arcane/utils/Iostream.h"
 #include "arcane/utils/String.h"
 #include "arcane/utils/Array.h"
-#include "arcane/utils/Real2.h"
-#include "arcane/utils/Real3.h"
-#include "arcane/utils/Real2x2.h"
-#include "arcane/utils/Real3x3.h"
-#include "arcane/utils/BFloat16.h"
-#include "arcane/utils/Float16.h"
+#include "arcane/utils/NumericTypes.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -69,6 +64,8 @@ template<> ARCANE_UTILS_EXPORT bool builtInGetValue(unsigned long& v,const Strin
 template<> ARCANE_UTILS_EXPORT bool builtInGetValue(unsigned long long& v,const String& s);
 template<> ARCANE_UTILS_EXPORT bool builtInGetValue(Float16& v,const String& s);
 template<> ARCANE_UTILS_EXPORT bool builtInGetValue(BFloat16& v,const String& s);
+template<> ARCANE_UTILS_EXPORT bool builtInGetValue(Float128& v,const String& s);
+template<> ARCANE_UTILS_EXPORT bool builtInGetValue(Int128& v,const String& s);
 #ifdef ARCANE_REAL_NOT_BUILTIN
 template<> ARCANE_UTILS_EXPORT bool builtInGetValue(Real& v,const String& s);
 #endif
@@ -84,6 +81,8 @@ template<> ARCANE_UTILS_EXPORT bool builtInGetValue(Int64Array& v,const String& 
 template<> ARCANE_UTILS_EXPORT bool builtInGetValue(BFloat16Array& v,const String& s);
 template<> ARCANE_UTILS_EXPORT bool builtInGetValue(Float16Array& v,const String& s);
 template<> ARCANE_UTILS_EXPORT bool builtInGetValue(Float32Array& v,const String& s);
+template<> ARCANE_UTILS_EXPORT bool builtInGetValue(Array<Float128>& v,const String& s);
+template<> ARCANE_UTILS_EXPORT bool builtInGetValue(Array<Int128>& v,const String& s);
 template<> ARCANE_UTILS_EXPORT bool builtInGetValue(BoolArray& v,const String& s);
 template<> ARCANE_UTILS_EXPORT bool builtInGetValue(StringArray& v,const String& s);
 
@@ -99,6 +98,8 @@ template<> ARCANE_UTILS_EXPORT bool builtInGetValue(Int64SharedArray& v,const St
 template<> ARCANE_UTILS_EXPORT bool builtInGetValue(BFloat16SharedArray& v,const String& s);
 template<> ARCANE_UTILS_EXPORT bool builtInGetValue(Float16SharedArray& v,const String& s);
 template<> ARCANE_UTILS_EXPORT bool builtInGetValue(Float32SharedArray& v,const String& s);
+template<> ARCANE_UTILS_EXPORT bool builtInGetValue(SharedArray<Float128>& v,const String& s);
+template<> ARCANE_UTILS_EXPORT bool builtInGetValue(SharedArray<Int128>& v,const String& s);
 template<> ARCANE_UTILS_EXPORT bool builtInGetValue(BoolSharedArray& v,const String& s);
 template<> ARCANE_UTILS_EXPORT bool builtInGetValue(StringSharedArray& v,const String& s);
 
@@ -114,6 +115,8 @@ template<> ARCANE_UTILS_EXPORT bool builtInGetValue(Int64UniqueArray& v,const St
 template<> ARCANE_UTILS_EXPORT bool builtInGetValue(BFloat16UniqueArray& v,const String& s);
 template<> ARCANE_UTILS_EXPORT bool builtInGetValue(Float16UniqueArray& v,const String& s);
 template<> ARCANE_UTILS_EXPORT bool builtInGetValue(Float32UniqueArray& v,const String& s);
+template<> ARCANE_UTILS_EXPORT bool builtInGetValue(UniqueArray<Float128>& v,const String& s);
+template<> ARCANE_UTILS_EXPORT bool builtInGetValue(UniqueArray<Int128>& v,const String& s);
 template<> ARCANE_UTILS_EXPORT bool builtInGetValue(BoolUniqueArray& v,const String& s);
 template<> ARCANE_UTILS_EXPORT bool builtInGetValue(StringUniqueArray& v,const String& s);
 
@@ -205,6 +208,8 @@ inline const char* typeToName(unsigned int) { return "unsigned integer"; }
 inline const char* typeToName(BFloat16){ return "bfloat16"; }
 inline const char* typeToName(Float16){ return "float16"; }
 inline const char* typeToName(Float32){ return "float32"; }
+inline const char* typeToName(Float128){ return "float128"; }
+inline const char* typeToName(Int128){ return "int128"; }
 inline const char* typeToName(const StringArray&){ return "string[]"; }
 inline const char* typeToName(const BoolArray&){ return "boolean[]"; }
 inline const char* typeToName(const RealArray&){ return "real[]"; }

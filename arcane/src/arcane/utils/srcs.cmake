@@ -44,6 +44,7 @@ set(ARCANE_SOURCES
   Event.h
   FixedArray.h
   Float16.h
+  Float128.h
   FloatingPointExceptionSentry.cc
   FloatingPointExceptionSentry.h
   FileContent.cc
@@ -56,6 +57,7 @@ set(ARCANE_SOURCES
   GoBackwardException.cc
   GoBackwardException.h
   IDataCompressor.h
+  Int128.h
   IOException.cc
   IOException.h
   IMemoryRessourceMng.h

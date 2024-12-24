@@ -270,6 +270,12 @@ using Float32 = float;
 //! Type représentant un entier sur 8 bits
 using Int8 = Arccore::Int8;
 
+//! Type représentant un floattan sur 128 bits
+using Float128 = Arccore::Float128;
+
+//! Type représentant un entier sur 128 bits
+using Int128 = Arccore::Int128;
+
 /*!
  * \def ARCANE_INTEGER_MAX
  * \brief Macro indiquant la valeur maximal que peut prendre le type #Integer
