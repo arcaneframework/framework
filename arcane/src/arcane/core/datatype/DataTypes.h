@@ -51,11 +51,13 @@ enum eDataType
   DT_Float16 = 11, //!< Donnée de type 'Float16'
   DT_Float32 = 12, //!< Donnée de type 'Float32'
   DT_Int8 = 13, //!< Donnée de type entier sur 8 bits
-  DT_Unknown = 14 //!< Donnée de type inconnue ou non initialisée
+  DT_Float128 = 14, //!< Donnée de type flottant sur 128 bits
+  DT_Int128 = 15, //!< Donnée de type entier sur 128 bits
+  DT_Unknown = 16 //!< Donnée de type inconnue ou non initialisée
 };
 
 //! Nombre de valeurs de eDataType
-static constexpr Int32 NB_ARCANE_DATA_TYPE = 15;
+static constexpr Int32 NB_ARCANE_DATA_TYPE = 17;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -79,6 +81,8 @@ class DataTypeNames
   static constexpr const char* N_FLOAT16 = "Float16";
   static constexpr const char* N_FLOAT32 = "Float32";
   static constexpr const char* N_INT8 = "Int8";
+  static constexpr const char* N_FLOAT128 = "Float128";
+  static constexpr const char* N_INT128 = "Int128";
   static constexpr const char* N_UNKNOWN = "Unknown";
 };
 
