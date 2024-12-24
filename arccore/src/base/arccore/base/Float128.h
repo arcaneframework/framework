@@ -40,25 +40,37 @@ namespace Arccore
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Type flottant demi-précision
+ * \brief Type flottant sur 128 bits.
+ *
+ * \warning Cette classe est en cours de définition et ne doit pas être
+ * utilisée.
  */
 class alignas(16) Float128
 {
  public:
 
   Float128() = default;
-  Float128(long double v)
+  constexpr Float128(long double v)
+  : m_v(_toNativeType(v))
   {
-    _setFromLongDouble(v);
   }
-  Float128& operator=(long double v)
+  constexpr Float128(double v)
+  : m_v(_toNativeType(v))
+  {
+  }
+  constexpr Float128& operator=(long double v)
   {
     _setFromLongDouble(v);
     return (*this);
   }
-  operator long double() const { return _toLongDouble(); }
+  constexpr Float128& operator=(double v)
+  {
+    _setFromLongDouble(v);
+    return (*this);
+  }
+  constexpr operator long double() const { return _toLongDouble(); }
 
- private:
+ public:
 
 #ifdef ARCCORE_HAS_NATIVE_FLOAT128
 #if defined(__aarch64__)
@@ -66,24 +78,30 @@ class alignas(16) Float128
 #else
   using NativeType = __float128;
 #endif
-  explicit Float128(NativeType x)
+  constexpr Float128(NativeType x)
   : m_v(x)
   {}
 #else
   using NativeType = long double;
 #endif
 
+ private:
+
   NativeType m_v;
 
-  long double _toLongDouble() const
+  constexpr NativeType _toNativeType(long double v)
+  {
+    return static_cast<NativeType>(v);
+  }
+  constexpr long double _toLongDouble() const
   {
     return static_cast<long double>(m_v);
   }
-  void _setFromLongDouble(long double v)
+  constexpr void _setFromLongDouble(long double v)
   {
     m_v = static_cast<NativeType>(v);
   }
-  friend Float128 operator+(Float128 a, Float128 b)
+  constexpr friend Float128 operator+(Float128 a, Float128 b)
   {
     return Float128(a.m_v + b.m_v);
   }

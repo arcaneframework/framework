@@ -37,47 +37,50 @@ namespace Arccore
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Type flottant demi-précision
+ * \brief Type entier sur 128 bits.
+ *
+ * \warning Cette classe est en cours de définition et ne doit pas être
+ * utilisée.
  */
 class alignas(16) Int128
 {
  public:
 
   Int128() = default;
-  Int128(Int64 v)
+  constexpr Int128(Int64 v)
+  : m_v(v)
   {
-    _setFromInt64(v);
   }
-  Int128& operator=(Int64 v)
+  constexpr Int128& operator=(Int64 v)
   {
     _setFromInt64(v);
     return (*this);
   }
-  Int64 toInt64() const { return _toInt64(); }
-  operator Int64() const { return _toInt64(); }
+  constexpr Int64 toInt64() const { return _toInt64(); }
+  constexpr operator Int64() const { return _toInt64(); }
 
  private:
 
 #ifdef ARCCORE_HAS_NATIVE_INT128
   using NativeType = __int128;
   NativeType m_v;
-  explicit Int128(__int128 x)
+  constexpr explicit Int128(__int128 x)
   : m_v(x)
   {}
 #else
   Int64 m_v;
-  Int64 m_v2;
+  Int64 m_v2 = 0;
 #endif
 
-  Int64 _toInt64() const
+  constexpr Int64 _toInt64() const
   {
     return static_cast<Int64>(m_v);
   }
-  void _setFromInt64(Int64 v)
+  constexpr void _setFromInt64(Int64 v)
   {
     m_v = v;
   }
-  friend Int128 operator+(Int128 a, Int128 b)
+  friend constexpr Int128 operator+(Int128 a, Int128 b)
   {
     return Int128(a.m_v + b.m_v);
   }
