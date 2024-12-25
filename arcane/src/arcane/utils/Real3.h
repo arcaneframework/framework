@@ -216,26 +216,7 @@ class ARCANE_UTILS_EXPORT Real3
     z = f.z;
     return (*this);
   }
-  /*!
-   * \brief Indique si l'instance est proche de l'instance nulle.
-   *
-   * \retval true si math::isNearlyZero() est vrai pour chaque composante.
-   * \retval false sinon.
-   */
-  constexpr ARCCORE_HOST_DEVICE bool isNearlyZero() const
-  {
-    return math::isNearlyZero(x) && math::isNearlyZero(y) && math::isNearlyZero(z);
-  }
-  //! Retourne la norme L2 au carré du triplet \f$x^2+y^2+z^2\f$
-  constexpr ARCCORE_HOST_DEVICE Real squareNormL2() const { return x * x + y * y + z * z; }
-  //! Retourne la norme L2 du triplet \f$\sqrt{x^2+y^2+z^2}\f$
-  ARCCORE_HOST_DEVICE Real normL2() const { return _sqrt(squareNormL2()); }
-  //! Retourne la norme au carré du triplet \f$x^2+y^2+z^2\f$
-  ARCCORE_DEPRECATED_2021("Use squareNormL2() instead")
-  constexpr ARCCORE_HOST_DEVICE Real abs2() const { return x * x + y * y + z * z; }
-  //! Retourne la norme du triplet \f$\sqrt{x^2+y^2+z^2}\f$
-  ARCCORE_DEPRECATED_2021("Use normL2() instead")
-  ARCCORE_HOST_DEVICE Real abs() const { return _sqrt(squareNormL2()); }
+
   //! Valeur absolue composante par composante.
   ARCCORE_HOST_DEVICE Real3 absolute() const { return Real3(math::abs(x), math::abs(y), math::abs(z)); }
 
@@ -352,20 +333,6 @@ class ARCANE_UTILS_EXPORT Real3
    */
   constexpr ARCCORE_HOST_DEVICE Real3 operator/(Real3 b) const { return Real3(x / b.x, y / b.y, z / b.z); }
 
-  /*!
-   * \brief Normalise le triplet.
-   * 
-   * Si le triplet est non nul, divise chaque composante par la norme du triplet
-   * (abs()), de telle sorte qu'après l'appel à cette méthode, normL2() vaux \a 1.
-   * Si le triplet est nul, ne fait rien.
-   */
-  Real3& normalize()
-  {
-    Real d = normL2();
-    if (!math::isZero(d))
-      divSame(d);
-    return (*this);
-  }
   //! Multiplication par un scalaire.
   friend constexpr ARCCORE_HOST_DEVICE Real3 operator*(Real sca, Real3 vec)
   {
@@ -383,6 +350,8 @@ class ARCANE_UTILS_EXPORT Real3
   {
     return Real3(vec.x / sca, vec.y / sca, vec.z / sca);
   }
+
+ public:
 
   /*!
    * \brief Opérateur de comparaison.
@@ -432,6 +401,30 @@ class ARCANE_UTILS_EXPORT Real3
    */
   constexpr ARCCORE_HOST_DEVICE bool operator!=(Real3 b) const { return !operator==(b); }
 
+ public:
+
+  //! Retourne la norme L2 au carré du triplet \f$x^2+y^2+z^2\f$
+  // TODO: rendre obsolète mi-2025: ARCANE_DEPRECATED_REASON("Y2024: Use math::squareNormL2(const Real3&) instead")
+  constexpr ARCCORE_HOST_DEVICE Real squareNormL2() const { return x * x + y * y + z * z; }
+
+  //! Retourne la norme L2 du triplet \f$\sqrt{x^2+y^2+z^2}\f$
+  // TODO: rendre obsolète mi-2025: ARCANE_DEPRECATED_REASON("Y2024: Use math::normL2(const Real3&) instead")
+  inline ARCCORE_HOST_DEVICE Real normL2() const;
+
+  //! Retourne la norme au carré du triplet \f$x^2+y^2+z^2\f$
+  ARCCORE_DEPRECATED_2021("Use math::squareNormL2(const Real3&) instead")
+  constexpr ARCCORE_HOST_DEVICE Real abs2() const { return x * x + y * y + z * z; }
+
+  //! Retourne la norme du triplet \f$\sqrt{x^2+y^2+z^2}\f$
+  ARCCORE_DEPRECATED_2021("Use math::normL2(const Real3&) instead")
+  inline ARCCORE_HOST_DEVICE Real abs() const;
+
+  // TODO: rendre obsolète mi-2025: ARCANE_DEPRECATED_REASON("Y2024: Use math::isNearlyZero(const Real3&) instead")
+  inline constexpr ARCCORE_HOST_DEVICE bool isNearlyZero() const;
+
+  ARCANE_DEPRECATED_REASON("Y2024: Use math::mutableNormalize(Real3&) instead")
+  inline Real3& normalize();
+
  private:
 
   /*!
@@ -439,15 +432,9 @@ class ARCANE_UTILS_EXPORT Real3
    * \retval true si \a a et \a b sont égaux,
    * \retval false sinon.
    */
-  constexpr ARCCORE_HOST_DEVICE static bool _eq(Real a, Real b)
-  {
-    return math::isEqual(a, b);
-  }
+  inline constexpr ARCCORE_HOST_DEVICE static bool _eq(Real a, Real b);
   //! Retourne la racine carrée de \a a
-  ARCCORE_HOST_DEVICE static Real _sqrt(Real a)
-  {
-    return math::sqrt(a);
-  }
+  inline ARCCORE_HOST_DEVICE static Real _sqrt(Real a);
 };
 
 /*---------------------------------------------------------------------------*/
@@ -459,6 +446,87 @@ Real2(const Real3& v)
 {
   x = v.x;
   y = v.y;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace math
+{
+  //! Retourne la norme au carré du triplet \f$x^2+y^2+z^2\f$
+  inline constexpr ARCCORE_HOST_DEVICE Real squareNormL2(const Real3& v)
+  {
+    return v.x * v.x + v.y * v.y + v.z * v.z;
+  }
+
+  /*!
+   * \brief Indique si l'instance est proche de l'instance nulle.
+   *
+   * \retval true si math::isNearlyZero() est vrai pour chaque composante.
+   * \retval false sinon.
+   */
+  inline constexpr ARCCORE_HOST_DEVICE bool isNearlyZero(const Real3& v)
+  {
+    return math::isNearlyZero(v.x) && math::isNearlyZero(v.y) && math::isNearlyZero(v.z);
+  }
+  //! Retourne la norme L2 du triplet \f$\sqrt{v.x^2+v.y^2+v.z^2}\f$
+  inline ARCCORE_HOST_DEVICE Real normL2(const Real3& v)
+  {
+    return math::sqrt(math::squareNormL2(v));
+  }
+  /*!
+    * \brief Normalise le triplet \a v
+    *
+    * Si le triplet est non nul, divise chaque composante par la norme du triplet
+    * (abs()), de telle sorte qu'après l'appel à cette méthode, math::normL2() vaux \a 1.
+    * Si le triplet est nul, ne fait rien.
+    */
+  inline Real3& mutableNormalize(Real3& v)
+  {
+    Real d = math::normL2(v);
+    if (!math::isZero(d))
+      v.divSame(d);
+    return v;
+  }
+} // namespace math
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+inline Real3& Real3::
+normalize()
+{
+  return math::mutableNormalize(*this);
+}
+
+inline constexpr ARCCORE_HOST_DEVICE bool Real3::
+isNearlyZero() const
+{
+  return math::isNearlyZero(*this);
+}
+
+inline constexpr ARCCORE_HOST_DEVICE bool Real3::
+_eq(Real a, Real b)
+{
+  return math::isEqual(a, b);
+}
+
+ARCCORE_HOST_DEVICE inline Real Real3::
+_sqrt(Real a)
+{
+  return math::sqrt(a);
+}
+
+inline ARCCORE_HOST_DEVICE Real Real3::
+normL2() const
+{
+  return math::normL2(*this);
+}
+
+inline ARCCORE_HOST_DEVICE Real Real3::
+abs() const
+{
+  return math::normL2(*this);
 }
 
 /*---------------------------------------------------------------------------*/
