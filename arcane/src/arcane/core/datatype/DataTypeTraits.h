@@ -73,6 +73,9 @@ class DataTypeTraitsT<bool>
    */
   static constexpr eDataType type() { return DT_Byte; }
 
+  //! Type de donnée de base.
+  static constexpr eBasicDataType basicDataType() { return eBasicDataType::Byte; }
+
   //! Type du proxy associé
   typedef BuiltInProxy<bool> ProxyType;
 

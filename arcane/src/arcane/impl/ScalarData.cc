@@ -270,7 +270,7 @@ serialize(ISerializer* sbuf, IDataOperation*)
 {
   Integer nb_count = DataTypeTraitsT<DataType>::nbBasicType();
   typedef typename DataTypeTraitsT<DataType>::BasicType BasicType;
-  eDataType data_type = DataTypeTraitsT<BasicType>::type();
+  eBasicDataType data_type = DataTypeTraitsT<BasicType>::basicDataType();
 
   DataType ttmp = m_value;
   ArrayView<BasicType> vtmp(1 * nb_count, reinterpret_cast<BasicType*>(&ttmp));

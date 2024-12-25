@@ -382,7 +382,7 @@ serialize(ISerializer* sbuf,IDataOperation* operation)
 {
   Integer nb_count = DataTypeTraitsT<DataType>::nbBasicType();
   typedef typename DataTypeTraitsT<DataType>::BasicType BasicType;
-  eDataType data_type = DataTypeTraitsT<BasicType>::type();
+  eBasicDataType data_type = DataTypeTraitsT<BasicType>::basicDataType();
   bool is_debug = arcaneIsDebug();
 
   switch(sbuf->mode()){
@@ -391,9 +391,8 @@ serialize(ISerializer* sbuf,IDataOperation* operation)
       Int64 nb_value = m_value.largeSize();
       Int64 total_size = nb_value*nb_count;
       m_trace->debug(Trace::High) << " ArrayDataT::serialize (full) reserve datatype="
-                                  << dataTypeName(data_type)
-                                  << " ids=" << nb_value << " totalsize=" << total_size;
-      sbuf->reserve(DT_Int64,2); // 1 pour magic number et 1 pour la taille
+                                  << data_type << " ids=" << nb_value << " totalsize=" << total_size;
+      sbuf->reserveInt64(2); // 1 pour magic number et 1 pour la taille
       sbuf->reserveSpan(data_type,total_size);
     }
     break;
@@ -402,8 +401,7 @@ serialize(ISerializer* sbuf,IDataOperation* operation)
       Int64 nb_value = m_value.largeSize();
       Int64 total_size = nb_value*nb_count;
       m_trace->debug(Trace::High) << " ArrayDataT::serialize (full) put datatype="
-                                  << dataTypeName(data_type)
-                                  << " ids=" << nb_value << " totalsize=" << total_size;
+                                  << data_type << " ids=" << nb_value << " totalsize=" << total_size;
       if (is_debug)
         for( Int64 i=0; i<nb_value; ++i )
           m_trace->debug(Trace::Highest) << "Put i=" << i << " value =" << m_value[i];
@@ -426,7 +424,7 @@ serialize(ISerializer* sbuf,IDataOperation* operation)
       Int64 total_size = nb_value * nb_count;
 
       m_trace->debug(Trace::High) << " ArrayDataT::serialize (full) get mode=" << sbuf->readMode() 
-                                  << " datatype=" << dataTypeName(data_type)
+                                  << " datatype=" << data_type
                                   << " ids=" << nb_value << " totalsize=" << total_size;
       switch(sbuf->readMode()){
       case ISerializer::ReadReplace:
@@ -488,7 +486,7 @@ _serialize(ISerializer* sbuf,Span<const Int32> ids,IDataOperation* operation)
 {
   Integer nb_count = DataTypeTraitsT<DataType>::nbBasicType();
   typedef typename DataTypeTraitsT<DataType>::BasicType BasicType;
-  eDataType data_type = DataTypeTraitsT<BasicType>::type();
+  eBasicDataType data_type = DataTypeTraitsT<BasicType>::basicDataType();
   bool is_debug = arcaneIsDebug();
 
   Int64 nb_value = ids.size();
@@ -498,17 +496,15 @@ _serialize(ISerializer* sbuf,Span<const Int32> ids,IDataOperation* operation)
   case ISerializer::ModeReserve:
     {
       m_trace->debug(Trace::High) << " ArrayDataT::serialize (partial) reserve datatype="
-                                  << dataTypeName(data_type)
-                                  << " ids=" << nb_value << " totalsize=" << total_size;
-      sbuf->reserve(DT_Int64,2);
+                                  << data_type << " ids=" << nb_value << " totalsize=" << total_size;
+      sbuf->reserveInt64(2);
       sbuf->reserveSpan(data_type,total_size);
     }
     break;
   case ISerializer::ModePut:
     {
       m_trace->debug(Trace::High) << " ArrayDataT::serialize (partial) put datatype="
-                                  << dataTypeName(data_type)
-                                  << " ids=" << nb_value << " totalsize=" << total_size;
+                                  << data_type << " ids=" << nb_value << " totalsize=" << total_size;
       if (is_debug){
         // Vérifie les valeurs
         for( Integer i=0, max_value=m_value.size(); i<nb_value; ++i )
@@ -536,7 +532,7 @@ _serialize(ISerializer* sbuf,Span<const Int32> ids,IDataOperation* operation)
   case ISerializer::ModeGet:
     {
       m_trace->debug(Trace::High) << " ArrayDataT::serialize (partial) get mode=" << sbuf->readMode() 
-                                  << " datatype=" << dataTypeName(data_type)
+                                  << " datatype=" << data_type
                                   << " ids=" << nb_value << " totalsize=" << total_size;
       if (is_debug){
         // Vérifie les valeurs

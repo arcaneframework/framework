@@ -125,7 +125,7 @@ class VariablePrivate
   {
     switch(sbuf->mode()){
     case ISerializer::ModeReserve:
-      sbuf->reserveSpan(DT_Byte,HASHID_SIZE);
+      sbuf->reserveSpan(eBasicDataType::Byte,HASHID_SIZE);
       break;
     case ISerializer::ModePut:
       sbuf->putSpan(Span<const Byte>(m_hash_id,HASHID_SIZE));

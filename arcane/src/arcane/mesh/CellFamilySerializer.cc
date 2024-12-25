@@ -66,7 +66,7 @@ serializeItems(ISerializer* buf,Int32ConstArrayView cells_local_id)
   switch(buf->mode()){
   case ISerializer::ModeReserve:
     {
-      buf->reserve(DT_Int64,2); // 1 pour le rang du sous-domaine et 1 pour le nombre de mailles
+      buf->reserveInt64(2); // 1 pour le rang du sous-domaine et 1 pour le nombre de mailles
       UniqueArray<Int64> tmp_buf;
       tmp_buf.reserve(200);
       for( Integer i_cell=0; i_cell<nb_cell; ++i_cell ){
@@ -74,7 +74,7 @@ serializeItems(ISerializer* buf,Int32ConstArrayView cells_local_id)
         ItemInternal* cell = cells_internal[lid];
         tmp_buf.clear();
         FullCellInfo::dump(cell,tmp_buf,parent_info,has_edge,has_amr,use_flags);
-        buf->reserve(DT_Int64,1);
+        buf->reserveInt64(1);
         buf->reserveSpan(tmp_buf);
       }
     }

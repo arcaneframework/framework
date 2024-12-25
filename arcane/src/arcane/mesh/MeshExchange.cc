@@ -459,7 +459,7 @@ _exchangeCellDataInfos([[maybe_unused]] Int32ConstArrayView cells_new_owner,bool
     }
     sbuf->setMode(ISerializer::ModeReserve);
 
-    sbuf->reserve(DT_Int64,1); // Pour le nombre de mailles
+    sbuf->reserveInt64(1); // Pour le nombre de mailles
     sbuf->reserveArray(cells_to_comm_uid);
     sbuf->reserveArray(cells_to_comm_owner_size);
     sbuf->reserveArray(cells_to_comm_owner);
@@ -1137,7 +1137,7 @@ _exchangeCellDataInfos3()
         }
       }
       sbuf->setMode(ISerializer::ModeReserve);
-      sbuf->reserve(DT_Int64,1); // nb_item_family
+      sbuf->reserveInt64(1); // nb_item_family
       for (const auto& family: item_families)
         sbuf->reserve(family->name()); // ItemFamily->name
       sbuf->reserveInteger(item_families.size()); // ItemFamily->itemKind
@@ -1536,10 +1536,10 @@ _exchangeGhostItemDataInfos()
     }
     sbuf->setMode(ISerializer::ModeReserve);
 
-    sbuf->reserve(DT_Int64,1); // nb_item_family
+    sbuf->reserveInt64(1); // nb_item_family
     for (const auto& family: item_families)
       sbuf->reserve(family->name()); // ItemFamily->name
-    sbuf->reserve(DT_Int64,item_families.size()); // ItemFamily->itemKind
+    sbuf->reserveInt64(item_families.size()); // ItemFamily->itemKind
 
     sbuf->reserveArray(item_uids);
     sbuf->reserveArray(family_nb_items);

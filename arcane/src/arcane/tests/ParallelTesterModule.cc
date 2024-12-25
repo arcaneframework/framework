@@ -1535,7 +1535,7 @@ _testBitonicSort()
       ranks_to_recv[i] = dest_rank;
       serializer->setMode(ISerializer::ModeReserve);
       serializer->reserveInteger(1);
-      serializer->reserve(DT_Int32,nb_to_send);
+      serializer->reserveInt32(nb_to_send);
       serializer->allocateBuffer();
       serializer->setMode(ISerializer::ModePut);
       serializer->putInteger(nb_to_send);

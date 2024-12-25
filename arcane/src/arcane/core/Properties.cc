@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Properties.cc                                               (C) 2000-2020 */
+/* Properties.cc                                               (C) 2000-2024 */
 /*                                                                           */
 /* Liste de propriétés.                                                      */
 /*---------------------------------------------------------------------------*/
@@ -20,11 +20,11 @@
 #include "arcane/utils/ArgumentException.h"
 #include "arcane/utils/FatalErrorException.h"
 
-#include "arcane/datatype/SmallVariant.h"
-#include "arcane/datatype/DataTypeTraits.h"
+#include "arcane/core/datatype/SmallVariant.h"
+#include "arcane/core/datatype/DataTypeTraits.h"
 
-#include "arcane/IPropertyMng.h"
-#include "arcane/ISerializer.h"
+#include "arcane/core/IPropertyMng.h"
+#include "arcane/core/ISerializer.h"
 
 #include <map>
 
@@ -210,7 +210,7 @@ void _directPutScalar(ISerializer* s,const bool& value)
 template<typename DataType>
 void _directReserveScalar(ISerializer* s,const DataType&)
 {
-  s->reserve(DataTypeTraitsT<DataType>::type(),1);
+  s->reserve(DataTypeTraitsT<DataType>::basicDataType(),1);
 }
 
 void _directReserveScalar(ISerializer* s,const String& value)
@@ -221,21 +221,21 @@ void _directReserveScalar(ISerializer* s,const String& value)
 template<typename DataType>
 void _directReserve(ISerializer* s,Span<const DataType> values)
 {
-  s->reserve(DT_Int64,1);
-  s->reserveSpan(DataTypeTraitsT<DataType>::type(),values.size());
+  s->reserveInt64(1);
+  s->reserveSpan(DataTypeTraitsT<DataType>::basicDataType(),values.size());
 }
 
 
 void _directReserve(ISerializer* s,Span<const bool> values)
 {
   Int64 n = values.size();
-  s->reserve(DT_Int64,1);
-  s->reserveSpan(DT_Byte,n);
+  s->reserveInt64(1);
+  s->reserveSpan(eBasicDataType::Byte,n);
 }
 
 void _directReserve(ISerializer* s,Span<const String> values)
 {
-  s->reserve(DT_Int64,1);
+  s->reserveInt64(1);
   Int64 n = values.size();
   for( Integer i=0; i<n; ++i )
     s->reserve(values[i]);
@@ -621,15 +621,15 @@ serialize(ISerializer* serializer)
 void PropertiesImpl::
 serializeReserve(ISerializer* serializer)
 {
-  serializer->reserve(DT_Int32,1); // SERIALIZE_VERSION
-  serializer->reserve(DT_Int64,1); // Nombre d'éléments dans la map
+  serializer->reserveInt32(1); // SERIALIZE_VERSION
+  serializer->reserveInt64(1); // Nombre d'éléments dans la map
 
   MapType::iterator v = m_property_map.begin();
   MapType::iterator vend = m_property_map.end();
   for( ; v!=vend; ++v ){
     PropertyVariant* p = v->second;
     PropertyVariant::eType et = p->type();
-    serializer->reserve(DT_Int32,1);
+    serializer->reserveInt32(1);
     serializer->reserve(v->first);
     IPropertyType* pt = m_types[et];
     pt->serializeReserve(serializer,p);

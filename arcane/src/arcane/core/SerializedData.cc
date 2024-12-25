@@ -348,24 +348,24 @@ _serialize(ISerializer* sbuf) const
 
   switch (mode) {
   case ISerializer::ModeReserve:
-    sbuf->reserve(DT_Int64, 1); // Valeur magique pour vérification
-    sbuf->reserve(DT_Int32, 1); // Numéro de version
+    sbuf->reserveInt64(1); // Valeur magique pour vérification
+    sbuf->reserveInt32(1); // Numéro de version
     sbuf->reserveInteger(1); // Pour le m_base_data_type
-    sbuf->reserve(DT_Int64, 1); // Pour le m_memory_size
+    sbuf->reserveInt64(1); // Pour le m_memory_size
     sbuf->reserveInteger(1); // Pour le m_nb_dimension
-    sbuf->reserve(DT_Int64, 1); // Pour le m_nb_element
-    sbuf->reserve(DT_Int64, 1); // Pour le m_nb_base_element
+    sbuf->reserveInt64(1); // Pour le m_nb_element
+    sbuf->reserveInt64(1); // Pour le m_nb_base_element
     sbuf->reserveInteger(1); // Pour le m_is_multi_size
-    sbuf->reserve(DT_Int64, 1); // Pour le m_element_size
+    sbuf->reserveInt64(1); // Pour le m_element_size
 
-    sbuf->reserve(DT_Int64, 1); // Pour le m_extents.size()
-    sbuf->reserveSpan(DT_Int64, m_extents.size()); // Pour les dimensions
+    sbuf->reserveInt64(1); // Pour le m_extents.size()
+    sbuf->reserveSpan(eBasicDataType::Int64, m_extents.size()); // Pour les dimensions
 
-    sbuf->reserve(DT_Int32, 1); // Pour le nombre de valeur de 'm_shape'
-    sbuf->reserveSpan(DT_Int32, m_shape.nbDimension()); // Pour les données de 'm_shape'
+    sbuf->reserveInt32(1); // Pour le nombre de valeur de 'm_shape'
+    sbuf->reserveSpan(eBasicDataType::Int32, m_shape.nbDimension()); // Pour les données de 'm_shape'
 
-    sbuf->reserve(DT_Int64, 1); // Pour le m_const_buffer.size()
-    sbuf->reserveSpan(DT_Byte, m_const_buffer.size()); // Pour les données
+    sbuf->reserveInt64(1); // Pour le m_const_buffer.size()
+    sbuf->reserveSpan(eBasicDataType::Byte, m_const_buffer.size()); // Pour les données
     break;
   case ISerializer::ModePut:
     sbuf->putInt64(SERIALIZE_MAGIC_NUMBER); // Valeur magique pour vérification

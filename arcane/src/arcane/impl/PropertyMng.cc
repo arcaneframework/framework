@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* PropertyMng.cc                                              (C) 2000-2022 */
+/* PropertyMng.cc                                              (C) 2000-2024 */
 /*                                                                           */
 /* Gestionnaire des protections.                                             */
 /*---------------------------------------------------------------------------*/
@@ -15,12 +15,12 @@
 #include "arcane/utils/String.h"
 #include "arcane/utils/Ref.h"
 
-#include "arcane/IPropertyMng.h"
-#include "arcane/Properties.h"
-#include "arcane/ISerializer.h"
-#include "arcane/SerializeBuffer.h"
-#include "arcane/VariableTypes.h"
-#include "arcane/Observable.h"
+#include "arcane/core/IPropertyMng.h"
+#include "arcane/core/Properties.h"
+#include "arcane/core/ISerializer.h"
+#include "arcane/core/SerializeBuffer.h"
+#include "arcane/core/VariableTypes.h"
+#include "arcane/core/Observable.h"
 
 #include <map>
 
@@ -168,8 +168,8 @@ serialize(ISerializer* serializer)
   case ISerializer::ModeReserve:
 
   {
-    serializer->reserve(DT_Int32, 1); // SERIALIZE_VERSION
-    serializer->reserve(DT_Int64, 1); // Nombre d'éléments dans la map
+    serializer->reserveInt32(1); // SERIALIZE_VERSION
+    serializer->reserveInt64(1); // Nombre d'éléments dans la map
 
     for (auto& v : m_properties_map) {
       serializer->reserve(v.first);
