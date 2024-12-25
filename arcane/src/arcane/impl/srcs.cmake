@@ -11,8 +11,16 @@ set( ARCANE_SOURCES
   ArcaneCodeService.cc
   ArcaneMain.cc
   ArcaneMain.h
+  ArrayData.inst.h
   ArrayData.cc
-  ArrayData.h
+  ArrayDataTpl1.cc
+  ArrayDataTpl2.cc
+  ArrayDataTpl3.cc
+  Array2Data.inst.h
+  Array2Data.cc
+  Array2DataTpl1.cc
+  Array2DataTpl2.cc
+  Array2DataTpl3.cc
   ArcaneMainBatch.cc
   CaseDocument.cc
   CaseDocumentLangTranslator.cc
@@ -47,12 +55,6 @@ set( ARCANE_SOURCES
   MainFactory.cc
   MainFactory.h
   ModuleMng.cc
-  Array2Data.inst.h
-  Array2Data.h
-  Array2Data.cc
-  Array2DataTpl1.cc
-  Array2DataTpl2.cc
-  Array2DataTpl3.cc
   MemoryDataReaderWriter.cc
   MemoryDataReaderWriter.h
   DefaultBackwardMng.cc
@@ -110,13 +112,11 @@ set( ARCANE_SOURCES
   Application.h
   ArcaneSession.h
   ArcaneMain.h
-  ArrayData.h
   CaseDocumentLangTranslator.h
   GetVariablesValuesParallelOperation.h
   DataFactory.h
   ItemEnumeratorTracer.h
   MainFactory.h
-  Array2Data.h
   MemoryDataReaderWriter.h
   DefaultBackwardMng.h
   LoadBalanceMng.h
@@ -140,6 +140,7 @@ set( ARCANE_SOURCES
   DataOperation.cc
   SequentialParallelSuperMng.h
 
+  internal/ArrayData.h
   internal/Array2Data.h
   internal/ArcaneMainExecInfo.h
   internal/DataSynchronizeBuffer.h

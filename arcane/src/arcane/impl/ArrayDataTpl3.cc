@@ -11,9 +11,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/impl/internal/ArrayData.h"
-
-#include "arcane/impl/DataStorageFactory.h"
+#include "arcane/impl/ArrayData.inst.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -24,28 +22,12 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-extern "C++" void
-registerArrayDataFactory(IDataFactoryMng* dfm)
-{
-  DataStorageFactory<ArrayDataT<Byte>>::registerDataFactory(dfm);
-  DataStorageFactory<ArrayDataT<Real>>::registerDataFactory(dfm);
-  DataStorageFactory<ArrayDataT<Float16>>::registerDataFactory(dfm);
-  DataStorageFactory<ArrayDataT<BFloat16>>::registerDataFactory(dfm);
-  DataStorageFactory<ArrayDataT<Float32>>::registerDataFactory(dfm);
-  DataStorageFactory<ArrayDataT<Int8>>::registerDataFactory(dfm);
-  DataStorageFactory<ArrayDataT<Int16>>::registerDataFactory(dfm);
-  DataStorageFactory<ArrayDataT<Int32>>::registerDataFactory(dfm);
-  DataStorageFactory<ArrayDataT<Int64>>::registerDataFactory(dfm);
-  DataStorageFactory<ArrayDataT<Real2>>::registerDataFactory(dfm);
-  DataStorageFactory<ArrayDataT<Real3>>::registerDataFactory(dfm);
-  DataStorageFactory<ArrayDataT<Real2x2>>::registerDataFactory(dfm);
-  DataStorageFactory<ArrayDataT<Real3x3>>::registerDataFactory(dfm);
-}
+ARCANE_INTERNAL_INSTANTIATE_TEMPLATE_FOR_NUMERIC_DATATYPE3(ArrayDataT);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // namespace Arcane
+} // End namesapce Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
