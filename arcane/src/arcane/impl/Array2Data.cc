@@ -419,7 +419,7 @@ serialize(ISerializer* sbuf,IDataOperation* operation)
 {
   Integer nb_count = DataTypeTraitsT<DataType>::nbBasicType();
   typedef typename DataTypeTraitsT<DataType>::BasicType BasicType;
-  eDataType data_type = DataTypeTraitsT<BasicType>::type();
+  eBasicDataType data_type = DataTypeTraitsT<BasicType>::basicDataType();
 
   ISerializer::eMode mode = sbuf->mode();
   if (mode==ISerializer::ModeReserve){
@@ -428,7 +428,7 @@ serialize(ISerializer* sbuf,IDataOperation* operation)
     // - le nombre d'éléments de la deuxième dimension
     // - le nombre d'éléments de ids.
     // - le nombre magique pour verification
-    sbuf->reserveSpan(DT_Int64,4);
+    sbuf->reserveSpan(eBasicDataType::Int64,4);
     // Réserve la mémoire pour les valeurs
     Int64 total_nb_element = m_value.totalNbElement();
     sbuf->reserveSpan(data_type,total_nb_element*nb_count);
@@ -495,7 +495,7 @@ serialize(ISerializer* sbuf,Int32ConstArrayView ids,IDataOperation* operation)
 {
   Integer nb_count = DataTypeTraitsT<DataType>::nbBasicType();
   typedef typename DataTypeTraitsT<DataType>::BasicType BasicType;
-  eDataType data_type = DataTypeTraitsT<BasicType>::type();
+  eBasicDataType data_type = DataTypeTraitsT<BasicType>::basicDataType();
 
   ISerializer::eMode mode = sbuf->mode();
   if (mode==ISerializer::ModeReserve){
@@ -504,7 +504,7 @@ serialize(ISerializer* sbuf,Int32ConstArrayView ids,IDataOperation* operation)
     // - le nombre d'éléments de la deuxième dimension
     // - le nombre d'éléments de ids.
     // - le nombre magique pour verification
-    sbuf->reserveSpan(DT_Int64,4);
+    sbuf->reserveSpan(eBasicDataType::Int64,4);
     // Réserve la mémoire pour les valeurs
     Int64 total_nb_value = ((Int64)ids.size()) * ((Int64)m_value.dim2Size());
     sbuf->reserveSpan(data_type,total_nb_value*nb_count);

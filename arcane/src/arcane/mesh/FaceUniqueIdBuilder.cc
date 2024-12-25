@@ -614,8 +614,8 @@ _exchangeData(IParallelExchanger* exchanger,BoundaryInfosMap& boundary_infos_to_
       Int64ConstArrayView infos  = boundary_infos_to_send[rank];
       Integer nb_info = infos.size();
       s->setMode(ISerializer::ModeReserve);
-      s->reserve(DT_Int64,1); // Pour le nombre d'elements
-      s->reserveSpan(DT_Int64,nb_info); // Pour les elements
+      s->reserveInt64(1); // Pour le nombre d'elements
+      s->reserveSpan(eBasicDataType::Int64,nb_info); // Pour les elements
       s->allocateBuffer();
       s->setMode(ISerializer::ModePut);
       s->putInt64(nb_info);

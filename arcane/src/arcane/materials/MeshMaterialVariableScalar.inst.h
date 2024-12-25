@@ -705,7 +705,7 @@ serialize(ISerializer* sbuf,Int32ConstArrayView ids)
   IMeshMaterialMng* mat_mng = m_p->materialMng();
   const Integer nb_count = DataTypeTraitsT<DataType>::nbBasicType();
   typedef typename DataTypeTraitsT<DataType>::BasicType BasicType;
-  const eDataType data_type = DataTypeTraitsT<BasicType>::type();
+  const eBasicDataType data_type = DataTypeTraitsT<BasicType>::basicDataType();
   ItemVectorView ids_view(family->view(ids));
   bool has_mat = this->space()!=MatVarSpace::Environment;
   switch(sbuf->mode()){
@@ -721,7 +721,7 @@ serialize(ISerializer* sbuf,Int32ConstArrayView ids)
         }
       }
       tm->info() << "RESERVE: nb_value=" << 1 << " size=" << (nb_val*nb_count);
-      sbuf->reserve(DT_Int64,1);  // Pour le nombre de valeurs.
+      sbuf->reserveInt64(1);  // Pour le nombre de valeurs.
       sbuf->reserveSpan(data_type,nb_val*nb_count);  // Pour le nombre de valeurs.
     }
     break;
