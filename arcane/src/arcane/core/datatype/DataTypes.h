@@ -197,20 +197,32 @@ enum eTraceType
 } // End namespace Arcane
 
 // Macro pour instantier une classe template pour tous les types numériques
-#define ARCANE_INTERNAL_INSTANTIATE_TEMPLATE_FOR_NUMERIC_DATATYPE(class_name)\
+#define ARCANE_INTERNAL_INSTANTIATE_TEMPLATE_FOR_NUMERIC_DATATYPE1(class_name)\
 template class class_name <Real>;\
 template class class_name <Real3>;\
 template class class_name <Real3x3>;\
 template class class_name <Real2>;\
-template class class_name <Real2x2>;\
-template class class_name <BFloat16>;\
-template class class_name <Float16>;\
-template class class_name <Float32>;\
+template class class_name <Real2x2>;
+
+// Macro pour instantier une classe template pour tous les types numériques
+#define ARCANE_INTERNAL_INSTANTIATE_TEMPLATE_FOR_NUMERIC_DATATYPE2(class_name)\
 template class class_name <Int8>;\
 template class class_name <Int16>;\
 template class class_name <Int32>;\
 template class class_name <Int64>;\
-template class class_name <Byte>;
+template class class_name <Byte>
+
+// Macro pour instantier une classe template pour tous les types numériques
+#define ARCANE_INTERNAL_INSTANTIATE_TEMPLATE_FOR_NUMERIC_DATATYPE3(class_name)\
+template class class_name <BFloat16>;\
+template class class_name <Float16>;\
+template class class_name <Float32>;
+
+// Macro pour instantier une classe template pour tous les types numériques
+#define ARCANE_INTERNAL_INSTANTIATE_TEMPLATE_FOR_NUMERIC_DATATYPE(class_name)\
+  ARCANE_INTERNAL_INSTANTIATE_TEMPLATE_FOR_NUMERIC_DATATYPE1(class_name);\
+  ARCANE_INTERNAL_INSTANTIATE_TEMPLATE_FOR_NUMERIC_DATATYPE2(class_name);\
+  ARCANE_INTERNAL_INSTANTIATE_TEMPLATE_FOR_NUMERIC_DATATYPE3(class_name)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
