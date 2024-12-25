@@ -11,9 +11,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/impl/internal/Array2Data.h"
-
-#include "arcane/impl/DataStorageFactory.h"
+#include "arcane/impl/Array2Data.inst.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -24,23 +22,7 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-extern "C++" void
-registerArray2DataFactory(IDataFactoryMng* dfm)
-{
-  DataStorageFactory<Array2DataT<Byte>>::registerDataFactory(dfm);
-  DataStorageFactory<Array2DataT<Real>>::registerDataFactory(dfm);
-  DataStorageFactory<Array2DataT<BFloat16>>::registerDataFactory(dfm);
-  DataStorageFactory<Array2DataT<Float16>>::registerDataFactory(dfm);
-  DataStorageFactory<Array2DataT<Float32>>::registerDataFactory(dfm);
-  DataStorageFactory<Array2DataT<Int8>>::registerDataFactory(dfm);
-  DataStorageFactory<Array2DataT<Int16>>::registerDataFactory(dfm);
-  DataStorageFactory<Array2DataT<Int32>>::registerDataFactory(dfm);
-  DataStorageFactory<Array2DataT<Int64>>::registerDataFactory(dfm);
-  DataStorageFactory<Array2DataT<Real2>>::registerDataFactory(dfm);
-  DataStorageFactory<Array2DataT<Real3>>::registerDataFactory(dfm);
-  DataStorageFactory<Array2DataT<Real2x2>>::registerDataFactory(dfm);
-  DataStorageFactory<Array2DataT<Real3x3>>::registerDataFactory(dfm);
-}
+ARCANE_INTERNAL_INSTANTIATE_TEMPLATE_FOR_NUMERIC_DATATYPE2(Array2DataT);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
