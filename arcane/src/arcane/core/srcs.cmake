@@ -485,6 +485,8 @@ set(ARCANE_ORIGINAL_SOURCES
   EntryPoint.cc
   EntryPoint.h
   EnumeratorTraceWrapper.h
+  ExternalPartitionConstraint.h
+  ExternalPartitionConstraint.cc
   Factory.h
   FactoryService.cc
   FactoryService.h

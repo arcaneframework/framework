@@ -118,7 +118,6 @@ set( ARCANE_SOURCES
   MeshVariables.h
   MeshPartitionConstraintMng.cc
   MeshPartitionConstraintMng.h
-  ExternalPartitionConstraint.cc
   ExternalPartitionConstraint.h
   ParticleFamily.cc
   ParticleFamily.h
