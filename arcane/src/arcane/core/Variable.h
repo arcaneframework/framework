@@ -255,5 +255,5 @@ class ARCANE_CORE_EXPORT Variable
 
 #endif  
 
-#include "arcane/VariableScalar.h"
-#include "arcane/VariableArray.h"
+#include "arcane/core/VariableScalar.h"
+#include "arcane/core/VariableArray.h"

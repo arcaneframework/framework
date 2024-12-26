@@ -83,6 +83,15 @@ set(ARCANE_INTERNAL_SOURCES
   )
 
 set(ARCANE_ORIGINAL_SOURCES
+  # Les fichiers suivants sont en premier car ce sont
+  # les plus longs à compiler
+  Array2Variable.cc
+  Array2Variable.h
+  VariableArray.cc
+  VariableArray.h
+  MeshVariableTpl.cc
+  MeshVariableTplArray.cc
+
   AbstractModule.h
   ApplicationBuildInfo.h
   ApplicationBuildInfo.cc
@@ -395,8 +404,6 @@ set(ARCANE_ORIGINAL_SOURCES
   Algorithm.h
   ArcaneException.cc
   ArcaneVersion.h
-  Array2Variable.cc
-  Array2Variable.h
   Assertion.cc
   Assertion.h
   BasicModule.cc
@@ -529,8 +536,6 @@ set(ARCANE_ORIGINAL_SOURCES
   MeshVariableRef.h
   MeshVariableScalarRef.h
   MeshVariableScalarRefT.H
-  MeshVariableTpl.cc
-  MeshVariableTplArray.cc
   MeshVisitor.cc
   MeshVisitor.h
   ModuleBuildInfo.cc
@@ -620,8 +625,6 @@ set(ARCANE_ORIGINAL_SOURCES
   Variable.cc
   Variable.h
   VariableAccessor.h
-  VariableArray.cc
-  VariableArray.h
   VariableBuildInfo.cc
   VariableCollection.cc
   VariableComputeFunction.h
