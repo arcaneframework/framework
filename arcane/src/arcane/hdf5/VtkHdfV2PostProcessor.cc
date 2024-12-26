@@ -29,8 +29,9 @@
 #include "arcane/core/IParallelMng.h"
 #include "arcane/core/IMesh.h"
 
-#include "arcane/std/Hdf5Utils.h"
-#include "arcane/std/VtkHdfV2PostProcessor_axl.h"
+#include "arcane/hdf5/Hdf5Utils.h"
+#include "arcane/hdf5/VtkHdfV2PostProcessor_axl.h"
+//TODO: mettre 'VtkCellTypes' ailleurs.
 #include "arcane/std/internal/VtkCellTypes.h"
 
 #include <map>

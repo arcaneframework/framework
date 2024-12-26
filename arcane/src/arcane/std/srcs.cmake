@@ -152,7 +152,5 @@ set(AXL_FILES
   SimpleCsvComparator
   SplitSDMeshPartitioner
   KdiPostProcessor
-  VtkHdfPostProcessor
-  VtkHdfV2PostProcessor
   VtkPolyhedralMeshIO
   )
