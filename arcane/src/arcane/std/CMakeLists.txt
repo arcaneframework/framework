@@ -184,8 +184,14 @@ if (ARCANE_HAS_KDI_PYTHON)
   target_link_libraries(arcane_std PRIVATE Python::Python Python::NumPy)
 endif()
 
-target_link_libraries(arcane_std PUBLIC $<TARGET_NAME_IF_EXISTS:Arccore::arccore_message_passing_mpi>)
-target_link_libraries(arcane_std PUBLIC $<TARGET_NAME_IF_EXISTS:Arcane::arcane_hdf5>)
+if (TARGET Arccore::arccore_message_passing_mpi)
+  target_link_libraries(arcane_std PUBLIC Arccore::arccore_message_passing_mpi)
+endif()
+
+# Ne dépend pas de HDF5. C'était le cas jusqu'à la version 3 de Arcane.
+# Maintenant, les utilisateurs doivent directement ajouter 'arcane_hdf5'
+#target_link_libraries(arcane_std PUBLIC $<TARGET_NAME_IF_EXISTS:Arcane::arcane_hdf5>)
+
 target_link_libraries(arcane_std PUBLIC arcane_impl arcane_core)
 
 # TODO: il semblerait qu'on ait besoin de rajouter stdc++fs pour que link passe avec le
