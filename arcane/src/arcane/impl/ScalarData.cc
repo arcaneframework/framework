@@ -437,19 +437,7 @@ registerScalarDataFactory(IDataFactoryMng* dfm)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template class ScalarDataT<Byte>;
-template class ScalarDataT<Real>;
-template class ScalarDataT<BFloat16>;
-template class ScalarDataT<Float16>;
-template class ScalarDataT<Float32>;
-template class ScalarDataT<Int8>;
-template class ScalarDataT<Int16>;
-template class ScalarDataT<Int32>;
-template class ScalarDataT<Int64>;
-template class ScalarDataT<Real2>;
-template class ScalarDataT<Real3>;
-template class ScalarDataT<Real2x2>;
-template class ScalarDataT<Real3x3>;
+ARCANE_INTERNAL_INSTANTIATE_TEMPLATE_FOR_NUMERIC_DATATYPE(ScalarDataT);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
