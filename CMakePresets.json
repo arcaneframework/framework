@@ -13,7 +13,7 @@
             "description": "Default build using Arcane",
             "cacheVariables": {
                 "ARCANEFRAMEWORK_BUILD_COMPONENTS" : "Arcane",
-                "CMAKE_BUILD_TYPE" : "RelWithDebInfo",
+                "CMAKE_BUILD_TYPE" : "Release",
                 "ARCANE_DISABLE_DEPRECATED_WARNINGS" : "TRUE",
                 "BUILD_SHARED_LIBS" : "TRUE",
                 "ARCANE_ENABLE_TESTS" : "FALSE",
