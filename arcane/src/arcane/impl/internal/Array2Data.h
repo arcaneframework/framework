@@ -22,6 +22,7 @@
 #include "arcane/utils/Array2.h"
 #include "arcane/utils/MemoryView.h"
 #include "arcane/utils/Ref.h"
+#include "arcane/utils/FatalErrorException.h"
 
 #include "arcane/core/IData.h"
 #include "arcane/core/IDataVisitor.h"

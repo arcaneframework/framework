@@ -13,6 +13,8 @@
 
 #include "arcane/impl/internal/ArrayData.h"
 
+#include "arcane/utils/NumericTypes.h"
+
 #include "arcane/impl/DataStorageFactory.h"
 
 /*---------------------------------------------------------------------------*/
