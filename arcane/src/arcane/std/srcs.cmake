@@ -150,6 +150,7 @@ set(AXL_FILES
   PDESRandomNumberGenerator
   SimpleCsvOutput
   SimpleCsvComparator
+  SplitSDMeshPartitioner
   KdiPostProcessor
   VtkHdfPostProcessor
   VtkHdfV2PostProcessor

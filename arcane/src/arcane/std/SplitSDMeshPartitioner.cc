@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -21,24 +21,23 @@
 #include "arcane/utils/Convert.h"
 #include "arcane/utils/Array.h"
 
-#include "arcane/ISubDomain.h"
-#include "arcane/IParallelMng.h"
-#include "arcane/ItemEnumerator.h"
-#include "arcane/IPrimaryMesh.h"
-#include "arcane/Properties.h"
-#include "arcane/ItemGroup.h"
-#include "arcane/Service.h"
-#include "arcane/Timer.h"
-#include "arcane/FactoryService.h"
-#include "arcane/ItemPrinter.h"
-#include "arcane/IItemFamily.h"
-#include "arcane/MeshVariable.h"
-#include "arcane/VariableBuildInfo.h"
+#include "arcane/core/ISubDomain.h"
+#include "arcane/core/IParallelMng.h"
+#include "arcane/core/ItemEnumerator.h"
+#include "arcane/core/IPrimaryMesh.h"
+#include "arcane/core/Properties.h"
+#include "arcane/core/ItemGroup.h"
+#include "arcane/core/Service.h"
+#include "arcane/core/Timer.h"
+#include "arcane/core/FactoryService.h"
+#include "arcane/core/ItemPrinter.h"
+#include "arcane/core/IItemFamily.h"
+#include "arcane/core/MeshVariable.h"
+#include "arcane/core/VariableBuildInfo.h"
 #include "arcane/std/MeshPartitionerBase.h"
+#include "arcane/std/SplitSDMeshPartitioner.h"
 
 #include <map>
-
-#include "arcane/cea/SplitSDMeshPartitioner.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

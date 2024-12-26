@@ -20,8 +20,7 @@
 /*---------------------------------------------------------------------------*/
 #include "arcane/std/MeshPartitionerBase.h"
 
-#include "arcane/cea/SplitSDMeshPartitioner_axl.h"
-
+#include "arcane/std/SplitSDMeshPartitioner_axl.h"
 
 #define MPICH_SKIP_MPICXX
 #define OMPI_SKIP_MPICXX

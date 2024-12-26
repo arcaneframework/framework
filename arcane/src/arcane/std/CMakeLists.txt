@@ -158,6 +158,13 @@ if (ARCANE_HAS_KDI_PYTHON)
   )
 endif()
 
+if(MPI_FOUND)
+  list(APPEND ARCANE_SOURCES
+    SplitSDMeshPartitioner.cc
+    SplitSDMeshPartitioner.h
+  )
+endif()
+
 # ----------------------------------------------------------------------------
 
 arcane_add_library(arcane_std
