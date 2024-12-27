@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* RunCommandMaterialEnumerate.h                               (C) 2000-2024 */
 /*                                                                           */
-/* Helpers et macros pour exécuter une boucle sur une liste d'envcell        */
+/* Exécution d'une boucle sur une liste de constituants.                     */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_ACCELERATOR_RUNCOMMANDMATERIALENUMERATE_H
 #define ARCANE_ACCELERATOR_RUNCOMMANDMATERIALENUMERATE_H
@@ -29,8 +29,104 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+namespace Arcane::Accelerator
+{
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Index d'une boucle accélérateur sur les matériaux ou milieux.
+ *
+ * Cette classe permet de récupérer un EnvItemLocalId (pour un milieu) ou
+ * un MatItemLocalId (pour un matériau) ainsi que le CellLocalId de la maille
+ * globale associée.
+ */
+template <typename ConstituentItemLocalIdType_>
+class ConstituentAndGlobalCellIteratorValue
+{
+ public:
+
+  using ConstituentItemLocalIdType = ConstituentItemLocalIdType_;
+  using ComponentItemLocalId = Arcane::Materials::ComponentItemLocalId;
+  using MatVarIndex = Arcane::Materials::MatVarIndex;
+
+ public:
+
+  //! Struct interne simple pour éviter l'usage d'un std::tuple pour l'opérateur()
+  struct Data
+  {
+   public:
+
+    constexpr ARCCORE_HOST_DEVICE Data(ConstituentItemLocalIdType mvi, CellLocalId cid)
+    : m_mvi(mvi)
+    , m_cid(cid)
+    {}
+
+   public:
+
+    ConstituentItemLocalIdType m_mvi;
+    CellLocalId m_cid;
+  };
+
+ public:
+
+  constexpr ARCCORE_HOST_DEVICE ConstituentAndGlobalCellIteratorValue(ConstituentItemLocalIdType mvi, CellLocalId cid, Int32 index)
+  : m_internal_data{ mvi, cid }
+  , m_index(index)
+  {
+  }
+
+  /*!
+   * \brief Cet opérateur permet de renvoyer le couple [ConstituentItemLocalIdType, CellLocalId].
+   *
+   * L'utilisation classique est :
+   *
+   * \code
+   * // Pour un milieu \a envcellsv
+   * // evi est de type EnvItemLocalId
+   * cmd << RUNCOMMAND_MAT_ENUMERATE(EnvAndGlobalCell, iter, envcellsv) {
+   *   auto [evi, cid] = iter();
+   * }
+   * // Pour un matériau \a matcellsv
+   * // mvi est de type MatItemLocalId
+   * cmd << RUNCOMMAND_MAT_ENUMERATE(MatAndGlobalCell, iter, matcellsv) {
+   *   auto [mvi, cid] = iter();
+   * }
+   * \endcode
+   */
+  constexpr ARCCORE_HOST_DEVICE Data operator()()
+  {
+    return m_internal_data;
+  }
+
+  //! Accesseur sur la partie MatVarIndex
+  constexpr ARCCORE_HOST_DEVICE ConstituentItemLocalIdType varIndex() const { return m_internal_data.m_mvi; };
+
+  //! Accesseur sur la partie cell local id
+  constexpr ARCCORE_HOST_DEVICE CellLocalId globalCellId() const { return m_internal_data.m_cid; }
+
+  //! Index de l'itération courante
+  constexpr ARCCORE_HOST_DEVICE Int32 index() const { return m_index; }
+
+ private:
+
+  Data m_internal_data;
+  Int32 m_index = -1;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+} // namespace Arcane::Accelerator
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 namespace Arcane::Accelerator::impl
 {
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 class MatCommandContainerBase
 {
@@ -293,62 +389,10 @@ class EnvAndGlobalCellRunCommand
 
  public:
 
-  /*!
-   * \brief Classe helper pour l'accès au MatVarIndex et au CellLocalId à travers les
-   *        RUNCOMMAND_MAT_ENUMERATE(EnvAndGlobalCell...
-   */
-  class Accessor
-  {
+  //! Type de l'accesseur de la boucle
+  using Accessor = ConstituentAndGlobalCellIteratorValue<Arcane::Materials::EnvItemLocalId>;
 
-   public:
-
-    //! Struct interne simple pour éviter l'usage d'un std::tuple pour l'opérateur()
-    struct Data
-    {
-      ComponentItemLocalId m_mvi;
-      CellLocalId m_cid;
-    };
-
-   public:
-
-    constexpr ARCCORE_HOST_DEVICE Accessor(ComponentItemLocalId mvi, CellLocalId cid, Int32 index)
-    : m_internal_data{ mvi, cid }
-    , m_index(index)
-    {
-    }
-
-    /*!
-     * \brief Cet opérateur permet de renvoyer le couple [MatVarIndex, LocalCellId].
-     *
-     * L'utilisation classique est :
-     *
-     * \code
-     * cmd << RUNCOMMAND_MAT_ENUMERATE(EnvAndGlobalCell, evi, envcellsv) {
-     *   auto [mvi, cid] = evi();
-     * }
-     * \endcode
-     *
-     * où evi est le type de cette classe
-     */
-    ARCCORE_HOST_DEVICE Data operator()()
-    {
-      return { m_internal_data.m_mvi, m_internal_data.m_cid };
-    }
-
-    //! Accesseur sur la partie MatVarIndex
-    ARCCORE_HOST_DEVICE ComponentItemLocalId varIndex() const { return m_internal_data.m_mvi; };
-
-    //! Accesseur sur la partie cell local id
-    ARCCORE_HOST_DEVICE CellLocalId globalCellId() const { return m_internal_data.m_cid; }
-
-    //! Index de l'itération courante
-    ARCCORE_HOST_DEVICE Int32 index() const { return m_index; }
-
-   private:
-
-    Data m_internal_data;
-    Int32 m_index = -1;
-  };
+ public:
 
   /*!
    * \brief Conteneur contenant les informations nécessaires pour la commande.
@@ -416,62 +460,8 @@ class MatAndGlobalCellRunCommand
 
  public:
 
-  /*!
-   * \brief Classe helper pour l'accès au MatVarIndex et au CellLocalId à travers les
-   *        RUNCOMMAND_MAT_ENUMERATE(EnvAndGlobalCell...
-   */
-  class Accessor
-  {
-
-   public:
-
-    //! Struct interne simple pour éviter l'usage d'un std::tuple pour l'opérateur()
-    struct Data
-    {
-      ComponentItemLocalId m_mvi;
-      CellLocalId m_cid;
-    };
-
-   public:
-
-    constexpr ARCCORE_HOST_DEVICE Accessor(ComponentItemLocalId mvi, CellLocalId cid, Int32 index)
-    : m_internal_data{ mvi, cid }
-    , m_index(index)
-    {
-    }
-
-    /*!
-     * \brief Cet opérateur permet de renvoyer le couple [MatVarIndex, LocalCellId].
-     *
-     * L'utilisation classique est :
-     *
-     * \code
-     * cmd << RUNCOMMAND_MAT_ENUMERATE(EnvAndGlobalCell, evi, envcellsv) {
-     *   auto [mvi, cid] = evi();
-     * }
-     * \endcode
-     *
-     * où evi est le type de cette classe
-     */
-    ARCCORE_HOST_DEVICE Data operator()()
-    {
-      return { m_internal_data.m_mvi, m_internal_data.m_cid };
-    }
-
-    ///! Accesseur sur la partie MatVarIndex
-    ARCCORE_HOST_DEVICE ComponentItemLocalId varIndex() const { return m_internal_data.m_mvi; };
-
-    ///! Accesseur sur la partie cell local id
-    ARCCORE_HOST_DEVICE CellLocalId globalCellId() const { return m_internal_data.m_cid; }
-
-    //! Index de l'itération courante
-    ARCCORE_HOST_DEVICE Int32 index() const { return m_index; }
-
-   private:
-
-    Data m_internal_data;
-    Int32 m_index = -1;
-  };
+  //! Type de l'accesseur de la boucle
+  using Accessor = ConstituentAndGlobalCellIteratorValue<Arcane::Materials::MatItemLocalId>;
 
   /*!
    * \brief Conteneur contenant les informations nécessaires pour la commande.
@@ -601,7 +591,7 @@ class RunCommandMatItemEnumeratorTraitsT<Arcane::Materials::EnvCell>
 {
  public:
 
-  using EnumeratorType = Arcane::Materials::ComponentItemLocalId;
+  using EnumeratorType = Arcane::Materials::EnvItemLocalId;
   using ContainerType = EnvCellRunCommand::Container;
   using MatCommandType = EnvCellRunCommand;
 
@@ -626,7 +616,7 @@ class RunCommandMatItemEnumeratorTraitsT<Arcane::Materials::MatCell>
 {
  public:
 
-  using EnumeratorType = Arcane::Materials::ComponentItemLocalId;
+  using EnumeratorType = Arcane::Materials::MatItemLocalId;
   using ContainerType = MatCellRunCommand::Container;
   using MatCommandType = MatCellRunCommand;
 
