@@ -510,7 +510,7 @@ template <typename DataType, typename ReduceFunctor>
 class HostDeviceReducer2
 : public HostDeviceReducerBase<DataType, ReduceFunctor>
 {
-  friend impl::KernelReducerHelper;
+  friend impl::KernelRemainingArgsHelper;
   friend ::Arcane::impl::HostReducerHelper;
 
  public:

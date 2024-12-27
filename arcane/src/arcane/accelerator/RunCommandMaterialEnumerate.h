@@ -128,7 +128,7 @@ namespace Arcane::Accelerator::impl
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class MatCommandContainerBase
+class ConstituentCommandContainerBase
 {
  protected:
 
@@ -138,7 +138,7 @@ class MatCommandContainerBase
 
  protected:
 
-  explicit MatCommandContainerBase(ComponentItemVectorView view)
+  explicit ConstituentCommandContainerBase(ComponentItemVectorView view)
   : m_items(view)
   {
     _init();
@@ -174,7 +174,7 @@ class MatCommandContainerBase
  * qui correspond à l'énumérateur.
  */
 template <typename MatItemType>
-class RunCommandMatItemEnumeratorTraitsT;
+class RunCommandConstituentItemEnumeratorTraitsT;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -262,16 +262,16 @@ class EnvCellRunCommand
    * \brief Conteneur contenant les informations nécessaires pour la commande.
    */
   class Container
-  : public impl::MatCommandContainerBase
+  : public impl::ConstituentCommandContainerBase
   {
    public:
 
     explicit Container(IMeshEnvironment* env)
-    : impl::MatCommandContainerBase(env->envView())
+    : impl::ConstituentCommandContainerBase(env->envView())
     {
     }
     explicit Container(EnvCellVectorView view)
-    : impl::MatCommandContainerBase(view)
+    : impl::ConstituentCommandContainerBase(view)
     {
     }
 
@@ -327,16 +327,16 @@ class MatCellRunCommand
    * \brief Conteneur contenant les informations nécessaires pour la commande.
    */
   class Container
-  : public impl::MatCommandContainerBase
+  : public impl::ConstituentCommandContainerBase
   {
    public:
 
     explicit Container(IMeshMaterial* mat)
-    : impl::MatCommandContainerBase(mat->matView())
+    : impl::ConstituentCommandContainerBase(mat->matView())
     {
     }
     explicit Container(MatCellVectorView view)
-    : impl::MatCommandContainerBase(view)
+    : impl::ConstituentCommandContainerBase(view)
     {
     }
 
@@ -398,16 +398,16 @@ class EnvAndGlobalCellRunCommand
    * \brief Conteneur contenant les informations nécessaires pour la commande.
    */
   class Container
-  : public impl::MatCommandContainerBase
+  : public impl::ConstituentCommandContainerBase
   {
    public:
 
     explicit Container(IMeshEnvironment* env)
-    : impl::MatCommandContainerBase(env->envView())
+    : impl::ConstituentCommandContainerBase(env->envView())
     {
     }
     explicit Container(EnvCellVectorView view)
-    : impl::MatCommandContainerBase(view)
+    : impl::ConstituentCommandContainerBase(view)
     {
     }
 
@@ -467,16 +467,16 @@ class MatAndGlobalCellRunCommand
    * \brief Conteneur contenant les informations nécessaires pour la commande.
    */
   class Container
-  : public impl::MatCommandContainerBase
+  : public impl::ConstituentCommandContainerBase
   {
    public:
 
     explicit Container(IMeshMaterial* env)
-    : impl::MatCommandContainerBase(env->matView())
+    : impl::ConstituentCommandContainerBase(env->matView())
     {
     }
     explicit Container(MatCellVectorView view)
-    : impl::MatCommandContainerBase(view)
+    : impl::ConstituentCommandContainerBase(view)
     {
     }
 
@@ -516,7 +516,7 @@ class MatAndGlobalCellRunCommand
 
 //! Spécialisation pour une vue sur un milieu et la maille globale associée
 template <>
-class RunCommandMatItemEnumeratorTraitsT<Arcane::Materials::EnvAndGlobalCell>
+class RunCommandConstituentItemEnumeratorTraitsT<Arcane::Materials::EnvAndGlobalCell>
 {
  public:
 
@@ -541,7 +541,7 @@ class RunCommandMatItemEnumeratorTraitsT<Arcane::Materials::EnvAndGlobalCell>
 
 //! Spécialisation pour une vue sur un matériau et la maille globale associée
 template <>
-class RunCommandMatItemEnumeratorTraitsT<Arcane::Materials::MatAndGlobalCell>
+class RunCommandConstituentItemEnumeratorTraitsT<Arcane::Materials::MatAndGlobalCell>
 {
  public:
 
@@ -566,7 +566,7 @@ class RunCommandMatItemEnumeratorTraitsT<Arcane::Materials::MatAndGlobalCell>
 
 //! Spécialisation pour une vue sur les AllEvnCell
 template <>
-class RunCommandMatItemEnumeratorTraitsT<Arcane::Materials::AllEnvCell>
+class RunCommandConstituentItemEnumeratorTraitsT<Arcane::Materials::AllEnvCell>
 {
  public:
 
@@ -587,7 +587,7 @@ class RunCommandMatItemEnumeratorTraitsT<Arcane::Materials::AllEnvCell>
 
 //! Spécialisation pour une vue sur un milieu.
 template <>
-class RunCommandMatItemEnumeratorTraitsT<Arcane::Materials::EnvCell>
+class RunCommandConstituentItemEnumeratorTraitsT<Arcane::Materials::EnvCell>
 {
  public:
 
@@ -612,7 +612,7 @@ class RunCommandMatItemEnumeratorTraitsT<Arcane::Materials::EnvCell>
 
 //! Spécialisation pour une vue sur un matériau
 template <>
-class RunCommandMatItemEnumeratorTraitsT<Arcane::Materials::MatCell>
+class RunCommandConstituentItemEnumeratorTraitsT<Arcane::Materials::MatCell>
 {
  public:
 
@@ -639,17 +639,17 @@ class RunCommandMatItemEnumeratorTraitsT<Arcane::Materials::MatCell>
 /*
  * Surcharge de la fonction de lancement de kernel pour GPU pour les ComponentItemLocalId et CellLocalId
  */
-template <typename ContainerType, typename Lambda, typename... ReducerArgs> __global__ void
-doMatContainerGPULambda(ContainerType items, Lambda func, ReducerArgs... reducer_args)
+template <typename ContainerType, typename Lambda, typename... RemainingArgs> __global__ void
+doMatContainerGPULambda(ContainerType items, Lambda func, RemainingArgs... remaining_args)
 {
   auto privatizer = privatize(func);
   auto& body = privatizer.privateCopy();
 
   Int32 i = blockDim.x * blockIdx.x + threadIdx.x;
   if (i < items.size()) {
-    body(items[i], reducer_args...);
+    body(items[i], remaining_args...);
   }
-  KernelReducerHelper::applyReducerArgs(i, reducer_args...);
+  KernelRemainingArgsHelper::applyRemainingArgs(i, remaining_args...);
 }
 
 #endif // ARCANE_COMPILING_CUDA || ARCANE_COMPILING_HIP
@@ -659,22 +659,23 @@ doMatContainerGPULambda(ContainerType items, Lambda func, ReducerArgs... reducer
 
 #if defined(ARCANE_COMPILING_SYCL)
 
-template <typename ContainerType, typename Lambda, typename... ReducerArgs>
+template <typename ContainerType, typename Lambda, typename... RemainingArgs>
 class DoMatContainerSYCLLambda
 {
  public:
 
-  void operator()(sycl::nd_item<1> x, ContainerType items, Lambda func, ReducerArgs... reducer_args) const
+  void operator()(sycl::nd_item<1> x, ContainerType items, Lambda func, RemainingArgs... remaining_args) const
   {
     auto privatizer = privatize(func);
     auto& body = privatizer.privateCopy();
 
     Int32 i = static_cast<Int32>(x.get_global_id(0));
     if (i < items.size()) {
-      body(items[i], reducer_args...);
+      body(items[i], remaining_args...);
     }
-    KernelReducerHelper::applyReducerArgs(x, reducer_args...);
+    KernelReducerHelper::applyReducerArgs(x, remaining_args...);
   }
+
   void operator()(sycl::id<1> x, ContainerType items, Lambda func) const
   {
     auto privatizer = privatize(func);
@@ -692,67 +693,67 @@ class DoMatContainerSYCLLambda
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template <typename ContainerType, typename Lambda, typename... ReducerArgs>
-void _doMatItemsLambda(Int32 base_index, Int32 size, ContainerType items, const Lambda& func, ReducerArgs... reducer_args)
+template <typename ContainerType, typename Lambda, typename... RemainingArgs>
+void _doConstituentItemsLambda(Int32 base_index, Int32 size, ContainerType items,
+                               const Lambda& func, RemainingArgs... remaining_args)
 {
   auto privatizer = privatize(func);
   auto& body = privatizer.privateCopy();
 
   Int32 last_value = base_index + size;
   for (Int32 i = base_index; i < last_value; ++i) {
-    body(items[i], reducer_args...);
+    body(items[i], remaining_args...);
   }
-  ::Arcane::impl::HostReducerHelper::applyReducerArgs(reducer_args...);
+  ::Arcane::impl::HostReducerHelper::applyReducerArgs(remaining_args...);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template <typename TraitsType, typename... ReducerArgs>
-class GenericMatCommandArgs
+template <typename TraitsType, typename... RemainingArgs>
+class GenericConstituentCommandArgs
 {
  public:
 
   using ContainerType = typename TraitsType::ContainerType;
-  using MatCommandType = typename TraitsType::MatCommandType;
 
  public:
 
-  explicit GenericMatCommandArgs(const ContainerType& container, const ReducerArgs&... reducer_args)
+  explicit GenericConstituentCommandArgs(const ContainerType& container, const RemainingArgs&... remaining_args)
   : m_container(container)
-  , m_reducer_args(reducer_args...)
+  , m_remaining_args(remaining_args...)
   {}
 
  public:
 
   ContainerType m_container;
-  std::tuple<ReducerArgs...> m_reducer_args;
+  std::tuple<RemainingArgs...> m_remaining_args;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template <typename MatCommandType, typename... ReducerArgs>
-class GenericMatCommand
+template <typename ConstituentCommandType, typename... RemainingArgs>
+class GenericConstituentCommand
 {
  public:
 
-  using ContainerType = typename MatCommandType::Container;
+  using ContainerType = typename ConstituentCommandType::Container;
 
  public:
 
-  explicit GenericMatCommand(const MatCommandType& mat_command)
-  : m_mat_command(mat_command)
+  explicit GenericConstituentCommand(const ConstituentCommandType& command)
+  : m_command(command)
   {}
-  explicit GenericMatCommand(const MatCommandType& mat_command, const std::tuple<ReducerArgs...>& reducer_args)
-  : m_mat_command(mat_command)
-  , m_reducer_args(reducer_args)
+  explicit GenericConstituentCommand(const ConstituentCommandType& command, const std::tuple<RemainingArgs...>& remaining_args)
+  : m_command(command)
+  , m_remaining_args(remaining_args)
   {}
 
  public:
 
-  MatCommandType m_mat_command;
-  std::tuple<ReducerArgs...> m_reducer_args;
+  ConstituentCommandType m_command;
+  std::tuple<RemainingArgs...> m_remaining_args;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -766,8 +767,8 @@ class GenericMatCommand
  * - MatAndGlobalCellRunCommand
  * - MatCellRunCommand
  */
-template <typename ContainerType, typename Lambda, typename... ReducerArgs> void
-_applyEnvCells(RunCommand& command, ContainerType items, const Lambda& func, const ReducerArgs&... reducer_args)
+template <typename ContainerType, typename Lambda, typename... RemainingArgs> void
+_applyConstituentCells(RunCommand& command, ContainerType items, const Lambda& func, const RemainingArgs&... remaining_args)
 {
   using namespace Arcane::Materials;
   // TODO: fusionner la partie commune avec 'applyLoop'
@@ -781,21 +782,24 @@ _applyEnvCells(RunCommand& command, ContainerType items, const Lambda& func, con
   launch_info.beginExecute();
   switch (exec_policy) {
   case eExecutionPolicy::CUDA:
-    _applyKernelCUDA(launch_info, ARCANE_KERNEL_CUDA_FUNC(doMatContainerGPULambda) < ContainerType, Lambda, ReducerArgs... >, func, items, reducer_args...);
+    _applyKernelCUDA(launch_info, ARCANE_KERNEL_CUDA_FUNC(doMatContainerGPULambda) < ContainerType, Lambda, RemainingArgs... >,
+                     func, items, remaining_args...);
     break;
   case eExecutionPolicy::HIP:
-    _applyKernelHIP(launch_info, ARCANE_KERNEL_HIP_FUNC(doMatContainerGPULambda) < ContainerType, Lambda, ReducerArgs... >, func, items, reducer_args...);
+    _applyKernelHIP(launch_info, ARCANE_KERNEL_HIP_FUNC(doMatContainerGPULambda) < ContainerType, Lambda, RemainingArgs... >,
+                    func, items, remaining_args...);
     break;
   case eExecutionPolicy::SYCL:
-    _applyKernelSYCL(launch_info, ARCANE_KERNEL_SYCL_FUNC(impl::DoMatContainerSYCLLambda) < ContainerType, Lambda, ReducerArgs... > {}, func, items, reducer_args...);
+    _applyKernelSYCL(launch_info, ARCANE_KERNEL_SYCL_FUNC(impl::DoMatContainerSYCLLambda) < ContainerType, Lambda, RemainingArgs... > {},
+                     func, items, remaining_args...);
     break;
   case eExecutionPolicy::Sequential:
-    _doMatItemsLambda(0, vsize, items, func, reducer_args...);
+    _doConstituentItemsLambda(0, vsize, items, func, remaining_args...);
     break;
   case eExecutionPolicy::Thread:
     arcaneParallelFor(0, vsize, launch_info.loopRunInfo(),
                       [&](Int32 begin, Int32 size) {
-                        _doMatItemsLambda(begin, size, items, func, reducer_args...);
+                        _doConstituentItemsLambda(begin, size, items, func, remaining_args...);
                       });
     break;
   default:
@@ -807,22 +811,25 @@ _applyEnvCells(RunCommand& command, ContainerType items, const Lambda& func, con
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template <typename MatCommandType, typename... ReducerArgs, typename Lambda>
-void operator<<(const GenericMatCommand<MatCommandType, ReducerArgs...>& c, const Lambda& func)
+template <typename ConstituentCommandType, typename... RemainingArgs, typename Lambda>
+void operator<<(const GenericConstituentCommand<ConstituentCommandType, RemainingArgs...>& c, const Lambda& func)
 {
-  if constexpr (sizeof...(ReducerArgs) > 0) {
-    std::apply([&](auto... vs) { impl::_applyEnvCells(c.m_mat_command.m_command, c.m_mat_command.m_items, func, vs...); }, c.m_reducer_args);
+  if constexpr (sizeof...(RemainingArgs) > 0) {
+    std::apply([&](auto... vs) {
+      impl::_applyConstituentCells(c.m_command.m_command, c.m_command.m_items, func, vs...);
+    },
+               c.m_remaining_args);
   }
   else
-    impl::_applyEnvCells(c.m_mat_command.m_command, c.m_mat_command.m_items, func);
+    impl::_applyConstituentCells(c.m_command.m_command, c.m_command.m_items, func);
 }
 
-template <typename MatItemType, typename MatItemContainerType, typename... ReducerArgs> auto
-makeExtendedMatItemEnumeratorLoop(const MatItemContainerType& container,
-                                  const ReducerArgs&... reducer_args)
+template <typename ConstituentItemType, typename ConstituentItemContainerType, typename... RemainingArgs> auto
+makeExtendedMatItemEnumeratorLoop(const ConstituentItemContainerType& container,
+                                  const RemainingArgs&... remaining_args)
 {
-  using TraitsType = RunCommandMatItemEnumeratorTraitsT<MatItemType>;
-  return GenericMatCommandArgs<TraitsType, ReducerArgs...>(TraitsType::createContainer(container), reducer_args...);
+  using TraitsType = RunCommandConstituentItemEnumeratorTraitsT<ConstituentItemType>;
+  return GenericConstituentCommandArgs<TraitsType, RemainingArgs...>(TraitsType::createContainer(container), remaining_args...);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -836,11 +843,11 @@ makeExtendedMatItemEnumeratorLoop(const MatItemContainerType& container,
 namespace Arcane::Accelerator
 {
 
-template <typename TraitsType, typename... ReducerArgs> auto
-operator<<(RunCommand& command, const impl::GenericMatCommandArgs<TraitsType, ReducerArgs...>& args)
+template <typename TraitsType, typename... RemainingArgs> auto
+operator<<(RunCommand& command, const impl::GenericConstituentCommandArgs<TraitsType, RemainingArgs...>& args)
 {
   using MatCommandType = typename TraitsType::MatCommandType;
-  return impl::GenericMatCommand<MatCommandType, ReducerArgs...>(args.m_container.createCommand(command), args.m_reducer_args);
+  return impl::GenericConstituentCommand<MatCommandType, RemainingArgs...>(args.m_container.createCommand(command), args.m_remaining_args);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -849,7 +856,7 @@ operator<<(RunCommand& command, const impl::GenericMatCommandArgs<TraitsType, Re
 inline auto
 operator<<(RunCommand& command, const impl::MatAndGlobalCellRunCommand::Container& view)
 {
-  return impl::GenericMatCommand<impl::MatAndGlobalCellRunCommand>(view.createCommand(command));
+  return impl::GenericConstituentCommand<impl::MatAndGlobalCellRunCommand>(view.createCommand(command));
 }
 
 /*---------------------------------------------------------------------------*/
@@ -858,7 +865,7 @@ operator<<(RunCommand& command, const impl::MatAndGlobalCellRunCommand::Containe
 inline auto
 operator<<(RunCommand& command, const impl::EnvAndGlobalCellRunCommand::Container& view)
 {
-  return impl::GenericMatCommand<impl::EnvAndGlobalCellRunCommand>(view.createCommand(command));
+  return impl::GenericConstituentCommand<impl::EnvAndGlobalCellRunCommand>(view.createCommand(command));
 }
 
 /*---------------------------------------------------------------------------*/
@@ -867,7 +874,7 @@ operator<<(RunCommand& command, const impl::EnvAndGlobalCellRunCommand::Containe
 inline auto
 operator<<(RunCommand& command, const impl::EnvCellRunCommand::Container& view)
 {
-  return impl::GenericMatCommand<impl::EnvCellRunCommand>(view.createCommand(command));
+  return impl::GenericConstituentCommand<impl::EnvCellRunCommand>(view.createCommand(command));
 }
 
 /*---------------------------------------------------------------------------*/
@@ -876,7 +883,7 @@ operator<<(RunCommand& command, const impl::EnvCellRunCommand::Container& view)
 inline auto
 operator<<(RunCommand& command, const impl::MatCellRunCommand::Container& view)
 {
-  return impl::GenericMatCommand<impl::MatCellRunCommand>(view.createCommand(command));
+  return impl::GenericConstituentCommand<impl::MatCellRunCommand>(view.createCommand(command));
 }
 
 /*---------------------------------------------------------------------------*/
@@ -887,7 +894,16 @@ operator<<(RunCommand& command, const impl::MatCellRunCommand::Container& view)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Macro pour itérer sur un matériau ou un milieu
+/*!
+ * \brief Macro pour itérer sur un matériau ou un milieu
+ *
+ * \a MatItemNameType doit être une des valeurs suivantes:
+ *
+ * - EnvAndGlobalCell
+ * - EnvCell
+ * - MatAndGlobalCell
+ * - MatCell
+ */
 #define RUNCOMMAND_MAT_ENUMERATE(MatItemNameType, iter_name, env_or_mat_vector, ...) \
   A_FUNCINFO << ::Arcane::Accelerator::impl::makeExtendedMatItemEnumeratorLoop<MatItemNameType>(env_or_mat_vector __VA_OPT__(, __VA_ARGS__)) \
              << [=] ARCCORE_HOST_DEVICE(::Arcane::Accelerator::impl::RunCommandMatItemEnumeratorTraitsT<MatItemNameType>::EnumeratorType iter_name \
