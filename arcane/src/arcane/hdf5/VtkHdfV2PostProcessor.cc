@@ -28,11 +28,10 @@
 #include "arcane/core/VariableCollection.h"
 #include "arcane/core/IParallelMng.h"
 #include "arcane/core/IMesh.h"
+#include "arcane/core/internal/VtkCellTypes.h"
 
 #include "arcane/hdf5/Hdf5Utils.h"
 #include "arcane/hdf5/VtkHdfV2PostProcessor_axl.h"
-//TODO: mettre 'VtkCellTypes' ailleurs.
-#include "arcane/std/internal/VtkCellTypes.h"
 
 #include <map>
 

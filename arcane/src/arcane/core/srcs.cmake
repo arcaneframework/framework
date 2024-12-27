@@ -80,6 +80,7 @@ set(ARCANE_INTERNAL_SOURCES
   internal/ITimeHistoryMngInternal.h
   internal/VariableUtilsInternal.h
   internal/IPolyhedralMeshModifier.h
+  internal/VtkCellTypes.h
   )
 
 set(ARCANE_ORIGINAL_SOURCES
@@ -635,8 +636,7 @@ set(ARCANE_ORIGINAL_SOURCES
   VariableDependInfo.h
   VariableDiff.h
   VariableDiff.cc
-  #VariableExpressionImpl.cc
-  #VariableExpressionImpl.h
+  VtkCellTypes.cc
   VariableFactory.cc
   VariableFactory.h
   VariableFactoryRegisterer.cc
