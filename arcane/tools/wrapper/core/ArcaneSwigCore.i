@@ -575,9 +575,6 @@ ARCANE_STD_EXHANDLER
 
 %include arcane/core/ArcaneException.h
 
-// Pour forcer l'inclusion de la bibliothèque 'arcane_std'
-%include arcane/std/ArcaneStdRegisterer.h
-
 ARCANE_STD_EXHANDLER
 %include arcane/core/MeshReaderMng.h
 %exception;
