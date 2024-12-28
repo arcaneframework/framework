@@ -29,7 +29,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arcane::Accelerator
+namespace Arcane::Materials
 {
 
 /*---------------------------------------------------------------------------*/
@@ -114,10 +114,16 @@ class ConstituentAndGlobalCellIteratorValue
   Int32 m_index = -1;
 };
 
+//! Type de la valeur de l'itérateur pour RUNCOMMAND_MAT_ENUMERATE(EnvAndGlobalCell,...)
+using EnvAndGlobalCellIteratorValue = ConstituentAndGlobalCellIteratorValue<EnvItemLocalId>;
+
+//! Type de la valeur de l'itérateur pour RUNCOMMAND_MAT_ENUMERATE(MatAndGlobalCell,...)
+using MatAndGlobalCellIteratorValue = ConstituentAndGlobalCellIteratorValue<MatItemLocalId>;
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // namespace Arcane::Accelerator
+} // namespace Arcane::Materials
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -300,7 +306,7 @@ class ConstituentAndGlobalCellRunCommandBase
 
   using ThatClass = ConstituentAndGlobalCellRunCommandBase<ConstituentItemLocalIdType_, ContainerCreateViewType_>;
   using CommandType = ThatClass;
-  using IteratorValueType = ConstituentAndGlobalCellIteratorValue<ConstituentItemLocalIdType_>;
+  using IteratorValueType = Arcane::Materials::ConstituentAndGlobalCellIteratorValue<ConstituentItemLocalIdType_>;
   using ContainerCreateViewType = ContainerCreateViewType_;
 
  public:
@@ -767,7 +773,8 @@ operator<<(RunCommand& command, const impl::MatCellRunCommand::Container& view)
  * \param iter_name est le nom de l'itérateur
  * \param env_or_mat_container est le conteneur sur lequel on itère.
  *
- * Les paramètres supplémentaires sont utilisés pour les réductions.
+ * Les paramètres supplémentaires sont utilisés pour les réductions
+ * (voir \ref arcanedoc_acceleratorapi_reduction)
  *
  * \a ConstituentItemNameType doit être une des valeurs suivantes:
  *
@@ -777,7 +784,7 @@ operator<<(RunCommand& command, const impl::MatCellRunCommand::Container& view)
  * - MatCell
  * - AllEnvCell
  *
- * \sa arcanedoc_acceleratorapi_materials
+ * Voir \ref arcanedoc_acceleratorapi_materials pour plus d'informations.
  */
 #define RUNCOMMAND_MAT_ENUMERATE(ConstituentItemNameType, iter_name, env_or_mat_container, ...) \
   A_FUNCINFO << ::Arcane::Accelerator::impl::makeExtendedConstituentItemEnumeratorLoop<ConstituentItemNameType>(env_or_mat_container __VA_OPT__(, __VA_ARGS__)) \
