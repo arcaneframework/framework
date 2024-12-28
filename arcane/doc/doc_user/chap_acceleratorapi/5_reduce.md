@@ -72,7 +72,7 @@ ____
 
 <div class="section_buttons">
 <span class="back_section_button">
-\ref arcanedoc_parallel_accelerator
+\ref arcanedoc_acceleratorapi_materials
 </span>
 <span class="next_section_button">
 \ref arcanedoc_acceleratorapi_memorypool

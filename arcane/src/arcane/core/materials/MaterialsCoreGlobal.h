@@ -173,6 +173,12 @@ using CellMatCellEnumerator = CellComponentCellEnumeratorT<MatCell>;
 //! Enumérateur sur les mailles milieux d'une maille.
 using CellEnvCellEnumerator = CellComponentCellEnumeratorT<EnvCell>;
 
+//! Index d'un MatItem dans une variable.
+using MatCellLocalId = MatItemLocalId;
+
+//! Index d'un EnvItem dans une variable.
+using EnvCellLocalId = EnvItemLocalId;
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 

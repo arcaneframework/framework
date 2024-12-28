@@ -667,4 +667,7 @@ ____
 <span class="back_section_button">
 \ref arcanedoc_acceleratorapi
 </span>
+<span class="next_section_button">
+\ref arcanedoc_accelerator_materials
+</span>
 </div>
