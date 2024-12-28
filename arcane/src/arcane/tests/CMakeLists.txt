@@ -19,8 +19,6 @@ if(GEOMETRYKERNEL_FOUND)
   set(TEST_DIRS ${TEST_DIRS} corefinement)
   set(TEST_LIBS ${TEST_LIBS} arcane_corefinement)
 endif()
-set(PKGS TBB)
-arcane_find_package(TBB)
 
 arcane_find_package(Neo QUIET)
 if (Neo_FOUND)
@@ -75,8 +73,6 @@ arcane_add_library(arcane_tests_lib
   FILES ${ARCANE_SOURCES}
   AXL_FILES ${AXL_FILES}
   )
-
-arcane_add_arccon_packages(arcane_tests_lib PRIVATE ${PKGS})
 
 add_executable(arcane_tests_exec ${ARCANE_SRC_PATH}/arcane/tests/ArcaneTestMain.cc)
 set(ARCANE_TEST_PATH ${ARCANEBUILDROOT}/src/arcane/tests)
