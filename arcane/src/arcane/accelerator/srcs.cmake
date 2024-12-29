@@ -19,6 +19,8 @@ set( ARCANE_SOURCES
   MaterialVariableViews.h
   MaterialVariableViews.cc
   MemoryCopier.cc
+  MultiThreadAlgo.h
+  MultiThreadAlgo.cc
   NumArray.h
   NumArrayViews.h
   NumArrayViews.cc
