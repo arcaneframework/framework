@@ -233,7 +233,7 @@ class DoIndirectSYCLLambda
 {
  public:
 
-  void operator()(sycl::nd_item<1> x, SmallSpan<const Int32> ids, Lambda func, RemainingArgs... reducer_args) const
+  void operator()(sycl::nd_item<1> x, SmallSpan<const Int32> ids, Lambda func, RemainingArgs... remaining_args) const
   {
     using BuilderType = TraitsType::BuilderType;
     using LocalIdType = BuilderType::ValueType;
@@ -243,9 +243,9 @@ class DoIndirectSYCLLambda
     Int32 i = static_cast<Int32>(x.get_global_id(0));
     if (i < ids.size()) {
       LocalIdType lid(ids[i]);
-      body(BuilderType::create(i, lid), reducer_args...);
+      body(BuilderType::create(i, lid), remaining_args...);
     }
-    KernelReducerHelper::applyReducerArgs(x, reducer_args...);
+    KernelRemainingArgsHelper::applyRemainingArgs(x, remaining_args...);
   }
   void operator()(sycl::id<1> x, SmallSpan<const Int32> ids, Lambda func) const
   {
@@ -376,7 +376,7 @@ void _applyKernelSYCL(impl::RunCommandLaunchInfo& launch_info, SyclKernel kernel
     Int32 b = tbi.nbBlockPerGrid();
     Int32 t = tbi.nbThreadPerBlock();
     sycl::nd_range<1> loop_size(b * t, t);
-    event = s.parallel_for(loop_size, [=](sycl::nd_item<1> i) { kernel(i, args, func, reducer_args...); });
+    event = s.parallel_for(loop_size, [=](sycl::nd_item<1> i) { kernel(i, args, func, remaining_args...); });
   }
   else {
     sycl::range<1> loop_size = launch_info.totalLoopSize();

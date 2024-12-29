@@ -530,7 +530,7 @@ class DoMatContainerSYCLLambda
     if (i < items.size()) {
       body(items[i], remaining_args...);
     }
-    KernelReducerHelper::applyReducerArgs(x, remaining_args...);
+    KernelRemainingArgsHelper::applyRemainingArgs(x, remaining_args...);
   }
 
   void operator()(sycl::id<1> x, ContainerType items, Lambda func) const
