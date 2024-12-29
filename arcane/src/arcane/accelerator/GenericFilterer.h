@@ -26,6 +26,7 @@
 #include "arcane/accelerator/RunCommandLaunchInfo.h"
 #include "arcane/accelerator/RunCommandLoop.h"
 #include "arcane/accelerator/ScanImpl.h"
+#include "arcane/accelerator/MultiThreadAlgo.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -315,7 +316,12 @@ class GenericFilteringIf
     } break;
 #endif
     case eExecutionPolicy::Thread:
-      // Pas encore implémenté en multi-thread
+      if (nb_item > 500) {
+        MultiThreadAlgo scanner;
+        Int32 v = scanner.doFilter(launch_info.loopRunInfo(), nb_item, input_iter, output_iter, select_lambda);
+        s.m_host_nb_out_storage[0] = v;
+        break;
+      }
       [[fallthrough]];
     case eExecutionPolicy::Sequential: {
       Int32 index = 0;
