@@ -104,25 +104,25 @@ class NullTaskImplementation
     loop_info.functor()->executeFunctor(loop_info.beginIndex(),loop_info.size());
   }
   void executeParallelFor(const ComplexForLoopRanges<1>& loop_ranges,
-                          [[maybe_unused]] const ParallelLoopOptions& options,
+                          [[maybe_unused]] const ForLoopRunInfo& run_info,
                           IMDRangeFunctor<1>* functor) override
   {
     functor->executeFunctor(loop_ranges);
   }
   void executeParallelFor(const ComplexForLoopRanges<2>& loop_ranges,
-                          [[maybe_unused]] const ParallelLoopOptions& options,
+                          [[maybe_unused]] const ForLoopRunInfo& run_info,
                           IMDRangeFunctor<2>* functor) override
   {
     functor->executeFunctor(loop_ranges);
   }
   void executeParallelFor(const ComplexForLoopRanges<3>& loop_ranges,
-                          [[maybe_unused]] const ParallelLoopOptions& options,
+                          [[maybe_unused]] const ForLoopRunInfo& run_info,
                           IMDRangeFunctor<3>* functor) override
   {
     functor->executeFunctor(loop_ranges);
   }
   void executeParallelFor(const ComplexForLoopRanges<4>& loop_ranges,
-                          [[maybe_unused]] const ParallelLoopOptions& options,
+                          [[maybe_unused]] const ForLoopRunInfo& run_info,
                           IMDRangeFunctor<4>* functor) override
   {
     functor->executeFunctor(loop_ranges);
