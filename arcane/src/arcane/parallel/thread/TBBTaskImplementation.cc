@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* TBBTaskImplementation.cc                                    (C) 2000-2023 */
+/* TBBTaskImplementation.cc                                    (C) 2000-2024 */
 /*                                                                           */
 /* Implémentation des tâches utilisant TBB (Intel Threads Building Blocks).  */
 /*---------------------------------------------------------------------------*/
@@ -1134,6 +1134,7 @@ executeParallelFor(const ParallelFor1DLoopInfo& loop_info)
  * \brief Exécution d'une boucle N-dimensions.
  *
  * \warning L'implémentation actuelle ne tient pas compte de \a options
+ * pour les boucles autres que une dimension.
  */
 template<int RankValue> void TBBTaskImplementation::
 _executeMDParallelFor(const ComplexForLoopRanges<RankValue>& loop_ranges,
