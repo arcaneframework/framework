@@ -66,6 +66,8 @@ beginExecute()
     ARCANE_FATAL("beginExecute() has already been called");
   m_has_exec_begun = true;
   m_command._internalNotifyBeginLaunchKernel();
+  if (m_exec_policy == eExecutionPolicy::Thread)
+    _computeLoopRunInfo();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -148,12 +150,13 @@ computeParallelLoopOptions() const
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
+/*!
+ * \brief Calcule la valeur de loopRunInfo()
+ *
+ */
 void RunCommandLaunchInfo::
-computeLoopRunInfo()
+_computeLoopRunInfo()
 {
-  if (m_has_exec_begun)
-    ARCANE_FATAL("computeLoopRunInfo() has to be called before beginExecute()");
   ForLoopTraceInfo lti(m_command.traceInfo(), m_command.kernelName());
   m_loop_run_info = ForLoopRunInfo(computeParallelLoopOptions(), lti);
   m_loop_run_info.setExecStat(m_command._internalCommandExecStat());
