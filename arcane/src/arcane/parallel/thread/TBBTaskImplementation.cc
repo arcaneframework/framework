@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* TBBTaskImplementation.cc                                    (C) 2000-2023 */
+/* TBBTaskImplementation.cc                                    (C) 2000-2024 */
 /*                                                                           */
 /* Implémentation des tâches utilisant TBB (Intel Threads Building Blocks).  */
 /*---------------------------------------------------------------------------*/
@@ -119,8 +119,21 @@ class ScopedExecInfo
   }
   ~ScopedExecInfo()
   {
-    if (m_stat_info_ptr && m_use_own_run_info)
+#ifdef PRINT_STAT_INFO
+    if (m_stat_info_ptr){
+      bool is_valid = m_run_info.traceInfo().isValid();
+      if (!is_valid)
+        std::cout << "ADD_OWN_RUN_INFO nb_chunk=" << m_stat_info_ptr->nbChunk()
+                  << " stack=" << platform::getStackTrace()
+                  << "\n";
+      else
+        std::cout << "ADD_OWN_RUN_INFO nb_chunk=" << m_stat_info_ptr->nbChunk()
+                  << " trace_name=" << m_run_info.traceInfo().traceInfo().name() << "\n";
+    }
+#endif
+    if (m_stat_info_ptr && m_use_own_run_info){
       ProfilingRegistry::_threadLocalForLoopInstance()->merge(*m_stat_info_ptr,m_run_info.traceInfo());
+    }
   }
 
  public:
@@ -442,28 +455,28 @@ class TBBTaskImplementation
   void executeParallelFor(const ParallelFor1DLoopInfo& loop_info) override;
 
   void executeParallelFor(const ComplexForLoopRanges<1>& loop_ranges,
-                          const ParallelLoopOptions& options,
+                          const ForLoopRunInfo& run_info,
                           IMDRangeFunctor<1>* functor) final
   {
-    _executeMDParallelFor<1>(loop_ranges,functor,options);
+    _executeMDParallelFor<1>(loop_ranges,functor,run_info);
   }
   void executeParallelFor(const ComplexForLoopRanges<2>& loop_ranges,
-                          const ParallelLoopOptions& options,
+                          const ForLoopRunInfo& run_info,
                           IMDRangeFunctor<2>* functor) final
   {
-    _executeMDParallelFor<2>(loop_ranges,functor,options);
+    _executeMDParallelFor<2>(loop_ranges,functor,run_info);
   }
   void executeParallelFor(const ComplexForLoopRanges<3>& loop_ranges,
-                          const ParallelLoopOptions& options,
+                          const ForLoopRunInfo& run_info,
                           IMDRangeFunctor<3>* functor) final
   {
-    _executeMDParallelFor<3>(loop_ranges,functor,options);
+    _executeMDParallelFor<3>(loop_ranges,functor,run_info);
   }
   void executeParallelFor(const ComplexForLoopRanges<4>& loop_ranges,
-                          const ParallelLoopOptions& options,
+                          const ForLoopRunInfo& run_info,
                           IMDRangeFunctor<4>* functor) final
   {
-    _executeMDParallelFor<4>(loop_ranges,functor,options);
+    _executeMDParallelFor<4>(loop_ranges,functor,run_info);
   }
 
   bool isActive() const final
@@ -502,7 +515,7 @@ class TBBTaskImplementation
   template<int RankValue> void
   _executeMDParallelFor(const ComplexForLoopRanges<RankValue>& loop_ranges,
                         IMDRangeFunctor<RankValue>* functor,
-                        const ParallelLoopOptions& options);
+                        const ForLoopRunInfo& run_info);
   void _executeParallelFor(const ParallelFor1DLoopInfo& loop_info);
 };
 
@@ -1121,18 +1134,26 @@ executeParallelFor(const ParallelFor1DLoopInfo& loop_info)
  * \brief Exécution d'une boucle N-dimensions.
  *
  * \warning L'implémentation actuelle ne tient pas compte de \a options
+ * pour les boucles autres que une dimension.
  */
 template<int RankValue> void TBBTaskImplementation::
 _executeMDParallelFor(const ComplexForLoopRanges<RankValue>& loop_ranges,
-                       IMDRangeFunctor<RankValue>* functor,
-                       const ParallelLoopOptions& options)
+                      IMDRangeFunctor<RankValue>* functor,
+                      const ForLoopRunInfo& run_info)
 {
-  ScopedExecInfo sei(ForLoopRunInfo{});
+  ParallelLoopOptions options;
+  if (run_info.options().has_value())
+    options = run_info.options().value();
+
+  ScopedExecInfo sei(run_info);
   ForLoopOneExecStat* stat_info = sei.statInfo();
   impl::ScopedStatLoop scoped_loop(sei.isOwn() ? stat_info : nullptr);
 
   if (TaskFactory::verboseLevel()>=1)
-    std::cout << "TBB: TBBTaskImplementation executeMDParallelFor nb_dim=" << RankValue << '\n';
+    std::cout << "TBB: TBBTaskImplementation executeMDParallelFor nb_dim=" << RankValue
+              << " nb_element=" << loop_ranges.nbElement()
+              << " grain_size=" << options.grainSize() << '\n';
+
   Integer max_thread = options.maxThread();
   // En exécution séquentielle, appelle directement la méthode \a f.
   if (max_thread==1 || max_thread==0){

@@ -635,7 +635,6 @@ _applyConstituentCells(RunCommand& command, ContainerType items, const Lambda& f
 
   RunCommandLaunchInfo launch_info(command, vsize);
   const eExecutionPolicy exec_policy = launch_info.executionPolicy();
-  launch_info.computeLoopRunInfo();
   launch_info.beginExecute();
   switch (exec_policy) {
   case eExecutionPolicy::CUDA:

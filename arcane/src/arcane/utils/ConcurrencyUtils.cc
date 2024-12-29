@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ConcurrencyUtils.cc                                         (C) 2000-2021 */
+/* ConcurrencyUtils.cc                                         (C) 2000-2024 */
 /*                                                                           */
 /* Classes gérant la concurrence (tâches, boucles parallèles, ...)           */
 /*---------------------------------------------------------------------------*/
@@ -104,25 +104,25 @@ class NullTaskImplementation
     loop_info.functor()->executeFunctor(loop_info.beginIndex(),loop_info.size());
   }
   void executeParallelFor(const ComplexForLoopRanges<1>& loop_ranges,
-                          [[maybe_unused]] const ParallelLoopOptions& options,
+                          [[maybe_unused]] const ForLoopRunInfo& run_info,
                           IMDRangeFunctor<1>* functor) override
   {
     functor->executeFunctor(loop_ranges);
   }
   void executeParallelFor(const ComplexForLoopRanges<2>& loop_ranges,
-                          [[maybe_unused]] const ParallelLoopOptions& options,
+                          [[maybe_unused]] const ForLoopRunInfo& run_info,
                           IMDRangeFunctor<2>* functor) override
   {
     functor->executeFunctor(loop_ranges);
   }
   void executeParallelFor(const ComplexForLoopRanges<3>& loop_ranges,
-                          [[maybe_unused]] const ParallelLoopOptions& options,
+                          [[maybe_unused]] const ForLoopRunInfo& run_info,
                           IMDRangeFunctor<3>* functor) override
   {
     functor->executeFunctor(loop_ranges);
   }
   void executeParallelFor(const ComplexForLoopRanges<4>& loop_ranges,
-                          [[maybe_unused]] const ParallelLoopOptions& options,
+                          [[maybe_unused]] const ForLoopRunInfo& run_info,
                           IMDRangeFunctor<4>* functor) override
   {
     functor->executeFunctor(loop_ranges);
