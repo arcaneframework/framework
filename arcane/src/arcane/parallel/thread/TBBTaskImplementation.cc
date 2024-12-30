@@ -974,7 +974,10 @@ class TBBTaskImplementation::MDParallelForExecute
     // Il faut donc en reconstruire une complètement.
 
     Integer gsize = m_options.grainSize();
-    if (gsize>0){
+    if (gsize>0  && RankValue==1){
+      Int32 max_range0 = range.template upperBound<0>() - range.template lowerBound<0>();
+      if (gsize > max_range0)
+        gsize = max_range0;
       // Modifie la taille du grain pour la première dimension.
       // TODO: pouvoir aussi modifier la valeur de 'grain_size' pour les autres dimensions.
       m_tbb_range = _toTBBRangeWithGrain(m_tbb_range,gsize);

@@ -113,8 +113,9 @@ _internalNativeStream()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-//! Calcule le nombre de block/thread/grille du noyau en fonction de \a full_size
+/*!
+ * \brief Calcule le nombre de block/thread/grille du noyau en fonction de \a full_size.
+ */
 KernelLaunchArgs RunCommandLaunchInfo::
 _computeKernelLaunchArgs() const
 {
@@ -133,16 +134,17 @@ ParallelLoopOptions RunCommandLaunchInfo::
 computeParallelLoopOptions() const
 {
   ParallelLoopOptions opt = m_command.parallelLoopOptions();
-  const bool use_dynamic_compute = false;
+  const bool use_dynamic_compute = true;
   // Calcule une taille de grain par défaut si cela n'est pas renseigné dans
-  // les options
+  // les options. Par défaut on fait en sorte de faire un nombre d'itérations
+  // égale à 2 fois le nombre de threads utilisés.
   if (use_dynamic_compute && opt.grainSize() == 0) {
     Int32 nb_thread = opt.maxThread();
     if (nb_thread <= 0)
       nb_thread = TaskFactory::nbAllowedThread();
     if (nb_thread <= 0)
       nb_thread = 1;
-    Int32 grain_size = static_cast<Int32>((double)m_total_loop_size / (nb_thread * 10.0));
+    Int32 grain_size = static_cast<Int32>((double)m_total_loop_size / (nb_thread * 2.0));
     opt.setGrainSize(grain_size);
   }
   return opt;
@@ -151,8 +153,9 @@ computeParallelLoopOptions() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Calcule la valeur de loopRunInfo()
+ * \brief Calcule la valeur de m_loop_run_info.
  *
+ * Cela n'est utile qu'en mode multi-thread.
  */
 void RunCommandLaunchInfo::
 _computeLoopRunInfo()
