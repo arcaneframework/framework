@@ -130,7 +130,7 @@ class MultiThreadAlgo
     Arcane::arcaneParallelFor(0, nb_block, run_info, final_sum_func);
   }
 
-  template <typename InputIterator, typename OutputIterator, typename SelectLambda>
+  template <bool InPlace, typename InputIterator, typename OutputIterator, typename SelectLambda>
   Int32 doFilter(ForLoopRunInfo run_info, Int32 nb_value,
                  InputIterator input, OutputIterator output,
                  SelectLambda select_lambda)
@@ -215,10 +215,9 @@ class MultiThreadAlgo
       }
     };
 
-    // Pour l'instant il est possible que l'entrée et la sortie
-    // se chevauchent. Dans ce cas on fait le remplissage en séquentiel.
-    const bool may_input_and_output_overlap = true;
-    if (may_input_and_output_overlap)
+    // Si l'entrée et la sortie sont les mêmes, on fait le remplissage en séquentiel.
+    // TODO: faire en parallèle.
+    if (InPlace)
       filter_func(0, nb_block);
     else
       Arcane::arcaneParallelFor(0, nb_block, run_info, filter_func);
