@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ConcurrencyUtils.h                                          (C) 2000-2024 */
+/* ConcurrencyUtils.h                                          (C) 2000-2025 */
 /*                                                                           */
 /* Classes gérant la concurrence (tâches, boucles parallèles, ...)           */
 /*---------------------------------------------------------------------------*/
@@ -27,6 +27,11 @@
 
 namespace Arcane
 {
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+class TaskFactoryInternal;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -322,9 +327,12 @@ class ARCANE_UTILS_EXPORT ITaskImplementation
  */
 class ARCANE_UTILS_EXPORT TaskFactory
 {
- private:
-  TaskFactory();
+  friend TaskFactoryInternal;
+
  public:
+
+  TaskFactory() = delete;
+
  public:
 
   /*!
@@ -548,6 +556,7 @@ class ARCANE_UTILS_EXPORT TaskFactory
    * la modification de l'observable (ajout/suppression d'observateur)
    * n'est pas thread-safe.
    */
+  ARCANE_DEPRECATED_REASON("Y2024: This method is internal to Arcane. Do not use it")
   static IObservable* createThreadObservable();
 
   /*!
@@ -558,6 +567,7 @@ class ARCANE_UTILS_EXPORT TaskFactory
    * la modification de l'observable (ajout/suppression d'observateur)
    * n'est pas thread-safe.
    */
+  ARCANE_DEPRECATED_REASON("Y2024: This method is internal to Arcane. Do not use it")
   static IObservable* destroyThreadObservable();
 
   /*!
@@ -578,13 +588,13 @@ class ARCANE_UTILS_EXPORT TaskFactory
  public:
 
   //! \internal
+  ARCANE_DEPRECATED_REASON("Y2024: This method is internal to Arcane. "
+                           "Use TaskFactoryInternal::setImplementation() instead")
   static void _internalSetImplementation(ITaskImplementation* task_impl);
 
  private:
 
   static ITaskImplementation* m_impl;
-  static IObservable* m_created_thread_observable;
-  static IObservable* m_destroyed_thread_observable;
   static Int32 m_verbose_level;
   static ParallelLoopOptions m_default_loop_options;
 };

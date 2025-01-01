@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ArcaneMain.cc                                               (C) 2000-2024 */
+/* ArcaneMain.cc                                               (C) 2000-2025 */
 /*                                                                           */
 /* Classe gérant l'exécution.                                                */
 /*---------------------------------------------------------------------------*/
@@ -1237,6 +1237,10 @@ ArcaneMain(const ApplicationInfo& app_info, IMainFactory* factory,
 ArcaneMain::
 ~ArcaneMain()
 {
+  // S'assure qu'on retire les observateurs associés au TheadBindingMng
+  // avant la finalisation pour éviter de punaiser les threads alors que
+  // cela ne sert plus à rien.
+  m_p->m_thread_binding_mng.finalize();
   delete m_application;
   delete m_p;
 }

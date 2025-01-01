@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Application.cc                                              (C) 2000-2024 */
+/* Application.cc                                              (C) 2000-2025 */
 /*                                                                           */
 /* Superviseur.                                                              */
 /*---------------------------------------------------------------------------*/
@@ -34,6 +34,7 @@
 #include "arcane/utils/ITraceMngPolicy.h"
 #include "arcane/utils/JSONReader.h"
 #include "arcane/utils/Profiling.h"
+#include "arcane/utils/internal/TaskFactoryInternal.h"
 
 #include "arcane/core/ArcaneVersion.h"
 #include "arcane/core/ISubDomain.h"
@@ -399,7 +400,7 @@ build()
         String found_name;
         auto sv = _tryCreateService<ITaskImplementation>(names,&found_name);
         if (sv.get()){
-          TaskFactory::_internalSetImplementation(sv.get());
+          TaskFactoryInternal::setImplementation(sv.get());
           //m_trace->info() << "Initialize task with nb_thread=" << nb_thread;
           sv->initialize(nb_task_thread);
           m_used_task_service_name = found_name;

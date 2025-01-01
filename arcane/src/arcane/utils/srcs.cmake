@@ -347,6 +347,7 @@ set(ARCANE_SOURCES
   internal/MemoryBuffer.h
   internal/MemoryPool.h
   internal/ParallelLoopOptionsProperties.h
+  internal/TaskFactoryInternal.h
   )
 
 if (ARCANE_HAS_CXX20)

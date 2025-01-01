@@ -5,18 +5,16 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ThreadBindingMng.h                                          (C) 2000-2025 */
+/* TaskFactoryInternal.h                                       (C) 2000-2025 */
 /*                                                                           */
-/* Gestionnaire pour punaiser les threads.                                   */
+/* API interne à Arcane de 'TaskFactory'.                                    */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_IMPL_INTERNAL_THREADBINDERMNG_H
-#define ARCANE_IMPL_INTERNAL_THREADBINDERMNG_H
+#ifndef ARCANE_UTILS_INTERNAL_TASKFACTORYINTERNAL_H
+#define ARCANE_UTILS_INTERNAL_TASKFACTORYINTERNAL_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/String.h"
-
-#include "arcane/ObserverPool.h"
+#include "arcane/utils/UtilsTypes.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -26,31 +24,25 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-class ARCANE_IMPL_EXPORT ThreadBindingMng
+/*!
+ * \brief API interne à Arcane de 'TaskFactory'.
+ */
+class ARCANE_UTILS_EXPORT TaskFactoryInternal
 {
  public:
 
-  ThreadBindingMng();
-  ~ThreadBindingMng();
+  //! Ajoute un observateur pour la création de thread.
+  static void addThreadCreateObserver(IObserver* o);
+
+  //! Supprime un observateur pour la création de thread.
+  static void removeThreadCreateObserver(IObserver* o);
+
+  //! Notifie tous les observateurs de création de thread
+  static void notifyThreadCreated();
 
  public:
 
-  void initialize(ITraceMng* tm, const String& strategy);
-  void finalize();
-
- private:
-
-  ITraceMng* m_trace_mng = nullptr;
-  String m_bind_strategy;
-  Int32 m_current_thread_index = 0;
-  Int32 m_max_thread = 0;
-  IObserver* m_thread_created_callback = nullptr;
-  bool m_has_callback = false;
-
- private:
-
-  void _createThreadCallback();
+  static void setImplementation(ITaskImplementation* task_impl);
 };
 
 /*---------------------------------------------------------------------------*/
@@ -61,4 +53,4 @@ class ARCANE_IMPL_EXPORT ThreadBindingMng
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

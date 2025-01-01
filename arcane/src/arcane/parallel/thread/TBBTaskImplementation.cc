@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* TBBTaskImplementation.cc                                    (C) 2000-2024 */
+/* TBBTaskImplementation.cc                                    (C) 2000-2025 */
 /*                                                                           */
 /* Implémentation des tâches utilisant TBB (Intel Threads Building Blocks).  */
 /*---------------------------------------------------------------------------*/
@@ -21,8 +21,9 @@
 #include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/Profiling.h"
 #include "arcane/utils/MemoryAllocator.h"
+#include "arcane/utils/internal/TaskFactoryInternal.h"
 
-#include "arcane/FactoryService.h"
+#include "arcane/core/FactoryService.h"
 
 #include <new>
 #include <stack>
@@ -612,25 +613,23 @@ class TBBTaskImplementation::Impl
     m_constructed_thread_map.insert(my_thread_id);
 #endif
 
-    // Il faut toujours un verrou car on n'est pas certain que
-    // les méthodes appelées par l'observable soient thread-safe
-    // (et aussi TaskFactory::createThreadObservable() ne l'est pas)
     {
-      std::scoped_lock sl(m_thread_created_mutex);
       if (TaskFactory::verboseLevel()>=1){
-        std::cout << "TBB: CREATE THREAD"
-                  << " nb_allowed=" << m_nb_allowed_thread
+        std::ostringstream ostr;
+        ostr << "TBB: CREATE THREAD"
+             << " nb_allowed=" << m_nb_allowed_thread
 #ifdef ARCANE_USE_ONETBB
-                  << " tbb_default_allowed=" << tbb::info::default_concurrency()
+             << " tbb_default_allowed=" << tbb::info::default_concurrency()
 #else
-                  << " tbb_default_allowed=" << tbb::task_scheduler_init::default_num_threads()
+             << " tbb_default_allowed=" << tbb::task_scheduler_init::default_num_threads()
 #endif
-                  << " id=" << my_thread_id
-                  << " arena_id=" << _currentTaskTreadIndex()
-                  << " is_worker=" << is_worker
-                  << "\n";
+             << " id=" << my_thread_id
+             << " arena_id=" << _currentTaskTreadIndex()
+             << " is_worker=" << is_worker
+             << "\n";
+        std::cout << ostr.str();
       }
-      TaskFactory::createThreadObservable()->notifyAllObservers();
+      TaskFactoryInternal::notifyThreadCreated();
     }
   }
 
@@ -654,6 +653,7 @@ class TBBTaskImplementation::Impl
                 << " is_worker=" << is_worker
                 << '\n';
     }
+    // TODO: jamais utilisé. Sera supprimé au passage à OneTBB.
     TaskFactory::destroyThreadObservable()->notifyAllObservers();
 #endif
   }
