@@ -1237,6 +1237,10 @@ ArcaneMain(const ApplicationInfo& app_info, IMainFactory* factory,
 ArcaneMain::
 ~ArcaneMain()
 {
+  // S'assure qu'on retire les observateurs associés au TheadBindingMng
+  // avant la finalisation pour éviter de punaiser les threads alors que
+  // cela ne sert plus à rien.
+  m_p->m_thread_binding_mng.finalize();
   delete m_application;
   delete m_p;
 }

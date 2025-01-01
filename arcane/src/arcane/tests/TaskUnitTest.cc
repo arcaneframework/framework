@@ -17,6 +17,7 @@
 #include "arcane/utils/Mutex.h"
 #include "arcane/utils/ValueChecker.h"
 #include "arcane/utils/TestLogger.h"
+#include "arcane/utils/internal/TaskFactoryInternal.h"
 
 #include "arcane/core/BasicUnitTest.h"
 #include "arcane/core/IMesh.h"
@@ -657,6 +658,9 @@ class Test6
   SpinLock m_lock;
 };
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 } // namespace TaskTest
 
 /*---------------------------------------------------------------------------*/
@@ -686,7 +690,8 @@ class TaskUnitTest
 
  private:
 
-  ObserverPool m_observers;
+  ObserverT<TaskUnitTest> m_thread_create_observer;
+  bool m_has_thread_callback = false;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -700,6 +705,7 @@ ARCANE_REGISTER_SERVICE_TASKUNITTEST(TaskUnitTest,TaskUnitTest);
 TaskUnitTest::
 TaskUnitTest(const ServiceBuildInfo& mb)
 : ArcaneTaskUnitTestObject(mb)
+, m_thread_create_observer(this, &TaskUnitTest::_createTheadCallback)
 {
 }
 
@@ -709,6 +715,8 @@ TaskUnitTest(const ServiceBuildInfo& mb)
 TaskUnitTest::
 ~TaskUnitTest()
 {
+  if (m_has_thread_callback)
+    TaskFactoryInternal::removeThreadCreateObserver(&m_thread_create_observer);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -790,8 +798,8 @@ initializeTest()
   TaskFactory::setVerboseLevel(1);
   // Cette boucle doit être la première pour tester l'observable sur
   // la création de threads.
-  m_observers.addObserver(this,&TaskUnitTest::_createTheadCallback,
-                          TaskFactory::createThreadObservable());
+  TaskFactoryInternal::addThreadCreateObserver(&m_thread_create_observer);
+  m_has_thread_callback = true;
 
   Func my_functor;
   ParallelLoopOptions loop_options;
