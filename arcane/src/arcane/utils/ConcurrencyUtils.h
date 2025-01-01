@@ -30,6 +30,11 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+class TaskFactoryInternal;
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 /*
  * TODO:
  * - Vérifier les fuites memoires
@@ -322,9 +327,12 @@ class ARCANE_UTILS_EXPORT ITaskImplementation
  */
 class ARCANE_UTILS_EXPORT TaskFactory
 {
- private:
-  TaskFactory();
+  friend TaskFactoryInternal;
+
  public:
+
+  TaskFactory() = delete;
+
  public:
 
   /*!
@@ -548,6 +556,7 @@ class ARCANE_UTILS_EXPORT TaskFactory
    * la modification de l'observable (ajout/suppression d'observateur)
    * n'est pas thread-safe.
    */
+  ARCANE_DEPRECATED_REASON("Y2024: This method is internal to Arcane. Do not use it")
   static IObservable* createThreadObservable();
 
   /*!
@@ -558,6 +567,7 @@ class ARCANE_UTILS_EXPORT TaskFactory
    * la modification de l'observable (ajout/suppression d'observateur)
    * n'est pas thread-safe.
    */
+  ARCANE_DEPRECATED_REASON("Y2024: This method is internal to Arcane. Do not use it")
   static IObservable* destroyThreadObservable();
 
   /*!
@@ -578,13 +588,13 @@ class ARCANE_UTILS_EXPORT TaskFactory
  public:
 
   //! \internal
+  ARCANE_DEPRECATED_REASON("Y2024: This method is internal to Arcane. "
+                           "Use TaskFactoryInternal::setImplementation() instead")
   static void _internalSetImplementation(ITaskImplementation* task_impl);
 
  private:
 
   static ITaskImplementation* m_impl;
-  static IObservable* m_created_thread_observable;
-  static IObservable* m_destroyed_thread_observable;
   static Int32 m_verbose_level;
   static ParallelLoopOptions m_default_loop_options;
 };
