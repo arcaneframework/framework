@@ -3,21 +3,18 @@
 // Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
-
-
-#ifndef ALIEN_MCGIMPL_MCGVECTOR_H
-#define ALIEN_MCGIMPL_MCGVECTOR_H
+#pragma once
 
 #include <alien/utils/Precomp.h>
 #include <alien/core/impl/IVectorImpl.h>
 #include <alien/data/ISpace.h>
 
 #include "alien/kernels/mcg/MCGPrecomp.h"
+#include "alien/kernels/mcg/data_structure/MemoryDomain.h"
 
 BEGIN_MCGINTERNAL_NAMESPACE
-
+template<typename NumT,eMemoryDomain Domain>
 class VectorInternal;
-
 END_MCGINTERNAL_NAMESPACE
 
 namespace Alien {
@@ -27,7 +24,7 @@ namespace Alien {
 class MCGVector : public IVectorImpl
 {
  public:
-  typedef MCGInternal::VectorInternal VectorInternal;
+  using VectorInternal = MCGInternal::VectorInternal<double,MCGInternal::eMemoryDomain::CPU>;
 
  public:
   MCGVector(const MultiVectorImpl* multi_impl);
@@ -57,4 +54,3 @@ class MCGVector : public IVectorImpl
 
 }
 
-#endif /* ALIEN_MCGIMPL_MCGVECTOR_H */

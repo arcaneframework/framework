@@ -7,15 +7,16 @@
 
 #include <alien/utils/Precomp.h>
 #include <alien/core/backend/BackEnd.h>
+#include <alien/kernels/mcg/data_structure/MemoryDomain.h>
 
 class IOptionsMCGSolver;
 
 namespace Alien {
 
 class MultiVectorImpl;
+template<typename NumT,MCGInternal::eMemoryDomain Domain>
 class MCGMatrix;
 class MCGVector;
-class MCGgpuMatrix;
 class MCGgpuVector;
 class MatrixData;
 class MatrixExp;
@@ -43,12 +44,12 @@ namespace BackEnd {
 
 template <> struct AlgebraTraits<BackEnd::tag::mcgsolver>
 {
-  typedef MCGMatrix matrix_type;
-  typedef MCGVector vector_type;
+  using matrix_type = MCGMatrix<Real,MCGInternal::eMemoryDomain::CPU>;
+  using vector_type = MCGVector;
 
-  typedef IOptionsMCGSolver options_type;
-  typedef ILinearAlgebra algebra_type;
-  typedef ILinearSolver solver_type;
+  using options_type = IOptionsMCGSolver;
+  using algebra_type = ILinearAlgebra;
+  using solver_type = ILinearSolver;
 
   static algebra_type* algebra_factory() { return MCGInternalLinearAlgebraFactory(); }
 
@@ -63,12 +64,12 @@ template <> struct AlgebraTraits<BackEnd::tag::mcgsolver>
 
 template <> struct AlgebraTraits<BackEnd::tag::mcgsolver_gpu>
 {
-  typedef MCGgpuMatrix matrix_type;
-  typedef MCGgpuVector vector_type;
+  using matrix_type = MCGMatrix<Real,MCGInternal::eMemoryDomain::CPU>;
+  using vector_type = MCGgpuVector;
 
-  typedef IOptionsMCGSolver options_type;
-  typedef ILinearAlgebra algebra_type;
-  typedef ILinearSolver solver_type;
+  using options_type = IOptionsMCGSolver;
+  using algebra_type = ILinearAlgebra;
+  using solver_type = ILinearSolver;
 
   static algebra_type* algebra_factory() { return MCGInternalLinearAlgebraFactory(); }
 

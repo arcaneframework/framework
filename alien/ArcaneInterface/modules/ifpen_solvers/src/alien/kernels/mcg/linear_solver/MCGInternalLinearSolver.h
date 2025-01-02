@@ -3,9 +3,7 @@
 // Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
-
-#ifndef ALIEN_MCGIMPL_MCGINTERNALLINEARSOLVER_H
-#define ALIEN_MCGIMPL_MCGINTERNALLINEARSOLVER_H
+#pragma once
 
 #include <memory>
 #include <chrono>
@@ -82,11 +80,11 @@ class ALIEN_IFPEN_SOLVERS_EXPORT MCGInternalLinearSolver : public ILinearSolver,
   };
 
   typedef SolverStatus Status;
-  typedef MCGMatrix MatrixType;
+  typedef MCGMatrix<Real,MCGInternal::eMemoryDomain::CPU> MatrixType;
   typedef MCGVector VectorType;
 
-  typedef MCGInternal::MatrixInternal MCGMatrixType;
-  typedef MCGInternal::VectorInternal MCGVectorType;
+  typedef MCGInternal::MatrixInternal<double,MCGInternal::eMemoryDomain::CPU> MCGMatrixType;
+  typedef MCGInternal::VectorInternal<double,MCGInternal::eMemoryDomain::CPU> MCGVectorType;
 
   typedef SimpleCSRMatrix<Real> CSRMatrixType;
   typedef SimpleCSRVector<Real> CSRVectorType;
@@ -142,10 +140,10 @@ class ALIEN_IFPEN_SOLVERS_EXPORT MCGInternalLinearSolver : public ILinearSolver,
  private:
 
   Integer _solve(const MCGMatrixType& A, const MCGVectorType& b, MCGVectorType& x,
-      std::shared_ptr<MCGSolver::PartitionInfo<int32_t>> part_info);
+      const std::shared_ptr<const MCGSolver::PartitionInfo<int32_t>>& part_info);
 
   Integer _solve(const MCGMatrixType& A, const MCGVectorType& b, const MCGVectorType& x0,
-      MCGVectorType& x, std::shared_ptr<MCGSolver::PartitionInfo<int32_t>> part_info);
+      MCGVectorType& x,const std::shared_ptr<const MCGSolver::PartitionInfo<int32_t>>& part_info);
 
   bool _systemChanged(
       const MCGMatrixType& A, const MCGVectorType& b, const MCGVectorType& x);
@@ -217,7 +215,7 @@ class ALIEN_IFPEN_SOLVERS_EXPORT MCGInternalLinearSolver : public ILinearSolver,
   std::string m_dir;
   std::map<std::string, int> m_dir_enum;
 
-  MCGSolverLinearSystem* m_system = nullptr;
+  std::unique_ptr<MCGSolverLinearSystem> m_system;
 
   MCGSolver::UniqueKey m_A_key;
   int64_t m_A_time_stamp = 0;
@@ -245,4 +243,3 @@ class ALIEN_IFPEN_SOLVERS_EXPORT MCGInternalLinearSolver : public ILinearSolver,
 
 }
 
-#endif /* ALIEN_MCGIMPL_MCGINTERNALLINEARSOLVER_H */

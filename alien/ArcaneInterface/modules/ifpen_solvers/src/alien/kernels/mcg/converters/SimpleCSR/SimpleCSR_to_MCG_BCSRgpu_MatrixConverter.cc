@@ -28,15 +28,18 @@ class SimpleCSR_to_MCG_BCSRgpu_MatrixConverter : public IMatrixConverter
   {
     return AlgebraTraits<BackEnd::tag::simplecsr>::name();
   }
+
   BackEndId targetBackend() const
   {
     return AlgebraTraits<BackEnd::tag::mcgsolver_gpu>::name();
   }
+
   void convert(const IMatrixImpl* sourceImpl, IMatrixImpl* targetImpl) const;
   // void convert(const IMatrixImpl * sourceImpl, IMatrixImpl * targetImpl, int i, int j)
   // const;
 
-  void _build(const SimpleCSRMatrix<Real>& sourceImpl, MCGMatrix& targetImpl) const;
+  void _build(const SimpleCSRMatrix<Real>& sourceImpl,
+    MCGMatrix<Real,MCGInternal::eMemoryDomain::GPU>& targetImpl) const;
 };
 
 void
@@ -44,8 +47,9 @@ SimpleCSR_to_MCG_BCSRgpu_MatrixConverter::convert(
     const IMatrixImpl* sourceImpl, IMatrixImpl* targetImpl) const
 {
   const SimpleCSRMatrix<Real>& v =
-      cast<SimpleCSRMatrix<Real>>(sourceImpl, sourceBackend());
-  MCGMatrix& v2 = cast<MCGMatrix>(targetImpl, targetBackend());
+    cast<SimpleCSRMatrix<Real>>(sourceImpl, sourceBackend());
+  auto& v2 =
+    cast<MCGMatrix<Real,MCGInternal::eMemoryDomain::GPU>>(targetImpl, targetBackend());
 
   alien_debug(
       [&] { cout() << "Converting SimpleCSRMatrix: " << &v << " to MCGMatrix " << &v2; });
@@ -59,11 +63,13 @@ SimpleCSR_to_MCG_BCSRgpu_MatrixConverter::convert(
 
 void
 SimpleCSR_to_MCG_BCSRgpu_MatrixConverter::_build(
-    const SimpleCSRMatrix<Real>& sourceImpl, MCGMatrix& targetImpl) const
+    const SimpleCSRMatrix<Real>& sourceImpl,
+    MCGMatrix<Real,MCGInternal::eMemoryDomain::GPU>& targetImpl) const
 {
   const MatrixDistribution& dist = targetImpl.distribution();
   const CSRStructInfo& profile = sourceImpl.getCSRProfile();
-  const Integer local_size = profile.getNRow();
+  const auto local_size = profile.getNRow();
+  const auto global_size = dist.globalColSize();
   ConstArrayView<Integer> row_offset = profile.getRowOffset();
   ConstArrayView<Integer> cols = profile.getCols();
 
@@ -80,14 +86,14 @@ SimpleCSR_to_MCG_BCSRgpu_MatrixConverter::_build(
   }
 
   if (!targetImpl.isInit()) {
-    if (not targetImpl.initMatrix(block_size, block_size2, local_size,
+    if (not targetImpl.initMatrix(MCGInternal::eMemoryDomain::CPU,block_size, block_size2, local_size, global_size,
             row_offset.unguardedBasePointer(), cols.unguardedBasePointer(),
             partition_offset)) {
       throw FatalErrorException(A_FUNCINFO, "MCGSolver Initialisation failed");
     }
   }
 
-  const bool success = targetImpl.initMatrixValues(values.unguardedBasePointer());
+  const bool success = targetImpl.initMatrixValues(MCGInternal::eMemoryDomain::CPU,values.unguardedBasePointer());
 
   if (not success) {
     throw FatalErrorException(A_FUNCINFO, "Cannot set MCGSolver Matrix Values");

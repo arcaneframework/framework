@@ -26,8 +26,7 @@ namespace Alien {
 class ALIEN_IFPEN_SOLVERS_EXPORT MCGLinearSolver : public ArcaneMCGSolverObject,
                                                    public MCGInternalLinearSolver
 #ifdef ARCGEOSIM_COMP
-,
-                                                   public IInfoModel
+                                                  ,public IInfoModel
 #endif
 {
  public:

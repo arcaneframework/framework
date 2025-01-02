@@ -74,7 +74,7 @@ void
 MCGInternalLinearAlgebra::mult(
     const MatrixType& a, const VectorType& x, VectorType& r) const
 {
-  const MCGMatrix& ma = a.impl()->get<BackEnd::tag::mcgsolver>();
+  const MCGMatrix<Real,MCGInternal::eMemoryDomain::CPU>& ma = a.impl()->get<BackEnd::tag::mcgsolver>();
   const MCGVector& vx = x.impl()->get<BackEnd::tag::mcgsolver>();
   MCGVector& vr = r.impl()->get<BackEnd::tag::mcgsolver>(true);
   ALIEN_ASSERT(
