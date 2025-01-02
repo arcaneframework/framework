@@ -32,6 +32,14 @@ L'API accélérateur de %Arcane répond aux objectifs suivants:
   pas de mécanismes tels que les `#pragma` comme dans les normes
   OpenMP ou OpenACC.
 
+\note Si on souhaite utiliser %Arcane à la fois sur GPU et sur CPU
+pour l'environnement CUDA, il est fortement recommandé d'utiliser
+`clang` comme compilateur au lieu de `nvcc` car ce dernier génère du
+code moins performant sur la partie CPU. Cela est du à l'usage de
+`std::function` pour encapsuler les lambdas utilisées dans %Arcane
+(voir [New Compiler Features in CUDA 8](https://developer.nvidia.com/blog/new-compiler-features-cuda-8/#extended___host_____device___lambdas)
+pour plus d'informations)
+
 Le principe de fonctionnement est l'exécution de noyaux de calcul
 déportés. Le code est exécuté par défaut sur le CPU (l'hôte) et
 certaines parties du calcul sont déportés sur les accélérateurs. Ce
