@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* KdiPostProcessor.cc                                         (C) 2000-2024 */
+/* KdiPostProcessor.cc                                         (C) 2000-2025 */
 /*                                                                           */
 /* Pos-traitement avec l'outil KDI.                                          */
 /*---------------------------------------------------------------------------*/
@@ -31,8 +31,8 @@
 #include "arcane/core/IMesh.h"
 
 #include "arcane/std/KdiPostProcessor_axl.h"
-#include "arcane/std/internal/VtkCellTypes.h"
 
+#include "arcane/core/internal/VtkCellTypes.h"
 #include "arcane/std/internal/Kdi.h"
 
 // Timers. Pas actif pour l'instant
