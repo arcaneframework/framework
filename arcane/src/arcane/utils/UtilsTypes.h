@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* UtilsTypes.h                                                (C) 2000-2024 */
+/* UtilsTypes.h                                                (C) 2000-2025 */
 /*                                                                           */
 /* Définition des types généraux des classes utilitaires de Arcane.          */
 /*---------------------------------------------------------------------------*/
@@ -23,6 +23,11 @@
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+namespace Arccore
+{
+class IMemoryAllocator3;
+}
 
 namespace Arcane
 {
@@ -94,6 +99,7 @@ using Arccore::eMemoryLocationHint;
 using Arccore::MemoryAllocationOptions;
 using Arccore::MemoryAllocationArgs;
 using Arccore::IMemoryAllocator;
+using Arccore::IMemoryAllocator3;
 using Arccore::PrintableMemoryAllocator;
 using Arccore::AlignedMemoryAllocator;
 using Arccore::DefaultMemoryAllocator;
