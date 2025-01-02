@@ -383,7 +383,7 @@ endif()
 # ----------------------------------------------------------------------------
 # Charge 'Arccore' depuis le répertoire de base.
 if (NOT Arccore_FOUND)
-  add_subdirectory(${CMAKE_SOURCE_DIR}/arccore arccore)
+  add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../arccore arccore)
   set(Arccore_FOUND YES)
   set(Arccore_FOUND YES PARENT_SCOPE)
 endif()
