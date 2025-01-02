@@ -50,7 +50,7 @@ arcane_add_library(arcane_hdf5
 target_link_libraries(arcane_hdf5 PUBLIC arcane_core)
 
 arcane_add_arccon_packages(arcane_hdf5 PUBLIC ${PUBLIC_PKGS})
-arcane_add_arccon_packages(arcane_std PRIVATE ${PRIVATE_PKGS})
+arcane_add_arccon_packages(arcane_hdf5 PRIVATE ${PRIVATE_PKGS})
 
 arcane_register_library(arcane_hdf5)
 
