@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ConcurrencyUtils.cc                                         (C) 2000-2021 */
+/* ConcurrencyUtils.cc                                         (C) 2000-2025 */
 /*                                                                           */
 /* Classes gérant la concurrence (tâches, boucles parallèles, ...)           */
 /*---------------------------------------------------------------------------*/
@@ -13,8 +13,11 @@
 
 #include "arcane/utils/ConcurrencyUtils.h"
 
+#include "arcane/utils/internal/TaskFactoryInternal.h"
 #include "arcane/utils/TraceInfo.h"
 #include "arcane/utils/Observable.h"
+
+#include <mutex>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -104,25 +107,25 @@ class NullTaskImplementation
     loop_info.functor()->executeFunctor(loop_info.beginIndex(),loop_info.size());
   }
   void executeParallelFor(const ComplexForLoopRanges<1>& loop_ranges,
-                          [[maybe_unused]] const ParallelLoopOptions& options,
+                          [[maybe_unused]] const ForLoopRunInfo& run_info,
                           IMDRangeFunctor<1>* functor) override
   {
     functor->executeFunctor(loop_ranges);
   }
   void executeParallelFor(const ComplexForLoopRanges<2>& loop_ranges,
-                          [[maybe_unused]] const ParallelLoopOptions& options,
+                          [[maybe_unused]] const ForLoopRunInfo& run_info,
                           IMDRangeFunctor<2>* functor) override
   {
     functor->executeFunctor(loop_ranges);
   }
   void executeParallelFor(const ComplexForLoopRanges<3>& loop_ranges,
-                          [[maybe_unused]] const ParallelLoopOptions& options,
+                          [[maybe_unused]] const ForLoopRunInfo& run_info,
                           IMDRangeFunctor<3>* functor) override
   {
     functor->executeFunctor(loop_ranges);
   }
   void executeParallelFor(const ComplexForLoopRanges<4>& loop_ranges,
-                          [[maybe_unused]] const ParallelLoopOptions& options,
+                          [[maybe_unused]] const ForLoopRunInfo& run_info,
                           IMDRangeFunctor<4>* functor) override
   {
     functor->executeFunctor(loop_ranges);
@@ -155,10 +158,72 @@ class NullTaskImplementation
 
 NullTaskImplementation NullTaskImplementation::singleton;
 ITaskImplementation* TaskFactory::m_impl = &NullTaskImplementation::singleton;
-IObservable* TaskFactory::m_created_thread_observable = 0;
-IObservable* TaskFactory::m_destroyed_thread_observable = 0;
 Int32 TaskFactory::m_verbose_level = 0;
 ParallelLoopOptions TaskFactory::m_default_loop_options;
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace
+{
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+IObservable* global_created_thread_observable = 0;
+IObservable* global_destroyed_thread_observable = 0;
+std::mutex global_observable_mutex;
+
+IObservable*
+_checkCreateGlobalThreadObservable()
+{
+  if (!global_created_thread_observable)
+    global_created_thread_observable = new Observable();
+  return global_created_thread_observable;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void TaskFactoryInternal::
+setImplementation(ITaskImplementation* task_impl)
+{
+  if (TaskFactory::m_impl && TaskFactory::m_impl!=&NullTaskImplementation::singleton)
+    ARCANE_FATAL("TaskFactory already has an implementation");
+  TaskFactory::m_impl = task_impl;
+}
+
+void TaskFactoryInternal::
+addThreadCreateObserver(IObserver* o)
+{
+  std::scoped_lock slock(global_observable_mutex);
+  _checkCreateGlobalThreadObservable();
+  global_created_thread_observable->attachObserver(o);
+}
+
+void TaskFactoryInternal::
+removeThreadCreateObserver(IObserver* o)
+{
+  std::scoped_lock slock(global_observable_mutex);
+  _checkCreateGlobalThreadObservable();
+  global_created_thread_observable->detachObserver(o);
+}
+
+void TaskFactoryInternal::
+notifyThreadCreated()
+{
+  std::scoped_lock slock(global_observable_mutex);
+  if (global_created_thread_observable)
+    global_created_thread_observable->notifyAllObservers();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -166,9 +231,7 @@ ParallelLoopOptions TaskFactory::m_default_loop_options;
 void TaskFactory::
 _internalSetImplementation(ITaskImplementation* task_impl)
 {
-  if (m_impl && m_impl!=&NullTaskImplementation::singleton)
-    ARCANE_FATAL("TaskFactory already has an implementation");
-  m_impl = task_impl;
+  TaskFactoryInternal::setImplementation(task_impl);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -177,9 +240,8 @@ _internalSetImplementation(ITaskImplementation* task_impl)
 IObservable*  TaskFactory::
 createThreadObservable()
 {
-  if (!m_created_thread_observable)
-    m_created_thread_observable = new Observable();
-  return m_created_thread_observable;
+  std::scoped_lock slock(global_observable_mutex);
+  return _checkCreateGlobalThreadObservable();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -188,9 +250,9 @@ createThreadObservable()
 IObservable*  TaskFactory::
 destroyThreadObservable()
 {
-  if (!m_destroyed_thread_observable)
-    m_destroyed_thread_observable = new Observable();
-  return m_destroyed_thread_observable;
+  if (!global_destroyed_thread_observable)
+    global_destroyed_thread_observable = new Observable();
+  return global_destroyed_thread_observable;
 }
 
 /*---------------------------------------------------------------------------*/

@@ -15,9 +15,12 @@ set( ARCANE_SOURCES
   GenericScanner.h
   GenericSorter.h
   IReduceMemoryImpl.h
+  KernelLauncher.h
   MaterialVariableViews.h
   MaterialVariableViews.cc
   MemoryCopier.cc
+  MultiThreadAlgo.h
+  MultiThreadAlgo.cc
   NumArray.h
   NumArrayViews.h
   NumArrayViews.cc
@@ -31,7 +34,6 @@ set( ARCANE_SOURCES
   Runner.h
   RunQueue.h
   RunQueueImpl.h
-  RunQueueInternal.cc
   RunQueueInternal.h
   Filter.h
   Filterer.cc

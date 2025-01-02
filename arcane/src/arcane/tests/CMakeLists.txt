@@ -19,8 +19,6 @@ if(GEOMETRYKERNEL_FOUND)
   set(TEST_DIRS ${TEST_DIRS} corefinement)
   set(TEST_LIBS ${TEST_LIBS} arcane_corefinement)
 endif()
-set(PKGS TBB)
-arcane_find_package(TBB)
 
 arcane_find_package(Neo QUIET)
 if (Neo_FOUND)
@@ -75,8 +73,6 @@ arcane_add_library(arcane_tests_lib
   FILES ${ARCANE_SOURCES}
   AXL_FILES ${AXL_FILES}
   )
-
-arcane_add_arccon_packages(arcane_tests_lib PRIVATE ${PKGS})
 
 add_executable(arcane_tests_exec ${ARCANE_SRC_PATH}/arcane/tests/ArcaneTestMain.cc)
 set(ARCANE_TEST_PATH ${ARCANEBUILDROOT}/src/arcane/tests)
@@ -267,7 +263,10 @@ arcane_copy_mesh_direct(fan_2x1x3.vtkfaces.vtk)
 arcane_copy_mesh_direct(cross_a_2x1x1.vtu)
 arcane_copy_mesh_direct(cross_a_2x1x1.vtufaces.vtu)
 arcane_copy_mesh_direct(plancher.msh)
+arcane_copy_mesh_direct(plancher.binary.msh)
 arcane_copy_mesh_direct(hex_tetra_pyramics.msh)
+arcane_copy_mesh_direct(onesphere.msh)
+arcane_copy_mesh_direct(onesphere.binary.msh)
 arcane_copy_mesh(tied_interface_1 tied_interface_1 vtk)
 arcane_copy_mesh(tied_interface_2 tied_interface_2 vtk)
 arcane_copy_mesh(tied_interface_2d_1 tied_interface_2d_1 vtk)
@@ -289,6 +288,15 @@ file(COPY ${TEST_PATH}/data/test_output_continue_hydro3_cartesian_small
 # La protection pour ce test est issue du test hydro3_cartesian_small_4thread
 file(COPY ${TEST_PATH}/data/test_output_continue_hydro3_cartesian_small_4shm
   DESTINATION ${ARCANE_TEST_WORKDIR} USE_SOURCE_PERMISSIONS)
+
+# ----------------------------------------------------------------------------
+# ----------------------------------------------------------------------------
+
+macro(arcane_add_accelerator_test_all_policies TEST_NAME CASE_FILE)
+  arcane_add_test_sequential(${TEST_NAME} ${CASE_FILE} ${ARGN})
+  arcane_add_test_sequential_task(${TEST_NAME} ${CASE_FILE} 4 ${ARGN})
+  arcane_add_accelerator_test_sequential(${TEST_NAME} ${CASE_FILE} ${ARGN})
+endmacro()
 
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
@@ -362,12 +370,13 @@ add_test(dump_database ${ARCANE_TEST_DRIVER} launch -We,STDENV_CODE_NAME,Arcane 
 # ----------------------------------------------------------------------------
 
 if (ARCANE_HAS_ACCELERATOR_API)
-  arcane_add_test_sequential(standalone_accelerator_testsum dummy.arc "-A,StandaloneAcceleratorMethod=TestSum")
-  arcane_add_test_sequential(standalone_accelerator_testbinop dummy.arc "-A,StandaloneAcceleratorMethod=TestBinOp")
-  arcane_add_accelerator_test_sequential(standalone_accelerator_testsum dummy.arc "-A,StandaloneAcceleratorMethod=TestSum")
+  arcane_add_accelerator_test_all_policies(standalone_accelerator_testsum dummy.arc "-A,StandaloneAcceleratorMethod=TestSum")
+  arcane_add_accelerator_test_all_policies(standalone_accelerator_testbinop dummy.arc "-A,StandaloneAcceleratorMethod=TestBinOp")
+  #  arcane_add_accelerator_test_sequential(standalone_accelerator_testsum dummy.arc "-A,StandaloneAcceleratorMethod=TestSum")
+  #arcane_add_accelerator_test_sequential(standalone_accelerator_testbinop dummy.arc "-A,StandaloneAcceleratorMethod=TestBinOp")
+  #arcane_add_accelerator_test_sequential(standalone_accelerator_testemptykernel dummy.arc "-A,StandaloneAcceleratorMethod=TestEmptyKernel")
+  arcane_add_accelerator_test_all_policies(standalone_accelerator_testemptykernel dummy.arc "-A,StandaloneAcceleratorMethod=TestEmptyKernel")
   arcane_add_accelerator_test_sequential(standalone_accelerator_testsum_hostpinned dummy.arc "-A,StandaloneAcceleratorMethod=TestSum" "-We,ARCANE_DEFAULT_DATA_MEMORY_RESOURCE,HostPinned")
-  arcane_add_accelerator_test_sequential(standalone_accelerator_testbinop dummy.arc "-A,StandaloneAcceleratorMethod=TestBinOp")
-  arcane_add_accelerator_test_sequential(standalone_accelerator_testemptykernel dummy.arc "-A,StandaloneAcceleratorMethod=TestEmptyKernel")
 endif()
 
 arcane_add_test_sequential(standalone_subdomain1 dummy.arc "-A,StandaloneSubDomainMethod=Test1")
@@ -544,6 +553,10 @@ if(PARTITIONER_FOUND)
 endif()
 
 arcane_add_test(mesh2 testMesh-2.arc "-We,ARCANE_METIS_INPUT_OUTPUT_DIGEST,1")
+if (Parmetis_FOUND)
+  arcane_add_test_parallel_thread(mesh2_face_unique_id_v5 testMesh-2-face-unique-id-v5.arc 4)
+endif()
+arcane_add_test(mesh2_generate_face_uid testMesh-2.arc "-We,ARCANE_GENERATE_UNIQUE_ID_FROM_NODES,1")
 arcane_add_test_sequential(mesh2_sort_faces testMesh-2-sorted-faces.arc)
 arcane_add_test_sequential(mesh2_init_nan testMesh-2.arc "-We,ARCANE_DATA_INIT_POLICY,NAN")
 arcane_add_test_sequential(mesh2_init_default testMesh-2.arc "-We,ARCANE_DATA_INIT_POLICY,DEFAULT" "-We,ARCANE_ITEMFAMILY_SHRINK_AFTER_ALLOCATE,1")
@@ -580,9 +593,13 @@ ARCANE_ADD_TEST(mesh_sphere_vtk42 testMesh-sphere-vtk42.arc)
 ARCANE_ADD_TEST(mesh_sphere_vtk42_binary testMesh-sphere-vtk42-binary.arc)
 arcane_add_test_sequential(mesh1_honeycomb2d testMesh-honeycomb2D-1.arc "-We,ARCANE_PRINT_APPLYSIMDPADDING,2")
 arcane_add_test_sequential(mesh1_honeycomb3d testMesh-honeycomb3D-1.arc)
+arcane_add_test_sequential(mesh1_onesphere_msh testMesh-onesphere-1.arc)
+arcane_add_test_sequential(mesh1_onesphere_binary_msh testMesh-onesphere-binary-1.arc)
 if (ARCANE_DEFAULT_PARTITIONER_IS_METIS)
   arcane_add_test_parallel_thread(mesh1_honeycomb2d testMesh-honeycomb2D-1.arc 4)
   arcane_add_test_parallel_thread(mesh1_honeycomb3d testMesh-honeycomb3D-1.arc 4)
+  arcane_add_test_parallel_thread(mesh1_onesphere_msh testMesh-onesphere-1.arc 4)
+  arcane_add_test_parallel_thread(mesh1_onesphere_binary_msh testMesh-onesphere-binary-1.arc 4)
 endif()
 
 ##############
@@ -619,11 +636,14 @@ arcane_add_test_sequential(ios_msh4 testIos-msh4.arc)
 arcane_add_test_sequential(ios_msh5 testIos-msh5.arc "-We,ARCANE_USE_PARALLEL_MSH_READER,0")
 arcane_add_test_sequential(ios_msh5_parallel testIos-msh5.arc)
 arcane_add_test_sequential(ios_msh6_parallel testIos-msh6.arc "-We,ARCANE_FACE_UNIQUE_ID_BUILDER_VERSION,5")
+arcane_add_test_sequential(ios_msh_binary1 testIos-msh-binary-1.arc)
 if (ARCANE_DEFAULT_PARTITIONER_IS_METIS)
   arcane_add_test_parallel_thread(ios_msh4 testIos-msh4.arc 4)
   arcane_add_test_parallel_thread(ios_msh5 testIos-msh5.arc 5 "-We,ARCANE_USE_PARALLEL_MSH_READER,0")
   arcane_add_test_parallel(ios_msh5_parallel testIos-msh5.arc 4)
   arcane_add_test_parallel(ios_msh6_parallel testIos-msh6.arc 4)
+  arcane_add_test_parallel_thread(ios_msh_binary1 testIos-msh-binary-1.arc 4)
+  arcane_add_test_parallel(ios_msh_binary1 testIos-msh-binary-1.arc 4)
   # Ne fonctionne pas encore
   # arcane_add_test_parallel(ios_msh6_parallel_face5 testIos-msh6.arc 4 "-We,ARCANE_FACE_UNIQUE_ID_BUILDER_VERSION,5")
 endif()
@@ -770,12 +790,6 @@ if (HDF5_FOUND)
   ARCANE_ADD_TEST_SEQUENTIAL(hydro6_checkpoint testHydro-6.arc -c 2 -m 25)
   ARCANE_ADD_TEST_PARALLEL(hydro1_checkpoint_3proc_rep4 testHydro-1-checkpoint.arc 12 -c 2 -m 25 -R 4)
 endif()
-
-macro(arcane_add_accelerator_test_all_policies TEST_NAME CASE_FILE)
-  arcane_add_test_sequential(${TEST_NAME} ${CASE_FILE})
-  arcane_add_test_sequential_task(${TEST_NAME} ${CASE_FILE} 4)
-  arcane_add_accelerator_test_sequential(${TEST_NAME} ${CASE_FILE})
-endmacro()
 
 if (ARCANE_HAS_ACCELERATOR_API)
   arcane_add_test_sequential(numarray1 testNumArray-1.arc)

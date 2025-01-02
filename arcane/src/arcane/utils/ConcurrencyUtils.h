@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ConcurrencyUtils.h                                          (C) 2000-2024 */
+/* ConcurrencyUtils.h                                          (C) 2000-2025 */
 /*                                                                           */
 /* Classes gérant la concurrence (tâches, boucles parallèles, ...)           */
 /*---------------------------------------------------------------------------*/
@@ -30,6 +30,11 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+class TaskFactoryInternal;
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 /*
  * TODO:
  * - Vérifier les fuites memoires
@@ -37,6 +42,55 @@ namespace Arcane
  * - Regarder mecanisme pour les exceptions.
  * - Surcharger les For et Foreach sans specifier le block_size
  */
+
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Informations d'exécution d'une boucle.
+ *
+ * Cette classe permet de gérer les informations d'exécutions communes à toutes
+ * les boucles.
+ */
+class ARCANE_UTILS_EXPORT ForLoopRunInfo
+{
+ public:
+
+  using ThatClass = ForLoopRunInfo;
+
+ public:
+
+  ForLoopRunInfo() = default;
+  explicit ForLoopRunInfo(const ParallelLoopOptions& options)
+  : m_options(options) {}
+  ForLoopRunInfo(const ParallelLoopOptions& options,const ForLoopTraceInfo& trace_info)
+  : m_options(options), m_trace_info(trace_info) {}
+  explicit ForLoopRunInfo(const ForLoopTraceInfo& trace_info)
+  : m_trace_info(trace_info) {}
+
+ public:
+
+  std::optional<ParallelLoopOptions> options() const { return m_options; }
+  ThatClass& addOptions(const ParallelLoopOptions& v) { m_options = v; return (*this); }
+  const ForLoopTraceInfo& traceInfo() const { return m_trace_info; }
+  ThatClass& addTraceInfo(const ForLoopTraceInfo& v) { m_trace_info = v; return (*this); }
+
+  /*!
+   * \brief Positionne le pointeur conservant les statistiques d'exécution.
+   *
+   * Ce pointeur \a v doit rester valide durant toute l'exécution de la boucle.
+   */
+  void setExecStat(ForLoopOneExecStat* v) { m_exec_stat = v; }
+
+  //! Pointeur contenant les statistiques d'exécution.
+  ForLoopOneExecStat* execStat() const { return m_exec_stat; }
+
+ protected:
+
+  std::optional<ParallelLoopOptions> m_options;
+  ForLoopTraceInfo m_trace_info;
+  ForLoopOneExecStat* m_exec_stat = nullptr;
+};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -234,19 +288,19 @@ class ARCANE_UTILS_EXPORT ITaskImplementation
 
   //! Exécute une boucle 1D en concurrence
   virtual void executeParallelFor(const ComplexForLoopRanges<1>& loop_ranges,
-                                  const ParallelLoopOptions& options,
+                                  const ForLoopRunInfo& run_info,
                                   IMDRangeFunctor<1>* functor) =0;
   //! Exécute une boucle 2D en concurrence
   virtual void executeParallelFor(const ComplexForLoopRanges<2>& loop_ranges,
-                                  const ParallelLoopOptions& options,
+                                  const ForLoopRunInfo& run_info,
                                   IMDRangeFunctor<2>* functor) =0;
   //! Exécute une boucle 3D en concurrence
   virtual void executeParallelFor(const ComplexForLoopRanges<3>& loop_ranges,
-                                  const ParallelLoopOptions& options,
+                                  const ForLoopRunInfo& run_info,
                                   IMDRangeFunctor<3>* functor) =0;
   //! Exécute une boucle 4D en concurrence
   virtual void executeParallelFor(const ComplexForLoopRanges<4>& loop_ranges,
-                                  const ParallelLoopOptions& options,
+                                  const ForLoopRunInfo& run_info,
                                   IMDRangeFunctor<4>* functor) =0;
 
   //! Indique si l'implémentation est active.
@@ -273,9 +327,12 @@ class ARCANE_UTILS_EXPORT ITaskImplementation
  */
 class ARCANE_UTILS_EXPORT TaskFactory
 {
- private:
-  TaskFactory();
+  friend TaskFactoryInternal;
+
  public:
+
+  TaskFactory() = delete;
+
  public:
 
   /*!
@@ -359,7 +416,15 @@ class ARCANE_UTILS_EXPORT TaskFactory
                                  const ParallelLoopOptions& options,
                                  IMDRangeFunctor<1>* functor)
   {
-    m_impl->executeParallelFor(loop_ranges,options,functor);
+    m_impl->executeParallelFor(loop_ranges,ForLoopRunInfo(options),functor);
+  }
+
+  //! Exécute une boucle simple
+  static void executeParallelFor(const ComplexForLoopRanges<1>& loop_ranges,
+                                  const ForLoopRunInfo& run_info,
+                                  IMDRangeFunctor<1>* functor)
+  {
+    m_impl->executeParallelFor(loop_ranges,run_info,functor);
   }
 
   //! Exécute une boucle 2D
@@ -367,7 +432,15 @@ class ARCANE_UTILS_EXPORT TaskFactory
                                  const ParallelLoopOptions& options,
                                  IMDRangeFunctor<2>* functor)
   {
-    m_impl->executeParallelFor(loop_ranges,options,functor);
+    m_impl->executeParallelFor(loop_ranges,ForLoopRunInfo(options),functor);
+  }
+
+  //! Exécute une boucle 2D
+  static void executeParallelFor(const ComplexForLoopRanges<2>& loop_ranges,
+                                 const ForLoopRunInfo& run_info,
+                                 IMDRangeFunctor<2>* functor)
+  {
+    m_impl->executeParallelFor(loop_ranges,run_info,functor);
   }
 
   //! Exécute une boucle 3D
@@ -375,7 +448,15 @@ class ARCANE_UTILS_EXPORT TaskFactory
                                  const ParallelLoopOptions& options,
                                  IMDRangeFunctor<3>* functor)
   {
-    m_impl->executeParallelFor(loop_ranges,options,functor);
+    m_impl->executeParallelFor(loop_ranges,ForLoopRunInfo(options),functor);
+  }
+
+  //! Exécute une boucle 3D
+  static void executeParallelFor(const ComplexForLoopRanges<3>& loop_ranges,
+                                 const ForLoopRunInfo& run_info,
+                                 IMDRangeFunctor<3>* functor)
+  {
+    m_impl->executeParallelFor(loop_ranges,run_info,functor);
   }
 
   //! Exécute une boucle 4D
@@ -383,10 +464,18 @@ class ARCANE_UTILS_EXPORT TaskFactory
                                  const ParallelLoopOptions& options,
                                  IMDRangeFunctor<4>* functor)
   {
-    m_impl->executeParallelFor(loop_ranges,options,functor);
+    m_impl->executeParallelFor(loop_ranges,ForLoopRunInfo(options),functor);
   }
 
- //! Nombre de threads utilisés au maximum pour gérer les tâches.
+  //! Exécute une boucle 4D
+  static void executeParallelFor(const ComplexForLoopRanges<4>& loop_ranges,
+                                 const ForLoopRunInfo& run_info,
+                                 IMDRangeFunctor<4>* functor)
+  {
+    m_impl->executeParallelFor(loop_ranges,run_info,functor);
+  }
+
+  //! Nombre de threads utilisés au maximum pour gérer les tâches.
   static Int32 nbAllowedThread()
   {
     return m_impl->nbAllowedThread();
@@ -467,6 +556,7 @@ class ARCANE_UTILS_EXPORT TaskFactory
    * la modification de l'observable (ajout/suppression d'observateur)
    * n'est pas thread-safe.
    */
+  ARCANE_DEPRECATED_REASON("Y2024: This method is internal to Arcane. Do not use it")
   static IObservable* createThreadObservable();
 
   /*!
@@ -477,6 +567,7 @@ class ARCANE_UTILS_EXPORT TaskFactory
    * la modification de l'observable (ajout/suppression d'observateur)
    * n'est pas thread-safe.
    */
+  ARCANE_DEPRECATED_REASON("Y2024: This method is internal to Arcane. Do not use it")
   static IObservable* destroyThreadObservable();
 
   /*!
@@ -497,63 +588,15 @@ class ARCANE_UTILS_EXPORT TaskFactory
  public:
 
   //! \internal
+  ARCANE_DEPRECATED_REASON("Y2024: This method is internal to Arcane. "
+                           "Use TaskFactoryInternal::setImplementation() instead")
   static void _internalSetImplementation(ITaskImplementation* task_impl);
 
  private:
 
   static ITaskImplementation* m_impl;
-  static IObservable* m_created_thread_observable;
-  static IObservable* m_destroyed_thread_observable;
   static Int32 m_verbose_level;
   static ParallelLoopOptions m_default_loop_options;
-};
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
- * \brief Informations d'exécution d'une boucle.
- *
- * Cette classe permet de gérer les informations d'exécutions communes à toutes
- * les boucles.
- */
-class ARCANE_UTILS_EXPORT ForLoopRunInfo
-{
- public:
-
-  using ThatClass = ForLoopRunInfo;
-
- public:
-
-  ForLoopRunInfo() = default;
-  explicit ForLoopRunInfo(const ParallelLoopOptions& options)
-  : m_options(options) {}
-  ForLoopRunInfo(const ParallelLoopOptions& options,const ForLoopTraceInfo& trace_info)
-  : m_options(options), m_trace_info(trace_info) {}
-  explicit ForLoopRunInfo(const ForLoopTraceInfo& trace_info)
-  : m_trace_info(trace_info) {}
-
- public:
-
-  std::optional<ParallelLoopOptions> options() const { return m_options; }
-  ThatClass& addOptions(const ParallelLoopOptions& v) { m_options = v; return (*this); }
-  const ForLoopTraceInfo& traceInfo() const { return m_trace_info; }
-  ThatClass& addTraceInfo(const ForLoopTraceInfo& v) { m_trace_info = v; return (*this); }
-
-  /*!
-   * \brief Positionne le pointeur conservant les statistiques d'exécution.
-   *
-   * Ce pointeur \a v doit rester valide durant toute l'exécution de la boucle.
-   */
-  void setExecStat(ForLoopOneExecStat* v) { m_exec_stat = v; }
-
-  //! Pointeur contenant les statistiques d'exécution.
-  ForLoopOneExecStat* execStat() const { return m_exec_stat; }
-
- protected:
-
-  std::optional<ParallelLoopOptions> m_options;
-  ForLoopTraceInfo m_trace_info;
-  ForLoopOneExecStat* m_exec_stat = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -608,7 +651,7 @@ class ARCANE_UTILS_EXPORT ParallelFor1DLoopInfo
  */
 template<int RankValue,typename LambdaType,typename... ReducerArgs> inline void
 arcaneParallelFor(const ComplexForLoopRanges<RankValue>& loop_ranges,
-                  const ParallelLoopOptions& options,
+                  const ForLoopRunInfo& run_info,
                   const LambdaType& lambda_function,
                   const ReducerArgs&... reducer_args)
 {
@@ -629,7 +672,38 @@ arcaneParallelFor(const ComplexForLoopRanges<RankValue>& loop_ranges,
     arcaneSequentialFor(sub_bounds,private_lambda,reducer_args...);
   };
   LambdaMDRangeFunctor<RankValue,decltype(xfunc)> ipf(xfunc);
-  TaskFactory::executeParallelFor(loop_ranges,options,&ipf);
+  TaskFactory::executeParallelFor(loop_ranges,run_info,&ipf);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Applique en concurrence la fonction lambda \a lambda_function
+ * sur l'intervalle d'itération donné par \a loop_ranges.
+ */
+template<int RankValue,typename LambdaType,typename... ReducerArgs> inline void
+arcaneParallelFor(const ComplexForLoopRanges<RankValue>& loop_ranges,
+                  const ParallelLoopOptions& options,
+                  const LambdaType& lambda_function,
+                  const ReducerArgs&... reducer_args)
+{
+  arcaneParallelFor(loop_ranges,ForLoopRunInfo(options),lambda_function,reducer_args...);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Applique en concurrence la fonction lambda \a lambda_function
+ * sur l'intervalle d'itération donné par \a loop_ranges.
+ */
+template <int RankValue, typename LambdaType, typename... ReducerArgs> inline void
+arcaneParallelFor(const SimpleForLoopRanges<RankValue>& loop_ranges,
+                  const ForLoopRunInfo& run_info,
+                  const LambdaType& lambda_function,
+                  const ReducerArgs&... reducer_args)
+{
+  ComplexForLoopRanges<RankValue> complex_loop_ranges{ loop_ranges };
+  arcaneParallelFor(complex_loop_ranges, run_info, lambda_function, reducer_args...);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -645,7 +719,7 @@ arcaneParallelFor(const SimpleForLoopRanges<RankValue>& loop_ranges,
                   const ReducerArgs&... reducer_args)
 {
   ComplexForLoopRanges<RankValue> complex_loop_ranges{ loop_ranges };
-  arcaneParallelFor(complex_loop_ranges, options, lambda_function, reducer_args...);
+  arcaneParallelFor(complex_loop_ranges, ForLoopRunInfo(options), lambda_function, reducer_args...);
 }
 
 /*---------------------------------------------------------------------------*/

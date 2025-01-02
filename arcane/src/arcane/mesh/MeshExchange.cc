@@ -459,7 +459,7 @@ _exchangeCellDataInfos([[maybe_unused]] Int32ConstArrayView cells_new_owner,bool
     }
     sbuf->setMode(ISerializer::ModeReserve);
 
-    sbuf->reserve(DT_Int64,1); // Pour le nombre de mailles
+    sbuf->reserveInt64(1); // Pour le nombre de mailles
     sbuf->reserveArray(cells_to_comm_uid);
     sbuf->reserveArray(cells_to_comm_owner_size);
     sbuf->reserveArray(cells_to_comm_owner);
@@ -934,7 +934,7 @@ _propagatesToChildConnectivities(IItemFamily* family)
   //auto child_connectivities = m_mesh->itemFamilyNetwork()->getChildConnectivities(family);
   auto child_connectivities = m_mesh->itemFamilyNetwork()->getChildDependencies(family); // Only dependencies are required to propagate owner
   for (const auto& child_connectivity : child_connectivities){
-    //if(!child_connectivity->isEmpty())
+    if(child_connectivity)
     {
       VariableItemInt32& conn_item_new_owner = child_connectivity->targetFamily()->itemsNewOwner();
       auto accessor = IndexedItemConnectivityAccessor(child_connectivity);
@@ -991,7 +991,7 @@ _propagatesToChildDependencies(IItemFamily* family)
   //    => thus we would need to add to the DAG a method children(const Edge&) (see for the name firstRankChildren ??)
   auto child_dependencies =  m_mesh->itemFamilyNetwork()->getChildDependencies(family);
   for (const auto& child_dependency :child_dependencies){
-    //if(!child_dependency->isEmpty())
+    if(child_dependency)
     {
       auto accessor = IndexedItemConnectivityAccessor(child_dependency);
       ENUMERATE_ITEM(item, family->allItems()){
@@ -1137,7 +1137,7 @@ _exchangeCellDataInfos3()
         }
       }
       sbuf->setMode(ISerializer::ModeReserve);
-      sbuf->reserve(DT_Int64,1); // nb_item_family
+      sbuf->reserveInt64(1); // nb_item_family
       for (const auto& family: item_families)
         sbuf->reserve(family->name()); // ItemFamily->name
       sbuf->reserveInteger(item_families.size()); // ItemFamily->itemKind
@@ -1536,10 +1536,10 @@ _exchangeGhostItemDataInfos()
     }
     sbuf->setMode(ISerializer::ModeReserve);
 
-    sbuf->reserve(DT_Int64,1); // nb_item_family
+    sbuf->reserveInt64(1); // nb_item_family
     for (const auto& family: item_families)
       sbuf->reserve(family->name()); // ItemFamily->name
-    sbuf->reserve(DT_Int64,item_families.size()); // ItemFamily->itemKind
+    sbuf->reserveInt64(item_families.size()); // ItemFamily->itemKind
 
     sbuf->reserveArray(item_uids);
     sbuf->reserveArray(family_nb_items);

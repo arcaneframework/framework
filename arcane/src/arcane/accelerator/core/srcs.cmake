@@ -8,9 +8,11 @@ set( ARCANE_SOURCES
   DeviceId.h
   DeviceInfo.h
   DeviceInfoList.h
+  DeviceMemoryInfo.h
   IReduceMemoryImpl.h
   IDeviceInfoList.h
   KernelLaunchArgs.h
+  NativeStream.h
   Memory.h
   Memory.cc
   MemoryTracer.cc

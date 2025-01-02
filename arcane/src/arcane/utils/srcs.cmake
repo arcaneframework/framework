@@ -39,10 +39,12 @@ set(ARCANE_SOURCES
   ExternalRef.h
   Exception.h
   Exception.cc
+  ExtentsV.h
   Event.cc
   Event.h
   FixedArray.h
   Float16.h
+  Float128.h
   FloatingPointExceptionSentry.cc
   FloatingPointExceptionSentry.h
   FileContent.cc
@@ -55,6 +57,7 @@ set(ARCANE_SOURCES
   GoBackwardException.cc
   GoBackwardException.h
   IDataCompressor.h
+  Int128.h
   IOException.cc
   IOException.h
   IMemoryRessourceMng.h
@@ -344,6 +347,7 @@ set(ARCANE_SOURCES
   internal/MemoryBuffer.h
   internal/MemoryPool.h
   internal/ParallelLoopOptionsProperties.h
+  internal/TaskFactoryInternal.h
   )
 
 if (ARCANE_HAS_CXX20)

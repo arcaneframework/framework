@@ -13,6 +13,9 @@
 
 #include "arcane/mesh/PolyhedralMesh.h"
 
+#include "ItemFamilyNetwork.h"
+#include "ItemFamilyPolicyMng.h"
+#include "arcane/mesh/MeshExchangeMng.h"
 #include "arcane/core/ISubDomain.h"
 #include "arcane/core/ItemSharedInfo.h"
 #include "arcane/core/ItemTypeInfo.h"
@@ -26,11 +29,17 @@
 #include "arcane/core/IDoFFamily.h"
 #include "arcane/core/IMeshCompactMng.h"
 #include "arcane/core/IMeshCompacter.h"
+#include "arcane/core/IMeshExchanger.h"
+#include "arcane/core/IGhostLayerMng.h"
+#include "arcane/core/MeshVisitor.h"
 #include "arcane/core/internal/IVariableMngInternal.h"
 #include "arcane/core/internal/IPolyhedralMeshModifier.h"
+#include "arcane/core/internal/IMeshModifierInternal.h"
 
 #include "arcane/mesh/ItemFamily.h"
 #include "arcane/mesh/DynamicMeshKindInfos.h"
+#include "arcane/mesh/UnstructuredMeshUtilities.h"
+#include "arcane/mesh/GhostLayerMng.h"
 #include "arcane/utils/ITraceMng.h"
 #include "arcane/utils/FatalErrorException.h"
 
@@ -40,12 +49,25 @@
 #include "arcane/core/MeshHandle.h"
 #include "arcane/core/IItemFamily.h"
 #include "arcane/core/internal/IMeshInternal.h"
+#include "arcane/core/IVariableSynchronizer.h"
+#include "arcane/mesh/ItemFamilyPolicyMng.h"
+#include "arcane/mesh/ItemFamilySerializer.h"
 #include "arcane/utils/Collection.h"
 #include "arcane/utils/List.h"
+#include "arcane/utils/PlatformUtils.h"
 
 #include "neo/Mesh.h"
 #include "ItemConnectivityMng.h"
 
+#endif
+
+// #define ARCANE_DEBUG_POLYHEDRAL_MESH
+ #define ARCANE_DEBUG_LOAD_BALANCING
+
+#ifdef ARCANE_DEBUG_LOAD_BALANCING
+static bool arcane_debug_load_balancing = true;
+#else
+static bool arcane_debug_load_balancing = false;
 #endif
 
 /*---------------------------------------------------------------------------*/
@@ -68,6 +90,25 @@ namespace Arcane
 
 namespace mesh
 {
+
+  /*---------------------------------------------------------------------------*/
+  /*---------------------------------------------------------------------------*/
+
+  class PolyhedralFamilyPolicyMng
+    : public ItemFamilyPolicyMng
+  {
+    public:
+      PolyhedralFamilyPolicyMng(ItemFamily* family)
+        : ItemFamilyPolicyMng(family)
+        , m_family(family){}
+  public:
+    IItemFamilySerializer* createSerializer(bool use_flags) override
+    {
+      return new ItemFamilySerializer(m_family, nullptr, nullptr); // todo handle mesh incremental builder interface and IItemFamilyModifier
+    }
+  private:
+    ItemFamily* m_family;
+  };
 
   /*---------------------------------------------------------------------------*/
   /*---------------------------------------------------------------------------*/
@@ -184,6 +225,8 @@ namespace mesh
       ItemTypeInfo* dof_type_info = itm->typeFromId(IT_NullType);
       m_shared_info = _findSharedInfo(dof_type_info);
       _updateEmptyConnectivity();
+      ItemFamily::setPolicyMng(new PolyhedralFamilyPolicyMng{this});
+
     }
 
     // IDoFFamily
@@ -588,6 +631,7 @@ class mesh::PolyhedralMesh::PolyhedralMeshModifier
 
 class mesh::PolyhedralMesh::InternalApi
 : public IMeshInternal
+, public IMeshModifierInternal
 {
  public:
 
@@ -616,6 +660,11 @@ class mesh::PolyhedralMesh::InternalApi
   IPolyhedralMeshModifier* polyhedralMeshModifier() const noexcept override
   {
     return m_polyhedral_mesh_modifier.get();
+  }
+
+  void removeNeedRemoveMarkedItems() override
+  {
+    m_mesh->traceMng()->warning() << "PolyhedralMesh::removeNeedRemoveMarkedItems() not yet implemented in PolyhedralMesh";
   }
 
  private:
@@ -756,6 +805,10 @@ PolyhedralMesh(ISubDomain* subdomain, const MeshBuildInfo& mbi)
 , m_mesh_checker{ this }
 , m_internal_api{std::make_unique<InternalApi>(this)}
 , m_compact_mng{std::make_unique<NoCompactionMeshCompactMng>(this)}
+, m_mesh_utilities{std::make_unique<UnstructuredMeshUtilities>(this)}
+, m_mesh_exchange_mng{std::make_unique<MeshExchangeMng>(this)}
+, m_item_family_network{std::make_unique<ItemFamilyNetwork>(m_trace_mng)}
+, m_ghost_layer_mng{std::make_unique<GhostLayerMng>(m_trace_mng)}
 {
   m_mesh_handle._setMesh(this);
   m_mesh_item_internal_list.mesh = this;
@@ -810,8 +863,7 @@ allocateItems(const Arcane::ItemAllocationInfo& item_allocation_info)
   m_mesh->applyScheduledOperations();
   // Create variable for coordinates. This has to be done before call to family::endUpdate. Todo add to the graph
   for (auto& family_info : item_allocation_info.family_infos) {
-    if (family_info.item_coordinates.empty()) {
-      ++family_index;
+    if (family_info.item_kind != IK_Node && family_info.item_coordinates.empty()) { // variable is created for node even if no coords (parallel)
       continue;
     }
     auto* item_family = _findItemFamily(family_info.item_kind, family_info.name);
@@ -1091,6 +1143,21 @@ endUpdate()
       m_default_arcane_families[ik] = m_empty_arcane_families[ik].get();
     }
   }
+  // Wip add a first version of a family network. Should be done automatically in addConectivity
+  m_item_family_network->addDependency(itemFamily(IK_Cell), itemFamily(IK_Node), nullptr);
+  m_item_family_network->addDependency(itemFamily(IK_Cell), itemFamily(IK_Face), nullptr);
+  m_item_family_network->addDependency(itemFamily(IK_Cell), itemFamily(IK_Edge), nullptr);
+  m_item_family_network->addDependency(itemFamily(IK_Face), itemFamily(IK_Node),nullptr);
+  m_item_family_network->addDependency(itemFamily(IK_Edge), itemFamily(IK_Node),nullptr);
+  m_item_family_network->addRelation(itemFamily(IK_Face), itemFamily(IK_Edge),nullptr);
+  m_item_family_network->addRelation(itemFamily(IK_Face), itemFamily(IK_Face),nullptr);
+  m_item_family_network->addRelation(itemFamily(IK_Face), itemFamily(IK_Cell),nullptr);
+  m_item_family_network->addRelation(itemFamily(IK_Edge), itemFamily(IK_Cell),nullptr);
+  m_item_family_network->addRelation(itemFamily(IK_Node), itemFamily(IK_Cell),nullptr);
+  m_item_family_network->addRelation(itemFamily(IK_Node), itemFamily(IK_Face),nullptr);
+  m_item_family_network->addRelation(itemFamily(IK_Node), itemFamily(IK_Edge),nullptr);
+  m_item_family_network->addRelation(itemFamily(IK_Edge), itemFamily(IK_Face),nullptr);
+
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1327,6 +1394,152 @@ removeItems(Int32ConstArrayView local_ids, eItemKind ik, const String& family_na
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+void mesh::PolyhedralMesh::
+addNodes(Int64ConstArrayView nodes_uid, Int32ArrayView nodes_lid)
+{
+  addItems(nodes_uid, nodes_lid, IK_Node, nodeFamily()->name());
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void mesh::PolyhedralMesh::
+exchangeItems()
+{
+  m_trace_mng->info() << "PolyhedralMesh::_exchangeItems() do_compact?=" << "false"
+      << " nb_exchange=" << 0 << " version=" << 0;
+  _exchangeItems();
+  String check_exchange = platform::getEnvironmentVariable("ARCANE_CHECK_EXCHANGE");
+  if (!check_exchange.null()){
+    m_mesh_checker.checkGhostCells();
+    m_trace_mng->pwarning() << "CHECKING SYNCHRONISATION !";
+    m_mesh_checker.checkVariablesSynchronization();
+    m_mesh_checker.checkItemGroupsSynchronization();
+  }
+  if (checkLevel()>=2)
+    m_mesh_checker.checkValidMesh();
+  else if (checkLevel()>=1)
+    m_mesh_checker.checkValidConnectivity();
+
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void mesh::PolyhedralMesh::
+_exchangeItems()
+{
+  // todo handle submeshes, cf. DynamicMesh
+
+  Trace::Setter mci(traceMng(),_className());
+
+  if (!m_is_dynamic)
+    ARCANE_FATAL("property isDynamic() has to be 'true'");
+
+  if (arcane_debug_load_balancing){
+    // TODO: faire cela dans le MeshExchanger et par famille.
+    for (auto& family : m_arcane_families) {
+      family->itemsNewOwner().checkIfSync();
+    }
+  }
+
+  IMeshExchanger* iexchanger = m_mesh_exchange_mng->beginExchange();
+
+  // If no entity to exchange return
+  if (iexchanger->computeExchangeInfos()){
+    m_trace_mng->pwarning() << "No load balance is performed";
+    m_mesh_exchange_mng->endExchange();
+    return;
+  }
+
+  // Do exchange info
+  iexchanger->processExchange();
+
+  // Remove items no longer on the current subdomain
+  iexchanger->removeNeededItems();
+
+  // Update groups : remove gone entities
+  // invalidate computed groups
+  {
+    auto action = [](ItemGroup& group)
+    {
+      if (group.internal()->hasComputeFunctor() || group.isLocalToSubDomain())
+        group.invalidate();
+      else
+        group.internal()->removeSuppressedItems();
+    };
+    // todo update submeshes
+    meshvisitor::visitGroups(this, action);
+  }
+
+  iexchanger->allocateReceivedItems();
+
+  // todo update families (endUpdate and compute SynchronizeInfo cf. DynamicMesh::_internalEndUpdateInit(true);)
+
+  // Update groups
+  iexchanger->updateItemGroups();
+
+  auto action = [](ItemGroup& group)
+  {
+    if (group.hasSynchronizer())
+      group.synchronizer()->compute();
+  };
+
+  m_trace_mng->info() << "Computing group synchronization information for " << name();
+  meshvisitor::visitGroups(this,action);
+
+  iexchanger->updateVariables();
+
+  // todo DynamicMesh::_internalEndUpdateFinal(bool)
+
+  iexchanger->finalizeExchange();
+
+  // TODO: garantir cet appel en cas d'exception.
+  m_mesh_exchange_mng->endExchange();
+
+  // // todo handle extra ghost
+  // if (m_extra_ghost_cells_builder->hasBuilder() || m_extra_ghost_particles_builder->hasBuilder())
+  //   this->endUpdate(true,false);
+  // else
+  this->endUpdate();
+
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void mesh::PolyhedralMesh::
+prepareForDump()
+{
+  // do nothing for now
+  auto want_dump = false;
+  auto need_compact = false;
+  m_trace_mng->info(4) << "DynamicMesh::prepareForDump() name=" << name()
+          << " need_compact?=" << need_compact
+          << " want_dump?=" << want_dump
+          << " timestamp=" << 0;
+
+  {
+    eMeshEventType t = eMeshEventType::BeginPrepareDump;
+    m_mesh_events.eventObservable(t).notify(MeshEventArgs(this,t));
+  }
+
+  // todo use Properties
+  if (want_dump) {
+    for (auto& family : m_arcane_families) {
+      family->prepareForDump();
+    }
+  }
+
+  {
+    eMeshEventType t = eMeshEventType::EndPrepareDump;
+    m_mesh_events.eventObservable(t).notify(MeshEventArgs(this,t));
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 CellGroup mesh::PolyhedralMesh::
 allActiveCells()
 {
@@ -1389,9 +1602,66 @@ innerActiveFaces()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-FaceGroup mesh::PolyhedralMesh::outerActiveFaces()
+FaceGroup mesh::PolyhedralMesh::
+outerActiveFaces()
 {
   return allCells().outerActiveFaceGroup();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+IMeshUtilities* mesh::PolyhedralMesh::
+utilities()
+{
+  return m_mesh_utilities.get();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+VariableItemInt32& mesh::PolyhedralMesh::
+itemsNewOwner(eItemKind ik)
+{
+  IItemFamily* item_family = _itemFamily(ik);
+  ARCANE_CHECK_POINTER(item_family);
+  return item_family->itemsNewOwner();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Integer mesh::PolyhedralMesh::
+checkLevel() const
+{
+  return m_mesh_checker.checkLevel();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+IItemFamilyNetwork* mesh::PolyhedralMesh::
+itemFamilyNetwork()
+{
+  return m_item_family_network.get();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+IGhostLayerMng* mesh::PolyhedralMesh::
+ghostLayerMng() const
+{
+  return m_ghost_layer_mng.get();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+IMeshModifierInternal* mesh::PolyhedralMesh::
+_modifierInternalApi()
+{
+  return m_internal_api.get();
 }
 
 /*---------------------------------------------------------------------------*/

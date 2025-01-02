@@ -280,8 +280,8 @@ prepareToSend()
         if (lid != NULL_ITEM_LOCAL_ID)
           ++sub_dest_item_count;
       }
-      sbuf->reserve(DT_Int64,1);
-      sbuf->reserveSpan(DT_Int64,sub_dest_item_count);
+      sbuf->reserveInt64(1);
+      sbuf->reserveSpan(eBasicDataType::Int64,sub_dest_item_count);
     }    
 
     _applySerializeStep(IItemFamilySerializeStep::PH_Item,serialize_args);

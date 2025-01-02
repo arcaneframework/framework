@@ -1,16 +1,16 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* AbstractDataVisitor.h                                       (C) 2000-2023 */
+/* AbstractDataVisitor.h                                       (C) 2000-2024 */
 /*                                                                           */
 /* Visiteur abstrait pour une donnée.                                        */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_ABSTRACTDATAVISITOR_H
-#define ARCANE_ABSTRACTDATAVISITOR_H
+#ifndef ARCANE_CORE_ABSTRACTDATAVISITOR_H
+#define ARCANE_CORE_ABSTRACTDATAVISITOR_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -45,6 +45,7 @@ class ARCANE_CORE_EXPORT AbstractScalarDataVisitor
 
   virtual void applyVisitor(IScalarDataT<Byte>* data);
   virtual void applyVisitor(IScalarDataT<Real>* data);
+  virtual void applyVisitor(IScalarDataT<Int8>* data);
   virtual void applyVisitor(IScalarDataT<Int16>* data);
   virtual void applyVisitor(IScalarDataT<Int32>* data);
   virtual void applyVisitor(IScalarDataT<Int64>* data);
@@ -52,6 +53,9 @@ class ARCANE_CORE_EXPORT AbstractScalarDataVisitor
   virtual void applyVisitor(IScalarDataT<Real3>* data);
   virtual void applyVisitor(IScalarDataT<Real2x2>* data);
   virtual void applyVisitor(IScalarDataT<Real3x3>* data);
+  virtual void applyVisitor(IScalarDataT<Float16>* data);
+  virtual void applyVisitor(IScalarDataT<BFloat16>* data);
+  virtual void applyVisitor(IScalarDataT<Float32>* data);
   virtual void applyVisitor(IScalarDataT<String>* data);
 
  protected:
@@ -74,6 +78,7 @@ class ARCANE_CORE_EXPORT AbstractArrayDataVisitor
 
   virtual void applyVisitor(IArrayDataT<Byte>* data);
   virtual void applyVisitor(IArrayDataT<Real>* data);
+  virtual void applyVisitor(IArrayDataT<Int8>* data);
   virtual void applyVisitor(IArrayDataT<Int16>* data);
   virtual void applyVisitor(IArrayDataT<Int32>* data);
   virtual void applyVisitor(IArrayDataT<Int64>* data);
@@ -81,6 +86,9 @@ class ARCANE_CORE_EXPORT AbstractArrayDataVisitor
   virtual void applyVisitor(IArrayDataT<Real3>* data);
   virtual void applyVisitor(IArrayDataT<Real2x2>* data);
   virtual void applyVisitor(IArrayDataT<Real3x3>* data);
+  virtual void applyVisitor(IArrayDataT<Float16>* data);
+  virtual void applyVisitor(IArrayDataT<BFloat16>* data);
+  virtual void applyVisitor(IArrayDataT<Float32>* data);
   virtual void applyVisitor(IArrayDataT<String>* data);
 
  protected:
@@ -103,6 +111,7 @@ class ARCANE_CORE_EXPORT AbstractArray2DataVisitor
 
   virtual void applyVisitor(IArray2DataT<Byte>* data);
   virtual void applyVisitor(IArray2DataT<Real>* data);
+  virtual void applyVisitor(IArray2DataT<Int8>* data);
   virtual void applyVisitor(IArray2DataT<Int16>* data);
   virtual void applyVisitor(IArray2DataT<Int32>* data);
   virtual void applyVisitor(IArray2DataT<Int64>* data);
@@ -110,6 +119,9 @@ class ARCANE_CORE_EXPORT AbstractArray2DataVisitor
   virtual void applyVisitor(IArray2DataT<Real3>* data);
   virtual void applyVisitor(IArray2DataT<Real2x2>* data);
   virtual void applyVisitor(IArray2DataT<Real3x3>* data);
+  virtual void applyVisitor(IArray2DataT<Float16>* data);
+  virtual void applyVisitor(IArray2DataT<BFloat16>* data);
+  virtual void applyVisitor(IArray2DataT<Float32>* data);
 
  protected:
   

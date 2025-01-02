@@ -463,7 +463,7 @@ int main(int argc, char** argv)
     auto run = [&](auto& alg)
               {
                 typedef typename
-                    boost::remove_reference<decltype(alg)>::type AlgebraType ;
+                std::remove_reference<decltype(alg)>::type AlgebraType ;
                 typedef typename AlgebraType::BackEndType        BackEndType ;
                 typedef Alien::Iteration<AlgebraType>            StopCriteriaType ;
 
@@ -505,8 +505,7 @@ int main(int argc, char** argv)
     // clang-format off
     auto run = [&](auto& alg)
               {
-                typedef typename
-                    boost::remove_reference<decltype(alg)>::type AlgebraType ;
+                typedef typename std::remove_reference<decltype(alg)>::type AlgebraType ;
                 typedef typename AlgebraType::BackEndType        BackEndType ;
                 typedef Alien::Iteration<AlgebraType>            StopCriteriaType ;
 
@@ -679,8 +678,7 @@ int main(int argc, char** argv)
     // clang-format off
     auto run_sycl = [&](auto& alg)
               {
-                typedef typename
-                    boost::remove_reference<decltype(alg)>::type AlgebraType ;
+                typedef typename std::remove_reference<decltype(alg)>::type AlgebraType ;
                 typedef typename AlgebraType::BackEndType        BackEndType ;
                 typedef Alien::Iteration<AlgebraType>            StopCriteriaType ;
 

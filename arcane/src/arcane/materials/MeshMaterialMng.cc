@@ -49,6 +49,7 @@
 #include "arcane/materials/internal/MeshMaterialSynchronizer.h"
 #include "arcane/materials/internal/MeshMaterialVariableSynchronizer.h"
 #include "arcane/materials/internal/ConstituentConnectivityList.h"
+#include "arcane/materials/internal/AllCellToAllEnvCellContainer.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -131,7 +132,6 @@ MeshMaterialMng(const MeshHandle& mesh_handle,const String& name)
 , m_internal_api(std::make_unique<InternalApi>(this))
 , m_variable_mng(mesh_handle.variableMng())
 , m_name(name)
-, m_all_cell_to_all_env_cell(MemoryUtils::getDefaultDataAllocator())
 {
   m_all_env_data = std::make_unique<AllEnvData>(this);
   m_exchange_mng = std::make_unique<MeshMaterialExchangeMng>(this);
@@ -141,7 +141,7 @@ MeshMaterialMng(const MeshHandle& mesh_handle,const String& name)
 
   String s = platform::getEnvironmentVariable("ARCANE_ALLENVCELL_FOR_RUNCOMMAND");
   if (!s.null())
-    m_is_allcell_2_allenvcell = true;
+    m_is_use_accelerator_envcell_container = true;
   m_mms = new MeshMaterialSynchronizer(this);
 }
 
@@ -182,10 +182,7 @@ MeshMaterialMng::
   m_modifier.reset();
   m_internal_api.reset();
 
-  if (m_allcell_2_allenvcell){
-    m_all_cell_to_all_env_cell.clear();
-    m_allcell_2_allenvcell = nullptr;
-  }
+  m_accelerator_envcell_container.reset();
 
   // On détruit le Runner à la fin pour être sur qu'il n'y a plus de
   // références dessus dans les autres instances.
@@ -208,6 +205,21 @@ build()
       m_variable_factory_mng->registerFactory(x->createFactory());
       x = x->nextRegisterer();
     }
+  }
+
+  // Indique si on utilise l'API accélérateur pour le calcul des entités
+  // de ConstituentItemVectorImpl
+  {
+    if (auto v = Convert::Type<Real>::tryParseFromEnvironment("ARCANE_MATERIALMNG_USE_ACCELERATOR_FOR_CONSTITUENTITEMVECTOR", true)){
+      m_is_use_accelerator_for_constituent_item_vector = (v.value()!=0);
+    }
+    // N'active pas l'utilisation des RunQueue pour le calcul
+    // des 'ComponentItemVector' si le multi-threading est actif. Actuellement
+    // l'utilisation d'une même RunQueue n'est pas multi-thread (et donc
+    // on ne peut pas créer des ComponentItemVector en concurrence)
+    if (TaskFactory::isActive())
+      m_is_use_accelerator_for_constituent_item_vector = false;
+    info() << "Use accelerator API for 'ConstituentItemVectorImpl' = " << m_is_use_accelerator_for_constituent_item_vector;
   }
 
   // Positionne le runner par défaut
@@ -303,15 +315,6 @@ build()
         m_additional_capacity_ratio = v.value();
         info() << "Set additional capacity ratio to " << m_additional_capacity_ratio;
       }
-    }
-  }
-
-  // Indique si on utilise l'API accélérateur pour le calcul des entités
-  // de ConstituentItemVectorImpl
-  {
-    if (auto v = Convert::Type<Real>::tryParseFromEnvironment("ARCANE_MATERIALMNG_USE_ACCELERATOR_FOR_CONSTITUENTITEMVECTOR", true)){
-      m_is_use_accelerator_for_constituent_item_vector = (v.value()!=0);
-      info() << "Use accelerator APU for 'ConstituentItemVectorImpl' = " << m_is_use_accelerator_for_constituent_item_vector;
     }
   }
 
@@ -748,7 +751,7 @@ checkValid()
         MatCell mc = ec.cell(k);
         matimpl::ConstituentItemBase mci = mc.constituentItemBase();
         if (eii!=mci._superItemBase())
-          ARCANE_FATAL("Bad corresponding env_item in mat_item");
+          ARCANE_FATAL("Bad corresponding env_item in mat_item k={0} mc={1}",k,mc);
         if (mci.globalItemBase()!=cell)
           ARCANE_FATAL("Bad corresponding globalItem() in mat_item");
         if (mci.level()!=LEVEL_MATERIAL)
@@ -1328,11 +1331,9 @@ _dumpStats()
 void MeshMaterialMng::
 createAllCellToAllEnvCell()
 {
-  if (!m_allcell_2_allenvcell){
-    m_all_cell_to_all_env_cell.reserve(1);
-    m_all_cell_to_all_env_cell.add(AllCellToAllEnvCell(this));
-    m_allcell_2_allenvcell = m_all_cell_to_all_env_cell.view().ptrAt(0);
-    m_allcell_2_allenvcell->initialize();
+  if (!m_accelerator_envcell_container) {
+    m_accelerator_envcell_container = std::make_unique<AllCellToAllEnvCellContainer>(this);
+    m_accelerator_envcell_container->initialize();
   }
 }
 

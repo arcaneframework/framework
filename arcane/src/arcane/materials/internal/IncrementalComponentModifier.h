@@ -65,6 +65,8 @@ class ARCANE_MATERIALS_EXPORT IncrementalComponentModifier
   bool m_is_debug = false;
   //! 1 ou 2 si on utilise une version générique pour les copies entre pure et partiel
   Int32 m_use_generic_copy_between_pure_and_partial = 0;
+  //! Vrai si on force à utiliser une seule commande pour le redimensionnement.
+  bool m_force_multiple_command_for_resize = false;
 
  public:
 

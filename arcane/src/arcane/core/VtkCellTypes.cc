@@ -1,31 +1,33 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* VtkCellTypes.cc                                             (C) 2000-2023 */
+/* VtkCellTypes.cc                                             (C) 2000-2024 */
 /*                                                                           */
 /* Définitions des types de maille de VTK.                                   */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/std/internal/VtkCellTypes.h"
+#include "arcane/core/internal/VtkCellTypes.h"
+
 #include "arcane/utils/IOException.h"
 #include "arcane/utils/FatalErrorException.h"
-#include "arcane/ArcaneTypes.h"
+
+#include "arcane/core/ArcaneTypes.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arcane::VtkUtils
+namespace Arcane
 {
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-extern "C++" Int16
+Int16 VtkUtils::
 vtkToArcaneCellType(int vtk_type, Int32 nb_node)
 {
   switch (vtk_type) {
@@ -78,7 +80,7 @@ vtkToArcaneCellType(int vtk_type, Int32 nb_node)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-extern "C++" unsigned char
+unsigned char VtkUtils::
 arcaneToVtkCellType(Int16 arcane_type)
 {
   switch (arcane_type) {

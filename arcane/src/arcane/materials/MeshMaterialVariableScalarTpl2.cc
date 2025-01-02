@@ -1,28 +1,36 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* RunQueueInternal.cc                                         (C) 2000-2022 */
+/* MeshMaterialVariableScalar.cc                               (C) 2000-2024 */
 /*                                                                           */
-/* Implémentation de la gestion d'une file d'exécution sur accélérateur.     */
+/* Variable scalaire sur un matériau du maillage.                            */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/accelerator/RunQueueInternal.h"
+#include "arcane/materials/MeshMaterialVariableScalar.inst.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arcane::Accelerator::impl
+namespace Arcane::Materials
 {
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arcane::Accelerator
+ARCANE_INSTANTIATE_MAT(Int64);
+ARCANE_INSTANTIATE_MAT(BFloat16);
+ARCANE_INSTANTIATE_MAT(Float16);
+ARCANE_INSTANTIATE_MAT(Float32);
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+} // End namespace Arcane::materials
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

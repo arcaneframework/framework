@@ -42,18 +42,21 @@ void _doTest1()
   ASSERT_TRUE(queue.executionPolicy() == exec_policy);
 
   eMemoryResource mr = eMemoryResource::Host;
-  ASSERT_EQ(MemoryUtils::getAllocator(mr)->memoryResource(),mr);
+  ASSERT_EQ(MemoryUtils::getAllocator(mr)->memoryResource(), mr);
 
-  if (queue.isAcceleratorPolicy()){
+  if (queue.isAcceleratorPolicy()) {
     mr = eMemoryResource::HostPinned;
-    ASSERT_EQ(MemoryUtils::getAllocator(mr)->memoryResource(),mr);
+    ASSERT_EQ(MemoryUtils::getAllocator(mr)->memoryResource(), mr);
 
     mr = eMemoryResource::Device;
-    ASSERT_EQ(MemoryUtils::getAllocator(mr)->memoryResource(),mr);
+    ASSERT_EQ(MemoryUtils::getAllocator(mr)->memoryResource(), mr);
 
     mr = eMemoryResource::UnifiedMemory;
-    ASSERT_EQ(MemoryUtils::getAllocator(mr)->memoryResource(),mr);
+    ASSERT_EQ(MemoryUtils::getAllocator(mr)->memoryResource(), mr);
   }
+
+  size_t alignment = MemoryUtils::getDefaultDataAllocator()->guaranteedAlignment({});
+  ASSERT_GE(alignment, 64);
 }
 
 /*---------------------------------------------------------------------------*/

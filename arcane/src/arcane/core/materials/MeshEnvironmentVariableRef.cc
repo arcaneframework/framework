@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshMaterialVariableRef.cc                                  (C) 2000-2022 */
+/* MeshMaterialVariableRef.cc                                  (C) 2000-2024 */
 /*                                                                           */
 /* Référence à une variable sur un matériau du maillage.                     */
 /*---------------------------------------------------------------------------*/
@@ -15,10 +15,7 @@
 
 #include "arcane/utils/NotImplementedException.h"
 #include "arcane/utils/TraceInfo.h"
-#include "arcane/utils/Real2.h"
-#include "arcane/utils/Real3.h"
-#include "arcane/utils/Real2x2.h"
-#include "arcane/utils/Real3x3.h"
+#include "arcane/utils/NumericTypes.h"
 
 #include "arcane/MeshVariableScalarRef.h"
 #include "arcane/ArcaneException.h"
@@ -363,9 +360,13 @@ _setContainerView()
   template class ARCANE_TEMPLATE_EXPORT CellEnvironmentVariableArrayRef<type>
 
 ARCANE_INSTANTIATE_MAT(Byte);
+ARCANE_INSTANTIATE_MAT(Int8);
 ARCANE_INSTANTIATE_MAT(Int16);
 ARCANE_INSTANTIATE_MAT(Int32);
 ARCANE_INSTANTIATE_MAT(Int64);
+ARCANE_INSTANTIATE_MAT(BFloat16);
+ARCANE_INSTANTIATE_MAT(Float16);
+ARCANE_INSTANTIATE_MAT(Float32);
 ARCANE_INSTANTIATE_MAT(Real);
 ARCANE_INSTANTIATE_MAT(Real2);
 ARCANE_INSTANTIATE_MAT(Real3);

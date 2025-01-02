@@ -1,17 +1,15 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ProfPerformanceService.cc                                   (C) 2000-2023 */
+/* ProfPerformanceService.cc                                   (C) 2000-2024 */
 /*                                                                           */
 /* Informations de performances utilisant les signaux de profiling.          */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-#include "arcane/utils/ArcanePrecomp.h"
 
 #include "arcane/utils/ValueConvert.h"
 #include "arcane/utils/NotImplementedException.h"
@@ -203,6 +201,12 @@ _arcaneProfilingSigFunc(int signum)
   }
 }
 
+extern "C" void
+_arcaneProfilingSigactionFunc(int val, siginfo_t*,void*)
+{
+  _arcaneProfilingSigFunc(val);
+}
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -227,7 +231,13 @@ startProfiling()
 {
   global_is_active = true;
   global_infos->startProfiling();
-  ::sigset(SIGPROF,_arcaneProfilingSigFunc);
+
+  struct sigaction sa;
+  sa.sa_flags = SA_SIGINFO | SA_NODEFER;
+  sigemptyset(&sa.sa_mask);
+  sa.sa_sigaction = _arcaneProfilingSigactionFunc;
+  sigaction(SIGPROF, &sa, nullptr);
+
   _setTimer(global_timer_period);
 }
 
@@ -249,7 +259,13 @@ stopProfiling()
     return;
   global_is_active = false;
   _setTimer(global_timer_period);
-  ::sigset(SIGPROF,SIG_IGN);
+
+  struct sigaction sa;
+  sa.sa_flags = SA_SIGINFO | SA_NODEFER;
+  sigemptyset(&sa.sa_mask);
+  sa.sa_handler = SIG_IGN;
+  sigaction(SIGPROF, &sa, nullptr);
+
   //info() << "PROFILING: stop profiling nb_total=" << nb_total;
   global_infos->stopProfiling();
   //global_infos->printInfos();

@@ -23,6 +23,7 @@
 #include "arcane/core/ArcaneTypes.h"
 
 #include "arcane/mesh/EmptyMesh.h"
+#include "arcane/mesh/EmptyMeshModifier.h"
 #include "arcane/mesh/MeshEventsImpl.h"
 
 #include "arcane/core/ItemAllocationInfo.h"
@@ -50,6 +51,9 @@
 namespace Arcane
 {
 class ISubDomain;
+class IItemFamilyNetwork;
+class IGhostLayerMng;
+class IMeshExchangeMng;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -65,6 +69,7 @@ class PolyhedralFamily;
 
 class PolyhedralMesh
 : public EmptyMesh
+, public EmptyMeshModifier
 , public IPolyhedralMeshInitialAllocator
 {
 
@@ -144,6 +149,11 @@ class PolyhedralMesh
   List<IItemFamily*> m_item_family_collection;
   std::unique_ptr<InternalApi> m_internal_api;
   std::unique_ptr<IMeshCompactMng> m_compact_mng;
+  std::unique_ptr<IMeshUtilities> m_mesh_utilities;
+  std::unique_ptr<IMeshExchangeMng> m_mesh_exchange_mng;
+  std::unique_ptr<IItemFamilyNetwork> m_item_family_network;
+  std::unique_ptr<IGhostLayerMng> m_ghost_layer_mng;
+  bool m_is_dynamic = false;
 
   // IPrimaryMeshBase interface
   IMeshInitialAllocator* initialAllocator() override { return &m_initial_allocator; }
@@ -231,7 +241,7 @@ class PolyhedralMesh
 
   void destroyGroups() override;
 
-  IGhostLayerMng* ghostLayerMng() const override { return nullptr; }
+  IGhostLayerMng* ghostLayerMng() const override;
 
   void checkValidMesh() override
   {
@@ -250,8 +260,16 @@ class PolyhedralMesh
 
   IMeshCompactMng* _compactMng() override;
 
+  void exchangeItems() override;
+
   // For now, use _internalAPI()->polyhedralMeshModifier instead of IMeshModifier not implemented yet
-  IMeshModifier* modifier() override {return nullptr;}
+  IMeshModifier* modifier() override {return this;}
+  bool isDynamic() const override {return m_is_dynamic;}
+  void setDynamic(bool is_dynamic) override { m_is_dynamic = is_dynamic;}
+
+  IMeshUtilities* utilities() override;
+
+  void addNodes(Int64ConstArrayView nodes_uid, Int32ArrayView nodes_lid) override; // wip: add IMeshModifierAPI
 
   // AMR is not activated with Polyhedral mesh. All items are thus active.
   CellGroup allActiveCells() override;
@@ -263,9 +281,23 @@ class PolyhedralMesh
   FaceGroup innerActiveFaces() override;
   FaceGroup outerActiveFaces() override;
 
+  IMeshPartitionConstraintMng* partitionConstraintMng() override { return nullptr; }
+
+  VariableItemInt32& itemsNewOwner(eItemKind ik) override;
+
+  IItemFamilyNetwork* itemFamilyNetwork() override;
+
+  Integer checkLevel() const override;
 
   IUserDataList* userDataList() override { return m_mesh_handle.meshUserDataList(); }
   const IUserDataList* userDataList() const override { return m_mesh_handle.meshUserDataList(); }
+
+  void prepareForDump() override;
+
+  bool useMeshItemFamilyDependencies() const override {return true;}
+
+  IMeshModifierInternal* _modifierInternalApi() override;
+
  private:
 
   void addItems(Int64ConstArrayView unique_ids, Int32ArrayView local_ids, eItemKind ik, const String& family_name);
@@ -274,6 +306,9 @@ class PolyhedralMesh
   PolyhedralFamily* _createItemFamily(eItemKind ik, const String& name);
   PolyhedralFamily* _itemFamily(eItemKind ik);
   PolyhedralFamily* _findItemFamily(eItemKind ik, const String& name, bool create_if_needed = false);
+  const char* _className() const { return "PolyhedralMesh"; }
+
+ void _exchangeItems();
 
 #endif // ARCANE_HAS_POLYHEDRAL_MESH_TOOLS
 

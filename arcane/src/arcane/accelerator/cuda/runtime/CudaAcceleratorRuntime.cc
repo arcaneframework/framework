@@ -36,6 +36,9 @@
 #include "arcane/accelerator/core/internal/IRunQueueEventImpl.h"
 #include "arcane/accelerator/core/PointerAttribute.h"
 #include "arcane/accelerator/core/RunQueue.h"
+#include "arcane/accelerator/core/DeviceMemoryInfo.h"
+#include "arcane/accelerator/core/NativeStream.h"
+
 #include "arcane/accelerator/cuda/runtime/internal/Cupti.h"
 
 #include <iostream>
@@ -148,15 +151,16 @@ class CudaRunQueueStream
     int device = cudaCpuDeviceId;
     if (!d.isHost())
       device = d.asInt32();
-    //std::cout << "PREFETCH device=" << device << " host=" << cudaCpuDeviceId << " size=" << args.source().length() << "\n";
+    //std::cout << "PREFETCH device=" << device << " host(id)=" << cudaCpuDeviceId
+    //          << " size=" << args.source().size() << " data=" << src.data() << "\n";
     auto r = cudaMemPrefetchAsync(src.data(), src.size(), device, m_cuda_stream);
     ARCANE_CHECK_CUDA(r);
     if (!args.isAsync())
       barrier();
   }
-  void* _internalImpl() override
+  impl::NativeStream nativeStream() override
   {
-    return &m_cuda_stream;
+    return impl::NativeStream(&m_cuda_stream);
   }
 
  public:
@@ -367,6 +371,24 @@ class CudaRunnerRuntime
                           ptr, ca.devicePointer, ca.hostPointer);
   }
 
+  DeviceMemoryInfo getDeviceMemoryInfo(DeviceId device_id) override
+  {
+    int d = 0;
+    int wanted_d = device_id.asInt32();
+    ARCANE_CHECK_CUDA(cudaGetDevice(&d));
+    if (d != wanted_d)
+      ARCANE_CHECK_CUDA(cudaSetDevice(wanted_d));
+    size_t free_mem = 0;
+    size_t total_mem = 0;
+    ARCANE_CHECK_CUDA(cudaMemGetInfo(&free_mem, &total_mem));
+    if (d != wanted_d)
+      ARCANE_CHECK_CUDA(cudaSetDevice(d));
+    DeviceMemoryInfo dmi;
+    dmi.setFreeMemory(free_mem);
+    dmi.setTotalMemory(total_mem);
+    return dmi;
+  }
+
   void pushProfilerRange(const String& name, Int32 color_rgb) override
   {
 #ifdef ARCANE_HAS_CUDA_NVTOOLSEXT
@@ -442,6 +464,12 @@ fillDevices(bool is_verbose)
     o << " integrated = " << dp.integrated << "\n";
     o << " canMapHostMemory = " << dp.canMapHostMemory << "\n";
     o << " computeMode = " << dp.computeMode << "\n";
+    o << " directManagedMemAccessFromHost = " << dp.directManagedMemAccessFromHost << "\n";
+    o << " hostNativeAtomicSupported = " << dp.hostNativeAtomicSupported << "\n";
+    o << " pageableMemoryAccess = " << dp.pageableMemoryAccess << "\n";
+    o << " concurrentManagedAccess = " << dp.concurrentManagedAccess << "\n";
+    o << " pageableMemoryAccessUsesHostPageTables = " << dp.pageableMemoryAccessUsesHostPageTables << "\n";
+    o << " hostNativeAtomicSupported = " << dp.hostNativeAtomicSupported << "\n";
     o << " maxThreadsDim = " << dp.maxThreadsDim[0] << " " << dp.maxThreadsDim[1]
       << " " << dp.maxThreadsDim[2] << "\n";
     o << " maxGridSize = " << dp.maxGridSize[0] << " " << dp.maxGridSize[1]

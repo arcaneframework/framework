@@ -24,6 +24,7 @@
 #include "arcane/accelerator/core/Runner.h"
 #include "arcane/accelerator/core/RunQueueEvent.h"
 #include "arcane/accelerator/core/Memory.h"
+#include "arcane/accelerator/core/NativeStream.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -178,7 +179,6 @@ executionPolicy() const
 impl::IRunnerRuntime* RunQueue::
 _internalRuntime() const
 {
-  _checkNotNull();
   return m_p->_internalRuntime();
 }
 
@@ -188,7 +188,6 @@ _internalRuntime() const
 impl::IRunQueueStream* RunQueue::
 _internalStream() const
 {
-  _checkNotNull();
   return m_p->_internalStream();
 }
 
@@ -198,7 +197,6 @@ _internalStream() const
 impl::RunCommandImpl* RunQueue::
 _getCommandImpl() const
 {
-  _checkNotNull();
   return m_p->_internalCreateOrGetRunCommandImpl();
 }
 
@@ -215,12 +213,21 @@ _internalImpl() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+impl::NativeStream RunQueue::
+_internalNativeStream() const
+{
+  if (m_p)
+    return m_p->_internalStream()->nativeStream();
+  return {};
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 void* RunQueue::
 platformStream() const
 {
-  if (m_p)
-    return m_p->_internalStream()->_internalImpl();
-  return nullptr;
+  return _internalNativeStream().m_native_pointer;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -356,6 +363,29 @@ memoryRessource() const
   if (m_p)
     return m_p->m_memory_ressource;
   return eMemoryRessource::Unknown;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void RunQueue::
+setConcurrentCommandCreation(bool v)
+{
+  _checkNotNull();
+  if (isAcceleratorPolicy())
+    ARCANE_FATAL("setting concurrent command creation is not supported for RunQueue running on accelerator");
+  m_p->setConcurrentCommandCreation(v);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+bool RunQueue::
+isConcurrentCommandCreation() const
+{
+  if (m_p)
+    return m_p->isConcurrentCommandCreation();
+  return false;
 }
 
 /*---------------------------------------------------------------------------*/

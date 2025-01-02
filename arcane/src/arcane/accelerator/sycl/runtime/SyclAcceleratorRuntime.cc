@@ -22,12 +22,14 @@
 
 #include "arcane/accelerator/core/RunQueueBuildInfo.h"
 #include "arcane/accelerator/core/Memory.h"
+#include "arcane/accelerator/core/DeviceInfoList.h"
+#include "arcane/accelerator/core/RunQueue.h"
+#include "arcane/accelerator/core/DeviceMemoryInfo.h"
+#include "arcane/accelerator/core/NativeStream.h"
 #include "arcane/accelerator/core/internal/IRunnerRuntime.h"
 #include "arcane/accelerator/core/internal/RegisterRuntimeInfo.h"
 #include "arcane/accelerator/core/internal/IRunQueueStream.h"
 #include "arcane/accelerator/core/internal/IRunQueueEventImpl.h"
-#include "arcane/accelerator/core/DeviceInfoList.h"
-#include "arcane/accelerator/core/RunQueue.h"
 
 #include <iostream>
 
@@ -91,9 +93,9 @@ class SyclRunQueueStream
     if (!args.isAsync())
       this->barrier();
   }
-  void* _internalImpl() override
+  impl::NativeStream nativeStream() override
   {
-    return m_sycl_stream.get();
+    return impl::NativeStream(m_sycl_stream.get());
   }
 
   void _setSyclLastCommandEvent([[maybe_unused]] void* sycl_event_ptr) override
@@ -301,6 +303,11 @@ class SyclRunnerRuntime
     // TODO: à corriger
     Int32 device_id = 0;
     _fillPointerAttribute(attribute, mem_type, device_id, ptr, device_ptr, host_ptr);
+  }
+
+  DeviceMemoryInfo getDeviceMemoryInfo(DeviceId device_id) override
+  {
+    return {};
   }
 
   void fillDevicesAndSetDefaultQueue(bool is_verbose);

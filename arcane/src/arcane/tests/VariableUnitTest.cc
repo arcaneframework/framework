@@ -447,6 +447,10 @@ _testSwapHelper(MeshVarType& cells)
     cells.m_real2x2.swapValues(cells2.m_real2x2);
     cells.m_real3.swapValues(cells2.m_real3);
     cells.m_real3x3.swapValues(cells2.m_real3x3);
+    cells.m_int8.swapValues(cells2.m_int8);
+    cells.m_bfloat16.swapValues(cells2.m_bfloat16);
+    cells.m_float16.swapValues(cells2.m_float16);
+    cells.m_float32.swapValues(cells2.m_float32);
 
     // Vérifie les valeurs
     {
@@ -505,6 +509,11 @@ _testSwap()
     m_scalars.m_real2x2.swapValues(scalars2.m_real2x2);
     m_scalars.m_real3.swapValues(scalars2.m_real3);
     m_scalars.m_real3x3.swapValues(scalars2.m_real3x3);
+    // Les types suivants ne sont pas encore dans 'StdScalarVariables'
+    //m_scalars.m_int8.swapValues(scalars2.m_int8);
+    //m_scalars.m_bfloat16.swapValues(scalars.m_bfloat16);
+    //m_scalars.m_float16.swapValues(scalars.m_float16);
+    //m_scalars.m_float32.swapValues(scalars.m_float32);
 
     // Vérifie les valeurs
     {

@@ -2,9 +2,9 @@ set(SOURCES
   ISerializer.h
   BasicSerializer.h
   BasicSerializer.cc
-  BasicSerializerInternal.h
   SerializeGlobal.h
   SerializeGlobal.cc
+  internal/BasicSerializerInternal.h
 )
 
 arccore_add_component_library(serialize

@@ -18,6 +18,8 @@
 
 #include "arcane/accelerator/core/RunQueue.h"
 #include "arcane/accelerator/core/internal/IRunQueueStream.h"
+#include "arcane/accelerator/core/internal/RunQueueImpl.h"
+#include "arcane/accelerator/core/NativeStream.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -33,8 +35,14 @@ RunCommandLaunchInfo(RunCommand& command, Int64 total_loop_size)
 : m_command(command)
 , m_total_loop_size(total_loop_size)
 {
-  m_kernel_launch_args = _computeKernelLaunchArgs();
-  _begin();
+  m_queue_impl = m_command._internalQueueImpl();
+  m_exec_policy = m_queue_impl->executionPolicy();
+
+  // Le calcul des informations de kernel n'est utile que sur accélérateur
+  if (isAcceleratorPolicy(m_exec_policy)) {
+    m_kernel_launch_args = _computeKernelLaunchArgs();
+    m_command._allocateReduceMemory(m_kernel_launch_args.nbBlockPerGrid());
+  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -43,22 +51,9 @@ RunCommandLaunchInfo(RunCommand& command, Int64 total_loop_size)
 RunCommandLaunchInfo::
 ~RunCommandLaunchInfo()
 {
-  // Notifie de la fin de lancement du noyau. Normalement cela est déjà fait
+  // Notifie de la fin de lancement du noyau. Normalement, cela est déjà fait
   // sauf s'il y a eu une exception pendant le lancement du noyau de calcul.
   _doEndKernelLaunch();
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void RunCommandLaunchInfo::
-_begin()
-{
-  const RunQueue& queue = m_command._internalQueue();
-  m_exec_policy = queue.executionPolicy();
-  m_queue_stream = queue._internalStream();
-  m_runtime = queue._internalRuntime();
-  m_command._allocateReduceMemory(m_kernel_launch_args.nbBlockPerGrid());
 }
 
 /*---------------------------------------------------------------------------*/
@@ -71,6 +66,8 @@ beginExecute()
     ARCANE_FATAL("beginExecute() has already been called");
   m_has_exec_begun = true;
   m_command._internalNotifyBeginLaunchKernel();
+  if (m_exec_policy == eExecutionPolicy::Thread)
+    _computeLoopRunInfo();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -100,24 +97,25 @@ _doEndKernelLaunch()
   m_is_notify_end_kernel_done = true;
   m_command._internalNotifyEndLaunchKernel();
 
-  const RunQueue& q = m_command._internalQueue();
-  if (!q.isAsync())
-    q.barrier();
+  impl::RunQueueImpl* q = m_queue_impl;
+  if (!q->isAsync())
+    q->_internalBarrier();
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void* RunCommandLaunchInfo::
-_internalStreamImpl()
+NativeStream RunCommandLaunchInfo::
+_internalNativeStream()
 {
-  return m_queue_stream->_internalImpl();
+  return m_command._internalNativeStream();
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-//! Calcule le nombre de block/thread/grille du noyau en fonction de \a full_size
+/*!
+ * \brief Calcule le nombre de block/thread/grille du noyau en fonction de \a full_size.
+ */
 KernelLaunchArgs RunCommandLaunchInfo::
 _computeKernelLaunchArgs() const
 {
@@ -136,16 +134,17 @@ ParallelLoopOptions RunCommandLaunchInfo::
 computeParallelLoopOptions() const
 {
   ParallelLoopOptions opt = m_command.parallelLoopOptions();
-  const bool use_dynamic_compute = false;
+  const bool use_dynamic_compute = true;
   // Calcule une taille de grain par défaut si cela n'est pas renseigné dans
-  // les options
+  // les options. Par défaut on fait en sorte de faire un nombre d'itérations
+  // égale à 2 fois le nombre de threads utilisés.
   if (use_dynamic_compute && opt.grainSize() == 0) {
     Int32 nb_thread = opt.maxThread();
     if (nb_thread <= 0)
       nb_thread = TaskFactory::nbAllowedThread();
     if (nb_thread <= 0)
       nb_thread = 1;
-    Int32 grain_size = static_cast<Int32>((double)m_total_loop_size / (nb_thread * 10.0));
+    Int32 grain_size = static_cast<Int32>((double)m_total_loop_size / (nb_thread * 2.0));
     opt.setGrainSize(grain_size);
   }
   return opt;
@@ -153,12 +152,14 @@ computeParallelLoopOptions() const
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
+/*!
+ * \brief Calcule la valeur de m_loop_run_info.
+ *
+ * Cela n'est utile qu'en mode multi-thread.
+ */
 void RunCommandLaunchInfo::
-computeLoopRunInfo()
+_computeLoopRunInfo()
 {
-  if (m_has_exec_begun)
-    ARCANE_FATAL("computeLoopRunInfo() has to be called before beginExecute()");
   ForLoopTraceInfo lti(m_command.traceInfo(), m_command.kernelName());
   m_loop_run_info = ForLoopRunInfo(computeParallelLoopOptions(), lti);
   m_loop_run_info.setExecStat(m_command._internalCommandExecStat());

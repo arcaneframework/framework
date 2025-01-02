@@ -22,23 +22,68 @@
 
 #if defined(ARCANE_COMPILING_HIP)
 #include "arcane/accelerator/hip/HipAccelerator.h"
-#include <hip/hip_runtime.h>
 #include <rocprim/rocprim.hpp>
 #endif
 #if defined(ARCANE_COMPILING_CUDA)
 #include "arcane/accelerator/cuda/CudaAccelerator.h"
 #include <cub/cub.cuh>
 #endif
-#if defined(ARCANE_COMPILING_SYCL) && defined(__INTEL_LLVM_COMPILER)
+#if defined(ARCANE_COMPILING_SYCL)
+#include "arcane/accelerator/sycl/SyclAccelerator.h"
+#if defined(__INTEL_LLVM_COMPILER)
 #include <oneapi/dpl/execution>
 #include <oneapi/dpl/algorithm>
 #endif
+#endif
+
+// A définir si on souhaite utiliser LambdaStorage
+// #ifdef ARCANE_USE_LAMBDA_STORAGE
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 namespace Arcane::Accelerator::impl
 {
+/*!
+ * \brief Classe pour gérer la conservation d'une lambda dans un itérateur.
+ *
+ * Actuellement (C++20), on ne peut pas conserver une lambda dans un
+ * itérateur car il manque deux choses: un constructeur par défaut et
+ * un opérateur de recopie. Cette classe permet de supporter cela à condition
+ * que les deux poins suivants soient respectés:
+ * - instances capturées par la lambda sont trivialement copiables et donc
+ *   la lambda l'est.
+ * - les instances utilisant le constructeur par défaut ne sont pas utilisées
+ *   (ce qui est le cas des itérateurs car ils ne sont pas valides s'ils sont
+ *   construits avec le constructeur par défaut.
+ *
+ * A noter que l'alignement de cette classe doit être au moins celui de la
+ * lambda associée.
+ *
+ * Cette classe n'est indispensable que pour SYCL avec oneAPI car il est
+ * nécessite que les itérateurs aient le concept std::random_access_iterator.
+ * Cependant elle devrait aussi fonctionner avec CUDA et ROCM. A tester
+ * l'effet sur les performances.
+ */
+template <typename LambdaType>
+class alignas(LambdaType) LambdaStorage
+{
+  static constexpr size_t SizeofLambda = sizeof(LambdaType);
+
+ public:
+
+  LambdaStorage() = default;
+  ARCCORE_HOST_DEVICE LambdaStorage(const LambdaType& v)
+  {
+    std::memcpy(bytes, &v, SizeofLambda);
+  }
+  //! Convertie la classe en la lambda.
+  ARCCORE_HOST_DEVICE operator const LambdaType&() const { return *reinterpret_cast<const LambdaType*>(&bytes); }
+
+ private:
+
+  char bytes[SizeofLambda];
+};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -366,15 +411,33 @@ class SetterLambdaIterator
 
   using ThatClass = SetterLambdaIterator<SetterLambda>;
 
+ private:
+
+#ifdef ARCANE_USE_LAMBDA_STORAGE
+  using StorageType = LambdaStorage<SetterLambda>;
+#else
+  using StorageType = SetterLambda;
+#endif
+
  public:
 
+  SetterLambdaIterator() = default;
   ARCCORE_HOST_DEVICE SetterLambdaIterator(const SetterLambda& s)
   : m_lambda(s)
   {}
-  ARCCORE_HOST_DEVICE explicit SetterLambdaIterator(const SetterLambda& s, Int32 v)
+  ARCCORE_HOST_DEVICE SetterLambdaIterator(const SetterLambda& s, Int32 v)
   : m_index(v)
   , m_lambda(s)
   {}
+
+ private:
+
+#ifdef ARCANE_USE_LAMBDA_STORAGE
+  ARCCORE_HOST_DEVICE SetterLambdaIterator(const LambdaStorage<SetterLambda>& s, Int32 v)
+  : m_index(v)
+  , m_lambda(s)
+  {}
+#endif
 
  public:
 
@@ -401,9 +464,13 @@ class SetterLambdaIterator
   {
     return ThatClass(iter.m_lambda, iter.m_index + x);
   }
-  ARCCORE_HOST_DEVICE Int32 operator-(const ThatClass& x) const
+  ARCCORE_HOST_DEVICE friend ThatClass operator-(const ThatClass& iter, Int32 x)
   {
-    return m_index - x.m_index;
+    return ThatClass(iter.m_lambda, iter.m_index - x);
+  }
+  ARCCORE_HOST_DEVICE friend Int32 operator-(const ThatClass& iter1, const ThatClass& iter2)
+  {
+    return iter1.m_index - iter2.m_index;
   }
   ARCCORE_HOST_DEVICE friend bool operator<(const ThatClass& iter1, const ThatClass& iter2)
   {
@@ -413,7 +480,7 @@ class SetterLambdaIterator
  private:
 
   Int32 m_index = 0;
-  SetterLambda m_lambda;
+  StorageType m_lambda;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -441,6 +508,10 @@ template <typename DataType> using ScannerMinOperator = impl::MinOperator<DataTy
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+#ifdef ARCANE_USE_LAMBDA_STORAGE
+#undef ARCANE_USE_LAMBDA_STORAGE
+#endif
 
 #endif
 

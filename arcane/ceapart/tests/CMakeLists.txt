@@ -128,6 +128,11 @@ ARCANE_ADD_TEST_PARALLEL(cartesian2D-1_repart testCartesianMesh2D-1.arc 4 "-m 20
 if (Lima_FOUND)
   ARCANE_ADD_TEST(cartesian2D-lima testCartesianMesh2D-2.arc "-m 20")
 endif()
+
+arcane_add_test_sequential(cartesian2D-3 testCartesianMesh2D-3.arc "-m 20")
+arcane_add_test_parallel(cartesian2D-3 testCartesianMesh2D-3.arc 2 "-m 20")
+arcane_add_accelerator_test_sequential(cartesian2D-3 testCartesianMesh2D-3.arc "-m 20")
+
 arcane_add_test(cartesian2D_coarsen1 testCartesianMesh2D-coarsen-1.arc "-m 20" "-We,ARCANE_CARTESIANMESH_COARSENING_VERBOSITY_LEVEL,1")
 arcane_add_test(cartesian2D_coarsen2 testCartesianMesh2D-coarsen-2.arc "-m 20" "-We,ARCANE_CARTESIANMESH_COARSENING_VERBOSITY_LEVEL,2")
 arcane_add_test(cartesian3D_coarsen2 testCartesianMesh3D-coarsen-2.arc "-m 20" "-We,ARCANE_CARTESIANMESH_COARSENING_VERBOSITY_LEVEL,2")
@@ -453,6 +458,8 @@ if (ARCANE_HAS_ACCELERATOR_API)
     "${ARCANE_TEST_PATH}/testMaterialHeat-2-opt15.arc" "-m 20" "-We,ARCANE_USE_GENERIC_COPY_BETWEEN_PURE_AND_PARTIAL,1")
   arcane_add_test_sequential_host_and_accelerator(material_heat2_accelerator_generic_copy_one_queue
     "${ARCANE_TEST_PATH}/testMaterialHeat-2-opt15.arc" "-m 20" "-We,ARCANE_USE_GENERIC_COPY_BETWEEN_PURE_AND_PARTIAL,2")
+  arcane_add_test_sequential_host_and_accelerator(material_heat2_accelerator_force_multiple_resize
+    "${ARCANE_TEST_PATH}/testMaterialHeat-2-opt15.arc" "-m 20" "-We,ARCANE_FORCE_MULTIPLE_COMMAND_FOR_MATERIAL_RESIZE,1")
 
   arcane_add_test_sequential(material_heat4_accelerator "${ARCANE_TEST_PATH}/testMaterialHeat-4-opt15.arc" "-m 20")
   arcane_add_accelerator_test_sequential(material_heat4_accelerator "${ARCANE_TEST_PATH}/testMaterialHeat-4-opt15.arc" "-m 20")
@@ -460,7 +467,7 @@ if (ARCANE_HAS_ACCELERATOR_API)
   arcane_add_test_sequential_host_and_accelerator(material_heat4_init2_accelerator "${ARCANE_TEST_PATH}/testMaterialHeat-4-opt15.arc" "-m 20"
     "-We,ARCANE_MATERIAL_NEW_ITEM_INIT,2"  "-We,ARCANE_USE_GENERIC_COPY_BETWEEN_PURE_AND_PARTIAL,2")
   arcane_add_test_sequential_host_and_accelerator(material_heat4_init3_accelerator "${ARCANE_TEST_PATH}/testMaterialHeat-4-opt15.arc" "-m 20"
-    "-We,ARCANE_MATERIAL_NEW_ITEM_INIT,3")
+    "-We,ARCANE_MATERIAL_NEW_ITEM_INIT,3" "-We,ARCANE_ALLENVCELL_FOR_RUNCOMMAND,1")
 endif()
 
 ###################

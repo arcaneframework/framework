@@ -103,7 +103,7 @@ readCaseMeshes()
       internal_partitioner = internal_partitioner_env;
     }
     IParallelMng* pm = sd->parallelMng();
-    // Dans le cas où Arcane est retranché à un coeur, on va pas chercher les CPU*.mli
+    // Dans le cas où Arcane est retranché à un coeur, on ne va pas chercher les CPU*.mli2
     if (pm->isParallel() && (pm->commSize()>1)){
       m_use_internal_mesh_partitioner = internal_cut;
         
@@ -122,7 +122,7 @@ readCaseMeshes()
         debug() << "MESH CUT DIR " << mesh_cut_dir << ' ' << cut_dir_str;
         if (has_mesh_file && !internal_cut){
           char buf[128];
-          String file_format_str = "mli";
+          String file_format_str = "mli2";
           if (!file_format.null())
             file_format_str = file_format;
           sprintf(buf,"CPU%05d.%s",(int)sub_domain_id,file_format_str.localstr());

@@ -87,8 +87,8 @@ arcane_wrapper_add_swig_target(NAME core SOURCE ArcaneSwigCore.i NAMESPACE_NAME 
 # générés par le wrapper.
 add_dependencies(dotnet_wrapper_core dotnet_arcane_utils)
 
-# Pour que la bibliothèque générée ait un lien vers toutes les bibliothèques notamment 'arcane_mpi'
-target_link_libraries(arcane_dotnet_wrapper_core PUBLIC arcane_full)
+# Indique les cibles dont dépend 'arcane_dotnet_wrapper_core'
+target_link_libraries(arcane_dotnet_wrapper_core PUBLIC arcane_impl arcane_core)
 
 # Indique les .i dont dépend 'ArcaneSwigCore.i'
 set_property(TARGET arcane_dotnet_wrapper_core PROPERTY SWIG_DEPENDS ${ARCANE_SWIG_CORE_FILES})

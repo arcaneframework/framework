@@ -24,12 +24,14 @@
 
 #include "arcane/accelerator/core/RunQueueBuildInfo.h"
 #include "arcane/accelerator/core/Memory.h"
+#include "arcane/accelerator/core/DeviceInfoList.h"
+#include "arcane/accelerator/core/RunQueue.h"
+#include "arcane/accelerator/core/DeviceMemoryInfo.h"
+#include "arcane/accelerator/core/NativeStream.h"
 #include "arcane/accelerator/core/internal/IRunnerRuntime.h"
 #include "arcane/accelerator/core/internal/RegisterRuntimeInfo.h"
 #include "arcane/accelerator/core/internal/IRunQueueStream.h"
 #include "arcane/accelerator/core/internal/IRunQueueEventImpl.h"
-#include "arcane/accelerator/core/DeviceInfoList.h"
-#include "arcane/accelerator/core/RunQueue.h"
 #include "arcane/accelerator/core/internal/RunCommandImpl.h"
 
 #include <iostream>
@@ -116,9 +118,9 @@ class HipRunQueueStream
     if (!args.isAsync())
       barrier();
   }
-  void* _internalImpl() override
+  impl::NativeStream nativeStream() override
   {
-    return &m_hip_stream;
+    return impl::NativeStream(&m_hip_stream);
   }
 
  public:
@@ -327,6 +329,24 @@ class HipRunnerRuntime
                           ptr, pa.devicePointer, pa.hostPointer);
   }
 
+  DeviceMemoryInfo getDeviceMemoryInfo(DeviceId device_id) override
+  {
+    int d = 0;
+    int wanted_d = device_id.asInt32();
+    ARCANE_CHECK_HIP(hipGetDevice(&d));
+    if (d != wanted_d)
+      ARCANE_CHECK_HIP(hipSetDevice(wanted_d));
+    size_t free_mem = 0;
+    size_t total_mem = 0;
+    ARCANE_CHECK_HIP(hipMemGetInfo(&free_mem, &total_mem));
+    if (d != wanted_d)
+      ARCANE_CHECK_HIP(hipSetDevice(d));
+    DeviceMemoryInfo dmi;
+    dmi.setFreeMemory(free_mem);
+    dmi.setTotalMemory(total_mem);
+    return dmi;
+  }
+
   void pushProfilerRange(const String& name, [[maybe_unused]] Int32 color) override
   {
 #ifdef ARCANE_HAS_ROCTX
@@ -392,8 +412,17 @@ fillDevices(bool is_verbose)
       << " " << dp.maxThreadsDim[2] << "\n";
     o << " maxGridSize = " << dp.maxGridSize[0] << " " << dp.maxGridSize[1]
       << " " << dp.maxGridSize[2] << "\n";
+    o << " concurrentManagedAccess = " << dp.concurrentManagedAccess << "\n";
+    o << " directManagedMemAccessFromHost = " << dp.directManagedMemAccessFromHost << "\n";
+    o << " gcnArchName = " << dp.gcnArchName << "\n";
+    o << " pageableMemoryAccess = " << dp.pageableMemoryAccess << "\n";
+    o << " pageableMemoryAccessUsesHostPageTables = " << dp.pageableMemoryAccessUsesHostPageTables << "\n";
     o << " hasManagedMemory = " << has_managed_memory << "\n";
-
+#if HIP_VERSION_MAJOR >= 6
+    o << " gpuDirectRDMASupported = " << dp.gpuDirectRDMASupported << "\n";
+    o << " hostNativeAtomicSupported = " << dp.hostNativeAtomicSupported << "\n";
+    o << " unifiedFunctionPointers = " << dp.unifiedFunctionPointers << "\n";
+#endif
     {
       hipDevice_t device;
       ARCANE_CHECK_HIP(hipDeviceGet(&device, i));

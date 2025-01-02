@@ -11,10 +11,13 @@ Sommaire de ce chapitre :
   Présente les mécanismes disponibles dans %Arcane pour pouvoir utiliser
   les accélérateurs (GPU) dans %Arcane.
 
-2. \subpage arcanedoc_acceleratorapi_reduction <br>
+2. \subpage arcanedoc_acceleratorapi_materials <br>
+  Présente l'utilisation de l'API accélérateur pour les matériaux.
+
+3. \subpage arcanedoc_acceleratorapi_reduction <br>
   Présente les mécanismes disponibles pour effectuer des réductions.
 
-3. \subpage arcanedoc_acceleratorapi_memorypool <br>
+4. \subpage arcanedoc_acceleratorapi_memorypool <br>
   Présente le mécanisme de pool de mémoire.
 ____
 

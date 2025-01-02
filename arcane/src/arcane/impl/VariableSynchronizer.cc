@@ -37,8 +37,6 @@
 #include "arcane/core/internal/IParallelMngInternal.h"
 #include "arcane/core/internal/IVariableSynchronizerMngInternal.h"
 
-#include "arcane/accelerator/core/Runner.h"
-
 #include "arcane/impl/DataSynchronizeInfo.h"
 #include "arcane/impl/internal/VariableSynchronizerComputeList.h"
 #include "arcane/impl/internal/IBufferCopier.h"
@@ -248,10 +246,10 @@ VariableSynchronizer::SyncMessage* VariableSynchronizer::
 _buildMessage()
 {
   auto* internal_pm = m_parallel_mng->_internalApi();
-  Runner* runner = internal_pm->defaultRunner();
+  Runner runner = internal_pm->runner();
   bool is_accelerator_aware = internal_pm->isAcceleratorAware();
 
-  if (runner && is_accelerator_aware) {
+  if (runner.isInitialized() && is_accelerator_aware) {
     m_runner = runner;
   }
   
@@ -280,8 +278,8 @@ _buildMessage(Ref<DataSynchronizeInfo>& sync_info)
   // Si le IParallelMng gère la mémoire des accélérateurs alors on alloue le
   // buffer sur le device. On pourrait utiliser la mémoire managée mais certaines
   // implémentations MPI (i.e: BXI) ne le supportent pas.
-  if (m_runner) {
-    buffer_copier->setRunQueue(internal_pm->defaultQueue());
+  if (m_runner.isInitialized()) {
+    buffer_copier->setRunQueue(internal_pm->queue());
     allocator = MemoryUtils::getAllocator(eMemoryRessource::Device);
   }
 
@@ -667,8 +665,8 @@ _checkCreateTimer()
 void VariableSynchronizer::
 _setCurrentDevice()
 {
-  if (m_runner)
-    m_runner->setAsCurrentDevice();
+  if (m_runner.isInitialized())
+    m_runner.setAsCurrentDevice();
 }
 
 /*---------------------------------------------------------------------------*/

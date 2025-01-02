@@ -19,7 +19,10 @@ arcane_wrapper_add_swig_target(NAME launcher SOURCE ArcaneSwigLauncher.i NAMESPA
   CSHARP_SOURCES ${ARCANE_SWIG_LAUNCHER_CSHARP_FILES}
   SWIG_TARGET_DEPENDS core services
 )
-target_link_libraries(arcane_dotnet_wrapper_launcher PUBLIC arcane_launcher arcane_std)
+# Indique qu'on dépend de toutes les composantes de Arcane.
+# Cela est nécessaire pour que tous les services fournis par Arcane soient disponible.
+# TODO: on pourrait aussi résoudre cela en faisant un chargement dynamique de ces bibliothèques
+target_link_libraries(arcane_dotnet_wrapper_launcher PUBLIC arcane_launcher arcane_full)
 
 # Indique les .i dont dépend 'ArcaneSwigLauncher.i'
 set_property(TARGET arcane_dotnet_wrapper_launcher PROPERTY SWIG_DEPENDS ${ARCANE_SWIG_LAUNCHER_FILES})

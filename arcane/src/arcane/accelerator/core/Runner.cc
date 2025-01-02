@@ -24,6 +24,7 @@
 
 #include "arcane/accelerator/core/RunQueueBuildInfo.h"
 #include "arcane/accelerator/core/DeviceId.h"
+#include "arcane/accelerator/core/DeviceMemoryInfo.h"
 #include "arcane/accelerator/core/IDeviceInfoList.h"
 #include "arcane/accelerator/core/PointerAttribute.h"
 #include "arcane/accelerator/core/internal/IRunnerRuntime.h"
@@ -140,7 +141,8 @@ _freePool()
 {
   RunQueueImplStack& s = m_run_queue_pool;
   while (!s.empty()) {
-    delete s.top();
+    RunQueueImpl* q = s.top();
+    RunQueueImpl::_destroy(q);
     s.pop();
   }
 }
@@ -455,13 +457,22 @@ deviceInfoList(eExecutionPolicy policy)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+DeviceMemoryInfo Runner::
+deviceMemoryInfo() const
+{
+  _checkIsInit();
+  return m_p->runtime()->getDeviceMemoryInfo(deviceId());
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 void Runner::
 fillPointerAttribute(PointerAttribute& attr, const void* ptr)
 {
   _checkIsInit();
   m_p->runtime()->getPointerAttribute(attr, ptr);
 }
-
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

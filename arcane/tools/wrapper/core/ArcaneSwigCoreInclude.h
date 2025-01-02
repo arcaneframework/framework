@@ -87,7 +87,6 @@
 
 #include "arcane/impl/ArcaneMain.h"
 #include "arcane/impl/ArcaneSimpleExecutor.h"
-#include "arcane/std/ArcaneStdRegisterer.h"
 
 #include "arcane/core/XmlNode.h"
 #include "arcane/core/XmlNodeList.h"

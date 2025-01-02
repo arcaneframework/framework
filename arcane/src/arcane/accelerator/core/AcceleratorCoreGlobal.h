@@ -54,6 +54,7 @@ class MemoryCopyArgs;
 class MemoryPrefetchArgs;
 class DeviceId;
 class DeviceInfo;
+class DeviceMemoryInfo;
 class ProfileRegion;
 class IDeviceInfoList;
 class PointerAttribute;
@@ -77,6 +78,10 @@ namespace impl
   class RunCommandLaunchInfo;
   class RunnerImpl;
   class RunQueueImplStack;
+  class NativeStream;
+  class CudaUtils;
+  class HipUtils;
+  class SyclUtils;
 } // namespace impl
 
 /*---------------------------------------------------------------------------*/

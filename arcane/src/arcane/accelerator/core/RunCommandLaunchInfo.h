@@ -76,16 +76,22 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RunCommandLaunchInfo
    */
   void endExecute();
 
-  //! Informations sur le nombre de block/thread/grille du noyau à lancer.
+  /*!
+   * \brief Informations sur le nombre de block/thread/grille du noyau à lancer.
+   *
+   * Cette valeur n'est valide que pour si la commande est associée à un accélérateur.
+   */
   KernelLaunchArgs kernelLaunchArgs() const { return m_kernel_launch_args; }
 
-  //! Calcul les informations pour les boucles multi-thread
+  //! Calcule et retourne les informations pour les boucles multi-thread
   ParallelLoopOptions computeParallelLoopOptions() const;
 
-  //! Calcule la valeur de loopRunInfo()
-  void computeLoopRunInfo();
-
-  //! Informations d'exécution de la boucle
+  /*!
+   * \brief Informations d'exécution de la boucle.
+   *
+   * Ces informations ne sont valides si executionPolicy()==eExecutionPolicy::Thread
+   * et si beginExecute() a été appelé.
+   */
   const ForLoopRunInfo& loopRunInfo() const { return m_loop_run_info; }
 
   //! Taille totale de la boucle
@@ -96,12 +102,11 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RunCommandLaunchInfo
   RunCommand& m_command;
   bool m_has_exec_begun = false;
   bool m_is_notify_end_kernel_done = false;
-  IRunnerRuntime* m_runtime = nullptr;
-  IRunQueueStream* m_queue_stream = nullptr;
   eExecutionPolicy m_exec_policy = eExecutionPolicy::Sequential;
   KernelLaunchArgs m_kernel_launch_args;
   ForLoopRunInfo m_loop_run_info;
   Int64 m_total_loop_size = 0;
+  impl::RunQueueImpl* m_queue_impl = nullptr;
 
  private:
 
@@ -112,12 +117,13 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RunCommandLaunchInfo
    * sous-jacent.
    */
   KernelLaunchArgs _threadBlockInfo(const void* func, Int64 shared_memory_size) const;
-  void* _internalStreamImpl();
-  void _begin();
+  NativeStream _internalNativeStream();
   void _doEndKernelLaunch();
   KernelLaunchArgs _computeKernelLaunchArgs() const;
 
  private:
+
+  void _computeLoopRunInfo();
 
   // Pour SYCL: enregistre l'évènement associé à la dernière commande de la file
   // \a sycl_event_ptr est de type 'sycl::event*'.

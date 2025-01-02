@@ -14,27 +14,15 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/Array.h"
-
 #include "arcane/accelerator/AcceleratorGlobal.h"
-#include "arcane/accelerator/core/RunQueue.h"
 
 #if defined(ARCANE_COMPILING_HIP)
-#include "arcane/accelerator/hip/HipAccelerator.h"
 #include <hip/hip_runtime.h>
-#include <rocprim/rocprim.hpp>
 #endif
 #if defined(ARCANE_COMPILING_CUDA)
-#include "arcane/accelerator/cuda/CudaAccelerator.h"
-#include <cub/cub.cuh>
 #endif
 #if defined(ARCANE_COMPILING_SYCL)
-#include "arcane/accelerator/sycl/SyclAccelerator.h"
 #include <sycl/sycl.hpp>
-#if defined(__INTEL_LLVM_COMPILER)
-#include <oneapi/dpl/execution>
-#include <oneapi/dpl/algorithm>
-#endif
 #endif
 
 /*---------------------------------------------------------------------------*/
@@ -53,6 +41,7 @@ class ARCANE_ACCELERATOR_EXPORT CudaUtils
 
   static cudaStream_t toNativeStream(const RunQueue* queue);
   static cudaStream_t toNativeStream(const RunQueue& queue);
+  static cudaStream_t toNativeStream(const NativeStream& v);
 };
 #endif
 
@@ -66,6 +55,7 @@ class ARCANE_ACCELERATOR_EXPORT HipUtils
 
   static hipStream_t toNativeStream(const RunQueue* queue);
   static hipStream_t toNativeStream(const RunQueue& queue);
+  static hipStream_t toNativeStream(const NativeStream& v);
 };
 #endif
 
@@ -79,6 +69,7 @@ class ARCANE_ACCELERATOR_EXPORT SyclUtils
 
   static sycl::queue toNativeStream(const RunQueue* queue);
   static sycl::queue toNativeStream(const RunQueue& queue);
+  static sycl::queue toNativeStream(const NativeStream& v);
 };
 #endif
 

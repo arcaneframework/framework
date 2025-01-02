@@ -57,8 +57,10 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RunCommand
 
  public:
 
+  RunCommand(RunCommand&& command) = delete;
   RunCommand(const RunCommand&) = delete;
   RunCommand& operator=(const RunCommand&) = delete;
+  RunCommand& operator=(RunCommand&&) = delete;
 
  public:
 
@@ -121,8 +123,8 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RunCommand
  private:
 
   //! \internal
-  RunQueue _internalQueue() const;
   impl::RunQueueImpl* _internalQueueImpl() const;
+  impl::NativeStream _internalNativeStream() const;
   static impl::RunCommandImpl* _internalCreateImpl(impl::RunQueueImpl* queue);
   static void _internalDestroyImpl(impl::RunCommandImpl* p);
 
@@ -132,7 +134,6 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RunCommand
 
  private:
 
-  //RunQueue m_run_queue;
   impl::RunCommandImpl* m_p;
 };
 

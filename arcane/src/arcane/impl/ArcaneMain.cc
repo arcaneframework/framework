@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ArcaneMain.cc                                               (C) 2000-2024 */
+/* ArcaneMain.cc                                               (C) 2000-2025 */
 /*                                                                           */
 /* Classe gérant l'exécution.                                                */
 /*---------------------------------------------------------------------------*/
@@ -14,7 +14,6 @@
 #include "arcane/impl/ArcaneMain.h"
 
 #include "arcane/utils/Iostream.h"
-#include "arcane/utils/StdHeader.h"
 #include "arcane/utils/List.h"
 #include "arcane/utils/Iterator.h"
 #include "arcane/utils/ScopedPtr.h"
@@ -33,12 +32,10 @@
 #include "arcane/utils/IDynamicLibraryLoader.h"
 #include "arcane/utils/CheckedConvert.h"
 #include "arcane/utils/CommandLineArguments.h"
-#include "arcane/utils/ApplicationInfo.h"
 #include "arcane/utils/TestLogger.h"
 #include "arcane/utils/MemoryUtils.h"
 #include "arcane/utils/internal/MemoryUtilsInternal.h"
 
-#include "arcane/core/ArcaneException.h"
 #include "arcane/core/IMainFactory.h"
 #include "arcane/core/IApplication.h"
 #include "arcane/core/IServiceLoader.h"
@@ -72,13 +69,14 @@
 #include "arcane/core/IServiceFactory.h"
 #include "arcane/core/IModuleFactory.h"
 
-#include "arcane/impl/TimeLoopReader.h"
 #include "arcane/impl/MainFactory.h"
 #include "arcane/impl/InternalInfosDumper.h"
 #include "arcane/impl/internal/ArcaneMainExecInfo.h"
 #include "arcane/impl/internal/ThreadBindingMng.h"
 
 #include "arcane/accelerator/core/internal/RegisterRuntimeInfo.h"
+
+#include "arcane_internal_config.h"
 
 #include <signal.h>
 #include <exception>
@@ -1122,21 +1120,28 @@ int ArcaneMain::
 _checkAutoDetectAccelerator(bool& has_accelerator)
 {
   has_accelerator = false;
-
+  String default_runtime_name;
+#if defined(ARCANE_ACCELERATOR_RUNTIME)
+  default_runtime_name = ARCANE_ACCELERATOR_RUNTIME;
+#endif
   auto si = _staticInfo();
   AcceleratorRuntimeInitialisationInfo& init_info = si->m_accelerator_init_info;
   if (!init_info.isUsingAcceleratorRuntime())
     return 0;
   String runtime_name = init_info.acceleratorRuntime();
+  if (runtime_name == "sequential")
+    return 0;
+  if (runtime_name.empty())
+    runtime_name = default_runtime_name;
   if (runtime_name.empty())
     return 0;
-
+  init_info.setAcceleratorRuntime(runtime_name);
   try {
-    // Pour l'instant, seul les runtimes 'cuda', 'hip' et 'sycl' sont autorisés
+    // Pour l'instant, seuls les runtimes 'cuda', 'hip' et 'sycl' sont autorisés
     if (runtime_name != "cuda" && runtime_name != "hip" && runtime_name != "sycl")
       ARCANE_FATAL("Invalid accelerator runtime '{0}'. Only 'cuda', 'hip' or 'sycl' is allowed", runtime_name);
 
-    // Pour pouvoir automatiquement enregisrer un runtime accélérateur de nom \a NAME,
+    // Pour pouvoir automatiquement enregistrer un runtime accélérateur de nom \a NAME,
     // il faut appeler la méthode 'arcaneRegisterAcceleratorRuntime${NAME}' qui se trouve
     // dans la bibliothèque dynamique 'arcane_${NAME}'.
 
@@ -1232,6 +1237,10 @@ ArcaneMain(const ApplicationInfo& app_info, IMainFactory* factory,
 ArcaneMain::
 ~ArcaneMain()
 {
+  // S'assure qu'on retire les observateurs associés au TheadBindingMng
+  // avant la finalisation pour éviter de punaiser les threads alors que
+  // cela ne sert plus à rien.
+  m_p->m_thread_binding_mng.finalize();
   delete m_application;
   delete m_p;
 }

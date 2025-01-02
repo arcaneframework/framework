@@ -246,7 +246,7 @@ SimpleHydroAcceleratorService(const ServiceBuildInfo& sbi)
 , m_delta_t_f(VariableBuildInfo(sbi.mesh(),"SplitDeltaT"))
 , m_old_dt_f(VariableBuildInfo(sbi.mesh(),"OldDTf"))
 , m_module(nullptr)
-, m_node_index_in_cells(platform::getAcceleratorHostMemoryAllocator())
+, m_node_index_in_cells(MemoryUtils::getDefaultDataAllocator())
 , m_runner(sbi.subDomain()->acceleratorMng()->defaultRunner())
 , m_default_queue(sbi.subDomain()->acceleratorMng()->defaultQueue())
 {

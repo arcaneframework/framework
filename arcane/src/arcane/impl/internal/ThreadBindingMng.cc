@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ThreadBindingMng.cc                                         (C) 2000-2021 */
+/* ThreadBindingMng.cc                                         (C) 2000-2025 */
 /*                                                                           */
 /* Gestionnaire pour punaiser les threads.                                   */
 /*---------------------------------------------------------------------------*/
@@ -17,12 +17,32 @@
 #include "arcane/utils/ConcurrencyUtils.h"
 #include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/IProcessorAffinityService.h"
+#include "arcane/utils/internal/TaskFactoryInternal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 namespace Arcane
 {
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+ThreadBindingMng::
+ThreadBindingMng()
+: m_thread_created_callback(new ObserverT<ThreadBindingMng>(this, &ThreadBindingMng::_createThreadCallback))
+{
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+ThreadBindingMng::
+~ThreadBindingMng()
+{
+  finalize();
+  delete m_thread_created_callback;
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -40,8 +60,20 @@ initialize(ITraceMng* tm,const String& strategy)
     m_max_thread = TaskFactory::nbAllowedThread();
     if (tm)
       tm->info() << "Thread binding strategy is '" << m_bind_strategy << "'";
-    m_observer_pool.addObserver(this,&ThreadBindingMng::_createThreadCallback,
-                                Arcane::TaskFactory::createThreadObservable());
+    TaskFactoryInternal::addThreadCreateObserver(m_thread_created_callback);
+    m_has_callback = true;
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ThreadBindingMng::
+finalize()
+{
+  if (m_has_callback) {
+    TaskFactoryInternal::removeThreadCreateObserver(m_thread_created_callback);
+    m_has_callback = false;
   }
 }
 

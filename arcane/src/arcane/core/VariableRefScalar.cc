@@ -1,24 +1,24 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* VariableRefScalar.cc                                        (C) 2000-2023 */
+/* VariableRefScalar.cc                                        (C) 2000-2024 */
 /*                                                                           */
 /* Référence à une variable scalaire.                                        */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/VariableRefScalar.h"
-#include "arcane/VariableScalar.h"
-#include "arcane/VariableBuildInfo.h"
-#include "arcane/VariableInfo.h"
-#include "arcane/VariableDataTypeTraits.h"
-#include "arcane/VariableFactoryRegisterer.h"
-#include "arcane/IParallelMng.h"
-#include "arcane/IVariableMng.h"
+#include "arcane/core/VariableRefScalar.h"
+#include "arcane/core/VariableScalar.h"
+#include "arcane/core/VariableBuildInfo.h"
+#include "arcane/core/VariableInfo.h"
+#include "arcane/core/VariableDataTypeTraits.h"
+#include "arcane/core/VariableFactoryRegisterer.h"
+#include "arcane/core/IParallelMng.h"
+#include "arcane/core/IVariableMng.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -181,16 +181,8 @@ swapValues(VariableRefScalarT<DataType>& rhs)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template class VariableRefScalarT<Byte>;
-template class VariableRefScalarT<Real>;
-template class VariableRefScalarT<Int16>;
-template class VariableRefScalarT<Int32>;
-template class VariableRefScalarT<Int64>;
+ARCANE_INTERNAL_INSTANTIATE_TEMPLATE_FOR_NUMERIC_DATATYPE(VariableRefScalarT);
 template class VariableRefScalarT<String>;
-template class VariableRefScalarT<Real2>;
-template class VariableRefScalarT<Real3>;
-template class VariableRefScalarT<Real2x2>;
-template class VariableRefScalarT<Real3x3>;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

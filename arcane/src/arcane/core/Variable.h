@@ -37,6 +37,7 @@ template<typename T> class IDataTracerT;
 class VariablePrivate;
 class MemoryAccessInfo;
 class IParallelMng;
+class VariableResizeArgs;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -219,7 +220,7 @@ class ARCANE_CORE_EXPORT Variable
 
  protected:
 
-  virtual void _internalResize(Integer new_size,Integer nb_additional_element) =0;
+  virtual void _internalResize(const VariableResizeArgs& resize_args) =0;
   virtual Integer _checkIfSameOnAllReplica(IParallelMng* replica_pm,int max_print) =0;
   void _checkSwapIsValid(Variable* rhs);
   // Temporaire pour test libération mémoire
@@ -227,7 +228,7 @@ class ARCANE_CORE_EXPORT Variable
 
   // Accès via VariablePrivate pour l'API interne
   friend class VariablePrivate;
-  void _resizeWithReserve(Int32 new_size,Int32 additional_capacity);
+  void _resize(const VariableResizeArgs& resize_args);
 
  private:
 
@@ -254,5 +255,5 @@ class ARCANE_CORE_EXPORT Variable
 
 #endif  
 
-#include "arcane/VariableScalar.h"
-#include "arcane/VariableArray.h"
+#include "arcane/core/VariableScalar.h"
+#include "arcane/core/VariableArray.h"

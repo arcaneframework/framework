@@ -96,9 +96,9 @@ class MeshMaterialMng
 
    public:
 
-    AllCellToAllEnvCell* getAllCellToAllEnvCell() const override
+    AllCellToAllEnvCellContainer* getAllCellToAllEnvCellContainer() const override
     {
-      return m_material_mng->getAllCellToAllEnvCell();
+      return m_material_mng->getAllCellToAllEnvCellContainer();
     }
     void createAllCellToAllEnvCell() override
     {
@@ -300,11 +300,11 @@ class MeshMaterialMng
 
   void enableCellToAllEnvCellForRunCommand(bool is_enable, bool force_create=false) override
   {
-    m_is_allcell_2_allenvcell = is_enable;
+    m_is_use_accelerator_envcell_container = is_enable;
     if (force_create)
       createAllCellToAllEnvCell();
   }
-  bool isCellToAllEnvCellForRunCommand() const override { return m_is_allcell_2_allenvcell; }
+  bool isCellToAllEnvCellForRunCommand() const override { return m_is_use_accelerator_envcell_container; }
 
   IMeshMaterialMngInternal* _internalApi() const override { return m_internal_api.get(); }
 
@@ -319,7 +319,7 @@ class MeshMaterialMng
 
  private:
 
-  AllCellToAllEnvCell* getAllCellToAllEnvCell() const { return m_allcell_2_allenvcell; }
+  AllCellToAllEnvCellContainer* getAllCellToAllEnvCellContainer() const { return m_accelerator_envcell_container.get(); }
   void createAllCellToAllEnvCell();
 
  private:
@@ -381,14 +381,9 @@ class MeshMaterialMng
 
   std::unique_ptr<RunnerInfo> m_runner_info;
 
-  /*!
-   * \brief Contient une instance de AllCellToAllEnvCell.
-   *
-   * On utilise un tableau avec un seul élément pour l'allouer en mémoire unifiée.
-   */
-  UniqueArray<AllCellToAllEnvCell> m_all_cell_to_all_env_cell;
-  AllCellToAllEnvCell* m_allcell_2_allenvcell = nullptr;
-  bool m_is_allcell_2_allenvcell = false;
+  //! Conteneur pour AllEnvCellToAllEnvCell pour accélerateur
+  std::unique_ptr<AllCellToAllEnvCellContainer> m_accelerator_envcell_container;
+  bool m_is_use_accelerator_envcell_container = false;
 
   bool m_is_use_accelerator_for_constituent_item_vector = true;
 

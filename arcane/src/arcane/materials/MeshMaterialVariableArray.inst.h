@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshMaterialVariableArray.cc                                (C) 2000-2024 */
+/* MeshMaterialVariableArray.inst.h                            (C) 2000-2024 */
 /*                                                                           */
 /* Variable tableau sur un matériau du maillage.                             */
 /*---------------------------------------------------------------------------*/
@@ -93,7 +93,7 @@ resizeWithReserve(PrivatePartType* var, Integer dim1_size, Real reserve_ratio)
   // nombre de mailles matériaux, alloue un petit peu plus que nécessaire.
   // Par défaut, on alloue 5% de plus.
   Int32 nb_add = static_cast<Int32>(dim1_size * reserve_ratio);
-  var->_internalApi()->resizeWithReserve(dim1_size, nb_add);
+  var->_internalApi()->resize(VariableResizeArgs(dim1_size, nb_add, true));
 }
 
 /*---------------------------------------------------------------------------*/
@@ -174,7 +174,7 @@ serialize(ISerializer* sbuf,Int32ConstArrayView ids)
   IMeshMaterialMng* mat_mng = m_p->materialMng();
   const Int32 nb_count = DataTypeTraitsT<DataType>::nbBasicType();
   typedef typename DataTypeTraitsT<DataType>::BasicType BasicType;
-  const eDataType data_type = DataTypeTraitsT<BasicType>::type();
+  const eBasicDataType data_type = DataTypeTraitsT<BasicType>::basicDataType();
   ItemVectorView ids_view(family->view(ids));
   Int32 dim2_size = m_global_variable->valueView().dim2Size();
   bool has_mat = this->space()!=MatVarSpace::Environment;
@@ -191,7 +191,7 @@ serialize(ISerializer* sbuf,Int32ConstArrayView ids)
         }
       }
       sbuf->reserve(m_global_variable->fullName());
-      sbuf->reserve(DT_Int64,1);  // Pour le nombre de valeurs.
+      sbuf->reserveInt64(1);  // Pour le nombre de valeurs.
       Int64 nb_basic_value = nb_val * nb_count * dim2_size;
       sbuf->reserveSpan(data_type,nb_basic_value);  // Pour le nombre de valeurs.
     }
@@ -386,20 +386,10 @@ MeshMaterialVariableArray(const MaterialVariableBuildInfo& v,PrivatePartType* gl
 /*---------------------------------------------------------------------------*/
 
 #define ARCANE_INSTANTIATE_MAT(type) \
-  template class ItemMaterialVariableBase< MaterialVariableArrayTraits<type> >;\
-  template class ItemMaterialVariableArray<type>;\
-  template class MeshMaterialVariableArray<Cell,type>;\
-  template class MeshMaterialVariableCommonStaticImpl<MeshMaterialVariableArray<Cell,type>>
-
-ARCANE_INSTANTIATE_MAT(Byte);
-ARCANE_INSTANTIATE_MAT(Int16);
-ARCANE_INSTANTIATE_MAT(Int32);
-ARCANE_INSTANTIATE_MAT(Int64);
-ARCANE_INSTANTIATE_MAT(Real);
-ARCANE_INSTANTIATE_MAT(Real2);
-ARCANE_INSTANTIATE_MAT(Real3);
-ARCANE_INSTANTIATE_MAT(Real2x2);
-ARCANE_INSTANTIATE_MAT(Real3x3);
+  template class ItemMaterialVariableBase<MaterialVariableArrayTraits<type>>; \
+  template class ItemMaterialVariableArray<type>; \
+  template class MeshMaterialVariableArray<Cell, type>; \
+  template class MeshMaterialVariableCommonStaticImpl<MeshMaterialVariableArray<Cell, type>>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

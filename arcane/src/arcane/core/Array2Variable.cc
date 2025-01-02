@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -40,6 +40,7 @@
 
 #include "arcane/core/internal/IDataInternal.h"
 #include "arcane/core/internal/IVariableMngInternal.h"
+#include "arcane/core/internal/IVariableInternal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -474,8 +475,12 @@ _checkIfSameOnAllReplica(IParallelMng* replica_pm,Integer max_print)
 /*---------------------------------------------------------------------------*/
 
 template<typename T> void Array2VariableT<T>::
-_internalResize(Integer new_size,Integer nb_additional_element)
+_internalResize(const VariableResizeArgs& resize_args)
 {
+  Int32 new_size = resize_args.newSize();
+  Int32 nb_additional_element = resize_args.nbAdditionalCapacity();
+  bool use_no_init = resize_args.isUseNoInit();
+
   // Exception deplace de ItemGroupImpl::removeItems.
   // C'est un probleme d'implementation des variables partielles Arcane et non
   // du concept de variable partielle (cf ItemGroupMap qui l'implemente).
@@ -504,10 +509,10 @@ _internalResize(Integer new_size,Integer nb_additional_element)
          << " dim1_size=" << value().dim1Size()
          << " dim2size=" << dim2_size
          << " total=" << value().totalNbElement();*/
-  if (init_policy==DIP_InitWithDefault)
-    data_values.resize(new_size,dim2_size);
-  else
+  if (use_no_init || (init_policy!=DIP_InitWithDefault))
     data_values.resizeNoInit(new_size,dim2_size);
+  else
+    data_values.resize(new_size,dim2_size);
 
   if (new_size>current_size){
     bool use_nan = (init_policy==DIP_InitWithNan);
@@ -697,15 +702,7 @@ fillShape(ArrayShape& shape_with_item)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template class Array2VariableT<Byte>;
-template class Array2VariableT<Real>;
-template class Array2VariableT<Int16>;
-template class Array2VariableT<Int32>;
-template class Array2VariableT<Int64>;
-template class Array2VariableT<Real2>;
-template class Array2VariableT<Real2x2>;
-template class Array2VariableT<Real3>;
-template class Array2VariableT<Real3x3>;
+ARCANE_INTERNAL_INSTANTIATE_TEMPLATE_FOR_NUMERIC_DATATYPE(Array2VariableT);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

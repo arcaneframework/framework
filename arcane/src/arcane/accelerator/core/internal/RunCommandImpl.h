@@ -62,7 +62,6 @@ class RunCommandImpl
   void notifyEndLaunchKernel();
   void notifyEndExecuteKernel();
   impl::IReduceMemoryImpl* getOrCreateReduceMemoryImpl();
-
   void releaseReduceMemoryImpl(ReduceMemoryImpl* p);
   IRunQueueStream* internalStream() const;
   RunnerImpl* runner() const;
@@ -95,11 +94,15 @@ class RunCommandImpl
   //! Indique si la commande a été lancée.
   bool m_has_been_launched = false;
 
+  //! Indique si on souhaite le profiling
+  bool m_use_profiling = false;
+
   //! Indique si on utilise les évènements séquentiels pour calculer le temps d'exécution
   bool m_use_sequential_timer_event = false;
-  //! Evènements pour le début et la fin de l'exécution.
+
+  //! Évènements pour le début et la fin de l'exécution.
   IRunQueueEventImpl* m_start_event = nullptr;
-  //! Evènements pour la fin de l'exécution.
+  //! Évènements pour la fin de l'exécution.
   IRunQueueEventImpl* m_stop_event = nullptr;
 
   //! Temps au lancement de la commande
@@ -120,12 +123,19 @@ class RunCommandImpl
    */
   bool m_is_allow_reuse_command = false;
 
+  //! Indique si une RunCommand a une référence sur cette instance.
+  bool m_has_living_run_command = false;
+
+  //! Indique si on peut remettre la commande dans le pool associé à la RunQueue.
+  bool m_may_be_put_in_pool = false;
+
  private:
 
   void _freePools();
   void _reset();
   void _init();
   IRunQueueEventImpl* _createEvent();
+  void _notifyDestroyRunCommand();
 };
 
 /*---------------------------------------------------------------------------*/

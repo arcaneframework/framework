@@ -87,6 +87,7 @@ class ConstituentItemVectorImpl
 
  private:
 
+  void _computeNbPureAndImpureLegacy(SmallSpan<const Int32> local_ids);
   void _recomputePartData();
 
  public:

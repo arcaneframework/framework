@@ -47,7 +47,7 @@ namespace
     DataTypeNames::N_STRING,
     DataTypeNames::N_REAL2, DataTypeNames::N_REAL3, DataTypeNames::N_REAL2x2, DataTypeNames::N_REAL3x3,
     DataTypeNames::N_BFLOAT16, DataTypeNames::N_FLOAT16, DataTypeNames::N_FLOAT32,
-    DataTypeNames::N_INT8,
+    DataTypeNames::N_INT8, DataTypeNames::N_FLOAT128, DataTypeNames::N_INT128,
     DataTypeNames::N_UNKNOWN
   };
 
@@ -58,7 +58,7 @@ namespace
     -1,
     sizeof(Real2), sizeof(Real3), sizeof(Real2x2), sizeof(Real3x3),
     sizeof(BFloat16), sizeof(Float16), sizeof(Float32),
-    sizeof(Int8),
+    sizeof(Int8), sizeof(Float128), sizeof(Int128),
     0
   };
 } // namespace
@@ -193,6 +193,12 @@ fillNan(ArrayView<Type> ptr)
   _fillNoNan(ptr);
 }
 
+void DataTypeTraitsT<Int8>::
+fillNan(ArrayView<Type> ptr)
+{
+  _fillNoNan(ptr);
+}
+
 void DataTypeTraitsT<Int16>::
 fillNan(ArrayView<Type> ptr)
 {
@@ -217,8 +223,8 @@ fillNan(ArrayView<Type> ptr)
   _fillNoNan(ptr);
 }
 
-static void
-_fillWithNan(RealArrayView ptr)
+template<typename Type> static void
+_fillWithNan(ArrayView<Type> ptr)
 {
   Real v = _getNan();
   Integer n = ptr.size();
@@ -230,6 +236,24 @@ void DataTypeTraitsT<Real>::
 fillNan(ArrayView<Type> ptr)
 {
   _fillWithNan(ptr);
+}
+
+void DataTypeTraitsT<Float32>::
+fillNan(ArrayView<Type> ptr)
+{
+  _fillWithNan(ptr);
+}
+
+void DataTypeTraitsT<BFloat16>::
+fillNan(ArrayView<Type> ptr)
+{
+  _fillNoNan(ptr);
+}
+
+void DataTypeTraitsT<Float16>::
+fillNan(ArrayView<Type> ptr)
+{
+  _fillNoNan(ptr);
 }
 
 void DataTypeTraitsT<Real2>::

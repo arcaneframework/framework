@@ -159,7 +159,7 @@ class NumArray
 
   //! Construit un tableau à partir de valeurs prédéfinies (uniquement tableaux 1D dynamiques)
   NumArray(Int32 dim1_size, std::initializer_list<DataType> alist)
-  requires(Extents::is_full_dynamic() && Extents::rank() == 1)
+  requires(Extents::isDynamic1D())
   : NumArray(dim1_size)
   {
     this->m_data.copyInitializerList(alist);
@@ -167,7 +167,7 @@ class NumArray
 
   //! Construit une instance à partir d'une vue (uniquement tableaux 1D dynamiques)
   NumArray(SmallSpan<const DataType> v)
-  requires(Extents::is_full_dynamic() && Extents::rank() == 1)
+  requires(Extents::isDynamic1D())
   : NumArray(v.size())
   {
     this->m_data.copy(v);
@@ -175,7 +175,7 @@ class NumArray
 
   //! Construit une instance à partir d'une vue (uniquement tableaux 1D dynamiques)
   NumArray(Span<const DataType> v)
-  requires(Extents::is_full_dynamic() && Extents::rank() == 1)
+  requires(Extents::isDynamic1D())
   : NumArray(arcaneCheckArraySize(v.size()))
   {
     this->m_data.copy(v);
@@ -434,6 +434,17 @@ class NumArray
    * Cette opération est valide quelle que soit la mêmoire associée
    * associée à l'instance.
    */
+  void copy(SmallSpan<const DataType> rhs) requires(Extents::isDynamic1D())
+  {
+    copy(rhs, nullptr);
+  }
+
+  /*!
+   * \brief Copie dans l'instance les valeurs de \a rhs.
+   *
+   * Cette opération est valide quelle que soit la mêmoire associée
+   * associée à l'instance.
+   */
   void copy(ConstMDSpanType rhs) { copy(rhs, nullptr); }
 
   /*!
@@ -452,9 +463,35 @@ class NumArray
    * \a queue peut être nul. Si la file est asynchrone, il faudra la
    * synchroniser avant de pouvoir utiliser l'instance.
    */
+  void copy(SmallSpan<const DataType> rhs, const RunQueue* queue) requires(Extents::isDynamic1D())
+  {
+    _resizeAndCopy(ConstMDSpanType(rhs), eMemoryRessource::Unknown, queue);
+  }
+
+  /*!
+   * \brief Copie dans l'instance les valeurs de \a rhs via la file \a queue.
+   *
+   * Cette opération est valide quelle que soit la mêmoire associée
+   * associée à l'instance.
+   * \a queue peut être nul. Si la file est asynchrone, il faudra la
+   * synchroniser avant de pouvoir utiliser l'instance.
+   */
   void copy(ConstMDSpanType rhs, const RunQueue* queue)
   {
     _resizeAndCopy(rhs, eMemoryRessource::Unknown, queue);
+  }
+
+  /*!
+   * \brief Copie dans l'instance les valeurs de \a rhs via la file \a queue.
+   *
+   * Cette opération est valide quelle que soit la mêmoire associée
+   * associée à l'instance.
+   * \a queue peut être nulle, auquel cas la copie se fait sur l'hôte.
+   * Si la file est asynchrone, il faudra la synchroniser avant de pouvoir utiliser l'instance.
+   */
+  void copy(SmallSpan<const DataType> rhs, const RunQueue& queue) requires(Extents::isDynamic1D())
+  {
+    _resizeAndCopy(ConstMDSpanType(rhs), eMemoryRessource::Unknown, &queue);
   }
 
   /*!
