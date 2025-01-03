@@ -246,7 +246,7 @@ SimpleHydroAcceleratorService(const ServiceBuildInfo& sbi)
 , m_delta_t_f(VariableBuildInfo(sbi.mesh(),"SplitDeltaT"))
 , m_old_dt_f(VariableBuildInfo(sbi.mesh(),"OldDTf"))
 , m_module(nullptr)
-, m_node_index_in_cells(platform::getAcceleratorHostMemoryAllocator())
+, m_node_index_in_cells(MemoryUtils::getDefaultDataAllocator())
 , m_runner(sbi.subDomain()->acceleratorMng()->defaultRunner())
 , m_default_queue(sbi.subDomain()->acceleratorMng()->defaultQueue())
 {
@@ -650,9 +650,10 @@ updateDensity()
   auto command = makeCommand(m_default_queue);
   ax::ReducerMax2<double> density_ratio_maximum(command);
   density_ratio_maximum.setValue(0.0);
-  auto in_cell_mass = ax::viewIn(command,m_cell_mass);
-  auto in_volume = ax::viewIn(command,m_volume);
-  auto in_out_density = ax::viewInOut(command,m_density);
+
+  auto in_cell_mass = viewIn(command,m_cell_mass);
+  auto in_volume = viewIn(command,m_volume);
+  auto in_out_density = viewInOut(command,m_density);
 
   command << RUNCOMMAND_ENUMERATE(Cell,cid,allCells(),density_ratio_maximum)
   {

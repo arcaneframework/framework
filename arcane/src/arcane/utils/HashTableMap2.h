@@ -165,8 +165,8 @@ template <typename KeyT, typename ValueT,
 class HashTableMap2
 : public HashTableMap2Base
 {
-  constexpr static double EMH_DEFAULT_LOAD_FACTOR = 0.80f;
-  constexpr static double EMH_MIN_LOAD_FACTOR = 0.25f; //< 0.5
+  constexpr static float EMH_DEFAULT_LOAD_FACTOR = 0.80f;
+  constexpr static float EMH_MIN_LOAD_FACTOR = 0.25f; //< 0.5
   constexpr static uint32_t EMH_CACHE_LINE_SIZE = 64; //debug only
 
  public:

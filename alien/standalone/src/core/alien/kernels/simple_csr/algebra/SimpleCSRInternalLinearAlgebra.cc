@@ -137,6 +137,12 @@ Real SimpleCSRInternalLinearAlgebra::normInf(const CSRVector& vx) const
 
 /*---------------------------------------------------------------------------*/
 
+void SimpleCSRInternalLinearAlgebra::synchronize(const CSRMatrix& ma,
+                                                 CSRVector& vx) const
+{
+  Internal::SimpleCSRMatrixMultT<Real>(ma).synchronize(vx);
+}
+
 void SimpleCSRInternalLinearAlgebra::mult(const CSRMatrix& ma,
                                           const CSRVector& vx,
                                           CSRVector& vr) const

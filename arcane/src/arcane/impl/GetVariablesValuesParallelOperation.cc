@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* GetVariablesValuesParallelOperation.cc                      (C) 2000-2023 */
+/* GetVariablesValuesParallelOperation.cc                      (C) 2000-2024 */
 /*                                                                           */
 /* Opérations pour accéder aux valeurs de variables d'un autre sous-domaine. */
 /*---------------------------------------------------------------------------*/
@@ -14,12 +14,12 @@
 #include "arcane/utils/Array.h"
 #include "arcane/utils/ITraceMng.h"
 
-#include "arcane/Timer.h"
-#include "arcane/VariableTypes.h"
-#include "arcane/IParallelMng.h"
-#include "arcane/ISerializer.h"
-#include "arcane/SerializeMessage.h"
-#include "arcane/IItemFamily.h"
+#include "arcane/core/Timer.h"
+#include "arcane/core/VariableTypes.h"
+#include "arcane/core/IParallelMng.h"
+#include "arcane/core/ISerializer.h"
+#include "arcane/core/SerializeMessage.h"
+#include "arcane/core/IItemFamily.h"
 
 #include "arcane/impl/GetVariablesValuesParallelOperation.h"
 
@@ -151,8 +151,8 @@ getVariableValues(VariableItemReal& variable,
         ARCANE_FATAL("Can not find rank '{0}'",rank_recv);
       Span<const Int64> z_unique_ids = xiter->second.m_unique_ids;
       Int64 nb = z_unique_ids.size();
-      s->reserve(DT_Int64,1); // Pour la taille
-      s->reserveSpan(DT_Int64,nb); // Pour le tableau
+      s->reserveInt64(1); // Pour la taille
+      s->reserveSpan(eBasicDataType::Int64,nb); // Pour le tableau
       s->allocateBuffer();
       s->setMode(ISerializer::ModePut);
       s->putInt64(nb);
@@ -196,8 +196,8 @@ getVariableValues(VariableItemReal& variable,
       new_sm = new SerializeMessage(my_rank,sm->destination().value(),ISerializeMessage::MT_Send);
       ISerializer* s2 = new_sm->serializer();
       s2->setMode(ISerializer::ModeReserve);
-      s2->reserve(DT_Int64,1);
-      s2->reserveSpan(DT_Real,nb);
+      s2->reserveInt64(1);
+      s2->reserveSpan(eBasicDataType::Real,nb);
       s2->allocateBuffer();
       s2->setMode(ISerializer::ModePut);
       s2->putInt64(nb);

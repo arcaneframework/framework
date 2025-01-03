@@ -22,7 +22,21 @@ else()
     "Notwithstanding trying to use HDF5 but this may lead to errors during compilation.")
 endif()
 
+# Pour MEDFile, il faut HDF5 mais le find_package fait planter CMake (avec MED 4.0.0)
+# si HDF5 n'est pas trouvé. On ne fait donc le find_package que si HDF5
+# est trouvé
+if (HDF5_FOUND)
+  list(APPEND PRIVATE_PKGS MEDFile)
+  arcane_find_package(MEDFile QUIET)
+endif()
+
 include(srcs.cmake)
+
+if (MEDFILE_FOUND)
+  list(APPEND ARCANE_SOURCES MEDMeshReaderService.cc)
+endif()
+
+# ----------------------------------------------------------------------------
 
 arcane_add_library(arcane_hdf5
   INPUT_PATH ${Arcane_SOURCE_DIR}/src
@@ -33,9 +47,10 @@ arcane_add_library(arcane_hdf5
 
 # ----------------------------------------------------------------------------
 
-target_link_libraries(arcane_hdf5 PUBLIC ${ARCANE_BASE_LIBRARIES})
+target_link_libraries(arcane_hdf5 PUBLIC arcane_core)
 
 arcane_add_arccon_packages(arcane_hdf5 PUBLIC ${PUBLIC_PKGS})
+arcane_add_arccon_packages(arcane_hdf5 PRIVATE ${PRIVATE_PKGS})
 
 arcane_register_library(arcane_hdf5)
 

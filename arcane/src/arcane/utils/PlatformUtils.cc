@@ -22,7 +22,8 @@
 #include "arcane/utils/NotSupportedException.h"
 #include "arcane/utils/Array.h"
 #include "arcane/utils/StringList.h"
-#include "arcane/utils/internal/MemoryRessourceMng.h"
+#include "arcane/utils/MemoryUtils.h"
+#include "arcane/utils/internal/MemoryUtilsInternal.h"
 
 #include <chrono>
 
@@ -90,10 +91,7 @@ namespace platform
   ISymbolizerService* global_symbolizer_service = nullptr;
   IProfilingService* global_profiling_service = nullptr;
   IProcessorAffinityService* global_processor_affinity_service = nullptr;
-  IMemoryAllocator* global_accelerator_host_memory_allocator = nullptr;
   IDynamicLibraryLoader* global_dynamic_library_loader = nullptr;
-  MemoryRessourceMng global_default_data_memory_ressource_mng;
-  IMemoryRessourceMng* global_data_memory_ressource_mng = nullptr;
   IPerformanceCounterService* global_performance_counter_service = nullptr;
   bool global_has_color_console = false;
 }
@@ -224,7 +222,7 @@ setPerformanceCounterService(IPerformanceCounterService* service)
 extern "C++" ARCANE_UTILS_EXPORT IMemoryAllocator* platform::
 getAcceleratorHostMemoryAllocator()
 {
-  return global_accelerator_host_memory_allocator;
+  return MemoryUtils::getAcceleratorHostMemoryAllocator();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -233,18 +231,16 @@ getAcceleratorHostMemoryAllocator()
 extern "C++" ARCANE_UTILS_EXPORT IMemoryAllocator* platform::
 setAcceleratorHostMemoryAllocator(IMemoryAllocator* a)
 {
-  IMemoryAllocator* old = global_accelerator_host_memory_allocator;
-  global_accelerator_host_memory_allocator = a;
-  return old;
+  return MemoryUtils::setAcceleratorHostMemoryAllocator(a);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-extern "C++" ARCANE_UTILS_EXPORT IMemoryAllocator* platform::
+IMemoryAllocator* platform::
 getDefaultDataAllocator()
 {
-  return getDataMemoryRessourceMng()->getAllocator(eMemoryRessource::UnifiedMemory);
+  return MemoryUtils::getDefaultDataAllocator();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -253,22 +249,16 @@ getDefaultDataAllocator()
 extern "C++" ARCANE_UTILS_EXPORT IMemoryRessourceMng* platform::
 setDataMemoryRessourceMng(IMemoryRessourceMng* mng)
 {
-  ARCANE_CHECK_POINTER(mng);
-  IMemoryRessourceMng* old = global_data_memory_ressource_mng;
-  global_data_memory_ressource_mng = mng;
-  return old;
+  return MemoryUtils::setDataMemoryResourceMng(mng);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-extern "C++" ARCANE_UTILS_EXPORT IMemoryRessourceMng* platform::
+IMemoryRessourceMng* platform::
 getDataMemoryRessourceMng()
 {
-  IMemoryRessourceMng* a = global_data_memory_ressource_mng;
-  if (!a)
-    return &global_default_data_memory_ressource_mng;
-  return a;
+  return MemoryUtils::getDataMemoryResourceMng();
 }
 
 /*---------------------------------------------------------------------------*/

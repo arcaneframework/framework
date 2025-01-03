@@ -1,16 +1,16 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* AlephInterface.h                                            (C) 2000-2011 */
+/* AlephInterface.h                                            (C) 2000-2024 */
 /*                                                                           */
 /*                                                                           */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_ALEPH_ALEPHINTERFACE_H_
-#define ARCANE_ALEPH_ALEPHINTERFACE_H_
+#ifndef ARCANE_ALEPH_ALEPHINTERFACE_H
+#define ARCANE_ALEPH_ALEPHINTERFACE_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -20,7 +20,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -32,9 +33,11 @@ class AlephVector;
 /******************************************************************************
  * IAlephTopology
  *****************************************************************************/
-class IAlephTopology : public TraceAccessor
+class IAlephTopology
+: public TraceAccessor
 {
  public:
+
   IAlephTopology(ITraceMng* tm,
                  AlephKernel* kernel,
                  Integer index,
@@ -57,10 +60,12 @@ class IAlephTopology : public TraceAccessor
   }
 
  public:
+
   virtual void backupAndInitialize() = 0;
   virtual void restore() = 0;
 
  protected:
+
   Integer m_index;
   AlephKernel* m_kernel;
   bool m_participating_in_solver;
@@ -69,9 +74,11 @@ class IAlephTopology : public TraceAccessor
 /******************************************************************************
  * IAlephVector
  *****************************************************************************/
-class IAlephVector : public TraceAccessor
+class IAlephVector
+: public TraceAccessor
 {
  public:
+
   IAlephVector(ITraceMng* tm,
                AlephKernel* kernel,
                Integer index)
@@ -89,13 +96,15 @@ class IAlephVector : public TraceAccessor
   }
 
  public:
+
   virtual void AlephVectorCreate(void) = 0;
-  virtual void AlephVectorSet(const double*, const int*, Integer) = 0;
+  virtual void AlephVectorSet(const double*, const AlephInt*, Integer) = 0;
   virtual int AlephVectorAssemble(void) = 0;
-  virtual void AlephVectorGet(double*, const int*, Integer) = 0;
+  virtual void AlephVectorGet(double*, const AlephInt*, Integer) = 0;
   virtual void writeToFile(const String) = 0;
 
  protected:
+
   Integer m_index;
   AlephKernel* m_kernel;
 };
@@ -103,9 +112,11 @@ class IAlephVector : public TraceAccessor
 /******************************************************************************
  * IAlephMatrix
  *****************************************************************************/
-class IAlephMatrix : public TraceAccessor
+class IAlephMatrix
+: public TraceAccessor
 {
  public:
+
   IAlephMatrix(ITraceMng* tm,
                AlephKernel* kernel,
                Integer index)
@@ -123,10 +134,11 @@ class IAlephMatrix : public TraceAccessor
   }
 
  public:
+
   virtual void AlephMatrixCreate(void) = 0;
   virtual void AlephMatrixSetFilled(bool) = 0;
   virtual int AlephMatrixAssemble(void) = 0;
-  virtual void AlephMatrixFill(int, int*, int*, double*) = 0;
+  virtual void AlephMatrixFill(int, AlephInt*, AlephInt*, double*) = 0;
   virtual int AlephMatrixSolve(AlephVector*,
                                AlephVector*,
                                AlephVector*,
@@ -136,14 +148,20 @@ class IAlephMatrix : public TraceAccessor
   virtual void writeToFile(const String) = 0;
 
  protected:
+
   Integer m_index;
   AlephKernel* m_kernel;
 };
 
-class IAlephFactory : public TraceAccessor
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+class IAlephFactory
+: public TraceAccessor
 {
  public:
-  IAlephFactory(ITraceMng* tm)
+
+  explicit IAlephFactory(ITraceMng* tm)
   : TraceAccessor(tm)
   {
     debug() << "\33[1;34m[IAlephFactory] NEW IAlephFactory"
@@ -170,6 +188,7 @@ class IAlephFactory : public TraceAccessor
 class IAlephFactoryImpl
 {
  public:
+
   virtual ~IAlephFactoryImpl() {}
   virtual void initialize() = 0;
   virtual IAlephTopology* createTopology(ITraceMng*, AlephKernel*, Integer, Integer) = 0;
@@ -180,7 +199,7 @@ class IAlephFactoryImpl
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MemoryCopyUnitTest.cc                                       (C) 2000-2023 */
+/* MemoryCopyUnitTest.cc                                       (C) 2000-2024 */
 /*                                                                           */
 /* Service de test des noyaux de recopie mémoire.                            */
 /*---------------------------------------------------------------------------*/
@@ -351,7 +351,7 @@ _executeFill(eMemoryRessource mem_kind, bool use_queue, bool use_index)
   info() << "Execute Fill memory_ressource=" << mem_kind
          << " use_queue=" << use_queue << " use_index=" << use_index;
 
-  auto queue = makeQueue(m_runner);
+  RunQueue queue = makeQueue(m_runner);
   RunQueue* queue_ptr = &queue;
   if (!use_queue)
     queue_ptr = nullptr;
@@ -409,7 +409,7 @@ _executeFill(eMemoryRessource mem_kind, bool use_queue, bool use_index)
     if (use_index) {
       NumArray<Int16, MDDim1> filter(eMemoryRessource::Host);
       filter.resize(n1);
-      filter.fill(0);
+      filter.fillHost(0);
       for (Int32 i = 0; i < nb_index; ++i)
         filter[indexes[i]] = 1;
 

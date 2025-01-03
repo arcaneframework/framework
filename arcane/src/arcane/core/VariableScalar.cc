@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -34,7 +34,7 @@
 #include "arcane/core/IMesh.h"
 #include "arcane/core/internal/IVariableMngInternal.h"
 
-#include "arcane/datatype/DataStorageBuildInfo.h"
+#include "arcane/core/datatype/DataStorageBuildInfo.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -359,15 +359,7 @@ swapValues(ThatClass& rhs)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template class VariableScalarT<Byte>;
-template class VariableScalarT<Real>;
-template class VariableScalarT<Int16>;
-template class VariableScalarT<Int32>;
-template class VariableScalarT<Int64>;
-template class VariableScalarT<Real2>;
-template class VariableScalarT<Real2x2>;
-template class VariableScalarT<Real3>;
-template class VariableScalarT<Real3x3>;
+ARCANE_INTERNAL_INSTANTIATE_TEMPLATE_FOR_NUMERIC_DATATYPE(VariableScalarT);
 template class VariableScalarT<String>;
 
 /*---------------------------------------------------------------------------*/

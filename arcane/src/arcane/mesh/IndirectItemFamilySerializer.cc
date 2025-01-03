@@ -1,20 +1,20 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IndirectItemFamilySerializer.cc                             (C) 2000-2023 */
+/* IndirectItemFamilySerializer.cc                             (C) 2000-2024 */
 /*                                                                           */
 /* Sérialisation/Désérialisation indirecte des familles d'entités.           */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/ISerializer.h"
-#include "arcane/IItemFamily.h"
-#include "arcane/ItemInfoListView.h"
-#include "arcane/Item.h"
+#include "arcane/core/ISerializer.h"
+#include "arcane/core/IItemFamily.h"
+#include "arcane/core/ItemInfoListView.h"
+#include "arcane/core/Item.h"
 
 #include "arcane/mesh/IndirectItemFamilySerializer.h"
 
@@ -45,8 +45,8 @@ serializeItems(ISerializer* sbuf,Int32ConstArrayView local_ids)
 
   switch(sbuf->mode()){
   case ISerializer::ModeReserve:
-    sbuf->reserve(DT_Int64,1); // Pour le nombre d'entités
-    sbuf->reserveSpan(DT_Int64,nb_item); // Pour les uniqueId() des entités.
+    sbuf->reserveInt64(1); // Pour le nombre d'entités
+    sbuf->reserveSpan(eBasicDataType::Int64,nb_item); // Pour les uniqueId() des entités.
     break;
   case ISerializer::ModePut:
     sbuf->putInt64(nb_item);

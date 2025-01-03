@@ -16,12 +16,17 @@
 #include "arcane/utils/FatalErrorException.h"
 #include "arcane/utils/MemoryUtils.h"
 
-#if defined(ARCANE_COMPILING_HIP)
-#include "arcane/accelerator/hip/HipAccelerator.h"
-#endif
-#if defined(ARCANE_COMPILING_CUDA)
-#include "arcane/accelerator/cuda/CudaAccelerator.h"
-#endif
+#include "arcane/accelerator/core/NativeStream.h"
+#include "arcane/accelerator/CommonUtils.h"
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+/*!
+ * \namespace Arcane::Accelerator::AcceleratorUtils
+ *
+ * \brief Espace de nom pour les méthodes utilitaires des accélérateurs.
+ */
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -35,6 +40,15 @@ namespace Arcane::Accelerator::impl
 #if defined(ARCANE_COMPILING_CUDA)
 
 cudaStream_t CudaUtils::
+toNativeStream(const NativeStream& v)
+{
+  cudaStream_t* s = reinterpret_cast<cudaStream_t*>(v.m_native_pointer);
+  if (!s)
+    ARCANE_FATAL("Null CUDA stream");
+  return *s;
+}
+
+cudaStream_t CudaUtils::
 toNativeStream(const RunQueue* queue)
 {
   eExecutionPolicy p = eExecutionPolicy::None;
@@ -42,10 +56,7 @@ toNativeStream(const RunQueue* queue)
     p = queue->executionPolicy();
   if (p != eExecutionPolicy::CUDA)
     ARCANE_FATAL("RunQueue is not a CUDA queue");
-  cudaStream_t* s = reinterpret_cast<cudaStream_t*>(queue->platformStream());
-  if (!s)
-    ARCANE_FATAL("Null stream");
-  return *s;
+  return toNativeStream(queue->_internalNativeStream());
 }
 
 cudaStream_t CudaUtils::
@@ -62,6 +73,15 @@ toNativeStream(const RunQueue& queue)
 #if defined(ARCANE_COMPILING_HIP)
 
 hipStream_t HipUtils::
+toNativeStream(const NativeStream& v)
+{
+  hipStream_t* s = reinterpret_cast<hipStream_t*>(v.m_native_pointer);
+  if (!s)
+    ARCANE_FATAL("Null HIP stream");
+  return *s;
+}
+
+hipStream_t HipUtils::
 toNativeStream(const RunQueue* queue)
 {
   eExecutionPolicy p = eExecutionPolicy::None;
@@ -69,10 +89,7 @@ toNativeStream(const RunQueue* queue)
     p = queue->executionPolicy();
   if (p != eExecutionPolicy::HIP)
     ARCANE_FATAL("RunQueue is not a HIP queue");
-  hipStream_t* s = reinterpret_cast<hipStream_t*>(queue->platformStream());
-  if (!s)
-    ARCANE_FATAL("Null stream");
-  return *s;
+  return toNativeStream(queue->_internalNativeStream());
 }
 
 hipStream_t HipUtils::
@@ -89,6 +106,15 @@ toNativeStream(const RunQueue& queue)
 #if defined(ARCANE_COMPILING_SYCL)
 
 sycl::queue SyclUtils::
+toNativeStream(const NativeStream& v)
+{
+  sycl::queue* s = reinterpret_cast<sycl::queue*>(v.m_native_pointer);
+  if (!s)
+    ARCANE_FATAL("Null SYCL stream");
+  return *s;
+}
+
+sycl::queue SyclUtils::
 toNativeStream(const RunQueue* queue)
 {
   eExecutionPolicy p = eExecutionPolicy::None;
@@ -96,10 +122,7 @@ toNativeStream(const RunQueue* queue)
     p = queue->executionPolicy();
   if (p != eExecutionPolicy::SYCL)
     ARCANE_FATAL("RunQueue is not a SYCL queue");
-  sycl::queue* s = reinterpret_cast<sycl::queue*>(queue->platformStream());
-  if (!s)
-    ARCANE_FATAL("Null stream");
-  return *s;
+  return toNativeStream(queue->_internalNativeStream());
 }
 
 sycl::queue SyclUtils::

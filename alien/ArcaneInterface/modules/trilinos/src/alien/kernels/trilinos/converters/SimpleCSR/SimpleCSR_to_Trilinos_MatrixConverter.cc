@@ -77,17 +77,11 @@ void
 SimpleCSR_to_Trilinos_MatrixConverter<TagT>::_build(
     const SimpleCSRMatrix<Real>& sourceImpl, TrilinosMatrix<Real, TagT>& targetImpl) const
 {
-  typedef SimpleCSRMatrix<Real>::MatrixInternal CSRMatrixType;
-
   const MatrixDistribution& dist = targetImpl.distribution();
-  const CSRStructInfo& profile = sourceImpl.getCSRProfile();
-  const Integer localSize = profile.getNRow();
   const Integer localOffset = dist.rowOffset();
   const Integer globalSize = dist.globalRowSize();
 
   auto const& matrixInternal = *sourceImpl.internal();
-  const Integer myRank = dist.parallelMng()->commRank();
-  const Integer nProc = dist.parallelMng()->commSize();
 
   auto const& matrix_profile = sourceImpl.internal()->getCSRProfile();
   int nrows = matrix_profile.getNRow();
@@ -104,7 +98,7 @@ SimpleCSR_to_Trilinos_MatrixConverter<TagT>::_build(
 template <typename TagT>
 void
 SimpleCSR_to_Trilinos_MatrixConverter<TagT>::_buildBlock(
-    const SimpleCSRMatrix<Real>& sourceImpl, TrilinosMatrix<Real, TagT>& targetImpl) const
+    [[maybe_unused]] const SimpleCSRMatrix<Real>& sourceImpl,[[maybe_unused]] TrilinosMatrix<Real, TagT>& targetImpl) const
 {
 }
 

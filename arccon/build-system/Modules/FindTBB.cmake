@@ -12,11 +12,13 @@ arccon_return_if_package_found(TBB)
 # A partir des versions OneTBB (2020+), il existe un fichier de configuration
 # CMake pour TBB. On tente de l'utiliser si possible
 
-# Tente d'utiliser le module correspondant de CMake
-set(_SAVED_CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH})
-unset(CMAKE_MODULE_PATH)
-find_package(TBB CONFIG QUIET COMPONENTS tbb)
-set(CMAKE_MODULE_PATH ${_SAVED_CMAKE_MODULE_PATH})
+# Tente d'utiliser le module correspondant de CMake, sauf si la variable ARCCON_NO_TBB_CONFIG est activée
+if (NOT ARCCON_NO_TBB_CONFIG)
+  set(_SAVED_CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH})
+  unset(CMAKE_MODULE_PATH)
+  find_package(TBB CONFIG QUIET COMPONENTS tbb)
+  set(CMAKE_MODULE_PATH ${_SAVED_CMAKE_MODULE_PATH})
+endif ()
 
 # vcpkg ne positionne ni TBB_tbb_found ni TBB_IMPORTED_TARGETS
 # On utilise donc direction 'TBB::tbb'

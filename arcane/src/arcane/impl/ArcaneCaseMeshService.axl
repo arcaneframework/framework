@@ -76,6 +76,17 @@
       </description>
     </simple>
 
+    <simple name="face-numbering-version"
+            type="int32"
+            optional = "true"
+            >
+      <description>
+        Version du calcul des identifiants uniques des faces.
+
+        Cette option est interne à Arcane.
+      </description>
+    </simple>
+
     <!-- Service spécifique de lecture de maillage -->
     <service-instance
         name = "specific-reader"

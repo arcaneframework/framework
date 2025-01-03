@@ -52,7 +52,7 @@ namespace Arcane::mesh
  * \note Toutes les méthodes qui utilisent ou retournent un 'ItemInternal*'
  * sont obsolètes et ne doivent pas être utilisées.
  */
-class ItemInternalMap
+class ARCANE_MESH_EXPORT ItemInternalMap
 {
   // Pour accès aux méthodes qui utilisent ItemInternal.
   friend class DynamicMeshKindInfos;

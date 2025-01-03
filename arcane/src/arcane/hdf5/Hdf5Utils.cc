@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Hdf5Utils.cc                                                (C) 2000-2023 */
+/* Hdf5Utils.cc                                                (C) 2000-2024 */
 /*                                                                           */
 /* Utilitaires HDF5.                                                         */
 /*---------------------------------------------------------------------------*/
@@ -704,12 +704,14 @@ initialize()
   {
     hid_t type_id = H5Tcopy(H5T_NATIVE_CHAR);
     m_char_id.setId(type_id);
-    //H5Tset_precision(m_int_id,8*1);
   }
   {
     hid_t type_id = H5Tcopy(H5T_NATIVE_UCHAR);
     m_uchar_id.setId(type_id);
-    //H5Tset_precision(m_int_id,8*1);
+  }
+  {
+    hid_t type_id = H5Tcopy(H5T_NATIVE_SCHAR);
+    m_schar_id.setId(type_id);
   }
   {
     hid_t type_id = H5Tcopy(H5T_NATIVE_SHORT);
@@ -746,6 +748,12 @@ initialize()
     H5Tset_precision(type_id,8*sizeof(unsigned long));
     H5Tset_order(type_id,H5T_ORDER_LE);
     m_ulong_id.setId(type_id);
+  }
+  {
+    hid_t type_id = H5Tcopy(H5T_NATIVE_FLOAT);
+    H5Tset_precision(type_id,8*sizeof(float));
+    H5Tset_order(type_id,H5T_ORDER_LE);
+    m_float32_id.setId(type_id);
   }
   {
     hid_t type_id = H5Tcopy(H5T_NATIVE_DOUBLE);
@@ -787,7 +795,23 @@ initialize()
     _H5Tinsert(type_id,"ZZ",HOFFSET(Real3x3POD,z.z),H5T_NATIVE_DOUBLE);
     m_real3x3_id.setId(type_id);
   }
-}
+
+  // HDF5 1.10 et 1.12 ne supportent pas encore les types 'BFloat16' et 'Float16'.
+  // Lorsque ce sera le cas, on pourra utiliser le type fourni par HDF5.
+  // (NOTE: HDF5 1.14.4 supporte Float16)
+
+  // Ajoute type opaque pour BFloat16.
+  {
+    hid_t type_id = H5Tcopy(H5T_NATIVE_B16);
+    m_bfloat16_id.setId(type_id);
+  }
+  // Ajoute type opaque pour Float16.
+  {
+    hid_t type_id = H5Tcopy(H5T_NATIVE_B16);
+    m_float16_id.setId(type_id);
+  }
+
+ }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -817,7 +841,7 @@ _H5Tinsert(hid_t type,const char* name,Integer offset,hid_t field_id)
 hid_t StandardTypes::
 nativeType(Real) const
 {
-  throw FatalErrorException("Hdf5Utils::StandardTypes::nativeType(Real)","Real is a complex type");
+  ARCANE_FATAL("Real is a complex type");
 }
 #endif
 
@@ -831,11 +855,15 @@ saveType(eDataType sd) const
   case DT_Real2x2: return saveType(Real2x2());
   case DT_Real3: return saveType(Real3());
   case DT_Real3x3: return saveType(Real3x3());
+  case DT_Int8: return saveType(Int8());
   case DT_Int16: return saveType(Int16());
   case DT_Int32: return saveType(Int32());
   case DT_Int64: return saveType(Int64());
+  case DT_Float32: return saveType(Float32());
+  case DT_Float16: return saveType(Float16());
+  case DT_BFloat16: return saveType(BFloat16());
   default:
-    throw ArgumentException("Bad type");
+    throw ArgumentException(String::format("Bad type '{0}'",sd));
   }
 }
 
@@ -852,11 +880,15 @@ nativeType(eDataType sd) const
   case DT_Real2x2: return nativeType(Real2x2());
   case DT_Real3: return nativeType(Real3());
   case DT_Real3x3: return nativeType(Real3x3());
+  case DT_Int8: return nativeType(Int8());
   case DT_Int16: return nativeType(Int16());
   case DT_Int32: return nativeType(Int32());
   case DT_Int64: return nativeType(Int64());
+  case DT_Float32: return nativeType(Float32());
+  case DT_Float16: return nativeType(Float16());
+  case DT_BFloat16: return nativeType(BFloat16());
   default:
-    throw ArgumentException("Bad type");
+    throw ArgumentException(String::format("Bad type '{0}'",sd));
   }
 }
 
@@ -1178,6 +1210,13 @@ template class StandardArrayT<Int16>;
 template class StandardArrayT<Int32>;
 template class StandardArrayT<Int64>;
 template class StandardArrayT<Byte>;
+template class StandardArrayT<Int8>;
+template class StandardArrayT<Float32>;
+// NOTE: on ne peut pas encore instantier ces types car ils nécessitent
+// de pouvoir faire des send/receive via le IParallelMng et cela n'est pas
+// encore implémenté.
+//template class StandardArrayT<Float16>;
+//template class StandardArrayT<BFloat16>;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -1283,6 +1322,7 @@ write(Hdf5Utils::StandardTypes & st, const String & s)
 
 /*---------------------------------------------------------------------------*/
 
+template class StandardScalarT<String>;
 template class StandardScalarT<Real>;
 template class StandardScalarT<Real3>;
 template class StandardScalarT<Real3x3>;
@@ -1292,7 +1332,10 @@ template class StandardScalarT<Int16>;
 template class StandardScalarT<Int32>;
 template class StandardScalarT<Int64>;
 template class StandardScalarT<Byte>;
-template class StandardScalarT<String>;
+template class StandardScalarT<Int8>;
+template class StandardScalarT<Float16>;
+template class StandardScalarT<BFloat16>;
+template class StandardScalarT<Float32>;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

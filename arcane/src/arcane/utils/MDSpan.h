@@ -46,6 +46,8 @@ class MDSpan
   friend class NumArray<UnqualifiedValueType, Extents, LayoutPolicy>;
   // Pour que MDSpan<const T> ait accès à MDSpan<T>
   friend class MDSpan<const UnqualifiedValueType, Extents, LayoutPolicy>;
+  using ThatClass = MDSpan<DataType, Extents, LayoutPolicy>;
+  static constexpr bool IsConst = std::is_const_v<DataType>;
 
  public:
 
@@ -79,6 +81,26 @@ class MDSpan
   : m_ptr(rhs.m_ptr)
   , m_extents(rhs.m_extents)
   {}
+  constexpr ARCCORE_HOST_DEVICE MDSpan(SmallSpan<DataType> v) requires(Extents::isDynamic1D() && !IsConst)
+  : m_ptr(v.data())
+  , m_extents(DynamicDimsType(v.size()))
+  {}
+  constexpr ARCCORE_HOST_DEVICE MDSpan(SmallSpan<const DataType> v) requires(Extents::isDynamic1D() && IsConst)
+  : m_ptr(v.data())
+  , m_extents(DynamicDimsType(v.size()))
+  {}
+  constexpr ARCCORE_HOST_DEVICE ThatClass& operator=(SmallSpan<DataType> v) requires(Extents::isDynamic1D() && !IsConst)
+  {
+    m_ptr = v.data();
+    m_extents = DynamicDimsType(v.size());
+    return (*this);
+  }
+  constexpr ARCCORE_HOST_DEVICE ThatClass& operator=(SmallSpan<const DataType> v) requires(Extents::isDynamic1D() && IsConst)
+  {
+    m_ptr = v.data();
+    m_extents = DynamicDimsType(v.size());
+    return (*this);
+  }
 
  public:
 
@@ -107,7 +129,6 @@ class MDSpan
   //! Valeur de la quatrième dimension
   constexpr ARCCORE_HOST_DEVICE Int32 extent3() const requires(Extents::rank() >= 4) { return m_extents.extent3(); }
 
- public:
  public:
 
   //! Valeur pour l'élément \a i,j,k,l

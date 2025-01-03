@@ -17,3 +17,5 @@
 #include "arcane/utils/Real3x3.h"
 #include "arcane/utils/BFloat16.h"
 #include "arcane/utils/Float16.h"
+#include "arcane/utils/Float128.h"
+#include "arcane/utils/Int128.h"

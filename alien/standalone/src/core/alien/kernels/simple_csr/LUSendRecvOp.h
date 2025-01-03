@@ -169,9 +169,7 @@ class LUSendRecvOp
     CSRModifierViewT<MatrixT> modifier(m_matrix);
     // clang-format off
     auto nrows  = modifier.nrows() ;
-    auto nnz    = modifier.nnz() ;
     auto kcol   = modifier.kcol() ;
-    auto dcol   = modifier.dcol() ;
     auto cols   = modifier.cols() ;
     //auto values = modifier.data() ;
     // clang-format on

@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshMaterialSynchronizeBuffer.cc                            (C) 2000-2023 */
+/* MeshMaterialSynchronizeBuffer.cc                            (C) 2000-2024 */
 /*                                                                           */
 /* Gestion des buffers pour la synchronisation de variables matériaux.       */
 /*---------------------------------------------------------------------------*/
@@ -15,7 +15,7 @@
 
 #include "arcane/utils/UniqueArray.h"
 #include "arcane/utils/PlatformUtils.h"
-#include "arcane/utils/IMemoryRessourceMng.h"
+#include "arcane/utils/MemoryUtils.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -200,7 +200,7 @@ namespace impl
 extern "C++" ARCANE_MATERIALS_EXPORT Ref<IMeshMaterialSynchronizeBuffer>
 makeMultiBufferMeshMaterialSynchronizeBufferRef(eMemoryRessource memory_ressource)
 {
-  auto* a = platform::getDataMemoryRessourceMng()->getAllocator(memory_ressource);
+  auto* a = MemoryUtils::getAllocator(memory_ressource);
   auto* v = new MultiBufferMeshMaterialSynchronizeBuffer(a);
   return makeRef<IMeshMaterialSynchronizeBuffer>(v);
 }
@@ -214,7 +214,7 @@ makeMultiBufferMeshMaterialSynchronizeBufferRef()
 extern "C++" ARCANE_MATERIALS_EXPORT Ref<IMeshMaterialSynchronizeBuffer>
 makeOneBufferMeshMaterialSynchronizeBufferRef(eMemoryRessource memory_ressource)
 {
-  auto* a = platform::getDataMemoryRessourceMng()->getAllocator(memory_ressource);
+  auto* a = MemoryUtils::getAllocator(memory_ressource);
   auto* v = new OneBufferMeshMaterialSynchronizeBuffer(a);
   return makeRef<IMeshMaterialSynchronizeBuffer>(v);
 }

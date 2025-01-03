@@ -49,7 +49,7 @@ _checkHost(eMemoryRessource r)
 {
   if (r == eMemoryRessource::Host || r == eMemoryRessource::UnifiedMemory)
     return;
-  ARCANE_FATAL("Invalid access from '{0}' ressource memory to host memory", (int)r);
+  ARCANE_FATAL("Invalid access from '{0}' ressource memory to host memory", r);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -57,7 +57,7 @@ _checkHost(eMemoryRessource r)
 
 void NumArrayBaseCommon::
 _memoryAwareCopy(Span<const std::byte> from, eMemoryRessource from_mem,
-                 Span<std::byte> to, eMemoryRessource to_mem, RunQueue* queue)
+                 Span<std::byte> to, eMemoryRessource to_mem, const RunQueue* queue)
 {
   MemoryUtils::copy(MutableMemoryView(to), to_mem, ConstMemoryView(from), from_mem, queue);
 }
@@ -67,7 +67,7 @@ _memoryAwareCopy(Span<const std::byte> from, eMemoryRessource from_mem,
 
 void NumArrayBaseCommon::
 _memoryAwareFill(Span<std::byte> to, Int64 nb_element, const void* fill_address,
-                 Int32 datatype_size, SmallSpan<const Int32> indexes, RunQueue* queue)
+                 Int32 datatype_size, SmallSpan<const Int32> indexes, const RunQueue* queue)
 {
   ConstMemoryView fill_value_view(makeConstMemoryView(fill_address, datatype_size, 1));
   MutableMemoryView destination(makeMutableMemoryView(to.data(), datatype_size, nb_element));
@@ -79,7 +79,7 @@ _memoryAwareFill(Span<std::byte> to, Int64 nb_element, const void* fill_address,
 
 void NumArrayBaseCommon::
 _memoryAwareFill(Span<std::byte> to, Int64 nb_element, const void* fill_address,
-                 Int32 datatype_size, RunQueue* queue)
+                 Int32 datatype_size, const RunQueue* queue)
 {
   ConstMemoryView fill_value_view(makeConstMemoryView(fill_address, datatype_size, 1));
   MutableMemoryView destination(makeMutableMemoryView(to.data(), datatype_size, nb_element));

@@ -106,6 +106,7 @@ class UnifiedMemoryHipMemoryAllocator
   {
     return ::hipFree(ptr);
   }
+  eMemoryResource memoryResource() const override { return eMemoryResource::UnifiedMemory; }
 };
 
 /*---------------------------------------------------------------------------*/
@@ -124,6 +125,7 @@ class HostPinnedHipMemoryAllocator
   {
     return ::hipHostFree(ptr);
   }
+  eMemoryResource memoryResource() const override { return eMemoryResource::HostPinned; }
 };
 
 /*---------------------------------------------------------------------------*/
@@ -142,6 +144,7 @@ class DeviceHipMemoryAllocator
   {
     return ::hipFree(ptr);
   }
+  eMemoryResource memoryResource() const override { return eMemoryResource::Device; }
 };
 
 /*---------------------------------------------------------------------------*/

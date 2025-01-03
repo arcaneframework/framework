@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemFamilyNetwork.h                                         (C) 2000-2023 */
+/* ItemFamilyNetwork.h                                         (C) 2000-2024 */
 /*                                                                           */
 /* ItemFamily relations through their connectivities.                        */
 /*---------------------------------------------------------------------------*/
@@ -74,6 +74,9 @@ public:
    *  La responsabilité de la mémoire de \a source_to_target_connectivity est prise en charge par ItemFamilyNetwork
    */
   void addRelation(IItemFamily* source_family, IItemFamily* target_family, IIncrementalItemConnectivity* source_to_target_connectivity) override;
+
+  IIncrementalItemConnectivity* getDependency(IItemFamily* source_family, IItemFamily* target_family) override;
+  IIncrementalItemConnectivity* getRelation(IItemFamily* source_family, IItemFamily* target_family) override;
 
   //! Obtenir une connectivité entre les familles \a source_family et \a target_family de nom \a name, qu'elle soit une relation ou une dépendance
   IIncrementalItemConnectivity* getConnectivity(IItemFamily* source_family, IItemFamily* target_family, const String& name) override;

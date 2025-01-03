@@ -26,6 +26,8 @@
 #include "arcane/core/IParallelMng.h"
 #include "arcane/core/DataTypeDispatchingDataVisitor.h"
 
+#include "arcane/accelerator/core/Runner.h"
+
 #include "arcane/impl/internal/IDataSynchronizeDispatcher.h"
 
 /*---------------------------------------------------------------------------*/
@@ -111,7 +113,7 @@ class ARCANE_IMPL_EXPORT VariableSynchronizer
   Ref<IDataSynchronizeImplementationFactory> m_implementation_factory;
   IVariableSynchronizerMng* m_variable_synchronizer_mng = nullptr;
   SyncMessage* m_default_message = nullptr;
-  Runner* m_runner = nullptr;
+  Runner m_runner;
   // Pour les synchronisations sur un sous-ensemble des entités
   Ref<DataSynchronizeInfo> m_partial_sync_info;
   Ref<SyncMessage> m_partial_message;

@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* AlephMatrix.h                                               (C) 2000-2022 */
+/* AlephMatrix.h                                               (C) 2000-2024 */
 /*                                                                           */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_ALEPH_MATRIX_H
@@ -23,8 +23,6 @@
 namespace Arcane
 {
 
-class IAlephMatrix;
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
@@ -34,7 +32,8 @@ class ARCANE_ALEPH_EXPORT AlephMatrix
 : public TraceAccessor
 {
  public:
-  AlephMatrix(AlephKernel*);
+
+  explicit AlephMatrix(AlephKernel*);
   ~AlephMatrix();
 
  public:
@@ -67,6 +66,7 @@ class ARCANE_ALEPH_EXPORT AlephMatrix
   void solveNow(AlephVector*, AlephVector*, AlephVector*, Integer&, Real*, AlephParams*);
 
  private:
+
   AlephKernel* m_kernel = nullptr;
   Integer m_index;
   ArrayView<Integer> m_ranks;
@@ -74,14 +74,15 @@ class ARCANE_ALEPH_EXPORT AlephMatrix
   IAlephMatrix* m_implementation = nullptr;
 
  private:
+
   // Matrice utilisée dans le cas où nous sommes le solveur
-  MultiArray2<Int32> m_aleph_matrix_buffer_rows;
-  MultiArray2<Int32> m_aleph_matrix_buffer_cols;
+  MultiArray2<AlephInt> m_aleph_matrix_buffer_rows;
+  MultiArray2<AlephInt> m_aleph_matrix_buffer_cols;
   MultiArray2<Real> m_aleph_matrix_buffer_vals;
   // Tableaux tampons des setValues
   Integer m_setValue_idx;
-  UniqueArray<Int32> m_setValue_row;
-  UniqueArray<Int32> m_setValue_col;
+  UniqueArray<AlephInt> m_setValue_row;
+  UniqueArray<AlephInt> m_setValue_col;
   UniqueArray<Real> m_setValue_val;
 
  private: // Tableaux tampons des addValues

@@ -12,15 +12,13 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/Array.h"
-#include "arcane/utils/Real2.h"
-#include "arcane/utils/Real3.h"
-#include "arcane/utils/Real2x2.h"
-#include "arcane/utils/Real3x3.h"
 #include "arcane/utils/HPReal.h"
+#include "arcane/utils/NumericTypes.h"
 #include "arcane/utils/NotImplementedException.h"
 #include "arcane/utils/ScopedPtr.h"
 #include "arcane/utils/ITraceMng.h"
 #include "arcane/utils/ValueConvert.h"
+#include "arcane/utils/FatalErrorException.h"
 
 #include "arcane/core/ParallelMngDispatcher.h"
 #include "arcane/core/IParallelDispatch.h"
@@ -227,40 +225,38 @@ class ParallelMngDispatcher::Impl
 
   explicit Impl(ParallelMngDispatcher* pm)
   : m_parallel_mng(pm)
+  , m_runner(Accelerator::eExecutionPolicy::Sequential)
+  , m_queue(makeQueue(m_runner))
   {
     if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_DISABLE_ACCELERATOR_AWARE_MESSAGE_PASSING", true))
       m_is_accelerator_aware_disabled = (v.value()!=0);
   }
   ~Impl()
   {
-    m_queue.reset();
   }
  public:
 
-  Runner* defaultRunner() const override { return m_runner; }
-  RunQueue* defaultQueue() const override { return m_queue.get(); }
+  Runner runner() const override { return m_runner; }
+  RunQueue queue() const override { return m_queue; }
   bool isAcceleratorAware() const override
   {
     if (m_is_accelerator_aware_disabled)
       return false;
-    if (!m_queue.get())
+    if (m_queue.isNull())
       return false;
-    if (!m_queue->isAcceleratorPolicy())
+    if (!m_queue.isAcceleratorPolicy())
       return false;
     return m_parallel_mng->_isAcceleratorAware();
   }
-  void setDefaultRunner(Runner* runner) override
+  void setDefaultRunner(const Runner& runner) override
   {
+    if (!m_runner.isInitialized())
+      ARCANE_FATAL("Can not set an unitialized Runner");
+
     m_runner = runner;
-    // Conserve une référence sur le Runner pour éviter sa destruction
-    m_runner_ref = (runner) ? *runner : Runner();
-    if (m_runner){
-      Accelerator::RunQueueBuildInfo build_info(-5);
-      m_queue = makeQueueRef(*m_runner,build_info);
-      m_queue->setAsync(true);
-    }
-    else
-      m_queue.reset();
+    Accelerator::RunQueueBuildInfo build_info(-5);
+    m_queue = makeQueue(m_runner,build_info);
+    m_queue.setAsync(true);
   }
   Ref<IParallelMng> createSubParallelMngRef(Int32 color, Int32 key) override
   {
@@ -270,9 +266,8 @@ class ParallelMngDispatcher::Impl
  private:
 
   ParallelMngDispatcher* m_parallel_mng = nullptr;
-  Runner* m_runner = nullptr;
-  Ref<RunQueue> m_queue;
-  Runner m_runner_ref;
+  Runner m_runner;
+  RunQueue m_queue;
   bool m_is_accelerator_aware_disabled = false;
 };
 

@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* AcceleratorRuntimeInitialisationInfo.h                      (C) 2000-2022 */
+/* AcceleratorRuntimeInitialisationInfo.h                      (C) 2000-2024 */
 /*                                                                           */
 /* Informations pour l'initialisation du runtime des accélérateurs.          */
 /*---------------------------------------------------------------------------*/
@@ -47,10 +47,11 @@ class ARCANE_ACCELERATOR_CORE_EXPORT AcceleratorRuntimeInitialisationInfo
 
  public:
 
+  //! Indique si on utilise un runtime accélérateur
   void setIsUsingAcceleratorRuntime(bool v);
   bool isUsingAcceleratorRuntime() const;
 
-  //! Nom du runtime utilisé (pour l'instant uniquement 'cuda')
+  //! Nom du runtime utilisé (pour l'instant uniquement 'cuda', 'hip' ou 'sycl')
   void setAcceleratorRuntime(StringView name);
   String acceleratorRuntime() const;
 

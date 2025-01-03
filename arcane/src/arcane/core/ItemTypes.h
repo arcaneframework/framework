@@ -59,10 +59,12 @@ class DoF;
 class Item;
 class ItemWithNodes;
 class ItemInternal;
-namespace impl
-{
 class ItemBase;
 class MutableItemBase;
+namespace impl
+{
+using ItemBase = ::Arcane::ItemBase;
+using MutableItemBase = ::Arcane::MutableItemBase;
 template<int Extent = DynExtent> class ItemIndexedListView;
 class ItemLocalIdListContainerView;
 }

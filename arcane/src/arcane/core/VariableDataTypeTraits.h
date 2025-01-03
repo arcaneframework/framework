@@ -1,21 +1,25 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* VariableDataTypeTraits.h                                    (C) 2000-2023 */
+/* VariableDataTypeTraits.h                                    (C) 2000-2024 */
 /*                                                                           */
 /* Classes spécialisées pour caractériser les types de données.              */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_VARIABLEDATATYPETRAITS_H
-#define ARCANE_VARIABLEDATATYPETRAITS_H
+#ifndef ARCANE_CORE_VARIABLEDATATYPETRAITS_H
+#define ARCANE_CORE_VARIABLEDATATYPETRAITS_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/ValueConvert.h"
+#include "arcane/utils/BFloat16.h"
+#include "arcane/utils/Float16.h"
+#include "arcane/utils/Float128.h"
+#include "arcane/utils/Int128.h"
 
 #include "arcane/core/datatype/DataTypes.h"
 
@@ -193,6 +197,130 @@ class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<Real>
   static Real normeMax(Real v)
   {
     return math::abs(v);
+  }
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \internal
+ * \brief Spécialisation de VariableDataTypeTraitsT pour le type \c Real.
+ */
+template <>
+class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<Float128>
+{
+ public:
+
+  //! Type du paramètre template
+  typedef Float128 Type;
+
+  //! Indique si le type peut être sauvé et relu
+  typedef TrueType HasDump;
+
+  //! Indique si le type peut être subir une réduction
+  typedef FalseType HasReduce;
+
+  //! Indique si le type peut être subir une réduction Min/Max
+  typedef FalseType HasReduceMinMax;
+
+  //! Indique si le type est numérique
+  typedef TrueType IsNumeric;
+
+  typedef Float128 BasicType;
+
+  static constexpr Int32 nbBasicType() { return 1; }
+
+ public:
+
+  //! Retourne le nom du type de la variable
+  static constexpr const char* typeName() { return "Float128"; }
+  //! Retourne le type de la variable
+  static constexpr eDataType type() { return DT_Float128; }
+  //! Ecrit dans la chaîne \a s la valeur de \a v
+  static void dumpValue(String& s, const Type& v) { builtInDumpValue(s, v); }
+  /*!
+   * \brief Stocke la conversion de la chaîne \a s en le type #Type dans \a v
+   * \retval true en cas d'échec,
+   * \retval false si la conversion est un succès
+   */
+  static bool getValue(Type& v, const String& s) { return builtInGetValue(v, s); }
+
+  static bool verifDifferent(Type v1, Type v2, Type& diff, bool is_nan_equal = false)
+  {
+    if (is_nan_equal) {
+      // TODO: non supporté
+        return false;
+    }
+    if (v1 != v2) {
+      if (math::abs(v1) < 1.e-100) // TH: plantait pour v1 tres petit(math::isZero(v1))
+        diff = v1 - v2;
+      else
+        diff = (v1 - v2) / v1;
+      return true;
+    }
+    return false;
+  }
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \internal
+ * \brief Spécialisation de VariableDataTypeTraitsT pour le type <tt>Int8</tt>.
+ */
+template <>
+class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<Int8>
+{
+ public:
+
+  //! Type du paramètre template
+  typedef Int8 Type;
+
+  //! Indique si le type peut être sauvé et relu
+  typedef TrueType HasDump;
+
+  //! Indique si le type peut être subir une réduction
+  typedef TrueType HasReduce;
+
+  //! Indique si le type peut être subir une réduction Min/Max
+  typedef FalseType HasReduceMinMax;
+
+  //! Indique si le type est numérique
+  typedef TrueType IsNumeric;
+
+  typedef Int8 BasicType;
+
+  static constexpr Int32 nbBasicType() { return 1; }
+
+ public:
+
+  //! Retourne le nom du type de la variable
+  static constexpr const char* typeName() { return "Int8"; }
+  //! Retourne le type de la variable
+  static constexpr eDataType type() { return DT_Int8; }
+  //! Ecrit dans la chaîne \a s la valeur de \a v
+  static void dumpValue(String& s, const Type& v) { builtInDumpValue(s, v); }
+  /*!
+   * \brief Stocke la conversion de la chaîne \a s en le type #Type dans \a v
+   * \retval true en cas d'échec,
+   * \retval false si la conversion est un succès
+   */
+  static bool getValue(Type& v, const String& s) { return builtInGetValue(v, s); }
+  static bool verifDifferent(Int8 v1, Int8 v2, Int8& diff,
+                             [[maybe_unused]] bool is_nan_equal = false)
+  {
+    if (v1 != v2) {
+      if (math::isZero(v1))
+        diff = (Int8)(v1 - v2);
+      else
+        diff = (Int8)((v1 - v2) / v1);
+      return true;
+    }
+    return false;
+  }
+  static Int8 normeMax(Int8 v)
+  {
+    return static_cast<Int8>(math::abs(v));
   }
 };
 
@@ -387,6 +515,65 @@ class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<Int64>
 /*---------------------------------------------------------------------------*/
 /*!
  * \internal
+ * \brief Spécialisation de VariableDataTypeTraitsT pour le type <tt>Int128</tt>.
+ */
+template <>
+class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<Int128>
+{
+ public:
+
+  //! Type du paramètre template
+  typedef Int128 Type;
+
+  //! Indique si le type peut être sauvé et relu
+  typedef TrueType HasDump;
+
+  //! Indique si le type peut être subir une réduction
+  typedef FalseType HasReduce;
+
+  //! Indique si le type peut être subir une réduction Min/Max
+  typedef FalseType HasReduceMinMax;
+
+  //! Indique si le type est numérique
+  typedef TrueType IsNumeric;
+
+  typedef Int128 BasicType;
+
+  static constexpr Int32 nbBasicType() { return 1; }
+
+ public:
+
+  //! Retourne le nom du type de la variable
+  static constexpr const char* typeName() { return "Int128"; }
+  //! Retourne le type de la variable
+  static constexpr eDataType type() { return DT_Int128; }
+  //! Ecrit dans la chaîne \a s la valeur de \a v
+  static void dumpValue(String& s, const Type& v) { builtInDumpValue(s, v); }
+  /*!
+   * \brief Stocke la conversion de la chaîne \a s en le type #Type dans \a v
+   * \retval true en cas d'échec,
+   * \retval false si la conversion est un succès
+   */
+  static bool getValue(Type& v, const String& s) { return builtInGetValue(v, s); }
+
+  static bool verifDifferent(Type v1, Type v2, Type& diff,
+                             [[maybe_unused]] bool is_nan_equal = false)
+  {
+    if (v1 != v2) {
+      if (math::isZero(v1))
+        diff = v1 - v2;
+      else
+        diff = (v1 - v2) / v1;
+      return true;
+    }
+    return false;
+  }
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \internal
  * \brief Spécialisation de VariableDataTypeTraitsT pour le type <tt>String</tt>.
  */
 template <>
@@ -436,6 +623,217 @@ class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<String>
   static const char* normeMax(const char* v)
   {
     return v;
+  }
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \internal
+ * \brief Spécialisation de VariableDataTypeTraitsT pour le type \c BFloat16.
+ */
+template <>
+class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<BFloat16>
+{
+ public:
+
+  //! Type du paramètre template
+  typedef BFloat16 Type;
+
+  //! Indique si le type peut être sauvé et relu
+  typedef FalseType HasDump;
+
+  //! Indique si le type peut être subir une réduction
+  typedef FalseType HasReduce;
+
+  //! Indique si le type peut être subir une réduction Min/Max
+  typedef FalseType HasReduceMinMax;
+
+  //! Indique si le type est numérique
+  typedef TrueType IsNumeric;
+
+  typedef BFloat16 BasicType;
+
+  static constexpr Integer nbBasicType() { return 1; }
+
+ public:
+
+  //! Retourne le nom du type de la variable
+  static constexpr const char* typeName() { return "BFloat16"; }
+  //! Retourne le type de la variable
+  static constexpr eDataType type() { return DT_BFloat16; }
+  //! Ecrit dans la chaîne \a s la valeur de \a v
+  static void dumpValue(String& s, const Type& v) { builtInDumpValue(s, v); }
+  /*!
+   * \brief Stocke la conversion de la chaîne \a s en le type #Type dans \a v
+   * \retval true en cas d'échec,
+   * \retval false si la conversion est un succès
+   */
+  static bool getValue(Type& v, const String& s) { return builtInGetValue(v, s); }
+
+  static bool verifDifferent(float v1, float v2, BFloat16& diff, bool is_nan_equal = false)
+  {
+    if (is_nan_equal) {
+      // TODO: non supporté
+        return false;
+    }
+    if (v1 != v2) {
+      float fdiff = 0.0;
+      if (math::abs(v1)!=0.0)
+        fdiff = v1 - v2;
+      else
+        fdiff = (v1 - v2) / v1;
+      diff = static_cast<Type>(fdiff);
+      return true;
+    }
+    return false;
+  }
+
+  static Real normeMax(Real v)
+  {
+    return math::abs(v);
+  }
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \internal
+ * \brief Spécialisation de VariableDataTypeTraitsT pour le type \c Float16.
+ */
+template <>
+class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<Float16>
+{
+ public:
+
+  //! Type du paramètre template
+  typedef Float16 Type;
+
+  //! Indique si le type peut être sauvé et relu
+  typedef FalseType HasDump;
+
+  //! Indique si le type peut être subir une réduction
+  typedef FalseType HasReduce;
+
+  //! Indique si le type peut être subir une réduction Min/Max
+  typedef FalseType HasReduceMinMax;
+
+  //! Indique si le type est numérique
+  typedef TrueType IsNumeric;
+
+  typedef Float16 BasicType;
+
+  static constexpr Integer nbBasicType() { return 1; }
+
+ public:
+
+  //! Retourne le nom du type de la variable
+  static constexpr const char* typeName() { return "Float16"; }
+  //! Retourne le type de la variable
+  static constexpr eDataType type() { return DT_Float16; }
+  //! Ecrit dans la chaîne \a s la valeur de \a v
+  static void dumpValue(String& s, const Type& v) { builtInDumpValue(s, v); }
+  /*!
+   * \brief Stocke la conversion de la chaîne \a s en le type #Type dans \a v
+   * \retval true en cas d'échec,
+   * \retval false si la conversion est un succès
+   */
+  static bool getValue(Type& v, const String& s) { return builtInGetValue(v, s); }
+
+  static bool verifDifferent(float v1, float v2, Float16& diff, bool is_nan_equal = false)
+  {
+    if (is_nan_equal) {
+      // TODO: non supporté
+        return false;
+    }
+    if (v1 != v2) {
+      float fdiff = 0.0;
+      if (math::abs(v1)!=0.0)
+        fdiff = v1 - v2;
+      else
+        fdiff = (v1 - v2) / v1;
+      diff = static_cast<Type>(fdiff);
+      return true;
+    }
+    return false;
+  }
+
+  static Real normeMax(Real v)
+  {
+    return math::abs(v);
+  }
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \internal
+ * \brief Spécialisation de VariableDataTypeTraitsT pour le type \c Float32.
+ */
+template <>
+class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<Float32>
+{
+ public:
+
+  //! Type du paramètre template
+  typedef Float32 Type;
+
+  //! Indique si le type peut être sauvé et relu
+  typedef FalseType HasDump;
+
+  //! Indique si le type peut être subir une réduction
+  typedef TrueType HasReduce;
+
+  //! Indique si le type peut être subir une réduction Min/Max
+  typedef TrueType HasReduceMinMax;
+
+  //! Indique si le type est numérique
+  typedef TrueType IsNumeric;
+
+  typedef Real BasicType;
+
+  static constexpr Integer nbBasicType() { return 1; }
+
+ public:
+
+  //! Retourne le nom du type de la variable
+  static constexpr const char* typeName() { return "Float32"; }
+  //! Retourne le type de la variable
+  static constexpr eDataType type() { return DT_Float32; }
+  //! Ecrit dans la chaîne \a s la valeur de \a v
+  static void dumpValue(String& s, const Type& v) { builtInDumpValue(s, v); }
+  /*!
+   * \brief Stocke la conversion de la chaîne \a s en le type #Type dans \a v
+   * \retval true en cas d'échec,
+   * \retval false si la conversion est un succès
+   */
+  static bool getValue(Type& v, const String& s) { return builtInGetValue(v, s); }
+
+  static bool verifDifferent(Type v1, Type v2, Type& diff, bool is_nan_equal = false)
+  {
+    if (is_nan_equal) {
+      if (std::isnan(v1) && std::isnan(v2))
+        return false;
+    }
+    // Vérifie avant de les comparer que les deux nombres sont valides
+    // pour éviter une exception flottante sur certaines plates-formes
+    if (platform::isDenormalized(v1) || platform::isDenormalized(v2)) {
+      diff = 1.0;
+      return true;
+    }
+    if (v1 != v2) {
+      if (math::abs(v1) < 1.e-40)
+        diff = v1 - v2;
+      else
+        diff = (v1 - v2) / v1;
+      return true;
+    }
+    return false;
+  }
+
+  static Real normeMax(Real v)
+  {
+    return math::abs(v);
   }
 };
 

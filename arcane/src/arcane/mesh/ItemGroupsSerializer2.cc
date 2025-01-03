@@ -1,30 +1,29 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemGroupsSerializer2.cc                                    (C) 2000-2022 */
+/* ItemGroupsSerializer2.cc                                    (C) 2000-2024 */
 /*                                                                           */
 /* Sérialisation des groupes d'entités.                                      */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/ArcanePrecomp.h"
 #include "arcane/utils/String.h"
 #include "arcane/utils/ITraceMng.h"
 #include "arcane/utils/CheckedConvert.h"
 #include "arcane/utils/FatalErrorException.h"
 
-#include "arcane/IMesh.h"
-#include "arcane/IParallelMng.h"
-#include "arcane/ItemEnumerator.h"
-#include "arcane/IItemFamily.h"
-#include "arcane/Item.h"
-#include "arcane/IParallelExchanger.h"
-#include "arcane/ISerializer.h"
-#include "arcane/ItemFamilySerializeArgs.h"
+#include "arcane/core/IMesh.h"
+#include "arcane/core/IParallelMng.h"
+#include "arcane/core/ItemEnumerator.h"
+#include "arcane/core/IItemFamily.h"
+#include "arcane/core/Item.h"
+#include "arcane/core/IParallelExchanger.h"
+#include "arcane/core/ISerializer.h"
+#include "arcane/core/ItemFamilySerializeArgs.h"
 
 #include "arcane/mesh/ItemGroupsSerializer2.h"
 
@@ -85,8 +84,8 @@ serialize(const ItemFamilySerializeArgs& args)
   // NOTE: pour l' instant args.localIds() n'est pas utilisé.
   switch(sbuf->mode()){
   case ISerializer::ModeReserve:
-    sbuf->reserve(DT_Int64,1);
-    sbuf->reserveSpan(DT_Int64,m_items_to_send[rank].size());
+    sbuf->reserveInt64(1);
+    sbuf->reserveSpan(eBasicDataType::Int64,m_items_to_send[rank].size());
     break;
   case ISerializer::ModePut:
     sbuf->putInt64(m_items_to_send[rank].size());

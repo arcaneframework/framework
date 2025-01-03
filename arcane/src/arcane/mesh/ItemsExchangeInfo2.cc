@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemsExchangeInfo2.cc                                       (C) 2000-2023 */
+/* ItemsExchangeInfo2.cc                                       (C) 2000-2024 */
 /*                                                                           */
 /* Echange des entités et leurs variables.                                   */
 /*---------------------------------------------------------------------------*/
@@ -280,8 +280,8 @@ prepareToSend()
         if (lid != NULL_ITEM_LOCAL_ID)
           ++sub_dest_item_count;
       }
-      sbuf->reserve(DT_Int64,1);
-      sbuf->reserveSpan(DT_Int64,sub_dest_item_count);
+      sbuf->reserveInt64(1);
+      sbuf->reserveSpan(eBasicDataType::Int64,sub_dest_item_count);
     }    
 
     _applySerializeStep(IItemFamilySerializeStep::PH_Item,serialize_args);
@@ -340,6 +340,20 @@ prepareToSend()
     auto action = IItemFamilySerializeStep::eAction::AC_EndPrepareSend;
     for( IItemFamilySerializeStep* step : m_serialize_steps )
       step->notifyAction(IItemFamilySerializeStep::NotifyActionArgs(action,nb_send));
+  }
+}
+
+void ItemsExchangeInfo2::
+releaseBuffer()
+{
+  for( Integer i=0, is=m_exchanger->senderRanks().size(); i<is; ++i ) {
+    ISerializeMessage* comm = m_exchanger->messageToSend(i);
+
+    ISerializer* isbuf = comm->serializer();
+    SerializeBuffer* sbuf = dynamic_cast<SerializeBuffer*>(isbuf);
+
+    if(sbuf)
+      sbuf->releaseBuffer();
   }
 }
 

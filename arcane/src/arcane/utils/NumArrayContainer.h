@@ -38,11 +38,11 @@ class ARCANE_UTILS_EXPORT NumArrayBaseCommon
   static MemoryAllocationOptions _getDefaultAllocator(eMemoryRessource r);
   static void _checkHost(eMemoryRessource r);
   static void _memoryAwareCopy(Span<const std::byte> from, eMemoryRessource from_mem,
-                               Span<std::byte> to, eMemoryRessource to_mem, RunQueue* queue);
+                               Span<std::byte> to, eMemoryRessource to_mem, const RunQueue* queue);
   static void _memoryAwareFill(Span<std::byte> to, Int64 nb_element, const void* fill_address,
-                               Int32 datatype_size, SmallSpan<const Int32> indexes, RunQueue* queue);
+                               Int32 datatype_size, SmallSpan<const Int32> indexes, const RunQueue* queue);
   static void _memoryAwareFill(Span<std::byte> to, Int64 nb_element, const void* fill_address,
-                               Int32 datatype_size, RunQueue* queue);
+                               Int32 datatype_size, const RunQueue* queue);
 };
 
 /*---------------------------------------------------------------------------*/
@@ -150,14 +150,14 @@ class NumArrayContainer
    *
    * \a input_ressource indique l'origine de la zone mémoire (ou eMemoryRessource::Unknown si inconnu)
    */
-  void copyOnly(const Span<const DataType>& v, eMemoryRessource input_ressource, RunQueue* queue = nullptr)
+  void copyOnly(const Span<const DataType>& v, eMemoryRessource input_ressource, const RunQueue* queue = nullptr)
   {
     _memoryAwareCopy(v, input_ressource, queue);
   }
   /*!
    * \brief Remplit les indices données par \a indexes avec la valeur \a v.
    */
-  void fill(const DataType& v, SmallSpan<const Int32> indexes, RunQueue* queue)
+  void fill(const DataType& v, SmallSpan<const Int32> indexes, const RunQueue* queue)
   {
     Span<DataType> destination = to1DSpan();
     NumArrayBaseCommon::_memoryAwareFill(asWritableBytes(destination), destination.size(), &v, _typeSize(), indexes, queue);
@@ -165,7 +165,7 @@ class NumArrayContainer
   /*!
    * \brief Remplit les éléments de l'instance la valeur \a v.
    */
-  void fill(const DataType& v, RunQueue* queue)
+  void fill(const DataType& v, const RunQueue* queue)
   {
     Span<DataType> destination = to1DSpan();
     NumArrayBaseCommon::_memoryAwareFill(asWritableBytes(destination), destination.size(), &v, _typeSize(), queue);
@@ -173,7 +173,7 @@ class NumArrayContainer
 
  private:
 
-  void _memoryAwareCopy(const Span<const DataType>& v, eMemoryRessource input_ressource, RunQueue* queue)
+  void _memoryAwareCopy(const Span<const DataType>& v, eMemoryRessource input_ressource, const RunQueue* queue)
   {
     NumArrayBaseCommon::_memoryAwareCopy(asBytes(v), input_ressource,
                                          asWritableBytes(to1DSpan()), m_memory_ressource, queue);

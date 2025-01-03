@@ -127,7 +127,7 @@ template <typename TagT> class SolverInternal
   Teuchos::RCP<const Teuchos::Comm<int>> m_comm;
 
  public:
-  void initPrecondParameters(IOptionsTrilinosSolver* options, MPI_Comm const* comm)
+  void initPrecondParameters(IOptionsTrilinosSolver* options,[[maybe_unused]]  MPI_Comm const* comm)
   {
     using Teuchos::ParameterList;
     using Teuchos::parameterList;
@@ -507,11 +507,11 @@ template <typename TagT> class SolverInternal
   Teuchos::RCP<Tpetra::Operator<scalar_type, local_ordinal_type, global_ordinal_type,
       node_type>>
   createPreconditioner(matrix_type& A, 
-                       coord_type& A_coordinates, 
+                       [[maybe_unused]] coord_type& A_coordinates, 
                        const std::string& precondType,
                        Teuchos::RCP<Teuchos::ParameterList> plist,
                        std::ostream& out,
-                       std::ostream& err)
+                       [[maybe_unused]] std::ostream& err)
   {
     using Teuchos::ParameterList;
     using Teuchos::RCP;

@@ -192,28 +192,7 @@ class ARCANE_UTILS_EXPORT Real2
     y = f.y;
     return (*this);
   }
-  /*!
-   * \brief Indique si l'instance est proche de l'instance nulle.
-   *
-   * \retval true si math::isNearlyZero() est vrai pour chaque composante.
-   * \retval false sinon.
-   */
-  constexpr ARCCORE_HOST_DEVICE bool isNearlyZero() const
-  {
-    return math::isNearlyZero(x) && math::isNearlyZero(y);
-  }
 
-  //! Retourne la norme au carré du couple \f$x^2+y^2+z^2\f$
-  constexpr ARCCORE_HOST_DEVICE Real squareNormL2() const { return x * x + y * y; }
-  //! Retourne la norme du couple \f$\sqrt{x^2+y^2+z^2}\f$
-  ARCCORE_HOST_DEVICE Real normL2() const { return _sqrt(squareNormL2()); }
-
-  //! Retourne la norme au carré du couple \f$x^2+y^2+z^2\f$
-  ARCCORE_DEPRECATED_2021("Use squareNormL2() instead")
-  ARCCORE_HOST_DEVICE Real abs2() const { return x * x + y * y; }
-  //! Retourne la norme du couple \f$\sqrt{x^2+y^2+z^2}\f$
-  ARCCORE_DEPRECATED_2021("Use normL2() instead")
-  ARCCORE_HOST_DEVICE Real abs() const { return _sqrt(squareNormL2()); }
   //! Valeur absolue composante par composante.
   ARCCORE_HOST_DEVICE Real2 absolute() const { return Real2(math::abs(x), math::abs(y)); }
 
@@ -320,21 +299,6 @@ class ARCANE_UTILS_EXPORT Real2
    */
   constexpr ARCCORE_HOST_DEVICE Real2 operator/(Real2 b) const { return Real2(x / b.x, y / b.y); }
 
-  /*!
-   * \brief Normalise le couple.
-   * 
-   * Si le couple est non nul, divise chaque composante par la norme du couple
-   * (abs()), de telle sorte qu'après l'appel à cette méthode, abs() valent \a 1.
-   * Si le couple est nul, ne fait rien.
-   */
-  Real2& normalize()
-  {
-    Real d = normL2();
-    if (!math::isZero(d))
-      divSame(d);
-    return (*this);
-  }
-
   //! Multiplication par un scalaire.
   friend constexpr ARCCORE_HOST_DEVICE Real2 operator*(Real sca, Real2 vec)
   {
@@ -398,6 +362,43 @@ class ARCANE_UTILS_EXPORT Real2
    */
   constexpr ARCCORE_HOST_DEVICE bool operator!=(Real2 b) const { return !operator==(b); }
 
+ public:
+
+  //! Retourne la norme au carré du couple \f$x^2+y^2+z^2\f$
+  // TODO: rendre obsolète mi-2025: ARCANE_DEPRECATED_REASON("Y2024: Use math::squareNormL2(*this) instead")
+  constexpr ARCCORE_HOST_DEVICE Real squareNormL2() const { return x * x + y * y; }
+
+  //! Retourne la norme au carré du couple \f$x^2+y^2+z^2\f$
+  ARCCORE_DEPRECATED_2021("Use math::squareNormL2(*this) instead")
+  ARCCORE_HOST_DEVICE Real abs2() const { return x * x + y * y; }
+
+  //! Retourne la norme du couple \f$\sqrt{x^2+y^2+z^2}\f$
+  ARCCORE_DEPRECATED_2021("Use math::normL2(*this) instead")
+  inline ARCCORE_HOST_DEVICE Real abs() const;
+
+  /*!
+   * \brief Indique si l'instance est proche de l'instance nulle.
+   *
+   * \retval true si math::isNearlyZero() est vrai pour chaque composante.
+   * \retval false sinon.
+   */
+  // TODO: rendre obsolète mi-2025: ARCANE_DEPRECATED_REASON("Y2024: Use math::isNearlyZero(const Real2&) instead")
+  inline constexpr ARCCORE_HOST_DEVICE bool isNearlyZero() const;
+
+  //! Retourne la norme du couple \f$\sqrt{x^2+y^2+z^2}\f$
+  // TODO: rendre obsolète mi-2025: ARCANE_DEPRECATED_REASON("Y2024: Use math::normL2(const Real2&) instead")
+  ARCCORE_HOST_DEVICE Real normL2() const;
+
+  /*!
+   * \brief Normalise le couple.
+   *
+   * Si le couple est non nul, divise chaque composante par la norme du couple
+   * (abs()), de telle sorte qu'après l'appel à cette méthode, abs() valent \a 1.
+   * Si le couple est nul, ne fait rien.
+   */
+  ARCANE_DEPRECATED_REASON("Y2024: Use math::mutableNormalize(Real2&) instead")
+  inline Real2& normalize();
+
  private:
 
   /*!
@@ -405,10 +406,93 @@ class ARCANE_UTILS_EXPORT Real2
    * \retval true si \a a et \a b sont égaux,
    * \retval false sinon.
    */
-  constexpr ARCCORE_HOST_DEVICE static bool _eq(Real a, Real b) { return math::isEqual(a, b); }
+  constexpr ARCCORE_HOST_DEVICE static bool _eq(Real a, Real b);
   //! Retourne la racine carrée de \a a
-  ARCCORE_HOST_DEVICE static Real _sqrt(Real a) { return math::sqrt(a); }
+  ARCCORE_HOST_DEVICE static Real _sqrt(Real a);
 };
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace math
+{
+  /*!
+   * \brief Indique si l'instance est proche de l'instance nulle.
+   *
+   * \retval true si math::isNearlyZero() est vrai pour chaque composante.
+   * \retval false sinon.
+   */
+  inline constexpr ARCCORE_HOST_DEVICE bool isNearlyZero(const Real2& v)
+  {
+    return math::isNearlyZero(v.x) && math::isNearlyZero(v.y);
+  }
+
+  //! Retourne la norme au carré du couple \f$x^2+y^2+z^2\f$
+  inline constexpr ARCCORE_HOST_DEVICE Real squareNormL2(const Real2& v)
+  {
+    return v.x * v.x + v.y * v.y;
+  }
+
+  //! Retourne la norme du couple \f$\sqrt{x^2+y^2+z^2}\f$
+  inline ARCCORE_HOST_DEVICE Real normL2(const Real2& v)
+  {
+    return math::sqrt(math::squareNormL2(v));
+  }
+
+  /*!
+   * \brief Normalise le couple.
+   *
+   * Si le couple est non nul, divise chaque composante par la norme du couple
+   * (abs()), de telle sorte qu'après l'appel à cette méthode, abs() valent \a 1.
+   * Si le couple est nul, ne fait rien.
+   */
+  inline Real2& mutableNormalize(Real2& v)
+  {
+    Real d = math::normL2(v);
+    if (!math::isZero(d))
+      v.divSame(d);
+    return v;
+  }
+} // namespace math
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+inline constexpr ARCCORE_HOST_DEVICE bool Real2::
+isNearlyZero() const
+{
+  return math::isNearlyZero(*this);
+}
+
+inline constexpr ARCCORE_HOST_DEVICE bool Real2::
+_eq(Real a, Real b)
+{
+  return math::isEqual(a, b);
+}
+
+inline ARCCORE_HOST_DEVICE Real Real2::
+_sqrt(Real a)
+{
+  return math::sqrt(a);
+}
+
+inline ARCCORE_HOST_DEVICE Real Real2::
+normL2() const
+{
+  return math::normL2(*this);
+}
+
+inline Real2& Real2::
+normalize()
+{
+  return math::mutableNormalize(*this);
+}
+
+inline ARCCORE_HOST_DEVICE Real Real2::
+abs() const
+{
+  return math::normL2(*this);
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

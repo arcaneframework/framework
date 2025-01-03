@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Convert.cc                                                  (C) 2000-2022 */
+/* Convert.cc                                                  (C) 2000-2024 */
 /*                                                                           */
 /* Fonctions pour convertir un type en un autre.                             */
 /*---------------------------------------------------------------------------*/
@@ -131,6 +131,16 @@ template<> ARCANE_UTILS_EXPORT bool builtInGetValue(Real3x3Array& v,const String
   return builtInGetArrayValue(v,s);
 }
 
+template<> ARCANE_UTILS_EXPORT bool builtInGetValue(Int8Array& v,const String& s)
+{
+  return builtInGetArrayValue(v,s);
+}
+
+template<> ARCANE_UTILS_EXPORT bool builtInGetValue(Int16Array& v,const String& s)
+{
+  return builtInGetArrayValue(v,s);
+}
+
 template<> ARCANE_UTILS_EXPORT bool builtInGetValue(Int32Array& v,const String& s)
 {
   return builtInGetArrayValue(v,s);
@@ -175,6 +185,11 @@ template<> ARCANE_UTILS_EXPORT bool builtInGetValue(Real2x2UniqueArray& v,const 
 }
 
 template<> ARCANE_UTILS_EXPORT bool builtInGetValue(Real3x3UniqueArray& v,const String& s)
+{
+  return builtInGetArrayValue(v,s);
+}
+
+template<> ARCANE_UTILS_EXPORT bool builtInGetValue(Int8UniqueArray& v,const String& s)
 {
   return builtInGetArrayValue(v,s);
 }
@@ -228,6 +243,11 @@ template<> ARCANE_UTILS_EXPORT bool builtInGetValue(Real2x2SharedArray& v,const 
 }
 
 template<> ARCANE_UTILS_EXPORT bool builtInGetValue(Real3x3SharedArray& v,const String& s)
+{
+  return builtInGetArrayValue(v,s);
+}
+
+template<> ARCANE_UTILS_EXPORT bool builtInGetValue(Int8SharedArray& v,const String& s)
 {
   return builtInGetArrayValue(v,s);
 }

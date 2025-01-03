@@ -65,6 +65,8 @@ class ARCANE_MATERIALS_EXPORT IncrementalComponentModifier
   bool m_is_debug = false;
   //! 1 ou 2 si on utilise une version générique pour les copies entre pure et partiel
   Int32 m_use_generic_copy_between_pure_and_partial = 0;
+  //! Vrai si on force à utiliser une seule commande pour le redimensionnement.
+  bool m_force_multiple_command_for_resize = false;
 
  public:
 
@@ -78,6 +80,9 @@ class ARCANE_MATERIALS_EXPORT IncrementalComponentModifier
                           SmallSpan<const Int32> local_ids);
   void _removeItemsInGroup(ItemGroup cells,SmallSpan<const Int32> removed_ids);
   void _applyCopyBetweenPartialsAndGlobals(const CopyBetweenPartialAndGlobalArgs& args, RunQueue& queue);
+  void _applyCopyVariableViews(RunQueue& queue);
+  void _applyInitializeWithZero(const InitializeWithZeroArgs& args);
+  void _computeItemsToAdd(ComponentItemListBuilder& list_builder, SmallSpan<const Int32> local_ids);
 
  private:
 
@@ -91,6 +96,7 @@ class ARCANE_MATERIALS_EXPORT IncrementalComponentModifier
   void _addItemsToEnvironment(MeshEnvironment* env, MeshMaterial* mat,
                               SmallSpan<const Int32> local_ids, bool update_env_indexer);
   void _copyBetweenPartialsAndGlobals(const CopyBetweenPartialAndGlobalArgs& args);
+  void _resizeVariablesIndexer(Int32 var_index);
 };
 
 /*---------------------------------------------------------------------------*/

@@ -17,6 +17,8 @@
 #include "arccore/base/BaseTypes.h"
 #include "arccore/base/BFloat16.h"
 #include "arccore/base/Float16.h"
+#include "arccore/base/Float128.h"
+#include "arccore/base/Int128.h"
 
 #include <random>
 
@@ -50,6 +52,10 @@ class BuildInfo
 
 template <typename DataType>
 BuildInfo<DataType> _getFloatBuildInfo();
+template <> BuildInfo<Float128> _getFloatBuildInfo<Float128>()
+{
+  return { { -122334353.245, +983973536.324 } };
+}
 template <> BuildInfo<long double> _getFloatBuildInfo<long double>()
 {
   return { { -334353.245, +73536.324 } };
@@ -80,6 +86,8 @@ template <typename DataType> BuildInfo<DataType> _getIntegerBuildInfo(std::true_
     return { { -14353, 12345 } };
   if constexpr (sizeof(DataType) == 8)
     return { { -234353, 452345 } };
+  if constexpr (sizeof(DataType) == 16)
+    return { { -33435332, 9232023 } };
 }
 template <typename DataType> BuildInfo<DataType> _getIntegerBuildInfo(std::false_type)
 {
@@ -91,6 +99,8 @@ template <typename DataType> BuildInfo<DataType> _getIntegerBuildInfo(std::false
     return { { 0, 29540 } };
   if constexpr (sizeof(DataType) == 8)
     return { { 0, 1290325 } };
+  if constexpr (sizeof(DataType) == 16)
+    return { { 0, 931290325 } };
 }
 
 /*---------------------------------------------------------------------------*/
@@ -233,6 +243,13 @@ class FillTraitsT<unsigned long long>
 {
 };
 
+
+template <>
+class FillTraitsT<Int128>
+: public IntegerFillTraitsT<Int128, Int64>
+{
+};
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -263,6 +280,12 @@ class FillTraitsT<BFloat16>
 template <>
 class FillTraitsT<Float16>
 : public FloatFillTraitsT<Float16, float>
+{
+};
+
+template <>
+class FillTraitsT<Float128>
+: public FloatFillTraitsT<Float128, long double>
 {
 };
 

@@ -257,7 +257,7 @@ class ARCANE_CORE_EXPORT IItemFamily
    */
   virtual void removeNeedRemoveMarkedItems() =0;
 
-  /*
+  /*!
    * \brief Entité de numéro unique \a unique_id.
    *
    * Si aucune entité avec cet \a unique_id n'est trouvé, retourne \a nullptr.
@@ -610,6 +610,12 @@ class ARCANE_CORE_EXPORT IItemFamily
    */
   virtual void reduceFromGhostItems(IVariable* v,Parallel::eReduceType operation) =0;
 
+  //! Cherche une liste d'adjacence.
+  ARCANE_DEPRECATED_REASON("Y2024: use findAdjacency() instead")
+  virtual ItemPairGroup findAdjencyItems(const ItemGroup& group,
+                                         const ItemGroup& sub_group,
+                                         eItemKind link_kind,
+                                         Integer nb_layer) = 0;
   /*!
    * \brief Cherche une liste d'adjacence.
    *
@@ -624,11 +630,11 @@ class ARCANE_CORE_EXPORT IItemFamily
    *
    * \note pour l'instant une seule couche est autorisée.
    */
-  virtual ItemPairGroup findAdjencyItems(const ItemGroup& group,
-                                         const ItemGroup& sub_group,
-                                         eItemKind link_kind,
-                                         Integer nb_layer) =0;
-  
+  virtual ItemPairGroup findAdjacencyItems(const ItemGroup& group,
+                                           const ItemGroup& sub_group,
+                                           eItemKind link_kind,
+                                           Integer nb_layer);
+
   /*!
    * \brief Retourne l'interface de la famille de particule de cette famille.
    *

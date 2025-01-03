@@ -20,6 +20,7 @@
 #include "arcane/accelerator/core/PointerAttribute.h"
 #include "arcane/accelerator/core/ViewBuildInfo.h"
 #include "arcane/accelerator/core/RunCommand.h"
+#include "arcane/accelerator/core/RunQueue.h"
 
 #include <iostream>
 
@@ -287,11 +288,27 @@ getPointerAccessibility(eExecutionPolicy policy, const void* ptr, PointerAttribu
   return impl::RuntimeStaticInfo::getPointerAccessibility(policy, ptr, ptr_attr);
 }
 
-extern "C++" void impl::
+void impl::
 arcaneCheckPointerIsAccessible(eExecutionPolicy policy, const void* ptr,
                                const char* name, const TraceInfo& ti)
 {
   return impl::RuntimeStaticInfo::checkPointerIsAcccessible(policy, ptr, name, ti);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void impl::
+printUUID(std::ostream& o, char bytes[16])
+{
+  static const char hexa_chars[16] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f' };
+
+  for (int i = 0; i < 16; ++i) {
+    o << hexa_chars[(bytes[i] >> 4) & 0xf];
+    o << hexa_chars[bytes[i] & 0xf];
+    if (i == 4 || i == 6 || i == 8 || i == 10)
+      o << '-';
+  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -309,10 +326,25 @@ operator<<(std::ostream& o, const PointerAttribute& a)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Créé instance associée a la commande \a command.
+ViewBuildInfo::
+ViewBuildInfo(const RunQueue& queue)
+: m_queue_impl(queue._internalImpl())
+{}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+ViewBuildInfo::
+ViewBuildInfo(const RunQueue* queue)
+: m_queue_impl(queue->_internalImpl())
+{}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 ViewBuildInfo::
 ViewBuildInfo(RunCommand& command)
-: m_queue(command._internalQueue())
+: m_queue_impl(command._internalQueueImpl())
 {
 }
 

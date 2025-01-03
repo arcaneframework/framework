@@ -38,6 +38,7 @@ allocationArgs(RunQueue* queue) const
 {
   MemoryAllocationArgs x;
   x.setMemoryLocationHint(m_memory_location_hint);
+  x.setHostDeviceMemoryLocation(m_host_device_memory_location);
   x.setDevice(m_device);
   x.setDebugInfo(m_debug_info);
   x.setRunQueue(queue);

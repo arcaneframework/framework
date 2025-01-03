@@ -17,7 +17,7 @@
 #include "arcane/utils/ArcaneCxx20.h"
 
 #include "arcane/accelerator/RunCommand.h"
-#include "arcane/accelerator/RunQueueInternal.h"
+#include "arcane/accelerator/KernelLauncher.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -58,7 +58,7 @@ _applyGenericLoop(RunCommand& command, LoopBoundType<N, Int32> bounds,
     arcaneSequentialFor(bounds, func, other_args...);
     break;
   case eExecutionPolicy::Thread:
-    arcaneParallelFor(bounds, launch_info.computeParallelLoopOptions(), func, other_args...);
+    arcaneParallelFor(bounds, launch_info.loopRunInfo(), func, other_args...);
     break;
   default:
     ARCANE_FATAL("Invalid execution policy '{0}'", exec_policy);
@@ -243,13 +243,6 @@ void operator<<(ArrayBoundRunCommand<N, ForLoopBoundType<N, Int32>, RemainingArg
   A_FUNCINFO << ::Arcane::Accelerator::impl::makeExtendedArrayBoundLoop(Arcane::ArrayBounds<MDDim1>(1) __VA_OPT__(, __VA_ARGS__)) \
              << [=] ARCCORE_HOST_DEVICE(Arcane::ArrayIndex<1> __VA_OPT__(ARCANE_RUNCOMMAND_REDUCER_FOR_EACH(__VA_ARGS__)))
 
-/*!
- * \brief Boucle sur accélérateur.
- *
- * \deprecated Utiliser RUNCOMMAND_LOOP1() à la place.
- */
-#define RUNCOMMAND_LOOP1_EX(iter_name, x1, ...) \
-  RUNCOMMAND_LOOP1(iter_name, x1, __VA_ARGS__)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

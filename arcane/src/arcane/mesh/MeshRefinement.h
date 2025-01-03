@@ -163,7 +163,19 @@ public:
    */
   bool coarsenItems(const bool maintain_level_one = true);
 
-  bool coarsenItemsV2();
+  /*!
+   * \brief Méthode permettant de retirer les mailles marquées avec le
+   * flag "II_Coarsen".
+   *
+   * Les propriétaires des faces et des noeuds ayant des mailles marquées
+   * et des mailles non marquées sont susceptibles d'être mis à jour.
+   *
+   * \param update_parent_flag Si true, alors les flags des parents seront
+   * mis à jour. Cela inclut l'activation des mailles parents.
+   *
+   * \return true si le maillage a évolué.
+   */
+  bool coarsenItemsV2(bool update_parent_flag);
 
   /*!
    * raffine seulement les items demandés par l'utilisateur.

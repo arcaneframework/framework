@@ -5,11 +5,11 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* AlephOrdering.h                                                  (C) 2012 */
+/* AlephOrdering.h                                             (C) 2000-2024 */
 /*                                                                           */
 /*---------------------------------------------------------------------------*/
-#ifndef ALEPH_ORDERING_H
-#define ALEPH_ORDERING_H
+#ifndef ARCANE_ALEPH_ALEPHORDERING_H
+#define ARCANE_ALEPH_ALEPHORDERING_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -18,22 +18,25 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Gestionaire de reordering
+ * \brief Gestionnaire de reordering
  */
 class AlephOrdering
 : public TraceAccessor
 {
  public:
-  AlephOrdering(AlephKernel*);
+
+  explicit AlephOrdering(AlephKernel*);
   AlephOrdering(AlephKernel*, Integer, Integer, bool = false);
   ~AlephOrdering();
 
  public:
+
   Integer swap(Integer i)
   {
     if (m_do_swap)
@@ -42,25 +45,25 @@ class AlephOrdering
   }
 
  private:
-  void initCellOrder(void);
-  void initTwiceCellOrder(void);
-  void initFaceOrder(void);
-  void initCellFaceOrder(void);
-  void initCellNodeOrder(void);
-  void initTwiceCellNodeOrder(void);
+
+  void initCellOrder();
+  void initTwiceCellOrder();
+  void initFaceOrder();
+  void initCellFaceOrder();
+  void initCellNodeOrder();
+  void initTwiceCellNodeOrder();
 
  private:
-  bool m_do_swap;
-  AlephKernel* m_kernel;
 
- private:
+  bool m_do_swap = false;
+  AlephKernel* m_kernel = nullptr;
   UniqueArray<Int64> m_swap;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IItemFamilyNetwork.h                                        (C) 2000-2017 */
+/* IItemFamilyNetwork.h                                        (C) 2000-2024 */
 /*                                                                           */
 /* Interface to handle ItemFamily relations through their connectivities.    */
 /*---------------------------------------------------------------------------*/
@@ -63,13 +63,17 @@ public:
   /*! Ajoute une relation entre deux familles ; un élément de \a source_family est connecté à un ou plusieurs éléments de \a target_family
    *  La responsabilité de la mémoire de \a source_to_target_connectivity est prise en charge par ItemFamilyNetwork
    */
-  virtual void addRelation(IItemFamily* source_family, IItemFamily* target_family, IIncrementalItemConnectivity* source_to_target_connectivity) =0;
+  virtual void addRelation(IItemFamily* source_family, IItemFamily* target_family, IIncrementalItemConnectivity* source_to_target_connectivity) = 0;
+
+  //! Retourne la connectivité de dépendance entre la famille \a source_family et \a target_family
+  virtual IIncrementalItemConnectivity* getDependency(IItemFamily* source_family, IItemFamily* target_family) = 0;
+  virtual IIncrementalItemConnectivity* getRelation(IItemFamily* source_family, IItemFamily* target_family) = 0;
 
   //! Retourne la connectivité entre les familles \a source_family et \a target_family de nom \a name, qu'elle soit une relation ou une dépendance
   virtual IIncrementalItemConnectivity* getConnectivity(IItemFamily* source_family, IItemFamily* target_family, const String& name) =0;
   virtual IIncrementalItemConnectivity* getConnectivity(IItemFamily* source_family, IItemFamily* target_family, const String& name, bool& is_dependency) =0;
 
-  //! Retourne, si elle es associée à un stockage, la connectivité entre les familles \a source_family et \a target_family de nom \a name, qu'elle soit une relation ou une dépendance
+  //! Retourne, si elle est associée à un stockage, la connectivité entre les familles \a source_family et \a target_family de nom \a name, qu'elle soit une relation ou une dépendance
   virtual IIncrementalItemConnectivity* getStoredConnectivity(IItemFamily* source_family, IItemFamily* target_family, const String& name) =0;
   virtual IIncrementalItemConnectivity* getStoredConnectivity(IItemFamily* source_family, IItemFamily* target_family, const String& name, bool& is_dependency) =0;
 

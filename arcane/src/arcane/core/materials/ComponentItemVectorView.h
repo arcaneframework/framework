@@ -34,7 +34,7 @@ class MaterialHeatTestModule;
 }
 namespace Arcane::Accelerator::impl
 {
-class MatCommandContainerBase;
+class ConstituentCommandContainerBase;
 }
 
 namespace Arcane::Materials
@@ -56,7 +56,7 @@ class ARCANE_CORE_EXPORT ComponentItemVectorView
   friend class MatCellEnumerator;
   friend class EnvCellEnumerator;
   friend class ComponentCellEnumerator;
-  friend Arcane::Accelerator::impl::MatCommandContainerBase;
+  friend Arcane::Accelerator::impl::ConstituentCommandContainerBase;
   friend ArcaneTest::MeshMaterialTesterModule;
   friend ArcaneTest::MaterialHeatTestModule;
   template <typename ViewType, typename LambdaType>

@@ -14,7 +14,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/Variable.h"
+#include "arcane/core/Variable.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -93,7 +93,7 @@ class VariableArrayT
 
  protected:
 
-  void _internalResize(Integer new_size,Integer nb_additional_element) override;
+  void _internalResize(const VariableResizeArgs& resize_args) override;
   Integer _checkIfSameOnAllReplica(IParallelMng* replica_pm,int max_print) override;
 
  private:

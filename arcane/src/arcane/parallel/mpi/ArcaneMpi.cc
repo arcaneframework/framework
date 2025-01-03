@@ -60,7 +60,14 @@ arcaneIsHipAwareMPI()
   // MPICH
 #if defined(ARCANE_OS_LINUX)
 #if defined(MPIX_GPU_SUPPORT_HIP)
+  // CRAY MPICH
+#  if defined(CRAY_MPICH_VERSION)
+  int is_supported = 0;
+  MPIX_GPU_query_support(MPIX_GPU_SUPPORT_HIP,&is_supported);
+  is_aware = (is_supported!=0);
+#  else
   is_aware =  (MPIX_Query_hip_support()==1);
+#  endif
 #endif
 
   // OpenMPI:

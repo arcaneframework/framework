@@ -41,11 +41,11 @@ AcceleratorMeshMaterialSynchronizerImpl(IMeshMaterialMng* material_mng)
 {
   IMesh* mesh = m_material_mng->mesh();
   auto* internal_pm = mesh->parallelMng()->_internalApi();
-  if (internal_pm->defaultRunner() == nullptr) {
-    Arcane::Runner* default_runner = new Runner(Arcane::Accelerator::eExecutionPolicy::Sequential);
+  if (!internal_pm->runner().isInitialized()) {
+    Arcane::Runner default_runner(Arcane::Accelerator::eExecutionPolicy::Sequential);
     internal_pm->setDefaultRunner(default_runner);
   }
-  Arcane::Accelerator::RunQueue* m_queue = internal_pm->defaultQueue();
+  Arcane::Accelerator::RunQueue m_queue = internal_pm->queue();
   m_idx_selecter = Arcane::Accelerator::IndexSelecter(m_queue);
 }
 
@@ -89,10 +89,10 @@ synchronizeMaterialsInCells()
   info(4) << "Resize presence variable nb_mat=" << nb_mat << " dim2=" << dim2_size;
   CellToAllEnvCellConverter cell_converter = m_material_mng->cellToAllEnvCellConverter();
 
-  Arcane::Accelerator::RunQueue* m_queue = internal_pm->defaultQueue();
+  Arcane::Accelerator::RunQueue m_queue = internal_pm->queue();
 
-  m_queue->setAsync(true);
-  auto command = Arcane::Accelerator::makeCommand(m_queue);
+  m_queue.setAsync(true);
+  auto command = makeCommand(m_queue);
 
   auto out_mat_presence = Arcane::Accelerator::viewInOut(command, m_mat_presence);
   CellToAllEnvCellAccessor cell2allenvcell(m_material_mng);
@@ -117,7 +117,7 @@ synchronizeMaterialsInCells()
   };
 
   bool has_changed = false;
-  m_queue->barrier();
+  m_queue.barrier();
 
   m_mat_presence.synchronize();
   Arcane::ItemGenericInfoListView cells_info(mesh->cellFamily());

@@ -845,6 +845,16 @@ AlienBenchModule::test()
           vector_exporter.dump(vectorB,description.str()) ;
         }*/
 
+#ifdef ALIEN_USE_COMPOSYX
+        if(solver->getBackEndName().contains("composyx"))
+        {
+          auto const& true_A = matrixA.impl()->get<Alien::BackEnd::tag::simplecsr>() ;
+          auto& true_b = vectorB.impl()->get<Alien::BackEnd::tag::simplecsr>(false) ;
+          auto& true_x = vectorX.impl()->get<Alien::BackEnd::tag::simplecsr>(true) ;
+          SimpleCSRInternalLinearAlgebra alg;
+          alg.synchronize(true_A,true_b) ;
+        }
+#endif
         Timer::Sentry ts(&psolve_timer);
         info()<<"START RESOLUTION";
         solver->solve(matrixA, vectorB, vectorX);

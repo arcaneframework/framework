@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CommonCudaHipAtomicImpl.h                                   (C) 2000-2023 */
+/* CommonCudaHipAtomicImpl.h                                   (C) 2000-2024 */
 /*                                                                           */
 /* Implémentation CUDA et HIP des opérations atomiques.                      */
 /*---------------------------------------------------------------------------*/
@@ -24,7 +24,7 @@
 // méthodes atomiques ne fonctionnent pas si le pointeur est allouée
 // en mémoire unifiée. A priori le problème se pose avec atomicMin, atomicMax,
 // atomicInc. Par contre atomicAdd a l'air de fonctionner si les accès
-// concurrents ne sont pas trop nombreux
+// concurrents ne sont pas trop nombreux.
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -50,9 +50,9 @@ class CommonCudaHipAtomic<int, eAtomicOperation::Add>
 {
  public:
 
-  static ARCCORE_DEVICE void apply(int* ptr, int v)
+  static ARCCORE_DEVICE int apply(int* ptr, int v)
   {
-    ::atomicAdd(ptr, v);
+    return ::atomicAdd(ptr, v);
   }
 };
 
@@ -61,9 +61,9 @@ class CommonCudaHipAtomic<int, eAtomicOperation::Max>
 {
  public:
 
-  static ARCCORE_DEVICE void apply(int* ptr, int v)
+  static ARCCORE_DEVICE int apply(int* ptr, int v)
   {
-    ::atomicMax(ptr, v);
+    return ::atomicMax(ptr, v);
   }
 };
 
@@ -72,9 +72,9 @@ class CommonCudaHipAtomic<int, eAtomicOperation::Min>
 {
  public:
 
-  static ARCCORE_DEVICE void apply(int* ptr, int v)
+  static ARCCORE_DEVICE int apply(int* ptr, int v)
   {
-    ::atomicMin(ptr, v);
+    return ::atomicMin(ptr, v);
   }
 };
 
@@ -83,10 +83,10 @@ class CommonCudaHipAtomic<Int64, eAtomicOperation::Add>
 {
  public:
 
-  static ARCCORE_DEVICE void apply(Int64* ptr, Int64 v)
+  static ARCCORE_DEVICE Int64 apply(Int64* ptr, Int64 v)
   {
     static_assert(sizeof(Int64) == sizeof(long long int), "Bad pointer size");
-    ::atomicAdd((unsigned long long int*)ptr, v);
+    return static_cast<Int64>(::atomicAdd((unsigned long long int*)ptr, v));
   }
 };
 
@@ -96,7 +96,7 @@ class CommonCudaHipAtomic<Int64, eAtomicOperation::Max>
  public:
 
 #if defined(__HIP__)
-  static ARCCORE_DEVICE void apply(Int64* ptr, Int64 v)
+  static ARCCORE_DEVICE Int64 apply(Int64* ptr, Int64 v)
   {
     unsigned long long int* address_as_ull = reinterpret_cast<unsigned long long int*>(ptr);
     unsigned long long int old = *address_as_ull, assumed;
@@ -107,11 +107,12 @@ class CommonCudaHipAtomic<Int64, eAtomicOperation::Max>
       old = atomicCAS(address_as_ull, assumed,
                       static_cast<unsigned long long int>(v > assumed_as_int64 ? v : assumed_as_int64));
     } while (assumed != old);
+    return static_cast<Int64>(old);
   }
 #else
-  static ARCCORE_DEVICE void apply(Int64* ptr, Int64 v)
+  static ARCCORE_DEVICE Int64 apply(Int64* ptr, Int64 v)
   {
-    ::atomicMax((long long int*)ptr, v);
+    return static_cast<Int64>(::atomicMax((long long int*)ptr, v));
   }
 #endif
 };
@@ -122,7 +123,7 @@ class CommonCudaHipAtomic<Int64, eAtomicOperation::Min>
  public:
 
 #if defined(__HIP__)
-  static ARCCORE_DEVICE void apply(Int64* ptr, Int64 v)
+  static ARCCORE_DEVICE Int64 apply(Int64* ptr, Int64 v)
   {
     unsigned long long int* address_as_ull = reinterpret_cast<unsigned long long int*>(ptr);
     unsigned long long int old = *address_as_ull, assumed;
@@ -133,11 +134,12 @@ class CommonCudaHipAtomic<Int64, eAtomicOperation::Min>
       old = atomicCAS(address_as_ull, assumed,
                       static_cast<unsigned long long int>(v < assumed_as_int64 ? v : assumed_as_int64));
     } while (assumed != old);
+    return static_cast<Int64>(old);
   }
 #else
-  static ARCCORE_DEVICE void apply(Int64* ptr, Int64 v)
+  static ARCCORE_DEVICE Int64 apply(Int64* ptr, Int64 v)
   {
-    ::atomicMin((long long int*)ptr, v);
+    return static_cast<Int64>(::atomicMin((long long int*)ptr, v));
   }
 #endif
 };
@@ -200,12 +202,12 @@ class CommonCudaHipAtomic<double, eAtomicOperation::Add>
 {
  public:
 
-  static ARCCORE_DEVICE void apply(double* ptr, double v)
+  static ARCCORE_DEVICE double apply(double* ptr, double v)
   {
 #if __CUDA_ARCH__ >= 600
-    ::atomicAdd(ptr, v);
+    return ::atomicAdd(ptr, v);
 #else
-    preArch60atomicAdd(ptr, v);
+    return preArch60atomicAdd(ptr, v);
 #endif
   }
 };
@@ -215,9 +217,9 @@ class CommonCudaHipAtomic<double, eAtomicOperation::Max>
 {
  public:
 
-  static ARCCORE_DEVICE void apply(double* ptr, double v)
+  static ARCCORE_DEVICE double apply(double* ptr, double v)
   {
-    atomicMaxDouble(ptr, v);
+    return atomicMaxDouble(ptr, v);
   }
 };
 
@@ -226,9 +228,9 @@ class CommonCudaHipAtomic<double, eAtomicOperation::Min>
 {
  public:
 
-  static ARCCORE_DEVICE void apply(double* ptr, double v)
+  static ARCCORE_DEVICE double apply(double* ptr, double v)
   {
-    atomicMinDouble(ptr, v);
+    return atomicMinDouble(ptr, v);
   }
 };
 

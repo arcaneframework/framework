@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* FaceReorienter.cc                                           (C) 2000-2017 */
+/* FaceReorienter.cc                                           (C) 2000-2024 */
 /*                                                                           */
 /* Verifie la bonne orientation d'une face et la réoriente le cas échéant.   */
 /*---------------------------------------------------------------------------*/
@@ -225,6 +225,9 @@ checkAndChangeOrientationAMR(Face face)
   else {
     cell = face.cell(0);
     cell_0 = true;
+    if (cell.null()) {
+      ARCANE_FATAL("Face without cells cannot be possible -- Face uid: {0}", face.uniqueId());
+    }
   }
   Integer local_face_number = -1;
   for (Integer i_face=0; i_face<cell.nbFace(); ++i_face) {
@@ -235,10 +238,10 @@ checkAndChangeOrientationAMR(Face face)
     }
   }
 
-
-  if (local_face_number==(-1))
+  if (local_face_number == (-1)) {
     ARCANE_FATAL("Incoherent connectivity: Face {0} not connected to cell {1}",
                  face.uniqueId(),cell.uniqueId());
+  }
 
   const ItemTypeInfo::LocalFace& local_face = cell.typeInfo()->localFace(local_face_number);
 

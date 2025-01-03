@@ -1556,20 +1556,11 @@ replaceData(ULong offset,ULong count,const DOMString& arg) const
 /*---------------------------------------------------------------------------*/
 
 Attr::
-Attr()
-: Node()
-{
-}
-Attr::
 Attr(AttrPrv* p)
 : Node(cvt((xmlNodePtr)impl(p)))
 {
 }
-Attr::
-Attr(const Attr& f)
-: Node((const Node&)f)
-{
-}
+
 Attr::
 Attr(const Node& node)
 : Node()
@@ -1580,10 +1571,7 @@ Attr(const Node& node)
   //if (ni && impl(ni)->getNodeType()==ATTRIBUTE_NODE)
   //_assign(node);
 }
-Attr::
-~Attr()
-{
-}
+
 AttrPrv* Attr::
 _impl() const
 {

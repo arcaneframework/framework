@@ -625,7 +625,6 @@ TEST(NeoMeshApiTest, AddMeshOperationAfterSettingCoordinates) {
   auto mesh = Neo::Mesh{ "SetNodeCoordsTestMesh" };
   auto node_family = mesh.addFamily(Neo::ItemKind::IK_Node, "NodeFamily");
   auto added_nodes = Neo::FutureItemRange{};
-  auto added_nodes2 = Neo::FutureItemRange{};
   std::vector<Neo::utils::Int64> node_uids{ 1, 10, 100 };
   mesh.scheduleAddItems(node_family, node_uids, added_nodes);
   std::vector<Neo::utils::Real3> node_coords{ { 1, 0, 0 }, { 0, 0, 1 }, { 0, 1, 0 } };

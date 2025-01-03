@@ -36,7 +36,7 @@ VectorInternal::VectorInternal(const int local_size, const int local_offset,
 VectorInternal::VectorInternal(const int local_size,
                                const int local_offset,
                                const int global_size,
-                               const int block_size,
+                               [[maybe_unused]] const int block_size,
                                const bool parallel,
                                MPI_Comm comm)
 : m_offset(local_offset)

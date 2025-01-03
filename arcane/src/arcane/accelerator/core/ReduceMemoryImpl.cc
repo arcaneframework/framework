@@ -15,7 +15,7 @@
 
 #include "arcane/utils/CheckedConvert.h"
 #include "arcane/utils/PlatformUtils.h"
-#include "arcane/utils/IMemoryRessourceMng.h"
+#include "arcane/utils/MemoryUtils.h"
 
 #include "arcane/accelerator/core/Runner.h"
 #include "arcane/accelerator/core/Memory.h"
@@ -32,7 +32,7 @@ namespace
 {
   IMemoryAllocator* _getAllocator(eMemoryRessource r)
   {
-    return platform::getDataMemoryRessourceMng()->getAllocator(r);
+    return MemoryUtils::getAllocator(r);
   }
 } // namespace
 

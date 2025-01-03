@@ -272,11 +272,17 @@ using Integer = Int32;
 //! Brain Float16
 class BFloat16;
 
-//! Float16
+//! Float 16 bit
 class Float16;
 
 //! Type flottant IEEE-753 simple précision
 using Float32 = float;
+
+//! Float 128 bit
+class Float128;
+
+//! Integer 128 bit
+class Int128;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

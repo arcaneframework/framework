@@ -37,10 +37,10 @@ class ARCANE_CORE_EXPORT IParallelMngInternal
  public:
 
   //! Runner par défaut. Peut être nul
-  virtual Runner* defaultRunner() const = 0;
+  virtual Runner runner() const = 0;
 
   //! File par défaut pour les messages. Peut être nul
-  virtual RunQueue* defaultQueue() const = 0;
+  virtual RunQueue queue() const = 0;
 
   /*!
    * \brief Indique si l'implémentation gère les accélérateurs.
@@ -55,7 +55,7 @@ class ARCANE_CORE_EXPORT IParallelMngInternal
 
  public:
 
-  virtual void setDefaultRunner(Runner* runner) = 0;
+  virtual void setDefaultRunner(const Runner& runner) = 0;
 };
 
 /*---------------------------------------------------------------------------*/

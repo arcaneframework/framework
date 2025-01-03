@@ -87,7 +87,7 @@ class Array2VariableT
 
  protected:
   
-  void _internalResize(Integer new_size,Integer added_memory) override;
+  void _internalResize(const VariableResizeArgs& resize_args) override;
   Integer _checkIfSameOnAllReplica(IParallelMng* replica_pm,int max_print) override;
 
  private:

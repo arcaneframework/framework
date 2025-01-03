@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -288,9 +288,9 @@ void MiniWeatherArraySequential::
 semi_discrete_step(NumArray<double,MDDim3>& nstate_init, NumArray<double,MDDim3>& nstate_forcing, NumArray<double,MDDim3>& nstate_out,
                    double dt, int dir, NumArray<double,MDDim3>& flux, NumArray<double,MDDim3>& tend)
 {
-  auto state_init = nstate_init.constSpan();
-  auto state_out = nstate_out.span();
-  auto in_tend = tend.constSpan();
+  auto state_init = nstate_init.constMDSpan();
+  auto state_out = nstate_out.mdspan();
+  auto in_tend = tend.constMDSpan();
 
   int i, k, ll;
   if (dir == DIR_X) {
@@ -327,14 +327,14 @@ semi_discrete_step(NumArray<double,MDDim3>& nstate_init, NumArray<double,MDDim3>
 void MiniWeatherArraySequential::
 compute_tendencies_x(NumArray<double,MDDim3>& nstate, NumArray<double,MDDim3>& flux, NumArray<double,MDDim3>& tend)
 {
-  auto state = nstate.constSpan();
+  auto state = nstate.constMDSpan();
 
   int i, k, ll, s;
   double r, u, w, t, p, stencil[4], d3_vals[NUM_VARS], vals[NUM_VARS], hv_coef;
   //Compute the hyperviscosity coeficient
   hv_coef = -hv_beta * dx / (16 * dt);
   //Compute fluxes in the x-direction for each cell
-  auto out_flux = flux.span();
+  auto out_flux = flux.mdspan();
   for (k = 0; k < nz; k++){
     for (i = 0; i < nx + 1; i++){
       //Use fourth-order interpolation from four cell averages to compute the value at the interface in question
@@ -363,8 +363,8 @@ compute_tendencies_x(NumArray<double,MDDim3>& nstate, NumArray<double,MDDim3>& f
     }
   }
 
-  auto in_flux = flux.constSpan();
-  auto out_tend = tend.span();
+  auto in_flux = flux.constMDSpan();
+  auto out_tend = tend.mdspan();
   // Use the fluxes to compute tendencies for each cell
   for (ll = 0; ll < NUM_VARS; ll++) {
     for (k = 0; k < nz; k++) {
@@ -385,12 +385,12 @@ compute_tendencies_x(NumArray<double,MDDim3>& nstate, NumArray<double,MDDim3>& f
 void MiniWeatherArraySequential::
 compute_tendencies_z(NumArray<double,MDDim3>& nstate, NumArray<double,MDDim3>& flux, NumArray<double,MDDim3>& tend)
 {
-  auto state = nstate.constSpan();
+  auto state = nstate.constMDSpan();
   double r, u, w, t, p, stencil[4], d3_vals[NUM_VARS], vals[NUM_VARS], hv_coef;
   //Compute the hyperviscosity coeficient
   hv_coef = -hv_beta * dx / (16 * dt);
   //Compute fluxes in the x-direction for each cell
-  auto out_flux = flux.span();
+  auto out_flux = flux.mdspan();
   for (int k = 0; k < nz + 1; k++){
     for (int i = 0; i < nx; i++){
       //Use fourth-order interpolation from four cell averages to compute the value at the interface in question
@@ -420,8 +420,8 @@ compute_tendencies_z(NumArray<double,MDDim3>& nstate, NumArray<double,MDDim3>& f
   }
 
   // Use the fluxes to compute tendencies for each cell
-  auto in_flux = flux.constSpan();
-  auto out_tend = tend.span();
+  auto in_flux = flux.constMDSpan();
+  auto out_tend = tend.mdspan();
   for (int ll = 0; ll < NUM_VARS; ll++){
     for (int k = 0; k < nz; k++){
       for (int i = 0; i < nx; i++){
@@ -440,8 +440,8 @@ compute_tendencies_z(NumArray<double,MDDim3>& nstate, NumArray<double,MDDim3>& f
 void MiniWeatherArraySequential::
 set_halo_values_x(NumArray<double,MDDim3>& nstate)
 {
-  auto state_in = nstate.constSpan();
-  auto state_out = nstate.span();
+  auto state_in = nstate.constMDSpan();
+  auto state_out = nstate.mdspan();
 
   for (int ll = 0; ll < NUM_VARS; ll++){
     for ( int k = 0; k < nz; k++){
@@ -473,8 +473,8 @@ set_halo_values_x(NumArray<double,MDDim3>& nstate)
 void MiniWeatherArraySequential::
 set_halo_values_z(NumArray<double,MDDim3>& nstate)
 {
-  auto state_in = nstate.constSpan();
-  auto state_out = nstate.span();
+  auto state_in = nstate.constMDSpan();
+  auto state_out = nstate.mdspan();
   for (int ll = 0; ll < NUM_VARS; ll++){
     for (int i = 0; i < nx + 2 * hs; i++){
       if (ll == ID_WMOM){
@@ -550,7 +550,7 @@ init()
   info() << "dx,dz: " << dx << " " << dz;
   info() << "dt: " << dt;
 
-  auto state = nstate.span();
+  auto state = nstate.mdspan();
 
   //////////////////////////////////////////////////////////////////////////
   // Initialize the cell-averaged fluid state via Gauss-Legendre quadrature
@@ -585,8 +585,8 @@ init()
   }
 
   // Compute the hydrostatic background state over vertical cell averages
-  auto out_hy_dens_cell = hy_dens_cell.span();
-  auto out_hy_dens_theta_cell = hy_dens_theta_cell.span();
+  auto out_hy_dens_cell = hy_dens_cell.mdspan();
+  auto out_hy_dens_theta_cell = hy_dens_theta_cell.mdspan();
   for (k = 0; k < nz + 2 * hs; k++){
     double dens_cell = 0.0;
     double dens_theta_cell = 0.0;
@@ -603,9 +603,9 @@ init()
     out_hy_dens_theta_cell(k) = dens_theta_cell;
   }
 
-  auto out_hy_dens_int = hy_dens_int.span();
-  auto out_hy_dens_theta_int = hy_dens_theta_int.span();
-  auto out_hy_pressure_int = hy_pressure_int.span();
+  auto out_hy_dens_int = hy_dens_int.mdspan();
+  auto out_hy_dens_theta_int = hy_dens_theta_int.mdspan();
+  auto out_hy_pressure_int = hy_pressure_int.mdspan();
   // Compute the hydrostatic background state at vertical cell interfaces
   for (k = 0; k < nz + 1; k++) {
     z = (k_beg + k) * dz;
@@ -678,7 +678,7 @@ doExit(RealArrayView reduced_values)
   int k, i, ll;
   double sum_v[NUM_VARS];
 
-  auto ns = nstate.constSpan();
+  auto ns = nstate.constMDSpan();
 
   for (ll = 0; ll < NUM_VARS; ll++)
     sum_v[ll] = 0.0;

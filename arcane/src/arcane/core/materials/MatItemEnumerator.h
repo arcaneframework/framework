@@ -86,7 +86,7 @@ class ARCANE_CORE_EXPORT AllEnvCellVectorView
  public:
 
   //! Nombre d'éléments.
-  Integer size() const { return m_local_ids.size(); }
+  constexpr ARCCORE_HOST_DEVICE Integer size() const { return m_local_ids.size(); }
 
   // \i ème maille du vecteur
   ARCCORE_HOST_DEVICE AllEnvCell operator[](Integer index) const

@@ -68,6 +68,7 @@ loadPackage(NAME HTSSolver)
 loadPackage(NAME Trilinos)
 loadPackage(NAME Arpack)
 loadPackage(NAME HPDDM)
+loadPackage(NAME composyx)
 
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------

@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshExchangeMng.cc                                          (C) 2000-2016 */
+/* MeshExchangeMng.cc                                          (C) 2000-2024 */
 /*                                                                           */
 /* Gestionnaire des échanges de maillages entre sous-domaines.               */
 /*---------------------------------------------------------------------------*/
@@ -14,11 +14,10 @@
 #include "arcane/utils/FatalErrorException.h"
 #include "arcane/utils/TraceInfo.h"
 
-#include "arcane/ISubDomain.h"
+#include "arcane/core/ISubDomain.h"
 
 #include "arcane/mesh/MeshExchangeMng.h"
 #include "arcane/mesh/MeshExchanger.h"
-#include "arcane/mesh/DynamicMesh.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -33,7 +32,7 @@ ARCANE_MESH_BEGIN_NAMESPACE
 /*---------------------------------------------------------------------------*/
 
 MeshExchangeMng::
-MeshExchangeMng(DynamicMesh* mesh)
+MeshExchangeMng(IMesh* mesh)
 : TraceAccessor(mesh->traceMng())
 , m_mesh(mesh)
 , m_exchanger(nullptr)
@@ -90,7 +89,7 @@ endExchange()
 IPrimaryMesh* MeshExchangeMng::
 mesh() const
 {
-  return m_mesh;
+  return m_mesh->toPrimaryMesh();
 }
 
 /*---------------------------------------------------------------------------*/

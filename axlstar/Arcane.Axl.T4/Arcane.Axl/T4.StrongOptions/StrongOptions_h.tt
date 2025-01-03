@@ -49,17 +49,17 @@
 <# 	if (_option.IsSingle == true) { #>
 <# 		if (hasDefault) { #>
     m_<#= _option.Name.DashToUnderscore() #> = <#= _option_default #>;
-    OptionTools::optionalSimple<<#= _option.Name.ToFuncName() #>_, Args...>(m_<#= _option.Name.DashToUnderscore() #>, std::move(args)...);
+    OptionTools::optionalSimple<<#= _option.Name.ToFuncName() #>_, Args...>(m_<#= _option.Name.DashToUnderscore() #>, std::forward<Args>(args)...);
 <# 		} 
 		else { 
 			if(problemStdArray) { #>
-    static bool exist_<#= _option.Name.DashToUnderscore() #> = OptionTools::optionalSimple<<#= _option.Name.ToFuncName() #>_, Args...>(m_<#= _option.Name.DashToUnderscore() #>, std::move(args)...);
+    static bool exist_<#= _option.Name.DashToUnderscore() #> = OptionTools::optionalSimple<<#= _option.Name.ToFuncName() #>_, Args...>(m_<#= _option.Name.DashToUnderscore() #>, std::forward<Args>(args)...);
     // todo replace by static assert	
     if(!exist_<#= _option.Name.DashToUnderscore() #>)
       throw <#=SimpleTypeExtensions.Namespace()#>::FatalErrorException(A_FUNCINFO, "missing required option <#= _option.Name.ToFuncName() #>");
 <#			}
 			else { #>
-	m_<#= _option.Name.DashToUnderscore() #> = OptionTools::requiredFixedArray<<#= _option.Name.ToFuncName() #>_, 1, Args...>(std::move(args)...)[0];
+	m_<#= _option.Name.DashToUnderscore() #> = OptionTools::requiredFixedArray<<#= _option.Name.ToFuncName() #>_, 1, Args...>(std::forward<Args>(args)...)[0];
 <#          }
   	    }   
     } #>
@@ -67,7 +67,7 @@
 <# 		if (hasDefault) { #>
 //#warning "Default for multi options not used"
 <# 		} #>
-    m_<#= _option.Name.DashToUnderscore() #> = OptionTools::requiredVariableArray<<#= _option.Name.ToFuncName() #>_, <#= _option.MinOccurs #>, -1, Args...>(std::move(args)...);
+    m_<#= _option.Name.DashToUnderscore() #> = OptionTools::requiredVariableArray<<#= _option.Name.ToFuncName() #>_, <#= _option.MinOccurs #>, -1, Args...>(std::forward<Args>(args)...);
 <# 	} #>
 
 <# }; #>
@@ -268,7 +268,7 @@ private:
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 // #WARNING#: This file has been generated automatically. Do not edit.
-// Arcane version <#= Version #> : <#= DateTime.Now #>
+// Axlstar version <#= Version #>
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 

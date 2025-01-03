@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* StdMeshVariables.cc                                         (C) 2000-2016 */
+/* StdMeshVariables.cc                                         (C) 2000-2024 */
 /*                                                                           */
 /* Définition de variables du maillage pour des tests.                       */
 /*---------------------------------------------------------------------------*/
@@ -16,13 +16,14 @@
 
 #include "arcane/tests/StdMeshVariables.h"
 
-#include "arcane/VariableBuildInfo.h"
-#include "arcane/VariableCollection.h"
+#include "arcane/core/VariableBuildInfo.h"
+#include "arcane/core/VariableCollection.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANETEST_BEGIN_NAMESPACE
+namespace ArcaneTest
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -34,6 +35,10 @@ StdMeshVariables(const MeshHandle& mesh_handle,const String& basestr,const Strin
 , m_int64(VariableBuildInfo(mesh_handle,basestr+base2str+"Int64"))
 , m_int32(VariableBuildInfo(mesh_handle,basestr+base2str+"Int32"))
 , m_int16(VariableBuildInfo(mesh_handle,basestr+base2str+"Int16"))
+, m_int8(VariableBuildInfo(mesh_handle,basestr+base2str+"Int8"))
+, m_bfloat16(VariableBuildInfo(mesh_handle,basestr+base2str+"BFloat16"))
+, m_float16(VariableBuildInfo(mesh_handle,basestr+base2str+"Float16"))
+, m_float32(VariableBuildInfo(mesh_handle,basestr+base2str+"Float32"))
 , m_real2(VariableBuildInfo(mesh_handle,basestr+base2str+"Real2"))
 , m_real2x2(VariableBuildInfo(mesh_handle,basestr+base2str+"Real2x2"))
 , m_real3(VariableBuildInfo(mesh_handle,basestr+base2str+"Real3"))
@@ -53,6 +58,10 @@ StdMeshVariables(const MeshHandle& mesh_handle,const String& basestr,
 , m_int64(VariableBuildInfo(mesh_handle,basestr+base2str+"Int64",family_name))
 , m_int32(VariableBuildInfo(mesh_handle,basestr+base2str+"Int32",family_name))
 , m_int16(VariableBuildInfo(mesh_handle,basestr+base2str+"Int16",family_name))
+, m_int8(VariableBuildInfo(mesh_handle,basestr+base2str+"Int8",family_name))
+, m_bfloat16(VariableBuildInfo(mesh_handle,basestr+base2str+"BFloat16",family_name))
+, m_float16(VariableBuildInfo(mesh_handle,basestr+base2str+"Float16",family_name))
+, m_float32(VariableBuildInfo(mesh_handle,basestr+base2str+"Float32",family_name))
 , m_real2(VariableBuildInfo(mesh_handle,basestr+base2str+"Real2",family_name))
 , m_real2x2(VariableBuildInfo(mesh_handle,basestr+base2str+"Real2x2",family_name))
 , m_real3(VariableBuildInfo(mesh_handle,basestr+base2str+"Real3",family_name))
@@ -73,6 +82,10 @@ synchronize()
   m_int64.synchronize();
   m_int32.synchronize();
   m_int16.synchronize();
+  m_int8.synchronize();
+  m_bfloat16.synchronize();
+  m_float16.synchronize();
+  m_float32.synchronize();
   m_real2.synchronize();
   m_real2x2.synchronize();
   m_real3.synchronize();
@@ -90,6 +103,10 @@ addToCollection(VariableCollection vars)
   vars.add(m_int64.variable());
   vars.add(m_int32.variable());
   vars.add(m_int16.variable());
+  vars.add(m_int8.variable());
+  vars.add(m_bfloat16.variable());
+  vars.add(m_float16.variable());
+  vars.add(m_float32.variable());
   vars.add(m_real2.variable());
   vars.add(m_real2x2.variable());
   vars.add(m_real3.variable());
@@ -114,7 +131,7 @@ template class StdMeshVariables< StdMeshVariableTraits2<Particle,1> >;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANETEST_END_NAMESPACE
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -138,6 +138,9 @@
 // HPDDM
 #cmakedefine ALIEN_USE_HPDDM
 
+// COMPOSYX
+#cmakedefine ALIEN_USE_COMPOSYX
+
 // SYCL
 #cmakedefine ALIEN_USE_SYCL
 

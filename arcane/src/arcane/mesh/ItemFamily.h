@@ -78,11 +78,12 @@ class ARCANE_MESH_EXPORT ItemFamily
 
   class Variables;
   class InternalApi;
-  class AdjencyInfo
+  class AdjacencyInfo
   {
    public:
-    AdjencyInfo(const ItemGroup& item_group,const ItemGroup& sub_item_group,
-                eItemKind link_kind,Integer nb_layer)
+
+    AdjacencyInfo(const ItemGroup& item_group, const ItemGroup& sub_item_group,
+                  eItemKind link_kind, Integer nb_layer)
     : m_item_group(item_group), m_sub_item_group(sub_item_group),
       m_link_kind(link_kind), m_nb_layer(nb_layer)
       {
@@ -93,7 +94,8 @@ class ARCANE_MESH_EXPORT ItemFamily
     eItemKind m_link_kind;
     Integer m_nb_layer;
    public:
-    bool operator<(const AdjencyInfo& rhs) const
+
+    bool operator<(const AdjacencyInfo& rhs) const
     {
       if (m_item_group != rhs.m_item_group)
         return m_item_group < rhs.m_item_group;
@@ -105,7 +107,10 @@ class ARCANE_MESH_EXPORT ItemFamily
     }
 
   };
-  typedef std::map<AdjencyInfo,ItemPairGroup> AdjencyGroupMap;
+  using AdjacencyGroupMap = std::map<AdjacencyInfo, ItemPairGroup>;
+  // Garde la version avec faute d'ortographe pour des raisons de compatibilité
+  // TODO: à enlever mi 2025
+  using AdjencyGroupMap = AdjacencyGroupMap;
 
  public:
 
@@ -243,9 +248,13 @@ class ARCANE_MESH_EXPORT ItemFamily
 
  public:
 
+  ARCANE_DEPRECATED_REASON("Y2024: use findAdjacencyItems() instead")
   ItemPairGroup findAdjencyItems(const ItemGroup& group,
                                  const ItemGroup& sub_group,eItemKind link_kind,
                                  Integer layer) override;
+  ItemPairGroup findAdjacencyItems(const ItemGroup& group,
+                                   const ItemGroup& sub_group, eItemKind link_kind,
+                                   Integer layer) override;
   IParticleFamily* toParticleFamily() override { return nullptr; }
   void setItemSortFunction(IItemInternalSortFunction* sort_function) override;
   IItemInternalSortFunction* itemSortFunction() const override;
@@ -265,8 +274,8 @@ class ARCANE_MESH_EXPORT ItemFamily
 
  public:
 
-  //NOTE: Cette méthode n'est pas virtuelle et seul pour l'instant DynamicMesh peut modifier la politique.
-  void setPolicyMng(IItemFamilyPolicyMng* policy_mng);
+  //NOTE: Cette méthode doit être virtuelle pour que PolyhedralMesh puisse positionner la politique.
+  virtual void setPolicyMng(IItemFamilyPolicyMng* policy_mng);
 
  public:
 
@@ -419,10 +428,10 @@ class ARCANE_MESH_EXPORT ItemFamily
 
  private:
 
-  AdjencyGroupMap m_adjency_groups;
+  AdjacencyGroupMap m_adjacency_groups;
   UniqueArray<ItemConnectivitySelector*> m_connectivity_selector_list;
   IItemFamilyTopologyModifier* m_topology_modifier = nullptr;
-  //! Accesseur pour les connectités via Item et ItemInternal
+  //! Accesseur pour les connectivités via Item et ItemInternal
   ItemInternalConnectivityList m_item_connectivity_list;
 
   UniqueArray<ItemConnectivitySelector*> m_connectivity_selector_list_by_item_kind;

@@ -78,10 +78,9 @@ class VariableScalarT
 
  protected:
 
-  void _internalResize(Integer new_size,Integer nb_additional_element) override
+  void _internalResize(const VariableResizeArgs& resize_args) override
   {
-    ARCANE_UNUSED(new_size);
-    ARCANE_UNUSED(nb_additional_element);
+    ARCANE_UNUSED(resize_args);
   }
   Integer _checkIfSameOnAllReplica(IParallelMng* replica_pm,int max_print) override;
 

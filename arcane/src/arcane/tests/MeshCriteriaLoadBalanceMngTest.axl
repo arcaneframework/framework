@@ -13,6 +13,21 @@
   </entry-points>
 
   <options>
+    <complex name="mesh-params" type="MeshParams" minOccurs="1" maxOccurs="unbounded">
+      <simple name="partitioner" type="string" default="DefaultPartitioner">
+        <description>
+          Nom du service de partitionnement. Nécessite un nom par maillage.
+          L'ordre est pris en compte pour l'attribution d'une instance par maillage.
+        </description>
+      </simple>
+      <simple name="iteration" type="int32" default="1">
+        <description>
+          Permet de ne partitionner qu'une fois toutes les n itérations.
+        </description>
+      </simple>
+
+    </complex>
+
   </options>
 
 </module>

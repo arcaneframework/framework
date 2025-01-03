@@ -588,27 +588,31 @@ template <typename LayoutType>
 void MiniWeatherArray<LayoutType>::
 set_halo_values_x(NumArray3Type& nstate)
 {
-  auto command = makeCommand(m_queue);
-
-  auto state_in_out = ax::viewInOut(command, nstate);
-  auto in_hy_dens_cell = ax::viewIn(command, hy_dens_cell);
-  auto in_hy_dens_theta_cell = ax::viewIn(command, hy_dens_theta_cell);
 
   const auto nx = this->nx();
   const auto nz = this->nz();
   const auto dz = this->dz();
   const auto k_beg = this->k_beg();
 
-  command << RUNCOMMAND_LOOP (iter, ArrayBounds<MDDim2>(NUM_VARS, nz))
   {
-    auto [ll, k] = iter();
-    state_in_out(ll, k + hs, 0) = state_in_out(ll, k + hs, nx + hs - 2);
-    state_in_out(ll, k + hs, 1) = state_in_out(ll, k + hs, nx + hs - 1);
-    state_in_out(ll, k + hs, nx + hs) = state_in_out(ll, k + hs, hs);
-    state_in_out(ll, k + hs, nx + hs + 1) = state_in_out(ll, k + hs, hs + 1);
-  };
+    auto command = makeCommand(m_queue);
+    auto state_in_out = ax::viewInOut(command, nstate);
+
+    command << RUNCOMMAND_LOOP (iter, ArrayBounds<MDDim2>(NUM_VARS, nz))
+    {
+      auto [ll, k] = iter();
+      state_in_out(ll, k + hs, 0) = state_in_out(ll, k + hs, nx + hs - 2);
+      state_in_out(ll, k + hs, 1) = state_in_out(ll, k + hs, nx + hs - 1);
+      state_in_out(ll, k + hs, nx + hs) = state_in_out(ll, k + hs, hs);
+      state_in_out(ll, k + hs, nx + hs + 1) = state_in_out(ll, k + hs, hs + 1);
+    };
+  }
 
   if (m_const.myrank == 0) {
+    auto command = makeCommand(m_queue);
+    auto state_in_out = ax::viewInOut(command, nstate);
+    auto in_hy_dens_cell = ax::viewIn(command, hy_dens_cell);
+    auto in_hy_dens_theta_cell = ax::viewIn(command, hy_dens_theta_cell);
     command << RUNCOMMAND_LOOP (iter, ArrayBounds<MDDim2>(nz, hs))
     {
       auto [k, i] = iter();
@@ -902,7 +906,7 @@ doExit(RealArrayView reduced_values)
   NumArray3Type host_nstate(eMemoryRessource::Host);
   host_nstate.copy(nstate);
 
-  auto ns = host_nstate.constSpan();
+  auto ns = host_nstate.constMDSpan();
 
   for (ll = 0; ll < NUM_VARS; ll++)
     sum_v[ll] = 0.0;

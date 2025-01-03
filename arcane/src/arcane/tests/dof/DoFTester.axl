@@ -7,6 +7,7 @@
   
   
   <options>
+    <simple type="bool" name="do-check-compacting" default="true"/>
     <service-instance name="particle-exchanger" type="Arcane::IParticleExchanger" default="BasicParticleExchanger">
       <name lang="fr">echangeur-particule</name>
       <description>Service utilisé pour échanger les particules.</description>

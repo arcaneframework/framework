@@ -16,6 +16,7 @@
 
 #include "arcane/utils/TraceAccessor.h"
 #include "arcane/utils/Limits.h"
+#include "arcane/utils/UniqueArray.h"
 
 #include "arcane/core/IParallelSort.h"
 #include "arcane/core/IParallelMng.h"

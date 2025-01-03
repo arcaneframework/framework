@@ -5,16 +5,15 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IMemoryRessourceMng.h                                       (C) 2000-2024 */
+/* IMemoryResourceMng.h                                        (C) 2000-2024 */
 /*                                                                           */
 /* Gestion des ressources mémoire pour les CPU et accélérateurs.             */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_UTILS_IMEMORYRESSOURCEMNG_H
-#define ARCANE_UTILS_IMEMORYRESSOURCEMNG_H
+#ifndef ARCANE_UTILS_IMEMORYRESOURCEMNG_H
+#define ARCANE_UTILS_IMEMORYRESOURCEMNG_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/MemoryRessource.h"
 #include "arcane/utils/UtilsTypes.h"
 
 /*---------------------------------------------------------------------------*/
@@ -27,13 +26,14 @@ class IMemoryRessourceMngInternal;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
+ * \internal
  * \brief Gestion des ressources mémoire pour les CPU et accélérateurs.
  */
-class ARCANE_UTILS_EXPORT IMemoryRessourceMng
+class ARCANE_UTILS_EXPORT IMemoryResourceMng
 {
  public:
 
-  virtual ~IMemoryRessourceMng() = default;
+  virtual ~IMemoryResourceMng() = default;
 
  public:
 
@@ -42,7 +42,7 @@ class ARCANE_UTILS_EXPORT IMemoryRessourceMng
    *
    * Lève une exception si aucun allocateur pour la ressource \a v existe.
    */
-  virtual IMemoryAllocator* getAllocator(eMemoryRessource r) = 0;
+  virtual IMemoryAllocator* getAllocator(eMemoryResource r) = 0;
 
   /*!
    * \brief Allocateur mémoire pour la ressource \a r.
@@ -51,7 +51,7 @@ class ARCANE_UTILS_EXPORT IMemoryRessourceMng
    * exception si \a throw_if_not_found est vrai ou retourne \a nullptr
    * si \a throw_if_not_found est faux.
    */
-  virtual IMemoryAllocator* getAllocator(eMemoryRessource r, bool throw_if_not_found) = 0;
+  virtual IMemoryAllocator* getAllocator(eMemoryResource r, bool throw_if_not_found) = 0;
 
  public:
 

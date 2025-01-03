@@ -108,6 +108,15 @@ _setMemoryLocationHint(eMemoryLocationHint new_hint,void* ptr,Int64 sizeof_true_
 /*---------------------------------------------------------------------------*/
 
 void ArrayMetaData::
+_setHostDeviceMemoryLocation(eHostDeviceMemoryLocation location)
+{
+  allocation_options.setHostDeviceMemoryLocation(location);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ArrayMetaData::
 _copyFromMemory(MemoryPointer destination, ConstMemoryPointer source, Int64 sizeof_true_type, RunQueue* queue)
 {
   MemoryAllocationArgs args = _getAllocationArgs(queue);

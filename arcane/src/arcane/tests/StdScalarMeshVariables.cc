@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -11,21 +11,21 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/ArcanePrecomp.h"
-
 #include "arcane/utils/ITraceMng.h"
-#include "arcane/IMesh.h"
-#include "arcane/ItemGroup.h"
-#include "arcane/ItemEnumerator.h"
-#include "arcane/ItemPrinter.h"
-#include "arcane/VariableView.h"
+
+#include "arcane/core/IMesh.h"
+#include "arcane/core/ItemGroup.h"
+#include "arcane/core/ItemEnumerator.h"
+#include "arcane/core/ItemPrinter.h"
+#include "arcane/core/VariableView.h"
 
 #include "arcane/tests/StdScalarMeshVariables.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANETEST_BEGIN_NAMESPACE
+namespace ArcaneTest
+{
 using namespace Arcane;
 
 /*---------------------------------------------------------------------------*/
@@ -58,7 +58,7 @@ namespace
 void _setReferenceValue(Int64 n,MultiScalarValue& sv)
 {
   Real r = Convert::toReal(n);
-
+  float fr = static_cast<float>(r);
   sv.m_byte = (Byte)(n % 255);
   sv.m_real = r;
   sv.m_int64 = n;
@@ -68,6 +68,10 @@ void _setReferenceValue(Int64 n,MultiScalarValue& sv)
   sv.m_real2x2 = Real2x2::fromLines (r, r+1., r+2., r+3.);
   sv.m_real3 = Real3 (r, r+1., r+2.0);
   sv.m_real3x3 = Real3x3::fromLines (r, r+1., r+2., r+3., r+4., r+5., r+6., r+7., r+8.);
+  sv.m_int8 = static_cast<Int8>(n);
+  sv.m_bfloat16 = fr;
+  sv.m_float16 = fr;
+  sv.m_float32 = fr;
 }
 }
 
@@ -90,6 +94,10 @@ setItemValues(Int64 n, ItemType item)
   this->m_real2x2[item] = sv.m_real2x2;
   this->m_real3[item] = sv.m_real3;
   this->m_real3x3[item] = sv.m_real3x3;
+  this->m_int8[item] = sv.m_int8;
+  this->m_bfloat16[item] = sv.m_bfloat16;
+  this->m_float16[item] = sv.m_float16;
+  this->m_float32[item] = sv.m_float32;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -146,6 +154,10 @@ setValuesWithViews(Integer seed, const GroupType& group)
   auto out_real2x2 = viewOut(this->m_real2x2);
   auto out_real3 = viewOut(this->m_real3);
   auto out_real3x3 = viewOut(this->m_real3x3);
+  auto out_int8 = viewOut(this->m_int8);
+  auto out_bfloat16 = viewOut(this->m_bfloat16);
+  auto out_float16 = viewOut(this->m_float16);
+  auto out_float32 = viewOut(this->m_float32);
 
   MultiScalarValue sv;
 
@@ -163,6 +175,10 @@ setValuesWithViews(Integer seed, const GroupType& group)
     out_real2x2[item] = sv.m_real2x2;
     out_real3[item] = sv.m_real3;
     out_real3x3[item] = sv.m_real3x3;
+    out_int8[item] = sv.m_int8;
+    out_bfloat16[item] = sv.m_bfloat16;
+    out_float16[item] = sv.m_float16;
+    out_float32[item] = sv.m_float32;
   }
 }
 
@@ -211,7 +227,10 @@ _checkValue(ItemType item,const MultiScalarValue& ref_sv,
   CHECK_VALUE(real2x2);
   CHECK_VALUE(real3);
   CHECK_VALUE(real3x3);
-
+  CHECK_VALUE(int8);
+  CHECK_VALUE(bfloat16);
+  CHECK_VALUE(float16);
+  CHECK_VALUE(float32);
   return nb_error;
 }
 
@@ -268,7 +287,10 @@ checkGhostValuesOddOrEven(Integer iteration, const GroupType& group)
       current_sv.m_real2x2 = this->m_real2x2[item];
       current_sv.m_real3 = this->m_real3[item];
       current_sv.m_real3x3 = this->m_real3x3[item];
-      
+      current_sv.m_int8 = this->m_int8[item];
+      current_sv.m_bfloat16 = this->m_bfloat16[item];
+      current_sv.m_float16 = this->m_float16[item];
+      current_sv.m_float32 = this->m_float32[item];
       nb_error += check_value(item);
     }
   }
@@ -297,6 +319,10 @@ checkValues (Integer iteration, const GroupType& group)
     current_sv.m_real2x2 = this->m_real2x2[item];
     current_sv.m_real3 = this->m_real3[item];
     current_sv.m_real3x3 = this->m_real3x3[item];
+    current_sv.m_int8 = this->m_int8[item];
+    current_sv.m_bfloat16 = this->m_bfloat16[item];
+    current_sv.m_float16 = this->m_float16[item];
+    current_sv.m_float32 = this->m_float32[item];
 
     nb_error += _checkItemValues(iteration,item,current_sv);
   }
@@ -319,6 +345,10 @@ checkValuesWithViews(Integer seed, const GroupType& group)
   auto in_real2x2 = viewIn(this->m_real2x2);
   auto in_real3 = viewIn(this->m_real3);
   auto in_real3x3 = viewIn(this->m_real3x3);
+  auto in_int8 = viewIn(this->m_int8);
+  auto in_bfloat16 = viewIn(this->m_bfloat16);
+  auto in_float16 = viewIn(this->m_float16);
+  auto in_float32 = viewIn(this->m_float32);
 
   MultiScalarValue current_sv;
 
@@ -337,6 +367,10 @@ checkValuesWithViews(Integer seed, const GroupType& group)
     current_sv.m_real2x2 = in_real2x2[item];
     current_sv.m_real3 = in_real3[item];
     current_sv.m_real3x3 = in_real3x3[item];
+    current_sv.m_int8 = in_int8[item];
+    current_sv.m_bfloat16 = in_bfloat16[item];
+    current_sv.m_float16 = in_float16[item];
+    current_sv.m_float32 = in_float32[item];
 
     nb_error += _checkItemValues(seed,item,current_sv);
   }
@@ -362,6 +396,10 @@ checkReplica()
   nb_error += this->m_real3.checkIfSameOnAllReplica(max_print);
   nb_error += this->m_real2x2.checkIfSameOnAllReplica(max_print);
   nb_error += this->m_real3x3.checkIfSameOnAllReplica(max_print);
+  //nb_error += this->m_int8.checkIfSameOnAllReplica(max_print);
+  //nb_error += this->m_bfloat16.checkIfSameOnAllReplica(max_print);
+  //nb_error += this->m_float16.checkIfSameOnAllReplica(max_print);
+  //nb_error += this->m_float32.checkIfSameOnAllReplica(max_print);
 
   return nb_error;
 }
@@ -378,7 +416,7 @@ template class StdScalarMeshVariables<Particle>;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANETEST_END_NAMESPACE
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

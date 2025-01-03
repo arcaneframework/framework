@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ParallelLoopOptions.cc                                      (C) 2000-2022 */
+/* ParallelLoopOptions.cc                                      (C) 2000-2024 */
 /*                                                                           */
 /* Options de configuration pour les boucles parallèles en multi-thread.     */
 /*---------------------------------------------------------------------------*/
@@ -15,6 +15,7 @@
 
 #include "arcane/utils/Property.h"
 #include "arcane/utils/FatalErrorException.h"
+#include "arcane/utils/internal/ParallelLoopOptionsProperties.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -57,7 +58,7 @@ namespace
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template <typename V> void ParallelLoopOptions::
+template <typename V> void ParallelLoopOptionsProperties::
 _applyPropertyVisitor(V& p)
 {
   auto b = p.builder();
@@ -77,7 +78,7 @@ _applyPropertyVisitor(V& p)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_REGISTER_PROPERTY_CLASS(ParallelLoopOptions, ());
+ARCANE_REGISTER_PROPERTY_CLASS(ParallelLoopOptionsProperties, ());
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

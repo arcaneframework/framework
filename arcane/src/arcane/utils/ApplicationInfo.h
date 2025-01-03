@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ApplicationInfo.h                                           (C) 2000-2020 */
+/* ApplicationInfo.h                                           (C) 2000-2024 */
 /*                                                                           */
 /* Informations sur une application.                                         */
 /*---------------------------------------------------------------------------*/
@@ -17,7 +17,6 @@
 #include "arcane/utils/VersionInfo.h"
 #include "arcane/utils/String.h"
 #include "arcane/utils/UtilsTypes.h"
-#include "arcane/utils/PropertyDeclarations.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -38,7 +37,6 @@ class CommandLineArguments;
  */
 class ARCANE_UTILS_EXPORT ApplicationInfo
 {
-  ARCANE_DECLARE_PROPERTY_CLASS(ApplicationInfo);
  public:
 
   ApplicationInfo();

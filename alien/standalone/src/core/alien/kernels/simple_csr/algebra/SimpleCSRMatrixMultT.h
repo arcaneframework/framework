@@ -26,6 +26,26 @@ SimpleCSRMatrixMultT<ValueT>::SimpleCSRMatrixMultT(const MatrixType& matrix)
 /*---------------------------------------------------------------------------*/
 
 template <typename ValueT>
+void SimpleCSRMatrixMultT<ValueT>::synchronize(VectorType& x) const
+{
+  if (m_matrix_impl.block()) {
+    if (m_matrix_impl.m_is_parallel)
+      _synchronizeBlock(x);
+  }
+  else if (m_matrix_impl.vblock()) {
+    if (m_matrix_impl.m_is_parallel)
+      _synchronizeVariableBlock(x);
+  }
+  else {
+    if (m_matrix_impl.m_is_parallel)
+      _synchronize(x);
+  }
+}
+
+
+
+
+template <typename ValueT>
 void SimpleCSRMatrixMultT<ValueT>::mult(const VectorType& x, VectorType& y) const
 {
   if (m_matrix_impl.block()) {
@@ -70,6 +90,23 @@ void SimpleCSRMatrixMultT<ValueT>::mult(const UniqueArray<Real>& x, UniqueArray<
 }
 
 /*---------------------------------------------------------------------------*/
+
+template <typename ValueT>
+void SimpleCSRMatrixMultT<ValueT>::_synchronize(VectorType& x_impl) const
+{
+  Integer alloc_size = m_matrix_impl.m_local_size + m_matrix_impl.m_ghost_size;
+  x_impl.resize(alloc_size);
+  Real* x_ptr = (Real*)x_impl.getDataPtr();
+  ConstArrayView<Real> matrix = m_matrix_impl.m_matrix.getValues();
+  ConstArrayView<Integer> cols = m_matrix_impl.getDistStructInfo().m_cols;
+  ConstArrayView<Integer> row_offset =
+  m_matrix_impl.m_matrix.getCSRProfile().getRowOffset();
+  SendRecvOp<Real> op(x_ptr, m_matrix_impl.m_matrix_dist_info.m_send_info,
+                      m_matrix_impl.m_send_policy, x_ptr, m_matrix_impl.m_matrix_dist_info.m_recv_info,
+                      m_matrix_impl.m_recv_policy, m_matrix_impl.m_parallel_mng, m_matrix_impl.m_trace);
+  op.start();
+  op.end();
+}
 
 template <typename ValueT>
 void SimpleCSRMatrixMultT<ValueT>::_parallelMult(
@@ -243,6 +280,30 @@ const UniqueArray<Real>& x_impl, UniqueArray<Real>& y_impl) const
 /*---------------------------------------------------------------------------*/
 
 template <typename ValueT>
+void SimpleCSRMatrixMultT<ValueT>::_synchronizeBlock(VectorType& x) const
+{
+  Integer alloc_size = m_matrix_impl.m_local_size + m_matrix_impl.m_ghost_size;
+  const Integer block_size = m_matrix_impl.block()->size();
+  x.resize(alloc_size * block_size);
+  ConstArrayView<Real> x_ptr = x.fullValues();
+  Real const* matrix = m_matrix_impl.m_matrix.getDataPtr();
+  ConstArrayView<Integer> cols = m_matrix_impl.getDistStructInfo().m_cols;
+  ConstArrayView<Integer> row_offset =
+  m_matrix_impl.m_matrix.getCSRProfile().getRowOffset();
+  SimpleCSRInternal::SendRecvOp<Real> op(x.getDataPtr(),
+                                         m_matrix_impl.m_matrix_dist_info.m_send_info, m_matrix_impl.m_send_policy,
+                                         (Real*)x.getDataPtr(), m_matrix_impl.m_matrix_dist_info.m_recv_info,
+                                         m_matrix_impl.m_recv_policy, m_matrix_impl.m_parallel_mng, m_matrix_impl.m_trace,
+                                         block_size);
+  op.start();
+  op.end();
+}
+
+
+
+
+
+template <typename ValueT>
 void SimpleCSRMatrixMultT<ValueT>::_parallelMultBlock(const VectorType& x, VectorType& y) const
 {
   Integer alloc_size = m_matrix_impl.m_local_size + m_matrix_impl.m_ghost_size;
@@ -331,6 +392,40 @@ void SimpleCSRMatrixMultT<ValueT>::_seqMultBlock(const VectorType& x, VectorType
 }
 
 /*---------------------------------------------------------------------------*/
+template <typename ValueT>
+void SimpleCSRMatrixMultT<ValueT>::_synchronizeVariableBlock(VectorType& x_impl) const
+{
+  // alien_info([&] { cout()<<"_parallelMultVariableBlock";}) ;
+
+  ConstArrayView<Integer> block_sizes = m_matrix_impl.getDistStructInfo().m_block_sizes;
+  ConstArrayView<Integer> block_offsets =
+  m_matrix_impl.getDistStructInfo().m_block_offsets;
+  {
+    const Integer last = block_offsets.size() - 1;
+    x_impl.resize(block_offsets[last] + block_sizes[last]);
+  }
+
+  const ValueT* x_ptr = x_impl.getDataPtr();
+  const ValueT* matrix_ptr = m_matrix_impl.m_matrix.getDataPtr();
+
+  ConstArrayView<Integer> row_offset =
+  m_matrix_impl.m_matrix.getCSRProfile().getRowOffset();
+  ConstArrayView<Integer> cols = m_matrix_impl.getDistStructInfo().m_cols;
+  ConstArrayView<Integer> block_cols =
+  m_matrix_impl.m_matrix.getCSRProfile().getBlockCols();
+
+  SendRecvOp<Real> op(x_ptr, m_matrix_impl.m_matrix_dist_info.m_send_info,
+                      m_matrix_impl.m_send_policy, (ValueT*)x_ptr,
+                      m_matrix_impl.m_matrix_dist_info.m_recv_info, m_matrix_impl.m_recv_policy,
+                      m_matrix_impl.m_parallel_mng, m_matrix_impl.m_trace, block_sizes, block_offsets);
+
+  op.start();
+  op.end();
+}
+
+
+
+
 
 template <typename ValueT>
 void SimpleCSRMatrixMultT<ValueT>::_parallelMultVariableBlock(

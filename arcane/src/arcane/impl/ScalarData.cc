@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ScalarData.cc                                               (C) 2000-2023 */
+/* ScalarData.cc                                               (C) 2000-2024 */
 /*                                                                           */
 /* Donnée de type scalaire.                                                  */
 /*---------------------------------------------------------------------------*/
@@ -270,7 +270,7 @@ serialize(ISerializer* sbuf, IDataOperation*)
 {
   Integer nb_count = DataTypeTraitsT<DataType>::nbBasicType();
   typedef typename DataTypeTraitsT<DataType>::BasicType BasicType;
-  eDataType data_type = DataTypeTraitsT<BasicType>::type();
+  eBasicDataType data_type = DataTypeTraitsT<BasicType>::basicDataType();
 
   DataType ttmp = m_value;
   ArrayView<BasicType> vtmp(1 * nb_count, reinterpret_cast<BasicType*>(&ttmp));
@@ -421,6 +421,10 @@ registerScalarDataFactory(IDataFactoryMng* dfm)
 {
   DataStorageFactory<ScalarDataT<Byte>>::registerDataFactory(dfm);
   DataStorageFactory<ScalarDataT<Real>>::registerDataFactory(dfm);
+  DataStorageFactory<ScalarDataT<BFloat16>>::registerDataFactory(dfm);
+  DataStorageFactory<ScalarDataT<Float16>>::registerDataFactory(dfm);
+  DataStorageFactory<ScalarDataT<Float32>>::registerDataFactory(dfm);
+  DataStorageFactory<ScalarDataT<Int8>>::registerDataFactory(dfm);
   DataStorageFactory<ScalarDataT<Int16>>::registerDataFactory(dfm);
   DataStorageFactory<ScalarDataT<Int32>>::registerDataFactory(dfm);
   DataStorageFactory<ScalarDataT<Int64>>::registerDataFactory(dfm);
@@ -433,15 +437,7 @@ registerScalarDataFactory(IDataFactoryMng* dfm)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template class ScalarDataT<Byte>;
-template class ScalarDataT<Real>;
-template class ScalarDataT<Int16>;
-template class ScalarDataT<Int32>;
-template class ScalarDataT<Int64>;
-template class ScalarDataT<Real2>;
-template class ScalarDataT<Real3>;
-template class ScalarDataT<Real2x2>;
-template class ScalarDataT<Real3x3>;
+ARCANE_INTERNAL_INSTANTIATE_TEMPLATE_FOR_NUMERIC_DATATYPE(ScalarDataT);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* DynamicMeshChecker.cc                                       (C) 2000-2023 */
+/* DynamicMeshChecker.cc                                       (C) 2000-2024 */
 /*                                                                           */
 /* Classe fournissant des méthodes de vérification sur le maillage.          */
 /*---------------------------------------------------------------------------*/
@@ -215,7 +215,7 @@ checkValidMeshFull()
 void DynamicMeshChecker::
 checkValidConnectivity()
 {
-  String func_name = "DynamicMesh::checkValidConnectivity";
+  String func_name = "MeshChecker::checkValidConnectivity";
   debug() << func_name << " check";
 
   // Appelle la méthode de vérification de chaque famille.
@@ -389,7 +389,7 @@ checkValidConnectivity()
 void DynamicMeshChecker::
 updateAMRFaceOrientation()
 {
-	String func_name = "DynamicMesh::updateAMRFaceOrientation";
+	String func_name = "MeshChecker::updateAMRFaceOrientation";
   FaceReorienter fr(m_mesh);
   ENUMERATE_FACE(iface,m_mesh->allFaces()){
     Face face = *iface;
@@ -447,7 +447,7 @@ _checkFacesOrientation()
   if (is_1d)
     return;
 
-  String func_name = "DynamicMesh::_checkFacesOrientation";
+  String func_name = "MeshChecker::_checkFacesOrientation";
 
   Int64UniqueArray m_work_face_sorted_nodes;
   IntegerUniqueArray m_work_face_nodes_index;
@@ -522,7 +522,7 @@ _checkFacesOrientation()
 void DynamicMeshChecker::
 _checkValidItemOwner(IItemFamily* family)
 {
-  String func_name = "DynamicMesh::_checkValidItemOwner";
+  String func_name = "MeshChecker::_checkValidItemOwner";
 
   // Pour les maillages non sous-maillages, il faut que tout sub-item est une cellule voisine de même propriétaire
   // Pour les sous-maillages, il faut, en plus, que tout item soit de même propriétaire que son parent

@@ -244,8 +244,8 @@ endfunction()
 # Les fichiers de FILES qui ont l'extension '.h' ou '.H' seront
 # installés dans le répertoire *include* de destination avec un
 # chemin relative donné par RELATIVE_PATH. Par convention, les fichiers qui
-# sont dans un sous-répertoire de nom 'internal' sont considérés comme
-# interne et ne sont pas installés.
+# sont dans un sous-répertoire de nom 'internal' ou qui ont l'extension 'inst.h'
+# sont considérés comme interne et ne sont pas installés.
 function(arcane_add_library target)
   set(options        )
   set(oneValueArgs   INPUT_PATH RELATIVE_PATH)
@@ -259,15 +259,20 @@ function(arcane_add_library target)
     set(_FILE ${ARGS_INPUT_PATH}/${ARGS_RELATIVE_PATH}/${isource})
     #message(STATUS "FOREACH i='${_FILE}'")
     # Regarde si le fichier est un fichier d'en-tête et si
-    # c'est le cas, l'installe automatiquement sauf s'il est
-    # dans un sous-répertoire de nom *internal* auquel cas il
-    # est considéré comme interne à Arcane.
-    string(REGEX MATCH "\.(h|H)$" _OUT_HEADER ${isource})
-    if (_OUT_HEADER)
-      get_filename_component(_HEADER_RELATIVE_PATH ${isource} DIRECTORY)
-      string(REGEX MATCH "internal/" _INTERNAL_HEADER ${isource})
-      if (NOT _INTERNAL_HEADER)
-        install(FILES ${_FILE} DESTINATION include/${ARGS_RELATIVE_PATH}/${_HEADER_RELATIVE_PATH})
+    # c'est le cas, l'installe automatiquement sauf dans les cas suivants:
+    # - s'il est dans un sous-répertoire de nom *internal* auquel cas il
+    #   est considéré comme interne à Arcane.
+    # - s'il a l'extension '.inst.h' auquel il s'agit d'un fichier contenant
+    #   la définition de classes templates à instancier explicitement.
+    string(REGEX MATCH "\.inst\.h$" _OUT_INST_HEADER ${isource})
+    if (NOT _OUT_INST_HEADER)
+      string(REGEX MATCH "\.(h|H)$" _OUT_HEADER ${isource})
+      if (_OUT_HEADER)
+        get_filename_component(_HEADER_RELATIVE_PATH ${isource} DIRECTORY)
+        string(REGEX MATCH "internal/" _INTERNAL_HEADER ${isource})
+        if (NOT _INTERNAL_HEADER)
+          install(FILES ${_FILE} DESTINATION include/${ARGS_RELATIVE_PATH}/${_HEADER_RELATIVE_PATH})
+        endif()
       endif()
     endif()
     list(APPEND _FILES ${_FILE})

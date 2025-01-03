@@ -72,25 +72,25 @@ install(
 
 file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienInterfaceC/C)
 
-alien_test( BENCH alien.interface.c
+alien_test( BENCH interface.c
             NAME seq
             PROCS 1
             COMMAND alien_interface_c.exe
             WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienInterfaceC/C)
 
-alien_test( BENCH alien.interface.c
+alien_test( BENCH interface.c
             NAME parallel
             PROCS 4
             COMMAND alien_interface_c.exe
             WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienInterfaceC/C)
 
-alien_test( BENCH alien.interface.c.param
+alien_test( BENCH interface.c.param
             NAME seq
             PROCS 1
             COMMAND alien_interface_with_param_c.exe
             WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienInterfaceC/C)
 
-alien_test( BENCH alien.interface.c.param
+alien_test( BENCH interface.c.param
             NAME parallel
             PROCS 4
             COMMAND alien_interface_with_param_c.exe

@@ -77,6 +77,7 @@ class ARCCORE_COLLECTIONS_EXPORT ArrayMetaData
   Int32 nb_ref = 0;
   //! Indique is cette instance a été allouée par l'opérateur new.
   bool is_allocated_by_new = false;
+  //! Indique si cette instance n'est pas l'instance nulle (partagée par tous les SharedArray)
   bool is_not_null = false;
 
  protected:
@@ -102,6 +103,7 @@ class ARCCORE_COLLECTIONS_EXPORT ArrayMetaData
   MemoryPointer _reallocate(const AllocatedMemoryInfo& mem_info, Int64 new_capacity, Int64 sizeof_true_type, RunQueue* queue);
   void _deallocate(const AllocatedMemoryInfo& mem_info, RunQueue* queue) ARCCORE_NOEXCEPT;
   void _setMemoryLocationHint(eMemoryLocationHint new_hint, void* ptr, Int64 sizeof_true_type);
+  void _setHostDeviceMemoryLocation(eHostDeviceMemoryLocation location);
   void _copyFromMemory(MemoryPointer destination, ConstMemoryPointer source, Int64 sizeof_true_type, RunQueue* queue);
 
  private:
@@ -463,6 +465,23 @@ class AbstractArray
   void setMemoryLocationHint(eMemoryLocationHint new_hint)
   {
     m_md->_setMemoryLocationHint(new_hint,m_ptr,sizeof(T));
+  }
+
+  /*!
+   * \brief Positionne l'emplacement physique de la zone mémoire.
+   *
+   * \warning L'appelant doit garantir la cohérence entre l'allocateur
+   * et la zone mémoire spécifiée.
+   */
+  void _internalSetHostDeviceMemoryLocation(eHostDeviceMemoryLocation location)
+  {
+    m_md->_setHostDeviceMemoryLocation(location);
+  }
+
+  //! Positionne l'emplacement physique de la zone mémoire.
+  eHostDeviceMemoryLocation hostDeviceMemoryLocation() const
+  {
+    return m_md->allocation_options.hostDeviceMemoryLocation();
   }
 
  public:

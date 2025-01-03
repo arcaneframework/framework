@@ -2,6 +2,11 @@
 
 set(ARCANE_MATERIALS_SOURCES
   materials/CellToAllEnvCellConverter.h
+  materials/ConstituentItem.h
+  materials/ConstituentItemBase.h
+  materials/ConstituentItemSharedInfo.h
+  materials/ConstituentItemLocalId.h
+  materials/ConstituentItemLocalId.cc
   materials/MaterialsCoreGlobal.h
   materials/MaterialsCoreGlobal.cc
   materials/MatItem.h
@@ -74,9 +79,20 @@ set(ARCANE_INTERNAL_SOURCES
   internal/StringVariableReplace.cc
   internal/ITimeHistoryMngInternal.h
   internal/VariableUtilsInternal.h
+  internal/IPolyhedralMeshModifier.h
+  internal/VtkCellTypes.h
   )
 
 set(ARCANE_ORIGINAL_SOURCES
+  # Les fichiers suivants sont en premier car ce sont
+  # les plus longs à compiler
+  Array2Variable.cc
+  Array2Variable.h
+  VariableArray.cc
+  VariableArray.h
+  MeshVariableTpl.cc
+  MeshVariableTplArray.cc
+
   AbstractModule.h
   ApplicationBuildInfo.h
   ApplicationBuildInfo.cc
@@ -389,8 +405,6 @@ set(ARCANE_ORIGINAL_SOURCES
   Algorithm.h
   ArcaneException.cc
   ArcaneVersion.h
-  Array2Variable.cc
-  Array2Variable.h
   Assertion.cc
   Assertion.h
   BasicModule.cc
@@ -472,6 +486,8 @@ set(ARCANE_ORIGINAL_SOURCES
   EntryPoint.cc
   EntryPoint.h
   EnumeratorTraceWrapper.h
+  ExternalPartitionConstraint.h
+  ExternalPartitionConstraint.cc
   Factory.h
   FactoryService.cc
   FactoryService.h
@@ -523,8 +539,6 @@ set(ARCANE_ORIGINAL_SOURCES
   MeshVariableRef.h
   MeshVariableScalarRef.h
   MeshVariableScalarRefT.H
-  MeshVariableTpl.cc
-  MeshVariableTplArray.cc
   MeshVisitor.cc
   MeshVisitor.h
   ModuleBuildInfo.cc
@@ -614,8 +628,6 @@ set(ARCANE_ORIGINAL_SOURCES
   Variable.cc
   Variable.h
   VariableAccessor.h
-  VariableArray.cc
-  VariableArray.h
   VariableBuildInfo.cc
   VariableCollection.cc
   VariableComputeFunction.h
@@ -624,8 +636,7 @@ set(ARCANE_ORIGINAL_SOURCES
   VariableDependInfo.h
   VariableDiff.h
   VariableDiff.cc
-  #VariableExpressionImpl.cc
-  #VariableExpressionImpl.h
+  VtkCellTypes.cc
   VariableFactory.cc
   VariableFactory.h
   VariableFactoryRegisterer.cc

@@ -29,7 +29,7 @@ VectorInternal::~VectorInternal()
 /*---------------------------------------------------------------------------*/
 
 bool
-MatrixInternal::init(const int ilower, const int iupper, const int jlower,
+MatrixInternal::init(const HYPRE_Int ilower, const HYPRE_Int iupper, const HYPRE_Int jlower,
     const int jupper, const Arccore::ConstArrayView<Arccore::Integer>& lineSizes)
 {
   int ierr = 0; // code d'erreur de retour

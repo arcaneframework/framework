@@ -412,7 +412,8 @@ getMaxItemUniqueIdCollective(IMesh* mesh);
  */
 extern "C++" ARCANE_CORE_EXPORT void
 checkUniqueIdsHashCollective(IItemFamily* family, IHashAlgorithm* hash_algo,
-                             const String& expected_hash, bool print_hash_value);
+                             const String& expected_hash, bool print_hash_value,
+                             bool include_ghost);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

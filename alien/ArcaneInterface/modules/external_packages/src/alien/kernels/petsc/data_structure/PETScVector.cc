@@ -36,7 +36,7 @@ PETScVector::~PETScVector()
 
 void
 PETScVector::init([[maybe_unused]] const VectorDistribution& dist,
-                  const bool need_allocate, Arccore::Integer block_size ALIEN_UNUSED_PARAM)
+                  const bool need_allocate, [[maybe_unused]] Arccore::Integer block_size)
 {
   if (need_allocate)
     allocate();
@@ -90,7 +90,7 @@ PETScVector::setValues(const int nrow, const int* rows, const double* values)
 }
 
 bool
-PETScVector::setBlockValues(const int nrow, const int* rows, const int block_size, const double* values)
+PETScVector::setBlockValues(const int nrow, const int* rows,[[maybe_unused]] const int block_size, const double* values)
 {
   if (m_internal->m_internal == nullptr)
     return false;
@@ -118,7 +118,7 @@ PETScVector::setValues(const int nrow, const double* values)
 }
 
 bool
-PETScVector::setBlockValues(const int nrow, const int block_size, const double* values)
+PETScVector::setBlockValues(const int nrow,[[maybe_unused]] const int block_size, const double* values)
 {
   if (!m_internal.get())
     return false;
@@ -146,7 +146,7 @@ PETScVector::setValues(Arccore::ConstArrayView<Arccore::Real> values)
 
 
 bool
-PETScVector::setBlockValues(int block_size, Arccore::ConstArrayView<Arccore::Real> values)
+PETScVector::setBlockValues([[maybe_unused]] int block_size, Arccore::ConstArrayView<Arccore::Real> values)
 {
   ALIEN_ASSERT((m_internal.get()), ("Not initialized PETScVector before updating"));
 #ifdef  PETSC_HAVE_VECSETBLOCKSIZE

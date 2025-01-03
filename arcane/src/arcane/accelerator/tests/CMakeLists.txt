@@ -1,13 +1,15 @@
 ﻿set(SOURCE_FILES
   TestInit.cc
   TestCommon.cc
+  TestPartition_Kernel.cc
+  TestPartition.cc
   TestReduce.cc
 )
 
 arcane_add_component_test_executable(accelerator
   FILES ${SOURCE_FILES}
   )
-arcane_accelerator_add_source_files(TestReduce.cc)
+arcane_accelerator_add_source_files(TestReduce.cc TestPartition_Kernel.cc)
 
 target_link_libraries(arcane_accelerator.tests PUBLIC arcane_accelerator GTest::GTest GTest::Main)
 

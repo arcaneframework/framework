@@ -1,4 +1,14 @@
 set(ARCANE_SOURCES
+  # Les fichiers suivants sont en premier car ce sont
+  # les plus longs à compiler
+  MeshMaterialVariableScalar.inst.h
+  MeshMaterialVariableScalarTpl1.cc
+  MeshMaterialVariableScalarTpl2.cc
+  MeshMaterialVariableScalarTpl3.cc
+  MeshMaterialVariableArray.inst.h
+  MeshMaterialVariableArrayTpl1.cc
+  MeshMaterialVariableArrayTpl2.cc
+
   AllCellToAllEnvCellConverter.cc
   AllCellToAllEnvCellConverter.h
   AllEnvData.cc
@@ -22,6 +32,7 @@ set(ARCANE_SOURCES
   MatItemVector.h
   EnvItemVector.h
   IncrementalComponentModifier.cc
+  IncrementalComponentModifier_Accelerator.cc
   IMeshMaterialVariableSynchronizer.h
   MatItemEnumerator.h
   MatVarIndex.h
@@ -60,8 +71,6 @@ set(ARCANE_SOURCES
   MeshMaterialVariableFactoryRegisterer.cc
   MeshMaterialVariableFactoryRegisterer.h
   MeshEnvironmentVariableRef.h
-  MeshMaterialVariableScalar.cc
-  MeshMaterialVariableArray.cc
   MeshMaterialVariableSynchronizer.cc
   MeshMaterialVariableSynchronizerList.cc
   MeshMaterialVariableSynchronizerList.h
@@ -117,6 +126,7 @@ set(ARCANE_SOURCES
   IMeshMaterialSynchronizeBuffer.h
   ItemMaterialVariableBaseT.H
 
+  internal/AllCellToAllEnvCellContainer.h
   internal/AllEnvData.h
   internal/ConstituentConnectivityList.h
   internal/ComponentItemInternalData.h

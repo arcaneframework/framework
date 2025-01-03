@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* UnstructuredMeshUtilities.cc                                (C) 2000-2023 */
+/* UnstructuredMeshUtilities.cc                                (C) 2000-2024 */
 /*                                                                           */
 /* Fonctions utilitaires sur un maillage.                                    */
 /*---------------------------------------------------------------------------*/
@@ -67,7 +67,7 @@ UnstructuredMeshUtilities::
 UnstructuredMeshUtilities(IMesh* mesh)
 : TraceAccessor(mesh->traceMng())
 , m_mesh(mesh)
-, m_compute_adjency_functor(new BasicItemPairGroupComputeFunctor(traceMng()))
+, m_compute_adjacency_functor(new BasicItemPairGroupComputeFunctor(traceMng()))
 {
 }
 
@@ -77,7 +77,7 @@ UnstructuredMeshUtilities(IMesh* mesh)
 UnstructuredMeshUtilities::
 ~UnstructuredMeshUtilities()
 {
-  delete m_compute_adjency_functor;
+  delete m_compute_adjacency_functor;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -118,7 +118,7 @@ changeOwnersFromCells()
       const Node node = *i_node;
       const Cell cell = owner_builder.connectedCellOfItem(node);
 #ifdef ARCANE_DEBUG_LOAD_BALANCING
-      if (m_nodes_owner[node]!=m_cells_owner[cell]){
+      if (nodes_owner[node]!= cells_owner[cell]){
         info() << "New owner for node: " << ItemPrinter(node) << " cell=" << ItemPrinter(cell)
                << " old_owner=" << nodes_owner[node]
                << " current_cell_owner=" << cell.owner()
@@ -136,11 +136,11 @@ changeOwnersFromCells()
       const Edge edge = *i_edge;
       const Cell cell = owner_builder.connectedCellOfItem(edge);
 #ifdef ARCANE_DEBUG_LOAD_BALANCING
-      if (m_edges_owner[edge]!=m_cells_owner[cell]){
+      if (edges_owner[edge] != cells_owner[cell]) {
         info() << "New owner for edge: " << ItemPrinter(edge) << " cell=" << ItemPrinter(cell)
-               << " old_owner=" << edges_owner[edge]
-               << " current_cell_owner=" << cell.owner()
-               << " new_owner=" << cells_owner[cell];
+            << " old_owner=" << edges_owner[edge]
+            << " current_cell_owner=" << cell.owner()
+            << " new_owner=" << cells_owner[cell];
       }
 #endif /* ARCANE_DEBUG_LOAD_BALANCING */
       edges_owner[edge] = cells_owner[cell];
@@ -708,7 +708,7 @@ _broadcastFarthestNode(Real distance,const Node& farthest_node,
 void UnstructuredMeshUtilities::
 computeAdjency(ItemPairGroup adjency_array,eItemKind link_kind,Integer nb_layer)
 {
-  m_compute_adjency_functor->computeAdjency(adjency_array,link_kind,nb_layer);
+  m_compute_adjacency_functor->computeAdjacency(adjency_array, link_kind, nb_layer);
 }
 
 /*---------------------------------------------------------------------------*/

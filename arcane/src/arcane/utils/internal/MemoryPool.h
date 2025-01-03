@@ -56,6 +56,9 @@ class ARCANE_UTILS_EXPORT IMemoryPoolAllocator
  * \brief Classe pour gérer une liste de zone allouées.
  *
  * Cette classe utilise une sémantique par référence.
+ *
+ * L'allocateur passé en argument du constructeur doit rester valide
+ * durant toute la vie de l'instance.
  */
 class ARCANE_UTILS_EXPORT MemoryPool
 : public IMemoryPoolAllocator
@@ -74,6 +77,18 @@ class ARCANE_UTILS_EXPORT MemoryPool
   void dumpStats(std::ostream& ostr);
   void dumpFreeMap(std::ostream& ostr);
   String name() const;
+
+  /*!
+   * \brief Positionne la taille en octet à partir de laquelle
+   * on ne conserve pas un bloc dans le cache.
+   *
+   * Cette méthode ne peut être appelé que s'il n'y a aucun bloc dans le
+   * cache.
+   */
+  void setMaxCachedBlockSize(size_t v);
+
+  //! Libère la mémoire dans le cache
+  void freeCachedMemory();
 
  private:
 

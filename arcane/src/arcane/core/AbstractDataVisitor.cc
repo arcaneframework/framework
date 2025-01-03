@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* AbstractDataVisitor.cc                                      (C) 2000-2023 */
+/* AbstractDataVisitor.cc                                      (C) 2000-2024 */
 /*                                                                           */
 /* Visiteur abstrait pour une donnée.                                        */
 /*---------------------------------------------------------------------------*/
@@ -13,8 +13,9 @@
 
 #include "arcane/utils/NotImplementedException.h"
 #include "arcane/utils/TraceInfo.h"
-#include "arcane/AbstractDataVisitor.h"
-#include "arcane/IData.h"
+
+#include "arcane/core/AbstractDataVisitor.h"
+#include "arcane/core/IData.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -124,6 +125,34 @@ applyVisitor(IScalarDataT<String>* data)
   _throwException(DT_String);
 }
 
+void AbstractScalarDataVisitor::
+applyVisitor(IScalarDataT<Int8>* data)
+{
+  ARCANE_UNUSED(data);
+  _throwException(DT_Int8);
+}
+
+void AbstractScalarDataVisitor::
+applyVisitor(IScalarDataT<Float16>* data)
+{
+  ARCANE_UNUSED(data);
+  _throwException(DT_Float16);
+}
+
+void AbstractScalarDataVisitor::
+applyVisitor(IScalarDataT<BFloat16>* data)
+{
+  ARCANE_UNUSED(data);
+  _throwException(DT_BFloat16);
+}
+
+void AbstractScalarDataVisitor::
+applyVisitor(IScalarDataT<Float32>* data)
+{
+  ARCANE_UNUSED(data);
+  _throwException(DT_Float32);
+}
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -205,6 +234,34 @@ applyVisitor(IArrayDataT<String>* data)
   _throwException(DT_String);
 }
 
+void AbstractArrayDataVisitor::
+applyVisitor(IArrayDataT<Int8>* data)
+{
+  ARCANE_UNUSED(data);
+  _throwException(DT_Int8);
+}
+
+void AbstractArrayDataVisitor::
+applyVisitor(IArrayDataT<Float16>* data)
+{
+  ARCANE_UNUSED(data);
+  _throwException(DT_Float16);
+}
+
+void AbstractArrayDataVisitor::
+applyVisitor(IArrayDataT<BFloat16>* data)
+{
+  ARCANE_UNUSED(data);
+  _throwException(DT_BFloat16);
+}
+
+void AbstractArrayDataVisitor::
+applyVisitor(IArrayDataT<Float32>* data)
+{
+  ARCANE_UNUSED(data);
+  _throwException(DT_Float32);
+}
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -279,6 +336,34 @@ applyVisitor(IArray2DataT<Real3x3>* data)
   _throwException(DT_Real3x3);
 }
 
+void AbstractArray2DataVisitor::
+applyVisitor(IArray2DataT<Int8>* data)
+{
+  ARCANE_UNUSED(data);
+  _throwException(DT_Int8);
+}
+
+void AbstractArray2DataVisitor::
+applyVisitor(IArray2DataT<Float16>* data)
+{
+  ARCANE_UNUSED(data);
+  _throwException(DT_Float16);
+}
+
+void AbstractArray2DataVisitor::
+applyVisitor(IArray2DataT<BFloat16>* data)
+{
+  ARCANE_UNUSED(data);
+  _throwException(DT_BFloat16);
+}
+
+void AbstractArray2DataVisitor::
+applyVisitor(IArray2DataT<Float32>* data)
+{
+  ARCANE_UNUSED(data);
+  _throwException(DT_Float32);
+}
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -289,70 +374,6 @@ _throwException(eDataType dt)
                             dataTypeName(dt));
   throw NotImplementedException(A_FUNCINFO,s);
 }
-#if 0
-void AbstractMultiArray2DataVisitor::
-applyVisitor(IMultiArray2DataT<Byte>* data)
-{
-  ARCANE_UNUSED(data);
-  _throwException(DT_Byte);
-}
-
-void AbstractMultiArray2DataVisitor::
-applyVisitor(IMultiArray2DataT<Real>* data)
-{
-  ARCANE_UNUSED(data);
-  _throwException(DT_Real);
-}
-
-void AbstractMultiArray2DataVisitor::
-applyVisitor(IMultiArray2DataT<Int16>* data)
-{
-  ARCANE_UNUSED(data);
-  _throwException(DT_Int16);
-}
-
-void AbstractMultiArray2DataVisitor::
-applyVisitor(IMultiArray2DataT<Int32>* data)
-{
-  ARCANE_UNUSED(data);
-  _throwException(DT_Int32);
-}
-
-void AbstractMultiArray2DataVisitor::
-applyVisitor(IMultiArray2DataT<Int64>* data)
-{
-  ARCANE_UNUSED(data);
-  _throwException(DT_Int64);
-}
-
-void AbstractMultiArray2DataVisitor::
-applyVisitor(IMultiArray2DataT<Real2>* data)
-{
-  ARCANE_UNUSED(data);
-  _throwException(DT_Real2);
-}
-
-void AbstractMultiArray2DataVisitor::
-applyVisitor(IMultiArray2DataT<Real3>* data)
-{
-  ARCANE_UNUSED(data);
-  _throwException(DT_Real3);
-}
-
-void AbstractMultiArray2DataVisitor::
-applyVisitor(IMultiArray2DataT<Real2x2>* data)
-{
-  ARCANE_UNUSED(data);
-  _throwException(DT_Real2x2);
-}
-
-void AbstractMultiArray2DataVisitor::
-applyVisitor(IMultiArray2DataT<Real3x3>* data)
-{
-  ARCANE_UNUSED(data);
-  _throwException(DT_Real3x3);
-}
-#endif
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

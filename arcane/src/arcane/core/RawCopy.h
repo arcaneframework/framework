@@ -1,23 +1,26 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* RawCopy.h                                                        (C) 2008 */
+/* RawCopy.h                                                   (C) 2000-2024 */
 /*                                                                           */
 /* Structure de copie brute sans controle arithmétique.                      */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_RAWCOPY_H
-#define ARCANE_RAWCOPY_H
+#ifndef ARCANE_CORE_RAWCOPY_H
+#define ARCANE_CORE_RAWCOPY_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+#include "arcane/core/ArcaneTypes.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -38,6 +41,12 @@ struct RawCopy<Byte> {
 template<>
 struct RawCopy<Int16> {
   typedef Int16 T;
+  inline static void copy(T & dst, const T & src) { dst = src; }
+};
+
+template<>
+struct RawCopy<Int8> {
+  typedef Int8 T;
   inline static void copy(T & dst, const T & src) { dst = src; }
 };
 
@@ -130,6 +139,25 @@ struct RawCopy<Real> {
 };
 
 template<>
+struct RawCopy<BFloat16> {
+  typedef BFloat16 T;
+  inline static void copy(T & dst, const T & src) { dst = src; }
+};
+
+template<>
+struct RawCopy<Float16> {
+  typedef Float16 T;
+  inline static void copy(T & dst, const T & src) { dst = src; }
+};
+
+template<>
+struct RawCopy<Float32> {
+  typedef Float32 T;
+  inline static void copy(T & dst, const T & src) { dst = src; }
+};
+
+
+template<>
 struct RawCopy<Real2> {
   typedef Real2 T;
   inline static void copy(T & dst, const T & src) { dst = src; }
@@ -159,7 +187,7 @@ struct RawCopy<Real3x3> {
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

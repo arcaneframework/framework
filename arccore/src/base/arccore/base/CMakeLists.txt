@@ -35,10 +35,12 @@ set(SOURCES
   FatalErrorException.cc
   FatalErrorException.h
   Float16.h
+  Float128.h
   FloatConversion.h
   Iterator.h
   IndexOutOfRangeException.cc
   IndexOutOfRangeException.h
+  Int128.h
   IStackTraceService.h
   NotSupportedException.h
   NotSupportedException.cc

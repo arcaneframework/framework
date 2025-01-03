@@ -32,6 +32,7 @@
 #include "arcane/core/IGhostLayerMng.h"
 #include "arcane/core/MeshPartInfo.h"
 #include "arcane/core/IMeshSubdivider.h"
+#include "arcane/core/IMeshUniqueIdMng.h"
 #include "arcane/core/internal/StringVariableReplace.h"
 
 #include "arcane/impl/ArcaneCaseMeshService_axl.h"
@@ -79,6 +80,7 @@ class ArcaneCaseMeshService
   void _doInitialPartition2(const String& name);
   void _setGhostLayerInfos();
   void _checkMeshCreationAndAllocation(bool is_check_allocated);
+  void _setUniqueIdNumberingVersion();
 };
 
 /*---------------------------------------------------------------------------*/
@@ -163,11 +165,9 @@ allocateMeshItems()
   ARCANE_CHECK_POINTER(m_mesh_builder);
 
   _setGhostLayerInfos();
+  _setUniqueIdNumberingVersion();
 
   m_mesh_builder->allocateMeshItems(m_mesh);
-
-  // TODO: Faire cela après les opérations additionnelles
-  _initializeVariables();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -194,6 +194,8 @@ applyAdditionalOperations()
   IMeshSubdivider* subdivider = options()->subdivider();
   if (subdivider)
     subdivider->subdivideMesh(m_mesh);
+
+  _initializeVariables();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -381,15 +383,32 @@ _setGhostLayerInfos()
   // TODO Cela est fait pour rester compatible avec le mode historique mais
   // il faudrait pouvoir gérer cela autrement (via un service par exemple)
   Integer nb_ghost_layer = options()->nbGhostLayer();
-  if (nb_ghost_layer>=0){
+  if (nb_ghost_layer >= 0) {
     info() << "Set number of ghost layers to '" << nb_ghost_layer << "' from caseoption";
     gm->setNbGhostLayer(nb_ghost_layer);
   }
 
   Integer builder_version = options()->ghostLayerBuilderVersion();
-  if (builder_version>=0){
+  if (builder_version >= 0) {
     info() << "Set ghostlayer builder version to '" << builder_version << "' from caseoption";
     gm->setBuilderVersion(builder_version);
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ArcaneCaseMeshService::
+_setUniqueIdNumberingVersion()
+{
+  // NOTE: actuellement (12/2024) l'implémentation 'PolyedralMesh' lève une
+  // exception si on appelle meshUniqueIdMng(). On ne le fait que si
+  // l'option est présente.
+  if (options()->faceNumberingVersion.isPresent()) {
+    Int32 v = options()->faceNumberingVersion.value();
+    info() << "Set face uniqueId numbering version to '" << v << "' from caseoption";
+    IMeshUniqueIdMng* mum = m_mesh->meshUniqueIdMng();
+    mum->setFaceBuilderVersion(v);
   }
 }
 

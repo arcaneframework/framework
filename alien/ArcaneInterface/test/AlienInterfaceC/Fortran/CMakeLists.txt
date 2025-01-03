@@ -75,26 +75,26 @@ install(
 
 configure_file(solver.json ${CMAKE_BINARY_DIR}/${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienInterfaceC/Fortran/solver.json COPYONLY)
 
-alien_test( BENCH alien.interface.fortran
+alien_test( BENCH interface.fortran
             NAME seq
             PROCS 1
             COMMAND alien_interface_fortran.exe
             WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienInterfaceC/Fortran)
 
-alien_test( BENCH alien.interface.fortran
+alien_test( BENCH interface.fortran
             NAME parallel
             PROCS 4
             COMMAND alien_interface_fortran.exe
             WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienInterfaceC/Fortran)
 
 
-alien_test( BENCH alien.interface.fortran.param
+alien_test( BENCH interface.fortran.param
             NAME seq
             PROCS 1
             COMMAND alien_interface_fortran_param.exe
             WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienInterfaceC/Fortran)
             
-alien_test( BENCH alien.interface.fortran.param
+alien_test( BENCH interface.fortran.param
             NAME parallel
             PROCS 4
             COMMAND alien_interface_fortran_param.exe

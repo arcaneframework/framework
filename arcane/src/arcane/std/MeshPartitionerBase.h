@@ -9,32 +9,26 @@
 /*                                                                           */
 /* Classe de base d'un partitionneur de maillage.                            */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_MESHPARTITIONERBASE_H
-#define ARCANE_MESHPARTITIONERBASE_H
+#ifndef ARCANE_STD_MESHPARTITIONERBASE_H
+#define ARCANE_STD_MESHPARTITIONERBASE_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include <set>
+#include "arcane/utils/Array.h"
+#include "arcane/utils/HashTableMap.h"
+#include "arcane/utils/ScopedPtr.h"
 
 #include "arcane/core/IMeshPartitioner.h"
 #include "arcane/core/AbstractService.h"
 #include "arcane/core/ILoadBalanceMng.h"
 
-#include "arcane/utils/Array.h"
-#include "arcane/utils/HashTableMap.h"
-#include "arcane/utils/ScopedPtr.h"
+#include <set>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 namespace Arcane
 {
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-class ISubDomain;
-
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -54,33 +48,33 @@ class ARCANE_STD_EXPORT MeshPartitionerBase
  public:
 
   ISubDomain* subDomain() const { return m_sub_domain; }
-  IMesh* mesh() const { return m_mesh; }
+  IMesh* mesh() const override { return m_mesh; }
 
   // DEPRECATED
   void setMaximumComputationTime(Real v) override { m_maximum_computation_time = v; }
-  virtual Real maximumComputationTime() const { return m_maximum_computation_time; }
+  Real maximumComputationTime() const override { return m_maximum_computation_time; }
 
-  virtual void setImbalance(Real v){ m_imbalance = v; }
-  virtual Real imbalance() const { return m_imbalance; }
+  void setImbalance(Real v) override { m_imbalance = v; }
+  Real imbalance() const override { return m_imbalance; }
 
-  virtual void setMaxImbalance(Real v){ m_max_imbalance = v; }
-  virtual Real maxImbalance() const { return m_max_imbalance; }
+  void setMaxImbalance(Real v) override { m_max_imbalance = v; }
+  Real maxImbalance() const override { return m_max_imbalance; }
 
-  virtual void setComputationTimes(RealConstArrayView v) { m_computation_times.copy(v); }
-  virtual RealConstArrayView computationTimes() const { return m_computation_times; }
+  void setComputationTimes(RealConstArrayView v) override { m_computation_times.copy(v); }
+  RealConstArrayView computationTimes() const override { return m_computation_times; }
 
-  virtual void setCellsWeight(ArrayView<float> weights,Integer nb_weight);
-  virtual ArrayView<float> cellsWeight() const;
+  void setCellsWeight(ArrayView<float> weights,Integer nb_weight) override;
+  ArrayView<float> cellsWeight() const override;
 
   // CORRECT
-  virtual Integer nbCellWeight() const;
-  virtual void setILoadBalanceMng(ILoadBalanceMng* mng) { m_lbMng = mng; }
-  virtual ILoadBalanceMng* loadBalanceMng() const { return m_lbMng; }
+  Integer nbCellWeight() const;
+  void setILoadBalanceMng(ILoadBalanceMng* mng) override { m_lbMng = mng; }
+  ILoadBalanceMng* loadBalanceMng() const override { return m_lbMng; }
 
 
  public:
 
-  virtual void notifyEndPartition() { loadBalanceMng()->notifyEndPartition(); }
+  void notifyEndPartition() override { loadBalanceMng()->notifyEndPartition(); }
 
  public:
 
@@ -152,11 +146,10 @@ class ARCANE_STD_EXPORT MeshPartitionerBase
 
   virtual void* getCommunicator() const;
   virtual Parallel::Communicator communicator() const;
-
-
   virtual bool cellComm() {return true; }
 
-protected:
+ protected:
+
   virtual void _initArrayCellsWithConstraints();
   virtual void _initFilterLidCells();
   virtual void _initUidRef();
@@ -166,6 +159,7 @@ protected:
   virtual void  _clearCellWgt();
 
  private:
+
   Real _addNgb(const Cell& cell, const Face& face, Int64Array& neighbourcells, Array<bool>& contrib,
                HashTableMapT<Int64,Int32>& map, Array<float> *ptrcommWeights, Int32 offset,
                HashTableMapT<Int32,Int32>& lids,  bool special=false);

@@ -39,10 +39,12 @@ set(ARCANE_SOURCES
   ExternalRef.h
   Exception.h
   Exception.cc
+  ExtentsV.h
   Event.cc
   Event.h
   FixedArray.h
   Float16.h
+  Float128.h
   FloatingPointExceptionSentry.cc
   FloatingPointExceptionSentry.h
   FileContent.cc
@@ -55,6 +57,7 @@ set(ARCANE_SOURCES
   GoBackwardException.cc
   GoBackwardException.h
   IDataCompressor.h
+  Int128.h
   IOException.cc
   IOException.h
   IMemoryRessourceMng.h
@@ -92,7 +95,7 @@ set(ARCANE_SOURCES
   MemoryInfo.cc
   MemoryInfo.h
   MemoryRessource.h
-  MemoryRessourceMng.cc
+  MemoryResourceMng.cc
   MemoryUtils.h
   MemoryUtils.cc
   Numeric.cc
@@ -333,7 +336,9 @@ set(ARCANE_SOURCES
   GraphBaseT.h
   DirectedGraphT.h
   DirectedAcyclicGraphT.h
-  internal/MemoryRessourceMng.h
+  internal/ApplicationInfoProperties.h
+  internal/MemoryResourceMng.h
+  internal/MemoryUtilsInternal.h
   internal/IMemoryRessourceMngInternal.h
   internal/IMemoryCopier.h
   internal/ProfilingInternal.h
@@ -341,6 +346,8 @@ set(ARCANE_SOURCES
   internal/SpecificMemoryCopyList.h
   internal/MemoryBuffer.h
   internal/MemoryPool.h
+  internal/ParallelLoopOptionsProperties.h
+  internal/TaskFactoryInternal.h
   )
 
 if (ARCANE_HAS_CXX20)

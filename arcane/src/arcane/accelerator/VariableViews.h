@@ -22,6 +22,7 @@
 #include "arcane/core/VariableTypedef.h"
 #include "arcane/core/GroupIndexTable.h"
 
+#include "arcane/accelerator/core/ViewBuildInfo.h"
 #include "arcane/accelerator/AcceleratorGlobal.h"
 #include "arcane/accelerator/ViewsCommon.h"
 

@@ -493,11 +493,11 @@ class ParallelMngTest::SerializerTestValues
   void putValue(ISerializer* sb)
   {
     sb->setMode(ISerializer::ModeReserve);
-    sb->reserve(DT_Byte,ref_byte_values.size());
-    sb->reserve(DT_Int16,ref_i16_values.size());
-    sb->reserve(DT_Int32,ref_i32_values.size());
-    sb->reserve(DT_Int64,ref_i64_values.size());
-    sb->reserve(DT_Real,ref_real_values.size());
+    sb->reserveByte(ref_byte_values.size());
+    sb->reserveInt16(ref_i16_values.size());
+    sb->reserveInt32(ref_i32_values.size());
+    sb->reserveInt64(ref_i64_values.size());
+    sb->reserve(eBasicDataType::Real,ref_real_values.size());
     sb->allocateBuffer();
     sb->setMode(ISerializer::ModePut);
     sb->put(ref_byte_values);
@@ -962,7 +962,7 @@ _testProcessMessages(const ParallelExchangerOptions* exchange_options)
     Integer message_size = base_size + dest_rank + rank;
     s->setMode(ISerializer::ModeReserve);
     s->reserveInteger(1); // Pour le nombre d'elements
-    s->reserve(DT_Int32,message_size); // Pour les elements
+    s->reserveInt32(message_size); // Pour les elements
     s->allocateBuffer();
     s->setMode(ISerializer::ModePut);
     s->putInteger(message_size);

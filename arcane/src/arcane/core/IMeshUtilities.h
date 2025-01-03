@@ -1,24 +1,24 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IMeshUtilities.h                                            (C) 2000-2021 */
+/* IMeshUtilities.h                                            (C) 2000-2024 */
 /*                                                                           */
 /* Interface d'une classe proposant des fonctions utilitaires sur maillage.  */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_IMESHUTILITIES_H
-#define ARCANE_IMESHUTILITIES_H
+#ifndef ARCANE_CORE_IMESHUTILITIES_H
+#define ARCANE_CORE_IMESHUTILITIES_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/Real3.h"
 
-#include "arcane/ArcaneTypes.h"
-#include "arcane/ItemTypes.h"
-#include "arcane/VariableTypedef.h"
+#include "arcane/core/ArcaneTypes.h"
+#include "arcane/core/ItemTypes.h"
+#include "arcane/core/VariableTypedef.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -115,9 +115,14 @@ class ARCANE_CORE_EXPORT IMeshUtilities
                                  const VariableNodeReal3& nodes_coord,
                                  Real3* n1,Real3* n2) =0;
 
-  //! Calcul des adjacences, rangées dans \a adjency_array
-  virtual void computeAdjency(ItemPairGroup adjency_array,eItemKind link_kind,
+  //! Calcul des adjacences, rangées dans \a adjacency_array
+  ARCANE_DEPRECATED_REASON("Y2020: Use computeAdjacency() instead")
+  virtual void computeAdjency(ItemPairGroup adjacency_array, eItemKind link_kind,
                               Integer nb_layer) =0;
+
+  //! Calcul des adjacences, rangées dans \a adjacency_array
+  virtual void computeAdjacency(const ItemPairGroup& adjacency_array, eItemKind link_kind,
+                                Integer nb_layer);
 
   /*!
    * \brief Positionne les nouveaux propriétaires des noeuds, arêtes

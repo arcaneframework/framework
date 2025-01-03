@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ProfilingInfo.h                                             (C) 2000-2023 */
+/* ProfilingInfo.h                                             (C) 2000-2024 */
 /*                                                                           */
 /* Structures d'informations pour le profiling.                              */
 /*---------------------------------------------------------------------------*/
@@ -30,7 +30,7 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 
 static const int MAX_COUNTER = 3;
-static const int MAX_STACK = 16;
+static const int MAX_STACK = 25;
 static const int MAX_FUNC = 10000;
 static const int MAX_FUNC_LEN = 500;
 

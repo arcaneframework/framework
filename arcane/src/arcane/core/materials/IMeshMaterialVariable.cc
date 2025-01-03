@@ -1,17 +1,20 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IMeshMaterialVariable.cc                                    (C) 2000-2023 */
+/* IMeshMaterialVariable.cc                                    (C) 2000-2024 */
 /*                                                                           */
 /* Interface des variables matériaux.                                        */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/core/materials/IMeshMaterialVariable.h"
+
+#include "arcane/utils/FatalErrorException.h"
+
 #include "arcane/core/materials/IScalarMeshMaterialVariable.h"
 #include "arcane/core/materials/IArrayMeshMaterialVariable.h"
 #include "arcane/core/materials/MaterialVariableTypeInfo.h"
@@ -20,9 +23,8 @@
 #include "arcane/core/materials/IMeshMaterialVariableFactoryMng.h"
 #include "arcane/core/materials/internal/IMeshMaterialVariableInternal.h"
 
-#include "arcane/utils/FatalErrorException.h"
+#include "arcane/core/VariableDataTypeTraits.h"
 
-#include "arcane/VariableDataTypeTraits.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -80,9 +82,13 @@ getVariableReference(const MaterialVariableBuildInfo& v,MatVarSpace mvs)
   template class ARCANE_TEMPLATE_EXPORT MeshMaterialVariableBuildTraits<IArrayMeshMaterialVariable<Cell,type>>
 
 ARCANE_INSTANTIATE_MAT(Byte);
+ARCANE_INSTANTIATE_MAT(Int8);
 ARCANE_INSTANTIATE_MAT(Int16);
 ARCANE_INSTANTIATE_MAT(Int32);
 ARCANE_INSTANTIATE_MAT(Int64);
+ARCANE_INSTANTIATE_MAT(BFloat16);
+ARCANE_INSTANTIATE_MAT(Float16);
+ARCANE_INSTANTIATE_MAT(Float32);
 ARCANE_INSTANTIATE_MAT(Real);
 ARCANE_INSTANTIATE_MAT(Real2);
 ARCANE_INSTANTIATE_MAT(Real3);

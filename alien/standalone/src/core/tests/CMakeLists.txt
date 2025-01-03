@@ -52,9 +52,9 @@ target_link_libraries(core.gtest.mpi
         )
 
 if (ALIEN_EXPAND_TESTS)
-    gtest_discover_tests(core.gtest.seq TEST_PREFIX "core." TEST_SUFFIX ".seq" TEST_LIST core-seq DISCOVERY_TIMEOUT 10)
+    gtest_discover_tests(core.gtest.seq TEST_PREFIX "alien.core." TEST_SUFFIX ".seq" TEST_LIST core-seq DISCOVERY_TIMEOUT 10)
     set_tests_properties(${core-seq} PROPERTIES TIMEOUT 30)
-    gtest_discover_tests(core.gtest.mpi TEST_PREFIX "core." TEST_SUFFIX ".mpi" TEST_LIST core-mpi DISCOVERY_TIMEOUT 10)
+    gtest_discover_tests(core.gtest.mpi TEST_PREFIX "alien.core." TEST_SUFFIX ".mpi" TEST_LIST core-mpi DISCOVERY_TIMEOUT 10)
     set_tests_properties(${core-mpi} PROPERTIES TIMEOUT 30)
 else (ALIEN_EXPAND_TESTS)
     alien_test(

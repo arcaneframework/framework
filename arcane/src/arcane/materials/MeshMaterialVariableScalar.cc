@@ -126,7 +126,7 @@ resizeWithReserve(PrivatePartType* var, Integer dim1_size, Real reserve_ratio)
   // nombre de mailles matériaux, alloue un petit peu plus que nécessaire.
   // Par défaut, on alloue 5% de plus.
   Int32 nb_add = static_cast<Int32>(dim1_size * reserve_ratio);
-  var->_internalApi()->resizeWithReserve(dim1_size, nb_add);
+  var->_internalApi()->resize(VariableResizeArgs(dim1_size, nb_add, true));
 }
 
 /*---------------------------------------------------------------------------*/
@@ -810,9 +810,13 @@ MeshMaterialVariableScalar<ItemType,DataType>::
   template class MeshMaterialVariableCommonStaticImpl<MeshMaterialVariableScalar<Cell,type>>
 
 ARCANE_INSTANTIATE_MAT(Byte);
+ARCANE_INSTANTIATE_MAT(Int8);
 ARCANE_INSTANTIATE_MAT(Int16);
 ARCANE_INSTANTIATE_MAT(Int32);
 ARCANE_INSTANTIATE_MAT(Int64);
+ARCANE_INSTANTIATE_MAT(BFloat16);
+ARCANE_INSTANTIATE_MAT(Float16);
+ARCANE_INSTANTIATE_MAT(Float32);
 ARCANE_INSTANTIATE_MAT(Real);
 ARCANE_INSTANTIATE_MAT(Real2);
 ARCANE_INSTANTIATE_MAT(Real3);

@@ -150,9 +150,9 @@ copyBetweenPartialAndGlobal(const CopyBetweenPartialAndGlobalArgs& args)
 /*---------------------------------------------------------------------------*/
 
 void MeshMaterialVariablePrivate::
-initializeNewItems(const ComponentItemListBuilder& list_builder, RunQueue& queue)
+initializeNewItemsWithZero(InitializeWithZeroArgs& args)
 {
-  m_variable->_initializeNewItems(list_builder, queue);
+  m_variable->_initializeNewItemsWithZero(args);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -168,9 +168,9 @@ syncReferences(bool check_resize)
 /*---------------------------------------------------------------------------*/
 
 void MeshMaterialVariablePrivate::
-resizeForIndexer(Int32 index, RunQueue& queue)
+resizeForIndexer(ResizeVariableIndexerArgs& args)
 {
-  m_variable->_resizeForIndexer(index, queue);
+  m_variable->_resizeForIndexer(args);
 }
 
 /*---------------------------------------------------------------------------*/

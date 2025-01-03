@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IMemoryAllocator.h                                          (C) 2000-2023 */
+/* IMemoryAllocator.h                                          (C) 2000-2024 */
 /*                                                                           */
 /* Interface d'un allocateur mémoire.                                        */
 /*---------------------------------------------------------------------------*/
@@ -117,6 +117,14 @@ class ARCCORE_COLLECTIONS_EXPORT IMemoryAllocator
    *
    * S'il n'y a aucune garantie, retourne 0.
    */
+  virtual size_t guaranteedAlignment(MemoryAllocationArgs args) const;
+
+  /*!
+   * \brief Valeur de l'alignement garanti par l'allocateur.
+   *
+   * \sa guaranteedAlignment()
+   */
+  ARCCORE_DEPRECATED_REASON("Y2024: Use guaranteedAlignment() instead")
   virtual size_t guarantedAlignment(MemoryAllocationArgs args) const;
 
   /*!
@@ -139,6 +147,9 @@ class ARCCORE_COLLECTIONS_EXPORT IMemoryAllocator
    */
   virtual void copyMemory(MemoryAllocationArgs args, AllocatedMemoryInfo destination, AllocatedMemoryInfo source);
 
+  //! Ressource mémoire fournie par l'allocateur
+  virtual eMemoryResource memoryResource() const { return eMemoryResource::Unknown; }
+
  public:
 
   // Méthodes historiques (avant 2023) sans arguments supplémentaires.
@@ -154,7 +165,7 @@ class ARCCORE_COLLECTIONS_EXPORT IMemoryAllocator
   virtual void deallocate(void* ptr) = 0;
   ARCCORE_DEPRECATED_REASON("Y2023: use adjustedCapacity(MemoryAllocationArgs,Int64,Int64) instead")
   virtual size_t adjustCapacity(size_t wanted_capacity, size_t element_size) = 0;
-  ARCCORE_DEPRECATED_REASON("Y2023: use guarantedAlignment(MemoryAllocationArgs) instead")
+  ARCCORE_DEPRECATED_REASON("Y2023: use guaranteedAlignment(MemoryAllocationArgs) instead")
   virtual size_t guarantedAlignment() = 0;
 };
 
@@ -275,6 +286,7 @@ class ARCCORE_COLLECTIONS_EXPORT DefaultMemoryAllocator
   void deallocate(void* ptr) override;
   size_t adjustCapacity(size_t wanted_capacity, size_t element_size) override;
   size_t guarantedAlignment() override { return 0; }
+  eMemoryResource memoryResource() const override { return eMemoryResource::Host; }
 };
 
 /*---------------------------------------------------------------------------*/
@@ -310,6 +322,7 @@ class ARCCORE_COLLECTIONS_EXPORT DefaultMemoryAllocator3
   void deallocate(MemoryAllocationArgs, AllocatedMemoryInfo ptr) override;
   Int64 adjustedCapacity(MemoryAllocationArgs, Int64 wanted_capacity, Int64 element_size) const override;
   size_t guarantedAlignment(MemoryAllocationArgs) const override { return 0; }
+  eMemoryResource memoryResource() const override { return eMemoryResource::Host; }
 };
 
 /*---------------------------------------------------------------------------*/
@@ -404,6 +417,7 @@ class ARCCORE_COLLECTIONS_EXPORT AlignedMemoryAllocator
   void deallocate(void* ptr) override;
   size_t adjustCapacity(size_t wanted_capacity, size_t element_size) override;
   size_t guarantedAlignment() override { return m_alignment; }
+  eMemoryResource memoryResource() const override { return eMemoryResource::Host; }
 
  private:
 
@@ -491,6 +505,7 @@ class ARCCORE_COLLECTIONS_EXPORT AlignedMemoryAllocator3
   void deallocate(MemoryAllocationArgs args, AllocatedMemoryInfo ptr) override;
   Int64 adjustedCapacity(MemoryAllocationArgs args, Int64 wanted_capacity, Int64 element_size) const override;
   size_t guarantedAlignment(MemoryAllocationArgs) const override { return m_alignment; }
+  eMemoryResource memoryResource() const override { return eMemoryResource::Host; }
 
  private:
 

@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* SpecificMemoryCopyList.h                                    (C) 2000-2023 */
+/* SpecificMemoryCopyList.h                                    (C) 2000-2024 */
 /*                                                                           */
 /* Classe template pour gérer des fonctions spécialisées de copie mémoire.   */
 /*---------------------------------------------------------------------------*/
@@ -40,7 +40,7 @@ class ARCANE_UTILS_EXPORT IndexedMemoryCopyArgs
  public:
 
   IndexedMemoryCopyArgs(SmallSpan<const Int32> indexes, Span<const std::byte> source,
-                        Span<std::byte> destination, RunQueue* run_queue)
+                        Span<std::byte> destination, const RunQueue* run_queue)
   : m_indexes(indexes)
   , m_source(source)
   , m_destination(destination)
@@ -52,7 +52,7 @@ class ARCANE_UTILS_EXPORT IndexedMemoryCopyArgs
   SmallSpan<const Int32> m_indexes;
   Span<const std::byte> m_source;
   Span<std::byte> m_destination;
-  RunQueue* m_queue = nullptr;
+  const RunQueue* m_queue = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/

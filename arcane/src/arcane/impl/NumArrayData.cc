@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* NumArrayData.cc                                             (C) 2000-2023 */
+/* NumArrayData.cc                                             (C) 2000-2024 */
 /*                                                                           */
 /* Donnée de type 'NumArray'.                                                */
 /*---------------------------------------------------------------------------*/
@@ -129,8 +129,8 @@ class NumArrayDataT
   eDataType dataType() const override { return DataTypeTraitsT<DataType>::type(); }
   void serialize(ISerializer* sbuf, IDataOperation* operation) override;
   void serialize(ISerializer* sbuf, Int32ConstArrayView ids, IDataOperation* operation) override;
-  MDSpan<DataType,ExtentType> view() override { return m_value.span(); }
-  MDSpan<const DataType,ExtentType> view() const override { return m_value.span(); }
+  MDSpan<DataType,ExtentType> view() override { return m_value.mdspan(); }
+  MDSpan<const DataType,ExtentType> view() const override { return m_value.mdspan(); }
   void resize(Integer new_size) override;
   IData* clone() override { return _cloneTrue(); }
   IData* cloneEmpty() override { return _cloneTrueEmpty(); };
@@ -426,9 +426,9 @@ serialize(ISerializer* sbuf,IDataOperation* operation)
     // Réserve la mémoire pour
     // - le nombre magique pour verification
     // - le nombre d'éléments de ids.
-    sbuf->reserveSpan(DT_Int64,2);
+    sbuf->reserveSpan(eBasicDataType::Int64,2);
     // Réserve la mémoire pour le nombre d'éléments de chaque dimension (soit RankValue)
-    sbuf->reserveSpan(DT_Int32,RankValue);
+    sbuf->reserveSpan(eBasicDataType::Int32,RankValue);
     // Réserve la mémoire pour les valeurs
     sbuf->reserveSpan(m_value.to1DSpan());
   }
@@ -499,16 +499,16 @@ serialize(ISerializer* sbuf,Int32ConstArrayView ids,IDataOperation* operation)
 
   [[maybe_unused]] Integer nb_count = 1;
   typedef typename DataTypeTraitsT<DataType>::BasicType BasicType;
-  eDataType data_type = DataTypeTraitsT<BasicType>::type();
+  eBasicDataType data_type = DataTypeTraitsT<BasicType>::basicDataType();
   ISerializer::eMode mode = sbuf->mode();
   if (mode==ISerializer::ModeReserve){
     // Réserve la mémoire pour
     // - le nombre magique pour verification
     // - le nombre d'éléments de ids.
     // - 
-    sbuf->reserveSpan(DT_Int64,3);
+    sbuf->reserveSpan(eBasicDataType::Int64,3);
     // Réserve la mémoire pour le nombre d'éléments de chaque dimension (soit RankValue)
-    sbuf->reserveSpan(DT_Int32,RankValue);
+    sbuf->reserveSpan(eBasicDataType::Int32,RankValue);
     // Réserve la mémoire pour les valeurs
     auto sub_extent = m_value.extents().removeFirstExtent();
     sbuf->reserveSpan(data_type,sub_extent.totalNbElement() * ids.size());

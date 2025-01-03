@@ -6,6 +6,7 @@ set(SOURCES
   ArrayTraits.h
   ArrayDebugInfo.h
   CollectionsGlobal.h
+  CollectionsGlobal.cc
   IMemoryAllocator.h
   MemoryAllocationArgs.h
   MemoryAllocationOptions.h

@@ -52,6 +52,8 @@ class MaterialVariableBuildInfo;
 class MeshMaterialVariablePrivate;
 class MeshMaterialVariableSynchronizerList;
 class CopyBetweenPartialAndGlobalArgs;
+class ResizeVariableIndexerArgs;
+class InitializeWithZeroArgs;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -151,9 +153,9 @@ class ARCANE_MATERIALS_EXPORT MeshMaterialVariable
   virtual void _restoreData(IMeshComponent* component,IData* data,Integer data_index,
                             Int32ConstArrayView ids,bool allow_null_id) =0;
   virtual void _copyBetweenPartialAndGlobal(const CopyBetweenPartialAndGlobalArgs& args) = 0;
-  virtual void _initializeNewItems(const ComponentItemListBuilder& list_builder, RunQueue& queue) = 0;
+  virtual void _initializeNewItemsWithZero(InitializeWithZeroArgs& args) = 0;
   virtual void _syncReferences(bool update_views) = 0;
-  virtual void _resizeForIndexer(Int32 index, RunQueue& queue) = 0;
+  virtual void _resizeForIndexer(ResizeVariableIndexerArgs& args) = 0;
 
  private:
 
@@ -177,18 +179,19 @@ class MaterialVariableScalarTraits
 {
  public:
 
-  typedef DataType ValueType;
+  using ValueType = DataType;
 
-  typedef DataType SubViewType;
-  typedef DataType SubConstViewType;
-  typedef DataType SubInputViewType;
-  typedef ArrayView<DataType> ContainerViewType;
-  typedef ConstArrayView<DataType> ContainerConstViewType;
-  typedef VariableArrayT<DataType> PrivatePartType;
-  typedef IArrayDataT<DataType> ValueDataType;
-  typedef Array<DataType> ContainerType;
-  typedef UniqueArray<DataType> UniqueContainerType;
-  typedef VariableRefArrayT<DataType> VariableRefType;
+  using SubViewType = DataType;
+  using SubConstViewType = DataType;
+  using SubInputViewType = DataType;
+  using ContainerSpanType = SmallSpan<DataType>;
+  using ContainerViewType = ArrayView<DataType>;
+  using ContainerConstViewType = ConstArrayView<DataType>;
+  using PrivatePartType = VariableArrayT<DataType>;
+  using ValueDataType = IArrayDataT<DataType>;
+  using ContainerType = Array<DataType>;
+  using UniqueContainerType = UniqueArray<DataType>;
+  using VariableRefType = VariableRefArrayT<DataType>;
 
  public:
 
@@ -208,10 +211,10 @@ class MaterialVariableScalarTraits
   ARCANE_MATERIALS_EXPORT static void
   resizeWithReserve(PrivatePartType* var, Int32 new_size, Real reserve_ratio);
   static Integer dimension() { return 0; }
-  static Span<std::byte> toBytes(ArrayView<DataType> view)
+  static SmallSpan<std::byte> toBytes(ArrayView<DataType> view)
   {
-    Span<DataType> s(view);
-    return asWritableBytes(s);
+    //SmallSpan<DataType> s(view);
+    return asWritableBytes(view);
   }
 
 };
@@ -224,18 +227,19 @@ class MaterialVariableArrayTraits
 {
  public:
 
-  typedef DataType ValueType;
+  using ValueType = DataType;
 
-  typedef ArrayView<DataType> SubViewType;
-  typedef ConstArrayView<DataType> SubConstViewType;
-  typedef SmallSpan<const DataType> SubInputViewType;
-  typedef Array2View<DataType> ContainerViewType;
-  typedef ConstArray2View<DataType> ContainerConstViewType;
-  typedef Array2VariableT<DataType> PrivatePartType;
-  typedef IArray2DataT<DataType> ValueDataType;
-  typedef Array2<DataType> ContainerType;
-  typedef UniqueArray2<DataType> UniqueContainerType;
-  typedef VariableRefArray2T<DataType> VariableRefType;
+  using SubViewType = ArrayView<DataType>;
+  using SubConstViewType = ConstArrayView<DataType>;
+  using SubInputViewType = SmallSpan<const DataType>;
+  using ContainerViewType = Array2View<DataType>;
+  using ContainerSpanType = SmallSpan2<DataType>;
+  using ContainerConstViewType = ConstArray2View<DataType>;
+  using PrivatePartType = Array2VariableT<DataType>;
+  using ValueDataType = IArray2DataT<DataType>;
+  using ContainerType = Array2<DataType>;
+  using UniqueContainerType = UniqueArray2<DataType>;
+  using VariableRefType = VariableRefArray2T<DataType>;
 
  public:
 
@@ -259,9 +263,9 @@ class MaterialVariableArrayTraits
   }
   ARCANE_MATERIALS_EXPORT
   static void resizeWithReserve(PrivatePartType* var, Integer new_size, Real resize_ratio);
-  static Span<std::byte> toBytes(Array2View<DataType> view)
+  static SmallSpan<std::byte> toBytes(Array2View<DataType> view)
   {
-    Span<DataType> s(view.data(),view.totalNbElement());
+    SmallSpan<DataType> s(view.data(), view.totalNbElement());
     return asWritableBytes(s);
   }
 
@@ -281,21 +285,22 @@ class ItemMaterialVariableBase
 {
  public:
 
-  typedef Traits TraitsType;
-  typedef typename Traits::ValueType ValueType;
-  typedef typename Traits::ValueType DataType;
-  typedef ItemMaterialVariableBase<Traits> ThatClass;
+  using TraitsType = Traits;
+  using ValueType = typename Traits::ValueType;
+  using DataType = typename Traits::ValueType;
+  using ThatClass = ItemMaterialVariableBase<Traits>;
 
-  typedef typename Traits::SubViewType SubViewType;
-  typedef typename Traits::SubConstViewType SubConstViewType;
-  typedef typename Traits::SubInputViewType SubInputViewType;
-  typedef typename Traits::ContainerViewType ContainerViewType;
-  typedef typename Traits::ContainerConstViewType ContainerConstViewType;
-  typedef typename Traits::PrivatePartType PrivatePartType;
-  typedef typename Traits::ValueDataType ValueDataType;
-  typedef typename Traits::ContainerType ContainerType;
-  typedef typename Traits::UniqueContainerType UniqueContainerType;
-  typedef typename Traits::VariableRefType VariableRefType;
+  using SubViewType = typename Traits::SubViewType;
+  using SubConstViewType = typename Traits::SubConstViewType;
+  using SubInputViewType = typename Traits::SubInputViewType;
+  using ContainerSpanType = typename Traits::ContainerSpanType;
+  using ContainerViewType = typename Traits::ContainerViewType;
+  using ContainerConstViewType = typename Traits::ContainerConstViewType;
+  using PrivatePartType = typename Traits::PrivatePartType;
+  using ValueDataType = typename Traits::ValueDataType;
+  using ContainerType = typename Traits::ContainerType;
+  using UniqueContainerType = typename Traits::UniqueContainerType;
+  using VariableRefType = typename Traits::VariableRefType;
 
  public:
 
@@ -303,7 +308,7 @@ class ItemMaterialVariableBase
   ItemMaterialVariableBase(const MaterialVariableBuildInfo& v,
                            PrivatePartType* global_var,
                            VariableRef* global_var_ref,MatVarSpace mvs);
-  ARCANE_MATERIALS_EXPORT ~ItemMaterialVariableBase();
+  ARCANE_MATERIALS_EXPORT ~ItemMaterialVariableBase() override;
 
  public:
 
@@ -319,7 +324,7 @@ class ItemMaterialVariableBase
   ARCANE_MATERIALS_EXPORT
   void _copyBetweenPartialAndGlobal(const CopyBetweenPartialAndGlobalArgs& args) override;
   ARCANE_MATERIALS_EXPORT
-  void _initializeNewItems(const ComponentItemListBuilder& list_builder, RunQueue& queue) override;
+  void _initializeNewItemsWithZero(InitializeWithZeroArgs& args) override;
 
   ARCANE_MATERIALS_EXPORT void fillPartialValuesWithGlobalValues() override;
   ARCANE_MATERIALS_EXPORT void
@@ -327,19 +332,19 @@ class ItemMaterialVariableBase
 
  public:
 
-  void setValue(MatVarIndex mvi,SubInputViewType v)
+  void setValue(MatVarIndex mvi, SubInputViewType v)
   {
-    Traits::setValue(m_views[mvi.arrayIndex()][mvi.valueIndex()],v);
+    Traits::setValue(m_host_views[mvi.arrayIndex()][mvi.valueIndex()],v);
   }
 
-  void setFillValue(MatVarIndex mvi,const DataType& v)
+  void setFillValue(MatVarIndex mvi, const DataType& v)
   {
-    Traits::setValue(m_views[mvi.arrayIndex()][mvi.valueIndex()],v);
+    Traits::setValue(m_host_views[mvi.arrayIndex()][mvi.valueIndex()],v);
   }
 
   SubConstViewType value(MatVarIndex mvi) const
   {
-    return m_views[mvi.arrayIndex()][mvi.valueIndex()];
+    return m_host_views[mvi.arrayIndex()][mvi.valueIndex()];
   }
 
  protected:
@@ -354,7 +359,7 @@ class ItemMaterialVariableBase
   ARCANE_MATERIALS_EXPORT void
   _fillPartialValuesWithSuperValues(MeshComponentList components);
   ARCANE_MATERIALS_EXPORT void _syncReferences(bool check_resize) override;
-  ARCANE_MATERIALS_EXPORT void _resizeForIndexer(Int32 index, RunQueue& queue) override;
+  ARCANE_MATERIALS_EXPORT void _resizeForIndexer(ResizeVariableIndexerArgs& args) override;
   ARCANE_MATERIALS_EXPORT void _copyHostViewsToViews(RunQueue* queue);
 
  public:
@@ -366,12 +371,19 @@ class ItemMaterialVariableBase
   VariableRef* m_global_variable_ref = nullptr;
   //! Variables pour les différents matériaux.
   UniqueArray<PrivatePartType*> m_vars;
-  UniqueArray<ContainerViewType> m_views;
+  //! Liste des vues visibles uniquement depuis l'accélérateur
+  UniqueArray<ContainerViewType> m_device_views;
   //! Liste des vues visibles uniquement depuis l'ĥote
   UniqueArray<ContainerViewType> m_host_views;
 
  protected:
 
+  /*!
+   * \brief Positionne les vues à partir du conteneur
+   *
+   * La vue accélérateur n'est pas mise à jour ici mais lors de l'appel
+   * à _copyHostViewsToViews().
+   */
   void _setView(Int32 index)
   {
     ContainerViewType view;
@@ -414,16 +426,16 @@ class ItemMaterialVariableScalar
 : public ItemMaterialVariableBase<MaterialVariableScalarTraits<DataType>>
 {
  public:
-	
-  typedef ItemMaterialVariableBase<MaterialVariableScalarTraits<DataType>> BaseClass;
-  typedef MaterialVariableScalarTraits<DataType> Traits;
-  typedef ItemMaterialVariableScalar<DataType> ThatClass;
 
-  typedef typename Traits::ContainerViewType ContainerViewType;
-  typedef typename Traits::PrivatePartType PrivatePartType;
-  typedef typename Traits::ValueDataType ValueDataType;
-  typedef typename Traits::ContainerType ContainerType;
-  typedef typename Traits::VariableRefType VariableRefType;
+  using BaseClass = ItemMaterialVariableBase<MaterialVariableScalarTraits<DataType>>;
+  using Traits = MaterialVariableScalarTraits<DataType>;
+  using ThatClass = ItemMaterialVariableScalar<DataType>;
+
+  using ContainerViewType = typename Traits::ContainerViewType;
+  using PrivatePartType = typename Traits::PrivatePartType;
+  using ValueDataType = typename Traits::ValueDataType;
+  using ContainerType = typename Traits::ContainerType;
+  using VariableRefType = typename Traits::VariableRefType;
 
  protected:
 
@@ -434,17 +446,17 @@ class ItemMaterialVariableScalar
 
  public:
 
-  ArrayView<DataType>* views() { return this->m_views.data(); }
+  ArrayView<DataType>* views() { return this->m_host_views.data(); }
 
  protected:
 
-  ArrayView<ArrayView<DataType>> _containerView() { return this->m_views; }
+  ArrayView<ArrayView<DataType>> _containerView() { return this->m_host_views; }
 
  public:
   
   DataType operator[](MatVarIndex mvi) const
   {
-    return this->m_views[mvi.arrayIndex()][mvi.valueIndex()];
+    return this->m_host_views[mvi.arrayIndex()][mvi.valueIndex()];
   }
 
   using BaseClass::setValue;
@@ -487,14 +499,12 @@ class ItemMaterialVariableScalar
   using BaseClass::m_global_variable;
   using BaseClass::m_global_variable_ref;
   using BaseClass::m_vars;
-  using BaseClass::m_views;
+  using BaseClass::m_host_views;
 
  private:
 
   void _synchronizeV1();
   void _synchronizeV2();
-  void _synchronizeV3();
-  void _synchronizeV4();
   void _synchronizeV5();
   Int64 _synchronize2();
 
@@ -566,8 +576,8 @@ class MeshMaterialVariableScalar
   IMeshMaterialVariable* toMeshMaterialVariable() final { return this; }
 
  private:
-  
-  VariableRefType* m_true_global_variable_ref;
+
+  VariableRefType* m_true_global_variable_ref = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -583,16 +593,16 @@ class ItemMaterialVariableArray
 {
  public:
 
-  typedef ItemMaterialVariableBase<MaterialVariableArrayTraits<DataType>> BaseClass;
-  typedef MaterialVariableArrayTraits<DataType> Traits;
+  using BaseClass = ItemMaterialVariableBase<MaterialVariableArrayTraits<DataType>>;
+  using Traits = MaterialVariableArrayTraits<DataType>;
 
-  typedef ItemMaterialVariableArray<DataType> ThatClass;
+  using ThatClass = ItemMaterialVariableArray<DataType>;
 
-  typedef typename Traits::ContainerViewType ContainerViewType;
-  typedef typename Traits::PrivatePartType PrivatePartType;
-  typedef typename Traits::ValueDataType ValueDataType;
-  typedef typename Traits::ContainerType ContainerType;
-  typedef typename Traits::VariableRefType VariableRefType;
+  using ContainerViewType = typename Traits::ContainerViewType;
+  using PrivatePartType = typename Traits::PrivatePartType;
+  using ValueDataType = typename Traits::ValueDataType;
+  using ContainerType = typename Traits::ContainerType;
+  using VariableRefType = typename Traits::VariableRefType;
 
  protected:
 
@@ -600,12 +610,11 @@ class ItemMaterialVariableArray
   ItemMaterialVariableArray(const MaterialVariableBuildInfo& v,
                             PrivatePartType* global_var,
                             VariableRef* global_var_ref,MatVarSpace mvs);
-  ARCANE_MATERIALS_EXPORT ~ItemMaterialVariableArray() {}
 
  public:
 
   ARCANE_DEPRECATED_REASON("Y2022: Do not use internal storage accessor")
-  Array2View<DataType>* views() { return m_views.data(); }
+  Array2View<DataType>* views() { return m_host_views.data(); }
 
  public:
 
@@ -635,7 +644,7 @@ class ItemMaterialVariableArray
 
   ConstArrayView<DataType> operator[](MatVarIndex mvi) const
   {
-    return m_views[mvi.arrayIndex()][mvi.valueIndex()];
+    return m_host_views[mvi.arrayIndex()][mvi.valueIndex()];
   }
 
   using BaseClass::setValue;
@@ -644,14 +653,14 @@ class ItemMaterialVariableArray
  protected:
 
   using BaseClass::m_p;
-  ArrayView<Array2View<DataType>> _containerView() { return m_views; }
+  ArrayView<Array2View<DataType>> _containerView() { return m_host_views; }
 
  private:
 
   using BaseClass::m_global_variable;
   using BaseClass::m_global_variable_ref;
   using BaseClass::m_vars;
-  using BaseClass::m_views;
+  using BaseClass::m_host_views;
 
   void _copyToBufferLegacy(SmallSpan<const MatVarIndex> matvar_indexes,
                            Span<std::byte> bytes) const;
@@ -677,10 +686,10 @@ class MeshMaterialVariableArray
   using ThatInterface = IArrayMeshMaterialVariable<ItemType,DataType>;
   using BuilderType = typename ThatInterface::BuilderType;
   using StaticImpl = MeshMaterialVariableCommonStaticImpl<ThatClass>;
-  typedef ItemType ItemTypeTemplate;
+  using ItemTypeTemplate = ItemType;
 
   using BaseClass = ItemMaterialVariableArray<DataType>;
-  typedef MeshVariableArrayRefT<ItemType,DataType> VariableRefType;
+  using VariableRefType = MeshVariableArrayRefT<ItemType, DataType>;
   using PrivatePartType = typename BaseClass::PrivatePartType;
 
   friend StaticImpl;
@@ -691,8 +700,6 @@ class MeshMaterialVariableArray
   MeshMaterialVariableArray(const MaterialVariableBuildInfo& v,
                             PrivatePartType* global_var,
                             VariableRefType* global_var_ref,MatVarSpace mvs);
-  ARCANE_MATERIALS_EXPORT
-  ~MeshMaterialVariableArray(){}
 
  public:
 
@@ -704,7 +711,7 @@ class MeshMaterialVariableArray
 
  private:
 
-  VariableRefType* m_true_global_variable_ref;
+  VariableRefType* m_true_global_variable_ref = nullptr;
 };
 
 

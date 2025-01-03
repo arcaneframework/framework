@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IosFile.cc                 	                               (C) 2000-2021 */
+/* IosFile.cc                                                  (C) 2000-2024 */
 /*                                                                           */
-/* Routines des Lecture/Ecriture d'un fichier.		                           */
+/* Routines des Lecture/Ecriture d'un fichier.                               */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -16,6 +16,7 @@
 #include "arcane/utils/Iostream.h"
 #include "arcane/utils/IOException.h"
 #include "arcane/utils/ITraceMng.h"
+#include "arcane/utils/Real3.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -174,6 +175,63 @@ isEqualString(const String& current_value, const String& expected_value)
   String current_value_low = current_value.lower();
   String expected_value_low = expected_value.lower();
   return (current_value_low == expected_value_low);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void IosFile::
+readBytes(SmallSpan<std::byte> bytes)
+{
+  m_stream->read(reinterpret_cast<char*>(bytes.data()),bytes.size());
+  if (!m_stream->good())
+    throw IOException("IosFile::readBytes()",
+                      String::format("Can not read '{0}' bytes",bytes.size()));
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void IosFile::
+binaryRead(SmallSpan<Int32> values)
+{
+  readBytes(asWritableBytes(values));
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void IosFile::
+binaryRead(SmallSpan<Int64> values)
+{
+  readBytes(asWritableBytes(values));
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void IosFile::
+binaryRead(SmallSpan<double> values)
+{
+  readBytes(asWritableBytes(values));
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void IosFile::
+binaryRead(SmallSpan<Real3> values)
+{
+  readBytes(asWritableBytes(values));
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void IosFile::
+binaryRead(SmallSpan<Byte> values)
+{
+  readBytes(asWritableBytes(values));
 }
 
 /*---------------------------------------------------------------------------*/

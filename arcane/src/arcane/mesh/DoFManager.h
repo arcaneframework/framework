@@ -39,15 +39,20 @@ class ARCANE_MESH_EXPORT DoFManager
  public:
 
   // TODO: a supprimer. Utiliser getFamily() à la place
+  ARCANE_DEPRECATED_REASON("Y2024: use getFamily instead")
   mesh::DoFFamily& family(const String& family_name, bool register_modifier_if_created = false)
   {
-    return _getFamily(family_name, register_modifier_if_created);
+    bool create_if_needed = true;
+    IItemFamily* item_family = m_mesh->findItemFamily(Arcane::IK_DoF, family_name, create_if_needed, register_modifier_if_created);
+    mesh::DoFFamily* dof_family = dynamic_cast<mesh::DoFFamily*>(item_family);
+    return *dof_family;
   }
 
   IDoFFamily* getFamily(const String& family_name, bool register_modifier_if_created = false)
   {
-    mesh::DoFFamily& dof_family = _getFamily(family_name, register_modifier_if_created);
-    return &dof_family;
+    bool create_if_needed = true;
+    IItemFamily* item_family = m_mesh->findItemFamily(Arcane::IK_DoF, family_name, create_if_needed, register_modifier_if_created);
+    return item_family->toDoFFamily();
   }
 
   IItemConnectivityMng* connectivityMng() const { return m_connectivity_mng; }
@@ -56,16 +61,6 @@ class ARCANE_MESH_EXPORT DoFManager
 
   Arcane::IMesh* m_mesh;
   IItemConnectivityMng* m_connectivity_mng;
-
- private:
-
-  mesh::DoFFamily& _getFamily(const String& family_name, bool register_modifier_if_created = false)
-  {
-    bool create_if_needed = true;
-    IItemFamily* item_family = m_mesh->findItemFamily(Arcane::IK_DoF, family_name, create_if_needed, register_modifier_if_created);
-    mesh::DoFFamily* dof_family = static_cast<mesh::DoFFamily*>(item_family);
-    return *dof_family;
-  }
 };
 
 /*---------------------------------------------------------------------------*/

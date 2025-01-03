@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ArcaneLauncher.cc                                           (C) 2000-2023 */
+/* ArcaneLauncher.cc                                           (C) 2000-2024 */
 /*                                                                           */
 /* Classe gérant le lancement de l'exécution.                                */
 /*---------------------------------------------------------------------------*/
@@ -26,6 +26,8 @@
 #include "arcane/utils/ParameterList.h"
 #include "arcane/utils/Ref.h"
 #include "arcane/utils/ConcurrencyUtils.h"
+#include "arcane/utils/internal/ParallelLoopOptionsProperties.h"
+#include "arcane/utils/internal/ApplicationInfoProperties.h"
 
 #include "arcane/impl/ArcaneMain.h"
 #include "arcane/impl/ArcaneSimpleExecutor.h"
@@ -102,7 +104,7 @@ _checkReadConfigFile(StringView config_file_name)
   if (config.null())
     return;
   std::cout << "READING CONFIG\n";
-  properties::readFromJSON(config,app_info);
+  properties::readFromJSON<ApplicationInfo,ApplicationInfoProperties>(config,app_info);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -322,7 +324,8 @@ init(const CommandLineArguments& args)
     if (global_has_init_done)
       ARCANE_FATAL("ArcaneLauncher::init() has already been called");
     global_has_init_done = true;
-    applicationInfo().setCommandLineArguments(args);
+    auto& application_info = applicationInfo();
+    application_info.setCommandLineArguments(args);
     bool do_list = false;
     if (do_list)
       _listPropertySettings();
@@ -330,12 +333,13 @@ init(const CommandLineArguments& args)
     String runtime_config_file_name = cargs.getParameter("RuntimeConfigFile");
     if (!runtime_config_file_name.empty())
       _checkReadConfigFile(runtime_config_file_name);
+    properties::readFromParameterList<ApplicationInfo,ApplicationInfoProperties>(args.parameters(),application_info);
     auto& dotnet_info = ArcaneLauncher::dotNetRuntimeInitialisationInfo();
     properties::readFromParameterList(args.parameters(),dotnet_info);
     auto& accelerator_info = ArcaneLauncher::acceleratorRuntimeInitialisationInfo();
     properties::readFromParameterList(args.parameters(),accelerator_info);
     ParallelLoopOptions loop_options;
-    properties::readFromParameterList(args.parameters(),loop_options);
+    properties::readFromParameterList<ParallelLoopOptions,ParallelLoopOptionsProperties>(args.parameters(),loop_options);
     TaskFactory::setDefaultParallelLoopOptions(loop_options);
   }
   catch(const Exception& ex){

@@ -13,13 +13,18 @@
 
 #include "arcane/materials/AllCellToAllEnvCellConverter.h"
 
+#include "arcane/utils/NumArray.h"
+
 #include "arcane/core/IItemFamily.h"
 #include "arcane/core/ItemEnumerator.h"
 #include "arcane/core/ItemGroup.h"
 #include "arcane/core/materials/internal/IMeshMaterialMngInternal.h"
 
+#include "arcane/materials/internal/AllCellToAllEnvCellContainer.h"
+
 #include "arcane/accelerator/Reduce.h"
 #include "arcane/accelerator/RunCommandEnumerate.h"
+#include "arcane/accelerator/NumArrayViews.h"
 
 #include <algorithm>
 
@@ -29,23 +34,52 @@
 namespace Arcane::Materials
 {
 
-class AllCellToAllEnvCell::Impl
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+class AllCellToAllEnvCellContainer::Impl
 {
  public:
 
-  static Int32 _computeMaxNbEnvPerCell(IMeshMaterialMng* material_mng);
-  static void _updateValues(IMeshMaterialMng* material_mng,
-                            ComponentItemLocalId* mem_pool,
-                            Span<ComponentItemLocalId>* allcell_allenvcell,
-                            Int32 max_nb_env);
+  explicit Impl(IMeshMaterialMng* mm)
+  : m_material_mng(mm)
+  {
+    m_mem_pool.setDebugName("AllCellToAllEnvCellMemPool");
+    m_envcell_container.setDebugName("AllCellToAllEnvCellCells");
+  }
+
+ public:
+
+  Int32 computeMaxNbEnvPerCell();
+  void initialize();
+  void bruteForceUpdate();
+  void reset();
+  AllCellToAllEnvCell view() const { return m_all_cell_to_all_env_cell; }
+
+ public:
+
+  static void updateValues(IMeshMaterialMng* material_mng,
+                           Span<ComponentItemLocalId> mem_pool,
+                           Span<Span<ComponentItemLocalId>> allcell_allenvcell,
+                           Int32 max_nb_env);
+
+ private:
+
+  IMeshMaterialMng* m_material_mng = nullptr;
+  Int32 m_size = 0;
+  NumArray<Span<ComponentItemLocalId>, MDDim1> m_envcell_container;
+  NumArray<ComponentItemLocalId, MDDim1> m_mem_pool;
+  Int32 m_current_max_nb_env = 0;
+  AllCellToAllEnvCell m_all_cell_to_all_env_cell;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Int32 AllCellToAllEnvCell::Impl::
-_computeMaxNbEnvPerCell(IMeshMaterialMng* material_mng)
+Int32 AllCellToAllEnvCellContainer::Impl::
+computeMaxNbEnvPerCell()
 {
+  IMeshMaterialMng* material_mng = m_material_mng;
   CellToAllEnvCellConverter allenvcell_converter(material_mng);
   RunQueue& queue = material_mng->_internalApi()->runQueue();
   Accelerator::GenericReducer<Int32> reducer(queue);
@@ -64,11 +98,11 @@ _computeMaxNbEnvPerCell(IMeshMaterialMng* material_mng)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void AllCellToAllEnvCell::Impl::
-_updateValues(IMeshMaterialMng* material_mng,
-              ComponentItemLocalId* mem_pool,
-              Span<ComponentItemLocalId>* allcell_allenvcell,
-              Int32 max_nb_env)
+void AllCellToAllEnvCellContainer::Impl::
+updateValues(IMeshMaterialMng* material_mng,
+             Span<ComponentItemLocalId> mem_pool,
+             Span<Span<ComponentItemLocalId>> allcell_allenvcell,
+             Int32 max_nb_env)
 {
   // mise a jour des valeurs
   CellToAllEnvCellConverter all_env_cell_converter(material_mng);
@@ -77,18 +111,21 @@ _updateValues(IMeshMaterialMng* material_mng,
   command << RUNCOMMAND_ENUMERATE (CellLocalId, cid, material_mng->mesh()->allCells())
   {
     AllEnvCell all_env_cell = all_env_cell_converter[cid];
+    Integer offset = cid * max_nb_env;
     Int32 nb_env = all_env_cell.nbEnvironment();
+    // Initialize à zéro les indices de 'mem_pools' de ma maille.
+    for (Int32 x = 0; x < max_nb_env; ++x)
+      mem_pool[offset + x] = ComponentItemLocalId();
     if (nb_env != 0) {
       Integer i = 0;
-      Integer offset = cid * max_nb_env;
       for (EnvCell ev : all_env_cell.subEnvItems()) {
         mem_pool[offset + i] = ComponentItemLocalId(ev._varIndex());
         ++i;
       }
-      allcell_allenvcell[cid] = Span<ComponentItemLocalId>(mem_pool + offset, nb_env);
+      allcell_allenvcell[cid] = Span<ComponentItemLocalId>(mem_pool.ptrAt(offset), nb_env);
     }
     else {
-      allcell_allenvcell[cid] = Span<ComponentItemLocalId>();
+      allcell_allenvcell[cid] = {};
     }
   };
 }
@@ -96,82 +133,53 @@ _updateValues(IMeshMaterialMng* material_mng,
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-AllCellToAllEnvCell::
-AllCellToAllEnvCell(IMeshMaterialMng* mm)
-: m_material_mng(mm)
-{
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void AllCellToAllEnvCell::
-reset()
-{
-  if (m_allcell_allenvcell_ptr) {
-    m_allcell_allenvcell.resize(0);
-    m_allcell_allenvcell_ptr = nullptr;
-    m_mem_pool.resize(0);
-  }
-  m_material_mng = nullptr;
-  m_size = 0;
-  m_current_max_nb_env = 0;
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-Int32 AllCellToAllEnvCell::
-maxNbEnvPerCell() const
-{
-  return Impl::_computeMaxNbEnvPerCell(m_material_mng);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void AllCellToAllEnvCell::
+void AllCellToAllEnvCellContainer::Impl::
 initialize()
 {
   IMeshMaterialMng* mm = m_material_mng;
+  RunQueue queue = mm->_internalApi()->runQueue();
   m_size = mm->mesh()->cellFamily()->maxLocalId() + 1;
 
-  m_allcell_allenvcell.resize(m_size);
-  m_allcell_allenvcell_ptr = m_allcell_allenvcell.to1DSpan().data();
+  m_envcell_container.resize(m_size);
+  m_all_cell_to_all_env_cell.m_allcell_allenvcell_ptr = m_envcell_container.to1DSpan();
 
-  // On force la valeur initiale sur tous les elmts car dans le ENUMERATE_CELL ci-dessous
+  // On force la valeur initiale sur tous les éléments car dans le ENUMERATE_CELL ci-dessous
   // il se peut que m_size (qui vaut maxLocalId()+1) soit different de allCells().size()
-  m_allcell_allenvcell.fill(Span<ComponentItemLocalId>());
+  m_envcell_container.fill(Span<ComponentItemLocalId>(), &queue);
 
-  m_current_max_nb_env = maxNbEnvPerCell();
+  m_current_max_nb_env = computeMaxNbEnvPerCell();
   // TODO: vérifier débordement
   Int32 pool_size = m_current_max_nb_env * m_size;
   m_mem_pool.resize(pool_size);
-  m_mem_pool.fill(ComponentItemLocalId());
+  m_mem_pool.fill(ComponentItemLocalId(), &queue);
 
   Span<ComponentItemLocalId> mem_pool_view(m_mem_pool.to1DSpan());
   CellToAllEnvCellConverter all_env_cell_converter(mm);
-  ENUMERATE_CELL (icell, mm->mesh()->allCells()) {
-    Int32 cid = icell->itemLocalId();
+  auto command = makeCommand(queue);
+  auto mem_pool = viewOut(command, m_mem_pool);
+  auto allcell_allenvcell = viewOut(command, m_envcell_container);
+  const Int32 max_nb_env = m_current_max_nb_env;
+  command << RUNCOMMAND_ENUMERATE (CellLocalId, cid, mm->mesh()->allCells())
+  {
     AllEnvCell all_env_cell = all_env_cell_converter[CellLocalId(cid)];
     Integer nb_env(all_env_cell.nbEnvironment());
     if (nb_env != 0) {
       Integer i = 0;
-      Integer offset(cid * m_current_max_nb_env);
+      Integer offset(cid * max_nb_env);
       ENUMERATE_CELL_ENVCELL (ienvcell, all_env_cell) {
         EnvCell ev = *ienvcell;
-        m_mem_pool[offset + i] = ComponentItemLocalId(ev._varIndex());
+        mem_pool[offset + i] = ComponentItemLocalId(ev._varIndex());
         ++i;
       }
-      m_allcell_allenvcell[cid] = Span<ComponentItemLocalId>(mem_pool_view.ptrAt(offset), nb_env);
+      allcell_allenvcell[cid] = Span<ComponentItemLocalId>(mem_pool_view.ptrAt(offset), nb_env);
     }
-  }
+  };
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void AllCellToAllEnvCell::
+void AllCellToAllEnvCellContainer::Impl::
 bruteForceUpdate()
 {
   // Si les ids ont changé, on doit tout refaire
@@ -180,32 +188,112 @@ bruteForceUpdate()
     return;
   }
 
-  Int32 current_max_nb_env(maxNbEnvPerCell());
+  Int32 current_max_nb_env(computeMaxNbEnvPerCell());
   // Si les ids n'ont pas changé, on regarde si à cet instant, le nb max d'env par maille a changé
   // Si ca a changé, refaire le mem pool, sinon, juste update les valeurs
   if (current_max_nb_env != m_current_max_nb_env) {
     // On n'oublie pas de mettre a jour la nouvelle valeur !
     m_current_max_nb_env = current_max_nb_env;
-    // Si le nb max d'env pour les mailles a changé à cet instant, on doit refaire le memory pool
-    ARCANE_ASSERT((m_allcell_allenvcell_ptr), ("Trying to change memory pool within a null structure"));
-    // on reinit a un span vide
-    m_allcell_allenvcell.fill(Span<ComponentItemLocalId>());
     // on recrée le pool
-    auto pool_size(m_current_max_nb_env * m_size);
+    Int32 pool_size = CheckedConvert::multiply(m_current_max_nb_env, m_size);
     m_mem_pool.resize(pool_size);
-    m_mem_pool.fill(ComponentItemLocalId());
   }
   // Mise a jour des valeurs
-  Impl::_updateValues(m_material_mng, m_mem_pool.to1DSpan().data(), m_allcell_allenvcell_ptr, m_current_max_nb_env);
+  updateValues(m_material_mng, m_mem_pool.to1DSpan(), m_all_cell_to_all_env_cell.m_allcell_allenvcell_ptr, m_current_max_nb_env);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-CellToAllEnvCellAccessor::
-CellToAllEnvCellAccessor(const IMeshMaterialMng* mmmng)
-: m_cell_allenvcell(mmmng->_internalApi()->getAllCellToAllEnvCell())
+void AllCellToAllEnvCellContainer::Impl::
+reset()
 {
+  m_envcell_container.resize(0);
+  m_all_cell_to_all_env_cell.m_allcell_allenvcell_ptr = {};
+  m_mem_pool.resize(0);
+  m_material_mng = nullptr;
+  m_size = 0;
+  m_current_max_nb_env = 0;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+AllCellToAllEnvCellContainer::
+AllCellToAllEnvCellContainer(IMeshMaterialMng* mm)
+: m_p(new Impl(mm))
+{
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+AllCellToAllEnvCellContainer::
+~AllCellToAllEnvCellContainer()
+{
+  delete m_p;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void AllCellToAllEnvCellContainer::
+reset()
+{
+  m_p->reset();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Int32 AllCellToAllEnvCellContainer::
+computeMaxNbEnvPerCell() const
+{
+  return m_p->computeMaxNbEnvPerCell();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void AllCellToAllEnvCellContainer::
+initialize()
+{
+  m_p->initialize();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void AllCellToAllEnvCellContainer::
+bruteForceUpdate()
+{
+  m_p->bruteForceUpdate();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+AllCellToAllEnvCell AllCellToAllEnvCellContainer::
+view() const
+{
+  return m_p->view();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+CellToAllEnvCellAccessor::
+CellToAllEnvCellAccessor(const IMeshMaterialMng* mm)
+{
+  AllCellToAllEnvCellContainer* c = mm->_internalApi()->getAllCellToAllEnvCellContainer();
+  if (c)
+    m_cell_allenvcell = c->view();
 }
 
 /*---------------------------------------------------------------------------*/

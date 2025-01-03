@@ -11,16 +11,18 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+#include "arcane/utils/NotImplementedException.h"
+#include "arcane/utils/MemoryView.h"
+#include "arcane/utils/PlatformUtils.h"
+#include "arcane/utils/FatalErrorException.h"
+
 #include "arcane/accelerator/core/internal/IRunnerRuntime.h"
 #include "arcane/accelerator/core/internal/IRunQueueStream.h"
 #include "arcane/accelerator/core/internal/IRunQueueEventImpl.h"
 #include "arcane/accelerator/core/Memory.h"
 #include "arcane/accelerator/core/DeviceInfoList.h"
-
-#include "arcane/utils/NotImplementedException.h"
-#include "arcane/utils/MemoryView.h"
-#include "arcane/utils/PlatformUtils.h"
-#include "arcane/utils/FatalErrorException.h"
+#include "arcane/accelerator/core/DeviceMemoryInfo.h"
+#include "arcane/accelerator/core/NativeStream.h"
 
 #include <cstring>
 
@@ -52,7 +54,7 @@ class ARCANE_ACCELERATOR_CORE_EXPORT HostRunQueueStream
     args.destination().copyHost(args.source());
   }
   void prefetchMemory(const MemoryPrefetchArgs&) override {}
-  void* _internalImpl() override { return nullptr; }
+  NativeStream nativeStream() override { return {}; }
   bool _barrierNoException() override { return false; }
 
  private:
@@ -128,7 +130,12 @@ class ARCANE_ACCELERATOR_CORE_EXPORT CommonRunnerRuntime
   const IDeviceInfoList* deviceInfoList() final { return &m_device_info_list; }
   void getPointerAttribute(PointerAttribute& attribute, const void* ptr) final
   {
-    _fillPointerAttribute(attribute,ptr);
+    _fillPointerAttribute(attribute, ptr);
+  }
+  DeviceMemoryInfo getDeviceMemoryInfo(DeviceId) override
+  {
+    // TODO: à implémenter
+    return {};
   }
 
  private:

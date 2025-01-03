@@ -21,10 +21,7 @@ endif()
 
 # TODO Mettre la partie '.Net' (mais pas swig) dans un fichier de configuration séparé
 if (NOT ARCANE_MSBUILD_EXEC)
-  set (ARCANE_MSBUILD_EXEC @ARCCON_MSBUILD_EXEC_coreclr@)
-  if (NOT ARCANE_MSBUILD_EXEC)
-    set (ARCANE_MSBUILD_EXEC @ARCCON_MSBUILD_EXEC_mono@)
-  endif()
+  set (ARCANE_MSBUILD_EXEC @DOTNET_EXEC@)
 endif()
 
 set(ArcaneSwig_FOUND FALSE)

@@ -172,22 +172,6 @@ class ARCANE_UTILS_EXPORT Real3x3
   }
 
   /*!
-   * \brief Compare la matrice avec la matrice nulle.
-   *
-   * La matrice est nulle si et seulement si chacune de ses composantes
-   * est inférieure à un espilon donné. La valeur de l'epsilon utilisée est celle
-   * de float_info<value_type>::nearlyEpsilon():
-   * \f[A=0 \Leftrightarrow |A.x|<\epsilon,|A.y|<\epsilon,|A.z|<\epsilon \f]
-   *
-   * \retval true si la matrice est égale à la matrice nulle,
-   * \retval false sinon.
-   */
-  constexpr ARCCORE_HOST_DEVICE bool isNearlyZero() const
-  {
-    return x.isNearlyZero() && y.isNearlyZero() && z.isNearlyZero();
-  }
-
-  /*!
    * \brief Lit la matrice sur le flot \a i
    * La matrice est lue sous la forme de trois Real3.
    */
@@ -393,6 +377,11 @@ class ARCANE_UTILS_EXPORT Real3x3
     return (v1.x < v2.x);
   }
 
+ public:
+
+  // TODO: rendre obsolète mi-2025: ARCANE_DEPRECATED_REASON("Y2024: Use math::isNearlyZero(const Real3x3&) instead")
+  inline constexpr ARCCORE_HOST_DEVICE bool isNearlyZero() const;
+
  private:
 
   /*!
@@ -405,6 +394,37 @@ class ARCANE_UTILS_EXPORT Real3x3
     return TypeEqualT<Real>::isEqual(a, b);
   }
 };
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace math
+{
+  /*!
+   * \brief Compare la matrice avec la matrice nulle.
+   *
+   * La matrice est nulle si et seulement si chacune de ses composantes
+   * est inférieure à un espilon donné. La valeur de l'epsilon utilisée est celle
+   * de float_info<value_type>::nearlyEpsilon():
+   * \f[A=0 \Leftrightarrow |A.x|<\epsilon,|A.y|<\epsilon,|A.z|<\epsilon \f]
+   *
+   * \retval true si la matrice est égale à la matrice nulle,
+   * \retval false sinon.
+   */
+  inline constexpr ARCCORE_HOST_DEVICE bool isNearlyZero(const Real3x3& v)
+  {
+    return isNearlyZero(v.x) && isNearlyZero(v.y) && isNearlyZero(v.z);
+  }
+} // namespace math
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+inline constexpr ARCCORE_HOST_DEVICE bool Real3x3::
+isNearlyZero() const
+{
+  return math::isNearlyZero(*this);
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

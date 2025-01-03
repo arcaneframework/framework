@@ -15,9 +15,6 @@ if (Lima_FOUND)
     list(APPEND ARCANE_SOURCES LimaMalipp2.cc)
   endif()
 endif()
-if(MPI_FOUND)
-  set(ARCANE_SOURCES ${ARCANE_SOURCES} SplitSDMeshPartitioner.cc)
-endif()
 
 arcane_add_library(arcane_cea
   INPUT_PATH ${ARCANECEA_SRC_PATH}
@@ -48,6 +45,6 @@ if (ARCANE_LIMA_HAS_MLI)
   target_compile_definitions(arcane_cea PRIVATE ARCANE_LIMA_HAS_MLI)
 endif()
 
-target_link_libraries(arcane_cea PUBLIC arcane_std arcane_cartesianmesh arcane_core)
+target_link_libraries(arcane_cea PUBLIC arcane_cartesianmesh arcane_core)
 
 arcane_register_library(arcane_cea)

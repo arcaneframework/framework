@@ -25,6 +25,17 @@ namespace Arcane::Materials
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+std::ostream&
+operator<<(std::ostream& o, const ComponentCell& mvi)
+{
+  ConstituentItemLocalId x = mvi;
+  o << x;
+  return o;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 void ComponentCell::
 _badConversion(matimpl::ConstituentItemBase item_base, Int32 level,Int32 expected_level)
 {

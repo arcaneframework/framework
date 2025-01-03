@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshMaterialVariableSynchronizerList.cc                     (C) 2000-2023 */
+/* MeshMaterialVariableSynchronizerList.cc                     (C) 2000-2024 */
 /*                                                                           */
 /* Synchroniseur de variables matériaux.                                     */
 /*---------------------------------------------------------------------------*/
@@ -304,7 +304,7 @@ _beginSynchronizeMultiple2(SyncInfo& sync_info)
   if (!pm->isParallel())
     return;
   const bool use_new_version = sync_info.use_generic_version;
-  RunQueue* queue = pm->_internalApi()->defaultQueue();
+  RunQueue queue = pm->_internalApi()->queue();
 
   mmvs->checkRecompute();
 
@@ -354,7 +354,7 @@ _beginSynchronizeMultiple2(SyncInfo& sync_info)
       auto sub_view = values.subView(offset, total_shared * my_data_size);
       if (use_new_version) {
         auto* ptr = reinterpret_cast<std::byte*>(sub_view.data());
-        vars[z]->_internalApi()->copyToBuffer(shared_matcells, { ptr, sub_view.size() }, queue);
+        vars[z]->_internalApi()->copyToBuffer(shared_matcells, { ptr, sub_view.size() }, &queue);
       }
       else
         vars[z]->copyToBuffer(shared_matcells, sub_view);
@@ -363,8 +363,7 @@ _beginSynchronizeMultiple2(SyncInfo& sync_info)
   }
 
   // Attend que les copies soient terminées
-  if (queue)
-    queue->barrier();
+  queue.barrier();
 
   // Poste les sends
   for (Integer i = 0; i < nb_rank; ++i) {
@@ -388,7 +387,7 @@ _endSynchronizeMultiple2(SyncInfo& sync_info)
   if (!pm->isParallel())
     return;
   const bool use_new_version = sync_info.use_generic_version;
-  RunQueue* queue = pm->_internalApi()->defaultQueue();
+  RunQueue queue = pm->_internalApi()->queue();
   IMeshMaterialSynchronizeBuffer* buf_list = sync_info.buf_list.get();
 
   Int32ConstArrayView ranks = var_syncer->communicatingRanks();
@@ -409,7 +408,7 @@ _endSynchronizeMultiple2(SyncInfo& sync_info)
       auto sub_view = values.subView(offset, total_ghost * my_data_size);
       if (use_new_version) {
         auto* ptr = reinterpret_cast<const std::byte*>(sub_view.data());
-        vars[z]->_internalApi()->copyFromBuffer(ghost_matcells, { ptr, sub_view.size() }, queue);
+        vars[z]->_internalApi()->copyFromBuffer(ghost_matcells, { ptr, sub_view.size() }, &queue);
       }
       else
         vars[z]->copyFromBuffer(ghost_matcells, sub_view);
@@ -419,8 +418,7 @@ _endSynchronizeMultiple2(SyncInfo& sync_info)
   sync_info.message_total_size += buf_list->totalSize();
 
   // Attend que les copies soient terminées
-  if (queue)
-    queue->barrier();
+  queue.barrier();
 }
 
 /*---------------------------------------------------------------------------*/

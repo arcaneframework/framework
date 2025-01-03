@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemConnectivitySynchronizer.cc                             (C) 2000-2023 */
+/* ItemConnectivitySynchronizer.cc                             (C) 2000-2024 */
 /*                                                                           */
 /* Synchronization des connectivités.                                        */
 /*---------------------------------------------------------------------------*/
@@ -92,7 +92,7 @@ serializeGhostItems(ISerializer* buffer,Int32ConstArrayView ghost_item_info)
 
   // Serialize item_uid, nb_dof, shared_item_connected_item_uids
   buffer->setMode(ISerializer::ModeReserve);
-  buffer->reserve(DT_Int64,1);
+  buffer->reserveInt64(1);
   buffer->reserveSpan(shared_item_uids);
   buffer->reserveSpan(shared_item_connected_item_uids);
   buffer->reserveSpan(shared_item_owners);

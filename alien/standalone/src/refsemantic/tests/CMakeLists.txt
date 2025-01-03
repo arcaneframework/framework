@@ -118,8 +118,8 @@ target_link_libraries(ref.gtest.seq PRIVATE
         )
 
 if (ALIEN_EXPAND_TESTS)
-    gtest_discover_tests(ref.gtest.seq TEST_PREFIX "ref." TEST_SUFFIX ".seq" DISCOVERY_TIMEOUT 10)
-    gtest_discover_tests(ref.gtest.mpi TEST_PREFIX "ref." TEST_SUFFIX ".seq" DISCOVERY_TIMEOUT 10)
+    gtest_discover_tests(ref.gtest.seq TEST_PREFIX "alien.ref." TEST_SUFFIX ".seq" DISCOVERY_TIMEOUT 10)
+    gtest_discover_tests(ref.gtest.mpi TEST_PREFIX "alien.ref." TEST_SUFFIX ".seq" DISCOVERY_TIMEOUT 10)
 else (ALIEN_EXPAND_TESTS)
     alien_test(
             BENCH ref

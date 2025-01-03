@@ -18,10 +18,10 @@
 
 #include "arcane/accelerator/AcceleratorGlobal.h"
 #include "arcane/accelerator/core/RunQueue.h"
+#include "arcane/accelerator/AcceleratorUtils.h"
 
 #if defined(ARCANE_COMPILING_HIP)
 #include "arcane/accelerator/hip/HipAccelerator.h"
-#include <hip/hip_runtime.h>
 #include <rocprim/rocprim.hpp>
 #endif
 #if defined(ARCANE_COMPILING_CUDA)
@@ -30,57 +30,60 @@
 #endif
 #if defined(ARCANE_COMPILING_SYCL)
 #include "arcane/accelerator/sycl/SyclAccelerator.h"
-#include <sycl/sycl.hpp>
 #if defined(__INTEL_LLVM_COMPILER)
 #include <oneapi/dpl/execution>
 #include <oneapi/dpl/algorithm>
 #endif
 #endif
 
+// A définir si on souhaite utiliser LambdaStorage
+// #ifdef ARCANE_USE_LAMBDA_STORAGE
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 namespace Arcane::Accelerator::impl
 {
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-#if defined(ARCANE_COMPILING_CUDA)
-class ARCANE_ACCELERATOR_EXPORT CudaUtils
+/*!
+ * \brief Classe pour gérer la conservation d'une lambda dans un itérateur.
+ *
+ * Actuellement (C++20), on ne peut pas conserver une lambda dans un
+ * itérateur car il manque deux choses: un constructeur par défaut et
+ * un opérateur de recopie. Cette classe permet de supporter cela à condition
+ * que les deux poins suivants soient respectés:
+ * - instances capturées par la lambda sont trivialement copiables et donc
+ *   la lambda l'est.
+ * - les instances utilisant le constructeur par défaut ne sont pas utilisées
+ *   (ce qui est le cas des itérateurs car ils ne sont pas valides s'ils sont
+ *   construits avec le constructeur par défaut.
+ *
+ * A noter que l'alignement de cette classe doit être au moins celui de la
+ * lambda associée.
+ *
+ * Cette classe n'est indispensable que pour SYCL avec oneAPI car il est
+ * nécessite que les itérateurs aient le concept std::random_access_iterator.
+ * Cependant elle devrait aussi fonctionner avec CUDA et ROCM. A tester
+ * l'effet sur les performances.
+ */
+template <typename LambdaType>
+class alignas(LambdaType) LambdaStorage
 {
+  static constexpr size_t SizeofLambda = sizeof(LambdaType);
+
  public:
 
-  static cudaStream_t toNativeStream(const RunQueue* queue);
-  static cudaStream_t toNativeStream(const RunQueue& queue);
+  LambdaStorage() = default;
+  ARCCORE_HOST_DEVICE LambdaStorage(const LambdaType& v)
+  {
+    std::memcpy(bytes, &v, SizeofLambda);
+  }
+  //! Convertie la classe en la lambda.
+  ARCCORE_HOST_DEVICE operator const LambdaType&() const { return *reinterpret_cast<const LambdaType*>(&bytes); }
+
+ private:
+
+  char bytes[SizeofLambda];
 };
-#endif
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-#if defined(ARCANE_COMPILING_HIP)
-class ARCANE_ACCELERATOR_EXPORT HipUtils
-{
- public:
-
-  static hipStream_t toNativeStream(const RunQueue* queue);
-  static hipStream_t toNativeStream(const RunQueue& queue);
-};
-#endif
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-#if defined(ARCANE_COMPILING_SYCL)
-class ARCANE_ACCELERATOR_EXPORT SyclUtils
-{
- public:
-
-  static sycl::queue toNativeStream(const RunQueue* queue);
-  static sycl::queue toNativeStream(const RunQueue& queue);
-};
-#endif
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -147,7 +150,7 @@ class ARCANE_ACCELERATOR_EXPORT DeviceStorageBase
  * \internal
  * \brief Gère l'allocation interne sur le device pour un type donné.
  */
-template <typename DataType>
+template <typename DataType, Int32 N = 1>
 class DeviceStorage
 : public DeviceStorageBase
 {
@@ -157,7 +160,7 @@ class DeviceStorage
   size_t size() const { return m_storage.size(); }
   DataType* allocate()
   {
-    m_storage.allocate(sizeof(DataType));
+    m_storage.allocate(sizeof(DataType) * N);
     return address();
   }
   void deallocate() { m_storage.deallocate(); }
@@ -408,15 +411,33 @@ class SetterLambdaIterator
 
   using ThatClass = SetterLambdaIterator<SetterLambda>;
 
+ private:
+
+#ifdef ARCANE_USE_LAMBDA_STORAGE
+  using StorageType = LambdaStorage<SetterLambda>;
+#else
+  using StorageType = SetterLambda;
+#endif
+
  public:
 
+  SetterLambdaIterator() = default;
   ARCCORE_HOST_DEVICE SetterLambdaIterator(const SetterLambda& s)
   : m_lambda(s)
   {}
-  ARCCORE_HOST_DEVICE explicit SetterLambdaIterator(const SetterLambda& s, Int32 v)
+  ARCCORE_HOST_DEVICE SetterLambdaIterator(const SetterLambda& s, Int32 v)
   : m_index(v)
   , m_lambda(s)
   {}
+
+ private:
+
+#ifdef ARCANE_USE_LAMBDA_STORAGE
+  ARCCORE_HOST_DEVICE SetterLambdaIterator(const LambdaStorage<SetterLambda>& s, Int32 v)
+  : m_index(v)
+  , m_lambda(s)
+  {}
+#endif
 
  public:
 
@@ -443,9 +464,13 @@ class SetterLambdaIterator
   {
     return ThatClass(iter.m_lambda, iter.m_index + x);
   }
-  ARCCORE_HOST_DEVICE Int32 operator-(const ThatClass& x) const
+  ARCCORE_HOST_DEVICE friend ThatClass operator-(const ThatClass& iter, Int32 x)
   {
-    return m_index - x.m_index;
+    return ThatClass(iter.m_lambda, iter.m_index - x);
+  }
+  ARCCORE_HOST_DEVICE friend Int32 operator-(const ThatClass& iter1, const ThatClass& iter2)
+  {
+    return iter1.m_index - iter2.m_index;
   }
   ARCCORE_HOST_DEVICE friend bool operator<(const ThatClass& iter1, const ThatClass& iter2)
   {
@@ -455,7 +480,7 @@ class SetterLambdaIterator
  private:
 
   Int32 m_index = 0;
-  SetterLambda m_lambda;
+  StorageType m_lambda;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -468,13 +493,25 @@ class SetterLambdaIterator
 
 namespace Arcane::Accelerator
 {
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 template <typename DataType> using ScannerSumOperator = impl::SumOperator<DataType>;
 template <typename DataType> using ScannerMaxOperator = impl::MaxOperator<DataType>;
 template <typename DataType> using ScannerMinOperator = impl::MinOperator<DataType>;
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 } // namespace Arcane::Accelerator
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+#ifdef ARCANE_USE_LAMBDA_STORAGE
+#undef ARCANE_USE_LAMBDA_STORAGE
+#endif
 
 #endif
 

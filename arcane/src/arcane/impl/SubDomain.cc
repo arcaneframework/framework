@@ -475,12 +475,12 @@ initialize()
     _setDefaultAcceleratorDevice(config);
 
     m_accelerator_mng->initialize(config);
-    Runner* runner = m_accelerator_mng->defaultRunner();
-    const auto& device_info = runner->deviceInfo();
+    Runner runner = m_accelerator_mng->runner();
+    const auto& device_info = runner.deviceInfo();
     info() << "DeviceInfo: name=" << device_info.name();
     info() << "DeviceInfo: description=" << device_info.description();
 
-    if (Accelerator::impl::isAcceleratorPolicy(runner->executionPolicy())){
+    if (Accelerator::impl::isAcceleratorPolicy(runner.executionPolicy())){
       m_parallel_mng->_internalApi()->setDefaultRunner(runner);
       m_all_replica_parallel_mng->_internalApi()->setDefaultRunner(runner);
     }

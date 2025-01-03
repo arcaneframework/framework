@@ -23,6 +23,8 @@
 #include "arccore/base/ReferenceCounterImpl.h"
 #include "arccore/base/Float16.h"
 #include "arccore/base/BFloat16.h"
+#include "arccore/base/Float128.h"
+#include "arccore/base/Int128.h"
 
 #include <iostream>
 #include <cstring>

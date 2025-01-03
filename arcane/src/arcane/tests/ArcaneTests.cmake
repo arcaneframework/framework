@@ -460,16 +460,7 @@ endmacro()
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
 
-set(ARCANE_ACCELERATOR_RUNTIME_NAME)
-if (ARCANE_ACCELERATOR_MODE STREQUAL "ROCM" )
-  set(ARCANE_ACCELERATOR_RUNTIME_NAME hip)
-endif()
-if (ARCANE_ACCELERATOR_MODE STREQUAL "CUDA" )
-  set(ARCANE_ACCELERATOR_RUNTIME_NAME cuda)
-endif()
-if (ARCANE_ACCELERATOR_MODE STREQUAL "SYCL" )
-  set(ARCANE_ACCELERATOR_RUNTIME_NAME sycl)
-endif()
+set(ARCANE_ACCELERATOR_RUNTIME_NAME ${ARCANE_ACCELERATOR_RUNTIME})
 
 # ----------------------------------------------------------------------------
 # Ajoute un test séquentiel pour accélerateur si disponible
@@ -477,7 +468,7 @@ macro(arcane_add_accelerator_test_sequential test_name case_file)
   if (ARCANE_ACCELERATOR_RUNTIME_NAME)
     message(STATUS "ADD ACCELERATOR test name=${test_name}")
     arcane_add_test_sequential(${test_name}_${ARCANE_ACCELERATOR_RUNTIME_NAME} ${case_file}
-      "-A,AcceleratorRuntime=${ARCANE_ACCELERATOR_RUNTIME_NAME}" ${ARGN}
+      "-A,UseAccelerator=1" ${ARGN}
       )
   endif()
 endmacro()

@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemFamilyVariableSerializer.cc                             (C) 2000-2023 */
+/* ItemFamilyVariableSerializer.cc                             (C) 2000-2024 */
 /*                                                                           */
 /* Gère la sérialisation/désérialisation des variables d'une famille.        */
 /*---------------------------------------------------------------------------*/
@@ -15,19 +15,19 @@
 #include "arcane/utils/HashTableMap.h"
 #include "arcane/utils/Collection.h"
 
-#include "arcane/VariableTypes.h"
-#include "arcane/ItemEnumerator.h"
-#include "arcane/ItemPrinter.h"
-#include "arcane/ISerializer.h"
-#include "arcane/IItemFamily.h"
-#include "arcane/ItemVector.h"
-#include "arcane/MeshToMeshTransposer.h"
-#include "arcane/ItemFamilySerializeArgs.h"
-#include "arcane/IParallelMng.h"
+#include "arcane/core/VariableTypes.h"
+#include "arcane/core/ItemEnumerator.h"
+#include "arcane/core/ItemPrinter.h"
+#include "arcane/core/ISerializer.h"
+#include "arcane/core/IItemFamily.h"
+#include "arcane/core/ItemVector.h"
+#include "arcane/core/MeshToMeshTransposer.h"
+#include "arcane/core/ItemFamilySerializeArgs.h"
+#include "arcane/core/IParallelMng.h"
 // TODO: a supprimer
-#include "arcane/IMesh.h"
-#include "arcane/IVariableMng.h"
-#include "arcane/ISubDomain.h"
+#include "arcane/core/IMesh.h"
+#include "arcane/core/IVariableMng.h"
+#include "arcane/core/ISubDomain.h"
 
 #include "arcane/mesh/ItemFamilyVariableSerializer.h"
 
@@ -305,8 +305,8 @@ _serializePartialVariable(IVariable* var,ISerializer* sbuf,Int32ConstArrayView l
       Integer nb_item_to_send = indexes_to_send.size();
       if (mode==ISerializer::ModeReserve){
         // Réserve pour le nombre d'élément et pour chaque élément
-        sbuf->reserve(DT_Int64,1);
-        sbuf->reserveSpan(DT_Int64,nb_item_to_send);
+        sbuf->reserveInt64(1);
+        sbuf->reserveSpan(eBasicDataType::Int64,nb_item_to_send);
       }
       else{
         sbuf->putInt64(nb_item_to_send);

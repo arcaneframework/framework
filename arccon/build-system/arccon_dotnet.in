@@ -1,0 +1,6 @@
+#!/bin/sh
+export HOME=@ARCCON_DOTNET_FAKEHOME@
+# To disable telemetry
+export DOTNET_CLI_TELEMETRY_OPTOUT=1
+
+@ARCCON_DOTNET_PATH@/dotnet "$@"
