@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ForLoopRanges.h                                             (C) 2000-2024 */
+/* ForLoopRanges.h                                             (C) 2000-2025 */
 /*                                                                           */
 /* Intervalles d'itérations pour les boucles.                                */
 /*---------------------------------------------------------------------------*/
@@ -104,6 +104,7 @@ class SimpleForLoopRanges
 
   template <Int32 I> constexpr Int32 lowerBound() const { return 0; }
   template <Int32 I> constexpr Int32 upperBound() const { return m_bounds.template constExtent<I>(); }
+  template <Int32 I> constexpr Int32 extent() const { return m_bounds.template constExtent<I>(); }
   constexpr Int64 nbElement() const { return m_bounds.nbElement(); }
   constexpr ArrayIndexType getIndices(Int32 i) const { return m_bounds.getIndices(i); }
 
@@ -144,6 +145,7 @@ class ComplexForLoopRanges
 
   template <Int32 I> constexpr Int32 lowerBound() const { return m_lower_bounds[I]; }
   template <Int32 I> constexpr Int32 upperBound() const { return m_lower_bounds[I] + m_extents.template constExtent<I>(); }
+  template <Int32 I> constexpr Int32 extent() const { return m_extents.template constExtent<I>(); }
   constexpr Int64 nbElement() const { return m_extents.nbElement(); }
   constexpr ArrayIndexType getIndices(Int32 i) const
   {
@@ -151,6 +153,7 @@ class ComplexForLoopRanges
     x.add(m_lower_bounds);
     return x;
   }
+  constexpr ArrayBoundsType extents() const { return m_extents; }
 
  private:
 

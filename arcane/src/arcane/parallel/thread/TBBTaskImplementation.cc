@@ -21,6 +21,7 @@
 #include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/Profiling.h"
 #include "arcane/utils/MemoryAllocator.h"
+#include "arcane/utils/FixedArray.h"
 #include "arcane/utils/internal/TaskFactoryInternal.h"
 
 #include "arcane/core/FactoryService.h"
@@ -197,27 +198,27 @@ _toTBBRange(const ComplexForLoopRanges<4>& r)
 /*---------------------------------------------------------------------------*/
 
 inline tbb::blocked_rangeNd<Int32,2>
-_toTBBRangeWithGrain(const tbb::blocked_rangeNd<Int32,2>& r,std::size_t grain_size)
+_toTBBRangeWithGrain(const tbb::blocked_rangeNd<Int32,2>& r,FixedArray<size_t,2> grain_sizes)
 {
-  return {{r.dim(0).begin(), r.dim(0).end(), grain_size},
-          {r.dim(1).begin(), r.dim(1).end()}};
+  return {{r.dim(0).begin(), r.dim(0).end(), grain_sizes[0]},
+          {r.dim(1).begin(), r.dim(1).end(), grain_sizes[1]}};
 }
 
 inline tbb::blocked_rangeNd<Int32,3>
-_toTBBRangeWithGrain(const tbb::blocked_rangeNd<Int32,3>& r,std::size_t grain_size)
+_toTBBRangeWithGrain(const tbb::blocked_rangeNd<Int32,3>& r,FixedArray<size_t,3> grain_sizes)
 {
-  return {{r.dim(0).begin(), r.dim(0).end(), grain_size},
-          {r.dim(1).begin(), r.dim(0).end()},
-          {r.dim(2).begin(), r.dim(0).end()}};
+  return {{r.dim(0).begin(), r.dim(0).end(), grain_sizes[0]},
+          {r.dim(1).begin(), r.dim(1).end(), grain_sizes[1]},
+          {r.dim(2).begin(), r.dim(2).end(), grain_sizes[2]}};
 }
 
 inline tbb::blocked_rangeNd<Int32,4>
-_toTBBRangeWithGrain(const tbb::blocked_rangeNd<Int32,4>& r,std::size_t grain_size)
+_toTBBRangeWithGrain(const tbb::blocked_rangeNd<Int32,4>& r,FixedArray<size_t,4> grain_sizes)
 {
-  return {{r.dim(0).begin(), r.dim(0).end(), grain_size},
-          {r.dim(1).begin(), r.dim(1).end()},
-          {r.dim(2).begin(), r.dim(2).end()},
-          {r.dim(3).begin(), r.dim(3).end()}};
+  return {{r.dim(0).begin(), r.dim(0).end(), grain_sizes[0]},
+          {r.dim(1).begin(), r.dim(1).end(), grain_sizes[1]},
+          {r.dim(2).begin(), r.dim(2).end(), grain_sizes[2]},
+          {r.dim(3).begin(), r.dim(3).end(), grain_sizes[3]}};
 }
 
 /*---------------------------------------------------------------------------*/
@@ -766,8 +767,13 @@ class TBBMDParallelFor
       o << "TBB: INDEX=" << TaskFactory::currentTaskThreadIndex()
         << " id=" << std::this_thread::get_id()
         << " max_allowed=" << m_nb_allowed_thread
-      //<< " range_begin=" << range.begin() << " range_size=" << range.size()
-        << "\n";
+        << " MDFor ";
+      for( Int32 i=0; i<RankValue; ++i ){
+        Int32 r0= range.dim(i).begin();
+        Int32 r1 = range.dim(i).size();
+        o << " range" << i << " (begin=" << r0 << " size=" << r1 << ")";
+      }
+      o << "\n";
       std::cout << o.str();
       std::cout.flush();
     }
@@ -931,7 +937,9 @@ class TBBTaskImplementation::ParallelForExecute
       std::cout << "TBB: TBBTaskImplementationInit ParallelForExecute begin=" << m_begin
                 << " size=" << m_size << " gsize=" << gsize
                 << " partitioner=" << (int)m_options.partitioner()
-                << " nb_thread=" << nb_thread << '\n';
+                << " nb_thread=" << nb_thread
+                << " has_stat_info=" << (m_stat_info!=nullptr)
+                << '\n';
 
     if (gsize>0)
       range = tbb::blocked_range<Integer>(m_begin,m_begin+m_size,gsize);
@@ -968,19 +976,54 @@ class TBBTaskImplementation::MDParallelForExecute
                        const ParallelLoopOptions& options,
                        const ComplexForLoopRanges<RankValue>& range,
                        IMDRangeFunctor<RankValue>* f,[[maybe_unused]] ForLoopOneExecStat* stat_info)
-  : m_impl(impl), m_tbb_range(_toTBBRange(range)), m_functor(f), m_options(options)
+  : m_impl(impl)
+  , m_tbb_range(_toTBBRange(range))
+  , m_functor(f)
+  , m_options(options)
+  , m_stat_info(stat_info)
   {
     // On ne peut pas modifier les valeurs d'une instance de tbb::blocked_rangeNd.
     // Il faut donc en reconstruire une complètement.
-
-    Integer gsize = m_options.grainSize();
-    if (gsize>0  && RankValue==1){
-      Int32 max_range0 = range.template upperBound<0>() - range.template lowerBound<0>();
-      if (gsize > max_range0)
-        gsize = max_range0;
-      // Modifie la taille du grain pour la première dimension.
-      // TODO: pouvoir aussi modifier la valeur de 'grain_size' pour les autres dimensions.
-      m_tbb_range = _toTBBRangeWithGrain(m_tbb_range,gsize);
+    FixedArray<size_t,RankValue> all_grain_sizes;
+    Int32 gsize = m_options.grainSize();
+    if (gsize>0){
+      // Si la taille du grain est différent zéro, il faut la répartir
+      // sur l'ensemble des dimensions. On commence par la dernière.
+      // TODO: regarder pourquoi dans certains cas les performances sont
+      // inférieures à celles qu'on obtient en utilisant un partitionneur
+      // statique.
+      constexpr bool is_verbose = false;
+      std::array<Int32,RankValue> range_extents = range.extents().asStdArray();
+      double ratio = static_cast<double>(gsize) / static_cast<double>(range.nbElement());
+      if constexpr (is_verbose){
+        std::cout << "GSIZE=" << gsize << " rank=" << RankValue << " ratio=" << ratio;
+        for(Int32 i=0; i<RankValue; ++i )
+          std::cout << " range" << i << "=" << range_extents[i];
+        std::cout << "\n";
+      }
+      Int32 index = RankValue - 1;
+      Int32 remaining_grain = gsize;
+      for( ; index>=0; --index ){
+        Int32 current = range_extents[index];
+        if constexpr (is_verbose)
+          std::cout << "Check index=" << index << " remaining=" << remaining_grain << " current=" << current << "\n";
+        if (remaining_grain>current){
+          all_grain_sizes[index] = current;
+          remaining_grain /= current;
+        }
+        else{
+          all_grain_sizes[index] = remaining_grain;
+          break;
+        }
+      }
+      for( Int32 i=0; i<index; ++i )
+        all_grain_sizes[i] = 1;
+      if constexpr (is_verbose){
+        for(Int32 i=0; i<RankValue; ++i )
+          std::cout << " grain" << i << "=" << all_grain_sizes[i];
+        std::cout << "\n";
+      }
+      m_tbb_range = _toTBBRangeWithGrain(m_tbb_range,all_grain_sizes);
     }
   }
 
@@ -1001,8 +1044,9 @@ class TBBTaskImplementation::MDParallelForExecute
       //TBBDeterministicParallelFor dpf(m_impl,pf,m_begin,m_size,gsize,nb_thread);
       //tbb::parallel_for(range2,dpf);
     }
-    else
+    else{
       tbb::parallel_for(m_tbb_range,pf);
+    }
   }
  private:
   TBBTaskImplementation* m_impl = nullptr;
@@ -1152,10 +1196,14 @@ _executeMDParallelFor(const ComplexForLoopRanges<RankValue>& loop_ranges,
   ForLoopOneExecStat* stat_info = sei.statInfo();
   impl::ScopedStatLoop scoped_loop(sei.isOwn() ? stat_info : nullptr);
 
-  if (TaskFactory::verboseLevel()>=1)
+  if (TaskFactory::verboseLevel()>=1){
     std::cout << "TBB: TBBTaskImplementation executeMDParallelFor nb_dim=" << RankValue
               << " nb_element=" << loop_ranges.nbElement()
-              << " grain_size=" << options.grainSize() << '\n';
+              << " grain_size=" << options.grainSize()
+              << " name=" << run_info.traceInfo().traceInfo()
+              << " has_stat_info=" << (stat_info!=nullptr)
+              << '\n';
+  }
 
   Integer max_thread = options.maxThread();
   // En exécution séquentielle, appelle directement la méthode \a f.
