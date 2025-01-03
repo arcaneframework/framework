@@ -562,7 +562,19 @@ if (NOT ARCANE_WANT_NOMPI)
   arcane_find_package(MPI)
 endif()
 arcane_find_package(Valgrind)
-include(${CMAKE_CURRENT_LIST_DIR}/cmake/FindFlexLM.cmake)
+
+# Définir la variable PROTECTION comme valeur par défaut : FLEXLM
+set(PROTECTION "FLEXLM" CACHE STRING "Specify the license system (FLEXLM or RLM)")
+
+# Vérifiez la valeur de PROTECTION
+if(PROTECTION STREQUAL "FLEXLM")
+    include(${CMAKE_CURRENT_LIST_DIR}/cmake/FindFlexLM.cmake)
+elseif(PROTECTION STREQUAL "RLM")
+    include(${CMAKE_CURRENT_LIST_DIR}/cmake/FindRLM.cmake)
+else()
+    message(FATAL_ERROR "Invalid value for PROTECTION: ${PROTECTION}. Please use FLEXLM or RLM.")
+endif()
+
 message(STATUS "----------------------------------------------------")
 
 # default package list
@@ -662,9 +674,9 @@ if(ARCANE_WANT_LONGDOUBLE)
 endif()
 
 IF(NOT FLEXLM_FOUND)
-  MESSAGE(STATUS "PACKAGE: FlexLM         : not found")
+  MESSAGE(STATUS "PACKAGE: ${FLEXLM_PROTECTION_NAME}         : not found")
 ELSE(NOT FLEXLM_FOUND)
-  MESSAGE(STATUS "PACKAGE: FlexLM         : ${FLEXLM_LIBRARIES}")
+  MESSAGE(STATUS "PACKAGE: ${FLEXLM_PROTECTION_NAME}         : ${FLEXLM_LIBRARIES}")
 ENDIF(NOT FLEXLM_FOUND)
 
 IF(ARCANE_CONFIGURE_WANT_MPC)
