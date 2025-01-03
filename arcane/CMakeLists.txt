@@ -776,14 +776,6 @@ if(FLEXLM_FOUND)
   list(APPEND ARCANE_EXTERNAL_LIBRARIES ${FLEXLM_LIBRARIES})
   # TODO: a priori cette variable n'est plust utilisée donc on devrait pouvoir la supprimer
   list(APPEND ARCANE_EXTERNAL_LIBRARY_DIRS ${FLEXLM_LIBRARY_DIRS})
-  # TODO: à retirer lors de la migration vers RLM
-  #       cette définition a pour but d'utiliser la feature Arcane de la license de test RLM
-  #       qui ne contient pas de feature ArcaneCore, voir :
-  #       - arcane/src/arcane/impl/FlexLMTools.h
-  #       - arcane/src/arcane/impl/FlexLMTools.cc
-  if("${FLEXLM_PROTECTION_NAME}" STREQUAL "RLM")
-    ADD_DEFINITIONS(-DARCANE_TEST_RLM)
-  endif()
 endif()
 
 if(ARCANE_USE_MPC)

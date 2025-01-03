@@ -18,6 +18,17 @@ arcane_add_arccon_packages(arcane_impl PRIVATE ${PKGS})
 
 target_compile_definitions(arcane_impl PRIVATE ARCANE_COMPONENT_arcane_impl)
 
+if(FLEXLM_FOUND)
+  # TODO: à retirer lors de la migration vers RLM
+  #       cette définition a pour but d'utiliser la feature Arcane de la license de test RLM
+  #       qui ne contient pas de feature ArcaneCore, voir :
+  #       - arcane/src/arcane/impl/FlexLMTools.h
+  #       - arcane/src/arcane/impl/FlexLMTools.cc
+  if("${FLEXLM_PROTECTION_NAME}" STREQUAL "RLM")
+    target_compile_definitions(arcane_impl PRIVATE ARCANE_TEST_RLM)
+  endif()
+endif()
+
 target_link_libraries(arcane_impl PUBLIC arcane_core)
 
 # Avec les versions statiques de la glib, cela est nécessaire
