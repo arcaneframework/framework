@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IncrementalComponentModifier.cc                             (C) 2000-2024 */
+/* IncrementalComponentModifier.cc                             (C) 2000-2025 */
 /*                                                                           */
 /* Modification incrémentale des constituants.                               */
 /*---------------------------------------------------------------------------*/
@@ -50,9 +50,9 @@ IncrementalComponentModifier(AllEnvData* all_env_data, const RunQueue& queue)
     m_use_generic_copy_between_pure_and_partial = v.value();
   }
   else {
-    // Par défaut sur un accélérateur on utilise la copie avec une seule file
-    // car c'est la plus performante.
-    if (queue.isAcceleratorPolicy())
+    // Par défaut sur un accélérateur et en multi-threading, on utilise la copie
+    // avec une seule file, car c'est le mécanisme le plus performant.
+    if (queue.executionPolicy() != Accelerator::eExecutionPolicy::Sequential)
       m_use_generic_copy_between_pure_and_partial = 2;
   }
   if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_FORCE_MULTIPLE_COMMAND_FOR_MATERIAL_RESIZE", true)) {
