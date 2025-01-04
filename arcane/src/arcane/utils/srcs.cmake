@@ -31,7 +31,6 @@ set(ARCANE_SOURCES
   ConcurrencyUtils.h
   CStringUtils.cc
   CStringUtils.h
-  DependencyInjection.h
   DependencyInjection.cc
   DualUniqueArray.h
   Enumerator.cc
@@ -336,6 +335,7 @@ set(ARCANE_SOURCES
   GraphBaseT.h
   DirectedGraphT.h
   DirectedAcyclicGraphT.h
+  internal/DependencyInjection.h
   internal/ApplicationInfoProperties.h
   internal/MemoryResourceMng.h
   internal/MemoryUtilsInternal.h

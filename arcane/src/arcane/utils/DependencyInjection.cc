@@ -1,17 +1,17 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* DependencyInjection.cc                                      (C) 2000-2021 */
+/* DependencyInjection.cc                                      (C) 2000-2025 */
 /*                                                                           */
 /* Types et fonctions pour gérer le pattern 'DependencyInjection'.           */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/DependencyInjection.h"
+#include "arcane/utils/internal/DependencyInjection.h"
 
 #include "arcane/utils/UniqueArray.h"
 #include "arcane/utils/ExternalRef.h"
@@ -29,20 +29,24 @@ namespace Arcane::DependencyInjection
 class Injector::Impl
 {
  public:
+
   class InstanceInfo
   {
    public:
+
     InstanceInfo(IInjectedInstance* instance, Int32 index)
     : m_instance(instance)
     , m_index(index)
     {}
 
    public:
+
     IInjectedInstance* m_instance = nullptr;
     Int32 m_index = 0;
   };
 
  public:
+
   ~Impl()
   {
     for (Integer i = 0, n = m_instance_list.size(); i < n; ++i)
@@ -51,6 +55,7 @@ class Injector::Impl
   }
 
  public:
+
   void addInstance(IInjectedInstance* instance)
   {
     Int32 index = m_instance_list.size();
@@ -60,9 +65,11 @@ class Injector::Impl
   Int32 nbInstance() const { return m_instance_list.size(); }
 
  private:
+
   UniqueArray<InstanceInfo> m_instance_list;
 
  public:
+
   UniqueArray<Ref<impl::IInstanceFactory>> m_factories;
 };
 

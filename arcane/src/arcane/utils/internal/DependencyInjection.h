@@ -1,16 +1,16 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* DependencyInjection.h                                       (C) 2000-2024 */
+/* DependencyInjection.h                                       (C) 2000-2025 */
 /*                                                                           */
 /* Types et fonctions pour gérer le pattern 'DependencyInjection'.           */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_UTILS_DEPENDENCYINJECTION_H
-#define ARCANE_UTILS_DEPENDENCYINJECTION_H
+#ifndef ARCANE_UTILS_INTERNAL_DEPENDENCYINJECTION_H
+#define ARCANE_UTILS_INTERNAL_DEPENDENCYINJECTION_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -84,14 +84,17 @@ class ARCANE_UTILS_EXPORT IInjectedInstance
 class ARCANE_UTILS_EXPORT ProviderProperty
 {
  public:
+
   ProviderProperty(const char* name)
   : m_name(name)
   {}
 
  public:
+
   const char* name() const { return m_name; }
 
  private:
+
   const char* m_name;
 };
 
@@ -112,12 +115,14 @@ namespace Arcane::DependencyInjection::impl
 class TypeInfo
 {
  private:
+
   TypeInfo(const TraceInfo& trace_info, const std::type_info& type_info)
   : m_trace_info(trace_info)
   , m_type_info(type_info)
   {}
 
  public:
+
   template <typename Type> static TypeInfo create()
   {
     return TypeInfo(A_FUNCINFO, typeid(Type));
@@ -126,6 +131,7 @@ class TypeInfo
   const std::type_info& stdTypeInfo() const { return m_type_info; }
 
  private:
+
   TraceInfo m_trace_info;
   const std::type_info& m_type_info;
 };
@@ -142,6 +148,7 @@ class TypeInfo
 class ARCANE_UTILS_EXPORT ConcreteFactoryTypeInfo
 {
  private:
+
   ConcreteFactoryTypeInfo(TypeInfo&& a, TypeInfo&& b, TypeInfo&& c)
   : m_interface_info(a)
   , m_concrete_info(b)
@@ -149,6 +156,7 @@ class ARCANE_UTILS_EXPORT ConcreteFactoryTypeInfo
   {}
 
  public:
+
   template <typename InterfaceType, typename ConcreteType, typename ConstructorType>
   static ConcreteFactoryTypeInfo create()
   {
@@ -161,6 +169,7 @@ class ARCANE_UTILS_EXPORT ConcreteFactoryTypeInfo
   const TypeInfo& constructorTypeInfo() const { return m_constructor_info; }
 
  private:
+
   TypeInfo m_interface_info;
   TypeInfo m_concrete_info;
   TypeInfo m_constructor_info;
@@ -177,6 +186,7 @@ class IInjectedRefInstanceT
 : public IInjectedInstance
 {
  public:
+
   virtual Ref<InterfaceType> instance() = 0;
 
  private:
@@ -193,20 +203,24 @@ class InjectedRefInstance
 : public IInjectedRefInstanceT<InterfaceType>
 {
  public:
+
   using InstanceType = Ref<InterfaceType>;
 
  public:
+
   InjectedRefInstance(InstanceType t_instance, const String& t_name)
   : m_instance(t_instance)
   , m_name(t_name)
   {}
 
  public:
+
   Ref<InterfaceType> instance() override { return m_instance; }
   bool hasName(const String& str) const override { return m_name == str; }
   bool hasTypeInfo(const std::type_info& tinfo) const override { return typeid(InstanceType) == tinfo; }
 
  private:
+
   InstanceType m_instance;
   String m_name;
 };
@@ -222,9 +236,8 @@ class IInjectedValueInstance
 : public IInjectedInstance
 {
  public:
-  virtual Type instance() const = 0;
 
- private:
+  virtual Type instance() const = 0;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -238,20 +251,24 @@ class InjectedValueInstance
 : public IInjectedValueInstance<Type>
 {
  public:
+
   using InstanceType = Type;
 
  public:
+
   InjectedValueInstance(Type t_instance, const String& t_name)
   : m_instance(t_instance)
   , m_name(t_name)
   {}
 
  public:
+
   Type instance() const override { return m_instance; }
   bool hasName(const String& str) const override { return m_name == str; }
   bool hasTypeInfo(const std::type_info& tinfo) const override { return typeid(InstanceType) == tinfo; }
 
  private:
+
   Type m_instance;
   String m_name;
 };
@@ -269,14 +286,17 @@ class ARCANE_UTILS_EXPORT InjectedInstanceRef
   typedef Ref<IInjectedInstance> RefType;
 
  private:
-  InjectedInstanceRef(const RefType& r)
+
+  explicit InjectedInstanceRef(const RefType& r)
   : m_instance(r)
   {}
 
  public:
+
   InjectedInstanceRef() = default;
 
  public:
+
   static InjectedInstanceRef createRef(IInjectedInstance* p)
   {
     return InjectedInstanceRef(RefType::create(p));
@@ -291,10 +311,12 @@ class ARCANE_UTILS_EXPORT InjectedInstanceRef
   }
 
  public:
+
   IInjectedInstance* get() const { return m_instance.get(); }
   void reset() { m_instance.reset(); }
 
  private:
+
   RefType m_instance;
 };
 
@@ -309,9 +331,11 @@ class ARCANE_UTILS_EXPORT IInstanceFactory
   ARCCORE_DECLARE_REFERENCE_COUNTED_INCLASS_METHODS();
 
  protected:
+
   virtual ~IInstanceFactory() = default;
 
  public:
+
   virtual InjectedInstanceRef createGenericReference(Injector& injector, const String& name) = 0;
 
   virtual const FactoryInfo* factoryInfo() const = 0;
@@ -344,6 +368,7 @@ class InstanceFactory
 : public AbstractInstanceFactory
 {
  public:
+
   InstanceFactory(FactoryInfo* si, IConcreteFactory<InterfaceType>* sub_factory)
   : m_factory_info(si)
   , m_sub_factory(sub_factory)
@@ -381,10 +406,12 @@ class InstanceFactory
   }
 
  protected:
+
   FactoryInfo* m_factory_info;
   IConcreteFactory<InterfaceType>* m_sub_factory;
 
  private:
+
   Ref<InterfaceType> _createReference(Injector& injector)
   {
     return m_sub_factory->createReference(injector);
@@ -403,9 +430,11 @@ class InstanceFactory
 class ARCANE_UTILS_EXPORT IConcreteFactoryBase
 {
  public:
+
   virtual ~IConcreteFactoryBase() = default;
 
  public:
+
   virtual ConcreteFactoryTypeInfo concreteFactoryInfo() const = 0;
   virtual Int32 nbConstructorArg() const = 0;
 };
@@ -422,9 +451,11 @@ class IConcreteFactory
 : public IConcreteFactoryBase
 {
  public:
+
   virtual ~IConcreteFactory() = default;
 
  public:
+
   //! Créé une instance du service .
   virtual Ref<InterfaceType> createReference(Injector&) = 0;
 };
@@ -441,14 +472,17 @@ class ARCANE_UTILS_EXPORT FactoryInfo
   class Impl;
 
  public:
+
   FactoryInfo(const FactoryInfo&) = delete;
   FactoryInfo& operator=(const FactoryInfo&) = delete;
   ~FactoryInfo();
 
  private:
+
   FactoryInfo(const ProviderProperty& property);
 
  public:
+
   static FactoryInfo* create(const ProviderProperty& property, const char* file_name, int line_number)
   {
     ARCANE_UNUSED(file_name);
@@ -459,6 +493,7 @@ class ARCANE_UTILS_EXPORT FactoryInfo
   bool hasName(const String& str) const;
 
  private:
+
   Impl* m_p = nullptr;
 };
 
@@ -483,6 +518,7 @@ class ARCANE_UTILS_EXPORT GlobalRegisterer
   typedef FactoryInfo* (*FactoryCreateFunc)(const ProviderProperty& property);
 
  public:
+
   /*!
    * \brief Crée en enregistreur pour le service \a name et la fonction \a func.
    *
@@ -529,6 +565,7 @@ class ARCANE_UTILS_EXPORT Injector
   class InjectorHelper
   {
    public:
+
     static IInjectedInstance* bind(const Type& t, const String& name)
     {
       return new impl::InjectedValueInstance<Type>(t, name);
@@ -544,9 +581,11 @@ class ARCANE_UTILS_EXPORT Injector
   class InjectorHelper<Ref<PointerType>>
   {
    public:
+
     using ThatType = Ref<PointerType>;
 
    public:
+
     static IInjectedInstance* bind(const ThatType& t, const String& name)
     {
       return new impl::InjectedRefInstance<PointerType>(t, name);
@@ -562,6 +601,7 @@ class ARCANE_UTILS_EXPORT Injector
   class IFactoryVisitorFunctor
   {
    public:
+
     virtual ~IFactoryVisitorFunctor() = default;
     virtual bool execute(impl::IInstanceFactory* f) = 0;
   };
@@ -570,14 +610,17 @@ class ARCANE_UTILS_EXPORT Injector
   : public IFactoryVisitorFunctor
   {
    public:
+
     FactoryVisitorFunctor(Lambda& lambda)
     : m_lambda(lambda)
     {}
 
    public:
+
     virtual bool execute(impl::IInstanceFactory* f) { return m_lambda(f); }
 
    private:
+
     Lambda& m_lambda;
   };
 
@@ -587,6 +630,7 @@ class ARCANE_UTILS_EXPORT Injector
   class IInstanceVisitorFunctor
   {
    public:
+
     virtual ~IInstanceVisitorFunctor() = default;
     virtual bool execute(IInjectedInstance* v) = 0;
   };
@@ -595,24 +639,29 @@ class ARCANE_UTILS_EXPORT Injector
   : public IInstanceVisitorFunctor
   {
    public:
+
     InstanceVisitorFunctor(Lambda& lambda)
     : m_lambda(lambda)
     {}
 
    public:
+
     virtual bool execute(IInjectedInstance* v) { return m_lambda(v); }
 
    private:
+
     Lambda& m_lambda;
   };
 
  public:
+
   Injector();
   Injector(const Injector&) = delete;
   Injector& operator=(const Injector&) = delete;
   ~Injector();
 
  public:
+
   template <typename Type> void
   bind(Type iref, const String& name = String())
   {
@@ -655,9 +704,11 @@ class ARCANE_UTILS_EXPORT Injector
   void fillWithGlobalFactories();
 
  private:
+
   Impl* m_p = nullptr;
 
  private:
+
   void _add(IInjectedInstance* instance);
 
   // Itère sur la lambda et s'arrête dès que cette dernière retourne \a true
@@ -728,6 +779,7 @@ namespace Arcane::DependencyInjection::impl
 class ARCANE_UTILS_EXPORT ConstructorRegistererBase
 {
  protected:
+
   [[noreturn]] void _doError1(const String& message, int nb_value);
 };
 
@@ -742,6 +794,7 @@ class ConstructorRegisterer
 : public ConstructorRegistererBase
 {
  public:
+
   using ArgsType = std::tuple<Args...>;
 
   ConstructorRegisterer() {}
@@ -788,6 +841,7 @@ class ConcreteFactory
   using Args = typename ConstructorType::ArgsType;
 
  public:
+
   Ref<InterfaceType> createReference(Injector& injector) override
   {
     ConstructorType ct;
@@ -804,6 +858,7 @@ class ConcreteFactory
   }
 
  private:
+
   /*!
    * Créé une instance du service à partir des arguments sous forme d'un std::tuple.
    *
@@ -827,6 +882,7 @@ template <typename... Interfaces>
 class InterfaceListRegisterer
 {
  public:
+
   /*!
    * \brief Enregistre une fabrique.
    *
@@ -840,6 +896,7 @@ class InterfaceListRegisterer
   }
 
  private:
+
   template <typename ConcreteType, typename ConstructorType,
             typename InterfaceType, typename... OtherInterfaces>
   void
@@ -865,6 +922,7 @@ template <typename ConcreteType, typename InterfaceList>
 class InjectionRegisterer
 {
  public:
+
   //! Enregistre dans \a si les fabriques correspondentes aux constructeurs \a Constructors
   template <typename... Constructors> void
   registerProviderInfo(FactoryInfo* si, const Constructors&... args)
@@ -873,10 +931,12 @@ class InjectionRegisterer
   }
 
  private:
+
   // TODO: Créér l'instance de 'FactoryInfo' dans le constructeur
   InterfaceList m_interface_list;
 
  private:
+
   //! Surcharge pour 1 constructeur
   template <typename ConstructorType> void
   _create(FactoryInfo* si, const ConstructorType&)
@@ -897,7 +957,7 @@ class InjectionRegisterer
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arcane::DependencyInjection::impl
+} // namespace Arcane::DependencyInjection::impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
