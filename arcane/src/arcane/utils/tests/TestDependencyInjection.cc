@@ -8,6 +8,7 @@
 #include <gtest/gtest.h>
 
 #include "arcane/utils/internal/DependencyInjection.h"
+#include "arcane/utils/FatalErrorException.h"
 
 #include "arcane/utils/ITraceMng.h"
 
@@ -69,6 +70,13 @@ class IE
   virtual ~IE() = default;
   virtual int intValue() const = 0;
   virtual String stringValue() const = 0;
+};
+
+class INone
+{
+ public:
+
+  virtual ~INone() = default;
 };
 
 class AImpl
@@ -202,6 +210,38 @@ TEST(DependencyInjection,TestPrintFactories)
   std::cout << "FACTORIES=" << injector.printFactories() << "\n";
 }
 
+namespace
+{
+template <typename T> void
+_testNotFoundThrow(Arcane::DependencyInjection::Injector& injector)
+{
+  try {
+    Ref<T> ic = injector.createInstance<T>("Test1");
+    FAIL() << "Expected FatalErrorException";
+  }
+  catch (const FatalErrorException& ex) {
+    std::cout << "EX=" << ex << "\n";
+  }
+  catch (...) {
+    FAIL() << "Expected FatalErrorException";
+  }
+}
+} // namespace
+
+TEST(DependencyInjection, TestNotFound)
+{
+  using namespace Arcane::DependencyInjection;
+  using namespace DI_Test;
+  Injector injector;
+  injector.fillWithGlobalFactories();
+
+  _testNotFoundThrow<INone>(injector);
+  _testNotFoundThrow<IA>(injector);
+  _testNotFoundThrow<IC>(injector);
+  Ref<IC> ic2 = injector.createInstance<IC>("Test1", true);
+  ASSERT_EQ(ic2.get(), nullptr);
+}
+
 TEST(DependencyInjection,TestBind1)
 {
   using namespace Arcane::DependencyInjection;
@@ -223,7 +263,7 @@ TEST(DependencyInjection,ProcessGlobalProviders)
   Injector injector;
   injector.fillWithGlobalFactories();
 
-  Ref<IA> ia = injector.createInstance<IA>();
+  Ref<IA> ia = injector.createInstance<IA>({});
   EXPECT_TRUE(ia.get());
   ASSERT_EQ(ia->value(),5);
 
@@ -231,7 +271,7 @@ TEST(DependencyInjection,ProcessGlobalProviders)
   EXPECT_TRUE(ia2.get());
   ASSERT_EQ(ia2->value(),5);
 
-  Ref<IB> ib = injector.createInstance<IB>();
+  Ref<IB> ib = injector.createInstance<IB>({});
   EXPECT_TRUE(ib.get());
   ASSERT_EQ(ib->value(),12);
 }
@@ -248,7 +288,7 @@ void _TestBindValue()
 
     injector.bind(wanted_string);
 
-    Ref<IB2> ib = injector.createInstance<IB2>();
+    Ref<IB2> ib = injector.createInstance<IB2>({});
     EXPECT_TRUE(ib.get());
     ASSERT_EQ(ib->value(), 32);
     ASSERT_EQ(ib->stringValue(), wanted_string);
