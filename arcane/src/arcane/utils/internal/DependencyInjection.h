@@ -684,10 +684,15 @@ class ARCANE_UTILS_EXPORT Injector
    * Créé et retourne une instance dont l'implémentation est
    * \a implementation_name et qui implémente l'interface \a InterfaceType.
    *
-   * Lève une exception si aucune instance ne correspond.
+   * Si l'implémentation \a implementation_name n'est pas trouvé ou si
+   * elle n'implémente pas l'interface \a InterfaceType, le comportement
+   * est le suivant:
+   * - si \a allow_null vaut \a true, retourne une référence nulle,
+   * - si \a allow_null vaut \a false, lève une exception de type
+   * FatalErrorException.
    */
   template <typename InterfaceType> Ref<InterfaceType>
-  createInstance(const String& implementation_name)
+  createInstance(const String& implementation_name, bool allow_null = false)
   {
     using FactoryType = impl::InstanceFactory<InterfaceType>;
     Ref<InterfaceType> instance;
@@ -705,7 +710,7 @@ class ARCANE_UTILS_EXPORT Injector
     };
     FactoryVisitorFunctor ff(f);
     _iterateFactories(implementation_name, &ff);
-    if (instance.get())
+    if (instance.get() || allow_null)
       return instance;
 
     // Pas d'implémentation correspondante trouvée.
