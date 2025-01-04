@@ -21,6 +21,8 @@
 #include "arcane/utils/Ref.h"
 #include "arcane/utils/ExternalRef.h"
 #include "arcane/utils/GenericRegisterer.h"
+#include "arcane/utils/Array.h"
+#include "arcane/utils/String.h"
 
 #include "arccore/base/ReferenceCounterImpl.h"
 
@@ -479,7 +481,7 @@ class ARCANE_UTILS_EXPORT FactoryInfo
 
  private:
 
-  FactoryInfo(const ProviderProperty& property);
+  explicit FactoryInfo(const ProviderProperty& property);
 
  public:
 
@@ -491,6 +493,7 @@ class ARCANE_UTILS_EXPORT FactoryInfo
   }
   void addFactory(Ref<IInstanceFactory> f);
   bool hasName(const String& str) const;
+  void fillWithImplementationNames(Array<String>& names) const;
 
  private:
 
@@ -560,6 +563,7 @@ namespace Arcane::DependencyInjection
 class ARCANE_UTILS_EXPORT Injector
 {
   class Impl;
+  using FactoryFilterFunc = bool (*)(impl::IInstanceFactory*);
 
   template <class Type>
   class InjectorHelper
@@ -674,8 +678,16 @@ class ARCANE_UTILS_EXPORT Injector
     return InjectorHelper<Type>::get(*this, name);
   }
 
+  /*!
+   * \brief Créé une instance implémentant une interface.
+   *
+   * Créé et retourne une instance dont l'implémentation est
+   * \a implementation_name et qui implémente l'interface \a InterfaceType.
+   *
+   * Lève une exception si aucune instance ne correspond.
+   */
   template <typename InterfaceType> Ref<InterfaceType>
-  createInstance(const String& service_name = String())
+  createInstance(const String& implementation_name)
   {
     using FactoryType = impl::InstanceFactory<InterfaceType>;
     Ref<InterfaceType> instance;
@@ -692,11 +704,17 @@ class ARCANE_UTILS_EXPORT Injector
       return false;
     };
     FactoryVisitorFunctor ff(f);
-    _iterateFactories(service_name, &ff);
+    _iterateFactories(implementation_name, &ff);
     if (instance.get())
       return instance;
-    // TODO: améliorer le message
-    _doError(A_FUNCINFO, "Can not create instance");
+
+    // Pas d'implémentation correspondante trouvée.
+    // Dans ce cas on récupère la liste des implémentations valides et on les affiche dans
+    // le message d'erreur.
+    auto filter_func = [](impl::IInstanceFactory* v) -> bool {
+      return dynamic_cast<FactoryType*>(v) != nullptr;
+    };
+    _printValidImplementationAndThrow(A_FUNCINFO, implementation_name, filter_func);
   }
 
   String printFactories() const;
@@ -762,6 +780,9 @@ class ARCANE_UTILS_EXPORT Injector
       return t->instance();
     _doError(A_FUNCINFO, "Can not find value for type");
   }
+  [[noreturn]] void _printValidImplementationAndThrow(const TraceInfo& ti,
+                                                      const String& implementation_name,
+                                                      FactoryFilterFunc filter_func);
   [[noreturn]] void _doError(const TraceInfo& ti, const String& message);
 };
 

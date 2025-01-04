@@ -213,6 +213,15 @@ hasName(const String& str) const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+void FactoryInfo::
+fillWithImplementationNames(Array<String>& names) const
+{
+  names.add(m_p->m_name);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -337,6 +346,37 @@ void Injector::
 _doError(const TraceInfo& ti, const String& message)
 {
   ARCANE_FATAL("Function: {0} : {1}", ti, message);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void Injector::
+_printValidImplementationAndThrow(const TraceInfo& ti,
+                                  const String& implementation_name,
+                                  FactoryFilterFunc filter_func)
+{
+  // Pas d'implémentation correspondante trouvée.
+  // Dans ce cas on récupère la liste des implémentations valides et on les affiche dans
+  // le message d'erreur.
+  UniqueArray<String> valid_names;
+  for (Int32 i = 0, n = _nbFactory(); i < n; ++i) {
+    impl::IInstanceFactory* f = _factory(i);
+    if (filter_func(f)) {
+      f->factoryInfo()->fillWithImplementationNames(valid_names);
+    }
+  };
+  String message = String::format("No implementation named '{0}' found", implementation_name);
+
+  // TODO: améliorer le message
+  String message2;
+  if (valid_names.size() == 0)
+    message2 = " and no implementation is available.";
+  else if (valid_names.size() == 1)
+    message2 = String::format(". Valid value is: '{0}'.", valid_names[0]);
+  else
+    message2 = String::format(". Valid values are: '{0}'.", String::join(", ", valid_names));
+  _doError(ti, message + message2);
 }
 
 /*---------------------------------------------------------------------------*/
