@@ -21,8 +21,6 @@
 #include "arcane/utils/Ref.h"
 #include "arcane/utils/ExternalRef.h"
 #include "arcane/utils/GenericRegisterer.h"
-#include "arcane/utils/Array.h"
-#include "arcane/utils/String.h"
 
 #include "arccore/base/ReferenceCounterImpl.h"
 
