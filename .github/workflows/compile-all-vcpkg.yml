@@ -108,7 +108,7 @@ jobs:
       VCPKG_ROOT: '${{ github.workspace }}/../../build_base/framework-ci/vcpkg'
       VCPKG_BUILD_DIR: '${{ github.workspace }}/../../build_base/framework-ci/vcpkg'
       BUILD_COMMANDS_ROOT: '${{ github.workspace }}/../../build_base/framework-ci/_build'
-      VCPKG_INSTALL_HASH_PACKAGE_NAME: '1.6.1-${{ matrix.package_name }}-${{ matrix.triplet }}'
+      VCPKG_INSTALL_HASH_PACKAGE_NAME: '1.7.3-${{ matrix.package_name }}-${{ matrix.triplet }}'
       DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
       DOTNET_CLI_TELEMETRY_OPTOUT: true
       FRAMEWORKCI_BRANCH: main
