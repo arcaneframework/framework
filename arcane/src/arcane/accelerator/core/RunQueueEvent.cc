@@ -34,7 +34,7 @@ class RunQueueEvent::Impl
 {
  public:
 
-  Impl(impl::IRunQueueEventImpl* p)
+  explicit Impl(impl::IRunQueueEventImpl* p)
   : m_impl(p)
   {}
   ~Impl()
