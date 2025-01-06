@@ -29,10 +29,12 @@ namespace Arcane::Accelerator
 /*---------------------------------------------------------------------------*/
 /*!
  * \brief Evènement pour une file d'exécution.
- * \warning API en cours de définition.
+ *
+ * Cette classe a une sémantique par référence.
  *
  * Les méthodes RunQueue::recordEvent() et RunQueue::waitEvent() permettent
- * d'associer un RunQueueEvent à une RunQueue donnée.
+ * d'associer un RunQueueEvent à une RunQueue donnée pour effectuer
+ * une synchronisation.
  */
 class ARCANE_ACCELERATOR_CORE_EXPORT RunQueueEvent
 {
@@ -49,12 +51,23 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RunQueueEvent
 
  public:
 
+  RunQueueEvent();
+  RunQueueEvent(const RunQueueEvent&);
+  RunQueueEvent& operator=(const RunQueueEvent&);
+  RunQueueEvent(RunQueueEvent&&) noexcept;
+  RunQueueEvent& operator=(RunQueueEvent&&) noexcept;
   ~RunQueueEvent();
-  RunQueueEvent(const RunQueueEvent&) = delete;
-  RunQueueEvent& operator=(const RunQueueEvent&) = delete;
 
  public:
 
+  /*!
+   * \brief Indique si l'instance est nulle.
+   *
+   * L'instance est nulle si elle a été construite avec le constructeur par défaut.
+   */
+  bool isNull() const { return m_p.get() == nullptr; }
+
+  //! Bloque tant que les files associées à cet évènement n'ont pas fini leur travail.
   void wait();
 
  private:
