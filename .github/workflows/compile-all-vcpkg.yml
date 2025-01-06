@@ -62,6 +62,13 @@ jobs:
             vcpkg_os: ubuntu-22.04
             cmake_specific_args : '-DALIEN_BUILD_COMPONENT=all -DARCCORE_BUILD_MODE=Debug -DCMAKE_BUILD_TYPE=Debug -DARCCORE_CXX_STANDARD=20 -DARCANE_ENABLE_DOTNET_PYTHON_WRAPPER=ON'
             ctest_specific_args : '-I 1,150'
+          - os: ubuntu-24.04
+            full_name: 'ubuntu-cxx20-24.04'
+            package_name: 'ubuntu-24.04'
+            triplet: x64-linux-dynamic
+            vcpkg_os: ubuntu-24.04
+            cmake_specific_args : '-DALIEN_BUILD_COMPONENT=all -DARCCORE_BUILD_MODE=Debug -DCMAKE_BUILD_TYPE=Debug -DARCCORE_CXX_STANDARD=20 -DARCANE_ENABLE_DOTNET_PYTHON_WRAPPER=ON'
+            ctest_specific_args : '-I 1,150'
           - os: 'windows-2019'
             full_name: 'windows-2019-msmpi'
             package_name: 'windows-2019-msmpi'
@@ -135,6 +142,19 @@ jobs:
           cd '${{ github.workspace }}' && mv framework-ci '${{ env.FRAMEWORKCI_ROOT_PATH }}'
           ls -lart '${{ env.FRAMEWORKCI_ROOT_PATH }}'
 
+      - name: Setup .Net
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '6.0.x'
+
+      - name: Install mono
+        shell: 'bash'
+        # Mono is needed for 'ubuntu-24.04' because it is no longer installed on the runner
+        # WARNING: The installation has to be done after 'setup-dotnet'
+        if: ${{ matrix.os == 'ubuntu-24.04' }}
+        run: |
+          sudo apt-get install -y mono-devel
+
       - name: Setup environment
         shell: 'bash'
         run: |
@@ -147,12 +167,7 @@ jobs:
           mkdir -p ${{ env.CCACHE_DIR }}
           cp "${{ github.workspace }}/.github/compile-vcpkg-global.json" "${{ github.workspace }}/global.json"
       
-      - name: Setup .Net
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: '6.0.x'
-
-      - name: Install pnumpy
+      - name: Install numpy
         shell: 'bash'
         run: |
           pip3 install numpy
