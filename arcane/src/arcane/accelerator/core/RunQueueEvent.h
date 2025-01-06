@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* RunQueueEvent.h                                             (C) 2000-2024 */
+/* RunQueueEvent.h                                             (C) 2000-2025 */
 /*                                                                           */
 /* Evènement sur une file d'exécution.                                       */
 /*---------------------------------------------------------------------------*/
@@ -15,6 +15,7 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/Ref.h"
+#include "arcane/utils/AutoRef.h"
 
 #include "arcane/accelerator/core/RunCommand.h"
 
@@ -35,15 +36,16 @@ namespace Arcane::Accelerator
  */
 class ARCANE_ACCELERATOR_CORE_EXPORT RunQueueEvent
 {
-  friend RunQueueEvent makeEvent(Runner& runner);
-  friend Ref<RunQueueEvent> makeEventRef(Runner& runner);
+  friend RunQueueEvent makeEvent(const Runner& runner);
+  friend Ref<RunQueueEvent> makeEventRef(const Runner& runner);
   friend RunQueue;
   friend impl::RunQueueImpl;
+  class Impl;
 
  private:
 
   //! Construit un évènement. Utiliser makeEvent() pour constuire une instance
-  explicit RunQueueEvent(Runner& runner);
+  explicit RunQueueEvent(const Runner& runner);
 
  public:
 
@@ -57,11 +59,11 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RunQueueEvent
 
  private:
 
-  impl::IRunQueueEventImpl* _internalEventImpl() const { return m_p; }
+  impl::IRunQueueEventImpl* _internalEventImpl() const;
 
  private:
 
-  impl::IRunQueueEventImpl* m_p;
+  AutoRef2<Impl> m_p;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -73,7 +75,7 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RunQueueEvent
  * \brief Créé un évènement associé à \a runner.
  */
 inline RunQueueEvent
-makeEvent(Runner& runner)
+makeEvent(const Runner& runner)
 {
   return RunQueueEvent(runner);
 }
@@ -84,7 +86,7 @@ makeEvent(Runner& runner)
  * \brief Créé un évènement associé à \a runner.
  */
 inline Ref<RunQueueEvent>
-makeEventRef(Runner& runner)
+makeEventRef(const Runner& runner)
 {
   return makeRef(new RunQueueEvent(runner));
 }
