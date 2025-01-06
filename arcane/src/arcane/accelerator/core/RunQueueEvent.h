@@ -35,6 +35,10 @@ namespace Arcane::Accelerator
  * Les méthodes RunQueue::recordEvent() et RunQueue::waitEvent() permettent
  * d'associer un RunQueueEvent à une RunQueue donnée pour effectuer
  * une synchronisation.
+ *
+ * Par exemple:
+ *
+ * \snippet RunQueueUnitTest.cc SampleRunQueueEventSample1
  */
 class ARCANE_ACCELERATOR_CORE_EXPORT RunQueueEvent
 {
