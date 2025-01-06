@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* RunQueueUnitTest.cc                                         (C) 2000-2024 */
+/* RunQueueUnitTest.cc                                         (C) 2000-2025 */
 /*                                                                           */
 /* Service de test unitaire des 'RunQueue'.                                  */
 /*---------------------------------------------------------------------------*/
@@ -67,6 +67,7 @@ class RunQueueUnitTest
   void _executeTest2();
   void _executeTest3();
   void _executeTest4();
+  void _executeTest5();
 };
 
 /*---------------------------------------------------------------------------*/
@@ -117,6 +118,7 @@ executeTest()
   _executeTest1(true);
   _executeTest3();
   _executeTest4();
+  _executeTest5();
   m_runner->setConcurrentQueueCreation(old_v);
 }
 
@@ -304,9 +306,73 @@ _executeTest3()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
+// Test la synchronisation de avec un évènement et sémantique par référence.
 void RunQueueUnitTest::
 _executeTest4()
+{
+  info() << "Test4: use events with wait()";
+
+  {
+    Arcane::Accelerator::RunQueueEvent event0;
+    if (!event0.isNull())
+      ARCANE_FATAL("Event is not null");
+    event0 = makeEvent(*m_runner);
+    if (event0.isNull())
+      ARCANE_FATAL("Event is null");
+    Arcane::Accelerator::RunQueueEvent event1(event0);
+    if (event1.isNull())
+      ARCANE_FATAL("Event is null");
+  }
+
+  ValueChecker vc(A_FUNCINFO);
+  //![SampleRunQueueEventSample1]
+  Arcane::Accelerator::Runner runner = *m_runner;
+
+  Arcane::Accelerator::RunQueueEvent event(makeEvent(runner));
+
+  Arcane::Accelerator::RunQueue queue1{ makeQueue(runner) };
+  queue1.setAsync(true);
+  Arcane::Accelerator::RunQueue queue2{ makeQueue(runner) };
+  queue2.setAsync(true);
+
+  Integer nb_value = 100000;
+  Arcane::NumArray<Int32, MDDim1> values(nb_value);
+  {
+    auto command1 = makeCommand(queue1);
+    auto v = viewOut(command1, values);
+    command1 << RUNCOMMAND_LOOP1(iter, nb_value)
+    {
+      auto [i] = iter();
+      v(iter) = i + 3;
+    };
+    queue1.recordEvent(event);
+  }
+  event.wait();
+  {
+    auto command2 = makeCommand(queue2);
+    auto v = viewInOut(command2, values);
+    command2 << RUNCOMMAND_LOOP1(iter, nb_value)
+    {
+      v(iter) = v(iter) * 2;
+    };
+    queue2.recordEvent(event);
+  }
+  event.wait();
+  //![SampleRunQueueEventSample1]
+
+  // Vérifie les valeurs
+  for (Integer i = 0; i < nb_value; ++i) {
+    Int32 v = values(i);
+    Int32 expected_v = (i + 3) * 2;
+    vc.areEqual(v, expected_v, "Bad value");
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void RunQueueUnitTest::
+_executeTest5()
 {
   info() << "Test RunQueue allocation";
   ValueChecker vc(A_FUNCINFO);
