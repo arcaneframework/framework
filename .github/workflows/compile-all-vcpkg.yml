@@ -46,6 +46,7 @@ jobs:
             package_name: 'ubuntu-20.04'
             triplet: x64-linux-dynamic
             vcpkg_os: ubuntu-20.04
+            dotnet_version : "6.0.x"
             cmake_specific_args : '-DARCCORE_BUILD_MODE=Debug -DCMAKE_BUILD_TYPE=Debug'
             ctest_specific_args : '-I 1,140'
           - os: ubuntu-22.04
@@ -53,6 +54,7 @@ jobs:
             package_name: 'ubuntu-22.04'
             triplet: x64-linux-dynamic
             vcpkg_os: ubuntu-22.04
+            dotnet_version : "6.0.x"
             cmake_specific_args : '-DALIEN_BUILD_COMPONENT=all -DARCCORE_BUILD_MODE=Debug -DCMAKE_BUILD_TYPE=Debug'
             ctest_specific_args : '-I 1,140'
           - os: ubuntu-22.04
@@ -60,6 +62,7 @@ jobs:
             package_name: 'ubuntu-22.04'
             triplet: x64-linux-dynamic
             vcpkg_os: ubuntu-22.04
+            dotnet_version : "6.0.x"
             cmake_specific_args : '-DALIEN_BUILD_COMPONENT=all -DARCCORE_BUILD_MODE=Debug -DCMAKE_BUILD_TYPE=Debug -DARCCORE_CXX_STANDARD=20 -DARCANE_ENABLE_DOTNET_PYTHON_WRAPPER=ON'
             ctest_specific_args : '-I 1,150'
           - os: ubuntu-24.04
@@ -67,6 +70,7 @@ jobs:
             package_name: 'ubuntu-24.04'
             triplet: x64-linux-dynamic
             vcpkg_os: ubuntu-24.04
+            dotnet_version : "8.0.x"
             cmake_specific_args : '-DALIEN_BUILD_COMPONENT=all -DARCCORE_BUILD_MODE=Debug -DCMAKE_BUILD_TYPE=Debug -DARCCORE_CXX_STANDARD=20 -DARCANE_ENABLE_DOTNET_PYTHON_WRAPPER=ON'
             ctest_specific_args : '-I 1,150'
           - os: 'windows-2019'
@@ -74,6 +78,7 @@ jobs:
             package_name: 'windows-2019-msmpi'
             triplet: x64-windows
             vcpkg_os: windows-2019
+            dotnet_version : "6.0.x"
             cmake_specific_args : '-DCMAKE_BUILD_TYPE=Release'
             ctest_specific_args : '-I 1,160'
           - os: 'windows-2019'
@@ -81,6 +86,7 @@ jobs:
             package_name: 'windows-2019-intelmpi'
             triplet: x64-windows
             vcpkg_os: windows-2019
+            dotnet_version : "6.0.x"
             cmake_specific_args : '-DCMAKE_BUILD_TYPE=Release'
             ctest_specific_args : '-I 1,160'
           - os: 'windows-2022'
@@ -88,6 +94,7 @@ jobs:
             package_name: 'windows-2022-intelmpi'
             triplet: x64-windows
             vcpkg_os: windows-2022
+            dotnet_version : "6.0.x"
             cmake_specific_args : '-DCMAKE_BUILD_TYPE=Release'
             ctest_specific_args : '-I 1,10'
           - os: 'windows-2022'
@@ -95,6 +102,7 @@ jobs:
             package_name: 'windows-2022-intelmpi'
             triplet: x64-windows
             vcpkg_os: windows-2022
+            dotnet_version : "8.0.x"
             cmake_specific_args : '-DCMAKE_BUILD_TYPE=Release -DARCCORE_CXX_STANDARD=20'
             ctest_specific_args : '-I 1,10'
 
@@ -145,7 +153,7 @@ jobs:
       - name: Setup .Net
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '6.0.x'
+          dotnet-version: '${{ matrix.dotnet_version }}'
 
       - name: Install mono
         shell: 'bash'
@@ -165,7 +173,7 @@ jobs:
           cmake --version
           cmake -DNUGET_PASSWORD="${{ secrets.GITHUB_TOKEN }}" -P '${{ env.BUILD_COMMANDS_ROOT }}/Setup.cmake'
           mkdir -p ${{ env.CCACHE_DIR }}
-          cp "${{ github.workspace }}/.github/compile-vcpkg-global.json" "${{ github.workspace }}/global.json"
+          cp "${{ github.workspace }}/.github/compile-vcpkg-global.${{ matrix.dotnet_version }}.json" "${{ github.workspace }}/global.json"
       
       - name: Install numpy
         shell: 'bash'
@@ -255,3 +263,11 @@ jobs:
         run: |
           cd "${{ env.CMAKE_BUILD_DIR }}" && ctest --output-on-failure -V -R python_test
 
+      # NOTE: pour l'instant sous Win32 on ne peut pas exécuter les tests 'embedded'
+      # car il faut gérer le lancement de la compilation et aussi vérifier
+      # que la DLL 'arcane_dotnet_coreclr' est bien trouvée
+      - name: Test .Net wrapper
+        shell: bash
+        if: ${{ startsWith(matrix.os, 'ubuntu') }}
+        run: |
+          cd "${{ env.CMAKE_BUILD_DIR }}" && ctest --output-on-failure -R coreclr
