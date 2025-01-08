@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Test.cu                                                  (C) 2000-2022 */
+/* Test.cu                                                     (C) 2000-2025 */
 /*                                                                           */
 /* Fichier contenant les tests pour l'implémentation CUDA.                   */
 /*---------------------------------------------------------------------------*/
@@ -20,9 +20,10 @@
 #include "arcane/utils/NotSupportedException.h"
 #include "arcane/utils/Real3.h"
 #include "arcane/utils/NumArray.h"
+#include "arcane/utils/MemoryUtils.h"
 
-#include "arcane/Item.h"
-#include "arcane/MathUtils.h"
+#include "arcane/core/Item.h"
+#include "arcane/core/MathUtils.h"
 
 #include "arcane/accelerator/core/Runner.h"
 #include "arcane/accelerator/core/RunQueue.h"
@@ -69,13 +70,13 @@ __global__ void MyVecAdd(double* a,double* b,double* out)
 
 __global__ void MyVecAdd2(Span<const double> a,Span<const double>b,Span<double> out)
 {
-  int size = a.size();
-  int i = blockDim.x * blockIdx.x + threadIdx.x;
+  Int64 size = a.size();
+  Int64 i = blockDim.x * blockIdx.x + threadIdx.x;
   if (i>=size)
     return;
   out[i] = a[i] + b[i];
   if (i<10){
-    printf("A=%d %lf %lf %lf %d\n",i,a[i],b[i],out[i],i);
+    printf("A=%ld %lf %lf %lf %ld\n",i,a[i],b[i],out[i],i);
   }
 }
 
@@ -242,7 +243,7 @@ int arcaneTestCuda3()
   std::cout << "TEST_CUDA_3\n";
   constexpr int vsize = 2000;
   IMemoryAllocator* cuda_allocator = Arcane::Accelerator::Cuda::getCudaMemoryAllocator();
-  IMemoryAllocator* cuda_allocator2 = Arcane::platform::getAcceleratorHostMemoryAllocator();
+  IMemoryAllocator* cuda_allocator2 = MemoryUtils::getDefaultDataAllocator();
   if (!cuda_allocator2)
     ARCANE_FATAL("platform::getAcceleratorHostMemoryAllocator() is null");
   UniqueArray<double> d_a(cuda_allocator,vsize);
@@ -377,8 +378,7 @@ int arcaneTestCudaNumArray()
 {
   std::cout << "TEST_CUDA_NUM_ARRAY\n";
   constexpr int vsize = 2000;
-  IMemoryAllocator* cuda_allocator = Arcane::Accelerator::Cuda::getCudaMemoryAllocator();
-  IMemoryAllocator* cuda_allocator2 = Arcane::platform::getAcceleratorHostMemoryAllocator();
+  IMemoryAllocator* cuda_allocator2 = MemoryUtils::getDefaultDataAllocator();
   if (!cuda_allocator2)
     ARCANE_FATAL("platform::getAcceleratorHostMemoryAllocator() is null");
   NumArray<double,MDDim1> d_a;
@@ -502,10 +502,9 @@ namespace ax = Arcane::Accelerator;
 void arcaneTestCudaReductionX(int vsize,ax::RunQueue& queue)
 {
   using namespace Arcane::Accelerator;
-  std::cout << "TestReduction vsize=" << vsize << "\n";
-  IMemoryAllocator* cuda_allocator2 = Arcane::platform::getAcceleratorHostMemoryAllocator();
-  UniqueArray<int> d_a(cuda_allocator2,vsize);
-  UniqueArray<int> d_out(cuda_allocator2,vsize);
+  std::cout << "TestReduction vsize=" << vsize << " accelerator_policy=" << queue.executionPolicy() << "\n";
+  NumArray<int,MDDim1> d_a(vsize);
+  NumArray<int,MDDim1> d_out(vsize);
   for( Integer i=0; i<vsize; ++i ){
     int a = 5 + ((i+2) % 43);
     d_a[i] = a;
@@ -519,9 +518,9 @@ void arcaneTestCudaReductionX(int vsize,ax::RunQueue& queue)
   ReducerMax<double> max_double_reducer(command);
   ReducerMin<int> min_int_reducer(command);
   ReducerMin<double> min_double_reducer(command);
-  Span<const int> xa = d_a.span();
-  Span<int> xout = d_out.span();
-  auto func2 = [=] ARCCORE_HOST_DEVICE (Arcane::ArrayIndex<1> idx)
+  Span<const int> xa = d_a.to1DSpan();
+  Span<int> xout = d_out.to1DSpan();
+  command << RUNCOMMAND_LOOP1(idx,vsize)
   {
     auto [i] = idx();
     double vxa = (double)(xa[i]);
@@ -535,7 +534,7 @@ void arcaneTestCudaReductionX(int vsize,ax::RunQueue& queue)
     //if (i<10)
     //printf("Do Reduce i=%d v=%d %lf\n",i,xa[i],vxa);
   };
-  run(command,ArrayBounds<MDDim1>(vsize),func2);
+  //run(command,ArrayBounds<MDDim1>(vsize),func2);
   std::cout << "SumReducer v_int=" << sum_reducer.reduce()
             << " v_double=" << sum_double_reducer.reduce()
             << "\n";

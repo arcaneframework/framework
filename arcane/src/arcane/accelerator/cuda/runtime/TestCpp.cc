@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* TestCpp.cc                                                  (C) 2000-2022 */
+/* TestCpp.cc                                                  (C) 2000-2025 */
 /*                                                                           */
 /* Fichier de tests pour CUDA.                                               */
 /*---------------------------------------------------------------------------*/
@@ -25,6 +25,9 @@ extern "C"
 int arcaneTestCudaNumArray();
 extern "C"
 int arcaneTestCudaReduction();
+extern "C"
+void arcaneTestCooperativeLaunch();
+
 
 extern "C" ARCANE_EXPORT
 int func0()
@@ -33,5 +36,6 @@ int func0()
   arcaneTestCudaNumArray();
   arcaneTestCudaReduction();
   arcaneTestCuda4();
+  arcaneTestCooperativeLaunch();
   return 0;
 }
