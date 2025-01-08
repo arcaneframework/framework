@@ -1709,7 +1709,7 @@ void ArcaneBasicMeshSubdividerService::_faceOrderArcane(IPrimaryMesh* mesh){
       }
       info() << face.uniqueId() << " nodes " << n;
     }
-    exit(0);
+  
   }
 }
 
@@ -1730,7 +1730,8 @@ subdivideMesh([[maybe_unused]] IPrimaryMesh* mesh)
   // Code de tests pour pattern 2D
   std::unordered_map<Arccore::Int16,Pattern> pattern_manager;
   // Default pattern manager
-  pattern_manager[IT_Quad4] = PatternBuilder::quadtoquad();
+  //pattern_manager[IT_Quad4] = PatternBuilder::quadtoquad();
+  pattern_manager[IT_Quad4] = PatternBuilder::quadtotri();
   pattern_manager[IT_Triangle3] = PatternBuilder::tritotri();
   pattern_manager[IT_Hexaedron8] = PatternBuilder::hextohex();
   pattern_manager[IT_Tetraedron4] = PatternBuilder::tettotet();
