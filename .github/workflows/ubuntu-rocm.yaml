@@ -2,8 +2,10 @@
 name: Ubuntu ROCM/HIP
 
 on:
+  schedule:
+    - cron: '35 0 * * *' # Every night at 00:35
+  # To allow on demand launch
   workflow_dispatch:
-  push:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref || github.run_id }}
@@ -53,7 +55,7 @@ jobs:
           echo CMake path is: `which cmake`
           cmake --version
 
-      - name: Install rocm 6.3.1
+      - name: Install ROCM
         shell: 'bash'
         run: |
           sudo mkdir --parents --mode=0755 /etc/apt/keyrings
@@ -79,6 +81,8 @@ jobs:
           echo Ninja path is: `which ninja`
           echo Dotnet path is: `which dotnet`
           cmake --version
+          ninja --version
+          dotnet --version
 
       - name: Configure build script
         shell: bash
