@@ -74,12 +74,6 @@ jobs:
         shell: 'bash'
         continue-on-error: true
         run: |
-          echo 'Content of local_bin_dir'
-          ls -lart "${RUNNER_TEMP}/local_bin_dir"
-          echo 'Content of local_bin_dir/bin'
-          ls -lart "${RUNNER_TEMP}/local_bin_dir/bin"
-          echo 'Content of local_bin_dir/cmake'
-          ls -lart "${RUNNER_TEMP}/local_bin_dir/cmake"
           echo Path variable is: ${PATH}
           echo CMake path is: `which cmake`
           echo Ninja path is: `which ninja`
@@ -97,6 +91,7 @@ jobs:
           -DARCCORE_CXX_STANDARD=20 \
           -DARCANE_ENABLE_DOTNET_PYTHON_WRAPPER=OFF \
           -DARCANE_ACCELERATOR_MODE=ROCM \
+          -DCMAKE_HIP_ARCHITECTURES=gfx90a \
           -DARCCORE_USE_MPI=FALSE \
           -DCMAKE_PREFIX_PATH=/opt/rocm \
           -DBUILD_SHARED_LIBS=TRUE \
