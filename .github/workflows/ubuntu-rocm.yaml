@@ -1,5 +1,5 @@
 # CI to compile Arcane with ROCM/HIP
-name: ubuntu-rocm
+name: Ubuntu ROCM/HIP
 
 on:
   workflow_dispatch:
@@ -11,19 +11,26 @@ concurrency:
 
 jobs:
   job:
-    name: ${{ matrix.full_name }}-ci-direct
+    name: ${{ matrix.full_name }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
         include:
           - os: ubuntu-24.04
-            full_name: 'ubuntu-24.04-rocm'
-            cmake_specific_args : '-DARCANEFRAMEWORK_BUILD_COMPONENTS=Arcane -DARCCORE_BUILD_MODE=Debug -DCMAKE_BUILD_TYPE=Debug -DARCCORE_CXX_STANDARD=20 -DARCANE_ENABLE_DOTNET_PYTHON_WRAPPER=OFF -DARCANE_ACCELERATOR_MODE=ROCM -DARCCORE_USE_MPI=FALSE -DCMAKE_PREFIX_PATH=/opt/rocm'
+            ubuntu-name: noble
+            full_name: 'ubuntu-24.04-rocm-6.3.1'
+            rocm-version: '6.3.1'
+            amdgpu-package: amdgpu-install_6.3.60301-1_all.deb
+            cmake_specific_args : ''
+          - os: ubuntu-22.04
+            ubuntu-name: jammy
+            full_name: 'ubuntu-22.04-rocm-5.7.1'
+            rocm-version: '5.7.1'
+            amdgpu-package: amdgpu-install_5.7.50701-1_all.deb
+            cmake_specific_args : ''
 
     env:
-      # Pour indiquer a OpenMPI qu'on utilise plus de PE que de coeurs disponibles
-      OMPI_MCA_rmaps_base_oversubscribe : true
       # Indicates the CMake build directory where project files and binaries are being produced.
       CMAKE_BUILD_DIR: ${{ github.workspace }}/builddir/
       DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
@@ -51,13 +58,12 @@ jobs:
         run: |
           sudo mkdir --parents --mode=0755 /etc/apt/keyrings
           wget https://repo.radeon.com/rocm/rocm.gpg.key -O - | gpg --dearmor | sudo tee /etc/apt/keyrings/rocm.gpg > /dev/null
-          echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/rocm.gpg] https://repo.radeon.com/amdgpu/6.3.1/ubuntu noble main" | sudo tee /etc/apt/sources.list.d/amdgpu.list
+          echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/rocm.gpg] https://repo.radeon.com/amdgpu/${{ matrix.rocm-version }}/ubuntu ${{ matrix.ubuntu-name }} main" | sudo tee /etc/apt/sources.list.d/amdgpu.list
           sudo apt-get update
-          echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/rocm.gpg] https://repo.radeon.com/rocm/apt/6.3.1 noble main" | sudo tee --append /etc/apt/sources.list.d/rocm.list
+          echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/rocm.gpg] https://repo.radeon.com/rocm/apt/${{ matrix.rocm-version }} ${{ matrix.ubuntu-name }} main" | sudo tee --append /etc/apt/sources.list.d/rocm.list
           sudo echo 'Package: *\nPin: release o=repo.radeon.com\nPin-Priority: 600' | sudo tee /etc/apt/preferences.d/rocm-pin-600
-          #sudo usermod -a -G render,video $LOGNAME
-          wget https://repo.radeon.com/amdgpu-install/6.3.1/ubuntu/noble/amdgpu-install_6.3.60301-1_all.deb
-          sudo apt install -y ./amdgpu-install_6.3.60301-1_all.deb
+          wget https://repo.radeon.com/amdgpu-install/${{ matrix.rocm-version }}/ubuntu/${{ matrix.ubuntu-name }}/${{ matrix.amdgpu-package }}
+          sudo apt install -y ./${{ matrix.amdgpu-package }}
           sudo apt-get update
           #sudo apt-get install -y amdgpu-dkms
           #sudo apt-get install -y rocm-hip-sdk rocm-hip-runtime-dev rocm-core
@@ -84,7 +90,18 @@ jobs:
       - name: Configure build script
         shell: bash
         run: |
-          cmake -S "${{ github.workspace }}" -B "${{ env.CMAKE_BUILD_DIR }}" -DCMAKE_VERBOSE_MAKEFILE=TRUE -DBUILD_SHARED_LIBS=TRUE ${{ matrix.cmake_specific_args }} -GNinja
+          cmake -S "${{ github.workspace }}" -B "${{ env.CMAKE_BUILD_DIR }}" \
+          -DCMAKE_VERBOSE_MAKEFILE=TRUE \
+          -DARCANEFRAMEWORK_BUILD_COMPONENTS=Arcane \
+          -DCMAKE_BUILD_TYPE=Debug \
+          -DARCCORE_CXX_STANDARD=20 \
+          -DARCANE_ENABLE_DOTNET_PYTHON_WRAPPER=OFF \
+          -DARCANE_ACCELERATOR_MODE=ROCM \
+          -DARCCORE_USE_MPI=FALSE \
+          -DCMAKE_PREFIX_PATH=/opt/rocm \
+          -DBUILD_SHARED_LIBS=TRUE \
+          -GNinja ${{ matrix.cmake_specific_args }}
+
 
       - name: Dump Some Generated files
         shell: bash
