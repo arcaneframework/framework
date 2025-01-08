@@ -54,6 +54,8 @@
 #include <arcane/cartesianmesh/ICartesianMesh.h>
 #include <arcane/std/IMeshGenerator.h>
 #include <arcane/utils/MDDim.h>
+/*//#include <arcane/utils/Array.h>
+#include <arcane/utils/NumArray.h*/
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -168,12 +170,16 @@ class Pattern{
  * Groups:
  * Test gestion des groups:
  *  - Faire deux groups dont un a l'intérieur et un à l'extérieur et vérifier visuellement qu'on les a bien avec paraview.
- *  - Pour l'automatisation ???
+ *  - Pour l'automatisation ?
  * 3D:
  *
  *
  */
 
+
+/*!
+ * \brief Classe qui permet de construire des patterns
+ */
 class PatternBuilder{
   public:
   // 2D
@@ -188,28 +194,57 @@ class PatternBuilder{
   // 3D
   // N'utilise pas la numérotation des faces de arcane pour l'instant
   static Pattern hextohex();
-  // TODO Generation faces + cf + type
+  // TODO test par + f + cf + type
   static Pattern tettotet();
-  // TODO Generation faces + cf + type
+  // TODO test par + f + cf + type
   static Pattern hextotet();
-  // TODO Generation faces + cf + type
+  // TODO test par + f + cf + type
   static Pattern tettohex();
 
 };
 
-/* quadto2quad
-StorageRefine nodes({
-  {0,1}, // 4
-  {2,3}
-  });
-StorageRefine faces;
-StorageRefine cells({
 
-  {4,5,2,1},
-  {5,4,0,3}
+/*
 
-});
+Noeuds
+(3) --- (2)
+ |       |
+ |       |
+(0) --- (1)
+Ordre des arêtes
+(3) -2- (2)
+ |       |
+ 3       1 
+ |       |
+(0) -0- (1)
+Nouveaux noeuds
+(3) -6- (2)
+ |       |
+ 7   8   5 
+ |       |
+(0) -4- (1)
+Nouveaux noeuds avec ordre nouvelles arêtes
+(3) -5- (6) -7- (2)
+|        |       |
+4        6       8
+|        |       |
+(7) -1- (8) -9- (5)
+|        |       |
+0        2       10
+|        |       | 
+(0) -3- (4) -11- (1)
+
+
+  ---   ---
+|     |     |
+|     |     |
+  ---   ---  
+|     |     |
+|     |     | 
+  ---   --- 
+
 */
+
 
 Pattern PatternBuilder::quadtoquad()
   {
@@ -220,26 +255,67 @@ Pattern PatternBuilder::quadtoquad()
       {3,0}, // 7
       {0,1,2,3}, // 8
       });
-    StorageRefine faces;
+    StorageRefine faces({
+      {0,7}, // 0
+      {7,8}, // 1
+      {4,8}, // 2
+      {0,4}, // 3
+      {3,7}, // 4
+      {3,6}, // 5
+      {6,8}, // 6
+      {2,6}, // 7
+      {2,5}, // 8
+      {5,8}, // 9
+      {1,5}, // 10
+      {1,4}, // 11
+      }
+    );
     StorageRefine cells({
-        {0,7,8,4},
+      {0,7,8,4},
       {7,3,6,8},
       {6,2,5,8},
       {5,1,4,8},
     });
-    StorageRefine child_faces({});
-    return {IT_Quad4,IT_Line2,IT_Quad4,nodes,faces,cells,child_faces };
+    StorageRefine child_faces({ // pas testé
+      {3,11},
+      {10,8},
+      {5,7},
+      {0,4},
+    });
+    return {IT_Quad4,IT_Line2,IT_Quad4,nodes,faces,cells,child_faces};
   }
 
   Pattern PatternBuilder::quadtotri()
   {
     StorageRefine nodes({}); // Pas de noeud à ajouter
     StorageRefine faces({});
-    StorageRefine cells({{0,2,1},{0,3,2}});
+    StorageRefine cells({{0,3,2},{2,1,0}});
     StorageRefine child_faces({});
-
     return {IT_Quad4,IT_Line2,IT_Triangle3,nodes,faces,cells,child_faces};
   }
+
+
+  /*
+  Numérotation nouveaux noeuds
+         2
+        / \
+       /   \
+      5 --- 4
+     / \   / \
+    /   \ /   \
+   0 --- 3 --- 1
+
+  Numérotation arêtes
+           2 
+          / \
+         6   7 
+        /     \
+       + --8-- +
+      / \     / \
+     1   2   5   3    
+    /     \ /     \
+   + --0-- + --4-- +
+  */
 
   Pattern PatternBuilder::tritotri()
   {
@@ -249,15 +325,28 @@ Pattern PatternBuilder::quadtoquad()
       {2,0}, // 5
     });
     StorageRefine faces({
-
+      {0,3},
+      {0,5},
+      {3,5},
+      {1,4},
+      {1,3},
+      {3,4},
+      {2,5},
+      {2,4},
+      {4,5},
     });
     StorageRefine cells({
-        {3,0,5},
+      {3,0,5},
       {4,1,3},
       {5,2,4},
       {3,5,4}
     });
-    StorageRefine child_faces({});
+    StorageRefine child_faces(
+      {
+        {0,4},
+        {3,7},
+        {1,6}
+      });
     return {IT_Triangle3,IT_Line2,IT_Triangle3,nodes,faces,cells,child_faces};
   }
 
@@ -375,6 +464,7 @@ Pattern PatternBuilder::quadtoquad()
       {2,3}, // 8
       {1,3}, // 9
     };
+    
     StorageRefine faces = {
       {0, 4, 6},
       {0, 6, 7},
@@ -401,11 +491,11 @@ Pattern PatternBuilder::quadtoquad()
       {6, 7, 8},
       {5, 8, 9}
     };
-    StorageRefine child_faces = {
+    StorageRefine child_faces = { // non testé
       {0,19,4,8},
       {1,22,19,9},
       {2,16,6,14},
-        {11,23,7,15}
+      {11,23,7,15}
     };
     StorageRefine cells = {
       {0, 4, 6, 7},
@@ -423,8 +513,26 @@ Pattern PatternBuilder::quadtoquad()
 
   Pattern PatternBuilder::hextotet(){
     StorageRefine nodes = {}; // Pas de nouveaux noeuds
-    StorageRefine faces = {
-    };
+    StorageRefine faces ={    // Ne fonctionne pas avec les même faces que arcane pourtant 
+        /*{0,1,2},
+        {0,2,4},
+        {0,1,4},
+        {1,2,4},
+        {1,4,5},
+        {1,5,7},
+        {1,4,7},
+        {4,5,7},
+        {1,2,3},
+        {1,2,7},
+        {1,3,7},
+        {2,3,7},
+        {2,4,7},
+        {2,6,7},
+        {2,4,6},
+        {4,6,7},*/
+      };
+
+      
     StorageRefine child_faces = {
     };
     StorageRefine cells = {
@@ -436,7 +544,6 @@ Pattern PatternBuilder::quadtoquad()
     };
     return {IT_Hexaedron8,IT_Triangle3,IT_Tetraedron4,nodes,faces,cells,child_faces};
   }
-
 
   Pattern PatternBuilder::tettohex(){
     StorageRefine nodes = {
@@ -453,8 +560,30 @@ Pattern PatternBuilder::quadtoquad()
       {0,1,2,3},// 14
     };
     StorageRefine faces = {
+      {0,4,12,6},   // 0
+      {0,6,13,7},   // 1 
+      {0,4,10,7},   // 2
+      {7,10,14,13}, // 3 X 
+      {4,10,14,12}, // 4 X
+      {6,12,14,13}, // 5 X
+      {2,6,13,8},   // 6 
+      {8,11,14,13}, // 7 X
+      {2,5,11,8},   // 8
+      {5,11,14,12}, // 9 X
+      {2,5,12,6},   // 10
+      {3,7,13,8},   // 11
+      {3,7,10,9},   // 12
+      {3,8,11,9},   // 13
+      {9,10,14,11}, // 14 X
+      {1,4,10,9},   // 15
+      {1,5,11,9},   // 16
+      {1,4,12,5},   // 17 
     };
     StorageRefine child_faces = {
+      {0,10,17},
+      {1,6,11},
+      {2,13,15},
+      {8,12,16}
     };
     StorageRefine cells = {
         {0,4,12,6,7,10,14,13},
@@ -496,8 +625,7 @@ class ArcaneBasicMeshSubdividerService
   void _getRefinePattern(Int16 type);
   void _execute();
     */
-  /*Creer un tetra et test la subdivision*/
-  void _testTetra(IPrimaryMesh* mesh);
+  void _faceOrderArcane(IPrimaryMesh* mesh);
 
   void _generateOneTetra(IPrimaryMesh* mesh);
 
@@ -513,18 +641,64 @@ class ArcaneBasicMeshSubdividerService
 
   void subdivideMesh([[maybe_unused]] IPrimaryMesh* mesh) override;
 
-  void _refineOnce([[maybe_unused]] IPrimaryMesh* mesh);
+  // Methode pour avoir la manière dont sont crée les nouvelles faces pour un élément. Utile pour remplir tableau child faces 
+  void _getArcaneOrder(IPrimaryMesh* mesh);
+
+  void _refineOnce([[maybe_unused]] IPrimaryMesh* mesh,std::unordered_map<Arccore::Int16, Pattern> & pattern_manager);
 };
 
 
-void ArcaneBasicMeshSubdividerService::_refineOnce(IPrimaryMesh* mesh)
+void ArcaneBasicMeshSubdividerService::_getArcaneOrder(IPrimaryMesh* mesh){
+  // Tritotri generate faces 
+  /*
+  _generateOneTri(mesh);
+  pattern_manager[IT_Triangle3] = PatternBuilder::tritotri();
+  _refineOnce(mesh,pattern_manager);
+  */
+  
+  // Quadtoquad generate faces
+  /*
+  _generateOneQuad(mesh);
+  //_refineWithArcaneFaces(mesh,PatternBuilder::quadtoquad());
+  pattern_manager[IT_Quad4] = PatternBuilder::quadtoquad();
+  _refineOnce(mesh,pattern_manager);
+  */
+  
+  // Tettotet generate faces
+  /*
+  _generateOneTetra(mesh);
+  _refineWithArcaneFaces(mesh,PatternBuilder::tettotet());
+  */
+  
+  /*
+  _faceOrderArcane(mesh); 
+  mesh_utils::writeMeshInfos(mesh,"meshInSubdivide");
+  pattern_manager[IT_Triangle3] = PatternBuilder::tritotri();
+  _refineOnce(mesh,pattern_manager);
+  mesh_utils::writeMeshInfos(mesh,"meshOutSubdivide");
+  */
+
+  // Tettohex generate faces input one tet
+  /*
+  _generateOneTetra(mesh);
+  _refineWithArcaneFaces(mesh,PatternBuilder::tettohex());
+  */
+  // Hextohex generate faces input one hex 
+  //_refineWithArcaneFaces(mesh,PatternBuilder::hextotet());
+  /*
+  pattern_manager[IT_Hexaedron8] = PatternBuilder::hextotet();
+  _refineOnce(mesh,pattern_manager);
+  */
+}
+
+void ArcaneBasicMeshSubdividerService::_refineOnce(IPrimaryMesh* mesh,std::unordered_map<Arccore::Int16, Pattern> & pattern_manager)
 {
   // options()->nbSubdivision();
   info() << "#subdivide mesh";
   // Est-ce qu'on est en 3D ?
   // Si non on fait rien;
   bool is_implemented=false;
-  ENUMERATE_CELL(icell,mesh->ownCells()){
+  /*ENUMERATE_CELL(icell,mesh->ownCells()){
     const Cell & cell = *icell;
     if( cell.itemTypeId() == IT_Hexaedron8 || cell.itemTypeId() == IT_Tetraedron4 ){
       is_implemented = true;
@@ -532,14 +706,14 @@ void ArcaneBasicMeshSubdividerService::_refineOnce(IPrimaryMesh* mesh)
       info() << "Not implemented item type" << cell.itemTypeId() ;
       return ;
     }
-  }
-
-  std::unordered_map<Int16, Pattern> pattern_manager;
+  }*/
   // Génération des patterns
-  pattern_manager[IT_Tetraedron4] = PatternBuilder::tettotet();
+  /*pattern_manager[IT_Tetraedron4] = PatternBuilder::tettotet();
   pattern_manager[IT_Hexaedron8] = PatternBuilder::hextohex();
+  
+  pattern_manager[IT_Triangle3] = PatternBuilder::tritotri();
+  pattern_manager[IT_Quad4] = PatternBuilder::quadtotri();*/
   //pattern_manager[IT_Hexaedron8] = PatternBuilder::hextotet();
-  Pattern & a = pattern_manager[IT_Tetraedron4];
 
   Int32 my_rank = mesh->parallelMng()->commRank();
   IMeshModifier* mesh_modifier = mesh->modifier();
@@ -625,7 +799,7 @@ void ArcaneBasicMeshSubdividerService::_refineOnce(IPrimaryMesh* mesh)
     nodes_to_add_coords[node.uniqueId().asInt64()] = nodes_coords[node];
   }
   */
-  // Traitement pour une cellule
+  // Traitement pour une cellule²
   ENUMERATE_CELL(icell,mesh->ownCells())
   {
       debug() << "Refining element" ;
@@ -814,14 +988,14 @@ void ArcaneBasicMeshSubdividerService::_refineOnce(IPrimaryMesh* mesh)
 
     debug() << "Faces_uids " <<faces_uids << " faces_to_add " << faces_to_add.size() << " faces_to_add/6 " << faces_to_add.size()/6 ;
 
-    ARCANE_ASSERT((nodes_to_add.size() != 0),("End"));
+    //ARCANE_ASSERT((nodes_to_add.size() != 0),("End"));
     //ARCANE_ASSERT((nb_face_to_add == 68),("WRONG NUMBER OF FACES")); // two hex
     // Ajout des Faces enfants
     UniqueArray<Int32> face_lid(faces_uids.size());
 
     //Setup faces
     mesh->modifier()->addFaces(MeshModifierAddFacesArgs(nb_face_to_add, faces_to_add.constView(),face_lid.view()));
-    debug() << "addOneFac" << nb_face_to_add ;
+    debug() << "addOneFace " << nb_face_to_add ;
     mesh->faceFamily()->itemsUniqueIdToLocalId(face_lid,faces_uids,true);
     debug() << "NB_FACE_ADDED AFTER " << face_lid.size() << " " << new_faces.size()  ;
 
@@ -924,7 +1098,7 @@ void ArcaneBasicMeshSubdividerService::_refineOnce(IPrimaryMesh* mesh)
       info() << "#Added " << to_add_to_group.size() << " to group " << group.fullName();
       group.addItems(to_add_to_group,true);
     }
-
+    
     // fin gestion itemgroups
     mesh->modifier()->removeCells(cells_to_detach.constView());
     mesh->modifier()->endUpdate();
@@ -945,7 +1119,7 @@ void ArcaneBasicMeshSubdividerService::_refineOnce(IPrimaryMesh* mesh)
     }
     mesh->cellFamily()->notifyItemsOwnerChanged();
 
-    ARCANE_ASSERT((nodes_lid.size() != 0),("End"));
+    // ARCANE_ASSERT((nodes_lid.size() != 0),("End"));
     ARCANE_ASSERT((nodes_lid.size() == nodes_to_add.size()),("End"));
     // Assignation des coords aux noeuds
 
@@ -988,7 +1162,7 @@ void ArcaneBasicMeshSubdividerService::_refineOnce(IPrimaryMesh* mesh)
     }
 
     // Utiliser les couches fantôme est couteux (construction destruction)
-    // - Optim: pour les noeuds partager avoir une variable all to all (gather) qui permet de récuper le rank de l'owner
+    // - Optim: pour les noeuds partager avoir une variable all to all (gather) qui permet de récuper le rank de l'owner pour chaque item shared 
     // - Déduction possible des owners des faces enfants avec la face parent directement
     // - Les cellules enfants ont le même owner que la cellule parent
     // Supression de la couche fantôme
@@ -1005,7 +1179,7 @@ void ArcaneBasicMeshSubdividerService::_refineOnce(IPrimaryMesh* mesh)
 
 
     // Quelques sur le nombres d'entités insérés
-    ARCANE_ASSERT((mesh->nbCell() == nb_cell_init*8 ),("Wrong number of cell added"));
+    // ARCANE_ASSERT((mesh->nbCell() == nb_cell_init*8 ),("Wrong number of cell added"));
     debug() <<"nbface " << mesh->nbFace() << " " << nb_face_to_add << " Attendu " << nb_face_init*4 + 12 * nb_cell_init;
     ARCANE_ASSERT((mesh->nbFace() <= nb_face_init*4 + 12 * nb_cell_init ),("Wrong number of face added"));
     // A ajouter pour vérifier le nombre de noeud si les arêtes sont crées
@@ -1081,6 +1255,17 @@ void ArcaneBasicMeshSubdividerService::_refineWithArcaneFaces(IPrimaryMesh* mesh
   UniqueArray<Int32> cells_to_detach; // Cellules à détacher
 
   Int64 face_count = 0;
+
+  ENUMERATE_FACE(iface,mesh->allFaces())
+  {
+    Face face = *iface;
+    for(Node n : face.nodes()) {
+
+    }
+  }
+
+  std::map<Int64,Int32> node_uid_to_cell_local_id; // Donne le local id par rapport à une cell
+
   ENUMERATE_CELL(icell,mesh->allCells())
   {
     UniqueArray<Int64>  node_in_cell;
@@ -1088,9 +1273,6 @@ void ArcaneBasicMeshSubdividerService::_refineWithArcaneFaces(IPrimaryMesh* mesh
     info() << "Detach"  ;
     cells_to_detach.add(cell.localId());
     info() << "Get Pattern" ;
-
-    //Pattern p = PatternBuilder::hextotet();
-    //Pattern p = PatternBuilder::tettohex();
     StorageRefine & node_pattern = p.nodes;
     StorageRefine & cells = p.cells;
     StorageRefine & faces = p.faces;
@@ -1121,6 +1303,7 @@ void ArcaneBasicMeshSubdividerService::_refineWithArcaneFaces(IPrimaryMesh* mesh
       middle_coord /= node_pattern[i].size();
       nodes_to_add_coords[uid] = middle_coord;
       info() << "NodeX " << uid << " " << " coord " << nodes_to_add_coords[uid] << " " << middle_coord ;
+      node_uid_to_cell_local_id[uid] = cell.nbNode() + i ;
     }
 
     info() << "#node in cell " << node_in_cell;
@@ -1204,16 +1387,24 @@ void ArcaneBasicMeshSubdividerService::_refineWithArcaneFaces(IPrimaryMesh* mesh
       info() << "Faces " << face.uniqueId() << " node " << stuff ;
     }
   }
-  info() << "#ENUM Faces" ;
+  info() << "#Arcane face numbering:" ;
+  std::cout << "{" ;
   ENUMERATE_FACE(iface,mesh->allFaces()) {
     const Face & face = *iface;
     UniqueArray<Int64> stuff;
-    for(Node node : face.nodes() ) {
-      stuff.add(node.uniqueId());
-    }
-    info() << "Faces " << face.uniqueId() << " node " << stuff ;
-  }
+    std::cout << "{" << face.nodes()[0].uniqueId().asInt64() ;
 
+    for(Integer i = 1 ; i < face.nodes().size() ; i++) {
+      std::cout << "," << face.nodes()[i].uniqueId().asInt64();
+    }
+      //stuff.add(node_uid_to_cell_local_id[node.uniqueId().asInt64()]);
+      //info() << "Faces " << face.uniqueId() << " node " << stuff ;
+      //std::cout << node_uid_to_cell_local_id[node.uniqueId().asInt64()] ;
+
+    //info() << "Faces " << face.uniqueId() << " node " << stuff ;
+    std::cout << "}," << std::endl;
+  }
+  std::cout << "}" ;
   Arcane::VariableScalarInteger m_temperature(Arcane::VariableBuildInfo(mesh, "ArcaneCheckpointNextIteration" ));
 
   VariableCellInt64* arcane_cell_uid = nullptr;
@@ -1505,13 +1696,18 @@ void ArcaneBasicMeshSubdividerService::_generateOneTetra(IPrimaryMesh* mesh){
 }
 
 /* Le but est simplement d'avoir l'ordre des faces dans un maillage tetra */
-void ArcaneBasicMeshSubdividerService::_testTetra(IPrimaryMesh* mesh){
+void ArcaneBasicMeshSubdividerService::_faceOrderArcane(IPrimaryMesh* mesh){
   mesh->utilities()->writeToFile("3D_last_input_seq.vtk", "VtkLegacyMeshWriter");
+  info() << "#ORDRE FACES" ;
   ENUMERATE_CELL(icell,mesh->ownCells()){
     
     const Cell & cell = *icell;
     for( Face face : cell.faces()){
-      info() << face.uniqueId();
+      UniqueArray<Int64> n;
+      for( Node node : face.nodes()){
+        n.add(node.uniqueId().asInt64());
+      }
+      info() << face.uniqueId() << " nodes " << n;
     }
     exit(0);
   }
@@ -1520,63 +1716,37 @@ void ArcaneBasicMeshSubdividerService::_testTetra(IPrimaryMesh* mesh){
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /* Il faut une méthode qui permet de récuperer les faces générés par arcanes.
- * Ces faces doivent donner les indices locaux à la cellule initiale.
+ * Ces faces doivent donner les indices locaux des noeuds de la cellule initiale.
  * Pour ça on construit une map global to my_local_index. <Int64,Int64>
- *
  * 3 --- 2
  * |     |
  * |     |
  * 0 --- 1
- *
- *
  */
 
 void ArcaneBasicMeshSubdividerService::
 subdivideMesh([[maybe_unused]] IPrimaryMesh* mesh)
 {
   // Code de tests pour pattern 2D
-  std::map<Integer,Pattern> pattern_manager;
+  std::unordered_map<Arccore::Int16,Pattern> pattern_manager;
+  // Default pattern manager
+  pattern_manager[IT_Quad4] = PatternBuilder::quadtoquad();
+  pattern_manager[IT_Triangle3] = PatternBuilder::tritotri();
+  pattern_manager[IT_Hexaedron8] = PatternBuilder::hextohex();
+  pattern_manager[IT_Tetraedron4] = PatternBuilder::tettotet();
+
   // Patterns à tester dans cet ordre
-  pattern_manager[0] = PatternBuilder::quadtoquad();
+  /*pattern_manager[0] = PatternBuilder::quadtoquad();
   pattern_manager[1] = PatternBuilder::quadtotri();
-  pattern_manager[2] = PatternBuilder::tritotri();
-  pattern_manager[3] = PatternBuilder::tritoquad();
+  pattern_manager[2] = PatternBuilder::tritotri(); // ok multiple fois
+  pattern_manager[3] = PatternBuilder::tritoquad(); // 
+  */
 
-  // Generer notre quad
-  //_generateOneQuad(mesh);
-  //mesh->utilities()->writeToFile("subdivider_quad_order.vtk", "VtkLegacyMeshWriter");
-  //_refineWithArcaneFaces(mesh,pattern_manager[0]);
-  //exit(0);
-  mesh->utilities()->writeToFile("subdivider_refined_quad_order0.vtk", "VtkLegacyMeshWriter");
-  //_refineWithArcaneFaces(mesh,pattern_manager[1]);
-  mesh->utilities()->writeToFile("subdivider_refined_quad_order1.vtk", "VtkLegacyMeshWriter");
-  //exit(0);
-  //_refineWithArcaneFaces(mesh,pattern_manager[1]);
-  //mesh->utilities()->writeToFile("subdivider_refined_tri_order.vtk", "VtkLegacyMeshWriter");
-  //exit(0);
-  //_refineWithArcaneFaces(mesh,pattern_manager[1]);
-  _generateOneTri(mesh);
-  //_refineWithArcaneFaces(mesh,pattern_manager[2]);
-  //mesh->utilities()->writeToFile("subdivider_refined_tritotri_order.vtk", "VtkLegacyMeshWriter");
-  //
-  _refineWithArcaneFaces(mesh,pattern_manager[3]);
   mesh->utilities()->writeToFile("subdivider_refined_tritoquad_order.vtk", "VtkLegacyMeshWriter");
-  exit(0);
-
-  /*
-  for(const Pattern & x : patterns){
-    _refineWithArcaneFaces(mesh); // changer en refineWithout faces infering , passer pattern manager en paramètre
-    //_refineWithArcaneFaces(mesh,p)
-  }*/
-
   info() << "subdivideMesh" ;
-  //_generateOneHexa(mesh);
-
-  //_generateOneTetra(mesh);
-  //_refineWithArcaneFaces(mesh);
-  //exit(0);
+  
   for(Integer i = 0 ; i < options()->nbSubdivision ; i++) {
-    _refineOnce(mesh);
+    _refineOnce(mesh,pattern_manager);
     VariableNodeReal3 vrc = mesh->nodesCoordinates();
     ENUMERATE_NODE(inode,mesh->ownNodes())
     {
@@ -1585,36 +1755,7 @@ subdivideMesh([[maybe_unused]] IPrimaryMesh* mesh)
     }
     debug() << i << "refine done";
   }
-  /*
-  VariableNodeReal3 vrc = mesh->nodesCoordinates();
-  ENUMERATE_NODE(inode,mesh->ownNodes())
-  {
-    const Node & node = *inode;
-    info() << node.uniqueId() << " " << vrc[node];
-  }
-  */
-  //_refineOnce(mesh);
-
-  /*
-  info() << "subdivideMesh2";
-  ARCANE_ASSERT((mesh->nbNode() == 27),("Wrong nb node"));
-  info() << "after subdivide" ;
-  VariableNodeReal3 vrc = mesh->nodesCoordinates();
-  ENUMERATE_NODE(inode,mesh->ownNodes())
-  {
-    const Node & node = *inode;
-    info() << node.uniqueId() << " " << vrc[node];
-  }
-  info() << "#beforesd";
-  _refineOnce(mesh);
-  info() << "subdivideMesh3";
-  ARCANE_ASSERT((mesh->nbNode() == 125),("Wrong nb node"));
-  ENUMERATE_NODE(inode,mesh->ownNodes())
-  {
-    const Node & node = *inode;
-    info() << node.uniqueId() << " " << mesh->nodesCoordinates()[node];
-  }
-  */
+  mesh->utilities()->writeToFile("subdivider_after_"+std::to_string(options()->nbSubdivision)+"refine.vtk", "VtkLegacyMeshWriter");
 }
 
 /*---------------------------------------------------------------------------*/
