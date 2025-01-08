@@ -23,6 +23,7 @@
 #include "arcane/utils/MemoryAllocator.h"
 #include "arcane/utils/FixedArray.h"
 #include "arcane/utils/internal/TaskFactoryInternal.h"
+#include "arcane/utils/internal/DependencyInjection.h"
 
 #include "arcane/core/FactoryService.h"
 
@@ -428,10 +429,9 @@ class TBBTaskImplementation
 
  public:
   TBBTaskImplementation(const ServiceBuildInfo& sbi)
-  : m_is_active(false), m_p(nullptr)
   {
-    ARCANE_UNUSED(sbi);
   }
+  TBBTaskImplementation() = default;
   ~TBBTaskImplementation() override;
  public:
   void build() {}
@@ -509,8 +509,8 @@ class TBBTaskImplementation
 
  private:
 
-  bool m_is_active;
-  Impl* m_p;
+  bool m_is_active = false;
+  Impl* m_p = nullptr;
 
  private:
 
@@ -769,8 +769,8 @@ class TBBMDParallelFor
         << " max_allowed=" << m_nb_allowed_thread
         << " MDFor ";
       for( Int32 i=0; i<RankValue; ++i ){
-        Int32 r0= range.dim(i).begin();
-        Int32 r1 = range.dim(i).size();
+        Int32 r0 = static_cast<Int32>(range.dim(i).begin());
+        Int32 r1 = static_cast<Int32>(range.dim(i).size());
         o << " range" << i << " (begin=" << r0 << " size=" << r1 << ")";
       }
       o << "\n";
@@ -1398,8 +1398,14 @@ _createChildTask(ITaskFunctor* functor)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+// TODO: a supprimer maintenant qu'on utilise 'DependencyInjection'
 ARCANE_REGISTER_APPLICATION_FACTORY(TBBTaskImplementation,ITaskImplementation,
                                     TBBTaskImplementation);
+
+ARCANE_DI_REGISTER_PROVIDER(TBBTaskImplementation,
+                            DependencyInjection::ProviderProperty("TBBTaskImplementation"),
+                            ARCANE_DI_INTERFACES(ITaskImplementation),
+                            ARCANE_DI_EMPTY_CONSTRUCTOR());
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

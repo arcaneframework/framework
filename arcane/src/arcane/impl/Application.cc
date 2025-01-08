@@ -35,6 +35,7 @@
 #include "arcane/utils/JSONReader.h"
 #include "arcane/utils/Profiling.h"
 #include "arcane/utils/internal/TaskFactoryInternal.h"
+#include "arcane/utils/internal/DependencyInjection.h"
 
 #include "arcane/core/ArcaneVersion.h"
 #include "arcane/core/ISubDomain.h"
@@ -224,6 +225,9 @@ _stringListToArray(const StringList& slist) const
  * si elle existe et remplit \a found_name (si non nul) avec le nom de
  * l'instance. Dès qu'une instance est trouvée, on la retourne.
  * Retourne nulle si aucune instance n'est disponible.
+ *
+ * \note Cette méthode n'est plus utilisée (janvier 2025) et on utilise
+ * _tryCreateServiceUsingInjector() à la place.
  */
 template<typename InterfaceType> Ref<InterfaceType> Application::
 _tryCreateService(const StringList& names,String* found_name)
@@ -233,6 +237,34 @@ _tryCreateService(const StringList& names,String* found_name)
   ServiceBuilder<InterfaceType> sf(this);
   for( String s : names ){
     auto t = sf.createReference(s,SB_AllowNull);
+    if (t.get()){
+      if (found_name)
+        (*found_name) = s;
+      return t;
+    }
+  }
+  return {};
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * Essaie d'instancier un service implémentant \a InterfaceType avec
+ * la liste de nom de services \a names.  Retourne l'instance trouvée
+ * si elle existe et remplit \a found_name (si non nul) avec le nom de
+ * l'instance. Dès qu'une instance est trouvée, on la retourne.
+ * Retourne nulle si aucune instance n'est disponible.
+ */
+template<typename InterfaceType> Ref<InterfaceType> Application::
+_tryCreateServiceUsingInjector(const StringList& names,String* found_name)
+{
+  DependencyInjection::Injector injector;
+  injector.fillWithGlobalFactories();
+
+  if (found_name)
+    (*found_name) = String();
+  for( String s : names ){
+    auto t = injector.createInstance<InterfaceType>(s,true);
     if (t.get()){
       if (found_name)
         (*found_name) = s;
@@ -373,7 +405,7 @@ build()
     if (arcaneHasThread()){
       StringList names = build_info.threadImplementationServices();
       String found_name;
-      auto sv = _tryCreateService<IThreadImplementationService>(names,&found_name);
+      auto sv = _tryCreateServiceUsingInjector<IThreadImplementationService>(names,&found_name);
       if (sv.get()){
         m_thread_implementation_service = sv;
         m_thread_implementation = sv->createImplementation();
@@ -396,9 +428,10 @@ build()
     if (arcaneHasThread()){
       Integer nb_task_thread = build_info.nbTaskThread();
       if (nb_task_thread>=0){
+
         StringList names = build_info.taskImplementationServices();
         String found_name;
-        auto sv = _tryCreateService<ITaskImplementation>(names,&found_name);
+        auto sv = _tryCreateServiceUsingInjector<ITaskImplementation>(names,&found_name);
         if (sv.get()){
           TaskFactoryInternal::setImplementation(sv.get());
           //m_trace->info() << "Initialize task with nb_thread=" << nb_thread;
