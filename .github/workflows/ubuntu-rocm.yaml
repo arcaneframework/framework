@@ -1,0 +1,116 @@
+# CI to compile Arcane with ROCM/HIP
+name: Ubuntu ROCM/HIP
+
+on:
+  schedule:
+    - cron: '35 0 * * *' # Every night at 00:35
+  # To allow on demand launch
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  job:
+    name: ${{ matrix.full_name }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-24.04
+            ubuntu-name: noble
+            full_name: 'ubuntu-24.04-rocm-6.3.1'
+            rocm-version: '6.3.1'
+            amdgpu-package: amdgpu-install_6.3.60301-1_all.deb
+            cmake_specific_args : ''
+          - os: ubuntu-22.04
+            ubuntu-name: jammy
+            full_name: 'ubuntu-22.04-rocm-5.7.1'
+            rocm-version: '5.7.1'
+            amdgpu-package: amdgpu-install_5.7.50701-1_all.deb
+            cmake_specific_args : ''
+
+    env:
+      # Indicates the CMake build directory where project files and binaries are being produced.
+      CMAKE_BUILD_DIR: ${{ github.workspace }}/builddir/
+      DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+      DOTNET_CLI_TELEMETRY_OPTOUT: true
+
+    steps:
+      - name: Checkout actions
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Setup environment
+        shell: 'bash'
+        run: |
+          sudo apt-get install -y ninja-build
+          sudo apt-get install -y apt-utils build-essential iputils-ping libglib2.0-dev libxml2-dev
+          echo "${RUNNER_TEMP}/local_bin_dir/bin" >> $GITHUB_PATH
+          echo "${RUNNER_TEMP}/local_bin_dir/cmake/bin" >> $GITHUB_PATH
+          echo Path variable is: ${PATH}
+          echo CMake path is: `which cmake`
+          cmake --version
+
+      - name: Install ROCM
+        shell: 'bash'
+        run: |
+          sudo mkdir --parents --mode=0755 /etc/apt/keyrings
+          wget https://repo.radeon.com/rocm/rocm.gpg.key -O - | gpg --dearmor | sudo tee /etc/apt/keyrings/rocm.gpg > /dev/null
+          echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/rocm.gpg] https://repo.radeon.com/amdgpu/${{ matrix.rocm-version }}/ubuntu ${{ matrix.ubuntu-name }} main" | sudo tee /etc/apt/sources.list.d/amdgpu.list
+          sudo apt-get update
+          echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/rocm.gpg] https://repo.radeon.com/rocm/apt/${{ matrix.rocm-version }} ${{ matrix.ubuntu-name }} main" | sudo tee --append /etc/apt/sources.list.d/rocm.list
+          sudo echo 'Package: *\nPin: release o=repo.radeon.com\nPin-Priority: 600' | sudo tee /etc/apt/preferences.d/rocm-pin-600
+          wget https://repo.radeon.com/amdgpu-install/${{ matrix.rocm-version }}/ubuntu/${{ matrix.ubuntu-name }}/${{ matrix.amdgpu-package }}
+          sudo apt install -y ./${{ matrix.amdgpu-package }}
+          sudo apt-get update
+          #sudo apt-get install -y amdgpu-dkms
+          #sudo apt-get install -y rocm-hip-sdk rocm-hip-runtime-dev rocm-core
+          sudo apt-get install -y rocm-hip-runtime-dev rocprim-dev roctracer-dev rocm-core
+          find /opt/rocm
+
+      - name: 'Display environment after setup'
+        shell: 'bash'
+        continue-on-error: true
+        run: |
+          echo Path variable is: ${PATH}
+          echo CMake path is: `which cmake`
+          echo Ninja path is: `which ninja`
+          echo Dotnet path is: `which dotnet`
+          cmake --version
+          ninja --version
+          dotnet --version
+
+      - name: Configure build script
+        shell: bash
+        run: |
+          cmake -S "${{ github.workspace }}" -B "${{ env.CMAKE_BUILD_DIR }}" \
+          -DCMAKE_VERBOSE_MAKEFILE=TRUE \
+          -DARCANEFRAMEWORK_BUILD_COMPONENTS=Arcane \
+          -DCMAKE_BUILD_TYPE=Debug \
+          -DARCCORE_CXX_STANDARD=20 \
+          -DARCANE_ENABLE_DOTNET_PYTHON_WRAPPER=OFF \
+          -DARCANE_ACCELERATOR_MODE=ROCM \
+          -DCMAKE_HIP_ARCHITECTURES=gfx90a \
+          -DAMDGPU_TARGETS=gfx90a \
+          -DARCCORE_USE_MPI=FALSE \
+          -DCMAKE_PREFIX_PATH=/opt/rocm \
+          -DBUILD_SHARED_LIBS=TRUE \
+          -GNinja ${{ matrix.cmake_specific_args }}
+
+
+      - name: Dump Some Generated files
+        shell: bash
+        run: |
+          echo "Dump CMakeCache.txt"
+          cat "${{ env.CMAKE_BUILD_DIR }}/CMakeCache.txt"
+          echo "Dump arcane_core_config.h"
+          cat "${{ env.CMAKE_BUILD_DIR }}/arcane_core_config.h"
+
+      - name: Build arcane
+        shell: bash
+        run: |
+          cmake --build "${{ env.CMAKE_BUILD_DIR }}"
