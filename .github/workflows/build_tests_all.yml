@@ -149,3 +149,4 @@ jobs:
       excluded_tests_with_labels: ${{ matrix.config.excluded_tests_with_labels }}
       ctest_additionnal_args: ${{ matrix.config.ctest_args }}
       use_cache: false
+      artifact_key_prefix: ${{matrix.image.short}}_${{matrix.version.short}}_${{matrix.mpi.implementation}}_${{matrix.config.type}}
