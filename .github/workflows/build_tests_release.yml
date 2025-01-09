@@ -42,7 +42,7 @@ jobs:
             compilo_version: '12'
             acc_compilo_name: ''
             acc_compilo_version: ''
-            date: '20250107'
+            date: '20250108'
             args: '-DARCCORE_CXX_STANDARD=23'
             execute_tests: true
 
@@ -52,7 +52,7 @@ jobs:
             compilo_version: '14'
             acc_compilo_name: ''
             acc_compilo_version: ''
-            date: '20250107'
+            date: '20250108'
             args: '-DARCCORE_CXX_STANDARD=23'
             execute_tests: true
 
@@ -62,7 +62,7 @@ jobs:
             compilo_version: '18'
             acc_compilo_name: ''
             acc_compilo_version: ''
-            date: '20250107'
+            date: '20250108'
             args: '-DARCCORE_CXX_STANDARD=23'
             execute_tests: true
 
@@ -72,7 +72,7 @@ jobs:
             compilo_version: '13'
             acc_compilo_name: 'cuda'
             acc_compilo_version: '126'
-            date: '20250107'
+            date: '20250108'
             # Disable googletest with CUDA because it requires a GPU driver
             args: '-DARCCORE_CXX_STANDARD=20 -DARCANE_EXECUTE_ACCELERATOR_GOOGLETEST=OFF'
             execute_tests: false
