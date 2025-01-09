@@ -381,7 +381,7 @@ static PyArrayObject* vector_to_nparray(const std::vector<std::vector<T>>& vec, 
 
       size_t nRows = vec.size();
       size_t nCols = vec[0].size();
-      npy_intp dims[2] = { nRows, nCols };
+      npy_intp dims[2] = { static_cast<npy_intp>(nRows), static_cast<npy_intp>(nCols) };
       PyArrayObject* vec_array = (PyArrayObject*)PyArray_SimpleNew(2, dims, type_num);
 
       T* vec_array_pointer = (T*)PyArray_DATA(vec_array);
