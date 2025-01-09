@@ -6,7 +6,7 @@
   <boucle-en-temps>ArcaneDirectExecutionLoop</boucle-en-temps>
  </arcane>
  <maillage utilise-unite="0">
-  <fichier>sphere2.mli</fichier>
+  <fichier>sphere2.mli2</fichier>
  </maillage>
  <execution-directe>
   <tool name='ArcaneCasePartitioner'>
