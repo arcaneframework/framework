@@ -127,6 +127,7 @@ class ARCANE_ACCELERATOR_CORE_EXPORT Runner
   double cumulativeCommandTime() const;
 
   //! Positionne la politique d'exécution des réductions
+  ARCANE_DEPRECATED_REASON("Y2025: this method is a no op. reduce policy is always eDeviceReducePolicy::Grid")
   void setDeviceReducePolicy(eDeviceReducePolicy v);
 
   //! politique d'exécution des réductions
