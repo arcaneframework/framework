@@ -49,7 +49,7 @@ jobs:
     name: Codecov
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/arcaneframework/ubuntu-2404:gcc-13_full_20240717
+      image: ghcr.io/arcaneframework/ubuntu-2404:gcc-13_full_20250108
 
     steps:
       - name: Display CPU infos
@@ -97,7 +97,8 @@ jobs:
           restore-keys: codecov-
 
       - name: Build framework
-        uses: arcaneframework/gh_actions/build_install_framework@v2
+        # TODO : NE PAS MERGER AVANT D'AVOIR RETIRÉ LE NOM DE LA BRANCHE !!!
+        uses: arcaneframework/gh_actions/build_install_framework@dev/ah-improve-accelerator-compiler-support
         with:
           source_dir: ${{ env.SOURCE_DIR }}
           build_dir: ${{ env.BUILD_DIR }}
@@ -120,7 +121,6 @@ jobs:
           type_build: 'Release'
           compilo: 'gcc'
           verbose: true
-          with_cuda: false
           with_samples: false
 
       - name: Upload failure artifact
