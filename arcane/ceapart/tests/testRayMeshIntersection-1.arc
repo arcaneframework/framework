@@ -7,7 +7,7 @@
  </arcane>
 
  <maillage utilise-unite="false">
-  <fichier internal-partition='true'>sphere1.mli</fichier>
+  <fichier internal-partition='true'>sphere1.mli2</fichier>
  </maillage>
 
  <module-test-unitaire>
