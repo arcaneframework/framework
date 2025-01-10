@@ -52,6 +52,7 @@
 
 #include <map>
 #include <arcane/cartesianmesh/ICartesianMesh.h>
+#include <arcane/core/Properties.h>
 #include <arcane/std/IMeshGenerator.h>
 #include <arcane/utils/MDDim.h>
 /*//#include <arcane/utils/Array.h>
@@ -285,6 +286,24 @@ Pattern PatternBuilder::quadtoquad()
     return {IT_Quad4,IT_Line2,IT_Quad4,nodes,faces,cells,child_faces};
   }
 
+/*
+ * Pour un quad:
+ * 3 --- 2
+ * |     |
+ * |     |
+ * 0 --- 1
+ * 
+ * 3 --> 2
+ * |   / |
+ * | /   |
+ * 0 <-- 1
+ * 
+ * 3 --- 4 --- 5
+ * |     |     |
+ * |     |     |
+ * 0 --- 1 --- 2 
+ * 
+*/
   Pattern PatternBuilder::quadtotri()
   {
     StorageRefine nodes({}); // Pas de noeud à ajouter
@@ -514,7 +533,8 @@ Pattern PatternBuilder::quadtoquad()
   Pattern PatternBuilder::hextotet(){
     StorageRefine nodes = {}; // Pas de nouveaux noeuds
     StorageRefine faces ={    // Ne fonctionne pas avec les même faces que arcane pourtant 
-        /*{0,1,2},
+        /*
+        {0,1,2},
         {0,2,4},
         {0,1,4},
         {1,2,4},
@@ -529,10 +549,29 @@ Pattern PatternBuilder::quadtoquad()
         {2,4,7},
         {2,6,7},
         {2,4,6},
-        {4,6,7},*/
+        {4,6,7},
+        */
       };
-
-      
+/*
+{
+{0,1,2},
+{0,2,4},
+{0,1,4},
+{1,2,4},
+{1,4,5},
+{1,5,7},
+{1,4,7},
+{4,5,7},
+{1,2,3},
+{1,2,7},
+{1,3,7},
+{2,3,7},
+{2,4,7},
+{2,6,7},
+{2,4,6},
+{4,6,7},
+}
+*/      
     StorageRefine child_faces = {
     };
     StorageRefine cells = {
@@ -840,7 +879,7 @@ void ArcaneBasicMeshSubdividerService::_refineOnce(IPrimaryMesh* mesh,std::unord
 
       UniqueArray<Int64> face_in_cell;      // Toutes les faces de la cellule uid
       StorageRefine & child_faces = p.child_faces;
-
+      
       cells_to_detach.add(cell.localId());
       // Génération des noeud
       UniqueArray<Int64> node_in_cell;
@@ -857,7 +896,7 @@ void ArcaneBasicMeshSubdividerService::_refineOnce(IPrimaryMesh* mesh,std::unord
 
       // - Génération des uid noeuds
       debug() << "Génération des uid noeuds" ;
-      debug() << "Génération des uid noeudsbkbkbkbk" ;
+      
       for( Integer i = 0 ; i < node_pattern.size() ; i++ ){
         // uid
         UniqueArray<Int64> tmp;
@@ -898,7 +937,7 @@ void ArcaneBasicMeshSubdividerService::_refineOnce(IPrimaryMesh* mesh,std::unord
       */
 
       debug() << "nodetoadd size " << nodes_to_add.size() << " " << nodes_to_add_coords.size();
-      debug() << "Node coord & uid TRUC" << nodes_to_add_coords.size() << " " << nodes_to_add.size() ;
+      debug() << "Node coord & nb node to add" << nodes_to_add_coords.size() << " " << nodes_to_add.size() ;
       //ARCANE_ASSERT((nodes_to_add_coords.size() == static_cast<size_t>(nodes_to_add.size())),("Has to be same"));
       //ARCANE_ASSERT((nodes_to_add_coords.size() == new_nodes.size()),("Has to be same"));
 
@@ -1002,9 +1041,12 @@ void ArcaneBasicMeshSubdividerService::_refineOnce(IPrimaryMesh* mesh,std::unord
     //ARCANE_ASSERT((nb_face_to_add == (faces_to_add.size()/6)),("non consistant number of faces")); // Pour hex
 
     // Ajout des cellules enfants
+    mesh->modifier()->detachCells(cells_to_detach);
+
     UniqueArray<Int32> cells_lid(nb_cell_to_add);
     mesh->modifier()->addCells(nb_cell_to_add, cells_to_add.constView(),cells_lid);
-
+    info() << "After addCells" ;
+    // mesh->modifier()->addCells()
     // Pour tout les itemgroups
     UniqueArray<Int32> child_cells_lid(child_cells.size());
     mesh->cellFamily()->itemsUniqueIdToLocalId(child_cells_lid,child_cells,true);
@@ -1090,17 +1132,15 @@ void ArcaneBasicMeshSubdividerService::_refineOnce(IPrimaryMesh* mesh,std::unord
         Int64 step = parents_to_childs_cell[iitem->uniqueId().asInt64()].first;
         Int64 n_childs = parents_to_childs_cell[iitem->uniqueId().asInt64()].second;
         auto subview = child_cells_lid.subView(step,static_cast<Integer>(n_childs));
-
-
         ARCANE_ASSERT((subview.size() == 8 ), ("SUBVIEW"));
         to_add_to_group.addRange(subview);
       }
       info() << "#Added " << to_add_to_group.size() << " to group " << group.fullName();
       group.addItems(to_add_to_group,true);
     }
-    
     // fin gestion itemgroups
-    mesh->modifier()->removeCells(cells_to_detach.constView());
+    mesh->modifier()->removeDetachedCells(cells_to_detach.constView());
+    //mesh->modifier()->removeCells(cells_to_detach.constView());
     mesh->modifier()->endUpdate();
 
     // DEBUG
@@ -1722,6 +1762,12 @@ void ArcaneBasicMeshSubdividerService::_faceOrderArcane(IPrimaryMesh* mesh){
  * |     |
  * |     |
  * 0 --- 1
+ * 
+ * 3 --- 2
+ * |   / |
+ * | /   |
+ * 0 --- 1
+ * 
  */
 
 void ArcaneBasicMeshSubdividerService::
@@ -1733,7 +1779,7 @@ subdivideMesh([[maybe_unused]] IPrimaryMesh* mesh)
   //pattern_manager[IT_Quad4] = PatternBuilder::quadtoquad();
   pattern_manager[IT_Quad4] = PatternBuilder::quadtotri();
   pattern_manager[IT_Triangle3] = PatternBuilder::tritotri();
-  pattern_manager[IT_Hexaedron8] = PatternBuilder::hextohex();
+  pattern_manager[IT_Hexaedron8] = PatternBuilder::hextotet();
   pattern_manager[IT_Tetraedron4] = PatternBuilder::tettotet();
 
   // Patterns à tester dans cet ordre
@@ -1743,7 +1789,10 @@ subdivideMesh([[maybe_unused]] IPrimaryMesh* mesh)
   pattern_manager[3] = PatternBuilder::tritoquad(); // 
   */
 
+  //_refineWithArcaneFaces(mesh,PatternBuilder::hextotet());
+  
   mesh->utilities()->writeToFile("subdivider_refined_tritoquad_order.vtk", "VtkLegacyMeshWriter");
+  //exit(0);
   info() << "subdivideMesh" ;
   
   for(Integer i = 0 ; i < options()->nbSubdivision ; i++) {
