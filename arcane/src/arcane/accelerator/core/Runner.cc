@@ -337,7 +337,8 @@ isConcurrentQueueCreation() const
 void Runner::
 setDeviceReducePolicy(eDeviceReducePolicy v)
 {
-  m_p->m_reduce_policy = v;
+  if (v != eDeviceReducePolicy::Grid)
+    std::cout << "Warning: Runner::setDeviceReducePolicy(): only 'eDeviceReducePolicy::Grid' is supported\n";
 }
 
 /*---------------------------------------------------------------------------*/

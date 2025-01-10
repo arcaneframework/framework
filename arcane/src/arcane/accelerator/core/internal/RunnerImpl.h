@@ -139,7 +139,7 @@ class RunnerImpl
 
   eExecutionPolicy m_execution_policy = eExecutionPolicy::None;
   bool m_is_init = false;
-  eDeviceReducePolicy m_reduce_policy = eDeviceReducePolicy::Grid;
+  const eDeviceReducePolicy m_reduce_policy = eDeviceReducePolicy::Grid;
   DeviceId m_device_id;
   impl::IRunnerRuntime* m_runtime = nullptr;
   RunQueueImplStack m_run_queue_pool;
