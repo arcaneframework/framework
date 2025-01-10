@@ -302,12 +302,18 @@ Pattern PatternBuilder::quadtoquad()
  * |     |     |
  * |     |     |
  * 0 --- 1 --- 2 
- * 
+ * Ici on ajoute une seule face arcane (0,2). 
 */
   Pattern PatternBuilder::quadtotri()
   {
     StorageRefine nodes({}); // Pas de noeud à ajouter
-    StorageRefine faces({});
+    StorageRefine faces({
+      /*{0,1},
+      {1,3},
+      {2,3},*/
+      {0,2},
+      //{0,3}
+    });
     StorageRefine cells({{0,3,2},{2,1,0}});
     StorageRefine child_faces({});
     return {IT_Quad4,IT_Line2,IT_Triangle3,nodes,faces,cells,child_faces};
@@ -529,50 +535,35 @@ Pattern PatternBuilder::quadtoquad()
     return {IT_Tetraedron4,IT_Triangle3,IT_Tetraedron4,nodes,faces,cells,child_faces};
   }
 
-
+  // Attention lors de la génération des faces, il ne faut pas utiliser le cartesian (l'ordre du cartesian builder est différent)
   Pattern PatternBuilder::hextotet(){
     StorageRefine nodes = {}; // Pas de nouveaux noeuds
     StorageRefine faces ={    // Ne fonctionne pas avec les même faces que arcane pourtant 
-        /*
-        {0,1,2},
-        {0,2,4},
-        {0,1,4},
-        {1,2,4},
-        {1,4,5},
-        {1,5,7},
-        {1,4,7},
-        {4,5,7},
-        {1,2,3},
-        {1,2,7},
-        {1,3,7},
-        {2,3,7},
-        {2,4,7},
-        {2,6,7},
-        {2,4,6},
-        {4,6,7},
-        */
-      };
-/*
-{
-{0,1,2},
-{0,2,4},
-{0,1,4},
-{1,2,4},
-{1,4,5},
-{1,5,7},
-{1,4,7},
-{4,5,7},
-{1,2,3},
-{1,2,7},
-{1,3,7},
-{2,3,7},
-{2,4,7},
-{2,6,7},
-{2,4,6},
-{4,6,7},
-}
-*/      
-    StorageRefine child_faces = {
+      {0,1,3}, // 0
+      {0,3,4}, // 1
+      {0,1,4}, // 2
+      {1,3,4}, // 3
+      {1,4,5}, // 4
+      {1,5,6}, // 5
+      {1,4,6}, // 6
+      {4,5,6}, // 7
+      {1,2,3}, // 8
+      {1,3,6}, // 9
+      {1,2,6}, // 10
+      {2,3,6}, // 11
+      {3,4,6}, // 12
+      {3,6,7}, // 13
+      {3,4,7}, // 14
+      {4,6,7}, // 15
+    };
+
+    StorageRefine child_faces = { // 6*2 = 12 faces
+      {0,8},
+      {1,14},
+      {2,4},
+      {15,7},
+      {10,5},
+      {11,13}
     };
     StorageRefine cells = {
       {0,1,3,4},
@@ -1103,7 +1094,7 @@ void ArcaneBasicMeshSubdividerService::_refineOnce(IPrimaryMesh* mesh,std::unord
         Int64 step = parents_to_childs_faces_groups[iitem->uniqueId().asInt64()].first;
         Int64 n_childs = parents_to_childs_faces_groups[iitem->uniqueId().asInt64()].second;
         auto subview = face_external_lid.subView(step,static_cast<Integer>(n_childs));
-        ARCANE_ASSERT((subview.size() == 4 ), ("SUBVIEW"));
+        //ARCANE_ASSERT((subview.size() == 4 ), ("SUBVIEW"));
         to_add_to_group.addRange(subview);
       }
       group.addItems(to_add_to_group,true);
@@ -1128,11 +1119,11 @@ void ArcaneBasicMeshSubdividerService::_refineOnce(IPrimaryMesh* mesh,std::unord
       UniqueArray<Int32> to_add_to_group;
 
       ENUMERATE_(Item,iitem,group){ // Pour chaque cellule du groupe on ajoute ses 8 enfants ( ou n )
-        ARCANE_ASSERT(( static_cast<Integer>(parents_to_childs_cell.size()) == child_cells_lid.size()/8 ),("Wrong number of childs"));
+        //ARCANE_ASSERT(( static_cast<Integer>(parents_to_childs_cell.size()) == child_cells_lid.size()/8 ),("Wrong number of childs"));
         Int64 step = parents_to_childs_cell[iitem->uniqueId().asInt64()].first;
         Int64 n_childs = parents_to_childs_cell[iitem->uniqueId().asInt64()].second;
         auto subview = child_cells_lid.subView(step,static_cast<Integer>(n_childs));
-        ARCANE_ASSERT((subview.size() == 8 ), ("SUBVIEW"));
+        //ARCANE_ASSERT((subview.size() == 8 ), ("SUBVIEW"));
         to_add_to_group.addRange(subview);
       }
       info() << "#Added " << to_add_to_group.size() << " to group " << group.fullName();
@@ -1779,7 +1770,7 @@ subdivideMesh([[maybe_unused]] IPrimaryMesh* mesh)
   //pattern_manager[IT_Quad4] = PatternBuilder::quadtoquad();
   pattern_manager[IT_Quad4] = PatternBuilder::quadtotri();
   pattern_manager[IT_Triangle3] = PatternBuilder::tritotri();
-  pattern_manager[IT_Hexaedron8] = PatternBuilder::hextotet();
+  pattern_manager[IT_Hexaedron8] = PatternBuilder::hextohex();
   pattern_manager[IT_Tetraedron4] = PatternBuilder::tettotet();
 
   // Patterns à tester dans cet ordre
@@ -1791,10 +1782,32 @@ subdivideMesh([[maybe_unused]] IPrimaryMesh* mesh)
 
   //_refineWithArcaneFaces(mesh,PatternBuilder::hextotet());
   
+
+
+
   mesh->utilities()->writeToFile("subdivider_refined_tritoquad_order.vtk", "VtkLegacyMeshWriter");
   //exit(0);
   info() << "subdivideMesh" ;
   
+  
+
+
+  pattern_manager[IT_Quad4] = PatternBuilder::quadtotri();
+  pattern_manager[IT_Hexaedron8] = PatternBuilder::hextotet();
+  pattern_manager[IT_Tetraedron4] = PatternBuilder::tettohex();
+  //_generateOneHexa(mesh);
+  //_refineWithArcaneFaces(mesh,PatternBuilder::hextotet());
+  _refineOnce(mesh,pattern_manager);
+  _refineOnce(mesh,pattern_manager);
+  //_refineOnce(mesh,pattern_manager);
+  //_refineWithArcaneFaces(mesh,PatternBuilder::quadtotri());
+
+  // pattern_manager[IT_Triangle3] = PatternBuilder::tritoquad();
+  // _refineOnce(mesh,pattern_manager);
+  // pattern_manager[IT_Quad4] = PatternBuilder::quadtoquad();
+  // _refineOnce(mesh,pattern_manager);
+  // _refineOnce(mesh,pattern_manager);
+  /*
   for(Integer i = 0 ; i < options()->nbSubdivision ; i++) {
     _refineOnce(mesh,pattern_manager);
     VariableNodeReal3 vrc = mesh->nodesCoordinates();
@@ -1805,7 +1818,9 @@ subdivideMesh([[maybe_unused]] IPrimaryMesh* mesh)
     }
     debug() << i << "refine done";
   }
+  */
   mesh->utilities()->writeToFile("subdivider_after_"+std::to_string(options()->nbSubdivision)+"refine.vtk", "VtkLegacyMeshWriter");
+   mesh->utilities()->writeToFile("subdivider_output.vtk", "VtkLegacyMeshWriter");
 }
 
 /*---------------------------------------------------------------------------*/
