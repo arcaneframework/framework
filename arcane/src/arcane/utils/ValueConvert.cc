@@ -33,6 +33,23 @@ namespace
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+impl::StringViewInputStream::
+StringViewInputStream(StringView v)
+: m_view(v)
+, m_stream(this)
+{
+  auto b = v.bytes();
+  char* begin_ptr = const_cast<char*>(reinterpret_cast<const char*>(b.data()));
+  char* end_ptr = begin_ptr + b.size();
+  setg(begin_ptr, begin_ptr, end_ptr);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 template <> ARCANE_UTILS_EXPORT bool
 builtInGetValue(double& v, StringView s)
 {
@@ -237,7 +254,8 @@ namespace
   {
     std::string s2;
     String read_val = String();
-    std::istringstream sbuf(s.toStdStringView().data());
+    impl::StringViewInputStream svis(s);
+    std::istream& sbuf = svis.stream();
     while (!sbuf.eof()) {
       sbuf >> s2;
       //cout << " ** CHECK READ v='" << s2 << "' '" << sv << "'\n";

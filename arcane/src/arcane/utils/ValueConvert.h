@@ -26,6 +26,37 @@
 namespace Arcane
 {
 
+namespace impl
+{
+/*!
+ * \brief Encapsule un std::istream pour un StringView.
+ *
+ * Actuellement (C++20) std::istringstream utilise en
+ * entrée un std::string ce qui nécessite une instance de ce type
+ * et donc une allocation potentielle. Cette classe sert à éviter
+ * cela en utilisant directement la mémoire pointée par l'instance
+ * de StringView passé dans le constructeur. Cette dernière doit
+ * rester valide durant toute l'ulisation de cette classe.
+ */
+class ARCANE_UTILS_EXPORT StringViewInputStream
+: private std::streambuf
+{
+ public:
+
+  StringViewInputStream(StringView v);
+
+ public:
+
+  std::istream& stream() { return m_stream; }
+
+ private:
+
+  StringView m_view;
+  std::istream m_stream;
+};
+
+} // namespace impl
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
@@ -39,7 +70,8 @@ template <class T> inline bool
 builtInGetValue(T& v, StringView s)
 {
   T read_val = T();
-  std::istringstream sbuf(std::string(s.toStdStringView()));
+  impl::StringViewInputStream svis(s);
+  std::istream& sbuf = svis.stream();
   sbuf >> read_val;
   if (sbuf.fail() || sbuf.bad())
     return true;
