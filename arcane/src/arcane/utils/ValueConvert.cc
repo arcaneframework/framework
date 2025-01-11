@@ -168,6 +168,29 @@ builtInGetValue(long long& v, StringView s)
 }
 
 template <> ARCANE_UTILS_EXPORT bool
+builtInGetValue(Real2& v, StringView s)
+{
+  return impl::builtInGetValueGeneric(v, s);
+}
+template <> ARCANE_UTILS_EXPORT bool
+builtInGetValue(Real3& v, StringView s)
+{
+  return impl::builtInGetValueGeneric(v, s);
+}
+
+template <> ARCANE_UTILS_EXPORT bool
+builtInGetValue(Real2x2& v, StringView s)
+{
+  return impl::builtInGetValueGeneric(v, s);
+}
+
+template <> ARCANE_UTILS_EXPORT bool
+builtInGetValue(Real3x3& v, StringView s)
+{
+  return impl::builtInGetValueGeneric(v, s);
+}
+
+template <> ARCANE_UTILS_EXPORT bool
 builtInGetValue(Int128& v, StringView s)
 {
   // Pour l'instant (12/2024), il n'y a pas de fonctions natives pour lire un Int128.
