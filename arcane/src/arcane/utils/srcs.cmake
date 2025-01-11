@@ -316,6 +316,7 @@ set(ARCANE_SOURCES
   SHA3HashAlgorithm.h
   SHA3HashAlgorithm.cc
   ValueConvert.h
+  ValueConvert.cc
   ScopedPtr.h
   SharedPtr.h
   EventHandlerListImpl.h

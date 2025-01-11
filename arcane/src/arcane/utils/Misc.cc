@@ -12,7 +12,7 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/Iostream.h"
-#include "arcane/utils/ValueConvert.h"
+#include "arcane/utils/Convert.h"
 #include "arcane/utils/StdHeader.h"
 #include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/FatalErrorException.h"
@@ -46,137 +46,13 @@
 
 namespace Arcane
 {
-namespace
-{
-const char* _stringViewData(StringView s)
-{
-  return reinterpret_cast<const char*>(s.bytes().data());
-}
 
-}
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 extern "C"
 {
   typedef void (*fSignalFunc)(int);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-template<> ARCANE_UTILS_EXPORT bool builtInGetValue(double& v,StringView s)
-{
-  const char* ptr = _stringViewData(s);
-#ifdef WIN32
-  if(s=="infinity" || s=="inf")
-  {
-	v = std::numeric_limits<double>::infinity();
-	return false;
-  }
-#endif
-  char* ptr2 = 0;
-  v = ::strtod(ptr,&ptr2);
-  return (ptr2!=(ptr+s.length()));
-}
-template<> ARCANE_UTILS_EXPORT bool builtInGetValue(BFloat16& v,StringView s)
-{
-  float z = 0.0;
-  bool r = builtInGetValue(z,s);
-  v = z;
-  return r;
-}
-template<> ARCANE_UTILS_EXPORT bool builtInGetValue(Float16& v,StringView s)
-{
-  float z = 0.0;
-  bool r = builtInGetValue(z,s);
-  v = z;
-  return r;
-}
-template<> ARCANE_UTILS_EXPORT bool builtInGetValue(Float128& v,StringView s)
-{
-  // Pour l'instant (12/2024), il n'y a pas de fonctions natives pour lire un Float128.
-  // On utilise donc un 'long double'.
-  // TODO: à implémenter correctement
-  long double z = 0.0;
-  bool r = builtInGetValue(z,s);
-  v = z;
-  return r;
-}
-template<> ARCANE_UTILS_EXPORT bool builtInGetValue(float& v,StringView s)
-{
-  double z = 0.;
-  bool r = builtInGetValue(z,s);
-  v = (float)z;
-  return r;
-}
-template<> ARCANE_UTILS_EXPORT bool builtInGetValue(long& v,StringView s)
-{
-  const char* ptr = _stringViewData(s);
-  char* ptr2 = 0;
-  v = ::strtol(ptr,&ptr2,0);
-  return (ptr2!=(ptr+s.length()));
-}
-template<> ARCANE_UTILS_EXPORT bool builtInGetValue(int& v,StringView s)
-{
-  long z = 0;
-  bool r = builtInGetValue(z,s);
-  v = (int)z;
-  return r;
-}
-template<> ARCANE_UTILS_EXPORT bool builtInGetValue(short& v,StringView s)
-{
-  long z = 0;
-  bool r = builtInGetValue(z,s);
-  v = (short)z;
-  return r;
-}
-template<> ARCANE_UTILS_EXPORT bool builtInGetValue(unsigned long& v,StringView s)
-{
-  const char* ptr = _stringViewData(s);
-  char* ptr2 = 0;
-  v = ::strtoul(ptr,&ptr2,0);
-  return (ptr2!=(ptr+s.length()));
-}
-template<> ARCANE_UTILS_EXPORT bool builtInGetValue(unsigned int& v,StringView s)
-{
-  unsigned long z = 0;
-  bool r = builtInGetValue(z,s);
-  v = (unsigned int)z;
-  return r;
-}
-template<> ARCANE_UTILS_EXPORT bool builtInGetValue(unsigned short& v,StringView s)
-{
-  unsigned long z = 0;
-  bool r = builtInGetValue(z,s);
-  v = (unsigned short)z;
-  return r;
-}
-template<> ARCANE_UTILS_EXPORT bool builtInGetValue(long long& v,StringView s)
-{
-  const char* ptr = _stringViewData(s);
-  char* ptr2 = 0;
-  v = ::strtoll(ptr,&ptr2,0);
-  return (ptr2!=(ptr+s.length()));
-}
-template<> ARCANE_UTILS_EXPORT bool builtInGetValue(Int128& v,StringView s)
-{
-  // Pour l'instant (12/2024), il n'y a pas de fonctions natives pour lire un Int128.
-  // On utilise donc un 'Int64' en attendant.
-  // TODO: il existe des exemples sur internet. A implémenter correctement
-  long long v2 = 0;
-  const char* ptr = _stringViewData(s);
-  char* ptr2 = 0;
-  v2 = ::strtoll(ptr,&ptr2,0);
-  v = v2;
-  return (ptr2!=(ptr+s.length()));
-}
-template<> ARCANE_UTILS_EXPORT bool builtInGetValue(unsigned long long& v,StringView s)
-{
-  const char* ptr = _stringViewData(s);
-  char* ptr2 = 0;
-  v = ::strtoull(ptr,&ptr2,0);
-  return (ptr2!=(ptr+s.length()));
 }
 
 /*---------------------------------------------------------------------------*/
