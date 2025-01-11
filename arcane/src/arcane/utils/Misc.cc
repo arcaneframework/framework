@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Misc.cc                                                     (C) 2000-2024 */
+/* Misc.cc                                                     (C) 2000-2025 */
 /*                                                                           */
 /* Diverses fonctions                                                        */
 /*---------------------------------------------------------------------------*/
@@ -46,7 +46,14 @@
 
 namespace Arcane
 {
+namespace
+{
+const char* _stringViewData(StringView s)
+{
+  return reinterpret_cast<const char*>(s.bytes().data());
+}
 
+}
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -58,9 +65,9 @@ extern "C"
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<> ARCANE_UTILS_EXPORT bool builtInGetValue(double& v,const String& s)
+template<> ARCANE_UTILS_EXPORT bool builtInGetValue(double& v,StringView s)
 {
-  const char* ptr = s.localstr();
+  const char* ptr = _stringViewData(s);
 #ifdef WIN32
   if(s=="infinity" || s=="inf")
   {
@@ -72,21 +79,21 @@ template<> ARCANE_UTILS_EXPORT bool builtInGetValue(double& v,const String& s)
   v = ::strtod(ptr,&ptr2);
   return (ptr2!=(ptr+s.length()));
 }
-template<> ARCANE_UTILS_EXPORT bool builtInGetValue(BFloat16& v,const String& s)
+template<> ARCANE_UTILS_EXPORT bool builtInGetValue(BFloat16& v,StringView s)
 {
   float z = 0.0;
   bool r = builtInGetValue(z,s);
   v = z;
   return r;
 }
-template<> ARCANE_UTILS_EXPORT bool builtInGetValue(Float16& v,const String& s)
+template<> ARCANE_UTILS_EXPORT bool builtInGetValue(Float16& v,StringView s)
 {
   float z = 0.0;
   bool r = builtInGetValue(z,s);
   v = z;
   return r;
 }
-template<> ARCANE_UTILS_EXPORT bool builtInGetValue(Float128& v,const String& s)
+template<> ARCANE_UTILS_EXPORT bool builtInGetValue(Float128& v,StringView s)
 {
   // Pour l'instant (12/2024), il n'y a pas de fonctions natives pour lire un Float128.
   // On utilise donc un 'long double'.
@@ -96,77 +103,77 @@ template<> ARCANE_UTILS_EXPORT bool builtInGetValue(Float128& v,const String& s)
   v = z;
   return r;
 }
-template<> ARCANE_UTILS_EXPORT bool builtInGetValue(float& v,const String& s)
+template<> ARCANE_UTILS_EXPORT bool builtInGetValue(float& v,StringView s)
 {
   double z = 0.;
   bool r = builtInGetValue(z,s);
   v = (float)z;
   return r;
 }
-template<> ARCANE_UTILS_EXPORT bool builtInGetValue(long& v,const String& s)
+template<> ARCANE_UTILS_EXPORT bool builtInGetValue(long& v,StringView s)
 {
-  const char* ptr = s.localstr();
+  const char* ptr = _stringViewData(s);
   char* ptr2 = 0;
   v = ::strtol(ptr,&ptr2,0);
   return (ptr2!=(ptr+s.length()));
 }
-template<> ARCANE_UTILS_EXPORT bool builtInGetValue(int& v,const String& s)
+template<> ARCANE_UTILS_EXPORT bool builtInGetValue(int& v,StringView s)
 {
   long z = 0;
   bool r = builtInGetValue(z,s);
   v = (int)z;
   return r;
 }
-template<> ARCANE_UTILS_EXPORT bool builtInGetValue(short& v,const String& s)
+template<> ARCANE_UTILS_EXPORT bool builtInGetValue(short& v,StringView s)
 {
   long z = 0;
   bool r = builtInGetValue(z,s);
   v = (short)z;
   return r;
 }
-template<> ARCANE_UTILS_EXPORT bool builtInGetValue(unsigned long& v,const String& s)
+template<> ARCANE_UTILS_EXPORT bool builtInGetValue(unsigned long& v,StringView s)
 {
-  const char* ptr = s.localstr();
+  const char* ptr = _stringViewData(s);
   char* ptr2 = 0;
   v = ::strtoul(ptr,&ptr2,0);
   return (ptr2!=(ptr+s.length()));
 }
-template<> ARCANE_UTILS_EXPORT bool builtInGetValue(unsigned int& v,const String& s)
+template<> ARCANE_UTILS_EXPORT bool builtInGetValue(unsigned int& v,StringView s)
 {
   unsigned long z = 0;
   bool r = builtInGetValue(z,s);
   v = (unsigned int)z;
   return r;
 }
-template<> ARCANE_UTILS_EXPORT bool builtInGetValue(unsigned short& v,const String& s)
+template<> ARCANE_UTILS_EXPORT bool builtInGetValue(unsigned short& v,StringView s)
 {
   unsigned long z = 0;
   bool r = builtInGetValue(z,s);
   v = (unsigned short)z;
   return r;
 }
-template<> ARCANE_UTILS_EXPORT bool builtInGetValue(long long& v,const String& s)
+template<> ARCANE_UTILS_EXPORT bool builtInGetValue(long long& v,StringView s)
 {
-  const char* ptr = s.localstr();
+  const char* ptr = _stringViewData(s);
   char* ptr2 = 0;
   v = ::strtoll(ptr,&ptr2,0);
   return (ptr2!=(ptr+s.length()));
 }
-template<> ARCANE_UTILS_EXPORT bool builtInGetValue(Int128& v,const String& s)
+template<> ARCANE_UTILS_EXPORT bool builtInGetValue(Int128& v,StringView s)
 {
   // Pour l'instant (12/2024), il n'y a pas de fonctions natives pour lire un Int128.
   // On utilise donc un 'Int64' en attendant.
   // TODO: il existe des exemples sur internet. A implémenter correctement
   long long v2 = 0;
-  const char* ptr = s.localstr();
+  const char* ptr = _stringViewData(s);
   char* ptr2 = 0;
   v2 = ::strtoll(ptr,&ptr2,0);
   v = v2;
   return (ptr2!=(ptr+s.length()));
 }
-template<> ARCANE_UTILS_EXPORT bool builtInGetValue(unsigned long long& v,const String& s)
+template<> ARCANE_UTILS_EXPORT bool builtInGetValue(unsigned long long& v,StringView s)
 {
-  const char* ptr = s.localstr();
+  const char* ptr = _stringViewData(s);
   char* ptr2 = 0;
   v = ::strtoull(ptr,&ptr2,0);
   return (ptr2!=(ptr+s.length()));

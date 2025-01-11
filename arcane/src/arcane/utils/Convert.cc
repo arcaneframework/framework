@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Convert.cc                                                  (C) 2000-2024 */
+/* Convert.cc                                                  (C) 2000-2025 */
 /*                                                                           */
 /* Fonctions pour convertir un type en un autre.                             */
 /*---------------------------------------------------------------------------*/
@@ -30,10 +30,9 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-
 #ifdef ARCANE_REAL_NOT_BUILTIN
 template<> ARCANE_UTILS_EXPORT bool
-builtInGetValue(Real& v,const String& s)
+builtInGetValue(Real& v,StringView s)
 {
 #if 0
   double vz = 0.0;
@@ -56,7 +55,7 @@ builtInGetValue(Real& v,const String& s)
 /*---------------------------------------------------------------------------*/
 
 template<> bool
-builtInGetValue(String& v,const String& s)
+builtInGetValue(String& v,StringView s)
 {
   v = s;
   return false;
@@ -65,8 +64,9 @@ builtInGetValue(String& v,const String& s)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace{
-bool _builtInGetBoolArrayValue(BoolArray& v,const String& s)
+namespace
+{
+bool _builtInGetBoolArrayValue(BoolArray& v,StringView s)
 {
   // Le type 'bool' est un peu spécial car il doit pouvoir lire les
   // valeurs comme 'true' ou 'false'.
@@ -87,11 +87,11 @@ bool _builtInGetBoolArrayValue(BoolArray& v,const String& s)
 }
 
 bool
-_builtInGetStringArrayValue(StringArray& v,const String& s)
+_builtInGetStringArrayValue(StringArray& v,StringView s)
 {
   std::string s2;
   String read_val = String();
-  std::istringstream sbuf(s.localstr());
+  std::istringstream sbuf(s.toStdStringView().data());
   while(!sbuf.eof()) {
     sbuf >> s2;
     //cout << " ** CHECK READ v='" << s2 << "' '" << sv << "'\n";
@@ -106,57 +106,57 @@ _builtInGetStringArrayValue(StringArray& v,const String& s)
 }
 }
 
-template<> ARCANE_UTILS_EXPORT bool builtInGetValue(RealArray& v,const String& s)
+template<> ARCANE_UTILS_EXPORT bool builtInGetValue(RealArray& v,StringView s)
 {
   return builtInGetArrayValue(v,s);
 }
 
-template<> ARCANE_UTILS_EXPORT bool builtInGetValue(Real2Array& v,const String& s)
+template<> ARCANE_UTILS_EXPORT bool builtInGetValue(Real2Array& v,StringView s)
 {
   return builtInGetArrayValue(v,s);
 }
 
-template<> ARCANE_UTILS_EXPORT bool builtInGetValue(Real3Array& v,const String& s)
+template<> ARCANE_UTILS_EXPORT bool builtInGetValue(Real3Array& v,StringView s)
 {
   return builtInGetArrayValue(v,s);
 }
 
-template<> ARCANE_UTILS_EXPORT bool builtInGetValue(Real2x2Array& v,const String& s)
+template<> ARCANE_UTILS_EXPORT bool builtInGetValue(Real2x2Array& v,StringView s)
 {
   return builtInGetArrayValue(v,s);
 }
 
-template<> ARCANE_UTILS_EXPORT bool builtInGetValue(Real3x3Array& v,const String& s)
+template<> ARCANE_UTILS_EXPORT bool builtInGetValue(Real3x3Array& v,StringView s)
 {
   return builtInGetArrayValue(v,s);
 }
 
-template<> ARCANE_UTILS_EXPORT bool builtInGetValue(Int8Array& v,const String& s)
+template<> ARCANE_UTILS_EXPORT bool builtInGetValue(Int8Array& v,StringView s)
 {
   return builtInGetArrayValue(v,s);
 }
 
-template<> ARCANE_UTILS_EXPORT bool builtInGetValue(Int16Array& v,const String& s)
+template<> ARCANE_UTILS_EXPORT bool builtInGetValue(Int16Array& v,StringView s)
 {
   return builtInGetArrayValue(v,s);
 }
 
-template<> ARCANE_UTILS_EXPORT bool builtInGetValue(Int32Array& v,const String& s)
+template<> ARCANE_UTILS_EXPORT bool builtInGetValue(Int32Array& v,StringView s)
 {
   return builtInGetArrayValue(v,s);
 }
 
-template<> ARCANE_UTILS_EXPORT bool builtInGetValue(Int64Array& v,const String& s)
+template<> ARCANE_UTILS_EXPORT bool builtInGetValue(Int64Array& v,StringView s)
 {
   return builtInGetArrayValue(v,s);
 }
 
-template<> ARCANE_UTILS_EXPORT bool builtInGetValue(BoolArray& v,const String& s)
+template<> ARCANE_UTILS_EXPORT bool builtInGetValue(BoolArray& v,StringView s)
 {
   return _builtInGetBoolArrayValue(v,s);
 }
 
-template<> ARCANE_UTILS_EXPORT bool builtInGetValue(StringArray& v,const String& s)
+template<> ARCANE_UTILS_EXPORT bool builtInGetValue(StringArray& v,StringView s)
 {
   return _builtInGetStringArrayValue(v,s);
 }
@@ -164,57 +164,57 @@ template<> ARCANE_UTILS_EXPORT bool builtInGetValue(StringArray& v,const String&
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<> ARCANE_UTILS_EXPORT bool builtInGetValue(RealUniqueArray& v,const String& s)
+template<> ARCANE_UTILS_EXPORT bool builtInGetValue(RealUniqueArray& v,StringView s)
 {
   return builtInGetArrayValue(v,s);
 }
 
-template<> ARCANE_UTILS_EXPORT bool builtInGetValue(Real2UniqueArray& v,const String& s)
+template<> ARCANE_UTILS_EXPORT bool builtInGetValue(Real2UniqueArray& v,StringView s)
 {
   return builtInGetArrayValue(v,s);
 }
 
-template<> ARCANE_UTILS_EXPORT bool builtInGetValue(Real3UniqueArray& v,const String& s)
+template<> ARCANE_UTILS_EXPORT bool builtInGetValue(Real3UniqueArray& v,StringView s)
 {
   return builtInGetArrayValue(v,s);
 }
 
-template<> ARCANE_UTILS_EXPORT bool builtInGetValue(Real2x2UniqueArray& v,const String& s)
+template<> ARCANE_UTILS_EXPORT bool builtInGetValue(Real2x2UniqueArray& v,StringView s)
 {
   return builtInGetArrayValue(v,s);
 }
 
-template<> ARCANE_UTILS_EXPORT bool builtInGetValue(Real3x3UniqueArray& v,const String& s)
+template<> ARCANE_UTILS_EXPORT bool builtInGetValue(Real3x3UniqueArray& v,StringView s)
 {
   return builtInGetArrayValue(v,s);
 }
 
-template<> ARCANE_UTILS_EXPORT bool builtInGetValue(Int8UniqueArray& v,const String& s)
+template<> ARCANE_UTILS_EXPORT bool builtInGetValue(Int8UniqueArray& v,StringView s)
 {
   return builtInGetArrayValue(v,s);
 }
 
-template<> ARCANE_UTILS_EXPORT bool builtInGetValue(Int16UniqueArray& v,const String& s)
+template<> ARCANE_UTILS_EXPORT bool builtInGetValue(Int16UniqueArray& v,StringView s)
 {
   return builtInGetArrayValue(v,s);
 }
 
-template<> ARCANE_UTILS_EXPORT bool builtInGetValue(Int32UniqueArray& v,const String& s)
+template<> ARCANE_UTILS_EXPORT bool builtInGetValue(Int32UniqueArray& v,StringView s)
 {
   return builtInGetArrayValue(v,s);
 }
 
-template<> ARCANE_UTILS_EXPORT bool builtInGetValue(Int64UniqueArray& v,const String& s)
+template<> ARCANE_UTILS_EXPORT bool builtInGetValue(Int64UniqueArray& v,StringView s)
 {
   return builtInGetArrayValue(v,s);
 }
 
-template<> ARCANE_UTILS_EXPORT bool builtInGetValue(BoolUniqueArray& v,const String& s)
+template<> ARCANE_UTILS_EXPORT bool builtInGetValue(BoolUniqueArray& v,StringView s)
 {
   return _builtInGetBoolArrayValue(v,s);
 }
 
-template<> ARCANE_UTILS_EXPORT bool builtInGetValue(StringUniqueArray& v,const String& s)
+template<> ARCANE_UTILS_EXPORT bool builtInGetValue(StringUniqueArray& v,StringView s)
 {
   return _builtInGetStringArrayValue(v,s);
 }
@@ -222,57 +222,57 @@ template<> ARCANE_UTILS_EXPORT bool builtInGetValue(StringUniqueArray& v,const S
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<> ARCANE_UTILS_EXPORT bool builtInGetValue(RealSharedArray& v,const String& s)
+template<> ARCANE_UTILS_EXPORT bool builtInGetValue(RealSharedArray& v,StringView s)
 {
   return builtInGetArrayValue(v,s);
 }
 
-template<> ARCANE_UTILS_EXPORT bool builtInGetValue(Real2SharedArray& v,const String& s)
+template<> ARCANE_UTILS_EXPORT bool builtInGetValue(Real2SharedArray& v,StringView s)
 {
   return builtInGetArrayValue(v,s);
 }
 
-template<> ARCANE_UTILS_EXPORT bool builtInGetValue(Real3SharedArray& v,const String& s)
+template<> ARCANE_UTILS_EXPORT bool builtInGetValue(Real3SharedArray& v,StringView s)
 {
   return builtInGetArrayValue(v,s);
 }
 
-template<> ARCANE_UTILS_EXPORT bool builtInGetValue(Real2x2SharedArray& v,const String& s)
+template<> ARCANE_UTILS_EXPORT bool builtInGetValue(Real2x2SharedArray& v,StringView s)
 {
   return builtInGetArrayValue(v,s);
 }
 
-template<> ARCANE_UTILS_EXPORT bool builtInGetValue(Real3x3SharedArray& v,const String& s)
+template<> ARCANE_UTILS_EXPORT bool builtInGetValue(Real3x3SharedArray& v,StringView s)
 {
   return builtInGetArrayValue(v,s);
 }
 
-template<> ARCANE_UTILS_EXPORT bool builtInGetValue(Int8SharedArray& v,const String& s)
+template<> ARCANE_UTILS_EXPORT bool builtInGetValue(Int8SharedArray& v,StringView s)
 {
   return builtInGetArrayValue(v,s);
 }
 
-template<> ARCANE_UTILS_EXPORT bool builtInGetValue(Int16SharedArray& v,const String& s)
+template<> ARCANE_UTILS_EXPORT bool builtInGetValue(Int16SharedArray& v,StringView s)
 {
   return builtInGetArrayValue(v,s);
 }
 
-template<> ARCANE_UTILS_EXPORT bool builtInGetValue(Int32SharedArray& v,const String& s)
+template<> ARCANE_UTILS_EXPORT bool builtInGetValue(Int32SharedArray& v,StringView s)
 {
   return builtInGetArrayValue(v,s);
 }
 
-template<> ARCANE_UTILS_EXPORT bool builtInGetValue(Int64SharedArray& v,const String& s)
+template<> ARCANE_UTILS_EXPORT bool builtInGetValue(Int64SharedArray& v,StringView s)
 {
   return builtInGetArrayValue(v,s);
 }
 
-template<> ARCANE_UTILS_EXPORT bool builtInGetValue(BoolSharedArray& v,const String& s)
+template<> ARCANE_UTILS_EXPORT bool builtInGetValue(BoolSharedArray& v,StringView s)
 {
   return _builtInGetBoolArrayValue(v,s);
 }
 
-template<> ARCANE_UTILS_EXPORT bool builtInGetValue(StringSharedArray& v,const String& s)
+template<> ARCANE_UTILS_EXPORT bool builtInGetValue(StringSharedArray& v,StringView s)
 {
   return _builtInGetStringArrayValue(v,s);
 }
