@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ValueConvertInternal.h                                      (C) 2000-2022 */
+/* ValueConvertInternal.h                                      (C) 2000-2025 */
 /*                                                                           */
 /* Fonctions pour convertir une chaîne de caractère en un type donné.        */
 /*---------------------------------------------------------------------------*/
@@ -53,6 +53,28 @@ builtInGetArrayValue(Array<T>& v, const String& s)
   std::istringstream sbuf(s.localstr());
   return builtInGetArrayValueFromStream(v, sbuf);
 }
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace impl
+{
+  /*!
+   * \brief Indique si on utilise 'std::from_chars' pour convertir
+   * les chaînes de caractères en un type numérique.
+   *
+   * Si on n'utilise pas 'std::from_chars', alors on utilise les fonctions
+   * telles que strtod(), strtol(), ...
+   *
+   * Le défaut en C++20 est d'utiliser std::from_chars().
+   */
+  extern "C++" ARCANE_UTILS_EXPORT void
+  arcaneSetIsValueConvertUseFromChars(bool v);
+
+  //! Positionne le niveau de verbosité pour les fonctions de conversion.
+  extern "C++" ARCANE_UTILS_EXPORT void
+  arcaneSetValueConvertVerbosity(Int32 v);
+} // namespace impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
