@@ -55,6 +55,33 @@ class ARCANE_UTILS_EXPORT StringViewInputStream
   std::istream m_stream;
 };
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Converti la valeur de la chaîne \a s dans le type basique \a T
+ * et stocke la valeur dans \a v.
+ *
+ * \retval true en cas d'échec.
+ * \retval false en cas de succès
+ */
+template <class T> inline bool
+builtInGetValueGeneric(T& v, StringView s)
+{
+  T read_val = T();
+  impl::StringViewInputStream svis(s);
+  std::istream& sbuf = svis.stream();
+  sbuf >> read_val;
+  if (sbuf.fail() || sbuf.bad())
+    return true;
+  if (!sbuf.eof())
+    return true;
+  v = read_val;
+  return false;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 } // namespace impl
 
 /*---------------------------------------------------------------------------*/
@@ -69,16 +96,7 @@ class ARCANE_UTILS_EXPORT StringViewInputStream
 template <class T> inline bool
 builtInGetValue(T& v, StringView s)
 {
-  T read_val = T();
-  impl::StringViewInputStream svis(s);
-  std::istream& sbuf = svis.stream();
-  sbuf >> read_val;
-  if (sbuf.fail() || sbuf.bad())
-    return true;
-  if (!sbuf.eof())
-    return true;
-  v = read_val;
-  return false;
+  return impl::builtInGetValueGeneric(v, s);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -102,6 +120,10 @@ template <> ARCANE_UTILS_EXPORT bool builtInGetValue(Int128& v, StringView s);
 #ifdef ARCANE_REAL_NOT_BUILTIN
 template <> ARCANE_UTILS_EXPORT bool builtInGetValue(Real& v, StringView s);
 #endif
+template <> ARCANE_UTILS_EXPORT bool builtInGetValue(Real2& v, StringView s);
+template <> ARCANE_UTILS_EXPORT bool builtInGetValue(Real3& v, StringView s);
+template <> ARCANE_UTILS_EXPORT bool builtInGetValue(Real2x2& v, StringView s);
+template <> ARCANE_UTILS_EXPORT bool builtInGetValue(Real3x3& v, StringView s);
 
 template <> ARCANE_UTILS_EXPORT bool builtInGetValue(RealArray& v, StringView s);
 template <> ARCANE_UTILS_EXPORT bool builtInGetValue(Real2Array& v, StringView s);
