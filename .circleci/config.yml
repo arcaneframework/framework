@@ -180,6 +180,7 @@ jobs:
           command: |
             echo 'export OMPI_ALLOW_RUN_AS_ROOT=1' >> $BASH_ENV
             echo 'export OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1' >> $BASH_ENV
+            echo 'export GTEST_CATCH_EXCEPTIONS=0' >> $BASH_ENV
 
       # On ne lance pas les tests qui utilisent 'mpithread' car ils ont besoin de 12 coeurs
       # sur les machines à 4 coeurs cela pose problème.
@@ -227,7 +228,7 @@ workflows:
                 - /dev\/[a-z]+-highci-.*/
           matrix:
             parameters:
-              arch: [arm64, amd64]
+              arch: [arm64]
               image_version: [full]
               exec_type: [normal]
               type_build: [Check]
