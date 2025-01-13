@@ -97,8 +97,7 @@ jobs:
           restore-keys: codecov-
 
       - name: Build framework
-        # TODO : NE PAS MERGER AVANT D'AVOIR RETIRÉ LE NOM DE LA BRANCHE !!!
-        uses: arcaneframework/gh_actions/build_install_framework@dev/ah-improve-accelerator-compiler-support
+        uses: arcaneframework/gh_actions/build_install_framework@v3
         with:
           source_dir: ${{ env.SOURCE_DIR }}
           build_dir: ${{ env.BUILD_DIR }}

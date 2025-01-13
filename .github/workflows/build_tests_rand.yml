@@ -57,8 +57,7 @@ jobs:
 
     name: '[${{matrix.image.short}}_${{matrix.version.short}}]_OMPI_${{matrix.config.type}}'
     # La partie 'uses' est déterminée à la compilation, donc on ne peut pas mettre de variable ${{}}.
-    # TODO : NE PAS MERGER AVANT D'AVOIR RETIRÉ LE NOM DE LA BRANCHE !!!
-    uses: 'arcaneframework/gh_actions/.github/workflows/reusable_test_framework.yml@dev/ah-improve-accelerator-compiler-support'
+    uses: 'arcaneframework/gh_actions/.github/workflows/reusable_test_framework.yml@v3'
     with:
       image: ghcr.io/arcaneframework/${{matrix.image.long}}:${{matrix.image.compilo_name}}-${{matrix.image.compilo_version}}_${{matrix.version.long}}_${{matrix.image.date}}
       compilo_name: ${{ matrix.image.compilo_name }}
