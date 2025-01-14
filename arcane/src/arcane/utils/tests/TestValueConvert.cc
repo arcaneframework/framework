@@ -15,14 +15,20 @@
 
 using namespace Arcane;
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 namespace
 {
 
-void _checkBadDouble(const String& s)
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template <typename T> void _checkBad(const String& s)
 {
-  Real x = 0;
+  T x = {};
   bool is_bad = builtInGetValue(x, s);
-  std::cout << "S=" << s << " X=" << x << " is_bad?=" << is_bad << "\n";
+  std::cout << "CheckBad S=" << s << " X=" << x << " is_bad?=" << is_bad << "\n";
   ASSERT_TRUE(is_bad);
 }
 
@@ -44,6 +50,35 @@ void _checkNaN(const String& s)
   ASSERT_TRUE(std::isnan(x));
 }
 
+/*!
+ * \brief Vérifie que \a value et \a expected_value sont strictements identiques.
+ *
+ * \return true si la valeur attendu n'est pas NaN.
+ */
+void _checkValidDouble(double value, double expected_value)
+{
+  // Pour NaN, on ne peut pas faire la comparaison.
+  if (std::isnan(expected_value)) {
+    ASSERT_TRUE(std::isnan(value)) << "value " << value << " is not 'nan'";
+    return;
+  }
+  ASSERT_EQ(value, expected_value);
+}
+
+void _checkReal2(const String& s, Real2 expected_v)
+{
+  Real2 v = {};
+  bool is_bad = builtInGetValue(v, s);
+  std::cout << "S=" << s << " Real2=" << v << " is_bad?=" << is_bad << "\n";
+  ASSERT_FALSE(is_bad) << "Can not convert '" << s << "' to Real2";
+  bool do_test = false;
+  _checkValidDouble(v.x, expected_v.x);
+  _checkValidDouble(v.y, expected_v.y);
+  if (do_test) {
+    ASSERT_EQ(v, expected_v);
+  }
+}
+
 void _testDoubleConvert(bool use_from_chars)
 {
 
@@ -58,9 +93,11 @@ void _testDoubleConvert(bool use_from_chars)
   // Avec la version 'from_chars', convertir une chaîne vide est une erreur
   // mais pas avec la version historique.
   if (use_from_chars)
-    _checkBadDouble("");
+    _checkBad<double>("");
   _checkDouble("-0x1.81e03f705857bp-16", -2.3e-05);
   _checkDouble("0x1.81e03f705857bp-16", 2.3e-05);
+  _checkBad<double>("d2");
+  _checkBad<double>("2.3w");
 
   {
     Real inf_x = std::numeric_limits<Real>::infinity();
@@ -97,7 +134,25 @@ void _testDoubleConvert(bool use_from_chars)
   }
 }
 
+void _testReal2Convert(bool use_same_that_real)
+{
+  impl::arcaneSetUseSameValueConvertForAllReal(use_same_that_real);
+  Real v_nan = std::numeric_limits<double>::quiet_NaN();
+  _checkReal2("2.3e1 -1.2", Real2(2.3e1, -1.2));
+  if (use_same_that_real)
+    _checkReal2("-1.3 nan", Real2(-1.3, v_nan));
+  _checkBad<Real2>("2.3 1.2w");
+  _checkBad<Real2>("2.3x");
+  _checkBad<Real2>(" y2.3 1.2");
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 } // namespace
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 TEST(ValueConvert, Basic)
 {
@@ -107,10 +162,14 @@ TEST(ValueConvert, Basic)
 #if defined(ARCANE_HAS_CXX20)
   impl::arcaneSetIsValueConvertUseFromChars(true);
   _testDoubleConvert(true);
+  _testReal2Convert(true);
+  _testReal2Convert(false);
 #endif
 
   impl::arcaneSetIsValueConvertUseFromChars(false);
   _testDoubleConvert(false);
+  _testReal2Convert(true);
+  _testReal2Convert(false);
 }
 
 TEST(ValueConvert, TryParse)

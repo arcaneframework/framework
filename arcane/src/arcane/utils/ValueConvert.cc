@@ -65,6 +65,7 @@ namespace
 {
   Int32 global_value_convert_verbosity = 0;
   bool global_use_from_chars = true;
+  bool global_use_same_value_convert_for_all_real = false;
 } // namespace
 
 /*---------------------------------------------------------------------------*/
@@ -82,12 +83,18 @@ arcaneSetValueConvertVerbosity(Int32 v)
   global_value_convert_verbosity = v;
 }
 
+void impl::
+arcaneSetUseSameValueConvertForAllReal(bool v)
+{
+  global_use_same_value_convert_for_all_real = v;
+}
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#if defined(ARCANE_USE_FROMCHARS)
 namespace
 {
+#if defined(ARCANE_USE_FROMCHARS)
   /*!
    * \brief Converti une chaîne de caractères en un double.
    *
@@ -103,7 +110,7 @@ namespace
    * \retval (-1) si la conversion a échouée.
    * \retval la position dans \s du dernier caratère lu plus 1.
    */
-  Int64 _getDoubleValue(double& v, StringView s)
+  Int64 _getDoubleValueWithFromChars(double& v, StringView s)
   {
     // ATTENTION: il ne faut pas d'espace en début de \a s
     auto bytes = s.bytes();
@@ -155,9 +162,42 @@ namespace
     }
     return (last_ptr - orig_data);
   }
+#endif
+
+  /*---------------------------------------------------------------------------*/
+  /*---------------------------------------------------------------------------*/
+
+  /*!
+   * \brief Converti \a s en un double.
+   *
+   * Utilise std::from_chars() si \a global_use_from_chars est vrai.
+   * Sinon, utilise strtod().
+   */
+  Int64 _getDoubleValue(double& v, StringView s)
+  {
+#if defined(ARCANE_USE_FROMCHARS)
+    if (global_use_from_chars) {
+      Int64 p = _getDoubleValueWithFromChars(v, s);
+      return p;
+    }
+#endif
+
+    const char* ptr = _stringViewData(s);
+#ifdef WIN32
+    if (s == "infinity" || s == "inf") {
+      v = std::numeric_limits<double>::infinity();
+      return false;
+    }
+#endif
+    char* ptr2 = nullptr;
+    v = ::strtod(ptr, &ptr2);
+    return (ptr2 - ptr);
+  }
+
+  /*---------------------------------------------------------------------------*/
+  /*---------------------------------------------------------------------------*/
 
 } // namespace
-#endif
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -167,7 +207,7 @@ builtInGetValue(double& v, StringView s)
 {
 #if defined(ARCANE_USE_FROMCHARS)
   if (global_use_from_chars) {
-    Int64 p = _getDoubleValue(v, s);
+    Int64 p = _getDoubleValueWithFromChars(v, s);
     return (p == (-1) || (p != s.size()));
   }
 #endif
@@ -292,6 +332,28 @@ builtInGetValue(long long& v, StringView s)
 template <> ARCANE_UTILS_EXPORT bool
 builtInGetValue(Real2& v, StringView s)
 {
+  if (global_use_same_value_convert_for_all_real) {
+    // ATTENTION: Pour l'instant ce nouveau mécanisme ne tolère pas
+    // les espaces en début de \a s.
+    v = {};
+    const bool is_verbose = global_value_convert_verbosity > 0;
+    if (is_verbose)
+      std::cout << "Try Read Real2: '" << s << "'\n";
+    Int64 p = _getDoubleValue(v.x, s);
+    if (p == (-1))
+      return true;
+    Span<const Byte> bytes = s.bytes();
+    Int64 nb_byte = bytes.size();
+    // Supprime les espaces potentiels
+    for (; p < nb_byte; ++p)
+      if (!std::isspace(bytes[p]))
+        break;
+    s = StringView(bytes.subSpan(p, nb_byte));
+    if (is_verbose)
+      std::cout << "VX=" << v.x << " remaining_s='" << s << "'\n";
+    p = _getDoubleValue(v.y, s);
+    return (p == (-1) || (p != s.size()));
+  }
   return impl::builtInGetValueGeneric(v, s);
 }
 template <> ARCANE_UTILS_EXPORT bool

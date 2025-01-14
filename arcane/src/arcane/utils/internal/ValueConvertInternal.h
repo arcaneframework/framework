@@ -74,6 +74,16 @@ namespace impl
   //! Positionne le niveau de verbosité pour les fonctions de conversion.
   extern "C++" ARCANE_UTILS_EXPORT void
   arcaneSetValueConvertVerbosity(Int32 v);
+
+  /*!
+   * Si vrai, utilise le même mécanisme pour lire les 'RealN' que pour lire les 'Real'.
+   *
+   * Avant la version 3.15 de Arcane, la lecture des 'Real' se fait via std::strtod()
+   * et celle des 'RealN' via std::istream. Si \a v est vrai, on utilise
+   * std::strtod() pour tout le monde (ou std::from_chars()) si disponible.
+   */
+  extern "C++" ARCANE_UTILS_EXPORT void
+  arcaneSetUseSameValueConvertForAllReal(bool v);
 } // namespace impl
 
 /*---------------------------------------------------------------------------*/
