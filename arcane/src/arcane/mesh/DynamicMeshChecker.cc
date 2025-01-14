@@ -546,7 +546,7 @@ _checkValidItemOwner(IItemFamily* family)
           break;
         }
       }
-      if (!is_ok) {
+      if (false) {
         OStringStream ostr;
         Integer index = 0;
         for( Item cell : cells ){

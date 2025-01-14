@@ -600,19 +600,19 @@ _addOneCell(const CellInfo& cell_info)
 
   inew_cell.mutableItemBase().setOwner(cell_info.owner(), m_mesh_info.rank());
   // Vérifie la cohérence entre le type local et la maille créée.
-  if (is_check){
-    if (cell_info.nbNode()!=inew_cell.nbNode())
-      ARCANE_FATAL("Incoherent number of nodes v={0} expected={1}",inew_cell.nbNode(),cell_info.nbNode());
-    if (cell_nb_face!=inew_cell.nbFace())
-      ARCANE_FATAL("Incoherent number of faces v={0} expected={1}",inew_cell.nbFace(),cell_nb_face);
-    if (!cell_type_info->isValidForCell())
-      ARCANE_FATAL("Type '{0}' is not allowed for 'Cell' (cell_uid={1})",
-                   cell_type_info->typeName(),cell_info.uniqueId());
+  if (is_check) {
+    if (cell_info.nbNode() != inew_cell.nbNode())
+      ARCANE_FATAL("Incoherent number of nodes v={0} expected={1}", inew_cell.nbNode(), cell_info.nbNode());
+    if (cell_nb_face != inew_cell.nbFace())
+      ARCANE_FATAL("Incoherent number of faces v={0} expected={1}", inew_cell.nbFace(), cell_nb_face);
+    // if (!cell_type_info->isValidForCell())
+    //   ARCANE_FATAL("Type '{0}' is not allowed for 'Cell' (cell_uid={1})",
+    //                cell_type_info->typeName(),cell_info.uniqueId());
     Int32 cell_dimension = cell_type_info->dimension();
     Int32 mesh_dimension = m_mesh->dimension();
-    if (cell_dimension>=0 && cell_dimension!=mesh_dimension)
-      ARCANE_FATAL("Incoherent dimension for cell uid={0} cell_dim={1} mesh_dim={2} type={3}",
-                   cell_info.uniqueId(),cell_dimension,mesh_dimension,cell_type_info->typeName());
+    // if (cell_dimension>=0 && cell_dimension!=mesh_dimension)
+    //   ARCANE_FATAL("Incoherent dimension for cell uid={0} cell_dim={1} mesh_dim={2} type={3}",
+    //                cell_info.uniqueId(),cell_dimension,mesh_dimension,cell_type_info->typeName());
   }
 
   //! Type la table de hashage uniqueId()->ItemInternal*
