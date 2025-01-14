@@ -68,6 +68,21 @@ class CommandLineArguments::Impl
       (*argv)[i+1] = (char*)m_args[i].localstr();
     m_argv = argv;
   }
+
+  Impl()
+  : m_nb_ref(0), m_args(), m_argc(nullptr), m_argv(nullptr), m_need_destroy(true)
+  {
+    m_argc_orig = new int;
+    m_argc = m_argc_orig;
+    *m_argc = 1;
+
+    m_argv_orig = new char**;
+    char*** argv = m_argv_orig;
+    *argv = new char*[1];
+    m_argv0 = ::strdup("arcane");
+    (*argv)[0] = m_argv0;
+    m_argv = argv;
+  }
   ~Impl()
   {
     if (m_need_destroy){
@@ -137,6 +152,16 @@ class CommandLineArguments::Impl
 CommandLineArguments::
 CommandLineArguments(int* argc,char*** argv)
 : m_p(new Impl(argc,argv))
+{
+  m_p->parseParameters(*this);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+CommandLineArguments::
+CommandLineArguments()
+: m_p(new Impl())
 {
   m_p->parseParameters(*this);
 }
