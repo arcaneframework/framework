@@ -63,14 +63,14 @@ set(HDF5_USE_CMAKE_CONFIG TRUE)
 set(BUILDSYSTEM_DLL_COPY_DIRECTORY ${ARCANEFRAMEWORK_BINARY_DIR}/lib)
 
 # Path to configuration files for Alien
-set(ALIEN_CMAKE_CONFIG_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
+set(ALIEN_CMAKE_CONFIG_PATH "${INFRA_BUILDSYSTEM_PATH}/alien")
 # Path to local build-system
-set(ALIEN_BUILDSYSTEM_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake/build-system")
+set(ALIEN_BUILDSYSTEM_PATH "${INFRA_BUILDSYSTEM_PATH}/tools")
 
 find_package(Arccon REQUIRED)
 include(${ARCCON_CMAKE_COMMANDS}) # needed when working with 'inline' (ie not installed) Arccon
 
-include(${ALIEN_CMAKE_CONFIG_PATH}/Functions.cmake)
+#include(${ALIEN_CMAKE_CONFIG_PATH}/Functions.cmake)
 
 include(${ALIEN_BUILDSYSTEM_PATH}/LoadBuildSystem.cmake)
 
@@ -96,7 +96,7 @@ include(${ALIEN_BUILDSYSTEM_PATH}/LoadDefaultPackages.cmake)
 # default languages  (axl)
 # NB: after packages
 # Incompatible avec axlstar !!
-#include(LoadDefaultLanguages)
+#include(LoadDefaultLanguagesr
 
 # Alien Options
 include(${ALIEN_CMAKE_CONFIG_PATH}/LoadAlienOptions.cmake)
