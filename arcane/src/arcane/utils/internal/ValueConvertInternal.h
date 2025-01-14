@@ -9,13 +9,14 @@
 /*                                                                           */
 /* Fonctions pour convertir une chaîne de caractère en un type donné.        */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_UTILS_VALUECONVERTINTERNAL_H
-#define ARCANE_UTILS_VALUECONVERTINTERNAL_H
+#ifndef ARCANE_UTILS_INTERNAL_VALUECONVERTINTERNAL_H
+#define ARCANE_UTILS_INTERNAL_VALUECONVERTINTERNAL_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/Array.h"
 #include "arcane/utils/String.h"
+#include "arcane/utils/ValueConvert.h"
 
 #include <iostream>
 
@@ -48,9 +49,10 @@ builtInGetArrayValueFromStream(Array<T>& v, std::istream& sbuf)
 /*---------------------------------------------------------------------------*/
 
 template <typename T> inline bool
-builtInGetArrayValue(Array<T>& v, const String& s)
+builtInGetArrayValue(Array<T>& v, StringView s)
 {
-  std::istringstream sbuf(s.localstr());
+  impl::StringViewInputStream svis(s);
+  std::istream& sbuf = svis.stream();
   return builtInGetArrayValueFromStream(v, sbuf);
 }
 
