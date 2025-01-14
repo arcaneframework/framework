@@ -52,7 +52,8 @@ class ARCANE_UTILS_EXPORT CommandLineArguments
  public:
 
   //! Créé une instance à partir des arguments (argc,argv)
-  CommandLineArguments(int* argc,char*** argv);
+  CommandLineArguments(int* argc, char*** argv);
+  CommandLineArguments();
   explicit CommandLineArguments(const StringList& args);
   CommandLineArguments(const CommandLineArguments& rhs);
   ~CommandLineArguments();
