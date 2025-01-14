@@ -124,7 +124,7 @@
               )
   endif (TARGET superlu)
 
-  if (TARGET mumps)
+  if (TARGET petsc::mumps)
       if(USE_AXLSTAR)
           generateAxl(alien_external_packages
                   linear_solver/mumps/PETScSolverConfigMUMPS.axl
@@ -141,7 +141,7 @@
               linear_solver/mumps/PETScSolverConfigMUMPSService.cc
               linear_solver/mumps/PETScPrecConfigMUMPSService.cc
       )
-  endif (TARGET mumps)
+  endif (TARGET petsc::mumps)
 
   if (TARGET superlu)
       linkLibraries(alien_external_packages superlu)
