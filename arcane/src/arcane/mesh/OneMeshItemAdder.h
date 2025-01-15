@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* OneMeshItemAdder.h                                          (C) 2000-2024 */
+/* OneMeshItemAdder.h                                          (C) 2000-2025 */
 /*                                                                           */
 /* Outil de création d'une maille                                            */
 /*---------------------------------------------------------------------------*/
@@ -13,6 +13,8 @@
 #define ARCANE_MESH_ONEITEMADDER_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+#include "arcane/utils/TraceAccessor.h"
 
 #include "arcane/core/Item.h"
 
@@ -23,8 +25,6 @@
 #include "arcane/mesh/FaceFamily.h"
 #include "arcane/mesh/EdgeFamily.h"
 #include "arcane/mesh/MeshInfos.h"
-
-#include "arcane/utils/TraceAccessor.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -174,7 +174,7 @@ class OneMeshItemAdder
   UniqueArray<Int64> m_work_edge_orig_nodes_uid;
 
   //! Si vrai, génère les uniqueId() des faces à partir de ceux des noeuds.
-  bool m_use_hash_for_face_unique_id = false;
+  bool m_use_hash_for_edge_and_face_unique_id = false;
 };
 
 /*---------------------------------------------------------------------------*/
