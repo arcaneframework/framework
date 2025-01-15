@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* OneMeshItemAdder.cc                                         (C) 2000-2024 */
+/* OneMeshItemAdder.cc                                         (C) 2000-2025 */
 /*                                                                           */
 /* Ajout des entités une par une.                                            */
 /*---------------------------------------------------------------------------*/
@@ -15,6 +15,7 @@
 
 #include "arcane/utils/NotSupportedException.h"
 #include "arcane/utils/ValueConvert.h"
+#include "arcane/utils/FixedArray.h"
 
 #include "arcane/core/MeshUtils.h"
 #include "arcane/core/MeshToMeshTransposer.h"
@@ -93,8 +94,8 @@ OneMeshItemAdder(DynamicMeshIncrementalBuilder* mesh_builder)
   m_work_face_orig_nodes_uid.reserve(100); 
 
   if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_GENERATE_UNIQUE_ID_FROM_NODES", true)){
-    m_use_hash_for_face_unique_id = (v.value()!=0);
-    info() << "Is generate Face uniqueId() from Nodes=" << m_use_hash_for_face_unique_id;
+    m_use_hash_for_edge_and_face_unique_id = (v.value()!=0);
+    info() << "Is generate Edge and Face uniqueId() from Nodes=" << m_use_hash_for_edge_and_face_unique_id;
   }
 }
 
@@ -233,7 +234,7 @@ _findInternalFace(Integer i_face, const CellInfoProxy& cell_info, bool& is_add)
   if (face_internal.null()) {
     // La face n'est pas trouvée. Elle n'existe donc pas dans notre sous-domaine.
     // Si cela est autorisé, on créée la nouvelle face.
-    if (!cell_info.allowBuildFace() && !m_use_hash_for_face_unique_id){
+    if (!cell_info.allowBuildFace() && !m_use_hash_for_edge_and_face_unique_id){
       info() << "BadCell uid=" << cell_info.uniqueId();
       for( Int32 i=0; i<cell_info.nbNode(); ++i )
         info() << "Cell node I=" << i << " uid=" << cell_info.nodeUniqueId(i);
@@ -244,7 +245,7 @@ _findInternalFace(Integer i_face, const CellInfoProxy& cell_info, bool& is_add)
     }
     ItemTypeInfo* face_type = m_item_type_mng->typeFromId(lf.typeId());
     Int64 face_unique_id = m_next_face_uid++;
-    if (m_use_hash_for_face_unique_id)
+    if (m_use_hash_for_edge_and_face_unique_id)
       face_unique_id = MeshUtils::generateHashUniqueId(m_work_face_sorted_nodes);
     is_add = true;
     return m_face_family.allocOne(face_unique_id,face_type);
@@ -283,10 +284,16 @@ _findInternalEdge(Integer i_edge, const CellInfoProxy& cell_info, Int64 first_no
   Node nbi = nodes_map.findItem(first_node);
   Edge edge_internal = ItemTools::findEdgeInNode2(nbi,first_node,second_node);
   if (edge_internal.null()){
-    if (!cell_info.allowBuildEdge())
+    if (!cell_info.allowBuildEdge() && !m_use_hash_for_edge_and_face_unique_id)
       ARCANE_FATAL("On the fly edge allocation is not allowed here."
                    " You need to add edges before with IMeshModifier::addEdges()");
-    const Int64 edge_unique_id = m_next_edge_uid++;
+    Int64 edge_unique_id = m_next_edge_uid++;
+    if (m_use_hash_for_edge_and_face_unique_id){
+      FixedArray<Int64,2> nodes;
+      nodes[0] = first_node;
+      nodes[1] = second_node;
+      edge_unique_id = MeshUtils::generateHashUniqueId(nodes.view());
+    }
     is_add = true;
     return m_edge_family.allocOne(edge_unique_id);
   }
