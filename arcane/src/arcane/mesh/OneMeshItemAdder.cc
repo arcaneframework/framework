@@ -92,11 +92,6 @@ OneMeshItemAdder(DynamicMeshIncrementalBuilder* mesh_builder)
 {
   m_work_face_sorted_nodes.reserve(100);
   m_work_face_orig_nodes_uid.reserve(100);
-
-  if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_GENERATE_UNIQUE_ID_FROM_NODES", true)){
-    m_use_hash_for_edge_and_face_unique_id = (v.value()!=0);
-    info() << "Env: Is Generate Edge and Face uniqueId() from Nodes=" << m_use_hash_for_edge_and_face_unique_id;
-  }
 }
 
 /*---------------------------------------------------------------------------*/

@@ -341,6 +341,12 @@ DynamicMesh(ISubDomain* sub_domain,const MeshBuildInfo& mbi, bool is_submesh)
   // de Arcane (juin 2023). A supprimer avant fin 2023.
   if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_NO_SAVE_NEED_COMPACT", true))
     m_do_not_save_need_compact = v.value();
+
+  // Surcharge la valeur par défaut pour le mécanisme de numérotation
+  // des uniqueId() des arêtes et des faces.
+  if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_GENERATE_UNIQUE_ID_FROM_NODES", true)){
+    m_mesh_unique_id_mng->setUseNodeUniqueIdToGenerateEdgeAndFaceUniqueId(v.value() != 0);
+  }
 }
 
 /*---------------------------------------------------------------------------*/
