@@ -339,13 +339,13 @@ TEST(DependencyInjection, ConstructorCall)
 
   try {
     Injector injector;
-    IB* ib{ new BImpl() };
-    injector.bind(ib);
+    std::unique_ptr<IB> ib{ std::make_unique<BImpl>() };
+    injector.bind(ib.get());
     injector.bind(x);
     Ref<IA2> a2 = c2f.createReference(injector);
     ARCANE_CHECK_POINTER(a2.get());
     ASSERT_EQ(a2->value(), 3);
-    ASSERT_EQ(a2->bValue(), ib);
+    ASSERT_EQ(a2->bValue(), ib.get());
   }
   catch (const Exception& ex) {
     std::cerr << "ERROR=" << ex << "\n";
