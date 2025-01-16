@@ -119,6 +119,13 @@ class OneMeshItemAdder
   //! Remise à zéro des structures pour pouvoir faire à nouveau une allocation
   void resetAfterDeallocate();
 
+  /*!
+   * \brief Positionne le mécanisme de numérotation des uniqueId().
+   *
+   * \warning Cette méthode doit être appelée avant toute création d'entité.
+   */
+  void setUseNodeUniqueIdToGenerateEdgeAndFaceUniqueId(bool v);
+
  private:
   
   template<typename CellInfo>

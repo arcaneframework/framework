@@ -91,11 +91,11 @@ OneMeshItemAdder(DynamicMeshIncrementalBuilder* mesh_builder)
 , m_mesh_info(m_mesh->meshPartInfo().partRank())
 {
   m_work_face_sorted_nodes.reserve(100);
-  m_work_face_orig_nodes_uid.reserve(100); 
+  m_work_face_orig_nodes_uid.reserve(100);
 
   if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_GENERATE_UNIQUE_ID_FROM_NODES", true)){
     m_use_hash_for_edge_and_face_unique_id = (v.value()!=0);
-    info() << "Is generate Edge and Face uniqueId() from Nodes=" << m_use_hash_for_edge_and_face_unique_id;
+    info() << "Env: Is Generate Edge and Face uniqueId() from Nodes=" << m_use_hash_for_edge_and_face_unique_id;
   }
 }
 
@@ -1080,6 +1080,18 @@ resetAfterDeallocate()
   m_next_face_uid = 0;
   m_next_edge_uid = 0;
   m_mesh_info.reset();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void OneMeshItemAdder::
+setUseNodeUniqueIdToGenerateEdgeAndFaceUniqueId(bool v)
+{
+  if (m_next_face_uid!=0 || m_next_edge_uid!=0)
+    ARCANE_FATAL("Can not call this method when edge or face are already created");
+  m_use_hash_for_edge_and_face_unique_id = v;
+  info() << "Is Generate Edge and Face uniqueId() from Nodes=" << m_use_hash_for_edge_and_face_unique_id;
 }
 
 /*---------------------------------------------------------------------------*/
