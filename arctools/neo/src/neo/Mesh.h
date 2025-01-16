@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Mesh.h                                          (C) 2000-2024             */
+/* Mesh.h                                          (C) 2000-2025             */
 /*                                                                           */
 /* Asynchronous Mesh structure based on Neo kernel                           */
 /*---------------------------------------------------------------------------*/
@@ -98,6 +98,8 @@ class Mesh
   FamilyMap m_families;
   using ConnectivityMapType = std::map<std::string, Connectivity, std::less<>>;
   ConnectivityMapType m_connectivities;
+  using ConnectivityPerFamilyMapType = std::map<std::pair<ItemKind, std::string>, std::vector<Connectivity>>;
+  ConnectivityPerFamilyMapType m_connectivities_per_family;
   int m_dimension = 3;
 
   template <typename ItemRangeT>
@@ -427,6 +429,13 @@ class Mesh
    * @throw a std::invalid_argument if the connectivity is not found
    */
   Connectivity getConnectivity(Neo::Family const& source_family, Neo::Family const& target_family, std::string const& connectivity_name) const;
+
+  /*!
+   * @brief Get item connectivities with \p source_family as source
+   * @param source_family Family of the source items
+   * @return a span of Connectivities (a connectivity wrapper object). The span will be empty if no connectivities are found.
+   */
+  Neo::utils::ConstSpan<Connectivity> getConnectivities(Neo::Family const& source_family) const;
 
   /*!
    * @brief Apply all scheduled operations (addItems, addConnectivities, setItemCoords)
