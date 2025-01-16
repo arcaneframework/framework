@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* DynamicMesh.cc                                              (C) 2000-2024 */
+/* DynamicMesh.cc                                              (C) 2000-2025 */
 /*                                                                           */
 /* Classe de gestion d'un maillage non structuré évolutif.                   */
 /*---------------------------------------------------------------------------*/
@@ -67,6 +67,7 @@
 #include "arcane/mesh/MeshPartitionConstraintMng.h"
 #include "arcane/mesh/ItemGroupsSynchronize.h"
 #include "arcane/mesh/DynamicMeshIncrementalBuilder.h"
+#include "arcane/mesh/OneMeshItemAdder.h"
 #include "arcane/mesh/DynamicMeshChecker.h"
 #include "arcane/mesh/GhostLayerMng.h"
 #include "arcane/mesh/MeshUniqueIdMng.h"
@@ -340,6 +341,12 @@ DynamicMesh(ISubDomain* sub_domain,const MeshBuildInfo& mbi, bool is_submesh)
   // de Arcane (juin 2023). A supprimer avant fin 2023.
   if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_NO_SAVE_NEED_COMPACT", true))
     m_do_not_save_need_compact = v.value();
+
+  // Surcharge la valeur par défaut pour le mécanisme de numérotation
+  // des uniqueId() des arêtes et des faces.
+  if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_GENERATE_UNIQUE_ID_FROM_NODES", true)){
+    m_mesh_unique_id_mng->setUseNodeUniqueIdToGenerateEdgeAndFaceUniqueId(v.value() != 0);
+  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -2977,6 +2984,12 @@ _setDimension(Integer dim)
     ARCANE_FATAL("DynamicMesh::setDimension(): mesh is already allocated");
   info() << "Mesh name=" << name() << " set dimension = " << dim;
   m_mesh_dimension = dim;
+  bool v = m_mesh_unique_id_mng->isUseNodeUniqueIdToGenerateEdgeAndFaceUniqueId();
+  if (m_mesh_builder){
+    auto* adder = m_mesh_builder->oneMeshItemAdder();
+    if (adder)
+      adder->setUseNodeUniqueIdToGenerateEdgeAndFaceUniqueId(v);
+  }
 }
 
 /*---------------------------------------------------------------------------*/

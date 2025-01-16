@@ -154,6 +154,12 @@ Teste la désallocation du maillage
     </description>
   </simple>
 
+  <simple name = "generate-uid-from-nodes-uid" type = "bool" default = "false">
+    <description>
+      Si vrai, génère les uniqueId des arêtes et des faces à partir de ceux des noeuds.
+    </description>
+  </simple>
+
   <simple name = "check-read-property" type = "string" minOccurs="0" maxOccurs="unbounded">
     <description>
       Indique que l'on veut vérifier si la variable dont le nom est donnée a bien été créée et conservée.
