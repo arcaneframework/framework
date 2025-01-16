@@ -70,7 +70,10 @@ class Injector::Impl
 
  public:
 
+  // Il faut conserver une instance de FactoryInfo pour éviter sa
+  // destruction prématurée car les instances dans m_factories en ont besoin.
   UniqueArray<Ref<impl::IInstanceFactory>> m_factories;
+  UniqueArray<impl::FactoryInfo> m_factories_info;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -159,16 +162,23 @@ _doError1(const String& message, int nb_value)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class FactoryInfo::Impl
+class FactoryInfoImpl
 {
  public:
-  Impl(const ProviderProperty& property)
+
+  FactoryInfoImpl(const ProviderProperty& property)
   : m_property(property)
   , m_name(property.name())
   {
   }
 
  public:
+
+  bool hasName(const String& str) const { return str == m_name; }
+  void fillWithImplementationNames(Array<String>& names) const { names.add(m_name); }
+
+ public:
+
   const ProviderProperty m_property;
   UniqueArray<Ref<IInstanceFactory>> m_factories;
   String m_name;
@@ -179,17 +189,8 @@ class FactoryInfo::Impl
 
 FactoryInfo::
 FactoryInfo(const ProviderProperty& property)
-: m_p{ new Impl(property) }
+: m_p(std::make_shared<FactoryInfoImpl>(property))
 {
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-FactoryInfo::
-~FactoryInfo()
-{
-  delete m_p;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -207,16 +208,7 @@ addFactory(Ref<IInstanceFactory> f)
 bool FactoryInfo::
 hasName(const String& str) const
 {
-  return str == m_p->m_name;
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void FactoryInfo::
-fillWithImplementationNames(Array<String>& names) const
-{
-  names.add(m_p->m_name);
+  return m_p->hasName(str);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -255,11 +247,11 @@ fillWithGlobalFactories()
   Integer i = 0;
   while (g) {
     auto func = g->infoCreatorWithPropertyFunction();
-    impl::FactoryInfo* fi = nullptr;
-    if (func)
-      fi = (*func)(g->property());
-    if (fi)
-      m_p->m_factories.addRange(fi->m_p->m_factories);
+    if (func) {
+      impl::FactoryInfo fi = (*func)(g->property());
+      m_p->m_factories_info.add(fi);
+      m_p->m_factories.addRange(fi.m_p->m_factories);
+    }
 
     g = g->nextRegisterer();
     ++i;
@@ -311,7 +303,7 @@ _iterateFactories(const String& factory_name, IFactoryVisitorFunctor* functor) c
     Int32 nb_constructor_arg = f->nbConstructorArg();
     if (nb_constructor_arg >= 0 && nb_constructor_arg != nb_instance)
       continue;
-    if (has_no_name || f->factoryInfo()->hasName(factory_name)) {
+    if (has_no_name || f->factoryInfoImpl()->hasName(factory_name)) {
       if (functor->execute(f))
         return;
     }
@@ -363,7 +355,7 @@ _printValidImplementationAndThrow(const TraceInfo& ti,
   for (Int32 i = 0, n = _nbFactory(); i < n; ++i) {
     impl::IInstanceFactory* f = _factory(i);
     if (filter_func(f)) {
-      f->factoryInfo()->fillWithImplementationNames(valid_names);
+      f->factoryInfoImpl()->fillWithImplementationNames(valid_names);
     }
   };
   String message = String::format("No implementation named '{0}' found", implementation_name);

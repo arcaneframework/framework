@@ -48,6 +48,7 @@ class Injector;
 namespace Arcane::DependencyInjection::impl
 {
 class FactoryInfo;
+class FactoryInfoImpl;
 class IInstanceFactory;
 template <typename InterfaceType>
 class IConcreteFactory;
@@ -337,12 +338,40 @@ class ARCANE_UTILS_EXPORT IInstanceFactory
  public:
 
   virtual InjectedInstanceRef createGenericReference(Injector& injector, const String& name) = 0;
-
-  virtual const FactoryInfo* factoryInfo() const = 0;
-
+  virtual const FactoryInfoImpl* factoryInfoImpl() const = 0;
   virtual ConcreteFactoryTypeInfo concreteFactoryInfo() const = 0;
-
   virtual Int32 nbConstructorArg() const = 0;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \internal
+ * \brief Informations pour une fabrique.
+ */
+class ARCANE_UTILS_EXPORT FactoryInfo
+{
+  friend class Arcane::DependencyInjection::Injector;
+
+ private:
+
+  explicit FactoryInfo(const ProviderProperty& property);
+
+ public:
+
+  static FactoryInfo create(const ProviderProperty& property, const char* file_name, int line_number)
+  {
+    ARCANE_UNUSED(file_name);
+    ARCANE_UNUSED(line_number);
+    return FactoryInfo(property);
+  }
+  void addFactory(Ref<IInstanceFactory> f);
+  bool hasName(const String& str) const;
+  const FactoryInfoImpl* _impl() const { return m_p.get(); }
+
+ private:
+
+  std::shared_ptr<FactoryInfoImpl> m_p;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -367,10 +396,14 @@ template <typename InterfaceType>
 class InstanceFactory
 : public AbstractInstanceFactory
 {
+  // NOTE: On ne conserve pas une instance de 'FactoryInfo'
+  // mais uniquement son implémentation pour éviter des références croisées
+  // avec le std::shared_ptr.
+
  public:
 
-  InstanceFactory(FactoryInfo* si, IConcreteFactory<InterfaceType>* sub_factory)
-  : m_factory_info(si)
+  InstanceFactory(const FactoryInfoImpl* si, IConcreteFactory<InterfaceType>* sub_factory)
+  : m_factory_info_impl(si)
   , m_sub_factory(sub_factory)
   {
   }
@@ -390,9 +423,9 @@ class InstanceFactory
     return _createReference(injector);
   }
 
-  const FactoryInfo* factoryInfo() const override
+  const FactoryInfoImpl* factoryInfoImpl() const override
   {
-    return m_factory_info;
+    return m_factory_info_impl;
   }
 
   ConcreteFactoryTypeInfo concreteFactoryInfo() const override
@@ -407,8 +440,8 @@ class InstanceFactory
 
  protected:
 
-  FactoryInfo* m_factory_info;
-  IConcreteFactory<InterfaceType>* m_sub_factory;
+  const FactoryInfoImpl* m_factory_info_impl = nullptr;
+  IConcreteFactory<InterfaceType>* m_sub_factory = nullptr;
 
  private:
 
@@ -462,44 +495,6 @@ class IConcreteFactory
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-/*!
- * \internal
- * \brief Informations pour une fabrique.
- */
-class ARCANE_UTILS_EXPORT FactoryInfo
-{
-  friend class Arcane::DependencyInjection::Injector;
-  class Impl;
-
- public:
-
-  FactoryInfo(const FactoryInfo&) = delete;
-  FactoryInfo& operator=(const FactoryInfo&) = delete;
-  ~FactoryInfo();
-
- private:
-
-  explicit FactoryInfo(const ProviderProperty& property);
-
- public:
-
-  static FactoryInfo* create(const ProviderProperty& property, const char* file_name, int line_number)
-  {
-    ARCANE_UNUSED(file_name);
-    ARCANE_UNUSED(line_number);
-    return new FactoryInfo(property);
-  }
-  void addFactory(Ref<IInstanceFactory> f);
-  bool hasName(const String& str) const;
-  void fillWithImplementationNames(Array<String>& names) const;
-
- private:
-
-  Impl* m_p = nullptr;
-};
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 
 class ARCANE_UTILS_EXPORT GlobalRegisterer
 : public GenericRegisterer<GlobalRegisterer>
@@ -516,7 +511,7 @@ class ARCANE_UTILS_EXPORT GlobalRegisterer
 
  public:
 
-  typedef FactoryInfo* (*FactoryCreateFunc)(const ProviderProperty& property);
+  typedef FactoryInfo (*FactoryCreateFunc)(const ProviderProperty& property);
 
  public:
 
@@ -914,7 +909,7 @@ class InterfaceListRegisterer
    * créer une instance de \a ConcreteType via le constructeur \a ConstructorType
    */
   template <typename ConcreteType, typename ConstructorType> void
-  registerFactory(FactoryInfo* si)
+  registerFactory(FactoryInfo& si)
   {
     _registerFactory<ConcreteType, ConstructorType, Interfaces...>(si);
   }
@@ -924,10 +919,10 @@ class InterfaceListRegisterer
   template <typename ConcreteType, typename ConstructorType,
             typename InterfaceType, typename... OtherInterfaces>
   void
-  _registerFactory(FactoryInfo* fi)
+  _registerFactory(FactoryInfo& fi)
   {
     auto* factory = new ConcreteFactory<InterfaceType, ConcreteType, ConstructorType>();
-    fi->addFactory(createRef<InstanceFactory<InterfaceType>>(fi, factory));
+    fi.addFactory(createRef<InstanceFactory<InterfaceType>>(fi._impl(), factory));
     // Applique récursivement pour les autres interfaces si nécessaire
     if constexpr (sizeof...(OtherInterfaces) > 0)
       _registerFactory<ConcreteType, ConstructorType, OtherInterfaces...>(fi);
@@ -949,7 +944,7 @@ class InjectionRegisterer
 
   //! Enregistre dans \a si les fabriques correspondentes aux constructeurs \a Constructors
   template <typename... Constructors> void
-  registerProviderInfo(FactoryInfo* si, const Constructors&... args)
+  registerProviderInfo(FactoryInfo& si, const Constructors&... args)
   {
     _create(si, args...);
   }
@@ -963,14 +958,14 @@ class InjectionRegisterer
 
   //! Surcharge pour 1 constructeur
   template <typename ConstructorType> void
-  _create(FactoryInfo* si, const ConstructorType&)
+  _create(FactoryInfo& si, const ConstructorType&)
   {
     m_interface_list.template registerFactory<ConcreteType, ConstructorType>(si);
   }
 
   //! Surcharge pour 2 constructeurs ou plus
   template <typename C1, typename C2, typename... OtherConstructors>
-  void _create(FactoryInfo* si, const C1& c1, const C2& c2, const OtherConstructors&... args)
+  void _create(FactoryInfo& si, const C1& c1, const C2& c2, const OtherConstructors&... args)
   {
     _create<C1>(si, c1);
     // Applique la récursivité sur les types restants
@@ -1000,10 +995,10 @@ class InjectionRegisterer
 #define ARCANE_DI_REGISTER_PROVIDER(t_class, t_provider_property, t_interfaces, ...) \
   namespace \
   { \
-    Arcane::DependencyInjection::impl::FactoryInfo* \
+    Arcane::DependencyInjection::impl::FactoryInfo \
     ARCANE_JOIN_WITH_LINE(arcaneCreateDependencyInjectionProviderInfo##t_class)(const Arcane::DependencyInjection::ProviderProperty& property) \
     { \
-      auto* si = Arcane::DependencyInjection::impl::FactoryInfo::create(property, __FILE__, __LINE__); \
+      auto si = Arcane::DependencyInjection::impl::FactoryInfo::create(property, __FILE__, __LINE__); \
       Arcane::DependencyInjection::impl::InjectionRegisterer<t_class, t_interfaces> injection_registerer; \
       injection_registerer.registerProviderInfo(si, __VA_ARGS__); \
       return si; \
