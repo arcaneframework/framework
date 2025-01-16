@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* DynamicMeshChecker.cc                                       (C) 2000-2024 */
+/* DynamicMeshChecker.cc                                       (C) 2000-2025 */
 /*                                                                           */
 /* Classe fournissant des méthodes de vérification sur le maillage.          */
 /*---------------------------------------------------------------------------*/
@@ -19,20 +19,26 @@
 #include "arcane/mesh/FaceReorienter.h"
 #include "arcane/mesh/DynamicMeshChecker.h"
 
-#include "arcane/MeshUtils.h"
-#include "arcane/ItemPrinter.h"
-#include "arcane/TemporaryVariableBuildInfo.h"
-#include "arcane/IXmlDocumentHolder.h"
-#include "arcane/XmlNodeList.h"
-#include "arcane/IIOMng.h"
-#include "arcane/IParallelMng.h"
-#include "arcane/IParallelReplication.h"
-#include "arcane/VariableCollection.h"
+#include "arcane/core/MeshUtils.h"
+#include "arcane/core/Properties.h"
+#include "arcane/core/ItemPrinter.h"
+#include "arcane/core/TemporaryVariableBuildInfo.h"
+#include "arcane/core/IXmlDocumentHolder.h"
+#include "arcane/core/XmlNodeList.h"
+#include "arcane/core/IIOMng.h"
+#include "arcane/core/IParallelMng.h"
+#include "arcane/core/IParallelReplication.h"
+#include "arcane/core/VariableCollection.h"
 
 #include <set>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+namespace
+{
+const char* PROPERTY_ALLOW_ORPHAN_ITEM = "allow-orphan-item";
+}
 
 namespace Arcane::mesh
 {
@@ -44,10 +50,6 @@ DynamicMeshChecker::
 DynamicMeshChecker(IMesh* mesh)
 : TraceAccessor(mesh->traceMng())
 , m_mesh(mesh)
-, m_check_level(0)
-, m_var_cells_faces(0)
-, m_var_cells_nodes(0)
-, m_compare_reference_file(false)
 {
   if (arcaneIsCheck())
     m_check_level = 1;
@@ -225,9 +227,12 @@ checkValidConnectivity()
     f->checkValidConnectivity();
   }
 
-  if (!m_mesh->parentMesh()){
+  // Vérifie que la face a bien au moins une maille connectée
+  // sauf si on autorise les entités orphelines
+  const bool allow_orphan_item = m_mesh->properties()->getBool(PROPERTY_ALLOW_ORPHAN_ITEM);
+  if (!m_mesh->parentMesh() && !allow_orphan_item){
     Integer index = 0;
-    ENUMERATE_FACE(i,m_mesh->allFaces()){
+    ENUMERATE_(Face,i,m_mesh->allFaces()){
       Face elem = *i;
       Cell front_cell = elem.frontCell();
       Cell back_cell  = elem.backCell();
@@ -522,13 +527,15 @@ _checkFacesOrientation()
 void DynamicMeshChecker::
 _checkValidItemOwner(IItemFamily* family)
 {
-  String func_name = "MeshChecker::_checkValidItemOwner";
-
-  // Pour les maillages non sous-maillages, il faut que tout sub-item est une cellule voisine de même propriétaire
-  // Pour les sous-maillages, il faut, en plus, que tout item soit de même propriétaire que son parent
+  // Pour les maillages non sous-maillages, il faut que tout sub-item
+  // (Node, Edge ou Face) ait une cellule voisine de même propriétaire,
+  // sauf si on autorise les entités orphelines et que l'entité n'est
+  // connectée à aucune maille.
+  // Pour les sous-maillages, il faut, en plus, que tout item soit de
+  // même propriétaire que son parent.
 
   Integer nerror = 0;
-
+  const bool allow_orphan_item = m_mesh->properties()->getBool(PROPERTY_ALLOW_ORPHAN_ITEM);
   if (!m_mesh->parentMesh()){
     
     if (family->itemKind() == IK_Cell)
@@ -540,6 +547,9 @@ _checkValidItemOwner(IItemFamily* family)
       Int32 owner = item.owner();
       bool is_ok = false;
       ItemVectorView cells = item.itemBase().cellList();
+
+      if (allow_orphan_item && cells.size()==0)
+        continue;
       for( Item cell : cells ){
         if (cell.owner()==owner){
           is_ok = true;
@@ -549,11 +559,13 @@ _checkValidItemOwner(IItemFamily* family)
       if (!is_ok) {
         OStringStream ostr;
         Integer index = 0;
+        ostr() << " nb_cell=" << cells.size();
         for( Item cell : cells ){
           ostr() << " SubCell i=" << index << " cell=" << ItemPrinter(cell);
           ++index;
         }
-        error() << "Mesh " << m_mesh->name() << " Item" << ItemPrinter(item) << " has no cell with same owner:"
+        error() << "Mesh " << m_mesh->name() << " family=" << family->name()
+                << " Item" << ItemPrinter(item) << " has no cell with same owner:"
                 << ostr.str();
         ++nerror;
       }
