@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* DynamicMeshIncrementalBuilder.cc                            (C) 2000-2024 */
+/* DynamicMeshIncrementalBuilder.cc                            (C) 2000-2025 */
 /*                                                                           */
 /* Construction d'un maillage de manière incrémentale.                       */
 /*---------------------------------------------------------------------------*/
@@ -1525,7 +1525,7 @@ readFromDump()
   // Recalcul le max uniqueId() des faces pour savoir quelle valeur
   // utiliser en cas de creation de face.
   ItemInternalMap& faces_map = m_mesh->facesMap();
-  Int64 max_uid = 0;
+  Int64 max_uid = -1;
   faces_map.eachItem([&](Item face) {
     if (face.uniqueId() > max_uid)
       max_uid = face.uniqueId();
@@ -1534,7 +1534,7 @@ readFromDump()
 
   if (m_has_edge) {
     ItemInternalMap& edges_map = m_mesh->edgesMap();
-    Int64 max_uid = 0;
+    Int64 max_uid = -1;
     edges_map.eachItem([&](Item edge) {
       if (edge.uniqueId() > max_uid)
         max_uid = edge.uniqueId();
