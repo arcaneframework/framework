@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CommandLineArguments.cc                                     (C) 2000-2022 */
+/* CommandLineArguments.cc                                     (C) 2000-2025 */
 /*                                                                           */
 /* Arguments de la ligne de commande.                                        */
 /*---------------------------------------------------------------------------*/
@@ -66,6 +66,21 @@ class CommandLineArguments::Impl
     (*argv)[0] = m_argv0;
     for(Integer i=0; i<nb_arg; ++i )
       (*argv)[i+1] = (char*)m_args[i].localstr();
+    m_argv = argv;
+  }
+
+  Impl()
+  : m_nb_ref(0), m_args(), m_argc(nullptr), m_argv(nullptr), m_need_destroy(true)
+  {
+    m_argc_orig = new int;
+    m_argc = m_argc_orig;
+    *m_argc = 1;
+
+    m_argv_orig = new char**;
+    char*** argv = m_argv_orig;
+    *argv = new char*[1];
+    m_argv0 = ::strdup("arcane");
+    (*argv)[0] = m_argv0;
     m_argv = argv;
   }
   ~Impl()
@@ -137,6 +152,16 @@ class CommandLineArguments::Impl
 CommandLineArguments::
 CommandLineArguments(int* argc,char*** argv)
 : m_p(new Impl(argc,argv))
+{
+  m_p->parseParameters(*this);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+CommandLineArguments::
+CommandLineArguments()
+: m_p(new Impl())
 {
   m_p->parseParameters(*this);
 }
