@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* AcceleratorFilterUnitTest.cc                                (C) 2000-2024 */
+/* AcceleratorFilterUnitTest.cc                                (C) 2000-2025 */
 /*                                                                           */
 /* Service de test des algorithmes de 'Filtrage' sur accélérateur.           */
 /*---------------------------------------------------------------------------*/
@@ -179,6 +179,13 @@ _executeTestDataType(Int32 size, Int32 test_id)
     Arcane::Accelerator::GenericFilterer generic_filterer(queue);
     Int32 nb_out = 0;
     if (test_id == 3) {
+      {
+        // Test appel vide
+        generic_filterer.applyIf(0, t1.to1DSpan().begin(), t2.to1DSpan().begin(), filter_lambda);
+        Int32 nb_out_empty = generic_filterer.nbOutputElement();
+        vc.areEqual(0,nb_out_empty,"ApplyIf 0");
+      }
+
       generic_filterer.applyIf(n1, t1.to1DSpan().begin(), t2.to1DSpan().begin(), filter_lambda);
       nb_out = generic_filterer.nbOutputElement();
     }
@@ -195,6 +202,12 @@ _executeTestDataType(Int32 size, Int32 test_id)
       auto setter_lambda_index = [=] ARCCORE_HOST_DEVICE(Int32 input_index, Int32 output_index) {
         output_view[output_index] = input_view[input_index];
       };
+      {
+        // Test appel vide
+        generic_filterer.applyWithIndex(0, filter_lambda_index, setter_lambda_index);
+        Int32 nb_out_empty = generic_filterer.nbOutputElement();
+        vc.areEqual(0,nb_out_empty,"ApplyIf 1");
+      }
       generic_filterer.applyWithIndex(input_view.size(), filter_lambda_index, setter_lambda_index);
       nb_out = generic_filterer.nbOutputElement();
     }

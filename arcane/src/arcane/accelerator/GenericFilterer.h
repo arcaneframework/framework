@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* GenericFilterer.h                                           (C) 2000-2024 */
+/* GenericFilterer.h                                           (C) 2000-2025 */
 /*                                                                           */
 /* Algorithme de filtrage.                                                   */
 /*---------------------------------------------------------------------------*/
@@ -59,11 +59,13 @@ class ARCANE_ACCELERATOR_EXPORT GenericFilteringBase
 
  protected:
 
-  Int32 _nbOutputElement() const;
+  Int32 _nbOutputElement();
   void _allocate();
   void _allocateTemporaryStorage(size_t size);
   int* _getDeviceNbOutPointer();
   void _copyDeviceNbOutToHostNbOut();
+  void _setCalled();
+  bool _checkEmpty(Int32 nb_value);
 
  protected:
 
@@ -83,6 +85,9 @@ class ARCANE_ACCELERATOR_EXPORT GenericFilteringBase
    * recopier la valeur dans m_host_nb_out_storage.
    */
   bool m_use_direct_host_storage = true;
+
+  //! Indique si un appel est en cours
+  bool m_is_already_called = false;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -439,9 +444,9 @@ class GenericFilterer
     if (flag.size() != nb_value)
       ARCANE_FATAL("Sizes are not equals: input={0} flag={1}", nb_value, flag.size());
 
-    _setCalled();
     if (_checkEmpty(nb_value))
       return;
+    _setCalled();
     impl::GenericFilteringBase* base_ptr = this;
     impl::GenericFilteringFlag<InputDataType, FlagType, OutputDataType> gf;
     gf.apply(*base_ptr, input, output, flag);
@@ -491,9 +496,9 @@ class GenericFilterer
       ARCANE_FATAL("Sizes are not equals: input={0} output={1}", nb_value, output.size());
     if (input.data() == output.data())
       ARCANE_FATAL("Input and Output are the same. Use in place overload instead");
-    _setCalled();
     if (_checkEmpty(nb_value))
       return;
+    _setCalled();
     impl::GenericFilteringBase* base_ptr = this;
     impl::GenericFilteringIf gf;
     gf.apply<false>(*base_ptr, nb_value, input.data(), output.data(), select_lambda, trace_info);
@@ -511,11 +516,9 @@ class GenericFilterer
                const TraceInfo& trace_info = TraceInfo())
   {
     const Int32 nb_value = input_output.size();
-    if (nb_value <= 0)
-      return;
-    _setCalled();
     if (_checkEmpty(nb_value))
       return;
+    _setCalled();
     impl::GenericFilteringBase* base_ptr = this;
     impl::GenericFilteringIf gf;
     gf.apply<true>(*base_ptr, nb_value, input_output.data(), input_output.data(), select_lambda, trace_info);
@@ -535,9 +538,9 @@ class GenericFilterer
   void applyIf(Int32 nb_value, InputIterator input_iter, OutputIterator output_iter,
                const SelectLambda& select_lambda, const TraceInfo& trace_info = TraceInfo())
   {
-    _setCalled();
     if (_checkEmpty(nb_value))
       return;
+    _setCalled();
     impl::GenericFilteringBase* base_ptr = this;
     impl::GenericFilteringIf gf;
     gf.apply<false>(*base_ptr, nb_value, input_iter, output_iter, select_lambda, trace_info);
@@ -580,9 +583,9 @@ class GenericFilterer
   void applyWithIndex(Int32 nb_value, const SelectLambda& select_lambda,
                       const SetterLambda& setter_lambda, const TraceInfo& trace_info = TraceInfo())
   {
-    _setCalled();
     if (_checkEmpty(nb_value))
       return;
+    _setCalled();
     impl::GenericFilteringBase* base_ptr = this;
     impl::GenericFilteringIf gf;
     impl::IndexIterator input_iter;
@@ -593,29 +596,7 @@ class GenericFilterer
   //! Nombre d'éléments en sortie.
   Int32 nbOutputElement()
   {
-    m_is_already_called = false;
     return _nbOutputElement();
-  }
-
- private:
-
-  bool m_is_already_called = false;
-
- private:
-
-  void _setCalled()
-  {
-    if (m_is_already_called)
-      ARCANE_FATAL("apply() has already been called for this instance");
-    m_is_already_called = true;
-  }
-  bool _checkEmpty(Int32 nb_value)
-  {
-    if (nb_value == 0) {
-      m_host_nb_out_storage[0] = 0;
-      return true;
-    }
-    return false;
   }
 };
 

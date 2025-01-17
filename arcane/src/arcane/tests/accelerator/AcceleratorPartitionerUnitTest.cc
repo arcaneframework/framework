@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* AcceleratorPartitionerUnitTest.cc                           (C) 2000-2024 */
+/* AcceleratorPartitionerUnitTest.cc                           (C) 2000-2025 */
 /*                                                                           */
 /* Service de test des algorithmes de partitionnement de liste.              */
 /*---------------------------------------------------------------------------*/
@@ -196,6 +196,12 @@ _executeTestDataType2(Int32 size, Int32 test_id)
       return (x > static_cast<DataType>(569));
     };
     Arcane::Accelerator::GenericPartitioner generic_partitioner(m_queue);
+    {
+      // Teste liste vide
+      generic_partitioner.applyIf(0, t1.to1DSpan().begin(), t2.to1DSpan().begin(), filter_lambda);
+      Int32 nb_list1 = generic_partitioner.nbFirstPart();
+      vc.areEqual(0,nb_list1,"applyIf 0");
+    }
     Int32 nb_list1 = 0;
     generic_partitioner.applyIf(n1, t1.to1DSpan().begin(), t2.to1DSpan().begin(), filter_lambda);
     nb_list1 = generic_partitioner.nbFirstPart();
@@ -218,6 +224,13 @@ _executeTestDataType2(Int32 size, Int32 test_id)
       t2_view[output_index] = t1_view[input_index];
     };
     Arcane::Accelerator::GenericPartitioner generic_partitioner(m_queue);
+    {
+      // Teste liste vide
+      Int32 nb_list1 = 0;
+      generic_partitioner.applyWithIndex(0, setter_lambda, filter_lambda);
+      nb_list1 = generic_partitioner.nbFirstPart();
+      vc.areEqual(0,nb_list1,"applyIf 1");
+    }
     Int32 nb_list1 = 0;
     generic_partitioner.applyWithIndex(n1, setter_lambda, filter_lambda);
     nb_list1 = generic_partitioner.nbFirstPart();
@@ -323,6 +336,15 @@ _executeTestDataType3(Int32 size, Int32 test_id)
       return (x < static_cast<DataType>(469));
     };
     Arcane::Accelerator::GenericPartitioner generic_partitioner(m_queue);
+    {
+      // Test liste vide
+      generic_partitioner.applyIf(0, t1.to1DSpan().begin(), t2.to1DSpan().begin(),
+                                  t3.to1DSpan().begin(), t4.to1DSpan().begin(),
+                                  filter1_lambda, filter2_lambda, A_FUNCINFO);
+      SmallSpan<const Int32> nb_parts = generic_partitioner.nbParts();
+      vc.areEqual(nb_parts[0], 0, "Part1 0");
+      vc.areEqual(nb_parts[1], 0, "Part2 0");
+    }
     generic_partitioner.applyIf(n1, t1.to1DSpan().begin(), t2.to1DSpan().begin(),
                                 t3.to1DSpan().begin(), t4.to1DSpan().begin(),
                                 filter1_lambda, filter2_lambda, A_FUNCINFO);
@@ -356,6 +378,15 @@ _executeTestDataType3(Int32 size, Int32 test_id)
     };
 
     Arcane::Accelerator::GenericPartitioner generic_partitioner(m_queue);
+    {
+      // Test liste vide
+      generic_partitioner.applyWithIndex(0, first_setter_lambda,
+                                         second_setter_lambda, unselected_setter_lambda,
+                                         filter1_lambda, filter2_lambda, A_FUNCINFO);
+      SmallSpan<const Int32> nb_parts = generic_partitioner.nbParts();
+      vc.areEqual(nb_parts[0], 0, "Part1 1");
+      vc.areEqual(nb_parts[1], 0, "Part2 1");
+    }
     generic_partitioner.applyWithIndex(n1, first_setter_lambda,
                                        second_setter_lambda, unselected_setter_lambda,
                                        filter1_lambda, filter2_lambda, A_FUNCINFO);
