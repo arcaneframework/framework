@@ -143,6 +143,7 @@ createSolver(boost::program_options::variables_map& vm)
       return std::make_shared<Alien::PETScLinearSolverService>(pm, root_options);
     }
     if (solver.compare("mumps") == 0) {
+#ifdef PETSC_HAVE_MUMPS
         // solver service mumps
         auto options_solver = std::make_shared<IOptionsPETScSolverConfigMUMPS>();
         // root petsc option
@@ -151,6 +152,7 @@ createSolver(boost::program_options::variables_map& vm)
                         std::make_shared<Alien::PETScSolverConfigMUMPSService>(pm, options_solver));
         // root petsc service
         return std::make_shared<Alien::PETScLinearSolverService>(pm, root_options);
+#endif
     }
     tm->fatal() << "*** solver " << solver << " not available in test!";
 #else
