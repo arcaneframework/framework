@@ -1075,7 +1075,7 @@ class ARCANE_CORE_EXPORT ItemInternal
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-impl::ItemBase::
+ItemBase::
 ItemBase(ItemInternal* x)
 : m_local_id(x->m_local_id)
 , m_shared_info(x->m_shared_info)
@@ -1084,7 +1084,7 @@ ItemBase(ItemInternal* x)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-impl::MutableItemBase::
+MutableItemBase::
 MutableItemBase(ItemInternal* x)
 : ItemBase(x)
 {}
