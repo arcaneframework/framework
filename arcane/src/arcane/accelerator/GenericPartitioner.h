@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* GenericPartitioner.h                                        (C) 2000-2024 */
+/* GenericPartitioner.h                                        (C) 2000-2025 */
 /*                                                                           */
 /* Algorithme de partitionnement de liste.                                   */
 /*---------------------------------------------------------------------------*/
@@ -53,6 +53,7 @@ class ARCANE_ACCELERATOR_EXPORT GenericPartitionerBase
   Int32 _nbFirstPart() const;
   SmallSpan<const Int32> _nbParts() const;
   void _allocate();
+  void _resetNbPart();
 
  protected:
 
@@ -357,7 +358,7 @@ class GenericPartitioner
   void applyWithIndex(Int32 nb_value, const SetterLambda& setter_lambda,
                       const SelectLambda& select_lambda, const TraceInfo& trace_info = TraceInfo())
   {
-    if (nb_value == 0)
+    if (_checkEmpty(nb_value))
       return;
     _setCalled();
     impl::GenericPartitionerBase* base_ptr = this;
@@ -388,7 +389,7 @@ class GenericPartitioner
   void applyIf(Int32 nb_value, InputIterator input_iter, OutputIterator output_iter,
                const SelectLambda& select_lambda, const TraceInfo& trace_info = TraceInfo())
   {
-    if (nb_value == 0)
+    if (_checkEmpty(nb_value))
       return;
     _setCalled();
     impl::GenericPartitionerBase* base_ptr = this;
@@ -423,7 +424,7 @@ class GenericPartitioner
                       const Select2Lambda& select2_lambda,
                       const TraceInfo& trace_info = TraceInfo())
   {
-    if (nb_value == 0)
+    if (_checkEmpty(nb_value))
       return;
     _setCalled();
     impl::GenericPartitionerBase* base_ptr = this;
@@ -464,7 +465,7 @@ class GenericPartitioner
                const Select2Lambda& select2_lambda,
                const TraceInfo& trace_info = TraceInfo())
   {
-    if (nb_value == 0)
+    if (_checkEmpty(nb_value))
       return;
     _setCalled();
     impl::GenericPartitionerBase* base_ptr = this;
@@ -509,6 +510,14 @@ class GenericPartitioner
     if (m_is_already_called)
       ARCANE_FATAL("apply() has already been called for this instance");
     m_is_already_called = true;
+  }
+  bool _checkEmpty(Int32 nb_value)
+  {
+    if (nb_value == 0) {
+      _resetNbPart();
+      return true;
+    }
+    return false;
   }
 };
 
