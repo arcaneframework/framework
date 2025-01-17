@@ -38,7 +38,7 @@ class EmptyMeshModifier
 
  private:
 
-  void _error() const { ARCANE_FATAL("Using EmptyMeshModifier"); }
+  [[noreturn]] void _error() const { ARCANE_FATAL("Using EmptyMeshModifier"); }
 
  public:
 
