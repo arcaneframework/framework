@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshUtils.h                                                 (C) 2000-2024 */
+/* MeshUtils.h                                                 (C) 2000-2025 */
 /*                                                                           */
 /* Fonctions utilitaires diverses sur le maillage.                           */
 /*---------------------------------------------------------------------------*/
@@ -106,32 +106,46 @@ reorderNodesOfFace2(Int64ConstArrayView nodes_unique_id, IntegerArrayView new_in
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
-  \brief Recherche une entité face à partir des numéros locaux de ces noeuds.
-
-  Recherche la face donnée par la liste ordonnée des numéros <b>locaux</b> de
-  ces noeuds \a face_nodes_local_id. \a node doit être le premier noeud de
-  la face. Les noeuds de la face doivent être correctement orientés, comme
-  après un appel à reorderNodesOfFace().
-
-  \return la face correspondante ou 0 si la face n'est pas trouvé.
-*/
+ * \brief Recherche une entité face à partir des numéros locaux de ces noeuds.
+ *
+ * Recherche la face donnée par la liste ordonnée des numéros <b>locaux</b> de
+ * ces noeuds \a face_nodes_local_id. \a node doit être le premier noeud de
+ * la face. Les noeuds de la face doivent être correctement orientés, comme
+ * après un appel à reorderNodesOfFace().
+ *
+ * \return la face correspondante ou la face nulle si elle n'est pas trouvé.
+ */
 extern "C++" ARCANE_CORE_EXPORT Face
-getFaceFromNodesLocal(Node node, Int32ConstArrayView face_nodes_local_id);
+getFaceFromNodesLocalId(Node node, Int32ConstArrayView face_nodes_local_id);
+
+ARCANE_DEPRECATED_REASON("Y2025: Use getFaceFromNodesLocalId() instead")
+inline Face
+getFaceFromNodesLocal(Node node, Int32ConstArrayView face_nodes_local_id)
+{
+  return getFaceFromNodesLocalId(node, face_nodes_local_id);
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
-  \brief Recherche une entité face à partir des numéros uniques de ces noeuds.
-
-  Recherche la face donnée par la liste ordonnée des numéros <b>unique</b> de
-  ces noeuds \a face_nodes_unique_id. \a node doit être le premier noeud de
-  la face. Les noeuds de la face doivent être correctement orientés, comme
-  après un appel à reorderNodesOfFace().
-
-  \return la face correspondante ou 0 si la face n'est pas trouvé.
-*/
+ * \brief Recherche une entité face à partir des numéros uniques de ces noeuds.
+ *
+ * Recherche la face donnée par la liste ordonnée des numéros <b>unique</b> de
+ * ces noeuds \a face_nodes_unique_id. \a node doit être le premier noeud de
+ * la face. Les noeuds de la face doivent être correctement orientés, comme
+ * après un appel à reorderNodesOfFace().
+ *
+ * \return la face correspondante ou la face nulle si elles n'est pas trouvé.
+ */
 extern "C++" ARCANE_CORE_EXPORT Face
-getFaceFromNodesUnique(Node node, Int64ConstArrayView face_nodes_unique_id);
+getFaceFromNodesUniqueId(Node node, Int64ConstArrayView face_nodes_unique_id);
+
+ARCANE_DEPRECATED_REASON("Y2025: Use getFaceFromNodesUniqueId() instead")
+inline Face
+getFaceFromNodesUnique(Node node, Int64ConstArrayView face_nodes_unique_id)
+{
+  return getFaceFromNodesUniqueId(node, face_nodes_unique_id);
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -156,7 +170,8 @@ removeItemAndKeepOrder(Int32ArrayView items, Int32 local_id);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-/*! \brief Vérifie que le maillage possède certaines propriétés.
+/*!
+ * \brief Vérifie que le maillage possède certaines propriétés.
  *
  * Si \a is_sorted, vérifie que les entités de maillage sont triées par
  * ordre croissant de leur uniqueId().
@@ -228,7 +243,7 @@ extern "C++" ARCANE_CORE_EXPORT void
 dumpSynchronizerTopologyJSON(IVariableSynchronizer* var_syncer, const String& filename);
 
 /*!
- * \interne
+ * \internal
  * \brief Calcul et affiche les patterns communs dans les connectivités.
  */
 extern "C++" ARCANE_CORE_EXPORT void
@@ -253,7 +268,7 @@ computeConnectivityPatternOccurence(IMesh* mesh);
  * gérant la connectivité.
  */
 extern "C++" ARCANE_CORE_EXPORT void
-markMeshConnectivitiesAsMostlyReadOnly(IMesh* mesh,RunQueue* q = nullptr,
+markMeshConnectivitiesAsMostlyReadOnly(IMesh* mesh, RunQueue* q = nullptr,
                                        bool do_prefetch = false);
 
 /*---------------------------------------------------------------------------*/
@@ -265,7 +280,7 @@ markMeshConnectivitiesAsMostlyReadOnly(IMesh* mesh,RunQueue* q = nullptr,
  *
  * \pre family->hasUniqueIdMap() == true
  */
-extern "C++" ARCANE_CORE_EXPORT impl::ItemBase
+extern "C++" ARCANE_CORE_EXPORT ItemBase
 findOneItem(IItemFamily* family, Int64 unique_id);
 
 /*---------------------------------------------------------------------------*/
@@ -277,7 +292,7 @@ findOneItem(IItemFamily* family, Int64 unique_id);
  *
  * \pre family->hasUniqueIdMap() == true
  */
-extern "C++" ARCANE_CORE_EXPORT impl::ItemBase
+extern "C++" ARCANE_CORE_EXPORT ItemBase
 findOneItem(IItemFamily* family, ItemUniqueId unique_id);
 
 /*---------------------------------------------------------------------------*/

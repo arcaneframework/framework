@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MshParallelMeshReader.cc                                    (C) 2000-2024 */
+/* MshParallelMeshReader.cc                                    (C) 2000-2025 */
 /*                                                                           */
 /* Lecture parallèle d'un fichier au format MSH.				                     */
 /*---------------------------------------------------------------------------*/
@@ -30,6 +30,8 @@
 #include "arcane/core/VariableTypes.h"
 #include "arcane/core/IParallelMng.h"
 #include "arcane/core/MeshUtils.h"
+#include "arcane/core/IMeshModifier.h"
+#include "arcane/core/MeshKind.h"
 
 // Element types in .msh file format, found in gmsh-2.0.4/Common/GmshDefines.h
 #include "arcane/std/internal/IosFile.h"
@@ -64,7 +66,7 @@ namespace Arcane
  * Le format `msh` est celui utilisé par la bibliothèque 
  * [gmsh](https://gmsh.info/).
  *
- * Le lecteur supporte les versions `2.0` et `4.1` de ce format.
+ * Le lecteur supporte la version `4.1` de ce format.
  *
  * Seules une partie des fonctionnalités du format sont supportées:
  *
@@ -93,7 +95,7 @@ class MshParallelMeshReader
   {
     Int32 index = 0; //!< Index du bloc dans la liste
     Int64 nb_entity = 0; //!< Nombre d'entités du bloc
-    Integer item_type = -1; //!< Type Arcane de l'entité
+    ItemTypeId item_type; //!< Type Arcane de l'entité
     Int32 dimension = -1; //!< Dimension de l'entité
     Int32 item_nb_node = 0; //!< Nombre de noeuds de l'entité.
     Int64 entity_tag = -1;
@@ -137,7 +139,7 @@ class MshParallelMeshReader
 
    private:
 
-    FixedArray<UniqueArray<MeshPhysicalName>,4> m_physical_names;
+    FixedArray<UniqueArray<MeshPhysicalName>, 4> m_physical_names;
   };
 
   //! Infos pour les entités 0D
@@ -184,6 +186,29 @@ class MshParallelMeshReader
     UniqueArray<PeriodicOneInfo> m_periodic_list;
   };
 
+  /*!
+   * \brief Informations pour créer les entités d'un genre.
+   */
+  class ItemKindInfo
+  {
+    // TODO: Allouer la connectivité par bloc pour éviter de trop grosses allocations
+
+   public:
+
+    void addItem(Int16 type_id, Int64 unique_id, SmallSpan<const Int64> nodes_uid)
+    {
+      ++nb_item;
+      items_infos.add(type_id);
+      items_infos.add(unique_id);
+      items_infos.addRange(nodes_uid);
+    }
+
+   public:
+
+    Int32 nb_item = 0;
+    UniqueArray<Int64> items_infos;
+  };
+
   //! Informations sur le maillage créé
   class MeshInfo
   {
@@ -207,10 +232,8 @@ class MshParallelMeshReader
 
    public:
 
-    UniqueArray<Int32> cells_nb_node;
-    UniqueArray<Int32> cells_type;
-    UniqueArray<Int64> cells_uid;
-    UniqueArray<Int64> cells_connectivity;
+    ItemKindInfo faces_infos;
+    ItemKindInfo cells_infos;
 
     //! Coordonnées des noeuds de ma partie
     UniqueArray<Real3> nodes_coordinates;
@@ -257,6 +280,7 @@ class MshParallelMeshReader
   Integer _readElementsFromFile();
   void _readMeshFromFile();
   void _setNodesCoordinates();
+  void _addFaces();
   void _allocateCells();
   void _allocateGroups();
   void _addFaceGroup(MeshV4ElementsBlock& block, const String& group_name);
@@ -265,7 +289,7 @@ class MshParallelMeshReader
   void _addCellOrNodeGroup(MeshV4ElementsBlock& block, const String& group_name, IItemFamily* family);
   void _addCellOrNodeGroupOnePart(ConstArrayView<Int64> uids, const String& group_name,
                                   Int32 block_index, IItemFamily* family);
-  Int32 _switchMshType(Int64, Int32&) const;
+  Int16 _switchMshType(Int64, Int32&) const;
   void _readPhysicalNames();
   void _readEntities();
   void _readPeriodic();
@@ -279,7 +303,7 @@ class MshParallelMeshReader
   void _getDoubleArrayAndBroadcast(ArrayView<double> values);
   void _readOneElementBlock(MeshV4ElementsBlock& block);
   void _computeNodesPartition();
-  void _computeOwnCells(MeshV4ElementsBlock& block);
+  void _computeOwnItems(MeshV4ElementsBlock& block, ItemKindInfo& item_kind_info, bool is_generate_uid);
   Real3 _getReal3();
   Int32 _getInt32();
   Int64 _getInt64();
@@ -360,6 +384,7 @@ _getIsEndOfFileAndBroadcast()
 /*---------------------------------------------------------------------------*/
 
 Int32 MshParallelMeshReader::
+//_getASCIIIntegerAndBroadcast()
 _getIntegerAndBroadcast()
 {
   IosFile* f = m_ios_file.get();
@@ -514,7 +539,7 @@ _goToNextLine()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Int32 MshParallelMeshReader::
+Int16 MshParallelMeshReader::
 _switchMshType(Int64 mshElemType, Int32& nNodes) const
 {
   switch (mshElemType) {
@@ -967,7 +992,7 @@ _readElementsFromFile()
     Int64 nb_entity_in_block = _getInt64AndBroadcast();
 
     Integer item_nb_node = 0;
-    Integer item_type = _switchMshType(entity_type, item_nb_node);
+    ItemTypeId item_type(_switchMshType(entity_type, item_nb_node));
 
     info() << "[Elements] index=" << block.index << " entity_dim=" << entity_dim
            << " entity_tag=" << entity_tag
@@ -1005,7 +1030,7 @@ _readElementsFromFile()
   if (m_is_binary)
     _goToNextLine();
 
-  // Maintenant qu'on a tout les blocs, la dimension du maillage est
+  // Maintenant qu'on a tous les blocs, la dimension du maillage est
   // la plus grande dimension des blocs
   Integer mesh_dimension = -1;
   for (const MeshV4ElementsBlock& block : blocks)
@@ -1016,9 +1041,15 @@ _readElementsFromFile()
     ARCANE_THROW(NotSupportedException, "mesh dimension '{0}'. Only 2D or 3D meshes are supported", mesh_dimension);
   info() << "Computed mesh dimension = " << mesh_dimension;
 
+  bool allow_orphan_item = m_mesh->meshKind().isAllowLooseItems();
   for (MeshV4ElementsBlock& block : blocks) {
-    if (block.dimension == mesh_dimension)
-      _computeOwnCells(block);
+    const Int32 block_dim = block.dimension;
+    if (block_dim == mesh_dimension)
+      _computeOwnItems(block, m_mesh_info.cells_infos, false);
+    else if (allow_orphan_item) {
+      if (block_dim == (mesh_dimension - 1))
+        _computeOwnItems(block, m_mesh_info.faces_infos, true);
+    }
   }
 
   return mesh_dimension;
@@ -1064,15 +1095,18 @@ namespace
 
 } // namespace
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 void MshParallelMeshReader::
-_computeOwnCells(MeshV4ElementsBlock& block)
+_computeOwnItems(MeshV4ElementsBlock& block, ItemKindInfo& item_kind_info, bool is_generate_uid)
 {
-  // On ne conserve que les mailles dont le premier noeud appartient à notre rang.
+  // On ne conserve que les entités dont le premier noeud appartient à notre rang.
 
   IParallelMng* pm = m_parallel_mng;
   const Int32 my_rank = pm->commRank();
 
-  const Int32 item_type = block.item_type;
+  const ItemTypeId item_type = block.item_type;
   const Int32 item_nb_node = block.item_nb_node;
 
   UniqueArray<Int64> connectivities;
@@ -1080,6 +1114,7 @@ _computeOwnCells(MeshV4ElementsBlock& block)
   UniqueArray<Int32> nodes_rank;
 
   const Int32 nb_part = m_parts_rank.size();
+  info() << "Compute own items block_index=" << block.index << " nb_part=" << nb_part;
   for (Int32 i_part = 0; i_part < nb_part; ++i_part) {
     const Int32 dest_rank = m_parts_rank[i_part];
     // Broadcast la i_part-ème partie des uids et connectivités des mailles
@@ -1090,7 +1125,7 @@ _computeOwnCells(MeshV4ElementsBlock& block)
     nodes_rank.resize(nb_item);
     nodes_rank.fill(-1);
 
-    // Parcours les mailles. Chaque maille appartiendra au rang
+    // Parcours les entités. Chaque entité appartiendra au rang
     // de son premier noeud. Si cette partie correspond à mon rang, alors
     // on conserve la maille.
     for (Int32 i = 0; i < nb_item; ++i) {
@@ -1110,11 +1145,11 @@ _computeOwnCells(MeshV4ElementsBlock& block)
         continue;
       // Le noeud est chez moi, j'ajoute ma maille à la liste des
       // mailles que je vais créer.
-      m_mesh_info.cells_type.add(item_type);
-      m_mesh_info.cells_nb_node.add(item_nb_node);
-      m_mesh_info.cells_uid.add(uids_view[i]);
-      auto v = connectivities_view.subView(i * item_nb_node, item_nb_node);
-      m_mesh_info.cells_connectivity.addRange(v);
+      ConstArrayView<Int64> v = connectivities_view.subView(i * item_nb_node, item_nb_node);
+      Int64 uid = uids_view[i];
+      if (is_generate_uid)
+        uid = MeshUtils::generateHashUniqueId(v);
+      item_kind_info.addItem(item_type, uid, v);
     }
   }
 }
@@ -1170,46 +1205,38 @@ _setNodesCoordinates()
 /*---------------------------------------------------------------------------*/
 
 void MshParallelMeshReader::
+_addFaces()
+{
+  IMesh* mesh = m_mesh;
+  Integer nb_item = m_mesh_info.faces_infos.nb_item;
+  info() << "Adding faces direct nb_face=" << nb_item;
+  if (nb_item != 0)
+    mesh->modifier()->addFaces(nb_item, m_mesh_info.faces_infos.items_infos);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MshParallelMeshReader::
 _allocateCells()
 {
-  // TODO: Allouer par bloc de 100000 mailles pour éviter de faire
-  // une trop grosse allocation
   IMesh* mesh = m_mesh;
-  Integer nb_elements = m_mesh_info.cells_type.size();
+  Integer nb_elements = m_mesh_info.cells_infos.nb_item;
   info() << "nb_of_elements=cells_type.size()=" << nb_elements;
-  Integer nb_cell_node = m_mesh_info.cells_connectivity.size();
+  Integer nb_cell_node = m_mesh_info.cells_infos.items_infos.size();
   info() << "nb_cell_node=cells_connectivity.size()=" << nb_cell_node;
 
   // Création des mailles
   info() << "Building cells, nb_cell=" << nb_elements << " nb_cell_node=" << nb_cell_node;
-  // Infos pour la création des mailles
-  // par maille: 1 pour son unique id,
-  //             1 pour son type,
-  //             1 pour chaque noeud
-  UniqueArray<Int64> cells_infos;
-  Int32 connectivity_index = 0;
-  UniqueArray<Real3> local_coords;
-  for (Integer i = 0; i < nb_elements; ++i) {
-    Integer current_cell_nb_node = m_mesh_info.cells_nb_node[i];
-    Integer cell_type = m_mesh_info.cells_type[i];
-    Int64 cell_uid = m_mesh_info.cells_uid[i];
-    cells_infos.add(cell_type);
-    cells_infos.add(cell_uid); //cell_unique_id
-
-    ArrayView<Int64> local_info(current_cell_nb_node, &m_mesh_info.cells_connectivity[connectivity_index]);
-    cells_infos.addRange(local_info);
-    connectivity_index += current_cell_nb_node;
-  }
-
   IPrimaryMesh* pmesh = mesh->toPrimaryMesh();
   info() << "## Allocating ##";
-  pmesh->allocateCells(nb_elements, cells_infos, false);
+  pmesh->allocateCells(nb_elements, m_mesh_info.cells_infos.items_infos, false);
   info() << "## Ending ##";
+  // Ajoute ensuite faces si elles peuvent ne pas être connectées au maillage.
+  if (m_mesh->meshKind().isAllowLooseItems())
+    _addFaces();
   pmesh->endAllocate();
   info() << "## Done ##";
-
-  // Positionne les coordonnées des noeuds
-  _setNodesCoordinates();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1323,7 +1350,10 @@ _addFaceGroupOnePart(ConstArrayView<Int64> connectivities, Int32 item_nb_node,
   IItemFamily* node_family = mesh->nodeFamily();
   NodeInfoListView mesh_nodes(node_family);
 
-  // Réordonne les identifiants des faces retrouver la face dans le maillage
+  // Réordonne les identifiants des faces retrouver la face dans le maillage.
+  // Pour cela, on récupère le premier noeud de la face et on regarde s'il
+  // se trouve dans notre sous-domaine. Si oui, la face sera ajoutée à notre
+  // partie du maillage
   for (Integer i_face = 0; i_face < nb_entity; ++i_face) {
     for (Integer z = 0; z < item_nb_node; ++z)
       orig_nodes_id[z] = connectivities[faces_nodes_unique_id_index + z];
@@ -1344,7 +1374,7 @@ _addFaceGroupOnePart(ConstArrayView<Int64> connectivities, Int32 item_nb_node,
     if (face_first_node_lid != NULL_ITEM_LOCAL_ID) {
       Int64ConstArrayView face_nodes_id(item_nb_node, &faces_nodes_unique_id[faces_nodes_unique_id_index]);
       Node current_node(mesh_nodes[faces_first_node_local_id[i_face]]);
-      Face face = MeshUtils::getFaceFromNodesUnique(current_node, face_nodes_id);
+      Face face = MeshUtils::getFaceFromNodesUniqueId(current_node, face_nodes_id);
 
       // En parallèle, il est possible que la face ne soit pas dans notre sous-domaine
       // même si un de ses noeuds l'est
@@ -1793,6 +1823,7 @@ _readMeshFromFile()
   }
 
   _allocateCells();
+  _setNodesCoordinates();
   _allocateGroups();
 }
 

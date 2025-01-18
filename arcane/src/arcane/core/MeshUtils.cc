@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshUtils.cc                                                (C) 2000-2024 */
+/* MeshUtils.cc                                                (C) 2000-2025 */
 /*                                                                           */
 /* Fonctions diverses sur les éléments du maillage.                          */
 /*---------------------------------------------------------------------------*/
@@ -1556,7 +1556,7 @@ reorderNodesOfFace2(Int64ConstArrayView nodes_unique_id, IntegerArrayView new_in
 /*---------------------------------------------------------------------------*/
 
 Face MeshUtils::
-getFaceFromNodesLocal(Node node, Int32ConstArrayView face_nodes_local_id)
+getFaceFromNodesLocalId(Node node, Int32ConstArrayView face_nodes_local_id)
 {
   Integer n = face_nodes_local_id.size();
   for (Integer i = 0, s = node.nbFace(); i < s; ++i) {
@@ -1580,7 +1580,7 @@ getFaceFromNodesLocal(Node node, Int32ConstArrayView face_nodes_local_id)
 /*---------------------------------------------------------------------------*/
 
 Face MeshUtils::
-getFaceFromNodesUnique(Node node, Int64ConstArrayView face_nodes_unique_id)
+getFaceFromNodesUniqueId(Node node, Int64ConstArrayView face_nodes_unique_id)
 {
   Integer n = face_nodes_unique_id.size();
   for (Integer i = 0, s = node.nbFace(); i < s; ++i) {
@@ -1934,7 +1934,7 @@ generateHashUniqueId(SmallSpan<const Int64> nodes_unique_id)
   // Prend les 30 premiers bits du premier nœud pour former
   // les 30 premiers bits de la fonction de hash.
   // Les 32 bits suivants sont formées avec la fonction de hash.
-  // Le uniqueId() généré doit toujours être strictement positif
+  // Le uniqueId() généré doit toujours être positif
   // sauf pour l'entité nulle.
   Int32 nb_node = nodes_unique_id.size();
   if (nb_node == 0)
