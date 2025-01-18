@@ -1143,12 +1143,13 @@ _computeOwnItems(MeshV4ElementsBlock& block, ItemKindInfo& item_kind_info, bool 
       if (rank != my_rank)
         // Le noeud n'est pas dans ma partie
         continue;
-      // Le noeud est chez moi, j'ajoute ma maille à la liste des
-      // mailles que je vais créer.
+      // Le noeud est chez moi, j'ajoute l'entité à la liste des
+      // entités que je vais créer.
       ConstArrayView<Int64> v = connectivities_view.subView(i * item_nb_node, item_nb_node);
       Int64 uid = uids_view[i];
       if (is_generate_uid)
-        uid = MeshUtils::generateHashUniqueId(v);
+        // Le uniqueId() sera généré automatiquement
+        uid = NULL_ITEM_UNIQUE_ID;
       item_kind_info.addItem(item_type, uid, v);
     }
   }
