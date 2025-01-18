@@ -35,11 +35,6 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace
-{
-const char* PROPERTY_ALLOW_ORPHAN_ITEM = "allow-orphan-item";
-}
-
 namespace Arcane::mesh
 {
 
@@ -229,7 +224,7 @@ checkValidConnectivity()
 
   // Vérifie que la face a bien au moins une maille connectée
   // sauf si on autorise les entités orphelines
-  const bool allow_orphan_item = m_mesh->properties()->getBool(PROPERTY_ALLOW_ORPHAN_ITEM);
+  const bool allow_orphan_item = m_mesh->meshKind().isAllowLooseItems();
   if (!m_mesh->parentMesh() && !allow_orphan_item){
     Integer index = 0;
     ENUMERATE_(Face,i,m_mesh->allFaces()){
@@ -535,7 +530,7 @@ _checkValidItemOwner(IItemFamily* family)
   // même propriétaire que son parent.
 
   Integer nerror = 0;
-  const bool allow_orphan_item = m_mesh->properties()->getBool(PROPERTY_ALLOW_ORPHAN_ITEM);
+  const bool allow_orphan_item = m_mesh->meshKind().isAllowLooseItems();
   if (!m_mesh->parentMesh()){
     
     if (family->itemKind() == IK_Cell)

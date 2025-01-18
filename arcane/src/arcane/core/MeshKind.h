@@ -1,16 +1,16 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshKind.h                                                  (C) 2000-2024 */
+/* MeshKind.h                                                  (C) 2000-2025 */
 /*                                                                           */
 /* Caractéristiques d'un maillage.                                           */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_MESHKIND_H
-#define ARCANE_MESHKIND_H
+#ifndef ARCANE_CORE_MESHKIND_H
+#define ARCANE_CORE_MESHKIND_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -32,6 +32,7 @@ enum class eMeshStructure
   Cartesian,
   Polyhedral
 };
+
 extern "C++" ARCANE_CORE_EXPORT std::ostream&
 operator<<(std::ostream& o, eMeshStructure r);
 
@@ -43,6 +44,7 @@ enum class eMeshAMRKind
   Patch,
   PatchCartesianMeshOnly
 };
+
 extern "C++" ARCANE_CORE_EXPORT std::ostream&
 operator<<(std::ostream& o, eMeshAMRKind r);
 
@@ -54,6 +56,7 @@ operator<<(std::ostream& o, eMeshAMRKind r);
  * Pour l'instant les caractéristiques sont:
  * - la structure du maillage (eMeshStructure)
  * - le type d'AMR
+ * - la possibilité d'avoir des entités libres
  */
 class ARCANE_CORE_EXPORT MeshKind
 {
@@ -61,13 +64,17 @@ class ARCANE_CORE_EXPORT MeshKind
 
   eMeshStructure meshStructure() const { return m_structure; }
   eMeshAMRKind meshAMRKind() const { return m_amr_kind; }
+  bool isAllowLooseItems() const { return m_allow_loose_items; }
+
   void setMeshStructure(eMeshStructure v) { m_structure = v; }
   void setMeshAMRKind(eMeshAMRKind v) { m_amr_kind = v; }
+  void setAllowLooseItems(bool v) { m_allow_loose_items = v; }
 
  private:
 
   eMeshStructure m_structure = eMeshStructure::Unknown;
   eMeshAMRKind m_amr_kind = eMeshAMRKind::None;
+  bool m_allow_loose_items = false;
 };
 
 /*---------------------------------------------------------------------------*/
