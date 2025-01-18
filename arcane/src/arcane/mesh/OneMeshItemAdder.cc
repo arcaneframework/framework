@@ -68,11 +68,11 @@ class OneMeshItemAdder::CellInfoProxy
 
  private:
 
-  ItemTypeInfo* m_type_info;
-  Int64 m_cell_uid;
+  ItemTypeInfo* m_type_info = nullptr;
+  Int64 m_cell_uid = NULL_ITEM_UNIQUE_ID;
   Int64ConstArrayView m_info;
-  Int32 m_owner;
-  bool m_allow_build_face;
+  Int32 m_owner = A_NULL_RANK;
+  bool m_allow_build_face = false;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -112,10 +112,67 @@ addOneNode(Int64 node_uid,Int32 owner)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
+ * \brief Vérifie la cohérence des noeuds d'une entité ajouté déjà présente.
+ *
+ * Lorsqu'on tente d'ajouter une entité et qu'elle est déjà présente,
+ * vérifie que les noeuds donnés pour l'ajout sont les même que ceux de
+ * l'entité déjà présente.
+ */
+void OneMeshItemAdder::
+_checkSameItemCoherency(ItemWithNodes item,ConstArrayView<Int64> nodes_uid)
+{
+  Int32 nb_node = nodes_uid.size();
+  // Vérifie que le nombre de noeuds est le même
+  if (item.nbNode()!=nb_node)
+    ARCANE_FATAL("Trying to add existing item (kind='{0}', uid={1}) with different number of node (existing={2} new={3})",
+                 item.kind(), item.uniqueId(), item.nbNode(), nb_node);
+
+  // Vérifie que les noeuds correspondent bien à ceux existants
+  for( Int32 i=0; i<nb_node; ++i ){
+    Int64 new_uid = nodes_uid[i];
+    Int64 current_uid = item.node(i).uniqueId();
+    if (new_uid != current_uid){
+      std::ostringstream ostr;
+      for( Int32 k=0; k<nb_node; ++k )
+        ostr << " " << item.node(k).uniqueId();
+      ARCANE_FATAL("Trying to add existing item (kind='{0}', uid={1}) with different nodes (index={2} existing='{3}' new='{4}')",
+                   item.kind(), item.uniqueId(), i, ostr.str(), nodes_uid);
+    }
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Génère un uniqueId() pour la face si \a uid est nul.
+ *
+ * Si \a uid vaut NULL_ITEM_UNIQUE_ID, génère un uniqueId() pour la face.
+ */
+Int64 OneMeshItemAdder::
+_checkGenerateFaceUniqueId(Int64 uid, ConstArrayView<Int64> nodes_uid)
+{
+  if (uid!=NULL_ITEM_UNIQUE_ID)
+    return uid;
+  if (m_use_hash_for_edge_and_face_unique_id)
+    uid = MeshUtils::generateHashUniqueId(nodes_uid);
+  else
+    uid = m_next_face_uid++;
+  return uid;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
  * \brief Ajoute une face.
  *
- * Ajoute une face en fournissant l'unique_id à utiliser et les unique_ids
+ * Cette méthode est appelée lorsqu'on souhaite directement créer une face
+ * qui ne sera pas forcément connectée à une maille. En général, les faces
+ * sont créées automatiquement lorsqu'on ajoute des mailles.
+ *
+ * Ajoute une face en fournissant l'unique_id de la face et les unique_ids
  * des noeuds à connecter.
+ *
+ * Si \a face_uid est égal à NULL_ITEM_UNIQUE_ID, l'identifiant est généré.
  */
 ItemInternal* OneMeshItemAdder::
 addOneFace(ItemTypeId type_id, Int64 face_uid, Int32 owner_rank, Int64ConstArrayView nodes_uid)
@@ -126,8 +183,11 @@ addOneFace(ItemTypeId type_id, Int64 face_uid, Int32 owner_rank, Int64ConstArray
   m_work_face_orig_nodes_uid.resize(face_nb_node);
   for( Integer z=0; z<face_nb_node; ++z )
     m_work_face_orig_nodes_uid[z] = nodes_uid[z];
-  mesh_utils::reorderNodesOfFace(m_work_face_orig_nodes_uid,m_work_face_sorted_nodes);
-  
+  // TODO: dans le cas où la face sera orpheline (non connectée à une mailles),
+  // vérifier s'il faut réorienter la face car cela risque d'introduire
+  // une incohérence si par la suite on souhaite calculer une normale.
+  MeshUtils::reorderNodesOfFace(m_work_face_orig_nodes_uid,m_work_face_sorted_nodes);
+  face_uid = _checkGenerateFaceUniqueId(face_uid,m_work_face_sorted_nodes);
   bool is_add_face = false;
   Face face = m_face_family.findOrAllocOne(face_uid,type_id,is_add_face);
   // La face n'existe pas
@@ -141,7 +201,8 @@ addOneFace(ItemTypeId type_id, Int64 face_uid, Int32 owner_rank, Int64ConstArray
     }
   }
   else {
-    // TODO en mode check vérifier la cohérence.
+    if (arcaneIsCheck())
+      _checkSameItemCoherency(face, m_work_face_sorted_nodes);
   }
   
   return ItemCompatibility::_itemInternal(face);
@@ -151,7 +212,7 @@ addOneFace(ItemTypeId type_id, Int64 face_uid, Int32 owner_rank, Int64ConstArray
 /*---------------------------------------------------------------------------*/
 
 ItemInternal* OneMeshItemAdder::
-addOneEdge(Int64 edge_uid, Integer sub_domain_id, Int64ConstArrayView nodes_uid)
+addOneEdge(Int64 edge_uid, Int32 rank, Int64ConstArrayView nodes_uid)
 {
   m_work_edge_sorted_nodes.resize(2);
   m_work_edge_orig_nodes_uid.resize(2);
@@ -159,7 +220,7 @@ addOneEdge(Int64 edge_uid, Integer sub_domain_id, Int64ConstArrayView nodes_uid)
   for( Integer z=0; z<2; ++z )
     m_work_edge_orig_nodes_uid[z] = nodes_uid[z];
   // reorderNodesOfFace se comporte ici correctement pour des arêtes == face en 2D
-  mesh_utils::reorderNodesOfFace(m_work_edge_orig_nodes_uid,m_work_edge_sorted_nodes);
+  MeshUtils::reorderNodesOfFace(m_work_edge_orig_nodes_uid,m_work_edge_sorted_nodes);
   
   bool is_add_edge = false;
   ItemInternal* edge = m_edge_family.findOrAllocOne(edge_uid,is_add_edge);
@@ -167,7 +228,7 @@ addOneEdge(Int64 edge_uid, Integer sub_domain_id, Int64ConstArrayView nodes_uid)
   // L'arête n'existe pas
   if (is_add_edge) {
     ++m_mesh_info.nbEdge();
-    edge->setOwner(sub_domain_id,sub_domain_id);
+    edge->setOwner(rank,m_mesh_info.rank());
     for(Integer i_node=0; i_node<2; ++i_node ){
       ItemInternal *current_node_internal = addOneNode(m_work_edge_sorted_nodes[i_node], m_mesh_info.rank());
       m_edge_family.replaceNode(ItemLocalId(edge),i_node, ItemLocalId(current_node_internal));
@@ -216,9 +277,7 @@ _findInternalFace(Integer i_face, const CellInfoProxy& cell_info, bool& is_add)
                    cell_info.uniqueId(),i_face,m_work_face_sorted_nodes);
     }
     ItemTypeInfo* face_type = m_item_type_mng->typeFromId(lf.typeId());
-    Int64 face_unique_id = m_next_face_uid++;
-    if (m_use_hash_for_edge_and_face_unique_id)
-      face_unique_id = MeshUtils::generateHashUniqueId(m_work_face_sorted_nodes);
+    Int64 face_unique_id = _checkGenerateFaceUniqueId(NULL_ITEM_UNIQUE_ID,m_work_face_sorted_nodes);
     is_add = true;
     return m_face_family.allocOne(face_unique_id,face_type);
   }
@@ -930,7 +989,7 @@ addOneParentItem(const Item & item, const eItemKind submesh_kind, const bool fat
       m_work_face_sorted_nodes[0] = m_work_face_orig_nodes_uid[0];
     }
     else
-      is_reorder = mesh_utils::reorderNodesOfFace(m_work_face_orig_nodes_uid,m_work_face_sorted_nodes);
+      is_reorder = MeshUtils::reorderNodesOfFace(m_work_face_orig_nodes_uid,m_work_face_sorted_nodes);
 
     // find parent item
     Item parent_item;
@@ -1036,8 +1095,8 @@ _isReorder(Integer i_face, const ItemTypeInfo::LocalFace& lf, const CellInfo& ce
     m_work_face_sorted_nodes[0] = m_work_face_orig_nodes_uid[0];
   }
   else
-    is_reorder = mesh_utils::reorderNodesOfFace(m_work_face_orig_nodes_uid,
-                                                m_work_face_sorted_nodes);
+    is_reorder = MeshUtils::reorderNodesOfFace(m_work_face_orig_nodes_uid,
+                                               m_work_face_sorted_nodes);
   
   return is_reorder;
 }
