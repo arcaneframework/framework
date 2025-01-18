@@ -118,32 +118,7 @@ addOneNode(Int64 node_uid,Int32 owner)
  * des noeuds à connecter.
  */
 ItemInternal* OneMeshItemAdder::
-addOneFace(Int64 a_face_uid, Int64ConstArrayView a_node_list, Integer a_type)
-{
-  m_work_face_sorted_nodes.resize(a_node_list.size());
-  m_work_face_orig_nodes_uid.resize(a_node_list.size());
-  for( Integer z=0; z<a_node_list.size(); ++z )
-    m_work_face_orig_nodes_uid[z] = a_node_list[z];
-  mesh_utils::reorderNodesOfFace(m_work_face_orig_nodes_uid, m_work_face_sorted_nodes);
-
-  ItemTypeMng* itm = m_mesh->itemTypeMng();
-  ItemInternal *face = m_face_family.allocOne(a_face_uid,itm->typeFromId(a_type));
-	face->setOwner(m_mesh_info.rank(), m_mesh_info.rank());
-
-  for(Integer i_node=0; i_node<a_node_list.size(); ++i_node ){
-    ItemInternal *current_node_internal = addOneNode(m_work_face_sorted_nodes[i_node], m_mesh_info.rank());
-    m_face_family.replaceNode(ItemLocalId(face),i_node,ItemLocalId(current_node_internal));
-		m_node_family.addFaceToNode(current_node_internal, face);
-	}
-	++m_mesh_info.nbFace();
-	return face;
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ItemInternal* OneMeshItemAdder::
-addOneFace(ItemTypeId type_id, Int64 face_uid, Int32 sub_domain_id, Int64ConstArrayView nodes_uid)
+addOneFace(ItemTypeId type_id, Int64 face_uid, Int32 owner_rank, Int64ConstArrayView nodes_uid)
 {
   const Integer face_nb_node = nodes_uid.size();
 
@@ -155,16 +130,18 @@ addOneFace(ItemTypeId type_id, Int64 face_uid, Int32 sub_domain_id, Int64ConstAr
   
   bool is_add_face = false;
   Face face = m_face_family.findOrAllocOne(face_uid,type_id,is_add_face);
-  
   // La face n'existe pas
   if (is_add_face) { 
     ++m_mesh_info.nbFace();
-    face.mutableItemBase().setOwner(sub_domain_id,sub_domain_id);
+    face.mutableItemBase().setOwner(owner_rank, m_mesh_info.rank());
     for(Integer i_node=0; i_node<face_nb_node; ++i_node ){
       Node node = addOneNode(m_work_face_sorted_nodes[i_node], m_mesh_info.rank());
       m_face_family.replaceNode(face,i_node,node);
       m_node_family.addFaceToNode(node, face);
     }
+  }
+  else {
+    // TODO en mode check vérifier la cohérence.
   }
   
   return ItemCompatibility::_itemInternal(face);

@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* DynamicMesh.h                                               (C) 2000-2024 */
+/* DynamicMesh.h                                               (C) 2000-2025 */
 /*                                                                           */
 /* Classe de gestion d'un maillage évolutif.                                 */
 /*---------------------------------------------------------------------------*/
@@ -247,7 +247,6 @@ class ARCANE_MESH_EXPORT DynamicMesh
   void addFaces(const MeshModifierAddFacesArgs& args) override;
   void addEdges(Integer nb_edge,Int64ConstArrayView edge_infos,Int32ArrayView edges) override;
   void addNodes(Int64ConstArrayView nodes_uid,Int32ArrayView nodes) override;
-  ARCANE_DEPRECATED ItemInternal *addFace(Int64 a_face_uid, Int64ConstArrayView a_node_list, Integer a_type);
   void removeCells(Int32ConstArrayView cells_local_id,bool update_graph) override;
   void removeCells(Int32ConstArrayView cells_local_id) override
   {

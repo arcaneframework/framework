@@ -1,21 +1,21 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IMeshModifier.h                                             (C) 2000-2024 */
+/* IMeshModifier.h                                             (C) 2000-2025 */
 /*                                                                           */
 /* Interface de modification du maillage.                                    */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_IMESHMODIFIER_H
-#define ARCANE_IMESHMODIFIER_H
+#ifndef ARCANE_CORE_IMESHMODIFIER_H
+#define ARCANE_CORE_IMESHMODIFIER_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/ArcaneTypes.h"
-#include "arcane/Item.h"
+#include "arcane/core/ArcaneTypes.h"
+#include "arcane/core/Item.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -188,6 +188,14 @@ class ARCANE_CORE_EXPORT IMeshModifier
   /*!
    * \brief Ajoute des faces.
    *
+   * \sa addFaces(const MeshModifierAddFacesArgs&)
+   */
+  virtual void addFaces(Integer nb_face, Int64ConstArrayView face_infos,
+                        Int32ArrayView face_lids = Int32ArrayView()) = 0;
+
+  /*!
+   * \brief Ajoute des faces.
+   *
    * Ajoute des faces. Le format de \a face_infos est identiques à celui
    * de la méthode IMesh::allocateCells(). Si \a face_lids n'est pas vide, il contiendra
    * en retour les numéros locaux des faces créées. Il est possible de faire plusieurs ajouts
@@ -198,14 +206,7 @@ class ARCANE_CORE_EXPORT IMeshModifier
    *
    * Les faces créées sont considérées comme appartenant à ce sous-domaine
    * Si ce n'est pas le cas, il faut ensuite modifier leur appartenance.
-   *
-   * Cette méthode est collective. Si un sous-domaine ne souhaite pas ajouter
-   * de faces, il est possible de passer un tableau vide.
    */
-  virtual void addFaces(Integer nb_face, Int64ConstArrayView face_infos,
-                        Int32ArrayView face_lids = Int32ArrayView()) = 0;
-
-  //! Ajoute des faces
   virtual void addFaces(const MeshModifierAddFacesArgs& args);
 
   /*!
