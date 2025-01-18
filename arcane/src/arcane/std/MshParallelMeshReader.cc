@@ -30,6 +30,8 @@
 #include "arcane/core/VariableTypes.h"
 #include "arcane/core/IParallelMng.h"
 #include "arcane/core/MeshUtils.h"
+#include "arcane/core/IMeshModifier.h"
+#include "arcane/core/MeshKind.h"
 
 // Element types in .msh file format, found in gmsh-2.0.4/Common/GmshDefines.h
 #include "arcane/std/internal/IosFile.h"
@@ -230,7 +232,8 @@ class MshParallelMeshReader
 
    public:
 
-    ItemKindInfo cells;
+    ItemKindInfo faces_infos;
+    ItemKindInfo cells_infos;
 
     //! Coordonnées des noeuds de ma partie
     UniqueArray<Real3> nodes_coordinates;
@@ -277,6 +280,7 @@ class MshParallelMeshReader
   Integer _readElementsFromFile();
   void _readMeshFromFile();
   void _setNodesCoordinates();
+  void _addFaces();
   void _allocateCells();
   void _allocateGroups();
   void _addFaceGroup(MeshV4ElementsBlock& block, const String& group_name);
@@ -299,7 +303,7 @@ class MshParallelMeshReader
   void _getDoubleArrayAndBroadcast(ArrayView<double> values);
   void _readOneElementBlock(MeshV4ElementsBlock& block);
   void _computeNodesPartition();
-  void _computeOwnCells(MeshV4ElementsBlock& block);
+  void _computeOwnItems(MeshV4ElementsBlock& block, ItemKindInfo& item_kind_info, bool is_generate_uid);
   Real3 _getReal3();
   Int32 _getInt32();
   Int64 _getInt64();
@@ -1037,14 +1041,17 @@ _readElementsFromFile()
     ARCANE_THROW(NotSupportedException, "mesh dimension '{0}'. Only 2D or 3D meshes are supported", mesh_dimension);
   info() << "Computed mesh dimension = " << mesh_dimension;
 
+  bool allow_orphan_item = m_mesh->meshKind().isAllowLooseItems();
   for (MeshV4ElementsBlock& block : blocks) {
-    if (block.dimension == mesh_dimension)
-      _computeOwnCells(block);
+    const Int32 block_dim = block.dimension;
+    if (block_dim == mesh_dimension)
+      _computeOwnItems(block, m_mesh_info.cells_infos, false);
+    else if (allow_orphan_item) {
+      if (block_dim == (mesh_dimension - 1))
+        _computeOwnItems(block, m_mesh_info.faces_infos, true);
+    }
   }
 
-  // TODO TODO TODO
-  // Si les entités orphelines sont supportées, alors il faut aussi
-  // créer les faces.
   return mesh_dimension;
 }
 
@@ -1092,9 +1099,9 @@ namespace
 /*---------------------------------------------------------------------------*/
 
 void MshParallelMeshReader::
-_computeOwnCells(MeshV4ElementsBlock& block)
+_computeOwnItems(MeshV4ElementsBlock& block, ItemKindInfo& item_kind_info, bool is_generate_uid)
 {
-  // On ne conserve que les mailles dont le premier noeud appartient à notre rang.
+  // On ne conserve que les entités dont le premier noeud appartient à notre rang.
 
   IParallelMng* pm = m_parallel_mng;
   const Int32 my_rank = pm->commRank();
@@ -1107,6 +1114,7 @@ _computeOwnCells(MeshV4ElementsBlock& block)
   UniqueArray<Int32> nodes_rank;
 
   const Int32 nb_part = m_parts_rank.size();
+  info() << "Compute own items block_index=" << block.index << " nb_part=" << nb_part;
   for (Int32 i_part = 0; i_part < nb_part; ++i_part) {
     const Int32 dest_rank = m_parts_rank[i_part];
     // Broadcast la i_part-ème partie des uids et connectivités des mailles
@@ -1117,7 +1125,7 @@ _computeOwnCells(MeshV4ElementsBlock& block)
     nodes_rank.resize(nb_item);
     nodes_rank.fill(-1);
 
-    // Parcours les mailles. Chaque maille appartiendra au rang
+    // Parcours les entités. Chaque entité appartiendra au rang
     // de son premier noeud. Si cette partie correspond à mon rang, alors
     // on conserve la maille.
     for (Int32 i = 0; i < nb_item; ++i) {
@@ -1137,8 +1145,11 @@ _computeOwnCells(MeshV4ElementsBlock& block)
         continue;
       // Le noeud est chez moi, j'ajoute ma maille à la liste des
       // mailles que je vais créer.
-      auto v = connectivities_view.subView(i * item_nb_node, item_nb_node);
-      m_mesh_info.cells.addItem(item_type, uids_view[i], v);
+      ConstArrayView<Int64> v = connectivities_view.subView(i * item_nb_node, item_nb_node);
+      Int64 uid = uids_view[i];
+      if (is_generate_uid)
+        uid = MeshUtils::generateHashUniqueId(v);
+      item_kind_info.addItem(item_type, uid, v);
     }
   }
 }
@@ -1194,25 +1205,38 @@ _setNodesCoordinates()
 /*---------------------------------------------------------------------------*/
 
 void MshParallelMeshReader::
+_addFaces()
+{
+  IMesh* mesh = m_mesh;
+  Integer nb_item = m_mesh_info.faces_infos.nb_item;
+  info() << "Adding faces direct nb_face=" << nb_item;
+  if (nb_item != 0)
+    mesh->modifier()->addFaces(nb_item, m_mesh_info.faces_infos.items_infos);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MshParallelMeshReader::
 _allocateCells()
 {
   IMesh* mesh = m_mesh;
-  Integer nb_elements = m_mesh_info.cells.nb_item;
+  Integer nb_elements = m_mesh_info.cells_infos.nb_item;
   info() << "nb_of_elements=cells_type.size()=" << nb_elements;
-  Integer nb_cell_node = m_mesh_info.cells.items_infos.size();
+  Integer nb_cell_node = m_mesh_info.cells_infos.items_infos.size();
   info() << "nb_cell_node=cells_connectivity.size()=" << nb_cell_node;
 
   // Création des mailles
   info() << "Building cells, nb_cell=" << nb_elements << " nb_cell_node=" << nb_cell_node;
   IPrimaryMesh* pmesh = mesh->toPrimaryMesh();
   info() << "## Allocating ##";
-  pmesh->allocateCells(nb_elements, m_mesh_info.cells.items_infos, false);
+  pmesh->allocateCells(nb_elements, m_mesh_info.cells_infos.items_infos, false);
   info() << "## Ending ##";
+  // Ajoute ensuite faces si elles peuvent ne pas être connectées au maillage.
+  if (m_mesh->meshKind().isAllowLooseItems())
+    _addFaces();
   pmesh->endAllocate();
   info() << "## Done ##";
-
-  // Positionne les coordonnées des noeuds
-  _setNodesCoordinates();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1799,6 +1823,7 @@ _readMeshFromFile()
   }
 
   _allocateCells();
+  _setNodesCoordinates();
   _allocateGroups();
 }
 
