@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MpiParallelMng.cc                                           (C) 2000-2024 */
+/* MpiParallelMng.cc                                           (C) 2000-2025 */
 /*                                                                           */
 /* Gestionnaire de parallélisme utilisant MPI.                               */
 /*---------------------------------------------------------------------------*/
@@ -861,6 +861,7 @@ _createSubParallelMng(Int32ConstArrayView kept_ranks)
   MPI_Comm sub_communicator = MPI_COMM_NULL;
 
   MPI_Comm_create(m_communicator, final_group, &sub_communicator);
+  MPI_Group_free(&final_group);
   return _createSubParallelMng(sub_communicator);
 }
 
