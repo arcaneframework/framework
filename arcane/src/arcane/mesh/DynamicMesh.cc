@@ -286,7 +286,8 @@ DynamicMesh(ISubDomain* sub_domain,const MeshBuildInfo& mbi, bool is_submesh)
   m_item_internal_list._internalSetCellSharedInfo(m_cell_family->commonItemSharedInfo());
 
   info() << "Is AMR Activated? = " << m_is_amr_activated
-         << "AMR type = " << m_amr_type;
+         << " AMR type = " << m_amr_type
+         << " allow_loose_items=" << m_mesh_kind.isAllowLooseItems();
 
   _printConnectivityPolicy();
 
@@ -345,7 +346,12 @@ DynamicMesh(ISubDomain* sub_domain,const MeshBuildInfo& mbi, bool is_submesh)
   // Surcharge la valeur par défaut pour le mécanisme de numérotation
   // des uniqueId() des arêtes et des faces.
   if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_GENERATE_UNIQUE_ID_FROM_NODES", true)){
-    m_mesh_unique_id_mng->setUseNodeUniqueIdToGenerateEdgeAndFaceUniqueId(v.value() != 0);
+    bool is_generate = (v.value() != 0);
+    // L'utilisation des entités libres implique d'utiliser la génération des uniqueId()
+    // à partir des noeuds.
+    if (!is_generate && meshKind().isAllowLooseItems())
+      is_generate = true;
+    m_mesh_unique_id_mng->setUseNodeUniqueIdToGenerateEdgeAndFaceUniqueId(is_generate);
   }
 }
 
@@ -2973,6 +2979,13 @@ _setDimension(Integer dim)
   info() << "Mesh name=" << name() << " set dimension = " << dim;
   m_mesh_dimension = dim;
   bool v = m_mesh_unique_id_mng->isUseNodeUniqueIdToGenerateEdgeAndFaceUniqueId();
+  // Si les entités libres sont autorisées, alors il faut obligatoirement utiliser
+  // la génération à partir des uniqueId() à partir des noeuds pour garantir
+  // la cohérence des entités créées.
+  if (!v && meshKind().isAllowLooseItems()){
+    v = true;
+    info() << "Force using edge and face uid generation from nodes because loose items are allowed";
+  }
   if (m_mesh_builder){
     auto* adder = m_mesh_builder->oneMeshItemAdder();
     if (adder)
@@ -2987,8 +3000,7 @@ void DynamicMesh::
 _checkDimension() const
 {
   if (m_mesh_dimension()<0)
-    ARCANE_FATAL("DynamicMesh::_checkDimension(): dimension not set."
-                 "setDimension() must be called before allocating cells");
+    ARCANE_FATAL("dimension not set. setDimension() must be called before allocating cells");
 }
 
 /*---------------------------------------------------------------------------*/

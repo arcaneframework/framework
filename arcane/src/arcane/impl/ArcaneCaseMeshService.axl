@@ -87,6 +87,20 @@
       </description>
     </simple>
 
+    <simple name="allow-loose-items"
+            type="bool"
+            default="false"
+            >
+      <description>
+        Indique si les entités libres sont autorisées.
+        Une entité libre est une entité de dimension inférieure à celle
+        du maillage qui n'est pas connectée à une entité de dimension
+        supérieure. Par exemple, pour un maillage 3D, il s'agit
+        d'une face non connectée à une maille, d'une arête non
+        connectée à une face ou d'un noeud non connecté à une arête
+      </description>
+    </simple>
+
     <!-- Service spécifique de lecture de maillage -->
     <service-instance
         name = "specific-reader"

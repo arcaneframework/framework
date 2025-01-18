@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ArcaneCaseMeshService.cc                                    (C) 2000-2024 */
+/* ArcaneCaseMeshService.cc                                    (C) 2000-2025 */
 /*                                                                           */
 /* Service Arcane gérant un maillage du jeu de données.                      */
 /*---------------------------------------------------------------------------*/
@@ -139,6 +139,14 @@ createMesh(const String& default_name)
     ARCANE_FATAL("Invalid operation");
 
   ARCANE_CHECK_POINTER(m_mesh_builder);
+
+  // Indique si les entités libres sont autorisées
+  bool allow_loose_items = options()->allowLooseItems;
+  if (allow_loose_items){
+    MeshKind mesh_kind = build_info.meshKind();
+    mesh_kind.setAllowLooseItems(true);
+    build_info.addMeshKind(mesh_kind);
+  }
 
   m_mesh_builder->fillMeshBuildInfo(build_info);
   // Le générateur peut forcer l'utilisation du partitionnement
