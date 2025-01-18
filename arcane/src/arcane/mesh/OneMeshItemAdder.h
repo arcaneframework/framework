@@ -59,14 +59,9 @@ class OneMeshItemAdder
 
   ItemInternal* addOneNode(Int64 node_uid,Int32 owner);
 
-  // DEPRECATED
-  ItemInternal* addOneFace(Int64 a_face_uid, 
-                           Int64ConstArrayView a_node_list, 
-                           Integer a_type);
- 
   ItemInternal* addOneFace(ItemTypeId type_id,
                            Int64 face_uid,
-                           Int32 sub_domain_id,
+                           Int32 owner_rank,
                            Int64ConstArrayView nodes_uid);
   
   ItemInternal* addOneEdge(Int64 edge_uid,

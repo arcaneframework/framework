@@ -1103,20 +1103,6 @@ addFamilyItems(ItemData& item_data)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Ajoute une face.
- *
- * Ajoute une face en fournissant l'unique_id à utiliser et les unique_ids
- * des noeuds à connecter.
- */
-ItemInternal *DynamicMeshIncrementalBuilder::
-addFace(Int64 a_face_uid, Int64ConstArrayView a_node_list, Integer a_type)
-{
-  return m_one_mesh_item_adder->addOneFace(a_face_uid,a_node_list,a_type);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
  * \brief Ajoute des faces au maillage actuel.
  *
  * \param nb_face nombre de faces à ajouter
@@ -1126,7 +1112,7 @@ addFace(Int64 a_face_uid, Int64ConstArrayView a_node_list, Integer a_type)
  */
 void DynamicMeshIncrementalBuilder::
 addFaces(Integer nb_face,Int64ConstArrayView faces_infos,
-         Integer sub_domain_id,Int32ArrayView faces)
+         Int32 rank, Int32ArrayView faces)
 {
   ItemTypeMng* itm = m_item_type_mng;
   
@@ -1138,7 +1124,7 @@ addFaces(Integer nb_face,Int64ConstArrayView faces_infos,
   Integer faces_infos_index = 0;
   for(Integer i_face=0; i_face<nb_face; ++i_face ){
 
-    ItemTypeId item_type_id { (Int16)faces_infos[faces_infos_index] };
+    ItemTypeId item_type_id = ItemTypeId::fromInteger(faces_infos[faces_infos_index]);
     ++faces_infos_index;
     Int64 face_unique_id = faces_infos[faces_infos_index];
     ++faces_infos_index;
@@ -1149,8 +1135,8 @@ addFaces(Integer nb_face,Int64ConstArrayView faces_infos,
     Int64ConstArrayView nodes_uid(current_face_nb_node,&faces_infos[faces_infos_index]);
     faces_infos_index += current_face_nb_node;
 
-    ItemInternal* face = m_one_mesh_item_adder->addOneFace(item_type_id, face_unique_id, sub_domain_id, nodes_uid);
-    
+    ItemInternal* face = m_one_mesh_item_adder->addOneFace(item_type_id, face_unique_id, rank, nodes_uid);
+
     if (add_to_faces)
       faces[i_face] = face->localId();
   }

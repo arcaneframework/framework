@@ -1246,18 +1246,6 @@ addNodes(Int64ConstArrayView nodes_uid,Int32ArrayView nodes)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ItemInternal *DynamicMesh::
-addFace(Int64 a_face_uid, Int64ConstArrayView a_node_list, Integer a_type)
-{
-  Trace::Setter mci(traceMng(),_className());
-  _checkDimension();
-  _checkConnectivity();
-  return m_mesh_builder->addFace(a_face_uid, a_node_list, a_type);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 void DynamicMesh::
 removeCells(Int32ConstArrayView cells_local_id,bool update_graph)
 {
