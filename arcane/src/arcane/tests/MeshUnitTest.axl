@@ -94,6 +94,16 @@ Vrai si on ecrit les informations de maillage dans un un fichier (dont le nom es
   </simple>
 
   <simple
+   name = "write-mesh-service-name"
+   type = "string"
+   default = "Lima"
+  >
+   <description>
+Nom du service utilisé pour écrire le maillage.
+   </description>
+  </simple>
+
+  <simple
     name = "connectivity-file-checksum"
     type = "string"
     optional = "true"
