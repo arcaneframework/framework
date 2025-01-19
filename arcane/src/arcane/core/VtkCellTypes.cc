@@ -87,6 +87,7 @@ arcaneToVtkCellType(Int16 arcane_type)
   case IT_NullType:
     return VTK_EMPTY_CELL;
   case IT_Vertex:
+  case IT_FaceVertex:
     return VTK_VERTEX;
   case IT_Line2:
     return VTK_LINE;
@@ -95,10 +96,12 @@ arcaneToVtkCellType(Int16 arcane_type)
   case IT_CellLine2:
     return VTK_LINE;
   case IT_Triangle3:
+  case IT_Cell3D_Triangle3:
     return VTK_TRIANGLE;
   case IT_Triangle6:
     return VTK_QUADRATIC_TRIANGLE;
   case IT_Quad4:
+  case IT_Cell3D_Quad4:
     return VTK_QUAD;
   case IT_Quad8:
     return VTK_QUADRATIC_QUAD;
