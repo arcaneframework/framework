@@ -633,7 +633,7 @@ _addOneCell(const CellInfo& cell_info)
 
   ++m_mesh_info.nbCell();
 
-  const bool allow_multi_dim_cell = m_mesh->meshKind().isAllowLooseItems();
+  const bool allow_multi_dim_cell = m_mesh->meshKind().isNonManifold();
   const Int32 cell_nb_face = cell_info.nbFace();
 
   inew_cell.mutableItemBase().setOwner(cell_info.owner(), m_mesh_info.rank());

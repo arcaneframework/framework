@@ -1042,7 +1042,7 @@ _readElementsFromFile()
     ARCANE_THROW(NotSupportedException, "mesh dimension '{0}'. Only 2D or 3D meshes are supported", mesh_dimension);
   info() << "Computed mesh dimension = " << mesh_dimension;
 
-  bool allow_multi_dim_cell = m_mesh->meshKind().isAllowLooseItems();
+  bool allow_multi_dim_cell = m_mesh->meshKind().isNonManifold();
   bool use_experimental_type_for_cell = false;
   if (allow_multi_dim_cell) {
     // Par défaut utilise les nouveaux types lorsqu'on est en séquentiel.
@@ -1255,7 +1255,7 @@ _allocateCells()
   pmesh->allocateCells(nb_elements, m_mesh_info.cells_infos.items_infos, false);
   info() << "## Ending ##";
   // Ajoute ensuite faces si elles peuvent ne pas être connectées au maillage.
-  if (m_mesh->meshKind().isAllowLooseItems())
+  if (m_mesh->meshKind().isNonManifold())
     _addFaces();
   pmesh->endAllocate();
   info() << "## Done ##";
