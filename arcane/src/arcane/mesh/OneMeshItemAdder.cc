@@ -631,10 +631,10 @@ _addOneCell(const CellInfo& cell_info)
 
   Cell new_cell(inew_cell);
 
-  const Integer cell_nb_face = cell_info.nbFace();
-  const Integer cell_nb_edge = cell_info.nbEdge();
-
   ++m_mesh_info.nbCell();
+
+  const bool allow_multi_dim_cell = m_mesh->meshKind().isAllowLooseItems();
+  const Int32 cell_nb_face = cell_info.nbFace();
 
   inew_cell.mutableItemBase().setOwner(cell_info.owner(), m_mesh_info.rank());
   // Vérifie la cohérence entre le type local et la maille créée.
@@ -646,11 +646,13 @@ _addOneCell(const CellInfo& cell_info)
     if (!cell_type_info->isValidForCell())
       ARCANE_FATAL("Type '{0}' is not allowed for 'Cell' (cell_uid={1})",
                    cell_type_info->typeName(),cell_info.uniqueId());
-    Int32 cell_dimension = cell_type_info->dimension();
-    Int32 mesh_dimension = m_mesh->dimension();
-    if (cell_dimension>=0 && cell_dimension!=mesh_dimension)
-      ARCANE_FATAL("Incoherent dimension for cell uid={0} cell_dim={1} mesh_dim={2} type={3}",
-                   cell_info.uniqueId(),cell_dimension,mesh_dimension,cell_type_info->typeName());
+    if (!allow_multi_dim_cell){
+      Int32 cell_dimension = cell_type_info->dimension();
+      Int32 mesh_dimension = m_mesh->dimension();
+      if (cell_dimension>=0 && cell_dimension!=mesh_dimension)
+        ARCANE_FATAL("Incoherent dimension for cell uid={0} cell_dim={1} mesh_dim={2} type={3}",
+                     cell_info.uniqueId(),cell_dimension,mesh_dimension,cell_type_info->typeName());
+    }
   }
 
   //! Type la table de hashage uniqueId()->ItemInternal*
@@ -659,11 +661,11 @@ _addOneCell(const CellInfo& cell_info)
   _addNodesToCell(inew_cell,cell_info);
   
   if (m_mesh_builder->hasEdge()) {
+    const Int32 cell_nb_edge = cell_info.nbEdge();
     // Ajoute les nouvelles arêtes ci-nécessaire
     for( Integer i_edge=0; i_edge<cell_nb_edge; ++i_edge ){
       const ItemTypeInfo::LocalEdge& le = cell_type_info->localEdge(i_edge);
-      
-      Int64 first_node  = cell_info.nodeUniqueId( le.beginNode() );
+      Int64 first_node = cell_info.nodeUniqueId( le.beginNode() );
       Int64 second_node = cell_info.nodeUniqueId( le.endNode() );
       if (first_node > second_node)
         std::swap(first_node,second_node);

@@ -1,17 +1,17 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023£ CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemTypeMng.cc                                              (C) 2000-2023 */
+/* ItemTypeMng.cc                                              (C) 2000-2025 */
 /*                                                                           */
 /* Gestionnaire des types d'entite du maillage.                              */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/ItemTypeMng.h"
+#include "arcane/core/ItemTypeMng.h"
 
 #include "arcane/utils/Iostream.h"
 #include "arcane/utils/String.h"
@@ -24,9 +24,9 @@
 #include "arcane/utils/Array.h"
 #include "arcane/utils/MultiBuffer.h"
 
-#include "arcane/ItemTypeInfoBuilder.h"
-#include "arcane/IParallelSuperMng.h"
-#include "arcane/ItemTypeInfoBuilder.h"
+#include "arcane/core/ItemTypeInfoBuilder.h"
+#include "arcane/core/IParallelSuperMng.h"
+#include "arcane/core/ItemTypeInfoBuilder.h"
 
 // AMR
 #include "arcane/ItemRefinementPattern.h"
@@ -822,6 +822,31 @@ _build(IParallelSuperMng* parallel_mng, ITraceMng* trace)
     type->addEdge(7, 7, 0, 6, 0);
   }
 
+  // Cell3D_Triangle3
+  {
+    ItemTypeInfoBuilder* type = m_types_buffer->allocOne();
+    m_types[IT_Cell3D_Triangle3] = type;
+
+    type->setInfos(this, ItemTypeId(IT_Cell3D_Triangle3), "Cell3D_Triangle3", 2, 3, 3, 0);
+
+    type->addEdge(0, 0, 1, 1, 2);
+    type->addEdge(1, 1, 2, 2, 0);
+    type->addEdge(2, 2, 0, 0, 1);
+  }
+
+  // Cell3D_Quad4
+  {
+    ItemTypeInfoBuilder* type = m_types_buffer->allocOne();
+    m_types[IT_Cell3D_Quad4] = type;
+
+    type->setInfos(this, ItemTypeId(IT_Cell3D_Quad4), "Cell3D_Quad4", 2, 4, 4, 0);
+
+    type->addEdge(0, 0, 1, 3, 1);
+    type->addEdge(1, 1, 2, 0, 2);
+    type->addEdge(2, 2, 3, 1, 3);
+    type->addEdge(3, 3, 0, 2, 0);
+  }
+
   { // Polygon & Polyhedron: generic item types
     String arcane_item_type_file = platform::getEnvironmentVariable("ARCANE_ITEM_TYPE_FILE");
     if (!arcane_item_type_file.null()) {
@@ -835,7 +860,7 @@ _build(IParallelSuperMng* parallel_mng, ITraceMng* trace)
   for (Integer i = 0; i < m_types.size(); ++i) {
     ItemTypeInfoBuilder* type = static_cast<ItemTypeInfoBuilder*>(m_types[i]);
     if (!type)
-      ARCANE_FATAL("ItemType '{0}' is not defined");
+      ARCANE_FATAL("ItemType '{0}' is not defined", type);
     type->computeFaceEdgeInfos();
   }
 }
