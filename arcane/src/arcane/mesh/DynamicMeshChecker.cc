@@ -222,10 +222,7 @@ checkValidConnectivity()
     f->checkValidConnectivity();
   }
 
-  // Vérifie que la face a bien au moins une maille connectée
-  // sauf si on autorise les entités orphelines
-  const bool allow_orphan_item = m_mesh->meshKind().isAllowLooseItems();
-  if (!m_mesh->parentMesh() && !allow_orphan_item){
+  if (!m_mesh->parentMesh()){
     Integer index = 0;
     ENUMERATE_(Face,i,m_mesh->allFaces()){
       Face elem = *i;
@@ -454,10 +451,10 @@ _checkFacesOrientation()
   Int64UniqueArray m_work_face_orig_nodes_uid;
 
 
-  ENUMERATE_CELL(icell,m_mesh->allCells()){
+  ENUMERATE_(Cell,icell,m_mesh->allCells()){
     Cell cell = *icell;
     const ItemTypeInfo* type = cell.typeInfo();
-    Integer cell_nb_face = type->nbLocalFace();
+    Int32 cell_nb_face = type->nbLocalFace();
     for( Integer i_face=0; i_face<cell_nb_face; ++i_face ){
       const ItemTypeInfo::LocalFace& lf = type->localFace(i_face);
       Integer face_nb_node = lf.nbNode();
@@ -530,7 +527,6 @@ _checkValidItemOwner(IItemFamily* family)
   // même propriétaire que son parent.
 
   Integer nerror = 0;
-  const bool allow_orphan_item = m_mesh->meshKind().isAllowLooseItems();
   if (!m_mesh->parentMesh()){
     
     if (family->itemKind() == IK_Cell)
@@ -543,8 +539,6 @@ _checkValidItemOwner(IItemFamily* family)
       bool is_ok = false;
       ItemVectorView cells = item.itemBase().cellList();
 
-      if (allow_orphan_item && cells.size()==0)
-        continue;
       for( Item cell : cells ){
         if (cell.owner()==owner){
           is_ok = true;

@@ -372,7 +372,8 @@ void MeshUnitTest::
 _dumpMesh()
 {
   ServiceBuilder<IMeshWriter> sbu(subDomain());
-  auto mesh_io(sbu.createReference("Lima",SB_AllowNull));
+  String write_service_name = options()->writeMeshServiceName();
+  auto mesh_io(sbu.createReference(write_service_name,SB_AllowNull));
   IParallelMng* pm = subDomain()->parallelMng();
   bool is_parallel = pm->isParallel();
   Int32 my_rank = pm->commRank();
@@ -417,9 +418,13 @@ _dumpMesh()
   }
 
   if (mesh_io.get()){
-    file_name = file_name + ".unf";
+    if (write_service_name=="Lima")
+      file_name = file_name + ".unf";
+    else if (write_service_name=="VtkLegacyMeshWriter")
+      file_name = file_name + ".vtk";
     mesh_io->writeMeshToFile(mesh(), base_path.file(file_name));
   }
+
   IItemFamily* cell_family = mesh()->cellFamily();
   info() << "Local connectivity infos:";
   _dumpConnectivityInfos(cell_family->localConnectivityInfos(),
@@ -1753,7 +1758,7 @@ _testNodeNodeViaEdgeConnectivity()
   // Tableau contenant la liste triée des nœuds connectés à un nœud.
   UniqueArray<Int32> ref_cx_nodes;
 
-  ENUMERATE_ (Node, inode, allNodes()) {
+  ENUMERATE_ (Node, inode, ownNodes()) {
     Node node = *inode;
     Int32 nb_edge = node.nbEdge();
     Int32 nb_connectivity_node = nn_cv.nbNode(node);

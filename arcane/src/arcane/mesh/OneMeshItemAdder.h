@@ -151,6 +151,8 @@ class OneMeshItemAdder
   void _clearConnectivity(ItemLocalId item, IIncrementalItemConnectivity* connectivity);
   void _clearReverseConnectivity(ItemLocalId item, IIncrementalItemConnectivity* connectivity, IIncrementalItemConnectivity* reverse_connectivity);
   void _printRelations(ItemInternal* item);
+  void _checkSameItemCoherency(ItemWithNodes item, ConstArrayView<Int64> nodes_uid);
+  Int64 _checkGenerateFaceUniqueId(Int64 uid, ConstArrayView<Int64> nodes_uid);
 
  private:
  
