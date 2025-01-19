@@ -56,7 +56,9 @@ operator<<(std::ostream& o, eMeshAMRKind r);
  * Pour l'instant les caractéristiques sont:
  * - la structure du maillage (eMeshStructure)
  * - le type d'AMR
- * - la possibilité d'avoir des entités libres
+ * - si le maillage est 'manifold' (le défaut) ou non.
+ *
+ * \note Le support de maillage non-manifold est expérimental.
  */
 class ARCANE_CORE_EXPORT MeshKind
 {
@@ -64,17 +66,17 @@ class ARCANE_CORE_EXPORT MeshKind
 
   eMeshStructure meshStructure() const { return m_structure; }
   eMeshAMRKind meshAMRKind() const { return m_amr_kind; }
-  bool isAllowLooseItems() const { return m_allow_loose_items; }
+  bool isNonManifold() const { return m_is_non_manifold; }
 
   void setMeshStructure(eMeshStructure v) { m_structure = v; }
   void setMeshAMRKind(eMeshAMRKind v) { m_amr_kind = v; }
-  void setAllowLooseItems(bool v) { m_allow_loose_items = v; }
+  void setIsNonManifold(bool v) { m_is_non_manifold = v; }
 
  private:
 
   eMeshStructure m_structure = eMeshStructure::Unknown;
   eMeshAMRKind m_amr_kind = eMeshAMRKind::None;
-  bool m_allow_loose_items = false;
+  bool m_is_non_manifold = false;
 };
 
 /*---------------------------------------------------------------------------*/

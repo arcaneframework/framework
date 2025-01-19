@@ -287,7 +287,7 @@ DynamicMesh(ISubDomain* sub_domain,const MeshBuildInfo& mbi, bool is_submesh)
 
   info() << "Is AMR Activated? = " << m_is_amr_activated
          << " AMR type = " << m_amr_type
-         << " allow_loose_items=" << m_mesh_kind.isAllowLooseItems();
+         << " allow_loose_items=" << m_mesh_kind.isNonManifold();
 
   _printConnectivityPolicy();
 
@@ -349,7 +349,7 @@ DynamicMesh(ISubDomain* sub_domain,const MeshBuildInfo& mbi, bool is_submesh)
     bool is_generate = (v.value() != 0);
     // L'utilisation des entités libres implique d'utiliser la génération des uniqueId()
     // à partir des noeuds.
-    if (!is_generate && meshKind().isAllowLooseItems())
+    if (!is_generate && meshKind().isNonManifold())
       is_generate = true;
     m_mesh_unique_id_mng->setUseNodeUniqueIdToGenerateEdgeAndFaceUniqueId(is_generate);
   }
@@ -2982,7 +2982,7 @@ _setDimension(Integer dim)
   // Si les entités libres sont autorisées, alors il faut obligatoirement utiliser
   // la génération à partir des uniqueId() à partir des noeuds pour garantir
   // la cohérence des entités créées.
-  if (!v && meshKind().isAllowLooseItems()){
+  if (!v && meshKind().isNonManifold()) {
     v = true;
     info() << "Force using edge and face uid generation from nodes because loose items are allowed";
   }

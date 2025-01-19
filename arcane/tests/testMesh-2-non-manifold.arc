@@ -9,7 +9,7 @@
  <meshes>
    <mesh>
      <filename>mesh_with_loose_items.msh</filename>
-     <allow-loose-items>true</allow-loose-items>
+     <non-manifold-mesh>true</non-manifold-mesh>
      <face-numbering-version>5</face-numbering-version>
    </mesh>
  </meshes>

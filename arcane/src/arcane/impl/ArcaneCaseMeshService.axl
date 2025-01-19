@@ -87,17 +87,15 @@
       </description>
     </simple>
 
-    <simple name="allow-loose-items"
+    <simple name="non-manifold-mesh"
             type="bool"
             default="false"
             >
       <description>
-        Indique si les entités libres sont autorisées.
-        Une entité libre est une entité de dimension inférieure à celle
-        du maillage qui n'est pas connectée à une entité de dimension
-        supérieure. Par exemple, pour un maillage 3D, il s'agit
-        d'une face non connectée à une maille, d'une arête non
-        connectée à une face ou d'un noeud non connecté à une arête
+        Indique si le maillage est 'non-manifold'. Un maillage de ce type contient
+        des mailles de différents dimensions.
+
+        AVERTISSEMENT: Ce mode est expérimental. Ne pas utiliser en dehors de %Arcane.
       </description>
     </simple>
 

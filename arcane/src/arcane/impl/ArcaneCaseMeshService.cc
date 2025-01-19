@@ -140,11 +140,11 @@ createMesh(const String& default_name)
 
   ARCANE_CHECK_POINTER(m_mesh_builder);
 
-  // Indique si les entités libres sont autorisées
-  bool allow_loose_items = options()->allowLooseItems;
-  if (allow_loose_items){
+  // Indique si les entités multi-dimension sont autorisées
+  bool is_non_manifold = options()->nonManifoldMesh;
+  if (is_non_manifold) {
     MeshKind mesh_kind = build_info.meshKind();
-    mesh_kind.setAllowLooseItems(true);
+    mesh_kind.setIsNonManifold(true);
     build_info.addMeshKind(mesh_kind);
   }
 
