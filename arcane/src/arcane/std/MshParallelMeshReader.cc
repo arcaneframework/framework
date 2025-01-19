@@ -99,6 +99,7 @@ class MshParallelMeshReader
     Int32 dimension = -1; //!< Dimension de l'entité
     Int32 item_nb_node = 0; //!< Nombre de noeuds de l'entité.
     Int64 entity_tag = -1;
+    bool is_built_as_cells = false; //!< Indique si les entités du bloc sont des mailles
     UniqueArray<Int64> uids; //! < Liste des uniqueId() du bloc
     UniqueArray<Int64> connectivities; //!< Liste des connectivités du bloc.
   };
@@ -1041,14 +1042,34 @@ _readElementsFromFile()
     ARCANE_THROW(NotSupportedException, "mesh dimension '{0}'. Only 2D or 3D meshes are supported", mesh_dimension);
   info() << "Computed mesh dimension = " << mesh_dimension;
 
-  bool allow_orphan_item = m_mesh->meshKind().isAllowLooseItems();
+  bool allow_multi_dim_cell = m_mesh->meshKind().isAllowLooseItems();
+  bool use_experimental_type_for_cell = false;
+  if (allow_multi_dim_cell) {
+    // Par défaut utilise les nouveaux types lorsqu'on est en séquentiel.
+    use_experimental_type_for_cell = !pm->isParallel();
+    if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_USE_EXPERIMENTAL_CELL_TYPE", true))
+      use_experimental_type_for_cell = (v.value() != 0);
+  }
+  info() << "Use experiemental cell type?=" << use_experimental_type_for_cell;
   for (MeshV4ElementsBlock& block : blocks) {
     const Int32 block_dim = block.dimension;
     if (block_dim == mesh_dimension)
       _computeOwnItems(block, m_mesh_info.cells_infos, false);
-    else if (allow_orphan_item) {
-      if (block_dim == (mesh_dimension - 1))
-        _computeOwnItems(block, m_mesh_info.faces_infos, true);
+    else if (allow_multi_dim_cell) {
+      if (block_dim == (mesh_dimension - 1)) {
+        if (use_experimental_type_for_cell) {
+          // Ici on va créer des mailles 2D dans un maillage 3D.
+          // On converti le type de base en un type équivalent pour les mailles.
+          if (block.item_type == IT_Triangle3)
+            block.item_type = ItemTypeId(IT_Cell3D_Triangle3);
+          else if (block.item_type == IT_Quad4)
+            block.item_type = ItemTypeId(IT_Cell3D_Quad4);
+          else
+            ARCANE_FATAL("Not supported sub dimension cell type={0}", block.item_type);
+        }
+        block.is_built_as_cells = true;
+        _computeOwnItems(block, m_mesh_info.cells_infos, false);
+      }
     }
   }
 
@@ -1289,8 +1310,8 @@ _allocateGroups()
         continue;
       }
       info(4) << "[Groups] Block index=" << block_index << " dim=" << block_dim
-              << " name='" << physical_name.name << "'";
-      if (block_dim == mesh_dim) {
+              << " name='" << physical_name.name << "' built_as_cells=" << block.is_built_as_cells;
+      if (block_dim == mesh_dim || block.is_built_as_cells) {
         _addCellOrNodeGroup(block, physical_name.name, mesh->cellFamily());
       }
       else if (block_dim == face_dim) {
