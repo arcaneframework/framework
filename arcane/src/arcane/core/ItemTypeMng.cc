@@ -822,6 +822,14 @@ _build(IParallelSuperMng* parallel_mng, ITraceMng* trace)
     type->addEdge(7, 7, 0, 6, 0);
   }
 
+  // Cell3D_Line2
+  {
+    ItemTypeInfoBuilder* type = m_types_buffer->allocOne();
+    m_types[IT_Cell3D_Line2] = type;
+
+    type->setInfos(this, ItemTypeId(IT_Cell3D_Line2), "Cell3D_Line2", 1, 2, 0, 0);
+  }
+
   // Cell3D_Triangle3
   {
     ItemTypeInfoBuilder* type = m_types_buffer->allocOne();

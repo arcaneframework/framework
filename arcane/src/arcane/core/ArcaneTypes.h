@@ -281,14 +281,16 @@ static const Int16 IT_Hexaedron20 = 35;
  * pas être utilisés en dehors de %Arcane.
  */
 //@{
+//! Maille Line2 dans un maillage 3D. EXPERIMENTAL !
+static const Int16 IT_Cell3D_Line2 = 36;
 //! Maille Triangulaire à 3 noeuds dans un maillage 3D. EXPERIMENTAL !
-static const Int16 IT_Cell3D_Triangle3 = 36;
+static const Int16 IT_Cell3D_Triangle3 = 37;
 //! Maille Quadrangulaire à 5 noeuds dans un maillage 3D. EXPERIMENTAL !
-static const Int16 IT_Cell3D_Quad4 = 37;
+static const Int16 IT_Cell3D_Quad4 = 38;
 //@}
 
 //! Nombre de types d'entités disponible par défaut
-static const Integer NB_BASIC_ITEM_TYPE = 38;
+static const Integer NB_BASIC_ITEM_TYPE = 39;
 
 extern "C++" ARCANE_CORE_EXPORT eItemKind
 dualItemKind(Integer type);
