@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ArcaneBasicMeshSubdividerService.cc                         (C) 2000-2024 */
+/* ArcaneBasicMeshSubdividerService.cc                         (C) 2000-2025 */
 /*                                                                           */
 /* Service Arcane gérant un maillage du jeu de données.                      */
 /*---------------------------------------------------------------------------*/
@@ -117,6 +117,9 @@ class Pattern{
           child_faces(other.child_faces){
         std::cout << "Constructeur par déplacement appelé\n";
     }
+
+
+  Pattern(const Pattern&) = delete;
 
   Pattern(Pattern& other) noexcept
         : type(other.type),
