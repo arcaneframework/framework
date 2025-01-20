@@ -1,20 +1,22 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemTypeInfoBuilder.h                                       (C) 2000-2023 */
+/* ItemTypeInfoBuilder.h                                       (C) 2000-2025 */
 /*                                                                           */
 /* Construction d'un type d'entité du maillage.                              */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_ITEMTYPEINFOBUILDER_H
-#define ARCANE_ITEMTYPEINFOBUILDER_H
+#ifndef ARCANE_CORE_ITEMTYPEINFOBUILDER_H
+#define ARCANE_CORE_ITEMTYPEINFOBUILDER_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/ItemTypeInfo.h"
+#include "arcane/core/ItemTypeInfo.h"
+
+#include <array>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -48,26 +50,49 @@ class ItemTypeInfoBuilder
 {
  public:
 
+  //! Dimension du type
+  enum class Dimension : Int16
+  {
+    DimUnknown = -1,
+    Dim0 = 0,
+    Dim1 = 1,
+    Dim2 = 2,
+    Dim3 = 3
+  };
+
+ public:
+
   //! Constructeur par défaut
   ItemTypeInfoBuilder() = default;
 
  public:
 
-  // TODO: Rendre obsolète
-  void setInfos(ItemTypeMng* mng,
-                Integer type_id, String type_name,
-                Integer nb_node, Integer nb_edge, Integer nb_face);
+  ARCANE_DEPRECATED_REASON("Y2025: Use setInfo(...,Dimension dimension, ...) instead")
+  void setInfos(ItemTypeMng* mng, Int16 type_id, String type_name,
+                Int32 nb_node, Int32 nb_edge, Int32 nb_face);
 
-  // TODO: Rendre obsolète
-  void setInfos(ItemTypeMng* mng,
-                ItemTypeId type_id, String type_name,
-                Integer nb_node, Integer nb_edge, Integer nb_face);
+  ARCANE_DEPRECATED_REASON("Y2025: Use setInfo(...,Dimension dimension, ...) instead")
+  void setInfos(ItemTypeMng* mng, ItemTypeId type_id, String type_name,
+                Int32 nb_node, Int32 nb_edge, Int32 nb_face);
 
   /*!
    * \brief Positionne les informations d'un type.
    */
-   void setInfos(ItemTypeMng* mng, ItemTypeId type_id, String type_name, Int16 dimension,
-                Integer nb_node, Integer nb_edge, Integer nb_face);
+  ARCANE_DEPRECATED_REASON("Y2025: Use setInfo(...,Dimension dimension, ...) instead")
+  void setInfos(ItemTypeMng* mng, ItemTypeId type_id, String type_name, Int16 dimension,
+                Int32 nb_node, Int32 nb_edge, Int32 nb_face);
+
+  /*!
+   * \brief Positionne les informations d'un type.
+   */
+  void setInfos(ItemTypeMng* mng, ItemTypeId type_id, String type_name, Dimension dimension,
+                Int32 nb_node, Int32 nb_edge, Int32 nb_face);
+
+  /*!
+   * \brief Positionne les informations d'un type.
+   */
+  void setInfos(ItemTypeMng* mng, Int16 type_id, String type_name, Dimension dimension,
+                Int32 nb_node, Int32 nb_edge, Int32 nb_face);
 
   /*!
    * \brief Ajoute une arête à la liste des arêtes
@@ -77,48 +102,48 @@ class ItemTypeInfoBuilder
    * \a f_left numéro local de la face à gauche
    * \a f_right numéro local de la face à droite
    */
-  void addEdge(Integer edge_index,Integer n0,Integer n1,Integer f_left,Integer f_right);
+  void addEdge(Integer edge_index, Integer n0, Integer n1, Integer f_left, Integer f_right);
 
   //! Ajoute un sommet à la liste des faces (pour les elements 1D)
-  void addFaceVertex(Integer face_index,Integer n0);
+  void addFaceVertex(Integer face_index, Integer n0);
 
   //! Ajoute une ligne à la liste des faces (pour les elements 2D)
-  void addFaceLine(Integer face_index,Integer n0,Integer n1);
+  void addFaceLine(Integer face_index, Integer n0, Integer n1);
 
   //! Ajoute une ligne quadratique à la liste des faces (pour les elements 2D)
-  void addFaceLine3(Integer face_index,Integer n0,Integer n1,Integer n2);
+  void addFaceLine3(Integer face_index, Integer n0, Integer n1, Integer n2);
 
   //! Ajoute un triangle à la liste des faces
-  void addFaceTriangle(Integer face_index,Integer n0,Integer n1,Integer n2);
+  void addFaceTriangle(Integer face_index, Integer n0, Integer n1, Integer n2);
 
   //! Ajoute un triangle quadratique à la liste des faces
-  void addFaceTriangle6(Integer face_index,Integer n0,Integer n1,Integer n2,
+  void addFaceTriangle6(Integer face_index, Integer n0, Integer n1, Integer n2,
                         Integer n3, Integer n4, Integer n5);
 
   //! Ajoute un quadrilatère à la liste des faces
-  void addFaceQuad(Integer face_index,Integer n0,Integer n1,Integer n2,Integer n3);
+  void addFaceQuad(Integer face_index, Integer n0, Integer n1, Integer n2, Integer n3);
 
   //! Ajoute un quadrilatère quadratique à la liste des faces
-  void addFaceQuad8(Integer face_index,Integer n0,Integer n1,Integer n2,Integer n3,
-                    Integer n4,Integer n5,Integer n6,Integer n7);
+  void addFaceQuad8(Integer face_index, Integer n0, Integer n1, Integer n2, Integer n3,
+                    Integer n4, Integer n5, Integer n6, Integer n7);
 
   //! Ajoute un pentagone à la liste des faces
-  void addFacePentagon(Integer face_index,Integer n0,Integer n1,Integer n2,Integer n3,Integer n4);
+  void addFacePentagon(Integer face_index, Integer n0, Integer n1, Integer n2, Integer n3, Integer n4);
 
   //! Ajoute un hexagone à la liste des faces
-  void addFaceHexagon(Integer face_index,Integer n0,Integer n1,Integer n2,Integer n3,
-                      Integer n4,Integer n5);
+  void addFaceHexagon(Integer face_index, Integer n0, Integer n1, Integer n2, Integer n3,
+                      Integer n4, Integer n5);
 
   //! Ajoute un heptagone à la liste des faces
-  void addFaceHeptagon(Integer face_index,Integer n0,Integer n1,Integer n2,Integer n3,
-                       Integer n4,Integer n5, Integer n6);
+  void addFaceHeptagon(Integer face_index, Integer n0, Integer n1, Integer n2, Integer n3,
+                       Integer n4, Integer n5, Integer n6);
 
   //! Ajoute un heptagone à la liste des faces
-  void addFaceOctogon(Integer face_index,Integer n0,Integer n1,Integer n2,Integer n3,
-                      Integer n4,Integer n5, Integer n6, Integer n7);
+  void addFaceOctogon(Integer face_index, Integer n0, Integer n1, Integer n2, Integer n3,
+                      Integer n4, Integer n5, Integer n6, Integer n7);
 
   //! Ajoute une face générique à la liste des faces
-  void addFaceGeneric(Integer face_index,Integer type_id,ConstArrayView<Integer> n);
+  void addFaceGeneric(Integer face_index, Integer type_id, ConstArrayView<Integer> n);
 
   //! Calcule les relations face->arêtes
   void computeFaceEdgeInfos();
