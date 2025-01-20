@@ -49,7 +49,7 @@ jobs:
     name: Codecov
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/arcaneframework/ubuntu-2404:gcc-13_full_20250112
+      image: ghcr.io/arcaneframework/ubuntu-2404:gcc-13_full_20250120
 
     steps:
       - name: Display CPU infos

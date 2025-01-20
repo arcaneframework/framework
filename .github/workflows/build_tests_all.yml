@@ -38,7 +38,7 @@ jobs:
             compilo_version: '14'
             acc_compilo_name: ''
             acc_compilo_version: ''
-            date: '20250112'
+            date: '20250120'
             args: '-DARCCORE_CXX_STANDARD=23'
             execute_tests: true
 
@@ -48,7 +48,7 @@ jobs:
             compilo_version: '18'
             acc_compilo_name: ''
             acc_compilo_version: ''
-            date: '20250112'
+            date: '20250120'
             args: '-DARCCORE_CXX_STANDARD=23'
             execute_tests: true
 
@@ -58,7 +58,7 @@ jobs:
             compilo_version: '13'
             acc_compilo_name: 'cuda'
             acc_compilo_version: '126'
-            date: '20250112'
+            date: '20250120'
             # Disable googletest with CUDA because it requires a GPU driver
             args: '-DARCCORE_CXX_STANDARD=20 -DARCANE_EXECUTE_ACCELERATOR_GOOGLETEST=OFF'
             execute_tests: false
@@ -69,18 +69,18 @@ jobs:
             compilo_version: '18'
             acc_compilo_name: 'cuda'
             acc_compilo_version: '126'
-            date: '20250112'
+            date: '20250120'
             # Disable googletest with CUDA because it requires a GPU driver
             args: '-DARCCORE_CXX_STANDARD=20 -DARCANE_EXECUTE_ACCELERATOR_GOOGLETEST=OFF'
             execute_tests: false
 
-          - short: 'U24_G13_CUC19'
+          - short: 'U24_G14_CUC19'
             long: 'ubuntu-2404'
             compilo_name: 'gcc'
-            compilo_version: '13'
+            compilo_version: '14'
             acc_compilo_name: 'clang_cuda'
             acc_compilo_version: '19'
-            date: '20250112'
+            date: '20250120'
             # Disable googletest with CUDA because it requires a GPU driver
             args: '-DARCCORE_CXX_STANDARD=20 -DARCANE_EXECUTE_ACCELERATOR_GOOGLETEST=OFF'
             execute_tests: false
@@ -91,7 +91,7 @@ jobs:
             compilo_version: '14'
             acc_compilo_name: 'rocm'
             acc_compilo_version: '631'
-            date: '20250112'
+            date: '20250120'
             args: '-DARCCORE_CXX_STANDARD=20 -DARCANE_EXECUTE_ACCELERATOR_GOOGLETEST=OFF'
             execute_tests: false
 
@@ -101,7 +101,7 @@ jobs:
             compilo_version: '19'
             acc_compilo_name: 'rocm'
             acc_compilo_version: '631'
-            date: '20250112'
+            date: '20250120'
             args: '-DARCCORE_CXX_STANDARD=20 -DARCANE_EXECUTE_ACCELERATOR_GOOGLETEST=OFF'
             execute_tests: false
 
@@ -111,7 +111,7 @@ jobs:
             compilo_version: '18'
             acc_compilo_name: 'acpp'
             acc_compilo_version: ''
-            date: '20250112'
+            date: '20250120'
             args: '-DARCCORE_CXX_STANDARD=23'
             execute_tests: false
 
@@ -146,7 +146,7 @@ jobs:
           - { version: { short: 'F' }, mpi: { implementation: 'MPICH' } }
           - { version: { short: 'M' }, image: { short: 'U24_G13_CU126' } }
           - { version: { short: 'M' }, image: { short: 'U24_C18_CU126' } }
-          - { version: { short: 'M' }, image: { short: 'U24_G13_CUC19' } }
+          - { version: { short: 'M' }, image: { short: 'U24_G14_CUC19' } }
           - { version: { short: 'M' }, image: { short: 'U24_G14_RC631' } }
           - { version: { short: 'M' }, image: { short: 'U24_C19_RC631' } }
           - { version: { short: 'M' }, image: { short: 'U24_ACPP' } }

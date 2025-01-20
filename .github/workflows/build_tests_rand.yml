@@ -31,7 +31,7 @@ jobs:
             long: 'ubuntu-2404'
             compilo_name: 'gcc'
             compilo_version: '14'
-            date: '20250112'
+            date: '20250120'
             args: '-DARCCORE_CXX_STANDARD=23'
             execute_tests: true
 
@@ -39,7 +39,7 @@ jobs:
             long: 'ubuntu-2404'
             compilo_name: 'clang'
             compilo_version: '18'
-            date: '20250112'
+            date: '20250120'
             args: '-DARCCORE_CXX_STANDARD=23'
             execute_tests: true
 
