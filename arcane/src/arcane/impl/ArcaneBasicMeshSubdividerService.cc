@@ -1656,7 +1656,7 @@ void ArcaneBasicMeshSubdividerService::_refineWithArcaneFaces(IPrimaryMesh* mesh
   */
   //
   // On va chercher le service directement sans utiliser dans le .arc
-  Directory d = mesh->subDomain()->exportDirectory();
+  /*Directory d = mesh->subDomain()->exportDirectory();
   info() << "Writing at " << d.path() ;
   ServiceBuilder<IPostProcessorWriter> spp(mesh->handle());
 
@@ -1683,7 +1683,7 @@ void ArcaneBasicMeshSubdividerService::_refineWithArcaneFaces(IPrimaryMesh* mesh
 
   IVariableMng* vm = mesh->subDomain()->variableMng();
 
-  vm->writePostProcessing(post_processor.get());
+  vm->writePostProcessing(post_processor.get());*/
   mesh->utilities()->writeToFile("subdivider_one_tetra_refine_output.vtk", "VtkLegacyMeshWriter");
   info() << "#ENDSUBDV " ;
 }
