@@ -346,8 +346,15 @@ builtInGetValue(Real2& v, StringView s)
     Int64 nb_byte = bytes.size();
     // Supprime les espaces potentiels
     for (; p < nb_byte; ++p)
+    {
+#ifdef _MSC_VER <= 1916 // Visual Studio 2017 or less
+      if (!std::isspace((char)bytes[p], std::locale()))
+        break;
+#else
       if (!std::isspace(bytes[p]))
         break;
+#endif
+    }
     s = StringView(bytes.subSpan(p, nb_byte));
     if (is_verbose)
       std::cout << "VX=" << v.x << " remaining_s='" << s << "'\n";
