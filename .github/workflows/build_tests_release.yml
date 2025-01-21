@@ -1,4 +1,4 @@
-name: '[Check] Build/Install/Test Arcane Framework (Ubuntu 22.04-24.04 / GCC 12-14 / CLang 16-18 / CUDA 12.6 / Minimal-Full)'
+name: '[Check] Build/Install/Test Arcane Framework (Ubuntu 22.04-24.04 / GCC 12-14 / CLang 16-19 / CUDA 12.6 / Minimal-Full)'
 
 on:
   push:
@@ -52,7 +52,7 @@ jobs:
             compilo_version: '14'
             acc_compilo_name: ''
             acc_compilo_version: ''
-            date: '20250112'
+            date: '20250120'
             args: '-DARCCORE_CXX_STANDARD=23'
             execute_tests: true
 
@@ -62,7 +62,7 @@ jobs:
             compilo_version: '19'
             acc_compilo_name: ''
             acc_compilo_version: ''
-            date: '20250112'
+            date: '20250120'
             args: '-DARCCORE_CXX_STANDARD=23'
             execute_tests: true
 
@@ -72,7 +72,7 @@ jobs:
             compilo_version: '13'
             acc_compilo_name: 'cuda'
             acc_compilo_version: '126'
-            date: '20250112'
+            date: '20250120'
             # Disable googletest with CUDA because it requires a GPU driver
             args: '-DARCCORE_CXX_STANDARD=20 -DARCANE_EXECUTE_ACCELERATOR_GOOGLETEST=OFF'
             execute_tests: false
