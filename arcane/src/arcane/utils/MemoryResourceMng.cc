@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MemoryResourceMng.cc                                       (C) 2000-2024 */
+/* MemoryResourceMng.cc                                       (C) 2000-2025 */
 /*                                                                           */
 /* Gestion des ressources mémoire pour les CPU et accélérateurs.             */
 /*---------------------------------------------------------------------------*/
@@ -111,9 +111,10 @@ getAllocator(eMemoryResource r, bool throw_if_not_found)
   // utilise platform::getAcceleratorHostMemoryAllocator().
   if (!a && !m_is_accelerator) {
     if (r == eMemoryResource::UnifiedMemory || r == eMemoryResource::HostPinned) {
-      a = MemoryUtils::getDefaultDataAllocator();
+      eMemoryResource mem = MemoryUtils::getDefaultDataMemoryResource();
+      a = m_allocators[static_cast<int>(mem)];
       if (!a)
-        a = m_allocators[(int)eMemoryResource::Host];
+        a = m_allocators[static_cast<int>(eMemoryResource::Host)];
     }
   }
 
