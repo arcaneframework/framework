@@ -53,7 +53,6 @@
 #include <iterator>
 #include <map>
 
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -61,125 +60,121 @@ namespace Arcane
 {
 
 typedef UniqueArray<UniqueArray<Int64>> StorageRefine;
-namespace MeshSubdivider{
+namespace MeshSubdivider
+{
 
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
+  /*---------------------------------------------------------------------------*/
+  /*---------------------------------------------------------------------------*/
+  /*!
  * \brief Classe Pattern qui permet de manipuler un motif (pattern en anglais) de raffinement.
  */
-class Pattern
-{
- public:
-
-  //! Type de l'élément a rafiner
-  Int16 type;
-  //! Type de la face de l'élément a rafiner
-  Int16 face_type;
-  //! Type des cellules enfants
-  Int16 cell_type;
-  //! Matrice pour la génération des nouveaux noeuds
-  StorageRefine nodes;
-  //! Matrice pour la génération des nouvelles faces
-  StorageRefine faces;
-  //! Matrice pour la génération des nouvelles cellules
-  StorageRefine cells;
-  StorageRefine child_faces; // Lien entre faces de la cellule mère et les faces de la cellule fille.
-  // ^-- Pour la gestion des groups ou des propriétés. Par exemple pour le sod, une face mère dans le groupe "membrane" doit engendrer des faces avec le même groupe.
-  // Les faces internes n'ont pas de face mère mais pourrait avoir besoin de propager ou déposer des propriétés sur ces faces.
-  // Pour l'instant elles ne sont juste pas dans les groupes.
-
-  // En fait les seules informations importantes sont dans 'cells' et 'nodes'. Arcane peut déduire les faces pour nous et on garde le même ordre pour le parallel.
-  // Pour les childs faces
-
- public:
-
-  Pattern()
-  : type(IT_NullType)
-  , face_type(IT_NullType)
-  , cell_type(IT_NullType)
-  {}
-
-  Pattern(Int16 type, Int16 face_type, Int16 cell_type, StorageRefine nodes, StorageRefine faces, StorageRefine cells, StorageRefine child_faces)
+  class Pattern
   {
-    this->type = type;
-    this->face_type = face_type;
-    this->cell_type = cell_type;
-    this->nodes = nodes;
-    this->faces = faces;
-    this->cells = cells;
-    this->child_faces = child_faces;
-  }
+   public:
 
-  Pattern(Pattern&& other) noexcept
-  : type(other.type)
-  , face_type(other.face_type)
-  , cell_type(other.cell_type)
-  , nodes(other.nodes)
-  , faces(other.faces)
-  , cells(other.cells)
-  , child_faces(other.child_faces)
-  {
-    std::cout << "Constructeur par déplacement appelé\n";
-  }
+    //! Type de l'élément a rafiner
+    Int16 type;
+    //! Type de la face de l'élément a rafiner
+    Int16 face_type;
+    //! Type des cellules enfants
+    Int16 cell_type;
+    //! Matrice pour la génération des nouveaux noeuds
+    StorageRefine nodes;
+    //! Matrice pour la génération des nouvelles faces
+    StorageRefine faces;
+    //! Matrice pour la génération des nouvelles cellules
+    StorageRefine cells;
+    StorageRefine child_faces; // Lien entre faces de la cellule mère et les faces de la cellule fille.
+    // ^-- Pour la gestion des groups ou des propriétés. Par exemple pour le sod, une face mère dans le groupe "membrane" doit engendrer des faces avec le même groupe.
+    // Les faces internes n'ont pas de face mère mais pourrait avoir besoin de propager ou déposer des propriétés sur ces faces.
+    // Pour l'instant elles ne sont juste pas dans les groupes.
 
-  Pattern(const Pattern&) = delete;
+    // En fait les seules informations importantes sont dans 'cells' et 'nodes'. Arcane peut déduire les faces pour nous et on garde le même ordre pour le parallel.
+    // Pour les childs faces
 
-  Pattern(Pattern& other) noexcept
-  : type(other.type)
-  , face_type(other.face_type)
-  , cell_type(other.cell_type)
-  , nodes(other.nodes)
-  , faces(other.faces)
-  , cells(other.cells)
-  , child_faces(other.child_faces)
-  {
-    std::cout << "Constructeur par copie appelé\n";
-  }
-  Pattern& operator=(const Pattern& other)
-  {
-    if (this != &other) {
-      type = other.type;
-      face_type = other.face_type;
-      cell_type = other.cell_type;
-      nodes = other.nodes; // Référence partagée
-      faces = other.faces; // Référence partagée
-      cells = other.cells; // Référence partagée
-      child_faces = other.child_faces;
+   public:
+
+    Pattern()
+    : type(IT_NullType)
+    , face_type(IT_NullType)
+    , cell_type(IT_NullType)
+    {}
+
+    Pattern(Int16 type, Int16 face_type, Int16 cell_type, StorageRefine nodes, StorageRefine faces, StorageRefine cells, StorageRefine child_faces)
+    {
+      this->type = type;
+      this->face_type = face_type;
+      this->cell_type = cell_type;
+      this->nodes = nodes;
+      this->faces = faces;
+      this->cells = cells;
+      this->child_faces = child_faces;
     }
-    return *this;
-  }
 
-  Pattern& operator=(Pattern&& other) noexcept
-  {
-    if (this != &other) {
-      type = other.type;
-      face_type = other.face_type;
-      cell_type = other.cell_type;
-      nodes = other.nodes;
-      faces = other.faces;
-      cells = other.cells;
-      child_faces = other.child_faces;
-    }
-    return *this;
-  }
-  Pattern& operator=(Pattern& other) noexcept
-  {
-    if (this != &other) {
-      type = other.type;
-      face_type = other.face_type;
-      cell_type = other.cell_type;
-      nodes = other.nodes;
-      faces = other.faces;
-      cells = other.cells;
-      child_faces = other.child_faces;
-    }
-    return *this;
-  }
-};
+    Pattern(Pattern&& other) noexcept
+    : type(other.type)
+    , face_type(other.face_type)
+    , cell_type(other.cell_type)
+    , nodes(other.nodes)
+    , faces(other.faces)
+    , cells(other.cells)
+    , child_faces(other.child_faces)
+    {}
 
-}
+    Pattern(const Pattern&) = delete;
+
+    Pattern(Pattern& other) noexcept
+    : type(other.type)
+    , face_type(other.face_type)
+    , cell_type(other.cell_type)
+    , nodes(other.nodes)
+    , faces(other.faces)
+    , cells(other.cells)
+    , child_faces(other.child_faces)
+    {}
+    Pattern& operator=(const Pattern& other)
+    {
+      if (this != &other) {
+        type = other.type;
+        face_type = other.face_type;
+        cell_type = other.cell_type;
+        nodes = other.nodes; // Référence partagée
+        faces = other.faces; // Référence partagée
+        cells = other.cells; // Référence partagée
+        child_faces = other.child_faces;
+      }
+      return *this;
+    }
+
+    Pattern& operator=(Pattern&& other) noexcept
+    {
+      if (this != &other) {
+        type = other.type;
+        face_type = other.face_type;
+        cell_type = other.cell_type;
+        nodes = other.nodes;
+        faces = other.faces;
+        cells = other.cells;
+        child_faces = other.child_faces;
+      }
+      return *this;
+    }
+    Pattern& operator=(Pattern& other) noexcept
+    {
+      if (this != &other) {
+        type = other.type;
+        face_type = other.face_type;
+        cell_type = other.cell_type;
+        nodes = other.nodes;
+        faces = other.faces;
+        cells = other.cells;
+        child_faces = other.child_faces;
+      }
+      return *this;
+    }
+  };
+
+} // namespace MeshSubdivider
 /*!
  * \brief Classe qui permet de construire des patterns
  */
@@ -472,7 +467,7 @@ MeshSubdivider::Pattern PatternBuilder::hextohex()
     { 20, 11, 2, 13, 26, 23, 14, 24 },
     { 26, 23, 14, 24, 25, 18, 6, 19 }
   };
-  return {IT_Hexaedron8, IT_Quad4, IT_Hexaedron8, nodes, faces, cells, child_faces};
+  return { IT_Hexaedron8, IT_Quad4, IT_Hexaedron8, nodes, faces, cells, child_faces };
 }
 
 MeshSubdivider::Pattern PatternBuilder::tettotet()
@@ -775,8 +770,8 @@ class ArcaneBasicMeshSubdividerService
  private:
 
   void _init();
-  static UniqueArray<Int64> _computeNodeUid(UniqueArray<Int64> node_uid, const StorageRefine& node_pattern);
-  void _computeNodeCoord();
+  //! Calcule le unique id en fonction des noeuds de node_uid
+  static UniqueArray<Int64> _computeNodeUid(UniqueArray<Int64> nodes_uid, const StorageRefine& node_pattern);
   /*
   void _computeNodeCoord();
   void _computeNodeUid();
@@ -791,8 +786,8 @@ class ArcaneBasicMeshSubdividerService
   void _execute();
   */
 
-  //! Génère l'ordre des faces arcane pour tout les motifs.
-  void _faceOrderArcane(IPrimaryMesh* mesh);
+  //! Génère l'ordre des faces arcane pour tout les motifs. 
+  void _faceOrderArcane(IPrimaryMesh* mesh); 
   //! Raffine en utilisant les faces d'arcane et le motif (Pattern) p
   /* Méthode qui permet de récuperer les faces générés par arcanes.
   * Ces faces doivent donner les indices locaux des noeuds de la cellule initiale.
@@ -1736,7 +1731,7 @@ void ArcaneBasicMeshSubdividerService::_generateOneQuad(IPrimaryMesh* mesh)
   mesh->utilities()->writeToFile("subdivider_one_quad_ouput.vtk", "VtkLegacyMeshWriter");
 }
 
-// TODO test
+
 void ArcaneBasicMeshSubdividerService::_generateOneTri(IPrimaryMesh* mesh)
 {
   mesh->utilities()->writeToFile("subdivider_one_hexa_input.vtk", "VtkLegacyMeshWriter");
