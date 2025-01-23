@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* FaceUniqueIdBuilder.cc                                      (C) 2000-2024 */
+/* FaceUniqueIdBuilder.cc                                      (C) 2000-2025 */
 /*                                                                           */
 /* Construction des identifiants uniques des faces.                          */
 /*---------------------------------------------------------------------------*/
@@ -82,7 +82,13 @@ computeFacesUniqueIds()
     arcaneComputeCartesianFaceUniqueId(m_mesh);
   else if (face_version==3)
     _computeFaceUniqueIdVersion3(m_mesh);
-  else{
+  else if (face_version==0){
+    info() << "No face renumbering";
+    // Regarder s'il faut faire un 'return'
+    return;
+  }
+  else {
+    // Version 1 ou 2
     if (is_parallel){
       if (face_version==2){
         //PAS ENCORE PAR DEFAUT
@@ -95,10 +101,6 @@ computeFacesUniqueIds()
       }
     }
     else{
-      if (face_version==0){
-        pwarning() << "No face renumbering";
-        return;
-      }
       _computeFacesUniqueIdsSequential();
     }
   }
@@ -123,7 +125,7 @@ computeFacesUniqueIds()
       info() << "Face uid=" << face.uniqueId() << " lid=" << face.localId();
     });
   }
-  // Avec la version 5, les propriétaires ne sont positionnées
+  // Avec la version 5, les propriétaires ne sont pas positionnées
   // Il faut le faire maintenant
   if (face_version == 5){
     ItemsOwnerBuilder owner_builder(m_mesh);
