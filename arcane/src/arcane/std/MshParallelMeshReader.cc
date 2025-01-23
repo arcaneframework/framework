@@ -1045,8 +1045,8 @@ _readElementsFromFile()
   bool allow_multi_dim_cell = m_mesh->meshKind().isNonManifold();
   bool use_experimental_type_for_cell = false;
   if (allow_multi_dim_cell) {
-    // Par défaut utilise les nouveaux types lorsqu'on est en séquentiel.
-    use_experimental_type_for_cell = !pm->isParallel();
+    // Par défaut utilise les nouveaux types.
+    use_experimental_type_for_cell = true;
     if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_USE_EXPERIMENTAL_CELL_TYPE", true))
       use_experimental_type_for_cell = (v.value() != 0);
   }

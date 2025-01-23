@@ -837,11 +837,11 @@ _build(IParallelSuperMng* parallel_mng, ITraceMng* trace)
     ItemTypeInfoBuilder* type = m_types_buffer->allocOne();
     m_types[IT_Cell3D_Triangle3] = type;
 
-    type->setInfos(this, IT_Cell3D_Triangle3, "Cell3D_Triangle3", Dimension::Dim2, 3, 3, 0);
+    type->setInfos(this, IT_Cell3D_Triangle3, "Cell3D_Triangle3", Dimension::Dim2, 3, 0, 3);
 
-    type->addEdge(0, 0, 1, 1, 2);
-    type->addEdge(1, 1, 2, 2, 0);
-    type->addEdge(2, 2, 0, 0, 1);
+    type->addFaceLine(0, 0, 1);
+    type->addFaceLine(1, 1, 2);
+    type->addFaceLine(2, 2, 0);
   }
 
   // Cell3D_Quad4
@@ -849,12 +849,12 @@ _build(IParallelSuperMng* parallel_mng, ITraceMng* trace)
     ItemTypeInfoBuilder* type = m_types_buffer->allocOne();
     m_types[IT_Cell3D_Quad4] = type;
 
-    type->setInfos(this, IT_Cell3D_Quad4, "Cell3D_Quad4", Dimension::Dim2, 4, 4, 0);
+    type->setInfos(this, IT_Cell3D_Quad4, "Cell3D_Quad4", Dimension::Dim2, 4, 0, 4);
 
-    type->addEdge(0, 0, 1, 3, 1);
-    type->addEdge(1, 1, 2, 0, 2);
-    type->addEdge(2, 2, 3, 1, 3);
-    type->addEdge(3, 3, 0, 2, 0);
+    type->addFaceLine(0, 0, 1);
+    type->addFaceLine(1, 1, 2);
+    type->addFaceLine(2, 2, 3);
+    type->addFaceLine(3, 3, 0);
   }
 
   { // Polygon & Polyhedron: generic item types
