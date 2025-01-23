@@ -562,7 +562,7 @@ writeMeshInfosSorted(IMesh* mesh, const String& file_name)
     for (Integer i = 0; i < nb_edge; ++i)
       sorted_edges[i] = edges[i];
     {
-      _CompareItemWithNodes compare_edges(mesh, IK_Edge, edges_sorted_id);
+      _CompareItemWithNodes compare_edges(mesh, IK_Edge, nodes_sorted_id);
       std::sort(std::begin(sorted_edges), std::end(sorted_edges), compare_edges);
     }
     for (Integer i = 0; i < nb_edge; ++i)
