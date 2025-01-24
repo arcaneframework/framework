@@ -128,7 +128,6 @@ addCells(Integer nb_cell,Int64ConstArrayView cells_infos,
 {
   ItemTypeMng* itm = m_item_type_mng;
 
-  debug() << "[addCells] ADD CELLS mesh=" << m_mesh->name() << " nb=" << nb_cell;
   Integer cells_infos_index = 0;
   bool add_to_cells = cells.size()!=0;
   if (add_to_cells && nb_cell!=cells.size())
