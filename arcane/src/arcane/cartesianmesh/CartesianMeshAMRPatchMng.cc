@@ -1978,7 +1978,12 @@ coarse()
   if (version < 3)
     gm->setBuilderVersion(3);
   Int32 nb_ghost_layer = gm->nbGhostLayer();
-  gm->setNbGhostLayer(nb_ghost_layer + (nb_ghost_layer % m_num_mng->pattern()));
+  // TODO AH : Cette ligne permettrait d'avoir moins de mailles fantômes et
+  // d'éviter leurs suppressions en cas d'inutilité. Mais le comportement
+  // serait différent de l'AMR historique.
+  //gm->setNbGhostLayer(nb_ghost_layer + (nb_ghost_layer % m_num_mng->pattern()));
+  // Comportement de l'AMR historique.
+  gm->setNbGhostLayer(nb_ghost_layer * 2);
   mesh_modifier->setDynamic(true);
   mesh_modifier->updateGhostLayers();
   // Remet le nombre initial de couches de mailles fantômes

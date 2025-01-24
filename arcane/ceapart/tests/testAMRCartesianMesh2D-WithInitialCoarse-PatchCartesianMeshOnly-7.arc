@@ -48,7 +48,7 @@
     </refinement-2d>
 
     <expected-number-of-cells-in-patchs>1600 6400 484</expected-number-of-cells-in-patchs>
-    <expected-number-of-ghost-cells-in-patchs>336 1344 0</expected-number-of-ghost-cells-in-patchs>
+    <expected-number-of-ghost-cells-in-patchs>516 2064 0</expected-number-of-ghost-cells-in-patchs>
     <nodes-uid-hash>be945c17467f6ba7bbf41ee1baf19c8c</nodes-uid-hash>
     <faces-uid-hash>c92d0e52cea7b406b449d57521f42124</faces-uid-hash>
     <cells-uid-hash>19dd0b9269462bd111611a5f0adac601</cells-uid-hash>
