@@ -525,6 +525,7 @@ _checkValidItemOwner(IItemFamily* family)
   // connectée à aucune maille.
   // Pour les sous-maillages, il faut, en plus, que tout item soit de
   // même propriétaire que son parent.
+  bool allow_orphan_items = m_mesh->meshKind().isNonManifold();
 
   Integer nerror = 0;
   if (!m_mesh->parentMesh()){
@@ -538,7 +539,8 @@ _checkValidItemOwner(IItemFamily* family)
       Int32 owner = item.owner();
       bool is_ok = false;
       ItemVectorView cells = item.itemBase().cellList();
-
+      if (cells.size()==0 && allow_orphan_items)
+        continue;
       for( Item cell : cells ){
         if (cell.owner()==owner){
           is_ok = true;
