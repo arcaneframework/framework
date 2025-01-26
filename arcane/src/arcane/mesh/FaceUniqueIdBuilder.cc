@@ -80,27 +80,25 @@ computeFacesUniqueIds()
     _computeFaceUniqueIdVersion5(m_mesh);
   else if (face_version == 4)
     arcaneComputeCartesianFaceUniqueId(m_mesh);
-  else if (face_version==3)
+  else if (face_version == 3)
     _computeFaceUniqueIdVersion3(m_mesh);
-  else if (face_version==0){
+  else if (face_version == 0) {
     info() << "No face renumbering";
-    // Regarder s'il faut faire un 'return'
-    return;
   }
   else {
     // Version 1 ou 2
-    if (is_parallel){
-      if (face_version==2){
+    if (is_parallel) {
+      if (face_version == 2) {
         //PAS ENCORE PAR DEFAUT
         info() << "Use new mesh init in FaceUniqueIdBuilder";
         _computeFacesUniqueIdsParallelV2();
       }
-      else{
+      else {
         // Version par défaut.
         _computeFacesUniqueIdsParallelV1();
       }
     }
-    else{
+    else {
       _computeFacesUniqueIdsSequential();
     }
   }
@@ -116,18 +114,19 @@ computeFacesUniqueIds()
 
   // Il faut ranger à nouveau #m_faces_map car les uniqueId() des
   // faces ont été modifiés
-  m_mesh->faceFamily()->notifyItemsUniqueIdChanged();
+  if (face_version != 0)
+    m_mesh->faceFamily()->notifyItemsUniqueIdChanged();
 
   bool is_verbose = m_mesh_builder->isVerbose();
-  if (is_verbose){
+  if (is_verbose) {
     info() << "NEW FACES_MAP after re-indexing";
     faces_map.eachItem([&](Item face) {
       info() << "Face uid=" << face.uniqueId() << " lid=" << face.localId();
     });
   }
-  // Avec la version 5, les propriétaires ne sont pas positionnées
+  // Avec la version 0 ou 5, les propriétaires ne sont pas positionnées
   // Il faut le faire maintenant
-  if (face_version == 5){
+  if (face_version == 0 || face_version == 5) {
     ItemsOwnerBuilder owner_builder(m_mesh);
     owner_builder.computeFacesOwner();
   }
