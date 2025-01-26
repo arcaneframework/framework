@@ -104,6 +104,7 @@ class AlephVectorPETSc
  public:
 
   AlephVectorPETSc(ITraceMng*, AlephKernel*, Integer);
+  ~AlephVectorPETSc();
   void AlephVectorCreate(void) override;
   void AlephVectorSet(const double*, const AlephInt*, Integer) override;
   int AlephVectorAssemble(void) override;
@@ -113,8 +114,10 @@ class AlephVectorPETSc
 
  public:
 
-  Vec m_petsc_vector;
-  PetscInt jSize, jUpper, jLower;
+  Vec m_petsc_vector = nullptr;
+  PetscInt jSize = 0;
+  PetscInt jUpper = 0;
+  PetscInt jLower = -1;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -126,6 +129,7 @@ class AlephMatrixPETSc
  public:
 
   AlephMatrixPETSc(ITraceMng*, AlephKernel*, Integer);
+  ~AlephMatrixPETSc();
   void AlephMatrixCreate(void) override;
   void AlephMatrixSetFilled(bool) override;
   int AlephMatrixAssemble(void) override;
@@ -139,9 +143,17 @@ class AlephMatrixPETSc
 
  private:
 
-  Mat m_petsc_matrix;
-  KSP m_ksp_solver;
+  Mat m_petsc_matrix = nullptr;
+  KSP m_ksp_solver = nullptr;
 };
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace
+{
+bool global_need_petsc_finalize = false;
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -151,7 +163,6 @@ class PETScAlephFactoryImpl
 , public IAlephFactoryImpl
 {
  public:
-
   explicit PETScAlephFactoryImpl(const ServiceBuildInfo& sbi)
   : AbstractService(sbi)
   {}
@@ -163,6 +174,14 @@ class PETScAlephFactoryImpl
       delete v;
     for (auto* v : m_IAlephTopologys)
       delete v;
+    if (global_need_petsc_finalize){
+      // TODO: Il faudrait appeler PETscFinalize() mais il
+      // faut le faire faire avant le MPI_Finalize() ce qui
+      // n'est pas toujours le cas suivant quand cette fabrique
+      // est détruite. En attendant, on n'appelle pas la fonction
+      //PetscFinalize();
+      global_need_petsc_finalize = false;
+    }
   }
 
  public:
@@ -209,10 +228,7 @@ class PETScAlephFactoryImpl
 /*---------------------------------------------------------------------------*/
 
 AlephTopologyPETSc::
-AlephTopologyPETSc(ITraceMng* tm,
-                   AlephKernel* kernel,
-                   Integer index,
-                   Integer nb_row_size)
+AlephTopologyPETSc(ITraceMng* tm, AlephKernel* kernel, Integer index, Integer nb_row_size)
 : IAlephTopology(tm, kernel, index, nb_row_size)
 {
   ARCANE_CHECK_POINTER(kernel);
@@ -246,6 +262,7 @@ _checkInitPETSc()
   AlephKernelSolverInitializeArguments& init_args = m_kernel->solverInitializeArgs();
   bool has_args = init_args.hasValues();
   debug() << Trace::Color::cyan() << "[AlephTopologyPETSc] Initializing PETSc. UseArg=" << has_args;
+
   if (has_args){
     const CommandLineArguments& args = init_args.commandLineArguments();
     PetscInitialize(args.commandLineArgc(),args.commandLineArgv(),nullptr,nullptr);
@@ -253,6 +270,7 @@ _checkInitPETSc()
   else{
     PetscInitializeNoArguments();
   }
+  global_need_petsc_finalize = true;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -271,6 +289,18 @@ AlephVectorPETSc(ITraceMng *tm,AlephKernel *kernel,Integer index)
 {
   debug()<<"\t\t[AlephVectorPETSc::AlephVectorPETSc] new SolverVectorPETSc";
 }
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+AlephVectorPETSc::
+~AlephVectorPETSc()
+{
+  VecDestroy(&m_petsc_vector);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 // ****************************************************************************
 // * AlephVectorCreate
@@ -357,17 +387,31 @@ LinftyNorm(void)
 // ****************************************************************************
 // * AlephMatrixPETSc
 // ****************************************************************************
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 AlephMatrixPETSc::
-AlephMatrixPETSc(ITraceMng *tm,
-                 AlephKernel *kernel,
-                 Integer index)
+AlephMatrixPETSc(ITraceMng *tm, AlephKernel *kernel, Integer index)
 : IAlephMatrix(tm,kernel,index)
-, m_petsc_matrix()
-, m_ksp_solver()
 {
   debug()<<"\t\t[AlephMatrixPETSc::AlephMatrixPETSc] new AlephMatrixPETSc";
 }
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+AlephMatrixPETSc::
+~AlephMatrixPETSc()
+{
+  if (m_petsc_matrix)
+    MatDestroy(&m_petsc_matrix);
+  if (m_ksp_solver)
+    KSPDestroy(&m_ksp_solver);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 // ****************************************************************************
 // * AlephMatrixCreate
@@ -511,6 +555,8 @@ AlephMatrixSolve(AlephVector* x,AlephVector* b,AlephVector* t,
   Vec RHS      = b_petsc->m_petsc_vector;
 
   debug()<<"[AlephMatrixSolve]";
+  if (m_ksp_solver)
+    KSPDestroy(&m_ksp_solver);
   KSPCreate(MPI_COMM_SUB,&m_ksp_solver);
 #if PETSC_VERSION_GE(3,6,1)
   KSPSetOperators(m_ksp_solver,m_petsc_matrix,m_petsc_matrix);//SAME_PRECONDITIONER);
