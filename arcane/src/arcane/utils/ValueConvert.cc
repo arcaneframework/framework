@@ -153,7 +153,8 @@ _getDoubleValue(double& v, StringView s)
   }
 #endif
   char* ptr2 = nullptr;
-  v = ::strtod(ptr, &ptr2);
+  if (ptr)
+    v = ::strtod(ptr, &ptr2);
   return (ptr2 - ptr);
 }
 
@@ -390,6 +391,28 @@ builtInGetValue(Real2& v, StringView s)
 template <> ARCANE_UTILS_EXPORT bool
 builtInGetValue(Real3& v, StringView s)
 {
+  if (global_use_same_value_convert_for_all_real) {
+    // ATTENTION: Pour l'instant ce nouveau mécanisme ne tolère pas
+    // les espaces en début de \a s.
+    v = {};
+    const bool is_verbose = global_value_convert_verbosity > 0;
+    if (is_verbose)
+      std::cout << "Try Read Real3: '" << s << "'\n";
+    Int64 p = StringViewToDoubleConverter::_getDoubleValue(v.x, s);
+    if (p == (-1) || (p == s.size()))
+      return true;
+    s = _removeLeadingSpaces(s, p);
+    if (is_verbose)
+      std::cout << "VX=" << v.x << " remaining_s='" << s << "'\n";
+    p = StringViewToDoubleConverter::_getDoubleValue(v.y, s);
+    if (p == (-1) || (p == s.size()))
+      return true;
+    s = _removeLeadingSpaces(s, p);
+    if (is_verbose)
+      std::cout << "VY=" << v.x << " remaining_s='" << s << "'\n";
+    p = StringViewToDoubleConverter::_getDoubleValue(v.z, s);
+    return (p == (-1) || (p != s.size()));
+  }
   return impl::builtInGetValueGeneric(v, s);
 }
 
