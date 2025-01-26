@@ -150,7 +150,7 @@ _getDoubleValue(double& v, StringView s)
 #ifdef WIN32
   if (s == "infinity" || s == "inf") {
     v = std::numeric_limits<double>::infinity();
-    return false;
+    return s.size();
   }
 #endif
   char* ptr2 = nullptr;
