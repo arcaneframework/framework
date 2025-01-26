@@ -79,6 +79,21 @@ void _checkReal2(const String& s, Real2 expected_v)
   }
 }
 
+void _checkReal3(const String& s, Real3 expected_v)
+{
+  Real3 v = {};
+  bool is_bad = builtInGetValue(v, s);
+  std::cout << "S=" << s << " Real3=" << v << " is_bad?=" << is_bad << "\n";
+  ASSERT_FALSE(is_bad) << "Can not convert '" << s << "' to Real3";
+  bool do_test = false;
+  _checkValidDouble(v.x, expected_v.x);
+  _checkValidDouble(v.y, expected_v.y);
+  _checkValidDouble(v.z, expected_v.z);
+  if (do_test) {
+    ASSERT_EQ(v, expected_v);
+  }
+}
+
 void _testDoubleConvert(bool use_from_chars)
 {
 
@@ -96,6 +111,8 @@ void _testDoubleConvert(bool use_from_chars)
     _checkBad<double>("");
   _checkDouble("-0x1.81e03f705857bp-16", -2.3e-05);
   _checkDouble("0x1.81e03f705857bp-16", 2.3e-05);
+  if (!use_from_chars)
+    _checkDouble("+1.23e42", 1.23e42);
   _checkBad<double>("d2");
   _checkBad<double>("2.3w");
 
@@ -146,6 +163,26 @@ void _testReal2Convert(bool use_same_that_real)
   _checkBad<Real2>(" y2.3 1.2");
 }
 
+void _testReal3Convert(bool use_same_that_real)
+{
+  impl::arcaneSetUseSameValueConvertForAllReal(use_same_that_real);
+  Real v_nan = std::numeric_limits<double>::quiet_NaN();
+  Real v_inf = std::numeric_limits<double>::infinity();
+  _checkReal3("2.3e1 -1.2 1.5", Real3(2.3e1, -1.2, 1.5));
+  if (use_same_that_real) {
+    _checkReal3("-1.3 nan 4.6", Real3(-1.3, v_nan, 4.6));
+    _checkReal3("1.3 4.2 inf", Real3(1.3, 4.2, v_inf));
+    _checkReal3("-2.1 -1.5 1.0e5", Real3(-2.1, -1.5, 1.0e5));
+    //_checkReal3("-2.1 -1.5 +1.0e5", Real3(-2.1, -1.5, 1.0e5));
+  }
+  _checkBad<Real3>("2.3 1.2w");
+  _checkBad<Real3>("2.3x");
+  _checkBad<Real3>("2.3 1.2");
+  _checkBad<Real3>("2.3 -1.2ee2 4.5");
+  _checkBad<Real3>("z2.3 -1.2e2 -2323.3");
+  _checkBad<Real3>("2.3 -1.2e2 -2323.3x");
+}
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -164,12 +201,16 @@ TEST(ValueConvert, Basic)
   _testDoubleConvert(true);
   _testReal2Convert(true);
   _testReal2Convert(false);
+  _testReal3Convert(true);
+  _testReal3Convert(false);
 #endif
 
   impl::arcaneSetIsValueConvertUseFromChars(false);
   _testDoubleConvert(false);
   _testReal2Convert(true);
   _testReal2Convert(false);
+  _testReal3Convert(true);
+  _testReal3Convert(false);
 }
 
 TEST(ValueConvert, TryParse)
