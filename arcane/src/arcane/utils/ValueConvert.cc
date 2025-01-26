@@ -14,6 +14,7 @@
 #include "arcane/utils/ValueConvert.h"
 
 #include "arcane/utils/OStringStream.h"
+#include "arcane/utils/NotSupportedException.h"
 #include "arcane/utils/internal/ValueConvertInternal.h"
 
 // En théorie std::from_chars() est disponible avec le C++17 mais pour
