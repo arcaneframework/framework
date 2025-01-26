@@ -35,20 +35,15 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-/******************************************************************************
- AlephVectorTrilinos
-*****************************************************************************/
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 class AlephVectorTrilinos : public IAlephVector
 {
  public:
-  /******************************************************************************
- * AlephVectorTrilinos
- *****************************************************************************/
-  AlephVectorTrilinos(ITraceMng* tm,
-                      AlephKernel* kernel,
-                      Integer index)
+
+  AlephVectorTrilinos(ITraceMng* tm, AlephKernel* kernel, Integer index)
   : IAlephVector(tm, kernel, index)
-  , m_trilinos_vector(NULL)
   {
     debug() << "\t\t[AlephVectorTrilinos::AlephVectorTrilinos] new SolverVectorTrilinos";
 #ifdef HAVE_MPI
@@ -57,6 +52,14 @@ class AlephVectorTrilinos : public IAlephVector
     m_trilinos_Comm = new Epetra_SerialComm();
 #endif // HAVE_MPI
   }
+
+  ~AlephVectorTrilinos()
+  {
+    delete m_trilinos_vector;
+    delete m_trilinos_Comm;
+  }
+
+ public:
 
   /******************************************************************************
  * AlephVectorCreate
@@ -148,24 +151,25 @@ class AlephVectorTrilinos : public IAlephVector
   }
 
  public:
-  Epetra_Vector* m_trilinos_vector;
-  Epetra_Comm* m_trilinos_Comm;
+  Epetra_Vector* m_trilinos_vector = nullptr;
+  Epetra_Comm* m_trilinos_Comm = nullptr;
 };
 
-/******************************************************************************
- AlephMatrixTrilinos
-*****************************************************************************/
-class AlephMatrixTrilinos : public IAlephMatrix
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+class AlephMatrixTrilinos
+: public IAlephMatrix
 {
  public:
   /******************************************************************************
  AlephMatrixTrilinos
-*****************************************************************************/
-  AlephMatrixTrilinos(ITraceMng* tm,
-                      AlephKernel* kernel,
-                      Integer index)
+  *****************************************************************************/
+  AlephMatrixTrilinos(ITraceMng* tm, AlephKernel* kernel, Integer index)
   : IAlephMatrix(tm, kernel, index)
-  , m_trilinos_matrix(NULL)
   {
     debug() << "\t\t[AlephMatrixTrilinos::AlephMatrixTrilinos] new AlephMatrixTrilinos";
 #ifdef HAVE_MPI
@@ -173,6 +177,12 @@ class AlephMatrixTrilinos : public IAlephMatrix
 #else
     m_trilinos_Comm = new Epetra_SerialComm();
 #endif // HAVE_MPI
+  }
+
+  ~AlephMatrixTrilinos()
+  {
+    delete m_trilinos_matrix;
+    delete m_trilinos_Comm;
   }
 
   /******************************************************************************
@@ -508,8 +518,8 @@ class AlephMatrixTrilinos : public IAlephMatrix
   }
 
  private:
-  Epetra_CrsMatrix* m_trilinos_matrix;
-  Epetra_Comm* m_trilinos_Comm;
+  Epetra_CrsMatrix* m_trilinos_matrix = nullptr;
+  Epetra_Comm* m_trilinos_Comm = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/
