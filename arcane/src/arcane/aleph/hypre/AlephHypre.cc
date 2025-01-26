@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* AlephHypre.cc                                               (C) 2000-2024 */
+/* AlephHypre.cc                                               (C) 2000-2025 */
 /*                                                                           */
 /* Implémentation Hypre de Aleph.                                            */
 /*---------------------------------------------------------------------------*/
@@ -111,16 +111,20 @@ class AlephVectorHypre
  public:
   AlephVectorHypre(ITraceMng* tm, AlephKernel* kernel, Integer index)
   : IAlephVector(tm, kernel, index)
-  , m_hypre_ijvector(0)
-  , m_hypre_parvector(0)
   , jSize(0)
   , jUpper(0)
   , jLower(-1)
   {
     debug() << "[AlephVectorHypre::AlephVectorHypre] new SolverVectorHypre";
   }
+  ~AlephVectorHypre()
+  {
+    if (m_hypre_ijvector)
+      HYPRE_IJVectorDestroy(m_hypre_ijvector);
+  }
 
  public:
+
   /******************************************************************************
    * The Create() routine creates an empty vector object that lives on the comm communicator. This is
    * a collective call, with each process passing its own index extents, jLower and jupper. The names
@@ -224,8 +228,8 @@ class AlephVectorHypre
   }
 
  public:
-  HYPRE_IJVector m_hypre_ijvector;
-  HYPRE_ParVector m_hypre_parvector;
+  HYPRE_IJVector m_hypre_ijvector = nullptr;
+  HYPRE_ParVector m_hypre_parvector = nullptr;
   HYPRE_Int jSize;
   HYPRE_Int jUpper;
   HYPRE_Int jLower;
@@ -251,6 +255,8 @@ class AlephMatrixHypre
   ~AlephMatrixHypre()
   {
     debug() << "[~AlephMatrixHypre]";
+    if (m_hypre_ijmatrix)
+      HYPRE_IJMatrixDestroy(m_hypre_ijmatrix);
   }
 
  public:
