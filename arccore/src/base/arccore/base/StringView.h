@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* StringView.h                                                (C) 2000-2023 */
+/* StringView.h                                                (C) 2000-2025 */
 /*                                                                           */
 /* Vue sur une chaîne de caractères UTF-8.                                   */
 /*---------------------------------------------------------------------------*/
@@ -182,6 +182,12 @@ class ARCCORE_BASE_EXPORT StringView
 
   //! Écrit la chaîne au format UTF-8 sur le flot \a o
   void writeBytes(std::ostream& o) const;
+
+  //! Sous-chaîne commençant à la position \a pos
+  StringView substring(Int64 pos) const;
+
+  //! Sous-chaîne commençant à la position \a pos et de longueur \a len
+  StringView substring(Int64 pos,Int64 len) const;
 
  private:
 
