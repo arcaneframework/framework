@@ -42,6 +42,31 @@ namespace
     return reinterpret_cast<const char*>(s.bytes().data());
   }
 
+  /*!
+   * \brief Retourne une vue en supprimant les caratères blancs du début.
+   *
+   * Un caractère blanc est un caractère pour lequel std::isspace() est vrai.
+   * \a pos indique la position dans \a s à partir de laquelle
+   * on cherche les blancs.
+   */
+  StringView _removeLeadingSpaces(StringView s, Int64 pos)
+  {
+    Span<const Byte> bytes = s.bytes();
+    Int64 nb_byte = bytes.size();
+    // Supprime les espaces potentiels
+    for (; pos < nb_byte; ++pos) {
+      int charv = static_cast<unsigned char>(bytes[pos]);
+      // Visual Studio 2017 or less
+#if defined(_MSC_VER) && _MSC_VER <= 1916
+      if (std::isspace(charv, std::locale()) != 0)
+        break;
+#else
+      if (!std::isspace(charv) != 0)
+        break;
+#endif
+    }
+    return StringView(bytes.subSpan(pos, nb_byte));
+  }
 } // namespace
 
 /*---------------------------------------------------------------------------*/
@@ -353,19 +378,7 @@ builtInGetValue(Real2& v, StringView s)
     Int64 p = StringViewToDoubleConverter::_getDoubleValue(v.x, s);
     if (p == (-1))
       return true;
-    Span<const Byte> bytes = s.bytes();
-    Int64 nb_byte = bytes.size();
-    // Supprime les espaces potentiels
-    for (; p < nb_byte; ++p) {
-#ifdef _MSC_VER <= 1916 // Visual Studio 2017 or less
-      if (!std::isspace((char)bytes[p], std::locale()))
-        break;
-#else
-      if (!std::isspace(bytes[p]))
-        break;
-#endif
-    }
-    s = StringView(bytes.subSpan(p, nb_byte));
+    s = _removeLeadingSpaces(s, p);
     if (is_verbose)
       std::cout << "VX=" << v.x << " remaining_s='" << s << "'\n";
     p = StringViewToDoubleConverter::_getDoubleValue(v.y, s);
@@ -373,6 +386,7 @@ builtInGetValue(Real2& v, StringView s)
   }
   return impl::builtInGetValueGeneric(v, s);
 }
+
 template <> ARCANE_UTILS_EXPORT bool
 builtInGetValue(Real3& v, StringView s)
 {
