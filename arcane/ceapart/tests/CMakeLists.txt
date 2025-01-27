@@ -104,6 +104,9 @@ if (ARCANE_HAS_ACCELERATOR_API)
   arcane_add_accelerator_test_parallel_thread(material_sync2_v7 testMaterial-sync-2.arc 4 -We,ARCANE_MATSYNCHRONIZE_VERSION,7)
   arcane_add_accelerator_test_parallel_thread(material_sync2_vacc testMaterial-sync-2.arc 4 -We,ARCANE_ACC_MAT_SYNCHRONIZER,1)
 
+  ARCANE_ADD_TEST(material_sync3 testMaterial-sync-3.arc)
+  ARCANE_ADD_TEST_PARALLEL_THREAD(material_sync3 testMaterial-sync-3.arc 4)
+
   ARCANE_ADD_TEST(material3 testMaterial-3.arc "-m 20")
   # NOTE Ajoute test optmisation uniquement en sequentiel car pour l'instant cela
   # ne marche pas en parallele a cause de la suppression de mailles.

@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CartesianMeshAMRPatchMng.cc                                 (C) 2000-2024 */
+/* CartesianMeshAMRPatchMng.cc                                 (C) 2000-2025 */
 /*                                                                           */
 /* Gestionnaire de l'AMR par patch d'un maillage cartésien.                  */
 /*---------------------------------------------------------------------------*/
@@ -1904,6 +1904,9 @@ refine()
     }
   }
 
+  // Recalcule les informations de synchronisation.
+  m_mesh->computeSynchronizeInfos();
+
   //  ENUMERATE_(Cell, icell, m_mesh->allCells()){
   //    debug() << "\t" << *icell;
   //    for(Node node : icell->nodes()){
@@ -1975,7 +1978,12 @@ coarse()
   if (version < 3)
     gm->setBuilderVersion(3);
   Int32 nb_ghost_layer = gm->nbGhostLayer();
-  gm->setNbGhostLayer(nb_ghost_layer + (nb_ghost_layer % m_num_mng->pattern()));
+  // TODO AH : Cette ligne permettrait d'avoir moins de mailles fantômes et
+  // d'éviter leurs suppressions en cas d'inutilité. Mais le comportement
+  // serait différent de l'AMR historique.
+  //gm->setNbGhostLayer(nb_ghost_layer + (nb_ghost_layer % m_num_mng->pattern()));
+  // Comportement de l'AMR historique.
+  gm->setNbGhostLayer(nb_ghost_layer * 2);
   mesh_modifier->setDynamic(true);
   mesh_modifier->updateGhostLayers();
   // Remet le nombre initial de couches de mailles fantômes

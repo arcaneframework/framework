@@ -55,6 +55,7 @@ set(ARCANE_SOURCES
   GenericRegisterer.cc
   GoBackwardException.cc
   GoBackwardException.h
+  HashSuite.h
   IDataCompressor.h
   Int128.h
   IOException.cc
