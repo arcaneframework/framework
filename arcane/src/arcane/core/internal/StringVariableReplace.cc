@@ -204,16 +204,16 @@ _splitString(StringView str_view, ArrayView<StringView> str_view_array, char c)
       // Si cette arrobase est précédée par un backslash.
       if (previous_backslash) {
         // On enregistre le morceau qu'on parcourait, sans le backslash.
-        str_view_array[index++] = str_view.substring(offset, i - 1 - offset);
+        str_view_array[index++] = str_view.subView(offset, i - 1 - offset);
         // On rajoute l'arrobase.
-        str_view_array[index++] = str_view.substring(i, 1);
+        str_view_array[index++] = str_view.subView(i, 1);
 
         offset = i + 1;
         previous_backslash = false;
       }
       else {
         // On enregistre le morceau qu'on parcourait, sans l'arrobase.
-        str_view_array[index++] = str_view.substring(offset, i - offset);
+        str_view_array[index++] = str_view.subView(offset, i - offset);
 
         offset = i + 1;
       }
@@ -231,7 +231,7 @@ _splitString(StringView str_view, ArrayView<StringView> str_view_array, char c)
     }
   }
   // On ajoute le dernier morceau.
-  str_view_array[index] = str_view.substring(offset, len - offset);
+  str_view_array[index] = str_view.subView(offset, len - offset);
 }
 
 /*---------------------------------------------------------------------------*/
