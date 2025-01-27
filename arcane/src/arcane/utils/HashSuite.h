@@ -24,25 +24,14 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-/*!
- * \internal
- * \brief Fonctor pour une fonction de hachage.
- */
-template <class Type>
-class IntegerHashSuiteT
-{
-};
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 
 /*!
  * \internal
  * \brief Classe permettant de calculer un hash de manière itératif.
  * \warning L'ordre dans lequel les valeurs sont données via la méthode add() est important.
  */
-template <>
-class IntegerHashSuiteT<Int32>
+
+class IntegerHashSuite
 {
  public:
 
@@ -52,11 +41,11 @@ class IntegerHashSuiteT<Int32>
    * add() est important.
    * \param value La valeur à ajouter.
    */
-  void add(Int32 value)
+  template <class T>
+  void add(T value)
   {
-    Int32 next_hash = IntegerHashFunctionT<Int32>::hashfunc(value);
-    if (m_hash == -1) m_hash = next_hash;
-    else m_hash ^= next_hash + 0x9e3779b9 + (m_hash << 6) + (m_hash >> 2);
+    const UInt64 next_hash = static_cast<UInt64>(IntegerHashFunctionT<T>::hashfunc(value));
+    m_hash ^= next_hash + 0x9e3779b9 + (m_hash << 6) + (m_hash >> 2);
   }
 
   /*!
@@ -64,52 +53,14 @@ class IntegerHashSuiteT<Int32>
    * toutes les valeurs passées à la méthode add().
    * \return Le hash.
    */
-  Int32 hash()
+  Int64 hash() const
   {
-    return m_hash;
+    return static_cast<Int64>(m_hash);
   }
 
-private:
-  Int32 m_hash{-1};
-};
+ private:
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-/*!
- * \internal
- * \brief Classe permettant de calculer un hash de manière itératif.
- * \warning L'ordre dans lequel les valeurs sont données via la méthode add() est important.
- */
-template <>
-class IntegerHashSuiteT<Int64>
-{
-public:
-  /*!
-   * \brief Méthode permettant d'ajouter une valeur dans le calcul du hash.
-   * \warning L'ordre dans lequel les valeurs sont données via la méthode
-   * add() est important.
-   * \param value La valeur à ajouter.
-   */
-  void add(Int64 value)
-  {
-    Int64 next_hash = IntegerHashFunctionT<Int64>::hashfunc(value);
-    if (m_hash == -1) m_hash = next_hash;
-    else m_hash ^= next_hash + 0x9e3779b9 + (m_hash << 6) + (m_hash >> 2);
-  }
-
-  /*!
-   * \brief Méthode permettant de récupérer le hash calculé à partir de
-   * toutes les valeurs passées à la méthode add().
-   * \return Le hash.
-   */
-  Int64 hash()
-  {
-    return m_hash;
-  }
-
-private:
-  Int64 m_hash{-1};
+  UInt64 m_hash{0};
 };
 
 /*---------------------------------------------------------------------------*/
