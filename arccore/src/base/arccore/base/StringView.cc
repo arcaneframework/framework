@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* StringView.cc                                               (C) 2000-2021 */
+/* StringView.cc                                               (C) 2000-2025 */
 /*                                                                           */
 /* Vue sur une chaîne de caractères UTF-8.                                   */
 /*---------------------------------------------------------------------------*/
@@ -28,6 +28,26 @@ void StringView::
 writeBytes(std::ostream& o) const
 {
   o.write((const char*)m_v.data(),m_v.size());
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+StringView StringView::
+subView(Int64 pos) const
+{
+  return subView(pos, length() - pos);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+StringView StringView::
+subView(Int64 pos, Int64 len) const
+{
+  if (pos < 0)
+    pos = 0;
+  return { m_v.subspan(pos, len) };
 }
 
 /*---------------------------------------------------------------------------*/
