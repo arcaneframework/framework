@@ -98,7 +98,8 @@ checkMaterialsInCells(Integer max_print)
   _checkComponents(indexes, m_material_mng->materialsAsComponents(), max_print);
   _checkComponents(indexes, m_material_mng->environmentsAsComponents(), max_print);
 
-  _checkComponentsInGhostCells(indexes, max_print);
+  VariableCellInt64 hashes(VariableBuildInfo(mesh, "ArcaneMaterialCheckHashes"));
+  _checkComponentsInGhostCells(hashes, max_print);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -149,7 +150,7 @@ _checkComponents(VariableCellInt32& indexes,
 }
 
 void MeshMaterialSynchronizer::
-_checkComponentsInGhostCells(VariableCellInt32& hashes, Integer max_print)
+_checkComponentsInGhostCells(VariableCellInt64& hashes, Integer max_print)
 {
   IMesh* mesh = m_material_mng->mesh();
   Integer nb_error = 0;
@@ -158,7 +159,7 @@ _checkComponentsInGhostCells(VariableCellInt32& hashes, Integer max_print)
     AllEnvCell all_env_cell = *iallenvcell;
     Cell cell = all_env_cell.globalCell();
 
-    IntegerHashSuiteT<Int32> hash_suite;
+    IntegerHashSuite hash_suite;
 
     Int32 nb_env = all_env_cell.nbEnvironment();
     hash_suite.add(nb_env);
@@ -186,7 +187,7 @@ _checkComponentsInGhostCells(VariableCellInt32& hashes, Integer max_print)
     if (cell.isOwn())
       continue;
 
-    IntegerHashSuiteT<Int32> hash_suite;
+    IntegerHashSuite hash_suite;
 
     Int32 nb_env = all_env_cell.nbEnvironment();
     hash_suite.add(nb_env);

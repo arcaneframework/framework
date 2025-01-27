@@ -77,7 +77,7 @@ class MeshMaterialSynchronizer
   void _checkComponents(VariableCellInt32& indexes,
                         ConstArrayView<IMeshComponent*> components,
                         Integer max_print);
-  void _checkComponentsInGhostCells(VariableCellInt32& hashes,
+  void _checkComponentsInGhostCells(VariableCellInt64& hashes,
                                     Integer max_print);
 };
 
