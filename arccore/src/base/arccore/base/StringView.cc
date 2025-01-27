@@ -34,16 +34,16 @@ writeBytes(std::ostream& o) const
 /*---------------------------------------------------------------------------*/
 
 StringView StringView::
-substring(Int64 pos) const
+subView(Int64 pos) const
 {
-  return substring(pos, length() - pos);
+  return subView(pos, length() - pos);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 StringView StringView::
-substring(Int64 pos, Int64 len) const
+subView(Int64 pos, Int64 len) const
 {
   if (pos < 0)
     pos = 0;

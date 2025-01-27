@@ -184,10 +184,10 @@ class ARCCORE_BASE_EXPORT StringView
   void writeBytes(std::ostream& o) const;
 
   //! Sous-chaîne commençant à la position \a pos
-  StringView substring(Int64 pos) const;
+  StringView subView(Int64 pos) const;
 
   //! Sous-chaîne commençant à la position \a pos et de longueur \a len
-  StringView substring(Int64 pos,Int64 len) const;
+  StringView subView(Int64 pos,Int64 len) const;
 
  private:
 
