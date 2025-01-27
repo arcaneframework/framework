@@ -12,6 +12,10 @@
 #include "arcane/utils/SmallArray.h"
 #include "arcane/utils/FixedArray.h"
 
+#ifdef ARCANE_HAS_CXX20
+#include <ranges>
+#endif
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -182,6 +186,10 @@ TEST(Collections,SmallArray)
 
 TEST(Collections, FixedArray)
 {
+#ifdef ARCANE_HAS_CXX20
+  static_assert(std::ranges::contiguous_range<FixedArray<Int32, 2>>);
+#endif
+
   {
     FixedArray<Int32, 0> empty_array;
     ASSERT_EQ(empty_array.size(), 0);
@@ -226,6 +234,40 @@ TEST(Collections, FixedArray)
       ASSERT_EQ(iter, array1.end());
       ASSERT_EQ(iter, const_array1.end());
     }
+  }
+  {
+    FixedArray<Int32, 2> v({ 1, 2 });
+    ASSERT_EQ(v[0], 1);
+    ASSERT_EQ(v[1], 2);
+  }
+  {
+    FixedArray<Int32, 2> v({ 3 });
+    ASSERT_EQ(v[0], 3);
+    ASSERT_EQ(v[1], 0);
+  }
+  {
+    UniqueArray<Int32> a1;
+    a1.add(3);
+    a1.add(5);
+    UniqueArray<Int32> a2;
+    a2.add(27);
+    a2.add(32);
+    a2.add(21);
+    FixedArray<UniqueArray<Int32>, 2> v({ a1, a2 });
+    ASSERT_EQ(v[0].size(), 2);
+    ASSERT_EQ(v[0][1], 5);
+    ASSERT_EQ(v[0][1], 5);
+    ASSERT_EQ(v[1].size(), 3);
+    ASSERT_EQ(v[1][0], 27);
+    ASSERT_EQ(v[1][1], 32);
+    ASSERT_EQ(v[1][2], 21);
+    FixedArray<UniqueArray<Int32>, 2> v2({ a1 });
+    v2 = { a2 };
+    ASSERT_EQ(v2[0].size(), 3);
+    ASSERT_EQ(v2[0][0], 27);
+    ASSERT_EQ(v2[0][1], 32);
+    ASSERT_EQ(v2[0][2], 21);
+    ASSERT_EQ(v2[1].size(), 0);
   }
 }
 
