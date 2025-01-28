@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemFamily.h                                                (C) 2000-2024 */
+/* ItemFamily.h                                                (C) 2000-2025 */
 /*                                                                           */
 /* Famille d'entités.                                                        */
 /*---------------------------------------------------------------------------*/
@@ -520,6 +520,7 @@ class ARCANE_MESH_EXPORT ItemFamily
   void _removeVariable(IVariable* var);
   void _resizeVariables(bool force_resize);
   void _shrinkConnectivityAndPrintInfos();
+  void _addOnSizeChangedObservable(VariableRef& var_ref);
 };
 
 /*---------------------------------------------------------------------------*/
