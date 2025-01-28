@@ -333,9 +333,7 @@ endmacro()
 # ----------------------------------------------------------------------------
 # Ajoute un test séquentiel en C#
 # Pour chaque test, on génère 4 variantes:
-# - le lancement avec 'mono'
-# - le lancement avec 'coreclr'
-# - le lancement avec l'exécutable classique et mono intégré (mono_embedded)
+# - le lancement avec 'coreclr' via dotnet (coreclr_dotnet)
 # - le lancement avec l'exécutable classique et coreclr intégré (coreclr_embedded)
 #
 function(arcane_add_csharp_test_direct)
@@ -376,7 +374,7 @@ function(arcane_add_csharp_test_direct)
       list(APPEND _EXTERNAL_ARGS "--dotnet-output-dll=${_OUTPUT_DLL}")
     endif ()
 
-    arcane_add_test_direct(NAME ${ARGS_TEST_NAME}_coreclr
+    arcane_add_test_direct(NAME ${ARGS_TEST_NAME}_coreclr_dotnet
       COMMAND ${ARGS_LAUNCH_COMMAND} -Z --dotnet-runtime=coreclr ${ARGS_ARGS} ${_FILE_ARC} ${_ALL_ARGS} ${_EXTERNAL_ARGS}
       WORKING_DIRECTORY ${ARGS_WORKING_DIRECTORY})
   endif()
