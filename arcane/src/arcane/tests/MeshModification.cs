@@ -235,13 +235,19 @@ public class MeshModificationService
     modifier.AddNodes(nodes_to_add.ConstView,new_nodes_local_id.View);
     Mesh().NodeFamily().EndUpdate();
     Trace.Info("NODES ADDED = {0}",nb_node_added);
-    ItemInternalArrayView new_nodes = Mesh().NodeFamily().ItemsInternal();
-    Trace.Info("NB TOTAL NODE = {0}",new_nodes.Size);
+    ItemInternalArrayView new_nodes_legacy = Mesh().NodeFamily().ItemsInternal();
+    ItemInfoListView new_nodes = Mesh().NodeFamily().ItemInfoListView();
+    Trace.Info("NB TOTAL NODE = {0}",new_nodes_legacy.Size);
     for(int i=0; i<nb_node_added; ++i){
       Int32 new_local_id = new_nodes_local_id[i];
       Item new_node = new_nodes[new_local_id];
-      Trace.Info("NEW LOCAL ID={0} Coord={1} UID={2}",new_local_id, nodes_to_add_coords[i],new_node.UniqueId);
+      Trace.Info("NEW LOCAL ID={0} Coord={1} UID={2} FromItem={3}",
+                 new_local_id, nodes_to_add_coords[i],new_node.UniqueId,new_node.LocalId);
       nodes_coords[new_nodes[new_local_id]] = nodes_to_add_coords[i];
+      if (new_node.LocalId!=new_nodes_legacy[new_local_id].LocalId)
+        throw new ApplicationException("Nodes are different (1)");
+      if (new_node.LocalId!=new_local_id)
+        throw new ApplicationException("Nodes are different (2)");
     }
 
     Trace.Info("NB CELL TO ADD = {0}",nb_cell_to_add);
