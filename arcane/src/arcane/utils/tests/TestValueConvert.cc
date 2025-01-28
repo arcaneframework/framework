@@ -81,6 +81,7 @@ void _checkReal2(const String& s, Real2 expected_v)
 
 void _checkReal3(const String& s, Real3 expected_v)
 {
+  std::cout << "Real3Compare s='" << s << "'\n";
   Real3 v = {};
   bool is_bad = builtInGetValue(v, s);
   std::cout << "S=" << s << " Real3=" << v << " is_bad?=" << is_bad << "\n";
@@ -111,31 +112,36 @@ void _testDoubleConvert(bool use_from_chars)
     _checkBad<double>("");
   _checkDouble("-0x1.81e03f705857bp-16", -2.3e-05);
   _checkDouble("0x1.81e03f705857bp-16", 2.3e-05);
-  if (!use_from_chars)
+  _checkDouble("+0x1.81e03f705857bp-16", 2.3e-05);
+  _checkDouble("  +1.23e42", 1.23e42);
+  _checkDouble("  -1.23e42", -1.23e42);
+  if (!use_from_chars) {
     _checkDouble("+1.23e42", 1.23e42);
+  }
+
   _checkBad<double>("d2");
   _checkBad<double>("2.3w");
 
   {
     Real inf_x = std::numeric_limits<Real>::infinity();
     _checkDouble("inf", inf_x);
-    _checkDouble("INF", inf_x);
-    _checkDouble("infinity", inf_x);
+    _checkDouble(" INF", inf_x);
+    _checkDouble("  infinity", inf_x);
     _checkDouble("INFINITY", inf_x);
   }
   {
     Real minus_inf_x = -std::numeric_limits<Real>::infinity();
     _checkDouble("-inf", minus_inf_x);
-    _checkDouble("-INF", minus_inf_x);
-    _checkDouble("-infinity", minus_inf_x);
+    _checkDouble(" -INF", minus_inf_x);
+    _checkDouble("  -infinity", minus_inf_x);
     _checkDouble("-INFINITY", minus_inf_x);
   }
 
   {
     _checkNaN("nan");
-    _checkNaN("NAN");
+    _checkNaN(" NAN");
     _checkNaN("NaN");
-    _checkNaN("nAN");
+    _checkNaN("  nAN");
   }
   {
     String s3 = "23123.132e123";
@@ -156,8 +162,10 @@ void _testReal2Convert(bool use_same_that_real)
   impl::arcaneSetUseSameValueConvertForAllReal(use_same_that_real);
   Real v_nan = std::numeric_limits<double>::quiet_NaN();
   _checkReal2("2.3e1 -1.2", Real2(2.3e1, -1.2));
-  if (use_same_that_real)
+  if (use_same_that_real) {
     _checkReal2("-1.3 nan", Real2(-1.3, v_nan));
+    _checkReal2("  2.3 -1.3", Real2(2.3, -1.3));
+  }
   _checkBad<Real2>("2.3 1.2w");
   _checkBad<Real2>("2.3x");
   _checkBad<Real2>(" y2.3 1.2");
@@ -171,8 +179,9 @@ void _testReal3Convert(bool use_same_that_real)
   _checkReal3("2.3e1 -1.2 1.5", Real3(2.3e1, -1.2, 1.5));
   if (use_same_that_real) {
     _checkReal3("-1.3 nan 4.6", Real3(-1.3, v_nan, 4.6));
-    _checkReal3("1.3 4.2 inf", Real3(1.3, 4.2, v_inf));
-    _checkReal3("-2.1 -1.5 1.0e5", Real3(-2.1, -1.5, 1.0e5));
+    _checkReal3("1.3 4.2   inf", Real3(1.3, 4.2, v_inf));
+    _checkReal3("-2.1\t -1.5 1.0e5", Real3(-2.1, -1.5, 1.0e5));
+    _checkReal3("  -2.1 -1.5 1.0e5", Real3(-2.1, -1.5, 1.0e5));
     //_checkReal3("-2.1 -1.5 +1.0e5", Real3(-2.1, -1.5, 1.0e5));
   }
   _checkBad<Real3>("2.3 1.2w");
