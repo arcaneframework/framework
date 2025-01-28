@@ -671,7 +671,7 @@ class TBBTaskImplementation::Impl
  public:
   tbb::task_arena m_main_arena;
   //! Tableau dont le i-ème élément contient la tbb::task_arena pour \a i thread.
-  std::vector<tbb::task_arena*> m_sub_arena_list;
+  UniqueArray<tbb::task_arena*> m_sub_arena_list;
  private:
   TaskObserver m_task_observer;
   std::mutex m_thread_created_mutex;
@@ -694,6 +694,8 @@ class TBBTaskImplementation::Impl
     // pour éviter d'avoir trop d'objets alloués.
     if (max_arena_size>512)
       max_arena_size = 512;
+    if (max_arena_size<2)
+      max_arena_size = 2;
     m_sub_arena_list.resize(max_arena_size);
     m_sub_arena_list[0] = m_sub_arena_list[1] = nullptr;
     for( Integer i=2; i<max_arena_size; ++i )
@@ -1159,7 +1161,7 @@ _executeParallelFor(const ParallelFor1DLoopInfo& loop_info)
   ParallelForExecute pfe(this,true_options,begin,size,f,stat_info);
 
   tbb::task_arena* used_arena = nullptr;
-  if (max_thread<nb_allowed_thread)
+  if (max_thread<nb_allowed_thread && max_thread<m_p->m_sub_arena_list.size())
     used_arena = m_p->m_sub_arena_list[max_thread];
   if (!used_arena)
     used_arena = &(m_p->m_main_arena);
