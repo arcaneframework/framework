@@ -38,6 +38,12 @@ namespace Arcane
 {
 namespace
 {
+  /*!
+   * \brief Retourne \a s converti en \a 'const char*'.
+   *
+   * \warning Si la valeur retournée est utilisée pour une fonction C,
+   * il faut être sur que \a s a un '\0' terminal.
+   */
   const char* _stringViewData(StringView s)
   {
     return reinterpret_cast<const char*>(s.bytes().data());
@@ -50,7 +56,7 @@ namespace
    * \a pos indique la position dans \a s à partir de laquelle
    * on cherche les blancs.
    */
-  StringView _removeLeadingSpaces(StringView s, Int64 pos)
+  StringView _removeLeadingSpaces(StringView s, Int64 pos = 0)
   {
     Span<const Byte> bytes = s.bytes();
     Int64 nb_byte = bytes.size();
@@ -66,7 +72,7 @@ namespace
         break;
 #endif
     }
-    return StringView(bytes.subSpan(pos, nb_byte));
+    return s.subView(pos, nb_byte);
   }
 } // namespace
 
@@ -141,6 +147,7 @@ _getDoubleValue(double& v, StringView s)
 {
 #if defined(ARCANE_USE_FROMCHARS)
   if (global_use_from_chars) {
+    s = _removeLeadingSpaces(s);
     Int64 p = _getDoubleValueWithFromChars(v, s);
     return p;
   }
@@ -180,7 +187,8 @@ Int64 StringViewToDoubleConverter::
 _getDoubleValueWithFromChars(double& v, StringView s)
 {
 #if defined(ARCANE_USE_FROMCHARS)
-  // ATTENTION: il ne faut pas d'espace en début de \a s
+  // NOTE: si on veut le même comportement que 'strtod',
+  // on suppose que l'appelant a enlevé les blancs en début de s.
   auto bytes = s.bytes();
   Int64 size = bytes.size();
   if (size == 0)
@@ -195,11 +203,18 @@ _getDoubleValueWithFromChars(double& v, StringView s)
   const char* data = orig_data;
   bool do_negatif = false;
   const bool is_verbose = global_value_convert_verbosity > 0;
+
+  // std::from_chars() ne supporte pas les '+' en début alors
+  // que 'strto*' le supporte.
+  if (bytes[0] == '+') {
+    ++data;
+    --size;
+    bytes = bytes.subspan(1, size);
+  }
   // std::from_chars() peut lire les valeurs au format hexadécimal
   // mais il ne doit pas contenir le '0x' ou '0X' du début, contrairement
   // à std::strtod(). On détecte ce cas et on commence la conversion
   // après le '0x' ou '0X'.
-
   // Détecte '-0x' ou '-0X'
   if (size >= 3 && (bytes[0] == '-') && (bytes[1] == '0') && (bytes[2] == 'x' || bytes[2] == 'X')) {
     fmt = std::chars_format::hex;
@@ -245,6 +260,7 @@ builtInGetValue(double& v, StringView s)
 {
 #if defined(ARCANE_USE_FROMCHARS)
   if (global_use_from_chars) {
+    s = _removeLeadingSpaces(s);
     Int64 p = StringViewToDoubleConverter::_getDoubleValueWithFromChars(v, s);
     return (p == (-1) || (p != s.size()));
   }
@@ -371,8 +387,7 @@ template <> ARCANE_UTILS_EXPORT bool
 builtInGetValue(Real2& v, StringView s)
 {
   if (global_use_same_value_convert_for_all_real) {
-    // ATTENTION: Pour l'instant ce nouveau mécanisme ne tolère pas
-    // les espaces en début de \a s.
+    s = _removeLeadingSpaces(s);
     v = {};
     const bool is_verbose = global_value_convert_verbosity > 0;
     if (is_verbose)
@@ -393,8 +408,7 @@ template <> ARCANE_UTILS_EXPORT bool
 builtInGetValue(Real3& v, StringView s)
 {
   if (global_use_same_value_convert_for_all_real) {
-    // ATTENTION: Pour l'instant ce nouveau mécanisme ne tolère pas
-    // les espaces en début de \a s.
+    s = _removeLeadingSpaces(s);
     v = {};
     const bool is_verbose = global_value_convert_verbosity > 0;
     if (is_verbose)
