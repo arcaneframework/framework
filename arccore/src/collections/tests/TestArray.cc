@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -894,7 +894,7 @@ class TesterMemoryAllocatorV3
     _checkValid(args);
     return m_default_allocator.adjustedCapacity(args, wanted_capacity, element_size);
   }
-  size_t guarantedAlignment(MemoryAllocationArgs args) const override
+  size_t guaranteedAlignment(MemoryAllocationArgs args) const override
   {
     _checkValid(args);
     return m_default_allocator.guaranteedAlignment(args);

@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ArraySimdPadder.h                                           (C) 2000-2024 */
+/* ArraySimdPadder.h                                           (C) 2000-2025 */
 /*                                                                           */
 /* Classe pour ajouter du 'padding' pour la vectorisation.                   */
 /*---------------------------------------------------------------------------*/
@@ -83,9 +83,9 @@ class ArraySimdPadder
     if (padding_size <= size)
       return;
     MemoryAllocationArgs args;
-    if (ids.allocator()->guarantedAlignment(args) < AlignedMemoryAllocator::simdAlignment())
+    if (ids.allocator()->guaranteedAlignment(args) < AlignedMemoryAllocator::simdAlignment())
       ARCANE_FATAL("Allocator guaranted alignment ({0}) has to be greated than {1}",
-                   ids.allocator()->guarantedAlignment(args), AlignedMemoryAllocator::simdAlignment());
+                   ids.allocator()->guaranteedAlignment(args), AlignedMemoryAllocator::simdAlignment());
     if (padding_size > ids.capacity())
       ARCANE_FATAL("Not enough capacity c={0} min_expected={1}", ids.capacity(),
                    padding_size);

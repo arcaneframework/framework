@@ -52,7 +52,7 @@ class ARCANE_UTILS_EXPORT StackMemoryAllocator final
   AllocatedMemoryInfo reallocate(MemoryAllocationArgs args, AllocatedMemoryInfo current_ptr, Int64 new_size) final;
   void deallocate(MemoryAllocationArgs args, AllocatedMemoryInfo ptr) final;
   Int64 adjustedCapacity(MemoryAllocationArgs, Int64 wanted_capacity, Int64) const final { return wanted_capacity; }
-  size_t guarantedAlignment(MemoryAllocationArgs) const final { return 0; }
+  size_t guaranteedAlignment(MemoryAllocationArgs) const final { return 0; }
 
  private:
 
