@@ -16,6 +16,7 @@ SWIG_CSBODY_TYPEWRAPPER([System.ComponentModel.EditorBrowsable(System.ComponentM
 
 %{
 #include "core/ArcaneSwigCoreInclude.h"
+#include "ArcaneSwigUtils.h"
 
 using namespace Arcane;
 using namespace Arcane::Accelerator;
@@ -551,20 +552,7 @@ class EntryPoint : public IEntryPoint
 
 %define ARCANE_STD_EXHANDLER
 %exception {
-	try {
-		$action
-  }
-  catch (const Arcane::Exception& ex) {
-    OStringStream ostr;
-    ostr() << ex;
-    String s = ostr.str();
-    std::string s2 = s.localstr();
-    SWIG_CSharpSetPendingException(SWIG_CSharpApplicationException, s2.c_str());
-  } catch (const std::exception& e) {
-    SWIG_CSharpSetPendingException(SWIG_CSharpApplicationException, e.what());
-	} catch(...) {
-    SWIG_CSharpSetPendingException(SWIG_CSharpApplicationException, "Unknown");
-  }
+  ::Arcane::_doSwigTryCatch([&]{ $action });
 }
 %enddef
 

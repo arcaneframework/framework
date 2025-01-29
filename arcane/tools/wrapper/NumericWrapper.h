@@ -1,13 +1,16 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* NumericWrapper.h                                            (C) 2000-2024 */
+/* NumericWrapper.h                                            (C) 2000-2025 */
 /*                                                                           */
 /* Wrapper pour swig.                                                        */
+/*---------------------------------------------------------------------------*/
+#ifndef ARCANE_WRAPPER_CORE_NUMERICWRAPPER_H
+#define ARCANE_WRAPPER_CORE_NUMERICWRAPPER_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -20,10 +23,10 @@
 // Pour que cela compile, on ajoute donc un constructeur qui prend un entier en argument.
 // Comme cela ne sert que pour la déclaration de la variable, cela ne pose pas de problèmes.
 
-#include "arcane/utils/Real2.h"
-#include "arcane/utils/Real3.h"
-#include "arcane/utils/Real2x2.h"
-#include "arcane/utils/Real3x3.h"
+#include "arcane/utils/NumericTypes.h"
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 namespace Arcane
 {
@@ -227,6 +230,9 @@ namespace Arcane
   };
 }
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 namespace Arcane
 {
   extern ARCANE_CORE_EXPORT bool
@@ -240,3 +246,11 @@ namespace Arcane
   extern ARCANE_CORE_EXPORT bool
   _caseOptionConvert(const CaseOptionBase& co,const String& name,CellGroup& obj);
 }
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+#endif
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
