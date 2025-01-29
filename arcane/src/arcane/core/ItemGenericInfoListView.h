@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemGenericInfoListView.h                                   (C) 2000-2024 */
+/* ItemGenericInfoListView.h                                   (C) 2000-2025 */
 /*                                                                           */
 /* Vue sur les informations génériques d'une famille d'entités.              */
 /*---------------------------------------------------------------------------*/
@@ -96,6 +96,8 @@ class ARCANE_CORE_EXPORT ItemGenericInfoListView
 
  private:
 
+  // NOTE: Cette structure est utilisée dans le wrapping C#.
+  // Si on modifie les champs, il faut mettre à jour la structure C# équivalente
   Int64ArrayView m_unique_ids;
   Int32ArrayView m_owners;
   Int32ArrayView m_flags;

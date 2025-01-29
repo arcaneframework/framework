@@ -396,19 +396,56 @@ ARCANE_SWIG_OVERRIDE_GETCPTR(Arcane::ItemGroupT<Arcane::Cell>,Arcane)
 %template(IRealReal3ToRealMathFunctor) Arcane::IBinaryMathFunctor<double,Arcane::Real3,double>;
 %template(IRealReal3ToReal3MathFunctor) Arcane::IBinaryMathFunctor<double,Arcane::Real3,Arcane::Real3>;
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+// Wrapping de ItemInternalArrayView (et ItemInternalList car c'est la même classe)
+
 %template(ItemInternalArrayView) Arcane::ArrayView<ItemInternal*>;
+%typemap(ctype, out="Arcane::ItemInternalArrayView",
+         directorout="Arcane::ItemInternalArrayView",
+         directorin="Arcane::ItemInternalArrayView") ItemInternalArrayView "Arcane.ItemInternalArrayView"
 %typemap(cstype) ItemInternalArrayView "Arcane.ItemInternalArrayView"
 %typemap(imtype) ItemInternalArrayView "Arcane.ItemInternalArrayView"
 %typemap(csin) ItemInternalArrayView "$csinput"
+%typemap(out) ItemInternalArrayView
+%{
+   $result = $1;
+%}
 %typemap(csout) ItemInternalArrayView {
     ItemInternalArrayView ret = $imcall;$excode
     return ret;
   }
+%typemap(csdirectorin) ItemInternalArrayView "$iminput"
+%typemap(csdirectorout) ItemInternalArrayView "$cscall"
 
 namespace Arcane
 {
-  typedef Arcane::ArrayView<ItemInternal*> ItemInternaList;
+  using ItemInternaList = Arcane::ArrayView<ItemInternal*>;
 }
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+// Wrapping de ItemInfoListView. La structure C# correspondante est dans csharp/ItemInternal.cs
+
+%typemap(ctype, out="Arcane::ItemInfoListView",
+         directorout="Arcane::ItemInfoListView",
+         directorin="Arcane::ItemInfoListView") Arcane::ItemInfoListView "Arcane.ItemInfoListView"
+%typemap(cstype) Arcane::ItemInfoListView "Arcane.ItemInfoListView"
+%typemap(imtype) Arcane::ItemInfoListView "Arcane.ItemInfoListView"
+%typemap(csin) Arcane::ItemInfoListView "$csinput"
+%typemap(out) Arcane::ItemInfoListView
+%{
+   $result = $1;
+%}
+%typemap(csout) Arcane::ItemInfoListView {
+    ItemInfoListView ret = $imcall;$excode
+    return ret;
+  }
+%typemap(csdirectorin) Arcane::ItemInfoListView "$iminput"
+%typemap(csdirectorout) Arcane::ItemInfoListView "$cscall"
+
+ /*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 %typemap(csinterfaces) Arcane::ITraceMng "Arcane.ITraceMng";
 namespace Arcane
@@ -509,6 +546,9 @@ class EntryPoint : public IEntryPoint
 };
 }
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 %define ARCANE_STD_EXHANDLER
 %exception {
 	try {
@@ -519,7 +559,6 @@ class EntryPoint : public IEntryPoint
     ostr() << ex;
     String s = ostr.str();
     std::string s2 = s.localstr();
-    //cerr << "ArcaneWrapper exception: " << s << '\n';
     SWIG_CSharpSetPendingException(SWIG_CSharpApplicationException, s2.c_str());
   } catch (const std::exception& e) {
     SWIG_CSharpSetPendingException(SWIG_CSharpApplicationException, e.what());
@@ -529,6 +568,8 @@ class EntryPoint : public IEntryPoint
 }
 %enddef
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 ARCANE_STD_EXHANDLER
 %ignore Arcane::IItemFamily::synchronizeVariable;
