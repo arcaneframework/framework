@@ -1,11 +1,17 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ArcaneSwigUtils.h                                           (C) 2000-2022 */
+/* ArcaneSwigUtils.h                                           (C) 2000-2025 */
+/*                                                                           */
+/* Fonctions utilitaires pour le wrapping via Swig.                          */
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+#ifndef ARCANE_WRAPPER_CORE_ARCANESWIGUTILS_H
+#define ARCANE_WRAPPER_CORE_ARCANESWIGUTILS_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -85,3 +91,30 @@ namespace Arcane
 
 #include "arcane/utils/Exception.h"
 #include "arcane/utils/OStringStream.h"
+
+namespace Arcane
+{
+  //! Fonction utilitaire pour récupérer une éventuelle exception pour la passer entre le C++ et le C#
+  template<typename Lambda> inline
+  void _doSwigTryCatch(const Lambda& lambda)
+  {
+    try{
+      lambda();
+    }
+    catch (const Arcane::Exception& ex) {
+      OStringStream ostr;
+      ostr() << ex;
+      String s = ostr.str();
+      std::string s2 = s.localstr();
+      SWIG_CSharpSetPendingException(SWIG_CSharpApplicationException, s2.c_str());
+    }
+    catch (const std::exception& e) {
+      SWIG_CSharpSetPendingException(SWIG_CSharpApplicationException, e.what());
+    }
+    catch(...) {
+      SWIG_CSharpSetPendingException(SWIG_CSharpApplicationException, "Unknown");
+    }
+  }
+}
+
+#endif
