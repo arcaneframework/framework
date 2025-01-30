@@ -244,6 +244,11 @@ jobs:
           cmake --build "${{ env.CMAKE_BUILD_DIR }}"
           cmake --build "${{ env.CMAKE_BUILD_DIR }}" --target copy_dlls
 
+      - name: Print output directory contents
+        shell: bash
+        run: |
+          find "${{ env.CMAKE_BUILD_DIR }}/lib"
+
       - name: Get 'ccache' status
         run: ccache -s -v
 
