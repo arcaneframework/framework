@@ -63,7 +63,7 @@ jobs:
             triplet: x64-linux-dynamic
             vcpkg_os: ubuntu-22.04
             dotnet_version : "6.0.x"
-            cmake_specific_args : '-DALIEN_BUILD_COMPONENT=all -DARCCORE_BUILD_MODE=Debug -DCMAKE_BUILD_TYPE=Debug -DARCCORE_CXX_STANDARD=20 -DARCANE_ENABLE_DOTNET_PYTHON_WRAPPER=ON'
+            cmake_specific_args : '-DALIEN_BUILD_COMPONENT=all -DARCCORE_BUILD_MODE=Debug -DCMAKE_BUILD_TYPE=Debug -DARCCORE_CXX_STANDARD=20 -DARCANE_ENABLE_DOTNET_PYTHON_WRAPPER=OFF'
             ctest_specific_args : '-I 1,210'
           - os: ubuntu-24.04
             full_name: 'ubuntu-cxx20-24.04'
