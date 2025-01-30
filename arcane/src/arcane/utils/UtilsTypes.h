@@ -38,117 +38,6 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-// Classes de 'arccore_base'
-
-using Arccore::ArrayView;
-using Arccore::ConstArrayView;
-using Arccore::Array2View;
-using Arccore::ConstArray2View;
-using Arccore::Array3View;
-using Arccore::ConstArray3View;
-using Arccore::Array4View;
-using Arccore::ConstArray4View;
-using Arccore::IterT;
-using Arccore::ConstIterT;
-using Arccore::CoreArray;
-using Arccore::StringImpl;
-using Arccore::Span;
-using Arccore::Span2;
-using Arccore::SmallSpan;
-using Arccore::SmallSpan2;
-using Arccore::SpanImpl;
-using Arccore::Span2Impl;
-using Arccore::eBasicDataType;
-
-using Arccore::TraceInfo;
-using Arccore::StackTrace;
-using Arccore::Exception;
-using Arccore::StackFrame;
-using Arccore::FixedStackFrameArray;
-using Arccore::IStackTraceService;
-using Arccore::CheckedPointer;
-using Arccore::ReferenceCounter;
-using Arccore::ReferenceCounterImpl;
-using Arccore::RefTraits;
-using Arccore::Ref;
-using Arccore::ArgumentException;
-using Arccore::IndexOutOfRangeException;
-using Arccore::FatalErrorException;
-using Arccore::NotSupportedException;
-using Arccore::NotImplementedException;
-using Arccore::TimeoutException;
-
-using Arccore::IFunctor;
-using Arccore::IFunctorWithArgumentT;
-using Arccore::IFunctorWithArgAndReturn2;
-using Arccore::FunctorT;
-using Arccore::FunctorWithArgumentT;
-using Arccore::StdFunctorWithArgumentT;
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-// Classes de 'arccore_collections'
-
-using Arccore::AllocatedMemoryInfo;
-using Arccore::eMemoryLocationHint;
-using Arccore::MemoryAllocationOptions;
-using Arccore::MemoryAllocationArgs;
-using Arccore::IMemoryAllocator;
-using Arccore::IMemoryAllocator3;
-using Arccore::PrintableMemoryAllocator;
-using Arccore::AlignedMemoryAllocator;
-using Arccore::DefaultMemoryAllocator;
-using Arccore::ArrayTraits;
-using Arccore::Array;
-using Arccore::AbstractArray;
-using Arccore::SharedArray;
-using Arccore::UniqueArray;
-using Arccore::Array2;
-using Arccore::SharedArray2;
-using Arccore::UniqueArray2;
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-// Classes de 'arccore_concurrency'
-
-using Arccore::IThreadImplementation;
-using Arccore::Mutex;
-using Arccore::SpinLock;
-using Arccore::GlobalMutex;
-using Arccore::IThreadBarrier;
-using Arccore::ThreadImpl;
-using Arccore::MutexImpl;
-using Arccore::NullThreadImplementation;
-using Arccore::NullThreadBarrier;
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-// Classes de 'arccore_trace'
-
-using Arccore::ITraceStream;
-using Arccore::ITraceMng;
-using Arccore::TraceAccessor;
-using Arccore::TraceMessageClass; 
-using Arccore::TraceClassConfig;
-using Arccore::TraceMessage;
-using Arccore::TraceMessageDbg;
-using Arccore::TraceMessageListenerArgs;
-using Arccore::ITraceMessageListener;
-namespace Trace = ::Arccore::Trace;
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-//! Type d'un octet
-typedef unsigned char Byte;
-//! Type d'un octet
-typedef signed char SByte;
-//! Type d'un caractère unicode
-typedef unsigned short UChar;
-//! Type d'un Int16 non signé
-typedef unsigned short UInt16;
-//! Type d'un réel simple précision
-typedef float Single;
 
 template<typename T> class MultiArray2View;
 template<typename T> class ConstMultiArray2View;
@@ -257,11 +146,6 @@ inline constexpr Int32 DynExtent = -1;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-using Arccore::eMemoryResource;
-//! Typedef pour la version Arcane historique (avec 2's')
-// TODO: A rendre obsolète (juin 2025)
-using eMemoryRessource = Arccore::eMemoryResource;
 
 class DefaultLayout;
 template<int RankValue> class RightLayoutN;
