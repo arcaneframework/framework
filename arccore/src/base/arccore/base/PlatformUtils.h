@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* PlatformUtils.h                                             (C) 2000-2023 */
+/* PlatformUtils.h                                             (C) 2000-2025 */
 /*                                                                           */
 /* Fonctions utilitaires dépendant de la plateforme.                         */
 /*---------------------------------------------------------------------------*/
@@ -23,21 +23,17 @@
 
 namespace Arccore
 {
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-class String;
 class IStackTraceService;
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
-  \brief Espace de nom pour les fonctions dépendant de la plateforme.
- 
-  Cet espace de nom contient toutes les fonctions dépendant de la plateforme.
-*/
-namespace Platform
+ * \brief Espace de nom pour les fonctions dépendant de la plateforme.
+ * 
+ * Cet espace de nom contient toutes les fonctions dépendant de la plateforme.
+ */
+namespace Arccore::Platform
 {
 
 /*---------------------------------------------------------------------------*/
@@ -361,12 +357,58 @@ getCompilerId();
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Platform
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arccore
+namespace Arcane::platform
+{
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+using Arccore::Platform::getCurrentDate;
+using Arccore::Platform::getCurrentTime;
+using Arccore::Platform::getCurrentDateTime;
+using Arccore::Platform::getHostName;
+using Arccore::Platform::getCurrentDirectory;
+using Arccore::Platform::getProcessId;
+using Arccore::Platform::getUserName;
+using Arccore::Platform::getHomeDirectory;
+using Arccore::Platform::getFileLength;
+using Arccore::Platform::getEnvironmentVariable;
+using Arccore::Platform::recursiveCreateDirectory;
+using Arccore::Platform::createDirectory;
+using Arccore::Platform::removeFile;
+using Arccore::Platform::isFileReadable;
+using Arccore::Platform::getFileDirName;
+using Arccore::Platform::stdMemcpy;
+using Arccore::Platform::getMemoryUsed;
+using Arccore::Platform::getCPUTime;
+using Arccore::Platform::getRealTime;
+using Arccore::Platform::timeToHourMinuteSecond;
+using Arccore::Platform::isDenormalized;
+using Arccore::Platform::safeStringCopy;
+using Arccore::Platform::sleep;
+
+using Arccore::Platform::enableFloatingException;
+using Arccore::Platform::isFloatingExceptionEnabled;
+using Arccore::Platform::raiseFloatingException;
+using Arccore::Platform::hasFloatingExceptionSupport;
+
+using Arccore::Platform::getStackTraceService;
+using Arccore::Platform::setStackTraceService;
+using Arccore::Platform::getStackTrace;
+using Arccore::Platform::dumpStackTrace;
+
+using Arccore::Platform::getConsoleHasColor;
+using Arccore::Platform::getCompilerId;
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
