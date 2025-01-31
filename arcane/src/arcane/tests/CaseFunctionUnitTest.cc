@@ -1,16 +1,17 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CaseFunctionUnitTest.cc                                     (C) 2000-2023 */
+/* CaseFunctionUnitTest.cc                                     (C) 2000-2025 */
 /*                                                                           */
 /* Tests unitaires de 'ICaseFunction'.                                       */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+#include "arcane/utils/ScopedPtr.h"
 #include "arcane/core/BasicUnitTest.h"
 #include "arcane/core/FactoryService.h"
 #include "arcane/core/CaseTable.h"
@@ -147,8 +148,7 @@ void CaseFunctionUnitTest::
 _testBigTable()
 {
   CaseFunctionBuildInfo cfbi(traceMng(), "big-table");
-  //TODO: à detruire
-  auto func = new CaseTable(cfbi, CaseTable::CurveLinear);
+  ScopedPtrT<CaseTable> func(new CaseTable(cfbi, CaseTable::CurveLinear));
   Int32 multiplier = 10;
   // En débug utilise moins de points pour que le test ne dure pas trop
   // longtemps.
@@ -172,7 +172,7 @@ _testBigTable()
   for (Int32 z = 0; z < nb_z; ++z) {
     for (Int32 i = 0; i < nb; ++i) {
       Real2 v = values_to_test[i];
-      _checkValueEpsilon(func, v.x, v.y);
+      _checkValueEpsilon(func.get(), v.x, v.y);
     }
   }
 }
