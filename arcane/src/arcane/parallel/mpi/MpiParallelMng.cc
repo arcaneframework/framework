@@ -59,6 +59,7 @@
 
 namespace Arcane
 {
+using namespace Arcane::MessagePassing;
 using namespace Arccore::MessagePassing::Mpi;
 
 /*---------------------------------------------------------------------------*/

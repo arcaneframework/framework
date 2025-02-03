@@ -83,6 +83,11 @@ using Arccore::TraceMessage;
 using Arccore::TraceMessageDbg;
 using Arccore::TraceMessageListenerArgs;
 using Arccore::ITraceMessageListener;
+using Arccore::ITimeMetricCollector;
+using Arccore::TimeMetricSentry;
+using Arccore::TimeMetricId;
+using Arccore::TimeMetricAction;
+using Arccore::TimeMetricActionBuildInfo;
 namespace Trace = ::Arccore::Trace;
 
 /*---------------------------------------------------------------------------*/
