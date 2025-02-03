@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Parallel.h                                                  (C) 2000-2024 */
+/* Parallel.h                                                  (C) 2000-2025 */
 /*                                                                           */
 /* Espace de nom des types gérant le parallélisme.                           */
 /*---------------------------------------------------------------------------*/
@@ -32,55 +32,11 @@
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-namespace Arcane
-{
-using Arccore::MessagePassing::IControlDispatcher;
-using Arccore::MessagePassing::IMessagePassingMng;
-using Arccore::MessagePassing::ISerializeMessage;
-using Arccore::MessagePassing::ISerializeMessageList;
-using Arccore::MessagePassing::ITypeDispatcher;
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 /*!
  * \brief Types des classes du parallélisme.
  */
 namespace Arcane::Parallel
 {
-
-using Arccore::MessagePassing::eReduceType;
-using Arccore::MessagePassing::ReduceMax;
-using Arccore::MessagePassing::ReduceMin;
-using Arccore::MessagePassing::ReduceSum;
-
-using Arccore::MessagePassing::eWaitType;
-using Arccore::MessagePassing::TestSome;
-using Arccore::MessagePassing::WaitAll;
-using Arccore::MessagePassing::WaitSome;
-using Arccore::MessagePassing::WaitSomeNonBlocking;
-
-using Arccore::MessagePassing::Blocking;
-using Arccore::MessagePassing::eBlockingType;
-using Arccore::MessagePassing::NonBlocking;
-
-using Arccore::MessagePassing::ePointToPointMessageType;
-using Arccore::MessagePassing::MsgReceive;
-using Arccore::MessagePassing::MsgSend;
-
-using Arccore::MessagePassing::IRequestCreator;
-using Arccore::MessagePassing::IRequestList;
-using Arccore::MessagePassing::ISubRequest;
-using Arccore::MessagePassing::MessageId;
-using Arccore::MessagePassing::MessageRank;
-using Arccore::MessagePassing::MessageSourceInfo;
-using Arccore::MessagePassing::MessageTag;
-using Arccore::MessagePassing::PointToPointMessageInfo;
-using Arccore::MessagePassing::Request;
-
-using Arccore::MessagePassing::Communicator;
-
 class IStat;
 }
 

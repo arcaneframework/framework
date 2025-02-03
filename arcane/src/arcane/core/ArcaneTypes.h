@@ -20,11 +20,20 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+// GG: Ne devrait pas être ici. Il faudrait inclure "SerializeGlobal.h" à la
+// place mais cela n'est pas possible tant que certains fichiers de
+// 'arcane/utils' utilisent des fichiers d'en-tête de 'arcane/core'. C'est
+// le cas par exemple des fichiers '*AMR*.h'.
+
 namespace Arccore
 {
 class ISerializer;
 }
+namespace Arcane
+{
+using Arccore::ISerializer;
 
+}
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -497,16 +506,6 @@ typedef List<ISession*> SessionList;
 typedef List<ICaseOptions*> CaseOptionsList;
 /*! \brief Tableau d'interfaces liées. */
 typedef List<ITiedInterface*> TiedInterfaceList;
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-using Arccore::ISerializer;
-using Arccore::ITimeMetricCollector;
-using Arccore::TimeMetricSentry;
-using Arccore::TimeMetricId;
-using Arccore::TimeMetricAction;
-using Arccore::TimeMetricActionBuildInfo;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
