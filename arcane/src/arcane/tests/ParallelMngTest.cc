@@ -699,7 +699,7 @@ _testProbeSerialize(Integer nb_value,bool use_one_message)
   else if (my_rank>min_rank){
     Integer nb_remaining_message = nb_message;
     while(nb_remaining_message>0){
-      MessageTag mtag(BasicSerializeMessage::DEFAULT_SERIALIZE_TAG_VALUE);
+      MessageTag mtag(MessagePassing::internal::BasicSerializeMessage::DEFAULT_SERIALIZE_TAG_VALUE);
       PointToPointMessageInfo p2p_info(MessageRank(0),mtag);
       p2p_info.setBlocking(false);
       MessageId id = pm->probe(p2p_info);
