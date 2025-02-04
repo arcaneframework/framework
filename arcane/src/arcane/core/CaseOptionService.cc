@@ -17,6 +17,8 @@
 #include "arcane/utils/Enumerator.h"
 #include "arcane/utils/NotImplementedException.h"
 #include "arcane/utils/FatalErrorException.h"
+#include "arcane/utils/ApplicationInfo.h"
+#include "arcane/utils/CommandLineArguments.h"
 
 #include "arcane/core/IApplication.h"
 #include "arcane/core/IServiceFactory.h"
@@ -28,6 +30,7 @@
 #include "arcane/core/ICaseDocument.h"
 #include "arcane/core/ICaseMng.h"
 #include "arcane/core/internal/ICaseOptionListInternal.h"
+#include "arcane/core/internal/StringVariableReplace.h"
 
 #include <typeinfo>
 
@@ -187,7 +190,17 @@ _readPhase1()
   }
 
   XmlNode element = col->rootElement();
-  String mesh_name = meshName();
+  const ParameterList& params = caseMng()->application()->applicationInfo().commandLineArguments().parameters();
+
+  String mesh_name = element.attrValue("mesh-name");
+  if (mesh_name.null()) {
+    mesh_name = meshName();
+  }
+  else {
+    // Dans un else : Le remplacement de symboles ne s'applique pas pour les valeurs par défault du .axl.
+    mesh_name = StringVariableReplace::replaceWithCmdLineArgs(params, mesh_name, true);
+  }
+
   tm->info(5) << "** CaseOptionService::read() ELEMENT <" << rootTagName() << "> " << col->rootElement().name()
               << " full=" << col->rootElement().xpathFullName()
               << " is_present=" << col->isPresent()
@@ -220,6 +233,10 @@ _readPhase1()
       }
     }
     str_val = m_default_value;
+  }
+  else {
+    // Dans un else : Le remplacement de symboles ne s'applique pas pour les valeurs par défault du .axl.
+    str_val = StringVariableReplace::replaceWithCmdLineArgs(params, str_val, true);
   }
   if (str_val.null() && !isOptional()){
     CaseOptionError::addOptionNotFoundError(doc,A_FUNCINFO,"@name",element);

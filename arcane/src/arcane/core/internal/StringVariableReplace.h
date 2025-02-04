@@ -22,8 +22,6 @@
 
 #include "arcane/utils/ParameterList.h"
 
-#include "arcane/core/VariableTypes.h"
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -37,6 +35,7 @@ class ARCANE_CORE_EXPORT StringVariableReplace
 {
  public:
 
+  static String replaceWithCmdLineArgs(StringView string_with_symbols, bool fatal_if_not_found = false, bool fatal_if_invalid = true);
   static String replaceWithCmdLineArgs(const ParameterList& parameter_list, StringView string_with_symbols, bool fatal_if_not_found = false, bool fatal_if_invalid = true);
 
  private:

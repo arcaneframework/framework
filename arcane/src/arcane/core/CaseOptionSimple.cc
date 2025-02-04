@@ -16,7 +16,10 @@
 #include "arcane/utils/ValueConvert.h"
 #include "arcane/utils/ITraceMng.h"
 #include "arcane/utils/FatalErrorException.h"
+#include <arcane/utils/ApplicationInfo.h>
+#include <arcane/utils/CommandLineArguments.h>
 
+#include "arcane/core/IApplication.h"
 #include "arcane/core/CaseOptionException.h"
 #include "arcane/core/CaseOptionBuildInfo.h"
 #include "arcane/core/XmlNodeList.h"
@@ -29,6 +32,7 @@
 #include "arcane/core/IPhysicalUnitSystem.h"
 #include "arcane/core/IStandardFunction.h"
 #include "arcane/core/ICaseDocumentVisitor.h"
+#include "arcane/core/internal/StringVariableReplace.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -125,6 +129,11 @@ _search(bool is_phase1)
                                   String::format("Only one token of the element is allowed (nb_occur={0})",
                                                  nb_elem));
     }
+  }
+
+  {
+    const ParameterList& params = caseMng()->application()->applicationInfo().commandLineArguments().parameters();
+    velem.setValue(StringVariableReplace::replaceWithCmdLineArgs(params, velem.value(), true));
   }
 
   m_element = velem;
