@@ -212,6 +212,26 @@ class ARCANE_LAUNCHER_EXPORT ArcaneLauncher
    */
   static StandaloneSubDomain createStandaloneSubDomain(const String& case_file_name);
 
+  /*!
+   * \brief Demande d'aide avec l'option "--help" ou "-h".
+   *
+   * Méthode permettant de savoir si l'utilisateur a demandée l'aide
+   * avec l'option "--help" ou "-h".
+   *
+   * \return true si l'aide a été demandée.
+   */
+  static bool needHelp();
+
+  /*!
+   * \brief Affichage de l'aide générique Arcane.
+   *
+   * Méthode permettant d'afficher l'aide générique Arcane si
+   * l'utilisateur l'a demandée avec l'option "--help" ou "-h".
+   *
+   * \return true si l'aide a été demandée.
+   */
+  static bool printHelp();
+
  public:
 
   /*!
