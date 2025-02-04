@@ -131,8 +131,33 @@ _search(bool is_phase1)
     }
   }
 
+  // Liste des options de la ligne de commande.
+  const ParameterList& params = caseMng()->application()->applicationInfo().commandLineArguments().parameters();
   {
-    const ParameterList& params = caseMng()->application()->applicationInfo().commandLineArguments().parameters();
+    String path;
+    if (velem.null())
+      path = rootElement().xpathFullName() + "/" + name();
+    else
+      path = velem.xpathFullName();
+
+    // On retire le "//case/" ou le "//cas/" du début.
+    StringView sv;
+    if (doc->language() == "fr")
+      sv = path.view().subView(6);
+    else
+      sv = path.view().subView(7);
+
+    String reference_input = params.getParameterOrNull(sv);
+    if (!reference_input.null()) {
+      // Si l'utilisateur a spécifié une option qui n'est pas présente dans le
+      // jeu de données, on doit la créer.
+      if (velem.null()) {
+        velem = rootElement().createElement(name());
+      }
+      velem.setValue(reference_input);
+    }
+  }
+  if (!velem.null()) {
     velem.setValue(StringVariableReplace::replaceWithCmdLineArgs(params, velem.value(), true));
   }
 

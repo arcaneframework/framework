@@ -191,8 +191,26 @@ _readPhase1()
 
   XmlNode element = col->rootElement();
   const ParameterList& params = caseMng()->application()->applicationInfo().commandLineArguments().parameters();
+  ICaseDocumentFragment* doc = caseDocumentFragment();
 
-  String mesh_name = element.attrValue("mesh-name");
+  String mesh_name;
+  {
+    String path = element.xpathFullName() + "/@mesh-name";
+
+    // On retire le "//case/" ou le "//cas/" du début.
+    StringView sv;
+    if (doc->language() == "fr")
+      sv = path.view().subView(6);
+    else
+      sv = path.view().subView(7);
+
+    String reference_input = params.getParameterOrNull(sv);
+    if (!reference_input.null())
+      mesh_name = reference_input;
+    else
+      mesh_name = element.attrValue("mesh-name");
+  }
+
   if (mesh_name.null()) {
     mesh_name = meshName();
   }
@@ -213,9 +231,24 @@ _readPhase1()
   if (_setMeshHandleAndCheckDisabled(mesh_name))
     return;
 
-  ICaseDocumentFragment* doc = caseDocumentFragment();
+  String str_val;
+  {
+    String path = element.xpathFullName() + "/@name";
 
-  String str_val = element.attrValue("name");
+    // On retire le "//case/" ou le "//cas/" du début.
+    StringView sv;
+    if (doc->language() == "fr")
+      sv = path.view().subView(6);
+    else
+      sv = path.view().subView(7);
+
+    String reference_input = params.getParameterOrNull(sv);
+    if (!reference_input.null())
+      str_val = reference_input;
+    else
+      str_val = element.attrValue("name");
+  }
+
   //cerr << "** STR_VAL <" << str_val << " - " << m_default_value << ">\n";
 
   if (str_val.null()){
