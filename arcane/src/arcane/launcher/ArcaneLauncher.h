@@ -215,7 +215,7 @@ class ARCANE_LAUNCHER_EXPORT ArcaneLauncher
   /*!
    * \brief Demande d'aide avec l'option "--help" ou "-h".
    *
-   * Méthode permettant de savoir si l'utilisateur a demandée l'aide
+   * Méthode permettant de savoir si l'utilisateur a demandé l'aide
    * avec l'option "--help" ou "-h".
    *
    * \return true si l'aide a été demandée.

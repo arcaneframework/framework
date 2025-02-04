@@ -115,8 +115,8 @@ createMesh(const String& default_name)
                  options()->configList()->xpathFullName(),
                  options()->generator.rootTagName(),
                  options()->filename.name());
-  if (has_filename){
-    m_mesh_file_name = StringVariableReplace::replaceWithCmdLineArgs(m_sub_domain->applicationInfo().commandLineArguments().parameters(), options()->filename().view());
+  if (has_filename) {
+    m_mesh_file_name = options()->filename();
     if (m_mesh_file_name.empty())
       ARCANE_FATAL("Invalid filename '{0}' in option '{1}'",
                    m_mesh_file_name,options()->filename.xpathFullName());
