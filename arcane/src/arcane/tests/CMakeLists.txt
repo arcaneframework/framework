@@ -331,6 +331,41 @@ endif()
 ARCANE_ADD_TEST_SEQUENTIAL(caseoptions testCaseOptions-1.arc)
 arcane_add_test_sequential(caseoptions_specificentrypoint testCaseOptions-specific-entry-point.arc
   "-We,ARCANE_CALL_SPECIFIC_ENTRY_POINT,CaseOptionLoop2")
+
+arcane_add_test_sequential(caseoptions_commandlinereplace testCaseOptions-commandLineReplace.arc
+    "-We,ARCANE_CALL_SPECIFIC_ENTRY_POINT,CaseOptionLoop2"
+    "-We,ARCANE_REPLACE_SYMBOLS_IN_DATASET,1"
+    "-A,TestId=1"
+    "-A,SimpleRealUnit2=0.0"
+    "-A,case-options-tester/simple-real=3.0"
+    "-A,case-options-tester/simple-real-unit=4.2"
+    "-A,SimpleRealUnit2=0.0"
+    "-A,case-options-tester/simple-realarray-unit=\"2.2 2.3 0.1 3.5\""
+    "-A,case-options-tester/simple-real2=\"3.5 7.2\""
+    "-A,SimpleReal3=\"1.2 4.7 7.9\""
+    "-A,case-options-tester/simple-real2x2=\"3.1 3.0 2.9 2.7\""
+    "-A,case-options-tester/simple-real3x3=\"3.3 3.2 2.1 1.1 0.3 0.5 7.2 7.1 4.0\""
+    "-A,case-options-tester/simple-integer=4"
+    "-A,case-options-tester/simple-int32=-23"
+    "-A,case-options-tester/simple-int64=454653457457455474"
+    "-A,case-options-tester/simple-bool=true"
+    "-A,case-options-tester/simple-string=toto"
+    "-A,SimpleStringMultiple=toto2"
+    "-A,case-options-tester/simple-string-multiple[2]=toto3"
+    "-A,case-options-tester/simple-string-multiple[3]=\"\""
+    "-A,case-options-tester/simple-real-array=\"3.0 4.1 5.6\""
+    "-A,case-options-tester/simple-real-array-multi[1]=\"4.0 1.1 7.3\""
+    "-A,case-options-tester/simple-integer-array=\"4 5 6 7\""
+    "-A,case-options-tester/simple-int32-array=\"-23 32 -32\""
+    "-A,case-options-tester/simple-int64-array=\"454653457457455474 -453463634634634634\""
+    "-A,case-options-tester/simple-bool-array=\"true false false true\""
+    "-A,case-options-tester/simple-string-array=\"toto titi tata tutu tete\""
+    "-A,case-options-tester/simple-enum=enum1"
+    "-A,PostProcessor1FrName=Ensight7PostProcessor"
+    "-A,case-options-tester/post-processor1-fr[0]/nb-temps-par-fichier=1"
+    "-A,case-options-tester/post-processor1-fr[0]/fichier-binaire=false"
+)
+
 if(UDUNITS_FOUND)
   ARCANE_ADD_TEST_SEQUENTIAL(caseoptions_unit testCaseOptions-2.arc)
 endif()

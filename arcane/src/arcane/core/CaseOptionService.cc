@@ -193,6 +193,8 @@ _readPhase1()
   const ParameterList& params = caseMng()->application()->applicationInfo().commandLineArguments().parameters();
   ICaseDocumentFragment* doc = caseDocumentFragment();
 
+  // TODO AH : Si l'on met un "mesh-name" dans le .axl puis que l'utilisateur met un "mesh-name" dans le .arc, qui gagne ?
+  // Cas où un service agit sur deux maillages ?
   String mesh_name;
   {
     String path = element.xpathFullName() + "/@mesh-name";
@@ -401,44 +403,92 @@ multiAllocate(const XmlNodeList& elem_list)
 
   Integer size = elem_list.size();
 
-  if (size==0)
+  if (size == 0)
     return;
-
-  m_services_name.resize(size);
 
   ITraceMng* tm = traceMng();
 
-  m_container->allocate(size);
-  m_allocated_options.resize(size);
   IApplication* app = caseMng()->application();
   XmlNode parent_element = configList()->parentElement();
+  const ParameterList& params = caseMng()->application()->applicationInfo().commandLineArguments().parameters();
   ICaseDocumentFragment* doc = caseDocumentFragment();
 
-  String mesh_name = meshName();
-  if (_setMeshHandleAndCheckDisabled(mesh_name))
-    return;
+  m_container->allocate(size);
 
-  for( Integer index=0; index<size; ++index ){
-    XmlNode element = elem_list[index];
-      
-    String str_val = element.attrValue("name");
-    m_services_name[index] = str_val;
+  m_allocated_options.resize(size);
+  m_services_name.resize(size);
+
+  Integer index = 0;
+  for (const XmlNode& element : elem_list) {
+    String mesh_name;
+    {
+      String path = element.xpathFullName() + "/@mesh-name";
+
+      // On retire le "//case/" ou le "//cas/" du début.
+      StringView sv;
+      if (doc->language() == "fr")
+        sv = path.view().subView(6);
+      else
+        sv = path.view().subView(7);
+
+      String reference_input = params.getParameterOrNull(sv);
+      if (!reference_input.null())
+        mesh_name = reference_input;
+      else
+        mesh_name = element.attrValue("mesh-name");
+    }
+
+    if (mesh_name.null()) {
+      mesh_name = meshName();
+    }
+    else {
+      // Dans un else : Le remplacement de symboles ne s'applique pas pour les valeurs par défault du .axl.
+      mesh_name = StringVariableReplace::replaceWithCmdLineArgs(params, mesh_name, true);
+    }
+
+    String str_val;
+    {
+      String path = element.xpathFullName() + "/@name";
+
+      // On retire le "//case/" ou le "//cas/" du début.
+      StringView sv;
+      if (doc->language() == "fr")
+        sv = path.view().subView(6);
+      else
+        sv = path.view().subView(7);
+
+      String reference_input = params.getParameterOrNull(sv);
+      if (!reference_input.null())
+        str_val = reference_input;
+      else
+        str_val = element.attrValue("name");
+    }
     tm->info(5) << "CaseOptionMultiServiceImpl name=" << name()
                 << " index=" << index
                 << " v=" << str_val
                 << " default_value='" << _defaultValue() << "'"
                 << " mesh=" << meshHandle().meshName();
-        
-    if (str_val.null())
-      str_val = _defaultValue();
-    if (str_val.null())
-      throw CaseOptionException("get_value","@name",element);
-    // TODO: regarder si on ne peut pas créer directement un CaseOptionService.
-    CaseOptions* coptions = new CaseOptions(configList(),name(),parent_element,false,true);
-    coptions->configList()->_internalApi()->setRootElement(element);
-    bool is_found = _tryCreateService(m_container,app,str_val,index,coptions);
 
-    if (!is_found){
+    if (str_val.null()) {
+      str_val = _defaultValue();
+    }
+    else {
+      // Dans un else : Le remplacement de symboles ne s'applique pas pour les valeurs par défault du .axl.
+      str_val = StringVariableReplace::replaceWithCmdLineArgs(params, str_val, true);
+    }
+    if (str_val.null())
+      throw CaseOptionException("get_value", "@name", element);
+
+    // TODO: regarder si on ne peut pas créer directement un CaseOptionService.
+    auto* coptions = new CaseOptions(configList(), name(), parent_element, false, true);
+    if (coptions->_setMeshHandleAndCheckDisabled(mesh_name)) {
+      delete coptions;
+      continue;
+    }
+    coptions->configList()->_internalApi()->setRootElement(element);
+    bool is_found = _tryCreateService(m_container, app, str_val, index, coptions);
+
+    if (!is_found) {
       tm->info(5) << "CaseOptionMultiServiceImpl name=" << name()
                   << " index=" << index
                   << " service not found";
@@ -447,12 +497,22 @@ multiAllocate(const XmlNodeList& elem_list)
       // Recherche les noms des implémentations valides
       StringUniqueArray valid_names;
       getAvailableNames(valid_names);
-      CaseOptionError::addError(doc,A_FUNCINFO,element.xpathFullName(),
+      CaseOptionError::addError(doc, A_FUNCINFO, element.xpathFullName(),
                                 String::format("Unable to find a service named '{0}' (valid values:{1})",
-                                               str_val,valid_names),true);
+                                               str_val, valid_names),
+                                true);
     }
+    m_services_name[index] = str_val;
     m_allocated_options[index] = coptions;
+
+    index++;
   }
+
+  m_container->allocate(index);
+
+  m_allocated_options.resize(index);
+  m_services_name.resize(index);
+
   if (m_notify_functor)
     m_notify_functor->executeFunctor();
 }

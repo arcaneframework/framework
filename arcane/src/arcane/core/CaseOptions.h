@@ -186,6 +186,8 @@ class ARCANE_CORE_EXPORT CaseOptions
 
  protected:
 
+  friend class CaseOptionMultiServiceImpl;
+
   void _setTranslatedName();
   bool _setMeshHandleAndCheckDisabled(const String& mesh_name);
 
