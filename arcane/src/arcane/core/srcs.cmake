@@ -106,6 +106,8 @@ set(ARCANE_ORIGINAL_SOURCES
 
   DotNetRuntimeInitialisationInfo.h
   DotNetRuntimeInitialisationInfo.cc
+  FaceReorienter.h
+  FaceReorienter.cc
 
   IApplication.h
   IArcaneMain.h

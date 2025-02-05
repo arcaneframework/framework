@@ -96,7 +96,6 @@ set( ARCANE_SOURCES
   CellMerger.h
   GhostLayerMng.cc
   GhostLayerMng.h
-  FaceReorienter.cc
   FaceReorienter.h
   MeshCompacter.cc
   MeshCompacter.h
