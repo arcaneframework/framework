@@ -63,7 +63,7 @@ PETScPrecConfigHypreService::configure(PC& pc, [[maybe_unused]] const ISpace& sp
     checkError("Set Hypre Relax type",
         PetscOptionsSetValue(NULL, "-pc_hypre_boomeramg_relax_type_all", "SOR/Jacobi"));
     checkError("Hypre AMG SetDebugFlag",
-        PetscOptionsSetValue(NULL, "-pc_hypre_boomeramg_print_debug", "1"));
+        PetscOptionsSetValue(NULL, "-pc_hypre_boomeramg_print_debug", "0"));
     PCSetFromOptions(pc);
     // Default option is reversed in PETSc (CF-Relaxation is default)
     // checkError("Set Hypre Relax order", PetscOptionsSetValue(NULL,
