@@ -1,28 +1,27 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* FaceReorienter.cc                                           (C) 2000-2024 */
+/* FaceReorienter.cc                                           (C) 2000-2025 */
 /*                                                                           */
-/* Verifie la bonne orientation d'une face et la réoriente le cas échéant.   */
+/* Vérifie la bonne orientation d'une face et la réoriente le cas échéant.   */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/ITraceMng.h"
-#include "arcane/utils/OStringStream.h"
-#include "arcane/utils/Array.h"
+#include "arcane/utils/FatalErrorException.h"
 
 #include "arcane/mesh/FaceReorienter.h"
-#include "arcane/mesh/FaceFamily.h"
 
-#include "arcane/MeshUtils.h"
-#include "arcane/ItemPrinter.h"
-
-#include "arcane/ItemInternal.h"
-#include "arcane/IMesh.h"
+#include "arcane/core/MeshUtils.h"
+#include "arcane/core/ItemPrinter.h"
+#include "arcane/core/ItemInternal.h"
+#include "arcane/core/IMesh.h"
+#include "arcane/core/IItemFamily.h"
+#include "arcane/core/IItemFamilyTopologyModifier.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -48,7 +47,7 @@ FaceReorienter(IMesh* mesh)
 : m_trace_mng(mesh->traceMng())
 , m_face_family(nullptr)
 {
-  m_face_family = ARCANE_CHECK_POINTER(dynamic_cast<FaceFamily*>(mesh->faceFamily()));
+  m_face_family = mesh->faceFamily();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -76,8 +75,9 @@ void FaceReorienter::
 checkAndChangeOrientation(Face face)
 {
   if (!m_face_family)
-    m_face_family = ARCANE_CHECK_POINTER(dynamic_cast<FaceFamily*>(face.itemFamily()));
-  Integer face_nb_node = face.nbNode();
+    m_face_family = face.itemFamily();
+  Int32 face_nb_node = face.nbNode();
+  IItemFamilyTopologyModifier* face_topology_modifier = m_face_family->_topologyModifier();
 
   m_nodes_unique_id.resize(face_nb_node);
   m_nodes_local_id.resize(face_nb_node);
@@ -92,7 +92,7 @@ checkAndChangeOrientation(Face face)
 
   for (Integer i_node = 0; i_node < face_nb_node; ++i_node) {
     ItemLocalId node_lid(m_nodes_local_id[m_face_nodes_index[i_node]]);
-    m_face_family->replaceNode(face, i_node, node_lid);
+    face_topology_modifier->replaceNode(face, i_node, node_lid);
   }
 
   // On cherche le plus petit uid de la face
@@ -156,7 +156,7 @@ checkAndChangeOrientation(Face face)
     // Si on arrive ici c'est que la maille 0 est la back_cell
     std::swap(face_cells.first, face_cells.second);
   }
-  m_face_family->setBackAndFrontCells(face, face_cells.first, face_cells.second);
+  face_topology_modifier->setBackAndFrontCells(face, CellLocalId(face_cells.first), CellLocalId(face_cells.second));
 }
 
 /*---------------------------------------------------------------------------*/
@@ -166,7 +166,8 @@ void FaceReorienter::
 checkAndChangeOrientationAMR(Face face)
 {
   if (!m_face_family)
-    m_face_family = ARCANE_CHECK_POINTER(dynamic_cast<FaceFamily*>(face.itemFamily()));
+    m_face_family = face.itemFamily();
+  IItemFamilyTopologyModifier* face_topology_modifier = m_face_family->_topologyModifier();
 
   m_nodes_unique_id.resize(face.nbNode());
   m_nodes_local_id.resize(face.nbNode());
@@ -181,7 +182,7 @@ checkAndChangeOrientationAMR(Face face)
 
   for (Integer i_node = 0; i_node < face.nbNode(); ++i_node) {
     ItemLocalId node_lid(m_nodes_local_id[m_face_nodes_index[i_node]]);
-    m_face_family->replaceNode(face, i_node, node_lid);
+    face_topology_modifier->replaceNode(face, i_node, node_lid);
   }
 
   // On cherche le plus petit uid de la face
@@ -269,12 +270,12 @@ checkAndChangeOrientationAMR(Face face)
   if (cell_0) {
     Int32 cell1_lid = (face_has_two_cell) ? face.cell(1).localId() : NULL_ITEM_LOCAL_ID;
     if (cell_is_back_cell) {
-      // Si on arrive ici c'est que la maille 0 est la back_cell
+      // Si on arrive ici, c'est que la maille 0 est la back_cell
       // La front cell est toujours cell1_lid (qui peut être nulle).
       face_cells = { face.cell(0).localId(), cell1_lid };
     }
     else {
-      // Si on arrive ici c'est que la maille 0 est la front_cell
+      // Si on arrive ici, c'est que la maille 0 est la front_cell
       // La back cell est toujours cell1_lid (qui peut être nulle)
       face_cells.first = cell1_lid;
       face_cells.second = (face_has_two_cell) ? cell.localId() : face.cell(0).localId();
@@ -282,7 +283,7 @@ checkAndChangeOrientationAMR(Face face)
   }
   else if (cell_1) {
     if (cell_is_back_cell) {
-      // Si on arrive ici c'est que la maille 0 est la front_cell
+      // Si on arrive ici, c'est que la maille 0 est la front_cell
       // On met à jour les infos d'orientation
       face_cells.second = face.cell(0).localId();
       // GG Attention, si ici, cela signifie qu'il faut échanger la front cell
@@ -290,13 +291,13 @@ checkAndChangeOrientationAMR(Face face)
       face_cells.first = (face_has_two_cell) ? cell.localId() : NULL_ITEM_LOCAL_ID;
     }
     else {
-      // Si on arrive ici c'est que la maille 0 est la back_cell
+      // Si on arrive ici, c'est que la maille 0 est la back_cell
       // On met à jour les infos d'orientation
       face_cells.first = face.cell(0).localId();
       face_cells.second = (face_has_two_cell) ? face.cell(1).localId() : NULL_ITEM_LOCAL_ID;
     }
   }
-  m_face_family->setBackAndFrontCells(face, face_cells.first, face_cells.second);
+  face_topology_modifier->setBackAndFrontCells(face, CellLocalId(face_cells.first), CellLocalId(face_cells.second));
 }
 
 /*---------------------------------------------------------------------------*/

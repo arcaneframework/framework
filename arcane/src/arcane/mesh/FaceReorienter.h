@@ -76,7 +76,7 @@ class ARCANE_MESH_EXPORT FaceReorienter
  private:
 
   ITraceMng* m_trace_mng = nullptr;
-  FaceFamily* m_face_family = nullptr;
+  IItemFamily* m_face_family = nullptr;
   UniqueArray<Int64> m_nodes_unique_id;
   UniqueArray<Int32> m_nodes_local_id;
   UniqueArray<Integer> m_face_nodes_index;
