@@ -1,40 +1,30 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* FaceReorienter.h                                            (C) 2000-2018 */
+/* FaceReorienter.h                                            (C) 2000-2025 */
 /*                                                                           */
 /* Vérifie la bonne orientation d'une face et la réoriente le cas échéant.   */
 /*---------------------------------------------------------------------------*/
-#ifndef FACE_REORIENTER_H
-#define FACE_REORIENTER_H
+#ifndef ARCANE_MESH_FACEREORIENTER_H
+#define ARCANE_MESH_FACEREORIENTER_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/mesh/MeshGlobal.h"
 
-#include "arcane/utils/TraceAccessor.h"
+#include "arcane/utils/Array.h"
+
+#include "arcane/core/ItemTypes.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-class ItemInternal;
-class IMesh;
-class Face;
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ARCANE_MESH_BEGIN_NAMESPACE
-
+namespace Arcane::mesh
+{
 class FaceFamily;
 
 /*---------------------------------------------------------------------------*/
@@ -48,17 +38,16 @@ class FaceFamily;
 class ARCANE_MESH_EXPORT FaceReorienter
 {
  public:
+
   /*! Constructeur.
    * \deprecated Utiliser FaceReorienter(IMesh*) à la place.
    */
   ARCANE_DEPRECATED_260 FaceReorienter(ITraceMng* tm);
   //! Constructeur.
-  FaceReorienter(IMesh* mesh);
-  //! Destructeur
-  ~FaceReorienter();
+  explicit FaceReorienter(IMesh* mesh);
 
  public:
-  
+
   /*!
    * \deprecated Utiliser checkAndChangeOrientation(Face) à la place.
    */
@@ -86,24 +75,19 @@ class ARCANE_MESH_EXPORT FaceReorienter
 
  private:
 
-  ITraceMng* m_trace_mng;
-  FaceFamily* m_face_family;
-  Int64UniqueArray m_nodes_unique_id;
-  Int32UniqueArray m_nodes_local_id;
-  IntegerUniqueArray m_face_nodes_index;
+  ITraceMng* m_trace_mng = nullptr;
+  FaceFamily* m_face_family = nullptr;
+  UniqueArray<Int64> m_nodes_unique_id;
+  UniqueArray<Int32> m_nodes_local_id;
+  UniqueArray<Integer> m_face_nodes_index;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_MESH_END_NAMESPACE
+} // namespace Arcane::mesh
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-#endif // FACE_REORIENTER_H
+#endif
