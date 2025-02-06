@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemLocalId.h                                               (C) 2000-2024 */
+/* ItemLocalId.h                                               (C) 2000-2025 */
 /*                                                                           */
-/* Index local sur une entité du maillage.                                   */
+/* Numéro local d'une entité du maillage.                                    */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_ITEMLOCALID_H
 #define ARCANE_CORE_ITEMLOCALID_H
@@ -23,6 +23,7 @@
 
 namespace Arcane
 {
+class ItemSharedInfo;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -120,6 +121,119 @@ class ItemLocalIdT
 
   ARCANE_DEPRECATED_REASON("Y2022: Use strongly typed 'ItemEnumeratorT<ItemType>' or 'ItemType'")
   inline ItemLocalIdT(ItemEnumerator enumerator);
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Classe pour convertir un ItemLocalId vers une entité (Item).
+ *
+ * Les instances de cette classe restent valides durant toute la durée
+ * de vie de la famille associée.
+ */
+class ARCANE_CORE_EXPORT ItemLocalIdToItemConverter
+{
+  template <typename ItemType_> friend class ItemLocalIdToItemConverterT;
+
+ public:
+
+  explicit ItemLocalIdToItemConverter(IItemFamily* family);
+
+ public:
+
+  //! Entité de numéro local \a local_id
+  inline constexpr ARCCORE_HOST_DEVICE Item operator[](ItemLocalId local_id) const;
+  //! Entité de numéro local \a local_id
+  inline constexpr ARCCORE_HOST_DEVICE Item operator[](Int32 local_id) const;
+
+ private:
+
+  ItemSharedInfo* m_item_shared_info = nullptr;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Classe pour convertir un ItemLocalId vers une entité (Item).
+ *
+ * Les instances de cette classe restent valides durant toute la durée
+ * de vie de la famille associée.
+ */
+template <typename ItemType_> class ItemLocalIdToItemConverterT
+: public ItemLocalIdToItemConverter
+{
+ public:
+
+  using ItemType = ItemType_;
+  using ItemLocalIdType = ItemLocalIdT<ItemType>;
+
+ public:
+
+  using ItemLocalIdToItemConverter::ItemLocalIdToItemConverter;
+
+ public:
+
+  //! Entité de numéro local \a local_id
+  inline constexpr ARCCORE_HOST_DEVICE ItemType operator[](ItemLocalIdType local_id) const;
+  //! Entité de numéro local \a local_id
+  inline constexpr ARCCORE_HOST_DEVICE ItemType operator[](Int32 local_id) const;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+//! Classe pour convertir un NodeLocalId vers une arête.
+class NodeLocalIdToNodeConverter
+: public ItemLocalIdToItemConverterT<Node>
+{
+ public:
+
+  using ItemLocalIdToItemConverterT<Node>::ItemLocalIdToItemConverterT;
+};
+
+//! Classe pour convertir un EdgeLocalId vers une arête.
+class EdgeLocalIdToEdgeConverter
+: public ItemLocalIdToItemConverterT<Edge>
+{
+ public:
+
+  using ItemLocalIdToItemConverterT<Edge>::ItemLocalIdToItemConverterT;
+};
+
+//! Classe pour convertir un FaceLocalId vers une face.
+class FaceLocalIdToFaceConverter
+: public ItemLocalIdToItemConverterT<Face>
+{
+ public:
+
+  using ItemLocalIdToItemConverterT<Face>::ItemLocalIdToItemConverterT;
+};
+
+//! Classe pour convertir un CellLocalId vers une maille.
+class CellLocalIdToCellConverter
+: public ItemLocalIdToItemConverterT<Cell>
+{
+ public:
+
+  using ItemLocalIdToItemConverterT<Cell>::ItemLocalIdToItemConverterT;
+};
+
+//! Classe pour convertir un ParticleLocalId vers une particule.
+class ParticleLocalIdToParticleConverter
+: public ItemLocalIdToItemConverterT<Particle>
+{
+ public:
+
+  using ItemLocalIdToItemConverterT<Particle>::ItemLocalIdToItemConverterT;
+};
+
+//! Classe pour convertir un DoFLocalId vers un degré de liberté.
+class DoFLocalIdToDoFConverter
+: public ItemLocalIdToItemConverterT<DoF>
+{
+ public:
+
+  using ItemLocalIdToItemConverterT<DoF>::ItemLocalIdToItemConverterT;
 };
 
 /*---------------------------------------------------------------------------*/
