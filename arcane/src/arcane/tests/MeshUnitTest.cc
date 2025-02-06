@@ -1140,12 +1140,19 @@ _testItemArray()
   
   ItemVectorView v(family,local_ids);
   ItemInfoListView cells_info_view(family);
+  ItemLocalIdToItemConverter cells_local_id_converter(family);
   ItemVectorViewT<Cell> v2(v);
   Integer z = v2.size();
   info() << "NB CELL=" << z;
   for( Integer i=0; i<z; ++i ){
     Cell c = v2[i];
     Item c2 = cells_info_view[local_ids[i]];
+    Item c3 = cells_local_id_converter[local_ids[i]];
+    Item c4 = cells_local_id_converter[ItemLocalId(local_ids[i])];
+    if (c2!=c3)
+      ARCANE_FATAL("Bad same item item2={0} item3={1}", ItemPrinter(c2), ItemPrinter(c3));
+    if (c2!=c4)
+      ARCANE_FATAL("Bad same item item2={0} item4={1}", ItemPrinter(c2), ItemPrinter(c4));
     info(6) << "CELL =" << ItemPrinter(c);
     if (c2.uniqueId()!=c.uniqueId())
       ARCANE_FATAL("Not same uniqueId() (1) uid1={0} uid2={1}",c.uniqueId(),c2.uniqueId());
