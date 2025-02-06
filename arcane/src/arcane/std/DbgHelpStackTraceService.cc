@@ -195,7 +195,6 @@ class ARCANE_STD_EXPORT DbgHelpStackTraceService
 StackTrace DbgHelpStackTraceService::
 stackTrace(int first_function)
 {
-  std::cout << "GET STACK TRACE1\n";
   DbgHelpSymContainer* c = _getContainer();
   FixedStackFrameArray frames = c->getStackFrames(first_function);
   String text = c->getStackSymbols(frames.view());
@@ -208,7 +207,6 @@ stackTrace(int first_function)
 StackTrace DbgHelpStackTraceService::
 stackTraceFunction(int function_index)
 {
-  std::cout << "GET STACK TRACE2\n";
   return StackTrace();
 }
 
