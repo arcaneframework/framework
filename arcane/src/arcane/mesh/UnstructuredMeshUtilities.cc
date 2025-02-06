@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* UnstructuredMeshUtilities.cc                                (C) 2000-2024 */
+/* UnstructuredMeshUtilities.cc                                (C) 2000-2025 */
 /*                                                                           */
 /* Fonctions utilitaires sur un maillage.                                    */
 /*---------------------------------------------------------------------------*/
@@ -432,7 +432,7 @@ computeNormal(const FaceGroup& face_group,const VariableNodeReal3& nodes_coord)
     }
   }
   UniqueArray<Node> single_nodes;
-  NodeInfoListView nodes_internal(m_mesh->nodeFamily());
+  NodeLocalIdToNodeConverter nodes_internal(m_mesh->nodeFamily());
   nodes_occurence.each([&](NodeOccurenceMap::Data* d){
       if (d->value()==1){
         Node node = nodes_internal[d->key()];

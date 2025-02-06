@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Item.h                                                      (C) 2000-2024 */
+/* Item.h                                                      (C) 2000-2025 */
 /*                                                                           */
 /* Informations sur les éléments du maillage.                                */
 /*---------------------------------------------------------------------------*/
@@ -91,6 +91,8 @@ class ARCANE_CORE_EXPORT Item
   friend class SimdItem;
   friend class SimdItemEnumeratorBase;
   friend class ItemInfoListView;
+  friend class ItemLocalIdToItemConverter;
+  template<typename ItemType> friend class ItemLocalIdToItemConverterT;
   friend class ItemPairEnumerator;
   template<int Extent> friend class ItemConnectedListView;
   template<typename ItemType> friend class ItemEnumeratorBaseT;
@@ -167,7 +169,7 @@ class ARCANE_CORE_EXPORT Item
  protected:
 
   //! Constructeur réservé pour les énumérateurs
-  Item(Int32 local_id,ItemSharedInfo* shared_info)
+  constexpr ARCCORE_HOST_DEVICE Item(Int32 local_id,ItemSharedInfo* shared_info)
   : m_shared_info(shared_info), m_local_id(local_id) {}
 
  public:
@@ -188,11 +190,18 @@ class ARCANE_CORE_EXPORT Item
   // NOTE: Pour le constructeur suivant; il est indispensable d'utiliser
   // const& pour éviter une ambiguité avec le constructeur par recopie
   //! Construit une référence à l'entité \a abase
-  Item(const ItemBase& abase) : m_shared_info(abase.m_shared_info), m_local_id(abase.m_local_id) {}
+  constexpr ARCCORE_HOST_DEVICE Item(const ItemBase& abase)
+  : m_shared_info(abase.m_shared_info)
+  , m_local_id(abase.m_local_id)
+  {
+  }
 
   //! Construit une référence à l'entité \a internal
   Item(const ItemInternalPtr* internals,Int32 local_id)
-  : Item(local_id,internals[local_id]->m_shared_info) { ARCANE_ITEM_ADD_STAT(m_nb_created_from_internalptr); }
+  : Item(local_id,internals[local_id]->m_shared_info)
+  {
+    ARCANE_ITEM_ADD_STAT(m_nb_created_from_internalptr);
+  }
 
   //! Opérateur de copie
   Item& operator=(ItemInternal* ainternal)
@@ -573,6 +582,7 @@ class ARCANE_CORE_EXPORT Node
   friend class ItemConnectedListViewConstIteratorT<ThatClass>;
   friend class SimdItemT<ThatClass>;
   friend class ItemInfoListViewT<ThatClass>;
+  friend class ItemLocalIdToItemConverterT<ThatClass>;
 
  public:
 
@@ -723,6 +733,7 @@ class ARCANE_CORE_EXPORT ItemWithNodes
   friend class ItemConnectedListViewConstIteratorT<ThatClass>;
   friend class SimdItemT<ThatClass>;
   friend class ItemInfoListViewT<ThatClass>;
+  friend class ItemLocalIdToItemConverterT<ThatClass>;
 
  protected:
 
@@ -807,6 +818,7 @@ class ARCANE_CORE_EXPORT Edge
   friend class ItemConnectedListViewConstIteratorT<ThatClass>;
   friend class SimdItemT<ThatClass>;
   friend class ItemInfoListViewT<ThatClass>;
+  friend class ItemLocalIdToItemConverterT<ThatClass>;
 
  public:
 
@@ -941,6 +953,7 @@ class ARCANE_CORE_EXPORT Face
   friend class ItemConnectedListViewConstIteratorT<ThatClass>;
   friend class SimdItemT<ThatClass>;
   friend class ItemInfoListViewT<ThatClass>;
+  friend class ItemLocalIdToItemConverterT<ThatClass>;
 
  public:
 
@@ -1187,6 +1200,7 @@ class ARCANE_CORE_EXPORT Cell
   friend class ItemConnectedListViewConstIteratorT<ThatClass>;
   friend class SimdItemT<ThatClass>;
   friend class ItemInfoListViewT<ThatClass>;
+  friend class ItemLocalIdToItemConverterT<ThatClass>;
 
  public:
 
@@ -1392,6 +1406,7 @@ class Particle
   friend class ItemConnectedListViewConstIteratorT<ThatClass>;
   friend class SimdItemT<ThatClass>;
   friend class ItemInfoListViewT<ThatClass>;
+  friend class ItemLocalIdToItemConverterT<ThatClass>;
 
  private:
 
@@ -1497,6 +1512,7 @@ class DoF
   friend class ItemConnectedListViewConstIteratorT<ThatClass>;
   friend class SimdItemT<ThatClass>;
   friend class ItemInfoListViewT<ThatClass>;
+  friend class ItemLocalIdToItemConverterT<ThatClass>;
 
  private:
 
@@ -1717,6 +1733,44 @@ operator[](ItemLocalId local_id) const
 /*---------------------------------------------------------------------------*/
 
 template<typename ItemType> inline ItemType ItemInfoListViewT<ItemType>::
+operator[](Int32 local_id) const
+{
+  return ItemType(local_id, m_item_shared_info);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+inline constexpr ARCCORE_HOST_DEVICE Item ItemLocalIdToItemConverter::
+operator[](ItemLocalId local_id) const
+{
+  return Item(local_id.localId(), m_item_shared_info);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+inline constexpr ARCCORE_HOST_DEVICE Item ItemLocalIdToItemConverter::
+operator[](Int32 local_id) const
+{
+  return Item(local_id, m_item_shared_info);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<typename ItemType_> inline constexpr ARCCORE_HOST_DEVICE ItemType_
+ItemLocalIdToItemConverterT<ItemType_>::
+operator[](ItemLocalIdType local_id) const
+{
+  return ItemType(local_id.localId(), m_item_shared_info);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<typename ItemType_> inline constexpr ARCCORE_HOST_DEVICE ItemType_
+ItemLocalIdToItemConverterT<ItemType_>::
 operator[](Int32 local_id) const
 {
   return ItemType(local_id, m_item_shared_info);
