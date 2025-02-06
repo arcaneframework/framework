@@ -288,7 +288,7 @@ _computeFacesUniqueIdsParallelV1()
     // soit de l'ordre de 100 Mo pour chaque message.
     Int64 step_size = 1500000;
     Integer nb_phase = CheckedConvert::toInteger((global_nb_boundary_face / step_size) + 1);
-    FaceInfoListView faces(m_mesh->faceFamily());
+    FaceLocalIdToFaceConverter faces(m_mesh->faceFamily());
     for( Integer i_phase=0; i_phase<nb_phase; ++i_phase ){
       Integer nb_face_to_send = nb_sub_domain_boundary_face / nb_phase;
       Integer first_face_to_send = nb_face_to_send * i_phase;
