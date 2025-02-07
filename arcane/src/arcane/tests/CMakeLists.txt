@@ -306,6 +306,7 @@ endmacro()
 
 message(STATUS "ADD AUTOMATED TESTS")
 ARCANE_ADD_TEST_SEQUENTIAL(utils1 testUtils-1.arc)
+arcane_add_test_sequential(itemtypes1 testItemTypes-1.arc)
 ARCANE_ADD_TEST_SEQUENTIAL(json1 testJSON-1.arc)
 ARCANE_ADD_TEST_SEQUENTIAL(xml1 testXml-1.arc -We,ARCANE_XML_PATH,${ARCANE_ARC_PATH})
 ARCANE_ADD_TEST_SEQUENTIAL(random1 testRandom-1.arc)

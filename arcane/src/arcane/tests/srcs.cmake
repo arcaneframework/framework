@@ -12,6 +12,7 @@ set(ARCANE_SOURCES
   ParallelTesterModule.cc
   SubMeshTestModule.cc
   HydroAdditionalTestModule.cc
+  ItemTypesUnitTest.cc
   TestTplParameter.cc
   ModuleSimpleHydro.cc
   ModuleSimpleHydroGeneric.cc
