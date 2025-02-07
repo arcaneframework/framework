@@ -92,7 +92,6 @@ initializeTest()
 /*---------------------------------------------------------------------------*/
 
 #define TEST_ITEM_TYPE(a) _doCheck(ITI_##a, IT_##a, #a)
-#define TEST_ITEM_TYPE_BAD(a) _doCheck(ITI_##a, IT_##a, (String("IT_") + #a))
 
 void ItemTypesUnitTest::
 executeTest()
@@ -124,8 +123,8 @@ executeTest()
   TEST_ITEM_TYPE(FaceVertex);
   TEST_ITEM_TYPE(CellLine2);
   TEST_ITEM_TYPE(DualParticle);
-  TEST_ITEM_TYPE_BAD(Enneedron14);
-  TEST_ITEM_TYPE_BAD(Decaedron16);
+  TEST_ITEM_TYPE(Enneedron14);
+  TEST_ITEM_TYPE(Decaedron16);
   TEST_ITEM_TYPE(Heptagon7);
   TEST_ITEM_TYPE(Octogon8);
   TEST_ITEM_TYPE(Line3);
