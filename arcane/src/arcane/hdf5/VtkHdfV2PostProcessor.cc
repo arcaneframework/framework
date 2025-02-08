@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* VtkHdfV2PostProcessor.cc                                    (C) 2000-2024 */
+/* VtkHdfV2PostProcessor.cc                                    (C) 2000-2025 */
 /*                                                                           */
 /* Pos-traitement au format VTK HDF.                                         */
 /*---------------------------------------------------------------------------*/
@@ -29,6 +29,9 @@
 #include "arcane/core/IParallelMng.h"
 #include "arcane/core/IMesh.h"
 #include "arcane/core/internal/VtkCellTypes.h"
+
+#include "arcane/core/materials/IMeshMaterialMng.h"
+#include "arcane/core/materials/IMeshEnvironment.h"
 
 #include "arcane/hdf5/Hdf5Utils.h"
 #include "arcane/hdf5/VtkHdfV2PostProcessor_axl.h"
@@ -66,6 +69,7 @@
 namespace Arcane
 {
 using namespace Hdf5Utils;
+using namespace Materials;
 
 namespace
 {
@@ -93,6 +97,15 @@ class VtkHdfV2DataWriter
    */
   struct DatasetGroupAndName
   {
+   public:
+
+    DatasetGroupAndName(HGroup& group_, const String& name_)
+    : group(group_)
+    , name(name_)
+    {}
+
+   public:
+
     HGroup& group;
     String name;
   };
@@ -215,7 +228,7 @@ class VtkHdfV2DataWriter
 
  public:
 
-  VtkHdfV2DataWriter(IMesh* mesh, const ItemGroupCollection& groups, bool use_collective_io);
+  VtkHdfV2DataWriter(IMesh* mesh, const ItemGroupCollection& groups, bool is_collective_io);
 
  public:
 
@@ -232,7 +245,11 @@ class VtkHdfV2DataWriter
 
  private:
 
+  //! Maillage associé
   IMesh* m_mesh = nullptr;
+
+  //! Gestionnaire de matériaux associé (peut-être nul)
+  IMeshMaterialMng* m_material_mng = nullptr;
 
   //! Liste des groupes à sauver
   ItemGroupCollection m_groups;
@@ -276,6 +293,7 @@ class VtkHdfV2DataWriter
 
   ItemGroupCollectiveInfo m_all_cells_info;
   ItemGroupCollectiveInfo m_all_nodes_info;
+  UniqueArray<Ref<ItemGroupCollectiveInfo>> m_materials_groups;
 
   /*!
    * \brief Taille maximale (en kilo-octet) pour une écriture.
@@ -328,6 +346,7 @@ class VtkHdfV2DataWriter
   void _initializeOffsets();
   void _initializeItemGroupCollectiveInfos(ItemGroupCollectiveInfo& group_info);
   WritePartInfo _computeWritePartInfo(Int64 local_size);
+  void _writeConstituentsGroups();
 };
 
 /*---------------------------------------------------------------------------*/
@@ -352,6 +371,9 @@ beginWrite(const VariableCollection& vars)
 {
   ARCANE_UNUSED(vars);
 
+  // Récupère le gestionnaire de matériaux s'il existe
+  m_material_mng = IMeshMaterialMng::getReference(m_mesh, false);
+
   IParallelMng* pm = m_mesh->parallelMng();
   const Int32 nb_rank = pm->commSize();
   m_is_parallel = nb_rank > 1;
@@ -361,7 +383,7 @@ beginWrite(const VariableCollection& vars)
   const bool is_first_call = (time_index < 2);
   m_is_first_call = is_first_call;
   if (is_first_call)
-    pwarning() << "L'implémentation au format 'VtkHdfV2' est expérimentale";
+    info() << "WARNING: L'implémentation au format 'VtkHdfV2' est expérimentale";
 
   String filename = _getFileName();
 
@@ -372,9 +394,9 @@ beginWrite(const VariableCollection& vars)
 
   HInit();
 
-  // Il est possible d'utiliser le mode collectif de HDF5 via MPI-IO dans les cas suivants:
-  // - Hdf5 a été compilé avec MPI
-  // - on est en mode MPI pure (ni mode mémoire partagé, ni mode hybride)
+  // Il est possible d'utiliser le mode collectif de HDF5 via MPI-IO dans les cas suivants :
+  // * Hdf5 a été compilé avec MPI,
+  // * on est en mode MPI pure (ni mode mémoire partagé, ni mode hybride).
   m_is_collective_io = m_is_collective_io && (pm->isParallel() && HInit::hasParallelHdf5());
   if (pm->isHybridImplementation() || pm->isThreadImplementation())
     m_is_collective_io = false;
@@ -382,7 +404,9 @@ beginWrite(const VariableCollection& vars)
   if (is_first_call) {
     info() << "VtkHdfV2DataWriter: using collective MPI/IO ?=" << m_is_collective_io;
     info() << "VtkHdfV2DataWriter: max_write_size (kB) =" << m_max_write_size;
+    info() << "VtkHdfV2DataWriter: has_material?=" << (m_material_mng != nullptr);
   }
+
   // Vrai si on doit participer aux écritures
   // Si on utilise MPI/IO avec HDF5, il faut tout de même que tous
   // les rangs fassent toutes les opérations d'écriture pour garantir
@@ -511,10 +535,10 @@ beginWrite(const VariableCollection& vars)
       points[index][2] = pos.z;
     }
 
-    // Sauve l'uniqueId de chaque noeud dans le dataset "GlobalNodeId".
+    // Sauve l'uniqueId de chaque nœud dans le dataset "GlobalNodeId".
     _writeDataSet1DCollective<Int64>({ { m_node_data_group, "GlobalNodeId" }, m_cell_offset_info }, nodes_uid);
 
-    // Sauve les informations sur le type de noeud (réel ou fantôme).
+    // Sauve les informations sur le type de nœud (réel ou fantôme).
     _writeDataSet1DCollective<unsigned char>({ { m_node_data_group, "vtkGhostType" }, m_cell_offset_info }, nodes_ghost_type);
 
     // Sauve les coordonnées des noeuds.
@@ -529,7 +553,6 @@ beginWrite(const VariableCollection& vars)
   _writeDataSet1DCollective<Int64>({ { m_cell_data_group, "GlobalCellId" }, m_cell_offset_info }, cells_uid);
 
   if (m_is_writer) {
-
     // Liste des temps.
     Real current_time = m_times[time_index - 1];
     _writeDataSet1D<Real>({ { m_steps_group, "Values" }, m_time_offset_info }, asConstSpan(&current_time));
@@ -540,6 +563,33 @@ beginWrite(const VariableCollection& vars)
 
     // Nombre de temps
     _addInt64Attribute(m_steps_group, "NSteps", time_index);
+  }
+
+  _writeConstituentsGroups();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void VtkHdfV2DataWriter::
+_writeConstituentsGroups()
+{
+  if (!m_material_mng)
+    return;
+
+  // Remplit les informations des groupes liés aux constituents
+  // NOTE : Pour l'instant, on ne traite que les milieux.
+  for (IMeshEnvironment* env : m_material_mng->environments()) {
+    CellGroup cells = env->cells();
+    Ref<ItemGroupCollectiveInfo> group_info_ref = createRef<ItemGroupCollectiveInfo>(cells);
+    m_materials_groups.add(group_info_ref);
+    ItemGroupCollectiveInfo& group_info = *group_info_ref.get();
+    _initializeItemGroupCollectiveInfos(group_info);
+    ConstArrayView<Int32> groups_ids = cells.view().localIds();
+    DatasetGroupAndName dataset_group_name(m_top_group, String("Constituent_") + cells.name());
+    if (m_is_first_call)
+      info() << "Writing infos for group '" << cells.name() << "'";
+    _writeDataSet1DCollective<Int32>({ dataset_group_name, m_cell_offset_info }, groups_ids);
   }
 }
 
@@ -1140,21 +1190,22 @@ _readAndSetOffset(DatasetInfo& offset_info, Int32 wanted_step)
 void VtkHdfV2DataWriter::
 _initializeOffsets()
 {
-  // Il y a 5 valeurs d'offset utilisées:
+  // Il y a 5 valeurs d'offset utilisées :
+  //
   // - offset sur le nombre de mailles (CellOffsets). Cet offset a pour nombre d'éléments
   //   le nombre de temps sauvés et est augmenté à chaque sortie du nombre de mailles. Cet offset
-  //   est aussi utiliser pour les variables aux mailles
-  // - offset sur le nombre de noeuds (PointOffsets). Il équivalent à 'CellOffsets' mais
+  //   est aussi utilisé pour les variables aux mailles
+  // - offset sur le nombre de noeuds (PointOffsets). Il est équivalent à 'CellOffsets' mais
   //   pour les noeuds.
   // - offset pour "NumberOfCells", "NumberOfPoints" et "NumberOfConnectivityIds". Pour chacun
   //   de ces champs il y a NbPart valeurs par temps, avec 'NbPart' le nombre de parties (donc
-  //   le nombre de sous-domaines si on ne fait pas de regroupement). Il y a donc au total
+  //   le nombre de sous-domaines si on ne fait pas de regroupement). Il y a ainsi au total
   //   NbPart * NbTimeStep dans ce champ d'offset.
   // - offset pour le champ "Connectivity" qui s'appelle "ConnectivityIdOffsets".
   //   Cet offset a pour nombre d'éléments le nombre de temps sauvés.
   // - offset pour le champ "Offsets". "Offset" contient pour chaque maille l'offset dans
-  //   "Connectivity" de la connectivité des noeuds de la maille. Cet offset n'est pas sauvés
-  //   mais comme ce champ à un nombre de valeur égale au nombre de mailles plus 1 il est possible
+  //   "Connectivity" de la connectivité des noeuds de la maille. Cet offset n'est pas sauvés,
+  //   mais comme ce champ à un nombre de valeurs égal au nombre de mailles plus un il est possible
   //   de le déduire de "CellOffsets" (il vaut "CellOffsets" plus l'index du temps courant).
 
   m_cell_offset_info = DatasetInfo(m_steps_group, "CellOffsets");
