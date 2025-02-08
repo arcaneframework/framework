@@ -97,6 +97,15 @@ class VtkHdfV2DataWriter
    */
   struct DatasetGroupAndName
   {
+   public:
+
+    DatasetGroupAndName(HGroup& group_, const String& name_)
+    : group(group_)
+    , name(name_)
+    {}
+
+   public:
+
     HGroup& group;
     String name;
   };
