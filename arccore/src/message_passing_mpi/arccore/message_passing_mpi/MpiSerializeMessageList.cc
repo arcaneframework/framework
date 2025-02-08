@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MpiSerializeMessageList.cc                                  (C) 2000-2024 */
+/* MpiSerializeMessageList.cc                                  (C) 2000-2025 */
 /*                                                                           */
 /* Gestion des messages de sérialisation via MPI.                            */
 /*---------------------------------------------------------------------------*/
@@ -25,7 +25,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arccore::MessagePassing::Mpi
+namespace Arcane::MessagePassing::Mpi
 {
 
 /*---------------------------------------------------------------------------*/
@@ -35,7 +35,8 @@ class MpiSerializeMessageList::_SortMessages
 {
  public:
 
-  bool operator()(const BasicSerializeMessage* m1,const BasicSerializeMessage* m2)
+  bool operator()(const internal::BasicSerializeMessage* m1,
+                  const internal::BasicSerializeMessage* m2)
   {
     return _SortMessages::compare(m1,m2);
   }
@@ -100,7 +101,7 @@ MpiSerializeMessageList(MpiSerializeDispatcher* dispatcher)
 void MpiSerializeMessageList::
 addMessage(ISerializeMessage* message)
 {
-  BasicSerializeMessage* true_message = dynamic_cast<BasicSerializeMessage*>(message);
+  auto* true_message = dynamic_cast<internal::BasicSerializeMessage*>(message);
   if (!true_message)
     ARCCORE_FATAL("Can not convert 'ISerializeMessage' to 'BasicSerializeMessage'");
   if (true_message->isSend() && true_message->source()!=MessageRank(m_adapter->commRank()))
@@ -145,7 +146,7 @@ processPendingMessages()
 
   Int64 serialize_buffer_size = m_dispatcher->serializeBufferSize();
   for( Integer i=0; i<nb_message; ++i ){
-    BasicSerializeMessage* mpi_msg = m_messages_to_process[i];
+    internal::BasicSerializeMessage* mpi_msg = m_messages_to_process[i];
     ISerializeMessage* pmsg = mpi_msg;
     Request new_request;
     MessageRank dest = pmsg->destination();
@@ -241,7 +242,7 @@ _waitMessages2(eWaitType wait_type)
     msg->info() << "Waiting for rank =" << comm_rank << " nb_message=" << nb_message;
 
     for( Integer z=0; z<nb_message; ++z ){
-      BasicSerializeMessage* msm = m_messages_request[z].m_mpi_message;
+      internal::BasicSerializeMessage* msm = m_messages_request[z].m_mpi_message;
       msg->info() << "Waiting for message: "
                   << " rank=" << comm_rank
                   << " issend=" << msm->isSend()
@@ -272,7 +273,7 @@ _waitMessages2(eWaitType wait_type)
   catch(const TimeoutException&){
     std::ostringstream ostr;
     for( Integer z=0; z<nb_message; ++z ){
-      BasicSerializeMessage* message = m_messages_request[z].m_mpi_message;
+      internal::BasicSerializeMessage* message = m_messages_request[z].m_mpi_message;
       ostr << "IndexReturn message: "
            << " issend=" << message->isSend()
            << " dest=" << message->destination()
@@ -288,7 +289,7 @@ _waitMessages2(eWaitType wait_type)
   }
   if (m_is_verbose){
     for( Integer z=0; z<nb_message; ++z ){
-      BasicSerializeMessage* message = m_messages_request[z].m_mpi_message;
+      internal::BasicSerializeMessage* message = m_messages_request[z].m_mpi_message;
       bool is_send = message->isSend();
       MessageRank destination = message->destination();
       Int64 message_size = message->trueSerializer()->totalSize();
@@ -314,7 +315,7 @@ _waitMessages2(eWaitType wait_type)
 
   int mpi_status_index = 0;
   for( Integer i=0; i<nb_message; ++i ){
-    BasicSerializeMessage* mpi_msg = m_messages_request[i].m_mpi_message;
+    internal::BasicSerializeMessage* mpi_msg = m_messages_request[i].m_mpi_message;
     if (done_indexes[i]){
       MPI_Status status = mpi_status[mpi_status_index];
       Request rq = requests[i];
@@ -365,7 +366,7 @@ _waitMessages2(eWaitType wait_type)
  * \brief Effectue la requête. Retourne une éventuelle requête si non nul.
  */
 Request MpiSerializeMessageList::
-_processOneMessage(BasicSerializeMessage* message, MessageRank source, MessageTag mpi_tag)
+_processOneMessage(internal::BasicSerializeMessage* message, MessageRank source, MessageTag mpi_tag)
 {
   Request request;
   if (m_is_verbose)
@@ -383,7 +384,7 @@ _processOneMessage(BasicSerializeMessage* message, MessageRank source, MessageTa
  * \brief Effectue la requête. Retourne une éventuelle requête si non nul.
  */
 Request MpiSerializeMessageList::
-_processOneMessageGlobalBuffer(BasicSerializeMessage* message,MessageRank source,MessageTag mpi_tag)
+_processOneMessageGlobalBuffer(internal::BasicSerializeMessage* message,MessageRank source,MessageTag mpi_tag)
 {
   Request request;
   BasicSerializer* sbuf = message->trueSerializer();
@@ -434,7 +435,7 @@ Ref<ISerializeMessage> MpiSerializeMessageList::
 createAndAddMessage(MessageRank destination,ePointToPointMessageType type)
 {
   MessageRank source(m_adapter->commRank());
-  auto x = BasicSerializeMessage::create(source,destination,type);
+  auto x = internal::BasicSerializeMessage::create(source,destination,type);
   addMessage(x.get());
   return x;
 }

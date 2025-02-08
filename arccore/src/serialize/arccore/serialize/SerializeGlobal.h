@@ -50,6 +50,7 @@ class BasicSerializer;
 namespace Arcane
 {
 using Arccore::ISerializer;
+using Arccore::BasicSerializer;
 }
 
 /*---------------------------------------------------------------------------*/

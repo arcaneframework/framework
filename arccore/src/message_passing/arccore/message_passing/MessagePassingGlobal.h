@@ -70,6 +70,7 @@ class MessageRank;
 class MessageSourceInfo;
 class PointToPointMessageInfo;
 class IStat;
+class Stat;
 class IMessagePassingMng;
 class MessagePassingMng;
 class IDispatchers;
@@ -190,8 +191,24 @@ using Arccore::MessagePassing::MessageSourceInfo;
 using Arccore::MessagePassing::MessageTag;
 using Arccore::MessagePassing::PointToPointMessageInfo;
 using Arccore::MessagePassing::Request;
+using Arccore::MessagePassing::MessagePassingMng;
+using Arccore::MessagePassing::SubRequestCompletionInfo;
 
 using Arccore::MessagePassing::Communicator;
+using Arccore::MessagePassing::IProfiler;
+using Arccore::MessagePassing::IStat;
+using Arccore::MessagePassing::Stat;
+using Arccore::MessagePassing::ISerializeDispatcher;
+using Arccore::MessagePassing::IDispatchers;
+using Arccore::MessagePassing::Dispatchers;
+
+using Arccore::MessagePassing::A_NULL_RANK;
+using Arccore::MessagePassing::A_NULL_TAG_VALUE;
+using Arccore::MessagePassing::A_ANY_SOURCE_RANK;
+using Arccore::MessagePassing::A_PROC_NULL_RANK;
+
+using Arccore::MessagePassing::GatherMessageInfoBase;
+using Arccore::MessagePassing::GatherMessageInfo;
 }
 
 /*---------------------------------------------------------------------------*/

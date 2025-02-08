@@ -63,24 +63,30 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arccore::MessagePassing::Mpi
+namespace Arcane::MessagePassing::Mpi
 {
 class MpiRequest;
 class MpiAdapter;
 class MpiLock;
 class IMpiReduceOperator;
+class IMpiProfiling;
+class NoMpiProfiling;
 class MpiDatatype;
 class MpiMessagePassingMng;
 class MpiSerializeMessageList;
 class MpiSerializeDispatcher;
+class StandaloneMpiMessagePassingMng;
+class MpiSerializeMessageList;
 template <typename DataType>
 class StdMpiReduceOperator;
-} // namespace Arccore::MessagePassing::Mpi
+template <typename Type>
+class MpiTypeDispatcher;
+} // namespace Arcane::MessagePassing::Mpi
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arccore::MessagePassing::Mpi::MpiBuiltIn
+namespace Arcane::MessagePassing::Mpi::MpiBuiltIn
 {
 
 /*---------------------------------------------------------------------------*/
@@ -159,21 +165,31 @@ datatype(unsigned long long)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // namespace Arccore::MessagePassing::Mpi::MpiBuiltIn
+} // namespace Arcane::MessagePassing::Mpi::MpiBuiltIn
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arcane::MessagePassing::Mpi
+namespace Arccore::MessagePassing::Mpi
 {
-using Arccore::MessagePassing::Mpi::IMpiReduceOperator;
-using Arccore::MessagePassing::Mpi::MpiAdapter;
-using Arccore::MessagePassing::Mpi::MpiDatatype;
-using Arccore::MessagePassing::Mpi::MpiLock;
-using Arccore::MessagePassing::Mpi::MpiSerializeDispatcher;
-using Arccore::MessagePassing::Mpi::StdMpiReduceOperator;
-namespace MpiBuiltIn = Arccore::MessagePassing::Mpi::MpiBuiltIn;
-}; // namespace Arcane::MessagePassing::Mpi
+// Pour compatibilité avec Alien
+using Arccore::MessagePassing::internal::BasicSerializeMessage;
+
+using Arcane::MessagePassing::Mpi::IMpiProfiling;
+using Arcane::MessagePassing::Mpi::IMpiReduceOperator;
+using Arcane::MessagePassing::Mpi::MpiAdapter;
+using Arcane::MessagePassing::Mpi::MpiDatatype;
+using Arcane::MessagePassing::Mpi::MpiLock;
+using Arcane::MessagePassing::Mpi::MpiMessagePassingMng;
+using Arcane::MessagePassing::Mpi::MpiRequest;
+using Arcane::MessagePassing::Mpi::MpiSerializeDispatcher;
+using Arcane::MessagePassing::Mpi::MpiSerializeMessageList;
+using Arcane::MessagePassing::Mpi::MpiTypeDispatcher;
+using Arcane::MessagePassing::Mpi::NoMpiProfiling;
+using Arcane::MessagePassing::Mpi::StandaloneMpiMessagePassingMng;
+using Arcane::MessagePassing::Mpi::StdMpiReduceOperator;
+namespace MpiBuiltIn = Arcane::MessagePassing::Mpi::MpiBuiltIn;
+}; // namespace Arccore::MessagePassing::Mpi
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
