@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MpiSerializeDispatcher.cc                                   (C) 2000-2024 */
+/* MpiSerializeDispatcher.cc                                   (C) 2000-2025 */
 /*                                                                           */
 /* Gestion des messages de sérialisation avec MPI.                           */
 /*---------------------------------------------------------------------------*/
@@ -30,7 +30,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arccore::MessagePassing::Mpi
+namespace Arcane::MessagePassing::Mpi
 {
 
 /*---------------------------------------------------------------------------*/
@@ -536,7 +536,7 @@ broadcastSerializer(ISerializer* values,MessageRank rank)
     Int64 total_size = sbuf->totalSize();
     Span<Byte> bytes = sbuf->globalBuffer();
     _checkBigMessage(total_size);
-    Int64ArrayView total_size_buf(1,&total_size);
+    ArrayView<Int64> total_size_buf(1,&total_size);
     m_adapter->broadcast(total_size_buf.data(),total_size_buf.size(),rank.value(),int64_datatype);
     if (m_is_trace_serializer)
       tm->info() << "MpiSerializeDispatcher::broadcastSerializer(): sending "
@@ -546,7 +546,7 @@ broadcastSerializer(ISerializer* values,MessageRank rank)
   }
   else{
     Int64 total_size = 0;
-    Int64ArrayView total_size_buf(1,&total_size);
+    ArrayView<Int64> total_size_buf(1,&total_size);
     m_adapter->broadcast(total_size_buf.data(),total_size_buf.size(),rank.value(),int64_datatype);
     sbuf->preallocate(total_size);
     Span<Byte> bytes = sbuf->globalBuffer();

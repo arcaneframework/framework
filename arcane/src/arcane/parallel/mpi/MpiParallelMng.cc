@@ -89,7 +89,7 @@ arcaneCreateMpiLegacyVariableSynchronizerFactory(MpiParallelMng* mpi_pm);
 MpiParallelMngBuildInfo::
 MpiParallelMngBuildInfo(MPI_Comm comm)
 : is_parallel(false)
-, comm_rank(A_NULL_RANK)
+, comm_rank(MessagePassing::A_NULL_RANK)
 , comm_nb_rank(0)
 , stat(nullptr)
 , trace_mng(nullptr)

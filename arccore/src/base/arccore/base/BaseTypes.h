@@ -221,6 +221,9 @@ typedef Span<const Integer> IntegerConstSpan;
 
 } // End namespace Arccore
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 namespace Arcane
 {
 using Arccore::Array2View;

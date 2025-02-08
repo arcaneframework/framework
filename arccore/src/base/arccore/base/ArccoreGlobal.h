@@ -714,6 +714,20 @@ using Float128 = Arccore::Float128;
 
 //! Type représentant un entier sur 128 bits
 using Int128 = Arccore::Int128;
+
+using Arccore::arccoreIsCheck;
+using Arccore::arccoreSetCheck;
+using Arccore::arccoreIsDebug;
+using Arccore::arccorePrintf;
+using Arccore::arccoreDebugPause;
+using Arccore::arccoreSetPauseOnError;
+using Arccore::arccoreNullPointerError;
+using Arccore::arccoreRangeError;
+using Arccore::arccoreCheckRange;
+using Arccore::arccoreCheckAt;
+using Arccore::arccoreThrowNullPointerError;
+using Arccore::arccoreThrowIfNull;
+
 }
 
 /*---------------------------------------------------------------------------*/
