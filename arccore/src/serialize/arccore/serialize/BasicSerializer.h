@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* BasicSerializer.h                                           (C) 2000-2024 */
+/* BasicSerializer.h                                           (C) 2000-2025 */
 /*                                                                           */
 /* Implémentation simple de 'ISerializer'.                                   */
 /*---------------------------------------------------------------------------*/
@@ -24,6 +24,11 @@
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+namespace Arcane
+{
+class BasicSerializeGatherMessage;
+}
 
 namespace Arccore
 {
@@ -87,7 +92,7 @@ class BasicSerializerDataT
 class ARCCORE_SERIALIZE_EXPORT BasicSerializer
 : public ISerializer
 {
-  friend class BasicSerializeGatherMessage;
+  friend Arcane::BasicSerializeGatherMessage;
   typedef BasicSerializer ThatClass;
   using ISerializer::reserveSpan;
   using ISerializer::putSpan;

@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Messages.h                                                  (C) 2000-2024 */
+/* Messages.h                                                  (C) 2000-2025 */
 /*                                                                           */
 /* Interface du gestionnaire des échanges de messages.                       */
 /*---------------------------------------------------------------------------*/
@@ -25,7 +25,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arccore::MessagePassing
+namespace Arcane::MessagePassing
 {
 
 /*---------------------------------------------------------------------------*/
@@ -292,6 +292,42 @@ ARCCORE_GENERATE_MESSAGEPASSING_PROTOTYPE(Float16)
 /*---------------------------------------------------------------------------*/
 
 } // End namespace Arccore::MessagePassing
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace Arccore::MessagePassing
+{
+using Arcane::MessagePassing::mpSend;
+using Arcane::MessagePassing::mpReceive;
+using Arcane::MessagePassing::mpAllGather;
+using Arcane::MessagePassing::mpGather;
+using Arcane::MessagePassing::mpNonBlockingAllGather;
+using Arcane::MessagePassing::mpNonBlockingGather;
+using Arcane::MessagePassing::mpAllGatherVariable;
+using Arcane::MessagePassing::mpGatherVariable;
+using Arcane::MessagePassing::mpGather;
+using Arcane::MessagePassing::mpScatterVariable;
+using Arcane::MessagePassing::mpAllReduce;
+using Arcane::MessagePassing::mpNonBlockingAllReduce;
+using Arcane::MessagePassing::mpBroadcast;
+using Arcane::MessagePassing::mpNonBlockingBroadcast;
+using Arcane::MessagePassing::mpAllToAll;
+using Arcane::MessagePassing::mpNonBlockingAllToAll;
+using Arcane::MessagePassing::mpAllToAllVariable;
+using Arcane::MessagePassing::mpNonBlockingAllToAllVariable;
+using Arcane::MessagePassing::mpCreateRequestListRef;
+using Arcane::MessagePassing::mpWaitAll;
+using Arcane::MessagePassing::mpWait;
+using Arcane::MessagePassing::mpWaitSome;
+using Arcane::MessagePassing::mpTestSome;
+using Arcane::MessagePassing::mpProbe;
+using Arcane::MessagePassing::mpLegacyProbe;
+using Arcane::MessagePassing::mpSplit;
+using Arcane::MessagePassing::mpBarrier;
+using Arcane::MessagePassing::mpNonBlockingBarrier;
+using Arcane::MessagePassing::mpCreateSerializeMessageListRef;
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

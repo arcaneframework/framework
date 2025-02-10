@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Messages.cc                                                 (C) 2000-2024 */
+/* Messages.cc                                                 (C) 2000-2025 */
 /*                                                                           */
 /* Identifiant d'un message point à point.                                   */
 /*---------------------------------------------------------------------------*/
@@ -34,7 +34,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arccore
+namespace Arcane
 {
 
 /*---------------------------------------------------------------------------*/
@@ -97,7 +97,7 @@ doAllGather(MessagePassing::IMessagePassingMng* pm, const BasicSerializer* send_
   sizes[9] = send_float128.size();
   sizes[10] = send_int128.size();
 
-  mpAllReduce(pm, MessagePassing::ReduceSum, Int64ArrayView(11, sizes));
+  mpAllReduce(pm, MessagePassing::ReduceSum, ArrayView<Int64>(11, sizes));
 
   Int64 recv_nb_real = sizes[0];
   Int64 recv_nb_int16 = sizes[1];
@@ -139,7 +139,7 @@ doAllGather(MessagePassing::IMessagePassingMng* pm, const BasicSerializer* send_
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arccore::MessagePassing
+namespace Arcane::MessagePassing
 {
 
 /*---------------------------------------------------------------------------*/
