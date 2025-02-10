@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Dispatchers.h                                               (C) 2000-2024 */
+/* Dispatchers.h                                               (C) 2000-2025 */
 /*                                                                           */
 /* Conteneur des dispatchers.                                                */
 /*---------------------------------------------------------------------------*/
@@ -21,7 +21,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arccore::MessagePassing
+namespace Arcane::MessagePassing
 {
 
 /*---------------------------------------------------------------------------*/
@@ -85,7 +85,7 @@ class ARCCORE_MESSAGEPASSING_EXPORT Dispatchers
 
  private:
 
-  BuiltInDataTypeContainer<ContainerTraits> m_container;
+  Arccore::BuiltInDataTypeContainer<ContainerTraits> m_container;
 
   IControlDispatcher* m_control = nullptr;
   ISerializeDispatcher* m_serialize = nullptr;

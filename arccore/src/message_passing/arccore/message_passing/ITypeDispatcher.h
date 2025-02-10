@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ITypeDispatcher.h                                           (C) 2000-2022 */
+/* ITypeDispatcher.h                                           (C) 2000-2025 */
 /*                                                                           */
 /* Gestion des messages pour un type de données.                             */
 /*---------------------------------------------------------------------------*/
@@ -22,7 +22,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arccore::MessagePassing
+namespace Arcane::MessagePassing
 {
 extern "C++" ARCCORE_MESSAGEPASSING_EXPORT void
 _internalThrowNotImplementedTypeDispatcher ARCCORE_NORETURN ();
