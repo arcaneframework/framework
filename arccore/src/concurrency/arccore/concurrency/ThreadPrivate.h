@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ThreadPrivate.h                                             (C) 2000-2018 */
+/* ThreadPrivate.h                                             (C) 2000-2025 */
 /*                                                                           */
 /* Classe permettant de conserver une valeur spécifique par thread.          */
 /*---------------------------------------------------------------------------*/
@@ -23,7 +23,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arccore
+namespace Arcane
 {
 
 /*---------------------------------------------------------------------------*/
@@ -46,7 +46,7 @@ class ARCCORE_CONCURRENCY_EXPORT ThreadPrivateStorage
 
  public:
 
- /*!
+  /*!
    * \brief Initialise la clé contenant les valeurs par thread.
    * Cette méthode peut être appelée plusieurs fois et ne fait rien si
    * la clé a déjà été initialisée.
@@ -57,7 +57,9 @@ class ARCCORE_CONCURRENCY_EXPORT ThreadPrivateStorage
   void initialize();
   void* getValue();
   void setValue(void* v);
+
  private:
+
   GlibPrivate* m_storage;
 };
 
@@ -71,18 +73,21 @@ class ARCCORE_CONCURRENCY_EXPORT ThreadPrivateStorage
 class ARCCORE_CONCURRENCY_EXPORT ThreadPrivateBase
 {
  public:
+
   class ICreateFunctor
   {
    public:
-    virtual ~ICreateFunctor(){}
-    virtual void* createInstance() =0;
+
+    virtual ~ICreateFunctor() {}
+    virtual void* createInstance() = 0;
   };
 
  public:
 
   ARCCORE_DEPRECATED_REASON("Y2022; This class is deprecated. Use 'thread_local' specifier.")
-  ThreadPrivateBase(ThreadPrivateStorage* key,ICreateFunctor* create_functor)
-  : m_key(key), m_create_functor(create_functor) 
+  ThreadPrivateBase(ThreadPrivateStorage* key, ICreateFunctor* create_functor)
+  : m_key(key)
+  , m_create_functor(create_functor)
   {
   }
 
@@ -102,7 +107,7 @@ class ARCCORE_CONCURRENCY_EXPORT ThreadPrivateBase
    * la clé associée (ThreadPrivateStorage) n'a pas été initialisée
    * par l'apple à ThreadPrivateStorage::initialize().
    */
- void* item();
+  void* item();
 
  private:
 
@@ -130,7 +135,7 @@ class ARCCORE_CONCURRENCY_EXPORT ThreadPrivateBase
  *
  * \deprecated Utiliser 'thread_local' du C++11.
  */
-template<typename T>
+template <typename T>
 class ThreadPrivate
 : private ThreadPrivateBase::ICreateFunctor
 {
@@ -138,17 +143,18 @@ class ThreadPrivate
 
   ARCCORE_DEPRECATED_REASON("Y2022; This class is deprecated. Use 'thread_local' specifier.")
   ThreadPrivate(ThreadPrivateStorage* key)
-  : m_storage(key,this)
+  : m_storage(key, this)
   {
   }
 
   ~ThreadPrivate()
   {
-    for( T* item : m_allocated_items )
+    for (T* item : m_allocated_items)
       delete item;
   }
 
  public:
+
   //! Instance spécifique au thread courant.
   T* item()
   {
@@ -166,6 +172,7 @@ class ThreadPrivate
   }
 
  private:
+
   std::vector<T*> m_allocated_items;
   ThreadPrivateBase m_storage;
 };
@@ -173,7 +180,7 @@ class ThreadPrivate
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arccore
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
