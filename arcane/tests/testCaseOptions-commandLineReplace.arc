@@ -34,9 +34,9 @@
 
     <post-processor1 name="UCDPostProcessor"/>
 
-    <post-processor1 name="Ensight7PostProcessor">
-      <fileset-size>9</fileset-size>
-      <binary-file>false</binary-file>
+    <post-processor1>
+      <use-collective-write>true</use-collective-write>
+      <max-write-size>50</max-write-size>
     </post-processor1>
 
     <post-processor2 name="Ensight7PostProcessor">

@@ -31,6 +31,7 @@
 #include "arcane/core/ICaseMng.h"
 #include "arcane/core/internal/ICaseOptionListInternal.h"
 #include "arcane/core/internal/StringVariableReplace.h"
+#include "arcane/utils/ParameterCaseOption.h"
 
 #include <typeinfo>
 
@@ -193,20 +194,11 @@ _readPhase1()
   const ParameterList& params = caseMng()->application()->applicationInfo().commandLineArguments().parameters();
   ICaseDocumentFragment* doc = caseDocumentFragment();
 
-  // TODO AH : Si l'on met un "mesh-name" dans le .axl puis que l'utilisateur met un "mesh-name" dans le .arc, qui gagne ?
-  // Cas où un service agit sur deux maillages ?
+  ParameterCaseOption pco{ caseMng() };
+
   String mesh_name;
   {
-    String path = element.xpathFullName() + "/@mesh-name";
-
-    // On retire le "//case/" ou le "//cas/" du début.
-    StringView sv;
-    if (doc->language() == "fr")
-      sv = path.view().subView(6);
-    else
-      sv = path.view().subView(7);
-
-    String reference_input = params.getParameterOrNull(sv);
+    String reference_input = pco.getParameterOrNull(element.xpathFullName(), "@mesh-name", 1);
     if (!reference_input.null())
       mesh_name = reference_input;
     else
@@ -235,16 +227,7 @@ _readPhase1()
 
   String str_val;
   {
-    String path = element.xpathFullName() + "/@name";
-
-    // On retire le "//case/" ou le "//cas/" du début.
-    StringView sv;
-    if (doc->language() == "fr")
-      sv = path.view().subView(6);
-    else
-      sv = path.view().subView(7);
-
-    String reference_input = params.getParameterOrNull(sv);
+    String reference_input = pco.getParameterOrNull(element.xpathFullName(), "@name", 1);
     if (!reference_input.null())
       str_val = reference_input;
     else
@@ -401,41 +384,78 @@ multiAllocate(const XmlNodeList& elem_list)
   if (!m_container)
     ARCANE_FATAL("null 'm_container'. did you called setContainer() method ?");
 
+  const ParameterList& params = caseMng()->application()->applicationInfo().commandLineArguments().parameters();
+  ParameterCaseOption pco{ caseMng() };
+
+  XmlNode parent_element = configList()->parentElement();
+
+  // !!! En XML, on commence par 1 et non 0.
+  UniqueArray<Integer> option_in_param;
+
+  pco.indexesInParam(String::format("{0}/{1}", parent_element.xpathFullName(), name()), option_in_param, true);
+
   Integer size = elem_list.size();
 
-  if (size == 0)
+  bool is_optional = configList()->isOptional();
+
+  if (size == 0 && option_in_param.empty() && is_optional) {
     return;
+  }
+
+  Integer min_occurs = configList()->minOccurs();
+  Integer max_occurs = configList()->maxOccurs();
+
+  Integer max_in_param = 0;
+
+  if (!option_in_param.empty()) {
+    max_in_param = option_in_param[0];
+    for (Integer index : option_in_param) {
+      if (index > max_in_param)
+        max_in_param = index;
+    }
+    if (max_occurs >= 0) {
+      if (max_in_param > max_occurs) {
+        ARCANE_FATAL("Max in param > max_occurs");
+      }
+    }
+  }
+
+  if (max_occurs >= 0) {
+    if (size > max_occurs) {
+      ARCANE_FATAL("Nb in XmlNodeList > max_occurs");
+    }
+  }
+
+  Integer final_size = std::max(size, std::max(min_occurs, max_in_param));
 
   ITraceMng* tm = traceMng();
 
   IApplication* app = caseMng()->application();
-  XmlNode parent_element = configList()->parentElement();
-  const ParameterList& params = caseMng()->application()->applicationInfo().commandLineArguments().parameters();
   ICaseDocumentFragment* doc = caseDocumentFragment();
 
-  m_container->allocate(size);
+  m_container->allocate(final_size);
 
-  m_allocated_options.resize(size);
-  m_services_name.resize(size);
+  m_allocated_options.resize(final_size);
+  m_services_name.resize(final_size);
 
-  Integer index = 0;
-  for (const XmlNode& element : elem_list) {
+  for (Integer index = 0; index < final_size; ++index) {
+    XmlNode element;
+
     String mesh_name;
-    {
-      String path = element.xpathFullName() + "/@mesh-name";
+    String str_val;
 
-      // On retire le "//case/" ou le "//cas/" du début.
-      StringView sv;
-      if (doc->language() == "fr")
-        sv = path.view().subView(6);
-      else
-        sv = path.view().subView(7);
-
-      String reference_input = params.getParameterOrNull(sv);
-      if (!reference_input.null())
-        mesh_name = reference_input;
-      else
-        mesh_name = element.attrValue("mesh-name");
+    if (option_in_param.contains(index + 1)) {
+      mesh_name = pco.getParameterOrNull(String::format("{0}/{1}", parent_element.xpathFullName(), name()), "@mesh-name", index + 1);
+      str_val = pco.getParameterOrNull(String::format("{0}/{1}", parent_element.xpathFullName(), name()), "@name", index + 1);
+    }
+    if (index < size && (mesh_name.null() || str_val.null())) {
+      element = elem_list[index];
+      if (!element.null()) {
+        if (mesh_name.null())
+          mesh_name = element.attrValue("mesh-name");
+        if (str_val.null())
+          str_val = element.attrValue("name");
+      }
     }
 
     if (mesh_name.null()) {
@@ -446,29 +466,6 @@ multiAllocate(const XmlNodeList& elem_list)
       mesh_name = StringVariableReplace::replaceWithCmdLineArgs(params, mesh_name, true);
     }
 
-    String str_val;
-    {
-      String path = element.xpathFullName() + "/@name";
-
-      // On retire le "//case/" ou le "//cas/" du début.
-      StringView sv;
-      if (doc->language() == "fr")
-        sv = path.view().subView(6);
-      else
-        sv = path.view().subView(7);
-
-      String reference_input = params.getParameterOrNull(sv);
-      if (!reference_input.null())
-        str_val = reference_input;
-      else
-        str_val = element.attrValue("name");
-    }
-    tm->info(5) << "CaseOptionMultiServiceImpl name=" << name()
-                << " index=" << index
-                << " v=" << str_val
-                << " default_value='" << _defaultValue() << "'"
-                << " mesh=" << meshHandle().meshName();
-
     if (str_val.null()) {
       str_val = _defaultValue();
     }
@@ -476,8 +473,20 @@ multiAllocate(const XmlNodeList& elem_list)
       // Dans un else : Le remplacement de symboles ne s'applique pas pour les valeurs par défault du .axl.
       str_val = StringVariableReplace::replaceWithCmdLineArgs(params, str_val, true);
     }
+    if (element.null()) {
+      element = parent_element.createElement(name());
+
+      element.setAttrValue("mesh-name", mesh_name);
+      element.setAttrValue("name", str_val);
+    }
+
+    tm->info(5) << "CaseOptionMultiServiceImpl name=" << name()
+                << " index=" << index
+                << " v=" << str_val
+                << " default_value='" << _defaultValue() << "'"
+                << " mesh=" << meshHandle().meshName();
     if (str_val.null())
-      throw CaseOptionException("get_value", "@name", element);
+      throw CaseOptionException("get_value", "@name");
 
     // TODO: regarder si on ne peut pas créer directement un CaseOptionService.
     auto* coptions = new CaseOptions(configList(), name(), parent_element, false, true);
@@ -504,14 +513,7 @@ multiAllocate(const XmlNodeList& elem_list)
     }
     m_services_name[index] = str_val;
     m_allocated_options[index] = coptions;
-
-    index++;
   }
-
-  m_container->allocate(index);
-
-  m_allocated_options.resize(index);
-  m_services_name.resize(index);
 
   if (m_notify_functor)
     m_notify_functor->executeFunctor();

@@ -54,6 +54,7 @@ class CaseOptionBasePrivate
   String m_default_value; //!< Valeur par défaut
   Integer m_min_occurs; //!< Nombre minimum d'occurences
   Integer m_max_occurs; //!< Nombre maximum d'occurences (-1 == unbounded)
+  bool m_is_optional;
   bool m_is_initialized; //!< \a true si initialisé
   bool m_is_override_default; //!< \a true si la valeur par défaut est surchargée
   //! Liste des noms d'options par langue.
@@ -77,6 +78,7 @@ CaseOptionBasePrivate(const CaseOptionBuildInfo& cob)
 , m_default_value(m_axl_default_value)
 , m_min_occurs(cob.minOccurs())
 , m_max_occurs(cob.maxOccurs())
+, m_is_optional(cob.isOptional())
 , m_is_initialized(false)
 , m_is_override_default(false)
 {
@@ -227,6 +229,15 @@ maxOccurs() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+bool CaseOptionBase::
+isOptional() const
+{
+  return m_p->m_is_optional;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 void CaseOptionBase::
 _setTranslatedName()
 {
@@ -349,6 +360,11 @@ _checkMinMaxOccurs(Integer nb_occur)
 {
   Integer min_occurs = m_p->m_min_occurs;
   Integer max_occurs = m_p->m_max_occurs;
+  bool is_optional = m_p->m_is_optional;
+
+  if (nb_occur == 0 && is_optional) {
+    return;
+  }
 
   if (nb_occur<min_occurs){
     StringBuilder msg = "Bad number of occurences (less than min)";

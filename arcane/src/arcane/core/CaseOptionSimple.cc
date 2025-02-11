@@ -16,8 +16,9 @@
 #include "arcane/utils/ValueConvert.h"
 #include "arcane/utils/ITraceMng.h"
 #include "arcane/utils/FatalErrorException.h"
-#include <arcane/utils/ApplicationInfo.h>
-#include <arcane/utils/CommandLineArguments.h>
+#include "arcane/utils/ApplicationInfo.h"
+#include "arcane/utils/CommandLineArguments.h"
+#include "arcane/utils/ParameterCaseOption.h"
 
 #include "arcane/core/IApplication.h"
 #include "arcane/core/CaseOptionException.h"
@@ -132,22 +133,11 @@ _search(bool is_phase1)
   }
 
   // Liste des options de la ligne de commande.
-  const ParameterList& params = caseMng()->application()->applicationInfo().commandLineArguments().parameters();
   {
-    String path;
-    if (velem.null())
-      path = rootElement().xpathFullName() + "/" + name();
-    else
-      path = velem.xpathFullName();
+    const ParameterList& params = caseMng()->application()->applicationInfo().commandLineArguments().parameters();
+    ParameterCaseOption pco{ caseMng() };
 
-    // On retire le "//case/" ou le "//cas/" du début.
-    StringView sv;
-    if (doc->language() == "fr")
-      sv = path.view().subView(6);
-    else
-      sv = path.view().subView(7);
-
-    String reference_input = params.getParameterOrNull(sv);
+    String reference_input = pco.getParameterOrNull(String::format("{0}/{1}", rootElement().xpathFullName(), velem_name), 1, false);
     if (!reference_input.null()) {
       // Si l'utilisateur a spécifié une option qui n'est pas présente dans le
       // jeu de données, on doit la créer.
@@ -156,9 +146,9 @@ _search(bool is_phase1)
       }
       velem.setValue(reference_input);
     }
-  }
-  if (!velem.null()) {
-    velem.setValue(StringVariableReplace::replaceWithCmdLineArgs(params, velem.value(), true));
+    if (!velem.null()) {
+      velem.setValue(StringVariableReplace::replaceWithCmdLineArgs(params, velem.value(), true));
+    }
   }
 
   m_element = velem;
@@ -664,43 +654,97 @@ _allowPhysicalUnit()
  * Si la valeur n'est pas présente dans le jeu de donnée, regarde s'il
  * existe une valeur par défaut et utilise cette dernière.
  */
-template<typename T> void CaseOptionMultiSimpleT<T>::
+template <typename T>
+void CaseOptionMultiSimpleT<T>::
 _search(bool is_phase1)
 {
   if (!is_phase1)
     return;
-  XmlNodeList elem_list = rootElement().children(name());
 
+  const ParameterList& params = caseMng()->application()->applicationInfo().commandLineArguments().parameters();
+  ParameterCaseOption pco{ caseMng() };
+
+  // !!! En XML, on commence par 1 et non 0.
+  UniqueArray<Integer> option_in_param;
+
+  pco.indexesInParam(String::format("{0}/{1}", rootElement().xpathFullName(), name()), option_in_param, false);
+
+  XmlNodeList elem_list = rootElement().children(name());
   Integer asize = elem_list.size();
-  _checkMinMaxOccurs(asize);
-  if (asize==0)
+
+  bool is_optional = isOptional();
+
+  if (asize == 0 && option_in_param.empty() && is_optional) {
     return;
+  }
+
+  Integer min_occurs = minOccurs();
+  Integer max_occurs = maxOccurs();
+
+  Integer max_in_param = 0;
+
+  if (!option_in_param.empty()) {
+    max_in_param = option_in_param[0];
+    for (Integer index : option_in_param) {
+      if (index > max_in_param)
+        max_in_param = index;
+    }
+    if (max_occurs >= 0) {
+      if (max_in_param > max_occurs) {
+        ARCANE_FATAL("Max in param > max_occurs");
+      }
+    }
+  }
+
+  if (max_occurs >= 0) {
+    if (asize > max_occurs) {
+      ARCANE_FATAL("Nb in XmlNodeList > max_occurs");
+    }
+  }
+
+  Integer final_size = std::max(asize, std::max(min_occurs, max_in_param));
 
   const Type* old_value = m_view.data();
   delete[] old_value;
   using Type = typename CaseOptionTraitsT<T>::ContainerType;
-  Type* ptr_value = new Type[asize];
-  m_view = ArrayViewType(asize,ptr_value);
-  this->_setArray(ptr_value,asize);
+  Type* ptr_value = new Type[final_size];
+  m_view = ArrayViewType(final_size, ptr_value);
+  this->_setArray(ptr_value, final_size);
 
   //cerr << "** MULTI SEARCH " << size << endl;
-  for( Integer i=0; i<asize; ++i ){
-    XmlNode velem = elem_list[i];
-    // Si l'option n'est pas présente dans le jeu de donnée, on prend
-    // l'option par défaut.
-    String str_val = (velem.null()) ? _defaultValue() : velem.value();
+  for (Integer i = 0; i < final_size; ++i) {
+    String str_val;
+
+    if (option_in_param.contains(i + 1)) {
+      str_val = pco.getParameterOrNull(String::format("{0}/{1}", rootElement().xpathFullName(), name()), i + 1, false);
+    }
+    else if (i < asize) {
+      XmlNode velem = elem_list[i];
+      if (!velem.null()) {
+        str_val = velem.value();
+      }
+    }
+
+    if (str_val.null()) {
+      str_val = _defaultValue();
+    }
+    else {
+      // Dans un else : Le remplacement de symboles ne s'applique pas pour les valeurs par défault du .axl.
+      str_val = StringVariableReplace::replaceWithCmdLineArgs(params, str_val, true);
+    }
+
     if (str_val.null())
-      CaseOptionError::addOptionNotFoundError(caseDocumentFragment(),A_FUNCINFO,
-                                              name(),rootElement());
-    Type val    = Type();
+      CaseOptionError::addOptionNotFoundError(caseDocumentFragment(), A_FUNCINFO,
+                                              name(), rootElement());
+    Type val = Type();
     str_val = StringCollapser<Type>::collapse(str_val);
-    bool is_bad = builtInGetValue(val,str_val);
+    bool is_bad = builtInGetValue(val, str_val);
     if (is_bad)
-      CaseOptionError::addInvalidTypeError(caseDocumentFragment(),A_FUNCINFO,
-                                           name(),rootElement(),str_val,typeToName(val));
+      CaseOptionError::addInvalidTypeError(caseDocumentFragment(), A_FUNCINFO,
+                                           name(), rootElement(), str_val, typeToName(val));
     //throw CaseOptionException("get_value",name(),rootElement(),str_val,typeToName(val));
     //ptr_value[i] = val;
-    _copyCaseOptionValue(ptr_value[i],val);
+    _copyCaseOptionValue(ptr_value[i], val);
   }
 }
 

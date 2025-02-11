@@ -108,7 +108,10 @@ class ARCANE_CORE_EXPORT CaseOptionBase
 
   //! Nombre maximum d'occurences (pour une option multiple) (-1 == unbounded)
   Integer maxOccurs() const;
-  
+
+  //! Permet de savoir si une option est optionnelle.
+  bool isOptional() const;
+
   /*! \brief Met à jour la valeur de l'option à partir d'une fonction.
    *
    * Si l'option n'est pas liée à une table de marche, ne fait rien.

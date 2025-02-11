@@ -72,6 +72,10 @@ class ARCANE_CORE_EXPORT ICaseOptionList
   virtual bool isPresent() const =0;
   //! Indique si l'option est optionnelle
   virtual bool isOptional() const =0;
+  //! Nombre minimum d'occurences
+  virtual Integer minOccurs() const = 0;
+  //! Nombre maximum d'occurences
+  virtual Integer maxOccurs() const = 0;
   //! Applique le visiteur \a visitor
   virtual void visit(ICaseDocumentVisitor* visitor) =0;
   //! Nom complet au format XPath correspondant à rootElement()
