@@ -30,14 +30,17 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arccore
+namespace Arcane
 {
 class ISerializer;
+}
+namespace Arccore
+{
 class ITimeMetricCollector;
+using Arcane::ISerializer;
 }
 namespace Arcane
 {
-using Arccore::ISerializer;
 using Arccore::ITimeMetricCollector;
 }
 

@@ -28,10 +28,6 @@
 namespace Arcane
 {
 class BasicSerializeGatherMessage;
-}
-
-namespace Arccore
-{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -215,31 +211,31 @@ class ARCCORE_SERIALIZE_EXPORT BasicSerializer
 
   void putReal(Real value) override
   {
-    put(RealConstArrayView(1, &value));
+    put(ConstArrayView<Real>(1, &value));
   }
   void putInt64(Int64 value) override
   {
-    put(Int64ConstArrayView(1, &value));
+    put(ConstArrayView<Int64>(1, &value));
   }
   void putInt32(Int32 value) override
   {
-    put(Int32ConstArrayView(1, &value));
+    put(ConstArrayView<Int32>(1, &value));
   }
   void putInt16(Int16 value) override
   {
-    put(Int16ConstArrayView(1, &value));
+    put(ConstArrayView<Int16>(1, &value));
   }
   void putInteger(Integer value) override
   {
 #ifdef ARCANE_64BIT
-    put(Int64ConstArrayView(1, &value));
+    put(ConstArrayView<Int64>(1, &value));
 #else
-    put(Int32ConstArrayView(1, &value));
+    put(ConstArrayView<Int32>(1, &value));
 #endif
   }
   void putByte(Byte value) override
   {
-    put(ByteConstArrayView(1, &value));
+    put(ConstArrayView<Byte>(1, &value));
   }
   void putInt8(Int8 value) override
   {
@@ -278,11 +274,11 @@ class ARCCORE_SERIALIZE_EXPORT BasicSerializer
   void putArray(Span<const Float128> values) override;
   void putArray(Span<const Int128> values) override;
 
-  void get(RealArrayView values) override { ThatClass::getSpan(values); }
-  void get(Int64ArrayView values) override { ThatClass::getSpan(values); }
-  void get(Int32ArrayView values) override { ThatClass::getSpan(values); }
-  void get(Int16ArrayView values) override { ThatClass::getSpan(values); }
-  void get(ByteArrayView values) override { ThatClass::getSpan(values); }
+  void get(ArrayView<Real> values) override { ThatClass::getSpan(values); }
+  void get(ArrayView<Int64> values) override { ThatClass::getSpan(values); }
+  void get(ArrayView<Int32> values) override { ThatClass::getSpan(values); }
+  void get(ArrayView<Int16> values) override { ThatClass::getSpan(values); }
+  void get(ArrayView<Byte> values) override { ThatClass::getSpan(values); }
 
   void getSpan(Span<Real> values) override;
   void getSpan(Span<Int16> values) override;
@@ -429,11 +425,11 @@ class ARCCORE_SERIALIZE_EXPORT BasicSerializer
 
  public:
 
-  ByteConstArrayView copyAndGetSizesBuffer();
+  ConstArrayView<Byte> copyAndGetSizesBuffer();
   Span<Byte> globalBuffer();
   Span<const Byte> globalBuffer() const;
   ARCCORE_DEPRECATED_2020("Do not use. get total size with totalSize()")
-  Int64ConstArrayView sizesBuffer();
+  ConstArrayView<Int64> sizesBuffer();
   Int64 totalSize() const;
   void preallocate(Int64 size);
   void releaseBuffer();
