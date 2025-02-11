@@ -385,6 +385,7 @@ class CaseOptionMultiSimpleT
   const T& value(Integer index) const { return this->operator[](index); }
   Integer size() const { return ArrayView<T>::size(); }
   ARCANE_CORE_EXPORT void visit(ICaseDocumentVisitor* visitor) const override;
+  bool isPresent() const { return !m_view.empty(); }
 
  protected:
 	

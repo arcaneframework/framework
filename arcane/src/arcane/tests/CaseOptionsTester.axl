@@ -130,6 +130,7 @@
   <simple
    name = "simple-string-multiple"
     type = "string"
+    optional = "true"
     minOccurs = "3"
     maxOccurs = "unbounded"
   >
