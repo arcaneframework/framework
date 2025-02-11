@@ -23,7 +23,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arccore
+namespace Arcane
 {
 
 /*---------------------------------------------------------------------------*/
@@ -344,19 +344,19 @@ class ARCCORE_SERIALIZE_EXPORT ISerializer
 
   //! Récupère le tableau \a values
   ARCCORE_DEPRECATED_2020("Use getSpan() instead")
-  virtual void get(RealArrayView values) = 0;
+  virtual void get(ArrayView<Real> values) = 0;
   //! Récupère le tableau \a values
   ARCCORE_DEPRECATED_2020("Use getSpan() instead")
-  virtual void get(Int16ArrayView values) = 0;
+  virtual void get(ArrayView<Int16> values) = 0;
   //! Récupère le tableau \a values
   ARCCORE_DEPRECATED_2020("Use getSpan() instead")
-  virtual void get(Int32ArrayView values) = 0;
+  virtual void get(ArrayView<Int32> values) = 0;
   //! Récupère le tableau \a values
   ARCCORE_DEPRECATED_2020("Use getSpan() instead")
-  virtual void get(Int64ArrayView values) = 0;
+  virtual void get(ArrayView<Int64> values) = 0;
   //! Récupère le tableau \a values
   ARCCORE_DEPRECATED_2020("Use getSpan() instead")
-  virtual void get(ByteArrayView values) = 0;
+  virtual void get(ArrayView<Byte> values) = 0;
 
  public:
 
@@ -465,7 +465,15 @@ createSerializer();
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arccore
+} // End namespace Arcane
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace Arccore
+{
+using Arcane::createSerializer;
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

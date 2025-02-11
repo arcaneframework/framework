@@ -25,15 +25,11 @@
 // 'arcane/utils' utilisent des fichiers d'en-tête de 'arcane/core'. C'est
 // le cas par exemple des fichiers '*AMR*.h'.
 
-namespace Arccore
+namespace Arcane
 {
 class ISerializer;
 }
-namespace Arcane
-{
-using Arccore::ISerializer;
 
-}
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
