@@ -32,7 +32,14 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+// Pour l'instant on doit laisser ArrayTraits dans le namespace Arccore
+// pour des raisons de compatibilité avec la macro ARCCORE_DEFINE_ARRAY_PODTYPE
 namespace Arccore
+{
+template <typename DataType> class ArrayTraits;
+}
+
+namespace Arcane
 {
 class IMemoryAllocator;
 class PrintableMemoryAllocator;
@@ -43,22 +50,22 @@ class ArrayMetaData;
 class MemoryAllocationArgs;
 class MemoryAllocationOptions;
 class ArrayDebugInfo;
-template<typename DataType> class ArrayTraits;
-template<typename DataType> class ArrayImplT;
-template<typename DataType> class Array;
-template<typename DataType> class AbstractArray;
-template<typename DataType> class UniqueArray;
-template<typename DataType> class SharedArray;
-template<typename DataType> class Array2;
-template<typename DataType> class UniqueArray2;
-template<typename DataType> class SharedArray2;
+template <typename DataType> class ArrayImplT;
+template <typename DataType> class Array;
+template <typename DataType> class AbstractArray;
+template <typename DataType> class UniqueArray;
+template <typename DataType> class SharedArray;
+template <typename DataType> class Array2;
+template <typename DataType> class UniqueArray2;
+template <typename DataType> class SharedArray2;
+using Arccore::ArrayTraits;
 
 // Les trois types suivants sont conservés pour compatibilité avec l'existant.
 // Il faudra les rendre optionnels mi-2025 et les supprimer en 2026
 using IMemoryAllocator3 = IMemoryAllocator;
 using AlignedMemoryAllocator3 = AlignedMemoryAllocator;
 using DefaultMemoryAllocator3 = DefaultMemoryAllocator;
-}
+} // namespace Arcane
 
 namespace Arcane::Accelerator
 {
@@ -68,7 +75,7 @@ class RunQueue;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arccore
+namespace Arcane
 {
 using Arcane::Accelerator::RunQueue;
 
@@ -136,8 +143,12 @@ enum class eMemoryResource
   UnifiedMemory
 };
 
-//! Nombre de valeurs valides pour eMemoryRessource
+//! Nombre de valeurs valides pour eMemoryResource
 static constexpr int ARCCORE_NB_MEMORY_RESOURCE = 5;
+
+//! Typedef pour la version Arcane historique (avec 2's')
+// TODO: A rendre obsolète (juin 2025)
+using eMemoryRessource = Arcane::eMemoryResource;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -186,43 +197,48 @@ class AllocatedMemoryInfo
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // namespace Arccore
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arcane
+namespace Arccore
 {
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-using Arccore::AllocatedMemoryInfo;
-using Arccore::eMemoryLocationHint;
-using Arccore::MemoryAllocationOptions;
-using Arccore::MemoryAllocationArgs;
-using Arccore::IMemoryAllocator;
-using Arccore::IMemoryAllocator3;
-using Arccore::PrintableMemoryAllocator;
-using Arccore::AlignedMemoryAllocator;
-using Arccore::DefaultMemoryAllocator;
-using Arccore::ArrayTraits;
-using Arccore::Array;
-using Arccore::AbstractArray;
-using Arccore::SharedArray;
-using Arccore::UniqueArray;
-using Arccore::Array2;
-using Arccore::SharedArray2;
-using Arccore::UniqueArray2;
-using Arccore::eMemoryResource;
+using Arcane::AbstractArray;
+using Arcane::AlignedMemoryAllocator;
+using Arcane::AlignedMemoryAllocator3;
+using Arcane::AllocatedMemoryInfo;
+using Arcane::ARCCORE_NB_MEMORY_RESOURCE;
+using Arcane::Array;
+using Arcane::Array2;
+using Arcane::ArrayMetaData;
+using Arcane::DefaultMemoryAllocator;
+using Arcane::DefaultMemoryAllocator3;
+using Arcane::eHostDeviceMemoryLocation;
+using Arcane::eMemoryLocationHint;
+using Arcane::eMemoryResource;
+using Arcane::IMemoryAllocator;
+using Arcane::IMemoryAllocator3;
+using Arcane::MemoryAllocationArgs;
+using Arcane::MemoryAllocationOptions;
+using Arcane::PrintableMemoryAllocator;
+using Arcane::SharedArray;
+using Arcane::SharedArray2;
+using Arcane::UniqueArray;
+using Arcane::UniqueArray2;
+
 //! Typedef pour la version Arcane historique (avec 2's')
 // TODO: A rendre obsolète (juin 2025)
-using eMemoryRessource = Arccore::eMemoryResource;
+using eMemoryRessource = Arcane::eMemoryResource;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-}
+} // namespace Arccore
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
