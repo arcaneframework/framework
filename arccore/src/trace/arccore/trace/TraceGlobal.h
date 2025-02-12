@@ -30,7 +30,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arccore
+namespace Arcane
 {
 class ITraceStream;
 class ITraceMng;
@@ -62,33 +62,34 @@ namespace Trace
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCCORE_DECLARE_REFERENCE_COUNTED_CLASS(ITraceStream)
-ARCCORE_DECLARE_REFERENCE_COUNTED_CLASS(ITraceMng)
+ARCCORE_DECLARE_REFERENCE_COUNTED_CLASS(Arcane::ITraceStream)
+ARCCORE_DECLARE_REFERENCE_COUNTED_CLASS(Arcane::ITraceMng)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arcane
+namespace Arccore
 {
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-using Arccore::ITraceStream;
-using Arccore::ITraceMng;
-using Arccore::TraceAccessor;
-using Arccore::TraceMessageClass; 
-using Arccore::TraceClassConfig;
-using Arccore::TraceMessage;
-using Arccore::TraceMessageDbg;
-using Arccore::TraceMessageListenerArgs;
-using Arccore::ITraceMessageListener;
-using Arccore::ITimeMetricCollector;
-using Arccore::TimeMetricSentry;
-using Arccore::TimeMetricId;
-using Arccore::TimeMetricAction;
-using Arccore::TimeMetricActionBuildInfo;
-namespace Trace = ::Arccore::Trace;
+using Arcane::ITraceStream;
+using Arcane::ITraceMng;
+using Arcane::TraceAccessor;
+using Arcane::TraceMessageClass; 
+using Arcane::TraceClassConfig;
+using Arcane::TraceMessage;
+using Arcane::TraceMessageDbg;
+using Arcane::TraceMessageListenerArgs;
+using Arcane::ITraceMessageListener;
+using Arcane::ITimeMetricCollector;
+using Arcane::TimeMetricSentry;
+using Arcane::TimeMetricId;
+using Arcane::TimeMetricAction;
+using Arcane::TimeMetricActionBuildInfo;
+using Arcane::StandaloneTraceMessage;
+namespace Trace = ::Arcane::Trace;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

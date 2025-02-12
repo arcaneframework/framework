@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* TraceMng.cc                                                 (C) 2000-2024 */
+/* TraceMng.cc                                                 (C) 2000-2025 */
 /*                                                                           */
 /* Gestionnaire des traces.                                                  */
 /*---------------------------------------------------------------------------*/
@@ -18,7 +18,6 @@
 #include "arccore/base/FatalErrorException.h"
 #include "arccore/base/NotSupportedException.h"
 #include "arccore/base/IFunctor.h"
-#include "arccore/base/StackTrace.h"
 #include "arccore/base/IStackTraceService.h"
 #include "arccore/base/String.h"
 #include "arccore/base/PlatformUtils.h"
@@ -41,7 +40,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arccore
+namespace Arcane
 {
 
 // TODO réimplémenter cette classe
@@ -1321,13 +1320,16 @@ fatalMessage(const StandaloneTraceMessage& o)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCCORE_DEFINE_REFERENCE_COUNTED_CLASS(ITraceMng);
-ARCCORE_DEFINE_REFERENCE_COUNTED_CLASS(ITraceStream);
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arccore
+namespace Arccore
+{
+ARCCORE_DEFINE_REFERENCE_COUNTED_CLASS(Arcane::ITraceMng);
+ARCCORE_DEFINE_REFERENCE_COUNTED_CLASS(Arcane::ITraceStream);
+} // namespace Arccore
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

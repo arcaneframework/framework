@@ -666,10 +666,6 @@ class StringView;
 class StringFormatterArg;
 class StringBuilder;
 
-// Pas dans cette composante mais comme cette interface on la met ici
-// pour compatibilité avec l'existant
-class ITraceMng;
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -680,11 +676,24 @@ class ITraceMng;
 
 namespace Arcane
 {
+// Pas dans cette composante mais comme cette interface on la met ici
+// pour compatibilité avec l'existant
+class ITraceMng;
+} // namespace Arcane
+namespace Arccore
+{
+using Arcane::ITraceMng;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace Arcane
+{
 using Arccore::StringView;
 using Arccore::String;
 using Arccore::StringBuilder;
 using Arccore::StringFormatterArg;
-using Arccore::ITraceMng;
 using Arccore::Int16;
 using Arccore::Int32;
 using Arccore::Int64;
