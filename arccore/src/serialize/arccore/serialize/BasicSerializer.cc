@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* BasicSerializer.cc                                          (C) 2000-2024 */
+/* BasicSerializer.cc                                          (C) 2000-2025 */
 /*                                                                           */
 /* Implémentation simple de 'ISerializer'.                                   */
 /*---------------------------------------------------------------------------*/
@@ -23,7 +23,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arccore
+namespace Arcane
 {
 
 /*---------------------------------------------------------------------------*/
@@ -122,7 +122,7 @@ class BasicSerializerNewImpl
   Span<Float128> m_float128_view; //!< Vue les Float128
   Span<Int128> m_int128_view; //!< Vue les Int128
 
-  Int64ArrayView m_sizes_view; //!< Vue pour les tailles (doit être un multiple de ALIGN_SIZE);
+  ArrayView<Int64> m_sizes_view; //!< Vue pour les tailles (doit être un multiple de ALIGN_SIZE);
 
   /*!
    * \brief Copie des tailles utilisée pour l'envoie en plusieurs fois.
@@ -225,7 +225,7 @@ class BasicSerializerNewImpl
     _fillPadding(float128_position, padded_float128_size);
     _fillPadding(int128_position, padded_int128_size);
 
-    m_sizes_view = Int64ArrayView(NB_SIZE_ELEM, (Int64*)&m_buffer_view[0]);
+    m_sizes_view = ArrayView<Int64>(NB_SIZE_ELEM, (Int64*)&m_buffer_view[0]);
     m_sizes_view.fill(0);
 
     m_sizes_view[IDX_TAG] = SERIALIZE_TAG;
@@ -299,7 +299,7 @@ class BasicSerializerNewImpl
     return m_buffer_view;
   }
 
-  Int64ConstArrayView sizesBuffer() const override
+  ConstArrayView<Int64> sizesBuffer() const override
   {
     return m_sizes_view;
   }
@@ -307,7 +307,7 @@ class BasicSerializerNewImpl
   void preallocate(Int64 size) override
   {
     _allocBuffer(size);
-    m_sizes_view = Int64ArrayView(NB_SIZE_ELEM, (Int64*)&m_buffer_view[0]);
+    m_sizes_view = ArrayView<Int64>(NB_SIZE_ELEM, (Int64*)&m_buffer_view[0]);
   }
 
   void releaseBuffer() override
@@ -365,13 +365,13 @@ class BasicSerializerNewImpl
     _checkAlignment();
   }
 
-  ByteConstArrayView copyAndGetSizesBuffer() override
+  ConstArrayView<Byte> copyAndGetSizesBuffer() override
   {
     // Recopie dans \a m_size_copy_buffer les valeurs de \a m_size_view
     // et retourne un pointeur sur \a m_size_copy_buffer.
-    Int64ArrayView copy_buf(NB_SIZE_ELEM, m_size_copy_buffer);
+    ArrayView<Int64> copy_buf(NB_SIZE_ELEM, m_size_copy_buffer);
     copy_buf.copy(m_sizes_view);
-    ByteConstArrayView bytes(sizeof(m_size_copy_buffer), (const Byte*)m_size_copy_buffer);
+    ConstArrayView<Byte> bytes(sizeof(m_size_copy_buffer), (const Byte*)m_size_copy_buffer);
     return bytes;
   }
 
@@ -382,7 +382,7 @@ class BasicSerializerNewImpl
 
   void printSizes(std::ostream& o) const override
   {
-    Int64ConstArrayView sbuf_sizes = this->sizesBuffer();
+    ConstArrayView<Int64> sbuf_sizes = this->sizesBuffer();
     Int64 total_size = totalSize();
     Span<Byte> bytes = m_buffer_view;
     o << " bytes " << bytes.size()
@@ -1525,7 +1525,7 @@ globalBuffer() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ByteConstArrayView BasicSerializer::
+ConstArrayView<Byte> BasicSerializer::
 copyAndGetSizesBuffer()
 {
   return _p()->copyAndGetSizesBuffer();
@@ -1534,7 +1534,7 @@ copyAndGetSizesBuffer()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Int64ConstArrayView BasicSerializer::
+ConstArrayView<Int64> BasicSerializer::
 sizesBuffer()
 {
   return _p()->sizesBuffer();

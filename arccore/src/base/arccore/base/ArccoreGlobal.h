@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ArccoreGlobal.h                                             (C) 2000-2024 */
+/* ArccoreGlobal.h                                             (C) 2000-2025 */
 /*                                                                           */
 /* Déclarations générales de Arccore.                                        */
 /*---------------------------------------------------------------------------*/
@@ -666,10 +666,69 @@ class StringView;
 class StringFormatterArg;
 class StringBuilder;
 
+// Pas dans cette composante mais comme cette interface on la met ici
+// pour compatibilité avec l'existant
+class ITraceMng;
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 } // End namespace Arccore
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace Arcane
+{
+using Arccore::StringView;
+using Arccore::String;
+using Arccore::StringBuilder;
+using Arccore::StringFormatterArg;
+using Arccore::ITraceMng;
+using Arccore::Int16;
+using Arccore::Int32;
+using Arccore::Int64;
+using Arccore::UInt32;
+using Arccore::UInt64;
+
+using Arccore::Real;
+using Arccore::Pointer;
+using Arccore::APReal;
+using Arccore::Short;
+using Arccore::Integer;
+
+//! Type 'Brain Float16'
+using BFloat16 = Arccore::BFloat16;
+
+//! Type 'Float16' (binary16)
+using Float16 = Arccore::Float16;
+
+//! Type flottant IEEE-753 simple précision (binary32)
+using Float32 = float;
+
+//! Type représentant un entier sur 8 bits
+using Int8 = Arccore::Int8;
+
+//! Type représentant un floattan sur 128 bits
+using Float128 = Arccore::Float128;
+
+//! Type représentant un entier sur 128 bits
+using Int128 = Arccore::Int128;
+
+using Arccore::arccoreIsCheck;
+using Arccore::arccoreSetCheck;
+using Arccore::arccoreIsDebug;
+using Arccore::arccorePrintf;
+using Arccore::arccoreDebugPause;
+using Arccore::arccoreSetPauseOnError;
+using Arccore::arccoreNullPointerError;
+using Arccore::arccoreRangeError;
+using Arccore::arccoreCheckRange;
+using Arccore::arccoreCheckAt;
+using Arccore::arccoreThrowNullPointerError;
+using Arccore::arccoreThrowIfNull;
+
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

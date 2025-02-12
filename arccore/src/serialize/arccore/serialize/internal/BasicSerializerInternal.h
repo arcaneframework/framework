@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* BasicSerializerInternal.h                                   (C) 2000-2024 */
+/* BasicSerializerInternal.h                                   (C) 2000-2025 */
 /*                                                                           */
 /* Partie interne de 'BasicSerializer'.                                      */
 /*---------------------------------------------------------------------------*/
@@ -20,7 +20,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arccore
+namespace Arcane
 {
 
 /*---------------------------------------------------------------------------*/
@@ -52,8 +52,8 @@ class ARCCORE_SERIALIZE_EXPORT BasicSerializer::Impl
   virtual void copy(Impl* rhs) = 0;
   virtual Span<Byte> globalBuffer() = 0;
   virtual Span<const Byte> globalBuffer() const = 0;
-  virtual Int64ConstArrayView sizesBuffer() const = 0;
-  virtual ByteConstArrayView copyAndGetSizesBuffer() = 0;
+  virtual ConstArrayView<Int64> sizesBuffer() const = 0;
+  virtual ConstArrayView<Byte> copyAndGetSizesBuffer() = 0;
   virtual void preallocate(Int64 size) = 0;
   virtual void releaseBuffer() = 0;
   virtual void setFromSizes() = 0;

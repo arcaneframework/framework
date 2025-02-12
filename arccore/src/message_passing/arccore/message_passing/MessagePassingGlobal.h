@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MessagePassingGlobal.h                                      (C) 2000-2024 */
+/* MessagePassingGlobal.h                                      (C) 2000-2025 */
 /*                                                                           */
 /* Définitions globales de la composante 'MessagePassing' de 'Arccore'.      */
 /*---------------------------------------------------------------------------*/
@@ -30,13 +30,21 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arccore
+namespace Arcane
 {
 class ISerializer;
+}
+namespace Arccore
+{
 class ITimeMetricCollector;
+using Arcane::ISerializer;
+}
+namespace Arcane
+{
+using Arccore::ITimeMetricCollector;
 }
 
-namespace Arccore::MessagePassing
+namespace Arcane::MessagePassing
 {
 /*!
  * \brief Numéro correspondant à un rang nul.
@@ -70,6 +78,9 @@ class MessageRank;
 class MessageSourceInfo;
 class PointToPointMessageInfo;
 class IStat;
+class Stat;
+class OneStat;
+class StatData;
 class IMessagePassingMng;
 class MessagePassingMng;
 class IDispatchers;
@@ -80,6 +91,9 @@ class IControlDispatcher;
 template<typename DataType> class ITypeDispatcher;
 class GatherMessageInfoBase;
 template<typename DataType> class GatherMessageInfo;
+class PointToPointSerializerMng;
+class ISerializeMessage;
+class ISerializeMessageList;
 
 /*!
  * \brief Types des réductions supportées.
@@ -125,20 +139,138 @@ enum ePointToPointMessageType
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arccore::MessagePassing
+} // End namespace Arcane::MessagePassing
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+namespace Arcane::MessagePassing::internal
+{
+class BasicSerializeMessage;
+class SerializeMessageList;
+}
 
 namespace Arccore::MessagePassing::internal
 {
-class BasicSerializeMessage;
+using Arcane::MessagePassing::internal::BasicSerializeMessage;
+using Arcane::MessagePassing::internal::SerializeMessageList;
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCCORE_DECLARE_REFERENCE_COUNTED_CLASS(Arccore::MessagePassing::IMessagePassingMng)
+ARCCORE_DECLARE_REFERENCE_COUNTED_CLASS(Arcane::MessagePassing::IMessagePassingMng)
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace Arcane
+{
+using Arcane::MessagePassing::IControlDispatcher;
+using Arcane::MessagePassing::IMessagePassingMng;
+using Arcane::MessagePassing::ISerializeMessage;
+using Arcane::MessagePassing::ISerializeMessageList;
+using Arcane::MessagePassing::ITypeDispatcher;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace Arccore::MessagePassing
+{
+using Arcane::MessagePassing::eReduceType;
+using Arcane::MessagePassing::ReduceMax;
+using Arcane::MessagePassing::ReduceMin;
+using Arcane::MessagePassing::ReduceSum;
+
+using Arcane::MessagePassing::eWaitType;
+using Arcane::MessagePassing::TestSome;
+using Arcane::MessagePassing::WaitAll;
+using Arcane::MessagePassing::WaitSome;
+using Arcane::MessagePassing::WaitSomeNonBlocking;
+
+using Arcane::MessagePassing::Blocking;
+using Arcane::MessagePassing::eBlockingType;
+using Arcane::MessagePassing::NonBlocking;
+
+using Arcane::MessagePassing::ePointToPointMessageType;
+using Arcane::MessagePassing::MsgReceive;
+using Arcane::MessagePassing::MsgSend;
+
+using Arcane::MessagePassing::IRequestCreator;
+using Arcane::MessagePassing::IRequestList;
+using Arcane::MessagePassing::ISubRequest;
+using Arcane::MessagePassing::MessageId;
+using Arcane::MessagePassing::MessageRank;
+using Arcane::MessagePassing::MessageSourceInfo;
+using Arcane::MessagePassing::MessageTag;
+using Arcane::MessagePassing::PointToPointMessageInfo;
+using Arcane::MessagePassing::Request;
+using Arcane::MessagePassing::MessagePassingMng;
+using Arcane::MessagePassing::SubRequestCompletionInfo;
+
+using Arcane::MessagePassing::Communicator;
+using Arcane::MessagePassing::IProfiler;
+using Arcane::MessagePassing::IStat;
+using Arcane::MessagePassing::Stat;
+using Arcane::MessagePassing::ISerializeDispatcher;
+using Arcane::MessagePassing::IDispatchers;
+using Arcane::MessagePassing::Dispatchers;
+
+using Arcane::MessagePassing::A_NULL_RANK;
+using Arcane::MessagePassing::A_NULL_TAG_VALUE;
+using Arcane::MessagePassing::A_ANY_SOURCE_RANK;
+using Arcane::MessagePassing::A_PROC_NULL_RANK;
+
+using Arcane::MessagePassing::GatherMessageInfoBase;
+using Arcane::MessagePassing::GatherMessageInfo;
+
+using Arcane::MessagePassing::OneStat;
+using Arcane::MessagePassing::StatData;
+using Arcane::MessagePassing::IControlDispatcher;
+using Arcane::MessagePassing::IMessagePassingMng;
+using Arcane::MessagePassing::PointToPointSerializerMng;
+using Arcane::MessagePassing::ISerializeMessage;
+using Arcane::MessagePassing::ISerializeMessageList;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+// TODO: rendre obsolète et utiliser Arcane::MessagePassing à la place
+namespace Arcane::Parallel
+{
+using Arcane::MessagePassing::eReduceType;
+using Arcane::MessagePassing::ReduceMax;
+using Arcane::MessagePassing::ReduceMin;
+using Arcane::MessagePassing::ReduceSum;
+
+using Arcane::MessagePassing::eWaitType;
+using Arcane::MessagePassing::TestSome;
+using Arcane::MessagePassing::WaitAll;
+using Arcane::MessagePassing::WaitSome;
+using Arcane::MessagePassing::WaitSomeNonBlocking;
+
+using Arcane::MessagePassing::Blocking;
+using Arcane::MessagePassing::eBlockingType;
+using Arcane::MessagePassing::NonBlocking;
+
+using Arcane::MessagePassing::ePointToPointMessageType;
+using Arcane::MessagePassing::MsgReceive;
+using Arcane::MessagePassing::MsgSend;
+
+using Arcane::MessagePassing::IRequestCreator;
+using Arcane::MessagePassing::IRequestList;
+using Arcane::MessagePassing::ISubRequest;
+using Arcane::MessagePassing::MessageId;
+using Arcane::MessagePassing::MessageRank;
+using Arcane::MessagePassing::MessageSourceInfo;
+using Arcane::MessagePassing::MessageTag;
+using Arcane::MessagePassing::PointToPointMessageInfo;
+using Arcane::MessagePassing::Request;
+
+using Arcane::MessagePassing::Communicator;
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ArcaneGlobal.h                                              (C) 2000-2024 */
+/* ArcaneGlobal.h                                              (C) 2000-2025 */
 /*                                                                           */
 /* Déclarations générales de Arcane.                                         */
 /*---------------------------------------------------------------------------*/
@@ -196,18 +196,6 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-/*
- * Définition des types Arcane Int16, Int32 et Int64.
- *
- * Ces types sont définis lors de la configuration dans le fichier
- * 'arcane_core_config.h'.
- */
-
-using Arccore::Int16;
-using Arccore::Int32;
-using Arccore::Int64;
-using Arccore::UInt32;
-using Arccore::UInt64;
 
 #define ARCANE_HAS_LONG_LONG
 
@@ -234,12 +222,6 @@ const double cgrPI = 3.14159265358979323846;
 #  define ARCANE_REAL_IS_DOUBLE
 #endif
 
-using Arccore::Real;
-using Arccore::Pointer;
-using Arccore::APReal;
-using Arccore::Short;
-using Arccore::Integer;
-
 /*!
  * \brief Type des entiers utilisés pour stocker les identifiants locaux
  * des entités.
@@ -258,29 +240,10 @@ using LocalIdType = Int32;
  */
 using UniqueIdType = Int64;
 
-//! Type 'Brain Float16'
-using BFloat16 = Arccore::BFloat16;
-
-//! Type 'Float16' (binary16)
-using Float16 = Arccore::Float16;
-
-//! Type flottant IEEE-753 simple précision (binary32)
-using Float32 = float;
-
-//! Type représentant un entier sur 8 bits
-using Int8 = Arccore::Int8;
-
-//! Type représentant un floattan sur 128 bits
-using Float128 = Arccore::Float128;
-
-//! Type représentant un entier sur 128 bits
-using Int128 = Arccore::Int128;
-
 /*!
  * \def ARCANE_INTEGER_MAX
  * \brief Macro indiquant la valeur maximal que peut prendre le type #Integer
  */
-
 
 /*!
  * \typedef Int64
@@ -922,24 +885,6 @@ arcaneCheckAt(Int64 i,Int64 max_size)
 /*---------------------------------------------------------------------------*/
 
 } // End namespace Arcane
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-namespace Arccore
-{
-class ITraceMng;
-class StringView;
-}
-
-namespace Arcane
-{
-using Arccore::StringView;
-using Arccore::String;
-using Arccore::StringBuilder;
-using Arccore::StringFormatterArg;
-using Arccore::ITraceMng;
-}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

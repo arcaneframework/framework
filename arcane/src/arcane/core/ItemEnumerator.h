@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemEnumerator.h                                            (C) 2000-2024 */
+/* ItemEnumerator.h                                            (C) 2000-2025 */
 /*                                                                           */
 /* Enumérateur sur des groupes d'entités du maillage.                        */
 /*---------------------------------------------------------------------------*/
@@ -75,7 +75,7 @@ class ItemEnumerator
   friend class ItemEnumeratorBaseT<Cell>;
   friend class ItemEnumeratorBaseT<Particle>;
   friend class ItemEnumeratorBaseT<DoF>;
-  friend void _arcaneInternalItemEnumeratorSwigSet(const ItemEnumerator* ie, ItemEnumeratorPOD* vpod);
+  friend ARCANE_CORE_EXPORT void _arcaneInternalItemEnumeratorSwigSet(const ItemEnumerator* ie, ItemEnumeratorPOD* vpod);
 
  public:
 

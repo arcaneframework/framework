@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* RefDeclarations.h                                           (C) 2000-2023 */
+/* RefDeclarations.h                                           (C) 2000-2025 */
 /*                                                                           */
 /* Déclarations liées à la gestion des références sur une instance.          */
 /*---------------------------------------------------------------------------*/
@@ -14,7 +14,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arccore/base/ArccoreGlobal.h"
+#include "arccore/base/BaseTypes.h"
 
 #include <type_traits>
 #include <memory>
@@ -35,13 +35,6 @@
 
 namespace Arccore
 {
-class ReferenceCounterImpl;
-
-namespace impl
-{
-template <typename InstanceType>
-class ReferenceCounterWrapper;
-}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -75,7 +68,7 @@ constexpr int REF_TAG_REFERENCE_COUNTER = 1;
  *
  * Par défaut, on utilise comme implémentation la classe std::shared_ptr.
  */
-template<typename InstanceType,class T = void>
+template<typename InstanceType,class T>
 struct RefTraits
 {
   static constexpr int TagId = REF_TAG_SHARED_PTR;
@@ -93,9 +86,9 @@ struct RefTraits<InstanceType,std::enable_if_t<std::is_same_v<typename InstanceT
   static constexpr int TagId = REF_TAG_REFERENCE_COUNTER;
 };
 
-template<typename InstanceType,
-         int ImplTagId = RefTraits<InstanceType>::TagId>
-class Ref;
+//template<typename InstanceType,
+//         int ImplTagId = RefTraits<InstanceType>::TagId>
+//class Ref;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

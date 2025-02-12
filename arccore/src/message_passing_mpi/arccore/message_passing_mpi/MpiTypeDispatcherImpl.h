@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MpiTypeDispatcherImpl.h                                     (C) 2000-2024 */
+/* MpiTypeDispatcherImpl.h                                     (C) 2000-2025 */
 /*                                                                           */
 /* Implémentation de 'MpiTypeDispatcher'.                                    */
 /*---------------------------------------------------------------------------*/
@@ -31,7 +31,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arccore::MessagePassing::Mpi
+namespace Arcane::MessagePassing::Mpi
 {
 
 /*---------------------------------------------------------------------------*/
@@ -206,11 +206,11 @@ allToAll(Span<const Type> send_buf,Span<Type> recv_buf,Int32 count)
 
 template<class Type> void MpiTypeDispatcher<Type>::
 allToAllVariable(Span<const Type> send_buf,
-                 Int32ConstArrayView send_count,
-                 Int32ConstArrayView send_index,
+                 ConstArrayView<Int32> send_count,
+                 ConstArrayView<Int32> send_index,
                  Span<Type> recv_buf,
-                 Int32ConstArrayView recv_count,
-                 Int32ConstArrayView recv_index
+                 ConstArrayView<Int32> recv_count,
+                 ConstArrayView<Int32> recv_index
                  )
 {
   MPI_Datatype type = m_datatype->datatype();
@@ -352,11 +352,11 @@ nonBlockingAllToAll(Span<const Type> send_buf,Span<Type> recv_buf,Int32 count)
 
 template<class Type> Request MpiTypeDispatcher<Type>::
 nonBlockingAllToAllVariable(Span<const Type> send_buf,
-                            Int32ConstArrayView send_count,
-                            Int32ConstArrayView send_index,
+                            ConstArrayView<Int32> send_count,
+                            ConstArrayView<Int32> send_index,
                             Span<Type> recv_buf,
-                            Int32ConstArrayView recv_count,
-                            Int32ConstArrayView recv_index
+                            ConstArrayView<Int32> recv_count,
+                            ConstArrayView<Int32> recv_index
                             )
 {
   MPI_Datatype type = m_datatype->datatype();

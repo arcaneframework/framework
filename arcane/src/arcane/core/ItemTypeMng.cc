@@ -696,7 +696,7 @@ _build(IParallelSuperMng* parallel_mng, ITraceMng* trace)
     ItemTypeInfoBuilder* type = m_types_buffer->allocOne();
     m_types[IT_Enneedron14] = type;
 
-    type->setInfos(this, IT_Enneedron14, "IT_Enneedron14", Dimension::Dim3, 14, 21, 9);
+    type->setInfos(this, IT_Enneedron14, "Enneedron14", Dimension::Dim3, 14, 21, 9);
 
     type->addFaceHeptagon(0, 0, 6, 5, 4, 3, 2, 1);
     type->addFaceHeptagon(1, 7, 8, 9, 10, 11, 12, 13);
@@ -735,7 +735,7 @@ _build(IParallelSuperMng* parallel_mng, ITraceMng* trace)
     ItemTypeInfoBuilder* type = m_types_buffer->allocOne();
     m_types[IT_Decaedron16] = type;
 
-    type->setInfos(this, IT_Decaedron16, "IT_Decaedron16", Dimension::Dim3, 16, 24, 10);
+    type->setInfos(this, IT_Decaedron16, "Decaedron16", Dimension::Dim3, 16, 24, 10);
 
     type->addFaceOctogon(0, 0, 7, 6, 5, 4, 3, 2, 1);
     type->addFaceOctogon(1, 8, 9, 10, 11, 12, 13, 14, 15);

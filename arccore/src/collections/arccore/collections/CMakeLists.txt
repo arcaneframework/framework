@@ -12,6 +12,8 @@ set(SOURCES
   MemoryAllocationOptions.h
   MemoryAllocationOptions.cc
   MemoryAllocator.cc
+  StringVector.h
+  StringVector.cc
 )
 
 arccore_add_component_library(collections

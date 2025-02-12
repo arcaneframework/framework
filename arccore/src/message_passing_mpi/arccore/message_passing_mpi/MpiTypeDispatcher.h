@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MpiTypeDispatcher.h                                         (C) 2000-2024 */
+/* MpiTypeDispatcher.h                                         (C) 2000-2025 */
 /*                                                                           */
 /* Gestion des messages pour un type de données.                             */
 /*---------------------------------------------------------------------------*/
@@ -20,7 +20,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arccore::MessagePassing::Mpi
+namespace Arcane::MessagePassing::Mpi
 {
 
 /*---------------------------------------------------------------------------*/
@@ -45,9 +45,9 @@ class MpiTypeDispatcher
   void gatherVariable(Span<const Type> send_buf,Array<Type>& recv_buf,Int32 rank) override;
   void scatterVariable(Span<const Type> send_buf,Span<Type> recv_buf,Int32 root) override;
   void allToAll(Span<const Type> send_buf,Span<Type> recv_buf,Int32 count) override;
-  void allToAllVariable(Span<const Type> send_buf,Int32ConstArrayView send_count,
-                        Int32ConstArrayView send_index,Span<Type> recv_buf,
-                        Int32ConstArrayView recv_count,Int32ConstArrayView recv_index) override;
+  void allToAllVariable(Span<const Type> send_buf,ConstArrayView<Int32> send_count,
+                        ConstArrayView<Int32> send_index,Span<Type> recv_buf,
+                        ConstArrayView<Int32> recv_count,ConstArrayView<Int32> recv_index) override;
   Request send(Span<const Type> send_buffer,Int32 rank,bool is_blocked) override;
   Request send(Span<const Type> send_buffer,const PointToPointMessageInfo& message) override;
   Request receive(Span<Type> recv_buffer,Int32 rank,bool is_blocked) override;

@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MpiSerializeDispatcher.h                                    (C) 2000-2020 */
+/* MpiSerializeDispatcher.h                                    (C) 2000-2025 */
 /*                                                                           */
 /* Gestion des messages de sérialisation avec MPI.                           */
 /*---------------------------------------------------------------------------*/
@@ -18,19 +18,13 @@
 #include "arccore/message_passing/ISerializeDispatcher.h"
 #include "arccore/message_passing/Request.h"
 #include "arccore/collections/Array.h"
+#include "arccore/serialize/SerializeGlobal.h"
 #include "arccore/base/BaseTypes.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arccore
-{
-class ISerializer;
-class BasicSerializer;
-class ITraceMng;
-}
-
-namespace Arccore::MessagePassing::Mpi
+namespace Arcane::MessagePassing::Mpi
 {
 class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiSerializeDispatcher
 : public ISerializeDispatcher
@@ -46,14 +40,13 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiSerializeDispatcher
    public:
     static const int MAX_REQUEST_SIZE = 256;
    public:
-   public:
     Byte m_bytes[MAX_REQUEST_SIZE];
     Request m_request;
   };
 
  public:
 
-  MpiSerializeDispatcher(MpiAdapter* adapter);
+  explicit MpiSerializeDispatcher(MpiAdapter* adapter);
   ~MpiSerializeDispatcher() override;
 
  public:

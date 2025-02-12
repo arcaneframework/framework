@@ -191,5 +191,41 @@ class AllocatedMemoryInfo
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+namespace Arcane
+{
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+using Arccore::AllocatedMemoryInfo;
+using Arccore::eMemoryLocationHint;
+using Arccore::MemoryAllocationOptions;
+using Arccore::MemoryAllocationArgs;
+using Arccore::IMemoryAllocator;
+using Arccore::IMemoryAllocator3;
+using Arccore::PrintableMemoryAllocator;
+using Arccore::AlignedMemoryAllocator;
+using Arccore::DefaultMemoryAllocator;
+using Arccore::ArrayTraits;
+using Arccore::Array;
+using Arccore::AbstractArray;
+using Arccore::SharedArray;
+using Arccore::UniqueArray;
+using Arccore::Array2;
+using Arccore::SharedArray2;
+using Arccore::UniqueArray2;
+using Arccore::eMemoryResource;
+//! Typedef pour la version Arcane historique (avec 2's')
+// TODO: A rendre obsolète (juin 2025)
+using eMemoryRessource = Arccore::eMemoryResource;
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 #endif  
 

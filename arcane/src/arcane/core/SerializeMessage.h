@@ -1,29 +1,27 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* SerializeMessage.h                                          (C) 2000-2020 */
+/* SerializeMessage.h                                          (C) 2000-2025 */
 /*                                                                           */
 /* Message utilisant un SerializeBuffer.                                     */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_SERIALIZEMESSAGE_H
-#define ARCANE_SERIALIZEMESSAGE_H
+#ifndef ARCANE_CORE_SERIALIZEMESSAGE_H
+#define ARCANE_CORE_SERIALIZEMESSAGE_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #include "arccore/message_passing/BasicSerializeMessage.h"
-#include "arcane/SerializeBuffer.h"
+#include "arcane/core/SerializeBuffer.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 namespace Arcane
 {
-using namespace Arccore::MessagePassing;
-using namespace Arccore::MessagePassing::internal;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -41,18 +39,18 @@ using namespace Arccore::MessagePassing::internal;
  * complémentaire à celui-ci soit envoyé par destRank().
  */
 class ARCANE_CORE_EXPORT SerializeMessage
-: public BasicSerializeMessage
+: public MessagePassing::internal::BasicSerializeMessage
 {
  public:
   SerializeMessage(Int32 orig_rank,Int32 dest_rank,eMessageType mtype);
-  SerializeMessage(Int32 orig_rank,MessageId message_id);
+  SerializeMessage(Int32 orig_rank,MessagePassing::MessageId message_id);
  public:
   ARCCORE_DEPRECATED_2020("Use BasicSerializeMessage::serializer() instead")
   SerializeBuffer& buffer()
   {
     // Comme c'est cette classe qui a créé le serializer(), on est certain
     // que la conversion est valide.
-    Arccore::BasicSerializer& x = BasicSerializeMessage::buffer();
+    Arccore::BasicSerializer& x = MessagePassing::internal::BasicSerializeMessage::buffer();
     return static_cast<SerializeBuffer&>(x);
   }
 };

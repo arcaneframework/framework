@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ISerializer.h                                               (C) 2000-2024 */
+/* ISerializer.h                                               (C) 2000-2025 */
 /*                                                                           */
 /* Interface d'un serialiseur.                                               */
 /*---------------------------------------------------------------------------*/
@@ -23,7 +23,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arccore
+namespace Arcane
 {
 
 /*---------------------------------------------------------------------------*/
@@ -96,28 +96,10 @@ class ARCCORE_SERIALIZE_EXPORT ISerializer
   /*!
    * \brief Réserve de la mémoire pour \a n valeurs de \a dt.
    *
-   * \dt doit être un type intégral: DT_Int16, DT_Int32, DT_Int64,
-   * DT_Real ou DT_Byte.
-   *
    * Il faudra effectuer un appel à une méthode putSpan()
    * pour que la sérialisation soit correcte.
-   *
-   * \deprecated Utiliser reserveSpan(eBasicDataType) à la place
    */
-  ARCCORE_DEPRECATED_REASON("Y2024: Use reserveSpan(eBasicDataType) instead")
-  virtual void reserveSpan(eDataType dt, Int64 n) = 0;
-
-  /*!
-  * \brief Réserve de la mémoire pour \a n valeurs de \a dt.
-  *
-  * Il faudra effectuer un appel à une méthode putSpan()
-  * pour que la sérialisation soit correcte.
-  */
   virtual void reserveSpan(eBasicDataType dt, Int64 n) = 0;
-
-  //! \sa reserve(eDataType dt,Int64 n)
-  ARCCORE_DEPRECATED_REASON("Y2024: Use reserveSpan(eBasicDataType) instead")
-  void reserveSpan(int dt, Int64 n);
 
   //! Réserve pour une vue de \a values éléments
   virtual void reserveSpan(Span<const Real> values);
@@ -168,21 +150,6 @@ class ARCCORE_SERIALIZE_EXPORT ISerializer
   /*!
    * \brief Réserve de la mémoire pour \a n objets de type \a dt.
    *
-   * \dt doit être un type intégral: DT_Int16, DT_Int32, DT_Int64,
-   * DT_Real ou DT_Byte.
-   *
-   * Il faudra effectuer \a n appels à une méthode put() avec une
-   * seule valeur pour que la sérialisation soit correcte.
-   *
-   * Si on souhaite sérialiser plusieurs valeurs avec un seul
-   * appel à put(), il faut utiliser la méthode reserveSpan().
-   */
-  ARCCORE_DEPRECATED_REASON("Y2024: Use reserveSpan(eBasicDataType) instead")
-  virtual void reserve(eDataType dt, Int64 n) = 0;
-
-  /*!
-   * \brief Réserve de la mémoire pour \a n objets de type \a dt.
-   *
    * Il faudra effectuer \a n appels à une méthode put() avec une
    * seule valeur pour que la sérialisation soit correcte.
    *
@@ -190,10 +157,6 @@ class ARCCORE_SERIALIZE_EXPORT ISerializer
    * appel à put(), il faut utiliser la méthode reserveSpan().
    */
   virtual void reserve(eBasicDataType dt, Int64 n) = 0;
-
-  //! \sa reserve(eDataType dt,Int64 n)
-  ARCCORE_DEPRECATED_REASON("Y2024: Use reserveSpan(eBasicDataType) instead")
-  void reserve(int dt, Int64 n);
 
   virtual void reserveInteger(Int64 n) = 0;
 
@@ -222,6 +185,44 @@ class ARCCORE_SERIALIZE_EXPORT ISerializer
   void reserveFloat128(Int64 n) { reserve(eBasicDataType::Float128, n); }
   //! Réserve pour \a n Int128
   void reserveInt128(Int64 n) { reserve(eBasicDataType::Int128, n); }
+
+ public:
+
+  /*!
+   * \brief Réserve de la mémoire pour \a n valeurs de \a dt.
+   *
+   * \dt doit être un type intégral: DT_Int16, DT_Int32, DT_Int64,
+   * DT_Real ou DT_Byte.
+   *
+   * Il faudra effectuer un appel à une méthode putSpan()
+   * pour que la sérialisation soit correcte.
+   *
+   * \deprecated Utiliser reserveSpan(eBasicDataType) à la place
+   */
+  ARCCORE_DEPRECATED_REASON("Y2024: Use reserveSpan(eBasicDataType) instead")
+  virtual void reserveSpan(eDataType dt, Int64 n) = 0;
+
+  //! \sa reserve(eDataType dt,Int64 n)
+  ARCCORE_DEPRECATED_REASON("Y2024: Use reserveSpan(eBasicDataType) instead")
+  void reserveSpan(int dt, Int64 n);
+  /*!
+   * \brief Réserve de la mémoire pour \a n objets de type \a dt.
+   *
+   * \dt doit être un type intégral: DT_Int16, DT_Int32, DT_Int64,
+   * DT_Real ou DT_Byte.
+   *
+   * Il faudra effectuer \a n appels à une méthode put() avec une
+   * seule valeur pour que la sérialisation soit correcte.
+   *
+   * Si on souhaite sérialiser plusieurs valeurs avec un seul
+   * appel à put(), il faut utiliser la méthode reserveSpan().
+   */
+  ARCCORE_DEPRECATED_REASON("Y2024: Use reserveSpan(eBasicDataType) instead")
+  virtual void reserve(eDataType dt, Int64 n) = 0;
+
+  //! \sa reserve(eDataType dt,Int64 n)
+  ARCCORE_DEPRECATED_REASON("Y2024: Use reserveSpan(eBasicDataType) instead")
+  void reserve(int dt, Int64 n);
 
  public:
 
@@ -343,19 +344,19 @@ class ARCCORE_SERIALIZE_EXPORT ISerializer
 
   //! Récupère le tableau \a values
   ARCCORE_DEPRECATED_2020("Use getSpan() instead")
-  virtual void get(RealArrayView values) = 0;
+  virtual void get(ArrayView<Real> values) = 0;
   //! Récupère le tableau \a values
   ARCCORE_DEPRECATED_2020("Use getSpan() instead")
-  virtual void get(Int16ArrayView values) = 0;
+  virtual void get(ArrayView<Int16> values) = 0;
   //! Récupère le tableau \a values
   ARCCORE_DEPRECATED_2020("Use getSpan() instead")
-  virtual void get(Int32ArrayView values) = 0;
+  virtual void get(ArrayView<Int32> values) = 0;
   //! Récupère le tableau \a values
   ARCCORE_DEPRECATED_2020("Use getSpan() instead")
-  virtual void get(Int64ArrayView values) = 0;
+  virtual void get(ArrayView<Int64> values) = 0;
   //! Récupère le tableau \a values
   ARCCORE_DEPRECATED_2020("Use getSpan() instead")
-  virtual void get(ByteArrayView values) = 0;
+  virtual void get(ArrayView<Byte> values) = 0;
 
  public:
 
@@ -464,7 +465,15 @@ createSerializer();
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arccore
+} // End namespace Arcane
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace Arccore
+{
+using Arcane::createSerializer;
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

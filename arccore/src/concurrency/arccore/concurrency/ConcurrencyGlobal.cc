@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ConcurrencyGlobal.h                                         (C) 2000-2024 */
+/* ConcurrencyGlobal.h                                         (C) 2000-2025 */
 /*                                                                           */
 /* Définitions globales de la composante 'Concurrency' de 'Arccore'.         */
 /*---------------------------------------------------------------------------*/
@@ -28,7 +28,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arccore
+namespace Arcane
 {
 
 namespace
@@ -68,7 +68,7 @@ createGlibThreadImplementation()
 #ifdef ARCCORE_HAS_GLIB
   return makeRef<IThreadImplementation>(new GlibThreadImplementation());
 #else
-  throw NotSupportedException(A_FUNCINFO,"GLib is not available Recompile Arccore with ARCCORE_ENABLE_GLIB=TRUE");
+  throw NotSupportedException(A_FUNCINFO, "GLib is not available Recompile Arccore with ARCCORE_ENABLE_GLIB=TRUE");
 #endif
 }
 
@@ -78,6 +78,7 @@ createGlibThreadImplementation()
 class NullThreadImplementationFactory
 {
  public:
+
   static Ref<IThreadImplementation> create()
   {
     return makeRef<>(new NullThreadImplementation());
@@ -120,12 +121,15 @@ _deprecatedUnlockSpinLock(Int64* spin_lock_addr, Int64* scoped_spin_lock_addr)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCCORE_DEFINE_REFERENCE_COUNTED_CLASS(IThreadImplementation);
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arccore
+namespace Arccore
+{
+ARCCORE_DEFINE_REFERENCE_COUNTED_CLASS(Arcane::IThreadImplementation);
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
