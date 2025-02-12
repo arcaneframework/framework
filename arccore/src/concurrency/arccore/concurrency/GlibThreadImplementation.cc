@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* GlibThreadImplementation.cc                                 (C) 2000-2021 */
+/* GlibThreadImplementation.cc                                 (C) 2000-2025 */
 /*                                                                           */
 /* Implémentation des threads utilisant la glib.                             */
 /*---------------------------------------------------------------------------*/
@@ -25,7 +25,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arccore
+namespace Arcane
 {
 
 /*---------------------------------------------------------------------------*/
@@ -47,8 +47,11 @@ class GlibThreadBarrier
  public:
 
   GlibThreadBarrier()
-  : m_wait_mutex(nullptr), m_wait(nullptr), m_nb_thread(0)
-  , m_current_reached(0) {}
+  : m_wait_mutex(nullptr)
+  , m_wait(nullptr)
+  , m_nb_thread(0)
+  , m_current_reached(0)
+  {}
 
  public:
 
@@ -75,7 +78,7 @@ class GlibThreadBarrier
     m_wait_mutex->lock();
     ++m_current_reached;
     //cout << "ADD BARRIER N=" << m_current_reached << '\n';
-    if (m_current_reached==m_nb_thread){
+    if (m_current_reached == m_nb_thread) {
       m_current_reached = 0;
       is_last = true;
       //cout << "BROADCAST BARRIER N=" << m_current_reached << '\n';
@@ -86,7 +89,9 @@ class GlibThreadBarrier
     m_wait_mutex->unlock();
     return is_last;
   }
+
  private:
+
   GlibMutex* m_wait_mutex;
   GlibCond* m_wait;
   Integer m_nb_thread;
@@ -129,7 +134,7 @@ initialize()
 ThreadImpl* GlibThreadImplementation::
 createThread(IFunctor* f)
 {
-  return reinterpret_cast<ThreadImpl*>(g_thread_new(nullptr,&_GlibStartFunc,f));
+  return reinterpret_cast<ThreadImpl*>(g_thread_new(nullptr, &_GlibStartFunc, f));
 }
 
 void GlibThreadImplementation::
@@ -218,7 +223,7 @@ createBarrier()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arccore
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
