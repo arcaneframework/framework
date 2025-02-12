@@ -34,9 +34,144 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+struct ParameterOptionPart
+{
+  StringView m_part;
+  Integer m_index;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+class ParameterOptionLine
+{
+ public:
+
+  explicit ParameterOptionLine(const StringView line)
+  {
+    Span span_line(line.bytes());
+    Integer begin = 0;
+    Integer size = 0;
+    Integer index_begin = -1;
+
+    // aaa[0]
+    for (Integer i = 0; i < span_line.size(); ++i) {
+      if (span_line[i] == '[') {
+        index_begin = i + 1;
+        size = i - begin;
+        ARCANE_ASSERT(size != 0, ("Invalid option (empty name)"));
+        ARCANE_ASSERT(index_begin < span_line.size(), ("Invalid option (']' not found)"));
+      }
+      else if (span_line[i] == ']') {
+        ARCANE_ASSERT(index_begin != i, ("Invalid option ('[]' found without integer)"));
+        ARCANE_ASSERT(index_begin != -1, ("Invalid option (']' found without '[')"));
+
+        StringView index_str = line.subView(index_begin, i - index_begin);
+        Integer index;
+        bool is_bad = builtInGetValue(index, index_str);
+        if (is_bad) {
+          ARCANE_FATAL("Invalid index");
+        }
+        m_parts.add({ line.subView(begin, size), index });
+      }
+      else if (span_line[i] == '/') {
+        ARCANE_ASSERT(i + 1 != span_line.size(), ("Invalid option ('/' found at the end of the param option)"));
+
+        if (index_begin == -1) {
+          size = i - begin;
+          ARCANE_ASSERT(size != 0, ("Invalid option (empty name)"));
+
+          m_parts.add({ line.subView(begin, size), 1 });
+        }
+
+        begin = i + 1;
+        size = 0;
+        index_begin = -1;
+      }
+    }
+    if (index_begin == -1) {
+      size = span_line.size() - begin;
+      ARCANE_ASSERT(size != 0, ("Invalid option (empty name)"));
+
+      m_parts.add({ line.subView(begin, size), 1 });
+    }
+    m_parts.shrink();
+  }
+
+ public:
+
+  ParameterOptionPart getPart(Integer index)
+  {
+    return m_parts[index];
+  }
+
+  Integer nbPart()
+  {
+    return m_parts.size();
+  }
+
+ private:
+
+  UniqueArray<ParameterOptionPart> m_parts;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+class ParameterCaseOptionLine
+{
+ public:
+
+  ParameterCaseOptionLine(StringView line, StringView value)
+  : m_line(line)
+  , m_value(value)
+  {}
+
+  ParameterOptionLine getLine()
+  {
+    return m_line;
+  }
+
+  StringView getValue() const
+  {
+    return m_value;
+  }
+
+ private:
+
+  ParameterOptionLine m_line;
+  StringView m_value;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+class ParameterCaseOptionMultiLine
+{
+ public:
+
+  void addOption(StringView line, StringView value)
+  {
+    m_lines.add({ line, value });
+  }
+
+  ParameterCaseOptionLine getOption(Integer index)
+  {
+    return m_lines[index];
+  }
+
+ private:
+
+  UniqueArray<ParameterCaseOptionLine> m_lines;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 ParameterCaseOption::
 ParameterCaseOption(ICaseMng* case_mng)
 : m_case_mng(case_mng)
+, m_lines(new ParameterCaseOptionMultiLine)
 {
   m_lang = m_case_mng->caseDocumentFragment()->language();
 
@@ -53,11 +188,31 @@ ParameterCaseOption(ICaseMng* case_mng)
     if (param.startsWith("//")) {
       m_params_view.add(param.view().subView(2));
       m_values_view.add(m_values[i].view());
+
+      m_lines->addOption(param.view().subView(2), m_values[i].view());
+
       true_size++;
     }
   }
   m_params_view.resize(true_size);
   m_values_view.resize(true_size);
+
+  ITraceMng* tm = case_mng->traceMng();
+  tm->info() << "Try with : " << m_params_view[2];
+  ParameterCaseOptionLine pa(m_lines->getOption(2));
+  ParameterOptionLine line = pa.getLine();
+  for (Integer i = 0; i < line.nbPart(); ++i) {
+    tm->info() << "i : " << i << " -- elem : " << line.getPart(i).m_part << " -- index : " << line.getPart(i).m_index;
+  }
+  tm->info() << "Value : " << pa.getValue();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+ParameterCaseOption::~ParameterCaseOption()
+{
+  delete m_lines;
 }
 
 /*---------------------------------------------------------------------------*/
