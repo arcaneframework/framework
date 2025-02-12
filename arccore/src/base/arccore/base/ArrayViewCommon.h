@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ArrayViewCommon.h                                           (C) 2000-2023 */
+/* ArrayViewCommon.h                                           (C) 2000-2025 */
 /*                                                                           */
 /* Déclarations communes aux classes ArrayView, ConstArrayView et Span.      */
 /*---------------------------------------------------------------------------*/
@@ -291,25 +291,26 @@ arccoreCheckLargeArraySize(size_t size)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename IntType> class ArraySizeChecker;
+template <typename IntType> class ArraySizeChecker;
 
 //! Spécialisation pour tester la conversion en Int32
-template<>
+template <>
 class ArraySizeChecker<Int32>
 {
  public:
-  template<typename SizeType> ARCCORE_HOST_DEVICE
-  static Int32 check(SizeType size)
+
+  template <typename SizeType> ARCCORE_HOST_DEVICE static Int32 check(SizeType size)
   {
     return arccoreCheckArraySize(size);
   }
 };
 
 //! Spécialisation pour tester la conversion en Int64
-template<>
+template <>
 class ArraySizeChecker<Int64>
 {
  public:
+
   static ARCCORE_HOST_DEVICE Int64 check(std::size_t size)
   {
     return arccoreCheckLargeArraySize(size);
@@ -319,9 +320,32 @@ class ArraySizeChecker<Int64>
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-}
+} // namespace Arccore
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+namespace Arcane::impl
+{
+using Arccore::impl::arccoreCheckIsPositive;
+using Arccore::impl::arccoreCheckIsValidInt64;
+using Arccore::impl::arccoreCheckIsValidInteger;
+using Arccore::impl::arccoreThrowNegativeSize;
+using Arccore::impl::arccoreThrowTooBigInt64;
+using Arccore::impl::arccoreThrowTooBigInteger;
+using Arccore::impl::areEqual;
+using Arccore::impl::areEqual2D;
+using Arccore::impl::dumpArray;
+using Arccore::impl::subViewInterval;
+} // namespace Arcane::impl
+
+namespace Arcane
+{
+using Arccore::arccoreCheckArraySize;
+using Arccore::arccoreCheckLargeArraySize;
+} // namespace Arcane
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+#endif

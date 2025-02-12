@@ -728,6 +728,8 @@ using Arccore::arccoreCheckAt;
 using Arccore::arccoreThrowNullPointerError;
 using Arccore::arccoreThrowIfNull;
 
+using Arccore::TrueType;
+using Arccore::FalseType;
 }
 
 /*---------------------------------------------------------------------------*/

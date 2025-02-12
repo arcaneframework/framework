@@ -503,20 +503,6 @@ Int64 arcaneCurrentThread();
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-/*!
- * \internal
- * \brief Structure équivalente à la valeur booléenne \a vrai
- */
-struct TrueType  {};
-/*!
-  \internal
-  \brief Structure équivalente à la valeur booléenne \a vrai
-*/
-struct FalseType {};
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 #ifdef ARCANE_DEBUG
 extern "C++" ARCANE_UTILS_EXPORT bool _checkDebug(size_t);
 #define ARCANE_DEBUGP(a,b)     if (_checkDebug(a)) { arcanePrintf b; }

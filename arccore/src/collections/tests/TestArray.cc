@@ -1069,7 +1069,7 @@ TEST(Collections, Memory)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arccore
+namespace Arcane
 {
 // Instancie explicitement les classes tableaux pour garantir
 // que toutes les méthodes fonctionnent

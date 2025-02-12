@@ -280,6 +280,7 @@ using Arccore::UInt16;
 
 // Ces classes sont internes à Arccore/Arcane
 using Arccore::BasicTranscoder;
+using Arccore::ArrayRange;
 }
 
 /*---------------------------------------------------------------------------*/
