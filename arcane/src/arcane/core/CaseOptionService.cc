@@ -389,10 +389,11 @@ multiAllocate(const XmlNodeList& elem_list)
 
   XmlNode parent_element = configList()->parentElement();
 
+  String full_xpath = String::format("{0}/{1}", parent_element.xpathFullName(), name());
   // !!! En XML, on commence par 1 et non 0.
   UniqueArray<Integer> option_in_param;
 
-  pco.indexesInParam(String::format("{0}/{1}", parent_element.xpathFullName(), name()), option_in_param, true);
+  pco.indexesInParam(full_xpath, option_in_param, true);
 
   Integer size = elem_list.size();
 
@@ -445,8 +446,8 @@ multiAllocate(const XmlNodeList& elem_list)
     String str_val;
 
     if (option_in_param.contains(index + 1)) {
-      mesh_name = pco.getParameterOrNull(String::format("{0}/{1}", parent_element.xpathFullName(), name()), "@mesh-name", index + 1);
-      str_val = pco.getParameterOrNull(String::format("{0}/{1}", parent_element.xpathFullName(), name()), "@name", index + 1);
+      mesh_name = pco.getParameterOrNull(full_xpath, "@mesh-name", index + 1);
+      str_val = pco.getParameterOrNull(full_xpath, "@name", index + 1);
     }
     if (index < size && (mesh_name.null() || str_val.null())) {
       element = elem_list[index];

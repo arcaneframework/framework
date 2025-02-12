@@ -664,10 +664,11 @@ _search(bool is_phase1)
   const ParameterList& params = caseMng()->application()->applicationInfo().commandLineArguments().parameters();
   ParameterCaseOption pco{ caseMng() };
 
+  String full_xpath = String::format("{0}/{1}", rootElement().xpathFullName(), name());
   // !!! En XML, on commence par 1 et non 0.
   UniqueArray<Integer> option_in_param;
 
-  pco.indexesInParam(String::format("{0}/{1}", rootElement().xpathFullName(), name()), option_in_param, false);
+  pco.indexesInParam(full_xpath, option_in_param, false);
 
   XmlNodeList elem_list = rootElement().children(name());
   Integer asize = elem_list.size();
@@ -716,7 +717,7 @@ _search(bool is_phase1)
     String str_val;
 
     if (option_in_param.contains(i + 1)) {
-      str_val = pco.getParameterOrNull(String::format("{0}/{1}", rootElement().xpathFullName(), name()), i + 1, false);
+      str_val = pco.getParameterOrNull(full_xpath, i + 1, false);
     }
     else if (i < asize) {
       XmlNode velem = elem_list[i];
