@@ -33,15 +33,12 @@
 namespace Arcane
 {
 class ISerializer;
+class ITimeMetricCollector;
 }
 namespace Arccore
 {
-class ITimeMetricCollector;
 using Arcane::ISerializer;
-}
-namespace Arcane
-{
-using Arccore::ITimeMetricCollector;
+using Arcane::ITimeMetricCollector;
 }
 
 namespace Arcane::MessagePassing
