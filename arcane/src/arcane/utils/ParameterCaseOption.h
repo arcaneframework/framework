@@ -29,7 +29,10 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class ParameterCaseOptionMultiLine;
+class ParameterOptionElementsCollection;
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 class ARCANE_UTILS_EXPORT
 ParameterCaseOption
@@ -67,7 +70,7 @@ ParameterCaseOption
   StringList m_values;
   String m_lang;
   ICaseMng* m_case_mng;
-  ParameterCaseOptionMultiLine* m_lines;
+  ParameterOptionElementsCollection* m_lines;
 };
 
 /*---------------------------------------------------------------------------*/

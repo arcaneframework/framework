@@ -16,13 +16,14 @@
 #include "arcane/utils/ApplicationInfo.h"
 #include "arcane/utils/CommandLineArguments.h"
 #include "arcane/utils/ParameterList.h"
-#include "arcane/core/IApplication.h"
-#include "arcane/core/ICaseDocument.h"
 #include "arcane/utils/ValueConvert.h"
 #include "arcane/utils/Array.h"
 #include "arcane/utils/FatalErrorException.h"
 #include "arcane/utils/ITraceMng.h"
 #include "arcane/utils/Ref.h"
+
+#include "arcane/core/IApplication.h"
+#include "arcane/core/ICaseDocument.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -41,23 +42,23 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class ParameterOptionPart
+class ParameterOptionAddrPart
 {
  public:
 
-  ParameterOptionPart()
+  ParameterOptionAddrPart()
   : m_tag(ANY_TAG)
   , m_index(ANY_INDEX)
   {}
 
-  explicit ParameterOptionPart(const StringView tag)
+  explicit ParameterOptionAddrPart(const StringView tag)
   : m_tag(tag)
   , m_index(1)
   {
     ARCANE_ASSERT(tag != ANY_TAG, ("ANY_TAG without ANY_INDEX is forbiden"));
   }
 
-  ParameterOptionPart(const StringView tag, const Integer index)
+  ParameterOptionAddrPart(const StringView tag, const Integer index)
   : m_tag(tag)
   , m_index(index)
   {
@@ -87,10 +88,15 @@ class ParameterOptionPart
   {
     return (m_tag == ANY_TAG && m_index == ANY_INDEX);
   }
-  bool operator==(const ParameterOptionPart& other) const
+  bool operator==(const ParameterOptionAddrPart& other) const
   {
     return (m_tag == other.m_tag || m_tag == ANY_TAG || other.m_tag == ANY_TAG) &&
     (m_index == other.m_index || m_index == ANY_INDEX || other.m_index == ANY_INDEX || m_index == GET_INDEX || other.m_index == GET_INDEX);
+  }
+  // TODO AH : À supprimer lors du passage en C++20.
+  bool operator!=(const ParameterOptionAddrPart& other) const
+  {
+    return !operator==(other);
   }
 
  private:
@@ -99,7 +105,7 @@ class ParameterOptionPart
   Integer m_index;
 };
 
-std::ostream& operator<<(std::ostream& o, const ParameterOptionPart& h)
+std::ostream& operator<<(std::ostream& o, const ParameterOptionAddrPart& h)
 {
   o << (h.tag() == ANY_TAG ? "ANY" : h.tag())
     << "[" << (h.index() == ANY_INDEX ? "ANY" : (h.index() == GET_INDEX ? "GET" : std::to_string(h.index())))
@@ -110,11 +116,11 @@ std::ostream& operator<<(std::ostream& o, const ParameterOptionPart& h)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class ParameterOptionLine
+class ParameterOptionAddr
 {
  public:
 
-  explicit ParameterOptionLine(const StringView line)
+  explicit ParameterOptionAddr(const StringView line)
   {
     Span span_line(line.bytes());
     Integer begin = 0;
@@ -141,7 +147,7 @@ class ParameterOptionLine
         if (is_bad) {
           ARCANE_FATAL("Invalid index");
         }
-        m_parts.add(makeRef(new ParameterOptionPart(line.subView(begin, size), index)));
+        m_parts.add(makeRef(new ParameterOptionAddrPart(line.subView(begin, size), index)));
         have_a_no_any = true;
       }
 
@@ -152,10 +158,10 @@ class ParameterOptionLine
           size = i - begin;
           // Cas ou on a un any_tag any_index ("truc1//truc2").
           if (size == 0) {
-            m_parts.add(makeRef(new ParameterOptionPart()));
+            m_parts.add(makeRef(new ParameterOptionAddrPart()));
           }
           else {
-            m_parts.add(makeRef(new ParameterOptionPart(line.subView(begin, size))));
+            m_parts.add(makeRef(new ParameterOptionAddrPart(line.subView(begin, size))));
             have_a_no_any = true;
           }
         }
@@ -169,7 +175,7 @@ class ParameterOptionLine
       size = static_cast<Integer>(span_line.size()) - begin;
       ARCANE_ASSERT(size != 0, ("Invalid option (empty name)"));
 
-      m_parts.add(makeRef(new ParameterOptionPart(line.subView(begin, size))));
+      m_parts.add(makeRef(new ParameterOptionAddrPart(line.subView(begin, size))));
       have_a_no_any = true;
     }
     if (!have_a_no_any) {
@@ -179,43 +185,45 @@ class ParameterOptionLine
 
  public:
 
-  // On ne doit pas bloquer les multiples ParameterOptionPart(ANY) :
+  // On ne doit pas bloquer les multiples ParameterOptionAddrPart(ANY) :
   // Construction par iteration : aaaa/bb/ANY/ANY/cc
-  void addPart(ParameterOptionPart* part)
+  void addAddrPart(ParameterOptionAddrPart* part)
   {
     m_parts.add(makeRef(part));
   }
 
-  ParameterOptionPart* part(const Integer index) const
+  ParameterOptionAddrPart* addrPart(const Integer index) const
   {
     if (index >= m_parts.size()) {
       if (m_parts[m_parts.size() - 1]->isAny()) {
-        return lastPart();
+        return lastAddrPart();
       }
       ARCANE_FATAL("Invalid index");
     }
     return m_parts[index].get();
   }
 
-  ParameterOptionPart* lastPart() const
+  ParameterOptionAddrPart* lastAddrPart() const
   {
     return m_parts[m_parts.size() - 1].get();
   }
 
-  Integer nbPart() const
+  Integer nbAddrPart() const
   {
     return m_parts.size();
   }
 
-  bool getIndexes(const ParameterOptionLine& with_get_index, ArrayView<Integer> indexes) const
+  bool getIndexes(const ParameterOptionAddr& addr_with_get_index, ArrayView<Integer> indexes) const
   {
-    if (!operator==(with_get_index))
+    if (!operator==(addr_with_get_index))
       return false;
 
+    ARCANE_ASSERT(indexes.size() == addr_with_get_index.nbIndexToGet(), ("ArrayView too small"));
+
     Integer index = 0;
-    for (Integer i = 0; i < with_get_index.nbPart(); ++i) {
-      if (with_get_index.part(i)->index() == GET_INDEX) {
-        Integer index_tag = part(i)->index();
+    for (Integer i = 0; i < addr_with_get_index.nbAddrPart(); ++i) {
+      if (addr_with_get_index.addrPart(i)->index() == GET_INDEX) {
+        Integer index_tag = addrPart(i)->index();
         if (index_tag == ANY_INDEX)
           return false;
         indexes[index++] = index_tag;
@@ -237,24 +245,24 @@ class ParameterOptionLine
 
  public:
 
-  bool operator==(const ParameterOptionLine& other) const
+  bool operator==(const ParameterOptionAddr& other) const
   {
     Integer nb_iter = 0;
-    if (lastPart()->isAny()) {
-      nb_iter = nbPart() - 1;
+    if (lastAddrPart()->isAny()) {
+      nb_iter = nbAddrPart() - 1;
     }
-    else if (other.lastPart()->isAny()) {
-      nb_iter = other.nbPart() - 1;
+    else if (other.lastAddrPart()->isAny()) {
+      nb_iter = other.nbAddrPart() - 1;
     }
-    else if (nbPart() != other.nbPart()) {
+    else if (nbAddrPart() != other.nbAddrPart()) {
       return false;
     }
     else {
-      nb_iter = nbPart();
+      nb_iter = nbAddrPart();
     }
 
     for (Integer i = 0; i < nb_iter; ++i) {
-      if (*part(i) != *other.part(i)) {
+      if (*addrPart(i) != *other.addrPart(i)) {
         return false;
       }
     }
@@ -263,16 +271,16 @@ class ParameterOptionLine
 
  private:
 
-  UniqueArray<Ref<ParameterOptionPart>> m_parts;
+  UniqueArray<Ref<ParameterOptionAddrPart>> m_parts;
 };
 
-std::ostream& operator<<(std::ostream& o, const ParameterOptionLine& h)
+std::ostream& operator<<(std::ostream& o, const ParameterOptionAddr& h)
 {
-  Integer nb_part = h.nbPart();
+  Integer nb_part = h.nbAddrPart();
   if (nb_part != 0)
-    o << *(h.part(0));
+    o << *(h.addrPart(0));
   for (Integer i = 1; i < nb_part; ++i) {
-    o << "/" << *(h.part(i));
+    o << "/" << *(h.addrPart(i));
   }
   return o;
 }
@@ -280,86 +288,86 @@ std::ostream& operator<<(std::ostream& o, const ParameterOptionLine& h)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class ParameterCaseOptionLine
+class ParameterOptionElement
 {
  public:
 
-  ParameterCaseOptionLine(StringView line, StringView value)
-  : m_line(line)
+  ParameterOptionElement(StringView addr, StringView value)
+  : m_addr(addr)
   , m_value(value)
   {}
 
-  ParameterOptionLine getLine() const
+  ParameterOptionAddr addr() const
   {
-    return m_line;
+    return m_addr;
   }
 
-  StringView getValue() const
+  StringView value() const
   {
     return m_value;
   }
 
-  bool operator==(const ParameterOptionLine& line) const
+  bool operator==(const ParameterOptionAddr& addr) const
   {
-    return m_line == line;
+    return m_addr == addr;
   }
 
  private:
 
-  ParameterOptionLine m_line;
+  ParameterOptionAddr m_addr;
   StringView m_value;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class ParameterCaseOptionMultiLine
+class ParameterOptionElementsCollection
 {
  public:
 
-  void addOption(StringView line, StringView value)
+  void addOption(StringView addr, StringView value)
   {
-    m_lines.add({ line, value });
+    m_elements.add({ addr, value });
   }
 
-  ParameterCaseOptionLine getOption(Integer index)
+  ParameterOptionElement element(Integer index)
   {
-    return m_lines[index];
+    return m_elements[index];
   }
 
-  std::optional<StringView> getValueOrNull(const ParameterOptionLine& line)
+  std::optional<StringView> value(const ParameterOptionAddr& addr)
   {
-    for (const auto& elem : m_lines) {
-      if (elem == line)
-        return elem.getValue();
+    for (const auto& elem : m_elements) {
+      if (elem == addr)
+        return elem.value();
     }
     return {};
   }
 
-  bool exist(const ParameterOptionLine& line)
+  bool isExistAddr(const ParameterOptionAddr& addr)
   {
-    for (const auto& elem : m_lines) {
-      if (elem == line)
+    for (const auto& elem : m_elements) {
+      if (elem == addr)
         return true;
     }
     return false;
   }
 
-  Integer existAndCount(const ParameterOptionLine& line)
+  Integer countAddr(const ParameterOptionAddr& addr)
   {
     Integer count = 0;
-    for (const auto& elem : m_lines) {
-      if (elem == line)
+    for (const auto& elem : m_elements) {
+      if (elem == addr)
         count++;
     }
     return count;
   }
 
-  void getIndexesOfLine(const ParameterOptionLine& line, UniqueArray<Integer>& indexes)
+  void getIndexesOfLine(const ParameterOptionAddr& line, UniqueArray<Integer>& indexes)
   {
     UniqueArray<Integer> new_indexes(line.nbIndexToGet());
-    for (const auto& elem : m_lines) {
-      if (elem.getLine().getIndexes(line, new_indexes)) {
+    for (const auto& elem : m_elements) {
+      if (elem.addr().getIndexes(line, new_indexes)) {
         indexes.addRange(new_indexes);
       }
     }
@@ -367,7 +375,7 @@ class ParameterCaseOptionMultiLine
 
  private:
 
-  UniqueArray<ParameterCaseOptionLine> m_lines;
+  UniqueArray<ParameterOptionElement> m_elements;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -376,7 +384,7 @@ class ParameterCaseOptionMultiLine
 ParameterCaseOption::
 ParameterCaseOption(ICaseMng* case_mng)
 : m_case_mng(case_mng)
-, m_lines(new ParameterCaseOptionMultiLine)
+, m_lines(new ParameterOptionElementsCollection)
 {
   m_lang = m_case_mng->caseDocumentFragment()->language();
 
@@ -396,7 +404,8 @@ ParameterCaseOption(ICaseMng* case_mng)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ParameterCaseOption::~ParameterCaseOption()
+ParameterCaseOption::
+~ParameterCaseOption()
 {
   delete m_lines;
 }
@@ -416,13 +425,13 @@ getParameterOrNull(const String& xpath_before_index, const String& xpath_after_i
     ARCANE_FATAL("Index in XML start at 1");
   }
 
-  ParameterOptionLine line{ _removeUselessPartInXpath(xpath_before_index.view()) };
-  line.lastPart()->setIndex(index);
-  line.addPart(new ParameterOptionPart(xpath_after_index.view()));
+  ParameterOptionAddr addr{ _removeUselessPartInXpath(xpath_before_index.view()) };
+  addr.lastAddrPart()->setIndex(index);
+  addr.addAddrPart(new ParameterOptionAddrPart(xpath_after_index.view()));
 
   // m_case_mng->traceMng()->info() << "Line : " << line;
 
-  std::optional<StringView> value = m_lines->getValueOrNull(line);
+  std::optional<StringView> value = m_lines->value(addr);
   if (value.has_value()) {
     // m_case_mng->traceMng()->info() << "Ret : " << value.value();
     return value.value();
@@ -444,14 +453,14 @@ getParameterOrNull(const String& xpath_before_index, Integer index, bool allow_e
   if (index <= 0) {
     ARCANE_FATAL("Index in XML start at 1");
   }
-  ParameterOptionLine line{ _removeUselessPartInXpath(xpath_before_index.view()) };
-  line.lastPart()->setIndex(index);
+  ParameterOptionAddr addr{ _removeUselessPartInXpath(xpath_before_index.view()) };
+  addr.lastAddrPart()->setIndex(index);
   if (allow_elems_after_index) {
-    line.addPart(new ParameterOptionPart());
+    addr.addAddrPart(new ParameterOptionAddrPart());
   }
 
   // m_case_mng->traceMng()->info() << "Line : " << line;
-  std::optional<StringView> value = m_lines->getValueOrNull(line);
+  std::optional<StringView> value = m_lines->value(addr);
   if (value.has_value()) {
     // m_case_mng->traceMng()->info() << "Ret : " << value.value();
     return value.value();
@@ -468,11 +477,11 @@ getParameterOrNull(const String& full_xpath)
 {
   // m_case_mng->traceMng()->info() << "getParameterOrNull(S)";
   // m_case_mng->traceMng()->info() << "full_xpath : " << full_xpath;
-  const ParameterOptionLine line{ _removeUselessPartInXpath(full_xpath.view()) };
+  const ParameterOptionAddr addr{ _removeUselessPartInXpath(full_xpath.view()) };
 
   // m_case_mng->traceMng()->info() << "Line : " << line;
 
-  std::optional<StringView> value = m_lines->getValueOrNull(line);
+  std::optional<StringView> value = m_lines->value(addr);
   if (value.has_value()) {
     // m_case_mng->traceMng()->info() << "Ret : " << value.value();
     return value.value();
@@ -489,12 +498,12 @@ exist(const String& full_xpath)
 {
   // m_case_mng->traceMng()->info() << "exist(S)";
   // m_case_mng->traceMng()->info() << "full_xpath : " << full_xpath;
-  const ParameterOptionLine line{ _removeUselessPartInXpath(full_xpath.view()) };
+  const ParameterOptionAddr addr{ _removeUselessPartInXpath(full_xpath.view()) };
 
   // m_case_mng->traceMng()->info() << "Line : " << line;
   // m_case_mng->traceMng()->info() << "Ret : " << m_lines->exist(line);
 
-  return m_lines->exist(line);
+  return m_lines->isExistAddr(addr);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -507,15 +516,15 @@ existAnyIndex(const String& xpath_before_index, const String& xpath_after_index)
   // m_case_mng->traceMng()->info() << "xpath_before_index : " << xpath_before_index
   //                                << " -- xpath_after_index : " << xpath_after_index;
 
-  ParameterOptionLine line{ _removeUselessPartInXpath(xpath_before_index.view()) };
-  line.lastPart()->setIndex(ANY_INDEX);
+  ParameterOptionAddr addr{ _removeUselessPartInXpath(xpath_before_index.view()) };
+  addr.lastAddrPart()->setIndex(ANY_INDEX);
 
-  line.addPart(new ParameterOptionPart(xpath_after_index.view()));
+  addr.addAddrPart(new ParameterOptionAddrPart(xpath_after_index.view()));
 
   // m_case_mng->traceMng()->info() << "Line : " << line;
   // m_case_mng->traceMng()->info() << "Ret : " << m_lines->exist(line);
 
-  return m_lines->exist(line);
+  return m_lines->isExistAddr(addr);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -527,13 +536,13 @@ existAnyIndex(const String& full_xpath)
   // m_case_mng->traceMng()->info() << "existAnyIndex(S)";
   // m_case_mng->traceMng()->info() << "full_xpath : " << full_xpath;
 
-  ParameterOptionLine line{ _removeUselessPartInXpath(full_xpath.view()) };
-  line.lastPart()->setIndex(ANY_INDEX);
+  ParameterOptionAddr addr{ _removeUselessPartInXpath(full_xpath.view()) };
+  addr.lastAddrPart()->setIndex(ANY_INDEX);
 
   // m_case_mng->traceMng()->info() << "Line : " << line;
   // m_case_mng->traceMng()->info() << "Ret : " << m_lines->exist(line);
 
-  return m_lines->exist(line);
+  return m_lines->isExistAddr(addr);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -547,13 +556,13 @@ indexesInParam(const String& xpath_before_index, const String& xpath_after_index
   //                                << " -- xpath_after_index : " << xpath_after_index
   //                                << " -- indexes : " << indexes;
 
-  ParameterOptionLine line{ _removeUselessPartInXpath(xpath_before_index.view()) };
-  line.lastPart()->setIndex(GET_INDEX);
-  line.addPart(new ParameterOptionPart(xpath_after_index.view()));
+  ParameterOptionAddr addr{ _removeUselessPartInXpath(xpath_before_index.view()) };
+  addr.lastAddrPart()->setIndex(GET_INDEX);
+  addr.addAddrPart(new ParameterOptionAddrPart(xpath_after_index.view()));
 
   // m_case_mng->traceMng()->info() << "Line : " << line;
 
-  m_lines->getIndexesOfLine(line, indexes);
+  m_lines->getIndexesOfLine(addr, indexes);
   // m_case_mng->traceMng()->info() << "indexes : " << indexes;
 }
 
@@ -568,14 +577,14 @@ indexesInParam(const String& xpath_before_index, UniqueArray<Integer>& indexes, 
   //                                << " -- indexes : " << indexes
   //                                << " -- allow_elems_after_index : " << allow_elems_after_index;
 
-  ParameterOptionLine line{ _removeUselessPartInXpath(xpath_before_index.view()) };
-  line.lastPart()->setIndex(GET_INDEX);
+  ParameterOptionAddr addr{ _removeUselessPartInXpath(xpath_before_index.view()) };
+  addr.lastAddrPart()->setIndex(GET_INDEX);
   if (allow_elems_after_index) {
-    line.addPart(new ParameterOptionPart());
+    addr.addAddrPart(new ParameterOptionAddrPart());
   }
 
   // m_case_mng->traceMng()->info() << "Line : " << line;
-  m_lines->getIndexesOfLine(line, indexes);
+  m_lines->getIndexesOfLine(addr, indexes);
   // m_case_mng->traceMng()->info() << "indexes : " << indexes;
 }
 
@@ -589,13 +598,13 @@ count(const String& xpath_before_index, const String& xpath_after_index)
   // m_case_mng->traceMng()->info() << "xpath_before_index : " << xpath_before_index
   //                                << " -- xpath_after_index : " << xpath_after_index;
 
-  ParameterOptionLine line{ _removeUselessPartInXpath(xpath_before_index.view()) };
-  line.lastPart()->setIndex(ANY_INDEX);
-  line.addPart(new ParameterOptionPart(xpath_after_index.view()));
+  ParameterOptionAddr addr{ _removeUselessPartInXpath(xpath_before_index.view()) };
+  addr.lastAddrPart()->setIndex(ANY_INDEX);
+  addr.addAddrPart(new ParameterOptionAddrPart(xpath_after_index.view()));
   // m_case_mng->traceMng()->info() << "Line : " << line;
   // m_case_mng->traceMng()->info() << "Ret : " << m_lines->existAndCount(line);
 
-  return m_lines->existAndCount(line);
+  return m_lines->countAddr(addr);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -607,12 +616,12 @@ count(const String& xpath_before_index)
   // m_case_mng->traceMng()->info() << "count(S)";
   // m_case_mng->traceMng()->info() << "xpath_before_index : " << xpath_before_index;
 
-  ParameterOptionLine line{ _removeUselessPartInXpath(xpath_before_index.view()) };
-  line.lastPart()->setIndex(ANY_INDEX);
+  ParameterOptionAddr addr{ _removeUselessPartInXpath(xpath_before_index.view()) };
+  addr.lastAddrPart()->setIndex(ANY_INDEX);
   // m_case_mng->traceMng()->info() << "Line : " << line;
   // m_case_mng->traceMng()->info() << "Ret : " << m_lines->existAndCount(line);
 
-  return m_lines->existAndCount(line);
+  return m_lines->countAddr(addr);
 }
 
 /*---------------------------------------------------------------------------*/
