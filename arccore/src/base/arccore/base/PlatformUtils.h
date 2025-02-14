@@ -21,7 +21,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arccore
+namespace Arcane
 {
 class IStackTraceService;
 }
@@ -33,7 +33,7 @@ class IStackTraceService;
  * 
  * Cet espace de nom contient toutes les fonctions dépendant de la plateforme.
  */
-namespace Arccore::Platform
+namespace Arcane::Platform
 {
 
 /*---------------------------------------------------------------------------*/
@@ -362,9 +362,9 @@ getCompilerId();
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arcane
+namespace Arccore
 {
-namespace Platform = Arccore::Platform;
+namespace Platform = Arcane::Platform;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -376,42 +376,42 @@ namespace Arcane::platform
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-using Arccore::Platform::getCurrentDate;
-using Arccore::Platform::getCurrentTime;
-using Arccore::Platform::getCurrentDateTime;
-using Arccore::Platform::getHostName;
-using Arccore::Platform::getCurrentDirectory;
-using Arccore::Platform::getProcessId;
-using Arccore::Platform::getUserName;
-using Arccore::Platform::getHomeDirectory;
-using Arccore::Platform::getFileLength;
-using Arccore::Platform::getEnvironmentVariable;
-using Arccore::Platform::recursiveCreateDirectory;
-using Arccore::Platform::createDirectory;
-using Arccore::Platform::removeFile;
-using Arccore::Platform::isFileReadable;
-using Arccore::Platform::getFileDirName;
-using Arccore::Platform::stdMemcpy;
-using Arccore::Platform::getMemoryUsed;
-using Arccore::Platform::getCPUTime;
-using Arccore::Platform::getRealTime;
-using Arccore::Platform::timeToHourMinuteSecond;
-using Arccore::Platform::isDenormalized;
-using Arccore::Platform::safeStringCopy;
-using Arccore::Platform::sleep;
+using Arcane::Platform::getCurrentDate;
+using Arcane::Platform::getCurrentTime;
+using Arcane::Platform::getCurrentDateTime;
+using Arcane::Platform::getHostName;
+using Arcane::Platform::getCurrentDirectory;
+using Arcane::Platform::getProcessId;
+using Arcane::Platform::getUserName;
+using Arcane::Platform::getHomeDirectory;
+using Arcane::Platform::getFileLength;
+using Arcane::Platform::getEnvironmentVariable;
+using Arcane::Platform::recursiveCreateDirectory;
+using Arcane::Platform::createDirectory;
+using Arcane::Platform::removeFile;
+using Arcane::Platform::isFileReadable;
+using Arcane::Platform::getFileDirName;
+using Arcane::Platform::stdMemcpy;
+using Arcane::Platform::getMemoryUsed;
+using Arcane::Platform::getCPUTime;
+using Arcane::Platform::getRealTime;
+using Arcane::Platform::timeToHourMinuteSecond;
+using Arcane::Platform::isDenormalized;
+using Arcane::Platform::safeStringCopy;
+using Arcane::Platform::sleep;
 
-using Arccore::Platform::enableFloatingException;
-using Arccore::Platform::isFloatingExceptionEnabled;
-using Arccore::Platform::raiseFloatingException;
-using Arccore::Platform::hasFloatingExceptionSupport;
+using Arcane::Platform::enableFloatingException;
+using Arcane::Platform::isFloatingExceptionEnabled;
+using Arcane::Platform::raiseFloatingException;
+using Arcane::Platform::hasFloatingExceptionSupport;
 
-using Arccore::Platform::getStackTraceService;
-using Arccore::Platform::setStackTraceService;
-using Arccore::Platform::getStackTrace;
-using Arccore::Platform::dumpStackTrace;
+using Arcane::Platform::getStackTraceService;
+using Arcane::Platform::setStackTraceService;
+using Arcane::Platform::getStackTrace;
+using Arcane::Platform::dumpStackTrace;
 
-using Arccore::Platform::getConsoleHasColor;
-using Arccore::Platform::getCompilerId;
+using Arcane::Platform::getConsoleHasColor;
+using Arcane::Platform::getCompilerId;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

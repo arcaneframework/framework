@@ -173,7 +173,7 @@ datatype(unsigned long long)
 namespace Arccore::MessagePassing::Mpi
 {
 // Pour compatibilité avec Alien
-using Arccore::MessagePassing::internal::BasicSerializeMessage;
+using Arcane::MessagePassing::internal::BasicSerializeMessage;
 
 using Arcane::MessagePassing::Mpi::IMpiProfiling;
 using Arcane::MessagePassing::Mpi::IMpiReduceOperator;

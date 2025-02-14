@@ -24,7 +24,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arccore::impl
+namespace Arcane::impl
 {
 
 /*---------------------------------------------------------------------------*/
@@ -187,7 +187,7 @@ arccoreCheckIsValidInt64(size_t size)
 
 } // End namespace Arccore::impl
 
-namespace Arccore
+namespace Arcane
 {
 
 /*---------------------------------------------------------------------------*/
@@ -325,24 +325,24 @@ class ArraySizeChecker<Int64>
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arcane::impl
+namespace Arccore::impl
 {
-using Arccore::impl::arccoreCheckIsPositive;
-using Arccore::impl::arccoreCheckIsValidInt64;
-using Arccore::impl::arccoreCheckIsValidInteger;
-using Arccore::impl::arccoreThrowNegativeSize;
-using Arccore::impl::arccoreThrowTooBigInt64;
-using Arccore::impl::arccoreThrowTooBigInteger;
-using Arccore::impl::areEqual;
-using Arccore::impl::areEqual2D;
-using Arccore::impl::dumpArray;
-using Arccore::impl::subViewInterval;
+using Arcane::impl::arccoreCheckIsPositive;
+using Arcane::impl::arccoreCheckIsValidInt64;
+using Arcane::impl::arccoreCheckIsValidInteger;
+using Arcane::impl::arccoreThrowNegativeSize;
+using Arcane::impl::arccoreThrowTooBigInt64;
+using Arcane::impl::arccoreThrowTooBigInteger;
+using Arcane::impl::areEqual;
+using Arcane::impl::areEqual2D;
+using Arcane::impl::dumpArray;
+using Arcane::impl::subViewInterval;
 } // namespace Arcane::impl
 
-namespace Arcane
+namespace Arccore
 {
-using Arccore::arccoreCheckArraySize;
-using Arccore::arccoreCheckLargeArraySize;
+using Arcane::arccoreCheckArraySize;
+using Arcane::arccoreCheckLargeArraySize;
 } // namespace Arcane
 
 /*---------------------------------------------------------------------------*/

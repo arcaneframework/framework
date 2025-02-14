@@ -60,7 +60,8 @@
 namespace Arcane
 {
 using namespace Arcane::MessagePassing;
-using namespace Arccore::MessagePassing::Mpi;
+using namespace Arcane::MessagePassing::Mpi;
+using BasicSerializeMessage = Arcane::MessagePassing::internal::BasicSerializeMessage;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

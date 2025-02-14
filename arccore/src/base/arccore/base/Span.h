@@ -22,7 +22,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arccore
+namespace Arcane
 {
 namespace detail
 {
@@ -1049,14 +1049,15 @@ binaryRead(std::istream& istr,const Span<std::byte>& bytes);
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arcane
+namespace Arccore
 {
-using Arccore::binaryRead;
-using Arccore::binaryWrite;
-using Arccore::asSmallSpan;
-using Arccore::asSpan;
-using Arccore::asWritableBytes;
-using Arccore::sampleSpan;
+using Arcane::binaryRead;
+using Arcane::binaryWrite;
+using Arcane::asSmallSpan;
+using Arcane::asSpan;
+using Arcane::asWritableBytes;
+using Arcane::asBytes;
+using Arcane::sampleSpan;
 }
 
 /*---------------------------------------------------------------------------*/

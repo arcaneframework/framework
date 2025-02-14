@@ -21,7 +21,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arccore
+namespace Arcane
 {
 
 /*---------------------------------------------------------------------------*/
@@ -50,7 +50,7 @@ typedef unsigned short UInt16;
 //! Type d'un réel simple précision
 typedef float Single;
 
-//! Indique que la dimension d'un tableau est dynamique
+//! Constante pour indiquer que la dimension d'un tableau est dynamique
 inline constexpr Int32 DynExtent = -1;
 
 template <typename T> class ConstArrayView;
@@ -74,6 +74,7 @@ class ArrayIterator;
 
 class StringImpl;
 class String;
+class StringVector;
 class StringBuilder;
 class StringFormatterArg;
 struct ReferenceCounterTag;
@@ -224,63 +225,112 @@ typedef Span<const Integer> IntegerConstSpan;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arcane
+namespace Arccore
 {
-using Arccore::Array2View;
-using Arccore::Array3View;
-using Arccore::Array4View;
-using Arccore::ArrayIterator;
-using Arccore::ArrayView;
-using Arccore::ConstArray2View;
-using Arccore::ConstArray3View;
-using Arccore::ConstArray4View;
-using Arccore::ConstArrayView;
-using Arccore::ConstIterT;
-using Arccore::CoreArray;
-using Arccore::eBasicDataType;
-using Arccore::IterT;
-using Arccore::SmallSpan;
-using Arccore::SmallSpan2;
-using Arccore::Span;
-using Arccore::Span2;
-using Arccore::Span2Impl;
-using Arccore::SpanImpl;
-using Arccore::StringImpl;
+using Arcane::Array2View;
+using Arcane::Array3View;
+using Arcane::Array4View;
+using Arcane::ArrayIterator;
+using Arcane::ArrayView;
+using Arcane::ConstArray2View;
+using Arcane::ConstArray3View;
+using Arcane::ConstArray4View;
+using Arcane::ConstArrayView;
+using Arcane::ConstIterT;
+using Arcane::CoreArray;
+using Arcane::eBasicDataType;
+using Arcane::IterT;
+using Arcane::SmallSpan;
+using Arcane::SmallSpan2;
+using Arcane::LargeSpan;
+using Arcane::Span;
+using Arcane::Span2;
+using Arcane::Span2Impl;
+using Arcane::SpanImpl;
+using Arcane::StringImpl;
+using Arcane::StringVector;
+using Arcane::StringBuilder;
 
-using Arccore::TraceInfo;
-using Arccore::StackTrace;
-using Arccore::Exception;
-using Arccore::StackFrame;
-using Arccore::FixedStackFrameArray;
-using Arccore::IStackTraceService;
-using Arccore::CheckedPointer;
-using Arccore::ReferenceCounter;
-using Arccore::ReferenceCounterImpl;
-using Arccore::RefTraits;
-using Arccore::Ref;
-using Arccore::ArgumentException;
-using Arccore::IndexOutOfRangeException;
-using Arccore::FatalErrorException;
-using Arccore::NotSupportedException;
-using Arccore::NotImplementedException;
-using Arccore::TimeoutException;
+using Arcane::TraceInfo;
+using Arcane::StackTrace;
+using Arcane::Exception;
+using Arcane::StackFrame;
+using Arcane::FixedStackFrameArray;
+using Arcane::IStackTraceService;
+using Arcane::CheckedPointer;
+using Arcane::ReferenceCounter;
+using Arcane::ReferenceCounterImpl;
+using Arcane::RefTraits;
+using Arcane::Ref;
+using Arcane::ArgumentException;
+using Arcane::IndexOutOfRangeException;
+using Arcane::FatalErrorException;
+using Arcane::NotSupportedException;
+using Arcane::NotImplementedException;
+using Arcane::TimeoutException;
 
-using Arccore::IFunctor;
-using Arccore::IFunctorWithArgumentT;
-using Arccore::IFunctorWithArgAndReturn2;
-using Arccore::FunctorT;
-using Arccore::FunctorWithArgumentT;
-using Arccore::StdFunctorWithArgumentT;
+using Arcane::IFunctor;
+using Arcane::IFunctorWithArgumentT;
+using Arcane::IFunctorWithArgAndReturn2;
+using Arcane::FunctorT;
+using Arcane::FunctorWithArgumentT;
+using Arcane::StdFunctorWithArgumentT;
 
-using Arccore::Byte;
-using Arccore::SByte;
-using Arccore::Single;
-using Arccore::UChar;
-using Arccore::UInt16;
+using Arcane::Byte;
+using Arcane::SByte;
+using Arcane::Single;
+using Arcane::UChar;
+using Arcane::UInt16;
+
+using Arcane::PointerArrayView;
+using Arcane::ByteArrayView;
+using Arcane::UCharArrayView;
+using Arcane::Int64ArrayView;
+using Arcane::Int32ArrayView;
+using Arcane::Int16ArrayView;
+using Arcane::IntegerArrayView;
+using Arcane::RealArrayView;
+using Arcane::BoolArrayView;
+using Arcane::IntegerArrayView;
+
+using Arcane::PointerConstArrayView;
+using Arcane::ByteConstArrayView;
+using Arcane::UCharConstArrayView;
+using Arcane::Int64ConstArrayView;
+using Arcane::Int32ConstArrayView;
+using Arcane::Int16ConstArrayView;
+using Arcane::IntegerConstArrayView;
+using Arcane::RealConstArrayView;
+using Arcane::BoolConstArrayView;
+using Arcane::IntegerConstArrayView;
+
+using Arcane::PointerSpan;
+using Arcane::ByteSpan;
+using Arcane::UCharSpan;
+using Arcane::Int64Span;
+using Arcane::Int32Span;
+using Arcane::Int16Span;
+using Arcane::IntegerSpan;
+using Arcane::RealSpan;
+using Arcane::BoolSpan;
+using Arcane::IntegerSpan;
+
+using Arcane::PointerConstSpan;
+using Arcane::ByteConstSpan;
+using Arcane::UCharConstSpan;
+using Arcane::Int64ConstSpan;
+using Arcane::Int32ConstSpan;
+using Arcane::Int16ConstSpan;
+using Arcane::IntegerConstSpan;
+using Arcane::RealConstSpan;
+using Arcane::BoolConstSpan;
+using Arcane::IntegerConstSpan;
+
+using Arcane::DynExtent;
 
 // Ces classes sont internes à Arccore/Arcane
-using Arccore::BasicTranscoder;
-using Arccore::ArrayRange;
+using Arcane::BasicTranscoder;
+using Arcane::ArrayRange;
 }
 
 /*---------------------------------------------------------------------------*/

@@ -21,7 +21,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arccore
+namespace Arcane
 {
 
 /*---------------------------------------------------------------------------*/
@@ -84,17 +84,17 @@ operator>> (std::istream& istr,eBasicDataType& data_type);
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arcane
+namespace Arccore
 {
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-using Arccore::eBasicDataType;
-using Arccore::basicDataTypeFromName;
-using Arccore::basicDataTypeSize;
-using Arccore::basicDataTypeName;
-using Arccore::NB_BASIC_DATA_TYPE;
+using Arcane::eBasicDataType;
+using Arcane::basicDataTypeFromName;
+using Arcane::basicDataTypeSize;
+using Arcane::basicDataTypeName;
+using Arcane::NB_BASIC_DATA_TYPE;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

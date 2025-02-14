@@ -33,8 +33,27 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+// La classe ExternalReferenceCounterAccessor doit rester dans le namespace
+// Arccore pour compatiblité avec l'existant et la macro
+// ARCCORE_DEFINE_REFERENCE_COUNTED_CLASS.
 namespace Arccore
 {
+template <class T>
+class ExternalReferenceCounterAccessor
+{
+ public:
+
+  static ARCCORE_EXPORT void addReference(T* t);
+  static ARCCORE_EXPORT void removeReference(T* t);
+};
+} // namespace Arccore
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace Arcane
+{
+using Arccore::ExternalReferenceCounterAccessor;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -142,14 +161,14 @@ class ReferenceCounterAccessor
  public:
   static void addReference(T* t)
   {
-    if constexpr(impl::HasInternalAddReference<T>::value)
+    if constexpr(Arcane::impl::HasInternalAddReference<T>::value)
       t->_internalAddReference();
     else
       t->addReference();
   }
   static void removeReference(T* t)
   {
-    if constexpr(impl::HasInternalRemoveReference<T>::value){
+    if constexpr(Arcane::impl::HasInternalRemoveReference<T>::value){
       bool need_destroy = t->_internalRemoveReference();
       if (need_destroy)
         delete t;
@@ -157,17 +176,6 @@ class ReferenceCounterAccessor
     else
       t->removeReference();
   }
-};
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-template<class T>
-class ExternalReferenceCounterAccessor
-{
- public:
-  static ARCCORE_EXPORT void addReference(T* t);
-  static ARCCORE_EXPORT void removeReference(T* t);
 };
 
 /*---------------------------------------------------------------------------*/
@@ -196,12 +204,15 @@ class ExternalReferenceCounterAccessor
  * \endcode
  */
 #define ARCCORE_DECLARE_REFERENCE_COUNTED_INCLASS_METHODS() \
- private:\
-  template<typename T> friend class Arccore::ExternalReferenceCounterAccessor; \
-  template<typename T> friend class Arccore::ReferenceCounterAccessor;\
- public:                                                          \
-  using ReferenceCounterTagType = Arccore::ReferenceCounterTag ;  \
-  virtual ::Arccore::ReferenceCounterImpl* _internalReferenceCounter() =0; \
+ private: \
+\
+  template <typename T> friend class ::Arccore::ExternalReferenceCounterAccessor; \
+  template <typename T> friend class Arcane::ReferenceCounterAccessor; \
+\
+ public: \
+\
+  using ReferenceCounterTagType = ::Arcane::ReferenceCounterTag; \
+  virtual ::Arcane::ReferenceCounterImpl* _internalReferenceCounter() = 0; \
   virtual void _internalAddReference() =0;\
   [[nodiscard]] virtual bool _internalRemoveReference() =0
   // NOTE: les classes 'friend' sont nécessaires pour l'accès au destructeur.
@@ -228,13 +239,14 @@ class ExternalReferenceCounterAccessor
  * définir les méthodes et types nécessaires
  */
 #define ARCCORE_DECLARE_REFERENCE_COUNTED_CLASS(class_name) \
-namespace Arccore {\
-template<>                   \
-struct RefTraits<class_name> \
-{\
-  static constexpr int TagId = Arccore::REF_TAG_REFERENCE_COUNTER;\
-};\
-template<>\
+  namespace Arcane \
+  { \
+    template <> \
+    struct RefTraits<class_name> \
+    { \
+      static constexpr int TagId = ::Arcane::REF_TAG_REFERENCE_COUNTER; \
+    }; \
+    template<>\
 class ReferenceCounterAccessor<class_name>\
 : public ExternalReferenceCounterAccessor<class_name>\
 {};                                                  \
@@ -243,14 +255,14 @@ class ReferenceCounterAccessor<class_name>\
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arccore
+} // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arcane
+namespace Arccore
 {
-using Arccore::ReferenceCounterTag;
+using Arcane::ReferenceCounterTag;
 }
 
 /*---------------------------------------------------------------------------*/

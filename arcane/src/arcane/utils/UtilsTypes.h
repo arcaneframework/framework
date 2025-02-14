@@ -141,12 +141,6 @@ using Accelerator::RunQueue;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Constante pour indiquer que la dimension d'un tableau est dynamique
-inline constexpr Int32 DynExtent = -1;
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 class DefaultLayout;
 template<int RankValue> class RightLayoutN;
 template<int RankValue> class LeftLayoutN;
