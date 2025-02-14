@@ -19,14 +19,21 @@
 #include "arcane/core/IApplication.h"
 #include "arcane/core/ICaseDocument.h"
 #include "arcane/utils/ValueConvert.h"
-#include "arcane/utils/String.h"
-#include "arcane/utils/StringDictionary.h"
 #include "arcane/utils/Array.h"
 #include "arcane/utils/FatalErrorException.h"
-#include "arccore/trace/ITraceMng.h"
+#include "arcane/utils/ITraceMng.h"
+#include "arcane/utils/Ref.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+namespace
+{
+const Arcane::String ANY_TAG_STR = "/";
+const Arcane::StringView ANY_TAG = ANY_TAG_STR.view();
+constexpr Arcane::Integer ANY_INDEX = -1;
+constexpr Arcane::Integer GET_INDEX = -2;
+} // namespace
 
 namespace Arcane
 {
@@ -34,11 +41,71 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-struct ParameterOptionPart
+class ParameterOptionPart
 {
-  StringView m_part;
+ public:
+
+  ParameterOptionPart()
+  : m_tag(ANY_TAG)
+  , m_index(ANY_INDEX)
+  {}
+
+  explicit ParameterOptionPart(const StringView tag)
+  : m_tag(tag)
+  , m_index(1)
+  {
+    ARCANE_ASSERT(tag != ANY_TAG, ("ANY_TAG without ANY_INDEX is forbiden"));
+  }
+
+  ParameterOptionPart(const StringView tag, const Integer index)
+  : m_tag(tag)
+  , m_index(index)
+  {
+    ARCANE_ASSERT(index == ANY_INDEX || tag != ANY_TAG, ("ANY_TAG without ANY_INDEX is forbiden"));
+  }
+
+ public:
+
+  StringView tag() const
+  {
+    return m_tag;
+  }
+  Integer index() const
+  {
+    return m_index;
+  }
+  void setTag(const StringView tag)
+  {
+    ARCANE_ASSERT(m_index == ANY_INDEX || tag != ANY_TAG, ("ANY_TAG without ANY_INDEX is forbiden"));
+    m_tag = tag;
+  }
+  void setIndex(const Integer index)
+  {
+    m_index = index;
+  }
+  bool isAny() const
+  {
+    return (m_tag == ANY_TAG && m_index == ANY_INDEX);
+  }
+  bool operator==(const ParameterOptionPart& other) const
+  {
+    return (m_tag == other.m_tag || m_tag == ANY_TAG || other.m_tag == ANY_TAG) &&
+    (m_index == other.m_index || m_index == ANY_INDEX || other.m_index == ANY_INDEX || m_index == GET_INDEX || other.m_index == GET_INDEX);
+  }
+
+ private:
+
+  StringView m_tag;
   Integer m_index;
 };
+
+std::ostream& operator<<(std::ostream& o, const ParameterOptionPart& h)
+{
+  o << (h.tag() == ANY_TAG ? "ANY" : h.tag())
+    << "[" << (h.index() == ANY_INDEX ? "ANY" : (h.index() == GET_INDEX ? "GET" : std::to_string(h.index())))
+    << "]";
+  return o;
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -53,6 +120,8 @@ class ParameterOptionLine
     Integer begin = 0;
     Integer size = 0;
     Integer index_begin = -1;
+    // On interdit les options qui s'appliquent à toutes les caseoptions.
+    bool have_a_no_any = false;
 
     // aaa[0]
     for (Integer i = 0; i < span_line.size(); ++i) {
@@ -72,16 +141,23 @@ class ParameterOptionLine
         if (is_bad) {
           ARCANE_FATAL("Invalid index");
         }
-        m_parts.add({ line.subView(begin, size), index });
+        m_parts.add(makeRef(new ParameterOptionPart(line.subView(begin, size), index)));
+        have_a_no_any = true;
       }
+
       else if (span_line[i] == '/') {
         ARCANE_ASSERT(i + 1 != span_line.size(), ("Invalid option ('/' found at the end of the param option)"));
 
         if (index_begin == -1) {
           size = i - begin;
-          ARCANE_ASSERT(size != 0, ("Invalid option (empty name)"));
-
-          m_parts.add({ line.subView(begin, size), 1 });
+          // Cas ou on a un any_tag any_index ("truc1//truc2").
+          if (size == 0) {
+            m_parts.add(makeRef(new ParameterOptionPart()));
+          }
+          else {
+            m_parts.add(makeRef(new ParameterOptionPart(line.subView(begin, size))));
+            have_a_no_any = true;
+          }
         }
 
         begin = i + 1;
@@ -90,30 +166,116 @@ class ParameterOptionLine
       }
     }
     if (index_begin == -1) {
-      size = span_line.size() - begin;
+      size = static_cast<Integer>(span_line.size()) - begin;
       ARCANE_ASSERT(size != 0, ("Invalid option (empty name)"));
 
-      m_parts.add({ line.subView(begin, size), 1 });
+      m_parts.add(makeRef(new ParameterOptionPart(line.subView(begin, size))));
+      have_a_no_any = true;
     }
-    m_parts.shrink();
+    if (!have_a_no_any) {
+      ARCANE_FATAL("Invalid option");
+    }
   }
 
  public:
 
-  ParameterOptionPart getPart(Integer index)
+  // On ne doit pas bloquer les multiples ParameterOptionPart(ANY) :
+  // Construction par iteration : aaaa/bb/ANY/ANY/cc
+  void addPart(ParameterOptionPart* part)
   {
-    return m_parts[index];
+    m_parts.add(makeRef(part));
   }
 
-  Integer nbPart()
+  ParameterOptionPart* part(const Integer index) const
+  {
+    if (index >= m_parts.size()) {
+      if (m_parts[m_parts.size() - 1]->isAny()) {
+        return lastPart();
+      }
+      ARCANE_FATAL("Invalid index");
+    }
+    return m_parts[index].get();
+  }
+
+  ParameterOptionPart* lastPart() const
+  {
+    return m_parts[m_parts.size() - 1].get();
+  }
+
+  Integer nbPart() const
   {
     return m_parts.size();
   }
 
+  bool getIndexes(const ParameterOptionLine& with_get_index, ArrayView<Integer> indexes) const
+  {
+    if (!operator==(with_get_index))
+      return false;
+
+    Integer index = 0;
+    for (Integer i = 0; i < with_get_index.nbPart(); ++i) {
+      if (with_get_index.part(i)->index() == GET_INDEX) {
+        Integer index_tag = part(i)->index();
+        if (index_tag == ANY_INDEX)
+          return false;
+        indexes[index++] = index_tag;
+      }
+    }
+    return true;
+  }
+
+  Integer nbIndexToGet() const
+  {
+    Integer count = 0;
+    for (const auto& elem : m_parts) {
+      if (elem->index() == GET_INDEX) {
+        count++;
+      }
+    }
+    return count;
+  }
+
+ public:
+
+  bool operator==(const ParameterOptionLine& other) const
+  {
+    Integer nb_iter = 0;
+    if (lastPart()->isAny()) {
+      nb_iter = nbPart() - 1;
+    }
+    else if (other.lastPart()->isAny()) {
+      nb_iter = other.nbPart() - 1;
+    }
+    else if (nbPart() != other.nbPart()) {
+      return false;
+    }
+    else {
+      nb_iter = nbPart();
+    }
+
+    for (Integer i = 0; i < nb_iter; ++i) {
+      if (*part(i) != *other.part(i)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
  private:
 
-  UniqueArray<ParameterOptionPart> m_parts;
+  UniqueArray<Ref<ParameterOptionPart>> m_parts;
 };
+
+std::ostream& operator<<(std::ostream& o, const ParameterOptionLine& h)
+{
+  Integer nb_part = h.nbPart();
+  if (nb_part != 0)
+    o << *(h.part(0));
+  for (Integer i = 1; i < nb_part; ++i) {
+    o << "/" << *(h.part(i));
+  }
+  return o;
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -127,7 +289,7 @@ class ParameterCaseOptionLine
   , m_value(value)
   {}
 
-  ParameterOptionLine getLine()
+  ParameterOptionLine getLine() const
   {
     return m_line;
   }
@@ -135,6 +297,11 @@ class ParameterCaseOptionLine
   StringView getValue() const
   {
     return m_value;
+  }
+
+  bool operator==(const ParameterOptionLine& line) const
+  {
+    return m_line == line;
   }
 
  private:
@@ -160,6 +327,44 @@ class ParameterCaseOptionMultiLine
     return m_lines[index];
   }
 
+  std::optional<StringView> getValueOrNull(const ParameterOptionLine& line)
+  {
+    for (const auto& elem : m_lines) {
+      if (elem == line)
+        return elem.getValue();
+    }
+    return {};
+  }
+
+  bool exist(const ParameterOptionLine& line)
+  {
+    for (const auto& elem : m_lines) {
+      if (elem == line)
+        return true;
+    }
+    return false;
+  }
+
+  Integer existAndCount(const ParameterOptionLine& line)
+  {
+    Integer count = 0;
+    for (const auto& elem : m_lines) {
+      if (elem == line)
+        count++;
+    }
+    return count;
+  }
+
+  void getIndexesOfLine(const ParameterOptionLine& line, UniqueArray<Integer>& indexes)
+  {
+    UniqueArray<Integer> new_indexes(line.nbIndexToGet());
+    for (const auto& elem : m_lines) {
+      if (elem.getLine().getIndexes(line, new_indexes)) {
+        indexes.addRange(new_indexes);
+      }
+    }
+  }
+
  private:
 
   UniqueArray<ParameterCaseOptionLine> m_lines;
@@ -177,34 +382,15 @@ ParameterCaseOption(ICaseMng* case_mng)
 
   m_case_mng->application()->applicationInfo().commandLineArguments().parameters().fillParameters(m_param_names, m_values);
 
-  Integer size = m_param_names.count();
-
-  m_params_view.reserve(size);
-  m_values_view.reserve(size);
-
-  Integer true_size = 0;
+  //Integer d_count = 0;
   for (Integer i = 0; i < m_param_names.count(); ++i) {
     const String& param = m_param_names[i];
     if (param.startsWith("//")) {
-      m_params_view.add(param.view().subView(2));
-      m_values_view.add(m_values[i].view());
-
       m_lines->addOption(param.view().subView(2), m_values[i].view());
-
-      true_size++;
+      //m_case_mng->traceMng()->info() << "AddOption : " << m_lines->getOption(d_count).getLine() << " = " << m_lines->getOption(d_count).getValue();
+      //d_count++;
     }
   }
-  m_params_view.resize(true_size);
-  m_values_view.resize(true_size);
-
-  ITraceMng* tm = case_mng->traceMng();
-  tm->info() << "Try with : " << m_params_view[2];
-  ParameterCaseOptionLine pa(m_lines->getOption(2));
-  ParameterOptionLine line = pa.getLine();
-  for (Integer i = 0; i < line.nbPart(); ++i) {
-    tm->info() << "i : " << i << " -- elem : " << line.getPart(i).m_part << " -- index : " << line.getPart(i).m_index;
-  }
-  tm->info() << "Value : " << pa.getValue();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -222,27 +408,26 @@ ParameterCaseOption::~ParameterCaseOption()
 String ParameterCaseOption::
 getParameterOrNull(const String& xpath_before_index, const String& xpath_after_index, Integer index)
 {
+  // m_case_mng->traceMng()->info() << "getParameterOrNull(SSI)";
+  // m_case_mng->traceMng()->info() << "xpath_before_index : " << xpath_before_index
+  //                                << " -- xpath_after_index : " << xpath_after_index
+  //                                << " -- index : " << index;
   if (index <= 0) {
     ARCANE_FATAL("Index in XML start at 1");
   }
 
-  StringView xpath_view = _removeIndexAtEnd(_removeUselessPartInXpath(xpath_before_index));
+  ParameterOptionLine line{ _removeUselessPartInXpath(xpath_before_index.view()) };
+  line.lastPart()->setIndex(index);
+  line.addPart(new ParameterOptionPart(xpath_after_index.view()));
 
-  String xpath_with_index_attr = String::format("{0}[{1}]/{2}", xpath_view, index, xpath_after_index);
+  // m_case_mng->traceMng()->info() << "Line : " << line;
 
-  if (index > 1) {
-    Integer index_value = _getValueIndex(xpath_with_index_attr);
-    if (index_value == -1)
-      return {};
-    return m_values_view[index_value];
+  std::optional<StringView> value = m_lines->getValueOrNull(line);
+  if (value.has_value()) {
+    // m_case_mng->traceMng()->info() << "Ret : " << value.value();
+    return value.value();
   }
-
-  String xpath_with_attr = String::format("{0}/{1}", xpath_view, xpath_after_index);
-  for (Integer i = 0; i < m_params_view.size(); ++i) {
-    if (m_params_view[i] == xpath_with_index_attr.view() || m_params_view[i] == xpath_with_attr.view()) {
-      return m_values_view[i];
-    }
-  }
+  // m_case_mng->traceMng()->info() << "Ret : {}";
   return {};
 }
 
@@ -252,64 +437,26 @@ getParameterOrNull(const String& xpath_before_index, const String& xpath_after_i
 String ParameterCaseOption::
 getParameterOrNull(const String& xpath_before_index, Integer index, bool allow_elems_after_index)
 {
+  // m_case_mng->traceMng()->info() << "getParameterOrNull(SIB)";
+  // m_case_mng->traceMng()->info() << "xpath_before_index : " << xpath_before_index
+  //                                << " -- index : " << index
+  //                                << " -- allow_elems_after_index : " << allow_elems_after_index;
   if (index <= 0) {
     ARCANE_FATAL("Index in XML start at 1");
   }
-
-  StringView xpath_view = _removeIndexAtEnd(_removeUselessPartInXpath(xpath_before_index));
-
-  String xpath_with_index_attr = String::format("{0}[{1}]", xpath_view, index);
-
-
+  ParameterOptionLine line{ _removeUselessPartInXpath(xpath_before_index.view()) };
+  line.lastPart()->setIndex(index);
   if (allow_elems_after_index) {
-    StringView before_view_with_attr = xpath_with_index_attr.view();
-    if (index > 1) {
-      for (Integer i = 0; i < m_params_view.size(); ++i) {
-        StringView param = m_params_view[i];
-        if (param.size()-before_view_with_attr.size() >= 0) {
-          StringView begin = param.subView(0, before_view_with_attr.size());
-          if (begin == before_view_with_attr) {
-            return m_values_view[i];
-          }
-        }
-      }
-      return {};
-    }
-
-    for (Integer i = 0; i < m_params_view.size(); ++i) {
-      StringView param = m_params_view[i];
-      if (param.size()-xpath_view.size() >= 0) {
-        StringView begin = param.subView(0, xpath_view.size());
-        if (begin == xpath_view) {
-          return m_values_view[i];
-        }
-      }
-      if (param.size()-before_view_with_attr.size() >= 0) {
-        StringView begin = param.subView(0, before_view_with_attr.size());
-        if (begin == before_view_with_attr) {
-          return m_values_view[i];
-        }
-      }
-    }
-    return {};
-
+    line.addPart(new ParameterOptionPart());
   }
-  else {
-    if (index > 1) {
-      for (Integer i = 0; i < m_params_view.size(); ++i) {
-        if (m_params_view[i] == xpath_with_index_attr.view()) {
-          return m_values_view[i];
-        }
-      }
-      return {};
-    }
 
-    for (Integer i = 0; i < m_params_view.size(); ++i) {
-      if (m_params_view[i] == xpath_view || m_params_view[i] == xpath_with_index_attr.view()) {
-        return m_values_view[i];
-      }
-    }
+  // m_case_mng->traceMng()->info() << "Line : " << line;
+  std::optional<StringView> value = m_lines->getValueOrNull(line);
+  if (value.has_value()) {
+    // m_case_mng->traceMng()->info() << "Ret : " << value.value();
+    return value.value();
   }
+  // m_case_mng->traceMng()->info() << "Ret : {}";
   return {};
 }
 
@@ -319,12 +466,20 @@ getParameterOrNull(const String& xpath_before_index, Integer index, bool allow_e
 String ParameterCaseOption::
 getParameterOrNull(const String& full_xpath)
 {
-  Integer index_value = _getValueIndex(_removeUselessPartInXpath(full_xpath));
-  if (index_value == -1) return {};
-  return m_values_view[index_value];
+  // m_case_mng->traceMng()->info() << "getParameterOrNull(S)";
+  // m_case_mng->traceMng()->info() << "full_xpath : " << full_xpath;
+  const ParameterOptionLine line{ _removeUselessPartInXpath(full_xpath.view()) };
+
+  // m_case_mng->traceMng()->info() << "Line : " << line;
+
+  std::optional<StringView> value = m_lines->getValueOrNull(line);
+  if (value.has_value()) {
+    // m_case_mng->traceMng()->info() << "Ret : " << value.value();
+    return value.value();
+  }
+  // m_case_mng->traceMng()->info() << "Ret : {}";
+  return {};
 }
-
-
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -332,14 +487,14 @@ getParameterOrNull(const String& full_xpath)
 bool ParameterCaseOption::
 exist(const String& full_xpath)
 {
-  StringView xpath = _removeUselessPartInXpath(full_xpath);
+  // m_case_mng->traceMng()->info() << "exist(S)";
+  // m_case_mng->traceMng()->info() << "full_xpath : " << full_xpath;
+  const ParameterOptionLine line{ _removeUselessPartInXpath(full_xpath.view()) };
 
-  for (auto param : m_params_view) {
-    if (param == xpath) {
-      return true;
-    }
-  }
-  return false;
+  // m_case_mng->traceMng()->info() << "Line : " << line;
+  // m_case_mng->traceMng()->info() << "Ret : " << m_lines->exist(line);
+
+  return m_lines->exist(line);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -348,26 +503,19 @@ exist(const String& full_xpath)
 bool ParameterCaseOption::
 existAnyIndex(const String& xpath_before_index, const String& xpath_after_index)
 {
-  StringView before_view = _removeIndexAtEnd(_removeUselessPartInXpath(xpath_before_index));
-  StringView after_view = xpath_after_index.view();
+  // m_case_mng->traceMng()->info() << "existAnyIndex(SS)";
+  // m_case_mng->traceMng()->info() << "xpath_before_index : " << xpath_before_index
+  //                                << " -- xpath_after_index : " << xpath_after_index;
 
-  for (auto param : m_params_view) {
-    // > 0 car il doit y avoir au moins un "/" entre les deux.
-    if (param.size()-after_view.size()-before_view.size() > 0) {
-      StringView begin = param.subView(0, before_view.size());
-      if (begin == before_view) {
-        StringView end = param.subView(param.size()-after_view.size(), after_view.size());
-        if (end == after_view) {
-          // Le "-1" : On retire le "/" à la fin du between.
-          StringView between = param.subView(before_view.size(), param.size()-after_view.size()-before_view.size()-1);
-          if (_hasOnlyIndex(between)){
-            return true;
-          }
-        }
-      }
-    }
-  }
-  return false;
+  ParameterOptionLine line{ _removeUselessPartInXpath(xpath_before_index.view()) };
+  line.lastPart()->setIndex(ANY_INDEX);
+
+  line.addPart(new ParameterOptionPart(xpath_after_index.view()));
+
+  // m_case_mng->traceMng()->info() << "Line : " << line;
+  // m_case_mng->traceMng()->info() << "Ret : " << m_lines->exist(line);
+
+  return m_lines->exist(line);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -376,14 +524,16 @@ existAnyIndex(const String& xpath_before_index, const String& xpath_after_index)
 bool ParameterCaseOption::
 existAnyIndex(const String& full_xpath)
 {
-  StringView xpath_view = _removeIndexAtEnd(_removeUselessPartInXpath(full_xpath));
+  // m_case_mng->traceMng()->info() << "existAnyIndex(S)";
+  // m_case_mng->traceMng()->info() << "full_xpath : " << full_xpath;
 
-  for (auto param : m_params_view) {
-    if (_removeIndexAtEnd(param) == xpath_view) {
-      return true;
-    }
-  }
-  return false;
+  ParameterOptionLine line{ _removeUselessPartInXpath(full_xpath.view()) };
+  line.lastPart()->setIndex(ANY_INDEX);
+
+  // m_case_mng->traceMng()->info() << "Line : " << line;
+  // m_case_mng->traceMng()->info() << "Ret : " << m_lines->exist(line);
+
+  return m_lines->exist(line);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -392,36 +542,19 @@ existAnyIndex(const String& full_xpath)
 void ParameterCaseOption::
 indexesInParam(const String& xpath_before_index, const String& xpath_after_index, UniqueArray<Integer>& indexes)
 {
-  StringView before_view = _removeIndexAtEnd(_removeUselessPartInXpath(xpath_before_index));
-  StringView after_view = xpath_after_index.view();
+  // m_case_mng->traceMng()->info() << "indexesInParam(SSU)";
+  // m_case_mng->traceMng()->info() << "xpath_before_index : " << xpath_before_index
+  //                                << " -- xpath_after_index : " << xpath_after_index
+  //                                << " -- indexes : " << indexes;
 
-  // m_case_mng->traceMng()->info() << "full_xpath : " << xpath_view
-  //                                << " -- name_view : " << name_view
-  //                                << " -- m_params_view.size() : " << m_params_view.size()
-  // ;
+  ParameterOptionLine line{ _removeUselessPartInXpath(xpath_before_index.view()) };
+  line.lastPart()->setIndex(GET_INDEX);
+  line.addPart(new ParameterOptionPart(xpath_after_index.view()));
 
-  for (auto param : m_params_view) {
-    // > 0 car il doit y avoir au moins un "/" entre les deux.
-    if (param.size()-after_view.size()-before_view.size() > 0) {
-      StringView begin = param.subView(0, before_view.size());
-      if (begin == before_view) {
-        StringView end = param.subView(param.size()-after_view.size(), after_view.size());
-        if (end == after_view) {
-          // Le "-1" : On retire le "/" à la fin du between.
-          StringView between = param.subView(before_view.size(), param.size()-after_view.size()-before_view.size()-1);
-          if (_hasOnlyIndex(between)){
-            Integer index = _getIndexAtBegin(between);
-            if (indexes.contains(index)) {
-              // TODO Warning : Doublon
-            }
-            else {
-              indexes.add(index);
-            }
-          }
-        }
-      }
-    }
-  }
+  // m_case_mng->traceMng()->info() << "Line : " << line;
+
+  m_lines->getIndexesOfLine(line, indexes);
+  // m_case_mng->traceMng()->info() << "indexes : " << indexes;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -430,26 +563,20 @@ indexesInParam(const String& xpath_before_index, const String& xpath_after_index
 void ParameterCaseOption::
 indexesInParam(const String& xpath_before_index, UniqueArray<Integer>& indexes, bool allow_elems_after_index)
 {
-  StringView before_view = _removeIndexAtEnd(_removeUselessPartInXpath(xpath_before_index));
+  // m_case_mng->traceMng()->info() << "indexesInParam(SUB)";
+  // m_case_mng->traceMng()->info() << "xpath_before_index : " << xpath_before_index
+  //                                << " -- indexes : " << indexes
+  //                                << " -- allow_elems_after_index : " << allow_elems_after_index;
 
-  for (auto param : m_params_view) {
-    // > 0 car il doit y avoir au moins un "/" entre les deux.
-    if (param.size()-before_view.size() > 0) {
-      StringView begin = param.subView(0, before_view.size());
-      if (begin == before_view) {
-        StringView end = param.subView(before_view.size());
-        if (allow_elems_after_index || _hasOnlyIndex(end)){
-          Integer index = _getIndexAtBegin(end);
-          if (indexes.contains(index)) {
-            // TODO Warning : Doublon
-          }
-          else {
-            indexes.add(index);
-          }
-        }
-      }
-    }
+  ParameterOptionLine line{ _removeUselessPartInXpath(xpath_before_index.view()) };
+  line.lastPart()->setIndex(GET_INDEX);
+  if (allow_elems_after_index) {
+    line.addPart(new ParameterOptionPart());
   }
+
+  // m_case_mng->traceMng()->info() << "Line : " << line;
+  m_lines->getIndexesOfLine(line, indexes);
+  // m_case_mng->traceMng()->info() << "indexes : " << indexes;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -458,9 +585,17 @@ indexesInParam(const String& xpath_before_index, UniqueArray<Integer>& indexes, 
 Integer ParameterCaseOption::
 count(const String& xpath_before_index, const String& xpath_after_index)
 {
-  UniqueArray<Integer> indexes;
-  indexesInParam(xpath_before_index, xpath_after_index, indexes);
-  return indexes.size();
+  // m_case_mng->traceMng()->info() << "count(SS)";
+  // m_case_mng->traceMng()->info() << "xpath_before_index : " << xpath_before_index
+  //                                << " -- xpath_after_index : " << xpath_after_index;
+
+  ParameterOptionLine line{ _removeUselessPartInXpath(xpath_before_index.view()) };
+  line.lastPart()->setIndex(ANY_INDEX);
+  line.addPart(new ParameterOptionPart(xpath_after_index.view()));
+  // m_case_mng->traceMng()->info() << "Line : " << line;
+  // m_case_mng->traceMng()->info() << "Ret : " << m_lines->existAndCount(line);
+
+  return m_lines->existAndCount(line);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -469,9 +604,15 @@ count(const String& xpath_before_index, const String& xpath_after_index)
 Integer ParameterCaseOption::
 count(const String& xpath_before_index)
 {
-  UniqueArray<Integer> indexes;
-  indexesInParam(xpath_before_index, indexes, false);
-  return indexes.size();
+  // m_case_mng->traceMng()->info() << "count(S)";
+  // m_case_mng->traceMng()->info() << "xpath_before_index : " << xpath_before_index;
+
+  ParameterOptionLine line{ _removeUselessPartInXpath(xpath_before_index.view()) };
+  line.lastPart()->setIndex(ANY_INDEX);
+  // m_case_mng->traceMng()->info() << "Line : " << line;
+  // m_case_mng->traceMng()->info() << "Ret : " << m_lines->existAndCount(line);
+
+  return m_lines->existAndCount(line);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -480,131 +621,12 @@ count(const String& xpath_before_index)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-StringView ParameterCaseOption::
+inline StringView ParameterCaseOption::
 _removeUselessPartInXpath(StringView xpath)
 {
   if (m_lang == "fr")
     return xpath.subView(6);
   return xpath.subView(7);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-StringView ParameterCaseOption::
-_removeIndexAtEnd(StringView xpath)
-{
-  Span<const Byte> bytes_span = xpath.bytes();
-  if (bytes_span[bytes_span.size()-1] == ']') {
-    // bytes_span.size()-3 car on ne peut pas avoir de crochets vides : "[]".
-    // i >= 2 car il y a forcément quelque chose avant les crochets.
-    for (Integer i = bytes_span.size()-3; i >= 2; --i) {
-      if (bytes_span[i] == '[') {
-        return StringView{bytes_span.subSpan(0, i)};
-      }
-    }
-    ARCANE_FATAL("Bad xpath");
-  }
-  return xpath;
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-Integer ParameterCaseOption::
-_getIndexAtEnd(StringView xpath)
-{
-  if (xpath.size() == 0) return 1;
-  Span<const Byte> bytes_span = xpath.bytes();
-  if (bytes_span[bytes_span.size() - 1] == ']') {
-    // bytes_span.size()-3 car on ne peut pas avoir de crochets vides : "[]".
-    // i >= 2 car il y a forcément quelque chose avant les crochets.
-    for (Integer i = bytes_span.size() - 3; i >= 2; --i) {
-      if (bytes_span[i] == '[') {
-        StringView index_str = bytes_span.subSpan(i + 1, bytes_span.size() - 1 - i - 1);
-        Integer index = 0;
-        bool is_bad = builtInGetValue(index, index_str);
-        if (is_bad) {
-          ARCANE_FATAL("Invalid index");
-        }
-        if (index < 1) {
-          ARCANE_FATAL("Index in XML start at 1");
-        }
-        return index;
-      }
-    }
-    ARCANE_FATAL("Bad xpath");
-  }
-  return 1;
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-Integer ParameterCaseOption::
-_getIndexAtBegin(StringView xpath)
-{
-  if (xpath.size() == 0) return 1;
-  Span<const Byte> bytes_span = xpath.bytes();
-  if (bytes_span[0] == '[') {
-    for (Integer i = 2; i < bytes_span.size(); ++i) {
-      if (bytes_span[i] == ']') {
-        StringView index_str = bytes_span.subSpan(1, i-1);
-        Integer index = 0;
-        bool is_bad = builtInGetValue(index, index_str);
-        if (is_bad) {
-          ARCANE_FATAL("Invalid index");
-        }
-        if (index < 1) {
-          ARCANE_FATAL("Index in XML start at 1");
-        }
-        return index;
-      }
-    }
-    ARCANE_FATAL("Bad xpath");
-  }
-  return 1;
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-Integer ParameterCaseOption::
-_getValueIndex(StringView xpath)
-{
-  for (Integer i = 0; i < m_params_view.size(); ++i) {
-    if (m_params_view[i] == xpath) {
-      return i;
-    }
-  }
-  return -1;
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-bool ParameterCaseOption::
-_hasOnlyIndex(StringView xpath_part)
-{
-  // xpath_before_index=0  (xpath_part="")
-  if (xpath_part.size() == 0) return true;
-  Span<const Byte> bytes_span = xpath_part.bytes();
-
-  // xpath_before_index[0]=0  (xpath_part="[0]")
-  if (bytes_span.size() < 3) return false;
-  // xpath_before_indextruc[0]=0  (xpath_part="truc[0]")
-  if (bytes_span[0] != '[') return false;
-
-  // xpath_before_index[0]/xpath_after_index=0  (xpath_part="[0]")
-  for (Integer i = 2; i < bytes_span.size(); ++i) {
-    if (bytes_span[i] == ']') {
-      return (i == bytes_span.size()-1);
-    }
-  }
-
-  // xpath_before_index[0]/truc/xpath_after_index=0  (xpath_part="[0]/truc/")
-  // xpath_before_index[0]/truc[0]/xpath_after_index=0  (xpath_part="[0]/truc[0]/")
-  return false;
 }
 
 /*---------------------------------------------------------------------------*/

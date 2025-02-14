@@ -363,10 +363,12 @@ arcane_add_test_sequential(caseoptions_commandlinereplace testCaseOptions-comman
     "-A,//case-options-tester/simple-enum=enum1"
     "-A,PostProcessor1FrName=Ensight7PostProcessor"
     "-A,//case-options-tester/post-processor1/fileset-size=1"
-    "-A,//case-options-tester/post-processor1/binary-file=false"
+    "-A,//case-options-tester/post-processor1[1]/binary-file=false"
     "-A,//case-options-tester/post-processor1[3]/@name=VtkHdfV2PostProcessor"
     "-A,//case-options-tester/post-processor1[4]/@name=UCDPostProcessor"
     "-A,//case-options-tester/post-processor2[2]/@mesh-name=Mesh1"
+    "-A,//case-options-tester/complex1/simple-real-2=3"
+    "-A,//case-options-tester/complex1/simple-real-2-multi[2]=2.3"
 )
 
 if(UDUNITS_FOUND)

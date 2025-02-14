@@ -14,10 +14,11 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/core/ICaseMng.h"
 #include "arcane/utils/UtilsTypes.h"
 #include "arcane/utils/String.h"
 #include "arcane/utils/List.h"
+
+#include "arcane/core/ICaseMng.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -58,23 +59,12 @@ ParameterCaseOption
 
  private:
 
-  StringView _removeUselessPartInXpath(StringView xpath);
-  StringView _removeIndexAtEnd(StringView xpath);
-  Integer _getIndexAtEnd(StringView xpath);
-  Integer _getIndexAtBegin(StringView xpath);
-
-
-  Integer _getValueIndex(StringView xpath);
-
-  bool _hasOnlyIndex(StringView xpath_part);
-
+  inline StringView _removeUselessPartInXpath(StringView xpath);
 
  private:
 
   StringList m_param_names;
   StringList m_values;
-  UniqueArray<StringView> m_params_view;
-  UniqueArray<StringView> m_values_view;
   String m_lang;
   ICaseMng* m_case_mng;
   ParameterCaseOptionMultiLine* m_lines;
