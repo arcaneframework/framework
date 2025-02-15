@@ -114,6 +114,9 @@ if(OTF2_FOUND)
       Otf2MessagePassingProfilingService.cc
       Otf2MpiProfiling.cc
       Otf2LibWrapper.cc
+      internal/Otf2MessagePassingProfilingService.h
+      internal/Otf2MpiProfiling.h
+      internal/Otf2LibWrapper.h
       )
   endif()
 endif()

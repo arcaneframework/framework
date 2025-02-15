@@ -30,7 +30,7 @@
 #include "arccore/base/TraceInfo.h"
 
 #include "arccore/message_passing_mpi/MpiLock.h"
-#include "arccore/message_passing_mpi/NoMpiProfiling.h"
+#include "arccore/message_passing_mpi/internal/NoMpiProfiling.h"
 #include "arccore/message_passing_mpi/MpiRequest.h"
 #include "arccore/message_passing_mpi/StandaloneMpiMessagePassingMng.h"
 

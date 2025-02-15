@@ -18,7 +18,6 @@
 
 #include "arccore/message_passing_mpi/MessagePassingMpiGlobal.h"
 #include "arccore/message_passing_mpi/MessagePassingMpiEnum.h"
-#include "arccore/message_passing_mpi/IMpiProfiling.h"
 #include "arccore/message_passing/PointToPointMessageInfo.h"
 #include "arccore/message_passing/Request.h"
 #include "arccore/collections/CollectionsGlobal.h"
@@ -210,9 +209,9 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiAdapter
 
  private:
 
-  IStat* m_stat;
-  MpiLock* m_mpi_lock;
-  IMpiProfiling* m_mpi_prof;
+  IStat* m_stat = nullptr;
+  MpiLock* m_mpi_lock = nullptr;
+  IMpiProfiling* m_mpi_prof = nullptr;
   ITimeMetricCollector* m_metric_collector = nullptr;
   MPI_Comm m_communicator; //!< Communicateur MPI
   int m_comm_rank = A_PROC_NULL_RANK;

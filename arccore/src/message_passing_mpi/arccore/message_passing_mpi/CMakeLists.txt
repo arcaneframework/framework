@@ -18,7 +18,6 @@ if (NOT WIN32)
 endif()
 
 set(SOURCES
-  IMpiProfiling.h
   MessagePassingMpiGlobal.h
   MessagePassingMpiGlobal.cc
   MessagePassingMpiEnum.h
@@ -40,9 +39,12 @@ set(SOURCES
   MpiTypeDispatcher.cc
   MpiMessagePassingMng.cc
   MpiMessagePassingMng.h
-  NoMpiProfiling.h
+
   StandaloneMpiMessagePassingMng.cc
   StandaloneMpiMessagePassingMng.h
+
+  internal/IMpiProfiling.h
+  internal/NoMpiProfiling.h
   internal/MpiTypeDispatcher.h
   internal/MpiTypeDispatcherImpl.h
 )

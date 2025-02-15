@@ -12,16 +12,15 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arccore/message_passing_mpi/MessagePassingMpiEnum.h"
-#include "arcane/utils/ArcaneGlobal.h"
 #include "arcane/utils/FatalErrorException.h"
-#include "arcane/std/Otf2MpiProfiling.h"
+#include "arcane/std/internal/Otf2MpiProfiling.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 namespace Arcane
 {
-using namespace Arccore::MessagePassing::Mpi;
+using namespace MessagePassing::Mpi;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
