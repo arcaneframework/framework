@@ -1599,18 +1599,24 @@ class SharedArray
   inline SharedArray(const UniqueArray<T>& rhs);
 
   /*!
-   * \brief Créé un tableau de \a asize éléments avec un
-   * allocateur spécifique \a allocator.
-   *
-   * Si ArrayTraits<T>::IsPODType vaut TrueType, les éléments ne sont pas
-   * initialisés. Sinon, c'est le constructeur par défaut de T qui est utilisé.
+   * \brief Créé un tableau vide avec un allocateur spécifique \a allocator.
    *
    * \warning Using specific allocator for SharedArray is experimental
    */
   explicit SharedArray(IMemoryAllocator* allocator)
+  : SharedArray(MemoryAllocationOptions(allocator))
+  {
+  }
+
+  /*!
+   * \brief Créé un tableau vide avec un allocateur spécifique \a allocation_options.
+   *
+   * \warning Using specific allocator for SharedArray is experimental
+   */
+  explicit SharedArray(const MemoryAllocationOptions& allocation_options)
   : Array<T>()
   {
-    this->_initFromAllocator(allocator,0);
+    this->_initFromAllocator(allocation_options,0);
     this->_checkValidSharedArray();
   }
 
@@ -1620,22 +1626,28 @@ class SharedArray
    *
    * Si ArrayTraits<T>::IsPODType vaut TrueType, les éléments ne sont pas
    * initialisés. Sinon, c'est le constructeur par défaut de T qui est utilisé.
-   *
-   * \warning Using specific allocator for SharedArray is experimental
    */
   SharedArray(IMemoryAllocator* allocator,Int64 asize)
+  : SharedArray(MemoryAllocationOptions(allocator), asize)
+  {
+  }
+
+  /*!
+   * \brief Créé un tableau de \a asize éléments avec un
+   * allocateur spécifique \a allocator.
+   *
+   * Si ArrayTraits<T>::IsPODType vaut TrueType, les éléments ne sont pas
+   * initialisés. Sinon, c'est le constructeur par défaut de T qui est utilisé.
+   */
+  SharedArray(const MemoryAllocationOptions& allocation_options, Int64 asize)
   : Array<T>()
   {
-    this->_initFromAllocator(allocator,asize);
+    this->_initFromAllocator(allocation_options, asize);
     this->_resize(asize);
     this->_checkValidSharedArray();
   }
 
-  /*!
-   * \brief Créé un tableau avec l'allocateur \a allocator en recopiant les valeurs \a rhs.
-   *
-   * \warning Using specific allocator for SharedArray is experimental
-   */
+  //!Créé un tableau avec l'allocateur \a allocator en recopiant les valeurs \a rhs.
   SharedArray(IMemoryAllocator* allocator,Span<const T> rhs)
   {
     this->_initFromAllocator(allocator,0);
