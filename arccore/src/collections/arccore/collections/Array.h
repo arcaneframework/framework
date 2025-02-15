@@ -1295,9 +1295,15 @@ class Array
     m_ptr[m_md->size].~T();
   }
   //! Elément d'indice \a i. Vérifie toujours les débordements
-  ConstReferenceType at(Int64 i) const
+  T& at(Int64 i)
   {
     arccoreCheckAt(i,m_md->size);
+    return m_ptr[i];
+  }
+  //! Elément d'indice \a i. Vérifie toujours les débordements
+  ConstReferenceType at(Int64 i) const
+  {
+    arccoreCheckAt(i, m_md->size);
     return m_ptr[i];
   }
   //! Positionne l'élément d'indice \a i. Vérifie toujours les débordements
