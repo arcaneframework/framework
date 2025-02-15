@@ -21,7 +21,7 @@
 #include "arcane/parallel/mpi/ArcaneMpi.h"
 #include "arcane/parallel/mpi/MpiDatatypeList.h"
 
-#include "arccore/message_passing_mpi/MpiTypeDispatcher.h"
+#include "arccore/message_passing_mpi/internal/MpiTypeDispatcher.h"
 #include "arccore/message_passing/PointToPointMessageInfo.h"
 #include "arccore/base/ReferenceCounterImpl.h"
 

@@ -37,14 +37,14 @@ set(SOURCES
   MpiSerializeMessageList.cc
   MpiSerializeDispatcher.h
   MpiSerializeDispatcher.cc
-  MpiTypeDispatcher.h
-  MpiTypeDispatcherImpl.h
   MpiTypeDispatcher.cc
   MpiMessagePassingMng.cc
   MpiMessagePassingMng.h
   NoMpiProfiling.h
   StandaloneMpiMessagePassingMng.cc
   StandaloneMpiMessagePassingMng.h
+  internal/MpiTypeDispatcher.h
+  internal/MpiTypeDispatcherImpl.h
 )
 
 arccore_add_component_library(message_passing_mpi

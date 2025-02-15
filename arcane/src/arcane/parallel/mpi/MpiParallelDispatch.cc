@@ -33,7 +33,7 @@
 
 #include "arccore/message_passing/Messages.h"
 
-#include "arccore/message_passing_mpi/MpiTypeDispatcherImpl.h"
+#include "arccore/message_passing_mpi/internal/MpiTypeDispatcherImpl.h"
 
 #include <limits>
 
