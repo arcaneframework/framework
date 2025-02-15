@@ -32,7 +32,6 @@ set(SOURCES
   MpiRequest.h
   MpiRequestList.h
   MpiRequestList.cc
-  MpiSerializeMessageList.h
   MpiSerializeMessageList.cc
   MpiSerializeDispatcher.h
   MpiSerializeDispatcher.cc
@@ -45,6 +44,7 @@ set(SOURCES
 
   internal/IMpiProfiling.h
   internal/NoMpiProfiling.h
+  internal/MpiSerializeMessageList.h
   internal/MpiTypeDispatcher.h
   internal/MpiTypeDispatcherImpl.h
 )

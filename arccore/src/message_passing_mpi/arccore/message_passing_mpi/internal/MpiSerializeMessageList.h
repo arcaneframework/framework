@@ -9,8 +9,8 @@
 /*                                                                           */
 /* Implémentation de ISerializeMessageList pour MPI.                         */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCCORE_MESSAGEPASSINGMPI_MPISERIALIZEMESSAGELIST_H
-#define ARCCORE_MESSAGEPASSINGMPI_MPISERIALIZEMESSAGELIST_H
+#ifndef ARCCORE_MESSAGEPASSINGMPI_INTERNAL_MPISERIALIZEMESSAGELIST_H
+#define ARCCORE_MESSAGEPASSINGMPI_INTERNAL_MPISERIALIZEMESSAGELIST_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
