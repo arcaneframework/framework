@@ -26,11 +26,9 @@
 #include <vector>
 
 #include <arccore/collections/Array2.h>
-#include <arccore/message_passing/BasicSerializeMessage.h>
 #include <arccore/message_passing/ISerializeMessageList.h>
 #include <arccore/message_passing/Messages.h>
-#include <arccore/message_passing_mpi/MpiMessagePassingMng.h>
-#include <arccore/message_passing_mpi/MpiSerializeMessageList.h>
+
 #include <arccore/trace/ITraceMng.h>
 
 #include <alien/utils/Precomp.h>
@@ -591,10 +589,8 @@ void BasicIndexManager::parallel_prepare(EntryIndexMap& entry_index)
       sendToDomains[2 * destDomainId + 1] += request.count;
 
       // Construction du message du EntrySendRequest
-      request.comm = Arccore::MessagePassing::internal::BasicSerializeMessage::create(
-      MessageRank(m_parallel_mng->commRank()), MessageRank(destDomainId),
-      Arccore::MessagePassing::ePointToPointMessageType::MsgSend);
-      messageList->addMessage(request.comm.get());
+      request.comm = messageList->createAndAddMessage(MessageRank(destDomainId),
+                                                      Arccore::MessagePassing::ePointToPointMessageType::MsgSend);
 
       auto sbuf = request.comm->serializer();
       sbuf->setMode(Alien::ISerializer::ModeReserve); // phase préparatoire
@@ -628,13 +624,11 @@ void BasicIndexManager::parallel_prepare(EntryIndexMap& entry_index)
   for (Integer isd = 0, nsd = m_parallel_mng->commSize(); isd < nsd; ++isd) {
     Integer recvCount = recvFromDomains[2 * isd + 0];
     while (recvCount-- > 0) {
-      auto recvMsg = Arccore::MessagePassing::internal::BasicSerializeMessage::create(
-      MessageRank(m_parallel_mng->commRank()), MessageRank(isd),
-      Arccore::MessagePassing::ePointToPointMessageType::MsgReceive);
+      auto recvMsg = messageList->createAndAddMessage(MessageRank(isd),
+                                                      Arccore::MessagePassing::ePointToPointMessageType::MsgReceive);
       recvRequests.push_back(EntryRecvRequest());
       EntryRecvRequest& recvRequest = recvRequests.back();
       recvRequest.comm = recvMsg;
-      messageList->addMessage(recvMsg.get());
     }
   }
 
@@ -713,9 +707,7 @@ void BasicIndexManager::parallel_prepare(EntryIndexMap& entry_index)
       auto dest = recvRequest.comm->destination(); // Attention à l'ordre bizarre
       auto orig = recvRequest.comm->source(); //       de SerializeMessage
       recvRequest.comm.reset();
-      recvRequest.comm = Arccore::MessagePassing::internal::BasicSerializeMessage::create(
-      orig, dest, Arccore::MessagePassing::ePointToPointMessageType::MsgSend);
-      messageList->addMessage(recvRequest.comm.get());
+      recvRequest.comm = messageList->createAndAddMessage(dest, Arccore::MessagePassing::ePointToPointMessageType::MsgSend);
 
       auto sbuf = recvRequest.comm->serializer();
       sbuf->setMode(Alien::ISerializer::ModeReserve); // phase préparatoire
@@ -802,13 +794,10 @@ void BasicIndexManager::parallel_prepare(EntryIndexMap& entry_index)
       // On ne peut pas associer directement le message à cette entrée
       // : dans le cas d'échange multiple il n'y pas de garantie d'arrivée
       // à la bonne place
-
-      auto msg = Arccore::MessagePassing::internal::BasicSerializeMessage::create(
-      MessageRank(m_parallel_mng->commRank()), MessageRank(destDomainId),
-      Arccore::MessagePassing::ePointToPointMessageType::MsgReceive);
+      auto msg = messageList->createAndAddMessage(MessageRank(destDomainId),
+                                                  Arccore::MessagePassing::ePointToPointMessageType::MsgReceive);
 
       returnedRequests.push_back(msg);
-      messageList->addMessage(msg.get());
 
       fastReturnMap[nameString][destDomainId] = &request;
     }
