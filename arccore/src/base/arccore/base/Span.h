@@ -22,9 +22,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arcane
-{
-namespace detail
+namespace Arcane::impl
 {
 // Pour indiquer que Span<T>::view() retourne un ArrayView
   // et Span<const T>::view() retourne un ConstArrayView.
@@ -62,8 +60,13 @@ namespace detail
 
     using SpanType = Span<T>;
   };
-
 }
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -103,7 +106,7 @@ class SpanImpl
   using const_reference = const ElementType&;
   using iterator = ArrayIterator<pointer>;
   using const_iterator = ArrayIterator<const_pointer>;
-  using view_type = typename detail::ViewTypeT<ElementType>::view_type;
+  using view_type = typename impl::ViewTypeT<ElementType>::view_type;
   using reverse_iterator = std::reverse_iterator<iterator>;
   using const_reverse_iterator = std::reverse_iterator<const_iterator>;
 
@@ -877,7 +880,7 @@ sampleSpan(Span<const DataType> values,Span<const Int32> indexes,Span<DataType> 
  * \brief Converti la vue en un tableau d'octets non modifiables.
  */
 template <typename DataType, typename SizeType, SizeType Extent>
-inline typename detail::SpanTypeFromSize<const std::byte, SizeType>::SpanType
+inline typename impl::SpanTypeFromSize<const std::byte, SizeType>::SpanType
 asBytes(const SpanImpl<DataType,SizeType,Extent>& s)
 {
   return {reinterpret_cast<const std::byte*>(s.data()), s.sizeBytes()};
@@ -912,7 +915,7 @@ asBytes(const ConstArrayView<DataType>& s)
  */
 template<typename DataType,typename SizeType,SizeType Extent,
          typename std::enable_if_t<!std::is_const<DataType>::value, int> = 0>
-inline typename detail::SpanTypeFromSize<std::byte, SizeType>::SpanType
+inline typename impl::SpanTypeFromSize<std::byte, SizeType>::SpanType
 asWritableBytes(const SpanImpl<DataType, SizeType, Extent>& s)
 {
   return {reinterpret_cast<std::byte*>(s.data()), s.sizeBytes()};
@@ -932,7 +935,7 @@ asWritableBytes(const ArrayView<DataType>& s)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace detail
+namespace impl
 {
 
 template<typename ByteType, typename DataType,Int64 Extent> inline Span<DataType>
@@ -972,7 +975,7 @@ asSmallSpanInternal(SmallSpan<ByteType,Extent> bytes)
 template<typename DataType,Int64 Extent> inline Span<DataType>
 asSpan(Span<std::byte,Extent> bytes)
 {
-  return detail::asSpanInternal<std::byte,DataType,Extent>(bytes);
+  return impl::asSpanInternal<std::byte,DataType,Extent>(bytes);
 }
 /*!
  * \brief Converti un Span<std::byte> en un Span<DataType>.
@@ -981,7 +984,7 @@ asSpan(Span<std::byte,Extent> bytes)
 template<typename DataType,Int64 Extent> inline Span<const DataType>
 asSpan(Span<const std::byte,Extent> bytes)
 {
-  return detail::asSpanInternal<const std::byte,const DataType,Extent>(bytes);
+  return impl::asSpanInternal<const std::byte,const DataType,Extent>(bytes);
 }
 /*!
  * \brief Converti un SmallSpan<std::byte> en un SmallSpan<DataType>.
@@ -990,7 +993,7 @@ asSpan(Span<const std::byte,Extent> bytes)
 template<typename DataType,Int32 Extent> inline SmallSpan<DataType>
 asSmallSpan(SmallSpan<std::byte,Extent> bytes)
 {
-  return detail::asSmallSpanInternal<std::byte,DataType,Extent>(bytes);
+  return impl::asSmallSpanInternal<std::byte,DataType,Extent>(bytes);
 }
 /*!
  * \brief Converti un SmallSpan<const std::byte> en un SmallSpan<const DataType>.
@@ -999,7 +1002,7 @@ asSmallSpan(SmallSpan<std::byte,Extent> bytes)
 template<typename DataType,Int32 Extent> inline SmallSpan<const DataType>
 asSmallSpan(SmallSpan<const std::byte,Extent> bytes)
 {
-  return detail::asSmallSpanInternal<const std::byte,const DataType,Extent>(bytes);
+  return impl::asSmallSpanInternal<const std::byte,const DataType,Extent>(bytes);
 }
 
 /*---------------------------------------------------------------------------*/
