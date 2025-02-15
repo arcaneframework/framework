@@ -345,6 +345,8 @@ set(ARCANE_SOURCES
   internal/MemoryUtilsInternal.h
   internal/IMemoryRessourceMngInternal.h
   internal/IMemoryCopier.h
+  internal/ParameterOption.h
+  internal/ParameterOption.cc
   internal/ProfilingInternal.h
   internal/ValueConvertInternal.h
   internal/SpecificMemoryCopyList.h

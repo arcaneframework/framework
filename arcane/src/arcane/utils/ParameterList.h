@@ -15,6 +15,7 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/UtilsTypes.h"
+#include "arcane/utils/ParameterCaseOption.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -86,6 +87,16 @@ class ARCANE_UTILS_EXPORT ParameterList
    * dans \a values la valeur associée.
    */
   void fillParameters(StringList& param_names,StringList& values) const;
+
+  /*!
+   * \brief Méthode permettant de récupérer un objet de type ParameterCaseOption.
+   *
+   * Cet objet peut être détruit après utilisation.
+   *
+   * \param language Le langage dans lequel est écrit le jeu de données.
+   * \return Un objet de type ParameterCaseOption.
+   */
+  ParameterCaseOption getParameterCaseOption(const String& language) const;
 
  private:
 

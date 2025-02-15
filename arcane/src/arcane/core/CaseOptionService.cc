@@ -194,7 +194,7 @@ _readPhase1()
   const ParameterList& params = caseMng()->application()->applicationInfo().commandLineArguments().parameters();
   ICaseDocumentFragment* doc = caseDocumentFragment();
 
-  ParameterCaseOption pco{ caseMng() };
+  const ParameterCaseOption pco{ params.getParameterCaseOption(doc->language()) };
 
   String mesh_name;
   {
@@ -385,7 +385,7 @@ multiAllocate(const XmlNodeList& elem_list)
     ARCANE_FATAL("null 'm_container'. did you called setContainer() method ?");
 
   const ParameterList& params = caseMng()->application()->applicationInfo().commandLineArguments().parameters();
-  ParameterCaseOption pco{ caseMng() };
+  const ParameterCaseOption pco{ params.getParameterCaseOption(caseDocumentFragment()->language()) };
 
   XmlNode parent_element = configList()->parentElement();
 

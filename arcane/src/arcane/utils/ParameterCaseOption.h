@@ -7,8 +7,8 @@
 /*---------------------------------------------------------------------------*/
 /* ParameterCaseOption.h                                       (C) 2000-2025 */
 /*                                                                           */
-/* Classe représentant l'ensemble des paramètres pouvant modifier les        */
-/* options du jeu de données .                                               */
+/* Classe permettant d'interroger les paramètres pour savoir si des options  */
+/* du jeu de données doivent être modifiées par ceux-ci.                     */
 /*---------------------------------------------------------------------------*/
 
 #ifndef ARCANE_UTILS_PARAMETERCASEOPTION_H
@@ -18,10 +18,6 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/UtilsTypes.h"
-#include "arcane/utils/String.h"
-#include "arcane/utils/List.h"
-
-#include "arcane/core/ICaseMng.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -47,8 +43,7 @@ ParameterCaseOption
 
  public:
 
-  ParameterCaseOption(ICaseMng* case_mng);
-  ~ParameterCaseOption();
+  ParameterCaseOption(ParameterOptionElementsCollection* parameter_options, const String& lang);
 
  public:
 
@@ -138,7 +133,7 @@ ParameterCaseOption
    * \param full_xpath L'adresse à rechercher.
    * \return true si l'adresse est trouvée dans la liste.
    */
-  bool exist(const String& full_xpath);
+  bool exist(const String& full_xpath) const;
 
   /*!
    * \brief Méthode permettant de savoir si une option est présente.
@@ -300,10 +295,7 @@ ParameterCaseOption
 
  private:
 
-  StringList m_param_names;
-  StringList m_values;
-  String m_lang;
-  ICaseMng* m_case_mng;
+  bool m_is_fr;
   ParameterOptionElementsCollection* m_lines;
 };
 

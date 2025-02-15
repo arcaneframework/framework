@@ -27,6 +27,7 @@
 #include "arcane/core/XmlNodeList.h"
 #include "arcane/core/ICaseOptionList.h"
 #include "arcane/core/MeshHandle.h"
+#include "arcane/core/ICaseDocument.h"
 #include "arcane/core/internal/StringVariableReplace.h"
 
 /*---------------------------------------------------------------------------*/
@@ -50,7 +51,7 @@ _search(bool is_phase1)
 {
   ITraceMng* tm = traceMng();
   const ParameterList& params = caseMng()->application()->applicationInfo().commandLineArguments().parameters();
-  ParameterCaseOption pco{ caseMng() };
+  const ParameterCaseOption pco{ params.getParameterCaseOption(caseDocumentFragment()->language()) };
 
   // !!! En XML, on commence par 1 et non 0.
   UniqueArray<Integer> option_in_param;

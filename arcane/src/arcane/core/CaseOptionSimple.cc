@@ -135,7 +135,7 @@ _search(bool is_phase1)
   // Liste des options de la ligne de commande.
   {
     const ParameterList& params = caseMng()->application()->applicationInfo().commandLineArguments().parameters();
-    ParameterCaseOption pco{ caseMng() };
+    const ParameterCaseOption pco{ params.getParameterCaseOption(doc->language()) };
 
     String reference_input = pco.getParameterOrNull(String::format("{0}/{1}", rootElement().xpathFullName(), velem_name), 1, false);
     if (!reference_input.null()) {
@@ -662,7 +662,7 @@ _search(bool is_phase1)
     return;
 
   const ParameterList& params = caseMng()->application()->applicationInfo().commandLineArguments().parameters();
-  ParameterCaseOption pco{ caseMng() };
+  const ParameterCaseOption pco{ params.getParameterCaseOption(caseDocumentFragment()->language()) };
 
   String full_xpath = String::format("{0}/{1}", rootElement().xpathFullName(), name());
   // !!! En XML, on commence par 1 et non 0.
