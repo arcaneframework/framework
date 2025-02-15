@@ -60,7 +60,7 @@
 
 namespace Arcane
 {
-using RequestListBase = Arccore::MessagePassing::internal::RequestListBase;
+using RequestListBase = Arcane::MessagePassing::internal::RequestListBase;
 using IRequestList = Parallel::IRequestList;
 using namespace Arcane::MessagePassing;
 

@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -178,7 +178,7 @@ TEST(ReferenceCounter, RefWithDeleter)
       myx2 = myx1;
     }
     myx2.reset();
-    Internal::ExternalRef external_ref;
+    Arcane::Internal::ExternalRef external_ref;
     {
       auto* ptr1 = new TestClassWithDeleter();
       Ref<ITestClassWithDeleter> x4 = Ref<ITestClassWithDeleter>::createWithHandle(ptr1,external_ref);
