@@ -60,8 +60,6 @@
 
 #include <arccore/message_passing/Messages.h>
 #include <arccore/message_passing/Request.h>
-
-#include <arccore/message_passing/BasicSerializeMessage.h>
 #include <arccore/message_passing/ISerializeMessage.h>
 #include <arccore/message_passing/ISerializeMessageList.h>
 #include <arccore/serialize/BasicSerializer.h>
