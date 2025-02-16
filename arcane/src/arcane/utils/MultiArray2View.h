@@ -17,6 +17,8 @@
 #include "arcane/utils/UtilsTypes.h"
 #include "arcane/utils/ArrayView.h"
 
+#include <type_traits>
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -127,6 +129,60 @@ class ConstMultiArray2View
   ConstArrayView<DataType> m_buffer;
   ConstArrayView<Int32> m_indexes;
   ConstArrayView<Int32> m_sizes;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Vue sur un MultiArray2.
+ *
+ * Les instances de cette classe sont créées par appel à MultiArray2::span()
+ * ou MultiArray2::constSpan().
+ */
+template <class DataType>
+class MultiArray2SmallSpan
+{
+ private:
+
+  friend class MultiArray2<std::remove_cv_t<DataType>>;
+
+ public:
+
+  //! Vue vide
+  MultiArray2SmallSpan() = default;
+
+ private:
+
+  //! Vue sur la tableau \a buf
+  MultiArray2SmallSpan(SmallSpan<DataType> buf, SmallSpan<const Int32> indexes,
+                       SmallSpan<const Int32> sizes)
+  : m_buffer(buf)
+  , m_indexes(indexes)
+  , m_sizes(sizes)
+  {}
+
+ public:
+
+  //! Nombre d'éléments de la première dimension.
+  constexpr ARCCORE_HOST_DEVICE Int32 dim1Size() const { return m_sizes.size(); }
+  //! Nombre d'éléments de la deuxième dimension
+  constexpr ARCCORE_HOST_DEVICE SmallSpan<const Int32> dim2Sizes() const { return m_sizes; }
+  //! Nombre total d'éléments dans le tableau.
+  constexpr ARCCORE_HOST_DEVICE Int32 totalNbElement() const { return m_buffer.size(); }
+
+ public:
+
+  //! \a i-ème élément du tableau
+  constexpr ARCCORE_HOST_DEVICE SmallSpan<DataType> operator[](Int32 i) const
+  {
+    return m_buffer.subSpan(m_indexes[i], m_sizes[i]);
+  }
+
+ private:
+
+  SmallSpan<DataType> m_buffer;
+  SmallSpan<const Int32> m_indexes;
+  SmallSpan<const Int32> m_sizes;
 };
 
 /*---------------------------------------------------------------------------*/

@@ -11,6 +11,7 @@
 #include "arcane/utils/String.h"
 #include "arcane/utils/SmallArray.h"
 #include "arcane/utils/FixedArray.h"
+#include "arcane/utils/MultiArray2.h"
 
 #ifdef ARCANE_HAS_CXX20
 #include <ranges>
@@ -285,6 +286,10 @@ template class CollectionImplT<String>;
 template class SmallArray<Int32>;
 template class FixedArray<Int32,3>;
 template class FixedArray<double, 21>;
+
+template class MultiArray2<Int32>;
+template class UniqueMultiArray2<Int32>;
+template class SharedMultiArray2<Int32>;
 }
 
 /*---------------------------------------------------------------------------*/

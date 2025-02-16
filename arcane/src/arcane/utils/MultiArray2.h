@@ -67,6 +67,7 @@ class MultiArray2
  public:
 
   MultiArray2() = default;
+  // TODO: Rendre accessible uniquement à UniqueMultiArray2 ou SharedMultiArray2
   explicit MultiArray2(ConstArrayView<Int32> sizes)
   {
     _resize(sizes);
@@ -96,6 +97,17 @@ class MultiArray2
   , m_sizes(aview.m_sizes)
   {
   }
+  explicit MultiArray2(const MemoryAllocationOptions& allocation_options)
+  : m_buffer(allocation_options)
+  , m_indexes(allocation_options)
+  , m_sizes(allocation_options)
+  {}
+  // TODO: Rendre accessible uniquement à UniqueMultiArray2 ou SharedMultiArray2
+  MultiArray2(const MemoryAllocationOptions& allocation_options, ConstArrayView<Int32> sizes)
+  : MultiArray2(allocation_options)
+  {
+    _resize(sizes);
+  }
 
  public:
 
@@ -111,22 +123,14 @@ class MultiArray2
  public:
 
   //! Nombre total d'éléments
-  Integer totalNbElement() const { return m_buffer.size(); }
+  Int32 totalNbElement() const { return m_buffer.size(); }
+
   //! Supprime les éléments du tableau.
   void clear()
   {
     m_buffer.clear();
     m_indexes.clear();
     m_sizes.clear();
-  }
-  //! Clone le tableau
-  MultiArray2<DataType> clone()
-  {
-    MultiArray2<DataType> new_array;
-    new_array.m_buffer = m_buffer.clone();
-    new_array.m_indexes = m_indexes.clone();
-    new_array.m_sizes = m_sizes.clone();
-    return new_array;
   }
   //! Remplit les éléments du tableau avec la valeur \a v
   void fill(const DataType& v)
@@ -137,7 +141,7 @@ class MultiArray2
   {
     return m_buffer[m_indexes[i] + j];
   }
-  const DataType& at(Integer i, Integer j) const
+  ConstReferenceType at(Integer i, Integer j) const
   {
     return m_buffer[m_indexes[i] + j];
   }
@@ -176,6 +180,24 @@ class MultiArray2
   ConstMultiArray2View<DataType> constView() const
   {
     return ConstMultiArray2View<DataType>(m_buffer, m_indexes, m_sizes);
+  }
+
+  //! Vue modifiable du tableau
+  MultiArray2SmallSpan<DataType> span()
+  {
+    return { m_buffer.smallSpan(), m_indexes, m_sizes };
+  }
+
+  //! Vue constante du tableau
+  MultiArray2SmallSpan<const DataType> span() const
+  {
+    return { m_buffer, m_indexes, m_sizes };
+  }
+
+  //! Vue constante du tableau
+  MultiArray2SmallSpan<const DataType> constSpan() const
+  {
+    return { m_buffer.constSmallSpan(), m_indexes, m_sizes };
   }
 
   //! Vue du tableau sous forme de tableau 1D
@@ -233,7 +255,7 @@ class MultiArray2
 
     Integer old_size1 = m_indexes.size();
 
-    SharedArray<DataType> new_buffer(total_size);
+    SharedArray<DataType> new_buffer(m_buffer.allocationOptions(), total_size);
 
     // Recopie dans le nouveau tableau les valeurs de l'ancien.
     if (old_size1 > size1)
@@ -278,7 +300,7 @@ class MultiArray2
 
  private:
 
-  //! Valeurs
+  //! Tableau des Valeurs
   SharedArray<DataType> m_buffer;
   //! Tableau des indices dans \a m_buffer du premièr élément de la deuxième dimension
   SharedArray<Int32> m_indexes;
@@ -360,6 +382,16 @@ class UniqueMultiArray2
   UniqueMultiArray2() = default;
   explicit UniqueMultiArray2(ConstArrayView<Int32> sizes)
   : MultiArray2<DataType>(sizes)
+  {}
+  explicit UniqueMultiArray2(IMemoryAllocator* allocator)
+  : UniqueMultiArray2(MemoryAllocationOptions(allocator))
+  {}
+  explicit UniqueMultiArray2(const MemoryAllocationOptions& allocation_options)
+  : MultiArray2<DataType>(allocation_options)
+  {}
+  UniqueMultiArray2(const MemoryAllocationOptions& allocation_options,
+                    ConstArrayView<Int32> sizes)
+  : MultiArray2<DataType>(allocation_options, sizes)
   {}
   UniqueMultiArray2(ConstMultiArray2View<DataType> view)
   : MultiArray2<DataType>(view)
