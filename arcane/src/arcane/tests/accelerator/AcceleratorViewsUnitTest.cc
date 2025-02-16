@@ -1,17 +1,19 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* AcceleratorViewsUnitTest.cc                                 (C) 2000-2024 */
+/* AcceleratorViewsUnitTest.cc                                 (C) 2000-2025 */
 /*                                                                           */
 /* Service de test des vues pour les accelerateurs.                          */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/ValueChecker.h"
+#include "arcane/utils/MemoryUtils.h"
+#include "arcane/utils/MultiArray2.h"
 
 #include "arcane/core/BasicUnitTest.h"
 #include "arcane/core/ServiceFactory.h"
@@ -91,6 +93,7 @@ class AcceleratorViewsUnitTest
   void _checkResultReal2x2(Real to_add);
   void _checkResultReal3x3(Real to_add);
   void _executeTestGroupIndexTable();
+  void _executeTestMultiArray();
 };
 
 /*---------------------------------------------------------------------------*/
@@ -209,6 +212,7 @@ executeTest()
   _executeTestMemoryCopy();
   _executeTestVariableCopy();
   _executeTestVariableFill();
+  _executeTestMultiArray();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -866,6 +870,53 @@ _executeTestGroupIndexTable()
     if (x != lid)
       ARCANE_FATAL("Bad id index={0} ref={1} v={2}", icell.index(), lid, x);
   }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void AcceleratorViewsUnitTest::
+_executeTestMultiArray()
+{
+  info() << "Execute test TestMultiArray";
+  ValueChecker vc(A_FUNCINFO);
+  auto queue = makeQueue(m_runner);
+  UniqueMultiArray2<Int32> values(MemoryUtils::getDefaultDataAllocator());
+  const Int32 dim1_size = 5;
+  NumArray<Int32, MDDim1> result_values(dim1_size);
+  NumArray<Int32, MDDim1> expected_result_values(dim1_size);
+  UniqueArray<Int32> sizes(dim1_size);
+  for (Int32 i = 0; i < dim1_size; ++i)
+    sizes[i] = i + 1;
+  values.resize(sizes);
+  MultiArray2SmallSpan<Int32> inout_values = values.span();
+  for (Int32 i = 0; i < dim1_size; ++i) {
+    const Int32 dim2_size = inout_values[i].size();
+    Int32 total = 0;
+    info() << "I=" << i << " dim2_size=" << dim2_size;
+    for (Int32 j = 0; j < dim2_size; ++j) {
+      Int32 v = i + j + 1;
+      inout_values[i][j] = v;
+      total += v;
+    }
+    expected_result_values[i] = total;
+  }
+
+  {
+    auto command = makeCommand(queue);
+    auto out_values_view = viewOut(command, result_values);
+
+    command << RUNCOMMAND_LOOP1(iter, dim1_size)
+    {
+      auto [i] = iter();
+      const Int32 dim2_size = inout_values[i].size();
+      Int32 total = 0;
+      for (Int32 j = 0; j < dim2_size; ++j)
+        total += inout_values[i][j];
+      out_values_view[i] = total;
+    };
+  }
+  vc.areEqualArray(result_values.to1DSpan(), expected_result_values.to1DSpan(), "Result");
 }
 
 /*---------------------------------------------------------------------------*/
