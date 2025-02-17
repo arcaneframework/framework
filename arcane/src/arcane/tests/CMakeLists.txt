@@ -1222,7 +1222,10 @@ endif()
 #################################################################
 
 # Test pour la partie StringVariableReplace.
-arcane_add_test_sequential(string_variable_replace testStringVariableReplace.arc)
+arcane_add_test_sequential(string_variable_replace testStringVariableReplace.arc
+    "-We,ARCANE_REPLACE_SYMBOLS_IN_DATASET,1"
+    "-A,aa=bb"
+)
 
 #################################################################
 #################################################################

@@ -12,6 +12,9 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/ParameterList.h"
+#include "arcane/utils/CommandLineArguments.h"
+#include "arcane/utils/List.h"
+#include "arcane/utils/PlatformUtils.h"
 
 #include "arcane/core/BasicUnitTest.h"
 #include "arcane/core/internal/StringVariableReplace.h"
@@ -82,40 +85,42 @@ initializeTest()
 void StringVariableReplaceTest::
 executeTest()
 {
-  ParameterList params;
+  StringList args;
+  platform::fillCommandLineArguments(args);
+  const CommandLineArguments cla{ args };
+
+  ParameterList params(cla.parameters());
   String test("aaaa");
   bool fatal = true;
 
-  String result = StringVariableReplace::replaceWithCmdLineArgs(params, test);
+  String result = StringVariableReplace::replaceWithCmdLineArgs(test);
 
-  if(result != test) {
+  if (result != test) {
     ARCANE_FATAL("Test 1 -- Expected: {0} -- Actual: {1}", test, result);
   }
   info() << "Test 1 OK";
 
   /*---------------------------------------------------------------------------*/
 
-  params.addParameterLine("ARCANE_REPLACE_SYMBOLS_IN_DATASET=1");
+  result = StringVariableReplace::replaceWithCmdLineArgs("");
 
-  result = StringVariableReplace::replaceWithCmdLineArgs(params, "");
-
-  if(result != "") {
+  if (result != "") {
     ARCANE_FATAL("Test 2 -- Expected: {0} -- Actual: {1}", "", result);
   }
   info() << "Test 2 OK";
 
   /*---------------------------------------------------------------------------*/
 
-  result = StringVariableReplace::replaceWithCmdLineArgs(params, test);
+  result = StringVariableReplace::replaceWithCmdLineArgs(test);
 
-  if(result != test) {
+  if (result != test) {
     ARCANE_FATAL("Test 3 -- Expected: {0} -- Actual: {1}", test, result);
   }
   info() << "Test 3 OK";
 
   /*---------------------------------------------------------------------------*/
 
-  params.addParameterLine("aa=bb");
+  //params.addParameterLine("aa=bb"); // Dans le CMakeLists.
 
   /*---------------------------------------------------------------------------*/
 
@@ -123,7 +128,7 @@ executeTest()
 
   fatal = false;
   try {
-    StringVariableReplace::replaceWithCmdLineArgs(params, test);
+    StringVariableReplace::replaceWithCmdLineArgs(test);
     fatal = true;
   }
   catch (const FatalErrorException& e) {
@@ -132,7 +137,7 @@ executeTest()
     ARCANE_FATAL("Test 4 no fatal test");
   }
 
-  result = StringVariableReplace::replaceWithCmdLineArgs(params, test, false, false);
+  result = StringVariableReplace::replaceWithCmdLineArgs(test, false, false);
   String expected = "aaaa";
 
   if (result != expected) {
@@ -144,7 +149,7 @@ executeTest()
 
   test = "@aa@aa@aa@";
 
-  result = StringVariableReplace::replaceWithCmdLineArgs(params, test);
+  result = StringVariableReplace::replaceWithCmdLineArgs(test);
   expected = "bbaabb";
 
   if (result != expected) {
@@ -156,7 +161,7 @@ executeTest()
 
   test = "@aa@@aa@";
 
-  result = StringVariableReplace::replaceWithCmdLineArgs(params, test);
+  result = StringVariableReplace::replaceWithCmdLineArgs(test);
   expected = "bbbb";
 
   if (result != expected) {
@@ -170,7 +175,7 @@ executeTest()
 
   fatal = false;
   try {
-    StringVariableReplace::replaceWithCmdLineArgs(params, test);
+    StringVariableReplace::replaceWithCmdLineArgs(test);
     fatal = true;
   }
   catch (const FatalErrorException& e) {
@@ -179,7 +184,7 @@ executeTest()
     ARCANE_FATAL("Test 7 no fatal test");
   }
 
-  result = StringVariableReplace::replaceWithCmdLineArgs(params, test, false, false);
+  result = StringVariableReplace::replaceWithCmdLineArgs(test, false, false);
   expected = "";
 
   if (result != expected) {
