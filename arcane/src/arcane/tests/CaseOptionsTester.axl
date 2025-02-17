@@ -622,7 +622,7 @@
      name = "extended-real-int-c3"
      type = "ArcaneTest::TestRealInt"
      minOccurs = "0"
-     maxOccurs = "unbounded"
+     maxOccurs = "5"
     >
      <description>ExtendedRealInt2</description>
     </extended>

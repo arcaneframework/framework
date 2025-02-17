@@ -427,6 +427,13 @@ arcane_add_test_sequential(caseoptions_commandlinereplace_fail8 testCaseOptions-
 )
 set_property(TEST caseoptions_commandlinereplace_fail8 PROPERTY WILL_FAIL true)
 
+arcane_add_test_sequential(caseoptions_commandlinereplace_fail9 testCaseOptions-specific-entry-point.arc
+    "-We,ARCANE_CALL_SPECIFIC_ENTRY_POINT,CaseOptionLoop2"
+    "-We,ARCANE_REPLACE_SYMBOLS_IN_DATASET,1"
+    "-A,//case-options-tester/complex2[2]/complex3/extended-real-int-c3[9]=enum1"
+)
+set_property(TEST caseoptions_commandlinereplace_fail9 PROPERTY WILL_FAIL true)
+
 #arcane_add_test_sequential(caseoptions_commandlinereplace_fail99 testCaseOptions-specific-entry-point.arc
 #    "-We,ARCANE_CALL_SPECIFIC_ENTRY_POINT,CaseOptionLoop2"
 #    "-We,ARCANE_REPLACE_SYMBOLS_IN_DATASET,1"

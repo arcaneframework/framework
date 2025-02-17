@@ -67,7 +67,6 @@
       <simple-real3-2>3.0 2.0 4.0</simple-real3-2>
       <simple-integer-2>4</simple-integer-2>
       <simple-enum-2>enum2</simple-enum-2>
-      <extended-real-int-2>enum1</extended-real-int-2>
       <complex1-sub>
         <sub-test1>2.0 3.0</sub-test1>
         <sub-test2>1.0 2.0 3.0 4.0 5.0 6.0 7.0 8.0 9.0</sub-test2>
