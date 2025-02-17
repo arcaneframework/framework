@@ -392,7 +392,7 @@
     name = "post-processor1"
     type = "Arcane::IPostProcessorWriter"
     minOccurs = "0"
-    maxOccurs = "unbounded"
+    maxOccurs="10"
   >
    <name lang='fr'>post-processor1-fr</name>
    <description>Liste des services de protection</description>

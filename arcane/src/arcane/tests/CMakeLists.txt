@@ -392,12 +392,47 @@ arcane_add_test_sequential(caseoptions_commandlinereplace_fail3 testCaseOptions-
 )
 set_property(TEST caseoptions_commandlinereplace_fail3 PROPERTY WILL_FAIL true)
 
-#arcane_add_test_sequential(caseoptions_commandlinereplace_fail4 testCaseOptions-specific-entry-point.arc
+arcane_add_test_sequential(caseoptions_commandlinereplace_fail4 testCaseOptions-specific-entry-point.arc
+    "-We,ARCANE_CALL_SPECIFIC_ENTRY_POINT,CaseOptionLoop2"
+    "-We,ARCANE_REPLACE_SYMBOLS_IN_DATASET,1"
+    "-A,//case-options-tester/simple-real-array-multi[6]=\"3.0 4.0\""
+)
+set_property(TEST caseoptions_commandlinereplace_fail4 PROPERTY WILL_FAIL true)
+
+arcane_add_test_sequential(caseoptions_commandlinereplace_fail5 testCaseOptions-specific-entry-point.arc
+    "-We,ARCANE_CALL_SPECIFIC_ENTRY_POINT,CaseOptionLoop2"
+    "-We,ARCANE_REPLACE_SYMBOLS_IN_DATASET,1"
+    "-A,//case-options-tester/simple-integer=aaa"
+)
+set_property(TEST caseoptions_commandlinereplace_fail5 PROPERTY WILL_FAIL true)
+
+arcane_add_test_sequential(caseoptions_commandlinereplace_fail6 testCaseOptions-specific-entry-point.arc
+    "-We,ARCANE_CALL_SPECIFIC_ENTRY_POINT,CaseOptionLoop2"
+    "-We,ARCANE_REPLACE_SYMBOLS_IN_DATASET,1"
+    "-A,//case-options-tester/post-processor1-fr[20]/@name=UCDPostProcessor"
+)
+set_property(TEST caseoptions_commandlinereplace_fail6 PROPERTY WILL_FAIL true)
+
+arcane_add_test_sequential(caseoptions_commandlinereplace_fail7 testCaseOptions-specific-entry-point.arc
+    "-We,ARCANE_CALL_SPECIFIC_ENTRY_POINT,CaseOptionLoop2"
+    "-We,ARCANE_REPLACE_SYMBOLS_IN_DATASET,1"
+    "-A,//case-options-tester/post-processor1-fr/binary-file-=false"
+)
+set_property(TEST caseoptions_commandlinereplace_fail7 PROPERTY WILL_FAIL true)
+
+arcane_add_test_sequential(caseoptions_commandlinereplace_fail8 testCaseOptions-specific-entry-point.arc
+    "-We,ARCANE_CALL_SPECIFIC_ENTRY_POINT,CaseOptionLoop2"
+    "-We,ARCANE_REPLACE_SYMBOLS_IN_DATASET,1"
+    "-A,//case-options-tester/post-processor1-fr/binary-file:=false"
+)
+set_property(TEST caseoptions_commandlinereplace_fail8 PROPERTY WILL_FAIL true)
+
+#arcane_add_test_sequential(caseoptions_commandlinereplace_fail99 testCaseOptions-specific-entry-point.arc
 #    "-We,ARCANE_CALL_SPECIFIC_ENTRY_POINT,CaseOptionLoop2"
 #    "-We,ARCANE_REPLACE_SYMBOLS_IN_DATASET,1"
 #    "-A,//case-options-tester/simple-real[=3.0"
 #)
-#set_property(TEST caseoptions_commandlinereplace_fail4 PROPERTY WILL_FAIL true)
+#set_property(TEST caseoptions_commandlinereplace_fail99 PROPERTY WILL_FAIL true)
 
 
 if(UDUNITS_FOUND)
