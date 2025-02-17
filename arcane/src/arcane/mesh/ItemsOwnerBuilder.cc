@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemsOwnerBuilder.cc                                        (C) 2000-2024 */
+/* ItemsOwnerBuilder.cc                                        (C) 2000-2025 */
 /*                                                                           */
 /* Classe pour calculer les propriétaires des entités.                       */
 /*---------------------------------------------------------------------------*/
@@ -68,13 +68,26 @@ class ItemsOwnerBuilderImpl
 : public TraceAccessor
 {
   class ItemOwnerInfoSortTraits;
+
+  /*!
+   * \brief Informations sur une entité partagée.
+   *
+   * On conserve dans l'instance le uniqueId() du premier noeud
+   * de l'entité et on s'en sert comme clé primaire pour le tri.
+   * En général, les noeuds dont le uniqueId() est proche sont dans le même
+   * sous-domaine. Comme on se sert de cette valeur comme clé primaire
+   * du tri, cela permet de garantir une certaine cohérence topologique
+   * des entités distribuées et ainsi éviter de faire un all-to-all qui
+   * concerne un grand nombre de rangs.
+   */
   class ItemOwnerInfo
   {
    public:
 
     ItemOwnerInfo() = default;
-    ItemOwnerInfo(Int64 item_uid, Int64 cell_uid, Int32 sender_rank, Int32 cell_owner)
+    ItemOwnerInfo(Int64 item_uid, Int64 first_node_uid, Int64 cell_uid, Int32 sender_rank, Int32 cell_owner)
     : m_item_uid(item_uid)
+    , m_first_node_uid(first_node_uid)
     , m_cell_uid(cell_uid)
     , m_item_sender_rank(sender_rank)
     , m_cell_owner(cell_owner)
@@ -83,9 +96,15 @@ class ItemsOwnerBuilderImpl
 
    public:
 
+    //! uniqueId() de l'entité
     Int64 m_item_uid = NULL_ITEM_UNIQUE_ID;
+    //! uniqueId() du premier noeud de l'entité
+    Int64 m_first_node_uid = NULL_ITEM_UNIQUE_ID;
+    //! uniqueId() de la maille à laquelle l'entité appartient
     Int64 m_cell_uid = NULL_ITEM_UNIQUE_ID;
+    //! rang de celui qui a créé cette instance
     Int32 m_item_sender_rank = A_NULL_RANK;
+    //! Propriétaire de la maille connectée à cette entité
     Int32 m_cell_owner = A_NULL_RANK;
   };
 
@@ -121,6 +140,11 @@ class ItemsOwnerBuilderImpl::ItemOwnerInfoSortTraits
 
   static bool compareLess(const ItemOwnerInfo& k1, const ItemOwnerInfo& k2)
   {
+    if (k1.m_first_node_uid < k2.m_first_node_uid)
+      return true;
+    if (k1.m_first_node_uid > k2.m_first_node_uid)
+      return false;
+
     if (k1.m_item_uid < k2.m_item_uid)
       return true;
     if (k1.m_item_uid > k2.m_item_uid)
@@ -156,7 +180,7 @@ class ItemsOwnerBuilderImpl::ItemOwnerInfoSortTraits
   }
   static ItemOwnerInfo maxValue()
   {
-    return ItemOwnerInfo(INT64_MAX, INT64_MAX, INT32_MAX, INT32_MAX);
+    return ItemOwnerInfo(INT64_MAX, INT64_MAX, INT64_MAX, INT32_MAX, INT32_MAX);
   }
   static bool isValid(const ItemOwnerInfo& fsi)
   {
@@ -217,7 +241,7 @@ computeFacesOwner()
     for (Cell cell : face.cells()) {
       if (verbose_level >= 2)
         info() << "ADD lid=" << lid << " uid=" << face_uid << " cell_uid=" << cell.uniqueId() << " owner=" << cell.owner();
-      m_items_owner_info.add(ItemOwnerInfo(face_uid, cell.uniqueId(), my_rank, cell.owner()));
+      m_items_owner_info.add(ItemOwnerInfo(face_uid, face.node(0).uniqueId(), cell.uniqueId(), my_rank, cell.owner()));
     }
   }
 
@@ -249,7 +273,8 @@ _sortInfos()
   info() << "END_ALL_ITEM_OWNER_SORTER time=" << (Real)(sort_end_time - sort_begin_time);
   if (verbose_level >= 2)
     for (const ItemOwnerInfo& x : m_items_owner_info) {
-      info() << "Sorted item_uid=" << x.m_item_uid << " cell_uid=" << x.m_cell_uid << " owner=" << x.m_cell_owner;
+      info() << "Sorted first_node_uid=" << x.m_first_node_uid << " item_uid="
+             << x.m_item_uid << " cell_uid=" << x.m_cell_uid << " owner=" << x.m_cell_owner;
     }
 }
 
@@ -338,7 +363,7 @@ _processSortedInfos(ItemInternalMap& items_map)
   }
 
   auto exchanger{ ParallelMngUtils::createExchangerRef(pm) };
-
+  info() << "NbResendRanks=" << resend_items_owner_info_map.size();
   for (const auto& [key, value] : resend_items_owner_info_map) {
     if (verbose_level >= 1)
       info() << "RESEND_INFO to_rank=" << key << " nb=" << value.size();
