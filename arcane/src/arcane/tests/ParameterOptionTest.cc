@@ -265,27 +265,6 @@ _internalStructs()
     }
   }
 
-  // Il y a déjà un ARCANE_ASSERT qui vérifie ça.
-#ifndef ARCANE_DEBUG_ASSERT
-  {
-    const String addr1 = "test/option2";
-    const String addr2 = "test/option2";
-
-    ParameterOptionAddr addr1_option(addr1.view());
-    ParameterOptionAddr addr2_option(addr2.view());
-
-    addr2_option.lastAddrPart()->setIndex(ParameterOptionAddrPart::GET_INDEX);
-
-    UniqueArray<Integer> index(3);
-    bool ret = addr1_option.getIndexInAddr(addr2_option, index.view());
-
-    // Le tableau index n'est pas à la bonne taille (un seul GET_INDEX).
-    if (ret) {
-      ARCANE_FATAL("_internalStructs -- Test 11");
-    }
-  }
-#endif
-
   {
     const String addr1 = "test/option2";
     ParameterOptionAddr addr1_option(addr1.view());
@@ -294,7 +273,7 @@ _internalStructs()
     addr1_option.lastAddrPart()->setTag(option3.view());
 
     if (addr1_option.lastAddrPart()->tag() != option3.view()) {
-      ARCANE_FATAL("_internalStructs -- Test 12");
+      ARCANE_FATAL("_internalStructs -- Test 11");
     }
   }
 }
