@@ -80,6 +80,7 @@ set(ARCANE_SOURCES
   StringVariableReplaceTest.cc
   TimeHistoryAdderTestModule.cc
   MeshCriteriaLoadBalanceMngTestModule.cc
+  ParameterOptionTest.cc
 )
 
 set(AXL_FILES
@@ -132,5 +133,6 @@ set(AXL_FILES
   StringVariableReplaceTest
   TimeHistoryAdderTest
   MeshCriteriaLoadBalanceMngTest
+  ParameterOptionTest
 )
 

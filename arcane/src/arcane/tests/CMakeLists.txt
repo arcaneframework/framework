@@ -1163,6 +1163,12 @@ arcane_add_test_sequential(string_variable_replace testStringVariableReplace.arc
 #################################################################
 #################################################################
 
+# Test pour la partie ParameterOption.
+arcane_add_test_sequential(parameter_option testParameterOption.arc)
+
+#################################################################
+#################################################################
+
 # Test pour les implementations de TimeHistoryAdder.
 arcane_add_test(time_history_adder_1 testTimeHistoryAdder-1.arc -c 2 -m 5 -We,ARCANE_ENABLE_NON_IO_MASTER_CURVES,1)
 
