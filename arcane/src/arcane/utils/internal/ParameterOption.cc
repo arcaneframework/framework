@@ -163,11 +163,20 @@ ParameterOptionAddr(const StringView addr_str_view)
     if (span_line[i] == '[') {
       index_begin = i + 1;
       size = i - begin;
-      ARCANE_ASSERT(size != 0, ("Invalid option (empty name)"));
-      ARCANE_ASSERT(index_begin < span_line.size(), ("Invalid option (']' not found)"));
+      if (size == 0) {
+        const StringView current = addr_str_view.subView(0, i + 1);
+        ARCANE_FATAL("Invalid parameter option (empty tag) -- Current read : {0}", current);
+      }
+      if (index_begin >= span_line.size()) {
+        const StringView current = addr_str_view.subView(0, i + 1);
+        ARCANE_FATAL("Invalid parameter option (']' not found) -- Current read : {0}", current);
+      }
     }
     else if (span_line[i] == ']') {
-      ARCANE_ASSERT(index_begin != -1, ("Invalid option (']' found without '[')"));
+      if (index_begin == -1) {
+        const StringView current = addr_str_view.subView(0, i + 1);
+        ARCANE_FATAL("Invalid parameter option (']' found without '[' before) -- Current read : {0}", current);
+      }
 
       // Motif spécial "[]" (= ANY_INDEX)
       if (index_begin == i) {
@@ -179,7 +188,8 @@ ParameterOptionAddr(const StringView addr_str_view)
         Integer index;
         bool is_bad = builtInGetValue(index, index_str);
         if (is_bad) {
-          ARCANE_FATAL("Invalid index");
+          const StringView current = addr_str_view.subView(0, i + 1);
+          ARCANE_FATAL("Invalid index in parameter option -- Current read : {0}", current);
         }
         m_parts.add(makeRef(new ParameterOptionAddrPart(addr_str_view.subView(begin, size), index)));
         have_a_no_any = true;
@@ -187,7 +197,10 @@ ParameterOptionAddr(const StringView addr_str_view)
     }
 
     else if (span_line[i] == '/') {
-      ARCANE_ASSERT(i + 1 != span_line.size(), ("Invalid option ('/' found at the end of the param option)"));
+      if (i + 1 == span_line.size()) {
+        const StringView current = addr_str_view.subView(0, i + 1);
+        ARCANE_FATAL("Invalid parameter option ('/' found at the end of the param option) -- Current read : {0}", current);
+      }
 
       if (index_begin == -1) {
         size = i - begin;
@@ -208,7 +221,10 @@ ParameterOptionAddr(const StringView addr_str_view)
   }
   if (index_begin == -1) {
     size = static_cast<Integer>(span_line.size()) - begin;
-    ARCANE_ASSERT(size != 0, ("Invalid option (empty name)"));
+    if (size == 0) {
+      const StringView current = addr_str_view.subView(0, size);
+      ARCANE_FATAL("Invalid parameter option (empty tag) -- Current read : {0}", current);
+    }
 
     m_parts.add(makeRef(new ParameterOptionAddrPart(addr_str_view.subView(begin, size))));
     have_a_no_any = true;
