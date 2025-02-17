@@ -77,6 +77,7 @@ ParameterOptionAddrPart
   Integer index() const;
 
   //! Si l'index est ANY_INDEX, le tag ne peut pas être ANY_TAG.
+  //! Attention à la durée de vie de tag.
   void setTag(const StringView tag);
   void setIndex(const Integer index);
 
@@ -210,6 +211,9 @@ ParameterOptionAddr
    */
   bool operator==(const ParameterOptionAddr& other) const;
 
+  // TODO AH : À supprimer lors du passage en C++20.
+  bool operator!=(const ParameterOptionAddr& other) const;
+
  private:
 
   UniqueArray<Ref<ParameterOptionAddrPart>> m_parts;
@@ -252,6 +256,16 @@ ParameterOptionElementsCollection
 {
  public:
 
+  /*!
+   * \brief Méthode permettant d'ajouter un paramètre d'option dans la liste
+   * des paramètres d'options.
+   *
+   * \warning Les deux paramètres ne sont pas copiés ! On ne récupère qu'une vue. L'utilisateur
+   * de cette classe doit gérer la durée de vie de ces objets.
+   *
+   * \param parameter Le paramètre d'option brut (avec les "//" au début).
+   * \param value La valeur de l'option.
+   */
   void addParameter(const String& parameter, const String& value);
 
   void addElement(StringView addr, StringView value);

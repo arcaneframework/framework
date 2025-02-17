@@ -337,7 +337,7 @@ arcane_add_test_sequential(caseoptions_commandlinereplace testCaseOptions-comman
     "-We,ARCANE_REPLACE_SYMBOLS_IN_DATASET,1"
     "-A,TestId=1"
     "-A,SimpleRealUnit2=0.0"
-    "-A,//case-options-tester/simple-real=3.0"
+    "-A,//case-options-tester/simple-real[]=3.0"
     "-A,//case-options-tester/simple-real-unit=4.2"
     "-A,SimpleRealUnit2=0.0"
     "-A,//case-options-tester/simple-realarray-unit=\"2.2 2.3 0.1 3.5\""
@@ -370,6 +370,35 @@ arcane_add_test_sequential(caseoptions_commandlinereplace testCaseOptions-comman
     "-A,//case-options-tester/complex1/simple-real-2=3"
     "-A,//case-options-tester/complex1/simple-real-2-multi[2]=2.3"
 )
+
+arcane_add_test_sequential(caseoptions_commandlinereplace_fail1 testCaseOptions-specific-entry-point.arc
+    "-We,ARCANE_CALL_SPECIFIC_ENTRY_POINT,CaseOptionLoop2"
+    "-We,ARCANE_REPLACE_SYMBOLS_IN_DATASET,1"
+    "-A,//case-options-tester/[1]=3.0"
+)
+set_property(TEST caseoptions_commandlinereplace_fail1 PROPERTY WILL_FAIL true)
+
+arcane_add_test_sequential(caseoptions_commandlinereplace_fail2 testCaseOptions-specific-entry-point.arc
+    "-We,ARCANE_CALL_SPECIFIC_ENTRY_POINT,CaseOptionLoop2"
+    "-We,ARCANE_REPLACE_SYMBOLS_IN_DATASET,1"
+    "-A,//case-options-tester/simple-real[aa]=3.0"
+)
+set_property(TEST caseoptions_commandlinereplace_fail2 PROPERTY WILL_FAIL true)
+
+arcane_add_test_sequential(caseoptions_commandlinereplace_fail3 testCaseOptions-specific-entry-point.arc
+    "-We,ARCANE_CALL_SPECIFIC_ENTRY_POINT,CaseOptionLoop2"
+    "-We,ARCANE_REPLACE_SYMBOLS_IN_DATASET,1"
+    "-A,//case-options-tester/simple-real[1]/=3.0"
+)
+set_property(TEST caseoptions_commandlinereplace_fail3 PROPERTY WILL_FAIL true)
+
+#arcane_add_test_sequential(caseoptions_commandlinereplace_fail4 testCaseOptions-specific-entry-point.arc
+#    "-We,ARCANE_CALL_SPECIFIC_ENTRY_POINT,CaseOptionLoop2"
+#    "-We,ARCANE_REPLACE_SYMBOLS_IN_DATASET,1"
+#    "-A,//case-options-tester/simple-real[=3.0"
+#)
+#set_property(TEST caseoptions_commandlinereplace_fail4 PROPERTY WILL_FAIL true)
+
 
 if(UDUNITS_FOUND)
   ARCANE_ADD_TEST_SEQUENTIAL(caseoptions_unit testCaseOptions-2.arc)

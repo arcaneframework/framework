@@ -121,7 +121,6 @@ operator==(const ParameterOptionAddrPart& other) const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// TODO AH : À supprimer lors du passage en C++20.
 bool ParameterOptionAddrPart::
 operator!=(const ParameterOptionAddrPart& other) const
 {
@@ -342,6 +341,15 @@ operator==(const ParameterOptionAddr& other) const
     }
   }
   return true;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+bool ParameterOptionAddr::
+operator!=(const ParameterOptionAddr& other) const
+{
+  return !operator==(other);
 }
 
 /*---------------------------------------------------------------------------*/
