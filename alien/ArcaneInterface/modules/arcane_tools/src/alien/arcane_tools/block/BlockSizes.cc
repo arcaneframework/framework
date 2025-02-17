@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* BlockSizes                                     (C) 2000-2024              */
+/* BlockSizes                                                  (C) 2000-2025 */
 /*                                                                           */
 /* Size info for block matrices                                              */
 /*---------------------------------------------------------------------------*/
@@ -18,12 +18,7 @@
 #include <alien/utils/Precomp.h>
 #include <alien/utils/Trace.h>
 
-#include <arccore/message_passing/BasicSerializeMessage.h>
 #include <arccore/message_passing/ISerializeMessageList.h>
-
-#include <arccore/message_passing_mpi/MpiMessagePassingMng.h>
-#include <arccore/message_passing_mpi/MpiSerializeMessageList.h>
-
 #include <arccore/message_passing/Messages.h>
 
 #include <map>
@@ -148,16 +143,14 @@ prepare(const IIndexManager& index_mng, ConstArrayView<Integer>  block_sizes)
       //request.comm = new Arcane::SerializeMessage(m_parallel_mng->commRank(),destDomainId,Arcane::ISerializeMessage::MT_Send);
       //messageList->addMessage(request.comm);
       //Arcane::SerializeBuffer& sbuf = request.comm->buffer();
-      request.m_comm = Arccore::MessagePassing::internal::BasicSerializeMessage::create(
-          MessageRank(m_parallel_mng->commRank()), MessageRank(destDomainId),
-          Arccore::MessagePassing::ePointToPointMessageType::MsgSend);
-      messageList->addMessage(request.m_comm.get());
+      request.m_comm = messageList->createAndAddMessage(MessageRank(destDomainId),
+                                                        Arccore::MessagePassing::ePointToPointMessageType::MsgSend);
       auto sbuf = request.m_comm->serializer();
 
       sbuf->setMode(Alien::ISerializer::ModeReserve);
-      sbuf->reserve(nameString);                     // Chaine de caract�re du nom de l'entr�e
+      sbuf->reserve(nameString);                     // Chaine de caractère du nom de l'entrée
       sbuf->reserveInteger(1);                       // Nb d'item
-      sbuf->reserve(Alien::ISerializer::DT_Int32,request.m_count); // Les indices demand�s
+      sbuf->reserve(Alien::ISerializer::DT_Int32,request.m_count); // Les indices demandés
       sbuf->allocateBuffer();
       sbuf->setMode(Alien::ISerializer::ModePut);
       sbuf->put(nameString);
@@ -183,15 +176,12 @@ prepare(const IIndexManager& index_mng, ConstArrayView<Integer>  block_sizes)
   for(Integer isd=0, nsd=m_parallel_mng->commSize();isd<nsd;++isd) {
     Integer recvCount = recvFromDomains[2*isd+0];
     while(recvCount-- > 0) {
-      //Arcane::SerializeMessage* recvMsg = new Arcane::SerializeMessage(parallel_mng->commRank(),isd,Arcane::ISerializeMessage::MT_Recv);
-        auto recvMsg = Arccore::MessagePassing::internal::BasicSerializeMessage::create(
-            MessageRank(m_parallel_mng->commRank()), MessageRank(isd),
-            Arccore::MessagePassing::ePointToPointMessageType::MsgReceive);
+      auto recvMsg = messageList->createAndAddMessage(MessageRank(isd),
+                                                      Arccore::MessagePassing::ePointToPointMessageType::MsgReceive);
 
       recvRequests.push_back(EntryRecvRequest());
       EntryRecvRequest& recvRequest = recvRequests.back();
       recvRequest.m_comm = recvMsg;
-      messageList->addMessage(recvMsg.get());
     }
   }
   
@@ -223,19 +213,15 @@ prepare(const IIndexManager& index_mng, ConstArrayView<Integer>  block_sizes)
     }
     
     {
-      auto dest = recvRequest.m_comm->destination(); // Attention � l'ordre bizarre
-      auto orig = recvRequest.m_comm->source(); //       de SerializeMessage
+      auto dest = recvRequest.m_comm->destination();
       recvRequest.m_comm.reset();
-      //recvRequest.comm = new Arcane::SerializeMessage(orig,dest,Arcane::ISerializeMessage::MT_Send);
-      recvRequest.m_comm = Arccore::MessagePassing::internal::BasicSerializeMessage::create(
-          orig, dest, Arccore::MessagePassing::ePointToPointMessageType::MsgSend);
-      messageList->addMessage(recvRequest.m_comm.get());
+      recvRequest.m_comm = messageList->createAndAddMessage(dest, Arccore::MessagePassing::ePointToPointMessageType::MsgSend);
       
       //Arcane::SerializeBuffer & sbuf = recvRequest.comm->buffer();
       auto sbuf = recvRequest.m_comm->serializer();
 
       sbuf->setMode(Alien::ISerializer::ModeReserve);
-      sbuf->reserve(nameString);      // Chaine de caract�re du nom de l'entr�e
+      sbuf->reserve(nameString);      // Chaine de caractère du nom de l'entrée
       sbuf->reserveInteger(1);        // Nb d'item
       sbuf->reserveInteger(uidCount); // Les tailles
       sbuf->allocateBuffer();
@@ -269,23 +255,16 @@ prepare(const IIndexManager& index_mng, ConstArrayView<Integer>  block_sizes)
     for(SendRequestByEntry::iterator j = requests.begin(); j != requests.end(); ++j) {
       EntrySendRequest & request = j->second;
       const String nameString = j->first;
-      //delete request.comm; request.comm = NULL;
       request.m_comm.reset();
-      //Arcane::SerializeMessage * msg = new Arcane::SerializeMessage(parallel_mng->commRank(),destDomainId,Arcane::ISerializeMessage::MT_Recv);
-      auto msg = Arccore::MessagePassing::internal::BasicSerializeMessage::create(
-          MessageRank(m_parallel_mng->commRank()), MessageRank(destDomainId),
-          Arccore::MessagePassing::ePointToPointMessageType::MsgReceive);
+      auto msg = messageList->createAndAddMessage(MessageRank(destDomainId),
+                                                  Arccore::MessagePassing::ePointToPointMessageType::MsgReceive);
 
       returnedRequests.push_back(msg);
-      messageList->addMessage(msg.get());
       
       fastReturnMap[nameString][destDomainId] = &request;
     }
   }
   
-  //messageList->processPendingMessages();
-  //messageList->waitMessages(Arcane::Parallel::WaitAll);
-  //delete messageList; messageList = NULL;
   messageList->processPendingMessages();
   messageList->waitMessages(Arccore::MessagePassing::WaitAll);
   messageList.reset();

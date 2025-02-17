@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* BasicIndexManager                                         (C) 2000-2024   */
+/* BasicIndexManager                                           (C) 2000-2025 */
 /*                                                                           */
 /* Basic indexing between algebra and mesh worlds. Depends on Arcane         */
 /*---------------------------------------------------------------------------*/
@@ -703,11 +703,9 @@ namespace ArcaneTools {
         sendToDomains[2 * destDomainId + 1] += request.m_count;
 
         // Construction du message du EntrySendRequest
-         request.m_comm = Arccore::MessagePassing::internal::BasicSerializeMessage::create(
-            MessageRank(m_parallel_mng->commRank()), MessageRank(destDomainId),
-            Arccore::MessagePassing::ePointToPointMessageType::MsgSend);
+        request.m_comm = messageList->createAndAddMessage(MessageRank(destDomainId),
+                                                          Arccore::MessagePassing::ePointToPointMessageType::MsgSend);
 
-        messageList->addMessage(request.m_comm.get());
         auto sbuf = request.m_comm->serializer();
         sbuf->setMode(ISerializer::ModeReserve); // phase préparatoire
         sbuf->reserve(nameString); // Chaine de caractère du nom de l'entrée
@@ -742,15 +740,13 @@ namespace ArcaneTools {
     for (Integer isd = 0, nsd = m_parallel_mng->commSize(); isd < nsd; ++isd) {
       Integer recvCount = recvFromDomains[2 * isd + 0];
       while (recvCount-- > 0) {
-        auto recvMsg = Arccore::MessagePassing::internal::BasicSerializeMessage::create(
-              MessageRank(m_parallel_mng->commRank()), MessageRank(isd),
-              Arccore::MessagePassing::ePointToPointMessageType::MsgReceive);
+        auto recvMsg = messageList->createAndAddMessage(MessageRank(isd),
+                                                        Arccore::MessagePassing::ePointToPointMessageType::MsgReceive);
 
 
         recvRequests.push_back(EntryRecvRequest());
         EntryRecvRequest& recvRequest = recvRequests.back();
         recvRequest.m_comm = recvMsg;
-        messageList->addMessage(recvMsg.get());
       }
     }
 
@@ -839,10 +835,7 @@ namespace ArcaneTools {
         auto dest = recvRequest.m_comm->destination(); // Attention à l'ordre bizarre
         auto orig = recvRequest.m_comm->source(); //       de SerializeMessage
         recvRequest.m_comm.reset();
-        recvRequest.m_comm = Arccore::MessagePassing::internal::BasicSerializeMessage::create(
-             orig, dest, Arccore::MessagePassing::ePointToPointMessageType::MsgSend);
-
-        messageList->addMessage(recvRequest.m_comm.get());
+        recvRequest.m_comm = messageList->createAndAddMessage(dest, Arccore::MessagePassing::ePointToPointMessageType::MsgSend);
 
         auto sbuf = recvRequest.m_comm->serializer();
         sbuf->setMode(ISerializer::ModeReserve); // phase préparatoire
@@ -932,11 +925,9 @@ namespace ArcaneTools {
         // à la bonne place
         request.m_comm.reset();
 
-        auto msg = Arccore::MessagePassing::internal::BasicSerializeMessage::create(
-            MessageRank(m_parallel_mng->commRank()), MessageRank(destDomainId),
-            Arccore::MessagePassing::ePointToPointMessageType::MsgReceive);
+        auto msg = messageList->createAndAddMessage(MessageRank(destDomainId),
+                                           Arccore::MessagePassing::ePointToPointMessageType::MsgReceive);
         returnedRequests.push_back(msg);
-        messageList->addMessage(msg.get());
 
         fastReturnMap[nameString][destDomainId] = &request;
       }
