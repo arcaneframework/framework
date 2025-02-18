@@ -40,12 +40,12 @@ Voici un exemple de jeu de donnée en anglais :
   <deltat-min>0.0001</deltat-min>
   <deltat-max>0.01</deltat-max>
   <final-time>0.2</final-time>
- <simple-hydro>
+ </simple-hydro>
 
 </case>
 ```
 
-Un jeu de données se compose de quatres parties : 
+Un jeu de données se compose de quatre parties :
 
 - l'élément `<arcane>` permettant entre autre de configurer la boucle
   en temps et les modules actifs (voir \ref
