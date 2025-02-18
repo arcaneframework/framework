@@ -142,6 +142,10 @@ ArcaneLauncher::applicationBuildInfo() sont automatiquement remplies
 avec ces options. Il est cependant possible de les surcharger si
 nécessaire.
 
+\remark Il est aussi possible de modifier le jeu de données avec des
+options de la ligne de commande. Cette possibilité est abordée à la
+page \ref arcanedoc_execution_commandlineargs.
+
 Les options disponibles sont :
 
 <table>

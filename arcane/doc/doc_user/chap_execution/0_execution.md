@@ -22,6 +22,9 @@ Sommaire de ce chapitre :
 4. \subpage arcanedoc_execution_traces <br>
   Décrit comment afficher des traces pendant les exécutions et comment paramétrer leur affichage.
 
+5. \subpage arcanedoc_execution_commandlineargs <br>
+   Détaille les possibilités de personnalisation du jeu de données au lancement avec
+   les options de la ligne de commande.
 
 ____
 

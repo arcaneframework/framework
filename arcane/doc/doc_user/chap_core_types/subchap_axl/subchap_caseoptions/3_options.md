@@ -175,6 +175,15 @@ Le jeu de données correspondant est:
 </eos-model>
 ```
 
+Il est aussi possible d'ajouter le nom du maillage dans le jeu de données :
+
+```xml
+
+<eos-model name="StiffenedGas" mesh-name="Mesh0">
+  <limit-tension>0.01</limit-tension>
+</eos-model>
+```
+
 Le code pour lire l'option est :
   
 ```cpp
@@ -231,6 +240,12 @@ ignorée ainsi que les sous-options éventuelles.
 
 Cette option est disponible à partir de la version 2.0.7 de %Axlstar
 et 3.8.4 de %Arcane.
+
+\warning Il est possible de spécifier l'attribut `mesh-name` dans l'AXL
+ET/OU dans le jeu de données (.ARC). On peut voir celui de l'AXL comme
+un `mesh-name` par défaut pour une instance de service donnée. Si
+le `mesh-name` est spécifié dans le jeu de données (.ARC), il écrasera
+le `mesh-name` spécifié dans l'AXL.
 </td>
 </tr>
 
