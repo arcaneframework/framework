@@ -19,7 +19,7 @@
 #include "arccore/collections/CollectionsGlobal.h"
 #include "arccore/message_passing/Request.h"
 #include "arccore/message_passing_mpi/internal/IMpiProfiling.h"
-#include "arccore/message_passing_mpi/MessagePassingMpiEnum.h"
+#include "arccore/message_passing_mpi/internal/MessagePassingMpiEnum.h"
 #include "arcane/std/internal/Otf2LibWrapper.h"
 
 /*---------------------------------------------------------------------------*/

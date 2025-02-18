@@ -15,9 +15,10 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arccore/message_passing_mpi/internal/MpiTypeDispatcher.h"
+
 #include "arccore/message_passing_mpi/MpiDatatype.h"
-#include "arccore/message_passing_mpi/MpiAdapter.h"
-#include "arccore/message_passing_mpi/MpiLock.h"
+#include "arccore/message_passing_mpi/internal/MpiAdapter.h"
+#include "arccore/message_passing_mpi/internal/MpiLock.h"
 
 #include "arccore/message_passing/Messages.h"
 #include "arccore/message_passing/Request.h"

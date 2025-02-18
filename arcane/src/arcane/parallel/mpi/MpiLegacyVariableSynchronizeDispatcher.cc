@@ -14,7 +14,6 @@
 #include "arcane/utils/MemoryView.h"
 
 #include "arcane/parallel/mpi/MpiParallelMng.h"
-#include "arcane/parallel/mpi/MpiAdapter.h"
 #include "arcane/parallel/mpi/MpiDatatypeList.h"
 #include "arcane/parallel/mpi/MpiDatatype.h"
 #include "arcane/parallel/IStat.h"
@@ -23,6 +22,7 @@
 #include "arcane/impl/IDataSynchronizeImplementation.h"
 
 #include "arccore/message_passing_mpi/internal/IMpiProfiling.h"
+#include "arccore/message_passing_mpi/internal/MpiAdapter.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

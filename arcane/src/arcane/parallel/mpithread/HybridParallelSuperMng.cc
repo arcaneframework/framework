@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* HybridParallelSuperMng.cc                                   (C) 2000-2024 */
+/* HybridParallelSuperMng.cc                                   (C) 2000-2025 */
 /*                                                                           */
 /* Gestionnaire de parallélisme utilisant MPI et mémoire partagée.           */
 /*---------------------------------------------------------------------------*/
@@ -23,11 +23,12 @@
 
 #include "arcane/parallel/IStat.h"
 
-#include "arcane/parallel/mpi/MpiAdapter.h"
 #include "arcane/parallel/mpi/MpiParallelMng.h"
 #include "arcane/parallel/mpi/MpiParallelDispatch.h"
-#include "arcane/parallel/mpi/MpiLock.h"
 #include "arcane/parallel/mpi/MpiErrorHandler.h"
+
+#include "arccore/message_passing_mpi/internal/MpiAdapter.h"
+#include "arccore/message_passing_mpi/internal/MpiLock.h"
 
 #include "arcane/parallel/thread/SharedMemoryMessageQueue.h"
 #include "arcane/parallel/thread/SharedMemoryParallelMng.h"

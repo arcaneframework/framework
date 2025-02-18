@@ -20,11 +20,8 @@ endif()
 set(SOURCES
   MessagePassingMpiGlobal.h
   MessagePassingMpiGlobal.cc
-  MessagePassingMpiEnum.h
   MessagePassingMpiEnum.cc
-  MpiAdapter.h
   MpiAdapter.cc
-  MpiLock.h
   MpiDatatype.h
   MpiDatatype.cc
   MpiControlDispatcher.cc
@@ -39,7 +36,10 @@ set(SOURCES
   StandaloneMpiMessagePassingMng.h
 
   internal/IMpiProfiling.h
+  internal/MessagePassingMpiEnum.h
+  internal/MpiAdapter.h
   internal/MpiControlDispatcher.h
+  internal/MpiLock.h
   internal/MpiRequest.h
   internal/MpiRequestList.h
   internal/MpiSerializeMessageList.h

@@ -24,7 +24,7 @@
 #include "arcane/IApplication.h"
 
 #include "arccore/message_passing_mpi/MessagePassingMpiGlobal.h"
-#include "arccore/message_passing_mpi/MessagePassingMpiEnum.h"
+#include "arccore/message_passing_mpi/internal/MessagePassingMpiEnum.h"
 #include "arccore/base/PlatformUtils.h"
 
 #include <otf2/OTF2_MPI_Collectives.h>

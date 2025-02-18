@@ -11,7 +11,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arccore/message_passing_mpi/MpiAdapter.h"
+#include "arccore/message_passing_mpi/internal/MpiAdapter.h"
 
 #include "arccore/trace/ITraceMng.h"
 
@@ -29,8 +29,8 @@
 #include "arccore/base/FatalErrorException.h"
 #include "arccore/base/TraceInfo.h"
 
-#include "arccore/message_passing_mpi/MpiLock.h"
 #include "arccore/message_passing_mpi/StandaloneMpiMessagePassingMng.h"
+#include "arccore/message_passing_mpi/internal/MpiLock.h"
 #include "arccore/message_passing_mpi/internal/NoMpiProfiling.h"
 #include "arccore/message_passing_mpi/internal/MpiRequest.h"
 

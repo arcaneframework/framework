@@ -27,15 +27,13 @@
 #include "arcane/IParallelMng.h"
 
 #include "arcane/parallel/mpi/MpiDatatype.h"
-#include "arcane/parallel/mpi/MpiAdapter.h"
 #include "arcane/parallel/mpi/MpiParallelDispatch.h"
-#include "arcane/parallel/mpi/MpiLock.h"
 
 #include "arccore/message_passing/Messages.h"
 
 #include "arccore/message_passing_mpi/internal/MpiTypeDispatcherImpl.h"
-
-#include <limits>
+#include "arccore/message_passing_mpi/internal/MpiAdapter.h"
+#include "arccore/message_passing_mpi/internal/MpiLock.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

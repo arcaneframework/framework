@@ -17,7 +17,7 @@
 #include "arccore/trace/TraceAccessor.h"
 
 #include "arccore/message_passing_mpi/MessagePassingMpiGlobal.h"
-#include "arccore/message_passing_mpi/MessagePassingMpiEnum.h"
+#include "arccore/message_passing_mpi/internal/MessagePassingMpiEnum.h"
 #include "arccore/message_passing/PointToPointMessageInfo.h"
 #include "arccore/message_passing/Request.h"
 #include "arccore/collections/CollectionsGlobal.h"
