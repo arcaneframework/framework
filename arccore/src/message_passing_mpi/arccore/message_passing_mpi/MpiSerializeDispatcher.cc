@@ -11,7 +11,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arccore/message_passing_mpi/MpiSerializeDispatcher.h"
+#include "arccore/message_passing_mpi/internal/MpiSerializeDispatcher.h"
 
 #include "arccore/message_passing_mpi/MpiAdapter.h"
 #include "arccore/message_passing_mpi/MpiMessagePassingMng.h"

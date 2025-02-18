@@ -9,8 +9,8 @@
 /*                                                                           */
 /* Manage Control/Utility parallel messages for MPI.                         */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCCORE_MESSAGEPASSINGMPI_MPICONTROLDISPATCHER_H
-#define ARCCORE_MESSAGEPASSINGMPI_MPICONTROLDISPATCHER_H
+#ifndef ARCCORE_MESSAGEPASSINGMPI_INTERNAL_MPICONTROLDISPATCHER_H
+#define ARCCORE_MESSAGEPASSINGMPI_INTERNAL_MPICONTROLDISPATCHER_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 

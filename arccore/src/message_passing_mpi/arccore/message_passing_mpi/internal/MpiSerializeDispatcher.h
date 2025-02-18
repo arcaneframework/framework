@@ -9,8 +9,8 @@
 /*                                                                           */
 /* Gestion des messages de sérialisation avec MPI.                           */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCCORE_MESSAGEPASSINGMPI_MPISERIALIZEDISPATCHER_H
-#define ARCCORE_MESSAGEPASSINGMPI_MPISERIALIZEDISPATCHER_H
+#ifndef ARCCORE_MESSAGEPASSINGMPI_INTERNAL_MPISERIALIZEDISPATCHER_H
+#define ARCCORE_MESSAGEPASSINGMPI_INTERNAL_MPISERIALIZEDISPATCHER_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 

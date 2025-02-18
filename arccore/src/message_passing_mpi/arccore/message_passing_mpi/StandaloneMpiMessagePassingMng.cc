@@ -23,8 +23,8 @@
 #include "arccore/message_passing_mpi/MpiAdapter.h"
 #include "arccore/message_passing_mpi/MpiDatatype.h"
 #include "arccore/message_passing_mpi/internal/MpiTypeDispatcher.h"
-#include "arccore/message_passing_mpi/MpiControlDispatcher.h"
-#include "arccore/message_passing_mpi/MpiSerializeDispatcher.h"
+#include "arccore/message_passing_mpi/internal/MpiControlDispatcher.h"
+#include "arccore/message_passing_mpi/internal/MpiSerializeDispatcher.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

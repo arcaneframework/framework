@@ -12,7 +12,7 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arccore/message_passing_mpi/internal/MpiSerializeMessageList.h"
-#include "arccore/message_passing_mpi/MpiSerializeDispatcher.h"
+#include "arccore/message_passing_mpi/internal/MpiSerializeDispatcher.h"
 #include "arccore/message_passing_mpi/MpiAdapter.h"
 #include "arccore/message_passing/BasicSerializeMessage.h"
 #include "arccore/trace/ITraceMng.h"
