@@ -5,45 +5,39 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MpiRequestList.h                                            (C) 2000-2025 */
+/* MpiRequest.h                                                (C) 2000-2025 */
 /*                                                                           */
-/* Liste de requêtes MPI.                                                    */
+/* Spécialisation de 'Request' pour MPI.                                     */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCCORE_MESSAGEPASSINGMPI_MPIREQUESTLIST_H
-#define ARCCORE_MESSAGEPASSINGMPI_MPIREQUESTLIST_H
+#ifndef ARCCORE_MESSAGEPASSINGMPI_INTERNAL_MPIREQUEST_H
+#define ARCCORE_MESSAGEPASSINGMPI_INTERNAL_MPIREQUEST_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arccore/message_passing/RequestListBase.h"
 #include "arccore/message_passing_mpi/MessagePassingMpiGlobal.h"
+
+#include "arccore/message_passing/Request.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 namespace Arcane::MessagePassing::Mpi
 {
+class MpiAdapter;
 /*!
- * \brief Liste de requêtes MPI.
+ * \brief Spécialisation MPI d'une 'Request'.
+ *
+ * Cette classe permet de garantir qu'une requête MPI est bien construite
+ * à partir d'une MPI_Request.
  */
-class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiRequestList
-: public internal::RequestListBase
+class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiRequest
+: public Request
 {
  public:
 
-  MpiRequestList(MpiAdapter* adapter) : m_adapter(adapter){}
-
- public:
-
-  void _wait(eWaitType wait_type) override;
-
- private:
-
-  MpiAdapter* m_adapter;
-  UniqueArray<MPI_Status> m_requests_status;
-
- private:
-
-  void _doWaitSome(bool is_non_blocking);
+  MpiRequest() = default;
+  MpiRequest(int ret_value,MpiAdapter* creator,MPI_Request mpi_request)
+  : Request(ret_value,creator,mpi_request){}
 };
 
 /*---------------------------------------------------------------------------*/
