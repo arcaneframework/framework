@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Otf2LibWrapper.h                                            (C) 2000-2018 */
+/* Otf2LibWrapper.h                                            (C) 2000-2025 */
 /*                                                                           */
 /* Classe qui encapsule les fonctions utiles de la lib Otf2.                 */
 /*---------------------------------------------------------------------------*/
@@ -14,17 +14,22 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include <vector>
-#include <set>
-#include "arcane/ISubDomain.h"
 #include "arccore/base/BaseTypes.h"
+
 #include "arcane/utils/String.h"
+
+#include "arcane/core/ISubDomain.h"
+
 #include "otf2/otf2.h"
 
+#include <vector>
+#include <set>
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arcane {
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

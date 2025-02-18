@@ -9,8 +9,8 @@
 /*                                                                           */
 /* Gestion des messages pour un type de données.                             */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCCORE_MESSAGEPASSINGMPI_MPITYPEDISPATCHER_H
-#define ARCCORE_MESSAGEPASSINGMPI_MPITYPEDISPATCHER_H
+#ifndef ARCCORE_MESSAGEPASSINGMPI_INTERNAL_MPITYPEDISPATCHER_H
+#define ARCCORE_MESSAGEPASSINGMPI_INTERNAL_MPITYPEDISPATCHER_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 

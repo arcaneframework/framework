@@ -1,34 +1,33 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Otf2MpiProfiling.h                                          (C) 2000-2018 */
+/* Otf2MpiProfiling.h                                          (C) 2000-2025 */
 /*                                                                           */
 /* Implementation de l'interface IMpiProfiling permettant l'instrumentation  */
 /* au format OTF2                              .                             */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_STD_OTF2MPIPROFILING_H
-#define ARCANE_STD_OTF2MPIPROFILING_H
+#ifndef ARCANE_STD_INTERNAL_OTF2MPIPROFILING_H
+#define ARCANE_STD_INTERNAL_OTF2MPIPROFILING_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #include "arccore/base/BaseTypes.h"
 #include "arccore/collections/CollectionsGlobal.h"
 #include "arccore/message_passing/Request.h"
-#include "arccore/message_passing_mpi/MessagePassingMpiGlobal.h"
-#include "arccore/message_passing_mpi/IMpiProfiling.h"
-#include "arccore/message_passing_mpi/MessagePassingMpiEnum.h"
-#include "arcane/std/Otf2LibWrapper.h"
+#include "arccore/message_passing_mpi/internal/IMpiProfiling.h"
+#include "arccore/message_passing_mpi/internal/MessagePassingMpiEnum.h"
+#include "arcane/std/internal/Otf2LibWrapper.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 namespace Arcane
 {
-using namespace Arccore::MessagePassing::Mpi;
+using namespace MessagePassing::Mpi;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

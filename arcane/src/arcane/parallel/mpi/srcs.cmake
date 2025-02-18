@@ -35,8 +35,6 @@ set( ARCANE_SOURCES
   MpiSerializeMessageList.h
   MpiTimerMng.h
   MpiBatchMainFactory.h
-  MpiAdapter.h
   MpiDatatype.h
-  MpiLock.h
   MpiTimeInterval.h
   )

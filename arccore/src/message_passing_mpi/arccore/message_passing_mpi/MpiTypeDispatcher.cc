@@ -11,7 +11,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arccore/message_passing_mpi/MpiTypeDispatcherImpl.h"
+#include "arccore/message_passing_mpi/internal/MpiTypeDispatcherImpl.h"
 
 #include "arccore/base/BFloat16.h"
 #include "arccore/base/Float16.h"

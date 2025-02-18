@@ -14,18 +14,15 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+#include "arcane/AbstractService.h"
+#include "arcane/ISubDomain.h"
+#include "arcane/ObserverPool.h"
+#include "arcane/VariableSynchronizerEventArgs.h"
 #include "arcane/utils/IMessagePassingProfilingService.h"
 #include "arcane/utils/String.h"
-
-#include "arcane/core/AbstractService.h"
-#include "arcane/core/ISubDomain.h"
-#include "arcane/core/ObserverPool.h"
-#include "arcane/core/VariableSynchronizerEventArgs.h"
-
+#include "arccore/message_passing/Stat.h"
 #include "arcane/std/internal/Otf2LibWrapper.h"
 #include "arcane/std/internal/Otf2MpiProfiling.h"
-
-#include "arccore/message_passing/Stat.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

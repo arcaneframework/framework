@@ -7,11 +7,11 @@
 /*---------------------------------------------------------------------------*/
 /* MessagePassingMpiEnum.cc                                    (C) 2000-2025 */
 /*                                                                           */
-/* Enumeration des differentes operations MPI.                               */
+/* Enumeration des différentes operations MPI.                               */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arccore/message_passing_mpi/MessagePassingMpiEnum.h"
+#include "arccore/message_passing_mpi/internal/MessagePassingMpiEnum.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

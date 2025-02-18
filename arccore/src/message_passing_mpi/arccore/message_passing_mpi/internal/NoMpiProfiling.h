@@ -9,13 +9,13 @@
 /*                                                                           */
 /* Implementation de l'interface IMpiProfiling.                              */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCCORE_MESSAGEPASSINGMPI_NOMPIPROFILING_H
-#define ARCCORE_MESSAGEPASSINGMPI_NOMPIPROFILING_H
+#ifndef ARCCORE_MESSAGEPASSINGMPI_INTERNAL_NOMPIPROFILING_H
+#define ARCCORE_MESSAGEPASSINGMPI_INTERNAL_NOMPIPROFILING_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #include "arccore/message_passing_mpi/MessagePassingMpiGlobal.h"
-#include "arccore/message_passing_mpi/IMpiProfiling.h"
+#include "arccore/message_passing_mpi/internal/IMpiProfiling.h"
 #include "arccore/message_passing/Request.h"
 #include "arccore/collections/CollectionsGlobal.h"
 #include "arccore/base/BaseTypes.h"

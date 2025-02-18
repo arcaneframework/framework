@@ -11,7 +11,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arccore/message_passing_mpi/MpiAdapter.h"
+#include "arccore/message_passing_mpi/internal/MpiAdapter.h"
 
 #include "arccore/trace/ITraceMng.h"
 
@@ -29,10 +29,10 @@
 #include "arccore/base/FatalErrorException.h"
 #include "arccore/base/TraceInfo.h"
 
-#include "arccore/message_passing_mpi/MpiLock.h"
-#include "arccore/message_passing_mpi/NoMpiProfiling.h"
-#include "arccore/message_passing_mpi/MpiRequest.h"
 #include "arccore/message_passing_mpi/StandaloneMpiMessagePassingMng.h"
+#include "arccore/message_passing_mpi/internal/MpiLock.h"
+#include "arccore/message_passing_mpi/internal/NoMpiProfiling.h"
+#include "arccore/message_passing_mpi/internal/MpiRequest.h"
 
 #include <cstdint>
 
@@ -41,6 +41,9 @@
 
 namespace Arcane::MessagePassing::Mpi
 {
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 class MpiAdapter::RequestSet
 : public TraceAccessor
@@ -54,7 +57,9 @@ class MpiAdapter::RequestSet
  public:
   typedef std::map<MPI_Request,RequestInfo>::iterator Iterator;
  public:
-  RequestSet(ITraceMng* tm) : TraceAccessor(tm)
+
+  explicit RequestSet(ITraceMng* tm)
+  : TraceAccessor(tm)
   {
     m_trace_mng_ref = makeRef(tm);
     if (arccoreIsCheck()){
