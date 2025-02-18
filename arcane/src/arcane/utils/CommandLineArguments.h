@@ -94,6 +94,12 @@ class ARCANE_UTILS_EXPORT CommandLineArguments
   //! Liste des paramètres
   ParameterList& parameters();
 
+  /*!
+   * \brief Méthode permettant de savoir si l'utilisateur a demandé
+   * de l'aide dans la ligne de commande.
+   */
+  bool needHelp() const;
+
  private:
 
   Arccore::ReferenceCounter<Impl> m_p;

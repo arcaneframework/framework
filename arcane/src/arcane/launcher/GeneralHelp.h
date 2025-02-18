@@ -5,22 +5,16 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* StringVariableReplace.h                                     (C) 2000-2025 */
+/* GeneralHelp.h                                               (C) 2000-2025 */
 /*                                                                           */
-/* Classe permettant de remplacer les symboles d'une chaine de caractères    */
-/* par une autre chaine de caractères définie dans les arguments de          */
-/* lancement.                                                                */
-/* Un symbole est défini par une chaine de caractères entourée de @.         */
-/* Exemple : @mon_symbole@                                                   */
+/* Classe gérant le message d'aide générique.                                */
 /*---------------------------------------------------------------------------*/
-
-#ifndef ARCANE_CORE_INTERNAL_STRINGVARIABLEREPLACE_H
-#define ARCANE_CORE_INTERNAL_STRINGVARIABLEREPLACE_H
-
+#ifndef ARCANE_LAUNCHER_GENERALHELP_H
+#define ARCANE_LAUNCHER_GENERALHELP_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/ParameterList.h"
+#include "arcane/launcher/LauncherGlobal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -31,23 +25,16 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class ARCANE_CORE_EXPORT StringVariableReplace
+class ARCANE_LAUNCHER_EXPORT GeneralHelp
 {
- public:
-
-  static String replaceWithCmdLineArgs(StringView string_with_symbols, bool fatal_if_not_found = false, bool fatal_if_invalid = true);
-  static String replaceWithCmdLineArgs(const ParameterList& parameter_list, StringView string_with_symbols, bool fatal_if_not_found = false, bool fatal_if_invalid = true);
-
- private:
-
-  static void _splitString(StringView str_view, ArrayView<StringView> str_view_array, char c);
-  static void _countChar(StringView str_view, char c, Integer& count_c, Integer& count_c_with_escape);
+public:
+  static void printHelp();
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arcane
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

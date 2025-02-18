@@ -117,6 +117,8 @@ set(ARCANE_SOURCES
   ParallelFatalErrorException.h
   ParallelLoopOptions.h
   ParallelLoopOptions.cc
+  ParameterCaseOption.h
+  ParameterCaseOption.cc
   PerfCounterMng.cc
   PerfCounterMng.h
   PlatformUtils.cc
@@ -343,6 +345,8 @@ set(ARCANE_SOURCES
   internal/MemoryUtilsInternal.h
   internal/IMemoryRessourceMngInternal.h
   internal/IMemoryCopier.h
+  internal/ParameterOption.h
+  internal/ParameterOption.cc
   internal/ProfilingInternal.h
   internal/ValueConvertInternal.h
   internal/SpecificMemoryCopyList.h

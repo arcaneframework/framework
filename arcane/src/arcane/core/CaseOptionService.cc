@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CaseOptions.cc                                              (C) 2000-2023 */
+/* CaseOptionsService.cc                                       (C) 2000-2025 */
 /*                                                                           */
 /* Gestion des options du jeu de données.                                    */
 /*---------------------------------------------------------------------------*/
@@ -17,6 +17,9 @@
 #include "arcane/utils/Enumerator.h"
 #include "arcane/utils/NotImplementedException.h"
 #include "arcane/utils/FatalErrorException.h"
+#include "arcane/utils/ApplicationInfo.h"
+#include "arcane/utils/CommandLineArguments.h"
+#include "arcane/utils/StringBuilder.h"
 
 #include "arcane/core/IApplication.h"
 #include "arcane/core/IServiceFactory.h"
@@ -28,6 +31,8 @@
 #include "arcane/core/ICaseDocument.h"
 #include "arcane/core/ICaseMng.h"
 #include "arcane/core/internal/ICaseOptionListInternal.h"
+#include "arcane/core/internal/StringVariableReplace.h"
+#include "arcane/utils/ParameterCaseOption.h"
 
 #include <typeinfo>
 
@@ -187,7 +192,28 @@ _readPhase1()
   }
 
   XmlNode element = col->rootElement();
-  String mesh_name = meshName();
+  const ParameterList& params = caseMng()->application()->applicationInfo().commandLineArguments().parameters();
+  ICaseDocumentFragment* doc = caseDocumentFragment();
+
+  const ParameterCaseOption pco{ params.getParameterCaseOption(doc->language()) };
+
+  String mesh_name;
+  {
+    String reference_input = pco.getParameterOrNull(element.xpathFullName(), "@mesh-name", 1);
+    if (!reference_input.null())
+      mesh_name = reference_input;
+    else
+      mesh_name = element.attrValue("mesh-name");
+  }
+
+  if (mesh_name.null()) {
+    mesh_name = meshName();
+  }
+  else {
+    // Dans un else : Le remplacement de symboles ne s'applique pas pour les valeurs par défault du .axl.
+    mesh_name = StringVariableReplace::replaceWithCmdLineArgs(params, mesh_name, true);
+  }
+
   tm->info(5) << "** CaseOptionService::read() ELEMENT <" << rootTagName() << "> " << col->rootElement().name()
               << " full=" << col->rootElement().xpathFullName()
               << " is_present=" << col->isPresent()
@@ -200,9 +226,15 @@ _readPhase1()
   if (_setMeshHandleAndCheckDisabled(mesh_name))
     return;
 
-  ICaseDocumentFragment* doc = caseDocumentFragment();
+  String str_val;
+  {
+    String reference_input = pco.getParameterOrNull(element.xpathFullName(), "@name", 1);
+    if (!reference_input.null())
+      str_val = reference_input;
+    else
+      str_val = element.attrValue("name");
+  }
 
-  String str_val = element.attrValue("name");
   //cerr << "** STR_VAL <" << str_val << " - " << m_default_value << ">\n";
 
   if (str_val.null()){
@@ -220,6 +252,10 @@ _readPhase1()
       }
     }
     str_val = m_default_value;
+  }
+  else {
+    // Dans un else : Le remplacement de symboles ne s'applique pas pour les valeurs par défault du .axl.
+    str_val = StringVariableReplace::replaceWithCmdLineArgs(params, str_val, true);
   }
   if (str_val.null() && !isOptional()){
     CaseOptionError::addOptionNotFoundError(doc,A_FUNCINFO,"@name",element);
@@ -349,46 +385,154 @@ multiAllocate(const XmlNodeList& elem_list)
   if (!m_container)
     ARCANE_FATAL("null 'm_container'. did you called setContainer() method ?");
 
+  const ParameterList& params = caseMng()->application()->applicationInfo().commandLineArguments().parameters();
+  const ParameterCaseOption pco{ params.getParameterCaseOption(caseDocumentFragment()->language()) };
+
+  XmlNode parent_element = configList()->parentElement();
+
+  String full_xpath = String::format("{0}/{1}", parent_element.xpathFullName(), name());
+  // !!! En XML, on commence par 1 et non 0.
+  UniqueArray<Integer> option_in_param;
+  pco.indexesInParam(full_xpath, option_in_param, true);
+
   Integer size = elem_list.size();
 
-  if (size==0)
-    return;
+  bool is_optional = configList()->isOptional();
 
-  m_services_name.resize(size);
+  if (size == 0 && option_in_param.empty() && is_optional) {
+    return;
+  }
+
+  Integer min_occurs = configList()->minOccurs();
+  Integer max_occurs = configList()->maxOccurs();
+
+  Integer max_in_param = 0;
+
+  // On regarde si l'utilisateur n'a pas mis un indice trop élevé pour l'option dans la ligne de commande.
+  if (!option_in_param.empty()) {
+    max_in_param = option_in_param[0];
+    for (Integer index : option_in_param) {
+      if (index > max_in_param)
+        max_in_param = index;
+    }
+    if (max_occurs >= 0) {
+      if (max_in_param > max_occurs) {
+        StringBuilder msg = "Bad number of occurences in command line (greater than max)";
+        msg += " index_max_in_param=";
+        msg += max_in_param;
+        msg += " max_occur=";
+        msg += max_occurs;
+        msg += " option=";
+        msg += full_xpath;
+        throw CaseOptionException(A_FUNCINFO, msg.toString(), true);
+      }
+    }
+  }
+
+  if (max_occurs >= 0) {
+    if (size > max_occurs) {
+      StringBuilder msg = "Bad number of occurences (greater than max)";
+      msg += " nb_occur=";
+      msg += size;
+      msg += " max_occur=";
+      msg += max_occurs;
+      msg += " option=";
+      msg += full_xpath;
+      throw CaseOptionException(A_FUNCINFO, msg.toString(), true);
+    }
+  }
+
+  // Il y aura toujours au moins min_occurs options.
+  // S'il n'y a pas assez l'options dans le jeu de données et dans les paramètres de la
+  // ligne de commande, on ajoute des services par défaut (si pas de défaut, il y aura un plantage).
+  Integer final_size = std::max(size, std::max(min_occurs, max_in_param));
 
   ITraceMng* tm = traceMng();
 
-  m_container->allocate(size);
-  m_allocated_options.resize(size);
   IApplication* app = caseMng()->application();
-  XmlNode parent_element = configList()->parentElement();
   ICaseDocumentFragment* doc = caseDocumentFragment();
 
-  String mesh_name = meshName();
-  if (_setMeshHandleAndCheckDisabled(mesh_name))
-    return;
+  m_container->allocate(final_size);
 
-  for( Integer index=0; index<size; ++index ){
-    XmlNode element = elem_list[index];
-      
-    String str_val = element.attrValue("name");
-    m_services_name[index] = str_val;
+  m_allocated_options.resize(final_size);
+  m_services_name.resize(final_size);
+
+  // D'abord, on aura les options du jeu de données : comme on ne peut pas définir un indice
+  // pour les options dans le jeu de données, elles seront forcément au début et seront contigües.
+  // Puis, s'il manque des options pour atteindre le min_occurs, on ajoute des options par défaut.
+  // S'il n'y a pas d'option par défaut, il y aura une exception.
+  // Enfin, l'utilisateur peut avoir ajouté des options à partir de la ligne de commande. On les ajoute alors.
+  // Si l'utilisateur souhaite modifier des valeurs du jeu de données à partir de la ligne de commande, on
+  // remplace les options au fur et à mesure de la lecture.
+  for (Integer index = 0; index < final_size; ++index) {
+    XmlNode element;
+
+    String mesh_name;
+    String str_val;
+
+    // Partie paramètres de la ligne de commande.
+    if (option_in_param.contains(index + 1)) {
+      mesh_name = pco.getParameterOrNull(full_xpath, "@mesh-name", index + 1);
+      str_val = pco.getParameterOrNull(full_xpath, "@name", index + 1);
+    }
+    // Partie jeu de données.
+    if (index < size && (mesh_name.null() || str_val.null())) {
+      element = elem_list[index];
+      if (!element.null()) {
+        if (mesh_name.null())
+          mesh_name = element.attrValue("mesh-name");
+        if (str_val.null())
+          str_val = element.attrValue("name");
+      }
+    }
+
+    // Valeur par défaut.
+    if (mesh_name.null()) {
+      mesh_name = meshName();
+    }
+    else {
+      // Dans un else : Le remplacement de symboles ne s'applique pas pour les valeurs par défault du .axl.
+      mesh_name = StringVariableReplace::replaceWithCmdLineArgs(params, mesh_name, true);
+    }
+
+    // Valeur par défaut.
+    if (str_val.null()) {
+      str_val = _defaultValue();
+    }
+    else {
+      // Dans un else : Le remplacement de symboles ne s'applique pas pour les valeurs par défault du .axl.
+      str_val = StringVariableReplace::replaceWithCmdLineArgs(params, str_val, true);
+    }
+
+    // Si l'on n'utilise pas les options du jeu de données, on doit créer de nouvelles options.
+    if (element.null()) {
+      element = parent_element.createElement(name());
+
+      element.setAttrValue("mesh-name", mesh_name);
+      element.setAttrValue("name", str_val);
+    }
+
     tm->info(5) << "CaseOptionMultiServiceImpl name=" << name()
                 << " index=" << index
                 << " v=" << str_val
                 << " default_value='" << _defaultValue() << "'"
                 << " mesh=" << meshHandle().meshName();
-        
-    if (str_val.null())
-      str_val = _defaultValue();
-    if (str_val.null())
-      throw CaseOptionException("get_value","@name",element);
-    // TODO: regarder si on ne peut pas créer directement un CaseOptionService.
-    CaseOptions* coptions = new CaseOptions(configList(),name(),parent_element,false,true);
-    coptions->configList()->_internalApi()->setRootElement(element);
-    bool is_found = _tryCreateService(m_container,app,str_val,index,coptions);
 
-    if (!is_found){
+    // Maintenant, ce plantage concerne aussi le cas où il n'y a pas de valeurs par défaut et qu'il n'y a
+    // pas assez d'options pour atteindre le min_occurs.
+    if (str_val.null())
+      throw CaseOptionException("get_value", "@name");
+
+    // TODO: regarder si on ne peut pas créer directement un CaseOptionService.
+    auto* coptions = new CaseOptions(configList(), name(), parent_element, false, true);
+    if (coptions->_setMeshHandleAndCheckDisabled(mesh_name)) {
+      delete coptions;
+      continue;
+    }
+    coptions->configList()->_internalApi()->setRootElement(element);
+    bool is_found = _tryCreateService(m_container, app, str_val, index, coptions);
+
+    if (!is_found) {
       tm->info(5) << "CaseOptionMultiServiceImpl name=" << name()
                   << " index=" << index
                   << " service not found";
@@ -397,12 +541,15 @@ multiAllocate(const XmlNodeList& elem_list)
       // Recherche les noms des implémentations valides
       StringUniqueArray valid_names;
       getAvailableNames(valid_names);
-      CaseOptionError::addError(doc,A_FUNCINFO,element.xpathFullName(),
+      CaseOptionError::addError(doc, A_FUNCINFO, element.xpathFullName(),
                                 String::format("Unable to find a service named '{0}' (valid values:{1})",
-                                               str_val,valid_names),true);
+                                               str_val, valid_names),
+                                true);
     }
+    m_services_name[index] = str_val;
     m_allocated_options[index] = coptions;
   }
+
   if (m_notify_functor)
     m_notify_functor->executeFunctor();
 }

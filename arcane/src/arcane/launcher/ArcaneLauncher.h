@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ArcaneLauncher.h                                            (C) 2000-2024 */
+/* ArcaneLauncher.h                                            (C) 2000-2025 */
 /*                                                                           */
 /* Classe gérant l'exécution.                                                */
 /*---------------------------------------------------------------------------*/
@@ -211,6 +211,26 @@ class ARCANE_LAUNCHER_EXPORT ArcaneLauncher
    * Si nul, alors il n'y a pas de jeu de données.
    */
   static StandaloneSubDomain createStandaloneSubDomain(const String& case_file_name);
+
+  /*!
+   * \brief Demande d'aide avec l'option "--help" ou "-h".
+   *
+   * Méthode permettant de savoir si l'utilisateur a demandé l'aide
+   * avec l'option "--help" ou "-h".
+   *
+   * \return true si l'aide a été demandée.
+   */
+  static bool needHelp();
+
+  /*!
+   * \brief Affichage de l'aide générique Arcane.
+   *
+   * Méthode permettant d'afficher l'aide générique Arcane si
+   * l'utilisateur l'a demandée avec l'option "--help" ou "-h".
+   *
+   * \return true si l'aide a été demandée.
+   */
+  static bool printHelp();
 
  public:
 

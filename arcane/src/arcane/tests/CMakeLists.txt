@@ -331,6 +331,117 @@ endif()
 ARCANE_ADD_TEST_SEQUENTIAL(caseoptions testCaseOptions-1.arc)
 arcane_add_test_sequential(caseoptions_specificentrypoint testCaseOptions-specific-entry-point.arc
   "-We,ARCANE_CALL_SPECIFIC_ENTRY_POINT,CaseOptionLoop2")
+
+arcane_add_test_sequential(caseoptions_commandlinereplace testCaseOptions-commandLineReplace.arc
+    "-We,ARCANE_CALL_SPECIFIC_ENTRY_POINT,CaseOptionLoop2"
+    "-We,ARCANE_REPLACE_SYMBOLS_IN_DATASET,1"
+    "-A,TestId=1"
+    "-A,SimpleRealUnit2=0.0"
+    "-A,//case-options-tester/simple-real[]=3.0"
+    "-A,//case-options-tester/simple-real-unit=4.2"
+    "-A,SimpleRealUnit2=0.0"
+    "-A,//case-options-tester/simple-realarray-unit=\"2.2 2.3 0.1 3.5\""
+    "-A,//case-options-tester/simple-real2=\"3.5 7.2\""
+    "-A,SimpleReal3=\"1.2 4.7 7.9\""
+    "-A,//case-options-tester/simple-real2x2=\"3.1 3.0 2.9 2.7\""
+    "-A,//case-options-tester/simple-real3x3=\"3.3 3.2 2.1 1.1 0.3 0.5 7.2 7.1 4.0\""
+    "-A,//case-options-tester/simple-integer=4"
+    "-A,//case-options-tester/simple-int32=-23"
+    "-A,//case-options-tester/simple-int64=454653457457455474"
+    "-A,//case-options-tester/simple-bool=true"
+    "-A,//case-options-tester/simple-string=toto"
+    "-A,SimpleStringMultiple=toto2"
+    "-A,//case-options-tester/simple-string-multiple[3]=toto3"
+    "-A,//case-options-tester/simple-string-multiple[4]=\"\""
+    "-A,//case-options-tester/simple-real-array=\"3.0 4.1 5.6\""
+    "-A,//case-options-tester/simple-real-array-multi[2]=\"4.0 1.1 7.3\""
+    "-A,//case-options-tester/simple-integer-array=\"4 5 6 7\""
+    "-A,//case-options-tester/simple-int32-array=\"-23 32 -32\""
+    "-A,//case-options-tester/simple-int64-array=\"454653457457455474 -453463634634634634\""
+    "-A,//case-options-tester/simple-bool-array=\"true false false true\""
+    "-A,//case-options-tester/simple-string-array=\"toto titi tata tutu tete\""
+    "-A,//case-options-tester/simple-enum=enum1"
+    "-A,PostProcessor1FrName=Ensight7PostProcessor"
+    "-A,//case-options-tester/post-processor1/fileset-size=1"
+    "-A,//case-options-tester/post-processor1[1]/binary-file=false"
+    "-A,//case-options-tester/post-processor1[3]/@name=VtkHdfV2PostProcessor"
+    "-A,//case-options-tester/post-processor1[4]/@name=UCDPostProcessor"
+    "-A,//case-options-tester/post-processor2[2]/@mesh-name=Mesh1"
+    "-A,//case-options-tester/complex1/simple-real-2=3"
+    "-A,//case-options-tester/complex1/simple-real-2-multi[2]=2.3"
+)
+
+arcane_add_test_sequential(caseoptions_commandlinereplace_fail1 testCaseOptions-specific-entry-point.arc
+    "-We,ARCANE_CALL_SPECIFIC_ENTRY_POINT,CaseOptionLoop2"
+    "-We,ARCANE_REPLACE_SYMBOLS_IN_DATASET,1"
+    "-A,//case-options-tester/[1]=3.0"
+)
+set_property(TEST caseoptions_commandlinereplace_fail1 PROPERTY WILL_FAIL true)
+
+arcane_add_test_sequential(caseoptions_commandlinereplace_fail2 testCaseOptions-specific-entry-point.arc
+    "-We,ARCANE_CALL_SPECIFIC_ENTRY_POINT,CaseOptionLoop2"
+    "-We,ARCANE_REPLACE_SYMBOLS_IN_DATASET,1"
+    "-A,//case-options-tester/simple-real[aa]=3.0"
+)
+set_property(TEST caseoptions_commandlinereplace_fail2 PROPERTY WILL_FAIL true)
+
+arcane_add_test_sequential(caseoptions_commandlinereplace_fail3 testCaseOptions-specific-entry-point.arc
+    "-We,ARCANE_CALL_SPECIFIC_ENTRY_POINT,CaseOptionLoop2"
+    "-We,ARCANE_REPLACE_SYMBOLS_IN_DATASET,1"
+    "-A,//case-options-tester/simple-real[1]/=3.0"
+)
+set_property(TEST caseoptions_commandlinereplace_fail3 PROPERTY WILL_FAIL true)
+
+arcane_add_test_sequential(caseoptions_commandlinereplace_fail4 testCaseOptions-specific-entry-point.arc
+    "-We,ARCANE_CALL_SPECIFIC_ENTRY_POINT,CaseOptionLoop2"
+    "-We,ARCANE_REPLACE_SYMBOLS_IN_DATASET,1"
+    "-A,//case-options-tester/simple-real-array-multi[6]=\"3.0 4.0\""
+)
+set_property(TEST caseoptions_commandlinereplace_fail4 PROPERTY WILL_FAIL true)
+
+arcane_add_test_sequential(caseoptions_commandlinereplace_fail5 testCaseOptions-specific-entry-point.arc
+    "-We,ARCANE_CALL_SPECIFIC_ENTRY_POINT,CaseOptionLoop2"
+    "-We,ARCANE_REPLACE_SYMBOLS_IN_DATASET,1"
+    "-A,//case-options-tester/simple-integer=aaa"
+)
+set_property(TEST caseoptions_commandlinereplace_fail5 PROPERTY WILL_FAIL true)
+
+arcane_add_test_sequential(caseoptions_commandlinereplace_fail6 testCaseOptions-specific-entry-point.arc
+    "-We,ARCANE_CALL_SPECIFIC_ENTRY_POINT,CaseOptionLoop2"
+    "-We,ARCANE_REPLACE_SYMBOLS_IN_DATASET,1"
+    "-A,//case-options-tester/post-processor1-fr[20]/@name=UCDPostProcessor"
+)
+set_property(TEST caseoptions_commandlinereplace_fail6 PROPERTY WILL_FAIL true)
+
+arcane_add_test_sequential(caseoptions_commandlinereplace_fail7 testCaseOptions-specific-entry-point.arc
+    "-We,ARCANE_CALL_SPECIFIC_ENTRY_POINT,CaseOptionLoop2"
+    "-We,ARCANE_REPLACE_SYMBOLS_IN_DATASET,1"
+    "-A,//case-options-tester/post-processor1-fr/binary-file-=false"
+)
+set_property(TEST caseoptions_commandlinereplace_fail7 PROPERTY WILL_FAIL true)
+
+arcane_add_test_sequential(caseoptions_commandlinereplace_fail8 testCaseOptions-specific-entry-point.arc
+    "-We,ARCANE_CALL_SPECIFIC_ENTRY_POINT,CaseOptionLoop2"
+    "-We,ARCANE_REPLACE_SYMBOLS_IN_DATASET,1"
+    "-A,//case-options-tester/post-processor1-fr/binary-file:=false"
+)
+set_property(TEST caseoptions_commandlinereplace_fail8 PROPERTY WILL_FAIL true)
+
+arcane_add_test_sequential(caseoptions_commandlinereplace_fail9 testCaseOptions-specific-entry-point.arc
+    "-We,ARCANE_CALL_SPECIFIC_ENTRY_POINT,CaseOptionLoop2"
+    "-We,ARCANE_REPLACE_SYMBOLS_IN_DATASET,1"
+    "-A,//case-options-tester/complex2[2]/complex3/extended-real-int-c3[9]=enum1"
+)
+set_property(TEST caseoptions_commandlinereplace_fail9 PROPERTY WILL_FAIL true)
+
+#arcane_add_test_sequential(caseoptions_commandlinereplace_fail99 testCaseOptions-specific-entry-point.arc
+#    "-We,ARCANE_CALL_SPECIFIC_ENTRY_POINT,CaseOptionLoop2"
+#    "-We,ARCANE_REPLACE_SYMBOLS_IN_DATASET,1"
+#    "-A,//case-options-tester/simple-real[=3.0"
+#)
+#set_property(TEST caseoptions_commandlinereplace_fail99 PROPERTY WILL_FAIL true)
+
+
 if(UDUNITS_FOUND)
   ARCANE_ADD_TEST_SEQUENTIAL(caseoptions_unit testCaseOptions-2.arc)
 endif()
@@ -1118,7 +1229,16 @@ endif()
 #################################################################
 
 # Test pour la partie StringVariableReplace.
-arcane_add_test_sequential(string_variable_replace testStringVariableReplace.arc)
+arcane_add_test_sequential(string_variable_replace testStringVariableReplace.arc
+    "-We,ARCANE_REPLACE_SYMBOLS_IN_DATASET,1"
+    "-A,aa=bb"
+)
+
+#################################################################
+#################################################################
+
+# Test pour la partie ParameterOption.
+arcane_add_test_sequential(parameter_option testParameterOption.arc)
 
 #################################################################
 #################################################################

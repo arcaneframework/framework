@@ -14,11 +14,15 @@
 /* Exemple : @mon_symbole@                                                   */
 /*---------------------------------------------------------------------------*/
 
+#include "arcane/core/internal/StringVariableReplace.h"
+
+#include "arcane/utils/CommandLineArguments.h"
 #include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/SmallArray.h"
 #include "arcane/utils/StringBuilder.h"
-
-#include "arcane/core/internal/StringVariableReplace.h"
+#include "arcane/utils/String.h"
+#include "arcane/utils/FatalErrorException.h"
+#include "arcane/utils/List.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -28,6 +32,15 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+String StringVariableReplace::
+replaceWithCmdLineArgs(StringView string_with_symbols, bool fatal_if_not_found, bool fatal_if_invalid)
+{
+  StringList args;
+  platform::fillCommandLineArguments(args);
+  const CommandLineArguments cla{ args };
+  return replaceWithCmdLineArgs(cla.parameters(), string_with_symbols, fatal_if_not_found, fatal_if_invalid);
+}
 
 /*!
  * \brief Méthode permettant de remplacer les symboles de la chaine de

@@ -130,7 +130,8 @@
   <simple
    name = "simple-string-multiple"
     type = "string"
-    minOccurs = "0"
+    optional = "true"
+    minOccurs = "3"
     maxOccurs = "unbounded"
   >
    <description>SimpleStringMultiple</description>
@@ -391,7 +392,7 @@
     name = "post-processor1"
     type = "Arcane::IPostProcessorWriter"
     minOccurs = "0"
-    maxOccurs = "unbounded"
+    maxOccurs="10"
   >
    <name lang='fr'>post-processor1-fr</name>
    <description>Liste des services de protection</description>
@@ -621,7 +622,7 @@
      name = "extended-real-int-c3"
      type = "ArcaneTest::TestRealInt"
      minOccurs = "0"
-     maxOccurs = "unbounded"
+     maxOccurs = "5"
     >
      <description>ExtendedRealInt2</description>
     </extended>
