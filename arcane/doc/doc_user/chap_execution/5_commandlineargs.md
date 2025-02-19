@@ -26,7 +26,7 @@ Un symbole est une chaîne de caractères entourée d'arrobases.
 
 Exemple : `@UneValeur@`
 
-Si on met ce symbole dans un jeu de données, on aurait, par exemple :
+Si on met ce symbole dans un jeu de données, on pourrait avoir, par exemple :
 
 ```xml
 <!--Fichier ARC-->
@@ -165,8 +165,8 @@ de commande, le symbole est simplement remplacé par une chaîne de caractères 
 \warning Dans %Arcane, une différence est faite entre une option
 vide `<deltat-cp></deltat-cp>` et une option absente du jeu de données. Dans
 le premier cas, la valeur de l'option est **vide** (`String("")`)
-mais présente donc n'est pas remplacé par la valeur par défaut.
-Dans le second cas, la valeur de l'option est **null** (`String()`) donc est remplacé
+mais présente donc n'est pas remplacée par la valeur par défaut.
+Dans le second cas, la valeur de l'option est **null** (`String()`) donc est remplacée
 par la valeur par défaut.
 
 
@@ -210,7 +210,7 @@ lancer l'application comme ceci :
 dataset.arc
 ```
 
-Il est nécessaire d'avoir l'adresse de l'option. Pour la retrouver, il faut
+Il est nécessaire d'avoir l'adresse (XPath) de l'option. Pour la retrouver, il faut
 dérouler les éléments XML. Ici, l'option `deltat-cp` est à l'adresse :
 `//case/simple-hydro/deltat-cp`.
 Ensuite, on retire le `case/` au début (ou `cas/` pour les jeux de données en français).
@@ -221,6 +221,12 @@ Enfin, on peut construire l'argument à ajouter :
 Comme pour le remplacement de symboles, on peut ajouter des guillemets :
 
 `-A,//simple-hydro/simple-real-array="3.1 3.11 3.12"`
+
+Dans le cas des attributs, ils sont désignés par un `@` (pour l'attribut `name`, on
+doit mettre `@name` dans l'adresse).
+Si l'on souhaite modifier l'attribut `name` d'un service, on peut le faire comme ceci :
+
+`-A,//simple-hydro/post-processor/@name=VtkHdfV2PostProcessor`
 
 ### Les options multiples {#arcanedoc_execution_commandlineargs_addr_multi}
 
@@ -250,7 +256,7 @@ Ainsi, pour les trois valeurs de `deltat-cp`, on les adresse comme ceci :
 `//simple-hydro/deltat-cp[3]`
 
 \warning Il n'y a pas d'erreur au niveau des indices. En XML, les indices commencent
-à 1, et non 0 !
+à 1, et non 0.
 
 On peut aussi les écrire comme ceci :
 
@@ -275,6 +281,84 @@ Ou bien :
 dataset.arc
 ```
 
+### L'ajout d'options {#arcanedoc_execution_commandlineargs_addr_add_option}
+
+Une chose que l'on peut faire aussi est d'ajouter des options.
+
+Si l'on souhaite ajouter une quatrième option `deltat-cp`, il est possible d'ajouter l'argument :
+
+`-A,//simple-hydro/deltat-cp[4]=9.0`
+
+Il est aussi possible d'ajouter des options non présentes dans le jeu de données (mais présentes dans l'AXL) :
+
+```xml
+<!--Fichier ARC-->
+<?xml version="1.0"?>
+<case codename="ArcaneTest" codeversion="1.0">
+  <arcane/>
+  <meshes/>
+
+  <simple-hydro>
+  </simple-hydro>
+
+</case>
+```
+
+On pourrait ajouter les options via les arguments de la ligne de commande :
+
+```sh
+./app \
+-A,//simple-hydro/deltat-cp[1]=3.0 \
+-A,//simple-hydro/deltat-cp[2]=6.0 \
+-A,//simple-hydro/deltat-cp[3]=7.0 \
+dataset.arc
+```
+
+Ça fonctionne aussi pour les *options services*. Dans ce cas, il est nécessaire d'ajouter au moins l'attribut `name` :
+
+```sh
+./app \
+-A,//simple-hydro/post-processor/@name=VtkHdfV2PostProcessor \
+dataset.arc
+```
+
+Puis, on peut, par exemple, modifier les *options simples* de ce service ou l'attribut `mesh-name` :
+
+```sh
+./app \
+-A,//simple-hydro/post-processor/@name=VtkHdfV2PostProcessor \
+-A,//simple-hydro/post-processor/@mesh-name=Mesh1 \
+-A,//simple-hydro/post-processor/max-write-size=50 \
+dataset.arc
+```
+
+\warning Il n'est pas encore possible d'ajouter des *options complexes*.
+
+#### Et si on commence à l'indice 2 ? {#arcanedoc_execution_commandlineargs_addr_add_option_default}
+
+Si, au lieu de lancer notre application avec ces arguments :
+
+```sh
+./app \
+-A,//simple-hydro/deltat-cp[1]=3.0 \
+-A,//simple-hydro/deltat-cp[2]=6.0 \
+-A,//simple-hydro/deltat-cp[3]=7.0 \
+dataset.arc
+```
+
+on lançait ceci :
+
+```sh
+./app \
+-A,//simple-hydro/deltat-cp[2]=6.0 \
+-A,//simple-hydro/deltat-cp[3]=7.0 \
+dataset.arc
+```
+
+Dans ce cas, l'option `//simple-hydro/deltat-cp[1]`, qui n'est ni présente dans le jeu de
+données, ni présente dans les arguments de la ligne de commande, sera ajouté avec la valeur
+par défaut.
+
 ### Les syntaxes spéciales {#arcanedoc_execution_commandlineargs_addr_multi_special_syntax}
 
 #### L'indice ANY {#arcanedoc_execution_commandlineargs_addr_multi_special_syntax_index_any}
@@ -295,21 +379,25 @@ Exemple de lancement :
 dataset.arc
 ```
 
-Et dans ce cas, les trois options `simple-hydro/deltat-cp` auront la valeur `2.0`.
+Et dans ce cas, les trois options `simple-hydro/deltat-cp` auraient la valeur `2.0`.
 
+#### La balise ANY {#arcanedoc_execution_commandlineargs_addr_multi_special_syntax_tag_any}
 
-#### Le tag ANY {#arcanedoc_execution_commandlineargs_addr_multi_special_syntax_tag_any}
+La balise ANY permet de changer la valeur d'une option présente à plusieurs endroits.
+Elle est représentée par une partie d'adresse vide (deux `/` sans rien entre)
+(donc `//module1/option1/option11`, si on veut remplacer `option1` par ANY, on fait `//module1//option11`).
 
-Le tag ANY permet de traiter plusieurs options ayant des adresses différentes en une fois.
-Il est représenté par une partie d'adresse vide (donc `//module1/option1/option11`,
-si on veut remplacer `option1` par ANY, on fait `//module1//option11`).
-
-\warning Le tag ANY ne remplace qu'une seule partie de l'adresse. Pour remplacer
+\note La balise ANY ne remplace qu'une seule partie de l'adresse. Pour remplacer
 plusieurs parties, il faut en mettre plusieurs. Reprenons l'exemple du dessus en
 remplaçant `module1` par ANY : `////option11`
 
+\todo Doit-on garder cette syntaxe ou préférer utiliser `*` ? (exemple : `//*/*/option11`)
+Le `*` pouvant prêter à confusion (ça pourrait sous-entendre que l'on pourrait
+faire `//*/option*/option11` (comme une regex) alors que non), et la partie d'adresse vide
+paraissant plus claire, ce dernier fut choisi.
+
 En reprenant l'exemple au-dessus, si l'on souhaite modifier toutes les options `deltat-cp[2]`,
-on peut utiliser l'adresse :
+quelque soit le module dans lequel cette option apparait, on peut utiliser l'adresse :
 
 `///deltat-cp[2]`
 
@@ -321,7 +409,8 @@ Exemple de lancement :
 dataset.arc
 ```
 
-\warning Le tag ANY ne peut pas être présent à la fin de l'adresse.
+\warning La balise ANY ne peut pas être présente à la fin de l'adresse
+(l'adresse `//module1/option11/` est invalide).
 
 
 #### Le mélange des deux ANY {#arcanedoc_execution_commandlineargs_addr_multi_special_syntax_mix_any}
@@ -335,19 +424,47 @@ Admettons que l'on ait le jeu de données :
   <meshes/>
   
   <simple-hydro>
-    <deltat-cp>3.0</deltat-cp>
-    <deltat-cp>6.0</deltat-cp>
+    <checkpoint>
+      <deltat-cp>3.0</deltat-cp>
+      <print-details-before-cp>true</print-details-before-cp>
+    </checkpoint>
+
+    <checkpoint>
+      <deltat-cp>6.0</deltat-cp>
+      <print-details-before-cp>true</print-details-before-cp>
+    </checkpoint>
+
     <final-time>10.2</final-time>
+
     <post-processor name="Ensight7PostProcessor">
       <fileset-size>10</fileset-size>
       <binary-file>false</binary-file>
     </post-processor>
+
+    <noidea-service name="StillNoIdea">
+      <duration>-1</duration>
+      <rewrite>false</rewrite>
+    </noidea-service>
   </simple-hydro>
 
   <pas-simple-hydro>
-    <deltat-cp>1.0</deltat-cp>
-    <deltat-cp>3.0</deltat-cp>
-    <final-time>9.9</final-time>
+    <checkpoint>
+      <deltat-cp>1.0</deltat-cp>
+      <print-details-before-cp>true</print-details-before-cp>
+    </checkpoint>
+
+    <checkpoint>
+      <deltat-cp>3.0</deltat-cp>
+      <print-details-before-cp>true</print-details-before-cp>
+    </checkpoint>
+
+    <checkpoint>
+      <deltat-cp>7.0</deltat-cp>
+      <print-details-before-cp>true</print-details-before-cp>
+    </checkpoint>
+
+    <final-time>8.9</final-time>
+
     <post-processor name="Ensight7PostProcessor">
       <fileset-size>10</fileset-size>
       <binary-file>false</binary-file>
@@ -357,8 +474,33 @@ Admettons que l'on ait le jeu de données :
 </case>
 ```
 
-TODO Continuer ici
+On pourrait commencer par vouloir modifier l'option `deltat-cp` du second
+checkpoint du module `pas-simple-hydro`.
+Pour cela, on peut utiliser l'argument : <br>
+`-A,//pas-simple-hydro/checkpoint[2]/delta-cp=4.0`.
 
+Puis, on pourrait modifier le premier `deltat-cp` des deux modules : <br>
+`-A,///checkpoint[1]/delta-cp=2.0`.
+
+Ensuite, on pourrait ne pas vouloir d'écriture entre les checkpoints : <br>
+`-A,///checkpoint[]/print-details-before-cp=false`.
+
+Enfin, les services du module `simple-hydro` doivent agir sur le `Mesh0`
+et les services `pas-simple-hydro` sur le `Mesh1` : <br>
+`-A,//simple-hydro//@mesh-name=Mesh0` <br>
+`-A,//pas-simple-hydro//@mesh-name=Mesh1`
+
+Finalement, on se retrouve avec la commande :
+
+```sh
+./app \
+-A,//pas-simple-hydro/checkpoint[2]/delta-cp=4.0 \
+-A,///checkpoint[1]/delta-cp=2.0 \
+-A,///checkpoint[]/print-details-before-cp=false \
+-A,//simple-hydro//@mesh-name=Mesh0 \
+-A,//pas-simple-hydro//@mesh-name=Mesh1 \
+dataset.arc
+```
 
 ### Les syntaxes invalides {#arcanedoc_execution_commandlineargs_addr_invalid_syntax}
 
@@ -366,14 +508,20 @@ Pour cette partie, quelques containtes d'utilisations ont été mises en places 
 
 - Les arguments commençants par `-A,//` sont réservés à cet usage.
 - Les adresses ne peuvent pas terminer par un `/`.
-Exemple invalide :
+  Exemple invalide :
 ```sh
 ./app \
 -A,//simple-hydro/deltat-cp/=3.1 \
 dataset.arc
 ```
 - Les indices doivent être des entiers supérieurs ou égals à 1.
-
+- Lorsqu'un indice est présent (y compris l'indice ANY), une balise doit aussi être présente.
+  Exemple invalide :
+```sh
+./app \
+-A,//simple-hydro/[2]/option=3.1 \
+dataset.arc
+```
 
 
 
