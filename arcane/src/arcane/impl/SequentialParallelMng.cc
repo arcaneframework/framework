@@ -38,7 +38,8 @@
 #include "arcane/core/Timer.h"
 #include "arcane/core/FactoryService.h"
 #include "arcane/core/AbstractService.h"
-#include "arcane/core/SerializeMessage.h"
+#include "arcane/core/ISerializer.h"
+#include "arcane/core/internal/SerializeMessage.h"
 
 #include "arcane/parallel/IStat.h"
 

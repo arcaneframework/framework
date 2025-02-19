@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* GetVariablesValuesParallelOperation.cc                      (C) 2000-2024 */
+/* GetVariablesValuesParallelOperation.cc                      (C) 2000-2025 */
 /*                                                                           */
 /* Opérations pour accéder aux valeurs de variables d'un autre sous-domaine. */
 /*---------------------------------------------------------------------------*/
@@ -18,8 +18,8 @@
 #include "arcane/core/VariableTypes.h"
 #include "arcane/core/IParallelMng.h"
 #include "arcane/core/ISerializer.h"
-#include "arcane/core/SerializeMessage.h"
 #include "arcane/core/IItemFamily.h"
+#include "arcane/core/internal/SerializeMessage.h"
 
 #include "arcane/impl/GetVariablesValuesParallelOperation.h"
 

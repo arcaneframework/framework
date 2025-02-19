@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Hdf5ReaderWriter.cc                                         (C) 2000-2023 */
+/* Hdf5ReaderWriter.cc                                         (C) 2000-2025 */
 /*                                                                           */
 /* Lecture/Ecriture au format HDF5.                                          */
 /*---------------------------------------------------------------------------*/
@@ -16,38 +16,32 @@
 #include "arcane/utils/OStringStream.h"
 #include "arcane/utils/ScopedPtr.h"
 #include "arcane/utils/List.h"
-#include "arcane/utils/ArcanePrecomp.h"
 #include "arcane/utils/ITraceMng.h"
-#include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/CheckedConvert.h"
 #include "arcane/utils/ArrayShape.h"
 
-#include "arcane/Item.h"
-#include "arcane/ISubDomain.h"
-#include "arcane/StdNum.h"
-#include "arcane/IVariable.h"
-#include "arcane/CheckpointService.h"
-#include "arcane/Directory.h"
-#include "arcane/IParallelMng.h"
-#include "arcane/IParallelReplication.h"
-#include "arcane/Service.h"
-#include "arcane/ArcaneException.h"
-#include "arcane/ItemGroup.h"
-#include "arcane/ItemEnumerator.h"
-#include "arcane/VerifierService.h"
-#include "arcane/IVariableMng.h"
-#include "arcane/FactoryService.h"
-#include "arcane/IData.h"
-#include "arcane/Timer.h"
-#include "arcane/ISerializedData.h"
-#include "arcane/IIOMng.h"
-#include "arcane/IXmlDocumentHolder.h"
+#include "arcane/core/ISubDomain.h"
+#include "arcane/core/StdNum.h"
+#include "arcane/core/IVariable.h"
+#include "arcane/core/CheckpointService.h"
+#include "arcane/core/Directory.h"
+#include "arcane/core/IParallelMng.h"
+#include "arcane/core/IParallelReplication.h"
+#include "arcane/core/ArcaneException.h"
+#include "arcane/core/VerifierService.h"
+#include "arcane/core/IVariableMng.h"
+#include "arcane/core/FactoryService.h"
+#include "arcane/core/IData.h"
+#include "arcane/core/Timer.h"
+#include "arcane/core/ISerializedData.h"
+#include "arcane/core/IIOMng.h"
+#include "arcane/core/IXmlDocumentHolder.h"
 
 #include "arcane/datatype/DataTypeTraits.h"
 
-#include "arcane/SerializeBuffer.h"
-#include "arcane/ISerializeMessageList.h"
-#include "arcane/SerializeMessage.h"
+#include "arcane/core/SerializeBuffer.h"
+#include "arcane/core/ISerializeMessageList.h"
+#include "arcane/core/internal/SerializeMessage.h"
 
 #include "arcane/hdf5/Hdf5ReaderWriter.h"
 

@@ -26,8 +26,8 @@
 #include "arcane/core/IIOMng.h"
 #include "arcane/core/Timer.h"
 #include "arcane/core/IItemFamily.h"
-#include "arcane/core/SerializeMessage.h"
 #include "arcane/core/parallel/IStat.h"
+#include "arcane/core/internal/SerializeMessage.h"
 
 #include "arcane/parallel/mpi/MpiParallelMng.h"
 #include "arcane/parallel/mpi/MpiParallelDispatch.h"

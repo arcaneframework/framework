@@ -14,7 +14,7 @@
 #include "arcane/mesh/AsyncParticleExchanger.h"
 #include "arcane/core/IParallelNonBlockingCollective.h"
 
-#include "arccore/message_passing/BasicSerializeMessage.h"
+#include "arcane/core/internal/SerializeMessage.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

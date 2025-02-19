@@ -80,6 +80,7 @@ set(ARCANE_INTERNAL_SOURCES
   internal/ITimeHistoryMngInternal.h
   internal/VariableUtilsInternal.h
   internal/IPolyhedralMeshModifier.h
+  internal/SerializeMessage.h
   internal/VtkCellTypes.h
   )
 
@@ -587,7 +588,6 @@ set(ARCANE_ORIGINAL_SOURCES
   SerializeBuffer.cc
   SerializeBuffer.h
   SerializeMessage.cc
-  SerializeMessage.h
   SerializedData.cc
   Service.h
   ServiceBuildInfo.cc
