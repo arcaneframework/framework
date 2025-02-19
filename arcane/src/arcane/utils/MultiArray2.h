@@ -183,19 +183,19 @@ class MultiArray2
   }
 
   //! Vue modifiable du tableau
-  MultiArray2SmallSpan<DataType> span()
+  JaggedSmallSpan<DataType> span()
   {
     return { m_buffer.smallSpan(), m_indexes, m_sizes };
   }
 
   //! Vue constante du tableau
-  MultiArray2SmallSpan<const DataType> span() const
+  JaggedSmallSpan<const DataType> span() const
   {
     return { m_buffer, m_indexes, m_sizes };
   }
 
   //! Vue constante du tableau
-  MultiArray2SmallSpan<const DataType> constSpan() const
+  JaggedSmallSpan<const DataType> constSpan() const
   {
     return { m_buffer.constSmallSpan(), m_indexes, m_sizes };
   }

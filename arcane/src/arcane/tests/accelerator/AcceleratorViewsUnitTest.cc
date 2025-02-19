@@ -889,7 +889,7 @@ _executeTestMultiArray()
   for (Int32 i = 0; i < dim1_size; ++i)
     sizes[i] = i + 1;
   values.resize(sizes);
-  MultiArray2SmallSpan<Int32> inout_values = values.span();
+  JaggedSmallSpan<Int32> inout_values = values.span();
   for (Int32 i = 0; i < dim1_size; ++i) {
     const Int32 dim2_size = inout_values[i].size();
     Int32 total = 0;

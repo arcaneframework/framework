@@ -140,7 +140,7 @@ class ConstMultiArray2View
  * ou MultiArray2::constSpan().
  */
 template <class DataType>
-class MultiArray2SmallSpan
+class JaggedSmallSpan
 {
  private:
 
@@ -149,12 +149,12 @@ class MultiArray2SmallSpan
  public:
 
   //! Vue vide
-  MultiArray2SmallSpan() = default;
+  JaggedSmallSpan() = default;
 
  private:
 
   //! Vue sur la tableau \a buf
-  MultiArray2SmallSpan(SmallSpan<DataType> buf, SmallSpan<const Int32> indexes,
+  JaggedSmallSpan(SmallSpan<DataType> buf, SmallSpan<const Int32> indexes,
                        SmallSpan<const Int32> sizes)
   : m_buffer(buf)
   , m_indexes(indexes)
