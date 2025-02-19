@@ -1,25 +1,26 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
-#include "ParallelCorefinementService.h"
+#include "arcane/corefinement/ParallelCorefinementService.h"
 
-#include <arcane/IItemFamily.h>
-#include <arcane/IMesh.h>
-#include <arcane/IMeshModifier.h>
-#include <arcane/IMeshSubMeshTransition.h>
 #include <arcane/utils/List.h>
 #include <arcane/utils/Limits.h>
 #include <arcane/utils/ITraceMng.h>
-#include <arcane/IParallelMng.h>
-#include <arcane/ISerializeMessageList.h>
-#include <arcane/SerializeMessage.h>
-#include <arcane/Timer.h>
-
 #include <arcane/utils/ScopedPtr.h>
-#include <arcane/IParallelExchanger.h>
+
+#include <arcane/core/IItemFamily.h>
+#include <arcane/core/IMesh.h>
+#include <arcane/core/IMeshModifier.h>
+#include <arcane/core/IMeshSubMeshTransition.h>
+#include <arcane/core/IParallelMng.h>
+#include <arcane/core/ISerializeMessageList.h>
+#include <arcane/core/Timer.h>
+#include <arcane/core/internal/SerializeMessage.h>
+
+#include <arcane/core/IParallelExchanger.h>
 
 #include <set>
 #include <list>
