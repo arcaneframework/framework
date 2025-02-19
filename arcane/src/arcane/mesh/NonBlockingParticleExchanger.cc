@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* NonBlockingParticleExchanger.cc                             (C) 2000-2024 */
+/* NonBlockingParticleExchanger.cc                             (C) 2000-2025 */
 /*                                                                           */
 /* Echangeur de particules.                                                  */
 /*---------------------------------------------------------------------------*/
@@ -28,10 +28,10 @@
 #include "arcane/core/IMesh.h"
 #include "arcane/core/Item.h"
 #include "arcane/core/Timer.h"
-#include "arcane/core/SerializeMessage.h"
 #include "arcane/core/ISerializeMessageList.h"
 #include "arcane/core/CommonVariables.h"
 #include "arcane/core/FactoryService.h"
+#include "arcane/core/internal/SerializeMessage.h"
 
 //#define ARCANE_DEBUG_EXCHANGE_ITEMS
 

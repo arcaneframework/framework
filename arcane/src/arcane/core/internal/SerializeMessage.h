@@ -9,8 +9,8 @@
 /*                                                                           */
 /* Message utilisant un SerializeBuffer.                                     */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_CORE_SERIALIZEMESSAGE_H
-#define ARCANE_CORE_SERIALIZEMESSAGE_H
+#ifndef ARCANE_CORE_INTERNAL_SERIALIZEMESSAGE_H
+#define ARCANE_CORE_INTERNAL_SERIALIZEMESSAGE_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 

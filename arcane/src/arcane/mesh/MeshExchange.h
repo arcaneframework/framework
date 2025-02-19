@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshExchange.h                                              (C) 2000-2023 */
+/* MeshExchange.h                                              (C) 2000-2025 */
 /*                                                                           */
-/* Echange des entités de maillages entre entre sous-domaines.               */
+/* Echange des entités de maillages entre sous-domaines.                     */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MESH_MESHEXCHANGE_H
 #define ARCANE_MESH_MESHEXCHANGE_H
@@ -16,8 +16,7 @@
 
 #include "arcane/utils/TraceAccessor.h"
 
-#include "arcane/ArcaneTypes.h"
-#include "arcane/SerializeMessage.h"
+#include "arcane/core/ArcaneTypes.h"
 
 #include "arcane/mesh/MeshGlobal.h"
 
