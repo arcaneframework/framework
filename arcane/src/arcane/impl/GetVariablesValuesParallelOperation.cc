@@ -18,9 +18,11 @@
 #include "arcane/core/IParallelMng.h"
 #include "arcane/core/ISerializer.h"
 #include "arcane/core/IItemFamily.h"
-#include "arcane/core/internal/SerializeMessage.h"
+#include "arcane/core/ISerializeMessage.h"
 
 #include "arcane/impl/GetVariablesValuesParallelOperation.h"
+
+#include "arccore/message_passing/ISerializeMessageList.h"
 
 #include <map>
 
@@ -29,6 +31,7 @@
 
 namespace Arcane
 {
+using namespace MessagePassing;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -106,7 +109,8 @@ getVariableValues(VariableItemReal& variable,
 
   UniqueArray<Int32> total_sub_domain_nb_to_send;
   pm->allGatherVariable(sub_domain_nb_to_send, total_sub_domain_nb_to_send);
-  UniqueArray<ISerializeMessage*> messages;
+  UniqueArray<Ref<ISerializeMessage>> messages;
+  Ref<ISerializeMessageList> message_list(pm->createSerializeMessageListRef());
   for (Integer i = 0, is = total_sub_domain_nb_to_send.size(); i < is; i += 3) {
     Int32 rank_send = total_sub_domain_nb_to_send[i];
     Int32 rank_recv = total_sub_domain_nb_to_send[i + 1];
@@ -116,14 +120,14 @@ getVariableValues(VariableItemReal& variable,
     //<< " N= " << nb_exchange;
     if (rank_send == rank_recv)
       continue;
-    SerializeMessage* sm = nullptr;
+    Ref<ISerializeMessage> sm;
     if (rank_recv == my_rank) {
       //trace->info() << " ADD RECV MESSAGE recv=" << rank_recv << " send=" << rank_send;
-      sm = new SerializeMessage(rank_recv, rank_send, ISerializeMessage::MT_Recv);
+      sm = message_list->createAndAddMessage(MessageRank(rank_send), ePointToPointMessageType::MsgReceive);
     }
     else if (rank_send == my_rank) {
       //trace->info() << " ADD SEND MESSAGE recv=" << rank_recv << " send=" << rank_send;
-      sm = new SerializeMessage(rank_send, rank_recv, ISerializeMessage::MT_Send);
+      sm = message_list->createAndAddMessage(MessageRank(rank_recv), ePointToPointMessageType::MsgSend);
       ISerializer* s = sm->serializer();
       s->setMode(ISerializer::ModeReserve);
       auto xiter = sub_domain_list.find(rank_recv);
@@ -138,24 +142,24 @@ getVariableValues(VariableItemReal& variable,
       s->putInt64(nb);
       s->putSpan(z_unique_ids);
     }
-    if (sm)
+    if (sm.get())
       messages.add(sm);
   }
 
-  pm->processMessages(messages);
+  message_list->waitMessages(eWaitType::WaitAll);
 
   UniqueArray<Int64> tmp_unique_ids;
   UniqueArray<Int32> tmp_local_ids;
   UniqueArray<Real> tmp_values;
 
-  UniqueArray<ISerializeMessage*> values_messages;
+  UniqueArray<Ref<ISerializeMessage>> values_messages;
   ItemInfoListView items_internal(item_family);
-  for (ISerializeMessage* sm : messages) {
-    ISerializeMessage* new_sm = nullptr;
+  for (Ref<ISerializeMessage> sm : messages) {
+    Ref<ISerializeMessage> new_sm;
     if (sm->isSend()) {
       // Pour recevoir les valeurs
       //trace->info() << " ADD RECV2 MESSAGE recv=" << my_rank << " send=" << sm->destSubDomain();
-      new_sm = new SerializeMessage(my_rank, sm->destination().value(), ISerializeMessage::MT_Recv);
+      new_sm = message_list->createAndAddMessage(MessageRank(sm->destination().value()), ePointToPointMessageType::MsgReceive);
     }
     else {
       ISerializer* s = sm->serializer();
@@ -172,7 +176,7 @@ getVariableValues(VariableItemReal& variable,
       }
 
       //trace->info() << " ADD SEND2 MESSAGE recv=" << my_rank << " send=" << sm->destSubDomain();
-      new_sm = new SerializeMessage(my_rank, sm->destination().value(), ISerializeMessage::MT_Send);
+      new_sm = message_list->createAndAddMessage(MessageRank(sm->destination().value()), ePointToPointMessageType::MsgSend);
       ISerializer* s2 = new_sm->serializer();
       s2->setMode(ISerializer::ModeReserve);
       s2->reserveInt64(1);
@@ -186,11 +190,11 @@ getVariableValues(VariableItemReal& variable,
   }
 
   // Supprime les messages qui ne sont plus utilisés
-  _deleteMessages(messages);
+  messages.clear();
 
-  pm->processMessages(values_messages);
+  message_list->waitMessages(eWaitType::WaitAll);
 
-  for (ISerializeMessage* sm : values_messages) {
+  for (Ref<ISerializeMessage> sm : values_messages) {
     if (sm->isSend()) {
     }
     else {
@@ -222,7 +226,8 @@ getVariableValues(VariableItemReal& variable,
   }
 
   // Supprime les messages qui ne sont plus utilisés
-  _deleteMessages(values_messages);
+  values_messages.clear();
+  //_deleteMessages(values_messages);
 
 #if 0
   {
@@ -308,17 +313,6 @@ getVariableValues(VariableItemReal& variable, Int64ConstArrayView unique_ids,
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void GetVariablesValuesParallelOperation::
-_deleteMessages(Array<ISerializeMessage*>& messages)
-{
-  for (ISerializeMessage* sm : messages)
-    delete sm;
-  messages.clear();
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 template <class Type> void GetVariablesValuesParallelOperation::
 _getVariableValues(ItemVariableScalarRefT<Type>& variable,
                    Int64ConstArrayView unique_ids,
@@ -330,7 +324,7 @@ _getVariableValues(ItemVariableScalarRefT<Type>& variable,
   IItemFamily* item_family = group.itemFamily();
 
   // Pour éviter un bug MPI sur certaines machines,
-  // si la liste est vide, on créé une liste temporaire
+  // si la liste est vide, on crée une liste temporaire
   UniqueArray<Int64> dummy_unique_ids;
   UniqueArray<Real> dummy_values;
   if (unique_ids.empty()) {

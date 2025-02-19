@@ -62,11 +62,9 @@ class ARCANE_IMPL_EXPORT GetVariablesValuesParallelOperation
 
  private:
 
-  IParallelMng* m_parallel_mng;
+  IParallelMng* m_parallel_mng = nullptr;
 
  private:
-
-  void _deleteMessages(Array<ISerializeMessage*>& messages);
 
   template<class Type>
   void _getVariableValues(ItemVariableScalarRefT<Type>& variable,
