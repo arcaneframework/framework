@@ -29,7 +29,7 @@ namespace Arcane::impl
 MemoryAllocationOptions NumArrayBaseCommon::
 _getDefaultAllocator()
 {
-  return _getDefaultAllocator(eMemoryRessource::UnifiedMemory);
+  return _getDefaultAllocator(MemoryUtils::getDefaultDataMemoryResource());
 }
 
 /*---------------------------------------------------------------------------*/
