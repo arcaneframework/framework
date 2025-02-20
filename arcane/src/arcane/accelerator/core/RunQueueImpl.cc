@@ -156,7 +156,7 @@ _setDefaultMemoryRessource()
 {
   m_memory_ressource = eMemoryRessource::Host;
   if (isAcceleratorPolicy(m_execution_policy))
-    m_memory_ressource = eMemoryRessource::UnifiedMemory;
+    m_memory_ressource = MemoryUtils::getDefaultDataMemoryResource();
 }
 
 /*---------------------------------------------------------------------------*/
