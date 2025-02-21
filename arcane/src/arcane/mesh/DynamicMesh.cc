@@ -1832,7 +1832,7 @@ _exchangeItems(bool do_compact)
   // qu'une couche de maille fantômes. Si on en demande plus, il faut
   // les ajouter maintenant. Cet appel n'est pas optimum mais permet
   // de traiter correctement tous les cas (enfin j'espère).
-  if (ghostLayerMng()->nbGhostLayer()>1 && ! m_item_family_network) // many ghost already handled in MeshExchange with ItemFamilyNetwork
+  if (ghostLayerMng()->nbGhostLayer()>1 && !m_use_mesh_item_family_dependencies) // many ghost already handled in MeshExchange with ItemFamilyNetwork
     updateGhostLayers(true);
   String check_exchange = platform::getEnvironmentVariable("ARCANE_CHECK_EXCHANGE");
   if (!check_exchange.null()){
