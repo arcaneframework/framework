@@ -411,7 +411,7 @@ details[open] summary::before {
  */
 #snippetLineno {
   margin-right: 10px !important;
-  background-color: #34393c !important;
+  background-color: var(--fragment-linenumber-background) !important;
 }
 
 /*---------------------------------------------------------------------------*/
