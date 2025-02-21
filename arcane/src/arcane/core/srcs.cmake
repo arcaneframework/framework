@@ -68,6 +68,7 @@ set(ARCANE_INTERNAL_SOURCES
   internal/IParallelMngInternal.h
   internal/IItemFamilyInternal.h
   internal/IMeshInternal.h
+  internal/IParallelMngUtilsFactory.h
   internal/IVariableInternal.h
   internal/IMeshModifierInternal.h
   internal/ItemGroupImplInternal.h
@@ -243,7 +244,6 @@ set(ARCANE_ORIGINAL_SOURCES
   IParallelDispatch.h
   IParallelExchanger.h
   IParallelMng.h
-  IParallelMngUtilsFactory.h
   IParallelNonBlockingCollective.h
   IParallelNonBlockingCollectiveDispatch.h
   IParallelReplication.h

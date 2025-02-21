@@ -50,7 +50,7 @@
 #include "arcane/impl/ParallelReplication.h"
 #include "arcane/impl/SequentialParallelSuperMng.h"
 #include "arcane/impl/SequentialParallelMng.h"
-#include "arcane/impl/ParallelMngUtilsFactoryBase.h"
+#include "arcane/impl/internal/ParallelMngUtilsFactoryBase.h"
 #include "arcane/impl/internal/VariableSynchronizer.h"
 
 #include "arccore/message_passing/RequestListBase.h"

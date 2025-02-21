@@ -39,7 +39,7 @@
 
 #include "arcane/impl/ParallelReplication.h"
 #include "arcane/impl/SequentialParallelMng.h"
-#include "arcane/impl/ParallelMngUtilsFactoryBase.h"
+#include "arcane/impl/internal/ParallelMngUtilsFactoryBase.h"
 #include "arcane/impl/internal/VariableSynchronizer.h"
 
 #include "arccore/message_passing_mpi/MpiMessagePassingMng.h"
@@ -537,8 +537,7 @@ sendSerializer(ISerializer* s,Int32 rank)
 ISerializeMessage* MpiParallelMng::
 createSendSerializer(Int32 rank)
 {
-  auto x = new SerializeMessage(m_comm_rank,rank,ISerializeMessage::MT_Send);
-  return x;
+  return m_utils_factory->createSendSerializeMessage(this, rank)._release();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -581,8 +580,7 @@ recvSerializer(ISerializer* values,Int32 rank)
 ISerializeMessage* MpiParallelMng::
 createReceiveSerializer(Int32 rank)
 {
-  auto x = new SerializeMessage(m_comm_rank,rank,ISerializeMessage::MT_Recv);
-  return x;
+  return m_utils_factory->createReceiveSerializeMessage(this, rank)._release();
 }
 
 /*---------------------------------------------------------------------------*/

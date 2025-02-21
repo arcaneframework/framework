@@ -1,21 +1,21 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ParallelMngUtilsFactoryBase.h                               (C) 2000-2021 */
+/* ParallelMngUtilsFactoryBase.h                               (C) 2000-2025 */
 /*                                                                           */
 /* Classe de base d'une fabrique pour les fonctions utilitaires de           */
 /* IParallelMng.                                                             */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_IMPL_PARALLELMNGUTILSFACTORY_H
-#define ARCANE_IMPL_PARALLELMNGUTILSFACTORY_H
+#ifndef ARCANE_IMPL_INTERNAL_PARALLELMNGUTILSFACTORY_H
+#define ARCANE_IMPL_INTERNAL_PARALLELMNGUTILSFACTORY_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/IParallelMngUtilsFactory.h"
+#include "arcane/core/internal/IParallelMngUtilsFactory.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -39,6 +39,8 @@ class ARCANE_IMPL_EXPORT ParallelMngUtilsFactoryBase
   Ref<IVariableSynchronizer> createSynchronizer(IParallelMng* pm,IItemFamily* family) override;
   Ref<IVariableSynchronizer> createSynchronizer(IParallelMng* pm,const ItemGroup& group) override;
   Ref<IParallelTopology> createTopology(IParallelMng* pm) override;
+  Ref<ISerializeMessage> createSendSerializeMessage(IParallelMng* pm, Int32 rank) override;
+  Ref<ISerializeMessage> createReceiveSerializeMessage(IParallelMng* pm, Int32 rank) override;
 };
 
 /*---------------------------------------------------------------------------*/
