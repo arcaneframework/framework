@@ -346,7 +346,7 @@ sendSerializer(ISerializer* s,Int32 rank,ByteArray& bytes) -> Request
 ISerializeMessage* HybridParallelMng::
 createSendSerializer(Int32 rank)
 {
-  return new SerializeMessage(m_global_rank,rank,ISerializeMessage::MT_Send);
+  return m_utils_factory->createSendSerializeMessage(this, rank)._release();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -399,7 +399,7 @@ recvSerializer(ISerializer* s,Int32 rank)
 ISerializeMessage* HybridParallelMng::
 createReceiveSerializer(Int32 rank)
 {
-  return new SerializeMessage(m_global_rank,rank,ISerializeMessage::MT_Recv);
+  return m_utils_factory->createReceiveSerializeMessage(this, rank)._release();
 }
 
 /*---------------------------------------------------------------------------*/

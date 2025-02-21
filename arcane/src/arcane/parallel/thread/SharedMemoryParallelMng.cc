@@ -241,7 +241,7 @@ sendSerializer(ISerializer* values,Int32 rank,ByteArray& bytes)
 ISerializeMessage* SharedMemoryParallelMng::
 createSendSerializer(Int32 rank)
 {
-  return new SerializeMessage(m_rank,rank,ISerializeMessage::MT_Send);
+  return m_utils_factory->createSendSerializeMessage(this, rank)._release();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -283,7 +283,7 @@ recvSerializer(ISerializer* values,Int32 rank)
 ISerializeMessage* SharedMemoryParallelMng::
 createReceiveSerializer(Int32 rank)
 {
-  return new SerializeMessage(m_rank,rank,ISerializeMessage::MT_Recv);
+  return m_utils_factory->createReceiveSerializeMessage(this, rank)._release();
 }
 
 /*---------------------------------------------------------------------------*/
