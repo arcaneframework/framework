@@ -80,6 +80,22 @@ createTopologyRef(IParallelMng* pm);
 extern "C++" ARCANE_CORE_EXPORT Ref<IParallelMng>
 createSubParallelMngRef(IParallelMng* pm, Int32 color, Int32 key);
 
+/*!
+ * \brief Créé un message de sérialisation non bloquant en envoi au rang \a rank.
+ *
+ * Le message est traité uniquement lors de l'appel à IParallelMng::processMessages().
+ */
+extern "C++" ARCANE_CORE_EXPORT Ref<ISerializeMessage>
+createSendSerializeMessageRef(IParallelMng* pm, Int32 rank);
+
+/*!
+ * \brief Créé un message de sérialisation non bloquant en réception du rang \a rank.
+ *
+ * Le message est traité uniquement lors de l'appel à IParallelMng::processMessages().
+ */
+extern "C++" ARCANE_CORE_EXPORT Ref<ISerializeMessage>
+createReceiveSerializeMessageRef(IParallelMng* pm, Int32 rank);
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
