@@ -45,7 +45,6 @@
 #include "arccore/message_passing_mpi/MpiMessagePassingMng.h"
 #include "arccore/message_passing_mpi/internal/MpiSerializeDispatcher.h"
 #include "arccore/message_passing_mpi/internal/MpiRequestList.h"
-#include "arccore/message_passing_mpi/internal/MpiSerializeMessageList.h"
 #include "arccore/message_passing_mpi/internal/MpiAdapter.h"
 #include "arccore/message_passing_mpi/internal/MpiLock.h"
 #include "arccore/message_passing/Dispatchers.h"
@@ -474,7 +473,7 @@ build()
   _setControlDispatcher(control_dispatcher);
 
   // NOTE: cette instance sera détruite par le ParallelMngDispatcher
-  auto* serialize_dispatcher = new MpiSerializeDispatcher(m_adapter);
+  auto* serialize_dispatcher = new MpiSerializeDispatcher(m_adapter, mpm);
   m_mpi_serialize_dispatcher = serialize_dispatcher;
   _setSerializeDispatcher(serialize_dispatcher);
 
@@ -487,13 +486,6 @@ build()
   m_non_blocking_collective->build();
   if (m_mpi_lock)
     m_trace->info() << "Using mpi with locks.";
-
-  // Utilise par défaut (janvier 2024) la nouvelle implémentation de la sérialisation,
-  // mais on laisse l'ancienne accessible au cas où.
-  if (platform::getEnvironmentVariable("ARCANE_SYNCHRONIZE_LIST_VERSION") == "1") {
-    m_use_serialize_list_v2 = false;
-    m_trace->info() << "Using MPI SerializeList version 1";
-  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -724,9 +716,7 @@ _waitSomeRequests(ArrayView<Request> requests, bool is_non_blocking)
 ISerializeMessageList* MpiParallelMng::
 _createSerializeMessageList()
 {
-  if (m_use_serialize_list_v2)
-    return new MP::internal::SerializeMessageList(messagePassingMng());
-  return new MpiSerializeMessageList(serializeDispatcher());
+  return new MP::internal::SerializeMessageList(messagePassingMng());
 }
 
 /*---------------------------------------------------------------------------*/

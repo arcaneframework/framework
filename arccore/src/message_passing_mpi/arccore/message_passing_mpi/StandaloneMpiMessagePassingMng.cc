@@ -155,7 +155,7 @@ create(MPI_Comm mpi_comm, bool clean_comm)
   _createAndSetDispatcher<long double>(dsp, mpm, adapter);
 
   dsp->setDispatcher(new MpiControlDispatcher(adapter));
-  dsp->setDispatcher(new MpiSerializeDispatcher(adapter));
+  dsp->setDispatcher(new MpiSerializeDispatcher(adapter, mpm));
 
   MPI_Datatype uint8_datatype = MpiBuiltIn::datatype(uint8_t{});
   {

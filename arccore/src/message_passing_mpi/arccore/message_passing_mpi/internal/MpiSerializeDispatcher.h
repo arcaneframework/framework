@@ -46,7 +46,7 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiSerializeDispatcher
 
  public:
 
-  explicit MpiSerializeDispatcher(MpiAdapter* adapter);
+  explicit MpiSerializeDispatcher(MpiAdapter* adapter, IMessagePassingMng* message_passing_mng);
   ~MpiSerializeDispatcher() override;
 
  public:
@@ -80,6 +80,7 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiSerializeDispatcher
  private:
 
   MpiAdapter* m_adapter = nullptr;
+  IMessagePassingMng* m_message_passing_mng = nullptr;
   ITraceMng* m_trace = nullptr;
   Int64 m_serialize_buffer_size;
   Int64 m_max_serialize_buffer_size;
