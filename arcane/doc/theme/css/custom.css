@@ -403,3 +403,16 @@ details[open] summary::before {
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+/*
+ * Pour Doxygen 1.10.0+
+ * Correction de la couleur de la première ligne des extraits de codes et
+ * ajout d'un espace entre les numéros de lignes et les lignes.
+ */
+#snippetLineno {
+  margin-right: 10px !important;
+  background-color: #34393c !important;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
