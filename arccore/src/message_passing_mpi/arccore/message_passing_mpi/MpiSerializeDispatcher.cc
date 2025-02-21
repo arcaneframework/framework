@@ -583,7 +583,6 @@ Ref<ISerializeMessageList> MpiSerializeDispatcher::
 createSerializeMessageListRef()
 {
   ISerializeMessageList* x = new internal::SerializeMessageList(m_message_passing_mng);
-  //MpiSerializeMessageList(this);
   return makeRef(x);
 }
 
