@@ -41,6 +41,7 @@ var addLinesNumbers = () => {
 
       let elem_span = document.createElement("span");
       elem_span.className = "lineno";
+      elem_span.id = "snippetLineno";
       elem_span.innerHTML = linei + 1;
 
       allLine[linei].insertBefore(elem_span, first_elem);
