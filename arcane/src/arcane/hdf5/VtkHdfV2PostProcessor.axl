@@ -3,6 +3,7 @@
 <service name="VtkHdfV2PostProcessor" parent-name="PostProcessorWriterBase"
          type="caseoption" type2="subdomain">
   <name lang='fr'>post-processeur-vtk-hdf</name>
+  <userclass>User</userclass>
   <description>
     Post Processeur au format VTK HDF Version 2 (https://kitware.github.io/vtk-examples/site/VTKFileFormats/#hdf-file-formats)
   </description>
