@@ -15,8 +15,11 @@
 
 #include "arccore/message_passing_mpi/MpiMessagePassingMng.h"
 #include "arccore/message_passing_mpi/internal/MpiAdapter.h"
+#include "arccore/message_passing_mpi/internal/MpiRequestList.h"
+
 #include "arccore/message_passing/Request.h"
-#include "arccore/base/NotImplementedException.h"
+#include "arccore/message_passing/IMessagePassingMng.h"
+#include "arccore/message_passing/Messages.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -27,8 +30,9 @@ namespace Arcane::MessagePassing::Mpi
 /*---------------------------------------------------------------------------*/
 
 MpiControlDispatcher::
-MpiControlDispatcher(MpiAdapter* adapter)
+MpiControlDispatcher(MpiAdapter* adapter, IMessagePassingMng* mpm)
 : m_adapter(adapter)
+, m_message_passing_mng(mpm)
 {
 }
 
@@ -113,6 +117,15 @@ void MpiControlDispatcher::
 setProfiler(IProfiler* p)
 {
   m_adapter->setProfiler(p);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Ref<IRequestList> MpiControlDispatcher::
+createRequestListRef()
+{
+  return createRef<MpiRequestList>(m_adapter);
 }
 
 /*---------------------------------------------------------------------------*/

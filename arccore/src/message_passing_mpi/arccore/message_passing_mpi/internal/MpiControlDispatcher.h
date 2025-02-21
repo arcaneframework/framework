@@ -16,7 +16,6 @@
 
 #include "arccore/message_passing_mpi/MessagePassingMpiGlobal.h"
 #include "arccore/message_passing/IControlDispatcher.h"
-#include "arccore/base/NotImplementedException.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -32,7 +31,7 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiControlDispatcher
 {
  public:
 
-  MpiControlDispatcher(MpiAdapter* adapter);
+  MpiControlDispatcher(MpiAdapter* adapter, IMessagePassingMng* message_passing_mng);
 
  public:
 
@@ -44,10 +43,7 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiControlDispatcher
   Request nonBlockingBarrier() override;
   MessageId probe(const PointToPointMessageInfo& message) override;
   MessageSourceInfo legacyProbe(const PointToPointMessageInfo& message) override;
-  Ref<IRequestList> createRequestListRef() override
-  {
-    ARCCORE_THROW(NotImplementedException,"");
-  }
+  Ref<IRequestList> createRequestListRef() override;
   IProfiler* profiler() const override;
   void setProfiler(IProfiler* p) override;
 
@@ -57,7 +53,8 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiControlDispatcher
 
  private:
 
-  MpiAdapter* m_adapter;
+  MpiAdapter* m_adapter = nullptr;
+  IMessagePassingMng* m_message_passing_mng;
 };
 
 /*---------------------------------------------------------------------------*/

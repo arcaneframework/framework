@@ -26,7 +26,6 @@ set(SOURCES
   MpiDatatype.cc
   MpiControlDispatcher.cc
   MpiRequestList.cc
-  MpiSerializeMessageList.cc
   MpiSerializeDispatcher.cc
   MpiTypeDispatcher.cc
   MpiMessagePassingMng.cc
@@ -42,7 +41,6 @@ set(SOURCES
   internal/MpiLock.h
   internal/MpiRequest.h
   internal/MpiRequestList.h
-  internal/MpiSerializeMessageList.h
   internal/MpiSerializeDispatcher.h
   internal/MpiTypeDispatcher.h
   internal/MpiTypeDispatcherImpl.h

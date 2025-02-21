@@ -15,11 +15,14 @@
 
 #include "arccore/message_passing_mpi/internal/MpiAdapter.h"
 #include "arccore/message_passing_mpi/MpiMessagePassingMng.h"
-#include "arccore/message_passing_mpi/internal/MpiSerializeMessageList.h"
 #include "arccore/message_passing_mpi/internal/MpiLock.h"
+
 #include "arccore/message_passing/Request.h"
+#include "arccore/message_passing/SerializeMessageList.h"
 #include "arccore/message_passing/internal/SubRequestCompletionInfo.h"
+
 #include "arccore/serialize/BasicSerializer.h"
+
 #include "arccore/base/NotImplementedException.h"
 #include "arccore/base/FatalErrorException.h"
 #include "arccore/base/NotSupportedException.h"
@@ -202,8 +205,9 @@ class MpiSerializeDispatcher::ReceiveSerializerSubRequest
 /*---------------------------------------------------------------------------*/
 
 MpiSerializeDispatcher::
-MpiSerializeDispatcher(MpiAdapter* adapter)
+MpiSerializeDispatcher(MpiAdapter* adapter, IMessagePassingMng* message_passing_mng)
 : m_adapter(adapter)
+, m_message_passing_mng(message_passing_mng)
 , m_trace(adapter->traceMng())
 , m_serialize_buffer_size(50000)
 //, m_serialize_buffer_size(20000000)
@@ -578,7 +582,7 @@ _castSerializer(ISerializer* serializer)
 Ref<ISerializeMessageList> MpiSerializeDispatcher::
 createSerializeMessageListRef()
 {
-  ISerializeMessageList* x = new MpiSerializeMessageList(this);
+  ISerializeMessageList* x = new internal::SerializeMessageList(m_message_passing_mng);
   return makeRef(x);
 }
 

@@ -532,12 +532,6 @@ add_test_message_passing(sub_all)
 arcane_add_test_message_passing_hybrid(parallelmng_all NB_MPI 2 NB_SHM 2 ARGS -We,MESSAGE_PASSING_TEST,all -arcane_opt direct_test ParallelMngTest null)
 arcane_add_test_message_passing_hybrid(parallelmng_sub_all NB_MPI 2 NB_SHM 2 ARGS -We,MESSAGE_PASSING_TEST,all -arcane_opt direct_test ParallelMngTest null)
 
-add_test(serialize_message_list_v1_4proc
-  ${ARCANE_TEST_DRIVER} launch -n 4
-  -We,MESSAGE_PASSING_TEST,serialize_message_list
-  -We,ARCANE_SYNCHRONIZE_LIST_VERSION,1
-  -arcane_opt direct_test ParallelMngTest null)
-
 # ----------------------------------------------------------------------------
 
 ARCANE_ADD_TEST_PARALLEL(parallel testParallel-1.arc 4)
