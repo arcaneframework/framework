@@ -65,7 +65,6 @@ set( ARCANE_SOURCES
   ParallelExchanger.cc
   ParallelExchanger.h
   ParallelMngUtilsFactoryBase.cc
-  ParallelMngUtilsFactoryBase.h
   ParallelReplication.cc
   ParallelReplication.h
   ParallelTopology.cc
@@ -152,6 +151,7 @@ set( ARCANE_SOURCES
   internal/MeshFactoryMng.cc
   internal/MeshMng.h
   internal/MeshMng.cc
+  internal/ParallelMngUtilsFactoryBase.h
   internal/ThreadBindingMng.h
   internal/ThreadBindingMng.cc
   internal/VariableMng.h

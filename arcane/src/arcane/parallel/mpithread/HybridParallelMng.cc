@@ -36,7 +36,7 @@
 #include "arcane/impl/TimerMng.h"
 #include "arcane/impl/ParallelReplication.h"
 #include "arcane/impl/SequentialParallelMng.h"
-#include "arcane/impl/ParallelMngUtilsFactoryBase.h"
+#include "arcane/impl/internal/ParallelMngUtilsFactoryBase.h"
 
 #include "arccore/message_passing/Messages.h"
 #include "arccore/message_passing/RequestListBase.h"

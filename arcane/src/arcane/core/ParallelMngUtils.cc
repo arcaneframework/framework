@@ -14,7 +14,7 @@
 #include "arcane/core/ParallelMngUtils.h"
 
 #include "arcane/core/IParallelMng.h"
-#include "arcane/core/IParallelMngUtilsFactory.h"
+#include "arcane/core/internal/IParallelMngUtilsFactory.h"
 #include "arcane/core/internal/IParallelMngInternal.h"
 
 /*---------------------------------------------------------------------------*/

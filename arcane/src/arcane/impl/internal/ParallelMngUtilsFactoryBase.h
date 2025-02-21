@@ -10,12 +10,12 @@
 /* Classe de base d'une fabrique pour les fonctions utilitaires de           */
 /* IParallelMng.                                                             */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_IMPL_PARALLELMNGUTILSFACTORY_H
-#define ARCANE_IMPL_PARALLELMNGUTILSFACTORY_H
+#ifndef ARCANE_IMPL_INTERNAL_PARALLELMNGUTILSFACTORY_H
+#define ARCANE_IMPL_INTERNAL_PARALLELMNGUTILSFACTORY_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/IParallelMngUtilsFactory.h"
+#include "arcane/core/internal/IParallelMngUtilsFactory.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

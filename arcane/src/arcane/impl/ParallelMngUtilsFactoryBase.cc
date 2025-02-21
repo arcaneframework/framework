@@ -12,7 +12,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/impl/ParallelMngUtilsFactoryBase.h"
+#include "arcane/impl/internal/ParallelMngUtilsFactoryBase.h"
 
 #include "arcane/utils/Real2.h"
 #include "arcane/utils/Real3.h"

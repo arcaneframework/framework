@@ -9,8 +9,8 @@
 /*                                                                           */
 /* Interface d'une fabrique pour les fonctions utilitaires de IParallelMng.  */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_IPARALLELMNGUTILSFACTORY_H
-#define ARCANE_IPARALLELMNGUTILSFACTORY_H
+#ifndef ARCANE_CORE_INTERNAL_IPARALLELMNGUTILSFACTORY_H
+#define ARCANE_CORE_INTERNAL_IPARALLELMNGUTILSFACTORY_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
