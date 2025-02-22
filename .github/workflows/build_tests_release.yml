@@ -104,6 +104,8 @@ jobs:
           - { version: { short: 'M' }, image: { short: 'U24_G13_CU126' } }
           - { version: { short: 'M' }, image: { short: 'U24_C18_CU126' } }
           - { version: { short: 'M' }, image: { short: 'U24_ACPP' } }
+          # Ce test est fait par build_tests_required.
+          - { image: { short: 'U24_C19' }, version: { short: 'M' }, config: { type: 'Check' }, mpi: { implementation: 'OMPI' } }
 
 
     name: '[${{matrix.image.short}}_${{matrix.version.short}}]_${{matrix.mpi.implementation}}_${{matrix.config.type}}'
