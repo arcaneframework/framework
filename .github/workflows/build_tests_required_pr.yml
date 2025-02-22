@@ -1,29 +1,8 @@
-name: '[Check] Build/Install/Test Arcane Framework (Ubuntu 22.04-24.04 / GCC 12-14 / CLang 16-19 / CUDA 12.6 / Minimal-Full)'
+name: '[Require PR] Build/Install/Test Arcane Framework (Ubuntu 24.04 / CLang 19 / Minimal)'
 
 on:
-  push:
-    branches: [ main, dev/cea ]
   pull_request:
     branches: [ main, dev/cea ]
-    paths-ignore:
-      - '**.css'
-      - '**.dox'
-      - '**.doxyfile'
-      - '**.geo'
-      - '**.goto'
-      - '**.html'
-      - '**.jpg'
-      - '**.js'
-      - '**.markdown'
-      - '**.md'
-      - '**.odg'
-      - '**.old'
-      - '**.png'
-      - '**.py'
-      - '**.samples'
-      - '**.svg'
-      - '**.webp'
-      - '**.yml'
   workflow_dispatch:
 
 concurrency:
@@ -36,26 +15,6 @@ jobs:
       fail-fast: false
       matrix:
         image:
-          - short: 'U22_G12'
-            long: 'ubuntu-2204'
-            compilo_name: 'gcc'
-            compilo_version: '12'
-            acc_compilo_name: ''
-            acc_compilo_version: ''
-            date: '20250112'
-            args: '-DARCCORE_CXX_STANDARD=23'
-            execute_tests: true
-
-          - short: 'U24_G14'
-            long: 'ubuntu-2404'
-            compilo_name: 'gcc'
-            compilo_version: '14'
-            acc_compilo_name: ''
-            acc_compilo_version: ''
-            date: '20250120'
-            args: '-DARCCORE_CXX_STANDARD=23'
-            execute_tests: true
-
           - short: 'U24_C19'
             long: 'ubuntu-2404'
             compilo_name: 'clang'
@@ -66,28 +25,10 @@ jobs:
             args: '-DARCCORE_CXX_STANDARD=23'
             execute_tests: true
 
-          - short: 'U24_G13_CU126'
-            long: 'ubuntu-2404'
-            compilo_name: 'gcc'
-            compilo_version: '13'
-            acc_compilo_name: 'cuda'
-            acc_compilo_version: '126'
-            date: '20250120'
-            # Disable googletest with CUDA because it requires a GPU driver
-            args: '-DARCCORE_CXX_STANDARD=20 -DARCANE_EXECUTE_ACCELERATOR_GOOGLETEST=OFF'
-            execute_tests: false
-
         version:
           - short: 'M'
             long: 'minimal'
             args: '-DARCANE_DISABLE_PERFCOUNTER_TESTS=ON'
-
-          - short: 'F'
-            long: 'full'
-            args: '-DARCANE_DISABLE_PERFCOUNTER_TESTS=ON
-              -DARCANE_DEFAULT_PARTITIONER=Metis
-              -DARCANE_USE_HASHTABLEMAP2_FOR_ITEMINTERNALMAP=ON
-              -DPTScotch_INCLUDE_DIR="/usr/include/scotch"'
 
         config:
           - type: 'Check'
@@ -97,16 +38,6 @@ jobs:
 
         mpi:
           - implementation: 'OMPI'
-          - implementation: 'MPICH'
-
-        exclude:
-          - { version: { short: 'F' }, mpi: { implementation: 'MPICH' } }
-          - { version: { short: 'M' }, image: { short: 'U24_G13_CU126' } }
-          - { version: { short: 'M' }, image: { short: 'U24_C18_CU126' } }
-          - { version: { short: 'M' }, image: { short: 'U24_ACPP' } }
-          # Ce test est fait par build_tests_required.
-          - { image: { short: 'U24_C19' }, version: { short: 'M' }, config: { type: 'Check' }, mpi: { implementation: 'OMPI' } }
-
 
     name: '[${{matrix.image.short}}_${{matrix.version.short}}]_${{matrix.mpi.implementation}}_${{matrix.config.type}}'
     # La partie 'uses' est déterminée à la compilation, donc on ne peut pas mettre de variable ${{}}.
