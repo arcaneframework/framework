@@ -21,6 +21,8 @@ La documentation développeur est plus libre et peut être composé uniquement d
 (même si la disposition présentée dans la page \subpage arcanedoc_doxygen est souhaitable
 dans les deux documentations).
 
+Pour configurer la documentation, c'est ici : \subpage arcanedoc_doc_config
+
 <br>
 
 Les pages/chapitres disponibles sont:

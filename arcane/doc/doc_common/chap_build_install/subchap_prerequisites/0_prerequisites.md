@@ -42,7 +42,7 @@ dépendances. Ce sous-chapitre est dédié à l'installation de ces dépendances
 <tr><td>[PETSc](https://gitlab.com/petsc/petsc) <td> <td>TODO
 <tr><td>[Trilinos](https://trilinos.github.io/) <td> <td>TODO
 <tr><td>[Zoltan](https://github.com/sandialabs/Zoltan) <td> <td>Bibliothèque permettant d'équilibrage de charge
-<tr><td>[Doxygen](https://doxygen.nl/) <td>1.9.1/1.9.8 <td>Génération de la documentation
+<tr><td>[Doxygen](https://doxygen.nl/) <td>1.9.1/1.13.2 <td>Génération de la documentation
 </table>
 </details>
 
