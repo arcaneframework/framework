@@ -12,11 +12,11 @@ Ce dépôt contient un Readme complet expliquant comment les tags des images son
 
 Les DockerFiles sont générés à la demande et certaines images sont mises à jour toutes les semaines.
 
-Les images peuvent être trouvées [ici](https://github.com/arcaneframework/containers/pkgs/container/arcane_ubuntu-2204).
+Les images peuvent être trouvées [ici](https://github.com/arcaneframework/containers/pkgs/container/arcane_ubuntu-2404).
 
 Exemple d'utilisation :
 ```sh
-IMAGE_ID=$(docker pull ghcr.io/arcaneframework/arcane_ubuntu-2204:gcc-12_full_release_latest)
+IMAGE_ID=$(docker pull ghcr.io/arcaneframework/arcane_ubuntu-2404:gcc-14_full_release_latest)
 CONTAINER_ID=$(docker run -dt "$IMAGE_ID")
 docker exec -it "$CONTAINER_ID" bash
 ```
@@ -31,11 +31,11 @@ Le dépôt GitHub hébergeant ces images est [ici](https://github.com/arcanefram
 Ce dépôt contient un Readme complet expliquant comment les tags des images sont formés.
 Chaque image a une branche qui lui est dédiée.
 
-Les images peuvent être trouvées [ici](https://github.com/arcaneframework/framework-ci/pkgs/container/ubuntu-2204).
+Les images peuvent être trouvées [ici](https://github.com/arcaneframework/framework-ci/pkgs/container/ubuntu-2404).
 
 Exemple d'utilisation :
 ```sh
-IMAGE_ID=$(docker pull ghcr.io/arcaneframework/ubuntu-2204:gcc-12_full_latest)
+IMAGE_ID=$(docker pull ghcr.io/arcaneframework/ubuntu-2404:gcc-14_full_latest)
 CONTAINER_ID=$(docker run -dt "$IMAGE_ID")
 docker exec -it "$CONTAINER_ID" bash
 ```
