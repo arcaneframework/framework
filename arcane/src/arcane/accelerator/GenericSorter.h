@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* GenericSorter.h                                             (C) 2000-2024 */
+/* GenericSorter.h                                             (C) 2000-2025 */
 /*                                                                           */
 /* Algorithme de tri.                                                        */
 /*---------------------------------------------------------------------------*/
@@ -134,8 +134,6 @@ namespace Arcane::Accelerator
 /*---------------------------------------------------------------------------*/
 /*!
  * \brief Algorithme générique de tri sur accélérateur.
- *
- * \warning API en cours de développement. Ne pas utiliser en dehors d'Arcane
  */
 class GenericSorter
 : private impl::GenericSorterBase
@@ -166,10 +164,7 @@ class GenericSorter
     if (output.size() < nb_item)
       ARCANE_FATAL("Output size '{0}' is smaller than input size '{1}'",
                    output.size(), nb_item);
-    auto compare_lambda = [] ARCCORE_HOST_DEVICE(const DataType& a, const DataType& b) {
-      return a < b;
-    };
-    gf.apply(*base_ptr, nb_item, input.data(), output.data(), compare_lambda);
+    gf.apply(*base_ptr, nb_item, input.data(), output.data(), std::less<DataType>{});
   }
 };
 
