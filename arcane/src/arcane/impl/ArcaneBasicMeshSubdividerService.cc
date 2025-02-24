@@ -1951,6 +1951,15 @@ subdivideMesh([[maybe_unused]] IPrimaryMesh* mesh)
   pattern_manager[IT_Hexaedron8] = PatternBuilder::hextohex();
   pattern_manager[IT_Tetraedron4] = PatternBuilder::tettotet();
 
+  if(options()->differentElementTypeOutput()){
+    pattern_manager[IT_Quad4] = PatternBuilder::quadtotri();
+    pattern_manager[IT_Triangle3] = PatternBuilder::tritoquad();
+    pattern_manager[IT_Hexaedron8] = PatternBuilder::hextotet24();
+    pattern_manager[IT_Tetraedron4] = PatternBuilder::tettohex();
+    info() << "Les motifs de rafinement ont changés pour les mailles ayant les types suivant:Quad4,Triangle3,Hexaedron8,Tetraedron4." ; 
+    info() << "Les type d'élément en sortie seront:\nQuad4->Triangle3\nTriangle3->Quad4\nHexaedron8->Tetraedron4\nTetraedron4->Hexaedron8" ;
+  }
+
   for (Integer i = 0; i < options()->nbSubdivision; i++) {
     _refineOnce(mesh, pattern_manager);
     debug() << i << "refine done";
