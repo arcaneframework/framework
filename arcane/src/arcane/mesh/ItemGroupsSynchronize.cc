@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemGroupsSynchronize.cc                                    (C) 2000-2021 */
+/* ItemGroupsSynchronize.cc                                    (C) 2000-2025 */
 /*                                                                           */
 /* Synchronisations des groupes.                                             */
 /*---------------------------------------------------------------------------*/
@@ -14,12 +14,13 @@
 #include "arcane/mesh/ItemGroupsSynchronize.h"
 
 #include "arcane/utils/ITraceMng.h"
+#include "arcane/utils/Math.h"
 
-#include "arcane/ItemEnumerator.h"
-#include "arcane/IMesh.h"
-#include "arcane/IItemFamily.h"
-#include "arcane/VariableBuildInfo.h"
-#include "arcane/ItemPrinter.h"
+#include "arcane/core/ItemEnumerator.h"
+#include "arcane/core/IMesh.h"
+#include "arcane/core/IItemFamily.h"
+#include "arcane/core/VariableBuildInfo.h"
+#include "arcane/core/ItemPrinter.h"
 
 #include "arcane/mesh/CommonItemGroupFilterer.h"
 

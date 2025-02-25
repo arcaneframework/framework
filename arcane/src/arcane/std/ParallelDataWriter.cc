@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ParallelDataWriter.cc                                       (C) 2000-2024 */
+/* ParallelDataWriter.cc                                       (C) 2000-2025 */
 /*                                                                           */
 /* Lecteur/Ecrivain de IData en parallèle.                                   */
 /*---------------------------------------------------------------------------*/
@@ -14,6 +14,7 @@
 #include "arcane/std/internal/ParallelDataWriter.h"
 
 #include "arcane/utils/Ref.h"
+#include "arcane/utils/Math.h"
 
 #include "arcane/core/IParallelMng.h"
 #include "arcane/core/IParallelExchanger.h"

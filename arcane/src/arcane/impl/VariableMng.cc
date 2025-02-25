@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* VariableMng.cc                                              (C) 2000-2024 */
+/* VariableMng.cc                                              (C) 2000-2025 */
 /*                                                                           */
 /* Classe gérant l'ensemble des variables.                                   */
 /*---------------------------------------------------------------------------*/
@@ -19,6 +19,7 @@
 #include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/JSONWriter.h"
 #include "arcane/utils/OStringStream.h"
+#include "arcane/utils/Math.h"
 
 #include "arcane/core/ArcaneException.h"
 #include "arcane/core/VarRefEnumerator.h"
