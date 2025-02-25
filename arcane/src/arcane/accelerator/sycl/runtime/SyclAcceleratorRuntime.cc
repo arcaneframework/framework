@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* SyclAcceleratorRuntime.cc                                   (C) 2000-2024 */
+/* SyclAcceleratorRuntime.cc                                   (C) 2000-2025 */
 /*                                                                           */
 /* Runtime pour 'SYCL'.                                                      */
 /*---------------------------------------------------------------------------*/
@@ -16,6 +16,7 @@
 
 #include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/NotSupportedException.h"
+#include "arcane/utils/NotImplementedException.h"
 #include "arcane/utils/FatalErrorException.h"
 #include "arcane/utils/IMemoryRessourceMng.h"
 #include "arcane/utils/internal/IMemoryRessourceMngInternal.h"
@@ -214,6 +215,11 @@ class SyclRunQueueEvent
     Int64 start = event.get_profiling_info<sycl::info::event_profiling::command_start>();
     Int64 end = event.get_profiling_info<sycl::info::event_profiling::command_end>();
     return (end - start);
+  }
+
+  bool hasPendingWork() final
+  {
+    ARCANE_THROW(NotImplementedException,"hasPendingWork()");
   }
 
  private:

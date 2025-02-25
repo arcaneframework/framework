@@ -232,6 +232,15 @@ class CudaRunQueueEvent
     return nano_time;
   }
 
+  bool hasPendingWork() final
+  {
+    cudaError_t v = cudaEventQuery(m_cuda_event);
+    if (v == cudaErrorNotReady)
+      return true;
+    ARCANE_CHECK_CUDA(v);
+    return false;
+  }
+
  private:
 
   cudaEvent_t m_cuda_event;
