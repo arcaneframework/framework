@@ -13,7 +13,18 @@
             >
       <userclass>User</userclass>
       <description>
-        Nom de subdivision à effectuer.
+        Nombre de subdivision à effectuer.
+      </description>
+    </simple>
+
+    <simple name="different-element-type-output"
+            type="int32"
+            default="0"
+            >
+      <userclass>User</userclass>
+      <description>
+        Permet de définir un autre type de cellule après la subdivision. Ne fonctionne que pour les triangles, quadrangles, tétraèdres, hexaèdres. 
+        Par exemple, considérons un maillage initial avec des éléments quadrangulaire, si cette option est différente de zéro les nouvelle mailles seront des triangles.
       </description>
     </simple>
 
