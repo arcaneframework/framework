@@ -14,6 +14,8 @@
 
 #include "CartesianMeshNumberingMng.h"
 
+#include "arcane/utils/Vector2.h"
+
 #include "arcane/core/IMesh.h"
 #include "arcane/core/IParallelMng.h"
 #include "arcane/core/VariableTypes.h"
@@ -39,7 +41,7 @@ CartesianMeshNumberingMng(IMesh* mesh)
 , m_converting_numbering_face(true)
 , m_ori_level(0)
 {
-  auto* m_generation_info = ICartesianMeshGenerationInfo::getReference(m_mesh, true);
+  const auto* m_generation_info = ICartesianMeshGenerationInfo::getReference(m_mesh, true);
 
   Int64ConstArrayView global_nb_cells_by_direction = m_generation_info->globalNbCells();
   m_nb_cell.x = global_nb_cells_by_direction[MD_DirX];
@@ -73,10 +75,10 @@ CartesianMeshNumberingMng(IMesh* mesh)
   // Tant qu'on utilise la numérotation d'origine pour le niveau 0, on doit utiliser
   // une conversion de la numérotation d'origine vers la nouvelle.
   if (m_converting_numbering_face) {
-    UniqueArray<Int64> face_uid(nbFaceByCell());
+    UniqueArray<Int64> face_uid(CartesianMeshNumberingMng::nbFaceByCell());
     ENUMERATE_ (Cell, icell, m_mesh->allLevelCells(0)) {
-      cellFaceUniqueIds(face_uid, 0, icell->uniqueId());
-      for (Integer i = 0; i < nbFaceByCell(); ++i) {
+      CartesianMeshNumberingMng::cellFaceUniqueIds(face_uid, 0, icell->uniqueId());
+      for (Integer i = 0; i < CartesianMeshNumberingMng::nbFaceByCell(); ++i) {
         m_face_ori_numbering_to_new[icell->face(i).uniqueId()] = face_uid[i];
         m_face_new_numbering_to_ori[face_uid[i]] = icell->face(i).uniqueId();
         //        debug() << "Face Ori <-> New -- Ori : " << icell->face(i).uniqueId() << " -- New : " << face_uid[i];

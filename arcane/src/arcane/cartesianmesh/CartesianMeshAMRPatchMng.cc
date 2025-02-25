@@ -11,7 +11,16 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "CartesianMeshAMRPatchMng.h"
+#include <arcane/cartesianmesh/CartesianMeshAMRPatchMng.h>
+
+#include "arcane/cartesianmesh/CellDirectionMng.h"
+#include "arcane/cartesianmesh/CartesianMeshNumberingMng.h"
+#include "arcane/cartesianmesh/internal/ICartesianMeshInternal.h"
+
+#include "arcane/utils/Array2View.h"
+#include "arcane/utils/Array3View.h"
+#include "arcane/utils/FixedArray.h"
+#include "arcane/utils/Vector2.h"
 
 #include "arcane/core/IGhostLayerMng.h"
 #include "arcane/core/IMesh.h"
@@ -20,12 +29,6 @@
 #include "arcane/core/VariableTypes.h"
 #include "arcane/core/IMeshModifier.h"
 
-#include "arcane/cartesianmesh/CellDirectionMng.h"
-#include "arcane/cartesianmesh/CartesianMeshNumberingMng.h"
-#include "arcane/cartesianmesh/internal/ICartesianMeshInternal.h"
-
-#include "arcane/utils/Array2View.h"
-#include "arcane/utils/Array3View.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -41,7 +44,7 @@ CartesianMeshAMRPatchMng(ICartesianMesh* cmesh)
 : TraceAccessor(cmesh->mesh()->traceMng())
 , m_mesh(cmesh->mesh())
 , m_cmesh(cmesh)
-, m_num_mng(Arccore::makeRef(new CartesianMeshNumberingMng(cmesh->mesh())))
+, m_num_mng(makeRef(new CartesianMeshNumberingMng(cmesh->mesh())))
 {
 }
 
@@ -63,7 +66,7 @@ flagCellToRefine(Int32ConstArrayView cells_lids)
 /*---------------------------------------------------------------------------*/
 
 void CartesianMeshAMRPatchMng::
-_syncFlagCell()
+_syncFlagCell() const
 {
   if (!m_mesh->parallelMng()->isParallel())
     return;
@@ -282,17 +285,17 @@ refine()
     // parente (appartient à un autre sous-domaine) et (est en train d'être raffiné),
     // on crée ce noeud mais on lui donne comme propriétaire le processus à qui appartient
     // la maille parente à gauche.
-    const bool mask_node_if_cell_left[] = { false, true, true, false };
-    const bool mask_node_if_cell_bottom[] = { false, false, true, true };
+    constexpr bool mask_node_if_cell_left[] = { false, true, true, false };
+    constexpr bool mask_node_if_cell_bottom[] = { false, false, true, true };
 
-    const bool mask_node_if_cell_right[] = { true, false, false, true };
-    const bool mask_node_if_cell_top[] = { true, true, false, false };
+    constexpr bool mask_node_if_cell_right[] = { true, false, false, true };
+    constexpr bool mask_node_if_cell_top[] = { true, true, false, false };
 
-    const bool mask_face_if_cell_left[] = { true, true, true, false };
-    const bool mask_face_if_cell_bottom[] = { false, true, true, true };
+    constexpr bool mask_face_if_cell_left[] = { true, true, true, false };
+    constexpr bool mask_face_if_cell_bottom[] = { false, true, true, true };
 
-    const bool mask_face_if_cell_right[] = { true, false, true, true };
-    const bool mask_face_if_cell_top[] = { true, true, false, true };
+    constexpr bool mask_face_if_cell_right[] = { true, false, true, true };
+    constexpr bool mask_face_if_cell_top[] = { true, true, false, true };
 
     // Pour la taille :
     // - on a "cell_to_refine_internals.size() * 4" mailles enfants,
@@ -310,6 +313,10 @@ refine()
     // - on a (cell_to_refine_internals.size() * 9) uniqueIds de noeuds.
     nodes_infos.reserve(cell_to_refine_internals.size() * 9);
 
+    FixedArray<Int64, 9> uid_cells_around_parent_cell_1d;
+    FixedArray<Int32, 9> owner_cells_around_parent_cell_1d;
+    FixedArray<Int32, 9> flags_cells_around_parent_cell_1d;
+
     for (Cell parent_cell : cell_to_refine_internals) {
       const Int64 parent_cell_uid = parent_cell.uniqueId();
       const Int32 parent_cell_level = parent_cell.level();
@@ -323,11 +330,7 @@ refine()
 
       const Integer pattern = m_num_mng->pattern();
 
-      UniqueArray<Int64> uid_cells_around_parent_cell_1d(9);
-      UniqueArray<Int32> owner_cells_around_parent_cell_1d(9);
-      UniqueArray<Int32> flags_cells_around_parent_cell_1d(9);
-
-      m_num_mng->cellUniqueIdsAroundCell(uid_cells_around_parent_cell_1d, parent_cell);
+      m_num_mng->cellUniqueIdsAroundCell(uid_cells_around_parent_cell_1d.view(), parent_cell);
 
       for (Integer i = 0; i < 9; ++i) {
         Int64 uid_cell = uid_cells_around_parent_cell_1d[i];
@@ -378,7 +381,7 @@ refine()
       // On simplifie avec un tableau de booléens.
       // Si true, alors on doit appliquer la priorité de propriété.
       // Si false, alors on considère qu'il n'y a pas de maille à la position définie.
-      bool is_cell_around_parent_cell_present_and_useful[3][3] = { { false } };
+      FixedArray<FixedArray<bool, 3>, 3> is_cell_around_parent_cell_present_and_useful;
 
       // Pour les mailles prioritaires sur nous, on doit regarder les deux flags.
       // Si une maille a le flag "II_Refine", on n'existe pas pour elle donc elle prend la propriété
@@ -406,17 +409,17 @@ refine()
 
       // En plus de regarder si chaque maille parent autour de notre maille parent existe et possède (II_Inactive) ou possédera (II_Refine) des enfants...
       // ... on regarde si chaque maille parent est présente sur notre sous-domaine, que ce soit une maille fantôme ou non.
-      auto is_cell_around_parent_cell_in_subdomain = [&](Integer y, Integer x) {
+      auto is_cell_around_parent_cell_in_subdomain = [&](const Integer y, const Integer x) {
         return is_cell_around_parent_cell_present_and_useful[y][x] && (flags_cells_around_parent_cell(y, x) & ItemFlags::II_UserMark1);
       };
 
       // ... on regarde si chaque maille parent est possédé par le même propriétaire que notre maille parent.
-      auto is_cell_around_parent_cell_same_owner = [&](Integer y, Integer x) {
+      auto is_cell_around_parent_cell_same_owner = [&](const Integer y, const Integer x) {
         return is_cell_around_parent_cell_present_and_useful[y][x] && (owner_cells_around_parent_cell(y, x) == owner_cells_around_parent_cell(1, 1));
       };
 
       // ... on regarde si chaque maille parent a un propriétaire différent par rapport à notre maille parent.
-      auto is_cell_around_parent_cell_different_owner = [&](Integer y, Integer x) {
+      auto is_cell_around_parent_cell_different_owner = [&](const Integer y, const Integer x) {
         return is_cell_around_parent_cell_present_and_useful[y][x] && (owner_cells_around_parent_cell(y, x) != owner_cells_around_parent_cell(1, 1));
       };
 
@@ -432,8 +435,8 @@ refine()
           m_num_mng->cellNodeUniqueIds(child_nodes_uids, parent_cell_level + 1, Int64x2(i, j));
           m_num_mng->cellFaceUniqueIds(child_faces_uids, parent_cell_level + 1, Int64x2(i, j));
 
-          const Integer type_cell = IT_Quad4;
-          const Integer type_face = IT_Line2;
+          constexpr Integer type_cell = IT_Quad4;
+          constexpr Integer type_face = IT_Line2;
 
           // Partie Cell.
           cells_infos.add(type_cell);
@@ -767,21 +770,21 @@ refine()
     // parente (appartient à un autre sous-domaine) et (est en train d'être raffiné),
     // on crée ce noeud mais on lui donne comme propriétaire le processus à qui appartient
     // la maille parente à gauche.
-    const bool mask_node_if_cell_left[] = { false, true, true, false, false, true, true, false };
-    const bool mask_node_if_cell_bottom[] = { false, false, true, true, false, false, true, true };
-    const bool mask_node_if_cell_rear[] = { false, false, false, false, true, true, true, true };
+    constexpr bool mask_node_if_cell_left[] = { false, true, true, false, false, true, true, false };
+    constexpr bool mask_node_if_cell_bottom[] = { false, false, true, true, false, false, true, true };
+    constexpr bool mask_node_if_cell_rear[] = { false, false, false, false, true, true, true, true };
 
-    const bool mask_node_if_cell_right[] = { true, false, false, true, true, false, false, true };
-    const bool mask_node_if_cell_top[] = { true, true, false, false, true, true, false, false };
-    const bool mask_node_if_cell_front[] = { true, true, true, true, false, false, false, false };
+    constexpr bool mask_node_if_cell_right[] = { true, false, false, true, true, false, false, true };
+    constexpr bool mask_node_if_cell_top[] = { true, true, false, false, true, true, false, false };
+    constexpr bool mask_node_if_cell_front[] = { true, true, true, true, false, false, false, false };
 
-    const bool mask_face_if_cell_left[] = { true, false, true, true, true, true };
-    const bool mask_face_if_cell_bottom[] = { true, true, false, true, true, true };
-    const bool mask_face_if_cell_rear[] = { false, true, true, true, true, true };
+    constexpr bool mask_face_if_cell_left[] = { true, false, true, true, true, true };
+    constexpr bool mask_face_if_cell_bottom[] = { true, true, false, true, true, true };
+    constexpr bool mask_face_if_cell_rear[] = { false, true, true, true, true, true };
 
-    const bool mask_face_if_cell_right[] = { true, true, true, true, false, true };
-    const bool mask_face_if_cell_top[] = { true, true, true, true, true, false };
-    const bool mask_face_if_cell_front[] = { true, true, true, false, true, true };
+    constexpr bool mask_face_if_cell_right[] = { true, true, true, true, false, true };
+    constexpr bool mask_face_if_cell_top[] = { true, true, true, true, true, false };
+    constexpr bool mask_face_if_cell_front[] = { true, true, true, false, true, true };
 
     // Petite différence par rapport au 2D. Pour le 2D, la position des noeuds des faces
     // dans le tableau "child_nodes_uids" est toujours pareil (l et l+1, voir le 2D).
@@ -790,14 +793,14 @@ refine()
     // (Exemple : pour la face 1 (même ordre d'énumération qu'Arcane), on doit prendre le
     // tableau "nodes_in_face_1" et donc les noeuds "child_nodes_uids[0]", "child_nodes_uids[3]",
     // "child_nodes_uids[7]" et "child_nodes_uids[4]").
-    const Integer nodes_in_face_0[] = { 0, 1, 2, 3 };
-    const Integer nodes_in_face_1[] = { 0, 3, 7, 4 };
-    const Integer nodes_in_face_2[] = { 0, 1, 5, 4 };
-    const Integer nodes_in_face_3[] = { 4, 5, 6, 7 };
-    const Integer nodes_in_face_4[] = { 1, 2, 6, 5 };
-    const Integer nodes_in_face_5[] = { 3, 2, 6, 7 };
+    constexpr Integer nodes_in_face_0[] = { 0, 1, 2, 3 };
+    constexpr Integer nodes_in_face_1[] = { 0, 3, 7, 4 };
+    constexpr Integer nodes_in_face_2[] = { 0, 1, 5, 4 };
+    constexpr Integer nodes_in_face_3[] = { 4, 5, 6, 7 };
+    constexpr Integer nodes_in_face_4[] = { 1, 2, 6, 5 };
+    constexpr Integer nodes_in_face_5[] = { 3, 2, 6, 7 };
 
-    const Integer nb_nodes_in_face = 4;
+    constexpr Integer nb_nodes_in_face = 4;
 
     // Pour la taille :
     // - on a "cell_to_refine_internals.size() * 8" mailles enfants,
@@ -815,6 +818,10 @@ refine()
     // - on a (cell_to_refine_internals.size() * 27) uniqueIds de noeuds.
     nodes_infos.reserve(cell_to_refine_internals.size() * 27);
 
+    FixedArray<Int64, 27> uid_cells_around_parent_cell_1d;
+    FixedArray<Int32, 27> owner_cells_around_parent_cell_1d;
+    FixedArray<Int32, 27> flags_cells_around_parent_cell_1d;
+
     for (Cell parent_cell : cell_to_refine_internals) {
       const Int64 parent_cell_uid = parent_cell.uniqueId();
       const Int32 parent_cell_level = parent_cell.level();
@@ -829,11 +836,7 @@ refine()
 
       const Integer pattern = m_num_mng->pattern();
 
-      UniqueArray<Int64> uid_cells_around_parent_cell_1d(27);
-      UniqueArray<Int32> owner_cells_around_parent_cell_1d(27);
-      UniqueArray<Int32> flags_cells_around_parent_cell_1d(27);
-
-      m_num_mng->cellUniqueIdsAroundCell(uid_cells_around_parent_cell_1d, parent_cell);
+      m_num_mng->cellUniqueIdsAroundCell(uid_cells_around_parent_cell_1d.view(), parent_cell);
 
       for (Integer i = 0; i < 27; ++i) {
         Int64 uid_cell = uid_cells_around_parent_cell_1d[i];
@@ -887,7 +890,7 @@ refine()
       // On simplifie avec un tableau de booléens.
       // Si true, alors on doit appliquer la priorité de propriété.
       // Si false, alors on considère qu'il n'y a pas de maille à la position définie.
-      bool is_cell_around_parent_cell_present_and_useful[3][3][3] = { { { false } } };
+      FixedArray<FixedArray<FixedArray<bool, 3>, 3>, 3> is_cell_around_parent_cell_present_and_useful;
 
       // Pour les mailles prioritaires sur nous, on doit regarder les deux flags.
       // Si une maille a le flag "II_Refine", on n'existe pas pour elle donc elle prend la propriété
@@ -935,17 +938,17 @@ refine()
 
       // En plus de regarder si chaque maille parent autour de notre maille parent existe et possède (II_Inactive) ou possédera (II_Refine) des enfants...
       // ... on regarde si chaque maille parent est présente sur notre sous-domaine, que ce soit une maille fantôme ou non.
-      auto is_cell_around_parent_cell_in_subdomain = [&](Integer z, Integer y, Integer x) {
+      auto is_cell_around_parent_cell_in_subdomain = [&](const Integer z, const Integer y, const Integer x) {
         return is_cell_around_parent_cell_present_and_useful[z][y][x] && (flags_cells_around_parent_cell(z, y, x) & ItemFlags::II_UserMark1);
       };
 
       // ... on regarde si chaque maille parent est possédé par le même propriétaire que notre maille parent.
-      auto is_cell_around_parent_cell_same_owner = [&](Integer z, Integer y, Integer x) {
+      auto is_cell_around_parent_cell_same_owner = [&](const Integer z, const Integer y, const Integer x) {
         return is_cell_around_parent_cell_present_and_useful[z][y][x] && (owner_cells_around_parent_cell(z, y, x) == owner_cells_around_parent_cell(1, 1, 1));
       };
 
       // ... on regarde si chaque maille parent a un propriétaire différent par rapport à notre maille parent.
-      auto is_cell_around_parent_cell_different_owner = [&](Integer z, Integer y, Integer x) {
+      auto is_cell_around_parent_cell_different_owner = [&](const Integer z, const Integer y, const Integer x) {
         return is_cell_around_parent_cell_present_and_useful[z][y][x] && (owner_cells_around_parent_cell(z, y, x) != owner_cells_around_parent_cell(1, 1, 1));
       };
 
@@ -962,8 +965,8 @@ refine()
             m_num_mng->cellNodeUniqueIds(child_nodes_uids, parent_cell_level + 1, Int64x3(i, j, k));
             m_num_mng->cellFaceUniqueIds(child_faces_uids, parent_cell_level + 1, Int64x3(i, j, k));
 
-            const Integer type_cell = IT_Hexaedron8;
-            const Integer type_face = IT_Quad4;
+            constexpr Integer type_cell = IT_Hexaedron8;
+            constexpr Integer type_face = IT_Quad4;
 
             // Partie Cell.
             cells_infos.add(type_cell);
@@ -2122,22 +2125,22 @@ coarse()
     // Masques permettant de savoir si on doit créer une faces/noeuds (true)
     // ou si on doit regarder la maille d'à côté avant (false).
     // Rappel que le parcours des faces par Arcane est dans l'ordre NumPad{2, 6, 8, 4}.
-    const bool mask_face_if_cell_left[] = { true, true, true, false };
-    const bool mask_face_if_cell_bottom[] = { false, true, true, true };
+    constexpr bool mask_face_if_cell_left[] = { true, true, true, false };
+    constexpr bool mask_face_if_cell_bottom[] = { false, true, true, true };
 
     // Rappel que le parcours des nodes par Arcane est dans l'ordre NumPad{1, 3, 9, 7}.
-    const bool mask_node_if_cell_left[] = { false, true, true, false };
-    const bool mask_node_if_cell_bottom[] = { false, false, true, true };
+    constexpr bool mask_node_if_cell_left[] = { false, true, true, false };
+    constexpr bool mask_node_if_cell_bottom[] = { false, false, true, true };
+
+    FixedArray<Int64, 9> cells_uid_around;
+    FixedArray<Int32, 9> owner_cells_around_parent_cell_1d;
+    FixedArray<bool, 9> is_not_in_subdomain_cells_around_parent_cell_1d;
 
     // Pour le raffinement, on parcourait les mailles parents existantes.
     // Ici, les mailles parents n'existent pas encore, donc on parcours les uid.
     for (Int64 parent_cell_uid : cell_uid_to_create) {
 
-      UniqueArray<Int64> cells_uid_around(9);
-      m_num_mng->cellUniqueIdsAroundCell(cells_uid_around, parent_cell_uid, -1);
-
-      UniqueArray<Int32> owner_cells_around_parent_cell_1d(9);
-      UniqueArray<bool> is_not_in_subdomain_cells_around_parent_cell_1d(9);
+      m_num_mng->cellUniqueIdsAroundCell(cells_uid_around.view(), parent_cell_uid, -1);
 
       ConstArray2View owner_cells_around_parent_cell(owner_cells_around_parent_cell_1d.data(), 3, 3);
       // Attention au "not" dans le nom de la variable.
@@ -2161,11 +2164,11 @@ coarse()
       // Ces deux lambdas sont différentes.
       // Quand une parent_cell n'existe pas, il y a -1 dans le tableau adéquat,
       // la première lambda répondra donc forcément true alors que la seconde false.
-      auto is_cell_around_parent_cell_different_owner = [&](Integer y, Integer x) {
+      auto is_cell_around_parent_cell_different_owner = [&](const Integer y, const Integer x) {
         return (owner_cells_around_parent_cell(y, x) != owner_cells_around_parent_cell(1, 1));
       };
 
-      auto is_cell_around_parent_cell_exist_and_different_owner = [&](Integer y, Integer x) {
+      auto is_cell_around_parent_cell_exist_and_different_owner = [&](const Integer y, const Integer x) {
         return (owner_cells_around_parent_cell(y, x) != -1 && (owner_cells_around_parent_cell(y, x) != owner_cells_around_parent_cell(1, 1)));
       };
 
@@ -2180,8 +2183,8 @@ coarse()
       m_num_mng->cellNodeUniqueIds(parent_nodes_uids, -1, parent_cell_uid);
       m_num_mng->cellFaceUniqueIds(parent_faces_uids, -1, parent_cell_uid);
 
-      const Integer type_cell = IT_Quad4;
-      const Integer type_face = IT_Line2;
+      constexpr Integer type_cell = IT_Quad4;
+      constexpr Integer type_face = IT_Line2;
 
       // Partie Cell.
       cells_infos.add(type_cell);
@@ -2192,8 +2195,6 @@ coarse()
 
       // Partie Face.
       for (Integer l = 0; l < m_num_mng->nbFaceByCell(); ++l) {
-        Integer parent_face_owner = -1;
-
         // On regarde si l'on doit traiter la face.
         // Si mask_face_if_cell_left[l] == false, on doit regarder si la maille à gauche est à nous ou non
         // ou si la maille à gauche est dans notre sous-domaine ou non.
@@ -2202,6 +2203,7 @@ coarse()
         if (
         (mask_face_if_cell_left[l] || is_cell_around_parent_cell_different_owner(1, 0) || is_not_in_subdomain_cells_around_parent_cell(1, 0)) &&
         (mask_face_if_cell_bottom[l] || is_cell_around_parent_cell_different_owner(0, 1) || is_not_in_subdomain_cells_around_parent_cell(0, 1))) {
+          Integer parent_face_owner = -1;
           faces_infos.add(type_face);
           faces_infos.add(parent_faces_uids[l]);
 
@@ -2234,10 +2236,10 @@ coarse()
       // Cette partie est assez ressemblante à la partie face, mis à part le fait qu'il peut y avoir
       // plus de propriétaires possibles.
       for (Integer l = 0; l < m_num_mng->nbNodeByCell(); ++l) {
-        Integer parent_node_owner = -1;
         if (
         (mask_node_if_cell_left[l] || is_cell_around_parent_cell_different_owner(1, 0) || is_not_in_subdomain_cells_around_parent_cell(1, 0)) &&
         (mask_node_if_cell_bottom[l] || is_cell_around_parent_cell_different_owner(0, 1) || is_not_in_subdomain_cells_around_parent_cell(0, 1))) {
+          Integer parent_node_owner = -1;
           nodes_infos.add(parent_nodes_uids[l]);
           total_nb_nodes++;
 
@@ -2296,13 +2298,13 @@ coarse()
 
     // Masques permettant de savoir si on doit créer une faces/noeuds (true)
     // ou si on doit regarder la maille d'à côté avant (false).
-    const bool mask_node_if_cell_left[] = { false, true, true, false, false, true, true, false };
-    const bool mask_node_if_cell_bottom[] = { false, false, true, true, false, false, true, true };
-    const bool mask_node_if_cell_rear[] = { false, false, false, false, true, true, true, true };
+    constexpr bool mask_node_if_cell_left[] = { false, true, true, false, false, true, true, false };
+    constexpr bool mask_node_if_cell_bottom[] = { false, false, true, true, false, false, true, true };
+    constexpr bool mask_node_if_cell_rear[] = { false, false, false, false, true, true, true, true };
 
-    const bool mask_face_if_cell_left[] = { true, false, true, true, true, true };
-    const bool mask_face_if_cell_bottom[] = { true, true, false, true, true, true };
-    const bool mask_face_if_cell_rear[] = { false, true, true, true, true, true };
+    constexpr bool mask_face_if_cell_left[] = { true, false, true, true, true, true };
+    constexpr bool mask_face_if_cell_bottom[] = { true, true, false, true, true, true };
+    constexpr bool mask_face_if_cell_rear[] = { false, true, true, true, true, true };
 
     // Petite différence par rapport au 2D. Pour le 2D, la position des noeuds des faces
     // dans le tableau "parent_nodes_uids" est toujours pareil (l et l+1, voir le 2D).
@@ -2311,24 +2313,23 @@ coarse()
     // (Exemple : pour la face 1 (même ordre d'énumération qu'Arcane), on doit prendre le
     // tableau "nodes_in_face_1" et donc les noeuds "parent_nodes_uids[0]", "parent_nodes_uids[3]",
     // "parent_nodes_uids[7]" et "parent_nodes_uids[4]").
-    const Integer nodes_in_face_0[] = { 0, 1, 2, 3 };
-    const Integer nodes_in_face_1[] = { 0, 3, 7, 4 };
-    const Integer nodes_in_face_2[] = { 0, 1, 5, 4 };
-    const Integer nodes_in_face_3[] = { 4, 5, 6, 7 };
-    const Integer nodes_in_face_4[] = { 1, 2, 6, 5 };
-    const Integer nodes_in_face_5[] = { 3, 2, 6, 7 };
+    constexpr Integer nodes_in_face_0[] = { 0, 1, 2, 3 };
+    constexpr Integer nodes_in_face_1[] = { 0, 3, 7, 4 };
+    constexpr Integer nodes_in_face_2[] = { 0, 1, 5, 4 };
+    constexpr Integer nodes_in_face_3[] = { 4, 5, 6, 7 };
+    constexpr Integer nodes_in_face_4[] = { 1, 2, 6, 5 };
+    constexpr Integer nodes_in_face_5[] = { 3, 2, 6, 7 };
 
-    const Integer nb_nodes_in_face = 4;
+    constexpr Integer nb_nodes_in_face = 4;
+    FixedArray<Int64, 27> cells_uid_around;
+    FixedArray<Int32, 27> owner_cells_around_parent_cell_1d;
+    FixedArray<bool, 27> is_not_in_subdomain_cells_around_parent_cell_1d;
 
     // Pour le raffinement, on parcourait les mailles parents existantes.
     // Ici, les mailles parents n'existent pas encore, donc on parcours les uid.
     for (Int64 parent_cell_uid : cell_uid_to_create) {
 
-      UniqueArray<Int64> cells_uid_around(27);
-      m_num_mng->cellUniqueIdsAroundCell(cells_uid_around, parent_cell_uid, -1);
-
-      UniqueArray<Int32> owner_cells_around_parent_cell_1d(27);
-      UniqueArray<bool> is_not_in_subdomain_cells_around_parent_cell_1d(27);
+      m_num_mng->cellUniqueIdsAroundCell(cells_uid_around.view(), parent_cell_uid, -1);
 
       ConstArray3View owner_cells_around_parent_cell(owner_cells_around_parent_cell_1d.data(), 3, 3, 3);
       // Attention au "not" dans le nom de la variable.
@@ -2352,11 +2353,11 @@ coarse()
       // Ces deux lambdas sont différentes.
       // Quand une parent_cell n'existe pas, il y a -1 dans le tableau adéquat,
       // la première lambda répondra donc forcément true alors que la seconde false.
-      auto is_cell_around_parent_cell_different_owner = [&](Integer z, Integer y, Integer x) {
+      auto is_cell_around_parent_cell_different_owner = [&](const Integer z, const Integer y, const Integer x) {
         return (owner_cells_around_parent_cell(z, y, x) != owner_cells_around_parent_cell(1, 1, 1));
       };
 
-      auto is_cell_around_parent_cell_exist_and_different_owner = [&](Integer z, Integer y, Integer x) {
+      auto is_cell_around_parent_cell_exist_and_different_owner = [&](const Integer z, const Integer y, const Integer x) {
         return (owner_cells_around_parent_cell(z, y, x) != -1 && (owner_cells_around_parent_cell(z, y, x) != owner_cells_around_parent_cell(1, 1, 1)));
       };
 
@@ -2372,8 +2373,8 @@ coarse()
       m_num_mng->cellNodeUniqueIds(parent_nodes_uids, -1, parent_cell_uid);
       m_num_mng->cellFaceUniqueIds(parent_faces_uids, -1, parent_cell_uid);
 
-      const Integer type_cell = IT_Hexaedron8;
-      const Integer type_face = IT_Quad4;
+      constexpr Integer type_cell = IT_Hexaedron8;
+      constexpr Integer type_face = IT_Quad4;
 
       // Partie Cell.
       cells_infos.add(type_cell);
@@ -2384,8 +2385,6 @@ coarse()
 
       // Partie Face.
       for (Integer l = 0; l < m_num_mng->nbFaceByCell(); ++l) {
-        Integer parent_face_owner = -1;
-
         // On regarde si l'on doit traiter la face.
         // Si mask_face_if_cell_left[l] == false, on doit regarder si la maille à gauche est à nous ou non
         // ou si la maille à gauche est dans notre sous-domaine ou non.
@@ -2395,6 +2394,7 @@ coarse()
         (mask_face_if_cell_left[l] || is_cell_around_parent_cell_different_owner(1, 1, 0) || is_not_in_subdomain_cells_around_parent_cell(1, 1, 0)) &&
         (mask_face_if_cell_bottom[l] || is_cell_around_parent_cell_different_owner(1, 0, 1) || is_not_in_subdomain_cells_around_parent_cell(1, 0, 1)) &&
         (mask_face_if_cell_rear[l] || is_cell_around_parent_cell_different_owner(0, 1, 1) || is_not_in_subdomain_cells_around_parent_cell(0, 1, 1))) {
+          Integer parent_face_owner = -1;
           faces_infos.add(type_face);
           faces_infos.add(parent_faces_uids[l]);
 
@@ -2452,11 +2452,11 @@ coarse()
       // Cette partie est assez ressemblante à la partie face, mis à part le fait qu'il peut y avoir
       // plus de propriétaires possibles.
       for (Integer l = 0; l < m_num_mng->nbNodeByCell(); ++l) {
-        Integer parent_node_owner = -1;
         if (
         (mask_node_if_cell_left[l] || is_cell_around_parent_cell_different_owner(1, 1, 0) || is_not_in_subdomain_cells_around_parent_cell(1, 1, 0)) &&
         (mask_node_if_cell_bottom[l] || is_cell_around_parent_cell_different_owner(1, 0, 1) || is_not_in_subdomain_cells_around_parent_cell(1, 0, 1)) &&
         (mask_node_if_cell_rear[l] || is_cell_around_parent_cell_different_owner(0, 1, 1) || is_not_in_subdomain_cells_around_parent_cell(0, 1, 1))) {
+          Integer parent_node_owner = -1;
           nodes_infos.add(parent_nodes_uids[l]);
           total_nb_nodes++;
 
