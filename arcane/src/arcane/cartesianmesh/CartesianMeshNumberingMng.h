@@ -18,11 +18,12 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/core/Item.h"
+#include "arcane/cartesianmesh/ICartesianMeshNumberingMng.h"
 
 #include "arcane/utils/TraceAccessor.h"
+#include "arcane/utils/Vector3.h"
 
-#include "arcane/cartesianmesh/ICartesianMeshNumberingMng.h"
+#include "arcane/core/Item.h"
 
 #include <unordered_map>
 

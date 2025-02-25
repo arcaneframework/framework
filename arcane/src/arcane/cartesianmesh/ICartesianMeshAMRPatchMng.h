@@ -18,6 +18,7 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/cartesianmesh/CartesianMeshGlobal.h"
+#include "arcane/utils/UtilsTypes.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -32,7 +33,7 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMeshAMRPatchMng
 {
  public:
 
-  ~ICartesianMeshAMRPatchMng() = default;
+  virtual ~ICartesianMeshAMRPatchMng() = default;
 
  public:
 
