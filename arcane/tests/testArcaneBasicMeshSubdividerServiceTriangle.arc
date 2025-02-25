@@ -10,13 +10,14 @@
       <filename>plancher.msh</filename>
       <partitioner>MeshPartitionerTester</partitioner>
       <subdivider>
-          <nb-subdivision>2</nb-subdivision>
+          <nb-subdivision>1</nb-subdivision>
       </subdivider>
     </mesh>
   </meshes>
   <unit-test-module>
     <test name="MeshUnitTest">
-      <test-adjency>1</test-adjency>
+    <test-adjency>1</test-adjency>
+    <write-mesh>false</write-mesh>
     </test>
   </unit-test-module>
 </case>

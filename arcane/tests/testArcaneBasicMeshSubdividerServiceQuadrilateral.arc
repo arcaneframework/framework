@@ -16,7 +16,8 @@
   </meshes>
   <unit-test-module>
     <test name="MeshUnitTest">
-      <test-adjency>1</test-adjency>
+    <test-adjency>1</test-adjency>
+    <write-mesh>false</write-mesh>
     </test>
   </unit-test-module>
 </case>
