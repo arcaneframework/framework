@@ -20,8 +20,7 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/cartesianmesh/CartesianMeshGlobal.h"
-#include "arcane/utils/Vector2.h"
-#include "arcane/utils/Vector3.h"
+#include "arcane/core/Item.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -35,7 +34,8 @@ namespace Arcane
 class ARCANE_CARTESIANMESH_EXPORT ICartesianMeshNumberingMng
 {
  public:
-  ~ICartesianMeshNumberingMng() = default;
+
+  virtual ~ICartesianMeshNumberingMng() = default;
 
  public:
 
