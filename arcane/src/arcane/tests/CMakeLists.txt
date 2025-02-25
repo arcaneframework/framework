@@ -813,7 +813,7 @@ arcane_add_test(meshservice-subdivide1-hydro testHydro-3-meshservice-subdivide1.
 arcane_add_test(basicmeshsubdividerservice1-subdivide1 testArcaneBasicMeshSubdividerService1-subdivide1.arc -m 1)
 arcane_add_test_parallel_thread(basicmeshsubdividerservice1-subdivide1 testArcaneBasicMeshSubdividerService1-subdivide1.arc 4 -m 1)
 
-arcane_add_test(basicmeshsubdividerservidetriangle-subdivide-1 testArcaneBasicMeshSubdividerServiceTriangle.arc -m 1 "-A,//meshes/mesh/subdivider/different-element-type-output=1")
+arcane_add_test_sequential(basicmeshsubdividerservidetriangle-subdivide-1 testArcaneBasicMeshSubdividerServiceTriangle.arc -m 1 "-A,//meshes/mesh/subdivider/different-element-type-output=1")
 
 arcane_add_test(basicmeshsubdividerservidetriangle-subdivide testArcaneBasicMeshSubdividerServiceTriangle.arc -m 1)
 arcane_add_test(basicmeshsubdividerservidequadrilateral-subdivide testArcaneBasicMeshSubdividerServiceQuadrilateral.arc -m 1)
