@@ -1119,8 +1119,8 @@ void ArcaneBasicMeshSubdividerService::_refineOnce(IPrimaryMesh* mesh, std::unor
         nodes_to_add_coords[node_in_cell[i + index_27]] = middle_coord;
         // Insertion dans Uarray uid
         nodes_to_add.add(uid);
-        info() << node_pattern[i];
-        debug() << i << " " << uid << " sizenic " << tmp << middle_coord;
+        //info() << node_pattern[i];
+        //debug() << i << " " << uid << " sizenic " << tmp << middle_coord;
       }
     }
     // Est-ce qu'on doit ajouter les anciens noeuds ? Normalement non
@@ -1964,9 +1964,15 @@ subdivideMesh([[maybe_unused]] IPrimaryMesh* mesh)
     _refineOnce(mesh, pattern_manager);
     debug() << i << "refine done";
   }
-  /*
+  
   // Debug After
-  mesh->utilities()->writeToFile("subdivider_after_" + std::to_string(options()->nbSubdivision) + "refine.vtk", "VtkLegacyMeshWriter");
+  
+  //mesh->utilities()->writeToFile("subdivider_output_"+std::to_string(mesh->parallelMng()->commRank())+".vtk", "VtkLegacyMeshWriter");
+  
+  
+  //mesh->utilities()->writeToFile("subdivider_after_" + std::to_string(options()->nbSubdivision) + "refine.vtk", "VtkLegacyMeshWriter");
+  //debug() << "write file with name:" << "subdivider_after_";
+  /*
   mesh->utilities()->writeToFile("subdivider_output.vtk", "VtkLegacyMeshWriter");
   */
 }
