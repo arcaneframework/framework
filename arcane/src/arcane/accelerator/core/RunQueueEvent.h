@@ -74,6 +74,14 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RunQueueEvent
   //! Bloque tant que les files associées à cet évènement n'ont pas fini leur travail.
   void wait();
 
+  /*!
+   * \brief Indique si les RunQueue associées à cet évènement ont fini leur travail.
+   *
+   * Retourne \a false si les RunQueue enregistrées via RunQueue::recordEvent() ont
+   * fini leur travail. Retourn \a true sinon.
+   */
+  bool hasPendingWork() const;
+
  private:
 
   impl::IRunQueueEventImpl* _internalEventImpl() const;
