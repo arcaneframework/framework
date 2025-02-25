@@ -1408,7 +1408,7 @@ void ArcaneBasicMeshSubdividerService::_refineOnce(IPrimaryMesh* mesh, std::unor
 
   // Quelques sur le nombres d'entités insérés
   // ARCANE_ASSERT((mesh->nbCell() == nb_cell_init*8 ),("Wrong number of cell added"));
-  debug() << "nbface " << mesh->nbFace() << " " << nb_face_to_add << " Attendu " << nb_face_init * 4 + 12 * nb_cell_init;
+  debug() << "nbface " << mesh->nbFace() << " " << nb_face_to_add << " expected " << nb_face_init * 4 + 12 * nb_cell_init;
   // ARCANE_ASSERT((mesh->nbFace() <= nb_face_init*4 + 12 * nb_cell_init ),("Wrong number of face added"));
   // A ajouter pour vérifier le nombre de noeud si les arêtes sont crées
   // ARCANE_ASSERT((mesh->nbNode() == nb_edge_init + nb_face_init + nb_cell_init ),("Wrong number of node added"))
@@ -1470,7 +1470,7 @@ void ArcaneBasicMeshSubdividerService::_refineWithArcaneFaces(IPrimaryMesh* mesh
            << icell->type() << ", nb nodes=" << icell->nbNode();
 
     for (Face face : cell.faces()) {
-      info() << "Face " << face.uniqueId() << " Noeuds ";
+      info() << "Face " << face.uniqueId() << " nodes ";
       for (Node node : face.nodes()) {
         info() << node.uniqueId() << " ";
       }
@@ -1956,8 +1956,8 @@ subdivideMesh([[maybe_unused]] IPrimaryMesh* mesh)
     pattern_manager[IT_Triangle3] = PatternBuilder::tritoquad();
     pattern_manager[IT_Hexaedron8] = PatternBuilder::hextotet24();
     pattern_manager[IT_Tetraedron4] = PatternBuilder::tettohex();
-    info() << "Les motifs de rafinement ont changés pour les mailles ayant les types suivant:Quad4,Triangle3,Hexaedron8,Tetraedron4." ; 
-    info() << "Les type d'élément en sortie seront:\nQuad4->Triangle3\nTriangle3->Quad4\nHexaedron8->Tetraedron4\nTetraedron4->Hexaedron8" ;
+    info() << "The refinement patterns have changed for meshes of the following types: Quad4, Triangle3, Hexaedron8, Tetraedron4." ; 
+    info() << "The output element types will be:\nQuad4->Triangle3\nTriangle3->Quad4\nHexaedron8->Tetraedron4\nTetraedron4->Hexaedron8" ;
   }
 
   for (Integer i = 0; i < options()->nbSubdivision; i++) {
