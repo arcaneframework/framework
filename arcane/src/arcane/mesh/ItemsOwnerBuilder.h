@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemsOwnerBuilder.h                                         (C) 2000-2024 */
+/* ItemsOwnerBuilder.h                                         (C) 2000-2025 */
 /*                                                                           */
 /* Classe pour calculer les propriétaires des entités.                       */
 /*---------------------------------------------------------------------------*/
@@ -20,7 +20,10 @@
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
+namespace Arcane
+{
+class IMesh;
+}
 namespace Arcane::mesh
 {
 class ItemsOwnerBuilderImpl;
@@ -39,12 +42,13 @@ class ARCANE_MESH_EXPORT ItemsOwnerBuilder
 
  public:
 
-  explicit ItemsOwnerBuilder(DynamicMesh* mesh);
+  explicit ItemsOwnerBuilder(IMesh* mesh);
   ~ItemsOwnerBuilder();
 
  public:
 
   void computeFacesOwner();
+  void computeNodesOwner();
 
  private:
 

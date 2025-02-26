@@ -29,7 +29,10 @@
 #include "arcane/parallel/BitonicSortT.H"
 
 #include "arcane/mesh/ItemInternalMap.h"
+#include "arcane/mesh/NodeFamily.h"
 #include "arcane/mesh/DynamicMesh.h"
+
+#include <unordered_set>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -110,11 +113,12 @@ class ItemsOwnerBuilderImpl
 
  public:
 
-  explicit ItemsOwnerBuilderImpl(DynamicMesh* mesh);
+  explicit ItemsOwnerBuilderImpl(IMesh* mesh);
 
  public:
 
   void computeFacesOwner();
+  void computeNodesOwner();
 
  private:
 
@@ -195,10 +199,13 @@ class ItemsOwnerBuilderImpl::ItemOwnerInfoSortTraits
 /*---------------------------------------------------------------------------*/
 
 ItemsOwnerBuilderImpl::
-ItemsOwnerBuilderImpl(DynamicMesh* mesh)
+ItemsOwnerBuilderImpl(IMesh* mesh)
 : TraceAccessor(mesh->traceMng())
-, m_mesh(mesh)
 {
+  DynamicMesh* dm = dynamic_cast<DynamicMesh*>(mesh);
+  if (!dm)
+    ARCANE_FATAL("Mesh is not an instance of 'DynamicMesh'");
+  m_mesh = dm;
   if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_ITEMS_OWNER_BUILDER_IMPL_DEBUG_LEVEL", true))
     m_verbose_level = v.value();
 }
@@ -209,6 +216,8 @@ ItemsOwnerBuilderImpl(DynamicMesh* mesh)
 void ItemsOwnerBuilderImpl::
 computeFacesOwner()
 {
+  m_items_owner_info.clear();
+
   IParallelMng* pm = m_mesh->parallelMng();
   const Int32 my_rank = pm->commRank();
   ItemInternalMap& faces_map = m_mesh->facesMap();
@@ -251,6 +260,78 @@ computeFacesOwner()
   _processSortedInfos(faces_map);
 
   face_family.notifyItemsOwnerChanged();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ItemsOwnerBuilderImpl::
+computeNodesOwner()
+{
+  m_items_owner_info.clear();
+
+  IParallelMng* pm = m_mesh->parallelMng();
+  const Int32 my_rank = pm->commRank();
+  ItemInternalMap& faces_map = m_mesh->facesMap();
+  ItemInternalMap& nodes_map = m_mesh->nodesMap();
+  NodeFamily& node_family = m_mesh->trueNodeFamily();
+
+  info() << "** BEGIN ComputeNodesOwner nb_node=" << nodes_map.count();
+
+  // Place par défaut tous les noeuds dans ce sous-domaine
+  nodes_map.eachItem([&](Node node) {
+    node.mutableItemBase().setOwner(my_rank, my_rank);
+  });
+
+  // Parcours toutes les faces.
+  // Ne garde que celles qui sont frontières ou dont les propriétaires des
+  // deux mailles de part et d'autre sont différents de notre sous-domaine.
+  //UniqueArray<Int32> faces_to_add;
+  //faces_map.eachItem([&](Face face) {
+  //Int32 nb_cell = face.nbCell();
+  // if (nb_cell == 1)
+  //  faces_to_add.add(face.localId());
+  //});
+  //info() << "ItemsOwnerBuilder: NB_FACE_TO_ADD=" << faces_to_add.size();
+  const Int32 verbose_level = m_verbose_level;
+
+  // Ajoute tous les noeuds des faces frontières.
+  std::unordered_set<Int32> done_nodes;
+
+  FaceInfoListView faces(m_mesh->faceFamily());
+  UniqueArray<Int32> nodes_to_add;
+  faces_map.eachItem([&](Face face) {
+    Int32 face_nb_cell = face.nbCell();
+    if (face_nb_cell == 1)
+      return;
+    for (Node node : face.nodes()) {
+      Int32 node_id = node.localId();
+      if (done_nodes.find(node_id) == done_nodes.end()) {
+        nodes_to_add.add(node_id);
+        done_nodes.insert(node_id);
+        node.mutableItemBase().setOwner(A_NULL_RANK, my_rank);
+      }
+    }
+  });
+
+  info() << "ItemsOwnerBuilder: NB_NODE_TO_ADD=" << nodes_to_add.size();
+  NodeInfoListView nodes(&node_family);
+  for (Int32 lid : nodes_to_add) {
+    Node node(nodes[lid]);
+    Int64 node_uid = node.uniqueId();
+    for (Cell cell : node.cells()) {
+      if (verbose_level >= 2)
+        info() << "ADD lid=" << lid << " uid=" << node_uid << " cell_uid=" << cell.uniqueId() << " owner=" << cell.owner();
+      m_items_owner_info.add(ItemOwnerInfo(node_uid, node_uid, cell.uniqueId(), my_rank, cell.owner()));
+    }
+  }
+
+  // Tri les instances de ItemOwnerInfo et les place les valeurs triées
+  // dans items_owner_info.
+  _sortInfos();
+  _processSortedInfos(nodes_map);
+
+  node_family.notifyItemsOwnerChanged();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -416,7 +497,7 @@ _processSortedInfos(ItemInternalMap& items_map)
 /*---------------------------------------------------------------------------*/
 
 ItemsOwnerBuilder::
-ItemsOwnerBuilder(DynamicMesh* mesh)
+ItemsOwnerBuilder(IMesh* mesh)
 : m_p(std::make_unique<ItemsOwnerBuilderImpl>(mesh))
 {}
 
@@ -427,10 +508,22 @@ ItemsOwnerBuilder::
   // pas connu dans le '.h'.
 }
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 void ItemsOwnerBuilder::
 computeFacesOwner()
 {
   m_p->computeFacesOwner();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ItemsOwnerBuilder::
+computeNodesOwner()
+{
+  m_p->computeNodesOwner();
 }
 
 /*---------------------------------------------------------------------------*/
