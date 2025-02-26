@@ -182,5 +182,11 @@ Teste la désallocation du maillage
     </description>
   </simple>
 
+  <simple name = "compute-owners-direct" type = "bool" default = "false">
+    <description>
+      Si vrai, utilise 'ItemsOwnerBuilder' pour calculer les propriétaires des noeuds et faces.
+    </description>
+  </simple>
+
  </options>
 </service>
