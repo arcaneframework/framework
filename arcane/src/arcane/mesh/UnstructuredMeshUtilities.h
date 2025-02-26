@@ -92,6 +92,9 @@ class UnstructuredMeshUtilities
   void mergeNodes(Int32ConstArrayView nodes_local_id,
                   Int32ConstArrayView nodes_to_merge_local_id) override;
 
+  void computeAndSetOwnersForNodes() override;
+  void computeAndSetOwnersForFaces() override;
+
  private:
 
   IMesh* m_mesh;

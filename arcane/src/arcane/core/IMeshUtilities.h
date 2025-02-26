@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IMeshUtilities.h                                            (C) 2000-2024 */
+/* IMeshUtilities.h                                            (C) 2000-2025 */
 /*                                                                           */
 /* Interface d'une classe proposant des fonctions utilitaires sur maillage.  */
 /*---------------------------------------------------------------------------*/
@@ -131,8 +131,35 @@ class ARCANE_CORE_EXPORT IMeshUtilities
    * En considérant que les nouveaux propriétaires des mailles sont
    * connus (et synchronisés), détermine les nouveaux propriétaires des autres
    * entités et les synchronise.
+   *
+   * Cette méthode est collective.
+   *
+   * \note Cette méthode nécessite que les informations de synchronisations soient
+   * valides. Si on souhaite déterminer les propriétaires des entités sans
+   * information préalable, il faut utiliser computeAndSetOwnersForNodes()
+   * ou computeAndSetOwnersForFaces().
    */
   virtual void changeOwnersFromCells() =0;
+
+  /*!
+   * \brief Détermine les propriétaires des noeuds.
+   *
+   * La détermination se fait en fonction des propriétaires des mailles.
+   * Il ne doit pas y avoir de couches de mailles fantômes.
+   *
+   * Cette opération est collective.
+   */
+  virtual void computeAndSetOwnersForNodes() =0;
+
+  /*!
+   * \brief Détermine les propriétaires des faces.
+   *
+   * La détermination se fait en fonction des propriétaires des mailles.
+   * Il ne doit pas y avoir de couches de mailles fantômes.
+   *
+   * Cette opération est collective.
+   */
+  virtual void computeAndSetOwnersForFaces() =0;
 
   /*!
    * \brief Ecrit le maillage dans un fichier.

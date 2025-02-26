@@ -51,6 +51,7 @@
 #include "arcane/mesh/BasicItemPairGroupComputeFunctor.h"
 #include "arcane/mesh/MeshNodeMerger.h"
 #include "arcane/mesh/ConnectivityNewWithDependenciesTypes.h"
+#include "arcane/mesh/ItemsOwnerBuilder.h"
 
 #include <algorithm>
 
@@ -810,6 +811,26 @@ mergeNodes(Int32ConstArrayView nodes_local_id,
 {
   mesh::MeshNodeMerger merger(m_mesh);
   merger.mergeNodes(nodes_local_id,nodes_to_merge_local_id);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void UnstructuredMeshUtilities::
+computeAndSetOwnersForNodes()
+{
+  mesh::ItemsOwnerBuilder owner_builder(m_mesh);
+  owner_builder.computeNodesOwner();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void UnstructuredMeshUtilities::
+computeAndSetOwnersForFaces()
+{
+  mesh::ItemsOwnerBuilder owner_builder(m_mesh);
+  owner_builder.computeFacesOwner();
 }
 
 /*---------------------------------------------------------------------------*/
