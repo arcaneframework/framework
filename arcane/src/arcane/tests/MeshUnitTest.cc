@@ -204,6 +204,7 @@ class MeshUnitTest
   void _testFindOneItem();
   void _testEvents();
   void _testNodeNodeViaEdgeConnectivity();
+  void _testComputeOwnersDirect();
 };
 
 /*---------------------------------------------------------------------------*/
@@ -246,6 +247,10 @@ buildInitializeTest()
 void MeshUnitTest::
 executeTest()
 {
+  bool do_compute_owners_direct = options()->computeOwnersDirect();
+  if (do_compute_owners_direct)
+    _testComputeOwnersDirect();
+
   bool do_sort_faces_and_edges = options()->testSortNodeFacesAndEdges();
   if (do_sort_faces_and_edges) {
     mesh()->nodeFamily()->properties()->setBool("sort-connected-faces-edges",true);
@@ -1791,6 +1796,19 @@ _testNodeNodeViaEdgeConnectivity()
                      node.uniqueId(), i, ref_cx_node_lid, cx_node_lid);
     }
   }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MeshUnitTest::
+_testComputeOwnersDirect()
+{
+  info() << "Test: _testComputeOwnersDirect()";
+  mesh()->modifier()->setDynamic(true);
+  mesh()->modifier()->updateGhostLayers();
+  mesh()->utilities()->computeAndSetOwnersForNodes();
+  mesh()->utilities()->computeAndSetOwnersForFaces();
 }
 
 /*---------------------------------------------------------------------------*/
