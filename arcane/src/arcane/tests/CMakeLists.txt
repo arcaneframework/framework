@@ -810,10 +810,17 @@ arcane_add_test_script(continue_hydro3_cartesian_small continue_hydro3_cartesian
 arcane_add_test_parallel(hydro3_cartesian_8proc testHydro-3-cartesian.arc 8 "-m 50")
 
 arcane_add_test(meshservice-subdivide1-hydro testHydro-3-meshservice-subdivide1.arc )
-arcane_add_test(arcanebasicmeshsubdividerservice1-subdivide1 testArcaneBasicMeshSubdividerService1-subdivide1.arc -m 1)
-arcane_add_test_parallel_thread(arcanebasicmeshsubdividerservice1-subdivide1 testArcaneBasicMeshSubdividerService1-subdivide1.arc 4 -m 1)
+arcane_add_test(basicmeshsubdividerservice1-subdivide1 testArcaneBasicMeshSubdividerService1-subdivide1.arc -m 1)
+arcane_add_test_parallel_thread(basicmeshsubdividerservice1-subdivide1 testArcaneBasicMeshSubdividerService1-subdivide1.arc 4 -m 1)
+
+arcane_add_test_sequential(basicmeshsubdividerservidetriangle-subdivide-1 testArcaneBasicMeshSubdividerServiceTriangle.arc -m 1 "-A,//meshes/mesh/subdivider/different-element-type-output=1")
+
+arcane_add_test(basicmeshsubdividerservidetriangle-subdivide testArcaneBasicMeshSubdividerServiceTriangle.arc -m 1)
+arcane_add_test(basicmeshsubdividerservidequadrilateral-subdivide testArcaneBasicMeshSubdividerServiceQuadrilateral.arc -m 1)
+
+
 if( Parmetis_FOUND )
-  arcane_add_test_parallel_thread(arcanebasicmeshsubdividerservice1-subdivide1-parmetis testArcaneBasicMeshSubdividerService1-subdivide1-parmetis.arc 4 -m 1)
+  arcane_add_test_parallel_thread(basicmeshsubdividerservice1-subdivide1-parmetis testArcaneBasicMeshSubdividerService1-subdivide1-parmetis.arc 4 -m 1)
 endif()
 
 arcane_add_test_parallel_all(hydro3_checkpoint_meshservice testHydro-3-checkpoint-meshservice.arc 3 4 -c 3 -m 10)

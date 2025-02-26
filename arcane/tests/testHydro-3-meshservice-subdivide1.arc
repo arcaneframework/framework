@@ -39,7 +39,7 @@
     <filename internal-partition="true">sod.vtk</filename>
     <subdivider>
       <nb-subdivision>1</nb-subdivision>
-
+      
     </subdivider>
     <partitioner>MeshPartitionerTester</partitioner>
     <initialization>
