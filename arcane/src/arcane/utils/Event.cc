@@ -37,19 +37,13 @@ namespace Arcane
 class EventObservableBase::Impl
 {
  public:
-  Impl(){}
+
+  Impl() {}
+
  public:
-  void rebuildOberversArray()
-  {
-    m_observers_array.clear();
-    m_observers_array.reserve(arcaneCheckArraySize(m_observers.size()));
-    for( auto o : m_observers )
-      m_observers_array.add(o);
-  }
- public:
+
   std::set<EventObserverBase*> m_auto_destroy_observers;
   std::set<EventObserverBase*> m_observers;
-  UniqueArray<EventObserverBase*> m_observers_array;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -80,14 +74,26 @@ EventObservableBase::
 /*---------------------------------------------------------------------------*/
 
 void EventObservableBase::
-_attachObserver(EventObserverBase* obs,bool is_auto_destroy)
+_rebuildObserversArray()
+{
+  m_observers_array.clear();
+  m_observers_array.reserve(m_p->m_observers.size());
+  for (auto o : m_p->m_observers)
+    m_observers_array.add(o);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void EventObservableBase::
+_attachObserver(EventObserverBase* obs, bool is_auto_destroy)
 {
   // Vérifie que l'observeur n'est pas dans la liste.
-  if (m_p->m_observers.find(obs)!=m_p->m_observers.end())
+  if (m_p->m_observers.find(obs) != m_p->m_observers.end())
     ARCANE_FATAL("Observer is already attached to this observable");
   obs->_notifyAttach(this);
   m_p->m_observers.insert(obs);
-  m_p->rebuildOberversArray();
+  _rebuildObserversArray();
   if (is_auto_destroy)
     m_p->m_auto_destroy_observers.insert(obs);
 }
@@ -102,8 +108,8 @@ _detachObserver(EventObserverBase* obs)
   // dynamiquement. Il n'y a donc pas besoin de mettre à jour
   // m_p->m_auto_destroy_observers.
   bool is_ok = false;
-  for( auto o : m_p->m_observers )
-    if (o==obs){
+  for (auto o : m_p->m_observers)
+    if (o == obs) {
       m_p->m_observers.erase(o);
       is_ok = true;
       break;
@@ -113,16 +119,7 @@ _detachObserver(EventObserverBase* obs)
   if (!is_ok)
     ARCANE_FATAL("observer is not registered to this observable");
   obs->_notifyDetach();
-  m_p->rebuildOberversArray();
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ConstArrayView<EventObserverBase*> EventObservableBase::
-_observers() const
-{
-  return m_p->m_observers_array;
+  _rebuildObserversArray();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -137,16 +134,6 @@ detachAllObservers()
   for( auto o : m_p->m_auto_destroy_observers )
     delete o;
 }
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-bool EventObservableBase::
-hasObservers() const
-{
-  return (m_p->m_observers.size()!=0);
-}
-
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

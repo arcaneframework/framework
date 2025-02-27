@@ -55,18 +55,26 @@ class ARCANE_UTILS_EXPORT EventObservableBase
 
  public:
 
-  bool hasObservers() const;
+  bool hasObservers() const { return !m_observers_array.empty(); }
   void detachAllObservers();
 
  protected:
 
   void _attachObserver(EventObserverBase* obs, bool is_auto_destroy);
   void _detachObserver(EventObserverBase* obs);
-  ConstArrayView<EventObserverBase*> _observers() const;
+  ConstArrayView<EventObserverBase*> _observers() const
+  {
+    return m_observers_array;
+  }
 
  private:
 
   Impl* m_p = nullptr;
+  UniqueArray<EventObserverBase*> m_observers_array;
+
+ private:
+
+  void _rebuildObserversArray();
 };
 
 /*---------------------------------------------------------------------------*/
