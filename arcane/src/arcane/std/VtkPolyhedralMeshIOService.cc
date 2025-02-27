@@ -841,7 +841,7 @@ VtkReader(const String& filename, VtkPolyhedralTools::PrintInfoLevel print_info_
     _readPlainTextVtkFaceGrid(faces_filename);
   }
   else{
-    faces_filename = m_filename + "faces.vtu";
+    faces_filename = m_filename + "faces.vtp";
     ifile = std::ifstream{ faces_filename.localstr() };
     if (ifile) {
       _readXmlVtkFaceGrid(faces_filename);
@@ -852,7 +852,7 @@ VtkReader(const String& filename, VtkPolyhedralTools::PrintInfoLevel print_info_
   faces_filename.split(faces_filename_and_extension,'.');
 
   if (!ifile){
-    m_read_status.info_message = String::format("Information no face mesh given {0}{1} (.vtk or .vtu) to define face variables or groups on faces.",
+    m_read_status.info_message = String::format("Information no face mesh given {0}{1} (.vtk or .vtp) to define face variables or groups on faces.",
                                                 faces_filename_and_extension[0],
                                                 faces_filename_and_extension[1]);
   }
