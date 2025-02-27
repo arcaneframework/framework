@@ -17,6 +17,7 @@
 #include <numeric>
 #include <functional>
 #include <memory>
+#include <iterator>
 
 #include <vtkUnstructuredGrid.h>
 #include <vtkUnstructuredGridReader.h>
@@ -30,6 +31,8 @@
 #include <vtkDataArrayAccessor.h>
 #include <vtkPolyDataReader.h>
 #include <vtkPolyData.h>
+#include <vtkSmartPointer.h>
+#include <vtkCellArray.h>
 
 #include <arccore/base/Ref.h>
 #include <arccore/base/String.h>
@@ -123,6 +126,9 @@ class VtkPolyhedralMeshIOService
     Int64ConstArrayView faceNodes();
     Int32ConstArrayView faceNbNodes();
 
+    Int64ConstArrayView faceNodesInFaceMesh();
+    Int32ConstArrayView faceNbNodesInFaceMesh();
+
     Int64ConstArrayView edgeNodes();
     Int32ConstArrayView edgeNbNodes();
 
@@ -163,7 +169,7 @@ class VtkPolyhedralMeshIOService
     vtkCellData* faceData();
 
     bool isEmpty() const noexcept { return m_is_empty; }
-    bool doRead()  const noexcept { return m_do_read; }
+    bool doRead() const noexcept { return m_do_read; }
 
    private:
 
@@ -188,6 +194,8 @@ class VtkPolyhedralMeshIOService
     Int32UniqueArray m_node_nb_cells, m_node_nb_faces, m_node_nb_edges;
     Int32UniqueArray m_cell_nb_edges, m_face_nb_edges, m_face_uid_indexes;
     Int32UniqueArray m_cell_face_indexes, m_edge_nb_nodes;
+    Int64UniqueArray m_face_node_uids_in_face_mesh;
+    Int32UniqueArray m_face_nb_nodes_in_face_mesh;
     using NodeUidToIndexMap = Int32UniqueArray; // use a map when no longer possible to index with node uids
     using FaceUidToIndexMap = Int32UniqueArray; // use a map when no longer possible to index with face uids
     using EdgeUidToIndexMap = Int32UniqueArray; // use a map when no longer possible to index with edge uids
@@ -196,6 +204,7 @@ class VtkPolyhedralMeshIOService
     vtkCellData* m_cell_data = nullptr;
     vtkPointData* m_point_data = nullptr;
     vtkCellData* m_face_data = nullptr;
+    vtkCellArray* m_poly_data = nullptr; // to store faces from face mesh file
 
     void _printMeshInfos() const;
 
@@ -207,6 +216,7 @@ class VtkPolyhedralMeshIOService
     void _checkVtkGrid() const;
     void _readPlainTextVtkFaceGrid(const String& faces_filename);
     void _readXmlVtkFaceGrid(const String& faces_filename);
+    void _readfaceNodesInFaceMesh();
   };
 
  public:
@@ -676,8 +686,8 @@ _createVariable(vtkDataArray* item_values, const String& variable_name, IMesh* m
 void VtkPolyhedralMeshIOService::
 _computeFaceVtkArcaneLidConversion(Int32Span face_vtk_to_arcane_lids, Int32Span arcane_to_vtk_lids, VtkPolyhedralMeshIOService::VtkReader& reader, IPrimaryMesh* mesh) const
 {
-  auto face_nodes_unique_ids = reader.faceNodes();
-  auto face_nb_nodes = reader.faceNbNodes();
+  auto face_nodes_unique_ids = reader.faceNodesInFaceMesh();
+  auto face_nb_nodes = reader.faceNbNodesInFaceMesh();
   auto current_face_index = 0;
   auto current_face_index_in_face_nodes = 0;
   Int32UniqueArray face_nodes_local_ids(face_nodes_unique_ids.size());
@@ -686,7 +696,7 @@ _computeFaceVtkArcaneLidConversion(Int32Span face_vtk_to_arcane_lids, Int32Span 
     auto current_face_nodes = face_nodes_local_ids.subConstView(current_face_index_in_face_nodes, current_face_nb_node);
     current_face_index_in_face_nodes += current_face_nb_node;
     Node face_first_node{ mesh->nodeFamily()->view()[current_face_nodes[0]] };
-    face_vtk_to_arcane_lids[current_face_index] = mesh_utils::getFaceFromNodesLocal(face_first_node, current_face_nodes).localId();
+    face_vtk_to_arcane_lids[current_face_index] = MeshUtils::getFaceFromNodesLocalId(face_first_node, current_face_nodes).localId();
     ++current_face_index;
   }
   auto vtk_lid = 0;
@@ -854,6 +864,7 @@ VtkReader(const String& filename, VtkPolyhedralTools::PrintInfoLevel print_info_
       }
       else {
         m_face_data = m_vtk_face_grid->GetCellData();
+        m_poly_data = m_vtk_face_grid->GetPolys();
       }
     }
     else{
@@ -1306,6 +1317,28 @@ faceNbNodes()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+Int64ConstArrayView VtkPolyhedralMeshIOService::VtkReader::
+faceNodesInFaceMesh()
+{
+  if (m_face_node_uids_in_face_mesh.empty())
+    _readfaceNodesInFaceMesh();
+  return m_face_node_uids_in_face_mesh;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Int32ConstArrayView VtkPolyhedralMeshIOService::VtkReader::
+faceNbNodesInFaceMesh()
+{
+  if (m_face_nb_nodes_in_face_mesh.empty())
+    _readfaceNodesInFaceMesh();
+  return m_face_nb_nodes_in_face_mesh;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 Int32ConstArrayView VtkPolyhedralMeshIOService::VtkReader::
 edgeNbNodes()
 {
@@ -1691,6 +1724,35 @@ _readXmlVtkFaceGrid(const String& faces_filename)
   m_vtk_face_grid = m_vtk_xml_face_grid_reader->GetOutput();
 }
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void VtkPolyhedralMeshIOService::VtkReader::
+_readfaceNodesInFaceMesh()
+{
+  m_face_nb_nodes_in_face_mesh.resize(m_poly_data->GetNumberOfCells());
+  m_face_node_uids_in_face_mesh.reserve(m_poly_data->GetNumberOfCells() * m_poly_data->GetMaxCellSize());
+  m_poly_data->InitTraversal();
+  vtkIdType face_nb_nodes;
+  vtkIdType* face_nodes;
+
+  auto face_nb_node_index = 0;
+  Int64UniqueArray current_face_node_uids;
+  Int64UniqueArray reordered_current_face_node_uids;
+  current_face_node_uids.reserve(m_poly_data->GetMaxCellSize());
+  reordered_current_face_node_uids.reserve(m_poly_data->GetMaxCellSize());
+  Int64UniqueArray reordered_face_node_uids(m_poly_data->GetMaxCellSize());
+  while (m_poly_data->GetNextCell(face_nb_nodes, face_nodes)) {
+    m_face_nb_nodes_in_face_mesh[face_nb_node_index] = face_nb_nodes;
+    ConstArrayView<vtkIdType> face_nodes_view(face_nb_nodes, face_nodes);
+    current_face_node_uids.resize(face_nb_nodes);
+    reordered_current_face_node_uids.resize(face_nb_nodes);
+    std::copy(face_nodes_view.begin(), face_nodes_view.end(), current_face_node_uids.begin());
+    MeshUtils::reorderNodesOfFace(current_face_node_uids, reordered_current_face_node_uids);
+    std::copy(reordered_current_face_node_uids.begin(), reordered_current_face_node_uids.end(), std::back_inserter(m_face_node_uids_in_face_mesh));
+    ++face_nb_node_index;
+  }
+}
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
