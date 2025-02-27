@@ -1,6 +1,7 @@
 ﻿set(SOURCE_FILES
   TestAutoRef.cc
   TestDependencyInjection.cc
+  TestEvent.cc
   TestRealN.cc
   TestNumVector.cc
   TestValueConvert.cc
