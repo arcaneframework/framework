@@ -27,6 +27,7 @@
 #include "arcane/core/ItemFamilyCompactInfos.h"
 #include "arcane/core/IMeshCompacter.h"
 #include "arcane/core/MeshPartInfo.h"
+#include "arcane/core/ItemFamilyItemListChangedEventArgs.h"
 
 #include "arcane/mesh/DynamicMeshKindInfos.h"
 #include "arcane/mesh/ItemFamily.h"
@@ -911,6 +912,37 @@ _updateItemSharedInfoInternalView()
 {
   if (m_common_item_shared_info)
     m_common_item_shared_info->m_items_internal = m_internals.constView();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+EventObservableView<const ItemFamilyItemListChangedEventArgs&> DynamicMeshKindInfos::
+itemListChangedEvent()
+{
+  return EventObservableView<const ItemFamilyItemListChangedEventArgs&>(m_item_list_change_event);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void DynamicMeshKindInfos::
+_notifyRemove2(ItemInternal* item)
+{
+  ItemFamilyItemListChangedEventArgs args(m_item_family,item->localId(),item->uniqueId());
+  m_item_list_change_event.notify(args);
+  args.setIsAdd(false);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void DynamicMeshKindInfos::
+_notifyAdd2(ItemInternal* item,Int64 uid)
+{
+  ItemFamilyItemListChangedEventArgs args(m_item_family,item->localId(),uid);
+  args.setIsAdd(true);
+  m_item_list_change_event.notify(args);
 }
 
 /*---------------------------------------------------------------------------*/
