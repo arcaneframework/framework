@@ -27,18 +27,13 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-class EventObserverBase;
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 /*!
  * \internal
  * \brief Classe de base d'un handler d'évènement.
  */
 class ARCANE_UTILS_EXPORT EventObservableBase
 {
-  friend class EventObserverBase;
+  friend EventObserverBase;
   class Impl;
 
  public:
@@ -243,10 +238,60 @@ class EventObservable
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+/*!
+ * \ingroup Utils
+ * \brief Classe gérant les observateurs associés à un évènement.
+ * \sa EventObservable
+ */
+template <typename... Args>
+class EventObservableView
+{
+ public:
+
+  typedef EventObserver<Args...> ObserverType;
+
+ public:
+
+  explicit EventObservableView(EventObservable<Args...>& v)
+  : m_observable_ref(v)
+  {}
+
+ public:
+
+  /*!
+   * \brief Attache l'observateur \a o à cet observable.
+   *
+   * Une exception est levée si l'observateur est déjà attaché à un observable.
+   */
+  void attach(ObserverType* o) { m_observable_ref.attach(o); }
+  /*!
+   * \brief Détache l'observateur \a o de cet observable.
+   *
+   * Une exception est levée si l'observateur n'est pas attaché à cet observable.
+   */
+  void detach(ObserverType* o) { m_observable_ref.detach(o); }
+
+  /*!
+   * \brief Ajoute un observateur utilisant la lambda \a lambda
+   * et conserve une référence dans \a pool.
+   */
+  template <typename Lambda>
+  void attach(EventObserverPool& pool, const Lambda& lambda)
+  {
+    m_observable_ref.attach(pool, lambda);
+  }
+
+ private:
+
+  EventObservable<Args...>& m_observable_ref;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 } // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

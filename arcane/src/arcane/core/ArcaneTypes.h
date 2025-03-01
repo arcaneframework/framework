@@ -118,6 +118,8 @@ class MeshBuildInfo;
 class MeshKind;
 class IPrimaryMesh;
 class IMeshInitialAllocator;
+class ItemFamilyCompactInfos;
+class ItemFamilyItemListChangedEventArgs;
 class ItemPairEnumerator;
 class ItemInfoListView;
 class ItemGenericInfoListView;
@@ -147,6 +149,14 @@ class IParallelMngInternal;
 class IIOMng;
 class ITimerMng;
 class IThreadMng;
+class ItemUniqueId;
+class IItemConnectivityInfo;
+class IItemConnectivity;
+class IItemInternalSortFunction;
+class IItemConnectivityMng;
+class Properties;
+class IItemFamilyTopologyModifier;
+class IItemFamilyPolicyMng;
 enum class eMeshStructure;
 enum class eMeshAMRKind;
 
@@ -548,6 +558,18 @@ class AcceleratorRuntimeInitialisationInfo;
 }
 using Accelerator::IAcceleratorMng;
 using Accelerator::AcceleratorRuntimeInitialisationInfo;
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+// Déclarations de types utilisés pour les classes 'friend'.
+namespace mesh
+{
+class DynamicMesh;
+class ItemFamily;
+class ItemSharedInfoWithType;
+class DynamicMeshKindInfos;
+class ItemDataList;
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

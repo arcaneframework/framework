@@ -51,8 +51,11 @@ template<typename T> class ListEnumeratorT;
 template<typename T> class Collection;
 template<typename T> class List;
 
+class EventObservableBase;
+class EventObserverBase;
 template<typename... Args> class EventObservable;
 template<typename... Args> class EventObserver;
+template <typename... Args> class EventObservableView;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

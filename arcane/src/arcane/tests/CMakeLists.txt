@@ -662,6 +662,8 @@ if(PARTITIONER_FOUND)
   #  ARCANE_ADD_TEST_PARALLEL(mesh_merge_nodes_2d testMeshMergeNodes-2D.arc 4)
 endif()
 
+arcane_add_test_sequential(mesh_modification-1D testMeshModificationTester-1D.arc)
+arcane_add_test_sequential(mesh_modification-3D testMeshModificationTester-3D.arc)
 arcane_add_test(mesh2 testMesh-2.arc "-We,ARCANE_METIS_INPUT_OUTPUT_DIGEST,1")
 if (Parmetis_FOUND)
   arcane_add_test_parallel_thread(mesh2_face_unique_id_v5 testMesh-2-face-unique-id-v5.arc 4)

@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* DynamicMeshKindInfos.cc                                     (C) 2000-2024 */
+/* DynamicMeshKindInfos.cc                                     (C) 2000-2025 */
 /*                                                                           */
 /* Infos de maillage pour un genre d'entité donnée.                          */
 /*---------------------------------------------------------------------------*/
@@ -27,6 +27,7 @@
 #include "arcane/core/ItemFamilyCompactInfos.h"
 #include "arcane/core/IMeshCompacter.h"
 #include "arcane/core/MeshPartInfo.h"
+#include "arcane/core/ItemFamilyItemListChangedEventArgs.h"
 
 #include "arcane/mesh/DynamicMeshKindInfos.h"
 #include "arcane/mesh/ItemFamily.h"
@@ -911,6 +912,37 @@ _updateItemSharedInfoInternalView()
 {
   if (m_common_item_shared_info)
     m_common_item_shared_info->m_items_internal = m_internals.constView();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+EventObservableView<const ItemFamilyItemListChangedEventArgs&> DynamicMeshKindInfos::
+itemListChangedEvent()
+{
+  return EventObservableView<const ItemFamilyItemListChangedEventArgs&>(m_item_list_change_event);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void DynamicMeshKindInfos::
+_notifyRemove2(ItemInternal* item)
+{
+  ItemFamilyItemListChangedEventArgs args(m_item_family,item->localId(),item->uniqueId());
+  m_item_list_change_event.notify(args);
+  args.setIsAdd(false);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void DynamicMeshKindInfos::
+_notifyAdd2(ItemInternal* item,Int64 uid)
+{
+  ItemFamilyItemListChangedEventArgs args(m_item_family,item->localId(),uid);
+  args.setIsAdd(true);
+  m_item_list_change_event.notify(args);
 }
 
 /*---------------------------------------------------------------------------*/
