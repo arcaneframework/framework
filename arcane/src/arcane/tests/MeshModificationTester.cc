@@ -109,7 +109,7 @@ executeTest()
 
   if (mesh()->dimension() == 3)
     _refineCells(); // copied from MeshModifications.cs C# for easier debug
-  if (mesh()->dimension() == 2)
+  if (mesh()->dimension() == 1)
     _addRemoveCells();
 }
 
@@ -215,6 +215,7 @@ _addRemoveCells()
   }
 
   modifier->removeCells(lids);
+  mesh()->cellFamily()->endUpdate();
 
   cells_infos.resize(4);
   cells_infos[0] = IT_CellLine2;
@@ -234,7 +235,7 @@ _addRemoveCells()
   }
 
   if (group.size() != 0)
-    ARCANE_FATAL("Error after in mesh update, group is not empty...");
+    ARCANE_FATAL("Error after in mesh update, group '{0}' is not empty (n={1})", group.name(), group.size());
 
   ENUMERATE_CELL (icell, allCells()) {
     info() << "cell[" << icell->localId() << "," << icell->uniqueId() << "] type="
@@ -281,7 +282,7 @@ _refineCells()
 
       to_add_cells.add(8); // Pour une pyramide
       //to_add_cells.Add(max_cell_uid + index); // Pour le uid
-      to_add_cells.add(cell->uniqueId().asInt64() + max_cell_uid); // Pour le uid, reutilise celui de la maille supprimÃ©e
+      to_add_cells.add(cell->uniqueId().asInt64() + max_cell_uid); // Pour le uid, reutilise celui de la maille supprimée
       //to_add_cells.Add(c.UniqueId); // Pour le uid, reutilise celui de la maille supprimée
       to_add_cells.add(cell->node(0).uniqueId().asInt64());
       to_add_cells.add(cell->node(1).uniqueId().asInt64());
