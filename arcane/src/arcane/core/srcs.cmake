@@ -307,6 +307,7 @@ set(ARCANE_ORIGINAL_SOURCES
   ItemEnumerator.h
   ItemEnumeratorBase.h
   ItemFamilyCompactInfos.h
+  ItemFamilyItemListChangedEventArgs.h
   ItemFamilySerializeArgs.h
   ItemFlags.h
   ItemFunctor.cc

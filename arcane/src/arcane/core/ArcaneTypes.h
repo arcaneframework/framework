@@ -118,6 +118,8 @@ class MeshBuildInfo;
 class MeshKind;
 class IPrimaryMesh;
 class IMeshInitialAllocator;
+class ItemFamilyCompactInfos;
+class ItemFamilyItemListChangedEventArgs;
 class ItemPairEnumerator;
 class ItemInfoListView;
 class ItemGenericInfoListView;
@@ -548,6 +550,16 @@ class AcceleratorRuntimeInitialisationInfo;
 }
 using Accelerator::IAcceleratorMng;
 using Accelerator::AcceleratorRuntimeInitialisationInfo;
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+// Déclarations de types utilisés pour les classes 'friend'.
+namespace mesh
+{
+class ItemFamily;
+class ItemSharedInfoWithType;
+class DynamicMeshKindInfos;
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
