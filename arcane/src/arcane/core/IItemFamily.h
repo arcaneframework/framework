@@ -1,56 +1,29 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IItemFamily.h                                               (C) 2000-2024 */
+/* IItemFamily.h                                               (C) 2000-2025 */
 /*                                                                           */
 /* Interface d'une famille d'entités.                                        */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_IITEMFAMILY_H
-#define ARCANE_IITEMFAMILY_H
+#ifndef ARCANE_CORE_IITEMFAMILY_H
+#define ARCANE_CORE_IITEMFAMILY_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/ArcaneTypes.h"
-#include "arcane/ItemTypes.h"
-#include "arcane/VariableTypedef.h"
-#include "arcane/Parallel.h"
+#include "arcane/core/ArcaneTypes.h"
+#include "arcane/core/ItemTypes.h"
+#include "arcane/core/VariableTypedef.h"
+#include "arcane/core/Parallel.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 namespace Arcane
 {
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-class IParallelMng;
-class IDataOperation;
-class ItemUniqueId;
-class IItemInternalSortFunction;
-class IVariableSynchronizer;
-class IParticleFamily;
-class GroupIndexTable;
-class IItemConnectivityInfo;
-class IItemConnectivityMng;
-class IItemConnectivity;
-class IExtraGhostItemsBuilder;
-class IIncrementalItemConnectivity;
-class IItemFamilyPolicyMng;
-class IItemFamilyTopologyModifier;
-class ItemInternalConnectivityList;
-class Properties;
-
-namespace mesh
-{
-  class ItemDataList;
-  class DynamicMesh;
-  class ItemFamily;
-}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -109,8 +82,8 @@ namespace mesh
  */
 class ARCANE_CORE_EXPORT IItemFamily
 {
-  friend class mesh::DynamicMesh;
-  friend class mesh::ItemFamily;
+  friend mesh::DynamicMesh;
+  friend mesh::ItemFamily;
 
  public:
 
@@ -705,6 +678,11 @@ class ARCANE_CORE_EXPORT IItemFamily
 
   //! Propriétés associées à cette famille.
   virtual Properties* properties() =0;
+
+ public:
+
+  //! Evènement pour l'ajout et la suppression d'entité
+  virtual EventObservableView<const ItemFamilyItemListChangedEventArgs&> itemListChangedEvent() = 0;
 
  public:
 

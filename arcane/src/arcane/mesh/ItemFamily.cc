@@ -2474,6 +2474,15 @@ setConnectivityMng(IItemConnectivityMng* connectivity_mng)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+EventObservableView<const ItemFamilyItemListChangedEventArgs&> ItemFamily::
+itemListChangedEvent()
+{
+  return m_infos->itemListChangedEvent();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 void ItemFamily::
 _addSourceConnectivity(IIncrementalItemSourceConnectivity* c)
 {

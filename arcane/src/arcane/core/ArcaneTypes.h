@@ -149,6 +149,14 @@ class IParallelMngInternal;
 class IIOMng;
 class ITimerMng;
 class IThreadMng;
+class ItemUniqueId;
+class IItemConnectivityInfo;
+class IItemConnectivity;
+class IItemInternalSortFunction;
+class IItemConnectivityMng;
+class Properties;
+class IItemFamilyTopologyModifier;
+class IItemFamilyPolicyMng;
 enum class eMeshStructure;
 enum class eMeshAMRKind;
 
@@ -556,9 +564,11 @@ using Accelerator::AcceleratorRuntimeInitialisationInfo;
 // Déclarations de types utilisés pour les classes 'friend'.
 namespace mesh
 {
+class DynamicMesh;
 class ItemFamily;
 class ItemSharedInfoWithType;
 class DynamicMeshKindInfos;
+class ItemDataList;
 }
 
 /*---------------------------------------------------------------------------*/

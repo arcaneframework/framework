@@ -268,6 +268,8 @@ class ARCANE_MESH_EXPORT ItemFamily
   void setConnectivityMng(IItemConnectivityMng* connectivity_mng) override;
 
   void addGhostItems(Int64ConstArrayView unique_ids, Int32ArrayView items, Int32ConstArrayView owners) override;
+  EventObservableView<const ItemFamilyItemListChangedEventArgs&> itemListChangedEvent() override;
+
   IItemFamilyPolicyMng* policyMng() override { return m_policy_mng; }
   Properties* properties() override { return m_properties; }
   IItemFamilyInternal* _internalApi() override;
