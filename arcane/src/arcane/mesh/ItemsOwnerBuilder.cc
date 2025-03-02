@@ -302,7 +302,7 @@ computeNodesOwner()
   UniqueArray<Int32> nodes_to_add;
   faces_map.eachItem([&](Face face) {
     Int32 face_nb_cell = face.nbCell();
-    if (face_nb_cell == 1)
+    if (face_nb_cell == 2)
       return;
     for (Node node : face.nodes()) {
       Int32 node_id = node.localId();
