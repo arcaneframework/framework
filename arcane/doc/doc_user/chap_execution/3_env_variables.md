@@ -209,6 +209,17 @@ comportement à l'exécution :
     todo
   </td>
 </tr>
+<tr>
+  <td>
+    ARCANE_REPLACE_SYMBOLS_IN_DATASET
+  </td>
+  <td>
+    Variable d'environnement permettant d'activer le remplacement des symboles dans
+    le jeu de données à partir des arguments de la ligne de commande.
+    Voir la page \ref arcanedoc_execution_commandlineargs
+  </td>
+</tr>
+
 
 </table>
 
