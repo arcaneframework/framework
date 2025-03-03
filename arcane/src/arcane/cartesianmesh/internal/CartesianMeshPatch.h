@@ -50,6 +50,10 @@ class CartesianMeshPatch
   ~CartesianMeshPatch() override;
  public:
   CellGroup cells() override;
+  Integer index() override
+  {
+    return m_amr_patch_index;
+  }
   CellDirectionMng& cellDirection(eMeshDirection dir) override
   {
     return m_cell_directions[dir];

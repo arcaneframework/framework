@@ -14,10 +14,11 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+#include "arcane/cartesianmesh/PatchAMRPosition.h"
+#include "arcane/cartesianmesh/CartesianMeshGlobal.h"
+
 #include "arcane/core/ArcaneTypes.h"
 #include "arcane/core/MeshHandle.h"
-
-#include "arcane/cartesianmesh/CartesianMeshGlobal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -157,6 +158,7 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMesh
    * Cette opération est collective.
    */
   virtual void refinePatch3D(Real3 position, Real3 length) = 0;
+  virtual void refinePatch(PatchAMRPosition position) = 0;
 
   /*!
    * \brief Dé-raffine en 2D un bloc du maillage cartésien.
@@ -197,6 +199,7 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMesh
    * Cette opération est collective.
    */
   virtual void coarseZone3D(Real3 position, Real3 length) = 0;
+  virtual void coarseZone(PatchAMRPosition position) = 0;
 
   /*!
    * \brief Méthode permettant de supprimer une ou plusieurs couches
