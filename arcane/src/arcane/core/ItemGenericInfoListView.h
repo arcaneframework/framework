@@ -94,6 +94,18 @@ class ARCANE_CORE_EXPORT ItemGenericInfoListView
     return ItemFlags::isOwn(m_flags[local_id]);
   }
 
+  //! Indique si l'entité de numéro local \a local_id est partagée par d'autres sous-domaines
+  constexpr ARCCORE_HOST_DEVICE bool isShared(Int32 local_id) const
+  {
+    return ItemFlags::isShared(m_flags[local_id]);
+  }
+
+  //! Indique si l'entité de numéro local \a local_id est partagée par d'autres sous-domaines
+  constexpr ARCCORE_HOST_DEVICE bool isShared(ItemLocalId local_id) const
+  {
+    return ItemFlags::isShared(m_flags[local_id]);
+  }
+
  private:
 
   // NOTE: Cette structure est utilisée dans le wrapping C#.
