@@ -23,6 +23,8 @@
 
 namespace Arcane
 {
+class CartesianPatchGroup;
+
 /*!
  * \brief Vue sur une liste de patchs.
  *
@@ -31,6 +33,7 @@ namespace Arcane
 class ARCANE_CARTESIANMESH_EXPORT CartesianMeshPatchListView
 {
   friend CartesianMeshImpl;
+  friend CartesianPatchGroup;
 
  public:
 

@@ -38,7 +38,10 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMeshPatch
   //! Groupe de mailles du patch
   virtual CellGroup cells() =0;
 
- //! Liste des mailles dans la direction \a dir
+  //! TODO
+  virtual Integer index() = 0;
+
+  //! Liste des mailles dans la direction \a dir
   virtual CellDirectionMng& cellDirection(eMeshDirection dir) =0;
 
   //! Liste des mailles dans la direction \a dir (0, 1 ou 2)
