@@ -28,7 +28,7 @@
 #include "arcane/core/IParallelMng.h"
 #include "arcane/core/VariableTypes.h"
 #include "arcane/core/IMeshModifier.h"
-
+#include "arcane/core/materials/IMeshMaterialMng.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -66,6 +66,20 @@ flagCellToRefine(Int32ConstArrayView cells_lids)
 /*---------------------------------------------------------------------------*/
 
 void CartesianMeshAMRPatchMng::
+flagCellToCoarsen(Int32ConstArrayView cells_lids)
+{
+  ItemInfoListView cells(m_mesh->cellFamily());
+  for (Integer lid : cells_lids) {
+    Item item = cells[lid];
+    item.mutableItemBase().addFlags(ItemFlags::II_Coarsen);
+  }
+  _syncFlagCell();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void CartesianMeshAMRPatchMng::
 _syncFlagCell() const
 {
   if (!m_mesh->parallelMng()->isParallel())
@@ -95,6 +109,9 @@ _syncFlagCell() const
     if (flag_cells_consistent[cell] & ItemFlags::II_Inactive) {
       cell.mutableItemBase().setFlags(ItemFlags::II_Inactive);
     }
+    if (flag_cells_consistent[cell] & ItemFlags::II_Coarsen) {
+      cell.mutableItemBase().setFlags(ItemFlags::II_Coarsen);
+    }
 
     //    debug() << "After Compute " << cell
     //            << " -- flag : " << cell.mutableItemBase().flags()
@@ -112,7 +129,7 @@ _syncFlagCell() const
  *       (top)
  *         y    (front)
  *         ^    z
-*          |   /
+ *         |   /
  *         | /
  *  (left) ------->x (right)
  *  (rear)(bottom)
@@ -121,7 +138,6 @@ void CartesianMeshAMRPatchMng::
 refine()
 {
   IParallelMng* pm = m_mesh->parallelMng();
-  Int32 nb_rank = pm->commSize();
   Int32 my_rank = pm->commRank();
   Int32 max_level = 0;
 
@@ -163,104 +179,12 @@ refine()
   std::unordered_map<Int64, Integer> around_parent_cells_uid_to_owner;
   std::unordered_map<Int64, Int32> around_parent_cells_uid_to_flags;
 
-  // Partie échange d'informations sur les mailles autour du patch
-  // (pour remplacer les mailles fantômes).
   {
     // On a uniquement besoin de ses deux flags pour les mailles autour.
     // (II_Refine pour savoir si les mailles autour sont dans le même patch)
     // (II_Inactive pour savoir si les mailles autour sont déjà raffinées)
-    Int32 usefull_flags = ItemFlags::II_Refine + ItemFlags::II_Inactive;
-
-    // On remplit le tableau avec nos infos, pour les autres processus.
-    ENUMERATE_ (Cell, icell, m_mesh->ownCells()) {
-      Cell cell = *icell;
-      around_parent_cells_uid_to_owner[cell.uniqueId()] = my_rank;
-      around_parent_cells_uid_to_flags[cell.uniqueId()] = ((cell.itemBase().flags() & usefull_flags) + ItemFlags::II_UserMark1);
-    }
-
-    ENUMERATE_ (Cell, icell, m_mesh->allCells().ghost()) {
-      Cell cell = *icell;
-      around_parent_cells_uid_to_owner[cell.uniqueId()] = cell.owner();
-      around_parent_cells_uid_to_flags[cell.uniqueId()] = ((cell.itemBase().flags() & usefull_flags) + ItemFlags::II_UserMark1);
-    }
-
-    // Tableau qui contiendra les uids des mailles dont on a besoin des infos.
-    UniqueArray<Int64> uid_of_cells_needed;
-    {
-      UniqueArray<Int64> cell_uids_around((m_mesh->dimension() == 2) ? 9 : 27);
-      for (Cell parent_cell : cell_to_refine_internals) {
-        m_num_mng->cellUniqueIdsAroundCell(cell_uids_around, parent_cell);
-        for (Int64 cell_uid : cell_uids_around) {
-          // Si -1 alors il n'y a pas de mailles à cette position.
-          if (cell_uid == -1)
-            continue;
-
-          // TODO C++20 : Mettre map.contains().
-          // SI on a la maille, on n'a pas besoin de demander d'infos.
-          if (around_parent_cells_uid_to_owner.find(cell_uid) != around_parent_cells_uid_to_owner.end())
-            continue;
-
-          uid_of_cells_needed.add(cell_uid);
-        }
-      }
-    }
-
-    UniqueArray<Int64> uid_of_cells_needed_all_procs;
-    pm->allGatherVariable(uid_of_cells_needed, uid_of_cells_needed_all_procs);
-
-    UniqueArray<Int32> flags_of_cells_needed_all_procs(uid_of_cells_needed_all_procs.size());
-    UniqueArray<Int32> owner_of_cells_needed_all_procs(uid_of_cells_needed_all_procs.size());
-
-    {
-      UniqueArray<Int32> local_ids(uid_of_cells_needed_all_procs.size());
-      m_mesh->cellFamily()->itemsUniqueIdToLocalId(local_ids, uid_of_cells_needed_all_procs, false);
-      Integer compt = 0;
-      ENUMERATE_ (Cell, icell, m_mesh->cellFamily()->view(local_ids)) {
-        // Le isOwn est important vu qu'il peut y avoir les mailles fantômes.
-        if (!icell->null() && icell->isOwn()) {
-          owner_of_cells_needed_all_procs[compt] = my_rank;
-          flags_of_cells_needed_all_procs[compt] = (icell->itemBase().flags() & usefull_flags);
-        }
-        else {
-          owner_of_cells_needed_all_procs[compt] = -1;
-          flags_of_cells_needed_all_procs[compt] = 0;
-        }
-        compt++;
-      }
-    }
-
-    pm->reduce(Parallel::eReduceType::ReduceMax, owner_of_cells_needed_all_procs);
-    pm->reduce(Parallel::eReduceType::ReduceMax, flags_of_cells_needed_all_procs);
-
-    // A partir de ce moment, si les parent_cells sont au niveau 0, le tableau
-    // "owner_of_cells_needed_all_procs" ne devrait plus contenir de "-1".
-    // Si les parent_cells sont au niveau 1 ou plus, il peut y avoir des "-1"
-    // car les mailles autour ne sont pas forcément toutes raffinées.
-    // (exemple : on est en train de faire le niveau 2, donc on regarde les mailles
-    // parent de niveau 1 tout autour. Il se peut que la maille d'à coté n'ai jamais
-    // été raffinée, donc n'a pas de mailles de niveau 1. Comme la maille n'existe pas,
-    // aucun processus ne peut mettre un propriétaire, donc le tableau des propriétaires
-    // contiendra "-1".
-
-    // On récupère les infos des mailles autour qui nous intéressent.
-    {
-      Integer size_uid_of_cells_needed = uid_of_cells_needed.size();
-      Integer my_pos_in_all_procs_arrays = 0;
-      UniqueArray<Integer> size_uid_of_cells_needed_per_proc(nb_rank);
-      ArrayView<Integer> av(1, &size_uid_of_cells_needed);
-      pm->allGather(av, size_uid_of_cells_needed_per_proc);
-
-      for (Integer i = 0; i < my_rank; ++i) {
-        my_pos_in_all_procs_arrays += size_uid_of_cells_needed_per_proc[i];
-      }
-
-      ArrayView<Int32> owner_of_cells_needed = owner_of_cells_needed_all_procs.subView(my_pos_in_all_procs_arrays, size_uid_of_cells_needed);
-      ArrayView<Int32> flags_of_cells_needed = flags_of_cells_needed_all_procs.subView(my_pos_in_all_procs_arrays, size_uid_of_cells_needed);
-      for (Integer i = 0; i < size_uid_of_cells_needed; ++i) {
-        around_parent_cells_uid_to_owner[uid_of_cells_needed[i]] = owner_of_cells_needed[i];
-        around_parent_cells_uid_to_flags[uid_of_cells_needed[i]] = flags_of_cells_needed[i];
-      }
-    }
+    Int32 useful_flags = ItemFlags::II_Refine + ItemFlags::II_Inactive;
+    _shareInfosOfCellsAroundPatch(cell_to_refine_internals, around_parent_cells_uid_to_owner, around_parent_cells_uid_to_flags, useful_flags);
   }
 
   if (m_mesh->dimension() == 2) {
@@ -362,6 +286,24 @@ refine()
       // │ └───────┐
       // │0   1   2│
       // └─────────┘
+      //
+      // ^y
+      // |
+      // ->x
+
+      // Note pour les maillages cartésiens 2D :
+      // Les itérateurs sur les faces itèrent dans l'ordre (pour la maille 4 ici) :
+      //  1. Face entre [4, 1],
+      //  2. Face entre [4, 5],
+      //  3. Face entre [4, 7],
+      //  4. Face entre [4, 3],
+      //
+      // Les itérateurs sur les noeuds itèrent dans l'ordre (pour la maille 4 ici) :
+      //  1. Noeud entre [4, 0]
+      //  2. Noeud entre [4, 2]
+      //  3. Noeud entre [4, 8]
+      //  4. Noeud entre [4, 6]
+
       // Chaque chiffre désigne une maille parente et une priorité (0 étant la priorité la plus forte).
       // 4 = parent_cell ("nous")
 
@@ -870,6 +812,29 @@ refine()
       // └──────────┘ │ └──────────┘ │ └──────────┘
       // Z=0          │ Z=1          │ Z=2
       // ("arrière")  │              │ ("avant")
+      //
+      // ^y
+      // |
+      // ->x
+
+      // Note pour les maillages cartésiens 3D :
+      // Les itérateurs sur les faces itèrent dans l'ordre (pour la maille 13 ici) :
+      //  1. Face entre [13, 12],
+      //  2. Face entre [13, 10],
+      //  3. Face entre [13, 4],
+      //  4. Face entre [13, 14],
+      //  5. Face entre [13, 16],
+      //  6. Face entre [13, 22],
+      //
+      // Les itérateurs sur les noeuds itèrent dans l'ordre (pour la maille 13 ici) :
+      //  1. Noeud entre [13, 0]
+      //  2. Noeud entre [13, 2]
+      //  3. Noeud entre [13, 8]
+      //  4. Noeud entre [13, 6]
+      //  5. Noeud entre [13, 18]
+      //  6. Noeud entre [13, 20]
+      //  7. Noeud entre [13, 26]
+      //  8. Noeud entre [13, 24]
 
       // Chaque chiffre désigne une maille parente et une priorité (0 étant la priorité la plus forte).
       // 13 = parent_cell ("nous")
@@ -1947,7 +1912,7 @@ refine()
 /*---------------------------------------------------------------------------*/
 
 void CartesianMeshAMRPatchMng::
-coarse()
+createSubLevel()
 {
   IParallelMng* pm = m_mesh->parallelMng();
   Int32 nb_rank = pm->commSize();
@@ -2817,6 +2782,433 @@ coarse()
   //      debug() << "\t\tChild uniqueId : " << iface->hChild(i).uniqueId() << " -- level : " << iface->hChild(i).level() << " -- nbChildren : " << iface->hChild(i).nbHChildren();
   //    }
   //  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void CartesianMeshAMRPatchMng::
+coarse(bool update_parent_flag)
+{
+  UniqueArray<Cell> cells_to_coarsen_internal;
+  ENUMERATE_ (Cell, icell, m_mesh->allActiveCells()) {
+    Cell cell = *icell;
+    if (cell.itemBase().flags() & ItemFlags::II_Coarsen) {
+      if (cell.level() == 0) {
+        ARCANE_FATAL("Cannot coarse level-0 cell");
+      }
+
+      Cell parent = cell.hParent();
+
+      if (update_parent_flag) {
+        parent.mutableItemBase().addFlags(ItemFlags::II_JustCoarsened);
+        parent.mutableItemBase().removeFlags(ItemFlags::II_Inactive);
+        parent.mutableItemBase().removeFlags(ItemFlags::II_CoarsenInactive);
+      }
+
+      // Pour une maille de niveau n-1, si une de ses mailles filles doit être dé-raffinée,
+      // alors toutes ses mailles filles doivent être dé-raffinées.
+      for (Integer i = 0; i < parent.nbHChildren(); ++i) {
+        Cell child = parent.hChild(i);
+        if (!(child.mutableItemBase().flags() & ItemFlags::II_Coarsen)) {
+          ARCANE_FATAL("Parent cannot have children with coarse flag and children without coarse flag -- Parent uid: {0} -- Child uid: {1}", parent.uniqueId(), child.uniqueId());
+        }
+      }
+      if (parent.mutableItemBase().flags() & ItemFlags::II_Coarsen) {
+        ARCANE_FATAL("Cannot coarse parent and child in same time");
+      }
+      if (cell.nbHChildren() != 0) {
+        ARCANE_FATAL("For now, cannot coarse cell with children");
+      }
+      cells_to_coarsen_internal.add(cell);
+    }
+  }
+
+  // Maps remplaçant les mailles fantômes.
+  std::unordered_map<Int64, Integer> around_cells_uid_to_owner;
+  std::unordered_map<Int64, Int32> around_cells_uid_to_flags;
+
+  {
+    // On a uniquement besoin de ses deux flags pour les mailles autour.
+    // (II_Coarsen pour savoir si les mailles autour sont aussi à dé-raffinées)
+    // (II_Inactive pour savoir si les mailles autour sont déjà raffinées(pour vérifier qu'il n'y a pas plus d'un niveau d'écart))
+    Int32 useful_flags = ItemFlags::II_Coarsen + ItemFlags::II_Inactive;
+    _shareInfosOfCellsAroundPatch(cells_to_coarsen_internal, around_cells_uid_to_owner, around_cells_uid_to_flags, useful_flags);
+  }
+  if (m_mesh->dimension() == 2) {
+
+    FixedArray<Int64, 9> uid_cells_around_cell_1d;
+    FixedArray<Int32, 9> owner_cells_around_cell_1d;
+    FixedArray<Int32, 9> flags_cells_around_cell_1d;
+
+    for (Cell cell_to_coarsen : cells_to_coarsen_internal) {
+      const Int64 cell_to_coarsen_uid = cell_to_coarsen.uniqueId();
+      m_num_mng->cellUniqueIdsAroundCell(uid_cells_around_cell_1d.view(), cell_to_coarsen);
+
+      {
+        Integer nb_cells_to_coarsen_or_empty_around = 0;
+
+        for (Integer i = 0; i < 9; ++i) {
+          Int64 uid_cell = uid_cells_around_cell_1d[i];
+          // Si uid_cell != -1 alors il y a peut-être une maille (mais on ne sait pas si elle est bien présente).
+          // Si around_cells_uid_to_owner[uid_cell] != -1 alors il y a bien une maille.
+          if (uid_cell != -1 && around_cells_uid_to_owner[uid_cell] != -1) {
+            owner_cells_around_cell_1d[i] = around_cells_uid_to_owner[uid_cell];
+            flags_cells_around_cell_1d[i] = around_cells_uid_to_flags[uid_cell];
+
+            if (flags_cells_around_cell_1d[i] & ItemFlags::II_Coarsen) {
+              nb_cells_to_coarsen_or_empty_around++;
+            }
+          }
+          else {
+            uid_cells_around_cell_1d[i] = -1;
+            owner_cells_around_cell_1d[i] = -1;
+            flags_cells_around_cell_1d[i] = 0;
+
+            nb_cells_to_coarsen_or_empty_around++;
+          }
+        }
+
+        // Si toutes les mailles autours de nous sont soit inexistantes, soit
+        // à supprimer, inutile de chercher de nouveaux propriétaires pour nos items.
+        if (nb_cells_to_coarsen_or_empty_around == 9) {
+          continue;
+        }
+      }
+
+      Int32 cell_to_coarsen_owner = owner_cells_around_cell_1d[4];
+
+      {
+        constexpr Integer aaa[] = { 1, 5, 7, 3 };
+
+        Integer count = -1;
+
+        for (Face face : cell_to_coarsen.faces()) {
+          count++;
+          Int64 other_cell_uid = uid_cells_around_cell_1d[aaa[count]];
+          if (other_cell_uid == -1) {
+            // On est au bord du maillage ou il n'y a pas de maille du même niveau à côté,
+            // pas besoin de changer le owner de la face (elle sera supprimée).
+            continue;
+          }
+          Int32 other_cell_flag = flags_cells_around_cell_1d[aaa[count]];
+
+          if (other_cell_flag & ItemFlags::II_Coarsen) {
+            // La maille d'à côté sera aussi supprimée, pas besoin de changer le owner de la face.
+            continue;
+          }
+          if (other_cell_flag & ItemFlags::II_Inactive) {
+            // La maille d'à côté a des enfants. Il y aura donc au moins deux niveaux de
+            // raffinements de différences.
+            ARCANE_FATAL("Max one level diff between two cells is allowed -- Uid of Cell to be coarseing: {0} -- Uid of Opposite cell with children: {1}", cell_to_coarsen_uid, other_cell_uid);
+          }
+          Int32 other_cell_owner = owner_cells_around_cell_1d[aaa[count]];
+          if (other_cell_owner != cell_to_coarsen_owner) {
+            // La maille d'à côté existe et appartient à quelqu'un d'autre. On lui donne la face.
+            face.mutableItemBase().setOwner(other_cell_owner, cell_to_coarsen_owner);
+          }
+        }
+      }
+
+      {
+        Integer count = -1;
+
+        constexpr Integer bbb[4][3] = { { 3, 1, 0 }, { 5, 2, 1 }, { 8, 7, 5 }, { 7, 6, 3 } };
+
+        for (Node node : cell_to_coarsen.nodes()) {
+          count++;
+          Integer final_owner = -1;
+          for (Integer other_cell = 0; other_cell < 3; ++other_cell) {
+            Int64 other_cell_uid = uid_cells_around_cell_1d[bbb[count][other_cell]];
+            if (other_cell_uid == -1) {
+              // On est au bord du maillage ou il n'y a pas de maille du même niveau à côté,
+              // le noeud ne prendra pas son propriétaire.
+              continue;
+            }
+            Int32 other_cell_flag = flags_cells_around_cell_1d[bbb[count][other_cell]];
+
+            if (other_cell_flag & ItemFlags::II_Coarsen) {
+              // La maille d'à côté sera aussi supprimée, elle ne pourra pas prendre
+              // la propriété de notre noeud.
+              continue;
+            }
+            if (other_cell_flag & ItemFlags::II_Inactive) {
+              // La maille d'à côté a des enfants. Il y aura donc au moins deux niveaux de
+              // raffinements de différences.
+              ARCANE_FATAL("Max one level diff between two cells is allowed -- Uid of Cell to be coarseing: {0} -- Uid of Opposite cell with children: {1}", cell_to_coarsen_uid, other_cell_uid);
+            }
+            Int32 other_cell_owner = owner_cells_around_cell_1d[bbb[count][other_cell]];
+            if (other_cell_owner != cell_to_coarsen_owner) {
+              // La maille d'à côté existe et appartient à quelqu'un d'autre. On lui donne le noeud.
+              final_owner = other_cell_owner;
+            }
+          }
+          if (final_owner != -1) {
+            node.mutableItemBase().setOwner(final_owner, cell_to_coarsen_owner);
+          }
+        }
+      }
+    }
+  }
+  else if (m_mesh->dimension() == 3) {
+    FixedArray<Int64, 27> uid_cells_around_cell_1d;
+    FixedArray<Int32, 27> owner_cells_around_cell_1d;
+    FixedArray<Int32, 27> flags_cells_around_cell_1d;
+
+    for (Cell cell_to_coarsen : cells_to_coarsen_internal) {
+      const Int64 cell_to_coarsen_uid = cell_to_coarsen.uniqueId();
+      m_num_mng->cellUniqueIdsAroundCell(uid_cells_around_cell_1d.view(), cell_to_coarsen);
+
+      {
+        Integer nb_cells_to_coarsen_or_empty_around = 0;
+
+        for (Integer i = 0; i < 27; ++i) {
+          Int64 uid_cell = uid_cells_around_cell_1d[i];
+          // Si uid_cell != -1 alors il y a peut-être une maille (mais on ne sait pas si elle est bien présente).
+          // Si around_cells_uid_to_owner[uid_cell] != -1 alors il y a bien une maille.
+          if (uid_cell != -1 && around_cells_uid_to_owner[uid_cell] != -1) {
+            owner_cells_around_cell_1d[i] = around_cells_uid_to_owner[uid_cell];
+            flags_cells_around_cell_1d[i] = around_cells_uid_to_flags[uid_cell];
+
+            if (flags_cells_around_cell_1d[i] & ItemFlags::II_Coarsen) {
+              nb_cells_to_coarsen_or_empty_around++;
+            }
+          }
+          else {
+            uid_cells_around_cell_1d[i] = -1;
+            owner_cells_around_cell_1d[i] = -1;
+            flags_cells_around_cell_1d[i] = 0;
+
+            nb_cells_to_coarsen_or_empty_around++;
+          }
+        }
+
+        // Si toutes les mailles autours de nous sont soit inexistantes, soit
+        // à supprimer, inutile de chercher de nouveaux propriétaires pour nos items.
+        if (nb_cells_to_coarsen_or_empty_around == 9) {
+          continue;
+        }
+      }
+
+      Int32 cell_to_coarsen_owner = owner_cells_around_cell_1d[13];
+
+      {
+        constexpr Integer aaa[] = { 12, 10, 4, 14, 16, 22 };
+
+        Integer count = -1;
+
+        for (Face face : cell_to_coarsen.faces()) {
+          count++;
+          Int64 other_cell_uid = uid_cells_around_cell_1d[aaa[count]];
+          if (other_cell_uid == -1) {
+            // On est au bord du maillage ou il n'y a pas de maille du même niveau à côté,
+            // pas besoin de changer le owner de la face (elle sera supprimée).
+            continue;
+          }
+          Int32 other_cell_flag = flags_cells_around_cell_1d[aaa[count]];
+
+          if (other_cell_flag & ItemFlags::II_Coarsen) {
+            // La maille d'à côté sera aussi supprimée, pas besoin de changer le owner de la face.
+            continue;
+          }
+          if (other_cell_flag & ItemFlags::II_Inactive) {
+            // La maille d'à côté a des enfants. Il y aura donc au moins deux niveaux de
+            // raffinements de différences.
+            ARCANE_FATAL("Max one level diff between two cells is allowed -- Uid of Cell to be coarseing: {0} -- Uid of Opposite cell with children: {1}", cell_to_coarsen_uid, other_cell_uid);
+          }
+          Int32 other_cell_owner = owner_cells_around_cell_1d[aaa[count]];
+          if (other_cell_owner != cell_to_coarsen_owner) {
+            // La maille d'à côté existe et appartient à quelqu'un d'autre. On lui donne la face.
+            face.mutableItemBase().setOwner(other_cell_owner, cell_to_coarsen_owner);
+          }
+        }
+      }
+
+      {
+        Integer count = -1;
+
+        constexpr Integer bbb[8][7] = {
+          {12, 10, 9, 4, 3, 1, 0},
+          {14, 11, 10, 5, 4, 2, 1},
+          {17, 16, 14, 8, 7, 5, 4},
+          {16, 15, 12, 7, 6, 4, 3},
+          {22, 21, 19, 18, 12, 10, 9},
+          {23, 22, 20, 19, 14, 11, 10},
+          {26, 25, 23, 22, 17, 16, 14},
+          {25, 24, 22, 21, 16, 15, 12}
+        };
+
+        for (Node node : cell_to_coarsen.nodes()) {
+          count++;
+          Integer final_owner = -1;
+          for (Integer other_cell = 0; other_cell < 7; ++other_cell) {
+            Int64 other_cell_uid = uid_cells_around_cell_1d[bbb[count][other_cell]];
+            if (other_cell_uid == -1) {
+              // On est au bord du maillage ou il n'y a pas de maille du même niveau à côté,
+              // le noeud ne prendra pas son propriétaire.
+              continue;
+            }
+            Int32 other_cell_flag = flags_cells_around_cell_1d[bbb[count][other_cell]];
+
+            if (other_cell_flag & ItemFlags::II_Coarsen) {
+              // La maille d'à côté sera aussi supprimée, elle ne pourra pas prendre
+              // la propriété de notre noeud.
+              continue;
+            }
+            if (other_cell_flag & ItemFlags::II_Inactive) {
+              // La maille d'à côté a des enfants. Il y aura donc au moins deux niveaux de
+              // raffinements de différences.
+              ARCANE_FATAL("Max one level diff between two cells is allowed -- Uid of Cell to be coarseing: {0} -- Uid of Opposite cell with children: {1}", cell_to_coarsen_uid, other_cell_uid);
+            }
+            Int32 other_cell_owner = owner_cells_around_cell_1d[bbb[count][other_cell]];
+            if (other_cell_owner != cell_to_coarsen_owner) {
+              // La maille d'à côté existe et appartient à quelqu'un d'autre. On lui donne le noeud.
+              node.mutableItemBase().setOwner(other_cell_owner, cell_to_coarsen_owner);
+            }
+          }
+          if (final_owner != -1) {
+            node.mutableItemBase().setOwner(final_owner, cell_to_coarsen_owner);
+          }
+        }
+      }
+    }
+  }
+
+  else {
+    ARCANE_FATAL("Bad dimension");
+  }
+
+  UniqueArray<Int32> local_ids;
+  for (Cell cell : cells_to_coarsen_internal) {
+    local_ids.add(cell.localId());
+  }
+  m_mesh->modifier()->removeCells(local_ids);
+  m_mesh->nodeFamily()->notifyItemsOwnerChanged();
+  m_mesh->faceFamily()->notifyItemsOwnerChanged();
+  m_mesh->modifier()->endUpdate();
+  m_mesh->cellFamily()->computeSynchronizeInfos();
+  m_mesh->nodeFamily()->computeSynchronizeInfos();
+  m_mesh->faceFamily()->computeSynchronizeInfos();
+  m_mesh->modifier()->setDynamic(true);
+
+  UniqueArray<Int64> ghost_cell_to_refine;
+  UniqueArray<Int64> ghost_cell_to_coarsen;
+
+  if (!update_parent_flag) {
+    // Si les matériaux sont actifs, il faut forcer un recalcul des matériaux car les groupes
+    // de mailles ont été modifiés et donc la liste des constituants aussi
+    Materials::IMeshMaterialMng* mm = Materials::IMeshMaterialMng::getReference(m_mesh, false);
+    if (mm)
+      mm->forceRecompute();
+  }
+
+  m_mesh->modifier()->updateGhostLayerFromParent(ghost_cell_to_refine, ghost_cell_to_coarsen, true);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+// TODO : Faire une doc détaillée.
+void CartesianMeshAMRPatchMng::
+_shareInfosOfCellsAroundPatch(ConstArrayView<Cell> patch_cells, std::unordered_map<Int64, Integer>& around_cells_uid_to_owner, std::unordered_map<Int64, Int32>& around_cells_uid_to_flags, Int32 useful_flags) const
+{
+  IParallelMng* pm = m_mesh->parallelMng();
+  Int32 my_rank = pm->commRank();
+  Int32 nb_rank = pm->commSize();
+
+  // Partie échange d'informations sur les mailles autour du patch
+  // (pour remplacer les mailles fantômes).
+
+  // On remplit le tableau avec nos infos, pour les autres processus.
+  ENUMERATE_ (Cell, icell, m_mesh->ownCells()) {
+    Cell cell = *icell;
+    around_cells_uid_to_owner[cell.uniqueId()] = my_rank;
+    around_cells_uid_to_flags[cell.uniqueId()] = ((cell.itemBase().flags() & useful_flags) + ItemFlags::II_UserMark1);
+  }
+
+  ENUMERATE_ (Cell, icell, m_mesh->allCells().ghost()) {
+    Cell cell = *icell;
+    around_cells_uid_to_owner[cell.uniqueId()] = cell.owner();
+    around_cells_uid_to_flags[cell.uniqueId()] = ((cell.itemBase().flags() & useful_flags) + ItemFlags::II_UserMark1);
+  }
+
+  // Tableau qui contiendra les uids des mailles dont on a besoin des infos.
+  UniqueArray<Int64> uid_of_cells_needed;
+  {
+    UniqueArray<Int64> cell_uids_around((m_mesh->dimension() == 2) ? 9 : 27);
+    for (Cell cell : patch_cells) {
+      m_num_mng->cellUniqueIdsAroundCell(cell_uids_around, cell);
+      for (Int64 cell_uid : cell_uids_around) {
+        // Si -1 alors il n'y a pas de mailles à cette position.
+        if (cell_uid == -1)
+          continue;
+
+        // TODO C++20 : Mettre map.contains().
+        // SI on a la maille, on n'a pas besoin de demander d'infos.
+        if (around_cells_uid_to_owner.find(cell_uid) != around_cells_uid_to_owner.end())
+          continue;
+
+        uid_of_cells_needed.add(cell_uid);
+      }
+    }
+  }
+
+  UniqueArray<Int64> uid_of_cells_needed_all_procs;
+  pm->allGatherVariable(uid_of_cells_needed, uid_of_cells_needed_all_procs);
+
+  UniqueArray<Int32> flags_of_cells_needed_all_procs(uid_of_cells_needed_all_procs.size());
+  UniqueArray<Int32> owner_of_cells_needed_all_procs(uid_of_cells_needed_all_procs.size());
+
+  {
+    UniqueArray<Int32> local_ids(uid_of_cells_needed_all_procs.size());
+    m_mesh->cellFamily()->itemsUniqueIdToLocalId(local_ids, uid_of_cells_needed_all_procs, false);
+    Integer compt = 0;
+    ENUMERATE_ (Cell, icell, m_mesh->cellFamily()->view(local_ids)) {
+      // Le isOwn est important vu qu'il peut y avoir les mailles fantômes.
+      if (!icell->null() && icell->isOwn()) {
+        owner_of_cells_needed_all_procs[compt] = my_rank;
+        flags_of_cells_needed_all_procs[compt] = (icell->itemBase().flags() & useful_flags);
+      }
+      else {
+        owner_of_cells_needed_all_procs[compt] = -1;
+        flags_of_cells_needed_all_procs[compt] = 0;
+      }
+      compt++;
+    }
+  }
+
+  pm->reduce(Parallel::eReduceType::ReduceMax, owner_of_cells_needed_all_procs);
+  pm->reduce(Parallel::eReduceType::ReduceMax, flags_of_cells_needed_all_procs);
+
+  // A partir de ce moment, si les parent_cells sont au niveau 0, le tableau
+  // "owner_of_cells_needed_all_procs" ne devrait plus contenir de "-1".
+  // Si les parent_cells sont au niveau 1 ou plus, il peut y avoir des "-1"
+  // car les mailles autour ne sont pas forcément toutes raffinées.
+  // (exemple : on est en train de faire le niveau 2, donc on regarde les mailles
+  // parent de niveau 1 tout autour. Il se peut que la maille d'à coté n'ai jamais
+  // été raffinée, donc n'a pas de mailles de niveau 1. Comme la maille n'existe pas,
+  // aucun processus ne peut mettre un propriétaire, donc le tableau des propriétaires
+  // contiendra "-1".
+
+  // On récupère les infos des mailles autour qui nous intéressent.
+  {
+    Integer size_uid_of_cells_needed = uid_of_cells_needed.size();
+    Integer my_pos_in_all_procs_arrays = 0;
+    UniqueArray<Integer> size_uid_of_cells_needed_per_proc(nb_rank);
+    ArrayView<Integer> av(1, &size_uid_of_cells_needed);
+    pm->allGather(av, size_uid_of_cells_needed_per_proc);
+
+    for (Integer i = 0; i < my_rank; ++i) {
+      my_pos_in_all_procs_arrays += size_uid_of_cells_needed_per_proc[i];
+    }
+
+    ArrayView<Int32> owner_of_cells_needed = owner_of_cells_needed_all_procs.subView(my_pos_in_all_procs_arrays, size_uid_of_cells_needed);
+    ArrayView<Int32> flags_of_cells_needed = flags_of_cells_needed_all_procs.subView(my_pos_in_all_procs_arrays, size_uid_of_cells_needed);
+    for (Integer i = 0; i < size_uid_of_cells_needed; ++i) {
+      around_cells_uid_to_owner[uid_of_cells_needed[i]] = owner_of_cells_needed[i];
+      around_cells_uid_to_flags[uid_of_cells_needed[i]] = flags_of_cells_needed[i];
+    }
+  }
 }
 
 /*---------------------------------------------------------------------------*/
