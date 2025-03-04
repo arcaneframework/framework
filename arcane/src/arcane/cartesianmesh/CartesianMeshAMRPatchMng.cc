@@ -52,10 +52,21 @@ CartesianMeshAMRPatchMng(ICartesianMesh* cmesh)
 /*---------------------------------------------------------------------------*/
 
 void CartesianMeshAMRPatchMng::
-flagCellToRefine(Int32ConstArrayView cells_lids)
+flagCellToRefine(const Int32ConstArrayView cells_lids, const bool clear_old_flags)
 {
-  ItemInfoListView cells(m_mesh->cellFamily());
-  for (int lid : cells_lids) {
+  if (clear_old_flags) {
+    constexpr ItemFlags::FlagType flags_to_remove = (
+      ItemFlags::II_Coarsen | ItemFlags::II_Refine |
+      ItemFlags::II_JustCoarsened | ItemFlags::II_JustRefined |
+      ItemFlags::II_JustAdded | ItemFlags::II_CoarsenInactive
+      );
+    ENUMERATE_(Cell, icell, m_mesh->allCells()){
+      icell->mutableItemBase().removeFlags(flags_to_remove);
+    }
+  }
+
+  const ItemInfoListView cells(m_mesh->cellFamily());
+  for (const int lid : cells_lids) {
     Item item = cells[lid];
     item.mutableItemBase().addFlags(ItemFlags::II_Refine);
   }
@@ -66,10 +77,21 @@ flagCellToRefine(Int32ConstArrayView cells_lids)
 /*---------------------------------------------------------------------------*/
 
 void CartesianMeshAMRPatchMng::
-flagCellToCoarsen(Int32ConstArrayView cells_lids)
+flagCellToCoarsen(const Int32ConstArrayView cells_lids, const bool clear_old_flags)
 {
-  ItemInfoListView cells(m_mesh->cellFamily());
-  for (Integer lid : cells_lids) {
+  if (clear_old_flags) {
+    constexpr ItemFlags::FlagType flags_to_remove = (
+      ItemFlags::II_Coarsen | ItemFlags::II_Refine |
+      ItemFlags::II_JustCoarsened | ItemFlags::II_JustRefined |
+      ItemFlags::II_JustAdded | ItemFlags::II_CoarsenInactive
+      );
+    ENUMERATE_(Cell, icell, m_mesh->allCells()){
+      icell->mutableItemBase().removeFlags(flags_to_remove);
+    }
+  }
+
+  const ItemInfoListView cells(m_mesh->cellFamily());
+  for (const Integer lid : cells_lids) {
     Item item = cells[lid];
     item.mutableItemBase().addFlags(ItemFlags::II_Coarsen);
   }
@@ -2138,11 +2160,11 @@ createSubLevel()
       };
 
       total_nb_cells++;
-      debug() << "Parent"
-              << " -- x : " << m_num_mng->cellUniqueIdToCoordX(parent_cell_uid, -1)
-              << " -- y : " << m_num_mng->cellUniqueIdToCoordY(parent_cell_uid, -1)
-              << " -- level : " << -1
-              << " -- uid : " << parent_cell_uid;
+      // debug() << "Parent"
+      //         << " -- x : " << m_num_mng->cellUniqueIdToCoordX(parent_cell_uid, -1)
+      //         << " -- y : " << m_num_mng->cellUniqueIdToCoordY(parent_cell_uid, -1)
+      //         << " -- level : " << -1
+      //         << " -- uid : " << parent_cell_uid;
 
       // On récupère les uniqueIds des nodes et faces à créer.
       m_num_mng->cellNodeUniqueIds(parent_nodes_uids, -1, parent_cell_uid);
@@ -2189,11 +2211,11 @@ createSubLevel()
             parent_face_owner = owner_cells_around_parent_cell(1, 1);
           }
           face_uid_to_owner[parent_faces_uids[l]] = parent_face_owner;
-          debug() << "Parent face (create face)  -- parent_cell_uid : " << parent_cell_uid
-                  << " -- level : " << -1
-                  << " -- face : " << l
-                  << " -- uid_face : " << parent_faces_uids[l]
-                  << " -- owner : " << parent_face_owner;
+          // debug() << "Parent face (create face)  -- parent_cell_uid : " << parent_cell_uid
+          //         << " -- level : " << -1
+          //         << " -- face : " << l
+          //         << " -- uid_face : " << parent_faces_uids[l]
+          //         << " -- owner : " << parent_face_owner;
         }
       }
 
@@ -2250,11 +2272,11 @@ createSubLevel()
           }
 
           node_uid_to_owner[parent_nodes_uids[l]] = parent_node_owner;
-          debug() << "Parent node (create node)  -- parent_cell_uid : " << parent_cell_uid
-                  << " -- level : " << -1
-                  << " -- node : " << l
-                  << " -- uid_node : " << parent_nodes_uids[l]
-                  << " -- owner : " << parent_node_owner;
+          // debug() << "Parent node (create node)  -- parent_cell_uid : " << parent_cell_uid
+          //         << " -- level : " << -1
+          //         << " -- node : " << l
+          //         << " -- uid_node : " << parent_nodes_uids[l]
+          //         << " -- owner : " << parent_node_owner;
         }
       }
     }
@@ -2327,12 +2349,12 @@ createSubLevel()
       };
 
       total_nb_cells++;
-      debug() << "Parent"
-              << " -- x : " << m_num_mng->cellUniqueIdToCoordX(parent_cell_uid, -1)
-              << " -- y : " << m_num_mng->cellUniqueIdToCoordY(parent_cell_uid, -1)
-              << " -- z : " << m_num_mng->cellUniqueIdToCoordZ(parent_cell_uid, -1)
-              << " -- level : " << -1
-              << " -- uid : " << parent_cell_uid;
+      // debug() << "Parent"
+      //         << " -- x : " << m_num_mng->cellUniqueIdToCoordX(parent_cell_uid, -1)
+      //         << " -- y : " << m_num_mng->cellUniqueIdToCoordY(parent_cell_uid, -1)
+      //         << " -- z : " << m_num_mng->cellUniqueIdToCoordZ(parent_cell_uid, -1)
+      //         << " -- level : " << -1
+      //         << " -- uid : " << parent_cell_uid;
 
       // On récupère les uniqueIds des nodes et faces à créer.
       m_num_mng->cellNodeUniqueIds(parent_nodes_uids, -1, parent_cell_uid);
@@ -2405,11 +2427,11 @@ createSubLevel()
             parent_face_owner = owner_cells_around_parent_cell(1, 1, 1);
           }
           face_uid_to_owner[parent_faces_uids[l]] = parent_face_owner;
-          debug() << "Parent face (create face)  -- parent_cell_uid : " << parent_cell_uid
-                  << " -- level : " << -1
-                  << " -- face : " << l
-                  << " -- uid_face : " << parent_faces_uids[l]
-                  << " -- owner : " << parent_face_owner;
+          // debug() << "Parent face (create face)  -- parent_cell_uid : " << parent_cell_uid
+          //         << " -- level : " << -1
+          //         << " -- face : " << l
+          //         << " -- uid_face : " << parent_faces_uids[l]
+          //         << " -- owner : " << parent_face_owner;
         }
       }
 
@@ -2562,11 +2584,11 @@ createSubLevel()
           }
 
           node_uid_to_owner[parent_nodes_uids[l]] = parent_node_owner;
-          debug() << "Parent node (create node)  -- parent_cell_uid : " << parent_cell_uid
-                  << " -- level : " << -1
-                  << " -- node : " << l
-                  << " -- uid_node : " << parent_nodes_uids[l]
-                  << " -- owner : " << parent_node_owner;
+          // debug() << "Parent node (create node)  -- parent_cell_uid : " << parent_cell_uid
+          //         << " -- level : " << -1
+          //         << " -- node : " << l
+          //         << " -- uid_node : " << parent_nodes_uids[l]
+          //         << " -- owner : " << parent_node_owner;
         }
       }
     }
@@ -2788,7 +2810,7 @@ createSubLevel()
 /*---------------------------------------------------------------------------*/
 
 void CartesianMeshAMRPatchMng::
-coarse(bool update_parent_flag)
+coarsen(bool update_parent_flag)
 {
   UniqueArray<Cell> cells_to_coarsen_internal;
   ENUMERATE_ (Cell, icell, m_mesh->allActiveCells()) {
