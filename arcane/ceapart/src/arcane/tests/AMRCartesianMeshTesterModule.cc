@@ -512,7 +512,7 @@ _initAMR()
     if (m_cartesian_mesh->mesh()->meshKind().meshAMRKind() == eMeshAMRKind::PatchCartesianMeshOnly) {
       debug() << "Coarse with specific coarser (for cartesian mesh only)";
       Ref<ICartesianMeshAMRPatchMng> coarser = CartesianMeshUtils::cartesianMeshAMRPatchMng(m_cartesian_mesh);
-      coarser->coarse();
+      coarser->createSubLevel();
     }
     else {
       Ref<CartesianMeshCoarsening2> coarser = CartesianMeshUtils::createCartesianMeshCoarsening2(m_cartesian_mesh);

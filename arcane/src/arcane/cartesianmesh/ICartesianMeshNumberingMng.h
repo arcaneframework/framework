@@ -697,6 +697,9 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMeshNumberingMng
    * \brief Méthode permettant de récupérer les uniqueIds des mailles autour de la maille passée
    * en paramètre.
    *
+   * S'il n'y a pas de maille à un endroit autour (si on est au bord du maillage par exemple),
+   * on met un uniqueId = -1.
+   *
    * La vue passée en paramètre doit faire une taille de 9 en 2D et de 27 en 3D.
    *
    * \param uid [OUT] Les uniqueIds des mailles autour.
@@ -708,6 +711,9 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMeshNumberingMng
   /*!
    * \brief Méthode permettant de récupérer les uniqueIds des mailles autour de la maille passée
    * en paramètre.
+   *
+   * S'il n'y a pas de maille à un endroit autour (si on est au bord du maillage par exemple),
+   * on met un uniqueId = -1.
    *
    * La vue passée en paramètre doit faire une taille de 9 en 2D et de 27 en 3D.
    *

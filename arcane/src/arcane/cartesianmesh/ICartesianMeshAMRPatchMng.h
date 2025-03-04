@@ -42,6 +42,7 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMeshAMRPatchMng
    * @param cells_lids Les localIds des mailles.
    */
   virtual void flagCellToRefine(Int32ConstArrayView cells_lids) = 0;
+  virtual void flagCellToCoarsen(Int32ConstArrayView cells_lids) = 0;
 
   /*!
    * @brief Méthode permettant de raffiner les mailles avec le
@@ -56,7 +57,10 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMeshAMRPatchMng
    * de niveau 0 puis tous les niveaux seront incrémentés de 1. Le niveau créé
    * par cette méthode sera donc le nouveau niveau 0.
    */
-  virtual void coarse() = 0;
+  virtual void createSubLevel() = 0;
+
+  // TODO
+  virtual void coarse(bool update_parent_flag) = 0;
 };
 
 /*---------------------------------------------------------------------------*/
