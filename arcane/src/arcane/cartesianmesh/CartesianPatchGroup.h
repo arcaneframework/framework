@@ -86,9 +86,26 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianPatchGroup
     m_amr_patches.remove(index);
   }
 
-  void removeCellsInPatch(Integer index, ConstArrayView<Int32> parent_cells_local_id)
+  void removeCellsInAllPatches(ConstArrayView<Int32> cells_local_id)
   {
+    IParallelMng* pm = m_cmesh->mesh()->parallelMng();
+    for (CellGroup cells : m_amr_patch_cell_groups) {
+      if (cells.isAllItems()) continue;
+      cells.removeItems(cells_local_id);
+    }
 
+    UniqueArray<Integer> truc(m_amr_patch_cell_groups.size());
+    for (Integer i = 0; i < m_amr_patch_cell_groups.size(); ++i) {
+      truc[i] = m_amr_patch_cell_groups[i].size();
+    }
+    pm->reduce(MessagePassing::ReduceMax, truc);
+    for (Integer i = 0; i < truc.size(); ++i) {
+      if (truc[i] == 0) {
+        // TODO C'est paaaaas..... c'est bof. Disons simplement que c'est à refaire.
+        truc.remove(i);
+        removePatch(i--);
+      }
+    }
   }
 
  private:

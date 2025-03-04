@@ -40,9 +40,16 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMeshAMRPatchMng
   /*!
    * @brief Méthode permettant de définir les mailles à raffiner.
    * @param cells_lids Les localIds des mailles.
+   * @param clear_old_flags Doit-on retirer les flags des raffinements/déraffinements précédents ?
    */
-  virtual void flagCellToRefine(Int32ConstArrayView cells_lids) = 0;
-  virtual void flagCellToCoarsen(Int32ConstArrayView cells_lids) = 0;
+  virtual void flagCellToRefine(Int32ConstArrayView cells_lids, bool clear_old_flags) = 0;
+
+  /*!
+   * @brief Méthode permettant de définir les mailles à déraffiner.
+   * @param cells_lids Les localIds des mailles.
+   * @param clear_old_flags Doit-on retirer les flags des raffinements/déraffinements précédents ?
+   */
+  virtual void flagCellToCoarsen(Int32ConstArrayView cells_lids, bool clear_old_flags) = 0;
 
   /*!
    * @brief Méthode permettant de raffiner les mailles avec le
@@ -60,7 +67,7 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMeshAMRPatchMng
   virtual void createSubLevel() = 0;
 
   // TODO
-  virtual void coarse(bool update_parent_flag) = 0;
+  virtual void coarsen(bool update_parent_flag) = 0;
 };
 
 /*---------------------------------------------------------------------------*/
