@@ -937,17 +937,7 @@ _addPatch(const CellGroup& parent_cells)
 void CartesianMeshImpl::
 _removeCellsInPatches(ConstArrayView<Int32> const_array_view)
 {
-  //ARCANE_FATAL("TODO");
-  // for (CellGroup cells : m_patch_group.m_amr_patch_cell_groups) {
-  //   cells.removeItems(const_array_view);
-  // }
-  //
-  // IParallelMng* pm = m_mesh->parallelMng();
-  //
-  // auto new_end = std::remove_if(m_patch_group.m_amr_patch_cell_groups.begin(), m_patch_group.m_amr_patch_cell_groups.end(),
-  //                               [&pm](const CellGroup& cells) { return pm->reduce(Parallel::ReduceMax, cells.size()) == 0; });
-  //
-  // m_patch_group.m_amr_patch_cell_groups.resize(new_end - m_patch_group.m_amr_patch_cell_groups.begin());
+  m_patch_group.removeCellsInAllPatches(const_array_view);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -980,7 +970,7 @@ _applyRefine(PatchAMRPosition position)
   else if(m_amr_type == eMeshAMRKind::PatchCartesianMeshOnly) {
     debug() << "Refine with specific refiner (for cartesian mesh only)";
     computeDirections();
-    m_internal_api.cartesianMeshAMRPatchMng()->flagCellToRefine(cells_local_id);
+    m_internal_api.cartesianMeshAMRPatchMng()->flagCellToRefine(cells_local_id, true);
     m_internal_api.cartesianMeshAMRPatchMng()->refine();
   }
   else if(m_amr_type == eMeshAMRKind::Patch) {
@@ -1025,8 +1015,8 @@ _applyCoarse(PatchAMRPosition position)
   else if (m_amr_type == eMeshAMRKind::PatchCartesianMeshOnly) {
     debug() << "Coarsen with specific coarser (for cartesian mesh only)";
     computeDirections();
-    m_internal_api.cartesianMeshAMRPatchMng()->flagCellToCoarsen(cells_local_id);
-    m_internal_api.cartesianMeshAMRPatchMng()->coarse(true);
+    m_internal_api.cartesianMeshAMRPatchMng()->flagCellToCoarsen(cells_local_id, true);
+    m_internal_api.cartesianMeshAMRPatchMng()->coarsen(true);
   }
   else if (m_amr_type == eMeshAMRKind::Patch) {
     ARCANE_FATAL("General patch AMR is not implemented. Please use PatchCartesianMeshOnly (3)");
