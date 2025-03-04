@@ -1023,7 +1023,10 @@ _applyCoarse(PatchAMRPosition position)
     m_mesh->modifier()->coarsenItemsV2(true);
   }
   else if (m_amr_type == eMeshAMRKind::PatchCartesianMeshOnly) {
-    ARCANE_NOT_YET_IMPLEMENTED("Patch AMR for Cartesian only is not implemented yet");
+    debug() << "Coarsen with specific coarser (for cartesian mesh only)";
+    computeDirections();
+    m_internal_api.cartesianMeshAMRPatchMng()->flagCellToCoarsen(cells_local_id);
+    m_internal_api.cartesianMeshAMRPatchMng()->coarse(true);
   }
   else if (m_amr_type == eMeshAMRKind::Patch) {
     ARCANE_FATAL("General patch AMR is not implemented. Please use PatchCartesianMeshOnly (3)");
