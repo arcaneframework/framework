@@ -369,19 +369,38 @@ _processSortedInfos(ItemInternalMap& items_map)
   const Int32 my_rank = pm->commRank();
   const Int32 nb_rank = pm->commSize();
   ConstArrayView<ItemOwnerInfo> items_owner_info = m_items_owner_info;
-  const Int32 nb_sorted = items_owner_info.size();
+  Int32 nb_sorted = items_owner_info.size();
   info() << "NbSorted=" << nb_sorted;
+  const bool is_last_rank = ((my_rank + 1) == nb_rank);
+  const bool is_first_rank = (my_rank == 0);
+  const Int32 verbose_level = m_verbose_level;
 
   // Comme les informations d'une entité peuvent être réparties sur plusieurs rangs
   // après le tri, chaque rang envoie au rang suivant les informations
   // de la dernière entité de sa liste.
+  // Il faut faire attention à bien envoyer la liste dans le même ordre trié pour
+  // garantir la cohérence car on va prendre le premier élément de la liste pour
+  // positionner le propriétaire.
 
   UniqueArray<ItemOwnerInfo> items_owner_info_send_to_next;
-  for (Int32 i = (nb_sorted - 1); i >= 0; --i) {
-    const ItemOwnerInfo& x = items_owner_info[i];
-    if (x.m_item_uid != items_owner_info[nb_sorted - 1].m_item_uid)
-      break;
-    items_owner_info_send_to_next.add(x);
+  if (nb_sorted > 0 && !is_last_rank) {
+    Int32 send_index = nb_sorted;
+    Int64 last_uid = items_owner_info[nb_sorted - 1].m_item_uid;
+    for (Int32 i = (nb_sorted - 1); i >= 0; --i) {
+      const ItemOwnerInfo& x = items_owner_info[i];
+      if (x.m_item_uid != last_uid) {
+        send_index = i + 1;
+        break;
+      }
+    }
+    info() << "SendIndext=" << send_index << " nb_sorted=" << nb_sorted;
+    for (Int32 i = send_index; i < nb_sorted; ++i) {
+      const ItemOwnerInfo& x = items_owner_info[i];
+      items_owner_info_send_to_next.add(x);
+      if (verbose_level >= 2)
+        info() << "AddSendToNext item_uid=" << x.m_item_uid << " owner=" << x.m_cell_owner
+               << " from_rank=" << x.m_item_sender_rank << " index=" << i;
+    }
   }
   Int32 nb_send_to_next = items_owner_info_send_to_next.size();
   info() << "NbSendToNext=" << nb_send_to_next;
@@ -389,9 +408,9 @@ _processSortedInfos(ItemInternalMap& items_map)
   Int32 nb_to_receive_from_previous = 0;
   SmallArray<Parallel::Request> requests;
   // Envoie et recoit les tailles des tableaux
-  if (my_rank != (nb_rank - 1))
+  if (!is_last_rank)
     requests.add(pm->send(ConstArrayView<Int32>(1, &nb_send_to_next), my_rank + 1, false));
-  if (my_rank > 0)
+  if (!is_first_rank)
     requests.add(pm->recv(ArrayView<Int32>(1, &nb_to_receive_from_previous), my_rank - 1, false));
 
   pm->waitAllRequests(requests);
@@ -399,13 +418,17 @@ _processSortedInfos(ItemInternalMap& items_map)
 
   // Envoie le tableau au suivant et récupère celui du précédent.
   UniqueArray<ItemOwnerInfo> items_owner_info_received_from_previous(nb_to_receive_from_previous);
-  if (my_rank != (nb_rank - 1))
+  if (!is_last_rank)
     requests.add(ItemOwnerInfoSortTraits::send(pm, my_rank + 1, items_owner_info_send_to_next));
-  if (my_rank > 0)
+  if (!is_first_rank)
     requests.add(ItemOwnerInfoSortTraits::recv(pm, my_rank - 1, items_owner_info_received_from_previous));
   pm->waitAllRequests(requests);
 
-  const Int32 verbose_level = m_verbose_level;
+  // Supprime de la liste les entités qu'on a envoyé au suivant
+  m_items_owner_info.resize(nb_sorted - nb_send_to_next);
+  items_owner_info = m_items_owner_info.view();
+  nb_sorted = items_owner_info.size();
+  info() << "NbRemaining=" << nb_sorted;
 
   Int64 current_item_uid = NULL_ITEM_UNIQUE_ID;
   Int32 current_item_owner = A_NULL_RANK;
@@ -419,28 +442,29 @@ _processSortedInfos(ItemInternalMap& items_map)
   // On envoie ensuite à tous les rangs qui possèdent cette entité ce nouveau propriétaire.
   // Le tableau envoyé contient une liste de couples (item_uid, item_new_owner).
   impl::HashTableMap2<Int32, UniqueArray<Int64>> resend_items_owner_info_map;
-  for (Int32 i = 0; i < nb_sorted; ++i) {
-    const ItemOwnerInfo* first_ioi = &items_owner_info[i];
+  for (Int32 index = 0; index < (nb_sorted + nb_to_receive_from_previous); ++index) {
+    const ItemOwnerInfo* first_ioi = nullptr;
+    // Si \a i est inférieur à nb_to_receive_from_previous, on prend
+    // les informations de la liste recue.
+    if (index < nb_to_receive_from_previous)
+      first_ioi = &items_owner_info_received_from_previous[index];
+    else
+      first_ioi = &items_owner_info[index - nb_to_receive_from_previous];
     Int64 item_uid = first_ioi->m_item_uid;
-    // Si on est au début de la liste, prend l'entité envoyée par le rang précédent
-    // si c'est la même que la nôtre.
-    if (i == 0 && nb_to_receive_from_previous > 0) {
-      ItemOwnerInfo* first_previous = &items_owner_info_received_from_previous[0];
-      if (item_uid == first_previous->m_item_uid) {
-        first_ioi = first_previous;
-      }
-    }
+
     // Si l'id courant est différent du précédent, on commence une nouvelle liste.
     if (item_uid != current_item_uid) {
       current_item_uid = item_uid;
       current_item_owner = first_ioi->m_cell_owner;
+      if (verbose_level >= 2)
+        info() << "SetOwner from sorted index=" << index << " item_uid=" << current_item_uid << " new_owner=" << current_item_owner;
     }
-    Int32 orig_sender = items_owner_info[i].m_item_sender_rank;
+    Int32 orig_sender = first_ioi->m_item_sender_rank;
     UniqueArray<Int64>& send_array = resend_items_owner_info_map[orig_sender];
     send_array.add(current_item_uid);
     send_array.add(current_item_owner);
     if (verbose_level >= 2)
-      info() << "SEND i=" << i << " rank=" << orig_sender << " item_uid=" << current_item_uid << " new_owner=" << current_item_owner;
+      info() << "SEND i=" << index << " rank=" << orig_sender << " item_uid=" << current_item_uid << " new_owner=" << current_item_owner;
   }
 
   auto exchanger{ ParallelMngUtils::createExchangerRef(pm) };
@@ -484,7 +508,7 @@ _processSortedInfos(ItemInternalMap& items_map)
       Int32 item_owner = CheckedConvert::toInt32(receive_info[(z * 2) + 1]);
       impl::ItemBase x = items_map.findItem(item_uid);
       if (verbose_level >= 2)
-        info() << "SetOwner uid=" << item_uid << " new_owner" << item_owner;
+        info() << "SetOwner uid=" << item_uid << " new_owner=" << item_owner;
       x.toMutable().setOwner(item_owner, my_rank);
     }
   }
