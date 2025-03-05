@@ -937,7 +937,22 @@ _addPatch(const CellGroup& parent_cells)
 void CartesianMeshImpl::
 _removeCellsInPatches(ConstArrayView<Int32> const_array_view)
 {
-  m_patch_group.removeCellsInAllPatches(const_array_view);
+  if (m_amr_type == eMeshAMRKind::Cell) {
+    m_patch_group.removeCellsInAllPatches(const_array_view);
+    m_patch_group.applyPatchEdit();
+  }
+  else if (m_amr_type == eMeshAMRKind::PatchCartesianMeshOnly) {
+    UniqueArray<Integer> altered_patches;
+    m_patch_group.removeCellsInAllPatches(const_array_view, altered_patches);
+    info() << "altered_patches : " << altered_patches;
+    m_patch_group.applyPatchEdit();
+  }
+  else if (m_amr_type == eMeshAMRKind::Patch) {
+    ARCANE_FATAL("General patch AMR is not implemented. Please use PatchCartesianMeshOnly (3)");
+  }
+  else {
+    ARCANE_FATAL("AMR is not enabled");
+  }
 }
 
 /*---------------------------------------------------------------------------*/
