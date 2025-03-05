@@ -81,31 +81,69 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianPatchGroup
 
   void removePatch(Integer index)
   {
-    m_amr_patch_cell_groups.remove(index);
-    m_amr_patches_pointer.remove(index);
-    m_amr_patches.remove(index);
+    if (m_patches_to_delete.contains(index)) {
+      return;
+    }
+    if (index < 0 || index >= m_amr_patch_cell_groups.size()) {
+      ARCANE_FATAL("Invalid index");
+    }
+
+    m_patches_to_delete.add(index);
   }
 
   void removeCellsInAllPatches(ConstArrayView<Int32> cells_local_id)
   {
-    IParallelMng* pm = m_cmesh->mesh()->parallelMng();
+    for (CellGroup cells : m_amr_patch_cell_groups) {
+      if (cells.isAllItems())
+        continue;
+      cells.removeItems(cells_local_id);
+    }
+  }
+
+  void removeCellsInAllPatches(ConstArrayView<Int32> cells_local_id, UniqueArray<Integer>& altered_patches)
+  {
+    UniqueArray<Integer> size_of_patches_before(m_amr_patch_cell_groups.size());
+    for (Integer i = 0; i < m_amr_patch_cell_groups.size(); ++i) {
+      size_of_patches_before[i] = m_amr_patch_cell_groups[i].size();
+    }
+    m_cmesh->mesh()->parallelMng()->reduce(MessagePassing::ReduceMax, size_of_patches_before);
+
     for (CellGroup cells : m_amr_patch_cell_groups) {
       if (cells.isAllItems()) continue;
       cells.removeItems(cells_local_id);
     }
 
-    UniqueArray<Integer> truc(m_amr_patch_cell_groups.size());
+    UniqueArray<Integer> size_of_patches_after(m_amr_patch_cell_groups.size());
     for (Integer i = 0; i < m_amr_patch_cell_groups.size(); ++i) {
-      truc[i] = m_amr_patch_cell_groups[i].size();
+      size_of_patches_after[i] = m_amr_patch_cell_groups[i].size();
     }
-    pm->reduce(MessagePassing::ReduceMax, truc);
-    for (Integer i = 0; i < truc.size(); ++i) {
-      if (truc[i] == 0) {
-        // TODO C'est paaaaas..... c'est bof. Disons simplement que c'est à refaire.
-        truc.remove(i);
-        removePatch(i--);
+    m_cmesh->mesh()->parallelMng()->reduce(MessagePassing::ReduceMax, size_of_patches_after);
+
+    altered_patches.clear();
+    for (Integer i = 0; i < size_of_patches_after.size(); ++i) {
+      if (size_of_patches_before[i] != size_of_patches_after[i]) {
+        altered_patches.add(i);
       }
     }
+  }
+
+  void applyPatchEdit()
+  {
+    _removeMultiplePatches(m_patches_to_delete);
+    m_patches_to_delete.clear();
+
+    UniqueArray<Integer> size_of_patches(m_amr_patch_cell_groups.size());
+    for (Integer i = 0; i < m_amr_patch_cell_groups.size(); ++i) {
+      size_of_patches[i] = m_amr_patch_cell_groups[i].size();
+    }
+    m_cmesh->mesh()->parallelMng()->reduce(MessagePassing::ReduceMax, size_of_patches);
+    for (Integer i = 0; i < size_of_patches.size(); ++i) {
+      if (size_of_patches[i] == 0) {
+        m_patches_to_delete.add(i);
+      }
+    }
+    _removeMultiplePatches(m_patches_to_delete);
+    m_patches_to_delete.clear();
   }
 
  private:
@@ -114,12 +152,29 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianPatchGroup
     m_amr_patches.add(v);
     m_amr_patches_pointer.add(v.get());
   }
+
+  void _removeOnePatch(Integer index)
+  {
+    m_amr_patch_cell_groups.remove(index);
+    m_amr_patches_pointer.remove(index);
+    m_amr_patches.remove(index);
+  }
+  void _removeMultiplePatches(ConstArrayView<Integer> indexes)
+  {
+    Integer count = 0;
+    for (const Integer index : indexes) {
+      _removeOnePatch(index - count);
+      count++;
+    }
+  }
+
  private:
 
   UniqueArray<CellGroup> m_amr_patch_cell_groups;
   UniqueArray<ICartesianMeshPatch*> m_amr_patches_pointer;
   UniqueArray<Ref<CartesianMeshPatch>> m_amr_patches;
   ICartesianMesh* m_cmesh;
+  UniqueArray<Integer> m_patches_to_delete;
 };
 
 /*---------------------------------------------------------------------------*/
