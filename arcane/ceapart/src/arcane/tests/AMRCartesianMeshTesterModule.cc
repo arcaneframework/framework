@@ -806,24 +806,25 @@ _checkDirections()
              << " v= " << cell_hash << " expected= " << expected_hash;
     }
 
-    if (!expected_hash.empty() && cell_hash != expected_hash)
+    if (cell_hash != expected_hash)
       ARCANE_FATAL("Bad hash for uniqueId() for direction items of family '{0}' v= {1} expected='{2}'",
                    item_family->fullName(), cell_hash, expected_hash);
   };
 
-  {
+  if (!options()->cellsDirectionHash().empty()) {
     debug() << "Check cells direction hash";
     UniqueArray<Int64> own_cells_uid_around_cells;
     Integer nb_items_around = _cellsUidAroundCells(own_cells_uid_around_cells);
     check_hash(mesh->cellFamily(), options()->cellsDirectionHash(), own_cells_uid_around_cells, nb_items_around);
   }
-  {
+  if (!options()->facesDirectionHash().empty()) {
     debug() << "Check faces direction hash";
     UniqueArray<Int64> own_cells_uid_around_faces;
     Integer nb_items_around = _cellsUidAroundFaces(own_cells_uid_around_faces);
     check_hash(mesh->faceFamily(), options()->facesDirectionHash(), own_cells_uid_around_faces, nb_items_around);
   }
-  {
+
+  if (!options()->nodesDirectionHash().empty()) {
     debug() << "Check nodes direction hash";
     UniqueArray<Int64> own_nodes_uid_around_nodes;
     Integer nb_items_around = _nodesUidAroundNodes(own_nodes_uid_around_nodes);
