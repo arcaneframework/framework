@@ -14,11 +14,14 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "CartesianMeshPatchListView.h"
-#include "ICartesianMesh.h"
 #include "arcane/core/ItemTypes.h"
 #include "arccore/trace/ITraceMng.h"
-#include "internal/CartesianMeshPatch.h" // TODO A gérer
+
+#include "arcane/cartesianmesh/CartesianMeshPatchListView.h"
+#include "arcane/cartesianmesh/ICartesianMesh.h"
+#include "arcane/cartesianmesh/ICartesianMeshNumberingMng.h"
+
+#include "arcane/cartesianmesh/internal/CartesianMeshPatch.h" // TODO Internal à gérer
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -127,23 +130,47 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianPatchGroup
     }
   }
 
-  void applyPatchEdit()
+  void applyPatchEdit(bool remove_empty_patches)
   {
     _removeMultiplePatches(m_patches_to_delete);
     m_patches_to_delete.clear();
 
-    UniqueArray<Integer> size_of_patches(m_amr_patch_cell_groups.size());
-    for (Integer i = 0; i < m_amr_patch_cell_groups.size(); ++i) {
-      size_of_patches[i] = m_amr_patch_cell_groups[i].size();
-    }
-    m_cmesh->mesh()->parallelMng()->reduce(MessagePassing::ReduceMax, size_of_patches);
-    for (Integer i = 0; i < size_of_patches.size(); ++i) {
-      if (size_of_patches[i] == 0) {
-        m_patches_to_delete.add(i);
+    if (remove_empty_patches) {
+      UniqueArray<Integer> size_of_patches(m_amr_patch_cell_groups.size());
+      for (Integer i = 0; i < m_amr_patch_cell_groups.size(); ++i) {
+        size_of_patches[i] = m_amr_patch_cell_groups[i].size();
       }
+      m_cmesh->mesh()->parallelMng()->reduce(MessagePassing::ReduceMax, size_of_patches);
+      for (Integer i = 0; i < size_of_patches.size(); ++i) {
+        if (size_of_patches[i] == 0) {
+          m_patches_to_delete.add(i);
+        }
+      }
+      _removeMultiplePatches(m_patches_to_delete);
+      m_patches_to_delete.clear();
     }
-    _removeMultiplePatches(m_patches_to_delete);
-    m_patches_to_delete.clear();
+  }
+
+  // void repairPatch(Integer index, ICartesianMeshNumberingMng* numbering_mng)
+  // {
+  //   UniqueArray<Integer> size_of_line;
+  //   UniqueArray<Integer> begin_of_line;
+  //
+  //   ENUMERATE_ ()
+  //     CellDirectionMng cells = m_amr_patches_pointer[index]->cellDirection(eMeshDirection::MD_DirX);
+  //   cells.cell()
+  //
+  //   // Localement, découper le old_patch en patch X.
+  //   // Echange pour avoir la taille réel des patchs X.
+  //   // Fusion des patchs X ayant le même originX et lenghtX (entre Y et Y+1).
+  //   // (3D) Fusion des patchs XY ayant le même originXY et lenghtXY (entre Z et Z+1).
+  // }
+
+  void updateLevelsBeforeCoarsen()
+  {
+    for (ICartesianMeshPatch* patch : m_amr_patches_pointer) {
+      patch->setLevel(patch->level() + 1);
+    }
   }
 
  private:

@@ -54,6 +54,14 @@ class CartesianMeshPatch
   {
     return m_amr_patch_index;
   }
+  Integer level() override
+  {
+    return m_level;
+  }
+  void setLevel(Integer level) override
+  {
+    m_level = level;
+  }
   CellDirectionMng& cellDirection(eMeshDirection dir) override
   {
     return m_cell_directions[dir];
@@ -94,6 +102,7 @@ class CartesianMeshPatch
   FaceDirectionMng m_face_directions[3];
   NodeDirectionMng m_node_directions[3];
   Integer m_amr_patch_index;
+  Integer m_level;
 };
 
 /*---------------------------------------------------------------------------*/
