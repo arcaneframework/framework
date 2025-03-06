@@ -59,6 +59,11 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianPatch
     ARCANE_CHECK_POINTER(m_patch);
     return m_patch->index();
   }
+  Integer level() const
+  {
+    ARCANE_CHECK_POINTER(m_patch);
+    return m_patch->level();
+  }
 
   //! Liste des mailles dans la direction \a dir
   CellDirectionMng& cellDirection(eMeshDirection dir)

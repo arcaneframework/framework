@@ -14,8 +14,10 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/core/ItemTypes.h"
 #include "arcane/cartesianmesh/ICartesianMeshAMRPatchMng.h"
+#include "arcane/cartesianmesh/ICartesianMeshNumberingMng.h"
+
+#include "arcane/core/ItemTypes.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -60,6 +62,12 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMeshInternal
    * \brief Méthode permettant de récupérer l'instance de CartesianMeshAMRPatchMng.
    */
   virtual Ref<ICartesianMeshAMRPatchMng> cartesianMeshAMRPatchMng() = 0;
+
+  // TODO
+  virtual void initCartesianMeshNumberingMng() = 0;
+
+  //TODO
+  virtual Ref<ICartesianMeshNumberingMng> cartesianMeshNumberingMng() = 0;
 };
 
 /*---------------------------------------------------------------------------*/
