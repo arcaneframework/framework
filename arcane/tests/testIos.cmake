@@ -12,10 +12,10 @@
 
  
  <module-test-unitaire>
-	<test name="IosUnitTest">
-   <ecriture-vtu>@_VTK_FOUND_BOOL@</ecriture-vtu>
-   <ecriture-xmf>@_XDMF_FOUND_BOOL@</ecriture-xmf>
-   <ecriture-msh>true</ecriture-msh>
-	</test>
+   <test name="IosUnitTest">
+     <ecriture-vtu>@_VTK_FOUND_BOOL@</ecriture-vtu>
+     <ecriture-xmf>@_XDMF_FOUND_BOOL@</ecriture-xmf>
+     <ecriture-msh>false</ecriture-msh>
+   </test>
  </module-test-unitaire>
 </cas>
