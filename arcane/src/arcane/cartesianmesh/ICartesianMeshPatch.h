@@ -40,6 +40,8 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMeshPatch
 
   //! TODO
   virtual Integer index() = 0;
+  virtual Integer level() = 0;
+  virtual void setLevel(Integer level) = 0;
 
   //! Liste des mailles dans la direction \a dir
   virtual CellDirectionMng& cellDirection(eMeshDirection dir) =0;

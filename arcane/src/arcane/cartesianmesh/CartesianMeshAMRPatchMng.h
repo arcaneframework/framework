@@ -38,7 +38,7 @@ class CartesianMeshAMRPatchMng
 {
  public:
 
-  explicit CartesianMeshAMRPatchMng(ICartesianMesh* mesh);
+  explicit CartesianMeshAMRPatchMng(ICartesianMesh* cmesh, ICartesianMeshNumberingMng* numbering_mng);
 
  public:
 
@@ -58,7 +58,7 @@ class CartesianMeshAMRPatchMng
 
   IMesh* m_mesh;
   ICartesianMesh* m_cmesh;
-  Ref<ICartesianMeshNumberingMng> m_num_mng;
+  ICartesianMeshNumberingMng* m_num_mng;
 };
 
 /*---------------------------------------------------------------------------*/

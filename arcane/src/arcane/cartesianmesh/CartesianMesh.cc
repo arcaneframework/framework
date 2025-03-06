@@ -45,6 +45,7 @@
 
 #include "arcane/cartesianmesh/internal/CartesianMeshUniqueIdRenumbering.h"
 #include "arcane/cartesianmesh/v2/CartesianMeshUniqueIdRenumberingV2.h"
+#include "arcane/cartesianmesh/CartesianMeshNumberingMng.h"
 
 #include "arcane/cartesianmesh/CartesianMeshAMRPatchMng.h"
 #include "arcane/core/IGhostLayerMng.h"
@@ -97,18 +98,33 @@ class CartesianMeshImpl
     }
     void initCartesianMeshAMRPatchMng() override
     {
-      m_amr_mng = makeRef(new CartesianMeshAMRPatchMng(m_cartesian_mesh));
+      if (m_numbering_mng.isNull()) {
+        initCartesianMeshNumberingMng();
+      }
+      if (m_amr_mng.isNull()) {
+        m_amr_mng = makeRef(new CartesianMeshAMRPatchMng(m_cartesian_mesh, m_numbering_mng.get()));
+      }
     }
-
     Ref<ICartesianMeshAMRPatchMng> cartesianMeshAMRPatchMng() override
     {
       return m_amr_mng;
+    }
+    void initCartesianMeshNumberingMng() override
+    {
+      if (m_numbering_mng.isNull()) {
+        m_numbering_mng = makeRef(new CartesianMeshNumberingMng(m_cartesian_mesh->mesh()));
+      }
+    }
+    Ref<ICartesianMeshNumberingMng> cartesianMeshNumberingMng() override
+    {
+      return m_numbering_mng;
     }
 
    private:
 
     CartesianMeshImpl* m_cartesian_mesh = nullptr;
     Ref<ICartesianMeshAMRPatchMng> m_amr_mng;
+    Ref<ICartesianMeshNumberingMng> m_numbering_mng;
   };
 
  public:
@@ -259,8 +275,10 @@ CartesianMeshImpl(IMesh* mesh)
 , m_amr_type(mesh->meshKind().meshAMRKind())
 , m_patch_group(this)
 {
-  if (m_amr_type == eMeshAMRKind::PatchCartesianMeshOnly)
+  if (m_amr_type == eMeshAMRKind::PatchCartesianMeshOnly) {
+    m_internal_api.initCartesianMeshNumberingMng();
     m_internal_api.initCartesianMeshAMRPatchMng();
+  }
 
   m_patch_group.addPatch(m_mesh->allCells());
   m_all_items_direction_info = m_patch_group.patch(0);
@@ -939,13 +957,17 @@ _removeCellsInPatches(ConstArrayView<Int32> const_array_view)
 {
   if (m_amr_type == eMeshAMRKind::Cell) {
     m_patch_group.removeCellsInAllPatches(const_array_view);
-    m_patch_group.applyPatchEdit();
+    m_patch_group.applyPatchEdit(true);
   }
   else if (m_amr_type == eMeshAMRKind::PatchCartesianMeshOnly) {
-    UniqueArray<Integer> altered_patches;
-    m_patch_group.removeCellsInAllPatches(const_array_view, altered_patches);
-    info() << "altered_patches : " << altered_patches;
-    m_patch_group.applyPatchEdit();
+    m_patch_group.removeCellsInAllPatches(const_array_view);
+    // UniqueArray<Integer> altered_patches;
+    // m_patch_group.removeCellsInAllPatches(const_array_view, altered_patches);
+    // info() << "altered_patches : " << altered_patches;
+    // for (Integer index : altered_patches) {
+    //   m_patch_group.repairPatch(index, _internalApi()->cartesianMeshNumberingMng().get());
+    // }
+    m_patch_group.applyPatchEdit(true);
   }
   else if (m_amr_type == eMeshAMRKind::Patch) {
     ARCANE_FATAL("General patch AMR is not implemented. Please use PatchCartesianMeshOnly (3)");
@@ -1030,6 +1052,7 @@ _applyCoarse(PatchAMRPosition position)
   else if (m_amr_type == eMeshAMRKind::PatchCartesianMeshOnly) {
     debug() << "Coarsen with specific coarser (for cartesian mesh only)";
     computeDirections();
+    m_patch_group.updateLevelsBeforeCoarsen();
     m_internal_api.cartesianMeshAMRPatchMng()->flagCellToCoarsen(cells_local_id, true);
     m_internal_api.cartesianMeshAMRPatchMng()->coarsen(true);
   }

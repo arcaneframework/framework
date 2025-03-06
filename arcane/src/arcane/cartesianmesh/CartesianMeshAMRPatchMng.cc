@@ -40,11 +40,11 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 
 CartesianMeshAMRPatchMng::
-CartesianMeshAMRPatchMng(ICartesianMesh* cmesh)
+CartesianMeshAMRPatchMng(ICartesianMesh* cmesh, ICartesianMeshNumberingMng* numbering_mng)
 : TraceAccessor(cmesh->mesh()->traceMng())
 , m_mesh(cmesh->mesh())
 , m_cmesh(cmesh)
-, m_num_mng(makeRef(new CartesianMeshNumberingMng(cmesh->mesh())))
+, m_num_mng(numbering_mng)
 {
 }
 

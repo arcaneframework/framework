@@ -74,6 +74,7 @@ CartesianMeshNumberingMng(IMesh* mesh)
 
   // Tant qu'on utilise la numérotation d'origine pour le niveau 0, on doit utiliser
   // une conversion de la numérotation d'origine vers la nouvelle.
+  // TODO AH : Ça risque de pas très bien se passer en cas de repartitionnement...
   if (m_converting_numbering_face) {
     UniqueArray<Int64> face_uid(CartesianMeshNumberingMng::nbFaceByCell());
     ENUMERATE_ (Cell, icell, m_mesh->allLevelCells(0)) {
