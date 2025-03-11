@@ -687,6 +687,19 @@ class ARCANE_CORE_EXPORT IItemFamily
  public:
 
   /*!
+   * \brief Change le numéro unique de l'entité.
+   *
+   * \warning Cette méthode est expérimentale.
+   * \warning Modifier le uniqueId d'une entité peut engendrer des incohérences
+   * dans le maillage et la numérotation. Il est préférable de n'appeler cette méthode
+   * que sur les entités qui ne sont pas associées à d'autres (par exemple les noeuds qu'on vient
+   * de créer).
+   */
+  virtual void experimentalChangeUniqueId(ItemLocalId local_id,ItemUniqueId unique_id) =0;
+
+ public:
+
+  /*!
    * \brief Redimensionne les variables de cette famille.
    *
    * Cette méthode est interne à Arcane.

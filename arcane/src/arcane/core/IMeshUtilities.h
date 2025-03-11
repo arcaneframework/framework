@@ -221,6 +221,16 @@ class ARCANE_CORE_EXPORT IMeshUtilities
    */
   virtual void mergeNodes(Int32ConstArrayView nodes_local_id,
                           Int32ConstArrayView nodes_to_merge_local_id) =0;
+
+  /*!
+   * \brief Recalcule les uniqueId() des arêtes, faces et mailles en fonction
+   * des uniqueId() des noeuds.
+   *
+   * \warning Cette méthode est expérimentale et ne doit être utilisée que
+   * dans Arcane. Elle suppose que les uniqueId() des entités sont construit
+   * à partir de generateHashUniqueId().
+   */
+  virtual void recomputeItemsUniqueIdFromNodesUniqueId() =0;
 };
 
 /*---------------------------------------------------------------------------*/

@@ -269,6 +269,7 @@ class ARCANE_MESH_EXPORT ItemFamily
 
   void addGhostItems(Int64ConstArrayView unique_ids, Int32ArrayView items, Int32ConstArrayView owners) override;
   EventObservableView<const ItemFamilyItemListChangedEventArgs&> itemListChangedEvent() override;
+  void experimentalChangeUniqueId(ItemLocalId local_id,ItemUniqueId unique_id) override;
 
   IItemFamilyPolicyMng* policyMng() override { return m_policy_mng; }
   Properties* properties() override { return m_properties; }
