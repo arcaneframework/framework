@@ -23,7 +23,7 @@
 #include "arcane/utils/StringBuilder.h"
 #include "arcane/utils/CheckedConvert.h"
 #include "arcane/utils/PlatformUtils.h"
-
+#include "arcane/utils/SmallArray.h"
 #include "arcane/utils/NotImplementedException.h"
 
 #include "arcane/IMesh.h"
@@ -833,6 +833,53 @@ computeAndSetOwnersForFaces()
   owner_builder.computeFacesOwner();
 }
 
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+namespace
+{
+  void _recomputeUniqueIds(IItemFamily* family)
+  {
+    ITraceMng* tm = family->traceMng();
+    eItemKind ik = family->itemKind();
+    SmallArray<Int64> unique_ids;
+    ENUMERATE_ (ItemWithNodes, iitem, family->allItems()) {
+      ItemWithNodes item = *iitem;
+      Int32 index = 0;
+      unique_ids.resize(item.nbNode());
+      for (Node node : item.nodes()) {
+        unique_ids[index] = node.uniqueId();
+        ++index;
+      }
+      Int64 new_uid = MeshUtils::generateHashUniqueId(unique_ids);
+      //if (ik==IK_Face)
+      //tm->info() << "Face uid=" << item.uniqueId() << " nb_node=" << item.nbNode()
+      //             << " node0=" << item.node(0).uniqueId() << " node1=" << item.node(1).uniqueId();
+      item.mutableItemBase().setUniqueId(new_uid);
+    }
+    family->notifyItemsUniqueIdChanged();
+  }
+} // namespace
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void UnstructuredMeshUtilities::
+recomputeItemsUniqueIdFromNodesUniqueId()
+{
+  IMesh* mesh = m_mesh;
+  ARCANE_CHECK_POINTER(mesh);
+  ITraceMng* tm = mesh->traceMng();
+
+  tm->info() << "Calling RecomputeItemsUniqueIdFromNodesUniqueId()";
+  // D'abord indiquer que les noeuds ont changés pour éventuellement
+  // remettre à jour l'orientation des faces.
+  mesh->nodeFamily()->notifyItemsUniqueIdChanged();
+  _recomputeUniqueIds(mesh->edgeFamily());
+  _recomputeUniqueIds(mesh->faceFamily());
+  _recomputeUniqueIds(mesh->cellFamily());
+}
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -840,4 +887,3 @@ computeAndSetOwnersForFaces()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-

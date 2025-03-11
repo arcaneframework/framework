@@ -2484,6 +2484,26 @@ itemListChangedEvent()
 /*---------------------------------------------------------------------------*/
 
 void ItemFamily::
+experimentalChangeUniqueId(ItemLocalId local_id,ItemUniqueId unique_id)
+{
+  ItemInternal* iitem = _itemInternal(local_id);
+  Int64 old_uid = iitem->uniqueId();
+  if (old_uid==unique_id)
+    return;
+  //MutableItemBase item_base(local_id,m_common_item_shared_info);
+  iitem->setUniqueId(unique_id);
+
+  if (m_infos->hasUniqueIdMap()){
+    ItemInternalMap& item_map = itemsMap();
+    item_map.remove(old_uid);
+    item_map.add(unique_id,iitem);
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ItemFamily::
 _addSourceConnectivity(IIncrementalItemSourceConnectivity* c)
 {
   m_source_incremental_item_connectivities.add(c->toSourceReference());

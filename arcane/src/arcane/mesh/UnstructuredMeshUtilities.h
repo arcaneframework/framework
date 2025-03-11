@@ -15,6 +15,7 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/TraceAccessor.h"
+
 #include "arcane/core/IMeshUtilities.h"
 
 /*---------------------------------------------------------------------------*/
@@ -79,12 +80,12 @@ class UnstructuredMeshUtilities
 
   Real3 computeDirection(const NodeGroup& node_group,
                          const VariableNodeReal3& nodes_coord,
-                         Real3* n1,Real3* n2) override;
+                         Real3* n1, Real3* n2) override;
 
-  void computeAdjency(ItemPairGroup adjency_array,eItemKind link_kind,
+  void computeAdjency(ItemPairGroup adjency_array, eItemKind link_kind,
                       Integer nb_layer) override;
 
-  bool writeToFile(const String& file_name,const String& service_name) override;
+  bool writeToFile(const String& file_name, const String& service_name) override;
 
   void partitionAndExchangeMeshWithReplication(IMeshPartitionerBase* partitioner,
                                                bool initial_partition) override;
@@ -95,22 +96,24 @@ class UnstructuredMeshUtilities
   void computeAndSetOwnersForNodes() override;
   void computeAndSetOwnersForFaces() override;
 
+  void recomputeItemsUniqueIdFromNodesUniqueId() override;
+
  private:
 
-  IMesh* m_mesh;
-  BasicItemPairGroupComputeFunctor* m_compute_adjacency_functor;
+  IMesh* m_mesh = nullptr;
+  BasicItemPairGroupComputeFunctor* m_compute_adjacency_functor = nullptr;
 
  private:
 
   Real3 _round(Real3 value);
-  Real3 _broadcastFarthestNode(Real distance,const Node& node,
+  Real3 _broadcastFarthestNode(Real distance, const Node& node,
                                const VariableNodeReal3& nodes_coord);
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-}
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
