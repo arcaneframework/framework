@@ -550,7 +550,7 @@ _switchMshType(Int64 mshElemType, Int32& nNodes) const
       return IT_HemiHexa7;
     default:
       info() << "Could not decode IT_NullType with nNodes=" << nNodes;
-      throw IOException("_switchMshType", "Could not decode IT_NullType with nNodes");
+      throw IOException("_convertToMshType", "Could not decode IT_NullType with nNodes");
     }
     break;
   case MSH_PNT:
@@ -1050,22 +1050,44 @@ _readElementsFromFile()
     if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_USE_EXPERIMENTAL_CELL_TYPE", true))
       use_experimental_type_for_cell = (v.value() != 0);
   }
-  info() << "Use experiemental cell type?=" << use_experimental_type_for_cell;
+  info() << "Use experimental cell type?=" << use_experimental_type_for_cell;
+  ItemTypeMng* item_type_mng = m_mesh->itemTypeMng();
   for (MeshV4ElementsBlock& block : blocks) {
     const Int32 block_dim = block.dimension;
+    String item_type_name = item_type_mng->typeFromId(block.item_type)->typeName();
+    info() << "Reading block dim=" << block_dim << " type_name=" << item_type_name;
     if (block_dim == mesh_dimension)
       _computeOwnItems(block, m_mesh_info.cells_infos, false);
     else if (allow_multi_dim_cell) {
-      if (block_dim == (mesh_dimension - 1)) {
-        if (use_experimental_type_for_cell) {
-          // Ici on va créer des mailles 2D dans un maillage 3D.
-          // On converti le type de base en un type équivalent pour les mailles.
+      // Regarde si on peut créé des mailles de dimension inférieures à celles
+      // du maillage.
+      bool use_sub_dim_cell = false;
+      if (mesh_dimension == 3 && (block_dim == 2 || block_dim == 1))
+        // Maille 1D ou 2D dans un maillage 3D
+        use_sub_dim_cell = true;
+      else if (mesh_dimension == 2 && block_dim == 1)
+        // Maille 1D dans un maillage 2D
+        use_sub_dim_cell = true;
+      if (!use_experimental_type_for_cell)
+        use_sub_dim_cell = false;
+      if (use_sub_dim_cell) {
+        // Ici on va créer des mailles 2D dans un maillage 3D.
+        // On converti le type de base en un type équivalent pour les mailles.
+        if (mesh_dimension == 3) {
           if (block.item_type == IT_Triangle3)
             block.item_type = ItemTypeId(IT_Cell3D_Triangle3);
           else if (block.item_type == IT_Quad4)
             block.item_type = ItemTypeId(IT_Cell3D_Quad4);
+          else if (block.item_type == IT_Line2)
+            block.item_type = ItemTypeId(IT_Cell3D_Line2);
           else
-            ARCANE_FATAL("Not supported sub dimension cell type={0}", block.item_type);
+            ARCANE_FATAL("Not supported sub dimension cell type={0} for 3D mesh", item_type_name);
+        }
+        else if (mesh_dimension == 2) {
+          if (block.item_type == IT_Line2)
+            block.item_type = ItemTypeId(IT_CellLine2);
+          else
+            ARCANE_FATAL("Not supported sub dimension cell type={0} for 2D mesh", item_type_name);
         }
         block.is_built_as_cells = true;
         _computeOwnItems(block, m_mesh_info.cells_infos, false);
