@@ -41,14 +41,6 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: ubuntu-20.04
-            full_name: 'ubuntu-20.04'
-            package_name: 'ubuntu-20.04'
-            triplet: x64-linux-dynamic
-            vcpkg_os: ubuntu-20.04
-            dotnet_version : "6.0.x"
-            cmake_specific_args : '-DARCCORE_BUILD_MODE=Debug -DCMAKE_BUILD_TYPE=Debug'
-            ctest_specific_args : '-I 1,140'
           - os: ubuntu-22.04
             full_name: 'ubuntu-22.04'
             package_name: 'ubuntu-22.04'
