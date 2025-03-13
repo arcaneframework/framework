@@ -187,11 +187,11 @@ class CartesianMeshImpl
 
   void refinePatch2D(Real2 position,Real2 length) override;
   void refinePatch3D(Real3 position,Real3 length) override;
-  void refinePatch(const PatchAMRPosition& position) override;
+  void refinePatch(const AMRZonePosition& position) override;
 
   void coarseZone2D(Real2 position, Real2 length) override;
   void coarseZone3D(Real3 position, Real3 length) override;
-  void coarseZone(const PatchAMRPosition& position) override;
+  void coarseZone(const AMRZonePosition& position) override;
 
   Integer reduceNbGhostLayers(Integer level, Integer target_nb_ghost_layers) override;
 
@@ -238,9 +238,9 @@ class CartesianMeshImpl
                              VariableCellReal3& cells_center,
                              VariableFaceReal3& faces_center,CellGroup all_cells,
                              NodeGroup all_nodes);
-  void _applyRefine(const PatchAMRPosition &position);
+  void _applyRefine(const AMRZonePosition &position);
   void _removeCellsInPatches(ConstArrayView<Int32> const_array_view);
-  void _applyCoarse(const PatchAMRPosition &position);
+  void _applyCoarse(const AMRZonePosition &position);
   void _addPatch(const CellGroup& parent_group);
   void _saveInfosInProperties();
 
@@ -717,7 +717,7 @@ refinePatch3D(Real3 position, Real3 length)
 /*---------------------------------------------------------------------------*/
 
 void CartesianMeshImpl::
-refinePatch(const PatchAMRPosition& position)
+refinePatch(const AMRZonePosition& position)
 {
   _applyRefine(position);
   _saveInfosInProperties();
@@ -747,7 +747,7 @@ coarseZone3D(Real3 position, Real3 length)
 /*---------------------------------------------------------------------------*/
 
 void CartesianMeshImpl::
-coarseZone(const PatchAMRPosition& position)
+coarseZone(const AMRZonePosition& position)
 {
   _applyCoarse(position);
   _saveInfosInProperties();
@@ -981,7 +981,7 @@ _removeCellsInPatches(ConstArrayView<Int32> const_array_view)
 /*---------------------------------------------------------------------------*/
 
 void CartesianMeshImpl::
-_applyRefine(const PatchAMRPosition& position)
+_applyRefine(const AMRZonePosition& position)
 {
   UniqueArray<Int32> cells_local_id;
   position.cellsInPatch(this, cells_local_id);
@@ -1028,7 +1028,7 @@ _applyRefine(const PatchAMRPosition& position)
 /*---------------------------------------------------------------------------*/
 
 void CartesianMeshImpl::
-_applyCoarse(const PatchAMRPosition& position)
+_applyCoarse(const AMRZonePosition& position)
 {
   UniqueArray<Int32> cells_local_id;
   position.cellsInPatch(this, cells_local_id);

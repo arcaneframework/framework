@@ -5,12 +5,12 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* PatchAMR.h                                                  (C) 2000-2025 */
+/* AMRBoxPosition.cc                                           (C) 2000-2025 */
 /*                                                                           */
 /* TODO                                        */
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/cartesianmesh/PatchAMRPosition.h"
+#include "arcane/cartesianmesh/AMRZonePosition.h"
 #include "arcane/cartesianmesh/ICartesianMesh.h"
 #include "arcane/core/IMesh.h"
 
@@ -23,7 +23,7 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void PatchAMRPosition::
+void AMRZonePosition::
 cellsInPatch(ICartesianMesh* cmesh, UniqueArray<Int32>& cells_local_id) const
 {
   VariableNodeReal3& nodes_coord = cmesh->mesh()->nodesCoordinates();
@@ -33,11 +33,11 @@ cellsInPatch(ICartesianMesh* cmesh, UniqueArray<Int32>& cells_local_id) const
   Real3 max_pos = min_pos + m_length;
   //Int32 level = -10;
   cells_local_id.clear();
-  ENUMERATE_CELL (icell, cmesh->mesh()->allActiveCells()) {
+  ENUMERATE_ (Cell, icell, cmesh->mesh()->allActiveCells()) {
     Cell cell = *icell;
     Real3 center;
-    for (NodeLocalId inode : cell.nodeIds())
-      center += nodes_coord[inode];
+    for (const Node node : cell.nodes())
+      center += nodes_coord[node];
     center /= cell.nbNode();
     bool is_inside_x = center.x > min_pos.x && center.x < max_pos.x;
     bool is_inside_y = center.y > min_pos.y && center.y < max_pos.y;
