@@ -5,12 +5,12 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* PatchAMR.h                                                  (C) 2000-2025 */
+/* AMRBoxPosition.h                                            (C) 2000-2025 */
 /*                                                                           */
 /* TODO                                        */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_CARTESIANMESH_PATCHAMRPOSITION_H
-#define ARCANE_CARTESIANMESH_PATCHAMRPOSITION_H
+#ifndef ARCANE_CARTESIANMESH_AMRBOXPOSITION_H
+#define ARCANE_CARTESIANMESH_AMRBOXPOSITION_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -29,17 +29,17 @@ class ICartesianMesh;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class ARCANE_CARTESIANMESH_EXPORT PatchAMRPosition
+class ARCANE_CARTESIANMESH_EXPORT AMRZonePosition
 {
  public:
 
-  PatchAMRPosition(const Real3& position, const Real3& length)
+  AMRZonePosition(const Real3& position, const Real3& length)
   : m_position(position)
   , m_length(length)
   , m_is_3d(true)
   {}
 
-  PatchAMRPosition(const Real2& position, const Real2& length)
+  AMRZonePosition(const Real2& position, const Real2& length)
   : m_position(position)
   , m_length(length)
   , m_is_3d(false)
