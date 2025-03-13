@@ -535,14 +535,14 @@ _initAMR()
   // spécifiée dans le jeu de données.
   Int32 dim = defaultMesh()->dimension();
   if (dim==2){
-    for( auto& x : options()->refinement2d() ){    
-      m_cartesian_mesh->refinePatch2D(x->position(),x->length());
+    for( const auto& x : options()->refinement2d() ){
+      m_cartesian_mesh->refinePatch({x->position(), x->length()});
       m_cartesian_mesh->computeDirections();
     }
   }
   if (dim==3){
-    for( auto& x : options()->refinement3d() ){    
-      m_cartesian_mesh->refinePatch3D(x->position(),x->length());
+    for( const auto& x : options()->refinement3d() ){
+      m_cartesian_mesh->refinePatch({x->position(), x->length()});
       m_cartesian_mesh->computeDirections();
     }
   }
@@ -563,7 +563,7 @@ _coarseZone()
       // defaultMesh()->modifier()->flagCellToCoarsen(cells_in_patchs);
       // defaultMesh()->modifier()->coarsenItemsV2(true);
       // cells_in_patchs.clear();
-      m_cartesian_mesh->coarseZone2D(x->position(), x->length());
+      m_cartesian_mesh->coarseZone({{x->position()}, {x->length()}});
       m_cartesian_mesh->computeDirections();
     }
   }
@@ -574,7 +574,7 @@ _coarseZone()
       // defaultMesh()->modifier()->flagCellToCoarsen(cells_in_patchs);
       // defaultMesh()->modifier()->coarsenItemsV2(true);
       // cells_in_patchs.clear();
-      m_cartesian_mesh->coarseZone3D(x->position(), x->length());
+      m_cartesian_mesh->coarseZone({{x->position()}, {x->length()}});
       m_cartesian_mesh->computeDirections();
     }
   }

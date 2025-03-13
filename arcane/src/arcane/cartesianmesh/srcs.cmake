@@ -18,6 +18,8 @@ set(ARCANE_SOURCES
   ICartesianMeshPatch.h
   CartesianPatch.h
   CartesianPatch.cc
+  CartesianPatchGroup.h
+  CartesianPatchGroup.cc
   CartesianMeshCoarsening.cc
   CartesianMeshCoarsening.h
   CartesianMeshCoarsening2.cc

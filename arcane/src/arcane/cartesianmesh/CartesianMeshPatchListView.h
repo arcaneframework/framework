@@ -14,6 +14,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+#include "arcane/utils/ArrayView.h"
+
 #include "arcane/core/ArcaneTypes.h"
 
 #include "arcane/cartesianmesh/CartesianPatch.h"
