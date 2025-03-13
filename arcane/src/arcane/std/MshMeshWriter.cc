@@ -56,11 +56,40 @@ class MshMeshWriter
     }
   };
 
+  struct PhysicalTagInfo
+  {
+   public:
+
+    Int32 m_dimension = -1;
+    Int32 m_physical_tag = -1;
+    String m_name;
+  };
   struct EntityInfo
   {
+   public:
+
+    EntityInfo(Int32 dim, Int32 item_type, Int32 entity_tag)
+    : m_dim(dim)
+    , m_item_type(item_type)
+    , m_entity_tag(entity_tag)
+    {
+    }
+
+   public:
+
+    void setPhysicalTag(Int32 tag, const String& name)
+    {
+      m_physical_tag = tag;
+      m_physical_tag_name = name;
+    }
+
+   public:
+
     Int32 m_dim = -1;
     Int32 m_item_type = IT_NullType;
     Int32 m_entity_tag = -1;
+    Int32 m_physical_tag = -1;
+    String m_physical_tag_name;
   };
 
   class ItemGroupWriteInfo
@@ -191,6 +220,8 @@ writeMeshToFile(IMesh* mesh, const String& file_name)
 void MshMeshWriter::ItemGroupWriteInfo::
 processGroup(ItemGroup group, Int32 base_entity_index)
 {
+  String group_name = group.name();
+  bool is_all_items = group.isAllItems();
   IItemFamily* family = group.itemFamily();
   ItemTypeMng* item_type_mng = family->mesh()->itemTypeMng();
   ITraceMng* tm = family->traceMng();
@@ -222,7 +253,10 @@ processGroup(ItemGroup group, Int32 base_entity_index)
     Int32 item_type = m_existing_items_type[type_index];
     ItemTypeInfo* item_type_info = item_type_mng->typeFromId(item_type);
     Int32 type_dimension = item_type_info->dimension();
-    m_entities_by_type.add(EntityInfo{ type_dimension, item_type, base_entity_index + type_index });
+    EntityInfo entity_info(type_dimension, item_type, base_entity_index + type_index);
+    if (!is_all_items)
+      entity_info.setPhysicalTag(base_entity_index + type_index, group_name);
+    m_entities_by_type.add(entity_info);
     //++nb_entities_by_dim[type_dimension];
   }
 }
@@ -296,6 +330,9 @@ _writeMeshToFileV4(IMesh* mesh, const String& file_name)
   // Pour les maillages non-manifold les mailles peuvent être de dimension
   // différentes
 
+  // Liste des tags physiques
+  UniqueArray<PhysicalTagInfo> physical_tags;
+
   // Calcule le nombre d'entités par dimension
   FixedArray<Int32, 4> nb_entities_by_dim;
 
@@ -311,8 +348,30 @@ _writeMeshToFileV4(IMesh* mesh, const String& file_name)
         Int32 item_type = entity_info.m_item_type;
         Int32 nb_item = ginfo->itemsByType(item_type).size();
         total_nb_cell += nb_item;
+
+        Int32 physical_tag = entity_info.m_physical_tag;
+        if (physical_tag > 0) {
+          physical_tags.add(PhysicalTagInfo{ dim, physical_tag, entity_info.m_physical_tag_name });
+        }
       }
     }
+  }
+
+  // $PhysicalNames // same as MSH version 2
+  //   numPhysicalNames(ASCII int)
+  //   dimension(ASCII int) physicalTag(ASCII int) "name"(127 characters max)
+  //   ...
+  // $EndPhysicalNames
+
+  {
+    ofile << "$PhysicalNames\n";
+    Int32 nb_tag = physical_tags.size();
+    ofile << nb_tag << "\n";
+    for (const PhysicalTagInfo& tag_info : physical_tags) {
+      // TODO: vérifier que le nom ne dépasse pas 127 caractères.
+      ofile << tag_info.m_dimension << " " << tag_info.m_physical_tag << " " << tag_info.m_name << "\n";
+    }
+    ofile << "$EndPhysicalNames\n";
   }
 
   // Calcule la bounding box des noeuds
@@ -363,15 +422,17 @@ _writeMeshToFileV4(IMesh* mesh, const String& file_name)
     for (Int32 idim = 1; idim < 4; ++idim) {
       for (const auto& ginfo : groups_write_info_list) {
         for (const EntityInfo& entity_info : ginfo->entitiesByType()) {
-          //Int32 dim = entity_info.m_dim;
-          //for (Int32 k = 0; k < NB_BASIC_ITEM_TYPE; ++k) {
-          //const EntityInfo& entity_info = entities_by_type[k];
           if (entity_info.m_dim != idim)
             continue;
           ofile << entity_info.m_entity_tag << " " << node_min_bounding_box.x << " " << node_min_bounding_box.y << " " << node_min_bounding_box.z
                 << " " << node_max_bounding_box.x << " " << node_max_bounding_box.y << " " << node_max_bounding_box.z;
           // Pas de tag pour l'instant
-          ofile << " 0";
+          Int32 physical_tag = entity_info.m_physical_tag;
+          if (physical_tag > 0) {
+            ofile << " 1 " << physical_tag;
+          }
+          else
+            ofile << " 0";
           // Pas de boundary pour l'instant
           ofile << " 0";
           ofile << "\n";
