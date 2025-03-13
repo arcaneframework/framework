@@ -187,11 +187,11 @@ class CartesianMeshImpl
 
   void refinePatch2D(Real2 position,Real2 length) override;
   void refinePatch3D(Real3 position,Real3 length) override;
-  void refinePatch(PatchAMRPosition position) override;
+  void refinePatch(const PatchAMRPosition& position) override;
 
   void coarseZone2D(Real2 position, Real2 length) override;
   void coarseZone3D(Real3 position, Real3 length) override;
-  void coarseZone(PatchAMRPosition position) override;
+  void coarseZone(const PatchAMRPosition& position) override;
 
   Integer reduceNbGhostLayers(Integer level, Integer target_nb_ghost_layers) override;
 
@@ -238,9 +238,9 @@ class CartesianMeshImpl
                              VariableCellReal3& cells_center,
                              VariableFaceReal3& faces_center,CellGroup all_cells,
                              NodeGroup all_nodes);
-  void _applyRefine(PatchAMRPosition position);
+  void _applyRefine(const PatchAMRPosition &position);
   void _removeCellsInPatches(ConstArrayView<Int32> const_array_view);
-  void _applyCoarse(PatchAMRPosition position);
+  void _applyCoarse(const PatchAMRPosition &position);
   void _addPatch(const CellGroup& parent_group);
   void _saveInfosInProperties();
 
@@ -717,7 +717,7 @@ refinePatch3D(Real3 position, Real3 length)
 /*---------------------------------------------------------------------------*/
 
 void CartesianMeshImpl::
-refinePatch(PatchAMRPosition position)
+refinePatch(const PatchAMRPosition& position)
 {
   _applyRefine(position);
   _saveInfosInProperties();
@@ -747,7 +747,7 @@ coarseZone3D(Real3 position, Real3 length)
 /*---------------------------------------------------------------------------*/
 
 void CartesianMeshImpl::
-coarseZone(PatchAMRPosition position)
+coarseZone(const PatchAMRPosition& position)
 {
   _applyCoarse(position);
   _saveInfosInProperties();
@@ -961,7 +961,7 @@ _removeCellsInPatches(ConstArrayView<Int32> const_array_view)
   }
   else if (m_amr_type == eMeshAMRKind::PatchCartesianMeshOnly) {
     m_patch_group.removeCellsInAllPatches(const_array_view);
-    // UniqueArray<Integer> altered_patches;
+    // SharedArray<Integer> altered_patches;
     // m_patch_group.removeCellsInAllPatches(const_array_view, altered_patches);
     // info() << "altered_patches : " << altered_patches;
     // for (Integer index : altered_patches) {
@@ -981,7 +981,7 @@ _removeCellsInPatches(ConstArrayView<Int32> const_array_view)
 /*---------------------------------------------------------------------------*/
 
 void CartesianMeshImpl::
-_applyRefine(PatchAMRPosition position)
+_applyRefine(const PatchAMRPosition& position)
 {
   UniqueArray<Int32> cells_local_id;
   position.cellsInPatch(this, cells_local_id);
@@ -1028,7 +1028,7 @@ _applyRefine(PatchAMRPosition position)
 /*---------------------------------------------------------------------------*/
 
 void CartesianMeshImpl::
-_applyCoarse(PatchAMRPosition position)
+_applyCoarse(const PatchAMRPosition& position)
 {
   UniqueArray<Int32> cells_local_id;
   position.cellsInPatch(this, cells_local_id);
@@ -1052,7 +1052,6 @@ _applyCoarse(PatchAMRPosition position)
   else if (m_amr_type == eMeshAMRKind::PatchCartesianMeshOnly) {
     debug() << "Coarsen with specific coarser (for cartesian mesh only)";
     computeDirections();
-    m_patch_group.updateLevelsBeforeCoarsen();
     m_internal_api.cartesianMeshAMRPatchMng()->flagCellToCoarsen(cells_local_id, true);
     m_internal_api.cartesianMeshAMRPatchMng()->coarsen(true);
   }

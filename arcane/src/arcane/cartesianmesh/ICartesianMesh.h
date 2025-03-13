@@ -158,7 +158,20 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMesh
    * Cette opération est collective.
    */
   virtual void refinePatch3D(Real3 position, Real3 length) = 0;
-  virtual void refinePatch(PatchAMRPosition position) = 0;
+
+  /*!
+   * \brief Raffine un bloc du maillage cartésien.
+   *
+   * Cette méthode ne peut être appelée que si le maillage est un maillage
+   * AMR (IMesh::isAmrActivated()==true).
+   *
+   * Les mailles dont les positions des centres sont comprises entre
+   * \a position et \a (position+length) sont raffinées et les informations
+   * de connectivité correspondantes sont mises à jour.
+   *
+   * Cette opération est collective.
+   */
+  virtual void refinePatch(const PatchAMRPosition& position) = 0;
 
   /*!
    * \brief Dé-raffine en 2D un bloc du maillage cartésien.
@@ -199,7 +212,26 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMesh
    * Cette opération est collective.
    */
   virtual void coarseZone3D(Real3 position, Real3 length) = 0;
-  virtual void coarseZone(PatchAMRPosition position) = 0;
+
+  /*!
+   * \brief Dé-raffine un bloc du maillage cartésien.
+   *
+   * Cette méthode ne peut être appelée que si le maillage est un maillage
+   * AMR (IMesh::isAmrActivated()==true).
+   *
+   * Les mailles dont les positions des centres sont comprises entre
+   * \a position et \a (position+length) sont dé-raffinées et les informations
+   * de connectivité correspondantes sont mises à jour.
+   *
+   * Toutes les mailles dans la zone de dé-raffinement doivent être du même
+   * niveau.
+   *
+   * Les patchs ne contenant plus de mailles après l'appel à cette méthode
+   * seront supprimés.
+   *
+   * Cette opération est collective.
+   */
+  virtual void coarseZone(const PatchAMRPosition& position) = 0;
 
   /*!
    * \brief Méthode permettant de supprimer une ou plusieurs couches
