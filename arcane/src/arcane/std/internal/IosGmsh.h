@@ -58,7 +58,7 @@ class IMshMeshReader
  public:
 
   virtual IMeshReader::eReturnType
-  readMeshFromMshFile(IMesh* mesh, const String& file_name) = 0;
+  readMeshFromMshFile(IMesh* mesh, const String& file_name, bool use_internal_partition) = 0;
 };
 
 /*---------------------------------------------------------------------------*/
