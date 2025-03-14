@@ -983,7 +983,7 @@ _removeCellsInPatches(ConstArrayView<Int32> const_array_view)
 void CartesianMeshImpl::
 _applyRefine(const AMRZonePosition& position)
 {
-  UniqueArray<Int32> cells_local_id;
+  SharedArray<Int32> cells_local_id;
   position.cellsInPatch(this, cells_local_id);
 
   IItemFamily* cell_family = m_mesh->cellFamily();
@@ -1030,7 +1030,7 @@ _applyRefine(const AMRZonePosition& position)
 void CartesianMeshImpl::
 _applyCoarse(const AMRZonePosition& position)
 {
-  UniqueArray<Int32> cells_local_id;
+  SharedArray<Int32> cells_local_id;
   position.cellsInPatch(this, cells_local_id);
 
   Integer nb_cell = cells_local_id.size();
