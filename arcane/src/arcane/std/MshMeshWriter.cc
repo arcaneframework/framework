@@ -100,11 +100,13 @@ class MshMeshWriter
 
    public:
 
+    const ItemGroup& group() const { return m_item_group; }
     ConstArrayView<EntityInfo> entitiesByType() const { return m_entities_by_type; }
     ConstArrayView<Int32> itemsByType(Int32 item_type) const { return m_items_by_type[item_type]; }
 
    private:
 
+    ItemGroup m_item_group;
     UniqueArray<EntityInfo> m_entities_by_type;
     FixedArray<UniqueArray<Int32>, NB_BASIC_ITEM_TYPE> m_items_by_type;
     UniqueArray<Int32> m_existing_items_type;
@@ -128,6 +130,7 @@ class MshMeshWriter
   bool _writeMeshToFileV4(IMesh* mesh, const String& file_name);
   Integer _convertToMshType(Int32 arcane_type);
   std::pair<Int64, Int64> _getFamilyMinMaxUniqueId(IItemFamily* family);
+  void _addGroupsToProcess(IItemFamily* family, Array<ItemGroup>& items_groups);
 };
 
 /*---------------------------------------------------------------------------*/
@@ -198,7 +201,7 @@ _convertToMshType(Int32 arcane_type)
   // Other 12-nodes
   case IT_Octaedron12:
     return MSH_TRI_12;
-  // Others ar still considered as default, rising an exception
+  // Others are still considered as default, rising an exception
   default:
     break;
   }
@@ -220,10 +223,12 @@ writeMeshToFile(IMesh* mesh, const String& file_name)
 void MshMeshWriter::ItemGroupWriteInfo::
 processGroup(ItemGroup group, Int32 base_entity_index)
 {
+  m_item_group = group;
   String group_name = group.name();
   bool is_all_items = group.isAllItems();
   IItemFamily* family = group.itemFamily();
-  ItemTypeMng* item_type_mng = family->mesh()->itemTypeMng();
+  IMesh* mesh = family->mesh();
+  ItemTypeMng* item_type_mng = mesh->itemTypeMng();
   ITraceMng* tm = family->traceMng();
 
   // Pour GMSH, il faut trier les mailles par leur type (Triangle, Quadrangle, ...)
@@ -257,8 +262,56 @@ processGroup(ItemGroup group, Int32 base_entity_index)
     if (!is_all_items)
       entity_info.setPhysicalTag(base_entity_index + type_index, group_name);
     m_entities_by_type.add(entity_info);
-    //++nb_entities_by_dim[type_dimension];
   }
+
+  // Si le groupe est vide, il faut quand même un tag physique pour que le
+  // groupe soit créé en lecture et ainsi en parallèle garantir que tous
+  // les sous-domaines ont les mêmes groupes.
+  if (nb_existing_type == 0 && !is_all_items) {
+    Int32 mesh_dim = mesh->dimension();
+    eItemKind ik = family->itemKind();
+    Int32 entity_dim = -1;
+    if (ik == IK_Cell)
+      entity_dim = mesh_dim;
+    else if (ik == IK_Face)
+      entity_dim = mesh_dim - 1;
+    else if (ik == IK_Edge)
+      entity_dim = mesh_dim - 2;
+    else
+      ARCANE_FATAL("Invalid item kind '{0}' for entity dimension", entity_dim);
+    // TODO: prendre un type qui correspond à la dimension
+    EntityInfo entity_info(entity_dim, IT_Tetraedron4, base_entity_index);
+    entity_info.setPhysicalTag(base_entity_index, group_name);
+    m_entities_by_type.add(entity_info);
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MshMeshWriter::
+_addGroupsToProcess(IItemFamily* family, Array<ItemGroup>& items_groups)
+{
+  bool has_group = false;
+  // Parcours tous les groupes de la famille
+  // NOTE: Pour l'instant, pour les mailles on suppose que cela
+  // forme une partition du maillage.
+  for (ItemGroup group : family->groups()) {
+    if (group.isAllItems())
+      continue;
+    if (group.isAutoComputed())
+      continue;
+    info() << "Processing ItemGroup group=" << group.name() << " family=" << group.itemFamily()->name();
+    items_groups.add(group);
+    has_group = true;
+  }
+  // Si pas de groupes dans la famille, on prend celui de toutes les entités
+  // si la famille est celle des mailles.
+  // TODO: toujours prendre ce groupe pour les entités qui n'auraient pas
+  // été traitées par les autres groupes lorsqu'on n'est pas sur
+  // que l'ensemble des groupes forme une partition.
+  if (!has_group && (family->itemKind() == IK_Cell))
+    items_groups.add(family->allItems());
 }
 
 /*---------------------------------------------------------------------------*/
@@ -275,13 +328,15 @@ bool MshMeshWriter::
 _writeMeshToFileV4(IMesh* mesh, const String& file_name)
 {
   m_item_type_mng = mesh->itemTypeMng();
-  String mshFileName(file_name + ".msh");
-  std::ofstream ofile(mshFileName.localstr());
+  String mesh_file_name(file_name);
+  if (!file_name.endsWith(".msh"))
+    mesh_file_name = mesh_file_name + ".msh";
+  std::ofstream ofile(mesh_file_name.localstr());
   ofile.precision(20);
   if (!ofile)
-    ARCANE_THROW(IOException, "Unable to open file '{0}' for writing", mshFileName);
+    ARCANE_THROW(IOException, "Unable to open file '{0}' for writing", mesh_file_name);
 
-  info() << "writing file '" << mshFileName << "'";
+  info() << "writing file '" << mesh_file_name << "'";
 
   ofile << "$MeshFormat\n";
   // 4.1 pour le format
@@ -291,29 +346,15 @@ _writeMeshToFileV4(IMesh* mesh, const String& file_name)
   ofile << "$EndMeshFormat\n";
 
   IItemFamily* cell_family = mesh->cellFamily();
+  IItemFamily* face_family = mesh->faceFamily();
   CellGroup all_cells = mesh->allCells();
   const Int32 mesh_nb_node = mesh->nbNode();
   IItemFamily* node_family = mesh->nodeFamily();
   ItemGroup all_nodes = mesh->allNodes();
 
   UniqueArray<ItemGroup> items_groups;
-  // Parcours tous les groupes
-  // NOTE: Pour l'instant on suppose que cela forme une partition
-  // du maillage.
-  for (ItemGroup group : cell_family->groups()) {
-    if (group.isAllItems())
-      continue;
-    if (group.isAutoComputed())
-      continue;
-    info() << "Processing ItemGroup group=" << group.name() << " family=" << group.itemFamily()->name();
-    items_groups.add(group);
-  }
-  // Si pas de groupes, on prend celui de toutes les mailles
-  // TODO: toujours prendre ce groupe pour les entités qui n'auraient pas
-  // été traitées par les autres groupes lorsqu'on n'est pas sur
-  // que l'ensemble des groupes forme une partition.
-  if (items_groups.empty())
-    items_groups.add(cell_family->allItems());
+  _addGroupsToProcess(cell_family, items_groups);
+  _addGroupsToProcess(face_family, items_groups);
 
   std::vector<std::unique_ptr<ItemGroupWriteInfo>> groups_write_info_list;
   Int32 base_entity_index = 1000;
@@ -466,7 +507,7 @@ _writeMeshToFileV4(IMesh* mesh, const String& file_name)
   // entityDim(int) entityTag(int) parametric(int; 0 or 1) numNodesInBlock(size_t)
   ofile << "0 " << "100 " << "0 " << mesh_nb_node << "\n";
 
-  // Sauve les uniqueId()
+  // Sauve les uniqueId() des noeuds
   ENUMERATE_ (Node, inode, all_nodes) {
     Int64 uid = inode->uniqueId();
     ofile << uid << "\n";
@@ -480,6 +521,7 @@ _writeMeshToFileV4(IMesh* mesh, const String& file_name)
 
   ofile << "$EndNodes\n";
 
+  // TODO: regarder s'il faut prendre en compte les uniqueId() des faces.
   auto [cell_min_uid, cell_max_uid] = _getFamilyMinMaxUniqueId(cell_family);
 
   // $Elements
@@ -498,25 +540,25 @@ _writeMeshToFileV4(IMesh* mesh, const String& file_name)
   Int32 nb_existing_type = nb_entities_by_dim[1] + nb_entities_by_dim[2] + nb_entities_by_dim[3];
   ofile << nb_existing_type << " " << total_nb_cell << " " << cell_min_uid << " " << cell_max_uid << "\n";
   for (const auto& ginfo : groups_write_info_list) {
+    ItemGroup item_group = ginfo->group();
+    IItemFamily* item_family = item_group.itemFamily();
     for (const EntityInfo& entity_info : ginfo->entitiesByType()) {
-      //for (Int32 type_index = 0; type_index < nb_existing_type; ++type_index) {
-      Int32 cell_type = entity_info.m_item_type; //existing_cells_type[type_index];
-      //const EntityInfo& entity_info = entities_by_type[cell_type];
-      ConstArrayView<Int32> cells_of_current_type = ginfo->itemsByType(cell_type);
+      Int32 cell_type = entity_info.m_item_type;
+      ConstArrayView<Int32> items_of_current_type = ginfo->itemsByType(cell_type);
       ItemTypeInfo* item_type_info = m_item_type_mng->typeFromId(cell_type);
       Int32 type_dimension = entity_info.m_dim;
       ofile << "\n";
       ofile << type_dimension << " " << entity_info.m_entity_tag << " " << _convertToMshType(cell_type)
-            << " " << cells_of_current_type.size() << "\n";
-      info() << "Writing cells of type=" << item_type_info->typeName()
-             << " n=" << cells_of_current_type.size()
+            << " " << items_of_current_type.size() << "\n";
+      info() << "Writing items family=" << item_family->name() << " type=" << item_type_info->typeName()
+             << " n=" << items_of_current_type.size()
              << " dimension=" << type_dimension;
       Int32 nb_node_for_type = item_type_info->nbLocalNode();
-      ENUMERATE_ (Cell, icell, cell_family->view(cells_of_current_type)) {
-        Cell cell = *icell;
-        ofile << cell.uniqueId();
+      ENUMERATE_ (ItemWithNodes, iitem, item_family->view(items_of_current_type)) {
+        ItemWithNodes item = *iitem;
+        ofile << item.uniqueId();
         for (Int32 i = 0; i < nb_node_for_type; ++i)
-          ofile << " " << cell.node(i).uniqueId();
+          ofile << " " << item.node(i).uniqueId();
         ofile << "\n";
       }
     }
