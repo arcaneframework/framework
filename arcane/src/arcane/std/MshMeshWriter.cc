@@ -275,13 +275,15 @@ bool MshMeshWriter::
 _writeMeshToFileV4(IMesh* mesh, const String& file_name)
 {
   m_item_type_mng = mesh->itemTypeMng();
-  String mshFileName(file_name + ".msh");
-  std::ofstream ofile(mshFileName.localstr());
+  String mesh_file_name(file_name);
+  if (!file_name.endsWith(".msh"))
+    mesh_file_name = mesh_file_name + ".msh";
+  std::ofstream ofile(mesh_file_name.localstr());
   ofile.precision(20);
   if (!ofile)
-    ARCANE_THROW(IOException, "Unable to open file '{0}' for writing", mshFileName);
+    ARCANE_THROW(IOException, "Unable to open file '{0}' for writing", mesh_file_name);
 
-  info() << "writing file '" << mshFileName << "'";
+  info() << "writing file '" << mesh_file_name << "'";
 
   ofile << "$MeshFormat\n";
   // 4.1 pour le format
