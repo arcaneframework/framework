@@ -198,7 +198,7 @@ _convertToMshType(Int32 arcane_type)
   // Other 12-nodes
   case IT_Octaedron12:
     return MSH_TRI_12;
-  // Others ar still considered as default, rising an exception
+  // Others are still considered as default, rising an exception
   default:
     break;
   }
@@ -223,7 +223,8 @@ processGroup(ItemGroup group, Int32 base_entity_index)
   String group_name = group.name();
   bool is_all_items = group.isAllItems();
   IItemFamily* family = group.itemFamily();
-  ItemTypeMng* item_type_mng = family->mesh()->itemTypeMng();
+  IMesh* mesh = family->mesh();
+  ItemTypeMng* item_type_mng = mesh->itemTypeMng();
   ITraceMng* tm = family->traceMng();
 
   // Pour GMSH, il faut trier les mailles par leur type (Triangle, Quadrangle, ...)
@@ -257,7 +258,16 @@ processGroup(ItemGroup group, Int32 base_entity_index)
     if (!is_all_items)
       entity_info.setPhysicalTag(base_entity_index + type_index, group_name);
     m_entities_by_type.add(entity_info);
-    //++nb_entities_by_dim[type_dimension];
+  }
+
+  // Si le groupe est vide, il faut quand même un tag physique pour que le
+  // groupe soit créé en lecture et ainsi en parallèle garantir que tous
+  // les sous-domaines ont les mêmes groupes.
+  if (nb_existing_type==0 && !is_all_items){
+    // TODO: prendre un type qui correspond à la dimension
+    EntityInfo entity_info(mesh->dimension(), IT_Tetraedron4, base_entity_index);
+    entity_info.setPhysicalTag(base_entity_index, group_name);
+    m_entities_by_type.add(entity_info);
   }
 }
 
@@ -293,6 +303,7 @@ _writeMeshToFileV4(IMesh* mesh, const String& file_name)
   ofile << "$EndMeshFormat\n";
 
   IItemFamily* cell_family = mesh->cellFamily();
+  IItemFamily* face_family = mesh->faceFamily();
   CellGroup all_cells = mesh->allCells();
   const Int32 mesh_nb_node = mesh->nbNode();
   IItemFamily* node_family = mesh->nodeFamily();
@@ -468,7 +479,7 @@ _writeMeshToFileV4(IMesh* mesh, const String& file_name)
   // entityDim(int) entityTag(int) parametric(int; 0 or 1) numNodesInBlock(size_t)
   ofile << "0 " << "100 " << "0 " << mesh_nb_node << "\n";
 
-  // Sauve les uniqueId()
+  // Sauve les uniqueId() des noeuds
   ENUMERATE_ (Node, inode, all_nodes) {
     Int64 uid = inode->uniqueId();
     ofile << uid << "\n";
