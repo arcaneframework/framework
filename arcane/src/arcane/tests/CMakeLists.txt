@@ -1070,8 +1070,11 @@ if(GEOMETRYKERNEL_FOUND)
   ARCANE_ADD_TEST_PARALLEL(corefinement testParallelCorefinement.arc 4)
 endif()
 
-if(VTK_FOUND AND MPI_FOUND)
-  ADD_TEST(case_part_vtu ${ARCANE_TEST_PATH}/test-CasePartVtu.sh)
+if(UNIX AND MPI_FOUND)
+  add_test(NAME partition_mesh_msh
+    COMMAND ${ARCANE_TEST_PATH}/test-CasePartVtu.sh
+    WORKING_DIRECTORY "${ARCANE_TEST_WORKDIR}"
+  )
 endif()
 
 add_test(convert_mesh1 ${ARCANE_CONVERT_MESH_COMMAND} -f convert_out_mesh.vtk --writer VtkLegacyMeshWriter ${ARCANE_TEST_PATH}/plan.vtk)
