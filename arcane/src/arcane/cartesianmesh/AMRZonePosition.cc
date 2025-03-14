@@ -24,7 +24,7 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 
 void AMRZonePosition::
-cellsInPatch(ICartesianMesh* cmesh, UniqueArray<Int32>& cells_local_id) const
+cellsInPatch(ICartesianMesh* cmesh, SharedArray<Int32> cells_local_id) const
 {
   VariableNodeReal3& nodes_coord = cmesh->mesh()->nodesCoordinates();
   // Parcours les mailles actives et ajoute dans la liste des mailles
