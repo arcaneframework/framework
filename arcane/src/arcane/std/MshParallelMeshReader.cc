@@ -257,7 +257,7 @@ class MshParallelMeshReader
   : TraceAccessor(tm)
   {}
 
-  eReturnType readMeshFromMshFile(IMesh* mesh, const String& file_name) override;
+  eReturnType readMeshFromMshFile(IMesh* mesh, const String& file_name, bool use_internal_partition) override;
 
  private:
 
@@ -1877,15 +1877,19 @@ _readMeshFromFile()
  * \brief Lit le maillage contenu dans le fichier \a filename et le construit dans \a mesh
  */
 IMeshReader::eReturnType MshParallelMeshReader::
-readMeshFromMshFile(IMesh* mesh, const String& filename)
+readMeshFromMshFile(IMesh* mesh, const String& filename, bool use_internal_partition)
 {
-  info() << "Trying to read in parallel 'msh' file '" << filename;
+  info() << "Trying to read in parallel 'msh' file '" << filename << "'"
+         << " use_internal_partition=" << use_internal_partition;
   m_mesh = mesh;
   IParallelMng* pm = mesh->parallelMng();
+  // Lit en séquentiel si les fichiers sont déjà découpés
+  if (!use_internal_partition)
+    pm = pm->sequentialParallelMng();
   m_parallel_mng = pm;
   const Int32 nb_rank = pm->commSize();
 
-  // Détermine les rangs qui vont conserver les données
+  // Détermine les rangs qui vont conserver les données.
   // Il n'est pas obligatoire que tous les rangs participent
   // à la conservation des données. L'idéal avec un
   // grand nombre de rangs serait qu'un rang sur 2 ou 4 participent.
@@ -1929,6 +1933,10 @@ readMeshFromMshFile(IMesh* mesh, const String& filename)
   String mesh_format_str = _getNextLineAndBroadcast();
   if (IosFile::isEqualString(mesh_format_str, "$MeshFormat")) {
     _readMeshFromFile();
+    if (!use_internal_partition) {
+      info() << "Synchronize groups and variables";
+      mesh->synchronizeGroupsAndVariables();
+    }
     return IMeshReader::RTOk;
   }
 
