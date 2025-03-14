@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* GraphDoFs.h                                                 (C) 2000-2024 */
+/* GraphDoFs.h                                                 (C) 2000-2025 */
 /*                                                                           */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MESH_GRAPHDOFS_H
@@ -201,11 +201,11 @@ class ARCANE_MESH_EXPORT GraphDoFs
       m_graph_observer[observer_id].reset();
   }
 
-  IItemFamily* dualNodeFamily() override { return &m_dual_node_family; }
-  const IItemFamily* dualNodeFamily() const override { return &m_dual_node_family; }
+  IItemFamily* dualNodeFamily() override { return m_dual_node_family->itemFamily(); }
+  const IItemFamily* dualNodeFamily() const override { return m_dual_node_family->itemFamily(); }
 
-  IItemFamily* linkFamily() override { return &m_link_family; }
-  const IItemFamily* linkFamily() const override { return &m_link_family; }
+  IItemFamily* linkFamily() override { return m_link_family->itemFamily(); }
+  const IItemFamily* linkFamily() const override { return m_link_family->itemFamily(); }
 
   inline Integer nbLink() const override { return linkFamily()->nbItem(); }
   inline Integer nbDualNode() const override { return dualNodeFamily()->nbItem(); }
@@ -284,8 +284,8 @@ class ARCANE_MESH_EXPORT GraphDoFs
 
   DoFManager m_dof_mng;
   IItemConnectivityMng* m_connectivity_mng;
-  DoFFamily& m_dual_node_family;
-  DoFFamily& m_link_family;
+  IDoFFamily* m_dual_node_family = nullptr;
+  IDoFFamily* m_link_family = nullptr;
 
   UniqueArray<Arcane::mesh::IncrementalItemConnectivity*> m_incremental_connectivities;
   UniqueArray<Arcane::mesh::IncrementalItemConnectivity*> m_dual2dof_incremental_connectivities;
