@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* PolyhedralMesh.h                                            (C) 2000-2024 */
+/* PolyhedralMesh.h                                            (C) 2000-2025 */
 /*                                                                           */
 /* Polyhedral mesh impl using Neo data structure                             */
 /*---------------------------------------------------------------------------*/
@@ -266,6 +266,28 @@ class PolyhedralMesh
   IMeshModifier* modifier() override {return this;}
   bool isDynamic() const override {return m_is_dynamic;}
   void setDynamic(bool is_dynamic) override { m_is_dynamic = is_dynamic;}
+  void addExtraGhostCellsBuilder(IExtraGhostCellsBuilder*) override
+  {
+    // not yet implemented : must exit in parallel
+    if (m_subdomain->parallelMng()->isParallel()) {
+      ARCANE_NOT_YET_IMPLEMENTED("Parallel for polyhedral mesh is WIP");
+    }
+  }
+  void removeExtraGhostCellsBuilder(IExtraGhostCellsBuilder*) override
+  {
+    // not yet implemented : must exit in parallel
+    if (m_subdomain->parallelMng()->isParallel()) {
+      ARCANE_NOT_YET_IMPLEMENTED("Parallel for polyhedral mesh is WIP");
+    }
+  }
+  void endUpdate(bool update_ghost_layer, bool remove_old_ghost) override
+  {
+    endUpdate();
+    // not yet implemented : must exit in parallel
+    if (m_subdomain->parallelMng()->isParallel()) {
+      ARCANE_NOT_YET_IMPLEMENTED("Parallel for polyhedral mesh is WIP");
+    }
+  }
 
   IMeshUtilities* utilities() override;
 
