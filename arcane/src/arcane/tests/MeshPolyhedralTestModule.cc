@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshPolyhedralTestModule.cc                                  C) 2000-2024 */
+/* MeshPolyhedralTestModule.cc                                  C) 2000-2025 */
 /*                                                                           */
 /* Test Module for custom mesh                                               */
 /*---------------------------------------------------------------------------*/
@@ -55,6 +55,7 @@ class MeshPolyhedralTestModule : public ArcaneMeshPolyhedralTestObject
       _testVariables(mesh());
       _testGroups(mesh());
       _testMeshUtilities(mesh());
+      _testMeshModifier(mesh());
     }
     else
       info() << "No Mesh";
@@ -71,6 +72,7 @@ class MeshPolyhedralTestModule : public ArcaneMeshPolyhedralTestObject
   void _testDimensions(IMesh* mesh);
   void _testCoordinates(IMesh* mesh);
   void _testMeshUtilities(IMesh* mesh);
+  void _testMeshModifier(IMesh* mesh);
   void _buildGroup(IItemFamily* family, String const& group_name);
   void _checkBoundaryFaceGroup(IMesh* mesh, String const& boundary_face_group_name) const;
   void _checkInternalFaceGroup(IMesh* mesh, String const& internal_face_group_name) const;
@@ -470,6 +472,20 @@ _testMeshUtilities(Arcane::IMesh* mesh)
   if (has_error) {
     ARCANE_FATAL("changeOwnerFromCells does not work with PolyhedralMesh");
   }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MeshPolyhedralTestModule::
+_testMeshModifier(Arcane::IMesh* mesh)
+{
+  auto* mesh_modifier = mesh->modifier();
+  ARCANE_CHECK_POINTER(mesh_modifier);
+  // Following methods not yet implemented. Do nothing in sequential and crash in parallel
+  mesh_modifier->addExtraGhostCellsBuilder(nullptr);
+  mesh_modifier->removeExtraGhostCellsBuilder(nullptr);
+  mesh_modifier->endUpdate(false, false);
 }
 
 /*---------------------------------------------------------------------------*/
