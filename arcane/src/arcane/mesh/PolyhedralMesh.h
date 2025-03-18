@@ -282,7 +282,6 @@ class PolyhedralMesh
   }
   void endUpdate(bool update_ghost_layer, bool remove_old_ghost) override
   {
-    endUpdate();
     // not yet implemented : must exit in parallel
     if (m_subdomain->parallelMng()->isParallel()) {
       ARCANE_NOT_YET_IMPLEMENTED("Parallel for polyhedral mesh is WIP");
