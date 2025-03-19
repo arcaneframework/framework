@@ -37,6 +37,8 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianPatchGroup
   explicit CartesianPatchGroup(ICartesianMesh* cmesh) : m_cmesh(cmesh){}
 
  public:
+  Ref<CartesianMeshPatch> groundPatch();
+
   void addPatch(CellGroup cell_group);
 
   Integer nbPatch() const;
@@ -61,11 +63,14 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianPatchGroup
 
   void updateLevelsBeforeCoarsen();
 
+  Integer nextIndexForNewPatch();
+
  private:
   void _addPatchInstance(Ref<CartesianMeshPatch> v);
 
   void _removeOnePatch(Integer index);
   void _removeMultiplePatches(ConstArrayView<Integer> indexes);
+  void _createGroundPatch();
 
  private:
 
