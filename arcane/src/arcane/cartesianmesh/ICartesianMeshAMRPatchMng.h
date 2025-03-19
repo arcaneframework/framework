@@ -38,21 +38,21 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMeshAMRPatchMng
  public:
 
   /*!
-   * @brief Méthode permettant de définir les mailles à raffiner.
-   * @param cells_lids Les localIds des mailles.
-   * @param clear_old_flags Doit-on retirer les flags des raffinements/déraffinements précédents ?
+   * \brief Méthode permettant de définir les mailles à raffiner (à marquer avec le flag "II_Refine").
+   * \param cells_lids Les localIds des mailles.
+   * \param clear_old_flags Doit-on retirer les flags des raffinements/déraffinements précédents ?
    */
   virtual void flagCellToRefine(Int32ConstArrayView cells_lids, bool clear_old_flags) = 0;
 
   /*!
-   * @brief Méthode permettant de définir les mailles à déraffiner.
-   * @param cells_lids Les localIds des mailles.
-   * @param clear_old_flags Doit-on retirer les flags des raffinements/déraffinements précédents ?
+   * \brief Méthode permettant de définir les mailles à déraffiner (à marquer avec le flag "II_Coarsen").
+   * \param cells_lids Les localIds des mailles.
+   * \param clear_old_flags Doit-on retirer les flags des raffinements/déraffinements précédents ?
    */
   virtual void flagCellToCoarsen(Int32ConstArrayView cells_lids, bool clear_old_flags) = 0;
 
   /*!
-   * @brief Méthode permettant de raffiner les mailles avec le
+   * \brief Méthode permettant de raffiner les mailles avec le
    * flag "II_Refine".
    */
   virtual void refine() = 0;
@@ -66,7 +66,16 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMeshAMRPatchMng
    */
   virtual void createSubLevel() = 0;
 
-  // TODO
+  /*!
+   * \brief Méthode permettant de retirer les mailles marquées avec le
+   * flag "II_Coarsen".
+   *
+   * Les propriétaires des faces et des noeuds ayant des mailles marquées
+   * et des mailles non marquées sont susceptibles d'être mis à jour.
+   *
+   * \param update_parent_flag Si true, alors les flags des parents seront
+   * mis à jour. Cela inclut l'activation des mailles parentes.
+   */
   virtual void coarsen(bool update_parent_flag) = 0;
 };
 

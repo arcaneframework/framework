@@ -5,13 +5,12 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* AMRBoxPosition.cc                                           (C) 2000-2025 */
+/* AMRZonePosition.cc                                          (C) 2000-2025 */
 /*                                                                           */
-/* TODO                                        */
+/* Definition d'une zone 2D ou 3D d'un maillage.                             */
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/cartesianmesh/AMRZonePosition.h"
-#include "arcane/cartesianmesh/ICartesianMesh.h"
 #include "arcane/core/IMesh.h"
 
 /*---------------------------------------------------------------------------*/
@@ -24,16 +23,16 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 
 void AMRZonePosition::
-cellsInPatch(ICartesianMesh* cmesh, SharedArray<Int32> cells_local_id) const
+cellsInPatch(IMesh* mesh, SharedArray<Int32> cells_local_id) const
 {
-  VariableNodeReal3& nodes_coord = cmesh->mesh()->nodesCoordinates();
+  VariableNodeReal3& nodes_coord = mesh->nodesCoordinates();
   // Parcours les mailles actives et ajoute dans la liste des mailles
   // à raffiner celles qui sont contenues dans la boîte englobante.
   Real3 min_pos = m_position;
   Real3 max_pos = min_pos + m_length;
   //Int32 level = -10;
   cells_local_id.clear();
-  ENUMERATE_ (Cell, icell, cmesh->mesh()->allActiveCells()) {
+  ENUMERATE_ (Cell, icell, mesh->allActiveCells()) {
     Cell cell = *icell;
     Real3 center;
     for (const Node node : cell.nodes())

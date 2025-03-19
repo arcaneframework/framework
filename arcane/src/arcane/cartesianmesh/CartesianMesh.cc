@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CartesianMesh.cc                                            (C) 2000-2024 */
+/* CartesianMesh.cc                                            (C) 2000-2025 */
 /*                                                                           */
 /* Maillage cartésien.                                                       */
 /*---------------------------------------------------------------------------*/
@@ -241,7 +241,7 @@ class CartesianMeshImpl
   void _applyRefine(const AMRZonePosition &position);
   void _removeCellsInPatches(ConstArrayView<Int32> const_array_view);
   void _applyCoarse(const AMRZonePosition &position);
-  void _addPatch(const CellGroup& parent_group);
+  void _addPatch(const CellGroup& parent_cells);
   void _saveInfosInProperties();
 
   std::tuple<CellGroup, NodeGroup>
@@ -382,10 +382,6 @@ computeDirections()
 
   m_mesh_timestamp = mesh()->timestamp();
   _checkAddObservableMeshChanged();
-
-  // m_patch_group.m_amr_patches.clear();
-  // m_patch_group.m_amr_patches_pointer.clear();
-  // m_patch_group._addPatchInstance(m_all_items_direction_info);
 
   m_is_amr = m_mesh->isAmrActivated();
 
@@ -551,23 +547,7 @@ computeDirections()
   m_connectivity._computeInfos(mesh(),nodes_coord,cells_center);
 
   // Ajoute informations de connectivités pour les patchs AMR
-  // TODO: supporter plusieurs appels à cette méthode
-  // for (const CellGroup& cells : m_patch_group.m_amr_patch_cell_groups) {
-  //   Integer patch_index = m_patch_group.m_amr_patches.size();
-  //   info() << "AMR Patch name=" << cells.name() << " size=" << cells.size() << " index=" << patch_index;
-  //   //auto* cdi = new CartesianMeshPatch(this,patch_index);
-  //   //m_patch_group._addPatchInstance(makeRef(cdi));
-  //
-  //   auto cdi = m_patch_group.patch(patch_index);
-  //   auto ccells = cdi->cells();
-  //
-  //   cdi->_internalComputeNodeCellInformations(cell0,cells_center[cell0],nodes_coord);
-  //   auto [ patch_cells, patch_nodes ] = _buildPatchGroups(cells,patch_index);
-  //   _computeMeshDirection(*cdi.get(), MD_DirX, cells_center, faces_center, patch_cells, patch_nodes);
-  //   _computeMeshDirection(*cdi.get(), MD_DirY, cells_center, faces_center, patch_cells, patch_nodes);
-  //   if (is_3d)
-  //     _computeMeshDirection(*cdi.get(), MD_DirZ, cells_center, faces_center, patch_cells, patch_nodes);
-  // }
+  // TODO: supporter plusieurs appels à cette méthode ?
   for (Integer patch_index = 1; patch_index < m_patch_group.nbPatch(); ++patch_index) {
     CellGroup cells = m_patch_group.cells(patch_index);
     Ref<CartesianMeshPatch> patch = m_patch_group.patch(patch_index);
@@ -601,9 +581,6 @@ _buildPatchGroups(const CellGroup& cells,Integer patch_level)
   NodeGroup nodes = cells.nodeGroup();
   IItemFamily* cell_family = cells.itemFamily();
   IItemFamily* node_family = nodes.itemFamily();
-
-  ARCANE_CHECK_PTR(cell_family);
-  ARCANE_CHECK_PTR(node_family);
 
   String cell_group_name = String("AMRPatchCells") + patch_level;
   CellGroup patch_cells = cell_family->createGroup(cell_group_name,Int32ConstArrayView(),true);
@@ -980,7 +957,7 @@ void CartesianMeshImpl::
 _applyRefine(const AMRZonePosition& position)
 {
   SharedArray<Int32> cells_local_id;
-  position.cellsInPatch(this, cells_local_id);
+  position.cellsInPatch(mesh(), cells_local_id);
 
   IItemFamily* cell_family = m_mesh->cellFamily();
   Integer nb_cell = cells_local_id.size();
@@ -1027,7 +1004,7 @@ void CartesianMeshImpl::
 _applyCoarse(const AMRZonePosition& position)
 {
   SharedArray<Int32> cells_local_id;
-  position.cellsInPatch(this, cells_local_id);
+  position.cellsInPatch(mesh(), cells_local_id);
 
   Integer nb_cell = cells_local_id.size();
   info(4) << "Local_NbCellToCoarsen = " << nb_cell;
