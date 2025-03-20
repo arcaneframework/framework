@@ -298,6 +298,7 @@ refine()
       ConstArray2View owner_cells_around_parent_cell(owner_cells_around_parent_cell_1d.data(), 3, 3);
       ConstArray2View flags_cells_around_parent_cell(flags_cells_around_parent_cell_1d.data(), 3, 3);
 
+      // #priority_owner_2d
       // Voici les priorités pour la propriété des noeuds et des faces :
       // ┌─────────┐
       // │6   7   8│
@@ -313,6 +314,7 @@ refine()
       // |
       // ->x
 
+      // #arcane_order_to_around_2d
       // Note pour les maillages cartésiens 2D :
       // Les itérateurs sur les faces itèrent dans l'ordre (pour la maille 4 ici) :
       //  1. Face entre [4, 1],
@@ -394,7 +396,7 @@ refine()
           total_nb_cells++;
 
           const Int64 child_cell_uid = m_num_mng->cellUniqueId(parent_cell_level + 1, Int64x2(i, j));
-          debug() << "Child -- x : " << i << " -- y : " << j << " -- level : " << parent_cell_level + 1 << " -- uid : " << child_cell_uid;
+          // debug() << "Child -- x : " << i << " -- y : " << j << " -- level : " << parent_cell_level + 1 << " -- uid : " << child_cell_uid;
 
           m_num_mng->cellNodeUniqueIds(child_nodes_uids, parent_cell_level + 1, Int64x2(i, j));
           m_num_mng->cellFaceUniqueIds(child_faces_uids, parent_cell_level + 1, Int64x2(i, j));
@@ -502,20 +504,20 @@ refine()
               // itérer dessus par la suite.
               if (!is_new_face) {
                 face_uid_change_owner_only.add(child_faces_uids[l]);
-                debug() << "Child face (change owner) -- x : " << i
-                        << " -- y : " << j
-                        << " -- level : " << parent_cell_level + 1
-                        << " -- face : " << l
-                        << " -- uid_face : " << child_faces_uids[l]
-                        << " -- owner : " << child_face_owner;
+                // debug() << "Child face (change owner) -- x : " << i
+                //         << " -- y : " << j
+                //         << " -- level : " << parent_cell_level + 1
+                //         << " -- face : " << l
+                //         << " -- uid_face : " << child_faces_uids[l]
+                //         << " -- owner : " << child_face_owner;
               }
               else {
-                debug() << "Child face (create face)  -- x : " << i
-                        << " -- y : " << j
-                        << " -- level : " << parent_cell_level + 1
-                        << " -- face : " << l
-                        << " -- uid_face : " << child_faces_uids[l]
-                        << " -- owner : " << child_face_owner;
+                // debug() << "Child face (create face)  -- x : " << i
+                //         << " -- y : " << j
+                //         << " -- level : " << parent_cell_level + 1
+                //         << " -- face : " << l
+                //         << " -- uid_face : " << child_faces_uids[l]
+                //         << " -- owner : " << child_face_owner;
               }
             }
           }
@@ -689,20 +691,20 @@ refine()
               // itérer dessus par la suite.
               if (!is_new_node) {
                 node_uid_change_owner_only.add(child_nodes_uids[l]);
-                debug() << "Child node (change owner) -- x : " << i
-                        << " -- y : " << j
-                        << " -- level : " << parent_cell_level + 1
-                        << " -- node : " << l
-                        << " -- uid_node : " << child_nodes_uids[l]
-                        << " -- owner : " << child_node_owner;
+                // debug() << "Child node (change owner) -- x : " << i
+                //         << " -- y : " << j
+                //         << " -- level : " << parent_cell_level + 1
+                //         << " -- node : " << l
+                //         << " -- uid_node : " << child_nodes_uids[l]
+                //         << " -- owner : " << child_node_owner;
               }
               else {
-                debug() << "Child node (create node)  -- x : " << i
-                        << " -- y : " << j
-                        << " -- level : " << parent_cell_level + 1
-                        << " -- node : " << l
-                        << " -- uid_node : " << child_nodes_uids[l]
-                        << " -- owner : " << child_node_owner;
+                // debug() << "Child node (create node)  -- x : " << i
+                //         << " -- y : " << j
+                //         << " -- level : " << parent_cell_level + 1
+                //         << " -- node : " << l
+                //         << " -- uid_node : " << child_nodes_uids[l]
+                //         << " -- owner : " << child_node_owner;
               }
             }
           }
@@ -822,6 +824,7 @@ refine()
       ConstArray3View owner_cells_around_parent_cell(owner_cells_around_parent_cell_1d.data(), 3, 3, 3);
       ConstArray3View flags_cells_around_parent_cell(flags_cells_around_parent_cell_1d.data(), 3, 3, 3);
 
+      // #priority_owner_3d
       // Voici les priorités pour la propriété des noeuds et des faces :
       // ┌──────────┐ │ ┌──────────┐ │ ┌──────────┐
       // │ 6   7   8│ │ │15  16  17│ │ │24  25  26│
@@ -839,14 +842,15 @@ refine()
       // |
       // ->x
 
+      // #arcane_order_to_around_3d
       // Note pour les maillages cartésiens 3D :
       // Les itérateurs sur les faces itèrent dans l'ordre (pour la maille 13 ici) :
-      //  1. Face entre [13, 12],
-      //  2. Face entre [13, 10],
-      //  3. Face entre [13, 4],
-      //  4. Face entre [13, 14],
-      //  5. Face entre [13, 16],
-      //  6. Face entre [13, 22],
+      //  1. Face entre [13, 4],
+      //  2. Face entre [13, 12],
+      //  3. Face entre [13, 10],
+      //  4. Face entre [13, 22],
+      //  5. Face entre [13, 14],
+      //  6. Face entre [13, 16],
       //
       // Les itérateurs sur les noeuds itèrent dans l'ordre (pour la maille 13 ici) :
       //  1. Noeud entre [13, 0]
@@ -947,7 +951,7 @@ refine()
             total_nb_cells++;
 
             const Int64 child_cell_uid = m_num_mng->cellUniqueId(parent_cell_level + 1, Int64x3(i, j, k));
-            debug() << "Child -- x : " << i << " -- y : " << j << " -- z : " << k << " -- level : " << parent_cell_level + 1 << " -- uid : " << child_cell_uid;
+            // debug() << "Child -- x : " << i << " -- y : " << j << " -- z : " << k << " -- level : " << parent_cell_level + 1 << " -- uid : " << child_cell_uid;
 
             m_num_mng->cellNodeUniqueIds(child_nodes_uids, parent_cell_level + 1, Int64x3(i, j, k));
             m_num_mng->cellFaceUniqueIds(child_faces_uids, parent_cell_level + 1, Int64x3(i, j, k));
@@ -1086,22 +1090,22 @@ refine()
                 // itérer dessus par la suite.
                 if (!is_new_face) {
                   face_uid_change_owner_only.add(child_faces_uids[l]);
-                  debug() << "Child face (change owner) -- x : " << i
-                          << " -- y : " << j
-                          << " -- z : " << k
-                          << " -- level : " << parent_cell_level + 1
-                          << " -- face : " << l
-                          << " -- uid_face : " << child_faces_uids[l]
-                          << " -- owner : " << child_face_owner;
+                  // debug() << "Child face (change owner) -- x : " << i
+                  //         << " -- y : " << j
+                  //         << " -- z : " << k
+                  //         << " -- level : " << parent_cell_level + 1
+                  //         << " -- face : " << l
+                  //         << " -- uid_face : " << child_faces_uids[l]
+                  //         << " -- owner : " << child_face_owner;
                 }
                 else {
-                  debug() << "Child face (create face)  -- x : " << i
-                          << " -- y : " << j
-                          << " -- z : " << k
-                          << " -- level : " << parent_cell_level + 1
-                          << " -- face : " << l
-                          << " -- uid_face : " << child_faces_uids[l]
-                          << " -- owner : " << child_face_owner;
+                  // debug() << "Child face (create face)  -- x : " << i
+                  //         << " -- y : " << j
+                  //         << " -- z : " << k
+                  //         << " -- level : " << parent_cell_level + 1
+                  //         << " -- face : " << l
+                  //         << " -- uid_face : " << child_faces_uids[l]
+                  //         << " -- owner : " << child_face_owner;
                 }
               }
             }
@@ -1693,22 +1697,22 @@ refine()
                 // itérer dessus par la suite.
                 if (!is_new_node) {
                   node_uid_change_owner_only.add(child_nodes_uids[l]);
-                  debug() << "Child node (change owner) -- x : " << i
-                          << " -- y : " << j
-                          << " -- z : " << k
-                          << " -- level : " << parent_cell_level + 1
-                          << " -- node : " << l
-                          << " -- uid_node : " << child_nodes_uids[l]
-                          << " -- owner : " << child_node_owner;
+                  // debug() << "Child node (change owner) -- x : " << i
+                  //         << " -- y : " << j
+                  //         << " -- z : " << k
+                  //         << " -- level : " << parent_cell_level + 1
+                  //         << " -- node : " << l
+                  //         << " -- uid_node : " << child_nodes_uids[l]
+                  //         << " -- owner : " << child_node_owner;
                 }
                 else {
-                  debug() << "Child node (create node)  -- x : " << i
-                          << " -- y : " << j
-                          << " -- z : " << k
-                          << " -- level : " << parent_cell_level + 1
-                          << " -- node : " << l
-                          << " -- uid_node : " << child_nodes_uids[l]
-                          << " -- owner : " << child_node_owner;
+                  // debug() << "Child node (create node)  -- x : " << i
+                  //         << " -- y : " << j
+                  //         << " -- z : " << k
+                  //         << " -- level : " << parent_cell_level + 1
+                  //         << " -- node : " << l
+                  //         << " -- uid_node : " << child_nodes_uids[l]
+                  //         << " -- owner : " << child_node_owner;
                 }
               }
             }
@@ -1811,7 +1815,7 @@ refine()
         }
         // Attention, face.level() == -1 ici.
         uid_parent_faces[index++] = m_num_mng->parentFaceUniqueIdOfFace(face.uniqueId(), max_level + 1, false);
-        //debug() << "Parent of : " << face.uniqueId() << " is : " << uid_child_faces[index - 1];
+        // debug() << "Parent of : " << face.uniqueId() << " is : " << uid_child_faces[index - 1];
       }
 
       m_mesh->faceFamily()->itemsUniqueIdToLocalId(lid_parent_faces, uid_parent_faces, false);
@@ -2812,6 +2816,7 @@ createSubLevel()
 void CartesianMeshAMRPatchMng::
 coarsen(bool update_parent_flag)
 {
+  // On commence par lister les mailles à ré-raffiner.
   UniqueArray<Cell> cells_to_coarsen_internal;
   ENUMERATE_ (Cell, icell, m_mesh->allActiveCells()) {
     Cell cell = *icell;
@@ -2857,8 +2862,10 @@ coarsen(bool update_parent_flag)
     Int32 useful_flags = ItemFlags::II_Coarsen + ItemFlags::II_Inactive;
     _shareInfosOfCellsAroundPatch(cells_to_coarsen_internal, around_cells_uid_to_owner, around_cells_uid_to_flags, useful_flags);
   }
-  if (m_mesh->dimension() == 2) {
 
+  // Avant de supprimer les mailles, on doit changer les propriétaires des faces/noeuds entre les mailles
+  // à supprimer et les mailles restantes.
+  if (m_mesh->dimension() == 2) {
     FixedArray<Int64, 9> uid_cells_around_cell_1d;
     FixedArray<Int32, 9> owner_cells_around_cell_1d;
     FixedArray<Int32, 9> flags_cells_around_cell_1d;
@@ -2893,27 +2900,35 @@ coarsen(bool update_parent_flag)
 
         // Si toutes les mailles autours de nous sont soit inexistantes, soit
         // à supprimer, inutile de chercher de nouveaux propriétaires pour nos items.
+        // Notre maille est à dé-raffiner, donc nb_cells_to_coarsen_or_empty_around >= 1.
         if (nb_cells_to_coarsen_or_empty_around == 9) {
           continue;
         }
       }
 
+      // Le propriétaire de notre maille.
       Int32 cell_to_coarsen_owner = owner_cells_around_cell_1d[4];
 
       {
-        constexpr Integer aaa[] = { 1, 5, 7, 3 };
+        // On donne la position de la face dans le tableau des mailles autours
+        // selon l'index de la face attribué par Arcane.
+        // (Voir commentaire tagué "arcane_order_to_around_2d").
+        // cell_to_coarsen.face(0) = uid_cells_around_cell_1d[1]
+        // cell_to_coarsen.face(1) = uid_cells_around_cell_1d[5]
+        // ...
+        constexpr Integer arcane_order_to_pos_around[] = { 1, 5, 7, 3 };
 
         Integer count = -1;
 
         for (Face face : cell_to_coarsen.faces()) {
           count++;
-          Int64 other_cell_uid = uid_cells_around_cell_1d[aaa[count]];
+          Int64 other_cell_uid = uid_cells_around_cell_1d[arcane_order_to_pos_around[count]];
           if (other_cell_uid == -1) {
             // On est au bord du maillage ou il n'y a pas de maille du même niveau à côté,
             // pas besoin de changer le owner de la face (elle sera supprimée).
             continue;
           }
-          Int32 other_cell_flag = flags_cells_around_cell_1d[aaa[count]];
+          Int32 other_cell_flag = flags_cells_around_cell_1d[arcane_order_to_pos_around[count]];
 
           if (other_cell_flag & ItemFlags::II_Coarsen) {
             // La maille d'à côté sera aussi supprimée, pas besoin de changer le owner de la face.
@@ -2924,7 +2939,7 @@ coarsen(bool update_parent_flag)
             // raffinements de différences.
             ARCANE_FATAL("Max one level diff between two cells is allowed -- Uid of Cell to be coarseing: {0} -- Uid of Opposite cell with children: {1}", cell_to_coarsen_uid, other_cell_uid);
           }
-          Int32 other_cell_owner = owner_cells_around_cell_1d[aaa[count]];
+          Int32 other_cell_owner = owner_cells_around_cell_1d[arcane_order_to_pos_around[count]];
           if (other_cell_owner != cell_to_coarsen_owner) {
             // La maille d'à côté existe et appartient à quelqu'un d'autre. On lui donne la face.
             face.mutableItemBase().setOwner(other_cell_owner, cell_to_coarsen_owner);
@@ -2935,19 +2950,39 @@ coarsen(bool update_parent_flag)
       {
         Integer count = -1;
 
-        constexpr Integer bbb[4][3] = { { 3, 1, 0 }, { 5, 2, 1 }, { 8, 7, 5 }, { 7, 6, 3 } };
+        // Ici, plus compliqué.
+        // Chaque élement du tableau de niveau 0 désigne un noeud.
+        // Comme pour les faces, l'ordre est décrit au commentaire tagué "arcane_order_to_around_2d".
+        //
+        // Ensuite, par rapport aux faces, on a l'aspect priorité (comme notre maille
+        // sera supprimé, pour chaque face, soit elle prendra la propriété de la maille d'à côté
+        // si elle est "survivante", soit elle sera supprimée).
+        // Un noeud est présent dans quatre mailles. Trois mailles seront potentiellement "survivantes".
+        // On doit déterminer à qui appartiendra ce noeud parmi ces trois mailles.
+        // Pour le savoir, on utilise les priorités décrites dans le commentaire
+        // tagué "priority_owner_2d".
+        //
+        // Exemple : Le noeud n°0 est présent sur quatre mailles autour avec les priorités : P0, P1, P3, P4.
+        //           La maille P4 (la "notre") sera supprimé.
+        //           Dans le tableau n°0, on met les trois priorités (de la plus faible à la plus forte).
+        //           Ensuite, on itére sur ces trois mailles (toujours de la plus faible à la plus forte).
+        //           Si la maille i est "survivante", elle prend la propriété.
+        //           Au final, la maille ayant la priorité la plus forte aura le noeud.
+        //           Si aucune maille n'a pris la propriété, alors le noeud sera supprimée.
+        //
+        constexpr Integer priority_and_pos_of_cells_around_node[4][3] = { { 3, 1, 0 }, { 5, 2, 1 }, { 8, 7, 5 }, { 7, 6, 3 } };
 
         for (Node node : cell_to_coarsen.nodes()) {
           count++;
           Integer final_owner = -1;
           for (Integer other_cell = 0; other_cell < 3; ++other_cell) {
-            Int64 other_cell_uid = uid_cells_around_cell_1d[bbb[count][other_cell]];
+            Int64 other_cell_uid = uid_cells_around_cell_1d[priority_and_pos_of_cells_around_node[count][other_cell]];
             if (other_cell_uid == -1) {
               // On est au bord du maillage ou il n'y a pas de maille du même niveau à côté,
               // le noeud ne prendra pas son propriétaire.
               continue;
             }
-            Int32 other_cell_flag = flags_cells_around_cell_1d[bbb[count][other_cell]];
+            Int32 other_cell_flag = flags_cells_around_cell_1d[priority_and_pos_of_cells_around_node[count][other_cell]];
 
             if (other_cell_flag & ItemFlags::II_Coarsen) {
               // La maille d'à côté sera aussi supprimée, elle ne pourra pas prendre
@@ -2959,7 +2994,7 @@ coarsen(bool update_parent_flag)
               // raffinements de différences.
               ARCANE_FATAL("Max one level diff between two cells is allowed -- Uid of Cell to be coarseing: {0} -- Uid of Opposite cell with children: {1}", cell_to_coarsen_uid, other_cell_uid);
             }
-            Int32 other_cell_owner = owner_cells_around_cell_1d[bbb[count][other_cell]];
+            Int32 other_cell_owner = owner_cells_around_cell_1d[priority_and_pos_of_cells_around_node[count][other_cell]];
             if (other_cell_owner != cell_to_coarsen_owner) {
               // La maille d'à côté existe et appartient à quelqu'un d'autre. On lui donne le noeud.
               final_owner = other_cell_owner;
@@ -3007,27 +3042,35 @@ coarsen(bool update_parent_flag)
 
         // Si toutes les mailles autours de nous sont soit inexistantes, soit
         // à supprimer, inutile de chercher de nouveaux propriétaires pour nos items.
-        if (nb_cells_to_coarsen_or_empty_around == 9) {
+        // Notre maille est à dé-raffiner, donc nb_cells_to_coarsen_or_empty_around >= 1.
+        if (nb_cells_to_coarsen_or_empty_around == 27) {
           continue;
         }
       }
 
+      // Le propriétaire de notre maille.
       Int32 cell_to_coarsen_owner = owner_cells_around_cell_1d[13];
 
       {
-        constexpr Integer aaa[] = { 12, 10, 4, 14, 16, 22 };
+        // On donne la position de la face dans le tableau des mailles autours
+        // selon l'index de la face attribué par Arcane.
+        // (Voir commentaire tagué "arcane_order_to_around_3d").
+        // cell_to_coarsen.face(0) = uid_cells_around_cell_1d[4]
+        // cell_to_coarsen.face(1) = uid_cells_around_cell_1d[12]
+        // ...
+        constexpr Integer arcane_order_to_pos_around[] = { 4, 12, 10, 22, 14, 16 };
 
         Integer count = -1;
 
         for (Face face : cell_to_coarsen.faces()) {
           count++;
-          Int64 other_cell_uid = uid_cells_around_cell_1d[aaa[count]];
+          Int64 other_cell_uid = uid_cells_around_cell_1d[arcane_order_to_pos_around[count]];
           if (other_cell_uid == -1) {
             // On est au bord du maillage ou il n'y a pas de maille du même niveau à côté,
             // pas besoin de changer le owner de la face (elle sera supprimée).
             continue;
           }
-          Int32 other_cell_flag = flags_cells_around_cell_1d[aaa[count]];
+          Int32 other_cell_flag = flags_cells_around_cell_1d[arcane_order_to_pos_around[count]];
 
           if (other_cell_flag & ItemFlags::II_Coarsen) {
             // La maille d'à côté sera aussi supprimée, pas besoin de changer le owner de la face.
@@ -3038,7 +3081,7 @@ coarsen(bool update_parent_flag)
             // raffinements de différences.
             ARCANE_FATAL("Max one level diff between two cells is allowed -- Uid of Cell to be coarseing: {0} -- Uid of Opposite cell with children: {1}", cell_to_coarsen_uid, other_cell_uid);
           }
-          Int32 other_cell_owner = owner_cells_around_cell_1d[aaa[count]];
+          Int32 other_cell_owner = owner_cells_around_cell_1d[arcane_order_to_pos_around[count]];
           if (other_cell_owner != cell_to_coarsen_owner) {
             // La maille d'à côté existe et appartient à quelqu'un d'autre. On lui donne la face.
             face.mutableItemBase().setOwner(other_cell_owner, cell_to_coarsen_owner);
@@ -3049,7 +3092,24 @@ coarsen(bool update_parent_flag)
       {
         Integer count = -1;
 
-        constexpr Integer bbb[8][7] = {
+        // Chaque élement du tableau de niveau 0 désigne un noeud.
+        // Comme pour les faces, l'ordre est décrit au commentaire tagué "arcane_order_to_around_3d".
+        //
+        // Ensuite, on a l'aspect priorité.
+        // Un noeud est présent dans huit mailles. Sept mailles seront potentiellement "survivantes".
+        // On doit déterminer à qui appartiendra ce noeud parmi ces sept mailles.
+        // Pour le savoir, on utilise les priorités décrites dans le commentaire
+        // tagué "priority_owner_3d".
+        //
+        // Exemple : Le noeud n°0 est présent sur huit mailles autour avec les priorités : P12, P10, P9, ...
+        //           La maille P13 (la "notre") sera supprimé.
+        //           Dans le tableau n°0, on met les sept priorités (de la plus faible à la plus forte).
+        //           Ensuite, on itére sur ces sept mailles (toujours de la plus faible à la plus forte).
+        //           Si la maille i est "survivante", elle prend la propriété.
+        //           Au final, la maille ayant la priorité la plus forte aura le noeud.
+        //           Si aucune maille n'a pris la propriété, alors le noeud sera supprimée.
+        //
+        constexpr Integer priority_and_pos_of_cells_around_node[8][7] = {
           {12, 10, 9, 4, 3, 1, 0},
           {14, 11, 10, 5, 4, 2, 1},
           {17, 16, 14, 8, 7, 5, 4},
@@ -3064,13 +3124,13 @@ coarsen(bool update_parent_flag)
           count++;
           Integer final_owner = -1;
           for (Integer other_cell = 0; other_cell < 7; ++other_cell) {
-            Int64 other_cell_uid = uid_cells_around_cell_1d[bbb[count][other_cell]];
+            Int64 other_cell_uid = uid_cells_around_cell_1d[priority_and_pos_of_cells_around_node[count][other_cell]];
             if (other_cell_uid == -1) {
               // On est au bord du maillage ou il n'y a pas de maille du même niveau à côté,
               // le noeud ne prendra pas son propriétaire.
               continue;
             }
-            Int32 other_cell_flag = flags_cells_around_cell_1d[bbb[count][other_cell]];
+            Int32 other_cell_flag = flags_cells_around_cell_1d[priority_and_pos_of_cells_around_node[count][other_cell]];
 
             if (other_cell_flag & ItemFlags::II_Coarsen) {
               // La maille d'à côté sera aussi supprimée, elle ne pourra pas prendre
@@ -3082,7 +3142,7 @@ coarsen(bool update_parent_flag)
               // raffinements de différences.
               ARCANE_FATAL("Max one level diff between two cells is allowed -- Uid of Cell to be coarseing: {0} -- Uid of Opposite cell with children: {1}", cell_to_coarsen_uid, other_cell_uid);
             }
-            Int32 other_cell_owner = owner_cells_around_cell_1d[bbb[count][other_cell]];
+            Int32 other_cell_owner = owner_cells_around_cell_1d[priority_and_pos_of_cells_around_node[count][other_cell]];
             if (other_cell_owner != cell_to_coarsen_owner) {
               // La maille d'à côté existe et appartient à quelqu'un d'autre. On lui donne le noeud.
               node.mutableItemBase().setOwner(other_cell_owner, cell_to_coarsen_owner);
@@ -3130,7 +3190,15 @@ coarsen(bool update_parent_flag)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// TODO : Faire une doc détaillée.
+/*!
+ * \brief Méthode permettant d'obtenir les propriétaires et les flags des
+ * mailles autour des mailles de patch_cells.
+ *
+ * \param patch_cells Les mailles autour desquelles on a besoin des infos des mailles autour.
+ * \param around_cells_uid_to_owner Les propriétaires des mailles de patch_cells et des mailles autours des mailles de patch_cells.
+ * \param around_cells_uid_to_flags Les flags des mailles de patch_cells et des mailles autours des mailles de patch_cells.
+ * \param useful_flags Les flags qu'il est nécessaire de récupérer.
+ */
 void CartesianMeshAMRPatchMng::
 _shareInfosOfCellsAroundPatch(ConstArrayView<Cell> patch_cells, std::unordered_map<Int64, Integer>& around_cells_uid_to_owner, std::unordered_map<Int64, Int32>& around_cells_uid_to_flags, Int32 useful_flags) const
 {

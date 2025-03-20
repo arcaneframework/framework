@@ -1,11 +1,11 @@
 <?xml version="1.0"?>
 <case codename="ArcaneTest" xml:lang="en" codeversion="1.0">
   <arcane>
-    <title>Test CartesianMesh 2D PatchCartesianMeshOnly Coarse Zone (Variant 1)</title>
+    <title>Test CartesianMesh 2D PatchCartesianMeshOnly Coarse Zone (Variant 3)</title>
 
     <description>
       Test du raffinement d'un maillage cartesian 2D avec le type d'AMR PatchCartesianMeshOnly
-      puis du dé-raffinement de certaines zones (avec renumérotation version 1)
+      puis du dé-raffinement de certaines zones (sans renumérotation)
     </description>
 
     <timeloop>AMRCartesianMeshTestLoop</timeloop>
@@ -42,7 +42,7 @@
   </mesh>
 
   <a-m-r-cartesian-mesh-tester>
-    <renumber-patch-method>1</renumber-patch-method>
+    <renumber-patch-method>0</renumber-patch-method>
 
     <refinement-2d>
       <position>1.0 1.0</position>
@@ -63,12 +63,12 @@
     </coarse-zone-2d>
 
     <expected-number-of-cells-in-patchs>25 32</expected-number-of-cells-in-patchs>
-    <nodes-uid-hash>b85cb78ab44742ca5ae8d1440a38739d</nodes-uid-hash>
-    <faces-uid-hash>f21c0a9a3f794391796fced1db892419</faces-uid-hash>
-    <cells-uid-hash>77ff9dc6c92dc78592a5a0f522422acb</cells-uid-hash>
-    <nodes-direction-hash>278dd927e27f254e9dd6e03788fe10ca</nodes-direction-hash>
-    <faces-direction-hash>639237c778c0ccbb6d41e2da46f42e4d</faces-direction-hash>
-    <cells-direction-hash>88908c6b1166b61acb92923029042140</cells-direction-hash>
+    <nodes-uid-hash>228ccabec148d8994007ec68e78ff7d4</nodes-uid-hash>
+    <faces-uid-hash>2a641fe98a56f0938992201e96d1cee8</faces-uid-hash>
+    <cells-uid-hash>f3b6adc61a780f25ff6580c7c9f39142</cells-uid-hash>
+    <nodes-direction-hash>c9a52b9949dc01d2f96eef356ffdd8c6</nodes-direction-hash>
+    <faces-direction-hash>66f244a79b230df70dec93aa16ea622f</faces-direction-hash>
+    <cells-direction-hash>9729d1bc9dd344ca1632b0d4ead1418c</cells-direction-hash>
   </a-m-r-cartesian-mesh-tester>
 
   <arcane-checkpoint>
