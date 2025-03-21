@@ -512,7 +512,7 @@ _initAMR()
     if (m_cartesian_mesh->mesh()->meshKind().meshAMRKind() == eMeshAMRKind::PatchCartesianMeshOnly) {
       debug() << "Coarse with specific coarser (for cartesian mesh only)";
       Ref<ICartesianMeshAMRPatchMng> coarser = CartesianMeshUtils::cartesianMeshAMRPatchMng(m_cartesian_mesh);
-      coarser->coarse();
+      coarser->createSubLevel();
     }
     else {
       Ref<CartesianMeshCoarsening2> coarser = CartesianMeshUtils::createCartesianMeshCoarsening2(m_cartesian_mesh);
@@ -535,14 +535,14 @@ _initAMR()
   // spécifiée dans le jeu de données.
   Int32 dim = defaultMesh()->dimension();
   if (dim==2){
-    for( auto& x : options()->refinement2d() ){    
-      m_cartesian_mesh->refinePatch2D(x->position(),x->length());
+    for( const auto& x : options()->refinement2d() ){
+      m_cartesian_mesh->refinePatch({x->position(), x->length()});
       m_cartesian_mesh->computeDirections();
     }
   }
   if (dim==3){
-    for( auto& x : options()->refinement3d() ){    
-      m_cartesian_mesh->refinePatch3D(x->position(),x->length());
+    for( const auto& x : options()->refinement3d() ){
+      m_cartesian_mesh->refinePatch({x->position(), x->length()});
       m_cartesian_mesh->computeDirections();
     }
   }
@@ -563,7 +563,7 @@ _coarseZone()
       // defaultMesh()->modifier()->flagCellToCoarsen(cells_in_patchs);
       // defaultMesh()->modifier()->coarsenItemsV2(true);
       // cells_in_patchs.clear();
-      m_cartesian_mesh->coarseZone2D(x->position(), x->length());
+      m_cartesian_mesh->coarseZone({{x->position()}, {x->length()}});
       m_cartesian_mesh->computeDirections();
     }
   }
@@ -574,7 +574,7 @@ _coarseZone()
       // defaultMesh()->modifier()->flagCellToCoarsen(cells_in_patchs);
       // defaultMesh()->modifier()->coarsenItemsV2(true);
       // cells_in_patchs.clear();
-      m_cartesian_mesh->coarseZone3D(x->position(), x->length());
+      m_cartesian_mesh->coarseZone({{x->position()}, {x->length()}});
       m_cartesian_mesh->computeDirections();
     }
   }
@@ -806,24 +806,25 @@ _checkDirections()
              << " v= " << cell_hash << " expected= " << expected_hash;
     }
 
-    if (!expected_hash.empty() && cell_hash != expected_hash)
+    if (cell_hash != expected_hash)
       ARCANE_FATAL("Bad hash for uniqueId() for direction items of family '{0}' v= {1} expected='{2}'",
                    item_family->fullName(), cell_hash, expected_hash);
   };
 
-  {
+  if (!options()->cellsDirectionHash().empty()) {
     debug() << "Check cells direction hash";
     UniqueArray<Int64> own_cells_uid_around_cells;
     Integer nb_items_around = _cellsUidAroundCells(own_cells_uid_around_cells);
     check_hash(mesh->cellFamily(), options()->cellsDirectionHash(), own_cells_uid_around_cells, nb_items_around);
   }
-  {
+  if (!options()->facesDirectionHash().empty()) {
     debug() << "Check faces direction hash";
     UniqueArray<Int64> own_cells_uid_around_faces;
     Integer nb_items_around = _cellsUidAroundFaces(own_cells_uid_around_faces);
     check_hash(mesh->faceFamily(), options()->facesDirectionHash(), own_cells_uid_around_faces, nb_items_around);
   }
-  {
+
+  if (!options()->nodesDirectionHash().empty()) {
     debug() << "Check nodes direction hash";
     UniqueArray<Int64> own_nodes_uid_around_nodes;
     Integer nb_items_around = _nodesUidAroundNodes(own_nodes_uid_around_nodes);

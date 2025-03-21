@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ICartesianMeshInternal.h                                    (C) 2000-2024 */
+/* ICartesianMeshInternal.h                                    (C) 2000-2025 */
 /*                                                                           */
 /* Partie interne à Arcane de ICartesianMesh.                                */
 /*---------------------------------------------------------------------------*/
@@ -14,8 +14,10 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/core/ItemTypes.h"
 #include "arcane/cartesianmesh/ICartesianMeshAMRPatchMng.h"
+#include "arcane/cartesianmesh/ICartesianMeshNumberingMng.h"
+
+#include "arcane/core/ItemTypes.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -60,6 +62,12 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMeshInternal
    * \brief Méthode permettant de récupérer l'instance de CartesianMeshAMRPatchMng.
    */
   virtual Ref<ICartesianMeshAMRPatchMng> cartesianMeshAMRPatchMng() = 0;
+
+  // TODO
+  virtual void initCartesianMeshNumberingMng() = 0;
+
+  //TODO
+  virtual Ref<ICartesianMeshNumberingMng> cartesianMeshNumberingMng() = 0;
 };
 
 /*---------------------------------------------------------------------------*/
