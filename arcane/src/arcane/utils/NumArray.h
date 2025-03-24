@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* NumArray.h                                                  (C) 2000-2024 */
+/* NumArray.h                                                  (C) 2000-2025 */
 /*                                                                           */
 /* Tableaux multi-dimensionnel pour les types numériques.                    */
 /*---------------------------------------------------------------------------*/
@@ -25,6 +25,12 @@
 
 namespace Arcane
 {
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template <typename T>
+concept NumArrayDataTypeConcept = std::is_trivially_copyable_v<T>;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -50,6 +56,12 @@ template <typename DataType, typename Extents, typename LayoutPolicy>
 class NumArray
 : private impl::NumArrayBaseCommon
 {
+ public:
+
+#if !defined(ARCANE_NO_CONCEPT_FOR_NUMARRAY)
+  static_assert(NumArrayDataTypeConcept<DataType>, "concept 'NumArrayDataTypeConcept' is not fullfilled");
+#endif
+
  public:
 
   using ExtentsType = Extents;
