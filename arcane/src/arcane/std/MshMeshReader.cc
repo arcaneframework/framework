@@ -1235,8 +1235,13 @@ class MshMeshReaderService
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+// Obsolète. Utiliser 'MshMeshReader' à la place
 ARCANE_REGISTER_SERVICE(MshMeshReaderService,
                         ServiceProperty("MshNewMeshReader", ST_SubDomain),
+                        ARCANE_SERVICE_INTERFACE(IMeshReader));
+
+ARCANE_REGISTER_SERVICE(MshMeshReaderService,
+                        ServiceProperty("MshMeshReader", ST_SubDomain),
                         ARCANE_SERVICE_INTERFACE(IMeshReader));
 
 /*---------------------------------------------------------------------------*/
