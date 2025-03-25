@@ -16,7 +16,7 @@
   <unit-test-module>
     <test name="MeshUnitTest">
       <create-edges>true</create-edges>
-      <write-mesh-service-name>MshNewMeshWriter</write-mesh-service-name>
+      <write-mesh-service-name>MshMeshWriter</write-mesh-service-name>
     </test>
   </unit-test-module>
 </case>
