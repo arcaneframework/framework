@@ -136,7 +136,12 @@ class MshMeshWriter
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+// Obsolète. Utiliser 'MshMeshReader' à la place
 ARCANE_REGISTER_SUB_DOMAIN_FACTORY(MshMeshWriter, IMeshWriter, MshNewMeshWriter);
+
+ARCANE_REGISTER_SERVICE(MshMeshWriter,
+                        ServiceProperty("MshMeshWriter", ST_SubDomain),
+                        ARCANE_SERVICE_INTERFACE(IMeshWriter));
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
