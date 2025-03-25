@@ -1573,16 +1573,16 @@ _readEntities()
   FixedArray<Int64, 4> nb_dim_item;
   _getInt64ArrayAndBroadcast(nb_dim_item.view());
 
-  info(4) << "[Entities] nb_0d=" << nb_dim_item[0] << " nb_1d=" << nb_dim_item[1]
+  info() << "[Entities] nb_0d=" << nb_dim_item[0] << " nb_1d=" << nb_dim_item[1]
           << " nb_2d=" << nb_dim_item[2] << " nb_3d=" << nb_dim_item[3];
   // Après le format, on peut avoir les entités mais cela est optionnel
   // Si elles sont présentes, on lit le fichier jusqu'à la fin de cette section.
   if (!m_is_binary)
     _goToNextLine();
 
+  // Lecture des entités associées à des points
   for (Int64 i = 0; i < nb_dim_item[0]; ++i) {
     FixedArray<Int64, 2> tag_info;
-    info() << "Reading entity index=" << i;
     if (ios_file) {
       Int32 tag = _getInt32();
       Real3 xyz = _getReal3();
@@ -1594,7 +1594,7 @@ _readEntities()
       Int32 physical_tag = -1;
       if (num_physical_tag == 1)
         physical_tag = _getInt32();
-      info(4) << "[Entities] point tag=" << tag << " pos=" << xyz << " phys_tag=" << physical_tag;
+      info() << "[Entities] point tag=" << tag << " pos=" << xyz << " phys_tag=" << physical_tag;
 
       tag_info[0] = tag;
       tag_info[1] = physical_tag;
@@ -1605,6 +1605,7 @@ _readEntities()
       _goToNextLine();
   }
 
+  // Lecture des entités de dimensions 1, 2 et 3.
   for (Int32 i_dim = 1; i_dim <= 3; ++i_dim)
     for (Int32 i = 0; i < nb_dim_item[i_dim]; ++i)
       _readOneEntity(i_dim);
@@ -1709,8 +1710,8 @@ _readPeriodic()
     FixedArray<Int32, 3> entity_info;
     _getInt32ArrayAndBroadcast(entity_info.view());
 
-    info() << "[Periodic] dim=" << entity_info[0] << " tag=" << entity_info[1]
-           << " tag_master=" << entity_info[2];
+    info() << "[Periodic] link_index=" << ilink << " dim=" << entity_info[0] << " entity_tag=" << entity_info[1]
+           << " entity_tag_master=" << entity_info[2];
     one_info.m_entity_dim = entity_info[0];
     one_info.m_entity_tag = entity_info[1];
     one_info.m_entity_tag_master = entity_info[2];
@@ -1723,7 +1724,7 @@ _readPeriodic()
     info() << "[Periodic] nb_corresponding_node=" << one_info.m_nb_corresponding_node;
     one_info.m_corresponding_nodes.resize(one_info.m_nb_corresponding_node * 2);
     _getInt64ArrayAndBroadcast(one_info.m_corresponding_nodes);
-    //info() << "[Periodic] corresponding_nodes=" << corresponding_nodes;
+    info() << "[Periodic] corresponding_nodes=" << one_info.m_corresponding_nodes;
   }
 
   _goToNextLine();
