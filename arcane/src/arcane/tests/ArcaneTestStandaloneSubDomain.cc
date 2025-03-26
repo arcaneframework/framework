@@ -15,12 +15,19 @@
 
 #include "arcane/utils/ITraceMng.h"
 #include "arcane/utils/FatalErrorException.h"
+#include "arcane/utils/NumArray.h"
 
 #include "arcane/core/MeshReaderMng.h"
 #include "arcane/core/IMesh.h"
 #include "arcane/core/ISubDomain.h"
 #include "arcane/core/IParallelMng.h"
 #include "arcane/core/ItemGroup.h"
+#include "arcane/accelerator/core/IAcceleratorMng.h"
+#include "arcane/accelerator/core/Runner.h"
+#include "arcane/accelerator/core/DeviceMemoryInfo.h"
+
+#include "arcane/accelerator/NumArrayViews.h"
+#include "arcane/accelerator/RunCommandLoop.h"
 
 #include "arcane/utils/Exception.h"
 
@@ -36,6 +43,43 @@ using namespace Arcane;
 
 namespace
 {
+void _testSum(IAcceleratorMng* acc_mng)
+{
+  // Test la somme de deux tableaux 'a' et 'b' dans un tableau 'c'.
+
+  int nb_value = 10000;
+  NumArray<Int64, MDDim1> a(nb_value);
+  NumArray<Int64, MDDim1> b(nb_value);
+  NumArray<Int64, MDDim1> c(nb_value);
+  for (int i = 0; i < nb_value; ++i) {
+    a(i) = i + 2;
+    b(i) = i + 3;
+  }
+
+  {
+    auto command = makeCommand(acc_mng->queue());
+    auto in_a = viewIn(command, a);
+    auto in_b = viewIn(command, b);
+    auto out_c = viewOut(command, c);
+    command << RUNCOMMAND_LOOP1(iter, nb_value)
+    {
+      auto [i] = iter();
+      out_c(i) = in_a(i) + in_b(i);
+    };
+  }
+
+  Int64 total = 0.0;
+  for (int i = 0; i < nb_value; ++i)
+    total += c(i);
+  std::cout << "TOTAL=" << total << "\n";
+  Int64 expected_total = 100040000;
+  if (total != expected_total)
+    ARCANE_FATAL("Bad value for sum={0} (expected={1})", total, expected_total);
+
+  Accelerator::DeviceMemoryInfo dmi = acc_mng->runner().deviceMemoryInfo();
+  std::cout << "DeviceMemoryInfo: free_mem=" << dmi.freeMemory()
+            << " total=" << dmi.totalMemory() << "\n";
+}
 
 int _testStandaloneSubDomainLauncher1(const CommandLineArguments& cmd_line_args)
 {
@@ -88,15 +132,18 @@ int _testStandaloneSubDomainLauncher2(const CommandLineArguments& cmd_line_args)
   auto launcher{ ArcaneLauncher::createStandaloneSubDomain(case_file_name) };
   ISubDomain* sd = launcher.subDomain();
   ITraceMng* tm = launcher.traceMng();
+  IAcceleratorMng* acc_mng = sd->acceleratorMng();
   IMesh* mesh = sd->defaultMesh();
   Int32 own_nb_cell = mesh->ownCells().size();
   Int32 nb_cell = mesh->parallelMng()->reduce(Parallel::ReduceSum, own_nb_cell);
+  tm->info() << "Accelerator Runtime=" << acc_mng->runner().executionPolicy();
   tm->info() << "NB_CELL=" << nb_cell;
   Int32 expected_nb_cell = 271;
   if (nb_cell != expected_nb_cell) {
     tm->error() << String::format("Bad number of cells n={0} expected={1}", nb_cell, expected_nb_cell);
     return 1;
   }
+  _testSum(acc_mng);
   return 0;
 }
 
