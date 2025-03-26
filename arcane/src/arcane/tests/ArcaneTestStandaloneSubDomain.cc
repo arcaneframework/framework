@@ -15,7 +15,6 @@
 
 #include "arcane/utils/ITraceMng.h"
 #include "arcane/utils/FatalErrorException.h"
-#include "arcane/utils/NumArray.h"
 
 #include "arcane/core/MeshReaderMng.h"
 #include "arcane/core/IMesh.h"
@@ -26,8 +25,11 @@
 #include "arcane/accelerator/core/Runner.h"
 #include "arcane/accelerator/core/DeviceMemoryInfo.h"
 
+#if defined(ARCANE_HAS_ACCELERATOR_API)
+#include "arcane/utils/NumArray.h"
 #include "arcane/accelerator/NumArrayViews.h"
 #include "arcane/accelerator/RunCommandLoop.h"
+#endif
 
 #include "arcane/utils/Exception.h"
 
@@ -43,6 +45,7 @@ using namespace Arcane;
 
 namespace
 {
+#if defined(ARCANE_HAS_ACCELERATOR_API)
 void _testSum(IAcceleratorMng* acc_mng)
 {
   // Test la somme de deux tableaux 'a' et 'b' dans un tableau 'c'.
@@ -80,6 +83,7 @@ void _testSum(IAcceleratorMng* acc_mng)
   std::cout << "DeviceMemoryInfo: free_mem=" << dmi.freeMemory()
             << " total=" << dmi.totalMemory() << "\n";
 }
+#endif
 
 int _testStandaloneSubDomainLauncher1(const CommandLineArguments& cmd_line_args)
 {
@@ -143,7 +147,9 @@ int _testStandaloneSubDomainLauncher2(const CommandLineArguments& cmd_line_args)
     tm->error() << String::format("Bad number of cells n={0} expected={1}", nb_cell, expected_nb_cell);
     return 1;
   }
+#if defined(ARCANE_HAS_ACCELERATOR_API)
   _testSum(acc_mng);
+#endif
   return 0;
 }
 
