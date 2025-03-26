@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* TimeHistoryMngInternal.h                                    (C) 2000-2024 */
+/* TimeHistoryMngInternal.h                                    (C) 2000-2025 */
 /*                                                                           */
 /* Classe interne gérant un historique de valeurs.                           */
 /*---------------------------------------------------------------------------*/
@@ -410,7 +410,7 @@ class TimeHistoryMngInternal
   , m_is_active(true)
   , m_is_shrink_active(false)
   , m_is_dump_active(true)
-  , m_io_master_write_only(false)
+  , m_io_master_write_only(true)
   , m_th_meta_data(VariableBuildInfo(m_variable_mng, "TimeHistoryMngMetaData"))
   , m_th_global_time(VariableBuildInfo(m_variable_mng, "TimeHistoryMngGlobalTime"))
   , m_properties(properties)
