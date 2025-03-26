@@ -47,6 +47,7 @@ set(ARCANE_ACCELERATOR_SOURCES
   accelerator/AcceleratorViewsUnitTest.cc
   accelerator/ArcaneTestStandaloneAcceleratorMng.cc
   accelerator/MeshMaterialAcceleratorUnitTest.cc
+  ArcaneTestStandaloneSubDomain.cc
 )
 if (ARCANE_HAS_ACCELERATOR_API)
   list(APPEND ARCANE_SOURCES
@@ -500,6 +501,9 @@ arcane_add_test_sequential(standalone_subdomain2 dummy.arc "-A,StandaloneSubDoma
 arcane_add_test_sequential(standalone_subdomain3 dummy.arc "-A,StandaloneSubDomainMethod=Test3")
 arcane_add_test_parallel(standalone_subdomain2 dummy.arc 4 "-A,StandaloneSubDomainMethod=Test2")
 arcane_add_test_parallel(standalone_subdomain2_legacy_partition_init dummy.arc 4 "-A,StandaloneSubDomainMethod=Test2" "-We,ARCANE_USE_LEGACY_INIT_LOADBALANCEMNG,1")
+if (ARCANE_HAS_ACCELERATOR_API)
+  arcane_add_accelerator_test_all_policies(standalone_subdomain_accelerator dummy.arc 4 "-A,StandaloneSubDomainMethod=Test2")
+endif()
 
 # ----------------------------------------------------------------------------
 
