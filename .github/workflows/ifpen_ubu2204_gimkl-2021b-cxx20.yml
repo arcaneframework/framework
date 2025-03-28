@@ -24,13 +24,13 @@ env:
   CCACHE_DIR: '/__w/framework/framework/ccache'
   CCACHE_MAXSIZE: 5G
   # CMake
-  CM_BUILD_OPTS: "-v"
-  CM_BUILD_TYPE: Debug
+  CM_BUILD_OPTS: "-v -j4"
+  CM_BUILD_TYPE: RelWithDebInfo
   CM_CCACHE_OPTS: "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache"
   # CTest
   CT_OPTS: "--timeout 60 --output-on-failure ${{ github.event.inputs.ctest_options }}"
   # For intel MPI to fix errors appearing in July 2023
-  I_MPI_SHM_LMT: shm
+  # I_MPI_SHM_LMT: shm
   # To remove test output directory to reduce disk usage
   ARCANE_TEST_CLEANUP_AFTER_RUN : 1
 
@@ -88,7 +88,7 @@ jobs:
           (success() || failure()) &&
           steps.checkout.outcome == 'success'
         shell: bash
-        run: cmake -S ${{ env.SOURCE_DIR }} -B ${{ env.BUILD_DIR }} -G Ninja -DCMAKE_VERBOSE_MAKEFILE=TRUE -DCMAKE_INSTALL_PREFIX=${{ env.INSTALL_DIR }} ${{ env.CM_CCACHE_OPTS }} -DCMAKE_BUILD_TYPE=${{ env.CM_BUILD_TYPE }} -DARCCORE_BUILD_MODE=Check -DREMOVE_UID_ON_DETACH=ON -DUSE_GTEST_DEATH_TEST=ON -DCMAKE_DISABLE_FIND_PACKAGE_Papi=ON -DCMAKE_DISABLE_FIND_PACKAGE_Trilinos=ON -DALIEN_BUILD_COMPONENT=all -DALIEN_PLUGIN_HYPRE=ON -DALIEN_PLUGIN_PETSC=ON -DARCCORE_CXX_STANDARD=20 -DUSE_GRAPH_CONNECTIVITY_POLICY=ON
+        run: cmake -S ${{ env.SOURCE_DIR }} -B ${{ env.BUILD_DIR }} -G Ninja -DCMAKE_VERBOSE_MAKEFILE=TRUE -DCMAKE_INSTALL_PREFIX=${{ env.INSTALL_DIR }} ${{ env.CM_CCACHE_OPTS }} -DCMAKE_BUILD_TYPE=${{ env.CM_BUILD_TYPE }} -DARCCORE_BUILD_MODE=Check -DREMOVE_UID_ON_DETACH=ON -DUSE_GTEST_DEATH_TEST=ON -DCMAKE_DISABLE_FIND_PACKAGE_Papi=ON -DCMAKE_DISABLE_FIND_PACKAGE_Trilinos=ON -DALIEN_BUILD_COMPONENT=all -DALIEN_PLUGIN_HYPRE=ON -DALIEN_PLUGIN_PETSC=ON -DARCCORE_CXX_STANDARD=20 -DUSE_GRAPH_CONNECTIVITY_POLICY=ON -DCMAKE_CXX_FLAGS_RELWITHDEBINFO="-O -DNDEBUG"
 
       - name: Build
         id: build
