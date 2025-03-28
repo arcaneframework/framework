@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ArccoreGlobal.cc                                            (C) 2000-2024 */
+/* ArccoreGlobal.cc                                            (C) 2000-2025 */
 /*                                                                           */
 /* Déclarations générales de Arccore.                                        */
 /*---------------------------------------------------------------------------*/
@@ -23,6 +23,8 @@
 #include "arccore/base/ReferenceCounterImpl.h"
 #include "arccore/base/Float16.h"
 #include "arccore/base/BFloat16.h"
+#include "arccore/base/Float128.h"
+#include "arccore/base/Int128.h"
 
 #include <iostream>
 #include <cstring>
@@ -46,7 +48,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arccore
+namespace Arcane
 {
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

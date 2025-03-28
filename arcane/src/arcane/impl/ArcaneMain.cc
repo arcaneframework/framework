@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ArcaneMain.cc                                               (C) 2000-2024 */
+/* ArcaneMain.cc                                               (C) 2000-2025 */
 /*                                                                           */
 /* Classe gérant l'exécution.                                                */
 /*---------------------------------------------------------------------------*/
@@ -35,6 +35,7 @@
 #include "arcane/utils/TestLogger.h"
 #include "arcane/utils/MemoryUtils.h"
 #include "arcane/utils/internal/MemoryUtilsInternal.h"
+#include "arcane/utils/internal/ValueConvertInternal.h"
 
 #include "arcane/core/IMainFactory.h"
 #include "arcane/core/IApplication.h"
@@ -725,6 +726,12 @@ arcaneInitialize()
     Exception::staticInit();
     dom::DOMImplementation::initialize();
     platform::platformInitialize();
+
+    // Regarde si on souhaite utiliser l'ancien mécanisme (avant la 3.15)
+    // pour convertir les chaînes de caractères en types numériques
+    if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_USE_LEGACY_BUILTINVALUECONVERT", true))
+      impl::arcaneSetIsValueConvertUseFromChars(v.value()==0);
+
     // Crée le singleton gestionnaire des types
     ItemTypeMng::_singleton();
     initializeStringConverter();
@@ -1237,6 +1244,10 @@ ArcaneMain(const ApplicationInfo& app_info, IMainFactory* factory,
 ArcaneMain::
 ~ArcaneMain()
 {
+  // S'assure qu'on retire les observateurs associés au TheadBindingMng
+  // avant la finalisation pour éviter de punaiser les threads alors que
+  // cela ne sert plus à rien.
+  m_p->m_thread_binding_mng.finalize();
   delete m_application;
   delete m_p;
 }

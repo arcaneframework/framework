@@ -1,25 +1,28 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MpiSerializeDispatcher.cc                                   (C) 2000-2024 */
+/* MpiSerializeDispatcher.cc                                   (C) 2000-2025 */
 /*                                                                           */
 /* Gestion des messages de sérialisation avec MPI.                           */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arccore/message_passing_mpi/MpiSerializeDispatcher.h"
+#include "arccore/message_passing_mpi/internal/MpiSerializeDispatcher.h"
 
-#include "arccore/message_passing_mpi/MpiAdapter.h"
+#include "arccore/message_passing_mpi/internal/MpiAdapter.h"
 #include "arccore/message_passing_mpi/MpiMessagePassingMng.h"
-#include "arccore/message_passing_mpi/MpiSerializeMessageList.h"
-#include "arccore/message_passing_mpi/MpiLock.h"
+#include "arccore/message_passing_mpi/internal/MpiLock.h"
+
 #include "arccore/message_passing/Request.h"
+#include "arccore/message_passing/SerializeMessageList.h"
 #include "arccore/message_passing/internal/SubRequestCompletionInfo.h"
+
 #include "arccore/serialize/BasicSerializer.h"
+
 #include "arccore/base/NotImplementedException.h"
 #include "arccore/base/FatalErrorException.h"
 #include "arccore/base/NotSupportedException.h"
@@ -30,7 +33,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arccore::MessagePassing::Mpi
+namespace Arcane::MessagePassing::Mpi
 {
 
 /*---------------------------------------------------------------------------*/
@@ -202,8 +205,9 @@ class MpiSerializeDispatcher::ReceiveSerializerSubRequest
 /*---------------------------------------------------------------------------*/
 
 MpiSerializeDispatcher::
-MpiSerializeDispatcher(MpiAdapter* adapter)
+MpiSerializeDispatcher(MpiAdapter* adapter, IMessagePassingMng* message_passing_mng)
 : m_adapter(adapter)
+, m_message_passing_mng(message_passing_mng)
 , m_trace(adapter->traceMng())
 , m_serialize_buffer_size(50000)
 //, m_serialize_buffer_size(20000000)
@@ -536,7 +540,7 @@ broadcastSerializer(ISerializer* values,MessageRank rank)
     Int64 total_size = sbuf->totalSize();
     Span<Byte> bytes = sbuf->globalBuffer();
     _checkBigMessage(total_size);
-    Int64ArrayView total_size_buf(1,&total_size);
+    ArrayView<Int64> total_size_buf(1,&total_size);
     m_adapter->broadcast(total_size_buf.data(),total_size_buf.size(),rank.value(),int64_datatype);
     if (m_is_trace_serializer)
       tm->info() << "MpiSerializeDispatcher::broadcastSerializer(): sending "
@@ -546,7 +550,7 @@ broadcastSerializer(ISerializer* values,MessageRank rank)
   }
   else{
     Int64 total_size = 0;
-    Int64ArrayView total_size_buf(1,&total_size);
+    ArrayView<Int64> total_size_buf(1,&total_size);
     m_adapter->broadcast(total_size_buf.data(),total_size_buf.size(),rank.value(),int64_datatype);
     sbuf->preallocate(total_size);
     Span<Byte> bytes = sbuf->globalBuffer();
@@ -578,7 +582,7 @@ _castSerializer(ISerializer* serializer)
 Ref<ISerializeMessageList> MpiSerializeDispatcher::
 createSerializeMessageListRef()
 {
-  ISerializeMessageList* x = new MpiSerializeMessageList(this);
+  ISerializeMessageList* x = new internal::SerializeMessageList(m_message_passing_mng);
   return makeRef(x);
 }
 

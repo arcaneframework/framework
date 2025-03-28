@@ -94,6 +94,16 @@ Vrai si on ecrit les informations de maillage dans un un fichier (dont le nom es
   </simple>
 
   <simple
+   name = "write-mesh-service-name"
+   type = "string"
+   default = "Lima"
+  >
+   <description>
+Nom du service utilisé pour écrire le maillage.
+   </description>
+  </simple>
+
+  <simple
     name = "connectivity-file-checksum"
     type = "string"
     optional = "true"
@@ -154,6 +164,12 @@ Teste la désallocation du maillage
     </description>
   </simple>
 
+  <simple name = "generate-uid-from-nodes-uid" type = "bool" default = "false">
+    <description>
+      Si vrai, génère les uniqueId des arêtes et des faces à partir de ceux des noeuds.
+    </description>
+  </simple>
+
   <simple name = "check-read-property" type = "string" minOccurs="0" maxOccurs="unbounded">
     <description>
       Indique que l'on veut vérifier si la variable dont le nom est donnée a bien été créée et conservée.
@@ -163,6 +179,12 @@ Teste la désallocation du maillage
   <simple name = "compact-mesh" type = "bool" default = "true">
     <description>
       Indique si on applique la propriété 'compact' et 'compact-after-allocate' au maillage.
+    </description>
+  </simple>
+
+  <simple name = "compute-owners-direct" type = "bool" default = "false">
+    <description>
+      Si vrai, utilise 'ItemsOwnerBuilder' pour calculer les propriétaires des noeuds et faces.
     </description>
   </simple>
 

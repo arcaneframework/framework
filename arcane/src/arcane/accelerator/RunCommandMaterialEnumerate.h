@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* RunCommandMaterialEnumerate.h                               (C) 2000-2024 */
 /*                                                                           */
-/* Helpers et macros pour exécuter une boucle sur une liste d'envcell        */
+/* Exécution d'une boucle sur une liste de constituants.                     */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_ACCELERATOR_RUNCOMMANDMATERIALENUMERATE_H
 #define ARCANE_ACCELERATOR_RUNCOMMANDMATERIALENUMERATE_H
@@ -29,56 +29,107 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arcane::Accelerator::impl
+namespace Arcane::Materials
 {
-
-class MatCommandContainerBase
-{
- protected:
-
-  using ComponentItemVectorView = Arcane::Materials::ComponentItemVectorView;
-  using ComponentItemLocalId = Arcane::Materials::ComponentItemLocalId;
-  using MatVarIndex = Arcane::Materials::MatVarIndex;
-
- protected:
-
-  explicit MatCommandContainerBase(ComponentItemVectorView view)
-  : m_items(view)
-  {
-    _init();
-  }
-
- public:
-
-  constexpr ARCCORE_HOST_DEVICE Int32 size() const { return m_nb_item; }
-
- protected:
-
-  ComponentItemVectorView m_items;
-  SmallSpan<const MatVarIndex> m_matvar_indexes;
-  SmallSpan<const Int32> m_global_cells_local_id;
-  Int32 m_nb_item = 0;
-
- private:
-
-  void _init()
-  {
-    m_nb_item = m_items.nbItem();
-    m_matvar_indexes = m_items._matvarIndexes();
-    m_global_cells_local_id = m_items._internalLocalIds();
-  }
-};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Caractéristiques d'un énumérateur d'une commande sur les matériaux/milieux.
+ * \brief Index d'une boucle accélérateur sur les matériaux ou milieux.
  *
- * Cette classe doit être spécialisée et définit un type \a EnumeratorType
- * qui correspond à l'énumérateur.
+ * Cette classe permet de récupérer un EnvItemLocalId (pour un milieu) ou
+ * un MatItemLocalId (pour un matériau) ainsi que le CellLocalId de la maille
+ * globale associée.
  */
-template <typename MatItemType>
-class RunCommandMatItemEnumeratorTraitsT;
+template <typename ConstituentItemLocalIdType_>
+class ConstituentAndGlobalCellIteratorValue
+{
+ public:
+
+  using ConstituentItemLocalIdType = ConstituentItemLocalIdType_;
+  using ComponentItemLocalId = Arcane::Materials::ComponentItemLocalId;
+  using MatVarIndex = Arcane::Materials::MatVarIndex;
+
+ public:
+
+  //! Struct interne simple pour éviter l'usage d'un std::tuple pour l'opérateur()
+  struct Data
+  {
+   public:
+
+    constexpr ARCCORE_HOST_DEVICE Data(ConstituentItemLocalIdType mvi, CellLocalId cid)
+    : m_mvi(mvi)
+    , m_cid(cid)
+    {}
+
+   public:
+
+    ConstituentItemLocalIdType m_mvi;
+    CellLocalId m_cid;
+  };
+
+ public:
+
+  constexpr ARCCORE_HOST_DEVICE ConstituentAndGlobalCellIteratorValue(ConstituentItemLocalIdType mvi, CellLocalId cid, Int32 index)
+  : m_internal_data{ mvi, cid }
+  , m_index(index)
+  {
+  }
+
+  /*!
+   * \brief Cet opérateur permet de renvoyer le couple [ConstituentItemLocalIdType, CellLocalId].
+   *
+   * L'utilisation classique est :
+   *
+   * \code
+   * // Pour un milieu \a envcellsv
+   * // evi est de type EnvItemLocalId
+   * cmd << RUNCOMMAND_MAT_ENUMERATE(EnvAndGlobalCell, iter, envcellsv) {
+   *   auto [evi, cid] = iter();
+   * }
+   * // Pour un matériau \a matcellsv
+   * // mvi est de type MatItemLocalId
+   * cmd << RUNCOMMAND_MAT_ENUMERATE(MatAndGlobalCell, iter, matcellsv) {
+   *   auto [mvi, cid] = iter();
+   * }
+   * \endcode
+   */
+  constexpr ARCCORE_HOST_DEVICE Data operator()()
+  {
+    return m_internal_data;
+  }
+
+  //! Accesseur sur la partie MatVarIndex
+  constexpr ARCCORE_HOST_DEVICE ConstituentItemLocalIdType varIndex() const { return m_internal_data.m_mvi; };
+
+  //! Accesseur sur la partie cell local id
+  constexpr ARCCORE_HOST_DEVICE CellLocalId globalCellId() const { return m_internal_data.m_cid; }
+
+  //! Index de l'itération courante
+  constexpr ARCCORE_HOST_DEVICE Int32 index() const { return m_index; }
+
+ private:
+
+  Data m_internal_data;
+  Int32 m_index = -1;
+};
+
+//! Type de la valeur de l'itérateur pour RUNCOMMAND_MAT_ENUMERATE(EnvAndGlobalCell,...)
+using EnvAndGlobalCellIteratorValue = ConstituentAndGlobalCellIteratorValue<EnvItemLocalId>;
+
+//! Type de la valeur de l'itérateur pour RUNCOMMAND_MAT_ENUMERATE(MatAndGlobalCell,...)
+using MatAndGlobalCellIteratorValue = ConstituentAndGlobalCellIteratorValue<MatItemLocalId>;
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+} // namespace Arcane::Materials
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace Arcane::Accelerator::impl
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -87,12 +138,12 @@ class RunCommandMatItemEnumeratorTraitsT;
  */
 class AllEnvCellRunCommand
 {
+  using AllEnvCellVectorView = Arcane::Materials::AllEnvCellVectorView;
+
  public:
 
-  using AllEnvCellVectorView = Arcane::Materials::AllEnvCellVectorView;
-  using ComponentItemVectorView = Arcane::Materials::ComponentItemVectorView;
-  using ComponentItemLocalId = Arcane::Materials::ComponentItemLocalId;
-  using AllEnvCell = Arcane::Materials::AllEnvCell;
+  using IteratorValueType = Arcane::Materials::AllEnvCell;
+  using ContainerCreateViewType = AllEnvCellVectorView;
 
  public:
 
@@ -103,24 +154,18 @@ class AllEnvCellRunCommand
   {
    public:
 
-    explicit Container(AllEnvCellVectorView view)
+    explicit Container(ContainerCreateViewType view)
     : m_view(view)
     {
     }
 
    public:
-
-    AllEnvCellRunCommand createCommand(RunCommand& run_command) const
-    {
-      return AllEnvCellRunCommand(run_command, *this);
-    }
-
    public:
 
-    ARCCORE_HOST_DEVICE Int32 size() const { return m_view.size(); }
+    constexpr ARCCORE_HOST_DEVICE Int32 size() const { return m_view.size(); }
 
     //! Accesseur pour le i-ème élément de la liste
-    ARCCORE_HOST_DEVICE AllEnvCell operator[](Int32 i) const
+    ARCCORE_HOST_DEVICE IteratorValueType operator[](Int32 i) const
     {
       return m_view[i];
     }
@@ -129,6 +174,13 @@ class AllEnvCellRunCommand
 
     AllEnvCellVectorView m_view;
   };
+
+ public:
+
+  static AllEnvCellRunCommand create(RunCommand& run_command, const Container& items)
+  {
+    return AllEnvCellRunCommand(run_command, items);
+  }
 
  private:
 
@@ -147,18 +199,51 @@ class AllEnvCellRunCommand
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+class ConstituentCommandContainerBase
+{
+ protected:
+
+  using ComponentItemVectorView = Arcane::Materials::ComponentItemVectorView;
+  using ComponentItemLocalId = Arcane::Materials::ComponentItemLocalId;
+  using MatVarIndex = Arcane::Materials::MatVarIndex;
+
+ protected:
+
+  explicit ConstituentCommandContainerBase(ComponentItemVectorView view)
+  : m_items(view)
+  {
+    m_nb_item = m_items.nbItem();
+    m_matvar_indexes = m_items._matvarIndexes();
+    m_global_cells_local_id = m_items._internalLocalIds();
+  }
+
+ public:
+
+  constexpr ARCCORE_HOST_DEVICE Int32 size() const { return m_nb_item; }
+
+ protected:
+
+  ComponentItemVectorView m_items;
+  SmallSpan<const MatVarIndex> m_matvar_indexes;
+  SmallSpan<const Int32> m_global_cells_local_id;
+  Int32 m_nb_item = 0;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 /*!
- * \brief Commande pour itérer sur les EnvCell.
+ * \brief Commande pour itérer sur les EnvCell ou MatCell.
  */
-class EnvCellRunCommand
+template <typename ConstituentItemLocalIdType_, typename ContainerCreateViewType_>
+class ConstituentRunCommandBase
 {
  public:
 
-  using EnvCellVectorView = Arcane::Materials::EnvCellVectorView;
-  using ComponentItemVectorView = Arcane::Materials::ComponentItemVectorView;
-  using IMeshEnvironment = Arcane::Materials::IMeshEnvironment;
-  using ComponentItemLocalId = Arcane::Materials::ComponentItemLocalId;
-  using MatVarIndex = Arcane::Materials::MatVarIndex;
+  using ThatClass = ConstituentRunCommandBase<ConstituentItemLocalIdType_, ContainerCreateViewType_>;
+  using CommandType = ThatClass;
+  using IteratorValueType = ConstituentItemLocalIdType_;
+  using ContainerCreateViewType = ContainerCreateViewType_;
 
  public:
 
@@ -166,39 +251,35 @@ class EnvCellRunCommand
    * \brief Conteneur contenant les informations nécessaires pour la commande.
    */
   class Container
-  : public impl::MatCommandContainerBase
+  : public impl::ConstituentCommandContainerBase
   {
    public:
 
-    explicit Container(IMeshEnvironment* env)
-    : impl::MatCommandContainerBase(env->envView())
+    explicit Container(ContainerCreateViewType view)
+    : impl::ConstituentCommandContainerBase(view)
     {
-    }
-    explicit Container(EnvCellVectorView view)
-    : impl::MatCommandContainerBase(view)
-    {
-    }
-
-   public:
-
-    EnvCellRunCommand createCommand(RunCommand& run_command) const
-    {
-      return EnvCellRunCommand(run_command, *this);
     }
 
    public:
 
     //! Accesseur pour le i-ème élément de la liste
-    constexpr ARCCORE_HOST_DEVICE ComponentItemLocalId operator[](Int32 i) const
+    constexpr ARCCORE_HOST_DEVICE IteratorValueType operator[](Int32 i) const
     {
       return { ComponentItemLocalId(m_matvar_indexes[i]) };
     }
   };
 
+ public:
+
+  static CommandType create(RunCommand& run_command, const Container& items)
+  {
+    return CommandType(run_command, items);
+  }
+
  private:
 
   // Uniquement appelable depuis 'Container'
-  explicit EnvCellRunCommand(RunCommand& command, const Container& items)
+  explicit ConstituentRunCommandBase(RunCommand& command, const Container& items)
   : m_command(command)
   , m_items(items)
   {
@@ -210,20 +291,23 @@ class EnvCellRunCommand
   Container m_items;
 };
 
+using EnvCellRunCommand = ConstituentRunCommandBase<Arcane::Materials::EnvItemLocalId, Arcane::Materials::EnvCellVectorView>;
+using MatCellRunCommand = ConstituentRunCommandBase<Arcane::Materials::MatItemLocalId, Arcane::Materials::MatCellVectorView>;
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Commande pour itérer sur les MatCell.
+ * \brief Classe pour les commandes MatAndGlobalCell et EnvAndGlobalCell.
  */
-class MatCellRunCommand
+template <typename ConstituentItemLocalIdType_, typename ContainerCreateViewType_>
+class ConstituentAndGlobalCellRunCommandBase
 {
  public:
 
-  using MatCellVectorView = Arcane::Materials::MatCellVectorView;
-  using ComponentItemVectorView = Arcane::Materials::ComponentItemVectorView;
-  using IMeshMaterial = Arcane::Materials::IMeshMaterial;
-  using ComponentItemLocalId = Arcane::Materials::ComponentItemLocalId;
-  using MatVarIndex = Arcane::Materials::MatVarIndex;
+  using ThatClass = ConstituentAndGlobalCellRunCommandBase<ConstituentItemLocalIdType_, ContainerCreateViewType_>;
+  using CommandType = ThatClass;
+  using IteratorValueType = Arcane::Materials::ConstituentAndGlobalCellIteratorValue<ConstituentItemLocalIdType_>;
+  using ContainerCreateViewType = ContainerCreateViewType_;
 
  public:
 
@@ -231,162 +315,35 @@ class MatCellRunCommand
    * \brief Conteneur contenant les informations nécessaires pour la commande.
    */
   class Container
-  : public impl::MatCommandContainerBase
+  : public impl::ConstituentCommandContainerBase
   {
    public:
 
-    explicit Container(IMeshMaterial* mat)
-    : impl::MatCommandContainerBase(mat->matView())
+    explicit Container(ContainerCreateViewType view)
+    : impl::ConstituentCommandContainerBase(view)
     {
-    }
-    explicit Container(MatCellVectorView view)
-    : impl::MatCommandContainerBase(view)
-    {
-    }
-
-   public:
-
-    MatCellRunCommand createCommand(RunCommand& run_command) const
-    {
-      return MatCellRunCommand(run_command, *this);
     }
 
    public:
 
     //! Accesseur pour le i-ème élément de la liste
-    constexpr ARCCORE_HOST_DEVICE ComponentItemLocalId operator[](Int32 i) const
-    {
-      return { ComponentItemLocalId(m_matvar_indexes[i]) };
-    }
-  };
-
- private:
-
-  // Uniquement appelable depuis 'Container'
-  explicit MatCellRunCommand(RunCommand& command, const Container& items)
-  : m_command(command)
-  , m_items(items)
-  {
-  }
-
- public:
-
-  RunCommand& m_command;
-  Container m_items;
-};
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
- * \brief Commande pour itérer sur les EnvCell et récupérer aussi l'information
- * sur la maille globale associée.
- */
-class EnvAndGlobalCellRunCommand
-{
- public:
-
-  using EnvCellVectorView = Arcane::Materials::EnvCellVectorView;
-  using ComponentItemVectorView = Arcane::Materials::ComponentItemVectorView;
-  using IMeshEnvironment = Arcane::Materials::IMeshEnvironment;
-  using ComponentItemLocalId = Arcane::Materials::ComponentItemLocalId;
-  using MatVarIndex = Arcane::Materials::MatVarIndex;
-
- public:
-
-  /*!
-   * \brief Classe helper pour l'accès au MatVarIndex et au CellLocalId à travers les
-   *        RUNCOMMAND_MAT_ENUMERATE(EnvAndGlobalCell...
-   */
-  class Accessor
-  {
-
-   public:
-
-    //! Struct interne simple pour éviter l'usage d'un std::tuple pour l'opérateur()
-    struct Data
-    {
-      ComponentItemLocalId m_mvi;
-      CellLocalId m_cid;
-    };
-
-   public:
-
-    constexpr ARCCORE_HOST_DEVICE Accessor(ComponentItemLocalId mvi, CellLocalId cid, Int32 index)
-    : m_internal_data{ mvi, cid }
-    , m_index(index)
-    {
-    }
-
-    /*!
-     * \brief Cet opérateur permet de renvoyer le couple [MatVarIndex, LocalCellId].
-     *
-     * L'utilisation classique est :
-     *
-     * \code
-     * cmd << RUNCOMMAND_MAT_ENUMERATE(EnvAndGlobalCell, evi, envcellsv) {
-     *   auto [mvi, cid] = evi();
-     * }
-     * \endcode
-     *
-     * où evi est le type de cette classe
-     */
-    ARCCORE_HOST_DEVICE Data operator()()
-    {
-      return { m_internal_data.m_mvi, m_internal_data.m_cid };
-    }
-
-    //! Accesseur sur la partie MatVarIndex
-    ARCCORE_HOST_DEVICE ComponentItemLocalId varIndex() const { return m_internal_data.m_mvi; };
-
-    //! Accesseur sur la partie cell local id
-    ARCCORE_HOST_DEVICE CellLocalId globalCellId() const { return m_internal_data.m_cid; }
-
-    //! Index de l'itération courante
-    ARCCORE_HOST_DEVICE Int32 index() const { return m_index; }
-
-   private:
-
-    Data m_internal_data;
-    Int32 m_index = -1;
-  };
-
-  /*!
-   * \brief Conteneur contenant les informations nécessaires pour la commande.
-   */
-  class Container
-  : public impl::MatCommandContainerBase
-  {
-   public:
-
-    explicit Container(IMeshEnvironment* env)
-    : impl::MatCommandContainerBase(env->envView())
-    {
-    }
-    explicit Container(EnvCellVectorView view)
-    : impl::MatCommandContainerBase(view)
-    {
-    }
-
-   public:
-
-    EnvAndGlobalCellRunCommand createCommand(RunCommand& run_command) const
-    {
-      return EnvAndGlobalCellRunCommand(run_command, *this);
-    }
-
-   public:
-
-    //! Accesseur pour le i-ème élément de la liste
-    constexpr ARCCORE_HOST_DEVICE Accessor operator[](Int32 i) const
+    constexpr ARCCORE_HOST_DEVICE IteratorValueType operator[](Int32 i) const
     {
       return { ComponentItemLocalId(m_matvar_indexes[i]), CellLocalId(m_global_cells_local_id[i]), i };
     }
   };
 
+ public:
+
+  static CommandType create(RunCommand& run_command, const Container& items)
+  {
+    return CommandType(run_command, items);
+  }
+
  private:
 
   // Uniquement appelable depuis 'Container'
-  explicit EnvAndGlobalCellRunCommand(RunCommand& command, const Container& items)
+  explicit ConstituentAndGlobalCellRunCommandBase(RunCommand& command, const Container& items)
   : m_command(command)
   , m_items(items)
   {
@@ -400,125 +357,48 @@ class EnvAndGlobalCellRunCommand
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+using EnvAndGlobalCellRunCommand = ConstituentAndGlobalCellRunCommandBase<Arcane::Materials::EnvItemLocalId, Arcane::Materials::EnvCellVectorView>;
+using MatAndGlobalCellRunCommand = ConstituentAndGlobalCellRunCommandBase<Arcane::Materials::MatItemLocalId, Arcane::Materials::MatCellVectorView>;
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 /*!
- * \brief Commande pour itérer sur les MatCell et récupérer aussi l'information
- * sur la maille globale associée.
+ * \brief Caractéristiques d'un énumérateur d'une commande sur les matériaux/milieux.
+ *
+ * Cette classe doit être spécialisée et définir les types suivants:
+ * - CommandType
+ * - IteratorValueType
+ * - ContainerType
+ * - ContainerCreateViewType
  */
-class MatAndGlobalCellRunCommand
+template <typename MatItemType>
+class RunCommandConstituentItemEnumeratorTraitsT;
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Classe de base des caractéristiques des commandes sur les constituants.
+ */
+template <typename CommandType_>
+class RunCommandConstituentItemTraitsBaseT
 {
  public:
 
-  using MatCellVectorView = Arcane::Materials::MatCellVectorView;
-  using ComponentItemVectorView = Arcane::Materials::ComponentItemVectorView;
-  using IMeshMaterial = Arcane::Materials::IMeshMaterial;
-  using ComponentItemLocalId = Arcane::Materials::ComponentItemLocalId;
-  using MatVarIndex = Arcane::Materials::MatVarIndex;
+  using CommandType = CommandType_;
+  using IteratorValueType = CommandType::IteratorValueType;
+  using ContainerType = CommandType::Container;
+  using ContainerCreateViewType = CommandType::ContainerCreateViewType;
 
  public:
 
-  /*!
-   * \brief Classe helper pour l'accès au MatVarIndex et au CellLocalId à travers les
-   *        RUNCOMMAND_MAT_ENUMERATE(EnvAndGlobalCell...
-   */
-  class Accessor
+  static ContainerType createContainer(const ContainerCreateViewType& items)
   {
-
-   public:
-
-    //! Struct interne simple pour éviter l'usage d'un std::tuple pour l'opérateur()
-    struct Data
-    {
-      ComponentItemLocalId m_mvi;
-      CellLocalId m_cid;
-    };
-
-   public:
-
-    constexpr ARCCORE_HOST_DEVICE Accessor(ComponentItemLocalId mvi, CellLocalId cid, Int32 index)
-    : m_internal_data{ mvi, cid }
-    , m_index(index)
-    {
-    }
-
-    /*!
-     * \brief Cet opérateur permet de renvoyer le couple [MatVarIndex, LocalCellId].
-     *
-     * L'utilisation classique est :
-     *
-     * \code
-     * cmd << RUNCOMMAND_MAT_ENUMERATE(EnvAndGlobalCell, evi, envcellsv) {
-     *   auto [mvi, cid] = evi();
-     * }
-     * \endcode
-     *
-     * où evi est le type de cette classe
-     */
-    ARCCORE_HOST_DEVICE Data operator()()
-    {
-      return { m_internal_data.m_mvi, m_internal_data.m_cid };
-    }
-
-    ///! Accesseur sur la partie MatVarIndex
-    ARCCORE_HOST_DEVICE ComponentItemLocalId varIndex() const { return m_internal_data.m_mvi; };
-
-    ///! Accesseur sur la partie cell local id
-    ARCCORE_HOST_DEVICE CellLocalId globalCellId() const { return m_internal_data.m_cid; }
-
-    //! Index de l'itération courante
-    ARCCORE_HOST_DEVICE Int32 index() const { return m_index; }
-
-   private:
-
-    Data m_internal_data;
-    Int32 m_index = -1;
-  };
-
-  /*!
-   * \brief Conteneur contenant les informations nécessaires pour la commande.
-   */
-  class Container
-  : public impl::MatCommandContainerBase
-  {
-   public:
-
-    explicit Container(IMeshMaterial* env)
-    : impl::MatCommandContainerBase(env->matView())
-    {
-    }
-    explicit Container(MatCellVectorView view)
-    : impl::MatCommandContainerBase(view)
-    {
-    }
-
-   public:
-
-    MatAndGlobalCellRunCommand createCommand(RunCommand& run_command) const
-    {
-      return MatAndGlobalCellRunCommand(run_command, *this);
-    }
-
-   public:
-
-    //! Accesseur pour le i-ème élément de la liste
-    constexpr ARCCORE_HOST_DEVICE Accessor operator[](Int32 i) const
-    {
-      return { ComponentItemLocalId(m_matvar_indexes[i]), CellLocalId(m_global_cells_local_id[i]), i };
-    }
-  };
-
- private:
-
-  // Uniquement appelable depuis 'Container'
-  explicit MatAndGlobalCellRunCommand(RunCommand& command, const Container& items)
-  : m_command(command)
-  , m_items(items)
-  {
+    return ContainerType{ items };
   }
-
- public:
-
-  RunCommand& m_command;
-  Container m_items;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -526,23 +406,17 @@ class MatAndGlobalCellRunCommand
 
 //! Spécialisation pour une vue sur un milieu et la maille globale associée
 template <>
-class RunCommandMatItemEnumeratorTraitsT<Arcane::Materials::EnvAndGlobalCell>
+class RunCommandConstituentItemEnumeratorTraitsT<Arcane::Materials::EnvAndGlobalCell>
+: public RunCommandConstituentItemTraitsBaseT<EnvAndGlobalCellRunCommand>
 {
  public:
 
-  using EnumeratorType = EnvAndGlobalCellRunCommand::Accessor;
-  using ContainerType = EnvAndGlobalCellRunCommand::Container;
-  using MatCommandType = EnvAndGlobalCellRunCommand;
+  using BaseClass = RunCommandConstituentItemTraitsBaseT<EnvAndGlobalCellRunCommand>;
+  using BaseClass::createContainer;
 
- public:
-
-  static ContainerType createContainer(const Arcane::Materials::EnvCellVectorView& items)
-  {
-    return ContainerType{ items };
-  }
   static ContainerType createContainer(Arcane::Materials::IMeshEnvironment* env)
   {
-    return ContainerType{ env };
+    return ContainerType{ env->envView() };
   }
 };
 
@@ -551,23 +425,17 @@ class RunCommandMatItemEnumeratorTraitsT<Arcane::Materials::EnvAndGlobalCell>
 
 //! Spécialisation pour une vue sur un matériau et la maille globale associée
 template <>
-class RunCommandMatItemEnumeratorTraitsT<Arcane::Materials::MatAndGlobalCell>
+class RunCommandConstituentItemEnumeratorTraitsT<Arcane::Materials::MatAndGlobalCell>
+: public RunCommandConstituentItemTraitsBaseT<MatAndGlobalCellRunCommand>
 {
  public:
 
-  using EnumeratorType = MatAndGlobalCellRunCommand::Accessor;
-  using ContainerType = MatAndGlobalCellRunCommand::Container;
-  using MatCommandType = MatAndGlobalCellRunCommand;
+  using BaseClass = RunCommandConstituentItemTraitsBaseT<MatAndGlobalCellRunCommand>;
+  using BaseClass::createContainer;
 
- public:
-
-  static ContainerType createContainer(const Arcane::Materials::MatCellVectorView& items)
+  static ContainerType createContainer(Arcane::Materials::IMeshMaterial* mat)
   {
-    return ContainerType{ items };
-  }
-  static ContainerType createContainer(Arcane::Materials::IMeshMaterial* env)
-  {
-    return ContainerType{ env };
+    return ContainerType{ mat->matView() };
   }
 };
 
@@ -576,20 +444,9 @@ class RunCommandMatItemEnumeratorTraitsT<Arcane::Materials::MatAndGlobalCell>
 
 //! Spécialisation pour une vue sur les AllEvnCell
 template <>
-class RunCommandMatItemEnumeratorTraitsT<Arcane::Materials::AllEnvCell>
+class RunCommandConstituentItemEnumeratorTraitsT<Arcane::Materials::AllEnvCell>
+: public RunCommandConstituentItemTraitsBaseT<AllEnvCellRunCommand>
 {
- public:
-
-  using EnumeratorType = Arcane::Materials::AllEnvCell;
-  using ContainerType = AllEnvCellRunCommand::Container;
-  using MatCommandType = AllEnvCellRunCommand;
-
- public:
-
-  static ContainerType createContainer(const Arcane::Materials::AllEnvCellVectorView& items)
-  {
-    return ContainerType{ items };
-  }
 };
 
 /*---------------------------------------------------------------------------*/
@@ -597,23 +454,19 @@ class RunCommandMatItemEnumeratorTraitsT<Arcane::Materials::AllEnvCell>
 
 //! Spécialisation pour une vue sur un milieu.
 template <>
-class RunCommandMatItemEnumeratorTraitsT<Arcane::Materials::EnvCell>
+class RunCommandConstituentItemEnumeratorTraitsT<Arcane::Materials::EnvCell>
+: public RunCommandConstituentItemTraitsBaseT<EnvCellRunCommand>
 {
  public:
 
-  using EnumeratorType = Arcane::Materials::ComponentItemLocalId;
-  using ContainerType = EnvCellRunCommand::Container;
-  using MatCommandType = EnvCellRunCommand;
+  using BaseClass = RunCommandConstituentItemTraitsBaseT<EnvCellRunCommand>;
+  using BaseClass::createContainer;
 
  public:
 
-  static ContainerType createContainer(const Arcane::Materials::EnvCellVectorView& items)
-  {
-    return ContainerType{ items };
-  }
   static ContainerType createContainer(Arcane::Materials::IMeshEnvironment* env)
   {
-    return ContainerType{ env };
+    return ContainerType(env->envView());
   }
 };
 
@@ -622,23 +475,17 @@ class RunCommandMatItemEnumeratorTraitsT<Arcane::Materials::EnvCell>
 
 //! Spécialisation pour une vue sur un matériau
 template <>
-class RunCommandMatItemEnumeratorTraitsT<Arcane::Materials::MatCell>
+class RunCommandConstituentItemEnumeratorTraitsT<Arcane::Materials::MatCell>
+: public RunCommandConstituentItemTraitsBaseT<MatCellRunCommand>
 {
  public:
 
-  using EnumeratorType = Arcane::Materials::ComponentItemLocalId;
-  using ContainerType = MatCellRunCommand::Container;
-  using MatCommandType = MatCellRunCommand;
+  using BaseClass = RunCommandConstituentItemTraitsBaseT<MatCellRunCommand>;
+  using BaseClass::createContainer;
 
- public:
-
-  static ContainerType createContainer(const Arcane::Materials::MatCellVectorView& items)
-  {
-    return ContainerType{ items };
-  }
   static ContainerType createContainer(Arcane::Materials::IMeshMaterial* mat)
   {
-    return ContainerType{ mat };
+    return ContainerType(mat->matView());
   }
 };
 
@@ -649,17 +496,17 @@ class RunCommandMatItemEnumeratorTraitsT<Arcane::Materials::MatCell>
 /*
  * Surcharge de la fonction de lancement de kernel pour GPU pour les ComponentItemLocalId et CellLocalId
  */
-template <typename ContainerType, typename Lambda, typename... ReducerArgs> __global__ void
-doMatContainerGPULambda(ContainerType items, Lambda func, ReducerArgs... reducer_args)
+template <typename ContainerType, typename Lambda, typename... RemainingArgs> __global__ void
+doMatContainerGPULambda(ContainerType items, Lambda func, RemainingArgs... remaining_args)
 {
   auto privatizer = privatize(func);
   auto& body = privatizer.privateCopy();
 
   Int32 i = blockDim.x * blockIdx.x + threadIdx.x;
   if (i < items.size()) {
-    body(items[i], reducer_args...);
+    body(items[i], remaining_args...);
   }
-  KernelReducerHelper::applyReducerArgs(i, reducer_args...);
+  KernelRemainingArgsHelper::applyRemainingArgs(i, remaining_args...);
 }
 
 #endif // ARCANE_COMPILING_CUDA || ARCANE_COMPILING_HIP
@@ -669,22 +516,23 @@ doMatContainerGPULambda(ContainerType items, Lambda func, ReducerArgs... reducer
 
 #if defined(ARCANE_COMPILING_SYCL)
 
-template <typename ContainerType, typename Lambda, typename... ReducerArgs>
+template <typename ContainerType, typename Lambda, typename... RemainingArgs>
 class DoMatContainerSYCLLambda
 {
  public:
 
-  void operator()(sycl::nd_item<1> x, ContainerType items, Lambda func, ReducerArgs... reducer_args) const
+  void operator()(sycl::nd_item<1> x, ContainerType items, Lambda func, RemainingArgs... remaining_args) const
   {
     auto privatizer = privatize(func);
     auto& body = privatizer.privateCopy();
 
     Int32 i = static_cast<Int32>(x.get_global_id(0));
     if (i < items.size()) {
-      body(items[i], reducer_args...);
+      body(items[i], remaining_args...);
     }
-    KernelReducerHelper::applyReducerArgs(x, reducer_args...);
+    KernelRemainingArgsHelper::applyRemainingArgs(x, remaining_args...);
   }
+
   void operator()(sycl::id<1> x, ContainerType items, Lambda func) const
   {
     auto privatizer = privatize(func);
@@ -702,67 +550,67 @@ class DoMatContainerSYCLLambda
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template <typename ContainerType, typename Lambda, typename... ReducerArgs>
-void _doMatItemsLambda(Int32 base_index, Int32 size, ContainerType items, const Lambda& func, ReducerArgs... reducer_args)
+template <typename ContainerType, typename Lambda, typename... RemainingArgs>
+void _doConstituentItemsLambda(Int32 base_index, Int32 size, ContainerType items,
+                               const Lambda& func, RemainingArgs... remaining_args)
 {
   auto privatizer = privatize(func);
   auto& body = privatizer.privateCopy();
 
   Int32 last_value = base_index + size;
   for (Int32 i = base_index; i < last_value; ++i) {
-    body(items[i], reducer_args...);
+    body(items[i], remaining_args...);
   }
-  ::Arcane::impl::HostReducerHelper::applyReducerArgs(reducer_args...);
+  ::Arcane::impl::HostReducerHelper::applyReducerArgs(remaining_args...);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template <typename TraitsType, typename... ReducerArgs>
-class GenericMatCommandArgs
+template <typename TraitsType, typename... RemainingArgs>
+class GenericConstituentCommandArgs
 {
  public:
 
   using ContainerType = typename TraitsType::ContainerType;
-  using MatCommandType = typename TraitsType::MatCommandType;
 
  public:
 
-  explicit GenericMatCommandArgs(const ContainerType& container, const ReducerArgs&... reducer_args)
+  explicit GenericConstituentCommandArgs(const ContainerType& container, const RemainingArgs&... remaining_args)
   : m_container(container)
-  , m_reducer_args(reducer_args...)
+  , m_remaining_args(remaining_args...)
   {}
 
  public:
 
   ContainerType m_container;
-  std::tuple<ReducerArgs...> m_reducer_args;
+  std::tuple<RemainingArgs...> m_remaining_args;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template <typename MatCommandType, typename... ReducerArgs>
-class GenericMatCommand
+template <typename ConstituentCommandType, typename... RemainingArgs>
+class GenericConstituentCommand
 {
  public:
 
-  using ContainerType = typename MatCommandType::Container;
+  using ContainerType = typename ConstituentCommandType::Container;
 
  public:
 
-  explicit GenericMatCommand(const MatCommandType& mat_command)
-  : m_mat_command(mat_command)
+  explicit GenericConstituentCommand(const ConstituentCommandType& command)
+  : m_command(command)
   {}
-  explicit GenericMatCommand(const MatCommandType& mat_command, const std::tuple<ReducerArgs...>& reducer_args)
-  : m_mat_command(mat_command)
-  , m_reducer_args(reducer_args)
+  explicit GenericConstituentCommand(const ConstituentCommandType& command, const std::tuple<RemainingArgs...>& remaining_args)
+  : m_command(command)
+  , m_remaining_args(remaining_args)
   {}
 
  public:
 
-  MatCommandType m_mat_command;
-  std::tuple<ReducerArgs...> m_reducer_args;
+  ConstituentCommandType m_command;
+  std::tuple<RemainingArgs...> m_remaining_args;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -776,8 +624,8 @@ class GenericMatCommand
  * - MatAndGlobalCellRunCommand
  * - MatCellRunCommand
  */
-template <typename ContainerType, typename Lambda, typename... ReducerArgs> void
-_applyEnvCells(RunCommand& command, ContainerType items, const Lambda& func, const ReducerArgs&... reducer_args)
+template <typename ContainerType, typename Lambda, typename... RemainingArgs> void
+_applyConstituentCells(RunCommand& command, ContainerType items, const Lambda& func, const RemainingArgs&... remaining_args)
 {
   using namespace Arcane::Materials;
   // TODO: fusionner la partie commune avec 'applyLoop'
@@ -787,25 +635,27 @@ _applyEnvCells(RunCommand& command, ContainerType items, const Lambda& func, con
 
   RunCommandLaunchInfo launch_info(command, vsize);
   const eExecutionPolicy exec_policy = launch_info.executionPolicy();
-  launch_info.computeLoopRunInfo();
   launch_info.beginExecute();
   switch (exec_policy) {
   case eExecutionPolicy::CUDA:
-    _applyKernelCUDA(launch_info, ARCANE_KERNEL_CUDA_FUNC(doMatContainerGPULambda) < ContainerType, Lambda, ReducerArgs... >, func, items, reducer_args...);
+    _applyKernelCUDA(launch_info, ARCANE_KERNEL_CUDA_FUNC(doMatContainerGPULambda) < ContainerType, Lambda, RemainingArgs... >,
+                     func, items, remaining_args...);
     break;
   case eExecutionPolicy::HIP:
-    _applyKernelHIP(launch_info, ARCANE_KERNEL_HIP_FUNC(doMatContainerGPULambda) < ContainerType, Lambda, ReducerArgs... >, func, items, reducer_args...);
+    _applyKernelHIP(launch_info, ARCANE_KERNEL_HIP_FUNC(doMatContainerGPULambda) < ContainerType, Lambda, RemainingArgs... >,
+                    func, items, remaining_args...);
     break;
   case eExecutionPolicy::SYCL:
-    _applyKernelSYCL(launch_info, ARCANE_KERNEL_SYCL_FUNC(impl::DoMatContainerSYCLLambda) < ContainerType, Lambda, ReducerArgs... > {}, func, items, reducer_args...);
+    _applyKernelSYCL(launch_info, ARCANE_KERNEL_SYCL_FUNC(impl::DoMatContainerSYCLLambda) < ContainerType, Lambda, RemainingArgs... > {},
+                     func, items, remaining_args...);
     break;
   case eExecutionPolicy::Sequential:
-    _doMatItemsLambda(0, vsize, items, func, reducer_args...);
+    _doConstituentItemsLambda(0, vsize, items, func, remaining_args...);
     break;
   case eExecutionPolicy::Thread:
     arcaneParallelFor(0, vsize, launch_info.loopRunInfo(),
                       [&](Int32 begin, Int32 size) {
-                        _doMatItemsLambda(begin, size, items, func, reducer_args...);
+                        _doConstituentItemsLambda(begin, size, items, func, remaining_args...);
                       });
     break;
   default:
@@ -817,22 +667,28 @@ _applyEnvCells(RunCommand& command, ContainerType items, const Lambda& func, con
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template <typename MatCommandType, typename... ReducerArgs, typename Lambda>
-void operator<<(const GenericMatCommand<MatCommandType, ReducerArgs...>& c, const Lambda& func)
+template <typename ConstituentCommandType, typename... RemainingArgs, typename Lambda>
+void operator<<(const GenericConstituentCommand<ConstituentCommandType, RemainingArgs...>& c, const Lambda& func)
 {
-  if constexpr (sizeof...(ReducerArgs) > 0) {
-    std::apply([&](auto... vs) { impl::_applyEnvCells(c.m_mat_command.m_command, c.m_mat_command.m_items, func, vs...); }, c.m_reducer_args);
+  if constexpr (sizeof...(RemainingArgs) > 0) {
+    std::apply([&](auto... vs) {
+      impl::_applyConstituentCells(c.m_command.m_command, c.m_command.m_items, func, vs...);
+    },
+               c.m_remaining_args);
   }
   else
-    impl::_applyEnvCells(c.m_mat_command.m_command, c.m_mat_command.m_items, func);
+    impl::_applyConstituentCells(c.m_command.m_command, c.m_command.m_items, func);
 }
 
-template <typename MatItemType, typename MatItemContainerType, typename... ReducerArgs> auto
-makeExtendedMatItemEnumeratorLoop(const MatItemContainerType& container,
-                                  const ReducerArgs&... reducer_args)
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template <typename ConstituentItemType, typename ConstituentItemContainerType, typename... RemainingArgs> auto
+makeExtendedConstituentItemEnumeratorLoop(const ConstituentItemContainerType& container,
+                                          const RemainingArgs&... remaining_args)
 {
-  using TraitsType = RunCommandMatItemEnumeratorTraitsT<MatItemType>;
-  return GenericMatCommandArgs<TraitsType, ReducerArgs...>(TraitsType::createContainer(container), reducer_args...);
+  using TraitsType = RunCommandConstituentItemEnumeratorTraitsT<ConstituentItemType>;
+  return GenericConstituentCommandArgs<TraitsType, RemainingArgs...>(TraitsType::createContainer(container), remaining_args...);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -846,47 +702,59 @@ makeExtendedMatItemEnumeratorLoop(const MatItemContainerType& container,
 namespace Arcane::Accelerator
 {
 
-template <typename TraitsType, typename... ReducerArgs> auto
-operator<<(RunCommand& command, const impl::GenericMatCommandArgs<TraitsType, ReducerArgs...>& args)
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template <typename TraitsType, typename... RemainingArgs> auto
+operator<<(RunCommand& command, const impl::GenericConstituentCommandArgs<TraitsType, RemainingArgs...>& args)
 {
-  using MatCommandType = typename TraitsType::MatCommandType;
-  return impl::GenericMatCommand<MatCommandType, ReducerArgs...>(args.m_container.createCommand(command), args.m_reducer_args);
+  using CommandType = typename TraitsType::CommandType;
+  using GenericCommandType = impl::GenericConstituentCommand<CommandType, RemainingArgs...>;
+  return GenericCommandType(CommandType::create(command, args.m_container), args.m_remaining_args);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+// TODO: rendre obsolète (il faut utiliser la version générique)
 inline auto
 operator<<(RunCommand& command, const impl::MatAndGlobalCellRunCommand::Container& view)
 {
-  return impl::GenericMatCommand<impl::MatAndGlobalCellRunCommand>(view.createCommand(command));
+  using CommandType = impl::MatAndGlobalCellRunCommand;
+  return impl::GenericConstituentCommand<CommandType>(CommandType::create(command, view));
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+// TODO: rendre obsolète (il faut utiliser la version générique)
 inline auto
 operator<<(RunCommand& command, const impl::EnvAndGlobalCellRunCommand::Container& view)
 {
-  return impl::GenericMatCommand<impl::EnvAndGlobalCellRunCommand>(view.createCommand(command));
+  using CommandType = impl::EnvAndGlobalCellRunCommand;
+  return impl::GenericConstituentCommand<CommandType>(CommandType::create(command, view));
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+// TODO: rendre obsolète (il faut utiliser la version générique)
 inline auto
 operator<<(RunCommand& command, const impl::EnvCellRunCommand::Container& view)
 {
-  return impl::GenericMatCommand<impl::EnvCellRunCommand>(view.createCommand(command));
+  using CommandType = impl::EnvCellRunCommand;
+  return impl::GenericConstituentCommand<CommandType>(CommandType::create(command, view));
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+// TODO: rendre obsolète (il faut utiliser la version générique)
 inline auto
 operator<<(RunCommand& command, const impl::MatCellRunCommand::Container& view)
 {
-  return impl::GenericMatCommand<impl::MatCellRunCommand>(view.createCommand(command));
+  using CommandType = impl::MatCellRunCommand;
+  return impl::GenericConstituentCommand<CommandType>(CommandType::create(command, view));
 }
 
 /*---------------------------------------------------------------------------*/
@@ -897,10 +765,29 @@ operator<<(RunCommand& command, const impl::MatCellRunCommand::Container& view)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Macro pour itérer sur un matériau ou un milieu
-#define RUNCOMMAND_MAT_ENUMERATE(MatItemNameType, iter_name, env_or_mat_vector, ...) \
-  A_FUNCINFO << ::Arcane::Accelerator::impl::makeExtendedMatItemEnumeratorLoop<MatItemNameType>(env_or_mat_vector __VA_OPT__(, __VA_ARGS__)) \
-             << [=] ARCCORE_HOST_DEVICE(::Arcane::Accelerator::impl::RunCommandMatItemEnumeratorTraitsT<MatItemNameType>::EnumeratorType iter_name \
+/*!
+ * \brief Macro pour itérer sur un matériau ou un milieu
+ *
+ * \param ConstituentItemNameType est le type de l'énumérateur.
+ * \param iter_name est le nom de l'itérateur
+ * \param env_or_mat_container est le conteneur sur lequel on itère.
+ *
+ * Les paramètres supplémentaires sont utilisés pour les réductions
+ * (voir \ref arcanedoc_acceleratorapi_reduction)
+ *
+ * \a ConstituentItemNameType doit être une des valeurs suivantes:
+ *
+ * - EnvAndGlobalCell
+ * - EnvCell
+ * - MatAndGlobalCell
+ * - MatCell
+ * - AllEnvCell
+ *
+ * Voir \ref arcanedoc_acceleratorapi_materials pour plus d'informations.
+ */
+#define RUNCOMMAND_MAT_ENUMERATE(ConstituentItemNameType, iter_name, env_or_mat_container, ...) \
+  A_FUNCINFO << ::Arcane::Accelerator::impl::makeExtendedConstituentItemEnumeratorLoop<ConstituentItemNameType>(env_or_mat_container __VA_OPT__(, __VA_ARGS__)) \
+             << [=] ARCCORE_HOST_DEVICE(::Arcane::Accelerator::impl::RunCommandConstituentItemEnumeratorTraitsT<ConstituentItemNameType>::IteratorValueType iter_name \
                                         __VA_OPT__(ARCANE_RUNCOMMAND_REDUCER_FOR_EACH(__VA_ARGS__)))
 
 /*---------------------------------------------------------------------------*/

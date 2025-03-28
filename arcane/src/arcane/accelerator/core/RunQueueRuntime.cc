@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* RunQueueRuntime.cc                                          (C) 2000-2024 */
+/* RunQueueRuntime.cc                                          (C) 2000-2025 */
 /*                                                                           */
 /* Implémentation d'un RunQueue pour une cible donnée.                       */
 /*---------------------------------------------------------------------------*/
@@ -83,6 +83,7 @@ class ARCANE_ACCELERATOR_CORE_EXPORT HostRunQueueEvent
   }
   void wait() final {}
   void waitForEvent(IRunQueueStream*) final {}
+  bool hasPendingWork() final { return false; }
   Int64 elapsedTime(IRunQueueEventImpl* start_event) final
   {
     ARCANE_CHECK_POINTER(start_event);

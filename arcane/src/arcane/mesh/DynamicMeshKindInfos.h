@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* DynamicMeshKindInfos.h                                      (C) 2000-2024 */
+/* DynamicMeshKindInfos.h                                      (C) 2000-2025 */
 /*                                                                           */
 /* Infos de maillage pour un genre d'entité donnée.                          */
 /*---------------------------------------------------------------------------*/
@@ -18,6 +18,7 @@
 #include "arcane/utils/String.h"
 #include "arcane/utils/HashTableMap.h"
 #include "arcane/utils/TraceAccessor.h"
+#include "arcane/utils/Event.h"
 
 #include "arcane/core/ItemGroup.h"
 #include "arcane/core/ItemInternal.h"
@@ -28,17 +29,15 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arcane
-{
-class ItemFamilyCompactInfos;
-}
+// Define pour désactiver les évènements si on souhaite tester
+// l'influence sur les performances (a priori il n'y en a pas).
+#define ARCANE_ENABLE_EVENT_FOR_DYNAMICMESHKINDINFO
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 namespace Arcane::mesh
 {
-class ItemFamily;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -108,6 +107,9 @@ class ARCANE_MESH_EXPORT DynamicMeshKindInfos
   {
     bool need_alloc = false;
     ItemInternal* next = _allocOne(need_alloc);
+#ifdef ARCANE_ENABLE_EVENT_FOR_DYNAMICMESHKINDINFO
+    _notifyAdd(next,unique_id);
+#endif
     if (m_has_unique_id_map)
       if (!m_items_map.add(unique_id,next))
         _badSameUniqueId(unique_id);
@@ -118,6 +120,9 @@ class ARCANE_MESH_EXPORT DynamicMeshKindInfos
   ItemInternal* allocOne(Int64 unique_id,bool& need_alloc)
   {
     ItemInternal* next = _allocOne(need_alloc);
+#ifdef ARCANE_ENABLE_EVENT_FOR_DYNAMICMESHKINDINFO
+    _notifyAdd(next,unique_id);
+#endif
     if (m_has_unique_id_map)
       if (!m_items_map.add(unique_id,next))
         _badSameUniqueId(unique_id);
@@ -138,6 +143,9 @@ class ARCANE_MESH_EXPORT DynamicMeshKindInfos
     }
     m_free_internals.add(item->localId());
     m_removed_items.add(item->localId());
+#ifdef ARCANE_ENABLE_EVENT_FOR_DYNAMICMESHKINDINFO
+    _notifyRemove(item);
+#endif
     --m_nb_item;
   }
 
@@ -154,6 +162,9 @@ class ARCANE_MESH_EXPORT DynamicMeshKindInfos
 #endif
     m_free_internals.add(item->localId());
     m_removed_items.add(item->localId());
+#ifdef ARCANE_ENABLE_EVENT_FOR_DYNAMICMESHKINDINFO
+    _notifyRemove(item);
+#endif
     --m_nb_item;
   }
 
@@ -191,6 +202,9 @@ class ARCANE_MESH_EXPORT DynamicMeshKindInfos
     if (is_alloc){
       bool need_alloc;
       item_data.setValue(_allocOne(need_alloc));
+#ifdef ARCANE_ENABLE_EVENT_FOR_DYNAMICMESHKINDINFO
+      _notifyAdd(item_data.value(),uid);
+#endif
     }
     return item_data.value();
   }
@@ -266,6 +280,10 @@ class ARCANE_MESH_EXPORT DynamicMeshKindInfos
 
   void printFreeInternals(Integer max_print);
 
+ public:
+
+  EventObservableView<const ItemFamilyItemListChangedEventArgs&> itemListChangedEvent();
+
  private:
 
   /*! \brief Ajoute une entité.
@@ -320,6 +338,7 @@ class ARCANE_MESH_EXPORT DynamicMeshKindInfos
   //! Temporaire tant que oldToNewLocalIds() et newToOldLocalIds() existent
   ItemFamilyCompactInfos* m_compact_infos;
   ItemSharedInfo* m_common_item_shared_info = nullptr;
+  EventObservable<const ItemFamilyItemListChangedEventArgs&> m_item_list_change_event;
 
  public:
   
@@ -360,6 +379,18 @@ class ARCANE_MESH_EXPORT DynamicMeshKindInfos
   void _badSameUniqueId(Int64 unique_id) const;
   void _badUniqueIdMap() const;
   void _updateItemSharedInfoInternalView();
+  void _notifyRemove(ItemInternal* item)
+  {
+    if (m_item_list_change_event.hasObservers())
+      _notifyRemove2(item);
+  }
+  void _notifyAdd(ItemInternal* item,Int64 uid)
+  {
+    if (m_item_list_change_event.hasObservers())
+      _notifyAdd2(item,uid);
+  }
+  void _notifyRemove2(ItemInternal* item);
+  void _notifyAdd2(ItemInternal* item,Int64 uid);
 };
 
 /*---------------------------------------------------------------------------*/

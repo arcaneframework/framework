@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IMeshUtilities.h                                            (C) 2000-2024 */
+/* IMeshUtilities.h                                            (C) 2000-2025 */
 /*                                                                           */
 /* Interface d'une classe proposant des fonctions utilitaires sur maillage.  */
 /*---------------------------------------------------------------------------*/
@@ -131,8 +131,35 @@ class ARCANE_CORE_EXPORT IMeshUtilities
    * En considérant que les nouveaux propriétaires des mailles sont
    * connus (et synchronisés), détermine les nouveaux propriétaires des autres
    * entités et les synchronise.
+   *
+   * Cette méthode est collective.
+   *
+   * \note Cette méthode nécessite que les informations de synchronisations soient
+   * valides. Si on souhaite déterminer les propriétaires des entités sans
+   * information préalable, il faut utiliser computeAndSetOwnersForNodes()
+   * ou computeAndSetOwnersForFaces().
    */
   virtual void changeOwnersFromCells() =0;
+
+  /*!
+   * \brief Détermine les propriétaires des noeuds.
+   *
+   * La détermination se fait en fonction des propriétaires des mailles.
+   * Il ne doit pas y avoir de couches de mailles fantômes.
+   *
+   * Cette opération est collective.
+   */
+  virtual void computeAndSetOwnersForNodes() =0;
+
+  /*!
+   * \brief Détermine les propriétaires des faces.
+   *
+   * La détermination se fait en fonction des propriétaires des mailles.
+   * Il ne doit pas y avoir de couches de mailles fantômes.
+   *
+   * Cette opération est collective.
+   */
+  virtual void computeAndSetOwnersForFaces() =0;
 
   /*!
    * \brief Ecrit le maillage dans un fichier.
@@ -194,6 +221,16 @@ class ARCANE_CORE_EXPORT IMeshUtilities
    */
   virtual void mergeNodes(Int32ConstArrayView nodes_local_id,
                           Int32ConstArrayView nodes_to_merge_local_id) =0;
+
+  /*!
+   * \brief Recalcule les uniqueId() des arêtes, faces et mailles en fonction
+   * des uniqueId() des noeuds.
+   *
+   * \warning Cette méthode est expérimentale et ne doit être utilisée que
+   * dans Arcane. Elle suppose que les uniqueId() des entités sont construit
+   * à partir de generateHashUniqueId().
+   */
+  virtual void recomputeItemsUniqueIdFromNodesUniqueId() =0;
 };
 
 /*---------------------------------------------------------------------------*/

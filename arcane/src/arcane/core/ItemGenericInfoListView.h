@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemGenericInfoListView.h                                   (C) 2000-2024 */
+/* ItemGenericInfoListView.h                                   (C) 2000-2025 */
 /*                                                                           */
 /* Vue sur les informations génériques d'une famille d'entités.              */
 /*---------------------------------------------------------------------------*/
@@ -94,8 +94,22 @@ class ARCANE_CORE_EXPORT ItemGenericInfoListView
     return ItemFlags::isOwn(m_flags[local_id]);
   }
 
+  //! Indique si l'entité de numéro local \a local_id est partagée par d'autres sous-domaines
+  constexpr ARCCORE_HOST_DEVICE bool isShared(Int32 local_id) const
+  {
+    return ItemFlags::isShared(m_flags[local_id]);
+  }
+
+  //! Indique si l'entité de numéro local \a local_id est partagée par d'autres sous-domaines
+  constexpr ARCCORE_HOST_DEVICE bool isShared(ItemLocalId local_id) const
+  {
+    return ItemFlags::isShared(m_flags[local_id]);
+  }
+
  private:
 
+  // NOTE: Cette structure est utilisée dans le wrapping C#.
+  // Si on modifie les champs, il faut mettre à jour la structure C# équivalente
   Int64ArrayView m_unique_ids;
   Int32ArrayView m_owners;
   Int32ArrayView m_flags;

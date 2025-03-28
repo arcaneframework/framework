@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* TBBThreadImplementation.cc                                  (C) 2000-2024 */
+/* TBBThreadImplementation.cc                                  (C) 2000-2025 */
 /*                                                                           */
 /* Implémentation des threads utilisant TBB (Intel Threads Building Blocks). */
 /*---------------------------------------------------------------------------*/
@@ -17,6 +17,7 @@
 #include "arcane/utils/IFunctor.h"
 #include "arcane/utils/Mutex.h"
 #include "arcane/utils/PlatformUtils.h"
+#include "arcane/utils/internal/DependencyInjection.h"
 
 #include "arcane/FactoryService.h"
 #include "arcane/Concurrency.h"
@@ -297,6 +298,7 @@ class TBBThreadImplementationService
  public:
 
   explicit TBBThreadImplementationService(const ServiceBuildInfo&) {}
+  TBBThreadImplementationService() = default;
 
  public:
 
@@ -311,9 +313,15 @@ class TBBThreadImplementationService
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+// TODO: a supprimer maintenant qu'on utilise 'DependencyInjection'
 ARCANE_REGISTER_SERVICE(TBBThreadImplementationService,
                         ServiceProperty("TBBThreadImplementationService",ST_Application),
                         ARCANE_SERVICE_INTERFACE(IThreadImplementationService));
+
+ARCANE_DI_REGISTER_PROVIDER(TBBThreadImplementationService,
+                            DependencyInjection::ProviderProperty("TBBThreadImplementationService"),
+                            ARCANE_DI_INTERFACES(IThreadImplementationService),
+                            ARCANE_DI_EMPTY_CONSTRUCTOR());
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

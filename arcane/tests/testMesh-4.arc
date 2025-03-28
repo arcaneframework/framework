@@ -12,7 +12,8 @@
 
  <module-test-unitaire>
   <test name="MeshUnitTest">
-   <ecrire-maillage>true</ecrire-maillage>
+    <ecrire-maillage>true</ecrire-maillage>
+    <write-mesh-service-name>VtkLegacyMeshWriter</write-mesh-service-name>
   </test>
  </module-test-unitaire>
 

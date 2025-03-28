@@ -362,14 +362,13 @@ _removeItemsInGroup(ItemGroup cells, SmallSpan<const Int32> removed_ids)
 
     // Lors de l'application du filtre, le tableau d'entrée et de sortie
     // est le même (c'est normalement supporté par le GenericFilterer).
-    SmallSpan<const Int32> input_ids(items_local_id);
-    SmallSpan<Int32> output_ids_view(items_local_id);
+    SmallSpan<Int32> input_ids(items_local_id);
     SmallSpan<const bool> filtered_cells(m_work_info.removedCells());
     Accelerator::GenericFilterer filterer(m_queue);
     auto select_filter = [=] ARCCORE_HOST_DEVICE(Int32 local_id) -> bool {
       return !filtered_cells[local_id];
     };
-    filterer.applyIf(input_ids, output_ids_view, select_filter, A_FUNCINFO);
+    filterer.applyIf(input_ids, select_filter, A_FUNCINFO);
 
     Int32 current_nb_item = items_local_id.size();
     Int32 nb_remaining = filterer.nbOutputElement();

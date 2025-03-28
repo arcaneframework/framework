@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* GraphDoFs.cc                                                (C) 2000-2024 */
+/* GraphDoFs.cc                                                (C) 2000-2025 */
 /*                                                                           */
 /*---------------------------------------------------------------------------*/
 
@@ -49,8 +49,8 @@ GraphDoFs(IMesh* mesh, String particle_family_name)
 , m_mesh(mesh)
 , m_dof_mng(mesh)
 , m_connectivity_mng(m_dof_mng.connectivityMng())
-, m_dual_node_family(m_dof_mng.family(GraphDoFs::dualNodeFamilyName(), true))
-, m_link_family(m_dof_mng.family(GraphDoFs::linkFamilyName(), true))
+, m_dual_node_family(m_dof_mng.getFamily(GraphDoFs::dualNodeFamilyName(), true))
+, m_link_family(m_dof_mng.getFamily(GraphDoFs::linkFamilyName(), true))
 , m_update_sync_info(false)
 , m_particle_family_name(particle_family_name)
 {
@@ -140,8 +140,8 @@ addLinks(Integer nb_link,
   if (!m_graph_allocated)
     _allocateGraph();
 
-  mesh::DoFFamily& link_family = m_dof_mng.family(GraphDoFs::linkFamilyName());
-  mesh::DoFFamily& dual_node_family = m_dof_mng.family(GraphDoFs::dualNodeFamilyName());
+  IDoFFamily* link_family = m_dof_mng.getFamily(GraphDoFs::linkFamilyName());
+  IDoFFamily* dual_node_family = m_dof_mng.getFamily(GraphDoFs::dualNodeFamilyName());
 
   // Extract link infos
   Int64UniqueArray link_uids, connected_dual_node_uids;
@@ -156,17 +156,17 @@ addLinks(Integer nb_link,
   }
 
   Int32UniqueArray link_lids(link_uids.size());
-  link_family.addDoFs(link_uids, link_lids);
-  link_family.endUpdate();
+  link_family->addDoFs(link_uids, link_lids);
+  link_family->endUpdate();
 
   // resize connectivity
   // fill connectivity
   Int32UniqueArray connected_dual_nodes_lids(nb_link * nb_dual_nodes_per_link);
-  dual_node_family.itemsUniqueIdToLocalId(
+  dual_node_family->itemFamily()->itemsUniqueIdToLocalId(
   connected_dual_nodes_lids.view(), connected_dual_node_uids.constView(), true);
 
   auto link_index = 0;
-  ENUMERATE_DOF (inewlink, link_family.view(link_lids)) {
+  ENUMERATE_DOF (inewlink, link_family->itemFamily()->view(link_lids)) {
     m_links_incremental_connectivity->notifySourceItemAdded(ItemLocalId(*inewlink));
     for (auto lid : connected_dual_nodes_lids.subConstView(link_index, nb_dual_nodes_per_link)) {
       m_links_incremental_connectivity->addConnectedItem(ItemLocalId(*inewlink), ItemLocalId(lid));
@@ -204,9 +204,9 @@ addDualNodes(Integer graph_nb_dual_node,
   }
 
   Int32UniqueArray dual_node_lids(dual_node_uids.size());
-  auto& dual_node_family = m_dof_mng.family(GraphDoFs::dualNodeFamilyName());
-  dual_node_family.addDoFs(dual_node_uids, dual_node_lids);
-  dual_node_family.endUpdate();
+  auto* dual_node_family = m_dof_mng.getFamily(GraphDoFs::dualNodeFamilyName());
+  dual_node_family->addDoFs(dual_node_uids, dual_node_lids);
+  dual_node_family->endUpdate();
 
   IItemFamily* dual_item_family = _dualItemFamily(dualItemKind(dual_node_kind));
 
@@ -225,7 +225,7 @@ addDualNodes(Integer graph_nb_dual_node,
   Int32UniqueArray dual_item_lids(dual_item_uids.size());
   dual_item_family->itemsUniqueIdToLocalId(dual_item_lids, dual_item_uids);
 
-  ENUMERATE_DOF (idual_node, dual_node_family.view(dual_node_lids)) {
+  ENUMERATE_DOF (idual_node, dual_node_family->itemFamily()->view(dual_node_lids)) {
     incremental_dual_item_connectivity->notifySourceItemAdded(ItemLocalId(*idual_node));
     incremental_dual_item_connectivity->addConnectedItem(ItemLocalId(*idual_node), ItemLocalId(dual_item_lids[idual_node.index()]));
   }
@@ -268,7 +268,7 @@ addDualNodes(Integer graph_nb_dual_node,
     auto& dual_node_uids = info.first;
     auto& dual_item_uids = info.second;
 
-    auto& dual_node_family = m_dof_mng.family(GraphDoFs::dualNodeFamilyName());
+    auto* dual_node_family = m_dof_mng.getFamily(GraphDoFs::dualNodeFamilyName());
     Int32UniqueArray dual_node_lids(dual_node_uids.size());
     if (is_parallel) {
       IItemFamily* dual_item_family = _dualItemFamily(dualItemKind(dual_node_kind));
@@ -307,9 +307,9 @@ addDualNodes(Integer graph_nb_dual_node,
           ++icount;
         }
 
-        dual_node_family.addDoFs(local_dual_node_uids, local_dual_node_lids);
-        dual_node_family.addGhostDoFs(ghost_dual_node_uids, ghost_dual_node_lids, ghost_dual_node_owner);
-        dual_node_family.endUpdate();
+        dual_node_family->addDoFs(local_dual_node_uids, local_dual_node_lids);
+        dual_node_family->addGhostDoFs(ghost_dual_node_uids, ghost_dual_node_lids, ghost_dual_node_owner);
+        dual_node_family->endUpdate();
 
         icount = 0;
         Integer local_icount = 0;
@@ -324,8 +324,8 @@ addDualNodes(Integer graph_nb_dual_node,
       }
     }
     else {
-      dual_node_family.addDoFs(dual_node_uids, dual_node_lids);
-      dual_node_family.endUpdate();
+      dual_node_family->addDoFs(dual_node_uids, dual_node_lids);
+      dual_node_family->endUpdate();
     }
 
     IItemFamily* dual_item_family = _dualItemFamily(dualItemKind(dual_node_kind));
@@ -346,7 +346,7 @@ addDualNodes(Integer graph_nb_dual_node,
       Int32UniqueArray dual_item_lids(dual_item_uids.size());
       dual_item_family->itemsUniqueIdToLocalId(dual_item_lids, dual_item_uids);
 
-      ENUMERATE_DOF (idual_node, dual_node_family.view(dual_node_lids)) {
+      ENUMERATE_DOF (idual_node, dual_node_family->itemFamily()->view(dual_node_lids)) {
         incremental_dual_item_connectivity->notifySourceItemAdded(ItemLocalId(*idual_node));
         incremental_dual_item_connectivity->addConnectedItem(ItemLocalId(*idual_node), ItemLocalId(dual_item_lids[idual_node.index()]));
       }
@@ -368,7 +368,7 @@ removeDualNodes(Int32ConstArrayView dual_node_local_ids)
 {
   Trace::Setter mci(traceMng(), _className());
   //m_dual_node_family.removeItems(dual_node_local_ids);
-  m_dof_mng.family(GraphDoFs::dualNodeFamilyName()).removeDoFs(dual_node_local_ids);
+  m_dof_mng.getFamily(GraphDoFs::dualNodeFamilyName())->removeDoFs(dual_node_local_ids);
   if (dual_node_local_ids.size() > 0)
     m_update_sync_info = false;
 }
@@ -381,7 +381,7 @@ removeLinks(Int32ConstArrayView link_local_ids)
 {
   Trace::Setter mci(traceMng(), _className());
   //m_link_family.removeItems(link_local_ids);
-  m_dof_mng.family(GraphDoFs::linkFamilyName()).removeDoFs(link_local_ids);
+  m_dof_mng.getFamily(GraphDoFs::linkFamilyName())->removeDoFs(link_local_ids);
   if (link_local_ids.size() > 0)
     m_update_sync_info = false;
 }
@@ -695,9 +695,9 @@ updateAfterMeshChanged()
   if (!m_graph_allocated)
     return;
 
-  auto& dual_node_family = m_dof_mng.family(GraphDoFs::dualNodeFamilyName());
-  m_dual_node_to_connectivity_index.resize(&dual_node_family, -1);
-  ENUMERATE_DOF (idof, dual_node_family.allItems()) {
+  auto* dual_node_family = m_dof_mng.getFamily(GraphDoFs::dualNodeFamilyName());
+  m_dual_node_to_connectivity_index.resize(dual_node_family->itemFamily(), -1);
+  ENUMERATE_DOF (idof, dual_node_family->allItems()) {
     for (Integer index = 0; index < m_incremental_connectivities.size(); ++index) {
       auto connectivity = m_incremental_connectivities[index];
       if (connectivity && (connectivity->maxNbConnectedItem() > 0)) {

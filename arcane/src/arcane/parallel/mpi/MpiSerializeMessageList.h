@@ -1,1 +1,1 @@
-﻿#include "arccore/message_passing_mpi/MpiSerializeMessageList.h"
+﻿#include "arccore/message_passing/ISerializeMessageList.h"

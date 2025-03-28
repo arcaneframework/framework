@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ArcaneTypes.h                                               (C) 2000-2024 */
+/* ArcaneTypes.h                                               (C) 2000-2025 */
 /*                                                                           */
 /* Définition des types généraux de Arcane.                                  */
 /*---------------------------------------------------------------------------*/
@@ -20,7 +20,12 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arccore
+// GG: Ne devrait pas être ici. Il faudrait inclure "SerializeGlobal.h" à la
+// place mais cela n'est pas possible tant que certains fichiers de
+// 'arcane/utils' utilisent des fichiers d'en-tête de 'arcane/core'. C'est
+// le cas par exemple des fichiers '*AMR*.h'.
+
+namespace Arcane
 {
 class ISerializer;
 }
@@ -113,6 +118,8 @@ class MeshBuildInfo;
 class MeshKind;
 class IPrimaryMesh;
 class IMeshInitialAllocator;
+class ItemFamilyCompactInfos;
+class ItemFamilyItemListChangedEventArgs;
 class ItemPairEnumerator;
 class ItemInfoListView;
 class ItemGenericInfoListView;
@@ -142,6 +149,14 @@ class IParallelMngInternal;
 class IIOMng;
 class ITimerMng;
 class IThreadMng;
+class ItemUniqueId;
+class IItemConnectivityInfo;
+class IItemConnectivity;
+class IItemInternalSortFunction;
+class IItemConnectivityMng;
+class Properties;
+class IItemFamilyTopologyModifier;
+class IItemFamilyPolicyMng;
 enum class eMeshStructure;
 enum class eMeshAMRKind;
 
@@ -275,8 +290,22 @@ static const Int16 IT_Tetraedron10 = 34;
 static const Int16 IT_Hexaedron20 = 35;
 //@}
 
+/*!
+ * \brief Mailles 2D dans un maillage 3D.
+ * \warning Ces types sont expérimentaux et ne doivent
+ * pas être utilisés en dehors de %Arcane.
+ */
+//@{
+//! Maille Line2 dans un maillage 3D. EXPERIMENTAL !
+static const Int16 IT_Cell3D_Line2 = 36;
+//! Maille Triangulaire à 3 noeuds dans un maillage 3D. EXPERIMENTAL !
+static const Int16 IT_Cell3D_Triangle3 = 37;
+//! Maille Quadrangulaire à 5 noeuds dans un maillage 3D. EXPERIMENTAL !
+static const Int16 IT_Cell3D_Quad4 = 38;
+//@}
+
 //! Nombre de types d'entités disponible par défaut
-static const Integer NB_BASIC_ITEM_TYPE = 36;
+static const Integer NB_BASIC_ITEM_TYPE = 39;
 
 extern "C++" ARCANE_CORE_EXPORT eItemKind
 dualItemKind(Integer type);
@@ -347,8 +376,6 @@ template<typename DataType>
 class VariableArrayT;
 template<typename DataType>
 class Array2VariableT;
-template<typename DataType>
-class MultiArray2VariableT;
 
 template<typename DataType>
 class VariableRefScalarT;
@@ -356,6 +383,7 @@ template<typename DataType>
 class VariableRefArrayT;
 template<typename DataType>
 class VariableRefArray2T;
+// TODO: Ce type n'est plus utilisé. A supprimer fin 2025
 template<typename DataType>
 class MultiArray2VariableRefT;
 
@@ -488,16 +516,6 @@ typedef List<ITiedInterface*> TiedInterfaceList;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-using Arccore::ISerializer;
-using Arccore::ITimeMetricCollector;
-using Arccore::TimeMetricSentry;
-using Arccore::TimeMetricId;
-using Arccore::TimeMetricAction;
-using Arccore::TimeMetricActionBuildInfo;
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 class IDataVisitor;
 class IScalarDataVisitor;
 class IArrayDataVisitor;
@@ -540,6 +558,18 @@ class AcceleratorRuntimeInitialisationInfo;
 }
 using Accelerator::IAcceleratorMng;
 using Accelerator::AcceleratorRuntimeInitialisationInfo;
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+// Déclarations de types utilisés pour les classes 'friend'.
+namespace mesh
+{
+class DynamicMesh;
+class ItemFamily;
+class ItemSharedInfoWithType;
+class DynamicMeshKindInfos;
+class ItemDataList;
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

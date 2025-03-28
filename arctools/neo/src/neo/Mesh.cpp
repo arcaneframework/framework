@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Mesh.cpp                                        (C) 2000-2023             */
+/* Mesh.cpp                                        (C) 2000-2025             */
 /*                                                                           */
 /* Asynchronous Mesh structure based on Neo kernel                           */
 /*---------------------------------------------------------------------------*/
@@ -170,6 +170,16 @@ Neo::Mesh::Connectivity Neo::Mesh::getConnectivity(Neo::Family const& source_fam
   }
   return connectivity_iter->second;
   // todo check source and target family type...(add operator== on family)
+}
+
+/*-----------------------------------------------------------------------------*/
+
+Neo::utils::ConstSpan<Neo::Mesh::Connectivity> Neo::Mesh::getConnectivities(Neo::Family const& source_family) const {
+  auto connectivity_iter = m_connectivities_per_family.find({source_family.itemKind(),source_family.name()});
+  if (connectivity_iter != m_connectivities_per_family.end()) {
+    return utils::ConstSpan<Neo::Mesh::Connectivity>{connectivity_iter->second.data(), connectivity_iter->second.size()};
+  }
+  else return utils::ConstSpan<Connectivity>{};
 }
 
 /*-----------------------------------------------------------------------------*/

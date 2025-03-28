@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ParallelMngUtils.h                                          (C) 2000-2024 */
+/* ParallelMngUtils.h                                          (C) 2000-2025 */
 /*                                                                           */
 /* Fonctions utilitaires associées aux 'IParallelMng'.                       */
 /*---------------------------------------------------------------------------*/
@@ -79,6 +79,22 @@ createTopologyRef(IParallelMng* pm);
  */
 extern "C++" ARCANE_CORE_EXPORT Ref<IParallelMng>
 createSubParallelMngRef(IParallelMng* pm, Int32 color, Int32 key);
+
+/*!
+ * \brief Créé un message de sérialisation non bloquant en envoi au rang \a rank.
+ *
+ * Le message est traité uniquement lors de l'appel à IParallelMng::processMessages().
+ */
+extern "C++" ARCANE_CORE_EXPORT Ref<ISerializeMessage>
+createSendSerializeMessageRef(IParallelMng* pm, Int32 rank);
+
+/*!
+ * \brief Créé un message de sérialisation non bloquant en réception du rang \a rank.
+ *
+ * Le message est traité uniquement lors de l'appel à IParallelMng::processMessages().
+ */
+extern "C++" ARCANE_CORE_EXPORT Ref<ISerializeMessage>
+createReceiveSerializeMessageRef(IParallelMng* pm, Int32 rank);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

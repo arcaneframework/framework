@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CaseOptionList.cc                                           (C) 2000-2023 */
+/* CaseOptionList.cc                                           (C) 2000-2025 */
 /*                                                                           */
 /* Liste d'options de configuration d'un service ou module.                  */
 /*---------------------------------------------------------------------------*/
@@ -215,6 +215,9 @@ class CaseOptionList
 
   bool isOptional() const override { return m_is_optional; }
   void setOptional(bool v) { m_is_optional = v; }
+
+  Integer minOccurs() const override { return m_is_optional ? 0 : 1; }
+  Integer maxOccurs() const override { return 1; }
 
   void setRootElementWithParent(XmlNode parent_element) override
   {
@@ -564,6 +567,8 @@ class CaseOptionListMulti
  public:
 
   bool isOptional() const override { return true; }
+  Integer minOccurs() const override { return m_min_occurs; }
+  Integer maxOccurs() const override { return m_max_occurs; }
   void readChildren(bool is_phase1) override;
   void addInvalidChildren(XmlNodeList& nlist) override;
   void printChildren(const String& lang,int indent) override;
@@ -608,10 +613,11 @@ readChildren(bool is_phase1)
 
     m_root_element_list = m_parent_element.children(rootTagName());
     m_case_config_list.clear();
-    Integer s = m_root_element_list.size();
-    _checkMinMaxOccurs(s);
-    if (s!=0)
-      m_case_option_multi->multiAllocate(m_root_element_list);
+    // Ces vérifications sont faites dans multiAllocate().
+    //Integer s = m_root_element_list.size();
+    //_checkMinMaxOccurs(s);
+    //if (s!=0)
+    m_case_option_multi->multiAllocate(m_root_element_list);
     // Récupère les options créées lors de l'appel à 'multiAllocate' et
     // les ajoute à la liste.
     Integer nb_children = m_case_option_multi->nbChildren();

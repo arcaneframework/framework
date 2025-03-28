@@ -1,6 +1,19 @@
 ﻿cmake_minimum_required(VERSION 3.21 FATAL_ERROR)
 
-message(STATUS "CMAKE_SOURCE_DIR=${CMAKE_SOURCE_DIR} CMAKE_VERSION=${CMAKE_VERSION}")
+message(STATUS "CMAKE_SOURCE_DIR=${CMAKE_SOURCE_DIR} CMAKE_CURRENT_SOURCE_DIR=${CMAKE_CURRENT_SOURCE_DIR}  CMAKE_VERSION=${CMAKE_VERSION}")
+
+# ----------------------------------------------------------------------------
+# Vérifie qu'on a bien lancé la configuration depuis le répertoire racine
+# du dépot.
+cmake_path(COMPARE "${CMAKE_SOURCE_DIR}" EQUAL "${CMAKE_CURRENT_SOURCE_DIR}" IS_NOT_FROM_BASE_REPO)
+message(STATUS "IS_NOT_FROM_BASE_REPO=${IS_NOT_FROM_BASE_REPO}")
+if (IS_NOT_FROM_BASE_REPO)
+  cmake_path(GET CMAKE_CURRENT_SOURCE_DIR PARENT_PATH PARENT_SOURCE_DIR)
+  message(FATAL_ERROR
+      "Compiling in 'arcane' subdirectory is not supported."
+      " Use CMakeLists.txt from repository base directory: '${PARENT_SOURCE_DIR}'"
+    )
+endif()
 
 # ----------------------------------------------------------------------------
 # Récupère numéro de version de Arcane à partir du fichier 'version' et
@@ -15,6 +28,8 @@ project(Arcane VERSION ${ARCANE_VERSION} LANGUAGES C CXX)
 math(EXPR ARCANE_VERSION_NUMERIC "((10000 * ${Arcane_VERSION_MAJOR}) + 100 * ${Arcane_VERSION_MINOR}) + ${Arcane_VERSION_PATCH}")
 configure_file(arcane_version.h.in ${CMAKE_BINARY_DIR}/arcane_version.h @ONLY)
 install(FILES ${CMAKE_BINARY_DIR}/arcane_version.h DESTINATION include)
+
+# ----------------------------------------------------------------------------
 
 if (NOT BUILD_SHARED_LIBS)
   message(FATAL_ERROR "Arcane has to be compiled with BUILD_SHARED_LIBS=TRUE. Static linking does not work")
@@ -364,24 +379,18 @@ if (ARCANE_WANT_CHECK)
   set(ARCCORE_CHECK TRUE)
 endif()
 
-set(ARCANE_ARCCORE_NEEDED_VERSION "2.8.0")
+# ----------------------------------------------------------------------------
+# ----------------------------------------------------------------------------
+# Charge 'Arccore' depuis le répertoire de base.
 if (NOT Arccore_FOUND)
-  find_package(Arccore ${ARCANE_ARCCORE_NEEDED_VERSION} REQUIRED)
-endif ()
-message(STATUS "Arccore_DIR = ${Arccore_DIR}")
-if (Arccore_VERSION VERSION_LESS ARCANE_ARCCORE_NEEDED_VERSION)
-  message(FATAL_ERROR "Arccore version '${Arccore_VERSION}' is too old."
-    " Version ${ARCANE_ARCCORE_NEEDED_VERSION} required")
+  add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../arccore arccore)
+  set(Arccore_FOUND YES)
+  set(Arccore_FOUND YES PARENT_SCOPE)
 endif()
 
-# Si arccore a déjà été installé, on prend le mode check de arccore
-# pour garantir la cohérence avec Arcane.
-if (Arccore_DIR)
-  # TODO: à terme, supprimer ces deux variables 'ARCANE_WANT_CHECK' et 'ARCANE_WANT_DEBUG'
-  message(STATUS "[arcane] Setting 'ARCANE_WANT_CHECK' and 'ARCANE_WANT_DEBUG' from arccore")
-  set(ARCANE_WANT_CHECK ${ARCCORE_CHECK})
-  set(ARCANE_WANT_DEBUG ${ARCCORE_DEBUG})
-endif()
+# ----------------------------------------------------------------------------
+# ----------------------------------------------------------------------------
+
 message(STATUS "[arcane] Is Check mode enabled ? ${ARCANE_WANT_CHECK} (from arccore: ${ARCCORE_CHECK})")
 message(STATUS "[arcane] Is Debug mode enabled ? ${ARCANE_WANT_DEBUG} (from arccore: ${ARCCORE_DEBUG})")
 
@@ -553,7 +562,19 @@ if (NOT ARCANE_WANT_NOMPI)
   arcane_find_package(MPI)
 endif()
 arcane_find_package(Valgrind)
-include(${CMAKE_CURRENT_LIST_DIR}/cmake/FindFlexLM.cmake)
+
+# Définir la variable PROTECTION comme valeur par défaut : FLEXLM
+set(PROTECTION "FLEXLM" CACHE STRING "Specify the license system (FLEXLM or RLM)")
+
+# Vérifiez la valeur de PROTECTION
+if(PROTECTION STREQUAL "FLEXLM")
+    include(${CMAKE_CURRENT_LIST_DIR}/cmake/FindFlexLM.cmake)
+elseif(PROTECTION STREQUAL "RLM")
+    include(${CMAKE_CURRENT_LIST_DIR}/cmake/FindRLM.cmake)
+else()
+    message(FATAL_ERROR "Invalid value for PROTECTION: ${PROTECTION}. Please use FLEXLM or RLM.")
+endif()
+
 message(STATUS "----------------------------------------------------")
 
 # default package list
@@ -653,9 +674,9 @@ if(ARCANE_WANT_LONGDOUBLE)
 endif()
 
 IF(NOT FLEXLM_FOUND)
-  MESSAGE(STATUS "PACKAGE: FlexLM         : not found")
+  MESSAGE(STATUS "PACKAGE: ${FLEXLM_PROTECTION_NAME}         : not found")
 ELSE(NOT FLEXLM_FOUND)
-  MESSAGE(STATUS "PACKAGE: FlexLM         : ${FLEXLM_LIBRARIES}")
+  MESSAGE(STATUS "PACKAGE: ${FLEXLM_PROTECTION_NAME}         : ${FLEXLM_LIBRARIES}")
 ENDIF(NOT FLEXLM_FOUND)
 
 IF(ARCANE_CONFIGURE_WANT_MPC)

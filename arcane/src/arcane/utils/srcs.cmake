@@ -31,7 +31,6 @@ set(ARCANE_SOURCES
   ConcurrencyUtils.h
   CStringUtils.cc
   CStringUtils.h
-  DependencyInjection.h
   DependencyInjection.cc
   DualUniqueArray.h
   Enumerator.cc
@@ -44,6 +43,7 @@ set(ARCANE_SOURCES
   Event.h
   FixedArray.h
   Float16.h
+  Float128.h
   FloatingPointExceptionSentry.cc
   FloatingPointExceptionSentry.h
   FileContent.cc
@@ -55,7 +55,9 @@ set(ARCANE_SOURCES
   GenericRegisterer.cc
   GoBackwardException.cc
   GoBackwardException.h
+  HashSuite.h
   IDataCompressor.h
+  Int128.h
   IOException.cc
   IOException.h
   IMemoryRessourceMng.h
@@ -115,6 +117,8 @@ set(ARCANE_SOURCES
   ParallelFatalErrorException.h
   ParallelLoopOptions.h
   ParallelLoopOptions.cc
+  ParameterCaseOption.h
+  ParameterCaseOption.cc
   PerfCounterMng.cc
   PerfCounterMng.h
   PlatformUtils.cc
@@ -315,6 +319,7 @@ set(ARCANE_SOURCES
   SHA3HashAlgorithm.h
   SHA3HashAlgorithm.cc
   ValueConvert.h
+  ValueConvert.cc
   ScopedPtr.h
   SharedPtr.h
   EventHandlerListImpl.h
@@ -334,17 +339,21 @@ set(ARCANE_SOURCES
   GraphBaseT.h
   DirectedGraphT.h
   DirectedAcyclicGraphT.h
+  internal/DependencyInjection.h
   internal/ApplicationInfoProperties.h
   internal/MemoryResourceMng.h
   internal/MemoryUtilsInternal.h
   internal/IMemoryRessourceMngInternal.h
   internal/IMemoryCopier.h
+  internal/ParameterOption.h
+  internal/ParameterOption.cc
   internal/ProfilingInternal.h
   internal/ValueConvertInternal.h
   internal/SpecificMemoryCopyList.h
   internal/MemoryBuffer.h
   internal/MemoryPool.h
   internal/ParallelLoopOptionsProperties.h
+  internal/TaskFactoryInternal.h
   )
 
 if (ARCANE_HAS_CXX20)

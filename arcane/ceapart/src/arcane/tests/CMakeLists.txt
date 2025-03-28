@@ -39,14 +39,19 @@ target_link_libraries(arcane_cea_tests PRIVATE $<TARGET_NAME_IF_EXISTS:arcane_ac
 # Test wrapping C#
 # Il faut que le wrapper matériaux soit disponible
 if (TARGET arcane_dotnet_wrapper_cea_materials)
-  message(STATUS "ARC: ${ARCANE_DOTNET_WRAPPER_INCLUDE_DIRS}")
+  message(STATUS "Add target to test C# material wrapper: current_dir=${CMAKE_CURRENT_SOURCE_DIR}")
+  message(STATUS "ArcaneSourceDir: ${Arcane_SOURCE_DIR}")
   include(${Arcane_SOURCE_DIR}/tools/wrapper/ArcaneSwigUtils.cmake)
   set_property(SOURCE MaterialEosService.i PROPERTY CPLUSPLUS ON)
+  set_property(SOURCE MaterialEosService.i PROPERTY USE_SWIG_DEPENDENCIES TRUE)
   set_property(SOURCE MaterialEosService.i PROPERTY INCLUDE_DIRECTORIES
     ${Arcane_SOURCE_DIR}/src
     ${Arcane_SOURCE_DIR}/tools/wrapper
-    ${Arcane_SOURCE_DIR}/ceapart/src
+#    ${Arcane_SOURCE_DIR}/ceapart/src
     ${Arcane_SOURCE_DIR}/ceapart/tools/wrapper)
+  set_property(SOURCE MaterialEosService.i PROPERTY GENERATED_INCLUDE_DIRECTORIES
+    ${Arcane_SOURCE_DIR}/ceapart/src
+    )
   set_property(SOURCE MaterialEosService.i PROPERTY COMPILE_OPTIONS -namespace MaterialEos)
   set(MATERIAL_CSHARP_OUTDIR ${CMAKE_CURRENT_BINARY_DIR})
   file(MAKE_DIRECTORY ${MATERIAL_CSHARP_OUTDIR})
@@ -56,7 +61,7 @@ if (TARGET arcane_dotnet_wrapper_cea_materials)
   swig_add_library(test_material_eos_csharp
     TYPE SHARED
     LANGUAGE CSHARP
-    SOURCES MaterialEosService.i
+    SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/MaterialEosService.i
     OUTPUT_DIR ${MATERIAL_CSHARP_OUTDIR}/cs_files
     OUTFILE_DIR ${MATERIAL_CSHARP_OUTDIR}/cpp_files
   )

@@ -1,0 +1,35 @@
+<?xml version="1.0" ?><!-- -*- SGML -*- -->
+
+<service name="VtkHdfV2PostProcessor" parent-name="PostProcessorWriterBase"
+         type="caseoption" type2="subdomain">
+  <name lang='fr'>post-processeur-vtk-hdf</name>
+  <userclass>User</userclass>
+  <description>
+    Post Processeur au format VTK HDF Version 2 (https://kitware.github.io/vtk-examples/site/VTKFileFormats/#hdf-file-formats)
+  </description>
+    
+  <interface name="Arcane::IPostProcessorWriter" inherited="false"/>
+
+  <options>
+
+    <simple name="use-collective-write" type="bool" default="true">
+      <userclass>User</userclass>
+      <description>
+        Indique si on utilise les opérations collectives via MPI/IO pour l'écriture.
+        Il faut aussi que HDF5 soit compilé avec le support de MPI/IO. Si ce n'est
+        pas le cas alors l'écriture ne sera pas collective.
+    </description>
+   </simple>
+
+    <simple name="max-write-size" type="int64" default="0">
+      <userclass>User</userclass>
+      <description>
+        Taille maximale en kilo-octet d'un bloc pour une écriture collective.
+        Si la taille maximale dépasse cette valeur, l'écriture est scindée en
+        plusieurs écritures. Cela n'est actif que pour les écritures avec MPI-IO.
+      </description>
+    </simple>
+
+  </options>
+
+</service>

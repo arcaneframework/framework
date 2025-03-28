@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* OneMeshItemAdder.h                                          (C) 2000-2024 */
+/* OneMeshItemAdder.h                                          (C) 2000-2025 */
 /*                                                                           */
 /* Outil de création d'une maille                                            */
 /*---------------------------------------------------------------------------*/
@@ -13,6 +13,8 @@
 #define ARCANE_MESH_ONEITEMADDER_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+#include "arcane/utils/TraceAccessor.h"
 
 #include "arcane/core/Item.h"
 
@@ -23,8 +25,6 @@
 #include "arcane/mesh/FaceFamily.h"
 #include "arcane/mesh/EdgeFamily.h"
 #include "arcane/mesh/MeshInfos.h"
-
-#include "arcane/utils/TraceAccessor.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -59,14 +59,9 @@ class OneMeshItemAdder
 
   ItemInternal* addOneNode(Int64 node_uid,Int32 owner);
 
-  // DEPRECATED
-  ItemInternal* addOneFace(Int64 a_face_uid, 
-                           Int64ConstArrayView a_node_list, 
-                           Integer a_type);
- 
   ItemInternal* addOneFace(ItemTypeId type_id,
                            Int64 face_uid,
-                           Int32 sub_domain_id,
+                           Int32 owner_rank,
                            Int64ConstArrayView nodes_uid);
   
   ItemInternal* addOneEdge(Int64 edge_uid,
@@ -119,6 +114,13 @@ class OneMeshItemAdder
   //! Remise à zéro des structures pour pouvoir faire à nouveau une allocation
   void resetAfterDeallocate();
 
+  /*!
+   * \brief Positionne le mécanisme de numérotation des uniqueId().
+   *
+   * \warning Cette méthode doit être appelée avant toute création d'entité.
+   */
+  void setUseNodeUniqueIdToGenerateEdgeAndFaceUniqueId(bool v);
+
  private:
   
   template<typename CellInfo>
@@ -149,6 +151,8 @@ class OneMeshItemAdder
   void _clearConnectivity(ItemLocalId item, IIncrementalItemConnectivity* connectivity);
   void _clearReverseConnectivity(ItemLocalId item, IIncrementalItemConnectivity* connectivity, IIncrementalItemConnectivity* reverse_connectivity);
   void _printRelations(ItemInternal* item);
+  void _checkSameItemCoherency(ItemWithNodes item, ConstArrayView<Int64> nodes_uid);
+  Int64 _checkGenerateFaceUniqueId(Int64 uid, ConstArrayView<Int64> nodes_uid);
 
  private:
  
@@ -174,7 +178,7 @@ class OneMeshItemAdder
   UniqueArray<Int64> m_work_edge_orig_nodes_uid;
 
   //! Si vrai, génère les uniqueId() des faces à partir de ceux des noeuds.
-  bool m_use_hash_for_face_unique_id = false;
+  bool m_use_hash_for_edge_and_face_unique_id = false;
 };
 
 /*---------------------------------------------------------------------------*/

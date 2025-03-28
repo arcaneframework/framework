@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CudaAcceleratorRuntime.cc                                   (C) 2000-2024 */
+/* CudaAcceleratorRuntime.cc                                   (C) 2000-2025 */
 /*                                                                           */
 /* Runtime pour 'Cuda'.                                                      */
 /*---------------------------------------------------------------------------*/
@@ -230,6 +230,15 @@ class CudaRunQueueEvent
     double x = time_in_ms * 1.0e6;
     Int64 nano_time = static_cast<Int64>(x);
     return nano_time;
+  }
+
+  bool hasPendingWork() final
+  {
+    cudaError_t v = cudaEventQuery(m_cuda_event);
+    if (v == cudaErrorNotReady)
+      return true;
+    ARCANE_CHECK_CUDA(v);
+    return false;
   }
 
  private:
@@ -459,6 +468,7 @@ fillDevices(bool is_verbose)
     o << " totalConstMem = " << dp.totalConstMem << "\n";
     o << " clockRate = " << dp.clockRate << "\n";
     o << " deviceOverlap = " << dp.deviceOverlap << "\n";
+    o << " cooperativeLaunch = " << dp.cooperativeLaunch << "\n";
     o << " multiProcessorCount = " << dp.multiProcessorCount << "\n";
     o << " kernelExecTimeoutEnabled = " << dp.kernelExecTimeoutEnabled << "\n";
     o << " integrated = " << dp.integrated << "\n";

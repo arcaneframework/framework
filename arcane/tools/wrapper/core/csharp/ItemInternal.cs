@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -27,6 +27,24 @@ namespace Arcane
     internal ItemInternal* this[Int32 id]
     {
       get { return m_ptr[id]; }
+    }
+  }
+
+  /*---------------------------------------------------------------------------*/
+  /*---------------------------------------------------------------------------*/
+
+  [StructLayout(LayoutKind.Sequential)]
+  public unsafe struct ItemInfoListView
+  {
+    Int64ArrayView m_unique_ids;
+    Int32ArrayView m_owners;
+    Int32ArrayView m_flags;
+    Int16ArrayView m_type_ids;
+    internal ItemSharedInfo* m_shared_info;
+
+    public Item this[Int32 id]
+    {
+      get { return new Item(new ItemBase(m_shared_info, id)); }
     }
   }
 
@@ -410,7 +428,7 @@ namespace Arcane
   /*---------------------------------------------------------------------------*/
 
   [StructLayout(LayoutKind.Sequential)]
-  public unsafe class ItemInternalArrayView
+  public unsafe struct ItemInternalArrayView
   {
     private Integer m_size;
     internal ItemInternal** m_ptr;

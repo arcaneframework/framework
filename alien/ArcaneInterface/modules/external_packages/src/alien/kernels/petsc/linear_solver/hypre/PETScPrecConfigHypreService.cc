@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -63,7 +63,7 @@ PETScPrecConfigHypreService::configure(PC& pc, [[maybe_unused]] const ISpace& sp
     checkError("Set Hypre Relax type",
         PetscOptionsSetValue(NULL, "-pc_hypre_boomeramg_relax_type_all", "SOR/Jacobi"));
     checkError("Hypre AMG SetDebugFlag",
-        PetscOptionsSetValue(NULL, "-pc_hypre_boomeramg_print_debug", "1"));
+        PetscOptionsSetValue(NULL, "-pc_hypre_boomeramg_print_debug", "0"));
     PCSetFromOptions(pc);
     // Default option is reversed in PETSc (CF-Relaxation is default)
     // checkError("Set Hypre Relax order", PetscOptionsSetValue(NULL,

@@ -1,20 +1,20 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ParticleFamilySerializer.cc                                 (C) 2000-2023 */
+/* ParticleFamilySerializer.cc                                 (C) 2000-2024 */
 /*                                                                           */
 /* Sérialisation/Désérialisation des familles de particules.                 */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/ISerializer.h"
-#include "arcane/ItemPrinter.h"
-#include "arcane/IMesh.h"
-#include "arcane/IParallelMng.h"
+#include "arcane/core/ISerializer.h"
+#include "arcane/core/ItemPrinter.h"
+#include "arcane/core/IMesh.h"
+#include "arcane/core/IParallelMng.h"
 
 #include "arcane/mesh/ParticleFamilySerializer.h"
 #include "arcane/mesh/ParticleFamily.h"
@@ -46,9 +46,9 @@ serializeItems(ISerializer* sbuf,Int32ConstArrayView local_ids)
 
   switch(sbuf->mode()){
   case ISerializer::ModeReserve:
-    sbuf->reserve(DT_Int64,1); // Pour le nombre de particules
-    sbuf->reserveSpan(DT_Int64,nb_item); // Pour les uniqueId() des particules.
-    sbuf->reserveSpan(DT_Int64,nb_item); // Pour les uniqueId() des mailles dans lesquelles se trouve les particules
+    sbuf->reserveInt64(1); // Pour le nombre de particules
+    sbuf->reserveSpan(eBasicDataType::Int64,nb_item); // Pour les uniqueId() des particules.
+    sbuf->reserveSpan(eBasicDataType::Int64,nb_item); // Pour les uniqueId() des mailles dans lesquelles se trouve les particules
     break;
   case ISerializer::ModePut:
     sbuf->putInt64(nb_item);

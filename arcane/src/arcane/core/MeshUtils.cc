@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshUtils.cc                                                (C) 2000-2024 */
+/* MeshUtils.cc                                                (C) 2000-2025 */
 /*                                                                           */
 /* Fonctions diverses sur les éléments du maillage.                          */
 /*---------------------------------------------------------------------------*/
@@ -562,7 +562,7 @@ writeMeshInfosSorted(IMesh* mesh, const String& file_name)
     for (Integer i = 0; i < nb_edge; ++i)
       sorted_edges[i] = edges[i];
     {
-      _CompareItemWithNodes compare_edges(mesh, IK_Edge, edges_sorted_id);
+      _CompareItemWithNodes compare_edges(mesh, IK_Edge, nodes_sorted_id);
       std::sort(std::begin(sorted_edges), std::end(sorted_edges), compare_edges);
     }
     for (Integer i = 0; i < nb_edge; ++i)
@@ -1556,7 +1556,7 @@ reorderNodesOfFace2(Int64ConstArrayView nodes_unique_id, IntegerArrayView new_in
 /*---------------------------------------------------------------------------*/
 
 Face MeshUtils::
-getFaceFromNodesLocal(Node node, Int32ConstArrayView face_nodes_local_id)
+getFaceFromNodesLocalId(Node node, Int32ConstArrayView face_nodes_local_id)
 {
   Integer n = face_nodes_local_id.size();
   for (Integer i = 0, s = node.nbFace(); i < s; ++i) {
@@ -1580,7 +1580,7 @@ getFaceFromNodesLocal(Node node, Int32ConstArrayView face_nodes_local_id)
 /*---------------------------------------------------------------------------*/
 
 Face MeshUtils::
-getFaceFromNodesUnique(Node node, Int64ConstArrayView face_nodes_unique_id)
+getFaceFromNodesUniqueId(Node node, Int64ConstArrayView face_nodes_unique_id)
 {
   Integer n = face_nodes_unique_id.size();
   for (Integer i = 0, s = node.nbFace(); i < s; ++i) {
@@ -1931,10 +1931,8 @@ fillUniqueIds(ItemVectorView items,Array<Int64>& uids)
 Int64 MeshUtils::
 generateHashUniqueId(SmallSpan<const Int64> nodes_unique_id)
 {
-  // Prend les 30 premiers bits du premier nœud pour former
-  // les 30 premiers bits de la fonction de hash.
-  // Les 32 bits suivants sont formées avec la fonction de hash.
-  // Le uniqueId() généré doit toujours être strictement positif
+  // Tout les bits sont formées avec la fonction de hash.
+  // Le uniqueId() généré doit toujours être positif
   // sauf pour l'entité nulle.
   Int32 nb_node = nodes_unique_id.size();
   if (nb_node == 0)
@@ -1946,9 +1944,7 @@ generateHashUniqueId(SmallSpan<const Int64> nodes_unique_id)
     Int64 next_hash = Hasher::hashfunc(nodes_unique_id[i]);
     hash ^= next_hash + 0x9e3779b9 + (hash << 6) + (hash >> 2);
   }
-  Int64 truncated_uid0 = uid0 & ((1 << 30) - 1);
-  Int64 truncated_hash = hash & ((1LL << 31) - 1);
-  Int64 new_uid = truncated_uid0 + (truncated_hash << 31);
+  Int64 new_uid = abs(hash);
   ARCANE_ASSERT(new_uid >= 0, ("UniqueId is not >= 0"));
   return new_uid;
 }

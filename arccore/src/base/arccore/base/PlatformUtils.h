@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* PlatformUtils.h                                             (C) 2000-2023 */
+/* PlatformUtils.h                                             (C) 2000-2025 */
 /*                                                                           */
 /* Fonctions utilitaires dépendant de la plateforme.                         */
 /*---------------------------------------------------------------------------*/
@@ -21,23 +21,19 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arccore
+namespace Arcane
 {
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-class String;
 class IStackTraceService;
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
-  \brief Espace de nom pour les fonctions dépendant de la plateforme.
- 
-  Cet espace de nom contient toutes les fonctions dépendant de la plateforme.
-*/
-namespace Platform
+ * \brief Espace de nom pour les fonctions dépendant de la plateforme.
+ * 
+ * Cet espace de nom contient toutes les fonctions dépendant de la plateforme.
+ */
+namespace Arcane::Platform
 {
 
 /*---------------------------------------------------------------------------*/
@@ -361,12 +357,66 @@ getCompilerId();
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Platform
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arccore
+namespace Arccore
+{
+namespace Platform = Arcane::Platform;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace Arcane::platform
+{
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+using Arcane::Platform::getCurrentDate;
+using Arcane::Platform::getCurrentTime;
+using Arcane::Platform::getCurrentDateTime;
+using Arcane::Platform::getHostName;
+using Arcane::Platform::getCurrentDirectory;
+using Arcane::Platform::getProcessId;
+using Arcane::Platform::getUserName;
+using Arcane::Platform::getHomeDirectory;
+using Arcane::Platform::getFileLength;
+using Arcane::Platform::getEnvironmentVariable;
+using Arcane::Platform::recursiveCreateDirectory;
+using Arcane::Platform::createDirectory;
+using Arcane::Platform::removeFile;
+using Arcane::Platform::isFileReadable;
+using Arcane::Platform::getFileDirName;
+using Arcane::Platform::stdMemcpy;
+using Arcane::Platform::getMemoryUsed;
+using Arcane::Platform::getCPUTime;
+using Arcane::Platform::getRealTime;
+using Arcane::Platform::timeToHourMinuteSecond;
+using Arcane::Platform::isDenormalized;
+using Arcane::Platform::safeStringCopy;
+using Arcane::Platform::sleep;
+
+using Arcane::Platform::enableFloatingException;
+using Arcane::Platform::isFloatingExceptionEnabled;
+using Arcane::Platform::raiseFloatingException;
+using Arcane::Platform::hasFloatingExceptionSupport;
+
+using Arcane::Platform::getStackTraceService;
+using Arcane::Platform::setStackTraceService;
+using Arcane::Platform::getStackTrace;
+using Arcane::Platform::dumpStackTrace;
+
+using Arcane::Platform::getConsoleHasColor;
+using Arcane::Platform::getCompilerId;
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

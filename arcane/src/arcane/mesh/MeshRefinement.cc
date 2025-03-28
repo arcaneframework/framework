@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshRefinement.cc                                           (C) 2000-2024 */
+/* MeshRefinement.cc                                           (C) 2000-2025 */
 /*                                                                           */
 /* Manipulation d'un maillage AMR.                                           */
 /*---------------------------------------------------------------------------*/
@@ -343,7 +343,7 @@ MeshRefinement::update()
 void MeshRefinement::
 flagCellToRefine(Int32ConstArrayView lids)
 {
-  ItemInfoListView cells(m_mesh->cellFamily());
+  CellLocalIdToCellConverter cells(m_mesh->cellFamily());
   for (Integer i = 0, is = lids.size(); i < is; i++) {
     Item item = cells[lids[i]];
     //ARCANE_ASSERT((item->type() ==IT_Hexaedron8),(""));

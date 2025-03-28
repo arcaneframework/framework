@@ -1,28 +1,31 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Otf2MessagePassingProfilingService.h                        (C) 2000-2019 */
+/* Otf2MessagePassingProfilingService.h                        (C) 2000-2025 */
 /*                                                                           */
 /* Informations de performances du "message passing" au format Otf2          */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_STD_OTF2MESSAGEPASSINGPROFILINGSERVICE_H
-#define ARCANE_STD_OTF2MESSAGEPASSINGPROFILINGSERVICE_H
+#ifndef ARCANE_STD_INTERNAL_OTF2MESSAGEPASSINGPROFILINGSERVICE_H
+#define ARCANE_STD_INTERNAL_OTF2MESSAGEPASSINGPROFILINGSERVICE_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/AbstractService.h"
-#include "arcane/ISubDomain.h"
-#include "arcane/ObserverPool.h"
-#include "arcane/VariableSynchronizerEventArgs.h"
 #include "arcane/utils/IMessagePassingProfilingService.h"
 #include "arcane/utils/String.h"
+
+#include "arcane/core/AbstractService.h"
+#include "arcane/core/ISubDomain.h"
+#include "arcane/core/ObserverPool.h"
+#include "arcane/core/VariableSynchronizerEventArgs.h"
+
+#include "arcane/std/internal/Otf2LibWrapper.h"
+#include "arcane/std/internal/Otf2MpiProfiling.h"
+
 #include "arccore/message_passing/Stat.h"
-#include "arcane/std/Otf2LibWrapper.h"
-#include "arcane/std/Otf2MpiProfiling.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -83,13 +83,15 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RunCommandLaunchInfo
    */
   KernelLaunchArgs kernelLaunchArgs() const { return m_kernel_launch_args; }
 
-  //! Calcul les informations pour les boucles multi-thread
+  //! Calcule et retourne les informations pour les boucles multi-thread
   ParallelLoopOptions computeParallelLoopOptions() const;
 
-  //! Calcule la valeur de loopRunInfo()
-  void computeLoopRunInfo();
-
-  //! Informations d'exécution de la boucle
+  /*!
+   * \brief Informations d'exécution de la boucle.
+   *
+   * Ces informations ne sont valides si executionPolicy()==eExecutionPolicy::Thread
+   * et si beginExecute() a été appelé.
+   */
   const ForLoopRunInfo& loopRunInfo() const { return m_loop_run_info; }
 
   //! Taille totale de la boucle
@@ -120,6 +122,8 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RunCommandLaunchInfo
   KernelLaunchArgs _computeKernelLaunchArgs() const;
 
  private:
+
+  void _computeLoopRunInfo();
 
   // Pour SYCL: enregistre l'évènement associé à la dernière commande de la file
   // \a sycl_event_ptr est de type 'sycl::event*'.

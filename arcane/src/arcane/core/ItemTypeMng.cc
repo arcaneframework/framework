@@ -1,17 +1,17 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023£ CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemTypeMng.cc                                              (C) 2000-2023 */
+/* ItemTypeMng.cc                                              (C) 2000-2025 */
 /*                                                                           */
 /* Gestionnaire des types d'entite du maillage.                              */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/ItemTypeMng.h"
+#include "arcane/core/ItemTypeMng.h"
 
 #include "arcane/utils/Iostream.h"
 #include "arcane/utils/String.h"
@@ -24,9 +24,9 @@
 #include "arcane/utils/Array.h"
 #include "arcane/utils/MultiBuffer.h"
 
-#include "arcane/ItemTypeInfoBuilder.h"
-#include "arcane/IParallelSuperMng.h"
-#include "arcane/ItemTypeInfoBuilder.h"
+#include "arcane/core/ItemTypeInfoBuilder.h"
+#include "arcane/core/IParallelSuperMng.h"
+#include "arcane/core/ItemTypeInfoBuilder.h"
 
 // AMR
 #include "arcane/ItemRefinementPattern.h"
@@ -102,6 +102,8 @@ _build(IParallelSuperMng* parallel_mng, ITraceMng* trace)
   //
   // https://vtk.org/wp-content/uploads/2015/04/file-formats.pdf
 
+  using Dimension = ItemTypeInfoBuilder::Dimension;
+
   m_trace = trace;
   m_types.resize(m_nb_builtin_item_type);
   m_types_buffer = new MultiBufferT<ItemTypeInfoBuilder>();
@@ -111,7 +113,7 @@ _build(IParallelSuperMng* parallel_mng, ITraceMng* trace)
     ItemTypeInfoBuilder* type = m_types_buffer->allocOne();
     m_types[IT_NullType] = type;
 
-    type->setInfos(this, IT_NullType, "NullType", 0, 0, 0);
+    type->setInfos(this, IT_NullType, "NullType", Dimension::DimUnknown, 0, 0, 0);
   }
 
   // Vertex
@@ -119,7 +121,7 @@ _build(IParallelSuperMng* parallel_mng, ITraceMng* trace)
     ItemTypeInfoBuilder* type = m_types_buffer->allocOne();
     m_types[IT_Vertex] = type;
 
-    type->setInfos(this, IT_Vertex, "Vertex", 0, 0, 0);
+    type->setInfos(this, IT_Vertex, "Vertex", Dimension::Dim0, 0, 0, 0);
     // TODO regarder si ce type est autorisé pour les mailles.
     // Si ce n'est pas le cas, il faudrait définir un type
     // pour les mailles 0D qui sont assimilables à des points.
@@ -130,7 +132,7 @@ _build(IParallelSuperMng* parallel_mng, ITraceMng* trace)
     ItemTypeInfoBuilder* type = m_types_buffer->allocOne();
     m_types[IT_FaceVertex] = type;
 
-    type->setInfos(this, IT_FaceVertex, "FaceVertex", 1, 0, 0);
+    type->setInfos(this, IT_FaceVertex, "FaceVertex", Dimension::Dim0, 1, 0, 0);
     type->setIsValidForCell(false);
   }
 
@@ -139,7 +141,7 @@ _build(IParallelSuperMng* parallel_mng, ITraceMng* trace)
     ItemTypeInfoBuilder* type = m_types_buffer->allocOne();
     m_types[IT_Line2] = type;
 
-    type->setInfos(this, IT_Line2, "Line2", 2, 0, 0);
+    type->setInfos(this, IT_Line2, "Line2", Dimension::Dim1, 2, 0, 0);
     type->setIsValidForCell(false);
   }
 
@@ -148,7 +150,7 @@ _build(IParallelSuperMng* parallel_mng, ITraceMng* trace)
     ItemTypeInfoBuilder* type = m_types_buffer->allocOne();
     m_types[IT_Line3] = type;
 
-    type->setInfos(this, IT_Line3, "Line3", 3, 0, 0);
+    type->setInfos(this, IT_Line3, "Line3", Dimension::Dim1, 3, 0, 0);
     type->setIsValidForCell(false);
   }
 
@@ -157,7 +159,7 @@ _build(IParallelSuperMng* parallel_mng, ITraceMng* trace)
     ItemTypeInfoBuilder* type = m_types_buffer->allocOne();
     m_types[IT_CellLine2] = type;
 
-    type->setInfos(this, IT_CellLine2, "CellLine2", 2, 0, 2);
+    type->setInfos(this, IT_CellLine2, "CellLine2", Dimension::Dim1, 2, 0, 2);
 
     type->addFaceVertex(0, 0);
     type->addFaceVertex(1, 1);
@@ -175,7 +177,7 @@ _build(IParallelSuperMng* parallel_mng, ITraceMng* trace)
     ItemTypeInfoBuilder* type = m_types_buffer->allocOne();
     m_types[IT_Triangle3] = type;
 
-    type->setInfos(this, IT_Triangle3, "Triangle3", 3, 3, 3);
+    type->setInfos(this, IT_Triangle3, "Triangle3", Dimension::Dim2, 3, 3, 3);
 
     type->addFaceLine(0, 0, 1);
     type->addFaceLine(1, 1, 2);
@@ -192,7 +194,7 @@ _build(IParallelSuperMng* parallel_mng, ITraceMng* trace)
     ItemTypeInfoBuilder* type = m_types_buffer->allocOne();
     m_types[IT_Triangle6] = type;
 
-    type->setInfos(this, IT_Triangle6, "Triangle6", 6, 3, 3);
+    type->setInfos(this, IT_Triangle6, "Triangle6", Dimension::Dim2, 6, 3, 3);
 
     type->addFaceLine3(0, 0, 1, 3);
     type->addFaceLine3(1, 1, 2, 4);
@@ -208,7 +210,7 @@ _build(IParallelSuperMng* parallel_mng, ITraceMng* trace)
     ItemTypeInfoBuilder* type = m_types_buffer->allocOne();
     m_types[IT_Quad4] = type;
 
-    type->setInfos(this, IT_Quad4, "Quad4", 4, 4, 4);
+    type->setInfos(this, IT_Quad4, "Quad4", Dimension::Dim2, 4, 4, 4);
 
     type->addFaceLine(0, 0, 1);
     type->addFaceLine(1, 1, 2);
@@ -227,7 +229,7 @@ _build(IParallelSuperMng* parallel_mng, ITraceMng* trace)
     ItemTypeInfoBuilder* type = m_types_buffer->allocOne();
     m_types[IT_Quad8] = type;
 
-    type->setInfos(this, IT_Quad8, "Quad8", 8, 4, 4);
+    type->setInfos(this, IT_Quad8, "Quad8", Dimension::Dim2, 8, 4, 4);
 
     type->addFaceLine3(0, 0, 1, 4);
     type->addFaceLine3(1, 1, 2, 5);
@@ -245,7 +247,7 @@ _build(IParallelSuperMng* parallel_mng, ITraceMng* trace)
     ItemTypeInfoBuilder* type = m_types_buffer->allocOne();
     m_types[IT_Pentagon5] = type;
 
-    type->setInfos(this, IT_Pentagon5, "Pentagon5", 5, 5, 5);
+    type->setInfos(this, IT_Pentagon5, "Pentagon5", Dimension::Dim2, 5, 5, 5);
 
     type->addFaceLine(0, 0, 1);
     type->addFaceLine(1, 1, 2);
@@ -265,7 +267,7 @@ _build(IParallelSuperMng* parallel_mng, ITraceMng* trace)
     ItemTypeInfoBuilder* type = m_types_buffer->allocOne();
     m_types[IT_Hexagon6] = type;
 
-    type->setInfos(this, IT_Hexagon6, "Hexagon6", 6, 6, 6);
+    type->setInfos(this, IT_Hexagon6, "Hexagon6", Dimension::Dim2, 6, 6, 6);
 
     type->addFaceLine(0, 0, 1);
     type->addFaceLine(1, 1, 2);
@@ -287,7 +289,7 @@ _build(IParallelSuperMng* parallel_mng, ITraceMng* trace)
     ItemTypeInfoBuilder* type = m_types_buffer->allocOne();
     m_types[IT_Hexaedron8] = type;
 
-    type->setInfos(this, IT_Hexaedron8, "Hexaedron8", 8, 12, 6);
+    type->setInfos(this, IT_Hexaedron8, "Hexaedron8", Dimension::Dim3, 8, 12, 6);
 
     type->addFaceQuad(0, 0, 3, 2, 1);
     type->addFaceQuad(1, 0, 4, 7, 3);
@@ -316,7 +318,7 @@ _build(IParallelSuperMng* parallel_mng, ITraceMng* trace)
     ItemTypeInfoBuilder* type = m_types_buffer->allocOne();
     m_types[IT_Hexaedron20] = type;
 
-    type->setInfos(this, IT_Hexaedron20, "Hexaedron20", 20, 12, 6);
+    type->setInfos(this, IT_Hexaedron20, "Hexaedron20", Dimension::Dim3, 20, 12, 6);
 
     type->addFaceQuad8(0, 0, 3, 2, 1, 11, 10, 9, 8);
     type->addFaceQuad8(1, 0, 4, 7, 3, 16, 15, 19, 11);
@@ -344,7 +346,7 @@ _build(IParallelSuperMng* parallel_mng, ITraceMng* trace)
     ItemTypeInfoBuilder* type = m_types_buffer->allocOne();
     m_types[IT_Pyramid5] = type;
 
-    type->setInfos(this, IT_Pyramid5, "Pyramid5", 5, 8, 5);
+    type->setInfos(this, IT_Pyramid5, "Pyramid5", Dimension::Dim3, 5, 8, 5);
 
     type->addFaceQuad(0, 0, 3, 2, 1);
     type->addFaceTriangle(1, 0, 4, 3);
@@ -367,7 +369,7 @@ _build(IParallelSuperMng* parallel_mng, ITraceMng* trace)
     ItemTypeInfoBuilder* type = m_types_buffer->allocOne();
     m_types[IT_Pentaedron6] = type;
 
-    type->setInfos(this, IT_Pentaedron6, "Pentaedron6", 6, 9, 5);
+    type->setInfos(this, IT_Pentaedron6, "Pentaedron6", Dimension::Dim3, 6, 9, 5);
 
     type->addFaceTriangle(0, 0, 2, 1);
     type->addFaceQuad(1, 0, 3, 5, 2);
@@ -391,7 +393,7 @@ _build(IParallelSuperMng* parallel_mng, ITraceMng* trace)
     ItemTypeInfoBuilder* type = m_types_buffer->allocOne();
     m_types[IT_Tetraedron4] = type;
 
-    type->setInfos(this, IT_Tetraedron4, "Tetraedron4", 4, 6, 4);
+    type->setInfos(this, IT_Tetraedron4, "Tetraedron4", Dimension::Dim3, 4, 6, 4);
 
     type->addFaceTriangle(0, 0, 2, 1);
     type->addFaceTriangle(1, 0, 3, 2);
@@ -412,7 +414,7 @@ _build(IParallelSuperMng* parallel_mng, ITraceMng* trace)
     ItemTypeInfoBuilder* type = m_types_buffer->allocOne();
     m_types[IT_Tetraedron10] = type;
 
-    type->setInfos(this, IT_Tetraedron10, "Tetraedron10", 10, 6, 4);
+    type->setInfos(this, IT_Tetraedron10, "Tetraedron10", Dimension::Dim3, 10, 6, 4);
 
     type->addFaceTriangle6(0, 0, 2, 1, 6, 5, 4);
     type->addFaceTriangle6(1, 0, 3, 2, 7, 9, 6);
@@ -432,7 +434,7 @@ _build(IParallelSuperMng* parallel_mng, ITraceMng* trace)
     ItemTypeInfoBuilder* type = m_types_buffer->allocOne();
     m_types[IT_Heptaedron10] = type;
 
-    type->setInfos(this, IT_Heptaedron10, "Heptaedron10", 10, 15, 7);
+    type->setInfos(this, IT_Heptaedron10, "Heptaedron10", Dimension::Dim3, 10, 15, 7);
 
     type->addFacePentagon(0, 0, 4, 3, 2, 1);
     type->addFacePentagon(1, 5, 6, 7, 8, 9);
@@ -464,7 +466,7 @@ _build(IParallelSuperMng* parallel_mng, ITraceMng* trace)
     ItemTypeInfoBuilder* type = m_types_buffer->allocOne();
     m_types[IT_Octaedron12] = type;
 
-    type->setInfos(this, IT_Octaedron12, "Octaedron12", 12, 18, 8);
+    type->setInfos(this, IT_Octaedron12, "Octaedron12", Dimension::Dim3, 12, 18, 8);
 
     type->addFaceHexagon(0, 0, 5, 4, 3, 2, 1);
     type->addFaceHexagon(1, 6, 7, 8, 9, 10, 11);
@@ -500,7 +502,7 @@ _build(IParallelSuperMng* parallel_mng, ITraceMng* trace)
     ItemTypeInfoBuilder* type = m_types_buffer->allocOne();
     m_types[IT_HemiHexa7] = type;
 
-    type->setInfos(this, IT_HemiHexa7, "HemiHexa7", 7, 11, 6);
+    type->setInfos(this, IT_HemiHexa7, "HemiHexa7", Dimension::Dim3, 7, 11, 6);
 
     type->addFaceTriangle(0, 0, 1, 2);
     type->addFaceQuad(1, 0, 2, 3, 4);
@@ -527,7 +529,7 @@ _build(IParallelSuperMng* parallel_mng, ITraceMng* trace)
     ItemTypeInfoBuilder* type = m_types_buffer->allocOne();
     m_types[IT_HemiHexa6] = type;
 
-    type->setInfos(this, IT_HemiHexa6, "HemiHexa6", 6, 10, 6);
+    type->setInfos(this, IT_HemiHexa6, "HemiHexa6", Dimension::Dim3, 6, 10, 6);
 
     type->addFaceTriangle(0, 0, 1, 2);
     type->addFaceQuad(1, 0, 2, 3, 4);
@@ -553,7 +555,7 @@ _build(IParallelSuperMng* parallel_mng, ITraceMng* trace)
     ItemTypeInfoBuilder* type = m_types_buffer->allocOne();
     m_types[IT_HemiHexa5] = type;
 
-    type->setInfos(this, IT_HemiHexa5, "HemiHexa5", 5, 7, 4);
+    type->setInfos(this, IT_HemiHexa5, "HemiHexa5", Dimension::Dim3, 5, 7, 4);
 
     type->addFaceTriangle(0, 0, 1, 2);
     type->addFaceQuad(1, 0, 2, 3, 4);
@@ -574,7 +576,7 @@ _build(IParallelSuperMng* parallel_mng, ITraceMng* trace)
     ItemTypeInfoBuilder* type = m_types_buffer->allocOne();
     m_types[IT_AntiWedgeLeft6] = type;
 
-    type->setInfos(this, IT_AntiWedgeLeft6, "AntiWedgeLeft6", 6, 10, 6);
+    type->setInfos(this, IT_AntiWedgeLeft6, "AntiWedgeLeft6", Dimension::Dim3, 6, 10, 6);
 
     type->addFaceTriangle(0, 0, 2, 1);
     type->addFaceQuad(1, 0, 3, 5, 2);
@@ -600,7 +602,7 @@ _build(IParallelSuperMng* parallel_mng, ITraceMng* trace)
     ItemTypeInfoBuilder* type = m_types_buffer->allocOne();
     m_types[IT_AntiWedgeRight6] = type;
 
-    type->setInfos(this, IT_AntiWedgeRight6, "AntiWedgeRight6", 6, 10, 6);
+    type->setInfos(this, IT_AntiWedgeRight6, "AntiWedgeRight6", Dimension::Dim3, 6, 10, 6);
 
     type->addFaceTriangle(0, 0, 2, 1);
     type->addFaceQuad(1, 0, 3, 5, 2);
@@ -626,7 +628,7 @@ _build(IParallelSuperMng* parallel_mng, ITraceMng* trace)
     ItemTypeInfoBuilder* type = m_types_buffer->allocOne();
     m_types[IT_DiTetra5] = type;
 
-    type->setInfos(this, IT_DiTetra5, "DiTetra5", 5, 9, 6);
+    type->setInfos(this, IT_DiTetra5, "DiTetra5", Dimension::Dim3, 5, 9, 6);
 
     type->addFaceTriangle(0, 0, 1, 3);
     type->addFaceTriangle(1, 1, 2, 3);
@@ -694,7 +696,7 @@ _build(IParallelSuperMng* parallel_mng, ITraceMng* trace)
     ItemTypeInfoBuilder* type = m_types_buffer->allocOne();
     m_types[IT_Enneedron14] = type;
 
-    type->setInfos(this, IT_Enneedron14, "IT_Enneedron14", 14, 21, 9);
+    type->setInfos(this, IT_Enneedron14, "Enneedron14", Dimension::Dim3, 14, 21, 9);
 
     type->addFaceHeptagon(0, 0, 6, 5, 4, 3, 2, 1);
     type->addFaceHeptagon(1, 7, 8, 9, 10, 11, 12, 13);
@@ -733,7 +735,7 @@ _build(IParallelSuperMng* parallel_mng, ITraceMng* trace)
     ItemTypeInfoBuilder* type = m_types_buffer->allocOne();
     m_types[IT_Decaedron16] = type;
 
-    type->setInfos(this, IT_Decaedron16, "IT_Decaedron16", 16, 24, 10);
+    type->setInfos(this, IT_Decaedron16, "Decaedron16", Dimension::Dim3, 16, 24, 10);
 
     type->addFaceOctogon(0, 0, 7, 6, 5, 4, 3, 2, 1);
     type->addFaceOctogon(1, 8, 9, 10, 11, 12, 13, 14, 15);
@@ -777,7 +779,7 @@ _build(IParallelSuperMng* parallel_mng, ITraceMng* trace)
     ItemTypeInfoBuilder* type = m_types_buffer->allocOne();
     m_types[IT_Heptagon7] = type;
 
-    type->setInfos(this, IT_Heptagon7, "Heptagon7", 7, 7, 7);
+    type->setInfos(this, IT_Heptagon7, "Heptagon7", Dimension::Dim2, 7, 7, 7);
 
     type->addFaceLine(0, 0, 1);
     type->addFaceLine(1, 1, 2);
@@ -801,7 +803,7 @@ _build(IParallelSuperMng* parallel_mng, ITraceMng* trace)
     ItemTypeInfoBuilder* type = m_types_buffer->allocOne();
     m_types[IT_Octogon8] = type;
 
-    type->setInfos(this, IT_Octogon8, "Octogon8", 8, 8, 8);
+    type->setInfos(this, IT_Octogon8, "Octogon8", Dimension::Dim2, 8, 8, 8);
 
     type->addFaceLine(0, 0, 1);
     type->addFaceLine(1, 1, 2);
@@ -822,6 +824,39 @@ _build(IParallelSuperMng* parallel_mng, ITraceMng* trace)
     type->addEdge(7, 7, 0, 6, 0);
   }
 
+  // Cell3D_Line2
+  {
+    ItemTypeInfoBuilder* type = m_types_buffer->allocOne();
+    m_types[IT_Cell3D_Line2] = type;
+
+    type->setInfos(this, IT_Cell3D_Line2, "Cell3D_Line2", Dimension::Dim1, 2, 0, 0);
+  }
+
+  // Cell3D_Triangle3
+  {
+    ItemTypeInfoBuilder* type = m_types_buffer->allocOne();
+    m_types[IT_Cell3D_Triangle3] = type;
+
+    type->setInfos(this, IT_Cell3D_Triangle3, "Cell3D_Triangle3", Dimension::Dim2, 3, 0, 3);
+
+    type->addFaceLine(0, 0, 1);
+    type->addFaceLine(1, 1, 2);
+    type->addFaceLine(2, 2, 0);
+  }
+
+  // Cell3D_Quad4
+  {
+    ItemTypeInfoBuilder* type = m_types_buffer->allocOne();
+    m_types[IT_Cell3D_Quad4] = type;
+
+    type->setInfos(this, IT_Cell3D_Quad4, "Cell3D_Quad4", Dimension::Dim2, 4, 0, 4);
+
+    type->addFaceLine(0, 0, 1);
+    type->addFaceLine(1, 1, 2);
+    type->addFaceLine(2, 2, 3);
+    type->addFaceLine(3, 3, 0);
+  }
+
   { // Polygon & Polyhedron: generic item types
     String arcane_item_type_file = platform::getEnvironmentVariable("ARCANE_ITEM_TYPE_FILE");
     if (!arcane_item_type_file.null()) {
@@ -835,7 +870,7 @@ _build(IParallelSuperMng* parallel_mng, ITraceMng* trace)
   for (Integer i = 0; i < m_types.size(); ++i) {
     ItemTypeInfoBuilder* type = static_cast<ItemTypeInfoBuilder*>(m_types[i]);
     if (!type)
-      ARCANE_FATAL("ItemType '{0}' is not defined");
+      ARCANE_FATAL("ItemType '{0}' is not defined", type);
     type->computeFaceEdgeInfos();
   }
 }
@@ -947,11 +982,11 @@ readTypes(IParallelSuperMng* pm, const String& filename)
 
   // Analyse du fichier de types
   std::istringstream ifile((char*)bytes.unguardedBasePointer(), std::istringstream::in);
-  Integer nb_type;
+  Integer nb_type = 0;
   ifile >> nb_type;
 
   m_types.resize(ItemTypeMng::nbBuiltInItemType() + nb_type);
-  Integer typeId, nbN, nbE, nbF;
+  Int16 typeId = -1, nbN = 0, nbE = 0, nbF = 0;
   for (Integer i = 0; i < nb_type; ++i) {
     ItemTypeInfoBuilder* type = m_types_buffer->allocOne();
     ifile >> typeId >> nbF >> nbE;
@@ -980,7 +1015,7 @@ readTypes(IParallelSuperMng* pm, const String& filename)
         ifile >> nodeFace[inodeFace];
       }
       PolygonMapper::const_iterator finder = built_polygons.find(nbN);
-      Integer face_type;
+      Int16 face_type = IT_NullType;
       if (finder != built_polygons.end()) {
         face_type = finder->second;
         m_trace->debug(Trace::High) << "\tAdding already existing face type " << face_type

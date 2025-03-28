@@ -1,17 +1,17 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* DependencyInjection.cc                                      (C) 2000-2021 */
+/* DependencyInjection.cc                                      (C) 2000-2025 */
 /*                                                                           */
 /* Types et fonctions pour gérer le pattern 'DependencyInjection'.           */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/DependencyInjection.h"
+#include "arcane/utils/internal/DependencyInjection.h"
 
 #include "arcane/utils/UniqueArray.h"
 #include "arcane/utils/ExternalRef.h"
@@ -29,20 +29,24 @@ namespace Arcane::DependencyInjection
 class Injector::Impl
 {
  public:
+
   class InstanceInfo
   {
    public:
+
     InstanceInfo(IInjectedInstance* instance, Int32 index)
     : m_instance(instance)
     , m_index(index)
     {}
 
    public:
+
     IInjectedInstance* m_instance = nullptr;
     Int32 m_index = 0;
   };
 
  public:
+
   ~Impl()
   {
     for (Integer i = 0, n = m_instance_list.size(); i < n; ++i)
@@ -51,6 +55,7 @@ class Injector::Impl
   }
 
  public:
+
   void addInstance(IInjectedInstance* instance)
   {
     Int32 index = m_instance_list.size();
@@ -60,10 +65,15 @@ class Injector::Impl
   Int32 nbInstance() const { return m_instance_list.size(); }
 
  private:
+
   UniqueArray<InstanceInfo> m_instance_list;
 
  public:
+
+  // Il faut conserver une instance de FactoryInfo pour éviter sa
+  // destruction prématurée car les instances dans m_factories en ont besoin.
   UniqueArray<Ref<impl::IInstanceFactory>> m_factories;
+  UniqueArray<impl::FactoryInfo> m_factories_info;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -152,16 +162,23 @@ _doError1(const String& message, int nb_value)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class FactoryInfo::Impl
+class FactoryInfoImpl
 {
  public:
-  Impl(const ProviderProperty& property)
+
+  FactoryInfoImpl(const ProviderProperty& property)
   : m_property(property)
   , m_name(property.name())
   {
   }
 
  public:
+
+  bool hasName(const String& str) const { return str == m_name; }
+  void fillWithImplementationNames(Array<String>& names) const { names.add(m_name); }
+
+ public:
+
   const ProviderProperty m_property;
   UniqueArray<Ref<IInstanceFactory>> m_factories;
   String m_name;
@@ -172,17 +189,8 @@ class FactoryInfo::Impl
 
 FactoryInfo::
 FactoryInfo(const ProviderProperty& property)
-: m_p{ new Impl(property) }
+: m_p(std::make_shared<FactoryInfoImpl>(property))
 {
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-FactoryInfo::
-~FactoryInfo()
-{
-  delete m_p;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -200,7 +208,7 @@ addFactory(Ref<IInstanceFactory> f)
 bool FactoryInfo::
 hasName(const String& str) const
 {
-  return str == m_p->m_name;
+  return m_p->hasName(str);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -239,11 +247,11 @@ fillWithGlobalFactories()
   Integer i = 0;
   while (g) {
     auto func = g->infoCreatorWithPropertyFunction();
-    impl::FactoryInfo* fi = nullptr;
-    if (func)
-      fi = (*func)(g->property());
-    if (fi)
-      m_p->m_factories.addRange(fi->m_p->m_factories);
+    if (func) {
+      impl::FactoryInfo fi = (*func)(g->property());
+      m_p->m_factories_info.add(fi);
+      m_p->m_factories.addRange(fi.m_p->m_factories);
+    }
 
     g = g->nextRegisterer();
     ++i;
@@ -295,7 +303,7 @@ _iterateFactories(const String& factory_name, IFactoryVisitorFunctor* functor) c
     Int32 nb_constructor_arg = f->nbConstructorArg();
     if (nb_constructor_arg >= 0 && nb_constructor_arg != nb_instance)
       continue;
-    if (has_no_name || f->factoryInfo()->hasName(factory_name)) {
+    if (has_no_name || f->factoryInfoImpl()->hasName(factory_name)) {
       if (functor->execute(f))
         return;
     }
@@ -330,6 +338,37 @@ void Injector::
 _doError(const TraceInfo& ti, const String& message)
 {
   ARCANE_FATAL("Function: {0} : {1}", ti, message);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void Injector::
+_printValidImplementationAndThrow(const TraceInfo& ti,
+                                  const String& implementation_name,
+                                  FactoryFilterFunc filter_func)
+{
+  // Pas d'implémentation correspondante trouvée.
+  // Dans ce cas on récupère la liste des implémentations valides et on les affiche dans
+  // le message d'erreur.
+  UniqueArray<String> valid_names;
+  for (Int32 i = 0, n = _nbFactory(); i < n; ++i) {
+    impl::IInstanceFactory* f = _factory(i);
+    if (filter_func(f)) {
+      f->factoryInfoImpl()->fillWithImplementationNames(valid_names);
+    }
+  };
+  String message = String::format("No implementation named '{0}' found", implementation_name);
+
+  // TODO: améliorer le message
+  String message2;
+  if (valid_names.size() == 0)
+    message2 = " and no implementation is available.";
+  else if (valid_names.size() == 1)
+    message2 = String::format(". Valid value is: '{0}'.", valid_names[0]);
+  else
+    message2 = String::format(". Valid values are: '{0}'.", String::join(", ", valid_names));
+  _doError(ti, message + message2);
 }
 
 /*---------------------------------------------------------------------------*/

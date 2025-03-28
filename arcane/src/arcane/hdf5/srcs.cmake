@@ -10,6 +10,8 @@ set(ARCANE_SOURCES
   Hdf5VariableWriter.cc
   Hdf5MpiReaderWriter.cc
   Hdf5MpiReaderWriter.h
+  VtkHdfPostProcessor.cc
+  VtkHdfV2PostProcessor.cc
 )
 
 set(AXL_FILES
@@ -17,4 +19,6 @@ set(AXL_FILES
   Hdf5VariableReader
   Hdf5VariableWriter
   Hdf5MpiReaderWriter
+  VtkHdfPostProcessor
+  VtkHdfV2PostProcessor
 )

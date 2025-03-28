@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Filtering.cc                                                (C) 2000-2024 */
+/* Filtering.cc                                                (C) 2000-2025 */
 /*                                                                           */
 /* Algorithme de filtrage.                                                   */
 /*---------------------------------------------------------------------------*/
@@ -33,9 +33,10 @@ GenericFilteringBase()
 /*---------------------------------------------------------------------------*/
 
 Int32 GenericFilteringBase::
-_nbOutputElement() const
+_nbOutputElement()
 {
   m_queue.barrier();
+  m_is_already_called = false;
   return m_host_nb_out_storage[0];
 }
 
@@ -87,6 +88,30 @@ _copyDeviceNbOutToHostNbOut()
 {
   if (!m_use_direct_host_storage)
     m_device_nb_out_storage.copyToAsync(m_host_nb_out_storage, m_queue);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void GenericFilteringBase::
+_setCalled()
+{
+  if (m_is_already_called)
+    ARCANE_FATAL("apply() has already been called for this instance");
+  m_is_already_called = true;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+bool GenericFilteringBase::
+_checkEmpty(Int32 nb_value)
+{
+  if (nb_value <= 0) {
+    m_host_nb_out_storage[0] = 0;
+    return true;
+  }
+  return false;
 }
 
 /*---------------------------------------------------------------------------*/

@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ICartesianMesh.h                                            (C) 2000-2024 */
+/* ICartesianMesh.h                                            (C) 2000-2025 */
 /*                                                                           */
 /* Interface d'un maillage cartésien.                                        */
 /*---------------------------------------------------------------------------*/
@@ -14,10 +14,11 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+#include "arcane/cartesianmesh/AMRZonePosition.h"
+#include "arcane/cartesianmesh/CartesianMeshGlobal.h"
+
 #include "arcane/core/ArcaneTypes.h"
 #include "arcane/core/MeshHandle.h"
-
-#include "arcane/cartesianmesh/CartesianMeshGlobal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -159,6 +160,20 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMesh
   virtual void refinePatch3D(Real3 position, Real3 length) = 0;
 
   /*!
+   * \brief Raffine un bloc du maillage cartésien.
+   *
+   * Cette méthode ne peut être appelée que si le maillage est un maillage
+   * AMR (IMesh::isAmrActivated()==true).
+   *
+   * Les mailles dont les positions des centres sont comprises entre
+   * \a position et \a (position+length) sont raffinées et les informations
+   * de connectivité correspondantes sont mises à jour.
+   *
+   * Cette opération est collective.
+   */
+  virtual void refinePatch(const AMRZonePosition& position) = 0;
+
+  /*!
    * \brief Dé-raffine en 2D un bloc du maillage cartésien.
    *
    * Cette méthode ne peut être appelée que si le maillage est un maillage
@@ -197,6 +212,26 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMesh
    * Cette opération est collective.
    */
   virtual void coarseZone3D(Real3 position, Real3 length) = 0;
+
+  /*!
+   * \brief Dé-raffine un bloc du maillage cartésien.
+   *
+   * Cette méthode ne peut être appelée que si le maillage est un maillage
+   * AMR (IMesh::isAmrActivated()==true).
+   *
+   * Les mailles dont les positions des centres sont comprises entre
+   * \a position et \a (position+length) sont dé-raffinées et les informations
+   * de connectivité correspondantes sont mises à jour.
+   *
+   * Toutes les mailles dans la zone de dé-raffinement doivent être du même
+   * niveau.
+   *
+   * Les patchs ne contenant plus de mailles après l'appel à cette méthode
+   * seront supprimés.
+   *
+   * Cette opération est collective.
+   */
+  virtual void coarseZone(const AMRZonePosition& position) = 0;
 
   /*!
    * \brief Méthode permettant de supprimer une ou plusieurs couches

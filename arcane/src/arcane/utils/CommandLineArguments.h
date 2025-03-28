@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CommandLineArguments.h                                      (C) 2000-2020 */
+/* CommandLineArguments.h                                      (C) 2000-2025 */
 /*                                                                           */
 /* Arguments de la ligne de commande.                                        */
 /*---------------------------------------------------------------------------*/
@@ -52,7 +52,8 @@ class ARCANE_UTILS_EXPORT CommandLineArguments
  public:
 
   //! Créé une instance à partir des arguments (argc,argv)
-  CommandLineArguments(int* argc,char*** argv);
+  CommandLineArguments(int* argc, char*** argv);
+  CommandLineArguments();
   explicit CommandLineArguments(const StringList& args);
   CommandLineArguments(const CommandLineArguments& rhs);
   ~CommandLineArguments();
@@ -92,6 +93,12 @@ class ARCANE_UTILS_EXPORT CommandLineArguments
 
   //! Liste des paramètres
   ParameterList& parameters();
+
+  /*!
+   * \brief Méthode permettant de savoir si l'utilisateur a demandé
+   * de l'aide dans la ligne de commande.
+   */
+  bool needHelp() const;
 
  private:
 

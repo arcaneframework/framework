@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* tv_display_arcane_types.cc                                  (C) 2000-2018 */
+/* tv_display_arcane_types.cc                                  (C) 2000-2025 */
 /*                                                                           */
 /* Informations pour le debugging avec totalview                             */
 /*---------------------------------------------------------------------------*/
@@ -141,7 +141,7 @@ class _ItemSharedInfo
 /*                             Arcane::Array  (sur type de base)             */
 /*---------------------------------------------------------------------------*/
 
-namespace Arccore
+namespace Arcane
 {
 template<typename type> int
 _displayArray(const AbstractArray<type>* obj,const char* type_name)
@@ -161,13 +161,13 @@ _displayArray(const AbstractArray<type>* obj,const char* type_name)
 
 #define TV_DISPLAY_ARRAY_TYPE(type)\
 ATTR_USED int \
-TV_ttf_display_type(const Arccore::Array<type>* obj)\
+TV_ttf_display_type(const Arcane::Array<type>* obj)\
 { return _displayArray(obj,#type); }\
 ATTR_USED int \
-TV_ttf_display_type(const Arccore::UniqueArray<type>* obj)\
+TV_ttf_display_type(const Arcane::UniqueArray<type>* obj)\
 { return _displayArray(obj,#type); }\
 ATTR_USED int \
-TV_ttf_display_type(const Arccore::SharedArray<type>* obj)\
+TV_ttf_display_type(const Arcane::SharedArray<type>* obj)\
 { return _displayArray(obj,#type); }
 
 // Les instances souhaitées doivent être explicitement instanciées

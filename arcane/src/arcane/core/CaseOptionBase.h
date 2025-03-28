@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CaseOptionBase.h                                            (C) 2000-2023 */
+/* CaseOptionBase.h                                            (C) 2000-2025 */
 /*                                                                           */
 /* Classe d'une base d'une option du jeu de donnés.                          */
 /*---------------------------------------------------------------------------*/
@@ -108,7 +108,10 @@ class ARCANE_CORE_EXPORT CaseOptionBase
 
   //! Nombre maximum d'occurences (pour une option multiple) (-1 == unbounded)
   Integer maxOccurs() const;
-  
+
+  //! Permet de savoir si une option est optionnelle.
+  bool isOptional() const;
+
   /*! \brief Met à jour la valeur de l'option à partir d'une fonction.
    *
    * Si l'option n'est pas liée à une table de marche, ne fait rien.

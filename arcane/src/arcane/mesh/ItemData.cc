@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemData.cc                                                 (C) 2000-2021 */
+/* ItemData.cc                                                 (C) 2000-2024 */
 /*                                                                           */
 /* Class gathering item data : ids and connectivities                        */
 /*---------------------------------------------------------------------------*/
@@ -14,8 +14,8 @@
 #include "arcane/utils/ITraceMng.h"
 #include "arcane/utils/CheckedConvert.h"
 
-#include "arcane/IParallelMng.h"
-#include "arcane/MeshPartInfo.h"
+#include "arcane/core/IParallelMng.h"
+#include "arcane/core/MeshPartInfo.h"
 
 #include "arcane/mesh/ItemData.h"
 
@@ -36,9 +36,9 @@ serialize(ISerializer* buffer)
     {
       buffer->reserve(m_item_family->name());
       buffer->reserve(itemKindName(m_item_family->itemKind()));
-      buffer->reserve(DT_Int64,2); // nb_items + item_infos.size
-      buffer->reserveSpan(DT_Int32,m_nb_items);// m_owners
-      buffer->reserveSpan(DT_Int64,m_item_infos.size());
+      buffer->reserveInt64(2); // nb_items + item_infos.size
+      buffer->reserveSpan(eBasicDataType::Int32,m_nb_items);// m_owners
+      buffer->reserveSpan(eBasicDataType::Int64,m_item_infos.size());
     }
     break;
   case ISerializer::ModePut:

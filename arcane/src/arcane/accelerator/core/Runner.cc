@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Runner.cc                                                   (C) 2000-2024 */
+/* Runner.cc                                                   (C) 2000-2025 */
 /*                                                                           */
-/* Gestion d'une file d'exécution sur accélérateur.                          */
+/* Gestion de l'exécution sur accélérateur.                                  */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -317,9 +317,9 @@ isInitialized() const
 /*---------------------------------------------------------------------------*/
 
 void Runner::
-setConcurrentQueueCreation(bool v)
+setConcurrentQueueCreation(bool)
 {
-  m_p->setConcurrentQueueCreation(v);
+  // Toujours thread-safe;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -328,7 +328,7 @@ setConcurrentQueueCreation(bool v)
 bool Runner::
 isConcurrentQueueCreation() const
 {
-  return m_p->isConcurrentQueueCreation();
+  return true;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -337,7 +337,8 @@ isConcurrentQueueCreation() const
 void Runner::
 setDeviceReducePolicy(eDeviceReducePolicy v)
 {
-  m_p->m_reduce_policy = v;
+  if (v != eDeviceReducePolicy::Grid)
+    std::cout << "Warning: Runner::setDeviceReducePolicy(): only 'eDeviceReducePolicy::Grid' is supported\n";
 }
 
 /*---------------------------------------------------------------------------*/

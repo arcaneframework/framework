@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* StdThreadImplementation.cc                                  (C) 2000-2024 */
+/* StdThreadImplementationService.cc                           (C) 2000-2025 */
 /*                                                                           */
 /* Implémentation des threads utilisant la bibliothèque standard C++.        */
 /*---------------------------------------------------------------------------*/
@@ -16,6 +16,8 @@
 #include "arcane/utils/FatalErrorException.h"
 #include "arcane/utils/UtilsTypes.h"
 #include "arcane/utils/IThreadImplementationService.h"
+#include "arcane/utils/internal/DependencyInjection.h"
+
 #include "arcane/core/FactoryService.h"
 
 /*---------------------------------------------------------------------------*/
@@ -33,6 +35,7 @@ class StdThreadImplementationService
  public:
 
   explicit StdThreadImplementationService(const ServiceBuildInfo&) {}
+  StdThreadImplementationService() = default;
 
  public:
 
@@ -52,6 +55,11 @@ class StdThreadImplementationService
 ARCANE_REGISTER_APPLICATION_FACTORY(StdThreadImplementationService,
                                     IThreadImplementationService,
                                     StdThreadImplementationService);
+
+ARCANE_DI_REGISTER_PROVIDER(StdThreadImplementationService,
+                            DependencyInjection::ProviderProperty("StdThreadImplementationService"),
+                            ARCANE_DI_INTERFACES(IThreadImplementationService),
+                            ARCANE_DI_EMPTY_CONSTRUCTOR());
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

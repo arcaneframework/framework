@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* AcceleratorItemInfoUnitTest.cc                              (C) 2000-2024 */
+/* AcceleratorItemInfoUnitTest.cc                              (C) 2000-2025 */
 /*                                                                           */
 /* Service de test unitaire des 'ItemGenericInfoListView'.                   */
 /*---------------------------------------------------------------------------*/
@@ -45,7 +45,7 @@ class AcceleratorItemInfoUnitTest
 {
  public:
 
-  explicit AcceleratorItemInfoUnitTest(const ServiceBuildInfo& cb);
+  explicit AcceleratorItemInfoUnitTest(const ServiceBuildInfo& sb);
 
  public:
 
@@ -95,10 +95,12 @@ _executeTest1()
   VariableCellInt64 var_unique_ids(VariableBuildInfo(mesh(), "TestUniqueIds"));
   VariableCellInt16 var_type_ids(VariableBuildInfo(mesh(), "TestTypeIds"));
   VariableCellInt32 var_owners(VariableBuildInfo(mesh(), "TestOwners"));
+  VariableCellInt16 var_is_shared(VariableBuildInfo(mesh(), "TestIsShared"));
 
   VariableCellInt64 var_unique_ids2(VariableBuildInfo(mesh(), "TestUniqueIds2"));
   VariableCellInt16 var_type_ids2(VariableBuildInfo(mesh(), "TestTypeIds2"));
   VariableCellInt32 var_owners2(VariableBuildInfo(mesh(), "TestOwners2"));
+  VariableCellInt16 var_is_shared2(VariableBuildInfo(mesh(), "TestIsShared2"));
 
   auto* queue = subDomain()->acceleratorMng()->defaultQueue();
   ItemGenericInfoListView cells_info(mesh()->cellFamily());
@@ -108,10 +110,12 @@ _executeTest1()
     auto out_unique_ids = viewOut(command, var_unique_ids);
     auto out_type_ids = viewOut(command, var_type_ids);
     auto out_owners = viewOut(command, var_owners);
+    auto out_is_shared = viewOut(command, var_is_shared);
 
     auto out_unique_ids2 = viewOut(command, var_unique_ids2);
     auto out_type_ids2 = viewOut(command, var_type_ids2);
     auto out_owners2 = viewOut(command, var_owners2);
+    auto out_is_shared2 = viewOut(command, var_is_shared2);
 
     command << RUNCOMMAND_ENUMERATE (Cell, vi, allCells())
     {
@@ -119,10 +123,12 @@ _executeTest1()
       out_unique_ids[vi] = cells_info.uniqueId(vi);
       out_type_ids[vi] = cells_info.typeId(vi);
       out_owners[vi] = cells_info.owner(vi);
+      out_is_shared[vi] = cells_info.isShared(vi);
 
       out_unique_ids2[vi] = cells_info.uniqueId(lid);
       out_type_ids2[vi] = cells_info.typeId(lid);
       out_owners2[vi] = cells_info.owner(lid);
+      out_is_shared2[vi] = cells_info.isShared(vi);
     };
   }
 
@@ -136,6 +142,8 @@ _executeTest1()
       ARCANE_FATAL("Bad 1 typeId() expected={0} current={1}", cell.itemTypeId(), var_type_ids[cell]);
     if (cell.owner() != var_owners[cell])
       ARCANE_FATAL("Bad 1 owner() expected={0} current={1}", cell.owner(), var_owners[cell]);
+    if (cell.isShared() != var_is_shared[cell])
+      ARCANE_FATAL("Bad 1 isShared() expected={0} current={1}", cell.isShared(), var_is_shared[cell]);
 
     if (cell.uniqueId() != var_unique_ids2[cell])
       ARCANE_FATAL("Bad 2 uniqueId() expected={0} current={1}", cell.uniqueId(), var_unique_ids[cell]);
@@ -143,6 +151,8 @@ _executeTest1()
       ARCANE_FATAL("Bad 2 typeId() expected={0} current={1}", cell.itemTypeId(), var_type_ids[cell]);
     if (cell.owner() != var_owners2[cell])
       ARCANE_FATAL("Bad 2 owner() expected={0} current={1}", cell.owner(), var_owners[cell]);
+    if (cell.isShared() != var_is_shared2[cell])
+      ARCANE_FATAL("Bad 2 isShared() expected={0} current={1}", cell.isShared(), var_is_shared2[cell]);
   }
 }
 

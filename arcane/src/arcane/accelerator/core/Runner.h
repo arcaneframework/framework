@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Runner.h                                                    (C) 2000-2024 */
+/* Runner.h                                                    (C) 2000-2025 */
 /*                                                                           */
 /* Gestion de l'exécution sur accélérateur.                                  */
 /*---------------------------------------------------------------------------*/
@@ -34,15 +34,30 @@ namespace Arcane::Accelerator
  *
  * Cette classe utilise une sémantique par référence
  *
- * Une instance de cette classe représente un backend d'exécution. Il faut
+ * Une instance de cette classe représente un back-end d'exécution. Il faut
  * d'abord appelé initialize() avant de pouvoir utiliser les méthodes de
  * l'instance ou alors il faut appeler l'un des constructeurs autre que le
- * constructeur par défaut.
+ * constructeur par défaut. Le back-end utilisé est choisi via l'énumération
+ * eExecutionPolicy. Les back-ends sont de deux types:
+ * - les back-ends qui s'exécutent sur l'hôte: eExecutionPolicy::Sequential
+ * et eExecutionPolicy::Thread,
+ *  - les back-ends qui s'exécutent sur accélérateurs : eExecutionPolicy::CUDA,
+ * eExecutionPolicy::HIP et eExecutionPolicy::SYCL.
  *
- * Une instance de cette classe est associée à un device qui n'est pas forcément
- * celui utilisé par défaut pour le thread courant. Pour garantir que les
- * kernels associés à ce runner seront bien exécutés sur le bon device il
- * est nécessaire d'appeler au moins une fois la méthode setAsCurrentDevice().
+ * La fonction \arcaneacc{isAcceleratorPolicy()} permet de savoir si une
+ * eExecutionPolicy est associée à un accélérateur.
+ *
+ * Si une instance de cette classe est associée à un accélérateur, celui-ci
+ * n'est pas forcément celui utilisé par défaut pour le thread courant.
+ * Pour garantir que les kernels associés à ce runner seront bien exécutés
+ * sur le bon device il est nécessaire d'appeler au moins une fois
+ * la méthode setAsCurrentDevice() et de le refaire si une autre partie du code
+ * ou si une bibliothèque externe change l'accélérateur par défaut.
+ *
+ * La classe Runner permet de créer des files d'exécutions (RunQueue)
+ * via la fonction makeQueue(). Ces files peuvent ensuite être utilisées
+ * pour lancer des commandes (RunCommand). La page \ref arcanedoc_acceleratorapi
+ * décrit le fonctionnement de l'API accélérateur.
  *
  * Il est possible de changer le mécanisme utilisé pour les réductions via
  * la méthode setDeviceReducePolicy(). Par défaut on utilise un kernel
@@ -95,9 +110,10 @@ class ARCANE_ACCELERATOR_CORE_EXPORT Runner
   /*!
    * \brief Indique si on autorise la création de RunQueue depuis plusieurs threads.
    *
-   * Cela nécessite d'utiliser un verrou (comme std::mutex) et peut dégrader les
-   * performances. Le défaut est \a false.
+   * \deprecated La création de file est toujours thread-safe depuis la version
+   * 3.15 de Arcane.
    */
+  ARCANE_DEPRECATED_REASON("Y2025: this method is a no op. Concurrent queue creation is always thread-safe")
   void setConcurrentQueueCreation(bool v);
 
   //! Indique si la création concurrent de plusieurs RunQueue est autorisé
@@ -111,6 +127,7 @@ class ARCANE_ACCELERATOR_CORE_EXPORT Runner
   double cumulativeCommandTime() const;
 
   //! Positionne la politique d'exécution des réductions
+  ARCANE_DEPRECATED_REASON("Y2025: this method is a no op. reduce policy is always eDeviceReducePolicy::Grid")
   void setDeviceReducePolicy(eDeviceReducePolicy v);
 
   //! politique d'exécution des réductions
@@ -199,7 +216,7 @@ class ARCANE_ACCELERATOR_CORE_EXPORT Runner
 /*!
  * \brief Créé une file associée à \a runner.
  *
- * Cet appel est thread-safe si runner.isConcurrentQueueCreation()==true.
+ * Cet appel est thread-safe.
  */
 inline RunQueue
 makeQueue(const Runner& runner)
@@ -212,7 +229,7 @@ makeQueue(const Runner& runner)
 /*!
  * \brief Créé une file associée à \a runner.
  *
- * Cet appel est thread-safe si runner.isConcurrentQueueCreation()==true.
+ * Cet appel est thread-safe.
  */
 inline RunQueue
 makeQueue(const Runner* runner)
@@ -226,7 +243,7 @@ makeQueue(const Runner* runner)
 /*!
  * \brief Créé une file associée à \a runner avec les propriétés \a bi.
  *
- * Cet appel est thread-safe si runner.isConcurrentQueueCreation()==true.
+ * Cet appel est thread-safe.
  */
 inline RunQueue
 makeQueue(const Runner& runner, const RunQueueBuildInfo& bi)
@@ -239,7 +256,7 @@ makeQueue(const Runner& runner, const RunQueueBuildInfo& bi)
 /*!
  * \brief Créé une file associée à \a runner avec les propriétés \a bi.
  *
- * Cet appel est thread-safe si runner.isConcurrentQueueCreation()==true.
+ * Cet appel est thread-safe.
  */
 inline RunQueue
 makeQueue(const Runner* runner, const RunQueueBuildInfo& bi)

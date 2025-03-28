@@ -15,16 +15,15 @@ jobs:
             long: 'ubuntu-2204'
             compilo_name: 'gcc'
             compilo_version: '12'
-            date: '20240717'
+            date: '20250112'
             args: '-DARCCORE_CXX_STANDARD=23'
-            cuda: 'false'
             execute_tests: true
 
           - short: 'U22_C16'
             long: 'ubuntu-2204'
             compilo_name: 'clang'
             compilo_version: '16'
-            date: '20240717'
+            date: '20250112'
             args: '-DARCCORE_CXX_STANDARD=23'
             execute_tests: true
 
@@ -32,7 +31,7 @@ jobs:
             long: 'ubuntu-2404'
             compilo_name: 'gcc'
             compilo_version: '14'
-            date: '20240717'
+            date: '20250120'
             args: '-DARCCORE_CXX_STANDARD=23'
             execute_tests: true
 
@@ -40,7 +39,7 @@ jobs:
             long: 'ubuntu-2404'
             compilo_name: 'clang'
             compilo_version: '18'
-            date: '20240717'
+            date: '20250120'
             args: '-DARCCORE_CXX_STANDARD=23'
             execute_tests: true
 
@@ -58,7 +57,7 @@ jobs:
 
     name: '[${{matrix.image.short}}_${{matrix.version.short}}]_OMPI_${{matrix.config.type}}'
     # La partie 'uses' est déterminée à la compilation, donc on ne peut pas mettre de variable ${{}}.
-    uses: 'arcaneframework/gh_actions/.github/workflows/reusable_test_framework.yml@v2'
+    uses: 'arcaneframework/gh_actions/.github/workflows/reusable_test_framework.yml@v3'
     with:
       image: ghcr.io/arcaneframework/${{matrix.image.long}}:${{matrix.image.compilo_name}}-${{matrix.image.compilo_version}}_${{matrix.version.long}}_${{matrix.image.date}}
       compilo_name: ${{ matrix.image.compilo_name }}
@@ -74,3 +73,4 @@ jobs:
       excluded_tests_with_labels: ${{ matrix.config.excluded_tests_with_labels }}
       ctest_additionnal_args: ${{ matrix.config.ctest_args }}
       use_cache: false
+      artifact_key_prefix: ${{matrix.image.short}}_${{matrix.version.short}}_${{matrix.mpi.implementation}}_${{matrix.config.type}}

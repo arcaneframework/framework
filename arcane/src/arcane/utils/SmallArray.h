@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* SmallArray.h                                                (C) 2000-2023 */
+/* SmallArray.h                                                (C) 2000-2025 */
 /*                                                                           */
 /* Tableau 1D de données avec buffer pré-alloué.                             */
 /*---------------------------------------------------------------------------*/
@@ -36,7 +36,7 @@ namespace Arcane::impl
  * Le buffer utilisé doit rester valide durant toute la durée de vie de l'allocateur.
  */
 class ARCANE_UTILS_EXPORT StackMemoryAllocator final
-: public IMemoryAllocator
+: public IMemoryAllocator3
 {
  public:
 
@@ -47,20 +47,17 @@ class ARCANE_UTILS_EXPORT StackMemoryAllocator final
 
  public:
 
-  bool hasRealloc() const final;
-  void* allocate(size_t new_size) final;
-  void* reallocate(void* current_ptr, size_t new_size) final;
-  void deallocate(void* ptr) final;
-  size_t adjustCapacity(size_t wanted_capacity, size_t) final
-  {
-    return wanted_capacity;
-  }
-  size_t guarantedAlignment() final { return 0; }
+  bool hasRealloc(MemoryAllocationArgs) const final { return true; }
+  AllocatedMemoryInfo allocate(MemoryAllocationArgs args, Int64 new_size) final;
+  AllocatedMemoryInfo reallocate(MemoryAllocationArgs args, AllocatedMemoryInfo current_ptr, Int64 new_size) final;
+  void deallocate(MemoryAllocationArgs args, AllocatedMemoryInfo ptr) final;
+  Int64 adjustedCapacity(MemoryAllocationArgs, Int64 wanted_capacity, Int64) const final { return wanted_capacity; }
+  size_t guaranteedAlignment(MemoryAllocationArgs) const final { return 0; }
 
  private:
 
   void* m_preallocated_buffer = nullptr;
-  size_t m_preallocated_size = 0;
+  Int64 m_preallocated_size = 0;
 };
 
 } // namespace Arcane::impl

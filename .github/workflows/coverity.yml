@@ -17,7 +17,7 @@ jobs:
     name: ubuntu coverity
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/arcaneframework/ubuntu-2404:gcc-14_full_20240717
+      image: ghcr.io/arcaneframework/ubuntu-2404:gcc-14_full_20250120
     steps:
       - name: Display CPU Infos
         shell: bash
@@ -98,12 +98,6 @@ jobs:
           name: coverity-artifact
           path: cov-int/build-log.txt
           retention-days: 3
-
-      - name: Install jq
-        shell: bash
-        run: |
-          apt-get update
-          apt-get install -y jq
 
       - name: Submit results to Coverity Scan
         shell: bash

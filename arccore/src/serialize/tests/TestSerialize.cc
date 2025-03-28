@@ -11,6 +11,9 @@
 #include "arccore/base/Ref.h"
 #include "arccore/base/FatalErrorException.h"
 #include "arccore/base/ValueFiller.h"
+#include "arccore/base/BasicDataType.h"
+#include "arccore/base/Float128.h"
+#include "arccore/base/Int128.h"
 
 using namespace Arccore;
 
@@ -31,25 +34,30 @@ class ISerializeValue
 /*---------------------------------------------------------------------------*/
 namespace
 {
+using Float64 = Real;
 template <typename T> class ValueTraits;
-#define VALUE_TRAITS(type_name) \
+#define VALUE_TRAITS(type_name,basic_type_name) \
   template <> class ValueTraits<type_name> \
   { \
    public: \
 \
-    static ISerializer::eDataType dataType() { return ISerializer::DT_##type_name; } \
+    static eBasicDataType dataType() { return eBasicDataType::basic_type_name; } \
     static void getValue(ISerializer* s, type_name& v) { v = s->get##type_name(); } \
   };
 
-VALUE_TRAITS(Byte);
-VALUE_TRAITS(Int8);
-VALUE_TRAITS(Int16);
-VALUE_TRAITS(Int32)
-VALUE_TRAITS(Int64);
-VALUE_TRAITS(Float16);
-VALUE_TRAITS(Float32);
-VALUE_TRAITS(BFloat16);
-VALUE_TRAITS(Real);
+#define VALUE_TRAITS2(type_name) VALUE_TRAITS(type_name,type_name)
+
+VALUE_TRAITS2(Byte);
+VALUE_TRAITS2(Int8);
+VALUE_TRAITS2(Int16);
+VALUE_TRAITS2(Int32)
+VALUE_TRAITS2(Int64);
+VALUE_TRAITS2(Float16);
+VALUE_TRAITS2(Float32);
+VALUE_TRAITS2(BFloat16);
+VALUE_TRAITS(Real,Float64);
+VALUE_TRAITS2(Float128);
+VALUE_TRAITS2(Int128);
 
 } // namespace
 
@@ -75,11 +83,13 @@ class SerializeValue
     Int64 size = m_array_values.size();
     switch (s->mode()) {
     case ISerializer::ModeReserve:
+      std::cout << "ReserveArray type=" << m_data_type << " size=" << m_array_values.size() << "\n";
       s->reserveArray(m_array_values);
       if (size > 0)
         s->reserve(m_data_type, 1);
       break;
     case ISerializer::ModePut:
+      std::cout << "PutArray type=" << m_data_type << " size=" << m_array_values.size() << "\n";
       s->putArray(m_array_values);
       if (size > 0)
         s->put(m_array_values[0]);
@@ -110,7 +120,7 @@ class SerializeValue
   UniqueArray<DataType> m_array_values;
   UniqueArray<DataType> m_result_array_values;
   DataType m_unique_value = {};
-  ISerializer::eDataType m_data_type;
+  eBasicDataType m_data_type = eBasicDataType::Unknown;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -210,6 +220,8 @@ void _doMisc()
   values.add<Int32>(16);
   values.add<Byte>(3289);
   values.add<Int64>(12932);
+  values.add<Float128>(19328);
+  values.add<Int128>(32422);
   values.addString("Ceci est un test de chaîne de caractères");
 
   serializer->setMode(ISerializer::ModeReserve);

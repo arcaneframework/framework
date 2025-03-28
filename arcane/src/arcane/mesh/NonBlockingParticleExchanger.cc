@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* NonBlockingParticleExchanger.cc                             (C) 2000-2023 */
+/* NonBlockingParticleExchanger.cc                             (C) 2000-2025 */
 /*                                                                           */
 /* Echangeur de particules.                                                  */
 /*---------------------------------------------------------------------------*/
@@ -18,21 +18,20 @@
 #include "arcane/utils/IFunctor.h"
 #include "arcane/utils/PlatformUtils.h"
 
-#include "arcane/ItemGroup.h"
-#include "arcane/ItemVector.h"
-#include "arcane/IItemFamily.h"
-#include "arcane/IParticleFamily.h"
-#include "arcane/IParallelMng.h"
-#include "arcane/IVariableMng.h"
-#include "arcane/IVariable.h"
-#include "arcane/IMesh.h"
-#include "arcane/Item.h"
-#include "arcane/Timer.h"
-#include "arcane/SerializeMessage.h"
-#include "arcane/ISerializeMessageList.h"
-#include "arcane/CommonVariables.h"
-#include "arcane/Timer.h"
-#include "arcane/FactoryService.h"
+#include "arcane/core/ItemGroup.h"
+#include "arcane/core/ItemVector.h"
+#include "arcane/core/IItemFamily.h"
+#include "arcane/core/IParticleFamily.h"
+#include "arcane/core/IParallelMng.h"
+#include "arcane/core/IVariableMng.h"
+#include "arcane/core/IVariable.h"
+#include "arcane/core/IMesh.h"
+#include "arcane/core/Item.h"
+#include "arcane/core/Timer.h"
+#include "arcane/core/ISerializeMessageList.h"
+#include "arcane/core/CommonVariables.h"
+#include "arcane/core/FactoryService.h"
+#include "arcane/core/internal/SerializeMessage.h"
 
 //#define ARCANE_DEBUG_EXCHANGE_ITEMS
 
@@ -525,16 +524,16 @@ _serializeMessage(ISerializeMessage* sm,
   sbuf->reserveInteger(1);
   if (m_want_fast_send_particles){
     // Réserve pour le nombre de particules traitées
-    sbuf->reserve(DT_Int64,1);
+    sbuf->reserveInt64(1);
   }
   // Réserve pour le rang de l'expéditeur
-  sbuf->reserve(DT_Int32,1);
+  sbuf->reserveInt32(1);
   // Réserve pour le nombre de uniqueId()
-  sbuf->reserve(DT_Int64,1);
+  sbuf->reserveInt64(1);
   // Réserve pour les uniqueId() des particules
-  sbuf->reserveSpan(DT_Int64,nb_item);
+  sbuf->reserveSpan(eBasicDataType::Int64,nb_item);
   // Réserve pour les uniqueId() des mailles dans lesquelles se trouvent les particules
-  sbuf->reserveSpan(DT_Int64,nb_item);
+  sbuf->reserveSpan(eBasicDataType::Int64,nb_item);
   
   for( VariableList::Enumerator i_var(m_variables_to_exchange); ++i_var; ){
     IVariable* var = *i_var;
@@ -751,8 +750,8 @@ _processFinishTrackingMessage()
       ISerializer* sbuf = sm->serializer();
       sbuf->setMode(ISerializer::ModeReserve);
       sbuf->reserveInteger(1);
-      sbuf->reserve(DT_Int64,1);
-      sbuf->reserve(DT_Int32,1);
+      sbuf->reserveInt64(1);
+      sbuf->reserveInt32(1);
       sbuf->allocateBuffer();
       sbuf->setMode(ISerializer::ModePut);
       sbuf->putInteger(MESSAGE_NB_FINISH_EXCHANGE);
@@ -782,7 +781,7 @@ _sendFinishExchangeParticle()
     ISerializer* sbuf = sm->serializer();
     sbuf->setMode(ISerializer::ModeReserve);
     sbuf->reserveInteger(1);
-    sbuf->reserve(DT_Int64,1);
+    sbuf->reserveInt64(1);
     sbuf->allocateBuffer();
     sbuf->setMode(ISerializer::ModePut);
     sbuf->putInteger(MESSAGE_FINISH_EXCHANGE_STATUS);

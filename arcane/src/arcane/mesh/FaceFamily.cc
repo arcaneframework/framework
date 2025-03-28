@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* FaceFamily.cc                                               (C) 2000-2024 */
+/* FaceFamily.cc                                               (C) 2000-2025 */
 /*                                                                           */
 /* Famille de faces.                                                         */
 /*---------------------------------------------------------------------------*/
@@ -52,7 +52,8 @@ class FaceFamily::TopologyModifier
 : public AbstractItemFamilyTopologyModifier
 {
  public:
-  TopologyModifier(FaceFamily* f)
+
+  explicit TopologyModifier(FaceFamily* f)
   :  AbstractItemFamilyTopologyModifier(f), m_true_family(f){}
   void replaceNode(ItemLocalId item_lid,Integer index,ItemLocalId new_lid) override
   {
@@ -70,8 +71,16 @@ class FaceFamily::TopologyModifier
   {
     m_true_family->replaceCell(item_lid,index,new_lid);
   }
+  void setBackAndFrontCells(FaceLocalId face_lid, CellLocalId back_cell_lid,
+                            CellLocalId front_cell_lid) override
+  {
+    Face face(m_true_family->_itemInternal(face_lid));
+    m_true_family->setBackAndFrontCells(face, back_cell_lid, front_cell_lid);
+  }
+
  private:
-  FaceFamily* m_true_family;
+
+  FaceFamily* m_true_family = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/

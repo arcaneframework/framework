@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemFamily.cc                                               (C) 2000-2024 */
+/* ItemFamily.cc                                               (C) 2000-2025 */
 /*                                                                           */
 /* Infos de maillage pour un genre d'entité donnée.                          */
 /*---------------------------------------------------------------------------*/
@@ -366,6 +366,14 @@ build()
     m_items_flags = &m_internal_variables->m_items_flags._internalTrueData()->_internalDeprecatedValue();
     m_items_type_id = &m_internal_variables->m_items_type_id._internalTrueData()->_internalDeprecatedValue();
     m_items_nb_parent = &m_internal_variables->m_items_nb_parent._internalTrueData()->_internalDeprecatedValue();
+
+    // Ajoute notification pour la mise à jour des vues après un changement externe
+    _addOnSizeChangedObservable(m_internal_variables->m_items_unique_id);
+    _addOnSizeChangedObservable(m_internal_variables->m_items_owner);
+    _addOnSizeChangedObservable(m_internal_variables->m_items_flags);
+    _addOnSizeChangedObservable(m_internal_variables->m_items_type_id);
+    _addOnSizeChangedObservable(m_internal_variables->m_items_nb_parent);
+
     _updateItemViews();
   }
 
@@ -2466,6 +2474,35 @@ setConnectivityMng(IItemConnectivityMng* connectivity_mng)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+EventObservableView<const ItemFamilyItemListChangedEventArgs&> ItemFamily::
+itemListChangedEvent()
+{
+  return m_infos->itemListChangedEvent();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ItemFamily::
+experimentalChangeUniqueId(ItemLocalId local_id,ItemUniqueId unique_id)
+{
+  ItemInternal* iitem = _itemInternal(local_id);
+  Int64 old_uid = iitem->uniqueId();
+  if (old_uid==unique_id)
+    return;
+  //MutableItemBase item_base(local_id,m_common_item_shared_info);
+  iitem->setUniqueId(unique_id);
+
+  if (m_infos->hasUniqueIdMap()){
+    ItemInternalMap& item_map = itemsMap();
+    item_map.remove(old_uid);
+    item_map.add(unique_id,iitem);
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 void ItemFamily::
 _addSourceConnectivity(IIncrementalItemSourceConnectivity* c)
 {
@@ -2666,6 +2703,7 @@ ArrayView<DataType> _getView(Array<DataType>* v)
  }
 
 }
+
 void ItemFamily::
 _updateItemViews()
 {
@@ -2676,6 +2714,16 @@ _updateItemViews()
   m_common_item_shared_info->m_parent_item_ids = m_items_nb_parent->view();
 
   m_items_unique_id_view = _getView(m_items_unique_id);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ItemFamily::
+_addOnSizeChangedObservable(VariableRef& var_ref)
+{
+  m_observers.addObserver(this,&ItemFamily::_updateItemViews,
+                          var_ref.variable()->onSizeChangedObservable());
 }
 
 /*---------------------------------------------------------------------------*/

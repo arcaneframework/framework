@@ -1,18 +1,17 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* AcceleratorReduceUnitTest.cc                                (C) 2000-2024 */
+/* AcceleratorReduceUnitTest.cc                                (C) 2000-2025 */
 /*                                                                           */
 /* Service de test des réductions sur accélérateur.                          */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/NumArray.h"
-
 #include "arcane/utils/ValueChecker.h"
 #include "arcane/utils/MemoryView.h"
 
@@ -157,21 +156,14 @@ executeTest()
 {
 
   info() << "ExecuteReduceTest policy=" << m_queue.executionPolicy();
-  if (options()->useAtomic()) {
-    info() << "UseReducePolicy = Atomic";
-    m_runner.setDeviceReducePolicy(ax::eDeviceReducePolicy::Atomic);
-    executeTest2(2);
-  }
-  else {
-    info() << "UseReducePolicy = Grid";
-    m_runner.setDeviceReducePolicy(ax::eDeviceReducePolicy::Grid);
-    Int32 nb_iter = 100;
-    if (!isAcceleratorPolicy(m_runner.executionPolicy()))
-      nb_iter = 10;
-    if (arcaneIsDebug())
-      nb_iter /= 5;
-    executeTest2(nb_iter);
-  }
+  info() << "UseReducePolicy = Grid";
+  m_runner.setDeviceReducePolicy(ax::eDeviceReducePolicy::Grid);
+  Int32 nb_iter = 100;
+  if (!isAcceleratorPolicy(m_runner.executionPolicy()))
+    nb_iter = 10;
+  if (arcaneIsDebug())
+    nb_iter /= 5;
+  executeTest2(nb_iter);
 }
 
 /*---------------------------------------------------------------------------*/

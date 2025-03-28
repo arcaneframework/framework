@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ParallelMngDispatcher.cc                                    (C) 2000-2024 */
+/* ParallelMngDispatcher.cc                                    (C) 2000-2025 */
 /*                                                                           */
 /* Redirection de la gestion des messages suivant le type des arguments.     */
 /*---------------------------------------------------------------------------*/
@@ -253,6 +253,11 @@ class ParallelMngDispatcher::Impl
     if (!m_runner.isInitialized())
       ARCANE_FATAL("Can not set an unitialized Runner");
 
+    // Attention à bien supprimer la référence sur la RunQueue
+    // avant de détruire le Runner car s'il n'y a pas d'autres
+    // références sur \a m_runner il sera détruit avec \a m_queue
+    // et ce dernier aura un \a m_runner détruit.
+    m_queue = RunQueue{};
     m_runner = runner;
     Accelerator::RunQueueBuildInfo build_info(-5);
     m_queue = makeQueue(m_runner,build_info);

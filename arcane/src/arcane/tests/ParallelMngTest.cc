@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ParallelMngTest.cc                                          (C) 2000-2024 */
+/* ParallelMngTest.cc                                          (C) 2000-2025 */
 /*                                                                           */
 /* Test des opérations de base du parallèlisme.                              */
 /*---------------------------------------------------------------------------*/
@@ -18,25 +18,22 @@
 #include "arcane/utils/ITraceMng.h"
 #include "arcane/utils/Array3View.h"
 #include "arcane/utils/Array2.h"
-#include "arcane/utils/Real2.h"
-#include "arcane/utils/Real3.h"
-#include "arcane/utils/Real2x2.h"
-#include "arcane/utils/Real3x3.h"
+#include "arcane/utils/NumericTypes.h"
 #include "arcane/utils/HPReal.h"
 #include "arcane/utils/ScopedPtr.h"
 
-#include "arcane/FactoryService.h"
-#include "arcane/AbstractService.h"
-#include "arcane/IParallelMng.h"
-#include "arcane/IDirectExecution.h"
-#include "arcane/SerializeBuffer.h"
-#include "arcane/IParallelExchanger.h"
-#include "arcane/ISerializeMessage.h"
-#include "arcane/SerializeMessage.h"
-#include "arcane/ISerializeMessageList.h"
-#include "arcane/IParallelTopology.h"
-#include "arcane/IParallelNonBlockingCollective.h"
-#include "arcane/ParallelMngUtils.h"
+#include "arcane/core/FactoryService.h"
+#include "arcane/core/AbstractService.h"
+#include "arcane/core/IParallelMng.h"
+#include "arcane/core/IDirectExecution.h"
+#include "arcane/core/SerializeBuffer.h"
+#include "arcane/core/IParallelExchanger.h"
+#include "arcane/core/ISerializeMessage.h"
+#include "arcane/core/ISerializeMessageList.h"
+#include "arcane/core/IParallelTopology.h"
+#include "arcane/core/IParallelNonBlockingCollective.h"
+#include "arcane/core/ParallelMngUtils.h"
+#include "arcane/core/internal/SerializeMessage.h"
 
 #include "arcane/tests/ArcaneTestGlobal.h"
 
@@ -493,11 +490,11 @@ class ParallelMngTest::SerializerTestValues
   void putValue(ISerializer* sb)
   {
     sb->setMode(ISerializer::ModeReserve);
-    sb->reserve(DT_Byte,ref_byte_values.size());
-    sb->reserve(DT_Int16,ref_i16_values.size());
-    sb->reserve(DT_Int32,ref_i32_values.size());
-    sb->reserve(DT_Int64,ref_i64_values.size());
-    sb->reserve(DT_Real,ref_real_values.size());
+    sb->reserveByte(ref_byte_values.size());
+    sb->reserveInt16(ref_i16_values.size());
+    sb->reserveInt32(ref_i32_values.size());
+    sb->reserveInt64(ref_i64_values.size());
+    sb->reserve(eBasicDataType::Real,ref_real_values.size());
     sb->allocateBuffer();
     sb->setMode(ISerializer::ModePut);
     sb->put(ref_byte_values);
@@ -699,7 +696,7 @@ _testProbeSerialize(Integer nb_value,bool use_one_message)
   else if (my_rank>min_rank){
     Integer nb_remaining_message = nb_message;
     while(nb_remaining_message>0){
-      MessageTag mtag(BasicSerializeMessage::DEFAULT_SERIALIZE_TAG_VALUE);
+      MessageTag mtag(MessagePassing::internal::BasicSerializeMessage::DEFAULT_SERIALIZE_TAG_VALUE);
       PointToPointMessageInfo p2p_info(MessageRank(0),mtag);
       p2p_info.setBlocking(false);
       MessageId id = pm->probe(p2p_info);
@@ -962,7 +959,7 @@ _testProcessMessages(const ParallelExchangerOptions* exchange_options)
     Integer message_size = base_size + dest_rank + rank;
     s->setMode(ISerializer::ModeReserve);
     s->reserveInteger(1); // Pour le nombre d'elements
-    s->reserve(DT_Int32,message_size); // Pour les elements
+    s->reserveInt32(message_size); // Pour les elements
     s->allocateBuffer();
     s->setMode(ISerializer::ModePut);
     s->putInteger(message_size);

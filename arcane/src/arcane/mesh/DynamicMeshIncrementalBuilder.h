@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* DynamicMeshIncrementalBuilder.h                             (C) 2000-2024 */
+/* DynamicMeshIncrementalBuilder.h                             (C) 2000-2025 */
 /*                                                                           */
 /* Construction d'un maillage de manière incrémentale.                       */
 /*---------------------------------------------------------------------------*/
@@ -96,8 +96,6 @@ class DynamicMeshIncrementalBuilder
   void addRelations(ItemDataList& item_relation_list);
 
   void addFamilyItems(ItemData& item_info);
-
-  ItemInternal* addFace(Int64 a_face_uid, Int64ConstArrayView a_node_list, Integer a_type);
 
   //! Ajout au maillage courant d'item venant d'un maillage parent
   void addParentCells(const ItemVectorView & items);

@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* TransferValuesParallelOperation.cc                          (C) 2000-2020 */
+/* TransferValuesParallelOperation.cc                          (C) 2000-2025 */
 /*                                                                           */
 /* Transfert de valeurs sur différents processeurs.                          */
 /*---------------------------------------------------------------------------*/
@@ -18,10 +18,10 @@
 #include "arcane/utils/FatalErrorException.h"
 #include "arcane/utils/CheckedConvert.h"
 
-#include "arcane/IParallelMng.h"
-#include "arcane/Timer.h"
-#include "arcane/ISerializer.h"
-#include "arcane/SerializeMessage.h"
+#include "arcane/core/IParallelMng.h"
+#include "arcane/core/Timer.h"
+#include "arcane/core/ISerializer.h"
+#include "arcane/core/internal/SerializeMessage.h"
 
 #include "arcane/impl/TransferValuesParallelOperation.h"
 
@@ -234,9 +234,9 @@ transferValues()
                     << " real=" << nb*nb_send_real;
       s->reserveInteger(1); // Pour la taille
       for( Integer k=0; k<nb; ++k ){
-        s->reserveSpan(DT_Int32,nb_send_int32);
-        s->reserveSpan(DT_Int64,nb_send_int64);
-        s->reserveSpan(DT_Real,nb_send_real);
+        s->reserveSpan(eBasicDataType::Int32,nb_send_int32);
+        s->reserveSpan(eBasicDataType::Int64,nb_send_int64);
+        s->reserveSpan(eBasicDataType::Real,nb_send_real);
       }
       s->allocateBuffer();
       s->setMode(ISerializer::ModePut);

@@ -18,6 +18,8 @@
 #include "arcane/utils/ValueConvert.h"
 #include "arcane/utils/BFloat16.h"
 #include "arcane/utils/Float16.h"
+#include "arcane/utils/Float128.h"
+#include "arcane/utils/Int128.h"
 
 #include "arcane/core/datatype/DataTypes.h"
 
@@ -195,6 +197,68 @@ class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<Real>
   static Real normeMax(Real v)
   {
     return math::abs(v);
+  }
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \internal
+ * \brief Spécialisation de VariableDataTypeTraitsT pour le type \c Real.
+ */
+template <>
+class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<Float128>
+{
+ public:
+
+  //! Type du paramètre template
+  typedef Float128 Type;
+
+  //! Indique si le type peut être sauvé et relu
+  typedef TrueType HasDump;
+
+  //! Indique si le type peut être subir une réduction
+  typedef FalseType HasReduce;
+
+  //! Indique si le type peut être subir une réduction Min/Max
+  typedef FalseType HasReduceMinMax;
+
+  //! Indique si le type est numérique
+  typedef TrueType IsNumeric;
+
+  typedef Float128 BasicType;
+
+  static constexpr Int32 nbBasicType() { return 1; }
+
+ public:
+
+  //! Retourne le nom du type de la variable
+  static constexpr const char* typeName() { return "Float128"; }
+  //! Retourne le type de la variable
+  static constexpr eDataType type() { return DT_Float128; }
+  //! Ecrit dans la chaîne \a s la valeur de \a v
+  static void dumpValue(String& s, const Type& v) { builtInDumpValue(s, v); }
+  /*!
+   * \brief Stocke la conversion de la chaîne \a s en le type #Type dans \a v
+   * \retval true en cas d'échec,
+   * \retval false si la conversion est un succès
+   */
+  static bool getValue(Type& v, const String& s) { return builtInGetValue(v, s); }
+
+  static bool verifDifferent(Type v1, Type v2, Type& diff, bool is_nan_equal = false)
+  {
+    if (is_nan_equal) {
+      // TODO: non supporté
+        return false;
+    }
+    if (v1 != v2) {
+      if (math::abs(v1) < 1.e-100) // TH: plantait pour v1 tres petit(math::isZero(v1))
+        diff = v1 - v2;
+      else
+        diff = (v1 - v2) / v1;
+      return true;
+    }
+    return false;
   }
 };
 
@@ -444,6 +508,65 @@ class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<Int64>
   static Int64 normeMax(Int64 v)
   {
     return v;
+  }
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \internal
+ * \brief Spécialisation de VariableDataTypeTraitsT pour le type <tt>Int128</tt>.
+ */
+template <>
+class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<Int128>
+{
+ public:
+
+  //! Type du paramètre template
+  typedef Int128 Type;
+
+  //! Indique si le type peut être sauvé et relu
+  typedef TrueType HasDump;
+
+  //! Indique si le type peut être subir une réduction
+  typedef FalseType HasReduce;
+
+  //! Indique si le type peut être subir une réduction Min/Max
+  typedef FalseType HasReduceMinMax;
+
+  //! Indique si le type est numérique
+  typedef TrueType IsNumeric;
+
+  typedef Int128 BasicType;
+
+  static constexpr Int32 nbBasicType() { return 1; }
+
+ public:
+
+  //! Retourne le nom du type de la variable
+  static constexpr const char* typeName() { return "Int128"; }
+  //! Retourne le type de la variable
+  static constexpr eDataType type() { return DT_Int128; }
+  //! Ecrit dans la chaîne \a s la valeur de \a v
+  static void dumpValue(String& s, const Type& v) { builtInDumpValue(s, v); }
+  /*!
+   * \brief Stocke la conversion de la chaîne \a s en le type #Type dans \a v
+   * \retval true en cas d'échec,
+   * \retval false si la conversion est un succès
+   */
+  static bool getValue(Type& v, const String& s) { return builtInGetValue(v, s); }
+
+  static bool verifDifferent(Type v1, Type v2, Type& diff,
+                             [[maybe_unused]] bool is_nan_equal = false)
+  {
+    if (v1 != v2) {
+      if (math::isZero(v1))
+        diff = v1 - v2;
+      else
+        diff = (v1 - v2) / v1;
+      return true;
+    }
+    return false;
   }
 };
 

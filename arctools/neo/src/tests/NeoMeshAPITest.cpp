@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* NeoMeshAPITest.h                                (C) 2000-2020             */
+/* NeoMeshAPITest.h                                (C) 2000-2025             */
 /*                                                                           */
 /* First tests for mesh class using Neo                                      */
 /*---------------------------------------------------------------------------*/
@@ -267,6 +267,9 @@ TEST(NeoMeshApiTest, AddItemConnectivity) {
   std::string node_to_cells_connectivity_name{ "node_to_cell" };
   std::string node_to_dofs_connectivity_name{ "node_to_dofs" };
 
+  auto empty_connectivities = mesh.getConnectivities(cell_family);
+  EXPECT_EQ(empty_connectivities.size(), 0);
+
   // Connectivity cell to nodes
   auto nb_node_per_cell = 4;
   {
@@ -418,6 +421,14 @@ TEST(NeoMeshApiTest, AddItemConnectivity) {
   auto& cell_family2 = mesh.addFamily(Neo::ItemKind::IK_Cell, "cell_family2");
   auto& node_family2 = mesh.addFamily(Neo::ItemKind::IK_Node, "node_family2");
   EXPECT_THROW(mesh.getConnectivity(node_family2, cell_family2, cell_to_nodes_connectivity_name), std::invalid_argument);
+  // check getConnectivities: all the connectivity attached to a same source family
+  auto connectivities = mesh.getConnectivities(cell_family);
+  auto nb_cell_connectivities = 3;
+  EXPECT_EQ(connectivities.size(), nb_cell_connectivities);
+  std::vector<std::string> target_family_names{node_family.name(),dof_family.name(),dof_family2.name()};
+  EXPECT_TRUE(areEqual(connectivities[0], cell_to_nodes));
+  EXPECT_TRUE(areEqual(connectivities[1], cell_to_dofs));
+  EXPECT_TRUE(areEqual(connectivities[2], cell_to_dofs2));
 }
 
 /*---------------------------------------------------------------------------*/

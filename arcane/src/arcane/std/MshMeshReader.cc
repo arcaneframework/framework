@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MshMeshReader.cc                                            (C) 2000-2024 */
+/* MshMeshReader.cc                                            (C) 2000-2025 */
 /*                                                                           */
 /* Lecture/Ecriture d'un fichier au format MSH.                              */
 /*---------------------------------------------------------------------------*/
@@ -15,21 +15,16 @@
 #include "arcane/utils/StdHeader.h"
 #include "arcane/utils/HashTableMap.h"
 #include "arcane/utils/ValueConvert.h"
-#include "arcane/utils/ScopedPtr.h"
 #include "arcane/utils/ITraceMng.h"
 #include "arcane/utils/String.h"
 #include "arcane/utils/IOException.h"
 #include "arcane/utils/Collection.h"
-#include "arcane/utils/Enumerator.h"
-#include "arcane/utils/NotImplementedException.h"
 #include "arcane/utils/Real3.h"
 #include "arcane/utils/OStringStream.h"
 
 #include "arcane/core/AbstractService.h"
 #include "arcane/core/FactoryService.h"
-#include "arcane/core/IMainFactory.h"
 #include "arcane/core/IMeshReader.h"
-#include "arcane/core/ISubDomain.h"
 #include "arcane/core/IMesh.h"
 #include "arcane/core/IMeshSubMeshTransition.h"
 #include "arcane/core/IItemFamily.h"
@@ -38,13 +33,6 @@
 #include "arcane/core/VariableTypes.h"
 #include "arcane/core/IVariableAccessor.h"
 #include "arcane/core/IParallelMng.h"
-#include "arcane/core/IIOMng.h"
-#include "arcane/core/IXmlDocumentHolder.h"
-#include "arcane/core/XmlNodeList.h"
-#include "arcane/core/XmlNode.h"
-#include "arcane/core/IMeshUtilities.h"
-#include "arcane/core/IMeshWriter.h"
-#include "arcane/core/BasicService.h"
 #include "arcane/core/MeshPartInfo.h"
 #include "arcane/core/MeshUtils.h"
 #include "arcane/core/ICaseMeshReader.h"
@@ -240,7 +228,7 @@ class MshMeshReader
   : TraceAccessor(tm)
   {}
 
-  eReturnType readMeshFromMshFile(IMesh* mesh, const String& file_name) override;
+  eReturnType readMeshFromMshFile(IMesh* mesh, const String& file_name, bool use_internal_partition) override;
 
  private:
 
@@ -1166,9 +1154,11 @@ _readMeshFromNewMshFile(IMesh* mesh, IosFile& ios_file)
  * _readMeshFromOldMshFile or _readMeshFromNewMshFile function.
  */
 IMeshReader::eReturnType MshMeshReader::
-readMeshFromMshFile(IMesh* mesh, const String& filename)
+readMeshFromMshFile(IMesh* mesh, const String& filename, bool use_internal_partition)
 {
-  info() << "Trying to read 'msh' file '" << filename << "'";
+  info() << "Trying to read 'msh' file '" << filename << "'"
+         << " use_internal_partition=" << use_internal_partition;
+
   std::ifstream ifile(filename.localstr());
   if (!ifile) {
     error() << "Unable to read file '" << filename << "'";
@@ -1235,19 +1225,23 @@ class MshMeshReaderService
                                bool use_internal_partition) override
   {
     ARCANE_UNUSED(dir_name);
-    ARCANE_UNUSED(use_internal_partition);
     ARCANE_UNUSED(mesh_node);
 
     Ref<IMshMeshReader> reader = _internalCreateReader(traceMng());
-    return reader->readMeshFromMshFile(mesh, file_name);
+    return reader->readMeshFromMshFile(mesh, file_name, use_internal_partition);
   }
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+// Obsolète. Utiliser 'MshMeshReader' à la place
 ARCANE_REGISTER_SERVICE(MshMeshReaderService,
                         ServiceProperty("MshNewMeshReader", ST_SubDomain),
+                        ARCANE_SERVICE_INTERFACE(IMeshReader));
+
+ARCANE_REGISTER_SERVICE(MshMeshReaderService,
+                        ServiceProperty("MshMeshReader", ST_SubDomain),
                         ARCANE_SERVICE_INTERFACE(IMeshReader));
 
 /*---------------------------------------------------------------------------*/
@@ -1267,6 +1261,7 @@ class MshCaseMeshReader
     explicit Builder(ITraceMng* tm, const CaseMeshReaderReadInfo& read_info)
     : m_trace_mng(tm)
     , m_read_info(read_info)
+    , m_use_internal_partition(read_info.isParallelRead())
     {}
 
    public:
@@ -1280,7 +1275,7 @@ class MshCaseMeshReader
       Ref<IMshMeshReader> reader = _internalCreateReader(m_trace_mng);
       String fname = m_read_info.fileName();
       m_trace_mng->info() << "Msh Reader (ICaseMeshReader) file_name=" << fname;
-      IMeshReader::eReturnType ret = reader->readMeshFromMshFile(pm, fname);
+      IMeshReader::eReturnType ret = reader->readMeshFromMshFile(pm, fname, m_use_internal_partition);
       if (ret != IMeshReader::RTOk)
         ARCANE_FATAL("Can not read MSH File");
     }
@@ -1289,6 +1284,7 @@ class MshCaseMeshReader
 
     ITraceMng* m_trace_mng;
     CaseMeshReaderReadInfo m_read_info;
+    bool m_use_internal_partition = false;
   };
 
  public:

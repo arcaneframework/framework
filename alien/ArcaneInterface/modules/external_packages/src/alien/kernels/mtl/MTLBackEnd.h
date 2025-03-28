@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MTLBackEnd                                     (C) 2000-2024              */
+/* MTLBackEnd                                                  (C) 2000-2025 */
 /*                                                                           */
 /* Tools for MTL backend                                                     */
 /*---------------------------------------------------------------------------*/
@@ -13,14 +13,10 @@
 #ifndef ALIEN_MTLIMPL_MTLBACKEND_H
 #define ALIEN_MTLIMPL_MTLBACKEND_H
 
-
+#include <arccore/message_passing/MessagePassingGlobal.h>
 #include <alien/core/backend/BackEnd.h>
 #include <alien/utils/Precomp.h>
 #include <alien/AlienExternalPackagesExport.h>
-
-namespace Arccore::MessagePassing {
-class IMessagePassingMng;
-}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

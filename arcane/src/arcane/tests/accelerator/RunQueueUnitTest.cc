@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* RunQueueUnitTest.cc                                         (C) 2000-2024 */
+/* RunQueueUnitTest.cc                                         (C) 2000-2025 */
 /*                                                                           */
 /* Service de test unitaire des 'RunQueue'.                                  */
 /*---------------------------------------------------------------------------*/
@@ -14,6 +14,7 @@
 #include "arcane/utils/NumArray.h"
 #include "arcane/utils/ValueChecker.h"
 #include "arcane/utils/MemoryUtils.h"
+#include "arcane/utils/PlatformUtils.h"
 
 #include "arcane/core/BasicUnitTest.h"
 #include "arcane/core/ServiceFactory.h"
@@ -22,6 +23,7 @@
 #include "arcane/accelerator/core/Runner.h"
 #include "arcane/accelerator/core/RunQueueEvent.h"
 #include "arcane/accelerator/core/IAcceleratorMng.h"
+#include "arcane/accelerator/core/internal/RunQueueImpl.h"
 
 #include "arcane/accelerator/NumArrayViews.h"
 #include "arcane/accelerator/SpanViews.h"
@@ -49,7 +51,6 @@ class RunQueueUnitTest
  public:
 
   explicit RunQueueUnitTest(const ServiceBuildInfo& cb);
-  ~RunQueueUnitTest();
 
  public:
 
@@ -58,15 +59,16 @@ class RunQueueUnitTest
 
  private:
 
-  ax::Runner* m_runner = nullptr;
+  ax::Runner m_runner;
 
  public:
 
   void _executeTestNullQueue();
   void _executeTest1(bool use_priority);
   void _executeTest2();
-  void _executeTest3();
+  void _executeTest3(bool use_pooling);
   void _executeTest4();
+  void _executeTest5();
 };
 
 /*---------------------------------------------------------------------------*/
@@ -86,21 +88,13 @@ RunQueueUnitTest(const ServiceBuildInfo& sb)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-RunQueueUnitTest::
-~RunQueueUnitTest()
-{
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void RunQueueUnitTest::
 initializeTest()
 {
-  m_runner = subDomain()->acceleratorMng()->defaultRunner();
+  m_runner = subDomain()->acceleratorMng()->runner();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -111,13 +105,13 @@ executeTest()
 {
   _executeTestNullQueue();
   _executeTest2();
-  bool old_v = m_runner->isConcurrentQueueCreation();
-  m_runner->setConcurrentQueueCreation(true);
   _executeTest1(false);
   _executeTest1(true);
-  _executeTest3();
+  _executeTest3(false);
+  if (m_runner.executionPolicy() != ax::eExecutionPolicy::SYCL)
+    _executeTest3(true);
   _executeTest4();
-  m_runner->setConcurrentQueueCreation(old_v);
+  _executeTest5();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -138,13 +132,13 @@ _executeTestNullQueue()
   if (queue.allocationOptions() != default_mem_opt)
     ARCANE_FATAL("Bad null allocationOptions()");
 
-  queue = makeQueue(*m_runner);
+  queue = makeQueue(m_runner);
   vc.areEqual(queue.isNull(), false, "not null");
 
   queue = RunQueue();
   vc.areEqual(queue.isNull(), true, "is null (2)");
 
-  queue = makeQueue(*m_runner);
+  queue = makeQueue(m_runner);
   if (queue.executionPolicy() == eExecutionPolicy::None)
     ARCANE_FATAL("Bad execution policy");
 }
@@ -183,7 +177,7 @@ _executeTest1(bool use_priority)
     ax::RunQueueBuildInfo bi;
     if (use_priority && (i > 3))
       bi.setPriority(-8);
-    auto queue_ref = makeQueueRef(*m_runner, bi);
+    auto queue_ref = makeQueueRef(m_runner, bi);
     queue_ref->setAsync(true);
     allthreads.add(new std::thread(task_func, queue_ref, i));
   }
@@ -191,6 +185,7 @@ _executeTest1(bool use_priority)
     thr->join();
     delete thr;
   }
+  info() << "End of wait";
 
   Int64 true_total = 0;
   Int64 expected_true_total = 0;
@@ -215,10 +210,10 @@ _executeTest2()
   info() << "Test2: use events";
   ValueChecker vc(A_FUNCINFO);
 
-  auto event{ makeEvent(*m_runner) };
-  auto queue1{ makeQueue(*m_runner) };
+  auto event{ makeEvent(m_runner) };
+  auto queue1{ makeQueue(m_runner) };
   queue1.setAsync(true);
-  auto queue2{ makeQueue(*m_runner) };
+  auto queue2{ makeQueue(m_runner) };
   queue2.setAsync(true);
 
   Integer nb_value = 100000;
@@ -242,7 +237,7 @@ _executeTest2()
       v(iter) = v(iter) * 2;
     };
   }
-  queue1.barrier();
+
   queue2.barrier();
 
   // Vérifie les valeurs
@@ -255,19 +250,19 @@ _executeTest2()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-// Test la synchronisation de avec un évènement.
+// Teste la synchronisation avec un évènement.
 void RunQueueUnitTest::
-_executeTest3()
+_executeTest3(bool use_pooling)
 {
-  info() << "Test3: use events with wait()";
+  info() << "Test3: use events with wait() or pooling is_pooling?=" << use_pooling;
   ValueChecker vc(A_FUNCINFO);
 
   UniqueArray<Ref<ax::RunQueueEvent>> event_array;
-  event_array.add(makeEventRef(*m_runner));
+  event_array.add(makeEventRef(m_runner));
 
-  auto queue1{ makeQueue(*m_runner) };
+  auto queue1{ makeQueue(m_runner) };
   queue1.setAsync(true);
-  auto queue2{ makeQueue(*m_runner) };
+  auto queue2{ makeQueue(m_runner) };
   queue2.setAsync(true);
 
   Integer nb_value = 100000;
@@ -282,7 +277,12 @@ _executeTest3()
     };
     queue1.recordEvent(event_array[0]);
   }
-  event_array[0]->wait();
+  if (use_pooling)
+    while (event_array[0]->hasPendingWork()) {
+      // Do something ...
+    }
+  else
+    event_array[0]->wait();
   {
     auto command2 = makeCommand(queue2);
     auto v = viewInOut(command2, values);
@@ -304,9 +304,73 @@ _executeTest3()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
+// Test la synchronisation de avec un évènement et sémantique par référence.
 void RunQueueUnitTest::
 _executeTest4()
+{
+  info() << "Test4: use events with wait()";
+
+  {
+    Arcane::Accelerator::RunQueueEvent event0;
+    if (!event0.isNull())
+      ARCANE_FATAL("Event is not null");
+    event0 = makeEvent(m_runner);
+    if (event0.isNull())
+      ARCANE_FATAL("Event is null");
+    Arcane::Accelerator::RunQueueEvent event1(event0);
+    if (event1.isNull())
+      ARCANE_FATAL("Event is null");
+  }
+
+  ValueChecker vc(A_FUNCINFO);
+  //![SampleRunQueueEventSample1]
+  Arcane::Accelerator::Runner runner = m_runner;
+
+  Arcane::Accelerator::RunQueueEvent event(makeEvent(runner));
+
+  Arcane::Accelerator::RunQueue queue1{ makeQueue(runner) };
+  queue1.setAsync(true);
+  Arcane::Accelerator::RunQueue queue2{ makeQueue(runner) };
+  queue2.setAsync(true);
+
+  Integer nb_value = 100000;
+  Arcane::NumArray<Int32, MDDim1> values(nb_value);
+  {
+    auto command1 = makeCommand(queue1);
+    auto v = viewOut(command1, values);
+    command1 << RUNCOMMAND_LOOP1(iter, nb_value)
+    {
+      auto [i] = iter();
+      v(iter) = i + 3;
+    };
+    queue1.recordEvent(event);
+  }
+  event.wait();
+  {
+    auto command2 = makeCommand(queue2);
+    auto v = viewInOut(command2, values);
+    command2 << RUNCOMMAND_LOOP1(iter, nb_value)
+    {
+      v(iter) = v(iter) * 2;
+    };
+    queue2.recordEvent(event);
+  }
+  event.wait();
+  //![SampleRunQueueEventSample1]
+
+  // Vérifie les valeurs
+  for (Integer i = 0; i < nb_value; ++i) {
+    Int32 v = values(i);
+    Int32 expected_v = (i + 3) * 2;
+    vc.areEqual(v, expected_v, "Bad value");
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void RunQueueUnitTest::
+_executeTest5()
 {
   info() << "Test RunQueue allocation";
   ValueChecker vc(A_FUNCINFO);

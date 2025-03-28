@@ -45,7 +45,7 @@ Table of Contents:
   - [Sharc](#sharc)
   - [ArcaneFem](#arcanefem)
   - [MaHyCo](#mahyco)
-- [Rencontres Arcanes](#rencontres-arcanes)
+- [Rencontres Arcane](#rencontres-arcanes)
 - [Screenshots](#screenshots)
 
 # Documentation
@@ -261,15 +261,15 @@ Very simple codes to test Finite Element Methods using Arcane.
 Finite volume code for solving hydrodynamic equations:
 Lagrangian or Eulerian simulations.
 
-# Rencontres Arcanes
+# Rencontres Arcane
 
 The next Rencontres Arcane are scheduled on Monday, the 24th March, 2025.
 
 <p align="center">
   <a href="https://github.com/arcaneframework/events">
-    <img alt="Arcane Framework" src="https://raw.githubusercontent.com/arcaneframework/events/main/rencontresarcane2023/visuel/BandeauARCANE_2023_V1.png" width="700px">
+    <img alt="Arcane Framework" src="https://raw.githubusercontent.com/arcaneframework/events/main/rencontresarcane2025/visuel/BandeauARCANE_2025_V2.png" width="700px">
   </a>
-  <p align="center">Les Rencontres Arcane on April 17th 2023.</p>
+  <p align="center">Les Rencontres Arcane on March 24th 2025.</p>
 </p>
 
 The previous presentations are stored [here](https://github.com/arcaneframework/events).

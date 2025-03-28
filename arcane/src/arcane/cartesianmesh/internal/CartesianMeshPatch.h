@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CartesianMeshPatch.h                                        (C) 2000-2023 */
+/* CartesianMeshPatch.h                                        (C) 2000-2025 */
 /*                                                                           */
 /* Informations sur un patch AMR d'un maillage cartésien.                    */
 /*---------------------------------------------------------------------------*/
@@ -50,6 +50,18 @@ class CartesianMeshPatch
   ~CartesianMeshPatch() override;
  public:
   CellGroup cells() override;
+  Integer index() override
+  {
+    return m_amr_patch_index;
+  }
+  Integer level() override
+  {
+    return m_level;
+  }
+  void setLevel(Integer level) override
+  {
+    m_level = level;
+  }
   CellDirectionMng& cellDirection(eMeshDirection dir) override
   {
     return m_cell_directions[dir];
@@ -90,6 +102,7 @@ class CartesianMeshPatch
   FaceDirectionMng m_face_directions[3];
   NodeDirectionMng m_node_directions[3];
   Integer m_amr_patch_index;
+  Integer m_level;
 };
 
 /*---------------------------------------------------------------------------*/

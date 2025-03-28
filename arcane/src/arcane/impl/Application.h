@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Application.h                                               (C) 2000-2022 */
+/* Application.h                                               (C) 2000-2025 */
 /*                                                                           */
 /* Implémentation IApplication.                                              */
 /*---------------------------------------------------------------------------*/
@@ -180,6 +180,8 @@ class ARCANE_IMPL_EXPORT Application
   void _initDataInitialisationPolicy();
   template<typename InterfaceType> Ref<InterfaceType>
   _tryCreateService(const StringList& names,String* found_name);
+  template<typename InterfaceType> Ref<InterfaceType>
+  _tryCreateServiceUsingInjector(const StringList& names,String* found_name);
   UniqueArray<String> _stringListToArray(const StringList& slist) const;
   void _readCodeConfigurationFile();
 };

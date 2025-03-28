@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -10,6 +10,8 @@
 #include "arccore/base/String.h"
 #include "arccore/base/BFloat16.h"
 #include "arccore/base/Float16.h"
+#include "arccore/base/Float128.h"
+#include "arccore/base/Int128.h"
 
 #include <string>
 
@@ -86,9 +88,9 @@ class RefValue
 {
  public:
 
-  float original_value = 0.0;
+  float original_value = 0.0f;
   uint16_t raw_value = 0;
-  float converted_value = 0.0;
+  float converted_value = 0.0f;
 
  public:
 
@@ -190,6 +192,32 @@ TEST(BasicDataType, Float16)
   ASSERT_EQ(bf3, bf1);
   ASSERT_TRUE(bf2 < bf1);
   ASSERT_FALSE(bf1 < bf2);
+}
+
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wlanguage-extension-token"
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpedantic"
+
+TEST(BasicDataType, Float128)
+{
+  Float128 a = 1.0;
+  Float128 b = 2.0;
+  Float128 c = a + b;
+  double c_as_double = static_cast<double>(c);
+  std::cout << "F128=" << c_as_double << "\n";
+  ASSERT_EQ(sizeof(Float128), 16);
+}
+
+TEST(BasicDataType, Int128)
+{
+  Int128 a = 1;
+  Int128 b = 2;
+  Int128 c = a + b;
+  std::cout << "I128=" << static_cast<int64_t>(c) << "\n";
+  std::cout << "sizeof(Int128) = " << sizeof(Int128) << "\n";
+  std::cout << "sizeof(intmax_t) = " << sizeof(intmax_t) << "\n";
+  ASSERT_EQ(sizeof(Int128), 16);
 }
 
 /*---------------------------------------------------------------------------*/

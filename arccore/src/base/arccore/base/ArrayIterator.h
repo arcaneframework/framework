@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ArrayIterator.h                                             (C) 2000-2024 */
+/* ArrayIterator.h                                             (C) 2000-2025 */
 /*                                                                           */
 /* Itérateur sur les Array, ArrayView, ConstArrayView, ...                   */
 /*---------------------------------------------------------------------------*/
@@ -21,7 +21,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arccore
+namespace Arcane
 {
 
 /*---------------------------------------------------------------------------*/
@@ -33,32 +33,35 @@ namespace Arccore
  *
  * Il est du type std::random_access_iterator_tag.
  */
-template<typename _Iterator>
+template <typename Iterator_>
 class ArrayIterator
 {
  private:
+
   // Pour le cas où on ne supporte pas le C++14.
   template< bool B, class XX = void >
   using Iterator_enable_if_t = typename std::enable_if<B,XX>::type;
 
  protected:
-  _Iterator m_ptr;
 
-  typedef std::iterator_traits<_Iterator> _TraitsType;
+  Iterator_ m_ptr;
+
+  using TraitsType_ = std::iterator_traits<Iterator_>;
 
  public:
-  //typedef _Iterator iterator_type;
+
   typedef typename std::random_access_iterator_tag iterator_category;
-  typedef typename _TraitsType::value_type value_type;
-  typedef typename _TraitsType::difference_type difference_type;
-  typedef typename _TraitsType::reference reference;
-  typedef typename _TraitsType::pointer pointer;
+  typedef typename TraitsType_::value_type value_type;
+  typedef typename TraitsType_::difference_type difference_type;
+  typedef typename TraitsType_::reference reference;
+  typedef typename TraitsType_::pointer pointer;
+
  public:
 
-  constexpr ARCCORE_HOST_DEVICE ArrayIterator() ARCCORE_NOEXCEPT : m_ptr(_Iterator()) { }
+  constexpr ARCCORE_HOST_DEVICE ArrayIterator() ARCCORE_NOEXCEPT : m_ptr(Iterator_()) {}
 
-  constexpr ARCCORE_HOST_DEVICE explicit ArrayIterator(const _Iterator& __i) ARCCORE_NOEXCEPT
-  : m_ptr(__i) { }
+  constexpr ARCCORE_HOST_DEVICE explicit ArrayIterator(const Iterator_& i) ARCCORE_NOEXCEPT
+  : m_ptr(i) {}
 
   // Allow iterator to const_iterator conversion
   template<typename X,typename = Iterator_enable_if_t<std::is_same<X,value_type*>::value> >
@@ -82,7 +85,7 @@ class ArrayIterator
   constexpr ARCCORE_HOST_DEVICE ArrayIterator& operator-=(difference_type n) ARCCORE_NOEXCEPT { m_ptr -= n; return *this; }
   constexpr ARCCORE_HOST_DEVICE ArrayIterator operator-(difference_type n) const ARCCORE_NOEXCEPT { return ArrayIterator(m_ptr-n); }
 
-  constexpr ARCCORE_HOST_DEVICE const _Iterator& base() const ARCCORE_NOEXCEPT { return m_ptr; }
+  constexpr ARCCORE_HOST_DEVICE const Iterator_& base() const ARCCORE_NOEXCEPT { return m_ptr; }
 };
 
 // Forward iterator requirements

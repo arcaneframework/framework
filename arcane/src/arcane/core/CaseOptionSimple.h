@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CaseOptionSimple.h                                          (C) 2000-2023 */
+/* CaseOptionSimple.h                                          (C) 2000-2025 */
 /*                                                                           */
 /* Option simple du jeu de données.                                          */
 /*---------------------------------------------------------------------------*/
@@ -385,6 +385,7 @@ class CaseOptionMultiSimpleT
   const T& value(Integer index) const { return this->operator[](index); }
   Integer size() const { return ArrayView<T>::size(); }
   ARCANE_CORE_EXPORT void visit(ICaseDocumentVisitor* visitor) const override;
+  bool isPresent() const { return !m_view.empty(); }
 
  protected:
 	

@@ -1,11 +1,11 @@
 ﻿/* -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 /*-----------------------------------------------------------------------------
-/* Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+/* Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 /* See the top-level COPYRIGHT file for details.
 /* SPDX-License-Identifier: Apache-2.0
 /*-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* custom.css                                                  (C) 2000-2023 */
+/* custom.css                                                  (C) 2000-2025 */
 /*                                                                           */
 /* Personnalisation des css de doxygen et du thème.                          */
 /*---------------------------------------------------------------------------*/
@@ -61,6 +61,10 @@ dl.deprecated dd {
   padding-bottom: 5px;
 }
 
+#projectlogo a:hover {
+  background: none;
+}
+
 /**
  * Arcane / Version.
  */
@@ -78,9 +82,9 @@ dl.deprecated dd {
   padding-top: 0px !important;
 }
 
-/** 
- * Pour les "Powertips" (bulles qui s'affichent quand on 
- * passe la souris dans un code.  
+/**
+ * Pour les "Powertips" (bulles qui s'affichent quand on
+ * passe la souris dans un code.
  */
 #powerTip {
   background-color: var(--side-nav-background);
@@ -183,7 +187,7 @@ dl.deprecated dd {
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-/* 
+/*
  * Début : Pour le 'corner' GitHub.
  */
 .github-corner:hover .octo-arm {
@@ -237,13 +241,18 @@ dl.deprecated dd {
 /*---------------------------------------------------------------------------*/
 
 
-/* 
+/*
  * Début : Bouton 'Prochaine page'.
  */
 /*
  * Dans le fichier ../doxygen-awesome-theme/doxygen-awesome-custom.css
  */
-/* 
+
+.next_section_button a:hover {
+  background: none;
+}
+
+/*
  * Fin : Bouton 'Prochaine page'.
  */
 
@@ -252,7 +261,7 @@ dl.deprecated dd {
 /*---------------------------------------------------------------------------*/
 
 
-/* 
+/*
  * Début : Bouton 'Précedente page'.
  */
 .back_section_button {
@@ -283,7 +292,7 @@ dl.deprecated dd {
 
 .back_section_button a:hover {
   color: var(--page-foreground-color) !important;
-  background-color: var(--odd-color);
+  background: var(--odd-color) none;
 }
 
 .back_section_button a::before {
@@ -367,14 +376,47 @@ details[open] summary {
 details[open] summary::before {
   content: '⯆' !important;
 }
+
+/*
+ * Doxygen possède sa propre version de "details".
+ * On reproduit donc le style au-dessus pour la version de Doxygen.
+ */
+div.dynheader {
+  border: 1px solid;
+  border-color: var(--separator-color);
+  border-radius: 4px;
+  margin: 0 0 10px 0;
+  background-color: var(--side-nav-background);
+  padding: 0.5em;
+  transition: color .08s ease-in-out, background-color .1s ease-in-out;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+div.dynheader.opened {
+  border-bottom: 2px solid;
+  border-bottom-color: var(--primary-color);
+  margin: 0 0 0 0;
+  color: var(--primary-color) !important;
+}
+
+div.dynheader:hover {
+  color: var(--primary-color) !important;
+  background-color: var(--odd-color);
+}
+
+div.dyncontent {
+  border-width: 0 1px 1px 1px;
+  border-style: solid;
+  margin: 0 0 10px 0 !important;
+  border-color: var(--separator-color);
+}
 /*
  * Fin : Personnalisation de la partie spoiler.
  */
 
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
 
 /*
  * Début : Personnalisation de la partie axldoc.
@@ -391,6 +433,19 @@ details[open] summary::before {
 /*
  * Fin : Personnalisation de la partie axldoc.
  */
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+/*
+ * Pour Doxygen 1.10.0+
+ * Correction de la couleur de la première ligne des extraits de codes et
+ * ajout d'un espace entre les numéros de lignes et les lignes.
+ */
+#snippetLineno {
+  margin-right: 10px !important;
+  background-color: var(--fragment-linenumber-background) !important;
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

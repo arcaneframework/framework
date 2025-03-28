@@ -17,6 +17,8 @@
 #include "arcane/utils/BasicDataType.h"
 #include "arcane/utils/BFloat16.h"
 #include "arcane/utils/Float16.h"
+#include "arcane/utils/Float128.h"
+#include "arcane/utils/Int128.h"
 
 #include "arcane/core/ArcaneTypes.h"
 
@@ -70,6 +72,9 @@ class DataTypeTraitsT<bool>
    * \todo: creer type DT_Bool a la place.
    */
   static constexpr eDataType type() { return DT_Byte; }
+
+  //! Type de donnée de base.
+  static constexpr eBasicDataType basicDataType() { return eBasicDataType::Byte; }
 
   //! Type du proxy associé
   typedef BuiltInProxy<bool> ProxyType;
@@ -164,6 +169,46 @@ class DataTypeTraitsT<Real>
 
   //! Valeur par défaut.
   static constexpr Type defaultValue() { return 0.0; }
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \internal
+ * \brief Spécialisation de DataTypeTraitsT pour le type \c Float128
+ */
+template<>
+class DataTypeTraitsT<Float128>
+{
+ public:
+
+  //! Type de donnée
+  typedef Float128 Type;
+
+  //! Type de donnée de base de ce type de donnée
+  typedef Float128 BasicType;
+
+  //! Nombre d'éléments du type de base
+  static constexpr int nbBasicType() { return 1; }
+
+  //! Nom du type de donnée
+  static constexpr const char* name() { return "Float128"; }
+
+  //! Type de donnée
+  static constexpr eDataType type() { return DT_Float128; }
+
+  //! Type de donnée de base.
+  // TODO: calculer automatiquement la taille
+  static constexpr eBasicDataType basicDataType() { return eBasicDataType::Float128; }
+
+  //! Type du proxy associé
+  typedef BuiltInProxy<Float128> ProxyType;
+
+  //! Remplit les éléments de \a values avec des Nan.
+  static void fillNan(ArrayView<Type> values);
+
+  //! Valeur par défaut.
+  static constexpr Type defaultValue() { return Float128(0.0l); }
 };
 
 /*---------------------------------------------------------------------------*/
@@ -434,6 +479,45 @@ class DataTypeTraitsT<Int64>
 
   //! Type du proxy associé
   typedef BuiltInProxy<Int64> ProxyType;
+
+  //! Remplit les éléments de \a values avec des Nan.
+  static void fillNan(ArrayView<Type> values);
+
+  //! Valeur par défaut.
+  static constexpr Type defaultValue() { return 0; }
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \internal
+ * \brief Spécialisation de DataTypeTraitsT pour le type <tt>Int128</tt>.
+ */
+template<>
+class DataTypeTraitsT<Int128>
+{
+ public:
+
+  //! Type de donnée
+  typedef Int128 Type;
+
+  //! Type de donnée de base de ce type de donnée
+  typedef Int128 BasicType;
+
+  //! Nombre d'éléments du type de base
+  static constexpr int nbBasicType() { return 1; }
+
+  //! Nom du type de donnée
+  static constexpr const char* name() { return "Int128"; }
+
+  //! Type de donnée
+  static constexpr eDataType type() { return DT_Int128; }
+
+  //! Type de donnée de base.
+  static constexpr eBasicDataType basicDataType() { return eBasicDataType::Int128; }
+
+  //! Type du proxy associé
+  typedef BuiltInProxy<Int128> ProxyType;
 
   //! Remplit les éléments de \a values avec des Nan.
   static void fillNan(ArrayView<Type> values);

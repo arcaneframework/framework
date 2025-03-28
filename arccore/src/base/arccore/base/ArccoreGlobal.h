@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ArccoreGlobal.h                                             (C) 2000-2024 */
+/* ArccoreGlobal.h                                             (C) 2000-2025 */
 /*                                                                           */
 /* Déclarations générales de Arccore.                                        */
 /*---------------------------------------------------------------------------*/
@@ -168,7 +168,7 @@ typedef ARCCORE_TYPE_INT64 Int64;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arccore
+namespace Arcane
 {
 
 /*---------------------------------------------------------------------------*/
@@ -272,11 +272,17 @@ using Integer = Int32;
 //! Brain Float16
 class BFloat16;
 
-//! Float16
+//! Float 16 bit
 class Float16;
 
 //! Type flottant IEEE-753 simple précision
 using Float32 = float;
+
+//! Float 128 bit
+class Float128;
+
+//! Integer 128 bit
+class Int128;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -579,19 +585,33 @@ _checkPointer(T* t,const char* file,const char* func,int line)
   return t;
 }
 #  ifdef __GNUG__
-#    define ARCCORE_D_WHERE(a)  Arccore::_doAssert(a,__FILE__,__PRETTY_FUNCTION__,__LINE__)
-#    define ARCCORE_DCHECK_POINTER(a) Arccore::_checkPointer((a),__FILE__,__PRETTY_FUNCTION__,__LINE__);
+#define ARCCORE_D_WHERE(a) ::Arcane::_doAssert(a, __FILE__, __PRETTY_FUNCTION__, __LINE__)
+#define ARCCORE_DCHECK_POINTER(a) ::Arcane::_checkPointer((a), __FILE__, __PRETTY_FUNCTION__, __LINE__);
 #  else
 #    define ARCCORE_D_WHERE(a)  Arccore::_doAssert(a,__FILE__,"(NoInfo)",__LINE__)
 #    define ARCCORE_DCHECK_POINTER(a) Arccore::_checkPointer((a),__FILE__,"(NoInfo"),__LINE__);
 #  endif
 #  define ARCCORE_CHECK_PTR(a) \
-   {if (!(a)){Arccore::arccorePrintf("Null value");ARCCORE_D_WHERE("ARCCORE_ASSERT");}}
+  { \
+    if (!(a)) { \
+      ::Arcane::arccorePrintf("Null value"); \
+      ARCCORE_D_WHERE("ARCCORE_ASSERT"); \
+    } \
+  }
 
 #  define ARCCORE_ASSERT(a,b) \
-  {if (!(a)){ Arccore::arccorePrintf("Assertion '%s' fails:",#a); Arccore::arccorePrintf b; ARCCORE_D_WHERE("ARCCORE_ASSERT");}}
+  { \
+    if (!(a)) { \
+      ::Arcane::arccorePrintf("Assertion '%s' fails:", #a); \
+      ::Arcane::arccorePrintf b; \
+      ARCCORE_D_WHERE("ARCCORE_ASSERT"); \
+    } \
+  }
 #  define ARCCORE_WARNING(a) \
-   { Arccore::arccorePrintf a; ARCCORE_D_WHERE("ARCCORE_WARNING"); }
+  { \
+    ::Arcane::arccorePrintf a; \
+    ARCCORE_D_WHERE("ARCCORE_WARNING"); \
+  }
 #else
 #  define ARCCORE_CHECK_PTR(a)
 #  define ARCCORE_ASSERT(a,b)
@@ -659,11 +679,74 @@ class String;
 class StringView;
 class StringFormatterArg;
 class StringBuilder;
+// Pas dans cette composante mais comme cette interface on la met ici
+// pour compatibilité avec l'existant
+class ITraceMng;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arccore
+} // End namespace Arcane
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace Arccore
+{
+using Arcane::ITraceMng;
+using Arcane::String;
+using Arcane::StringBuilder;
+using Arcane::StringFormatterArg;
+using Arcane::StringView;
+using Arcane::UInt32;
+using Arcane::UInt64;
+
+using Arcane::APReal;
+using Arcane::Integer;
+using Arcane::Pointer;
+using Arcane::Real;
+using Arcane::Short;
+
+//! Type 'Brain Float16'
+using BFloat16 = Arcane::BFloat16;
+
+//! Type 'Float16' (binary16)
+using Float16 = Arcane::Float16;
+
+//! Type flottant IEEE-753 simple précision (binary32)
+using Float32 = float;
+
+//! Type représentant un entier sur 8 bits
+using Int8 = Arcane::Int8;
+
+//! Type représentant un floattan sur 128 bits
+using Float128 = Arcane::Float128;
+
+//! Type représentant un entier sur 128 bits
+using Int128 = Arcane::Int128;
+using Int16 = Arcane::Int16;
+using Int32 = Arcane::Int32;
+using Int64 = Arcane::Int64;
+
+using Arcane::arccoreCheckAt;
+using Arcane::arccoreCheckRange;
+using Arcane::arccoreDebugPause;
+using Arcane::arccoreIsCheck;
+using Arcane::arccoreIsDebug;
+using Arcane::arccoreNullPointerError;
+using Arcane::arccorePrintf;
+using Arcane::arccoreRangeError;
+using Arcane::arccoreSetCheck;
+using Arcane::arccoreSetPauseOnError;
+using Arcane::arccoreThrowIfNull;
+using Arcane::arccoreThrowNullPointerError;
+
+using Arcane::FalseType;
+using Arcane::TrueType;
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

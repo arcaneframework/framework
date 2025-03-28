@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ParallelMngUtils.cc                                         (C) 2000-2024 */
+/* ParallelMngUtils.cc                                         (C) 2000-2025 */
 /*                                                                           */
 /* Fonctions utilitaires associées aux 'IParallelMng'.                       */
 /*---------------------------------------------------------------------------*/
@@ -14,7 +14,7 @@
 #include "arcane/core/ParallelMngUtils.h"
 
 #include "arcane/core/IParallelMng.h"
-#include "arcane/core/IParallelMngUtilsFactory.h"
+#include "arcane/core/internal/IParallelMngUtilsFactory.h"
 #include "arcane/core/internal/IParallelMngInternal.h"
 
 /*---------------------------------------------------------------------------*/
@@ -81,11 +81,28 @@ class ParallelMngUtilsAccessor
     auto f = pm->_internalUtilsFactory();
     return f->createTopology(pm);
   }
+
   static Ref<IParallelMng>
   createSubParallelMngRef(IParallelMng* pm, Int32 color, Int32 key)
   {
     ARCANE_CHECK_POINTER(pm);
     return pm->_internalApi()->createSubParallelMngRef(color, key);
+  }
+
+  static Ref<ISerializeMessage>
+  createSendSerializeMessageRef(IParallelMng* pm, Int32 rank)
+  {
+    ARCANE_CHECK_POINTER(pm);
+    auto f = pm->_internalUtilsFactory();
+    return f->createSendSerializeMessage(pm, rank);
+  }
+
+  static Ref<ISerializeMessage>
+  createReceiveSerializeMessageRef(IParallelMng* pm, Int32 rank)
+  {
+    ARCANE_CHECK_POINTER(pm);
+    auto f = pm->_internalUtilsFactory();
+    return f->createReceiveSerializeMessage(pm, rank);
   }
 };
 

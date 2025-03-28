@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshSchedule.cpp                                            (C) 2000-2023 */
+/* MeshSchedule.cpp                                            (C) 2000-2025 */
 /*                                                                           */
 /* Asynchronous Mesh structure based on Neo kernel                           */
 /*---------------------------------------------------------------------------*/
@@ -34,13 +34,11 @@ void Neo::Mesh::_scheduleAddConnectivity(Neo::Family& source_family, Neo::ItemRa
   // Create connectivity wrapper and add it to mesh
   auto& connectivity_property = source_family.getConcreteProperty<Mesh::ConnectivityPropertyType>(connectivity_unique_name);
   auto& connectivity_orientation = source_family.getConcreteProperty<Mesh::ConnectivityPropertyType>(orientation_name);
-  auto [iterator, is_inserted] = m_connectivities.insert(std::make_pair(connectivity_unique_name,
-                                                                        Connectivity{
-                                                                        source_family,
-                                                                        target_family,
-                                                                        connectivity_unique_name,
-                                                                        connectivity_property,
-                                                                        connectivity_orientation }));
+  Connectivity current_connectivity = Connectivity {source_family,target_family,
+                                                    connectivity_unique_name,connectivity_property,
+                                                    connectivity_orientation};
+  auto [iterator, is_inserted] = m_connectivities.insert(std::make_pair(connectivity_unique_name,current_connectivity));
+  m_connectivities_per_family[{source_family.itemKind(),source_family.name()}].push_back(current_connectivity);
   if (!is_inserted && add_or_modify == ConnectivityOperation::Add) {
     throw std::invalid_argument("Cannot include already inserted connectivity " + connectivity_unique_name + ". Choose ConnectivityOperation::Modify");
   }

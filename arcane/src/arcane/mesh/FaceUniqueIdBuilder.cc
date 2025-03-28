@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* FaceUniqueIdBuilder.cc                                      (C) 2000-2024 */
+/* FaceUniqueIdBuilder.cc                                      (C) 2000-2025 */
 /*                                                                           */
 /* Construction des identifiants uniques des faces.                          */
 /*---------------------------------------------------------------------------*/
@@ -17,18 +17,19 @@
 #include "arcane/utils/OStringStream.h"
 #include "arcane/utils/CheckedConvert.h"
 
-#include "arcane/mesh/DynamicMesh.h"
-#include "arcane/mesh/OneMeshItemAdder.h"
-#include "arcane/mesh/GhostLayerBuilder.h"
-#include "arcane/mesh/FaceUniqueIdBuilder.h"
-#include "arcane/mesh/ItemTools.h"
-
 #include "arcane/core/IMeshUniqueIdMng.h"
 #include "arcane/core/IParallelExchanger.h"
 #include "arcane/core/IParallelMng.h"
 #include "arcane/core/ISerializeMessage.h"
 #include "arcane/core/ISerializer.h"
 #include "arcane/core/ParallelMngUtils.h"
+
+#include "arcane/mesh/DynamicMesh.h"
+#include "arcane/mesh/OneMeshItemAdder.h"
+#include "arcane/mesh/GhostLayerBuilder.h"
+#include "arcane/mesh/FaceUniqueIdBuilder.h"
+#include "arcane/mesh/ItemTools.h"
+#include "arcane/mesh/ItemsOwnerBuilder.h"
 
 #include <unordered_set>
 
@@ -79,25 +80,25 @@ computeFacesUniqueIds()
     _computeFaceUniqueIdVersion5(m_mesh);
   else if (face_version == 4)
     arcaneComputeCartesianFaceUniqueId(m_mesh);
-  else if (face_version==3)
+  else if (face_version == 3)
     _computeFaceUniqueIdVersion3(m_mesh);
-  else{
-    if (is_parallel){
-      if (face_version==2){
+  else if (face_version == 0) {
+    info() << "No face renumbering";
+  }
+  else {
+    // Version 1 ou 2
+    if (is_parallel) {
+      if (face_version == 2) {
         //PAS ENCORE PAR DEFAUT
         info() << "Use new mesh init in FaceUniqueIdBuilder";
         _computeFacesUniqueIdsParallelV2();
       }
-      else{
+      else {
         // Version par défaut.
         _computeFacesUniqueIdsParallelV1();
       }
     }
-    else{
-      if (face_version==0){
-        pwarning() << "No face renumbering";
-        return;
-      }
+    else {
       _computeFacesUniqueIdsSequential();
     }
   }
@@ -113,14 +114,21 @@ computeFacesUniqueIds()
 
   // Il faut ranger à nouveau #m_faces_map car les uniqueId() des
   // faces ont été modifiés
-  m_mesh->faceFamily()->notifyItemsUniqueIdChanged();
+  if (face_version != 0)
+    m_mesh->faceFamily()->notifyItemsUniqueIdChanged();
 
   bool is_verbose = m_mesh_builder->isVerbose();
-  if (is_verbose){
+  if (is_verbose) {
     info() << "NEW FACES_MAP after re-indexing";
     faces_map.eachItem([&](Item face) {
       info() << "Face uid=" << face.uniqueId() << " lid=" << face.localId();
     });
+  }
+  // Avec la version 0 ou 5, les propriétaires ne sont pas positionnées
+  // Il faut le faire maintenant
+  if (face_version == 0 || face_version == 5) {
+    ItemsOwnerBuilder owner_builder(m_mesh);
+    owner_builder.computeFacesOwner();
   }
 }
 
@@ -280,7 +288,7 @@ _computeFacesUniqueIdsParallelV1()
     // soit de l'ordre de 100 Mo pour chaque message.
     Int64 step_size = 1500000;
     Integer nb_phase = CheckedConvert::toInteger((global_nb_boundary_face / step_size) + 1);
-    FaceInfoListView faces(m_mesh->faceFamily());
+    FaceLocalIdToFaceConverter faces(m_mesh->faceFamily());
     for( Integer i_phase=0; i_phase<nb_phase; ++i_phase ){
       Integer nb_face_to_send = nb_sub_domain_boundary_face / nb_phase;
       Integer first_face_to_send = nb_face_to_send * i_phase;
@@ -607,8 +615,8 @@ _exchangeData(IParallelExchanger* exchanger,BoundaryInfosMap& boundary_infos_to_
       Int64ConstArrayView infos  = boundary_infos_to_send[rank];
       Integer nb_info = infos.size();
       s->setMode(ISerializer::ModeReserve);
-      s->reserve(DT_Int64,1); // Pour le nombre d'elements
-      s->reserveSpan(DT_Int64,nb_info); // Pour les elements
+      s->reserveInt64(1); // Pour le nombre d'elements
+      s->reserveSpan(eBasicDataType::Int64,nb_info); // Pour les elements
       s->allocateBuffer();
       s->setMode(ISerializer::ModePut);
       s->putInt64(nb_info);

@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* FloatConversion.h                                           (C) 2000-2023 */
+/* FloatConversion.h                                           (C) 2000-2025 */
 /*                                                                           */
 /* Opérations de conversion entre 'float' et 'Float16' et 'BFloat16'.        */
 /*---------------------------------------------------------------------------*/
@@ -24,7 +24,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arccore::impl
+namespace Arcane::impl
 {
 
 // The following Float16_t conversions are based on the code from
@@ -165,7 +165,7 @@ convertToBFloat16Impl(uint16_t val)
   char* const first = reinterpret_cast<char*>(&result);
   char* const second = first + sizeof(uint16_t);
   // Les macros suivantes ne sont pas définies sous Windows mais ce dernier
-  // ne supporte que des architectures little-endian donc cela ne pose pas
+  // ne supporte que des architectures big-endian donc cela ne pose pas
   // de problèmes.
 #if defined(__BYTE_ORDER__) && (__BYTE_ORDER__ == __ORDER_BIG_ENDIAN__)
   std::memcpy(first, &val, sizeof(uint16_t));
@@ -180,7 +180,15 @@ convertToBFloat16Impl(uint16_t val)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // namespace Arccore::impl
+}
+
+namespace Arccore::impl
+{
+using Arcane::impl::convertFloat16ToUint16Impl;
+using Arcane::impl::convertToFloat16Impl;
+using Arcane::impl::convertBFloat16ToUint16Impl;
+using Arcane::impl::convertToBFloat16Impl;
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

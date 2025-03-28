@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CartesianMeshPatch.cc                                       (C) 2000-2023 */
+/* CartesianMeshPatch.cc                                       (C) 2000-2025 */
 /*                                                                           */
 /* Informations sur un patch AMR d'un maillage cartésien.                    */
 /*---------------------------------------------------------------------------*/
@@ -35,6 +35,7 @@ CartesianMeshPatch(ICartesianMesh* cmesh,Integer patch_index)
 : TraceAccessor(cmesh->traceMng())
 , m_mesh(cmesh)
 , m_amr_patch_index(patch_index)
+, m_level(0)
 {
   Integer nb_dir = cmesh->mesh()->dimension();
   for( Integer i=0; i<nb_dir; ++i ){

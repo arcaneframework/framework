@@ -258,6 +258,12 @@ macro(arcane_wrapper_add_swig_target)
   # de private.
   target_include_directories(${_TARGET_NAME} PRIVATE ${ARCANE_DOTNET_WRAPPER_SOURCE_DIR} ${ARGS_INCLUDE_DIRECTORIES})
 
+  # Compile uniquement avec l'option '-O1' pour compiler plus vite.
+  # La différence de performance n'est pas perceptible pour le wrapper.
+  if (UNIX)
+    target_compile_options(${_TARGET_NAME} PRIVATE "-O1")
+  endif()
+
   arcane_register_library(${_TARGET_NAME} OPTIONAL)
 endmacro()
 

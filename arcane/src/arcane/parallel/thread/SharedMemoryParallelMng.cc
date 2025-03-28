@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* SharedMemoryParallelMng.cc                                  (C) 2000-2024 */
+/* SharedMemoryParallelMng.cc                                  (C) 2000-2025 */
 /*                                                                           */
 /* Implémentation des messages en mode mémoire partagé.                      */
 /*---------------------------------------------------------------------------*/
@@ -17,10 +17,7 @@
 #include "arcane/utils/NotSupportedException.h"
 #include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/TraceInfo.h"
-#include "arcane/utils/Real2.h"
-#include "arcane/utils/Real3.h"
-#include "arcane/utils/Real2x2.h"
-#include "arcane/utils/Real3x3.h"
+#include "arcane/utils/NumericTypes.h"
 #include "arcane/utils/ArgumentException.h"
 #include "arcane/utils/FatalErrorException.h"
 #include "arcane/utils/ITraceMng.h"
@@ -30,15 +27,15 @@
 #include "arcane/parallel/thread/SharedMemoryParallelDispatch.h"
 #include "arcane/parallel/thread/ISharedMemoryMessageQueue.h"
 
-#include "arcane/core/SerializeMessage.h"
 #include "arcane/core/Timer.h"
 #include "arcane/core/IIOMng.h"
 #include "arcane/core/ISerializeMessageList.h"
 #include "arcane/core/IItemFamily.h"
+#include "arcane/core/internal/SerializeMessage.h"
 
 #include "arcane/impl/TimerMng.h"
 #include "arcane/impl/ParallelReplication.h"
-#include "arcane/impl/ParallelMngUtilsFactoryBase.h"
+#include "arcane/impl/internal/ParallelMngUtilsFactoryBase.h"
 
 #include "arccore/message_passing/RequestListBase.h"
 #include "arccore/message_passing/SerializeMessageList.h"
@@ -244,7 +241,7 @@ sendSerializer(ISerializer* values,Int32 rank,ByteArray& bytes)
 ISerializeMessage* SharedMemoryParallelMng::
 createSendSerializer(Int32 rank)
 {
-  return new SerializeMessage(m_rank,rank,ISerializeMessage::MT_Send);
+  return m_utils_factory->createSendSerializeMessage(this, rank)._release();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -286,7 +283,7 @@ recvSerializer(ISerializer* values,Int32 rank)
 ISerializeMessage* SharedMemoryParallelMng::
 createReceiveSerializer(Int32 rank)
 {
-  return new SerializeMessage(m_rank,rank,ISerializeMessage::MT_Recv);
+  return m_utils_factory->createReceiveSerializeMessage(this, rank)._release();
 }
 
 /*---------------------------------------------------------------------------*/

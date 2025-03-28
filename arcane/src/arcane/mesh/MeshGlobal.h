@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshGlobal.h                                                (C) 2000-2021 */
+/* MeshGlobal.h                                                (C) 2000-2024 */
 /*                                                                           */
 /* Déclarations générales de la composante Maillage de Arcane.               */
 /*---------------------------------------------------------------------------*/
@@ -36,6 +36,7 @@ class NodeFamily;
 class EdgeFamily;
 class FaceFamily;
 class CellFamily;
+class DynamicMesh;
 
 class IncrementalItemConnectivity;
 

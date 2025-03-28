@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* TaskUnitTest.cc                                             (C) 2000-2024 */
+/* TaskUnitTest.cc                                             (C) 2000-2025 */
 /*                                                                           */
 /* Service de test des tâches.                                               */
 /*---------------------------------------------------------------------------*/
@@ -17,27 +17,21 @@
 #include "arcane/utils/Mutex.h"
 #include "arcane/utils/ValueChecker.h"
 #include "arcane/utils/TestLogger.h"
+#include "arcane/utils/internal/TaskFactoryInternal.h"
 
-#include "arcane/BasicUnitTest.h"
-#include "arcane/IMesh.h"
-#include "arcane/Concurrency.h"
-#include "arcane/ItemFunctor.h"
-#include "arcane/ObserverPool.h"
-#include "arcane/ItemPrinter.h"
+#include "arcane/core/BasicUnitTest.h"
+#include "arcane/core/IMesh.h"
+#include "arcane/core/Concurrency.h"
+#include "arcane/core/ItemFunctor.h"
+#include "arcane/core/ObserverPool.h"
+#include "arcane/core/ItemPrinter.h"
 
-#include "arcane/tests/ArcaneTestGlobal.h"
 #include "arcane/tests/TaskUnitTest_axl.h"
-
-#include "arcane_packages.h"
 
 #include <thread>
 
-#ifdef ARCANE_HAS_PACKAGE_TBB
-#include <tbb/spin_mutex.h>
-using namespace tbb;
-#endif
-
-long SerialFib( long n ) {
+long SerialFib(long n)
+{
   if( n<2 )
     return n;
   else
@@ -66,8 +60,14 @@ class Test2
 : public TraceAccessor
 {
  public:
-  Test2(ITraceMng* tm) : TraceAccessor(tm), m_wanted_nb_task(0) {}
+
+  explicit Test2(ITraceMng* tm)
+  : TraceAccessor(tm)
+  , m_wanted_nb_task(0)
+  {}
+
  public:
+
   void exec()
   {
     m_nb = 0;
@@ -96,12 +96,13 @@ class Test2
   }
 
  private:
+
   void _testCallback()
   {
     ++m_nb;
   }
-  std::atomic<Int32> m_nb;
-  Integer m_wanted_nb_task;
+  std::atomic<Int32> m_nb = 0;
+  Integer m_wanted_nb_task = 0;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -113,6 +114,7 @@ class Test3
 : public TraceAccessor
 {
  public:
+
   Test3(ITraceMng* tm,IMesh* mesh)
   : TraceAccessor(tm), m_mesh(mesh), m_node_coord(mesh->nodesCoordinates()),
     m_node_nb_access(VariableBuildInfo(mesh,"NodeNbAccess")),
@@ -122,7 +124,9 @@ class Test3
     m_saved_value = 0.0;
     m_max_thread_index = (-1);
   }
+
  public:
+
   void exec()
   {
     m_total_value = 0.0;
@@ -384,10 +388,10 @@ class Test3
     }
   }
 
-  IMesh* m_mesh;
-  Real m_total_value;
-  Real m_saved_value;
-  Integer m_max_thread_index;
+  IMesh* m_mesh = nullptr;
+  Real m_total_value = 0.0;
+  Real m_saved_value = 0.0;
+  Integer m_max_thread_index = 0;
   SpinLock m_reduce_lock;
   VariableNodeReal3 m_node_coord;
   VariableNodeInteger m_node_nb_access;
@@ -396,7 +400,6 @@ class Test3
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -408,7 +411,8 @@ class Test4
   class IAction
   {
    public:
-    virtual ~IAction(){}
+
+    virtual ~IAction() = default;
     virtual Int32 value() =0;
     virtual void loop(Integer nb_loop) =0;
   };
@@ -417,8 +421,8 @@ class Test4
   {
    public:
     DoAtomic() { m_nb = 0; }
-    Int32 value() { return m_nb.load(); }
-    void loop(Integer nb_loop)
+    Int32 value() override { return m_nb.load(); }
+    void loop(Integer nb_loop) override
     {
       for( int i=0; i<nb_loop; ++i )
         ++m_nb;
@@ -429,9 +433,10 @@ class Test4
   class DoSpinLock : public IAction
   {
    public:
+
     DoSpinLock() : m_nb(0) {}
-    Int32 value() { return m_nb; }
-    void loop(Integer nb_loop)
+    Int32 value() override { return m_nb; }
+    void loop(Integer nb_loop) override
     {
       for( int i=0; i<nb_loop; ++i ){
         SpinLock::ScopedLock sl(m_lock);
@@ -442,43 +447,32 @@ class Test4
     SpinLock m_lock;
   };
 
-#ifdef ARCANE_HAS_PACKAGE_TBB
-  class DoSpinLockTBB : public IAction
-  {
-   public:
-    DoSpinLockTBB() : m_nb(0) {}
-    Int32 value() { return m_nb; }
-    void loop(Integer nb_loop)
-    {
-      for( int i=0; i<nb_loop; ++i ){
-        tbb::spin_mutex::scoped_lock sl(m_lock);
-        ++m_nb;
-      }
-    }
-    Int32 m_nb;
-    tbb::spin_mutex m_lock;
-  };
-#endif
-
-  class DoMutex : public IAction
+  class DoMutex
+  : public IAction
   {
    public:
     DoMutex() : m_nb(0) {}
-    Int32 value() { return m_nb; }
-    void loop(Integer nb_loop)
+    Int32 value() override { return m_nb; }
+    void loop(Integer nb_loop) override
     {
       for( int i=0; i<nb_loop; ++i ){
         Mutex::ScopedLock sl(m_lock);
         ++m_nb;
       }
     }
-    Int32 m_nb;
+    Int32 m_nb = 0;
     Mutex m_lock;
   };
 
  public:
-  Test4(ITraceMng* tm) : TraceAccessor(tm), m_action(nullptr) {}
+
+  explicit Test4(ITraceMng* tm)
+  : TraceAccessor(tm)
+  , m_action(nullptr)
+  {}
+
  public:
+
   void exec()
   {
     int n = 100000;
@@ -491,7 +485,7 @@ class Test4
       Real v1 = platform::getRealTime();
       ParallelLoopOptions loop_options2;
       loop_options2.setGrainSize(n2);
-      arcaneParallelFor(0,n,loop_options2,[&](Integer a,Integer n){ _DoLoop(a,n); });
+      arcaneParallelFor(0, n, loop_options2, [&](Integer a, Integer n) { _doLoop(a, n); });
       Real v2 = platform::getRealTime();
       _print("atomic",m_action->value(),v2-v1,n);
     }
@@ -499,39 +493,28 @@ class Test4
       DoSpinLock spinlock_action;
       m_action = &spinlock_action;
       Real v1 = platform::getRealTime();
-      arcaneParallelFor(0,n,loop_options,[&](Integer a,Integer n){ _DoLoop(a,n); });
+      arcaneParallelFor(0, n, loop_options, [&](Integer a, Integer n) { _doLoop(a, n); });
       Real v2 = platform::getRealTime();
-      _print("spin",m_action->value(),v2-v1,n);
+      _print("spin", m_action->value(), v2 - v1, n);
     }
     {
       DoMutex mutex_action;
       m_action = &mutex_action;
       Real v1 = platform::getRealTime();
-      arcaneParallelFor(0,n,loop_options,[&](Integer a,Integer n){ _DoLoop(a,n); });
+      arcaneParallelFor(0, n, loop_options, [&](Integer a, Integer n) { _doLoop(a, n); });
       Real v2 = platform::getRealTime();
-      _print("mutex",m_action->value(),v2-v1,n);
+      _print("mutex", m_action->value(), v2 - v1, n);
     }
-#ifdef ARCANE_HAS_PACKAGE_TBB
-    {
-      DoSpinLockTBB spintbb_action;
-      m_action = &spintbb_action;
-      Real v1 = platform::getRealTime();
-      arcaneParallelFor(0,n,loop_options,[&](Integer a,Integer n){ _DoLoop(a,n); });
-      Real v2 = platform::getRealTime();
-      _print("spintbb",m_action->value(),v2-v1,n);
-    }
-#endif
     {
       // Test Mutex avec syntaxe des lambda fonction du C++0x
       DoMutex mutex_action;
       m_action = &mutex_action;
       Real v1 = platform::getRealTime();
-      arcaneParallelFor(0,n,loop_options,[this](Integer /*i0*/,Integer size)
-                    {
-                      m_action->loop(size*10);
-                    });
+      arcaneParallelFor(0, n, loop_options, [this](Integer /*i0*/, Integer size) {
+        m_action->loop(size * 10);
+      });
       Real v2 = platform::getRealTime();
-      _print("mutex_c++0x",m_action->value(),v2-v1,n);
+      _print("mutex_c++0x", m_action->value(), v2 - v1, n);
     }
   }
 
@@ -541,13 +524,14 @@ class Test4
            << " time=" << elapsed_time << " time2=" << elapsed_time / (n*10);
   }
 
-  void _DoLoop(Integer /*i0*/,Integer size)
+  void _doLoop(Integer /*i0*/, Integer size)
   {
     m_action->loop(size*10);
   }
 
  private:
-  IAction* m_action;
+
+  IAction* m_action = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -560,18 +544,21 @@ class Test5Fibonnaci
 {
  public:
 
- public:
-  const long n;
-  long* const sum;
+  const long n = 0;
+  long* const sum = nullptr;
+
   Test5Fibonnaci( long n_, long* sum_ ) : n(n_), sum(sum_)
   {}
+
   void execute(const TaskContext& context);
+
   static long SerialFib( long n ) {
     if( n<2 )
       return n;
     else
       return SerialFib(n-1)+SerialFib(n-2);
   }
+
   static long ParallelFib( long n )
   {
     long sum = 0;
@@ -581,6 +568,7 @@ class Test5Fibonnaci
     return sum;
   }
  public:
+
   static std::atomic<Int32> m_nb_exec;
 };
 std::atomic<Int32> Test5Fibonnaci::m_nb_exec(0);
@@ -664,11 +652,14 @@ class Test6
     }
   }
   Int64 m_value = 0;
-  Int32 m_first_value;
-  Int32 m_nb_value;
-  Int32 m_step_size;
+  Int32 m_first_value = 0;
+  Int32 m_nb_value = 0;
+  Int32 m_step_size = 0;
   SpinLock m_lock;
 };
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 } // namespace TaskTest
 
@@ -680,17 +671,15 @@ class Test6
 class TaskUnitTest
 : public ArcaneTaskUnitTestObject
 {
-public:
+ public:
 
-public:
-
-  TaskUnitTest(const ServiceBuildInfo& cb);
-  ~TaskUnitTest();
+  explicit TaskUnitTest(const ServiceBuildInfo& cb);
+  ~TaskUnitTest() override;
 
  public:
 
-  virtual void initializeTest();
-  virtual void executeTest();
+  void initializeTest() override;
+  void executeTest() override;
 
  private:
   
@@ -701,7 +690,8 @@ public:
 
  private:
 
-  ObserverPool m_observers;
+  ObserverT<TaskUnitTest> m_thread_create_observer;
+  bool m_has_thread_callback = false;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -715,6 +705,7 @@ ARCANE_REGISTER_SERVICE_TASKUNITTEST(TaskUnitTest,TaskUnitTest);
 TaskUnitTest::
 TaskUnitTest(const ServiceBuildInfo& mb)
 : ArcaneTaskUnitTestObject(mb)
+, m_thread_create_observer(this, &TaskUnitTest::_createTheadCallback)
 {
 }
 
@@ -724,6 +715,8 @@ TaskUnitTest(const ServiceBuildInfo& mb)
 TaskUnitTest::
 ~TaskUnitTest()
 {
+  if (m_has_thread_callback)
+    TaskFactoryInternal::removeThreadCreateObserver(&m_thread_create_observer);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -805,17 +798,14 @@ initializeTest()
   TaskFactory::setVerboseLevel(1);
   // Cette boucle doit être la première pour tester l'observable sur
   // la création de threads.
-  m_observers.addObserver(this,&TaskUnitTest::_createTheadCallback,
-                          TaskFactory::createThreadObservable());
+  TaskFactoryInternal::addThreadCreateObserver(&m_thread_create_observer);
+  m_has_thread_callback = true;
 
   Func my_functor;
   ParallelLoopOptions loop_options;
   loop_options.setGrainSize(100);
   arcaneParallelFor(50,1000,loop_options,[&](Integer a,Integer n){ my_functor.exec(a,n); });
 }
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

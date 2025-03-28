@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ArcaneMpi.h                                                 (C) 2000-2024 */
+/* ArcaneMpi.h                                                 (C) 2000-2025 */
 /*                                                                           */
 /* Déclarations globales pour la partie MPI de Arcane.                       */
 /*---------------------------------------------------------------------------*/
@@ -26,13 +26,13 @@
 
 namespace Arcane
 {
-using Arccore::MessagePassing::Mpi::MpiLock;
-using Arccore::MessagePassing::Mpi::MpiAdapter;
-using Arccore::MessagePassing::Mpi::MpiDatatype;
-using Arccore::MessagePassing::Mpi::IMpiReduceOperator;
-using Arccore::MessagePassing::Mpi::StdMpiReduceOperator;
-using Arccore::MessagePassing::Mpi::MpiSerializeDispatcher;
-namespace MpiBuiltIn = Arccore::MessagePassing::Mpi::MpiBuiltIn;
+using MessagePassing::Mpi::IMpiReduceOperator;
+using MessagePassing::Mpi::MpiAdapter;
+using MessagePassing::Mpi::MpiDatatype;
+using MessagePassing::Mpi::MpiLock;
+using MessagePassing::Mpi::MpiSerializeDispatcher;
+using MessagePassing::Mpi::StdMpiReduceOperator;
+namespace MpiBuiltIn = MessagePassing::Mpi::MpiBuiltIn;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -69,7 +69,7 @@ arcaneIsAcceleratorAwareMPI();
 
 //! \internal
 extern "C++" ARCANE_MPI_EXPORT void
-arcaneInitializeMPI(int* argc,char*** argv,int wanted_thread_level);
+arcaneInitializeMPI(int* argc, char*** argv, int wanted_thread_level);
 
 //! \internal
 extern "C++" ARCANE_MPI_EXPORT void

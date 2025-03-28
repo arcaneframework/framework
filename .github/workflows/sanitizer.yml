@@ -1,0 +1,38 @@
+name: '[Sanitizer] Build/Install/Test Arcane Framework (Ubuntu 24.04 / CLang 19 / Full)'
+
+on:
+  schedule:
+    - cron: '24 0 * * *' # Tous les jours à 00:24.
+  # À exécuter lorsque l'on demande.
+  workflow_dispatch:
+
+jobs:
+  build-install-test:
+    strategy:
+      fail-fast: false
+    name: '[U24_C19_F]_OMPI_Check'
+    # La partie 'uses' est déterminée à la compilation, donc on ne peut pas mettre de variable ${{}}.
+    uses: 'arcaneframework/gh_actions/.github/workflows/reusable_test_framework.yml@v3'
+    with:
+      image: ghcr.io/arcaneframework/ubuntu-2404:clang-19_full_20250120
+      compilo_name: clang
+      compilo_version: 19
+      mpi: OMPI
+      use_mold: false
+      type_build: Check
+      cmake_additionnal_args: '-DARCCORE_CXX_STANDARD=23 
+        -DARCANE_DISABLE_PERFCOUNTER_TESTS=ON
+        -DARCANE_DEFAULT_PARTITIONER=Metis
+        -DARCANE_USE_HASHTABLEMAP2_FOR_ITEMINTERNALMAP=ON
+        -DPTScotch_INCLUDE_DIR="/usr/include/scotch"
+        -DCMAKE_C_FLAGS="-fsanitize=address -fno-omit-frame-pointer -g"
+        -DCMAKE_CXX_FLAGS="-fsanitize=address -fno-omit-frame-pointer -g"'
+      verbose: true
+      ccache_debug_mode: false
+      with_samples: true
+      execute_tests: true
+      excluded_tests: '^.*([5-9]proc|[1-9][0-9]+proc|[5-9]thread|[1-9][0-9]+thread|coreclr_dotnet).*$'
+      excluded_tests_with_labels: 'LARGE_HYBRID'
+      ctest_additionnal_args: '-j4 --timeout 1200'
+      cache_key_prefix: 'U24_C19_F'
+      artifact_key_prefix: 'U24_C19_F_OMPI_Check'

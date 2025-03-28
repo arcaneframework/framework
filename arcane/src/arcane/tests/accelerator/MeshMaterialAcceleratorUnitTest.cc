@@ -735,23 +735,25 @@ _executeTest4(Integer nb_z, bool use_new_impl)
 
     if (use_new_impl) {
       for (Integer z = 0, iz = nb_z; z < iz; ++z) {
-        AllEnvCellVectorView all_env_view = m_mm_mng->view(allCells());
+        //![SampleAllEnvCell]
+        Arcane::Materials::AllEnvCellVectorView all_env_view = m_mm_mng->view(allCells());
         auto cmd = makeCommand(queue);
         auto in_b = viewIn(cmd, m_mat_b);
         auto out_c = viewOut(cmd, m_mat_c);
         auto in_c_g = viewIn(cmd, m_mat_c.globalVariable());
         auto out_a_g = viewOut(cmd, m_mat_a);
-        cmd << RUNCOMMAND_MAT_ENUMERATE(AllEnvCell, all_env_cell, all_env_view)
+        cmd << RUNCOMMAND_MAT_ENUMERATE(AllEnvCell, all_env_cell_iter, all_env_view)
         {
-          CellLocalId cid = all_env_cell.globalCellId();
+          Arcane::Materials::AllEnvCell all_env_cell = all_env_cell_iter;
+          Arcane::CellLocalId cid = all_env_cell.globalCellId();
           Real sum2 = 0.0;
-          for (EnvCell ev : all_env_cell.subEnvItems()) {
+          for (Arcane::Materials::EnvCell ev : all_env_cell.subEnvItems()) {
             sum2 += in_b[ev] + in_b[cid];
           }
 
           Real sum3 = 0.0;
           if (all_env_cell.nbEnvironment() > 1) {
-            for (EnvCell ev : all_env_cell.subEnvItems()) {
+            for (Arcane::Materials::EnvCell ev : all_env_cell.subEnvItems()) {
               Real contrib2 = (in_b[ev] + in_b[all_env_cell]) - (sum2 + 1.);
               out_c[ev] = contrib2 * in_c_g[cid];
               sum3 += contrib2;
@@ -759,6 +761,7 @@ _executeTest4(Integer nb_z, bool use_new_impl)
           }
           out_a_g[cid] = sum3;
         };
+        //![SampleAllEnvCell]
       }
     }
     else {
@@ -910,19 +913,29 @@ _executeTest4(Integer nb_z, bool use_new_impl)
 void MeshMaterialAcceleratorUnitTest::
 _executeTest6()
 {
-  Int32 nb_cell = m_env1->cells().size();
-  NumArray<Int32, MDDim1> cells_local_id(nb_cell);
+  //![SampleEnvAndGlobalCell]
+  Arcane::Materials::IMeshEnvironment* env1 = m_env1;
+  Int32 nb_cell = env1->cells().size();
+  Arcane::NumArray<Int32, MDDim1> cells_local_id(nb_cell);
+  Arcane::Materials::MaterialVariableCellReal& mat_a = m_mat_a;
 
   {
     auto queue = makeQueue(m_runner);
     auto command = makeCommand(queue);
     auto cells_local_id_view = viewOut(command, cells_local_id);
-    command << RUNCOMMAND_MAT_ENUMERATE(EnvAndGlobalCell, evi, m_env1)
+    auto out_mat_a = viewOut(command, mat_a);
+    command << RUNCOMMAND_MAT_ENUMERATE(EnvAndGlobalCell, iter, m_env1)
     {
-      auto [mvi, cid] = evi();
-      cells_local_id_view[evi.index()] = cid;
+      EnvAndGlobalCellIteratorValue evi = iter; // Valeur de l'itérateur
+      auto [iter_mvi, iter_cid] = evi();
+      EnvCellLocalId mvi = iter_mvi; // Numéro local de la maille milieu
+      Arcane::CellLocalId cid = iter_cid; // Numéro de la maille globale de la maille milieu courante
+      Int32 iter_index = evi.index(); // Index de l'itération
+      cells_local_id_view[iter_index] = cid;
+      out_mat_a[mvi] = 1.2;
     };
   }
+  //![SampleEnvAndGlobalCell]
   {
     ENUMERATE_ENVCELL (ienvcell, m_env1) {
       EnvCell env_cell(*ienvcell);

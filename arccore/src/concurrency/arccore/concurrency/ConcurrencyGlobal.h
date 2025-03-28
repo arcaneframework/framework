@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ConcurrencyGlobal.h                                         (C) 2000-2024 */
+/* ConcurrencyGlobal.h                                         (C) 2000-2025 */
 /*                                                                           */
 /* Définitions globales de la composante 'Concurrency' de 'Arccore'.         */
 /*---------------------------------------------------------------------------*/
@@ -30,7 +30,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arccore
+namespace Arcane
 {
 class IThreadImplementation;
 class Mutex;
@@ -40,21 +40,26 @@ class IThreadBarrier;
 class NullThreadImplementation;
 class NullThreadBarrier;
 
+//@{ Classe internes à Arccore/Arcane
+class SpinLockImpl;
+class GlibThreadImplementation;
+//@}
+
 //! Classe opaque encapsulant l'implementation des threads
 class ThreadImpl;
 //! Classe opaque encapsulant l'implementation d'un mutex
 class MutexImpl;
-} // namespace Arccore
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCCORE_DECLARE_REFERENCE_COUNTED_CLASS(IThreadImplementation)
+ARCCORE_DECLARE_REFERENCE_COUNTED_CLASS(Arcane::IThreadImplementation)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arccore::Concurrency
+namespace Arcane::Concurrency
 {
 
 /*---------------------------------------------------------------------------*/
@@ -80,7 +85,45 @@ createNullThreadImplementation();
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // namespace Arccore::Concurrency
+} // namespace Arcane::Concurrency
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace Arccore
+{
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+using Arcane::GlibThreadImplementation;
+using Arcane::GlobalMutex;
+using Arcane::IThreadBarrier;
+using Arcane::IThreadImplementation;
+using Arcane::Mutex;
+using Arcane::MutexImpl;
+using Arcane::NullThreadBarrier;
+using Arcane::NullThreadImplementation;
+using Arcane::SpinLock;
+using Arcane::SpinLockImpl;
+using Arcane::ThreadImpl;
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace Arccore::Concurrency
+{
+using Arcane::Concurrency::getThreadImplementation;
+using Arcane::Concurrency::setThreadImplementation;
+using Arcane::Concurrency::createGlibThreadImplementation;
+using Arcane::Concurrency::createStdThreadImplementation;
+using Arcane::Concurrency::createNullThreadImplementation;
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

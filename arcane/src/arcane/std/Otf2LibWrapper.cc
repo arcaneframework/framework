@@ -1,17 +1,17 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Otf2LibWrapper.cc                                           (C) 2000-2022 */
+/* Otf2LibWrapper.cc                                           (C) 2000-2025 */
 /*                                                                           */
 /* Classe qui encapsule les fonctions utiles de la lib Otf2.                 */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/std/Otf2LibWrapper.h"
+#include "arcane/std/internal/Otf2LibWrapper.h"
 
 #include "arcane/utils/Collection.h"
 #include "arcane/utils/ITraceMng.h"
@@ -24,7 +24,7 @@
 #include "arcane/IApplication.h"
 
 #include "arccore/message_passing_mpi/MessagePassingMpiGlobal.h"
-#include "arccore/message_passing_mpi/MessagePassingMpiEnum.h"
+#include "arccore/message_passing_mpi/internal/MessagePassingMpiEnum.h"
 #include "arccore/base/PlatformUtils.h"
 
 #include <otf2/OTF2_MPI_Collectives.h>

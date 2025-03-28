@@ -1,17 +1,15 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* BasicParticleExchanger.h                                    (C) 2000-2020 */
+/* BasicParticleExchanger.h                                    (C) 2000-2025 */
 /*                                                                           */
 /*---------------------------------------------------------------------------*/
-
-#ifndef ARCANE_BASICPARTICLEEXCHANGER_H
-#define ARCANE_BASICPARTICLEEXCHANGER_H
-
+#ifndef ARCANE_MESH_BASICPARTICLEEXCHANGER_H
+#define ARCANE_MESH_BASICPARTICLEEXCHANGER_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -22,24 +20,21 @@
 #include "arcane/utils/ValueConvert.h"
 #include "arcane/utils/ScopedPtr.h"
 
-
-#include "arcane/IParticleExchanger.h"
-#include "arcane/VariableCollection.h"
-
-#include "arcane/ItemGroup.h"
-#include "arcane/ItemPrinter.h"
-#include "arcane/IItemFamily.h"
-#include "arcane/IParticleFamily.h"
-#include "arcane/IParallelMng.h"
-#include "arcane/IVariableMng.h"
-#include "arcane/IVariable.h"
-#include "arcane/IMesh.h"
-#include "arcane/Item.h"
-#include "arcane/Timer.h"
-#include "arcane/SerializeMessage.h"
-#include "arcane/ISerializeMessageList.h"
-#include "arcane/CommonVariables.h"
-#include "arcane/FactoryService.h"
+#include "arcane/core/IParticleExchanger.h"
+#include "arcane/core/VariableCollection.h"
+#include "arcane/core/ItemGroup.h"
+#include "arcane/core/ItemPrinter.h"
+#include "arcane/core/IItemFamily.h"
+#include "arcane/core/IParticleFamily.h"
+#include "arcane/core/IParallelMng.h"
+#include "arcane/core/IVariableMng.h"
+#include "arcane/core/IVariable.h"
+#include "arcane/core/IMesh.h"
+#include "arcane/core/Item.h"
+#include "arcane/core/Timer.h"
+#include "arcane/core/ISerializeMessageList.h"
+#include "arcane/core/CommonVariables.h"
+#include "arcane/core/FactoryService.h"
 
 #include "arcane/mesh/MeshGlobal.h"
 #include "arcane/mesh/BasicParticleExchanger_axl.h"
@@ -50,7 +45,6 @@
 namespace Arcane
 {
 class Timer;
-class SerializeMessage;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -112,7 +106,7 @@ class BasicParticleExchanger
 
   IItemFamily* m_item_family = nullptr;
   IParallelMng* m_parallel_mng = nullptr;
-  UniqueArray<SerializeMessage*> m_accumulate_infos;
+  UniqueArray<ISerializeMessage*> m_accumulate_infos;
 
   Int32 m_rank = A_NULL_RANK;
 
@@ -181,7 +175,11 @@ class BasicParticleExchanger
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 } // End namespace Arcane
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 #endif  
 

@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* FixedArray.h                                                (C) 2000-2024 */
+/* FixedArray.h                                                (C) 2000-2025 */
 /*                                                                           */
 /* Tableau 1D de taille fixe.                                                */
 /*---------------------------------------------------------------------------*/
@@ -61,38 +61,44 @@ class FixedArray final
  public:
 
   //! Créé un tableau en initialisant les éléments avec le constructeur par défaut de \a T
-  FixedArray()
+  constexpr FixedArray()
   : m_value({})
   {}
   //! Créé un tableau en initialisant les éléments de \a x
-  FixedArray(const std::array<T, NbElement>& x)
-  : m_value(x)
+  constexpr FixedArray(std::array<T, NbElement> x)
+  : m_value(std::move(x))
   {}
+  //! Recopie \a x dans l'instance
+  constexpr FixedArray<T,NbElement>& operator=(std::array<T, NbElement> x)
+  {
+    m_value = std::move(x);
+    return *this;
+  }
 
  public:
 
   //! Valeur du \a i-ème élément
-  ARCCORE_HOST_DEVICE T& operator[](Int32 index)
+  constexpr ARCCORE_HOST_DEVICE T& operator[](Int32 index)
   {
     ARCANE_CHECK_AT(index, NbElement);
     return m_value[index];
   }
   //! Valeur du \a i-ème élément
-  ARCCORE_HOST_DEVICE const T& operator[](Int32 index) const
+  constexpr ARCCORE_HOST_DEVICE const T& operator[](Int32 index) const
   {
     ARCANE_CHECK_AT(index, NbElement);
     return m_value[index];
   }
   //! Vue modifiable sur le tableau
-  ARCCORE_HOST_DEVICE SmallSpan<T, NbElement> span() { return { m_value.data(), NbElement }; }
+  constexpr ARCCORE_HOST_DEVICE SmallSpan<T, NbElement> span() { return { m_value.data(), NbElement }; }
   //! Vue non modifiable sur le tableau
-  ARCCORE_HOST_DEVICE SmallSpan<const T, NbElement> span() const { return { m_value.data(), NbElement }; }
+  constexpr ARCCORE_HOST_DEVICE SmallSpan<const T, NbElement> span() const { return { m_value.data(), NbElement }; }
   //! Vue modifiable sur le tableau
-  ARCCORE_HOST_DEVICE ArrayView<T> view() { return { NbElement, m_value.data() }; }
+  constexpr ARCCORE_HOST_DEVICE ArrayView<T> view() { return { NbElement, m_value.data() }; }
   //! Vue non modifiable sur le tableau
-  ARCCORE_HOST_DEVICE ConstArrayView<T> view() const { return { NbElement, m_value.data() }; }
-  ARCCORE_HOST_DEVICE const T* data() const { return m_value.data(); }
-  ARCCORE_HOST_DEVICE T* data() { return m_value.data(); }
+  constexpr ARCCORE_HOST_DEVICE ConstArrayView<T> view() const { return { NbElement, m_value.data() }; }
+  constexpr ARCCORE_HOST_DEVICE const T* data() const { return m_value.data(); }
+  constexpr ARCCORE_HOST_DEVICE T* data() { return m_value.data(); }
 
   //! Nombre d'éléments tu tableau
   static constexpr Int32 size() { return NbElement; }
@@ -100,13 +106,13 @@ class FixedArray final
  public:
 
   //! Itérateur sur le début du tableau
-  iterator begin() { return m_value.begin(); }
+  constexpr iterator begin() { return m_value.begin(); }
   //! Itérateur sur la fin du tableau
-  iterator end() { return m_value.end(); }
+  constexpr iterator end() { return m_value.end(); }
   //! Itérateur constant sur le début du tableau
-  const_iterator begin() const { return m_value.begin(); }
+  constexpr const_iterator begin() const { return m_value.begin(); }
   //! Itérateur constant la fin du tableau
-  const_iterator end() const { return m_value.end(); }
+  constexpr const_iterator end() const { return m_value.end(); }
 
  private:
 

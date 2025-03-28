@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Messages.cc                                                 (C) 2000-2024 */
+/* Messages.cc                                                 (C) 2000-2025 */
 /*                                                                           */
 /* Identifiant d'un message point à point.                                   */
 /*---------------------------------------------------------------------------*/
@@ -18,7 +18,7 @@
 #include "arccore/base/NotImplementedException.h"
 
 #include "arccore/serialize/BasicSerializer.h"
-#include "arccore/serialize/BasicSerializerInternal.h"
+#include "arccore/serialize/internal/BasicSerializerInternal.h"
 
 #include "arccore/message_passing/ISerializeDispatcher.h"
 #include "arccore/message_passing/IControlDispatcher.h"
@@ -34,7 +34,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arccore
+namespace Arcane
 {
 
 /*---------------------------------------------------------------------------*/
@@ -63,8 +63,9 @@ void BasicSerializeGatherMessage::
 doAllGather(MessagePassing::IMessagePassingMng* pm, const BasicSerializer* send_serializer,
             BasicSerializer* receive_serializer)
 {
-  // TODO:  ne supporte pas encore les types 'Float16' et 'BFloat16'
-  // car ces derniers ne sont pas supportés dans les messages MPI.
+  // TODO:  ne supporte pas encore les types 'Float16', 'BFloat16'
+  // 'Float128' et 'Int128' car ces derniers ne sont pas supportés
+  // dans les messages MPI.
 
   const BasicSerializer* sbuf = send_serializer;
   BasicSerializer* recv_buf = receive_serializer;
@@ -80,8 +81,10 @@ doAllGather(MessagePassing::IMessagePassingMng* pm, const BasicSerializer* send_
   Span<const Float16> send_float16 = sbuf_p2->float16Bytes();
   Span<const BFloat16> send_bfloat16 = sbuf_p2->bfloat16Bytes();
   Span<const Float32> send_float32 = sbuf_p2->float32Bytes();
+  Span<const Float128> send_float128 = sbuf_p2->float128Bytes();
+  Span<const Int128> send_int128 = sbuf_p2->int128Bytes();
 
-  Int64 sizes[9];
+  Int64 sizes[11];
   sizes[0] = send_real.size();
   sizes[1] = send_int16.size();
   sizes[2] = send_int32.size();
@@ -91,8 +94,10 @@ doAllGather(MessagePassing::IMessagePassingMng* pm, const BasicSerializer* send_
   sizes[6] = send_float16.size();
   sizes[7] = send_bfloat16.size();
   sizes[8] = send_float32.size();
+  sizes[9] = send_float128.size();
+  sizes[10] = send_int128.size();
 
-  mpAllReduce(pm, MessagePassing::ReduceSum, Int64ArrayView(9, sizes));
+  mpAllReduce(pm, MessagePassing::ReduceSum, ArrayView<Int64>(11, sizes));
 
   Int64 recv_nb_real = sizes[0];
   Int64 recv_nb_int16 = sizes[1];
@@ -103,14 +108,20 @@ doAllGather(MessagePassing::IMessagePassingMng* pm, const BasicSerializer* send_
   Int64 recv_nb_float16 = sizes[6];
   Int64 recv_nb_bfloat16 = sizes[7];
   Int64 recv_nb_float32 = sizes[8];
+  Int64 recv_nb_float128 = sizes[9];
+  Int64 recv_nb_int128 = sizes[10];
 
   if (recv_nb_float16 != 0)
     ARCCORE_THROW(NotImplementedException, "AllGather with serialized type 'float16' is not yet implemented");
   if (recv_nb_bfloat16 != 0)
     ARCCORE_THROW(NotImplementedException, "AllGather with serialized type 'bfloat16' is not yet implemented");
+  if (recv_nb_float128 != 0)
+    ARCCORE_THROW(NotImplementedException, "AllGather with serialized type 'float128' is not yet implemented");
+  if (recv_nb_int128 != 0)
+    ARCCORE_THROW(NotImplementedException, "AllGather with serialized type 'int128' is not yet implemented");
 
   recv_p2->allocateBuffer(recv_nb_real, recv_nb_int16, recv_nb_int32, recv_nb_int64, recv_nb_byte,
-                          recv_nb_int8, recv_nb_float16, recv_nb_bfloat16, recv_nb_float32);
+                          recv_nb_int8, recv_nb_float16, recv_nb_bfloat16, recv_nb_float32, recv_nb_float128, recv_nb_int128);
 
   auto recv_p = recv_buf->_p();
 
@@ -128,7 +139,7 @@ doAllGather(MessagePassing::IMessagePassingMng* pm, const BasicSerializer* send_
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arccore::MessagePassing
+namespace Arcane::MessagePassing
 {
 
 /*---------------------------------------------------------------------------*/

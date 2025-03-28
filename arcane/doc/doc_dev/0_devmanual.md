@@ -4,9 +4,6 @@
 
 \image html cea_ifpen_logo.png "Logo du CEA et logo de l'IFPEN"
 
-\warning La documentation a été récemment mise à jour. Il peut donc rester
-des erreurs, des bugs ou des élements non finalisés.
-
 Cette page contient la documentation pour les développeurs de la plate-forme %Arcane.
 
 La page \subpage arcanedoc_news présente la liste des nouveautés de chaque version.
@@ -20,6 +17,8 @@ La documentation utilisateur se compose de chapitres, sous-chapitres et de pages
 La documentation développeur est plus libre et peut être composé uniquement de pages
 (même si la disposition présentée dans la page \subpage arcanedoc_doxygen est souhaitable
 dans les deux documentations).
+
+Pour configurer la documentation, c'est ici : \subpage arcanedoc_doc_config
 
 <br>
 

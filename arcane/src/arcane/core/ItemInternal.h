@@ -54,7 +54,7 @@ class MeshRefinement;
 }
 namespace Arcane::Materials
 {
-class ComponentItemSharedInfo;
+class ConstituentItemSharedInfo;
 }
 namespace Arcane
 {
@@ -434,7 +434,7 @@ class ARCANE_CORE_EXPORT ItemBase
   friend class ::Arcane::ItemInternal;
   friend class ::Arcane::Item;
   friend class ::Arcane::ItemInternalCompatibility;
-  friend class ::Arcane::Materials::ComponentItemSharedInfo;
+  friend Arcane::Materials::ConstituentItemSharedInfo;
   friend class ::Arcane::ItemEnumerator;
   friend MutableItemBase;
   // Pour _internalActiveCells2().
@@ -1075,7 +1075,7 @@ class ARCANE_CORE_EXPORT ItemInternal
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-impl::ItemBase::
+ItemBase::
 ItemBase(ItemInternal* x)
 : m_local_id(x->m_local_id)
 , m_shared_info(x->m_shared_info)
@@ -1084,7 +1084,7 @@ ItemBase(ItemInternal* x)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-impl::MutableItemBase::
+MutableItemBase::
 MutableItemBase(ItemInternal* x)
 : ItemBase(x)
 {}

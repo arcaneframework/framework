@@ -6,6 +6,8 @@ set( ARCANE_SOURCES
   DirectExecutionContext.cc
   DirectSubDomainExecutionContext.h
   DirectSubDomainExecutionContext.cc
+  GeneralHelp.h
+  GeneralHelp.cc
   LauncherGlobal.h
   StandaloneAcceleratorMng.h
   StandaloneAcceleratorMng.cc

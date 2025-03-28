@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* BasicDataType.h                                             (C) 2000-2023 */
+/* BasicDataType.h                                             (C) 2000-2025 */
 /*                                                                           */
 /* Définition des types de données basiques.                                 */
 /*---------------------------------------------------------------------------*/
@@ -21,7 +21,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arccore
+namespace Arcane
 {
 
 /*---------------------------------------------------------------------------*/
@@ -47,6 +47,7 @@ enum class eBasicDataType : unsigned char
   Int128 = 9, //!< Donnée de type entier 128 bits
   BFloat16 = 10, //! < Donnée de type BFloat16
   Int8 = 11, //! Donnée de type entier 8 bits
+  Real = Float64 //! Donnée de type Float64
 };
 //! Nombre de types de base supportés
 constexpr unsigned char NB_BASIC_DATA_TYPE = 12;
@@ -75,11 +76,30 @@ operator<< (std::ostream& ostr,eBasicDataType data_type);
 extern "C++" ARCCORE_BASE_EXPORT std::istream&
 operator>> (std::istream& istr,eBasicDataType& data_type);
 
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 } // End namespace Arccore
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace Arccore
+{
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+using Arcane::eBasicDataType;
+using Arcane::basicDataTypeFromName;
+using Arcane::basicDataTypeSize;
+using Arcane::basicDataTypeName;
+using Arcane::NB_BASIC_DATA_TYPE;
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

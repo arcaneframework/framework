@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CellFamily.cc                                               (C) 2000-2024 */
+/* CellFamily.cc                                               (C) 2000-2025 */
 /*                                                                           */
 /* Famille de mailles.                                                       */
 /*---------------------------------------------------------------------------*/
@@ -15,16 +15,15 @@
 
 #include "arcane/utils/FatalErrorException.h"
 
+#include "arcane/core/IMesh.h"
+#include "arcane/core/ISubDomain.h"
+#include "arcane/core/ItemInternalEnumerator.h"
+#include "arcane/core/Connectivity.h"
+
 #include "arcane/mesh/NodeFamily.h"
 #include "arcane/mesh/EdgeFamily.h"
 #include "arcane/mesh/FaceFamily.h"
-
 #include "arcane/mesh/CellMerger.h"
-
-#include "arcane/IMesh.h"
-#include "arcane/ISubDomain.h"
-#include "arcane/ItemInternalEnumerator.h"
-#include "arcane/Connectivity.h"
 #include "arcane/mesh/IncrementalItemConnectivity.h"
 #include "arcane/mesh/CompactIncrementalItemConnectivity.h"
 #include "arcane/mesh/ItemConnectivitySelector.h"
@@ -304,7 +303,7 @@ removeCell(Cell icell)
 void CellFamily::
 removeCells(ConstArrayView<Int32> cells_local_id)
 {
-  CellInfoListView cells(this);
+  CellLocalIdToCellConverter cells(this);
   for (Int32 lid : cells_local_id)
     removeCell(cells[lid]);
 }

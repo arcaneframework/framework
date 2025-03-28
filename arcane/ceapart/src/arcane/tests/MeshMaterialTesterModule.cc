@@ -744,7 +744,7 @@ _checkNullComponentItem()
   info() << "NullEnvCell level =" << null_env_cell.level();
   info() << "NullEnvCell nb_sub_item=" << null_env_cell.nbSubItem();
   info() << "NullEnvCell component_unique_id=" << null_env_cell.componentUniqueId();
-  info() << "NullEnvCell sub_items =" << null_env_cell.subItems();
+  //info() << "NullEnvCell sub_items =" << null_env_cell.subItems();
 
   info() << "NullEnvCell all_env_cell =" << null_env_cell.allEnvCell().null();
 }

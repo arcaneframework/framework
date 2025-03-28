@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ArcaneCaseMeshService.cc                                    (C) 2000-2024 */
+/* ArcaneCaseMeshService.cc                                    (C) 2000-2025 */
 /*                                                                           */
 /* Service Arcane gérant un maillage du jeu de données.                      */
 /*---------------------------------------------------------------------------*/
@@ -115,8 +115,8 @@ createMesh(const String& default_name)
                  options()->configList()->xpathFullName(),
                  options()->generator.rootTagName(),
                  options()->filename.name());
-  if (has_filename){
-    m_mesh_file_name = StringVariableReplace::replaceWithCmdLineArgs(m_sub_domain->applicationInfo().commandLineArguments().parameters(), options()->filename);
+  if (has_filename) {
+    m_mesh_file_name = options()->filename();
     if (m_mesh_file_name.empty())
       ARCANE_FATAL("Invalid filename '{0}' in option '{1}'",
                    m_mesh_file_name,options()->filename.xpathFullName());
@@ -139,6 +139,14 @@ createMesh(const String& default_name)
     ARCANE_FATAL("Invalid operation");
 
   ARCANE_CHECK_POINTER(m_mesh_builder);
+
+  // Indique si les entités multi-dimension sont autorisées
+  bool is_non_manifold = options()->nonManifoldMesh;
+  if (is_non_manifold) {
+    MeshKind mesh_kind = build_info.meshKind();
+    mesh_kind.setIsNonManifold(true);
+    build_info.addMeshKind(mesh_kind);
+  }
 
   m_mesh_builder->fillMeshBuildInfo(build_info);
   // Le générateur peut forcer l'utilisation du partitionnement

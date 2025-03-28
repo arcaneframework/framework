@@ -1,17 +1,15 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MpiParallelNonBlockingCollectiveDispatch.cc                 (C) 2000-2018 */
+/* MpiParallelNonBlockingCollectiveDispatch.cc                 (C) 2000-2025 */
 /*                                                                           */
 /* Implémentation MPI des collectives non bloquantes pour un type donné.     */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-#include "arcane/utils/ArcanePrecomp.h"
 
 #include "arcane/utils/Array.h"
 #include "arcane/utils/NotImplementedException.h"
@@ -22,25 +20,27 @@
 #include "arcane/utils/HPReal.h"
 #include "arcane/utils/FatalErrorException.h"
 
-#include "arcane/IParallelNonBlockingCollective.h"
-#include "arcane/ParallelMngDispatcher.h"
+#include "arcane/core/IParallelNonBlockingCollective.h"
+#include "arcane/core/ParallelMngDispatcher.h"
 
 #include "arcane/parallel/mpi/MpiParallelNonBlockingCollectiveDispatch.h"
-#include "arcane/parallel/mpi/MpiAdapter.h"
-#include "arcane/parallel/mpi/MpiLock.h"
 #include "arcane/parallel/mpi/MpiDatatype.h"
 #include "arcane/parallel/mpi/MpiParallelDispatch.h"
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ARCANE_BEGIN_NAMESPACE
+#include "arccore/message_passing_mpi/internal/MpiAdapter.h"
+#include "arccore/message_passing_mpi/internal/MpiLock.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class Type> MpiParallelNonBlockingCollectiveDispatchT<Type>::
-MpiParallelNonBlockingCollectiveDispatchT(ITraceMng* tm,IParallelNonBlockingCollective* collective_mng,
+namespace Arcane
+{
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template <class Type> MpiParallelNonBlockingCollectiveDispatchT<Type>::
+MpiParallelNonBlockingCollectiveDispatchT(ITraceMng* tm, IParallelNonBlockingCollective* collective_mng,
                                           MpiAdapter* adapter)
 : TraceAccessor(tm)
 , m_parallel_mng(collective_mng->parallelMng())
@@ -54,7 +54,7 @@ MpiParallelNonBlockingCollectiveDispatchT(ITraceMng* tm,IParallelNonBlockingColl
     ARCANE_FATAL("Bad parallelMng()");
   Type* xtype = nullptr;
   auto dispatcher = pmd->dispatcher(xtype);
-  auto true_dispatcher = dynamic_cast< MpiParallelDispatchT<Type>* >(dispatcher);
+  auto true_dispatcher = dynamic_cast<MpiParallelDispatchT<Type>*>(dispatcher);
   if (!true_dispatcher)
     ARCANE_FATAL("Bad dispatcher. should have type MpiParallelDispatcher");
   m_datatype = true_dispatcher->datatype();
@@ -63,7 +63,7 @@ MpiParallelNonBlockingCollectiveDispatchT(ITraceMng* tm,IParallelNonBlockingColl
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class Type> MpiParallelNonBlockingCollectiveDispatchT<Type>::
+template <class Type> MpiParallelNonBlockingCollectiveDispatchT<Type>::
 ~MpiParallelNonBlockingCollectiveDispatchT()
 {
   // NOTE: m_datatype est géré par MpiParallelDispatch et ne doit pas être
@@ -72,9 +72,9 @@ template<class Type> MpiParallelNonBlockingCollectiveDispatchT<Type>::
 }
 
 /*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/ 
+/*---------------------------------------------------------------------------*/
 
-template<class Type> void MpiParallelNonBlockingCollectiveDispatchT<Type>::
+template <class Type> void MpiParallelNonBlockingCollectiveDispatchT<Type>::
 finalize()
 {
 }
@@ -82,38 +82,38 @@ finalize()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class Type> Parallel::Request MpiParallelNonBlockingCollectiveDispatchT<Type>::
-broadcast(ArrayView<Type> send_buf,Integer sub_domain)
+template <class Type> Parallel::Request MpiParallelNonBlockingCollectiveDispatchT<Type>::
+broadcast(ArrayView<Type> send_buf, Integer sub_domain)
 {
   MPI_Datatype type = m_datatype->datatype();
-  return m_adapter->nonBlockingBroadcast(send_buf.data(),send_buf.size(),sub_domain,type);
+  return m_adapter->nonBlockingBroadcast(send_buf.data(), send_buf.size(), sub_domain, type);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class Type> Parallel::Request MpiParallelNonBlockingCollectiveDispatchT<Type>::
-allGather(ConstArrayView<Type> send_buf,ArrayView<Type> recv_buf)
+template <class Type> Parallel::Request MpiParallelNonBlockingCollectiveDispatchT<Type>::
+allGather(ConstArrayView<Type> send_buf, ArrayView<Type> recv_buf)
 {
   MPI_Datatype type = m_datatype->datatype();
-  return m_adapter->nonBlockingAllGather(send_buf.data(),recv_buf.data(),send_buf.size(),type);
+  return m_adapter->nonBlockingAllGather(send_buf.data(), recv_buf.data(), send_buf.size(), type);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class Type> Parallel::Request MpiParallelNonBlockingCollectiveDispatchT<Type>::
-gather(ConstArrayView<Type> send_buf,ArrayView<Type> recv_buf,Integer rank)
+template <class Type> Parallel::Request MpiParallelNonBlockingCollectiveDispatchT<Type>::
+gather(ConstArrayView<Type> send_buf, ArrayView<Type> recv_buf, Integer rank)
 {
   MPI_Datatype type = m_datatype->datatype();
-  return m_adapter->nonBlockingGather(send_buf.data(),recv_buf.data(),send_buf.size(),rank,type);
+  return m_adapter->nonBlockingGather(send_buf.data(), recv_buf.data(), send_buf.size(), rank, type);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class Type> Parallel::Request MpiParallelNonBlockingCollectiveDispatchT<Type>::
-allGatherVariable(ConstArrayView<Type> send_buf,Array<Type>& recv_buf)
+template <class Type> Parallel::Request MpiParallelNonBlockingCollectiveDispatchT<Type>::
+allGatherVariable(ConstArrayView<Type> send_buf, Array<Type>& recv_buf)
 {
   ARCANE_UNUSED(send_buf);
   ARCANE_UNUSED(recv_buf);
@@ -126,8 +126,8 @@ allGatherVariable(ConstArrayView<Type> send_buf,Array<Type>& recv_buf)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class Type> Parallel::Request MpiParallelNonBlockingCollectiveDispatchT<Type>::
-gatherVariable(ConstArrayView<Type> send_buf,Array<Type>& recv_buf,Integer rank)
+template <class Type> Parallel::Request MpiParallelNonBlockingCollectiveDispatchT<Type>::
+gatherVariable(ConstArrayView<Type> send_buf, Array<Type>& recv_buf, Integer rank)
 {
   ARCANE_UNUSED(send_buf);
   ARCANE_UNUSED(recv_buf);
@@ -141,8 +141,8 @@ gatherVariable(ConstArrayView<Type> send_buf,Array<Type>& recv_buf,Integer rank)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class Type> Parallel::Request MpiParallelNonBlockingCollectiveDispatchT<Type>::
-scatterVariable(ConstArrayView<Type> send_buf,ArrayView<Type> recv_buf,Integer root)
+template <class Type> Parallel::Request MpiParallelNonBlockingCollectiveDispatchT<Type>::
+scatterVariable(ConstArrayView<Type> send_buf, ArrayView<Type> recv_buf, Integer root)
 {
   ARCANE_UNUSED(send_buf);
   ARCANE_UNUSED(recv_buf);
@@ -177,38 +177,37 @@ scatterVariable(ConstArrayView<Type> send_buf,ArrayView<Type> recv_buf,Integer r
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class Type> Parallel::Request MpiParallelNonBlockingCollectiveDispatchT<Type>::
-allToAll(ConstArrayView<Type> send_buf,ArrayView<Type> recv_buf,Integer count)
+template <class Type> Parallel::Request MpiParallelNonBlockingCollectiveDispatchT<Type>::
+allToAll(ConstArrayView<Type> send_buf, ArrayView<Type> recv_buf, Integer count)
 {
   MPI_Datatype type = m_datatype->datatype();
-  return m_adapter->nonBlockingAllToAll(send_buf.data(),recv_buf.data(),count,type);
+  return m_adapter->nonBlockingAllToAll(send_buf.data(), recv_buf.data(), count, type);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class Type> Parallel::Request MpiParallelNonBlockingCollectiveDispatchT<Type>::
+template <class Type> Parallel::Request MpiParallelNonBlockingCollectiveDispatchT<Type>::
 allToAllVariable(ConstArrayView<Type> send_buf,
                  Int32ConstArrayView send_count,
                  Int32ConstArrayView send_index,
                  ArrayView<Type> recv_buf,
                  Int32ConstArrayView recv_count,
-                 Int32ConstArrayView recv_index
-                 )
+                 Int32ConstArrayView recv_index)
 {
   MPI_Datatype type = m_datatype->datatype();
 
-  return m_adapter->nonBlockingAllToAllVariable(send_buf.data(),send_count.data(),
-                                                send_index.data(),recv_buf.data(),
+  return m_adapter->nonBlockingAllToAllVariable(send_buf.data(), send_count.data(),
+                                                send_index.data(), recv_buf.data(),
                                                 recv_count.data(),
-                                                recv_index.data(),type);
+                                                recv_index.data(), type);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class Type> Parallel::Request MpiParallelNonBlockingCollectiveDispatchT<Type>::
-allReduce(eReduceType op,ConstArrayView<Type> send_buf,ArrayView<Type> recv_buf)
+template <class Type> Parallel::Request MpiParallelNonBlockingCollectiveDispatchT<Type>::
+allReduce(eReduceType op, ConstArrayView<Type> send_buf, ArrayView<Type> recv_buf)
 {
   MPI_Datatype type = m_datatype->datatype();
   Integer s = send_buf.size();
@@ -217,8 +216,8 @@ allReduce(eReduceType op,ConstArrayView<Type> send_buf,ArrayView<Type> recv_buf)
   Request request;
   {
     MpiLock::Section mls(m_adapter->mpiLock());
-    request = m_adapter->nonBlockingAllReduce(send_buf.data(),recv_buf.data(),
-                                              s,type,operation);
+    request = m_adapter->nonBlockingAllReduce(send_buf.data(), recv_buf.data(),
+                                              s, type, operation);
   }
   return request;
 }
@@ -249,7 +248,7 @@ template class MpiParallelNonBlockingCollectiveDispatchT<HPReal>;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

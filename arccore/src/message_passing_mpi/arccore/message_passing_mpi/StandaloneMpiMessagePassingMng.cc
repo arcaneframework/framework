@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* StandaloneMpiMessagePassingMng.cc                           (C) 2000-2024 */
+/* StandaloneMpiMessagePassingMng.cc                           (C) 2000-2025 */
 /*                                                                           */
 /* Implémentation MPI du gestionnaire des échanges de messages.              */
 /*---------------------------------------------------------------------------*/
@@ -20,17 +20,20 @@
 #include "arccore/base/BFloat16.h"
 #include "arccore/base/Float16.h"
 
-#include "arccore/message_passing_mpi/MpiAdapter.h"
 #include "arccore/message_passing_mpi/MpiDatatype.h"
-#include "arccore/message_passing_mpi/MpiTypeDispatcher.h"
-#include "arccore/message_passing_mpi/MpiControlDispatcher.h"
-#include "arccore/message_passing_mpi/MpiSerializeDispatcher.h"
+#include "arccore/message_passing_mpi/internal/MpiAdapter.h"
+#include "arccore/message_passing_mpi/internal/MpiTypeDispatcher.h"
+#include "arccore/message_passing_mpi/internal/MpiControlDispatcher.h"
+#include "arccore/message_passing_mpi/internal/MpiSerializeDispatcher.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arccore::MessagePassing::Mpi
+namespace Arcane::MessagePassing::Mpi
 {
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 class StandaloneMpiMessagePassingMng::Impl
 {
@@ -151,8 +154,8 @@ create(MPI_Comm mpi_comm, bool clean_comm)
   _createAndSetDispatcher<double>(dsp, mpm, adapter);
   _createAndSetDispatcher<long double>(dsp, mpm, adapter);
 
-  dsp->setDispatcher(new MpiControlDispatcher(adapter));
-  dsp->setDispatcher(new MpiSerializeDispatcher(adapter));
+  dsp->setDispatcher(new MpiControlDispatcher(adapter, mpm));
+  dsp->setDispatcher(new MpiSerializeDispatcher(adapter, mpm));
 
   MPI_Datatype uint8_datatype = MpiBuiltIn::datatype(uint8_t{});
   {
@@ -187,7 +190,7 @@ createRef(MPI_Comm mpi_comm, bool clean_comm)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arccore::MessagePassing::Mpi
+} // End namespace Arcane::MessagePassing::Mpi
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

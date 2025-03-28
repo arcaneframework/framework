@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* NumArray.cc                                                 (C) 2000-2024 */
+/* NumArray.cc                                                 (C) 2000-2025 */
 /*                                                                           */
 /* Tableaux multi-dimensionnel pour les types numériques sur accélérateur.   */
 /*---------------------------------------------------------------------------*/
@@ -29,7 +29,7 @@ namespace Arcane::impl
 MemoryAllocationOptions NumArrayBaseCommon::
 _getDefaultAllocator()
 {
-  return _getDefaultAllocator(eMemoryRessource::UnifiedMemory);
+  return _getDefaultAllocator(MemoryUtils::getDefaultDataMemoryResource());
 }
 
 /*---------------------------------------------------------------------------*/
@@ -47,7 +47,7 @@ _getDefaultAllocator(eMemoryRessource r)
 void NumArrayBaseCommon::
 _checkHost(eMemoryRessource r)
 {
-  if (r == eMemoryRessource::Host || r == eMemoryRessource::UnifiedMemory)
+  if (r == eMemoryRessource::HostPinned || r == eMemoryRessource::Host || r == eMemoryRessource::UnifiedMemory)
     return;
   ARCANE_FATAL("Invalid access from '{0}' ressource memory to host memory", r);
 }

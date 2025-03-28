@@ -1,58 +1,32 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MshMeshWriter.cc                                            (C) 2000-2021 */
+/* MshMeshWriter.cc                                            (C) 2000-2025 */
 /*                                                                           */
-/* Lecture/Ecriture d'un fichier au format MSH.                              */
+/* Lecture/Écriture d'un fichier au format MSH.                              */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/Iostream.h"
-#include "arcane/utils/StdHeader.h"
-#include "arcane/utils/HashTableMap.h"
-#include "arcane/utils/ValueConvert.h"
-#include "arcane/utils/ScopedPtr.h"
-#include "arcane/utils/ITraceMng.h"
-#include "arcane/utils/String.h"
 #include "arcane/utils/IOException.h"
+#include "arcane/utils/FixedArray.h"
 #include "arcane/utils/Collection.h"
-#include "arcane/utils/Enumerator.h"
-#include "arcane/utils/NotImplementedException.h"
-#include "arcane/utils/Real3.h"
+#include "arcane/utils/ITraceMng.h"
 
-#include "arcane/FactoryService.h"
-#include "arcane/IMainFactory.h"
-#include "arcane/IMeshReader.h"
-#include "arcane/ISubDomain.h"
-#include "arcane/IMesh.h"
-#include "arcane/IMeshSubMeshTransition.h"
-#include "arcane/IItemFamily.h"
-#include "arcane/Item.h"
-#include "arcane/ItemEnumerator.h"
-#include "arcane/VariableTypes.h"
-#include "arcane/IVariableAccessor.h"
-#include "arcane/IParallelMng.h"
-#include "arcane/IIOMng.h"
-#include "arcane/IXmlDocumentHolder.h"
-#include "arcane/XmlNodeList.h"
-#include "arcane/XmlNode.h"
-#include "arcane/IMeshUtilities.h"
-#include "arcane/IMeshWriter.h"
-#include "arcane/BasicService.h"
-#include "arcane/SharedVariable.h"
-
-#include "arcane/AbstractService.h"
-
-/*****************************************************************************\
-* DEFINES						 																	*
-* Element types in .msh file format, found in gmsh-2.0.4/Common/GmshDefines.h *
-\*****************************************************************************/
+#include "arcane/core/FactoryService.h"
+#include "arcane/core/IMesh.h"
+#include "arcane/core/VariableTypes.h"
+#include "arcane/core/AbstractService.h"
+#include "arcane/core/IMeshWriter.h"
+#include "arcane/core/ItemTypeMng.h"
+#include "arcane/core/SharedVariable.h"
 
 #include "arcane/std/internal/IosGmsh.h"
+
+#include <tuple>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -63,7 +37,7 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Ecriture des fichiers de maillage aux format msh.
+ * \brief Écriture des fichiers de maillage au format msh.
  */
 class MshMeshWriter
 : public AbstractService
@@ -71,152 +45,551 @@ class MshMeshWriter
 {
  public:
 
-	MshMeshWriter(const ServiceBuildInfo& sbi) : AbstractService(sbi){}
-	virtual void build() {}
-	virtual bool writeMeshToFile(IMesh* mesh,const String& file_name);
+  class ItemFamilyWriteInfo
+  : public TraceAccessor
+  {
+   public:
+
+    explicit ItemFamilyWriteInfo(ITraceMng* tm)
+    : TraceAccessor(tm)
+    {
+    }
+  };
+
+  struct PhysicalTagInfo
+  {
+   public:
+
+    Int32 m_dimension = -1;
+    Int32 m_physical_tag = -1;
+    String m_name;
+  };
+  struct EntityInfo
+  {
+   public:
+
+    EntityInfo(Int32 dim, Int32 item_type, Int32 entity_tag)
+    : m_dim(dim)
+    , m_item_type(item_type)
+    , m_entity_tag(entity_tag)
+    {
+    }
+
+   public:
+
+    void setPhysicalTag(Int32 tag, const String& name)
+    {
+      m_physical_tag = tag;
+      m_physical_tag_name = name;
+    }
+
+   public:
+
+    Int32 m_dim = -1;
+    Int32 m_item_type = IT_NullType;
+    Int32 m_entity_tag = -1;
+    Int32 m_physical_tag = -1;
+    String m_physical_tag_name;
+  };
+
+  class ItemGroupWriteInfo
+  {
+   public:
+
+    void processGroup(ItemGroup group, Int32 base_entity_index);
+
+   public:
+
+    const ItemGroup& group() const { return m_item_group; }
+    ConstArrayView<EntityInfo> entitiesByType() const { return m_entities_by_type; }
+    ConstArrayView<Int32> itemsByType(Int32 item_type) const { return m_items_by_type[item_type]; }
+
+   private:
+
+    ItemGroup m_item_group;
+    UniqueArray<EntityInfo> m_entities_by_type;
+    FixedArray<UniqueArray<Int32>, NB_BASIC_ITEM_TYPE> m_items_by_type;
+    UniqueArray<Int32> m_existing_items_type;
+  };
+
+ public:
+
+  explicit MshMeshWriter(const ServiceBuildInfo& sbi);
+
+ public:
+
+  void build() override {}
+  bool writeMeshToFile(IMesh* mesh, const String& file_name) override;
 
  private:
 
-	Integer _switchMshType(Integer mshElemType);
+  ItemTypeMng* m_item_type_mng = nullptr;
+
+ private:
+
+  bool _writeMeshToFileV4(IMesh* mesh, const String& file_name);
+  Integer _convertToMshType(Int32 arcane_type);
+  std::pair<Int64, Int64> _getFamilyMinMaxUniqueId(IItemFamily* family);
+  void _addGroupsToProcess(IItemFamily* family, Array<ItemGroup>& items_groups);
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_REGISTER_SUB_DOMAIN_FACTORY(MshMeshWriter,IMeshWriter,MshNewMeshWriter);
+// Obsolète. Utiliser 'MshMeshReader' à la place
+ARCANE_REGISTER_SUB_DOMAIN_FACTORY(MshMeshWriter, IMeshWriter, MshNewMeshWriter);
+
+ARCANE_REGISTER_SERVICE(MshMeshWriter,
+                        ServiceProperty("MshMeshWriter", ST_SubDomain),
+                        ARCANE_SERVICE_INTERFACE(IMeshWriter));
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-/*****************************************************************************\
-* [_switchMshType]			 																	*
-\*****************************************************************************/
-/*!/brief Selon le type MSH passé en argument, cette fonction retourne l'Integer
-correspondant  type d'ARCANE. Une exception est levée dans le cas d'une inadéquation.
-\param msh_type Type MSH proposé au décodage
-\retrun Le type ARCANE trouvé en correspondance
-*/
-Integer MshMeshWriter::_switchMshType(Integer msh_type){
-	switch (msh_type){
-//		case (IT_NullType):			return MSH_LIN_2;		//case (0) is not used
-		case (IT_Vertex):	  			return MSH_PNT;  		//printf("1-node point");  					
-		case (IT_Line2): 				return MSH_LIN_2;		//printf("2-node line");						
-		case (IT_Triangle3): 		return MSH_TRI_3;  	//printf("3-node triangle");  				
-		case (IT_Quad4): 				return MSH_QUA_4;		//printf("4-node quadrangle");				
-		case (IT_Tetraedron4):		return MSH_TET_4;		//printf("4-node tetrahedron");  			
-		case (IT_Hexaedron8): 		return MSH_HEX_8; 	//printf("8-node hexahedron");				
-		case (IT_Pentaedron6):		return MSH_PRI_6;		//printf("6-node prism");  					
-		case (IT_Pyramid5):			return MSH_PYR_5;		//printf("5-node pyramid");
-		// Beneath, are some meshes that have been tried to match gmsh's ones
-		// Other 5-nodes
-		case (IT_Pentagon5):			return MSH_PYR_5;		// Could use a tag to encode these
-		case (IT_HemiHexa5):			return MSH_PYR_5;	
-		case (IT_DiTetra5):			return MSH_PYR_5;
-		// Other 6-nodes
-		case (IT_Hexagon6):			return MSH_PRI_6;
-		case (IT_HemiHexa6):			return MSH_PRI_6;	
-		case (IT_AntiWedgeLeft6):	return MSH_PRI_6;
-		case (IT_AntiWedgeRight6):	return MSH_PRI_6;
-		// Other 10-nodes
-		case (IT_Heptaedron10):		return MSH_TRI_10;
-		// Other 12-nodes
-		case (IT_Octaedron12):		return MSH_TRI_12; 
-		// Other ?-nodes, have to work with another field (nNodes)
-		case (IT_HemiHexa7):			return IT_NullType;	// This IT_NullType will be associated with its number of nodes
-		// Others ar still considered as default, rising an exception
-		case (IT_DualNode):
-		case (IT_DualEdge):
-		case (IT_DualFace):
-		case (IT_DualCell):
-		default:
-			info() << "_switchMshType Non supporté (" << msh_type << ")";
-			throw IOException("_switchMshType Non supporté");
-	}// Not found: IT_Pentagon5, IT_Hexagon6, IT_Octaedron12
-	info() << "_switchMshType non switché (" << msh_type << ")";
-	throw IOException("_switchMshType non switché");
-	return 0;
+MshMeshWriter::
+MshMeshWriter(const ServiceBuildInfo& sbi)
+: AbstractService(sbi)
+{
 }
 
-
-
-/**********************************************************************\
-* [writeMeshToFile]																	  *
-\**********************************************************************/
-/*!\brief writeMeshToFile écrit au format gmsh tel que spécifié ci-dessous:
-\code
-	$MeshFormat
-	2.0 file-type data-size
-	$EndMeshFormat
-	$Nodes
-	number-of-nodes
-	node-number x-coord y-coord z-coord
-	...
-	$EndNodes
-	$Elements
-	number-of-elements
-	elm-number elm-type number-of-tags < tag > ... node-number-list
-	...
-	$EndElements
-\endcode
-	
-	\param mesh Maillage d'entrée
-	\param file_name Nom du fichier de sortie
-	\return
-		- true	Pour toute erreur détectée
-		- false	Sinon
-*/
-bool MshMeshWriter::
-writeMeshToFile(IMesh* mesh,const String& file_name)
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Converti le type %Arcane en le type GMSH.
+ *
+ * La conversion n'est possible que pour les types de base.
+ */
+Integer MshMeshWriter::
+_convertToMshType(Int32 arcane_type)
 {
-  String mshFileName(file_name+".msh");
-  std::ofstream ofile(mshFileName.localstr());
-	if (!ofile)
-		throw IOException("VtkMeshIOService::writeMeshToFile(): Unable to open file");
+  switch (arcane_type) {
+    //		case (IT_NullType):			return MSH_LIN_2;		//case (0) is not used
+  case IT_Vertex:
+    return MSH_PNT; //printf("1-node point");
+  case IT_Cell3D_Line2:
+  case IT_Line2:
+    return MSH_LIN_2; //printf("2-node line");
+  case IT_Cell3D_Triangle3:
+  case IT_Triangle3:
+    return MSH_TRI_3; //printf("3-node triangle");
+  case IT_Cell3D_Quad4:
+  case IT_Quad4:
+    return MSH_QUA_4; //printf("4-node quadrangle");
+  case IT_Tetraedron4:
+    return MSH_TET_4; //printf("4-node tetrahedron");
+  case IT_Hexaedron8:
+    return MSH_HEX_8; //printf("8-node hexahedron");
+  case IT_Pentaedron6:
+    return MSH_PRI_6; //printf("6-node prism");
+  case IT_Pyramid5:
+    return MSH_PYR_5; //printf("5-node pyramid");
+  // Beneath, are some meshes that have been tried to match gmsh's ones
+  // Other 5-nodes
+  case IT_Pentagon5:
+    return MSH_PYR_5; // Could use a tag to encode these
+  case IT_HemiHexa5:
+    return MSH_PYR_5;
+  case IT_DiTetra5:
+    return MSH_PYR_5;
+  // Other 6-nodes
+  case IT_Hexagon6:
+    return MSH_PRI_6;
+  case IT_HemiHexa6:
+    return MSH_PRI_6;
+  case IT_AntiWedgeLeft6:
+    return MSH_PRI_6;
+  case IT_AntiWedgeRight6:
+    return MSH_PRI_6;
+  // Other 10-nodes
+  case IT_Heptaedron10:
+    return MSH_TRI_10;
+  // Other 12-nodes
+  case IT_Octaedron12:
+    return MSH_TRI_12;
+  // Others are still considered as default, rising an exception
+  default:
+    break;
+  }
+  ARCANE_THROW(NotSupportedException, "Arcane type '{0}'", m_item_type_mng->typeFromId(arcane_type)->typeName());
+}
 
-	info() << "[writNodes=" << mesh->nbNode() << " nCells="<< mesh->nbCell();
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
-	ofile << "$MeshFormat\n";
-	ofile << "2.0 0 " << (int) sizeof(double) << "\n";
-	ofile << "$EndMeshFormat\n";
-	ofile << "$Nodes\n";
-	ofile << mesh->nbNode() << "\n";
-	
-	SharedVariableNodeReal3 nodes_coords = mesh->sharedNodesCoordinates();
-	ItemGroup all_nodes = mesh->allNodes();
+bool MshMeshWriter::
+writeMeshToFile(IMesh* mesh, const String& file_name)
+{
+  return _writeMeshToFileV4(mesh, file_name);
+}
 
-	ENUMERATE_NODE(inode,all_nodes){
-    Node node = *inode;
-		Real3 coord = nodes_coords[inode];
-		double vtkXyz[3];
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
-    vtkXyz[0] = Convert::toDouble(coord.x);
-    vtkXyz[1] = Convert::toDouble(coord.y);
-    vtkXyz[2] = Convert::toDouble(coord.z);
-    ofile << node.uniqueId() << " " << vtkXyz[0] << " " << vtkXyz[1] << " " <<vtkXyz[2] << "\n";
-		//info() << "[writeMeshToFile] Adding node[" << node.uniqueId().asInt64() << "]";
-	}
-  
-	ofile << "$EndNodes\n";
-	ofile << "$Elements\n";
-	ofile << mesh->nbCell() << "\n";
-	
-  // Scanning the cells' nodes to get type and connectivity
-	// elm-number elm-type number-of-tags < tag > ... node-number-list
-	ENUMERATE_CELL(iCell,mesh->allCells()){
-		Cell cell = *iCell;
-		int  nbNodes = cell.nbNode();
-		ofile << cell.uniqueId().asInt64() << " " << _switchMshType(cell.type());
-		if (_switchMshType(cell.type()) ==  IT_NullType) 
-			ofile  << " 1 " << nbNodes << " ";
-		else
-			ofile  << " 0 ";
-		for(Integer j=0; j<nbNodes;++j)
-			ofile << cell.node(j).uniqueId().asInt64() << " ";
-		ofile << "\n";
-	}
+void MshMeshWriter::ItemGroupWriteInfo::
+processGroup(ItemGroup group, Int32 base_entity_index)
+{
+  m_item_group = group;
+  String group_name = group.name();
+  bool is_all_items = group.isAllItems();
+  IItemFamily* family = group.itemFamily();
+  IMesh* mesh = family->mesh();
+  ItemTypeMng* item_type_mng = mesh->itemTypeMng();
+  ITraceMng* tm = family->traceMng();
 
-	ofile << "$EndElements\n";
-	return false;
+  // Pour GMSH, il faut trier les mailles par leur type (Triangle, Quadrangle, ...)
+  // On fait une entity MSH par type d'entité Arcane.
+
+  ENUMERATE_ (Item, iitem, group) {
+    Item item = *iitem;
+    Int16 item_type = item.type();
+    if (item_type >= NB_BASIC_ITEM_TYPE || item_type <= 0)
+      ARCANE_FATAL("Only pre-defined Item type are supported (current item type is '{0}')",
+                   item_type_mng->typeFromId(item_type)->typeName());
+    m_items_by_type[item_type].add(item.localId());
+  }
+
+  // Conserve les types pré-définis qui ont des éléments
+  Int64 total_nb_item = 0;
+  for (Int32 i = 0; i < NB_BASIC_ITEM_TYPE; ++i) {
+    Int64 nb_type = m_items_by_type[i].size();
+    if (nb_type > 0)
+      m_existing_items_type.add(i);
+    total_nb_item += nb_type;
+  }
+
+  Int32 nb_existing_type = m_existing_items_type.size();
+  tm->info() << "NbExistingType=" << nb_existing_type;
+  for (Int32 type_index = 0; type_index < nb_existing_type; ++type_index) {
+    Int32 item_type = m_existing_items_type[type_index];
+    ItemTypeInfo* item_type_info = item_type_mng->typeFromId(item_type);
+    Int32 type_dimension = item_type_info->dimension();
+    EntityInfo entity_info(type_dimension, item_type, base_entity_index + type_index);
+    if (!is_all_items)
+      entity_info.setPhysicalTag(base_entity_index + type_index, group_name);
+    m_entities_by_type.add(entity_info);
+  }
+
+  // Si le groupe est vide, il faut quand même un tag physique pour que le
+  // groupe soit créé en lecture et ainsi en parallèle garantir que tous
+  // les sous-domaines ont les mêmes groupes.
+  if (nb_existing_type == 0 && !is_all_items) {
+    Int32 mesh_dim = mesh->dimension();
+    eItemKind ik = family->itemKind();
+    Int32 entity_dim = -1;
+    if (ik == IK_Cell)
+      entity_dim = mesh_dim;
+    else if (ik == IK_Face)
+      entity_dim = mesh_dim - 1;
+    else if (ik == IK_Edge)
+      entity_dim = mesh_dim - 2;
+    else
+      ARCANE_FATAL("Invalid item kind '{0}' for entity dimension", entity_dim);
+    // TODO: prendre un type qui correspond à la dimension
+    EntityInfo entity_info(entity_dim, IT_Tetraedron4, base_entity_index);
+    entity_info.setPhysicalTag(base_entity_index, group_name);
+    m_entities_by_type.add(entity_info);
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MshMeshWriter::
+_addGroupsToProcess(IItemFamily* family, Array<ItemGroup>& items_groups)
+{
+  bool has_group = false;
+  // Parcours tous les groupes de la famille
+  // NOTE: Pour l'instant, pour les mailles on suppose que cela
+  // forme une partition du maillage.
+  for (ItemGroup group : family->groups()) {
+    if (group.isAllItems())
+      continue;
+    if (group.isAutoComputed())
+      continue;
+    info() << "Processing ItemGroup group=" << group.name() << " family=" << group.itemFamily()->name();
+    items_groups.add(group);
+    has_group = true;
+  }
+  // Si pas de groupes dans la famille, on prend celui de toutes les entités
+  // si la famille est celle des mailles.
+  // TODO: toujours prendre ce groupe pour les entités qui n'auraient pas
+  // été traitées par les autres groupes lorsqu'on n'est pas sur
+  // que l'ensemble des groupes forme une partition.
+  if (!has_group && (family->itemKind() == IK_Cell))
+    items_groups.add(family->allItems());
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Ecrit au format MSH V4.
+ *
+ * \param mesh Maillage d'entrée
+ * \param file_name Nom du fichier de sortie
+ * \retval true pour toute erreur détectée
+ * \retval false sinon
+ */
+bool MshMeshWriter::
+_writeMeshToFileV4(IMesh* mesh, const String& file_name)
+{
+  m_item_type_mng = mesh->itemTypeMng();
+  String mesh_file_name(file_name);
+  if (!file_name.endsWith(".msh"))
+    mesh_file_name = mesh_file_name + ".msh";
+  std::ofstream ofile(mesh_file_name.localstr());
+  ofile.precision(20);
+  if (!ofile)
+    ARCANE_THROW(IOException, "Unable to open file '{0}' for writing", mesh_file_name);
+
+  info() << "writing file '" << mesh_file_name << "'";
+
+  ofile << "$MeshFormat\n";
+  // 4.1 pour le format
+  // 0 pour ASCII (1 pour binaire)
+  // 8 pour sizeof(size_t)
+  ofile << "4.1 0 " << sizeof(size_t) << "\n";
+  ofile << "$EndMeshFormat\n";
+
+  IItemFamily* cell_family = mesh->cellFamily();
+  IItemFamily* face_family = mesh->faceFamily();
+  CellGroup all_cells = mesh->allCells();
+  const Int32 mesh_nb_node = mesh->nbNode();
+  IItemFamily* node_family = mesh->nodeFamily();
+  ItemGroup all_nodes = mesh->allNodes();
+
+  UniqueArray<ItemGroup> items_groups;
+  _addGroupsToProcess(cell_family, items_groups);
+  _addGroupsToProcess(face_family, items_groups);
+
+  std::vector<std::unique_ptr<ItemGroupWriteInfo>> groups_write_info_list;
+  Int32 base_entity_index = 1000;
+  for (ItemGroup group : items_groups) {
+    auto x(std::make_unique<ItemGroupWriteInfo>());
+    x->processGroup(group, base_entity_index);
+    groups_write_info_list.emplace_back(std::move(x));
+    base_entity_index += 1000;
+  }
+
+  // Pour GMSH, il faut commencer par les 'Entities'.
+  // Il faut une entité par type de maille.
+  // On commence donc par calculer les types de mailles.
+  // Pour les maillages non-manifold les mailles peuvent être de dimension
+  // différentes
+
+  // Liste des tags physiques
+  UniqueArray<PhysicalTagInfo> physical_tags;
+
+  // Calcule le nombre d'entités par dimension
+  FixedArray<Int32, 4> nb_entities_by_dim;
+
+  // Calcule le nombre total d'éléments.
+  // Toutes les entités qui ne sont pas de dimension 0 sont des éléments.
+  Int64 total_nb_cell = 0;
+  for (const auto& ginfo : groups_write_info_list) {
+    for (const EntityInfo& entity_info : ginfo->entitiesByType()) {
+      Int32 dim = entity_info.m_dim;
+      if (dim >= 0)
+        ++nb_entities_by_dim[dim];
+      if (dim > 0) {
+        Int32 item_type = entity_info.m_item_type;
+        Int32 nb_item = ginfo->itemsByType(item_type).size();
+        total_nb_cell += nb_item;
+
+        Int32 physical_tag = entity_info.m_physical_tag;
+        if (physical_tag > 0) {
+          physical_tags.add(PhysicalTagInfo{ dim, physical_tag, entity_info.m_physical_tag_name });
+        }
+      }
+    }
+  }
+
+  // $PhysicalNames // same as MSH version 2
+  //   numPhysicalNames(ASCII int)
+  //   dimension(ASCII int) physicalTag(ASCII int) "name"(127 characters max)
+  //   ...
+  // $EndPhysicalNames
+
+  {
+    ofile << "$PhysicalNames\n";
+    Int32 nb_tag = physical_tags.size();
+    ofile << nb_tag << "\n";
+    for (const PhysicalTagInfo& tag_info : physical_tags) {
+      // TODO: vérifier que le nom ne dépasse pas 127 caractères.
+      ofile << tag_info.m_dimension << " " << tag_info.m_physical_tag << " " << tag_info.m_name << "\n";
+    }
+    ofile << "$EndPhysicalNames\n";
+  }
+
+  // Calcule la bounding box des noeuds
+  VariableNodeReal3 nodes_coords = mesh->nodesCoordinates();
+  Real3 node_min_bounding_box;
+  Real3 node_max_bounding_box;
+  {
+    Real max_value = FloatInfo<Real>::maxValue();
+    Real min_value = -max_value;
+    Real3 min_box(max_value, max_value, max_value);
+    Real3 max_box(min_value, min_value, min_value);
+    ENUMERATE_ (Node, inode, all_nodes) {
+      Real3 pos = nodes_coords[inode];
+      min_box = math::min(min_box, pos);
+      max_box = math::max(max_box, pos);
+    }
+    node_min_bounding_box = min_box;
+    node_max_bounding_box = max_box;
+  }
+
+  // $Entities
+  // numPoints(size_t) numCurves(size_t)
+  //   numSurfaces(size_t) numVolumes(size_t)
+  // pointTag(int) X(double) Y(double) Z(double)
+  //   numPhysicalTags(size_t) physicalTag(int) ...
+  // ...
+  // curveTag(int) minX(double) minY(double) minZ(double)
+  //   maxX(double) maxY(double) maxZ(double)
+  //   numPhysicalTags(size_t) physicalTag(int) ...
+  //   numBoundingPoints(size_t) pointTag(int; sign encodes orientation) ...
+  // ...
+  // surfaceTag(int) minX(double) minY(double) minZ(double)
+  //   maxX(double) maxY(double) maxZ(double)
+  //   numPhysicalTags(size_t) physicalTag(int) ...
+  //   numBoundingCurves(size_t) curveTag(int; sign encodes orientation) ...
+  // ...
+  // volumeTag(int) minX(double) minY(double) minZ(double)
+  //   maxX(double) maxY(double) maxZ(double)
+  //   numPhysicalTags(size_t) physicalTag(int) ...
+  //   numBoundngSurfaces(size_t) surfaceTag(int; sign encodes orientation) ...
+  // ...
+  // $EndEntities
+  {
+    ofile << "$Entities\n";
+    //nb_entities_by_dim[0] = 0;
+    ofile << nb_entities_by_dim[0] << " " << nb_entities_by_dim[1]
+          << " " << nb_entities_by_dim[2] << " " << nb_entities_by_dim[3] << "\n";
+    for (Int32 idim = 1; idim < 4; ++idim) {
+      for (const auto& ginfo : groups_write_info_list) {
+        for (const EntityInfo& entity_info : ginfo->entitiesByType()) {
+          if (entity_info.m_dim != idim)
+            continue;
+          ofile << entity_info.m_entity_tag << " " << node_min_bounding_box.x << " " << node_min_bounding_box.y << " " << node_min_bounding_box.z
+                << " " << node_max_bounding_box.x << " " << node_max_bounding_box.y << " " << node_max_bounding_box.z;
+          // Pas de tag pour l'instant
+          Int32 physical_tag = entity_info.m_physical_tag;
+          if (physical_tag > 0) {
+            ofile << " 1 " << physical_tag;
+          }
+          else
+            ofile << " 0";
+          // Pas de boundary pour l'instant
+          ofile << " 0";
+          ofile << "\n";
+        }
+      }
+    }
+    ofile << "$EndEntities\n";
+  }
+
+  // $Nodes
+  // numEntityBlocks(size_t) numNodes(size_t)
+  //   minNodeTag(size_t) maxNodeTag(size_t)
+  // entityDim(int) entityTag(int) parametric(int; 0 or 1)
+  //   numNodesInBlock(size_t)
+  //   nodeTag(size_t)
+  //   ...
+  //   x(double) y(double) z(double)
+  //      < u(double; if parametric and entityDim >= 1) >
+  //      < v(double; if parametric and entityDim >= 2) >
+  //      < w(double; if parametric and entityDim == 3) >
+  //   ...
+  // ...
+  // $EndNodes
+
+  // Bloc contenant les noeuds
+  ofile << "$Nodes\n";
+
+  auto [node_min_uid, node_max_uid] = _getFamilyMinMaxUniqueId(node_family);
+
+  ofile << "1 " << mesh_nb_node << " " << node_min_uid << " " << node_max_uid << "\n";
+  // entityDim(int) entityTag(int) parametric(int; 0 or 1) numNodesInBlock(size_t)
+  ofile << "0 " << "100 " << "0 " << mesh_nb_node << "\n";
+
+  // Sauve les uniqueId() des noeuds
+  ENUMERATE_ (Node, inode, all_nodes) {
+    Int64 uid = inode->uniqueId();
+    ofile << uid << "\n";
+  }
+
+  // Sauve les coordonnées
+  ENUMERATE_ (Node, inode, all_nodes) {
+    Real3 coord = nodes_coords[inode];
+    ofile << coord.x << " " << coord.y << " " << coord.z << "\n";
+  }
+
+  ofile << "$EndNodes\n";
+
+  // TODO: regarder s'il faut prendre en compte les uniqueId() des faces.
+  auto [cell_min_uid, cell_max_uid] = _getFamilyMinMaxUniqueId(cell_family);
+
+  // $Elements
+  //   numEntityBlocks(size_t) numElements(size_t)
+  //     minElementTag(size_t) maxElementTag(size_t)
+  //   entityDim(int) entityTag(int) elementType(int; see below)
+  //     numElementsInBlock(size_t)
+  //     elementTag(size_t) nodeTag(size_t) ...
+  //     ...
+  //   ...
+  // $EndElements
+
+  // Bloc contenant les mailles
+  ofile << "$Elements\n";
+
+  Int32 nb_existing_type = nb_entities_by_dim[1] + nb_entities_by_dim[2] + nb_entities_by_dim[3];
+  ofile << nb_existing_type << " " << total_nb_cell << " " << cell_min_uid << " " << cell_max_uid << "\n";
+  for (const auto& ginfo : groups_write_info_list) {
+    ItemGroup item_group = ginfo->group();
+    IItemFamily* item_family = item_group.itemFamily();
+    for (const EntityInfo& entity_info : ginfo->entitiesByType()) {
+      Int32 cell_type = entity_info.m_item_type;
+      ConstArrayView<Int32> items_of_current_type = ginfo->itemsByType(cell_type);
+      ItemTypeInfo* item_type_info = m_item_type_mng->typeFromId(cell_type);
+      Int32 type_dimension = entity_info.m_dim;
+      ofile << "\n";
+      ofile << type_dimension << " " << entity_info.m_entity_tag << " " << _convertToMshType(cell_type)
+            << " " << items_of_current_type.size() << "\n";
+      info() << "Writing items family=" << item_family->name() << " type=" << item_type_info->typeName()
+             << " n=" << items_of_current_type.size()
+             << " dimension=" << type_dimension;
+      Int32 nb_node_for_type = item_type_info->nbLocalNode();
+      ENUMERATE_ (ItemWithNodes, iitem, item_family->view(items_of_current_type)) {
+        ItemWithNodes item = *iitem;
+        ofile << item.uniqueId();
+        for (Int32 i = 0; i < nb_node_for_type; ++i)
+          ofile << " " << item.node(i).uniqueId();
+        ofile << "\n";
+      }
+    }
+  }
+  ofile << "$EndElements\n";
+
+  return false;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+std::pair<Int64, Int64> MshMeshWriter::
+_getFamilyMinMaxUniqueId(IItemFamily* family)
+{
+  Int64 min_uid = INT64_MAX;
+  Int64 max_uid = -1;
+  ENUMERATE_ (Item, iitem, family->allItems()) {
+    Item item = *iitem;
+    Int64 uid = item.uniqueId();
+    if (uid < min_uid)
+      min_uid = uid;
+    if (uid > max_uid)
+      max_uid = uid;
+  }
+  return { min_uid, max_uid };
 }
 
 /*---------------------------------------------------------------------------*/

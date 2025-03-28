@@ -269,7 +269,6 @@ _applyItems(RunCommand& command, typename TraitsType::ContainerType items,
   using ItemType = TraitsType::ItemType;
   impl::RunCommandLaunchInfo launch_info(command, vsize);
   const eExecutionPolicy exec_policy = launch_info.executionPolicy();
-  launch_info.computeLoopRunInfo();
   launch_info.beginExecute();
   SmallSpan<const Int32> ids = items.localIds();
   switch (exec_policy) {

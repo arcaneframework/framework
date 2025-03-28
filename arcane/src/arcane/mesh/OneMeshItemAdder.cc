@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* OneMeshItemAdder.cc                                         (C) 2000-2024 */
+/* OneMeshItemAdder.cc                                         (C) 2000-2025 */
 /*                                                                           */
 /* Ajout des entités une par une.                                            */
 /*---------------------------------------------------------------------------*/
@@ -15,6 +15,7 @@
 
 #include "arcane/utils/NotSupportedException.h"
 #include "arcane/utils/ValueConvert.h"
+#include "arcane/utils/FixedArray.h"
 
 #include "arcane/core/MeshUtils.h"
 #include "arcane/core/MeshToMeshTransposer.h"
@@ -67,11 +68,11 @@ class OneMeshItemAdder::CellInfoProxy
 
  private:
 
-  ItemTypeInfo* m_type_info;
-  Int64 m_cell_uid;
+  ItemTypeInfo* m_type_info = nullptr;
+  Int64 m_cell_uid = NULL_ITEM_UNIQUE_ID;
   Int64ConstArrayView m_info;
-  Int32 m_owner;
-  bool m_allow_build_face;
+  Int32 m_owner = A_NULL_RANK;
+  bool m_allow_build_face = false;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -90,12 +91,7 @@ OneMeshItemAdder(DynamicMeshIncrementalBuilder* mesh_builder)
 , m_mesh_info(m_mesh->meshPartInfo().partRank())
 {
   m_work_face_sorted_nodes.reserve(100);
-  m_work_face_orig_nodes_uid.reserve(100); 
-
-  if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_GENERATE_UNIQUE_ID_FROM_NODES", true)){
-    m_use_hash_for_face_unique_id = (v.value()!=0);
-    info() << "Is generate Face uniqueId() from Nodes=" << m_use_hash_for_face_unique_id;
-  }
+  m_work_face_orig_nodes_uid.reserve(100);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -116,38 +112,70 @@ addOneNode(Int64 node_uid,Int32 owner)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Ajoute une face.
+ * \brief Vérifie la cohérence des noeuds d'une entité ajouté déjà présente.
  *
- * Ajoute une face en fournissant l'unique_id à utiliser et les unique_ids
- * des noeuds à connecter.
+ * Lorsqu'on tente d'ajouter une entité et qu'elle est déjà présente,
+ * vérifie que les noeuds donnés pour l'ajout sont les même que ceux de
+ * l'entité déjà présente.
  */
-ItemInternal* OneMeshItemAdder::
-addOneFace(Int64 a_face_uid, Int64ConstArrayView a_node_list, Integer a_type)
+void OneMeshItemAdder::
+_checkSameItemCoherency(ItemWithNodes item,ConstArrayView<Int64> nodes_uid)
 {
-  m_work_face_sorted_nodes.resize(a_node_list.size());
-  m_work_face_orig_nodes_uid.resize(a_node_list.size());
-  for( Integer z=0; z<a_node_list.size(); ++z )
-    m_work_face_orig_nodes_uid[z] = a_node_list[z];
-  mesh_utils::reorderNodesOfFace(m_work_face_orig_nodes_uid, m_work_face_sorted_nodes);
+  Int32 nb_node = nodes_uid.size();
+  // Vérifie que le nombre de noeuds est le même
+  if (item.nbNode()!=nb_node)
+    ARCANE_FATAL("Trying to add existing item (kind='{0}', uid={1}) with different number of node (existing={2} new={3})",
+                 item.kind(), item.uniqueId(), item.nbNode(), nb_node);
 
-  ItemTypeMng* itm = m_mesh->itemTypeMng();
-  ItemInternal *face = m_face_family.allocOne(a_face_uid,itm->typeFromId(a_type));
-	face->setOwner(m_mesh_info.rank(), m_mesh_info.rank());
-
-  for(Integer i_node=0; i_node<a_node_list.size(); ++i_node ){
-    ItemInternal *current_node_internal = addOneNode(m_work_face_sorted_nodes[i_node], m_mesh_info.rank());
-    m_face_family.replaceNode(ItemLocalId(face),i_node,ItemLocalId(current_node_internal));
-		m_node_family.addFaceToNode(current_node_internal, face);
-	}
-	++m_mesh_info.nbFace();
-	return face;
+  // Vérifie que les noeuds correspondent bien à ceux existants
+  for( Int32 i=0; i<nb_node; ++i ){
+    Int64 new_uid = nodes_uid[i];
+    Int64 current_uid = item.node(i).uniqueId();
+    if (new_uid != current_uid){
+      std::ostringstream ostr;
+      for( Int32 k=0; k<nb_node; ++k )
+        ostr << " " << item.node(k).uniqueId();
+      ARCANE_FATAL("Trying to add existing item (kind='{0}', uid={1}) with different nodes (index={2} existing='{3}' new='{4}')",
+                   item.kind(), item.uniqueId(), i, ostr.str(), nodes_uid);
+    }
+  }
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+/*!
+ * \brief Génère un uniqueId() pour la face si \a uid est nul.
+ *
+ * Si \a uid vaut NULL_ITEM_UNIQUE_ID, génère un uniqueId() pour la face.
+ */
+Int64 OneMeshItemAdder::
+_checkGenerateFaceUniqueId(Int64 uid, ConstArrayView<Int64> nodes_uid)
+{
+  if (uid!=NULL_ITEM_UNIQUE_ID)
+    return uid;
+  if (m_use_hash_for_edge_and_face_unique_id)
+    uid = MeshUtils::generateHashUniqueId(nodes_uid);
+  else
+    uid = m_next_face_uid++;
+  return uid;
+}
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Ajoute une face.
+ *
+ * Cette méthode est appelée lorsqu'on souhaite directement créer une face
+ * qui ne sera pas forcément connectée à une maille. En général, les faces
+ * sont créées automatiquement lorsqu'on ajoute des mailles.
+ *
+ * Ajoute une face en fournissant l'unique_id de la face et les unique_ids
+ * des noeuds à connecter.
+ *
+ * Si \a face_uid est égal à NULL_ITEM_UNIQUE_ID, l'identifiant est généré.
+ */
 ItemInternal* OneMeshItemAdder::
-addOneFace(ItemTypeId type_id, Int64 face_uid, Int32 sub_domain_id, Int64ConstArrayView nodes_uid)
+addOneFace(ItemTypeId type_id, Int64 face_uid, Int32 owner_rank, Int64ConstArrayView nodes_uid)
 {
   const Integer face_nb_node = nodes_uid.size();
 
@@ -155,20 +183,26 @@ addOneFace(ItemTypeId type_id, Int64 face_uid, Int32 sub_domain_id, Int64ConstAr
   m_work_face_orig_nodes_uid.resize(face_nb_node);
   for( Integer z=0; z<face_nb_node; ++z )
     m_work_face_orig_nodes_uid[z] = nodes_uid[z];
-  mesh_utils::reorderNodesOfFace(m_work_face_orig_nodes_uid,m_work_face_sorted_nodes);
-  
+  // TODO: dans le cas où la face sera orpheline (non connectée à une mailles),
+  // vérifier s'il faut réorienter la face car cela risque d'introduire
+  // une incohérence si par la suite on souhaite calculer une normale.
+  MeshUtils::reorderNodesOfFace(m_work_face_orig_nodes_uid,m_work_face_sorted_nodes);
+  face_uid = _checkGenerateFaceUniqueId(face_uid,m_work_face_sorted_nodes);
   bool is_add_face = false;
   Face face = m_face_family.findOrAllocOne(face_uid,type_id,is_add_face);
-  
   // La face n'existe pas
   if (is_add_face) { 
     ++m_mesh_info.nbFace();
-    face.mutableItemBase().setOwner(sub_domain_id,sub_domain_id);
+    face.mutableItemBase().setOwner(owner_rank, m_mesh_info.rank());
     for(Integer i_node=0; i_node<face_nb_node; ++i_node ){
       Node node = addOneNode(m_work_face_sorted_nodes[i_node], m_mesh_info.rank());
       m_face_family.replaceNode(face,i_node,node);
       m_node_family.addFaceToNode(node, face);
     }
+  }
+  else {
+    if (arcaneIsCheck())
+      _checkSameItemCoherency(face, m_work_face_sorted_nodes);
   }
   
   return ItemCompatibility::_itemInternal(face);
@@ -178,7 +212,7 @@ addOneFace(ItemTypeId type_id, Int64 face_uid, Int32 sub_domain_id, Int64ConstAr
 /*---------------------------------------------------------------------------*/
 
 ItemInternal* OneMeshItemAdder::
-addOneEdge(Int64 edge_uid, Integer sub_domain_id, Int64ConstArrayView nodes_uid)
+addOneEdge(Int64 edge_uid, Int32 rank, Int64ConstArrayView nodes_uid)
 {
   m_work_edge_sorted_nodes.resize(2);
   m_work_edge_orig_nodes_uid.resize(2);
@@ -186,7 +220,7 @@ addOneEdge(Int64 edge_uid, Integer sub_domain_id, Int64ConstArrayView nodes_uid)
   for( Integer z=0; z<2; ++z )
     m_work_edge_orig_nodes_uid[z] = nodes_uid[z];
   // reorderNodesOfFace se comporte ici correctement pour des arêtes == face en 2D
-  mesh_utils::reorderNodesOfFace(m_work_edge_orig_nodes_uid,m_work_edge_sorted_nodes);
+  MeshUtils::reorderNodesOfFace(m_work_edge_orig_nodes_uid,m_work_edge_sorted_nodes);
   
   bool is_add_edge = false;
   ItemInternal* edge = m_edge_family.findOrAllocOne(edge_uid,is_add_edge);
@@ -194,7 +228,7 @@ addOneEdge(Int64 edge_uid, Integer sub_domain_id, Int64ConstArrayView nodes_uid)
   // L'arête n'existe pas
   if (is_add_edge) {
     ++m_mesh_info.nbEdge();
-    edge->setOwner(sub_domain_id,sub_domain_id);
+    edge->setOwner(rank,m_mesh_info.rank());
     for(Integer i_node=0; i_node<2; ++i_node ){
       ItemInternal *current_node_internal = addOneNode(m_work_edge_sorted_nodes[i_node], m_mesh_info.rank());
       m_edge_family.replaceNode(ItemLocalId(edge),i_node, ItemLocalId(current_node_internal));
@@ -233,7 +267,7 @@ _findInternalFace(Integer i_face, const CellInfoProxy& cell_info, bool& is_add)
   if (face_internal.null()) {
     // La face n'est pas trouvée. Elle n'existe donc pas dans notre sous-domaine.
     // Si cela est autorisé, on créée la nouvelle face.
-    if (!cell_info.allowBuildFace() && !m_use_hash_for_face_unique_id){
+    if (!cell_info.allowBuildFace() && !m_use_hash_for_edge_and_face_unique_id){
       info() << "BadCell uid=" << cell_info.uniqueId();
       for( Int32 i=0; i<cell_info.nbNode(); ++i )
         info() << "Cell node I=" << i << " uid=" << cell_info.nodeUniqueId(i);
@@ -243,9 +277,7 @@ _findInternalFace(Integer i_face, const CellInfoProxy& cell_info, bool& is_add)
                    cell_info.uniqueId(),i_face,m_work_face_sorted_nodes);
     }
     ItemTypeInfo* face_type = m_item_type_mng->typeFromId(lf.typeId());
-    Int64 face_unique_id = m_next_face_uid++;
-    if (m_use_hash_for_face_unique_id)
-      face_unique_id = MeshUtils::generateHashUniqueId(m_work_face_sorted_nodes);
+    Int64 face_unique_id = _checkGenerateFaceUniqueId(NULL_ITEM_UNIQUE_ID,m_work_face_sorted_nodes);
     is_add = true;
     return m_face_family.allocOne(face_unique_id,face_type);
   }
@@ -283,10 +315,16 @@ _findInternalEdge(Integer i_edge, const CellInfoProxy& cell_info, Int64 first_no
   Node nbi = nodes_map.findItem(first_node);
   Edge edge_internal = ItemTools::findEdgeInNode2(nbi,first_node,second_node);
   if (edge_internal.null()){
-    if (!cell_info.allowBuildEdge())
+    if (!cell_info.allowBuildEdge() && !m_use_hash_for_edge_and_face_unique_id)
       ARCANE_FATAL("On the fly edge allocation is not allowed here."
                    " You need to add edges before with IMeshModifier::addEdges()");
-    const Int64 edge_unique_id = m_next_edge_uid++;
+    Int64 edge_unique_id = m_next_edge_uid++;
+    if (m_use_hash_for_edge_and_face_unique_id){
+      FixedArray<Int64,2> nodes;
+      nodes[0] = first_node;
+      nodes[1] = second_node;
+      edge_unique_id = MeshUtils::generateHashUniqueId(nodes.view());
+    }
     is_add = true;
     return m_edge_family.allocOne(edge_unique_id);
   }
@@ -593,10 +631,10 @@ _addOneCell(const CellInfo& cell_info)
 
   Cell new_cell(inew_cell);
 
-  const Integer cell_nb_face = cell_info.nbFace();
-  const Integer cell_nb_edge = cell_info.nbEdge();
-
   ++m_mesh_info.nbCell();
+
+  const bool allow_multi_dim_cell = m_mesh->meshKind().isNonManifold();
+  const Int32 cell_nb_face = cell_info.nbFace();
 
   inew_cell.mutableItemBase().setOwner(cell_info.owner(), m_mesh_info.rank());
   // Vérifie la cohérence entre le type local et la maille créée.
@@ -608,11 +646,13 @@ _addOneCell(const CellInfo& cell_info)
     if (!cell_type_info->isValidForCell())
       ARCANE_FATAL("Type '{0}' is not allowed for 'Cell' (cell_uid={1})",
                    cell_type_info->typeName(),cell_info.uniqueId());
-    Int32 cell_dimension = cell_type_info->dimension();
-    Int32 mesh_dimension = m_mesh->dimension();
-    if (cell_dimension>=0 && cell_dimension!=mesh_dimension)
-      ARCANE_FATAL("Incoherent dimension for cell uid={0} cell_dim={1} mesh_dim={2} type={3}",
-                   cell_info.uniqueId(),cell_dimension,mesh_dimension,cell_type_info->typeName());
+    if (!allow_multi_dim_cell){
+      Int32 cell_dimension = cell_type_info->dimension();
+      Int32 mesh_dimension = m_mesh->dimension();
+      if (cell_dimension>=0 && cell_dimension!=mesh_dimension)
+        ARCANE_FATAL("Incoherent dimension for cell uid={0} cell_dim={1} mesh_dim={2} type={3}",
+                     cell_info.uniqueId(),cell_dimension,mesh_dimension,cell_type_info->typeName());
+    }
   }
 
   //! Type la table de hashage uniqueId()->ItemInternal*
@@ -621,11 +661,11 @@ _addOneCell(const CellInfo& cell_info)
   _addNodesToCell(inew_cell,cell_info);
   
   if (m_mesh_builder->hasEdge()) {
+    const Int32 cell_nb_edge = cell_info.nbEdge();
     // Ajoute les nouvelles arêtes ci-nécessaire
     for( Integer i_edge=0; i_edge<cell_nb_edge; ++i_edge ){
       const ItemTypeInfo::LocalEdge& le = cell_type_info->localEdge(i_edge);
-      
-      Int64 first_node  = cell_info.nodeUniqueId( le.beginNode() );
+      Int64 first_node = cell_info.nodeUniqueId( le.beginNode() );
       Int64 second_node = cell_info.nodeUniqueId( le.endNode() );
       if (first_node > second_node)
         std::swap(first_node,second_node);
@@ -951,7 +991,7 @@ addOneParentItem(const Item & item, const eItemKind submesh_kind, const bool fat
       m_work_face_sorted_nodes[0] = m_work_face_orig_nodes_uid[0];
     }
     else
-      is_reorder = mesh_utils::reorderNodesOfFace(m_work_face_orig_nodes_uid,m_work_face_sorted_nodes);
+      is_reorder = MeshUtils::reorderNodesOfFace(m_work_face_orig_nodes_uid,m_work_face_sorted_nodes);
 
     // find parent item
     Item parent_item;
@@ -1057,8 +1097,8 @@ _isReorder(Integer i_face, const ItemTypeInfo::LocalFace& lf, const CellInfo& ce
     m_work_face_sorted_nodes[0] = m_work_face_orig_nodes_uid[0];
   }
   else
-    is_reorder = mesh_utils::reorderNodesOfFace(m_work_face_orig_nodes_uid,
-                                                m_work_face_sorted_nodes);
+    is_reorder = MeshUtils::reorderNodesOfFace(m_work_face_orig_nodes_uid,
+                                               m_work_face_sorted_nodes);
   
   return is_reorder;
 }
@@ -1073,6 +1113,18 @@ resetAfterDeallocate()
   m_next_face_uid = 0;
   m_next_edge_uid = 0;
   m_mesh_info.reset();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void OneMeshItemAdder::
+setUseNodeUniqueIdToGenerateEdgeAndFaceUniqueId(bool v)
+{
+  if (m_next_face_uid!=0 || m_next_edge_uid!=0)
+    ARCANE_FATAL("Can not call this method when edge or face are already created");
+  m_use_hash_for_edge_and_face_unique_id = v;
+  info() << "Is Generate Edge and Face uniqueId() from Nodes=" << m_use_hash_for_edge_and_face_unique_id;
 }
 
 /*---------------------------------------------------------------------------*/

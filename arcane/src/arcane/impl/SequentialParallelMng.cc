@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* SequentialParallelMng.cc                                    (C) 2000-2024 */
+/* SequentialParallelMng.cc                                    (C) 2000-2025 */
 /*                                                                           */
 /* Gestion du parallélisme dans le cas séquentiel.                           */
 /*---------------------------------------------------------------------------*/
@@ -38,7 +38,8 @@
 #include "arcane/core/Timer.h"
 #include "arcane/core/FactoryService.h"
 #include "arcane/core/AbstractService.h"
-#include "arcane/core/SerializeMessage.h"
+#include "arcane/core/ISerializer.h"
+#include "arcane/core/internal/SerializeMessage.h"
 
 #include "arcane/parallel/IStat.h"
 
@@ -49,7 +50,7 @@
 #include "arcane/impl/ParallelReplication.h"
 #include "arcane/impl/SequentialParallelSuperMng.h"
 #include "arcane/impl/SequentialParallelMng.h"
-#include "arcane/impl/ParallelMngUtilsFactoryBase.h"
+#include "arcane/impl/internal/ParallelMngUtilsFactoryBase.h"
 #include "arcane/impl/internal/VariableSynchronizer.h"
 
 #include "arccore/message_passing/RequestListBase.h"
@@ -60,8 +61,9 @@
 
 namespace Arcane
 {
-using RequestListBase = Arccore::MessagePassing::internal::RequestListBase;
+using RequestListBase = Arcane::MessagePassing::internal::RequestListBase;
 using IRequestList = Parallel::IRequestList;
+using namespace Arcane::MessagePassing;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

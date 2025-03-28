@@ -12,7 +12,7 @@
 
  <module-test-unitaire>
   <test name="MeshUnitTest">
-   <maillage-additionnel>tube5x5x100.mli</maillage-additionnel>
+   <maillage-additionnel>tube5x5x100.mli2</maillage-additionnel>
    <maillage-additionnel>tube5x5x100.unf</maillage-additionnel>
   </test>
  </module-test-unitaire>

@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MpiParallelMng.cc                                           (C) 2000-2024 */
+/* MpiParallelMng.cc                                           (C) 2000-2025 */
 /*                                                                           */
 /* Gestionnaire de parallélisme utilisant MPI.                               */
 /*---------------------------------------------------------------------------*/
@@ -26,15 +26,12 @@
 #include "arcane/core/IIOMng.h"
 #include "arcane/core/Timer.h"
 #include "arcane/core/IItemFamily.h"
-#include "arcane/core/SerializeMessage.h"
 #include "arcane/core/parallel/IStat.h"
+#include "arcane/core/internal/SerializeMessage.h"
 
 #include "arcane/parallel/mpi/MpiParallelMng.h"
-#include "arcane/parallel/mpi/MpiAdapter.h"
 #include "arcane/parallel/mpi/MpiParallelDispatch.h"
-#include "arcane/parallel/mpi/MpiSerializeMessageList.h"
 #include "arcane/parallel/mpi/MpiTimerMng.h"
-#include "arcane/parallel/mpi/MpiLock.h"
 #include "arcane/parallel/mpi/MpiSerializeMessage.h"
 #include "arcane/parallel/mpi/MpiParallelNonBlockingCollective.h"
 #include "arcane/parallel/mpi/MpiDatatype.h"
@@ -42,12 +39,14 @@
 
 #include "arcane/impl/ParallelReplication.h"
 #include "arcane/impl/SequentialParallelMng.h"
-#include "arcane/impl/ParallelMngUtilsFactoryBase.h"
+#include "arcane/impl/internal/ParallelMngUtilsFactoryBase.h"
 #include "arcane/impl/internal/VariableSynchronizer.h"
 
 #include "arccore/message_passing_mpi/MpiMessagePassingMng.h"
-#include "arccore/message_passing_mpi/MpiRequestList.h"
-#include "arccore/message_passing_mpi/MpiSerializeDispatcher.h"
+#include "arccore/message_passing_mpi/internal/MpiSerializeDispatcher.h"
+#include "arccore/message_passing_mpi/internal/MpiRequestList.h"
+#include "arccore/message_passing_mpi/internal/MpiAdapter.h"
+#include "arccore/message_passing_mpi/internal/MpiLock.h"
 #include "arccore/message_passing/Dispatchers.h"
 #include "arccore/message_passing/Messages.h"
 #include "arccore/message_passing/SerializeMessageList.h"
@@ -59,7 +58,9 @@
 
 namespace Arcane
 {
-using namespace Arccore::MessagePassing::Mpi;
+using namespace Arcane::MessagePassing;
+using namespace Arcane::MessagePassing::Mpi;
+using BasicSerializeMessage = Arcane::MessagePassing::internal::BasicSerializeMessage;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -88,7 +89,7 @@ arcaneCreateMpiLegacyVariableSynchronizerFactory(MpiParallelMng* mpi_pm);
 MpiParallelMngBuildInfo::
 MpiParallelMngBuildInfo(MPI_Comm comm)
 : is_parallel(false)
-, comm_rank(A_NULL_RANK)
+, comm_rank(MessagePassing::A_NULL_RANK)
 , comm_nb_rank(0)
 , stat(nullptr)
 , trace_mng(nullptr)
@@ -472,7 +473,7 @@ build()
   _setControlDispatcher(control_dispatcher);
 
   // NOTE: cette instance sera détruite par le ParallelMngDispatcher
-  auto* serialize_dispatcher = new MpiSerializeDispatcher(m_adapter);
+  auto* serialize_dispatcher = new MpiSerializeDispatcher(m_adapter, mpm);
   m_mpi_serialize_dispatcher = serialize_dispatcher;
   _setSerializeDispatcher(serialize_dispatcher);
 
@@ -485,13 +486,6 @@ build()
   m_non_blocking_collective->build();
   if (m_mpi_lock)
     m_trace->info() << "Using mpi with locks.";
-
-  // Utilise par défaut (janvier 2024) la nouvelle implémentation de la sérialisation,
-  // mais on laisse l'ancienne accessible au cas où.
-  if (platform::getEnvironmentVariable("ARCANE_SYNCHRONIZE_LIST_VERSION") == "1") {
-    m_use_serialize_list_v2 = false;
-    m_trace->info() << "Using MPI SerializeList version 1";
-  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -535,8 +529,7 @@ sendSerializer(ISerializer* s,Int32 rank)
 ISerializeMessage* MpiParallelMng::
 createSendSerializer(Int32 rank)
 {
-  auto x = new SerializeMessage(m_comm_rank,rank,ISerializeMessage::MT_Send);
-  return x;
+  return m_utils_factory->createSendSerializeMessage(this, rank)._release();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -579,8 +572,7 @@ recvSerializer(ISerializer* values,Int32 rank)
 ISerializeMessage* MpiParallelMng::
 createReceiveSerializer(Int32 rank)
 {
-  auto x = new SerializeMessage(m_comm_rank,rank,ISerializeMessage::MT_Recv);
-  return x;
+  return m_utils_factory->createReceiveSerializeMessage(this, rank)._release();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -724,9 +716,7 @@ _waitSomeRequests(ArrayView<Request> requests, bool is_non_blocking)
 ISerializeMessageList* MpiParallelMng::
 _createSerializeMessageList()
 {
-  if (m_use_serialize_list_v2)
-    return new MP::internal::SerializeMessageList(messagePassingMng());
-  return new MpiSerializeMessageList(serializeDispatcher());
+  return new MP::internal::SerializeMessageList(messagePassingMng());
 }
 
 /*---------------------------------------------------------------------------*/
@@ -861,6 +851,7 @@ _createSubParallelMng(Int32ConstArrayView kept_ranks)
   MPI_Comm sub_communicator = MPI_COMM_NULL;
 
   MPI_Comm_create(m_communicator, final_group, &sub_communicator);
+  MPI_Group_free(&final_group);
   return _createSubParallelMng(sub_communicator);
 }
 

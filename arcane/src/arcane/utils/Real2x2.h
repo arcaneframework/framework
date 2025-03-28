@@ -139,21 +139,7 @@ class ARCANE_UTILS_EXPORT Real2x2
     y = f.y;
     return (*this);
   }
-  /*!
-   * \brief Compare la matrice avec la matrice nulle.
-   *
-   * La matrice est nulle si et seulement si chacune de ses composant
-   * est inférieure à un espilon donné. La valeur de l'epsilon utilisée est celle
-   * de float_info<value_type>::nearlyEpsilon():
-   * \f[A=0 \Leftrightarrow |A.x|<\epsilon,|A.y|<\epsilon\f]
-   *
-   * \retval true si la matrice est égale à la matrice nulle,
-   * \retval false sinon.
-   */
-  constexpr ARCCORE_HOST_DEVICE bool isNearlyZero() const
-  {
-    return x.isNearlyZero() && y.isNearlyZero();
-  }
+
   /*!
    * \brief Lit la matrice sur le flot \a i
    * La matrice est lue sous la forme de trois Real2.
@@ -373,6 +359,22 @@ class ARCANE_UTILS_EXPORT Real2x2
     return (v1.x < v2.x);
   }
 
+ public:
+
+  /*!
+   * \brief Compare la matrice avec la matrice nulle.
+   *
+   * La matrice est nulle si et seulement si chacune de ses composant
+   * est inférieure à un espilon donné. La valeur de l'epsilon utilisée est celle
+   * de float_info<value_type>::nearlyEpsilon():
+   * \f[A=0 \Leftrightarrow |A.x|<\epsilon,|A.y|<\epsilon\f]
+   *
+   * \retval true si la matrice est égale à la matrice nulle,
+   * \retval false sinon.
+   */
+  // TODO: rendre obsolète mi-2025: ARCANE_DEPRECATED_REASON("Y2024: Use math::isNearlyZero(const Real2x2&) instead")
+  inline constexpr ARCCORE_HOST_DEVICE bool isNearlyZero() const;
+
  private:
 
   /*!
@@ -385,6 +387,37 @@ class ARCANE_UTILS_EXPORT Real2x2
     return TypeEqualT<Real>::isEqual(a, b);
   }
 };
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace math
+{
+  /*!
+   * \brief Compare la matrice avec la matrice nulle.
+   *
+   * La matrice est nulle si et seulement si chacune de ses composant
+   * est inférieure à un espilon donné. La valeur de l'epsilon utilisée est celle
+   * de float_info<value_type>::nearlyEpsilon():
+   * \f[A=0 \Leftrightarrow |A.x|<\epsilon,|A.y|<\epsilon\f]
+   *
+   * \retval true si la matrice est égale à la matrice nulle,
+   * \retval false sinon.
+   */
+  constexpr ARCCORE_HOST_DEVICE bool isNearlyZero(const Real2x2& v)
+  {
+    return math::isNearlyZero(v.x) && math::isNearlyZero(v.y);
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+inline constexpr ARCCORE_HOST_DEVICE bool Real2x2::
+isNearlyZero() const
+{
+  return math::isNearlyZero(*this);
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

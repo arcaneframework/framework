@@ -1,4 +1,4 @@
-name: '[All] Build/Install/Test Arcane Framework (Ubuntu 20.04-22.04-24.04 / GCC 12-14 / CLang 16-17-18 / CUDA 12.5 / Minimal-Full / Release-Debug)'
+name: '[All] Build/Install/Test Arcane Framework (Ubuntu 22.04-24.04 / GCC 12-13-14 / CLang 16-18-19 / CUDA 12.6 / ROCM 6.3.1 / Minimal-Full / Release-Debug)'
 # Attention : GitHub limite à 20 tests à la fois.
 
 on:
@@ -16,73 +16,105 @@ jobs:
             long: 'ubuntu-2204'
             compilo_name: 'gcc'
             compilo_version: '12'
-            date: '20240717'
+            acc_compilo_name: ''
+            acc_compilo_version: ''
+            date: '20250112'
             args: '-DARCCORE_CXX_STANDARD=23'
-            cuda: 'false'
-            acpp: false
             execute_tests: true
 
           - short: 'U22_C16'
             long: 'ubuntu-2204'
             compilo_name: 'clang'
             compilo_version: '16'
-            date: '20240717'
+            acc_compilo_name: ''
+            acc_compilo_version: ''
+            date: '20250112'
             args: '-DARCCORE_CXX_STANDARD=23'
-            cuda: 'false'
-            acpp: false
             execute_tests: true
 
           - short: 'U24_G14'
             long: 'ubuntu-2404'
             compilo_name: 'gcc'
             compilo_version: '14'
-            date: '20240717'
+            acc_compilo_name: ''
+            acc_compilo_version: ''
+            date: '20250120'
             args: '-DARCCORE_CXX_STANDARD=23'
-            cuda: 'false'
-            acpp: false
             execute_tests: true
 
           - short: 'U24_C18'
             long: 'ubuntu-2404'
             compilo_name: 'clang'
             compilo_version: '18'
-            date: '20240717'
+            acc_compilo_name: ''
+            acc_compilo_version: ''
+            date: '20250120'
             args: '-DARCCORE_CXX_STANDARD=23'
-            cuda: 'false'
-            acpp: false
             execute_tests: true
 
-          - short: 'U24_G13_CU125'
+          - short: 'U24_G13_CU126'
             long: 'ubuntu-2404'
             compilo_name: 'gcc'
             compilo_version: '13'
-            date: '20240717'
+            acc_compilo_name: 'cuda'
+            acc_compilo_version: '126'
+            date: '20250120'
             # Disable googletest with CUDA because it requires a GPU driver
             args: '-DARCCORE_CXX_STANDARD=20 -DARCANE_EXECUTE_ACCELERATOR_GOOGLETEST=OFF'
-            cuda: 'cuda-125'
-            acpp: false
             execute_tests: false
 
-          - short: 'U24_C17_CU125'
+          - short: 'U24_C18_CU126'
             long: 'ubuntu-2404'
             compilo_name: 'clang'
-            compilo_version: '17'
-            date: '20240717'
+            compilo_version: '18'
+            acc_compilo_name: 'cuda'
+            acc_compilo_version: '126'
+            date: '20250120'
             # Disable googletest with CUDA because it requires a GPU driver
             args: '-DARCCORE_CXX_STANDARD=20 -DARCANE_EXECUTE_ACCELERATOR_GOOGLETEST=OFF'
-            cuda: 'cuda-125'
-            acpp: false
+            execute_tests: false
+
+          - short: 'U24_G14_CUC19'
+            long: 'ubuntu-2404'
+            compilo_name: 'gcc'
+            compilo_version: '14'
+            acc_compilo_name: 'clang_cuda'
+            acc_compilo_version: '19'
+            date: '20250120'
+            # Disable googletest with CUDA because it requires a GPU driver
+            args: '-DARCCORE_CXX_STANDARD=20 -DARCANE_EXECUTE_ACCELERATOR_GOOGLETEST=OFF'
+            execute_tests: false
+
+          - short: 'U24_G14_RC631'
+            long: 'ubuntu-2404'
+            compilo_name: 'gcc'
+            compilo_version: '14'
+            acc_compilo_name: 'rocm'
+            acc_compilo_version: '631'
+            date: '20250120'
+            args: '-DARCCORE_CXX_STANDARD=20 -DARCANE_EXECUTE_ACCELERATOR_GOOGLETEST=OFF'
+            execute_tests: false
+
+          - short: 'U24_C19_RC631'
+            long: 'ubuntu-2404'
+            compilo_name: 'clang'
+            compilo_version: '19'
+            acc_compilo_name: 'rocm'
+            acc_compilo_version: '631'
+            date: '20250120'
+            args: '-DARCCORE_CXX_STANDARD=20 -DARCANE_EXECUTE_ACCELERATOR_GOOGLETEST=OFF'
             execute_tests: false
 
           - short: 'U24_ACPP'
             long: 'ubuntu-2404'
             compilo_name: 'clang'
             compilo_version: '18'
-            date: '20240717'
+            acc_compilo_name: 'acpp'
+            acc_compilo_version: ''
+            date: '20250120'
             args: '-DARCCORE_CXX_STANDARD=23'
-            cuda: 'false'
-            acpp: true
             execute_tests: false
+
 
         version:
           - short: 'M'
@@ -112,21 +144,24 @@ jobs:
 
         exclude:
           - { version: { short: 'F' }, mpi: { implementation: 'MPICH' } }
-          - { version: { short: 'M' }, image: { short: 'U24_G13_CU125' } }
-          - { version: { short: 'M' }, image: { short: 'U24_C17_CU125' } }
+          - { version: { short: 'M' }, image: { short: 'U24_G13_CU126' } }
+          - { version: { short: 'M' }, image: { short: 'U24_C18_CU126' } }
+          - { version: { short: 'M' }, image: { short: 'U24_G14_CUC19' } }
+          - { version: { short: 'M' }, image: { short: 'U24_G14_RC631' } }
+          - { version: { short: 'M' }, image: { short: 'U24_C19_RC631' } }
           - { version: { short: 'M' }, image: { short: 'U24_ACPP' } }
           - { config: { type: 'Debug' }, image: { short: 'U24_ACPP' } }
 
     name: '[${{matrix.image.short}}_${{matrix.version.short}}]_${{matrix.mpi.implementation}}_${{matrix.config.type}}'
     # La partie 'uses' est déterminée à la compilation, donc on ne peut pas mettre de variable ${{}}.
-    uses: 'arcaneframework/gh_actions/.github/workflows/reusable_test_framework.yml@v2'
+    uses: 'arcaneframework/gh_actions/.github/workflows/reusable_test_framework.yml@v3'
     with:
       image: ghcr.io/arcaneframework/${{matrix.image.long}}:${{matrix.image.compilo_name}}-${{matrix.image.compilo_version}}_${{matrix.version.long}}_${{matrix.image.date}}
       compilo_name: ${{ matrix.image.compilo_name }}
       compilo_version: ${{ matrix.image.compilo_version }}
+      acc_compilo_name: ${{ matrix.image.acc_compilo_name }}
+      acc_compilo_version: ${{ matrix.image.acc_compilo_version }}
       mpi: ${{ matrix.mpi.implementation }}
-      cuda: ${{ matrix.image.cuda }}
-      use_acpp: ${{ matrix.image.acpp }}
       type_build: ${{ matrix.config.type }}
       cmake_additionnal_args: '${{ matrix.image.args }} ${{ matrix.version.args }}'
       verbose: true
@@ -136,3 +171,4 @@ jobs:
       excluded_tests_with_labels: ${{ matrix.config.excluded_tests_with_labels }}
       ctest_additionnal_args: ${{ matrix.config.ctest_args }}
       use_cache: false
+      artifact_key_prefix: ${{matrix.image.short}}_${{matrix.version.short}}_${{matrix.mpi.implementation}}_${{matrix.config.type}}

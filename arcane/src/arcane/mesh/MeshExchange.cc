@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshExchange.cc                                             (C) 2000-2024 */
+/* MeshExchange.cc                                             (C) 2000-2025 */
 /*                                                                           */
 /* Echange un maillage entre entre sous-domaines.                            */
 /*---------------------------------------------------------------------------*/
@@ -16,33 +16,31 @@
 #include "arcane/utils/ScopedPtr.h"
 #include "arcane/utils/Collection.h"
 
-#include "arcane/IMesh.h"
-#include "arcane/ISubDomain.h"
-#include "arcane/IParallelMng.h"
-#include "arcane/IParallelExchanger.h"
-#include "arcane/IItemFamily.h"
-#include "arcane/ItemEnumerator.h"
-#include "arcane/Item.h"
-#include "arcane/MeshVariable.h"
-#include "arcane/IParticleFamily.h"
-#include "arcane/ParallelMngUtils.h"
+#include "arcane/core/IMesh.h"
+#include "arcane/core/ISubDomain.h"
+#include "arcane/core/IParallelMng.h"
+#include "arcane/core/IParallelExchanger.h"
+#include "arcane/core/IItemFamily.h"
+#include "arcane/core/ItemEnumerator.h"
+#include "arcane/core/Item.h"
+#include "arcane/core/MeshVariable.h"
+#include "arcane/core/IParticleFamily.h"
+#include "arcane/core/ParallelMngUtils.h"
+#include "arcane/core/ConnectivityItemVector.h"
+#include "arcane/core/IndexedItemConnectivityView.h"
+#include "arcane/core/ItemPrinter.h"
+#include "arcane/core/IParallelMng.h"
+#include "arcane/core/VariableTypes.h"
+#include "arcane/core/IItemFamilyNetwork.h"
+#include "arcane/core/IGhostLayerMng.h"
+#include "arcane/core/ConnectivityItemVector.h"
+#include "arcane/core/IVariableSynchronizer.h"
+#include "arcane/core/ISerializeMessage.h"
+#include "arcane/core/ISerializer.h"
 
-#include "arcane/ConnectivityItemVector.h"
-#include "arcane/IndexedItemConnectivityView.h"
 #include "arcane/mesh/IndexedItemConnectivityAccessor.h"
 #include "arcane/mesh/MeshExchange.h"
 #include "arcane/mesh/NewItemOwnerBuilder.h"
-
-#include "arcane/ItemPrinter.h"
-#include "arcane/IParallelMng.h"
-
-#include "arcane/VariableTypes.h"
-
-#include "arcane/IItemFamilyNetwork.h"
-#include "arcane/IGhostLayerMng.h"
-#include "arcane/ConnectivityItemVector.h"
-
-#include "arcane/IVariableSynchronizer.h"
 
 #include <algorithm>
 
@@ -459,7 +457,7 @@ _exchangeCellDataInfos([[maybe_unused]] Int32ConstArrayView cells_new_owner,bool
     }
     sbuf->setMode(ISerializer::ModeReserve);
 
-    sbuf->reserve(DT_Int64,1); // Pour le nombre de mailles
+    sbuf->reserveInt64(1); // Pour le nombre de mailles
     sbuf->reserveArray(cells_to_comm_uid);
     sbuf->reserveArray(cells_to_comm_owner_size);
     sbuf->reserveArray(cells_to_comm_owner);
@@ -1137,7 +1135,7 @@ _exchangeCellDataInfos3()
         }
       }
       sbuf->setMode(ISerializer::ModeReserve);
-      sbuf->reserve(DT_Int64,1); // nb_item_family
+      sbuf->reserveInt64(1); // nb_item_family
       for (const auto& family: item_families)
         sbuf->reserve(family->name()); // ItemFamily->name
       sbuf->reserveInteger(item_families.size()); // ItemFamily->itemKind
@@ -1536,10 +1534,10 @@ _exchangeGhostItemDataInfos()
     }
     sbuf->setMode(ISerializer::ModeReserve);
 
-    sbuf->reserve(DT_Int64,1); // nb_item_family
+    sbuf->reserveInt64(1); // nb_item_family
     for (const auto& family: item_families)
       sbuf->reserve(family->name()); // ItemFamily->name
-    sbuf->reserve(DT_Int64,item_families.size()); // ItemFamily->itemKind
+    sbuf->reserveInt64(item_families.size()); // ItemFamily->itemKind
 
     sbuf->reserveArray(item_uids);
     sbuf->reserveArray(family_nb_items);

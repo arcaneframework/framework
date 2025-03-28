@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* RunnerImpl.h                                                (C) 2000-2024 */
+/* RunnerImpl.h                                                (C) 2000-2025 */
 /*                                                                           */
-/* Implémentation d'une 'RunQueue'.                                          */
+/* Implémentation d'un 'Runner'.                                             */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_ACCELERATOR_CORE_INTERNAL_RUNNERIMPL_H
 #define ARCANE_ACCELERATOR_CORE_INTERNAL_RUNNERIMPL_H
@@ -71,24 +71,20 @@ class RunnerImpl
    public:
 
     explicit Lock(RunnerImpl* p)
+    : m_mutex_ptr(&p->m_pool_mutex)
     {
-      if (p->m_use_pool_mutex) {
-        m_mutex = p->m_pool_mutex.get();
-        if (m_mutex)
-          m_mutex->lock();
-      }
+      m_mutex_ptr->lock();
     }
     ~Lock()
     {
-      if (m_mutex)
-        m_mutex->unlock();
+      m_mutex_ptr->unlock();
     }
     Lock(const Lock&) = delete;
     Lock& operator=(const Lock&) = delete;
 
    private:
 
-    std::mutex* m_mutex = nullptr;
+    std::mutex* m_mutex_ptr = nullptr;
   };
 
  public:
@@ -106,14 +102,6 @@ class RunnerImpl
  public:
 
   void initialize(Runner* runner, eExecutionPolicy v, DeviceId device);
-
-  void setConcurrentQueueCreation(bool v)
-  {
-    m_use_pool_mutex = v;
-    if (!m_pool_mutex.get())
-      m_pool_mutex = std::make_unique<std::mutex>();
-  }
-  bool isConcurrentQueueCreation() const { return m_use_pool_mutex; }
 
  public:
 
@@ -151,12 +139,11 @@ class RunnerImpl
 
   eExecutionPolicy m_execution_policy = eExecutionPolicy::None;
   bool m_is_init = false;
-  eDeviceReducePolicy m_reduce_policy = eDeviceReducePolicy::Grid;
+  const eDeviceReducePolicy m_reduce_policy = eDeviceReducePolicy::Grid;
   DeviceId m_device_id;
   impl::IRunnerRuntime* m_runtime = nullptr;
   RunQueueImplStack m_run_queue_pool;
-  std::unique_ptr<std::mutex> m_pool_mutex;
-  bool m_use_pool_mutex = false;
+  std::mutex m_pool_mutex;
   /*!
    * \brief Temps passé dans le noyau en nano-seconde. On utilise un 'Int64'
    * car les atomiques sur les flottants ne sont pas supportés partout.

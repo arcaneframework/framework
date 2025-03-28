@@ -17,7 +17,6 @@
 #include "arcane/utils/ITraceMng.h"
 
 #include "arcane/core/BasicService.h"
-
 #include "arcane/core/ISubDomain.h"
 #include "arcane/core/ServiceFinder2.h"
 #include "arcane/core/FactoryService.h"
@@ -37,11 +36,10 @@
 #include "arcane/core/IMeshWriter.h"
 #include "arcane/core/ITimeStats.h"
 #include "arcane/core/ServiceBuilder.h"
+#include "arcane/core/IMeshPartitionConstraintMng.h"
+#include "arcane/core/ExternalPartitionConstraint.h"
 
 #include "arcane/std/ArcaneCasePartitioner_axl.h"
-
-#include "arcane/core/IMeshPartitionConstraintMng.h"
-#include "arcane/mesh/ExternalPartitionConstraint.h"
 
 #include <map>
 
@@ -173,7 +171,7 @@ _mergeConstraints(ConstArrayView<IMesh*> meshes)
   }
 
   sd->timeStats()->dumpTimeAndMemoryUsage(sd->parallelMng());
-  IMeshPartitionConstraint* c = new mesh::ExternalPartitionConstraint(mesh, m_main->options()->constraints);
+  IMeshPartitionConstraint* c = new ExternalPartitionConstraint(mesh, m_main->options()->constraints);
   mesh->partitionConstraintMng()->addConstraint(c);
   mesh->partitionConstraintMng()->computeAndApplyConstraints();
 

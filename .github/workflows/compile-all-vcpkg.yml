@@ -41,32 +41,36 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: ubuntu-20.04
-            full_name: 'ubuntu-20.04'
-            package_name: 'ubuntu-20.04'
-            triplet: x64-linux-dynamic
-            vcpkg_os: ubuntu-20.04
-            cmake_specific_args : '-DARCCORE_BUILD_MODE=Debug -DCMAKE_BUILD_TYPE=Debug'
-            ctest_specific_args : '-I 1,140'
           - os: ubuntu-22.04
             full_name: 'ubuntu-22.04'
             package_name: 'ubuntu-22.04'
             triplet: x64-linux-dynamic
             vcpkg_os: ubuntu-22.04
+            dotnet_version : "6.0.x"
             cmake_specific_args : '-DALIEN_BUILD_COMPONENT=all -DARCCORE_BUILD_MODE=Debug -DCMAKE_BUILD_TYPE=Debug'
-            ctest_specific_args : '-I 1,140'
+            ctest_specific_args : '-I 1,200'
           - os: ubuntu-22.04
             full_name: 'ubuntu-cxx20-22.04'
             package_name: 'ubuntu-22.04'
             triplet: x64-linux-dynamic
             vcpkg_os: ubuntu-22.04
+            dotnet_version : "6.0.x"
+            cmake_specific_args : '-DALIEN_BUILD_COMPONENT=all -DARCCORE_BUILD_MODE=Debug -DCMAKE_BUILD_TYPE=Debug -DARCCORE_CXX_STANDARD=20 -DARCANE_ENABLE_DOTNET_PYTHON_WRAPPER=OFF'
+            ctest_specific_args : '-I 1,210'
+          - os: ubuntu-24.04
+            full_name: 'ubuntu-cxx20-24.04'
+            package_name: 'ubuntu-24.04'
+            triplet: x64-linux-dynamic
+            vcpkg_os: ubuntu-24.04
+            dotnet_version : "8.0.x"
             cmake_specific_args : '-DALIEN_BUILD_COMPONENT=all -DARCCORE_BUILD_MODE=Debug -DCMAKE_BUILD_TYPE=Debug -DARCCORE_CXX_STANDARD=20 -DARCANE_ENABLE_DOTNET_PYTHON_WRAPPER=ON'
-            ctest_specific_args : '-I 1,150'
+            ctest_specific_args : '-I 1,210'
           - os: 'windows-2019'
             full_name: 'windows-2019-msmpi'
             package_name: 'windows-2019-msmpi'
             triplet: x64-windows
             vcpkg_os: windows-2019
+            dotnet_version : "6.0.x"
             cmake_specific_args : '-DCMAKE_BUILD_TYPE=Release'
             ctest_specific_args : '-I 1,160'
           - os: 'windows-2019'
@@ -74,6 +78,7 @@ jobs:
             package_name: 'windows-2019-intelmpi'
             triplet: x64-windows
             vcpkg_os: windows-2019
+            dotnet_version : "6.0.x"
             cmake_specific_args : '-DCMAKE_BUILD_TYPE=Release'
             ctest_specific_args : '-I 1,160'
           - os: 'windows-2022'
@@ -81,15 +86,17 @@ jobs:
             package_name: 'windows-2022-intelmpi'
             triplet: x64-windows
             vcpkg_os: windows-2022
+            dotnet_version : "6.0.x"
             cmake_specific_args : '-DCMAKE_BUILD_TYPE=Release'
-            ctest_specific_args : '-I 1,10'
+            ctest_specific_args : '-I 1,160'
           - os: 'windows-2022'
             full_name: 'windows-2022-cxx20-intelmpi'
             package_name: 'windows-2022-intelmpi'
             triplet: x64-windows
             vcpkg_os: windows-2022
+            dotnet_version : "8.0.x"
             cmake_specific_args : '-DCMAKE_BUILD_TYPE=Release -DARCCORE_CXX_STANDARD=20'
-            ctest_specific_args : '-I 1,10'
+            ctest_specific_args : '-I 1,160'
 
     env:
       # Indique pour IntelMPI de ne pas faire d'attente active
@@ -108,7 +115,7 @@ jobs:
       VCPKG_ROOT: '${{ github.workspace }}/../../build_base/framework-ci/vcpkg'
       VCPKG_BUILD_DIR: '${{ github.workspace }}/../../build_base/framework-ci/vcpkg'
       BUILD_COMMANDS_ROOT: '${{ github.workspace }}/../../build_base/framework-ci/_build'
-      VCPKG_INSTALL_HASH_PACKAGE_NAME: '1.6.1-${{ matrix.package_name }}-${{ matrix.triplet }}'
+      VCPKG_INSTALL_HASH_PACKAGE_NAME: '1.7.3-${{ matrix.package_name }}-${{ matrix.triplet }}'
       DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
       DOTNET_CLI_TELEMETRY_OPTOUT: true
       FRAMEWORKCI_BRANCH: main
@@ -135,6 +142,19 @@ jobs:
           cd '${{ github.workspace }}' && mv framework-ci '${{ env.FRAMEWORKCI_ROOT_PATH }}'
           ls -lart '${{ env.FRAMEWORKCI_ROOT_PATH }}'
 
+      - name: Setup .Net
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '${{ matrix.dotnet_version }}'
+
+      - name: Install mono
+        shell: 'bash'
+        # Mono is needed for 'ubuntu-24.04' because it is no longer installed on the runner
+        # WARNING: The installation has to be done after 'setup-dotnet'
+        if: ${{ matrix.os == 'ubuntu-24.04' }}
+        run: |
+          sudo apt-get install -y mono-devel
+
       - name: Setup environment
         shell: 'bash'
         run: |
@@ -145,14 +165,9 @@ jobs:
           cmake --version
           cmake -DNUGET_PASSWORD="${{ secrets.GITHUB_TOKEN }}" -P '${{ env.BUILD_COMMANDS_ROOT }}/Setup.cmake'
           mkdir -p ${{ env.CCACHE_DIR }}
-          cp "${{ github.workspace }}/.github/compile-vcpkg-global.json" "${{ github.workspace }}/global.json"
+          cp "${{ github.workspace }}/.github/compile-vcpkg-global.${{ matrix.dotnet_version }}.json" "${{ github.workspace }}/global.json"
       
-      - name: Setup .Net
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: '6.0.x'
-
-      - name: Install pnumpy
+      - name: Install numpy
         shell: 'bash'
         run: |
           pip3 install numpy
@@ -205,7 +220,7 @@ jobs:
       - name: Configure build script
         shell: bash
         run: |
-          cmake -S "${{ github.workspace }}/_common/build_all" -B "${{ env.CMAKE_BUILD_DIR }}" -DCMAKE_VERBOSE_MAKEFILE=TRUE -DVCPKG_INSTALLED_DIR="${{ env.VCPKG_BUILD_DIR }}/installed" -DVCPKG_TARGET_TRIPLET='${{ matrix.triplet }}' -DBUILD_SHARED_LIBS=TRUE -DCMAKE_TOOLCHAIN_FILE="${{ env.VCPKG_ROOT }}/scripts/buildsystems/vcpkg.cmake" ${{ matrix.cmake_specific_args }} -DCMAKE_CXX_COMPILER_LAUNCHER="ccache" -GNinja
+          cmake -S "${{ github.workspace }}" -B "${{ env.CMAKE_BUILD_DIR }}" -DCMAKE_VERBOSE_MAKEFILE=TRUE -DVCPKG_INSTALLED_DIR="${{ env.VCPKG_BUILD_DIR }}/installed" -DVCPKG_TARGET_TRIPLET='${{ matrix.triplet }}' -DBUILD_SHARED_LIBS=TRUE -DCMAKE_TOOLCHAIN_FILE="${{ env.VCPKG_ROOT }}/scripts/buildsystems/vcpkg.cmake" ${{ matrix.cmake_specific_args }} -DCMAKE_CXX_COMPILER_LAUNCHER="ccache" -GNinja
 
       - name: Dump Some Generated files
         shell: bash
@@ -220,6 +235,11 @@ jobs:
         run: |
           cmake --build "${{ env.CMAKE_BUILD_DIR }}"
           cmake --build "${{ env.CMAKE_BUILD_DIR }}" --target copy_dlls
+
+      - name: Print output directory contents
+        shell: bash
+        run: |
+          find "${{ env.CMAKE_BUILD_DIR }}/lib"
 
       - name: Get 'ccache' status
         run: ccache -s -v
@@ -240,3 +260,11 @@ jobs:
         run: |
           cd "${{ env.CMAKE_BUILD_DIR }}" && ctest --output-on-failure -V -R python_test
 
+      # NOTE: pour l'instant sous Win32 on ne peut pas exécuter les tests 'embedded'
+      # car il faut gérer le lancement de la compilation et aussi vérifier
+      # que la DLL 'arcane_dotnet_coreclr' est bien trouvée
+      - name: Test .Net wrapper
+        shell: bash
+        if: ${{ startsWith(matrix.os, 'ubuntu') }}
+        run: |
+          cd "${{ env.CMAKE_BUILD_DIR }}" && ctest --output-on-failure -R coreclr

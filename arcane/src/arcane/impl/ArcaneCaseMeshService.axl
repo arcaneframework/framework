@@ -87,6 +87,18 @@
       </description>
     </simple>
 
+    <simple name="non-manifold-mesh"
+            type="bool"
+            default="false"
+            >
+      <description>
+        Indique si le maillage est 'non-manifold'. Un maillage de ce type contient
+        des mailles de différents dimensions.
+
+        AVERTISSEMENT: Ce mode est expérimental. Ne pas utiliser en dehors de %Arcane.
+      </description>
+    </simple>
+
     <!-- Service spécifique de lecture de maillage -->
     <service-instance
         name = "specific-reader"

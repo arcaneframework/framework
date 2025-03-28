@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* BasicParticleExchanger.cc                                   (C) 2000-2023 */
+/* BasicParticleExchanger.cc                                   (C) 2000-2025 */
 /*                                                                           */
 /* Echangeur de particules.                                                  */
 /*---------------------------------------------------------------------------*/
@@ -13,13 +13,15 @@
 
 #include "arcane/mesh/BasicParticleExchanger.h"
 
+#include "arcane/core/internal/SerializeMessage.h"
+
 /*
- * NOTE:
+ * NOTE :
  * Dans exchangeItems(), le tableau new_particle_local_ids
  * n'est valide que si le compactage n'est pas actif pour la famille de
  * particules (c'est toujours le cas avec l'implémentation actuelle).
  * Pour qu'il soit valide dans tous les cas, il faudrait lors
- * de la désérialisation des messages, créer toutes les entités
+ * de la dé-sérialisation des messages, créer toutes les entités
  * en une fois, mettre à jour ce tableau \a new_particle_local_ids
  * et ensuite mettre à jour les variables.
  */
@@ -464,13 +466,13 @@ _serializeMessage(ISerializeMessage* sm,
   // Réserve pour le type de message
   //sbuf->reserveInteger(1);
   // Réserve pour l'id du message
-  sbuf->reserve(DT_Int64,1);
+  sbuf->reserveInt64(1);
   // Réserve pour le nombre de uniqueId()
-  sbuf->reserve(DT_Int64,1);
-  sbuf->reserveSpan(DT_Int64,nb_item);
+  sbuf->reserveInt64(1);
+  sbuf->reserveSpan(eBasicDataType::Int64,nb_item);
   // Réserve pour les uniqueId() des mailles dans lesquelles se trouvent les particules
   //sbuf->reserve(DT_Size,1);
-  sbuf->reserveSpan(DT_Int64,nb_item);
+  sbuf->reserveSpan(eBasicDataType::Int64,nb_item);
 
   for( VariableList::Enumerator i_var(m_variables_to_exchange); ++i_var; ){
     IVariable* var = *i_var;

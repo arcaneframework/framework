@@ -1,18 +1,18 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Misc.cc                                                     (C) 2000-2024 */
+/* Misc.cc                                                     (C) 2000-2025 */
 /*                                                                           */
 /* Diverses fonctions                                                        */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/Iostream.h"
-#include "arcane/utils/ValueConvert.h"
+#include "arcane/utils/Convert.h"
 #include "arcane/utils/StdHeader.h"
 #include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/FatalErrorException.h"
@@ -53,101 +53,6 @@ namespace Arcane
 extern "C"
 {
   typedef void (*fSignalFunc)(int);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-template<> ARCANE_UTILS_EXPORT bool builtInGetValue(double& v,const String& s)
-{
-  const char* ptr = s.localstr();
-#ifdef WIN32
-  if(s=="infinity" || s=="inf")
-  {
-	v = std::numeric_limits<double>::infinity();
-	return false;
-  }
-#endif
-  char* ptr2 = 0;
-  v = ::strtod(ptr,&ptr2);
-  return (ptr2!=(ptr+s.length()));
-}
-template<> ARCANE_UTILS_EXPORT bool builtInGetValue(BFloat16& v,const String& s)
-{
-  float z = 0.0;
-  bool r = builtInGetValue(z,s);
-  v = z;
-  return r;
-}
-template<> ARCANE_UTILS_EXPORT bool builtInGetValue(Float16& v,const String& s)
-{
-  float z = 0.0;
-  bool r = builtInGetValue(z,s);
-  v = z;
-  return r;
-}
-template<> ARCANE_UTILS_EXPORT bool builtInGetValue(float& v,const String& s)
-{
-  double z = 0.;
-  bool r = builtInGetValue(z,s);
-  v = (float)z;
-  return r;
-}
-template<> ARCANE_UTILS_EXPORT bool builtInGetValue(long& v,const String& s)
-{
-  const char* ptr = s.localstr();
-  char* ptr2 = 0;
-  v = ::strtol(ptr,&ptr2,0);
-  return (ptr2!=(ptr+s.length()));
-}
-template<> ARCANE_UTILS_EXPORT bool builtInGetValue(int& v,const String& s)
-{
-  long z = 0;
-  bool r = builtInGetValue(z,s);
-  v = (int)z;
-  return r;
-}
-template<> ARCANE_UTILS_EXPORT bool builtInGetValue(short& v,const String& s)
-{
-  long z = 0;
-  bool r = builtInGetValue(z,s);
-  v = (short)z;
-  return r;
-}
-template<> ARCANE_UTILS_EXPORT bool builtInGetValue(unsigned long& v,const String& s)
-{
-  const char* ptr = s.localstr();
-  char* ptr2 = 0;
-  v = ::strtoul(ptr,&ptr2,0);
-  return (ptr2!=(ptr+s.length()));
-}
-template<> ARCANE_UTILS_EXPORT bool builtInGetValue(unsigned int& v,const String& s)
-{
-  unsigned long z = 0;
-  bool r = builtInGetValue(z,s);
-  v = (unsigned int)z;
-  return r;
-}
-template<> ARCANE_UTILS_EXPORT bool builtInGetValue(unsigned short& v,const String& s)
-{
-  unsigned long z = 0;
-  bool r = builtInGetValue(z,s);
-  v = (unsigned short)z;
-  return r;
-}
-template<> ARCANE_UTILS_EXPORT bool builtInGetValue(long long& v,const String& s)
-{
-  const char* ptr = s.localstr();
-  char* ptr2 = 0;
-  v = ::strtoll(ptr,&ptr2,0);
-  return (ptr2!=(ptr+s.length()));
-}
-template<> ARCANE_UTILS_EXPORT bool builtInGetValue(unsigned long long& v,const String& s)
-{
-  const char* ptr = s.localstr();
-  char* ptr2 = 0;
-  v = ::strtoull(ptr,&ptr2,0);
-  return (ptr2!=(ptr+s.length()));
 }
 
 /*---------------------------------------------------------------------------*/

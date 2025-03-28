@@ -26,6 +26,7 @@
 #include "arcane/accelerator/RunCommandLaunchInfo.h"
 #include "arcane/accelerator/RunCommandLoop.h"
 #include "arcane/accelerator/ScanImpl.h"
+#include "arcane/accelerator/MultiThreadAlgo.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -141,7 +142,14 @@ class ScannerImpl
     } break;
 #endif
     case eExecutionPolicy::Thread:
-      // Pas encore implémenté en multi-thread
+      // Si le nombre de valeurs est 1 on utilise la version séquentielle.
+      // TODO: il serait judicieux de faire cela aussi pour des valeurs plus importantes
+      // car en général sur les petites boucles le multi-threading est contre productif.
+      if (nb_item > 1) {
+        MultiThreadAlgo scanner;
+        scanner.doScan<IsExclusive, DataType>(launch_info.loopRunInfo(), nb_item, input_data, output_data, init_value, op);
+        break;
+      }
       [[fallthrough]];
     case eExecutionPolicy::Sequential: {
       DataType sum = init_value;

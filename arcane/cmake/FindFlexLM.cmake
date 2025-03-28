@@ -6,6 +6,7 @@
 # FLEXLM_LIBRARIES, the libraries to link against to use FlexlmAPI.
 # FLEXLM_LIBRARY_DIRS, the library path to link against to use FlexlmAPI.
 # FLEXLM_FOUND, If false, do not try to use FlexlmAPI.
+# FLEXLM_PROTECTION_NAME, return the protection name : FLEXLM
 
 if(NOT FLEXLM_ROOT)
   set(FLEXLM_ROOT $ENV{FLEXLM_ROOT})
@@ -59,6 +60,7 @@ IF(FLEXLM_INCLUDE_DIR)
     # erreur dans une recherche de lib
   ELSE(FLEXLM_LIBRARY_FAILED)
     SET(FLEXLM_FOUND "YES")
+    SET(FLEXLM_PROTECTION_NAME "FLEXLM")
     # Biblioth�ques syst�mes suppl�mentaires
     if(WIN32)
       SET(FLEXLM_LIBRARIES ${FLEXLM_LIBRARY} oldnames.lib kernel32.lib user32.lib netapi32.lib

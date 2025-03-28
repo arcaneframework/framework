@@ -1,12 +1,17 @@
 set( ARCANE_SOURCES
+  # Les fichiers suivants sont en premier car ce sont
+  # les plus longs à compiler
+  PolyhedralMesh.cc
+  PolyhedralMesh.h
+  DynamicMesh.cc
+  DynamicMesh.h
+
   AbstractItemFamilyTopologyModifier.cc
   AbstractItemFamilyTopologyModifier.h
   CartesianFaceUniqueIdBuilder.cc
   CompactIncrementalItemConnectivity.h
   CommonItemGroupFilterer.h
   CommonItemGroupFilterer.cc
-  DynamicMesh.cc
-  DynamicMesh.h
   DynamicMeshKindInfos.cc
   DynamicMeshKindInfos.h
   DynamicMeshIncrementalBuilder.cc
@@ -45,6 +50,8 @@ set( ARCANE_SOURCES
   ItemGroupsSynchronize.h
   ItemGroupsSerializer2.cc
   ItemGroupsSerializer2.h
+  ItemsOwnerBuilder.h
+  ItemsOwnerBuilder.cc
   ItemsExchangeInfo2.cc
   ItemsExchangeInfo2.h
   ItemGroupDynamicMeshObserver.cc
@@ -89,7 +96,6 @@ set( ARCANE_SOURCES
   CellMerger.h
   GhostLayerMng.cc
   GhostLayerMng.h
-  FaceReorienter.cc
   FaceReorienter.h
   MeshCompacter.cc
   MeshCompacter.h
@@ -111,7 +117,6 @@ set( ARCANE_SOURCES
   MeshVariables.h
   MeshPartitionConstraintMng.cc
   MeshPartitionConstraintMng.h
-  ExternalPartitionConstraint.cc
   ExternalPartitionConstraint.h
   ParticleFamily.cc
   ParticleFamily.h
@@ -237,8 +242,6 @@ set( ARCANE_SOURCES
   ConnectivityNewWithDependenciesTypes.h
   NewWithLegacyConnectivity.h
   MeshInfos.h
-  PolyhedralMesh.cc
-  PolyhedralMesh.h
   GraphBuilder.h
   GraphDoFs.h
   GraphDoFs.cc

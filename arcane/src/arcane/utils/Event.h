@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Event.h                                                     (C) 2000-2023 */
+/* Event.h                                                     (C) 2000-2025 */
 /*                                                                           */
 /* Gestionnaires d'évènements.                                               */
 /*---------------------------------------------------------------------------*/
@@ -27,31 +27,49 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-class EventObserverBase;
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 /*!
  * \internal
  * \brief Classe de base d'un handler d'évènement.
  */
 class ARCANE_UTILS_EXPORT EventObservableBase
 {
-  friend class EventObserverBase;
+  friend EventObserverBase;
   class Impl;
+
  public:
+
   EventObservableBase();
   virtual ~EventObservableBase();
+
  public:
-  bool hasObservers() const;
+
+  EventObservableBase(const EventObservableBase&) = delete;
+  EventObservableBase(EventObservableBase&&) = delete;
+  EventObservableBase& operator=(const EventObservableBase&) = delete;
+  EventObservableBase& operator=(EventObservableBase&&) = delete;
+
+ public:
+
+  bool hasObservers() const { return !m_observers_array.empty(); }
   void detachAllObservers();
+
  protected:
-  void _attachObserver(EventObserverBase* obs,bool is_auto_destroy);
+
+  void _attachObserver(EventObserverBase* obs, bool is_auto_destroy);
   void _detachObserver(EventObserverBase* obs);
-  ConstArrayView<EventObserverBase*> _observers() const;
+  ConstArrayView<EventObserverBase*> _observers() const
+  {
+    return m_observers_array;
+  }
+
  private:
-  Impl* m_p;
+
+  Impl* m_p = nullptr;
+  UniqueArray<EventObserverBase*> m_observers_array;
+
+ private:
+
+  void _rebuildObserversArray();
 };
 
 /*---------------------------------------------------------------------------*/
@@ -66,14 +84,20 @@ class ARCANE_UTILS_EXPORT EventObservableBase
 class ARCANE_UTILS_EXPORT EventObserverBase
 {
   friend class EventObservableBase;
+
  public:
-  EventObserverBase() : m_observable(nullptr) {}
+
+  EventObserverBase() = default;
   virtual ~EventObserverBase() ARCANE_NOEXCEPT_FALSE;
+
  protected:
+
   void _notifyDetach();
   void _notifyAttach(EventObservableBase* obs);
+
  private:
-  EventObservableBase* m_observable;
+
+  EventObservableBase* m_observable = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -82,24 +106,31 @@ class ARCANE_UTILS_EXPORT EventObserverBase
  * \ingroup Utils
  * \brief Observateur d'évènements.
  */
-template<typename... Args>
+template <typename... Args>
 class EventObserver
 : public EventObserverBase
 {
  public:
+
   typedef EventObservable<Args...> ObservableType;
+
  public:
+
   EventObserver() {}
   EventObserver(const std::function<void(Args...)>& func)
-  : m_functor(func){}
+  : m_functor(func)
+  {}
   EventObserver(std::function<void(Args...)>&& func)
-  : m_functor(func){}
+  : m_functor(func)
+  {}
   void observerUpdate(Args... args)
   {
     if (m_functor)
       m_functor(args...);
   }
+
  private:
+
   std::function<void(Args...)> m_functor;
 };
 
@@ -111,13 +142,18 @@ class EventObserver
 class ARCANE_UTILS_EXPORT EventObserverPool
 {
  public:
+
   ~EventObserverPool();
+
  public:
+
   //! Ajoute l'observateur \a x
   void add(EventObserverBase* x);
   //! Supprime tous les observateurs associés à cette instance.
   void clear();
+
  private:
+
   UniqueArray<EventObserverBase*> m_observers;
 };
 
@@ -151,7 +187,7 @@ class ARCANE_UTILS_EXPORT EventObserverPool
  \endcode
  *
  */
-template<typename... Args>
+template <typename... Args>
 class EventObservable
 : public EventObservableBase
 {
@@ -161,12 +197,7 @@ class EventObservable
 
  public:
 
-  EventObservable() {}
-
- public:
-
-  EventObservable(const EventObservable<Args...>& rhs) = delete;
-  void operator=(const EventObservable<Args...>& rhs) = delete;
+  EventObservable() = default;
 
  public:
 
@@ -175,7 +206,7 @@ class EventObservable
    *
    * Une exception est levée si l'observateur est déjà attaché à un observable.
    */
-  void attach(ObserverType* o) { _attachObserver(o,false); }
+  void attach(ObserverType* o) { _attachObserver(o, false); }
   /*!
    * \brief Détache l'observateur \a o de cet observable.
    *
@@ -187,11 +218,11 @@ class EventObservable
    * \brief Ajoute un observateur utilisant la lambda \a lambda
    * et conserve une référence dans \a pool.
    */
-  template<typename Lambda>
-  void attach(EventObserverPool& pool,const Lambda& lambda)
+  template <typename Lambda>
+  void attach(EventObserverPool& pool, const Lambda& lambda)
   {
     auto x = new ObserverType(lambda);
-    _attachObserver(x,false);
+    _attachObserver(x, false);
     pool.add(x);
   }
 
@@ -200,17 +231,67 @@ class EventObservable
   {
     if (!hasObservers())
       return;
-    for( auto o : _observers() )
+    for (auto o : _observers())
       ((ObserverType*)o)->observerUpdate(args...);
   }
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+/*!
+ * \ingroup Utils
+ * \brief Classe gérant les observateurs associés à un évènement.
+ * \sa EventObservable
+ */
+template <typename... Args>
+class EventObservableView
+{
+ public:
 
-}
+  typedef EventObserver<Args...> ObserverType;
+
+ public:
+
+  explicit EventObservableView(EventObservable<Args...>& v)
+  : m_observable_ref(v)
+  {}
+
+ public:
+
+  /*!
+   * \brief Attache l'observateur \a o à cet observable.
+   *
+   * Une exception est levée si l'observateur est déjà attaché à un observable.
+   */
+  void attach(ObserverType* o) { m_observable_ref.attach(o); }
+  /*!
+   * \brief Détache l'observateur \a o de cet observable.
+   *
+   * Une exception est levée si l'observateur n'est pas attaché à cet observable.
+   */
+  void detach(ObserverType* o) { m_observable_ref.detach(o); }
+
+  /*!
+   * \brief Ajoute un observateur utilisant la lambda \a lambda
+   * et conserve une référence dans \a pool.
+   */
+  template <typename Lambda>
+  void attach(EventObserverPool& pool, const Lambda& lambda)
+  {
+    m_observable_ref.attach(pool, lambda);
+  }
+
+ private:
+
+  EventObservable<Args...>& m_observable_ref;
+};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+} // namespace Arcane
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+#endif

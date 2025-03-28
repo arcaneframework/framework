@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ICartesianMeshPatch.h                                       (C) 2000-2020 */
+/* ICartesianMeshPatch.h                                       (C) 2000-2025 */
 /*                                                                           */
 /* Interface d'un patch AMR d'un maillage cartésien.                         */
 /*---------------------------------------------------------------------------*/
@@ -38,7 +38,12 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMeshPatch
   //! Groupe de mailles du patch
   virtual CellGroup cells() =0;
 
- //! Liste des mailles dans la direction \a dir
+  //! TODO
+  virtual Integer index() = 0;
+  virtual Integer level() = 0;
+  virtual void setLevel(Integer level) = 0;
+
+  //! Liste des mailles dans la direction \a dir
   virtual CellDirectionMng& cellDirection(eMeshDirection dir) =0;
 
   //! Liste des mailles dans la direction \a dir (0, 1 ou 2)

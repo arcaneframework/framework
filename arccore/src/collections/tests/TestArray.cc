@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -479,8 +479,12 @@ TEST(Array, Misc2)
     UniqueArray<Real> v;
     v.resize(3);
     v[0] = 1.2;
-    v[1] = -1.3;
+    v.at(1) = -1.3;
     v[2] = 7.6;
+    ASSERT_EQ(v[0], 1.2);
+    ASSERT_EQ(v[1], -1.3);
+    ASSERT_EQ(v.at(2), 7.6);
+
     v.add(4.3);
     for (Real x : v) {
       std::cout << " Value: " << x << '\n';
@@ -826,7 +830,7 @@ TEST(SharedArray, Allocator)
     ASSERT_EQ(a1.size(), 5);
 
     std::cout << "Array a3\n";
-    SharedArray<Int32> a3(allocator1);
+    SharedArray<Int32> a3(MemoryAllocationOptions{ allocator1 });
     a3.add(4);
     a3.add(6);
     a3.add(2);
@@ -837,11 +841,16 @@ TEST(SharedArray, Allocator)
     ASSERT_EQ(a3.constSpan(), a1.constSpan());
 
     std::cout << "Array a4\n";
-    SharedArray<Int32> a4(allocator1);
+    SharedArray<Int32> a4(allocator1, 2);
+    ASSERT_EQ(a4.size(), 2);
     a4.add(4);
     a4.add(6);
     a4.add(2);
-    ASSERT_EQ(a4.size(), 3);
+    ASSERT_EQ(a4.size(), 5);
+    ASSERT_EQ(a4[2], 4);
+    ASSERT_EQ(a4[3], 6);
+    ASSERT_EQ(a4[4], 2);
+
     a4 = a1.span();
     ASSERT_EQ(a4.allocator(), allocator1);
 
@@ -849,7 +858,7 @@ TEST(SharedArray, Allocator)
 
     SharedArray<Int32> array[2];
     IMemoryAllocator* allocator3 = allocator1;
-    for( Integer i=0; i<2; ++i ){
+    for (Integer i = 0; i < 2; ++i) {
       array[i] = SharedArray<Int32>(allocator3);
     }
     ASSERT_EQ(array[0].allocator(), allocator3);
@@ -894,7 +903,7 @@ class TesterMemoryAllocatorV3
     _checkValid(args);
     return m_default_allocator.adjustedCapacity(args, wanted_capacity, element_size);
   }
-  size_t guarantedAlignment(MemoryAllocationArgs args) const override
+  size_t guaranteedAlignment(MemoryAllocationArgs args) const override
   {
     _checkValid(args);
     return m_default_allocator.guaranteedAlignment(args);
@@ -1008,6 +1017,7 @@ TEST(Array, DebugInfo)
   MemoryAllocationOptions allocate_options2(&m_default_allocator, eMemoryLocationHint::None, 0);
 
   String a1_name("Array1");
+  String sa1_name("SharedArray1");
   UniqueArray<Int32> a3;
   {
     std::cout << "Array a1\n";
@@ -1017,6 +1027,17 @@ TEST(Array, DebugInfo)
     ASSERT_EQ(a1.size(), 0);
     ASSERT_EQ(a1.capacity(), 0);
     ASSERT_EQ(a1.data(), nullptr);
+    ASSERT_EQ(a1.debugName(), a1_name);
+
+    std::cout << "SharedArray sa1\n";
+    SharedArray<Int32> sa1(allocate_options2);
+    sa1.setDebugName(sa1_name);
+    ASSERT_EQ(sa1.allocationOptions(), allocate_options2);
+    ASSERT_EQ(sa1.size(), 0);
+    ASSERT_EQ(sa1.capacity(), 0);
+    ASSERT_EQ(sa1.data(), nullptr);
+    ASSERT_EQ(sa1.debugName(), sa1_name);
+
     ASSERT_EQ(a1.debugName(), a1_name);
 
     std::cout << "Array a2\n";
@@ -1069,7 +1090,7 @@ TEST(Collections, Memory)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arccore
+namespace Arcane
 {
 // Instancie explicitement les classes tableaux pour garantir
 // que toutes les méthodes fonctionnent

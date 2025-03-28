@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CommandLineArguments.cc                                     (C) 2000-2022 */
+/* CommandLineArguments.cc                                     (C) 2000-2025 */
 /*                                                                           */
 /* Arguments de la ligne de commande.                                        */
 /*---------------------------------------------------------------------------*/
@@ -47,12 +47,22 @@ class CommandLineArguments::Impl
   };
  public:
   Impl(int* argc,char*** argv)
-  : m_nb_ref(0), m_args(), m_argc(argc), m_argv(argv), m_need_destroy(false)
+  : m_nb_ref(0)
+  , m_args()
+  , m_argc(argc)
+  , m_argv(argv)
+  , m_need_destroy(false)
+  , m_need_help(false)
   {
   }
 
   Impl(const StringList& aargs)
-  : m_nb_ref(0), m_args(aargs), m_argc(nullptr), m_argv(nullptr), m_need_destroy(true)
+  : m_nb_ref(0)
+  , m_args(aargs)
+  , m_argc(nullptr)
+  , m_argv(nullptr)
+  , m_need_destroy(true)
+  , m_need_help(false)
   {
     Integer nb_arg = aargs.count();
     m_argc_orig = new int;
@@ -66,6 +76,26 @@ class CommandLineArguments::Impl
     (*argv)[0] = m_argv0;
     for(Integer i=0; i<nb_arg; ++i )
       (*argv)[i+1] = (char*)m_args[i].localstr();
+    m_argv = argv;
+  }
+
+  Impl()
+  : m_nb_ref(0)
+  , m_args()
+  , m_argc(nullptr)
+  , m_argv(nullptr)
+  , m_need_destroy(true)
+  , m_need_help(false)
+  {
+    m_argc_orig = new int;
+    m_argc = m_argc_orig;
+    *m_argc = 1;
+
+    m_argv_orig = new char**;
+    char*** argv = m_argv_orig;
+    *argv = new char*[1];
+    m_argv0 = ::strdup("arcane");
+    (*argv)[0] = m_argv0;
     m_argv = argv;
   }
   ~Impl()
@@ -95,8 +125,17 @@ class CommandLineArguments::Impl
     //   -A,x=b,y=c
     StringList args;
     command_line_args.fillArgs(args);
-    for( Integer i=0, n=args.count(); i<n; ++i ){
+    if (args.count() == 1) {
+      m_need_help = true;
+      return;
+    }
+    for (Integer i = 0, n = args.count(); i < n; ++i) {
       String arg = args[i];
+      if (arg.startsWith("-h") || arg.startsWith("--help")) {
+        m_need_help = true;
+        // TODO AH : Voir pour faire une aide : "-h=module".
+        continue;
+      }
       if (!arg.startsWith("-A,"))
         continue;
       String arg_value = arg.substring(3);
@@ -119,6 +158,11 @@ class CommandLineArguments::Impl
     m_parameter_list.fillParameters(param_names,values);
   }
 
+  bool needHelp() const
+  {
+    return m_need_help;
+  }
+
  public:
   std::atomic<Int32> m_nb_ref;
   StringList m_args;
@@ -128,6 +172,7 @@ class CommandLineArguments::Impl
   char*** m_argv_orig = nullptr;
   char* m_argv0 = nullptr;
   bool m_need_destroy;
+  bool m_need_help;
   ParameterList m_parameter_list;
 };
 
@@ -137,6 +182,16 @@ class CommandLineArguments::Impl
 CommandLineArguments::
 CommandLineArguments(int* argc,char*** argv)
 : m_p(new Impl(argc,argv))
+{
+  m_p->parseParameters(*this);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+CommandLineArguments::
+CommandLineArguments()
+: m_p(new Impl())
 {
   m_p->parseParameters(*this);
 }
@@ -243,6 +298,15 @@ const ParameterList& CommandLineArguments::
 parameters() const
 {
   return m_p->m_parameter_list;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+bool CommandLineArguments::
+needHelp() const
+{
+  return m_p->needHelp();
 }
 
 /*---------------------------------------------------------------------------*/

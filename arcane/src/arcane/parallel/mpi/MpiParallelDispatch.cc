@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MpiParallelDispatch.cc                                      (C) 2000-2018 */
+/* MpiParallelDispatch.cc                                      (C) 2000-2025 */
 /*                                                                           */
 /* Gestionnaire de parallélisme utilisant MPI.                               */
 /*---------------------------------------------------------------------------*/
@@ -27,20 +27,19 @@
 #include "arcane/IParallelMng.h"
 
 #include "arcane/parallel/mpi/MpiDatatype.h"
-#include "arcane/parallel/mpi/MpiAdapter.h"
 #include "arcane/parallel/mpi/MpiParallelDispatch.h"
-#include "arcane/parallel/mpi/MpiLock.h"
 
 #include "arccore/message_passing/Messages.h"
 
-#include "arccore/message_passing_mpi/MpiTypeDispatcherImpl.h"
-
-#include <limits>
+#include "arccore/message_passing_mpi/internal/MpiTypeDispatcherImpl.h"
+#include "arccore/message_passing_mpi/internal/MpiAdapter.h"
+#include "arccore/message_passing_mpi/internal/MpiLock.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 namespace MP = ::Arccore::MessagePassing;
 
@@ -320,16 +319,12 @@ template class MpiParallelDispatchT<HPReal>;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arccore
-{
-namespace MessagePassing
-{
-namespace Mpi
+namespace Arcane::MessagePassing::Mpi
 {
 using namespace Arcane;
 template class MpiTypeDispatcher<APReal>;
@@ -338,9 +333,7 @@ template class MpiTypeDispatcher<Real3>;
 template class MpiTypeDispatcher<Real2x2>;
 template class MpiTypeDispatcher<Real3x3>;
 template class MpiTypeDispatcher<HPReal>;
-} // End namespace Mpi
-} // End namespace MessagePassing
-} // End namespace Arccore
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

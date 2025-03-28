@@ -54,7 +54,7 @@ jobs:
 
     executor: <<parameters.arch>>
     docker:
-      - image: ghcr.io/arcaneframework/ubuntu-2404:gcc-14_<<parameters.image_version>>_20240717
+      - image: ghcr.io/arcaneframework/ubuntu-2404:gcc-14_<<parameters.image_version>>_20250120
 
     steps:
       - when:
@@ -84,7 +84,7 @@ jobs:
             - run:
                 name: (ARM64) Set specific variables
                 command: |
-                  echo 'export CT_REGEX="${CT_REGEX}|^utils1$|^hydro5_papi_backtrace$|^.*(mpithread|[3-9]proc|[1-9][0-9]+proc|[5-9]thread|[1-9][0-9]+thread).*$"' >> $BASH_ENV
+                  echo 'export CT_REGEX="${CT_REGEX}|^utils1$|^hydro5_papi_backtrace$|^ref\.mpi\.mpi-4$|^.*(mpithread|[3-9]proc|[1-9][0-9]+proc|[5-9]thread|[1-9][0-9]+thread).*$"' >> $BASH_ENV
 
       - run:
           name: "Compute build type"

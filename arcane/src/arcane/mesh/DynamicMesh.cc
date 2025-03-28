@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* DynamicMesh.cc                                              (C) 2000-2024 */
+/* DynamicMesh.cc                                              (C) 2000-2025 */
 /*                                                                           */
 /* Classe de gestion d'un maillage non structuré évolutif.                   */
 /*---------------------------------------------------------------------------*/
@@ -67,6 +67,7 @@
 #include "arcane/mesh/MeshPartitionConstraintMng.h"
 #include "arcane/mesh/ItemGroupsSynchronize.h"
 #include "arcane/mesh/DynamicMeshIncrementalBuilder.h"
+#include "arcane/mesh/OneMeshItemAdder.h"
 #include "arcane/mesh/DynamicMeshChecker.h"
 #include "arcane/mesh/GhostLayerMng.h"
 #include "arcane/mesh/MeshUniqueIdMng.h"
@@ -285,7 +286,8 @@ DynamicMesh(ISubDomain* sub_domain,const MeshBuildInfo& mbi, bool is_submesh)
   m_item_internal_list._internalSetCellSharedInfo(m_cell_family->commonItemSharedInfo());
 
   info() << "Is AMR Activated? = " << m_is_amr_activated
-         << "AMR type = " << m_amr_type;
+         << " AMR type = " << m_amr_type
+         << " allow_loose_items=" << m_mesh_kind.isNonManifold();
 
   _printConnectivityPolicy();
 
@@ -340,6 +342,17 @@ DynamicMesh(ISubDomain* sub_domain,const MeshBuildInfo& mbi, bool is_submesh)
   // de Arcane (juin 2023). A supprimer avant fin 2023.
   if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_NO_SAVE_NEED_COMPACT", true))
     m_do_not_save_need_compact = v.value();
+
+  // Surcharge la valeur par défaut pour le mécanisme de numérotation
+  // des uniqueId() des arêtes et des faces.
+  if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_GENERATE_UNIQUE_ID_FROM_NODES", true)){
+    bool is_generate = (v.value() != 0);
+    // L'utilisation des entités libres implique d'utiliser la génération des uniqueId()
+    // à partir des noeuds.
+    if (!is_generate && meshKind().isNonManifold())
+      is_generate = true;
+    m_mesh_unique_id_mng->setUseNodeUniqueIdToGenerateEdgeAndFaceUniqueId(is_generate);
+  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1239,18 +1252,6 @@ addNodes(Int64ConstArrayView nodes_uid,Int32ArrayView nodes)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ItemInternal *DynamicMesh::
-addFace(Int64 a_face_uid, Int64ConstArrayView a_node_list, Integer a_type)
-{
-  Trace::Setter mci(traceMng(),_className());
-  _checkDimension();
-  _checkConnectivity();
-  return m_mesh_builder->addFace(a_face_uid, a_node_list, a_type);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 void DynamicMesh::
 removeCells(Int32ConstArrayView cells_local_id,bool update_graph)
 {
@@ -1831,7 +1832,7 @@ _exchangeItems(bool do_compact)
   // qu'une couche de maille fantômes. Si on en demande plus, il faut
   // les ajouter maintenant. Cet appel n'est pas optimum mais permet
   // de traiter correctement tous les cas (enfin j'espère).
-  if (ghostLayerMng()->nbGhostLayer()>1 && ! m_item_family_network) // many ghost already handled in MeshExchange with ItemFamilyNetwork
+  if (ghostLayerMng()->nbGhostLayer()>1 && !m_use_mesh_item_family_dependencies) // many ghost already handled in MeshExchange with ItemFamilyNetwork
     updateGhostLayers(true);
   String check_exchange = platform::getEnvironmentVariable("ARCANE_CHECK_EXCHANGE");
   if (!check_exchange.null()){
@@ -2977,6 +2978,19 @@ _setDimension(Integer dim)
     ARCANE_FATAL("DynamicMesh::setDimension(): mesh is already allocated");
   info() << "Mesh name=" << name() << " set dimension = " << dim;
   m_mesh_dimension = dim;
+  bool v = m_mesh_unique_id_mng->isUseNodeUniqueIdToGenerateEdgeAndFaceUniqueId();
+  // Si les entités libres sont autorisées, alors il faut obligatoirement utiliser
+  // la génération à partir des uniqueId() à partir des noeuds pour garantir
+  // la cohérence des entités créées.
+  if (!v && meshKind().isNonManifold()) {
+    v = true;
+    info() << "Force using edge and face uid generation from nodes because loose items are allowed";
+  }
+  if (m_mesh_builder){
+    auto* adder = m_mesh_builder->oneMeshItemAdder();
+    if (adder)
+      adder->setUseNodeUniqueIdToGenerateEdgeAndFaceUniqueId(v);
+  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -2986,8 +3000,7 @@ void DynamicMesh::
 _checkDimension() const
 {
   if (m_mesh_dimension()<0)
-    ARCANE_FATAL("DynamicMesh::_checkDimension(): dimension not set."
-                 "setDimension() must be called before allocating cells");
+    ARCANE_FATAL("dimension not set. setDimension() must be called before allocating cells");
 }
 
 /*---------------------------------------------------------------------------*/

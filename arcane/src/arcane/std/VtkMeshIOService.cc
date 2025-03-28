@@ -45,8 +45,7 @@
 #include "arcane/core/UnstructuredMeshAllocateBuildInfo.h"
 
 #include "arcane/core/internal/IVariableMngInternal.h"
-
-#include "arcane/std/internal/VtkCellTypes.h"
+#include "arcane/core/internal/VtkCellTypes.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

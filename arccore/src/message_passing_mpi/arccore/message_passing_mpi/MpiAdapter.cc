@@ -1,17 +1,17 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MpiAdapter.cc                                               (C) 2000-2024 */
+/* MpiAdapter.cc                                               (C) 2000-2025 */
 /*                                                                           */
 /* Gestionnaire de parallélisme utilisant MPI.                               */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arccore/message_passing_mpi/MpiAdapter.h"
+#include "arccore/message_passing_mpi/internal/MpiAdapter.h"
 
 #include "arccore/trace/ITraceMng.h"
 
@@ -29,18 +29,21 @@
 #include "arccore/base/FatalErrorException.h"
 #include "arccore/base/TraceInfo.h"
 
-#include "arccore/message_passing_mpi/MpiLock.h"
-#include "arccore/message_passing_mpi/NoMpiProfiling.h"
-#include "arccore/message_passing_mpi/MpiRequest.h"
 #include "arccore/message_passing_mpi/StandaloneMpiMessagePassingMng.h"
+#include "arccore/message_passing_mpi/internal/MpiLock.h"
+#include "arccore/message_passing_mpi/internal/NoMpiProfiling.h"
+#include "arccore/message_passing_mpi/internal/MpiRequest.h"
 
 #include <cstdint>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arccore::MessagePassing::Mpi
+namespace Arcane::MessagePassing::Mpi
 {
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 class MpiAdapter::RequestSet
 : public TraceAccessor
@@ -54,7 +57,9 @@ class MpiAdapter::RequestSet
  public:
   typedef std::map<MPI_Request,RequestInfo>::iterator Iterator;
  public:
-  RequestSet(ITraceMng* tm) : TraceAccessor(tm)
+
+  explicit RequestSet(ITraceMng* tm)
+  : TraceAccessor(tm)
   {
     m_trace_mng_ref = makeRef(tm);
     if (arccoreIsCheck()){

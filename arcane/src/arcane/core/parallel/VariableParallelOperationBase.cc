@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* VariableParallelOperationBase.cc                            (C) 2000-2023 */
+/* VariableParallelOperationBase.cc                            (C) 2000-2024 */
 /*                                                                           */
 /* Classe de base des opérations parallèles sur des variables.               */
 /*---------------------------------------------------------------------------*/
@@ -16,16 +16,16 @@
 #include "arcane/utils/FatalErrorException.h"
 #include "arcane/utils/ScopedPtr.h"
 
-#include "arcane/IParallelMng.h"
-#include "arcane/ISerializer.h"
-#include "arcane/ISerializeMessage.h"
-#include "arcane/IParallelExchanger.h"
-#include "arcane/ISubDomain.h"
-#include "arcane/IVariable.h"
-#include "arcane/IItemFamily.h"
-#include "arcane/ItemInternal.h"
-#include "arcane/ItemGroup.h"
-#include "arcane/ParallelMngUtils.h"
+#include "arcane/core/IParallelMng.h"
+#include "arcane/core/ISerializer.h"
+#include "arcane/core/ISerializeMessage.h"
+#include "arcane/core/IParallelExchanger.h"
+#include "arcane/core/ISubDomain.h"
+#include "arcane/core/IVariable.h"
+#include "arcane/core/IItemFamily.h"
+#include "arcane/core/ItemInternal.h"
+#include "arcane/core/ItemGroup.h"
+#include "arcane/core/ParallelMngUtils.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -138,10 +138,10 @@ applyOperation(IDataOperation* operation)
     sbuf->setMode(ISerializer::ModeReserve);
 
     // Réserve pour le magic number
-    sbuf->reserve(DT_Int64,1);
+    sbuf->reserveInt64(1);
 
     // Réserve pour la liste uniqueId() des entités transférées
-    sbuf->reserve(DT_Int64,1);
+    sbuf->reserveInt64(1);
     sbuf->reserveSpan(dest_items_unique_id);
 
     // Réserve pour chaque variable

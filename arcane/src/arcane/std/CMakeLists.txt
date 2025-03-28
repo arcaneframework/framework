@@ -1,5 +1,5 @@
-set(PRIVATE_PKGS LibUnwind Papi Parmetis PTScotch Udunits Zoltan BZip2 LZ4 Otf2 DbgHelp HWLoc Hiredis)
-set(PUBLIC_PKGS HDF5 MPI vtkIOXML vtkIOLegacy)
+﻿set(PRIVATE_PKGS LibUnwind Papi Parmetis PTScotch Udunits Zoltan BZip2 LZ4 Otf2 DbgHelp HWLoc Hiredis)
+set(PUBLIC_PKGS MPI vtkIOXML vtkIOLegacy)
 set(PKGS ${PRIVATE_PKGS} ${PUBLIC_PKGS})
 
 foreach(package ${PKGS})
@@ -44,14 +44,6 @@ set(ARCANE_HAS_KDI ${ARCANE_HAS_KDI} CACHE BOOL "Is KDI available" FORCE)
 
 # ----------------------------------------------------------------------------
 
-# Pour MEDFile, il faut HDF5 mais le find_package fait planter CMake (avec MED 4.0.0)
-# si HDF5 n'est pas trouvé. On ne fait donc le find_package que si HDF5
-# est trouvé
-if(HDF5_FOUND)
-  list(APPEND PRIVATE_PKGS MEDFile)
-  arcane_find_package(MEDFile QUIET)
-endif()
-
 include(srcs.cmake)
 
 if(BZIP2_FOUND)
@@ -60,16 +52,7 @@ endif()
 if(LZ4_FOUND)
   list(APPEND ARCANE_SOURCES LZ4DeflateService.cc)
 endif()
-if(HDF5_FOUND)
-  list(APPEND ARCANE_SOURCES
-    VtkHdfPostProcessor.cc
-    VtkHdfV2PostProcessor.cc
-    )
-endif()
 
-if(MEDFILE_FOUND)
-  list(APPEND ARCANE_SOURCES MEDMeshReaderService.cc)
-endif()
 if(Parmetis_FOUND)
   list(APPEND ARCANE_SOURCES
     MetisMeshPartitioner.cc
@@ -131,6 +114,9 @@ if(OTF2_FOUND)
       Otf2MessagePassingProfilingService.cc
       Otf2MpiProfiling.cc
       Otf2LibWrapper.cc
+      internal/Otf2MessagePassingProfilingService.h
+      internal/Otf2MpiProfiling.h
+      internal/Otf2LibWrapper.h
       )
   endif()
 endif()
@@ -158,6 +144,13 @@ if (ARCANE_HAS_KDI_PYTHON)
   )
 endif()
 
+if(MPI_FOUND)
+  list(APPEND ARCANE_SOURCES
+    SplitSDMeshPartitioner.cc
+    SplitSDMeshPartitioner.h
+  )
+endif()
+
 # ----------------------------------------------------------------------------
 
 arcane_add_library(arcane_std
@@ -177,9 +170,15 @@ if (ARCANE_HAS_KDI_PYTHON)
   target_link_libraries(arcane_std PRIVATE Python::Python Python::NumPy)
 endif()
 
-target_link_libraries(arcane_std PUBLIC $<TARGET_NAME_IF_EXISTS:Arccore::arccore_message_passing_mpi>)
-target_link_libraries(arcane_std PUBLIC $<TARGET_NAME_IF_EXISTS:Arcane::arcane_hdf5>)
-target_link_libraries(arcane_std PUBLIC ${ARCANE_BASE_LIBRARIES})
+if (TARGET Arccore::arccore_message_passing_mpi)
+  target_link_libraries(arcane_std PUBLIC Arccore::arccore_message_passing_mpi)
+endif()
+
+# Ne dépend pas de HDF5. C'était le cas jusqu'à la version 3 de Arcane.
+# Maintenant, les utilisateurs doivent directement ajouter 'arcane_hdf5'
+#target_link_libraries(arcane_std PUBLIC $<TARGET_NAME_IF_EXISTS:Arcane::arcane_hdf5>)
+
+target_link_libraries(arcane_std PUBLIC arcane_impl arcane_core)
 
 # TODO: il semblerait qu'on ait besoin de rajouter stdc++fs pour que link passe avec le
 # std::filesystem du c++17 pour le moment, a enlever quand ce sera possible

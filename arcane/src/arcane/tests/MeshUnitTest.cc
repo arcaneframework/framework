@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshUnitTest.cc                                             (C) 2000-2024 */
+/* MeshUnitTest.cc                                             (C) 2000-2025 */
 /*                                                                           */
 /* Service de test du maillage.                                              */
 /*---------------------------------------------------------------------------*/
@@ -64,6 +64,7 @@
 #include "arcane/core/MeshEvents.h"
 #include "arcane/core/BlockIndexList.h"
 #include "arcane/core/Connectivity.h"
+#include "arcane/core/IMeshUniqueIdMng.h"
 
 #include "arcane/tests/MeshUnitTest_axl.h"
 
@@ -203,6 +204,7 @@ class MeshUnitTest
   void _testFindOneItem();
   void _testEvents();
   void _testNodeNodeViaEdgeConnectivity();
+  void _testComputeOwnersDirect();
 };
 
 /*---------------------------------------------------------------------------*/
@@ -234,6 +236,9 @@ buildInitializeTest()
     p->setBool("compact",false);
     p->setBool("compact-after-allocate",false);
   }
+  if (options()->generateUidFromNodesUid()) {
+    mesh()->meshUniqueIdMng()->setUseNodeUniqueIdToGenerateEdgeAndFaceUniqueId(true);
+  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -242,6 +247,10 @@ buildInitializeTest()
 void MeshUnitTest::
 executeTest()
 {
+  bool do_compute_owners_direct = options()->computeOwnersDirect();
+  if (do_compute_owners_direct)
+    _testComputeOwnersDirect();
+
   bool do_sort_faces_and_edges = options()->testSortNodeFacesAndEdges();
   if (do_sort_faces_and_edges) {
     mesh()->nodeFamily()->properties()->setBool("sort-connected-faces-edges",true);
@@ -368,7 +377,8 @@ void MeshUnitTest::
 _dumpMesh()
 {
   ServiceBuilder<IMeshWriter> sbu(subDomain());
-  auto mesh_io(sbu.createReference("Lima",SB_AllowNull));
+  String write_service_name = options()->writeMeshServiceName();
+  auto mesh_io(sbu.createReference(write_service_name,SB_AllowNull));
   IParallelMng* pm = subDomain()->parallelMng();
   bool is_parallel = pm->isParallel();
   Int32 my_rank = pm->commRank();
@@ -413,9 +423,13 @@ _dumpMesh()
   }
 
   if (mesh_io.get()){
-    file_name = file_name + ".unf";
+    if (write_service_name=="Lima")
+      file_name = file_name + ".unf";
+    else if (write_service_name=="VtkLegacyMeshWriter")
+      file_name = file_name + ".vtk";
     mesh_io->writeMeshToFile(mesh(), base_path.file(file_name));
   }
+
   IItemFamily* cell_family = mesh()->cellFamily();
   info() << "Local connectivity infos:";
   _dumpConnectivityInfos(cell_family->localConnectivityInfos(),
@@ -1131,12 +1145,19 @@ _testItemArray()
   
   ItemVectorView v(family,local_ids);
   ItemInfoListView cells_info_view(family);
+  ItemLocalIdToItemConverter cells_local_id_converter(family);
   ItemVectorViewT<Cell> v2(v);
   Integer z = v2.size();
   info() << "NB CELL=" << z;
   for( Integer i=0; i<z; ++i ){
     Cell c = v2[i];
     Item c2 = cells_info_view[local_ids[i]];
+    Item c3 = cells_local_id_converter[local_ids[i]];
+    Item c4 = cells_local_id_converter[ItemLocalId(local_ids[i])];
+    if (c2!=c3)
+      ARCANE_FATAL("Bad same item item2={0} item3={1}", ItemPrinter(c2), ItemPrinter(c3));
+    if (c2!=c4)
+      ARCANE_FATAL("Bad same item item2={0} item4={1}", ItemPrinter(c2), ItemPrinter(c4));
     info(6) << "CELL =" << ItemPrinter(c);
     if (c2.uniqueId()!=c.uniqueId())
       ARCANE_FATAL("Not same uniqueId() (1) uid1={0} uid2={1}",c.uniqueId(),c2.uniqueId());
@@ -1749,7 +1770,7 @@ _testNodeNodeViaEdgeConnectivity()
   // Tableau contenant la liste triée des nœuds connectés à un nœud.
   UniqueArray<Int32> ref_cx_nodes;
 
-  ENUMERATE_ (Node, inode, allNodes()) {
+  ENUMERATE_ (Node, inode, ownNodes()) {
     Node node = *inode;
     Int32 nb_edge = node.nbEdge();
     Int32 nb_connectivity_node = nn_cv.nbNode(node);
@@ -1775,6 +1796,19 @@ _testNodeNodeViaEdgeConnectivity()
                      node.uniqueId(), i, ref_cx_node_lid, cx_node_lid);
     }
   }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MeshUnitTest::
+_testComputeOwnersDirect()
+{
+  info() << "Test: _testComputeOwnersDirect()";
+  mesh()->modifier()->setDynamic(true);
+  mesh()->modifier()->updateGhostLayers();
+  mesh()->utilities()->computeAndSetOwnersForNodes();
+  mesh()->utilities()->computeAndSetOwnersForFaces();
 }
 
 /*---------------------------------------------------------------------------*/

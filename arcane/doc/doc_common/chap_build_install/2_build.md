@@ -73,13 +73,44 @@ Options générales :
   </td>
   <td>
     Permet de spécifier le type d'accélerateur qu'on souhaite utiliser.
-    A partir de la version 3.14 de Arcane, il est possible d'utiliser `CUDA` au lieu
+    A partir de la version 3.14 de %Arcane, il est possible d'utiliser `CUDA` au lieu
     de `CUDANVCC` et `ROCM` au lieu de `ROCMHIP`
   </td>
 </tr>
-<tr><td>`CMAKE_CUDA_COMPILER` <td>Compilateur CUDA (exemple : `nvcc`) <td>Permet de spécifier le chemin vers le compilateur `nvcc`
-<tr><td>`CMAKE_CUDA_ARCHITECTURES` <td>Architecture cible (exemple : `80`) <td>Permet de spécifier une architecture cible (Capability Compute)
-<tr><td>`CMAKE_HIP_ARCHITECTURES` <td>Architecture cible (exemple : `gfx90a`) <td>Permet de spécifier une architecture cible
+
+<tr>
+<td>`CMAKE_CUDA_COMPILER` <td>Compilateur CUDA (exemple : `nvcc` ou
+`clang++`) </td>
+<td>
+Permet de spécifier le chemin vers le compilateur CUDA historique (`nvcc`) ou un autre
+compilateur supportant le format `ptx`
+</td>
+</tr>
+
+<tr>
+<td>`CMAKE_HIP_COMPILER` <td>Compilateur ROCM/HIP (exemple :
+`amdclang++` ou `clang++`)</td>
+<td>
+Permet de spécifier le chemin vers le compilateur utilisé pour générer
+le code pour ROCM/HIP
+</td>
+</tr>
+
+<tr>
+<td>`CMAKE_CUDA_ARCHITECTURES` <td>Architecture cible (exemple : `80`)</td>
+<td>
+Permet de spécifier une architecture cible (Capability Compute). Une
+liste de plusieurs valeurs est possible (par exemple `80;90`)
+</td>
+</tr>
+
+<tr>
+<td>`CMAKE_HIP_ARCHITECTURES` <td>Architecture cible (exemple : `gfx90a`)</td>
+<td>Permet de spécifier une architecture cible pour les GPUS AMD.
+Une liste de valeurs est possible (par exemple `gfx90a;gfx1031`)
+</td>
+</tr>
+
 </table>
 </details>
 
@@ -100,13 +131,30 @@ Il est nécessaire d'avoir au moins la version 12 de
 [CUDA](https://developer.nvidia.com/cuda-downloads).
 
 Si on souhaite compiler le support CUDA, il faut ajouter l'argument
-`-DARCANE_ACCELERATOR_MODE=CUDANVCC` à la configuration et spécifier
-le chemin vers le compilateur `nvcc` via la variable CMake
+`-DARCANE_ACCELERATOR_MODE=CUDA` à la configuration et spécifier
+le chemin vers le compilateur `nvcc` ou `clang++` via la variable CMake
 `CMAKE_CUDA_COMPILER` ou la variable d'environnement `CUDACXX`:
 
+\warning Si on souhaite utiliser %Arcane à la fois sur GPU et sur CPU,
+il est fortement recommandé d'utiliser `clang` comme compilateur au
+lieu de `nvcc` car ce dernier génère du code moins performant sur la
+partie CPU. Cela est du à l'usage de `std::function` pour encapsuler
+les lambdas utilisées dans %Arcane (voir
+[New Compiler Features in CUDA 8](https://developer.nvidia.com/blog/new-compiler-features-cuda-8/#extended___host_____device___lambdas)
+pour plus d'informations)
+
 ~~~{.sh}
-cmake -DARCANE_ACCELERATOR_MODE=CUDANVCC
--DCMAKE_CUDA_COMPILER=/usr/local/cuda-11/bin/nvcc \
+# Avec 'clang'
+cmake -DARCANE_ACCELERATOR_MODE=CUDA
+-DCMAKE_CUDA_COMPILER=/usr/bin/clang++-19 \
+-DARCCORE_CXX_STANDARD=20 \
+...
+~~~
+
+~~~{.sh}
+# Avec 'nvcc'
+cmake -DARCANE_ACCELERATOR_MODE=CUDA
+-DCMAKE_CUDA_COMPILER=/usr/local/cuda-12/bin/nvcc \
 -DARCCORE_CXX_STANDARD=20 \
 ...
 ~~~
@@ -117,7 +165,7 @@ SDK](https://developer.nvidia.com/hpc-sdk) de NVidia:
 ~~~{.sh}
 export CXX=`which nvc++`
 export CC=`which nvc`
-cmake -DARCANE_ACCELERATOR_MODE=CUDANVCC \
+cmake -DARCANE_ACCELERATOR_MODE=CUDA \
 -DARCCORE_CXX_STANDARD=20 \
 ...
 ~~~
@@ -130,8 +178,7 @@ Compute) via la variable `CMAKE_CUDA_ARCHITECTURES`, par exemple
 
 Pour compiler pour les GPU AMD (comme par exemple les GPU MI100 ou
 MI250) il faut avoir auparavant installer la bibliothèque [ROCM](https://docs.amd.com/). Lors
-de la configuration de %Arcane, il faut spécifier
-`-DARCANE_ACCELERATOR_MODE=ROCMHIP`.
+de la configuration de %Arcane, il faut spécifier `-DARCANE_ACCELERATOR_MODE=ROCMHIP`.
 
 Par exemple, si ROCM est installé dans `/opt/rocm` et qu'on souhaite
 compiler pour les cartes MI250 (architecture gfx90x):

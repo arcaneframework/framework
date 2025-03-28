@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* UnstructuredMeshUtilities.cc                                (C) 2000-2024 */
+/* UnstructuredMeshUtilities.cc                                (C) 2000-2025 */
 /*                                                                           */
 /* Fonctions utilitaires sur un maillage.                                    */
 /*---------------------------------------------------------------------------*/
@@ -23,7 +23,7 @@
 #include "arcane/utils/StringBuilder.h"
 #include "arcane/utils/CheckedConvert.h"
 #include "arcane/utils/PlatformUtils.h"
-
+#include "arcane/utils/SmallArray.h"
 #include "arcane/utils/NotImplementedException.h"
 
 #include "arcane/IMesh.h"
@@ -51,6 +51,7 @@
 #include "arcane/mesh/BasicItemPairGroupComputeFunctor.h"
 #include "arcane/mesh/MeshNodeMerger.h"
 #include "arcane/mesh/ConnectivityNewWithDependenciesTypes.h"
+#include "arcane/mesh/ItemsOwnerBuilder.h"
 
 #include <algorithm>
 
@@ -432,7 +433,7 @@ computeNormal(const FaceGroup& face_group,const VariableNodeReal3& nodes_coord)
     }
   }
   UniqueArray<Node> single_nodes;
-  NodeInfoListView nodes_internal(m_mesh->nodeFamily());
+  NodeLocalIdToNodeConverter nodes_internal(m_mesh->nodeFamily());
   nodes_occurence.each([&](NodeOccurenceMap::Data* d){
       if (d->value()==1){
         Node node = nodes_internal[d->key()];
@@ -815,8 +816,74 @@ mergeNodes(Int32ConstArrayView nodes_local_id,
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+void UnstructuredMeshUtilities::
+computeAndSetOwnersForNodes()
+{
+  mesh::ItemsOwnerBuilder owner_builder(m_mesh);
+  owner_builder.computeNodesOwner();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void UnstructuredMeshUtilities::
+computeAndSetOwnersForFaces()
+{
+  mesh::ItemsOwnerBuilder owner_builder(m_mesh);
+  owner_builder.computeFacesOwner();
+}
+
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+namespace
+{
+  void _recomputeUniqueIds(IItemFamily* family)
+  {
+    ITraceMng* tm = family->traceMng();
+    eItemKind ik = family->itemKind();
+    SmallArray<Int64> unique_ids;
+    ENUMERATE_ (ItemWithNodes, iitem, family->allItems()) {
+      ItemWithNodes item = *iitem;
+      Int32 index = 0;
+      unique_ids.resize(item.nbNode());
+      for (Node node : item.nodes()) {
+        unique_ids[index] = node.uniqueId();
+        ++index;
+      }
+      Int64 new_uid = MeshUtils::generateHashUniqueId(unique_ids);
+      //if (ik==IK_Face)
+      //tm->info() << "Face uid=" << item.uniqueId() << " nb_node=" << item.nbNode()
+      //             << " node0=" << item.node(0).uniqueId() << " node1=" << item.node(1).uniqueId();
+      item.mutableItemBase().setUniqueId(new_uid);
+    }
+    family->notifyItemsUniqueIdChanged();
+  }
+} // namespace
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void UnstructuredMeshUtilities::
+recomputeItemsUniqueIdFromNodesUniqueId()
+{
+  IMesh* mesh = m_mesh;
+  ARCANE_CHECK_POINTER(mesh);
+  ITraceMng* tm = mesh->traceMng();
+
+  tm->info() << "Calling RecomputeItemsUniqueIdFromNodesUniqueId()";
+  // D'abord indiquer que les noeuds ont changés pour éventuellement
+  // remettre à jour l'orientation des faces.
+  mesh->nodeFamily()->notifyItemsUniqueIdChanged();
+  _recomputeUniqueIds(mesh->edgeFamily());
+  _recomputeUniqueIds(mesh->faceFamily());
+  _recomputeUniqueIds(mesh->cellFamily());
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 } // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-

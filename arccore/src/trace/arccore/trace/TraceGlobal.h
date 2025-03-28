@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* TraceGlobal.h                                               (C) 2000-2020 */
+/* TraceGlobal.h                                               (C) 2000-2025 */
 /*                                                                           */
 /* Définitions globales de la composante 'Trace' de 'Arccore'.               */
 /*---------------------------------------------------------------------------*/
@@ -30,7 +30,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arccore
+namespace Arcane
 {
 class ITraceStream;
 class ITraceMng;
@@ -62,8 +62,39 @@ namespace Trace
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCCORE_DECLARE_REFERENCE_COUNTED_CLASS(ITraceStream)
-ARCCORE_DECLARE_REFERENCE_COUNTED_CLASS(ITraceMng)
+ARCCORE_DECLARE_REFERENCE_COUNTED_CLASS(Arcane::ITraceStream)
+ARCCORE_DECLARE_REFERENCE_COUNTED_CLASS(Arcane::ITraceMng)
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace Arccore
+{
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+using Arcane::ITraceStream;
+using Arcane::ITraceMng;
+using Arcane::TraceAccessor;
+using Arcane::TraceMessageClass; 
+using Arcane::TraceClassConfig;
+using Arcane::TraceMessage;
+using Arcane::TraceMessageDbg;
+using Arcane::TraceMessageListenerArgs;
+using Arcane::ITraceMessageListener;
+using Arcane::ITimeMetricCollector;
+using Arcane::TimeMetricSentry;
+using Arcane::TimeMetricId;
+using Arcane::TimeMetricAction;
+using Arcane::TimeMetricActionBuildInfo;
+using Arcane::StandaloneTraceMessage;
+namespace Trace = ::Arcane::Trace;
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

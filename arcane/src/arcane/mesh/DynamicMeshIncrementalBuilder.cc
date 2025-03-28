@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* DynamicMeshIncrementalBuilder.cc                            (C) 2000-2024 */
+/* DynamicMeshIncrementalBuilder.cc                            (C) 2000-2025 */
 /*                                                                           */
 /* Construction d'un maillage de manière incrémentale.                       */
 /*---------------------------------------------------------------------------*/
@@ -128,7 +128,6 @@ addCells(Integer nb_cell,Int64ConstArrayView cells_infos,
 {
   ItemTypeMng* itm = m_item_type_mng;
 
-  debug() << "[addCells] ADD CELLS mesh=" << m_mesh->name() << " nb=" << nb_cell;
   Integer cells_infos_index = 0;
   bool add_to_cells = cells.size()!=0;
   if (add_to_cells && nb_cell!=cells.size())
@@ -1103,20 +1102,6 @@ addFamilyItems(ItemData& item_data)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Ajoute une face.
- *
- * Ajoute une face en fournissant l'unique_id à utiliser et les unique_ids
- * des noeuds à connecter.
- */
-ItemInternal *DynamicMeshIncrementalBuilder::
-addFace(Int64 a_face_uid, Int64ConstArrayView a_node_list, Integer a_type)
-{
-  return m_one_mesh_item_adder->addOneFace(a_face_uid,a_node_list,a_type);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
  * \brief Ajoute des faces au maillage actuel.
  *
  * \param nb_face nombre de faces à ajouter
@@ -1126,7 +1111,7 @@ addFace(Int64 a_face_uid, Int64ConstArrayView a_node_list, Integer a_type)
  */
 void DynamicMeshIncrementalBuilder::
 addFaces(Integer nb_face,Int64ConstArrayView faces_infos,
-         Integer sub_domain_id,Int32ArrayView faces)
+         Int32 rank, Int32ArrayView faces)
 {
   ItemTypeMng* itm = m_item_type_mng;
   
@@ -1138,7 +1123,7 @@ addFaces(Integer nb_face,Int64ConstArrayView faces_infos,
   Integer faces_infos_index = 0;
   for(Integer i_face=0; i_face<nb_face; ++i_face ){
 
-    ItemTypeId item_type_id { (Int16)faces_infos[faces_infos_index] };
+    ItemTypeId item_type_id = ItemTypeId::fromInteger(faces_infos[faces_infos_index]);
     ++faces_infos_index;
     Int64 face_unique_id = faces_infos[faces_infos_index];
     ++faces_infos_index;
@@ -1149,8 +1134,8 @@ addFaces(Integer nb_face,Int64ConstArrayView faces_infos,
     Int64ConstArrayView nodes_uid(current_face_nb_node,&faces_infos[faces_infos_index]);
     faces_infos_index += current_face_nb_node;
 
-    ItemInternal* face = m_one_mesh_item_adder->addOneFace(item_type_id, face_unique_id, sub_domain_id, nodes_uid);
-    
+    ItemInternal* face = m_one_mesh_item_adder->addOneFace(item_type_id, face_unique_id, rank, nodes_uid);
+
     if (add_to_faces)
       faces[i_face] = face->localId();
   }
@@ -1525,7 +1510,7 @@ readFromDump()
   // Recalcul le max uniqueId() des faces pour savoir quelle valeur
   // utiliser en cas de creation de face.
   ItemInternalMap& faces_map = m_mesh->facesMap();
-  Int64 max_uid = 0;
+  Int64 max_uid = -1;
   faces_map.eachItem([&](Item face) {
     if (face.uniqueId() > max_uid)
       max_uid = face.uniqueId();
@@ -1534,7 +1519,7 @@ readFromDump()
 
   if (m_has_edge) {
     ItemInternalMap& edges_map = m_mesh->edgesMap();
-    Int64 max_uid = 0;
+    Int64 max_uid = -1;
     edges_map.eachItem([&](Item edge) {
       if (edge.uniqueId() > max_uid)
         max_uid = edge.uniqueId();

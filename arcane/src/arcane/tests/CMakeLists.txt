@@ -19,8 +19,6 @@ if(GEOMETRYKERNEL_FOUND)
   set(TEST_DIRS ${TEST_DIRS} corefinement)
   set(TEST_LIBS ${TEST_LIBS} arcane_corefinement)
 endif()
-set(PKGS TBB)
-arcane_find_package(TBB)
 
 arcane_find_package(Neo QUIET)
 if (Neo_FOUND)
@@ -49,6 +47,7 @@ set(ARCANE_ACCELERATOR_SOURCES
   accelerator/AcceleratorViewsUnitTest.cc
   accelerator/ArcaneTestStandaloneAcceleratorMng.cc
   accelerator/MeshMaterialAcceleratorUnitTest.cc
+  ArcaneTestStandaloneSubDomain.cc
 )
 if (ARCANE_HAS_ACCELERATOR_API)
   list(APPEND ARCANE_SOURCES
@@ -75,8 +74,6 @@ arcane_add_library(arcane_tests_lib
   FILES ${ARCANE_SOURCES}
   AXL_FILES ${AXL_FILES}
   )
-
-arcane_add_arccon_packages(arcane_tests_lib PRIVATE ${PKGS})
 
 add_executable(arcane_tests_exec ${ARCANE_SRC_PATH}/arcane/tests/ArcaneTestMain.cc)
 set(ARCANE_TEST_PATH ${ARCANEBUILDROOT}/src/arcane/tests)
@@ -251,8 +248,10 @@ ARCANE_COPY_MESH_DIRECT(mesh.h5)
 ARCANE_COPY_MESH_DIRECT(merge_nodes_2d.vtk)
 ARCANE_COPY_MESH_DIRECT(mesh1.med)
 ARCANE_COPY_MESH_DIRECT(mesh2.med)
-arcane_copy_mesh_direct(tube5x5x100.mli)
+arcane_copy_mesh_direct(tube5x5x100.mli2)
 arcane_copy_mesh_direct(tube5x5x100.unf)
+arcane_copy_mesh_direct(sphere1.mli2)
+arcane_copy_mesh_direct(sphere2.mli2)
 arcane_copy_mesh_direct(sod3d-penta6.msh)
 arcane_copy_mesh_direct(sod3d-misc.msh)
 arcane_copy_mesh_direct(planar_unstructured_quad1.msh)
@@ -265,12 +264,14 @@ arcane_copy_mesh_direct(cross_a_2x1x1.vtkfaces.vtk)
 arcane_copy_mesh_direct(fan_2x1x3.vtk)
 arcane_copy_mesh_direct(fan_2x1x3.vtkfaces.vtk)
 arcane_copy_mesh_direct(cross_a_2x1x1.vtu)
-arcane_copy_mesh_direct(cross_a_2x1x1.vtufaces.vtu)
+arcane_copy_mesh_direct(cross_a_2x1x1.vtufaces.vtp)
 arcane_copy_mesh_direct(plancher.msh)
 arcane_copy_mesh_direct(plancher.binary.msh)
 arcane_copy_mesh_direct(hex_tetra_pyramics.msh)
 arcane_copy_mesh_direct(onesphere.msh)
+arcane_copy_mesh_direct(periodic_rotation_on_axis.msh)
 arcane_copy_mesh_direct(onesphere.binary.msh)
+arcane_copy_mesh_direct(mesh_with_loose_items.msh)
 arcane_copy_mesh(tied_interface_1 tied_interface_1 vtk)
 arcane_copy_mesh(tied_interface_2 tied_interface_2 vtk)
 arcane_copy_mesh(tied_interface_2d_1 tied_interface_2d_1 vtk)
@@ -307,6 +308,7 @@ endmacro()
 
 message(STATUS "ADD AUTOMATED TESTS")
 ARCANE_ADD_TEST_SEQUENTIAL(utils1 testUtils-1.arc)
+arcane_add_test_sequential(itemtypes1 testItemTypes-1.arc)
 ARCANE_ADD_TEST_SEQUENTIAL(json1 testJSON-1.arc)
 ARCANE_ADD_TEST_SEQUENTIAL(xml1 testXml-1.arc -We,ARCANE_XML_PATH,${ARCANE_ARC_PATH})
 ARCANE_ADD_TEST_SEQUENTIAL(random1 testRandom-1.arc)
@@ -331,6 +333,117 @@ endif()
 ARCANE_ADD_TEST_SEQUENTIAL(caseoptions testCaseOptions-1.arc)
 arcane_add_test_sequential(caseoptions_specificentrypoint testCaseOptions-specific-entry-point.arc
   "-We,ARCANE_CALL_SPECIFIC_ENTRY_POINT,CaseOptionLoop2")
+
+arcane_add_test_sequential(caseoptions_commandlinereplace testCaseOptions-commandLineReplace.arc
+    "-We,ARCANE_CALL_SPECIFIC_ENTRY_POINT,CaseOptionLoop2"
+    "-We,ARCANE_REPLACE_SYMBOLS_IN_DATASET,1"
+    "-A,TestId=1"
+    "-A,SimpleRealUnit2=0.0"
+    "-A,//case-options-tester/simple-real[]=3.0"
+    "-A,//case-options-tester/simple-real-unit=4.2"
+    "-A,SimpleRealUnit2=0.0"
+    "-A,//case-options-tester/simple-realarray-unit=\"2.2 2.3 0.1 3.5\""
+    "-A,//case-options-tester/simple-real2=\"3.5 7.2\""
+    "-A,SimpleReal3=\"1.2 4.7 7.9\""
+    "-A,//case-options-tester/simple-real2x2=\"3.1 3.0 2.9 2.7\""
+    "-A,//case-options-tester/simple-real3x3=\"3.3 3.2 2.1 1.1 0.3 0.5 7.2 7.1 4.0\""
+    "-A,//case-options-tester/simple-integer=4"
+    "-A,//case-options-tester/simple-int32=-23"
+    "-A,//case-options-tester/simple-int64=454653457457455474"
+    "-A,//case-options-tester/simple-bool=true"
+    "-A,//case-options-tester/simple-string=toto"
+    "-A,SimpleStringMultiple=toto2"
+    "-A,//case-options-tester/simple-string-multiple[3]=toto3"
+    "-A,//case-options-tester/simple-string-multiple[4]=\"\""
+    "-A,//case-options-tester/simple-real-array=\"3.0 4.1 5.6\""
+    "-A,//case-options-tester/simple-real-array-multi[2]=\"4.0 1.1 7.3\""
+    "-A,//case-options-tester/simple-integer-array=\"4 5 6 7\""
+    "-A,//case-options-tester/simple-int32-array=\"-23 32 -32\""
+    "-A,//case-options-tester/simple-int64-array=\"454653457457455474 -453463634634634634\""
+    "-A,//case-options-tester/simple-bool-array=\"true false false true\""
+    "-A,//case-options-tester/simple-string-array=\"toto titi tata tutu tete\""
+    "-A,//case-options-tester/simple-enum=enum1"
+    "-A,PostProcessor1FrName=Ensight7PostProcessor"
+    "-A,//case-options-tester/post-processor1/fileset-size=1"
+    "-A,//case-options-tester/post-processor1[1]/binary-file=false"
+    "-A,//case-options-tester/post-processor1[3]/@name=VtkHdfV2PostProcessor"
+    "-A,//case-options-tester/post-processor1[4]/@name=UCDPostProcessor"
+    "-A,//case-options-tester/post-processor2[2]/@mesh-name=Mesh1"
+    "-A,//case-options-tester/complex1/simple-real-2=3"
+    "-A,//case-options-tester/complex1/simple-real-2-multi[2]=2.3"
+)
+
+arcane_add_test_sequential(caseoptions_commandlinereplace_fail1 testCaseOptions-specific-entry-point.arc
+    "-We,ARCANE_CALL_SPECIFIC_ENTRY_POINT,CaseOptionLoop2"
+    "-We,ARCANE_REPLACE_SYMBOLS_IN_DATASET,1"
+    "-A,//case-options-tester/[1]=3.0"
+)
+set_property(TEST caseoptions_commandlinereplace_fail1 PROPERTY WILL_FAIL true)
+
+arcane_add_test_sequential(caseoptions_commandlinereplace_fail2 testCaseOptions-specific-entry-point.arc
+    "-We,ARCANE_CALL_SPECIFIC_ENTRY_POINT,CaseOptionLoop2"
+    "-We,ARCANE_REPLACE_SYMBOLS_IN_DATASET,1"
+    "-A,//case-options-tester/simple-real[aa]=3.0"
+)
+set_property(TEST caseoptions_commandlinereplace_fail2 PROPERTY WILL_FAIL true)
+
+arcane_add_test_sequential(caseoptions_commandlinereplace_fail3 testCaseOptions-specific-entry-point.arc
+    "-We,ARCANE_CALL_SPECIFIC_ENTRY_POINT,CaseOptionLoop2"
+    "-We,ARCANE_REPLACE_SYMBOLS_IN_DATASET,1"
+    "-A,//case-options-tester/simple-real[1]/=3.0"
+)
+set_property(TEST caseoptions_commandlinereplace_fail3 PROPERTY WILL_FAIL true)
+
+arcane_add_test_sequential(caseoptions_commandlinereplace_fail4 testCaseOptions-specific-entry-point.arc
+    "-We,ARCANE_CALL_SPECIFIC_ENTRY_POINT,CaseOptionLoop2"
+    "-We,ARCANE_REPLACE_SYMBOLS_IN_DATASET,1"
+    "-A,//case-options-tester/simple-real-array-multi[6]=\"3.0 4.0\""
+)
+set_property(TEST caseoptions_commandlinereplace_fail4 PROPERTY WILL_FAIL true)
+
+arcane_add_test_sequential(caseoptions_commandlinereplace_fail5 testCaseOptions-specific-entry-point.arc
+    "-We,ARCANE_CALL_SPECIFIC_ENTRY_POINT,CaseOptionLoop2"
+    "-We,ARCANE_REPLACE_SYMBOLS_IN_DATASET,1"
+    "-A,//case-options-tester/simple-integer=aaa"
+)
+set_property(TEST caseoptions_commandlinereplace_fail5 PROPERTY WILL_FAIL true)
+
+arcane_add_test_sequential(caseoptions_commandlinereplace_fail6 testCaseOptions-specific-entry-point.arc
+    "-We,ARCANE_CALL_SPECIFIC_ENTRY_POINT,CaseOptionLoop2"
+    "-We,ARCANE_REPLACE_SYMBOLS_IN_DATASET,1"
+    "-A,//case-options-tester/post-processor1-fr[20]/@name=UCDPostProcessor"
+)
+set_property(TEST caseoptions_commandlinereplace_fail6 PROPERTY WILL_FAIL true)
+
+arcane_add_test_sequential(caseoptions_commandlinereplace_fail7 testCaseOptions-specific-entry-point.arc
+    "-We,ARCANE_CALL_SPECIFIC_ENTRY_POINT,CaseOptionLoop2"
+    "-We,ARCANE_REPLACE_SYMBOLS_IN_DATASET,1"
+    "-A,//case-options-tester/post-processor1-fr/binary-file-=false"
+)
+set_property(TEST caseoptions_commandlinereplace_fail7 PROPERTY WILL_FAIL true)
+
+arcane_add_test_sequential(caseoptions_commandlinereplace_fail8 testCaseOptions-specific-entry-point.arc
+    "-We,ARCANE_CALL_SPECIFIC_ENTRY_POINT,CaseOptionLoop2"
+    "-We,ARCANE_REPLACE_SYMBOLS_IN_DATASET,1"
+    "-A,//case-options-tester/post-processor1-fr/binary-file:=false"
+)
+set_property(TEST caseoptions_commandlinereplace_fail8 PROPERTY WILL_FAIL true)
+
+arcane_add_test_sequential(caseoptions_commandlinereplace_fail9 testCaseOptions-specific-entry-point.arc
+    "-We,ARCANE_CALL_SPECIFIC_ENTRY_POINT,CaseOptionLoop2"
+    "-We,ARCANE_REPLACE_SYMBOLS_IN_DATASET,1"
+    "-A,//case-options-tester/complex2[2]/complex3/extended-real-int-c3[9]=enum1"
+)
+set_property(TEST caseoptions_commandlinereplace_fail9 PROPERTY WILL_FAIL true)
+
+#arcane_add_test_sequential(caseoptions_commandlinereplace_fail99 testCaseOptions-specific-entry-point.arc
+#    "-We,ARCANE_CALL_SPECIFIC_ENTRY_POINT,CaseOptionLoop2"
+#    "-We,ARCANE_REPLACE_SYMBOLS_IN_DATASET,1"
+#    "-A,//case-options-tester/simple-real[=3.0"
+#)
+#set_property(TEST caseoptions_commandlinereplace_fail99 PROPERTY WILL_FAIL true)
+
+
 if(UDUNITS_FOUND)
   ARCANE_ADD_TEST_SEQUENTIAL(caseoptions_unit testCaseOptions-2.arc)
 endif()
@@ -385,8 +498,12 @@ endif()
 
 arcane_add_test_sequential(standalone_subdomain1 dummy.arc "-A,StandaloneSubDomainMethod=Test1")
 arcane_add_test_sequential(standalone_subdomain2 dummy.arc "-A,StandaloneSubDomainMethod=Test2")
+arcane_add_test_sequential(standalone_subdomain3 dummy.arc "-A,StandaloneSubDomainMethod=Test3")
 arcane_add_test_parallel(standalone_subdomain2 dummy.arc 4 "-A,StandaloneSubDomainMethod=Test2")
 arcane_add_test_parallel(standalone_subdomain2_legacy_partition_init dummy.arc 4 "-A,StandaloneSubDomainMethod=Test2" "-We,ARCANE_USE_LEGACY_INIT_LOADBALANCEMNG,1")
+if (ARCANE_HAS_ACCELERATOR_API)
+  arcane_add_accelerator_test_all_policies(standalone_subdomain_accelerator dummy.arc 4 "-A,StandaloneSubDomainMethod=Test2")
+endif()
 
 # ----------------------------------------------------------------------------
 
@@ -419,12 +536,6 @@ add_test_message_passing(sub_all)
 # Pour la converture de test, lance les tests en mode hybrid mais avec uniquement 4 coeurs
 arcane_add_test_message_passing_hybrid(parallelmng_all NB_MPI 2 NB_SHM 2 ARGS -We,MESSAGE_PASSING_TEST,all -arcane_opt direct_test ParallelMngTest null)
 arcane_add_test_message_passing_hybrid(parallelmng_sub_all NB_MPI 2 NB_SHM 2 ARGS -We,MESSAGE_PASSING_TEST,all -arcane_opt direct_test ParallelMngTest null)
-
-add_test(serialize_message_list_v1_4proc
-  ${ARCANE_TEST_DRIVER} launch -n 4
-  -We,MESSAGE_PASSING_TEST,serialize_message_list
-  -We,ARCANE_SYNCHRONIZE_LIST_VERSION,1
-  -arcane_opt direct_test ParallelMngTest null)
 
 # ----------------------------------------------------------------------------
 
@@ -556,9 +667,21 @@ if(PARTITIONER_FOUND)
   #  ARCANE_ADD_TEST_PARALLEL(mesh_merge_nodes_2d testMeshMergeNodes-2D.arc 4)
 endif()
 
+arcane_add_test_sequential(mesh_modification-1D testMeshModificationTester-1D.arc)
+arcane_add_test_sequential(mesh_modification-3D testMeshModificationTester-3D.arc)
 arcane_add_test(mesh2 testMesh-2.arc "-We,ARCANE_METIS_INPUT_OUTPUT_DIGEST,1")
-arcane_add_test(mesh2_generate_face_uid testMesh-2.arc "-We,ARCANE_GENERATE_UNIQUE_ID_FROM_NODES,1")
+if (Parmetis_FOUND)
+  arcane_add_test_parallel_thread(mesh2_face_unique_id_v5 testMesh-2-face-unique-id-v5.arc 4)
+endif()
+arcane_add_test(mesh2_generate_edge_face_uid testMesh-2-generate-edge-face-uid.arc)
+arcane_add_test(mesh2_non_manifold testMesh-2-non-manifold.arc)
+arcane_add_test(mesh2_non_manifold_write_msh testMesh-2-non-manifold-write-msh.arc)
+if (ARCANE_DEFAULT_PARTITIONER_IS_METIS)
+  arcane_add_test_parallel_thread(mesh2_non_manifold testMesh-2-non-manifold.arc 4)
+endif()
+arcane_add_test_sequential(mesh2_generate_edge_face_uid_env testMesh-2-env-generate-edge-face-uid.arc "-We,ARCANE_GENERATE_UNIQUE_ID_FROM_NODES,1")
 arcane_add_test_sequential(mesh2_sort_faces testMesh-2-sorted-faces.arc)
+arcane_add_test(mesh2_compute_owners_direct testMesh-2-compute-owners-direct.arc)
 arcane_add_test_sequential(mesh2_init_nan testMesh-2.arc "-We,ARCANE_DATA_INIT_POLICY,NAN")
 arcane_add_test_sequential(mesh2_init_default testMesh-2.arc "-We,ARCANE_DATA_INIT_POLICY,DEFAULT" "-We,ARCANE_ITEMFAMILY_SHRINK_AFTER_ALLOCATE,1")
 arcane_add_test_sequential(mesh2_init_nan_and_default testMesh-2.arc "-We,ARCANE_DATA_INIT_POLICY,NAN_AND_DEFAULT")
@@ -595,6 +718,7 @@ ARCANE_ADD_TEST(mesh_sphere_vtk42_binary testMesh-sphere-vtk42-binary.arc)
 arcane_add_test_sequential(mesh1_honeycomb2d testMesh-honeycomb2D-1.arc "-We,ARCANE_PRINT_APPLYSIMDPADDING,2")
 arcane_add_test_sequential(mesh1_honeycomb3d testMesh-honeycomb3D-1.arc)
 arcane_add_test_sequential(mesh1_onesphere_msh testMesh-onesphere-1.arc)
+arcane_add_test_sequential(mesh1_periodic2d_msh testMesh-periodic2d-1.arc)
 arcane_add_test_sequential(mesh1_onesphere_binary_msh testMesh-onesphere-binary-1.arc)
 if (ARCANE_DEFAULT_PARTITIONER_IS_METIS)
   arcane_add_test_parallel_thread(mesh1_honeycomb2d testMesh-honeycomb2D-1.arc 4)
@@ -695,10 +819,18 @@ arcane_add_test_script(continue_hydro3_cartesian_small continue_hydro3_cartesian
 #arcane_add_test_script(continue_hydro3_cartesian_small_4shm continue_hydro3_cartesian_small_4shm.xml)
 arcane_add_test_parallel(hydro3_cartesian_8proc testHydro-3-cartesian.arc 8 "-m 50")
 
-arcane_add_test(ArcaneBasicMeshsubdividerservice1-subdivide1 testArcaneBasicMeshSubdividerService1-subdivide1.arc -m 1)
-arcane_add_test_parallel_thread(arcanebasicmeshsubdividerservice1-subdivide1 testArcaneBasicMeshSubdividerService1-subdivide1.arc 4 -m 1)
+arcane_add_test(meshservice-subdivide1-hydro testHydro-3-meshservice-subdivide1.arc )
+arcane_add_test(basicmeshsubdividerservice1-subdivide1 testArcaneBasicMeshSubdividerService1-subdivide1.arc -m 1)
+arcane_add_test_parallel_thread(basicmeshsubdividerservice1-subdivide1 testArcaneBasicMeshSubdividerService1-subdivide1.arc 4 -m 1)
+
+arcane_add_test_sequential(basicmeshsubdividerservidetriangle-subdivide-1 testArcaneBasicMeshSubdividerServiceTriangle.arc -m 1 "-A,//meshes/mesh/subdivider/different-element-type-output=1")
+
+arcane_add_test(basicmeshsubdividerservidetriangle-subdivide testArcaneBasicMeshSubdividerServiceTriangle.arc -m 1)
+arcane_add_test(basicmeshsubdividerservidequadrilateral-subdivide testArcaneBasicMeshSubdividerServiceQuadrilateral.arc -m 1)
+
+
 if( Parmetis_FOUND )
-  arcane_add_test_parallel_thread(arcanebasicmeshsubdividerservice1-subdivide1-parmetis testArcaneBasicMeshSubdividerService1-subdivide1-parmetis.arc 4 -m 1)
+  arcane_add_test_parallel_thread(basicmeshsubdividerservice1-subdivide1-parmetis testArcaneBasicMeshSubdividerService1-subdivide1-parmetis.arc 4 -m 1)
 endif()
 
 arcane_add_test_parallel_all(hydro3_checkpoint_meshservice testHydro-3-checkpoint-meshservice.arc 3 4 -c 3 -m 10)
@@ -809,7 +941,6 @@ if (ARCANE_HAS_ACCELERATOR_API)
   arcane_add_test_sequential(accelerator_reduce1 testAcceleratorReduce-1.arc)
   arcane_add_test_sequential_task(accelerator_reduce1 testAcceleratorReduce-1.arc 4)
   arcane_add_accelerator_test_sequential(accelelerator_reduce1 testAcceleratorReduce-1.arc)
-  arcane_add_accelerator_test_sequential(accelelerator_reduce1_atomic testAcceleratorReduce-1-atomic.arc)
 
   arcane_add_test_sequential(accelerator_scan1 testAcceleratorScan-1.arc)
   arcane_add_test_sequential_task(accelerator_scan1 testAcceleratorScan-1.arc 4)
@@ -923,7 +1054,7 @@ ARCANE_ADD_TEST_PARALLEL_THREAD(thread1 testThread-1.arc 1 -m 15)
 arcane_add_test_sequential(task1_0 testTask-1.arc 1 -m 5)
 arcane_add_test_sequential_task(task1 testTask-1.arc 1 -m 5)
 arcane_add_test_sequential_task(task1 testTask-1.arc 4 -m 5)
-arcane_add_test_sequential_task(task1_cppstd testTask-1.arc 4 -m 5 -A,ThreadService=Cpp)
+arcane_add_test_sequential_task(task1_cppstd testTask-1.arc 4 -m 5 -A,ThreadService=Std)
 arcane_add_test_sequential_task(task1_glib testTask-1.arc 4 -m 5 -A,ThreadService=Glib)
 arcane_add_test_sequential_task(task1_setoptions testTask-1.arc 4 -m 5 -A,ParallelLoopGrainSize=4 -A,ParallelLoopPartitioner=static)
 arcane_add_test_sequential_task(task1_loop_profile testTask-1.arc 4 -m 5 -We,ARCANE_LOOP_PROFILING_LEVEL,2)
@@ -945,11 +1076,15 @@ if(GEOMETRYKERNEL_FOUND)
   ARCANE_ADD_TEST_PARALLEL(corefinement testParallelCorefinement.arc 4)
 endif()
 
-if(VTK_FOUND AND MPI_FOUND)
-  ADD_TEST(case_part_vtu ${ARCANE_TEST_PATH}/test-CasePartVtu.sh)
+if(UNIX AND MPI_FOUND)
+  add_test(NAME partition_mesh_msh
+    COMMAND ${ARCANE_TEST_PATH}/test-CasePartVtu.sh
+    WORKING_DIRECTORY "${ARCANE_TEST_WORKDIR}"
+  )
 endif()
 
-add_test(convert_mesh1 ${ARCANE_CONVERT_MESH_COMMAND} -f convert_out_mesh.vtk --writer VtkLegacyMeshWriter ${ARCANE_TEST_PATH}/plan.vtk)
+add_test(convert_mesh1_vtk ${ARCANE_CONVERT_MESH_COMMAND} -f convert_out_mesh.vtk --writer VtkLegacyMeshWriter ${ARCANE_TEST_PATH}/plan.vtk)
+add_test(convert_mesh1_msh ${ARCANE_CONVERT_MESH_COMMAND} -f convert_out_mesh.msh --writer MshMeshWriter ${ARCANE_TEST_PATH}/tube5x5x100.vtk)
 arcane_add_test(tied_interface1 testTiedInterface-1.arc "-m 10")
 arcane_add_test(tied_interface2 testTiedInterface-2.arc "-m 10")
 arcane_add_test(tied_interface1_2D testTiedInterface2D-1.arc "-m 10")
@@ -1109,7 +1244,16 @@ endif()
 #################################################################
 
 # Test pour la partie StringVariableReplace.
-arcane_add_test_sequential(string_variable_replace testStringVariableReplace.arc)
+arcane_add_test_sequential(string_variable_replace testStringVariableReplace.arc
+    "-We,ARCANE_REPLACE_SYMBOLS_IN_DATASET,1"
+    "-A,aa=bb"
+)
+
+#################################################################
+#################################################################
+
+# Test pour la partie ParameterOption.
+arcane_add_test_sequential(parameter_option testParameterOption.arc)
 
 #################################################################
 #################################################################

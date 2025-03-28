@@ -18,33 +18,33 @@ if (NOT WIN32)
 endif()
 
 set(SOURCES
-  IMpiProfiling.h
   MessagePassingMpiGlobal.h
   MessagePassingMpiGlobal.cc
-  MessagePassingMpiEnum.h
   MessagePassingMpiEnum.cc
-  MpiAdapter.h
   MpiAdapter.cc
-  MpiLock.h
   MpiDatatype.h
   MpiDatatype.cc
-  MpiControlDispatcher.h
   MpiControlDispatcher.cc
-  MpiRequest.h
-  MpiRequestList.h
   MpiRequestList.cc
-  MpiSerializeMessageList.h
-  MpiSerializeMessageList.cc
-  MpiSerializeDispatcher.h
   MpiSerializeDispatcher.cc
-  MpiTypeDispatcher.h
-  MpiTypeDispatcherImpl.h
   MpiTypeDispatcher.cc
   MpiMessagePassingMng.cc
   MpiMessagePassingMng.h
-  NoMpiProfiling.h
+
   StandaloneMpiMessagePassingMng.cc
   StandaloneMpiMessagePassingMng.h
+
+  internal/IMpiProfiling.h
+  internal/MessagePassingMpiEnum.h
+  internal/MpiAdapter.h
+  internal/MpiControlDispatcher.h
+  internal/MpiLock.h
+  internal/MpiRequest.h
+  internal/MpiRequestList.h
+  internal/MpiSerializeDispatcher.h
+  internal/MpiTypeDispatcher.h
+  internal/MpiTypeDispatcherImpl.h
+  internal/NoMpiProfiling.h
 )
 
 arccore_add_component_library(message_passing_mpi
