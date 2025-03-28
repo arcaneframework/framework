@@ -148,58 +148,58 @@ jobs:
           path: ${{ env.CCACHE_DIR }}
           key:  ${{ steps.restore-cache.outputs.cache-primary-key }}
 
-  # test:
-  #   name: test
-  #   needs:
-  #     - build
-  #   runs-on: ubuntu-latest
-  #   timeout-minutes: 120
-  #   container:
-  #     image: ghcr.io/arcaneframework/arcane-ifpen-devenv-gimkl-2021b-rt:ubu2204
-  #     #options: --user root  # Avoid to match github UID in container.
-  #   strategy:
-  #     fail-fast: false
+  test:
+    name: test
+    needs:
+      - build
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    container:
+      image: ghcr.io/arcaneframework/arcane-ifpen-devenv-gimkl-2021b-rt:ubu2204
+      #options: --user root  # Avoid to match github UID in container.
+    strategy:
+      fail-fast: false
 
-  #   steps:
+    steps:
 
-  #     - name: Checkout
-  #       id: checkout
-  #       if: |
-  #         (success() || failure())
-  #       uses: actions/checkout@v4
-  #       with:
-  #         path: ${{ env.SOURCE_DIR }}
-  #         submodules: true
+      - name: Checkout
+        id: checkout
+        if: |
+          (success() || failure())
+        uses: actions/checkout@v4
+        with:
+          path: ${{ env.SOURCE_DIR }}
+          submodules: true
 
-  #     - name: Download build artifact
-  #       uses: actions/download-artifact@v4
-  #       with:
-  #         name: build-artifact
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: build-artifact
 
-  #     - name: Untar build artifact
-  #       shell: bash
-  #       run: tar xf build-artifact.tar.gz -C /
+      - name: Untar build artifact
+        shell: bash
+        run: tar xf build-artifact.tar.gz -C /
 
-  #     - name: Remove build artifact tar
-  #       shell: bash
-  #       run: rm -f build-artifact.tar.gz
+      - name: Remove build artifact tar
+        shell: bash
+        run: rm -f build-artifact.tar.gz
 
-  #     - name: Test
-  #       id: test
-  #       shell: bash
-  #       run: |
-  #          export LD_LIBRARY_PATH=${{ env.BUILD_DIR }}/${{ env.EXT_LIB_SUBDIR }}:${LD_LIBRARY_PATH}
-  #          which mpiexec
-  #          mpiexec --version
-  #          ctest --test-dir ${{ env.BUILD_DIR }} ${{ env.CT_OPTS }}
+      - name: Test
+        id: test
+        shell: bash
+        run: |
+           export LD_LIBRARY_PATH=${{ env.BUILD_DIR }}/${{ env.EXT_LIB_SUBDIR }}:${LD_LIBRARY_PATH}
+           which mpiexec
+           mpiexec --version
+           ctest --test-dir ${{ env.BUILD_DIR }} ${{ env.CT_OPTS }}
 
-  #     - name: Upload test artifact
-  #       id: upload-test-artifact
-  #       uses: actions/upload-artifact@v4
-  #       if: |
-  #         (success() || failure()) &&
-  #         steps.test.outcome == 'failure'
-  #       with:
-  #         name: test-artifact
-  #         path: ${{ env.BUILD_DIR }}/Testing
-  #         retention-days: 1
+      - name: Upload test artifact
+        id: upload-test-artifact
+        uses: actions/upload-artifact@v4
+        if: |
+          (success() || failure()) &&
+          steps.test.outcome == 'failure'
+        with:
+          name: test-artifact
+          path: ${{ env.BUILD_DIR }}/Testing
+          retention-days: 1
