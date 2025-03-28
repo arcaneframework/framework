@@ -30,7 +30,9 @@ env:
   # CTest
   CT_OPTS: "--timeout 60 --output-on-failure ${{ github.event.inputs.ctest_options }}"
   # For intel MPI to fix errors appearing in July 2023
-  # I_MPI_SHM_LMT: shm
+  I_MPI_FABRICS: shm
+  # For oversubscribe
+  I_MPI_WAIT_MODE: 1
   # To remove test output directory to reduce disk usage
   ARCANE_TEST_CLEANUP_AFTER_RUN : 1
 
