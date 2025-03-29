@@ -61,6 +61,7 @@ set(ARCANE_MATERIALS_SOURCES
 set(ARCANE_INTERNAL_SOURCES
   internal/ICaseMngInternal.h
   internal/IDataInternal.h
+  internal/MshMeshGenerationInfo.h
   internal/CartesianMeshGenerationInfo.h
   internal/CartesianMeshGenerationInfo.cc
   internal/CartesianMeshAllocateBuildInfoInternal.h
@@ -372,6 +373,8 @@ set(ARCANE_ORIGINAL_SOURCES
   MeshReaderMng.h
   ModuleBuildInfo.h
   ModuleFactory.h
+
+  MshMeshGenerationInfo.cc
 
   PrivateVariableScalar.h
   PrivateVariableArray.h
