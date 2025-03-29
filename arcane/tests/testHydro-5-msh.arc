@@ -45,9 +45,8 @@
    </ensight7gold>-->
  </arcane-post-processing>
  <arcane-checkpoint>
-  <!--<period>1</period>  -->
-  <!-- <checkpoint-service name="ArcaneHdf5MultiCheckpointWriter" /> -->
-  <do-dump-at-end>true</do-dump-at-end>
+   <checkpoint-service name="ArcaneBasicCheckpointWriter" />
+   <do-dump-at-end>true</do-dump-at-end>
  </arcane-checkpoint>
 
  <!-- Configuration du module hydrodynamique -->
