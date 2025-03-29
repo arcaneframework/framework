@@ -13,6 +13,12 @@
 
 #include "arcane/core/internal/MshMeshGenerationInfo.h"
 
+#include "arcane/utils/IUserDataList.h"
+#include "arcane/utils/AutoDestroyUserData.h"
+#include "arcane/utils/FatalErrorException.h"
+
+#include "arcane/core/IMesh.h"
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -26,6 +32,29 @@ MshMeshGenerationInfo::
 MshMeshGenerationInfo(IMesh* mesh)
 : m_mesh(mesh)
 {
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+MshMeshGenerationInfo* MshMeshGenerationInfo::
+getReference(IMesh* mesh, bool create)
+{
+  const char* name = "MshMeshGenerationInfo";
+  IUserDataList* udlist = mesh->userDataList();
+
+  IUserData* ud = udlist->data(name, true);
+  if (!ud) {
+    if (!create)
+      return nullptr;
+    auto* cm = new MshMeshGenerationInfo(mesh);
+    udlist->setData(name, new AutoDestroyUserData<MshMeshGenerationInfo>(cm));
+    return cm;
+  }
+  auto* adud = dynamic_cast<AutoDestroyUserData<MshMeshGenerationInfo>*>(ud);
+  if (!adud)
+    ARCANE_FATAL("Can not cast to MshMeshGenerationInfo");
+  return adud->data();
 }
 
 /*---------------------------------------------------------------------------*/

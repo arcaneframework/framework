@@ -169,7 +169,7 @@ class MshParallelMeshReader
   Int32 m_master_io_rank = A_NULL_RANK;
   bool m_is_parallel = false;
   Ref<IosFile> m_ios_file; // nullptr sauf pour le rang maitre.
-  std::unique_ptr<impl::MshMeshGenerationInfo> m_mesh_info;
+  impl::MshMeshGenerationInfo* m_mesh_info = nullptr;
   MshMeshAllocateInfo m_mesh_allocate_info;
   //! Nombre de partitions pour la lecture des noeuds et blocs
   Int32 m_nb_part = 4;
@@ -1782,7 +1782,7 @@ _readMeshFromFile()
 IMeshReader::eReturnType MshParallelMeshReader::
 readMeshFromMshFile(IMesh* mesh, const String& filename, bool use_internal_partition)
 {
-  m_mesh_info = std::make_unique<impl::MshMeshGenerationInfo>(mesh);
+  m_mesh_info = impl::MshMeshGenerationInfo::getReference(mesh, true);
   info() << "Trying to read in parallel 'msh' file '" << filename << "'"
          << " use_internal_partition=" << use_internal_partition;
   m_mesh = mesh;

@@ -131,6 +131,10 @@ class ARCANE_CORE_EXPORT MshMeshGenerationInfo
 
  public:
 
+  static MshMeshGenerationInfo* getReference(IMesh* mesh, bool create);
+
+ public:
+
   void findEntities(Int32 dimension, Int64 tag, Array<MshEntitiesWithNodes>& entities)
   {
     entities.clear();
