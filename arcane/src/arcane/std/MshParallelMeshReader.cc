@@ -91,7 +91,7 @@ class MshParallelMeshReader
    * Si on a \a nb_entity, alors uids.size()==nb_entity
    * et connectivity.size()==nb_entity*item_nb_node
    */
-  struct MeshV4ElementsBlock
+  struct MshElementsBlock
   {
     Int32 index = 0; //!< Index du bloc dans la liste
     Int64 nb_entity = 0; //!< Nombre d'entités du bloc
@@ -107,14 +107,14 @@ class MshParallelMeshReader
   /*!
    * \brief Infos sur un nom physique.
    */
-  struct MeshPhysicalName
+  struct MshPhysicalName
   {
-    MeshPhysicalName(Int32 _dimension, Int64 _tag, const String& _name)
+    MshPhysicalName(Int32 _dimension, Int64 _tag, const String& _name)
     : dimension(_dimension)
     , tag(_tag)
     , name(_name)
     {}
-    MeshPhysicalName() = default;
+    MshPhysicalName() = default;
     bool isNull() const { return dimension == (-1); }
     Int32 dimension = -1;
     Int64 tag = -1;
@@ -124,13 +124,13 @@ class MshParallelMeshReader
   /*!
    * \brief Infos du bloc '$PhysicalNames'.
    */
-  struct MeshPhysicalNameList
+  struct MshPhysicalNameList
   {
     void add(Int32 dimension, Int64 tag, String name)
     {
-      m_physical_names[dimension].add(MeshPhysicalName{ dimension, tag, name });
+      m_physical_names[dimension].add(MshPhysicalName{ dimension, tag, name });
     }
-    MeshPhysicalName find(Int32 dimension, Int64 tag) const
+    MshPhysicalName find(Int32 dimension, Int64 tag) const
     {
       for (auto& x : m_physical_names[dimension])
         if (x.tag == tag)
@@ -141,13 +141,13 @@ class MshParallelMeshReader
    private:
 
     //! Liste par dimension des éléments du bloc $PhysicalNames
-    FixedArray<UniqueArray<MeshPhysicalName>, 4> m_physical_names;
+    FixedArray<UniqueArray<MshPhysicalName>, 4> m_physical_names;
   };
 
   //! Infos pour les entités 0D
-  struct MeshV4EntitiesNodes
+  struct MshEntitiesNodes
   {
-    MeshV4EntitiesNodes(Int64 _tag, Int64 _physical_tag)
+    MshEntitiesNodes(Int64 _tag, Int64 _physical_tag)
     : tag(_tag)
     , physical_tag(_physical_tag)
     {}
@@ -156,9 +156,9 @@ class MshParallelMeshReader
   };
 
   //! Infos pour les entités 1D, 2D et 3D
-  struct MeshV4EntitiesWithNodes
+  struct MshEntitiesWithNodes
   {
-    MeshV4EntitiesWithNodes(Int32 _dim, Int64 _tag, Int64 _physical_tag)
+    MshEntitiesWithNodes(Int32 _dim, Int64 _tag, Int64 _physical_tag)
     : dimension(_dim)
     , tag(_tag)
     , physical_tag(_physical_tag)
@@ -168,7 +168,7 @@ class MshParallelMeshReader
     Int64 physical_tag;
   };
 
-  class PeriodicOneInfo
+  class MshPeriodicOneInfo
   {
    public:
 
@@ -184,17 +184,17 @@ class MshParallelMeshReader
   };
 
   //! Informations sur la périodicité
-  class PeriodicInfo
+  class MshPeriodicInfo
   {
    public:
 
-    UniqueArray<PeriodicOneInfo> m_periodic_list;
+    UniqueArray<MshPeriodicOneInfo> m_periodic_list;
   };
 
   /*!
    * \brief Informations pour créer les entités d'un genre.
    */
-  class ItemKindInfo
+  class MshItemKindInfo
   {
     // TODO: Allouer la connectivité par bloc pour éviter de trop grosses allocations
 
@@ -215,12 +215,12 @@ class MshParallelMeshReader
   };
 
   //! Informations pour créer les entités Arcane.
-  class MeshItemsAllocateInfo
+  class MshMeshAllocateInfo
   {
    public:
 
-    ItemKindInfo faces_infos;
-    ItemKindInfo cells_infos;
+    MshItemKindInfo faces_infos;
+    MshItemKindInfo cells_infos;
 
     //! Coordonnées des noeuds de ma partie
     UniqueArray<Real3> nodes_coordinates;
@@ -231,11 +231,11 @@ class MshParallelMeshReader
   };
 
   //! Informations sur le maillage créé
-  class MeshInfo
+  class MshMeshInfo
   {
    public:
 
-    void findEntities(Int32 dimension, Int64 tag, Array<MeshV4EntitiesWithNodes>& entities)
+    void findEntities(Int32 dimension, Int64 tag, Array<MshEntitiesWithNodes>& entities)
     {
       entities.clear();
       for (auto& x : entities_with_nodes_list[dimension - 1])
@@ -243,7 +243,7 @@ class MshParallelMeshReader
           entities.add(x);
     }
 
-    MeshV4EntitiesNodes* findNodeEntities(Int64 tag)
+    MshEntitiesNodes* findNodeEntities(Int64 tag)
     {
       for (auto& x : entities_nodes_list)
         if (x.tag == tag)
@@ -253,11 +253,11 @@ class MshParallelMeshReader
 
    public:
 
-    MeshPhysicalNameList physical_name_list;
-    UniqueArray<MeshV4EntitiesNodes> entities_nodes_list;
-    FixedArray<UniqueArray<MeshV4EntitiesWithNodes>, 3> entities_with_nodes_list;
-    UniqueArray<MeshV4ElementsBlock> blocks;
-    PeriodicInfo m_periodic_info;
+    MshPhysicalNameList physical_name_list;
+    UniqueArray<MshEntitiesNodes> entities_nodes_list;
+    FixedArray<UniqueArray<MshEntitiesWithNodes>, 3> entities_with_nodes_list;
+    UniqueArray<MshElementsBlock> blocks;
+    MshPeriodicInfo m_periodic_info;
   };
 
  public:
@@ -275,8 +275,8 @@ class MshParallelMeshReader
   Int32 m_master_io_rank = A_NULL_RANK;
   bool m_is_parallel = false;
   Ref<IosFile> m_ios_file; // nullptr sauf pour le rang maitre.
-  MeshInfo m_mesh_info;
-  MeshItemsAllocateInfo m_mesh_allocate_info;
+  MshMeshInfo m_mesh_info;
+  MshMeshAllocateInfo m_mesh_allocate_info;
   //! Nombre de partitions pour la lecture des noeuds et blocs
   Int32 m_nb_part = 4;
   //! Liste des rangs qui participent à la conservation des données
@@ -294,10 +294,10 @@ class MshParallelMeshReader
   void _addFaces();
   void _allocateCells();
   void _allocateGroups();
-  void _addFaceGroup(MeshV4ElementsBlock& block, const String& group_name);
+  void _addFaceGroup(MshElementsBlock& block, const String& group_name);
   void _addFaceGroupOnePart(ConstArrayView<Int64> connectivities, Int32 item_nb_node,
                             const String& group_name, Int32 block_index);
-  void _addCellOrNodeGroup(MeshV4ElementsBlock& block, const String& group_name, IItemFamily* family);
+  void _addCellOrNodeGroup(MshElementsBlock& block, const String& group_name, IItemFamily* family);
   void _addCellOrNodeGroupOnePart(ConstArrayView<Int64> uids, const String& group_name,
                                   Int32 block_index, IItemFamily* family);
   Int16 _switchMshType(Int64, Int32&) const;
@@ -312,9 +312,9 @@ class MshParallelMeshReader
   void _getInt64ArrayAndBroadcast(ArrayView<Int64> values);
   void _getInt32ArrayAndBroadcast(ArrayView<Int32> values);
   void _getDoubleArrayAndBroadcast(ArrayView<double> values);
-  void _readOneElementBlock(MeshV4ElementsBlock& block);
+  void _readOneElementBlock(MshElementsBlock& block);
   void _computeNodesPartition();
-  void _computeOwnItems(MeshV4ElementsBlock& block, ItemKindInfo& item_kind_info, bool is_generate_uid);
+  void _computeOwnItems(MshElementsBlock& block, MshItemKindInfo& item_kind_info, bool is_generate_uid);
   Real3 _getReal3();
   Int32 _getInt32();
   Int64 _getInt64();
@@ -854,7 +854,7 @@ _readNodesOneEntity(Int32 entity_index)
  * \brief Lit un bloc d'entité de type 'Element'.
  */
 void MshParallelMeshReader::
-_readOneElementBlock(MeshV4ElementsBlock& block)
+_readOneElementBlock(MshElementsBlock& block)
 {
   IosFile* ios_file = m_ios_file.get();
   IParallelMng* pm = m_parallel_mng;
@@ -978,19 +978,19 @@ _readElementsFromFile()
   if (number_of_elements < 0)
     ARCANE_THROW(IOException, "Invalid number of elements: {0}", number_of_elements);
 
-  UniqueArray<MeshV4ElementsBlock>& blocks = m_mesh_info.blocks;
+  UniqueArray<MshElementsBlock>& blocks = m_mesh_info.blocks;
   blocks.resize(nb_block);
 
   {
     // Numérote les blocs (pour le débug)
     Integer index = 0;
-    for (MeshV4ElementsBlock& block : blocks) {
+    for (MshElementsBlock& block : blocks) {
       block.index = index;
       ++index;
     }
   }
 
-  for (MeshV4ElementsBlock& block : blocks) {
+  for (MshElementsBlock& block : blocks) {
 
     FixedArray<Int32, 3> block_info;
     _getInt32ArrayAndBroadcast(block_info.view());
@@ -1042,7 +1042,7 @@ _readElementsFromFile()
   // Maintenant qu'on a tous les blocs, la dimension du maillage est
   // la plus grande dimension des blocs
   Integer mesh_dimension = -1;
-  for (const MeshV4ElementsBlock& block : blocks)
+  for (const MshElementsBlock& block : blocks)
     mesh_dimension = math::max(mesh_dimension, block.dimension);
   if (mesh_dimension < 0)
     ARCANE_FATAL("Invalid computed mesh dimension '{0}'", mesh_dimension);
@@ -1060,7 +1060,7 @@ _readElementsFromFile()
   }
   info() << "Use experimental cell type?=" << use_experimental_type_for_cell;
   ItemTypeMng* item_type_mng = m_mesh->itemTypeMng();
-  for (MeshV4ElementsBlock& block : blocks) {
+  for (MshElementsBlock& block : blocks) {
     const Int32 block_dim = block.dimension;
     String item_type_name = item_type_mng->typeFromId(block.item_type)->typeName();
     info() << "Reading block dim=" << block_dim << " type_name=" << item_type_name;
@@ -1150,7 +1150,7 @@ namespace
 /*---------------------------------------------------------------------------*/
 
 void MshParallelMeshReader::
-_computeOwnItems(MeshV4ElementsBlock& block, ItemKindInfo& item_kind_info, bool is_generate_uid)
+_computeOwnItems(MshElementsBlock& block, MshItemKindInfo& item_kind_info, bool is_generate_uid)
 {
   // On ne conserve que les entités dont le premier noeud appartient à notre rang.
 
@@ -1300,9 +1300,9 @@ _allocateGroups()
   IMesh* mesh = m_mesh;
   Int32 mesh_dim = mesh->dimension();
   Int32 face_dim = mesh_dim - 1;
-  UniqueArray<MeshV4EntitiesWithNodes> entity_list;
-  UniqueArray<MeshPhysicalName> physical_name_list;
-  for (MeshV4ElementsBlock& block : m_mesh_info.blocks) {
+  UniqueArray<MshEntitiesWithNodes> entity_list;
+  UniqueArray<MshPhysicalName> physical_name_list;
+  for (MshElementsBlock& block : m_mesh_info.blocks) {
     entity_list.clear();
     physical_name_list.clear();
     Int32 block_index = block.index;
@@ -1315,25 +1315,25 @@ _allocateGroups()
       continue;
     }
     if (block_dim == 0) {
-      const MeshV4EntitiesNodes* entity = m_mesh_info.findNodeEntities(block_entity_tag);
+      const MshEntitiesNodes* entity = m_mesh_info.findNodeEntities(block_entity_tag);
       if (!entity) {
         info(5) << "[Groups] Skipping block index=" << block_index
                 << " because entity tag is invalid";
         continue;
       }
       Int64 entity_physical_tag = entity->physical_tag;
-      MeshPhysicalName physical_name = m_mesh_info.physical_name_list.find(block_dim, entity_physical_tag);
+      MshPhysicalName physical_name = m_mesh_info.physical_name_list.find(block_dim, entity_physical_tag);
       physical_name_list.add(physical_name);
     }
     else {
       m_mesh_info.findEntities(block_dim, block_entity_tag, entity_list);
-      for (const MeshV4EntitiesWithNodes& x : entity_list) {
+      for (const MshEntitiesWithNodes& x : entity_list) {
         Int64 entity_physical_tag = x.physical_tag;
-        MeshPhysicalName physical_name = m_mesh_info.physical_name_list.find(block_dim, entity_physical_tag);
+        MshPhysicalName physical_name = m_mesh_info.physical_name_list.find(block_dim, entity_physical_tag);
         physical_name_list.add(physical_name);
       }
     }
-    for (const MeshPhysicalName& physical_name : physical_name_list) {
+    for (const MshPhysicalName& physical_name : physical_name_list) {
       if (physical_name.isNull()) {
         info(5) << "[Groups] Skipping block index=" << block_index
                 << " because entity physical tag is invalid";
@@ -1360,7 +1360,7 @@ _allocateGroups()
  * \brief Ajoute des faces au groupe \a group_name.
  */
 void MshParallelMeshReader::
-_addFaceGroup(MeshV4ElementsBlock& block, const String& group_name)
+_addFaceGroup(MshElementsBlock& block, const String& group_name)
 {
   IParallelMng* pm = m_parallel_mng;
   const Int32 item_nb_node = block.item_nb_node;
@@ -1458,7 +1458,7 @@ _addFaceGroupOnePart(ConstArrayView<Int64> connectivities, Int32 item_nb_node,
  * \brief Ajoute des faces au groupe \a group_name.
  */
 void MshParallelMeshReader::
-_addCellOrNodeGroup(MeshV4ElementsBlock& block, const String& group_name, IItemFamily* family)
+_addCellOrNodeGroup(MshElementsBlock& block, const String& group_name, IItemFamily* family)
 {
   IParallelMng* pm = m_parallel_mng;
 
@@ -1608,7 +1608,7 @@ _readEntities()
       tag_info[1] = physical_tag;
     }
     m_parallel_mng->broadcast(tag_info.view(), m_master_io_rank);
-    m_mesh_info.entities_nodes_list.add(MeshV4EntitiesNodes(tag_info[0], tag_info[1]));
+    m_mesh_info.entities_nodes_list.add(MshEntitiesNodes(tag_info[0], tag_info[1]));
     if (!m_is_binary)
       _goToNextLine();
   }
@@ -1675,7 +1675,7 @@ _readOneEntity(Int32 entity_dim)
       Int64 physical_tag = dim_and_tag_info[3 + z];
       info(4) << "[Entities] adding info dim=" << entity_dim << " tag=" << tag
               << " physical_tag=" << physical_tag;
-      m_mesh_info.entities_with_nodes_list[dim - 1].add(MeshV4EntitiesWithNodes(dim, tag, physical_tag));
+      m_mesh_info.entities_with_nodes_list[dim - 1].add(MshEntitiesWithNodes(dim, tag, physical_tag));
     }
   }
 
@@ -1711,10 +1711,10 @@ _readPeriodic()
   // TODO: pour l'instant, tous les rangs conservent les
   // données car on suppose qu'il n'y en a pas beaucoup.
   // A terme, il faudra aussi distribuer ces informations.
-  PeriodicInfo& periodic_info = m_mesh_info.m_periodic_info;
+  MshPeriodicInfo& periodic_info = m_mesh_info.m_periodic_info;
   periodic_info.m_periodic_list.resize(nb_link);
   for (Int64 ilink = 0; ilink < nb_link; ++ilink) {
-    PeriodicOneInfo& one_info = periodic_info.m_periodic_list[ilink];
+    MshPeriodicOneInfo& one_info = periodic_info.m_periodic_list[ilink];
     FixedArray<Int32, 3> entity_info;
     _getInt32ArrayAndBroadcast(entity_info.view());
 
