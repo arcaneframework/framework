@@ -281,8 +281,6 @@ arcane_copy_mesh(tied_interface_2d_1_v4.2 tied_interface_2d_1_v4.2 vtk)
 arcane_copy_mesh(sphere_v4.2 sphere_v4.2 vtk)
 arcane_copy_mesh(sphere_v4.2_binary sphere_v4.2_binary vtk)
 
-configure_file(test-CasePartVtu.sh.in ${ARCANE_TEST_PATH}/test-CasePartVtu.sh)
-
 # Copie le répertoire des données dans le répertoire d'exécution des tests
 # Cela est nécessaire pour certains cas comme ceux faisant une reprise
 # depuis une ancienne version de Arcane
@@ -1081,8 +1079,16 @@ if(GEOMETRYKERNEL_FOUND)
 endif()
 
 if(UNIX AND MPI_FOUND)
+  set(CASE_PART_TEST_FILE "${TEST_PATH}/testHydro-5-msh.arc")
+  configure_file(test-CasePartVtu.sh.in ${ARCANE_TEST_PATH}/test-CasePartVtu1.sh)
   add_test(NAME partition_mesh_msh
-    COMMAND ${ARCANE_TEST_PATH}/test-CasePartVtu.sh
+    COMMAND ${ARCANE_TEST_PATH}/test-CasePartVtu1.sh
+    WORKING_DIRECTORY "${ARCANE_TEST_WORKDIR}"
+  )
+  set(CASE_PART_TEST_FILE "${TEST_PATH}/testHydro-5-meshservice-msh.arc")
+  configure_file(test-CasePartVtu.sh.in ${ARCANE_TEST_PATH}/test-CasePartVtu2.sh)
+  add_test(NAME partition_mesh_meshservice_msh
+    COMMAND ${ARCANE_TEST_PATH}/test-CasePartVtu2.sh
     WORKING_DIRECTORY "${ARCANE_TEST_WORKDIR}"
   )
 endif()
