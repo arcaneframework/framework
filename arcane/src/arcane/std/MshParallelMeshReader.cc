@@ -140,6 +140,7 @@ class MshParallelMeshReader
 
    private:
 
+    //! Liste par dimension des éléments du bloc $PhysicalNames
     FixedArray<UniqueArray<MeshPhysicalName>, 4> m_physical_names;
   };
 
@@ -174,8 +175,11 @@ class MshParallelMeshReader
     Int32 m_entity_dim = -1;
     Int32 m_entity_tag = -1;
     Int32 m_entity_tag_master = -1;
+    //! Liste des valeurs affines
     UniqueArray<double> m_affine_values;
+    // Nombre de couples (esclave, maîtres)
     Int32 m_nb_corresponding_node = 0;
+    //! Liste de couples (uniqueId noeud esclave, unique() noeud maître)
     UniqueArray<Int64> m_corresponding_nodes;
   };
 
@@ -210,6 +214,22 @@ class MshParallelMeshReader
     UniqueArray<Int64> items_infos;
   };
 
+  //! Informations pour créer les entités Arcane.
+  class MeshItemsAllocateInfo
+  {
+   public:
+
+    ItemKindInfo faces_infos;
+    ItemKindInfo cells_infos;
+
+    //! Coordonnées des noeuds de ma partie
+    UniqueArray<Real3> nodes_coordinates;
+    //! UniqueId() des noeuds de ma partie.
+    UniqueArray<Int64> nodes_unique_id;
+    //! Tableau associatif (uniqueId(),rang) auquel le noeud appartiendra.
+    std::unordered_map<Int64, Int32> nodes_rank_map;
+  };
+
   //! Informations sur le maillage créé
   class MeshInfo
   {
@@ -233,17 +253,6 @@ class MshParallelMeshReader
 
    public:
 
-    ItemKindInfo faces_infos;
-    ItemKindInfo cells_infos;
-
-    //! Coordonnées des noeuds de ma partie
-    UniqueArray<Real3> nodes_coordinates;
-    //! UniqueId() des noeuds de ma partie.
-    UniqueArray<Int64> nodes_unique_id;
-    //! Tableau associatif (uniqueId(),rang) auquel le noeud appartiendra.
-    std::unordered_map<Int64, Int32> nodes_rank_map;
-    Real3 m_node_min_bounding_box;
-    Real3 m_node_max_bounding_box;
     MeshPhysicalNameList physical_name_list;
     UniqueArray<MeshV4EntitiesNodes> entities_nodes_list;
     FixedArray<UniqueArray<MeshV4EntitiesWithNodes>, 3> entities_with_nodes_list;
@@ -257,7 +266,7 @@ class MshParallelMeshReader
   : TraceAccessor(tm)
   {}
 
-  eReturnType readMeshFromMshFile(IMesh* mesh, const String& file_name, bool use_internal_partition) override;
+  eReturnType readMeshFromMshFile(IMesh* mesh, const String& filename, bool use_internal_partition) override;
 
  private:
 
@@ -267,6 +276,7 @@ class MshParallelMeshReader
   bool m_is_parallel = false;
   Ref<IosFile> m_ios_file; // nullptr sauf pour le rang maitre.
   MeshInfo m_mesh_info;
+  MeshItemsAllocateInfo m_mesh_allocate_info;
   //! Nombre de partitions pour la lecture des noeuds et blocs
   Int32 m_nb_part = 4;
   //! Liste des rangs qui participent à la conservation des données
@@ -618,13 +628,11 @@ _computeNodesPartition()
   Real min_value = -max_value;
   Real3 min_box(max_value, max_value, max_value);
   Real3 max_box(min_value, min_value, min_value);
-  const Int64 nb_node = m_mesh_info.nodes_coordinates.largeSize();
-  for (Real3 pos : m_mesh_info.nodes_coordinates) {
+  const Int64 nb_node = m_mesh_allocate_info.nodes_coordinates.largeSize();
+  for (Real3 pos : m_mesh_allocate_info.nodes_coordinates) {
     min_box = math::min(min_box, pos);
     max_box = math::max(max_box, pos);
   }
-  m_mesh_info.m_node_min_bounding_box = min_box;
-  m_mesh_info.m_node_max_bounding_box = max_box;
 
   //! Rank auquel appartient les noeuds de ma partie.
   UniqueArray<Int32> nodes_part(nb_node, 0);
@@ -647,7 +655,7 @@ _computeNodesPartition()
   // divisions par zéro.
   if (!math::isNearlyEqual(global_min_x, global_max_x)) {
     for (Int64 i = 0; i < nb_node; ++i) {
-      Int32 part = static_cast<Int32>((m_mesh_info.nodes_coordinates[i].x - global_min_x) / diff_v);
+      Int32 part = static_cast<Int32>((m_mesh_allocate_info.nodes_coordinates[i].x - global_min_x) / diff_v);
       part = std::clamp(part, 0, m_nb_part - 1);
       nodes_part[i] = part;
     }
@@ -656,9 +664,9 @@ _computeNodesPartition()
   // Construit la table de hashage des rangs
   for (Int64 i = 0; i < nb_node; ++i) {
     Int32 rank = m_parts_rank[nodes_part[i]];
-    Int64 uid = m_mesh_info.nodes_unique_id[i];
+    Int64 uid = m_mesh_allocate_info.nodes_unique_id[i];
     ++nb_node_per_rank[rank];
-    m_mesh_info.nodes_rank_map.insert(std::make_pair(uid, rank));
+    m_mesh_allocate_info.nodes_rank_map.insert(std::make_pair(uid, rank));
   }
   pm->reduce(Parallel::ReduceSum, nb_node_per_rank);
   info() << "NB_NODE_PER_RANK=" << nb_node_per_rank;
@@ -797,7 +805,7 @@ _readNodesOneEntity(Int32 entity_index)
 
     // Conserve les informations de ma partie
     if (my_rank == dest_rank) {
-      m_mesh_info.nodes_unique_id.addRange(nodes_uids);
+      m_mesh_allocate_info.nodes_unique_id.addRange(nodes_uids);
     }
   }
 
@@ -832,7 +840,7 @@ _readNodesOneEntity(Int32 entity_index)
 
     // Conserve les informations de ma partie
     if (my_rank == dest_rank) {
-      m_mesh_info.nodes_coordinates.addRange(nodes_coordinates);
+      m_mesh_allocate_info.nodes_coordinates.addRange(nodes_coordinates);
     }
   }
 
@@ -1057,7 +1065,7 @@ _readElementsFromFile()
     String item_type_name = item_type_mng->typeFromId(block.item_type)->typeName();
     info() << "Reading block dim=" << block_dim << " type_name=" << item_type_name;
     if (block_dim == mesh_dimension)
-      _computeOwnItems(block, m_mesh_info.cells_infos, false);
+      _computeOwnItems(block, m_mesh_allocate_info.cells_infos, false);
     else if (allow_multi_dim_cell) {
       // Regarde si on peut créé des mailles de dimension inférieures à celles
       // du maillage.
@@ -1090,7 +1098,7 @@ _readElementsFromFile()
             ARCANE_FATAL("Not supported sub dimension cell type={0} for 2D mesh", item_type_name);
         }
         block.is_built_as_cells = true;
-        _computeOwnItems(block, m_mesh_info.cells_infos, false);
+        _computeOwnItems(block, m_mesh_allocate_info.cells_infos, false);
       }
     }
   }
@@ -1173,8 +1181,8 @@ _computeOwnItems(MeshV4ElementsBlock& block, ItemKindInfo& item_kind_info, bool 
     // on conserve la maille.
     for (Int32 i = 0; i < nb_item; ++i) {
       Int64 first_node_uid = connectivities_view[i * item_nb_node];
-      auto x = m_mesh_info.nodes_rank_map.find(first_node_uid);
-      if (x == m_mesh_info.nodes_rank_map.end())
+      auto x = m_mesh_allocate_info.nodes_rank_map.find(first_node_uid);
+      if (x == m_mesh_allocate_info.nodes_rank_map.end())
         // Le noeud n'est pas dans ma liste
         continue;
       Int32 rank = x->second;
@@ -1227,8 +1235,8 @@ _setNodesCoordinates()
   VariableNodeReal3& nodes_coord_var(m_mesh->nodesCoordinates());
 
   for (Int32 dest_rank : m_parts_rank) {
-    ConstArrayView<Int64> uids = _broadcastArray(pm, m_mesh_info.nodes_unique_id, uids_storage, dest_rank);
-    ConstArrayView<Real3> coords = _broadcastArray(pm, m_mesh_info.nodes_coordinates, coords_storage, dest_rank);
+    ConstArrayView<Int64> uids = _broadcastArray(pm, m_mesh_allocate_info.nodes_unique_id, uids_storage, dest_rank);
+    ConstArrayView<Real3> coords = _broadcastArray(pm, m_mesh_allocate_info.nodes_coordinates, coords_storage, dest_rank);
 
     Int32 nb_item = uids.size();
     local_ids.resize(nb_item);
@@ -1252,10 +1260,10 @@ void MshParallelMeshReader::
 _addFaces()
 {
   IMesh* mesh = m_mesh;
-  Integer nb_item = m_mesh_info.faces_infos.nb_item;
+  Integer nb_item = m_mesh_allocate_info.faces_infos.nb_item;
   info() << "Adding faces direct nb_face=" << nb_item;
   if (nb_item != 0)
-    mesh->modifier()->addFaces(nb_item, m_mesh_info.faces_infos.items_infos);
+    mesh->modifier()->addFaces(nb_item, m_mesh_allocate_info.faces_infos.items_infos);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1265,16 +1273,16 @@ void MshParallelMeshReader::
 _allocateCells()
 {
   IMesh* mesh = m_mesh;
-  Integer nb_elements = m_mesh_info.cells_infos.nb_item;
+  Integer nb_elements = m_mesh_allocate_info.cells_infos.nb_item;
   info() << "nb_of_elements=cells_type.size()=" << nb_elements;
-  Integer nb_cell_node = m_mesh_info.cells_infos.items_infos.size();
+  Integer nb_cell_node = m_mesh_allocate_info.cells_infos.items_infos.size();
   info() << "nb_cell_node=cells_connectivity.size()=" << nb_cell_node;
 
   // Création des mailles
   info() << "Building cells, nb_cell=" << nb_elements << " nb_cell_node=" << nb_cell_node;
   IPrimaryMesh* pmesh = mesh->toPrimaryMesh();
   info() << "## Allocating ##";
-  pmesh->allocateCells(nb_elements, m_mesh_info.cells_infos.items_infos, false);
+  pmesh->allocateCells(nb_elements, m_mesh_allocate_info.cells_infos.items_infos, false);
   info() << "## Ending ##";
   // Ajoute ensuite faces si elles peuvent ne pas être connectées au maillage.
   if (m_mesh->meshKind().isNonManifold())
