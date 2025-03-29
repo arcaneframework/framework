@@ -334,6 +334,10 @@ ARCANE_ADD_TEST_SEQUENTIAL(caseoptions testCaseOptions-1.arc)
 arcane_add_test_sequential(caseoptions_specificentrypoint testCaseOptions-specific-entry-point.arc
   "-We,ARCANE_CALL_SPECIFIC_ENTRY_POINT,CaseOptionLoop2")
 
+set(APPEND OPTIONAL_ARGS_TEST_COMMAND_LINE_REPLACE)
+if (HDF5_FOUND)
+  list(APPEND OPTIONAL_ARGS_TEST_COMMAND_LINE_REPLACE "-A,//case-options-tester/post-processor1[3]/@name=VtkHdfV2PostProcessor")
+endif()
 arcane_add_test_sequential(caseoptions_commandlinereplace testCaseOptions-commandLineReplace.arc
     "-We,ARCANE_CALL_SPECIFIC_ENTRY_POINT,CaseOptionLoop2"
     "-We,ARCANE_REPLACE_SYMBOLS_IN_DATASET,1"
@@ -366,11 +370,11 @@ arcane_add_test_sequential(caseoptions_commandlinereplace testCaseOptions-comman
     "-A,PostProcessor1FrName=Ensight7PostProcessor"
     "-A,//case-options-tester/post-processor1/fileset-size=1"
     "-A,//case-options-tester/post-processor1[1]/binary-file=false"
-    "-A,//case-options-tester/post-processor1[3]/@name=VtkHdfV2PostProcessor"
     "-A,//case-options-tester/post-processor1[4]/@name=UCDPostProcessor"
     "-A,//case-options-tester/post-processor2[2]/@mesh-name=Mesh1"
     "-A,//case-options-tester/complex1/simple-real-2=3"
     "-A,//case-options-tester/complex1/simple-real-2-multi[2]=2.3"
+    ${OPTIONAL_ARGS_TEST_COMMAND_LINE_REPLACE}
 )
 
 arcane_add_test_sequential(caseoptions_commandlinereplace_fail1 testCaseOptions-specific-entry-point.arc
