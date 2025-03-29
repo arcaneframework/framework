@@ -9,6 +9,11 @@
     à partir du fichier spécifié. Si c'est `&lt;generator&gt;`, alors le
     maillage sera généré directement en ligne à partir d'un des
     générateurs disponible dans %Arcane.
+
+    La balise `&lt;partitioner;&gt;` indique le partitionneur à utiliser pour
+    le partitionnement initial. La valeur `External` permet d'indiquer que le partitionnement
+    a déjà été fait. Dans ce cas, les fichiers de maillage seront de la
+    forme 'CPU...%n' avec N le numéro de la partie du maillage.
   </description>
     
   <interface name="Arcane::ICaseMeshService" />
