@@ -39,33 +39,57 @@ class ARCANE_CORE_EXPORT MshMeshGenerationInfo
   /*!
    * \brief Infos sur un nom physique.
    */
-  struct MshPhysicalName
+  class MshPhysicalName
   {
-    MshPhysicalName(Int32 _dimension, Int64 _tag, const String& _name)
-    : dimension(_dimension)
-    , tag(_tag)
-    , name(_name)
+   public:
+
+    MshPhysicalName(Int32 dimension, Int64 tag, const String& name)
+    : m_dimension(dimension)
+    , m_tag(tag)
+    , m_name(name)
     {}
+    //! Construit un nom physique nul.
     MshPhysicalName() = default;
-    bool isNull() const { return dimension == (-1); }
-    Int32 dimension = -1;
-    Int64 tag = -1;
-    String name;
+
+   public:
+
+    //! Indique si le nom physique n'est pas défini.
+    bool isNull() const { return m_dimension == (-1); }
+    Int32 dimension() const { return m_dimension; }
+    Int64 tag() const { return m_tag; }
+    const String& name() const { return m_name; }
+
+   private:
+
+    Int32 m_dimension = -1;
+    Int64 m_tag = -1;
+    String m_name;
   };
 
   /*!
    * \brief Infos du bloc '$PhysicalNames'.
+   *
+   * Ce bloc est optionnel dans le format MSH. Il n'y a donc
+   * pas forcément un nom physique associé à un tag.
    */
-  struct MshPhysicalNameList
+  class MshPhysicalNameList
   {
+   public:
+
     void add(Int32 dimension, Int64 tag, const String& name)
     {
       m_physical_names[dimension].add(MshPhysicalName{ dimension, tag, name });
     }
+    /*!
+     * \brief Récupère le nom physique associé au tag \a tag
+     *
+     * Ce nom peut-être nul si le tag \a tag n'est pas associé
+     * à un nom physique ou s'il n'y a pas de nom physique.
+     */
     MshPhysicalName find(Int32 dimension, Int64 tag) const
     {
       for (auto& x : m_physical_names[dimension])
-        if (x.tag == tag)
+        if (x.tag() == tag)
           return x;
       return {};
     }
@@ -77,14 +101,24 @@ class ARCANE_CORE_EXPORT MshMeshGenerationInfo
   };
 
   //! Infos pour les entités 0D
-  struct MshEntitiesNodes
+  class MshEntitiesNodes
   {
-    MshEntitiesNodes(Int64 _tag, Int64 _physical_tag)
-    : tag(_tag)
-    , physical_tag(_physical_tag)
+   public:
+
+    MshEntitiesNodes(Int64 tag, Int64 physical_tag)
+    : m_tag(tag)
+    , m_physical_tag(physical_tag)
     {}
-    Int64 tag;
-    Int64 physical_tag;
+
+   public:
+
+    Int64 tag() const { return m_tag; }
+    Int64 physicalTag() const { return m_physical_tag; }
+
+   private:
+
+    Int64 m_tag = -1;
+    Int64 m_physical_tag = -1;
   };
 
   //! Infos pour les entités 1D, 2D et 3D
@@ -92,14 +126,23 @@ class ARCANE_CORE_EXPORT MshMeshGenerationInfo
   {
    public:
 
-    MshEntitiesWithNodes(Int32 _dim, Int64 _tag, Int64 _physical_tag)
-    : dimension(_dim)
-    , tag(_tag)
-    , physical_tag(_physical_tag)
+    MshEntitiesWithNodes(Int32 dim, Int64 tag, Int64 physical_tag)
+    : m_dimension(dim)
+    , m_tag(tag)
+    , m_physical_tag(physical_tag)
     {}
-    Int32 dimension;
-    Int64 tag;
-    Int64 physical_tag;
+
+   public:
+
+    Int32 dimension() const { return m_dimension; }
+    Int64 tag() const { return m_tag; }
+    Int64 physicalTag() const { return m_physical_tag; }
+
+   private:
+
+    Int32 m_dimension = -1;
+    Int64 m_tag = -1;
+    Int64 m_physical_tag = -1;
   };
 
   class MshPeriodicOneInfo
@@ -139,14 +182,14 @@ class ARCANE_CORE_EXPORT MshMeshGenerationInfo
   {
     entities.clear();
     for (auto& x : entities_with_nodes_list[dimension - 1])
-      if (x.tag == tag)
+      if (x.tag() == tag)
         entities.add(x);
   }
 
   MshEntitiesNodes* findNodeEntities(Int64 tag)
   {
     for (auto& x : entities_nodes_list)
-      if (x.tag == tag)
+      if (x.tag() == tag)
         return &x;
     return nullptr;
   }

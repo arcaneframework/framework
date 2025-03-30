@@ -1216,14 +1216,14 @@ _allocateGroups()
                 << " because entity tag is invalid";
         continue;
       }
-      Int64 entity_physical_tag = entity->physical_tag;
+      Int64 entity_physical_tag = entity->physicalTag();
       MshPhysicalName physical_name = m_mesh_info->physical_name_list.find(block_dim, entity_physical_tag);
       physical_name_list.add(physical_name);
     }
     else {
       m_mesh_info->findEntities(block_dim, block_entity_tag, entity_list);
       for (const MshEntitiesWithNodes& x : entity_list) {
-        Int64 entity_physical_tag = x.physical_tag;
+        Int64 entity_physical_tag = x.physicalTag();
         MshPhysicalName physical_name = m_mesh_info->physical_name_list.find(block_dim, entity_physical_tag);
         physical_name_list.add(physical_name);
       }
@@ -1234,16 +1234,17 @@ _allocateGroups()
                 << " because entity physical tag is invalid";
         continue;
       }
+      String group_name = physical_name.name();
       info(4) << "[Groups] Block index=" << block_index << " dim=" << block_dim
-              << " name='" << physical_name.name << "' built_as_cells=" << block.is_built_as_cells;
+              << " name='" << group_name << "' built_as_cells=" << block.is_built_as_cells;
       if (block_dim == mesh_dim || block.is_built_as_cells) {
-        _addCellOrNodeGroup(block, physical_name.name, mesh->cellFamily());
+        _addCellOrNodeGroup(block, group_name, mesh->cellFamily());
       }
       else if (block_dim == face_dim) {
-        _addFaceGroup(block, physical_name.name);
+        _addFaceGroup(block, group_name);
       }
       else {
-        _addCellOrNodeGroup(block, physical_name.name, mesh->nodeFamily());
+        _addCellOrNodeGroup(block, group_name, mesh->nodeFamily());
       }
     }
   }
