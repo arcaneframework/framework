@@ -1080,15 +1080,15 @@ endif()
 
 if(UNIX AND MPI_FOUND)
   set(CASE_PART_TEST_FILE "${TEST_PATH}/testHydro-5-msh.arc")
-  configure_file(test-CasePartVtu.sh.in ${ARCANE_TEST_PATH}/test-CasePartVtu1.sh)
+  configure_file(test-CasePart.sh.in ${ARCANE_TEST_PATH}/test-CasePart1.sh)
   add_test(NAME partition_mesh_msh
-    COMMAND ${ARCANE_TEST_PATH}/test-CasePartVtu1.sh
+    COMMAND ${ARCANE_TEST_PATH}/test-CasePart1.sh
     WORKING_DIRECTORY "${ARCANE_TEST_WORKDIR}"
   )
   set(CASE_PART_TEST_FILE "${TEST_PATH}/testHydro-5-meshservice-msh.arc")
-  configure_file(test-CasePartVtu.sh.in ${ARCANE_TEST_PATH}/test-CasePartVtu2.sh)
+  configure_file(test-CasePart.sh.in ${ARCANE_TEST_PATH}/test-CasePart2.sh)
   add_test(NAME partition_mesh_meshservice_msh
-    COMMAND ${ARCANE_TEST_PATH}/test-CasePartVtu2.sh
+    COMMAND ${ARCANE_TEST_PATH}/test-CasePart2.sh
     WORKING_DIRECTORY "${ARCANE_TEST_WORKDIR}"
   )
 endif()

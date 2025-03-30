@@ -4,4 +4,4 @@
 #@ARCANEBUILDROOT@/bin/arcane_partition_mesh -n 2 -p 4 --writer Lima --correspondance -f 1 --output-file-pattern "CPU%05d.mli" tube5x5x100.vtk && @ARCANE_TEST_DRIVER@ launch -n 4 -m 2 @TEST_PATH@/testHydro-5-vtk.arc
 
 # TODO: générer cela dans un répertoire spécifique
-@ARCANEBUILDROOT@/bin/arcane_partition_mesh -n 2 -p 4 --writer MshMeshWriter -f 0 --output-file-pattern "CPU%05d.msh" tube5x5x100.vtk && @ARCANE_TEST_DRIVER@ launch -n 4 -m 100 @CASE_PART_TEST_FILE@
+@ARCANEBUILDROOT@/bin/arcane_partition_mesh -n 2 -p 4 --writer MshMeshWriter tube5x5x100.vtk && @ARCANE_TEST_DRIVER@ launch -n 4 -m 100 @CASE_PART_TEST_FILE@
