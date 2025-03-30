@@ -177,6 +177,8 @@ _convertToMshType(Int32 arcane_type)
     return MSH_QUA_4; //printf("4-node quadrangle");
   case IT_Tetraedron4:
     return MSH_TET_4; //printf("4-node tetrahedron");
+  case IT_Tetraedron10:
+    return MSH_TET_10; //printf("4-node tetrahedron");
   case IT_Hexaedron8:
     return MSH_HEX_8; //printf("8-node hexahedron");
   case IT_Pentaedron6:
