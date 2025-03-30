@@ -17,6 +17,8 @@ namespace Arcane.ExecDrivers.MeshUtilsDriver
       void _ErrorArg(string msg)
       {
         Console.WriteLine("ERROR: {0}", msg);
+        Console.WriteLine("Usage: program -n nb_processus -p nb_part [--writer write_service] input_file");
+        Console.WriteLine("Use 'program --help' for additional information");
         Environment.Exit(1);
       }
       public int Execute(List<string> remaining_args)
@@ -33,6 +35,8 @@ namespace Arcane.ExecDrivers.MeshUtilsDriver
         bool generate_correspondance_file = false;
         string partitioner_name = "DefaultPartitioner";
         string mesh_writer_name = Utils.ReadConfig("DefaultMeshWriter");
+        if (String.IsNullOrEmpty(mesh_writer_name))
+          mesh_writer_name = "MshMeshWriter";
         string output_file_pattern = null;
         List<string> constrained_groups = new List<string>();
         opt_set.Add("p|parties|nb-part=", "nombre de parties a decouper", (int v) => nb_part = v);
@@ -40,7 +44,7 @@ namespace Arcane.ExecDrivers.MeshUtilsDriver
         opt_set.Add("correspondance", "genere le fichier de correspondance", (string v) => generate_correspondance_file = (v != null));
         opt_set.Add("I|indivisible=", "groupe d'entites indivisibles", (string v) => constrained_groups.Add(v));
         opt_set.Add("A|algorithme=", "nom du partitionneur a utiliser (Metis, Zoltan ou PTScotch)", (string v) => partitioner_name = v);
-        opt_set.Add("writer|ecrivain=", "nom du service pour l'ecriture des maillages decoupes", (string v) => mesh_writer_name = v);
+        opt_set.Add("w|writer|ecrivain=", "nom du service pour l'ecriture des maillages decoupes", (string v) => mesh_writer_name = v);
         opt_set.Add("output-file-pattern=", "file pattern for output file (default to CPU%05d)", (string v) => output_file_pattern = v);
         exec_driver.OnAddAdditionalArgs += delegate (ExecDriver d)
         {
@@ -48,26 +52,20 @@ namespace Arcane.ExecDrivers.MeshUtilsDriver
           if (nb_part == 0)
             nb_part = d.NbProc;
           if (d.NbProc < 2)
-          {
-            _ErrorArg(String.Format("le nombre de processeurs (option -n) doit etre superieur a 1 (actuellement {0})", d.NbProc));
-          }
+            _ErrorArg(String.Format("Number of MPI processus (option -n) has to be greater than 1 (current value is '{0}')", d.NbProc));
+
           d.AdditionalArgs.AddRange(new string[] { "-arcane_opt", "direct_exec", "ArcaneCasePartitioner" });
           _AddArg(d, "nb-ghost-layer", nb_ghost.ToString());
           _AddArg(d, "create-correspondances", generate_correspondance_file ? "1" : "0");
           _AddArg(d, "library", partitioner_name);
           _AddArg(d, "nb-cut-part", nb_part.ToString());
           if (!String.IsNullOrEmpty(output_file_pattern))
-          {
             _AddArg(d, "mesh-file-name-pattern", output_file_pattern);
-          }
           foreach (string s in constrained_groups)
-          {
             d.AdditionalArgs.AddRange(new string[] { "-arcane_opt", "tool_arg", "constraints", s });
-          }
-          if (!String.IsNullOrEmpty(mesh_writer_name))
-          {
-            _AddArg(d, "writer-service-name", mesh_writer_name);
-          }
+          if (String.IsNullOrEmpty(mesh_writer_name))
+            _ErrorArg(String.Format("Name of writer service (-w|--writer) is not specified"));
+          _AddArg(d, "writer-service-name", mesh_writer_name);
         };
         exec_driver.ParseArgs(remaining_args.ToArray(), opt_set);
         return exec_driver.Execute();
@@ -85,6 +83,7 @@ namespace Arcane.ExecDrivers.MeshUtilsDriver
       {
         Console.WriteLine("ERROR: {0}", msg);
         Console.WriteLine("Usage: program --file output_file --writer write_service input_file");
+        Console.WriteLine("Use 'program --help' for additional information");
         Environment.Exit(1);
       }
       public int Execute(List<string> remaining_args)
@@ -97,15 +96,20 @@ namespace Arcane.ExecDrivers.MeshUtilsDriver
         ExecDriver exec_driver = new ExecDriver();
         Mono.Options.OptionSet opt_set = new Mono.Options.OptionSet();
 
+        // L'écrivain au format MSH est toujours disponible. On le prend si aucun autre n'est disponible.
         string mesh_writer_name = Utils.ReadConfig("DefaultMeshWriter");
+        if (String.IsNullOrEmpty(mesh_writer_name))
+          mesh_writer_name = "MshMeshWriter";
+
         string output_file_name = null;
         opt_set.Add("f|fichier|file=", "nom du fichier de sortie", (string v) => output_file_name = v);
-        opt_set.Add("ecrivain|writer=", "nom du service pour l'écriture du maillage", (string v) => mesh_writer_name = v);
+        opt_set.Add("w|ecrivain|writer=", "nom du service pour l'écriture du maillage", (string v) => mesh_writer_name = v);
         exec_driver.OnAddAdditionalArgs += delegate (ExecDriver d)
         {
           d.AdditionalArgs.AddRange(new string[] { "-arcane_opt", "direct_exec", "ArcaneMeshConverter" });
-          if (!String.IsNullOrEmpty(mesh_writer_name))
-            _AddArg(d, "writer-service-name", mesh_writer_name);
+          if (String.IsNullOrEmpty(mesh_writer_name))
+            _ErrorArg(String.Format("Name of writer service (-w|--writer) is not specified"));
+          _AddArg(d, "writer-service-name", mesh_writer_name);
           if (String.IsNullOrEmpty(output_file_name))
             _ErrorArg(String.Format("Name of output file (-f|--file) is not specified"));
           _AddArg(d, "file-name", output_file_name);
