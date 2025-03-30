@@ -50,6 +50,7 @@ namespace Arcane.ExecDrivers.Common
 
     public delegate void AddAdditionalArgsCallback(ExecDriver driver);
 
+    //! Arguments additionnels. Ils doivent être positionnés lors de l'évènement OnAddAdditionalArgs.
     public List<string> AdditionalArgs;
 
     public event AddAdditionalArgsCallback OnAddAdditionalArgs;
@@ -65,7 +66,6 @@ namespace Arcane.ExecDrivers.Common
     public void ParseArgs(string[] args, Mono.Options.OptionSet additional_options)
     {
       AdditionalArgs = new List<string>();
-
       CommandArgs command_args = new CommandArgs();
       m_command_args = command_args;
       command_args.ParseArgs(args, additional_options);
@@ -380,11 +380,13 @@ namespace Arcane.ExecDrivers.Common
           if (String.IsNullOrEmpty(env_parallel_service))
             args.Add("-A,MessagePassingService=Sequential");
         }
+
         if (OnAddAdditionalArgs != null)
           OnAddAdditionalArgs(this);
         args.AddRange(AdditionalArgs);
         args.AddRange(m_remaining_args);
         string args_str = String.Join(" ", args.ToArray());
+
         int r = 0;
         if (m_use_dotnet && want_dotnet_shared && m_properties.NbProc == 0) {
           Console.WriteLine("Launching '.Net' sequential test");
