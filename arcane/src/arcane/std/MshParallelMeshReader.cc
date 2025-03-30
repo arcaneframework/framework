@@ -20,6 +20,7 @@
 #include "arcane/utils/Real3.h"
 #include "arcane/utils/OStringStream.h"
 #include "arcane/utils/FixedArray.h"
+#include "arcane/utils/SmallArray.h"
 #include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/CheckedConvert.h"
 
@@ -198,7 +199,7 @@ class MshParallelMeshReader
   void _readPhysicalNames();
   void _readEntities();
   void _readPeriodic();
-  void _readOneEntity(Int32 entity_dim);
+  void _readOneEntity(Int32 entity_dim, Int32 entity_index_in_dim);
   bool _getIsEndOfFileAndBroadcast();
   String _getNextLineAndBroadcast();
   Int32 _getIntegerAndBroadcast();
@@ -1476,7 +1477,7 @@ _readEntities()
   _getInt64ArrayAndBroadcast(nb_dim_item.view());
 
   info() << "[Entities] nb_0d=" << nb_dim_item[0] << " nb_1d=" << nb_dim_item[1]
-          << " nb_2d=" << nb_dim_item[2] << " nb_3d=" << nb_dim_item[3];
+         << " nb_2d=" << nb_dim_item[2] << " nb_3d=" << nb_dim_item[3];
   // Après le format, on peut avoir les entités mais cela est optionnel
   // Si elles sont présentes, on lit le fichier jusqu'à la fin de cette section.
   if (!m_is_binary)
@@ -1510,7 +1511,7 @@ _readEntities()
   // Lecture des entités de dimensions 1, 2 et 3.
   for (Int32 i_dim = 1; i_dim <= 3; ++i_dim)
     for (Int32 i = 0; i < nb_dim_item[i_dim]; ++i)
-      _readOneEntity(i_dim);
+      _readOneEntity(i_dim, i);
 
   // En binaire, il faut aller au début de la ligne suivante.
   if (m_is_binary)
@@ -1522,7 +1523,7 @@ _readEntities()
 /*---------------------------------------------------------------------------*/
 
 void MshParallelMeshReader::
-_readOneEntity(Int32 entity_dim)
+_readOneEntity(Int32 entity_dim, Int32 entity_index_in_dim)
 {
   IosFile* ios_file = m_ios_file.get();
 
@@ -1530,35 +1531,43 @@ _readOneEntity(Int32 entity_dim)
   // [0] entity_dim
   // [1] tag
   // [2] nb_physical_tag
-  // [3] physical_tag1
-  // [4] physical_tag2
-  // [5] ...
-  FixedArray<Int64, 128> dim_and_tag_info;
-  dim_and_tag_info[0] = entity_dim;
+  // [2+1] physical_tag1
+  // [2+N] physical_tagN
+  // ...
+  // [3+nb_physical_tag] nb_boundary
+  // [3+nb_physical_tag+1] boundary_tag1
+  // [3+nb_physical_tag+n] boundary_tagN
+  // ...
+  info() << "[Entities] Reading entity dim=" << entity_dim << " index_in_dim=" << entity_index_in_dim;
+  SmallArray<Int64, 128> dim_and_tag_info;
+  dim_and_tag_info.add(entity_dim);
   if (ios_file) {
     Int32 tag = _getInt32();
-    dim_and_tag_info[1] = tag;
+    dim_and_tag_info.add(tag);
     Real3 min_pos = _getReal3();
     Real3 max_pos = _getReal3();
     Int64 nb_physical_tag = _getInt64();
-    if (nb_physical_tag >= 124)
-      ARCANE_FATAL("NotImplemented numPhysicalTag>=124 (n={0})", nb_physical_tag);
-    dim_and_tag_info[2] = nb_physical_tag;
+    dim_and_tag_info.add(nb_physical_tag);
     for (Int32 z = 0; z < nb_physical_tag; ++z) {
       Int32 physical_tag = _getInt32();
-      dim_and_tag_info[3 + z] = physical_tag;
+      dim_and_tag_info.add(physical_tag);
       info(4) << "[Entities] z=" << z << " physical_tag=" << physical_tag;
     }
     // TODO: Lire les informations numBounding...
-    Int64 num_bounding_group = _getInt64();
-    for (Int64 k = 0; k < num_bounding_group; ++k) {
-      [[maybe_unused]] Int32 group_tag = _getInt32();
+    Int64 nb_bounding_group = _getInt64();
+    dim_and_tag_info.add(nb_bounding_group);
+    for (Int64 z = 0; z < nb_bounding_group; ++z) {
+      Int32 boundary_tag = _getInt32();
+      info(4) << "[Entities] z=" << z << " boundary_tag=" << boundary_tag;
     }
     info(4) << "[Entities] dim=" << entity_dim << " tag=" << tag
             << " min_pos=" << min_pos << " max_pos=" << max_pos
-            << " nb_phys_tag=" << nb_physical_tag;
+            << " nb_phys_tag=" << nb_physical_tag
+            << " nb_bounding=" << nb_bounding_group;
   }
-
+  Int32 info_size = dim_and_tag_info.size();
+  m_parallel_mng->broadcast(ArrayView<Int32>(1, &info_size), m_master_io_rank);
+  dim_and_tag_info.resize(info_size);
   m_parallel_mng->broadcast(dim_and_tag_info.view(), m_master_io_rank);
 
   {
