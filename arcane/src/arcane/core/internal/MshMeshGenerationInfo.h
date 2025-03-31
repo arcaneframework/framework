@@ -165,6 +165,10 @@ class ARCANE_CORE_EXPORT MshMeshGenerationInfo
   {
    public:
 
+    bool hasValues() const { return !m_periodic_list.empty(); }
+
+   public:
+
     UniqueArray<MshPeriodicOneInfo> m_periodic_list;
   };
 
@@ -192,6 +196,11 @@ class ARCANE_CORE_EXPORT MshMeshGenerationInfo
       if (x.tag() == tag)
         return &x;
     return nullptr;
+  }
+
+  MshPhysicalName findPhysicalName(Int32 dimension, Int64 tag) const
+  {
+    return physical_name_list.find(dimension, tag);
   }
 
  public:
