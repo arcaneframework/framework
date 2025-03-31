@@ -398,11 +398,10 @@ void SimpleCSRMatrixMultT<ValueT>::_synchronizeVariableBlock(VectorType& x_impl)
   // alien_info([&] { cout()<<"_parallelMultVariableBlock";}) ;
 
   ConstArrayView<Integer> block_sizes = m_matrix_impl.getDistStructInfo().m_block_sizes;
-  ConstArrayView<Integer> block_offsets =
-  m_matrix_impl.getDistStructInfo().m_block_offsets;
+  ConstArrayView<Integer> block_offsets = m_matrix_impl.getDistStructInfo().m_block_offsets;
   {
     const Integer last = block_offsets.size() - 1;
-    x_impl.resize(block_offsets[last] + block_sizes[last]);
+    x_impl.resize(block_offsets[last]);
   }
 
   const ValueT* x_ptr = x_impl.getDataPtr();
@@ -436,11 +435,10 @@ const VectorType& x_impl, VectorType& y_impl) const
   ArrayView<ValueT> y = y_impl.fullValues();
 
   ConstArrayView<Integer> block_sizes = m_matrix_impl.getDistStructInfo().m_block_sizes;
-  ConstArrayView<Integer> block_offsets =
-  m_matrix_impl.getDistStructInfo().m_block_offsets;
+  ConstArrayView<Integer> block_offsets = m_matrix_impl.getDistStructInfo().m_block_offsets;
   {
     const Integer last = block_offsets.size() - 1;
-    x_impl.resize(block_offsets[last] + block_sizes[last]);
+    x_impl.resize(block_offsets[last]);
   }
 
   const ValueT* x_ptr = x_impl.getDataPtr();
