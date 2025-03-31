@@ -10,6 +10,7 @@
 #include "alien/kernels/mcg/data_structure/MCGMatrix.h"
 
 #include "MCGSolver/LinearSystem/LinearSystem.h"
+#include "MCGSolver/GPULinearSystem/GPULinearSystem.h"
 
 namespace Alien {
 
@@ -74,7 +75,7 @@ MCGMatrix<NumT,Domain>::initMatrixValues(const MCGInternal::eMemoryDomain src_do
     if (src_domain == MCGInternal::eMemoryDomain::CPU) {
       // CPU -> CPU
       MCGSolver::LinearSystem<double,MCGSolver::Int32SparseIndex>::setMatrixValues(
-           m_internal->m_matrix,values,m_internal->m_elem_perm);
+           m_internal->m_matrix,values,m_internal->m_elem_perm.data());
     }
     else {
       // GPU -> CPU
@@ -88,7 +89,7 @@ MCGMatrix<NumT,Domain>::initMatrixValues(const MCGInternal::eMemoryDomain src_do
     }
     else {
       MCGSolver::GPULinearSystem<double,MCGSolver::Int32SparseIndex>::setMatrixValues(
-          m_internal->m_matrix,values,m_internal->m_elem_perm);
+          m_internal->m_matrix,values,m_internal->m_elem_perm.data());
     }
   }
 

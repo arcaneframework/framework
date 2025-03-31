@@ -226,6 +226,7 @@ MCGInternalLinearSolver::init()
     m_solver->initMPIInfo(m_mpi_info);
 
   m_solver->setOpt(MCGSolver::eOptType::Normalize, m_options->normalize());
+  m_solver->setOpt(MCGSolver::eOptType::RowSum, m_options->rowsum());
   m_solver->setOpt(MCGSolver::eOptType::OutputLevel, m_output_level - 1);
   m_solver->setOpt(MCGSolver::eOptType::SolverMaxIter, m_max_iteration);
   m_solver->setOpt(MCGSolver::eOptType::SolverEps, m_precision);
@@ -254,7 +255,6 @@ MCGInternalLinearSolver::init()
     switch (m_precond_opt) {
     case MCGSolver::PrecColorBlockILU0:
     case MCGSolver::PrecBlockILU0:
-    case MCGSolver::PrecParILU0:
     case MCGSolver::PrecILUk:
     case MCGSolver::PrecFixPointILU0:
       bj_local_solver = m_precond_opt;
@@ -271,10 +271,10 @@ MCGInternalLinearSolver::init()
   m_solver->setOpt(MCGSolver::eOptType::BlockJacobiNumOfIter, m_options->bjNumIter());
   m_solver->setOpt(MCGSolver::eOptType::BlockJacobiLocalSolver, bj_local_solver);
 
-  m_solver->setOpt(MCGSolver::eOptType::FPILUSolverNumIter, m_options->fpilu0SolveNumIter());
-  m_solver->setOpt(MCGSolver::eOptType::FPILUFactorNumIter, m_options->fpilu0FactoNumIter());
-
-  m_solver->setOpt(MCGSolver::eOptType::SpPrec, m_options->spPrec());
+  if (!m_options->FPILU0().empty()) {
+      m_solver->setOpt(MCGSolver::eOptType::FPILUSolverNumIter, m_options->FPILU0()[0]->solveNumIter());
+      m_solver->setOpt(MCGSolver::eOptType::FPILUFactorNumIter, m_options->FPILU0()[0]->factoNumIter());
+  }
 
   if (!m_options->Poly().empty()) {
     m_solver->setOpt(MCGSolver::eOptType::PolyOrder, m_options->Poly()[0]->order());
