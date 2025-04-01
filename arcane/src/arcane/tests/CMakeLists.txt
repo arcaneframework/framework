@@ -1078,26 +1078,41 @@ if(GEOMETRYKERNEL_FOUND)
   ARCANE_ADD_TEST_PARALLEL(corefinement testParallelCorefinement.arc 4)
 endif()
 
+# TODO: Indiquer que ces cas tests ne doivent pas être lancés simulatanément
 if(UNIX AND MPI_FOUND)
+  set(CASE_PART_ARGS "-n 2 -p 4 --writer MshMeshWriter tube5x5x100.vtk")
   set(CASE_PART_TEST_FILE "${TEST_PATH}/testHydro-5-msh.arc")
   configure_file(test-CasePart.sh.in ${ARCANE_TEST_PATH}/test-CasePart1.sh)
   add_test(NAME partition_mesh_msh
     COMMAND ${ARCANE_TEST_PATH}/test-CasePart1.sh
     WORKING_DIRECTORY "${ARCANE_TEST_WORKDIR}"
   )
+  set_tests_properties(partition_mesh_msh PROPERTIES RUN_SERIAL ON)
+
+  set(CASE_PART_ARGS "-n 2 -p 4 --writer MshMeshWriter tube5x5x100.vtk")
   set(CASE_PART_TEST_FILE "${TEST_PATH}/testHydro-5-meshservice-msh.arc")
   configure_file(test-CasePart.sh.in ${ARCANE_TEST_PATH}/test-CasePart2.sh)
   add_test(NAME partition_mesh_meshservice_msh
     COMMAND ${ARCANE_TEST_PATH}/test-CasePart2.sh
     WORKING_DIRECTORY "${ARCANE_TEST_WORKDIR}"
   )
+  set_tests_properties(partition_mesh_meshservice_msh PROPERTIES RUN_SERIAL ON)
+
+  set(CASE_PART_ARGS "-n 2 -p 4 --writer MshMeshWriter --manifold- mesh_with_loose_items.msh")
+  set(CASE_PART_TEST_FILE "${TEST_PATH}/testMesh-2-non-manifold-external-cut.arc")
+  configure_file(test-CasePart.sh.in ${ARCANE_TEST_PATH}/test-CasePart3.sh)
+  add_test(NAME partition_mesh_nonmanifold_msh
+    COMMAND ${ARCANE_TEST_PATH}/test-CasePart3.sh
+    WORKING_DIRECTORY "${ARCANE_TEST_WORKDIR}"
+  )
+  set_tests_properties(partition_mesh_nonmanifold_msh PROPERTIES RUN_SERIAL ON)
 endif()
 
 add_test(convert_mesh1_vtk ${ARCANE_CONVERT_MESH_COMMAND} -f convert_out_mesh.vtk --writer VtkLegacyMeshWriter ${ARCANE_TEST_PATH}/plan.vtk)
 add_test(convert_mesh1_msh ${ARCANE_CONVERT_MESH_COMMAND} -f convert_out_mesh1.msh --writer MshMeshWriter ${ARCANE_TEST_PATH}/tube5x5x100.vtk)
 add_test(convert_mesh2_msh ${ARCANE_CONVERT_MESH_COMMAND} -f convert_out_mesh2.msh --writer MshMeshWriter ${ARCANE_TEST_PATH}/onesphere.msh)
 add_test(convert_mesh3_msh ${ARCANE_CONVERT_MESH_COMMAND} -f convert_out_mesh3.msh --writer MshMeshWriter ${ARCANE_TEST_PATH}/onesphere.binary.msh)
-#add_test(convert_mesh3_msh ${ARCANE_CONVERT_MESH_COMMAND} -f convert_out_mesh4.msh --writer MshMeshWriter ${ARCANE_TEST_PATH}/mesh_with_loose_items.msh)
+add_test(convert_mesh4_msh ${ARCANE_CONVERT_MESH_COMMAND} -f convert_out_mesh4.msh --writer MshMeshWriter --manifold- ${ARCANE_TEST_PATH}/mesh_with_loose_items.msh)
 arcane_add_test(tied_interface1 testTiedInterface-1.arc "-m 10")
 arcane_add_test(tied_interface2 testTiedInterface-2.arc "-m 10")
 arcane_add_test(tied_interface1_2D testTiedInterface2D-1.arc "-m 10")
