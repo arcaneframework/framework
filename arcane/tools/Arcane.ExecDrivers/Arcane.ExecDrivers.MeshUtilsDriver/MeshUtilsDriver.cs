@@ -17,7 +17,7 @@ namespace Arcane.ExecDrivers.MeshUtilsDriver
       void _ErrorArg(string msg)
       {
         Console.WriteLine("ERROR: {0}", msg);
-        Console.WriteLine("Usage: program -n nb_processus -p nb_part [--writer write_service] input_file");
+        Console.WriteLine("Usage: program -n nb_processus -p nb_part [--writer write_service] [--manifold-] input_file");
         Console.WriteLine("Use 'program --help' for additional information");
         Environment.Exit(1);
       }
@@ -38,6 +38,7 @@ namespace Arcane.ExecDrivers.MeshUtilsDriver
         if (String.IsNullOrEmpty(mesh_writer_name))
           mesh_writer_name = "MshMeshWriter";
         string output_file_pattern = null;
+        bool is_manifold = true;
         List<string> constrained_groups = new List<string>();
         opt_set.Add("p|parties|nb-part=", "nombre de parties a decouper", (int v) => nb_part = v);
         opt_set.Add("f|fantomes|nb-ghost-layer=", "nombre de couches de mailles fantomes", (int v) => nb_ghost = v);
@@ -46,6 +47,7 @@ namespace Arcane.ExecDrivers.MeshUtilsDriver
         opt_set.Add("A|algorithme=", "nom du partitionneur a utiliser (Metis, Zoltan ou PTScotch)", (string v) => partitioner_name = v);
         opt_set.Add("w|writer|ecrivain=", "nom du service pour l'ecriture des maillages decoupes", (string v) => mesh_writer_name = v);
         opt_set.Add("output-file-pattern=", "file pattern for output file (default to CPU%05d)", (string v) => output_file_pattern = v);
+        opt_set.Add("manifold", "specify if the mesh is a manifold mesh (the default is true)", (bool v) => is_manifold = v);
         exec_driver.OnAddAdditionalArgs += delegate (ExecDriver d)
         {
           // Si le nombre de parties n'est pas specifie, il est egal au nombre de processeurs
@@ -55,25 +57,31 @@ namespace Arcane.ExecDrivers.MeshUtilsDriver
             _ErrorArg(String.Format("Number of MPI processus (option -n) has to be greater than 1 (current value is '{0}')", d.NbProc));
 
           d.AdditionalArgs.AddRange(new string[] { "-arcane_opt", "direct_exec", "ArcaneCasePartitioner" });
-          _AddArg(d, "nb-ghost-layer", nb_ghost.ToString());
-          _AddArg(d, "create-correspondances", generate_correspondance_file ? "1" : "0");
-          _AddArg(d, "library", partitioner_name);
-          _AddArg(d, "nb-cut-part", nb_part.ToString());
+          _AddToolArg(d, "nb-ghost-layer", nb_ghost.ToString());
+          _AddToolArg(d, "create-correspondances", generate_correspondance_file ? "1" : "0");
+          _AddToolArg(d, "library", partitioner_name);
+          _AddToolArg(d, "nb-cut-part", nb_part.ToString());
           if (!String.IsNullOrEmpty(output_file_pattern))
-            _AddArg(d, "mesh-file-name-pattern", output_file_pattern);
+            _AddToolArg(d, "mesh-file-name-pattern", output_file_pattern);
           foreach (string s in constrained_groups)
             d.AdditionalArgs.AddRange(new string[] { "-arcane_opt", "tool_arg", "constraints", s });
           if (String.IsNullOrEmpty(mesh_writer_name))
             _ErrorArg(String.Format("Name of writer service (-w|--writer) is not specified"));
-          _AddArg(d, "writer-service-name", mesh_writer_name);
+          _AddToolArg(d, "writer-service-name", mesh_writer_name);
+          if (!is_manifold)
+            _AddMeshArg(d,"non-manifold-mesh","true");
         };
         exec_driver.ParseArgs(remaining_args.ToArray(), opt_set);
         return exec_driver.Execute();
       }
 
-      void _AddArg(ExecDriver d, string parameter, string param_value)
+      void _AddToolArg(ExecDriver d, string parameter, string param_value)
       {
         d.AdditionalArgs.AddRange(new string[] { "-arcane_opt", "tool_arg", parameter, param_value });
+      }
+      void _AddMeshArg(ExecDriver d, string parameter, string param_value)
+      {
+        d.AdditionalArgs.AddRange(new string[] { "-arcane_opt", "direct_exec_mesh_arg", parameter, param_value });
       }
     }
 
@@ -82,7 +90,7 @@ namespace Arcane.ExecDrivers.MeshUtilsDriver
       void _ErrorArg(string msg)
       {
         Console.WriteLine("ERROR: {0}", msg);
-        Console.WriteLine("Usage: program --file output_file --writer write_service input_file");
+        Console.WriteLine("Usage: program --file output_file [--writer write_service] [--manifold-] input_file");
         Console.WriteLine("Use 'program --help' for additional information");
         Environment.Exit(1);
       }
@@ -100,29 +108,36 @@ namespace Arcane.ExecDrivers.MeshUtilsDriver
         string mesh_writer_name = Utils.ReadConfig("DefaultMeshWriter");
         if (String.IsNullOrEmpty(mesh_writer_name))
           mesh_writer_name = "MshMeshWriter";
-
+        bool is_manifold = true;
         string output_file_name = null;
-        opt_set.Add("f|fichier|file=", "nom du fichier de sortie", (string v) => output_file_name = v);
-        opt_set.Add("w|ecrivain|writer=", "nom du service pour l'écriture du maillage", (string v) => mesh_writer_name = v);
+        opt_set.Add("f|fichier|file=", "name of converted file", (string v) => output_file_name = v);
+        opt_set.Add("w|ecrivain|writer=", "name of mesh service used for writing", (string v) => mesh_writer_name = v);
+        opt_set.Add("manifold", "specify if the mesh is a manifold mesh (the default is true)", (bool v) => is_manifold = v);
         exec_driver.OnAddAdditionalArgs += delegate (ExecDriver d)
         {
           d.AdditionalArgs.AddRange(new string[] { "-arcane_opt", "direct_exec", "ArcaneMeshConverter" });
           if (String.IsNullOrEmpty(mesh_writer_name))
             _ErrorArg(String.Format("Name of writer service (-w|--writer) is not specified"));
-          _AddArg(d, "writer-service-name", mesh_writer_name);
+          _AddToolArg(d, "writer-service-name", mesh_writer_name);
           if (String.IsNullOrEmpty(output_file_name))
             _ErrorArg(String.Format("Name of output file (-f|--file) is not specified"));
-          _AddArg(d, "file-name", output_file_name);
+          _AddToolArg(d, "file-name", output_file_name);
           if (exec_driver.RemainingArgs.Length == 0)
             _ErrorArg(String.Format("Name of input file is not specified"));
+          if (!is_manifold)
+            _AddMeshArg(d,"non-manifold-mesh","true");
         };
         exec_driver.ParseArgs(remaining_args.ToArray(), opt_set);
         return exec_driver.Execute();
       }
 
-      void _AddArg(ExecDriver d, string parameter, string param_value)
+      void _AddToolArg(ExecDriver d, string parameter, string param_value)
       {
         d.AdditionalArgs.AddRange(new string[] { "-arcane_opt", "tool_arg", parameter, param_value });
+      }
+      void _AddMeshArg(ExecDriver d, string parameter, string param_value)
+      {
+        d.AdditionalArgs.AddRange(new string[] { "-arcane_opt", "direct_exec_mesh_arg", parameter, param_value });
       }
     }
 
