@@ -503,9 +503,11 @@ _sequentialParseArgs(StringList args)
     s += "  <description>DirectExec</description>\n";
     s += "  <timeloop>ArcaneDirectExecutionLoop</timeloop>\n";
     s += " </arcane>\n";
-    s += " <mesh>\n";
-    s += String::format("  <file>{0}</file>\n",tool_mesh);
-    s += " </mesh>\n";
+    s += " <meshes>\n";
+    s += "   <mesh>\n";
+    s += String::format("  <filename>{0}</filename>\n",tool_mesh);
+    s += "   </mesh>\n";
+    s += " </meshes>\n";
     s += " <arcane-direct-execution>\n";
     s += String::format("  <tool name='{0}'>\n",m_direct_exec_name);
     s += tool_args_xml;
