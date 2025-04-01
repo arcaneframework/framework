@@ -46,6 +46,15 @@
 #include "arcane/cartesianmesh/ICartesianMesh.h"
 #include "arcane/core/Properties.h"
 #include "arcane/std/IMeshGenerator.h"
+// renumbering
+#include "arcane/core/IndexedItemConnectivityView.h"
+#include "arcane/core/IIndexedIncrementalItemConnectivityMng.h"
+#include "arcane/core/IIndexedIncrementalItemConnectivity.h"
+#include "arcane/core/IIncrementalItemConnectivity.h"
+
+//
+#include "arcane/utils/IHashAlgorithm.h"
+#include "arcane/utils/MD5HashAlgorithm.h"
 
 // Utils
 #include <unordered_set>
@@ -786,8 +795,8 @@ class ArcaneBasicMeshSubdividerService
   void _execute();
   */
 
-  //! Génère l'ordre des faces arcane pour tout les motifs. 
-  void _faceOrderArcane(IPrimaryMesh* mesh); 
+  //! Génère l'ordre des faces arcane pour tout les motifs.
+  void _faceOrderArcane(IPrimaryMesh* mesh);
   //! Raffine en utilisant les faces d'arcane et le motif (Pattern) p
   /* Méthode qui permet de récuperer les faces générés par arcanes.
   * Ces faces doivent donner les indices locaux des noeuds de la cellule initiale.
@@ -812,7 +821,77 @@ class ArcaneBasicMeshSubdividerService
   void _generatePattern3D(IPrimaryMesh* mesh);
   //! Méthode pour générer les motifs sur un seul élément de base
   void _generatePattern(IPrimaryMesh* mesh);
+  //! Vérification que tout les uids sont >= 0
+  void _checkMeshUid(IPrimaryMesh* mesh);
+  //! Renumérote les Noeuds Faces selon les cellules
+  //! TODO faire une numérotation normale par uid de cellule dans subdivider
+  void _renumberNodesFaces(IPrimaryMesh* mesh);
+  //! Renumérote la famille TODO mettre en commun avec AMR
+  void _applyFamilyRenumbering(IItemFamily* family, VariableItemInt64& items_new_uid);
+  //! Calcul du hash des N F C
+  void _checkHashNodesFacesCells(IPrimaryMesh* mesh);
 };
+
+void ArcaneBasicMeshSubdividerService::_checkMeshUid(IPrimaryMesh* mesh)
+{
+  // C F E N
+  info() << "begin:_checkMeshUid";
+  ENUMERATE_CELL (icell, mesh->allCells()) {
+    const Cell& cell = *icell;
+    if (cell.uniqueId().asInt64() < 0) {
+      info() << "FATAL ERROR UID";
+      exit(0);
+    }
+  }
+  ENUMERATE_FACE (iface, mesh->allFaces()) {
+    const Face& face = *iface;
+    if (face.uniqueId().asInt64() < 0) {
+      info() << "FATAL ERROR UID";
+      exit(0);
+    }
+  }
+  ENUMERATE_EDGE (iedge, mesh->allEdges()) {
+    const Edge& edge = *iedge;
+    if (edge.uniqueId().asInt64() < 0) {
+      info() << "FATAL ERROR UID";
+      exit(0);
+    }
+  }
+  ENUMERATE_NODE (inode, mesh->allNodes()) {
+    const Node& node = *inode;
+    if (node.uniqueId().asInt64() < 0) {
+      info() << "FATAL ERROR UID";
+      exit(0);
+    }
+  }
+
+  /*
+    ENUMERATE_DOF(idof,mesh) {
+        dof_id = idof->uniqueId().asInt64();
+        info() << "= Dof id : " << dof_id;
+        if(dof_id < 0){
+         info() << "FATAL ERROR UID DOF";
+         exit(0);
+        }
+    }
+    */
+  info() << "Vars: " << mesh->variableMng()->variables().count();
+  VariableCollection vars = mesh->variableMng()->variables();
+  for (VariableCollection::Enumerator ivar(vars); ++ivar;) {
+    IVariable* var = *ivar;
+    if (var->isUsed())
+      continue;
+    if ((var->property() & IVariable::PNoDump) != 0)
+      continue;
+    // Ne traite pas les variables qui ne sont pas sur des familles.
+    if (var->itemFamilyName().null())
+      continue;
+    //var->setUsed(true);
+    info() << "LIST_VAR name=" << var->fullName();
+  }
+
+  info() << "end:_checkMeshUid";
+}
 
 void ArcaneBasicMeshSubdividerService::_generatePattern(IPrimaryMesh* mesh)
 {
@@ -935,6 +1014,16 @@ void ArcaneBasicMeshSubdividerService::_generatePattern3D(IPrimaryMesh* mesh)
 void ArcaneBasicMeshSubdividerService::_refineOnce(IPrimaryMesh* mesh, std::unordered_map<Arccore::Int16, MeshSubdivider::Pattern>& pattern_manager)
 {
 
+  // Compute max_cell_uid
+  Int64 max_cell_uid = NULL_ITEM_UNIQUE_ID;
+  ENUMERATE_ (Cell, icell, mesh->ownCells()) {
+    Cell cell = *icell;
+    if (max_cell_uid < cell.uniqueId())
+      max_cell_uid = cell.uniqueId();
+  }
+  Int64 global_max_cell_uid = mesh->parallelMng()->reduce(Parallel::ReduceMax, max_cell_uid);
+  global_max_cell_uid++; // on prend le suivant
+
   info() << "#subdivide mesh";
   // On vérifie qu'on sait raffiner les cellules (peut-être pas en même temps)
   ENUMERATE_CELL (icell, mesh->ownCells()) {
@@ -1032,7 +1121,7 @@ void ArcaneBasicMeshSubdividerService::_refineOnce(IPrimaryMesh* mesh, std::unor
     nodes_to_add_coords[node.uniqueId().asInt64()] = nodes_coords[node];
   }
   */
-  // Traitement pour une cellule²
+  // Traitement pour une cellule
   ENUMERATE_CELL (icell, mesh->ownCells()) {
     debug() << "Refining element";
     // POUR UN ELEMNT:
@@ -1064,6 +1153,7 @@ void ArcaneBasicMeshSubdividerService::_refineOnce(IPrimaryMesh* mesh, std::unor
 
     // Assignation des noeuds au propriétaire
     // Assignation des faces au propriétaire
+    // Ajout nombre de couche de maille initial
 
     const Cell& cell = *icell;
 
@@ -1195,10 +1285,13 @@ void ArcaneBasicMeshSubdividerService::_refineOnce(IPrimaryMesh* mesh, std::unor
         tmp.add(node_in_cell[cells_refine[i][j]]);
       }
       std::sort(tmp.begin(), tmp.end());
-      Int64 cell_uid = Arcane::MeshUtils::generateHashUniqueId(tmp.constView()); //max_cell_uid+ind_new_cell;
-
+      //Int64 cell_uid = Arcane::MeshUtils::generateHashUniqueId(tmp.constView()); //max_cell_uid+ind_new_cell;
+      //info() << "global_max_cell_uid" << global_max_cell_uid ;
+      Int64 cell_uid = cell.uniqueId().asInt64() * p.cells.size() + i + global_max_cell_uid;
+      //info() << "#old new uid" << cell.uniqueId().asInt64() << " " << cell_uid ;
+      ARCANE_ASSERT((cell_uid >= 0), ("Cell uid generation don't work properly"));
       cells_to_add.add(p.cell_type); // Type
-      cells_to_add.add(cell_uid); // TODO CHANGER par max_uid + cell_uid * max_nb_node
+      cells_to_add.add(cell_uid); 
       for (Integer j = 0; j < cells_refine[i].size(); j++) {
         cells_to_add.add(node_in_cell[cells_refine[i][j]]);
       }
@@ -1230,6 +1323,7 @@ void ArcaneBasicMeshSubdividerService::_refineOnce(IPrimaryMesh* mesh, std::unor
   debug() << "Before addOneFace " << nb_face_to_add;
 
   //Setup faces
+
   mesh->modifier()->addFaces(nb_face_to_add, faces_to_add.constView(), face_lid.view());
   debug() << "addOneFace " << nb_face_to_add;
   mesh->faceFamily()->itemsUniqueIdToLocalId(face_lid, faces_uids, true);
@@ -1282,6 +1376,7 @@ void ArcaneBasicMeshSubdividerService::_refineOnce(IPrimaryMesh* mesh, std::unor
   info() << "#mygroupname face " << face_family->groups().count();
   for (ItemGroupCollection::Enumerator igroup(face_family->groups()); ++igroup;) {
     ItemGroup group = *igroup;
+
     info() << "#mygroupname face " << group.fullName();
     if (group.isOwn() && mesh->parallelMng()->isParallel()) {
       info() << "#groups: OWN";
@@ -1731,7 +1826,6 @@ void ArcaneBasicMeshSubdividerService::_generateOneQuad(IPrimaryMesh* mesh)
   mesh->utilities()->writeToFile("subdivider_one_quad_ouput.vtk", "VtkLegacyMeshWriter");
 }
 
-
 void ArcaneBasicMeshSubdividerService::_generateOneTri(IPrimaryMesh* mesh)
 {
   mesh->utilities()->writeToFile("subdivider_one_hexa_input.vtk", "VtkLegacyMeshWriter");
@@ -1941,9 +2035,107 @@ void ArcaneBasicMeshSubdividerService::_faceOrderArcane(IPrimaryMesh* mesh)
   }
 }
 
+void ArcaneBasicMeshSubdividerService::_applyFamilyRenumbering(IItemFamily* family, VariableItemInt64& items_new_uid)
+{
+  info() << "Change uniqueId() for family=" << family->name();
+  items_new_uid.synchronize();
+  ENUMERATE_ (Item, iitem, family->allItems()) {
+    Item item{ *iitem };
+    Int64 current_uid = item.uniqueId();
+    Int64 new_uid = items_new_uid[iitem];
+    if (new_uid >= 0 && new_uid != current_uid) {
+      item.mutableItemBase().setUniqueId(new_uid);
+    }
+  }
+  family->notifyItemsUniqueIdChanged();
+}
+
+/*Renumérote les noeuds et les faces en fonction des cellules
+Attention il y a des trous il faut recompacter
+Comment on recompacte ? 
+=> Sort et on renumérote en incrémentant. 
+Pas sûr que ça soit reproductible.
+*/
+
+void ArcaneBasicMeshSubdividerService::_renumberNodesFaces(IPrimaryMesh* mesh)
+{
+  // Pour chaque noeud, on met la cell incidente avec l'uid le plus petit
+  VariableNodeInt64 nodes_min_cell_uid(VariableBuildInfo(mesh, "ArcaneNodeMinCellUid"));
+  nodes_min_cell_uid.fill(NULL_ITEM_UNIQUE_ID);
+  ENUMERATE_NODE (inode, mesh->ownNodes()) {
+    Node node = *inode;
+    auto cells = node.cells();
+    Int64 min = cells[0].uniqueId();
+    for (auto c : cells) {
+      if (min > c.uniqueId()) {
+        min = c.uniqueId();
+      }
+    }
+    nodes_min_cell_uid[node] = min;
+  }
+  // idem pour face
+  VariableFaceInt64 faces_min_cell_uid(VariableBuildInfo(mesh, "ArcaneFaceMinCellUid"));
+  faces_min_cell_uid.fill(NULL_ITEM_UNIQUE_ID);
+  ENUMERATE_FACE (iface, mesh->ownFaces()) {
+    Face face = *iface;
+    auto cells = face.cells();
+    Int64 min = cells[0].uniqueId();
+    for (auto c : cells) {
+      if (min > c.uniqueId()) {
+        min = c.uniqueId();
+      }
+    }
+    faces_min_cell_uid[face] = min;
+  }
+  //
+  nodes_min_cell_uid.synchronize();
+  faces_min_cell_uid.synchronize();
+
+  VariableNodeInt64 nodes_new_uid(VariableBuildInfo(mesh, "ArcaneRenumberNodesNewUid"));
+  VariableFaceInt64 faces_new_uid(VariableBuildInfo(mesh, "ArcaneRenumberFacesNewUid"));
+  // Renumérotation selon C des F et N dans vars
+  // ?? Attention au ghost layer ??
+  nodes_new_uid.fill(NULL_ITEM_UNIQUE_ID);
+  faces_new_uid.fill(NULL_ITEM_UNIQUE_ID);
+
+  ENUMERATE_CELL (icell, mesh->ownCells()) {
+    Cell cell = *icell;
+    Int64 count_nodes = 0;
+    for (Node node : cell.nodes()) {
+      if (nodes_new_uid[node] == NULL_ITEM_UNIQUE_ID && cell.uniqueId() == nodes_min_cell_uid[node]) {
+        nodes_new_uid[node] = cell.uniqueId().asInt64() * cell.nbNode() + count_nodes;
+        count_nodes++;
+      }
+    }
+    Int64 count_faces = 0;
+    for (Face face : cell.faces()) {
+      if (faces_new_uid[face] == NULL_ITEM_UNIQUE_ID && cell.uniqueId() == faces_min_cell_uid[face]) {
+        faces_new_uid[face] = cell.uniqueId().asInt64() * cell.nbFace() + count_faces;
+        count_faces++;
+      }
+    }
+  }
+  // Application
+  _applyFamilyRenumbering(mesh->nodeFamily(), nodes_new_uid);
+  _applyFamilyRenumbering(mesh->faceFamily(), faces_new_uid);
+  // mesh->checkValidMesh();
+}
+
+void ArcaneBasicMeshSubdividerService::_checkHashNodesFacesCells(IPrimaryMesh* mesh)
+{
+  bool print_hash = true;
+  bool with_ghost = false;
+  MD5HashAlgorithm hash_algo;
+  MeshUtils::checkUniqueIdsHashCollective(mesh->nodeFamily(), &hash_algo, Arcane::String(), print_hash, with_ghost);
+  MeshUtils::checkUniqueIdsHashCollective(mesh->faceFamily(), &hash_algo, Arcane::String(), print_hash, with_ghost);
+  MeshUtils::checkUniqueIdsHashCollective(mesh->cellFamily(), &hash_algo, Arcane::String(), print_hash, with_ghost);
+}
+
 void ArcaneBasicMeshSubdividerService::
 subdivideMesh([[maybe_unused]] IPrimaryMesh* mesh)
 {
+  //exit(0);
+  //_generateOneTetra(mesh);
   std::unordered_map<Arccore::Int16, MeshSubdivider::Pattern> pattern_manager;
   // Default pattern manager
   pattern_manager[IT_Quad4] = PatternBuilder::quadtoquad();
@@ -1951,30 +2143,32 @@ subdivideMesh([[maybe_unused]] IPrimaryMesh* mesh)
   pattern_manager[IT_Hexaedron8] = PatternBuilder::hextohex();
   pattern_manager[IT_Tetraedron4] = PatternBuilder::tettotet();
 
-  if(options()->differentElementTypeOutput()){
+  if (options()->differentElementTypeOutput()) {
     pattern_manager[IT_Quad4] = PatternBuilder::quadtotri();
     pattern_manager[IT_Triangle3] = PatternBuilder::tritoquad();
     pattern_manager[IT_Hexaedron8] = PatternBuilder::hextotet24();
     pattern_manager[IT_Tetraedron4] = PatternBuilder::tettohex();
-    info() << "The refinement patterns have changed for meshes of the following types: Quad4, Triangle3, Hexaedron8, Tetraedron4." ; 
-    info() << "The output element types will be:\nQuad4->Triangle3\nTriangle3->Quad4\nHexaedron8->Tetraedron4\nTetraedron4->Hexaedron8" ;
+    info() << "The refinement patterns have changed for meshes of the following types: Quad4, Triangle3, Hexaedron8, Tetraedron4.";
+    info() << "The output element types will be:\nQuad4->Triangle3\nTriangle3->Quad4\nHexaedron8->Tetraedron4\nTetraedron4->Hexaedron8";
   }
-
   for (Integer i = 0; i < options()->nbSubdivision; i++) {
     _refineOnce(mesh, pattern_manager);
     debug() << i << "refine done";
   }
-  
+  // Renumbering Node, Faces, using Cells uids
+  _renumberNodesFaces(mesh);
+
   // Debug After
-  
-  //mesh->utilities()->writeToFile("subdivider_output_"+std::to_string(mesh->parallelMng()->commRank())+".vtk", "VtkLegacyMeshWriter");
-  
-  
+  // mesh->utilities()->writeToFile("subdivider_output_"+std::to_string(mesh->parallelMng()->commRank())+".vtk", "VtkLegacyMeshWriter");
+
   //mesh->utilities()->writeToFile("subdivider_after_" + std::to_string(options()->nbSubdivision) + "refine.vtk", "VtkLegacyMeshWriter");
   //debug() << "write file with name:" << "subdivider_after_";
   /*
   mesh->utilities()->writeToFile("subdivider_output.vtk", "VtkLegacyMeshWriter");
   */
+  //_checkMeshUid(mesh);
+  //MeshUtils::writeMeshInfosSorted(mesh,"vp_meshinfo"+std::to_string(mesh->parallelMng()->commRank()));
+  info() << "subdivider done";
 }
 
 /*---------------------------------------------------------------------------*/
