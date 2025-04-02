@@ -74,7 +74,7 @@
 
 namespace
 {
-#if TBB_VERSION_MAJOR >= 2022
+#if (TBB_VERSION_MAJOR > 2022) || (TBB_VERSION_MAJOR == 2022 && TBB_VERSION_MINOR > 0) || defined __TBB_blocked_nd_range_H
 
 // La classe "blocked_rangeNd" a été retirée dans la version
 // 2022.0.0 et remplacée par "blocked_nd_range".
