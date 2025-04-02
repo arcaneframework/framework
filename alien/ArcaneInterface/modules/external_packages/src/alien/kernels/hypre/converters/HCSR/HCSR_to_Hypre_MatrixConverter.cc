@@ -6,8 +6,6 @@
 //-----------------------------------------------------------------------------
 
 #include <iostream>
-#include <cuda.h>
-#include <cuda_runtime_api.h>
 
 #include <alien/core/backend/IMatrixConverter.h>
 #include <alien/core/backend/MatrixConverterRegisterer.h>

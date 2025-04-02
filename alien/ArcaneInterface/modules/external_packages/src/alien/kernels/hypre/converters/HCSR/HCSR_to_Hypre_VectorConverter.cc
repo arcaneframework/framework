@@ -7,8 +7,6 @@
 
 #include <iostream>
 #include <vector>
-#include <cuda.h>
-#include <cuda_runtime_api.h>
 
 #include <alien/core/backend/IVectorConverter.h>
 #include <alien/core/backend/VectorConverterRegisterer.h>
