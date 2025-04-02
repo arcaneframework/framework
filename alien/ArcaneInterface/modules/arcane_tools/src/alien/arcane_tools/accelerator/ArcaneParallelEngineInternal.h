@@ -26,6 +26,7 @@ namespace Alien
   template<int dim>
   struct ParallelEngine::Item : public sycl::item<dim>
   {
+    using type = sycl::item<dim>;
     Item(sycl::item<1> const& item)
     : sycl::item<dim>(item)
     {}
