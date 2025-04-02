@@ -331,7 +331,7 @@ int main(int argc, char** argv)
                     auto allVIndex_acc = allVIndex_buffer.get_access<sycl::access::mode::read>(cgh.m_internal) ;
                     cgh.parallel_for(nx,
                                      ny,
-                                     [=](Alien::SYCLParallelEngine::Item<2> item)
+                                     [=](Alien::SYCLParallelEngine::Item<2>::type item)
                                      {
                                         auto i = item.get_id(0);
                                         auto j = item.get_id(1);

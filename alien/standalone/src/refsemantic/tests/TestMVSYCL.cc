@@ -184,7 +184,7 @@ TEST(TestSYCLMV, HCSRVector)
                   {
                      auto xv = x_acc.view(cgh) ;
                      cgh.parallel_for(engine.maxNumThreads(),
-                                         [=](Alien::SYCLParallelEngine::Item<1> item)
+                                         [=](Alien::SYCLParallelEngine::Item<1>::type item)
                                          {
                                             auto index = item.get_id(0) ;
                                             auto id = item.get_id(0);
@@ -200,7 +200,7 @@ TEST(TestSYCLMV, HCSRVector)
                     auto yv = y_acc.view(cgh) ;
                     auto xcv = x_acc.constView(cgh) ;
                     cgh.parallel_for(engine.maxNumThreads(),
-                                         [=](Alien::SYCLParallelEngine::Item<1> item)
+                                         [=](Alien::SYCLParallelEngine::Item<1>::type item)
                                          {
                                             auto index = item.get_id(0) ;
                                             auto id = item.get_id(0);
@@ -258,7 +258,7 @@ TEST(TestSYCLMV, HCSRMatrix)
                   {
                     auto matrix_acc = builder.view(cgh) ;
                     cgh.parallel_for(engine.maxNumThreads(),
-                                         [=](Alien::SYCLParallelEngine::Item<1> item)
+                                         [=](Alien::SYCLParallelEngine::Item<1>::type item)
                                          {
                                             auto index = item.get_id(0) ;
                                             auto id = item.get_id(0);
@@ -323,7 +323,7 @@ TEST(TestSYCLMV, HCSR2SYCLConverter)
                   {
                     auto matrix_acc = builder.view(cgh) ;
                     cgh.parallel_for(engine.maxNumThreads(),
-                                         [=](Alien::SYCLParallelEngine::Item<1> item)
+                                         [=](Alien::SYCLParallelEngine::Item<1>::type item)
                                          {
                                             auto index = item.get_id(0) ;
                                             auto id = item.get_id(0);
@@ -345,7 +345,7 @@ TEST(TestSYCLMV, HCSR2SYCLConverter)
                     {
                        auto xv = x_acc.view(cgh) ;
                        cgh.parallel_for(engine.maxNumThreads(),
-                                           [=](Alien::SYCLParallelEngine::Item<1> item)
+                                           [=](Alien::SYCLParallelEngine::Item<1>::type item)
                                            {
                                               auto index = item.get_id(0) ;
                                               auto id = item.get_id(0);
@@ -607,7 +607,7 @@ TEST(TestSYCLMV, CombineAddBuilder)
                     auto allVIndex_acc = allVIndex_buffer.get_access<sycl::access::mode::read>(cgh.m_internal) ;
                     cgh.parallel_for(nx,
                                      ny,
-                                     [=](Alien::SYCLParallelEngine::Item<2> item)
+                                     [=](Alien::SYCLParallelEngine::Item<2>::type item)
                                      {
                                         auto i = item.get_id(0);
                                         auto j = item.get_id(1);
