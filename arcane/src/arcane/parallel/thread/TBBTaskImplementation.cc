@@ -72,6 +72,23 @@
 
 #endif // ARCANE_USE_ONETBB
 
+namespace
+{
+#if (TBB_VERSION_MAJOR > 2022) || (TBB_VERSION_MAJOR == 2022 && TBB_VERSION_MINOR > 0) || defined __TBB_blocked_nd_range_H
+
+// La classe "blocked_rangeNd" a été retirée dans la version
+// 2022.0.0 et remplacée par "blocked_nd_range".
+template <typename Value, unsigned int N>
+using blocked_nd_range = tbb::blocked_nd_range<Value, N>;
+
+#else
+
+template <typename Value, unsigned int N>
+using blocked_nd_range = tbb::blocked_rangeNd<Value, N>;
+
+#endif
+} // namespace
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -164,13 +181,13 @@ inline int _currentTaskTreadIndex()
   return tbb::this_task_arena::current_thread_index();
 }
 
-inline tbb::blocked_rangeNd<Int32,1>
+inline blocked_nd_range<Int32, 1>
 _toTBBRange(const ComplexForLoopRanges<1>& r)
 {
   return {{r.lowerBound<0>(), r.upperBound<0>()}};
 }
 
-inline tbb::blocked_rangeNd<Int32,2>
+inline blocked_nd_range<Int32, 2>
 _toTBBRange(const ComplexForLoopRanges<2>& r)
 {
   return {{r.lowerBound<0>(), r.upperBound<0>()},
@@ -178,7 +195,7 @@ _toTBBRange(const ComplexForLoopRanges<2>& r)
 
 }
 
-inline tbb::blocked_rangeNd<Int32,3>
+inline blocked_nd_range<Int32, 3>
 _toTBBRange(const ComplexForLoopRanges<3>& r)
 {
   return {{r.lowerBound<0>(), r.upperBound<0>()},
@@ -186,7 +203,7 @@ _toTBBRange(const ComplexForLoopRanges<3>& r)
           {r.lowerBound<2>(), r.upperBound<2>()}};
 }
 
-inline tbb::blocked_rangeNd<Int32,4>
+inline blocked_nd_range<Int32, 4>
 _toTBBRange(const ComplexForLoopRanges<4>& r)
 {
   return {{r.lowerBound<0>(), r.upperBound<0>()},
@@ -198,23 +215,23 @@ _toTBBRange(const ComplexForLoopRanges<4>& r)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-inline tbb::blocked_rangeNd<Int32,2>
-_toTBBRangeWithGrain(const tbb::blocked_rangeNd<Int32,2>& r,FixedArray<size_t,2> grain_sizes)
+inline blocked_nd_range<Int32, 2>
+_toTBBRangeWithGrain(const blocked_nd_range<Int32, 2>& r, FixedArray<size_t, 2> grain_sizes)
 {
   return {{r.dim(0).begin(), r.dim(0).end(), grain_sizes[0]},
           {r.dim(1).begin(), r.dim(1).end(), grain_sizes[1]}};
 }
 
-inline tbb::blocked_rangeNd<Int32,3>
-_toTBBRangeWithGrain(const tbb::blocked_rangeNd<Int32,3>& r,FixedArray<size_t,3> grain_sizes)
+inline blocked_nd_range<Int32, 3>
+_toTBBRangeWithGrain(const blocked_nd_range<Int32, 3>& r, FixedArray<size_t, 3> grain_sizes)
 {
   return {{r.dim(0).begin(), r.dim(0).end(), grain_sizes[0]},
           {r.dim(1).begin(), r.dim(1).end(), grain_sizes[1]},
           {r.dim(2).begin(), r.dim(2).end(), grain_sizes[2]}};
 }
 
-inline tbb::blocked_rangeNd<Int32,4>
-_toTBBRangeWithGrain(const tbb::blocked_rangeNd<Int32,4>& r,FixedArray<size_t,4> grain_sizes)
+inline blocked_nd_range<Int32, 4>
+_toTBBRangeWithGrain(const blocked_nd_range<Int32, 4>& r, FixedArray<size_t, 4> grain_sizes)
 {
   return {{r.dim(0).begin(), r.dim(0).end(), grain_sizes[0]},
           {r.dim(1).begin(), r.dim(1).end(), grain_sizes[1]},
@@ -226,7 +243,7 @@ _toTBBRangeWithGrain(const tbb::blocked_rangeNd<Int32,4>& r,FixedArray<size_t,4>
 /*---------------------------------------------------------------------------*/
 
 inline ComplexForLoopRanges<2>
-_fromTBBRange(const tbb::blocked_rangeNd<Int32,2>& r)
+_fromTBBRange(const blocked_nd_range<Int32, 2>& r)
 {
   using BoundsType = ArrayBounds<MDDim2>;
   using ArrayExtentType = typename BoundsType::ArrayExtentType;
@@ -239,7 +256,7 @@ _fromTBBRange(const tbb::blocked_rangeNd<Int32,2>& r)
 }
 
 inline ComplexForLoopRanges<3>
-_fromTBBRange(const tbb::blocked_rangeNd<Int32,3> & r)
+_fromTBBRange(const blocked_nd_range<Int32, 3>& r)
 {
   using BoundsType = ArrayBounds<MDDim3>;
   using ArrayExtentType = typename BoundsType::ArrayExtentType;
@@ -253,7 +270,7 @@ _fromTBBRange(const tbb::blocked_rangeNd<Int32,3> & r)
 }
 
 inline ComplexForLoopRanges<4>
-_fromTBBRange(const tbb::blocked_rangeNd<Int32,4>& r)
+_fromTBBRange(const blocked_nd_range<Int32, 4>& r)
 {
   using BoundsType = ArrayBounds<MDDim4>;
   using ArrayExtentType = typename BoundsType::ArrayExtentType;
@@ -761,7 +778,7 @@ class TBBMDParallelFor
 
  public:
 
-  void operator()(tbb::blocked_rangeNd<Int32,RankValue>& range) const
+  void operator()(blocked_nd_range<Int32, RankValue>& range) const
   {
 #ifdef ARCANE_CHECK
     if (TaskFactory::verboseLevel()>=3){
@@ -1052,7 +1069,7 @@ class TBBTaskImplementation::MDParallelForExecute
   }
  private:
   TBBTaskImplementation* m_impl = nullptr;
-  tbb::blocked_rangeNd<Int32,RankValue> m_tbb_range;
+  blocked_nd_range<Int32, RankValue> m_tbb_range;
   IMDRangeFunctor<RankValue>* m_functor = nullptr;
   ParallelLoopOptions m_options;
   ForLoopOneExecStat* m_stat_info = nullptr;
