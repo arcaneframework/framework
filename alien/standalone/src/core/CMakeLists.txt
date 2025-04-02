@@ -246,7 +246,7 @@ IF(ALIEN_USE_SYCL)
     ENDIF()
   ENDIF()
   target_link_libraries(alien_core PUBLIC alien_kernel_sycl alien_handlers_sycl)
-  IF(ALIEN_USE_HIPSYCL)
+  IF(ALIEN_USE_ACPPSYCL)
    target_link_libraries(alien_core PUBLIC Boost::fiber Boost::context)
   ENDIF()
   

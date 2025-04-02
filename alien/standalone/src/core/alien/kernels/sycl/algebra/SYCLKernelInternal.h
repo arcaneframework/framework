@@ -554,6 +554,9 @@ class KernelInternal
 #ifdef USE_ONEAPI
                       auto sumReduction = sycl::reduction(sum, h, sycl::plus<T>());
 #endif
+#ifdef USE_ACPPSYCL
+                      auto sumReduction = sycl::reduction(sum, h, sycl::plus<T>());
+#endif
 
                       //sycl::accessor<T, 1, sycl::access::mode::read_write,sycl::access::target::local>
                       //  scratch(sycl::range<1>(local), h);
@@ -739,6 +742,9 @@ class KernelInternal
                       auto sumReduction = sycl::reduction(access_sum, sycl::plus<T>());
 #endif
 #ifdef USE_ONEAPI
+                      auto sumReduction = sycl::reduction(res, h, sycl::plus<T>());
+#endif
+#ifdef USE_ACPPSYCL
                       auto sumReduction = sycl::reduction(res, h, sycl::plus<T>());
 #endif
                       //auto access_sum = sycl::accessor<T,0,access::mode::write,access::target::global_buffer>(res, h);
@@ -1073,6 +1079,9 @@ class KernelInternal
                                         auto sumReduction = sycl::reduction(sum_acc, sycl::plus<T>());
 #endif
 #ifdef USE_ONEAPI
+                                        auto sumReduction = sycl::reduction(sum_buff, cgh, sycl::plus<T>());
+#endif
+#ifdef USE_ACPPSYCL
                                         auto sumReduction = sycl::reduction(sum_buff, cgh, sycl::plus<T>());
 #endif
                                         cgh.parallel_for(sycl::range<1>{x.size()},
