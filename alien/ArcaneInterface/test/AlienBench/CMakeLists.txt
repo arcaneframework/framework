@@ -48,6 +48,7 @@ if(ALIEN_USE_SYCL)
     addSources(alien_bench.exe
                AlienBenchSYCL.cc
               )
+    target_compile_definitions(alien_bench.exe PUBLIC ALIEN_USE_SYCL USE_SYCL2020)
     IF(ALIEN_USE_HIPSYCL)
         add_sycl_to_target(TARGET  alien_bench.exe
                            SOURCES AlienBenchSYCL.cc)
@@ -126,6 +127,7 @@ addSources(alien_hypre_sycl.exe
           )
 
 if(ALIEN_USE_SYCL)
+    target_compile_definitions(alien_hypre_sycl.exe PUBLIC USE_SYCL2020)
     IF(ALIEN_USE_HIPSYCL)
         add_sycl_to_target(TARGET  alien_hypre_sycl.exe
                            SOURCES hypre_sycl.cpp)
