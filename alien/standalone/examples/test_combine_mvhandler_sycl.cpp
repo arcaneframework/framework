@@ -431,7 +431,6 @@ int main(int argc, char** argv)
 
   }
 
-
   timer.printInfo(trace_mng->info().file(), "SYCL-BENCH");
 
   trace_mng->info() << "INFO FINALIZE SYCL TEST";

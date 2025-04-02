@@ -49,6 +49,15 @@ IF(ALIEN_USE_SYCL)
 
     set(ALIEN_USE_SYCL ${IntelSYCL_FOUND})
   ENDIF()
+  IF(ALIEN_USE_ACPPSYCL)
+    find_package(AdaptiveCpp REQUIRED)
+    message(status "AdaptiveSYCL           : ${AdaptiveCpp_FOUND}")
+    message(status "      SYCL INCLUDE DIR : ${SYCL_INCLUDE_DIR}")
+    message(status "      SYCL FLAGS       : ${SYCL_FLAGS}")
+    message(status "      SYCL LINK FLAGS  : ${SYCL_LINK_FLAGS}")
+    find_package(Boost COMPONENTS fiber context REQUIRED)
+  ENDIF()
+  add_subdirectory(alien/handlers/scalar/sycl)
   add_subdirectory(alien/kernels/sycl)
 endif()
 
@@ -164,14 +173,14 @@ if (Eigen3_FOUND)
         alien/expression/schur/SchurBlock.h)
 endif()
 
-IF(ALIEN_USE_SYCL)
-   list(APPEND alien_core_list
-        alien/handlers/scalar/sycl/VectorAccessorT.h
-        alien/handlers/scalar/sycl/VectorAccessorImplT.h
-        alien/handlers/scalar/sycl/ProfiledMatrixBuilderT.h
-        alien/handlers/scalar/sycl/ProfiledMatrixBuilderImplT.h
-        alien/handlers/scalar/sycl/VectorAccessor.cc)
-ENDIF()
+#IF(ALIEN_USE_SYCL)
+#   list(APPEND alien_core_list
+#        alien/handlers/scalar/sycl/VectorAccessorT.h
+#        alien/handlers/scalar/sycl/VectorAccessorImplT.h
+#        alien/handlers/scalar/sycl/ProfiledMatrixBuilderT.h
+#        alien/handlers/scalar/sycl/ProfiledMatrixBuilderImplT.h
+#        alien/handlers/scalar/sycl/VectorAccessor.cc)
+#ENDIF()
 
 add_library(alien_core ${alien_core_list})
 
@@ -236,7 +245,11 @@ IF(ALIEN_USE_SYCL)
       target_link_options(alien_core PRIVATE ${DPCPP_FLAGS})
     ENDIF()
   ENDIF()
-  target_link_libraries(alien_core PUBLIC alien_kernel_sycl)
+  target_link_libraries(alien_core PUBLIC alien_kernel_sycl alien_handlers_sycl)
+  IF(ALIEN_USE_ACPPSYCL)
+   target_link_libraries(alien_core PUBLIC Boost::fiber Boost::context)
+  ENDIF()
+  
 ENDIF()
 
 

@@ -26,10 +26,6 @@
 #include "arccore/message_passing/Request.h"
 #include "arccore/message_passing/IStat.h"
 #include "arccore/message_passing_mpi/MessagePassingMpiGlobal.h"
-#include "arccore/message_passing_mpi/MpiAdapter.h"
-#include "arccore/message_passing_mpi/MpiLock.h"
-#include "arccore/message_passing_mpi/MpiRequest.h"
-#include "arccore/message_passing_mpi/MpiTypeDispatcher.h"
 #include "arccore/message_passing_mpi/MpiDatatype.h"
 
 #include <alien/utils/Precomp.h>

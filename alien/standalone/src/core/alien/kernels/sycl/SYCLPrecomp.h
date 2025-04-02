@@ -30,6 +30,12 @@
 //#define USE_SYCL_USM
 #endif
 #ifndef USE_HIPSYCL
+#ifndef USE_ACPPSYCL
 #define USE_ONEAPI
 #endif
+#endif
+#ifdef USE_ACPPSYCL
+#define USE_SYCL2020
+#endif
+
 

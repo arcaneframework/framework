@@ -126,7 +126,7 @@ class RunCommandItemEnumeratorSubTraitsT
  public:
 
   using ItemType = T;
-  using ValueType = ItemTraitsT<ItemType>::LocalIdType;
+  using ValueType = typename ItemTraitsT<ItemType>::LocalIdType;
   using BuilderType = Arcane::impl::IterBuilderNoIndex<ValueType>;
 };
 
@@ -215,10 +215,10 @@ class RunCommandItemEnumeratorTraitsT
 
   using SubTraitsType = RunCommandItemEnumeratorSubTraitsT<IteratorValueType_>;
   using ItemType = typename SubTraitsType::ItemType;
-  using LocalIdType = ItemTraitsT<ItemType>::LocalIdType;
+  using LocalIdType = typename ItemTraitsT<ItemType>::LocalIdType;
   using ValueType = typename SubTraitsType::ValueType;
   using ContainerType = RunCommandItemContainer<ItemType>;
-  using BuilderType = SubTraitsType::BuilderType;
+  using BuilderType = typename SubTraitsType::BuilderType;
 
  public:
 
@@ -241,9 +241,9 @@ class RunCommandItemEnumeratorTraitsT
 template <typename TraitsType, typename ContainerType, typename Lambda, typename... ReducerArgs>
 void _doItemsLambda(Int32 base_index, ContainerType sub_items, const Lambda& func, ReducerArgs... reducer_args)
 {
-  using ItemType = TraitsType::ItemType;
-  using BuilderType = TraitsType::BuilderType;
-  using LocalIdType = BuilderType::ValueType;
+  using ItemType = typename TraitsType::ItemType;
+  using BuilderType = typename TraitsType::BuilderType;
+  using LocalIdType = typename BuilderType::ValueType;
   auto privatizer = privatize(func);
   auto& body = privatizer.privateCopy();
 
@@ -266,7 +266,7 @@ _applyItems(RunCommand& command, typename TraitsType::ContainerType items,
   Integer vsize = items.size();
   if (vsize == 0)
     return;
-  using ItemType = TraitsType::ItemType;
+  using ItemType = typename TraitsType::ItemType;
   impl::RunCommandLaunchInfo launch_info(command, vsize);
   const eExecutionPolicy exec_policy = launch_info.executionPolicy();
   launch_info.beginExecute();

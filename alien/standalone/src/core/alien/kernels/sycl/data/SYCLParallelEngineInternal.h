@@ -27,6 +27,7 @@ namespace Alien
   struct SYCLParallelEngine::Item : public sycl::item<dim>
   {
     using type = sycl::item<dim>;
+
     Item(sycl::item<dim> const& item)
     : sycl::item<dim>(item)
     {}

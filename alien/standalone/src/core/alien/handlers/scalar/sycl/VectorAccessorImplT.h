@@ -38,8 +38,12 @@ namespace SYCL
   class VectorAccessorT<ValueT>::Impl
   {
   public :
-    typedef HCSRVector<ValueT>::InternalType VectorInternalType ;
-    typedef VectorInternalType::ValueBufferType ValueBufferType ;
+    typedef typename HCSRVector<ValueT>::InternalType VectorInternalType ;
+    typedef typename VectorInternalType::ValueBufferType ValueBufferType ;
+
+    Impl(ValueBufferType& buffer)
+    : m_buffer(buffer)
+    {}
 
     //std::span<ValueT> m_values ;
     ValueBufferType& m_buffer ;
@@ -62,7 +66,7 @@ namespace SYCL
   }
 
   template <typename ValueT>
-  VectorAccessorT<ValueT>::Impl* VectorAccessorT<ValueT>::impl() {
+  typename VectorAccessorT<ValueT>::Impl* VectorAccessorT<ValueT>::impl() {
     assert(m_impl.get()) ;
     return m_impl.get() ;
   }
@@ -123,8 +127,8 @@ namespace SYCL
   class VectorAccessorT<ValueT>::HostView
   {
   public :
-    typedef HCSRVector<ValueT>::InternalType VectorInternalType ;
-    typedef VectorInternalType::ValueBufferType ValueBufferType ;
+    typedef typename HCSRVector<ValueT>::InternalType VectorInternalType ;
+    typedef typename VectorInternalType::ValueBufferType ValueBufferType ;
 
     sycl::buffer<ValueT,1>* m_b = nullptr ;
     using AccessorType = decltype(m_b->get_host_access());
@@ -145,19 +149,19 @@ namespace SYCL
 
   /*---------------------------------------------------------------------------*/
   template <typename ValueT>
-  VectorAccessorT<ValueT>::View VectorAccessorT<ValueT>::view(SYCLControlGroupHandler& cgh)
+  typename VectorAccessorT<ValueT>::View VectorAccessorT<ValueT>::view(SYCLControlGroupHandler& cgh)
   {
     return View(m_impl->m_buffer.template get_access<sycl::access::mode::read_write>(cgh.m_internal)) ;
   }
 
   template <typename ValueT>
-  VectorAccessorT<ValueT>::ConstView VectorAccessorT<ValueT>::constView(SYCLControlGroupHandler& cgh) const
+  typename VectorAccessorT<ValueT>::ConstView VectorAccessorT<ValueT>::constView(SYCLControlGroupHandler& cgh) const
   {
     return VectorAccessorT<ValueT>::ConstView(m_impl->m_buffer.template get_access<sycl::access::mode::read>(cgh.m_internal)) ;
   }
 
   template <typename ValueT>
-  VectorAccessorT<ValueT>::HostView VectorAccessorT<ValueT>::hostView() const
+  typename VectorAccessorT<ValueT>::HostView VectorAccessorT<ValueT>::hostView() const
   {
     return HostView(m_impl->m_buffer.get_host_access()) ;
   }

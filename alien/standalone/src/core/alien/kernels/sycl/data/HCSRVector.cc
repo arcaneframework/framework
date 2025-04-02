@@ -14,7 +14,7 @@
 namespace Alien {
 
 template <typename ValueT>
-HCSRVector<ValueT>::ValueType const*
+typename HCSRVector<ValueT>::ValueType const*
 HCSRVector<ValueT>::dataPtr() const
 {
   if(m_internal.get()==nullptr)

@@ -52,35 +52,12 @@ ENDIF()
 
 find_package(Boost COMPONENTS context)
 
-add_library(alien_kernel_sycl OBJECT
-        algebra/SYCLInternalLinearAlgebra.cc
-        algebra/SYCLInternalLinearAlgebra.h
-        algebra/SYCLLinearAlgebra.h
-        algebra/SYCLBEllPackMatrixMult.h
-        algebra/SYCLBEllPackMatrixMultT.h
-        converters/SimpleCSRtoSYCLMatrixConverter.cc
-        converters/SimpleCSRtoSYCLVectorConverter.cc
-        converters/SYCLtoSimpleCSRVectorConverter.cc
-        converters/HCSRtoSYCLMatrixConverter.cc
-        converters/HCSRtoSYCLVectorConverter.cc
-        data/BEllPackStructInfo.h
-        data/SYCLSendRecvOp.h
-        data/SYCLLUSendRecvOp.h
-        data/SYCLBEllPackInternal.h
-        data/SYCLBEllPackMatrix.cc
-        data/SYCLBEllPackMatrix.h
-        data/SYCLVector.cc
-        data/SYCLVector.h
-        data/HCSRVector.cc
-        data/HCSRVector.h
-        data/HCSRVectorInternal.h
-        data/HCSRMatrix.cc
-        data/HCSRMatrix.h
-        data/HCSRMatrixInternal.h
-        data/SYCLParallelEngine.h
-        data/SYCLParallelEngine.cc
-        SYCLBackEnd.h
-        SYCLPrecomp.h
+add_library(alien_handlers_sycl OBJECT
+        VectorAccessorT.h
+        VectorAccessorImplT.h
+        ProfiledMatrixBuilderT.h
+        ProfiledMatrixBuilderImplT.h
+        VectorAccessor.cc
         )
 
 IF(ALIEN_USE_HIPSYCL)
@@ -89,64 +66,52 @@ IF(ALIEN_USE_HIPSYCL)
   ENDIF()
   set(DPCPP_FLAGS --hipsycl-gpu-arch=gfx90a --hipsycl-platform=rocm)
   target_compile_options(alien_kernel_sycl PRIVATE $<$<COMPILE_LANGUAGE:CXX>:${DPCPP_FLAGS}>)
-  target_compile_definitions(alien_kernel_sycl PRIVATE USE_HIPSYCL USE_SYCL2020)
+  target_compile_definitions(alien_kernel_sycl PRIVATE USE_HIPSYCL)
   #target_include_directories(alien_kernel_sycl PRIVATE ${SYCL_INCLUDE_DIR_HINT})
-  add_sycl_to_target(TARGET alien_kernel_sycl 
-                     SOURCES data/SYCLVector.cc 
-                             data/SYCLBEllPackMatrix.cc
-                             data/HCSRVector.cc
-                             data/HCSRMatrix.cc
-                             data/SYCLParallelEngine.cc
-                             algebra/SYCLInternalLinearAlgebra.cc)
+  add_sycl_to_target(TARGET alien_handlers_sycl 
+                     SOURCES VectorAccessor.cc)
 ENDIF()
 IF(ALIEN_USE_INTELSYCL)
    IF(ALIEN_USE_CUDA)
      set(DPCPP_FLAGS -fsycl -fsycl-targets=nvptx64-nvidia-cuda -Xsycl-target-backend=nvptx64-nvidia-cuda --cuda-gpu-arch=sm_80 -Wno-linker-warnings )
-     target_compile_options(alien_kernel_sycl PRIVATE $<$<COMPILE_LANGUAGE:CXX>:${DPCPP_FLAGS}>)
-     target_link_options(alien_kernel_sycl PRIVATE ${DPCPP_FLAGS})
+     target_compile_options(alien_handlers_sycl PRIVATE $<$<COMPILE_LANGUAGE:CXX>:${DPCPP_FLAGS}>)
+     target_link_options(alien_handlers_sycl PRIVATE ${DPCPP_FLAGS})
    ENDIF()
    IF(ALIEN_USE_HIP)
      set(DPCPP_FLAGS -fsycl -Xsycl-target-backend=amdgcn-amd-amdhsa --offload-arch=gfx90a -Wno-linker-warnings)
      #set(DPCPP_FLAGS -fsycl --amdgpu-target=gfx90a --offload-arch=gfx90a -Wno-linker-warnings)
-     target_compile_options(alien_kernel_sycl PRIVATE $<$<COMPILE_LANGUAGE:CXX>:${DPCPP_FLAGS}>)
-     target_link_options(alien_kernel_sycl PRIVATE ${DPCPP_FLAGS})
+     target_compile_options(alien_handlers_sycl PRIVATE $<$<COMPILE_LANGUAGE:CXX>:${DPCPP_FLAGS}>)
+     target_link_options(alien_handlers_sycl PRIVATE ${DPCPP_FLAGS})
    ENDIF()  
-   add_sycl_to_target(TARGET  alien_kernel_sycl 
-                      SOURCES data/SYCLVector.cc 
-                              data/SYCLBEllPackMatrix.cc
-                              data/HCSRVector.cc
-                              data/HCSRMatrix.cc
-                              algebra/SYCLInternalLinearAlgebra.cc)
+  add_sycl_to_target(TARGET alien_handlers_sycl 
+                     SOURCES VectorAccessor.cc)
 ENDIF()
 
 IF(ALIEN_USE_ACPPSYCL)
-   IF(ALIEN_USE_CUDA)
-     #set(ACPP_FLAGS -fsycl -fsycl-targets=nvptx64-nvidia-cuda -Xsycl-target-backend=nvptx64-nvidia-cuda --cuda-gpu-arch=sm_80 -Wno-linker-warnings -DUSE_SYCL2020)
-     #target_compile_options(alien_kernel_sycl PRIVATE $<$<COMPILE_LANGUAGE:CXX>:${ACPP_FLAGS}>)
-     #target_link_options(alien_kernel_sycl PRIVATE ${ACPP_FLAGS})
-   ENDIF()
-   IF(ALIEN_USE_HIP)
-     set(ACPP_FLAGS --hipsycl-gpu-arch=gfx90a --hipsycl-platform=rocm)
-     target_compile_options(alien_kernel_sycl PRIVATE $<$<COMPILE_LANGUAGE:CXX>:${ACPP_FLAGS}> -DUSE_SYCL2020)
-     target_link_options(alien_kernel_sycl PRIVATE ${ACPP_FLAGS})
-   ENDIF()
-   
-   target_compile_definitions(alien_kernel_sycl PRIVATE USE_ACPPSYCL)
-   add_sycl_to_target(TARGET  alien_kernel_sycl 
-                      SOURCES data/SYCLVector.cc 
-                              data/SYCLBEllPackMatrix.cc
-                              data/HCSRVector.cc
-                              data/HCSRMatrix.cc
-                              algebra/SYCLInternalLinearAlgebra.cc)
+  IF(CMAKE_COMPILER_IS_GNUCXX)
+      target_compile_options(alien_handlers_sycl PRIVATE "--gcc-toolchain=${GCCCORE_ROOT}")
+  ENDIF()
+  IF(ALIEN_USE_CUDA)
+    #set(ACPP_FLAGS -fsycl -fsycl-targets=nvptx64-nvidia-cuda -Xsycl-target-backend=nvptx64-nvidia-cuda --cuda-gpu-arch=sm_80 -Wno-linker-warnings -DUSE_SYCL2020)
+    #target_compile_options(alien_handlers_sycl PRIVATE $<$<COMPILE_LANGUAGE:CXX>:${ACPP_FLAGS}>)
+    #target_link_options(alien_handlers_sycl PRIVATE ${ACPP_FLAGS})
+  ENDIF()
+  IF(ALIEN_USE_HIP)
+    set(ACPP_FLAGS --hipsycl-gpu-arch=gfx90a --hipsycl-platform=rocm)
+    target_link_options(alien_handlers_sycl PRIVATE ${ACPP_FLAGS})
+  ENDIF()
+  target_compile_definitions(alien_handlers_sycl PRIVATE USE_ACPPSYCL)
+  add_sycl_to_target(TARGET alien_handlers_sycl 
+                     SOURCES VectorAccessor.cc)
 ENDIF()
-target_link_libraries(alien_kernel_sycl PUBLIC
+target_link_libraries(alien_handlers_sycl PUBLIC
                       Arccore::arccore_trace
                       Arccore::arccore_collections
                       Arccore::arccore_base
                       Arccore::arccore_message_passing_mpi)
 
-target_link_libraries(alien_kernel_sycl PUBLIC alien_utils alien_headers)
+target_link_libraries(alien_handlers_sycl PUBLIC alien_utils alien_headers)
 
-install(TARGETS alien_kernel_sycl EXPORT ${ALIEN_EXPORT_TARGET})
+install(TARGETS alien_handlers_sycl EXPORT ${ALIEN_EXPORT_TARGET})
 
 
