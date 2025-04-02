@@ -124,13 +124,24 @@ class MshMeshWriter
   IMesh* m_mesh = nullptr;
   ItemTypeMng* m_item_type_mng = nullptr;
 
+  // Liste des tags physiques
+  UniqueArray<PhysicalTagInfo> m_physical_tags;
+
+  // Nombre d'entités par dimension
+  FixedArray<Int32, 4> m_nb_entities_by_dim;
+
+  //! Liste des informations à écrire pour chaque groupe
+  std::vector<std::unique_ptr<ItemGroupWriteInfo>> m_groups_write_info_list;
+
  private:
 
   bool _writeMeshToFileV4(IMesh* mesh, const String& file_name);
   Integer _convertToMshType(Int32 arcane_type);
   std::pair<Int64, Int64> _getFamilyMinMaxUniqueId(IItemFamily* family);
   void _addGroupsToProcess(IItemFamily* family, Array<ItemGroup>& items_groups);
-  void _writeElements(std::ostream& ofile);
+  void _writeEntities(std::ostream& ofile);
+  void _writeNodes(std::ostream& ofile);
+  void _writeElements(std::ostream& ofile, Int64 total_nb_cell);
 };
 
 /*---------------------------------------------------------------------------*/
@@ -343,20 +354,16 @@ writeMesh(const String& file_name)
   IItemFamily* cell_family = mesh->cellFamily();
   IItemFamily* face_family = mesh->faceFamily();
   CellGroup all_cells = mesh->allCells();
-  const Int32 mesh_nb_node = mesh->nbNode();
-  IItemFamily* node_family = mesh->nodeFamily();
-  ItemGroup all_nodes = mesh->allNodes();
 
   UniqueArray<ItemGroup> items_groups;
   _addGroupsToProcess(cell_family, items_groups);
   _addGroupsToProcess(face_family, items_groups);
 
-  std::vector<std::unique_ptr<ItemGroupWriteInfo>> groups_write_info_list;
   Int32 base_entity_index = 1000;
   for (ItemGroup group : items_groups) {
     auto x(std::make_unique<ItemGroupWriteInfo>());
     x->processGroup(group, base_entity_index);
-    groups_write_info_list.emplace_back(std::move(x));
+    m_groups_write_info_list.emplace_back(std::move(x));
     base_entity_index += 1000;
   }
 
@@ -366,20 +373,14 @@ writeMesh(const String& file_name)
   // Pour les maillages non-manifold les mailles peuvent être de dimension
   // différentes
 
-  // Liste des tags physiques
-  UniqueArray<PhysicalTagInfo> physical_tags;
-
-  // Calcule le nombre d'entités par dimension
-  FixedArray<Int32, 4> nb_entities_by_dim;
-
   // Calcule le nombre total d'éléments.
   // Toutes les entités qui ne sont pas de dimension 0 sont des éléments.
   Int64 total_nb_cell = 0;
-  for (const auto& ginfo : groups_write_info_list) {
+  for (const auto& ginfo : m_groups_write_info_list) {
     for (const EntityInfo& entity_info : ginfo->entitiesByType()) {
       Int32 dim = entity_info.m_dim;
       if (dim >= 0)
-        ++nb_entities_by_dim[dim];
+        ++m_nb_entities_by_dim[dim];
       if (dim > 0) {
         Int32 item_type = entity_info.m_item_type;
         Int32 nb_item = ginfo->itemsByType(item_type).size();
@@ -387,7 +388,7 @@ writeMesh(const String& file_name)
 
         Int32 physical_tag = entity_info.m_physical_tag;
         if (physical_tag > 0) {
-          physical_tags.add(PhysicalTagInfo{ dim, physical_tag, entity_info.m_physical_tag_name });
+          m_physical_tags.add(PhysicalTagInfo{ dim, physical_tag, entity_info.m_physical_tag_name });
         }
       }
     }
@@ -401,32 +402,29 @@ writeMesh(const String& file_name)
 
   {
     ofile << "$PhysicalNames\n";
-    Int32 nb_tag = physical_tags.size();
+    Int32 nb_tag = m_physical_tags.size();
     ofile << nb_tag << "\n";
-    for (const PhysicalTagInfo& tag_info : physical_tags) {
+    for (const PhysicalTagInfo& tag_info : m_physical_tags) {
       // TODO: vérifier que le nom ne dépasse pas 127 caractères.
       ofile << tag_info.m_dimension << " " << tag_info.m_physical_tag << " " << tag_info.m_name << "\n";
     }
     ofile << "$EndPhysicalNames\n";
   }
 
-  // Calcule la bounding box des noeuds
-  VariableNodeReal3 nodes_coords = mesh->nodesCoordinates();
-  Real3 node_min_bounding_box;
-  Real3 node_max_bounding_box;
-  {
-    Real max_value = FloatInfo<Real>::maxValue();
-    Real min_value = -max_value;
-    Real3 min_box(max_value, max_value, max_value);
-    Real3 max_box(min_value, min_value, min_value);
-    ENUMERATE_ (Node, inode, all_nodes) {
-      Real3 pos = nodes_coords[inode];
-      min_box = math::min(min_box, pos);
-      max_box = math::max(max_box, pos);
-    }
-    node_min_bounding_box = min_box;
-    node_max_bounding_box = max_box;
-  }
+  _writeEntities(ofile);
+  _writeNodes(ofile);
+  _writeElements(ofile, total_nb_cell);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Écrit le bloc contenant les entités ($Entities).
+ */
+void MshMeshWriter::
+_writeEntities(std::ostream& ofile)
+{
+  ItemGroup all_nodes = m_mesh->allNodes();
 
   // $Entities
   // numPoints(size_t) numCurves(size_t)
@@ -450,13 +448,34 @@ writeMesh(const String& file_name)
   //   numBoundngSurfaces(size_t) surfaceTag(int; sign encodes orientation) ...
   // ...
   // $EndEntities
+
+  // On a besoin de la bouding box de chaque entity.
+  // Pour faire simple, on prend celle de tout le maillage mais à terme
+  // ce serait mieux de calculer directement la bonne valeur.
+  const VariableNodeReal3& nodes_coords = m_mesh->nodesCoordinates();
+  Real3 node_min_bounding_box;
+  Real3 node_max_bounding_box;
+  {
+    Real max_value = FloatInfo<Real>::maxValue();
+    Real min_value = -max_value;
+    Real3 min_box(max_value, max_value, max_value);
+    Real3 max_box(min_value, min_value, min_value);
+    ENUMERATE_ (Node, inode, all_nodes) {
+      Real3 pos = nodes_coords[inode];
+      min_box = math::min(min_box, pos);
+      max_box = math::max(max_box, pos);
+    }
+    node_min_bounding_box = min_box;
+    node_max_bounding_box = max_box;
+  }
+
   {
     ofile << "$Entities\n";
     //nb_entities_by_dim[0] = 0;
-    ofile << nb_entities_by_dim[0] << " " << nb_entities_by_dim[1]
-          << " " << nb_entities_by_dim[2] << " " << nb_entities_by_dim[3] << "\n";
+    ofile << m_nb_entities_by_dim[0] << " " << m_nb_entities_by_dim[1]
+          << " " << m_nb_entities_by_dim[2] << " " << m_nb_entities_by_dim[3] << "\n";
     for (Int32 idim = 1; idim < 4; ++idim) {
-      for (const auto& ginfo : groups_write_info_list) {
+      for (const auto& ginfo : m_groups_write_info_list) {
         for (const EntityInfo& entity_info : ginfo->entitiesByType()) {
           if (entity_info.m_dim != idim)
             continue;
@@ -477,6 +496,19 @@ writeMesh(const String& file_name)
     }
     ofile << "$EndEntities\n";
   }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Écrit le bloc contenant les noeuds ($Nodes).
+ */
+void MshMeshWriter::
+_writeNodes(std::ostream& ofile)
+{
+  const Int32 mesh_nb_node = m_mesh->nbNode();
+  IItemFamily* node_family = m_mesh->nodeFamily();
+  ItemGroup all_nodes = m_mesh->allNodes();
 
   // $Nodes
   // numEntityBlocks(size_t) numNodes(size_t)
@@ -509,12 +541,24 @@ writeMesh(const String& file_name)
   }
 
   // Sauve les coordonnées
+  VariableNodeReal3& nodes_coords = m_mesh->nodesCoordinates();
   ENUMERATE_ (Node, inode, all_nodes) {
     Real3 coord = nodes_coords[inode];
     ofile << coord.x << " " << coord.y << " " << coord.z << "\n";
   }
 
   ofile << "$EndNodes\n";
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Écrit le bloc contenant les élements ($Elements).
+ */
+void MshMeshWriter::
+_writeElements(std::ostream& ofile, Int64 total_nb_cell)
+{
+  IItemFamily* cell_family = m_mesh->cellFamily();
 
   // TODO: regarder s'il faut prendre en compte les uniqueId() des faces.
   auto [cell_min_uid, cell_max_uid] = _getFamilyMinMaxUniqueId(cell_family);
@@ -532,9 +576,9 @@ writeMesh(const String& file_name)
   // Bloc contenant les mailles
   ofile << "$Elements\n";
 
-  Int32 nb_existing_type = nb_entities_by_dim[1] + nb_entities_by_dim[2] + nb_entities_by_dim[3];
+  Int32 nb_existing_type = m_nb_entities_by_dim[1] + m_nb_entities_by_dim[2] + m_nb_entities_by_dim[3];
   ofile << nb_existing_type << " " << total_nb_cell << " " << cell_min_uid << " " << cell_max_uid << "\n";
-  for (const auto& ginfo : groups_write_info_list) {
+  for (const auto& ginfo : m_groups_write_info_list) {
     ItemGroup item_group = ginfo->group();
     IItemFamily* item_family = item_group.itemFamily();
     for (const EntityInfo& entity_info : ginfo->entitiesByType()) {
