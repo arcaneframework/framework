@@ -40,8 +40,7 @@ namespace Arcane
  * \brief Écriture des fichiers de maillage au format msh.
  */
 class MshMeshWriter
-: public AbstractService
-, public IMeshWriter
+: public TraceAccessor
 {
  public:
 
@@ -114,15 +113,15 @@ class MshMeshWriter
 
  public:
 
-  explicit MshMeshWriter(const ServiceBuildInfo& sbi);
+  explicit MshMeshWriter(IMesh* mesh);
 
  public:
 
-  void build() override {}
-  bool writeMeshToFile(IMesh* mesh, const String& file_name) override;
+  void writeMesh(const String& file_name);
 
  private:
 
+  IMesh* m_mesh = nullptr;
   ItemTypeMng* m_item_type_mng = nullptr;
 
  private:
@@ -131,24 +130,16 @@ class MshMeshWriter
   Integer _convertToMshType(Int32 arcane_type);
   std::pair<Int64, Int64> _getFamilyMinMaxUniqueId(IItemFamily* family);
   void _addGroupsToProcess(IItemFamily* family, Array<ItemGroup>& items_groups);
+  void _writeElements(std::ostream& ofile);
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// Obsolète. Utiliser 'MshMeshReader' à la place
-ARCANE_REGISTER_SUB_DOMAIN_FACTORY(MshMeshWriter, IMeshWriter, MshNewMeshWriter);
-
-ARCANE_REGISTER_SERVICE(MshMeshWriter,
-                        ServiceProperty("MshMeshWriter", ST_SubDomain),
-                        ARCANE_SERVICE_INTERFACE(IMeshWriter));
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 MshMeshWriter::
-MshMeshWriter(const ServiceBuildInfo& sbi)
-: AbstractService(sbi)
+MshMeshWriter(IMesh* mesh)
+: TraceAccessor(mesh->traceMng())
+, m_mesh(mesh)
 {
 }
 
@@ -213,15 +204,6 @@ _convertToMshType(Int32 arcane_type)
     break;
   }
   ARCANE_THROW(NotSupportedException, "Arcane type '{0}'", m_item_type_mng->typeFromId(arcane_type)->typeName());
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-bool MshMeshWriter::
-writeMeshToFile(IMesh* mesh, const String& file_name)
-{
-  return _writeMeshToFileV4(mesh, file_name);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -295,14 +277,18 @@ processGroup(ItemGroup group, Int32 base_entity_index)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
+/*!
+ * \brief Détermine la liste des groupes à traiter pour une famille.
+ *
+ * La liste des groupes à sauver sera ajoutée à \a items_groups.
+ * \note Pour l'instant on support que l'ensemble des groupes forme
+ * une partition des entités de la famille.
+ */
 void MshMeshWriter::
 _addGroupsToProcess(IItemFamily* family, Array<ItemGroup>& items_groups)
 {
   bool has_group = false;
   // Parcours tous les groupes de la famille
-  // NOTE: Pour l'instant, pour les mailles on suppose que cela
-  // forme une partition du maillage.
   for (ItemGroup group : family->groups()) {
     if (group.isAllItems())
       continue;
@@ -314,11 +300,12 @@ _addGroupsToProcess(IItemFamily* family, Array<ItemGroup>& items_groups)
   }
   // Si pas de groupes dans la famille, on prend celui de toutes les entités
   // si la famille est celle des mailles.
-  // TODO: toujours prendre ce groupe pour les entités qui n'auraient pas
-  // été traitées par les autres groupes lorsqu'on n'est pas sur
-  // que l'ensemble des groupes forme une partition.
   if (!has_group && (family->itemKind() == IK_Cell))
     items_groups.add(family->allItems());
+
+  // TODO: si les groupe traités ne forment pas une partition et qu'il y a
+  // des entités qui ne sont pas dans ces groupes, il faudrait tout de même
+  // les sauver sous la forme d'une $Entity sans groupe physique associé.
 }
 
 /*---------------------------------------------------------------------------*/
@@ -331,9 +318,10 @@ _addGroupsToProcess(IItemFamily* family, Array<ItemGroup>& items_groups)
  * \retval true pour toute erreur détectée
  * \retval false sinon
  */
-bool MshMeshWriter::
-_writeMeshToFileV4(IMesh* mesh, const String& file_name)
+void MshMeshWriter::
+writeMesh(const String& file_name)
 {
+  IMesh* mesh = m_mesh;
   m_item_type_mng = mesh->itemTypeMng();
   String mesh_file_name(file_name);
   if (!file_name.endsWith(".msh"))
@@ -571,8 +559,6 @@ _writeMeshToFileV4(IMesh* mesh, const String& file_name)
     }
   }
   ofile << "$EndElements\n";
-
-  return false;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -593,6 +579,60 @@ _getFamilyMinMaxUniqueId(IItemFamily* family)
   }
   return { min_uid, max_uid };
 }
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Écriture des fichiers de maillage au format msh.
+ */
+class MshMeshWriterService
+: public AbstractService
+, public IMeshWriter
+{
+ public:
+
+  explicit MshMeshWriterService(const ServiceBuildInfo& sbi);
+
+ public:
+
+  void build() override {}
+  bool writeMeshToFile(IMesh* mesh, const String& file_name) override;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+MshMeshWriterService::
+MshMeshWriterService(const ServiceBuildInfo& sbi)
+: AbstractService(sbi)
+{
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+bool MshMeshWriterService::
+writeMeshToFile(IMesh* mesh, const String& file_name)
+{
+  MshMeshWriter writer(mesh);
+  writer.writeMesh(file_name);
+  return false;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+// Obsolète. Utiliser 'MshMeshReader' à la place
+ARCANE_REGISTER_SERVICE(MshMeshWriterService,
+                        ServiceProperty("MshNewMeshWriter", ST_SubDomain),
+                        ARCANE_SERVICE_INTERFACE(IMeshWriter));
+
+ARCANE_REGISTER_SERVICE(MshMeshWriterService,
+                        ServiceProperty("MshMeshWriter", ST_SubDomain),
+                        ARCANE_SERVICE_INTERFACE(IMeshWriter));
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
