@@ -221,6 +221,10 @@ class SYCLSendRecvOp : public Alien::SimpleCSRInternal::IASynchOp
 #ifdef USE_ONEAPI
                        auto access_recv_buffer = sycl::accessor(m_recv_buffer, cgh, sycl::write_only, sycl::property::no_init{});
 #endif
+#ifdef USE_ACPPSYCL
+                       auto access_recv_buffer = sycl::accessor(m_recv_buffer, cgh, sycl::write_only, sycl::property::no_init{});
+#endif
+
 
                        sycl::accessor<ValueType> access_rbuffer{rbuffer, cgh};
 

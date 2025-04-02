@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -176,7 +176,6 @@ TEST(TestSYCLMV, HCSRVector)
   std::size_t local_size = vdist.localSize();
   auto offset = vdist.offset();
 
-
   Alien::SYCLParallelEngine engine;
   {
     auto x_acc = Alien::SYCL::VectorAccessorT<Real>(x);
@@ -184,7 +183,7 @@ TEST(TestSYCLMV, HCSRVector)
                   {
                      auto xv = x_acc.view(cgh) ;
                      cgh.parallel_for(engine.maxNumThreads(),
-                                         [=](Alien::SYCLParallelEngine::Item<1> item)
+                                         [=](Alien::SYCLParallelEngine::Item<1>::type item)
                                          {
                                             auto index = item.get_id(0) ;
                                             auto id = item.get_id(0);
@@ -200,7 +199,7 @@ TEST(TestSYCLMV, HCSRVector)
                     auto yv = y_acc.view(cgh) ;
                     auto xcv = x_acc.constView(cgh) ;
                     cgh.parallel_for(engine.maxNumThreads(),
-                                         [=](Alien::SYCLParallelEngine::Item<1> item)
+                                         [=](Alien::SYCLParallelEngine::Item<1>::type item)
                                          {
                                             auto index = item.get_id(0) ;
                                             auto id = item.get_id(0);
@@ -252,13 +251,14 @@ TEST(TestSYCLMV, HCSRMatrix)
         profiler.addMatrixEntry(row, row - 1);
     }
   }
+
   {
     Alien::SYCL::ProfiledMatrixBuilder builder(A, Alien::ProfiledMatrixOptions::eResetValues);
     engine.submit([&](Alien::SYCLControlGroupHandler& cgh)
                   {
                     auto matrix_acc = builder.view(cgh) ;
                     cgh.parallel_for(engine.maxNumThreads(),
-                                         [=](Alien::SYCLParallelEngine::Item<1> item)
+                                         [=](Alien::SYCLParallelEngine::Item<1>::type item)
                                          {
                                             auto index = item.get_id(0) ;
                                             auto id = item.get_id(0);
@@ -317,13 +317,14 @@ TEST(TestSYCLMV, HCSR2SYCLConverter)
         profiler.addMatrixEntry(row, row - 1);
     }
   }
+
   {
     Alien::SYCL::ProfiledMatrixBuilder builder(A, Alien::ProfiledMatrixOptions::eResetValues);
     engine.submit([&](Alien::SYCLControlGroupHandler& cgh)
                   {
                     auto matrix_acc = builder.view(cgh) ;
                     cgh.parallel_for(engine.maxNumThreads(),
-                                         [=](Alien::SYCLParallelEngine::Item<1> item)
+                                         [=](Alien::SYCLParallelEngine::Item<1>::type item)
                                          {
                                             auto index = item.get_id(0) ;
                                             auto id = item.get_id(0);
@@ -345,7 +346,7 @@ TEST(TestSYCLMV, HCSR2SYCLConverter)
                     {
                        auto xv = x_acc.view(cgh) ;
                        cgh.parallel_for(engine.maxNumThreads(),
-                                           [=](Alien::SYCLParallelEngine::Item<1> item)
+                                           [=](Alien::SYCLParallelEngine::Item<1>::type item)
                                            {
                                               auto index = item.get_id(0) ;
                                               auto id = item.get_id(0);
@@ -607,7 +608,7 @@ TEST(TestSYCLMV, CombineAddBuilder)
                     auto allVIndex_acc = allVIndex_buffer.get_access<sycl::access::mode::read>(cgh.m_internal) ;
                     cgh.parallel_for(nx,
                                      ny,
-                                     [=](Alien::SYCLParallelEngine::Item<2> item)
+                                     [=](Alien::SYCLParallelEngine::Item<2>::type item)
                                      {
                                         auto i = item.get_id(0);
                                         auto j = item.get_id(1);

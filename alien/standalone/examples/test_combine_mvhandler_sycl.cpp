@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 IFPEN-CEA
+ * Copyright 2025 IFPEN-CEA
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -331,7 +331,7 @@ int main(int argc, char** argv)
                     auto allVIndex_acc = allVIndex_buffer.get_access<sycl::access::mode::read>(cgh.m_internal) ;
                     cgh.parallel_for(nx,
                                      ny,
-                                     [=](Alien::SYCLParallelEngine::Item<2> item)
+                                     [=](Alien::SYCLParallelEngine::Item<2>::type item)
                                      {
                                         auto i = item.get_id(0);
                                         auto j = item.get_id(1);
@@ -430,7 +430,6 @@ int main(int argc, char** argv)
     }
 
   }
-
 
   timer.printInfo(trace_mng->info().file(), "SYCL-BENCH");
 
