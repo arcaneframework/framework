@@ -47,6 +47,9 @@ if(ALIEN_USE_SYCL)
     add_executable(test_sycl.exe test_sycl.cpp)
     add_executable(test_mvhandler_sycl.exe test_mvhandler_sycl.cpp)
     add_executable(test_combine_mvhandler_sycl.exe test_combine_mvhandler_sycl.cpp)
+    target_compile_definitions(test_sycl.exe PUBLIC ALIEN_USE_SYCL USE_SYCL2020)
+    target_compile_definitions(test_mvhandler_sycl.exe PUBLIC ALIEN_USE_SYCL USE_SYCL2020)
+    target_compile_definitions(test_combine_mvhandler_sycl.exe PUBLIC ALIEN_USE_SYCL USE_SYCL2020)
     IF(ALIEN_USE_HIPSYCL)
       add_sycl_to_target(TARGET  test_sycl.exe
                          SOURCES test_sycl.cpp)
@@ -115,7 +118,7 @@ if(CMAKE_COMPILER_IS_GNUCXX OR (CMAKE_CXX_COMPILER_ID STREQUAL Clang))
 endif()
 
 if(ALIEN_USE_SYCL)
-  target_compile_definitions(krylov_example.exe PUBLIC -DALIEN_USE_SYCL) 
+  target_compile_definitions(krylov_example.exe PUBLIC ALIEN_USE_SYCL USE_SYCL2020)
   IF(ALIEN_USE_HIPSYCL)
     add_sycl_to_target(TARGET  krylov_example.exe
                         SOURCES test_krylov.cpp)

@@ -79,6 +79,8 @@ endif ()
 
 IF (ALIEN_USE_SYCL)
     target_sources(ref.gtest.seq PRIVATE TestMVSYCL.cc)
+    target_compile_definitions(ref.gtest.seq PUBLIC USE_SYCL2020)
+
     
     IF(ALIEN_USE_HIPSYCL)
       IF(CMAKE_COMPILER_IS_GNUCXX)

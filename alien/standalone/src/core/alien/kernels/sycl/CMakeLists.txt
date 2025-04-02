@@ -83,7 +83,7 @@ IF(ALIEN_USE_HIPSYCL)
   ENDIF()
   set(DPCPP_FLAGS --hipsycl-gpu-arch=gfx90a --hipsycl-platform=rocm)
   target_compile_options(alien_kernel_sycl PRIVATE $<$<COMPILE_LANGUAGE:CXX>:${DPCPP_FLAGS}>)
-  target_compile_definitions(alien_kernel_sycl PRIVATE USE_HIPSYCL)
+  target_compile_definitions(alien_kernel_sycl PRIVATE USE_HIPSYCL USE_SYCL2020)
   #target_include_directories(alien_kernel_sycl PRIVATE ${SYCL_INCLUDE_DIR_HINT})
   add_sycl_to_target(TARGET alien_kernel_sycl 
                      SOURCES data/SYCLVector.cc 
