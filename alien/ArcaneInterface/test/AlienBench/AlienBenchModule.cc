@@ -1114,7 +1114,7 @@ AlienBenchModule::_test(Timer& pbuild_timer,
 }
 /*---------------------------------------------------------------------------*/
 
-Real
+ARCCORE_HOST_DEVICE Real
 AlienBenchModule::funcn(Real3 p) const
 {
   return p.x * p.x * p.y;
