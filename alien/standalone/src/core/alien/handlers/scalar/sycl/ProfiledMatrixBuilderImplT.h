@@ -40,9 +40,17 @@ namespace SYCL
   class ProfiledMatrixBuilderT<ValueT,IndexT>::Impl
   {
   public :
-    typedef HCSRMatrix<ValueT>::InternalType MatrixInternalType ;
-    typedef MatrixInternalType::ValueBufferType ValueBufferType ;
-    typedef MatrixInternalType::IndexBufferType IndexBufferType ;
+    typedef typename HCSRMatrix<ValueT>::InternalType MatrixInternalType ;
+    typedef typename MatrixInternalType::ValueBufferType ValueBufferType ;
+    typedef typename MatrixInternalType::IndexBufferType IndexBufferType ;
+
+    Impl(ValueBufferType& values_buffer,
+         IndexBufferType& cols_buffer,
+         IndexBufferType& kcol_buffer)
+    : m_values_buffer(values_buffer)
+    , m_cols_buffer(cols_buffer)
+    , m_kcol_buffer(kcol_buffer)
+    {}
 
     ValueBufferType& m_values_buffer ;
     IndexBufferType& m_cols_buffer ;
@@ -213,7 +221,7 @@ namespace SYCL
 
   /*---------------------------------------------------------------------------*/
   template <typename ValueT,typename IndexT>
-  ProfiledMatrixBuilderT<ValueT,IndexT>::View ProfiledMatrixBuilderT<ValueT,IndexT>::view(SYCLControlGroupHandler& cgh)
+  typename ProfiledMatrixBuilderT<ValueT,IndexT>::View ProfiledMatrixBuilderT<ValueT,IndexT>::view(SYCLControlGroupHandler& cgh)
   {
     return View(m_impl->m_values_buffer.template get_access<sycl::access::mode::read_write>(cgh.m_internal),
                 m_impl->m_cols_buffer.template get_access<sycl::access::mode::read>(cgh.m_internal),
@@ -221,7 +229,7 @@ namespace SYCL
   }
 
   template <typename ValueT,typename IndexT>
-  ProfiledMatrixBuilderT<ValueT,IndexT>::ConstView ProfiledMatrixBuilderT<ValueT,IndexT>::constView(SYCLControlGroupHandler& cgh) const
+  typename ProfiledMatrixBuilderT<ValueT,IndexT>::ConstView ProfiledMatrixBuilderT<ValueT,IndexT>::constView(SYCLControlGroupHandler& cgh) const
   {
     return ProfiledMatrixBuilderT<ValueT,IndexT>::ConstView(m_impl->m_values_buffer.template get_access<sycl::access::mode::read>(cgh.m_internal),
                                                      m_impl->m_cols_buffer.template get_access<sycl::access::mode::read>(cgh.m_internal),
@@ -229,7 +237,7 @@ namespace SYCL
   }
 
   template <typename ValueT,typename IndexT>
-  ProfiledMatrixBuilderT<ValueT,IndexT>::HostView ProfiledMatrixBuilderT<ValueT,IndexT>::hostView() const
+  typename ProfiledMatrixBuilderT<ValueT,IndexT>::HostView ProfiledMatrixBuilderT<ValueT,IndexT>::hostView() const
   {
     return HostView(m_impl->m_values_buffer.get_host_access(),
                     m_impl->m_cols_buffer.get_host_access(),

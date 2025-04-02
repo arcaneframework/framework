@@ -137,7 +137,7 @@ int main(int argc, char** argv)
                   {
                      auto xv = x_acc.view(cgh) ;
                      cgh.parallel_for(engine.maxNumThreads(),
-                                         [=](Alien::SYCLParallelEngine::Item<1> item)
+                                         [=](Alien::SYCLParallelEngine::Item<1>::type item)
                                          {
                                             auto id = item.get_id(0);
                                             for (std::size_t index = id; id < local_size; id += item.get_range()[0])
@@ -152,7 +152,7 @@ int main(int argc, char** argv)
                     auto yv = y_acc.view(cgh) ;
                     auto xcv = x_acc.constView(cgh) ;
                     cgh.parallel_for(engine.maxNumThreads(),
-                                         [=](Alien::SYCLParallelEngine::Item<1> item)
+                                         [=](Alien::SYCLParallelEngine::Item<1>::type item)
                                          {
                                             auto index = item.get_id(0) ;
                                             auto id = item.get_id(0);
@@ -191,7 +191,7 @@ int main(int argc, char** argv)
                   {
                     auto matrix_acc = builder.view(cgh) ;
                     cgh.parallel_for(engine.maxNumThreads(),
-                                         [=](Alien::SYCLParallelEngine::Item<1> item)
+                                         [=](Alien::SYCLParallelEngine::Item<1>::item item)
                                          {
                                             auto index = item.get_id(0) ;
                                             auto id = item.get_id(0);

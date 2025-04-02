@@ -176,7 +176,6 @@ TEST(TestSYCLMV, HCSRVector)
   std::size_t local_size = vdist.localSize();
   auto offset = vdist.offset();
 
-
   Alien::SYCLParallelEngine engine;
   {
     auto x_acc = Alien::SYCL::VectorAccessorT<Real>(x);
@@ -252,6 +251,7 @@ TEST(TestSYCLMV, HCSRMatrix)
         profiler.addMatrixEntry(row, row - 1);
     }
   }
+
   {
     Alien::SYCL::ProfiledMatrixBuilder builder(A, Alien::ProfiledMatrixOptions::eResetValues);
     engine.submit([&](Alien::SYCLControlGroupHandler& cgh)
@@ -317,6 +317,7 @@ TEST(TestSYCLMV, HCSR2SYCLConverter)
         profiler.addMatrixEntry(row, row - 1);
     }
   }
+
   {
     Alien::SYCL::ProfiledMatrixBuilder builder(A, Alien::ProfiledMatrixOptions::eResetValues);
     engine.submit([&](Alien::SYCLControlGroupHandler& cgh)
