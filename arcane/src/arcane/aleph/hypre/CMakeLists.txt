@@ -10,7 +10,7 @@ endif()
 # #define HYPRE_RELEASE_VERSION "2.20.0"
 # NOTE: on pourrait aussi utilier HYPRE_RELEASE_NUMBER. Il faudrait
 # vérifier depuis quelle version de Hypre cette macro est disponible
-set(Hypre_INCLUDE_DIRS $ENV{HYPRE_ROOT}/include)
+#set(Hypre_INCLUDE_DIRS $ENV{HYPRE_ROOT}/include)
 find_file(_HYPRE_CONFIG_PATH NAMES HYPRE_config.h PATHS ${Hypre_INCLUDE_DIRS} REQUIRED)
 file(STRINGS ${_HYPRE_CONFIG_PATH} _HYPRE_VERSION_STR REGEX HYPRE_RELEASE_VERSION)
 string(REGEX MATCH "#define HYPRE_RELEASE_VERSION \"([0-9]+)\.([0-9]+)\.([0-9]+)\"" HYPRE_VERSION_REGEX_MATCH ${_HYPRE_VERSION_STR})
