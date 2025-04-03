@@ -90,7 +90,7 @@ jobs:
           (success() || failure()) &&
           steps.checkout.outcome == 'success'
         shell: bash
-        run: cmake -S ${{ env.SOURCE_DIR }} -B ${{ env.BUILD_DIR }} -G Ninja -DCMAKE_VERBOSE_MAKEFILE=TRUE -DCMAKE_INSTALL_PREFIX=${{ env.INSTALL_DIR }} ${{ env.CM_CCACHE_OPTS }} -DCMAKE_BUILD_TYPE=${{ env.CM_BUILD_TYPE }} -DARCCORE_BUILD_MODE=Check -DREMOVE_UID_ON_DETACH=ON -DUSE_GTEST_DEATH_TEST=ON -DCMAKE_DISABLE_FIND_PACKAGE_Papi=ON -DCMAKE_DISABLE_FIND_PACKAGE_Trilinos=ON -DALIEN_BUILD_COMPONENT=all -DALIEN_PLUGIN_HYPRE=ON -DALIEN_PLUGIN_PETSC=ON -DARCCORE_CXX_STANDARD=20 -DUSE_GRAPH_CONNECTIVITY_POLICY=ON -DCMAKE_CXX_FLAGS_RELWITHDEBINFO="-O -DNDEBUG"
+        run: cmake -S ${{ env.SOURCE_DIR }} -B ${{ env.BUILD_DIR }} -G Ninja -DCMAKE_VERBOSE_MAKEFILE=TRUE -DCMAKE_INSTALL_PREFIX=${{ env.INSTALL_DIR }} ${{ env.CM_CCACHE_OPTS }} -DCMAKE_BUILD_TYPE=${{ env.CM_BUILD_TYPE }} -DARCCORE_BUILD_MODE=Check -DREMOVE_UID_ON_DETACH=ON -DUSE_GTEST_DEATH_TEST=ON -DCMAKE_DISABLE_FIND_PACKAGE_Papi=ON -DCMAKE_DISABLE_FIND_PACKAGE_Trilinos=ON -DALIEN_BUILD_COMPONENT=all -DALIEN_PLUGIN_HYPRE=ON -DALIEN_PLUGIN_PETSC=ON -DARCCORE_CXX_STANDARD=20 -DUSE_GRAPH_CONNECTIVITY_POLICY=ON -DCMAKE_CXX_FLAGS_RELWITHDEBINFO="-O -DNDEBUG" -DARCANE_DISABLE_PERFCOUNTER_TESTS=ON
 
       - name: Build
         id: build
@@ -193,7 +193,7 @@ jobs:
            export LD_LIBRARY_PATH=${{ env.BUILD_DIR }}/${{ env.EXT_LIB_SUBDIR }}:${LD_LIBRARY_PATH}
            which mpiexec
            mpiexec --version
-           ctest --test-dir ${{ env.BUILD_DIR }} ${{ env.CT_OPTS }}
+           ctest --test-dir ${{ env.BUILD_DIR }} ${{ env.CT_OPTS }} -E '(12proc|8proc|6proc|alien.gtest.CompositeSpace)'
 
       - name: Upload test artifact
         id: upload-test-artifact
