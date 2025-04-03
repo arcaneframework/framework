@@ -23,6 +23,7 @@
 #include "arcane/core/IMeshWriter.h"
 #include "arcane/core/ItemTypeMng.h"
 #include "arcane/core/SharedVariable.h"
+#include "arcane/core/internal/MshMeshGenerationInfo.h"
 
 #include "arcane/std/internal/IosGmsh.h"
 
@@ -42,6 +43,8 @@ namespace Arcane
 class MshMeshWriter
 : public TraceAccessor
 {
+  using MshPeriodicOneInfo = impl::MshMeshGenerationInfo::MshPeriodicOneInfo;
+
  public:
 
   class ItemFamilyWriteInfo
@@ -133,6 +136,9 @@ class MshMeshWriter
   //! Liste des informations à écrire pour chaque groupe
   std::vector<std::unique_ptr<ItemGroupWriteInfo>> m_groups_write_info_list;
 
+  impl::MshMeshGenerationInfo* m_mesh_info = nullptr;
+  bool m_has_periodic_info = false;
+
  private:
 
   bool _writeMeshToFileV4(IMesh* mesh, const String& file_name);
@@ -142,6 +148,7 @@ class MshMeshWriter
   void _writeEntities(std::ostream& ofile);
   void _writeNodes(std::ostream& ofile);
   void _writeElements(std::ostream& ofile, Int64 total_nb_cell);
+  void _writePeriodic(std::ostream& ofile);
 };
 
 /*---------------------------------------------------------------------------*/
@@ -344,6 +351,12 @@ writeMesh(const String& file_name)
 
   info() << "writing file '" << mesh_file_name << "'";
 
+  m_mesh_info = impl::MshMeshGenerationInfo::getReference(mesh, false);
+  if (m_mesh_info) {
+    m_has_periodic_info = m_mesh_info->m_periodic_info.hasValues();
+    info() << "Mesh has 'MSH' generation info has_periodic=" << m_has_periodic_info;
+  }
+
   ofile << "$MeshFormat\n";
   // 4.1 pour le format
   // 0 pour ASCII (1 pour binaire)
@@ -359,12 +372,13 @@ writeMesh(const String& file_name)
   _addGroupsToProcess(cell_family, items_groups);
   _addGroupsToProcess(face_family, items_groups);
 
-  Int32 base_entity_index = 1000;
+  const Int32 entity_index_increment = 1000;
+  Int32 base_entity_index = entity_index_increment;
   for (ItemGroup group : items_groups) {
     auto x(std::make_unique<ItemGroupWriteInfo>());
     x->processGroup(group, base_entity_index);
     m_groups_write_info_list.emplace_back(std::move(x));
-    base_entity_index += 1000;
+    base_entity_index += entity_index_increment;
   }
 
   // Pour GMSH, il faut commencer par les 'Entities'.
@@ -414,6 +428,7 @@ writeMesh(const String& file_name)
   _writeEntities(ofile);
   _writeNodes(ofile);
   _writeElements(ofile, total_nb_cell);
+  _writePeriodic(ofile);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -468,12 +483,20 @@ _writeEntities(std::ostream& ofile)
     node_min_bounding_box = min_box;
     node_max_bounding_box = max_box;
   }
-
+  if (m_has_periodic_info)
+    m_nb_entities_by_dim[0] = 1;
   {
     ofile << "$Entities\n";
-    //nb_entities_by_dim[0] = 0;
     ofile << m_nb_entities_by_dim[0] << " " << m_nb_entities_by_dim[1]
           << " " << m_nb_entities_by_dim[2] << " " << m_nb_entities_by_dim[3] << "\n";
+
+    // Si on a des informations de périodicité,
+    // on créé une entité de dimension 0 pour que les informations de
+    // périodicité y fassent référence. On lui donne le tag 1.
+    if (m_has_periodic_info) {
+      ofile << "1 0.0 0.0 0.0 0\n";
+    }
+
     for (Int32 idim = 1; idim < 4; ++idim) {
       for (const auto& ginfo : m_groups_write_info_list) {
         for (const EntityInfo& entity_info : ginfo->entitiesByType()) {
@@ -603,6 +626,81 @@ _writeElements(std::ostream& ofile, Int64 total_nb_cell)
     }
   }
   ofile << "$EndElements\n";
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MshMeshWriter::
+_writePeriodic(std::ostream& ofile)
+{
+  IItemFamily* node_family = m_mesh->nodeFamily();
+
+  //   $Periodic
+  //     numPeriodicLinks(size_t)
+  //     entityDim(int) entityTag(int) entityTagMaster(int)
+  //     numAffine(size_t) value(double) ...
+  //     numCorrespondingNodes(size_t)
+  //       nodeTag(size_t) nodeTagMaster(size_t)
+  //       ...
+  //     ...
+  //   $EndPeriodic
+
+  // Les informations de périodicité sont conservées dans \a m_mesh_info
+  // qui n'existe pas si on n'est pas issu d'un maillage MSH.
+  if (!m_has_periodic_info)
+    return;
+  ARCANE_CHECK_POINTER(m_mesh_info);
+
+  ConstArrayView<MshPeriodicOneInfo> periodic_one_infos = m_mesh_info->m_periodic_info.m_periodic_list;
+  Int32 nb_periodic = periodic_one_infos.size();
+  ofile << "$Periodic\n";
+  ofile << nb_periodic << "\n";
+
+  UniqueArray<Int64> corresponding_nodes;
+  UniqueArray<Int32> node_local_ids;
+  ;
+  // Sauve chaque lien de périodicité.
+  for (const MshPeriodicOneInfo& one_info : periodic_one_infos) {
+    // On ne sauve pas les entités associées au lien, donc on considère
+    // que l'entité est de dimension zéro et les tags valent aussi zéro.
+    ofile << "\n";
+    ofile << "0 1 1\n";
+
+    // Sauve les valeurs affines associées
+    ConstArrayView<double> affine_values = one_info.m_affine_values;
+    Int32 nb_affine = affine_values.size();
+    ofile << nb_affine;
+    for (Int32 i = 0; i < nb_affine; ++i)
+      ofile << " " << affine_values[i];
+    ofile << "\n";
+
+    // Sauve les couples de noeuds (esclave/maitre)
+    // On ne sauve que les couples dont au moins l'un de des deux noeuds
+    // est présent dans notre sous-domaine.
+    Int32 nb_orig_node = one_info.m_nb_corresponding_node;
+    ConstArrayView<Int64> orig_corresponding_nodes = one_info.m_corresponding_nodes;
+    node_local_ids.resize(nb_orig_node * 2);
+    node_family->itemsUniqueIdToLocalId(node_local_ids, orig_corresponding_nodes, false);
+    corresponding_nodes.reserve(nb_orig_node * 2);
+    corresponding_nodes.clear();
+    for (Int32 i = 0; i < nb_orig_node; ++i) {
+      Int32 slave_index = (i * 2);
+      Int32 master_index = slave_index + 1;
+      bool has_slave = node_local_ids[slave_index] != NULL_ITEM_LOCAL_ID;
+      bool has_master = node_local_ids[master_index] != NULL_ITEM_LOCAL_ID;
+      if (has_slave || has_master) {
+        corresponding_nodes.add(orig_corresponding_nodes[slave_index]);
+        corresponding_nodes.add(orig_corresponding_nodes[master_index]);
+      }
+    }
+    Int32 nb_new_node = corresponding_nodes.size() / 2;
+    ofile << nb_new_node << "\n";
+    for (Int32 i = 0; i < nb_new_node; ++i)
+      ofile << corresponding_nodes[(i * 2)] << " " << corresponding_nodes[(i * 2) + 1] << "\n";
+  }
+
+  ofile << "$EndPeriodic\n";
 }
 
 /*---------------------------------------------------------------------------*/
