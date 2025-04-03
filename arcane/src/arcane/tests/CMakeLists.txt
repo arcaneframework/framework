@@ -1106,6 +1106,15 @@ if(UNIX AND MPI_FOUND)
     WORKING_DIRECTORY "${ARCANE_TEST_WORKDIR}"
   )
   set_tests_properties(partition_mesh_nonmanifold_msh PROPERTIES RUN_SERIAL ON)
+
+  set(CASE_PART_ARGS "-n 2 -p 4 --writer MshMeshWriter onesphere.msh")
+  set(CASE_PART_TEST_FILE "${TEST_PATH}/testMesh-onesphere-external-cut-1.arc")
+  configure_file(test-CasePart.sh.in ${ARCANE_TEST_PATH}/test-CasePart4.sh)
+  add_test(NAME partition_mesh_onesphere_msh
+    COMMAND ${ARCANE_TEST_PATH}/test-CasePart4.sh
+    WORKING_DIRECTORY "${ARCANE_TEST_WORKDIR}"
+  )
+  set_tests_properties(partition_mesh_onesphere_msh PROPERTIES RUN_SERIAL ON)
 endif()
 
 add_test(convert_mesh1_vtk ${ARCANE_CONVERT_MESH_COMMAND} -f convert_out_mesh.vtk --writer VtkLegacyMeshWriter ${ARCANE_TEST_PATH}/plan.vtk)
