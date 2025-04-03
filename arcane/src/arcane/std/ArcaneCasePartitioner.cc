@@ -42,6 +42,7 @@
 #include "arcane/core/ServiceBuilder.h"
 #include "arcane/core/IMeshPartitionConstraintMng.h"
 #include "arcane/core/ExternalPartitionConstraint.h"
+#include "arcane/core/internal/MshMeshGenerationInfo.h"
 
 #include "arcane/std/ArcaneCasePartitioner_axl.h"
 
@@ -400,9 +401,20 @@ _partitionMesh(Int32 nb_part)
   new_mesh->modifier()->setDynamic(true);
   new_mesh->allocateCells(0,Int64ConstArrayView(),true);
 
-  Integer saved_nb_cell = 0;
-  Integer min_nb_cell = total_current_nb_cell;
-  Integer max_nb_cell = 0;
+  // Si le maillage d'origine a des informations de génération de MSH,
+  // on les copie sur le nouveau maillage.
+  // TODO: regarder comment faire cela automatiquement, par exemple en ajoutant
+  // une méthode pour cloner le maillage.
+  impl::MshMeshGenerationInfo* new_msh_mesh_info = nullptr;
+  auto* msh_mesh_info = impl::MshMeshGenerationInfo::getReference(mesh(), false);
+  if (msh_mesh_info){
+    new_msh_mesh_info = impl::MshMeshGenerationInfo::getReference(new_mesh, true);
+    *new_msh_mesh_info = *msh_mesh_info;
+  }
+
+  Int32 saved_nb_cell = 0;
+  Int32 min_nb_cell = total_current_nb_cell;
+  Int32 max_nb_cell = 0;
   
   if (options()->createCorrespondances())
     _initCorrespondance(my_rank);
@@ -411,7 +423,7 @@ _partitionMesh(Int32 nb_part)
   Integer maxLocalIdCell = mesh()->cellFamily()->maxLocalId();
   Integer maxLocalIdNode = mesh()->nodeFamily()->maxLocalId();
 
-  // Force le propriétaire des entités pour au sous-domaine 0 car
+  // Force le propriétaire des entités au sous-domaine 0 car
   // new_mesh utilise un parallelMng() séquentiel.
   for( IItemFamily* family : mesh()->itemFamilies() ){
     ENUMERATE_ITEM(iitem,family->allItems()){
