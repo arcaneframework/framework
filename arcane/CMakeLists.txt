@@ -116,6 +116,23 @@ message(STATUS "CMAKE_BUILD_TYPE = ${CMAKE_BUILD_TYPE}")
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
 
+# Si CMAKE_BUILD_TYPE existe, vérifie qu'il vaut une valeur pré-définie
+# Cela est nécessaire sinon certaines propriétés peuvent ne pas être valides,
+# ce qui peut poser problèmes lors de la configuration (par exemple les chemins
+# d'installation.
+
+if (DEFINED CMAKE_BUILD_TYPE)
+  string(TOLOWER "${CMAKE_BUILD_TYPE}" LOWER_CMAKE_BUILD_TYPE)
+  set (VALID_BUILD_TYPE_LIST "release;relwithdebinfo;debug;minsizerelease")
+  if(NOT (LOWER_CMAKE_BUILD_TYPE IN_LIST VALID_BUILD_TYPE_LIST))
+    message(FATAL_ERROR "Invalid value '${CMAKE_BUILD_TYPE}' for CMAKE_BUILD_TYPE."
+      " Case insensitive valid values are '${VALID_BUILD_TYPE_LIST}'")
+  endif()
+endif()
+
+# ----------------------------------------------------------------------------
+# ----------------------------------------------------------------------------
+
 SET(ARCANEBUILDROOT ${CMAKE_BINARY_DIR})
 SET(ARCANESRCROOT ${CMAKE_CURRENT_SOURCE_DIR})
 
