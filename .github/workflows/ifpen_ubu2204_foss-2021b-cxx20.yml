@@ -1,4 +1,4 @@
-name: IFPEN ubu2204 foss/2021b
+name: IFPEN ubu2204 foss/2021b C++20
 
 on:
   #push:
