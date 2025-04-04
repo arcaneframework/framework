@@ -95,6 +95,13 @@ class ItemTypeInfoBuilder
                 Int32 nb_node, Int32 nb_edge, Int32 nb_face);
 
   /*!
+   * \brief Positionne l'ordre du type.
+   *
+   * Si pas appelé, on considère que le type est pour les entités d'ordre 1.
+   */
+  void setOrder(Int16 order);
+
+  /*!
    * \brief Ajoute une arête à la liste des arêtes
    *
    * \a n0 noeud origine

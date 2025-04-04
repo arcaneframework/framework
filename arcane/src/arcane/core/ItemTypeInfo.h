@@ -36,11 +36,9 @@ namespace Arcane
  *
  * \sa ItemTypeMng
  *
- * \internal
- *
  * Il ne doit exister qu'une instance par type d'entité. La création d'un
  * type se fait par la classe dérivée ItemTypeInfoBuilder. Les types doivent
- * être créée avant toute création de maillage (i.e durant
+ * être créé avant toute création de maillage (i.e durant
  * l'initialisation de l'architecture).
  */
 class ItemTypeInfo
@@ -60,12 +58,14 @@ class ItemTypeInfo
     //! Nombre de noeuds de la face
     Integer nbNode() const { return m_index[1]; }
     //! Indice locale dans la maille du i-ème noeud de la face
-    Integer node(Integer i) const { return m_index[2+i]; }
+    Integer node(Integer i) const { return m_index[2 + i]; }
     //! Nombre d'arête de la face
-    Integer nbEdge() const { return m_index[2+nbNode()]; }
+    Integer nbEdge() const { return m_index[2 + nbNode()]; }
     //! Arête de la face
-    Integer edge(Integer i) const { return m_index[3+nbNode()+i]; }
+    Integer edge(Integer i) const { return m_index[3 + nbNode() + i]; }
+
    private:
+
     Integer *m_index; //!< Indices dans le tampon des infos de la face
   };
 
@@ -115,6 +115,8 @@ class ItemTypeInfo
   Int16 dimension() const { return m_dimension; }
   //! Indique si le type est valide pour créér une maille (Cell)
   bool isValidForCell() const { return m_is_valid_for_cell; }
+  //! Ordre du type
+  Int32 order() const { return m_order; }
 
  public:
 
@@ -145,6 +147,8 @@ class ItemTypeInfo
   Integer m_nb_node = 0;
   Integer m_nb_edge = 0;
   Integer m_nb_face = 0;
+  Int32 m_order = 1;
+  //! Indice de ce type dans la liste des index de \a m_mng.
   Integer m_first_item_index = 0;
   String m_type_name;
 };
