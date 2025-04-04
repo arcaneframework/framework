@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* VtkMeshIOService.cc                                         (C) 2000-2024 */
+/* VtkMeshIOService.cc                                         (C) 2000-2025 */
 /*                                                                           */
 /* Lecture/Ecriture d'un maillage au format Vtk historique (legacy).         */
 /*---------------------------------------------------------------------------*/
@@ -1852,7 +1852,9 @@ class VtkLegacyMeshWriter
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_REGISTER_SUB_DOMAIN_FACTORY(VtkLegacyMeshWriter, IMeshWriter, VtkLegacyMeshWriter);
+ARCANE_REGISTER_SERVICE(VtkLegacyMeshWriter,
+                        ServiceProperty("VtkLegacyMeshWriter", ST_SubDomain),
+                        ARCANE_SERVICE_INTERFACE(IMeshWriter));
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -1874,6 +1876,9 @@ bool VtkLegacyMeshWriter::
 writeMeshToFile(IMesh* mesh, const String& file_name)
 {
   String fname = file_name;
+  // Ajoute l'extension '.vtk' si elle n'y est pas.
+  if (!fname.endsWith(".vtk"))
+    fname = fname + ".vtk";
   _writeMeshToFile(mesh, fname, IK_Cell);
   _writeMeshToFile(mesh, fname + "faces.vtk", IK_Face);
   return false;
