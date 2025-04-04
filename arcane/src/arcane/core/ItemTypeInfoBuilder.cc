@@ -87,6 +87,15 @@ setInfos(ItemTypeMng* mng, Int16 type_id, String type_name, Dimension dimension,
 /*---------------------------------------------------------------------------*/
 
 void ItemTypeInfoBuilder::
+setOrder(Int16 order)
+{
+  m_order = order;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ItemTypeInfoBuilder::
 addEdge(Int32 edge_index, Int32 n0, Int32 n1, Int32 f_left, Int32 f_right)
 {
   Array<Integer>& buf = m_mng->m_ids_buffer;

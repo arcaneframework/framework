@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemTypeMng.h                                               (C) 2000-2022 */
+/* ItemTypeMng.h                                               (C) 2000-2025 */
 /*                                                                           */
 /* Gestionnaire des types d'entité du maillage.                              */
 /*---------------------------------------------------------------------------*/
@@ -17,7 +17,7 @@
 #include "arcane/utils/UtilsTypes.h"
 #include "arcane/utils/Array.h"
 
-#include "arcane/ItemTypes.h"
+#include "arcane/core/ItemTypes.h"
 
 #include <set>
 #include <atomic>
@@ -70,6 +70,8 @@ class ARCANE_CORE_EXPORT ItemTypeMng
   friend class Application;
   friend class ArcaneMain;
   friend class Item;
+  friend ItemTypeInfo;
+  friend ItemTypeInfoBuilder;
 
  protected:
 
@@ -185,8 +187,6 @@ class ARCANE_CORE_EXPORT ItemTypeMng
 
   //! Ensemble des maillages contenant des mailles générales (sans type défini)
   std::set<IMesh*> m_mesh_with_general_cells;
-
- public:
 
   /*!
    * \brief Tampon d'allocation des données de type.

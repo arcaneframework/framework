@@ -17,6 +17,7 @@
 #include "arcane/utils/TraceAccessor.h"
 
 #include "arcane/core/Item.h"
+#include "arcane/core/NodesOfItemReorderer.h"
 
 #include "arcane/mesh/MeshGlobal.h"
 #include "arcane/mesh/FullItemInfo.h"
@@ -172,7 +173,8 @@ class OneMeshItemAdder
   Int64 m_next_edge_uid = 0; //!< Numéro du uniqueId() suivant utilisé pour générer les arêtes
   
   //! Tableaux de travail
-  UniqueArray<Int64> m_work_face_sorted_nodes;
+  NodesOfItemReorderer m_face_reorderer;
+  //UniqueArray<Int64> m_work_face_sorted_nodes;
   UniqueArray<Int64> m_work_face_orig_nodes_uid;
   UniqueArray<Int64> m_work_edge_sorted_nodes;
   UniqueArray<Int64> m_work_edge_orig_nodes_uid;

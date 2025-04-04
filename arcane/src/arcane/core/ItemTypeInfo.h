@@ -1,23 +1,23 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemTypeInfo.h                                              (C) 2000-2023 */
+/* ItemTypeInfo.h                                              (C) 2000-20255 */
 /*                                                                           */
 /* Informations sur un type d'entité du maillage.                            */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_ITEMTYPEINFO_H
-#define ARCANE_ITEMTYPEINFO_H
+#ifndef ARCANE_CORE_ITEMTYPEINFO_H
+#define ARCANE_CORE_ITEMTYPEINFO_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/String.h"
 
-#include "arcane/ItemTypeMng.h"
-#include "arcane/ItemTypeId.h"
+#include "arcane/core/ItemTypeMng.h"
+#include "arcane/core/ItemTypeId.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -36,11 +36,9 @@ namespace Arcane
  *
  * \sa ItemTypeMng
  *
- * \internal
- *
  * Il ne doit exister qu'une instance par type d'entité. La création d'un
  * type se fait par la classe dérivée ItemTypeInfoBuilder. Les types doivent
- * être créée avant toute création de maillage (i.e durant
+ * être créé avant toute création de maillage (i.e durant
  * l'initialisation de l'architecture).
  */
 class ItemTypeInfo
@@ -53,20 +51,27 @@ class ItemTypeInfo
   class LocalFace
   {
    public:
-    LocalFace(Integer* index) : m_index(index) {}
+
+    LocalFace(Integer* index)
+    : m_index(index)
+    {}
+
    public:
+
     //! Type de l'entité face
     Integer typeId() const { return m_index[0]; }
     //! Nombre de noeuds de la face
     Integer nbNode() const { return m_index[1]; }
     //! Indice locale dans la maille du i-ème noeud de la face
-    Integer node(Integer i) const { return m_index[2+i]; }
+    Integer node(Integer i) const { return m_index[2 + i]; }
     //! Nombre d'arête de la face
-    Integer nbEdge() const { return m_index[2+nbNode()]; }
+    Integer nbEdge() const { return m_index[2 + nbNode()]; }
     //! Arête de la face
-    Integer edge(Integer i) const { return m_index[3+nbNode()+i]; }
+    Integer edge(Integer i) const { return m_index[3 + nbNode() + i]; }
+
    private:
-    Integer *m_index; //!< Indices dans le tampon des infos de la face
+
+    Integer* m_index; //!< Indices dans le tampon des infos de la face
   };
 
   /*!
@@ -78,18 +83,25 @@ class ItemTypeInfo
   class LocalEdge
   {
    public:
-    LocalEdge(Integer* index) : m_index(index) {}
+
+    LocalEdge(Integer* index)
+    : m_index(index)
+    {}
+
    public:
+
     //! Indice local à la maille du sommet origine de l'arête
     Integer beginNode() const { return m_index[0]; }
     //! Indice local à la maille du sommet extrémité de l'arête
-    Integer endNode()   const { return m_index[1]; }
+    Integer endNode() const { return m_index[1]; }
     //! Indice local à la maille de la face à gauche de l'arête
-    Integer leftFace()  const { return m_index[2]; }
+    Integer leftFace() const { return m_index[2]; }
     //! Indice local à la maille du la face à droite de l'arête
     Integer rightFace() const { return m_index[3]; }
+
    private:
-    Integer *m_index; //!< Indices dans le tampon des infos de la face
+
+    Integer* m_index; //!< Indices dans le tampon des infos de la face
   };
 
  protected:
@@ -115,6 +127,8 @@ class ItemTypeInfo
   Int16 dimension() const { return m_dimension; }
   //! Indique si le type est valide pour créér une maille (Cell)
   bool isValidForCell() const { return m_is_valid_for_cell; }
+  //! Ordre du type
+  Int32 order() const { return m_order; }
 
  public:
 
@@ -145,6 +159,8 @@ class ItemTypeInfo
   Integer m_nb_node = 0;
   Integer m_nb_edge = 0;
   Integer m_nb_face = 0;
+  Int32 m_order = 1;
+  //! Indice de ce type dans la liste des index de \a m_mng.
   Integer m_first_item_index = 0;
   String m_type_name;
 };
