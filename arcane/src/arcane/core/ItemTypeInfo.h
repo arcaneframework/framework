@@ -1,23 +1,23 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemTypeInfo.h                                              (C) 2000-2023 */
+/* ItemTypeInfo.h                                              (C) 2000-20255 */
 /*                                                                           */
 /* Informations sur un type d'entité du maillage.                            */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_ITEMTYPEINFO_H
-#define ARCANE_ITEMTYPEINFO_H
+#ifndef ARCANE_CORE_ITEMTYPEINFO_H
+#define ARCANE_CORE_ITEMTYPEINFO_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/String.h"
 
-#include "arcane/ItemTypeMng.h"
-#include "arcane/ItemTypeId.h"
+#include "arcane/core/ItemTypeMng.h"
+#include "arcane/core/ItemTypeId.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -51,8 +51,13 @@ class ItemTypeInfo
   class LocalFace
   {
    public:
-    LocalFace(Integer* index) : m_index(index) {}
+
+    LocalFace(Integer* index)
+    : m_index(index)
+    {}
+
    public:
+
     //! Type de l'entité face
     Integer typeId() const { return m_index[0]; }
     //! Nombre de noeuds de la face
@@ -66,7 +71,7 @@ class ItemTypeInfo
 
    private:
 
-    Integer *m_index; //!< Indices dans le tampon des infos de la face
+    Integer* m_index; //!< Indices dans le tampon des infos de la face
   };
 
   /*!
@@ -78,18 +83,25 @@ class ItemTypeInfo
   class LocalEdge
   {
    public:
-    LocalEdge(Integer* index) : m_index(index) {}
+
+    LocalEdge(Integer* index)
+    : m_index(index)
+    {}
+
    public:
+
     //! Indice local à la maille du sommet origine de l'arête
     Integer beginNode() const { return m_index[0]; }
     //! Indice local à la maille du sommet extrémité de l'arête
-    Integer endNode()   const { return m_index[1]; }
+    Integer endNode() const { return m_index[1]; }
     //! Indice local à la maille de la face à gauche de l'arête
-    Integer leftFace()  const { return m_index[2]; }
+    Integer leftFace() const { return m_index[2]; }
     //! Indice local à la maille du la face à droite de l'arête
     Integer rightFace() const { return m_index[3]; }
+
    private:
-    Integer *m_index; //!< Indices dans le tampon des infos de la face
+
+    Integer* m_index; //!< Indices dans le tampon des infos de la face
   };
 
  protected:
