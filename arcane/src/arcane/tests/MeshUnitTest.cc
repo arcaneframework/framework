@@ -425,8 +425,6 @@ _dumpMesh()
   if (mesh_io.get()){
     if (write_service_name=="Lima")
       file_name = file_name + ".unf";
-    else if (write_service_name=="VtkLegacyMeshWriter")
-      file_name = file_name + ".vtk";
     mesh_io->writeMeshToFile(mesh(), base_path.file(file_name));
   }
 
