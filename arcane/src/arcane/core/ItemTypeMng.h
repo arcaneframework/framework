@@ -70,6 +70,8 @@ class ARCANE_CORE_EXPORT ItemTypeMng
   friend class Application;
   friend class ArcaneMain;
   friend class Item;
+  friend ItemTypeInfo;
+  friend ItemTypeInfoBuilder;
 
  protected:
 
@@ -185,8 +187,6 @@ class ARCANE_CORE_EXPORT ItemTypeMng
 
   //! Ensemble des maillages contenant des mailles générales (sans type défini)
   std::set<IMesh*> m_mesh_with_general_cells;
-
- public:
 
   /*!
    * \brief Tampon d'allocation des données de type.
