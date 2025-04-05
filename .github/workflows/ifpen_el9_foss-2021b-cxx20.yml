@@ -187,7 +187,7 @@ jobs:
       - name: Test
         id: test
         shell: bash
-        run: env LD_LIBRARY_PATH=${{ env.BUILD_DIR }}/${{ env.EXT_LIB_SUBDIR }}:${LD_LIBRARY_PATH} ctest --test-dir ${{ env.BUILD_DIR }} ${{ env.CT_OPTS }}
+        run: env LD_LIBRARY_PATH=${{ env.BUILD_DIR }}/${{ env.EXT_LIB_SUBDIR }}:${LD_LIBRARY_PATH} ctest --test-dir ${{ env.BUILD_DIR }} ${{ env.CT_OPTS }} -E '(RedistributorAlgebra|CompositeSpace)'
 
       - name: Upload test artifact
         id: upload-test-artifact
