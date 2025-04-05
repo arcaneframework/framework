@@ -1,10 +1,10 @@
 name: IFPEN ubu2204 foss/2021b C++20
 
 on:
-  #push:
-  #  branches: [ main, dev/cea, dev/ifpen, dev/ci_ifpen ]
-  #pull_request:
-  #  branches: [ main, dev/cea, dev/ifpen, dev/ci_ifpen ]
+  push:
+    branches: [ main, dev/cea, dev/ifpen, dev/ci_ifpen ]
+  pull_request:
+    branches: [ main, dev/cea, dev/ifpen, dev/ci_ifpen ]
   workflow_dispatch:
     inputs:
       ctest_options:
