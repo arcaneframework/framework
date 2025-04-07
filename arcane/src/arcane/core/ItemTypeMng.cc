@@ -149,7 +149,7 @@ _build(IParallelSuperMng* parallel_mng, ITraceMng* trace)
   {
     ItemTypeInfoBuilder* type = m_types_buffer->allocOne();
     m_types[IT_Line3] = type;
-    type->setOrder(2);
+    type->setOrder(2, ITI_Line2);
 
     type->setInfos(this, IT_Line3, "Line3", Dimension::Dim1, 3, 0, 0);
     type->setIsValidForCell(false);
@@ -196,7 +196,7 @@ _build(IParallelSuperMng* parallel_mng, ITraceMng* trace)
     m_types[IT_Triangle6] = type;
 
     type->setInfos(this, IT_Triangle6, "Triangle6", Dimension::Dim2, 6, 3, 3);
-    type->setOrder(2);
+    type->setOrder(2, ITI_Triangle3);
 
     type->addFaceLine3(0, 0, 1, 3);
     type->addFaceLine3(1, 1, 2, 4);
@@ -232,7 +232,7 @@ _build(IParallelSuperMng* parallel_mng, ITraceMng* trace)
     m_types[IT_Quad8] = type;
 
     type->setInfos(this, IT_Quad8, "Quad8", Dimension::Dim2, 8, 4, 4);
-    type->setOrder(2);
+    type->setOrder(2, ITI_Quad4);
 
     type->addFaceLine3(0, 0, 1, 4);
     type->addFaceLine3(1, 1, 2, 5);
@@ -322,7 +322,7 @@ _build(IParallelSuperMng* parallel_mng, ITraceMng* trace)
     m_types[IT_Hexaedron20] = type;
 
     type->setInfos(this, IT_Hexaedron20, "Hexaedron20", Dimension::Dim3, 20, 12, 6);
-    type->setOrder(2);
+    type->setOrder(2, ITI_Hexaedron8);
 
     type->addFaceQuad8(0, 0, 3, 2, 1, 11, 10, 9, 8);
     type->addFaceQuad8(1, 0, 4, 7, 3, 16, 15, 19, 11);
@@ -419,7 +419,7 @@ _build(IParallelSuperMng* parallel_mng, ITraceMng* trace)
     m_types[IT_Tetraedron10] = type;
 
     type->setInfos(this, IT_Tetraedron10, "Tetraedron10", Dimension::Dim3, 10, 6, 4);
-    type->setOrder(2);
+    type->setOrder(2, ITI_Tetraedron4);
 
     type->addFaceTriangle6(0, 0, 2, 1, 6, 5, 4);
     type->addFaceTriangle6(1, 0, 3, 2, 7, 9, 6);

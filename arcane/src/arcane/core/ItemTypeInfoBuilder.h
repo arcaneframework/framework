@@ -98,8 +98,9 @@ class ItemTypeInfoBuilder
    * \brief Positionne l'ordre du type.
    *
    * Si pas appelé, on considère que le type est pour les entités d'ordre 1.
+   * Le premier argument est l'ordre de l'entité et le deuxième l'élément d'ordre 1 correspondant.
    */
-  void setOrder(Int16 order);
+  void setOrder(Int16 order, ItemTypeId linear_type);
 
   /*!
    * \brief Ajoute une arête à la liste des arêtes

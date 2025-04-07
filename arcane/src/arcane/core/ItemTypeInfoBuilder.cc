@@ -47,6 +47,7 @@ setInfos(ItemTypeMng* mng, ItemTypeId type_id, String type_name,
 {
   m_mng = mng;
   m_type_id = type_id;
+  m_linear_type_id = type_id;
   m_dimension = static_cast<Int16>(dimension);
   m_nb_node = nb_node;
   m_type_name = type_name;
@@ -87,9 +88,10 @@ setInfos(ItemTypeMng* mng, Int16 type_id, String type_name, Dimension dimension,
 /*---------------------------------------------------------------------------*/
 
 void ItemTypeInfoBuilder::
-setOrder(Int16 order)
+setOrder(Int16 order, ItemTypeId linear_type_id)
 {
   m_order = order;
+  m_linear_type_id = linear_type_id;
 }
 
 /*---------------------------------------------------------------------------*/
