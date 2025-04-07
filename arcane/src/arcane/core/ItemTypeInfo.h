@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemTypeInfo.h                                              (C) 2000-20255 */
+/* ItemTypeInfo.h                                              (C) 2000-2025 */
 /*                                                                           */
 /* Informations sur un type d'entité du maillage.                            */
 /*---------------------------------------------------------------------------*/
@@ -129,6 +129,12 @@ class ItemTypeInfo
   bool isValidForCell() const { return m_is_valid_for_cell; }
   //! Ordre du type
   Int32 order() const { return m_order; }
+  //! Type de l'élément linéaire correspondant
+  Int16 linearTypeId() const { return m_linear_type_id.typeId(); }
+  //! Type de l'élément linéaire correspondant
+  ItemTypeId linearItemTypeId() const { return m_linear_type_id; }
+  //! Type de l'élément linéaire correspondant
+  const ItemTypeInfo* linearTypeInfo() const { return m_mng->typeFromId(m_linear_type_id); }
 
  public:
 
@@ -152,6 +158,7 @@ class ItemTypeInfo
 
   ItemTypeMng* m_mng = nullptr;
   ItemTypeId m_type_id{ IT_NullType };
+  ItemTypeId m_linear_type_id{ IT_NullType };
   //! Dimension (-1) si pas initialisé.
   Int16 m_dimension = (-1);
   //! Indique si le type est valide pour une maille.

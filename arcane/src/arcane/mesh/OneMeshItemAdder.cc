@@ -708,22 +708,26 @@ _addOneCell(const CellInfo& cell_info)
     // en effet de bord, _isReorder positionne m_face_reorderer.sortedNodes();
     const bool is_reorder = _isReorder(i_face, lf, cell_info);
     ConstArrayView<Int64> face_sorted_nodes = m_face_reorderer.sortedNodes();
-    
     bool is_add = false;
     Face face = _findInternalFace(i_face, cell_info, is_add);
     if (is_add){
       if (is_verbose){
-        info() << "Create face " << face.uniqueId() << ' ' << face.localId();
-        info() << "AddCell (uid=" << new_cell.uniqueId() << ": Create face (index=" << i_face
+        info() << "AddFaceToCell (cell_uid=" << new_cell.uniqueId() << ": Create face (index=" << i_face
                << ") uid=" << face.uniqueId()
                << " lid=" << face.localId();
       }
       face.mutableItemBase().setOwner(cell_info.faceOwner(i_face),m_mesh_info.rank());
+      // Pour les éléments d'ordre supérieur à 1, on ajoute les faces qu'aux noeuds
+      // qui correspondent à l'élément d'ordre 1 (linéaire) associé.
+      ItemTypeInfo* face_type_info = m_item_type_mng->typeFromId(lf.typeId());
       
+      const Int32 face_nb_linear_node = face_type_info->linearTypeInfo()->nbLocalNode();
       for( Integer i_node=0; i_node<face_nb_node; ++i_node ){
         Node current_node = nodes_map.findItem(face_sorted_nodes[i_node]);
         m_face_family.replaceNode(face, i_node, current_node);
-        m_node_family.addFaceToNode(current_node, face);
+        if (i_node<face_nb_linear_node){
+          m_node_family.addFaceToNode(current_node, face);
+        }
       }
 
       if (m_mesh_builder->hasEdge()) {

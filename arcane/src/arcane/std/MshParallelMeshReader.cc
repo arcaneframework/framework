@@ -76,7 +76,7 @@ namespace Arcane
  * - `$Entities`
  * - `$Nodes`
  * - `$Elements`
- * - `$Periodics` (en cours)
+ * - `$Periodic` (en cours)
  */
 class MshParallelMeshReader
 : public TraceAccessor
@@ -143,7 +143,10 @@ class MshParallelMeshReader
       ++nb_item;
       items_infos.add(type_id);
       items_infos.add(unique_id);
+      Int64 index = items_infos.size();
       items_infos.addRange(nodes_uid);
+      if (type_id == IT_Tetraedron10)
+        std::swap(items_infos[index + 9], items_infos[index + 8]);
     }
 
    public:
@@ -1345,6 +1348,7 @@ _addFaceGroupOnePart(ConstArrayView<Int64> connectivities, Int32 item_nb_node,
 
   node_family->itemsUniqueIdToLocalId(faces_first_node_local_id, faces_first_node_unique_id, false);
 
+  const bool is_non_manifold = m_mesh->meshKind().isNonManifold();
   faces_nodes_unique_id_index = 0;
   for (Integer i_face = 0; i_face < nb_entity; ++i_face) {
     const Integer n = item_nb_node;
@@ -1363,8 +1367,11 @@ _addFaceGroupOnePart(ConstArrayView<Int64> connectivities, Int32 item_nb_node,
           for (Integer z = 0; z < n; ++z)
             ostr() << ' ' << face_nodes_id[z];
           ostr() << " - " << current_node.localId() << ")";
-          ARCANE_FATAL("INTERNAL: MeshMeshReader face index={0} with nodes '{1}' is not in node/face connectivity",
-                       i_face, ostr.str());
+          String error_string = "INTERNAL: MeshMeshReader face index={0} with nodes '{1}' is not in node/face connectivity.";
+          if (!is_non_manifold)
+            error_string = error_string + "\n This errors may occur if the mesh is non-manifold."
+                                          "\n See Arcane documentation to specify the mesh is a non manifold one.\n";
+          ARCANE_FATAL(error_string, i_face, ostr.str());
         }
       }
       else
