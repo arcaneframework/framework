@@ -133,6 +133,8 @@ class ItemTypeInfo
   Int16 linearTypeId() const { return m_linear_type_id.typeId(); }
   //! Type de l'élément linéaire correspondant
   ItemTypeId linearItemTypeId() const { return m_linear_type_id; }
+  //! Type de l'élément linéaire correspondant
+  const ItemTypeInfo* linearTypeInfo() const { return m_mng->typeFromId(m_linear_type_id); }
 
  public:
 

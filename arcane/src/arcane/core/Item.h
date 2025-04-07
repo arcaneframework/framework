@@ -467,6 +467,9 @@ class ARCANE_CORE_EXPORT Item
   ItemBase _hChildBase(Int32 index) const { return _connectivity()->hChildBase(m_local_id, index, m_shared_info); }
   ItemBase _toItemBase() const { return ItemBase(m_local_id,m_shared_info); }
 
+  //! Nombre de noeuds de l'entité
+  Int32 _nbLinearNode() const { return itemBase()._nbLinearNode(); }
+
  private:
 
   ItemInternalConnectivityList* _connectivity() const
@@ -786,6 +789,11 @@ class ARCANE_CORE_EXPORT ItemWithNodes
 
   //! i-ème noeud de l'entité.
   NodeLocalId nodeId(Int32 index) const { return _nodeId(index); }
+
+  //! Nombre de noeuds de l'entité linéaire associée (si entité ordre 2 ou plus)
+  Int32 nbLinearNode() const { return _nbLinearNode(); }
+
+ public:
 
   ARCANE_DEPRECATED_REASON("Y2022: Do not use this operator. Use operator '.' instead")
   ItemWithNodes* operator->() { return this; }
