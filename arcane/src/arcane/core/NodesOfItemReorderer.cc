@@ -13,6 +13,8 @@
 
 #include "arcane/core/NodesOfItemReorderer.h"
 
+#include "arcane/utils/NotImplementedException.h"
+
 #include "arcane/core/ItemTypeId.h"
 #include "arcane/core/MeshUtils.h"
 
@@ -24,12 +26,103 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+// TODO: fusionner avec la version d'ordre 1
+bool NodesOfItemReorderer::
+_reorderOrder2(ConstArrayView<Int64> nodes_uid,
+               ArrayView<Int64> sorted_nodes_uid)
+{
+  // \a true s'il faut réorienter les faces pour que leur orientation
+  // soit indépendante du partitionnement du maillage initial.
+  bool need_swap_orientation = false;
+  Int32 min_node_index = 0;
+
+  Int32 nb_node = nodes_uid.size();
+
+  // Traite directement le cas des arêtes d'ordre 2
+  if (nb_node == 3) {
+    if (nodes_uid[0] < nodes_uid[1]) {
+      sorted_nodes_uid[0] = nodes_uid[0];
+      sorted_nodes_uid[1] = nodes_uid[1];
+      sorted_nodes_uid[2] = nodes_uid[2];
+      return false;
+    }
+    sorted_nodes_uid[0] = nodes_uid[1];
+    sorted_nodes_uid[1] = nodes_uid[0];
+    sorted_nodes_uid[2] = nodes_uid[2];
+    return true;
+  }
+
+  // A l'ordre 2, si on a N noeuds, il ne faut tester les N/2 premiers noeuds
+  // TODO: utiliser les informations de type.
+  nb_node = nb_node / 2;
+
+  // L'algorithme suivant oriente les faces en tenant compte uniquement
+  // de l'ordre de la numérotation de ces noeuds. Si cet ordre est
+  // conservé lors du partitionnement, alors l'orientation des faces
+  // sera aussi conservée.
+
+  // L'algorithme est le suivant:
+  // - Recherche le noeud n de plus petit indice.
+  // - Recherche n-1 et n+1 les indices de ses 2 noeuds voisins.
+  // - Si (n+1) est inférieur à (n-1), l'orientation n'est pas modifiée.
+  // - Si (n+1) est supérieur à (n-1), l'orientation est inversée.
+
+  // Recherche le noeud de plus petit indice
+
+  Int64 min_node = INT64_MAX;
+  for (Integer k = 0; k < nb_node; ++k) {
+    Int64 id = nodes_uid[k];
+    if (id < min_node) {
+      min_node = id;
+      min_node_index = k;
+    }
+  }
+  Int64 next_node = nodes_uid[(min_node_index + 1) % nb_node];
+  Int64 prev_node = nodes_uid[(min_node_index + (nb_node - 1)) % nb_node];
+  Integer incr = 0;
+  Integer incr2 = 0;
+  if (next_node == min_node) {
+    next_node = nodes_uid[(min_node_index + (nb_node + 2)) % nb_node];
+    incr = 1;
+  }
+  if (prev_node == min_node) {
+    prev_node = nodes_uid[(min_node_index + (nb_node - 2)) % nb_node];
+    incr2 = nb_node - 1;
+  }
+  if (next_node > prev_node)
+    need_swap_orientation = true;
+  if (need_swap_orientation) {
+    for (Integer k = 0; k < nb_node; ++k) {
+      Integer index = (nb_node - k + min_node_index + incr) % nb_node;
+      Int32 index2 = (2 + incr + nb_node + min_node_index - k) % nb_node;
+      sorted_nodes_uid[k] = nodes_uid[index];
+      sorted_nodes_uid[k + nb_node] = nodes_uid[index2 + nb_node];
+    }
+  }
+  else {
+    for (Integer k = 0; k < nb_node; ++k) {
+      Integer index = (k + min_node_index + incr2) % nb_node;
+      sorted_nodes_uid[k] = nodes_uid[index];
+      sorted_nodes_uid[k + nb_node] = nodes_uid[index + nb_node];
+    }
+  }
+  return need_swap_orientation;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 bool NodesOfItemReorderer::
-reorder([[maybe_unused]] ItemTypeId type_id, ConstArrayView<Int64> nodes_uids)
+reorder(ItemTypeId type_id, ConstArrayView<Int64> nodes_uids)
 {
+  ItemTypeInfo* iti = m_item_type_mng->typeFromId(type_id);
+  Int32 order = iti->order();
   Int32 nb_node = nodes_uids.size();
   m_work_sorted_nodes.resize(nb_node);
+  if (order > 2)
+    ARCANE_THROW(NotImplementedException, "node reordering for type of order 3 or mode");
+  if (order == 2)
+    return _reorderOrder2(nodes_uids, m_work_sorted_nodes);
   return MeshUtils::reorderNodesOfFace(nodes_uids, m_work_sorted_nodes);
 }
 

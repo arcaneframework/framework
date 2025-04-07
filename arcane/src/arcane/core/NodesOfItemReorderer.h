@@ -31,6 +31,8 @@ class ItemTypeMng;
  */
 class ARCANE_CORE_EXPORT NodesOfItemReorderer
 {
+  friend class NodesOfItemReordererTester;
+
  public:
 
   NodesOfItemReorderer() = default;
@@ -52,6 +54,11 @@ class ARCANE_CORE_EXPORT NodesOfItemReorderer
     return (face_index == 1);
   }
   ConstArrayView<Int64> sortedNodes() const { return m_work_sorted_nodes; }
+
+ private:
+
+  static bool _reorderOrder2(ConstArrayView<Int64> nodes_uids,
+                             ArrayView<Int64> sorted_nodes_uids);
 
  private:
 
