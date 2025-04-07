@@ -778,8 +778,11 @@ _removeFace(Face face)
   ItemLocalId face_lid = face;
   for( Int32 edge : face.edgeIds() )
     m_edge_family->removeFaceFromEdge(ItemLocalId(edge),face_lid);
-  for( Int32 node : face.nodeIds() )
-    m_node_family->removeFaceFromNode(ItemLocalId(node),face_lid);
+  Int32 nb_linear_node = face.nbLinearNode();
+  for( Int32 i=0; i<nb_linear_node; ++i ){
+    m_node_family->removeFaceFromNode(face.nodeId(i),face_lid);
+  }
+
   _removeOne(face);
   // On ne supprime pas ici les autres relations (ici aucune)
   // Car l'autre de suppression doit toujours être cell, face, edge, node
