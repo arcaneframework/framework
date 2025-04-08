@@ -1,5 +1,11 @@
 # Les types de mailles {#arcanedoc_entities_itemtype}
 
+%Arcane utilise la même convention de numérotation des mailles que la
+bibliothèque [VTK]. Les pages suivantes montrent des exemples de ces
+connectivités:
+- [Exemple1](https://examples.vtk.org/site/Cxx/GeometricObjects/IsoparametricCellsDemo/)
+- [Exemple2](https://examples.vtk.org/site/VTKBook/08Chapter8)
+
 Les types prédéfinis suivants existent pour les mailles 3D :
 
 Le tétraèdre :
@@ -25,8 +31,6 @@ Le prisme à base pentagonale :
 Le prisme à base héxagonale :
 
 \image html mesh_wedge8.png
-
-
 
 ____
 
