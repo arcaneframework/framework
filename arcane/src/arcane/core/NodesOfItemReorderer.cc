@@ -81,20 +81,25 @@ _reorderOrder2(ConstArrayView<Int64> nodes_uid,
   Int64 prev_node = nodes_uid[(min_node_index + (nb_node - 1)) % nb_node];
   Integer incr = 0;
   Integer incr2 = 0;
-  if (next_node == min_node) {
-    next_node = nodes_uid[(min_node_index + (nb_node + 2)) % nb_node];
-    incr = 1;
-  }
-  if (prev_node == min_node) {
-    prev_node = nodes_uid[(min_node_index + (nb_node - 2)) % nb_node];
-    incr2 = nb_node - 1;
+  // Teste le cas où les noeuds précédents ou suivant
+  // sont les mêmes que le noeud de plus petit uniqueId().
+  // (dans ce cas l'entité est semi-dégénérée)
+  {
+    if (next_node == min_node) {
+      next_node = nodes_uid[(min_node_index + (nb_node + 2)) % nb_node];
+      incr = 1;
+    }
+    if (prev_node == min_node) {
+      prev_node = nodes_uid[(min_node_index + (nb_node - 2)) % nb_node];
+      incr2 = nb_node - 1;
+    }
   }
   if (next_node > prev_node)
     need_swap_orientation = true;
   if (need_swap_orientation) {
     for (Integer k = 0; k < nb_node; ++k) {
       Integer index = (nb_node - k + min_node_index + incr) % nb_node;
-      Int32 index2 = (2 + incr + nb_node + min_node_index - k) % nb_node;
+      Int32 index2 = ((2*nb_node-1) + incr + min_node_index - k) % nb_node;
       sorted_nodes_uid[k] = nodes_uid[index];
       sorted_nodes_uid[k + nb_node] = nodes_uid[index2 + nb_node];
     }

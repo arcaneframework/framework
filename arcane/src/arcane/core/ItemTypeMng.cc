@@ -327,7 +327,7 @@ _build(IParallelSuperMng* parallel_mng, ITraceMng* trace)
     type->addFaceQuad8(0, 0, 3, 2, 1, 11, 10, 9, 8);
     type->addFaceQuad8(1, 0, 4, 7, 3, 16, 15, 19, 11);
     type->addFaceQuad8(2, 0, 1, 5, 4, 8, 17, 12, 16);
-    type->addFaceQuad8(3, 4, 5, 6, 7, 19, 13, 14, 15);
+    type->addFaceQuad8(3, 4, 5, 6, 7, 12, 13, 14, 15);
     type->addFaceQuad8(4, 1, 2, 6, 5, 9, 18, 13, 17);
     type->addFaceQuad8(5, 2, 3, 7, 6, 10, 19, 14, 18);
 
