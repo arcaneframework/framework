@@ -37,14 +37,21 @@ class NodesOfItemReordererTester
     _doTest(true, { 12, 11, 13, 7, 6, 14 }, { 11, 12, 13, 7, 14, 6 });
     _doTest(true, { 11, 13, 12, 6, 14, 7 }, { 11, 12, 13, 7, 14, 6 });
     _doTest(false, { 12, 13, 11, 9, 18, 5 }, { 11, 12, 13, 5, 9, 18 });
-#if 0
-    UniqueArray<Int64> work_nodes(6);
-    UniqueArray<Int64> orig_nodes = { 13, 12, 11, 14, 7, 6 };
-    UniqueArray<Int64> expected_nodes = { 11, 12, 13, 7, 14, 6 };
-    bool is_reorder = NodesOfItemReorderer::_reorderOrder2(orig_nodes, work_nodes);
-    ASSERT_TRUE(is_reorder);
-    ASSERT_EQ(work_nodes.view(), expected_nodes.view()) << "Orig=" << orig_nodes;
-#endif
+
+    _doTest(false, { 4692, 4479, 4170, 4476, 4604, 4332, 4334, 4602 },
+            { 4170, 4476, 4692, 4479, 4334, 4602, 4604, 4332 });
+
+    _doTest(true, { 4479, 4505, 4193, 4170, 4498, 4349, 4184, 4332 },
+            { 4170, 4193, 4505, 4479, 4184, 4349, 4498, 4332 });
+
+    _doTest(false, { 4502, 4476, 4170, 4193, 4499, 4334, 4184, 4353 },
+            { 4170, 4193, 4502, 4476, 4184, 4353, 4499, 4334 });
+
+    _doTest(false, { 4479, 4170, 4193, 4505, 4332, 4184, 4349, 4498 },
+            { 4170, 4193, 4505, 4479, 4184, 4349, 4498, 4332 });
+
+    _doTest(true, { 4476, 4502, 4193, 4170, 4499, 4353, 4184, 4334 },
+            { 4170, 4193, 4502, 4476, 4184, 4353, 4499, 4334 });
   }
 };
 } // namespace Arcane
