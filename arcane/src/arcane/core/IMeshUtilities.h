@@ -43,31 +43,44 @@ class ARCANE_CORE_EXPORT IMeshUtilities
    * \brief Recherche les identifiants locaux des entités à partir
    * de leur connectivité.
    *
-   * Prend en entrée une liste d'entités décrite par les identifiants uniques
-   * (Item::uniqueId()) de leurs noeuds et recherche les identifiants locaux (Item::localId())
-   * de ces entités.
+   * Cette méthode n'est implémentée que pour les faces d'ordre 1.
    *
-   * \param item_kind Genre de l'entité (IK_Cell ou IK_Face)
-   * \param items_nb_node tableau du nombre de noeuds de l'entité
-   * \param items_connectivity tableau contenant les indices uniques des noeuds des entités.
-   * \param local_ids en retour, contient les identificants locaux des
-   * entités. Le nombre d'éléments de \a local_ids doit être égal à
-   * celui de \a items_nb_node.
-   *
-   * Le tableau \a items_connectivity contient les identifiants des noeuds des entités,
-   * rangés consécutivement. Par exemple, si \c items_nb_node[0]==3 et
-   * \c items_node[1]==4, alors \a items_connectivity[0..2] contiendra les
-   * noeuds de l'entité 0, et items_connectivity[3..6] ceux de l'entité 1.
-   *
-   * Si \a allow_null est faux, une erreur fatale est générée si
-   * une entité n'est pas trouvée, sinon NULL_ITEM_LOCAL_ID est
-   * retourné pour l'entité correspondante
+   * \deprecated Utiliser getFacesLocalIdFromConnectivity() à la place.
    */
+  ARCANE_DEPRECATED_REASON("Y2025: Use getFacesLocalIdFromConnectivity() instead")
   virtual void localIdsFromConnectivity(eItemKind item_kind,
                                         IntegerConstArrayView items_nb_node,
                                         Int64ConstArrayView items_connectivity,
                                         Int32ArrayView local_ids,
                                         bool allow_null=false) =0;
+
+  /*!
+   * \brief Recherche les identifiants locaux des faces à partir
+   * de leur connectivité.
+   *
+   * Prend en entrée une liste d'entités décrite par les identifiants uniques
+   * (Item::uniqueId()) de leurs noeuds et recherche les identifiants locaux (Item::localId())
+   * de ces entités.
+   *
+   * \param items_type tableau des ItemTypeId des entités
+   * \param items_connectivity tableau contenant les indices uniques des noeuds des entités.
+   * \param local_ids en retour, contient les identifiants locaux des
+   * entités. Le nombre d'éléments de \a local_ids doit être égal à
+   * celui de \a items_nb_node.
+   *
+   * Le tableau \a items_connectivity contient les identifiants des noeuds des faces,
+   * rangés consécutivement. Par exemple, si \c items_type[0]==IT_Triangle3 et
+   * \c items_type[1]==IT_Quad4, alors \a items_connectivity[0..2] contiendra les
+   * noeuds de l'entité 0, et items_connectivity[3..6] ceux de l'entité 1.
+   *
+   * Si \a allow_null est faux, une erreur fatale est générée si
+   * une entité n'est pas trouvée, sinon NULL_ITEM_LOCAL_ID est
+   * retourné pour l'entité correspondante.
+   */
+  virtual void getFacesLocalIdFromConnectivity(ConstArrayView<ItemTypeId> items_type,
+                                               ConstArrayView<Int64> items_connectivity,
+                                               ArrayView<Int32> local_ids,
+                                               bool allow_null = false) = 0;
 
   /*!
    * \brief Calcule la normale d'un groupe de face.

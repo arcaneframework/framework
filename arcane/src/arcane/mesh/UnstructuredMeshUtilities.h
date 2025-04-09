@@ -55,6 +55,10 @@ class UnstructuredMeshUtilities
                                 Int64ConstArrayView items_connectivity,
                                 Int32ArrayView local_ids,
                                 bool allow_null) override;
+  void getFacesLocalIdFromConnectivity(ConstArrayView<ItemTypeId> items_type,
+                                       ConstArrayView<Int64> items_connectivity,
+                                       ArrayView<Int32> local_ids,
+                                       bool allow_null) override;
 
   /*!
    * \brief Calcule la normale d'un groupe de face.

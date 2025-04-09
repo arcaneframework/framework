@@ -715,7 +715,7 @@ if(MEDFile_FOUND)
 endif()
 # Désactive temporairement la lecture des mailles quadratiques avec VTK car
 # le maillage n'est pas correct.
-# arcane_add_test(mesh_quadratic3d_vtk testMesh-quadratic3d-vtk.arc "-We,ARCANE_METIS_INPUT_OUTPUT_DIGEST,1" "-We,ARCANE_METIS_DUMP_GRAPH,1")
+arcane_add_test(mesh_quadratic3d_vtk testMesh-quadratic3d-vtk.arc "-We,ARCANE_METIS_INPUT_OUTPUT_DIGEST,1" "-We,ARCANE_METIS_DUMP_GRAPH,1")
 ARCANE_ADD_TEST(mesh_tied_interface_2d_1_vtk42 testMesh-tied_interface_2d_1-vtk42.arc)
 ARCANE_ADD_TEST(mesh_sphere_vtk42 testMesh-sphere-vtk42.arc)
 ARCANE_ADD_TEST(mesh_sphere_vtk42_binary testMesh-sphere-vtk42-binary.arc)
@@ -1124,6 +1124,7 @@ add_test(convert_mesh1_msh ${ARCANE_CONVERT_MESH_COMMAND} -f convert_out_mesh1.m
 add_test(convert_mesh2_msh ${ARCANE_CONVERT_MESH_COMMAND} -f convert_out_mesh2.msh --writer MshMeshWriter ${ARCANE_TEST_PATH}/onesphere.msh)
 add_test(convert_mesh3_msh ${ARCANE_CONVERT_MESH_COMMAND} -f convert_out_mesh3.msh --writer MshMeshWriter ${ARCANE_TEST_PATH}/onesphere.binary.msh)
 add_test(convert_mesh4_msh ${ARCANE_CONVERT_MESH_COMMAND} -f convert_out_mesh4.msh --writer MshMeshWriter --manifold- ${ARCANE_TEST_PATH}/mesh_with_loose_items.msh)
+add_test(convert_mesh5_vtk ${ARCANE_CONVERT_MESH_COMMAND} -f convert_out_mesh5.vtk --writer VtkLegacyMeshWriter ${ARCANE_TEST_PATH}/onesphere.msh)
 arcane_add_test(tied_interface1 testTiedInterface-1.arc "-m 10")
 arcane_add_test(tied_interface2 testTiedInterface-2.arc "-m 10")
 arcane_add_test(tied_interface1_2D testTiedInterface2D-1.arc "-m 10")

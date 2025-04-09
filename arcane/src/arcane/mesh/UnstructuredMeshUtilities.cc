@@ -26,24 +26,25 @@
 #include "arcane/utils/SmallArray.h"
 #include "arcane/utils/NotImplementedException.h"
 
-#include "arcane/IMesh.h"
-#include "arcane/IMeshWriter.h"
-#include "arcane/IParallelMng.h"
-#include "arcane/MeshUtils.h"
-#include "arcane/IItemFamily.h"
-#include "arcane/ItemPrinter.h"
-#include "arcane/VariableTypes.h"
-#include "arcane/ItemPairGroup.h"
-#include "arcane/ISubDomain.h"
-#include "arcane/ServiceBuilder.h"
-#include "arcane/IParallelReplication.h"
-#include "arcane/Timer.h"
-#include "arcane/IMeshPartitioner.h"
-#include "arcane/IPrimaryMesh.h"
-#include "arcane/IMeshChecker.h"
+#include "arcane/core/IMesh.h"
+#include "arcane/core/IMeshWriter.h"
+#include "arcane/core/IParallelMng.h"
+#include "arcane/core/MeshUtils.h"
+#include "arcane/core/IItemFamily.h"
+#include "arcane/core/ItemPrinter.h"
+#include "arcane/core/VariableTypes.h"
+#include "arcane/core/ItemPairGroup.h"
+#include "arcane/core/ISubDomain.h"
+#include "arcane/core/ServiceBuilder.h"
+#include "arcane/core/IParallelReplication.h"
+#include "arcane/core/Timer.h"
+#include "arcane/core/IMeshPartitioner.h"
+#include "arcane/core/IPrimaryMesh.h"
+#include "arcane/core/IMeshChecker.h"
+#include "arcane/core/IItemFamilyNetwork.h"
+#include "arcane/core/NodesOfItemReorderer.h"
 
 #include "arcane/mesh/UnstructuredMeshUtilities.h"
-#include "arcane/IItemFamilyNetwork.h"
 #include "arcane/ConnectivityItemVector.h"
 #include "arcane/mesh/NewItemOwnerBuilder.h"
 #include "arcane/mesh/ParticleFamily.h"
@@ -333,6 +334,78 @@ localIdsFromConnectivity(eItemKind item_kind,
       else
         local_ids[i] = face.localId();
     }
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void UnstructuredMeshUtilities::
+getFacesLocalIdFromConnectivity(ConstArrayView<ItemTypeId> items_type,
+                                ConstArrayView<Int64> items_connectivity,
+                                ArrayView<Int32> local_ids,
+                                bool allow_null)
+{
+  Int32 nb_item = items_type.size();
+
+  if (nb_item!=local_ids.size())
+    throw InvalidArgumentException(A_FUNCINFO,"local_ids",
+                                   "Size different from 'items_type'");
+
+  Int32 item_connectivity_index = 0;
+  ItemTypeMng* item_type_mng = m_mesh->itemTypeMng();
+  NodesOfItemReorderer face_reorderer(item_type_mng);
+
+  ItemInternalList nodes(m_mesh->itemsInternal(IK_Node));
+  for( Integer i=0; i<nb_item; ++i ){
+    ItemTypeId current_type_id = items_type[i];
+    Int32 current_nb_node = item_type_mng->typeFromId(current_type_id)->nbLocalNode();
+    Int64ConstArrayView current_nodes(current_nb_node,items_connectivity.data()+item_connectivity_index);
+    item_connectivity_index += current_nb_node;
+
+    face_reorderer.reorder(current_type_id,current_nodes);
+    ConstArrayView<Int64> buf(face_reorderer.sortedNodes());
+    Int64 first_node_uid = buf[0];
+    Int64ArrayView first_node_uid_array(1,&first_node_uid);
+    Int32 first_node_lid = CheckedConvert::toInt32(buf[0]);
+    Int32ArrayView first_node_lid_array(1,&first_node_lid);
+    m_mesh->nodeFamily()->itemsUniqueIdToLocalId(first_node_lid_array,first_node_uid_array,!allow_null);
+    if (first_node_lid == NULL_ITEM_LOCAL_ID){
+      if (allow_null){
+        local_ids[i] = NULL_ITEM_LOCAL_ID;
+      }
+      else {
+        StringBuilder sb("Face with nodes (");
+        for(Integer j=0;j<current_nb_node;++j) {
+          if (j != 0) sb += " ";
+          sb += current_nodes[j];
+        }
+        sb += ") not found (first node ";
+        sb += first_node_uid;
+        sb += " not found)";
+        ARCANE_FATAL(sb.toString());
+      }
+      continue;
+    }
+
+    Node node(nodes[first_node_lid]);
+    Face face(MeshUtils::getFaceFromNodesUnique(node,buf));
+    if (face.null()){
+      if (allow_null){
+        local_ids[i] = NULL_ITEM_LOCAL_ID;
+      }
+      else {
+        StringBuilder sb("Face with nodes (");
+        for(Integer j=0;j<current_nb_node;++j) {
+          if (j != 0) sb += " ";
+          sb += current_nodes[j];
+        }
+        sb += ") not found";
+        ARCANE_FATAL(sb.toString());
+      }
+    }
+    else
+      local_ids[i] = face.localId();
   }
 }
 
@@ -840,8 +913,6 @@ namespace
 {
   void _recomputeUniqueIds(IItemFamily* family)
   {
-    ITraceMng* tm = family->traceMng();
-    eItemKind ik = family->itemKind();
     SmallArray<Int64> unique_ids;
     ENUMERATE_ (ItemWithNodes, iitem, family->allItems()) {
       ItemWithNodes item = *iitem;
@@ -852,9 +923,6 @@ namespace
         ++index;
       }
       Int64 new_uid = MeshUtils::generateHashUniqueId(unique_ids);
-      //if (ik==IK_Face)
-      //tm->info() << "Face uid=" << item.uniqueId() << " nb_node=" << item.nbNode()
-      //             << " node0=" << item.node(0).uniqueId() << " node1=" << item.node(1).uniqueId();
       item.mutableItemBase().setUniqueId(new_uid);
     }
     family->notifyItemsUniqueIdChanged();
