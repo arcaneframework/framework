@@ -205,6 +205,7 @@ class MeshUnitTest
   void _testEvents();
   void _testNodeNodeViaEdgeConnectivity();
   void _testComputeOwnersDirect();
+  void _testLocalIdsFromConnectivity();
 };
 
 /*---------------------------------------------------------------------------*/
@@ -330,6 +331,8 @@ executeTest()
     _testNodeNodeViaEdgeConnectivity();
     _testNodeNodeViaEdgeConnectivity();
   }
+  if (options()->checkLocalIdsFromConnectivity())
+    _testLocalIdsFromConnectivity();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1807,6 +1810,38 @@ _testComputeOwnersDirect()
   mesh()->modifier()->updateGhostLayers();
   mesh()->utilities()->computeAndSetOwnersForNodes();
   mesh()->utilities()->computeAndSetOwnersForFaces();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MeshUnitTest::
+_testLocalIdsFromConnectivity()
+{
+  info() << "Testing LocalIdsFromConnectivity";
+  UniqueArray<Int64> faces_connectivity;
+  UniqueArray<Int32> faces_nb_node;
+  UniqueArray<Int32> faces_local_id;
+  ENUMERATE_ (Cell, icell, mesh()->allCells()) {
+    for (Face face : icell->faces()) {
+      Int32 nb_node = face.nbNode();
+      faces_nb_node.add(nb_node);
+      for (Node node : face.nodes())
+        faces_connectivity.add(node.uniqueId());
+    }
+  }
+  faces_local_id.resize(faces_nb_node.size());
+  mesh()->utilities()->localIdsFromConnectivity(IK_Face, faces_nb_node, faces_connectivity, faces_local_id, false);
+
+  // Vérifie que les indices locaux des faces sont corrects
+  Int32 index = 0;
+  ENUMERATE_ (Cell, icell, mesh()->allCells()) {
+    for (Face face : icell->faces()) {
+      if (face.localId() != faces_local_id[index])
+        ARCANE_FATAL("Bad value face={0} expected_local_id={1}", ItemPrinter(face), faces_local_id[index]);
+      ++index;
+    }
+  }
 }
 
 /*---------------------------------------------------------------------------*/

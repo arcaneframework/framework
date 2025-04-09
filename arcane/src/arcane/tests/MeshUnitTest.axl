@@ -188,5 +188,11 @@ Teste la désallocation du maillage
     </description>
   </simple>
 
+  <simple name = "check-local-ids-from-connectivity" type = "bool" default = "false">
+    <description>
+      Si vrai, test 'IMeshUtilities::localIdsFromConnectivity()'
+    </description>
+  </simple>
+
  </options>
 </service>
