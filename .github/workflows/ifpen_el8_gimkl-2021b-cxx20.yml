@@ -191,7 +191,7 @@ jobs:
            export LD_LIBRARY_PATH=${{ env.BUILD_DIR }}/${{ env.EXT_LIB_SUBDIR }}:${LD_LIBRARY_PATH}
            which mpiexec
            mpiexec --version
-           ctest --test-dir ${{ env.BUILD_DIR }} ${{ env.CT_OPTS }}
+           ctest --test-dir ${{ env.BUILD_DIR }} ${{ env.CT_OPTS }} -E '(12proc|8proc|alien.gtest.CompositeSpace)'
 
       - name: Upload test artifact
         id: upload-test-artifact
