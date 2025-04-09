@@ -82,6 +82,32 @@ class ArrayVariableDiff
     int nb_diff = 0;
     bool compare_failed = false;
     Integer ref_size = ref.size();
+    typename VarDataTypeTraits::NormType local_norm_max = VarDataTypeTraits::norm_max_ini;
+
+    // Gros copier-coller pour calculer la norme globale
+    ENUMERATE_ITEM(i,group){
+      Item item = *i;
+      if (!item.isOwn() && !compare_ghost)
+        continue;
+      Integer index = item.localId();
+      if (group_index_table){
+        index = (*group_index_table)[index];
+        if (index<0)
+          continue;
+      }        
+      if (index>=ref_size){
+        continue;
+      }
+      else{
+        DataType dref = ref[index];
+        typename VarDataTypeTraits::NormType norm_max = VarDataTypeTraits::normeMax(dref);
+        if (norm_max>local_norm_max) {
+          local_norm_max=norm_max;
+        }
+      }
+    }
+
+    // On calcule les erreurs normalisées
     ENUMERATE_ITEM(i,group){
       Item item = *i;
       if (!item.isOwn() && !compare_ghost)
@@ -100,7 +126,7 @@ class ArrayVariableDiff
       else{
         DataType dref = ref[index];
         DataType dcurrent = current[index];
-        if (VarDataTypeTraits::verifDifferent(dref,dcurrent,diff,true)){
+        if (VarDataTypeTraits::verifDifferentNorm(dref,dcurrent,diff, local_norm_max, true)){
           this->m_diffs_info.add(DiffInfo(dcurrent,dref,diff,item,NULL_ITEM_ID));
           ++nb_diff;
         }
@@ -148,6 +174,23 @@ class ArrayVariableDiff
     bool compare_failed = false;
     Integer ref_size = ref.size();
     Integer current_size = current.size();
+    typename VarDataTypeTraits::NormType local_norm_max = VarDataTypeTraits::norm_max_ini;
+
+    // Gros copier-coller pour calculer la norme globale
+    for( Integer index=0; index<current_size; ++index ){
+      if (index>=ref_size){
+        continue;
+      }
+      else{
+        DataType dref = ref[index];
+        typename VarDataTypeTraits::NormType norm_max = VarDataTypeTraits::normeMax(dref);
+        if (norm_max>local_norm_max) {
+          local_norm_max=norm_max;
+        }
+      }
+    }
+
+    // On calcule les erreurs normalisées
     for( Integer index=0; index<current_size; ++index ){
       DataType diff = DataType();
       if (index>=ref_size){
@@ -157,7 +200,7 @@ class ArrayVariableDiff
       else{
         DataType dref = ref[index];
         DataType dcurrent = current[index];
-        if (VarDataTypeTraits::verifDifferent(dref,dcurrent,diff,true)){
+        if (VarDataTypeTraits::verifDifferentNorm(dref,dcurrent,diff, local_norm_max, true)){
           this->m_diffs_info.add(DiffInfo(dcurrent,dref,diff,index,NULL_ITEM_ID));
           ++nb_diff;
         }

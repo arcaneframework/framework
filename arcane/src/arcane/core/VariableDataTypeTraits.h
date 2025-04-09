@@ -93,6 +93,10 @@ class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<Byte>
 
   static constexpr Integer nbBasicType() { return 1; }
 
+  typedef Byte NormType;
+
+  static constexpr NormType norm_max_ini = 0;
+
  public:
 
   //! Retourne le nom du type de la variable
@@ -108,7 +112,7 @@ class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<Byte>
    */
   static bool getValue(Type& v, const String& s) { return builtInGetValue(v, s); }
 
-  static bool verifDifferent(Byte v1, Byte v2, Byte& diff,
+  static bool verifDifferentValue(Byte v1, Byte v2, Byte& diff,
                              [[maybe_unused]] bool is_nan_equal = false)
   {
     if (v1 != v2) {
@@ -120,8 +124,19 @@ class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<Byte>
     }
     return false;
   }
+  static bool verifDifferentNorm(Type v1, Type v2, Type& diff,
+      [[maybe_unused]] NormType norm,
+      [[maybe_unused]] bool is_nan_equal = false)
+  {
+    return verifDifferentValue(v1, v2, diff, is_nan_equal);
+  }
+  static bool verifDifferent(Type v1, Type v2, Type& diff,
+      [[maybe_unused]] bool is_nan_equal = false)
+  {
+    return verifDifferentValue(v1, v2, diff, is_nan_equal);
+  }
 
-  static Byte normeMax(Byte v)
+  static NormType normeMax(Byte v)
   {
     return (Byte)math::abs(v);
   }
@@ -157,6 +172,10 @@ class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<Real>
 
   static constexpr Integer nbBasicType() { return 1; }
 
+  typedef Real NormType;
+
+  static constexpr NormType norm_max_ini = 0;
+
  public:
 
   //! Retourne le nom du type de la variable
@@ -172,7 +191,7 @@ class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<Real>
    */
   static bool getValue(Type& v, const String& s) { return builtInGetValue(v, s); }
 
-  static bool verifDifferent(Real v1, Real v2, Real& diff, bool is_nan_equal = false)
+  static bool verifDifferentValue(Real v1, Real v2, Real& diff, bool is_nan_equal = false)
   {
     if (is_nan_equal) {
       if (std::isnan(v1) && std::isnan(v2))
@@ -193,8 +212,34 @@ class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<Real>
     }
     return false;
   }
+  static bool verifDifferentNorm(Real v1, Real v2, Real& diff, NormType norm, bool is_nan_equal)
+  {
+    if (is_nan_equal) {
+      if (std::isnan(v1) && std::isnan(v2))
+        return false;
+    }
+    // Vérifie avant de les comparer que les deux nombres sont valides
+    // pour éviter une exception flottante sur certaines plates-formes
+    if (platform::isDenormalized(v1) || platform::isDenormalized(v2)) {
+      diff = 1.0;
+      return true;
+    }
+    if (v1 != v2) {
+      if (norm < 1.e-100) // TH: plantait pour v1 tres petit(math::isZero(v1))
+        diff = math::abs(v1 - v2);
+      else
+        diff = math::abs(v1 - v2) / norm;
+      return true;
+    }
+    return false;
+  }
+  static bool verifDifferent(Real v1, Real v2, Real& diff, bool is_nan_equal = false)
+  {
+    return verifDifferentValue(v1, v2, diff, is_nan_equal);
+  }
 
-  static Real normeMax(Real v)
+
+  static NormType normeMax(Real v)
   {
     return math::abs(v);
   }
@@ -230,6 +275,10 @@ class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<Float128>
 
   static constexpr Int32 nbBasicType() { return 1; }
 
+  typedef Float128 NormType;
+
+  static constexpr NormType norm_max_ini = Float128(0.);
+
  public:
 
   //! Retourne le nom du type de la variable
@@ -245,7 +294,7 @@ class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<Float128>
    */
   static bool getValue(Type& v, const String& s) { return builtInGetValue(v, s); }
 
-  static bool verifDifferent(Type v1, Type v2, Type& diff, bool is_nan_equal = false)
+  static bool verifDifferentValue(Type v1, Type v2, Type& diff, bool is_nan_equal = false)
   {
     if (is_nan_equal) {
       // TODO: non supporté
@@ -259,6 +308,32 @@ class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<Float128>
       return true;
     }
     return false;
+  }
+
+  static bool verifDifferentNorm(Type v1, Type v2, Type& diff, NormType norm, bool is_nan_equal)
+  {
+    if (is_nan_equal) {
+      // TODO: non supporté
+        return false;
+    }
+    if (v1 != v2) {
+      if (math::abs(v1) < 1.e-100) // TH: plantait pour v1 tres petit(math::isZero(v1))
+        diff = v1 - v2;
+      else
+        diff = (v1 - v2) / norm;
+      return true;
+    }
+    return false;
+  }
+
+  static bool verifDifferent(Type v1, Type v2, Type& diff, bool is_nan_equal = false)
+  {
+    return verifDifferentValue(v1, v2, diff, is_nan_equal);
+  }
+
+  static NormType normeMax(Float128 v)
+  {
+    return math::abs(v);
   }
 };
 
@@ -292,6 +367,10 @@ class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<Int8>
 
   static constexpr Int32 nbBasicType() { return 1; }
 
+  typedef Int8 NormType;
+
+  static constexpr NormType norm_max_ini = 0;
+
  public:
 
   //! Retourne le nom du type de la variable
@@ -306,7 +385,7 @@ class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<Int8>
    * \retval false si la conversion est un succès
    */
   static bool getValue(Type& v, const String& s) { return builtInGetValue(v, s); }
-  static bool verifDifferent(Int8 v1, Int8 v2, Int8& diff,
+  static bool verifDifferentValue(Int8 v1, Int8 v2, Int8& diff,
                              [[maybe_unused]] bool is_nan_equal = false)
   {
     if (v1 != v2) {
@@ -318,7 +397,18 @@ class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<Int8>
     }
     return false;
   }
-  static Int8 normeMax(Int8 v)
+  static bool verifDifferentNorm(Type v1, Type v2, Type& diff,
+      [[maybe_unused]] NormType norm,
+      [[maybe_unused]] bool is_nan_equal = false)
+  {
+    return verifDifferentValue(v1, v2, diff, is_nan_equal);
+  }
+  static bool verifDifferent(Type v1, Type v2, Type& diff,
+      [[maybe_unused]] bool is_nan_equal = false)
+  {
+    return verifDifferentValue(v1, v2, diff, is_nan_equal);
+  }
+  static NormType normeMax(Int8 v)
   {
     return static_cast<Int8>(math::abs(v));
   }
@@ -354,6 +444,10 @@ class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<Int16>
 
   static constexpr Integer nbBasicType() { return 1; }
 
+  typedef Int16 NormType;
+
+  static constexpr NormType norm_max_ini = 0;
+
  public:
 
   //! Retourne le nom du type de la variable
@@ -368,7 +462,7 @@ class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<Int16>
    * \retval false si la conversion est un succès
    */
   static bool getValue(Type& v, const String& s) { return builtInGetValue(v, s); }
-  static bool verifDifferent(Int16 v1, Int16 v2, Int16& diff,
+  static bool verifDifferentValue(Int16 v1, Int16 v2, Int16& diff,
                              [[maybe_unused]] bool is_nan_equal = false)
   {
     if (v1 != v2) {
@@ -380,7 +474,18 @@ class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<Int16>
     }
     return false;
   }
-  static Int16 normeMax(Int16 v)
+  static bool verifDifferentNorm(Type v1, Type v2, Type& diff,
+      [[maybe_unused]] NormType norm,
+      [[maybe_unused]] bool is_nan_equal = false)
+  {
+    return verifDifferentValue(v1, v2, diff, is_nan_equal);
+  }
+  static bool verifDifferent(Type v1, Type v2, Type& diff,
+      [[maybe_unused]] bool is_nan_equal = false)
+  {
+    return verifDifferentValue(v1, v2, diff, is_nan_equal);
+  }
+  static NormType normeMax(Int16 v)
   {
     return math::abs(v);
   }
@@ -416,6 +521,10 @@ class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<Int32>
 
   static constexpr Integer nbBasicType() { return 1; }
 
+  typedef Int32 NormType;
+
+  static constexpr NormType norm_max_ini = 0;
+
  public:
 
   //! Retourne le nom du type de la variable
@@ -430,7 +539,7 @@ class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<Int32>
    * \retval false si la conversion est un succès
    */
   static bool getValue(Type& v, const String& s) { return builtInGetValue(v, s); }
-  static bool verifDifferent(Int32 v1, Int32 v2, Int32& diff,
+  static bool verifDifferentValue(Int32 v1, Int32 v2, Int32& diff,
                              [[maybe_unused]] bool is_nan_equal = false)
   {
     if (v1 != v2) {
@@ -442,7 +551,19 @@ class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<Int32>
     }
     return false;
   }
-  static Int32 normeMax(Int32 v)
+  static bool verifDifferentNorm(Type v1, Type v2, Type& diff,
+      [[maybe_unused]] NormType norm,
+      [[maybe_unused]] bool is_nan_equal = false)
+  {
+    return verifDifferentValue(v1, v2, diff, is_nan_equal);
+  }
+  static bool verifDifferent(Type v1, Type v2, Type& diff,
+      [[maybe_unused]] bool is_nan_equal = false)
+  {
+    return verifDifferentValue(v1, v2, diff, is_nan_equal);
+  }
+
+  static NormType normeMax(Int32 v)
   {
     return math::abs(v);
   }
@@ -478,6 +599,10 @@ class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<Int64>
 
   static constexpr Integer nbBasicType() { return 1; }
 
+  typedef Int64 NormType;
+
+  static constexpr NormType norm_max_ini = 0;
+
  public:
 
   //! Retourne le nom du type de la variable
@@ -493,7 +618,7 @@ class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<Int64>
    */
   static bool getValue(Type& v, const String& s) { return builtInGetValue(v, s); }
 
-  static bool verifDifferent(Type v1, Type v2, Type& diff,
+  static bool verifDifferentValue(Type v1, Type v2, Type& diff,
                              [[maybe_unused]] bool is_nan_equal = false)
   {
     if (v1 != v2) {
@@ -505,7 +630,18 @@ class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<Int64>
     }
     return false;
   }
-  static Int64 normeMax(Int64 v)
+  static bool verifDifferentNorm(Type v1, Type v2, Type& diff,
+      [[maybe_unused]] NormType norm,
+      [[maybe_unused]] bool is_nan_equal = false)
+  {
+    return verifDifferentValue(v1, v2, diff, is_nan_equal);
+  }
+  static bool verifDifferent(Type v1, Type v2, Type& diff,
+      [[maybe_unused]] bool is_nan_equal = false)
+  {
+    return verifDifferentValue(v1, v2, diff, is_nan_equal);
+  }
+  static NormType normeMax(Int64 v)
   {
     return v;
   }
@@ -541,6 +677,10 @@ class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<Int128>
 
   static constexpr Int32 nbBasicType() { return 1; }
 
+  typedef Int128 NormType;
+
+  static constexpr NormType norm_max_ini = 0;
+
  public:
 
   //! Retourne le nom du type de la variable
@@ -556,7 +696,7 @@ class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<Int128>
    */
   static bool getValue(Type& v, const String& s) { return builtInGetValue(v, s); }
 
-  static bool verifDifferent(Type v1, Type v2, Type& diff,
+  static bool verifDifferentValue(Type v1, Type v2, Type& diff,
                              [[maybe_unused]] bool is_nan_equal = false)
   {
     if (v1 != v2) {
@@ -567,6 +707,21 @@ class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<Int128>
       return true;
     }
     return false;
+  }
+  static bool verifDifferentNorm(Type v1, Type v2, Type& diff,
+      [[maybe_unused]] NormType norm,
+      [[maybe_unused]] bool is_nan_equal = false)
+  {
+    return verifDifferentValue(v1, v2, diff, is_nan_equal);
+  }
+  static bool verifDifferent(Type v1, Type v2, Type& diff,
+      [[maybe_unused]] bool is_nan_equal = false)
+  {
+    return verifDifferentValue(v1, v2, diff, is_nan_equal);
+  }
+  static NormType normeMax(Int16 v)
+  {
+    return static_cast<Int16>(math::abs(v));
   }
 };
 
@@ -600,6 +755,10 @@ class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<String>
 
   static constexpr Integer nbBasicType() { return 1; }
 
+  typedef const char* NormType;
+
+  static constexpr NormType norm_max_ini = "";
+
  public:
 
   //! Retourne le nom du type de la variable
@@ -615,14 +774,32 @@ class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<String>
    */
   static bool getValue(Type& v, const String& s) { return builtInGetValue(v, s); }
 
+  static bool verifDifferentValue(const Type v1, const Type& v2, Type&,
+                             [[maybe_unused]] bool is_nan_equal = false)
+  {
+    return (v1 != v2);
+  }
+
+  static bool verifDifferentNorm(const Type v1, const Type& v2, Type&diff,
+      [[maybe_unused]] NormType norm,
+      [[maybe_unused]] bool is_nan_equal = false)
+  {
+    return verifDifferentValue(v1, v2, diff, is_nan_equal);
+  }
+
   static bool verifDifferent(const Type v1, const Type& v2, Type&,
                              [[maybe_unused]] bool is_nan_equal = false)
   {
     return (v1 != v2);
   }
+
   static const char* normeMax(const char* v)
   {
     return v;
+  }
+  static NormType normeMax(const String& v)
+  {
+    return v.localstr();
   }
 };
 
@@ -656,6 +833,10 @@ class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<BFloat16>
 
   static constexpr Integer nbBasicType() { return 1; }
 
+  typedef float NormType;
+
+  static constexpr NormType norm_max_ini = 0;
+
  public:
 
   //! Retourne le nom du type de la variable
@@ -671,7 +852,7 @@ class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<BFloat16>
    */
   static bool getValue(Type& v, const String& s) { return builtInGetValue(v, s); }
 
-  static bool verifDifferent(float v1, float v2, BFloat16& diff, bool is_nan_equal = false)
+  static bool verifDifferentValue(float v1, float v2, BFloat16& diff, bool is_nan_equal = false)
   {
     if (is_nan_equal) {
       // TODO: non supporté
@@ -687,6 +868,27 @@ class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<BFloat16>
       return true;
     }
     return false;
+  }
+  static bool verifDifferentNorm(float v1, float v2, BFloat16& diff, NormType norm, bool is_nan_equal = false)
+  {
+    if (is_nan_equal) {
+      // TODO: non supporté
+        return false;
+    }
+    if (v1 != v2) {
+      float fdiff = 0.0;
+      if (math::abs(v1)!=0.0)
+        fdiff = v1 - v2;
+      else
+        fdiff = (v1 - v2) / norm;
+      diff = static_cast<Type>(fdiff);
+      return true;
+    }
+    return false;
+  }
+  static bool verifDifferent(float v1, float v2, BFloat16& diff, bool is_nan_equal = false)
+  {
+    return verifDifferentValue(v1, v2, diff, is_nan_equal);
   }
 
   static Real normeMax(Real v)
@@ -725,6 +927,10 @@ class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<Float16>
 
   static constexpr Integer nbBasicType() { return 1; }
 
+  typedef float NormType;
+
+  static constexpr NormType norm_max_ini = 0;
+
  public:
 
   //! Retourne le nom du type de la variable
@@ -740,7 +946,7 @@ class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<Float16>
    */
   static bool getValue(Type& v, const String& s) { return builtInGetValue(v, s); }
 
-  static bool verifDifferent(float v1, float v2, Float16& diff, bool is_nan_equal = false)
+  static bool verifDifferentValue(float v1, float v2, Float16& diff, bool is_nan_equal = false)
   {
     if (is_nan_equal) {
       // TODO: non supporté
@@ -756,6 +962,27 @@ class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<Float16>
       return true;
     }
     return false;
+  }
+  static bool verifDifferentNorm(float v1, float v2, Float16& diff, NormType norm, bool is_nan_equal = false)
+  {
+    if (is_nan_equal) {
+      // TODO: non supporté
+        return false;
+    }
+    if (v1 != v2) {
+      float fdiff = 0.0;
+      if (math::abs(v1)!=0.0)
+        fdiff = v1 - v2;
+      else
+        fdiff = (v1 - v2) / norm;
+      diff = static_cast<Type>(fdiff);
+      return true;
+    }
+    return false;
+  }
+  static bool verifDifferent(float v1, float v2, Float16& diff, bool is_nan_equal = false)
+  {
+    return verifDifferentValue(v1, v2, diff, is_nan_equal);
   }
 
   static Real normeMax(Real v)
@@ -794,6 +1021,10 @@ class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<Float32>
 
   static constexpr Integer nbBasicType() { return 1; }
 
+  typedef Float32 NormType;
+
+  static constexpr NormType norm_max_ini = 0;
+
  public:
 
   //! Retourne le nom du type de la variable
@@ -809,7 +1040,7 @@ class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<Float32>
    */
   static bool getValue(Type& v, const String& s) { return builtInGetValue(v, s); }
 
-  static bool verifDifferent(Type v1, Type v2, Type& diff, bool is_nan_equal = false)
+  static bool verifDifferentValue(Type v1, Type v2, Type& diff, bool is_nan_equal = false)
   {
     if (is_nan_equal) {
       if (std::isnan(v1) && std::isnan(v2))
@@ -829,6 +1060,31 @@ class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<Float32>
       return true;
     }
     return false;
+  }
+  static bool verifDifferentNorm(Type v1, Type v2, Type& diff, NormType norm, bool is_nan_equal = false)
+  {
+    if (is_nan_equal) {
+      if (std::isnan(v1) && std::isnan(v2))
+        return false;
+    }
+    // Vérifie avant de les comparer que les deux nombres sont valides
+    // pour éviter une exception flottante sur certaines plates-formes
+    if (platform::isDenormalized(v1) || platform::isDenormalized(v2)) {
+      diff = 1.0;
+      return true;
+    }
+    if (v1 != v2) {
+      if (math::abs(v1) < 1.e-40)
+        diff = v1 - v2;
+      else
+        diff = (v1 - v2) / norm;
+      return true;
+    }
+    return false;
+  }
+  static bool verifDifferent(Type v1, Type v2, Type& diff, bool is_nan_equal = false)
+  {
+    return verifDifferentValue(v1, v2, diff, is_nan_equal);
   }
 
   static Real normeMax(Real v)
@@ -867,6 +1123,10 @@ class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<Real2>
 
   static constexpr Integer nbBasicType() { return 2; }
 
+  typedef Real NormType;
+
+  static constexpr NormType norm_max_ini = 0;
+
  private:
 
   using SubTraits = VariableDataTypeTraitsT<Real>;
@@ -886,7 +1146,7 @@ class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<Real2>
    */
   static bool getValue(Type& v, const String& s) { return builtInGetValue(v, s); }
 
-  static bool verifDifferent(Real2 v1, Real2 v2, Real2& diff, bool is_nan_equal = false)
+  static bool verifDifferentValue(Real2 v1, Real2 v2, Real2& diff, bool is_nan_equal = false)
   {
     bool is_different = false;
     is_different |= SubTraits::verifDifferent(v1.x, v2.x, diff.x, is_nan_equal);
@@ -894,7 +1154,29 @@ class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<Real2>
     return is_different;
   }
 
-  static Real normeMax(const Real2& v)
+  static bool verifDifferentNorm(const Real2& v1, const Real2& v2, Real2& diff, NormType norm, [[maybe_unused]] bool is_nan_equal)
+  {
+    if (norm < 1.e-100)
+    {
+      diff.x = math::abs(v2.x);
+      diff.y = math::abs(v2.y);
+    }
+    else
+    {
+      diff.x = math::abs(v2.x - v1.x)/norm;
+      diff.y = math::abs(v2.y - v1.y)/norm;
+    }
+    bool is_different = (normeMax(diff)!=0.);
+    return is_different;
+  }
+
+  static bool verifDifferent(Real2 v1, Real2 v2, Real2& diff, bool is_nan_equal = false)
+  {
+    return verifDifferentNorm(v1, v2, diff, normeMax(v1), is_nan_equal);
+  }
+
+
+  static NormType normeMax(const Real2& v)
   {
     Real vx = SubTraits::normeMax(v.x);
     Real vy = SubTraits::normeMax(v.y);
@@ -932,6 +1214,10 @@ class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<Real3>
 
   static constexpr Integer nbBasicType() { return 3; }
 
+  typedef Real NormType;
+
+  static constexpr NormType norm_max_ini = 0;
+
  private:
 
   using SubTraits = VariableDataTypeTraitsT<Real>;
@@ -951,7 +1237,7 @@ class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<Real3>
    */
   static bool getValue(Type& v, const String& s) { return builtInGetValue(v, s); }
 
-  static bool verifDifferent(Real3 v1, Real3 v2, Real3& diff, bool is_nan_equal = false)
+  static bool verifDifferentValue(Real3 v1, Real3 v2, Real3& diff, bool is_nan_equal = false)
   {
     bool is_different = false;
     is_different |= SubTraits::verifDifferent(v1.x, v2.x, diff.x, is_nan_equal);
@@ -960,7 +1246,30 @@ class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<Real3>
     return is_different;
   }
 
-  static Real normeMax(const Real3& v)
+  static bool verifDifferentNorm(const Real3& v1, const Real3& v2, Real3& diff, NormType norm, [[maybe_unused]] bool is_nan_equal)
+  {
+    if (norm < 1.e-100)
+    {
+      diff.x = math::abs(v2.x);
+      diff.y = math::abs(v2.y);
+      diff.z = math::abs(v2.z);
+    }
+    else
+    {
+      diff.x = math::abs(v2.x - v1.x)/norm;
+      diff.y = math::abs(v2.y - v1.y)/norm;
+      diff.z = math::abs(v2.z - v1.z)/norm;
+    }
+    bool is_different = (normeMax(diff)!=0.);
+    return is_different;
+  }
+
+  static bool verifDifferent(Real3 v1, Real3 v2, Real3& diff, bool is_nan_equal = false)
+  {
+    return verifDifferentNorm(v1, v2, diff, normeMax(v1), is_nan_equal);
+  }
+
+  static NormType normeMax(const Real3& v)
   {
     Real vx = SubTraits::normeMax(v.x);
     Real vy = SubTraits::normeMax(v.y);
@@ -999,6 +1308,10 @@ class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<Real2x2>
 
   static constexpr Integer nbBasicType() { return 4; }
 
+  typedef Real NormType;
+
+  static constexpr NormType norm_max_ini = 0;
+
  private:
 
   using SubTraits = VariableDataTypeTraitsT<Real2>;
@@ -1018,7 +1331,7 @@ class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<Real2x2>
    */
   static bool getValue(Type&, const String&) { return true; }
 
-  static bool verifDifferent(Real2x2 v1, Real2x2 v2, Real2x2& diff, bool is_nan_equal = false)
+  static bool verifDifferentValue(Real2x2 v1, Real2x2 v2, Real2x2& diff, bool is_nan_equal = false)
   {
     bool is_different = false;
     is_different |= SubTraits::verifDifferent(v1.x, v2.x, diff.x, is_nan_equal);
@@ -1026,7 +1339,34 @@ class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<Real2x2>
     return is_different;
   }
 
-  static Real normeMax(const Real2x2& v)
+  static bool verifDifferentNorm(const Real2x2& v1, const Real2x2& v2, Real2x2& diff, NormType norm, [[maybe_unused]] bool is_nan_equal)
+  {
+    if (norm < 1.e-100)
+    {
+      diff.x.x = math::abs(v2.x.x);
+      diff.x.y = math::abs(v2.x.y);
+
+      diff.y.x = math::abs(v2.y.x);
+      diff.y.y = math::abs(v2.y.y);
+    }
+    else
+    {
+      diff.x.x = math::abs(v2.x.x - v1.x.x)/norm;
+      diff.x.y = math::abs(v2.x.y - v1.x.y)/norm;
+
+      diff.y.x = math::abs(v2.y.x - v1.y.x)/norm;
+      diff.y.y = math::abs(v2.y.y - v1.y.y)/norm;
+    }
+    bool is_different = (normeMax(diff)!=0.);
+    return is_different;
+  }
+
+  static bool verifDifferent(Real2x2 v1, Real2x2 v2, Real2x2& diff, bool is_nan_equal = false)
+  {
+    return verifDifferentNorm(v1, v2, diff, normeMax(v1), is_nan_equal);
+  }
+
+  static NormType normeMax(const Real2x2& v)
   {
     Real vx = SubTraits::normeMax(v.x);
     Real vy = SubTraits::normeMax(v.y);
@@ -1064,6 +1404,10 @@ class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<Real3x3>
 
   static constexpr Integer nbBasicType() { return 9; }
 
+  typedef Real NormType;
+
+  static constexpr NormType norm_max_ini = 0;
+
  private:
 
   using SubTraits = VariableDataTypeTraitsT<Real3>;
@@ -1083,16 +1427,55 @@ class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<Real3x3>
    */
   static bool getValue(Type&, const String&) { return true; }
 
-  static bool verifDifferent(Real3x3 v1, Real3x3 v2, Real3x3& diff, bool is_nan_equal = false)
+  static bool verifDifferentValue(Real3x3 v1, Real3x3 v2, Real3x3& diff, bool is_nan_equal = false)
   {
     bool is_different = false;
-    is_different |= SubTraits::verifDifferent(v1.x, v2.x, diff.x, is_nan_equal);
-    is_different |= SubTraits::verifDifferent(v1.y, v2.y, diff.y, is_nan_equal);
-    is_different |= SubTraits::verifDifferent(v1.z, v2.z, diff.z, is_nan_equal);
+    is_different |= SubTraits::verifDifferentValue(v1.x, v2.x, diff.x, is_nan_equal);
+    is_different |= SubTraits::verifDifferentValue(v1.y, v2.y, diff.y, is_nan_equal);
+    is_different |= SubTraits::verifDifferentValue(v1.z, v2.z, diff.z, is_nan_equal);
     return is_different;
   }
 
-  static Real normeMax(const Real3x3& v)
+  static bool verifDifferentNorm(const Real3x3& v1, const Real3x3& v2, Real3x3& diff, NormType norm, [[maybe_unused]] bool is_nan_equal)
+  {
+    if (norm < 1.e-100)
+    {
+      diff.x.x = math::abs(v2.x.x);
+      diff.x.y = math::abs(v2.x.y);
+      diff.x.z = math::abs(v2.x.z);
+
+      diff.y.x = math::abs(v2.y.x);
+      diff.y.y = math::abs(v2.y.y);
+      diff.y.z = math::abs(v2.y.z);
+
+      diff.z.x = math::abs(v2.z.x);
+      diff.z.y = math::abs(v2.z.y);
+      diff.z.z = math::abs(v2.z.z);
+    }
+    else
+    {
+      diff.x.x = math::abs(v2.x.x - v1.x.x)/norm;
+      diff.x.y = math::abs(v2.x.y - v1.x.y)/norm;
+      diff.x.z = math::abs(v2.x.z - v1.x.z)/norm;
+
+      diff.y.x = math::abs(v2.y.x - v1.y.x)/norm;
+      diff.y.y = math::abs(v2.y.y - v1.y.y)/norm;
+      diff.y.z = math::abs(v2.y.z - v1.y.z)/norm;
+
+      diff.z.x = math::abs(v2.z.x - v1.z.x)/norm;
+      diff.z.y = math::abs(v2.z.y - v1.z.y)/norm;
+      diff.z.z = math::abs(v2.z.z - v1.z.z)/norm;
+    }
+    bool is_different = (normeMax(diff)!=0.);
+    return is_different;
+  }
+
+  static bool verifDifferent(Real3x3 v1, Real3x3 v2, Real3x3& diff, bool is_nan_equal = false)
+  {
+    return verifDifferentNorm(v1, v2, diff, normeMax(v1), is_nan_equal);
+  }
+
+  static NormType normeMax(const Real3x3& v)
   {
     Real vx = SubTraits::normeMax(v.x);
     Real vy = SubTraits::normeMax(v.y);
