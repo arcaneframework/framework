@@ -987,7 +987,7 @@ _readNodesUnstructuredGrid(IMesh* mesh, VtkFile& vtk_file, Array<Real3>& node_co
   if (nb_node < 0)
     throw IOException(A_FUNCINFO, String::format("Invalid number of nodes: n={0}", nb_node));
 
-  info() << " Info: " << nb_node;
+  info() << "VTK file : number of nodes = " << nb_node;
 
   // Lecture les coordonnées
   node_coords.resize(nb_node);
@@ -1062,6 +1062,8 @@ _readCellsUnstructuredGrid(IMesh* mesh, VtkFile& vtk_file,
     throw IOException(func_name, "Syntax error while reading cells");
 
   vtk_file.checkString(cells_str, "CELLS");
+
+  info() << "VTK file : number of cells = " << nb_cell;
 
   if (nb_cell < 0 || nb_cell_node < 0) {
     throw IOException(A_FUNCINFO,
@@ -1358,7 +1360,8 @@ _readFacesMesh(IMesh* mesh, const String& file_name, const String& dir_name,
 
   // Lecture de la description
   String title = vtk_file.getNextLine();
-  info() << "Titre du fichier VTK : " << title;
+  info() << "Reading VTK file '" << file_name << "'";
+  info() << "Title of VTK file: " << title;
 
   String format = vtk_file.getNextLine();
   if (VtkFile::isEqualString(format, "BINARY")) {
@@ -1421,7 +1424,7 @@ _readFacesMesh(IMesh* mesh, const String& file_name, const String& dir_name,
       faces_local_id.resize(nb_face);
       {
         IMeshUtilities* mu = mesh->utilities();
-        mu->localIdsFromConnectivity(IK_Face, faces_nb_node, faces_connectivity, faces_local_id);
+        mu->getFacesLocalIdFromConnectivity(faces_type, faces_connectivity, faces_local_id);
       }
     }
 
@@ -1916,7 +1919,7 @@ _writeMeshToFile(IMesh* mesh, const String& file_name, eItemKind cell_kind)
     VariableNodeReal3& coords(mesh->toPrimaryMesh()->nodesCoordinates());
     Integer node_index = 0;
     ENUMERATE_NODE (inode, mesh->allNodes()) {
-      const Node& node = *inode;
+      Node node = *inode;
       nodes_local_id_to_current[node.localId()] = node_index;
       Real3 xyz = coords[inode];
       ofile << xyz.x << ' ' << xyz.y << ' ' << xyz.z << '\n';
@@ -1934,11 +1937,11 @@ _writeMeshToFile(IMesh* mesh, const String& file_name, eItemKind cell_kind)
     ofile << "CELLS " << nb_cell_kind << ' ' << nb_node_cell_kind << "\n";
     ENUMERATE_ITEMWITHNODES(iitem, cell_kind_family->allItems())
     {
-      const ItemWithNodes& item = *iitem;
+      ItemWithNodes item = *iitem;
       Integer item_nb_node = item.nbNode();
       ofile << item_nb_node;
-      for (NodeLocalId inode_lid : item.nodes() ) {
-        ofile << ' ' << nodes_local_id_to_current[inode_lid];
+      for (NodeLocalId node_id : item.nodes() ) {
+        ofile << ' ' << nodes_local_id_to_current[node_id];
       }
       ofile << '\n';
     }
