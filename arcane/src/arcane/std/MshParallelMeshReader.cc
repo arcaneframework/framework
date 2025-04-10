@@ -1265,7 +1265,7 @@ _allocateGroups()
 
   // Crée les groupes de noeuds associés aux blocs de $Nodes
   {
-    bool has_periodic = m_mesh_info->m_periodic_info.hasValues();
+    //bool has_periodic = m_mesh_info->m_periodic_info.hasValues();
     UniqueArray<Int64>& nodes_uids = m_mesh_allocate_info.nodes_unique_id;
     // Créé les groupes de noeuds issus des blocks dans $Nodes
     for (const MshNodeBlock& block : m_mesh_allocate_info.node_blocks) {
@@ -1275,8 +1275,11 @@ _allocateGroups()
       // Si on a des infos de périodicité, on crée toujours les groupes de noeuds correspondants
       // aux blocs, car ils peuvent être référencés par les infos de périodicité.
       // Dans ce cas, on génère un nom de groupe.
-      if (physical_name.isNull() && has_periodic)
-        group_name = String::format("ArcaneMshInternalNodesDim{0}Entity{1}", block.entity_dim, block.entity_tag);
+      // NOTE: désactive cela car cela peut générer un très grand nombre de nombre de groupes
+      // lorsqu'il y a beaucoup d'informations de périodicité et en plus on n'utilise pas encore
+      // cela lors de l'écriture des informations périodiques.
+      //if (physical_name.isNull() && has_periodic)
+      //group_name = String::format("ArcaneMshInternalNodesDim{0}Entity{1}", block.entity_dim, block.entity_tag);
       if (!group_name.null())
         _addCellOrNodeGroup(block_uids, block.index, group_name, node_family, true);
     }
