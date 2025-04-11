@@ -22,7 +22,7 @@
     <meshgenerator>
       <cartesian>
         <origine>0. 0. 0.</origine>
-        <nsd>1 1 1</nsd>
+        <nsd>2 1 1</nsd>
         <lx nx="10">1.</lx>
         <ly ny="10">1.</ly>
         <lz nz="10">1.</lz>
@@ -38,13 +38,17 @@
       <alpha>10.</alpha>
       <sigma>1000000.</sigma>
       <epsilon>0.01</epsilon>
+      <homogeneous>true</homogeneous>
+      <!--zero-rhs>true</zero-rhs-->
+      <nb-resolutions>100</nb-resolutions>
 
 
       <linear-solver name="IFPSolver">
           <num-iterations-max>1000</num-iterations-max>
           <stop-criteria-value>1e-8</stop-criteria-value>
-          <precond-option>AMG</precond-option>
-           <output>1</output>
+          <precond-option>ILU0</precond-option>
+          <output>10</output>
+          <keep-rhs>false</keep-rhs>
       </linear-solver>
 
     

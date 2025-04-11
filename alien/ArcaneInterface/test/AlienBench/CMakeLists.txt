@@ -282,6 +282,20 @@ if (TARGET trilinos)
             )
 endif ()
 
+if (TARGET ifpsolver)
+    configure_file(AlienBench-ifps.arc ${CMAKE_BINARY_DIR}/${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench/AlienBench-ifps.arc COPYONLY)
+    configure_file(AlienBench-ifps-2P.arc ${CMAKE_BINARY_DIR}/${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench/AlienBench-ifps-2P.arc COPYONLY)
+    configure_file(AlienBench-ifpsamg.arc ${CMAKE_BINARY_DIR}/${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench/AlienBench-ifpsamg.arc COPYONLY)
+    configure_file(AlienBench-ifpsamg-4P.arc ${CMAKE_BINARY_DIR}/${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench/AlienBench-ifpsamg-4P.arc COPYONLY)
+
+    list(APPEND ALIEN_EXAMPLE_FILES
+            AlienBench-ifps.arc
+            AlienBench-ifps-2P.arc
+            AlienBench-ifpsamg.arc
+            AlienBench-ifpsamg-4P.arc
+            )
+endif ()
+
 if(TARGET COMPOSYX::composyx)
 
     configure_file(AlienBench-composyx.arc ${CMAKE_BINARY_DIR}/${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench/AlienBench-composyx.arc COPYONLY)
@@ -471,6 +485,45 @@ if (TARGET trilinos)
             WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
 endif ()
 
+
+if (TARGET ifpsolver)
+
+    alien_test(
+            BENCH bench.ifps
+            NAME seq
+            PROCS 1
+            COMMAND alien_bench.exe
+            OPTIONS AlienBench-ifps.arc
+            UNIQUE_OUTPUT_DIR
+            WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
+
+    alien_test(
+            BENCH bench.ifpsamg
+            NAME seq
+            PROCS 1
+            COMMAND alien_bench.exe
+            OPTIONS AlienBench-ifpsamg.arc
+            UNIQUE_OUTPUT_DIR
+            WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
+
+    alien_test(
+            BENCH bench.ifps
+            NAME parallel
+            PROCS 2
+            COMMAND alien_bench.exe
+            OPTIONS AlienBench-ifps-2P.arc
+            UNIQUE_OUTPUT_DIR
+            WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
+
+    alien_test(
+            BENCH bench.ifpsamg
+            NAME parallel
+            PROCS 4
+            COMMAND alien_bench.exe
+            OPTIONS AlienBench-ifpsamg-4P.arc
+            UNIQUE_OUTPUT_DIR
+            WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienBench)
+endif ()
 
 if (TARGET COMPOSYX::composyx)
 

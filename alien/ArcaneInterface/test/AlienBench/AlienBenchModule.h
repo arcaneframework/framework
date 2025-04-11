@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -68,6 +68,16 @@ class AlienBenchModule : public ArcaneAlienBenchObject
              Alien::Vector& coordY,
              Alien::Vector& coordZ,
              Alien::Matrix& matrixA);
+
+  void _fillSystemCPU(Timer& pbuild_timer,
+                      CellCellGroup& cell_cell_connection,
+                      CellCellGroup& all_cell_cell_connection,
+                      Arccore::UniqueArray<Arccore::Integer>& allUIndex,
+                      Alien::Vector& vectorB,
+                      Alien::Vector& vectorBB,
+                      Alien::Vector& vectorX,
+                      Alien::Matrix& matrixA) ;
+
 #ifdef ALIEN_USE_SYCL
   void _testSYCLWithUSM( Timer& pbuild_timer,
                          CellGroup& areaU,
@@ -93,6 +103,24 @@ class AlienBenchModule : public ArcaneAlienBenchObject
                  Alien::Vector& coordY,
                  Alien::Vector& coordZ,
                  Alien::Matrix& matrixA);
+
+  void _fillSystemSYCLWithUSM(Timer& pbuild_timer,
+                       CellCellGroup& cell_cell_connection,
+                       CellCellGroup& all_cell_cell_connection,
+                       Arccore::UniqueArray<Arccore::Integer>& allUIndex,
+                       Alien::Vector& vectorB,
+                       Alien::Vector& vectorBB,
+                       Alien::Vector& vectorX,
+                       Alien::Matrix& matrixA) ;
+
+  void _fillSystemSYCL(Timer& pbuild_timer,
+                       CellCellGroup& cell_cell_connection,
+                       CellCellGroup& all_cell_cell_connection,
+                       Arccore::UniqueArray<Arccore::Integer>& allUIndex,
+                       Alien::Vector& vectorB,
+                       Alien::Vector& vectorBB,
+                       Alien::Vector& vectorX,
+                       Alien::Matrix& matrixA) ;
 #endif
  private:
   ARCCORE_HOST_DEVICE Real funcn(Real3 x) const;
