@@ -29,6 +29,7 @@
 
 
     <alien-bench>
+      <use-accelerator>true</use-accelerator>
       <redistribution>false</redistribution>
       <!-- big diagonal-coefficient keep diagonal dominant matrix -->
       <homogeneous>true</homogeneous>
@@ -59,7 +60,7 @@
         <nb-threads>1</nb-threads>
         <output>1</output>
       </linear-solver-->
-      <linear-solver name="HTSSolver">
+      <!--linear-solver name="HTSSolver">
         <solver>BiCGStab</solver>
         <max-iteration-num>1000</max-iteration-num>
         <stop-criteria-value>1e-8</stop-criteria-value>
@@ -70,7 +71,7 @@
         <output>3</output>
         <nb-part>1</nb-part>
         <nb-subpart>1</nb-subpart>
-      </linear-solver>
+      </linear-solver-->
 
 
     
