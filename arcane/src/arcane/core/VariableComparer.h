@@ -75,6 +75,13 @@ class ARCANE_CORE_EXPORT VariableComparerResults
 {
  public:
 
+  VariableComparerResults() = default;
+  explicit VariableComparerResults(Int32 nb_diff)
+  : m_nb_diff(nb_diff)
+  {}
+
+ public:
+
   void setNbDifference(Int32 v) { m_nb_diff = v; }
   Int32 nbDifference() const { return m_nb_diff; }
 

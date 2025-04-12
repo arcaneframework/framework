@@ -62,25 +62,27 @@ class ArrayVariableDiff
 
  public:
 
-  Integer
-  check(IVariable* var,ConstArrayView<DataType> ref,ConstArrayView<DataType> current,
-        int max_print,bool compare_ghost)
+  VariableComparerResults
+  check(IVariable* var, ConstArrayView<DataType> ref, ConstArrayView<DataType> current,
+        const VariableComparerArgs& compare_args)
   {
+    const int max_print = compare_args.maxPrint();
+    const bool compare_ghost = compare_args.isCompareGhost();
     if (var->itemKind()==IK_Unknown)
-      return _checkAsArray(var,ref,current,max_print);
+      return _checkAsArray(var, ref, current, compare_args);
 
     ItemGroup group = var->itemGroup();
     if (group.null())
-      return 0;
+      return {};
     IMesh* mesh = group.mesh();
     if (!mesh)
-      return 0;
+      return {};
     ITraceMng* msg = mesh->traceMng();
     IParallelMng* pm = mesh->parallelMng();
 
-    GroupIndexTable * group_index_table = (var->isPartial())?group.localIdToIndex().get():0;
+    GroupIndexTable* group_index_table = (var->isPartial()) ? group.localIdToIndex().get() : nullptr;
 
-    int nb_diff = 0;
+    int nb_diff = {};
     bool compare_failed = false;
     Integer ref_size = ref.size();
     typename VarDataTypeTraits::NormType local_norm_max = VarDataTypeTraits::norm_max_ini;
@@ -144,30 +146,33 @@ class ArrayVariableDiff
     if (nb_diff!=0)
       this->_sortAndDump(var,pm,max_print);
 
-    return nb_diff;
+    return VariableComparerResults(nb_diff);
   }
 
-  Integer checkReplica(IParallelMng* pm,IVariable* var,ConstArrayView<DataType> var_value,
-                       Integer max_print)
+  VariableComparerResults
+  checkReplica(IParallelMng* pm, IVariable* var, ConstArrayView<DataType> var_value,
+               const VariableComparerArgs& compare_args)
   {
-    // Appelle la bonne spécialisation pour être sur que le type template possède
+    // Appelle la bonne spécialisation pour être certain que le type template possède
     // la réduction.
     using ReduceType = typename VariableDataTypeTraitsT<DataType>::HasReduceMinMax;
     if constexpr(std::is_same<TrueType,ReduceType>::value)
-      return _checkReplica2(pm,var,var_value,max_print);
+      return _checkReplica2(pm, var, var_value, compare_args);
 
     ARCANE_UNUSED(pm);
     ARCANE_UNUSED(var);
     ARCANE_UNUSED(var_value);
-    ARCANE_UNUSED(max_print);
+    ARCANE_UNUSED(compare_args);
     throw NotSupportedException(A_FUNCINFO);
   }
 
  private:
-  
-  Integer _checkAsArray(IVariable* var,ConstArrayView<DataType> ref,
-                        ConstArrayView<DataType> current,int max_print)
+
+  VariableComparerResults
+  _checkAsArray(IVariable* var, ConstArrayView<DataType> ref, ConstArrayView<DataType> current,
+                const VariableComparerArgs& compare_args)
   {
+    const int max_print = compare_args.maxPrint();
     IParallelMng* pm = var->variableMng()->parallelMng();
     ITraceMng* msg = pm->traceMng();
 
@@ -218,15 +223,17 @@ class ArrayVariableDiff
     if (nb_diff!=0)
       this->_sortAndDump(var,pm,max_print);
 
-    return nb_diff;
+    return VariableComparerResults(nb_diff);
   }
 
-  Integer _checkReplica2(IParallelMng* pm,IVariable* var,ConstArrayView<DataType> var_values,
-                         Integer max_print)
+  VariableComparerResults
+  _checkReplica2(IParallelMng* pm, IVariable* var, ConstArrayView<DataType> var_values,
+                 const VariableComparerArgs& compare_args)
   {
+    const int max_print = compare_args.maxPrint();
     ITraceMng* msg = pm->traceMng();
     Integer size = var_values.size();
-    // Vérifie que tout les réplica ont le même nombre d'éléments pour la variable.
+    // Vérifie que tous les réplica ont le même nombre d'éléments pour la variable.
     Integer max_size = pm->reduce(Parallel::ReduceMax,size);
     Integer min_size = pm->reduce(Parallel::ReduceMin,size);
     msg->info(5) << "CheckReplica2 rep_size=" << pm->commSize() << " rank=" << pm->commRank();
@@ -235,7 +242,7 @@ class ArrayVariableDiff
       msg->info() << "Can not compare values on replica for variable '" << var_name << "'"
                   << " because the number of elements is not the same on all the replica "
                   << " min=" << min_size << " max="<< max_size;
-      return max_size;
+      return VariableComparerResults(max_size);
     }
     Integer nb_diff = 0;
     UniqueArray<DataType> min_values(var_values);
@@ -255,7 +262,7 @@ class ArrayVariableDiff
     if (nb_diff!=0)
       this->_sortAndDump(var,pm,max_print);
 
-    return nb_diff;
+    return VariableComparerResults(nb_diff);
   }
 };
 
@@ -389,6 +396,7 @@ allocatedMemory() const
 template<typename T> Integer VariableArrayT<T>::
 checkIfSync(int max_print)
 {
+  VariableComparerResults results;
   IItemFamily* family = itemGroup().itemFamily();
   if (family){
     ValueType& data_values = m_value->_internal()->_internalDeprecatedValue();
@@ -396,11 +404,13 @@ checkIfSync(int max_print)
     this->synchronize(); // fonctionne pour toutes les variables
     ArrayVariableDiff<T> csa;
     ConstArrayView<T> from_array(constValueView());
-    Integer nerror = csa.check(this,ref_array,from_array,max_print,true);
+    VariableComparerArgs compare_args;
+    compare_args.setMaxPrint(max_print);
+    compare_args.setCompareGhost(true);
+    results = csa.check(this, ref_array, from_array, compare_args);
     data_values.copy(ref_array);
-    return nerror;
   }
-  return 0;
+  return results.nbDifference();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -417,7 +427,11 @@ checkIfSame(IDataReader* reader,Integer max_print,bool compare_ghost)
   reader->read(this,ref_data.get());
 
   ArrayVariableDiff<T> csa;
-  return csa.check(this,ref_data->view(),from_array,max_print,compare_ghost);
+  VariableComparerArgs compare_args;
+  compare_args.setMaxPrint(max_print);
+  compare_args.setCompareGhost(compare_ghost);
+  VariableComparerResults r = csa.check(this, ref_data->view(), from_array, compare_args);
+  return r.nbDifference();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -427,39 +441,42 @@ checkIfSame(IDataReader* reader,Integer max_print,bool compare_ghost)
 // une réduction Min/Max et cela n'existe pas en MPI pour le type Byte.
 namespace
 {
-  template<typename T> Integer
-  _checkIfSameOnAllReplicaHelper(IParallelMng* pm,IVariable* var,
-                                 ConstArrayView<T> values,Integer max_print)
+  template <typename T> VariableComparerResults
+  _checkIfSameOnAllReplicaHelper(IParallelMng* pm, IVariable* var, ConstArrayView<T> values,
+                                 const VariableComparerArgs& compare_args)
   {
     ArrayVariableDiff<T> csa;
-    return csa.checkReplica(pm,var,values,max_print);
+    return csa.checkReplica(pm, var, values, compare_args);
   }
 
   // Spécialisation pour le type 'Byte' qui ne supporte pas les réductions.
-  Integer
+  VariableComparerResults
   _checkIfSameOnAllReplicaHelper(IParallelMng* pm,IVariable* var,
-                                 ConstArrayView<Byte> values,Integer max_print)
+                                 ConstArrayView<Byte> values, const VariableComparerArgs& compare_args)
   {
     Integer size = values.size();
     UniqueArray<Integer> int_values(size);
     for( Integer i=0; i<size; ++i )
       int_values[i] = values[i];
     ArrayVariableDiff<Integer> csa;
-    return csa.checkReplica(pm,var,int_values,max_print);
+    return csa.checkReplica(pm, var, int_values, compare_args);
   }
 }
 
 template<typename T> Integer VariableArrayT<T>::
 _checkIfSameOnAllReplica(IParallelMng* replica_pm,Integer max_print)
 {
-  return _checkIfSameOnAllReplicaHelper(replica_pm,this,constValueView(),max_print);
+  VariableComparerArgs compare_args;
+  compare_args.setMaxPrint(max_print);
+  VariableComparerResults r = _checkIfSameOnAllReplicaHelper(replica_pm, this, constValueView(), compare_args);
+  return r.nbDifference();
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 template<typename T> VariableComparerResults VariableArrayT<T>::
-_compareVariable(const VariableComparerArgs& compare_args)
+_compareVariable([[maybe_unused]] const VariableComparerArgs& compare_args)
 {
   ARCANE_FATAL("NotImplemented");
 }
