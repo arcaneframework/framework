@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* TimeLoopMng.cc                                              (C) 2000-2024 */
+/* TimeLoopMng.cc                                              (C) 2000-2025 */
 /*                                                                           */
 /* Gestionnaire de la boucle en temps.                                       */
 /*---------------------------------------------------------------------------*/
@@ -73,6 +73,7 @@
 #include "arcane/core/parallel/IStat.h"
 #include "arcane/core/IVariableSynchronizer.h"
 #include "arcane/core/IVariableSynchronizerMng.h"
+#include "arcane/core/VariableComparer.h"
 
 #include "arcane/accelerator/core/IAcceleratorMng.h"
 #include "arcane/accelerator/core/Runner.h"
@@ -661,7 +662,7 @@ _checkVerif(const String& entry_point_name,Integer index,bool do_verif)
 
   ISubDomain* sd = subDomain();
   IApplication* app = sd->application();
-
+  VariableComparer variable_comparer(traceMng());
 
   if ((m_verif_type==VerifRead || m_verif_type==VerifWrite) && !m_verifier_service.get()){
     String service_name1 = platform::getEnvironmentVariable("STDENV_VERIF_SERVICE");
@@ -691,7 +692,7 @@ _checkVerif(const String& entry_point_name,Integer index,bool do_verif)
           continue;
         if (var->isPartial())
           continue;
-        nb_error += var->checkIfSync(5);
+        nb_error += variable_comparer.checkIfSync(var, 5);
       }
       if (nb_error!=0)
         info() << "Error in synchronization nb_error=" << nb_error
@@ -768,6 +769,7 @@ _checkVerifSameOnAllReplica(const String& entry_point_name)
   IVariableMng* vm = sd->variableMng();
   VariableCollection variables(vm->usedVariables());
   VariableList vars_to_check;
+  VariableComparer variable_comparer(traceMng());
   for( VariableCollection::Enumerator i(variables); ++i; ){
     IVariable* var = *i;
     if (var->property() & IVariable::PNoReplicaSync)
@@ -787,7 +789,7 @@ _checkVerifSameOnAllReplica(const String& entry_point_name)
     FloatingPointExceptionSentry fpes(false);
     for( VariableCollection::Enumerator ivar(common_vars); ++ivar; ){
       IVariable* var = *ivar;
-      nb_error += var->checkIfSameOnAllReplica(10);
+      nb_error += variable_comparer.checkIfSameOnAllReplica(var, 10);
     }
   }
 
