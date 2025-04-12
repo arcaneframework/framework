@@ -1,32 +1,33 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* VerifierService.cc                                          (C) 2000-2022 */
+/* VerifierService.cc                                          (C) 2000-2025 */
 /*                                                                           */
 /* Classe de base du service de vérification des données.                    */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/VerifierService.h"
+#include "arcane/core/VerifierService.h"
 
 #include "arcane/utils/List.h"
 #include "arcane/utils/ITraceMng.h"
 #include "arcane/utils/OStringStream.h"
 
-#include "arcane/ServiceBuildInfo.h"
-#include "arcane/ISubDomain.h"
-#include "arcane/IVariable.h"
-#include "arcane/IParallelMng.h"
-#include "arcane/IVariableMng.h"
-#include "arcane/ArcaneException.h"
-#include "arcane/CommonVariables.h"
-#include "arcane/SerializeBuffer.h"
-#include "arcane/VariableCollection.h"
-#include "arcane/IMesh.h"
+#include "arcane/core/ServiceBuildInfo.h"
+#include "arcane/core/ISubDomain.h"
+#include "arcane/core/IVariable.h"
+#include "arcane/core/IParallelMng.h"
+#include "arcane/core/IVariableMng.h"
+#include "arcane/core/ArcaneException.h"
+#include "arcane/core/CommonVariables.h"
+#include "arcane/core/SerializeBuffer.h"
+#include "arcane/core/VariableCollection.h"
+#include "arcane/core/IMesh.h"
+#include "arcane/core/VariableComparer.h"
 
 #include <map>
 
@@ -118,7 +119,7 @@ _doVerif2(ReaderType reader,const VariableList& variables,bool compare_ghost)
   typedef std::map<String,DiffInfo> MapDiffInfos;
   typedef std::map<String,DiffInfo>::value_type MapDiffInfosValues;
   MapDiffInfos diff_infos;
-
+  VariableComparer variable_comparer(trace);
   {
     for( VariableList::Enumerator i(variables); ++i; ){
       IVariable* variable = *i;
@@ -126,7 +127,7 @@ _doVerif2(ReaderType reader,const VariableList& variables,bool compare_ghost)
       String var_name(variable->name());
       try
       {
-        nb_diff = variable->checkIfSame(reader,10,compare_ghost);
+        nb_diff = variable_comparer.checkIfSame(variable, reader, 10, compare_ghost);
         ++nb_compared;
       }
       catch(const ReaderWriterException& rw)
