@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Array2Variable.cc                                           (C) 2000-2024 */
+/* Array2Variable.cc                                           (C) 2000-2025 */
 /*                                                                           */
 /* Variable tableau 2D.                                                      */
 /*---------------------------------------------------------------------------*/
@@ -37,6 +37,7 @@
 #include "arcane/core/IParallelMng.h"
 #include "arcane/core/IDataFactoryMng.h"
 #include "arcane/core/IMesh.h"
+#include "arcane/core/VariableComparer.h"
 
 #include "arcane/core/internal/IDataInternal.h"
 #include "arcane/core/internal/IVariableMngInternal.h"
@@ -60,15 +61,18 @@ class Array2VariableDiff
 
  public:
 
-  Integer check(IVariable* var,ConstArray2View<DataType> ref,ConstArray2View<DataType> current,
-                int max_print,bool compare_ghost)
+  VariableComparerResults
+  check(IVariable* var, ConstArray2View<DataType> ref, ConstArray2View<DataType> current,
+        const VariableComparerArgs& compare_args)
   {
+    const int max_print = compare_args.maxPrint();
+    const bool compare_ghost = compare_args.isCompareGhost();
     ItemGroup group = var->itemGroup();
     if (group.null())
-      return 0;
+      return {};
     IMesh* mesh = group.mesh();
     if (!mesh)
-      return 0;
+      return {};
     ITraceMng* msg = mesh->traceMng();
     IParallelMng* pm = mesh->parallelMng();
 
@@ -85,7 +89,7 @@ class Array2VariableDiff
       return current_total_nb_element;
       }*/
     if (current_total_nb_element==0)
-      return 0;
+      return {};
     Integer ref_size1 = ref.dim1Size();
     Integer current_size1 = current.dim1Size();
     Integer ref_size2 = ref.dim2Size();
@@ -95,7 +99,7 @@ class Array2VariableDiff
                    << " bad dim2 size: ref=" << ref_size2 << " current=" << current_size2;
     }
     ENUMERATE_ITEM(i,group){
-      const Item& item = *i;
+      Item item = *i;
       if (!item.isOwn() && !compare_ghost)
         continue;
       Integer index = item.localId();
@@ -123,37 +127,40 @@ class Array2VariableDiff
     if (nb_diff!=0)
       this->_sortAndDump(var,pm,max_print);
 
-    return nb_diff;
+    return VariableComparerResults(nb_diff);
   }
 
-  Integer checkReplica(IParallelMng* pm,IVariable* var,ConstArray2View<DataType> var_values,
-                       Integer max_print)
+  VariableComparerResults
+  checkReplica(IParallelMng* pm, IVariable* var, ConstArray2View<DataType> var_values,
+               const VariableComparerArgs& compare_args)
   {
     // Appelle la bonne spécialisation pour être sur que le type template possède
     // la réduction.
     using ReduceType = typename VariableDataTypeTraitsT<DataType>::HasReduceMinMax;
     if constexpr(std::is_same<TrueType,ReduceType>::value)
-      return _checkReplica2(pm,var,var_values,max_print);
+      return _checkReplica2(pm, var, var_values, compare_args);
 
     ARCANE_UNUSED(pm);
     ARCANE_UNUSED(var);
     ARCANE_UNUSED(var_values);
-    ARCANE_UNUSED(max_print);
+    ARCANE_UNUSED(compare_args);
     throw NotSupportedException(A_FUNCINFO);
   }
 
  private:
 
-  Integer _checkReplica2(IParallelMng* pm,IVariable* var,ConstArray2View<DataType> var_values,
-                         Integer max_print)
+  VariableComparerResults
+  _checkReplica2(IParallelMng* pm, IVariable* var, ConstArray2View<DataType> var_values,
+                 const VariableComparerArgs& compare_args)
   {
+    const int max_print = compare_args.maxPrint();
     ITraceMng* msg = pm->traceMng();
     ItemGroup group = var->itemGroup();
     //TODO: traiter les variables qui ne sont pas sur des éléments du maillage.
     if (group.null())
-      return 0;
+      return {};
     GroupIndexTable * group_index_table = (var->isPartial())?group.localIdToIndex().get():0;
-    // Vérifie que tout les réplica ont le même nombre d'éléments dans chaque
+    // Vérifie que tous les réplica ont le même nombre d'éléments dans chaque
     // dimension pour la variable.
     Integer total_nb_element = var_values.totalNbElement();
     Integer ref_size1 = var_values.dim1Size();
@@ -175,16 +182,15 @@ class Array2VariableDiff
                   << " because the number of elements is not the same on all the replica "
                   << " min=" << min_dims[0] << "," << min_dims[1]
                   << " max="<< max_dims[0] << "," << max_dims[1];
-      return total_nb_element;
+      return VariableComparerResults(total_nb_element);
     }
     if (total_nb_element==0)
-      return 0;
+      return {};
     Integer nb_diff = 0;
     UniqueArray2<DataType> min_values(var_values);
     UniqueArray2<DataType> max_values(var_values);
     pm->reduce(Parallel::ReduceMax,max_values.viewAsArray());
     pm->reduce(Parallel::ReduceMin,min_values.viewAsArray());
-
 
     ENUMERATE_ITEM(i,group){
       Item item = *i;
@@ -214,7 +220,7 @@ class Array2VariableDiff
     if (nb_diff!=0)
       this->_sortAndDump(var,pm,max_print);
 
-    return nb_diff;
+    return VariableComparerResults(nb_diff);
   }
 
 };
@@ -402,16 +408,19 @@ checkIfSync(int max_print)
 
   //Integer dim2_size = value().dim2Size();
   IItemFamily* family = itemGroup().itemFamily();
+  VariableComparerResults results;
   if (family){
     UniqueArray2<T> ref_array(constValueView());
     this->synchronize(); // fonctionne pour toutes les variables
     Array2VariableDiff<T> csa;
     Array2View<T> from_array(valueView());
-    Integer nerror = csa.check(this,ref_array,from_array,max_print,true);
+    VariableComparerArgs compare_args;
+    compare_args.setMaxPrint(max_print);
+    compare_args.setCompareGhost(true);
+    results = csa.check(this, ref_array, from_array, compare_args);
     data_values.copy(ref_array);
-    return nerror;
   }
-  return 0;
+  return results.nbDifference();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -427,8 +436,13 @@ checkIfSame(IDataReader* reader,int max_print,bool compare_ghost)
   Ref< IArray2DataT<T> > ref_data(m_data->cloneTrueEmptyRef());
   reader->read(this,ref_data.get());
 
+  VariableComparerArgs compare_args;
+  compare_args.setMaxPrint(max_print);
+  compare_args.setCompareGhost(compare_ghost);
+
   Array2VariableDiff<T> csa;
-  return csa.check(this,ref_data->view(),from_array,max_print,compare_ghost);
+  VariableComparerResults r = csa.check(this, ref_data->view(), from_array, compare_args);
+  return r.nbDifference();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -438,18 +452,18 @@ checkIfSame(IDataReader* reader,int max_print,bool compare_ghost)
 // une réduction Min/Max et cela n'existe pas en MPI pour le type Byte.
 namespace
 {
-  template<typename T> Integer
-  _checkIfSameOnAllReplicaHelper(IParallelMng* pm,IVariable* var,
-                                 ConstArray2View<T> values,Integer max_print)
+  template <typename T> VariableComparerResults
+  _checkIfSameOnAllReplicaHelper(IParallelMng* pm, IVariable* var, ConstArray2View<T> values,
+                                 const VariableComparerArgs& compare_args)
   {
     Array2VariableDiff<T> csa;
-    return csa.checkReplica(pm,var,values,max_print);
+    return csa.checkReplica(pm, var, values, compare_args);
   }
 
   // Spécialisation pour le type 'Byte' qui ne supporte pas les réductions.
-  Integer
-  _checkIfSameOnAllReplicaHelper(IParallelMng* pm,IVariable* var,
-                                 ConstArray2View<Byte> values,Integer max_print)
+  VariableComparerResults
+  _checkIfSameOnAllReplicaHelper(IParallelMng* pm, IVariable* var, ConstArray2View<Byte> values,
+                                 const VariableComparerArgs& compare_args)
   {
     Integer dim1_size = values.dim1Size();
     Integer dim2_size = values.dim2Size();
@@ -458,7 +472,7 @@ namespace
       for( Integer j=0; j<dim2_size; ++j )
         int_values[i][j] = values[i][j];
     Array2VariableDiff<Integer> csa;
-    return csa.checkReplica(pm,var,int_values,max_print);
+    return csa.checkReplica(pm, var, int_values, compare_args);
   }
 }
 
@@ -468,7 +482,19 @@ namespace
 template<typename T> Integer Array2VariableT<T>::
 _checkIfSameOnAllReplica(IParallelMng* replica_pm,Integer max_print)
 {
-  return _checkIfSameOnAllReplicaHelper(replica_pm,this,constValueView(),max_print);
+  VariableComparerArgs compare_args;
+  compare_args.setMaxPrint(max_print);
+  VariableComparerResults r = _checkIfSameOnAllReplicaHelper(replica_pm, this, constValueView(), compare_args);
+  return r.nbDifference();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<typename T> VariableComparerResults Array2VariableT<T>::
+_compareVariable([[maybe_unused]] const VariableComparerArgs& compare_args)
+{
+  ARCANE_FATAL("NotImplemented");
 }
 
 /*---------------------------------------------------------------------------*/

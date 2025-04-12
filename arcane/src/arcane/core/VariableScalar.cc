@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* VariableScalar.cc                                           (C) 2000-2024 */
+/* VariableScalar.cc                                           (C) 2000-2025 */
 /*                                                                           */
 /* Variable scalaire.                                                        */
 /*---------------------------------------------------------------------------*/
@@ -32,6 +32,7 @@
 #include "arcane/core/IDataFactoryMng.h"
 #include "arcane/core/IParallelMng.h"
 #include "arcane/core/IMesh.h"
+#include "arcane/core/VariableComparer.h"
 #include "arcane/core/internal/IVariableMngInternal.h"
 
 #include "arcane/core/datatype/DataStorageBuildInfo.h"
@@ -56,20 +57,22 @@ class ScalarVariableDiff
   //TODO: a simplifier car recopie de ArrayVariableDiff
   // mais pour les variables scalaires il n'y a qu'une valeur et aucun groupe
   // associé.
-  Integer
+  VariableComparerResults
   check(IVariable* var,ConstArrayView<DataType> ref,ConstArrayView<DataType> current,
-        int max_print,bool compare_ghost)
+        const VariableComparerArgs& compare_args)
   {
+    const int max_print = compare_args.maxPrint();
+    const bool compare_ghost = compare_args.isCompareGhost();
     ItemGroup group = var->itemGroup();
     if (group.null())
-      return 0;
+      return {};
     IMesh* mesh = group.mesh();
     if (!mesh)
-      return 0;
+      return {};
     ITraceMng* msg = mesh->traceMng();
     IParallelMng* pm = mesh->parallelMng();
 
-    GroupIndexTable * group_index_table = (var->isPartial())?group.localIdToIndex().get():0;
+    GroupIndexTable* group_index_table = (var->isPartial()) ? group.localIdToIndex().get() : nullptr;
 
     int nb_diff = 0;
     bool compare_failed = false;
@@ -110,12 +113,14 @@ class ScalarVariableDiff
     if (nb_diff!=0)
       this->_sortAndDump(var,pm,max_print);
 
-    return nb_diff;
+    return VariableComparerResults(nb_diff);
   }
 
-  Integer checkReplica(IParallelMng* pm,IVariable* var,const DataType& var_value,
-                       Integer max_print)
+  VariableComparerResults
+  checkReplica(IParallelMng* pm, IVariable* var, const DataType& var_value,
+               const VariableComparerArgs& compare_args)
   {
+    const int max_print = compare_args.maxPrint();
     // Appelle la bonne spécialisation pour être sur que le type template possède
     // la réduction.
     using ReduceType = typename VariableDataTypeTraitsT<DataType>::HasReduceMinMax;
@@ -130,11 +135,12 @@ class ScalarVariableDiff
 
  private:
 
-  Integer _checkReplica2(IParallelMng* pm,const DataType& var_value)
+  VariableComparerResults
+  _checkReplica2(IParallelMng* pm, const DataType& var_value)
   {
     Int32 nb_rank = pm->commSize();
     if (nb_rank==1)
-      return 0;
+      return {};
 
     DataType max_value = pm->reduce(Parallel::ReduceMax,var_value);
     DataType min_value = pm->reduce(Parallel::ReduceMin,var_value);
@@ -145,7 +151,7 @@ class ScalarVariableDiff
       this->m_diffs_info.add(DiffInfo(min_value,max_value,diff,0,NULL_ITEM_ID));
       ++nb_diff;
     }
-    return nb_diff;
+    return VariableComparerResults(nb_diff);
   }
 
 };
@@ -218,7 +224,11 @@ checkIfSame(IDataReader* reader,int max_print,bool compare_ghost)
   ConstArrayView<T> from_array(1,&from);
   ConstArrayView<T> ref_array(1,&ref);
   ScalarVariableDiff<T> csa;
-  return csa.check(this,ref_array,from_array,max_print,compare_ghost);
+  VariableComparerArgs compare_args;
+  compare_args.setMaxPrint(max_print);
+  compare_args.setCompareGhost(compare_ghost);
+  VariableComparerResults r = csa.check(this, ref_array, from_array, compare_args);
+  return r.nbDifference();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -228,22 +238,22 @@ checkIfSame(IDataReader* reader,int max_print,bool compare_ghost)
 // une réduction Min/Max et cela n'existe pas en MPI pour le type Byte.
 namespace
 {
-  template<typename T> Integer
-  _checkIfSameOnAllReplicaHelper(IParallelMng* pm,IVariable* var,
-                                 const T& value,Integer max_print)
+  template <typename T> VariableComparerResults
+  _checkIfSameOnAllReplicaHelper(IParallelMng* pm, IVariable* var, const T& value,
+                                 const VariableComparerArgs& compare_args)
   {
     ScalarVariableDiff<T> csa;
-    return csa.checkReplica(pm,var,value,max_print);
+    return csa.checkReplica(pm, var, value, compare_args);
   }
 
   // Spécialisation pour le type 'Byte' qui ne supporte pas les réductions.
-  Integer
-  _checkIfSameOnAllReplicaHelper(IParallelMng* pm,IVariable* var,
-                                 const Byte& value,Integer max_print)
+  VariableComparerResults
+  _checkIfSameOnAllReplicaHelper(IParallelMng* pm, IVariable* var, const Byte& value,
+                                 const VariableComparerArgs& compare_args)
   {
     Integer int_value = value;
     ScalarVariableDiff<Integer> csa;
-    return csa.checkReplica(pm,var,int_value,max_print);
+    return csa.checkReplica(pm, var, int_value, compare_args);
   }
 }
 
@@ -253,7 +263,19 @@ namespace
 template<typename T> Integer VariableScalarT<T>::
 _checkIfSameOnAllReplica(IParallelMng* replica_pm,Integer max_print)
 {
-  return _checkIfSameOnAllReplicaHelper(replica_pm,this,value(),max_print);
+  VariableComparerArgs compare_args;
+  compare_args.setMaxPrint(max_print);
+  VariableComparerResults r = _checkIfSameOnAllReplicaHelper(replica_pm, this, value(), compare_args);
+  return r.nbDifference();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<typename T> VariableComparerResults VariableScalarT<T>::
+_compareVariable([[maybe_unused]] const VariableComparerArgs& compare_args)
+{
+  ARCANE_FATAL("NotImplemented");
 }
 
 /*---------------------------------------------------------------------------*/

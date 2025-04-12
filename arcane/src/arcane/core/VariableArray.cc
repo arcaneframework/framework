@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* VariableArray.cc                                            (C) 2000-2024 */
+/* VariableArray.cc                                            (C) 2000-2025 */
 /*                                                                           */
 /* Variable tableau 1D.                                                      */
 /*---------------------------------------------------------------------------*/
@@ -31,6 +31,7 @@
 #include "arcane/core/IDataFactoryMng.h"
 #include "arcane/core/IParallelMng.h"
 #include "arcane/core/IMesh.h"
+#include "arcane/core/VariableComparer.h"
 
 #include "arcane/core/datatype/DataTracer.h"
 #include "arcane/core/datatype/DataTypeTraits.h"
@@ -56,91 +57,133 @@ template<class DataType>
 class ArrayVariableDiff
 : public VariableDiff<DataType>
 {
-  typedef VariableDataTypeTraitsT<DataType> VarDataTypeTraits;
-  typedef typename VariableDiff<DataType>::DiffInfo DiffInfo;
+  using VarDataTypeTraits = VariableDataTypeTraitsT<DataType>;
+  using DiffInfo = typename VariableDiff<DataType>::DiffInfo;
+  static constexpr bool IsNumeric = std::is_same_v<typename VarDataTypeTraits::IsNumeric, TrueType>;
+  using NormType = typename VarDataTypeTraits::NormType;
 
  public:
 
-  Integer
-  check(IVariable* var,ConstArrayView<DataType> ref,ConstArrayView<DataType> current,
-        int max_print,bool compare_ghost)
+  VariableComparerResults
+  check(IVariable* var, ConstArrayView<DataType> ref, ConstArrayView<DataType> current,
+        const VariableComparerArgs& compare_args)
   {
-    if (var->itemKind()==IK_Unknown)
-      return _checkAsArray(var,ref,current,max_print);
+    const int max_print = compare_args.maxPrint();
+    const bool compare_ghost = compare_args.isCompareGhost();
+    if (var->itemKind() == IK_Unknown)
+      return _checkAsArray(var, ref, current, compare_args);
 
     ItemGroup group = var->itemGroup();
     if (group.null())
-      return 0;
+      return {};
     IMesh* mesh = group.mesh();
     if (!mesh)
-      return 0;
+      return {};
     ITraceMng* msg = mesh->traceMng();
     IParallelMng* pm = mesh->parallelMng();
 
-    GroupIndexTable * group_index_table = (var->isPartial())?group.localIdToIndex().get():0;
+    GroupIndexTable* group_index_table = (var->isPartial()) ? group.localIdToIndex().get() : nullptr;
 
     int nb_diff = 0;
     bool compare_failed = false;
+    VariableComparerArgs::eComputeDifferenceMethod diff_method = compare_args.computeDifferenceMethod();
+    // Pas de norme max si le type n'est pas numérique.
+    if (!IsNumeric)
+      diff_method = VariableComparerArgs::eComputeDifferenceMethod::Relative;
+
     Integer ref_size = ref.size();
-    ENUMERATE_ITEM(i,group){
+    NormType local_norm_max = {};
+
+    if constexpr (IsNumeric) {
+      bool is_use_local_norm = diff_method == VariableComparerArgs::eComputeDifferenceMethod::LocalNormMax;
+      if (is_use_local_norm) {
+        // Gros copier-coller pour calculer la norme globale
+        ENUMERATE_ITEM (i, group) {
+          Item item = *i;
+          if (!item.isOwn() && !compare_ghost)
+            continue;
+          Integer index = item.localId();
+          if (group_index_table) {
+            index = (*group_index_table)[index];
+            if (index < 0)
+              continue;
+          }
+          if (index >= ref_size) {
+            continue;
+          }
+          else {
+            DataType dref = ref[index];
+            NormType norm_max = VarDataTypeTraits::normeMax(dref);
+            if (norm_max > local_norm_max) {
+              local_norm_max = norm_max;
+            }
+          }
+        }
+      }
+    }
+    // On calcule les erreurs normalisées
+    ENUMERATE_ITEM (i, group) {
       Item item = *i;
       if (!item.isOwn() && !compare_ghost)
         continue;
       Integer index = item.localId();
-      if (group_index_table){
+      if (group_index_table) {
         index = (*group_index_table)[index];
-        if (index<0)
+        if (index < 0)
           continue;
-      }        
+      }
       DataType diff = DataType();
-      if (index>=ref_size){
+      if (index >= ref_size) {
         ++nb_diff;
         compare_failed = true;
       }
-      else{
+      else {
         DataType dref = ref[index];
         DataType dcurrent = current[index];
-        if (VarDataTypeTraits::verifDifferent(dref,dcurrent,diff,true)){
-          this->m_diffs_info.add(DiffInfo(dcurrent,dref,diff,item,NULL_ITEM_ID));
+        bool is_diff = _computeDifference(dref, dcurrent, diff, local_norm_max, diff_method);
+        if (is_diff) {
+          this->m_diffs_info.add(DiffInfo(dcurrent, dref, diff, item, NULL_ITEM_ID));
           ++nb_diff;
         }
       }
     }
-    if (compare_failed){
+    if (compare_failed) {
       Int32 sid = pm->commRank();
       const String& var_name = var->name();
       msg->pinfo() << "Processor " << sid << " : "
                    << "comparison impossible because the number of the elements is different "
                    << " for the variable " << var_name << " ref_size=" << ref_size;
-        
     }
-    if (nb_diff!=0)
-      this->_sortAndDump(var,pm,max_print);
+    if (nb_diff != 0)
+      this->_sortAndDump(var, pm, max_print);
 
-    return nb_diff;
+    return VariableComparerResults(nb_diff);
   }
 
-  Integer checkReplica(IParallelMng* pm,IVariable* var,ConstArrayView<DataType> var_value,
-                       Integer max_print)
+  VariableComparerResults
+  checkReplica(IParallelMng* pm, IVariable* var, ConstArrayView<DataType> var_value,
+               const VariableComparerArgs& compare_args)
   {
-    // Appelle la bonne spécialisation pour être sur que le type template possède
+    // Appelle la bonne spécialisation pour être certain que le type template possède
     // la réduction.
     using ReduceType = typename VariableDataTypeTraitsT<DataType>::HasReduceMinMax;
     if constexpr(std::is_same<TrueType,ReduceType>::value)
-      return _checkReplica2(pm,var,var_value,max_print);
+      return _checkReplica2(pm, var, var_value, compare_args);
 
     ARCANE_UNUSED(pm);
     ARCANE_UNUSED(var);
     ARCANE_UNUSED(var_value);
-    ARCANE_UNUSED(max_print);
+    ARCANE_UNUSED(compare_args);
     throw NotSupportedException(A_FUNCINFO);
   }
 
  private:
-  
-  Integer _checkAsArray(IVariable* var,ConstArrayView<DataType> ref,
-                        ConstArrayView<DataType> current,int max_print)
+
+  VariableComparerResults
+  _checkAsArray(IVariable* var, ConstArrayView<DataType> ref, ConstArrayView<DataType> current,
+                const VariableComparerArgs& compare_args)
   {
+    const int max_print = compare_args.maxPrint();
     IParallelMng* pm = var->variableMng()->parallelMng();
     ITraceMng* msg = pm->traceMng();
 
@@ -148,6 +191,31 @@ class ArrayVariableDiff
     bool compare_failed = false;
     Integer ref_size = ref.size();
     Integer current_size = current.size();
+    VariableComparerArgs::eComputeDifferenceMethod diff_method = compare_args.computeDifferenceMethod();
+    // Pas de norme max si le type n'est pas numérique.
+    if (!IsNumeric)
+      diff_method = VariableComparerArgs::eComputeDifferenceMethod::Relative;
+    NormType local_norm_max = {};
+
+    if constexpr (IsNumeric) {
+      bool is_use_local_norm = compare_args.computeDifferenceMethod() == VariableComparerArgs::eComputeDifferenceMethod::LocalNormMax;
+      if (is_use_local_norm) {
+        // Gros copier-coller pour calculer la norme globale
+        for (Integer index = 0; index < current_size; ++index) {
+          if (index >= ref_size) {
+            continue;
+          }
+          else {
+            DataType dref = ref[index];
+            typename VarDataTypeTraits::NormType norm_max = VarDataTypeTraits::normeMax(dref);
+            if (norm_max > local_norm_max) {
+              local_norm_max = norm_max;
+            }
+          }
+        }
+      }
+    }
+    // On calcule les erreurs normalisées
     for( Integer index=0; index<current_size; ++index ){
       DataType diff = DataType();
       if (index>=ref_size){
@@ -157,7 +225,7 @@ class ArrayVariableDiff
       else{
         DataType dref = ref[index];
         DataType dcurrent = current[index];
-        if (VarDataTypeTraits::verifDifferent(dref,dcurrent,diff,true)){
+        if (_computeDifference(dref, dcurrent, diff, local_norm_max, diff_method)) {
           this->m_diffs_info.add(DiffInfo(dcurrent,dref,diff,index,NULL_ITEM_ID));
           ++nb_diff;
         }
@@ -174,15 +242,17 @@ class ArrayVariableDiff
     if (nb_diff!=0)
       this->_sortAndDump(var,pm,max_print);
 
-    return nb_diff;
+    return VariableComparerResults(nb_diff);
   }
 
-  Integer _checkReplica2(IParallelMng* pm,IVariable* var,ConstArrayView<DataType> var_values,
-                         Integer max_print)
+  VariableComparerResults
+  _checkReplica2(IParallelMng* pm, IVariable* var, ConstArrayView<DataType> var_values,
+                 const VariableComparerArgs& compare_args)
   {
+    const int max_print = compare_args.maxPrint();
     ITraceMng* msg = pm->traceMng();
     Integer size = var_values.size();
-    // Vérifie que tout les réplica ont le même nombre d'éléments pour la variable.
+    // Vérifie que tous les réplica ont le même nombre d'éléments pour la variable.
     Integer max_size = pm->reduce(Parallel::ReduceMax,size);
     Integer min_size = pm->reduce(Parallel::ReduceMin,size);
     msg->info(5) << "CheckReplica2 rep_size=" << pm->commSize() << " rank=" << pm->commRank();
@@ -191,7 +261,7 @@ class ArrayVariableDiff
       msg->info() << "Can not compare values on replica for variable '" << var_name << "'"
                   << " because the number of elements is not the same on all the replica "
                   << " min=" << min_size << " max="<< max_size;
-      return max_size;
+      return VariableComparerResults(max_size);
     }
     Integer nb_diff = 0;
     UniqueArray<DataType> min_values(var_values);
@@ -211,7 +281,22 @@ class ArrayVariableDiff
     if (nb_diff!=0)
       this->_sortAndDump(var,pm,max_print);
 
-    return nb_diff;
+    return VariableComparerResults(nb_diff);
+  }
+  bool _computeDifference(const DataType& dref, const DataType& dcurrent, DataType& diff,
+                          const NormType& local_norm_max,
+                          VariableComparerArgs::eComputeDifferenceMethod diff_method)
+  {
+    bool is_diff = false;
+    switch (diff_method) {
+    case VariableComparerArgs::eComputeDifferenceMethod::Relative:
+      is_diff = VarDataTypeTraits::verifDifferent(dref, dcurrent, diff, true);
+      break;
+    case VariableComparerArgs::eComputeDifferenceMethod::LocalNormMax:
+      is_diff = VarDataTypeTraits::verifDifferentNorm(dref, dcurrent, diff, local_norm_max, true);
+      break;
+    }
+    return is_diff;
   }
 };
 
@@ -345,6 +430,7 @@ allocatedMemory() const
 template<typename T> Integer VariableArrayT<T>::
 checkIfSync(int max_print)
 {
+  VariableComparerResults results;
   IItemFamily* family = itemGroup().itemFamily();
   if (family){
     ValueType& data_values = m_value->_internal()->_internalDeprecatedValue();
@@ -352,11 +438,13 @@ checkIfSync(int max_print)
     this->synchronize(); // fonctionne pour toutes les variables
     ArrayVariableDiff<T> csa;
     ConstArrayView<T> from_array(constValueView());
-    Integer nerror = csa.check(this,ref_array,from_array,max_print,true);
+    VariableComparerArgs compare_args;
+    compare_args.setMaxPrint(max_print);
+    compare_args.setCompareGhost(true);
+    results = csa.check(this, ref_array, from_array, compare_args);
     data_values.copy(ref_array);
-    return nerror;
   }
-  return 0;
+  return results.nbDifference();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -373,7 +461,11 @@ checkIfSame(IDataReader* reader,Integer max_print,bool compare_ghost)
   reader->read(this,ref_data.get());
 
   ArrayVariableDiff<T> csa;
-  return csa.check(this,ref_data->view(),from_array,max_print,compare_ghost);
+  VariableComparerArgs compare_args;
+  compare_args.setMaxPrint(max_print);
+  compare_args.setCompareGhost(compare_ghost);
+  VariableComparerResults r = csa.check(this, ref_data->view(), from_array, compare_args);
+  return r.nbDifference();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -383,32 +475,44 @@ checkIfSame(IDataReader* reader,Integer max_print,bool compare_ghost)
 // une réduction Min/Max et cela n'existe pas en MPI pour le type Byte.
 namespace
 {
-  template<typename T> Integer
-  _checkIfSameOnAllReplicaHelper(IParallelMng* pm,IVariable* var,
-                                 ConstArrayView<T> values,Integer max_print)
+  template <typename T> VariableComparerResults
+  _checkIfSameOnAllReplicaHelper(IParallelMng* pm, IVariable* var, ConstArrayView<T> values,
+                                 const VariableComparerArgs& compare_args)
   {
     ArrayVariableDiff<T> csa;
-    return csa.checkReplica(pm,var,values,max_print);
+    return csa.checkReplica(pm, var, values, compare_args);
   }
 
   // Spécialisation pour le type 'Byte' qui ne supporte pas les réductions.
-  Integer
+  VariableComparerResults
   _checkIfSameOnAllReplicaHelper(IParallelMng* pm,IVariable* var,
-                                 ConstArrayView<Byte> values,Integer max_print)
+                                 ConstArrayView<Byte> values, const VariableComparerArgs& compare_args)
   {
     Integer size = values.size();
     UniqueArray<Integer> int_values(size);
     for( Integer i=0; i<size; ++i )
       int_values[i] = values[i];
     ArrayVariableDiff<Integer> csa;
-    return csa.checkReplica(pm,var,int_values,max_print);
+    return csa.checkReplica(pm, var, int_values, compare_args);
   }
 }
 
 template<typename T> Integer VariableArrayT<T>::
 _checkIfSameOnAllReplica(IParallelMng* replica_pm,Integer max_print)
 {
-  return _checkIfSameOnAllReplicaHelper(replica_pm,this,constValueView(),max_print);
+  VariableComparerArgs compare_args;
+  compare_args.setMaxPrint(max_print);
+  VariableComparerResults r = _checkIfSameOnAllReplicaHelper(replica_pm, this, constValueView(), compare_args);
+  return r.nbDifference();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<typename T> VariableComparerResults VariableArrayT<T>::
+_compareVariable([[maybe_unused]] const VariableComparerArgs& compare_args)
+{
+  ARCANE_FATAL("NotImplemented");
 }
 
 /*---------------------------------------------------------------------------*/
