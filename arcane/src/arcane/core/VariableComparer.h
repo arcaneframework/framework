@@ -44,6 +44,19 @@ class ARCANE_CORE_EXPORT VariableComparerArgs
     SameReplica = 2
   };
 
+  //! Méthode utilisée pour calculer la différence entre deux valeurs \a v1 et \a v2.
+  enum class eComputeDifferenceMethod
+  {
+    //! Utilise (v1-v2) / v1
+    Relative,
+    /*!
+     * \brief Utilise (v1-v2) / local_norm_max.
+     *
+     * \a local_norm_max est le maximum des math::abs() des valeurs sur le sous-domaine.
+     */
+    LocalNormMax,
+  };
+
  public:
 
   void setMaxPrint(Int32 v) { m_max_print = v; }
@@ -58,12 +71,16 @@ class ARCANE_CORE_EXPORT VariableComparerArgs
   void setCompareMode(eCompareMode v) { m_compare_mode = v; }
   eCompareMode compareMode() const { return m_compare_mode; }
 
+  void setComputeDifferenceMethod(eComputeDifferenceMethod v) { m_compute_difference_method = v; }
+  eComputeDifferenceMethod computeDifferenceMethod() const { return m_compute_difference_method; }
+
  private:
 
   Int32 m_max_print = 0;
   bool m_is_compare_ghost = false;
   IDataReader* m_data_reader = nullptr;
   eCompareMode m_compare_mode = eCompareMode::Same;
+  eComputeDifferenceMethod m_compute_difference_method = eComputeDifferenceMethod::Relative;
 };
 
 /*---------------------------------------------------------------------------*/
