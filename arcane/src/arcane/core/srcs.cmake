@@ -639,6 +639,8 @@ set(ARCANE_ORIGINAL_SOURCES
   VariableAccessor.h
   VariableBuildInfo.cc
   VariableCollection.cc
+  VariableComparer.h
+  VariableComparer.cc
   VariableComputeFunction.h
   VariableDataTypeTraits.h
   VariableDependInfo.cc
