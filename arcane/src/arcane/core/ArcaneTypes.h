@@ -157,6 +157,11 @@ class IItemConnectivityMng;
 class Properties;
 class IItemFamilyTopologyModifier;
 class IItemFamilyPolicyMng;
+class IDataReader;
+class IDataWriter;
+class VariableComparer;
+class VariableComparerArgs;
+class VariableComparerResults;
 enum class eMeshStructure;
 enum class eMeshAMRKind;
 

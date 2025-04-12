@@ -1,16 +1,16 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Array2Variable.h                                            (C) 2000-2024 */
+/* Array2Variable.h                                            (C) 2000-2025 */
 /*                                                                           */
 /* Variable tableau 2D.                                                      */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_ARRAY2VARIABLE_H
-#define ARCANE_ARRAY2VARIABLE_H
+#ifndef ARCANE_CORE_ARRAY2VARIABLE_H
+#define ARCANE_CORE_ARRAY2VARIABLE_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -89,6 +89,7 @@ class Array2VariableT
   
   void _internalResize(const VariableResizeArgs& resize_args) override;
   Integer _checkIfSameOnAllReplica(IParallelMng* replica_pm,int max_print) override;
+  VariableComparerResults _compareVariable(const VariableComparerArgs& compare_args) final;
 
  private:
 

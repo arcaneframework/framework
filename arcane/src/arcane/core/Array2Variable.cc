@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Array2Variable.cc                                           (C) 2000-2024 */
+/* Array2Variable.cc                                           (C) 2000-2025 */
 /*                                                                           */
 /* Variable tableau 2D.                                                      */
 /*---------------------------------------------------------------------------*/
@@ -37,6 +37,7 @@
 #include "arcane/core/IParallelMng.h"
 #include "arcane/core/IDataFactoryMng.h"
 #include "arcane/core/IMesh.h"
+#include "arcane/core/VariableComparer.h"
 
 #include "arcane/core/internal/IDataInternal.h"
 #include "arcane/core/internal/IVariableMngInternal.h"
@@ -469,6 +470,15 @@ template<typename T> Integer Array2VariableT<T>::
 _checkIfSameOnAllReplica(IParallelMng* replica_pm,Integer max_print)
 {
   return _checkIfSameOnAllReplicaHelper(replica_pm,this,constValueView(),max_print);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<typename T> VariableComparerResults Array2VariableT<T>::
+_compareVariable(const VariableComparerArgs& compare_args)
+{
+  ARCANE_FATAL("NotImplemented");
 }
 
 /*---------------------------------------------------------------------------*/

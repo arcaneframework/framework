@@ -23,11 +23,71 @@
 
 namespace Arcane
 {
-class IDataReader;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+/*!
+ * \brief Arguments des méthodes de VariableComparer.
+ */
+class ARCANE_CORE_EXPORT VariableComparerArgs
+{
+ public:
 
+  //! Méthode de comparaison
+  enum class eCompareMode
+  {
+    //! Compare avec une référence
+    Same = 0,
+    //! Vérifie que la variable est bien synchronisée
+    Sync = 1,
+    //! Vérifie que les valeurs de la variable sont les même sur tous les replica
+    SameReplica = 2
+  };
+
+ public:
+
+  void setMaxPrint(Int32 v) { m_max_print = v; }
+  Int32 maxPrint() const { return m_max_print; }
+
+  void setCompareGhost(bool v) { m_is_compare_ghost = v; }
+  bool isCompareGhost() const { return m_is_compare_ghost; }
+
+  void setDataReader(IDataReader* v) { m_data_reader = v; }
+  IDataReader* dataReader() const { return m_data_reader; }
+
+  void setCompareMode(eCompareMode v) { m_compare_mode = v; }
+  eCompareMode compareMode() const { return m_compare_mode; }
+
+ private:
+
+  Int32 m_max_print = 0;
+  bool m_is_compare_ghost = false;
+  IDataReader* m_data_reader = nullptr;
+  eCompareMode m_compare_mode = eCompareMode::Same;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Résultats d'une opération de comparaison.
+ */
+class ARCANE_CORE_EXPORT VariableComparerResults
+{
+ public:
+
+  void setNbDifference(Int32 v) { m_nb_diff = v; }
+  Int32 nbDifference() const { return m_nb_diff; }
+
+ public:
+
+  Int32 m_nb_diff = 0;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Classe pour effectuer des comparaisons entre les variables.
+ */
 class ARCANE_CORE_EXPORT VariableComparer
 : public TraceAccessor
 {
@@ -54,7 +114,7 @@ class ARCANE_CORE_EXPORT VariableComparer
    *
    * \return le nombre de valeurs différentes de la référence
    */
-  Int32 checkIfSync(IVariable* var, Int32 max_print = 0);
+  Int32 checkIfSync(IVariable* var, Int32 max_print);
 
   /*!
    * \brief Vérifie que la variable \a var est identique à une valeur de référence
@@ -97,7 +157,7 @@ class ARCANE_CORE_EXPORT VariableComparer
    *
    * \return le nombre de valeurs différentes de la référence.
    */
-  Int32 checkIfSameOnAllReplica(IVariable* var, Integer max_print = 0);
+  Int32 checkIfSameOnAllReplica(IVariable* var, Integer max_print);
 };
 
 /*---------------------------------------------------------------------------*/

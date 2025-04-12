@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* VariableScalar.cc                                           (C) 2000-2024 */
+/* VariableScalar.cc                                           (C) 2000-2025 */
 /*                                                                           */
 /* Variable scalaire.                                                        */
 /*---------------------------------------------------------------------------*/
@@ -32,6 +32,7 @@
 #include "arcane/core/IDataFactoryMng.h"
 #include "arcane/core/IParallelMng.h"
 #include "arcane/core/IMesh.h"
+#include "arcane/core/VariableComparer.h"
 #include "arcane/core/internal/IVariableMngInternal.h"
 
 #include "arcane/core/datatype/DataStorageBuildInfo.h"
@@ -254,6 +255,15 @@ template<typename T> Integer VariableScalarT<T>::
 _checkIfSameOnAllReplica(IParallelMng* replica_pm,Integer max_print)
 {
   return _checkIfSameOnAllReplicaHelper(replica_pm,this,value(),max_print);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<typename T> VariableComparerResults VariableScalarT<T>::
+_compareVariable(const VariableComparerArgs& compare_args)
+{
+  ARCANE_FATAL("NotImplemented");
 }
 
 /*---------------------------------------------------------------------------*/
