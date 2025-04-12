@@ -57,8 +57,10 @@ template<class DataType>
 class ArrayVariableDiff
 : public VariableDiff<DataType>
 {
-  typedef VariableDataTypeTraitsT<DataType> VarDataTypeTraits;
-  typedef typename VariableDiff<DataType>::DiffInfo DiffInfo;
+  using VarDataTypeTraits = VariableDataTypeTraitsT<DataType>;
+  using DiffInfo = typename VariableDiff<DataType>::DiffInfo;
+  static constexpr bool IsNumeric = std::is_same_v<typename VarDataTypeTraits::IsNumeric, TrueType>;
+  using NormType = typename VarDataTypeTraits::NormType;
 
  public:
 
@@ -68,7 +70,7 @@ class ArrayVariableDiff
   {
     const int max_print = compare_args.maxPrint();
     const bool compare_ghost = compare_args.isCompareGhost();
-    if (var->itemKind()==IK_Unknown)
+    if (var->itemKind() == IK_Unknown)
       return _checkAsArray(var, ref, current, compare_args);
 
     ItemGroup group = var->itemGroup();
@@ -82,69 +84,78 @@ class ArrayVariableDiff
 
     GroupIndexTable* group_index_table = (var->isPartial()) ? group.localIdToIndex().get() : nullptr;
 
-    int nb_diff = {};
+    int nb_diff = 0;
     bool compare_failed = false;
-    Integer ref_size = ref.size();
-    typename VarDataTypeTraits::NormType local_norm_max = VarDataTypeTraits::norm_max_ini;
+    VariableComparerArgs::eComputeDifferenceMethod diff_method = compare_args.computeDifferenceMethod();
+    // Pas de norme max si le type n'est pas numérique.
+    if (!IsNumeric)
+      diff_method = VariableComparerArgs::eComputeDifferenceMethod::Relative;
 
-    // Gros copier-coller pour calculer la norme globale
-    ENUMERATE_ITEM(i,group){
-      Item item = *i;
-      if (!item.isOwn() && !compare_ghost)
-        continue;
-      Integer index = item.localId();
-      if (group_index_table){
-        index = (*group_index_table)[index];
-        if (index<0)
-          continue;
-      }        
-      if (index>=ref_size){
-        continue;
-      }
-      else{
-        DataType dref = ref[index];
-        typename VarDataTypeTraits::NormType norm_max = VarDataTypeTraits::normeMax(dref);
-        if (norm_max>local_norm_max) {
-          local_norm_max=norm_max;
+    Integer ref_size = ref.size();
+    NormType local_norm_max = {};
+
+    if constexpr (IsNumeric) {
+      bool is_use_local_norm = diff_method == VariableComparerArgs::eComputeDifferenceMethod::LocalNormMax;
+      if (is_use_local_norm) {
+        // Gros copier-coller pour calculer la norme globale
+        ENUMERATE_ITEM (i, group) {
+          Item item = *i;
+          if (!item.isOwn() && !compare_ghost)
+            continue;
+          Integer index = item.localId();
+          if (group_index_table) {
+            index = (*group_index_table)[index];
+            if (index < 0)
+              continue;
+          }
+          if (index >= ref_size) {
+            continue;
+          }
+          else {
+            DataType dref = ref[index];
+            NormType norm_max = VarDataTypeTraits::normeMax(dref);
+            if (norm_max > local_norm_max) {
+              local_norm_max = norm_max;
+            }
+          }
         }
       }
     }
-
     // On calcule les erreurs normalisées
-    ENUMERATE_ITEM(i,group){
+    ENUMERATE_ITEM (i, group) {
       Item item = *i;
       if (!item.isOwn() && !compare_ghost)
         continue;
       Integer index = item.localId();
-      if (group_index_table){
+      if (group_index_table) {
         index = (*group_index_table)[index];
-        if (index<0)
+        if (index < 0)
           continue;
-      }        
+      }
       DataType diff = DataType();
-      if (index>=ref_size){
+      if (index >= ref_size) {
         ++nb_diff;
         compare_failed = true;
       }
-      else{
+      else {
         DataType dref = ref[index];
         DataType dcurrent = current[index];
-        if (VarDataTypeTraits::verifDifferentNorm(dref,dcurrent,diff, local_norm_max, true)){
-          this->m_diffs_info.add(DiffInfo(dcurrent,dref,diff,item,NULL_ITEM_ID));
+        bool is_diff = _computeDifference(dref, dcurrent, diff, local_norm_max, diff_method);
+        if (is_diff) {
+          this->m_diffs_info.add(DiffInfo(dcurrent, dref, diff, item, NULL_ITEM_ID));
           ++nb_diff;
         }
       }
     }
-    if (compare_failed){
+    if (compare_failed) {
       Int32 sid = pm->commRank();
       const String& var_name = var->name();
       msg->pinfo() << "Processor " << sid << " : "
                    << "comparison impossible because the number of the elements is different "
                    << " for the variable " << var_name << " ref_size=" << ref_size;
-        
     }
-    if (nb_diff!=0)
-      this->_sortAndDump(var,pm,max_print);
+    if (nb_diff != 0)
+      this->_sortAndDump(var, pm, max_print);
 
     return VariableComparerResults(nb_diff);
   }
@@ -180,22 +191,30 @@ class ArrayVariableDiff
     bool compare_failed = false;
     Integer ref_size = ref.size();
     Integer current_size = current.size();
-    typename VarDataTypeTraits::NormType local_norm_max = VarDataTypeTraits::norm_max_ini;
+    VariableComparerArgs::eComputeDifferenceMethod diff_method = compare_args.computeDifferenceMethod();
+    // Pas de norme max si le type n'est pas numérique.
+    if (!IsNumeric)
+      diff_method = VariableComparerArgs::eComputeDifferenceMethod::Relative;
+    NormType local_norm_max = {};
 
-    // Gros copier-coller pour calculer la norme globale
-    for( Integer index=0; index<current_size; ++index ){
-      if (index>=ref_size){
-        continue;
-      }
-      else{
-        DataType dref = ref[index];
-        typename VarDataTypeTraits::NormType norm_max = VarDataTypeTraits::normeMax(dref);
-        if (norm_max>local_norm_max) {
-          local_norm_max=norm_max;
+    if constexpr (IsNumeric) {
+      bool is_use_local_norm = compare_args.computeDifferenceMethod() == VariableComparerArgs::eComputeDifferenceMethod::LocalNormMax;
+      if (is_use_local_norm) {
+        // Gros copier-coller pour calculer la norme globale
+        for (Integer index = 0; index < current_size; ++index) {
+          if (index >= ref_size) {
+            continue;
+          }
+          else {
+            DataType dref = ref[index];
+            typename VarDataTypeTraits::NormType norm_max = VarDataTypeTraits::normeMax(dref);
+            if (norm_max > local_norm_max) {
+              local_norm_max = norm_max;
+            }
+          }
         }
       }
     }
-
     // On calcule les erreurs normalisées
     for( Integer index=0; index<current_size; ++index ){
       DataType diff = DataType();
@@ -206,7 +225,7 @@ class ArrayVariableDiff
       else{
         DataType dref = ref[index];
         DataType dcurrent = current[index];
-        if (VarDataTypeTraits::verifDifferentNorm(dref,dcurrent,diff, local_norm_max, true)){
+        if (_computeDifference(dref, dcurrent, diff, local_norm_max, diff_method)) {
           this->m_diffs_info.add(DiffInfo(dcurrent,dref,diff,index,NULL_ITEM_ID));
           ++nb_diff;
         }
@@ -263,6 +282,21 @@ class ArrayVariableDiff
       this->_sortAndDump(var,pm,max_print);
 
     return VariableComparerResults(nb_diff);
+  }
+  bool _computeDifference(const DataType& dref, const DataType& dcurrent, DataType& diff,
+                          const NormType& local_norm_max,
+                          VariableComparerArgs::eComputeDifferenceMethod diff_method)
+  {
+    bool is_diff = false;
+    switch (diff_method) {
+    case VariableComparerArgs::eComputeDifferenceMethod::Relative:
+      is_diff = VarDataTypeTraits::verifDifferent(dref, dcurrent, diff, true);
+      break;
+    case VariableComparerArgs::eComputeDifferenceMethod::LocalNormMax:
+      is_diff = VarDataTypeTraits::verifDifferentNorm(dref, dcurrent, diff, local_norm_max, true);
+      break;
+    }
+    return is_diff;
   }
 };
 

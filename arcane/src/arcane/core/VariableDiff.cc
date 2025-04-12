@@ -65,8 +65,8 @@ dump(ConstArrayView<DiffInfo> diffs_info, IVariable* var, IParallelMng* pm, int 
              << " lid=" << di.m_local_id;
       if (di.m_sub_index != NULL_ITEM_ID)
         ostr() << " [" << di.m_sub_index << "]";
-      ostr() << " val: " << VarDataTypeTraits::normeMax(di.m_current)
-             << " ref: " << VarDataTypeTraits::normeMax(di.m_ref) << " rdiff: " << VarDataTypeTraits::normeMax(di.m_diff) << '\n';
+      ostr() << " val: " << di.m_current
+             << " ref: " << di.m_ref << " rdiff: " << di.m_diff << '\n';
     }
     else {
       // Il s'agit de l'indice d'une variable tableau
@@ -74,8 +74,8 @@ dump(ConstArrayView<DiffInfo> diffs_info, IVariable* var, IParallelMng* pm, int 
              << " index=" << di.m_local_id;
       if (di.m_sub_index != NULL_ITEM_ID)
         ostr() << " [" << di.m_sub_index << "]";
-      ostr() << " val: " << VarDataTypeTraits::normeMax(di.m_current)
-             << " ref: " << VarDataTypeTraits::normeMax(di.m_ref) << " rdiff: " << VarDataTypeTraits::normeMax(di.m_diff) << '\n';
+      ostr() << " val: " << di.m_current
+             << " ref: " << di.m_ref << " rdiff: " << di.m_diff << '\n';
     }
   }
   msg->pinfo() << "Processor " << sid << " : " << nb_diff
