@@ -396,35 +396,6 @@ allocatedMemory() const
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-template<typename T> Integer Array2VariableT<T>::
-checkIfSync(int max_print)
-{
-  ValueType& data_values = m_data->_internal()->_internalDeprecatedValue();
-
-  Integer dim1_size = valueView().dim1Size();
-  if (dim1_size==0)
-    return 0;
-
-  //Integer dim2_size = value().dim2Size();
-  IItemFamily* family = itemGroup().itemFamily();
-  VariableComparerResults results;
-  if (family){
-    UniqueArray2<T> ref_array(constValueView());
-    this->synchronize(); // fonctionne pour toutes les variables
-    Array2VariableDiff<T> csa;
-    Array2View<T> from_array(valueView());
-    VariableComparerArgs compare_args;
-    compare_args.setMaxPrint(max_print);
-    compare_args.setCompareGhost(true);
-    results = csa.check(this, ref_array, from_array, compare_args);
-    data_values.copy(ref_array);
-  }
-  return results.nbDifference();
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 // Utilise une fonction Helper afin de spécialiser l'appel dans le
 // cas du type 'Byte' car ArrayVariableDiff::checkReplica() utilise
 // une réduction Min/Max et cela n'existe pas en MPI pour le type Byte.
@@ -487,6 +458,25 @@ _compareVariable(const VariableComparerArgs& compare_args)
     VariableComparerResults r = csa.check(this, ref_data->view(), from_array, compare_args);
     return r;
   } break;
+  case VariableComparerArgs::eCompareMode::Sync: {
+    IItemFamily* family = itemGroup().itemFamily();
+    if (!family)
+      return {};
+
+    Integer dim1_size = valueView().dim1Size();
+    if (dim1_size == 0)
+      return {};
+
+    ValueType& data_values = m_data->_internal()->_internalDeprecatedValue();
+
+    UniqueArray2<T> ref_array(constValueView());
+    this->synchronize(); // fonctionne pour toutes les variables
+    Array2VariableDiff<T> csa;
+    Array2View<T> from_array(valueView());
+    VariableComparerResults results = csa.check(this, ref_array, from_array, compare_args);
+    data_values.copy(ref_array);
+    return results;
+  }
   }
   ARCANE_FATAL("Invalid value for compare mode '{0}'", (int)compare_args.compareMode());
 }

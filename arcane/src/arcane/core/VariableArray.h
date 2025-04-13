@@ -61,7 +61,6 @@ class VariableArrayT
   void synchronize(Int32ConstArrayView local_ids) override;
   virtual void resizeWithReserve(Integer n,Integer nb_additional);
   Real allocatedMemory() const override;
-  Integer checkIfSync(int max_print) override;
   bool initialize(const ItemGroup& group,const String& value) override;
   Integer nbElement() const override { return m_value->view().size(); }
   ARCCORE_DEPRECATED_2021("use valueView() instead")

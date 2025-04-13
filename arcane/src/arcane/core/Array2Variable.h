@@ -56,7 +56,6 @@ class Array2VariableT
   void synchronize() override;
   void synchronize(Int32ConstArrayView local_ids) override;
   Real allocatedMemory() const override;
-  Integer checkIfSync(int max_print) override;
   Integer nbElement() const override { return m_data->view().totalNbElement(); }
   ARCCORE_DEPRECATED_2021("Use valueView() instead")
   virtual ValueType& value();

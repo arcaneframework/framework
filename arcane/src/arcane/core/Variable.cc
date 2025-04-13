@@ -763,11 +763,15 @@ syncReferences()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Integer Variable::
+Int32 Variable::
 checkIfSync(int max_print)
 {
-  ARCANE_UNUSED(max_print);
-  return 0;
+  VariableComparerArgs compare_args;
+  compare_args.setCompareMode(VariableComparerArgs::eCompareMode::Sync);
+  compare_args.setMaxPrint(max_print);
+  compare_args.setCompareGhost(true);
+  VariableComparerResults results = _compareVariable(compare_args);
+  return results.nbDifference();
 }
 
 /*---------------------------------------------------------------------------*/

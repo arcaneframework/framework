@@ -269,7 +269,9 @@ _compareVariable(const VariableComparerArgs& compare_args)
     ScalarVariableDiff<T> csa;
     VariableComparerResults r = csa.check(this, ref_array, from_array, compare_args);
     return r;
-  } break;
+  }
+  case VariableComparerArgs::eCompareMode::Sync:
+    return {};
   }
   ARCANE_FATAL("Invalid value for compare mode '{0}'", (int)compare_args.compareMode());
 }

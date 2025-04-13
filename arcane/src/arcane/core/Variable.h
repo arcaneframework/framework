@@ -147,7 +147,7 @@ class ARCANE_CORE_EXPORT Variable
   eItemKind itemKind() const override;
   Integer dimension() const override;
   Integer multiTag() const override;
-  Integer checkIfSync(Integer max_print) override;
+  Int32 checkIfSync(Integer max_print) final;
   Integer checkIfSameOnAllReplica(Integer max_print) override;
   Int32 checkIfSame(IDataReader* reader, Integer max_print, bool compare_ghost) final;
 
