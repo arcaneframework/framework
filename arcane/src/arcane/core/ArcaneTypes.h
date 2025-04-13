@@ -162,6 +162,8 @@ class IDataWriter;
 class VariableComparer;
 class VariableComparerArgs;
 class VariableComparerResults;
+enum class eVariableComparerCompareMode;
+enum class eVariableComparerComputeDifferenceMethod;
 enum class eMeshStructure;
 enum class eMeshAMRKind;
 

@@ -280,6 +280,7 @@ class TimeLoopMng
   //! Si vrai, effectue vérifications à chaque point d'entrée, sinon uniquement en fin d'itération.
   bool m_verification_at_entry_point;
   bool m_verification_only_at_exit = false;
+  eVariableComparerComputeDifferenceMethod m_compute_diff_method = eVariableComparerComputeDifferenceMethod::Relative;
 
   IBackwardMng* m_backward_mng; //!< Gestionnaire du retour-arrière;
   bool m_my_own_backward_mng;
@@ -423,6 +424,20 @@ build()
     }
     if (m_verif_type!=VerifNone)
       m_verification_active = true;
+  }
+
+  {
+    String s = platform::getEnvironmentVariable("STDENV_VERIF_DIFF_METHOD");
+    if (!s.null()){
+      if (s=="RELATIVE"){
+        m_compute_diff_method = eVariableComparerComputeDifferenceMethod::Relative;
+        info() << "Using 'Relative' method to compute difference of variable values";
+      }
+      if (s=="LOCALNORMMAX"){
+        m_compute_diff_method = eVariableComparerComputeDifferenceMethod::LocalNormMax;
+        info() << "Using 'LocalNormMax' method to compute difference of variable values";
+      }
+    }
   }
   {
     String s = platform::getEnvironmentVariable("STDENV_VERIF_ENTRYPOINT");
@@ -723,6 +738,7 @@ _checkVerif(const String& entry_point_name,Integer index,bool do_verif)
           
         m_verifier_service->setFileName(path.toString());
         m_verifier_service->setSubDir(sub_dir.toString());
+        m_verifier_service->setComputeDifferenceMethod(m_compute_diff_method);
       }
       bool parallel_sequential = pm->isParallel();
       if (m_verif_same_parallel)

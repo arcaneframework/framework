@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* VerifierService.h                                           (C) 2000-2024 */
+/* VerifierService.h                                           (C) 2000-2025 */
 /*                                                                           */
 /* Classe de base du service de vérification des variables.                  */
 /*---------------------------------------------------------------------------*/
@@ -19,6 +19,7 @@
 #include "arcane/core/ArcaneTypes.h"
 #include "arcane/core/AbstractService.h"
 #include "arcane/core/IVerifierService.h"
+#include "arcane/core/VariableComparer.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -67,7 +68,6 @@ class ARCANE_CORE_EXPORT VerifierService
  public:
 
   explicit VerifierService(const ServiceBuildInfo& sbi);
-  ~VerifierService() override;
 
  public:
 
@@ -92,6 +92,15 @@ class ARCANE_CORE_EXPORT VerifierService
   void setSubDir(const String& sub_dir) override { m_sub_dir = sub_dir; }
   String subDir() const override { return m_sub_dir; }
 
+  void setComputeDifferenceMethod(eVariableComparerComputeDifferenceMethod v) override
+  {
+    m_compute_diff_method = v;
+  }
+  eVariableComparerComputeDifferenceMethod computeDifferenceMethod() const override
+  {
+    return m_compute_diff_method;
+  }
+
  protected:
 
   virtual void _doVerif(IDataReader* reader, const VariableCollection& variables, bool compare_ghost);
@@ -111,6 +120,7 @@ class ARCANE_CORE_EXPORT VerifierService
   String m_result_file_name;
   String m_sub_dir;
   eCompareMode m_compare_mode = eCompareMode::Values;
+  eVariableComparerComputeDifferenceMethod m_compute_diff_method = eVariableComparerComputeDifferenceMethod::Relative;
 
  private:
 

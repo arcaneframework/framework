@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IvariableInternal.h                                         (C) 2000-2024 */
+/* IvariableInternal.h                                         (C) 2000-2025 */
 /*                                                                           */
 /* Partie interne à Arcane de IVariable.                                     */
 /*---------------------------------------------------------------------------*/
@@ -102,6 +102,9 @@ class ARCANE_CORE_EXPORT IVariableInternal
 
   //! Redimensionne la variable en ajoutant une capacité additionnelle
   virtual void resize(const VariableResizeArgs& resize_args) = 0;
+
+  //! Applique la méthode de comparaison spécifiée par \a compare_args
+  virtual VariableComparerResults compareVariable(const VariableComparerArgs& compare_args) =0;
 };
 
 /*---------------------------------------------------------------------------*/

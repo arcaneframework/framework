@@ -26,6 +26,33 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+//! Méthode de comparaison à utiliser
+enum class eVariableComparerCompareMode
+{
+  //! Compare avec une référence
+  Same = 0,
+  //! Vérifie que la variable est bien synchronisée
+  Sync = 1,
+  //! Vérifie que les valeurs de la variable sont les même sur tous les replica
+  SameReplica = 2
+};
+
+//! Méthode utilisée pour calculer la différence entre deux valeurs \a v1 et \a v2.
+enum class eVariableComparerComputeDifferenceMethod
+{
+  //! Utilise (v1-v2) / v1
+  Relative,
+  /*!
+   * \brief Utilise (v1-v2) / local_norm_max.
+   *
+   * \a local_norm_max est le maximum des math::abs() des valeurs sur le sous-domaine.
+   */
+  LocalNormMax,
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 /*!
  * \brief Arguments des méthodes de VariableComparer.
  */
@@ -33,46 +60,35 @@ class ARCANE_CORE_EXPORT VariableComparerArgs
 {
  public:
 
-  //! Méthode de comparaison
-  enum class eCompareMode
-  {
-    //! Compare avec une référence
-    Same = 0,
-    //! Vérifie que la variable est bien synchronisée
-    Sync = 1,
-    //! Vérifie que les valeurs de la variable sont les même sur tous les replica
-    SameReplica = 2
-  };
-
-  //! Méthode utilisée pour calculer la différence entre deux valeurs \a v1 et \a v2.
-  enum class eComputeDifferenceMethod
-  {
-    //! Utilise (v1-v2) / v1
-    Relative,
-    /*!
-     * \brief Utilise (v1-v2) / local_norm_max.
-     *
-     * \a local_norm_max est le maximum des math::abs() des valeurs sur le sous-domaine.
-     */
-    LocalNormMax,
-  };
-
- public:
-
+  /*!
+   * \brief Positionne le nombre d'erreurs à afficher dans le listing.
+   *
+   * Si 0, aucun élément n'est affiché. Si positif, affiche au plus
+   * \a v élément. Si négatif, tous les éléments sont affichés.
+   */
   void setMaxPrint(Int32 v) { m_max_print = v; }
   Int32 maxPrint() const { return m_max_print; }
 
+  /*!
+   * \brief Indique sur quelles entités on fait la comparaison.
+   *
+   * Si \a v si vrai, compare les valeurs à la fois sur les entités
+   * propres et les entités fantômes. Sinon, ne fait la comparaison que sur les
+   * entités propres.
+   *
+   * Ce paramètre n'est utilisé que si compareMode() vaut eCompareMode::Same.
+   */
   void setCompareGhost(bool v) { m_is_compare_ghost = v; }
   bool isCompareGhost() const { return m_is_compare_ghost; }
 
   void setDataReader(IDataReader* v) { m_data_reader = v; }
   IDataReader* dataReader() const { return m_data_reader; }
 
-  void setCompareMode(eCompareMode v) { m_compare_mode = v; }
-  eCompareMode compareMode() const { return m_compare_mode; }
+  void setCompareMode(eVariableComparerCompareMode v) { m_compare_mode = v; }
+  eVariableComparerCompareMode compareMode() const { return m_compare_mode; }
 
-  void setComputeDifferenceMethod(eComputeDifferenceMethod v) { m_compute_difference_method = v; }
-  eComputeDifferenceMethod computeDifferenceMethod() const { return m_compute_difference_method; }
+  void setComputeDifferenceMethod(eVariableComparerComputeDifferenceMethod v) { m_compute_difference_method = v; }
+  eVariableComparerComputeDifferenceMethod computeDifferenceMethod() const { return m_compute_difference_method; }
 
   void setReplicaParallelMng(IParallelMng* pm) { m_replica_parallel_mng = pm; }
   IParallelMng* replicaParallelMng() const { return m_replica_parallel_mng; }
@@ -82,8 +98,8 @@ class ARCANE_CORE_EXPORT VariableComparerArgs
   Int32 m_max_print = 0;
   bool m_is_compare_ghost = false;
   IDataReader* m_data_reader = nullptr;
-  eCompareMode m_compare_mode = eCompareMode::Same;
-  eComputeDifferenceMethod m_compute_difference_method = eComputeDifferenceMethod::Relative;
+  eVariableComparerCompareMode m_compare_mode = eVariableComparerCompareMode::Same;
+  eVariableComparerComputeDifferenceMethod m_compute_difference_method = eVariableComparerComputeDifferenceMethod::Relative;
   IParallelMng* m_replica_parallel_mng = nullptr;
 };
 
@@ -186,6 +202,27 @@ class ARCANE_CORE_EXPORT VariableComparer
    * \return le nombre de valeurs différentes de la référence.
    */
   Int32 checkIfSameOnAllReplica(IVariable* var, Integer max_print);
+
+ public:
+
+  /*!
+   * \brief Créé une comparaison pour vérifie qu'une variable est identique
+   * à une valeur de référence.
+   *
+   * Cette opération vérifie que les valeurs de la variable sont identiques
+   * à une valeur de référence qui sera lue à partir du lecteur \a data_reader.
+   *
+   * Il est possible d'appeler sur l'instance retournée les
+   * méthodes VariableComparerArgs::setCompareGhost() ou
+   * VariableComparerArgs::setMaxPrint() pour modifier le comportement.
+   *
+   * Il est ensuite possible d'appeler la méthode apply() sur l'instance
+   * retournée pour effectuer les comparaisons sur une variable.
+   */
+  VariableComparerArgs buildForCheckIfSame(IDataReader* data_reader);
+
+  //! Applique la comparaison \a compare_args à la variable \a var
+  VariableComparerResults apply(IVariable* var, const VariableComparerArgs& compare_args);
 };
 
 /*---------------------------------------------------------------------------*/

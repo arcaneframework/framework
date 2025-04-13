@@ -434,7 +434,7 @@ template<typename T> VariableComparerResults Array2VariableT<T>::
 _compareVariable(const VariableComparerArgs& compare_args)
 {
   switch (compare_args.compareMode()) {
-  case VariableComparerArgs::eCompareMode::Same: {
+  case eVariableComparerCompareMode::Same: {
     if (itemKind() == IK_Particle)
       return {};
     IDataReader* reader = compare_args.dataReader();
@@ -448,7 +448,7 @@ _compareVariable(const VariableComparerArgs& compare_args)
     VariableComparerResults r = csa.check(this, ref_data->view(), from_array, compare_args);
     return r;
   } break;
-  case VariableComparerArgs::eCompareMode::Sync: {
+  case eVariableComparerCompareMode::Sync: {
     IItemFamily* family = itemGroup().itemFamily();
     if (!family)
       return {};
@@ -467,7 +467,7 @@ _compareVariable(const VariableComparerArgs& compare_args)
     data_values.copy(ref_array);
     return results;
   }
-  case VariableComparerArgs::eCompareMode::SameReplica: {
+  case eVariableComparerCompareMode::SameReplica: {
     VariableComparerResults r = _checkIfSameOnAllReplicaHelper(this, constValueView(), compare_args);
     return r;
   }

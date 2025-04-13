@@ -86,16 +86,16 @@ class ArrayVariableDiff
 
     int nb_diff = 0;
     bool compare_failed = false;
-    VariableComparerArgs::eComputeDifferenceMethod diff_method = compare_args.computeDifferenceMethod();
+    eVariableComparerComputeDifferenceMethod diff_method = compare_args.computeDifferenceMethod();
     // Pas de norme max si le type n'est pas numérique.
     if (!IsNumeric)
-      diff_method = VariableComparerArgs::eComputeDifferenceMethod::Relative;
+      diff_method = eVariableComparerComputeDifferenceMethod::Relative;
 
     Integer ref_size = ref.size();
     NormType local_norm_max = {};
 
     if constexpr (IsNumeric) {
-      bool is_use_local_norm = diff_method == VariableComparerArgs::eComputeDifferenceMethod::LocalNormMax;
+      bool is_use_local_norm = diff_method == eVariableComparerComputeDifferenceMethod::LocalNormMax;
       if (is_use_local_norm) {
         // Gros copier-coller pour calculer la norme globale
         ENUMERATE_ITEM (i, group) {
@@ -193,14 +193,14 @@ class ArrayVariableDiff
     bool compare_failed = false;
     Integer ref_size = ref.size();
     Integer current_size = current.size();
-    VariableComparerArgs::eComputeDifferenceMethod diff_method = compare_args.computeDifferenceMethod();
+    eVariableComparerComputeDifferenceMethod diff_method = compare_args.computeDifferenceMethod();
     // Pas de norme max si le type n'est pas numérique.
     if (!IsNumeric)
-      diff_method = VariableComparerArgs::eComputeDifferenceMethod::Relative;
+      diff_method = eVariableComparerComputeDifferenceMethod::Relative;
     NormType local_norm_max = {};
 
     if constexpr (IsNumeric) {
-      bool is_use_local_norm = compare_args.computeDifferenceMethod() == VariableComparerArgs::eComputeDifferenceMethod::LocalNormMax;
+      bool is_use_local_norm = compare_args.computeDifferenceMethod() == eVariableComparerComputeDifferenceMethod::LocalNormMax;
       if (is_use_local_norm) {
         // Gros copier-coller pour calculer la norme globale
         for (Integer index = 0; index < current_size; ++index) {
@@ -287,14 +287,14 @@ class ArrayVariableDiff
   }
   bool _computeDifference(const DataType& dref, const DataType& dcurrent, DataType& diff,
                           const NormType& local_norm_max,
-                          VariableComparerArgs::eComputeDifferenceMethod diff_method)
+                          eVariableComparerComputeDifferenceMethod diff_method)
   {
     bool is_diff = false;
     switch (diff_method) {
-    case VariableComparerArgs::eComputeDifferenceMethod::Relative:
+    case eVariableComparerComputeDifferenceMethod::Relative:
       is_diff = VarDataTypeTraits::verifDifferent(dref, dcurrent, diff, true);
       break;
-    case VariableComparerArgs::eComputeDifferenceMethod::LocalNormMax:
+    case eVariableComparerComputeDifferenceMethod::LocalNormMax:
       is_diff = VarDataTypeTraits::verifDifferentNorm(dref, dcurrent, diff, local_norm_max, true);
       break;
     }
@@ -462,7 +462,7 @@ template<typename T> VariableComparerResults VariableArrayT<T>::
 _compareVariable(const VariableComparerArgs& compare_args)
 {
   switch (compare_args.compareMode()) {
-  case VariableComparerArgs::eCompareMode::Same: {
+  case eVariableComparerCompareMode::Same: {
 
     if (itemKind() == IK_Particle)
       return {};
@@ -478,7 +478,7 @@ _compareVariable(const VariableComparerArgs& compare_args)
     VariableComparerResults r = csa.check(this, ref_data->view(), from_array, compare_args);
     return r;
   }
-  case VariableComparerArgs::eCompareMode::Sync: {
+  case eVariableComparerCompareMode::Sync: {
     IItemFamily* family = itemGroup().itemFamily();
     if (!family)
       return {};
@@ -491,7 +491,7 @@ _compareVariable(const VariableComparerArgs& compare_args)
     data_values.copy(ref_array);
     return r;
   }
-  case VariableComparerArgs::eCompareMode::SameReplica: {
+  case eVariableComparerCompareMode::SameReplica: {
     VariableComparerResults r = _checkIfSameOnAllReplicaHelper(this, constValueView(), compare_args);
     return r;
   }

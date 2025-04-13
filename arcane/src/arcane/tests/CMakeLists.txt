@@ -1248,6 +1248,7 @@ ARCANE_ADD_TEST_PARALLEL(aleph_multi testAlephMulti.arc 8)
 # Test les comparaisons bit à bit entre deux exécutions
 arcane_add_test_script(compare_seq_seq compare_seq_seq.xml)
 arcane_add_test_script(compare_seq_seq_v3 compare_seq_seq_v3.xml)
+arcane_add_test_script(compare_seq_seq_localnormmax compare_seq_seq_localnormmax.xml)
 arcane_add_test_script(compare_seq_seq_hash_only compare_seq_seq_hash_only.xml)
 arcane_add_test_script(compare_seq_par_hash_only compare_seq_par_hash_only.xml)
 arcane_add_test_script(compare_par_par_hash_only compare_par_par_hash_only.xml)
