@@ -243,7 +243,7 @@ template<typename T> VariableComparerResults VariableScalarT<T>::
 _compareVariable(const VariableComparerArgs& compare_args)
 {
   switch (compare_args.compareMode()) {
-  case VariableComparerArgs::eCompareMode::Same: {
+  case eVariableComparerCompareMode::Same: {
 
     if (itemKind() == IK_Particle)
       return {};
@@ -260,9 +260,9 @@ _compareVariable(const VariableComparerArgs& compare_args)
     VariableComparerResults r = csa.check(this, ref_array, from_array, compare_args);
     return r;
   }
-  case VariableComparerArgs::eCompareMode::Sync:
+  case eVariableComparerCompareMode::Sync:
     return {};
-  case VariableComparerArgs::eCompareMode::SameReplica: {
+  case eVariableComparerCompareMode::SameReplica: {
     VariableComparerResults r = _checkIfSameOnAllReplicaHelper(this, value(), compare_args);
     return r;
   }

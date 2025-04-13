@@ -14,6 +14,7 @@
 #include "arcane/core/VariableComparer.h"
 
 #include "arcane/core/IVariable.h"
+#include "arcane/core/internal/IVariableInternal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -58,6 +59,29 @@ checkIfSameOnAllReplica(IVariable* var, Integer max_print)
 {
   ARCANE_CHECK_POINTER(var);
   return var->checkIfSameOnAllReplica(max_print);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+VariableComparerArgs VariableComparer::
+buildForCheckIfSame(IDataReader* data_reader)
+{
+  ARCANE_CHECK_POINTER(data_reader);
+  VariableComparerArgs compare_args;
+  compare_args.setCompareMode(eVariableComparerCompareMode::Same);
+  compare_args.setDataReader(data_reader);
+  return compare_args;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+VariableComparerResults VariableComparer::
+apply(IVariable* var, const VariableComparerArgs& compare_args)
+{
+  ARCANE_CHECK_POINTER(var);
+  return var->_internalApi()->compareVariable(compare_args);
 }
 
 /*---------------------------------------------------------------------------*/
