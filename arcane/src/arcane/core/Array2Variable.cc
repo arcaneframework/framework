@@ -131,16 +131,18 @@ class Array2VariableDiff
   }
 
   VariableComparerResults
-  checkReplica(IParallelMng* pm, IVariable* var, ConstArray2View<DataType> var_values,
+  checkReplica(IVariable* var, ConstArray2View<DataType> var_values,
                const VariableComparerArgs& compare_args)
   {
-    // Appelle la bonne spécialisation pour être sur que le type template possède
+    IParallelMng* replica_pm = compare_args.replicaParallelMng();
+    ARCANE_CHECK_POINTER(replica_pm);
+    // Appelle la bonne spécialisation pour être certain que le type template possède
     // la réduction.
     using ReduceType = typename VariableDataTypeTraitsT<DataType>::HasReduceMinMax;
     if constexpr(std::is_same<TrueType,ReduceType>::value)
-      return _checkReplica2(pm, var, var_values, compare_args);
+      return _checkReplica2(replica_pm, var, var_values, compare_args);
 
-    ARCANE_UNUSED(pm);
+    ARCANE_UNUSED(replica_pm);
     ARCANE_UNUSED(var);
     ARCANE_UNUSED(var_values);
     ARCANE_UNUSED(compare_args);
@@ -402,16 +404,16 @@ allocatedMemory() const
 namespace
 {
   template <typename T> VariableComparerResults
-  _checkIfSameOnAllReplicaHelper(IParallelMng* pm, IVariable* var, ConstArray2View<T> values,
+  _checkIfSameOnAllReplicaHelper(IVariable* var, ConstArray2View<T> values,
                                  const VariableComparerArgs& compare_args)
   {
     Array2VariableDiff<T> csa;
-    return csa.checkReplica(pm, var, values, compare_args);
+    return csa.checkReplica(var, values, compare_args);
   }
 
   // Spécialisation pour le type 'Byte' qui ne supporte pas les réductions.
   VariableComparerResults
-  _checkIfSameOnAllReplicaHelper(IParallelMng* pm, IVariable* var, ConstArray2View<Byte> values,
+  _checkIfSameOnAllReplicaHelper(IVariable* var, ConstArray2View<Byte> values,
                                  const VariableComparerArgs& compare_args)
   {
     Integer dim1_size = values.dim1Size();
@@ -421,20 +423,8 @@ namespace
       for( Integer j=0; j<dim2_size; ++j )
         int_values[i][j] = values[i][j];
     Array2VariableDiff<Integer> csa;
-    return csa.checkReplica(pm, var, int_values, compare_args);
+    return csa.checkReplica(var, int_values, compare_args);
   }
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-template<typename T> Integer Array2VariableT<T>::
-_checkIfSameOnAllReplica(IParallelMng* replica_pm,Integer max_print)
-{
-  VariableComparerArgs compare_args;
-  compare_args.setMaxPrint(max_print);
-  VariableComparerResults r = _checkIfSameOnAllReplicaHelper(replica_pm, this, constValueView(), compare_args);
-  return r.nbDifference();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -476,6 +466,10 @@ _compareVariable(const VariableComparerArgs& compare_args)
     VariableComparerResults results = csa.check(this, ref_array, from_array, compare_args);
     data_values.copy(ref_array);
     return results;
+  }
+  case VariableComparerArgs::eCompareMode::SameReplica: {
+    VariableComparerResults r = _checkIfSameOnAllReplicaHelper(this, constValueView(), compare_args);
+    return r;
   }
   }
   ARCANE_FATAL("Invalid value for compare mode '{0}'", (int)compare_args.compareMode());

@@ -81,7 +81,6 @@ class VariableScalarT
   {
     ARCANE_UNUSED(resize_args);
   }
-  Integer _checkIfSameOnAllReplica(IParallelMng* replica_pm,int max_print) override;
   VariableComparerResults _compareVariable(const VariableComparerArgs& compare_args) final;
 
  private:

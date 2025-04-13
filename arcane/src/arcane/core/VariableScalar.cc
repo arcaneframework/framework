@@ -117,16 +117,18 @@ class ScalarVariableDiff
   }
 
   VariableComparerResults
-  checkReplica(IParallelMng* pm, IVariable* var, const DataType& var_value,
+  checkReplica(IVariable* var, const DataType& var_value,
                const VariableComparerArgs& compare_args)
   {
+    IParallelMng* replica_pm = compare_args.replicaParallelMng();
+    ARCANE_CHECK_POINTER(replica_pm);
     const int max_print = compare_args.maxPrint();
-    // Appelle la bonne spécialisation pour être sur que le type template possède
+    // Appelle la bonne spécialisation pour être certain que le type template possède
     // la réduction.
     using ReduceType = typename VariableDataTypeTraitsT<DataType>::HasReduceMinMax;
     if constexpr(std::is_same<TrueType,ReduceType>::value)
-      return _checkReplica2(pm,var_value);
-    ARCANE_UNUSED(pm);
+      return _checkReplica2(replica_pm, var_value);
+    ARCANE_UNUSED(replica_pm);
     ARCANE_UNUSED(var);
     ARCANE_UNUSED(var_value);
     ARCANE_UNUSED(max_print);
@@ -216,34 +218,22 @@ getReference(IVariable* var)
 namespace
 {
   template <typename T> VariableComparerResults
-  _checkIfSameOnAllReplicaHelper(IParallelMng* pm, IVariable* var, const T& value,
+  _checkIfSameOnAllReplicaHelper(IVariable* var, const T& value,
                                  const VariableComparerArgs& compare_args)
   {
     ScalarVariableDiff<T> csa;
-    return csa.checkReplica(pm, var, value, compare_args);
+    return csa.checkReplica(var, value, compare_args);
   }
 
   // Spécialisation pour le type 'Byte' qui ne supporte pas les réductions.
   VariableComparerResults
-  _checkIfSameOnAllReplicaHelper(IParallelMng* pm, IVariable* var, const Byte& value,
+  _checkIfSameOnAllReplicaHelper(IVariable* var, const Byte& value,
                                  const VariableComparerArgs& compare_args)
   {
     Integer int_value = value;
     ScalarVariableDiff<Integer> csa;
-    return csa.checkReplica(pm, var, int_value, compare_args);
+    return csa.checkReplica(var, int_value, compare_args);
   }
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-template<typename T> Integer VariableScalarT<T>::
-_checkIfSameOnAllReplica(IParallelMng* replica_pm,Integer max_print)
-{
-  VariableComparerArgs compare_args;
-  compare_args.setMaxPrint(max_print);
-  VariableComparerResults r = _checkIfSameOnAllReplicaHelper(replica_pm, this, value(), compare_args);
-  return r.nbDifference();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -272,6 +262,10 @@ _compareVariable(const VariableComparerArgs& compare_args)
   }
   case VariableComparerArgs::eCompareMode::Sync:
     return {};
+  case VariableComparerArgs::eCompareMode::SameReplica: {
+    VariableComparerResults r = _checkIfSameOnAllReplicaHelper(this, value(), compare_args);
+    return r;
+  }
   }
   ARCANE_FATAL("Invalid value for compare mode '{0}'", (int)compare_args.compareMode());
 }

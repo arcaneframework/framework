@@ -30,7 +30,6 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class IVariableValue;
 class VariableInfo;
 class VariableBuildInfo;
 template<typename T> class IDataTracerT;
@@ -88,8 +87,8 @@ class ARCANE_CORE_EXPORT Variable
   //! Libère les ressources
   ~Variable() override;
 
- private:
-  
+ public:
+
   //! Constructeur de recopie (ne pas utiliser)
   Variable(const Variable& from) = delete;
   //! Opérateur de recopie (ne pas utiliser)
@@ -148,7 +147,7 @@ class ARCANE_CORE_EXPORT Variable
   Integer dimension() const override;
   Integer multiTag() const override;
   Int32 checkIfSync(Integer max_print) final;
-  Integer checkIfSameOnAllReplica(Integer max_print) override;
+  Int32 checkIfSameOnAllReplica(Integer max_print) final;
   Int32 checkIfSame(IDataReader* reader, Integer max_print, bool compare_ghost) final;
 
   eDataType dataType() const override;
@@ -222,7 +221,7 @@ class ARCANE_CORE_EXPORT Variable
  protected:
 
   virtual void _internalResize(const VariableResizeArgs& resize_args) =0;
-  virtual Integer _checkIfSameOnAllReplica(IParallelMng* replica_pm,int max_print) =0;
+
   void _checkSwapIsValid(Variable* rhs);
   // Temporaire pour test libération mémoire
   bool _wantShrink() const;
@@ -245,7 +244,6 @@ class ARCANE_CORE_EXPORT Variable
   void _checkSetProperty(VariableRef*);
   bool _hasReference() const;
   void _removeMeshReference();
-  String _computeComparisonHashCollective(IData* sorted_data);
   VariableMetaData* _createMetaData() const;
 };
 

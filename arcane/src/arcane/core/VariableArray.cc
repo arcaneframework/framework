@@ -161,16 +161,18 @@ class ArrayVariableDiff
   }
 
   VariableComparerResults
-  checkReplica(IParallelMng* pm, IVariable* var, ConstArrayView<DataType> var_value,
+  checkReplica(IVariable* var, ConstArrayView<DataType> var_value,
                const VariableComparerArgs& compare_args)
   {
+    IParallelMng* replica_pm = compare_args.replicaParallelMng();
+    ARCANE_CHECK_POINTER(replica_pm);
     // Appelle la bonne spécialisation pour être certain que le type template possède
     // la réduction.
     using ReduceType = typename VariableDataTypeTraitsT<DataType>::HasReduceMinMax;
     if constexpr(std::is_same<TrueType,ReduceType>::value)
-      return _checkReplica2(pm, var, var_value, compare_args);
+      return _checkReplica2(replica_pm, var, var_value, compare_args);
 
-    ARCANE_UNUSED(pm);
+    ARCANE_UNUSED(replica_pm);
     ARCANE_UNUSED(var);
     ARCANE_UNUSED(var_value);
     ARCANE_UNUSED(compare_args);
@@ -432,34 +434,25 @@ allocatedMemory() const
 namespace
 {
   template <typename T> VariableComparerResults
-  _checkIfSameOnAllReplicaHelper(IParallelMng* pm, IVariable* var, ConstArrayView<T> values,
+  _checkIfSameOnAllReplicaHelper(IVariable* var, ConstArrayView<T> values,
                                  const VariableComparerArgs& compare_args)
   {
     ArrayVariableDiff<T> csa;
-    return csa.checkReplica(pm, var, values, compare_args);
+    return csa.checkReplica(var, values, compare_args);
   }
 
   // Spécialisation pour le type 'Byte' qui ne supporte pas les réductions.
   VariableComparerResults
-  _checkIfSameOnAllReplicaHelper(IParallelMng* pm,IVariable* var,
-                                 ConstArrayView<Byte> values, const VariableComparerArgs& compare_args)
+  _checkIfSameOnAllReplicaHelper(IVariable* var, ConstArrayView<Byte> values,
+                                 const VariableComparerArgs& compare_args)
   {
     Integer size = values.size();
     UniqueArray<Integer> int_values(size);
     for( Integer i=0; i<size; ++i )
       int_values[i] = values[i];
     ArrayVariableDiff<Integer> csa;
-    return csa.checkReplica(pm, var, int_values, compare_args);
+    return csa.checkReplica(var, int_values, compare_args);
   }
-}
-
-template<typename T> Integer VariableArrayT<T>::
-_checkIfSameOnAllReplica(IParallelMng* replica_pm,Integer max_print)
-{
-  VariableComparerArgs compare_args;
-  compare_args.setMaxPrint(max_print);
-  VariableComparerResults r = _checkIfSameOnAllReplicaHelper(replica_pm, this, constValueView(), compare_args);
-  return r.nbDifference();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -496,6 +489,10 @@ _compareVariable(const VariableComparerArgs& compare_args)
     ConstArrayView<T> from_array(constValueView());
     VariableComparerResults r = csa.check(this, ref_array, from_array, compare_args);
     data_values.copy(ref_array);
+    return r;
+  }
+  case VariableComparerArgs::eCompareMode::SameReplica: {
+    VariableComparerResults r = _checkIfSameOnAllReplicaHelper(this, constValueView(), compare_args);
     return r;
   }
   }

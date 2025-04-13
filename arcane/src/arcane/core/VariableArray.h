@@ -92,7 +92,6 @@ class VariableArrayT
  protected:
 
   void _internalResize(const VariableResizeArgs& resize_args) override;
-  Integer _checkIfSameOnAllReplica(IParallelMng* replica_pm,int max_print) override;
   VariableComparerResults _compareVariable(const VariableComparerArgs& compare_args) final;
 
  private:

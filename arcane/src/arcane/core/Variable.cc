@@ -777,7 +777,7 @@ checkIfSync(int max_print)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Integer Variable::
+Int32 Variable::
 checkIfSameOnAllReplica(Integer max_print)
 {
   //TODO: regarder si la variable est utilisée.
@@ -786,8 +786,17 @@ checkIfSameOnAllReplica(Integer max_print)
   IParallelReplication* pr = pm->replication();
   if (!pr->hasReplication())
     return 0;
-  return _checkIfSameOnAllReplica(pr->replicaParallelMng(),max_print);
+
+  VariableComparerArgs compare_args;
+  compare_args.setCompareMode(VariableComparerArgs::eCompareMode::SameReplica);
+  compare_args.setMaxPrint(max_print);
+  compare_args.setReplicaParallelMng(pr->replicaParallelMng());
+  VariableComparerResults r = _compareVariable(compare_args);
+  return r.nbDifference();
 }
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 Int32 Variable::
 checkIfSame(IDataReader* reader, Integer max_print, bool compare_ghost)
