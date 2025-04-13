@@ -210,29 +210,6 @@ getReference(IVariable* var)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-template<typename T> Integer VariableScalarT<T>::
-checkIfSame(IDataReader* reader,int max_print,bool compare_ghost)
-{
-  if (itemKind()==IK_Particle)
-    return 0;
-  T from(value());
-  T ref = T();
-  Ref< IScalarDataT<T> > ref_data(m_value->cloneTrueEmptyRef());
-  reader->read(this,ref_data.get());
-  ref = ref_data->value();
-  ConstArrayView<T> from_array(1,&from);
-  ConstArrayView<T> ref_array(1,&ref);
-  ScalarVariableDiff<T> csa;
-  VariableComparerArgs compare_args;
-  compare_args.setMaxPrint(max_print);
-  compare_args.setCompareGhost(compare_ghost);
-  VariableComparerResults r = csa.check(this, ref_array, from_array, compare_args);
-  return r.nbDifference();
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 // Utilise une fonction Helper afin de spécialiser l'appel dans le
 // cas du type 'Byte' car ArrayVariableDiff::checkReplica() utilise
 // une réduction Min/Max et cela n'existe pas en MPI pour le type Byte.
@@ -273,9 +250,28 @@ _checkIfSameOnAllReplica(IParallelMng* replica_pm,Integer max_print)
 /*---------------------------------------------------------------------------*/
 
 template<typename T> VariableComparerResults VariableScalarT<T>::
-_compareVariable([[maybe_unused]] const VariableComparerArgs& compare_args)
+_compareVariable(const VariableComparerArgs& compare_args)
 {
-  ARCANE_FATAL("NotImplemented");
+  switch (compare_args.compareMode()) {
+  case VariableComparerArgs::eCompareMode::Same: {
+
+    if (itemKind() == IK_Particle)
+      return {};
+    IDataReader* reader = compare_args.dataReader();
+    ARCANE_CHECK_POINTER(reader);
+    T from(value());
+    T ref = T();
+    Ref<IScalarDataT<T>> ref_data(m_value->cloneTrueEmptyRef());
+    reader->read(this, ref_data.get());
+    ref = ref_data->value();
+    ConstArrayView<T> from_array(1, &from);
+    ConstArrayView<T> ref_array(1, &ref);
+    ScalarVariableDiff<T> csa;
+    VariableComparerResults r = csa.check(this, ref_array, from_array, compare_args);
+    return r;
+  } break;
+  }
+  ARCANE_FATAL("Invalid value for compare mode '{0}'", (int)compare_args.compareMode());
 }
 
 /*---------------------------------------------------------------------------*/

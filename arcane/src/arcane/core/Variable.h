@@ -149,6 +149,7 @@ class ARCANE_CORE_EXPORT Variable
   Integer multiTag() const override;
   Integer checkIfSync(Integer max_print) override;
   Integer checkIfSameOnAllReplica(Integer max_print) override;
+  Int32 checkIfSame(IDataReader* reader, Integer max_print, bool compare_ghost) final;
 
   eDataType dataType() const override;
   bool initialize(const ItemGroup& /*group*/,const String& /*value*/) override { return true; }

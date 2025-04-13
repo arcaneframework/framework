@@ -449,27 +449,6 @@ checkIfSync(int max_print)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-template<typename T> Integer VariableArrayT<T>::
-checkIfSame(IDataReader* reader,Integer max_print,bool compare_ghost)
-{
-  if (itemKind()==IK_Particle)
-    return 0;
-  ArrayView<T> from_array(valueView());
-
-  Ref< IArrayDataT<T> > ref_data(m_value->cloneTrueEmptyRef());
-  reader->read(this,ref_data.get());
-
-  ArrayVariableDiff<T> csa;
-  VariableComparerArgs compare_args;
-  compare_args.setMaxPrint(max_print);
-  compare_args.setCompareGhost(compare_ghost);
-  VariableComparerResults r = csa.check(this, ref_data->view(), from_array, compare_args);
-  return r.nbDifference();
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 // Utilise une fonction Helper afin de spécialiser l'appel dans le
 // cas du type 'Byte' car ArrayVariableDiff::checkReplica() utilise
 // une réduction Min/Max et cela n'existe pas en MPI pour le type Byte.
@@ -510,9 +489,27 @@ _checkIfSameOnAllReplica(IParallelMng* replica_pm,Integer max_print)
 /*---------------------------------------------------------------------------*/
 
 template<typename T> VariableComparerResults VariableArrayT<T>::
-_compareVariable([[maybe_unused]] const VariableComparerArgs& compare_args)
+_compareVariable(const VariableComparerArgs& compare_args)
 {
-  ARCANE_FATAL("NotImplemented");
+  switch (compare_args.compareMode()) {
+  case VariableComparerArgs::eCompareMode::Same: {
+
+    if (itemKind() == IK_Particle)
+      return {};
+    IDataReader* reader = compare_args.dataReader();
+    ARCANE_CHECK_POINTER(reader);
+
+    ArrayView<T> from_array(valueView());
+
+    Ref<IArrayDataT<T>> ref_data(m_value->cloneTrueEmptyRef());
+    reader->read(this, ref_data.get());
+
+    ArrayVariableDiff<T> csa;
+    VariableComparerResults r = csa.check(this, ref_data->view(), from_array, compare_args);
+    return r;
+  } break;
+  }
+  ARCANE_FATAL("Invalid value for compare mode '{0}'", (int)compare_args.compareMode());
 }
 
 /*---------------------------------------------------------------------------*/

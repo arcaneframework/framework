@@ -57,7 +57,6 @@ class VariableArrayT
                                    
  public:
 
-  Integer checkIfSame(IDataReader* reader,int max_print,bool compare_ghost) override;
   void synchronize() override;
   void synchronize(Int32ConstArrayView local_ids) override;
   virtual void resizeWithReserve(Integer n,Integer nb_additional);

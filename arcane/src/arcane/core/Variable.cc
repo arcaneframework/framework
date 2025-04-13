@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Variable.cc                                                 (C) 2000-2024 */
+/* Variable.cc                                                 (C) 2000-2025 */
 /*                                                                           */
 /* Classe gérant une variable.                                               */
 /*---------------------------------------------------------------------------*/
@@ -53,6 +53,7 @@
 #include "arcane/core/VariableMetaData.h"
 #include "arcane/core/IMeshMng.h"
 #include "arcane/core/MeshHandle.h"
+#include "arcane/core/VariableComparer.h"
 #include "arcane/core/datatype/DataAllocationInfo.h"
 #include "arcane/core/internal/IItemFamilyInternal.h"
 #include "arcane/core/internal/IVariableMngInternal.h"
@@ -236,19 +237,18 @@ VariablePrivate(const VariableBuildInfo& v, const VariableInfo& vi, Variable* va
 class ItemGroupPartialVariableObserver
 : public IItemGroupObserver
 {
-public:
-  ItemGroupPartialVariableObserver(IVariable * var) 
-    : m_var(var)
+ public:
+
+  explicit ItemGroupPartialVariableObserver(IVariable* var)
+  : m_var(var)
   {
     ARCANE_ASSERT((m_var),("Variable pointer null")); 
     
     if(var->itemGroup().isAllItems()) 
       ARCANE_FATAL("No observer should be attached on all items group");
   }
-  
-  ~ItemGroupPartialVariableObserver() {}
 
-  void executeExtend(const Int32ConstArrayView * info)
+  void executeExtend(const Int32ConstArrayView* info) override
   {
     const Int32ConstArrayView & new_ids = *info;
     if (new_ids.empty())
@@ -264,7 +264,7 @@ public:
     //id_to_index->update();
   }
 
-  void executeReduce(const Int32ConstArrayView * info)
+  void executeReduce(const Int32ConstArrayView* info) override
   {
     // contient la liste des localids des items supprimés dans l'ancien groupe
     const Int32ConstArrayView & removed_lids = *info; 
@@ -303,7 +303,8 @@ public:
     m_var->resizeFromGroup();
   }
 
-  void executeCompact(const Int32ConstArrayView* info) {
+  void executeCompact(const Int32ConstArrayView* info) override
+  {
     const Int32ConstArrayView & ids = *info;
     if (ids.empty()) return;
     ItemGroup group = m_var->itemGroup();
@@ -312,17 +313,19 @@ public:
     //id_to_index->compact(info);
   }
 
-  void executeInvalidate() {
+  void executeInvalidate() override
+  {
     ItemGroup group = m_var->itemGroup();
     SharedPtrT<GroupIndexTable> id_to_index = group.localIdToIndex();
     m_var->resizeFromGroup();
     //id_to_index->update();
   }
 
-  bool needInfo() const { return true; }
+  bool needInfo() const override { return true; }
 
-private:
-  IVariable* m_var;
+ private:
+
+  IVariable* m_var = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -780,6 +783,17 @@ checkIfSameOnAllReplica(Integer max_print)
   if (!pr->hasReplication())
     return 0;
   return _checkIfSameOnAllReplica(pr->replicaParallelMng(),max_print);
+}
+
+Int32 Variable::
+checkIfSame(IDataReader* reader, Integer max_print, bool compare_ghost)
+{
+  VariableComparerArgs compare_args;
+  compare_args.setMaxPrint(max_print);
+  compare_args.setCompareGhost(compare_ghost);
+  compare_args.setDataReader(reader);
+  VariableComparerResults r = _compareVariable(compare_args);
+  return r.nbDifference();
 }
 
 /*---------------------------------------------------------------------------*/
