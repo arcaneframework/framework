@@ -74,6 +74,9 @@ class ARCANE_CORE_EXPORT VariableComparerArgs
   void setComputeDifferenceMethod(eComputeDifferenceMethod v) { m_compute_difference_method = v; }
   eComputeDifferenceMethod computeDifferenceMethod() const { return m_compute_difference_method; }
 
+  void setReplicaParallelMng(IParallelMng* pm) { m_replica_parallel_mng = pm; }
+  IParallelMng* replicaParallelMng() const { return m_replica_parallel_mng; }
+
  private:
 
   Int32 m_max_print = 0;
@@ -81,6 +84,7 @@ class ARCANE_CORE_EXPORT VariableComparerArgs
   IDataReader* m_data_reader = nullptr;
   eCompareMode m_compare_mode = eCompareMode::Same;
   eComputeDifferenceMethod m_compute_difference_method = eComputeDifferenceMethod::Relative;
+  IParallelMng* m_replica_parallel_mng = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/

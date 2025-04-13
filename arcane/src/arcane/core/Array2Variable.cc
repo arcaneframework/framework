@@ -131,16 +131,18 @@ class Array2VariableDiff
   }
 
   VariableComparerResults
-  checkReplica(IParallelMng* pm, IVariable* var, ConstArray2View<DataType> var_values,
+  checkReplica(IVariable* var, ConstArray2View<DataType> var_values,
                const VariableComparerArgs& compare_args)
   {
-    // Appelle la bonne spécialisation pour être sur que le type template possède
+    IParallelMng* replica_pm = compare_args.replicaParallelMng();
+    ARCANE_CHECK_POINTER(replica_pm);
+    // Appelle la bonne spécialisation pour être certain que le type template possède
     // la réduction.
     using ReduceType = typename VariableDataTypeTraitsT<DataType>::HasReduceMinMax;
     if constexpr(std::is_same<TrueType,ReduceType>::value)
-      return _checkReplica2(pm, var, var_values, compare_args);
+      return _checkReplica2(replica_pm, var, var_values, compare_args);
 
-    ARCANE_UNUSED(pm);
+    ARCANE_UNUSED(replica_pm);
     ARCANE_UNUSED(var);
     ARCANE_UNUSED(var_values);
     ARCANE_UNUSED(compare_args);
@@ -396,73 +398,22 @@ allocatedMemory() const
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-template<typename T> Integer Array2VariableT<T>::
-checkIfSync(int max_print)
-{
-  ValueType& data_values = m_data->_internal()->_internalDeprecatedValue();
-
-  Integer dim1_size = valueView().dim1Size();
-  if (dim1_size==0)
-    return 0;
-
-  //Integer dim2_size = value().dim2Size();
-  IItemFamily* family = itemGroup().itemFamily();
-  VariableComparerResults results;
-  if (family){
-    UniqueArray2<T> ref_array(constValueView());
-    this->synchronize(); // fonctionne pour toutes les variables
-    Array2VariableDiff<T> csa;
-    Array2View<T> from_array(valueView());
-    VariableComparerArgs compare_args;
-    compare_args.setMaxPrint(max_print);
-    compare_args.setCompareGhost(true);
-    results = csa.check(this, ref_array, from_array, compare_args);
-    data_values.copy(ref_array);
-  }
-  return results.nbDifference();
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-template<typename T> Integer Array2VariableT<T>::
-checkIfSame(IDataReader* reader,int max_print,bool compare_ghost)
-{
-  if (itemKind()==IK_Particle)
-    return 0;
-  ConstArray2View<T> from_array(valueView());
-
-  Ref< IArray2DataT<T> > ref_data(m_data->cloneTrueEmptyRef());
-  reader->read(this,ref_data.get());
-
-  VariableComparerArgs compare_args;
-  compare_args.setMaxPrint(max_print);
-  compare_args.setCompareGhost(compare_ghost);
-
-  Array2VariableDiff<T> csa;
-  VariableComparerResults r = csa.check(this, ref_data->view(), from_array, compare_args);
-  return r.nbDifference();
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 // Utilise une fonction Helper afin de spécialiser l'appel dans le
 // cas du type 'Byte' car ArrayVariableDiff::checkReplica() utilise
 // une réduction Min/Max et cela n'existe pas en MPI pour le type Byte.
 namespace
 {
   template <typename T> VariableComparerResults
-  _checkIfSameOnAllReplicaHelper(IParallelMng* pm, IVariable* var, ConstArray2View<T> values,
+  _checkIfSameOnAllReplicaHelper(IVariable* var, ConstArray2View<T> values,
                                  const VariableComparerArgs& compare_args)
   {
     Array2VariableDiff<T> csa;
-    return csa.checkReplica(pm, var, values, compare_args);
+    return csa.checkReplica(var, values, compare_args);
   }
 
   // Spécialisation pour le type 'Byte' qui ne supporte pas les réductions.
   VariableComparerResults
-  _checkIfSameOnAllReplicaHelper(IParallelMng* pm, IVariable* var, ConstArray2View<Byte> values,
+  _checkIfSameOnAllReplicaHelper(IVariable* var, ConstArray2View<Byte> values,
                                  const VariableComparerArgs& compare_args)
   {
     Integer dim1_size = values.dim1Size();
@@ -472,29 +423,56 @@ namespace
       for( Integer j=0; j<dim2_size; ++j )
         int_values[i][j] = values[i][j];
     Array2VariableDiff<Integer> csa;
-    return csa.checkReplica(pm, var, int_values, compare_args);
+    return csa.checkReplica(var, int_values, compare_args);
   }
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename T> Integer Array2VariableT<T>::
-_checkIfSameOnAllReplica(IParallelMng* replica_pm,Integer max_print)
-{
-  VariableComparerArgs compare_args;
-  compare_args.setMaxPrint(max_print);
-  VariableComparerResults r = _checkIfSameOnAllReplicaHelper(replica_pm, this, constValueView(), compare_args);
-  return r.nbDifference();
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 template<typename T> VariableComparerResults Array2VariableT<T>::
-_compareVariable([[maybe_unused]] const VariableComparerArgs& compare_args)
+_compareVariable(const VariableComparerArgs& compare_args)
 {
-  ARCANE_FATAL("NotImplemented");
+  switch (compare_args.compareMode()) {
+  case VariableComparerArgs::eCompareMode::Same: {
+    if (itemKind() == IK_Particle)
+      return {};
+    IDataReader* reader = compare_args.dataReader();
+    ARCANE_CHECK_POINTER(reader);
+
+    ConstArray2View<T> from_array(valueView());
+    Ref<IArray2DataT<T>> ref_data(m_data->cloneTrueEmptyRef());
+    reader->read(this, ref_data.get());
+
+    Array2VariableDiff<T> csa;
+    VariableComparerResults r = csa.check(this, ref_data->view(), from_array, compare_args);
+    return r;
+  } break;
+  case VariableComparerArgs::eCompareMode::Sync: {
+    IItemFamily* family = itemGroup().itemFamily();
+    if (!family)
+      return {};
+
+    Integer dim1_size = valueView().dim1Size();
+    if (dim1_size == 0)
+      return {};
+
+    ValueType& data_values = m_data->_internal()->_internalDeprecatedValue();
+
+    UniqueArray2<T> ref_array(constValueView());
+    this->synchronize(); // fonctionne pour toutes les variables
+    Array2VariableDiff<T> csa;
+    Array2View<T> from_array(valueView());
+    VariableComparerResults results = csa.check(this, ref_array, from_array, compare_args);
+    data_values.copy(ref_array);
+    return results;
+  }
+  case VariableComparerArgs::eCompareMode::SameReplica: {
+    VariableComparerResults r = _checkIfSameOnAllReplicaHelper(this, constValueView(), compare_args);
+    return r;
+  }
+  }
+  ARCANE_FATAL("Invalid value for compare mode '{0}'", (int)compare_args.compareMode());
 }
 
 /*---------------------------------------------------------------------------*/

@@ -53,11 +53,9 @@ class Array2VariableT
 
  public:
 
-  Integer checkIfSame(IDataReader* reader,int max_print,bool compare_ghost) override;
   void synchronize() override;
   void synchronize(Int32ConstArrayView local_ids) override;
   Real allocatedMemory() const override;
-  Integer checkIfSync(int max_print) override;
   Integer nbElement() const override { return m_data->view().totalNbElement(); }
   ARCCORE_DEPRECATED_2021("Use valueView() instead")
   virtual ValueType& value();
@@ -88,7 +86,6 @@ class Array2VariableT
  protected:
   
   void _internalResize(const VariableResizeArgs& resize_args) override;
-  Integer _checkIfSameOnAllReplica(IParallelMng* replica_pm,int max_print) override;
   VariableComparerResults _compareVariable(const VariableComparerArgs& compare_args) final;
 
  private:

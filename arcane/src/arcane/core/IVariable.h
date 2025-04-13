@@ -353,7 +353,7 @@ class ARCANE_CORE_EXPORT IVariable
    *
    * \return le nombre de valeurs différentes de la référence
    */
-  virtual Integer checkIfSync(Integer max_print=0) =0;
+  virtual Int32 checkIfSync(Integer max_print=0) =0;
 
   /*! \brief Vérifie que la variable est identique à une valeur de référence
    *
@@ -371,7 +371,7 @@ class ARCANE_CORE_EXPORT IVariable
    *
    * \return le nombre de valeurs différentes de la référence
    */
-  virtual Integer checkIfSame(IDataReader* reader,Integer max_print,bool compare_ghost) =0;
+  virtual Int32 checkIfSame(IDataReader* reader,Integer max_print,bool compare_ghost) =0;
 
   /*!
    * \brief Vérifie si la variable a les mêmes valeurs sur tous les réplicas.
@@ -395,7 +395,7 @@ class ARCANE_CORE_EXPORT IVariable
    *
    * \return le nombre de valeurs différentes de la référence.
    */
-  virtual Integer checkIfSameOnAllReplica(Integer max_print=0) =0;
+  virtual Int32 checkIfSameOnAllReplica(Integer max_print=0) =0;
   //@}
 
   /*!
