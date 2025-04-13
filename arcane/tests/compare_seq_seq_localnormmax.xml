@@ -1,0 +1,6 @@
+<?xml version="1.0" ?>
+<commands>
+  <test>-We,STDENV_VERIF,WRITE -We,STDENV_VERIF_PATH,@_TEST_NAME@_dump -m 5 @ARCANE_TEST_CASEPATH@/testHydro-3.arc</test>
+  <!-- Le cas test en lecture utilise une viscosité différente pour que les deux cas tests donnent des résultats légèrement différents -->
+  <test>-We,STDENV_VERIF_DIFF_METHOD,LOCALNORMMAX -We,STDENV_VERIF,READ -We,STDENV_VERIF_PATH,@_TEST_NAME@_dump -m 5 -A,//simple-hydro/viscosity-linear-coef=0.6 @ARCANE_TEST_CASEPATH@/testHydro-3.arc</test>
+</commands>
