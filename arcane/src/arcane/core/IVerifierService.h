@@ -100,6 +100,12 @@ class IVerifierService
   virtual void setSubDir(const String& sub_dir) = 0;
   //! Nom du fichier contenant les valeurs de référence
   virtual String subDir() const = 0;
+
+ public:
+
+  //! Méthode à utiliser pour calculer la différence entre deux valeurs
+  virtual void setComputeDifferenceMethod(eVariableComparerComputeDifferenceMethod v) = 0;
+  virtual eVariableComparerComputeDifferenceMethod computeDifferenceMethod() const = 0;
 };
 
 /*---------------------------------------------------------------------------*/
