@@ -105,6 +105,13 @@ class ARCANE_CORE_EXPORT IVariableInternal
 
   //! Applique la méthode de comparaison spécifiée par \a compare_args
   virtual VariableComparerResults compareVariable(const VariableComparerArgs& compare_args) =0;
+
+  /*!
+   * \brief Retourne le IParallelMng du replica du maillage associé à la variable.
+   *
+   * Retourne nullptr s'y a pas de réplication.
+   */
+  virtual IParallelMng* replicaParallelMng() const= 0;
 };
 
 /*---------------------------------------------------------------------------*/

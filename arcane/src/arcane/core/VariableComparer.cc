@@ -25,40 +25,23 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-VariableComparer::
-VariableComparer(ITraceMng* tm)
-: TraceAccessor(tm)
+VariableComparerArgs VariableComparer::
+buildForCheckIfSync()
 {
+  VariableComparerArgs compare_args;
+  compare_args.setCompareMode(eVariableComparerCompareMode::Sync);
+  return compare_args;
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Int32 VariableComparer::
-checkIfSync(IVariable* var, Int32 max_print)
+VariableComparerArgs VariableComparer::
+buildForCheckIfSameOnAllReplica()
 {
-  ARCANE_CHECK_POINTER(var);
-  return var->checkIfSync(max_print);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-Int32 VariableComparer::
-checkIfSame(IVariable* var, IDataReader* reader, Int32 max_print, bool compare_ghost)
-{
-  ARCANE_CHECK_POINTER(var);
-  return var->checkIfSame(reader, max_print, compare_ghost);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-Int32 VariableComparer::
-checkIfSameOnAllReplica(IVariable* var, Integer max_print)
-{
-  ARCANE_CHECK_POINTER(var);
-  return var->checkIfSameOnAllReplica(max_print);
+  VariableComparerArgs compare_args;
+  compare_args.setCompareMode(eVariableComparerCompareMode::SameOnAllReplica);
+  return compare_args;
 }
 
 /*---------------------------------------------------------------------------*/
