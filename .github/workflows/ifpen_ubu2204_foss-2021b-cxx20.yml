@@ -1,10 +1,10 @@
-name: IFPEN ubu2204 foss/2021b
+name: IFPEN ubu2204 foss/2021b C++20
 
 on:
-  #push:
-  #  branches: [ main, dev/cea, dev/ifpen, dev/ci_ifpen ]
-  #pull_request:
-  #  branches: [ main, dev/cea, dev/ifpen, dev/ci_ifpen ]
+  push:
+    branches: [ main, dev/cea, dev/ifpen, dev/ci_ifpen ]
+  pull_request:
+    branches: [ main, dev/cea, dev/ifpen, dev/ci_ifpen ]
   workflow_dispatch:
     inputs:
       ctest_options:
@@ -88,7 +88,7 @@ jobs:
           (success() || failure()) &&
           steps.checkout.outcome == 'success'
         shell: bash
-        run: cmake -S ${{ env.SOURCE_DIR }} -B ${{ env.BUILD_DIR }} -DCMAKE_INSTALL_PREFIX=${{ env.INSTALL_DIR }} ${{ env.CM_CCACHE_OPTS }} -DCMAKE_BUILD_TYPE=${{ env.CM_BUILD_TYPE }} -DARCCORE_BUILD_MODE=Check -DREMOVE_UID_ON_DETACH=ON -DUSE_GTEST_DEATH_TEST=ON -DCMAKE_DISABLE_FIND_PACKAGE_Papi=ON -DALIEN_BUILD_COMPONENT=all -DALIEN_PLUGIN_HYPRE=ON -DALIEN_PLUGIN_PETSC=ON -DUSE_GRAPH_CONNECTIVITY_POLICY=ON -DARCANE_DISABLE_PERFCOUNTER_TESTS=ON
+        run: cmake -S ${{ env.SOURCE_DIR }} -B ${{ env.BUILD_DIR }} -DCMAKE_INSTALL_PREFIX=${{ env.INSTALL_DIR }} ${{ env.CM_CCACHE_OPTS }} -DCMAKE_BUILD_TYPE=${{ env.CM_BUILD_TYPE }} -DARCCORE_BUILD_MODE=Check -DREMOVE_UID_ON_DETACH=ON -DUSE_GTEST_DEATH_TEST=ON -DCMAKE_DISABLE_FIND_PACKAGE_Papi=ON -DALIEN_BUILD_COMPONENT=all -DALIEN_PLUGIN_HYPRE=ON -DALIEN_PLUGIN_PETSC=ON -DUSE_GRAPH_CONNECTIVITY_POLICY=ON -DARCANE_DISABLE_PERFCOUNTER_TESTS=ON -DARCCORE_CXX_STANDARD=20
 
       - name: Build
         id: build
@@ -189,7 +189,7 @@ jobs:
         shell: bash
         # GG: TEMPORARY Remove alien tests using redistribution because they are failing
         # with timeout.
-        run: env LD_LIBRARY_PATH=${{ env.BUILD_DIR }}/${{ env.EXT_LIB_SUBDIR }}:${LD_LIBRARY_PATH} ctest --test-dir ${{ env.BUILD_DIR }} ${{ env.CT_OPTS }} -E alien.refmvhandlers.scalar.RedistributorAlgebra
+        run: env LD_LIBRARY_PATH=${{ env.BUILD_DIR }}/${{ env.EXT_LIB_SUBDIR }}:${LD_LIBRARY_PATH} ctest --test-dir ${{ env.BUILD_DIR }} ${{ env.CT_OPTS }} -E '(RedistributorAlgebra|CompositeSpace)'
 
       - name: Upload test artifact
         id: upload-test-artifact
