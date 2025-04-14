@@ -33,6 +33,7 @@
 #include "arcane/core/IParallelMng.h"
 #include "arcane/core/IMesh.h"
 #include "arcane/core/VariableComparer.h"
+#include "arcane/core/internal/IVariableInternal.h"
 #include "arcane/core/internal/IVariableMngInternal.h"
 
 #include "arcane/core/datatype/DataStorageBuildInfo.h"
@@ -120,8 +121,9 @@ class ScalarVariableDiff
   checkReplica(IVariable* var, const DataType& var_value,
                const VariableComparerArgs& compare_args)
   {
-    IParallelMng* replica_pm = compare_args.replicaParallelMng();
-    ARCANE_CHECK_POINTER(replica_pm);
+    IParallelMng* replica_pm = var->_internalApi()->replicaParallelMng();
+    if (!replica_pm)
+      return {};
     const int max_print = compare_args.maxPrint();
     // Appelle la bonne spécialisation pour être certain que le type template possède
     // la réduction.
@@ -262,7 +264,7 @@ _compareVariable(const VariableComparerArgs& compare_args)
   }
   case eVariableComparerCompareMode::Sync:
     return {};
-  case eVariableComparerCompareMode::SameReplica: {
+  case eVariableComparerCompareMode::SameOnAllReplica: {
     VariableComparerResults r = _checkIfSameOnAllReplicaHelper(this, value(), compare_args);
     return r;
   }

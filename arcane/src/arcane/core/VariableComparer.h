@@ -35,7 +35,7 @@ enum class eVariableComparerCompareMode
   //! Vérifie que la variable est bien synchronisée
   Sync = 1,
   //! Vérifie que les valeurs de la variable sont les même sur tous les replica
-  SameReplica = 2
+  SameOnAllReplica = 2
 };
 
 //! Méthode utilisée pour calculer la différence entre deux valeurs \a v1 et \a v2.
@@ -90,9 +90,6 @@ class ARCANE_CORE_EXPORT VariableComparerArgs
   void setComputeDifferenceMethod(eVariableComparerComputeDifferenceMethod v) { m_compute_difference_method = v; }
   eVariableComparerComputeDifferenceMethod computeDifferenceMethod() const { return m_compute_difference_method; }
 
-  void setReplicaParallelMng(IParallelMng* pm) { m_replica_parallel_mng = pm; }
-  IParallelMng* replicaParallelMng() const { return m_replica_parallel_mng; }
-
  private:
 
   Int32 m_max_print = 0;
@@ -100,7 +97,6 @@ class ARCANE_CORE_EXPORT VariableComparerArgs
   IDataReader* m_data_reader = nullptr;
   eVariableComparerCompareMode m_compare_mode = eVariableComparerCompareMode::Same;
   eVariableComparerComputeDifferenceMethod m_compute_difference_method = eVariableComparerComputeDifferenceMethod::Relative;
-  IParallelMng* m_replica_parallel_mng = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -131,18 +127,28 @@ class ARCANE_CORE_EXPORT VariableComparerResults
 /*---------------------------------------------------------------------------*/
 /*!
  * \brief Classe pour effectuer des comparaisons entre les variables.
+ *
+ * Pour utiliser cette classe, il faut créer une instance de
+ * VariableComparerArgs via une des méthodes suivantes:
+ *
+ * - buildForCheckIfSame()
+ * - buildForCheckIfSync()
+ * - buildForCcheckIfSameOnAllReplica()
+ *
+ * Il faut ensuite appeler la méthode apply() avec l'instance créée pour
+ * chaque variable pour laquelle on souhaite faire la comparaison.
  */
 class ARCANE_CORE_EXPORT VariableComparer
-: public TraceAccessor
 {
  public:
 
-  explicit VariableComparer(ITraceMng* tm);
+  VariableComparer() = default;
 
  public:
 
   /*!
-   * \brief Vérifie si la variable \a var est bien synchronisée.
+   * \brief Créé une comparaison pour vérifie qu'une variable est
+   * bien synchronisée.
    *
    * Cette opération ne fonctionne que pour les variables de maillage.
    *
@@ -150,58 +156,35 @@ class ARCANE_CORE_EXPORT VariableComparer
    * sur tous les sous-domaines à la fois sur les éléments propres et
    * les éléments fantômes.
    *
-   * Pour chaque élément non synchronisé, un message est affiché.
-   *
-   * \param max_print nombre maximum de messages à afficher.
-   * Si 0, aucun élément n'est affiché. Si positif, affiche au plus
-   * \a max_print élément. Si négatif, tous les éléments sont affichés.
-   *
-   * \return le nombre de valeurs différentes de la référence
+   * Il est possible d'appeler sur l'instance retournée les méthodes
+   * VariableComparerArgs::setMaxPrint(),
+   * VariableComparerArgs::setCompareGhost()
+   * ou VariableComparerArgs::setComputeDifferenceMethod() pour modifier
+   * le comportement.
    */
-  Int32 checkIfSync(IVariable* var, Int32 max_print);
+  VariableComparerArgs buildForCheckIfSync();
 
   /*!
-   * \brief Vérifie que la variable \a var est identique à une valeur de référence
-   *
-   * Cette opération vérifie que les valeurs de la variable sont identique
-   * à une valeur de référence qui est lu à partir du lecteur \a reader.
-   *
-   * Pour chaque valeur différente de la référence, un message est affiché.
-   *
-   * \param max_print nombre maximum de messages à afficher.
-   * Si 0, aucun élément n'est affiché. Si positif, affiche au plus
-   * \a max_print élément. Si négatif, tous les éléments sont affichés.
-   * \param compare_ghost si vrai, compare les valeurs à la fois sur les entités
-   * propres et les entités fantômes. Sinon, ne fait la comparaison que sur les
-   * entités propres.
-   *
-   * \return le nombre de valeurs différentes de la référence
-   */
-  Int32 checkIfSame(IVariable* var, IDataReader* reader, Int32 max_print, bool compare_ghost);
-
-  /*!
-   * \brief Vérifie si la variable \a var a les mêmes valeurs sur tous les réplicas.
+   * \brief Créé une comparaison pour vérifie qu'une variable est identique
+   * sur tous les réplicas.
    *
    * Compare les valeurs de la variable avec celle du même sous-domaine
    * des autres réplicas. Pour chaque élément différent,
    * un message est affiché.
    *
-   * Cette méthode est collective sur le même sous-domaine des autres réplica.
+   * L'utilisation de apply() pour les comparaisons de ce type est une
+   * méthode collective sur le replica de la variable passée en argument.
    * Il ne faut donc l'appeler que si la variable existe sur tous les sous-domaines
    * sinon cela provoque un blocage.
    *
-   * Cette méthode ne fonctionne que pour les variables sur les types numériques.
+   * Cette comparaison ne fonctionne que pour les variables sur les types numériques.
    * Dans ce cas, elle renvoie une exception de type NotSupportedException.
    *
-   * \param max_print nombre maximum de messages à afficher.
-   * Si 0, aucun élément n'est affiché. Si positif, affiche au plus
-   * \a max_print élément. Si négatif, tous les éléments sont affichés.
-   * Pour chaque élément différent est affiché la valeur minimale et
-   * maximale.
-   *
-   * \return le nombre de valeurs différentes de la référence.
+   * Il est possible d'appeler sur l'instance retournée les méthodes
+   * VariableComparerArgs::setMaxPrint() ou
+   * VariableComparerArgs::setComputeDifferenceMethod() pour modifier le comportement.
    */
-  Int32 checkIfSameOnAllReplica(IVariable* var, Integer max_print);
+  VariableComparerArgs buildForCheckIfSameOnAllReplica();
 
  public:
 
@@ -212,14 +195,17 @@ class ARCANE_CORE_EXPORT VariableComparer
    * Cette opération vérifie que les valeurs de la variable sont identiques
    * à une valeur de référence qui sera lue à partir du lecteur \a data_reader.
    *
-   * Il est possible d'appeler sur l'instance retournée les
-   * méthodes VariableComparerArgs::setCompareGhost() ou
-   * VariableComparerArgs::setMaxPrint() pour modifier le comportement.
+   * Il est possible d'appeler sur l'instance retournée les méthodes
+   * VariableComparerArgs::setMaxPrint(),
+   * VariableComparerArgs::setCompareGhost() ou
+   * VariableComparerArgs::setComputeDifferenceMethod() pour modifier le comportement.
    *
    * Il est ensuite possible d'appeler la méthode apply() sur l'instance
    * retournée pour effectuer les comparaisons sur une variable.
    */
   VariableComparerArgs buildForCheckIfSame(IDataReader* data_reader);
+
+ public:
 
   //! Applique la comparaison \a compare_args à la variable \a var
   VariableComparerResults apply(IVariable* var, const VariableComparerArgs& compare_args);

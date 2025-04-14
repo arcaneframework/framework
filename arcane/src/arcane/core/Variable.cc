@@ -154,6 +154,7 @@ class VariablePrivate
   void changeAllocator(const MemoryAllocationOptions& alloc_info) override;
   void resize(const VariableResizeArgs& resize_args) override;
   VariableComparerResults compareVariable(const VariableComparerArgs& compare_args) override;
+  IParallelMng* replicaParallelMng() const;
   //!@}
 
  private:
@@ -779,17 +780,9 @@ checkIfSync(int max_print)
 Int32 Variable::
 checkIfSameOnAllReplica(Integer max_print)
 {
-  //TODO: regarder si la variable est utilisée.
-  IMesh* mesh = this->mesh();
-  IParallelMng* pm = (mesh) ? mesh->parallelMng() : subDomain()->parallelMng();
-  IParallelReplication* pr = pm->replication();
-  if (!pr->hasReplication())
-    return 0;
-
   VariableComparerArgs compare_args;
-  compare_args.setCompareMode(eVariableComparerCompareMode::SameReplica);
+  compare_args.setCompareMode(eVariableComparerCompareMode::SameOnAllReplica);
   compare_args.setMaxPrint(max_print);
-  compare_args.setReplicaParallelMng(pr->replicaParallelMng());
   VariableComparerResults r = _compareVariable(compare_args);
   return r.nbDifference();
 }
@@ -1480,6 +1473,22 @@ VariableComparerResults VariablePrivate::
 compareVariable(const VariableComparerArgs& compare_args)
 {
   return m_variable->_compareVariable(compare_args);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+IParallelMng* VariablePrivate::
+replicaParallelMng() const
+{
+  //TODO: regarder si la variable est utilisée.
+  IMesh* mesh = m_variable->mesh();
+  // TODO: faut-il prendre le sous-domaine dans ce cas ?
+  IParallelMng* pm = (mesh) ? mesh->parallelMng() : m_variable->subDomain()->parallelMng();
+  IParallelReplication* pr = pm->replication();
+  if (!pr->hasReplication())
+    return nullptr;
+  return pr->replicaParallelMng();
 }
 
 /*---------------------------------------------------------------------------*/

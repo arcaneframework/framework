@@ -134,8 +134,9 @@ class Array2VariableDiff
   checkReplica(IVariable* var, ConstArray2View<DataType> var_values,
                const VariableComparerArgs& compare_args)
   {
-    IParallelMng* replica_pm = compare_args.replicaParallelMng();
-    ARCANE_CHECK_POINTER(replica_pm);
+    IParallelMng* replica_pm = var->_internalApi()->replicaParallelMng();
+    if (!replica_pm)
+      return {};
     // Appelle la bonne spécialisation pour être certain que le type template possède
     // la réduction.
     using ReduceType = typename VariableDataTypeTraitsT<DataType>::HasReduceMinMax;
@@ -467,7 +468,7 @@ _compareVariable(const VariableComparerArgs& compare_args)
     data_values.copy(ref_array);
     return results;
   }
-  case eVariableComparerCompareMode::SameReplica: {
+  case eVariableComparerCompareMode::SameOnAllReplica: {
     VariableComparerResults r = _checkIfSameOnAllReplicaHelper(this, constValueView(), compare_args);
     return r;
   }

@@ -677,7 +677,9 @@ _checkVerif(const String& entry_point_name,Integer index,bool do_verif)
 
   ISubDomain* sd = subDomain();
   IApplication* app = sd->application();
-  VariableComparer variable_comparer(traceMng());
+  VariableComparer variable_comparer;
+  VariableComparerArgs sync_compare_args = variable_comparer.buildForCheckIfSync();
+  sync_compare_args.setMaxPrint(5);
 
   if ((m_verif_type==VerifRead || m_verif_type==VerifWrite) && !m_verifier_service.get()){
     String service_name1 = platform::getEnvironmentVariable("STDENV_VERIF_SERVICE");
@@ -707,7 +709,8 @@ _checkVerif(const String& entry_point_name,Integer index,bool do_verif)
           continue;
         if (var->isPartial())
           continue;
-        nb_error += variable_comparer.checkIfSync(var, 5);
+        VariableComparerResults r = variable_comparer.apply(var, sync_compare_args);
+        nb_error += r.nbDifference();
       }
       if (nb_error!=0)
         info() << "Error in synchronization nb_error=" << nb_error
@@ -785,7 +788,6 @@ _checkVerifSameOnAllReplica(const String& entry_point_name)
   IVariableMng* vm = sd->variableMng();
   VariableCollection variables(vm->usedVariables());
   VariableList vars_to_check;
-  VariableComparer variable_comparer(traceMng());
   for( VariableCollection::Enumerator i(variables); ++i; ){
     IVariable* var = *i;
     if (var->property() & IVariable::PNoReplicaSync)
@@ -801,11 +803,15 @@ _checkVerifSameOnAllReplica(const String& entry_point_name)
   VariableCollection common_vars = vm->utilities()->filterCommonVariables(replica_pm,vars_to_check,true);
 
   Integer nb_error = 0;
+  VariableComparer variable_comparer;
   {
+    VariableComparerArgs compare_args = variable_comparer.buildForCheckIfSameOnAllReplica();
+    compare_args.setMaxPrint(10);
     FloatingPointExceptionSentry fpes(false);
     for( VariableCollection::Enumerator ivar(common_vars); ++ivar; ){
       IVariable* var = *ivar;
-      nb_error += variable_comparer.checkIfSameOnAllReplica(var, 10);
+      VariableComparerResults r = variable_comparer.apply(var, compare_args);
+      nb_error += r.nbDifference();
     }
   }
 

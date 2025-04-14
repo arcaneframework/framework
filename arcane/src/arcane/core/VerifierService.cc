@@ -111,7 +111,7 @@ _doVerif2(ReaderType reader,const VariableList& variables,bool compare_ghost)
   typedef std::map<String,DiffInfo> MapDiffInfos;
   typedef std::map<String,DiffInfo>::value_type MapDiffInfosValues;
   MapDiffInfos diff_infos;
-  VariableComparer variable_comparer(trace);
+  VariableComparer variable_comparer;
   VariableComparerArgs compare_args = variable_comparer.buildForCheckIfSame(reader);
   compare_args.setMaxPrint(10);
   compare_args.setComputeDifferenceMethod(m_compute_diff_method);
