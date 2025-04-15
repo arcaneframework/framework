@@ -229,7 +229,7 @@ class TimeHistoryMng2
  private:
 
   Ref<ITimeHistoryMngInternal> m_internal;
-  Ref<ITimeHistoryAdder> m_adder;
+  // Ref<ITimeHistoryAdder> m_adder;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -241,7 +241,7 @@ TimeHistoryMng2(const ModuleBuildInfo& mb, bool add_entry_points)
 , CommonVariables(this)
 , m_internal(makeRef(new TimeHistoryMngInternal(subDomain()->variableMng(),
                                                 makeRef(new Properties(subDomain()->propertyMng(), "ArcaneTimeHistoryProperties")))))
-, m_adder(makeRef(new GlobalTimeHistoryAdder(this)))
+// , m_adder(makeRef(new GlobalTimeHistoryAdder(this)))
 {
   if (add_entry_points) {
     addEntryPoint(this, "ArcaneTimeHistoryBegin", &TimeHistoryMng2::timeHistoryBegin,
