@@ -22,6 +22,7 @@
 #include "arcane/core/CaseOptionBase.h"
 #include "arcane/core/ICaseOptionList.h"
 #include "arcane/core/MeshHandle.h"
+#include "arcane/core/internal/ItemGroupInternal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -655,6 +656,15 @@ checkIsSorted() const
 {
   m_impl->_checkNeedUpdate(false);
   return m_impl->checkIsSorted();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ItemGroup::
+incrementTimestamp() const
+{
+  m_impl->m_p->updateTimestamp();
 }
 
 /*---------------------------------------------------------------------------*/
