@@ -204,6 +204,7 @@ class MeshUnitTest
   void _testFindOneItem();
   void _testEvents();
   void _testNodeNodeViaEdgeConnectivity();
+  void _testBoundaryNodeNodeViaEdgeConnectivity();
   void _testComputeOwnersDirect();
   void _testLocalIdsFromConnectivity();
 };
@@ -331,6 +332,7 @@ executeTest()
     _testNodeNodeViaEdgeConnectivity();
     _testNodeNodeViaEdgeConnectivity();
   }
+  _testBoundaryNodeNodeViaEdgeConnectivity();
   if (options()->checkLocalIdsFromConnectivity())
     _testLocalIdsFromConnectivity();
 }
@@ -1797,6 +1799,16 @@ _testNodeNodeViaEdgeConnectivity()
                      node.uniqueId(), i, ref_cx_node_lid, cx_node_lid);
     }
   }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MeshUnitTest::
+_testBoundaryNodeNodeViaEdgeConnectivity()
+{
+  info() << "CREATE Boundary Edge Mesh";
+  auto bx = Arcane::MeshUtils::computeBoundaryNodeNodeViaEdgeConnectivity(mesh(), "BoundaryNodeNodeViaEdge");
 }
 
 /*---------------------------------------------------------------------------*/
