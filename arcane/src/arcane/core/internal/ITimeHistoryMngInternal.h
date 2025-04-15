@@ -1,18 +1,18 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ITimeHistoryMngInternal.h                                   (C) 2000-2024 */
+/* ITimeHistoryMngInternal.h                                   (C) 2000-2025 */
 /*                                                                           */
 /* Interface de classe interne gérant un historique de valeurs.              */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#ifndef ARCANE_ITIMEHISTORYMNGINTERNAL_H
-#define ARCANE_ITIMEHISTORYMNGINTERNAL_H
+#ifndef ARCANE_CORE_INTERNAL_ITIMEHISTORYMNGINTERNAL_H
+#define ARCANE_CORE_INTERNAL_ITIMEHISTORYMNGINTERNAL_H
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -56,8 +56,8 @@ class ARCANE_CORE_EXPORT TimeHistoryAddValueArgInternal
   , m_mesh_handle(mesh_handle)
   {}
 
-  TimeHistoryAddValueArgInternal(const String& name, bool end_time, Integer local_proc_id)
-  : m_thp(name, end_time, local_proc_id)
+  TimeHistoryAddValueArgInternal(const String& name, bool end_time, Integer subdomain_id)
+  : m_thp(name, end_time, subdomain_id)
   , m_mesh_handle()
   {}
 
@@ -235,9 +235,22 @@ class ARCANE_CORE_EXPORT ITimeHistoryMngInternal
 
   /*!
    * \brief Méthode permettant de savoir si notre processus est l'écrivain.
-   * @return True si nous sommes l'écrivain.
+   * \return True si nous sommes l'écrivain.
    */
   virtual bool isMasterIO() = 0;
+
+  /*!
+   * \brief Méthode permettant de savoir si notre processus est l'écrivain pour notre sous-domaine.
+   * Dans le cas où la réplication est activée, un seul processus parmi les réplicats peut
+   * écrire (et uniquement dans le cas où isNonIOMasterCurvesEnabled() == true).
+   *
+   * La variable d'environnement ARCANE_ENABLE_ALL_REPLICATS_WRITE_CURVES permet de bypasser cette
+   * protection et permet à tous les processus d'écrire.
+   *
+   * \return True si nous sommes l'écrivain pour notre sous-domaine.
+   */
+  virtual bool isMasterIOOfSubDomain() = 0;
+
   /*!
    * \brief Méthode permettant de savoir si tous les processus peuvent avoir un historique de valeurs.
    */
@@ -249,6 +262,7 @@ class ARCANE_CORE_EXPORT ITimeHistoryMngInternal
    * \return true si oui
    */
   virtual bool isIOMasterWriteOnly() = 0;
+
   /*!
    * \brief Méthode permettant de définir si seul le processus maitre appelle les écrivains.
    *
@@ -275,7 +289,8 @@ class ARCANE_CORE_EXPORT ITimeHistoryMngInternal
   /*!
    * \brief Méthode permettant de sortir les itérations et les valeurs d'un historique.
    *
-   * Méthode utile pour du debug/test.
+   * Méthode utile pour du debug/test. Attention en mode réplication de domaine : il n'y
+   * a que les masterRank des sous-domaines qui possèdent les valeurs.
    *
    * \param thpi Les informations nécessaire à la récupération de l'historique.
    * \param iterations [OUT] Les itérations où ont été récupéré chaque valeur.

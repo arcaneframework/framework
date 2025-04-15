@@ -1303,6 +1303,13 @@ arcane_add_test_sequential(parameter_option testParameterOption.arc)
 
 # Test pour les implementations de TimeHistoryAdder.
 arcane_add_test(time_history_adder_1 testTimeHistoryAdder-1.arc -c 2 -m 5 -We,ARCANE_ENABLE_NON_IO_MASTER_CURVES,1)
+arcane_add_test_parallel(time_history_adder_1_replication testTimeHistoryAdder-1.arc 4 -c 2 -m 5
+    -We,ARCANE_ENABLE_NON_IO_MASTER_CURVES,1
+    -A,R=2
+    -A,//meshes/mesh[]/generator/nb-part-y=1
+    -A,//meshes/mesh[]/generator/y/n=2
+    -A,//meshes/mesh[]/generator/y/length=2.0
+)
 
 #################################################################
 function(arcane_add_python_test_sequential test_name script_name case_file)

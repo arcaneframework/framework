@@ -211,6 +211,30 @@ comportement à l'exécution :
 </tr>
 <tr>
   <td>
+    ARCANE_ENABLE_NON_IO_MASTER_CURVES
+  </td>
+  <td>
+    Variable d'environnement permettant d'autoriser plusieurs processus à écrire des courbes.
+    Avec l'API historique (Arcane::ITimeHistoryMng), tous les processus écrivent les courbes
+    et avec les écrivains disponibles dans %Arcane, ces processus écrivent dans le même fichier.
+    Un écrivain personnalisé doit donc gérer cela.
+    Avec les nouvelles APIs (Arcane::GlobalTimeHistoryAdder et Arcane::MeshTimeHistoryAdder),
+    l'écriture de courbes par plusieurs processus est géré correctement. Cette variable
+    d'environnement reste nécessaire pour activer cette fonctionnalité (pour l'instant).
+    Voir la page \ref arcanedoc_io_timehistory_howto
+  </td>
+</tr>
+<tr>
+  <td>
+    ARCANE_ENABLE_ALL_REPLICATS_WRITE_CURVES
+  </td>
+  <td>
+    Variable d'environnement utile lors de l'utilisation de réplicats et permettant d'autoriser
+    tous les processus à écrire des courbes.
+  </td>
+</tr>
+<tr>
+  <td>
     ARCANE_REPLACE_SYMBOLS_IN_DATASET
   </td>
   <td>
