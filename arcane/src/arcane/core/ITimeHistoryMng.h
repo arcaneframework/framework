@@ -1,16 +1,16 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ITimeHistoryMng.h                                           (C) 2000-2024 */
+/* ITimeHistoryMng.h                                           (C) 2000-2025 */
 /*                                                                           */
 /* Interface de la classe gérant un historique de valeurs.                   */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_ITIMEHISTORYMNG_H
-#define ARCANE_ITIMEHISTORYMNG_H
+#ifndef ARCANE_CORE_ITIMEHISTORYMNG_H
+#define ARCANE_CORE_ITIMEHISTORYMNG_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -39,12 +39,12 @@ class TimeHistoryAddValueArg
    *
    * \param name Le nom de la courbe.
    * \param end_time Doit-on écrire la valeur à notre itération ou à notre itération-1 ?
-   * \param local_proc_id Le processus qui doit sauver la valeur (-1 pour global).
+   * \param subdomain_id L'id du sous-domaine qui doit sauver la valeur (-1 pour global).
    */
-  TimeHistoryAddValueArg(const String& name, bool end_time, Integer local_proc_id)
+  TimeHistoryAddValueArg(const String& name, bool end_time, Integer subdomain_id)
   : m_name(name)
   , m_end_time(end_time)
-  , m_local_proc_id(local_proc_id)
+  , m_subdomain_id(subdomain_id)
   {}
 
   /*!
@@ -75,14 +75,14 @@ class TimeHistoryAddValueArg
 
   const String& name() const { return m_name; }
   bool endTime() const { return m_end_time; }
-  bool isLocal() const { return m_local_proc_id != NULL_SUB_DOMAIN_ID; }
-  Integer localProcId() const { return m_local_proc_id; }
+  bool isLocal() const { return m_subdomain_id != NULL_SUB_DOMAIN_ID; }
+  Integer localSubDomainId() const { return m_subdomain_id; }
 
  private:
 
   String m_name;
   bool m_end_time;
-  Integer m_local_proc_id;
+  Integer m_subdomain_id;
 };
 
 /*---------------------------------------------------------------------------*/

@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* TimeHistoryAdderTestModule.cc                               (C) 2000-2024 */
+/* TimeHistoryAdderTestModule.cc                               (C) 2000-2025 */
 /*                                                                           */
 /* Module de test pour les implementations de ITimeHistoryAdder.             */
 /*---------------------------------------------------------------------------*/
@@ -16,6 +16,7 @@
 #include "arcane/core/MeshTimeHistoryAdder.h"
 
 #include "arcane/core/IMesh.h"
+#include "arcane/core/IParallelReplication.h"
 #include "arcane/core/internal/ITimeHistoryMngInternal.h"
 
 #include "arcane/tests/TimeHistoryAdderTest_axl.h"
@@ -127,16 +128,19 @@ _checker()
 {
   ISubDomain* sd = subDomain();
   IParallelMng* pm = parallelMng();
+  IParallelReplication* pr = pm->replication();
   Integer iteration = globalIteration();
   UniqueArray<Int32> iterations;
   UniqueArray<Real> values;
+
+  bool master_io = pr->hasReplication() ? (pr->isMasterRank() && pm->isMasterIO()) : pm->isMasterIO();
 
   Integer adder = 1;
 
   iterations.clear();
   values.clear();
   sd->timeHistoryMng()->_internalApi()->iterationsAndValues(TimeHistoryAddValueArgInternal(TimeHistoryAddValueArg("BBB")), iterations, values);
-  if (pm->commRank() == pm->masterIORank()) {
+  if (master_io) {
     for (Integer i = 0; i < iteration; ++i) {
       debug() << "iteration[" << i << "] = " << iterations[i]
               << " == i+1 = " << i + 1
@@ -155,7 +159,7 @@ _checker()
   iterations.clear();
   values.clear();
   sd->timeHistoryMng()->_internalApi()->iterationsAndValues(TimeHistoryAddValueArgInternal(TimeHistoryAddValueArg("BBB", true, 0)), iterations, values);
-  if (pm->commRank() == 0) {
+  if (pm->commRank() == 0 && pr->isMasterRank()) {
     for (Integer i = 0; i < iteration; ++i) {
       debug() << "iteration[" << i << "] = " << iterations[i]
               << " == i+1 = " << i + 1
@@ -174,7 +178,7 @@ _checker()
   iterations.clear();
   values.clear();
   sd->timeHistoryMng()->_internalApi()->iterationsAndValues(TimeHistoryAddValueArgInternal(TimeHistoryAddValueArg("BBB", true, 1)), iterations, values);
-  if (pm->commRank() == 1) {
+  if (pm->commRank() == 1 && pr->isMasterRank()) {
     for (Integer i = 0; i < iteration; ++i) {
       debug() << "iteration[" << i << "] = " << iterations[i]
               << " == i+1 = " << i + 1
@@ -194,7 +198,7 @@ _checker()
     iterations.clear();
     values.clear();
     sd->timeHistoryMng()->_internalApi()->iterationsAndValues(TimeHistoryAddValueArgInternal(TimeHistoryAddValueArg("BBB"), mesh->handle()), iterations, values);
-    if (pm->commRank() == pm->masterIORank()) {
+    if (master_io) {
       for (Integer i = 0; i < iteration; ++i) {
         debug() << "iteration[" << i << "] = " << iterations[i]
                 << " == i+1 = " << i + 1
@@ -213,7 +217,7 @@ _checker()
     iterations.clear();
     values.clear();
     sd->timeHistoryMng()->_internalApi()->iterationsAndValues(TimeHistoryAddValueArgInternal(TimeHistoryAddValueArg("BBB", true, 0), mesh->handle()), iterations, values);
-    if (pm->commRank() == 0) {
+    if (pm->commRank() == 0 && pr->isMasterRank()) {
       for (Integer i = 0; i < iteration; ++i) {
         debug() << "iteration[" << i << "] = " << iterations[i]
                 << " == i+1 = " << i + 1
@@ -232,7 +236,7 @@ _checker()
     iterations.clear();
     values.clear();
     sd->timeHistoryMng()->_internalApi()->iterationsAndValues(TimeHistoryAddValueArgInternal(TimeHistoryAddValueArg("BBB", true, 1), mesh->handle()), iterations, values);
-    if (pm->commRank() == 1) {
+    if (pm->commRank() == 1 && pr->isMasterRank()) {
       for (Integer i = 0; i < iteration; ++i) {
         debug() << "iteration[" << i << "] = " << iterations[i]
                 << " == i+1 = " << i + 1

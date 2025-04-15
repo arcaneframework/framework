@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* TimeHistoryMngInternal.h                                    (C) 2000-2024 */
+/* TimeHistoryMngInternal.h                                    (C) 2000-2025 */
 /*                                                                           */
 /* Classe interne gérant un historique de valeurs.                           */
 /*---------------------------------------------------------------------------*/
@@ -150,9 +150,9 @@ class TimeHistoryValue
   /*!
    * \brief Méthode permettant de récupérer l'id du sous-domaine à qui appartient cet historique.
    *
-   * \return L'in du sous-domaine.
+   * \return L'id du sous-domaine.
    */
-  Integer localProcId() const { return m_thpi.timeHistoryAddValueArg().localProcId(); }
+  Integer localSubDomainId() const { return m_thpi.timeHistoryAddValueArg().localSubDomainId(); }
 
  private:
 
@@ -321,7 +321,7 @@ class TimeHistoryValueT
 
     arrayToWrite(iterations_to_write, values_to_write, infos);
 
-    Integer sd = localProcId();
+    Integer sd = localSubDomainId();
     if (!meshHandle().isNull()) {
       TimeHistoryCurveInfo curve_info(name(), meshHandle().meshName(), iterations_to_write, values_to_write, subSize(), sd);
       writer->writeCurve(curve_info);
@@ -411,16 +411,27 @@ class TimeHistoryMngInternal
   , m_is_shrink_active(false)
   , m_is_dump_active(true)
   , m_io_master_write_only(false)
+  , m_need_comm(false)
   , m_th_meta_data(VariableBuildInfo(m_variable_mng, "TimeHistoryMngMetaData"))
   , m_th_global_time(VariableBuildInfo(m_variable_mng, "TimeHistoryMngGlobalTime"))
   , m_properties(properties)
   , m_version(2)
   {
+    // TODO AH : Avec la nouvelle API, cette variable devrait pouvoir être toujours true (grâce à m_need_comm). À garder pour l'IFPEN.
     m_enable_non_io_master_curves = !platform::getEnvironmentVariable("ARCANE_ENABLE_NON_IO_MASTER_CURVES").null();
+
+    bool enable_all_replicats_write = !platform::getEnvironmentVariable("ARCANE_ENABLE_ALL_REPLICATS_WRITE_CURVES").null();
 
     // Seul le sous-domaine maître des IO rend actif les time history.
     IParallelReplication* pr = m_parallel_mng->replication();
-    m_is_master_io = (pr->hasReplication()) ? pr->isMasterRank() : m_parallel_mng->isMasterIO();
+    if (pr->hasReplication()) {
+      m_is_master_io = (pr->isMasterRank() && m_parallel_mng->isMasterIO());
+      m_is_master_io_of_sd = (enable_all_replicats_write || pr->isMasterRank());
+    }
+    else {
+      m_is_master_io = m_parallel_mng->isMasterIO();
+      m_is_master_io_of_sd = true;
+    }
   }
 
   ~TimeHistoryMngInternal() override
@@ -492,6 +503,7 @@ class TimeHistoryMngInternal
   bool isDumpActive() const override { return m_is_dump_active; }
   void setDumpActive(bool is_active) override { m_is_dump_active = is_active; }
   bool isMasterIO() override { return m_is_master_io; }
+  bool isMasterIOOfSubDomain() override { return m_is_master_io_of_sd; }
   bool isNonIOMasterCurvesEnabled() override { return m_enable_non_io_master_curves; }
   bool isIOMasterWriteOnly() override { return m_io_master_write_only; }
   void setIOMasterWriteOnly(bool is_active) override { m_io_master_write_only = is_active; }
@@ -557,12 +569,14 @@ class TimeHistoryMngInternal
   CommonVariables m_common_variables;
   Directory m_directory;
 
-  bool m_is_master_io; //!< True si je suis le gestionnaire actif
+  bool m_is_master_io; //!< True si je suis le gestionnaire des IO
+  bool m_is_master_io_of_sd; //!< True si je suis le gestionnaire des IO pour mon sous-domaine.
   bool m_enable_non_io_master_curves; //!< Indique si l'ecriture  de courbes par des procs non io_master est possible
   bool m_is_active; //!< Indique si le service est actif.
   bool m_is_shrink_active; //!< Indique si la compression de l'historique est active
   bool m_is_dump_active; //!< Indique si les dump sont actifs
   bool m_io_master_write_only; //!< Indique si les writers doivent être appelé par tous les processus.
+  bool m_need_comm; //!< Indique si au moins une courbe est non local (donc nécessite des communications).
 
   String m_output_path;
   ObserverPool m_observer_pool;

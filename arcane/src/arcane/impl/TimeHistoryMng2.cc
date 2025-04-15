@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* TimeHistoryMng2.cc                                          (C) 2000-2024 */
+/* TimeHistoryMng2.cc                                          (C) 2000-2025 */
 /*                                                                           */
 /* Module gérant un historique de valeurs (Version 2).                       */
 /*---------------------------------------------------------------------------*/
@@ -165,27 +165,27 @@ class TimeHistoryMng2
 
   void addValue(const String& name, Real value, bool end_time, bool is_local) override
   {
-    m_internal->addValue(TimeHistoryAddValueArgInternal(name, end_time, (is_local ? parallelMng()->commRank() : -1)), value);
+    m_internal->addValue(TimeHistoryAddValueArgInternal(name, end_time, (is_local ? parallelMng()->commRank() : NULL_SUB_DOMAIN_ID)), value);
   }
   void addValue(const String& name, Int64 value, bool end_time, bool is_local) override
   {
-    m_internal->addValue(TimeHistoryAddValueArgInternal(name, end_time, (is_local ? parallelMng()->commRank() : -1)), value);
+    m_internal->addValue(TimeHistoryAddValueArgInternal(name, end_time, (is_local ? parallelMng()->commRank() : NULL_SUB_DOMAIN_ID)), value);
   }
   void addValue(const String& name, Int32 value, bool end_time, bool is_local) override
   {
-    m_internal->addValue(TimeHistoryAddValueArgInternal(name, end_time, (is_local ? parallelMng()->commRank() : -1)), value);
+    m_internal->addValue(TimeHistoryAddValueArgInternal(name, end_time, (is_local ? parallelMng()->commRank() : NULL_SUB_DOMAIN_ID)), value);
   }
   void addValue(const String& name, RealConstArrayView values, bool end_time, bool is_local) override
   {
-    m_internal->addValue(TimeHistoryAddValueArgInternal(name, end_time, (is_local ? parallelMng()->commRank() : -1)), values);
+    m_internal->addValue(TimeHistoryAddValueArgInternal(name, end_time, (is_local ? parallelMng()->commRank() : NULL_SUB_DOMAIN_ID)), values);
   }
   void addValue(const String& name, Int32ConstArrayView values, bool end_time, bool is_local) override
   {
-    m_internal->addValue(TimeHistoryAddValueArgInternal(name, end_time, (is_local ? parallelMng()->commRank() : -1)), values);
+    m_internal->addValue(TimeHistoryAddValueArgInternal(name, end_time, (is_local ? parallelMng()->commRank() : NULL_SUB_DOMAIN_ID)), values);
   }
   void addValue(const String& name, Int64ConstArrayView values, bool end_time, bool is_local) override
   {
-    m_internal->addValue(TimeHistoryAddValueArgInternal(name, end_time, (is_local ? parallelMng()->commRank() : -1)), values);
+    m_internal->addValue(TimeHistoryAddValueArgInternal(name, end_time, (is_local ? parallelMng()->commRank() : NULL_SUB_DOMAIN_ID)), values);
   }
 
  public:
@@ -300,7 +300,7 @@ timeHistoryBegin()
     int th_step = subDomain()->caseOptionsMain()->writeHistoryPeriod();
     if (th_step != 0) {
       if ((globalIteration() % th_step) == 0)
-        if (parallelMng()->isMasterIO() || m_internal->isNonIOMasterCurvesEnabled())
+        if (parallelMng()->isMasterIO() || (m_internal->isNonIOMasterCurvesEnabled() && m_internal->isMasterIOOfSubDomain()))
           force_print_thm = true;
     }
     if (subDomain()->applicationInfo().isDebug())
@@ -328,8 +328,9 @@ timeHistoryInit()
   //warning() << "timeHistoryInit " << m_global_time() << " " << m_global_times.size();
 
   info(4) << "TimeHistory is MasterIO ? " << m_internal->isMasterIO();
-  if (!m_internal->isMasterIO() && !m_internal->isNonIOMasterCurvesEnabled())
+  if (!m_internal->isMasterIO() && (!m_internal->isNonIOMasterCurvesEnabled() || !m_internal->isMasterIOOfSubDomain()))
     return;
+
   m_internal->editOutputPath(Directory(subDomain()->exportDirectory(), "courbes"));
   m_internal->addObservers(subDomain()->propertyMng());
 
@@ -338,17 +339,16 @@ timeHistoryInit()
     m_internal->addCurveWriter(makeRef(gnuplot_curve_writer));
   }
 
-  if (m_internal->isMasterIO() || m_internal->isNonIOMasterCurvesEnabled()) {
-    ServiceBuilder<ITimeHistoryCurveWriter2> builder(subDomain());
-    auto writers = builder.createAllInstances();
-    for (auto& wr_ref : writers) {
-      ITimeHistoryCurveWriter2* cw = wr_ref.get();
-      if (cw) {
-        info() << "FOUND CURVE SERVICE (V2)!";
-        m_internal->addCurveWriter(wr_ref);
-      }
+  ServiceBuilder<ITimeHistoryCurveWriter2> builder(subDomain());
+  auto writers = builder.createAllInstances();
+  for (auto& wr_ref : writers) {
+    ITimeHistoryCurveWriter2* cw = wr_ref.get();
+    if (cw) {
+      info() << "FOUND CURVE SERVICE (V2)!";
+      m_internal->addCurveWriter(wr_ref);
     }
   }
+
 }
 
 /*---------------------------------------------------------------------------*/
@@ -366,7 +366,7 @@ addCurveWriter(ITimeHistoryCurveWriter2* writer)
 void TimeHistoryMng2::
 timeHistoryContinueInit()
 {
-  if (m_internal->isMasterIO() || m_internal->isNonIOMasterCurvesEnabled())
+  if (m_internal->isMasterIO() || (m_internal->isNonIOMasterCurvesEnabled() && m_internal->isMasterIOOfSubDomain()))
     m_internal->readVariables(subDomain()->meshMng(), subDomain()->defaultMesh());
 }
 
