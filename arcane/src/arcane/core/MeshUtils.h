@@ -451,6 +451,17 @@ computeNodeNodeViaEdgeConnectivity(IMesh* mesh, const String& connectivity_name)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+/*!
+ * \brief Créé ou recréé une connectivité noeuds-noeuds via les arêtes
+ * pour les noeuds sur les faces frontières du maillage.
+ *
+ * La connectivité aura pour nom \a connectivity_name.
+ */
+extern "C++" ARCANE_CORE_EXPORT Ref<IIndexedIncrementalItemConnectivity>
+computeBoundaryNodeNodeViaEdgeConnectivity(IMesh* mesh, const String& connectivity_name);
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 } // namespace Arcane::MeshUtils
 
