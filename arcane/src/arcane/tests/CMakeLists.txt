@@ -1,7 +1,7 @@
 ﻿set(TEST_DIRS . anyitem dof inout)
 
 set(TEST_LIBS ${ARCANE_ADDITIONNAL_TEST_LIBRARIES})
-if(MPI_FOUND AND NOT WIN32)
+if(TARGET arcane_aleph_tests)
   # Aleph n'est disponible que si on a MPI et Linux
   set(TEST_LIBS ${TEST_LIBS} arcane_aleph_tests)
 endif()
@@ -1238,11 +1238,13 @@ endif()
 ####################
 # MULTI ALEPH TEST #
 ####################
-ARCANE_ADD_TEST_PARALLEL(aleph_multi testAlephMulti.arc 1)
-ARCANE_ADD_TEST_PARALLEL(aleph_multi testAlephMulti.arc 2)
-ARCANE_ADD_TEST_PARALLEL(aleph_multi testAlephMulti.arc 4)
-ARCANE_ADD_TEST_PARALLEL(aleph_multi testAlephMulti.arc 6)
-ARCANE_ADD_TEST_PARALLEL(aleph_multi testAlephMulti.arc 8)
+if (TARGET arcane_aleph_tests)
+  ARCANE_ADD_TEST_PARALLEL(aleph_multi testAlephMulti.arc 1)
+  ARCANE_ADD_TEST_PARALLEL(aleph_multi testAlephMulti.arc 2)
+  ARCANE_ADD_TEST_PARALLEL(aleph_multi testAlephMulti.arc 4)
+  ARCANE_ADD_TEST_PARALLEL(aleph_multi testAlephMulti.arc 6)
+  ARCANE_ADD_TEST_PARALLEL(aleph_multi testAlephMulti.arc 8)
+endif()
 
 #################################################################
 #################################################################

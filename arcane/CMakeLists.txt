@@ -175,6 +175,7 @@ option(ARCANE_ADD_RPATH_TO_LIBS "True if we automatically add rpath in target_li
 
 option(ARCANE_ENABLE_TESTS "Enable compilation of tests" ON)
 option(ARCANE_ENABLE_DOTNET_WRAPPER "Enable compilation of '.Net' wrapper" ON)
+option(ARCANE_ENABLE_ALEPH "Enable the compilation of Aleph component" ON)
 
 # Expérimental. Ne pas utiliser en dehors d'Arcane
 option(ARCANE_ENABLE_DOTNET_PYTHON_WRAPPER "Enable compilation python extension using '.Net' wrapper" OFF)
@@ -928,7 +929,9 @@ endif()
 
 add_subdirectory(src/arcane/hdf5)
 add_subdirectory(src/arcane/std)
-add_subdirectory(src/arcane/aleph)
+if (ARCANE_ENABLE_ALEPH)
+  add_subdirectory(src/arcane/aleph)
+endif()
 add_subdirectory(src/arcane/driverlib)
 add_subdirectory(src/arcane/driver)
 
