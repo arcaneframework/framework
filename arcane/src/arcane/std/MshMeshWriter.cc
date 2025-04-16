@@ -420,7 +420,7 @@ writeMesh(const String& file_name)
     ofile << nb_tag << "\n";
     for (const PhysicalTagInfo& tag_info : m_physical_tags) {
       // TODO: vérifier que le nom ne dépasse pas 127 caractères.
-      ofile << tag_info.m_dimension << " " << tag_info.m_physical_tag << " " << tag_info.m_name << "\n";
+      ofile << tag_info.m_dimension << " " << tag_info.m_physical_tag << " " << '"' << tag_info.m_name << '"' << "\n";
     }
     ofile << "$EndPhysicalNames\n";
   }
