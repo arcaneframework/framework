@@ -35,7 +35,7 @@ class ARCANE_CORE_EXPORT IMeshUtilities
 {
  public:
 
-  virtual ~IMeshUtilities() {} //!< Libère les ressources.
+  virtual ~IMeshUtilities() = default; //!< Libère les ressources.
 
  public:
 
@@ -219,22 +219,36 @@ class ARCANE_CORE_EXPORT IMeshUtilities
                                                        bool initial_partition) =0;
 
   /*!
-   * \brief Fusionne des noeuds.
-   *
-   * Fusionne deux à deux les noeuds de \a nodes_to_merge_local_id avec ceux
-   * de \a nodes_local_id. Chaque noeud \a nodes_to_merge_local_id[i] est
-   * fusionné avec \a nodes_local_id[i].
-   *
-   * Les noeuds \a nodes_to_merge_local_id sont détruits après fusion. Les entités
-   * reposant entièrement sur ces noeuds fusionnés sont aussi détruites.
-   *
-   * Il est interdit de fusionner deux noeuds d'une même maille ou d'une même face
-   * (après fusion, une face ou une maille ne peut pas avoir deux fois le
-   * même noeud).
+   * \brief Fusionne des nœuds.
    */
   virtual void mergeNodes(Int32ConstArrayView nodes_local_id,
-                          Int32ConstArrayView nodes_to_merge_local_id) =0;
+                          Int32ConstArrayView nodes_to_merge_local_id)
+  {
+    this->mergeNodes(nodes_local_id, nodes_to_merge_local_id, false);
+  }
 
+  /*!
+   * \brief Fusionne des nœuds.
+   *
+   * Fusionne deux à deux les nœuds de \a nodes_to_merge_local_id avec ceux
+   * de \a nodes_local_id. Chaque nœud \a nodes_to_merge_local_id[i] est
+   * fusionné avec \a nodes_local_id[i].
+   *
+   * Les nœuds \a nodes_to_merge_local_id sont détruits après fusion. Les entités
+   * reposant entièrement sur ces nœuds fusionnés sont aussi détruites.
+   *
+   * Il est interdit de fusionner deux nœuds d'une même maille ou d'une même face
+   * (après fusion, une face ou une maille ne peut pas avoir deux fois le
+   * même nœud).
+   *
+   * Une fois la fusion effectuée, les faces contenant les nœuds fusionnés
+   * (\a nodes_to_merge_local_id) sont détruites. Si \a allow_non_corresponding_face
+   * est faux, alors pour chaque face détruite doit correspondre une face
+   * existante avec les nœuds fusionnés (\a nodes_local_id).
+   */
+  virtual void mergeNodes(Int32ConstArrayView nodes_local_id,
+                          Int32ConstArrayView nodes_to_merge_local_id,
+                          bool allow_non_corresponding_face) = 0;
   /*!
    * \brief Recalcule les uniqueId() des arêtes, faces et mailles en fonction
    * des uniqueId() des noeuds.
