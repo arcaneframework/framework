@@ -101,6 +101,16 @@ class MshParallelMeshReader
   {
    public:
 
+    MshToArcaneTypeInfo() = default;
+    MshToArcaneTypeInfo(Int32 msh_type, ItemTypeInfo* iti, ConstArrayView<Int16> reorder_infos)
+    : m_msh_type(msh_type)
+    , m_arcane_type_info(iti)
+    , m_reorder_infos(reorder_infos)
+    {
+    }
+
+   public:
+
     Int32 m_msh_type = -1;
     ItemTypeInfo* m_arcane_type_info = nullptr;
     UniqueArray<Int16> m_reorder_infos;

@@ -190,6 +190,8 @@ _convertToMshType(Int32 arcane_type)
     return MSH_TET_10; //printf("4-node tetrahedron");
   case IT_Hexaedron8:
     return MSH_HEX_8; //printf("8-node hexahedron");
+  case IT_Hexaedron20:
+    return MSH_HEX_20;
   case IT_Pentaedron6:
     return MSH_PRI_6; //printf("6-node prism");
   case IT_Pyramid5:
@@ -619,6 +621,8 @@ _writeElements(std::ostream& ofile, Int64 total_nb_cell)
       ENUMERATE_ (ItemWithNodes, iitem, item_family->view(items_of_current_type)) {
         ItemWithNodes item = *iitem;
         ofile << item.uniqueId();
+        // TODO: traiter l'éventuelle permutation entre numérotation GMSH et Arcane
+        // (Arcane utilise la même convention que VTK)
         for (Int32 i = 0; i < nb_node_for_type; ++i)
           ofile << " " << item.node(i).uniqueId();
         ofile << "\n";
