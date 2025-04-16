@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshNodeMerger.cc                                           (C) 2000-2024 */
+/* MeshNodeMerger.cc                                           (C) 2000-2025 */
 /*                                                                           */
 /* Fusions de noeuds d'un maillage.                                          */
 /*---------------------------------------------------------------------------*/
@@ -13,7 +13,6 @@
 
 #include "arcane/utils/FatalErrorException.h"
 #include "arcane/utils/NotImplementedException.h"
-#include "arcane/utils/NotSupportedException.h"
 #include "arcane/utils/ArgumentException.h"
 
 #include "arcane/core/IMesh.h"
@@ -25,7 +24,6 @@
 
 #include "arcane/mesh/MeshNodeMerger.h"
 #include "arcane/mesh/FaceReorienter.h"
-
 #include "arcane/mesh/ItemTools.h"
 #include "arcane/mesh/NodeFamily.h"
 #include "arcane/mesh/EdgeFamily.h"
@@ -83,13 +81,14 @@ MeshNodeMerger(IMesh* mesh)
  */
 void MeshNodeMerger::
 mergeNodes(Int32ConstArrayView nodes_local_id,
-           Int32ConstArrayView nodes_to_merge_local_id)
+           Int32ConstArrayView nodes_to_merge_local_id,
+           bool allow_non_corresponding_face)
 {
   ItemInternalList nodes_internal(m_node_family->itemsInternal());
   Integer nb_node = nodes_local_id.size();
-  if (nb_node!=nodes_to_merge_local_id.size())
+  if (nb_node != nodes_to_merge_local_id.size())
     throw ArgumentException(A_FUNCINFO,String::format("Arrays of different size"));
-  for( Integer i=0; i<nb_node; ++i ){
+  for (Integer i = 0; i < nb_node; ++i) {
     Node node(nodes_internal[nodes_local_id[i]]);
     Node node_to_merge(nodes_internal[nodes_to_merge_local_id[i]]);
     if (node.localId()==node_to_merge.localId())
@@ -98,15 +97,15 @@ mergeNodes(Int32ConstArrayView nodes_local_id,
     m_nodes_correspondance.insert(std::make_pair(node_to_merge,node));
   }
 
-  // Marque toutes les faces qui contiennent au moins un noeud fusionné
-  // et détermine celles qui doivent être fusionnées: ce sont celles pour
-  // lesquelles chaque noeud est fusionné.
+  // Marque toutes les faces qui contiennent au moins un nœud fusionné
+  // et détermine celles qui doivent être fusionnées : ce sont celles pour
+  // lesquelles chaque nœud est fusionné.
   std::set<Face> marked_faces;
   Int64UniqueArray face_new_nodes_uid;
   Int64UniqueArray face_new_nodes_sorted_uid;
-  ENUMERATE_FACE(iface,m_face_family->allItems()){
+  ENUMERATE_ (Face, iface, m_face_family->allItems()) {
     Face face = *iface;
-    Integer nb_node = face.nbNode();
+    Integer face_nb_node = face.nbNode();
     Integer nb_merged_node = 0;
     for( NodeEnumerator inode(face.nodes()); inode(); ++inode ){
       Node node = *inode;
@@ -115,13 +114,13 @@ mergeNodes(Int32ConstArrayView nodes_local_id,
         marked_faces.insert(face);
       }
     }
-    if (nb_merged_node==nb_node){
-      // Tous les noeuds de la face sont fusionnés. Cela veut dire que les
+    if (nb_merged_node == face_nb_node) {
+      // Tous les nœuds de la face sont fusionnés. Cela veut dire que les
       // mailles associées à cette face vont faire référence à une nouvelle face.
       // Il faut maintenant trouver cette nouvelle face.
       info(4) << "FACE TO MERGE uid=" << face.uniqueId();
-      face_new_nodes_uid.resize(nb_node);
-      face_new_nodes_sorted_uid.resize(nb_node);
+      face_new_nodes_uid.resize(face_nb_node);
+      face_new_nodes_sorted_uid.resize(face_nb_node);
       Node new_face_first_node;
       for( NodeEnumerator inode(face.nodes()); inode(); ++inode ){
         Node new_node = m_nodes_correspondance.find(*inode)->second;
@@ -130,10 +129,14 @@ mergeNodes(Int32ConstArrayView nodes_local_id,
         face_new_nodes_uid[inode.index()] = new_node.uniqueId();
         info(4) << " OLD_node=" << (*inode).uniqueId() << " new=" << new_node.uniqueId();
       }
-      mesh_utils::reorderNodesOfFace(face_new_nodes_uid,face_new_nodes_sorted_uid);
-      Face new_face = ItemTools::findFaceInNode2(new_face_first_node,face.type(),face_new_nodes_sorted_uid);
-      if (new_face.null())
-        ARCANE_FATAL("Can not find corresponding face nodes_uid={0}",face_new_nodes_sorted_uid);
+      mesh_utils::reorderNodesOfFace(face_new_nodes_uid, face_new_nodes_sorted_uid);
+      Face new_face = ItemTools::findFaceInNode2(new_face_first_node, face.type(), face_new_nodes_sorted_uid);
+      if (new_face.null()) {
+        // La face n'a pas de correspondante. Ne fais rien si cela est autorisé.
+        if (allow_non_corresponding_face)
+          continue;
+        ARCANE_FATAL("Can not find corresponding face nodes_uid={0}", face_new_nodes_sorted_uid);
+      }
       info(4) << "NEW FACE=" << new_face.uniqueId() << " nb_cell=" << new_face.nbCell();
       m_faces_correspondance.insert(std::make_pair(face,new_face));
       // Comme cette face est fusionnée, on la retire de la liste des faces

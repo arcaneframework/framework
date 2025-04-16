@@ -880,10 +880,11 @@ partitionAndExchangeMeshWithReplication(IMeshPartitionerBase* partitioner,
 
 void UnstructuredMeshUtilities::
 mergeNodes(Int32ConstArrayView nodes_local_id,
-           Int32ConstArrayView nodes_to_merge_local_id)
+           Int32ConstArrayView nodes_to_merge_local_id,
+           bool allow_non_corresponding_face)
 {
   mesh::MeshNodeMerger merger(m_mesh);
-  merger.mergeNodes(nodes_local_id,nodes_to_merge_local_id);
+  merger.mergeNodes(nodes_local_id, nodes_to_merge_local_id, allow_non_corresponding_face);
 }
 
 /*---------------------------------------------------------------------------*/

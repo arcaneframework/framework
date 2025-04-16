@@ -95,7 +95,8 @@ class UnstructuredMeshUtilities
                                                bool initial_partition) override;
 
   void mergeNodes(Int32ConstArrayView nodes_local_id,
-                  Int32ConstArrayView nodes_to_merge_local_id) override;
+                  Int32ConstArrayView nodes_to_merge_local_id,
+                  bool allow_non_corresponding_face) override;
 
   void computeAndSetOwnersForNodes() override;
   void computeAndSetOwnersForFaces() override;
