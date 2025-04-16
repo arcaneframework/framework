@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshNodeMerger.cc                                           (C) 2000-2024 */
+/* MeshNodeMerger.cc                                           (C) 2000-2025 */
 /*                                                                           */
 /* Fusions de noeuds d'un maillage.                                          */
 /*---------------------------------------------------------------------------*/
@@ -13,7 +13,6 @@
 
 #include "arcane/utils/FatalErrorException.h"
 #include "arcane/utils/NotImplementedException.h"
-#include "arcane/utils/NotSupportedException.h"
 #include "arcane/utils/ArgumentException.h"
 
 #include "arcane/core/IMesh.h"
@@ -25,7 +24,6 @@
 
 #include "arcane/mesh/MeshNodeMerger.h"
 #include "arcane/mesh/FaceReorienter.h"
-
 #include "arcane/mesh/ItemTools.h"
 #include "arcane/mesh/NodeFamily.h"
 #include "arcane/mesh/EdgeFamily.h"
