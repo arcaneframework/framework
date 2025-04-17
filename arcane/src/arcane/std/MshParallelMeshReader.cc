@@ -94,6 +94,28 @@ class MshParallelMeshReader
 
   using eReturnType = typename IMeshReader::eReturnType;
 
+ public:
+
+  //! Informations de correspondance entre le type MSH et le type Arcane
+  class MshToArcaneTypeInfo
+  {
+   public:
+
+    MshToArcaneTypeInfo() = default;
+    MshToArcaneTypeInfo(Int32 msh_type, ItemTypeInfo* iti, ConstArrayView<Int16> reorder_infos)
+    : m_msh_type(msh_type)
+    , m_arcane_type_info(iti)
+    , m_reorder_infos(reorder_infos)
+    {
+    }
+
+   public:
+
+    Int32 m_msh_type = -1;
+    ItemTypeInfo* m_arcane_type_info = nullptr;
+    UniqueArray<Int16> m_reorder_infos;
+  };
+
   /*!
    * \brief Infos d'un bloc pour $Elements pour la version 4.
    *
@@ -112,6 +134,8 @@ class MshParallelMeshReader
     Int32 item_nb_node = 0; //!< Nombre de noeuds de l'entité.
     Int64 entity_tag = -1;
     bool is_built_as_cells = false; //!< Indique si les entités du bloc sont des mailles
+    //! Si non vide, contient les indirections pour la renumérotation
+    SmallSpan<const Int16> reorder_infos;
     UniqueArray<Int64> uids; //! < Liste des uniqueId() du bloc
     UniqueArray<Int64> connectivities; //!< Liste des connectivités du bloc.
   };
@@ -143,10 +167,7 @@ class MshParallelMeshReader
       ++nb_item;
       items_infos.add(type_id);
       items_infos.add(unique_id);
-      Int64 index = items_infos.size();
       items_infos.addRange(nodes_uid);
-      if (type_id == IT_Tetraedron10)
-        std::swap(items_infos[index + 9], items_infos[index + 8]);
     }
 
    public:
@@ -176,7 +197,8 @@ class MshParallelMeshReader
 
   explicit MshParallelMeshReader(ITraceMng* tm)
   : TraceAccessor(tm)
-  {}
+  {
+  }
 
   eReturnType readMeshFromMshFile(IMesh* mesh, const String& filename, bool use_internal_partition) override;
 
@@ -195,6 +217,8 @@ class MshParallelMeshReader
   UniqueArray<Int32> m_parts_rank;
   //! Vrai si le format est binaire
   bool m_is_binary = false;
+  //! Informations de conversion entre les types MSH et Arcane pour les entités
+  UniqueArray<MshToArcaneTypeInfo> m_msh_to_arcane_type_infos;
 
  private:
 
@@ -212,7 +236,6 @@ class MshParallelMeshReader
                            const String& group_name, IItemFamily* family, bool filter_invalid);
   void _addCellOrNodeGroupOnePart(ConstArrayView<Int64> uids, const String& group_name,
                                   Int32 block_index, IItemFamily* family, bool filter_invalid);
-  Int16 _switchMshType(Int64, Int32&) const;
   void _readPhysicalNames();
   void _readEntities();
   void _readPeriodic();
@@ -232,6 +255,9 @@ class MshParallelMeshReader
   Int64 _getInt64();
   void _goToNextLine();
   void _readAndCheck(const String& expected_value);
+  void _addMshTypeInfo(Int32 msh_type, ItemTypeId arcane_type, ConstArrayView<Int16> reorder_infos = {});
+  const MshToArcaneTypeInfo& mshToArcaneTypeInfo(Int32 msh_type) const;
+  void _initTypes();
 };
 
 /*---------------------------------------------------------------------------*/
@@ -457,76 +483,6 @@ _goToNextLine()
 {
   if (m_ios_file.get())
     m_ios_file->getNextLine();
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-Int16 MshParallelMeshReader::
-_switchMshType(Int64 mshElemType, Int32& nNodes) const
-{
-  switch (mshElemType) {
-  case IT_NullType: // used to decode IT_NullType: IT_HemiHexa7|IT_Line9
-    switch (nNodes) {
-    case 7:
-      return IT_HemiHexa7;
-    default:
-      info() << "Could not decode IT_NullType with nNodes=" << nNodes;
-      throw IOException("_convertToMshType", "Could not decode IT_NullType with nNodes");
-    }
-    break;
-  case MSH_PNT:
-    nNodes = 1;
-    return IT_Vertex;
-  case MSH_LIN_2:
-    nNodes = 2;
-    return IT_Line2;
-  case MSH_TRI_3:
-    nNodes = 3;
-    return IT_Triangle3;
-  case MSH_QUA_4:
-    nNodes = 4;
-    return IT_Quad4;
-  case MSH_TET_4:
-    nNodes = 4;
-    return IT_Tetraedron4;
-  case MSH_HEX_8:
-    nNodes = 8;
-    return IT_Hexaedron8;
-  case MSH_PRI_6:
-    nNodes = 6;
-    return IT_Pentaedron6;
-  case MSH_PYR_5:
-    nNodes = 5;
-    return IT_Pyramid5;
-  case MSH_TRI_10:
-    nNodes = 10;
-    return IT_Heptaedron10;
-  case MSH_TRI_12:
-    nNodes = 12;
-    return IT_Octaedron12;
-  case MSH_TRI_6:
-    nNodes = 6;
-    return IT_Triangle6;
-  case MSH_TET_10:
-    nNodes = 10;
-    return IT_Tetraedron10;
-  case MSH_QUA_9:
-  case MSH_HEX_27:
-  case MSH_PRI_18:
-  case MSH_PYR_14:
-  case MSH_QUA_8:
-  case MSH_HEX_20:
-  case MSH_PRI_15:
-  case MSH_PYR_13:
-  case MSH_TRI_9:
-  case MSH_TRI_15:
-  case MSH_TRI_15I:
-  case MSH_TRI_21:
-  default:
-    ARCANE_THROW(NotSupportedException, "Unknown GMSH element type '{0}'", mshElemType);
-  }
-  return IT_NullType;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -922,20 +878,22 @@ _readElementsFromFile()
     Int32 entity_type = block_info[2];
     Int64 nb_entity_in_block = _getInt64AndBroadcast();
 
-    Integer item_nb_node = 0;
-    ItemTypeId item_type(_switchMshType(entity_type, item_nb_node));
+    const MshToArcaneTypeInfo& msh_tinfo = mshToArcaneTypeInfo(entity_type);
+    ItemTypeInfo* tinfo = msh_tinfo.m_arcane_type_info;
+    Int32 item_nb_node = tinfo->nbLocalNode();
+    ItemTypeId item_type = tinfo->itemTypeId();
 
     info() << "[Elements] index=" << block.index << " entity_dim=" << entity_dim
            << " entity_tag=" << entity_tag
-           << " entity_type=" << entity_type << " nb_in_block=" << nb_entity_in_block
-           << " item_type=" << item_type << " item_nb_node=" << item_nb_node;
+           << " msh_entity_type=" << entity_type << " nb_in_block=" << nb_entity_in_block
+           << " arcane_item_type=" << item_type << " item_nb_node=" << item_nb_node;
 
     block.nb_entity = nb_entity_in_block;
     block.item_type = item_type;
     block.item_nb_node = item_nb_node;
     block.dimension = entity_dim;
     block.entity_tag = entity_tag;
-
+    block.reorder_infos = msh_tinfo.m_reorder_infos;
     if (entity_type == MSH_PNT) {
       // Si le type est un point, le traitement semble un peu particulier.
       // Il y a dans ce cas deux entiers dans la ligne suivante:
@@ -1086,8 +1044,15 @@ _computeOwnItems(MshElementBlock& block, MshItemKindInfo& item_kind_info, bool i
   UniqueArray<Int64> uids;
   UniqueArray<Int32> nodes_rank;
 
+  SmallSpan<const Int16> reorder_infos = block.reorder_infos;
+  bool has_reorder_info = !reorder_infos.empty();
   const Int32 nb_part = m_parts_rank.size();
-  info() << "Compute own items block_index=" << block.index << " nb_part=" << nb_part;
+  info() << "Compute own items block_index=" << block.index << " nb_part=" << nb_part
+         << " has_reorder?=" << has_reorder_info;
+  // Liste des noeuds de l'élément avec la connectivité Arcane.
+  SmallArray<Int64> arcane_reordered_uids;
+  if (has_reorder_info)
+    arcane_reordered_uids.resize(item_nb_node);
   for (Int32 i_part = 0; i_part < nb_part; ++i_part) {
     const Int32 dest_rank = m_parts_rank[i_part];
     // Broadcast la i_part-ème partie des uids et connectivités des mailles
@@ -1123,6 +1088,13 @@ _computeOwnItems(MshElementBlock& block, MshItemKindInfo& item_kind_info, bool i
       if (is_generate_uid)
         // Le uniqueId() sera généré automatiquement
         uid = NULL_ITEM_UNIQUE_ID;
+      if (has_reorder_info) {
+        // Réordonne les noeuds si le type Arcane n'a pas la même numérotation
+        // que le type MSH.
+        for (Int32 zz = 0; zz < item_nb_node; ++zz)
+          arcane_reordered_uids[zz] = v[reorder_infos[zz]];
+        v = arcane_reordered_uids.view();
+      }
       item_kind_info.addItem(item_type, uid, v);
     }
   }
@@ -1736,6 +1708,8 @@ _readMeshFromFile()
   IMesh* mesh = m_mesh;
   info() << "Reading 'msh' file in parallel";
 
+  _initTypes();
+
   const int MSH_BINARY_TYPE = 1;
 
   if (ios_file) {
@@ -1826,6 +1800,62 @@ _readMeshFromFile()
   _allocateCells();
   _setNodesCoordinates();
   _allocateGroups();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MshParallelMeshReader::
+_initTypes()
+{
+  // Initialise les types.
+  // Il faut le faire au début de la lecture et ne plus en ajouter après.
+  _addMshTypeInfo(MSH_PNT, ITI_Vertex);
+  _addMshTypeInfo(MSH_LIN_2, ITI_Line2);
+  _addMshTypeInfo(MSH_TRI_3, ITI_Triangle3);
+  _addMshTypeInfo(MSH_QUA_4, ITI_Quad4);
+  _addMshTypeInfo(MSH_TET_4, ITI_Tetraedron4);
+  _addMshTypeInfo(MSH_HEX_8, ITI_Hexaedron8);
+  _addMshTypeInfo(MSH_PRI_6, ITI_Pentaedron6);
+  _addMshTypeInfo(MSH_PYR_5, ITI_Pyramid5);
+  _addMshTypeInfo(MSH_TRI_6, ITI_Triangle6);
+  {
+    FixedArray<Int16, 10> x({ 0, 1, 2, 3, 4, 5, 6, 7, 9, 8 });
+    _addMshTypeInfo(MSH_TET_10, ITI_Tetraedron10, x.view());
+  }
+  {
+    FixedArray<Int16, 20> x({ 0, 1, 2, 3, 4, 5, 6, 7, 8, 11, 13, 9, 16, 18, 19, 17, 10, 12, 14, 15 });
+    _addMshTypeInfo(MSH_HEX_20, ITI_Hexaedron20, x.view());
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MshParallelMeshReader::
+_addMshTypeInfo(Int32 msh_type, ItemTypeId arcane_type, ConstArrayView<Int16> reorder_infos)
+{
+  if (msh_type < 0)
+    ARCANE_FATAL("Bad MSH type {0}", msh_type);
+  if (m_msh_to_arcane_type_infos.size() < msh_type)
+    m_msh_to_arcane_type_infos.resize(msh_type + 1);
+  ItemTypeMng* item_type_mng = m_mesh->itemTypeMng();
+  ItemTypeInfo* iti = item_type_mng->typeFromId(arcane_type);
+  m_msh_to_arcane_type_infos[msh_type] = MshToArcaneTypeInfo(msh_type, iti, reorder_infos);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+const MshParallelMeshReader::MshToArcaneTypeInfo& MshParallelMeshReader::
+mshToArcaneTypeInfo(Int32 msh_type) const
+{
+  if (msh_type < m_msh_to_arcane_type_infos.size()) {
+    const MshToArcaneTypeInfo& tx = m_msh_to_arcane_type_infos[msh_type];
+    if (tx.m_arcane_type_info)
+      return tx;
+  }
+  ARCANE_THROW(NotSupportedException, "MSH type '{0}' is not supported in Arcane", msh_type);
 }
 
 /*---------------------------------------------------------------------------*/
