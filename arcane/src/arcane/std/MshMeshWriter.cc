@@ -47,6 +47,26 @@ class MshMeshWriter
 
  public:
 
+  //! Informations de correspondance entre le type MSH et le type Arcane
+  class ArcaneToMshTypeInfo
+  {
+   public:
+
+    ArcaneToMshTypeInfo() = default;
+    ArcaneToMshTypeInfo(ItemTypeId iti, Int32 msh_type, ConstArrayView<Int16> reorder_infos)
+    : m_arcane_type(iti)
+    , m_msh_type(msh_type)
+    , m_reorder_infos(reorder_infos)
+    {
+    }
+
+   public:
+
+    ItemTypeId m_arcane_type;
+    Int32 m_msh_type = -1;
+    UniqueArray<Int16> m_reorder_infos;
+  };
+
   class ItemFamilyWriteInfo
   : public TraceAccessor
   {
@@ -70,7 +90,7 @@ class MshMeshWriter
   {
    public:
 
-    EntityInfo(Int32 dim, Int32 item_type, Int32 entity_tag)
+    EntityInfo(Int32 dim, ItemTypeId item_type, Int32 entity_tag)
     : m_dim(dim)
     , m_item_type(item_type)
     , m_entity_tag(entity_tag)
@@ -88,7 +108,7 @@ class MshMeshWriter
    public:
 
     Int32 m_dim = -1;
-    Int32 m_item_type = IT_NullType;
+    ItemTypeId m_item_type;
     Int32 m_entity_tag = -1;
     Int32 m_physical_tag = -1;
     String m_physical_tag_name;
@@ -111,7 +131,7 @@ class MshMeshWriter
     ItemGroup m_item_group;
     UniqueArray<EntityInfo> m_entities_by_type;
     FixedArray<UniqueArray<Int32>, NB_BASIC_ITEM_TYPE> m_items_by_type;
-    UniqueArray<Int32> m_existing_items_type;
+    UniqueArray<ItemTypeId> m_existing_items_type;
   };
 
  public:
@@ -139,16 +159,21 @@ class MshMeshWriter
   impl::MshMeshGenerationInfo* m_mesh_info = nullptr;
   bool m_has_periodic_info = false;
 
+  //! Informations de conversion entre les types Arcane et MSH pour les entités
+  UniqueArray<ArcaneToMshTypeInfo> m_arcane_to_msh_type_infos;
+
  private:
 
   bool _writeMeshToFileV4(IMesh* mesh, const String& file_name);
-  Integer _convertToMshType(Int32 arcane_type);
   std::pair<Int64, Int64> _getFamilyMinMaxUniqueId(IItemFamily* family);
   void _addGroupsToProcess(IItemFamily* family, Array<ItemGroup>& items_groups);
   void _writeEntities(std::ostream& ofile);
   void _writeNodes(std::ostream& ofile);
   void _writeElements(std::ostream& ofile, Int64 total_nb_cell);
   void _writePeriodic(std::ostream& ofile);
+  void _initTypes();
+  void _addArcaneTypeInfo(ItemTypeId arcane_type, Int32 msh_type, ConstArrayView<Int16> reorder_infos = {});
+  const ArcaneToMshTypeInfo& arcaneToMshTypeInfo(ItemTypeId arcane_type) const;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -159,71 +184,7 @@ MshMeshWriter(IMesh* mesh)
 : TraceAccessor(mesh->traceMng())
 , m_mesh(mesh)
 {
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
- * \brief Converti le type %Arcane en le type GMSH.
- *
- * La conversion n'est possible que pour les types de base.
- */
-Integer MshMeshWriter::
-_convertToMshType(Int32 arcane_type)
-{
-  switch (arcane_type) {
-    //		case (IT_NullType):			return MSH_LIN_2;		//case (0) is not used
-  case IT_Vertex:
-    return MSH_PNT; //printf("1-node point");
-  case IT_Cell3D_Line2:
-  case IT_Line2:
-    return MSH_LIN_2; //printf("2-node line");
-  case IT_Cell3D_Triangle3:
-  case IT_Triangle3:
-    return MSH_TRI_3; //printf("3-node triangle");
-  case IT_Cell3D_Quad4:
-  case IT_Quad4:
-    return MSH_QUA_4; //printf("4-node quadrangle");
-  case IT_Tetraedron4:
-    return MSH_TET_4; //printf("4-node tetrahedron");
-  case IT_Tetraedron10:
-    return MSH_TET_10; //printf("4-node tetrahedron");
-  case IT_Hexaedron8:
-    return MSH_HEX_8; //printf("8-node hexahedron");
-  case IT_Hexaedron20:
-    return MSH_HEX_20;
-  case IT_Pentaedron6:
-    return MSH_PRI_6; //printf("6-node prism");
-  case IT_Pyramid5:
-    return MSH_PYR_5; //printf("5-node pyramid");
-  // Beneath, are some meshes that have been tried to match gmsh's ones
-  // Other 5-nodes
-  case IT_Pentagon5:
-    return MSH_PYR_5; // Could use a tag to encode these
-  case IT_HemiHexa5:
-    return MSH_PYR_5;
-  case IT_DiTetra5:
-    return MSH_PYR_5;
-  // Other 6-nodes
-  case IT_Hexagon6:
-    return MSH_PRI_6;
-  case IT_HemiHexa6:
-    return MSH_PRI_6;
-  case IT_AntiWedgeLeft6:
-    return MSH_PRI_6;
-  case IT_AntiWedgeRight6:
-    return MSH_PRI_6;
-  // Other 10-nodes
-  case IT_Heptaedron10:
-    return MSH_TRI_10;
-  // Other 12-nodes
-  case IT_Octaedron12:
-    return MSH_TRI_12;
-  // Others are still considered as default, rising an exception
-  default:
-    break;
-  }
-  ARCANE_THROW(NotSupportedException, "Arcane type '{0}'", m_item_type_mng->typeFromId(arcane_type)->typeName());
+  _initTypes();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -254,17 +215,17 @@ processGroup(ItemGroup group, Int32 base_entity_index)
 
   // Conserve les types pré-définis qui ont des éléments
   Int64 total_nb_item = 0;
-  for (Int32 i = 0; i < NB_BASIC_ITEM_TYPE; ++i) {
+  for (Int16 i = 0; i < NB_BASIC_ITEM_TYPE; ++i) {
     Int64 nb_type = m_items_by_type[i].size();
     if (nb_type > 0)
-      m_existing_items_type.add(i);
+      m_existing_items_type.add(ItemTypeId(i));
     total_nb_item += nb_type;
   }
 
   Int32 nb_existing_type = m_existing_items_type.size();
   tm->info() << "NbExistingType=" << nb_existing_type;
   for (Int32 type_index = 0; type_index < nb_existing_type; ++type_index) {
-    Int32 item_type = m_existing_items_type[type_index];
+    ItemTypeId item_type = m_existing_items_type[type_index];
     ItemTypeInfo* item_type_info = item_type_mng->typeFromId(item_type);
     Int32 type_dimension = item_type_info->dimension();
     EntityInfo entity_info(type_dimension, item_type, base_entity_index + type_index);
@@ -289,7 +250,7 @@ processGroup(ItemGroup group, Int32 base_entity_index)
     else
       ARCANE_FATAL("Invalid item kind '{0}' for entity dimension", entity_dim);
     // TODO: prendre un type qui correspond à la dimension
-    EntityInfo entity_info(entity_dim, IT_Tetraedron4, base_entity_index);
+    EntityInfo entity_info(entity_dim, ITI_Tetraedron4, base_entity_index);
     entity_info.setPhysicalTag(base_entity_index, group_name);
     m_entities_by_type.add(entity_info);
   }
@@ -607,12 +568,14 @@ _writeElements(std::ostream& ofile, Int64 total_nb_cell)
     ItemGroup item_group = ginfo->group();
     IItemFamily* item_family = item_group.itemFamily();
     for (const EntityInfo& entity_info : ginfo->entitiesByType()) {
-      Int32 cell_type = entity_info.m_item_type;
+      ItemTypeId cell_type = entity_info.m_item_type;
       ConstArrayView<Int32> items_of_current_type = ginfo->itemsByType(cell_type);
       ItemTypeInfo* item_type_info = m_item_type_mng->typeFromId(cell_type);
       Int32 type_dimension = entity_info.m_dim;
       ofile << "\n";
-      ofile << type_dimension << " " << entity_info.m_entity_tag << " " << _convertToMshType(cell_type)
+      const ArcaneToMshTypeInfo& atm_type_info = arcaneToMshTypeInfo(cell_type);
+      ConstArrayView<Int16> reorder_infos = atm_type_info.m_reorder_infos;
+      ofile << type_dimension << " " << entity_info.m_entity_tag << " " << atm_type_info.m_msh_type
             << " " << items_of_current_type.size() << "\n";
       info() << "Writing items family=" << item_family->name() << " type=" << item_type_info->typeName()
              << " n=" << items_of_current_type.size()
@@ -621,10 +584,15 @@ _writeElements(std::ostream& ofile, Int64 total_nb_cell)
       ENUMERATE_ (ItemWithNodes, iitem, item_family->view(items_of_current_type)) {
         ItemWithNodes item = *iitem;
         ofile << item.uniqueId();
-        // TODO: traiter l'éventuelle permutation entre numérotation GMSH et Arcane
-        // (Arcane utilise la même convention que VTK)
-        for (Int32 i = 0; i < nb_node_for_type; ++i)
-          ofile << " " << item.node(i).uniqueId();
+        // Traite l'éventuelle permutation entre numérotation MSH et Arcane
+        if (!reorder_infos.empty()) {
+          for (Int32 i = 0; i < nb_node_for_type; ++i)
+            ofile << " " << item.node(reorder_infos[i]).uniqueId();
+        }
+        else {
+          for (Int32 i = 0; i < nb_node_for_type; ++i)
+            ofile << " " << item.node(i).uniqueId();
+        }
         ofile << "\n";
       }
     }
@@ -724,6 +692,64 @@ _getFamilyMinMaxUniqueId(IItemFamily* family)
       max_uid = uid;
   }
   return { min_uid, max_uid };
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MshMeshWriter::
+_initTypes()
+{
+  m_arcane_to_msh_type_infos.resize(NB_BASIC_ITEM_TYPE);
+  // Initialise les types.
+  // Il faut le faire au début de la lecture et ne plus en ajouter après.
+  _addArcaneTypeInfo(ITI_Vertex, MSH_PNT);
+  _addArcaneTypeInfo(ITI_Line2, MSH_LIN_2);
+  _addArcaneTypeInfo(ITI_Cell3D_Line2, MSH_LIN_2);
+  _addArcaneTypeInfo(ITI_Triangle3, MSH_TRI_3);
+  _addArcaneTypeInfo(ITI_Cell3D_Triangle3, MSH_TRI_3);
+  _addArcaneTypeInfo(ITI_Quad4, MSH_QUA_4);
+  _addArcaneTypeInfo(ITI_Cell3D_Quad4, MSH_QUA_4);
+  _addArcaneTypeInfo(ITI_Tetraedron4, MSH_TET_4);
+  _addArcaneTypeInfo(ITI_Hexaedron8, MSH_HEX_8);
+  _addArcaneTypeInfo(ITI_Pentaedron6, MSH_PRI_6);
+  _addArcaneTypeInfo(ITI_Pyramid5, MSH_PYR_5);
+  _addArcaneTypeInfo(ITI_Triangle6, MSH_TRI_6);
+  {
+    FixedArray<Int16, 10> x({ 0, 1, 2, 3, 4, 5, 6, 7, 9, 8 });
+    _addArcaneTypeInfo(ITI_Tetraedron10, MSH_TET_10, x.view());
+  }
+  {
+    FixedArray<Int16, 20> x({ 0, 1, 2, 3, 4, 5, 6, 7, 8, 11, 16, 9, 17, 10, 18, 19, 12, 15, 13, 14 });
+    _addArcaneTypeInfo(ITI_Hexaedron20, MSH_HEX_20, x.view());
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MshMeshWriter::
+_addArcaneTypeInfo(ItemTypeId arcane_type, Int32 msh_type, ConstArrayView<Int16> reorder_infos)
+{
+  if (arcane_type.isNull())
+    ARCANE_FATAL("Null Arcane Type {0}", arcane_type);
+  if (arcane_type >= m_arcane_to_msh_type_infos.size())
+    ARCANE_FATAL("Invalid Arcane type '{0}'", arcane_type);
+  m_arcane_to_msh_type_infos[arcane_type] = ArcaneToMshTypeInfo(arcane_type, msh_type, reorder_infos);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+const MshMeshWriter::ArcaneToMshTypeInfo& MshMeshWriter::
+arcaneToMshTypeInfo(ItemTypeId arcane_type) const
+{
+  if (arcane_type < m_arcane_to_msh_type_infos.size()) {
+    const ArcaneToMshTypeInfo& tx = m_arcane_to_msh_type_infos[arcane_type];
+    if (tx.m_msh_type > 0)
+      return tx;
+  }
+  ARCANE_THROW(NotSupportedException, "Arcane type '{0}' is not supported in MSH writer", arcane_type);
 }
 
 /*---------------------------------------------------------------------------*/
