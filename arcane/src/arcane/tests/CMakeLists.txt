@@ -1133,6 +1133,8 @@ add_test(convert_mesh4_msh ${ARCANE_CONVERT_MESH_COMMAND} -f convert_out_mesh4.m
 add_test(convert_mesh5_vtk ${ARCANE_CONVERT_MESH_COMMAND} -f convert_out_mesh5.vtk --writer VtkLegacyMeshWriter ${ARCANE_TEST_PATH}/onesphere.msh)
 add_test(convert_mesh_msh_quadratic3d_vtk ${ARCANE_CONVERT_MESH_COMMAND} -f convert_mesh_msh_quadratic3d.msh --writer MshMeshWriter ${ARCANE_TEST_PATH}/quadratic3d.vtk)
 add_test(convert_mesh_vtk_quadratic3d_msh ${ARCANE_CONVERT_MESH_COMMAND} -f convert_mesh_msh_quadratic3d.vtk --writer VtkLegacyMeshWriter ${ARCANE_TEST_PATH}/quadratic3d.msh)
+add_test(convert_mesh_msh_quadratic3d_msh ${ARCANE_CONVERT_MESH_COMMAND} -f convert_mesh_msh_quadratic3d.msh --writer MshMeshWriter ${ARCANE_TEST_PATH}/quadratic3d.msh)
+add_test(convert_mesh_msh_onesphere2_msh ${ARCANE_CONVERT_MESH_COMMAND} -f convert_mesh_msh_onesphere2.msh --writer MshMeshWriter ${ARCANE_TEST_PATH}/onesphere.order2.msh)
 arcane_add_test(tied_interface1 testTiedInterface-1.arc "-m 10")
 arcane_add_test(tied_interface2 testTiedInterface-2.arc "-m 10")
 arcane_add_test(tied_interface1_2D testTiedInterface2D-1.arc "-m 10")
