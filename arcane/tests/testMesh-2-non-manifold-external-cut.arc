@@ -18,6 +18,7 @@
  <unit-test-module>
   <test name="MeshUnitTest">
     <write-mesh-service-name>VtkLegacyMeshWriter</write-mesh-service-name>
+    <test-adjency>false</test-adjency>
   </test>
  </unit-test-module>
 
