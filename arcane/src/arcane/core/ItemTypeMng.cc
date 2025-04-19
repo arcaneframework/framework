@@ -27,6 +27,9 @@
 #include "arcane/core/ItemTypeInfoBuilder.h"
 #include "arcane/core/IParallelSuperMng.h"
 #include "arcane/core/ItemTypeInfoBuilder.h"
+#include "arcane/core/IMesh.h"
+#include "arcane/core/ISubDomain.h"
+#include "arcane/core/IApplication.h"
 
 // AMR
 #include "arcane/ItemRefinementPattern.h"
@@ -50,10 +53,7 @@ const Integer ItemTypeMng::m_nb_builtin_item_type = NB_BASIC_ITEM_TYPE;
 
 ItemTypeMng::
 ItemTypeMng()
-: m_initialized(false)
-, m_types_buffer(0)
 {
-  m_initialized_counter = 0;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -69,22 +69,47 @@ ItemTypeMng::
 /*---------------------------------------------------------------------------*/
 
 void ItemTypeMng::
+build(IMesh* mesh)
+{
+  if (m_initialized)
+    ARCANE_FATAL("ItemTypeMng instance is already initialized");
+  // Récupère le IParallelSuperMng via l'application.
+  // Une fois qu'on aura supprimé l'instance singleton, on pourra
+  // simplement utiliser le IParallelMng.
+  IParallelSuperMng* super_pm = mesh->subDomain()->application()->parallelSuperMng();
+  _buildTypes(super_pm, mesh->traceMng());
+  m_initialized = true;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ItemTypeMng::
 build(IParallelSuperMng* parallel_mng, ITraceMng* trace)
+{
+  _buildSingleton(parallel_mng, trace);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ItemTypeMng::
+_buildSingleton(IParallelSuperMng* parallel_mng, ITraceMng* trace)
 {
   // Avec MPC, cette fonction peut être appelée plusieurs fois
   // dans des threads différents. Comme tous les threads partagent
-  // le même singleton, seul le premier thread fait réelement l'init.
+  // le même singleton, seul le premier thread fait réellement l'initialisation.
   // ATTENTION: Cela est incompatible avec le mode readTypes()
   // ou on lit les connectivités dans un fichier ARCANE_ITEM_TYPE_FILE.
   Int32 max_rank = parallel_mng->commSize() + 1;
   Int32 init_counter = ++m_initialized_counter;
   if (init_counter == 1) {
-    _build(parallel_mng, trace);
+    _buildTypes(parallel_mng, trace);
     m_initialized = true;
     m_initialized_counter = max_rank;
   }
   else
-    // Ceux qui ne font pas l'init doivent attendre que cette derniere
+    // Ceux qui ne font pas l'initialisation doivent attendre que cette dernière
     // soit faite.
     while (init_counter < max_rank)
       init_counter = m_initialized_counter.load();
@@ -94,7 +119,7 @@ build(IParallelSuperMng* parallel_mng, ITraceMng* trace)
 /*---------------------------------------------------------------------------*/
 
 void ItemTypeMng::
-_build(IParallelSuperMng* parallel_mng, ITraceMng* trace)
+_buildTypes(IParallelSuperMng* parallel_mng, ITraceMng* trace)
 {
   // Construit la connectivité des éléments.
   // Pour les éléments classiques, la connectivité est la même que
@@ -142,7 +167,7 @@ _build(IParallelSuperMng* parallel_mng, ITraceMng* trace)
     m_types[IT_Line2] = type;
 
     type->setInfos(this, IT_Line2, "Line2", Dimension::Dim1, 2, 0, 0);
-    type->setIsValidForCell(false);
+    type->setIsValidForCell(true);
   }
 
   // Line3
@@ -866,7 +891,7 @@ _build(IParallelSuperMng* parallel_mng, ITraceMng* trace)
     String arcane_item_type_file = platform::getEnvironmentVariable("ARCANE_ITEM_TYPE_FILE");
     if (!arcane_item_type_file.null()) {
       // verify the existence of item type file. if doesn't exist return an exception
-      readTypes(parallel_mng, arcane_item_type_file);
+      _readTypes(parallel_mng, arcane_item_type_file);
     }
   }
 
@@ -934,7 +959,7 @@ printTypes(std::ostream& ostr)
  *  node0_edgeN node1_edge1 lefFace_edgeN rightFace_edgeN
  */
 void ItemTypeMng::
-readTypes(IParallelSuperMng* pm, const String& filename)
+_readTypes(IParallelSuperMng* pm, const String& filename)
 {
   m_trace->info() << "Reading additional item types from file '" << filename << "'";
 
