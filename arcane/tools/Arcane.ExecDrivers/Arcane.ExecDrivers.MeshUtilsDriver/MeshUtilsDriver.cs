@@ -69,7 +69,7 @@ namespace Arcane.ExecDrivers.MeshUtilsDriver
             _ErrorArg(String.Format("Name of writer service (-w|--writer) is not specified"));
           _AddToolArg(d, "writer-service-name", mesh_writer_name);
           if (!is_manifold)
-            _AddMeshArg(d,"non-manifold-mesh","true");
+            _AddMeshArg(d,"cell-dimension-kind","non-manifold");
         };
         exec_driver.ParseArgs(remaining_args.ToArray(), opt_set);
         return exec_driver.Execute();
@@ -125,7 +125,7 @@ namespace Arcane.ExecDrivers.MeshUtilsDriver
           if (exec_driver.RemainingArgs.Length == 0)
             _ErrorArg(String.Format("Name of input file is not specified"));
           if (!is_manifold)
-            _AddMeshArg(d,"non-manifold-mesh","true");
+            _AddMeshArg(d,"cell-dimension-kind","non-manifold");
         };
         exec_driver.ParseArgs(remaining_args.ToArray(), opt_set);
         return exec_driver.Execute();
