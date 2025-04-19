@@ -258,7 +258,7 @@ DynamicMesh(ISubDomain* sub_domain,const MeshBuildInfo& mbi, bool is_submesh)
 , m_mesh_compact_mng(new MeshCompactMng(this))
 , m_connectivity_policy(InternalConnectivityPolicy::NewOnly)
 , m_mesh_part_info(makeMeshPartInfoFromParallelMng(m_parallel_mng))
-, m_item_type_mng(ItemTypeMng::_singleton())
+, m_item_type_mng(new ItemTypeMng())
 , m_indexed_connectivity_mng(new IndexedIncrementalItemConnectivityMng(m_parallel_mng->traceMng()))
 , m_mesh_kind(mbi.meshKind())
 {
@@ -401,6 +401,8 @@ DynamicMesh::
   delete m_face_family;
   delete m_edge_family;
   delete m_node_family;
+
+  delete m_item_type_mng;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -413,6 +415,8 @@ build()
 
   info() << "Building DynamicMesh name=" << name()
          << " ItemInternalMapImpl=" << ItemInternalMap::UseNewImpl;
+
+  m_item_type_mng->build(this);
 
   m_tied_interface_mng = new TiedInterfaceMng(this);
 
@@ -2021,7 +2025,7 @@ _exchangeItemsNew()
 
   // S'il n'y a aucune entité à échanger, on arrête immédiatement l'échange.
   if (mesh_exchanger->computeExchangeInfos()){
-    pwarning() << "No load balance is performed";
+    info() << "No load balance is performed";
     m_mesh_exchange_mng->endExchange();
     return;
   }
