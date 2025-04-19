@@ -112,6 +112,20 @@ addEdge(Int32 edge_index, Int32 n0, Int32 n1, Int32 f_left, Int32 f_right)
 /*---------------------------------------------------------------------------*/
 
 void ItemTypeInfoBuilder::
+addEdge2D(Integer edge_index, Integer n0, Integer n1)
+{
+  Array<Integer>& buf = m_mng->m_ids_buffer;
+  buf[m_first_item_index + edge_index] = buf.size();
+  buf.add(n0);
+  buf.add(n1);
+  buf.add(-1);
+  buf.add(-1);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ItemTypeInfoBuilder::
 addFaceVertex(Integer face_index, Integer n0)
 {
   _checkDimension(1);
@@ -138,6 +152,23 @@ addFaceLine(Integer face_index, Integer n0, Integer n1)
   buf.add(n1);
   buf.add(0); // no edge
 }
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ItemTypeInfoBuilder::
+addEdgeAndFaceLine(Int32 edge_face_index,
+                   std::array<Int16, 2> begin_end_node,
+                   std::array<Int16, 2> left_and_right_face)
+{
+  Int16 n0 = begin_end_node[0];
+  Int16 n1 = begin_end_node[1];
+  addFaceLine(edge_face_index, n0, n1);
+  addEdge(edge_face_index, n0, n1, left_and_right_face[0], left_and_right_face[1]);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 //! Ajoute une ligne quadratique à la liste des faces (pour les elements 2D)
 void ItemTypeInfoBuilder::

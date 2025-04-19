@@ -16,9 +16,9 @@
 
  <unit-test-module>
   <test name="MeshUnitTest">
-    <create-edges>true</create-edges>
     <write-mesh-service-name>VtkLegacyMeshWriter</write-mesh-service-name>
     <check-local-ids-from-connectivity>true</check-local-ids-from-connectivity>
+    <test-adjency>false</test-adjency>
   </test>
  </unit-test-module>
 

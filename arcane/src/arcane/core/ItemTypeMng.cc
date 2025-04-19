@@ -28,6 +28,7 @@
 #include "arcane/core/IParallelSuperMng.h"
 #include "arcane/core/ItemTypeInfoBuilder.h"
 #include "arcane/core/IMesh.h"
+#include "arcane/core/MeshKind.h"
 #include "arcane/core/ISubDomain.h"
 #include "arcane/core/IApplication.h"
 
@@ -77,7 +78,7 @@ build(IMesh* mesh)
   // Une fois qu'on aura supprimé l'instance singleton, on pourra
   // simplement utiliser le IParallelMng.
   IParallelSuperMng* super_pm = mesh->subDomain()->application()->parallelSuperMng();
-  _buildTypes(super_pm, mesh->traceMng());
+  _buildTypes(mesh, super_pm, mesh->traceMng());
   m_initialized = true;
 }
 
@@ -104,7 +105,7 @@ _buildSingleton(IParallelSuperMng* parallel_mng, ITraceMng* trace)
   Int32 max_rank = parallel_mng->commSize() + 1;
   Int32 init_counter = ++m_initialized_counter;
   if (init_counter == 1) {
-    _buildTypes(parallel_mng, trace);
+    _buildTypes(nullptr, parallel_mng, trace);
     m_initialized = true;
     m_initialized_counter = max_rank;
   }
@@ -117,9 +118,13 @@ _buildSingleton(IParallelSuperMng* parallel_mng, ITraceMng* trace)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
+/*!
+ * \brief Construit les types des entités.
+ *
+ * \note Pour l'instance singleton, \a mesh est nul.
+ */
 void ItemTypeMng::
-_buildTypes(IParallelSuperMng* parallel_mng, ITraceMng* trace)
+_buildTypes(IMesh* mesh, IParallelSuperMng* parallel_mng, ITraceMng* trace)
 {
   // Construit la connectivité des éléments.
   // Pour les éléments classiques, la connectivité est la même que
@@ -128,6 +133,9 @@ _buildTypes(IParallelSuperMng* parallel_mng, ITraceMng* trace)
   // https://vtk.org/wp-content/uploads/2015/04/file-formats.pdf
 
   using Dimension = ItemTypeInfoBuilder::Dimension;
+  bool is_non_manifold = false;
+  if (mesh)
+    is_non_manifold = mesh->meshKind().isNonManifold();
 
   m_trace = trace;
   m_types.resize(m_nb_builtin_item_type);
@@ -192,10 +200,10 @@ _buildTypes(IParallelSuperMng* parallel_mng, ITraceMng* trace)
   }
 
   /**
-   * SDP: Pour les polygones les faces et les aretes sont identiques.
+   * SDP: Pour les polygones les faces et les arêtes sont identiques.
    *
-   * @note lors des declarations des aretes, on donne pour faces les
-   * aretes qui sont jointes a l'arete courante
+   * @note lors des declarations des arêtes, on donne pour faces les
+   * arêtes qui sont jointes a l'arête courante
    */
 
   // Triangle3
@@ -205,13 +213,9 @@ _buildTypes(IParallelSuperMng* parallel_mng, ITraceMng* trace)
 
     type->setInfos(this, IT_Triangle3, "Triangle3", Dimension::Dim2, 3, 3, 3);
 
-    type->addFaceLine(0, 0, 1);
-    type->addFaceLine(1, 1, 2);
-    type->addFaceLine(2, 2, 0);
-
-    type->addEdge(0, 0, 1, 1, 2);
-    type->addEdge(1, 1, 2, 2, 0);
-    type->addEdge(2, 2, 0, 0, 1);
+    type->addEdgeAndFaceLine(0, { 0, 1 }, { 1, 2 });
+    type->addEdgeAndFaceLine(1, { 1, 2 }, { 2, 0 });
+    type->addEdgeAndFaceLine(2, { 2, 0 }, { 0, 1 });
   }
 
   // Triangle6
@@ -239,15 +243,10 @@ _buildTypes(IParallelSuperMng* parallel_mng, ITraceMng* trace)
 
     type->setInfos(this, IT_Quad4, "Quad4", Dimension::Dim2, 4, 4, 4);
 
-    type->addFaceLine(0, 0, 1);
-    type->addFaceLine(1, 1, 2);
-    type->addFaceLine(2, 2, 3);
-    type->addFaceLine(3, 3, 0);
-
-    type->addEdge(0, 0, 1, 3, 1);
-    type->addEdge(1, 1, 2, 0, 2);
-    type->addEdge(2, 2, 3, 1, 3);
-    type->addEdge(3, 3, 0, 2, 0);
+    type->addEdgeAndFaceLine(0, { 0, 1 }, { 3, 1 });
+    type->addEdgeAndFaceLine(1, { 1, 2 }, { 0, 2 });
+    type->addEdgeAndFaceLine(2, { 2, 3 }, { 1, 3 });
+    type->addEdgeAndFaceLine(3, { 3, 0 }, { 2, 0 });
   }
 
   // Quad8
@@ -811,21 +810,13 @@ _buildTypes(IParallelSuperMng* parallel_mng, ITraceMng* trace)
 
     type->setInfos(this, IT_Heptagon7, "Heptagon7", Dimension::Dim2, 7, 7, 7);
 
-    type->addFaceLine(0, 0, 1);
-    type->addFaceLine(1, 1, 2);
-    type->addFaceLine(2, 2, 3);
-    type->addFaceLine(3, 3, 4);
-    type->addFaceLine(4, 4, 5);
-    type->addFaceLine(5, 5, 6);
-    type->addFaceLine(6, 6, 0);
-
-    type->addEdge(0, 0, 1, 6, 1);
-    type->addEdge(1, 1, 2, 0, 2);
-    type->addEdge(2, 2, 3, 1, 3);
-    type->addEdge(3, 3, 4, 2, 4);
-    type->addEdge(4, 4, 5, 3, 5);
-    type->addEdge(5, 5, 6, 4, 6);
-    type->addEdge(6, 6, 0, 5, 0);
+    type->addEdgeAndFaceLine(0, { 0, 1 }, { 6, 1 });
+    type->addEdgeAndFaceLine(1, { 1, 2 }, { 0, 2 });
+    type->addEdgeAndFaceLine(2, { 2, 3 }, { 1, 3 });
+    type->addEdgeAndFaceLine(3, { 3, 4 }, { 2, 4 });
+    type->addEdgeAndFaceLine(4, { 4, 5 }, { 3, 5 });
+    type->addEdgeAndFaceLine(5, { 5, 6 }, { 4, 6 });
+    type->addEdgeAndFaceLine(6, { 6, 0 }, { 5, 0 });
   }
 
   // Octogon8
@@ -835,23 +826,14 @@ _buildTypes(IParallelSuperMng* parallel_mng, ITraceMng* trace)
 
     type->setInfos(this, IT_Octogon8, "Octogon8", Dimension::Dim2, 8, 8, 8);
 
-    type->addFaceLine(0, 0, 1);
-    type->addFaceLine(1, 1, 2);
-    type->addFaceLine(2, 2, 3);
-    type->addFaceLine(3, 3, 4);
-    type->addFaceLine(4, 4, 5);
-    type->addFaceLine(5, 5, 6);
-    type->addFaceLine(6, 6, 7);
-    type->addFaceLine(7, 7, 0);
-
-    type->addEdge(0, 0, 1, 7, 1);
-    type->addEdge(1, 1, 2, 0, 2);
-    type->addEdge(2, 2, 3, 1, 3);
-    type->addEdge(3, 3, 4, 2, 4);
-    type->addEdge(4, 4, 5, 3, 5);
-    type->addEdge(5, 5, 6, 4, 6);
-    type->addEdge(6, 6, 7, 5, 7);
-    type->addEdge(7, 7, 0, 6, 0);
+    type->addEdgeAndFaceLine(0, { 0, 1 }, { 7, 1 });
+    type->addEdgeAndFaceLine(1, { 1, 2 }, { 0, 2 });
+    type->addEdgeAndFaceLine(2, { 2, 3 }, { 1, 3 });
+    type->addEdgeAndFaceLine(3, { 3, 4 }, { 2, 4 });
+    type->addEdgeAndFaceLine(4, { 4, 5 }, { 3, 5 });
+    type->addEdgeAndFaceLine(5, { 5, 6 }, { 4, 6 });
+    type->addEdgeAndFaceLine(6, { 6, 7 }, { 5, 7 });
+    type->addEdgeAndFaceLine(7, { 7, 0 }, { 6, 0 });
   }
 
   // Cell3D_Line2
@@ -866,25 +848,47 @@ _buildTypes(IParallelSuperMng* parallel_mng, ITraceMng* trace)
   {
     ItemTypeInfoBuilder* type = m_types_buffer->allocOne();
     m_types[IT_Cell3D_Triangle3] = type;
+    Int32 nb_face = 3;
+    Int32 nb_edge = 0;
+    if (is_non_manifold)
+      std::swap(nb_face, nb_edge);
 
-    type->setInfos(this, IT_Cell3D_Triangle3, "Cell3D_Triangle3", Dimension::Dim2, 3, 0, 3);
+    type->setInfos(this, IT_Cell3D_Triangle3, "Cell3D_Triangle3", Dimension::Dim2, 3, nb_edge, nb_face);
 
-    type->addFaceLine(0, 0, 1);
-    type->addFaceLine(1, 1, 2);
-    type->addFaceLine(2, 2, 0);
+    if (is_non_manifold) {
+      type->addEdge2D(0, 0, 1);
+      type->addEdge2D(1, 1, 2);
+      type->addEdge2D(2, 2, 0);
+    }
+    else {
+      type->addFaceLine(0, 0, 1);
+      type->addFaceLine(1, 1, 2);
+      type->addFaceLine(2, 2, 0);
+    }
   }
 
   // Cell3D_Quad4
   {
     ItemTypeInfoBuilder* type = m_types_buffer->allocOne();
     m_types[IT_Cell3D_Quad4] = type;
+    Int32 nb_face = 4;
+    Int32 nb_edge = 0;
+    if (is_non_manifold)
+      std::swap(nb_face, nb_edge);
 
-    type->setInfos(this, IT_Cell3D_Quad4, "Cell3D_Quad4", Dimension::Dim2, 4, 0, 4);
-
-    type->addFaceLine(0, 0, 1);
-    type->addFaceLine(1, 1, 2);
-    type->addFaceLine(2, 2, 3);
-    type->addFaceLine(3, 3, 0);
+    type->setInfos(this, IT_Cell3D_Quad4, "Cell3D_Quad4", Dimension::Dim2, 4, nb_edge, nb_face);
+    if (is_non_manifold) {
+      type->addEdge2D(0, 0, 1);
+      type->addEdge2D(1, 1, 2);
+      type->addEdge2D(2, 2, 3);
+      type->addEdge2D(3, 3, 0);
+    }
+    else {
+      type->addFaceLine(0, 0, 1);
+      type->addFaceLine(1, 1, 2);
+      type->addFaceLine(2, 2, 3);
+      type->addFaceLine(3, 3, 0);
+    }
   }
 
   { // Polygon & Polyhedron: generic item types
