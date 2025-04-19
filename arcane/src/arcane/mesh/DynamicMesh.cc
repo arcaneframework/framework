@@ -2983,10 +2983,13 @@ _setDimension(Integer dim)
   info() << "Mesh name=" << name() << " set dimension = " << dim;
   m_mesh_dimension = dim;
   bool v = m_mesh_unique_id_mng->isUseNodeUniqueIdToGenerateEdgeAndFaceUniqueId();
-  // Si les entités libres sont autorisées, alors il faut obligatoirement utiliser
+  // Si le maillage est non-manifold, alors il faut obligatoirement utiliser
   // la génération à partir des uniqueId() à partir des noeuds pour garantir
   // la cohérence des entités créées.
-  if (!v && meshKind().isNonManifold()) {
+  // Cette contrainte pourra être éventuellement être supprimée lorsque ce type
+  // de maillage ne sera plus expérimental.
+  bool is_non_manifold = meshKind().isNonManifold();
+  if (!v && is_non_manifold) {
     v = true;
     info() << "Force using edge and face uid generation from nodes because loose items are allowed";
   }
@@ -2994,6 +2997,15 @@ _setDimension(Integer dim)
     auto* adder = m_mesh_builder->oneMeshItemAdder();
     if (adder)
       adder->setUseNodeUniqueIdToGenerateEdgeAndFaceUniqueId(v);
+  }
+  // En 3D, avec les maillages non manifold, il faut obligatoirement créer les arêtes.
+  // Elles seront utilisées à la place des faces pour les mailles 2D.
+  if (dim == 3 && is_non_manifold) {
+    Connectivity c(m_mesh_connectivity);
+    if (!c.hasConnectivity(Connectivity::CT_HasEdge)) {
+      c.enableConnectivity(Connectivity::CT_HasEdge);
+      info() << "Force creating edges for 3D non-manifold mesh";
+    }
   }
 }
 

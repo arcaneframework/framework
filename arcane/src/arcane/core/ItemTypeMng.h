@@ -201,7 +201,7 @@ class ARCANE_CORE_EXPORT ItemTypeMng
  private:
 
   void _buildSingleton(IParallelSuperMng* parallel_mng, ITraceMng* trace);
-  void _buildTypes(IParallelSuperMng* parallel_mng, ITraceMng* trace);
+  void _buildTypes(IMesh* mesh, IParallelSuperMng* parallel_mng, ITraceMng* trace);
   //! Lecture des types a partir d'un fichier de nom filename
   void _readTypes(IParallelSuperMng* parallel_mng, const String& filename);
 };

@@ -106,11 +106,30 @@ class ItemTypeInfoBuilder
    * \brief Ajoute une arête à la liste des arêtes
    *
    * \a n0 noeud origine
-   * \a n1 noeud extremité
+   * \a n1 noeud extrémité
    * \a f_left numéro local de la face à gauche
    * \a f_right numéro local de la face à droite
    */
   void addEdge(Integer edge_index, Integer n0, Integer n1, Integer f_left, Integer f_right);
+
+  /*!
+   * \brief Ajoute une arête et une face
+   *
+   * \a edge_face_index index local de l'arête et de la face.
+   * \a begin_end_node couple (noeud origine,noeud extrémité) de l'arête et la face à ajouter.
+   * \a left_and_right_face couple numéro local (face à gauche, face à droite) de l'arête à ajouter
+   */
+  void addEdgeAndFaceLine(Int32 edge_face_index,
+                          std::array<Int16, 2> begin_end_node,
+                          std::array<Int16, 2> left_and_right_face);
+
+  /*!
+   * \brief Ajoute une arête pour une maille 2D.
+   *
+   * \a n0 noeud origine
+   * \a n1 noeud extrémité
+   */
+  void addEdge2D(Integer edge_index, Integer n0, Integer n1);
 
   //! Ajoute un sommet à la liste des faces (pour les elements 1D)
   void addFaceVertex(Integer face_index, Integer n0);
