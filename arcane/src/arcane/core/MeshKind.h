@@ -27,26 +27,65 @@ namespace Arcane
 //! Structure du maillage
 enum class eMeshStructure
 {
+  //! Structure inconnu ou pas initialisée
   Unknown,
+  //! Maillage non structuré
   Unstructured,
+  //! Maillage cartésien
   Cartesian,
+  //! Maillage polyedrique
   Polyhedral
 };
 
 extern "C++" ARCANE_CORE_EXPORT std::ostream&
 operator<<(std::ostream& o, eMeshStructure r);
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 //! Type de maillage AMR
 enum class eMeshAMRKind
 {
+  //! Le maillage n'est pas AMR
   None,
+  //! Le maillage est AMR par maille
   Cell,
+  //! Le maillage est AMR par patch
   Patch,
+  //! Le maillage est AMR par patch cartésien (rectangulaire)
   PatchCartesianMeshOnly
 };
 
 extern "C++" ARCANE_CORE_EXPORT std::ostream&
 operator<<(std::ostream& o, eMeshAMRKind r);
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+/*!
+ * \brief Types de gestion de la dimension du maillage.
+ *
+ * \warning Les modes autres que eMeshCellDimensionKind::MonoDimension sont
+ * expérimentaux et ne sont supportés que pour eMeshStructure::Unstructured.
+ */
+enum class eMeshCellDimensionKind
+{
+  //! Les mailles ont la même dimension que le maillage
+  MonoDimension,
+  //! Les mailles ont la même dimension que le maillage ou une dimension inférieure
+  MultiDimension,
+  /*!
+   * \brief Maillage non manifold.
+   *
+   * Le maillage est MultiDimension et non manifold.
+   * Dans ce cas, si le maillage est 3D, les mailles 2D ont des arêtes (Edge)
+   * au lieu des faces (Face).
+   */
+  NonManifold
+};
+
+extern "C++" ARCANE_CORE_EXPORT std::ostream&
+operator<<(std::ostream& o, eMeshCellDimensionKind r);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -56,9 +95,10 @@ operator<<(std::ostream& o, eMeshAMRKind r);
  * Pour l'instant les caractéristiques sont:
  * - la structure du maillage (eMeshStructure)
  * - le type d'AMR
- * - si le maillage est 'manifold' (le défaut) ou non.
+ * - la gestion de la dimension des mailles (eMeshDimensionKind). Cette dernière
  *
- * \note Le support de maillage non-manifold est expérimental.
+ * \note Le support de maillages autres que eMeshDimensionKind.MonoDimension
+ * est expérimental.
  */
 class ARCANE_CORE_EXPORT MeshKind
 {
@@ -66,17 +106,18 @@ class ARCANE_CORE_EXPORT MeshKind
 
   eMeshStructure meshStructure() const { return m_structure; }
   eMeshAMRKind meshAMRKind() const { return m_amr_kind; }
-  bool isNonManifold() const { return m_is_non_manifold; }
-
+  eMeshCellDimensionKind meshDimensionKind() const { return m_dimension_kind; }
+  bool isNonManifold() const { return m_dimension_kind == eMeshCellDimensionKind::NonManifold; }
+  bool isMonoDimension() const { return m_dimension_kind == eMeshCellDimensionKind::MonoDimension; }
   void setMeshStructure(eMeshStructure v) { m_structure = v; }
   void setMeshAMRKind(eMeshAMRKind v) { m_amr_kind = v; }
-  void setIsNonManifold(bool v) { m_is_non_manifold = v; }
+  void setMeshDimensionKind(eMeshCellDimensionKind v) { m_dimension_kind = v; }
 
  private:
 
   eMeshStructure m_structure = eMeshStructure::Unknown;
   eMeshAMRKind m_amr_kind = eMeshAMRKind::None;
-  bool m_is_non_manifold = false;
+  eMeshCellDimensionKind m_dimension_kind = eMeshCellDimensionKind::MonoDimension;
 };
 
 /*---------------------------------------------------------------------------*/
