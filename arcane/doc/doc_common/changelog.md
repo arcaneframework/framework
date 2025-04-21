@@ -9,6 +9,159 @@ antérieures à la version 3 sont listées ici : \ref arcanedoc_news_changelog20
 
 ___
 
+## Arcane Version 3.15.3 (04 février 2025) {#arcanedoc_version3150}
+
+### Nouveautés/Améliorations
+
+- Ajoute service pour sub-diviser un maillage initial (\pr{1937}, \pr{1938})
+- Commence support pour les maillages avec des mailles de
+  plusieurs dimensions et les maillages non manifold (\pr{1922},
+  \pr{1923}, \pr{1931}, \pr{1932}, \pr{1934}, \pr{1935}, \pr{1936},
+  \pr{1943}, \pr{1944}, \pr{1945}, \pr{1948})
+- Ajoute support expérimental pour générer les uniqueId() des faces et
+  des arêtes à partir des uniqueId() des noeuds qui les composent
+  (\pr{1851}, \pr{1920})
+- Améliore support pour les maillages polyédriques (\pr{1846},
+  \pr{1847}, \pr{1925})
+- Ajoute propriété `compact-after-allocate` pour désactiver le
+  compactage en d'allocation de maillage (\pr{1857})
+
+### API Accélérateur
+
+- Ajoute surchages avec \arcane{SmallSpan} des méthodes de \arcane{NumArray} et
+  \arcane{MDSpan} pour la dimension 1.
+- Autorise la création concurrente de \arcaneacc{RunQueue} et
+  \arcaneacc{RunCommand} (\pr{1842})
+- N'utilise pas l'API accélérateur pour la création de
+  \arcanemat{ComponentItemVector} si le multi-threading est actif
+  (\pr{1840})
+- Utilise l'API accélérateur pour initialiser
+  \arcanemat{AllCellToAllEnvCell} (\pr{1839})
+- Appelle automatiquement `cudaMemAdvise()` sur les zones allouées par
+  `cudaMallocManaged()` si la variable d'environnement
+  `ARCANE_CUDA_MEMORY_HINT_ON_DEVICE` est positionnée (TODO: faire
+  doc) (\pr{1838})
+- Ajoute support SYCL pour le partitionnement de liste en deux parties
+  (\pr{1858})
+- Ajoute version multi-thread des algorithmes de scan
+  (\arcaneacc{GenericScan}) et de filtrage
+  \arcaneacc{GenericFiltering} (\pr{1878}, \pr{1880}).
+- Ajoute support pour \arcane{ParallelLoopOptions::grainSize()} pour
+  les boucles multi-dimensionnelles (\pr{1890})
+- Ajoute implémentation spécifique de \arcaneacc{GenericFiltering}
+  quand l'entrée et la sortie utilisent le même tableau (\pr{1882})
+- Rend thread-safe la gestion des observers de \arcane{TaskFactory}
+  (\pr{1883})
+- Ajoute support pour copier les instances de
+  \arcaneacc{RunQueueEvent} avec une sémantique par référence
+  (\pr{1895})
+- Rend toujours thread-safe les appels à \arcaneacc{makeQueue()}
+  (\pr{1898})
+- Supprime l'implémentation des réductions utilisant les opérations
+  atomiques. Elle ne sont pas disponibles pour tous les types et sont
+  moins performances que l'implémentation utilisant un arbre
+  (\pr{1908})
+- Rend `const` les méthodes de \arcane{StandaloneAcceleratorMng} (\pr{1912})
+- Optimisations et refactoring divers (\pr{1843}, \pr{1845},
+  \pr{1854}, \pr{1855}, \pr{1860}, \pr{1875}, \pr{1881}, \pr{1891})
+
+### Changements
+
+- Refactoring divers dans \arcane{builtInGetValue()} pour éviter
+  certaines copies et utiliser `std::from_chars()` pour le type
+  `double`(\pr{1903}, \pr{1909}, \pr{1910}, \pr{1911}, \pr{1918},
+  \pr{1919}, \pr{1949}, \pr{1956})
+- Déplace les méthodes `isNearlyZero()`, `normL2()` et
+  `squareNormL2()` des classes numériques \arcane{Real2},
+  \arcane{Real3}, \arcane{Real2x2} et \arcane{Real3x3} dans le
+  namespace Arcane::math (\pr{1871}).
+- Renomme \arcanemat{ComponentItemLocalId} en
+  \arcanemat{ConstituentItemLocalId} et ajoute deux classes
+  \arcanemat{MatItemLocalId} et \arcanemat{EnvItemLocalId} pour typer
+  fortement l'accès aux variables matériaux (\pr{1862})
+- Utilise par défaut l'extension `mli2` au lieu de `mli` pour les fichiers généré
+  par Lima. Le format `mli` est obsolète et ne doit plus être utilisé
+  (\pr{1849}, \pr{1850})
+
+### Corrections
+
+- Corrige compilation avec ROCM version 5 (\pr{1852})
+- Fixe à `0` au lieu de `1` le numéro du premier uniqueId() généré
+  après une reprise lorsque le maillage est vide. Cela permet d'avoir
+  la même numérotation avec ou sans reprise pour ce cas spécifique
+  (\pr{1924})
+- Corrige fuite mémoire pour les \arcaneacc{RunCommand} créées par
+  des \arcaneacc{RunQueue} avec une priorité autre que la priorité par
+  défaut (\pr{1927})
+- Corrige mauvaises valeurs de retour dans \arcaneacc{GenericFilterer}
+  et \arcaneacc{GenericPartitioner} lorque les tableaux d'entrées ont
+  une taille de zéro (\pr{1929})
+- Corrige appel manquant à `MPI_Group_free` lors de la création d'un
+  \arcane{IParallelMng} issu d'un \arcane{IParallelMng} (\pr{1933})
+- Recalcule correctement les informations de synchronisation après la
+  création d'un patch AMR (\pr{1946})
+- Corrige fuite mérmoire dans Aleph lors de la création de matrices
+  Hypre, PETSc, ou Epetra (\pr{1947})
+- Corrige débordement de tableau si on utilise le multi-threading avec
+  un seul thread (\pr{1954})
+- Corrige fuites mémoires dans certaines opérations sur le DOM
+  (\pr{1965})
+
+### Interne
+
+- Ajoute classe \arcane{mesh::ItemsOnwerBuilder} pour calculer les
+  propriétaires des faces à partir de celui des mailles (\pr{1861}).
+- Utilise \arcane{IMesh} au lieu de \arcane{mesh::DynamicMesh} dans
+  \arcane{mesh::MeshExchangeMng} (\pr{1841})
+- Ajoute type spécifique `float` pour les utilitaires HDF5 (\pr{1837})
+- Sépare l'instantiation explicite de certaines classes en plusieurs
+  fichiers pour accélérer la compilation (\pr{1836}, \pr{1873})
+- Commence support pour les types \arcane{Float128}, \arcane{Int128},
+  \arcane{Float16}, \arcane{Float32}, \arcane{BFloat16} et
+  \arcane{Int8} (\pr{1835}, \pr{1863}, \pr{1864}, \pr{1866},
+  \pr{1867}, \pr{1868}, \pr{1869}, \pr{1870}, \pr{1914})
+- Uniformise la gestion du profiling en multi-thread (\pr{1877})
+- Implémente \arccore{IMemoryAllocator3} à la place de
+  \arccore{IMemoryAllocator} pour \arcane{SmallArray} (\pr{1889})
+- Utilise l'injection de dépendence pour créér les services gérant les
+  threads dans \arcane{Application} (\pr{1900}, \pr{1902})
+- Supprime méthode obsolète \arcane{mesh::DynamicMesh::addFace()} (\pr{1930})
+- Ajoute observables pour garantir que les vues sur les variables
+  internes à \arcane{mesh::ItemFamily} sont toujours valides suite à
+  un changement externe (\pr{1953})
+
+### Compilation et Intégration Continue (CI)
+
+- Supprime la possiblité d'installer %Arccore séparément de
+  %Arcane. Cela permet de garantir que %Arccore et %Arcane seront
+  toujours cohérents (\pr{1865}).
+- Simplifie la gestion des dépendances des composantes pour accélérer
+  la compilation (\pr{1874}).
+- Mise à jour du workflow `compile-all-vcpkg` avec la version 2024.12
+  (\pr{1894}).
+- Ajoute workflow `compile-all-vcpkg` avec ubuntu 24.04 (\pr{1896})
+- Utilise `.Net 8` pour certains workflows de `compile-all-vcpkg` et
+  ajoute tests du wrapper C# (\pr{1897})
+- Ajoute workflow pour ROCM version 6.3.1 et 5.7.1 (\pr{1899})
+- Utlise `.mli2` au lieu de `.mli` pour fichiers de maillage Lima
+  (\pr{1904})
+- Mise à jour des images pour le CI (\pr{1905}, \pr{1915})
+- Ajoute workflow avec `-fsanitize=address` (\pr{1940}, \pr{1955})
+
+### Arccore
+
+- Déplace les classes de %Arccore du namespace Arccore vers le
+  namespace Arcane (\pr{1963}, \pr{1966})
+- Supprime méthodes obsolètes de \arccore{IMemoryAllocator}
+  (\pr{1959})
+
+### Alien
+
+- Supprime utilisation de `boost::remove_reference` et le remplace par
+  `std::remove_reference` (\pr{1844})
+- Corrige compilation quand PETSc est compilé avec le support de MUMPS
+  (\pr{1917})
+
 ## Arcane Version 3.14.15 (11 décembre 2024) {#arcanedoc_version3140}
 
 ### Nouveautés/Améliorations
@@ -54,7 +207,7 @@ ___
 - Ajoute implémetation de \arcane{IParallelMng::scan()} pour le mode
   mémoire partagé et hybride (\pr{1548})
 
-#### API Accélérateur
+### API Accélérateur
 
 - Ajoute méthode \arcaneacc{Runner::deviceMemoryInfo()} pour récupérer
   la mémoire libre et la mémoire totale d'un accélérateur (\pr{1821})
