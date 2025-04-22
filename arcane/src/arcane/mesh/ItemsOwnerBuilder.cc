@@ -30,6 +30,7 @@
 
 #include "arcane/mesh/ItemInternalMap.h"
 #include "arcane/mesh/NodeFamily.h"
+#include "arcane/mesh/EdgeFamily.h"
 #include "arcane/mesh/DynamicMesh.h"
 
 #include <unordered_set>
@@ -118,6 +119,7 @@ class ItemsOwnerBuilderImpl
  public:
 
   void computeFacesOwner();
+  void computeEdgesOwner();
   void computeNodesOwner();
 
  private:
@@ -260,6 +262,68 @@ computeFacesOwner()
   _processSortedInfos(faces_map);
 
   face_family.notifyItemsOwnerChanged();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ItemsOwnerBuilderImpl::
+computeEdgesOwner()
+{
+  m_items_owner_info.clear();
+
+  IParallelMng* pm = m_mesh->parallelMng();
+  const Int32 my_rank = pm->commRank();
+  ItemInternalMap& edges_map = m_mesh->edgesMap();
+  EdgeFamily& edge_family = m_mesh->trueEdgeFamily();
+
+  info() << "** BEGIN ComputeEdgesOwner nb_edge=" << edges_map.count();
+
+  // Parcours toutes les arêtes.
+  // Ne garde que celles qui sont frontières ou dont au moins un des propriétaires des
+  // mailles connectées sont différents de notre sous-domaine.
+  UniqueArray<Int32> edges_to_add;
+  UniqueArray<Int64> edges_to_add_uid;
+  // La force brute ajoute toutes les arêtes.
+  // Cela permet de garantir qu'on calcule bien les propriétaires, même si
+  // on ne sait pas déterminer les arêtes frontìères.
+  // Cela n'est pas optimum, car on envoie aussi nos arêtes internes
+  // alors qu'on est certain qu'on est leur propriétaire.
+  bool do_brute_force = true;
+  edges_map.eachItem([&](Edge edge) {
+    Int32 nb_cell = edge.nbCell();
+    Int32 nb_cell_with_my_rank = 0;
+    for (Cell cell : edge.cells())
+      if (cell.owner() == my_rank)
+        ++nb_cell_with_my_rank;
+    bool do_add = (nb_cell == 1 || (nb_cell != nb_cell_with_my_rank));
+    if (do_add || do_brute_force) {
+      edges_to_add.add(edge.localId());
+      edges_to_add_uid.add(edge.uniqueId());
+    }
+    else
+      edge.mutableItemBase().setOwner(my_rank, my_rank);
+  });
+  info() << "ItemsOwnerBuilder: NB_FACE_TO_TRANSFER=" << edges_to_add.size();
+  const Int32 verbose_level = m_verbose_level;
+
+  EdgeInfoListView edges(&edge_family);
+  for (Int32 lid : edges_to_add) {
+    Edge edge(edges[lid]);
+    Int64 edge_uid = edge.uniqueId();
+    for (Cell cell : edge.cells()) {
+      if (verbose_level >= 2)
+        info() << "ADD lid=" << lid << " uid=" << edge_uid << " cell_uid=" << cell.uniqueId() << " owner=" << cell.owner();
+      m_items_owner_info.add(ItemOwnerInfo(edge_uid, edge.node(0).uniqueId(), cell.uniqueId(), my_rank, cell.owner()));
+    }
+  }
+
+  // Tri les instances de ItemOwnerInfo et les place les valeurs triées
+  // dans items_owner_info.
+  _sortInfos();
+  _processSortedInfos(edges_map);
+
+  edge_family.notifyItemsOwnerChanged();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -539,6 +603,15 @@ void ItemsOwnerBuilder::
 computeFacesOwner()
 {
   m_p->computeFacesOwner();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ItemsOwnerBuilder::
+computeEdgesOwner()
+{
+  m_p->computeEdgesOwner();
 }
 
 /*---------------------------------------------------------------------------*/
