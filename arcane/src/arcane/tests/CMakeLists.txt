@@ -685,7 +685,7 @@ arcane_add_test(mesh2_non_manifold_write_msh testMesh-2-non-manifold-write-msh.a
 if (ARCANE_DEFAULT_PARTITIONER_IS_METIS)
   arcane_add_test_parallel_thread(mesh2_non_manifold testMesh-2-non-manifold.arc 4)
 endif()
-arcane_add_test_sequential(mesh2_generate_edge_face_uid_env testMesh-2-env-generate-edge-face-uid.arc "-We,ARCANE_GENERATE_UNIQUE_ID_FROM_NODES,1")
+arcane_add_test(mesh2_generate_edge_face_uid_env testMesh-2-env-generate-edge-face-uid.arc "-We,ARCANE_GENERATE_UNIQUE_ID_FROM_NODES,1" "-We,ARCANE_EDGE_UNIQUE_ID_BUILDER_VERSION,0")
 arcane_add_test_sequential(mesh2_sort_faces testMesh-2-sorted-faces.arc)
 arcane_add_test(mesh2_compute_owners_direct testMesh-2-compute-owners-direct.arc)
 arcane_add_test_sequential(mesh2_init_nan testMesh-2.arc "-We,ARCANE_DATA_INIT_POLICY,NAN")

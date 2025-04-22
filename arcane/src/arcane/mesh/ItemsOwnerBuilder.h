@@ -48,6 +48,7 @@ class ARCANE_MESH_EXPORT ItemsOwnerBuilder
  public:
 
   void computeFacesOwner();
+  void computeEdgesOwner();
   void computeNodesOwner();
 
  private:
