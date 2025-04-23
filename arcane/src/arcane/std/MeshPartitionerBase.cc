@@ -526,34 +526,28 @@ getNeighbourCellsUidWithConstraints(Cell cell, Int64Array& neighbourcells,
   contrib.fill(false);
 
   if (m_filter_lid_cells[cell.localId()] == eCellClassical){
-    bool use_face = true;
-    if (m_is_non_manifold_mesh) {
-      // En cas de maillage non manifold, si la maille est
-      // de dimension 2 pour un maillage de dimension 3, alors
-      // elle contient des arêtes au lieu des faces.
-      // On utilise donc les arêtes pour déterminer les voisines.
-      // Dans ce cas, on ne prend en compte que les voisines
-      // qui sont aussi de dimension 2.
-      Int32 dim = cell.typeInfo()->dimension();
-      if (dim == 2 && m_mesh_dimension == 3) {
-        use_face = false;
-        for (Edge sub_edge : cell.edges()) {
-          // on ne prend que les arêtes ayant une maille voisine
-          if (sub_edge.nbCell() >= 2) {
-            for (Cell sub_cell : sub_edge.cells()) {
-              if (sub_cell != cell && sub_cell.typeInfo()->dimension() == 2) {
-                hg_contrib += 1.0;
-                neighbourcells.add((*m_unique_id_reference)[sub_cell]);
-                // TODO: regarder la valeur qu'il faut ajouter pour les communications
-                if (ptrcommWeights)
-                  (*ptrcommWeights).add(1.0f);
-              }
+    if (m_is_non_manifold_mesh && cell.hasFlags(ItemFlags::II_HasEdgeFor1DItems)) {
+      // En cas de maillage non manifold, la maille peut contenir
+      // des arêtes au lieu des faces. Si c'est le cas, on utilise les arêtes
+      // pour déterminer les voisines.
+      // Dans ce cas, on ne prend en compte que les voisines ayant
+      // aussi 'ItemFlags::II_HasEdgeFro1DItems' positionné.
+      for (Edge sub_edge : cell.edges()) {
+        // on ne prend que les arêtes ayant une maille voisine
+        if (sub_edge.nbCell() >= 2) {
+          for (Cell sub_cell : sub_edge.cells()) {
+            if (sub_cell != cell && sub_cell.hasFlags(ItemFlags::II_HasEdgeFor1DItems)) {
+              hg_contrib += 1.0;
+              neighbourcells.add((*m_unique_id_reference)[sub_cell]);
+              // TODO: regarder la valeur qu'il faut ajouter pour les communications
+              if (ptrcommWeights)
+                (*ptrcommWeights).add(1.0f);
             }
           }
         }
       }
     }
-    if (use_face) {
+    else {
       for (Integer z = 0; z < cell.nbFace(); ++z) {
         Face face = cell.face(z);
         // on ne prend que les faces ayant une maille voisine

@@ -303,7 +303,7 @@ TV_ttf_display_type(const Arcane::ItemInternal * obj)
   show_ttf_internal_flag(flags,Arcane::ItemInternal::II_SlaveFace,"SlaveFace");
   show_ttf_internal_flag(flags,Arcane::ItemInternal::II_MasterFace,"MasterFace");
   show_ttf_internal_flag(flags,Arcane::ItemInternal::II_Detached,"Detached");
-  show_ttf_internal_flag(flags,Arcane::ItemInternal::II_HasTrace,"HasTrace");
+  show_ttf_internal_flag(flags, Arcane::ItemInternal::II_HasEdgeFor1DItems, "HasEdgeFor1DItems");
   show_ttf_internal_flag(flags,Arcane::ItemInternal::II_UserMark1,"UserMark1");
   show_ttf_internal_flag(flags,Arcane::ItemInternal::II_UserMark2,"UserMark2");
 
