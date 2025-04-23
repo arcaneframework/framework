@@ -63,7 +63,14 @@ class ARCANE_CORE_EXPORT ItemFlags
     II_SlaveFace = 1 << 14, //!< L'entité est une face esclave d'une interface
     II_MasterFace = 1 << 15, //!< L'entité est une face maître d'une interface
     II_Detached = 1 << 16, //!< L'entité est détachée du maillage
-    II_HasTrace = 1 << 17, //!< L'entité est marquée pour trace (pour débug)
+    /*
+     * \brief L'entité utilise des arêtes au lieu des faces.
+     *
+     * Cela n'est utilisé que pour les mailles 2D des maillages
+     * non manifold. Si positionné, cela veut dire que les entités
+     * de dimension 1 sont de type Edge et pas de type Face.
+     */
+    II_HasEdgeFor1DItems = 1 << 17,
 
     II_Coarsen = 1 << 18, //!<  L'entité est marquée pour dé-raffinement
     II_DoNothing = 1 << 19, //!<  L'entité est bloquée

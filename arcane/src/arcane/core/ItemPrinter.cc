@@ -224,8 +224,8 @@ _printFlags(std::ostream& o, Integer flags)
     o << ((position++) ? "|" : "") << "MasterFace";
   if (flags & ItemFlags::II_Detached)
     o << ((position++) ? "|" : "") << "Detached";
-  if (flags & ItemFlags::II_HasTrace)
-    o << ((position++) ? "|" : "") << "HasTrace";
+  if (flags & ItemFlags::II_HasEdgeFor1DItems)
+    o << ((position++) ? "|" : "") << "HasEdgeFor1DItems";
   if (flags & ItemFlags::II_Coarsen)
     o << ((position++) ? "|" : "") << "Coarsen";
   if (flags & ItemFlags::II_DoNothing)
