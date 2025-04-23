@@ -2982,16 +2982,23 @@ _setDimension(Integer dim)
     ARCANE_FATAL("DynamicMesh::setDimension(): mesh is already allocated");
   info() << "Mesh name=" << name() << " set dimension = " << dim;
   m_mesh_dimension = dim;
+  const bool is_non_manifold = meshKind().isNonManifold();
+  // Force le fait de ne pas re-numéroter les faces et les arêtes
+  // dans le cas d'un maillage non-manifold
+  if (is_non_manifold){
+    info() << "Force no-renumbering of edge and face uid because we are using non manifold mesh";
+    m_mesh_unique_id_mng->setFaceBuilderVersion(0);
+    m_mesh_unique_id_mng->setEdgeBuilderVersion(0);
+  }
   bool v = m_mesh_unique_id_mng->isUseNodeUniqueIdToGenerateEdgeAndFaceUniqueId();
   // Si le maillage est non-manifold, alors il faut obligatoirement utiliser
   // la génération à partir des uniqueId() à partir des noeuds pour garantir
   // la cohérence des entités créées.
   // Cette contrainte pourra être éventuellement être supprimée lorsque ce type
   // de maillage ne sera plus expérimental.
-  bool is_non_manifold = meshKind().isNonManifold();
   if (!v && is_non_manifold) {
     v = true;
-    info() << "Force using edge and face uid generation from nodes because loose items are allowed";
+    info() << "Force using edge and face uid generation from nodes because we are using non manifold mesh";
   }
   if (m_mesh_builder){
     auto* adder = m_mesh_builder->oneMeshItemAdder();

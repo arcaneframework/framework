@@ -63,14 +63,18 @@ computeEdgesUniqueIds()
 
   info() << "Using version=" << edge_version << " to compute edges unique ids"
          << " mesh=" << m_mesh->name();
+  bool need_compute_owner = false;
   bool has_renumbering = true;
   if (edge_version == 1)
     _computeEdgesUniqueIdsParallel3();
   else if (edge_version == 2)
     _computeEdgesUniqueIdsParallelV2();
-  else if (edge_version == 3)
+  else if (edge_version == 3) {
+    need_compute_owner = true;
     _computeEdgesUniqueIdsParallel64bit();
+  }
   else if (edge_version == 0) {
+    need_compute_owner = true;
     has_renumbering = false;
     info() << "No renumbering for edges";
   }
@@ -84,7 +88,7 @@ computeEdgesUniqueIds()
   ItemInternalMap& edges_map = m_mesh->edgesMap();
 
   // Il faut ranger à nouveau #m_edges_map si les uniqueId() des
-  // edges ont été modifiés.
+  // arêtes ont été modifiés.
   if (has_renumbering)
     edges_map.notifyUniqueIdsChanged();
 
@@ -97,7 +101,7 @@ computeEdgesUniqueIds()
 
   // S'il n'y a pas de renumérotation, il n'y a pas non de
   // calcul des propriétaires. Il faut donc le faire maintenant
-  if (!has_renumbering) {
+  if (need_compute_owner) {
     ItemsOwnerBuilder owner_builder(m_mesh);
     owner_builder.computeEdgesOwner();
   }
