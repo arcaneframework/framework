@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* GhostLayerBuilder2.cc                                       (C) 2000-2024 */
+/* GhostLayerBuilder2.cc                                       (C) 2000-2025 */
 /*                                                                           */
 /* Construction des couches fantômes.                                        */
 /*---------------------------------------------------------------------------*/
@@ -299,15 +299,16 @@ addGhostLayers()
     return;
   Integer nb_ghost_layer = m_mesh->ghostLayerMng()->nbGhostLayer();
   info() << "** GHOST LAYER BUILDER V" << m_version << " with sort (nb_ghost_layer=" << nb_ghost_layer << ")";
+
+  // Marque les entités frontières
+  _markBoundaryItems();
+
   if (nb_ghost_layer==0)
     return;
   const Int32 my_rank = pm->commRank();
 
   ItemInternalMap& cells_map = m_mesh->cellsMap();
   ItemInternalMap& nodes_map = m_mesh->nodesMap();
-
-  // Marque les noeuds frontières
-  _markBoundaryItems();
 
   Integer boundary_nodes_uid_count = 0;
 
