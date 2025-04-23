@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshPartitionerBase.h                                       (C) 2000-2024 */
+/* MeshPartitionerBase.h                                       (C) 2000-2025 */
 /*                                                                           */
 /* Classe de base d'un partitionneur de maillage.                            */
 /*---------------------------------------------------------------------------*/
@@ -158,6 +158,11 @@ class ARCANE_STD_EXPORT MeshPartitionerBase
   virtual void _initNbCellsWithConstraints();
   virtual void  _clearCellWgt();
 
+ protected:
+
+  bool _isNonManifoldMesh() const { return m_is_non_manifold_mesh; }
+  Int32 _meshDimension() const { return m_mesh_dimension; }
+
  private:
 
   Real _addNgb(const Cell& cell, const Face& face, Int64Array& neighbourcells, Array<bool>& contrib,
@@ -186,20 +191,21 @@ class ARCANE_STD_EXPORT MeshPartitionerBase
   Real m_maximum_computation_time = 0.0;
   Real m_imbalance = 0.0;
   Real m_max_imbalance = 0.0;
-  RealUniqueArray m_computation_times;
+  UniqueArray<Real> m_computation_times;
 
   // Utile en interne pour construire le graphe/hypergraphe
   UniqueArray<SharedArray<Cell> > m_cells_with_constraints;
   std::set<std::pair<Int64, Int64> > m_cells_with_weak_constraints;
   Integer m_nb_cells_with_constraints = 0;
   UniqueArray<eMarkCellWithConstraint> m_filter_lid_cells;
-  Int32UniqueArray m_local_id_2_local_id_compacted;
+  UniqueArray<Int32> m_local_id_2_local_id_compacted;
   VariableCellInt64* m_unique_id_reference = nullptr;
 
   void _checkCreateVar();
-  Int32UniqueArray m_check;
+  UniqueArray<Int32> m_check;
+  bool m_is_non_manifold_mesh = false;
+  Int32 m_mesh_dimension = -1;
 };
-
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

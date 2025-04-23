@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MetisMeshPartitioner.cc                                     (C) 2000-2024 */
+/* MetisMeshPartitioner.cc                                     (C) 2000-2025 */
 /*                                                                           */
 /* Partitioneur de maillage utilisant la bibliothèque PARMetis.              */
 /*---------------------------------------------------------------------------*/
@@ -18,7 +18,6 @@
 #include "arcane/utils/NotImplementedException.h"
 #include "arcane/utils/ArgumentException.h"
 #include "arcane/utils/FloatingPointExceptionSentry.h"
-#include "arcane/utils/ValueConvert.h"
 
 #include "arcane/ISubDomain.h"
 #include "arcane/IParallelMng.h"
@@ -90,11 +89,11 @@ class MetisMeshPartitioner
  private:
 
   IParallelMng* m_parallel_mng = nullptr;
-  Integer m_nb_refine;
-  Integer m_random_seed;
-  bool m_disable_floatingexception;
+  Integer m_nb_refine = -1;
+  Integer m_random_seed = 15;
+  bool m_disable_floatingexception = false;
   void _partitionMesh(bool initial_partition,Int32 nb_part);
-  void _removeEmptyPartsV1(const Int32 nb_part,const Int32 nb_own_cell,ArrayView<idxtype> metis_part);
+  void _removeEmptyPartsV1(Int32 nb_part, Int32 nb_own_cell, ArrayView<idxtype> metis_part);
   void _removeEmptyPartsV2(Int32 nb_part,ArrayView<idxtype> metis_part);
   Int32 _removeEmptyPartsV2Helper(Int32 nb_part,ArrayView<idxtype> metis_part,Int32 algo_iteration);
   int _writeGraph(IParallelMng* pm,
@@ -112,9 +111,6 @@ class MetisMeshPartitioner
 MetisMeshPartitioner::
 MetisMeshPartitioner(const ServiceBuildInfo& sbi)
 : ArcaneMetisMeshPartitionerObject(sbi)
-, m_nb_refine(-1)
-, m_random_seed(15)
-, m_disable_floatingexception(false)
 {
   m_parallel_mng = mesh()->parallelMng();
   String s = platform::getEnvironmentVariable("ARCANE_DISABLE_METIS_FPE");
@@ -138,8 +134,8 @@ partitionMesh(bool initial_partition)
 void MetisMeshPartitioner::
 partitionMesh(bool initial_partition,Int32 nb_part)
 {
-  // Signal que le partitionnement peut planter car metis n'est pas toujours
-  // tres fiable.
+  // Signale que le partitionnement peut planter, car metis n'est pas toujours
+  // tres fiable sur le calcul flottant.
   initial_partition = (subDomain()->commonVariables().globalIteration() <= 2);
   if (m_disable_floatingexception){
     FloatingPointExceptionSentry fpes(false);
@@ -172,7 +168,7 @@ _partitionMesh(bool initial_partition,Int32 nb_part)
   }
 
   // TODO : comprendre les modifs de l'IFPEN
-  // utilise toujours repartitionnement complet.
+  // utilise toujours re-partitionnement complet.
   // info() << "Metis: params " << m_nb_refine << " " << imbalance() << " " << maxImbalance();
   // info() << "Metis: params " << (m_nb_refine>=10) << " " << (imbalance()>4.0*maxImbalance()) << " " << (imbalance()>1.0);
   bool force_full_repartition = false;
@@ -291,21 +287,31 @@ _partitionMesh(bool initial_partition,Int32 nb_part)
   }
 */
 
-  // Nombre max de mailles voisine connectés aux mailles
+  // Nombre max de mailles voisines connectées aux mailles
   // en supposant les mailles connectées uniquement par les faces
+  // (ou les arêtes pour une maille 2D dans un maillage 3D)
   // Cette valeur sert à préallouer la mémoire pour la liste des mailles voisines
   Integer nb_max_face_neighbour_cell = 0;
   {
     // Renumérote les mailles pour Metis pour que chaque sous-domaine
     // ait des mailles de numéro consécutifs
     Integer mid = static_cast<Integer>(metis_vtkdist[my_rank]);
-    ENUMERATE_CELL(i_item,own_cells){
-      const Cell& item = *i_item;
+    ENUMERATE_ (Cell, i_item, own_cells) {
+      Cell item = *i_item;
       if (cellUsedWithConstraints(item)){
         cell_metis_uid[item] = mid;
         ++mid;
       }
-      nb_max_face_neighbour_cell += item.nbFace();
+      bool use_face = true;
+      if (_isNonManifoldMesh()) {
+        Int32 dim = item.typeInfo()->dimension();
+        if (dim == 2 && _meshDimension() == 3) {
+          nb_max_face_neighbour_cell += item.nbEdge();
+          use_face = false;
+        }
+      }
+      if (use_face)
+        nb_max_face_neighbour_cell += item.nbFace();
     }
     cell_metis_uid.synchronize();
   }
@@ -394,7 +400,6 @@ _partitionMesh(bool initial_partition,Int32 nb_part)
 
   const bool do_print_weight = false;
   if (do_print_weight){
-    std::ofstream dumpy;
     StringBuilder fname;
     Integer iteration = mesh->subDomain()->commonVariables().globalIteration();
     fname = "weigth-";
@@ -402,7 +407,7 @@ _partitionMesh(bool initial_partition,Int32 nb_part)
     fname += "-";
     fname += iteration;
     String f(fname);
-    dumpy.open(f.localstr());
+    std::ofstream dumpy(f.localstr());
     for (int i = 0; i < metis_xadj.size()-1 ; ++i) {
       dumpy << " Weight uid=" << i;
       for( int j=0 ; j < nb_weight ; ++j ){
@@ -411,7 +416,6 @@ _partitionMesh(bool initial_partition,Int32 nb_part)
       }
       dumpy << '\n';
     }
-    dumpy.close();
   }
 
   converter.reset(1); // Only one weight for communications !
@@ -884,6 +888,12 @@ _writeGraph(IParallelMng* pm,
   // car il y a un MPI_Allreduce dans la partie sans erreur.
   // NOTE GG: Ne pas utiliser MPI directement.
 
+  info() << "MetisVtkDist=" << metis_vtkdist;
+  info() << "MetisXAdj   =" << metis_xadj;
+  info() << "MetisAdjncy =" << metis_adjncy;
+  info() << "MetisVWgt   =" << metis_vwgt;
+  info() << "MetisEWgt   =" << metis_ewgt;
+
 #define METIS_ERROR  ARCANE_FATAL("_writeGraph")
 
   StringBuilder filename(name);
@@ -900,7 +910,7 @@ _writeGraph(IParallelMng* pm,
     METIS_ERROR;
   }
 
-  if (nvtx)
+  if (nvtx != 0)
     nwgt = metis_vwgt.size()/nvtx;
   if (nwgt != 0 && metis_vwgt.size() % nwgt != 0)
     METIS_ERROR;

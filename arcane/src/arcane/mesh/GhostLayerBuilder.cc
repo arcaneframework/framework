@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* GhostLayerBuilder.cc                                        (C) 2000-2024 */
+/* GhostLayerBuilder.cc                                        (C) 2000-2025 */
 /*                                                                           */
 /* Construction des couches fantômes.                                        */
 /*---------------------------------------------------------------------------*/
@@ -212,7 +212,7 @@ _addOneGhostLayerV2()
       ostr() << '\n';
     }
     bool is_sub_domain_boundary_face = false;
-    if (face_base.flags() & ItemFlags::II_Boundary) {
+    if (face_base.hasFlags(ItemFlags::II_Boundary)) {
       is_sub_domain_boundary_face = true;
     }
     else{
@@ -264,10 +264,10 @@ _addOneGhostLayerV2()
     }
     //info() << " CHECK cell uid=" << cell->uniqueId() << " owner=" << cell->owner();
     //bool add_cell = false;
-    for( Node inode : cell.nodes() ){
+    for( Node node : cell.nodes() ){
       //info() << "** CHECK NODE node=" << i_node->uniqueId() << " cell=" << cell->uniqueId();
-      if (inode.itemBase().flags() & ItemFlags::II_Shared){
-        Int64 node_uid = inode.uniqueId();
+      if (node.hasFlags(ItemFlags::II_Shared)){
+        Int64 node_uid = node.uniqueId();
         //info() << "** ADD BOUNDARY CELL node=" << node_uid << " cell=" << cell->uniqueId();
         Int32 dest_rank = uid_to_subdomain_converter.uidToRank(node_uid);
         SharedArray<Int64> v = boundary_infos_to_send.lookupAdd(dest_rank)->value();
@@ -611,7 +611,7 @@ addGhostChildFromParent2(Array<Int64>& ghost_cell_to_refine)
     if (cell.owner() == sid)
       return;
     // cela suppose que les flags sont deja synchronises
-    if (cell.itemBase().flags() & ItemFlags::II_JustRefined) {
+    if (cell.hasFlags(ItemFlags::II_JustRefined)) {
       // cell to add
       ghost_cell_to_refine.add(cell.uniqueId());
       Int64Array& v = boundary_infos_to_send.lookupAdd(cell.owner())->value();
