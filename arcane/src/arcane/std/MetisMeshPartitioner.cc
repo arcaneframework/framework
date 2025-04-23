@@ -294,7 +294,7 @@ _partitionMesh(bool initial_partition,Int32 nb_part)
   Integer nb_max_face_neighbour_cell = 0;
   {
     // Renumérote les mailles pour Metis pour que chaque sous-domaine
-    // ait des mailles de numéro consécutifs
+    // ait des mailles de numéros consécutifs
     Integer mid = static_cast<Integer>(metis_vtkdist[my_rank]);
     ENUMERATE_ (Cell, i_item, own_cells) {
       Cell item = *i_item;
@@ -302,15 +302,9 @@ _partitionMesh(bool initial_partition,Int32 nb_part)
         cell_metis_uid[item] = mid;
         ++mid;
       }
-      bool use_face = true;
-      if (_isNonManifoldMesh()) {
-        Int32 dim = item.typeInfo()->dimension();
-        if (dim == 2 && _meshDimension() == 3) {
-          nb_max_face_neighbour_cell += item.nbEdge();
-          use_face = false;
-        }
-      }
-      if (use_face)
+      if (item.hasFlags(ItemFlags::II_HasEdgeFor1DItems))
+        nb_max_face_neighbour_cell += item.nbEdge();
+      else
         nb_max_face_neighbour_cell += item.nbFace();
     }
     cell_metis_uid.synchronize();
