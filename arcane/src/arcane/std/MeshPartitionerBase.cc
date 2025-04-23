@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshPartitionerBase.cc                                      (C) 2000-2024 */
+/* MeshPartitionerBase.cc                                      (C) 2000-2025 */
 /*                                                                           */
 /* Classe de base d'un partitionneur de maillage                             */
 /*---------------------------------------------------------------------------*/
@@ -37,6 +37,7 @@
 #include "arcane/core/CommonVariables.h"
 #include "arcane/core/IMeshPartitionConstraintMng.h"
 #include "arcane/core/ILoadBalanceMng.h"
+#include "arcane/core/MeshKind.h"
 #include "arcane/core/internal/ILoadBalanceMngInternal.h"
 
 #include "arcane/std/MeshPartitionerBase.h"
@@ -55,18 +56,14 @@ MeshPartitionerBase(const ServiceBuildInfo& sbi)
 : AbstractService(sbi)
 , m_sub_domain(sbi.subDomain())
 , m_mesh(sbi.mesh())
-, m_pm_sub(0)
 , m_cell_family(sbi.mesh()->cellFamily())
 , m_lbMng(sbi.subDomain()->loadBalanceMng())
 , m_lb_mng_internal(sbi.subDomain()->loadBalanceMng()->_internalApi())
-, m_maximum_computation_time(0.0)
-, m_imbalance(0.0)
-, m_max_imbalance(1.0)
-, m_unique_id_reference(nullptr)
 {
   IParallelMng* pm = m_mesh->parallelMng();
   m_pm_sub = pm;
- }
+  m_is_non_manifold_mesh = m_mesh->meshKind().isNonManifold();
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -80,11 +77,15 @@ MeshPartitionerBase::
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 void* MeshPartitionerBase::
 getCommunicator() const
 {
   return m_pm_sub->getMPICommunicator();
 }
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 Parallel::Communicator MeshPartitionerBase::
 communicator() const
@@ -107,6 +108,8 @@ changeOwnersFromCells()
 void MeshPartitionerBase::
 initConstraints(bool uidref)
 {
+  m_mesh_dimension = m_mesh->dimension();
+
   _initArrayCellsWithConstraints();
 
   _initFilterLidCells();
@@ -221,6 +224,8 @@ _initArrayCellsWithConstraints()
   // Be sure that constraints are local !
 #ifdef INSURE_CONSTRAINTS
   if (!_createConstraintsLists(tied_uids)) {
+    if (m_is_non_manifold_mesh)
+      ARCANE_FATAL("Constraints are not supported for non manifold mesh");
     // Only appends for the first iteration because constraints are not set before !
     VariableItemInt32& cells_new_owner(m_mesh->cellFamily()->itemsNewOwner());
     ENUMERATE_CELL(icell,m_mesh->cellFamily()->allItems()){
@@ -434,8 +439,8 @@ _addNgb(const Cell& cell, const Face& face,
   bool toAdd = false;
   Int32 myoffset = neighbourcells.size();
   Real hg_contrib = 0;
-  const VariableFaceReal& commCost = m_lb_mng_internal->commCost(m_mesh);
-
+  const VariableItemReal& commCost = m_lb_mng_internal->commCost(m_mesh);
+  const float face_comm_cost = static_cast<float>(commCost[face]);
   // Maille traditionnelle, on peut ajouter
   if ((!special) &&(m_filter_lid_cells[cell.localId()] == eCellClassical))
     toAdd = true;
@@ -444,13 +449,13 @@ _addNgb(const Cell& cell, const Face& face,
     ptr = map.lookupAdd(uid, myoffset, toAdd);
     if (!toAdd && ptrcommWeights) {
       myoffset = ptr->value();
-      (*ptrcommWeights)[offset + myoffset] += (float)(commCost[face]);
+      (*ptrcommWeights)[offset + myoffset] += face_comm_cost;
     }
   }
   if (toAdd) {
     neighbourcells.add(uid);
     if (ptrcommWeights){
-      (*ptrcommWeights).add((float)(commCost[face]));
+      (*ptrcommWeights).add(face_comm_cost);
     }
   }
 
@@ -521,16 +526,43 @@ getNeighbourCellsUidWithConstraints(Cell cell, Int64Array& neighbourcells,
   contrib.fill(false);
 
   if (m_filter_lid_cells[cell.localId()] == eCellClassical){
-    // hg_contrib = m_criteria.getOverallMemory(cell);
-    for( Integer z=0; z<cell.nbFace(); ++z ){
-      const Face& face = cell.face(z);
-      // on ne prend que les faces ayant une maille voisine
-      if (face.nbCell()==2){
-        // recherche de la maille externe
-        const Cell& opposite_cell = (face.cell(0)!=cell?
-                                     face.cell(0):face.cell(1));
-        hg_contrib += _addNgb(opposite_cell, face,  neighbourcells, contrib, difficultNgb,
-                             ptrcommWeights, offset, lids);
+    bool use_face = true;
+    if (m_is_non_manifold_mesh) {
+      // En cas de maillage non manifold, si la maille est
+      // de dimension 2 pour un maillage de dimension 3, alors
+      // elle contient des arêtes au lieu des faces.
+      // On utilise donc les arêtes pour déterminer les voisines.
+      // Dans ce cas, on ne prend en compte que les voisines
+      // qui sont aussi de dimension 2.
+      Int32 dim = cell.typeInfo()->dimension();
+      if (dim == 2 && m_mesh_dimension == 3) {
+        use_face = false;
+        for (Edge sub_edge : cell.edges()) {
+          // on ne prend que les arêtes ayant une maille voisine
+          if (sub_edge.nbCell() >= 2) {
+            for (Cell sub_cell : sub_edge.cells()) {
+              if (sub_cell != cell && sub_cell.typeInfo()->dimension() == 2) {
+                hg_contrib += 1.0;
+                neighbourcells.add((*m_unique_id_reference)[sub_cell]);
+                // TODO: regarder la valeur qu'il faut ajouter pour les communications
+                if (ptrcommWeights)
+                  (*ptrcommWeights).add(1.0f);
+              }
+            }
+          }
+        }
+      }
+    }
+    if (use_face) {
+      for (Integer z = 0; z < cell.nbFace(); ++z) {
+        Face face = cell.face(z);
+        // on ne prend que les faces ayant une maille voisine
+        if (face.nbCell() == 2) {
+          // recherche de la maille externe
+          Cell opposite_cell = (face.cell(0) != cell ? face.cell(0) : face.cell(1));
+          hg_contrib += _addNgb(opposite_cell, face, neighbourcells, contrib, difficultNgb,
+                                ptrcommWeights, offset, lids);
+        }
       }
     }
     // //Now add cell contribution to edge weight
@@ -776,14 +808,15 @@ nbCellWeight() const
   return math::max(m_lb_mng_internal->nbCriteria(m_mesh), 1);
 }
 
-ArrayView<float>
-MeshPartitionerBase::cellsWeight() const
+ArrayView<float> MeshPartitionerBase::
+cellsWeight() const
 {
-  throw FatalErrorException(A_FUNCINFO, "not implemented");
+  ARCANE_FATAL("NotImplemented");
 }
 
-void
-MeshPartitionerBase::_clearCellWgt() {
+void MeshPartitionerBase::
+_clearCellWgt()
+{
   //m_cell_wgt.clear();
 }
 
