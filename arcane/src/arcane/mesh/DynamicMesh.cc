@@ -2296,7 +2296,7 @@ _removeGhostChildItems2(Array<Int64>& cells_to_coarsen)
   cells_map.eachItem([&](Cell cell) {
     if (cell.owner() != sid)
       return;
-    if (cell.itemBase().flags() & ItemFlags::II_JustCoarsened) {
+    if (cell.hasFlags(ItemFlags::II_JustCoarsened)) {
       cells_to_coarsen.add(cell.uniqueId());
       for (Integer c = 0, cs = cell.nbHChildren(); c < cs; c++) {
         cells_to_remove.add(cell.hChild(c));

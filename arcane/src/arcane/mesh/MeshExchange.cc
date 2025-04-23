@@ -1303,7 +1303,7 @@ _printItemToRemove(IItemFamily* family)
   // SDC DEBUG PRINT
   debug() << "= ITEM TO REMOVE FOR FAMILY " << family->name();
   ENUMERATE_ITEM(item, family->allItems()) {
-    if (item->itemBase().flags() & ItemFlags::II_NeedRemove)
+    if (item->hasFlags(ItemFlags::II_NeedRemove))
       debug() << "== TO REMOVE ITEM " << item->uniqueId()   << " kind " << item->kind();
   }
 }
