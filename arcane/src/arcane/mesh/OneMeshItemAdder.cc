@@ -639,10 +639,13 @@ _addOneCell(const CellInfo& cell_info)
 
   ++m_mesh_info.nbCell();
 
-  const bool allow_multi_dim_cell = m_mesh->meshKind().isNonManifold();
+  const MeshKind& mesh_kind = m_mesh->meshKind();
+  const bool allow_multi_dim_cell = !mesh_kind.isMonoDimension();
   const Int32 cell_nb_face = cell_info.nbFace();
-
-  inew_cell.mutableItemBase().setOwner(cell_info.owner(), m_mesh_info.rank());
+  MutableItemBase mut_cell = new_cell.mutableItemBase();
+  if (cell_type_info->dimension() == 2 && cell_type_info->nbLocalFace() == 0)
+    mut_cell.addFlags(ItemFlags::II_HasEdgeFor1DItems);
+  mut_cell.setOwner(cell_info.owner(), m_mesh_info.rank());
   // Vérifie la cohérence entre le type local et la maille créée.
   if (is_check){
     if (cell_info.nbNode()!=inew_cell.nbNode())
