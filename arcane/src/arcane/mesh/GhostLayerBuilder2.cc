@@ -56,12 +56,12 @@ class GhostLayerBuilder2
  public:
 
   using ItemInternalMap = DynamicMeshKindInfos::ItemInternalMap;
-  using SubDomainItemMap = HashTableMapT<Int32,SharedArray<Int32> >;
-  
+  using SubDomainItemMap = HashTableMapT<Int32, SharedArray<Int32>>;
+
  public:
 
   //! Construit une instance pour le maillage \a mesh
-  GhostLayerBuilder2(DynamicMeshIncrementalBuilder* mesh_builder,bool is_allocate,Int32 version);
+  GhostLayerBuilder2(DynamicMeshIncrementalBuilder* mesh_builder, bool is_allocate, Int32 version);
 
  public:
 
@@ -79,13 +79,14 @@ class GhostLayerBuilder2
   bool m_use_only_minimal_cell_uid = true;
 
  private:
-  
-  void _printItem(ItemInternal* ii,std::ostream& o);
-  void _markBoundaryItems();
+
+  void _printItem(ItemInternal* ii, std::ostream& o);
+  void _markBoundaryItems(ArrayView<Int32> node_layer);
   void _sendAndReceiveCells(SubDomainItemMap& cells_to_send);
   void _sortBoundaryNodeList(Array<BoundaryNodeInfo>& boundary_node_list);
-  void _addGhostLayer(Integer current_layer,Int32ConstArrayView node_layer);
+  void _addGhostLayer(Integer current_layer, Int32ConstArrayView node_layer);
   void _markBoundaryNodes(ArrayView<Int32> node_layer);
+  void _markBoundaryNodesFromEdges(ArrayView<Int32> node_layer);
 };
 
 /*---------------------------------------------------------------------------*/
@@ -290,7 +291,7 @@ class GhostLayerBuilder2::BoundaryNodeToSendInfo
  * \todo: faire en sorte qu'on ne travaille que avec la connectivité
  * maille/noeud.
  * 
- */ 
+ */
 void GhostLayerBuilder2::
 addGhostLayers()
 {
@@ -300,12 +301,20 @@ addGhostLayers()
   Integer nb_ghost_layer = m_mesh->ghostLayerMng()->nbGhostLayer();
   info() << "** GHOST LAYER BUILDER V" << m_version << " with sort (nb_ghost_layer=" << nb_ghost_layer << ")";
 
-  // Marque les entités frontières
-  _markBoundaryItems();
+  // Couche fantôme à laquelle appartient le noeud.
+  UniqueArray<Integer> node_layer(m_mesh->nodeFamily()->maxLocalId(), -1);
 
-  if (nb_ghost_layer==0)
+  // Marque les noeuds frontières
+  // On le fait toujours même si on ne veut pas de couche de mailles fantômes
+  _markBoundaryItems(node_layer);
+
+  if (nb_ghost_layer == 0)
     return;
   const Int32 my_rank = pm->commRank();
+
+  const bool is_non_manifold = m_mesh->meshKind().isNonManifold();
+  if (is_non_manifold && (m_version != 3))
+    ARCANE_FATAL("Only version 3 of ghostlayer builder is supported for non manifold meshes");
 
   ItemInternalMap& cells_map = m_mesh->cellsMap();
   ItemInternalMap& nodes_map = m_mesh->nodesMap();
@@ -314,37 +323,34 @@ addGhostLayers()
 
   // Vérifie qu'il n'y a pas de mailles fantômes avec la version 3.
   // Si c'est le cas, affiche un avertissement et indique de passer à la version 4.
-  if (m_version==3){
+  if (m_version == 3) {
     Integer nb_ghost = 0;
     cells_map.eachItem([&](Item cell) {
       if (!cell.isOwn())
         ++nb_ghost;
     });
-    if (nb_ghost!=0)
+    if (nb_ghost != 0)
       warning() << "Invalid call to addGhostLayers() with version 3 because mesh "
                 << " already has '" << nb_ghost << "' ghost cells. The computed ghost cells"
                 << " may be wrong. Use version 4 of ghost layer builder if you want to handle this case";
   }
 
-  // Couche fantôme à laquelle appartient le noeud.
-  UniqueArray<Integer> node_layer(m_mesh->nodeFamily()->maxLocalId(),-1);
+  // Couche fantôme à laquelle appartient la maille.
+  UniqueArray<Integer> cell_layer(m_mesh->cellFamily()->maxLocalId(), -1);
 
-  // Couche fantôme à laquelle appartient la maille. 
-  UniqueArray<Integer> cell_layer(m_mesh->cellFamily()->maxLocalId(),-1);
-
-  if (m_version>=4){
+  if (m_version >= 4) {
     _markBoundaryNodes(node_layer);
     nodes_map.eachItem([&](Item node) {
       if (node_layer[node.localId()] == 1)
         ++boundary_nodes_uid_count;
     });
   }
-  else{
+  else {
     // Parcours les nœuds et calcule le nombre de nœuds frontières
     // et marque la première couche
     nodes_map.eachItem([&](Item node) {
       Int32 f = node.itemBase().flags();
-      if (f & ItemFlags::II_Shared){
+      if (f & ItemFlags::II_Shared) {
         node_layer[node.localId()] = 1;
         ++boundary_nodes_uid_count;
       }
@@ -353,33 +359,33 @@ addGhostLayers()
 
   info() << "NB BOUNDARY NODE=" << boundary_nodes_uid_count;
 
-  for(Integer current_layer=1; current_layer<=nb_ghost_layer; ++current_layer){
+  for (Integer current_layer = 1; current_layer <= nb_ghost_layer; ++current_layer) {
     //Integer current_layer = 1;
     info() << "Processing layer " << current_layer;
     cells_map.eachItem([&](Cell cell) {
       // Ne traite pas les mailles qui ne m'appartiennent pas
-      if (m_version>=4 && cell.owner()!=my_rank)
+      if (m_version >= 4 && cell.owner() != my_rank)
         return;
       //Int64 cell_uid = cell->uniqueId();
       Int32 cell_lid = cell.localId();
-      if (cell_layer[cell_lid]!=(-1))
+      if (cell_layer[cell_lid] != (-1))
         return;
       bool is_current_layer = false;
-      for( Int32 inode_local_id : cell.nodeIds() ){
+      for (Int32 inode_local_id : cell.nodeIds()) {
         Integer layer = node_layer[inode_local_id];
         //info() << "NODE_LAYER lid=" << i_node->localId() << " layer=" << layer;
-        if (layer==current_layer){
+        if (layer == current_layer) {
           is_current_layer = true;
           break;
         }
       }
-      if (is_current_layer){
+      if (is_current_layer) {
         cell_layer[cell_lid] = current_layer;
         //info() << "Current layer celluid=" << cell_uid;
         // Si non marqué, initialise à la couche courante + 1.
-        for( Int32 inode_local_id : cell.nodeIds() ){
+        for (Int32 inode_local_id : cell.nodeIds()) {
           Integer layer = node_layer[inode_local_id];
-          if (layer==(-1)){
+          if (layer == (-1)) {
             //info() << "Marque node uid=" << i_node->uniqueId();
             node_layer[inode_local_id] = current_layer + 1;
           }
@@ -406,8 +412,8 @@ addGhostLayers()
     info() << "Mark remaining nodes nb=" << nb_no_layer;
   }
 
-  for( Integer i=1; i<=nb_ghost_layer; ++i )
-    _addGhostLayer(i,node_layer);
+  for (Integer i = 1; i <= nb_ghost_layer; ++i)
+    _addGhostLayer(i, node_layer);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -435,27 +441,28 @@ _markBoundaryNodes(ArrayView<Int32> node_layer)
   // Parcours les faces et marque les nœuds, arêtes et faces frontières
   faces_map.eachItem([&](Face face) {
     Int32 nb_own = 0;
-    for( Integer i=0, n=face.nbCell(); i<n; ++i )
-      if (face.cell(i).owner()==my_rank)
+    for (Integer i = 0, n = face.nbCell(); i < n; ++i)
+      if (face.cell(i).owner() == my_rank)
         ++nb_own;
-    if (nb_own==1){
+    if (nb_own == 1) {
       face.mutableItemBase().addFlags(shared_and_boundary_flags);
       //++nb_sub_domain_boundary_face;
-      for( Item inode : face.nodes() ){
+      for (Item inode : face.nodes()) {
         inode.mutableItemBase().addFlags(shared_and_boundary_flags);
         node_layer[inode.localId()] = 1;
       }
-      for( Item iedge : face.edges() )
+      for (Item iedge : face.edges())
         iedge.mutableItemBase().addFlags(shared_and_boundary_flags);
     }
   });
+  _markBoundaryNodesFromEdges(node_layer);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void GhostLayerBuilder2::
-_addGhostLayer(Integer current_layer,Int32ConstArrayView node_layer)
+_addGhostLayer(Integer current_layer, Int32ConstArrayView node_layer)
 {
   info() << "Processing ghost layer " << current_layer;
 
@@ -485,23 +492,23 @@ _addGhostLayer(Integer current_layer,Int32ConstArrayView node_layer)
   // NOTE: pour la couche au dessus de 1, il ne faut envoyer qu'une seule valeur.
   cells_map.eachItem([&](Cell cell) {
     // Ne traite pas les mailles qui ne m'appartiennent pas
-    if (m_version>=4 && cell.owner()!=my_rank)
+    if (m_version >= 4 && cell.owner() != my_rank)
       return;
     Int64 cell_uid = cell.uniqueId();
-    for( Node node : cell.nodes() ){
+    for (Node node : cell.nodes()) {
       Int32 node_lid = node.localId();
       bool do_it = false;
-      if (cell.owner()!=my_rank){
+      if (cell.owner() != my_rank) {
         do_it = true;
         ++nb_added_for_different_rank;
       }
-      else{
+      else {
         Integer layer = node_layer[node_lid];
-        do_it = layer<=current_layer;
+        do_it = layer <= current_layer;
         if (do_it)
           ++nb_added_for_in_layer;
       }
-      if (do_it){
+      if (do_it) {
         Int32 node_lid = node.localId();
         if (do_only_minimal_uid) {
           Int64 current_uid = node_cell_uids[node_lid];
@@ -510,9 +517,8 @@ _addGhostLayer(Integer current_layer,Int32ConstArrayView node_layer)
             if (is_verbose)
               info() << "AddNode node_uid=" << node.uniqueId() << " cell=" << cell_uid;
           }
-          else
-            if (is_verbose)
-              info() << "AddNode node_uid=" << node.uniqueId() << " cell=" << cell_uid << " not done current=" << current_uid;
+          else if (is_verbose)
+            info() << "AddNode node_uid=" << node.uniqueId() << " cell=" << cell_uid << " not done current=" << current_uid;
         }
         else {
           Int64 node_uid = node.uniqueId();
@@ -555,14 +561,14 @@ _addGhostLayer(Integer current_layer,Int32ConstArrayView node_layer)
   {
     ConstArrayView<BoundaryNodeInfo> all_bni = all_boundary_node_info;
     Integer bi_n = all_bni.size();
-    for( Integer i=0; i<bi_n; ++i ){
+    for (Integer i = 0; i < bi_n; ++i) {
       const BoundaryNodeInfo& bni = all_bni[i];
       // Recherche tous les éléments de all_bni qui ont le même noeud.
       // Cela représente toutes les mailles connectées à ce noeud.
       Int64 node_uid = bni.node_uid;
       Integer last_i = i;
-      for( ; last_i<bi_n; ++last_i )
-        if (all_bni[last_i].node_uid!=node_uid)
+      for (; last_i < bi_n; ++last_i)
+        if (all_bni[last_i].node_uid != node_uid)
           break;
       Integer nb_same_node = (last_i - i);
       if (is_verbose)
@@ -572,12 +578,12 @@ _addGhostLayer(Integer current_layer,Int32ConstArrayView node_layer)
       // Sinon, il faudra envoyer la liste des mailles à tous les PE dont les rangs apparaissent dans cette liste
       Int32 owner = bni.cell_owner;
       bool has_ghost = false;
-      for( Integer z=0; z<nb_same_node; ++z )
-        if (all_bni[i+z].cell_owner!=owner){
+      for (Integer z = 0; z < nb_same_node; ++z)
+        if (all_bni[i + z].cell_owner != owner) {
           has_ghost = true;
           break;
         }
-      if (has_ghost){
+      if (has_ghost) {
         BoundaryNodeToSendInfo si;
         si.m_index = i;
         si.m_nb_cell = nb_same_node;
@@ -585,47 +591,47 @@ _addGhostLayer(Integer current_layer,Int32ConstArrayView node_layer)
         if (is_verbose)
           info() << "Add ghost uid=" << node_uid << " index=" << i << " nb_same_node=" << nb_same_node;
       }
-      i = last_i-1;
+      i = last_i - 1;
     }
   }
 
-  IntegerUniqueArray nb_info_to_send(nb_rank,0);
+  IntegerUniqueArray nb_info_to_send(nb_rank, 0);
   {
     ConstArrayView<BoundaryNodeInfo> all_bni = all_boundary_node_info;
     Integer nb_node_to_send = node_list_to_send.size();
     std::set<Int32> ranks_done;
-    for( Integer i=0; i<nb_node_to_send; ++i ){
+    for (Integer i = 0; i < nb_node_to_send; ++i) {
       Integer index = node_list_to_send[i].m_index;
       Integer nb_cell = node_list_to_send[i].m_nb_cell;
 
       ranks_done.clear();
 
-      for( Integer kz=0; kz<nb_cell; ++kz ){
-        Int32 krank = all_bni[index+kz].cell_owner;
-        if (ranks_done.find(krank)==ranks_done.end()){
+      for (Integer kz = 0; kz < nb_cell; ++kz) {
+        Int32 krank = all_bni[index + kz].cell_owner;
+        if (ranks_done.find(krank) == ranks_done.end()) {
           ranks_done.insert(krank);
           // Pour chacun, il faudra envoyer
           // - le nombre de mailles (1*Int64)
           // - le uid du noeud (1*Int64)
           // - le uid et le rank de chaque maille (2*Int64*nb_cell)
           //TODO: il est possible de stocker les rangs sur Int32
-          nb_info_to_send[krank] += (nb_cell*2) + 2;
+          nb_info_to_send[krank] += (nb_cell * 2) + 2;
         }
       }
     }
   }
 
-  if (is_verbose){
-    for( Integer i=0; i<nb_rank; ++i ){
+  if (is_verbose) {
+    for (Integer i = 0; i < nb_rank; ++i) {
       Integer nb_to_send = nb_info_to_send[i];
-      if (nb_to_send!=0)
+      if (nb_to_send != 0)
         info() << "NB_TO_SEND rank=" << i << " n=" << nb_to_send;
     }
   }
 
   Integer total_nb_to_send = 0;
-  IntegerUniqueArray nb_info_to_send_indexes(nb_rank,0);
-  for( Integer i=0; i<nb_rank; ++i ){
+  IntegerUniqueArray nb_info_to_send_indexes(nb_rank, 0);
+  for (Integer i = 0; i < nb_rank; ++i) {
     nb_info_to_send_indexes[i] = total_nb_to_send;
     total_nb_to_send += nb_info_to_send[i];
   }
@@ -636,26 +642,26 @@ _addGhostLayer(Integer current_layer,Int32ConstArrayView node_layer)
     ConstArrayView<BoundaryNodeInfo> all_bni = all_boundary_node_info;
     Integer nb_node_to_send = node_list_to_send.size();
     std::set<Int32> ranks_done;
-    for( Integer i=0; i<nb_node_to_send; ++i ){
+    for (Integer i = 0; i < nb_node_to_send; ++i) {
       Integer node_index = node_list_to_send[i].m_index;
       Integer nb_cell = node_list_to_send[i].m_nb_cell;
       Int64 node_uid = all_bni[node_index].node_uid;
 
       ranks_done.clear();
 
-      for( Integer kz=0; kz<nb_cell; ++kz ){
-        Int32 krank = all_bni[node_index+kz].cell_owner;
-        if (ranks_done.find(krank)==ranks_done.end()){
+      for (Integer kz = 0; kz < nb_cell; ++kz) {
+        Int32 krank = all_bni[node_index + kz].cell_owner;
+        if (ranks_done.find(krank) == ranks_done.end()) {
           ranks_done.insert(krank);
-          Integer send_index =  nb_info_to_send_indexes[krank];
+          Integer send_index = nb_info_to_send_indexes[krank];
           resend_infos[send_index] = node_uid;
           ++send_index;
           resend_infos[send_index] = nb_cell;
           ++send_index;
-          for( Integer zz=0; zz<nb_cell; ++zz ){
-            resend_infos[send_index] = all_bni[node_index+zz].cell_uid;
+          for (Integer zz = 0; zz < nb_cell; ++zz) {
+            resend_infos[send_index] = all_bni[node_index + zz].cell_uid;
             ++send_index;
-            resend_infos[send_index] = all_bni[node_index+zz].cell_owner;
+            resend_infos[send_index] = all_bni[node_index + zz].cell_owner;
             ++send_index;
           }
           nb_info_to_send_indexes[krank] = send_index;
@@ -664,19 +670,19 @@ _addGhostLayer(Integer current_layer,Int32ConstArrayView node_layer)
     }
   }
 
-  IntegerUniqueArray nb_info_to_recv(nb_rank,0);
+  IntegerUniqueArray nb_info_to_recv(nb_rank, 0);
   {
-    Timer::SimplePrinter sp(traceMng(),"Sending size with AllToAll");
-    pm->allToAll(nb_info_to_send,nb_info_to_recv,1);
+    Timer::SimplePrinter sp(traceMng(), "Sending size with AllToAll");
+    pm->allToAll(nb_info_to_send, nb_info_to_recv, 1);
   }
 
   if (is_verbose)
-    for( Integer i=0; i<nb_rank; ++i )
+    for (Integer i = 0; i < nb_rank; ++i)
       info() << "NB_TO_RECV: I=" << i << " n=" << nb_info_to_recv[i];
 
   Integer total_nb_to_recv = 0;
-  for( Integer i=0; i<nb_rank; ++i )
-    total_nb_to_recv +=  nb_info_to_recv[i];
+  for (Integer i = 0; i < nb_rank; ++i)
+    total_nb_to_recv += nb_info_to_recv[i];
 
   // Il y a de fortes chances que cela ne marche pas si le tableau est trop grand,
   // il faut proceder avec des tableaux qui ne depassent pas 2Go a cause des
@@ -692,7 +698,7 @@ _addGhostLayer(Integer current_layer,Int32ConstArrayView node_layer)
     Int32UniqueArray recv_indexes(nb_rank);
     Int32 total_send = 0;
     Int32 total_recv = 0;
-    for( Integer i=0; i<nb_rank; ++i ){
+    for (Integer i = 0; i < nb_rank; ++i) {
       send_counts[i] = (Int32)(nb_info_to_send[i] * vsize);
       recv_counts[i] = (Int32)(nb_info_to_recv[i] * vsize);
       send_indexes[i] = total_send;
@@ -702,17 +708,17 @@ _addGhostLayer(Integer current_layer,Int32ConstArrayView node_layer)
     }
     recv_infos.resize(total_nb_to_recv);
 
-    Int64ConstArrayView send_buf(total_nb_to_send*vsize,(Int64*)resend_infos.data());
-    Int64ArrayView recv_buf(total_nb_to_recv*vsize,(Int64*)recv_infos.data());
+    Int64ConstArrayView send_buf(total_nb_to_send * vsize, (Int64*)resend_infos.data());
+    Int64ArrayView recv_buf(total_nb_to_recv * vsize, (Int64*)recv_infos.data());
 
     info() << "BUF_SIZES: send=" << send_buf.size() << " recv=" << recv_buf.size();
     {
-      Timer::SimplePrinter sp(traceMng(),"Send values with AllToAll");
-      pm->allToAllVariable(send_buf,send_counts,send_indexes,recv_buf,recv_counts,recv_indexes);
+      Timer::SimplePrinter sp(traceMng(), "Send values with AllToAll");
+      pm->allToAllVariable(send_buf, send_counts, send_indexes, recv_buf, recv_counts, recv_indexes);
     }
   }
 
-  SubDomainItemMap cells_to_send(50,true);
+  SubDomainItemMap cells_to_send(50, true);
 
   // TODO: il n'y a a priori pas besoin d'avoir les mailles ici mais
   // seulement la liste des procs a qui il faut envoyer. Ensuite,
@@ -724,50 +730,50 @@ _addGhostLayer(Integer current_layer,Int32ConstArrayView node_layer)
     UniqueArray<Int32> my_cells;
     SharedArray<Int32> ranks_to_send;
     std::set<Int32> ranks_done;
-    while (index<total_nb_to_recv){
+    while (index < total_nb_to_recv) {
       Int64 node_uid = recv_infos[index];
       ++index;
       Int64 nb_cell = recv_infos[index];
       ++index;
       Node current_node(nodes_map.findItem(node_uid));
       if (is_verbose)
-        info() << "NODE uid=" << node_uid << " nb_cell=" << nb_cell << " idx=" << (index-2);
+        info() << "NODE uid=" << node_uid << " nb_cell=" << nb_cell << " idx=" << (index - 2);
       my_cells.clear();
       ranks_to_send.clear();
       ranks_done.clear();
-      for( Integer kk=0; kk<nb_cell; ++kk ){
+      for (Integer kk = 0; kk < nb_cell; ++kk) {
         Int64 cell_uid = recv_infos[index];
         ++index;
         Int32 cell_owner = CheckedConvert::toInt32(recv_infos[index]);
         ++index;
-        if (kk==0 && current_layer==1 && m_is_allocate)
+        if (kk == 0 && current_layer == 1 && m_is_allocate)
           // Je suis la maille de plus petit uid et donc je
           // positionne le propriétaire du noeud.
           // TODO: ne pas faire cela ici, mais le faire dans une routine à part.
           nodes_map.findItem(node_uid).toMutable().setOwner(cell_owner, my_rank);
         if (is_verbose)
           info() << " CELL=" << cell_uid << " owner=" << cell_owner;
-        if (cell_owner==my_rank){
+        if (cell_owner == my_rank) {
           impl::ItemBase dcell = cells_map.tryFind(cell_uid);
           if (dcell.null())
             ARCANE_FATAL("Internal error: cell uid={0} is not in our mesh", cell_uid);
-          if (do_only_minimal_uid){
+          if (do_only_minimal_uid) {
             // Ajoute toutes les mailles autour de mon noeud
-            for( CellLocalId c : current_node.cellIds() )
+            for (CellLocalId c : current_node.cellIds())
               my_cells.add(c);
           }
           else
             my_cells.add(dcell.localId());
         }
-        else{
-          if (ranks_done.find(cell_owner)==ranks_done.end()){
+        else {
+          if (ranks_done.find(cell_owner) == ranks_done.end()) {
             ranks_to_send.add(cell_owner);
             ranks_done.insert(cell_owner);
           }
         }
       }
 
-      if (is_verbose){
+      if (is_verbose) {
         info() << "CELLS TO SEND: node_uid=" << node_uid
                << " nb_rank=" << ranks_to_send.size()
                << " nb_cell=" << my_cells.size();
@@ -776,11 +782,11 @@ _addGhostLayer(Integer current_layer,Int32ConstArrayView node_layer)
                 << " cell=" << my_cells;
       }
 
-      for( Integer zrank=0, zn=ranks_to_send.size(); zrank<zn; ++zrank ){
+      for (Integer zrank = 0, zn = ranks_to_send.size(); zrank < zn; ++zrank) {
         Int32 send_rank = ranks_to_send[zrank];
         SubDomainItemMap::Data* d = cells_to_send.lookupAdd(send_rank);
         Int32Array& c = d->value();
-        for( Integer zid=0, zid_size=my_cells.size(); zid<zid_size; ++zid ){
+        for (Integer zid = 0, zid_size = my_cells.size(); zid < zid_size; ++zid) {
           // TODO: regarder si maille pas déjà présente et ne pas l'ajouter si ce n'est pas nécessaire.
           c.add(my_cells[zid]);
         }
@@ -809,18 +815,18 @@ _sortBoundaryNodeList(Array<BoundaryNodeInfo>& boundary_node_list)
   Int32 nb_rank = pm->commSize();
   bool is_verbose = m_is_verbose;
 
-  Parallel::BitonicSort<BoundaryNodeInfo,BoundaryNodeBitonicSortTraits> boundary_node_sorter(pm);
+  Parallel::BitonicSort<BoundaryNodeInfo, BoundaryNodeBitonicSortTraits> boundary_node_sorter(pm);
   boundary_node_sorter.setNeedIndexAndRank(false);
 
   {
-    Timer::SimplePrinter sp(traceMng(),"Sorting boundary nodes");
+    Timer::SimplePrinter sp(traceMng(), "Sorting boundary nodes");
     boundary_node_sorter.sort(boundary_node_list);
   }
 
-  if (is_verbose){
+  if (is_verbose) {
     ConstArrayView<BoundaryNodeInfo> all_bni = boundary_node_sorter.keys();
     Integer n = all_bni.size();
-    for( Integer i=0; i<n; ++i ){
+    for (Integer i = 0; i < n; ++i) {
       const BoundaryNodeInfo& bni = all_bni[i];
       info() << "NODES_KEY i=" << i
              << " node=" << bni.node_uid
@@ -842,14 +848,14 @@ _sortBoundaryNodeList(Array<BoundaryNodeInfo>& boundary_node_list)
     Integer n = all_bni.size();
     // Comme un même noeud peut être présent dans la liste du proc précédent, chaque PE
     // (sauf le 0) envoie au proc précédent le début sa liste qui contient les même noeuds.
-    
+
     UniqueArray<BoundaryNodeInfo> end_node_list;
     Integer begin_own_list_index = 0;
-    if (n!=0 && my_rank!=0){
-      if (BoundaryNodeBitonicSortTraits::isValid(all_bni[0])){
+    if (n != 0 && my_rank != 0) {
+      if (BoundaryNodeBitonicSortTraits::isValid(all_bni[0])) {
         Int64 node_uid = all_bni[0].node_uid;
-        for( Integer i=0; i<n; ++i ){
-          if (all_bni[i].node_uid!=node_uid){
+        for (Integer i = 0; i < n; ++i) {
+          if (all_bni[i].node_uid != node_uid) {
             begin_own_list_index = i;
             break;
           }
@@ -859,8 +865,8 @@ _sortBoundaryNodeList(Array<BoundaryNodeInfo>& boundary_node_list)
       }
     }
     info() << "BEGIN_OWN_LIST_INDEX=" << begin_own_list_index << " end_node_list_size=" << end_node_list.size();
-    if (is_verbose){
-      for( Integer k=0, kn=end_node_list.size(); k<kn; ++k )
+    if (is_verbose) {
+      for (Integer k = 0, kn = end_node_list.size(); k < kn; ++k)
         info() << " SEND node_uid=" << end_node_list[k].node_uid
                << " cell_uid=" << end_node_list[k].cell_uid;
     }
@@ -872,28 +878,28 @@ _sortBoundaryNodeList(Array<BoundaryNodeInfo>& boundary_node_list)
     Integer send_message_size = BoundaryNodeBitonicSortTraits::messageSize(end_node_list);
 
     // Envoie et réceptionne d'abord les tailles.
-    if (my_rank!=(nb_rank-1)){
-      requests.add(pm->recv(IntegerArrayView(1,&recv_message_size),my_rank+1,false));
+    if (my_rank != (nb_rank - 1)) {
+      requests.add(pm->recv(IntegerArrayView(1, &recv_message_size), my_rank + 1, false));
     }
-    if (my_rank!=0){
-      requests.add(pm->send(IntegerConstArrayView(1,&send_message_size),my_rank-1,false));
+    if (my_rank != 0) {
+      requests.add(pm->send(IntegerConstArrayView(1, &send_message_size), my_rank - 1, false));
     }
     info() << "Send size=" << send_message_size << " Recv size=" << recv_message_size;
     pm->waitAllRequests(requests);
     requests.clear();
-    
-    if (recv_message_size!=0){
+
+    if (recv_message_size != 0) {
       Int32 nb_element = BoundaryNodeInfo::nbElement(recv_message_size);
       end_node_list_recv.resize(nb_element);
-      requests.add(BoundaryNodeBitonicSortTraits::recv(pm,my_rank+1,end_node_list_recv));
+      requests.add(BoundaryNodeBitonicSortTraits::recv(pm, my_rank + 1, end_node_list_recv));
     }
-    if (send_message_size!=0)
-      requests.add(BoundaryNodeBitonicSortTraits::send(pm,my_rank-1,end_node_list));
+    if (send_message_size != 0)
+      requests.add(BoundaryNodeBitonicSortTraits::send(pm, my_rank - 1, end_node_list));
 
     pm->waitAllRequests(requests);
 
     boundary_node_list.clear();
-    boundary_node_list.addRange(all_bni.subConstView(begin_own_list_index,n-begin_own_list_index));
+    boundary_node_list.addRange(all_bni.subConstView(begin_own_list_index, n - begin_own_list_index));
     boundary_node_list.addRange(end_node_list_recv);
   }
 }
@@ -904,21 +910,21 @@ _sortBoundaryNodeList(Array<BoundaryNodeInfo>& boundary_node_list)
 void GhostLayerBuilder2::
 _sendAndReceiveCells(SubDomainItemMap& cells_to_send)
 {
-  auto exchanger { ParallelMngUtils::createExchangerRef(m_parallel_mng) };
+  auto exchanger{ ParallelMngUtils::createExchangerRef(m_parallel_mng) };
 
   const bool is_verbose = m_is_verbose;
 
   // Envoie et réceptionne les mailles fantômes
-  for( SubDomainItemMap::Enumerator i_map(cells_to_send); ++i_map; ){
+  for (SubDomainItemMap::Enumerator i_map(cells_to_send); ++i_map;) {
     Int32 sd = i_map.data()->key();
     Int32Array& items = i_map.data()->value();
 
     // Comme la liste par sous-domaine peut contenir plusieurs
     // fois la même maille, on trie la liste et on supprime les
     // doublons
-    std::sort(std::begin(items),std::end(items));
-    auto new_end = std::unique(std::begin(items),std::end(items));
-    items.resize(CheckedConvert::toInteger(new_end-std::begin(items)));
+    std::sort(std::begin(items), std::end(items));
+    auto new_end = std::unique(std::begin(items), std::end(items));
+    items.resize(CheckedConvert::toInteger(new_end - std::begin(items)));
     if (is_verbose)
       info(4) << "CELLS TO SEND SD=" << sd << " Items=" << items;
     else
@@ -926,16 +932,16 @@ _sendAndReceiveCells(SubDomainItemMap& cells_to_send)
     exchanger->addSender(sd);
   }
   exchanger->initializeCommunicationsMessages();
-  for( Integer i=0, ns=exchanger->nbSender(); i<ns; ++i ){
+  for (Integer i = 0, ns = exchanger->nbSender(); i < ns; ++i) {
     ISerializeMessage* sm = exchanger->messageToSend(i);
     Int32 rank = sm->destination().value();
     ISerializer* s = sm->serializer();
     Int32ConstArrayView items_to_send = cells_to_send[rank];
-    m_mesh->serializeCells(s,items_to_send);
+    m_mesh->serializeCells(s, items_to_send);
   }
   exchanger->processExchange();
   info(4) << "END EXCHANGE CELLS";
-  for( Integer i=0, ns=exchanger->nbReceiver(); i<ns; ++i ){
+  for (Integer i = 0, ns = exchanger->nbReceiver(); i < ns; ++i) {
     ISerializeMessage* sm = exchanger->messageToReceive(i);
     ISerializer* s = sm->serializer();
     m_mesh->addCells(s);
@@ -953,7 +959,7 @@ _sendAndReceiveCells(SubDomainItemMap& cells_to_send)
  * tous les sous-domaines).
  */
 void GhostLayerBuilder2::
-_markBoundaryItems()
+_markBoundaryItems(ArrayView<Int32> node_layer)
 {
   IParallelMng* pm = m_mesh->parallelMng();
   Int32 my_rank = pm->commRank();
@@ -964,30 +970,73 @@ _markBoundaryItems()
   // Parcours les faces et marque les nœuds, arêtes et faces frontières
   faces_map.eachItem([&](Face face) {
     bool is_sub_domain_boundary_face = false;
-    if (face.itemBase().flags() & ItemFlags::II_Boundary){
+    if (face.itemBase().flags() & ItemFlags::II_Boundary) {
       is_sub_domain_boundary_face = true;
     }
-    else{
-      if (face.nbCell()==2 && (face.cell(0).owner()!=my_rank || face.cell(1).owner()!=my_rank))
+    else {
+      if (face.nbCell() == 2 && (face.cell(0).owner() != my_rank || face.cell(1).owner() != my_rank))
         is_sub_domain_boundary_face = true;
     }
-    if (is_sub_domain_boundary_face){
+    if (is_sub_domain_boundary_face) {
       face.mutableItemBase().addFlags(shared_and_boundary_flags);
-      for( Item inode : face.nodes() )
+      for (Item inode : face.nodes())
         inode.mutableItemBase().addFlags(shared_and_boundary_flags);
-      for( Item iedge : face.edges() )
+      for (Item iedge : face.edges())
         iedge.mutableItemBase().addFlags(shared_and_boundary_flags);
+    }
+  });
+  _markBoundaryNodesFromEdges(node_layer);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void GhostLayerBuilder2::
+_markBoundaryNodesFromEdges(ArrayView<Int32> node_layer)
+{
+  const bool is_non_manifold = m_mesh->meshKind().isNonManifold();
+  if (!is_non_manifold)
+    return;
+
+  const int shared_and_boundary_flags = ItemFlags::II_Shared | ItemFlags::II_SubDomainBoundary;
+
+  info() << "Mark boundary nodes from edges for non-manifold mesh";
+  // Parcours l'ensemble des arêtes.
+  // Si une arête est connectée à une seule maille de dimension 2
+  // dont on est le propriétaire, alors il s'agit d'une arête de bord
+  // et on marque les noeuds correspondants.
+  IParallelMng* pm = m_mesh->parallelMng();
+  Int32 my_rank = pm->commRank();
+  ItemInternalMap& edges_map = m_mesh->edgesMap();
+  edges_map.eachItem([&](Edge edge) {
+    Int32 nb_cell = edge.nbCell();
+    Int32 nb_dim2_cell = 0;
+    Int32 nb_own_dim2_cell = 0;
+    for (Cell cell : edge.cells()) {
+      Int32 dim = cell.typeInfo()->dimension();
+      if (dim == 2) {
+        ++nb_dim2_cell;
+        if (cell.owner() == my_rank)
+          ++nb_own_dim2_cell;
+      }
+    }
+    if (nb_dim2_cell == nb_cell && nb_own_dim2_cell == 1) {
+      edge.mutableItemBase().addFlags(shared_and_boundary_flags);
+      for (Item inode : edge.nodes()) {
+        inode.mutableItemBase().addFlags(shared_and_boundary_flags);
+        node_layer[inode.localId()] = 1;
+      }
     }
   });
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
+// Cette fonction gère les versions 3 et 4 de calcul des entités fantômes.
 extern "C++" void
-_buildGhostLayerNewVersion(DynamicMesh* mesh,bool is_allocate,Int32 version)
+_buildGhostLayerNewVersion(DynamicMesh* mesh, bool is_allocate, Int32 version)
 {
-  GhostLayerBuilder2 glb(mesh->m_mesh_builder,is_allocate,version);
+  GhostLayerBuilder2 glb(mesh->m_mesh_builder, is_allocate, version);
   glb.addGhostLayers();
 }
 
