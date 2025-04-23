@@ -334,6 +334,12 @@ class ARCANE_CORE_EXPORT Item
     return (ik==IK_Unknown || ik==IK_DoF);
   }
 
+  //! Retourne si les flags \a flags sont positionnées pour l'entité
+  bool hasFlags(Int32 flags) const { return (_flags() & flags); }
+
+  //! Flags de l'entité
+  Int32 flags() const { return m_shared_info->_flagsV2(m_local_id); }
+
  public:
 
  /*!

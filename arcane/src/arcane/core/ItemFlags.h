@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemFlags.h                                                 (C) 2000-2024 */
+/* ItemFlags.h                                                 (C) 2000-2025 */
 /*                                                                           */
 /* Drapeaux contenant les caractéristiques d'une entité.                     */
 /*---------------------------------------------------------------------------*/
@@ -26,6 +26,13 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*!
  * \brief Flags pour les caractéristiques des entités.
+ *
+ * Ces flags permettent de conserver des informations sur les entités (Item).
+ * Ils sont réservés à %Arcane et ne doivent pas être utilisés en dehors
+ * d'Arcane. La seule exception concerne les valeurs ItemFlags::II_UserMark1
+ * et ItemFlags::II_UserMark2. Ils peuvent être associés aux entités via
+ * les méthodes MutableItemBase::addFlags(), MutableItemBase::removeFlags() ou
+ * ItemBase::hasFlags().
  */
 class ARCANE_CORE_EXPORT ItemFlags
 {
@@ -35,8 +42,8 @@ class ARCANE_CORE_EXPORT ItemFlags
 
  public:
 
-  // L'affichage 'lisible' des flags est implémenté dans ItemPrinter
-  // Il doit être updaté si des flags sont ici changés
+  // L'affichage 'lisible' des flags est implémenté dans ItemPrinter.
+  // Il doit être mis à jour si des valeurs ici sont modifiées ou ajoutées.
 
   enum : FlagType
   {
@@ -58,16 +65,16 @@ class ARCANE_CORE_EXPORT ItemFlags
     II_Detached = 1 << 16, //!< L'entité est détachée du maillage
     II_HasTrace = 1 << 17, //!< L'entité est marquée pour trace (pour débug)
 
-    II_Coarsen = 1 << 18, //!<  L'entité est marquée pour déraffinement
+    II_Coarsen = 1 << 18, //!<  L'entité est marquée pour dé-raffinement
     II_DoNothing = 1 << 19, //!<  L'entité est bloquée
     II_Refine = 1 << 20, //!<  L'entité est marquée pour raffinement
     II_JustRefined = 1 << 21, //!<  L'entité vient d'être raffinée
-    II_JustCoarsened = 1 << 22, //!<  L'entité vient d'être déraffiné
+    II_JustCoarsened = 1 << 22, //!<  L'entité vient d'être dé-raffiné
     II_Inactive = 1 << 23, //!<  L'entité est inactive //COARSEN_INACTIVE,
-    II_CoarsenInactive = 1 << 24, //!<  L'entité est inactive et a des enfants tagués pour déraffinement
+    II_CoarsenInactive = 1 << 24, //!< L'entité est inactive et a des enfants tagués pour dé-raffinement
 
-    II_UserMark1 = 1 << 25, //!< Marque utilisateur old_value 1<<24
-    II_UserMark2 = 1 << 26 //!< Marque utilisateur  old_value 1<<25
+    II_UserMark1 = 1 << 30, //!< Marque utilisateur
+    II_UserMark2 = 1 << 31 //!< Marque utilisateur
   };
 
   static const int II_InterfaceFlags = II_Boundary + II_HasFrontCell + II_HasBackCell +

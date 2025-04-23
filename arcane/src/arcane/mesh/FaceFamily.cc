@@ -387,7 +387,7 @@ addBackCellToFace(Face face,Cell new_cell)
   // par couches
   if (m_check_orientation){
     Cell current_cell = face.backCell();
-    if (face.itemBase().flags() & ItemFlags::II_HasBackCell){
+    if (face.hasFlags(ItemFlags::II_HasBackCell)){
       ARCANE_FATAL("Face already having a back cell."
                    " This is most probably due to the fact that the face"
                    " is connected to a reverse cell with a negative volume."
@@ -420,7 +420,7 @@ addFrontCellToFace(Face face,Cell new_cell)
   // par couches
   if (m_check_orientation){
     Cell current_cell = face.frontCell();
-    if (face.itemBase().flags() & ItemFlags::II_HasFrontCell){
+    if (face.hasFlags(ItemFlags::II_HasFrontCell)){
       ARCANE_FATAL("Face already having a front cell."
                    " This is most probably due to the fact that the face"
                    " is connected to a reverse cell with a negative volume."
@@ -473,13 +473,13 @@ addBackFrontCellsFromParentFace(Face subface,Face face)
 	Cell fcell= face.frontCell();
 	Cell bcell= face.backCell();
 
-	if (subface.itemBase().flags() & ItemFlags::II_HasBackCell){
+	if (subface.hasFlags(ItemFlags::II_HasBackCell)){
     if(fcell.isActive()) 
       addFrontCellToFace(subface,face.frontCell());
     else if(bcell.isActive())
       addFrontCellToFace(subface,face.backCell());
 	}
-	else if (subface.itemBase().flags() & ItemFlags::II_HasFrontCell){
+	else if (subface.hasFlags(ItemFlags::II_HasFrontCell)){
     if(bcell.isActive()) 
       addBackCellToFace(subface,face.backCell());
     else if (fcell.isActive())
