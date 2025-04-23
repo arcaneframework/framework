@@ -10,7 +10,6 @@
    <mesh>
      <filename>mesh_with_loose_items.msh</filename>
      <cell-dimension-kind>non-manifold</cell-dimension-kind>
-     <face-numbering-version>0</face-numbering-version>
    </mesh>
  </meshes>
 
