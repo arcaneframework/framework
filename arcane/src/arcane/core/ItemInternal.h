@@ -694,6 +694,9 @@ class ARCANE_CORE_EXPORT ItemBase
   ItemBase hChildBase(Int32 index) const { return _connectivity()->hChildBase(m_local_id, index, m_shared_info); }
   inline ItemBase parentBase(Int32 index) const;
 
+  //! Retourne si les flags \a flags sont positionnées pour l'entité
+  bool hasFlags(Int32 flags) const { return (this->flags() & flags); }
+
  public:
 
  /*!
@@ -832,7 +835,7 @@ class ARCANE_CORE_EXPORT MutableItemBase
   //! Positionne les flags de l'entité
   void setFlags(Int32 f) { m_shared_info->_setFlagsV2(m_local_id,f); }
 
-  //! Ajoute les flags \added_flags à ceux de l'entité
+  //! Ajoute les flags \a added_flags à ceux de l'entité
   void addFlags(Int32 added_flags)
   {
     Int32 f = this->flags();
@@ -840,7 +843,7 @@ class ARCANE_CORE_EXPORT MutableItemBase
     this->setFlags(f);
   }
 
-  //! Supprime les flags \added_flags de ceux de l'entité
+  //! Supprime les flags \a removed_flags de ceux de l'entité
   void removeFlags(Int32 removed_flags)
   {
     Int32 f = this->flags();
