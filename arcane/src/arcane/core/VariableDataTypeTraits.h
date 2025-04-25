@@ -195,7 +195,7 @@ class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<Real>
 
   static bool verifDifferent(Type v1, Type v2, Type& diff, bool is_nan_equal = false)
   {
-    return _verifDifferent(v1, v2, diff, v1, is_nan_equal);
+    return _verifDifferent(v1, v2, diff, math::abs(v1), is_nan_equal);
   }
 
   static NormType normeMax(Real v)
@@ -218,7 +218,7 @@ class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<Real>
       return true;
     }
     if (v1 != v2) {
-      if (math::abs(divider) < 1.e-100) // TH: plantait pour v1 tres petit(math::isZero(v1))
+      if (divider < 1.e-100) // TH: plantait pour v1 tres petit(math::isZero(v1))
         diff = v1 - v2;
       else
         diff = (v1 - v2) / divider;
@@ -277,7 +277,7 @@ class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<Float128>
 
   static bool verifDifferent(Type v1, Type v2, Type& diff, [[maybe_unused]] bool is_nan_equal = false)
   {
-    return _verifDifferent(v1, v2, diff, v1);
+    return _verifDifferent(v1, v2, diff, math::abs(v1));
   }
 
   static bool verifDifferentNorm(Type v1, Type v2, Type& diff, NormType norm, [[maybe_unused]] bool is_nan_equal)
@@ -295,7 +295,7 @@ class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<Float128>
   static bool _verifDifferent(Type v1, Type v2, Type& diff, Type divider)
   {
     if (v1 != v2) {
-      if (math::abs(divider) < 1.e-100) // TH: plantait pour v1 tres petit(math::isZero(v1))
+      if (divider < 1.e-100) // TH: plantait pour v1 tres petit(math::isZero(v1))
         diff = v1 - v2;
       else
         diff = (v1 - v2) / divider;
@@ -774,7 +774,7 @@ class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<BFloat16>
   static bool verifDifferent(float v1, float v2, BFloat16& diff,
                              [[maybe_unused]] bool is_nan_equal = false)
   {
-    return _verifDifferent(v1, v2, diff, v1);
+    return _verifDifferent(v1, v2, diff, math::abs(v1));
   }
 
   static bool verifDifferentNorm(float v1, float v2, BFloat16& diff, NormType norm,
@@ -794,7 +794,7 @@ class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<BFloat16>
   {
     if (v1 != v2) {
       float fdiff = 0.0;
-      if (math::abs(divider) != 0.0)
+      if (divider != 0.0)
         fdiff = v1 - v2;
       else
         fdiff = (v1 - v2) / divider;
@@ -855,7 +855,7 @@ class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<Float16>
   static bool verifDifferent(float v1, float v2, Float16& diff,
                              [[maybe_unused]] bool is_nan_equal = false)
   {
-    return _verifDifferent(v1, v2, diff, v1);
+    return _verifDifferent(v1, v2, diff, math::abs(v1));
   }
 
   static bool verifDifferentNorm(float v1, float v2, Float16& diff, NormType norm,
@@ -875,7 +875,7 @@ class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<Float16>
   {
     if (v1 != v2) {
       float fdiff = 0.0;
-      if (math::abs(divider) != 0.0)
+      if (divider != 0.0)
         fdiff = v1 - v2;
       else
         fdiff = (v1 - v2) / divider;
@@ -940,7 +940,7 @@ class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<Float32>
 
   static bool verifDifferent(Type v1, Type v2, Type& diff, bool is_nan_equal = false)
   {
-    return _verifDifferent(v1, v2, diff, v1, is_nan_equal);
+    return _verifDifferent(v1, v2, diff, math::abs(v1), is_nan_equal);
   }
 
   static Float32 normeMax(Float32 v)
@@ -963,7 +963,7 @@ class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<Float32>
       return true;
     }
     if (v1 != v2) {
-      if (math::abs(divider) < 1.e-40)
+      if (divider < 1.e-40)
         diff = v1 - v2;
       else
         diff = (v1 - v2) / divider;
@@ -1032,7 +1032,8 @@ class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<Real2>
     return is_different;
   }
 
-  static bool verifDifferentNorm(const Real2& v1, const Real2& v2, Real2& diff, NormType norm, [[maybe_unused]] bool is_nan_equal)
+  static bool verifDifferentNorm(const Real2& v1, const Real2& v2, Real2& diff,
+                                 NormType norm, [[maybe_unused]] bool is_nan_equal)
   {
     if (norm < 1.e-100) {
       diff.x = math::abs(v2.x);
@@ -1114,7 +1115,8 @@ class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<Real3>
     return is_different;
   }
 
-  static bool verifDifferentNorm(const Real3& v1, const Real3& v2, Real3& diff, NormType norm, [[maybe_unused]] bool is_nan_equal)
+  static bool verifDifferentNorm(const Real3& v1, const Real3& v2, Real3& diff,
+                                 NormType norm, [[maybe_unused]] bool is_nan_equal)
   {
     if (norm < 1.e-100) {
       diff.x = math::abs(v2.x);
@@ -1198,7 +1200,8 @@ class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<Real2x2>
     return is_different;
   }
 
-  static bool verifDifferentNorm(const Real2x2& v1, const Real2x2& v2, Real2x2& diff, NormType norm, [[maybe_unused]] bool is_nan_equal)
+  static bool verifDifferentNorm(const Real2x2& v1, const Real2x2& v2, Real2x2& diff,
+                                 NormType norm, [[maybe_unused]] bool is_nan_equal)
   {
     if (norm < 1.e-100) {
       diff.x.x = math::abs(v2.x.x);
@@ -1286,7 +1289,8 @@ class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<Real3x3>
     return is_different;
   }
 
-  static bool verifDifferentNorm(const Real3x3& v1, const Real3x3& v2, Real3x3& diff, NormType norm, [[maybe_unused]] bool is_nan_equal)
+  static bool verifDifferentNorm(const Real3x3& v1, const Real3x3& v2, Real3x3& diff,
+                                 NormType norm, [[maybe_unused]] bool is_nan_equal)
   {
     if (norm < 1.e-100) {
       diff.x.x = math::abs(v2.x.x);
