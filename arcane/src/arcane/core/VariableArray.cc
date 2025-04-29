@@ -68,7 +68,6 @@ class ArrayVariableDiff
   check(IVariable* var, ConstArrayView<DataType> ref, ConstArrayView<DataType> current,
         const VariableComparerArgs& compare_args)
   {
-    const int max_print = compare_args.maxPrint();
     const bool compare_ghost = compare_args.isCompareGhost();
     if (var->itemKind() == IK_Unknown)
       return _checkAsArray(var, ref, current, compare_args);
@@ -155,7 +154,7 @@ class ArrayVariableDiff
                    << " for the variable " << var_name << " ref_size=" << ref_size;
     }
     if (nb_diff != 0)
-      this->_sortAndDump(var, pm, max_print);
+      this->_sortAndDump(var, pm, compare_args);
 
     return VariableComparerResults(nb_diff);
   }
@@ -186,7 +185,6 @@ class ArrayVariableDiff
   _checkAsArray(IVariable* var, ConstArrayView<DataType> ref, ConstArrayView<DataType> current,
                 const VariableComparerArgs& compare_args)
   {
-    const int max_print = compare_args.maxPrint();
     IParallelMng* pm = var->variableMng()->parallelMng();
     ITraceMng* msg = pm->traceMng();
 
@@ -243,7 +241,7 @@ class ArrayVariableDiff
         
     }
     if (nb_diff!=0)
-      this->_sortAndDump(var,pm,max_print);
+      this->_sortAndDump(var, pm, compare_args);
 
     return VariableComparerResults(nb_diff);
   }
@@ -252,7 +250,6 @@ class ArrayVariableDiff
   _checkReplica2(IParallelMng* pm, IVariable* var, ConstArrayView<DataType> var_values,
                  const VariableComparerArgs& compare_args)
   {
-    const int max_print = compare_args.maxPrint();
     ITraceMng* msg = pm->traceMng();
     Integer size = var_values.size();
     // Vérifie que tous les réplica ont le même nombre d'éléments pour la variable.
@@ -282,7 +279,7 @@ class ArrayVariableDiff
       }
     }
     if (nb_diff!=0)
-      this->_sortAndDump(var,pm,max_print);
+      this->_sortAndDump(var, pm, compare_args);
 
     return VariableComparerResults(nb_diff);
   }
