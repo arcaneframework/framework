@@ -65,7 +65,6 @@ class Array2VariableDiff
   check(IVariable* var, ConstArray2View<DataType> ref, ConstArray2View<DataType> current,
         const VariableComparerArgs& compare_args)
   {
-    const int max_print = compare_args.maxPrint();
     const bool compare_ghost = compare_args.isCompareGhost();
     ItemGroup group = var->itemGroup();
     if (group.null())
@@ -125,7 +124,7 @@ class Array2VariableDiff
       }
     }
     if (nb_diff!=0)
-      this->_sortAndDump(var,pm,max_print);
+      this->_sortAndDump(var, pm, compare_args);
 
     return VariableComparerResults(nb_diff);
   }
@@ -156,7 +155,6 @@ class Array2VariableDiff
   _checkReplica2(IParallelMng* pm, IVariable* var, ConstArray2View<DataType> var_values,
                  const VariableComparerArgs& compare_args)
   {
-    const int max_print = compare_args.maxPrint();
     ITraceMng* msg = pm->traceMng();
     ItemGroup group = var->itemGroup();
     //TODO: traiter les variables qui ne sont pas sur des éléments du maillage.
@@ -221,7 +219,7 @@ class Array2VariableDiff
     }
 
     if (nb_diff!=0)
-      this->_sortAndDump(var,pm,max_print);
+      this->_sortAndDump(var, pm, compare_args);
 
     return VariableComparerResults(nb_diff);
   }

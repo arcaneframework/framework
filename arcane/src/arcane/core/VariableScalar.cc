@@ -62,7 +62,6 @@ class ScalarVariableDiff
   check(IVariable* var,ConstArrayView<DataType> ref,ConstArrayView<DataType> current,
         const VariableComparerArgs& compare_args)
   {
-    const int max_print = compare_args.maxPrint();
     const bool compare_ghost = compare_args.isCompareGhost();
     ItemGroup group = var->itemGroup();
     if (group.null())
@@ -112,7 +111,7 @@ class ScalarVariableDiff
         
     }
     if (nb_diff!=0)
-      this->_sortAndDump(var,pm,max_print);
+      this->_sortAndDump(var, pm, compare_args);
 
     return VariableComparerResults(nb_diff);
   }
