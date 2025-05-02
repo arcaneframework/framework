@@ -82,6 +82,14 @@ class Mesh
       if (nb_connected_elements.size() == 0) {return 0;}
       return *std::max_element(nb_connected_elements.begin(), nb_connected_elements.end());
     }
+
+    bool isEmpty() const {
+      return maxNbConnectedItems() == 0;
+    }
+
+    friend bool operator==(Connectivity const& lhs, Connectivity const& rhs) {
+      return (lhs.source_family == rhs.source_family) && (lhs.target_family == rhs.target_family) && lhs.name == rhs.name;
+    }
   };
 
   enum class ConnectivityOperation
