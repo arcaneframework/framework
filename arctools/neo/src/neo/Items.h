@@ -249,6 +249,13 @@ struct FutureItemRange
     return std::move(new_items);
   }
 
+  ItemRange::size_type size() const {
+    if (is_data_released)
+      throw std::runtime_error(
+      "Impossible to call FutureItemRange.size(), data already released.");
+    return new_items.size();
+  }
+
  private:
   virtual ItemRange& _toItemRange() {
     return new_items;
