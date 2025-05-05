@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* NeoBaseTest.cpp                                 (C) 2000-2023             */
+/* NeoBaseTest.cpp                                 (C) 2000-2025             */
 /*                                                                           */
 /* Base tests for Neo kernel                                                 */
 /*---------------------------------------------------------------------------*/
@@ -164,9 +164,11 @@ TEST(NeoTestItemRange, test_item_range) {
 
 TEST(NeoTestFutureItemRange, test_future_item_range) {
   Neo::FutureItemRange future_item_range{};
+  EXPECT_EQ(future_item_range.size(), 0);
   // Manually fill contained ItemRange
   std::vector<Neo::utils::Int32> lids{ 0, 2, 4, 6 };
   future_item_range.new_items = Neo::ItemRange{ Neo::ItemLocalIds{ lids } };
+  EXPECT_EQ(future_item_range.size(), lids.size());
   Neo::ItemRange& internal_range = future_item_range;
   EXPECT_EQ(&future_item_range.new_items, &internal_range);
   auto end_update = Neo::EndOfMeshUpdate{};
@@ -175,6 +177,7 @@ TEST(NeoTestFutureItemRange, test_future_item_range) {
     std::vector<int> filter{ 0, 1, 2 };
     auto filtered_future_range =
     Neo::make_future_range(future_item_range, filter);
+    EXPECT_EQ(filtered_future_range.size(), 0);
     // Get item_ranges
     auto filtered_range = filtered_future_range.get(end_update);
     auto item_range = future_item_range.get(end_update);

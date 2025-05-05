@@ -238,6 +238,17 @@ TEST(NeoMeshApiTest, SetNodeCoordsTest) {
 
 /*---------------------------------------------------------------------------*/
 
+TEST(NeoMeshApiTest,EmptyMeshConnectivity) {
+  // Check empty connectivity
+  Neo::Family empty_family{Neo::ItemKind::IK_None, "EmptyFamily"};
+  Neo::Mesh::ConnectivityPropertyType empty_property{};
+  Neo::Mesh::Connectivity empty_connectivity{empty_family,empty_family,"empty_connectivity",
+    empty_property,empty_property};
+  EXPECT_TRUE(empty_connectivity.isEmpty());
+}
+
+/*---------------------------------------------------------------------------*/
+
 bool areEqual(Neo::Mesh::Connectivity const con1, Neo::Mesh::Connectivity const con2) {
   bool are_equal = con1.name == con2.name;
   are_equal &= &con1.source_family == &con2.source_family;
@@ -301,6 +312,10 @@ TEST(NeoMeshApiTest, AddItemConnectivity) {
   // check connectivities
   // check cell_to_nodes
   auto cell_to_nodes = mesh.getConnectivity(cell_family, node_family, cell_to_nodes_connectivity_name);
+  EXPECT_FALSE(cell_to_nodes.isEmpty());
+  // check operator ==
+  auto cell_to_nodes_copy{cell_to_nodes};
+  EXPECT_EQ(cell_to_nodes,cell_to_nodes_copy);
   EXPECT_EQ(cell_to_nodes_connectivity_name, cell_to_nodes.name);
   EXPECT_EQ(&cell_family, &cell_to_nodes.source_family);
   EXPECT_EQ(&node_family, &cell_to_nodes.target_family);
@@ -445,14 +460,23 @@ TEST(NeoMeshApiTest, AddAndChangeItemConnectivity) {
   auto future_dofs = Neo::FutureItemRange{};
   mesh.scheduleAddItems(cell_family, cell_uids, future_cells);
   mesh.scheduleAddItems(dof_family, dof_uids, future_dofs);
+  // Add en empty connectivity
+  mesh.scheduleAddConnectivity(cell_family, Neo::ItemRange{}, dof_family, 0,
+                               {}, "cell_to_dofs");
+  mesh.applyScheduledOperations();
+  // It is possible to modifiy an empty connectivity using ConnectivityOperation::Add (the default)
   mesh.scheduleAddConnectivity(cell_family, future_cells, dof_family, 3,
                                cell_dofs, "cell_to_dofs");
   mesh.applyScheduledOperations();
-
-  // Change an existing connectivity : cell 0 now points to dofs uids {3,4}
+  // Change an existing connectivity: cell 0 now points to dofs uids {3,4}
   auto cell_lids = cell_family.itemUniqueIdsToLocalids({ 0 });
   Neo::ItemRange cell_range{ cell_lids };
   auto connected_dofs = std::vector<Neo::utils::Int64>{ 3, 4 };
+  // First try using ConnectivityOperation::Add an existing connectivity: it fails
+  EXPECT_THROW(mesh.scheduleAddConnectivity(cell_family, cell_range, dof_family, 2,
+                               connected_dofs, "cell_to_dofs",
+                               Neo::Mesh::ConnectivityOperation::Add), std::invalid_argument);
+  // Second try using ConnectivityOperation::Add an existing connectivity: it works
   mesh.scheduleAddConnectivity(cell_family, cell_range, dof_family, 2,
                                connected_dofs, "cell_to_dofs",
                                Neo::Mesh::ConnectivityOperation::Modify);

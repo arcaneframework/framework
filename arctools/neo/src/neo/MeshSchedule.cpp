@@ -34,12 +34,17 @@ void Neo::Mesh::_scheduleAddConnectivity(Neo::Family& source_family, Neo::ItemRa
   // Create connectivity wrapper and add it to mesh
   auto& connectivity_property = source_family.getConcreteProperty<Mesh::ConnectivityPropertyType>(connectivity_unique_name);
   auto& connectivity_orientation = source_family.getConcreteProperty<Mesh::ConnectivityPropertyType>(orientation_name);
-  Connectivity current_connectivity = Connectivity {source_family,target_family,
-                                                    connectivity_unique_name,connectivity_property,
-                                                    connectivity_orientation};
-  auto [iterator, is_inserted] = m_connectivities.insert(std::make_pair(connectivity_unique_name,current_connectivity));
-  m_connectivities_per_family[{source_family.itemKind(),source_family.name()}].push_back(current_connectivity);
-  if (!is_inserted && add_or_modify == ConnectivityOperation::Add) {
+  Connectivity current_connectivity = Connectivity{ source_family, target_family,
+                                                    connectivity_unique_name, connectivity_property,
+                                                    connectivity_orientation };
+  auto [inserted_connectivity_iterator, is_inserted] = m_connectivities.insert(std::make_pair(connectivity_unique_name, current_connectivity));
+  auto& source_family_con = m_connectivities_per_family[{ source_family.itemKind(), source_family.name() }];
+  if (std::find(source_family_con.begin(),
+                source_family_con.end(),
+                current_connectivity) == source_family_con.end()) {
+    source_family_con.push_back(current_connectivity);
+  }
+  if (!is_inserted && add_or_modify == ConnectivityOperation::Add && !inserted_connectivity_iterator->second.isEmpty()) {
     throw std::invalid_argument("Cannot include already inserted connectivity " + connectivity_unique_name + ". Choose ConnectivityOperation::Modify");
   }
   m_mesh_graph->addAlgorithm(
