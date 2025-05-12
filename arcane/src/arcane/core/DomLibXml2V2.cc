@@ -259,11 +259,18 @@ class ILibXml2_Reader;
 class LibXml2_Parser
 {
  public:
-  LibXml2_Parser(const String& file_name,ITraceMng* trace)
-  : m_file_name(file_name), m_trace(trace), m_options(0)
+
+  LibXml2_Parser(const String& file_name, ITraceMng* trace)
+  : m_file_name(file_name)
+  , m_trace(trace)
   {
+    // Les versions après 2015 de LibXml2 limitent à 10Mo la longueur de chaque noeud XML.
+    // Avec cette option, on relâche cette contrainte qui passe à 1Go.
+    m_options = XML_PARSE_HUGE;
   }
+
  public:
+
   /*!
    * \brief Analyse le contenu Xml via le reader \a reader.
    *
@@ -276,14 +283,20 @@ class LibXml2_Parser
    */
   IXmlDocumentHolder* parse(ILibXml2_Reader* reader,const String& schema_name,
                             ByteConstArrayView schema_data);
+
  public:
+
   const String& fileName() const { return m_file_name; }
   int options() const { return m_options; }
+
  private:
+
   String m_file_name;
-  ITraceMng* m_trace;
-  int m_options;
+  ITraceMng* m_trace = nullptr;
+  int m_options = 0;
+
  private:
+
   void _applySchema(::xmlDocPtr doc,LibXml2_ErrorHandler& err_handler,
                     const String& schema_name,ByteConstArrayView schema_data);
 };
