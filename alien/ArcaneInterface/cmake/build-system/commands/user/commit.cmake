@@ -125,6 +125,13 @@ function(__commit_executable target)
 
   generateDynamicLoading(${target})
 
+  # increase stack size
+  if(WIN32)
+    if (MSVC)
+      set_target_properties(${target} PROPERTIES LINK_FLAGS /STACK:10000000)
+    endif()
+  endif()
+  
 endfunction()
 
 function(commit target)
