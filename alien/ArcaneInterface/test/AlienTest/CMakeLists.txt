@@ -36,7 +36,7 @@ if (TARGET alien_external_packages)
     linkLibraries(alien_arcane_test.exe alien_external_packages)
 endif ()
 
-if (TARGET alien_ifpen_solvers)
+if (TARGET alien_ifpen_solvers AND NOT WIN32)
     linkLibraries(alien_arcane_test.exe alien_ifpen_solvers)
 endif ()
 

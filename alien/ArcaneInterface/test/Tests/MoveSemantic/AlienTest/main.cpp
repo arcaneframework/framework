@@ -8,8 +8,12 @@
 #include <boost/program_options/cmdline.hpp>
 #include <boost/program_options/variables_map.hpp>
 
+#if defined ALIEN_USE_MTL4 || defined ALIEN_USE_PETSC || defined ALIEN_USE_HYPRE
 #include <alien/AlienExternalPackages.h>
+#endif
+#if defined ALIEN_USE_IFPSOLVER || defined ALIEN_USE_MCGSOLVER
 #include <alien/AlienIFPENSolvers.h>
+#endif
 #include <alien/move/AlienMoveSemantic.h>
 
 #include <alien/kernels/simple_csr/algebra/SimpleCSRLinearAlgebra.h>

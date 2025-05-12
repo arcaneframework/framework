@@ -21,15 +21,15 @@
 #include <alien/expression/solver/ILinearSolver.h>
 #include <alien/utils/parameter_manager/BaseParameterManager.h>
 
-#include <alien/AlienExternalPackages.h>
-#include <alien/AlienIFPENSolvers.h>
 #ifdef ALIEN_USE_MTL4
+#include <alien/AlienExternalPackages.h>
 #include <alien/kernels/mtl/linear_solver/arcane/MTLLinearSolverService.h>
 #include <alien/kernels/mtl/linear_solver/MTLOptionTypes.h>
 #include <ALIEN/axl/MTLLinearSolver_IOptions.h>
 #include <ALIEN/axl/MTLLinearSolver_StrongOptions.h>
 #endif
 #ifdef ALIEN_USE_PETSC
+#include <alien/AlienExternalPackages.h>
 #include <alien/kernels/petsc/algebra/PETScLinearAlgebra.h>
 #include <alien/kernels/petsc/linear_solver/arcane/PETScLinearSolverService.h>
 #include <alien/kernels/petsc/linear_solver/PETScInternalLinearSolver.h>
@@ -64,18 +64,21 @@
 #include <ALIEN/axl/PETScLinearSolver_StrongOptions.h>
 #endif
 #ifdef ALIEN_USE_HYPRE
+#include <alien/AlienExternalPackages.h>
 #include <alien/kernels/hypre/linear_solver/HypreOptionTypes.h>
 #include <alien/kernels/hypre/linear_solver/arcane/HypreLinearSolver.h>
 #include <ALIEN/axl/HypreSolver_IOptions.h>
 #include <ALIEN/axl/HypreSolver_StrongOptions.h>
 #endif
 #ifdef ALIEN_USE_IFPSOLVER
+#include <alien/AlienIFPENSolvers.h>
 #include <alien/kernels/ifp/linear_solver/arcane/IFPLinearSolverService.h>
 #include <alien/kernels/ifp/linear_solver/IFPSolverProperty.h>
 #include <ALIEN/axl/IFPLinearSolver_IOptions.h>
 #include <ALIEN/axl/IFPLinearSolver_StrongOptions.h>
 #endif
 #ifdef ALIEN_USE_MCGSOLVER
+#include <alien/AlienIFPENSolvers.h>
 #include <alien/kernels/mcg/linear_solver/arcane/MCGLinearSolver.h>
 #include <alien/kernels/mcg/linear_solver/MCGOptionTypes.h>
 #include <ALIEN/axl/MCGSolver_IOptions.h>
