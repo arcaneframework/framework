@@ -41,9 +41,12 @@
 #include <alien/utils/parameter_manager/BaseParameterManager.h>
 #include <alien/core/backend/SolverFactory.h>
 
+#if defined ALIEN_USE_MTL4 || defined ALIEN_USE_PETSC || defined ALIEN_USE_HYPRE
 #include <alien/AlienExternalPackages.h>
+#endif
+#if defined ALIEN_USE_IFPSOLVER || defined ALIEN_USE_MCGSOLVER
 #include <alien/AlienIFPENSolvers.h>
-
+#endif
 
 #include <boost/program_options/value_semantic.hpp>
 #include <boost/program_options/options_description.hpp>
