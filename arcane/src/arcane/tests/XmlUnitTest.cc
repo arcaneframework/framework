@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* XmlUnitTest.cc                                              (C) 2000-2023 */
+/* XmlUnitTest.cc                                              (C) 2000-2025 */
 /*                                                                           */
 /* Test du lecteur/ecrivain Xml.                                             */
 /*---------------------------------------------------------------------------*/
@@ -45,8 +45,7 @@ class XmlUnitTest
 {
  public:
 
-  XmlUnitTest(const ServiceBuildInfo& cb);
-  ~XmlUnitTest();
+  explicit XmlUnitTest(const ServiceBuildInfo& sbi);
 
  public:
 
@@ -57,6 +56,7 @@ class XmlUnitTest
 
   void _testXml_1();
   void _testXml_2();
+  void _testXml_Huge();
 
  private:
 
@@ -78,16 +78,8 @@ ARCANE_REGISTER_CASE_OPTIONS_NOAXL_FACTORY(XmlUnitTest,IUnitTest,XmlUnitTest);
 /*---------------------------------------------------------------------------*/
 
 XmlUnitTest::
-XmlUnitTest(const ServiceBuildInfo& mb)
-: BasicUnitTest(mb)
-{
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-XmlUnitTest::
-~XmlUnitTest()
+XmlUnitTest(const ServiceBuildInfo& sbi)
+: BasicUnitTest(sbi)
 {
 }
 
@@ -112,6 +104,7 @@ executeTest()
 {
   _testXml_1();
   _testXml_2();
+  _testXml_Huge();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -250,6 +243,34 @@ _testXml_2()
   for( Integer i=0; i<20; ++i ){
     _doDoc(i);
   }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Test la lecture d'un élément contenant un élément de 50Mo.
+ */
+void XmlUnitTest::
+_testXml_Huge()
+{
+  info() << "TEST XML_HUGE";
+  Directory base_path(subDomain()->exportDirectory());
+  String xml_filename = base_path.file("test_huge.xml");
+  ofstream ofile(xml_filename.localstr());
+  ofile << "<?xml version='1.0' ?>\n";
+  ofile << "<root>\n";
+  String base_value = "123456789abcdefghijklmnopqrst123456789abcdefghijklmnopqrst\n";
+  for (Int32 i = 0; i < 500000; ++i)
+    ofile << base_value;
+  ofile << "</root>\n";
+  ofile.close();
+
+  // Relit le fichier.
+  {
+    ScopedPtrT<IXmlDocumentHolder> doc(IXmlDocumentHolder::loadFromFile(xml_filename, traceMng()));
+  }
+
+  Platform::removeFile(xml_filename);
 }
 
 /*---------------------------------------------------------------------------*/
