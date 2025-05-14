@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* VariableViews.h                                             (C) 2000-2024 */
+/* VariableViews.h                                             (C) 2000-2025 */
 /*                                                                           */
 /* Gestion des vues sur les variables pour les accélérateurs.                */
 /*---------------------------------------------------------------------------*/
@@ -215,7 +215,7 @@ class ItemVariableScalarOutViewT
   using DataType = typename _Accessor::ValueType;
   using Accessor = _Accessor;
   using ItemType = _ItemType;
-  using IndexerType = typename ItemTraitsT<_ItemType>::LocalIdType;
+  using IndexerType = typename ItemLocalIdTraitsT<_ItemType>::LocalIdType;
   using DataTypeReturnReference = DataType&;
 
  public:
@@ -392,7 +392,7 @@ class ItemVariableScalarInViewT
 
   using ItemType = _ItemType;
   using DataType = _DataType;
-  using IndexerType = typename ItemTraitsT<_ItemType>::LocalIdType;
+  using IndexerType = typename ItemLocalIdTraitsT<_ItemType>::LocalIdType;
 
  public:
 
@@ -1035,6 +1035,16 @@ class ItemPartialVariableRealNScalarOutViewT
 /*!
  * \brief Vue en écriture.
  */
+template <typename DataType> auto
+viewOut(const ViewBuildInfo& command, ItemVariableScalarRefT<DataType>& var)
+{
+  using Accessor = DataViewSetter<DataType>;
+  return ItemVariableScalarOutViewT<Item, Accessor>(command, var.variable(), var.asArray());
+}
+
+/*!
+ * \brief Vue en écriture.
+ */
 template <typename ItemType, typename DataType> auto
 viewOut(const ViewBuildInfo& command, MeshVariableScalarRefT<ItemType, DataType>& var)
 {
@@ -1118,6 +1128,16 @@ viewOut(const ViewBuildInfo& command, MeshPartialVariableArrayRefT<ItemType, Dat
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+/*!
+ * \brief Vue en lecture/écriture.
+ */
+template <typename DataType> auto
+viewInOut(const ViewBuildInfo& command, ItemVariableScalarRefT<DataType>& var)
+{
+  using Accessor = DataViewGetterSetter<DataType>;
+  return ItemVariableScalarOutViewT<Item, Accessor>(command, var.variable(), var.asArray());
+}
+
 /*!
  * \brief Vue en lecture/écriture.
  */
@@ -1219,6 +1239,15 @@ template <typename ItemType, typename DataType> auto
 viewIn(const ViewBuildInfo& command, const MeshVariableScalarRefT<ItemType, DataType>& var)
 {
   return ItemVariableScalarInViewT<ItemType, DataType>(command, var.variable(), var.asArray());
+}
+
+/*!
+ * \brief Vue en lecture.
+ */
+template <typename DataType> auto
+viewIn(const ViewBuildInfo& command, const ItemVariableScalarRefT<DataType>& var)
+{
+  return ItemVariableScalarInViewT<Item, DataType>(command, var.variable(), var.asArray());
 }
 
 /*!
