@@ -666,6 +666,22 @@ class mesh::PolyhedralMesh::InternalApi
   {
     m_mesh->traceMng()->warning() << "PolyhedralMesh::removeNeedRemoveMarkedItems() not yet implemented in PolyhedralMesh";
   }
+  NodeLocalId addNode([[maybe_unused]] ItemUniqueId unique_id) override
+  {
+    ARCANE_THROW(NotImplementedException, "");
+  }
+  FaceLocalId addFace([[maybe_unused]] ItemUniqueId unique_id,
+                      [[maybe_unused]] ItemTypeId type_id,
+                      [[maybe_unused]] ConstArrayView<Int64> nodes_uid) override
+  {
+    ARCANE_THROW(NotImplementedException, "");
+  }
+  CellLocalId addCell([[maybe_unused]] ItemUniqueId unique_id,
+                      [[maybe_unused]] ItemTypeId type_id,
+                      [[maybe_unused]] ConstArrayView<Int64> nodes_uid) override
+  {
+    ARCANE_THROW(NotImplementedException, "");
+  }
 
  private:
 

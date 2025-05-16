@@ -81,6 +81,7 @@ class ExtraGhostCellsBuilder;
 class ExtraGhostParticlesBuilder;
 
 class DynamicMeshMergerHelper;
+class DynamicMeshInternal;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -95,11 +96,13 @@ class ARCANE_MESH_EXPORT DynamicMesh
 , public IUnstructuredMeshInitialAllocator
 , public ICartesianMeshInitialAllocator
 {
-  class InternalApi;
-
  private:
+
+  friend DynamicMeshInternal;
+
   // TEMPORAIRE
   friend DynamicMeshMergerHelper;
+
  public:
 
   typedef ItemInternal* ItemInternalPtr;
@@ -567,7 +570,7 @@ public:
   ExtraGhostCellsBuilder* m_extra_ghost_cells_builder = nullptr;
   ExtraGhostParticlesBuilder* m_extra_ghost_particles_builder = nullptr;
   InitialAllocator m_initial_allocator;
-  std::unique_ptr<InternalApi> m_internal_api;
+  std::unique_ptr<DynamicMeshInternal> m_internal_api;
 
  private:
   
