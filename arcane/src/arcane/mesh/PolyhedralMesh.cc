@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* PolyhedralMesh.cc                                           (C) 2000-2024 */
+/* PolyhedralMesh.cc                                           (C) 2000-2025 */
 /*                                                                           */
 /* Polyhedral mesh impl using Neo data structure.                            */
 /*---------------------------------------------------------------------------*/
@@ -665,6 +665,22 @@ class mesh::PolyhedralMesh::InternalApi
   void removeNeedRemoveMarkedItems() override
   {
     m_mesh->traceMng()->warning() << "PolyhedralMesh::removeNeedRemoveMarkedItems() not yet implemented in PolyhedralMesh";
+  }
+  NodeLocalId addNode([[maybe_unused]] ItemUniqueId unique_id) override
+  {
+    ARCANE_THROW(NotImplementedException, "");
+  }
+  FaceLocalId addFace([[maybe_unused]] ItemUniqueId unique_id,
+                      [[maybe_unused]] ItemTypeId type_id,
+                      [[maybe_unused]] ConstArrayView<Int64> nodes_uid) override
+  {
+    ARCANE_THROW(NotImplementedException, "");
+  }
+  CellLocalId addCell([[maybe_unused]] ItemUniqueId unique_id,
+                      [[maybe_unused]] ItemTypeId type_id,
+                      [[maybe_unused]] ConstArrayView<Int64> nodes_uid) override
+  {
+    ARCANE_THROW(NotImplementedException, "");
   }
 
  private:

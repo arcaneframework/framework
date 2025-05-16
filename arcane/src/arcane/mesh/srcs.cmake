@@ -12,6 +12,7 @@ set( ARCANE_SOURCES
   CompactIncrementalItemConnectivity.h
   CommonItemGroupFilterer.h
   CommonItemGroupFilterer.cc
+  DynamicMeshInternal.cc
   DynamicMeshKindInfos.cc
   DynamicMeshKindInfos.h
   DynamicMeshIncrementalBuilder.cc
@@ -245,7 +246,9 @@ set( ARCANE_SOURCES
   GraphBuilder.h
   GraphDoFs.h
   GraphDoFs.cc
-  )
+
+  internal/DynamicMeshInternal.h
+)
 
 set(AXL_FILES 
   BasicParticleExchanger

@@ -97,6 +97,8 @@
 #include "arcane/mesh/IncrementalItemConnectivity.h"
 #include "arcane/mesh/ItemConnectivityMng.h"
 
+#include "arcane/mesh/internal/DynamicMeshInternal.h"
+
 #include <functional>
 #include <memory>
 
@@ -170,48 +172,6 @@ const std::string DynamicMesh::PerfCounter::m_names[] = {
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class DynamicMesh::InternalApi
-: public IMeshInternal
-, public IMeshModifierInternal
-{
- public:
-
-  explicit InternalApi(DynamicMesh* mesh)
-  : m_mesh(mesh)
-  , m_connectivity_mng(std::make_unique<ItemConnectivityMng>(mesh->traceMng()))
-  {}
-
- public:
-
-  void setMeshKind(const MeshKind& v) override
-  {
-    m_mesh->m_mesh_kind = v;
-  }
-
-  IItemConnectivityMng* dofConnectivityMng() const noexcept override
-  {
-    return m_connectivity_mng.get();
-  }
-
-  IPolyhedralMeshModifier* polyhedralMeshModifier() const noexcept override
-  {
-    return nullptr;
-  }
-
-  void removeNeedRemoveMarkedItems() override
-  {
-    m_mesh->incrementalBuilder()->removeNeedRemoveMarkedItems();
-  }
-
- private:
-
-  DynamicMesh* m_mesh = nullptr;
-  std::unique_ptr<IItemConnectivityMng> m_connectivity_mng = nullptr;
-};
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 DynamicMesh::
 DynamicMesh(ISubDomain* sub_domain,const MeshBuildInfo& mbi, bool is_submesh)
 : MeshVariables(sub_domain,mbi.name())
@@ -244,7 +204,7 @@ DynamicMesh(ISubDomain* sub_domain,const MeshBuildInfo& mbi, bool is_submesh)
 , m_extra_ghost_cells_builder(nullptr)
 , m_extra_ghost_particles_builder(nullptr)
 , m_initial_allocator(this)
-, m_internal_api(std::make_unique<InternalApi>(this))
+, m_internal_api(std::make_unique<DynamicMeshInternal>(this))
 , m_is_amr_activated(mbi.meshKind().meshAMRKind()!=eMeshAMRKind::None)
 , m_amr_type(mbi.meshKind().meshAMRKind())
 , m_is_dynamic(false)
@@ -460,7 +420,8 @@ build()
     obs->executeExtend(&localIds);
     this->endUpdate();
 
-  } else {
+  }
+  else {
     m_submesh_tools = 0;
     //! AMR
 
@@ -486,6 +447,8 @@ build()
      }
     }
   }
+
+  m_internal_api->build();
 }
 
 /*---------------------------------------------------------------------------*/
