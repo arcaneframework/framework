@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* SimpleMeshGenerator.cc                                      (C) 2000-2023 */
+/* SimpleMeshGenerator.cc                                      (C) 2000-2025 */
 /*                                                                           */
 /* Service de génération de maillage 'Simple'.                               */
 /*---------------------------------------------------------------------------*/
@@ -17,25 +17,27 @@
 #include "arcane/utils/HashTableMap.h"
 #include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/ITraceMng.h"
-#include "arcane/utils/ArcanePrecomp.h"
 #include "arcane/utils/Real3.h"
+#include "arcane/utils/FixedArray.h"
 
-#include "arcane/IMeshReader.h"
-#include "arcane/ISubDomain.h"
-#include "arcane/ICaseDocument.h"
-#include "arcane/XmlNode.h"
-#include "arcane/Service.h"
-#include "arcane/IParallelMng.h"
-#include "arcane/Item.h"
-#include "arcane/ItemGroup.h"
-#include "arcane/IMesh.h"
-#include "arcane/IMeshSubMeshTransition.h"
-#include "arcane/IItemFamily.h"
-#include "arcane/MeshVariable.h"
-#include "arcane/MeshUtils.h"
-#include "arcane/ItemPrinter.h"
-#include "arcane/FactoryService.h"
-#include "arcane/AbstractService.h"
+#include "arcane/core/IMeshReader.h"
+#include "arcane/core/ISubDomain.h"
+#include "arcane/core/ICaseDocument.h"
+#include "arcane/core/XmlNode.h"
+#include "arcane/core/Service.h"
+#include "arcane/core/IParallelMng.h"
+#include "arcane/core/Item.h"
+#include "arcane/core/ItemGroup.h"
+#include "arcane/core/IMesh.h"
+#include "arcane/core/IMeshSubMeshTransition.h"
+#include "arcane/core/IItemFamily.h"
+#include "arcane/core/MeshVariable.h"
+#include "arcane/core/MeshUtils.h"
+#include "arcane/core/ItemPrinter.h"
+#include "arcane/core/FactoryService.h"
+#include "arcane/core/AbstractService.h"
+#include "arcane/core/IMeshModifier.h"
+#include "arcane/core/internal/IMeshModifierInternal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -49,9 +51,8 @@ namespace Arcane
 SimpleMeshGenerator::
 SimpleMeshGenerator(IPrimaryMesh* mesh)
 : TraceAccessor(mesh->traceMng())
-, m_mode(1)
 , m_mesh(mesh)
-, m_current_nb_cell(0)
+, m_mesh_modifier_internal(mesh->modifier()->_modifierInternalApi())
 {
 }
 
@@ -61,7 +62,7 @@ SimpleMeshGenerator(IPrimaryMesh* mesh)
 Integer SimpleMeshGenerator::
 _addNode(const Real3& pos)
 {
-  Real3Map::const_iterator i = m_coords_to_uid.find(pos);
+  auto i = m_coords_to_uid.find(pos);
   if (i==m_coords_to_uid.end()){
     Integer current_id = m_nodes_unique_id.size();
     m_nodes_unique_id.add(current_id);
@@ -86,16 +87,12 @@ _addNode(Real x,Real y,Real z)
 /*---------------------------------------------------------------------------*/
 
 void SimpleMeshGenerator::
-_addCell(Integer type_id,IntegerConstArrayView nodes_id)
+_addCell(Int16 type_id, ConstArrayView<Int64> nodes_id)
 {
   Integer current_id = m_current_nb_cell;
-  m_cells_infos.add(type_id);
-  m_cells_infos.add(current_id);
-  for( Integer i=0, is=nodes_id.size(); i<is; ++i )
-    m_cells_infos.add(nodes_id[i]);
   ++m_current_nb_cell;
+  m_mesh_modifier_internal->addCell(ItemUniqueId(current_id), ItemTypeId(type_id), nodes_id);
 }
-
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -121,120 +118,120 @@ readOptions(XmlNode node)
 void SimpleMeshGenerator::
 _createSimpleHemiHexa7(Real x0,Real y0,Real z1,Real z2)
 {
-  Integer ids[7];
+  FixedArray<Int64, 7> ids;
   ids[0] = _addNode(x0   ,y0   ,z1);
   ids[1] = _addNode(x0+1.,y0   ,z1);
   ids[2] = _addNode(x0+1.,y0   ,z2);
   ids[3] = _addNode(x0+1.,y0+1.,z2);
   ids[4] = _addNode(x0   ,y0+1.,z2);
   ids[5] = _addNode(x0   ,y0+1.,z1);
-  ids[6] = _addNode(x0+1.,y0+1.,z1);
-  _addCell(IT_HemiHexa7,ConstArrayView<Integer>(7,ids));
+  ids[6] = _addNode(x0 + 1., y0 + 1., z1);
+  _addCell(IT_HemiHexa7, ids.view());
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void SimpleMeshGenerator::
-_createSimpleHemiHexa6(Real x0,Real y0,Real z1,Real z2)
+_createSimpleHemiHexa6(Real x0, Real y0, Real z1, Real z2)
 {
-  Integer ids[6];
+  FixedArray<Int64, 6> ids;
   ids[0] = _addNode(x0   ,y0   ,z1);
   ids[1] = _addNode(x0+1.,y0   ,z1);
   ids[2] = _addNode(x0+1.,y0   ,z2);
   ids[3] = _addNode(x0+1.,y0+1.,z1);
-  ids[4] = _addNode(x0   ,y0+1.,z2);
-  ids[5] = _addNode(x0   ,y0+1.,z1);
-  _addCell(IT_HemiHexa6,ConstArrayView<Integer>(6,ids));
+  ids[4] = _addNode(x0, y0 + 1., z2);
+  ids[5] = _addNode(x0, y0 + 1., z1);
+  _addCell(IT_HemiHexa6, ids.view());
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void SimpleMeshGenerator::
-_createSimpleHemiHexa5(Real x0,Real y0,Real z1,Real z2)
+_createSimpleHemiHexa5(Real x0, Real y0, Real z1, Real z2)
 {
-  Integer ids[5];
+  FixedArray<Int64, 5> ids;
   ids[0] = _addNode(x0   ,y0   ,z1);
   ids[1] = _addNode(x0+1.,y0   ,z1);
   ids[2] = _addNode(x0+1.,y0   ,z2);
-  ids[3] = _addNode(x0+1.,y0+1.,z1);
-  ids[4] = _addNode(x0   ,y0+1.,z1);
-  _addCell(IT_HemiHexa5,ConstArrayView<Integer>(5,ids));
+  ids[3] = _addNode(x0 + 1., y0 + 1., z1);
+  ids[4] = _addNode(x0, y0 + 1., z1);
+  _addCell(IT_HemiHexa5, ids.view());
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void SimpleMeshGenerator::
-_createSimpleAntiWedgeLeft6(Real x0,Real y0,Real z1,Real z2)
+_createSimpleAntiWedgeLeft6(Real x0, Real y0, Real z1, Real z2)
 {
-  Integer ids[6];
+  FixedArray<Int64, 6> ids;
   ids[0] = _addNode(x0   ,y0   ,z1); 
   ids[1] = _addNode(x0   ,y0+1.,z1);
   ids[2] = _addNode(x0   ,y0+.5,z2);
   ids[3] = _addNode(x0+1.,y0   ,z1);
-  ids[4] = _addNode(x0+1.,y0+1.,z1);
-  ids[5] = _addNode(x0+1.,y0+.5,(z1+z2)/2);
-  _addCell(IT_AntiWedgeLeft6,ConstArrayView<Integer>(6,ids));
+  ids[4] = _addNode(x0 + 1., y0 + 1., z1);
+  ids[5] = _addNode(x0 + 1., y0 + .5, (z1 + z2) / 2);
+  _addCell(IT_AntiWedgeLeft6, ids.view());
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void SimpleMeshGenerator::
-_createSimpleAntiWedgeRight6(Real x0,Real y0,Real z1,Real z2)
+_createSimpleAntiWedgeRight6(Real x0, Real y0, Real z1, Real z2)
 {
-  Integer ids[6];
+  FixedArray<Int64, 6> ids;
   ids[0] = _addNode(x0   ,y0   ,z1); 
   ids[1] = _addNode(x0   ,y0+1.,z1);
   ids[2] = _addNode(x0   ,y0+.5,(z1+z2)/2);
-  ids[3] = _addNode(x0+1.,y0   ,z1);
-  ids[4] = _addNode(x0+1.,y0+1.,z1);
-  ids[5] = _addNode(x0+1.,y0+.5,z2);
-  _addCell(IT_AntiWedgeRight6,ConstArrayView<Integer>(6,ids));
+  ids[3] = _addNode(x0 + 1., y0, z1);
+  ids[4] = _addNode(x0 + 1., y0 + 1., z1);
+  ids[5] = _addNode(x0 + 1., y0 + .5, z2);
+  _addCell(IT_AntiWedgeRight6, ids.view());
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void SimpleMeshGenerator::
-_createSimpleDiTetra5(Real x0,Real y0,Real z1,Real z2)
+_createSimpleDiTetra5(Real x0, Real y0, Real z1, Real z2)
 {
-  Integer ids[5];
+  FixedArray<Int64, 5> ids;
   ids[0] = _addNode(x0   ,y0   ,z2);
   ids[1] = _addNode(x0+1.,y0   ,z1);
-  ids[2] = _addNode(x0+2.,y0   ,z2);
-  ids[3] = _addNode(x0+1.,y0+1.,(z2+z1)/2);
-  ids[4] = _addNode(x0+1.,y0-1.,(z2+z1)/2);
-  _addCell(IT_DiTetra5,ConstArrayView<Integer>(5,ids));
+  ids[2] = _addNode(x0 + 2., y0, z2);
+  ids[3] = _addNode(x0 + 1., y0 + 1., (z2 + z1) / 2);
+  ids[4] = _addNode(x0 + 1., y0 - 1., (z2 + z1) / 2);
+  _addCell(IT_DiTetra5, ids.view());
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void SimpleMeshGenerator::
-_createSimpleHexaedron8(Real x0,Real y0,Real z1,Real z2)
+_createSimpleHexaedron8(Real x0, Real y0, Real z1, Real z2)
 {
-  Integer ids[8];
+  FixedArray<Int64, 8> ids;
   ids[0] = _addNode(x0   ,y0   ,z1);
   ids[1] = _addNode(x0+1.,y0   ,z1);
   ids[2] = _addNode(x0+1.,y0+1.,z1);
-  ids[3] = _addNode(x0   ,y0+1.,z1);
-  ids[4] = _addNode(x0   ,y0   ,z2);
-  ids[5] = _addNode(x0+1.,y0   ,z2);
-  ids[6] = _addNode(x0+1.,y0+1.,z2);
-  ids[7] = _addNode(x0   ,y0+1.,z2);
-  _addCell(IT_Hexaedron8,IntegerConstArrayView(8,ids));
+  ids[3] = _addNode(x0, y0 + 1., z1);
+  ids[4] = _addNode(x0, y0, z2);
+  ids[5] = _addNode(x0 + 1., y0, z2);
+  ids[6] = _addNode(x0 + 1., y0 + 1., z2);
+  ids[7] = _addNode(x0, y0 + 1., z2);
+  _addCell(IT_Hexaedron8, ids.view());
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void SimpleMeshGenerator::
-_createSimpleOctaedron12(Real x0,Real y0,Real z1,Real z2)
+_createSimpleOctaedron12(Real x0, Real y0, Real z1, Real z2)
 {
-  Integer ids[12];
+  FixedArray<Int64, 12> ids;
   ids[0]  = _addNode(x0       ,y0 + 0.5,z1);
   ids[1]  = _addNode(x0 + 0.25,y0      ,z1);
   ids[2]  = _addNode(x0 + 0.75,y0      ,z1);
@@ -244,20 +241,20 @@ _createSimpleOctaedron12(Real x0,Real y0,Real z1,Real z2)
                      
   ids[6]  = _addNode(x0       ,y0 + 0.5,z2);
   ids[7]  = _addNode(x0 + 0.25,y0      ,z2);
-  ids[8]  = _addNode(x0 + 0.75,y0      ,z2);
-  ids[9]  = _addNode(x0 + 1.  ,y0 + 0.5,z2);
-  ids[10] = _addNode(x0 + 0.75,y0 + 1. ,z2);
-  ids[11] = _addNode(x0 + 0.25,y0 + 1. ,z2);
-  _addCell(IT_Octaedron12,IntegerConstArrayView(12,ids));
+  ids[8] = _addNode(x0 + 0.75, y0, z2);
+  ids[9] = _addNode(x0 + 1., y0 + 0.5, z2);
+  ids[10] = _addNode(x0 + 0.75, y0 + 1., z2);
+  ids[11] = _addNode(x0 + 0.25, y0 + 1., z2);
+  _addCell(IT_Octaedron12, ids.view());
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void SimpleMeshGenerator::
-_createSimpleHeptaedron10(Real x0,Real y0,Real z1,Real z2)
+_createSimpleHeptaedron10(Real x0, Real y0, Real z1, Real z2)
 {
-  Integer ids[10];
+  FixedArray<Int64, 10> ids;
   ids[0]  = _addNode(x0        ,y0 + 0.5 ,z1);
   ids[1]  = _addNode(x0 + 1./2.,y0       ,z1);
   ids[2]  = _addNode(x0 + 2./2.,y0 + 0.25,z1);
@@ -265,56 +262,56 @@ _createSimpleHeptaedron10(Real x0,Real y0,Real z1,Real z2)
   ids[4]  = _addNode(x0 + 1./2.,y0 + 1   ,z1);
                      
   ids[5]  = _addNode(x0        ,y0 + 0.5  ,z2);
-  ids[6]  = _addNode(x0 + 1./2.,y0        ,z2);
-  ids[7]  = _addNode(x0 + 2./2.,y0 + 0.25 ,z2);
-  ids[8]  = _addNode(x0 + 2./2.,y0 + 0.75 ,z2);
-  ids[9]  = _addNode(x0 + 1./2.,y0 + 1.   ,z2);
-  _addCell(IT_Heptaedron10,IntegerConstArrayView(10,ids));
+  ids[6] = _addNode(x0 + 1. / 2., y0, z2);
+  ids[7] = _addNode(x0 + 2. / 2., y0 + 0.25, z2);
+  ids[8] = _addNode(x0 + 2. / 2., y0 + 0.75, z2);
+  ids[9] = _addNode(x0 + 1. / 2., y0 + 1., z2);
+  _addCell(IT_Heptaedron10, ids.view());
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void SimpleMeshGenerator::
-_createSimplePentaedron6(Real x0,Real y0,Real z1,Real z2)
+_createSimplePentaedron6(Real x0, Real y0, Real z1, Real z2)
 {
-  Integer ids[6];
+  FixedArray<Int64, 6> ids;
   ids[0]  = _addNode(x0     ,y0        ,z1);
-  ids[1]  = _addNode(x0 + 1.,y0 + 1./2.,z1);
-  ids[2]  = _addNode(x0     ,y0 + 1.   ,z1);
-  ids[3]  = _addNode(x0     ,y0        ,z2);
-  ids[4]  = _addNode(x0 + 1.,y0 + 1./2.,z2);
-  ids[5]  = _addNode(x0     ,y0 + 1.   ,z2);
-  _addCell(IT_Pentaedron6,IntegerConstArrayView(6,ids));
+  ids[1] = _addNode(x0 + 1., y0 + 1. / 2., z1);
+  ids[2] = _addNode(x0, y0 + 1., z1);
+  ids[3] = _addNode(x0, y0, z2);
+  ids[4] = _addNode(x0 + 1., y0 + 1. / 2., z2);
+  ids[5] = _addNode(x0, y0 + 1., z2);
+  _addCell(IT_Pentaedron6, ids.view());
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void SimpleMeshGenerator::
-_createSimplePyramid5(Real x0,Real y0,Real z1,Real z2)
+_createSimplePyramid5(Real x0, Real y0, Real z1, Real z2)
 {
-  Integer ids[5];
+  FixedArray<Int64, 5> ids;
   ids[0]  = _addNode(x0     ,y0        ,z1);
-  ids[1]  = _addNode(x0 + 1.,y0        ,z1);
-  ids[2]  = _addNode(x0 + 1.,y0 + 1.   ,z1);
-  ids[3]  = _addNode(x0     ,y0 + 1.   ,z1);
-  ids[4]  = _addNode(x0 +0.5,y0 + 0.5  ,z2);
-  _addCell(IT_Pyramid5,IntegerConstArrayView(5,ids));
+  ids[1] = _addNode(x0 + 1., y0, z1);
+  ids[2] = _addNode(x0 + 1., y0 + 1., z1);
+  ids[3] = _addNode(x0, y0 + 1., z1);
+  ids[4] = _addNode(x0 + 0.5, y0 + 0.5, z2);
+  _addCell(IT_Pyramid5, ids.view());
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void SimpleMeshGenerator::
-_createSimpleTetraedron4(Real x0,Real y0,Real z1,Real z2)
+_createSimpleTetraedron4(Real x0, Real y0, Real z1, Real z2)
 {
-  Integer ids[4];
-  ids[0]  = _addNode(x0      ,y0      ,z1);
-  ids[1]  = _addNode(x0 + 1. ,y0      ,z1);
-  ids[2]  = _addNode(x0 + 0.5,y0 + 1. ,z1);
-  ids[3]  = _addNode(x0 + 0.5,y0 + 0.5,z2);
-  _addCell(IT_Tetraedron4,IntegerConstArrayView(4,ids));
+  FixedArray<Int64, 4> ids;
+  ids[0] = _addNode(x0, y0, z1);
+  ids[1] = _addNode(x0 + 1., y0, z1);
+  ids[2] = _addNode(x0 + 0.5, y0 + 1., z1);
+  ids[3] = _addNode(x0 + 0.5, y0 + 0.5, z2);
+  _addCell(IT_Tetraedron4, ids.view());
 }
 
 /*---------------------------------------------------------------------------*/
@@ -326,8 +323,9 @@ generateMesh()
   IPrimaryMesh* mesh = m_mesh;
 
   info() << "Using simple mesh generator";
+  mesh->setDimension(3);
 
-  if (m_mode==1){
+  if (m_mode == 1) {
     _createSimpleHexaedron8(2.,0.,0.,1.);
     _createSimpleOctaedron12(4.,0.,0.,1.);
     _createSimpleHeptaedron10(6.,0.,0.,1.);
@@ -377,11 +375,10 @@ generateMesh()
     _createSimpleTetraedron4(12.,0.,0.,1.);
   }
 
-  mesh->setDimension(3);
   UniqueArray<Int64> cells_infos(m_cells_infos.size());
-  for(Integer i=0;i<m_cells_infos.size();++i)
+  for (Integer i = 0; i < m_cells_infos.size(); ++i)
     cells_infos[i] = m_cells_infos[i];
-  mesh->allocateCells(m_current_nb_cell,cells_infos,true);
+  mesh->endAllocate();
 
   UniqueArray<Int64> nodes_unique_id(m_nodes_unique_id.size());
   for(Integer i=0;i<m_nodes_unique_id.size();++i)
