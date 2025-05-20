@@ -213,6 +213,8 @@ function(arcane_target_set_standard_path target)
   message(STATUS "arcane_target_set_standard_path target='${target}'")
   set_target_properties(${target}
     PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY ${_libpath}
+    LIBRARY_OUTPUT_DIRECTORY ${_libpath}
     LIBRARY_OUTPUT_DIRECTORY_DEBUG ${_libpath}
     RUNTIME_OUTPUT_DIRECTORY_DEBUG ${_libpath}
     LIBRARY_OUTPUT_DIRECTORY_RELEASE ${_libpath}
