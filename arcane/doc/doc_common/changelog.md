@@ -8,6 +8,140 @@ Les nouveautés successives apportées par les versions de %Arcane
 antérieures à la version 3 sont listées ici : \ref arcanedoc_news_changelog20
 
 ___
+## Arcane Version 3.16.+ (juin 2025) {#arcanedoc_version3160}
+
+### Nouveautés/Améliorations
+
+- Ajoute possibilité de modifier les valeurs du jeu de données à
+  partir de la ligne de commande (\pr{1988}, \pr{1994})
+- Ajoute classe \arcane{ItemLocalIdToItemConverter} pour obtenir un
+  \arcane{Item} à partir d'un \arcane{ItemLocalId}. Cette classe est
+  similaire à \arcane{ItemInfoListView} mais peut être conservée
+  pendant tout le calcul et reste valide après modification de la
+  famille d'entitée associée (\pr{1971})
+- Ajoute constantes de type \arcane{ItemTypeId} pour les types de base
+  des entités. Ces constantes sont préfixée par `ITI` (par exemple
+  `ITI_Quad4` pour le type `IT_Quad4`) (\pr{1972})
+- Ajoute méthodes dans \arcane{ParallelMngUtils} pour créer des
+  \arcane{Ref<ISerializeMessage>} au lieu de
+  `ISerializeMessage*` (\pr{1999})
+- Ajoute diverses améliorations au service de subdivision de maillage
+  (\pr{2005})
+- Ajoute support pour être notifier de l'ajout ou la suppression
+  d'entités (\pr{2013})
+- Ajoute écrivain de maillage au format MSH 4.1 (\pr{2020},
+  \pr{2026},\pr{2027}, \pr{2028}, \pr{2033}, \pr{2034}, \pr{2039},
+  \pr{2042}, \pr{2045}, \pr{2045},\pr{2049}, \pr{2053}, \pr{2054},
+  \pr{2065}, \pr{2076}, \pr{2077}, \pr{2078})
+- Ajoute support pour le format de maillage `MSH` dans le
+  partitionneur externe (\pr{2029})
+- Ajoute support pour le partitionneur externe dans
+  \arcane{ArcaneCaseMeshService}. Cela permet de l'utiliser dans les
+  balises de maillage (\pr{2040})
+- Ajoute support pour les maillages multi-dimensionnels dans le
+  partitionneur externe (\pr{2048})
+- Améliore le support des maillages d'ordre 2 (\pr{2056}, \pr{2060},
+  \pr{2062}, \pr{2063})
+- Ajoute support pour utiliser la norme max dans les comparaisons bit
+  à bit des variables (\pr{2068}, \pr{2069}, \pr{2070}, \pr{2071},
+  \pr{2090}, \pr{2091})
+
+### API Accélérateur
+
+- Ajoute support accélérateur de \arcane{MultiArray2} (\pr{1989},
+  \pr{1993})
+- Utilise \arcane{MemoryUtils::getDefaultDataMemoryResource()} pour la
+  mémoire utilisée par défaut pour \arcane{NumArray} et
+  \arcane{RunQueue}. Auparavant c'était toujours la mémoire unifiée
+  qui était utilisée. Cela permet de prendre en compte la variable
+  d'environnement `ARCANE_DEFAULT_DATA_MEMORY_RESOURCE` qui permet de
+  changer la ressource mémoire utilisée par défaut (\pr{1997})
+- Utilise `std::less` pour la comparaison dans
+  \arcaneacc{GenericSorter} (\pr{2002})
+- Ajoute \arcaneacc{RunQueueEvent::hasPendingWork()} pour savoir si
+  les RunQueue associées à un évènement sont en cours d'exécution
+  (\pr{2006})
+- Ajoute vues pour le type \arcane{ItemVariableScalarRefT} (\pr{2098})
+
+### Changements
+
+- Déplace les classes de %Arccore du namespace Arccore vers le
+  namespace Arcane. Des `using` vers le namespace `Arccore` sont
+  ajoutés pour garantir la compatibilité avec le code existant
+  (\pr{1974}, \pr{1976}, \pr{1977}, \pr{1978}, \pr{1979}, \pr{1983},
+  \pr{1984}, \pr{1985})
+- Déplace \arcane{SerializeMessage} dans l'API interne à %Arcane (\pr{1995})
+- S'assure que le groupe d'entité est bien recalculé avant appel à
+  \arcane{ItemGroup::checkIsSorted()} (\pr{2024})
+- Ajoute automatiquement l'extension `.vtk` dans l'écrivain VTK (\pr{2055})
+- Ajoute possibilité d'autoriser les faces non correspondantes dans
+  \arcane{MeshNodeMerger} (\pr{2074})
+- Utilise `XML_PARSE_HUGE` dans le lecture `libxml2` pour gérer les
+  éléments XML de grande taille (plus de 10Mo) (\pr{2094}, \pr{2097})
+
+### Corrections
+
+- Ne désactive pas la mise à jour des mailles fantômes is
+  \arcane{ItemFamilyNetwork} est utilisé (\pr{1998})
+- Corrige potentiel 'Read after free' dans
+  \arcane{ParallelMngDispatcher::setDefaultRunner()} (\pr{2021})
+- Corrige gestion de \arcane{TimeHistoryMngInternal} lorsque la
+  réplication est active (\pr{2035})
+- Incrémente le timestamp des \arcane{ItemGroup} après une relecture
+  d'une protection (\pr{2072})
+
+### Interne
+
+- Déplace la classe \arcane{mesh::FaceReorienter} dans `arcane/core`
+  (\pr{1969})
+- Ajoute classe \arcane{mesh::ItemsOwnerBuilder} pour calculer les
+  propriétaires des entités sans avoir besoin d'une couche de mailles
+  fantômes. Cela permet de garantir la cohérence des propriétaires
+  après des modifications du maillage (\pr{2008},\pr{2016}, \pr{2019})
+- Nettoyage et améliorations diverses dans le support des maillages
+  cartésiens par patch (\pr{2031})
+- S'assure que le type des éléments utilisés dans \arcane{NumArray}
+  remplissent bien le critère `std::is_trivially_copyable` (\pr{2032})
+- Nettoyage de la gestion des scripts utilitaires de maillage
+  (\pr{2043})
+- Utilise les services de maille pour le mécanisme d'exécution directe
+  (\pr{2046})
+- Utilise une instance de \arcane{ItemTypeMng} par maillage
+  (\pr{2079})
+- Améliore la gestion des maillages multi-dimension ou non manifold
+  (\pr{2080}, \pr{2081}, \pr{2083}, \pr{2085}, \pr{2086}, \pr{2089})
+- Ajoute méthodes \arcane{Item::hasFlags()} et
+  \arcane{ItemBase::hasFlags()} (\pr{2087})
+
+### Compilation et Intégration Continue (CI)
+
+- Améliore compatibilité avec la version 1.10.0 de `Doxygen`
+  (\pr{2001}, \pr{2003}, \pr{2014})
+- Ajoute un workflow nécessaire pour pouvoir appliquer les 'Merge
+  Request' (\pr{2004})
+- Supprime workflows utilisant `ubuntu-20.04` car ce système
+  d'exploitation n'est plus disponible sur GitHub (\pr{2023})
+- Corrige erreur de compilation avec oneTBB 2022 (\pr{2050})
+- Ajoute support pour `.Net 9` (\pr{2059})
+- Ajoute option CMake `ARCANE_ENABLE_ALEPH` pour désactiver Aleph
+  (\pr{2075})
+
+### Arccore
+
+- Déplace certaines classes de `message_passing_mpi` dans l'API privée
+  à %Arccore (\pr{1992})
+- Supprime la classe `MpiSerializeMessageList` qui n'est plus
+  utilisée depuis longtemps (\pr{2000})
+
+### Alien
+
+- Supprime certaines informations de debug (\pr{1968})
+- Supprime utilisation de \arcane{BasicSerializeMessage} (\pr{1986})
+- Corrige bug dans le produit matrice vector par block (\pr{2044})
+- Ajoute support pour AdaptiveCpp 24.10 (\pr{2051}, \pr{2067})
+- Ajoute support pour la version 16.1 de Trilinos (\pr{2088})
+- Ajoute support pour Visual Studio 2022 (\pr{2095}, \pr{2096})
+___
 
 ## Arcane Version 3.15.3 (04 février 2025) {#arcanedoc_version3150}
 
@@ -110,7 +244,8 @@ ___
 ### Interne
 
 - Ajoute classe \arcane{mesh::ItemsOnwerBuilder} pour calculer les
-  propriétaires des faces à partir de celui des mailles (\pr{1861}).
+  propriétaires des faces à partir de celui des mailles (\pr{1861},
+  \pr{2082})
 - Utilise \arcane{IMesh} au lieu de \arcane{mesh::DynamicMesh} dans
   \arcane{mesh::MeshExchangeMng} (\pr{1841})
 - Ajoute type spécifique `float` pour les utilitaires HDF5 (\pr{1837})
