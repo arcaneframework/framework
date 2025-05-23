@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MpiDatatypeList.cc                                          (C) 2000-2020 */
+/* MpiDatatypeList.cc                                          (C) 2000-2025 */
 /*                                                                           */
 /* Gestionnaire de parallélisme utilisant MPI.                               */
 /*---------------------------------------------------------------------------*/
@@ -241,28 +241,28 @@ _init()
     MPI_Datatype mpi_datatype;
     MPI_Type_contiguous(2,real_mpi_datatype,&mpi_datatype);
     MPI_Type_commit(&mpi_datatype);
-    m_real2 = new MpiDatatype(mpi_datatype,false,new StdMpiReduceOperator<Real2>(is_commutative));
+    m_real2 = new MpiDatatype(mpi_datatype,false,new StdMpiReduceOperator<Real>(is_commutative));
   }
   {
     // Real3
     MPI_Datatype mpi_datatype;
     MPI_Type_contiguous(3,real_mpi_datatype,&mpi_datatype);
     MPI_Type_commit(&mpi_datatype);
-    m_real3 = new MpiDatatype(mpi_datatype,false,new StdMpiReduceOperator<Real3>(is_commutative));
+    m_real3 = new MpiDatatype(mpi_datatype,false,new StdMpiReduceOperator<Real>(is_commutative));
   }
   {
     // Real2x2
     MPI_Datatype mpi_datatype;
     MPI_Type_contiguous(4,real_mpi_datatype,&mpi_datatype);
     MPI_Type_commit(&mpi_datatype);
-    m_real2x2 = new MpiDatatype(mpi_datatype,false,new StdMpiReduceOperator<Real2x2>(is_commutative));
+    m_real2x2 = new MpiDatatype(mpi_datatype,false,new StdMpiReduceOperator<Real>(is_commutative));
   }
   {
     // Real3x3
     MPI_Datatype mpi_datatype;
     MPI_Type_contiguous(9,real_mpi_datatype,&mpi_datatype);
     MPI_Type_commit(&mpi_datatype);
-    m_real3x3 = new MpiDatatype(mpi_datatype,false,new StdMpiReduceOperator<Real3x3>(is_commutative));
+    m_real3x3 = new MpiDatatype(mpi_datatype,false,new StdMpiReduceOperator<Real>(is_commutative));
   }
   {
     // HPReal
