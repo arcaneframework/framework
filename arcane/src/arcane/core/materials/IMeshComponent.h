@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IMeshComponent.h                                            (C) 2000-2023 */
+/* IMeshComponent.h                                            (C) 2000-2025 */
 /*                                                                           */
 /* Interface d'un composant (matériau ou milieu) d'un maillage.              */
 /*---------------------------------------------------------------------------*/
@@ -14,7 +14,9 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/ItemTypes.h"
+#include "arcane/accelerator/core/AcceleratorCoreGlobal.h"
+
+#include "arcane/core/ItemTypes.h"
 #include "arcane/core/materials/MaterialsCoreGlobal.h"
 
 /*---------------------------------------------------------------------------*/
@@ -115,6 +117,23 @@ class ARCANE_CORE_EXPORT IMeshComponent
    * Si isEnvironment()==false, retourne \a nullptr
    */
   virtual IMeshEnvironment* asEnvironment() =0;
+
+  /*!
+   * \brief Positionne une politique d'exécution pour ce constituant
+   *
+   * \warning Cette méthode est expérimentale. A ne pas utiliser en dehors d'Arcane.
+   *
+   * Si \a policy est différent de eExecutionPolicy::None, elle sera utilisée pour
+   * les opérations de création de EnvCellVector, MatCellVector ou ComponentItemVector
+   */
+  virtual void setSpecificExecutionPolicy(Accelerator::eExecutionPolicy policy) = 0;
+
+  /*!
+   * \brief Politique d'exécution spécifique.
+   *
+   * \sa setSpecificExecutionPolicy().
+   */
+  virtual Accelerator::eExecutionPolicy specificExecutionPolicy() const = 0;
 
  public:
 

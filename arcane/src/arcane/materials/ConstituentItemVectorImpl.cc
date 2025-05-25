@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ConstituentItemVectorImpl.cc                                (C) 2000-2024 */
+/* ConstituentItemVectorImpl.cc                                (C) 2000-2025 */
 /*                                                                           */
 /* Implémentation de 'IConstituentItemVectorImpl'.                           */
 /*---------------------------------------------------------------------------*/
@@ -83,7 +83,7 @@ class ConstituentItemVectorImpl::SetItemHelper
 {
  public:
 
-  SetItemHelper(bool use_new_impl)
+  explicit SetItemHelper(bool use_new_impl)
   : m_use_new_impl(use_new_impl)
   {}
 
@@ -219,7 +219,8 @@ _setItems(SmallSpan<const Int32> local_ids)
 {
   const bool do_new_impl = m_material_mng->_internalApi()->isUseAcceleratorForConstituentItemVector();
 
-  RunQueue queue = m_material_mng->_internalApi()->runQueue();
+  Accelerator::eExecutionPolicy exec_policy = m_component->specificExecutionPolicy();
+  RunQueue queue = m_material_mng->_internalApi()->runQueue(exec_policy);
 
   if (do_new_impl)
     _computeNbPureAndImpure(local_ids, queue);
@@ -232,7 +233,7 @@ _setItems(SmallSpan<const Int32> local_ids)
 
   // Tableau qui contiendra les indices des mailles pures et partielles.
   // La première partie de 0 à nb_pure contiendra la partie pure.
-  // La seconde partie de nb_pure à (nb_pure+nb_impure) contiendra les mailles partielles
+  // La seconde partie de nb_pure à (nb_pure+nb_impure) contiendra les mailles partielles.
   // A noter que (nb_pure + nb_impure) peut être différent de local_ids.size()
   // si certaines mailles de \a local_ids n'ont pas le constituant.
   m_constituent_list->resize(total_nb_pure_and_impure);

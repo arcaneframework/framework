@@ -1,21 +1,19 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshMaterialAcceleratorUnitTest.cc                          (C) 2000-2024 */
+/* MeshMaterialAcceleratorUnitTest.cc                          (C) 2000-2025 */
 /*                                                                           */
-/* Service de test unitaire du support accelerateurs des matériaux/milieux.  */
+/* Service de test unitaire du support accélérateurs des matériaux/milieux.  */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/core/IMeshModifier.h"
 
 #include "arcane/utils/ScopedPtr.h"
-#include "arcane/utils/PlatformUtils.h"
-#include "arcane/utils/OStringStream.h"
 #include "arcane/utils/ArithmeticException.h"
 #include "arcane/utils/ValueChecker.h"
 #include "arcane/utils/IMemoryAllocator.h"
@@ -24,13 +22,11 @@
 #include "arcane/core/BasicUnitTest.h"
 #include "arcane/core/ServiceBuilder.h"
 #include "arcane/core/FactoryService.h"
-#include "arcane/core/VariableView.h"
 #include "arcane/core/IItemFamily.h"
 #include "arcane/core/ItemVector.h"
 #include "arcane/core/materials/internal/IMeshComponentInternal.h"
 #include "arcane/core/materials/internal/IMeshMaterialMngInternal.h"
 
-#include "arcane/materials/ComponentSimd.h"
 #include "arcane/materials/AllCellToAllEnvCellConverter.h"
 #include "arcane/materials/IMeshMaterialMng.h"
 #include "arcane/materials/IMeshMaterial.h"
@@ -59,8 +55,6 @@
 
 #include "arcane/accelerator/RunCommandEnumerate.h"
 
-#include "arcane/tests/ArcaneTestGlobal.h"
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -77,7 +71,7 @@ namespace ax = Arcane::Accelerator;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Service de test unitaire du support accelerateurs des matériaux/milieux.
+ * \brief Service de test unitaire du support accélérateurs des constituants.
  */
 class MeshMaterialAcceleratorUnitTest
 : public BasicUnitTest
@@ -96,8 +90,8 @@ class MeshMaterialAcceleratorUnitTest
 
   ax::Runner m_runner;
 
-  IMeshMaterialMng* m_mm_mng;
-  IMeshEnvironment* m_env1;
+  IMeshMaterialMng* m_mm_mng = nullptr;
+  IMeshEnvironment* m_env1 = nullptr;
 
   MaterialVariableCellReal m_mat_a_ref;
   MaterialVariableCellReal m_mat_b_ref;
@@ -133,6 +127,7 @@ class MeshMaterialAcceleratorUnitTest
   void _executeTest5(Integer nb_z, MatCellVectorView mat);
   void _executeTest6();
   void _executeTest7(RunQueue& queue);
+  void _testComponentSetSpecificExecutionPolicy();
   void _checkEnvValues1();
   void _checkMatValues1();
   void _checkEnvironmentValues();
@@ -336,6 +331,7 @@ executeTest()
     _executeTest1(nb_z, m_env1->envView());
     _executeTest1(nb_z, sub_ev1);
   }
+  _testComponentSetSpecificExecutionPolicy();
   {
     _executeTest2(nb_z);
     _executeTest3(nb_z);
@@ -1004,6 +1000,23 @@ _executeTest7(RunQueue& queue)
         ARCANE_FATAL("Bad mat cell lid={0}", mc.globalCellId());
     }
   }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MeshMaterialAcceleratorUnitTest::
+_testComponentSetSpecificExecutionPolicy()
+{
+  ValueChecker vc(A_FUNCINFO);
+  // Vérifie le changement politique d'exécution d'un IMeshComponent
+  m_env1->setSpecificExecutionPolicy(Accelerator::eExecutionPolicy::Sequential);
+  EnvCellVector sub_env1(m_sub_env_group1, m_env1);
+  m_env1->setSpecificExecutionPolicy(Accelerator::eExecutionPolicy::None);
+  EnvCellVector sub_env2(m_sub_env_group1, m_env1);
+  Int32 nb_item1 = sub_env1.view().nbItem();
+  Int32 nb_item2 = sub_env2.view().nbItem();
+  vc.areEqual(nb_item1, nb_item2, "NbItem");
 }
 
 /*---------------------------------------------------------------------------*/

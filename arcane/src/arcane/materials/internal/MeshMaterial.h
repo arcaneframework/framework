@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshMaterial.h                                              (C) 2000-2024 */
+/* MeshMaterial.h                                              (C) 2000-2025 */
 /*                                                                           */
 /* Matériau d'un maillage.                                                   */
 /*---------------------------------------------------------------------------*/
@@ -55,8 +55,13 @@ class MeshMaterial
   : public IMeshComponentInternal
   {
    public:
-    InternalApi(MeshMaterial* mat) : m_material(mat){}
+
+    explicit InternalApi(MeshMaterial* mat)
+    : m_material(mat)
+    {}
+
    public:
+
     MeshMaterialVariableIndexer* variableIndexer() const override
     {
       return m_material->variableIndexer();
@@ -70,7 +75,8 @@ class MeshMaterial
     Ref<IConstituentItemVectorImpl> createItemVectorImpl(ComponentItemVectorView rhs) const override;
 
    private:
-    MeshMaterial* m_material;
+
+    MeshMaterial* m_material = nullptr;
   };
 
  public:
@@ -124,6 +130,15 @@ class MeshMaterial
   MatImpurePartItemVectorView impureMatItems() const override;
   MatPartItemVectorView partMatItems(eMatPart part) const override;
 
+  void setSpecificExecutionPolicy(Accelerator::eExecutionPolicy policy) override
+  {
+    m_data.setSpecificExecutionPolicy(policy);
+  }
+  Accelerator::eExecutionPolicy specificExecutionPolicy() const override
+  {
+    return m_data.specificExecutionPolicy();
+  }
+
  public:
 
   IMeshComponentInternal* _internalApi() override { return &m_internal_api; }
@@ -149,12 +164,12 @@ class MeshMaterial
 
  private:
 
-  IMeshMaterialMng* m_material_mng;
-  MeshMaterialInfo* m_infos;
-  MeshEnvironment* m_environment;
-  IUserMeshMaterial* m_user_material;
+  IMeshMaterialMng* m_material_mng = nullptr;
+  MeshMaterialInfo* m_infos = nullptr;
+  MeshEnvironment* m_environment = nullptr;
+  IUserMeshMaterial* m_user_material = nullptr;
   MeshComponentData m_data;
-  MeshMaterial* m_non_const_this;
+  MeshMaterial* m_non_const_this = nullptr;
   InternalApi m_internal_api;
 };
 
