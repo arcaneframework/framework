@@ -80,9 +80,17 @@ class MeshMaterialMng
 
    public:
 
+    RunQueue runQueue(Accelerator::eExecutionPolicy policy) const;
+
+   public:
+
     Runner m_runner;
     RunQueue m_run_queue;
     Accelerator::RunQueuePool m_async_queue_pool;
+    Runner m_sequential_runner;
+    RunQueue m_sequential_run_queue;
+    Runner m_multi_thread_runner;
+    RunQueue m_multi_thread_run_queue;
   };
 
   class InternalApi
@@ -147,6 +155,10 @@ class MeshMaterialMng
     bool isUseAcceleratorForConstituentItemVector() const override
     {
       return m_material_mng->m_is_use_accelerator_for_constituent_item_vector;
+    }
+    RunQueue runQueue(Accelerator::eExecutionPolicy policy) const override
+    {
+      return m_material_mng->m_runner_info->runQueue(policy);
     }
 
    private:

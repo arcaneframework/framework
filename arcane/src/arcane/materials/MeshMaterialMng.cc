@@ -100,6 +100,10 @@ MeshMaterialMng::RunnerInfo::
 RunnerInfo(Runner& runner)
 : m_runner(runner)
 , m_run_queue(makeQueue(m_runner))
+, m_sequential_runner(Accelerator::eExecutionPolicy::Sequential)
+, m_sequential_run_queue(makeQueue(m_sequential_runner))
+, m_multi_thread_runner(Accelerator::eExecutionPolicy::Thread)
+, m_multi_thread_run_queue(makeQueue(m_multi_thread_runner))
 {
 }
 
@@ -116,6 +120,21 @@ initializeAsyncPool(Int32 nb_queue)
   m_async_queue_pool.initialize(m_runner,nb_queue);
   if (is_accelerator)
     m_async_queue_pool.setAsync(true);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+RunQueue MeshMaterialMng::RunnerInfo::
+runQueue(Accelerator::eExecutionPolicy policy) const
+{
+  if (policy == Accelerator::eExecutionPolicy::None)
+    return m_run_queue;
+  if (policy == Accelerator::eExecutionPolicy::Sequential)
+    return m_sequential_run_queue;
+  if (policy == Accelerator::eExecutionPolicy::Thread)
+    return m_multi_thread_run_queue;
+  ARCANE_FATAL("Invalid value '{0}' for execution policy. Valid values are None, Sequential or Thread", policy);
 }
 
 /*---------------------------------------------------------------------------*/
