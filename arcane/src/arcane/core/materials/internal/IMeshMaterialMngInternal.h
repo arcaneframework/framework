@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IMeshMaterialMngInternal.h                                  (C) 2000-2024 */
+/* IMeshMaterialMngInternal.h                                  (C) 2000-2025 */
 /*                                                                           */
 /* API interne Arcane de 'IMeshMaterialMng'.                                 */
 /*---------------------------------------------------------------------------*/
@@ -107,7 +107,7 @@ class ARCANE_CORE_EXPORT IMeshMaterialMngInternal
    */
   virtual ComponentItemSharedInfo* componentItemSharedInfo(Int32 level) const = 0;
 
-  //! File d'exécution associée
+  //! File d'exécution par défaut.
   virtual RunQueue& runQueue() const = 0;
 
   //! Liste de files asynchrones
@@ -118,6 +118,15 @@ class ARCANE_CORE_EXPORT IMeshMaterialMngInternal
 
   //! Indique si on utilise l'API accélérateur pour positionner les valeurs de ConstituentItemVectorImpl
   virtual bool isUseAcceleratorForConstituentItemVector() const =0;
+
+  /*!
+   * \brief File d'exécution pour la politique \a policy.
+   *
+   * Si \a policy vaut eExecutionPolicy::None, alors c'est runQueue() qui est retourné.
+   * Les autres valeurs possibles sont eExecutionPolicy::Sequential
+   * ou eExecutionPolicy::Thread.
+   */
+  virtual RunQueue runQueue(Accelerator::eExecutionPolicy policy) const = 0;
 };
 
 /*---------------------------------------------------------------------------*/
