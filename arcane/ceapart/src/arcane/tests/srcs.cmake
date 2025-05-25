@@ -14,6 +14,7 @@ set(ARCANE_SOURCES
 set(ARCANE_MATERIAL_SOURCES
   HyodaMixedCellsUnitTest.cc
   MeshMaterialTesterModule.cc
+  MeshMaterialTesterModule.h
   MeshMaterialSyncUnitTest.cc
   MeshMaterialSimdUnitTest.cc
   MaterialHeatTestModule.cc
