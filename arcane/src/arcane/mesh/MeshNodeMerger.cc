@@ -91,8 +91,13 @@ mergeNodes(Int32ConstArrayView nodes_local_id,
   for (Integer i = 0; i < nb_node; ++i) {
     Node node(nodes_internal[nodes_local_id[i]]);
     Node node_to_merge(nodes_internal[nodes_to_merge_local_id[i]]);
-    if (node.localId()==node_to_merge.localId())
-      ARCANE_FATAL("Can not merge a node with itself");
+    // NOTE: juin 2025: Supprime le test suivant qui n'est
+    // pas utile car il doit être possible pour une face de fusionner
+    // noeud avec lui-même. Le seul cas où cela pourrait poser problème
+    // avec l'algorithme actuel est si pour une face données tous ces
+    // noeuds sont fusionnés avec eux-même.
+    //  if (node.localId()==node_to_merge.localId())
+    //    ARCANE_FATAL("Can not merge a node with itself");
     info(4) << "ADD CORRESPONDANCE node=" << node.uniqueId() << " node_to_merge=" << node_to_merge.uniqueId();
     m_nodes_correspondance.insert(std::make_pair(node_to_merge,node));
   }
