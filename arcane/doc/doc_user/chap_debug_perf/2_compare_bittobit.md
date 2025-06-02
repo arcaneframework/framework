@@ -58,10 +58,22 @@ un autre chemin dans la variable d'environnement **STDENV_VERIF_PATH**
 de l'ensemble des noeuds du calculateur, ce qui n'est généralement
 pas le cas du répertoire \c /tmp.
 
+Depuis la version 3.16 de %Arcane, il est possible de chosir la
+méthode de comparaison utilisée pour calculer la différence. Cela se
+fait via la variable d'environnement **STDENV_VERIF_DIFF_METHOD**. Les
+valeurs possibles sont :
+
+- `RELATIVE` : calcule la différence relative `(v-ref) / ref`. C'est la
+  comparaison utilisée par défaut.
+- `LOCALNORMMAX` calcule la différence `(v-ref) / max_ref` avec
+  `max_ref` la valeur absolue du maximum des valeurs de référence sur
+  le sous-domaine. A noter qu'avec cette méthode la différence dépend
+  du découpage.
+
 ### Comparaison avec la référence {#arcanedoc_debug_perf_compare_bittobit_compare}
 
 Une fois la référence exécutée, il suffit de positionner la variable
-d'environnement **STDENV_VERIF** à **READ** et de lancer une nouvelle
+d'environnement **STDENV_VERIF** à `READ` et de lancer une nouvelle
 exécution. Il est possible de changer le nombre de sous-domaines par
 rapport à l'exécution de référence et ainsi faire des comparaisons
 entre parallèle et séquentiel (dans ce cas, l'exécution séquentielle
