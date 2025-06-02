@@ -2,6 +2,14 @@
 
 [TOC]
 
+Il est possible d'utiliser l'API accélérateur de %Arcane pour gérer
+les constituants. Les instances du gestionnaire de matériaux
+\arcanemat{IMeshMaterialMng} utilisent le gestionnaire d'exécution
+(\arcaneacc{Runner}) associé au sous-domaine dont est issu le
+maillage. La gestion des constituants se fera donc automatiquement
+avec le même environnement d'exécution que les opérations sur les
+entités classiques du maillage.
+
 L'utilisation de l'API accélérateur pour les matériaux est similaire à
 l'utilisation sur les entités du maillage. La macro
 RUNCOMMAND_MAT_ENUMERATE() permet d'itérer sur un milieu
@@ -75,6 +83,18 @@ chaque \arcanemat{AllEnvCell}
 
 \snippet MeshMaterialAcceleratorUnitTest.cc SampleAllEnvCell
 
+La classe \arcanemat{ComponentCellVector} et les classes qui en
+dérivent (\arcanemat{MatCellVector} et \arcanemat{EnvCellVector}) sont
+supportées par l'API accélérateur et leur création ou modification
+utilise l'environnement d'exécution par défaut.
+
+A partir de la version 3.16 de %Arcane, si l'environnement d'exécution
+par défaut est un accélérateur, il est possible de spécifier
+une politique d'exécution sur l'hôte via la méthode
+\arcanemat{IMeshComponent::setSpecificExecutionPolicy()}. Cette
+politique sera utilisée pour créer et modifier les instances de
+\arcanemat{ComponentCellVector}, \arcanemat{MatCellVector} et
+\arcanemat{EnvCellVector}.
 ____
 
 <div class="section_buttons">

@@ -123,8 +123,17 @@ class ARCANE_CORE_EXPORT IMeshComponent
    *
    * \warning Cette méthode est expérimentale. A ne pas utiliser en dehors d'Arcane.
    *
-   * Si \a policy est différent de eExecutionPolicy::None, elle sera utilisée pour
-   * les opérations de création de EnvCellVector, MatCellVector ou ComponentItemVector
+   * La politique d'exécution sélectionnée sera sera utilisée pour
+   * les opérations de création ou de modification de EnvCellVector,
+   * MatCellVector ou ComponentItemVector.
+   *
+   * Si \a policy vaut Accelerator::eExecutionPolicy::None (le défaut), c'est la politique du
+   * IMeshMaterialMng associé qui est utilisée. Si elle vaut Accelerator::eExecutionPolicy::Sequential
+   * ou Accelerator::eExecutionPolicy::Thread, alors l'exécution aura lieu sur l'hôte en séquentiel
+   * ou en multi-thread. Les autres valeurs sont invalides.
+   *
+   * \note Le changement de politique d'exécute s'applique pour toute modification
+   * qui a lieu ensuite, même pour les instances de ComponentItemVector déjà créées.
    */
   virtual void setSpecificExecutionPolicy(Accelerator::eExecutionPolicy policy) = 0;
 
