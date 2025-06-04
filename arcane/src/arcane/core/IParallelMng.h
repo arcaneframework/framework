@@ -745,6 +745,11 @@ class ARCANE_CORE_EXPORT IParallelMng
   virtual void processMessages(ConstArrayView<ISerializeMessage*> messages) =0;
 
   /*!
+   * \brief Exécute les opérations des messages \a messages
+   */
+  virtual void processMessages(ConstArrayView<Ref<ISerializeMessage>> messages) =0;
+
+  /*!
    * \brief Libère les requêtes.
    */
   virtual void freeRequests(ArrayView<Parallel::Request> requests) =0;

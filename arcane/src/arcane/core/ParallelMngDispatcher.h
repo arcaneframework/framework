@@ -268,6 +268,7 @@ class ARCANE_CORE_EXPORT ParallelMngDispatcher
   UniqueArray<Integer> waitSomeRequests(ArrayView<Request> requests) override;
   UniqueArray<Integer> testSomeRequests(ArrayView<Request> requests) override;
   void processMessages(ConstArrayView<ISerializeMessage*> messages) override;
+  void processMessages(ConstArrayView<Ref<ISerializeMessage>> messages) override;
   ISerializeMessageList* createSerializeMessageList() final;
   Ref<ISerializeMessageList> createSerializeMessageListRef() final;
   IParallelMng* createSubParallelMng(Int32ConstArrayView kept_ranks) final;

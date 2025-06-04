@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ParallelMngDispatcher.cc                                    (C) 2000-2025 */
+/* ParallelMngDispatcher.cc                                    (C) 2000-2024 */
 /*                                                                           */
 /* Redirection de la gestion des messages suivant le type des arguments.     */
 /*---------------------------------------------------------------------------*/
@@ -498,14 +498,25 @@ void ParallelMngDispatcher::
 processMessages(ConstArrayView<ISerializeMessage*> messages)
 {
   TimeMetricSentry tphase(Timer::phaseAction(timeStats(),TP_Communication));
-  ScopedPtrT<ISerializeMessageList> message_list(createSerializeMessageList());
+  Ref<ISerializeMessageList> message_list(createSerializeMessageListRef());
 
-  Integer nb_message = messages.size();
-  for( Integer i=0; i<nb_message; ++i ){
-    ISerializeMessage* m = messages[i];
+  for (ISerializeMessage* m : messages)
     message_list->addMessage(m);
-  }
-  message_list->processPendingMessages();
+
+  message_list->waitMessages(Parallel::WaitAll);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ParallelMngDispatcher::
+processMessages(ConstArrayView<Ref<ISerializeMessage>> messages)
+{
+  TimeMetricSentry tphase(Timer::phaseAction(timeStats(), TP_Communication));
+  Ref<ISerializeMessageList> message_list(createSerializeMessageListRef());
+
+  for (const Ref<ISerializeMessage>& v : messages)
+    message_list->addMessage(v.get());
 
   message_list->waitMessages(Parallel::WaitAll);
 }
