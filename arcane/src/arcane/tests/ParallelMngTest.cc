@@ -612,6 +612,7 @@ void ParallelMngTest::
 _testNonBlockingSerializeSize(Integer nb_value)
 {
   IParallelMng* pm = m_parallel_mng;
+  IMessagePassingMng* mpm = pm->messagePassingMng();
   Int32 nb_rank = pm->commSize();
   Int32 my_rank = pm->commRank();
   Int32 min_rank = 0;
@@ -624,13 +625,13 @@ _testNonBlockingSerializeSize(Integer nb_value)
   ValueChecker vc(A_FUNCINFO);
 
   Integer nb_message = 3;
-  UniqueArray<ISerializeMessage*> requests;
+  UniqueArray<Ref<ISerializeMessage>> requests;
   if (my_rank==0){
     for( Integer k=0; k<nb_message; ++k ){
       for( Integer i=min_rank; i<nb_rank; ++i ){
         if (i!=0){
           info() << "Send Serializer rank=" << i;
-          auto x = pm->createSendSerializer(i);
+          auto x = mpCreateSendSerializeMessage(mpm, MessagePassing::MessageRank(i));
           test_values.putValue(x->serializer());
           requests.add(x);
         }
@@ -640,19 +641,18 @@ _testNonBlockingSerializeSize(Integer nb_value)
   else{
     for( Integer k=0; k<nb_message; ++k ){
       if (my_rank>=min_rank){
-        auto x = pm->createReceiveSerializer(0);
+        auto x = mpCreateReceiveSerializeMessage(mpm, MessagePassing::MessageRank(0));
         requests.add(x);
       }
     }
   }
   pm->processMessages(requests);
   if (my_rank!=0){
-    for( ISerializeMessage* s : requests )
+    for (Ref<ISerializeMessage>& s : requests)
       test_values.getAndCheckValues(s->serializer(),vc,"Deserialize");
   }
   pm->barrier();
-  for( auto& r : requests )
-    delete r;
+  requests.clear();
   tm->info() << " END TEST";
 }
 

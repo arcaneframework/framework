@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IParallelMng.h                                              (C) 2000-2024 */
+/* IParallelMng.h                                              (C) 2000-2025 */
 /*                                                                           */
 /* Interface du gestionnaire du parallélisme sur un sous-domaine.            */
 /*---------------------------------------------------------------------------*/
@@ -743,6 +743,11 @@ class ARCANE_CORE_EXPORT IParallelMng
    * \brief Exécute les opérations des messages \a messages
    */
   virtual void processMessages(ConstArrayView<ISerializeMessage*> messages) =0;
+
+  /*!
+   * \brief Exécute les opérations des messages \a messages
+   */
+  virtual void processMessages(ConstArrayView<Ref<ISerializeMessage>> messages) =0;
 
   /*!
    * \brief Libère les requêtes.

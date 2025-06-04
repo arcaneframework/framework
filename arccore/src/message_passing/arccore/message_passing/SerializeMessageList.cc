@@ -194,8 +194,7 @@ buildMessageInfo(ISerializeMessage* sm)
 Ref<ISerializeMessage> SerializeMessageList::
 createAndAddMessage(MessageRank destination,ePointToPointMessageType type)
 {
-  MessageRank source(m_message_passing_mng->commRank());
-  auto x = BasicSerializeMessage::create(source,destination,type);
+  auto x = mpCreateSerializeMessage(m_message_passing_mng, destination, type);
   addMessage(x.get());
   return x;
 }
