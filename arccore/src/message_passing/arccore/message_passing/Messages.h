@@ -265,6 +265,50 @@ mpAllGather(IMessagePassingMng* pm, const ISerializer* send_serializer, ISeriali
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+/*!
+ * \brief Créé un message de sérialisation.
+ *
+ * \a type est le type de message et \a target la cible.
+ * Si le message est un envoi, \a target est la destination du message.
+ * Si le message est une réception, \a target est la source du message.
+ *
+ * \sa ISerializeMessageList
+ */
+ARCCORE_MESSAGEPASSING_EXPORT Ref<ISerializeMessage>
+mpCreateSerializeMessage(IMessagePassingMng* pm, MessageRank target, ePointToPointMessageType type);
+
+/*!
+ * \brief Créé un message de sérialisation correspondant à \a id.
+ *
+ * \sa ISerializeMessageList
+ */
+ARCCORE_MESSAGEPASSING_EXPORT Ref<ISerializeMessage>
+mpCreateSerializeMessage(IMessagePassingMng* pm, MessageId id);
+
+/*!
+ * \brief Créé un message de sérialisation en envoi.
+ *
+ * Cette méthode est équivalente à
+ * mpCreateSerializeMessage(pm, destination, ePointToPointMessageType::MsgSend).
+ *
+ * \sa ISerializeMessageList
+ */
+ARCCORE_MESSAGEPASSING_EXPORT Ref<ISerializeMessage>
+mpCreateSendSerializeMessage(IMessagePassingMng* pm, MessageRank destination);
+
+/*!
+ * \brief Créé un message de sérialisation en envoi.
+ *
+ * Cette méthode est équivalente à
+ * mpCreateSerializeMessage(pm, source, ePointToPointMessageType::MsgReceive).
+ *
+ * \sa ISerializeMessageList
+ */
+ARCCORE_MESSAGEPASSING_EXPORT Ref<ISerializeMessage>
+mpCreateReceiveSerializeMessage(IMessagePassingMng* pm, MessageRank source);
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 ARCCORE_GENERATE_MESSAGEPASSING_PROTOTYPE(char)
 ARCCORE_GENERATE_MESSAGEPASSING_PROTOTYPE(signed char)
@@ -291,42 +335,44 @@ ARCCORE_GENERATE_MESSAGEPASSING_PROTOTYPE(Float16)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arccore::MessagePassing
+} // namespace Arcane::MessagePassing
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 namespace Arccore::MessagePassing
 {
-using Arcane::MessagePassing::mpSend;
-using Arcane::MessagePassing::mpReceive;
 using Arcane::MessagePassing::mpAllGather;
-using Arcane::MessagePassing::mpGather;
-using Arcane::MessagePassing::mpNonBlockingAllGather;
-using Arcane::MessagePassing::mpNonBlockingGather;
 using Arcane::MessagePassing::mpAllGatherVariable;
-using Arcane::MessagePassing::mpGatherVariable;
-using Arcane::MessagePassing::mpGather;
-using Arcane::MessagePassing::mpScatterVariable;
 using Arcane::MessagePassing::mpAllReduce;
-using Arcane::MessagePassing::mpNonBlockingAllReduce;
-using Arcane::MessagePassing::mpBroadcast;
-using Arcane::MessagePassing::mpNonBlockingBroadcast;
 using Arcane::MessagePassing::mpAllToAll;
-using Arcane::MessagePassing::mpNonBlockingAllToAll;
 using Arcane::MessagePassing::mpAllToAllVariable;
-using Arcane::MessagePassing::mpNonBlockingAllToAllVariable;
-using Arcane::MessagePassing::mpCreateRequestListRef;
-using Arcane::MessagePassing::mpWaitAll;
-using Arcane::MessagePassing::mpWait;
-using Arcane::MessagePassing::mpWaitSome;
-using Arcane::MessagePassing::mpTestSome;
-using Arcane::MessagePassing::mpProbe;
-using Arcane::MessagePassing::mpLegacyProbe;
-using Arcane::MessagePassing::mpSplit;
 using Arcane::MessagePassing::mpBarrier;
-using Arcane::MessagePassing::mpNonBlockingBarrier;
+using Arcane::MessagePassing::mpBroadcast;
+using Arcane::MessagePassing::mpCreateReceiveSerializeMessage;
+using Arcane::MessagePassing::mpCreateRequestListRef;
+using Arcane::MessagePassing::mpCreateSendSerializeMessage;
+using Arcane::MessagePassing::mpCreateSerializeMessage;
 using Arcane::MessagePassing::mpCreateSerializeMessageListRef;
+using Arcane::MessagePassing::mpGather;
+using Arcane::MessagePassing::mpGatherVariable;
+using Arcane::MessagePassing::mpLegacyProbe;
+using Arcane::MessagePassing::mpNonBlockingAllGather;
+using Arcane::MessagePassing::mpNonBlockingAllReduce;
+using Arcane::MessagePassing::mpNonBlockingAllToAll;
+using Arcane::MessagePassing::mpNonBlockingAllToAllVariable;
+using Arcane::MessagePassing::mpNonBlockingBarrier;
+using Arcane::MessagePassing::mpNonBlockingBroadcast;
+using Arcane::MessagePassing::mpNonBlockingGather;
+using Arcane::MessagePassing::mpProbe;
+using Arcane::MessagePassing::mpReceive;
+using Arcane::MessagePassing::mpScatterVariable;
+using Arcane::MessagePassing::mpSend;
+using Arcane::MessagePassing::mpSplit;
+using Arcane::MessagePassing::mpTestSome;
+using Arcane::MessagePassing::mpWait;
+using Arcane::MessagePassing::mpWaitAll;
+using Arcane::MessagePassing::mpWaitSome;
 }
 
 /*---------------------------------------------------------------------------*/

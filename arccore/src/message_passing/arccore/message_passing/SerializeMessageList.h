@@ -55,7 +55,7 @@ class ARCCORE_MESSAGEPASSING_EXPORT SerializeMessageList
 
  public:
 
-  SerializeMessageList(IMessagePassingMng* mpm);
+  explicit SerializeMessageList(IMessagePassingMng* mpm);
 
  public:
 

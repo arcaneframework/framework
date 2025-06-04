@@ -20,6 +20,7 @@
 #include "arccore/serialize/BasicSerializer.h"
 #include "arccore/serialize/internal/BasicSerializerInternal.h"
 
+#include "arccore/message_passing/BasicSerializeMessage.h"
 #include "arccore/message_passing/ISerializeDispatcher.h"
 #include "arccore/message_passing/IControlDispatcher.h"
 #include "arccore/message_passing/MessageId.h"
@@ -134,7 +135,7 @@ doAllGather(MessagePassing::IMessagePassingMng* pm, const BasicSerializer* send_
   _doGatherOne(pm, send_float32, recv_p->getFloat32Buffer());
 }
 
-} // namespace Arccore
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -318,6 +319,34 @@ void mpAllGather(IMessagePassingMng* pm, const ISerializer* send_serializer, ISe
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+Ref<ISerializeMessage>
+mpCreateSerializeMessage(IMessagePassingMng* pm, MessageRank target, ePointToPointMessageType type)
+{
+  return internal::BasicSerializeMessage::create(MessageRank(pm->commRank()), target, type);
+}
+
+Ref<ISerializeMessage>
+mpCreateSerializeMessage(IMessagePassingMng* pm, MessageId id)
+{
+  return internal::BasicSerializeMessage::create(MessageRank(pm->commRank()), id);
+}
+
+ARCCORE_MESSAGEPASSING_EXPORT Ref<ISerializeMessage>
+mpCreateSendSerializeMessage(IMessagePassingMng* pm, MessageRank destination)
+{
+  return mpCreateSerializeMessage(pm, destination, ePointToPointMessageType::MsgSend);
+}
+
+ARCCORE_MESSAGEPASSING_EXPORT Ref<ISerializeMessage>
+mpCreateReceiveSerializeMessage(IMessagePassingMng* pm, MessageRank source)
+{
+  return mpCreateSerializeMessage(pm, source, ePointToPointMessageType::MsgReceive);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 namespace
 {
   template <typename DataType> inline ITypeDispatcher<DataType>*
