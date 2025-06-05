@@ -843,6 +843,8 @@ endif()
 
 arcane_add_test_parallel_all(hydro3_checkpoint_meshservice testHydro-3-checkpoint-meshservice.arc 3 4 -c 3 -m 10)
 arcane_add_test(hydro5 testHydro-5.arc -m 50 -We,ARCANE_MASTER_HAS_OUTPUT_FILE,1)
+arcane_add_test_parallel_all(hydro5_thread_itemgroup testHydro-5.arc 3 4 -m 50 -We,ARCANE_USE_LOCK_FOR_ITEMGROUP_UPDATE,1)
+
 arcane_add_test_parallel(hydro5_checksync testHydro-5.arc 4 "-m 50" "-We,STDENV_VERIF,CHECKSYNC")
 arcane_add_test(hydro5_message_passing_prof testHydro-5.arc -m 50 -We,ARCANE_MESSAGE_PASSING_PROFILING,JSON)
 arcane_add_test(hydrosimd5 testHydroSimd-5.arc -m 50)
