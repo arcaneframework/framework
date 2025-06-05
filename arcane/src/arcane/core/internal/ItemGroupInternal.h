@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemGroupInternal.h                                         (C) 2000-2024 */
+/* ItemGroupInternal.h                                         (C) 2000-2025 */
 /*                                                                           */
 /* Partie interne à Arcane de ItemGroup.                                     */
 /*---------------------------------------------------------------------------*/
@@ -21,6 +21,7 @@
 #include "arcane/core/internal/ItemGroupImplInternal.h"
 
 #include <map>
+#include <mutex>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -36,7 +37,7 @@ class ItemGroupImpl;
  * \brief Implémentation de la classe ItemGroupImpl.
  *
  * Le container contenant la liste des entités du groupe est soit une
- * variable dans le cas d'une groupe standard, soit un tableau simple
+ * variable dans le cas d'une group standard, soit un tableau simple
  * dans le cas d'un groupe ayant un parent. En effet, les groupes
  * ayant des parents sont des groupes générés dynamiquement (par
  * exemple le groupe des entités propres) et ne sont donc pas
@@ -51,6 +52,66 @@ class ItemGroupImpl;
 class ItemGroupInternal
 {
   friend class ItemGroupImplInternal;
+
+ public:
+
+  /*!
+   * \brief Mutex pour protéger les appels à ItemGroupImpl::_checkNeedUpdate().
+   *
+   * Par défaut le mutex n'est pas actif. Il faut appeler create() pour le
+   * rendre actif.
+   */
+  class CheckNeedUpdateMutex
+  {
+   public:
+
+    class ScopedLock
+    {
+     public:
+
+      explicit ScopedLock(const CheckNeedUpdateMutex& mutex)
+      : m_update_mutex(mutex)
+      {
+        m_update_mutex._lock();
+      }
+      ~ScopedLock()
+      {
+        m_update_mutex._unlock();
+      }
+
+     private:
+
+      const CheckNeedUpdateMutex& m_update_mutex;
+    };
+
+   public:
+
+    ~CheckNeedUpdateMutex()
+    {
+      delete m_mutex;
+    }
+    void create()
+    {
+      m_mutex = new std::mutex();
+    }
+
+   private:
+
+    std::mutex* m_mutex = nullptr;
+
+   private:
+
+    void _lock() const
+    {
+      if (m_mutex)
+        m_mutex->lock();
+    }
+    void _unlock() const
+    {
+      if (m_mutex)
+        m_mutex->unlock();
+    }
+  };
 
  public:
 
@@ -76,13 +137,13 @@ class ItemGroupInternal
   VariableArrayInt32* variableItemsLocalid() { return m_variable_items_local_id; }
 
   Int64 timestamp() const { return m_timestamp; }
-  bool isContigous() const { return m_is_contigous; }
-  void checkIsContigous();
+  bool isContiguous() const { return m_is_contiguous; }
+  void checkIsContiguous();
 
   void updateTimestamp()
   {
     ++m_timestamp;
-    m_is_contigous = false;
+    m_is_contiguous = false;
   }
 
   void setNeedRecompute()
@@ -116,15 +177,15 @@ class ItemGroupInternal
  public:
 
   ItemGroupImplInternal m_internal_api;
-  IMesh* m_mesh = nullptr; //!< Gestionnare de groupe associé
+  IMesh* m_mesh = nullptr; //!< Gestionnaire de groupe associé
   IItemFamily* m_item_family = nullptr; //!< Famille associée
   ItemGroupImpl* m_parent = nullptr; //! Groupe parent (groupe null si aucun)
   String m_variable_name; //!< Nom de la variable contenant les indices des éléments du groupe
   String m_full_name; //!< Nom complet du groupe.
   bool m_is_null = true; //!< \a true si le groupe est nul
-  eItemKind m_kind = IK_Unknown; //!< Genre de entités du groupe
+  eItemKind m_kind = IK_Unknown; //!< Genre des entités du groupe
   String m_name; //!< Nom du groupe
-  bool m_is_own = false; //!< \a true si groupe local.
+  bool m_is_own = false; //!< \a true si groupe contient uniquement les entités dont on est propriétaire.
 
  private:
 
@@ -164,7 +225,7 @@ class ItemGroupInternal
   bool m_is_local_to_sub_domain = false; //!< Vrai si le groupe est local au sous-domaine
   IFunctor* m_compute_functor = nullptr; //!< Fonction de calcul du groupe
   bool m_is_all_items = false; //!< Indique s'il s'agit du groupe de toutes les entités
-  bool m_is_constituent_group = false; //!< Indique si le groupe est associé à un constituent (IMeshComponent)
+  bool m_is_constituent_group = false; //!< Indique si le groupe est associé à un constituant (IMeshComponent)
   SharedPtrT<GroupIndexTable> m_group_index_table; //!< Table de hachage du local id des items vers leur position en enumeration
   Ref<IVariableSynchronizer> m_synchronizer; //!< Synchronizer du groupe
 
@@ -189,7 +250,7 @@ class ItemGroupInternal
   UniqueArray<Int32> m_local_buffer{ MemoryUtils::getAllocatorForMostlyReadOnlyData() };
   Array<Int32>* m_items_local_id = &m_local_buffer; //!< Liste des numéros locaux des entités de ce groupe
   VariableArrayInt32* m_variable_items_local_id = nullptr;
-  bool m_is_contigous = false; //! Vrai si les localIds sont consécutifs.
+  bool m_is_contiguous = false; //! Vrai si les localIds sont consécutifs.
   bool m_is_check_simd_padding = true;
   bool m_is_print_check_simd_padding = false;
   bool m_is_print_apply_simd_padding = false;
@@ -225,6 +286,9 @@ class ItemGroupInternal
 
   bool m_is_debug_apply_operation = false;
   //@}
+
+  //! Mutex pour protéger la mise à jour.
+  CheckNeedUpdateMutex m_check_need_update_mutex;
 
  private:
 

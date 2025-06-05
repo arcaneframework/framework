@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemGroupImpl.h                                             (C) 2000-2024 */
+/* ItemGroupImpl.h                                             (C) 2000-2025 */
 /*                                                                           */
 /* Implémentation d'un groupe d'entités du maillage.                         */
 /*---------------------------------------------------------------------------*/
@@ -404,15 +404,21 @@ class ARCANE_CORE_EXPORT ItemGroupImpl
    */
   bool checkIsSorted() const;
 
+  //! \deprecated Utiliser isContiguousLocalIds() à la place
+  bool isContigousLocalIds() const { return isContiguousLocalIds(); }
+
   //! Indique si les entités du groupe ont des localIds() contigüs.
-  bool isContigousLocalIds() const;
+  bool isContiguousLocalIds() const;
+
+  //! \deprecated Utiliser checkLocalIdsAreContiguous() à la place
+  void checkLocalIdsAreContigous() const { return checkLocalIdsAreContiguous(); }
 
   /*!
    * \brief Vérifie si les entités du groupe ont des localIds() contigüs.
    *
-   * Si c'est le cas, alors \a isContigousLocalIds() retournera \a vrai.
+   * Si c'est le cas, alors \a isContiguousLocalIds() retournera \a vrai.
    */
-  void checkLocalIdsAreContigous() const;
+  void checkLocalIdsAreContiguous() const;
 
   /*!
    * \brief Limite au maximum la mémoire utilisée par le groupe.

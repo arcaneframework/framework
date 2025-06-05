@@ -570,7 +570,7 @@ _view(bool do_padding) const
     return ItemVectorView();
   m_impl->_checkNeedUpdate(do_padding);
   Int32 flags = 0;
-  if (m_impl->isContigousLocalIds())
+  if (m_impl->isContiguousLocalIds())
     flags |= ItemIndexArrayView::F_Contigous;
   // TODO: gérer l'offset
   return ItemVectorView(m_impl->itemFamily(),ItemIndexArrayView(m_impl->itemsLocalId(),0,flags));

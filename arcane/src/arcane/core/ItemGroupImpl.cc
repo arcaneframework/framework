@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemGroupImpl.cc                                            (C) 2000-2024 */
+/* ItemGroupImpl.cc                                            (C) 2000-2025 */
 /*                                                                           */
 /* Implémentation d'un groupe d'entités de maillage.                         */
 /*---------------------------------------------------------------------------*/
@@ -38,7 +38,6 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
 /*!
  * \internal
  * \brief Classe d'un groupe nul.
@@ -49,7 +48,6 @@ class ItemGroupImplNull
  public:
 
   ItemGroupImplNull() : ItemGroupImpl() {}
-  virtual ~ItemGroupImplNull() {} //!< Libére les ressources
 
  public:
 
@@ -59,14 +57,10 @@ class ItemGroupImplNull
 
  public:
 
- public:
-
   virtual void convert(NodeGroup& g) { g = NodeGroup(); }
   virtual void convert(EdgeGroup& g) { g = EdgeGroup(); }
   virtual void convert(FaceGroup& g) { g = FaceGroup(); }
   virtual void convert(CellGroup& g) { g = CellGroup(); }
-
- public:
 
  private:
 
@@ -76,7 +70,7 @@ class ItemGroupImplNull
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ItemGroupImpl* ItemGroupImpl::shared_null= 0;
+ItemGroupImpl* ItemGroupImpl::shared_null = nullptr;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -90,7 +84,7 @@ class ItemGroupImplItemGroupComputeFunctor
 
  public:
 
-  ItemGroupImplItemGroupComputeFunctor(ItemGroupImpl * parent, FuncPtr funcPtr)
+  ItemGroupImplItemGroupComputeFunctor(ItemGroupImpl* parent, FuncPtr funcPtr)
   : ItemGroupComputeFunctor()
   , m_parent(parent)
   , m_function(funcPtr) { }
@@ -1111,7 +1105,13 @@ checkValid()
 bool ItemGroupImpl::
 _checkNeedUpdate(bool do_padding)
 {
-  // En cas de problème sur des recalculs très imbriqués, une proposition est
+  // NOTE: l'utilisation de verrou est pour l'instant expérimentale (juin 2025)
+  // On met le verrou sur toute la méthode pour que ce soit plus simple, mais
+  // on pourrait ne le faire qu'après vérification que la mise à jour
+  // est vraiment utile.
+  ItemGroupInternal::CheckNeedUpdateMutex::ScopedLock lock(m_p->m_check_need_update_mutex);
+
+  // En cas de problème sur des re-calculs très imbriqués, une proposition est
   // de désactiver les lignes #A pour activer les lignes #B
   bool has_recompute = false;
   if (m_p->m_need_recompute) {
@@ -1749,18 +1749,18 @@ _destroySharedNull()
 /*---------------------------------------------------------------------------*/
 
 bool ItemGroupImpl::
-isContigousLocalIds() const
+isContiguousLocalIds() const
 {
-  return m_p->isContigous();
+  return m_p->isContiguous();
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void ItemGroupImpl::
-checkLocalIdsAreContigous() const
+checkLocalIdsAreContiguous() const
 {
-  m_p->checkIsContigous();
+  m_p->checkIsContiguous();
 }
 
 /*---------------------------------------------------------------------------*/

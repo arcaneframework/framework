@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemGroupImplInternal.h                                     (C) 2000-2024 */
+/* ItemGroupImplInternal.h                                     (C) 2000-2025 */
 /*                                                                           */
 /* API interne à Arcane de ItemGroupImpl.                                    */
 /*---------------------------------------------------------------------------*/
@@ -33,7 +33,7 @@ class ARCANE_CORE_EXPORT ItemGroupImplInternal
 {
  public:
 
-  ItemGroupImplInternal(ItemGroupInternal* p)
+  explicit ItemGroupImplInternal(ItemGroupInternal* p)
   : m_p(p)
   {}
 
@@ -49,7 +49,7 @@ class ARCANE_CORE_EXPORT ItemGroupImplInternal
    * \brief Notifie l'instance qu'on a directement modifié la liste des entités du groupe.
    *
    * \a nb_remaining est le nombre d'entités restantes et \a removed_ids la liste
-   * des entitées supprimées.
+   * des entités supprimées.
    */
   void notifyDirectRemoveItems(SmallSpan<const Int32> removed_ids, Int32 nb_remaining);
 
