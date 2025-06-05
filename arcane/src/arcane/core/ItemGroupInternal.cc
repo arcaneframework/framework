@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemGroupInternal.cc                                        (C) 2000-2024 */
+/* ItemGroupInternal.cc                                        (C) 2000-2025 */
 /*                                                                           */
 /* Partie interne à Arcane de ItemGroup.                                     */
 /*---------------------------------------------------------------------------*/
@@ -129,6 +129,10 @@ _init()
     m_is_print_stack_apply_simd_padding = (v.value()>1);
   }
 
+  if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_USE_LOCK_FOR_ITEMGROUP_UPDATE", true)) {
+    if (v.value() > 0)
+      m_check_need_update_mutex.create();
+  }
 }
 
 /*---------------------------------------------------------------------------*/
