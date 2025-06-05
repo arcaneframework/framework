@@ -404,15 +404,21 @@ class ARCANE_CORE_EXPORT ItemGroupImpl
    */
   bool checkIsSorted() const;
 
+  //! \deprecated Utiliser isContiguousLocalIds() à la place
+  bool isContigousLocalIds() const { return isContiguousLocalIds(); }
+
   //! Indique si les entités du groupe ont des localIds() contigüs.
-  bool isContigousLocalIds() const;
+  bool isContiguousLocalIds() const;
+
+  //! \deprecated Utiliser checkLocalIdsAreContiguous() à la place
+  void checkLocalIdsAreContigous() const { return checkLocalIdsAreContiguous(); }
 
   /*!
    * \brief Vérifie si les entités du groupe ont des localIds() contigüs.
    *
-   * Si c'est le cas, alors \a isContigousLocalIds() retournera \a vrai.
+   * Si c'est le cas, alors \a isContiguousLocalIds() retournera \a vrai.
    */
-  void checkLocalIdsAreContigous() const;
+  void checkLocalIdsAreContiguous() const;
 
   /*!
    * \brief Limite au maximum la mémoire utilisée par le groupe.

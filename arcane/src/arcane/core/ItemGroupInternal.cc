@@ -267,12 +267,12 @@ notifyInvalidateObservers()
  * \brief Vérifie que les localIds() sont contigüs.
  */
 void ItemGroupInternal::
-checkIsContigous()
+checkIsContiguous()
 {
-  m_is_contigous = false;
+  m_is_contiguous = false;
   Int32ConstArrayView lids = itemsLocalId();
-  if (lids.empty()){
-    m_is_contigous = false;
+  if (lids.empty()) {
+    m_is_contiguous = false;
     return;
   }
   Int32 first_lid = lids[0];
@@ -285,7 +285,7 @@ checkIsContigous()
     }
   }
   if (!is_bad)
-    m_is_contigous = true;
+    m_is_contiguous = true;
 }
 
 /*---------------------------------------------------------------------------*/

@@ -136,13 +136,13 @@ class ItemGroupInternal
   VariableArrayInt32* variableItemsLocalid() { return m_variable_items_local_id; }
 
   Int64 timestamp() const { return m_timestamp; }
-  bool isContigous() const { return m_is_contigous; }
-  void checkIsContigous();
+  bool isContiguous() const { return m_is_contiguous; }
+  void checkIsContiguous();
 
   void updateTimestamp()
   {
     ++m_timestamp;
-    m_is_contigous = false;
+    m_is_contiguous = false;
   }
 
   void setNeedRecompute()
@@ -249,7 +249,7 @@ class ItemGroupInternal
   UniqueArray<Int32> m_local_buffer{ MemoryUtils::getAllocatorForMostlyReadOnlyData() };
   Array<Int32>* m_items_local_id = &m_local_buffer; //!< Liste des numéros locaux des entités de ce groupe
   VariableArrayInt32* m_variable_items_local_id = nullptr;
-  bool m_is_contigous = false; //! Vrai si les localIds sont consécutifs.
+  bool m_is_contiguous = false; //! Vrai si les localIds sont consécutifs.
   bool m_is_check_simd_padding = true;
   bool m_is_print_check_simd_padding = false;
   bool m_is_print_apply_simd_padding = false;

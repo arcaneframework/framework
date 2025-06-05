@@ -1749,18 +1749,18 @@ _destroySharedNull()
 /*---------------------------------------------------------------------------*/
 
 bool ItemGroupImpl::
-isContigousLocalIds() const
+isContiguousLocalIds() const
 {
-  return m_p->isContigous();
+  return m_p->isContiguous();
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void ItemGroupImpl::
-checkLocalIdsAreContigous() const
+checkLocalIdsAreContiguous() const
 {
-  m_p->checkIsContigous();
+  m_p->checkIsContiguous();
 }
 
 /*---------------------------------------------------------------------------*/
