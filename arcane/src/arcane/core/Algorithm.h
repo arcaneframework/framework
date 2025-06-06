@@ -1,55 +1,47 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Algorithm.h                                                 (C) 2000-2005 */
+/* Algorithm.h                                                 (C) 2000-2025 */
 /*                                                                           */
 /* Algorithmes de la STL.                                                    */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_ALGORITHM_H
-#define ARCANE_ALGORITHM_H
+#ifndef ARCANE_CORE_ALGORITHM_H
+#define ARCANE_CORE_ALGORITHM_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/ArcaneGlobal.h"
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-#ifdef ARCANE_USE_OLD_STL
-#  include <algo.h>
-#  include <algobase.h>
-#else
-#  include <algorithm>
-#endif
+#include <algorithm>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class Container,class Element> inline
+template <class Container, class Element> inline
 typename Container::const_iterator
-container_find(const Container& c,const Element& elem)
+container_find(const Container& c, const Element& elem)
 {
   typedef typename Container::const_iterator const_iterator;
-  const_iterator i = ARCANE_STD::find(c.begin(),c.end(),elem);
+  const_iterator i = ARCANE_STD::find(c.begin(), c.end(), elem);
   return i;
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #endif
-

@@ -76,6 +76,7 @@ class IModule;
 class ISubDomain;
 class IServiceInstance;
 class ServiceBuildInfoBase;
+class ServiceBuildInfo;
 class ServiceProperty;
 class ServiceInstanceRef;
 
@@ -162,6 +163,7 @@ class IDataWriter;
 class VariableComparer;
 class VariableComparerArgs;
 class VariableComparerResults;
+class SubDomainBuildInfo;
 enum class eVariableComparerCompareMode;
 enum class eVariableComparerComputeDifferenceMethod;
 enum class eMeshStructure;

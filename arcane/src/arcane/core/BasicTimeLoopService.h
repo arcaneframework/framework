@@ -1,30 +1,28 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* BasicTimeLoopService.cc                                     (C) 2000-2006 */
+/* BasicTimeLoopService.cc                                     (C) 2000-2025 */
 /*                                                                           */
 /* Classe de base d'un service opérant lors de la boucle en temps.           */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_BASICTIMELOOPSERVICE_H
-#define ARCANE_BASICTIMELOOPSERVICE_H
+#ifndef ARCANE_CORE_BASICTIMELOOPSERVICE_H
+#define ARCANE_CORE_BASICTIMELOOPSERVICE_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/ITimeLoopService.h"
-#include "arcane/BasicService.h"
+#include "arcane/core/ITimeLoopService.h"
+#include "arcane/core/BasicService.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -39,27 +37,27 @@ class BasicTimeLoopService
 {
  public:
 
-  BasicTimeLoopService(const ServiceBuildInfo& sbi)
-  : BasicService(sbi) {}
-  virtual ~BasicTimeLoopService() {}
+  explicit BasicTimeLoopService(const ServiceBuildInfo& sbi)
+  : BasicService(sbi)
+  {}
 
  public:
 
-  virtual void onTimeLoopBeginLoop() {}
-  virtual void onTimeLoopEndLoop() {}
-  virtual void onTimeLoopStartInit() {}
-  virtual void onTimeLoopContinueInit() {}
-  virtual void onTimeLoopExit() {}
-  virtual void onTimeLoopMeshChanged() {}
-  virtual void onTimeLoopRestore() {}
+  void onTimeLoopBeginLoop() override {}
+  void onTimeLoopEndLoop() override {}
+  void onTimeLoopStartInit() override {}
+  void onTimeLoopContinueInit() override {}
+  void onTimeLoopExit() override {}
+  void onTimeLoopMeshChanged() override {}
+  void onTimeLoopRestore() override {}
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif
