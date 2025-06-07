@@ -1,30 +1,28 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* BasicUnitTest.cc                                            (C) 2000-2006 */
+/* BasicUnitTest.cc                                            (C) 2000-2025 */
 /*                                                                           */
 /* Service basique de test unitaire.                                         */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_BASICUNITTEST_H
-#define ARCANE_BASICUNITTEST_H
+#ifndef ARCANE_CORE_BASICUNITTEST_H
+#define ARCANE_CORE_BASICUNITTEST_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/IUnitTest.h"
-#include "arcane/BasicService.h"
+#include "arcane/core/IUnitTest.h"
+#include "arcane/core/BasicService.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -38,21 +36,22 @@ class ARCANE_CORE_EXPORT BasicUnitTest
 {
  public:
 
-  BasicUnitTest(const ServiceBuildInfo& sbi);
-  virtual ~BasicUnitTest();
+  explicit BasicUnitTest(const ServiceBuildInfo& sbi);
+  ~BasicUnitTest() override;
 
  public:
-  virtual void initializeTest();
-  virtual void executeTest();
-  virtual void finalizeTest();
+
+  void initializeTest() override;
+  void executeTest() override;
+  void finalizeTest() override;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

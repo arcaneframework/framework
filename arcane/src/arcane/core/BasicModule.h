@@ -1,39 +1,35 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* BasicModule.h                                               (C) 2000-2006 */
+/* BasicModule.h                                               (C) 2000-2025 */
 /*                                                                           */
 /* Module basique avec informations de maillage.                             */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_BASICMODULE_H
-#define ARCANE_BASICMODULE_H
+#ifndef ARCANE_CORE_BASICMODULE_H
+#define ARCANE_CORE_BASICMODULE_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/AbstractModule.h"
-#include "arcane/MeshAccessor.h"
-#include "arcane/CommonVariables.h"
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ARCANE_BEGIN_NAMESPACE
+#include "arcane/core/AbstractModule.h"
+#include "arcane/core/MeshAccessor.h"
+#include "arcane/core/CommonVariables.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class IMesh;
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Module basique.
- *
  * \ingroup Module
+ *
+ * \brief Module basique.
  *
  * Classe de base d'un module permettant de récupérer aisément les informations
  * de maillages (IMesh) et les variables standards (CommonVariables).
@@ -46,21 +42,20 @@ class ARCANE_CORE_EXPORT BasicModule
  protected:
 
   //! Constructeur à partir d'un \a ModuleBuildInfo
-  BasicModule(const ModuleBuildInfo&);
+  explicit BasicModule(const ModuleBuildInfo&);
 
  public:
-	
+
   //! Destructeur
-  virtual ~BasicModule();
+  ~BasicModule() override;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif
