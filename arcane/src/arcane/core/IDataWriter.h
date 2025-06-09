@@ -1,31 +1,26 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IDataWriter.h                                               (C) 2000-2007 */
+/* IDataWriter.h                                               (C) 2000-2025 */
 /*                                                                           */
 /* Interface d'écriture des données d'une variable.                          */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_IDATAWRITER_H
-#define ARCANE_IDATAWRITER_H
+#ifndef ARCANE_CORE_IDATAWRITER_H
+#define ARCANE_CORE_IDATAWRITER_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/ArcaneTypes.h"
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ARCANE_BEGIN_NAMESPACE
+#include "arcane/core/ArcaneTypes.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class IVariable;
-class IData;
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -45,35 +40,33 @@ class IData;
  \a vars contient la liste des variables qui vont être sauvées
   \sa IDataReader
  */
-class IDataWriter
+class ARCANE_CORE_EXPORT IDataWriter
 {
  public:
 
   //! Libère les ressources
-  virtual ~IDataWriter() {}
+  virtual ~IDataWriter() = default;
 
  public:
-  
-  virtual void beginWrite(const VariableCollection& vars) =0;
-  virtual void endWrite() =0;
+
+  virtual void beginWrite(const VariableCollection& vars) = 0;
+  virtual void endWrite() = 0;
 
  public:
 
   //! Positionne les infos des méta-données
-  virtual void setMetaData(const String& meta_data) =0;
+  virtual void setMetaData(const String& meta_data) = 0;
 
  public:
 
   //! Ecrit les données \a data de la variable \a var
-  virtual void write(IVariable* var,IData* data) =0;
-
- private:
+  virtual void write(IVariable* var, IData* data) = 0;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

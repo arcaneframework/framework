@@ -1,26 +1,28 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Directory.h                                                 (C) 2000-2016 */
+/* Directory.h                                                 (C) 2000-2025 */
 /*                                                                           */
 /* Gestion d'un répertoire.                                                  */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_DIRECTORY_H
-#define ARCANE_DIRECTORY_H
+#ifndef ARCANE_CORE_DIRECTORY_H
+#define ARCANE_CORE_DIRECTORY_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/IDirectory.h"
 #include "arcane/utils/String.h"
 
+#include "arcane/core/IDirectory.h"
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -33,23 +35,22 @@ class ARCANE_CORE_EXPORT Directory
 {
  public:
 
-  Directory();
+  Directory() = default;
   explicit Directory(const String& path);
   Directory(const Directory& directory);
-  Directory(const IDirectory& directory,const String& sub_path);
+  Directory(const IDirectory& directory, const String& sub_path);
   Directory(const IDirectory& directory);
-  virtual ~Directory(); //!< Libère les ressources
-
-  public:
-  
-  const Directory& operator=(const IDirectory& from);
-  const Directory& operator=(const Directory& from);
 
  public:
-	
-  virtual bool createDirectory() const;
-  virtual String path() const;
-  virtual String file(const String& file_name) const;
+
+  Directory& operator=(const IDirectory& from);
+  Directory& operator=(const Directory& from);
+
+ public:
+
+  bool createDirectory() const override;
+  String path() const override;
+  String file(const String& file_name) const override;
 
  private:
 
@@ -59,7 +60,7 @@ class ARCANE_CORE_EXPORT Directory
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

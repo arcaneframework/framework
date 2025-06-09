@@ -1,28 +1,26 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IBackwardMng.h                                              (C) 2000-2016 */
+/* IBackwardMng.h                                              (C) 2000-2025 */
 /*                                                                           */
 /* Interface gérant les stratégies de retour-arrière.                        */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_IBACKWARDMNG_H
-#define ARCANE_IBACKWARDMNG_H
+#ifndef ARCANE_CORE_IBACKWARDMNG_H
+#define ARCANE_CORE_IBACKWARDMNG_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/ArcaneTypes.h"
+#include "arcane/core/ArcaneTypes.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -40,7 +38,8 @@ ARCANE_BEGIN_NAMESPACE
  *
  * L'enchainement des opérations, effectué à la fin de chaque itération,
  * est géré par l'instance de ITimeLoopMng. Il est comme suit:
- \code
+ *
+ * \code
  * IBackwardMng bw = ...;
  * bw->beginAction();
  * if (bw->checkAndApplyRestore()){
@@ -48,8 +47,7 @@ ARCANE_BEGIN_NAMESPACE
  * }
  * bw->checkAndApplySave();
  * bw->endAction();
- \endcode
- *
+ * \endcode
  */
 class ARCANE_CORE_EXPORT IBackwardMng
 {
@@ -59,14 +57,14 @@ class ARCANE_CORE_EXPORT IBackwardMng
   enum eAction
   {
     //! Sauvegarde
-    Save ,
+    Save,
     //! Restauration
     Restore
   };
 
  public:
 
-  virtual ~IBackwardMng() {}
+  virtual ~IBackwardMng() = default;
 
  public:
 
@@ -87,7 +85,7 @@ class ARCANE_CORE_EXPORT IBackwardMng
    * Si \a is_forced est vrai, force la sauvegarde.
    * \retval true si une sauvegarde est effectuée.
    */
-  virtual bool checkAndApplySave(bool is_forced) =0;
+  virtual bool checkAndApplySave(bool is_forced) = 0;
 
   //! Indique que les actions de sauvegarde/restauration sont terminées
   virtual void endAction() = 0;
@@ -113,7 +111,7 @@ class ARCANE_CORE_EXPORT IBackwardMng
   virtual void goBackward() = 0;
 
   /*!
-   * \brief Indique si les sauvegardes de retour-arrière sont vérouillées.
+   * \brief Indique si les sauvegardes de retour-arrière sont verrouillées.
    *
    * isLocked() est vrai s'il n'est pas possible de faire une
    * sauvegarde. C'est le cas par exemple lorsqu'on a effectué à l'itération
@@ -142,7 +140,7 @@ class ARCANE_CORE_EXPORT IBackwardMng
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
