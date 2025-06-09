@@ -186,9 +186,6 @@ set(ARCANE_ORIGINAL_SOURCES
   IDeflateService.h
   IDirectSubDomainExecuteFunctor.h
   IDoFFamily.h
-  IDumpR.h
-  IDumpRW.h
-  IDumpW.h
   IEntryPointMng.h
   IExtraGhostCellsBuilder.h
   IExtraGhostItemsBuilder.h
