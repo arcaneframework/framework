@@ -1,26 +1,26 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IExtraGhostItemsBuilder.h                                   (C) 2000-2015 */
+/* IExtraGhostItemsBuilder.h                                   (C) 2000-2025 */
 /*                                                                           */
 /* Comment on file content.                                                  */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_IEXTRAGHOSTITEMSBUILDER_H_
-#define ARCANE_IEXTRAGHOSTITEMSBUILDER_H_
+#ifndef ARCANE_CORE_IEXTRAGHOSTITEMSBUILDER_H_
+#define ARCANE_CORE_IEXTRAGHOSTITEMSBUILDER_H_
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/ArcaneGlobal.h"
-#include "arcane/ArcaneTypes.h"
+#include "arcane/core/ArcaneTypes.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -36,41 +36,34 @@ ARCANE_BEGIN_NAMESPACE
  * NB : rend obsolète le paramètre remove_old_ghost de la méthode endUpdate de IMesh
  *
  */
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-class IExtraGhostItemsBuilder
+class ARCANE_CORE_EXPORT IExtraGhostItemsBuilder
 {
-public:
-
-  /** Constructeur de la classe */
-  IExtraGhostItemsBuilder() {}
+ public:
 
   /** Destructeur de la classe */
-  virtual ~IExtraGhostItemsBuilder() {}
+  virtual ~IExtraGhostItemsBuilder() = default;
 
-public:
+ public:
 
   /*!
    * \brief Calcul des items "extraordinaires" à envoyer
    * Effectue le calcul des items "extraordinaires" suivant
    * un algorithme de construction
    */
-  virtual void computeExtraItemsToSend() =0;
+  virtual void computeExtraItemsToSend() = 0;
 
   /*!
    * \brief Indices locaux des items "extraordinaires" pour envoi
    * Récupère le tableau des items "extraordinaires" à destination
    * du sous-domaine \a sid
    */
-  virtual IntegerConstArrayView extraItemsToSend(Int32 sid) const =0;
+  virtual ConstArrayView<Int32> extraItemsToSend(Int32 sid) const = 0;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

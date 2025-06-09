@@ -1,56 +1,49 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IDataReaderWriter.h                                         (C) 2000-2009 */
+/* IDataReaderWriter.h                                         (C) 2000-2025 */
 /*                                                                           */
-/* Interface de lecture/ecriture des données d'une variable.                 */
+/* Interface de lecture/écriture des données d'une variable.                 */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_IDATAREADERWRITER_H
-#define ARCANE_IDATAREADERWRITER_H
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-#include "arcane/IDataReader.h"
-#include "arcane/IDataWriter.h"
-
+#ifndef ARCANE_CORE_IDATAREADERWRITER_H
+#define ARCANE_CORE_IDATAREADERWRITER_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+#include "arcane/core/IDataReader.h"
+#include "arcane/core/IDataWriter.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class IVariable;
-class IData;
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
  * \ingroup IO
- \brief Interface de lecture/ecriture des données d'une variable.
-
-  \sa IDataWriter, IDataReader
+ * \brief Interface de lecture/écriture des données d'une variable.
+ *
+ * \sa IDataWriter, IDataReader
  */
-class IDataReaderWriter
+class ARCANE_CORE_EXPORT IDataReaderWriter
 : public IDataReader
 , public IDataWriter
 {
  public:
 
   virtual void free() = 0;
-
- private:
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

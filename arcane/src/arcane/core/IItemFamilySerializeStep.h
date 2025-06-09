@@ -1,31 +1,26 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IItemFamilySerializeStep.h                                  (C) 2000-2016 */
+/* IItemFamilySerializeStep.h                                  (C) 2000-2025 */
 /*                                                                           */
 /* Interface d'une étape de la sérialisation des familles d'entités.         */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_IITEMFAMILYSERIALIZESTEP_H
-#define ARCANE_IITEMFAMILYSERIALIZESTEP_H
+#ifndef ARCANE_CORE_IITEMFAMILYSERIALIZESTEP_H
+#define ARCANE_CORE_IITEMFAMILYSERIALIZESTEP_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/ArrayView.h"
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ARCANE_BEGIN_NAMESPACE
+#include "arcane/core/ArcaneTypes.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class IItemFamily;
-class ItemFamilySerializeArgs;
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -39,7 +34,7 @@ class ItemFamilySerializeArgs;
  * Le pseudo-code d'appel est le suivant:
  \code
  * IItemFamilyExchanger* exchanger = ...;
- * IItemFamilySerialeizeStep* step = ...;
+ * IItemFamilySerializeStep* step = ...;
  * exchanger->computeExchangeInfos();
  * step->initialize();
  * // Some exchanger action
@@ -78,6 +73,7 @@ class ItemFamilySerializeArgs;
 class ARCANE_CORE_EXPORT IItemFamilySerializeStep
 {
  public:
+
   //! Phase de la sérialisation
   enum ePhase
   {
@@ -97,31 +93,41 @@ class ARCANE_CORE_EXPORT IItemFamilySerializeStep
     //! Fin de la réception des données.
     AC_EndReceive,
   };
+
  public:
+
   class NotifyActionArgs
   {
    public:
-    NotifyActionArgs(eAction aaction,Integer nb_message)
-    : m_action(aaction), m_nb_message(nb_message){}
+
+    NotifyActionArgs(eAction aaction, Integer nb_message)
+    : m_action(aaction)
+    , m_nb_message(nb_message)
+    {}
+
    public:
+
     eAction action() const { return m_action; }
     //! Nombre de messages de sérialisation
     Integer nbMessage() const { return m_nb_message; }
+
    private:
+
     eAction m_action;
     Integer m_nb_message;
   };
+
  public:
-  
-  virtual ~IItemFamilySerializeStep(){}
-  
+
+  virtual ~IItemFamilySerializeStep() = default;
+
  public:
 
   //! Initialise l'instance avant le début des échanges.
-  virtual void initialize() =0;
+  virtual void initialize() = 0;
 
   //! Notifie l'instance qu'on entre dans une certaine phase de l'échange.
-  virtual void notifyAction(const NotifyActionArgs& args) =0;
+  virtual void notifyAction(const NotifyActionArgs& args) = 0;
 
   /*!
    * \brief Sérialise dans/depuis \a buf.
@@ -134,16 +140,16 @@ class ARCANE_CORE_EXPORT IItemFamilySerializeStep
    * rang \a rank(). En désérialisation, il s'agit des indices locaux
    * recues par le rang \a rank().
    */
-  virtual void serialize(const ItemFamilySerializeArgs& args) =0;
+  virtual void serialize(const ItemFamilySerializeArgs& args) = 0;
 
   //! Effectue les traitements de fin d'échange.
-  virtual void finalize() =0;
+  virtual void finalize() = 0;
 
   //! Phase de la sérialisation où cette instance intervient.
-  virtual ePhase phase() const =0;
+  virtual ePhase phase() const = 0;
 
   //! Famille associée
-  virtual IItemFamily* family() const =0;
+  virtual IItemFamily* family() const = 0;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -155,9 +161,9 @@ class ARCANE_CORE_EXPORT IItemFamilySerializeStep
 class ARCANE_CORE_EXPORT IItemFamilySerializeStepFactory
 {
  public:
-  
-  virtual ~IItemFamilySerializeStepFactory(){}
-  
+
+  virtual ~IItemFamilySerializeStepFactory() = default;
+
  public:
 
   /*!
@@ -166,13 +172,13 @@ class ARCANE_CORE_EXPORT IItemFamilySerializeStepFactory
    * Peut retourner nullptr auquel cas aucune étape n'est ajoutée pour cette
    * fabrique.
    */
-  virtual IItemFamilySerializeStep* createStep(IItemFamily* family) =0;
+  virtual IItemFamilySerializeStep* createStep(IItemFamily* family) = 0;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

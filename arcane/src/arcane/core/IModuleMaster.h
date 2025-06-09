@@ -1,35 +1,26 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IModuleMaster.h                                             (C) 2000-2012 */
+/* IModuleMaster.h                                             (C) 2000-2025 */
 /*                                                                           */
 /* Interface du module Maître.                                               */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_IMODULEMASTER_H
-#define ARCANE_IMODULEMASTER_H
+#ifndef ARCANE_CORE_IMODULEMASTER_H
+#define ARCANE_CORE_IMODULEMASTER_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/ArcaneTypes.h"
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ARCANE_BEGIN_NAMESPACE
+#include "arcane/core/ArcaneTypes.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class CaseOptionsMain;
-class ModuleBuildInfo;
-class IModuleMaster;
-class IModule;
-class CommonVariables;
-class ITimeLoopService;
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -46,7 +37,7 @@ class ARCANE_CORE_EXPORT IModuleMaster
 
   //! Destructeur.
   /*! Libère les ressources */
-  virtual ~IModuleMaster(){}
+  virtual ~IModuleMaster() {}
 
  public:
 
@@ -57,17 +48,17 @@ class ARCANE_CORE_EXPORT IModuleMaster
  public:
 
   //! Retourne les options de ce module
-  virtual CaseOptionsMain* caseoptions() =0;
+  virtual CaseOptionsMain* caseoptions() = 0;
 
   //! Conversion en module standard
   /*! Le succès de la conversion est liée à l'implémentation de \a IModuleMaster en tant que \a IModule */
-  virtual IModule* toModule() =0;
+  virtual IModule* toModule() = 0;
 
   //! Accès aux variables 'communes' partagés entre tout service et module
-  virtual CommonVariables* commonVariables() =0;
+  virtual CommonVariables* commonVariables() = 0;
 
   //! Ajoute le service de boucle en temps
-  virtual void addTimeLoopService(ITimeLoopService* tls) =0;
+  virtual void addTimeLoopService(ITimeLoopService* tls) = 0;
 
   /*!
    * \brief Sort les courbes classiques.
@@ -77,13 +68,13 @@ class ARCANE_CORE_EXPORT IModuleMaster
    * courante. Par défaut, si cette fonction n'est pas appelée, les
    * sorties se font à la fin de l'itération.
    */
-  virtual void dumpStandardCurves() =0;
+  virtual void dumpStandardCurves() = 0;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

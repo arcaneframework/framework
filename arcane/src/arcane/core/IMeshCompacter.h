@@ -1,39 +1,33 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IMeshCompacter.h                                            (C) 2000-2016 */
+/* IMeshCompacter.h                                            (C) 2000-2025 */
 /*                                                                           */
 /* Gestion d'un compactage de familles du maillage.                          */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_IMESHCOMPACTER_H
-#define ARCANE_IMESHCOMPACTER_H
+#ifndef ARCANE_CORE_IMESHCOMPACTER_H
+#define ARCANE_CORE_IMESHCOMPACTER_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/ArcaneTypes.h"
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ARCANE_BEGIN_NAMESPACE
+#include "arcane/core/ArcaneTypes.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class IMesh;
-class IItemFamily;
-class ItemFamilyCompactInfos;
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
  * \brief Gestion d'un compactage de familles du maillage.
  *
- * Les instances de cette classe sont créée via le gestionnnaire
+ * Les instances de cette classe sont créée via le gestionnaire
  * IMeshCompactMng. Un seul compactage peut avoir lieu à la fois.
  *
  * Par compactage, on entend toute modification de la numérotation locale
@@ -45,7 +39,7 @@ class ItemFamilyCompactInfos;
  * une seule famille. La méthode families() permet de retourner la
  * liste des familles compactées.
  *
- * Même si une famille n'est pas compactée directement elle participe à
+ * Même si une famille n'est pas compactée directement, elle participe à
  * certaines opérations du compactage car elle peut faire référence à des
  * entités compactées.
  *
@@ -69,7 +63,7 @@ class ItemFamilyCompactInfos;
  * C'est la méthode recommandé pour effectuer un compactage. Le code suivant
  * montre comment effectuer un compactage sur toutes les familles:
  *
- \code
+ * \code
  *
  * IMeshCompactMng* compact_mng = mesh()->_compactMng();
  * IMeshCompacter* compacter = compact_mng->beginCompact();
@@ -83,11 +77,12 @@ class ItemFamilyCompactInfos;
  * }
  * compact_mng->endCompact();
  *
- \endcode
+ * \endcode
  */
 class ARCANE_CORE_EXPORT IMeshCompacter
 {
  public:
+
   //! Indique les différentes phases du compactage
   enum class ePhase
   {
@@ -99,23 +94,24 @@ class ARCANE_CORE_EXPORT IMeshCompacter
     Finalize,
     Ended
   };
+
  public:
 
-  virtual ~IMeshCompacter() {} //<! Libère les ressources
+  virtual ~IMeshCompacter() = default; //!< Libère les ressources
 
  public:
 
   //! Exécute successivement toutes les actions de compactage.
-  virtual void doAllActions() =0;
+  virtual void doAllActions() = 0;
 
-  virtual void beginCompact() =0;
-  virtual void compactVariablesAndGroups() =0;
-  virtual void updateInternalReferences() =0;
-  virtual void endCompact() =0;
-  virtual void finalizeCompact() =0;
+  virtual void beginCompact() = 0;
+  virtual void compactVariablesAndGroups() = 0;
+  virtual void updateInternalReferences() = 0;
+  virtual void endCompact() = 0;
+  virtual void finalizeCompact() = 0;
 
   //! Maillage associé à ce compacter.
-  virtual IMesh* mesh() const =0;
+  virtual IMesh* mesh() const = 0;
 
   /*!
    * \brief Informations de compactage pour la famille \a family.
@@ -123,31 +119,31 @@ class ARCANE_CORE_EXPORT IMeshCompacter
    * Le pointeur retourné peut être nul si la famille spécifiée ne fait
    * pas partie des familles compactées.
    */
-  virtual const ItemFamilyCompactInfos* findCompactInfos(IItemFamily* family) const =0;
+  virtual const ItemFamilyCompactInfos* findCompactInfos(IItemFamily* family) const = 0;
 
   //! Phase de l'échange dans laquelle on se trouve.
-  virtual ePhase phase() const =0;
+  virtual ePhase phase() const = 0;
 
   /*!
    * \brief Indique s'il faut trier les entités lors du compactage.
    * \pre phase()==ePhase::Init.
    */
-  virtual void setSorted(bool v) =0;
+  virtual void setSorted(bool v) = 0;
 
   //! Indique si souhaite trier les entités en plus de les compacter.
-  virtual bool isSorted() const =0;
+  virtual bool isSorted() const = 0;
 
   //! Familles dont les entités sont compactées.
-  virtual ItemFamilyCollection families() const =0;
+  virtual ItemFamilyCollection families() const = 0;
 
   //! \internal
-  virtual void _setCompactVariablesAndGroups(bool v) =0;
+  virtual void _setCompactVariablesAndGroups(bool v) = 0;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

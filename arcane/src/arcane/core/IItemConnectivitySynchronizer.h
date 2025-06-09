@@ -1,30 +1,26 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IItemConnectivitySynchronizer.h                             (C) 2000-2015 */
+/* IItemConnectivitySynchronizer.h                             (C) 2000-2025 */
 /*                                                                           */
 /* Interface de synchronisation de la connectivité des entités.              */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_IITEMCONNECTIVITYSYNCHRONIZER_H
-#define ARCANE_IITEMCONNECTIVITYSYNCHRONIZER_H
+#ifndef ARCANE_CORE_IITEMCONNECTIVITYSYNCHRONIZER_H
+#define ARCANE_CORE_IITEMCONNECTIVITYSYNCHRONIZER_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/ArcaneGlobal.h"
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ARCANE_BEGIN_NAMESPACE
+#include "arcane/core/ArcaneTypes.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class IItemConnectivity;
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -34,7 +30,7 @@ class ARCANE_CORE_EXPORT IItemConnectivitySynchronizer
  public:
 
   /** Destructeur de la classe */
-  virtual ~IItemConnectivitySynchronizer() {}
+  virtual ~IItemConnectivitySynchronizer() = default;
 
  public:
 
@@ -46,7 +42,7 @@ class ARCANE_CORE_EXPORT IItemConnectivitySynchronizer
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -76,6 +76,7 @@ class ISingletonServiceInstance;
 class IModule;
 class ISubDomain;
 class IServiceInstance;
+class ModuleBuildInfo;
 class ServiceBuildInfoBase;
 class ServiceBuildInfo;
 class ServiceProperty;
@@ -106,14 +107,20 @@ class ServiceAllInterfaceRegisterer;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+class CaseOptionsMain;
 class CheckpointInfo;
 class CheckpointReadInfo;
+class CommonVariables;
+class ConnectivityItemVector;
+class FileContent;
 class ICheckpointReader;
 class ICheckpointWriter;
 class IVariableMng;
 class IMeshFactoryMng;
 class IMeshMng;
 class IMesh;
+class IMeshCompacter;
+class IMeshExchanger;
 class IMeshInternal;
 class IMeshBase;
 class IUserDataList;
@@ -134,6 +141,7 @@ class IIndexedIncrementalItemConnectivity;
 class IMeshInitialAllocator;
 class UnstructuredMeshAllocateBuildInfo;
 class CartesianMeshAllocateBuildInfo;
+class IConfiguration;
 class IIncrementalItemConnectivity;
 class IIncrementalItemConnectivityInternal;
 class IIncrementalItemTargetConnectivity;
@@ -158,6 +166,8 @@ class IThreadMng;
 class ItemUniqueId;
 class IItemConnectivityInfo;
 class IItemConnectivity;
+class IItemConnectivitySynchronizer;
+class IItemConnectivityGhostPolicy;
 class IItemInternalSortFunction;
 class IItemConnectivityMng;
 class Properties;
@@ -166,14 +176,31 @@ class IItemFamilyPolicyMng;
 class IDataReader;
 class IDataReader2;
 class IDataWriter;
+class IXmlDocumentHolder;
 class VariableComparer;
 class VariableComparerArgs;
 class VariableComparerResults;
 class SubDomainBuildInfo;
+class XmlNode;
+class TimeLoopEntryPointInfo;
+class TimeLoopSingletonServiceInfo;
+class Timer;
 enum class eVariableComparerCompareMode;
 enum class eVariableComparerComputeDifferenceMethod;
 enum class eMeshStructure;
 enum class eMeshAMRKind;
+using  TimeLoopEntryPointInfoCollection = Collection<TimeLoopEntryPointInfo>;
+using TimeLoopSingletonServiceInfoCollection = Collection<TimeLoopSingletonServiceInfo>;
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+// Les classes suivantes ne doivent pas être déclarées pour SWIG car ce
+// fichier est inclus par SWIG et la déclaration modifie la manière dont
+// certaines classes sont générées ce qui conduit à des erreurs
+#ifndef SWIG
+class ItemVectorView;
+#endif
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -441,6 +468,11 @@ class MeshMDVariableRefT;
 class CollectionBase;
 class IItemFamily;
 class IItemFamilyInternal;
+class IItemFamilyCompactPolicy;
+class IItemFamilyExchanger;
+class IItemFamilySerializer;
+class IItemFamilySerializeStepFactory;
+class ItemFamilySerializeArgs;
 class IMesh;
 class IMeshPartitioner;
 class IMeshPartitionerBase;
@@ -451,6 +483,7 @@ class IModuleFactoryInfo;
 class IServiceInstance;
 class IEntryPoint;
 class ITimeLoop;
+class ITimeLoopService;
 class IVariable;
 class IVariableInternal;
 class VariableRef;
