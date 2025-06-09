@@ -69,6 +69,7 @@ class ITimeStats;
 /*---------------------------------------------------------------------------*/
 
 class IService;
+class IServiceMng;
 class IServiceInfo;
 class IServiceInstance;
 class ISingletonServiceInstance;
@@ -105,6 +106,10 @@ class ServiceAllInterfaceRegisterer;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+class CheckpointInfo;
+class CheckpointReadInfo;
+class ICheckpointReader;
+class ICheckpointWriter;
 class IVariableMng;
 class IMeshFactoryMng;
 class IMeshMng;
@@ -159,6 +164,7 @@ class Properties;
 class IItemFamilyTopologyModifier;
 class IItemFamilyPolicyMng;
 class IDataReader;
+class IDataReader2;
 class IDataWriter;
 class VariableComparer;
 class VariableComparerArgs;
@@ -450,6 +456,14 @@ class IVariableInternal;
 class VariableRef;
 class Item;
 class CaseOptionBuildInfo;
+class CaseOptionEnum;
+class CaseOptionExtended;
+class CaseOptionMultiSimple;
+class CaseOptionServiceImpl;
+class CaseOptionSimple;
+class CaseOptionMultiEnum;
+class CaseOptionMultiExtended;
+class CaseOptionMultiServiceImpl;
 class ICaseOptions;
 class ICaseFunction;
 class ICaseDocument;

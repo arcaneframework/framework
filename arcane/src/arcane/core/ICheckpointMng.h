@@ -1,33 +1,30 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ICheckpointMng.h                                            (C) 2000-2018 */
+/* ICheckpointMng.h                                            (C) 2000-2025 */
 /*                                                                           */
 /* Interface du gestionnaire des informations des protections.               */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_ICHECKPOINTMNG_H
-#define ARCANE_ICHECKPOINTMNG_H
+#ifndef ARCANE_CORE_ICHECKPOINTMNG_H
+#define ARCANE_CORE_ICHECKPOINTMNG_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/ArcaneTypes.h"
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ARCANE_BEGIN_NAMESPACE
+#include "arcane/core/ArcaneTypes.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class ICheckpointWriter;
-class ICheckpointReader;
-class IObservable;
-class CheckpointInfo;
+namespace Arcane
+{
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -42,11 +39,11 @@ class CheckpointInfo;
  * La lecture d'une protection provoque la modification de toutes les variables
  * et des maillages.
  */
-class ICheckpointMng
+class ARCANE_CORE_EXPORT ICheckpointMng
 {
  public:
 
-  virtual ~ICheckpointMng() {} //!< Libère les ressources.
+  virtual ~ICheckpointMng() = default; //!< Libère les ressources.
 
  public:
 
@@ -57,14 +54,14 @@ class ICheckpointMng
    *
    * \deprecated Utiliser readDefaultCheckpoint() à la place
    */
-  ARCANE_DEPRECATED_122 virtual void readCheckpoint() =0;
+  ARCANE_DEPRECATED_122 virtual void readCheckpoint() = 0;
 
   /*!
    * \brief Lit une protection.
    *
    * Lit une protection à partir du lecture \a reader.
    */
-  virtual void readCheckpoint(ICheckpointReader* reader) =0;
+  virtual void readCheckpoint(ICheckpointReader* reader) = 0;
 
   /*!
    * \brief Lit une protection.
@@ -79,7 +76,7 @@ class ICheckpointMng
    * cm->readChekpoint(checkpoint_info);
    * \endcode
    */
-  virtual ARCANE_DEPRECATED_2018 void readCheckpoint(ByteConstArrayView infos) =0;
+  virtual ARCANE_DEPRECATED_2018 void readCheckpoint(ByteConstArrayView infos) = 0;
 
   /*!
    * \brief Lit les informations d'une protection.
@@ -87,14 +84,14 @@ class ICheckpointMng
    * Lit les informations d'une protection contenant dans le buffer \a infos.
    * \a buf_name contient le nom du buffer utilisé dans les affichages en cas d'erreur.
    */
-  virtual CheckpointInfo readCheckpointInfo(Span<const Byte> infos,const String& buf_name) =0;
+  virtual CheckpointInfo readCheckpointInfo(Span<const Byte> infos, const String& buf_name) = 0;
 
   /*!
    * \brief Lit une protection.
    *
    * Lit une protection dont les infos sont dans \a checkpoint_infos.
    */
-  virtual void readCheckpoint(const CheckpointInfo& checkpoint_info) =0;
+  virtual void readCheckpoint(const CheckpointInfo& checkpoint_info) = 0;
 
   /*!
    * \brief Lit une protection par défaut
@@ -112,7 +109,7 @@ class ICheckpointMng
    * cm->readChekpoint(checkpoint_info);
    * \endcode
    */
-  virtual ARCANE_DEPRECATED_2018 void readDefaultCheckpoint() =0;
+  virtual ARCANE_DEPRECATED_2018 void readDefaultCheckpoint() = 0;
 
   /*!
    * \brief Lit les informations de protection par défaut.
@@ -126,7 +123,7 @@ class ICheckpointMng
    * Après lecture des informations, il est possible d'appeler
    * readCheckpoint(const CheckpointInfo& checkpoint_info) pour lire la protection.
    */
-  virtual CheckpointInfo readDefaultCheckpointInfo() =0;
+  virtual CheckpointInfo readDefaultCheckpointInfo() = 0;
 
   /*!
    * \brief Écrit une protection par défaut avec l'écrivain \a writer.
@@ -135,7 +132,7 @@ class ICheckpointMng
    *
    * \deprecated Utiliser writeDefaultCheckpoint() à la place.
    */
-  ARCANE_DEPRECATED_122 virtual void writeCheckpoint(ICheckpointWriter* writer) =0;
+  ARCANE_DEPRECATED_122 virtual void writeCheckpoint(ICheckpointWriter* writer) = 0;
 
   /*!
    * \brief Écrit une protection avec l'écrivain \a writer.
@@ -149,7 +146,7 @@ class ICheckpointMng
    * L'implémentation par défaut stocke dans infos un fichier XML contenant en autre
    * le nom du lecteur correspondant, le nombre de sous-domaines, ...
    */
-  virtual void writeCheckpoint(ICheckpointWriter* writer,ByteArray& infos) =0;
+  virtual void writeCheckpoint(ICheckpointWriter* writer, ByteArray& infos) = 0;
 
   /*!
    * \brief Écrit une protection avec l'écrivain \a writer.
@@ -160,7 +157,7 @@ class ICheckpointMng
    *
    * \sa readDefaultCheckpoint
    */
-  virtual void writeDefaultCheckpoint(ICheckpointWriter* writer) =0;
+  virtual void writeDefaultCheckpoint(ICheckpointWriter* writer) = 0;
 
   /*!
    * \brief Observable en écriture.
@@ -168,7 +165,7 @@ class ICheckpointMng
    * Les observateurs enregistrés dans cet observable sont appelés
    * avant d'écrire une protection.
    */
-  virtual IObservable* writeObservable() =0;
+  virtual IObservable* writeObservable() = 0;
 
   /*!
    * \brief Observable en lecture.
@@ -176,15 +173,13 @@ class ICheckpointMng
    * Les observateurs enregistrés dans cet observable sont appelés
    * après relecture complète d'une protection.
    */
-  virtual IObservable* readObservable() =0;
-
- public:
+  virtual IObservable* readObservable() = 0;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

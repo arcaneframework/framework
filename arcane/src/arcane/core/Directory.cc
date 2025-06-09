@@ -1,35 +1,33 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Directory.cc                                                (C) 2000-2010 */
+/* Directory.cc                                                (C) 2000-2025 */
 /*                                                                           */
 /* Gestion d'un répertoire.                                                  */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/ArcanePrecomp.h"
-
 #include "arcane/utils/String.h"
 #include "arcane/utils/StringBuilder.h"
-#include "arcane/utils/Iostream.h"
 #include "arcane/utils/PlatformUtils.h"
 
-#include "arcane/Directory.h"
+#include "arcane/core/Directory.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 static String
-_appendFile(const String& directory,const String& file)
+_appendFile(const String& directory, const String& file)
 {
   StringBuilder out_str(directory);
 #ifdef ARCANE_OS_WIN32
@@ -45,14 +43,6 @@ _appendFile(const String& directory,const String& file)
 /*---------------------------------------------------------------------------*/
 
 Directory::
-Directory()
-{
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-Directory::
 Directory(const String& path)
 : m_directory_path(path)
 {
@@ -62,8 +52,8 @@ Directory(const String& path)
 /*---------------------------------------------------------------------------*/
 
 Directory::
-Directory(const IDirectory& directory,const String& sub_path)
-: m_directory_path(_appendFile(directory.path(),sub_path))
+Directory(const IDirectory& directory, const String& sub_path)
+: m_directory_path(_appendFile(directory.path(), sub_path))
 {
 }
 
@@ -88,15 +78,7 @@ Directory(const Directory& directory)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Directory::
-~Directory()
-{
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-const Directory& Directory::
+Directory& Directory::
 operator=(const IDirectory& from)
 {
   m_directory_path = from.path();
@@ -106,7 +88,7 @@ operator=(const IDirectory& from)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-const Directory& Directory::
+Directory& Directory::
 operator=(const Directory& from)
 {
   m_directory_path = from.m_directory_path;
@@ -137,13 +119,13 @@ path() const
 String Directory::
 file(const String& file_name) const
 {
-  return _appendFile(path(),file_name);
+  return _appendFile(path(), file_name);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

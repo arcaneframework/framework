@@ -1,16 +1,16 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* DomDeclaration.h                                            (C) 2000-2016 */
+/* DomDeclaration.h                                            (C) 2000-2025 */
 /*                                                                           */
 /* Déclarations du DOM.                                                      */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_DOMDECLARATION_H
-#define ARCANE_DOMDECLARATION_H
+#ifndef ARCANE_CORE_DOMDECLARATION_H
+#define ARCANE_CORE_DOMDECLARATION_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -26,7 +26,7 @@
 #define ARCANE_END_NAMESPACE_DOMUTILS   }
 
 /*
- * Ces deux macros ne sont plus utilisées par Arcane mais on les laisse
+ * Ces deux macros ne sont plus utilisées par Arcane, mais on les laisse
  * pour compatibilité avec les applications qui pourraient les utiliser.
  */
 #define ARCANE_HAVE_DOM2
@@ -35,12 +35,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ARCANE_BEGIN_NAMESPACE_DOM
+namespace Arcane::dom
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -87,7 +83,7 @@ class EntityReference;
 class ProcessingInstruction;
 
 typedef unsigned short UShort;
-typedef unsigned long  ULong;
+typedef unsigned long ULong;
 
 typedef unsigned long DOMTimeStamp;
 
@@ -111,8 +107,7 @@ class XPathNamespace;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE_DOM
-ARCANE_END_NAMESPACE
+} // namespace Arcane::dom
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

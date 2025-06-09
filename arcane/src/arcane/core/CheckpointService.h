@@ -1,30 +1,31 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CheckpointService.h                                         (C) 2000-2018 */
+/* CheckpointService.h                                         (C) 2000-2025 */
 /*                                                                           */
 /* Service de protection/reprise.                                            */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_CHECKPOINTSERVICE_H
-#define ARCANE_CHECKPOINTSERVICE_H
+#ifndef ARCANE_CORE_CHECKPOINTSERVICE_H
+#define ARCANE_CORE_CHECKPOINTSERVICE_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/String.h"
 #include "arcane/utils/Array.h"
 
-#include "arcane/BasicService.h"
-#include "arcane/ICheckpointReader.h"
-#include "arcane/ICheckpointWriter.h"
+#include "arcane/core/BasicService.h"
+#include "arcane/core/ICheckpointReader.h"
+#include "arcane/core/ICheckpointWriter.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -45,45 +46,40 @@ class ARCANE_CORE_EXPORT CheckpointService
 , public ICheckpointReader
 {
  public:
+
   class Impl;
- public:
-
-  CheckpointService(const ServiceBuildInfo& sbi);
 
  public:
 
-  virtual void build() {}
+  explicit CheckpointService(const ServiceBuildInfo& sbi);
 
  public:
 
-  virtual void setFileName(const String& file_name){ m_file_name = file_name; }
-  virtual String fileName() const { return m_file_name; }
-  virtual void setCheckpointTimes(RealConstArrayView times);
-  virtual void setCurrentTimeAndIndex(Real current_time,Integer current_index);
+  void build() override {}
 
-  RealConstArrayView checkpointTimes() const { return m_checkpoint_times; }
+ public:
+
+  void setFileName(const String& file_name) override { m_file_name = file_name; }
+  String fileName() const override { return m_file_name; }
+  void setCheckpointTimes(RealConstArrayView times) override;
+  void setCurrentTimeAndIndex(Real current_time, Integer current_index) override;
+
+  RealConstArrayView checkpointTimes() const override { return m_checkpoint_times; }
+  //! Méta données pour le lecteur associé à cet écrivain
+  String readerMetaData() const override { return m_reader_meta_data; }
+  void setReaderMetaData(const String& s) override { m_reader_meta_data = s; }
+  void setBaseDirectoryName(const String& dirname) override { m_base_directory_name = dirname; }
+  String baseDirectoryName() const override { return m_base_directory_name; }
+
   Integer currentIndex() const { return m_current_index; }
   Real currentTime() const { return m_current_time; }
-  //! Méta données pour le lecteur associé à cet écrivain
-  virtual String readerMetaData() const { return m_reader_meta_data; }
-  virtual void setReaderMetaData(const String& s) { m_reader_meta_data = s; }
-  virtual void setBaseDirectoryName(const String& dirname)
-    {
-      m_base_directory_name = dirname;
-    }
-  virtual String baseDirectoryName() const
-    {
-      return m_base_directory_name;
-    }
-
- public:
 
  private:
 
   String m_file_name;
   UniqueArray<Real> m_checkpoint_times;
-  Real m_current_time;
-  Integer m_current_index;
+  Real m_current_time = -1.0;
+  Integer m_current_index = -1;
   String m_reader_meta_data;
   String m_base_directory_name;
 };
@@ -91,7 +87,7 @@ class ARCANE_CORE_EXPORT CheckpointService
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
