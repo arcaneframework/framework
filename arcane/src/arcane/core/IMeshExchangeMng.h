@@ -1,49 +1,43 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IMeshExchangeMng.h                                          (C) 2000-2016 */
+/* IMeshExchangeMng.h                                          (C) 2000-2025 */
 /*                                                                           */
 /* Interface du gestionnaire des échanges de maillages entre sous-domaines.  */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_IMESHEXCHANGEMNG_H
-#define ARCANE_IMESHEXCHANGEMNG_H
+#ifndef ARCANE_CORE_IMESHEXCHANGEMNG_H
+#define ARCANE_CORE_IMESHEXCHANGEMNG_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/ArcaneGlobal.h"
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ARCANE_BEGIN_NAMESPACE
+#include "arcane/core/ArcaneTypes.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class IPrimaryMesh;
-class IMeshExchanger;
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
  * \brief Interface du gestionnaire des échanges de maillages entre
  * sous-domaines.
- *
  */
 class ARCANE_CORE_EXPORT IMeshExchangeMng
 {
  public:
 
-  virtual ~IMeshExchangeMng() {} //<! Libère les ressources
+  virtual ~IMeshExchangeMng() = default; //!< Libère les ressources
 
  public:
 
   //! Maillage associé
-  virtual IPrimaryMesh* mesh() const =0;
+  virtual IPrimaryMesh* mesh() const = 0;
 
   /*!
    * \brief Débute un échange.
@@ -54,7 +48,7 @@ class ARCANE_CORE_EXPORT IMeshExchangeMng
    * opérations sur le maillage comme par exemple créer une nouvelle famille
    * où ajouter des groupes.
    */
-  virtual IMeshExchanger* beginExchange() =0;
+  virtual IMeshExchanger* beginExchange() = 0;
 
   /*!
    * \brief Signale que l'échange est terminé.
@@ -62,20 +56,20 @@ class ARCANE_CORE_EXPORT IMeshExchangeMng
    * Cela permet de désallouer les structures associées à l'échange.
    * \post exchanger()==nullptr.
    */
-  virtual void endExchange() =0;
+  virtual void endExchange() = 0;
 
   /*!
    * \brief Échangeur courant.
    *
    * L'échangeur est non nul que si on est entre un beginExchange() et un endExchange()
    */
-  virtual IMeshExchanger* exchanger() =0;
+  virtual IMeshExchanger* exchanger() = 0;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

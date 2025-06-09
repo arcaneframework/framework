@@ -1,28 +1,29 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ITiedInterface.h                                            (C) 2000-2014 */
+/* ITiedInterface.h                                            (C) 2000-2025 */
 /*                                                                           */
 /* Interface d'une classe gérant une semi-conformité du maillage.            */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_ITIEDINTERFACE_H
-#define ARCANE_ITIEDINTERFACE_H
+#ifndef ARCANE_CORE_ITIEDINTERFACE_H
+#define ARCANE_CORE_ITIEDINTERFACE_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/MultiArray2View.h"
-#include "arcane/ArcaneTypes.h"
-#include "arcane/TiedNode.h"
-#include "arcane/TiedFace.h"
+#include "arcane/core/ArcaneTypes.h"
+#include "arcane/core/TiedNode.h"
+#include "arcane/core/TiedFace.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -40,7 +41,7 @@ class ITiedInterface
 {
  public:
 
-  virtual ~ITiedInterface() {} //<! Libère les ressources
+  virtual ~ITiedInterface() = default; //!< Libère les ressources
 
  public:
 
@@ -50,10 +51,10 @@ class ITiedInterface
    * Il s'agit d'un groupe contenant uniquement les entités
    * propres à ce sous-domaine.
    */
-  virtual FaceGroup masterInterface() const =0;
+  virtual FaceGroup masterInterface() const = 0;
 
   //! Nom du groupe contenant les mailles maîtres
-  virtual String masterInterfaceName() const =0;
+  virtual String masterInterfaceName() const = 0;
 
   /*!
    * \brief Groupe contenant les faces esclaves.
@@ -61,22 +62,22 @@ class ITiedInterface
    * Il s'agit d'un groupe contenant uniquement les entités
    * propres à ce sous-domaine.
    */
-  virtual FaceGroup slaveInterface() const =0;
+  virtual FaceGroup slaveInterface() const = 0;
 
   //! Nom du groupe contenant les mailles esclaves
-  virtual String slaveInterfaceName() const =0;
-  
+  virtual String slaveInterfaceName() const = 0;
+
   //! Liste des informations sur les noeuds esclaves d'une face maître
-  virtual TiedInterfaceNodeList tiedNodes() const =0;
+  virtual TiedInterfaceNodeList tiedNodes() const = 0;
 
   //! Liste des informations sur les faces esclaves d'une face maître
-  virtual TiedInterfaceFaceList tiedFaces() const =0;
+  virtual TiedInterfaceFaceList tiedFaces() const = 0;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

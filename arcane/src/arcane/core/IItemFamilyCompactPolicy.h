@@ -1,32 +1,26 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IItemFamilyCompactPolicy.h                                  (C) 2000-2016 */
+/* IItemFamilyCompactPolicy.h                                  (C) 2000-2025 */
 /*                                                                           */
 /* Interface de la politique de compactage des entités d'une famille.        */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_IITEMFAMILYCOMPACTPOLICY_H
-#define ARCANE_IITEMFAMILYCOMPACTPOLICY_H
+#ifndef ARCANE_CORE_IITEMFAMILYCOMPACTPOLICY_H
+#define ARCANE_CORE_IITEMFAMILYCOMPACTPOLICY_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/ArcaneGlobal.h"
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ARCANE_BEGIN_NAMESPACE
+#include "arcane/core/ArcaneTypes.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class IItemFamily;
-class IMeshCompacter;
-class ItemFamilyCompactInfos;
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -62,24 +56,27 @@ class ItemFamilyCompactInfos;
 class ARCANE_CORE_EXPORT IItemFamilyCompactPolicy
 {
  public:
-  virtual ~IItemFamilyCompactPolicy(){}
+
+  virtual ~IItemFamilyCompactPolicy() = default;
+
  public:
+
   // TODO: faire une méthode computeCompact après beginCompact().
-  virtual void beginCompact(ItemFamilyCompactInfos& compact_infos) =0;
-  virtual void compactVariablesAndGroups(const ItemFamilyCompactInfos& compact_infos) =0;
-  virtual void updateInternalReferences(IMeshCompacter* compacter) =0;
-  virtual void endCompact(ItemFamilyCompactInfos& compact_infos) =0;
-  virtual void finalizeCompact(IMeshCompacter* compacter) =0;
+  virtual void beginCompact(ItemFamilyCompactInfos& compact_infos) = 0;
+  virtual void compactVariablesAndGroups(const ItemFamilyCompactInfos& compact_infos) = 0;
+  virtual void updateInternalReferences(IMeshCompacter* compacter) = 0;
+  virtual void endCompact(ItemFamilyCompactInfos& compact_infos) = 0;
+  virtual void finalizeCompact(IMeshCompacter* compacter) = 0;
   //! Famille associée
-  virtual IItemFamily* family() const =0;
+  virtual IItemFamily* family() const = 0;
   //! Compacte les données sur les connectivités.
-  virtual void compactConnectivityData() =0;
+  virtual void compactConnectivityData() = 0;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
