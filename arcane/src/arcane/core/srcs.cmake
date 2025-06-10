@@ -675,7 +675,6 @@ set(ARCANE_ORIGINAL_SOURCES
   VerifierService.cc
   VerifierService.h
   XmlException.h
-  XmlInfo.h
   XmlNode.cc
   XmlNodeIterator.h
   XmlNodeList.cc
