@@ -1,31 +1,26 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IRessourceMng.h                                             (C) 2000-2008 */
+/* IRessourceMng.h                                             (C) 2000-2025 */
 /*                                                                           */
 /* Interface d'un gestionnaire de ressources.                                */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_IRESSOURCEMNG_H
-#define ARCANE_IRESSOURCEMNG_H
+#ifndef ARCANE_CORE_IRESSOURCEMNG_H
+#define ARCANE_CORE_IRESSOURCEMNG_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/ArcaneGlobal.h"
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ARCANE_BEGIN_NAMESPACE
+#include "arcane/core/ArcaneTypes.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class IXmlDocumentHolder;
-class IApplication;
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -35,33 +30,36 @@ class IApplication;
  */
 class ARCANE_CORE_EXPORT IRessourceMng
 {
+  // TODO: supprimer cette classe qui n'est plus utile.
+  // Il est possible de créer directement une instance
+  // de IXmlDocumentHolder
+
  public:
-	
+
   //! Création d'un gestionnaire d'historique par défaut.
   static IRessourceMng* createDefault(IApplication*);
 
  public:
 
-  virtual ~IRessourceMng(){} //!< Libère les ressources
+  virtual ~IRessourceMng() = default; //!< Libère les ressources
 
  public:
 
-  /*! \brief Créé un noeud document XML.
+  /*!
+   * \brief Créé un noeud document XML.
+   *
    * Crée et retourne un document XML utilisant une implémentation par défaut.
    * La destruction de ce document invalide tous les noeuds qui en dépendent.
    */
-  virtual IXmlDocumentHolder* createXmlDocument() =0;
-
- public:
+  virtual IXmlDocumentHolder* createXmlDocument() = 0;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #endif  
-

@@ -1,32 +1,27 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshAreaAccessor.h                                          (C) 2000-2004 */
+/* MeshAreaAccessor.h                                          (C) 2000-2025 */
 /*                                                                           */
 /* Accès aux informations d'une zone de maillage.                            */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_MESHAREAACCESSOR_H
-#define ARCANE_MESHAREAACCESSOR_H
+#ifndef ARCANE_CORE_MESHAREAACCESSOR_H
+#define ARCANE_CORE_MESHAREAACCESSOR_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-
-#include "arcane/ArcaneTypes.h"
-#include "arcane/ItemTypes.h"
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ARCANE_BEGIN_NAMESPACE
+#include "arcane/core/ArcaneTypes.h"
+#include "arcane/core/ItemTypes.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class IMeshArea;
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -37,11 +32,11 @@ class ARCANE_CORE_EXPORT MeshAreaAccessor
 {
  public:
 
-  MeshAreaAccessor(IMeshArea* mesh_area);
+  explicit MeshAreaAccessor(IMeshArea* mesh_area);
   ~MeshAreaAccessor();
 
  public:
-  
+
   //! Zone de maillage accédée par cette accessor
   IMeshArea* meshArea();
 
@@ -60,7 +55,7 @@ class ARCANE_CORE_EXPORT MeshAreaAccessor
 
   //! Groupe de tous les noeuds de la zone
   NodeGroup allNodes();
-  
+
   //! Groupe de toutes les mailles de la zone
   CellGroup allCells();
 
@@ -71,17 +66,16 @@ class ARCANE_CORE_EXPORT MeshAreaAccessor
   CellGroup ownCells();
 
  private:
-  
-  IMeshArea* m_mesh_area;
+
+  IMeshArea* m_mesh_area = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

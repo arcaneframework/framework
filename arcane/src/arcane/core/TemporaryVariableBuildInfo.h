@@ -1,33 +1,29 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* TemporaryVariableBuildInfo.h                                (C) 2000-2006 */
+/* TemporaryVariableBuildInfo.h                                (C) 2000-2025 */
 /*                                                                           */
 /* Informations pour construire une variable temporaraire.                   */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_TEMPORARYVARIABLEBUILDINFO_H
-#define ARCANE_TEMPORARYVARIABLEBUILDINFO_H
+#ifndef ARCANE_CORE_TEMPORARYVARIABLEBUILDINFO_H
+#define ARCANE_CORE_TEMPORARYVARIABLEBUILDINFO_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/VariableBuildInfo.h"
-#include "arcane/IVariableMng.h"
-#include "arcane/ISubDomain.h"
-#include "arcane/IModule.h"
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ARCANE_BEGIN_NAMESPACE
+#include "arcane/core/VariableBuildInfo.h"
+#include "arcane/core/IVariableMng.h"
+#include "arcane/core/ISubDomain.h"
+#include "arcane/core/IModule.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class IVariableMng;
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -51,7 +47,7 @@ class ARCANE_CORE_EXPORT TemporaryVariableBuildInfo
    * \param name nom de la variable
    * \param m module associé
    */
-  TemporaryVariableBuildInfo(IModule* m,const String& name);
+  TemporaryVariableBuildInfo(IModule* m, const String& name);
 
   /*!
    * \brief Construit un initialiseur pour une variable sans l'associer à
@@ -60,7 +56,7 @@ class ARCANE_CORE_EXPORT TemporaryVariableBuildInfo
    * \param sub_domain gestionnaire de sous-domaine
    * \param name nom de la variable
    */
-  TemporaryVariableBuildInfo(ISubDomain* sub_domain,const String& name);
+  TemporaryVariableBuildInfo(ISubDomain* sub_domain, const String& name);
 
   /*!
    * \brief Construit un initialiseur pour une variable.
@@ -69,7 +65,7 @@ class ARCANE_CORE_EXPORT TemporaryVariableBuildInfo
    * \param name nom de la variable
    * \param item_family_name nom de la famille d'entité
    */
-  TemporaryVariableBuildInfo(IModule* m,const String& name,
+  TemporaryVariableBuildInfo(IModule* m, const String& name,
                              const String& item_family_name);
 
   /*!
@@ -79,7 +75,7 @@ class ARCANE_CORE_EXPORT TemporaryVariableBuildInfo
    * \param sub_domain gestionnaire de sous-domaine
    * \param name nom de la variable
    */
-  TemporaryVariableBuildInfo(IMesh* mesh,const String& name);
+  TemporaryVariableBuildInfo(IMesh* mesh, const String& name);
 
   /*!
    * \brief Construit un initialiseur pour une variable associée à un
@@ -89,18 +85,19 @@ class ARCANE_CORE_EXPORT TemporaryVariableBuildInfo
    * \param name nom de la variable
    * \param item_family_name nom de la famille d'entité
    */
-  TemporaryVariableBuildInfo(IMesh* mesh,const String& name,
+  TemporaryVariableBuildInfo(IMesh* mesh, const String& name,
                              const String& item_family_name);
 
-protected:
+ protected:
+
   static int property();
-  static String _generateName(IVariableMng* vm,const String& name);
+  static String _generateName(IVariableMng* vm, const String& name);
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

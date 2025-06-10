@@ -1,16 +1,16 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ITimeHistoryCurveWriter2.h                                  (C) 2000-2024 */
+/* ITimeHistoryCurveWriter2.h                                  (C) 2000-2025 */
 /*                                                                           */
 /* Interface d'un écrivain d'une courbe d'un historique (Version 2).         */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_ITIMEHISTORYCURVEWRITER2_H
-#define ARCANE_ITIMEHISTORYCURVEWRITER2_H
+#ifndef ARCANE_CORE_ITIMEHISTORYCURVEWRITER2_H
+#define ARCANE_CORE_ITIMEHISTORYCURVEWRITER2_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -31,7 +31,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -109,11 +110,11 @@ class TimeHistoryCurveInfo
 #endif
   String m_name;
   String m_support;
-  bool m_has_support;
+  bool m_has_support = false;
   Int32ConstArrayView m_iterations;
   RealConstArrayView m_values;
-  Integer m_sub_size;
-  Integer m_sub_domain;
+  Integer m_sub_size = 0;
+  Integer m_sub_domain = 0;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -157,20 +158,20 @@ class TimeHistoryCurveWriterInfo
  * \brief Interface d'un écrivain d'une courbe.
  *
  * Lors de l'écriture des courbes, l'instance sera appelée comme suit:
- \begincode
+ * \code
  * ITimeHistoryCurveWriter2* instance = ...;
  * instance->beginWrite();
  * for( const TimeHistoryCurveInfo& curveinfo : all_curves )
  *   instance->writeCurve(curveinfo);
  * instance->endWrite()
- \endcode
+ * \endcode
  */
-class ITimeHistoryCurveWriter2
+class ARCANE_CORE_EXPORT ITimeHistoryCurveWriter2
 {
  public:
 
   //! Libère les ressources
-  virtual ~ITimeHistoryCurveWriter2() {}
+  virtual ~ITimeHistoryCurveWriter2() = default;
 
  public:
 
@@ -215,7 +216,7 @@ class ITimeHistoryCurveWriter2
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

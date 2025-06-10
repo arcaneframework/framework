@@ -1,31 +1,27 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemPairGroupImpl.h                                         (C) 2000-2018 */
+/* ItemPairGroupImpl.h                                         (C) 2000-2025 */
 /*                                                                           */
 /* Implémentation d'un tableau de listes d'entités.                          */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_ITEMPAIRGROUPIMPL_H
-#define ARCANE_ITEMPAIRGROUPIMPL_H
+#ifndef ARCANE_CORE_ITEMPAIRGROUPIMPL_H
+#define ARCANE_CORE_ITEMPAIRGROUPIMPL_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/ItemTypes.h"
-#include "arcane/SharedReference.h"
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ARCANE_BEGIN_NAMESPACE
+#include "arcane/core/ItemTypes.h"
+#include "arcane/core/SharedReference.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class IMesh;
+namespace Arcane
+{
 class ItemPairGroupImplPrivate;
 
 /*---------------------------------------------------------------------------*/
@@ -39,23 +35,21 @@ class ARCANE_CORE_EXPORT ItemPairGroupImpl
 {
  public:
 
- public:
-
   ItemPairGroupImpl();
-  ItemPairGroupImpl(const ItemGroup& group,const ItemGroup& sub_group);
-  virtual ~ItemPairGroupImpl(); //!< Libère les ressources
+  ItemPairGroupImpl(const ItemGroup& group, const ItemGroup& sub_group);
+  ~ItemPairGroupImpl() override; //!< Libère les ressources
 
  public:
-	
+
   static ItemPairGroupImpl* shared_null;
   static ItemPairGroupImpl* checkSharedNull();
 
  public:
-  
+
   virtual ISharedReference& sharedReference() { return *this; }
 
  public:
-	
+
   //! Nom du groupe
   const String& name() const;
 
@@ -73,16 +67,16 @@ class ARCANE_CORE_EXPORT ItemPairGroupImpl
 
   //! Genre du groupe. Il s'agit du genre de ses éléments.
   eItemKind subItemKind() const;
-  
-  //! Familly à laquelle appartient le groupe (ou 0 si aucune)
+
+  //! Famille à laquelle appartient le groupe (ou 0 si aucune)
   IItemFamily* itemFamily() const;
 
-  //! Familly à laquelle appartient le groupe (ou 0 si aucune)
+  //! Famille à laquelle appartient le groupe (ou 0 si aucune)
   IItemFamily* subItemFamily() const;
 
   //! Groupe des entités
   const ItemGroup& itemGroup() const;
-  
+
   //! Groupe des sous-entités
   const ItemGroup& subItemGroup() const;
 
@@ -91,7 +85,7 @@ class ARCANE_CORE_EXPORT ItemPairGroupImpl
 
   //! Invalide le groupe
   void invalidate(bool force_recompute);
-  
+
   //! Vérifie que le groupe est valide.
   void checkValid();
 
@@ -129,19 +123,22 @@ class ARCANE_CORE_EXPORT ItemPairGroupImpl
 
  private:
 
-  ItemPairGroupImplPrivate* m_p; //!< Implémentation du groupe
+  ItemPairGroupImplPrivate* m_p = nullptr; //!< Implémentation du groupe
 
  public:
-  virtual void addRef();
-  virtual void removeRef();
+
+  void addRef() override;
+  void removeRef() override;
+
  private:
-  virtual void deleteMe();
+
+  void deleteMe() override;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

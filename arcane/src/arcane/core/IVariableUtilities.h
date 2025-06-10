@@ -1,31 +1,26 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IVariableUtilities.h                                        (C) 2000-2018 */
+/* IVariableUtilities.h                                        (C) 2000-2025 */
 /*                                                                           */
 /* Interface proposant des fonctions utilitaires sur les variables.          */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_IVARIABLEUTILITIES_H
-#define ARCANE_IVARIABLEUTILITIES_H
+#ifndef ARCANE_CORE_IVARIABLEUTILITIES_H
+#define ARCANE_CORE_IVARIABLEUTILITIES_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/ArcaneTypes.h"
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ARCANE_BEGIN_NAMESPACE
+#include "arcane/core/ArcaneTypes.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class IVariableMng;
-class IParallelMng;
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -36,12 +31,12 @@ class ARCANE_CORE_EXPORT IVariableUtilities
 {
  public:
 
-  virtual ~IVariableUtilities() {} //!< Libère les ressources.
+  virtual ~IVariableUtilities() = default; //!< Libère les ressources.
 
  public:
 
   //! Gestionnaire de variables associé
-  virtual IVariableMng* variableMng() const =0;
+  virtual IVariableMng* variableMng() const = 0;
 
   /*!
    * \brief Affiche les informations de dépendance sur une variable.
@@ -50,7 +45,7 @@ class ARCANE_CORE_EXPORT IVariableUtilities
    * dont dépend \a var. Si \a is_recursive vaut \a true, cette
    * méthode est aussi appelé pour ces variables.
    */
-  virtual void dumpDependencies(IVariable* var,std::ostream& ostr,bool is_recursive) =0;
+  virtual void dumpDependencies(IVariable* var, std::ostream& ostr, bool is_recursive) = 0;
 
   /*!
    * \brief Affiche les informations de dépendance de toutes les variables.
@@ -58,7 +53,7 @@ class ARCANE_CORE_EXPORT IVariableUtilities
    * Affiche sur le flot \a ostr les informations de toutes les
    * variables utilisées.
    */
-  virtual void dumpAllVariableDependencies(std::ostream& ostr,bool is_recursive) =0;
+  virtual void dumpAllVariableDependencies(std::ostream& ostr, bool is_recursive) = 0;
 
   /*!
    * \brief Filtre les variables communes entre plusieurs rangs.
@@ -72,14 +67,14 @@ class ARCANE_CORE_EXPORT IVariableUtilities
    * des variables qui ne sont pas communes sur tous les rangs.
    */
   virtual VariableCollection filterCommonVariables(IParallelMng* pm,
-                                                   const VariableCollection input_variables,
-                                                   bool dump_not_common) =0;
+                                                   VariableCollection input_variables,
+                                                   bool dump_not_common) = 0;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

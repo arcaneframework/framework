@@ -40,7 +40,6 @@ class ARCANE_CORE_EXPORT TimeLoop
  public:
 
   virtual void build() override;
-  ;
 
  public:
 

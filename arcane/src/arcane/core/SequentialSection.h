@@ -1,32 +1,26 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* SequentialSection.h                                         (C) 2000-2015 */
+/* SequentialSection.h                                         (C) 2000-2025 */
 /*                                                                           */
 /* Section du code à exécuter séquentiellement.                              */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_SEQUENTIALSECTION_H
-#define ARCANE_SEQUENTIALSECTION_H
+#ifndef ARCANE_CORE_SEQUENTIALSECTION_H
+#define ARCANE_CORE_SEQUENTIALSECTION_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
 
 #include "arcane/utils/ParallelFatalErrorException.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-class IParallelMng;
-class ISubDomain;
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -65,8 +59,8 @@ class ARCANE_CORE_EXPORT SequentialSection
 {
  public:
 
-  SequentialSection(IParallelMng*);
-  SequentialSection(ISubDomain*);
+  explicit SequentialSection(IParallelMng*);
+  explicit SequentialSection(ISubDomain*);
   ~SequentialSection() ARCANE_NOEXCEPT_FALSE;
 
  public:
@@ -75,8 +69,8 @@ class ARCANE_CORE_EXPORT SequentialSection
 
  private:
 
-  IParallelMng* m_parallel_mng;
-  bool m_has_error;
+  IParallelMng* m_parallel_mng = nullptr;
+  bool m_has_error = false;
 
   void _init();
   void _sendError();
@@ -85,7 +79,7 @@ class ARCANE_CORE_EXPORT SequentialSection
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

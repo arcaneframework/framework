@@ -1,32 +1,27 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ParallelNonBlockingCollectiveDispatcher.h                   (C) 2000-2016 */
+/* ParallelNonBlockingCollectiveDispatcher.h                   (C) 2000-2025 */
 /*                                                                           */
 /* Interface du gestionnaire du parallélisme sur un domaine.                 */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_PARALLELNONBLOCKINGCOLLECTIVEDISPATCHER_H
-#define ARCANE_PARALLELNONBLOCKINGCOLLECTIVEDISPATCHER_H
+#ifndef ARCANE_CORE_PARALLELNONBLOCKINGCOLLECTIVEDISPATCHER_H
+#define ARCANE_CORE_PARALLELNONBLOCKINGCOLLECTIVEDISPATCHER_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/IParallelNonBlockingCollective.h"
-#include "arcane/IParallelNonBlockingCollectiveDispatch.h"
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ARCANE_BEGIN_NAMESPACE
+#include "arcane/core/IParallelNonBlockingCollective.h"
+#include "arcane/core/IParallelNonBlockingCollectiveDispatch.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class ITimeStats;
-class IParallelMng;
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -46,12 +41,12 @@ class ARCANE_CORE_EXPORT ParallelNonBlockingCollectiveDispatcher
 {
  public:
 
-  ParallelNonBlockingCollectiveDispatcher(IParallelMng* pm);
-  virtual ~ParallelNonBlockingCollectiveDispatcher();
+  explicit ParallelNonBlockingCollectiveDispatcher(IParallelMng* pm);
+  ~ParallelNonBlockingCollectiveDispatcher() override;
 
  public:
 
-  virtual IParallelMng* parallelMng() const { return m_parallel_mng; }
+  IParallelMng* parallelMng() const override { return m_parallel_mng; }
 
  protected:
 
@@ -83,7 +78,7 @@ class ARCANE_CORE_EXPORT ParallelNonBlockingCollectiveDispatcher
 
  private:
 
-  IParallelMng* m_parallel_mng;
+  IParallelMng* m_parallel_mng = nullptr;
 
  public:
 
@@ -153,16 +148,12 @@ protected:                                                              \
   virtual IParallelNonBlockingCollectiveDispatchT<Real2x2>* dispatcher(Real2x2*);
   virtual IParallelNonBlockingCollectiveDispatchT<Real3x3>* dispatcher(Real3x3*);
   virtual IParallelNonBlockingCollectiveDispatchT<HPReal>* dispatcher(HPReal*);
-
- public:
-
- private:
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

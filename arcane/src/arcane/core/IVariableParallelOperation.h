@@ -1,16 +1,16 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IVariableParallelOperation.h                                (C) 2000-2006 */
+/* IVariableParallelOperation.h                                (C) 2000-2025 */
 /*                                                                           */
 /* Interface d'une classe d'opérations parallèles sur des variables.         */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_IVARIABLEPARALLELOPERATION_H
-#define ARCANE_IVARIABLEPARALLELOPERATION_H
+#ifndef ARCANE_CORE_IVARIABLEPARALLELOPERATION_H
+#define ARCANE_CORE_IVARIABLEPARALLELOPERATION_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -19,14 +19,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-class IItemFamily;
-class IVariable;
-class IDataOperation;
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -34,18 +28,18 @@ class IDataOperation;
  * \internal
  * \brief Interface d'une classe d'opérations parallèle sur des variables.
  *
- Ces opérations sont collectives.
- 
- Avant d'effectuer l'opération, il faut positionner la famille
- d'entités (setItemFamily()),
- puis ajouter la liste des variables sur lesquelles seront effectuées
- les opérations.
+ * Ces opérations sont collectives.
+ *
+ * Avant d'effectuer l'opération, il faut positionner la famille
+ * d'entités (setItemFamily()),
+ * puis ajouter la liste des variables sur lesquelles seront effectuées
+ * les opérations.
  */
-class IVariableParallelOperation
+class ARCANE_CORE_EXPORT IVariableParallelOperation
 {
  public:
 
-  virtual ~IVariableParallelOperation() {} //!< Libère les ressources.
+  virtual ~IVariableParallelOperation() = default; //!< Libère les ressources.
 
  public:
 
@@ -53,11 +47,12 @@ class IVariableParallelOperation
 
  public:
 
-  /*! \brief Positionne la famille d'entité sur laquelle on souhaite opérer.
+  /*!
+   * \brief Positionne la famille d'entité sur laquelle on souhaite opérer.
    * 
-   Le maillage doit être positionner avant d'ajouter des variables.
-   Il ne peut l'être qu'une seule fois.
-  */
+   * La famille doit être positionnée avant d'ajouter des variables.
+   * Elle ne peut l'être qu'une seule fois.
+   */
   virtual void setItemFamily(IItemFamily* family) =0;
   
   //! Famille d'entités sur laquelle on opère
@@ -66,17 +61,14 @@ class IVariableParallelOperation
   //! Ajoute \a variable à la liste des variables concernées par l'opération
   virtual void addVariable(IVariable* variable) =0;
 
-  /*!
-   * \brief Applique l'opération.
-   */
+  //! Applique l'opération.
   virtual void applyOperation(IDataOperation* operation) =0;
- public:
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

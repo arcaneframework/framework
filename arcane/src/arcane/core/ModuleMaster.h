@@ -1,36 +1,31 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ModuleMaster.h                                              (C) 2000-2012 */
+/* ModuleMaster.h                                              (C) 2000-2025 */
 /*                                                                           */
 /* Module maître.                                                            */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_MODULEMASTER_H
-#define ARCANE_MODULEMASTER_H
+#ifndef ARCANE_CORE_MODULEMASTER_H
+#define ARCANE_CORE_MODULEMASTER_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/VersionInfo.h"
 
-#include "arcane/IModuleMaster.h"
-#include "arcane/AbstractModule.h"
-#include "arcane/VariableTypedef.h"
-#include "arcane/CommonVariables.h"
+#include "arcane/core/IModuleMaster.h"
+#include "arcane/core/AbstractModule.h"
+#include "arcane/core/VariableTypedef.h"
+#include "arcane/core/CommonVariables.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-class CaseOptionsMain;
-class ITimeLoopService;
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -41,7 +36,7 @@ class ITimeLoopService;
  * Ce module est toujours chargé en premier pour que ces points d'entrée encadrent tous ceux des autres modules.
  * Il contient les variables globales du cas, comme le nom de fichier ou le numéro de l'itération.
  */
-class ARCANE_CORE_EXPORT  ModuleMaster
+class ARCANE_CORE_EXPORT ModuleMaster
 : public AbstractModule
 , public CommonVariables
 , public IModuleMaster
@@ -49,31 +44,31 @@ class ARCANE_CORE_EXPORT  ModuleMaster
  public:
 
   //! Constructeur
-  ModuleMaster(const ModuleBuildInfo&);
+  explicit ModuleMaster(const ModuleBuildInfo&);
 
   //! Destructeur
-  virtual ~ModuleMaster();
+  ~ModuleMaster() override;
 
  public:
 
   //! Version du module
-  virtual VersionInfo versionInfo() const { return VersionInfo(1,0,0); }
-
- public:
+  VersionInfo versionInfo() const override { return VersionInfo(1, 0, 0); }
 
   //! Accès aux options du module
-  virtual CaseOptionsMain* caseoptions() { return m_case_options_main; }
+  CaseOptionsMain* caseoptions() override { return m_case_options_main; }
 
   //! Conversion en \a IModule
-  virtual IModule* toModule() { return this; }
+  IModule* toModule() override { return this; }
 
   //! Accès aux variables 'communes' partagées entre tout service et module
-  virtual CommonVariables* commonVariables() { return this; }
+  CommonVariables* commonVariables() override { return this; }
 
-  virtual void addTimeLoopService(ITimeLoopService* tls);
+  void addTimeLoopService(ITimeLoopService* tls) override;
 
   //! Sort les courbes classiques (CPUTime, ElapsedTime, ...)
-  virtual void dumpStandardCurves();
+  void dumpStandardCurves() override;
+
+ public:
 
   //! Point d'entrée auto-chargé en début d'itération de la boucle de calcul
   /*!
@@ -121,34 +116,35 @@ class ARCANE_CORE_EXPORT  ModuleMaster
   void _masterLoopExit();
   void _masterMeshChanged();
   void _masterRestore();
-  
+
  protected:
 
   //! Instance des options du module
-  CaseOptionsMain* m_case_options_main;
+  CaseOptionsMain* m_case_options_main = nullptr;
 
   //! Nombre de boucles de calcul effectuées
-  Integer m_nb_loop;
+  Integer m_nb_loop = 0;
 
-  //! Valeur du temps CPU à la derniere itération
-  Real m_old_cpu_time;
+  //! Valeur du temps CPU à la dernière itération
+  Real m_old_cpu_time = 0.0;
 
-  //! Valeur du temps horloge à la derniere itération
-  Real m_old_elapsed_time;
+  //! Valeur du temps horloge à la dernière itération
+  Real m_old_elapsed_time = 0.0;
 
-  //! Liste des serviecs de boucle en temps
+  //! Liste des services de boucle en temps
   UniqueArray<ITimeLoopService*> m_timeloop_services;
 
   //! Indique si on est dans la première itération de l'exécution
-  bool m_is_first_loop;
+  bool m_is_first_loop = true;
 
-  Real m_thm_mem_used;
-  Real m_thm_diff_cpu;
-  Real m_thm_global_cpu_time;
-  Real m_thm_diff_elapsed;
-  Real m_thm_global_elapsed_time;
-  Real m_thm_global_time;
-  bool m_has_thm_dump_at_iteration;
+  Real m_thm_mem_used = 0.0;
+  Real m_thm_diff_cpu = 0.0;
+  Real m_thm_global_cpu_time = 0.0;
+  Real m_thm_diff_elapsed = 0.0;
+  Real m_thm_global_elapsed_time = 0.0;
+  Real m_thm_global_time = 0.0;
+
+  bool m_has_thm_dump_at_iteration = false;
 
  private:
 
@@ -158,7 +154,7 @@ class ARCANE_CORE_EXPORT  ModuleMaster
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

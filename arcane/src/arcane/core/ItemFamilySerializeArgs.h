@@ -1,16 +1,16 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemFamilySerializeArgs.h                                   (C) 2000-2016 */
+/* ItemFamilySerializeArgs.h                                   (C) 2000-2025 */
 /*                                                                           */
 /* Arguments des callbacks de sérialisation des familles d'entités.          */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_ITEMFAMILYSERIALIZEARGS_H
-#define ARCANE_ITEMFAMILYSERIALIZEARGS_H
+#ifndef ARCANE_CORE_ITEMFAMILYSERIALIZEARGS_H
+#define ARCANE_CORE_ITEMFAMILYSERIALIZEARGS_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -20,7 +20,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -44,10 +45,13 @@ class ARCANE_CORE_EXPORT ItemFamilySerializeArgs
 {
  public:
 
-  ItemFamilySerializeArgs(ISerializer* aserializer,Int32 arank,
-                          Int32ConstArrayView local_ids,Integer message_index)
-  : m_serializer(aserializer), m_rank(arank), m_local_ids(local_ids)
-  , m_message_index(message_index) {}
+  ItemFamilySerializeArgs(ISerializer* aserializer, Int32 arank,
+                          Int32ConstArrayView local_ids, Integer message_index)
+  : m_serializer(aserializer)
+  , m_rank(arank)
+  , m_local_ids(local_ids)
+  , m_message_index(message_index)
+  {}
 
  public:
 
@@ -75,16 +79,16 @@ class ARCANE_CORE_EXPORT ItemFamilySerializeArgs
 
  public:
 
-  ISerializer* m_serializer;
-  Int32 m_rank;
+  ISerializer* m_serializer = nullptr;
+  Int32 m_rank = A_NULL_RANK;
   Int32ConstArrayView m_local_ids;
-  Integer m_message_index;
+  Integer m_message_index = -1;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
