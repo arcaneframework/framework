@@ -1,36 +1,28 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ServiceRegisterer.h                                         (C) 2000-2018 */
+/* ServiceRegisterer.h                                         (C) 2000-2025 */
 /*                                                                           */
-/* Singleton permettant d'enregister un service.                             */
+/* Singleton permettant d'enregistrer un service.                            */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_SERCVICEREGISTERER_H
-#define ARCANE_SERCVICEREGISTERER_H
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-#include "arcane/utils/ArcaneGlobal.h"
-
-#include "arcane/ServiceProperty.h"
-#include "arcane/ModuleProperty.h"
-
+#ifndef ARCANE_CORE_SERCVICEREGISTERER_H
+#define ARCANE_CORE_SERCVICEREGISTERER_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+#include "arcane/core/ArcaneTypes.h"
+#include "arcane/core/ServiceProperty.h"
+#include "arcane/core/ModuleProperty.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class IServiceFactory;
-class IServiceInfo;
-class IModuleFactoryInfo;
-class ModuleProperty;
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -55,7 +47,7 @@ class ModuleProperty;
 class ARCANE_CORE_EXPORT ServiceRegisterer
 {
  public:
- 
+
   typedef IModuleFactoryInfo* (*ModuleFactoryWithPropertyFunc)(const ModuleProperty& properties);
   typedef IServiceInfo* (*ServiceInfoWithPropertyCreateFunc)(const ServiceProperty& properties);
 
@@ -66,14 +58,14 @@ class ARCANE_CORE_EXPORT ServiceRegisterer
    *
    * Ce constructeur est utilisé pour enregistrer un service.
    */
-  ServiceRegisterer(ServiceInfoWithPropertyCreateFunc func,const ServiceProperty& properties) ARCANE_NOEXCEPT;
+  ServiceRegisterer(ServiceInfoWithPropertyCreateFunc func, const ServiceProperty& properties) ARCANE_NOEXCEPT;
 
   /*!
    * \brief Crée en enregistreur pour le module \a name avec les propriétés \a properties.
    *
    * Ce constructeur est utilisé pour enregistrer un module.
    */
-  ServiceRegisterer(ModuleFactoryWithPropertyFunc func,const ModuleProperty& properties) ARCANE_NOEXCEPT;
+  ServiceRegisterer(ModuleFactoryWithPropertyFunc func, const ModuleProperty& properties) ARCANE_NOEXCEPT;
 
  public:
 
@@ -96,7 +88,7 @@ class ARCANE_CORE_EXPORT ServiceRegisterer
   //! Nom du service
   const char* name() { return m_name; }
 
-  /*
+  /*!
    * \brief Propriétés du service.
    *
    * \deprecated Utiliser \a serviceProperty() à la place
@@ -117,7 +109,7 @@ class ARCANE_CORE_EXPORT ServiceRegisterer
 
  private:
 
-  //! Positionne le service précédent 
+  //! Positionne le service précédent
   /*! Utilisé en interne pour construire la chaine de service */
   void setPreviousService(ServiceRegisterer* s) { m_previous = s; }
 
@@ -130,38 +122,37 @@ class ARCANE_CORE_EXPORT ServiceRegisterer
   //! Accès au premier élément de la chaine d'enregistreur de service
   static ServiceRegisterer* firstService();
 
-  //! Nombre d'enregisteur de service dans la chaine
+  //! Nombre d'enregistreurs de service dans la chaine
   static Integer nbService();
 
  private:
 
   //! Fonction de création du IModuleFactory
-  ModuleFactoryWithPropertyFunc m_module_factory_with_property_functor;
+  ModuleFactoryWithPropertyFunc m_module_factory_with_property_functor = nullptr;
   //! Fonction de création du IServiceInfo
-  ServiceInfoWithPropertyCreateFunc m_info_function_with_property;
+  ServiceInfoWithPropertyCreateFunc m_info_function_with_property = nullptr;
   //! Nom du service
-  const char* m_name;
+  const char* m_name = nullptr;
   //! Propriétés du service
   ServiceProperty m_service_property;
   //! Propriétés du module
   ModuleProperty m_module_property;
   //! Service précédent
-  ServiceRegisterer* m_previous;
+  ServiceRegisterer* m_previous = nullptr;
   //! Service suivant
-  ServiceRegisterer* m_next;
+  ServiceRegisterer* m_next = nullptr;
 
  private:
-  
+
   void _init();
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #endif
-

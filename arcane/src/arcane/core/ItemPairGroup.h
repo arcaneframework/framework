@@ -1,16 +1,16 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemPairGroup.h                                             (C) 2000-2018 */
+/* ItemPairGroup.h                                             (C) 2000-2025 */
 /*                                                                           */
 /* Tableau de listes d'entités.                                              */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_ITEMPAIRGROUP_H
-#define ARCANE_ITEMPAIRGROUP_H
+#ifndef ARCANE_CORE_ITEMPAIRGROUP_H
+#define ARCANE_CORE_ITEMPAIRGROUP_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -18,19 +18,14 @@
 #include "arcane/utils/Iterator.h"
 #include "arcane/utils/IFunctorWithArgument.h"
 
-#include "arcane/ItemPairGroupImpl.h"
-#include "arcane/ItemTypes.h"
+#include "arcane/core/ItemPairGroupImpl.h"
+#include "arcane/core/ItemTypes.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-class ItemPairEnumerator;
-class ItemPairGroupBuilder;
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -41,44 +36,48 @@ class ItemPairGroupBuilder;
 class ARCANE_CORE_EXPORT ItemPairGroup
 {
  public:
+
   /*!
    * \brief Functor pour un calcul personnalisé des connectivités.
    */
   typedef IFunctorWithArgumentT<ItemPairGroupBuilder&> CustomFunctor;
   class CustomFunctorWrapper;
+
  public:
+
   //! Construit un tableau vide.
   ItemPairGroup();
   //! Construit un groupe à partir de la représentation interne \a prv
-  ItemPairGroup(ItemPairGroupImpl* prv);
+  explicit ItemPairGroup(ItemPairGroupImpl* prv);
   /*!
    * \brief Construit une instance en spécifiant le voisinage via les entités
    * de genre \a link_kind.
    */
-  ItemPairGroup(const ItemGroup& group,const ItemGroup& sub_item_group,
+  ItemPairGroup(const ItemGroup& group, const ItemGroup& sub_item_group,
                 eItemKind link_kind);
   //! Construit une instance avec un fonctor particulier.
-  ItemPairGroup(const ItemGroup& group,const ItemGroup& sub_item_group,
+  ItemPairGroup(const ItemGroup& group, const ItemGroup& sub_item_group,
                 CustomFunctor* functor);
   //! Constructeur de recopie.
   ItemPairGroup(const ItemPairGroup& from)
-  : m_impl(from.m_impl) {}
+  : m_impl(from.m_impl)
+  {}
 
   const ItemPairGroup& operator=(const ItemPairGroup& from)
-    {
-      m_impl = from.m_impl;
-      return (*this);
-    }
-  virtual ~ItemPairGroup() {}
+  {
+    m_impl = from.m_impl;
+    return (*this);
+  }
+  virtual ~ItemPairGroup() = default;
 
  public:
 
   //! \a true is le groupe est le groupe nul
   inline bool null() const { return m_impl->null(); }
   //! Type des entités du groupe
-  inline eItemKind itemKind() const  { return m_impl->itemKind(); }
+  inline eItemKind itemKind() const { return m_impl->itemKind(); }
   //! Type des sous-entités du groupe
-  inline eItemKind subItemKind() const  { return m_impl->subItemKind(); }
+  inline eItemKind subItemKind() const { return m_impl->subItemKind(); }
 
  public:
 
@@ -110,7 +109,7 @@ class ARCANE_CORE_EXPORT ItemPairGroup
 
   /*! \brief Invalide la liste.
    */
-  void invalidate(bool force_recompute=false)
+  void invalidate(bool force_recompute = false)
   {
     m_impl->invalidate(force_recompute);
   }
@@ -130,9 +129,9 @@ class ARCANE_CORE_EXPORT ItemPairGroup
  protected:
 
   //! Retourne le groupe \a impl s'il est du genre \a kt, le groupe nul sinon
-  static ItemPairGroupImpl* _check(ItemPairGroupImpl* impl,eItemKind ik,eItemKind aik)
+  static ItemPairGroupImpl* _check(ItemPairGroupImpl* impl, eItemKind ik, eItemKind aik)
   {
-    return (impl->itemKind()==ik && impl->subItemKind()==aik) ? impl : ItemPairGroupImpl::checkSharedNull();
+    return (impl->itemKind() == ik && impl->subItemKind() == aik) ? impl : ItemPairGroupImpl::checkSharedNull();
   }
 };
 
@@ -144,9 +143,9 @@ class ARCANE_CORE_EXPORT ItemPairGroup
  * \retval false sinon.
  */
 inline bool
-operator==(const ItemPairGroup& g1,const ItemPairGroup& g2)
+operator==(const ItemPairGroup& g1, const ItemPairGroup& g2)
 {
-  return g1.internal()==g2.internal();
+  return g1.internal() == g2.internal();
 }
 
 /*!
@@ -155,9 +154,9 @@ operator==(const ItemPairGroup& g1,const ItemPairGroup& g2)
  * \retval false sinon.
  */
 inline bool
-operator!=(const ItemPairGroup& g1,const ItemPairGroup& g2)
+operator!=(const ItemPairGroup& g1, const ItemPairGroup& g2)
 {
-  return g1.internal()!=g2.internal();
+  return g1.internal() != g2.internal();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -165,14 +164,14 @@ operator!=(const ItemPairGroup& g1,const ItemPairGroup& g2)
 /*!
  * \brief Référence à un groupe d'un genre donné.
  */
-template<typename ItemKind,typename SubItemKind>
+template <typename ItemKind, typename SubItemKind>
 class ItemPairGroupT
 : public ItemPairGroup
 {
  public:
 
   //! Type de cette classe
-  typedef ItemPairGroupT<ItemKind,SubItemKind> ThatClass;
+  typedef ItemPairGroupT<ItemKind, SubItemKind> ThatClass;
   //! Type de la classe contenant les caractéristiques de l'entité
   typedef ItemTraitsT<ItemKind> TraitsType;
   typedef ItemTraitsT<SubItemKind> SubTraitsType;
@@ -184,39 +183,48 @@ class ItemPairGroupT
 
  public:
 
-  ItemPairGroupT(){}
+  ItemPairGroupT() {}
   ItemPairGroupT(const ItemPairGroup& from)
-  : ItemPairGroup(_check(from.internal(),TraitsType::kind(),SubTraitsType::kind())) {}
+  : ItemPairGroup(_check(from.internal(), TraitsType::kind(), SubTraitsType::kind()))
+  {}
   ItemPairGroupT(const ThatClass& from)
-  : ItemPairGroup(from) {}
-  ItemPairGroupT(const ItemGroupType& group,const SubItemGroupType& sub_group,
+  : ItemPairGroup(from)
+  {}
+  ItemPairGroupT(const ItemGroupType& group, const SubItemGroupType& sub_group,
                  eItemKind link_kind)
-  : ItemPairGroup(group,sub_group,link_kind) {}
-  ItemPairGroupT(const ItemGroupType& group,const SubItemGroupType& sub_group,
+  : ItemPairGroup(group, sub_group, link_kind)
+  {}
+  ItemPairGroupT(const ItemGroupType& group, const SubItemGroupType& sub_group,
                  CustomFunctor* functor)
-  : ItemPairGroup(group,sub_group,functor) { }
-  ~ItemPairGroupT(){}
+  : ItemPairGroup(group, sub_group, functor)
+  {}
+  ~ItemPairGroupT() {}
 
  public:
 
   const ThatClass& operator=(const ThatClass& from)
-  { m_impl = from.internal(); return (*this); }
+  {
+    m_impl = from.internal();
+    return (*this);
+  }
   const ThatClass& operator=(const ItemPairGroup& from)
-  { _assign(from); return (*this); }
+  {
+    _assign(from);
+    return (*this);
+  }
 
  protected:
 
   void _assign(const ItemPairGroup& from)
   {
-    m_impl = _check(from.internal(),TraitsType::kind(),SubTraitsType::kind());
+    m_impl = _check(from.internal(), TraitsType::kind(), SubTraitsType::kind());
   }
 };
 
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -1,37 +1,26 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IServiceLoader.h                                            (C) 2000-2013 */
+/* IServiceLoader.h                                            (C) 2000-2025 */
 /*                                                                           */
 /* Interface de chargement des services et modules.                          */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_ISERVICELOADER_H
-#define ARCANE_ISERVICELOADER_H
+#ifndef ARCANE_CORE_ISERVICELOADER_H
+#define ARCANE_CORE_ISERVICELOADER_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/ArcaneGlobal.h"
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ARCANE_BEGIN_NAMESPACE
+#include "arcane/core/ArcaneTypes.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class IBase;
-class IServiceInfo;
-class IServiceFactory;
-class ISubDomain;
-class IApplication;
-class ISession;
-class ICaseOptions;
-class IServiceInstance;
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -44,7 +33,7 @@ class IServiceLoader
  public:
 
   //! Libère les ressources
-  virtual ~IServiceLoader() {}
+  virtual ~IServiceLoader() = default;
 
  public:
 	
@@ -85,10 +74,9 @@ class IServiceLoader
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #endif  
-

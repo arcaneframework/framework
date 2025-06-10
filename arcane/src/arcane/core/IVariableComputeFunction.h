@@ -1,16 +1,16 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IVariableComputeFunction.h                                  (C) 2000-2018 */
+/* IVariableComputeFunction.h                                  (C) 2000-2025 */
 /*                                                                           */
-/* Interface de la classe fonctor de recalcul d'une variable.                */
+/* Interface de la classe functor de re-calcul d'une variable.               */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_IVARIABLECOMPUTEFUNCTION_H
-#define ARCANE_IVARIABLECOMPUTEFUNCTION_H
+#ifndef ARCANE_CORE_IVARIABLECOMPUTEFUNCTION_H
+#define ARCANE_CORE_IVARIABLECOMPUTEFUNCTION_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -19,32 +19,33 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- \brief Interface de la classe fonctor de recalcul d'une variable.
+ \brief Interface de la classe functor de re-calcul d'une variable.
  */
 class IVariableComputeFunction
 {
  public:
 
-  virtual ~IVariableComputeFunction(){} //!< Libère les ressources
+  virtual ~IVariableComputeFunction() = default; //!< Libère les ressources
 
  public:
 
   //! Exécute la fonction de calcul
-  virtual void execute() =0;
+  virtual void execute() = 0;
 
   //! Informations de trace de la définition de la fonction de calcul
-  virtual const Arccore::TraceInfo& traceInfo() const =0;
+  virtual const TraceInfo& traceInfo() const = 0;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

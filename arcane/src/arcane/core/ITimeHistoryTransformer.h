@@ -1,16 +1,16 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ITimeHistoryTransformer.h                                   (C) 2000-2018 */
+/* ITimeHistoryTransformer.h                                   (C) 2000-2025 */
 /*                                                                           */
 /* Interface d'un objet transformant les courbes d'historiques.              */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_ITIMEHISTORYTRANSFORMER_H
-#define ARCANE_ITIMEHISTORYTRANSFORMER_H
+#ifndef ARCANE_CORE_ITIMEHISTORYTRANSFORMER_H
+#define ARCANE_CORE_ITIMEHISTORYTRANSFORMER_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -21,7 +21,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -41,7 +42,7 @@ ARCANE_BEGIN_NAMESPACE
  * d'éléments. Il n'est pas permis de changer le nom de la courbe ni
  * le nombre de valeurs par itération (sub_size).
  */
-class ITimeHistoryTransformer
+class ARCANE_CORE_EXPORT ITimeHistoryTransformer
 {
  public:
 
@@ -49,37 +50,37 @@ class ITimeHistoryTransformer
   class CommonInfo
   {
    public:
+
     //! Nom de la courbe
     String name;
     //! Liste des itérations
     Int32SharedArray iterations;
     //! Nombre de valeurs par courbe
-    Integer sub_size;
+    Integer sub_size = 0;
   };
 
  public:
 
-  virtual ~ITimeHistoryTransformer(){} //!< Libère les ressources
+  virtual ~ITimeHistoryTransformer() = default; //!< Libère les ressources
 
  public:
-	
+
   //! Applique la transformation pour une courbe avec des valeurs \a Real
-  virtual void transform(CommonInfo& infos,RealSharedArray values) =0;
+  virtual void transform(CommonInfo& infos, RealSharedArray values) = 0;
 
   //! Applique la transformation pour une courbe avec des valeurs \a Int32
-  virtual void transform(CommonInfo& infos,Int32SharedArray values) =0;
+  virtual void transform(CommonInfo& infos, Int32SharedArray values) = 0;
 
   //! Applique la transformation pour une courbe avec des valeurs \a Int64
-  virtual void transform(CommonInfo& infos,Int64SharedArray values) =0;
+  virtual void transform(CommonInfo& infos, Int64SharedArray values) = 0;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #endif  
-

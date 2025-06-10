@@ -145,12 +145,14 @@ class ItemPairGroup::CustomFunctorWrapper
  public:
   void executeFunctor() override
   {
-    ItemPairGroupBuilder builder(m_group);
+    ItemPairGroup pair_group(m_group);
+    ItemPairGroupBuilder builder(pair_group);
     m_functor->executeFunctor(builder);
   }
  public:
-  ItemPairGroupImpl* m_group;
-  ItemPairGroup::CustomFunctor* m_functor;
+
+  ItemPairGroupImpl* m_group = nullptr;
+  ItemPairGroup::CustomFunctor* m_functor = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/

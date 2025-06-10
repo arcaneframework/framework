@@ -1,16 +1,16 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemInternalSortFunction.h                                  (C) 2000-2008 */
+/* ItemInternalSortFunction.h                                  (C) 2000-2025 */
 /*                                                                           */
 /* Fonction de tri des entités.                                              */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_ITEMINTERNALSORTFUNCTION_H
-#define ARCANE_ITEMINTERNALSORTFUNCTION_H
+#ifndef ARCANE_CORE_ITEMINTERNALSORTFUNCTION_H
+#define ARCANE_CORE_ITEMINTERNALSORTFUNCTION_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -22,10 +22,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -41,31 +39,28 @@ ARCANE_BEGIN_NAMESPACE
  * \endcode
  * et qui retourne \a true si \a item1 est avant \a item2.
  */
-template<typename SortFunction>
+template <typename SortFunction>
 class ItemInternalSortFunction
 : public IItemInternalSortFunction
 {
  public:
 
-  ItemInternalSortFunction(const String& name)
-  : m_name(name){}
-  virtual ~ItemInternalSortFunction() {} //<! Libère les ressources
+  explicit ItemInternalSortFunction(const String& name)
+  : m_name(name)
+  {}
 
  public:
 
-  virtual const String& name() const
-  {
-    return m_name;
-  }
+  const String& name() const override { return m_name; }
 
  public:
 
   /*!
    * \brief Trie les entités du tableau \a items.
    */
-  virtual void sortItems(ItemInternalMutableArrayView items)
+  void sortItems(ItemInternalMutableArrayView items) override
   {
-    std::sort(std::begin(items),std::end(items),SortFunction());
+    std::sort(std::begin(items), std::end(items), SortFunction());
   }
 
  private:
@@ -76,7 +71,7 @@ class ItemInternalSortFunction
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -1,28 +1,26 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IItemInternalSortFunction.h                                 (C) 2000-2008 */
+/* IItemInternalSortFunction.h                                 (C) 2000-2025 */
 /*                                                                           */
 /* Interface d'une fonction de tri des entités.                              */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_IITEMINTERNALSORTFUNCTION_H
-#define ARCANE_IITEMINTERNALSORTFUNCTION_H
+#ifndef ARCANE_CORE_IITEMINTERNALSORTFUNCTION_H
+#define ARCANE_CORE_IITEMINTERNALSORTFUNCTION_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/ArcaneTypes.h"
+#include "arcane/core/ArcaneTypes.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -42,7 +40,7 @@ class IItemInternalSortFunction
 {
  public:
 
-  virtual ~IItemInternalSortFunction() {} //<! Libère les ressources
+  virtual ~IItemInternalSortFunction() = default; //!< Libère les ressources
 
  public:
 
@@ -52,18 +50,18 @@ class IItemInternalSortFunction
    * Les noms commençant par 'Arcane' sont réservés et ne doivent pas être
    * utilisés.
    */
-  virtual const String& name() const =0;
-  
+  virtual const String& name() const = 0;
+
   /*!
    * \brief Trie les entités du tableau \a items.
    */
-  virtual void sortItems(ItemInternalMutableArrayView items) =0;
+  virtual void sortItems(ItemInternalMutableArrayView items) = 0;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

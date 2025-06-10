@@ -57,7 +57,7 @@ class ARCANE_CORE_EXPORT ItemPairGroupBuilder
  public:
 
   //! \internal
-  ItemPairGroupBuilder(const ItemPairGroup& group);
+  explicit ItemPairGroupBuilder(const ItemPairGroup& group);
   ~ItemPairGroupBuilder();
 
  public:

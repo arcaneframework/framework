@@ -1,28 +1,29 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* SynchronizerMatrixPrinter.h                              (C) 2011-2011 */
+/* SynchronizerMatrixPrinter.h                                 (C) 2011-2025 */
 /*                                                                           */
 /* Affiche la matrix de synchronization.                                     */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_PARALLEL_SYNCHRONIZATIONMATRIXPRINTER_H
-#define ARCANE_PARALLEL_SYNCHRONIZATIONMATRIXPRINTER_H
+#ifndef ARCANE_CORE_SYNCHRONIZATIONMATRIXPRINTER_H
+#define ARCANE_CORE_SYNCHRONIZATIONMATRIXPRINTER_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/Parallel.h"
-#include "arcane/ArcaneTypes.h"
-#include "arcane/IVariableSynchronizer.h"
+#include "arcane/core/Parallel.h"
+#include "arcane/core/IVariableSynchronizer.h"
+
 #include <iostream>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -31,35 +32,32 @@ ARCANE_BEGIN_NAMESPACE
  */
 class ARCANE_CORE_EXPORT SynchronizerMatrixPrinter
 {
-public:
+ public:
 
-  SynchronizerMatrixPrinter(IVariableSynchronizer* synchronizer);
-  virtual ~SynchronizerMatrixPrinter() {} //!< Libère les ressources.
+  explicit SynchronizerMatrixPrinter(IVariableSynchronizer* synchronizer);
+  virtual ~SynchronizerMatrixPrinter() = default; //!< Libère les ressources.
 
-public:
-  void print(std::ostream & o) const;
+ public:
 
-private:
-  IVariableSynchronizer * m_synchronizer;
+  void print(std::ostream& o) const;
+  friend std::ostream&
+  operator<<(std::ostream& o, const SynchronizerMatrixPrinter& s)
+  {
+    s.print(o);
+    return o;
+  }
+
+ private:
+
+  IVariableSynchronizer* m_synchronizer = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-std::ostream & 
-operator<<(std::ostream & o, const SynchronizerMatrixPrinter & s)
-{
-  s.print(o);
-  return o;
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #endif
-

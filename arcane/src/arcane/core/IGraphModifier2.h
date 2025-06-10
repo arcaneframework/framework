@@ -1,44 +1,44 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IGraphModifier2.h                                            (C) 2011-2011 */
+/* IGraphModifier2.h                                           (C) 2000-2025 */
 /*                                                                           */
 /* Interface d'un outil de modification du graphe d'un maillage              */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_IGRAPHMODIFIER2_H
-#define ARCANE_IGRAPHMODIFIER2_H
+#ifndef ARCANE_CORE_IGRAPHMODIFIER2_H
+#define ARCANE_CORE_IGRAPHMODIFIER2_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/ArcaneTypes.h"
+#include "arcane/core/ArcaneTypes.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Interface d'un graphe du maillage
+ * \brief Interface d'un graphe du maillage.
  */
 class ARCANE_CORE_EXPORT IGraphModifier2
 {
  public:
 
-  virtual ~IGraphModifier2() {} //<! Lib�re les ressources
-    
+  virtual ~IGraphModifier2() = default; //!< Libère les ressources
+
  public:
-  
- 
+
   //! Ajout de liaisons dans le graphe avec un nombre fixe de noeuds dual par liaison
   virtual void addLinks(Integer nb_link,
                         Integer nb_dual_nodes_per_link,
-                        Int64ConstArrayView links_infos) =0;
+                        Int64ConstArrayView links_infos) = 0;
 
   //! Ajout de noeuds duaux dans le graphe avec un type fixe d'item dual par noeud
   virtual void addDualNodes(Integer graph_nb_dual_node,
@@ -50,26 +50,25 @@ class ARCANE_CORE_EXPORT IGraphModifier2
                             Int64ConstArrayView dual_nodes_infos) = 0;
 
   //! Suppression de noeuds duaux dans le graphe
-  virtual void removeDualNodes(Int32ConstArrayView dual_node_local_ids) =0;
+  virtual void removeDualNodes(Int32ConstArrayView dual_node_local_ids) = 0;
 
   //! Suppression de liaisons duaux dans le graphe
-  virtual void removeLinks(Int32ConstArrayView link_local_ids) =0;
-  
+  virtual void removeLinks(Int32ConstArrayView link_local_ids) = 0;
+
   //! Suppression des DualNodes et Links connectés aux mailles qui vont être supprimees
-  virtual void removeConnectedItemsFromCells(Int32ConstArrayView cell_local_ids) =0;
+  virtual void removeConnectedItemsFromCells(Int32ConstArrayView cell_local_ids) = 0;
 
-  virtual void endUpdate() =0;
+  virtual void endUpdate() = 0;
 
-  virtual void updateAfterMeshChanged() =0;
-
+  virtual void updateAfterMeshChanged() = 0;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 #endif
-

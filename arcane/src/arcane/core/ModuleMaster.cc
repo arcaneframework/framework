@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ModuleMaster.cc                                             (C) 2000-2015 */
+/* ModuleMaster.cc                                             (C) 2000-2025 */
 /*                                                                           */
 /* Module maître.                                                            */
 /*---------------------------------------------------------------------------*/
@@ -20,25 +20,26 @@
 #include "arcane/utils/Collection.h"
 #include "arcane/utils/IOnlineDebuggerService.h"
 
-#include "arcane/ModuleMaster.h"
-#include "arcane/EntryPoint.h"
-#include "arcane/CaseOptionsMain.h"
-#include "arcane/ITimeHistoryMng.h"
-#include "arcane/IVariableMng.h"
-#include "arcane/ISubDomain.h"
-#include "arcane/IApplication.h"
-#include "arcane/IModuleMng.h"
-#include "arcane/ITimeLoopMng.h"
-#include "arcane/IParallelMng.h"
-#include "arcane/ICaseMng.h"
-#include "arcane/IModuleMng.h"
-#include "arcane/ModuleBuildInfo.h"
-#include "arcane/ITimeLoopService.h"
+#include "arcane/core/ModuleMaster.h"
+#include "arcane/core/EntryPoint.h"
+#include "arcane/core/CaseOptionsMain.h"
+#include "arcane/core/ITimeHistoryMng.h"
+#include "arcane/core/IVariableMng.h"
+#include "arcane/core/ISubDomain.h"
+#include "arcane/core/IApplication.h"
+#include "arcane/core/IModuleMng.h"
+#include "arcane/core/ITimeLoopMng.h"
+#include "arcane/core/IParallelMng.h"
+#include "arcane/core/ICaseMng.h"
+#include "arcane/core/IModuleMng.h"
+#include "arcane/core/ModuleBuildInfo.h"
+#include "arcane/core/ITimeLoopService.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -58,18 +59,6 @@ ModuleMaster::
 ModuleMaster(const ModuleBuildInfo& mb)
 : AbstractModule(mb)
 , CommonVariables(this)
-, m_case_options_main(0)
-, m_nb_loop(0)
-, m_old_cpu_time(0.0)
-, m_old_elapsed_time(0.0)
-, m_is_first_loop(true)
-, m_thm_mem_used(0.0)
-, m_thm_diff_cpu(0.0)
-, m_thm_global_cpu_time(0.0)
-, m_thm_diff_elapsed(0.0)
-, m_thm_global_elapsed_time(0.0)
-, m_thm_global_time(0.0)
-, m_has_thm_dump_at_iteration(false)
 {
   m_case_options_main = new CaseOptionsMain(mb.subDomain()->caseMng());
 
@@ -472,8 +461,7 @@ _masterRestore()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-

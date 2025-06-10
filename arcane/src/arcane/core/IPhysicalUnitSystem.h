@@ -1,16 +1,16 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IPhysicalUnitSystemService.h                                (C) 2000-2010 */
+/* IPhysicalUnitSystemService.h                                (C) 2000-2025 */
 /*                                                                           */
 /* Interface d'un système d'unité.                                           */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_IPHYSICALUNITSYSTEM_H
-#define ARCANE_IPHYSICALUNITSYSTEM_H
+#ifndef ARCANE_CORE_IPHYSICALUNITSYSTEM_H
+#define ARCANE_CORE_IPHYSICALUNITSYSTEM_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -19,13 +19,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-class IPhysicalUnit;
-class IPhysicalUnitConverter;
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -37,7 +32,7 @@ class ARCANE_CORE_EXPORT IPhysicalUnitSystem
 {
  public:
 
-  virtual ~IPhysicalUnitSystem() {} //!< Libère les ressources.
+  virtual ~IPhysicalUnitSystem() = default; //!< Libère les ressources.
 
  public:
 
@@ -47,24 +42,21 @@ class ARCANE_CORE_EXPORT IPhysicalUnitSystem
    * Les unités \a from et \a to doivent avoir été créées par ce
    * système d'unité.
    */
-  virtual IPhysicalUnitConverter* createConverter(IPhysicalUnit* from,IPhysicalUnit* to) =0;
+  virtual IPhysicalUnitConverter* createConverter(IPhysicalUnit* from, IPhysicalUnit* to) = 0;
 
   /*!
    * \brief Créé un convertisseur entre deux unités.
    * L'appelant doit détruire le convertisseur retourné.
    */
-  virtual IPhysicalUnitConverter* createConverter(const String& from,const String& to) =0;
-
- private:
+  virtual IPhysicalUnitConverter* createConverter(const String& from, const String& to) = 0;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #endif
-
