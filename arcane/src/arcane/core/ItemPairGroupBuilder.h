@@ -1,16 +1,16 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemPairGroupBuilder.h                                      (C) 2000-2021 */
+/* ItemPairGroupBuilder.h                                      (C) 2000-2025 */
 /*                                                                           */
 /* Construction des listes des entités des ItemPairGroup.                    */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_ITEMPAIRGROUPBUILDER_H
-#define ARCANE_ITEMPAIRGROUPBUILDER_H
+#ifndef ARCANE_CORE_ITEMPAIRGROUPBUILDER_H
+#define ARCANE_CORE_ITEMPAIRGROUPBUILDER_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -21,9 +21,6 @@
 
 namespace Arcane
 {
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -70,7 +67,7 @@ class ARCANE_CORE_EXPORT ItemPairGroupBuilder
  private:
 
   ItemPairGroup m_group;
-  Int64 m_index;
+  Int64 m_index = 0;
   Array<Int64>& m_unguarded_indexes;
   Array<Int32>& m_unguarded_local_ids;
 };
