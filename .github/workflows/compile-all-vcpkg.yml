@@ -65,22 +65,6 @@ jobs:
             dotnet_version : "8.0.x"
             cmake_specific_args : '-DALIEN_BUILD_COMPONENT=all -DARCCORE_BUILD_MODE=Debug -DCMAKE_BUILD_TYPE=Debug -DARCCORE_CXX_STANDARD=20 -DARCANE_ENABLE_DOTNET_PYTHON_WRAPPER=ON'
             ctest_specific_args : '-I 1,210'
-          - os: 'windows-2019'
-            full_name: 'windows-2019-msmpi'
-            package_name: 'windows-2019-msmpi'
-            triplet: x64-windows
-            vcpkg_os: windows-2019
-            dotnet_version : "6.0.x"
-            cmake_specific_args : '-DCMAKE_BUILD_TYPE=Release'
-            ctest_specific_args : '-I 1,160'
-          - os: 'windows-2019'
-            full_name: 'windows-2019-intelmpi'
-            package_name: 'windows-2019-intelmpi'
-            triplet: x64-windows
-            vcpkg_os: windows-2019
-            dotnet_version : "6.0.x"
-            cmake_specific_args : '-DCMAKE_BUILD_TYPE=Release'
-            ctest_specific_args : '-I 1,160'
           - os: 'windows-2022'
             full_name: 'windows-2022-intelmpi'
             package_name: 'windows-2022-intelmpi'
