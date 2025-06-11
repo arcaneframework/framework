@@ -1,10 +1,10 @@
-name: IFPEN ubu2204 foss/2021b
+name: IFPEN el9 foss/2021b C++20
 
 on:
-  #push:
-  #  branches: [ main, dev/cea, dev/ifpen, dev/ci_ifpen ]
-  #pull_request:
-  #  branches: [ main, dev/cea, dev/ifpen, dev/ci_ifpen ]
+  push:
+    branches: [ main, dev/cea, dev/ifpen, dev/ci_ifpen ]
+  pull_request:
+    branches: [ main, dev/cea, dev/ifpen, dev/ci_ifpen ]
   workflow_dispatch:
     inputs:
       ctest_options:
@@ -41,7 +41,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 120
     container:
-      image: ghcr.io/arcaneframework/arcane-ifpen-devenv-foss-2021b:ubu2204
+      image: ghcr.io/arcaneframework/arcane-ifpen-devenv-foss-2021b:el9
       #options: --user root  # Avoid to match github UID in container.
     strategy:
       fail-fast: false
@@ -60,8 +60,8 @@ jobs:
         uses: actions/cache/restore@v4
         with:
           path: ${{ env.CCACHE_DIR }}
-          key: ifpen-ubu2204-foss-2021b-${{ env.CM_BUILD_TYPE }}-${{ env.NOW }}-${{ github.run_number }}
-          restore-keys: ifpen-ubu2204-foss-2021b-${{ env.CM_BUILD_TYPE }}-
+          key: ifpen-el9-foss-2021b-${{ env.CM_BUILD_TYPE }}-${{ env.NOW }}-${{ github.run_number }}
+          restore-keys: ifpen-el9-foss-2021b-${{ env.CM_BUILD_TYPE }}-
 
       # Installation
 
@@ -88,7 +88,7 @@ jobs:
           (success() || failure()) &&
           steps.checkout.outcome == 'success'
         shell: bash
-        run: cmake -S ${{ env.SOURCE_DIR }} -B ${{ env.BUILD_DIR }} -DCMAKE_INSTALL_PREFIX=${{ env.INSTALL_DIR }} ${{ env.CM_CCACHE_OPTS }} -DCMAKE_BUILD_TYPE=${{ env.CM_BUILD_TYPE }} -DARCCORE_BUILD_MODE=Check -DREMOVE_UID_ON_DETACH=ON -DUSE_GTEST_DEATH_TEST=ON -DCMAKE_DISABLE_FIND_PACKAGE_Papi=ON -DALIEN_BUILD_COMPONENT=all -DALIEN_PLUGIN_HYPRE=ON -DALIEN_PLUGIN_PETSC=ON -DUSE_GRAPH_CONNECTIVITY_POLICY=ON -DARCANE_DISABLE_PERFCOUNTER_TESTS=ON
+        run: cmake -S ${{ env.SOURCE_DIR }} -B ${{ env.BUILD_DIR }} -DCMAKE_INSTALL_PREFIX=${{ env.INSTALL_DIR }} ${{ env.CM_CCACHE_OPTS }} -DCMAKE_BUILD_TYPE=${{ env.CM_BUILD_TYPE }} -DARCCORE_BUILD_MODE=Check -DREMOVE_UID_ON_DETACH=ON -DUSE_GTEST_DEATH_TEST=ON -DCMAKE_DISABLE_FIND_PACKAGE_Papi=ON -DALIEN_BUILD_COMPONENT=all -DALIEN_PLUGIN_HYPRE=ON -DALIEN_PLUGIN_PETSC=ON -DUSE_GRAPH_CONNECTIVITY_POLICY=ON -DARCANE_DISABLE_PERFCOUNTER_TESTS=ON -DARCCORE_CXX_STANDARD=20
 
       - name: Build
         id: build
@@ -155,7 +155,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 120
     container:
-      image: ghcr.io/arcaneframework/arcane-ifpen-devenv-foss-2021b-rt:ubu2204
+      image: ghcr.io/arcaneframework/arcane-ifpen-devenv-foss-2021b-rt:el9
       #options: --user root  # Avoid to match github UID in container.
     strategy:
       fail-fast: false
@@ -187,9 +187,7 @@ jobs:
       - name: Test
         id: test
         shell: bash
-        # GG: TEMPORARY Remove alien tests using redistribution because they are failing
-        # with timeout.
-        run: env LD_LIBRARY_PATH=${{ env.BUILD_DIR }}/${{ env.EXT_LIB_SUBDIR }}:${LD_LIBRARY_PATH} ctest --test-dir ${{ env.BUILD_DIR }} ${{ env.CT_OPTS }} -E alien.refmvhandlers.scalar.RedistributorAlgebra
+        run: env LD_LIBRARY_PATH=${{ env.BUILD_DIR }}/${{ env.EXT_LIB_SUBDIR }}:${LD_LIBRARY_PATH} ctest --test-dir ${{ env.BUILD_DIR }} ${{ env.CT_OPTS }} -E '(RedistributorAlgebra|CompositeSpace)'
 
       - name: Upload test artifact
         id: upload-test-artifact
