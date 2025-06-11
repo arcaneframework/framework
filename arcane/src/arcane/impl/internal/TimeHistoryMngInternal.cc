@@ -533,7 +533,9 @@ _dumpSummaryOfCurvesLegacy()
     }
     // Puis, si les autres processus peuvent aussi avoir des courbes, on
     // écrit aussi leurs noms.
-    if (m_need_comm && m_enable_non_io_master_curves) {
+    // Même si "m_io_master_write_only" est égal à false, ce fichier est
+    // forcement écrit par un seul processus.
+    if (m_enable_non_io_master_curves && (!m_io_master_write_only || m_need_comm)) {
       for (Integer i = 0; i < m_parallel_mng->commSize(); ++i)
         if (i != master_io_rank) {
           Integer nb_curve = 0;
@@ -560,7 +562,7 @@ _dumpSummaryOfCurvesLegacy()
   }
 
   // Si l'on n'est pas un processus écrivain mais qu'il est possible que l'on possède des courbes.
-  else if (m_need_comm && m_enable_non_io_master_curves && m_is_master_io_of_sd) {
+  else if (m_enable_non_io_master_curves && m_is_master_io_of_sd && (!m_io_master_write_only || m_need_comm)) {
     Integer nb_curve = arcaneCheckArraySize(m_history_list.size());
     m_parallel_mng->send(ArrayView<Integer>(1, &nb_curve), master_io_rank);
     for (ConstIterT<HistoryList> i(m_history_list); i(); ++i) {
@@ -627,7 +629,9 @@ _dumpSummaryOfCurves()
 
           // Puis, si les autres processus peuvent aussi avoir des courbes, on
           // écrit aussi leurs noms.
-          if (m_need_comm && m_enable_non_io_master_curves) {
+          // Même si "m_io_master_write_only" est égal à false, ce fichier est
+          // forcement écrit par un seul processus.
+          if (m_enable_non_io_master_curves && (!m_io_master_write_only || m_need_comm)) {
             for (Integer i = 0; i < m_parallel_mng->commSize(); ++i) {
               if (i != master_io_rank) {
                 Integer nb_curve = 0;
@@ -670,7 +674,7 @@ _dumpSummaryOfCurves()
   }
 
   // Si l'on n'est pas un processus écrivain mais qu'il est possible que l'on possède des courbes.
-  else if (m_need_comm && m_enable_non_io_master_curves && m_is_master_io_of_sd) {
+  else if (m_enable_non_io_master_curves && m_is_master_io_of_sd && (!m_io_master_write_only || m_need_comm)) {
 
     Integer master_io_rank = m_parallel_mng->masterIORank();
 
