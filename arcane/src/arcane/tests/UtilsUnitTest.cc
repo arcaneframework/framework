@@ -28,6 +28,7 @@
 #include "arcane/utils/IHashAlgorithm.h"
 #include "arcane/utils/ValueChecker.h"
 
+#include "arcane/core/ArcaneException.h"
 #include "arcane/core/BasicUnitTest.h"
 #include "arcane/core/FactoryService.h"
 #include "arcane/core/ServiceBuilder.h"
@@ -88,13 +89,13 @@ class UtilsUnitTest
   };
  public:
 
-  UtilsUnitTest(const ServiceBuildInfo& cb);
-  ~UtilsUnitTest();
+  explicit UtilsUnitTest(const ServiceBuildInfo& cb);
+  ~UtilsUnitTest() override;
 
  public:
 
-  virtual void initializeTest() {}
-  virtual void executeTest();
+  void initializeTest() override {}
+  void executeTest() override;
 
  private:
 
@@ -115,6 +116,8 @@ class UtilsUnitTest
   void _testCommandLine();
   void _testHashAlgorithm();
   void _testDataTypeNames();
+  void _testCheckId();
+  void _testCheckId(const String& value, bool is_valid);
 };
 
 /*---------------------------------------------------------------------------*/
@@ -183,6 +186,7 @@ executeTest()
   _testCommandLine();
   _testHashAlgorithm();
   _testDataTypeNames();
+  _testCheckId();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -868,7 +872,48 @@ _testDataTypeNames()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+void UtilsUnitTest::
+_testCheckId(const String& value, bool is_valid)
+{
+  String func_name = "testCheckId()";
+  info() << "Test ISubDomain::checkId() for '" << value << "' is_valid=" << is_valid;
+  ISubDomain* sd = subDomain();
+  if (is_valid) {
+    sd->checkId(func_name, value);
+  }
+  else {
+    bool is_ok = false;
+    // On s'attend à avoir une exception BadIDException.
+    try {
+      sd->checkId(func_name, value);
+    }
+    catch (const BadIDException& ex) {
+      is_ok = true;
+    }
+    if (!is_ok)
+      ARCANE_FATAL("checkId() for '{0}' should throw BadIDException", value);
+  }
 }
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void UtilsUnitTest::
+_testCheckId()
+{
+  info() << "Test ISubDomain::checkId()";
+  _testCheckId("Toto", true);
+  _testCheckId("Toto_25", true);
+  _testCheckId("Toto-XYZ", true);
+  _testCheckId("Toto-é", false);
+  _testCheckId("_Toto", false);
+  _testCheckId(String{}, false);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+} // namespace ArcaneTest
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
