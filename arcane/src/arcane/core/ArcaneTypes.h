@@ -481,6 +481,7 @@ class IItemFamilyExchanger;
 class IItemFamilySerializer;
 class IItemFamilySerializeStepFactory;
 class ItemFamilySerializeArgs;
+class ILoadBalanceMng;
 class IMesh;
 class IMeshPartitioner;
 class IMeshPartitionerBase;
