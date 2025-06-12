@@ -1,30 +1,28 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ArcaneException.cc                                          (C) 2000-2024 */
+/* ArcaneException.cc                                          (C) 2000-2025 */
 /*                                                                           */
 /* Exceptions lancées par l'architecture.                                    */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/ArcaneException.h"
+#include "arcane/core/ArcaneException.h"
 
 #include "arcane/utils/Iostream.h"
-
-#include "arcane/IVariable.h"
-#include "arcane/IModule.h"
-#include "arcane/IBase.h"
 #include "arcane/utils/TraceInfo.h"
 
+#include "arcane/core/IVariable.h"
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-
+namespace Arcane
+{
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -44,7 +42,7 @@ explain(std::ostream& m) const
   m << "Name '" << m_invalid_name << "' is not a valid identifier.\n";
   m << "Identifiers must start with an alphabetical character (a-zA-Z)\n";
   m << "followed by alphabetical characters, figures,\n";
-  m << "underscores '_' or dots '.'\n";
+  m << "underscores '_', dots '.' or hyphen '-'.\n";
 }
 
 /*---------------------------------------------------------------------------*/
@@ -299,7 +297,7 @@ explain(std::ostream& m) const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
