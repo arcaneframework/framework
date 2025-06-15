@@ -10,7 +10,7 @@
 /* Interface de la classe compteur de référence.                             */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_ISHAREDREFERENCE_H
-#define ARCANE_ICORE_SHAREDREFERENCE_H
+#define ARCANE_CORE_ISHAREDREFERENCE_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
