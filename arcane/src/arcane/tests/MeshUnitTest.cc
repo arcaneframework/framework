@@ -1146,6 +1146,9 @@ _testItemArray()
     local_ids.add((*icell).localId());
   }
   
+  // Pour tester le constructeur par défaut.
+  [[maybe_unused]] ItemLocalIdToItemConverter empty_converter;
+
   ItemVectorView v(family,local_ids);
   ItemInfoListView cells_info_view(family);
   ItemLocalIdToItemConverter cells_local_id_converter(family);
