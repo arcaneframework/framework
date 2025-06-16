@@ -138,6 +138,14 @@ class ARCANE_CORE_EXPORT ItemLocalIdToItemConverter
  public:
 
   explicit ItemLocalIdToItemConverter(IItemFamily* family);
+  /*!
+   * \brief Constructeur par défaut.
+   *
+   * L'instance ne sera pas valide tant qu'elle n'aura pas été recopiée
+   * depuis une instance valide (en utilisant le constructeur qui
+   * prend un IItemFamily en argument.
+   */
+  ItemLocalIdToItemConverter() = default;
 
  public:
 
