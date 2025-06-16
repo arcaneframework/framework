@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* SimpleSVGMeshExporter.cc                                    (C) 2000-2023 */
+/* SimpleSVGMeshExporter.cc                                    (C) 2000-2025 */
 /*                                                                           */
 /* Écrivain d'un maillage au format SVG.                                     */
 /*---------------------------------------------------------------------------*/
@@ -137,6 +137,7 @@ write(const CellGroup& cells)
     Real2 cell_pos = cells_center[cell.localId()];
     Integer nb_node = cell.nbNode();
     ofile << "<path d='";
+    nb_node = cell.typeInfo()->linearTypeInfo()->nbLocalNode();
     for (Integer i = 0; i < nb_node; ++i) {
       Real3 node_coord_3d = nodes_coord[cell.node(i)];
       Real2 node_coord(node_coord_3d.x, -node_coord_3d.y);
@@ -195,10 +196,14 @@ write(const CellGroup& cells)
         if (faces_done.find(lid) != faces_done.end())
           continue;
         faces_done.insert(lid);
-
+        // En cas de maillage multi-dim, il est possible
+        // d'avoir des faces réduites à un point.
+        if (face.nbNode()<2)
+          continue;
         Real3 node0_coord = nodes_coord[face.node(0)];
         Real3 node1_coord = nodes_coord[face.node(1)];
         Real3 face_coord_3d = (node0_coord + node1_coord) / 2.0;
+
         Real2 face_coord(face_coord_3d.x, -face_coord_3d.y);
         face_coord *= mul_value;
         Real3 direction = node1_coord - node0_coord;
