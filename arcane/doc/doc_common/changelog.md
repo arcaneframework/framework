@@ -8,7 +8,7 @@ Les nouveautés successives apportées par les versions de %Arcane
 antérieures à la version 3 sont listées ici : \ref arcanedoc_news_changelog20
 
 ___
-## Arcane Version 3.16.+ (juin 2025) {#arcanedoc_version3160}
+## Arcane Version 3.16.5 (juin 2025) {#arcanedoc_version3160}
 
 ### Nouveautés/Améliorations
 
@@ -18,9 +18,9 @@ ___
   \arcane{Item} à partir d'un \arcane{ItemLocalId}. Cette classe est
   similaire à \arcane{ItemInfoListView} mais peut être conservée
   pendant tout le calcul et reste valide après modification de la
-  famille d'entitée associée (\pr{1971})
+  famille d'entitée associée (\pr{1971}, \pr{2122})
 - Ajoute constantes de type \arcane{ItemTypeId} pour les types de base
-  des entités. Ces constantes sont préfixée par `ITI` (par exemple
+  des entités. Ces constantes sont préfixées par `ITI` (par exemple
   `ITI_Quad4` pour le type `IT_Quad4`) (\pr{1972})
 - Ajoute méthodes dans \arcane{ParallelMngUtils} pour créer des
   \arcane{Ref<ISerializeMessage>} au lieu de
@@ -45,6 +45,12 @@ ___
 - Ajoute support pour utiliser la norme max dans les comparaisons bit
   à bit des variables (\pr{2068}, \pr{2069}, \pr{2070}, \pr{2071},
   \pr{2090}, \pr{2091})
+- Ajoute méthodes permettant de créer et d'utiliser des
+  \arcane{Ref<ISerializeMessage>} à la place de pointeur de
+  \arcane{ISerializeMessage}. Cela permettra de gérer plus proprement
+  la durée de vie des ces instances(\pr{2108})
+- Rend thread-safe la gestion des buffers dans
+  \arcane{VariableSynchronizerMng} (\pr{2109})
 
 ### API Accélérateur
 
@@ -62,7 +68,13 @@ ___
   les RunQueue associées à un évènement sont en cours d'exécution
   (\pr{2006})
 - Ajoute vues pour le type \arcane{ItemVariableScalarRefT} (\pr{2098})
-
+- Ajoute possibilité de changer la politique d'exécution d'un
+  \arcanemat{IMeshComponent} utilisée pour
+  créer les instances de \arcanemat{ComponentCellVector},
+  \arcanemat{MatCellVector} et \arcanemat{EnvCellVector} qui lui sont
+  associés. Ce mécanisme est expérimental et s'active via la méthode
+  \arcanemat{IMeshComponent::setSpecificExecutionPolicy()}. (\pr{2105})
+  
 ### Changements
 
 - Déplace les classes de %Arccore du namespace Arccore vers le
@@ -78,6 +90,10 @@ ___
   \arcane{MeshNodeMerger} (\pr{2074})
 - Utilise `XML_PARSE_HUGE` dans le lecture `libxml2` pour gérer les
   éléments XML de grande taille (plus de 10Mo) (\pr{2094}, \pr{2097})
+- Autorise un les noeuds qui se fusionnent avec eux-même dans
+  \arcane{MeshNodeMerger} (\pr{2106})
+- Autorise l'utilisation du caractère `-` (tiret) dans les noms des
+  variables (\pr{2119})
 
 ### Corrections
 
@@ -89,6 +105,10 @@ ___
   réplication est active (\pr{2035})
 - Incrémente le timestamp des \arcane{ItemGroup} après une relecture
   d'une protection (\pr{2072})
+- Corrige l'écriture historique des courbes lorsque
+  l'appel à \arcanemat{ITimeHistoryMng::addValue()} n'était pas
+  réalisé par tous les rangs d'un \arcane{IParallelMng}. Cela se
+  traduisait par un blocage (\pr{2118})
 
 ### Interne
 
@@ -112,6 +132,13 @@ ___
   (\pr{2080}, \pr{2081}, \pr{2083}, \pr{2085}, \pr{2086}, \pr{2089})
 - Ajoute méthodes \arcane{Item::hasFlags()} et
   \arcane{ItemBase::hasFlags()} (\pr{2087})
+- Ajoute support pour rendre thread-safe la méthode
+  \arcane{ItemGroupImpl::_checkNeedUpdate()}. Ce mécanisme est
+  expérimental et s'active en positionnant la variable d'environnement
+  `ARCANE_USE_LOCK_FOR_ITEMGROUP_UPDATE` à `1` (\pr{2110})
+- Nettoyag et suppression d'avertissements de compilations dans
+  plusieurs fichiers de la composante `arcane_core` (\pr{2112},
+  \pr{2114}, \pr{2115}, \pr{2116})
 
 ### Compilation et Intégration Continue (CI)
 
@@ -125,6 +152,9 @@ ___
 - Ajoute support pour `.Net 9` (\pr{2059})
 - Ajoute option CMake `ARCANE_ENABLE_ALEPH` pour désactiver Aleph
   (\pr{2075})
+- Ajoute workflows IFPEN utilisant le C++20 (\pr{2027})
+- Supprime le workflow utilisant `windows-2019` car ce dernier n'est
+  plus supporté par github (\pr{2117})
 
 ### Arccore
 
