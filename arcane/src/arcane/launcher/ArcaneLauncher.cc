@@ -54,7 +54,7 @@ bool _checkInitCalled()
   }
   return false;
 }
-bool global_has_standalone_sub_domain = false;
+
 }
 
 /*---------------------------------------------------------------------------*/
@@ -397,12 +397,9 @@ createStandaloneAcceleratorMng()
 StandaloneSubDomain ArcaneLauncher::
 createStandaloneSubDomain(const String& case_file_name)
 {
-  if (global_has_standalone_sub_domain)
-    ARCANE_FATAL("ArcaneLauncher::createStandaloneSubDomain() should only be called once");
   _initStandalone();
   StandaloneSubDomain s;
   s._initUniqueInstance(case_file_name);
-  global_has_standalone_sub_domain = true;
   return s;
 }
 
@@ -412,7 +409,6 @@ createStandaloneSubDomain(const String& case_file_name)
 void ArcaneLauncher::
 _notifyRemoveStandaloneSubDomain()
 {
-  global_has_standalone_sub_domain = false;
 }
 
 /*---------------------------------------------------------------------------*/
