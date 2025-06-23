@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CaseOptionsTesterModule.cc                                  (C) 2000-2023 */
+/* CaseOptionsTesterModule.cc                                  (C) 2000-2025 */
 /*                                                                           */
 /* Module de test des options du jeu de données.                             */
 /*---------------------------------------------------------------------------*/
@@ -484,7 +484,8 @@ init()
   info() << " SimpleInteger=" << options()->simpleInteger.name();
   info() << " SimpleBool=   " << options()->simpleBool;
   info() << " SimpleString= " << options()->simpleString;
-  info() << " InfinityReal    = " << options()->infinityReal();
+  info() << " InfinityReal= " << options()->infinityReal();
+  info() << " NaNReal=      " << options()->nanReal();
   info() << " SimpleEnumWithFunction   = " << options()->simpleEnumFunction.name();
   info() << " Complex1/SimpleReal-2    = " << options()->complex1.simpleReal2;
   info() << " Complex1/SimpleReal3-2   = " << options()->complex1.simpleReal32;
@@ -522,6 +523,11 @@ init()
   {
     UniqueArray<Real> v0 = { 5.2, 2.3 };
     vc.areEqual(options()->complex1.getSimpleReal2Multi(),v0.constView(),"SimpleReal2Multi");
+  }
+  {
+    vc.areEqual(options()->infinityReal(),std::numeric_limits<Real>::infinity(),"RealInfinity");
+    if (!std::isnan(options()->nanReal()))
+      ARCANE_FATAL("Value is not 'NaN' : '{0}'",options()->nanReal());
   }
   if (options()->testId()==4){
     vc.areEqual(options()->simpleRealWithDefault(),3.0,"setDefaultValue() for real");
