@@ -18,8 +18,6 @@
 #endif
 
 #ifdef ALIEN_USE_HTSSOLVER
-#include "HARTSSolver/HARTSSolverExport.h"
-#include "HARTSSolver/HTSSolverConfig.h"
 #include "HARTSSolver/HTS.h"
 #include "HARTSSolver/MatrixVector/CSR/CSRProfile.h"
 #include "HARTSSolver/MatrixVector/CSR/CSRMatrix.h"

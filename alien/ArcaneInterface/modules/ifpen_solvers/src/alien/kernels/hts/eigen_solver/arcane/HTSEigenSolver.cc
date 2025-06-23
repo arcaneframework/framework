@@ -13,7 +13,6 @@
 #include "HARTS/HARTS.h"
 #endif
 #ifdef ALIEN_USE_HTSSOLVER
-#include "HARTSSolver/HARTSSolverExport.h"
 #include "HARTSSolver/HTS.h"
 #endif
 #include <alien/kernels/hts/eigen_solver/arcane/HTSEigenSolver.h>
