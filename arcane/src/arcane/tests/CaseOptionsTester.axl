@@ -361,6 +361,14 @@
    <description>InfinityByDefault</description>
   </simple>
 
+  <simple
+   name = "nan-real"
+   type = "real"
+   default = "nan"
+  >
+   <description>NanByDefault</description>
+  </simple>
+
   <!-- - - - - - extended-real-int-with-default - - - - -->
   <extended
    name = "extended-real-int-with-default"
