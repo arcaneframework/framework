@@ -570,11 +570,8 @@ arccoreCheckAt(Int64 i,Int64 max_size)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-/*
- * Macros utilisées pour le débug.
- */
-#ifdef ARCCORE_DEBUG_ASSERT
-extern "C++" ARCCORE_BASE_EXPORT void _doAssert(const char*,const char*,const char*,int);
+extern "C++" ARCCORE_BASE_EXPORT void
+_doAssert(const char*,const char*,const char*,int);
 template<typename T> inline T*
 _checkPointer(T* t,const char* file,const char* func,int line)
 {
@@ -584,13 +581,27 @@ _checkPointer(T* t,const char* file,const char* func,int line)
   }
   return t;
 }
-#  ifdef __GNUG__
-#define ARCCORE_D_WHERE(a) ::Arcane::_doAssert(a, __FILE__, __PRETTY_FUNCTION__, __LINE__)
-#define ARCCORE_DCHECK_POINTER(a) ::Arcane::_checkPointer((a), __FILE__, __PRETTY_FUNCTION__, __LINE__);
-#  else
-#    define ARCCORE_D_WHERE(a)  Arccore::_doAssert(a,__FILE__,"(NoInfo)",__LINE__)
-#    define ARCCORE_DCHECK_POINTER(a) Arccore::_checkPointer((a),__FILE__,"(NoInfo"),__LINE__);
-#  endif
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+// Macro pour obtenir par le pré-processeur le nom de la fonction actuelle
+
+#if defined(__GNUG__)
+#  define ARCCORE_MACRO_FUNCTION_NAME __PRETTY_FUNCTION__
+#elif defined( _MSC_VER)
+#  define ARCCORE_MACRO_FUNCTION_NAME __FUNCTION__
+#else
+#  define ARCCORE_MACRO_FUNCTION_NAME __func__
+#endif
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*
+ * Macros utilisées pour le débug.
+ */
+#ifdef ARCCORE_DEBUG_ASSERT
+#  define ARCCORE_D_WHERE(a) ::Arcane::_doAssert(a, __FILE__, ARCCORE_MACRO_FUNCTION_NAME, __LINE__)
+#  define ARCCORE_DCHECK_POINTER(a) ::Arcane::_checkPointer((a), __FILE__, ARCCORE_MACRO_FUNCTION_NAME, __LINE__);
 #  define ARCCORE_CHECK_PTR(a) \
   { \
     if (!(a)) { \
@@ -746,6 +757,8 @@ using Arcane::arccoreThrowNullPointerError;
 
 using Arcane::FalseType;
 using Arcane::TrueType;
+using Arcane::_doAssert;
+using Arcane::_checkPointer;
 }
 
 /*---------------------------------------------------------------------------*/

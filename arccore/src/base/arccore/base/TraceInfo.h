@@ -76,25 +76,10 @@ std::ostream& operator<<(std::ostream& o,const TraceInfo&);
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#ifdef __GNUG__
 #define A_FUNCINFO \
-::Arccore::TraceInfo(__FILE__,__PRETTY_FUNCTION__,__LINE__)
+::Arccore::TraceInfo(__FILE__,ARCCORE_MACRO_FUNCTION_NAME,__LINE__)
 #define A_FUNCNAME \
-::Arccore::TraceInfo(__FILE__,__PRETTY_FUNCTION__,__LINE__,false)
-#else
-// Normalement valide uniquement avec extension c99
-#ifdef ARCCORE_OS_WIN32
-#define A_FUNCINFO \
-::Arccore::TraceInfo(__FILE__,__FUNCTION__,__LINE__)
-#define A_FUNCNAME \
-::Arccore::TraceInfo(__FILE__,__FUNCTION__,__LINE__,false)
-#else
-#define A_FUNCINFO \
-::Arccore::TraceInfo(__FILE__,__func__,__LINE__)
-#define A_FUNCNAME \
-::Arccore::TraceInfo(__FILE__,__func__,__LINE__,false)
-#endif
-#endif
+::Arccore::TraceInfo(__FILE__,ARCCORE_MACRO_FUNCTION_NAME,__LINE__,false)
 
 #define A_FUNCINFO1(name)\
 ::Arccore::TraceInfo(__FILE__,name,__LINE__)
