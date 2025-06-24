@@ -120,14 +120,17 @@ class StdThreadBarrier
     {
       std::unique_lock<std::mutex> lk(m_wait_mutex);
       ++m_current_reached;
+      Int32 generation = m_generation;
       //cout << "ADD BARRIER N=" << m_current_reached << '\n';
       if (m_current_reached == m_nb_thread) {
+        ++m_generation;
         m_current_reached = 0;
         is_last = true;
         //cout << "BROADCAST BARRIER N=" << m_current_reached << '\n';
+        lk.unlock();
         m_wait.notify_all();
       }
-      else
+      while (generation == m_generation)
         m_wait.wait(lk);
     }
     return is_last;
@@ -139,6 +142,7 @@ class StdThreadBarrier
   std::condition_variable m_wait;
   Integer m_nb_thread = 0;
   Integer m_current_reached = 0;
+  Int32 m_generation = 0;
 };
 
 /*---------------------------------------------------------------------------*/
