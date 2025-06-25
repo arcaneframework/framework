@@ -86,10 +86,13 @@ template<typename RealType> inline
 void ARCCORE_MPIOP_CALL StdMpiReduceOperator<RealType>::
 _MinOperator(void* a,void* b,int* len,MPI_Datatype* type)
 {
-  ARCCORE_UNUSED(type);
+  Integer nb_elem_in_realtype = 0;
+  MPI_Type_size(*type, &nb_elem_in_realtype);
+  nb_elem_in_realtype /= sizeof(RealType);
+
   RealType* ra = (RealType*)a;
   RealType* rb = (RealType*)b;
-  Integer s = *len;
+  Integer s = *len * nb_elem_in_realtype;
   for( Integer i=0; i<s; ++i ){
     RealType vb = rb[i];
     RealType va = ra[i];
@@ -101,10 +104,13 @@ template<typename RealType> inline
 void ARCCORE_MPIOP_CALL StdMpiReduceOperator<RealType>::
 _MaxOperator(void* a,void* b,int* len,MPI_Datatype* type)
 {
-  ARCCORE_UNUSED(type);
+  Integer nb_elem_in_realtype = 0;
+  MPI_Type_size(*type, &nb_elem_in_realtype);
+  nb_elem_in_realtype /= sizeof(RealType);
+
   RealType* ra = (RealType*)a;
   RealType* rb = (RealType*)b;
-  Integer s = *len;
+  Integer s = *len * nb_elem_in_realtype;
   for( Integer i=0; i<s; ++i ){
     RealType vb = rb[i];
     RealType va = ra[i];
@@ -116,10 +122,13 @@ template<typename RealType> inline
 void ARCCORE_MPIOP_CALL StdMpiReduceOperator<RealType>::
 _SumOperator(void* a,void* b,int* len,MPI_Datatype* type)
 {
-  ARCCORE_UNUSED(type);
+  Integer nb_elem_in_realtype = 0;
+  MPI_Type_size(*type, &nb_elem_in_realtype);
+  nb_elem_in_realtype /= sizeof(RealType);
+
   RealType* ra = (RealType*)a;
   RealType* rb = (RealType*)b;
-  Integer s = *len;
+  Integer s = *len * nb_elem_in_realtype;
   for( Integer i=0; i<s; ++i ){
     RealType vb = rb[i];
     RealType va = ra[i];
