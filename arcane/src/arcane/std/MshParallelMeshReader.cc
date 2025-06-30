@@ -1720,8 +1720,6 @@ _readMeshFromFile()
     if (file_type == MSH_BINARY_TYPE)
       m_is_binary = true;
     info() << "IsBinary?=" << m_is_binary;
-    if (m_is_binary)
-      pwarning() << "MSH reader for binary format is experimental";
     Int32 data_size = ios_file->getInteger(); // is an integer equal to the size of the floating point numbers used in the file
     ARCANE_UNUSED(data_size);
     if (data_size != 8)
