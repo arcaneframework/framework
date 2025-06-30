@@ -298,10 +298,10 @@ _getNextLineAndBroadcast()
   }
   if (m_is_parallel) {
     if (f)
-      info() << "BroadcastNextLine: " << s;
+      info(4) << "BroadcastNextLine: " << s;
     m_parallel_mng->broadcastString(s, m_master_io_rank);
   }
-  info() << "GetNextLine: " << s;
+  info(4) << "GetNextLine: " << s;
   return s;
 }
 
@@ -317,15 +317,15 @@ _getIsEndOfFileAndBroadcast()
   Int32 is_end_int = 0;
   if (f) {
     is_end_int = f->isEnd() ? 1 : 0;
-    info() << "IsEndOfFile_Master: " << is_end_int;
+    info(4) << "IsEndOfFile_Master: " << is_end_int;
   }
   if (m_is_parallel) {
     if (f)
-      info() << "IsEndOfFile: " << is_end_int;
+      info(4) << "IsEndOfFile: " << is_end_int;
     m_parallel_mng->broadcast(ArrayView<Int32>(1, &is_end_int), m_master_io_rank);
   }
   bool is_end = (is_end_int != 0);
-  info() << "IsEnd: " << is_end;
+  info(4) << "IsEnd: " << is_end;
   return is_end;
 }
 
@@ -637,9 +637,9 @@ _readNodesOneEntity(MshNodeBlock& node_block)
 
   Int32 parametric_coordinates = entity_infos[2];
 
-  info() << "[Nodes] index=" << node_block.index << " entity_dim=" << entity_dim << " entity_tag=" << entity_tag
-         << " parametric=" << parametric_coordinates
-         << " nb_node2=" << nb_node2;
+  info(4) << "[Nodes] index=" << node_block.index << " entity_dim=" << entity_dim << " entity_tag=" << entity_tag
+          << " parametric=" << parametric_coordinates
+          << " nb_node2=" << nb_node2;
 
   if (parametric_coordinates != 0)
     ARCANE_THROW(NotSupportedException, "Only 'parametric coordinates' value of '0' is supported (current={0})", parametric_coordinates);
@@ -655,7 +655,7 @@ _readNodesOneEntity(MshNodeBlock& node_block)
   for (Int32 i_part = 0; i_part < m_nb_part; ++i_part) {
     Int64 nb_to_read = _interval(i_part, m_nb_part, nb_node2).second;
     Int32 dest_rank = m_parts_rank[i_part];
-    info() << "Reading UIDS part i=" << i_part << " dest_rank=" << dest_rank << " nb_to_read=" << nb_to_read;
+    info(4) << "Reading UIDS part i=" << i_part << " dest_rank=" << dest_rank << " nb_to_read=" << nb_to_read;
     if (my_rank == dest_rank || my_rank == m_master_io_rank) {
       nodes_uids.resize(nb_to_read);
     }
@@ -691,7 +691,7 @@ _readNodesOneEntity(MshNodeBlock& node_block)
   for (Int32 i_part = 0; i_part < m_nb_part; ++i_part) {
     Int64 nb_to_read = _interval(i_part, m_nb_part, nb_node2).second;
     Int32 dest_rank = m_parts_rank[i_part];
-    info() << "Reading COORDS part i=" << i_part << " dest_rank=" << dest_rank << " nb_to_read=" << nb_to_read;
+    info(4) << "Reading COORDS part i=" << i_part << " dest_rank=" << dest_rank << " nb_to_read=" << nb_to_read;
     if (my_rank == dest_rank || my_rank == m_master_io_rank) {
       nodes_coordinates.resize(nb_to_read);
     }
@@ -751,8 +751,8 @@ _readOneElementBlock(MshElementBlock& block)
     const Int64 nb_to_read = _interval(i_part, m_nb_part, nb_entity_in_block).second;
     const Int32 dest_rank = m_parts_rank[i_part];
 
-    info() << "Reading block part i_part=" << i_part
-           << " nb_to_read=" << nb_to_read << " dest_rank=" << dest_rank;
+    info(4) << "Reading block part i_part=" << i_part
+            << " nb_to_read=" << nb_to_read << " dest_rank=" << dest_rank;
 
     const Int64 nb_uid = nb_to_read;
     const Int64 nb_connectivity = nb_uid * item_nb_node;
@@ -1645,14 +1645,14 @@ _readPeriodic()
     one_info.m_entity_tag_master = entity_info[2];
 
     Int64 num_affine = _getInt64AndBroadcast();
-    info() << "[Periodic] num_affine=" << num_affine;
+    info(4) << "[Periodic] num_affine=" << num_affine;
     one_info.m_affine_values.resize(num_affine);
     _getDoubleArrayAndBroadcast(one_info.m_affine_values);
     one_info.m_nb_corresponding_node = CheckedConvert::toInt32(_getInt64AndBroadcast());
     info() << "[Periodic] nb_corresponding_node=" << one_info.m_nb_corresponding_node;
     one_info.m_corresponding_nodes.resize(one_info.m_nb_corresponding_node * 2);
     _getInt64ArrayAndBroadcast(one_info.m_corresponding_nodes);
-    info() << "[Periodic] corresponding_nodes=" << one_info.m_corresponding_nodes;
+    info(4) << "[Periodic] corresponding_nodes=" << one_info.m_corresponding_nodes;
   }
 
   _goToNextLine();
@@ -1720,8 +1720,6 @@ _readMeshFromFile()
     if (file_type == MSH_BINARY_TYPE)
       m_is_binary = true;
     info() << "IsBinary?=" << m_is_binary;
-    if (m_is_binary)
-      pwarning() << "MSH reader for binary format is experimental";
     Int32 data_size = ios_file->getInteger(); // is an integer equal to the size of the floating point numbers used in the file
     ARCANE_UNUSED(data_size);
     if (data_size != 8)
