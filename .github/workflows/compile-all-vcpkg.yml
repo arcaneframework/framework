@@ -81,6 +81,16 @@ jobs:
             dotnet_version : "8.0.x"
             cmake_specific_args : '-DCMAKE_BUILD_TYPE=Release -DARCCORE_CXX_STANDARD=20'
             ctest_specific_args : '-I 1,160'
+          - os: 'windows-2022'
+            full_name: 'windows-2022-cxx20-debug-intelmpi'
+            package_name: 'windows-2022-intelmpi'
+            triplet: x64-windows
+            vcpkg_os: windows-2022
+            dotnet_version : "8.0.x"
+            cmake_specific_args : '-DCMAKE_BUILD_TYPE=Debug -DARCCORE_CXX_STANDARD=20'
+            # Actuellement (juin 2024) les tests MPI plantent à la fin en erreur.
+            # C'est pourquoi on n'active que les tests de 1 à 40.
+            ctest_specific_args : '-I 1,40'
 
     env:
       # Indique pour IntelMPI de ne pas faire d'attente active
