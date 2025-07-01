@@ -216,7 +216,7 @@ par la ligne de commande :
   plusieurs threads,
 - Sinon, les noyaux de calcul sont exécutés en séquentiel.
 
-## Noyaux de calcul (RunCommand)
+## Noyaux de calcul (RunCommand) {#arcanedoc_parallel_accelerator_runcommand}
 
 Une fois qu'on dispose d'une instance de \arcaneacc{RunQueue}, il est
 possible de créér une commande qui pourra être déportée sur
@@ -255,7 +255,7 @@ class MyModule
  public:
   void myEntryPoint()
   {
-    RunQueue* queue = ...;
+    RunQueue queue = ...;
 
     // Boucle sur les mailles déportée sur accélérateur
     auto command1 = makeCommand(queue);

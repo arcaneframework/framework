@@ -48,8 +48,8 @@ class AcceleratorViewsUnitTest
 {
  public:
 
-  explicit AcceleratorViewsUnitTest(const ServiceBuildInfo& cb);
-  ~AcceleratorViewsUnitTest();
+  explicit AcceleratorViewsUnitTest(const ServiceBuildInfo& sbi);
+  ~AcceleratorViewsUnitTest() override;
 
  public:
 
@@ -175,7 +175,7 @@ void AcceleratorViewsUnitTest::
 _setCellArrayValue(Integer seed)
 {
   Integer n = m_cell_array1.arraySize();
-  ENUMERATE_CELL (icell, allCells()) {
+  ENUMERATE_ (Cell, icell, allCells()) {
     Int32 lid = icell.itemLocalId();
     for (Integer i = 0; i < n; ++i) {
       m_cell_array1[icell][i] = Real((i + 1) + lid + seed);
@@ -953,7 +953,14 @@ _executeTestMultiArray()
   {
     auto command = makeCommand(queue);
     auto out_values_view = viewOut(command, result_values);
-
+    if (queue.executionPolicy() == ax::eExecutionPolicy::Thread) {
+      // Teste le changement du nombre de threads
+      ParallelLoopOptions opts = command.parallelLoopOptions();
+      if (opts.maxThread() > 2)
+        opts.setMaxThread(2);
+      command.setParallelLoopOptions(opts);
+      vc.areEqual(command.parallelLoopOptions().maxThread(), 2, "Bad number of CPU thread");
+    }
     command << RUNCOMMAND_LOOP1(iter, dim1_size)
     {
       auto [i] = iter();
