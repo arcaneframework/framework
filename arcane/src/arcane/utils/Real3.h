@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Real3.h                                                     (C) 2000-2024 */
+/* Real3.h                                                     (C) 2000-2025 */
 /*                                                                           */
-/* Vecteur à 3 dimensions.                                                   */
+/* Vecteur à 3 dimensions de 'Real'.                                         */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_UTILS_REAL3_H
 #define ARCANE_UTILS_REAL3_H
