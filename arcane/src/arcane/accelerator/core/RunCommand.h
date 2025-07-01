@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* RunCommand.h                                                (C) 2000-2024 */
+/* RunCommand.h                                                (C) 2000-2025 */
 /*                                                                           */
 /* Gestion d'une commande sur accélérateur.                                  */
 /*---------------------------------------------------------------------------*/
@@ -35,7 +35,12 @@ internalGetOrCreateReduceMemoryImpl(RunCommand* command);
  * Une commande est associée à une file d'exécution (RunQueue) et sa durée
  * de vie ne doit pas excéder celle de cette dernière.
  *
- * \warning API en cours de définition.
+ * Une commande est une opération qui sera exécutée sur l'accélérateur
+ * associé à l'instance de RunQueue utilisé lors de l'appel à makeCommand().
+ * Sur un GPU, cela correspond à un noyau (kernel).
+ *
+ * Pour plus d'informations, se reporter à la rubrique
+ * \ref arcanedoc_parallel_accelerator_runcommand.
  */
 class ARCANE_ACCELERATOR_CORE_EXPORT RunCommand
 {
