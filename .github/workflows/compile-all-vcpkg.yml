@@ -88,9 +88,7 @@ jobs:
             vcpkg_os: windows-2022
             dotnet_version : "8.0.x"
             cmake_specific_args : '-DCMAKE_BUILD_TYPE=Debug -DARCCORE_CXX_STANDARD=20'
-            # Actuellement (juin 2024) les tests MPI plantent à la fin en erreur.
-            # C'est pourquoi on n'active que les tests de 1 à 40.
-            ctest_specific_args : '-I 1,40'
+            ctest_specific_args : '-I 1,160'
 
     env:
       # Indique pour IntelMPI de ne pas faire d'attente active
@@ -109,7 +107,7 @@ jobs:
       VCPKG_ROOT: '${{ github.workspace }}/../../build_base/framework-ci/vcpkg'
       VCPKG_BUILD_DIR: '${{ github.workspace }}/../../build_base/framework-ci/vcpkg'
       BUILD_COMMANDS_ROOT: '${{ github.workspace }}/../../build_base/framework-ci/_build'
-      VCPKG_INSTALL_HASH_PACKAGE_NAME: '1.7.3-${{ matrix.package_name }}-${{ matrix.triplet }}'
+      VCPKG_INSTALL_HASH_PACKAGE_NAME: '1.9.1-${{ matrix.package_name }}-${{ matrix.triplet }}'
       DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
       DOTNET_CLI_TELEMETRY_OPTOUT: true
       FRAMEWORKCI_BRANCH: main
