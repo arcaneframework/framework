@@ -193,6 +193,12 @@ class ARCANE_UTILS_EXPORT Real2
     return (*this);
   }
 
+  //! Retourne une vue sur les deux élements du vecteur.
+  constexpr ARCCORE_HOST_DEVICE ArrayView<Real> view()
+  {
+    return { 2, &x };
+  }
+
   //! Valeur absolue composante par composante.
   ARCCORE_HOST_DEVICE Real2 absolute() const { return Real2(math::abs(x), math::abs(y)); }
 

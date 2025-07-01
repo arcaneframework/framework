@@ -217,6 +217,12 @@ class ARCANE_UTILS_EXPORT Real3
     return (*this);
   }
 
+  //! Retourne une vue sur les trois élements du vecteur.
+  constexpr ARCCORE_HOST_DEVICE ArrayView<Real> view()
+  {
+    return { 3, &x };
+  }
+
   //! Valeur absolue composante par composante.
   ARCCORE_HOST_DEVICE Real3 absolute() const { return Real3(math::abs(x), math::abs(y), math::abs(z)); }
 
