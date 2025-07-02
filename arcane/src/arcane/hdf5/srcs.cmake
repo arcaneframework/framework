@@ -1,5 +1,7 @@
 set(ARCANE_SOURCES
   ArcaneHdf5Global.h
+  ArcaneHdf5Registerer.cc
+  ArcaneHdf5Registerer.h
   Hdf5Utils.cc
   Hdf5Utils.h
   Hdf5VariableInfoBase.cc
