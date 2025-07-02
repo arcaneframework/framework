@@ -522,8 +522,17 @@ install(TARGETS arcane_full EXPORT ArcaneTargets)
 if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
   # TODO: Vérifier que tous les compilateurs Linux (GCC,CLANG,Intel) supportent
   # cette option.
-  message(STATUS "Adding 'no-as-needed' to link option")
+  message(STATUS "Adding 'no-as-needed' to link option for 'arcane_full'")
   target_link_options(arcane_full INTERFACE "-Wl,--no-as-needed")
+  # Normalement ce n'est pas nécessaire par défaut mais cela peut permettre de
+  # contourner des problèmes de RPATH ou RUNPATH pour les bibliothèques
+  # pas directement utilisées par Arcane pour lequel le RPATH ou le RUNPATH
+  # n'est pas bien géré (cela peut-être du à un bug ou un fichier
+  # de configuration qui n'utilise pas cela)
+  if (ARCANE_FORCE_NOASNEEDED)
+    message(STATUS "Adding 'no-as-needed' to link option for 'arcane_build_compile_flags'")
+    target_link_options(arcane_build_compile_flags INTERFACE "-Wl,--no-as-needed")
+  endif()
 endif()
 
 # ----------------------------------------------------------------------------
