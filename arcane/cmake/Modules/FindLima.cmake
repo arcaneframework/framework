@@ -8,12 +8,13 @@
  
 arccon_return_if_package_found(Lima)
 
+find_package(HDF5 COMPONENTS C CXX)
+
 set(Lima_FOUND FALSE)
 
 # Recherche d'abord avec le fichier de configuration CMake fourni par Lima
 set(_SAVED_CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH})
 unset(CMAKE_MODULE_PATH)
-find_package(HDF5 COMPONENTS C CXX)
 find_package(Lima CONFIG QUIET)
 set(CMAKE_MODULE_PATH ${_SAVED_CMAKE_MODULE_PATH})
 
