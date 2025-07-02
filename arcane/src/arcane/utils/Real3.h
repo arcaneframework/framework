@@ -175,6 +175,15 @@ class ARCANE_UTILS_EXPORT Real3
     z = 0.0;
   }
 
+  //! Construit le triplet (av[0], av[1], av[2])
+  constexpr ARCCORE_HOST_DEVICE Real3(ConstArrayView<Real> av)
+    : Real3POD()
+  {
+    x = av[0];
+    y = av[1];
+    z = av[2];
+  }
+
   //! Opérateur de recopie.
   Real3& operator=(const Real3& f) = default;
 
@@ -219,6 +228,12 @@ class ARCANE_UTILS_EXPORT Real3
 
   //! Retourne une vue sur les trois élements du vecteur.
   constexpr ARCCORE_HOST_DEVICE ArrayView<Real> view()
+  {
+    return { 3, &x };
+  }
+
+  //! Retourne une vue constante sur les trois élements du vecteur.
+  constexpr ARCCORE_HOST_DEVICE ConstArrayView<Real> constView() const
   {
     return { 3, &x };
   }

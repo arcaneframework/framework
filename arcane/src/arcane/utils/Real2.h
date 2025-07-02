@@ -155,6 +155,14 @@ class ARCANE_UTILS_EXPORT Real2
   //! Construit l'instance en premier les deux premières composantes de Real3.
   inline constexpr ARCCORE_HOST_DEVICE explicit Real2(const Real3& v);
 
+  //! Construit le couplet (av[0], av[1])
+  constexpr ARCCORE_HOST_DEVICE Real2(ConstArrayView<Real> av)
+  : Real2POD()
+  {
+    x = av[0];
+    y = av[1];
+  }
+
   Real2& operator=(const Real2& f) = default;
 
   //! Affecte à l'instance le couple (v,v).
@@ -195,6 +203,12 @@ class ARCANE_UTILS_EXPORT Real2
 
   //! Retourne une vue sur les deux élements du vecteur.
   constexpr ARCCORE_HOST_DEVICE ArrayView<Real> view()
+  {
+    return { 2, &x };
+  }
+
+  //! Retourne une vue constante sur les deux élements du vecteur.
+  constexpr ARCCORE_HOST_DEVICE ConstArrayView<Real> constView() const
   {
     return { 2, &x };
   }

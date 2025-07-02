@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Real2x2.h                                                   (C) 2000-2024 */
+/* Real2x2.h                                                   (C) 2000-2025 */
 /*                                                                           */
 /* Matrice 2x2 de 'Real'.                                                    */
 /*---------------------------------------------------------------------------*/
@@ -58,11 +58,13 @@ class ARCANE_UTILS_EXPORT Real2x2
   : x(Real2::null())
   , y(Real2::null())
   {}
+
   //! Construit le couple (ax,ay)
   constexpr ARCCORE_HOST_DEVICE Real2x2(Real2 ax, Real2 ay)
   : x(ax)
   , y(ay)
   {}
+
   /*!
    * \brief Construit le couple ((ax,bx),(ay,by)).
    * \deprecated Utiliser Real2x2(Real2 a,Real2 b) à la place.
@@ -71,18 +73,28 @@ class ARCANE_UTILS_EXPORT Real2x2
   : x(ax, bx)
   , y(ay, by)
   {}
+
   //! Construit un couple identique à \a f
   Real2x2(const Real2x2& f) = default;
+
   //! Construit un couple identique à \a f
   constexpr ARCCORE_HOST_DEVICE explicit Real2x2(const Real2x2POD& f)
   : x(f.x)
   , y(f.y)
   {}
+
   //! Construit l'instance avec le triplet (v,v,v).
   constexpr ARCCORE_HOST_DEVICE explicit Real2x2(Real v)
   {
     x = y = v;
   }
+
+  //! Construit le couple ((av[0], av[1]), (av[2], av[3]))
+  constexpr ARCCORE_HOST_DEVICE explicit Real2x2(ConstArrayView<Real> av)
+  : x(av[0], av[1])
+  , y(av[2], av[3])
+  {}
+
   //! Opérateur de recopie
   Real2x2& operator=(const Real2x2& f) = default;
 
@@ -138,6 +150,20 @@ class ARCANE_UTILS_EXPORT Real2x2
     x = f.x;
     y = f.y;
     return (*this);
+  }
+
+  //! Retourne une vue sur les quatre élements de la matrice.
+  //! [x.x, x.y, y.x, y.y]
+  constexpr ARCCORE_HOST_DEVICE ArrayView<Real> view()
+  {
+    return { 4, &x.x };
+  }
+
+  //! Retourne une vue constante sur les quatre élements de la matrice.
+  //! [x.x, x.y, y.x, y.y]
+  constexpr ARCCORE_HOST_DEVICE ConstArrayView<Real> constView() const
+  {
+    return { 4, &x.x };
   }
 
   /*!

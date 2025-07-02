@@ -101,6 +101,7 @@ class UtilsUnitTest
 
   void _testStringFormatter();
   void _testString();
+  void _testReal2x2();
   void _testReal3x3();
   void _testUserData();
   void _testHPReal();
@@ -153,6 +154,7 @@ executeTest()
   _testString();
   _testStringFormatter();
   _testSetClassConfig();
+  _testReal2x2();
   _testReal3x3();
   _testUserData();
   _testHPReal();
@@ -397,19 +399,93 @@ _testSetClassConfig()
 /*---------------------------------------------------------------------------*/
 
 void UtilsUnitTest::
+_testReal2x2()
+{
+  Real values[4];
+  for (int i = 0; i < 4; ++i)
+    values[i] = (Real)i;
+  {
+    // Vérifie que les accesseurs operator[] de Real3x3 sont corrects.
+    Real2x2 r = Real2x2::fromLines(values[0], values[1],
+                                   values[2], values[3]);
+    for (int i = 0; i < 2; ++i)
+      for (int j = 0; j < 2; ++j)
+        if (r[i][j] != values[(i * 2) + j])
+          ARCANE_FATAL("Bad value");
+  }
+  {
+    ConstArrayView av(4, values);
+    {
+      const Real2x2 r(av);
+      for (int i = 0; i < 2; ++i)
+        for (int j = 0; j < 2; ++j)
+          if (r[i][j] != values[(i * 2) + j])
+            ARCANE_FATAL("Bad value");
+
+      ConstArrayView av2(r.constView());
+      for (int i = 0; i < 4; ++i)
+        if (av2[i] != values[i])
+          ARCANE_FATAL("Bad value");
+    }
+    {
+      Real2x2 r(av);
+      ArrayView av2(r.view());
+      for (int i = 3; i >= 0; --i)
+        av2[i] = (Real)i;
+
+      for (int i = 1; i >= 0; --i)
+        for (int j = 1; j >= 0; --j)
+          if (r[i][j] != ((i * 2) + j))
+            ARCANE_FATAL("Bad value");
+    }
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void UtilsUnitTest::
 _testReal3x3()
 {
   Real values[9];
-  for( int i=0; i<9; ++i )
+  for (int i = 0; i < 9; ++i)
     values[i] = (Real)i;
-  // Vérifie que les accesseurs operator[] de Real3x3 sont corrects.
-  Real3x3 r = Real3x3::fromLines(values[0],values[1],values[2],
-                                 values[3],values[4],values[5],
-                                 values[6],values[7],values[8]);
-  for( int i=0; i<3; ++i )
-    for( int j=0; j<3; ++j )
-      if (r[i][j]!=values[(i*3)+j])
-        ARCANE_FATAL("Bad value");
+  {
+    // Vérifie que les accesseurs operator[] de Real3x3 sont corrects.
+    Real3x3 r = Real3x3::fromLines(values[0], values[1], values[2],
+                                   values[3], values[4], values[5],
+                                   values[6], values[7], values[8]);
+    for (int i = 0; i < 3; ++i)
+      for (int j = 0; j < 3; ++j)
+        if (r[i][j] != values[(i * 3) + j])
+          ARCANE_FATAL("Bad value");
+  }
+  {
+    ConstArrayView av(9, values);
+    {
+      const Real3x3 r(av);
+      for (int i = 0; i < 3; ++i)
+        for (int j = 0; j < 3; ++j)
+          if (r[i][j] != values[(i * 3) + j])
+            ARCANE_FATAL("Bad value");
+
+      ConstArrayView av2(r.constView());
+      for (int i = 0; i < 9; ++i)
+        if (av2[i] != values[i])
+          ARCANE_FATAL("Bad value");
+    }
+    {
+      Real3x3 r(av);
+      ArrayView av2(r.view());
+      for (int i = 8; i >= 0; --i)
+        av2[i] = (Real)i;
+
+      for (int i = 2; i >= 0; --i)
+        for (int j = 2; j >= 0; --j)
+          if (r[i][j] != ((i * 3) + j))
+            ARCANE_FATAL("Bad value");
+    }
+  }
 }
 
 /*---------------------------------------------------------------------------*/
