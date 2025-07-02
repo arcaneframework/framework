@@ -42,6 +42,7 @@ jobs:
       matrix:
         include:
           - os: ubuntu-22.04
+            base_os: ubuntu
             full_name: 'ubuntu-22.04'
             package_name: 'ubuntu-22.04'
             triplet: x64-linux-dynamic
@@ -50,6 +51,7 @@ jobs:
             cmake_specific_args : '-DALIEN_BUILD_COMPONENT=all -DARCCORE_BUILD_MODE=Debug -DCMAKE_BUILD_TYPE=Debug'
             ctest_specific_args : '-I 1,200'
           - os: ubuntu-22.04
+            base_os: ubuntu
             full_name: 'ubuntu-cxx20-22.04'
             package_name: 'ubuntu-22.04'
             triplet: x64-linux-dynamic
@@ -58,6 +60,7 @@ jobs:
             cmake_specific_args : '-DALIEN_BUILD_COMPONENT=all -DARCCORE_BUILD_MODE=Debug -DCMAKE_BUILD_TYPE=Debug -DARCCORE_CXX_STANDARD=20 -DARCANE_ENABLE_DOTNET_PYTHON_WRAPPER=OFF'
             ctest_specific_args : '-I 1,210'
           - os: ubuntu-24.04
+            base_os: ubuntu
             full_name: 'ubuntu-cxx20-24.04'
             package_name: 'ubuntu-24.04'
             triplet: x64-linux-dynamic
@@ -66,6 +69,7 @@ jobs:
             cmake_specific_args : '-DALIEN_BUILD_COMPONENT=all -DARCCORE_BUILD_MODE=Debug -DCMAKE_BUILD_TYPE=Debug -DARCCORE_CXX_STANDARD=20 -DARCANE_ENABLE_DOTNET_PYTHON_WRAPPER=ON'
             ctest_specific_args : '-I 1,210'
           - os: 'windows-2022'
+            base_os: windows
             full_name: 'windows-2022-intelmpi'
             package_name: 'windows-2022-intelmpi'
             triplet: x64-windows
@@ -74,6 +78,7 @@ jobs:
             cmake_specific_args : '-DCMAKE_BUILD_TYPE=Release'
             ctest_specific_args : '-I 1,160'
           - os: 'windows-2022'
+            base_os: windows
             full_name: 'windows-2022-cxx20-intelmpi'
             package_name: 'windows-2022-intelmpi'
             triplet: x64-windows
@@ -82,6 +87,7 @@ jobs:
             cmake_specific_args : '-DCMAKE_BUILD_TYPE=Release -DARCCORE_CXX_STANDARD=20'
             ctest_specific_args : '-I 1,160'
           - os: 'windows-2022'
+            base_os: windows
             full_name: 'windows-2022-cxx20-debug-intelmpi'
             package_name: 'windows-2022-intelmpi'
             triplet: x64-windows
@@ -212,7 +218,7 @@ jobs:
       - name: Configure build script
         shell: bash
         run: |
-          cmake -S "${{ github.workspace }}" -B "${{ env.CMAKE_BUILD_DIR }}" -DCMAKE_VERBOSE_MAKEFILE=TRUE -DVCPKG_INSTALLED_DIR="${{ env.VCPKG_BUILD_DIR }}/installed" -DVCPKG_TARGET_TRIPLET='${{ matrix.triplet }}' -DBUILD_SHARED_LIBS=TRUE -DCMAKE_TOOLCHAIN_FILE="${{ env.VCPKG_ROOT }}/scripts/buildsystems/vcpkg.cmake" ${{ matrix.cmake_specific_args }} -DCMAKE_CXX_COMPILER_LAUNCHER="ccache" -GNinja
+          cmake -S "${{ github.workspace }}" -B "${{ env.CMAKE_BUILD_DIR }}" -DCMAKE_VERBOSE_MAKEFILE=TRUE -DVCPKG_INSTALLED_DIR="${{ env.VCPKG_BUILD_DIR }}/installed" -DVCPKG_TARGET_TRIPLET='${{ matrix.triplet }}' -DBUILD_SHARED_LIBS=TRUE -DCMAKE_TOOLCHAIN_FILE="${{ env.VCPKG_ROOT }}/scripts/buildsystems/vcpkg.cmake" ${{ matrix.cmake_specific_args }} -DCMAKE_CXX_COMPILER_LAUNCHER="ccache" -GNinja -DARCANE_FORCE_NOASNEEDED=TRUE
 
       - name: Dump Some Generated files
         shell: bash
@@ -233,6 +239,14 @@ jobs:
         run: |
           find "${{ env.CMAKE_BUILD_DIR }}/lib"
 
+      - name: Print libraries path
+        if: matrix.base_os != 'windows'
+        shell: bash
+        run: |
+          ldd "${{ env.CMAKE_BUILD_DIR }}/lib/arcane_tests_exec"
+          ldd ${{ env.CMAKE_BUILD_DIR }}/lib/lib*.so
+          readelf -d ${{ env.CMAKE_BUILD_DIR }}/lib/lib*.so
+
       - name: Get 'ccache' status
         run: ccache -s -v
 
@@ -242,7 +256,7 @@ jobs:
           cd "${{ env.CMAKE_BUILD_DIR }}" && ctest --output-on-failure ${{ matrix.ctest_specific_args }}
 
       - name: Test Aleph kappa
-        if: matrix.os != 'windows-2022'
+        if: matrix.base_os != 'windows'
         shell: bash
         run: |
           cd "${{ env.CMAKE_BUILD_DIR }}" && ctest --output-on-failure ${{ matrix.ctest_specific_args }} -R kappa
@@ -257,6 +271,6 @@ jobs:
       # que la DLL 'arcane_dotnet_coreclr' est bien trouvée
       - name: Test .Net wrapper
         shell: bash
-        if: ${{ startsWith(matrix.os, 'ubuntu') }}
+        if: matrix.base_os != 'windows'
         run: |
           cd "${{ env.CMAKE_BUILD_DIR }}" && ctest --output-on-failure -R coreclr
