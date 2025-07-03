@@ -1912,7 +1912,9 @@ readMeshFromMshFile(IMesh* mesh, const String& filename, bool use_internal_parti
   std::ifstream ifile;
   Ref<IosFile> ios_file;
   if (is_master_io) {
-    ifile.open(filename.localstr());
+    // Ouvre toujours le fichier en binaire car on
+    // ne sait pas à l'avance s'il est en mode texte ou binaire.
+    ifile.open(filename.localstr(), ios::binary);
     ios_file = makeRef<IosFile>(new IosFile(&ifile));
   }
   m_ios_file = ios_file;
