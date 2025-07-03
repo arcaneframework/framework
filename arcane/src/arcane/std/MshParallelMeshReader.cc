@@ -482,7 +482,7 @@ void MshParallelMeshReader::
 _goToNextLine()
 {
   if (m_ios_file.get())
-    m_ios_file->getNextLine();
+    m_ios_file->goToEndOfLine();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1734,7 +1734,7 @@ _readMeshFromFile()
         ARCANE_FATAL("Bad endianess for file. Read int as value '{0}' (expected=1)", int_value_one);
     }
 
-    ios_file->getNextLine(); // Skip current \n\r
+    _goToNextLine();
 
     // $EndMeshFormat
     if (!ios_file->lookForString("$EndMeshFormat"))
