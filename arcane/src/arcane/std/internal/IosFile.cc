@@ -1,4 +1,4 @@
-﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
+// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
 // Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
@@ -127,11 +127,11 @@ bool IosFile::
 lookForString(const String& str)
 {
   const char* bfr = getNextLine();
-  //	ITraceMng::info() << "[IosFile::getString] Looking for " << str;
+  std::cout << "[IosFile::getString] Looking for '" << str << "' len=" << str.length() << "\n";
   std::istringstream iline(bfr);
   std::string got;
   iline >> got;
-  //	info() << "[IosFile::getString] got=" << got;
+  std::cout << "[IosFile::getString] got='" << got << "' len=" << got.length() << "\n";
   return isEqualString(got, str);
 }
 
