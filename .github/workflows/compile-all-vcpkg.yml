@@ -274,3 +274,8 @@ jobs:
         if: matrix.base_os != 'windows'
         run: |
           cd "${{ env.CMAKE_BUILD_DIR }}" && ctest --output-on-failure -R coreclr
+
+      - name: Test Convert Mesh
+        shell: bash
+        run: |
+          cd "${{ env.CMAKE_BUILD_DIR }}" && ctest --output-on-failure -R convert_mesh

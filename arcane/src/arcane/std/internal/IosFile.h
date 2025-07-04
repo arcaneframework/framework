@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IosFile.h                                                   (C) 2000-2024 */
+/* IosFile.h                                                   (C) 2000-2025 */
 /*                                                                           */
 /* Routines des Lecture/Ecriture d'un fichier.                               */
 /*---------------------------------------------------------------------------*/
@@ -42,6 +42,7 @@ class IosFile
   {}
   const char* getNextLine(const char*);
   const char* getNextLine(void);
+  void goToEndOfLine(void);
   Real getReal(void);
   Integer getInteger(void);
   Int64 getInt64(void);
@@ -59,7 +60,7 @@ class IosFile
 
  private:
 
-  std::istream* m_stream;
+  std::istream* m_stream = nullptr;
   char m_buf[IOS_BFR_SZE];
 };
 
