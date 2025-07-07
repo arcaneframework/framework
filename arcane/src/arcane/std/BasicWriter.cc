@@ -231,7 +231,7 @@ setMetaData(const String& meta_data)
   else {
     Int32 my_rank = m_parallel_mng->commRank();
     String filename = _getMetaDataFileName(my_rank);
-    std::ofstream ofile(filename.localstr());
+    std::ofstream ofile(filename.localstr(), ios::binary);
     meta_data.writeBytes(ofile);
   }
 }

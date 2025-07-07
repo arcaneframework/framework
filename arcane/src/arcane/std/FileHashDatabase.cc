@@ -92,7 +92,7 @@ class FileHashDatabase
     {
       // TODO: il faudrait relire la valeur pour vérifier que tout est OK dans la base
       // et aussi récupérer la taille du fichier pour garantir la cohérence.
-      std::ifstream ifile(full_filename.localstr());
+      std::ifstream ifile(full_filename.localstr(), ios::binary);
       if (ifile.good()) {
         ++m_nb_write_cache;
         //std::cout << "FILE_FOUND hash=" << hash_value << " name=" << key << "\n";
@@ -102,8 +102,8 @@ class FileHashDatabase
     // TODO: Ajouter verrou pour l'écriture si plusieurs processus écrivent en même temps
     {
       String full_filename = dirfile_info.full_filename;
-      ofstream ofile(full_filename.localstr());
-      //std::cout << "WRITE_HASH hash=" << hash_value << " size=" << bytes.size() << "\n";
+      ofstream ofile(full_filename.localstr(), ios::binary);
+      //info() << "WRITE_HASH hash=" << hash_value << " size=" << bytes.size() << " file=" << full_filename;
       binaryWrite(ofile, bytes);
       ++m_nb_write;
       if (!ofile)
@@ -115,11 +115,13 @@ class FileHashDatabase
   {
     const String& hash_value = args.hashValueAsString();
     Span<std::byte> bytes = args.values();
-    //std::cout << "READ_VALUE hash_value" << hash_value << " name=" << args.key() << "\n";
     DirFileInfo dirfile_info = _getDirFileInfo(hash_value);
     {
       String full_filename = dirfile_info.full_filename;
-      std::ifstream ifile(full_filename.localstr());
+      //info() << "READ_VALUE hash_value=" << hash_value << " name=" << args.key() << " file=" << full_filename;
+      std::ifstream ifile(full_filename.localstr(), ios::binary);
+      if (!ifile.good())
+        ARCANE_FATAL("Can not open file '{0}'", full_filename);
       binaryRead(ifile, bytes);
       ++m_nb_read;
       if (!ifile.good())
