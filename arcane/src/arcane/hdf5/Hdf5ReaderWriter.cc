@@ -660,10 +660,10 @@ _setMetaData(const String& meta_data,const String& sub_group_name)
   else
     base_group.recursiveCreate(m_file_id,sub_group_name);
   
-  ByteConstArrayView meta_data_utf8 = meta_data.utf8();
-  const Byte* _meta_data = meta_data_utf8.data();
+  Span<const Byte> meta_data_bytes = meta_data.bytes();
+  const Byte* _meta_data = meta_data_bytes.data();
   hsize_t dims[1];
-  dims[0] = meta_data_utf8.size() + 1;
+  dims[0] = meta_data_bytes.size();
   
   HSpace space_id;
   space_id.createSimple(1,dims);
