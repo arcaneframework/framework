@@ -44,7 +44,6 @@
 
 namespace Arcane
 {
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
@@ -82,7 +81,9 @@ class ArcanePostProcessingModule
   OutputChecker m_output_checker;
   OutputChecker m_history_output_checker;
   VariableArrayReal m_times; //!< Instants de temps des sauvegardes
-  bool m_do_output = true; //!< \a true si les sorties sont actives
+  bool m_is_output_active = true; //!< \a true si les sorties sont actives
+  //! Indique si on réalise des sorties lors de cette itération
+  bool m_is_output_at_current_iteration = false;
   Directory m_output_directory; //!< Répertoire de sortie
   bool m_output_dir_created = false; //!< \a true si répertoire créé.
   VariableList m_variables;    //!< Liste des variables a exporter
@@ -95,6 +96,8 @@ class ArcanePostProcessingModule
   void _saveAtTime(Real);
 
   void _checkCreateOutputDir();
+  void _markCurrentIterationPostProcessing();
+  void _resetCurrentIterationPostProcessing();
 };
 
 /*---------------------------------------------------------------------------*/
@@ -167,7 +170,7 @@ _readConfig()
     }
   }
   else
-    m_do_output = false;
+    m_is_output_active = false;
 
   if (nb_group!=0){
     std::set<String> used_groups; // Liste des groupes déjà indiquées
@@ -193,11 +196,11 @@ _readConfig()
     // Si aucun groupe spécifié, sauve uniquement l'ensemble des mailles.
     //m_groups.resize(1);
 
-	//! AMR
-	if(mesh->isAmrActivated())
-		m_groups.add(mesh->allActiveCells());
-	else
-		m_groups.add(mesh->allCells());
+    //! AMR
+    if (mesh->isAmrActivated())
+      m_groups.add(mesh->allActiveCells());
+    else
+      m_groups.add(mesh->allCells());
   }
 }
 
@@ -226,7 +229,7 @@ postProcessingInit()
   info() << " ";
 
   bool is_continue = subDomain()->isContinue();
-    
+
   info() << "Variables output:";
   m_output_checker.initialize(is_continue);
 
@@ -234,8 +237,8 @@ postProcessingInit()
   m_history_output_checker.initialize(is_continue);
 
   _readConfig();
-  
-   // Positionnement de l'option 'shrink' du timeHistoryMng depuis l'axl
+
+  // Positionnement de l'option 'shrink' du timeHistoryMng depuis l'axl
   if (options()->outputHistoryShrink)
     subDomain()->timeHistoryMng()->setShrinkActive(options()->outputHistoryShrink);
 
@@ -306,13 +309,10 @@ postProcessingExit()
 void ArcanePostProcessingModule::
 exportData()
 {
-  const CommonVariables& vc = subDomain()->commonVariables();
-  Real old_time = vc.globalOldTime();
-  Real current_time = vc.globalTime();
-  bool do_output = m_output_checker.check(old_time,current_time,
-                                          vc.globalIteration(),0);
-  if (do_output)
+  if (m_is_output_at_current_iteration) {
+    const Real current_time = subDomain()->commonVariables().globalTime();
     _saveAtTime(current_time);
+  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -323,18 +323,28 @@ exportData()
 void ArcanePostProcessingModule::
 exportDataStart()
 {
-  // Ecrit les valeurs du dépouillement pour l'initialisation.
-  if (subDomain()->commonVariables().globalIteration()==0)
-    _saveAtTime(0.);
+  ISubDomain* sd = subDomain();
+  const CommonVariables& vc = sd->commonVariables();
+
+  const Int32 global_iteration = vc.globalIteration();
+  // Écrit les valeurs du dépouillement pour l'initialisation.
+  if (global_iteration == 0)
+    _saveAtTime(0.0);
+
+  m_is_output_at_current_iteration = false;
 
   // Regarde s'il faut activer les historiques pour cette itération
-  const CommonVariables& vc = subDomain()->commonVariables();
-  Real old_time = vc.globalOldTime();
-  Real current_time = vc.globalTime();
-  bool do_history_output = m_history_output_checker.check(old_time,current_time,
-                                                          vc.globalIteration(),0);
+  const Real old_time = vc.globalOldTime();
+  const Real current_time = vc.globalTime();
+  bool do_history_output = m_history_output_checker.check(old_time, current_time, global_iteration, 0);
+  sd->timeHistoryMng()->setActive(do_history_output);
 
-  subDomain()->timeHistoryMng()->setActive(do_history_output);
+  // Regarde si des sorties de post-traitement sont prévues pour cette itération
+  if (m_is_output_active) {
+    bool do_at_current_iteration = m_output_checker.check(old_time, current_time, global_iteration, 0);
+    if (do_at_current_iteration)
+      _markCurrentIterationPostProcessing();
+  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -343,10 +353,11 @@ exportDataStart()
 void ArcanePostProcessingModule::
 _saveAtTime(Real saved_time)
 {
-  Integer size = m_times.size();
+  _resetCurrentIterationPostProcessing();
+
+  const Int32 size = m_times.size();
 
   IVariableMng* vm = subDomain()->variableMng();
-  //IParallelMng* pm = subDomain()->parallelMng();
 
   // Ne sauvegarde pas si le temps actuel est le même que le précédent
   // (Sinon ca fait planter Ensight...)
@@ -358,7 +369,7 @@ _saveAtTime(Real saved_time)
 
   _checkCreateOutputDir();
 
-  if (m_do_output){
+  if (m_is_output_active) {
     IPostProcessorWriter* post_processor = options()->format();
     post_processor->setBaseDirectoryName(m_output_directory.path());
     post_processor->setTimes(m_times);
@@ -371,6 +382,36 @@ _saveAtTime(Real saved_time)
       Timer::Sentry ts(m_post_processor_timer);
       vm->writePostProcessing(post_processor);
     }
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Supprime les tags des variables post-processées lors de cette itération.
+ */
+void ArcanePostProcessingModule::
+_resetCurrentIterationPostProcessing()
+{
+  m_is_output_at_current_iteration = false;
+  for (VariableList::Enumerator v_iter(m_variables); ++v_iter;) {
+    IVariable* v = *v_iter;
+    v->removeTag("PostProcessingAtThisIteration");
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Marque les variables comme étant post-processées lors de cette itération.
+ */
+void ArcanePostProcessingModule::
+_markCurrentIterationPostProcessing()
+{
+  m_is_output_at_current_iteration = true;
+  for (VariableList::Enumerator v_iter(m_variables); ++v_iter;) {
+    IVariable* v = *v_iter;
+    v->addTag("PostProcessingAtThisIteration", "1");
   }
 }
 
