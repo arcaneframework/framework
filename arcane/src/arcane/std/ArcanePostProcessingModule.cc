@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ArcanePostProcessingModule.cc                               (C) 2000-2022 */
+/* ArcanePostProcessingModule.cc                               (C) 2000-2025 */
 /*                                                                           */
 /* Module de post-traitement.                                                */
 /*---------------------------------------------------------------------------*/
@@ -14,30 +14,26 @@
 #include "arcane/utils/Ptr.h"
 #include "arcane/utils/List.h"
 
-#include "arcane/EntryPoint.h"
-#include "arcane/ISubDomain.h"
-#include "arcane/IVariableMng.h"
-#include "arcane/IApplication.h"
-#include "arcane/IParallelMng.h"
-#include "arcane/ItemGroup.h"
-#include "arcane/Directory.h"
-#include "arcane/ITimeHistoryMng.h"
-#include "arcane/ServiceUtils.h"
-#include "arcane/IPostProcessorWriter.h"
-#include "arcane/SimpleProperty.h"
-#include "arcane/MeshAccessor.h"
-#include "arcane/IMesh.h"
-#include "arcane/VariableTypes.h"
-#include "arcane/CommonVariables.h"
-#include "arcane/MathUtils.h"
-#include "arcane/ITimeLoopMng.h"
-#include "arcane/ItemEnumerator.h"
-#include "arcane/ModuleFactory.h"
-#include "arcane/Timer.h"
-#include "arcane/IVariableAccessor.h"
-#include "arcane/VariableCollection.h"
-
-#include "arcane/OutputChecker.h"
+#include "arcane/core/EntryPoint.h"
+#include "arcane/core/ISubDomain.h"
+#include "arcane/core/IVariableMng.h"
+#include "arcane/core/IParallelMng.h"
+#include "arcane/core/ItemGroup.h"
+#include "arcane/core/Directory.h"
+#include "arcane/core/ITimeHistoryMng.h"
+#include "arcane/core/ServiceUtils.h"
+#include "arcane/core/IPostProcessorWriter.h"
+#include "arcane/core/MeshAccessor.h"
+#include "arcane/core/IMesh.h"
+#include "arcane/core/VariableTypes.h"
+#include "arcane/core/CommonVariables.h"
+#include "arcane/core/MathUtils.h"
+#include "arcane/core/ITimeLoopMng.h"
+#include "arcane/core/ItemEnumerator.h"
+#include "arcane/core/ModuleFactory.h"
+#include "arcane/core/Timer.h"
+#include "arcane/core/VariableCollection.h"
+#include "arcane/core/OutputChecker.h"
 
 #include "arcane/std/ArcanePostProcessing_axl.h"
 
@@ -48,51 +44,51 @@
 
 namespace Arcane
 {
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
  * \brief Module de sortie pour le dépouillement.
  *
- Lorsque ce module est connecté, ce module gère les sorties pour
- le dépouillement.
-
- Si aucune variable n'est spécifiée, aucune sortie n'est effectuée. Le
- champs #m_do_output est alors à faux.
-*/
+ * Lorsque ce module est connecté, ce module gère les sorties pour
+ * le dépouillement.
+ *
+ * Si aucune variable n'est spécifiée, aucune sortie n'est effectuée. Le
+ * champ #m_do_output est alors à faux.
+ */
 class ArcanePostProcessingModule
 : public ArcaneArcanePostProcessingObject
 {
  public:
 
-  explicit ArcanePostProcessingModule(const ModuleBuilder& cb);
-  ~ArcanePostProcessingModule();
+  explicit ArcanePostProcessingModule(const ModuleBuildInfo& mbi);
+  ~ArcanePostProcessingModule() override;
 
  public:
 
-  virtual VersionInfo versionInfo() const { return VersionInfo(0,1,2); }
+  VersionInfo versionInfo() const override { return VersionInfo(0, 1, 2); }
 
  public:
 
-  virtual void exportData();
-  virtual void exportDataStart();
+  void exportData() override;
+  void exportDataStart() override;
 
-  virtual void postProcessingStartInit();
-  virtual void postProcessingInit();
-  virtual void postProcessingExit();
-  
+  void postProcessingStartInit() override;
+  void postProcessingInit() override;
+  void postProcessingExit() override;
 
  private:
 
   OutputChecker m_output_checker;
   OutputChecker m_history_output_checker;
   VariableArrayReal m_times; //!< Instants de temps des sauvegardes
-  bool m_do_output; //!< \a true si les sorties sont actives
+  bool m_is_output_active = true; //!< \a true si les sorties sont actives
+  //! Indique si on réalise des sorties lors de cette itération
+  bool m_is_output_at_current_iteration = false;
   Directory m_output_directory; //!< Répertoire de sortie
-  bool m_output_dir_created; //!< \a true si répertoire créé.
+  bool m_output_dir_created = false; //!< \a true si répertoire créé.
   VariableList m_variables;    //!< Liste des variables a exporter
   ItemGroupList m_groups; //!< Liste des groupes à exporter
-  Timer* m_post_processor_timer; //!< Timer pour le temps passé à écrire
+  Timer* m_post_processor_timer = nullptr; //!< Timer pour le temps passé à écrire
 
  private:
 
@@ -100,6 +96,8 @@ class ArcanePostProcessingModule
   void _saveAtTime(Real);
 
   void _checkCreateOutputDir();
+  void _markCurrentIterationPostProcessing();
+  void _resetCurrentIterationPostProcessing();
 };
 
 /*---------------------------------------------------------------------------*/
@@ -116,9 +114,6 @@ ArcanePostProcessingModule(const ModuleBuildInfo& mbi)
 , m_output_checker(mbi.subDomain(),"PostProcessing")
 , m_history_output_checker(mbi.subDomain(),"PostProcessingHistory")
 , m_times(VariableBuilder(this,"ExportTimes"))
-, m_do_output(true)
-, m_output_dir_created(false)
-, m_post_processor_timer(0)
 {
   m_output_checker.assignIteration(&m_next_iteration,&options()->outputPeriod);
   m_output_checker.assignGlobalTime(&m_next_global_time,&options()->outputFrequency);
@@ -175,7 +170,7 @@ _readConfig()
     }
   }
   else
-    m_do_output = false;
+    m_is_output_active = false;
 
   if (nb_group!=0){
     std::set<String> used_groups; // Liste des groupes déjà indiquées
@@ -201,11 +196,11 @@ _readConfig()
     // Si aucun groupe spécifié, sauve uniquement l'ensemble des mailles.
     //m_groups.resize(1);
 
-	//! AMR
-	if(mesh->isAmrActivated())
-		m_groups.add(mesh->allActiveCells());
-	else
-		m_groups.add(mesh->allCells());
+    //! AMR
+    if (mesh->isAmrActivated())
+      m_groups.add(mesh->allActiveCells());
+    else
+      m_groups.add(mesh->allCells());
   }
 }
 
@@ -234,7 +229,7 @@ postProcessingInit()
   info() << " ";
 
   bool is_continue = subDomain()->isContinue();
-    
+
   info() << "Variables output:";
   m_output_checker.initialize(is_continue);
 
@@ -242,26 +237,20 @@ postProcessingInit()
   m_history_output_checker.initialize(is_continue);
 
   _readConfig();
-  
-   // Positionnement de l'option 'shrink' du timeHistoryMng depuis l'axl
-  if (options()->outputHistoryShrink==true){
-    //info()<< "\33[42;30m" << "postProcessingStartInit Setting History to be shrank!" << "\33[m";
+
+  // Positionnement de l'option 'shrink' du timeHistoryMng depuis l'axl
+  if (options()->outputHistoryShrink)
     subDomain()->timeHistoryMng()->setShrinkActive(options()->outputHistoryShrink);
-  }else{
-    //info()<< "\33[42;30m" << "postProcessingStartInit Plain History!" << "\33[m";
-  }
 
   // initialize parameter with a dry call to checker
   const CommonVariables& vc = subDomain()->commonVariables();
-  Real old_time = vc.globalOldTime();
-  Real current_time = vc.globalTime();
-  /* bool do_output = */ m_output_checker.check(old_time,current_time,
-                                                vc.globalIteration(),0);
-  /* bool do_output = */ m_history_output_checker.check(old_time,current_time,
-                                                        vc.globalIteration(),0);
-  if (options()->saveInit()){
+  const Real old_time = vc.globalOldTime();
+  const Real current_time = vc.globalTime();
+  m_output_checker.check(old_time, current_time, vc.globalIteration(), 0);
+  m_history_output_checker.check(old_time, current_time, vc.globalIteration(), 0);
+
+  if (options()->saveInit())
     _saveAtTime(current_time);
-  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -290,7 +279,7 @@ postProcessingStartInit()
 void ArcanePostProcessingModule::
 postProcessingExit()
 {
-  Real current_time = subDomain()->commonVariables().globalTime();
+  const Real current_time = subDomain()->commonVariables().globalTime();
   bool save_at_exit = false;
   if (subDomain()->timeLoopMng()->finalTimeReached())
     save_at_exit = options()->saveFinalTime();
@@ -300,7 +289,7 @@ postProcessingExit()
     _saveAtTime(current_time);
   }
 
-  // Affiche statistiques d'exécutions
+  // Affiche les statistiques d'exécutions
   Real total_time = m_post_processor_timer->totalTime();
   info() << "Total time for post-processing analysis output (second): " << total_time;
   Integer nb_time = m_post_processor_timer->nbActivated();
@@ -320,13 +309,10 @@ postProcessingExit()
 void ArcanePostProcessingModule::
 exportData()
 {
-  const CommonVariables& vc = subDomain()->commonVariables();
-  Real old_time = vc.globalOldTime();
-  Real current_time = vc.globalTime();
-  bool do_output = m_output_checker.check(old_time,current_time,
-                                          vc.globalIteration(),0);
-  if (do_output)
+  if (m_is_output_at_current_iteration) {
+    const Real current_time = subDomain()->commonVariables().globalTime();
     _saveAtTime(current_time);
+  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -337,18 +323,28 @@ exportData()
 void ArcanePostProcessingModule::
 exportDataStart()
 {
-  // Ecrit les valeurs du dépouillement pour l'initialisation.
-  if (subDomain()->commonVariables().globalIteration()==0)
-    _saveAtTime(0.);
+  ISubDomain* sd = subDomain();
+  const CommonVariables& vc = sd->commonVariables();
+
+  const Int32 global_iteration = vc.globalIteration();
+  // Écrit les valeurs du dépouillement pour l'initialisation.
+  if (global_iteration == 0)
+    _saveAtTime(0.0);
+
+  m_is_output_at_current_iteration = false;
 
   // Regarde s'il faut activer les historiques pour cette itération
-  const CommonVariables& vc = subDomain()->commonVariables();
-  Real old_time = vc.globalOldTime();
-  Real current_time = vc.globalTime();
-  bool do_history_output = m_history_output_checker.check(old_time,current_time,
-                                                          vc.globalIteration(),0);
+  const Real old_time = vc.globalOldTime();
+  const Real current_time = vc.globalTime();
+  bool do_history_output = m_history_output_checker.check(old_time, current_time, global_iteration, 0);
+  sd->timeHistoryMng()->setActive(do_history_output);
 
-  subDomain()->timeHistoryMng()->setActive(do_history_output);
+  // Regarde si des sorties de post-traitement sont prévues pour cette itération
+  if (m_is_output_active) {
+    bool do_at_current_iteration = m_output_checker.check(old_time, current_time, global_iteration, 0);
+    if (do_at_current_iteration)
+      _markCurrentIterationPostProcessing();
+  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -357,10 +353,11 @@ exportDataStart()
 void ArcanePostProcessingModule::
 _saveAtTime(Real saved_time)
 {
-  Integer size = m_times.size();
+  _resetCurrentIterationPostProcessing();
+
+  const Int32 size = m_times.size();
 
   IVariableMng* vm = subDomain()->variableMng();
-  //IParallelMng* pm = subDomain()->parallelMng();
 
   // Ne sauvegarde pas si le temps actuel est le même que le précédent
   // (Sinon ca fait planter Ensight...)
@@ -372,7 +369,7 @@ _saveAtTime(Real saved_time)
 
   _checkCreateOutputDir();
 
-  if (m_do_output){
+  if (m_is_output_active) {
     IPostProcessorWriter* post_processor = options()->format();
     post_processor->setBaseDirectoryName(m_output_directory.path());
     post_processor->setTimes(m_times);
@@ -385,6 +382,36 @@ _saveAtTime(Real saved_time)
       Timer::Sentry ts(m_post_processor_timer);
       vm->writePostProcessing(post_processor);
     }
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Supprime les tags des variables post-processées lors de cette itération.
+ */
+void ArcanePostProcessingModule::
+_resetCurrentIterationPostProcessing()
+{
+  m_is_output_at_current_iteration = false;
+  for (VariableList::Enumerator v_iter(m_variables); ++v_iter;) {
+    IVariable* v = *v_iter;
+    v->removeTag("PostProcessingAtThisIteration");
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Marque les variables comme étant post-processées lors de cette itération.
+ */
+void ArcanePostProcessingModule::
+_markCurrentIterationPostProcessing()
+{
+  m_is_output_at_current_iteration = true;
+  for (VariableList::Enumerator v_iter(m_variables); ++v_iter;) {
+    IVariable* v = *v_iter;
+    v->addTag("PostProcessingAtThisIteration", "1");
   }
 }
 
