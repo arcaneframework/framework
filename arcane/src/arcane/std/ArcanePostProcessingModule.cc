@@ -162,7 +162,7 @@ _readConfig()
         info() << "Variable <" << varname << ">";
         m_variables.add(var);
         used_variables.insert(varname);
-        var->addTag("PostProcessing","1");
+        var->addTag(IVariable::TAG_POST_PROCESSING,"1");
       }
       else{
         warning() << "Variable <" << varname << "> required twice during post-processing analysis";
@@ -396,7 +396,7 @@ _resetCurrentIterationPostProcessing()
   m_is_output_at_current_iteration = false;
   for (VariableList::Enumerator v_iter(m_variables); ++v_iter;) {
     IVariable* v = *v_iter;
-    v->removeTag("PostProcessingAtThisIteration");
+    v->removeTag(IVariable::TAG_POST_PROCESSING_AT_THIS_ITERATION);
   }
 }
 
@@ -411,7 +411,7 @@ _markCurrentIterationPostProcessing()
   m_is_output_at_current_iteration = true;
   for (VariableList::Enumerator v_iter(m_variables); ++v_iter;) {
     IVariable* v = *v_iter;
-    v->addTag("PostProcessingAtThisIteration", "1");
+    v->addTag(IVariable::TAG_POST_PROCESSING_AT_THIS_ITERATION, "1");
   }
 }
 
