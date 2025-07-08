@@ -72,6 +72,12 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+const char* IVariable::TAG_POST_PROCESSING = "PostProcessing";
+const char* IVariable::TAG_POST_PROCESSING_AT_THIS_ITERATION = "PostProcessingAtThisIteration";
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 /*
  * \brief Partie privée d'une variable.
  */
