@@ -279,3 +279,9 @@ jobs:
         shell: bash
         run: |
           cd "${{ env.CMAKE_BUILD_DIR }}" && ctest --output-on-failure -R convert_mesh
+
+      - name: Test Checkpoint
+        shell: bash
+        if: matrix.full_name == 'windows-2022-cxx20-intelmpi'
+        run: |
+          cd "${{ env.CMAKE_BUILD_DIR }}" && ctest --output-on-failure -R checkpoint
