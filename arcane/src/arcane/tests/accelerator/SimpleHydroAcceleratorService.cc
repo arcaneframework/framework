@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* SimpleHydroAcceleratorService.cc                            (C) 2000-2024 */
+/* SimpleHydroAcceleratorService.cc                            (C) 2000-2025 */
 /*                                                                           */
-/* Hydrodynamique simplifiée utilisant les accélerateurs.                    */
+/* Hydrodynamique simplifiée utilisant les accélérateurs.                    */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -16,7 +16,6 @@
 #include "arcane/utils/StringBuilder.h"
 #include "arcane/utils/ITraceMng.h"
 
-#include "arcane/core/ITimeLoop.h"
 #include "arcane/core/ISubDomain.h"
 #include "arcane/core/IMesh.h"
 #include "arcane/core/IApplication.h"
@@ -30,17 +29,14 @@
 #include "arcane/core/TimeLoopEntryPointInfo.h"
 #include "arcane/core/ItemPrinter.h"
 #include "arcane/core/Concurrency.h"
-#include "arcane/core/BasicService.h"
+#include "arcane/core/BasicUnitTest.h"
 #include "arcane/core/ServiceBuildInfo.h"
 #include "arcane/core/ServiceBuilder.h"
 #include "arcane/core/FactoryService.h"
-#include "arcane/core/AcceleratorRuntimeInitialisationInfo.h"
-#include "arcane/core/BasicUnitTest.h"
-#include "arcane/core/IMainFactory.h"
-#include "arcane/core/SimdItem.h"
 #include "arcane/core/UnstructuredMeshConnectivity.h"
 #include "arcane/core/ItemGenericInfoListView.h"
 #include "arcane/core/MeshUtils.h"
+#include "arcane/core/VariableUtils.h"
 
 #include "arcane/accelerator/core/IAcceleratorMng.h"
 
@@ -99,7 +95,7 @@ double reference_global_deltat[50] =
  * \brief Module hydrodynamique simplifié avec vectorisation et parallélisation
  * par les threads. 
  *
- * Ce module implémente une hydrodynamique simple tri-dimensionnel,
+ * Ce module implémente une hydrodynamique simple tri dimensionnelle,
  * parallèle, avec une pseudo-viscosité aux mailles en utilisant
  * les classes de vectorisation fournies par Arcane.
  */
@@ -126,20 +122,19 @@ class SimpleHydroAcceleratorService
     ax::RunQueue queue_ref;
   };
 
-  // Note: il faut mettre ce champs statique si on veut que sa valeur
+  // Note : il faut mettre ce champ statique si on veut que sa valeur
   // soit correcte lors de la capture avec CUDA (sinon on passe par this et
   // cela provoque une erreur mémoire)
-  static const Integer MAX_NODE_CELL = 8;
+  static constexpr Integer MAX_NODE_CELL = 8;
 
  public:
 
   //! Constructeur
-  SimpleHydroAcceleratorService(const ServiceBuildInfo& sbi);
-  ~SimpleHydroAcceleratorService(); //!< Destructeur
+  explicit SimpleHydroAcceleratorService(const ServiceBuildInfo& sbi);
 
  public:
-  
-  virtual VersionInfo versionInfo() const { return VersionInfo(1,0,1); }
+
+  static VersionInfo versionInfo() { return { 1, 0, 1 }; }
 
  public:
 
@@ -164,30 +159,28 @@ class SimpleHydroAcceleratorService
   }
 
  private:
-  
-  void computeGeometricValues2();
 
-  void cellScalarPseudoViscosity();
   static ARCCORE_HOST_DEVICE inline void computeCQs(Real3 node_coord[8],Real3 face_coord[6],Span<Real3> cqs);
 
  private:
+
   VariableCellInt64 m_cell_unique_id; //!< Unique ID associé à la maille
   VariableCellInt32 m_sub_domain_id; //!< Numéro du sous-domaine associé à la maille
-  VariableCellReal m_density; //!< Densite par maille
+  VariableCellReal m_density; //!< Densité par maille
   VariableCellReal m_pressure; //!< Pression par maille
   VariableCellReal m_cell_mass; //!< Masse par maille
-  VariableCellReal m_internal_energy;  //!< Energie interne des mailles
+  VariableCellReal m_internal_energy; //!< Énergie interne des mailles
   VariableCellReal m_volume; //!< Volume des mailles
   VariableCellReal m_old_volume; //!< Volume d'une maille à l'itération précédente
-  VariableNodeReal3 m_force;  //!< Force aux noeuds
-  VariableNodeReal3 m_velocity; //!< Vitesse aux noeuds
+  VariableNodeReal3 m_force; //!< Force aux nœuds
+  VariableNodeReal3 m_velocity; //!< Vitesse aux nœuds
   VariableNodeReal m_node_mass; //! Masse nodale
   VariableCellReal m_cell_viscosity_force;  //!< Contribution locale des forces de viscosité
   VariableCellReal m_viscosity_work;  //!< Travail des forces de viscosité par maille
   VariableCellReal m_adiabatic_cst; //!< Constante adiabatique par maille
-  VariableCellReal m_caracteristic_length; //!< Longueur caractéristique par maille
+  VariableCellReal m_characteristic_length; //!< Longueur caractéristique par maille
   VariableCellReal m_sound_speed; //!< Vitesse du son dans la maille
-  VariableNodeReal3 m_node_coord; //!< Coordonnées des noeuds
+  VariableNodeReal3 m_node_coord; //!< Coordonnées des nœuds
   VariableCellArrayReal3 m_cell_cqs; //!< Résultantes aux sommets pour chaque maille
 
   VariableScalarReal m_density_ratio_maximum; //!< Accroissement maximum de la densité sur un pas de temps
@@ -195,12 +188,12 @@ class SimpleHydroAcceleratorService
   VariableScalarReal m_delta_t_f; //!< Delta t n+\demi  entre t^{n} et t^{n+1}
   VariableScalarReal m_old_dt_f; //!< Delta t n-\demi  entre t^{n-1} et t^{n}
 
-  SimpleHydro::SimpleHydroModuleBase* m_module;
-  //! Indice de chaque noeud dans la maille
+  SimpleHydro::SimpleHydroModuleBase* m_module = nullptr;
+  //! Indice de chaque nœud dans la maille
   UniqueArray<Int16> m_node_index_in_cells;
 
-  ax::Runner* m_runner = nullptr;
-  ax::RunQueue* m_default_queue = nullptr;
+  Runner m_runner;
+  RunQueue m_default_queue;
 
   UnstructuredMeshConnectivityView m_connectivity_view;
   UniqueArray<BoundaryCondition> m_boundary_conditions;
@@ -212,9 +205,8 @@ class SimpleHydroAcceleratorService
 
  private:
 
-  void _specialInit();
   void _computeNodeIndexInCells();
-  void _doTestInit();
+  void _doTestInit() const;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -237,7 +229,7 @@ SimpleHydroAcceleratorService(const ServiceBuildInfo& sbi)
 , m_cell_viscosity_force(VariableBuildInfo(sbi.mesh(),"CellViscosityForce"))
 , m_viscosity_work(VariableBuildInfo(sbi.mesh(),"ViscosityWork"))
 , m_adiabatic_cst(VariableBuildInfo(sbi.mesh(),"AdiabaticCst"))
-, m_caracteristic_length(VariableBuildInfo(sbi.mesh(),"CaracteristicLength"))
+, m_characteristic_length(VariableBuildInfo(sbi.mesh(), "CharacteristicLength"))
 , m_sound_speed(VariableBuildInfo(sbi.mesh(),"SoundSpeed"))
 , m_node_coord(VariableBuildInfo(sbi.mesh(),"NodeCoord"))
 , m_cell_cqs(VariableBuildInfo(sbi.mesh(),"CellCQS"))
@@ -247,18 +239,13 @@ SimpleHydroAcceleratorService(const ServiceBuildInfo& sbi)
 , m_old_dt_f(VariableBuildInfo(sbi.mesh(),"OldDTf"))
 , m_module(nullptr)
 , m_node_index_in_cells(MemoryUtils::getDefaultDataAllocator())
-, m_runner(sbi.subDomain()->acceleratorMng()->defaultRunner())
-, m_default_queue(sbi.subDomain()->acceleratorMng()->defaultQueue())
+, m_runner(sbi.subDomain()->acceleratorMng()->runner())
+, m_default_queue(sbi.subDomain()->acceleratorMng()->queue())
 {
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-SimpleHydroAcceleratorService::
-~SimpleHydroAcceleratorService()
-{
-}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -289,7 +276,12 @@ hydroStartInit()
 {
   // Indique que les connectivités doivent être dupliquées sur accélérateur
   // et pré-copie leur valeur.
-  MeshUtils::markMeshConnectivitiesAsMostlyReadOnly(mesh(),m_default_queue,true);
+  MeshUtils::markMeshConnectivitiesAsMostlyReadOnly(mesh(), &m_default_queue, true);
+
+  // Indique qu'on souhaite allouer la force sur l'accélérateur si c'est actif.
+  // Cela permet de tester l'usage d'une variable côté accélérateur.
+  if (m_default_queue.isAcceleratorPolicy())
+    VariableUtils::experimentalChangeAllocator(m_force, eMemoryRessource::Device);
 
   // Juste pour tester l'exemple de calcul du centre des mailles
   _doTestInit(); 
@@ -337,14 +329,14 @@ hydroStartInit()
   m_delta_t_n = deltat_init;
   m_delta_t_f = deltat_init;
 
-  // Initialise les données géométriques: volume, cqs, longueurs caractéristiques
+  // Initialise les données géométriques : volume, cqs, longueurs caractéristiques
   computeGeometricValues();
 
   m_node_mass.fill(ARCANE_REAL(0.0));
   m_velocity.fill(Real3::zero());
 
-  // Initialisation de la masses des mailles et des masses nodale
-  ENUMERATE_CELL(icell,allCells()){
+  // Initialisation de la masse des mailles et des masses nodales
+  ENUMERATE_CELL (icell, allCells()) {
     Cell cell = *icell;
     m_cell_mass[icell] = m_density[icell] * m_volume[icell];
 
@@ -388,7 +380,7 @@ hydroStartInit()
       FaceGroup face_group = bc->getSurface();
       Real value = bc->getValue();
       TypesSimpleHydro::eBoundaryCondition type = bc->getType();
-      RunQueue q = (use_multiple_queue) ? makeQueue(m_runner) : *m_default_queue;
+      RunQueue q = (use_multiple_queue) ? makeQueue(m_runner) : m_default_queue;
       BoundaryCondition bcn(makeQueue(m_runner));
       bcn.nodes = face_group.nodeGroup();
       bcn.value = value;
@@ -409,8 +401,8 @@ hydroStartInit()
 void SimpleHydroAcceleratorService::
 computeForces()
 {
-  // Calcul pour chaque noeud de chaque maille la contribution
-  // des forces de pression et de la pseudo-viscosite si necessaire
+  // Calcul pour chaque nœud de chaque maille la contribution
+  // des forces de pression et de la pseudo-viscosité si necessaire
   if (m_module->getViscosity()==TypesSimpleHydro::ViscosityCellScalar){
     _computePressureForces();
     _computePseudoViscosityForces();
@@ -449,7 +441,7 @@ _computePressureForces()
   auto command = makeCommand(m_default_queue);
   auto in_density = ax::viewIn(command,m_density);
   auto in_velocity = ax::viewIn(command,m_velocity);
-  auto in_caracteristic_length = ax::viewIn(command,m_caracteristic_length);
+  auto in_characteristic_length = ax::viewIn(command, m_characteristic_length);
   auto in_volume = ax::viewIn(command,m_volume);
   auto in_sound_speed = ax::viewIn(command,m_sound_speed);
   auto in_cell_cqs = ax::viewIn(command,m_cell_cqs);
@@ -469,7 +461,7 @@ _computePressureForces()
     if (shock){
       Real rho = in_density[cid];
       Real sound_speed = in_sound_speed[cid];
-      Real dx = in_caracteristic_length[cid];
+      Real dx = in_characteristic_length[cid];
       Real quadratic_viscosity = rho * dx * dx * delta_speed * delta_speed;
       Real linear_viscosity = -rho*sound_speed* dx * delta_speed;
       Real scalar_viscosity = linear_coef * linear_viscosity + quadratic_coef * quadratic_viscosity;
@@ -526,7 +518,7 @@ computeVelocity()
   auto in_out_velocity = ax::viewInOut(command,m_velocity);
   Real delta_t_n = m_delta_t_n();
 
-  // Calcule l'impulsion aux noeuds
+  // Calcule l'impulsion aux nœuds
   command << RUNCOMMAND_ENUMERATE(Node,node,allNodes())
   {
     Real node_mass  = in_node_mass[node];
@@ -578,7 +570,7 @@ applyBoundaryCondition()
   auto queue = makeQueue(m_runner);
 
   // Pour cette méthode, comme les conditions aux limites sont sur des groupes
-  // indépendants (ou alors avec la même valeur si c'est sur les mêmes noeuds),
+  // indépendants (ou alors avec la même valeur si c'est sur les mêmes nœuds),
   // on peut exécuter les noyaux en asynchrone.
   queue.setAsync(true);
   bool use_one_queue = !options()->useMultipleQueueForBoundaryConditions;
@@ -600,8 +592,8 @@ applyBoundaryCondition()
     // boucle sur les faces de la surface
     command << RUNCOMMAND_ENUMERATE(Node,node,view)
     {
-      // boucle sur les noeuds de la face
-      switch(type) {
+      // boucle sur les nœuds de la face
+      switch (type) {
       case TypesSimpleHydro::VelocityX: in_out_velocity[node].setX(value); break;
       case TypesSimpleHydro::VelocityY: in_out_velocity[node].setY(value); break;
       case TypesSimpleHydro::VelocityZ: in_out_velocity[node].setZ(value); break;
@@ -612,7 +604,7 @@ applyBoundaryCondition()
   if (use_one_queue)
     queue.barrier();
   else
-    for( auto bc : m_boundary_conditions ){
+    for (const auto& bc : m_boundary_conditions) {
       bc.queue_ref.barrier();
     }
 }
@@ -641,7 +633,7 @@ moveNodes()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Mise à jour des densités et calcul de l'accroissements max
+ * \brief Mise à jour des densités et calcul de l'accroissement max
  *	  de la densité sur l'ensemble du maillage.
  */
 void SimpleHydroAcceleratorService::
@@ -670,7 +662,7 @@ updateDensity()
   m_density_ratio_maximum = density_ratio_maximum.reducedValue();
 
   // Vérifie la validité du ratio calculé. La référence n'est valide
-  // qu'en séquentiel car ce ratio n'est pas réduit sur tout les
+  // qu'en séquentiel, car ce ratio n'est pas réduit sur tous les
   // sous-domaines.
   if (m_module->isCheckNumericalResult()){
     if (!mesh()->parallelMng()->isParallel()){
@@ -746,17 +738,17 @@ computeDeltaT()
   const Real old_dt = m_global_deltat();
 
   // Calcul du pas de temps pour le respect du critère de CFL
-  
-  Real minimum_aux = FloatInfo<Real>::maxValue();
+
+  Real minimum_aux = 0.0;
 
   {
     auto command = makeCommand(m_default_queue);
     ax::ReducerMin2<double> minimum_aux_reducer(command);
     auto in_sound_speed = ax::viewIn(command,m_sound_speed);
-    auto in_caracteristic_length = ax::viewIn(command,m_caracteristic_length);
+    auto in_characteristic_length = ax::viewIn(command, m_characteristic_length);
     command << RUNCOMMAND_ENUMERATE(Cell,cid,allCells(),minimum_aux_reducer)
     {
-      Real cell_dx = in_caracteristic_length[cid];
+      Real cell_dx = in_characteristic_length[cid];
       Real sound_speed = in_sound_speed[cid];
       Real dx_sound = cell_dx / sound_speed;
       minimum_aux_reducer.combine(dx_sound);
@@ -767,8 +759,8 @@ computeDeltaT()
   Real new_dt = m_module->getCfl()*minimum_aux;
 
   // Pas de variations trop brutales à la hausse comme à la baisse
-  Real max_dt = (ARCANE_REAL(1.0)+m_module->getVariationSup())*old_dt;
-  Real min_dt = (ARCANE_REAL(1.0)-m_module->getVariationInf())*old_dt;
+  Real max_dt = (1.0 + m_module->getVariationSup()) * old_dt;
+  Real min_dt = (1.0 - m_module->getVariationInf()) * old_dt;
 
   new_dt = math::min(new_dt,max_dt);
   new_dt = math::max(new_dt,min_dt);
@@ -819,7 +811,7 @@ computeDeltaT()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Calcul des résultantes aux noeuds d'une maille hexaédrique.
+ * \brief Calcul des résultantes aux nœuds d'une maille hexaédrique.
  *
  * La méthode utilisée est celle du découpage en quatre triangles.
  */
@@ -833,8 +825,8 @@ computeCQs(Real3 node_coord[8],Real3 face_coord[6],Span<Real3> cqs)
   const Real3 c4 = face_coord[4];
   const Real3 c5 = face_coord[5];
 
-  const Real demi = ARCANE_REAL(0.5);
-  const Real five = ARCANE_REAL(5.0);
+  constexpr Real demi = 0.5;
+  constexpr Real five = 5.0;
 
   // Calcul des normales face 1 :
   const Real3 n1a04 = demi * math::cross(node_coord[0] - c0 , node_coord[3] - c0);
@@ -872,7 +864,7 @@ computeCQs(Real3 node_coord[8],Real3 face_coord[6],Span<Real3> cqs)
   const Real3 n6a11 = demi * math::cross(node_coord[7] - c5 , node_coord[6] - c5);
   const Real3 n6a07 = demi * math::cross(node_coord[6] - c5 , node_coord[2] - c5);
 
-  const Real real_1div12 = ARCANE_REAL(1.0) / ARCANE_REAL(12.0);
+  constexpr Real real_1div12 = 1.0 / 12.0;
 
   // Calcul des résultantes aux sommets :
   cqs[0] = (five*(n1a01 + n1a04 + n2a04 + n2a05 + n3a05 + n3a01) +
@@ -908,8 +900,8 @@ computeGeometricValues()
   auto in_volume = ax::viewIn(command,m_volume);
 
   auto out_volume = ax::viewOut(command,m_volume);
-  auto out_old_volume = ax::viewOut(command,m_old_volume);
-  auto out_caracteristic_length = ax::viewOut(command,m_caracteristic_length);
+  auto out_old_volume = ax::viewOut(command, m_old_volume);
+  auto out_characteristic_length = ax::viewOut(command, m_characteristic_length);
 
   auto cnc = m_connectivity_view.cellNode();
 
@@ -947,19 +939,18 @@ computeGeometricValues()
       Real d3 = median3.normL2();
 
       Real dx_numerator   = d1*d2*d3;
-      Real dx_denominator = d1*d2 + d1*d3 + d2*d3;
-      out_caracteristic_length[cid] = dx_numerator / dx_denominator;
+      Real dx_denominator = d1 * d2 + d1 * d3 + d2 * d3;
+      out_characteristic_length[cid] = dx_numerator / dx_denominator;
     }
 
     // Calcule les résultantes aux sommets
     computeCQs(coord,face_coord,in_out_cell_cqs[cid]);
 
-    SmallSpan<const Real3> in_cqs(in_out_cell_cqs[cid]);
-
     // Calcule le volume de la maille
     {
+      SmallSpan<const Real3> in_cqs(in_out_cell_cqs[cid]);
       Real volume = 0.0;
-      for( Integer i_node=0; i_node<8; ++i_node )
+      for (Integer i_node = 0; i_node < 8; ++i_node)
         volume += math::dot(coord[i_node],in_cqs[i_node]);
       volume /= 3.0;
 
@@ -992,8 +983,8 @@ void SimpleHydroAcceleratorService::
 _computeNodeIndexInCells()
 {
   info() << "ComputeNodeIndexInCells";
-  // Un noeud est connecté au maximum à MAX_NODE_CELL mailles
-  // Calcul pour chaque noeud son index dans chacune des
+  // Un nœud est connecté au maximum à MAX_NODE_CELL mailles
+  // Calcul pour chaque nœud son index dans chacune des
   // mailles à laquelle il est connecté.
   NodeGroup nodes = allNodes();
   Integer nb_node = nodes.size();
@@ -1026,7 +1017,7 @@ class TestConnectivity
 {
  public:
 
-  TestConnectivity(IMesh* mesh,RunQueue* queue)
+  TestConnectivity(IMesh* mesh, const RunQueue& queue)
   : m_mesh(mesh)
   , m_queue(queue)
   , m_cells_center(VariableBuildInfo(mesh,"CellsCenterTest"))
@@ -1068,7 +1059,7 @@ class TestConnectivity
  private:
 
   Arcane::IMesh* m_mesh = nullptr;
-  Arcane::Accelerator::RunQueue* m_queue;
+  Arcane::Accelerator::RunQueue m_queue;
   Arcane::UnstructuredMeshConnectivityView m_connectivity_view;
   Arcane::VariableCellReal3 m_cells_center;
 };
@@ -1078,7 +1069,7 @@ class TestConnectivity
 /*---------------------------------------------------------------------------*/
 
 void SimpleHydroAcceleratorService::
-_doTestInit()
+_doTestInit() const
 {
   info() << "DoTestInit";
   TestConnectivity tester(mesh(),m_default_queue);
