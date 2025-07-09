@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -182,6 +182,40 @@ TEST(TestRealN,Copyable)
   ASSERT_TRUE(std::is_trivially_copyable_v<Real3>);
   ASSERT_TRUE(std::is_trivially_copyable_v<Real2x2>);
   ASSERT_TRUE(std::is_trivially_copyable_v<Real3x3>);
+}
+
+TEST(TestRealN,ContiguousAddress)
+{
+  // Vérifie que les adresses des champs des classes 'RealN' sont
+  // contigues et qu'on peut utiliser operator[] pour accéder à la i-ème composante.
+  Real2 r2;
+  ASSERT_TRUE(sizeof(r2)==2*sizeof(Real));
+  ASSERT_TRUE(&r2.y==(&r2.x+1));
+
+  Real3 r3;
+  ASSERT_TRUE(sizeof(r3)==3*sizeof(Real));
+  Real* r3_base = &r3.x;
+  ASSERT_TRUE(&r3.y==(r3_base+1));
+  ASSERT_TRUE(&r3.z==(r3_base+2));
+
+  Real2x2 r2x2;
+  Real* r2x2_base = &r2x2.x.x;
+  ASSERT_TRUE(sizeof(r2x2)==4*sizeof(Real));
+  ASSERT_TRUE(&r2x2.x.y==r2x2_base+1);
+  ASSERT_TRUE(&r2x2.y.x==r2x2_base+2);
+  ASSERT_TRUE(&r2x2.y.y==r2x2_base+3);
+
+  Real3x3 r3x3;
+  Real* r3x3_base = &r3x3.x.x;
+  ASSERT_TRUE(sizeof(r3x3)==9*sizeof(Real));
+  ASSERT_TRUE(&r3x3.x.y==r3x3_base+1);
+  ASSERT_TRUE(&r3x3.x.z==r3x3_base+2);
+  ASSERT_TRUE(&r3x3.y.x==r3x3_base+3);
+  ASSERT_TRUE(&r3x3.y.y==r3x3_base+4);
+  ASSERT_TRUE(&r3x3.y.z==r3x3_base+5);
+  ASSERT_TRUE(&r3x3.z.x==r3x3_base+6);
+  ASSERT_TRUE(&r3x3.z.y==r3x3_base+7);
+  ASSERT_TRUE(&r3x3.z.z==r3x3_base+8);
 }
 
 /*---------------------------------------------------------------------------*/
