@@ -24,6 +24,9 @@
 
 #include "arccore/base/BaseTypes.h"
 
+#include "arccore/message_passing_mpi/internal/MpiAiONodeWindow.h"
+#include "arccore/message_passing_mpi/internal/MpiNodeWindow.h"
+
 #include <set>
 
 /*---------------------------------------------------------------------------*/
@@ -207,6 +210,28 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiAdapter
 
   bool isAllowNullRankForAnySource() const { return m_is_allow_null_rank_for_any_source; }
 
+ public:
+
+  template<class Type>
+  Ref<INodeWindow<Type>> createNodeWindow(Integer nb_elem_local) const
+  {
+    return makeRef(new MpiNodeWindow<Type>(nb_elem_local, m_node_communicator, m_node_comm_rank));
+  }
+
+  void* createAiONodeWindow(Integer sizeof_local) const;
+  void freeAiONodeWindow(void* aio_node_window) const;
+
+  template<class Type>
+  Ref<INodeWindow<Type>> readAiONodeWindow(void* aio_node_window) const
+  {
+    return makeRef(new MpiAiONodeWindow<Type>(static_cast<Type*>(aio_node_window), sizeof(MPI_Win), m_node_communicator, m_node_comm_rank));
+  }
+
+  int nodeCommRank() const { return m_node_comm_rank; }
+  int nodeCommSize() const { return m_node_comm_size; }
+
+  MPI_Comm nodeCommunicator() const {return m_node_communicator;}
+
  private:
 
   IStat* m_stat = nullptr;
@@ -216,6 +241,9 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiAdapter
   MPI_Comm m_communicator; //!< Communicateur MPI
   int m_comm_rank = A_PROC_NULL_RANK;
   int m_comm_size = 0;
+  MPI_Comm m_node_communicator; //!< Communicateur MPI sur le noeud de calcul
+  int m_node_comm_rank = A_PROC_NULL_RANK;
+  int m_node_comm_size = 0;
   Int64 m_nb_all_reduce = 0;
   Int64 m_nb_reduce = 0;
   bool m_is_trace = false;
