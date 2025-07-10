@@ -184,38 +184,65 @@ TEST(TestRealN,Copyable)
   ASSERT_TRUE(std::is_trivially_copyable_v<Real3x3>);
 }
 
-TEST(TestRealN,ContiguousAddress)
+TEST(TestRealN, ContiguousAddress)
 {
   // Vérifie que les adresses des champs des classes 'RealN' sont
   // contigues et qu'on peut utiliser operator[] pour accéder à la i-ème composante.
   Real2 r2;
-  ASSERT_TRUE(sizeof(r2)==2*sizeof(Real));
-  ASSERT_TRUE(&r2.y==(&r2.x+1));
+  ASSERT_TRUE(sizeof(r2) == 2 * sizeof(Real));
+  ASSERT_TRUE(&r2.y == (&r2.x + 1));
 
   Real3 r3;
-  ASSERT_TRUE(sizeof(r3)==3*sizeof(Real));
+  ASSERT_TRUE(sizeof(r3) == 3 * sizeof(Real));
   Real* r3_base = &r3.x;
-  ASSERT_TRUE(&r3.y==(r3_base+1));
-  ASSERT_TRUE(&r3.z==(r3_base+2));
+  ASSERT_TRUE(&r3.y == (r3_base + 1));
+  ASSERT_TRUE(&r3.z == (r3_base + 2));
 
   Real2x2 r2x2;
-  Real* r2x2_base = &r2x2.x.x;
-  ASSERT_TRUE(sizeof(r2x2)==4*sizeof(Real));
-  ASSERT_TRUE(&r2x2.x.y==r2x2_base+1);
-  ASSERT_TRUE(&r2x2.y.x==r2x2_base+2);
-  ASSERT_TRUE(&r2x2.y.y==r2x2_base+3);
+  Real2* r2x2_base = &r2x2.x;
+  Real* r2x2_base_x = &r2x2.x.x;
+  Real* r2x2_base_y = &r2x2.y.x;
+
+  ASSERT_TRUE(sizeof(r2x2) == 4 * sizeof(Real));
+
+  ASSERT_TRUE(&r2x2.x == r2x2_base + 0);
+  ASSERT_TRUE(&r2x2.y == r2x2_base + 1);
+
+  ASSERT_EQ(static_cast<void*>(r2x2_base_x), r2x2_base + 0);
+  ASSERT_EQ(static_cast<void*>(r2x2_base_y), r2x2_base + 1);
+
+  ASSERT_TRUE(&r2x2.x.x == r2x2_base_x + 0);
+  ASSERT_TRUE(&r2x2.x.y == r2x2_base_x + 1);
+
+  ASSERT_TRUE(&r2x2.y.x == r2x2_base_y + 0);
+  ASSERT_TRUE(&r2x2.y.y == r2x2_base_y + 1);
 
   Real3x3 r3x3;
-  Real* r3x3_base = &r3x3.x.x;
-  ASSERT_TRUE(sizeof(r3x3)==9*sizeof(Real));
-  ASSERT_TRUE(&r3x3.x.y==r3x3_base+1);
-  ASSERT_TRUE(&r3x3.x.z==r3x3_base+2);
-  ASSERT_TRUE(&r3x3.y.x==r3x3_base+3);
-  ASSERT_TRUE(&r3x3.y.y==r3x3_base+4);
-  ASSERT_TRUE(&r3x3.y.z==r3x3_base+5);
-  ASSERT_TRUE(&r3x3.z.x==r3x3_base+6);
-  ASSERT_TRUE(&r3x3.z.y==r3x3_base+7);
-  ASSERT_TRUE(&r3x3.z.z==r3x3_base+8);
+  Real3* r3x3_base = &r3x3.x;
+  Real* r3x3_base_x = &r3x3.x.x;
+  Real* r3x3_base_y = &r3x3.y.x;
+  Real* r3x3_base_z = &r3x3.z.x;
+  ASSERT_TRUE(sizeof(r3x3) == 9 * sizeof(Real));
+
+  ASSERT_TRUE(&r3x3.x == r3x3_base + 0);
+  ASSERT_TRUE(&r3x3.y == r3x3_base + 1);
+  ASSERT_TRUE(&r3x3.z == r3x3_base + 2);
+
+  ASSERT_EQ(static_cast<void*>(r3x3_base_x), r3x3_base + 0);
+  ASSERT_EQ(static_cast<void*>(r3x3_base_y), r3x3_base + 1);
+  ASSERT_EQ(static_cast<void*>(r3x3_base_z), r3x3_base + 2);
+
+  ASSERT_TRUE(&r3x3.x.x == r3x3_base_x + 0);
+  ASSERT_TRUE(&r3x3.x.y == r3x3_base_x + 1);
+  ASSERT_TRUE(&r3x3.x.z == r3x3_base_x + 2);
+
+  ASSERT_TRUE(&r3x3.y.x == r3x3_base_y + 0);
+  ASSERT_TRUE(&r3x3.y.y == r3x3_base_y + 1);
+  ASSERT_TRUE(&r3x3.y.z == r3x3_base_y + 2);
+
+  ASSERT_TRUE(&r3x3.z.x == r3x3_base_z + 0);
+  ASSERT_TRUE(&r3x3.z.y == r3x3_base_z + 1);
+  ASSERT_TRUE(&r3x3.z.z == r3x3_base_z + 2);
 }
 
 /*---------------------------------------------------------------------------*/
