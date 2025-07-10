@@ -51,7 +51,13 @@
 #include <fcntl.h>
 #endif
 
+#ifdef ARCANE_OS_MACOS
+#include <stdlib.h>
+#include <mach-o/dyld.h>
+#else
 #include <malloc.h>
+#endif
+
 
 #if !defined(ARCANE_OS_CYGWIN) && !defined(ARCANE_OS_WIN32)
 #if defined(__i386__)
@@ -412,6 +418,14 @@ getExeFullPath()
   if (r>0){
     full_path = StringView(buf);
   }
+#elif defined(ARCANE_OS_MACOS)
+  char buf[2048];
+  uint32_t bufSize = 2000;
+  int r = _NSGetExecutablePath(buf, &bufSize);
+  if (r > 0) {
+    full_path = StringView(buf);
+    ::free(buf);
+  }
 #else
 #error "platform::getExeFullPath() not implemented for this platform"
 #endif
@@ -451,6 +465,21 @@ getLoadedSharedLibraryFullPath(const String& dll_name)
   TCHAR dllPath[_MAX_PATH];
   GetModuleFileName(hModule, dllPath, _MAX_PATH);
   full_path = StringView(dllPath);
+#elif defined(ARCANE_OS_MACOS)
+  {
+    String true_name = "lib" + dll_name + ".dylib";
+    uint32_t count = _dyld_image_count();
+    for (uint32_t i = 0; i < count; i++) {
+      const char* image_name = _dyld_get_image_name(i);
+      if (image_name) {
+        String image_path(image_name);
+        if (image_path.endsWith(true_name)) {
+          full_path = image_path;
+          break;
+        }
+      }
+    }
+  }
 #else
   throw NotSupportedException(A_FUNCINFO);
 //#error "platform::getSymbolFullPath() not implemented for this platform"
