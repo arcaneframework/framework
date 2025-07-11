@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -52,7 +52,7 @@
 #endif
 
 #ifdef ARCANE_OS_MACOS
-#include <stdlib.h>
+#include <cstdlib>
 #include <mach-o/dyld.h>
 #else
 #include <malloc.h>
@@ -422,9 +422,8 @@ getExeFullPath()
   char buf[2048];
   uint32_t bufSize = 2000;
   int r = _NSGetExecutablePath(buf, &bufSize);
-  if (r > 0) {
+  if (r==0) { // success returns 0
     full_path = StringView(buf);
-    ::free(buf);
   }
 #else
 #error "platform::getExeFullPath() not implemented for this platform"
