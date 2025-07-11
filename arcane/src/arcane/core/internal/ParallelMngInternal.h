@@ -5,16 +5,19 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IParallelMngInternal.h                                      (C) 2000-2025 */
+/* ParallelMngInternal.h                                       (C) 2000-2025 */
 /*                                                                           */
-/* Partie interne à Arcane de IParallelMng.                                  */
+/* Implémentation de la partie interne à Arcane de IParallelMng.             */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_CORE_INTERNAL_IPARALLELMNGINTERNAL_H
-#define ARCANE_CORE_INTERNAL_IPARALLELMNGINTERNAL_H
+#ifndef ARCANE_CORE_INTERNAL_PARALLELMNGINTERNAL_H
+#define ARCANE_CORE_INTERNAL_PARALLELMNGINTERNAL_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/ArcaneTypes.h"
+#include "arcane/core/ArcaneTypes.h"
+#include "arcane/core/internal/IParallelMngInternal.h"
+
+#include "arcane/accelerator/core/Runner.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -25,45 +28,39 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace MessagePassing
-{
-  class IMachineMemoryWindowBase;
-}
+class ParallelMngDispatcher;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
  * \brief Partie interne de IParallelMng.
  */
-class ARCANE_CORE_EXPORT IParallelMngInternal
+class ARCANE_CORE_EXPORT ParallelMngInternal
+: public IParallelMngInternal
 {
  public:
 
-  virtual ~IParallelMngInternal() = default;
+  explicit ParallelMngInternal(ParallelMngDispatcher* pm);
+
+  ~ParallelMngInternal() override = default;
 
  public:
 
-  //! Runner par défaut. Peut être nul
-  virtual Runner runner() const = 0;
+  Runner runner() const override;
+  RunQueue queue() const override;
+  bool isAcceleratorAware() const override;
+  Ref<IParallelMng> createSubParallelMngRef(Int32 color, Int32 key) override;
+  void setDefaultRunner(const Runner& runner) override;
+  Ref<MessagePassing::IMachineMemoryWindowBase> createMachineMemoryWindowBase(Integer nb_elem_local, Integer sizeof_one_elem) override;
 
-  //! File par défaut pour les messages. Peut être nul
-  virtual RunQueue queue() const = 0;
+ private:
 
-  /*!
-   * \brief Indique si l'implémentation gère les accélérateurs.
-   *
-   * Si c'est le cas on peut utiliser directement la mémoire de l'accélérateur
-   * dans les appels MPI ce qui permet d'éviter d'éventuelles recopies.
-   */
-  virtual bool isAcceleratorAware() const = 0;
-
-  //! Créé un sous IParallelMng de manière similaire à MPI_Comm_split.
-  virtual Ref<IParallelMng> createSubParallelMngRef(Int32 color, Int32 key) = 0;
-
-  virtual void setDefaultRunner(const Runner& runner) = 0;
-
-  virtual Ref<MessagePassing::IMachineMemoryWindowBase> createMachineMemoryWindowBase(Integer nb_elem_local, Integer sizeof_one_elem) = 0;
+  ParallelMngDispatcher* m_parallel_mng = nullptr;
+  Runner m_runner;
+  RunQueue m_queue;
+  bool m_is_accelerator_aware_disabled = false;
 };
 
 /*---------------------------------------------------------------------------*/

@@ -84,6 +84,8 @@ set(ARCANE_INTERNAL_SOURCES
   internal/IPolyhedralMeshModifier.h
   internal/SerializeMessage.h
   internal/VtkCellTypes.h
+  internal/ParallelMngInternal.h
+  internal/ParallelMngInternal.cc
   )
 
 set(ARCANE_ORIGINAL_SOURCES
