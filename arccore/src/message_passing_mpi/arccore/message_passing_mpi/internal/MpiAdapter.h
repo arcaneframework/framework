@@ -24,8 +24,8 @@
 
 #include "arccore/base/BaseTypes.h"
 
-#include "arccore/message_passing_mpi/internal/MpiAiONodeWindowBase.h"
-#include "arccore/message_passing_mpi/internal/MpiNodeWindowBase.h"
+#include "arccore/message_passing_mpi/internal/MpiAllInOneMachineMemoryWindowBase.h"
+#include "arccore/message_passing_mpi/internal/MpiMachineMemoryWindowBase.h"
 
 #include <set>
 
@@ -212,22 +212,22 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiAdapter
 
  public:
 
-  Ref<INodeWindowBase> createNodeWindowBase(Integer nb_elem_local, Integer sizeof_one_elem) const
+  Ref<IMachineMemoryWindowBase> createMachineMemoryWindowBase(Integer nb_elem_local, Integer sizeof_one_elem) const
   {
-    return makeRef(new MpiNodeWindowBase(nb_elem_local, sizeof_one_elem, m_node_communicator, m_node_comm_rank));
+    return makeRef(new MpiMachineMemoryWindowBase(nb_elem_local, sizeof_one_elem, m_machine_communicator, m_machine_comm_rank));
   }
 
-  void* createAiONodeWindowBase(Integer sizeof_local) const;
-  void freeAiONodeWindowBase(void* aio_node_window) const;
-  Ref<INodeWindowBase> readAiONodeWindowBase(void* aio_node_window) const
+  void* createAllInOneMachineMemoryWindowBase(Integer sizeof_local) const;
+  void freeAllInOneMachineMemoryWindowBase(void* aio_node_window) const;
+  Ref<IMachineMemoryWindowBase> readAllInOneMachineMemoryWindowBase(void* aio_node_window) const
   {
-    return makeRef(new MpiAiONodeWindowBase(aio_node_window, sizeof(MPI_Win), m_node_communicator, m_node_comm_rank));
+    return makeRef(new MpiAllInOneMachineMemoryWindowBase(aio_node_window, sizeof(MPI_Win), m_machine_communicator, m_machine_comm_rank));
   }
 
-  int nodeCommRank() const { return m_node_comm_rank; }
-  int nodeCommSize() const { return m_node_comm_size; }
+  int machineCommRank() const { return m_machine_comm_rank; }
+  int machineCommSize() const { return m_machine_comm_size; }
 
-  MPI_Comm nodeCommunicator() const {return m_node_communicator;}
+  MPI_Comm machineCommunicator() const { return m_machine_communicator; }
 
  private:
 
@@ -238,9 +238,9 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiAdapter
   MPI_Comm m_communicator; //!< Communicateur MPI
   int m_comm_rank = A_PROC_NULL_RANK;
   int m_comm_size = 0;
-  MPI_Comm m_node_communicator; //!< Communicateur MPI sur le noeud de calcul
-  int m_node_comm_rank = A_PROC_NULL_RANK;
-  int m_node_comm_size = 0;
+  MPI_Comm m_machine_communicator; //!< Communicateur MPI sur le noeud de calcul
+  int m_machine_comm_rank = A_PROC_NULL_RANK;
+  int m_machine_comm_size = 0;
   Int64 m_nb_all_reduce = 0;
   Int64 m_nb_reduce = 0;
   bool m_is_trace = false;
