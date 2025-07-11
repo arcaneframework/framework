@@ -30,6 +30,7 @@ set(SOURCES
   MpiTypeDispatcher.cc
   MpiMessagePassingMng.cc
   MpiMessagePassingMng.h
+  MpiNodeWindowBase.cc
 
   StandaloneMpiMessagePassingMng.cc
   StandaloneMpiMessagePassingMng.h
@@ -37,10 +38,10 @@ set(SOURCES
   internal/IMpiProfiling.h
   internal/MessagePassingMpiEnum.h
   internal/MpiAdapter.h
-  internal/MpiAiONodeWindow.h
+  internal/MpiAiONodeWindowBase.h
   internal/MpiControlDispatcher.h
   internal/MpiLock.h
-  internal/MpiNodeWindow.h
+  internal/MpiNodeWindowBase.h
   internal/MpiRequest.h
   internal/MpiRequestList.h
   internal/MpiSerializeDispatcher.h

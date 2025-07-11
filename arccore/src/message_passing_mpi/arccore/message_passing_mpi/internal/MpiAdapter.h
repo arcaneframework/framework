@@ -24,8 +24,8 @@
 
 #include "arccore/base/BaseTypes.h"
 
-#include "arccore/message_passing_mpi/internal/MpiAiONodeWindow.h"
-#include "arccore/message_passing_mpi/internal/MpiNodeWindow.h"
+#include "arccore/message_passing_mpi/internal/MpiAiONodeWindowBase.h"
+#include "arccore/message_passing_mpi/internal/MpiNodeWindowBase.h"
 
 #include <set>
 
@@ -212,19 +212,16 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiAdapter
 
  public:
 
-  template<class Type>
-  Ref<INodeWindow<Type>> createNodeWindow(Integer nb_elem_local) const
+  Ref<INodeWindowBase> createNodeWindowBase(Integer nb_elem_local, Integer sizeof_one_elem) const
   {
-    return makeRef(new MpiNodeWindow<Type>(nb_elem_local, m_node_communicator, m_node_comm_rank));
+    return makeRef(new MpiNodeWindowBase(nb_elem_local, sizeof_one_elem, m_node_communicator, m_node_comm_rank));
   }
 
-  void* createAiONodeWindow(Integer sizeof_local) const;
-  void freeAiONodeWindow(void* aio_node_window) const;
-
-  template<class Type>
-  Ref<INodeWindow<Type>> readAiONodeWindow(void* aio_node_window) const
+  void* createAiONodeWindowBase(Integer sizeof_local) const;
+  void freeAiONodeWindowBase(void* aio_node_window) const;
+  Ref<INodeWindowBase> readAiONodeWindowBase(void* aio_node_window) const
   {
-    return makeRef(new MpiAiONodeWindow<Type>(static_cast<Type*>(aio_node_window), sizeof(MPI_Win), m_node_communicator, m_node_comm_rank));
+    return makeRef(new MpiAiONodeWindowBase(aio_node_window, sizeof(MPI_Win), m_node_communicator, m_node_comm_rank));
   }
 
   int nodeCommRank() const { return m_node_comm_rank; }
