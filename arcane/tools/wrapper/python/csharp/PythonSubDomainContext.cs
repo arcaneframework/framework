@@ -42,11 +42,20 @@ namespace Arcane.Python
     {
       m_sub_domain = sd;
       m_default_mesh = sd.DefaultMesh();
+      using (Py.GIL()){
+        m_numpy_module = Py.Import("numpy");
+      }
+    }
+    internal SubDomainContext(ISubDomain sd, PyObject numpy_module)
+    {
+      m_sub_domain = sd;
+      m_default_mesh = sd.DefaultMesh();
+      m_numpy_module = numpy_module;
     }
     public string Name() { return "SubDomain"; }
     public VariableWrapper GetVariable(IMesh mesh, string var_name)
     {
-      IVariable v = m_sub_domain.VariableMng().FindMeshVariable(m_default_mesh, var_name);
+      IVariable v = m_sub_domain.VariableMng().FindMeshVariable(mesh, var_name);
       if (v == null)
         return null;
       return new VariableWrapper(this, v);
