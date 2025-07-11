@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MpiNodeWindow.h                                            (C) 2000-2025 */
+/* MpiNodeWindowBase.h                                            (C) 2000-2025 */
 /*                                                                           */
 /* TODO.                                                    */
 /*---------------------------------------------------------------------------*/
@@ -14,7 +14,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arccore/message_passing/INodeWindow.h"
+#include "arccore/message_passing/INodeWindowBase.h"
 #include "arccore/message_passing_mpi/MessagePassingMpiGlobal.h"
 
 #include <cstring>
@@ -25,14 +25,15 @@
 namespace Arcane::MessagePassing::Mpi
 {
 
-template<class Type>
-class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiNodeWindow
-: public INodeWindow<Type>
+class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiNodeWindowBase
+: public INodeWindowBase
 {
  public:
 
-  explicit MpiNodeWindow(Integer nb_elem_local_section, const MPI_Comm& comm, Int32 my_node_rank)
+  explicit MpiNodeWindowBase(Integer nb_elem_local_section, Integer sizeof_type, const MPI_Comm& comm, Int32 my_node_rank)
   : m_nb_elem_local(nb_elem_local_section)
+  , m_sizeof_type(sizeof_type)
+  , m_win()
   , m_comm(comm)
   , m_my_rank(my_node_rank)
   {
@@ -42,81 +43,51 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiNodeWindow
 
     MPI_Info_set(win_info, "alloc_shared_noncontig", "false");
 
-    MPI_Comm_rank(m_comm,&m_my_rank);
+    MPI_Comm_rank(m_comm, &m_my_rank);
 
-    int error = MPI_Win_allocate_shared(m_nb_elem_local * sizeof(Type), sizeof(Type), win_info, m_comm, &ptr_win, &m_win);
+    int error = MPI_Win_allocate_shared(m_nb_elem_local * sizeof_type, sizeof_type, win_info, m_comm, &ptr_win, &m_win);
 
     MPI_Info_free(&win_info);
   }
 
-  ~MpiNodeWindow() override
+  ~MpiNodeWindowBase() override
   {
     MPI_Win_free(&m_win);
   }
 
  public:
 
-  Int64 sizeLocalSegment() const override
+  Integer sizeofOneElem() const override
+  {
+    return m_sizeof_type;
+  }
+
+  Integer sizeLocalSegment() const override
   {
     return sizeOtherRankSegment(m_my_rank);
   }
 
-  Int64 sizeOtherRankSegment(int rank) const override
+  Integer sizeOtherRankSegment(int rank) const override
   {
     MPI_Aint size_win;
     int size_type;
-    Type* ptr_win = nullptr;
+    void* ptr_win = nullptr;
 
     int error = MPI_Win_shared_query(m_win, rank, &size_win, &size_type, &ptr_win);
 
     return (size_win / size_type);
   }
 
-
-  ArrayView<Type> localSegmentView() override
-  {
-    return otherRankSegmentView(m_my_rank);
-  }
-
-  ArrayView<Type> otherRankSegmentView(int rank) override
-  {
-    MPI_Aint size_win;
-    int size_type;
-    Type* ptr_win = nullptr;
-
-    int error = MPI_Win_shared_query(m_win, rank, &size_win, &size_type, &ptr_win);
-
-    Integer nb_elem = static_cast<Integer>(size_win / size_type);
-    return ArrayView<Type>(nb_elem, ptr_win);
-  }
-
-  ConstArrayView<Type> localSegmentConstView() const override
-  {
-    return otherRankSegmentConstView(m_my_rank);
-  }
-
-  ConstArrayView<Type> otherRankSegmentConstView(int rank) const override
-  {
-    MPI_Aint size_win;
-    int size_type;
-    Type* ptr_win = nullptr;
-
-    int error = MPI_Win_shared_query(m_win, rank, &size_win, &size_type, &ptr_win);
-
-    Integer nb_elem = static_cast<Integer>(size_win / size_type);
-    return ConstArrayView<Type>(nb_elem, ptr_win);
-  }
-
-  Type* data() override
+  void* data() override
   {
     return dataOtherRank(m_my_rank);
   }
 
-  Type* dataOtherRank(int rank) override
+  void* dataOtherRank(int rank) override
   {
     MPI_Aint size_win;
     int size_type;
-    Type* ptr_win = nullptr;
+    void* ptr_win = nullptr;
 
     int error = MPI_Win_shared_query(m_win, rank, &size_win, &size_type, &ptr_win);
     return ptr_win;
@@ -128,15 +99,15 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiNodeWindow
   MPI_Win m_win;
   MPI_Comm m_comm;
   Int32 m_my_rank;
+  Integer m_sizeof_type;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arccore::MessagePassing
+} // namespace Arcane::MessagePassing::Mpi
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

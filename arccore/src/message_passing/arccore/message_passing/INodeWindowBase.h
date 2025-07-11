@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* INodeWindow.h                                              (C) 2000-2025 */
+/* INodeWindowBase.h                                              (C) 2000-2025 */
 /*                                                                           */
 /* TODO.                            */
 /*---------------------------------------------------------------------------*/
@@ -26,26 +26,21 @@ namespace Arcane::MessagePassing
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class Type>
-class ARCCORE_MESSAGEPASSING_EXPORT INodeWindow
+class ARCCORE_MESSAGEPASSING_EXPORT INodeWindowBase
 {
  public:
 
-  virtual ~INodeWindow() = default;
+  virtual ~INodeWindowBase() = default;
 
  public:
 
-  virtual Int64 sizeLocalSegment() const = 0;
-  virtual Int64 sizeOtherRankSegment(int rank) const = 0;
+  virtual Integer sizeofOneElem() const = 0;
 
-  virtual ArrayView<Type> localSegmentView() = 0;
-  virtual ArrayView<Type> otherRankSegmentView(int rank) = 0;
+  virtual Integer sizeLocalSegment() const = 0;
+  virtual Integer sizeOtherRankSegment(int rank) const = 0;
 
-  virtual ConstArrayView<Type> localSegmentConstView() const = 0;
-  virtual ConstArrayView<Type> otherRankSegmentConstView(int rank) const = 0;
-
-  virtual Type* data() = 0;
-  virtual Type* dataOtherRank(int rank) = 0;
+  virtual void* data() = 0;
+  virtual void* dataOtherRank(int rank) = 0;
 };
 
 /*---------------------------------------------------------------------------*/
