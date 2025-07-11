@@ -1755,7 +1755,7 @@ profiler() const
 /*---------------------------------------------------------------------------*/
 
 void* MpiAdapter::
-createAiONodeWindow(Integer sizeof_local) const
+createAiONodeWindowBase(Integer sizeof_local) const
 {
   //MPI_Aint offset = sizeof(MPI_Win) + sizeof(Integer);
   MPI_Aint offset = sizeof(MPI_Win);
@@ -1795,7 +1795,7 @@ createAiONodeWindow(Integer sizeof_local) const
 /*---------------------------------------------------------------------------*/
 
 void MpiAdapter::
-freeAiONodeWindow(void* aio_node_window) const
+freeAiONodeWindowBase(void* aio_node_window) const
 {
   //MPI_Aint offset = sizeof(MPI_Win) + sizeof(Int64);
   MPI_Aint offset = sizeof(MPI_Win);
