@@ -276,12 +276,10 @@ MpiAdapter(ITraceMng* trace,IStat* stat,MPI_Comm comm,
   ::MPI_Comm_rank(m_communicator,&m_comm_rank);
   ::MPI_Comm_size(m_communicator,&m_comm_size);
 
+  ::MPI_Comm_split_type(comm, MPI_COMM_TYPE_SHARED, m_comm_rank, MPI_INFO_NULL, &m_machine_communicator);
 
-  ::MPI_Comm_split_type(comm, MPI_COMM_TYPE_SHARED, m_comm_rank, MPI_INFO_NULL, &m_node_communicator);
-
-  ::MPI_Comm_rank(m_node_communicator,&m_node_comm_rank);
-  ::MPI_Comm_size(m_node_communicator,&m_node_comm_size);
-
+  ::MPI_Comm_rank(m_machine_communicator, &m_machine_comm_rank);
+  ::MPI_Comm_size(m_machine_communicator, &m_machine_comm_size);
 
   // Par defaut, on ne fait pas de profiling MPI, on utilisera la methode set idoine pour changer
   if (!m_mpi_prof)
@@ -1755,7 +1753,7 @@ profiler() const
 /*---------------------------------------------------------------------------*/
 
 void* MpiAdapter::
-createAiONodeWindowBase(Integer sizeof_local) const
+createAllInOneMachineMemoryWindowBase(Integer sizeof_local) const
 {
   //MPI_Aint offset = sizeof(MPI_Win) + sizeof(Integer);
   MPI_Aint offset = sizeof(MPI_Win);
@@ -1770,7 +1768,7 @@ createAiONodeWindowBase(Integer sizeof_local) const
   const MPI_Aint new_size = offset + sizeof_local;
 
   char* my_section;
-  int error = MPI_Win_allocate_shared(new_size, 1, win_info, m_node_communicator, &my_section, &win);
+  int error = MPI_Win_allocate_shared(new_size, 1, win_info, m_machine_communicator, &my_section, &win);
 
   assert(error != MPI_ERR_ARG && "MPI_ERR_ARG");
   assert(error != MPI_ERR_COMM && "MPI_ERR_COMM");
@@ -1786,8 +1784,6 @@ createAiONodeWindowBase(Integer sizeof_local) const
   // memcpy(my_section, &sizeof_local, sizeof(Integer));
   // my_section += sizeof(Integer);
 
-  debug() << "Creation Window OK";
-
   return my_section;
 }
 
@@ -1795,7 +1791,7 @@ createAiONodeWindowBase(Integer sizeof_local) const
 /*---------------------------------------------------------------------------*/
 
 void MpiAdapter::
-freeAiONodeWindowBase(void* aio_node_window) const
+freeAllInOneMachineMemoryWindowBase(void* aio_node_window) const
 {
   //MPI_Aint offset = sizeof(MPI_Win) + sizeof(Int64);
   MPI_Aint offset = sizeof(MPI_Win);
@@ -1806,8 +1802,6 @@ freeAiONodeWindowBase(void* aio_node_window) const
   memcpy(&win_local, win, sizeof(MPI_Win));
 
   MPI_Win_free(&win_local);
-
-  debug() << "Free Window OK";
 }
 
 /*---------------------------------------------------------------------------*/
