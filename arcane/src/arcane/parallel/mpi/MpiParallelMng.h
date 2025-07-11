@@ -82,6 +82,7 @@ class ARCANE_MPI_EXPORT MpiParallelMng
  public:
   friend ArcaneMpiSerializeMessageList;
   class RequestList;
+  class Impl;
 
  public:
 
@@ -150,6 +151,10 @@ class ARCANE_MPI_EXPORT MpiParallelMng
 
   MpiSerializeDispatcher* serializeDispatcher() const { return m_mpi_serialize_dispatcher; }
 
+ public:
+
+  IParallelMngInternal* _internalApi() override { return m_parallel_mng_internal; }
+
  protected:
 
   ISerializeMessageList* _createSerializeMessageList() override;
@@ -194,6 +199,7 @@ class ARCANE_MPI_EXPORT MpiParallelMng
   IParallelNonBlockingCollective* m_non_blocking_collective = nullptr;
   MpiSerializeDispatcher* m_mpi_serialize_dispatcher = nullptr;
   Ref<IParallelMngUtilsFactory> m_utils_factory;
+  IParallelMngInternal* m_parallel_mng_internal = nullptr;
 
  private:
 
