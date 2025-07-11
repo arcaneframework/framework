@@ -557,6 +557,8 @@ set(ARCANE_ORIGINAL_SOURCES
   MultiArray2VariableRef.h
   NodesOfItemReorderer.h
   NodesOfItemReorderer.cc
+  MachineMemoryWindow.cc
+  MachineMemoryWindow.h
   NullXmlDocumentHolder.cc
   Observable.h
   ObservablePool.h
