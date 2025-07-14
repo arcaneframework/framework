@@ -9,14 +9,14 @@
   <name lang='fr'>arcane-post-traitement</name>
   <userclass>User</userclass>
   <description>
-Options concernant les **sorties** pour le dépouillement.
+    Options concernant les **sorties** pour le dépouillement.
 
-Les sorties peuvent être effectués en fonction du nombre d'itérations
-(options *periode-sortie*) ou en fonction du temps physique
-(option *frequence-sortie*). Par exemple:
-~~~~~~{.xml}
-<periode-sortie>5</periode-sortie>
-~~~~~~
+    Les sorties peuvent être effectués en fonction du nombre d'itérations
+    (options *periode-sortie*) ou en fonction du temps physique
+    (option *frequence-sortie*). Par exemple:
+    ~~~~~~{.xml}
+    <periode-sortie>5</periode-sortie>
+    ~~~~~~
   </description>
     
   <variables>
@@ -84,152 +84,163 @@ Les sorties peuvent être effectués en fonction du nombre d'itérations
     
     <!-- - - - - - format-service - - - - -->
     <service-instance name    = "format"
-	                    type    = "Arcane::IPostProcessorWriter"
-	                    default = "Ensight7PostProcessor"
-		                >
-	   <name lang='fr'>format-service</name>
-     <userclass>User</userclass>
-	   <description>
-	     Indique le type de bibliothèque à utiliser pour les sorties
-	     de dépouillement.
-	   </description>
+	              type    = "Arcane::IPostProcessorWriter"
+	              default = "Ensight7PostProcessor"
+		      >
+      <name lang='fr'>format-service</name>
+      <userclass>User</userclass>
+      <description>
+	Indique le type de bibliothèque à utiliser pour les sorties
+	de dépouillement.
+      </description>
     </service-instance>
 
 
     <!-- - - - - - output-frequency - - - - -->
     <simple name    = "output-frequency"
-	          type    = "real"
-	          default = "0.0"
-	         >
-	   <name lang='fr'>frequence-sortie</name>
-	   <userclass>User</userclass>
-	   <description>
-	     Temps physique entre deux sorties. Si cette valeur vaut
-	     zéro, aucune sortie n'est effectuée. Si cette option est
-	     présente avec l'option *periode-sortie*, cette dernière
-	     n'est pas prise en compte.
-	   </description>
+	    type    = "real"
+	    default = "0.0"
+	    >
+      <name lang='fr'>frequence-sortie</name>
+      <userclass>User</userclass>
+      <description>
+	Temps physique entre deux sorties. Si cette valeur vaut
+	zéro, aucune sortie n'est effectuée. Si cette option est
+	présente avec l'option *periode-sortie*, cette dernière
+	n'est pas prise en compte.
+      </description>
     </simple>
 
     <!-- - - - - - output-period - - - - -->
     <simple name    = "output-period"
-	          type    = "integer"
-	          default = "0"
-	         >
-	   <name lang='fr'>periode-sortie</name>
-	   <userclass>User</userclass>
-	   <description>
-	     Nombre d'itérations entre deux sorties. Si cette valeur vaut
-	     zéro, aucune sortie au cours des itérations n'est effectuée.
-	   </description>
+	    type    = "integer"
+	    default = "0"
+	    >
+      <name lang='fr'>periode-sortie</name>
+      <userclass>User</userclass>
+      <description>
+	Nombre d'itérations entre deux sorties. Si cette valeur vaut
+	zéro, aucune sortie au cours des itérations n'est effectuée.
+      </description>
     </simple>
 
     <!-- - - - - - history-period - - - - -->
     <simple name    = "output-history-period"
-	          type    = "integer"
-	          default = "1"
-	         >
-	   <name lang='fr'>periode-sortie-historique</name>
-	   <userclass>User</userclass>
-	   <description>
-	     Nombre d'itérations entre deux sorties pour les historiques. Si cette valeur vaut
-	     zéro, les sorties pour les historiques sont désactivées.
-	   </description>
+	    type    = "integer"
+	    default = "1"
+	    >
+      <name lang='fr'>periode-sortie-historique</name>
+      <userclass>User</userclass>
+      <description>
+	Nombre d'itérations entre deux sorties pour les historiques. Si cette valeur vaut
+	zéro, les sorties pour les historiques sont désactivées.
+      </description>
     </simple>
 
     <!-- - - - - - history-shrink - - - - -->
     <simple name    = "output-history-shrink"
-	         type    = "bool"
-	         default = "false" 
-	         >
-	   <name lang='fr'>compression-sortie-historique</name>
-	   <userclass>User</userclass>
-	   <description>
-	     Evite de sauvegarder tous les points d'abcisse entre les périodes de l'option *output-history-period*.
-       Cela permet de faire baisser la consomation mémoire notamment lorsque le code effectue un grand nombre d'itérations.
-	   </description>
+	    type    = "bool"
+	    default = "false" 
+	    >
+      <name lang='fr'>compression-sortie-historique</name>
+      <userclass>User</userclass>
+      <description>
+	Evite de sauvegarder tous les points d'abcisse entre les périodes de l'option *output-history-period*.
+        Cela permet de faire baisser la consomation mémoire notamment lorsque le code effectue un grand nombre d'itérations.
+      </description>
     </simple>
 
     <!-- - - - - - save-init - - - - -->
     <simple name    = "save-init"
-	          type    = "bool"
-	          default = "false"
-	         >
-	   <name lang='fr'>sauvegarde-initiale</name>
-	   <userclass>User</userclass>
-	   <description>
-	     Si vrai, effectue une sortie en fin d'initialisation.
-	   </description>
+	    type    = "bool"
+	    default = "false"
+	    >
+      <name lang='fr'>sauvegarde-initiale</name>
+      <userclass>User</userclass>
+      <description>
+	Si vrai, effectue une sortie en fin d'initialisation.
+      </description>
     </simple>
 
     <!-- - - - - - save-init - - - - -->
     <simple name    = "save-final-time"
-	          type    = "bool"
-	          default = "true"
-	         >
-	   <name lang='fr'>sauvegarde-temps-final</name>
-	   <userclass>User</userclass>
-	   <description>
-	     Si vrai, effectue une sortie en fin d'exécution lorsque
-	     le temps final est atteint.
-	   </description>
+	    type    = "bool"
+	    default = "true"
+	    >
+      <name lang='fr'>sauvegarde-temps-final</name>
+      <userclass>User</userclass>
+      <description>
+	Si vrai, effectue une sortie en fin d'exécution lorsque
+	le temps final est atteint.
+      </description>
     </simple>
 
     <!-- - - - - - end-execution-output - - - - -->
     <simple name    = "end-execution-output"
-	         type    = "bool"
-	         default = "false"
-	         >
-	   <name lang='fr'>sortie-fin-execution</name>
-	   <userclass>User</userclass>
-	   <description>
-	     Si vrai, effectue une sortie de dépouillement en fin
-	     d'exécution. La fin d'exécution n'est pas forcément identique au
-	     temps final en cas d'utilisations de protections/reprises
-	     ou si on spécifie un nombre maximum d'itérations lors de l'exécution.
-	   </description>
+	    type    = "bool"
+	    default = "false"
+	    >
+      <name lang='fr'>sortie-fin-execution</name>
+      <userclass>User</userclass>
+      <description>
+	Si vrai, effectue une sortie de dépouillement en fin
+	d'exécution. La fin d'exécution n'est pas forcément identique au
+	temps final en cas d'utilisations de protections/reprises
+	ou si on spécifie un nombre maximum d'itérations lors de l'exécution.
+      </description>
     </simple>
 
     <!-- - - - - - output - - - - - -->
     <complex type = "Output" name="output">
-	   <name lang='fr'>depouillement</name>
-	   <userclass>User</userclass>
-	   <description>
-	     Liste des variables et des groupes à dépouiller.
-	   </description>
+      <name lang='fr'>depouillement</name>
+      <userclass>User</userclass>
+      <description>
+	Liste des variables et des groupes à dépouiller.
+      </description>
 	
-	   <!-- - - - - - variable - - - - - -->
-	   <simple name = "variable"
-		        type = "ustring"
-		        minOccurs = "0"
-		        maxOccurs = "unbounded"
-		        >
-	     <name lang='fr'>variable</name>
-	     <userclass>User</userclass>
-	     <description>
-	       Nom d'une variable à exporter. Il est possible de mettre
-	       plusieurs options de ce type pour exporter plusieurs
-	       variables. Si aucune variable n'est spécifiée, aucune
-	       sortie n'est effectuée.
-	     </description>
-	   </simple>
+      <!-- - - - - - variable - - - - - -->
+      <simple name = "variable"
+	      type = "ustring"
+	      minOccurs = "0"
+	      maxOccurs = "unbounded"
+	      >
+	<name lang='fr'>variable</name>
+	<userclass>User</userclass>
+	<description>
+	  Nom d'une variable à exporter. Il est possible de mettre
+	  plusieurs options de ce type pour exporter plusieurs
+	  variables. Si aucune variable n'est spécifiée, aucune
+	  sortie n'est effectuée.
+	</description>
+      </simple>
 
-	   <extended name = "group"
-		           type = "Arcane::ItemGroup"
-		           minOccurs = "0"
-		           maxOccurs = "unbounded"
-		           >
-	     <name lang='fr'>groupe</name>
-	     <userclass>User</userclass>
-	     <description>
-	       Groupe d'entité de maillage sur lequel on souhaite
-	       exporter des variables.  Il est possible de mettre
-	       plusieurs options de ce type pour exporter les variables
-	       sur plusieurs groupes. Si cette option n'est pas
-	       spécifiée, les variables sont sorties sur l'ensemble du
-	       maillage.
-	     </description>
-	   </extended>
+      <extended name = "group"
+		type = "Arcane::ItemGroup"
+		minOccurs = "0"
+		maxOccurs = "unbounded"
+		>
+	<name lang='fr'>groupe</name>
+	<userclass>User</userclass>
+	<description>
+	  Groupe d'entité de maillage sur lequel on souhaite
+	  exporter des variables.  Il est possible de mettre
+	  plusieurs options de ce type pour exporter les variables
+	  sur plusieurs groupes. Si cette option n'est pas
+	  spécifiée, les variables sont sorties sur l'ensemble du
+	  maillage.
+	</description>
+      </extended>
+    </complex>
+    <complex type = "ExperimentalPythonPlugin" name="experimental-python-plugin" optional="true">
+      <description>
+	Plugin python pour test.
+        AVERTISSEMENT: Cette option est expériementale
+      </description>
+      <service-instance name="external-plugin"
+                        type="Arcane::IExternalPlugin"
+                        default="BasicDotNetPythonExternalPlugin"
+                        allow-null="true"/>
+      <simple name="function-name" type="string"/>
     </complex>
   </options>  
 </module>

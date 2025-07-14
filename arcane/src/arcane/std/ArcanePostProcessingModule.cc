@@ -34,6 +34,7 @@
 #include "arcane/core/Timer.h"
 #include "arcane/core/VariableCollection.h"
 #include "arcane/core/OutputChecker.h"
+#include "arcane/core/IExternalPlugin.h"
 
 #include "arcane/std/ArcanePostProcessing_axl.h"
 
@@ -89,6 +90,7 @@ class ArcanePostProcessingModule
   VariableList m_variables;    //!< Liste des variables a exporter
   ItemGroupList m_groups; //!< Liste des groupes à exporter
   Timer* m_post_processor_timer = nullptr; //!< Timer pour le temps passé à écrire
+  bool m_is_plugin_initialized = false;
 
  private:
 
@@ -98,6 +100,7 @@ class ArcanePostProcessingModule
   void _checkCreateOutputDir();
   void _markCurrentIterationPostProcessing();
   void _resetCurrentIterationPostProcessing();
+  void _checkExternalPlugin();
 };
 
 /*---------------------------------------------------------------------------*/
@@ -380,6 +383,7 @@ _saveAtTime(Real saved_time)
   
     {
       Timer::Sentry ts(m_post_processor_timer);
+      _checkExternalPlugin();
       vm->writePostProcessing(post_processor);
     }
   }
@@ -413,6 +417,28 @@ _markCurrentIterationPostProcessing()
     IVariable* v = *v_iter;
     v->addTag(IVariable::TAG_POST_PROCESSING_AT_THIS_ITERATION, "1");
   }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ArcanePostProcessingModule::
+_checkExternalPlugin()
+{
+  // Mode expérimental pour utiliser une fonction python.
+  // Il faut que wrapper C# soit actif et que le module 'pythonnet' soit installé.
+  auto& plugin_option = options()->experimentalPythonPlugin;
+  if (!plugin_option.isPresent())
+    return;
+  IExternalPlugin* p = plugin_option.externalPlugin();
+  String function = plugin_option.functionName();
+  info() << "Executing Python function '" << function << "'";
+  if (!m_is_plugin_initialized){
+    info() << "Initializing Python environment";
+    p->loadFile(String{});
+    m_is_plugin_initialized = true;
+  }
+  p->executeContextFunction(function);
 }
 
 /*---------------------------------------------------------------------------*/

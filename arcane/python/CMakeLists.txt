@@ -22,6 +22,8 @@ add_test(NAME python_test4 COMMAND ./python_wrapper.sh ${CMAKE_CURRENT_SOURCE_DI
 add_test(NAME python_test5 COMMAND ./python_wrapper.sh ${CMAKE_CURRENT_SOURCE_DIR}/tests/test5.py)
 add_test(NAME python_test_microhydro
   COMMAND ./python_wrapper.sh ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_microhydro.py -A,MaxIteration=15 ${CMAKE_CURRENT_SOURCE_DIR}/tests/t3.arc)
+add_test(NAME python_test_microhydro_post_processing
+  COMMAND ./python_wrapper.sh ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_microhydro_post_processing.py -A,MaxIteration=15 ${CMAKE_CURRENT_SOURCE_DIR}/tests/microhydro_post_processing.arc)
 
 # ----------------------------------------------------------------------------
 # Local Variables:
