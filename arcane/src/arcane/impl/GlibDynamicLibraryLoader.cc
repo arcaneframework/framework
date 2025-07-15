@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* GlibDynamicLibraryLoader.cc                                 (C) 2000-2019 */
+/* GlibDynamicLibraryLoader.cc                                 (C) 2000-2025 */
 /*                                                                           */
 /* Chargeur dynamique de bibliothèque avec Glib (utiliser gmodule).          */
 /*---------------------------------------------------------------------------*/
@@ -72,10 +72,15 @@ class ARCANE_IMPL_EXPORT GlibDynamicLibraryLoader
   {
     IDynamicLibrary* dl = _tryOpen(directory, name);
     if (!dl){
-      // Si on ne trouve pas, essaie avec l'extension '.dll' car sous windows
-      // certaines version de la GLIB prefixent automatiquement le
-      // nom de la bibliothèque par 'lib' si elle ne finit pas par '.dll'.
+      // Si on ne trouve pas, essaie avec l'extension '.dll' ou '.dylib' car sous
+      // windows ou macos, certaines version de la GLIB prefixent automatiquement le
+      // nom de la bibliothèque par 'lib' si elle ne finit pas par '.dll' ou '.dylib'.
+#ifdef ARCANE_OS_WINDOWS
       dl = _tryOpen(directory, name + ".dll");
+#endif
+#ifdef ARCANE_OS_MACOS
+      dl = _tryOpen(directory, "lib" + name + ".dylib");
+#endif
     }
 	if (!dl){
       // Si on ne trouve pas, essaie en cherchant à côté du binaire
@@ -83,8 +88,13 @@ class ARCANE_IMPL_EXPORT GlibDynamicLibraryLoader
     }
     if (!dl){
       // Si on ne trouve pas, essaie en cherchant à côté du binaire
-      // et avec l'extension dll
+      // et avec l'extension dll ou dylib
+#ifdef ARCANE_OS_WINDOWS
       dl = _tryOpen(".", name + ".dll");
+#endif
+#ifdef ARCANE_OS_MACOS
+      dl = _tryOpen(".", "lib" + name + ".dylib");
+#endif
     }
     return dl;
   }
