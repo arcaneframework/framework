@@ -29,7 +29,7 @@ namespace Arcane.Python
 
     public BasicDotNetPythonExternalPlugin(ServiceBuildInfo bi) : base(bi)
     {
-      m_sub_domain_context = new SubDomainContext(bi.SubDomain(), null);
+      m_sub_domain_context = new SubDomainContext(bi.SubDomain(), false);
     }
 
     ~BasicDotNetPythonExternalPlugin()

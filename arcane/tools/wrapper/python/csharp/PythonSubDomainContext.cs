@@ -16,6 +16,7 @@ namespace Arcane.Python
     }
     public override string Message { get; }
   }
+
   public class VariableWrapper
   {
     internal VariableWrapper(SubDomainContext sdc, IVariable var)
@@ -38,19 +39,21 @@ namespace Arcane.Python
 
   public class SubDomainContext
   {
-    public SubDomainContext(ISubDomain sd)
+    // Cette méthode peut-être appelée depuis le python et donc peut utiliser le GIL.
+    public SubDomainContext(ISubDomain sd) : this(sd, true)
     {
-      m_sub_domain = sd;
-      m_default_mesh = sd.DefaultMesh();
-      using (Py.GIL()){
-        m_numpy_module = Py.Import("numpy");
-      }
     }
-    internal SubDomainContext(ISubDomain sd, PyObject numpy_module)
+    internal SubDomainContext(ISubDomain sd, bool do_init_modules)
     {
       m_sub_domain = sd;
       m_default_mesh = sd.DefaultMesh();
-      m_numpy_module = numpy_module;
+      if (do_init_modules){
+        using (Py.GIL()){
+          m_numpy_module = Py.Import("numpy");
+          m_ctypes_module = Py.Import("ctypes");
+          m_numpy_ctypeslib_module = Py.Import("numpy.ctypeslib");
+        }
+      }
     }
     public string Name() { return "SubDomain"; }
     public VariableWrapper GetVariable(IMesh mesh, string var_name)
@@ -66,22 +69,42 @@ namespace Arcane.Python
       _checkNumpyImport();
       IVariable v = var_wrapper.m_variable;
       IData var_data = v.Data();
-      if (var_data.DataType() != Arcane.eDataType.DT_Real)
-        return null;
+      Arcane.eDataType var_datatype = var_data.DataType();
+      bool is_real3 = var_datatype == Arcane.eDataType.DT_Real3;
+      if (var_datatype != Arcane.eDataType.DT_Real && !is_real3)
+        throw new BadNDArrayException("conversion to NDArray is only valid for variables of type 'Real' or 'Real3'");
       Arcane.IDataInternal xd = VariableUtilsInternal.GetDataInternal(v);
       Arcane.INumericDataInternal ndi = xd.NumericData();
       Int32 nb_item = ndi.Extent0();
-      Console.WriteLine("Doint conversion");
+      //Console.WriteLine("Doint conversion");
       Arcane.MutableMemoryView mem_view = ndi.MemoryView();
-      Console.WriteLine("MemView size={0} nb_item={1}", mem_view.ByteSize, mem_view.NbElement);
+      Console.WriteLine("MemView size={0} nb_element={1} datatype_size={2} nb_item={3}",
+                        mem_view.ByteSize, mem_view.NbElement, mem_view.DatatypeSize, nb_item);
       if (nb_item != mem_view.NbElement)
-        throw new ApplicationException("Bad number of items");
+        throw new BadNDArrayException("Bad number of items");
+      int dim2_size = 1;
+      int nb_dim = 1;
+      if (is_real3){
+        dim2_size = 3;
+        nb_dim = 2;
+      }
       dynamic np = m_numpy_module;
-      Arcane.RealArray x = new Arcane.RealArray(nb_item);
-      Arcane.VariableUtilsInternal.FillFloat64Array(v, x.View);
       using (Py.GIL())
       {
-        dynamic px = np.array(x.View.ToArray(), dtype: np.float64);
+        dynamic py_numpy_ctypeslib = m_numpy_ctypeslib_module;
+        dynamic py_ctypes = m_ctypes_module;
+        PyObject[] array_shape = new PyObject[]{ new PyInt(nb_item) };
+        if (nb_dim==2)
+          array_shape = new PyObject[]{ new PyInt(nb_item), new PyInt(dim2_size) };
+        var ob_shape = new PyTuple(array_shape);
+        //dynamic nd_pointer = py_numpy_ctypeslib.ndpointer(dtype: np.float64, ndim : nb_dim,
+        //                                                  shape : ob_shape, flags: "C_CONTIGUOUS");
+
+        //dynamic ob0 = py_ctypes.cast((long)mem_view.Pointer,nd_pointer);
+        //dynamic px = np.frombuffer(ob0);
+
+        dynamic ob0 = py_ctypes.cast((long)mem_view.Pointer,py_ctypes.POINTER(py_ctypes.c_double));
+        dynamic px = py_numpy_ctypeslib.as_array(ob0,shape : ob_shape);
         return px;
       }
     }
@@ -137,6 +160,10 @@ namespace Arcane.Python
     internal void SetNumpyModule(PyObject py_module)
     {
       m_numpy_module = py_module;
+      using (Py.GIL()){
+        m_numpy_ctypeslib_module = Py.Import("numpy.ctypeslib");
+        m_ctypes_module = Py.Import("ctypes");
+      }
     }
     void _checkNumpyImport()
     {
@@ -146,5 +173,7 @@ namespace Arcane.Python
     readonly ISubDomain m_sub_domain;
     readonly IMesh m_default_mesh;
     PyObject m_numpy_module;
+    PyObject m_numpy_ctypeslib_module;
+    PyObject m_ctypes_module;
   }
 }
