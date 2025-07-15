@@ -48,11 +48,8 @@ namespace Arcane.Python
       m_sub_domain = sd;
       m_default_mesh = sd.DefaultMesh();
       if (do_init_modules){
-        using (Py.GIL()){
-          m_numpy_module = Py.Import("numpy");
-          m_ctypes_module = Py.Import("ctypes");
-          m_numpy_ctypeslib_module = Py.Import("numpy.ctypeslib");
-        }
+        m_common_module_list = new CommonModuleList();
+        m_common_module_list.ImportModules();
       }
     }
     public string Name() { return "SubDomain"; }
@@ -88,11 +85,11 @@ namespace Arcane.Python
         dim2_size = 3;
         nb_dim = 2;
       }
-      dynamic np = m_numpy_module;
+      dynamic np = m_common_module_list.Numpy;
       using (Py.GIL())
       {
-        dynamic py_numpy_ctypeslib = m_numpy_ctypeslib_module;
-        dynamic py_ctypes = m_ctypes_module;
+        dynamic py_numpy_ctypeslib = m_common_module_list.NumpyCtypeslib;
+        dynamic py_ctypes = m_common_module_list.Ctypes;
         PyObject[] array_shape = new PyObject[]{ new PyInt(nb_item) };
         if (nb_dim==2)
           array_shape = new PyObject[]{ new PyInt(nb_item), new PyInt(dim2_size) };
@@ -119,7 +116,7 @@ namespace Arcane.Python
         PyObject p = nd.ctypes.data;
         PyObject dtype = nd_array.GetAttr("dtype");
         dynamic dyn_dtype = dtype;
-        dynamic np = m_numpy_module;
+        dynamic np = m_common_module_list.Numpy;
         PyObject dtype_f64 = np.float64;
         bool is_same = dtype == dtype_f64;
         //string dt2 = dtype.As<string>();
@@ -157,23 +154,17 @@ namespace Arcane.Python
       }
     }
     public IMesh DefaultMesh { get { return m_default_mesh; } }
-    internal void SetNumpyModule(PyObject py_module)
+    internal void SetModuleList(CommonModuleList module_list)
     {
-      m_numpy_module = py_module;
-      using (Py.GIL()){
-        m_numpy_ctypeslib_module = Py.Import("numpy.ctypeslib");
-        m_ctypes_module = Py.Import("ctypes");
-      }
+      m_common_module_list = module_list;
     }
     void _checkNumpyImport()
     {
-      if (m_numpy_module == null)
+      if (m_common_module_list == null)
         throw new ApplicationException("Null numpy module");
     }
     readonly ISubDomain m_sub_domain;
     readonly IMesh m_default_mesh;
-    PyObject m_numpy_module;
-    PyObject m_numpy_ctypeslib_module;
-    PyObject m_ctypes_module;
+    CommonModuleList m_common_module_list;
   }
 }
