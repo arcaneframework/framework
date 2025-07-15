@@ -1336,6 +1336,7 @@ endfunction()
 
 #################################################################
 # Test wrapper python en mode embedded
+message(STATUS "Check add tests for python wrapper (is_active?=${ARCANE_ENABLE_DOTNET_PYTHON_WRAPPER})")
 if (ARCANE_ENABLE_DOTNET_PYTHON_WRAPPER)
   # Il faut trouver le chemin de 'libpython.so' et positionner
   # la variable d'environnement PYTHONNET_PYDLL pour le mode embedded.
