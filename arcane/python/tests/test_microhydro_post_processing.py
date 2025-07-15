@@ -1,15 +1,28 @@
 import ArcanePython
 import Arcane
 import sys
-
+import numpy
+import ctypes as C
 from Arcane import ArcaneLauncher
 
 import os
 gvar0 = 1
+
 def my_test_func(sd_context):
     print("HELLO context=",sd_context,flush=True)
     global gvar0
     gvar0 = gvar0 + 1
+    mesh0 = sd_context.DefaultMesh
+    node_coord = sd_context.GetVariable(mesh0,"NodeCoord")
+    nd_node_coord = node_coord.GetNDArray()
+    pressure = sd_context.GetVariable(mesh0,"Pressure")
+    nd_pressure = pressure.GetNDArray()
+    print("NodeCoord shape=",nd_node_coord.shape," v=",nd_node_coord,flush=True)
+    nd_node_coord[0][0] = 0.01
+    print("Pressure shape=",nd_pressure.shape," v=",nd_pressure,flush=True)
+    nd_pressure[0] = 1.2
+    print("Pressure2=",nd_pressure)
+    print("--Endcallback",flush=True)
 
 args = Arcane.CommandLineArguments.Create(sys.argv)
 ArcaneLauncher.Init(args)

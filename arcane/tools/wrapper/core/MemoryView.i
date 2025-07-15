@@ -20,6 +20,7 @@ ARCANE_SWIG_GENERATE_MEMORY_VIEW(Arcane::MutableMemoryView,Arcane.MutableMemoryV
     public IntPtr Pointer { get { return m_ptr; } }
     public Int64 ByteSize { get { return m_size; } }
     public Int64 NbElement { get { return m_nb_element; } }
+    public Int32 DatatypeSize { get { return m_datatype_size; } }
 
     IntPtr m_ptr;
     Int64 m_size;
@@ -37,6 +38,7 @@ ARCANE_SWIG_GENERATE_MEMORY_VIEW(Arcane::ConstMemoryView,Arcane.ConstMemoryView)
   public IntPtr Pointer { get { return m_ptr; } }
   public Int64 ByteSize { get { return m_size; } }
   public Int64 NbElement { get { return m_nb_element; } }
+  public Int32 DatatypeSize { get { return m_datatype_size; } }
 
   IntPtr m_ptr;
   Int64 m_size;

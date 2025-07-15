@@ -29,7 +29,7 @@ namespace Arcane.Python
 
     public BasicDotNetPythonExternalPlugin(ServiceBuildInfo bi) : base(bi)
     {
-      m_sub_domain_context = new SubDomainContext(bi.SubDomain(), null);
+      m_sub_domain_context = new SubDomainContext(bi.SubDomain(), false);
     }
 
     ~BasicDotNetPythonExternalPlugin()
@@ -70,9 +70,10 @@ namespace Arcane.Python
         }
         if (m_py_sub_domain_context==null)
           m_py_sub_domain_context = m_sub_domain_context.ToPython();
-        if (m_numpy_module==null){
-          m_numpy_module = Py.Import("numpy");
-          m_sub_domain_context.SetNumpyModule(m_numpy_module);
+        if (m_common_module_list==null){
+          m_common_module_list = new CommonModuleList();
+          m_common_module_list.ImportModules();
+          m_sub_domain_context.SetModuleList(m_common_module_list);
         }
       }
       Console.WriteLine("** -- End setup python");
@@ -138,6 +139,6 @@ namespace Arcane.Python
     PyObject m_python_global_dictionary;
     readonly SubDomainContext m_sub_domain_context;
     PyObject m_py_sub_domain_context;
-    PyObject m_numpy_module;
+    CommonModuleList m_common_module_list;
   }
 }
