@@ -109,8 +109,8 @@ createMachineMemoryWindowBase(Integer nb_elem_local, Integer sizeof_one_elem)
 {
   ARCANE_UNUSED(nb_elem_local);
   ARCANE_UNUSED(sizeof_one_elem);
-  ARCANE_NOT_YET_IMPLEMENTED("MachineWindows are not available in SequentialParallelMng, HybridParallelMng and SharedMemoryParallelMng");
-  ARCANE_FATAL("MachineWindows are available only with MpiParallelMng");
+  ARCANE_NOT_YET_IMPLEMENTED("MachineWindows are not available in HybridParallelMng and SharedMemoryParallelMng");
+  ARCANE_FATAL("MachineWindows are available only with MpiParallelMng and SequentialParallelMng");
 }
 
 /*---------------------------------------------------------------------------*/
