@@ -32,6 +32,7 @@ class IParallelTopology;
 
 namespace Arcane::MessagePassing
 {
+class SharedMemoryMachineMemoryWindowBaseCreator;
 class ISharedMemoryMessageQueue;
 class SharedMemoryAllDispatcher;
 
@@ -59,6 +60,7 @@ struct ARCANE_THREAD_EXPORT SharedMemoryParallelMngBuildInfo
   IParallelMngContainerFactory* sub_builder_factory = nullptr;
   Ref<IParallelMngContainer> container;
   MP::Communicator communicator;
+  SharedMemoryMachineMemoryWindowBaseCreator* window_creator;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -71,6 +73,8 @@ class ARCANE_THREAD_EXPORT SharedMemoryParallelMng
 {
  public:
   class RequestList;
+  class Impl;
+
  public:
 
   explicit SharedMemoryParallelMng(const SharedMemoryParallelMngBuildInfo& build_info);
@@ -124,6 +128,8 @@ class ARCANE_THREAD_EXPORT SharedMemoryParallelMng
   IParallelNonBlockingCollective* nonBlockingCollective() const override { return 0; }
 
   void build() override;
+
+  IParallelMngInternal* _internalApi() override { return m_parallel_mng_internal; }
 
  public:
   
@@ -180,6 +186,7 @@ class ARCANE_THREAD_EXPORT SharedMemoryParallelMng
   Ref<IParallelMngContainer> m_parent_container_ref;
   MP::Communicator m_mpi_communicator;
   Ref<IParallelMngUtilsFactory> m_utils_factory;
+  IParallelMngInternal* m_parallel_mng_internal = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/

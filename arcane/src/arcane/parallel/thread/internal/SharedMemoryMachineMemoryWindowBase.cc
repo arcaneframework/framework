@@ -5,131 +5,114 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MachineMemoryWindow.cc                                      (C) 2000-2025 */
+/* SharedMemoryMachineMemoryWindowBase.cc                      (C) 2000-2025 */
 /*                                                                           */
-/* Classe permettant de créer une fenêtre mémoire partagée entre les         */
-/* processus d'un même noeud.                                                */
+/* Classe permettant de créer une fenêtre mémoire pour l'ensemble des        */
+/* sous-domaines en mémoire partagée.                                        */
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/core/MachineMemoryWindow.h"
-
-#include "arcane/core/IParallelMng.h"
-#include "arcane/core/internal/IParallelMngInternal.h"
-
-#include "arcane/utils/NumericTypes.h"
-
-#include "arccore/message_passing/IMachineMemoryWindowBase.h"
+#include "arcane/parallel/thread/internal/SharedMemoryMachineMemoryWindowBase.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arcane
+namespace Arcane::MessagePassing
 {
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template <class Type>
-MachineMemoryWindow<Type>::
-MachineMemoryWindow(IParallelMng* pm, Integer nb_elem_local)
-: m_pm_internal(pm->_internalApi())
+SharedMemoryMachineMemoryWindowBase::
+SharedMemoryMachineMemoryWindowBase(Int32 my_rank, Int32 nb_rank, Integer sizeof_type, std::byte* window, Integer* nb_elem, Integer* sum_nb_elem, Integer nb_elem_total)
+: m_my_rank(my_rank)
+, m_nb_rank(nb_rank)
+, m_sizeof_type(sizeof_type)
+, m_nb_elem_total(nb_elem_total)
+, m_window(window)
+, m_nb_elem(nb_elem)
+, m_sum_nb_elem(sum_nb_elem)
+{}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+SharedMemoryMachineMemoryWindowBase::
+~SharedMemoryMachineMemoryWindowBase()
 {
-  m_node_window_base = m_pm_internal->createMachineMemoryWindowBase(nb_elem_local, sizeof(Type));
+  if (m_my_rank == 0) {
+    delete[] m_window;
+    delete[] m_nb_elem;
+    delete[] m_sum_nb_elem;
+  }
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template <class Type>
-Int64 MachineMemoryWindow<Type>::
+Integer SharedMemoryMachineMemoryWindowBase::
+sizeofOneElem() const
+{
+  return m_sizeof_type;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Integer SharedMemoryMachineMemoryWindowBase::
 sizeSegment() const
 {
-  return m_node_window_base->sizeSegment();
+  return m_nb_elem[m_my_rank];
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template <class Type>
-Int64 MachineMemoryWindow<Type>::
+Integer SharedMemoryMachineMemoryWindowBase::
 sizeSegment(Int32 rank) const
 {
-  return m_node_window_base->sizeSegment(rank);
+  return m_nb_elem[rank];
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template <class Type>
-ArrayView<Type> MachineMemoryWindow<Type>::
-segmentView()
+void* SharedMemoryMachineMemoryWindowBase::
+data() const
 {
-  auto [size, data] = m_node_window_base->sizeAndDataSegment();
-  return ArrayView<Type>(size, static_cast<Type*>(data));
+  return &m_window[m_sum_nb_elem[m_my_rank] * m_sizeof_type];
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template <class Type>
-ArrayView<Type> MachineMemoryWindow<Type>::
-segmentView(Int32 rank)
+void* SharedMemoryMachineMemoryWindowBase::
+data(Int32 rank) const
 {
-  auto [size, data] = m_node_window_base->sizeAndDataSegment(rank);
-  return ArrayView<Type>(size, static_cast<Type*>(data));
+  return &m_window[m_sum_nb_elem[rank] * m_sizeof_type];
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template <class Type>
-ConstArrayView<Type> MachineMemoryWindow<Type>::
-segmentConstView() const
+std::pair<Integer, void*> SharedMemoryMachineMemoryWindowBase::
+sizeAndDataSegment() const
 {
-  auto [size, data] = m_node_window_base->sizeAndDataSegment();
-  return ConstArrayView<Type>(size, static_cast<Type*>(data));
+  return { sizeSegment(), data() };
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template <class Type>
-ConstArrayView<Type> MachineMemoryWindow<Type>::
-segmentConstView(Int32 rank) const
+std::pair<Integer, void*> SharedMemoryMachineMemoryWindowBase::
+sizeAndDataSegment(Int32 rank) const
 {
-  auto [size, data] = m_node_window_base->sizeAndDataSegment(rank);
-  return ConstArrayView<Type>(size, static_cast<Type*>(data));
+  return { sizeSegment(rank), data(rank) };
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template <class Type>
-Type* MachineMemoryWindow<Type>::
-data()
-{
-  return static_cast<Type*>(m_node_window_base->data());
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-template <class Type>
-Type* MachineMemoryWindow<Type>::
-data(Int32 rank)
-{
-  return static_cast<Type*>(m_node_window_base->data(rank));
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ARCANE_INTERNAL_INSTANTIATE_TEMPLATE_FOR_NUMERIC_DATATYPE(MachineMemoryWindow);
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-} // End namespace Arcane
+} // namespace Arcane::MessagePassing
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
