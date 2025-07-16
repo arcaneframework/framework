@@ -32,6 +32,7 @@
 #include "arcane/core/ISerializeMessageList.h"
 #include "arcane/core/IParallelTopology.h"
 #include "arcane/core/IParallelNonBlockingCollective.h"
+#include "arcane/core/MachineMemoryWindow.h"
 #include "arcane/core/ParallelMngUtils.h"
 #include "arcane/core/internal/SerializeMessage.h"
 
@@ -110,6 +111,7 @@ class ParallelMngTest
   void _testBroadcastStringAndMemoryBuffer2(const String& wanted_str);
   void _testProbeSerialize(Integer nb_value,bool use_one_message);
   void _testProcessMessages(const ParallelExchangerOptions* exchange_options);
+  void _testMachineMemoryWindow();
 };
 
 /*---------------------------------------------------------------------------*/
@@ -168,6 +170,8 @@ execute()
     _launchTest("broadcast_serializer",&ParallelMngTest::_testBroadcastSerializer);
   }
   _launchTest("topology",&ParallelMngTest::_testTopology);
+
+  _launchTest("machine_window", &ParallelMngTest::_testMachineMemoryWindow);
 
   //  _testStandardCalls();
   if (m_nb_done_test==0)
@@ -999,6 +1003,48 @@ _testProcessMessages(const ParallelExchangerOptions* exchange_options)
         if (current!=expected)
           ARCANE_FATAL("Bad compare value v={0} expected={1} orig_rank={2} index={3} my_rank={4}",
                        current,expected,orig_rank,z,rank);
+      }
+    }
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ParallelMngTest::
+_testMachineMemoryWindow()
+{
+  IParallelMng* pm = m_parallel_mng;
+
+  // Pour l'instant, le mode hybrid n'est pas supporté.
+  if (pm->isHybridImplementation())
+    return;
+
+  constexpr Integer nb_elem = 10;
+
+  MachineMemoryWindow<Integer> window(pm, nb_elem);
+
+  ArrayView av_my_segment(window.segmentView());
+
+  Integer my_rank = pm->commRank();
+
+  Integer iter = 0;
+  for (Integer& elem : av_my_segment) {
+    elem = iter * (my_rank + 1);
+    iter++;
+  }
+
+  pm->barrier();
+
+  Integer nb_proc = pm->commSize();
+
+  for (Integer proc = 0; proc < nb_proc; ++proc) {
+    ArrayView av_segment(window.segmentView(proc));
+
+    for (Integer i = 0; i < nb_elem; ++i) {
+      //info() << "Test " << i << " : " << av_segment[i] << " -- " << proc;
+      if (av_segment[i] != i * (proc + 1)) {
+        ARCANE_FATAL("Bad element in memory window -- Expected : {0} -- Found : {1}", (i * (proc + 1)), av_segment[i]);
       }
     }
   }
