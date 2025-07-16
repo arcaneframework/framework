@@ -26,12 +26,14 @@
 
 #include "arcane/parallel/thread/SharedMemoryParallelDispatch.h"
 #include "arcane/parallel/thread/ISharedMemoryMessageQueue.h"
+#include "arcane/parallel/thread/internal/SharedMemoryMachineMemoryWindowBaseCreator.h"
 
 #include "arcane/core/Timer.h"
 #include "arcane/core/IIOMng.h"
 #include "arcane/core/ISerializeMessageList.h"
 #include "arcane/core/IItemFamily.h"
 #include "arcane/core/internal/SerializeMessage.h"
+#include "arcane/core/internal/ParallelMngInternal.h"
 
 #include "arcane/impl/TimerMng.h"
 #include "arcane/impl/ParallelReplication.h"
@@ -89,6 +91,35 @@ class SharedMemoryParallelMng::RequestList
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+class SharedMemoryParallelMng::Impl
+: public ParallelMngInternal
+{
+ public:
+
+  explicit Impl(SharedMemoryParallelMng* pm, SharedMemoryMachineMemoryWindowBaseCreator* window_creator)
+  : ParallelMngInternal(pm)
+  , m_parallel_mng(pm)
+  , m_window_creator(window_creator)
+  {}
+
+  ~Impl() override = default;
+
+ public:
+
+  Ref<IMachineMemoryWindowBase> createMachineMemoryWindowBase(Integer nb_elem_local, Integer sizeof_one_elem) override
+  {
+    return makeRef(m_window_creator->createWindow(m_parallel_mng->commRank(), nb_elem_local, sizeof_one_elem));
+  }
+
+ private:
+
+  SharedMemoryParallelMng* m_parallel_mng;
+  SharedMemoryMachineMemoryWindowBaseCreator* m_window_creator;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 SharedMemoryParallelMng::
 SharedMemoryParallelMng(const SharedMemoryParallelMngBuildInfo& build_info)
 : ParallelMngDispatcher(ParallelMngDispatcherBuildInfo(build_info.rank,build_info.nb_rank))
@@ -111,6 +142,7 @@ SharedMemoryParallelMng(const SharedMemoryParallelMngBuildInfo& build_info)
 , m_parent_container_ref(build_info.container)
 , m_mpi_communicator(build_info.communicator)
 , m_utils_factory(createRef<ParallelMngUtilsFactoryBase>())
+, m_parallel_mng_internal(new Impl(this, build_info.window_creator))
 {
   if (!m_world_parallel_mng)
     m_world_parallel_mng = this;
@@ -122,6 +154,7 @@ SharedMemoryParallelMng(const SharedMemoryParallelMngBuildInfo& build_info)
 SharedMemoryParallelMng::
 ~SharedMemoryParallelMng()
 {
+  delete m_parallel_mng_internal;
   delete m_replication;
   m_sequential_parallel_mng.reset();
   delete m_io_mng;
