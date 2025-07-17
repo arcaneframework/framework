@@ -357,12 +357,12 @@ class SequentialMachineMemoryWindowBase
   : m_nb_elem_local(nb_elem_local_section)
   , m_sizeof_type(sizeof_type)
   {
-    m_segment = std::malloc(m_nb_elem_local * m_sizeof_type);
+    m_segment = new std::byte[m_nb_elem_local * m_sizeof_type];
   }
 
   ~SequentialMachineMemoryWindowBase() override
   {
-    std::free(m_segment);
+    delete[] m_segment;
   }
 
  public:
@@ -412,7 +412,7 @@ class SequentialMachineMemoryWindowBase
 
   Integer m_nb_elem_local;
   Integer m_sizeof_type;
-  void* m_segment;
+  std::byte* m_segment;
 };
 
 /*---------------------------------------------------------------------------*/

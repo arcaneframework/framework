@@ -1016,10 +1016,6 @@ _testMachineMemoryWindow()
 {
   IParallelMng* pm = m_parallel_mng;
 
-  // Pour l'instant, le mode hybrid n'est pas supporté.
-  if (pm->isHybridImplementation())
-    return;
-
   constexpr Integer nb_elem = 10;
 
   MachineMemoryWindow<Integer> window(pm, nb_elem);

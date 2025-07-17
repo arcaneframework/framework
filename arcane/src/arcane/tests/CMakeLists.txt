@@ -517,16 +517,6 @@ endif()
 # ----------------------------------------------------------------------------
 
 # Macro pour tester le message_passing
-macro(add_test_message_passing_seq_proc_thread test_name)
-  set(_OPTS -We,MESSAGE_PASSING_TEST,${test_name} -We,ARCCORE_ALLOW_NULL_RANK_FOR_MPI_ANY_SOURCE,1 -arcane_opt direct_test ParallelMngTest null)
-  set(_TEST_NAME parallelmng_${test_name})
-  add_test(${_TEST_NAME}_seq ${ARCANE_TEST_DRIVER} launch ${_OPTS})
-  if (TARGET arcane_mpi)
-    add_test(${_TEST_NAME}_4proc ${ARCANE_TEST_DRIVER} launch -n 4 ${_OPTS})
-  endif ()
-  add_test(${_TEST_NAME}_4thread ${ARCANE_TEST_DRIVER} launch -T 4 ${_OPTS})
-endmacro()
-
 macro(add_test_message_passing test_name)
   set(_OPTS -We,MESSAGE_PASSING_TEST,${test_name} -We,ARCCORE_ALLOW_NULL_RANK_FOR_MPI_ANY_SOURCE,1 -arcane_opt direct_test ParallelMngTest null)
   set(_TEST_NAME parallelmng_${test_name})
@@ -549,7 +539,7 @@ add_test_message_passing(send_receive_nb3)
 add_test_message_passing(reduce2)
 add_test_message_passing(topology)
 add_test_message_passing(broadcast_serializer)
-add_test_message_passing_seq_proc_thread(machine_window)
+add_test_message_passing(machine_window)
 add_test_message_passing(all)
 add_test_message_passing(sub_all)
 
