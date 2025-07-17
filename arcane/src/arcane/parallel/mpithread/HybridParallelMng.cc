@@ -25,12 +25,14 @@
 #include "arcane/core/Timer.h"
 #include "arcane/core/ISerializeMessageList.h"
 #include "arcane/core/IItemFamily.h"
-#include "arcane/core/internal/IParallelMngInternal.h"
+#include "arcane/core/internal/ParallelMngInternal.h"
 #include "arcane/core/internal/SerializeMessage.h"
 #include "arcane/core/parallel/IStat.h"
 
 #include "arcane/parallel/mpithread/HybridParallelDispatch.h"
 #include "arcane/parallel/mpithread/HybridMessageQueue.h"
+#include "arcane/parallel/mpithread/internal/HybridMachineMemoryWindowBaseCreator.h"
+
 #include "arcane/parallel/mpi/MpiParallelMng.h"
 
 #include "arcane/impl/TimerMng.h"
@@ -157,6 +159,38 @@ _wait(Parallel::eWaitType wait_mode)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+class HybridParallelMng::Impl
+: public ParallelMngInternal
+{
+ public:
+
+  explicit Impl(HybridParallelMng* pm, HybridMachineMemoryWindowBaseCreator* window_creator)
+  : ParallelMngInternal(pm)
+  , m_parallel_mng(pm)
+  , m_window_creator(window_creator)
+  {}
+
+  ~Impl() override = default;
+
+ public:
+
+  Ref<IMachineMemoryWindowBase> createMachineMemoryWindowBase(Integer nb_elem_local, Integer sizeof_one_elem) override
+  {
+    return makeRef(m_window_creator->createWindow(m_parallel_mng->commRank(), nb_elem_local, sizeof_one_elem, m_parallel_mng->mpiParallelMng()));
+  }
+
+ private:
+
+  HybridParallelMng* m_parallel_mng;
+  HybridMachineMemoryWindowBaseCreator* m_window_creator;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 HybridParallelMng::
 HybridParallelMng(const HybridParallelMngBuildInfo& bi)
 : ParallelMngDispatcher(ParallelMngDispatcherBuildInfo(bi.local_rank,bi.local_nb_rank))
@@ -175,6 +209,7 @@ HybridParallelMng(const HybridParallelMngBuildInfo& bi)
 , m_sub_builder_factory(bi.sub_builder_factory)
 , m_parent_container_ref(bi.container)
 , m_utils_factory(createRef<ParallelMngUtilsFactoryBase>())
+, m_parallel_mng_internal(new Impl(this, bi.window_creator))
 {
   if (!m_world_parallel_mng)
     m_world_parallel_mng = this;
@@ -206,6 +241,7 @@ HybridParallelMng::
   delete m_timer_mng;
   delete m_stat;
   delete m_mpi_parallel_mng;
+  delete m_parallel_mng_internal;
 }
 
 /*---------------------------------------------------------------------------*/

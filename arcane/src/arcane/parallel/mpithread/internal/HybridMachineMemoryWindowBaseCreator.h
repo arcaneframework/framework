@@ -1,0 +1,74 @@
+﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
+//-----------------------------------------------------------------------------
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// See the top-level COPYRIGHT file for details.
+// SPDX-License-Identifier: Apache-2.0
+//-----------------------------------------------------------------------------
+/*---------------------------------------------------------------------------*/
+/* HybridMachineMemoryWindowBaseCreator.h                      (C) 2000-2025 */
+/*                                                                           */
+/* Classe permettant de créer des objets de type                             */
+/* HybridMachineMemoryWindowBase. Une instance de cet objet doit être        */
+/* partagée par tous les threads d'un processus.                             */
+/*---------------------------------------------------------------------------*/
+
+#ifndef ARCANE_PARALLEL_MPITHREAD_INTERNAL_HYBRIDMACHINEMEMORYWINDOWBASECREATOR_H
+#define ARCANE_PARALLEL_MPITHREAD_INTERNAL_HYBRIDMACHINEMEMORYWINDOWBASECREATOR_H
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+#include "arcane/utils/Ref.h"
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace Arcane
+{
+class MpiParallelMng;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace Arcane::MessagePassing
+{
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+class IMachineMemoryWindowBase;
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+class HybridMachineMemoryWindowBaseCreator
+{
+ public:
+
+  HybridMachineMemoryWindowBaseCreator(Int32 nb_rank_local_proc, IThreadBarrier* barrier);
+  ~HybridMachineMemoryWindowBaseCreator() = default;
+
+ public:
+
+  IMachineMemoryWindowBase* createWindow(Int32 my_rank_global, Integer nb_elem_local_proc, Integer sizeof_type, MpiParallelMng* mpi_parallel_mng);
+
+ private:
+
+  Int32 m_nb_rank_local_proc;
+  Integer m_nb_elem_total_local_proc;
+  IThreadBarrier* m_barrier;
+  Ref<IMachineMemoryWindowBase> m_window;
+  Ref<IMachineMemoryWindowBase> m_nb_elem;
+  Ref<IMachineMemoryWindowBase> m_sum_nb_elem;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+} // namespace Arcane::MessagePassing
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+#endif
