@@ -26,7 +26,7 @@ namespace Arcane::MessagePassing::Mpi
 /*---------------------------------------------------------------------------*/
 
 MpiMachineMemoryWindowBase::
-MpiMachineMemoryWindowBase(Integer nb_elem_local_section, Integer sizeof_type, const MPI_Comm& comm_machine, Int32 comm_machine_rank, Int32 comm_machine_size, const MPI_Comm& comm_world)
+MpiMachineMemoryWindowBase(Integer nb_elem_local_section, Integer sizeof_type, const MPI_Comm& comm_machine, Int32 comm_machine_rank, Int32 comm_machine_size, ConstArrayView<Int32> machine_ranks)
 : m_win()
 , m_win_nb_elem_segments()
 , m_win_sum_nb_elem_segments()
@@ -36,6 +36,7 @@ MpiMachineMemoryWindowBase(Integer nb_elem_local_section, Integer sizeof_type, c
 , m_comm_machine_master_rank(-1)
 , m_is_master_rank(false)
 , m_sizeof_type(sizeof_type)
+, m_machine_ranks(machine_ranks)
 , m_my_rank_index(-1)
 , m_max_nb_elem_win(0)
 , m_actual_nb_elem_win(-1)
@@ -54,47 +55,15 @@ MpiMachineMemoryWindowBase(Integer nb_elem_local_section, Integer sizeof_type, c
   }
   //--------------------------
 
-  {
-    int comm_size;
-    MPI_Comm_size(comm_world, &comm_size);
-
-    UniqueArray<Int32> global_ranks(comm_size);
-    UniqueArray<Int32> machine_ranks(comm_size);
-
-    for (Integer i = 0; i < comm_size; ++i) {
-      global_ranks[i] = i;
+  for (Int32 i = 0; i < m_comm_machine_size; ++i) {
+    if (m_machine_ranks[i] == m_comm_machine_rank) {
+      m_my_rank_index = i;
+      break;
     }
-    MPI_Group comm_world_group;
-    MPI_Comm_group(comm_world, &comm_world_group);
-
-    MPI_Group machine_comm_group;
-    MPI_Comm_group(m_comm_machine, &machine_comm_group);
-
-    MPI_Group_translate_ranks(comm_world_group, comm_size, global_ranks.data(), machine_comm_group, machine_ranks.data());
-
-    Int64 final_size = 0;
-    for (Int32 rank : machine_ranks) {
-      if (rank != MPI_UNDEFINED) {
-        final_size++;
-      }
-    }
-    if (final_size != m_comm_machine_size) {
-      ARCCORE_FATAL("Pb sizeof comm");
-    }
-    m_machine_ranks.resize(final_size);
-
-    Int32 iter = 0;
-    for (Int32 rank : machine_ranks) {
-      if (rank != MPI_UNDEFINED) {
-        if (rank == m_comm_machine_rank) {
-          m_my_rank_index = iter;
-        }
-        m_machine_ranks[iter++] = rank;
-      }
-    }
-    m_comm_machine_master_rank = m_machine_ranks[0];
-    m_is_master_rank = (m_comm_machine_master_rank == m_comm_machine_rank);
   }
+
+  m_comm_machine_master_rank = m_machine_ranks[0];
+  m_is_master_rank = (m_comm_machine_master_rank == m_comm_machine_rank);
 
   //--------------------------
 
@@ -396,12 +365,12 @@ resizeSegment(Integer new_nb_elem)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-//
-// ConstArrayView<Int32> MpiMachineMemoryWindowBase::
-// machineRanks() const
-// {
-//   return m_machine_ranks;
-// }
+
+ConstArrayView<Int32> MpiMachineMemoryWindowBase::
+machineRanks() const
+{
+  return m_machine_ranks;
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
