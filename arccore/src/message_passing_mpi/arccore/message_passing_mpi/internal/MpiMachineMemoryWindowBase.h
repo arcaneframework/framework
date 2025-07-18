@@ -18,6 +18,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+#include "arccore/collections/Array.h"
 #include "arccore/message_passing/IMachineMemoryWindowBase.h"
 
 #include "arccore/message_passing_mpi/MessagePassingMpiGlobal.h"
@@ -33,7 +34,7 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiMachineMemoryWindowBase
 {
  public:
 
-  explicit MpiMachineMemoryWindowBase(Integer nb_elem_local_section, Integer sizeof_type, const MPI_Comm& comm, Int32 my_node_rank);
+  explicit MpiMachineMemoryWindowBase(Integer nb_elem_local_section, Integer sizeof_type, const MPI_Comm& comm_machine, Int32 comm_machine_rank, Int32 comm_machine_size, const MPI_Comm& comm_world);
 
   ~MpiMachineMemoryWindowBase() override;
 
@@ -50,13 +51,34 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiMachineMemoryWindowBase
   std::pair<Integer, void*> sizeAndDataSegment() const override;
   std::pair<Integer, void*> sizeAndDataSegment(Int32 rank) const override;
 
+  void resizeSegment(Integer new_nb_elem) override;
+
+  // ConstArrayView<Int32> machineRanks() const override;
+
  private:
 
-  Integer m_nb_elem_local;
   MPI_Win m_win;
-  MPI_Comm m_comm;
-  Int32 m_my_rank;
+  void* m_ptr_win;
+
+  MPI_Win m_win_nb_elem_segments;
+  ArrayView<Integer> m_nb_elem_segments;
+
+  MPI_Win m_win_sum_nb_elem_segments;
+  ArrayView<Integer> m_sum_nb_elem_segments;
+
+  MPI_Comm m_comm_machine;
+  Int32 m_comm_machine_size;
+  Int32 m_comm_machine_rank;
+  Int32 m_comm_machine_master_rank;
+  bool m_is_master_rank;
+
   Integer m_sizeof_type;
+
+  UniqueArray<Int32> m_machine_ranks;
+  Integer m_my_rank_index;
+
+  Integer m_max_nb_elem_win;
+  Integer m_actual_nb_elem_win;
 };
 
 /*---------------------------------------------------------------------------*/
