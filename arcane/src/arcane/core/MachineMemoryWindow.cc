@@ -105,6 +105,15 @@ segmentConstView(Int32 rank) const
 /*---------------------------------------------------------------------------*/
 
 template <class Type>
+ConstArrayView<Type> MachineMemoryWindow<Type>::
+windowConstView() const
+{
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template <class Type>
 Type* MachineMemoryWindow<Type>::
 data()
 {
@@ -119,6 +128,16 @@ Type* MachineMemoryWindow<Type>::
 data(Int32 rank)
 {
   return static_cast<Type*>(m_node_window_base->data(rank));
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template <class Type>
+void MachineMemoryWindow<Type>::
+resizeSegment(Integer new_nb_elem) const
+{
+  m_node_window_base->resizeSegment(new_nb_elem);
 }
 
 /*---------------------------------------------------------------------------*/

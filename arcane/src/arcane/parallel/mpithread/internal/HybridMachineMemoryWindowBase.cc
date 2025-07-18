@@ -17,6 +17,8 @@
 
 #include "arcane/parallel/mpithread/HybridMessageQueue.h"
 
+#include "arccore/concurrency/IThreadBarrier.h"
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -27,7 +29,7 @@ namespace Arcane::MessagePassing
 /*---------------------------------------------------------------------------*/
 
 HybridMachineMemoryWindowBase::
-HybridMachineMemoryWindowBase(Int32 my_rank_mpi, Int32 my_rank_local_proc, Int32 nb_rank_local_proc, Integer sizeof_type, Ref<IMachineMemoryWindowBase> nb_elem, Ref<IMachineMemoryWindowBase> sum_nb_elem, Ref<IMachineMemoryWindowBase> mpi_window)
+HybridMachineMemoryWindowBase(Int32 my_rank_mpi, Int32 my_rank_local_proc, Int32 nb_rank_local_proc, Integer sizeof_type, Ref<IMachineMemoryWindowBase> nb_elem, Ref<IMachineMemoryWindowBase> sum_nb_elem, Ref<IMachineMemoryWindowBase> mpi_window, IThreadBarrier* barrier)
 : m_my_rank_local_proc(my_rank_local_proc)
 , m_nb_rank_local_proc(nb_rank_local_proc)
 , m_my_rank_mpi(my_rank_mpi)
@@ -37,6 +39,7 @@ HybridMachineMemoryWindowBase(Int32 my_rank_mpi, Int32 my_rank_local_proc, Int32
 , m_sum_nb_elem_global(sum_nb_elem)
 , m_nb_elem_local_proc(nullptr)
 , m_sum_nb_elem_local_proc(nullptr)
+, m_thread_barrier(barrier)
 {
   m_nb_elem_local_proc = static_cast<Int32*>(m_nb_elem_global->data());
   m_sum_nb_elem_local_proc = static_cast<Int32*>(m_sum_nb_elem_global->data());
@@ -125,6 +128,27 @@ std::pair<Integer, void*> HybridMachineMemoryWindowBase::
 sizeAndDataSegment(Int32 rank) const
 {
   return { sizeSegment(rank), data(rank) };
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void HybridMachineMemoryWindowBase::
+resizeSegment(Integer new_nb_elem)
+{
+  m_nb_elem_local_proc[m_my_rank_local_proc] = new_nb_elem;
+
+  m_thread_barrier->wait();
+
+  if (m_my_rank_local_proc == 0) {
+    Integer sum = 0;
+    for (Integer i = 0; i < m_nb_rank_local_proc; ++i) {
+      m_sum_nb_elem_local_proc[i] = sum;
+      sum += m_nb_elem_local_proc[i];
+    }
+    m_mpi_window->resizeSegment(sum);
+  }
+  m_thread_barrier->wait();
 }
 
 /*---------------------------------------------------------------------------*/

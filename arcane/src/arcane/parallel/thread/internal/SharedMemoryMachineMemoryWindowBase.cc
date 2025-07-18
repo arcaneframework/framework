@@ -13,6 +13,10 @@
 
 #include "arcane/parallel/thread/internal/SharedMemoryMachineMemoryWindowBase.h"
 
+#include "arcane/utils/FatalErrorException.h"
+
+#include "arccore/concurrency/IThreadBarrier.h"
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -23,14 +27,16 @@ namespace Arcane::MessagePassing
 /*---------------------------------------------------------------------------*/
 
 SharedMemoryMachineMemoryWindowBase::
-SharedMemoryMachineMemoryWindowBase(Int32 my_rank, Int32 nb_rank, Integer sizeof_type, std::byte* window, Integer* nb_elem, Integer* sum_nb_elem, Integer nb_elem_total)
+SharedMemoryMachineMemoryWindowBase(Int32 my_rank, Int32 nb_rank, Integer sizeof_type, std::byte* window, Integer* nb_elem, Integer* sum_nb_elem, Integer nb_elem_total, IThreadBarrier* barrier)
 : m_my_rank(my_rank)
 , m_nb_rank(nb_rank)
 , m_sizeof_type(sizeof_type)
 , m_nb_elem_total(nb_elem_total)
+, m_max_nb_elem_total(nb_elem_total)
 , m_window(window)
 , m_nb_elem(nb_elem)
 , m_sum_nb_elem(sum_nb_elem)
+, m_barrier(barrier)
 {}
 
 /*---------------------------------------------------------------------------*/
@@ -107,6 +113,41 @@ std::pair<Integer, void*> SharedMemoryMachineMemoryWindowBase::
 sizeAndDataSegment(Int32 rank) const
 {
   return { sizeSegment(rank), data(rank) };
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void SharedMemoryMachineMemoryWindowBase::
+resizeSegment(Integer new_nb_elem)
+{
+  m_nb_elem[m_my_rank] = new_nb_elem;
+
+  m_barrier->wait();
+
+  if (m_my_rank == 0) {
+    Integer sum = 0;
+    for (Integer i = 0; i < m_nb_rank; ++i) {
+      m_sum_nb_elem[i] = sum;
+      sum += m_nb_elem[i];
+    }
+    if (sum > m_max_nb_elem_total) {
+      ARCANE_FATAL("New size of window (sum of size of all segments) is superior than the old size");
+    }
+    m_nb_elem_total = sum;
+  }
+  else {
+    Integer sum = 0;
+    for (Integer i = 0; i < m_nb_rank; ++i) {
+      sum += m_nb_elem[i];
+    }
+    if (sum > m_max_nb_elem_total) {
+      ARCANE_FATAL("New size of window (sum of size of all segments) is superior than the old size");
+    }
+    m_nb_elem_total = sum;
+  }
+
+  m_barrier->wait();
 }
 
 /*---------------------------------------------------------------------------*/

@@ -355,6 +355,7 @@ class SequentialMachineMemoryWindowBase
 
   SequentialMachineMemoryWindowBase(Integer nb_elem_local_section, Integer sizeof_type)
   : m_nb_elem_local(nb_elem_local_section)
+  , m_max_nb_elem_local(nb_elem_local_section)
   , m_sizeof_type(sizeof_type)
   {
     m_segment = new std::byte[m_nb_elem_local * m_sizeof_type];
@@ -408,9 +409,18 @@ class SequentialMachineMemoryWindowBase
     return { m_nb_elem_local, m_segment };
   }
 
+  void resizeSegment(Integer new_nb_elem) override
+  {
+    if (new_nb_elem > m_max_nb_elem_local) {
+      ARCANE_FATAL("New size of window (sum of size of all segments) is superior than the old size");
+    }
+    m_nb_elem_local = new_nb_elem;
+  }
+
  private:
 
   Integer m_nb_elem_local;
+  Integer m_max_nb_elem_local;
   Integer m_sizeof_type;
   std::byte* m_segment;
 };

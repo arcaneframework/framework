@@ -85,7 +85,7 @@ createWindow(Int32 my_rank_global, Integer nb_elem_local_proc, Integer sizeof_ty
   }
   m_barrier->wait();
 
-  auto* window_obj = new HybridMachineMemoryWindowBase(my_rank_mpi, my_rank_local_proc, m_nb_rank_local_proc, sizeof_type, m_nb_elem, m_sum_nb_elem, m_window);
+  auto* window_obj = new HybridMachineMemoryWindowBase(my_rank_mpi, my_rank_local_proc, m_nb_rank_local_proc, sizeof_type, m_nb_elem, m_sum_nb_elem, m_window, m_barrier);
   m_barrier->wait();
 
   // Ces tableaux doivent être delete par HybridMachineMemoryWindowBase (rang 0 uniquement).

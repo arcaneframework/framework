@@ -110,6 +110,14 @@ class ARCANE_CORE_EXPORT MachineMemoryWindow
   ConstArrayView<Type> segmentConstView(Int32 rank) const;
 
   /*!
+   * \brief Méthode permettant d'obtenir une vue constante sur la fenêtre
+   * mémoire.
+   *
+   * \return Une vue constante.
+   */
+  ConstArrayView<Type> windowConstView() const;
+
+  /*!
    * \brief Méthode permettant d'obtenir un pointeur vers notre segment
    * de fenêtre mémoire.
    *
@@ -124,6 +132,8 @@ class ARCANE_CORE_EXPORT MachineMemoryWindow
    * \return Un pointeur.
    */
   Type* data(Int32 rank);
+
+  void resizeSegment(Integer new_nb_elem) const;
 
  private:
 

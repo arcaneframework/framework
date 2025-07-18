@@ -61,7 +61,7 @@ createWindow(Int32 my_rank, Integer nb_elem_local_section, Integer sizeof_type)
   }
   m_barrier->wait();
 
-  auto* window_obj = new SharedMemoryMachineMemoryWindowBase(my_rank, m_nb_rank, sizeof_type, m_window, m_nb_elem, m_sum_nb_elem, m_nb_elem_total);
+  auto* window_obj = new SharedMemoryMachineMemoryWindowBase(my_rank, m_nb_rank, sizeof_type, m_window, m_nb_elem, m_sum_nb_elem, m_nb_elem_total, m_barrier);
   m_barrier->wait();
 
   // Ces tableaux doivent être delete par SharedMemoryMachineMemoryWindowBase (rang 0 uniquement).
