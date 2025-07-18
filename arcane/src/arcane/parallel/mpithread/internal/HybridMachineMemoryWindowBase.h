@@ -35,7 +35,7 @@ class HybridMachineMemoryWindowBase
 {
  public:
 
-  HybridMachineMemoryWindowBase(Int32 my_rank_mpi, Int32 my_rank_local_proc, Int32 nb_rank_local_proc, Integer sizeof_type, Ref<IMachineMemoryWindowBase> nb_elem, Ref<IMachineMemoryWindowBase> sum_nb_elem, Ref<IMachineMemoryWindowBase> mpi_window);
+  HybridMachineMemoryWindowBase(Int32 my_rank_mpi, Int32 my_rank_local_proc, Int32 nb_rank_local_proc, Integer sizeof_type, Ref<IMachineMemoryWindowBase> nb_elem, Ref<IMachineMemoryWindowBase> sum_nb_elem, Ref<IMachineMemoryWindowBase> mpi_window, IThreadBarrier* barrier);
 
   ~HybridMachineMemoryWindowBase() override = default;
 
@@ -52,6 +52,8 @@ class HybridMachineMemoryWindowBase
   std::pair<Integer, void*> sizeAndDataSegment() const override;
   std::pair<Integer, void*> sizeAndDataSegment(Int32 rank) const override;
 
+  void resizeSegment(Integer new_nb_elem) override;
+
  private:
 
   Int32 m_my_rank_local_proc;
@@ -63,6 +65,7 @@ class HybridMachineMemoryWindowBase
   Ref<IMachineMemoryWindowBase> m_sum_nb_elem_global;
   Integer* m_nb_elem_local_proc;
   Integer* m_sum_nb_elem_local_proc;
+  IThreadBarrier* m_thread_barrier;
 };
 
 /*---------------------------------------------------------------------------*/
