@@ -1016,7 +1016,8 @@ _testMachineMemoryWindow()
 {
   IParallelMng* pm = m_parallel_mng;
 
-  constexpr Integer nb_elem = 10;
+  // nb_elem doit être paire pour ce test.
+  constexpr Integer nb_elem = 14;
 
   MachineMemoryWindow<Integer> window(pm, nb_elem);
 
@@ -1038,8 +1039,28 @@ _testMachineMemoryWindow()
     ArrayView av_segment(window.segmentView(proc));
 
     for (Integer i = 0; i < nb_elem; ++i) {
-      //info() << "Test " << i << " : " << av_segment[i] << " -- " << proc;
+      info() << "Test " << i << " : " << av_segment[i] << " -- " << proc;
       if (av_segment[i] != i * (proc + 1)) {
+        ARCANE_FATAL("Bad element in memory window -- Expected : {0} -- Found : {1}", (i * (proc + 1)), av_segment[i]);
+      }
+    }
+  }
+
+  pm->barrier();
+
+  constexpr Integer nb_elem_div = nb_elem / 2;
+
+  window.resizeSegment(nb_elem_div);
+  pm->barrier();
+
+  for (Integer proc = 0; proc < nb_proc; ++proc) {
+    ArrayView av_segment(window.segmentView(proc));
+
+    for (Integer i = 0; i < nb_elem_div; ++i) {
+      info() << "Test2 " << i << " : " << av_segment[i] << " -- " << proc;
+      Int32 procdiv2 = proc / 2;
+      Integer i2 = (proc % 2 == 0 ? i : i + nb_elem_div);
+      if (av_segment[i] != i2 * (procdiv2 + 1)) {
         ARCANE_FATAL("Bad element in memory window -- Expected : {0} -- Found : {1}", (i * (proc + 1)), av_segment[i]);
       }
     }

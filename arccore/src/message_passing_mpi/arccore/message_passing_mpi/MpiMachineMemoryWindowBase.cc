@@ -41,6 +41,17 @@ MpiMachineMemoryWindowBase(Integer nb_elem_local_section, Integer sizeof_type, c
 , m_max_nb_elem_win(0)
 , m_actual_nb_elem_win(-1)
 {
+  std::cout << "OK11" << std::endl;
+  for (Int32 elem : m_machine_ranks) {
+    if (elem == m_comm_machine_rank) {
+      std::cout << "OK13 : " << elem << std::endl;
+    }
+  }
+
+  MPI_Barrier(m_comm_machine);
+  std::cout << "OK12" << std::endl;
+  MPI_Barrier(m_comm_machine);
+
   MPI_Info win_info;
   MPI_Info_create(&win_info);
   MPI_Info_set(win_info, "alloc_shared_noncontig", "false");

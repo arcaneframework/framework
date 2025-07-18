@@ -35,7 +35,7 @@ class HybridMachineMemoryWindowBase
 {
  public:
 
-  HybridMachineMemoryWindowBase(Int32 my_rank_mpi, Int32 my_rank_local_proc, Int32 nb_rank_local_proc, Integer sizeof_type, Ref<IMachineMemoryWindowBase> nb_elem, Ref<IMachineMemoryWindowBase> sum_nb_elem, Ref<IMachineMemoryWindowBase> mpi_window, IThreadBarrier* barrier);
+  HybridMachineMemoryWindowBase(Int32 my_rank_mpi, Int32 my_rank_local_proc, Int32 nb_rank_local_proc, ConstArrayView<Int32> ranks, Integer sizeof_type, Ref<IMachineMemoryWindowBase> nb_elem, Ref<IMachineMemoryWindowBase> sum_nb_elem, Ref<IMachineMemoryWindowBase> mpi_window, IThreadBarrier* barrier);
 
   ~HybridMachineMemoryWindowBase() override = default;
 
@@ -54,11 +54,14 @@ class HybridMachineMemoryWindowBase
 
   void resizeSegment(Integer new_nb_elem) override;
 
+  ConstArrayView<Int32> machineRanks() const override;
+
  private:
 
   Int32 m_my_rank_local_proc;
   Int32 m_nb_rank_local_proc;
   Int32 m_my_rank_mpi;
+  ConstArrayView<Int32> m_machine_ranks;
   Integer m_sizeof_type;
   Ref<IMachineMemoryWindowBase> m_mpi_window;
   Ref<IMachineMemoryWindowBase> m_nb_elem_global;
