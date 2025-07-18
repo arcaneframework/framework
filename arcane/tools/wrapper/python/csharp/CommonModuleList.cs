@@ -20,7 +20,7 @@ namespace Arcane.Python
         _ImportModule(ref m_numpy_module,"numpy");
         _ImportModule(ref m_ctypes_module,"ctypes");
         _ImportModule(ref m_numpy_ctypeslib_module,"numpy.ctypeslib");
-        _ImportModule(ref m_arcane_python_module,"Arcane.Python");
+        _ImportModule(ref m_arcane_python_module,"_ArcanePython");
       }
     }
 

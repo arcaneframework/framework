@@ -9,3 +9,4 @@ Release
 .vs
 .vscode
 cmake-build-*
+*.pyc

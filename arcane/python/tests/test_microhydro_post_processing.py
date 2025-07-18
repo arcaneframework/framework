@@ -8,8 +8,10 @@ from Arcane import ArcaneLauncher
 import os
 gvar0 = 1
 
+true_py_context1 = ArcanePython.SubDomainContext()
 def my_test_func(sd_context):
     print("HELLO context=",sd_context,flush=True)
+    true_py_context = ArcanePython.SubDomainContext()
     global gvar0
     gvar0 = gvar0 + 1
     mesh0 = sd_context.DefaultMesh
@@ -28,6 +30,11 @@ args = Arcane.CommandLineArguments.Create(sys.argv)
 ArcaneLauncher.Init(args)
 
 print("MY_TEST_BEGIN",flush=True)
+print("MY_TEST_PATH=",__file__,flush=True)
+
+ArcanePython.func1()
+ArcanePython._utils.func0()
+
 app_info = ArcaneLauncher.ApplicationInfo;
 app_info.SetCodeName("ArcaneTest")
 app_build_info = ArcaneLauncher.ApplicationBuildInfo;
