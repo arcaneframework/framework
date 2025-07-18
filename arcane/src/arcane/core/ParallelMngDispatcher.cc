@@ -25,7 +25,7 @@
 #include "arcane/core/Timer.h"
 #include "arcane/core/ITimeStats.h"
 #include "arcane/core/IParallelNonBlockingCollective.h"
-#include "arcane/core/internal/IParallelMngInternal.h"
+#include "arcane/core/internal/ParallelMngInternal.h"
 
 #include "arcane/accelerator/core/Runner.h"
 #include "arcane/accelerator/core/RunQueueBuildInfo.h"
@@ -218,67 +218,6 @@ class ParallelMngDispatcher::SerializeDispatcher
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class ParallelMngDispatcher::Impl
-: public IParallelMngInternal
-{
- public:
-
-  explicit Impl(ParallelMngDispatcher* pm)
-  : m_parallel_mng(pm)
-  , m_runner(Accelerator::eExecutionPolicy::Sequential)
-  , m_queue(makeQueue(m_runner))
-  {
-    if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_DISABLE_ACCELERATOR_AWARE_MESSAGE_PASSING", true))
-      m_is_accelerator_aware_disabled = (v.value()!=0);
-  }
-  ~Impl()
-  {
-  }
- public:
-
-  Runner runner() const override { return m_runner; }
-  RunQueue queue() const override { return m_queue; }
-  bool isAcceleratorAware() const override
-  {
-    if (m_is_accelerator_aware_disabled)
-      return false;
-    if (m_queue.isNull())
-      return false;
-    if (!m_queue.isAcceleratorPolicy())
-      return false;
-    return m_parallel_mng->_isAcceleratorAware();
-  }
-  void setDefaultRunner(const Runner& runner) override
-  {
-    if (!m_runner.isInitialized())
-      ARCANE_FATAL("Can not set an unitialized Runner");
-
-    // Attention à bien supprimer la référence sur la RunQueue
-    // avant de détruire le Runner car s'il n'y a pas d'autres
-    // références sur \a m_runner il sera détruit avec \a m_queue
-    // et ce dernier aura un \a m_runner détruit.
-    m_queue = RunQueue{};
-    m_runner = runner;
-    Accelerator::RunQueueBuildInfo build_info(-5);
-    m_queue = makeQueue(m_runner,build_info);
-    m_queue.setAsync(true);
-  }
-  Ref<IParallelMng> createSubParallelMngRef(Int32 color, Int32 key) override
-  {
-    return m_parallel_mng->_createSubParallelMngRef(color, key);
-  }
-
- private:
-
-  ParallelMngDispatcher* m_parallel_mng = nullptr;
-  Runner m_runner;
-  RunQueue m_queue;
-  bool m_is_accelerator_aware_disabled = false;
-};
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -309,7 +248,7 @@ ParallelMngDispatcher(const ParallelMngDispatcherBuildInfo& bi)
 , m_message_passing_mng_ref(bi.messagePassingMngRef())
 , m_control_dispatcher(new DefaultControlDispatcher(this))
 , m_serialize_dispatcher(new SerializeDispatcher(this))
-, m_parallel_mng_internal(new Impl(this))
+, m_parallel_mng_internal(new ParallelMngInternal(this))
 {
 }
 

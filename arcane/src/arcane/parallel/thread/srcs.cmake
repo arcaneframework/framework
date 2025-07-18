@@ -21,6 +21,10 @@ set(ARCANE_SOURCES
   StdThreadImplementationService.cc
 
   internal/SharedMemoryThreadMng.h
+  internal/SharedMemoryMachineMemoryWindowBase.cc
+  internal/SharedMemoryMachineMemoryWindowBase.h
+  internal/SharedMemoryMachineMemoryWindowBaseCreator.cc
+  internal/SharedMemoryMachineMemoryWindowBaseCreator.h
 
   # TODO: les fichiers suivants sont gardés pour des raisons
   # de compatibilité avec l'existant. Il faudra les supprimer

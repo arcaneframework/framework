@@ -91,6 +91,7 @@ template<typename DataType> class GatherMessageInfo;
 class PointToPointSerializerMng;
 class ISerializeMessage;
 class ISerializeMessageList;
+class IMachineMemoryWindowBase;
 
 /*!
  * \brief Types des réductions supportées.
