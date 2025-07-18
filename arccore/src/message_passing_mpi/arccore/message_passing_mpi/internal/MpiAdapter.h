@@ -214,12 +214,12 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiAdapter
 
   Ref<IMachineMemoryWindowBase> createMachineMemoryWindowBase(Integer nb_elem_local, Integer sizeof_one_elem) const
   {
-    return makeRef(new MpiMachineMemoryWindowBase(nb_elem_local, sizeof_one_elem, m_machine_communicator, m_machine_comm_rank));
+    return makeRef(new MpiMachineMemoryWindowBase(nb_elem_local, sizeof_one_elem, m_machine_communicator, m_machine_comm_rank, m_machine_comm_size, m_communicator));
   }
 
   void* createAllInOneMachineMemoryWindowBase(Integer sizeof_local) const;
   void freeAllInOneMachineMemoryWindowBase(void* aio_node_window) const;
-  Ref<IMachineMemoryWindowBase> readAllInOneMachineMemoryWindowBase(void* aio_node_window) const
+  Ref<MpiAllInOneMachineMemoryWindowBase> readAllInOneMachineMemoryWindowBase(void* aio_node_window) const
   {
     return makeRef(new MpiAllInOneMachineMemoryWindowBase(aio_node_window, sizeof(MPI_Win), m_machine_communicator, m_machine_comm_rank));
   }

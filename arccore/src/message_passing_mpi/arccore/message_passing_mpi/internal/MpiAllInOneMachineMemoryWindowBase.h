@@ -29,26 +29,25 @@ namespace Arcane::MessagePassing::Mpi
 {
 
 class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiAllInOneMachineMemoryWindowBase
-: public IMachineMemoryWindowBase
 {
  public:
 
   explicit MpiAllInOneMachineMemoryWindowBase(void* node_window, MPI_Aint offset, const MPI_Comm& comm, Int32 my_node_rank);
 
-  ~MpiAllInOneMachineMemoryWindowBase() override;
+  ~MpiAllInOneMachineMemoryWindowBase();
 
  public:
 
-  Integer sizeofOneElem() const override;
+  Integer sizeofOneElem() const;
 
-  Integer sizeSegment() const override;
-  Integer sizeSegment(Int32 rank) const override;
+  Integer sizeSegment() const;
+  Integer sizeSegment(Int32 rank) const;
 
-  void* data() const override;
-  void* data(Int32 rank) const override;
+  void* data() const;
+  void* data(Int32 rank) const;
 
-  std::pair<Integer, void*> sizeAndDataSegment() const override;
-  std::pair<Integer, void*> sizeAndDataSegment(Int32 rank) const override;
+  std::pair<Integer, void*> sizeAndDataSegment() const;
+  std::pair<Integer, void*> sizeAndDataSegment(Int32 rank) const;
 
  private:
 

@@ -18,6 +18,7 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arccore/message_passing/MessagePassingGlobal.h"
+#include "arccore/collections/Array.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -93,6 +94,10 @@ class ARCCORE_MESSAGEPASSING_EXPORT IMachineMemoryWindowBase
    * \return Une paire [taille, ptr].
    */
   virtual std::pair<Integer, void*> sizeAndDataSegment(Int32 rank) const = 0;
+
+  virtual void resizeSegment(Integer new_nb_elem) = 0;
+
+  // virtual ConstArrayView<Int32> machineRanks() const = 0;
 };
 
 /*---------------------------------------------------------------------------*/
