@@ -27,9 +27,10 @@ namespace Arcane::MessagePassing
 /*---------------------------------------------------------------------------*/
 
 SharedMemoryMachineMemoryWindowBase::
-SharedMemoryMachineMemoryWindowBase(Int32 my_rank, Int32 nb_rank, Integer sizeof_type, std::byte* window, Integer* nb_elem, Integer* sum_nb_elem, Integer nb_elem_total, IThreadBarrier* barrier)
+SharedMemoryMachineMemoryWindowBase(Int32 my_rank, Int32 nb_rank, ConstArrayView<Int32> ranks, Integer sizeof_type, std::byte* window, Integer* nb_elem, Integer* sum_nb_elem, Integer nb_elem_total, IThreadBarrier* barrier)
 : m_my_rank(my_rank)
 , m_nb_rank(nb_rank)
+, m_ranks(ranks)
 , m_sizeof_type(sizeof_type)
 , m_nb_elem_total(nb_elem_total)
 , m_max_nb_elem_total(nb_elem_total)
@@ -148,6 +149,15 @@ resizeSegment(Integer new_nb_elem)
   }
 
   m_barrier->wait();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+ConstArrayView<Int32> SharedMemoryMachineMemoryWindowBase::
+machineRanks() const
+{
+  return m_ranks;
 }
 
 /*---------------------------------------------------------------------------*/

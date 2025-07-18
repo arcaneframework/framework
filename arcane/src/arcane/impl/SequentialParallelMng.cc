@@ -417,12 +417,18 @@ class SequentialMachineMemoryWindowBase
     m_nb_elem_local = new_nb_elem;
   }
 
+  ConstArrayView<Int32> machineRanks() const override
+  {
+    return { 1, &m_my_rank };
+  }
+
  private:
 
   Integer m_nb_elem_local;
   Integer m_max_nb_elem_local;
   Integer m_sizeof_type;
   std::byte* m_segment;
+  Int32 m_my_rank = 0;
 };
 
 /*---------------------------------------------------------------------------*/
