@@ -35,7 +35,7 @@ class ARCANE_THREAD_EXPORT SharedMemoryMachineMemoryWindowBase
 {
  public:
 
-  SharedMemoryMachineMemoryWindowBase(Int32 my_rank, Int32 nb_rank, Integer sizeof_type, std::byte* window, Integer* nb_elem, Integer* sum_nb_elem, Integer nb_elem_total, IThreadBarrier* barrier);
+  SharedMemoryMachineMemoryWindowBase(Int32 my_rank, Int32 nb_rank, ConstArrayView<Int32> ranks, Integer sizeof_type, std::byte* window, Integer* nb_elem, Integer* sum_nb_elem, Integer nb_elem_total, IThreadBarrier* barrier);
 
   ~SharedMemoryMachineMemoryWindowBase() override;
 
@@ -54,10 +54,13 @@ class ARCANE_THREAD_EXPORT SharedMemoryMachineMemoryWindowBase
 
   void resizeSegment(Integer new_size) override;
 
+  ConstArrayView<Int32> machineRanks() const override;
+
  private:
 
   Int32 m_my_rank;
   Int32 m_nb_rank;
+  ConstArrayView<Int32> m_ranks;
   Integer m_sizeof_type;
   Integer m_nb_elem_total;
   Integer m_max_nb_elem_total;

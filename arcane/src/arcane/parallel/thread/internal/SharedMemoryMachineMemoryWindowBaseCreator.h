@@ -19,6 +19,7 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/core/ArcaneTypes.h"
+#include "arcane/utils/UniqueArray.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -54,6 +55,7 @@ class SharedMemoryMachineMemoryWindowBaseCreator
   std::byte* m_window;
   Integer* m_nb_elem;
   Integer* m_sum_nb_elem;
+  UniqueArray<Int32> m_ranks;
 };
 
 /*---------------------------------------------------------------------------*/

@@ -34,7 +34,12 @@ SharedMemoryMachineMemoryWindowBaseCreator(Int32 nb_rank, IThreadBarrier* barrie
 , m_window(nullptr)
 , m_nb_elem(nullptr)
 , m_sum_nb_elem(nullptr)
-{}
+{
+  m_ranks.resize(m_nb_rank);
+  for (Int32 i = 0; i < m_nb_rank; ++i) {
+    m_ranks[i] = i;
+  }
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -61,7 +66,7 @@ createWindow(Int32 my_rank, Integer nb_elem_local_section, Integer sizeof_type)
   }
   m_barrier->wait();
 
-  auto* window_obj = new SharedMemoryMachineMemoryWindowBase(my_rank, m_nb_rank, sizeof_type, m_window, m_nb_elem, m_sum_nb_elem, m_nb_elem_total, m_barrier);
+  auto* window_obj = new SharedMemoryMachineMemoryWindowBase(my_rank, m_nb_rank, m_ranks, sizeof_type, m_window, m_nb_elem, m_sum_nb_elem, m_nb_elem_total, m_barrier);
   m_barrier->wait();
 
   // Ces tableaux doivent être delete par SharedMemoryMachineMemoryWindowBase (rang 0 uniquement).
