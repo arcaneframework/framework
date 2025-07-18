@@ -97,7 +97,7 @@ class ARCCORE_MESSAGEPASSING_EXPORT IMachineMemoryWindowBase
 
   virtual void resizeSegment(Integer new_nb_elem) = 0;
 
-  // virtual ConstArrayView<Int32> machineRanks() const = 0;
+  virtual ConstArrayView<Int32> machineRanks() const = 0;
 };
 
 /*---------------------------------------------------------------------------*/

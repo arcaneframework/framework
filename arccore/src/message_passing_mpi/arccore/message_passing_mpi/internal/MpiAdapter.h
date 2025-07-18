@@ -24,16 +24,12 @@
 
 #include "arccore/base/BaseTypes.h"
 
-#include "arccore/message_passing_mpi/internal/MpiAllInOneMachineMemoryWindowBase.h"
-#include "arccore/message_passing_mpi/internal/MpiMachineMemoryWindowBase.h"
-
-#include <set>
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 namespace Arcane::MessagePassing::Mpi
 {
+class MpiMachineMemoryWindowBaseCreator;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -212,22 +208,14 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiAdapter
 
  public:
 
-  Ref<IMachineMemoryWindowBase> createMachineMemoryWindowBase(Integer nb_elem_local, Integer sizeof_one_elem) const
-  {
-    return makeRef(new MpiMachineMemoryWindowBase(nb_elem_local, sizeof_one_elem, m_machine_communicator, m_machine_comm_rank, m_machine_comm_size, m_communicator));
-  }
+  // void* createAllInOneMachineMemoryWindowBase(Integer sizeof_local) const;
+  // void freeAllInOneMachineMemoryWindowBase(void* aio_node_window) const;
+  // Ref<MpiAllInOneMachineMemoryWindowBase> readAllInOneMachineMemoryWindowBase(void* aio_node_window) const
+  // {
+  //   return makeRef(new MpiAllInOneMachineMemoryWindowBase(aio_node_window, sizeof(MPI_Win), m_machine_communicator, m_machine_comm_rank));
+  // }
 
-  void* createAllInOneMachineMemoryWindowBase(Integer sizeof_local) const;
-  void freeAllInOneMachineMemoryWindowBase(void* aio_node_window) const;
-  Ref<MpiAllInOneMachineMemoryWindowBase> readAllInOneMachineMemoryWindowBase(void* aio_node_window) const
-  {
-    return makeRef(new MpiAllInOneMachineMemoryWindowBase(aio_node_window, sizeof(MPI_Win), m_machine_communicator, m_machine_comm_rank));
-  }
-
-  int machineCommRank() const { return m_machine_comm_rank; }
-  int machineCommSize() const { return m_machine_comm_size; }
-
-  MPI_Comm machineCommunicator() const { return m_machine_communicator; }
+  MpiMachineMemoryWindowBaseCreator* windowCreator() const { return m_window_creator; }
 
  private:
 
@@ -258,6 +246,8 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiAdapter
   // La variable d'environnement ARCCORE_ALLOW_NULL_RANK_FOR_MPI_ANY_SOURCE permettra
   // de temporairement garder un mode compatible.
   bool m_is_allow_null_rank_for_any_source = true;
+
+  MpiMachineMemoryWindowBaseCreator* m_window_creator;
 
  private:
   

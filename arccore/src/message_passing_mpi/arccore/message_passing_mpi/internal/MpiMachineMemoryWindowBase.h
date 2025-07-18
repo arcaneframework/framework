@@ -34,7 +34,7 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiMachineMemoryWindowBase
 {
  public:
 
-  explicit MpiMachineMemoryWindowBase(Integer nb_elem_local_section, Integer sizeof_type, const MPI_Comm& comm_machine, Int32 comm_machine_rank, Int32 comm_machine_size, const MPI_Comm& comm_world);
+  explicit MpiMachineMemoryWindowBase(Integer nb_elem_local_section, Integer sizeof_type, const MPI_Comm& comm_machine, Int32 comm_machine_rank, Int32 comm_machine_size, ConstArrayView<Int32> machine_ranks);
 
   ~MpiMachineMemoryWindowBase() override;
 
@@ -53,7 +53,7 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiMachineMemoryWindowBase
 
   void resizeSegment(Integer new_nb_elem) override;
 
-  // ConstArrayView<Int32> machineRanks() const override;
+  ConstArrayView<Int32> machineRanks() const override;
 
  private:
 
@@ -74,7 +74,7 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiMachineMemoryWindowBase
 
   Integer m_sizeof_type;
 
-  UniqueArray<Int32> m_machine_ranks;
+  ConstArrayView<Int32> m_machine_ranks;
   Integer m_my_rank_index;
 
   Integer m_max_nb_elem_win;

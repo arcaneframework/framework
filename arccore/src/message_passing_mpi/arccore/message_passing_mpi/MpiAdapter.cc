@@ -33,6 +33,7 @@
 #include "arccore/message_passing_mpi/internal/MpiLock.h"
 #include "arccore/message_passing_mpi/internal/NoMpiProfiling.h"
 #include "arccore/message_passing_mpi/internal/MpiRequest.h"
+#include "arccore/message_passing_mpi/internal/MpiMachineMemoryWindowBaseCreator.h"
 
 #include <cstdint>
 
@@ -281,6 +282,8 @@ MpiAdapter(ITraceMng* trace,IStat* stat,MPI_Comm comm,
   ::MPI_Comm_rank(m_machine_communicator, &m_machine_comm_rank);
   ::MPI_Comm_size(m_machine_communicator, &m_machine_comm_size);
 
+  m_window_creator = new MpiMachineMemoryWindowBaseCreator(m_machine_communicator, m_machine_comm_rank, m_machine_comm_size, m_communicator, m_comm_size);
+
   // Par defaut, on ne fait pas de profiling MPI, on utilisera la methode set idoine pour changer
   if (!m_mpi_prof)
     m_mpi_prof = new NoMpiProfiling();
@@ -329,6 +332,7 @@ MpiAdapter::
 
   delete m_request_set;
   delete m_mpi_prof;
+  delete m_window_creator;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1752,57 +1756,57 @@ profiler() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void* MpiAdapter::
-createAllInOneMachineMemoryWindowBase(Integer sizeof_local) const
-{
-  //MPI_Aint offset = sizeof(MPI_Win) + sizeof(Integer);
-  MPI_Aint offset = sizeof(MPI_Win);
-
-  MPI_Win win;
-
-  MPI_Info win_info;
-  MPI_Info_create(&win_info);
-
-  MPI_Info_set(win_info, "alloc_shared_noncontig", "false");
-
-  const MPI_Aint new_size = offset + sizeof_local;
-
-  char* my_section;
-  int error = MPI_Win_allocate_shared(new_size, 1, win_info, m_machine_communicator, &my_section, &win);
-
-  assert(error != MPI_ERR_ARG && "MPI_ERR_ARG");
-  assert(error != MPI_ERR_COMM && "MPI_ERR_COMM");
-  assert(error != MPI_ERR_INFO && "MPI_ERR_INFO");
-  assert(error != MPI_ERR_OTHER && "MPI_ERR_OTHER");
-  assert(error != MPI_ERR_SIZE && "MPI_ERR_SIZE");
-
-  MPI_Info_free(&win_info);
-
-  memcpy(my_section, &win, sizeof(MPI_Win));
-  my_section += sizeof(MPI_Win);
-
-  // memcpy(my_section, &sizeof_local, sizeof(Integer));
-  // my_section += sizeof(Integer);
-
-  return my_section;
-}
+// void* MpiAdapter::
+// createAllInOneMachineMemoryWindowBase(Integer sizeof_local) const
+// {
+//   //MPI_Aint offset = sizeof(MPI_Win) + sizeof(Integer);
+//   MPI_Aint offset = sizeof(MPI_Win);
+//
+//   MPI_Win win;
+//
+//   MPI_Info win_info;
+//   MPI_Info_create(&win_info);
+//
+//   MPI_Info_set(win_info, "alloc_shared_noncontig", "false");
+//
+//   const MPI_Aint new_size = offset + sizeof_local;
+//
+//   char* my_section;
+//   int error = MPI_Win_allocate_shared(new_size, 1, win_info, m_machine_communicator, &my_section, &win);
+//
+//   assert(error != MPI_ERR_ARG && "MPI_ERR_ARG");
+//   assert(error != MPI_ERR_COMM && "MPI_ERR_COMM");
+//   assert(error != MPI_ERR_INFO && "MPI_ERR_INFO");
+//   assert(error != MPI_ERR_OTHER && "MPI_ERR_OTHER");
+//   assert(error != MPI_ERR_SIZE && "MPI_ERR_SIZE");
+//
+//   MPI_Info_free(&win_info);
+//
+//   memcpy(my_section, &win, sizeof(MPI_Win));
+//   my_section += sizeof(MPI_Win);
+//
+//   // memcpy(my_section, &sizeof_local, sizeof(Integer));
+//   // my_section += sizeof(Integer);
+//
+//   return my_section;
+// }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void MpiAdapter::
-freeAllInOneMachineMemoryWindowBase(void* aio_node_window) const
-{
-  //MPI_Aint offset = sizeof(MPI_Win) + sizeof(Int64);
-  MPI_Aint offset = sizeof(MPI_Win);
-
-  MPI_Win* win =  reinterpret_cast<MPI_Win*>(static_cast<char*>(aio_node_window) - offset);
-
-  MPI_Win win_local;
-  memcpy(&win_local, win, sizeof(MPI_Win));
-
-  MPI_Win_free(&win_local);
-}
+// void MpiAdapter::
+// freeAllInOneMachineMemoryWindowBase(void* aio_node_window) const
+// {
+//   //MPI_Aint offset = sizeof(MPI_Win) + sizeof(Int64);
+//   MPI_Aint offset = sizeof(MPI_Win);
+//
+//   MPI_Win* win =  reinterpret_cast<MPI_Win*>(static_cast<char*>(aio_node_window) - offset);
+//
+//   MPI_Win win_local;
+//   memcpy(&win_local, win, sizeof(MPI_Win));
+//
+//   MPI_Win_free(&win_local);
+// }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
