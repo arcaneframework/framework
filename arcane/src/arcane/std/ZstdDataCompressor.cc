@@ -21,6 +21,8 @@
 #include "arcane/IDeflateService.h"
 
 #include <zstd.h>
+// Nécessaire pour les versions de zstd antérieures à 1.5.6.
+#include <zstd_errors.h>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
