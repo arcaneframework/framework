@@ -1,0 +1,6 @@
+<?xml version="1.0" ?>
+<commands>
+  <test>-We,STDENV_VERIF,WRITE -We,STDENV_VERIF_PATH,@_TEST_NAME@_dump -We,ARCANE_DEFLATER,zstd -m 5 @ARCANE_TEST_CASEPATH@/testHydro-3.arc</test>
+  <test>-We,STDENV_VERIF,READ -We,STDENV_VERIF_PATH,@_TEST_NAME@_dump -m 5 @ARCANE_TEST_CASEPATH@/testHydro-3.arc</test>
+  <driver>compare @_TEST_NAME@_dump/verif_file/iter6/_EndLoop0 @_TEST_NAME@_dump/verif_file/iter5/_EndLoop0</driver>
+</commands>
