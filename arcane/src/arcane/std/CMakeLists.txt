@@ -1,4 +1,4 @@
-﻿set(PRIVATE_PKGS LibUnwind Papi Parmetis PTScotch Udunits Zoltan BZip2 LZ4 Otf2 DbgHelp HWLoc Hiredis)
+﻿set(PRIVATE_PKGS LibUnwind Papi Parmetis PTScotch Udunits Zoltan BZip2 LZ4 Otf2 DbgHelp HWLoc Hiredis zstd)
 set(PUBLIC_PKGS MPI vtkIOXML vtkIOLegacy)
 set(PKGS ${PRIVATE_PKGS} ${PUBLIC_PKGS})
 
@@ -57,6 +57,9 @@ if(BZIP2_FOUND)
 endif()
 if(LZ4_FOUND)
   list(APPEND ARCANE_SOURCES LZ4DeflateService.cc)
+endif()
+if(zstd_FOUND)
+  list(APPEND ARCANE_SOURCES ZstdDataCompressor.cc)
 endif()
 
 if(Parmetis_FOUND)
