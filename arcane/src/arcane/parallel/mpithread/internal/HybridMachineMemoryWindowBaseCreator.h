@@ -19,6 +19,7 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/Ref.h"
+#include "arcane/utils/UniqueArray.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -33,6 +34,14 @@ class MpiParallelMng;
 
 namespace Arcane::MessagePassing
 {
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace Mpi
+{
+  class MpiMachineMemoryWindowBaseCreator;
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -52,6 +61,9 @@ class HybridMachineMemoryWindowBaseCreator
  public:
 
   IMachineMemoryWindowBase* createWindow(Int32 my_rank_global, Integer nb_elem_local_proc, Integer sizeof_type, MpiParallelMng* mpi_parallel_mng);
+private:
+
+  void _buildMachineRanksArray(const Mpi::MpiMachineMemoryWindowBaseCreator* mpi_window_creator);
 
  private:
 
@@ -61,6 +73,7 @@ class HybridMachineMemoryWindowBaseCreator
   Ref<IMachineMemoryWindowBase> m_window;
   Ref<IMachineMemoryWindowBase> m_nb_elem;
   Ref<IMachineMemoryWindowBase> m_sum_nb_elem;
+  UniqueArray<Int32> m_machine_ranks;
 };
 
 /*---------------------------------------------------------------------------*/

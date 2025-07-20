@@ -29,10 +29,11 @@ namespace Arcane::MessagePassing
 /*---------------------------------------------------------------------------*/
 
 HybridMachineMemoryWindowBase::
-HybridMachineMemoryWindowBase(Int32 my_rank_mpi, Int32 my_rank_local_proc, Int32 nb_rank_local_proc, Integer sizeof_type, Ref<IMachineMemoryWindowBase> nb_elem, Ref<IMachineMemoryWindowBase> sum_nb_elem, Ref<IMachineMemoryWindowBase> mpi_window, IThreadBarrier* barrier)
+HybridMachineMemoryWindowBase(Int32 my_rank_mpi, Int32 my_rank_local_proc, Int32 nb_rank_local_proc, ConstArrayView<Int32> ranks, Integer sizeof_type, Ref<IMachineMemoryWindowBase> nb_elem, Ref<IMachineMemoryWindowBase> sum_nb_elem, Ref<IMachineMemoryWindowBase> mpi_window, IThreadBarrier* barrier)
 : m_my_rank_local_proc(my_rank_local_proc)
 , m_nb_rank_local_proc(nb_rank_local_proc)
 , m_my_rank_mpi(my_rank_mpi)
+, m_machine_ranks(ranks)
 , m_sizeof_type(sizeof_type)
 , m_mpi_window(mpi_window)
 , m_nb_elem_global(nb_elem)
@@ -149,6 +150,15 @@ resizeSegment(Integer new_nb_elem)
     m_mpi_window->resizeSegment(sum);
   }
   m_thread_barrier->wait();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+ConstArrayView<Int32> HybridMachineMemoryWindowBase::
+machineRanks() const
+{
+  return m_machine_ranks;
 }
 
 /*---------------------------------------------------------------------------*/
