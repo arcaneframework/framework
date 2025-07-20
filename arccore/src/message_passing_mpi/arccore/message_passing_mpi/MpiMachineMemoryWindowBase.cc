@@ -135,7 +135,7 @@ MpiMachineMemoryWindowBase(Integer nb_elem_local_section, Integer sizeof_type, c
     MPI_Aint size_seg;
     int size_type;
     Integer* ptr_seg = nullptr;
-    int error = MPI_Win_shared_query(m_win_size_segments, m_comm_machine_master_rank, &size_seg, &size_type, &ptr_seg);
+    int error = MPI_Win_shared_query(m_win_nb_elem_segments, m_comm_machine_master_rank, &size_seg, &size_type, &ptr_seg);
     if (error != MPI_SUCCESS) {
       ARCCORE_FATAL("Error with MPI_Win_shared_query() call");
     }
@@ -146,7 +146,7 @@ MpiMachineMemoryWindowBase(Integer nb_elem_local_section, Integer sizeof_type, c
     MPI_Aint size_seg;
     int size_type;
     Integer* ptr_seg = nullptr;
-    int error = MPI_Win_shared_query(m_win_sum_size_segments, m_comm_machine_master_rank, &size_seg, &size_type, &ptr_seg);
+    int error = MPI_Win_shared_query(m_win_sum_nb_elem_segments, m_comm_machine_master_rank, &size_seg, &size_type, &ptr_seg);
 
     if (error != MPI_SUCCESS) {
       ARCCORE_FATAL("Error with MPI_Win_shared_query() call");
