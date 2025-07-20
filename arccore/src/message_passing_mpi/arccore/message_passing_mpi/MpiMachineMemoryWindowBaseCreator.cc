@@ -66,7 +66,7 @@ MpiMachineMemoryWindowBaseCreator(const MPI_Comm& comm_machine, Int32 comm_machi
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-IMachineMemoryWindowBase* MpiMachineMemoryWindowBaseCreator::
+MpiMachineMemoryWindowBase* MpiMachineMemoryWindowBaseCreator::
 createWindow(Integer nb_elem_local_section, Integer sizeof_type) const
 {
   return new MpiMachineMemoryWindowBase(nb_elem_local_section, sizeof_type, m_comm_machine, m_comm_machine_rank, m_comm_machine_size, m_machine_ranks);

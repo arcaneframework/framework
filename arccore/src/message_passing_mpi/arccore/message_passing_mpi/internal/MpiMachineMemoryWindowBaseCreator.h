@@ -27,6 +27,14 @@
 namespace Arcane::MessagePassing::Mpi
 {
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+class MpiMachineMemoryWindowBase;
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiMachineMemoryWindowBaseCreator
 {
  public:
@@ -37,7 +45,7 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiMachineMemoryWindowBaseCreator
 
  public:
 
-  IMachineMemoryWindowBase* createWindow(Integer nb_elem_local_section, Integer sizeof_type) const;
+  MpiMachineMemoryWindowBase* createWindow(Integer nb_elem_local_section, Integer sizeof_type) const;
 
   ConstArrayView<Int32> machineRanks() const;
 
