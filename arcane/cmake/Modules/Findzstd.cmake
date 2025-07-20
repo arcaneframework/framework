@@ -8,6 +8,19 @@
 
 arccon_return_if_package_found(zstd)
 
+# Essaie de trouver le fichier de configuration correspondant.
+# 'zstd' ne livre normalement pas de fichier de configuration mais
+# par exemple 'vcpkg' en génère un
+set(_SAVED_CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH})
+unset(CMAKE_MODULE_PATH)
+find_package(zstd CONFIG)
+set(CMAKE_MODULE_PATH ${_SAVED_CMAKE_MODULE_PATH})
+
+if (TARGET zstd::libzstd)
+  arccon_register_cmake_config_target(zstd CONFIG_TARGET_NAME zstd::libzstd)
+  return()
+endif()
+
 # TODO: utiliser pkg_check_module()
 
 # Il n'y a pas de find_package correspondant à 'zstd' dans 'CMake'
