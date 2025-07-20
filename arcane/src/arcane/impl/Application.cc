@@ -79,6 +79,7 @@
 
 #ifdef ARCANE_OS_WIN32
 #include <windows.h>
+#include <codecvt>
 #endif
 
 #include <vector>
@@ -329,6 +330,32 @@ build()
     IDynamicLibraryLoader* dynamic_library_loader = platform::getDynamicLibraryLoader();
     if (dynamic_library_loader){
       String os_dir(m_exe_info.dataOsDir());
+#ifdef ARCANE_OS_WIN32
+      {
+        // Sous windows, si le processus est lancé via 'dotnet' par exemple,
+        // les chemins de recherche pour LoadLibrary() ont pu être modifiés
+        // et on ne vas plus chercher par défaut dans le répertoire courant
+        // pour charger les bibliothèques natives. Pour corrige ce problème
+        // on repositionne le comportement qui autorise à ajouter des chemins
+        // utilisateurs et on ajoute 'os_dir' à ce chemin.
+        // Sans cela, les dépendances aux bibliothèques chargées par LoadLibrary()
+        // ne seront pas trouvé. Par exemple 'arcane_thread.dll' dépend de 'tbb.dll' et
+        // tous les deux sont le même répertoire mais si répertoire n'est pas
+        // dans la liste autorisé, alors 'tbb.dll' ne sera pas trouvé.
+        //
+        // NOTE: On pourrait peut-être éviter cela en utilisant LoadLibraryEx() et en
+        // spécifiant LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR comme flag de recherche.
+        // A vérifier si cela fonctionne lorsqu'on n'utilisera plus le chargeur
+        // dynamique de la glib.
+        m_trace->info(4) << "Adding '" << os_dir << "' to search library path";
+        // Convert en 'wchar_t' pour 'AddDllDirectory()'.
+        std::string std_utf8_str(os_dir.toStdStringView());
+        std::wstring_convert<std::codecvt_utf8<wchar_t>> converter;
+        std::wstring wide_os_dir = converter.from_bytes(std_utf8_str);
+        SetDefaultDllDirectories(LOAD_LIBRARY_SEARCH_DEFAULT_DIRS);
+        AddDllDirectory(wide_os_dir.c_str());
+      }
+#endif
       for( StringCollection::Enumerator i(m_exe_info.dynamicLibrariesName()); ++i; ){
         String name = *i;
         m_trace->info(4) << "*** Trying to load dynamic library: " << name;
