@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* PlatformUtils.cc                                            (C) 2000-2024 */
+/* PlatformUtils.cc                                            (C) 2000-2025 */
 /*                                                                           */
 /* Fonctions utilitaires dépendant de la plateforme.                         */
 /*---------------------------------------------------------------------------*/
@@ -20,9 +20,12 @@
 #include "arcane/utils/Iostream.h"
 #include "arcane/utils/StringBuilder.h"
 #include "arcane/utils/NotSupportedException.h"
+#include "arcane/utils/NotImplementedException.h"
+#include "arcane/utils/FatalErrorException.h"
 #include "arcane/utils/Array.h"
 #include "arcane/utils/StringList.h"
 #include "arcane/utils/MemoryUtils.h"
+#include "arcane/utils/CheckedConvert.h"
 #include "arcane/utils/internal/MemoryUtilsInternal.h"
 
 #include <chrono>
@@ -489,6 +492,20 @@ getLoadedSharedLibraryFullPath(const String& dll_name)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+#if defined(ARCANE_OS_WIN32)
+namespace
+{
+  Arcane::String _toArcaneString(const wchar_t* x)
+  {
+    const UChar* ux = reinterpret_cast<const UChar*>(x);
+    size_t slen = std::wcslen(x);
+    Int32 len = CheckedConvert::toInt32(slen);
+    ConstArrayView<UChar> buf(len, ux);
+    return String(buf);
+  }
+} // namespace
+#endif
+
 extern "C++" void platform::
 fillCommandLineArguments(StringList& arg_list)
 {
@@ -523,6 +540,23 @@ fillCommandLineArguments(StringList& arg_list)
     while (*ptr++ && ptr < end)
       ;
   }
+#elif defined(ARCANE_OS_WIN32)
+  LPWSTR* w_arg_list = nullptr;
+  int nb_arg = 0;
+
+  w_arg_list = ::CommandLineToArgvW(GetCommandLineW(), &nb_arg);
+  if (!w_arg_list)
+    ARCANE_FATAL("Can not get arguments from command line");
+
+  for (int i = 0; i < nb_arg; i++) {
+    String str = _toArcaneString(w_arg_list[i]);
+    arg_list.add(str);
+  }
+
+  ::LocalFree(w_arg_list);
+
+#else
+  ARCANE_THROW(NotImplementedException, "not implemented for this platform");
 #endif
 }
 
