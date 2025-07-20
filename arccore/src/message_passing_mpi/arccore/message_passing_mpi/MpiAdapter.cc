@@ -259,8 +259,10 @@ MpiAdapter(ITraceMng* trace,IStat* stat,MPI_Comm comm,
 , m_communicator(comm)
 , m_comm_rank(0)
 , m_comm_size(0)
+, m_machine_communicator(MPI_COMM_NULL)
 , m_empty_request1(MPI_REQUEST_NULL)
 , m_empty_request2(MPI_REQUEST_NULL)
+, m_window_creator(nullptr)
 {
   m_request_set = new RequestSet(trace);
 
@@ -276,13 +278,6 @@ MpiAdapter(ITraceMng* trace,IStat* stat,MPI_Comm comm,
 
   ::MPI_Comm_rank(m_communicator,&m_comm_rank);
   ::MPI_Comm_size(m_communicator,&m_comm_size);
-
-  ::MPI_Comm_split_type(comm, MPI_COMM_TYPE_SHARED, m_comm_rank, MPI_INFO_NULL, &m_machine_communicator);
-
-  ::MPI_Comm_rank(m_machine_communicator, &m_machine_comm_rank);
-  ::MPI_Comm_size(m_machine_communicator, &m_machine_comm_size);
-
-  m_window_creator = new MpiMachineMemoryWindowBaseCreator(m_machine_communicator, m_machine_comm_rank, m_machine_comm_size, m_communicator, m_comm_size);
 
   // Par defaut, on ne fait pas de profiling MPI, on utilisera la methode set idoine pour changer
   if (!m_mpi_prof)
@@ -333,6 +328,8 @@ MpiAdapter::
   delete m_request_set;
   delete m_mpi_prof;
   delete m_window_creator;
+  if (m_machine_communicator != MPI_COMM_NULL)
+    MPI_Comm_free(&m_machine_communicator);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1750,7 +1747,22 @@ setProfiler(IProfiler* profiler)
 IProfiler* MpiAdapter::
 profiler() const
 {
-	return m_mpi_prof;
+  return m_mpi_prof;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+MpiMachineMemoryWindowBaseCreator* MpiAdapter::
+windowCreator()
+{
+  if (m_window_creator == nullptr) {
+    MPI_Comm_split_type(m_communicator, MPI_COMM_TYPE_SHARED, m_comm_rank, MPI_INFO_NULL, &m_machine_communicator);
+    MPI_Comm_rank(m_machine_communicator, &m_machine_comm_rank);
+    MPI_Comm_size(m_machine_communicator, &m_machine_comm_size);
+    m_window_creator = new MpiMachineMemoryWindowBaseCreator(m_machine_communicator, m_machine_comm_rank, m_machine_comm_size, m_communicator, m_comm_size);
+  }
+  return m_window_creator;
 }
 
 /*---------------------------------------------------------------------------*/

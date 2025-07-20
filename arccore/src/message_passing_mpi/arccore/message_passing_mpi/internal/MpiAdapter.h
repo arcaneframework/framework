@@ -215,7 +215,7 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiAdapter
   //   return makeRef(new MpiAllInOneMachineMemoryWindowBase(aio_node_window, sizeof(MPI_Win), m_machine_communicator, m_machine_comm_rank));
   // }
 
-  MpiMachineMemoryWindowBaseCreator* windowCreator() const { return m_window_creator; }
+  MpiMachineMemoryWindowBaseCreator* windowCreator();
 
  private:
 
