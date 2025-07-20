@@ -8,6 +8,17 @@
 
 arccon_return_if_package_found(BZip2)
 
+# Essaie de trouver un fichier de configuration ou un FindBZip2.cmake.
+set(_SAVED_CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH})
+unset(CMAKE_MODULE_PATH)
+find_package(BZip2)
+set(CMAKE_MODULE_PATH ${_SAVED_CMAKE_MODULE_PATH})
+
+if (TARGET BZip2::BZip2)
+  arccon_register_cmake_config_target(BZip2 CONFIG_TARGET_NAME BZip2::BZip2)
+  return()
+endif()
+
 # TODO: utiliser le package correspondant de CMake.
 find_library(BZip2_LIBRARY bz2)
 find_path(BZip2_INCLUDE_DIR bzlib.h)

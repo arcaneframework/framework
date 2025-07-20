@@ -285,6 +285,12 @@ jobs:
         run: |
           cd "${{ env.CMAKE_BUILD_DIR }}" && ctest --output-on-failure -R replace
 
+      - name: Test compare
+        shell: bash
+        run: |
+          cd "${{ env.CMAKE_BUILD_DIR }}" && ctest --output-on-failure -R compare
+
+
       - name: Test Checkpoint
         shell: bash
         if: matrix.full_name == 'windows-2022-cxx20-intelmpi'
