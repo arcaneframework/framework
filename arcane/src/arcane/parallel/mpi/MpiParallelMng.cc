@@ -49,6 +49,7 @@
 #include "arccore/message_passing_mpi/internal/MpiAdapter.h"
 #include "arccore/message_passing_mpi/internal/MpiLock.h"
 #include "arccore/message_passing_mpi/internal/MpiMachineMemoryWindowBaseCreator.h"
+#include "arccore/message_passing_mpi/internal/MpiMachineMemoryWindowBase.h"
 #include "arccore/message_passing/Dispatchers.h"
 #include "arccore/message_passing/Messages.h"
 #include "arccore/message_passing/SerializeMessageList.h"

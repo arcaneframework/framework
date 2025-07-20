@@ -27,26 +27,24 @@
 namespace Arcane
 {
 class MpiParallelMng;
-}
+
+namespace MessagePassing
+{
+  class IMachineMemoryWindowBase;
+  class HybridMachineMemoryWindowBase;
+
+  namespace Mpi
+  {
+    class MpiMachineMemoryWindowBaseCreator;
+  }
+} // namespace MessagePassing
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 namespace Arcane::MessagePassing
 {
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-namespace Mpi
-{
-  class MpiMachineMemoryWindowBaseCreator;
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-class IMachineMemoryWindowBase;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -60,8 +58,9 @@ class HybridMachineMemoryWindowBaseCreator
 
  public:
 
-  IMachineMemoryWindowBase* createWindow(Int32 my_rank_global, Integer nb_elem_local_proc, Integer sizeof_type, MpiParallelMng* mpi_parallel_mng);
-private:
+  HybridMachineMemoryWindowBase* createWindow(Int32 my_rank_global, Integer nb_elem_local_proc, Integer sizeof_type, MpiParallelMng* mpi_parallel_mng);
+
+ private:
 
   void _buildMachineRanksArray(const Mpi::MpiMachineMemoryWindowBaseCreator* mpi_window_creator);
 

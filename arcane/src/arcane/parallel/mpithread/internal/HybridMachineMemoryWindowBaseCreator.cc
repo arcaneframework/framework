@@ -23,6 +23,7 @@
 #include "arccore/concurrency/IThreadBarrier.h"
 #include "arccore/message_passing_mpi/internal/MpiAdapter.h"
 #include "arccore/message_passing_mpi/internal/MpiMachineMemoryWindowBaseCreator.h"
+#include "arccore/message_passing_mpi/internal/MpiMachineMemoryWindowBase.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -43,7 +44,7 @@ HybridMachineMemoryWindowBaseCreator(Int32 nb_rank_local_proc, IThreadBarrier* b
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-IMachineMemoryWindowBase* HybridMachineMemoryWindowBaseCreator::
+HybridMachineMemoryWindowBase* HybridMachineMemoryWindowBaseCreator::
 createWindow(Int32 my_rank_global, Integer nb_elem_local_proc, Integer sizeof_type, MpiParallelMng* mpi_parallel_mng)
 {
   // On est dans un contexte où chaque processus doit avoir plusieurs segments, un par thread.

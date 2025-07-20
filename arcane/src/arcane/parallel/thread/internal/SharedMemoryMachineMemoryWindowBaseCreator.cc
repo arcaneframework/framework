@@ -44,7 +44,7 @@ SharedMemoryMachineMemoryWindowBaseCreator(Int32 nb_rank, IThreadBarrier* barrie
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-IMachineMemoryWindowBase* SharedMemoryMachineMemoryWindowBaseCreator::
+SharedMemoryMachineMemoryWindowBase* SharedMemoryMachineMemoryWindowBaseCreator::
 createWindow(Int32 my_rank, Integer nb_elem_local_section, Integer sizeof_type)
 {
   if (my_rank == 0) {

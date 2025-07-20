@@ -32,6 +32,7 @@
 #include "arcane/parallel/mpithread/HybridParallelDispatch.h"
 #include "arcane/parallel/mpithread/HybridMessageQueue.h"
 #include "arcane/parallel/mpithread/internal/HybridMachineMemoryWindowBaseCreator.h"
+#include "arcane/parallel/mpithread/internal/HybridMachineMemoryWindowBase.h"
 
 #include "arcane/parallel/mpi/MpiParallelMng.h"
 

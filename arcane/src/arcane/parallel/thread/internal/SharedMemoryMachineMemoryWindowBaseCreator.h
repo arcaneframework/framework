@@ -45,7 +45,7 @@ class SharedMemoryMachineMemoryWindowBaseCreator
 
  public:
 
-  IMachineMemoryWindowBase* createWindow(Int32 my_rank, Integer nb_elem_local_section, Integer sizeof_type);
+  SharedMemoryMachineMemoryWindowBase* createWindow(Int32 my_rank, Integer nb_elem_local_section, Integer sizeof_type);
 
  private:
 

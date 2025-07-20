@@ -27,6 +27,7 @@
 #include "arcane/parallel/thread/SharedMemoryParallelDispatch.h"
 #include "arcane/parallel/thread/ISharedMemoryMessageQueue.h"
 #include "arcane/parallel/thread/internal/SharedMemoryMachineMemoryWindowBaseCreator.h"
+#include "arcane/parallel/thread/internal/SharedMemoryMachineMemoryWindowBase.h"
 
 #include "arcane/core/Timer.h"
 #include "arcane/core/IIOMng.h"
