@@ -46,11 +46,17 @@ class ARCANE_THREAD_EXPORT SharedMemoryMachineMemoryWindowBase
   Integer sizeSegment() const override;
   Integer sizeSegment(Int32 rank) const override;
 
-  void* data() const override;
-  void* data(Int32 rank) const override;
+  Integer sizeWindow() const override;
+
+  void* dataSegment() const override;
+  void* dataSegment(Int32 rank) const override;
+
+  void* dataWindow() const override;
 
   std::pair<Integer, void*> sizeAndDataSegment() const override;
   std::pair<Integer, void*> sizeAndDataSegment(Int32 rank) const override;
+
+  std::pair<Integer, void*> sizeAndDataWindow() const override;
 
   void resizeSegment(Integer new_size) override;
 
@@ -62,11 +68,11 @@ class ARCANE_THREAD_EXPORT SharedMemoryMachineMemoryWindowBase
   Int32 m_nb_rank;
   ConstArrayView<Int32> m_ranks;
   Integer m_sizeof_type;
-  Integer m_nb_elem_total;
-  Integer m_max_nb_elem_total;
+  Integer m_actual_nb_elem_win;
+  Integer m_max_nb_elem_win;
   std::byte* m_window;
-  Integer* m_nb_elem;
-  Integer* m_sum_nb_elem;
+  Integer* m_nb_elem_segments;
+  Integer* m_sum_nb_elem_segments;
   IThreadBarrier* m_barrier;
 };
 

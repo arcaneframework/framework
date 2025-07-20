@@ -66,7 +66,7 @@ class ARCANE_CORE_EXPORT MachineMemoryWindow
    *
    * \return La taille de notre segment.
    */
-  Int64 sizeSegment() const;
+  Integer sizeSegment() const;
 
   /*!
    * \brief Méthode permettant d'obtenir la taille du segment de fenêtre
@@ -75,7 +75,15 @@ class ARCANE_CORE_EXPORT MachineMemoryWindow
    * \param rank Le processus visé.
    * \return La taille du segment.
    */
-  Int64 sizeSegment(Int32 rank) const;
+  Integer sizeSegment(Int32 rank) const;
+
+  /*!
+   * \brief Méthode permettant d'obtenir la taille de la fenêtre mémoire
+   * utilisable (en nombre d'éléments).
+   *
+   * \return La taille de la fenêtre.
+   */
+  Integer sizeWindow() const;
 
   /*!
    * \brief Méthode permettant d'obtenir une vue sur notre segment de fenêtre
@@ -83,7 +91,7 @@ class ARCANE_CORE_EXPORT MachineMemoryWindow
    *
    * \return Une vue.
    */
-  ArrayView<Type> segmentView();
+  ArrayView<Type> segmentView() const;
 
   /*!
    * \brief Méthode permettant d'obtenir une vue sur le segment de fenêtre
@@ -91,7 +99,14 @@ class ARCANE_CORE_EXPORT MachineMemoryWindow
    *
    * \return Une vue.
    */
-  ArrayView<Type> segmentView(Int32 rank);
+  ArrayView<Type> segmentView(Int32 rank) const;
+
+  /*!
+   * \brief Méthode permettant d'obtenir une vue sur toute la fenêtre mémoire.
+   *
+   * \return Une vue.
+   */
+  ArrayView<Type> windowView() const;
 
   /*!
    * \brief Méthode permettant d'obtenir une vue constante sur notre segment
@@ -110,7 +125,7 @@ class ARCANE_CORE_EXPORT MachineMemoryWindow
   ConstArrayView<Type> segmentConstView(Int32 rank) const;
 
   /*!
-   * \brief Méthode permettant d'obtenir une vue constante sur la fenêtre
+   * \brief Méthode permettant d'obtenir une vue constante sur toute la fenêtre
    * mémoire.
    *
    * \return Une vue constante.
@@ -121,19 +136,46 @@ class ARCANE_CORE_EXPORT MachineMemoryWindow
    * \brief Méthode permettant d'obtenir un pointeur vers notre segment
    * de fenêtre mémoire.
    *
-   * \return Un pointeur.
+   * \return Un pointeur (ne pas détruire).
    */
-  Type* data();
+  Type* dataSegment() const;
 
   /*!
    * \brief Méthode permettant d'obtenir un pointeur vers le segment de
    * fenêtre mémoire d'un autre processus du noeud.
    *
-   * \return Un pointeur.
+   * \return Un pointeur (ne pas détruire).
    */
-  Type* data(Int32 rank);
+  Type* dataSegment(Int32 rank) const;
 
+  /*!
+   * \brief Méthode permettant d'obtenir un pointeur vers la fenêtre mémoire.
+   *
+   * \return Un pointeur (ne pas détruire).
+   */
+  Type* dataWindow() const;
+
+  /*!
+   * \brief Méthode permettant de redimensionner les segments de la fenêtre.
+   * Appel collectif.
+   *
+   * La taille totale de la fenêtre doit être inférieure ou égale à la taille
+   * d'origine.
+   *
+   * \param new_nb_elem La nouvelle taille de notre segment.
+   */
   void resizeSegment(Integer new_nb_elem) const;
+
+  /*!
+   * \brief Méthode permettant d'obtenir les rangs qui possèdent un segment
+   * dans la fenêtre.
+   *
+   * L'ordre des processus de la vue retournée correspond à l'ordre des
+   * segments dans la fenêtre.
+   *
+   * \return Une vue contenant les ids des rangs.
+   */
+  ConstArrayView<Int32> machineRanks() const;
 
  private:
 

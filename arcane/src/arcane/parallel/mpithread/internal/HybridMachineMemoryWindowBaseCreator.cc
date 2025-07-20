@@ -69,7 +69,7 @@ createWindow(Int32 my_rank_global, Integer nb_elem_local_proc, Integer sizeof_ty
   m_barrier->wait();
 
   // nb_elem est le segment de notre processus (qui contient les segments de tous nos threads).
-  Int32* nb_elem = static_cast<Int32*>(m_nb_elem->data());
+  Int32* nb_elem = static_cast<Int32*>(m_nb_elem->dataSegment());
 
   nb_elem[my_rank_local_proc] = nb_elem_local_proc;
   m_barrier->wait();
@@ -77,7 +77,7 @@ createWindow(Int32 my_rank_global, Integer nb_elem_local_proc, Integer sizeof_ty
   if (my_rank_local_proc == 0) {
     m_nb_elem_total_local_proc = 0;
 
-    Int32* sum_nb_elem = static_cast<Int32*>(m_sum_nb_elem->data());
+    Int32* sum_nb_elem = static_cast<Int32*>(m_sum_nb_elem->dataSegment());
 
     for (Integer i = 0; i < m_nb_rank_local_proc; ++i) {
       sum_nb_elem[i] = m_nb_elem_total_local_proc;

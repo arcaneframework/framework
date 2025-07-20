@@ -41,7 +41,7 @@ MachineMemoryWindow(IParallelMng* pm, Integer nb_elem_local)
 /*---------------------------------------------------------------------------*/
 
 template <class Type>
-Int64 MachineMemoryWindow<Type>::
+Integer MachineMemoryWindow<Type>::
 sizeSegment() const
 {
   return m_node_window_base->sizeSegment();
@@ -51,7 +51,7 @@ sizeSegment() const
 /*---------------------------------------------------------------------------*/
 
 template <class Type>
-Int64 MachineMemoryWindow<Type>::
+Integer MachineMemoryWindow<Type>::
 sizeSegment(Int32 rank) const
 {
   return m_node_window_base->sizeSegment(rank);
@@ -61,8 +61,18 @@ sizeSegment(Int32 rank) const
 /*---------------------------------------------------------------------------*/
 
 template <class Type>
+Integer MachineMemoryWindow<Type>::
+sizeWindow() const
+{
+  return m_node_window_base->sizeWindow();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template <class Type>
 ArrayView<Type> MachineMemoryWindow<Type>::
-segmentView()
+segmentView() const
 {
   auto [size, data] = m_node_window_base->sizeAndDataSegment();
   return ArrayView<Type>(size, static_cast<Type*>(data));
@@ -73,9 +83,20 @@ segmentView()
 
 template <class Type>
 ArrayView<Type> MachineMemoryWindow<Type>::
-segmentView(Int32 rank)
+segmentView(Int32 rank) const
 {
   auto [size, data] = m_node_window_base->sizeAndDataSegment(rank);
+  return ArrayView<Type>(size, static_cast<Type*>(data));
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template <class Type>
+ArrayView<Type> MachineMemoryWindow<Type>::
+windowView() const
+{
+  auto [size, data] = m_node_window_base->sizeAndDataWindow();
   return ArrayView<Type>(size, static_cast<Type*>(data));
 }
 
@@ -108,6 +129,8 @@ template <class Type>
 ConstArrayView<Type> MachineMemoryWindow<Type>::
 windowConstView() const
 {
+  auto [size, data] = m_node_window_base->sizeAndDataWindow();
+  return ConstArrayView<Type>(size, static_cast<Type*>(data));
 }
 
 /*---------------------------------------------------------------------------*/
@@ -115,9 +138,9 @@ windowConstView() const
 
 template <class Type>
 Type* MachineMemoryWindow<Type>::
-data()
+dataSegment() const
 {
-  return static_cast<Type*>(m_node_window_base->data());
+  return static_cast<Type*>(m_node_window_base->dataSegment());
 }
 
 /*---------------------------------------------------------------------------*/
@@ -125,9 +148,19 @@ data()
 
 template <class Type>
 Type* MachineMemoryWindow<Type>::
-data(Int32 rank)
+dataSegment(Int32 rank) const
 {
-  return static_cast<Type*>(m_node_window_base->data(rank));
+  return static_cast<Type*>(m_node_window_base->dataSegment(rank));
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template <class Type>
+Type* MachineMemoryWindow<Type>::
+dataWindow() const
+{
+  return static_cast<Type*>(m_node_window_base->dataWindow());
 }
 
 /*---------------------------------------------------------------------------*/
@@ -138,6 +171,16 @@ void MachineMemoryWindow<Type>::
 resizeSegment(Integer new_nb_elem) const
 {
   m_node_window_base->resizeSegment(new_nb_elem);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template <class Type>
+ConstArrayView<Int32> MachineMemoryWindow<Type>::
+machineRanks() const
+{
+  return m_node_window_base->machineRanks();
 }
 
 /*---------------------------------------------------------------------------*/

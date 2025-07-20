@@ -42,8 +42,8 @@ HybridMachineMemoryWindowBase(Int32 my_rank_mpi, Int32 my_rank_local_proc, Int32
 , m_sum_nb_elem_local_proc(nullptr)
 , m_thread_barrier(barrier)
 {
-  m_nb_elem_local_proc = static_cast<Int32*>(m_nb_elem_global->data());
-  m_sum_nb_elem_local_proc = static_cast<Int32*>(m_sum_nb_elem_global->data());
+  m_nb_elem_local_proc = static_cast<Int32*>(m_nb_elem_global->dataSegment());
+  m_sum_nb_elem_local_proc = static_cast<Int32*>(m_sum_nb_elem_global->dataSegment());
 }
 
 /*---------------------------------------------------------------------------*/
@@ -77,17 +77,26 @@ sizeSegment(Int32 rank) const
     return m_nb_elem_local_proc[fri.localRankValue()];
   }
 
-  Int32* nb_elem_other_proc = static_cast<Int32*>(m_nb_elem_global->data(fri.mpiRankValue()));
+  Int32* nb_elem_other_proc = static_cast<Int32*>(m_nb_elem_global->dataSegment(fri.mpiRankValue()));
   return nb_elem_other_proc[fri.localRankValue()];
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void* HybridMachineMemoryWindowBase::
-data() const
+Integer HybridMachineMemoryWindowBase::
+sizeWindow() const
 {
-  std::byte* byte_array = static_cast<std::byte*>(m_mpi_window->data());
+  return m_mpi_window->sizeWindow();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void* HybridMachineMemoryWindowBase::
+dataSegment() const
+{
+  std::byte* byte_array = static_cast<std::byte*>(m_mpi_window->dataSegment());
 
   return &byte_array[m_sum_nb_elem_local_proc[m_my_rank_local_proc] * m_sizeof_type];
 }
@@ -96,21 +105,29 @@ data() const
 /*---------------------------------------------------------------------------*/
 
 void* HybridMachineMemoryWindowBase::
-data(Int32 rank) const
+dataSegment(Int32 rank) const
 {
   FullRankInfo fri = FullRankInfo::compute(MP::MessageRank(rank), m_nb_rank_local_proc);
 
   if (fri.mpiRankValue() == m_my_rank_mpi) {
-    std::byte* byte_array = static_cast<std::byte*>(m_mpi_window->data());
+    std::byte* byte_array = static_cast<std::byte*>(m_mpi_window->dataSegment());
     return &byte_array[m_sum_nb_elem_local_proc[fri.localRankValue()] * m_sizeof_type];
   }
 
+  Int32* sum_nb_elem_other_proc = static_cast<Int32*>(m_sum_nb_elem_global->dataSegment(fri.mpiRankValue()));
 
-  Int32* sum_nb_elem_other_proc = static_cast<Int32*>(m_sum_nb_elem_global->data(fri.mpiRankValue()));
-
-  std::byte* byte_array = static_cast<std::byte*>(m_mpi_window->data(fri.mpiRankValue()));
+  std::byte* byte_array = static_cast<std::byte*>(m_mpi_window->dataSegment(fri.mpiRankValue()));
 
   return &byte_array[sum_nb_elem_other_proc[fri.localRankValue()] * m_sizeof_type];
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void* HybridMachineMemoryWindowBase::
+dataWindow() const
+{
+  return m_mpi_window->dataWindow();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -119,7 +136,7 @@ data(Int32 rank) const
 std::pair<Integer, void*> HybridMachineMemoryWindowBase::
 sizeAndDataSegment() const
 {
-  return { sizeSegment(), data() };
+  return { sizeSegment(), dataSegment() };
 }
 
 /*---------------------------------------------------------------------------*/
@@ -128,7 +145,16 @@ sizeAndDataSegment() const
 std::pair<Integer, void*> HybridMachineMemoryWindowBase::
 sizeAndDataSegment(Int32 rank) const
 {
-  return { sizeSegment(rank), data(rank) };
+  return { sizeSegment(rank), dataSegment(rank) };
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+std::pair<Integer, void*> HybridMachineMemoryWindowBase::
+sizeAndDataWindow() const
+{
+  return m_mpi_window->sizeAndDataWindow();
 }
 
 /*---------------------------------------------------------------------------*/

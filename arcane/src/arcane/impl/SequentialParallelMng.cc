@@ -384,16 +384,24 @@ class SequentialMachineMemoryWindowBase
     }
     return m_nb_elem_local;
   }
+  Integer sizeWindow() const override
+  {
+    return m_nb_elem_local;
+  }
 
-  void* data() const override
+  void* dataSegment() const override
   {
     return m_segment;
   }
-  void* data(Int32 rank) const override
+  void* dataSegment(Int32 rank) const override
   {
     if (rank != 0) {
       ARCANE_FATAL("Rank {0} is unavailable (Sequential)", rank);
     }
+    return m_segment;
+  }
+  void* dataWindow() const override
+  {
     return m_segment;
   }
 
@@ -406,6 +414,10 @@ class SequentialMachineMemoryWindowBase
     if (rank != 0) {
       ARCANE_FATAL("Rank {0} is unavailable (Sequential)", rank);
     }
+    return { m_nb_elem_local, m_segment };
+  }
+  std::pair<Integer, void*> sizeAndDataWindow() const override
+  {
     return { m_nb_elem_local, m_segment };
   }
 
