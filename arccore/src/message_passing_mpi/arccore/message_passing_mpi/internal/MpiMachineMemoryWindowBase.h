@@ -45,12 +45,17 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiMachineMemoryWindowBase
   Integer sizeSegment() const override;
   Integer sizeSegment(Int32 rank) const override;
 
-  void* data() const override;
-  void* data(Int32 rank) const override;
+  Integer sizeWindow() const override;
+
+  void* dataSegment() const override;
+  void* dataSegment(Int32 rank) const override;
+
+  void* dataWindow() const override;
 
   std::pair<Integer, void*> sizeAndDataSegment() const override;
   std::pair<Integer, void*> sizeAndDataSegment(Int32 rank) const override;
 
+  std::pair<Integer, void*> sizeAndDataWindow() const override;
   void resizeSegment(Integer new_nb_elem) override;
 
   ConstArrayView<Int32> machineRanks() const override;

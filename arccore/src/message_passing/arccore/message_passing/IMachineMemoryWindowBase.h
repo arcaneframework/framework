@@ -8,7 +8,7 @@
 /* IMachineMemoryWindowBase.h                                  (C) 2000-2025 */
 /*                                                                           */
 /* Interface de classe permettant de créer une fenêtre mémoire pour un noeud */
-/* de calcul.                                                                */
+/* de calcul. Cette fenêtre sera contigüe en mémoire.                        */
 /*---------------------------------------------------------------------------*/
 
 #ifndef ARCCORE_MESSAGEPASSING_IMACHINEMEMORYWINDOWBASE_H
@@ -29,6 +29,13 @@ namespace Arcane::MessagePassing
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+/*!
+ * \brief Classe permettant de créer une fenêtre mémoire pour un noeud
+ * de calcul.
+ *
+ * Cette fenêtre sera contigüe en mémoire et sera accessible par
+ * tous les processus du noeud.
+ */
 class ARCCORE_MESSAGEPASSING_EXPORT IMachineMemoryWindowBase
 {
  public:
@@ -46,7 +53,7 @@ class ARCCORE_MESSAGEPASSING_EXPORT IMachineMemoryWindowBase
 
   /*!
    * \brief Méthode permettant d'obtenir la taille de son segment de la
-   * fenêtre mémoire utilisable (sans metadata) (en nombre d'éléments).
+   * fenêtre mémoire utilisable (en nombre d'éléments).
    *
    * \return La taille du segment.
    */
@@ -54,7 +61,7 @@ class ARCCORE_MESSAGEPASSING_EXPORT IMachineMemoryWindowBase
 
   /*!
    * \brief Méthode permettant d'obtenir la taille du segment d'un processus
-   * du noeud de la fenêtre mémoire utilisable (sans metadata) (en nombre
+   * du noeud de la fenêtre mémoire utilisable (en nombre
    * d'éléments).
    *
    * \return La taille du segment.
@@ -62,25 +69,39 @@ class ARCCORE_MESSAGEPASSING_EXPORT IMachineMemoryWindowBase
   virtual Integer sizeSegment(Int32 rank) const = 0;
 
   /*!
+   * \brief Méthode permettant d'obtenir la taille de la fenêtre mémoire
+   * utilisable (en nombre d'éléments).
+   *
+   * \return La taille de la fenêtre.
+   */
+  virtual Integer sizeWindow() const = 0;
+
+  /*!
    * \brief Méthode permettant d'obtenir un pointeur vers son segment de la
-   * fenêtre mémoire (après les métadonnées).
+   * fenêtre mémoire.
    *
    * \return Un pointeur (ne pas détruire).
    */
-  virtual void* data() const = 0;
+  virtual void* dataSegment() const = 0;
 
   /*!
    * \brief Méthode permettant d'obtenir un pointeur vers le segment d'un
-   * processus du noeud de la fenêtre mémoire (après les métadonnées).
+   * processus du noeud de la fenêtre mémoire.
    *
    * \return Un pointeur (ne pas détruire).
    */
-  virtual void* data(Int32 rank) const = 0;
+  virtual void* dataSegment(Int32 rank) const = 0;
+
+  /*!
+   * \brief Méthode permettant d'obtenir un pointeur vers la fenêtre mémoire.
+   *
+   * \return Un pointeur (ne pas détruire).
+   */
+  virtual void* dataWindow() const = 0;
 
   /*!
    * \brief Méthode permettant d'obtenir la taille et un pointeur de son
-   * segment (la taille sans metadata et en nombre d'éléments) (le pointeur
-   * après les métadonnées).
+   * segment (la taille en nombre d'éléments).
    *
    * \return Une paire [taille, ptr].
    */
@@ -88,15 +109,40 @@ class ARCCORE_MESSAGEPASSING_EXPORT IMachineMemoryWindowBase
 
   /*!
    * \brief Méthode permettant d'obtenir la taille et un pointeur du segment
-   * d'un processus du noeud (la taille sans metadata et en nombre d'éléments)
-   * (le pointeur après les métadonnées).
+   * d'un processus du noeud (la taille en nombre d'éléments).
    *
    * \return Une paire [taille, ptr].
    */
   virtual std::pair<Integer, void*> sizeAndDataSegment(Int32 rank) const = 0;
 
+  /*!
+   * \brief Méthode permettant d'obtenir la taille et un pointeur de la
+   * fenêtre (la taille en nombre d'éléments).
+   *
+   * \return Une paire [taille, ptr].
+   */
+  virtual std::pair<Integer, void*> sizeAndDataWindow() const = 0;
+
+  /*!
+   * \brief Méthode permettant de redimensionner les segments de la fenêtre.
+   * Appel collectif.
+   *
+   * La taille totale de la fenêtre doit être inférieure ou égale à la taille
+   * d'origine.
+   *
+   * \param new_nb_elem La nouvelle taille de notre segment.
+   */
   virtual void resizeSegment(Integer new_nb_elem) = 0;
 
+  /*!
+   * \brief Méthode permettant d'obtenir les rangs qui possèdent un segment
+   * dans la fenêtre.
+   *
+   * L'ordre des processus de la vue retournée correspond à l'ordre des
+   * segments dans la fenêtre.
+   *
+   * \return Une vue contenant les ids des rangs.
+   */
   virtual ConstArrayView<Int32> machineRanks() const = 0;
 };
 

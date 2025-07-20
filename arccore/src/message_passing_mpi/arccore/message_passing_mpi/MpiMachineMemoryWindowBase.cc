@@ -274,8 +274,17 @@ sizeSegment(Int32 rank) const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+Integer MpiMachineMemoryWindowBase::
+sizeWindow() const
+{
+  return m_actual_nb_elem_win;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 void* MpiMachineMemoryWindowBase::
-data() const
+dataSegment() const
 {
   return (static_cast<std::byte*>(m_ptr_win) + m_sum_nb_elem_segments[m_my_rank_index] * m_sizeof_type);
 }
@@ -284,7 +293,7 @@ data() const
 /*---------------------------------------------------------------------------*/
 
 void* MpiMachineMemoryWindowBase::
-data(Int32 rank) const
+dataSegment(Int32 rank) const
 {
   Integer pos = -1;
   for (Integer i = 0; i < m_comm_machine_size; ++i) {
@@ -298,6 +307,15 @@ data(Int32 rank) const
   }
 
   return (static_cast<std::byte*>(m_ptr_win) + (m_sum_nb_elem_segments[pos] * m_sizeof_type));
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void* MpiMachineMemoryWindowBase::
+dataWindow() const
+{
+  return m_ptr_win;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -327,6 +345,15 @@ sizeAndDataSegment(Int32 rank) const
   }
 
   return { (m_nb_elem_segments[pos]), (static_cast<std::byte*>(m_ptr_win) + (m_sum_nb_elem_segments[pos] * m_sizeof_type)) };
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+std::pair<Integer, void*> MpiMachineMemoryWindowBase::
+sizeAndDataWindow() const
+{
+  return { m_actual_nb_elem_win, m_ptr_win };
 }
 
 /*---------------------------------------------------------------------------*/
