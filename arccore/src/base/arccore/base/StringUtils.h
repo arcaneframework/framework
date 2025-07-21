@@ -35,6 +35,22 @@ namespace Arcane::StringUtils
 extern "C++" ARCCORE_BASE_EXPORT std::vector<UChar>
 asUtf16BE(const String& str);
 
+/*!
+ * \brief Retourne la conversion de \a str en std::wstring.
+ *
+ * Cette fonction n'est supportée que pour la plateforme Win32.
+ */
+extern "C++" ARCCORE_BASE_EXPORT std::wstring
+convertToStdWString(const String& str);
+
+/*!
+ * \brief Convertie \a wstr en une String.
+ *
+ * Cette fonction n'est supportée que pour la plateforme Win32.
+ */
+extern "C++" ARCCORE_BASE_EXPORT String
+convertToArcaneString(const std::wstring_view& wstr);
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
