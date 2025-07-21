@@ -266,12 +266,8 @@ jobs:
         run: |
           cd "${{ env.CMAKE_BUILD_DIR }}" && ctest --output-on-failure -V -R python_test
 
-      # NOTE: pour l'instant sous Win32 on ne peut pas exÃ©cuter les tests 'embedded'
-      # car il faut gÃ©rer le lancement de la compilation et aussi vÃ©rifier
-      # que la DLL 'arcane_dotnet_coreclr' est bien trouvÃ©e
       - name: Test .Net wrapper
         shell: bash
-        if: matrix.base_os != 'windows'
         run: |
           cd "${{ env.CMAKE_BUILD_DIR }}" && ctest --output-on-failure -R coreclr
 
@@ -290,7 +286,8 @@ jobs:
         run: |
           cd "${{ env.CMAKE_BUILD_DIR }}" && ctest --output-on-failure -R compare
 
-
+      # Comme ces tests sont un peu long on ne les exécute que sous Windows.
+      # Pour Linux, ils sont déjà lancés dans des CI dédiés.
       - name: Test Checkpoint
         shell: bash
         if: matrix.full_name == 'windows-2022-cxx20-intelmpi'
