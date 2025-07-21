@@ -11,6 +11,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+#include "arccore/base/StringUtils.h"
+
 #include "arcane/utils/Iostream.h"
 #include "arcane/utils/Iterator.h"
 #include "arcane/utils/List.h"
@@ -79,7 +81,6 @@
 
 #ifdef ARCANE_OS_WIN32
 #include <windows.h>
-#include <codecvt>
 #endif
 
 #include <vector>
@@ -348,10 +349,7 @@ build()
         // A vérifier si cela fonctionne lorsqu'on n'utilisera plus le chargeur
         // dynamique de la glib.
         m_trace->info(4) << "Adding '" << os_dir << "' to search library path";
-        // Convert en 'wchar_t' pour 'AddDllDirectory()'.
-        std::string std_utf8_str(os_dir.toStdStringView());
-        std::wstring_convert<std::codecvt_utf8<wchar_t>> converter;
-        std::wstring wide_os_dir = converter.from_bytes(std_utf8_str);
+        std::wstring wide_os_dir = StringUtils::convertToStdWString(os_dir);
         SetDefaultDllDirectories(LOAD_LIBRARY_SEARCH_DEFAULT_DIRS);
         AddDllDirectory(wide_os_dir.c_str());
       }
@@ -368,6 +366,7 @@ build()
 #ifdef ARCANE_OS_WIN32
     if (dynamic_library_loader){
       String os_dir(m_exe_info.dataOsDir());
+      // TODO: Ajouter le répertoire contenant 'arcane_impl' qui est connu dans ArcaneMain dans m_arcane_lib_path.
       String dyn_lib_names[5] = { "arcane_mpi", "arcane_std", "arcane_mesh",
                                   "arcane_thread", "arcane_mpithread",
                                 };
