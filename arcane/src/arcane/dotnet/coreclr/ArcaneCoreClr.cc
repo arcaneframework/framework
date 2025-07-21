@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -212,7 +212,15 @@ _execDirect(const CommandLineArguments& cmd_args,
   hostfxr_initialize_parameters params;
   params.size = sizeof(params);
   params.host_path = root_path1.c_str();
+#ifdef ARCANE_OS_WIN32
+  // Sous Windows, '.Net' est installé dans un chemin standard
+  // et il ne faut pas spécifier le chemin (cela provoque une erreur
+  // d'argument invalide (a vérifier si c'est parce que 'arcane_dotnet_root'
+  // n'est pas valide ou s'il ne faut rien spécifier).
+  params.dotnet_root = nullptr;
+#else
   params.dotnet_root = dotnet_root.c_str();
+#endif
   const_char_t* argv = new const_char_t[1];
   char_t* argv0_str = _duplicate((const char_t*)(orig_assembly_name1.c_str()));
   argv[0] = argv0_str;
