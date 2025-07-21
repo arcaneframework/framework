@@ -4,6 +4,7 @@ name: MacOs-15-gnu-openmpi
 # hypre and swig are disabled
 # It uses GNU compilers and OpenMPI
 on:
+  workflow_dispatch:
   push:
     branches:
       - main
