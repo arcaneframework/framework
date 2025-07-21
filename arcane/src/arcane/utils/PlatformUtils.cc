@@ -28,6 +28,8 @@
 #include "arcane/utils/CheckedConvert.h"
 #include "arcane/utils/internal/MemoryUtilsInternal.h"
 
+#include "arccore/base/StringUtils.h"
+
 #include <chrono>
 
 #ifndef ARCANE_OS_WIN32
@@ -492,20 +494,6 @@ getLoadedSharedLibraryFullPath(const String& dll_name)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#if defined(ARCANE_OS_WIN32)
-namespace
-{
-  Arcane::String _toArcaneString(const wchar_t* x)
-  {
-    const UChar* ux = reinterpret_cast<const UChar*>(x);
-    size_t slen = std::wcslen(x);
-    Int32 len = CheckedConvert::toInt32(slen);
-    ConstArrayView<UChar> buf(len, ux);
-    return String(buf);
-  }
-} // namespace
-#endif
-
 extern "C++" void platform::
 fillCommandLineArguments(StringList& arg_list)
 {
@@ -549,7 +537,8 @@ fillCommandLineArguments(StringList& arg_list)
     ARCANE_FATAL("Can not get arguments from command line");
 
   for (int i = 0; i < nb_arg; i++) {
-    String str = _toArcaneString(w_arg_list[i]);
+    std::wstring_view wstr_view(w_arg_list[i]);
+    String str = StringUtils::convertToArcaneString(wstr_view);
     arg_list.add(str);
   }
 

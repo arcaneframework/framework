@@ -9,6 +9,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+#include "arccore/base/StringUtils.h"
+
 #include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/String.h"
 #include "arcane/utils/CommandLineArguments.h"
@@ -42,16 +44,16 @@ using string_t = std::basic_string<char_t>;
 
 #ifdef _WINDOWS
 
-#include <Windows.h>
+#include <windows.h>
 
 #define STR(s) L##s
 #define CH(c) L##c
 
 namespace
 {
-  string_t _toString(const Arcane::String& s)
+  std::wstring _toString(const Arcane::String& s)
   {
-    return string_t((const char_t*)(s.utf16().data()));
+    return Arcane::StringUtils::convertToStdWString(s);
   }
   char_t* _duplicate(const char_t* x)
   {
@@ -59,12 +61,8 @@ namespace
   }
   Arcane::String _toArcaneString(const char_t* x)
   {
-    using namespace Arcane;
-    const UChar* ux = reinterpret_cast<const UChar*>(x);
-    size_t slen = wcslen(x);
-    Int32 len = CheckedConvert::toInt32(slen);
-    ConstArrayView<UChar> buf(len,ux);
-    return String(buf);
+    std::wstring_view wstr_view(x);
+    return Arcane::StringUtils::convertToArcaneString(wstr_view);
   }
 } // namespace
 
@@ -83,9 +81,7 @@ namespace
 {
   string_t _toString(const Arcane::String& s)
   {
-    if (s.null() || s.empty())
-      return string_t();
-    return string_t((const char_t*)(s.utf8().data()));
+    return std::string(s.toStdStringView());
   }
   char_t* _duplicate(const char_t* x)
   {
