@@ -1,0 +1,54 @@
+name: MacOs-15-gnu-openmpi
+# This workflow is designed to run on MacOs
+# tests only Arcane component install
+# hypre and swig are disabled
+# It uses GNU compilers and OpenMPI
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - '**.MD'
+      - '**.md'
+      - '**/.gitignore'
+  pull_request:
+    branches:
+      - main
+    paths-ignore:
+      - '**.MD'
+      - '**.md'
+      - '**/.gitignore'
+
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      
+      - name: Install dependencies
+        run: |
+          brew install git cmake gcc open-mpi hdf5-mpi scotch glib dotnet petsc
+          
+      - name: configure
+        run: |
+          cmake -S . -B ./build \
+            -DCMAKE_INSTALL_PREFIX=$HOME/framework-install \
+            -DARCANEFRAMEWORK_BUILD_COMPONENTS=Arcane \
+            -DARCCORE_CXX_STANDARD=20 \
+            -DCMAKE_CXX_COMPILER=g++-15 \
+            -DCMAKE_C_COMPILER=gcc-15 \
+            -DCMAKE_DISABLE_FIND_PACKAGE_SWIG=TRUE \
+            -DCMAKE_DISABLE_FIND_PACKAGE_Hypre=TRUE
+            
+      - name: Build arcane
+        run: |
+          make -j$(sysctl -n hw.ncpu)
+          make install
+        working-directory: ./build
+
+      - name: Make tests
+        run: |
+          ctest --output-on-failure
+        working-directory: ./build
