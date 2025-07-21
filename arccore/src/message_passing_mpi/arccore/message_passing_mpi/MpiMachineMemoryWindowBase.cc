@@ -182,7 +182,7 @@ MpiMachineMemoryWindowBase(Integer nb_elem_local_section, Integer sizeof_type, c
   for (Integer i = 0; i < m_comm_machine_size; ++i) {
     MPI_Aint size_seg;
     int size_type;
-    void* ptr_seg = nullptr;
+    std::byte* ptr_seg = nullptr;
     int error = MPI_Win_shared_query(m_win, m_machine_ranks[i], &size_seg, &size_type, &ptr_seg);
 
     if (error != MPI_SUCCESS) {
@@ -194,7 +194,7 @@ MpiMachineMemoryWindowBase(Integer nb_elem_local_section, Integer sizeof_type, c
 
     Integer size_seg2 = static_cast<Integer>(size_seg);
 
-    if (ptr_seg != static_cast<std::byte*>(m_ptr_win) + sum) {
+    if (ptr_seg != (m_ptr_win + sum)) {
       ARCCORE_FATAL("Pb d'adresse de segment");
     }
     if (size_seg2 != m_nb_elem_segments[i] * m_sizeof_type) {
@@ -210,7 +210,7 @@ MpiMachineMemoryWindowBase(Integer nb_elem_local_section, Integer sizeof_type, c
   {
     MPI_Aint size_seg;
     int size_type;
-    void* ptr_seg = nullptr;
+    std::byte* ptr_seg = nullptr;
     int error = MPI_Win_shared_query(m_win, m_comm_machine_master_rank, &size_seg, &size_type, &ptr_seg);
 
     if (error != MPI_SUCCESS) {
@@ -286,7 +286,7 @@ sizeWindow() const
 void* MpiMachineMemoryWindowBase::
 dataSegment() const
 {
-  return (static_cast<std::byte*>(m_ptr_win) + m_sum_nb_elem_segments[m_my_rank_index] * m_sizeof_type);
+  return (m_ptr_win + (m_sum_nb_elem_segments[m_my_rank_index] * m_sizeof_type));
 }
 
 /*---------------------------------------------------------------------------*/
@@ -306,7 +306,7 @@ dataSegment(Int32 rank) const
     ARCCORE_FATAL("Rank is not in machine");
   }
 
-  return (static_cast<std::byte*>(m_ptr_win) + (m_sum_nb_elem_segments[pos] * m_sizeof_type));
+  return (m_ptr_win + (m_sum_nb_elem_segments[pos] * m_sizeof_type));
 }
 
 /*---------------------------------------------------------------------------*/
@@ -324,7 +324,7 @@ dataWindow() const
 std::pair<Integer, void*> MpiMachineMemoryWindowBase::
 sizeAndDataSegment() const
 {
-  return { (m_nb_elem_segments[m_my_rank_index]), (static_cast<std::byte*>(m_ptr_win) + (m_sum_nb_elem_segments[m_my_rank_index] * m_sizeof_type)) };
+  return { (m_nb_elem_segments[m_my_rank_index]), (m_ptr_win + (m_sum_nb_elem_segments[m_my_rank_index] * m_sizeof_type)) };
 }
 
 /*---------------------------------------------------------------------------*/
@@ -344,7 +344,7 @@ sizeAndDataSegment(Int32 rank) const
     ARCCORE_FATAL("Rank is not in machine");
   }
 
-  return { (m_nb_elem_segments[pos]), (static_cast<std::byte*>(m_ptr_win) + (m_sum_nb_elem_segments[pos] * m_sizeof_type)) };
+  return { (m_nb_elem_segments[pos]), (m_ptr_win + (m_sum_nb_elem_segments[pos] * m_sizeof_type)) };
 }
 
 /*---------------------------------------------------------------------------*/
@@ -397,6 +397,17 @@ ConstArrayView<Int32> MpiMachineMemoryWindowBase::
 machineRanks() const
 {
   return m_machine_ranks;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MpiMachineMemoryWindowBase::
+barrier() const
+{
+  MPI_Win_sync(m_win);
+  MPI_Barrier(m_comm_machine);
+  MPI_Win_sync(m_win);
 }
 
 /*---------------------------------------------------------------------------*/

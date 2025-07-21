@@ -60,10 +60,12 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiMachineMemoryWindowBase
 
   ConstArrayView<Int32> machineRanks() const override;
 
+  void barrier() const override;
+
  private:
 
   MPI_Win m_win;
-  void* m_ptr_win;
+  std::byte* m_ptr_win;
 
   MPI_Win m_win_nb_elem_segments;
   ArrayView<Integer> m_nb_elem_segments;

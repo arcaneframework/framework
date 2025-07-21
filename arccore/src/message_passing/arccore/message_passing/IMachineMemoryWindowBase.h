@@ -144,6 +144,12 @@ class ARCCORE_MESSAGEPASSING_EXPORT IMachineMemoryWindowBase
    * \return Une vue contenant les ids des rangs.
    */
   virtual ConstArrayView<Int32> machineRanks() const = 0;
+
+  /*!
+   * \brief Méthode permettant d'attendre que tous les processus/threads
+   * du noeud appellent cette méthode pour continuer l'exécution.
+   */
+  virtual void barrier() const = 0;
 };
 
 /*---------------------------------------------------------------------------*/
