@@ -33,6 +33,7 @@
 #include "arccore/message_passing_mpi/internal/MpiLock.h"
 #include "arccore/message_passing_mpi/internal/NoMpiProfiling.h"
 #include "arccore/message_passing_mpi/internal/MpiRequest.h"
+#include "arccore/message_passing_mpi/internal/MpiMachineMemoryWindowBaseCreator.h"
 
 #include <cstdint>
 
@@ -258,8 +259,10 @@ MpiAdapter(ITraceMng* trace,IStat* stat,MPI_Comm comm,
 , m_communicator(comm)
 , m_comm_rank(0)
 , m_comm_size(0)
+, m_machine_communicator(MPI_COMM_NULL)
 , m_empty_request1(MPI_REQUEST_NULL)
 , m_empty_request2(MPI_REQUEST_NULL)
+, m_window_creator(nullptr)
 {
   m_request_set = new RequestSet(trace);
 
@@ -324,6 +327,9 @@ MpiAdapter::
 
   delete m_request_set;
   delete m_mpi_prof;
+  delete m_window_creator;
+  if (m_machine_communicator != MPI_COMM_NULL)
+    MPI_Comm_free(&m_machine_communicator);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1741,13 +1747,83 @@ setProfiler(IProfiler* profiler)
 IProfiler* MpiAdapter::
 profiler() const
 {
-	return m_mpi_prof;
+  return m_mpi_prof;
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arccore::MessagePassing::Mpi
+MpiMachineMemoryWindowBaseCreator* MpiAdapter::
+windowCreator()
+{
+  if (m_window_creator == nullptr) {
+    MPI_Comm_split_type(m_communicator, MPI_COMM_TYPE_SHARED, m_comm_rank, MPI_INFO_NULL, &m_machine_communicator);
+    MPI_Comm_rank(m_machine_communicator, &m_machine_comm_rank);
+    MPI_Comm_size(m_machine_communicator, &m_machine_comm_size);
+    m_window_creator = new MpiMachineMemoryWindowBaseCreator(m_machine_communicator, m_machine_comm_rank, m_machine_comm_size, m_communicator, m_comm_size);
+  }
+  return m_window_creator;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+// void* MpiAdapter::
+// createAllInOneMachineMemoryWindowBase(Integer sizeof_local) const
+// {
+//   //MPI_Aint offset = sizeof(MPI_Win) + sizeof(Integer);
+//   MPI_Aint offset = sizeof(MPI_Win);
+//
+//   MPI_Win win;
+//
+//   MPI_Info win_info;
+//   MPI_Info_create(&win_info);
+//
+//   MPI_Info_set(win_info, "alloc_shared_noncontig", "false");
+//
+//   const MPI_Aint new_size = offset + sizeof_local;
+//
+//   char* my_section;
+//   int error = MPI_Win_allocate_shared(new_size, 1, win_info, m_machine_communicator, &my_section, &win);
+//
+//   assert(error != MPI_ERR_ARG && "MPI_ERR_ARG");
+//   assert(error != MPI_ERR_COMM && "MPI_ERR_COMM");
+//   assert(error != MPI_ERR_INFO && "MPI_ERR_INFO");
+//   assert(error != MPI_ERR_OTHER && "MPI_ERR_OTHER");
+//   assert(error != MPI_ERR_SIZE && "MPI_ERR_SIZE");
+//
+//   MPI_Info_free(&win_info);
+//
+//   memcpy(my_section, &win, sizeof(MPI_Win));
+//   my_section += sizeof(MPI_Win);
+//
+//   // memcpy(my_section, &sizeof_local, sizeof(Integer));
+//   // my_section += sizeof(Integer);
+//
+//   return my_section;
+// }
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+// void MpiAdapter::
+// freeAllInOneMachineMemoryWindowBase(void* aio_node_window) const
+// {
+//   //MPI_Aint offset = sizeof(MPI_Win) + sizeof(Int64);
+//   MPI_Aint offset = sizeof(MPI_Win);
+//
+//   MPI_Win* win =  reinterpret_cast<MPI_Win*>(static_cast<char*>(aio_node_window) - offset);
+//
+//   MPI_Win win_local;
+//   memcpy(&win_local, win, sizeof(MPI_Win));
+//
+//   MPI_Win_free(&win_local);
+// }
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+} // End namespace Arcane::MessagePassing::Mpi
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

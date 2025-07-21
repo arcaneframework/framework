@@ -84,6 +84,8 @@ set(ARCANE_INTERNAL_SOURCES
   internal/IPolyhedralMeshModifier.h
   internal/SerializeMessage.h
   internal/VtkCellTypes.h
+  internal/ParallelMngInternal.h
+  internal/ParallelMngInternal.cc
   )
 
 set(ARCANE_ORIGINAL_SOURCES
@@ -555,6 +557,8 @@ set(ARCANE_ORIGINAL_SOURCES
   MultiArray2VariableRef.h
   NodesOfItemReorderer.h
   NodesOfItemReorderer.cc
+  MachineMemoryWindow.cc
+  MachineMemoryWindow.h
   NullXmlDocumentHolder.cc
   Observable.h
   ObservablePool.h

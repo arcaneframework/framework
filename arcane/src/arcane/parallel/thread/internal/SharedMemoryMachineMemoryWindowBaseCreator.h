@@ -5,71 +5,63 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IParallelMngInternal.h                                      (C) 2000-2025 */
+/* SharedMemoryMachineMemoryWindowBaseCreator.h                (C) 2000-2025 */
 /*                                                                           */
-/* Partie interne à Arcane de IParallelMng.                                  */
+/* Classe permettant de créer des objets de type                             */
+/* SharedMemoryMachineMemoryWindowBase. Une instance de cet objet doit être  */
+/* partagée par tous les threads.                                            */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_CORE_INTERNAL_IPARALLELMNGINTERNAL_H
-#define ARCANE_CORE_INTERNAL_IPARALLELMNGINTERNAL_H
+
+#ifndef ARCANE_PARALLEL_THREAD_INTERNAL_SHAREDMEMORYMACHINEMEMORYWINDOWBASECREATOR_H
+#define ARCANE_PARALLEL_THREAD_INTERNAL_SHAREDMEMORYMACHINEMEMORYWINDOWBASECREATOR_H
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/ArcaneTypes.h"
+#include "arcane/core/ArcaneTypes.h"
+#include "arcane/utils/UniqueArray.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arcane
+namespace Arcane::MessagePassing
 {
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace MessagePassing
-{
-  class IMachineMemoryWindowBase;
-}
+class IMachineMemoryWindowBase;
+class SharedMemoryMachineMemoryWindowBase;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-/*!
- * \internal
- * \brief Partie interne de IParallelMng.
- */
-class ARCANE_CORE_EXPORT IParallelMngInternal
+
+class SharedMemoryMachineMemoryWindowBaseCreator
 {
  public:
 
-  virtual ~IParallelMngInternal() = default;
+  SharedMemoryMachineMemoryWindowBaseCreator(Int32 nb_rank, IThreadBarrier* barrier);
+  ~SharedMemoryMachineMemoryWindowBaseCreator() = default;
 
  public:
 
-  //! Runner par défaut. Peut être nul
-  virtual Runner runner() const = 0;
+  SharedMemoryMachineMemoryWindowBase* createWindow(Int32 my_rank, Integer nb_elem_local_section, Integer sizeof_type);
 
-  //! File par défaut pour les messages. Peut être nul
-  virtual RunQueue queue() const = 0;
+ private:
 
-  /*!
-   * \brief Indique si l'implémentation gère les accélérateurs.
-   *
-   * Si c'est le cas on peut utiliser directement la mémoire de l'accélérateur
-   * dans les appels MPI ce qui permet d'éviter d'éventuelles recopies.
-   */
-  virtual bool isAcceleratorAware() const = 0;
-
-  //! Créé un sous IParallelMng de manière similaire à MPI_Comm_split.
-  virtual Ref<IParallelMng> createSubParallelMngRef(Int32 color, Int32 key) = 0;
-
-  virtual void setDefaultRunner(const Runner& runner) = 0;
-
-  virtual Ref<MessagePassing::IMachineMemoryWindowBase> createMachineMemoryWindowBase(Integer nb_elem_local, Integer sizeof_one_elem) = 0;
+  Int32 m_nb_rank;
+  Integer m_nb_elem_total;
+  IThreadBarrier* m_barrier;
+  std::byte* m_window;
+  Integer* m_nb_elem;
+  Integer* m_sum_nb_elem;
+  UniqueArray<Int32> m_ranks;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // namespace Arcane
+} // namespace Arcane::MessagePassing
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

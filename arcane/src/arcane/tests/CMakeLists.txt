@@ -539,6 +539,7 @@ add_test_message_passing(send_receive_nb3)
 add_test_message_passing(reduce2)
 add_test_message_passing(topology)
 add_test_message_passing(broadcast_serializer)
+add_test_message_passing(machine_window)
 add_test_message_passing(all)
 add_test_message_passing(sub_all)
 

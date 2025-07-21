@@ -24,13 +24,12 @@
 
 #include "arccore/base/BaseTypes.h"
 
-#include <set>
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 namespace Arcane::MessagePassing::Mpi
 {
+class MpiMachineMemoryWindowBaseCreator;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -207,6 +206,17 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiAdapter
 
   bool isAllowNullRankForAnySource() const { return m_is_allow_null_rank_for_any_source; }
 
+ public:
+
+  // void* createAllInOneMachineMemoryWindowBase(Integer sizeof_local) const;
+  // void freeAllInOneMachineMemoryWindowBase(void* aio_node_window) const;
+  // Ref<MpiAllInOneMachineMemoryWindowBase> readAllInOneMachineMemoryWindowBase(void* aio_node_window) const
+  // {
+  //   return makeRef(new MpiAllInOneMachineMemoryWindowBase(aio_node_window, sizeof(MPI_Win), m_machine_communicator, m_machine_comm_rank));
+  // }
+
+  MpiMachineMemoryWindowBaseCreator* windowCreator();
+
  private:
 
   IStat* m_stat = nullptr;
@@ -216,6 +226,9 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiAdapter
   MPI_Comm m_communicator; //!< Communicateur MPI
   int m_comm_rank = A_PROC_NULL_RANK;
   int m_comm_size = 0;
+  MPI_Comm m_machine_communicator; //!< Communicateur MPI sur le noeud de calcul
+  int m_machine_comm_rank = A_PROC_NULL_RANK;
+  int m_machine_comm_size = 0;
   Int64 m_nb_all_reduce = 0;
   Int64 m_nb_reduce = 0;
   bool m_is_trace = false;
@@ -233,6 +246,8 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiAdapter
   // La variable d'environnement ARCCORE_ALLOW_NULL_RANK_FOR_MPI_ANY_SOURCE permettra
   // de temporairement garder un mode compatible.
   bool m_is_allow_null_rank_for_any_source = true;
+
+  MpiMachineMemoryWindowBaseCreator* m_window_creator;
 
  private:
   

@@ -32,6 +32,7 @@
 #include "arcane/core/ISerializeMessageList.h"
 #include "arcane/core/IParallelTopology.h"
 #include "arcane/core/IParallelNonBlockingCollective.h"
+#include "arcane/core/MachineMemoryWindow.h"
 #include "arcane/core/ParallelMngUtils.h"
 #include "arcane/core/internal/SerializeMessage.h"
 
@@ -110,6 +111,7 @@ class ParallelMngTest
   void _testBroadcastStringAndMemoryBuffer2(const String& wanted_str);
   void _testProbeSerialize(Integer nb_value,bool use_one_message);
   void _testProcessMessages(const ParallelExchangerOptions* exchange_options);
+  void _testMachineMemoryWindow();
 };
 
 /*---------------------------------------------------------------------------*/
@@ -168,6 +170,8 @@ execute()
     _launchTest("broadcast_serializer",&ParallelMngTest::_testBroadcastSerializer);
   }
   _launchTest("topology",&ParallelMngTest::_testTopology);
+
+  _launchTest("machine_window", &ParallelMngTest::_testMachineMemoryWindow);
 
   //  _testStandardCalls();
   if (m_nb_done_test==0)
@@ -1002,6 +1006,144 @@ _testProcessMessages(const ParallelExchangerOptions* exchange_options)
       }
     }
   }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ParallelMngTest::
+_testMachineMemoryWindow()
+{
+  IParallelMng* pm = m_parallel_mng;
+  Integer my_rank = pm->commRank();
+
+  // nb_elem doit être paire pour ce test.
+  constexpr Integer nb_elem = 14;
+
+  MachineMemoryWindow<Integer> window(pm, nb_elem);
+
+  ConstArrayView<Int32> machine_ranks(window.machineRanks());
+  Integer machine_nb_proc = machine_ranks.size();
+
+  {
+    Ref<IParallelTopology> topo = ParallelMngUtils::createTopologyRef(pm);
+    if (topo->machineRanks().size() != machine_ranks.size()) {
+      // Problème avec MPI. Peut intervenir si MPICH est compilé en mode ch3:sock.
+      // On ne plante pas les tests dans ce cas.
+      warning() << "Shared memory not supported"
+                << " -- Nb machine ranks with ParallelTopo : " << topo->machineRanks().size()
+                << " -- Nb machine ranks with MPI_COMM_TYPE_SHARED : " << machine_ranks.size();
+      return;
+    }
+  }
+
+  for (Int32 rank : machine_ranks) {
+    if (window.sizeSegment(rank) != nb_elem) {
+      ARCANE_FATAL("Bad size of sizeSegment({0})", rank);
+    }
+  }
+
+  {
+    ArrayView av_my_segment(window.segmentView());
+
+    if (av_my_segment.size() != window.sizeSegment()) {
+      ARCANE_FATAL("Incoherence size of segmentView() and sizeSegment()");
+    }
+
+    if (window.sizeWindow() != machine_nb_proc * nb_elem) {
+      ARCANE_FATAL("Bad sizeWindow()");
+    }
+
+    if (av_my_segment.data() != window.dataSegment()) {
+      ARCANE_FATAL("Bad dataSegment()");
+    }
+
+    if (window.segmentConstView().data() != window.dataSegment()) {
+      ARCANE_FATAL("Bad segmentConstView().data()");
+    }
+
+    Integer iter = 0;
+    for (Integer& elem : av_my_segment) {
+      elem = iter * (my_rank + 1);
+      iter++;
+    }
+  }
+  window.barrier();
+
+  for (Int32 rank : machine_ranks) {
+    ArrayView av_segment(window.segmentView(rank));
+
+    for (Integer i = 0; i < nb_elem; ++i) {
+      //info() << "Test " << i << " : " << av_segment[i] << " -- " << rank;
+      if (av_segment[i] != i * (rank + 1)) {
+        ARCANE_FATAL("Bad element in memory window -- Expected : {0} -- Found : {1}", (i * (rank + 1)), av_segment[i]);
+      }
+    }
+  }
+
+  for (Int32 rank : machine_ranks) {
+    ConstArrayView av_segment(window.segmentConstView(rank));
+
+    for (Integer i = 0; i < nb_elem; ++i) {
+      //info() << "Test " << i << " : " << av_segment[i] << " -- " << rank;
+      if (av_segment[i] != i * (rank + 1)) {
+        ARCANE_FATAL("Bad element in memory window -- Expected : {0} -- Found : {1}", (i * (rank + 1)), av_segment[i]);
+      }
+    }
+  }
+
+  window.barrier();
+
+  constexpr Integer nb_elem_div = nb_elem / 2;
+
+  window.resizeSegment(nb_elem_div);
+
+  for (Int32 rank : machine_ranks) {
+    ConstArrayView av_segment(window.segmentConstView(rank));
+    if (av_segment.data() != window.dataSegment(rank)) {
+      ARCANE_FATAL("Bad dataSegment({0})", rank);
+    }
+
+    for (Integer i = 0; i < nb_elem_div; ++i) {
+      //info() << "Test2 " << i << " : " << av_segment[i] << " -- " << rank;
+      Int32 procdiv2 = rank / 2;
+      Integer i2 = (rank % 2 == 0 ? i : i + nb_elem_div);
+      if (av_segment[i] != i2 * (procdiv2 + 1)) {
+        ARCANE_FATAL("Bad element in memory window -- Expected : {0} -- Found : {1}", (i * (rank + 1)), av_segment[i]);
+      }
+    }
+  }
+  window.barrier();
+  window.resizeSegment(nb_elem);
+
+  if (my_rank == machine_ranks[0]) {
+    ArrayView av_window(window.windowView());
+    if (av_window.data() != window.dataWindow()) {
+      ARCANE_FATAL("Bad dataWindow()");
+    }
+    for (Integer j = 0; j < machine_nb_proc; ++j) {
+      for (Integer i = 0; i < nb_elem; ++i) {
+        av_window[i + (j * nb_elem)] = machine_ranks[j];
+        //info() << "Test3 " << (i + (j * nb_elem)) << " : " << av_window[i + (j * nb_elem)] << " -- " << machine_ranks[j];
+      }
+    }
+  }
+
+  window.barrier();
+
+  ConstArrayView av_window(window.windowConstView());
+  if (av_window.data() != window.dataWindow()) {
+    ARCANE_FATAL("Bad dataWindow()");
+  }
+  for (Integer j = 0; j < machine_nb_proc; ++j) {
+    for (Integer i = 0; i < nb_elem; ++i) {
+      //info() << "Test4 " << (i + (j * nb_elem)) << " : " << av_window[i + (j * nb_elem)] << " -- " << machine_ranks[j];
+      if (av_window[i + (j * nb_elem)] != machine_ranks[j]) {
+        ARCANE_FATAL("Bad element in memory window -- Expected : {0} -- Found : {1}", machine_ranks[j], av_window[i + (j * nb_elem)]);
+      }
+    }
+  }
+  window.barrier();
 }
 
 /*---------------------------------------------------------------------------*/
