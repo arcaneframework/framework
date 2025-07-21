@@ -1410,19 +1410,33 @@ endif()
 # TODO: pour 'libfabric.dll', plutôt modifier le package 'intel-mpi' de 'vcpkg' pour
 # indiquer explicitement où se trouve cette DLL.
 #
-if (ARCANE_ENABLE_TESTS)
+if (TARGET arcane_tests_exec)
   file(APPEND ${ARCANE_COPY_DLLS_CONFIG_FILE} "list(APPEND EXE_LIST \"$<TARGET_FILE:arcane_tests_exec>\")\n")
-  set(ARCANE_COPY_DLL_GENERATED_FILE ${CMAKE_CURRENT_BINARY_DIR}/copy_dlls_config.$<CONFIG>.cmake)
-  file(GENERATE OUTPUT ${ARCANE_COPY_DLL_GENERATED_FILE} INPUT ${ARCANE_COPY_DLLS_CONFIG_FILE})
-  add_custom_target(copy_dlls
-    COMMAND ${CMAKE_COMMAND} -D CONFIG_INCLUDE_FILE=${ARCANE_COPY_DLL_GENERATED_FILE} -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/ArcaneCopyDLLs.cmake )
 endif()
-
+# Pour copier 'nethost.dll' sous Windows.
+if (TARGET arcane_dotnet_coreclr)
+  file(APPEND ${ARCANE_COPY_DLLS_CONFIG_FILE} "list(APPEND EXE_LIST \"$<TARGET_FILE:arcane_dotnet_coreclr>\")\n")
+endif()
+foreach(pkg ${ARCANE_LIBRARIES})
+  if (TARGET ${pkg})
+    file(APPEND ${ARCANE_COPY_DLLS_CONFIG_FILE} "list(APPEND EXE_LIST \"$<TARGET_FILE:${pkg}>\")\n")
+  endif()
+endforeach()
+foreach(pkg ${ARCANE_OPTIONAL_LIBRARIES})
+  if (TARGET ${pkg})
+    file(APPEND ${ARCANE_COPY_DLLS_CONFIG_FILE} "list(APPEND EXE_LIST \"$<TARGET_FILE:${pkg}>\")\n")
+  endif()
+endforeach()
 find_path(INTEL_LIBFABRIC NAMES "libfabric.dll" PATH_SUFFIXES bin)
 if (INTEL_LIBFABRIC)
   message (STATUS "Found 'libfabric.dll' in = '${INTEL_LIBFABRIC}'")
   file(COPY ${INTEL_LIBFABRIC}/libfabric.dll DESTINATION "${LIBRARY_OUTPUT_PATH}")
 endif()
+
+set(ARCANE_COPY_DLL_GENERATED_FILE ${CMAKE_CURRENT_BINARY_DIR}/copy_dlls_config.$<CONFIG>.cmake)
+file(GENERATE OUTPUT ${ARCANE_COPY_DLL_GENERATED_FILE} INPUT ${ARCANE_COPY_DLLS_CONFIG_FILE})
+add_custom_target(copy_dlls
+  COMMAND ${CMAKE_COMMAND} -D CONFIG_INCLUDE_FILE=${ARCANE_COPY_DLL_GENERATED_FILE} -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/ArcaneCopyDLLs.cmake )
 
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
