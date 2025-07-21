@@ -40,6 +40,7 @@
 #include "arcane/core/AbstractService.h"
 #include "arcane/core/ISerializer.h"
 #include "arcane/core/internal/SerializeMessage.h"
+#include "arcane/core/internal/ParallelMngInternal.h"
 
 #include "arcane/parallel/IStat.h"
 
@@ -55,6 +56,7 @@
 
 #include "arccore/message_passing/RequestListBase.h"
 #include "arccore/message_passing/SerializeMessageList.h"
+#include "arccore/message_passing/IMachineMemoryWindowBase.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -346,6 +348,106 @@ class SequentialParallelDispatchT
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+class SequentialMachineMemoryWindowBase
+: public IMachineMemoryWindowBase
+{
+ public:
+
+  SequentialMachineMemoryWindowBase(Integer nb_elem_local_section, Integer sizeof_type)
+  : m_nb_elem_local(nb_elem_local_section)
+  , m_max_nb_elem_local(nb_elem_local_section)
+  , m_sizeof_type(sizeof_type)
+  {
+    m_segment = new std::byte[m_nb_elem_local * m_sizeof_type];
+  }
+
+  ~SequentialMachineMemoryWindowBase() override
+  {
+    delete[] m_segment;
+  }
+
+ public:
+
+  Integer sizeofOneElem() const override
+  {
+    return m_sizeof_type;
+  }
+
+  Integer sizeSegment() const override
+  {
+    return m_nb_elem_local;
+  }
+  Integer sizeSegment(Int32 rank) const override
+  {
+    if (rank != 0) {
+      ARCANE_FATAL("Rank {0} is unavailable (Sequential)", rank);
+    }
+    return m_nb_elem_local;
+  }
+  Integer sizeWindow() const override
+  {
+    return m_nb_elem_local;
+  }
+
+  void* dataSegment() const override
+  {
+    return m_segment;
+  }
+  void* dataSegment(Int32 rank) const override
+  {
+    if (rank != 0) {
+      ARCANE_FATAL("Rank {0} is unavailable (Sequential)", rank);
+    }
+    return m_segment;
+  }
+  void* dataWindow() const override
+  {
+    return m_segment;
+  }
+
+  std::pair<Integer, void*> sizeAndDataSegment() const override
+  {
+    return { m_nb_elem_local, m_segment };
+  }
+  std::pair<Integer, void*> sizeAndDataSegment(Int32 rank) const override
+  {
+    if (rank != 0) {
+      ARCANE_FATAL("Rank {0} is unavailable (Sequential)", rank);
+    }
+    return { m_nb_elem_local, m_segment };
+  }
+  std::pair<Integer, void*> sizeAndDataWindow() const override
+  {
+    return { m_nb_elem_local, m_segment };
+  }
+
+  void resizeSegment(Integer new_nb_elem) override
+  {
+    if (new_nb_elem > m_max_nb_elem_local) {
+      ARCANE_FATAL("New size of window (sum of size of all segments) is superior than the old size");
+    }
+    m_nb_elem_local = new_nb_elem;
+  }
+
+  ConstArrayView<Int32> machineRanks() const override
+  {
+    return { 1, &m_my_rank };
+  }
+
+  void barrier() const override {}
+
+ private:
+
+  Integer m_nb_elem_local;
+  Integer m_max_nb_elem_local;
+  Integer m_sizeof_type;
+  std::byte* m_segment;
+  Int32 m_my_rank = 0;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 class SequentialParallelMngUtilsFactory
 : public ParallelMngUtilsFactoryBase
 {
@@ -375,6 +477,10 @@ class SequentialParallelMngUtilsFactory
 class SequentialParallelMng
 : public ParallelMngDispatcher
 {
+ public:
+
+  class Impl;
+
  private:
   // Construit un gestionnaire séquentiel.
   SequentialParallelMng(const SequentialParallelMngBuildInfo& bi);
@@ -571,6 +677,8 @@ class SequentialParallelMng
 
   IParallelNonBlockingCollective* nonBlockingCollective() const override { return 0; }
 
+  IParallelMngInternal* _internalApi() override { return m_parallel_mng_internal; }
+
  public:
   
   static IParallelMng* create(const SequentialParallelMngBuildInfo& bi)
@@ -611,9 +719,7 @@ class SequentialParallelMng
   IParallelReplication* m_replication;
   MP::Communicator m_communicator;
   Ref<IParallelMngUtilsFactory> m_utils_factory;
-
- private:
-
+  IParallelMngInternal* m_parallel_mng_internal = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -639,6 +745,28 @@ arcaneCreateSequentialParallelMngRef(const SequentialParallelMngBuildInfo& bi)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+class SequentialParallelMng::Impl
+: public ParallelMngInternal
+{
+ public:
+
+  explicit Impl(SequentialParallelMng* pm)
+  : ParallelMngInternal(pm)
+  {}
+
+  ~Impl() override = default;
+
+ public:
+
+  Ref<IMachineMemoryWindowBase> createMachineMemoryWindowBase(Integer nb_elem_local, Integer sizeof_one_elem) override
+  {
+    return makeRef(new SequentialMachineMemoryWindowBase(nb_elem_local, sizeof_one_elem));
+  }
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 SequentialParallelMng::
 SequentialParallelMng(const SequentialParallelMngBuildInfo& bi)
 : ParallelMngDispatcher(ParallelMngDispatcherBuildInfo(0,1))
@@ -651,6 +779,7 @@ SequentialParallelMng(const SequentialParallelMngBuildInfo& bi)
 , m_replication(new ParallelReplication())
 , m_communicator(bi.communicator())
 , m_utils_factory(makeRef<IParallelMngUtilsFactory>(new SequentialParallelMngUtilsFactory()))
+, m_parallel_mng_internal(new Impl(this))
 {
   ARCANE_CHECK_PTR(m_trace);
   ARCANE_CHECK_PTR(m_thread_mng);
@@ -666,6 +795,7 @@ SequentialParallelMng(const SequentialParallelMngBuildInfo& bi)
 SequentialParallelMng::
 ~SequentialParallelMng()
 {
+  delete m_parallel_mng_internal;
   delete m_stat;
   delete m_replication;
   delete m_io_mng;

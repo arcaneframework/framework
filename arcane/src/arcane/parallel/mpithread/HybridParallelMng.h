@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* HybridParallelMng.h                                         (C) 2000-2024 */
+/* HybridParallelMng.h                                         (C) 2000-2025 */
 /*                                                                           */
 /* Implémentation des messages hybrides MPI/Mémoire partagée.                */
 /*---------------------------------------------------------------------------*/
@@ -18,7 +18,7 @@
 #include "arcane/utils/Array.h"
 #include "arcane/utils/Ref.h"
 
-#include "arcane/ParallelMngDispatcher.h"
+#include "arcane/core/ParallelMngDispatcher.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -31,6 +31,7 @@ class MpiParallelMng;
 
 namespace Arcane::MessagePassing
 {
+class HybridMachineMemoryWindowBaseCreator;
 class ISharedMemoryMessageQueue;
 class HybridMessageQueue;
 class HybridParallelMng;
@@ -57,6 +58,7 @@ struct HybridParallelMngBuildInfo
   MpiThreadAllDispatcher* all_dispatchers = nullptr;
   IParallelMngContainerFactory* sub_builder_factory = nullptr;
   Ref<IParallelMngContainer> container;
+  HybridMachineMemoryWindowBaseCreator* window_creator;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -69,6 +71,7 @@ class HybridParallelMng
 {
   friend HybridSerializeMessageList;
   class RequestList;
+  class Impl;
 
  public:
 
@@ -127,6 +130,10 @@ class HybridParallelMng
   PointToPointMessageInfo buildMessage(Int32 dest,MP::eBlockingType is_blocking);
   PointToPointMessageInfo buildMessage(const PointToPointMessageInfo& message);
 
+ public:
+
+  IParallelMngInternal* _internalApi() override { return m_parallel_mng_internal; }
+
  protected:
   
   IGetVariablesValuesParallelOperation* createGetVariablesValuesOperation() override;
@@ -176,6 +183,7 @@ class HybridParallelMng
   IParallelMngContainerFactory* m_sub_builder_factory = nullptr;
   Ref<IParallelMngContainer> m_parent_container_ref;
   Ref<IParallelMngUtilsFactory> m_utils_factory;
+  IParallelMngInternal* m_parallel_mng_internal = nullptr;
 
  private:
 

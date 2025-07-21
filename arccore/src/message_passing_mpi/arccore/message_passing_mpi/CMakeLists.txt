@@ -22,6 +22,7 @@ set(SOURCES
   MessagePassingMpiGlobal.cc
   MessagePassingMpiEnum.cc
   MpiAdapter.cc
+  MpiAllInOneMachineMemoryWindowBase.cc
   MpiDatatype.h
   MpiDatatype.cc
   MpiControlDispatcher.cc
@@ -30,6 +31,8 @@ set(SOURCES
   MpiTypeDispatcher.cc
   MpiMessagePassingMng.cc
   MpiMessagePassingMng.h
+  MpiMachineMemoryWindowBase.cc
+  MpiMachineMemoryWindowBaseCreator.cc
 
   StandaloneMpiMessagePassingMng.cc
   StandaloneMpiMessagePassingMng.h
@@ -37,8 +40,11 @@ set(SOURCES
   internal/IMpiProfiling.h
   internal/MessagePassingMpiEnum.h
   internal/MpiAdapter.h
+  internal/MpiAllInOneMachineMemoryWindowBase.h
   internal/MpiControlDispatcher.h
   internal/MpiLock.h
+  internal/MpiMachineMemoryWindowBase.h
+  internal/MpiMachineMemoryWindowBaseCreator.h
   internal/MpiRequest.h
   internal/MpiRequestList.h
   internal/MpiSerializeDispatcher.h

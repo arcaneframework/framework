@@ -116,7 +116,7 @@ class ARCANE_CORE_EXPORT ParallelMngDispatcher
   //! Implémentation de Arccore::MessagePassing::ISerializeDispatcher.
   class SerializeDispatcher;
 
-  class Impl;
+  friend class ParallelMngInternal;
 
  public:
 

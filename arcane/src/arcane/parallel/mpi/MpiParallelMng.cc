@@ -28,6 +28,7 @@
 #include "arcane/core/IItemFamily.h"
 #include "arcane/core/parallel/IStat.h"
 #include "arcane/core/internal/SerializeMessage.h"
+#include "arcane/core/internal/ParallelMngInternal.h"
 
 #include "arcane/parallel/mpi/MpiParallelMng.h"
 #include "arcane/parallel/mpi/MpiParallelDispatch.h"
@@ -47,6 +48,8 @@
 #include "arccore/message_passing_mpi/internal/MpiRequestList.h"
 #include "arccore/message_passing_mpi/internal/MpiAdapter.h"
 #include "arccore/message_passing_mpi/internal/MpiLock.h"
+#include "arccore/message_passing_mpi/internal/MpiMachineMemoryWindowBaseCreator.h"
+#include "arccore/message_passing_mpi/internal/MpiMachineMemoryWindowBase.h"
 #include "arccore/message_passing/Dispatchers.h"
 #include "arccore/message_passing/Messages.h"
 #include "arccore/message_passing/SerializeMessageList.h"
@@ -339,6 +342,36 @@ class MpiParallelMngUtilsFactory
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+class MpiParallelMng::Impl
+: public ParallelMngInternal
+{
+ public:
+
+  explicit Impl(MpiParallelMng* pm)
+  : ParallelMngInternal(pm)
+  , m_parallel_mng(pm)
+  {}
+
+  ~Impl() override = default;
+
+ public:
+
+  Ref<IMachineMemoryWindowBase> createMachineMemoryWindowBase(Integer nb_elem_local, Integer sizeof_one_elem) override
+  {
+    return makeRef(m_parallel_mng->adapter()->windowCreator()->createWindow(nb_elem_local, sizeof_one_elem));
+  }
+
+ private:
+
+  MpiParallelMng* m_parallel_mng;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 MpiParallelMng::
 MpiParallelMng(const MpiParallelMngBuildInfo& bi)
 : ParallelMngDispatcher(ParallelMngDispatcherBuildInfo(bi.dispatchersRef(),bi.messagePassingMngRef()))
@@ -356,6 +389,7 @@ MpiParallelMng(const MpiParallelMngBuildInfo& bi)
 , m_mpi_lock(bi.mpi_lock)
 , m_non_blocking_collective(nullptr)
 , m_utils_factory(createRef<MpiParallelMngUtilsFactory>())
+, m_parallel_mng_internal(new Impl(this))
 {
   if (!m_world_parallel_mng){
     m_trace->debug()<<"[MpiParallelMng] No m_world_parallel_mng found, reverting to ourselves!";
@@ -369,6 +403,7 @@ MpiParallelMng(const MpiParallelMngBuildInfo& bi)
 MpiParallelMng::
 ~MpiParallelMng()
 {
+  delete m_parallel_mng_internal;
   delete m_non_blocking_collective;
   m_sequential_parallel_mng.reset();
   if (m_is_communicator_owned){
