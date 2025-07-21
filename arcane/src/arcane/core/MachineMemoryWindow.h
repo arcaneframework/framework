@@ -70,9 +70,9 @@ class ARCANE_CORE_EXPORT MachineMemoryWindow
 
   /*!
    * \brief Méthode permettant d'obtenir la taille du segment de fenêtre
-   * mémoire d'un autre processus du noeud (en nombre d'éléments).
+   * mémoire d'un autre sous-domaine du noeud (en nombre d'éléments).
    *
-   * \param rank Le processus visé.
+   * \param rank Le rang du sous-domaine.
    * \return La taille du segment.
    */
   Integer sizeSegment(Int32 rank) const;
@@ -95,8 +95,9 @@ class ARCANE_CORE_EXPORT MachineMemoryWindow
 
   /*!
    * \brief Méthode permettant d'obtenir une vue sur le segment de fenêtre
-   * mémoire d'un autre processus du noeud.
+   * mémoire d'un autre sous-domaine du noeud.
    *
+   * \param rank Le rang du sous-domaine.
    * \return Une vue.
    */
   ArrayView<Type> segmentView(Int32 rank) const;
@@ -118,8 +119,9 @@ class ARCANE_CORE_EXPORT MachineMemoryWindow
 
   /*!
    * \brief Méthode permettant d'obtenir une vue constante sur le segment de
-   * fenêtre mémoire d'un autre processus du noeud.
+   * fenêtre mémoire d'un autre sous-domaine du noeud.
    *
+   * \param rank Le rang du sous-domaine.
    * \return Une vue constante.
    */
   ConstArrayView<Type> segmentConstView(Int32 rank) const;
@@ -142,8 +144,9 @@ class ARCANE_CORE_EXPORT MachineMemoryWindow
 
   /*!
    * \brief Méthode permettant d'obtenir un pointeur vers le segment de
-   * fenêtre mémoire d'un autre processus du noeud.
+   * fenêtre mémoire d'un autre sous-domaine du noeud.
    *
+   * \param rank Le rang du sous-domaine.
    * \return Un pointeur (ne pas détruire).
    */
   Type* dataSegment(Int32 rank) const;
