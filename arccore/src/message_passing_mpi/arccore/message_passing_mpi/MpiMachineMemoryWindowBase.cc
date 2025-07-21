@@ -405,9 +405,7 @@ machineRanks() const
 void MpiMachineMemoryWindowBase::
 barrier() const
 {
-  MPI_Win_sync(m_win);
   MPI_Barrier(m_comm_machine);
-  MPI_Win_sync(m_win);
 }
 
 /*---------------------------------------------------------------------------*/
