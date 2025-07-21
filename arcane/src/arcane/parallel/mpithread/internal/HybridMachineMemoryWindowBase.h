@@ -59,6 +59,8 @@ class HybridMachineMemoryWindowBase
 
   ConstArrayView<Int32> machineRanks() const override;
 
+  void barrier() const override;
+
  private:
 
   Int32 m_my_rank_local_proc;

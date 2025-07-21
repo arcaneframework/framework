@@ -434,6 +434,8 @@ class SequentialMachineMemoryWindowBase
     return { 1, &m_my_rank };
   }
 
+  void barrier() const override {}
+
  private:
 
   Integer m_nb_elem_local;

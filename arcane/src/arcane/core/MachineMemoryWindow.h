@@ -177,6 +177,12 @@ class ARCANE_CORE_EXPORT MachineMemoryWindow
    */
   ConstArrayView<Int32> machineRanks() const;
 
+  /*!
+   * \brief Méthode permettant d'attendre que tous les processus/threads
+   * du noeud appellent cette méthode pour continuer l'exécution.
+   */
+  void barrier() const;
+
  private:
 
   IParallelMngInternal* m_pm_internal;

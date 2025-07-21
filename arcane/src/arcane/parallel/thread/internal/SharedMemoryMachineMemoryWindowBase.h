@@ -62,6 +62,8 @@ class ARCANE_THREAD_EXPORT SharedMemoryMachineMemoryWindowBase
 
   ConstArrayView<Int32> machineRanks() const override;
 
+  void barrier() const override;
+
  private:
 
   Int32 m_my_rank;
