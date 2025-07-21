@@ -44,22 +44,16 @@ MpiMachineMemoryWindowBaseCreator(const MPI_Comm& comm_machine, Int32 comm_machi
 
   MPI_Group_translate_ranks(comm_world_group, comm_world_size, global_ranks.data(), machine_comm_group, machine_ranks.data());
 
-  Int64 final_size = 0;
-  for (Int32 rank : machine_ranks) {
-    if (rank != MPI_UNDEFINED) {
-      final_size++;
-    }
-  }
-  if (final_size != m_comm_machine_size) {
-    ARCCORE_FATAL("Pb sizeof comm");
-  }
-  m_machine_ranks.resize(final_size);
+  m_machine_ranks.resize(m_comm_machine_size);
 
   Int32 iter = 0;
-  for (Int32 rank : machine_ranks) {
-    if (rank != MPI_UNDEFINED) {
-      m_machine_ranks[iter++] = rank;
+  for (Int32 i = 0; i < comm_world_size; ++i) {
+    if (machine_ranks[i] != MPI_UNDEFINED) {
+      m_machine_ranks[iter++] = i;
     }
+  }
+  if (iter != m_comm_machine_size) {
+    ARCCORE_FATAL("Error in machine_ranks creation");
   }
 }
 

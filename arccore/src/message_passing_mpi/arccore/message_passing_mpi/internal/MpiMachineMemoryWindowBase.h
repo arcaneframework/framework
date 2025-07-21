@@ -76,13 +76,10 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiMachineMemoryWindowBase
   MPI_Comm m_comm_machine;
   Int32 m_comm_machine_size;
   Int32 m_comm_machine_rank;
-  Int32 m_comm_machine_master_rank;
-  bool m_is_master_rank;
 
   Integer m_sizeof_type;
 
   ConstArrayView<Int32> m_machine_ranks;
-  Integer m_my_rank_index;
 
   Integer m_max_nb_elem_win;
   Integer m_actual_nb_elem_win;

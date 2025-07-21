@@ -60,10 +60,11 @@ class ARCCORE_MESSAGEPASSING_EXPORT IMachineMemoryWindowBase
   virtual Integer sizeSegment() const = 0;
 
   /*!
-   * \brief Méthode permettant d'obtenir la taille du segment d'un processus
+   * \brief Méthode permettant d'obtenir la taille du segment d'un sous-domaine
    * du noeud de la fenêtre mémoire utilisable (en nombre
    * d'éléments).
    *
+   * \param rank Le rang du sous-domaine.
    * \return La taille du segment.
    */
   virtual Integer sizeSegment(Int32 rank) const = 0;
@@ -86,8 +87,9 @@ class ARCCORE_MESSAGEPASSING_EXPORT IMachineMemoryWindowBase
 
   /*!
    * \brief Méthode permettant d'obtenir un pointeur vers le segment d'un
-   * processus du noeud de la fenêtre mémoire.
+   * sous-domaine du noeud de la fenêtre mémoire.
    *
+   * \param rank Le rang du sous-domaine.
    * \return Un pointeur (ne pas détruire).
    */
   virtual void* dataSegment(Int32 rank) const = 0;
@@ -109,8 +111,9 @@ class ARCCORE_MESSAGEPASSING_EXPORT IMachineMemoryWindowBase
 
   /*!
    * \brief Méthode permettant d'obtenir la taille et un pointeur du segment
-   * d'un processus du noeud (la taille en nombre d'éléments).
+   * d'un sous-domaine du noeud (la taille en nombre d'éléments).
    *
+   * \param rank Le rang du sous-domaine.
    * \return Une paire [taille, ptr].
    */
   virtual std::pair<Integer, void*> sizeAndDataSegment(Int32 rank) const = 0;
