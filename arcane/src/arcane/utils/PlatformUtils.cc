@@ -57,6 +57,7 @@
 #ifdef ARCANE_OS_MACOS
 #include <cstdlib>
 #include <mach-o/dyld.h>
+#include <crt_externs.h>
 #else
 #include <malloc.h>
 #endif
@@ -554,7 +555,12 @@ fillCommandLineArguments(StringList& arg_list)
   }
 
   ::LocalFree(w_arg_list);
-
+#elif defined(ARCANE_OS_MACOS)
+  int argc = *_NSGetArgc();
+  char** argv = *_NSGetArgv();
+  for (int i = 0; i < argc; i++) {
+    arg_list.add(StringView(argv[i]));
+  }
 #else
   ARCANE_THROW(NotImplementedException, "not implemented for this platform");
 #endif
