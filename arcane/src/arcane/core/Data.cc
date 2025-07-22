@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Data.cc                                                     (C) 2000-2024 */
+/* Data.cc                                                     (C) 2000-2025 */
 /*                                                                           */
 /* Types liés aux 'IData'.                                                   */
 /*---------------------------------------------------------------------------*/
@@ -118,7 +118,7 @@ fillContiguousDataGeneric(IData* data, const void* fill_address,
     destination_buf = makeMutableMemoryView(destination_buf.data(), datatype_size, nb_element * total_dim);
   }
 
-  destination_buf.fill(fill_value_view, &queue);
+  MemoryUtils::fill(destination_buf, fill_value_view, &queue);
 }
 
 /*---------------------------------------------------------------------------*/
