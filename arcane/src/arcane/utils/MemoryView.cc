@@ -224,43 +224,44 @@ makeConstMemoryView(const void* ptr, Int32 datatype_size, Int64 nb_element)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void MutableMultiMemoryView::
-copyFromIndexes(ConstMemoryView v, SmallSpan<const Int32> indexes,
-                RunQueue* queue)
+void MemoryUtils::
+copyFromIndexes(MutableMultiMemoryView destination, ConstMemoryView source,
+                SmallSpan<const Int32> indexes, RunQueue* queue)
 {
-  Int32 one_data_size = _checkDataTypeSize(A_FUNCINFO, m_datatype_size, v.datatypeSize());
+  Int32 one_data_size = _checkDataTypeSize(A_FUNCINFO, destination.datatypeSize(), source.datatypeSize());
 
   Int64 nb_index = indexes.size();
   if (nb_index == 0)
     return;
 
-  _getDefaultCopyList(queue)->copyFrom(one_data_size, { indexes, m_views, v.bytes(), queue });
+  _getDefaultCopyList(queue)->copyFrom(one_data_size, { indexes, destination.views(), source.bytes(), queue });
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void MutableMultiMemoryView::
-fillIndexes(ConstMemoryView v, SmallSpan<const Int32> indexes, RunQueue* queue)
+void MemoryUtils::
+fillIndexes(MutableMultiMemoryView destination, ConstMemoryView source,
+            SmallSpan<const Int32> indexes, RunQueue* queue)
 {
-  Int32 one_data_size = _checkDataTypeSize(A_FUNCINFO, m_datatype_size, v.datatypeSize());
+  Int32 one_data_size = _checkDataTypeSize(A_FUNCINFO, destination.datatypeSize(), source.datatypeSize());
 
   Int64 nb_index = indexes.size();
   if (nb_index == 0)
     return;
 
-  _getDefaultCopyList(queue)->fill(one_data_size, { indexes, m_views, v.bytes(), queue });
+  _getDefaultCopyList(queue)->fill(one_data_size, { indexes, destination.views(), source.bytes(), queue });
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void MutableMultiMemoryView::
-fill(ConstMemoryView v, RunQueue* queue)
+void MemoryUtils::
+fill(MutableMultiMemoryView destination, ConstMemoryView source, RunQueue* queue)
 {
-  Int32 one_data_size = _checkDataTypeSize(A_FUNCINFO, m_datatype_size, v.datatypeSize());
+  Int32 one_data_size = _checkDataTypeSize(A_FUNCINFO, destination.datatypeSize(), source.datatypeSize());
 
-  _getDefaultCopyList(queue)->fill(one_data_size, { {}, m_views, v.bytes(), queue });
+  _getDefaultCopyList(queue)->fill(one_data_size, { {}, destination.views(), source.bytes(), queue });
 }
 
 /*---------------------------------------------------------------------------*/

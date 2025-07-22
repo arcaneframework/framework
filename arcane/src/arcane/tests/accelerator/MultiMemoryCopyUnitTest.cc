@@ -281,11 +281,11 @@ _executeCopy1Rank1(eMemoryRessource mem_kind, bool use_queue)
 
   // Effectue la copie depuis le buffer
   {
-    MutableMultiMemoryView source_memory_view(memories_as_bytes.view(), sizeof(double));
+    MutableMultiMemoryView destination_memory_view(memories_as_bytes.view(), sizeof(double));
     ConstMemoryView source(buffer.to1DSpan());
-    source_memory_view.copyFromIndexes(source, indexes.to1DSpan().smallView(), queue_ptr);
+    MemoryUtils::copyFromIndexes(destination_memory_view, source, indexes.to1DSpan().smallView(), queue_ptr);
     // Teste copie vide
-    source_memory_view.copyFromIndexes(source, {}, queue_ptr);
+    MemoryUtils::copyFromIndexes(destination_memory_view, source, {}, queue_ptr);
   }
 
   // Vérifie le résultat
@@ -403,11 +403,11 @@ _executeCopy1Rank2(eMemoryRessource mem_kind, bool use_queue)
 
   // Effectue la copie depuis le buffer
   {
-    MutableMultiMemoryView source_memory_view(memories_as_bytes.view(), sizeof(double) * n2);
+    MutableMultiMemoryView destination_memory_view(memories_as_bytes.view(), sizeof(double) * n2);
     ConstMemoryView source(buffer.to1DSpan(), n2);
-    source_memory_view.copyFromIndexes(source, indexes.to1DSpan().smallView(), queue_ptr);
+    MemoryUtils::copyFromIndexes(destination_memory_view, source, indexes.to1DSpan().smallView(), queue_ptr);
     // Teste copie vide
-    source_memory_view.copyFromIndexes(source, {}, queue_ptr);
+    MemoryUtils::copyFromIndexes(destination_memory_view, source, {}, queue_ptr);
   }
 
   // Vérifie le résultat
@@ -483,9 +483,9 @@ _executeFill1Rank1(eMemoryRessource mem_kind, bool use_queue, bool use_index)
     MutableMultiMemoryView destination_memory_view(memories_as_bytes.view(), sizeof(double));
     ConstMemoryView source_memory_view(fill_buffer.constSpan());
     if (use_index)
-      destination_memory_view.fillIndexes(source_memory_view, indexes, queue_ptr);
+      MemoryUtils::fillIndexes(destination_memory_view, source_memory_view, indexes, queue_ptr);
     else
-      destination_memory_view.fill(source_memory_view, queue_ptr);
+      MemoryUtils::fill(destination_memory_view, source_memory_view, queue_ptr);
   }
 
   // Recopie dans la mémoire hôte
