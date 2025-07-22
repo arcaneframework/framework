@@ -41,7 +41,7 @@ namespace MessagePassing
 
 /*!
  * \brief Classe permettant de créer une fenêtre mémoire partagée entre les
- * processus d'un même noeud.
+ * sous-domaines d'un même noeud.
  * Les segments de cette fenêtre seront contigüs en mémoire.
  *
  * \tparam Type Le type des éléments de la fenêtre.
@@ -54,36 +54,11 @@ class ARCANE_CORE_EXPORT MachineMemoryWindow
   /*!
    * \brief Constructeur.
    * \param pm Le ParallelMng contenant les processus du noeud.
-   * \param nb_elem_local Le nombre d'éléments pour le segment de ce processus.
+   * \param nb_elem_segment Le nombre d'éléments pour le segment de ce sous-domaine.
    */
-  MachineMemoryWindow(IParallelMng* pm, Integer nb_elem_local);
+  MachineMemoryWindow(IParallelMng* pm, Int64 nb_elem_segment);
 
  public:
-
-  /*!
-   * \brief Méthode permettant d'obtenir la taille de notre segment de fenêtre
-   * mémoire (en nombre d'éléments).
-   *
-   * \return La taille de notre segment.
-   */
-  Integer sizeSegment() const;
-
-  /*!
-   * \brief Méthode permettant d'obtenir la taille du segment de fenêtre
-   * mémoire d'un autre sous-domaine du noeud (en nombre d'éléments).
-   *
-   * \param rank Le rang du sous-domaine.
-   * \return La taille du segment.
-   */
-  Integer sizeSegment(Int32 rank) const;
-
-  /*!
-   * \brief Méthode permettant d'obtenir la taille de la fenêtre mémoire
-   * utilisable (en nombre d'éléments).
-   *
-   * \return La taille de la fenêtre.
-   */
-  Integer sizeWindow() const;
 
   /*!
    * \brief Méthode permettant d'obtenir une vue sur notre segment de fenêtre
@@ -91,7 +66,7 @@ class ARCANE_CORE_EXPORT MachineMemoryWindow
    *
    * \return Une vue.
    */
-  ArrayView<Type> segmentView() const;
+  Span<Type> segmentView() const;
 
   /*!
    * \brief Méthode permettant d'obtenir une vue sur le segment de fenêtre
@@ -100,14 +75,14 @@ class ARCANE_CORE_EXPORT MachineMemoryWindow
    * \param rank Le rang du sous-domaine.
    * \return Une vue.
    */
-  ArrayView<Type> segmentView(Int32 rank) const;
+  Span<Type> segmentView(Int32 rank) const;
 
   /*!
    * \brief Méthode permettant d'obtenir une vue sur toute la fenêtre mémoire.
    *
    * \return Une vue.
    */
-  ArrayView<Type> windowView() const;
+  Span<Type> windowView() const;
 
   /*!
    * \brief Méthode permettant d'obtenir une vue constante sur notre segment
@@ -115,7 +90,7 @@ class ARCANE_CORE_EXPORT MachineMemoryWindow
    *
    * \return Une vue constante.
    */
-  ConstArrayView<Type> segmentConstView() const;
+  Span<const Type> segmentConstView() const;
 
   /*!
    * \brief Méthode permettant d'obtenir une vue constante sur le segment de
@@ -124,7 +99,7 @@ class ARCANE_CORE_EXPORT MachineMemoryWindow
    * \param rank Le rang du sous-domaine.
    * \return Une vue constante.
    */
-  ConstArrayView<Type> segmentConstView(Int32 rank) const;
+  Span<const Type> segmentConstView(Int32 rank) const;
 
   /*!
    * \brief Méthode permettant d'obtenir une vue constante sur toute la fenêtre
@@ -132,31 +107,7 @@ class ARCANE_CORE_EXPORT MachineMemoryWindow
    *
    * \return Une vue constante.
    */
-  ConstArrayView<Type> windowConstView() const;
-
-  /*!
-   * \brief Méthode permettant d'obtenir un pointeur vers notre segment
-   * de fenêtre mémoire.
-   *
-   * \return Un pointeur (ne pas détruire).
-   */
-  Type* dataSegment() const;
-
-  /*!
-   * \brief Méthode permettant d'obtenir un pointeur vers le segment de
-   * fenêtre mémoire d'un autre sous-domaine du noeud.
-   *
-   * \param rank Le rang du sous-domaine.
-   * \return Un pointeur (ne pas détruire).
-   */
-  Type* dataSegment(Int32 rank) const;
-
-  /*!
-   * \brief Méthode permettant d'obtenir un pointeur vers la fenêtre mémoire.
-   *
-   * \return Un pointeur (ne pas détruire).
-   */
-  Type* dataWindow() const;
+  Span<const Type> windowConstView() const;
 
   /*!
    * \brief Méthode permettant de redimensionner les segments de la fenêtre.

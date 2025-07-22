@@ -27,16 +27,19 @@ namespace Arcane::MessagePassing
 /*---------------------------------------------------------------------------*/
 
 SharedMemoryMachineMemoryWindowBase::
-SharedMemoryMachineMemoryWindowBase(Int32 my_rank, Int32 nb_rank, ConstArrayView<Int32> ranks, Integer sizeof_type, std::byte* window, Integer* nb_elem, Integer* sum_nb_elem, Integer nb_elem_total, IThreadBarrier* barrier)
+SharedMemoryMachineMemoryWindowBase(Int32 my_rank, Int32 nb_rank, ConstArrayView<Int32> ranks, Int32 sizeof_type, std::byte* window, Int64* sizeof_segments, Int64* sum_sizeof_segments, Int64 sizeof_window, IThreadBarrier* barrier)
 : m_my_rank(my_rank)
 , m_nb_rank(nb_rank)
 , m_ranks(ranks)
 , m_sizeof_type(sizeof_type)
-, m_actual_nb_elem_win(nb_elem_total)
-, m_max_nb_elem_win(nb_elem_total)
+, m_actual_sizeof_win(sizeof_window)
+, m_max_sizeof_win(sizeof_window)
+, m_window_span(window, sizeof_window)
+, m_sizeof_segments_span(sizeof_segments, nb_rank)
+, m_sum_sizeof_segments_span(sum_sizeof_segments, nb_rank)
 , m_window(window)
-, m_nb_elem_segments(nb_elem)
-, m_sum_nb_elem_segments(sum_nb_elem)
+, m_sizeof_segments(sizeof_segments)
+, m_sum_sizeof_segments(sum_sizeof_segments)
 , m_barrier(barrier)
 {}
 
@@ -48,15 +51,15 @@ SharedMemoryMachineMemoryWindowBase::
 {
   if (m_my_rank == 0) {
     delete[] m_window;
-    delete[] m_nb_elem_segments;
-    delete[] m_sum_nb_elem_segments;
+    delete[] m_sizeof_segments;
+    delete[] m_sum_sizeof_segments;
   }
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Integer SharedMemoryMachineMemoryWindowBase::
+Int32 SharedMemoryMachineMemoryWindowBase::
 sizeofOneElem() const
 {
   return m_sizeof_type;
@@ -65,115 +68,69 @@ sizeofOneElem() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Integer SharedMemoryMachineMemoryWindowBase::
-sizeSegment() const
+Span<std::byte> SharedMemoryMachineMemoryWindowBase::
+segment() const
 {
-  return m_nb_elem_segments[m_my_rank];
+  const Int64 begin_segment = m_sum_sizeof_segments_span[m_my_rank];
+  const Int64 size_segment = m_sizeof_segments_span[m_my_rank];
+
+  return m_window_span.subSpan(begin_segment, size_segment);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Integer SharedMemoryMachineMemoryWindowBase::
-sizeSegment(Int32 rank) const
+Span<std::byte> SharedMemoryMachineMemoryWindowBase::
+segment(Int32 rank) const
 {
-  return m_nb_elem_segments[rank];
+  const Int64 begin_segment = m_sum_sizeof_segments_span[rank];
+  const Int64 size_segment = m_sizeof_segments_span[rank];
+
+  return m_window_span.subSpan(begin_segment, size_segment);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Integer SharedMemoryMachineMemoryWindowBase::
-sizeWindow() const
+Span<std::byte> SharedMemoryMachineMemoryWindowBase::
+window() const
 {
-  return m_actual_nb_elem_win;
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void* SharedMemoryMachineMemoryWindowBase::
-dataSegment() const
-{
-  return &m_window[m_sum_nb_elem_segments[m_my_rank] * m_sizeof_type];
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void* SharedMemoryMachineMemoryWindowBase::
-dataSegment(Int32 rank) const
-{
-  return &m_window[m_sum_nb_elem_segments[rank] * m_sizeof_type];
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void* SharedMemoryMachineMemoryWindowBase::
-dataWindow() const
-{
-  return m_window;
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-std::pair<Integer, void*> SharedMemoryMachineMemoryWindowBase::
-sizeAndDataSegment() const
-{
-  return { sizeSegment(), dataSegment() };
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-std::pair<Integer, void*> SharedMemoryMachineMemoryWindowBase::
-sizeAndDataSegment(Int32 rank) const
-{
-  return { sizeSegment(rank), dataSegment(rank) };
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-std::pair<Integer, void*> SharedMemoryMachineMemoryWindowBase::
-sizeAndDataWindow() const
-{
-  return { m_actual_nb_elem_win, m_window };
+  return m_window_span;
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void SharedMemoryMachineMemoryWindowBase::
-resizeSegment(Integer new_nb_elem)
+resizeSegment(Int64 new_sizeof_segment)
 {
-  m_nb_elem_segments[m_my_rank] = new_nb_elem;
+  m_sizeof_segments_span[m_my_rank] = new_sizeof_segment;
 
   m_barrier->wait();
 
   if (m_my_rank == 0) {
-    Integer sum = 0;
-    for (Integer i = 0; i < m_nb_rank; ++i) {
-      m_sum_nb_elem_segments[i] = sum;
-      sum += m_nb_elem_segments[i];
+    Int64 sum = 0;
+    for (Int32 i = 0; i < m_nb_rank; ++i) {
+      m_sum_sizeof_segments_span[i] = sum;
+      sum += m_sizeof_segments_span[i];
     }
-    if (sum > m_max_nb_elem_win) {
+    if (sum > m_max_sizeof_win) {
       ARCANE_FATAL("New size of window (sum of size of all segments) is superior than the old size");
     }
-    m_actual_nb_elem_win = sum;
+    m_actual_sizeof_win = sum;
   }
   else {
-    Integer sum = 0;
-    for (Integer i = 0; i < m_nb_rank; ++i) {
-      sum += m_nb_elem_segments[i];
+    Int64 sum = 0;
+    for (Int32 i = 0; i < m_nb_rank; ++i) {
+      sum += m_sizeof_segments_span[i];
     }
-    if (sum > m_max_nb_elem_win) {
+    if (sum > m_max_sizeof_win) {
       ARCANE_FATAL("New size of window (sum of size of all segments) is superior than the old size");
     }
-    m_actual_nb_elem_win = sum;
+    m_actual_sizeof_win = sum;
   }
+
+  m_window_span = Span<std::byte>{ m_window_span.data(), m_actual_sizeof_win };
 
   m_barrier->wait();
 }

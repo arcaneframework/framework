@@ -17,7 +17,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arccore/message_passing/IMachineMemoryWindowBase.h"
+#include "arccore/message_passing/internal/IMachineMemoryWindowBase.h"
 
 #include "arcane/core/ArcaneTypes.h"
 
@@ -35,30 +35,19 @@ class ARCANE_THREAD_EXPORT SharedMemoryMachineMemoryWindowBase
 {
  public:
 
-  SharedMemoryMachineMemoryWindowBase(Int32 my_rank, Int32 nb_rank, ConstArrayView<Int32> ranks, Integer sizeof_type, std::byte* window, Integer* nb_elem, Integer* sum_nb_elem, Integer nb_elem_total, IThreadBarrier* barrier);
+  SharedMemoryMachineMemoryWindowBase(Int32 my_rank, Int32 nb_rank, ConstArrayView<Int32> ranks, Int32 sizeof_type, std::byte* window, Int64* sizeof_segments, Int64* sum_sizeof_segments, Int64 sizeof_window, IThreadBarrier* barrier);
 
   ~SharedMemoryMachineMemoryWindowBase() override;
 
  public:
 
-  Integer sizeofOneElem() const override;
+  Int32 sizeofOneElem() const override;
 
-  Integer sizeSegment() const override;
-  Integer sizeSegment(Int32 rank) const override;
+  Span<std::byte> segment() const override;
+  Span<std::byte> segment(Int32 rank) const override;
+  Span<std::byte> window() const override;
 
-  Integer sizeWindow() const override;
-
-  void* dataSegment() const override;
-  void* dataSegment(Int32 rank) const override;
-
-  void* dataWindow() const override;
-
-  std::pair<Integer, void*> sizeAndDataSegment() const override;
-  std::pair<Integer, void*> sizeAndDataSegment(Int32 rank) const override;
-
-  std::pair<Integer, void*> sizeAndDataWindow() const override;
-
-  void resizeSegment(Integer new_size) override;
+  void resizeSegment(Int64 new_sizeof_segment) override;
 
   ConstArrayView<Int32> machineRanks() const override;
 
@@ -69,12 +58,15 @@ class ARCANE_THREAD_EXPORT SharedMemoryMachineMemoryWindowBase
   Int32 m_my_rank;
   Int32 m_nb_rank;
   ConstArrayView<Int32> m_ranks;
-  Integer m_sizeof_type;
-  Integer m_actual_nb_elem_win;
-  Integer m_max_nb_elem_win;
+  Int32 m_sizeof_type;
+  Int64 m_actual_sizeof_win;
+  Int64 m_max_sizeof_win;
+  Span<std::byte> m_window_span;
+  Span<Int64> m_sizeof_segments_span;
+  Span<Int64> m_sum_sizeof_segments_span;
   std::byte* m_window;
-  Integer* m_nb_elem_segments;
-  Integer* m_sum_nb_elem_segments;
+  Int64* m_sizeof_segments;
+  Int64* m_sum_sizeof_segments;
   IThreadBarrier* m_barrier;
 };
 

@@ -105,12 +105,12 @@ createSubParallelMngRef(Int32 color, Int32 key)
 /*---------------------------------------------------------------------------*/
 
 Ref<MessagePassing::IMachineMemoryWindowBase> ParallelMngInternal::
-createMachineMemoryWindowBase(Integer nb_elem_local, Integer sizeof_one_elem)
+createMachineMemoryWindowBase(Int64 sizeof_segment, Int32 sizeof_type)
 {
-  ARCANE_UNUSED(nb_elem_local);
-  ARCANE_UNUSED(sizeof_one_elem);
-  ARCANE_NOT_YET_IMPLEMENTED("MachineWindows are not available in HybridParallelMng");
-  ARCANE_FATAL("MachineWindows are not available in HybridParallelMng");
+  ARCANE_UNUSED(sizeof_segment);
+  ARCANE_UNUSED(sizeof_type);
+  ARCANE_NOT_YET_IMPLEMENTED("MachineWindow is not available in your ParallelMng");
+  ARCANE_FATAL("MachineWindow is not available in your ParallelMng");
 }
 
 /*---------------------------------------------------------------------------*/

@@ -58,7 +58,7 @@ class HybridMachineMemoryWindowBaseCreator
 
  public:
 
-  HybridMachineMemoryWindowBase* createWindow(Int32 my_rank_global, Integer nb_elem_local_proc, Integer sizeof_type, MpiParallelMng* mpi_parallel_mng);
+  HybridMachineMemoryWindowBase* createWindow(Int32 my_rank_global, Int64 sizeof_segment, Int32 sizeof_type, MpiParallelMng* mpi_parallel_mng);
 
  private:
 
@@ -67,11 +67,11 @@ class HybridMachineMemoryWindowBaseCreator
  private:
 
   Int32 m_nb_rank_local_proc;
-  Integer m_nb_elem_total_local_proc;
+  Int64 m_sizeof_segment_local_proc;
   IThreadBarrier* m_barrier;
   Ref<IMachineMemoryWindowBase> m_window;
-  Ref<IMachineMemoryWindowBase> m_nb_elem;
-  Ref<IMachineMemoryWindowBase> m_sum_nb_elem;
+  Ref<IMachineMemoryWindowBase> m_sizeof_sub_segments;
+  Ref<IMachineMemoryWindowBase> m_sum_sizeof_sub_segments;
   UniqueArray<Int32> m_machine_ranks;
 };
 

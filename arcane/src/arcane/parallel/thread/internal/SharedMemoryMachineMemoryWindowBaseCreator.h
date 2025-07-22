@@ -45,16 +45,16 @@ class SharedMemoryMachineMemoryWindowBaseCreator
 
  public:
 
-  SharedMemoryMachineMemoryWindowBase* createWindow(Int32 my_rank, Integer nb_elem_local_section, Integer sizeof_type);
+  SharedMemoryMachineMemoryWindowBase* createWindow(Int32 my_rank, Int64 sizeof_segment, Int32 sizeof_type);
 
  private:
 
   Int32 m_nb_rank;
-  Integer m_nb_elem_total;
+  Int64 m_sizeof_window;
   IThreadBarrier* m_barrier;
   std::byte* m_window;
-  Integer* m_nb_elem;
-  Integer* m_sum_nb_elem;
+  Int64* m_sizeof_segments;
+  Int64* m_sum_sizeof_segments;
   UniqueArray<Int32> m_ranks;
 };
 

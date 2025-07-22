@@ -56,7 +56,7 @@
 
 #include "arccore/message_passing/RequestListBase.h"
 #include "arccore/message_passing/SerializeMessageList.h"
-#include "arccore/message_passing/IMachineMemoryWindowBase.h"
+#include "arccore/message_passing/internal/IMachineMemoryWindowBase.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -353,12 +353,12 @@ class SequentialMachineMemoryWindowBase
 {
  public:
 
-  SequentialMachineMemoryWindowBase(Integer nb_elem_local_section, Integer sizeof_type)
-  : m_nb_elem_local(nb_elem_local_section)
-  , m_max_nb_elem_local(nb_elem_local_section)
+  SequentialMachineMemoryWindowBase(Int64 sizeof_segment, Int32 sizeof_type)
+  : m_sizeof_segment(sizeof_segment)
+  , m_max_sizeof_segment(sizeof_segment)
   , m_sizeof_type(sizeof_type)
   {
-    m_segment = new std::byte[m_nb_elem_local * m_sizeof_type];
+    m_segment = new std::byte[m_sizeof_segment];
   }
 
   ~SequentialMachineMemoryWindowBase() override
@@ -368,79 +368,48 @@ class SequentialMachineMemoryWindowBase
 
  public:
 
-  Integer sizeofOneElem() const override
+  Int32 sizeofOneElem() const override
   {
     return m_sizeof_type;
   }
 
-  Integer sizeSegment() const override
+  Span<std::byte> segment() const override
   {
-    return m_nb_elem_local;
+    return Span<std::byte>{ m_segment, m_sizeof_segment };
   }
-  Integer sizeSegment(Int32 rank) const override
+  Span<std::byte> segment(const Int32 rank) const override
   {
     if (rank != 0) {
       ARCANE_FATAL("Rank {0} is unavailable (Sequential)", rank);
     }
-    return m_nb_elem_local;
+    return Span<std::byte>{ m_segment, m_sizeof_segment };
   }
-  Integer sizeWindow() const override
+  Span<std::byte> window() const override
   {
-    return m_nb_elem_local;
-  }
-
-  void* dataSegment() const override
-  {
-    return m_segment;
-  }
-  void* dataSegment(Int32 rank) const override
-  {
-    if (rank != 0) {
-      ARCANE_FATAL("Rank {0} is unavailable (Sequential)", rank);
-    }
-    return m_segment;
-  }
-  void* dataWindow() const override
-  {
-    return m_segment;
+    return Span<std::byte>{ m_segment, m_sizeof_segment };
   }
 
-  std::pair<Integer, void*> sizeAndDataSegment() const override
+  void resizeSegment(const Int64 new_sizeof_segment) override
   {
-    return { m_nb_elem_local, m_segment };
-  }
-  std::pair<Integer, void*> sizeAndDataSegment(Int32 rank) const override
-  {
-    if (rank != 0) {
-      ARCANE_FATAL("Rank {0} is unavailable (Sequential)", rank);
-    }
-    return { m_nb_elem_local, m_segment };
-  }
-  std::pair<Integer, void*> sizeAndDataWindow() const override
-  {
-    return { m_nb_elem_local, m_segment };
-  }
-
-  void resizeSegment(Integer new_nb_elem) override
-  {
-    if (new_nb_elem > m_max_nb_elem_local) {
+    if (new_sizeof_segment > m_max_sizeof_segment) {
       ARCANE_FATAL("New size of window (sum of size of all segments) is superior than the old size");
     }
-    m_nb_elem_local = new_nb_elem;
+    m_sizeof_segment = new_sizeof_segment;
   }
 
   ConstArrayView<Int32> machineRanks() const override
   {
-    return { 1, &m_my_rank };
+    return ConstArrayView<Int32>{ 1, &m_my_rank };
   }
 
   void barrier() const override {}
 
  private:
 
-  Integer m_nb_elem_local;
-  Integer m_max_nb_elem_local;
-  Integer m_sizeof_type;
+  Int64 m_sizeof_segment;
+  Int64 m_max_sizeof_segment;
+
+  Int32 m_sizeof_type;
   std::byte* m_segment;
   Int32 m_my_rank = 0;
 };
@@ -758,9 +727,9 @@ class SequentialParallelMng::Impl
 
  public:
 
-  Ref<IMachineMemoryWindowBase> createMachineMemoryWindowBase(Integer nb_elem_local, Integer sizeof_one_elem) override
+  Ref<IMachineMemoryWindowBase> createMachineMemoryWindowBase(Int64 sizeof_segment, Int32 sizeof_type) override
   {
-    return makeRef(new SequentialMachineMemoryWindowBase(nb_elem_local, sizeof_one_elem));
+    return makeRef(new SequentialMachineMemoryWindowBase(sizeof_segment, sizeof_type));
   }
 };
 

@@ -1037,29 +1037,11 @@ _testMachineMemoryWindow()
     }
   }
 
-  for (Int32 rank : machine_ranks) {
-    if (window.sizeSegment(rank) != nb_elem) {
-      ARCANE_FATAL("Bad size of sizeSegment({0})", rank);
-    }
-  }
-
   {
-    ArrayView av_my_segment(window.segmentView());
+    Span av_my_segment(window.segmentView());
 
-    if (av_my_segment.size() != window.sizeSegment()) {
-      ARCANE_FATAL("Incoherence size of segmentView() and sizeSegment()");
-    }
-
-    if (window.sizeWindow() != machine_nb_proc * nb_elem) {
+    if (window.windowConstView().size() != machine_nb_proc * nb_elem) {
       ARCANE_FATAL("Bad sizeWindow()");
-    }
-
-    if (av_my_segment.data() != window.dataSegment()) {
-      ARCANE_FATAL("Bad dataSegment()");
-    }
-
-    if (window.segmentConstView().data() != window.dataSegment()) {
-      ARCANE_FATAL("Bad segmentConstView().data()");
     }
 
     Integer iter = 0;
@@ -1071,7 +1053,7 @@ _testMachineMemoryWindow()
   window.barrier();
 
   for (Int32 rank : machine_ranks) {
-    ArrayView av_segment(window.segmentView(rank));
+    Span av_segment(window.segmentView(rank));
 
     for (Integer i = 0; i < nb_elem; ++i) {
       //info() << "Test " << i << " : " << av_segment[i] << " -- " << rank;
@@ -1082,7 +1064,7 @@ _testMachineMemoryWindow()
   }
 
   for (Int32 rank : machine_ranks) {
-    ConstArrayView av_segment(window.segmentConstView(rank));
+    Span av_segment(window.segmentConstView(rank));
 
     for (Integer i = 0; i < nb_elem; ++i) {
       //info() << "Test " << i << " : " << av_segment[i] << " -- " << rank;
@@ -1099,10 +1081,7 @@ _testMachineMemoryWindow()
   window.resizeSegment(nb_elem_div);
 
   for (Int32 rank : machine_ranks) {
-    ConstArrayView av_segment(window.segmentConstView(rank));
-    if (av_segment.data() != window.dataSegment(rank)) {
-      ARCANE_FATAL("Bad dataSegment({0})", rank);
-    }
+    Span av_segment(window.segmentConstView(rank));
 
     for (Integer i = 0; i < nb_elem_div; ++i) {
       //info() << "Test2 " << i << " : " << av_segment[i] << " -- " << rank;
@@ -1117,10 +1096,7 @@ _testMachineMemoryWindow()
   window.resizeSegment(nb_elem);
 
   if (my_rank == machine_ranks[0]) {
-    ArrayView av_window(window.windowView());
-    if (av_window.data() != window.dataWindow()) {
-      ARCANE_FATAL("Bad dataWindow()");
-    }
+    Span av_window(window.windowView());
     for (Integer j = 0; j < machine_nb_proc; ++j) {
       for (Integer i = 0; i < nb_elem; ++i) {
         av_window[i + (j * nb_elem)] = machine_ranks[j];
@@ -1131,10 +1107,7 @@ _testMachineMemoryWindow()
 
   window.barrier();
 
-  ConstArrayView av_window(window.windowConstView());
-  if (av_window.data() != window.dataWindow()) {
-    ARCANE_FATAL("Bad dataWindow()");
-  }
+  Span av_window(window.windowConstView());
   for (Integer j = 0; j < machine_nb_proc; ++j) {
     for (Integer i = 0; i < nb_elem; ++i) {
       //info() << "Test4 " << (i + (j * nb_elem)) << " : " << av_window[i + (j * nb_elem)] << " -- " << machine_ranks[j];

@@ -37,7 +37,7 @@ namespace Arcane::MessagePassing
 HybridMachineMemoryWindowBaseCreator::
 HybridMachineMemoryWindowBaseCreator(Int32 nb_rank_local_proc, IThreadBarrier* barrier)
 : m_nb_rank_local_proc(nb_rank_local_proc)
-, m_nb_elem_total_local_proc(0)
+, m_sizeof_segment_local_proc(0)
 , m_barrier(barrier)
 {}
 
@@ -45,7 +45,7 @@ HybridMachineMemoryWindowBaseCreator(Int32 nb_rank_local_proc, IThreadBarrier* b
 /*---------------------------------------------------------------------------*/
 
 HybridMachineMemoryWindowBase* HybridMachineMemoryWindowBaseCreator::
-createWindow(Int32 my_rank_global, Integer nb_elem_local_proc, Integer sizeof_type, MpiParallelMng* mpi_parallel_mng)
+createWindow(Int32 my_rank_global, Int64 sizeof_segment, Int32 sizeof_type, MpiParallelMng* mpi_parallel_mng)
 {
   // On est dans un contexte où chaque processus doit avoir plusieurs segments, un par thread.
   // Pour que chaque processus puisse avoir accès à toutes les positions des segments de tous les
@@ -63,42 +63,41 @@ createWindow(Int32 my_rank_global, Integer nb_elem_local_proc, Integer sizeof_ty
     _buildMachineRanksArray(mpi_window_creator);
 
     // Le nombre d'éléments de chaque segment. Cette fenêtre fera une taille de nb_thread * nb_proc_sur_le_même_noeud.
-    m_nb_elem = makeRef(mpi_window_creator->createWindow(m_nb_rank_local_proc, sizeof(Int32)));
-    m_sum_nb_elem = makeRef(mpi_window_creator->createWindow(m_nb_rank_local_proc, sizeof(Int32)));
+    m_sizeof_sub_segments = makeRef(mpi_window_creator->createWindow(m_nb_rank_local_proc * static_cast<Int64>(sizeof(Int64)), sizeof(Int64)));
+    m_sum_sizeof_sub_segments = makeRef(mpi_window_creator->createWindow(m_nb_rank_local_proc * static_cast<Int64>(sizeof(Int64)), sizeof(Int64)));
   }
   m_barrier->wait();
 
   // nb_elem est le segment de notre processus (qui contient les segments de tous nos threads).
-  Int32* nb_elem = static_cast<Int32*>(m_nb_elem->dataSegment());
+  Span<Int64> sizeof_sub_segments = asSpan<Int64>(m_sizeof_sub_segments->segment());
 
-  nb_elem[my_rank_local_proc] = nb_elem_local_proc;
+  sizeof_sub_segments[my_rank_local_proc] = sizeof_segment;
   m_barrier->wait();
 
   if (my_rank_local_proc == 0) {
-    m_nb_elem_total_local_proc = 0;
+    m_sizeof_segment_local_proc = 0;
+    Span<Int64> sum_sizeof_sub_segments = asSpan<Int64>(m_sum_sizeof_sub_segments->segment());
 
-    Int32* sum_nb_elem = static_cast<Int32*>(m_sum_nb_elem->dataSegment());
-
-    for (Integer i = 0; i < m_nb_rank_local_proc; ++i) {
-      sum_nb_elem[i] = m_nb_elem_total_local_proc;
-      m_nb_elem_total_local_proc += nb_elem[i];
+    for (Int32 i = 0; i < m_nb_rank_local_proc; ++i) {
+      sum_sizeof_sub_segments[i] = m_sizeof_segment_local_proc;
+      m_sizeof_segment_local_proc += sizeof_sub_segments[i];
     }
   }
   m_barrier->wait();
 
 
   if (my_rank_local_proc == 0) {
-    m_window = makeRef(mpi_window_creator->createWindow(m_nb_elem_total_local_proc, sizeof_type));
+    m_window = makeRef(mpi_window_creator->createWindow(m_sizeof_segment_local_proc, sizeof_type));
   }
   m_barrier->wait();
 
-  auto* window_obj = new HybridMachineMemoryWindowBase(my_rank_mpi, my_rank_local_proc, m_nb_rank_local_proc, m_machine_ranks, sizeof_type, m_nb_elem, m_sum_nb_elem, m_window, m_barrier);
+  auto* window_obj = new HybridMachineMemoryWindowBase(my_rank_mpi, my_rank_local_proc, m_nb_rank_local_proc, m_machine_ranks, sizeof_type, m_sizeof_sub_segments, m_sum_sizeof_sub_segments, m_window, m_barrier);
   m_barrier->wait();
 
   // Ces tableaux doivent être delete par HybridMachineMemoryWindowBase (rang 0 uniquement).
-  m_nb_elem.reset();
-  m_sum_nb_elem.reset();
-  m_nb_elem_total_local_proc = 0;
+  m_sizeof_sub_segments.reset();
+  m_sum_sizeof_sub_segments.reset();
+  m_sizeof_segment_local_proc = 0;
   m_window.reset();
 
   return window_obj;
@@ -113,9 +112,9 @@ _buildMachineRanksArray(const Mpi::MpiMachineMemoryWindowBaseCreator* mpi_window
   ConstArrayView<Int32> mpi_ranks(mpi_window_creator->machineRanks());
   m_machine_ranks.resize(mpi_ranks.size() * m_nb_rank_local_proc);
 
-  Integer iter = 0;
+  Int32 iter = 0;
   for (Int32 mpi_rank : mpi_ranks) {
-    for (Integer thread_rank = 0; thread_rank < m_nb_rank_local_proc; ++thread_rank) {
+    for (Int32 thread_rank = 0; thread_rank < m_nb_rank_local_proc; ++thread_rank) {
       m_machine_ranks[iter++] = thread_rank + m_nb_rank_local_proc * mpi_rank;
     }
   }

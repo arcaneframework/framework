@@ -45,8 +45,16 @@ struct ARCANE_THREAD_EXPORT SharedMemoryParallelMngBuildInfo
 {
  public:
   SharedMemoryParallelMngBuildInfo()
-  : rank(-1), nb_rank(0), trace_mng(nullptr), thread_mng(nullptr)
-  , message_queue(nullptr), thread_barrier(nullptr), all_dispatchers(nullptr){}
+  : rank(-1)
+  , nb_rank(0)
+  , trace_mng(nullptr)
+  , thread_mng(nullptr)
+  , message_queue(nullptr)
+  , thread_barrier(nullptr)
+  , all_dispatchers(nullptr)
+  , window_creator(nullptr)
+  {}
+
  public:
   Int32 rank;
   Int32 nb_rank;
@@ -60,7 +68,7 @@ struct ARCANE_THREAD_EXPORT SharedMemoryParallelMngBuildInfo
   IParallelMngContainerFactory* sub_builder_factory = nullptr;
   Ref<IParallelMngContainer> container;
   MP::Communicator communicator;
-  SharedMemoryMachineMemoryWindowBaseCreator* window_creator;
+  SharedMemoryMachineMemoryWindowBaseCreator* window_creator = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/

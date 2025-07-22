@@ -63,7 +63,16 @@ class ARCANE_CORE_EXPORT IParallelMngInternal
 
   virtual void setDefaultRunner(const Runner& runner) = 0;
 
-  virtual Ref<MessagePassing::IMachineMemoryWindowBase> createMachineMemoryWindowBase(Integer nb_elem_local, Integer sizeof_one_elem) = 0;
+  /*!
+   * \brief Méthode permettant de créer une fenêtre mémoire sur le noeud.
+   *
+   * Appel collectif.
+   *
+   * \param sizeof_segment La taille de notre segment (en octet).
+   * \param sizeof_type La taille d'un élément du segment (en octet).
+   * \return Une référence vers la nouvelle fenêtre.
+   */
+  virtual Ref<MessagePassing::IMachineMemoryWindowBase> createMachineMemoryWindowBase(Int64 sizeof_segment, Int32 sizeof_type) = 0;
 };
 
 /*---------------------------------------------------------------------------*/

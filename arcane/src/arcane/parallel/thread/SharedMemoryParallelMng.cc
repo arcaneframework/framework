@@ -107,9 +107,9 @@ class SharedMemoryParallelMng::Impl
 
  public:
 
-  Ref<IMachineMemoryWindowBase> createMachineMemoryWindowBase(Integer nb_elem_local, Integer sizeof_one_elem) override
+  Ref<IMachineMemoryWindowBase> createMachineMemoryWindowBase(Int64 sizeof_segment, Int32 sizeof_type) override
   {
-    return makeRef(m_window_creator->createWindow(m_parallel_mng->commRank(), nb_elem_local, sizeof_one_elem));
+    return makeRef(m_window_creator->createWindow(m_parallel_mng->commRank(), sizeof_segment, sizeof_type));
   }
 
  private:
