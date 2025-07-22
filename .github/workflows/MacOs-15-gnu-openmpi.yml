@@ -22,15 +22,13 @@ on:
 
 jobs:
   build:
-    runs-on: macos-latest
+    runs-on: macos-15
     env:
       CCACHE_BASEDIR: ${{github.workspace}}
       CCACHE_DIR: '${{ github.workspace }}/ccache'
       CCACHE_COMPRESS: true
       CCACHE_COMPRESSLEVEL: 6
       CCACHE_MAXSIZE: 5G
-      # To tell 'openmpi' we may use more cpu core than available
-      OMPI_MCA_rmaps_base_oversubscribe : true
     strategy:
       fail-fast: false
     steps:
@@ -50,7 +48,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          brew install cmake gcc open-mpi hdf5-mpi scotch dotnet petsc zstd ccache
+          brew install cmake gcc open-mpi hdf5-mpi scotch dotnet petsc ccache
 
       - name: Get cache for 'ccache' tool
         uses: actions/cache@v4
@@ -96,6 +94,5 @@ jobs:
 
       - name: Make tests
         run: |
-          echo "nb_job=$(sysctl -n hw.ncpu)"
-          ctest -j$(sysctl -n hw.ncpu) --output-on-failure
+          ctest --output-on-failure
         working-directory: ./build
