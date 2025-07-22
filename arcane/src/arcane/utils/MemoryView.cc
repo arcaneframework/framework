@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MemoryView.cc                                               (C) 2000-2024 */
+/* MemoryView.cc                                               (C) 2000-2025 */
 /*                                                                           */
 /* Vues constantes ou modifiables sur une zone mémoire.                      */
 /*---------------------------------------------------------------------------*/
@@ -14,6 +14,7 @@
 #include "arcane/utils/MemoryView.h"
 
 #include "arcane/utils/FatalErrorException.h"
+#include "arcane/utils/MemoryUtils.h"
 #include "arcane/utils/internal/SpecificMemoryCopyList.h"
 
 #include <cstring>
@@ -166,26 +167,31 @@ fill(ConstMemoryView v, const RunQueue* queue) const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void ConstMemoryView::
-copyToIndexesHost(MutableMemoryView v, Span<const Int32> indexes) const
+void MemoryUtils::
+copyToIndexesHost(MutableMemoryView destination, ConstMemoryView source,
+                  Span<const Int32> indexes)
 {
-  copyToIndexes(v, indexes.smallView(), nullptr);
+  copyToIndexes(destination, source, indexes.smallView(), nullptr);
 }
 
-void ConstMemoryView::
-copyToIndexes(MutableMemoryView v, SmallSpan<const Int32> indexes,
-              RunQueue* queue) const
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MemoryUtils::
+copyToIndexes(MutableMemoryView destination, ConstMemoryView source,
+              SmallSpan<const Int32> indexes,
+              RunQueue* queue)
 {
-  Int32 one_data_size = _checkDataTypeSize(A_FUNCINFO, m_datatype_size, v.datatypeSize());
+  Int32 one_data_size = _checkDataTypeSize(A_FUNCINFO, source.datatypeSize(), destination.datatypeSize());
 
   Int64 nb_index = indexes.size();
   if (nb_index == 0)
     return;
 
-  auto source = bytes();
-  auto destination = v.bytes();
+  auto b_source = source.bytes();
+  auto b_destination = destination.bytes();
 
-  _getDefaultCopyList(queue)->copyTo(one_data_size, { indexes, source, destination, queue });
+  _getDefaultCopyList(queue)->copyTo(one_data_size, { indexes, b_source, b_destination, queue });
 }
 
 /*---------------------------------------------------------------------------*/

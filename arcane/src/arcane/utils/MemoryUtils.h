@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MemoryUtils.h                                               (C) 2000-2024 */
+/* MemoryUtils.h                                               (C) 2000-2025 */
 /*                                                                           */
 /* Fonctions utilitaires de gestion mémoire.                                 */
 /*---------------------------------------------------------------------------*/
@@ -229,19 +229,71 @@ copy(MutableMemoryView destination, ConstMemoryView source, const RunQueue* queu
 
 //! Copie de \a source vers \a destination en utilisant la file \a queue.
 template <typename DataType> inline void
-copy(Span<DataType> destination, Span<const DataType> source, const RunQueue* queue = nullptr)
+copy(Span<DataType> destination, Span<const DataType> source,
+     const RunQueue* queue = nullptr)
 {
   ConstMemoryView input(asBytes(source));
   MutableMemoryView output(asWritableBytes(destination));
   copy(output, input, queue);
 }
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 //! Copie de \a source vers \a destination en utilisant la file \a queue.
 template <typename DataType> inline void
-copy(SmallSpan<DataType> destination, SmallSpan<const DataType> source, const RunQueue* queue = nullptr)
+copy(SmallSpan<DataType> destination, SmallSpan<const DataType> source,
+     const RunQueue* queue = nullptr)
 {
   copy(Span<DataType>(destination), Span<const DataType>(source), queue);
 }
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Copie sur l'hôte des données avec indirection.
+ *
+ * Copie dans \a destination les données de \a source
+ * indexées par \a indexes
+ *
+ * L'opération est équivalente au pseudo-code suivant:
+ *
+ * \code
+ * Int64 n = indexes.size();
+ * for( Int64 i=0; i<n; ++i )
+ *   destination[i] = source[indexes[i]];
+ * \endcode
+ *
+ * \pre destination.datatypeSize() == source.datatypeSize();
+ * \pre source.nbElement() >= indexes.size();
+ */
+extern "C++" ARCANE_UTILS_EXPORT void
+copyToIndexesHost(MutableMemoryView destination, ConstMemoryView source,
+                  Span<const Int32> indexes);
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Copie sur l'hôte des données avec indirection.
+ *
+ * Copie dans \a destination les données de \a source
+ * indexées par \a indexes
+ *
+ * \code
+ * Int32 n = indexes.size();
+ * for( Int32 i=0; i<n; ++i )
+ *   destinationv[i] = source[indexes[i]];
+ * \endcode
+ *
+ * Si \a run_queue n'est pas nul, elle sera utilisée pour la copie.
+ *
+ * \pre destination.datatypeSize() == source.datatypeSize();
+ * \pre source.nbElement() >= indexes.size();
+ */
+extern "C++" ARCANE_UTILS_EXPORT void
+copyToIndexes(MutableMemoryView destination, ConstMemoryView source,
+              SmallSpan<const Int32> indexes,
+              RunQueue* run_queue = nullptr);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

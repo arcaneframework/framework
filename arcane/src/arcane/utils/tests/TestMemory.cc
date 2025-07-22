@@ -146,7 +146,7 @@ class MemoryTester
 
       MutableMemoryView to(array3.span());
       ConstMemoryView from(array1.span());
-      from.copyToIndexesHost(to, copy_indexes);
+      MemoryUtils::copyToIndexesHost(to, from,copy_indexes);
       ASSERT_EQ(array2, array3);
     }
   }

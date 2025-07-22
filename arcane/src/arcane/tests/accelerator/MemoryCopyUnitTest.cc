@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MemoryCopyUnitTest.cc                                       (C) 2000-2024 */
+/* MemoryCopyUnitTest.cc                                       (C) 2000-2025 */
 /*                                                                           */
 /* Service de test des noyaux de recopie mémoire.                            */
 /*---------------------------------------------------------------------------*/
@@ -14,6 +14,7 @@
 #include "arcane/utils/NumArray.h"
 #include "arcane/utils/ValueChecker.h"
 #include "arcane/utils/MemoryView.h"
+#include "arcane/utils/MemoryUtils.h"
 
 #include "arcane/BasicUnitTest.h"
 #include "arcane/ServiceFactory.h"
@@ -239,9 +240,9 @@ _executeCopy(eMemoryRessource mem_kind, bool use_queue)
     {
       MutableMemoryView t1_view(t1.to1DSpan());
       ConstMemoryView destination_view(destination_buffer.to1DSpan());
-      destination_view.copyToIndexes(t1_view, indexes.to1DSpan().smallView(), queue_ptr);
+      MemoryUtils::copyToIndexes(t1_view, destination_view,indexes.to1DSpan().smallView(), queue_ptr);
       // Teste copie vide
-      destination_view.copyToIndexes(t1_view, {}, queue_ptr);
+      MemoryUtils::copyToIndexes(t1_view, destination_view, {}, queue_ptr);
     }
 
     // Vérifie la validité
@@ -316,10 +317,10 @@ _executeCopy(eMemoryRessource mem_kind, bool use_queue)
 
     {
       MutableMemoryView t1_view(t1.to1DSpan(), n2);
-      ConstMemoryView destination_view(destination_buffer.to1DSpan(), n2);
-      destination_view.copyToIndexes(t1_view, indexes.to1DSpan().smallView(), queue_ptr);
+      ConstMemoryView source_view(destination_buffer.to1DSpan(), n2);
+      MemoryUtils::copyToIndexes(t1_view, source_view, indexes.to1DSpan().smallView(), queue_ptr);
       // Teste copie vide
-      destination_view.copyToIndexes(t1_view, {}, queue_ptr);
+      MemoryUtils::copyToIndexes(t1_view, source_view, {}, queue_ptr);
     }
 
     {

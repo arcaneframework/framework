@@ -125,43 +125,6 @@ class ARCANE_UTILS_EXPORT ConstMemoryView
 
  public:
 
-  /*!
-   * \brief Copie dans l'instance indexée les données de \a v.
-   *
-   * L'opération est équivalente au pseudo-code suivant:
-   *
-   * \code
-   * Int64 n = indexes.size();
-   * for( Int64 i=0; i<n; ++i )
-   *   v[i] = this[indexes[i]];
-   * \endcode
-   *
-   * \pre this.datatypeSize() == v.datatypeSize();
-   * \pre v.nbElement() >= indexes.size();
-   */
-  void copyToIndexesHost(MutableMemoryView v, Span<const Int32> indexes) const;
-
-  /*!
-   * \brief Copie dans l'instance indexée les données de \a v.
-   *
-   * L'opération est équivalente au pseudo-code suivant:
-   *
-   * \code
-   * Int32 n = indexes.size();
-   * for( Int32 i=0; i<n; ++i )
-   *   v[i] = this[indexes[i]];
-   * \endcode
-   *
-   * Si \a run_queue n'est pas nul, elle sera utilisée pour la copie.
-   *
-   * \pre this.datatypeSize() == v.datatypeSize();
-   * \pre v.nbElement() >= indexes.size();
-   */
-  void copyToIndexes(MutableMemoryView v, SmallSpan<const Int32> indexes,
-                     RunQueue* run_queue = nullptr) const;
-
- public:
-
   //! Vue convertie en un Span
   ARCANE_DEPRECATED_REASON("Use bytes() instead")
   SpanType span() const { return m_bytes; }
