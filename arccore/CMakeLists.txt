@@ -146,6 +146,9 @@ if (MSVC)
   # On utilise donc '/Z7' qui place les informations de debug dans les '.obj'.
   target_compile_options(arccore_build_compile_flags INTERFACE /Z7)
   target_link_options(arccore_build_compile_flags INTERFACE /debug)
+  # Indique que les fichiers ont l'encodage UTF-8
+  # Sans cela, Visual Studio 2022 considère qu'ils ont l'encodage courant (current code page)
+  target_compile_options(arccore_build_compile_flags INTERFACE "/utf-8")
 endif()
 
 # ----------------------------------------------------------------------------
