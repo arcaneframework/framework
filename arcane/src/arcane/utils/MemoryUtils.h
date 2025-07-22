@@ -297,6 +297,111 @@ copyToIndexes(MutableMemoryView destination, ConstMemoryView source,
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+/*!
+ * \brief Copie dans \a destination les données de \a source.
+ *
+ * Utilise std::memmove pour la copie.
+ *
+ * \pre source.bytes.size() >= destination.bytes.size()
+ */
+extern "C++" ARCANE_UTILS_EXPORT void
+copyHost(MutableMemoryView destination, ConstMemoryView source);
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Copie dans l'instance les données indexées de \a v.
+ *
+ * L'opération est équivalente au pseudo-code suivant:
+ *
+ * \code
+ * Int64 n = indexes.size();
+ * for( Int64 i=0; i<n; ++i )
+ *   destination[indexes[i]] = source[i];
+ * \endcode
+ *
+ * \pre destination.datatypeSize() == source.datatypeSize();
+ * \pre destination.nbElement() >= indexes.size();
+ */
+extern "C++" ARCANE_UTILS_EXPORT void
+copyFromIndexesHost(MutableMemoryView destination, ConstMemoryView source,
+                    Span<const Int32> indexes);
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Copie dans l'instance les données indexées de \a v.
+ *
+ * L'opération est équivalente au pseudo-code suivant:
+ *
+ * \code
+ * Int32 n = indexes.size();
+ * for( Int32 i=0; i<n; ++i )
+ *   destination[indexes[i]] = source[i];
+ * \endcode
+ *
+ * Si \a run_queue n'est pas nul, elle sera utilisée pour la copie.
+ *
+ * \pre destination.datatypeSize() == source.datatypeSize();
+ * \pre destination.nbElement() >= indexes.size();
+ */
+extern "C++" ARCANE_UTILS_EXPORT void
+copyFromIndexes(MutableMemoryView destination, ConstMemoryView source,
+                SmallSpan<const Int32> indexes, RunQueue* run_queue = nullptr);
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Remplit une zone mémoire indexée avec une valeur.
+ *
+ * Remplit les indices \a indexes de la zone mémoire \a destination avec
+ * la valeur de la zone mémoire \a source. \a source doit avoir une seule valeur.
+ * La zone mémoire \a source être accessible depuis l'hôte.
+ *
+ * L'opération est équivalente au pseudo-code suivant:
+ *
+ * \code
+ * Int32 n = indexes.size();
+ * for( Int32 i=0; i<n; ++i )
+ *   destination[indexes[i]] = source[0];
+ * \endcode
+ *
+ * Si \a run_queue n'est pas nul, elle sera utilisée pour la copie.
+ *
+ * \pre destination.datatypeSize() == source.datatypeSize();
+ * \pre destination.nbElement() >= indexes.size();
+ */
+extern "C++" ARCANE_UTILS_EXPORT void
+fillIndexes(MutableMemoryView destination, ConstMemoryView source,
+            SmallSpan<const Int32> indexes, const RunQueue* run_queue = nullptr);
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Remplit une zone mémoire avec une valeur.
+ *
+ * Remplit les valeurs de la zone mémoire \a destination avec
+ * la valeur de la zone mémoire \a source. \a source doit avoir une seule valeur.
+ * La zone mémoire \a source être accessible depuis l'hôte.
+ *
+ * L'opération est équivalente au pseudo-code suivant:
+ *
+ * \code
+ * Int32 n = nbElement();
+ * for( Int32 i=0; i<n; ++i )
+ *   destination[i] = source[0];
+ * \endcode
+ *
+ * Si \a run_queue n'est pas nul, elle sera utilisée pour la copie.
+ *
+ * \pre destination.datatypeSize() == source.datatypeSize();
+ */
+extern "C++" ARCANE_UTILS_EXPORT void
+fill(MutableMemoryView destination, ConstMemoryView source,
+     const RunQueue* run_queue = nullptr);
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 } // namespace Arcane::MemoryUtils
 

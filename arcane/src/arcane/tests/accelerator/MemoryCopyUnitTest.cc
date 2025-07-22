@@ -206,9 +206,9 @@ _executeCopy(eMemoryRessource mem_kind, bool use_queue)
     {
       ConstMemoryView source(t1.to1DSpan());
       MutableMemoryView destination(destination_buffer.to1DSpan());
-      destination.copyFromIndexes(source, indexes.to1DSpan().smallView(), queue_ptr);
+      MemoryUtils::copyFromIndexes(destination, source, indexes.to1DSpan().smallView(), queue_ptr);
       // Teste copie vide
-      destination.copyFromIndexes(source, {}, queue_ptr);
+      MemoryUtils::copyFromIndexes(destination, source, {}, queue_ptr);
     }
 
     NumArray<double, MDDim1> host_destination(eMemoryRessource::Host);
@@ -282,9 +282,9 @@ _executeCopy(eMemoryRessource mem_kind, bool use_queue)
     {
       ConstMemoryView source(t1.to1DSpan(), n2);
       MutableMemoryView destination(destination_buffer.to1DSpan(), n2);
-      destination.copyFromIndexes(source, indexes.to1DSpan().smallView(), queue_ptr);
+      MemoryUtils::copyFromIndexes(destination, source, indexes.to1DSpan().smallView(), queue_ptr);
       // Teste copie vide
-      destination.copyFromIndexes(source, {}, queue_ptr);
+      MemoryUtils::copyFromIndexes(destination, source, {}, queue_ptr);
     }
 
     NumArray<double, MDDim2> host_destination(eMemoryRessource::Host);

@@ -85,7 +85,7 @@ class DirectBufferCopier
                          ConstMemoryView var_value) override
   {
     RunQueue* q = (m_queue.isNull()) ? nullptr : &m_queue;
-    buffer.copyFromIndexes(var_value, indexes, q);
+    MemoryUtils::copyFromIndexes(buffer, var_value, indexes, q);
   }
 
   void barrier() override;

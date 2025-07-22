@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MemoryView.h                                                (C) 2000-2024 */
+/* MemoryView.h                                                (C) 2000-2025 */
 /*                                                                           */
 /* Vues constantes ou modifiables sur une zone mémoire.                      */
 /*---------------------------------------------------------------------------*/
@@ -230,94 +230,6 @@ class ARCANE_UTILS_EXPORT MutableMemoryView
     auto sub_bytes = m_bytes.subspan(byte_offset, nb_element * m_datatype_size);
     return { sub_bytes, m_datatype_size, nb_element };
   }
-
- public:
-
-  /*!
-   * \brief Copie dans l'instance les données de \a v.
-   *
-   * Utilise std::memmove pour la copie.
-   *
-   * \pre v.bytes.size() >= bytes.size()
-   */
-  void copyHost(ConstMemoryView v) const;
-
-  /*!
-   * \brief Copie dans l'instance les données indexées de \a v.
-   *
-   * L'opération est équivalente au pseudo-code suivant:
-   *
-   * \code
-   * Int64 n = indexes.size();
-   * for( Int64 i=0; i<n; ++i )
-   *   this[indexes[i]] = v[i];
-   * \endcode
-   *
-   * \pre this.datatypeSize() == v.datatypeSize();
-   * \pre this.nbElement() >= indexes.size();
-   */
-  void copyFromIndexesHost(ConstMemoryView v, Span<const Int32> indexes) const;
-
-  /*!
-   * \brief Copie dans l'instance les données indexées de \a v.
-   *
-   * L'opération est équivalente au pseudo-code suivant:
-   *
-   * \code
-   * Int32 n = indexes.size();
-   * for( Int32 i=0; i<n; ++i )
-   *   this[indexes[i]] = v[i];
-   * \endcode
-   *
-   * Si \a run_queue n'est pas nul, elle sera utilisée pour la copie.
-   *
-   * \pre this.datatypeSize() == v.datatypeSize();
-   * \pre this.nbElement() >= indexes.size();
-   */
-  void copyFromIndexes(ConstMemoryView v, SmallSpan<const Int32> indexes,
-                       RunQueue* run_queue = nullptr) const;
-
-  /*!
-   * \brief Remplit dans l'instance les données de \a v.
-   *
-   * \a v doit avoir une seule valeur. Cette valeur sera utilisée
-   * pour remplir les valeur de l'instance aux indices spécifiés par
-   * \a indexes. Elle doit être accessible depuis l'hôte.
-   *
-   * L'opération est équivalente au pseudo-code suivant:
-   *
-   * \code
-   * Int32 n = indexes.size();
-   * for( Int32 i=0; i<n; ++i )
-   *   this[indexes[i]] = v[0];
-   * \endcode
-   *
-   * Si \a run_queue n'est pas nul, elle sera utilisée pour la copie.
-   *
-   * \pre this.datatypeSize() == v.datatypeSize();
-   * \pre this.nbElement() >= indexes.size();
-   */
-  void fillIndexes(ConstMemoryView v, SmallSpan<const Int32> indexes,
-                   const RunQueue* run_queue = nullptr) const;
-
-  /*!
-   * \brief Remplit les éléments de l'instance avec la valeur \a v.
-   *
-   * \a v doit avoir une seule valeur. Elle doit être accessible depuis l'hôte.
-   *
-   * L'opération est équivalente au pseudo-code suivant:
-   *
-   * \code
-   * Int32 n = nbElement();
-   * for( Int32 i=0; i<n; ++i )
-   *   this[i] = v[0];
-   * \endcode
-   *
-   * Si \a run_queue n'est pas nul, elle sera utilisée pour la copie.
-   *
-   * \pre this.datatypeSize() == v.datatypeSize();
-   */
-  void fill(ConstMemoryView v, const RunQueue* run_queue = nullptr) const;
 
  public:
 

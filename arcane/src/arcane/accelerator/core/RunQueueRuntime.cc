@@ -13,6 +13,7 @@
 
 #include "arcane/utils/NotImplementedException.h"
 #include "arcane/utils/MemoryView.h"
+#include "arcane/utils/MemoryUtils.h"
 #include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/FatalErrorException.h"
 
@@ -51,7 +52,7 @@ class ARCANE_ACCELERATOR_CORE_EXPORT HostRunQueueStream
   void barrier() override { return m_runtime->barrier(); }
   void copyMemory(const MemoryCopyArgs& args) override
   {
-    args.destination().copyHost(args.source());
+    MemoryUtils::copyHost(args.destination(), args.source());
   }
   void prefetchMemory(const MemoryPrefetchArgs&) override {}
   NativeStream nativeStream() override { return {}; }
