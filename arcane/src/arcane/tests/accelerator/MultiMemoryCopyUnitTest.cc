@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MultiMemoryCopyUnitTest.cc                                  (C) 2000-2023 */
+/* MultiMemoryCopyUnitTest.cc                                  (C) 2000-2025 */
 /*                                                                           */
 /* Service de test des noyaux de recopie mémoire.                            */
 /*---------------------------------------------------------------------------*/
@@ -14,6 +14,7 @@
 #include "arcane/utils/NumArray.h"
 #include "arcane/utils/ValueChecker.h"
 #include "arcane/utils/MemoryView.h"
+#include "arcane/utils/MemoryUtils.h"
 #include "arcane/utils/PlatformUtils.h"
 
 #include "arcane/BasicUnitTest.h"
@@ -239,9 +240,9 @@ _executeCopy1Rank1(eMemoryRessource mem_kind, bool use_queue)
   {
     ConstMultiMemoryView source_memory_view(memories_as_bytes.constView(), sizeof(double));
     MutableMemoryView destination(buffer.to1DSpan());
-    source_memory_view.copyToIndexes(destination, indexes.to1DSpan().smallView(), queue_ptr);
+    MemoryUtils::copyToIndexes(destination, source_memory_view, indexes.to1DSpan().smallView(), queue_ptr);
     // Teste copie vide
-    source_memory_view.copyToIndexes(destination, {}, queue_ptr);
+    MemoryUtils::copyToIndexes(destination, source_memory_view, {}, queue_ptr);
   }
 
   UniqueArray<NumArray<double, MDDim1>> host_memories;
@@ -359,9 +360,9 @@ _executeCopy1Rank2(eMemoryRessource mem_kind, bool use_queue)
   {
     ConstMultiMemoryView source_memory_view(memories_as_bytes.constView(), sizeof(double) * n2);
     MutableMemoryView destination(buffer.to1DSpan(), n2);
-    source_memory_view.copyToIndexes(destination, indexes.to1DSpan().smallView(), queue_ptr);
+    MemoryUtils::copyToIndexes(destination, source_memory_view, indexes.to1DSpan().smallView(), queue_ptr);
     // Teste copie vide
-    source_memory_view.copyToIndexes(destination, {}, queue_ptr);
+    MemoryUtils::copyToIndexes(destination, source_memory_view, {}, queue_ptr);
   }
 
   UniqueArray<NumArray<double, MDDim2>> host_memories;

@@ -266,17 +266,17 @@ fill(ConstMemoryView v, RunQueue* queue)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void ConstMultiMemoryView::
-copyToIndexes(MutableMemoryView v, SmallSpan<const Int32> indexes,
-              RunQueue* queue)
+void MemoryUtils::
+copyToIndexes(MutableMemoryView destination, ConstMultiMemoryView source,
+              SmallSpan<const Int32> indexes, RunQueue* queue)
 {
-  Int32 one_data_size = _checkDataTypeSize(A_FUNCINFO, m_datatype_size, v.datatypeSize());
+  Int32 one_data_size = _checkDataTypeSize(A_FUNCINFO, destination.datatypeSize(), source.datatypeSize());
 
   Int64 nb_index = indexes.size();
   if (nb_index == 0)
     return;
 
-  _getDefaultCopyList(queue)->copyTo(one_data_size, { indexes, m_views, v.bytes(), queue });
+  _getDefaultCopyList(queue)->copyTo(one_data_size, { indexes, source.views(), destination.bytes(), queue });
 }
 
 /*---------------------------------------------------------------------------*/

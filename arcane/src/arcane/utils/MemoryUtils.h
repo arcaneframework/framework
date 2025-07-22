@@ -402,6 +402,34 @@ fill(MutableMemoryView destination, ConstMemoryView source,
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+/*!
+ * \brief Copie dans \a destination les données de \a source indexées.
+ *
+ * L'opération est équivalente au pseudo-code suivant:
+ *
+ * \code
+ * Int32 n = indexes.size();
+ * for( Int32 i=0; i<n; ++i ){
+ *   Int32 index0 = indexes[ (i*2)   ];
+ *   Int32 index1 = indexes[ (i*2)+1 ];
+ *   destination[i] = source[index0][index1];
+ * }
+ * \endcode
+ *
+ * Le tableau des indexes doit avoir une taille multiple de 2. Les valeurs
+ * paires servent à indexer le premier tableau et les valeurs impaires le 2ème.
+ *
+ * Si \a run_queue n'est pas nul, elle sera utilisée pour la copie.
+ *
+ * \pre destination.datatypeSize() == source.datatypeSize();
+ * \pre desination.nbElement() >= indexes.size();
+ */
+extern "C++" ARCANE_UTILS_EXPORT void
+copyToIndexes(MutableMemoryView destination, ConstMultiMemoryView source,
+              SmallSpan<const Int32> indexes, RunQueue* run_queue = nullptr);
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 } // namespace Arcane::MemoryUtils
 

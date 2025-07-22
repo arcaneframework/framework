@@ -270,32 +270,11 @@ class ARCANE_UTILS_EXPORT ConstMultiMemoryView
     m_views = { ptr, views.size() };
   }
 
- public:
+  //! Vues en octets sur la zone mémoire
+  constexpr SmallSpan<const Span<const std::byte>> views() const { return m_views; }
 
-  /*!
-   * \brief Copie dans l'instance indexée les données de \a v.
-   *
-   * L'opération est équivalente au pseudo-code suivant:
-   *
-   * \code
-   * Int32 n = indexes.size();
-   * for( Int32 i=0; i<n; ++i ){
-   *   Int32 index0 = indexes[ (i*2)   ];
-   *   Int32 index1 = indexes[ (i*2)+1 ];
-   *   v[i] = this[index0][index1];
-   * }
-   * \endcode
-   *
-   * Le tableau des indexes doit avoir une taille multiple de 2. Les valeurs
-   * paires servent à indexer le premier tableau et les valeurs impaires le 2ème.
-   *
-   * Si \a run_queue n'est pas nul, elle sera utilisée pour la copie.
-   *
-   * \pre this.datatypeSize() == v.datatypeSize();
-   * \pre v.nbElement() >= indexes.size();
-   */
-  void copyToIndexes(MutableMemoryView v, SmallSpan<const Int32> indexes,
-                     RunQueue* run_queue = nullptr);
+  //! Taille du type de donnée associé (1 par défaut)
+  constexpr Int32 datatypeSize() const { return m_datatype_size; }
 
  private:
 
