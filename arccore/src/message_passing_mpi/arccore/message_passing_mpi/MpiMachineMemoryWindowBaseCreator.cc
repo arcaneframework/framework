@@ -33,7 +33,7 @@ MpiMachineMemoryWindowBaseCreator(const MPI_Comm& comm_machine, Int32 comm_machi
   UniqueArray<Int32> global_ranks(comm_world_size);
   UniqueArray<Int32> machine_ranks(comm_world_size);
 
-  for (Integer i = 0; i < comm_world_size; ++i) {
+  for (Int32 i = 0; i < comm_world_size; ++i) {
     global_ranks[i] = i;
   }
   MPI_Group comm_world_group;
@@ -61,9 +61,9 @@ MpiMachineMemoryWindowBaseCreator(const MPI_Comm& comm_machine, Int32 comm_machi
 /*---------------------------------------------------------------------------*/
 
 MpiMachineMemoryWindowBase* MpiMachineMemoryWindowBaseCreator::
-createWindow(Integer nb_elem_local_section, Integer sizeof_type) const
+createWindow(Int64 sizeof_segment, Int32 sizeof_type) const
 {
-  return new MpiMachineMemoryWindowBase(nb_elem_local_section, sizeof_type, m_comm_machine, m_comm_machine_rank, m_comm_machine_size, m_machine_ranks);
+  return new MpiMachineMemoryWindowBase(sizeof_segment, sizeof_type, m_comm_machine, m_comm_machine_rank, m_comm_machine_size, m_machine_ranks);
 }
 
 /*---------------------------------------------------------------------------*/

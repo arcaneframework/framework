@@ -19,7 +19,7 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arccore/collections/Array.h"
-#include "arccore/message_passing/IMachineMemoryWindowBase.h"
+#include "arccore/message_passing/internal/IMachineMemoryWindowBase.h"
 
 #include "arccore/message_passing_mpi/MessagePassingMpiGlobal.h"
 
@@ -34,29 +34,19 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiMachineMemoryWindowBase
 {
  public:
 
-  explicit MpiMachineMemoryWindowBase(Integer nb_elem_local_section, Integer sizeof_type, const MPI_Comm& comm_machine, Int32 comm_machine_rank, Int32 comm_machine_size, ConstArrayView<Int32> machine_ranks);
+  explicit MpiMachineMemoryWindowBase(Int64 sizeof_segment, Int32 sizeof_type, const MPI_Comm& comm_machine, Int32 comm_machine_rank, Int32 comm_machine_size, ConstArrayView<Int32> machine_ranks);
 
   ~MpiMachineMemoryWindowBase() override;
 
  public:
 
-  Integer sizeofOneElem() const override;
+  Int32 sizeofOneElem() const override;
 
-  Integer sizeSegment() const override;
-  Integer sizeSegment(Int32 rank) const override;
+  Span<std::byte> segment() const override;
+  Span<std::byte> segment(Int32 rank) const override;
+  Span<std::byte> window() const override;
 
-  Integer sizeWindow() const override;
-
-  void* dataSegment() const override;
-  void* dataSegment(Int32 rank) const override;
-
-  void* dataWindow() const override;
-
-  std::pair<Integer, void*> sizeAndDataSegment() const override;
-  std::pair<Integer, void*> sizeAndDataSegment(Int32 rank) const override;
-
-  std::pair<Integer, void*> sizeAndDataWindow() const override;
-  void resizeSegment(Integer new_nb_elem) override;
+  void resizeSegment(Int64 new_sizeof_segment) override;
 
   ConstArrayView<Int32> machineRanks() const override;
 
@@ -65,24 +55,24 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiMachineMemoryWindowBase
  private:
 
   MPI_Win m_win;
-  std::byte* m_ptr_win;
+  Span<std::byte> m_window_span;
 
-  MPI_Win m_win_nb_elem_segments;
-  ArrayView<Integer> m_nb_elem_segments;
+  MPI_Win m_win_sizeof_segments;
+  Span<Int64> m_sizeof_segments_span;
 
-  MPI_Win m_win_sum_nb_elem_segments;
-  ArrayView<Integer> m_sum_nb_elem_segments;
+  MPI_Win m_win_sum_sizeof_segments;
+  Span<Int64> m_sum_sizeof_segments_span;
 
   MPI_Comm m_comm_machine;
   Int32 m_comm_machine_size;
   Int32 m_comm_machine_rank;
 
-  Integer m_sizeof_type;
+  Int32 m_sizeof_type;
 
   ConstArrayView<Int32> m_machine_ranks;
 
-  Integer m_max_nb_elem_win;
-  Integer m_actual_nb_elem_win;
+  Int64 m_max_sizeof_win;
+  Int64 m_actual_sizeof_win;
 };
 
 /*---------------------------------------------------------------------------*/

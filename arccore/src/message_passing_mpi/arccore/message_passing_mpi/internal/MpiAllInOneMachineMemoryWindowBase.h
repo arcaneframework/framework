@@ -17,8 +17,6 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arccore/message_passing/IMachineMemoryWindowBase.h"
-
 #include "arccore/message_passing_mpi/MessagePassingMpiGlobal.h"
 #include "arccore/base/FatalErrorException.h"
 

@@ -17,7 +17,7 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arccore/collections/Array.h"
-#include "arccore/message_passing/IMachineMemoryWindowBase.h"
+#include "arccore/message_passing/internal/IMachineMemoryWindowBase.h"
 
 #include "arccore/message_passing_mpi/MessagePassingMpiGlobal.h"
 
@@ -45,7 +45,7 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiMachineMemoryWindowBaseCreator
 
  public:
 
-  MpiMachineMemoryWindowBase* createWindow(Integer nb_elem_local_section, Integer sizeof_type) const;
+  MpiMachineMemoryWindowBase* createWindow(Int64 sizeof_segment, Int32 sizeof_type) const;
 
   ConstArrayView<Int32> machineRanks() const;
 

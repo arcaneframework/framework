@@ -26,17 +26,17 @@ namespace Arcane::MessagePassing::Mpi
 /*---------------------------------------------------------------------------*/
 
 MpiMachineMemoryWindowBase::
-MpiMachineMemoryWindowBase(Integer nb_elem_local_section, Integer sizeof_type, const MPI_Comm& comm_machine, Int32 comm_machine_rank, Int32 comm_machine_size, ConstArrayView<Int32> machine_ranks)
+MpiMachineMemoryWindowBase(Int64 sizeof_segment, Int32 sizeof_type, const MPI_Comm& comm_machine, Int32 comm_machine_rank, Int32 comm_machine_size, ConstArrayView<Int32> machine_ranks)
 : m_win()
-, m_win_nb_elem_segments()
-, m_win_sum_nb_elem_segments()
+, m_win_sizeof_segments()
+, m_win_sum_sizeof_segments()
 , m_comm_machine(comm_machine)
 , m_comm_machine_size(comm_machine_size)
 , m_comm_machine_rank(comm_machine_rank)
 , m_sizeof_type(sizeof_type)
 , m_machine_ranks(machine_ranks)
-, m_max_nb_elem_win(0)
-, m_actual_nb_elem_win(-1)
+, m_max_sizeof_win(0)
+, m_actual_sizeof_win(-1)
 {
   MPI_Info win_info;
   MPI_Info_create(&win_info);
@@ -44,7 +44,7 @@ MpiMachineMemoryWindowBase(Integer nb_elem_local_section, Integer sizeof_type, c
 
   {
     void* ptr_seg = nullptr;
-    int error = MPI_Win_allocate_shared(nb_elem_local_section * m_sizeof_type, m_sizeof_type, win_info, m_comm_machine, &ptr_seg, &m_win);
+    int error = MPI_Win_allocate_shared(sizeof_segment, m_sizeof_type, win_info, m_comm_machine, &ptr_seg, &m_win);
 
     if (error != MPI_SUCCESS) {
       ARCCORE_FATAL("Error with MPI_Win_allocate_shared() call");
@@ -54,17 +54,17 @@ MpiMachineMemoryWindowBase(Integer nb_elem_local_section, Integer sizeof_type, c
   //--------------------------
 
   {
-    Integer* ptr_seg = nullptr;
-    int error = MPI_Win_allocate_shared(sizeof(Integer), sizeof(Integer), win_info, m_comm_machine, &ptr_seg, &m_win_nb_elem_segments);
+    Int64* ptr_seg = nullptr;
+    int error = MPI_Win_allocate_shared(sizeof(Int64), sizeof(Int64), win_info, m_comm_machine, &ptr_seg, &m_win_sizeof_segments);
 
     if (error != MPI_SUCCESS) {
       ARCCORE_FATAL("Error with MPI_Win_allocate_shared() call");
     }
-    *ptr_seg = nb_elem_local_section;
+    *ptr_seg = sizeof_segment;
   }
   {
-    Integer* ptr_seg = nullptr;
-    int error = MPI_Win_allocate_shared(sizeof(Integer), sizeof(Integer), win_info, m_comm_machine, &ptr_seg, &m_win_sum_nb_elem_segments);
+    Int64* ptr_seg = nullptr;
+    int error = MPI_Win_allocate_shared(sizeof(Int64), sizeof(Int64), win_info, m_comm_machine, &ptr_seg, &m_win_sum_sizeof_segments);
 
     if (error != MPI_SUCCESS) {
       ARCCORE_FATAL("Error with MPI_Win_allocate_shared() call");
@@ -77,41 +77,41 @@ MpiMachineMemoryWindowBase(Integer nb_elem_local_section, Integer sizeof_type, c
   //--------------------------
 
 #ifdef ARCCORE_DEBUG
-  for (Integer i = 0; i < m_comm_machine_size; ++i) {
+  for (Int32 i = 0; i < m_comm_machine_size; ++i) {
     {
       MPI_Aint size_seg;
       int size_type;
-      Integer* ptr_seg = nullptr;
-      int error = MPI_Win_shared_query(m_win_nb_elem_segments, i, &size_seg, &size_type, &ptr_seg);
+      Int64* ptr_seg = nullptr;
+      int error = MPI_Win_shared_query(m_win_sizeof_segments, i, &size_seg, &size_type, &ptr_seg);
 
       if (error != MPI_SUCCESS) {
         ARCCORE_FATAL("Error with MPI_Win_shared_query() call");
       }
       if (i == 0) {
-        m_nb_elem_segments = { m_comm_machine_size, ptr_seg };
+        m_sizeof_segments_span = Span<Int64>{ ptr_seg, m_comm_machine_size };
       }
 
-      if (m_nb_elem_segments.data() + i != ptr_seg) {
+      if (m_sizeof_segments_span.data() + i != ptr_seg) {
         ARCCORE_FATAL("Pb d'adresse de segment");
       }
-      if (m_nb_elem_segments[i] != *ptr_seg) {
+      if (m_sizeof_segments_span[i] != *ptr_seg) {
         ARCCORE_FATAL("Pb taille de segment");
       }
     }
     {
       MPI_Aint size_seg;
       int size_type;
-      Integer* ptr_seg = nullptr;
-      int error = MPI_Win_shared_query(m_win_sum_nb_elem_segments, i, &size_seg, &size_type, &ptr_seg);
+      Int64* ptr_seg = nullptr;
+      int error = MPI_Win_shared_query(m_win_sum_sizeof_segments, i, &size_seg, &size_type, &ptr_seg);
 
       if (error != MPI_SUCCESS) {
         ARCCORE_FATAL("Error with MPI_Win_shared_query() call");
       }
       if (i == 0) {
-        m_sum_nb_elem_segments = { m_comm_machine_size, ptr_seg };
+        m_sum_sizeof_segments_span = Span<Int64>{ ptr_seg, m_comm_machine_size };
       }
 
-      if (m_sum_nb_elem_segments.data() + i != ptr_seg) {
+      if (m_sum_sizeof_segments_span.data() + i != ptr_seg) {
         ARCCORE_FATAL("Pb d'adresse de segment");
       }
     }
@@ -120,52 +120,54 @@ MpiMachineMemoryWindowBase(Integer nb_elem_local_section, Integer sizeof_type, c
   {
     MPI_Aint size_seg;
     int size_type;
-    Integer* ptr_seg = nullptr;
-    int error = MPI_Win_shared_query(m_win_nb_elem_segments, 0, &size_seg, &size_type, &ptr_seg);
+    Int64* ptr_seg = nullptr;
+    int error = MPI_Win_shared_query(m_win_sizeof_segments, 0, &size_seg, &size_type, &ptr_seg);
     if (error != MPI_SUCCESS) {
       ARCCORE_FATAL("Error with MPI_Win_shared_query() call");
     }
 
-    m_nb_elem_segments = { m_comm_machine_size, ptr_seg };
+    m_sizeof_segments_span = Span<Int64>{ ptr_seg, m_comm_machine_size };
   }
   {
     MPI_Aint size_seg;
     int size_type;
-    Integer* ptr_seg = nullptr;
-    int error = MPI_Win_shared_query(m_win_sum_nb_elem_segments, 0, &size_seg, &size_type, &ptr_seg);
+    Int64* ptr_seg = nullptr;
+    int error = MPI_Win_shared_query(m_win_sum_sizeof_segments, 0, &size_seg, &size_type, &ptr_seg);
 
     if (error != MPI_SUCCESS) {
       ARCCORE_FATAL("Error with MPI_Win_shared_query() call");
     }
 
-    m_sum_nb_elem_segments = { m_comm_machine_size, ptr_seg };
+    m_sum_sizeof_segments_span = Span<Int64>{ ptr_seg, m_comm_machine_size };
   }
 #endif
 
   //--------------------------
 
   if (m_comm_machine_rank == 0) {
-    for (Integer i = 0; i < m_comm_machine_size; ++i) {
-      m_sum_nb_elem_segments[i] = m_max_nb_elem_win;
-      m_max_nb_elem_win += m_nb_elem_segments[i];
+    for (Int32 i = 0; i < m_comm_machine_size; ++i) {
+      m_sum_sizeof_segments_span[i] = m_max_sizeof_win;
+      m_max_sizeof_win += m_sizeof_segments_span[i];
     }
   }
   else {
-    for (Integer i = 0; i < m_comm_machine_size; ++i) {
-      m_max_nb_elem_win += m_nb_elem_segments[i];
+    for (Int32 i = 0; i < m_comm_machine_size; ++i) {
+      m_max_sizeof_win += m_sizeof_segments_span[i];
     }
   }
 
   MPI_Barrier(m_comm_machine);
 
-  m_actual_nb_elem_win = m_max_nb_elem_win;
+  m_actual_sizeof_win = m_max_sizeof_win;
 
   //--------------------------
 
-#ifdef ARCCORE_DEBUG
-  Integer sum = 0;
+  std::byte* ptr_win = nullptr;
 
-  for (Integer i = 0; i < m_comm_machine_size; ++i) {
+#ifdef ARCCORE_DEBUG
+  Int64 sum = 0;
+
+  for (Int32 i = 0; i < m_comm_machine_size; ++i) {
     MPI_Aint size_seg;
     int size_type;
     std::byte* ptr_seg = nullptr;
@@ -175,22 +177,19 @@ MpiMachineMemoryWindowBase(Integer nb_elem_local_section, Integer sizeof_type, c
       ARCCORE_FATAL("Error with MPI_Win_shared_query() call");
     }
     if (i == 0) {
-      m_ptr_win = ptr_seg;
+      ptr_win = ptr_seg;
     }
 
-    Integer size_seg2 = static_cast<Integer>(size_seg);
-
-    if (ptr_seg != (m_ptr_win + sum)) {
+    if (ptr_seg != (ptr_win + sum)) {
       ARCCORE_FATAL("Pb d'adresse de segment");
     }
-    if (size_seg2 != m_nb_elem_segments[i] * m_sizeof_type) {
+    if (size_seg != m_sizeof_segments_span[i]) {
       ARCCORE_FATAL("Pb taille de segment");
     }
-    sum += size_seg2;
+    sum += size_seg;
   }
-  sum /= m_sizeof_type;
-  if (sum != m_max_nb_elem_win) {
-    ARCCORE_FATAL("Pb taille de window -- Expected : {0} -- Found : {1}", m_max_nb_elem_win, sum);
+  if (sum != m_max_sizeof_win) {
+    ARCCORE_FATAL("Pb taille de window -- Expected : {0} -- Found : {1}", m_max_sizeof_win, sum);
   }
 #else
   {
@@ -203,9 +202,11 @@ MpiMachineMemoryWindowBase(Integer nb_elem_local_section, Integer sizeof_type, c
       ARCCORE_FATAL("Error with MPI_Win_shared_query() call");
     }
 
-    m_ptr_win = ptr_seg;
+    ptr_win = ptr_seg;
   }
 #endif
+
+  m_window_span = Span<std::byte>{ ptr_win, m_max_sizeof_win };
 }
 
 /*---------------------------------------------------------------------------*/
@@ -215,14 +216,14 @@ MpiMachineMemoryWindowBase::
 ~MpiMachineMemoryWindowBase()
 {
   MPI_Win_free(&m_win);
-  MPI_Win_free(&m_win_nb_elem_segments);
-  MPI_Win_free(&m_win_sum_nb_elem_segments);
+  MPI_Win_free(&m_win_sizeof_segments);
+  MPI_Win_free(&m_win_sum_sizeof_segments);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Integer MpiMachineMemoryWindowBase::
+Int32 MpiMachineMemoryWindowBase::
 sizeofOneElem() const
 {
   return m_sizeof_type;
@@ -231,20 +232,23 @@ sizeofOneElem() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Integer MpiMachineMemoryWindowBase::
-sizeSegment() const
+Span<std::byte> MpiMachineMemoryWindowBase::
+segment() const
 {
-  return m_nb_elem_segments[m_comm_machine_rank];
+  const Int64 begin_segment = m_sum_sizeof_segments_span[m_comm_machine_rank];
+  const Int64 size_segment = m_sizeof_segments_span[m_comm_machine_rank];
+
+  return m_window_span.subSpan(begin_segment, size_segment);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Integer MpiMachineMemoryWindowBase::
-sizeSegment(Int32 rank) const
+Span<std::byte> MpiMachineMemoryWindowBase::
+segment(Int32 rank) const
 {
-  Integer pos = -1;
-  for (Integer i = 0; i < m_comm_machine_size; ++i) {
+  Int32 pos = -1;
+  for (Int32 i = 0; i < m_comm_machine_size; ++i) {
     if (m_machine_ranks[i] == rank) {
       pos = i;
       break;
@@ -254,125 +258,55 @@ sizeSegment(Int32 rank) const
     ARCCORE_FATAL("Rank is not in machine");
   }
 
-  return m_nb_elem_segments[pos];
+  const Int64 begin_segment = m_sum_sizeof_segments_span[pos];
+  const Int64 size_segment = m_sizeof_segments_span[pos];
+
+  return m_window_span.subSpan(begin_segment, size_segment);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Integer MpiMachineMemoryWindowBase::
-sizeWindow() const
+Span<std::byte> MpiMachineMemoryWindowBase::
+window() const
 {
-  return m_actual_nb_elem_win;
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void* MpiMachineMemoryWindowBase::
-dataSegment() const
-{
-  return (m_ptr_win + (m_sum_nb_elem_segments[m_comm_machine_rank] * m_sizeof_type));
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void* MpiMachineMemoryWindowBase::
-dataSegment(Int32 rank) const
-{
-  Integer pos = -1;
-  for (Integer i = 0; i < m_comm_machine_size; ++i) {
-    if (m_machine_ranks[i] == rank) {
-      pos = i;
-      break;
-    }
-  }
-  if (pos == -1) {
-    ARCCORE_FATAL("Rank is not in machine");
-  }
-
-  return (m_ptr_win + (m_sum_nb_elem_segments[pos] * m_sizeof_type));
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void* MpiMachineMemoryWindowBase::
-dataWindow() const
-{
-  return m_ptr_win;
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-std::pair<Integer, void*> MpiMachineMemoryWindowBase::
-sizeAndDataSegment() const
-{
-  return { (m_nb_elem_segments[m_comm_machine_rank]), (m_ptr_win + (m_sum_nb_elem_segments[m_comm_machine_rank] * m_sizeof_type)) };
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-std::pair<Integer, void*> MpiMachineMemoryWindowBase::
-sizeAndDataSegment(Int32 rank) const
-{
-  Integer pos = -1;
-  for (Integer i = 0; i < m_comm_machine_size; ++i) {
-    if (m_machine_ranks[i] == rank) {
-      pos = i;
-      break;
-    }
-  }
-  if (pos == -1) {
-    ARCCORE_FATAL("Rank is not in machine");
-  }
-
-  return { (m_nb_elem_segments[pos]), (m_ptr_win + (m_sum_nb_elem_segments[pos] * m_sizeof_type)) };
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-std::pair<Integer, void*> MpiMachineMemoryWindowBase::
-sizeAndDataWindow() const
-{
-  return { m_actual_nb_elem_win, m_ptr_win };
+  return m_window_span;
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void MpiMachineMemoryWindowBase::
-resizeSegment(Integer new_nb_elem)
+resizeSegment(Int64 new_sizeof_segment)
 {
-  m_nb_elem_segments[m_comm_machine_rank] = new_nb_elem;
+  m_sizeof_segments_span[m_comm_machine_rank] = new_sizeof_segment;
 
   MPI_Barrier(m_comm_machine);
 
   if (m_comm_machine_rank == 0) {
-    Integer sum = 0;
-    for (Integer i = 0; i < m_comm_machine_size; ++i) {
-      m_sum_nb_elem_segments[i] = sum;
-      sum += m_nb_elem_segments[i];
+    Int64 sum = 0;
+    for (Int32 i = 0; i < m_comm_machine_size; ++i) {
+      m_sum_sizeof_segments_span[i] = sum;
+      sum += m_sizeof_segments_span[i];
     }
-    if (sum > m_max_nb_elem_win) {
+    if (sum > m_max_sizeof_win) {
       ARCCORE_FATAL("New size of window (sum of size of all segments) is superior than the old size");
     }
-    m_actual_nb_elem_win = sum;
+    m_actual_sizeof_win = sum;
   }
   else {
-    Integer sum = 0;
-    for (Integer i = 0; i < m_comm_machine_size; ++i) {
-      sum += m_nb_elem_segments[i];
+    Int64 sum = 0;
+    for (Int32 i = 0; i < m_comm_machine_size; ++i) {
+      sum += m_sizeof_segments_span[i];
     }
-    if (sum > m_max_nb_elem_win) {
+    if (sum > m_max_sizeof_win) {
       ARCCORE_FATAL("New size of window (sum of size of all segments) is superior than the old size");
     }
-    m_actual_nb_elem_win = sum;
+    m_actual_sizeof_win = sum;
   }
+
+  m_window_span = Span<std::byte>{ m_window_span.data(), m_actual_sizeof_win };
+
   MPI_Barrier(m_comm_machine);
 }
 
