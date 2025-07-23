@@ -71,7 +71,7 @@ _memoryAwareFill(Span<std::byte> to, Int64 nb_element, const void* fill_address,
 {
   ConstMemoryView fill_value_view(makeConstMemoryView(fill_address, datatype_size, 1));
   MutableMemoryView destination(makeMutableMemoryView(to.data(), datatype_size, nb_element));
-  destination.fillIndexes(fill_value_view, indexes, queue);
+  MemoryUtils::fillIndexes(destination, fill_value_view, indexes, queue);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -83,7 +83,7 @@ _memoryAwareFill(Span<std::byte> to, Int64 nb_element, const void* fill_address,
 {
   ConstMemoryView fill_value_view(makeConstMemoryView(fill_address, datatype_size, 1));
   MutableMemoryView destination(makeMutableMemoryView(to.data(), datatype_size, nb_element));
-  destination.fill(fill_value_view, queue);
+  MemoryUtils::fill(destination, fill_value_view, queue);
 }
 
 /*---------------------------------------------------------------------------*/

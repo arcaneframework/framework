@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -90,7 +90,7 @@ class MemoryTester
       UniqueArray<DataType> array2(nb_value);
       MutableMemoryView to(array2.span());
       ConstMemoryView from(array1.span());
-      to.copyHost(from);
+      MemoryUtils::copyHost(to, from);
       ASSERT_EQ(array1, array2);
     }
 
@@ -120,7 +120,7 @@ class MemoryTester
       UniqueArray<DataType> array3(nb_index);
       MutableMemoryView to(array3.span());
       ConstMemoryView from(array1.span());
-      to.copyFromIndexesHost(from, copy_indexes);
+      MemoryUtils::copyFromIndexesHost(to, from, copy_indexes);
       ASSERT_EQ(array2, array3);
       ConstMemoryView view2(array1.view());
       ASSERT_EQ(view2.bytes(), asBytes(array1));
@@ -146,7 +146,7 @@ class MemoryTester
 
       MutableMemoryView to(array3.span());
       ConstMemoryView from(array1.span());
-      from.copyToIndexesHost(to, copy_indexes);
+      MemoryUtils::copyToIndexesHost(to, from,copy_indexes);
       ASSERT_EQ(array2, array3);
     }
   }

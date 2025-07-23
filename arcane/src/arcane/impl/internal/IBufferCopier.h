@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IBufferCopier.h                                             (C) 2000-2024 */
+/* IBufferCopier.h                                             (C) 2000-2025 */
 /*                                                                           */
 /* Interface pour la copie de buffer.                                        */
 /*---------------------------------------------------------------------------*/
@@ -16,6 +16,7 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/MemoryView.h"
+#include "arcane/utils/MemoryUtils.h"
 
 #include "arcane/core/GroupIndexTable.h"
 #include "arcane/accelerator/core/RunQueue.h"
@@ -76,7 +77,7 @@ class DirectBufferCopier
                            MutableMemoryView var_value) override
   {
     RunQueue* q = (m_queue.isNull()) ? nullptr : &m_queue;
-    buffer.copyToIndexes(var_value, indexes, q);
+    MemoryUtils::copyToIndexes(var_value, buffer, indexes, q);
   }
 
   void copyToBufferAsync(Int32ConstArrayView indexes,
@@ -84,7 +85,7 @@ class DirectBufferCopier
                          ConstMemoryView var_value) override
   {
     RunQueue* q = (m_queue.isNull()) ? nullptr : &m_queue;
-    buffer.copyFromIndexes(var_value, indexes, q);
+    MemoryUtils::copyFromIndexes(buffer, var_value, indexes, q);
   }
 
   void barrier() override;

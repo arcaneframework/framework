@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* SharedMemoryParallelDispatch.cc                             (C) 2000-2024 */
+/* SharedMemoryParallelDispatch.cc                             (C) 2000-2025 */
 /*                                                                           */
 /* Implémentation des messages en mémoire partagée.                          */
 /*---------------------------------------------------------------------------*/
@@ -17,13 +17,11 @@
 #include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/String.h"
 #include "arcane/utils/ITraceMng.h"
-#include "arcane/utils/Real2.h"
-#include "arcane/utils/Real3.h"
-#include "arcane/utils/Real2x2.h"
-#include "arcane/utils/Real3x3.h"
+#include "arcane/utils/NumericTypes.h"
 #include "arcane/utils/APReal.h"
 #include "arcane/utils/NotImplementedException.h"
 #include "arcane/utils/MemoryView.h"
+#include "arcane/utils/MemoryUtils.h"
 
 #include "arcane/MeshVariable.h"
 #include "arcane/IParallelMng.h"
@@ -139,7 +137,7 @@ _genericAllToAllVariable(ConstMemoryView send_buf,
     ConstMemoryView view(ainfo.send_buf);
     Integer index = ainfo.send_index[my_rank];
     Integer count = ainfo.send_count[my_rank];
-    recv_mem_buf.subView(global_index,count).copyHost(view.subView(index,count));
+    MemoryUtils::copyHost(recv_mem_buf.subView(global_index,count), view.subView(index,count));
     global_index += count;
   }
   _collectiveBarrier();
@@ -158,7 +156,7 @@ _genericAllGather(ConstMemoryView send_buf,MutableMemoryView recv_buf)
   for( Int32 i=0; i<m_nb_rank; ++i ){
     ConstMemoryView view(m_all_dispatchs_base[i]->m_const_view);
     Int64 size = view.nbElement();
-    recv_mem_view.subView(index,size).copyHost(view);
+    MemoryUtils::copyHost(recv_mem_view.subView(index,size), view);
     index += size;
   }
   _collectiveBarrier();
@@ -182,7 +180,7 @@ _genericAllGatherVariable(ConstMemoryView send_buf,IResizableArray* recv_buf)
   for( Integer i=0; i<m_nb_rank; ++i ){
     ConstMemoryView view(m_all_dispatchs_base[i]->m_const_view);
     Int64 size = view.nbElement();
-    recv_mem_view.subView(index,size).copyHost(view);
+    MemoryUtils::copyHost(recv_mem_view.subView(index,size), view);
     index += size;
   }
   _collectiveBarrier();
@@ -203,7 +201,7 @@ _genericScatterVariable(ConstMemoryView send_buf,MutableMemoryView recv_buf,Int3
     for( Integer i=0; i<m_nb_rank; ++i ){
       MutableMemoryView view(m_all_dispatchs_base[i]->m_recv_view);
       Int64 size = view.nbElement();
-      view.copyHost(const_view.subView(index,size));
+      MemoryUtils::copyHost(view, const_view.subView(index,size));
       index += size;
     }
   }
@@ -260,7 +258,7 @@ _genericBroadcast(MutableMemoryView send_buf,Int32 rank)
 {
   m_broadcast_view = send_buf;
   _collectiveBarrier();
-  m_broadcast_view.copyHost(m_all_dispatchs_base[rank]->m_broadcast_view);
+  MemoryUtils::copyHost(m_broadcast_view, m_all_dispatchs_base[rank]->m_broadcast_view);
   _collectiveBarrier();
 }
 

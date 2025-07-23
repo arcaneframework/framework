@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MemoryView.h                                                (C) 2000-2024 */
+/* MemoryView.h                                                (C) 2000-2025 */
 /*                                                                           */
 /* Vues constantes ou modifiables sur une zone mémoire.                      */
 /*---------------------------------------------------------------------------*/
@@ -125,43 +125,6 @@ class ARCANE_UTILS_EXPORT ConstMemoryView
 
  public:
 
-  /*!
-   * \brief Copie dans l'instance indexée les données de \a v.
-   *
-   * L'opération est équivalente au pseudo-code suivant:
-   *
-   * \code
-   * Int64 n = indexes.size();
-   * for( Int64 i=0; i<n; ++i )
-   *   v[i] = this[indexes[i]];
-   * \endcode
-   *
-   * \pre this.datatypeSize() == v.datatypeSize();
-   * \pre v.nbElement() >= indexes.size();
-   */
-  void copyToIndexesHost(MutableMemoryView v, Span<const Int32> indexes) const;
-
-  /*!
-   * \brief Copie dans l'instance indexée les données de \a v.
-   *
-   * L'opération est équivalente au pseudo-code suivant:
-   *
-   * \code
-   * Int32 n = indexes.size();
-   * for( Int32 i=0; i<n; ++i )
-   *   v[i] = this[indexes[i]];
-   * \endcode
-   *
-   * Si \a run_queue n'est pas nul, elle sera utilisée pour la copie.
-   *
-   * \pre this.datatypeSize() == v.datatypeSize();
-   * \pre v.nbElement() >= indexes.size();
-   */
-  void copyToIndexes(MutableMemoryView v, SmallSpan<const Int32> indexes,
-                     RunQueue* run_queue = nullptr) const;
-
- public:
-
   //! Vue convertie en un Span
   ARCANE_DEPRECATED_REASON("Use bytes() instead")
   SpanType span() const { return m_bytes; }
@@ -270,94 +233,6 @@ class ARCANE_UTILS_EXPORT MutableMemoryView
 
  public:
 
-  /*!
-   * \brief Copie dans l'instance les données de \a v.
-   *
-   * Utilise std::memmove pour la copie.
-   *
-   * \pre v.bytes.size() >= bytes.size()
-   */
-  void copyHost(ConstMemoryView v) const;
-
-  /*!
-   * \brief Copie dans l'instance les données indexées de \a v.
-   *
-   * L'opération est équivalente au pseudo-code suivant:
-   *
-   * \code
-   * Int64 n = indexes.size();
-   * for( Int64 i=0; i<n; ++i )
-   *   this[indexes[i]] = v[i];
-   * \endcode
-   *
-   * \pre this.datatypeSize() == v.datatypeSize();
-   * \pre this.nbElement() >= indexes.size();
-   */
-  void copyFromIndexesHost(ConstMemoryView v, Span<const Int32> indexes) const;
-
-  /*!
-   * \brief Copie dans l'instance les données indexées de \a v.
-   *
-   * L'opération est équivalente au pseudo-code suivant:
-   *
-   * \code
-   * Int32 n = indexes.size();
-   * for( Int32 i=0; i<n; ++i )
-   *   this[indexes[i]] = v[i];
-   * \endcode
-   *
-   * Si \a run_queue n'est pas nul, elle sera utilisée pour la copie.
-   *
-   * \pre this.datatypeSize() == v.datatypeSize();
-   * \pre this.nbElement() >= indexes.size();
-   */
-  void copyFromIndexes(ConstMemoryView v, SmallSpan<const Int32> indexes,
-                       RunQueue* run_queue = nullptr) const;
-
-  /*!
-   * \brief Remplit dans l'instance les données de \a v.
-   *
-   * \a v doit avoir une seule valeur. Cette valeur sera utilisée
-   * pour remplir les valeur de l'instance aux indices spécifiés par
-   * \a indexes. Elle doit être accessible depuis l'hôte.
-   *
-   * L'opération est équivalente au pseudo-code suivant:
-   *
-   * \code
-   * Int32 n = indexes.size();
-   * for( Int32 i=0; i<n; ++i )
-   *   this[indexes[i]] = v[0];
-   * \endcode
-   *
-   * Si \a run_queue n'est pas nul, elle sera utilisée pour la copie.
-   *
-   * \pre this.datatypeSize() == v.datatypeSize();
-   * \pre this.nbElement() >= indexes.size();
-   */
-  void fillIndexes(ConstMemoryView v, SmallSpan<const Int32> indexes,
-                   const RunQueue* run_queue = nullptr) const;
-
-  /*!
-   * \brief Remplit les éléments de l'instance avec la valeur \a v.
-   *
-   * \a v doit avoir une seule valeur. Elle doit être accessible depuis l'hôte.
-   *
-   * L'opération est équivalente au pseudo-code suivant:
-   *
-   * \code
-   * Int32 n = nbElement();
-   * for( Int32 i=0; i<n; ++i )
-   *   this[i] = v[0];
-   * \endcode
-   *
-   * Si \a run_queue n'est pas nul, elle sera utilisée pour la copie.
-   *
-   * \pre this.datatypeSize() == v.datatypeSize();
-   */
-  void fill(ConstMemoryView v, const RunQueue* run_queue = nullptr) const;
-
- public:
-
   ARCANE_DEPRECATED_REASON("Use bytes() instead")
   constexpr SpanType span() const { return m_bytes; }
 
@@ -395,32 +270,11 @@ class ARCANE_UTILS_EXPORT ConstMultiMemoryView
     m_views = { ptr, views.size() };
   }
 
- public:
+  //! Vues en octets sur la zone mémoire
+  constexpr SmallSpan<const Span<const std::byte>> views() const { return m_views; }
 
-  /*!
-   * \brief Copie dans l'instance indexée les données de \a v.
-   *
-   * L'opération est équivalente au pseudo-code suivant:
-   *
-   * \code
-   * Int32 n = indexes.size();
-   * for( Int32 i=0; i<n; ++i ){
-   *   Int32 index0 = indexes[ (i*2)   ];
-   *   Int32 index1 = indexes[ (i*2)+1 ];
-   *   v[i] = this[index0][index1];
-   * }
-   * \endcode
-   *
-   * Le tableau des indexes doit avoir une taille multiple de 2. Les valeurs
-   * paires servent à indexer le premier tableau et les valeurs impaires le 2ème.
-   *
-   * Si \a run_queue n'est pas nul, elle sera utilisée pour la copie.
-   *
-   * \pre this.datatypeSize() == v.datatypeSize();
-   * \pre v.nbElement() >= indexes.size();
-   */
-  void copyToIndexes(MutableMemoryView v, SmallSpan<const Int32> indexes,
-                     RunQueue* run_queue = nullptr);
+  //! Taille du type de donnée associé (1 par défaut)
+  constexpr Int32 datatypeSize() const { return m_datatype_size; }
 
  private:
 
@@ -448,76 +302,11 @@ class ARCANE_UTILS_EXPORT MutableMultiMemoryView
 
  public:
 
-  /*!
-   * \brief Copie dans l'instance indexée les données de \a v.
-   *
-   * L'opération est équivalente au pseudo-code suivant:
-   *
-   * \code
-   * Int32 n = indexes.size();
-   * for( Int32 i=0; i<n; ++i ){
-   *   Int32 index0 = indexes[ (i*2)   ];
-   *   Int32 index1 = indexes[ (i*2)+1 ];
-   *   this[index0][index1] = v[i];
-   * }
-   * \endcode
-   *
-   * Le tableau des indexes doit avoir une taille multiple de 2. Les valeurs
-   * paires servent à indexer le premier tableau et les valeurs impaires le 2ème.
-   *
-   * Si \a run_queue n'est pas nul, elle sera utilisée pour la copie.
-   *
-   * \pre this.datatypeSize() == v.datatypeSize();
-   * \pre v.nbElement() >= indexes.size();
-   */
-  void copyFromIndexes(ConstMemoryView v, SmallSpan<const Int32> indexes,
-                       RunQueue* run_queue = nullptr);
+  //! Vues en octets sur la zone mémoire
+  constexpr SmallSpan<Span<std::byte>> views() const { return m_views; }
 
-  /*!
-   * \brief Remplit dans l'instance les données de \a v.
-   *
-   * \a v doit avoir une seule valeur. Cette valeur sera utilisée
-   * pour remplir les valeur de l'instance aux indices spécifiés par
-   * \a indexes. Elle doit être accessible depuis l'hôte.
-   *
-   * L'opération est équivalente au pseudo-code suivant:
-   *
-   * \code
-   * Int32 n = indexes.size();
-   * for( Int32 i=0; i<n; ++i ){
-   *   Int32 index0 = indexes[ (i*2)   ];
-   *   Int32 index1 = indexes[ (i*2)+1 ];
-   *   this[index0][index1] = v[0];
-   * }
-   *
-   * Si \a run_queue n'est pas nul, elle sera utilisée pour la copie.
-   *
-   * \pre this.datatypeSize() == v.datatypeSize();
-   * \pre this.nbElement() >= indexes.size();
-   */
-  void fillIndexes(ConstMemoryView v, SmallSpan<const Int32> indexes,
-                   RunQueue* run_queue = nullptr);
-
-  /*!
-   * \brief Remplit les éléments de l'instance avec la valeur \a v.
-   *
-   * \a v doit avoir une seule valeur. Elle doit être accessible depuis l'hôte.
-   *
-   * L'opération est équivalente au pseudo-code suivant:
-   *
-   * \code
-   * Int32 n = nbElement();
-   * for( Int32 i=0; i<n; ++i ){
-   *   Int32 index0 = (i*2);
-   *   Int32 index1 = (i*2)+1;
-   *   this[index0][index1] = v[0];
-   * }
-   *
-   * Si \a run_queue n'est pas nul, elle sera utilisée pour la copie.
-   *
-   * \pre this.datatypeSize() == v.datatypeSize();
-   */
-  void fill(ConstMemoryView v, RunQueue* run_queue = nullptr);
+  //! Taille du type de donnée associé (1 par défaut)
+  constexpr Int32 datatypeSize() const { return m_datatype_size; }
 
  private:
 

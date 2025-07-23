@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MemoryView.cc                                               (C) 2000-2024 */
+/* MemoryView.cc                                               (C) 2000-2025 */
 /*                                                                           */
 /* Vues constantes ou modifiables sur une zone mémoire.                      */
 /*---------------------------------------------------------------------------*/
@@ -14,6 +14,7 @@
 #include "arcane/utils/MemoryView.h"
 
 #include "arcane/utils/FatalErrorException.h"
+#include "arcane/utils/MemoryUtils.h"
 #include "arcane/utils/internal/SpecificMemoryCopyList.h"
 
 #include <cstring>
@@ -85,107 +86,116 @@ setDefaultCopyListIfNotSet(ISpecificMemoryCopyList* ptr)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void MutableMemoryView::
-copyHost(ConstMemoryView v) const
+void MemoryUtils::
+copyHost(MutableMemoryView destination, ConstMemoryView source)
 {
-  auto source = v.bytes();
-  auto destination = bytes();
-  Int64 source_size = source.size();
+  auto b_source = source.bytes();
+  auto b_destination = destination.bytes();
+  Int64 source_size = b_source.size();
   if (source_size == 0)
     return;
-  Int64 destination_size = destination.size();
+  Int64 destination_size = b_destination.size();
   if (source_size > destination_size)
     ARCANE_FATAL("Destination is too small source_size={0} destination_size={1}",
                  source_size, destination_size);
-  auto* dest_data = destination.data();
-  auto* source_data = source.data();
-  ARCANE_CHECK_POINTER(dest_data);
+  auto* destination_data = b_destination.data();
+  auto* source_data = b_source.data();
+  ARCANE_CHECK_POINTER(destination_data);
   ARCANE_CHECK_POINTER(source_data);
-  std::memmove(destination.data(), source.data(), source_size);
+  std::memmove(destination_data, source_data, source_size);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void MutableMemoryView::
-copyFromIndexesHost(ConstMemoryView v, Span<const Int32> indexes) const
+void MemoryUtils::
+copyFromIndexesHost(MutableMemoryView destination, ConstMemoryView source,
+                    Span<const Int32> indexes)
 {
-  copyFromIndexes(v, indexes.smallView(), nullptr);
+  copyFromIndexes(destination, source, indexes.smallView(), nullptr);
 }
 
-void MutableMemoryView::
-copyFromIndexes(ConstMemoryView v, SmallSpan<const Int32> indexes,
-                RunQueue* queue) const
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MemoryUtils::
+copyFromIndexes(MutableMemoryView destination, ConstMemoryView source,
+                SmallSpan<const Int32> indexes, RunQueue* queue)
 {
 
-  Int32 one_data_size = _checkDataTypeSize(A_FUNCINFO, m_datatype_size, v.datatypeSize());
+  Int32 one_data_size = _checkDataTypeSize(A_FUNCINFO, destination.datatypeSize(), source.datatypeSize());
 
   Int64 nb_index = indexes.size();
   if (nb_index == 0)
     return;
 
-  auto source = v.bytes();
-  auto destination = bytes();
+  auto b_source = source.bytes();
+  auto b_destination = destination.bytes();
 
-  _getDefaultCopyList(queue)->copyFrom(one_data_size, { indexes, source, destination, queue });
+  _getDefaultCopyList(queue)->copyFrom(one_data_size, { indexes, b_source, b_destination, queue });
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void MutableMemoryView::
-fillIndexes(ConstMemoryView v, SmallSpan<const Int32> indexes,
-            const RunQueue* queue) const
+void MemoryUtils::
+fillIndexes(MutableMemoryView destination, ConstMemoryView source,
+            SmallSpan<const Int32> indexes, const RunQueue* queue)
 {
-  Int32 one_data_size = _checkDataTypeSize(A_FUNCINFO, m_datatype_size, v.datatypeSize());
+  Int32 one_data_size = _checkDataTypeSize(A_FUNCINFO, destination.datatypeSize(), source.datatypeSize());
 
   Int64 nb_index = indexes.size();
   if (nb_index == 0)
     return;
 
-  auto source = v.bytes();
-  auto destination = bytes();
+  auto b_source = source.bytes();
+  auto b_destination = destination.bytes();
 
-  _getDefaultCopyList(queue)->fill(one_data_size, { indexes, source, destination, queue });
+  _getDefaultCopyList(queue)->fill(one_data_size, { indexes, b_source, b_destination, queue });
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void MutableMemoryView::
-fill(ConstMemoryView v, const RunQueue* queue) const
+void MemoryUtils::
+fill(MutableMemoryView destination, ConstMemoryView source, const RunQueue* queue)
 {
-  Int32 one_data_size = _checkDataTypeSize(A_FUNCINFO, m_datatype_size, v.datatypeSize());
+  Int32 one_data_size = _checkDataTypeSize(A_FUNCINFO, destination.datatypeSize(), source.datatypeSize());
 
-  auto source = v.bytes();
-  auto destination = bytes();
+  auto b_source = source.bytes();
+  auto b_destination = destination.bytes();
 
-  _getDefaultCopyList(queue)->fill(one_data_size, { {}, source, destination, queue });
+  _getDefaultCopyList(queue)->fill(one_data_size, { {}, b_source, b_destination, queue });
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void ConstMemoryView::
-copyToIndexesHost(MutableMemoryView v, Span<const Int32> indexes) const
+void MemoryUtils::
+copyToIndexesHost(MutableMemoryView destination, ConstMemoryView source,
+                  Span<const Int32> indexes)
 {
-  copyToIndexes(v, indexes.smallView(), nullptr);
+  copyToIndexes(destination, source, indexes.smallView(), nullptr);
 }
 
-void ConstMemoryView::
-copyToIndexes(MutableMemoryView v, SmallSpan<const Int32> indexes,
-              RunQueue* queue) const
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MemoryUtils::
+copyToIndexes(MutableMemoryView destination, ConstMemoryView source,
+              SmallSpan<const Int32> indexes,
+              RunQueue* queue)
 {
-  Int32 one_data_size = _checkDataTypeSize(A_FUNCINFO, m_datatype_size, v.datatypeSize());
+  Int32 one_data_size = _checkDataTypeSize(A_FUNCINFO, source.datatypeSize(), destination.datatypeSize());
 
   Int64 nb_index = indexes.size();
   if (nb_index == 0)
     return;
 
-  auto source = bytes();
-  auto destination = v.bytes();
+  auto b_source = source.bytes();
+  auto b_destination = destination.bytes();
 
-  _getDefaultCopyList(queue)->copyTo(one_data_size, { indexes, source, destination, queue });
+  _getDefaultCopyList(queue)->copyTo(one_data_size, { indexes, b_source, b_destination, queue });
 }
 
 /*---------------------------------------------------------------------------*/
@@ -214,59 +224,60 @@ makeConstMemoryView(const void* ptr, Int32 datatype_size, Int64 nb_element)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void MutableMultiMemoryView::
-copyFromIndexes(ConstMemoryView v, SmallSpan<const Int32> indexes,
-                RunQueue* queue)
+void MemoryUtils::
+copyFromIndexes(MutableMultiMemoryView destination, ConstMemoryView source,
+                SmallSpan<const Int32> indexes, RunQueue* queue)
 {
-  Int32 one_data_size = _checkDataTypeSize(A_FUNCINFO, m_datatype_size, v.datatypeSize());
+  Int32 one_data_size = _checkDataTypeSize(A_FUNCINFO, destination.datatypeSize(), source.datatypeSize());
 
   Int64 nb_index = indexes.size();
   if (nb_index == 0)
     return;
 
-  _getDefaultCopyList(queue)->copyFrom(one_data_size, { indexes, m_views, v.bytes(), queue });
+  _getDefaultCopyList(queue)->copyFrom(one_data_size, { indexes, destination.views(), source.bytes(), queue });
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void MutableMultiMemoryView::
-fillIndexes(ConstMemoryView v, SmallSpan<const Int32> indexes, RunQueue* queue)
+void MemoryUtils::
+fillIndexes(MutableMultiMemoryView destination, ConstMemoryView source,
+            SmallSpan<const Int32> indexes, RunQueue* queue)
 {
-  Int32 one_data_size = _checkDataTypeSize(A_FUNCINFO, m_datatype_size, v.datatypeSize());
+  Int32 one_data_size = _checkDataTypeSize(A_FUNCINFO, destination.datatypeSize(), source.datatypeSize());
 
   Int64 nb_index = indexes.size();
   if (nb_index == 0)
     return;
 
-  _getDefaultCopyList(queue)->fill(one_data_size, { indexes, m_views, v.bytes(), queue });
+  _getDefaultCopyList(queue)->fill(one_data_size, { indexes, destination.views(), source.bytes(), queue });
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void MutableMultiMemoryView::
-fill(ConstMemoryView v, RunQueue* queue)
+void MemoryUtils::
+fill(MutableMultiMemoryView destination, ConstMemoryView source, RunQueue* queue)
 {
-  Int32 one_data_size = _checkDataTypeSize(A_FUNCINFO, m_datatype_size, v.datatypeSize());
+  Int32 one_data_size = _checkDataTypeSize(A_FUNCINFO, destination.datatypeSize(), source.datatypeSize());
 
-  _getDefaultCopyList(queue)->fill(one_data_size, { {}, m_views, v.bytes(), queue });
+  _getDefaultCopyList(queue)->fill(one_data_size, { {}, destination.views(), source.bytes(), queue });
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void ConstMultiMemoryView::
-copyToIndexes(MutableMemoryView v, SmallSpan<const Int32> indexes,
-              RunQueue* queue)
+void MemoryUtils::
+copyToIndexes(MutableMemoryView destination, ConstMultiMemoryView source,
+              SmallSpan<const Int32> indexes, RunQueue* queue)
 {
-  Int32 one_data_size = _checkDataTypeSize(A_FUNCINFO, m_datatype_size, v.datatypeSize());
+  Int32 one_data_size = _checkDataTypeSize(A_FUNCINFO, destination.datatypeSize(), source.datatypeSize());
 
   Int64 nb_index = indexes.size();
   if (nb_index == 0)
     return;
 
-  _getDefaultCopyList(queue)->copyTo(one_data_size, { indexes, m_views, v.bytes(), queue });
+  _getDefaultCopyList(queue)->copyTo(one_data_size, { indexes, source.views(), destination.bytes(), queue });
 }
 
 /*---------------------------------------------------------------------------*/

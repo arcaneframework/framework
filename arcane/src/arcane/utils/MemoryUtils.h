@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MemoryUtils.h                                               (C) 2000-2024 */
+/* MemoryUtils.h                                               (C) 2000-2025 */
 /*                                                                           */
 /* Fonctions utilitaires de gestion mémoire.                                 */
 /*---------------------------------------------------------------------------*/
@@ -229,19 +229,286 @@ copy(MutableMemoryView destination, ConstMemoryView source, const RunQueue* queu
 
 //! Copie de \a source vers \a destination en utilisant la file \a queue.
 template <typename DataType> inline void
-copy(Span<DataType> destination, Span<const DataType> source, const RunQueue* queue = nullptr)
+copy(Span<DataType> destination, Span<const DataType> source,
+     const RunQueue* queue = nullptr)
 {
   ConstMemoryView input(asBytes(source));
   MutableMemoryView output(asWritableBytes(destination));
   copy(output, input, queue);
 }
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 //! Copie de \a source vers \a destination en utilisant la file \a queue.
 template <typename DataType> inline void
-copy(SmallSpan<DataType> destination, SmallSpan<const DataType> source, const RunQueue* queue = nullptr)
+copy(SmallSpan<DataType> destination, SmallSpan<const DataType> source,
+     const RunQueue* queue = nullptr)
 {
   copy(Span<DataType>(destination), Span<const DataType>(source), queue);
 }
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Copie sur l'hôte des données avec indirection.
+ *
+ * Copie dans \a destination les données de \a source
+ * indexées par \a indexes
+ *
+ * L'opération est équivalente au pseudo-code suivant:
+ *
+ * \code
+ * Int64 n = indexes.size();
+ * for( Int64 i=0; i<n; ++i )
+ *   destination[i] = source[indexes[i]];
+ * \endcode
+ *
+ * \pre destination.datatypeSize() == source.datatypeSize();
+ * \pre source.nbElement() >= indexes.size();
+ */
+extern "C++" ARCANE_UTILS_EXPORT void
+copyToIndexesHost(MutableMemoryView destination, ConstMemoryView source,
+                  Span<const Int32> indexes);
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Copie sur l'hôte des données avec indirection.
+ *
+ * Copie dans \a destination les données de \a source
+ * indexées par \a indexes
+ *
+ * \code
+ * Int32 n = indexes.size();
+ * for( Int32 i=0; i<n; ++i )
+ *   destinationv[i] = source[indexes[i]];
+ * \endcode
+ *
+ * Si \a run_queue n'est pas nul, elle sera utilisée pour la copie.
+ *
+ * \pre destination.datatypeSize() == source.datatypeSize();
+ * \pre source.nbElement() >= indexes.size();
+ */
+extern "C++" ARCANE_UTILS_EXPORT void
+copyToIndexes(MutableMemoryView destination, ConstMemoryView source,
+              SmallSpan<const Int32> indexes,
+              RunQueue* run_queue = nullptr);
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Copie dans \a destination les données de \a source.
+ *
+ * Utilise std::memmove pour la copie.
+ *
+ * \pre source.bytes.size() >= destination.bytes.size()
+ */
+extern "C++" ARCANE_UTILS_EXPORT void
+copyHost(MutableMemoryView destination, ConstMemoryView source);
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Copie dans l'instance les données indexées de \a v.
+ *
+ * L'opération est équivalente au pseudo-code suivant:
+ *
+ * \code
+ * Int64 n = indexes.size();
+ * for( Int64 i=0; i<n; ++i )
+ *   destination[indexes[i]] = source[i];
+ * \endcode
+ *
+ * \pre destination.datatypeSize() == source.datatypeSize();
+ * \pre destination.nbElement() >= indexes.size();
+ */
+extern "C++" ARCANE_UTILS_EXPORT void
+copyFromIndexesHost(MutableMemoryView destination, ConstMemoryView source,
+                    Span<const Int32> indexes);
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Copie dans l'instance les données indexées de \a v.
+ *
+ * L'opération est équivalente au pseudo-code suivant:
+ *
+ * \code
+ * Int32 n = indexes.size();
+ * for( Int32 i=0; i<n; ++i )
+ *   destination[indexes[i]] = source[i];
+ * \endcode
+ *
+ * Si \a run_queue n'est pas nul, elle sera utilisée pour la copie.
+ *
+ * \pre destination.datatypeSize() == source.datatypeSize();
+ * \pre destination.nbElement() >= indexes.size();
+ */
+extern "C++" ARCANE_UTILS_EXPORT void
+copyFromIndexes(MutableMemoryView destination, ConstMemoryView source,
+                SmallSpan<const Int32> indexes, RunQueue* run_queue = nullptr);
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Remplit une zone mémoire indexée avec une valeur.
+ *
+ * Remplit les indices \a indexes de la zone mémoire \a destination avec
+ * la valeur de la zone mémoire \a source. \a source doit avoir une seule valeur.
+ * La zone mémoire \a source être accessible depuis l'hôte.
+ *
+ * L'opération est équivalente au pseudo-code suivant:
+ *
+ * \code
+ * Int32 n = indexes.size();
+ * for( Int32 i=0; i<n; ++i )
+ *   destination[indexes[i]] = source[0];
+ * \endcode
+ *
+ * Si \a run_queue n'est pas nul, elle sera utilisée pour la copie.
+ *
+ * \pre destination.datatypeSize() == source.datatypeSize();
+ * \pre destination.nbElement() >= indexes.size();
+ */
+extern "C++" ARCANE_UTILS_EXPORT void
+fillIndexes(MutableMemoryView destination, ConstMemoryView source,
+            SmallSpan<const Int32> indexes, const RunQueue* run_queue = nullptr);
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Remplit une zone mémoire avec une valeur.
+ *
+ * Remplit les valeurs de la zone mémoire \a destination avec
+ * la valeur de la zone mémoire \a source. \a source doit avoir une seule valeur.
+ * La zone mémoire \a source être accessible depuis l'hôte.
+ *
+ * L'opération est équivalente au pseudo-code suivant:
+ *
+ * \code
+ * Int32 n = nbElement();
+ * for( Int32 i=0; i<n; ++i )
+ *   destination[i] = source[0];
+ * \endcode
+ *
+ * Si \a run_queue n'est pas nul, elle sera utilisée pour la copie.
+ *
+ * \pre destination.datatypeSize() == source.datatypeSize();
+ */
+extern "C++" ARCANE_UTILS_EXPORT void
+fill(MutableMemoryView destination, ConstMemoryView source,
+     const RunQueue* run_queue = nullptr);
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Copie dans \a destination les données de \a source indexées.
+ *
+ * L'opération est équivalente au pseudo-code suivant:
+ *
+ * \code
+ * Int32 n = indexes.size();
+ * for( Int32 i=0; i<n; ++i ){
+ *   Int32 index0 = indexes[ (i*2)   ];
+ *   Int32 index1 = indexes[ (i*2)+1 ];
+ *   destination[i] = source[index0][index1];
+ * }
+ * \endcode
+ *
+ * Le tableau des indexes doit avoir une taille multiple de 2. Les valeurs
+ * paires servent à indexer le premier tableau et les valeurs impaires le 2ème.
+ *
+ * Si \a run_queue n'est pas nul, elle sera utilisée pour la copie.
+ *
+ * \pre destination.datatypeSize() == source.datatypeSize();
+ * \pre desination.nbElement() >= indexes.size();
+ */
+extern "C++" ARCANE_UTILS_EXPORT void
+copyToIndexes(MutableMemoryView destination, ConstMultiMemoryView source,
+              SmallSpan<const Int32> indexes, RunQueue* run_queue = nullptr);
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Copie les éléments indéxés de \a destination avec les données de \a source.
+ *
+ * L'opération est équivalente au pseudo-code suivant:
+ *
+ * \code
+ * Int32 n = indexes.size();
+ * for( Int32 i=0; i<n; ++i ){
+ *   Int32 index0 = indexes[ (i*2)   ];
+ *   Int32 index1 = indexes[ (i*2)+1 ];
+ *   destination[index0][index1] = source[i];
+ * }
+ * \endcode
+ *
+ * Le tableau des indexes doit avoir une taille multiple de 2. Les valeurs
+ * paires servent à indexer le premier tableau et les valeurs impaires le 2ème.
+ *
+ * Si \a run_queue n'est pas nul, elle sera utilisée pour la copie.
+ *
+ * \pre destination.datatypeSize() == v.datatypeSize();
+ * \pre source.nbElement() >= indexes.size();
+ */
+extern "C++" ARCANE_UTILS_EXPORT void
+copyFromIndexes(MutableMultiMemoryView destination, ConstMemoryView source,
+                SmallSpan<const Int32> indexes, RunQueue* run_queue = nullptr);
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Remplit les éléments indéxés de \a destination avec la donnée \a source.
+ *
+ * \a source doit avoir une seule valeur. Cette valeur sera utilisée
+ * pour remplir les valeur de l'instance aux indices spécifiés par
+ * \a indexes. Elle doit être accessible depuis l'hôte.
+ *
+ * L'opération est équivalente au pseudo-code suivant:
+ *
+ * \code
+ * Int32 n = indexes.size();
+ * for( Int32 i=0; i<n; ++i ){
+ *   Int32 index0 = indexes[ (i*2)   ];
+ *   Int32 index1 = indexes[ (i*2)+1 ];
+ *   destination[index0][index1] = source[0];
+ * }
+ *
+ * Si \a run_queue n'est pas nul, elle sera utilisée pour la copie.
+ *
+ * \pre destination.datatypeSize() == source.datatypeSize();
+ * \pre destination.nbElement() >= indexes.size();
+ */
+extern "C++" ARCANE_UTILS_EXPORT void
+fillIndexes(MutableMultiMemoryView destination, ConstMemoryView source,
+            SmallSpan<const Int32> indexes, RunQueue* run_queue = nullptr);
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Remplit les éléments de \a destination avec la valeur \a source.
+ *
+ * \a source doit avoir une seule valeur. Elle doit être accessible depuis l'hôte.
+ *
+ * L'opération est équivalente au pseudo-code suivant:
+ *
+ * \code
+ * Int32 n = nbElement();
+ * for( Int32 i=0; i<n; ++i ){
+ *   Int32 index0 = (i*2);
+ *   Int32 index1 = (i*2)+1;
+ *   destination[index0][index1] = source[0];
+ * }
+ * \endcode
+ *
+ * Si \a run_queue n'est pas nul, elle sera utilisée pour la copie.
+ *
+ * \pre destination.datatypeSize() == source.datatypeSize();
+ */
+extern "C++" ARCANE_UTILS_EXPORT void
+fill(MutableMultiMemoryView destination, ConstMemoryView source,
+     RunQueue* run_queue = nullptr);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

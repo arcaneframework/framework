@@ -67,7 +67,7 @@ class DefaultHostMemoryCopier
       ARCANE_FATAL("Destination buffer is not accessible from host and no copier provided (location={0})",
                    to_mem);
 
-    to.copyHost(from);
+    MemoryUtils::copyHost(to, from);
   }
 };
 
