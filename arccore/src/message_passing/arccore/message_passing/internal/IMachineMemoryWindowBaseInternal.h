@@ -5,14 +5,14 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IMachineMemoryWindowBase.h                                  (C) 2000-2025 */
+/* IMachineMemoryWindowBaseInternal.h                          (C) 2000-2025 */
 /*                                                                           */
 /* Interface de classe permettant de créer une fenêtre mémoire pour un noeud */
 /* de calcul. Cette fenêtre sera contigüe en mémoire.                        */
 /*---------------------------------------------------------------------------*/
 
-#ifndef ARCCORE_MESSAGEPASSING_INTERNAL_IMACHINEMEMORYWINDOWBASE_H
-#define ARCCORE_MESSAGEPASSING_INTERNAL_IMACHINEMEMORYWINDOWBASE_H
+#ifndef ARCCORE_MESSAGEPASSING_INTERNAL_IMACHINEMEMORYWINDOWBASEINTERNAL_H
+#define ARCCORE_MESSAGEPASSING_INTERNAL_IMACHINEMEMORYWINDOWBASEINTERNAL_H
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -38,11 +38,11 @@ namespace Arcane::MessagePassing
  * Cette fenêtre sera contigüe en mémoire et sera accessible par
  * tous les processus du noeud.
  */
-class ARCCORE_MESSAGEPASSING_EXPORT IMachineMemoryWindowBase
+class ARCCORE_MESSAGEPASSING_EXPORT IMachineMemoryWindowBaseInternal
 {
  public:
 
-  virtual ~IMachineMemoryWindowBase() = default;
+  virtual ~IMachineMemoryWindowBaseInternal() = default;
 
  public:
 

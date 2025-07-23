@@ -5,14 +5,14 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MpiMachineMemoryWindowBase.h                                (C) 2000-2025 */
+/* MpiMachineMemoryWindowBaseInternal.h                        (C) 2000-2025 */
 /*                                                                           */
 /* Classe permettant de créer une fenêtre mémoire pour un noeud              */
 /* de calcul avec MPI. Cette fenêtre sera contigüe pour tous les processus   */
 /* d'un même noeud.                                                          */
 /*---------------------------------------------------------------------------*/
 
-#include "arccore/message_passing_mpi/internal/MpiMachineMemoryWindowBase.h"
+#include "arccore/message_passing_mpi/internal/MpiMachineMemoryWindowBaseInternal.h"
 
 #include "arccore/base/FatalErrorException.h"
 
@@ -25,8 +25,8 @@ namespace Arcane::MessagePassing::Mpi
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-MpiMachineMemoryWindowBase::
-MpiMachineMemoryWindowBase(Int64 sizeof_segment, Int32 sizeof_type, const MPI_Comm& comm_machine, Int32 comm_machine_rank, Int32 comm_machine_size, ConstArrayView<Int32> machine_ranks)
+MpiMachineMemoryWindowBaseInternal::
+MpiMachineMemoryWindowBaseInternal(Int64 sizeof_segment, Int32 sizeof_type, const MPI_Comm& comm_machine, Int32 comm_machine_rank, Int32 comm_machine_size, ConstArrayView<Int32> machine_ranks)
 : m_win()
 , m_win_sizeof_segments()
 , m_win_sum_sizeof_segments()
@@ -212,8 +212,8 @@ MpiMachineMemoryWindowBase(Int64 sizeof_segment, Int32 sizeof_type, const MPI_Co
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-MpiMachineMemoryWindowBase::
-~MpiMachineMemoryWindowBase()
+MpiMachineMemoryWindowBaseInternal::
+~MpiMachineMemoryWindowBaseInternal()
 {
   MPI_Win_free(&m_win);
   MPI_Win_free(&m_win_sizeof_segments);
@@ -223,7 +223,7 @@ MpiMachineMemoryWindowBase::
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Int32 MpiMachineMemoryWindowBase::
+Int32 MpiMachineMemoryWindowBaseInternal::
 sizeofOneElem() const
 {
   return m_sizeof_type;
@@ -232,7 +232,7 @@ sizeofOneElem() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Span<std::byte> MpiMachineMemoryWindowBase::
+Span<std::byte> MpiMachineMemoryWindowBaseInternal::
 segment() const
 {
   const Int64 begin_segment = m_sum_sizeof_segments_span[m_comm_machine_rank];
@@ -244,7 +244,7 @@ segment() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Span<std::byte> MpiMachineMemoryWindowBase::
+Span<std::byte> MpiMachineMemoryWindowBaseInternal::
 segment(Int32 rank) const
 {
   Int32 pos = -1;
@@ -267,7 +267,7 @@ segment(Int32 rank) const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Span<std::byte> MpiMachineMemoryWindowBase::
+Span<std::byte> MpiMachineMemoryWindowBaseInternal::
 window() const
 {
   return m_window_span;
@@ -276,7 +276,7 @@ window() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void MpiMachineMemoryWindowBase::
+void MpiMachineMemoryWindowBaseInternal::
 resizeSegment(Int64 new_sizeof_segment)
 {
   m_sizeof_segments_span[m_comm_machine_rank] = new_sizeof_segment;
@@ -313,7 +313,7 @@ resizeSegment(Int64 new_sizeof_segment)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ConstArrayView<Int32> MpiMachineMemoryWindowBase::
+ConstArrayView<Int32> MpiMachineMemoryWindowBaseInternal::
 machineRanks() const
 {
   return m_machine_ranks;
@@ -322,7 +322,7 @@ machineRanks() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void MpiMachineMemoryWindowBase::
+void MpiMachineMemoryWindowBaseInternal::
 barrier() const
 {
   MPI_Barrier(m_comm_machine);

@@ -29,7 +29,7 @@
 
 namespace Arcane::MessagePassing::Mpi
 {
-class MpiMachineMemoryWindowBaseCreator;
+class MpiMachineMemoryWindowBaseInternalCreator;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -215,7 +215,7 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiAdapter
   //   return makeRef(new MpiAllInOneMachineMemoryWindowBase(aio_node_window, sizeof(MPI_Win), m_machine_communicator, m_machine_comm_rank));
   // }
 
-  MpiMachineMemoryWindowBaseCreator* windowCreator();
+  MpiMachineMemoryWindowBaseInternalCreator* windowCreator();
 
  private:
 
@@ -247,7 +247,7 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiAdapter
   // de temporairement garder un mode compatible.
   bool m_is_allow_null_rank_for_any_source = true;
 
-  MpiMachineMemoryWindowBaseCreator* m_window_creator;
+  MpiMachineMemoryWindowBaseInternalCreator* m_window_creator;
 
  private:
   

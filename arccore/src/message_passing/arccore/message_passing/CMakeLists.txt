@@ -42,7 +42,7 @@ set(SOURCES
   Stat.cc
   SerializeMessageList.h
   SerializeMessageList.cc
-  internal/IMachineMemoryWindowBase.h
+  internal/IMachineMemoryWindowBaseInternal.h
   internal/SubRequestCompletionInfo.h
 )
 

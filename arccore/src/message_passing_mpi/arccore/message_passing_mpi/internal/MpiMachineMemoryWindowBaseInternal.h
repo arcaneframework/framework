@@ -5,21 +5,21 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MpiMachineMemoryWindowBase.h                                (C) 2000-2025 */
+/* MpiMachineMemoryWindowBaseInternal.h                        (C) 2000-2025 */
 /*                                                                           */
 /* Classe permettant de créer une fenêtre mémoire pour un noeud              */
 /* de calcul avec MPI. Cette fenêtre sera contigüe pour tous les processus   */
 /* d'un même noeud.                                                          */
 /*---------------------------------------------------------------------------*/
 
-#ifndef ARCCORE_MESSAGEPASSINGMPI_INTERNAL_MPIMACHINEMEMORYWINDOWBASE_H
-#define ARCCORE_MESSAGEPASSINGMPI_INTERNAL_MPIMACHINEMEMORYWINDOWBASE_H
+#ifndef ARCCORE_MESSAGEPASSINGMPI_INTERNAL_MPIMACHINEMEMORYWINDOWBASEINTERNAL_H
+#define ARCCORE_MESSAGEPASSINGMPI_INTERNAL_MPIMACHINEMEMORYWINDOWBASEINTERNAL_H
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #include "arccore/collections/Array.h"
-#include "arccore/message_passing/internal/IMachineMemoryWindowBase.h"
+#include "arccore/message_passing/internal/IMachineMemoryWindowBaseInternal.h"
 
 #include "arccore/message_passing_mpi/MessagePassingMpiGlobal.h"
 
@@ -29,14 +29,14 @@
 namespace Arcane::MessagePassing::Mpi
 {
 
-class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiMachineMemoryWindowBase
-: public IMachineMemoryWindowBase
+class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiMachineMemoryWindowBaseInternal
+: public IMachineMemoryWindowBaseInternal
 {
  public:
 
-  explicit MpiMachineMemoryWindowBase(Int64 sizeof_segment, Int32 sizeof_type, const MPI_Comm& comm_machine, Int32 comm_machine_rank, Int32 comm_machine_size, ConstArrayView<Int32> machine_ranks);
+  explicit MpiMachineMemoryWindowBaseInternal(Int64 sizeof_segment, Int32 sizeof_type, const MPI_Comm& comm_machine, Int32 comm_machine_rank, Int32 comm_machine_size, ConstArrayView<Int32> machine_ranks);
 
-  ~MpiMachineMemoryWindowBase() override;
+  ~MpiMachineMemoryWindowBaseInternal() override;
 
  public:
 

@@ -23,7 +23,7 @@
 #include "arccore/message_passing/ISerializeDispatcher.h"
 #include "arccore/message_passing/IProfiler.h"
 #include "arccore/message_passing/internal/SubRequestCompletionInfo.h"
-#include "arccore/message_passing/internal/IMachineMemoryWindowBase.h"
+#include "arccore/message_passing/internal/IMachineMemoryWindowBaseInternal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
