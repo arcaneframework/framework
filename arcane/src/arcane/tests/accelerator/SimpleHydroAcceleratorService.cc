@@ -37,6 +37,7 @@
 #include "arcane/core/ItemGenericInfoListView.h"
 #include "arcane/core/MeshUtils.h"
 #include "arcane/core/VariableUtils.h"
+#include "arcane/core/internal/IParallelMngInternal.h"
 
 #include "arcane/accelerator/core/IAcceleratorMng.h"
 
@@ -278,10 +279,16 @@ hydroStartInit()
   // et pré-copie leur valeur.
   MeshUtils::markMeshConnectivitiesAsMostlyReadOnly(mesh(), &m_default_queue, true);
 
-  // Indique qu'on souhaite allouer la force sur l'accélérateur si c'est actif.
+  // Indique qu'on souhaite allouer la vitesse sur l'accélérateur si c'est actif.
   // Cela permet de tester l'usage d'une variable côté accélérateur.
-  if (m_default_queue.isAcceleratorPolicy())
-    VariableUtils::experimentalChangeAllocator(m_force, eMemoryRessource::Device);
+  if (m_default_queue.isAcceleratorPolicy()){
+    VariableUtils::experimentalChangeAllocator(m_velocity, eMemoryRessource::Device);
+    // On alloue aussi la force sur le device si possible.
+    // Comme cette variable sera synchronisée, on ne le fait que si MPI le supporte
+    // sinon cela va provoquer un accès mémoire invalide.
+    if (mesh()->parallelMng()->_internalApi()->isAcceleratorAware())
+      VariableUtils::experimentalChangeAllocator(m_force, eMemoryRessource::Device);
+  }
 
   // Juste pour tester l'exemple de calcul du centre des mailles
   _doTestInit(); 
@@ -333,7 +340,7 @@ hydroStartInit()
   computeGeometricValues();
 
   m_node_mass.fill(ARCANE_REAL(0.0));
-  m_velocity.fill(Real3::zero());
+  m_velocity.fill(Real3::zero(), &m_default_queue);
 
   // Initialisation de la masse des mailles et des masses nodales
   ENUMERATE_CELL (icell, allCells()) {
