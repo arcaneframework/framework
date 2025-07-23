@@ -20,6 +20,8 @@
 #include "arcane/core/ArcaneTypes.h"
 #include "arcane/utils/Ref.h"
 
+#include "arccore/base/Span.h"
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -35,6 +37,31 @@ namespace MessagePassing
 {
   class IMachineMemoryWindowBaseInternal;
 }
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+class ARCANE_CORE_EXPORT MachineMemoryWindowBase
+{
+ public:
+
+  MachineMemoryWindowBase(IParallelMng* pm, Int64 nb_elem_segment, Int32 sizeof_elem);
+
+ public:
+
+  Span<std::byte> segmentView() const;
+  Span<std::byte> segmentView(Int32 rank) const;
+  Span<std::byte> windowView() const;
+  void resizeSegment(Integer new_nb_elem) const;
+  ConstArrayView<Int32> machineRanks() const;
+  void barrier() const;
+
+ private:
+
+  IParallelMngInternal* m_pm_internal;
+  Ref<MessagePassing::IMachineMemoryWindowBaseInternal> m_node_window_base;
+  Int32 m_sizeof_elem;
+};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -56,7 +83,9 @@ class ARCANE_CORE_EXPORT MachineMemoryWindow
    * \param pm Le ParallelMng contenant les processus du noeud.
    * \param nb_elem_segment Le nombre d'éléments pour le segment de ce sous-domaine.
    */
-  MachineMemoryWindow(IParallelMng* pm, Int64 nb_elem_segment);
+  MachineMemoryWindow(IParallelMng* pm, Int64 nb_elem_segment)
+  : m_impl(pm, nb_elem_segment, static_cast<Int32>(sizeof(Type)))
+  {}
 
  public:
 
@@ -66,7 +95,10 @@ class ARCANE_CORE_EXPORT MachineMemoryWindow
    *
    * \return Une vue.
    */
-  Span<Type> segmentView() const;
+  Span<Type> segmentView() const
+  {
+    return asSpan<Type>(m_impl.segmentView());
+  }
 
   /*!
    * \brief Méthode permettant d'obtenir une vue sur le segment de fenêtre
@@ -75,14 +107,20 @@ class ARCANE_CORE_EXPORT MachineMemoryWindow
    * \param rank Le rang du sous-domaine.
    * \return Une vue.
    */
-  Span<Type> segmentView(Int32 rank) const;
+  Span<Type> segmentView(Int32 rank) const
+  {
+    return asSpan<Type>(m_impl.segmentView(rank));
+  }
 
   /*!
    * \brief Méthode permettant d'obtenir une vue sur toute la fenêtre mémoire.
    *
    * \return Une vue.
    */
-  Span<Type> windowView() const;
+  Span<Type> windowView() const
+  {
+    return asSpan<Type>(m_impl.windowView());
+  }
 
   /*!
    * \brief Méthode permettant d'obtenir une vue constante sur notre segment
@@ -90,7 +128,10 @@ class ARCANE_CORE_EXPORT MachineMemoryWindow
    *
    * \return Une vue constante.
    */
-  Span<const Type> segmentConstView() const;
+  Span<const Type> segmentConstView() const
+  {
+    return asSpan<const Type>(m_impl.segmentView());
+  }
 
   /*!
    * \brief Méthode permettant d'obtenir une vue constante sur le segment de
@@ -99,7 +140,10 @@ class ARCANE_CORE_EXPORT MachineMemoryWindow
    * \param rank Le rang du sous-domaine.
    * \return Une vue constante.
    */
-  Span<const Type> segmentConstView(Int32 rank) const;
+  Span<const Type> segmentConstView(Int32 rank) const
+  {
+    return asSpan<const Type>(m_impl.segmentView(rank));
+  }
 
   /*!
    * \brief Méthode permettant d'obtenir une vue constante sur toute la fenêtre
@@ -107,7 +151,10 @@ class ARCANE_CORE_EXPORT MachineMemoryWindow
    *
    * \return Une vue constante.
    */
-  Span<const Type> windowConstView() const;
+  Span<const Type> windowConstView() const
+  {
+    return asSpan<const Type>(m_impl.windowView());
+  }
 
   /*!
    * \brief Méthode permettant de redimensionner les segments de la fenêtre.
@@ -118,7 +165,10 @@ class ARCANE_CORE_EXPORT MachineMemoryWindow
    *
    * \param new_nb_elem La nouvelle taille de notre segment.
    */
-  void resizeSegment(Integer new_nb_elem) const;
+  void resizeSegment(Integer new_nb_elem) const
+  {
+    m_impl.resizeSegment(new_nb_elem);
+  }
 
   /*!
    * \brief Méthode permettant d'obtenir les rangs qui possèdent un segment
@@ -129,18 +179,23 @@ class ARCANE_CORE_EXPORT MachineMemoryWindow
    *
    * \return Une vue contenant les ids des rangs.
    */
-  ConstArrayView<Int32> machineRanks() const;
+  ConstArrayView<Int32> machineRanks() const
+  {
+    return m_impl.machineRanks();
+  }
 
   /*!
    * \brief Méthode permettant d'attendre que tous les processus/threads
    * du noeud appellent cette méthode pour continuer l'exécution.
    */
-  void barrier() const;
+  void barrier() const
+  {
+    m_impl.barrier();
+  }
 
  private:
 
-  IParallelMngInternal* m_pm_internal;
-  Ref<MessagePassing::IMachineMemoryWindowBaseInternal> m_node_window_base;
+  MachineMemoryWindowBase m_impl;
 };
 
 /*---------------------------------------------------------------------------*/

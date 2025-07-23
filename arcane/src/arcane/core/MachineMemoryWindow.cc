@@ -18,7 +18,7 @@
 
 #include "arcane/utils/NumericTypes.h"
 
-#include "arccore/message_passing/internal/IMachineMemoryWindowBase.h"
+#include "arccore/message_passing/internal/IMachineMemoryWindowBaseInternal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -26,92 +26,54 @@
 namespace Arcane
 {
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-template <class Type>
-MachineMemoryWindow<Type>::
-MachineMemoryWindow(IParallelMng* pm, Int64 nb_elem_segment)
+MachineMemoryWindowBase::
+MachineMemoryWindowBase(IParallelMng* pm, Int64 nb_elem_segment, Int32 sizeof_elem)
 : m_pm_internal(pm->_internalApi())
+, m_sizeof_elem(sizeof_elem)
 {
-  m_node_window_base = m_pm_internal->createMachineMemoryWindowBase(nb_elem_segment * static_cast<Int64>(sizeof(Type)), static_cast<Int32>(sizeof(Type)));
+  m_node_window_base = m_pm_internal->createMachineMemoryWindowBase(nb_elem_segment * static_cast<Int64>(sizeof_elem), sizeof_elem);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template <class Type>
-Span<Type> MachineMemoryWindow<Type>::
+Span<std::byte> MachineMemoryWindowBase::
 segmentView() const
 {
-  return asSpan<Type>(m_node_window_base->segment());
+  return m_node_window_base->segment();
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template <class Type>
-Span<Type> MachineMemoryWindow<Type>::
+Span<std::byte> MachineMemoryWindowBase::
 segmentView(Int32 rank) const
 {
-  return asSpan<Type>(m_node_window_base->segment(rank));
+  return m_node_window_base->segment(rank);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template <class Type>
-Span<Type> MachineMemoryWindow<Type>::
+Span<std::byte> MachineMemoryWindowBase::
 windowView() const
 {
-  return asSpan<Type>(m_node_window_base->window());
+  return m_node_window_base->window();
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template <class Type>
-Span<const Type> MachineMemoryWindow<Type>::
-segmentConstView() const
-{
-  return asSpan<const Type>(m_node_window_base->segment());
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-template <class Type>
-Span<const Type> MachineMemoryWindow<Type>::
-segmentConstView(Int32 rank) const
-{
-  return asSpan<const Type>(m_node_window_base->segment(rank));
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-template <class Type>
-Span<const Type> MachineMemoryWindow<Type>::
-windowConstView() const
-{
-  return asSpan<const Type>(m_node_window_base->window());
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-template <class Type>
-void MachineMemoryWindow<Type>::
+void MachineMemoryWindowBase::
 resizeSegment(Integer new_nb_elem) const
 {
-  m_node_window_base->resizeSegment(new_nb_elem * static_cast<Int64>(sizeof(Type)));
+  m_node_window_base->resizeSegment(new_nb_elem * static_cast<Int64>(m_sizeof_elem));
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template <class Type>
-ConstArrayView<Int32> MachineMemoryWindow<Type>::
+ConstArrayView<Int32> MachineMemoryWindowBase::
 machineRanks() const
 {
   return m_node_window_base->machineRanks();
@@ -120,17 +82,11 @@ machineRanks() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template <class Type>
-void MachineMemoryWindow<Type>::
+void MachineMemoryWindowBase::
 barrier() const
 {
   m_node_window_base->barrier();
 }
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ARCANE_INTERNAL_INSTANTIATE_TEMPLATE_FOR_NUMERIC_DATATYPE(MachineMemoryWindow);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
