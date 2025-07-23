@@ -5,15 +5,15 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* HybridMachineMemoryWindowBaseCreator.h                      (C) 2000-2025 */
+/* HybridMachineMemoryWindowBaseInternalCreator.h              (C) 2000-2025 */
 /*                                                                           */
 /* Classe permettant de créer des objets de type                             */
-/* HybridMachineMemoryWindowBase. Une instance de cet objet doit être        */
-/* partagée par tous les threads d'un processus.                             */
+/* HybridMachineMemoryWindowBaseInternal. Une instance de cet objet doit     */
+/* être partagée par tous les threads d'un processus.                        */
 /*---------------------------------------------------------------------------*/
 
-#ifndef ARCANE_PARALLEL_MPITHREAD_INTERNAL_HYBRIDMACHINEMEMORYWINDOWBASECREATOR_H
-#define ARCANE_PARALLEL_MPITHREAD_INTERNAL_HYBRIDMACHINEMEMORYWINDOWBASECREATOR_H
+#ifndef ARCANE_PARALLEL_MPITHREAD_INTERNAL_HYBRIDMACHINEMEMORYWINDOWBASEINTERNALCREATOR_H
+#define ARCANE_PARALLEL_MPITHREAD_INTERNAL_HYBRIDMACHINEMEMORYWINDOWBASEINTERNALCREATOR_H
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -30,12 +30,12 @@ class MpiParallelMng;
 
 namespace MessagePassing
 {
-  class IMachineMemoryWindowBase;
-  class HybridMachineMemoryWindowBase;
+  class IMachineMemoryWindowBaseInternal;
+  class HybridMachineMemoryWindowBaseInternal;
 
   namespace Mpi
   {
-    class MpiMachineMemoryWindowBaseCreator;
+    class MpiMachineMemoryWindowBaseInternalCreator;
   }
 } // namespace MessagePassing
 } // namespace Arcane
@@ -49,29 +49,29 @@ namespace Arcane::MessagePassing
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class HybridMachineMemoryWindowBaseCreator
+class HybridMachineMemoryWindowBaseInternalCreator
 {
  public:
 
-  HybridMachineMemoryWindowBaseCreator(Int32 nb_rank_local_proc, IThreadBarrier* barrier);
-  ~HybridMachineMemoryWindowBaseCreator() = default;
+  HybridMachineMemoryWindowBaseInternalCreator(Int32 nb_rank_local_proc, IThreadBarrier* barrier);
+  ~HybridMachineMemoryWindowBaseInternalCreator() = default;
 
  public:
 
-  HybridMachineMemoryWindowBase* createWindow(Int32 my_rank_global, Integer nb_elem_local_proc, Integer sizeof_type, MpiParallelMng* mpi_parallel_mng);
+  HybridMachineMemoryWindowBaseInternal* createWindow(Int32 my_rank_global, Int64 sizeof_segment, Int32 sizeof_type, MpiParallelMng* mpi_parallel_mng);
 
  private:
 
-  void _buildMachineRanksArray(const Mpi::MpiMachineMemoryWindowBaseCreator* mpi_window_creator);
+  void _buildMachineRanksArray(const Mpi::MpiMachineMemoryWindowBaseInternalCreator* mpi_window_creator);
 
  private:
 
   Int32 m_nb_rank_local_proc;
-  Integer m_nb_elem_total_local_proc;
+  Int64 m_sizeof_segment_local_proc;
   IThreadBarrier* m_barrier;
-  Ref<IMachineMemoryWindowBase> m_window;
-  Ref<IMachineMemoryWindowBase> m_nb_elem;
-  Ref<IMachineMemoryWindowBase> m_sum_nb_elem;
+  Ref<IMachineMemoryWindowBaseInternal> m_window;
+  Ref<IMachineMemoryWindowBaseInternal> m_sizeof_sub_segments;
+  Ref<IMachineMemoryWindowBaseInternal> m_sum_sizeof_sub_segments;
   UniqueArray<Int32> m_machine_ranks;
 };
 

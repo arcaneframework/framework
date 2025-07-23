@@ -26,6 +26,9 @@ Sommaire de ce chapitre :
 4. \subpage arcanedoc_parallel_loadbalance <br>
   Décrit l'utilisation du mécanisme d'équilibrage de charge sur le maillage.
 
+5. \subpage arcanedoc_parallel_shmem <br>
+   Décrit l'utilisation des fenêtres mémoires en mémoire partagée.
+
 
 ____
 

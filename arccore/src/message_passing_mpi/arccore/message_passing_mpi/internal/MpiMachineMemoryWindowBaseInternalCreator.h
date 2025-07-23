@@ -5,68 +5,63 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ParallelMngInternal.h                                       (C) 2000-2025 */
+/* MpiMachineMemoryWindowBaseInternalCreator.h                 (C) 2000-2025 */
 /*                                                                           */
-/* Implémentation de la partie interne à Arcane de IParallelMng.             */
-/*---------------------------------------------------------------------------*/
-#ifndef ARCANE_CORE_INTERNAL_PARALLELMNGINTERNAL_H
-#define ARCANE_CORE_INTERNAL_PARALLELMNGINTERNAL_H
-/*---------------------------------------------------------------------------*/
+/* Classe permettant de créer des objets de type                             */
+/* MpiMachineMemoryWindowBaseInternal.                                       */
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/core/ArcaneTypes.h"
-#include "arcane/core/internal/IParallelMngInternal.h"
-
-#include "arcane/accelerator/core/Runner.h"
+#ifndef ARCCORE_MESSAGEPASSINGMPI_INTERNAL_MPIMACHINEMEMORYWINDOWBASEINTERNALCREATOR_H
+#define ARCCORE_MESSAGEPASSINGMPI_INTERNAL_MPIMACHINEMEMORYWINDOWBASEINTERNALCREATOR_H
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arcane
+#include "arccore/collections/Array.h"
+#include "arccore/message_passing/internal/IMachineMemoryWindowBaseInternal.h"
+
+#include "arccore/message_passing_mpi/MessagePassingMpiGlobal.h"
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace Arcane::MessagePassing::Mpi
 {
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class ParallelMngDispatcher;
+class MpiMachineMemoryWindowBaseInternal;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-/*!
- * \internal
- * \brief Partie interne de IParallelMng.
- */
-class ARCANE_CORE_EXPORT ParallelMngInternal
-: public IParallelMngInternal
+class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiMachineMemoryWindowBaseInternalCreator
 {
  public:
 
-  explicit ParallelMngInternal(ParallelMngDispatcher* pm);
+  explicit MpiMachineMemoryWindowBaseInternalCreator(const MPI_Comm& comm_machine, Int32 comm_machine_rank, Int32 comm_machine_size, const MPI_Comm& comm_world, Int32 comm_world_size);
 
-  ~ParallelMngInternal() override = default;
+  ~MpiMachineMemoryWindowBaseInternalCreator() = default;
 
  public:
 
-  Runner runner() const override;
-  RunQueue queue() const override;
-  bool isAcceleratorAware() const override;
-  Ref<IParallelMng> createSubParallelMngRef(Int32 color, Int32 key) override;
-  void setDefaultRunner(const Runner& runner) override;
-  Ref<MessagePassing::IMachineMemoryWindowBaseInternal> createMachineMemoryWindowBase(Int64 sizeof_segment, Int32 sizeof_type) override;
+  MpiMachineMemoryWindowBaseInternal* createWindow(Int64 sizeof_segment, Int32 sizeof_type) const;
+
+  ConstArrayView<Int32> machineRanks() const;
 
  private:
 
-  ParallelMngDispatcher* m_parallel_mng = nullptr;
-  Runner m_runner;
-  RunQueue m_queue;
-  bool m_is_accelerator_aware_disabled = false;
+  MPI_Comm m_comm_machine;
+  Int32 m_comm_machine_rank;
+  Int32 m_comm_machine_size;
+  UniqueArray<Int32> m_machine_ranks;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // namespace Arcane
+} // namespace Arcane::MessagePassing::Mpi
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

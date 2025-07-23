@@ -5,14 +5,14 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IMachineMemoryWindowBase.h                                  (C) 2000-2025 */
+/* IMachineMemoryWindowBaseInternal.h                          (C) 2000-2025 */
 /*                                                                           */
 /* Interface de classe permettant de créer une fenêtre mémoire pour un noeud */
 /* de calcul. Cette fenêtre sera contigüe en mémoire.                        */
 /*---------------------------------------------------------------------------*/
 
-#ifndef ARCCORE_MESSAGEPASSING_IMACHINEMEMORYWINDOWBASE_H
-#define ARCCORE_MESSAGEPASSING_IMACHINEMEMORYWINDOWBASE_H
+#ifndef ARCCORE_MESSAGEPASSING_INTERNAL_IMACHINEMEMORYWINDOWBASEINTERNAL_H
+#define ARCCORE_MESSAGEPASSING_INTERNAL_IMACHINEMEMORYWINDOWBASEINTERNAL_H
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -29,6 +29,8 @@ namespace Arcane::MessagePassing
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+// TODO AH : Voir pour ajouter la possibilité de faire une fenêtre non-contigüe.
+
 /*!
  * \brief Classe permettant de créer une fenêtre mémoire pour un noeud
  * de calcul.
@@ -36,11 +38,11 @@ namespace Arcane::MessagePassing
  * Cette fenêtre sera contigüe en mémoire et sera accessible par
  * tous les processus du noeud.
  */
-class ARCCORE_MESSAGEPASSING_EXPORT IMachineMemoryWindowBase
+class ARCCORE_MESSAGEPASSING_EXPORT IMachineMemoryWindowBaseInternal
 {
  public:
 
-  virtual ~IMachineMemoryWindowBase() = default;
+  virtual ~IMachineMemoryWindowBaseInternal() = default;
 
  public:
 
@@ -49,93 +51,42 @@ class ARCCORE_MESSAGEPASSING_EXPORT IMachineMemoryWindowBase
    *
    * \return La taille d'un élement.
    */
-  virtual Integer sizeofOneElem() const = 0;
+  virtual Int32 sizeofOneElem() const = 0;
 
   /*!
-   * \brief Méthode permettant d'obtenir la taille de son segment de la
-   * fenêtre mémoire utilisable (en nombre d'éléments).
+   * \brief Méthode permettant d'obtenir une vue sur son segment.
    *
-   * \return La taille du segment.
+   * \return Une vue.
    */
-  virtual Integer sizeSegment() const = 0;
+  virtual Span<std::byte> segment() const = 0;
 
   /*!
-   * \brief Méthode permettant d'obtenir la taille du segment d'un sous-domaine
-   * du noeud de la fenêtre mémoire utilisable (en nombre
-   * d'éléments).
+   * \brief Méthode permettant d'obtenir une vue sur le segment d'un autre
+   * sous-domaine du noeud.
    *
    * \param rank Le rang du sous-domaine.
-   * \return La taille du segment.
+   * \return Une vue.
    */
-  virtual Integer sizeSegment(Int32 rank) const = 0;
+  virtual Span<std::byte> segment(Int32 rank) const = 0;
 
   /*!
-   * \brief Méthode permettant d'obtenir la taille de la fenêtre mémoire
-   * utilisable (en nombre d'éléments).
+   * \brief Méthode permettant d'obtenir une vue sur toute la fenêtre.
    *
-   * \return La taille de la fenêtre.
+   * \return Une vue.
    */
-  virtual Integer sizeWindow() const = 0;
-
-  /*!
-   * \brief Méthode permettant d'obtenir un pointeur vers son segment de la
-   * fenêtre mémoire.
-   *
-   * \return Un pointeur (ne pas détruire).
-   */
-  virtual void* dataSegment() const = 0;
-
-  /*!
-   * \brief Méthode permettant d'obtenir un pointeur vers le segment d'un
-   * sous-domaine du noeud de la fenêtre mémoire.
-   *
-   * \param rank Le rang du sous-domaine.
-   * \return Un pointeur (ne pas détruire).
-   */
-  virtual void* dataSegment(Int32 rank) const = 0;
-
-  /*!
-   * \brief Méthode permettant d'obtenir un pointeur vers la fenêtre mémoire.
-   *
-   * \return Un pointeur (ne pas détruire).
-   */
-  virtual void* dataWindow() const = 0;
-
-  /*!
-   * \brief Méthode permettant d'obtenir la taille et un pointeur de son
-   * segment (la taille en nombre d'éléments).
-   *
-   * \return Une paire [taille, ptr].
-   */
-  virtual std::pair<Integer, void*> sizeAndDataSegment() const = 0;
-
-  /*!
-   * \brief Méthode permettant d'obtenir la taille et un pointeur du segment
-   * d'un sous-domaine du noeud (la taille en nombre d'éléments).
-   *
-   * \param rank Le rang du sous-domaine.
-   * \return Une paire [taille, ptr].
-   */
-  virtual std::pair<Integer, void*> sizeAndDataSegment(Int32 rank) const = 0;
-
-  /*!
-   * \brief Méthode permettant d'obtenir la taille et un pointeur de la
-   * fenêtre (la taille en nombre d'éléments).
-   *
-   * \return Une paire [taille, ptr].
-   */
-  virtual std::pair<Integer, void*> sizeAndDataWindow() const = 0;
+  virtual Span<std::byte> window() const = 0;
 
   /*!
    * \brief Méthode permettant de redimensionner les segments de la fenêtre.
+   *
    * Appel collectif.
    *
    * La taille totale de la fenêtre doit être inférieure ou égale à la taille
    * d'origine.
    *
-   * \param new_nb_elem La nouvelle taille de notre segment.
+   * \param new_sizeof_segment La nouvelle taille de notre segment (en octet).
    */
-  virtual void resizeSegment(Integer new_nb_elem) = 0;
+  virtual void resizeSegment(Int64 new_sizeof_segment) = 0;
 
   /*!
    * \brief Méthode permettant d'obtenir les rangs qui possèdent un segment

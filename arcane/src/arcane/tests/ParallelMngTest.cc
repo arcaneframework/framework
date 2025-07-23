@@ -1014,16 +1014,20 @@ _testProcessMessages(const ParallelExchangerOptions* exchange_options)
 void ParallelMngTest::
 _testMachineMemoryWindow()
 {
+  // nb_elem doit être paire pour ce test.
+  //![snippet_arcanedoc_parallel_shmem_usage_1]
+  constexpr Integer nb_elem = 14;
+
   IParallelMng* pm = m_parallel_mng;
   Integer my_rank = pm->commRank();
 
-  // nb_elem doit être paire pour ce test.
-  constexpr Integer nb_elem = 14;
-
   MachineMemoryWindow<Integer> window(pm, nb_elem);
+  //![snippet_arcanedoc_parallel_shmem_usage_1]
 
+  //![snippet_arcanedoc_parallel_shmem_usage_2]
   ConstArrayView<Int32> machine_ranks(window.machineRanks());
   Integer machine_nb_proc = machine_ranks.size();
+  //![snippet_arcanedoc_parallel_shmem_usage_2]
 
   {
     Ref<IParallelTopology> topo = ParallelMngUtils::createTopologyRef(pm);
@@ -1036,31 +1040,13 @@ _testMachineMemoryWindow()
       return;
     }
   }
-
-  for (Int32 rank : machine_ranks) {
-    if (window.sizeSegment(rank) != nb_elem) {
-      ARCANE_FATAL("Bad size of sizeSegment({0})", rank);
-    }
+  if (window.windowConstView().size() != machine_nb_proc * nb_elem) {
+    ARCANE_FATAL("Bad sizeWindow()");
   }
 
+  //![snippet_arcanedoc_parallel_shmem_usage_3]
   {
-    ArrayView av_my_segment(window.segmentView());
-
-    if (av_my_segment.size() != window.sizeSegment()) {
-      ARCANE_FATAL("Incoherence size of segmentView() and sizeSegment()");
-    }
-
-    if (window.sizeWindow() != machine_nb_proc * nb_elem) {
-      ARCANE_FATAL("Bad sizeWindow()");
-    }
-
-    if (av_my_segment.data() != window.dataSegment()) {
-      ARCANE_FATAL("Bad dataSegment()");
-    }
-
-    if (window.segmentConstView().data() != window.dataSegment()) {
-      ARCANE_FATAL("Bad segmentConstView().data()");
-    }
+    Span av_my_segment(window.segmentView());
 
     Integer iter = 0;
     for (Integer& elem : av_my_segment) {
@@ -1069,9 +1055,10 @@ _testMachineMemoryWindow()
     }
   }
   window.barrier();
+  //![snippet_arcanedoc_parallel_shmem_usage_3]
 
   for (Int32 rank : machine_ranks) {
-    ArrayView av_segment(window.segmentView(rank));
+    Span av_segment(window.segmentView(rank));
 
     for (Integer i = 0; i < nb_elem; ++i) {
       //info() << "Test " << i << " : " << av_segment[i] << " -- " << rank;
@@ -1081,28 +1068,28 @@ _testMachineMemoryWindow()
     }
   }
 
+  //![snippet_arcanedoc_parallel_shmem_usage_4]
   for (Int32 rank : machine_ranks) {
-    ConstArrayView av_segment(window.segmentConstView(rank));
+    Span av_segment(window.segmentConstView(rank));
 
     for (Integer i = 0; i < nb_elem; ++i) {
-      //info() << "Test " << i << " : " << av_segment[i] << " -- " << rank;
       if (av_segment[i] != i * (rank + 1)) {
         ARCANE_FATAL("Bad element in memory window -- Expected : {0} -- Found : {1}", (i * (rank + 1)), av_segment[i]);
       }
     }
   }
+  //![snippet_arcanedoc_parallel_shmem_usage_4]
 
+  //![snippet_arcanedoc_parallel_shmem_usage_5]
   window.barrier();
 
   constexpr Integer nb_elem_div = nb_elem / 2;
 
   window.resizeSegment(nb_elem_div);
+  //![snippet_arcanedoc_parallel_shmem_usage_5]
 
   for (Int32 rank : machine_ranks) {
-    ConstArrayView av_segment(window.segmentConstView(rank));
-    if (av_segment.data() != window.dataSegment(rank)) {
-      ARCANE_FATAL("Bad dataSegment({0})", rank);
-    }
+    Span av_segment(window.segmentConstView(rank));
 
     for (Integer i = 0; i < nb_elem_div; ++i) {
       //info() << "Test2 " << i << " : " << av_segment[i] << " -- " << rank;
@@ -1113,37 +1100,33 @@ _testMachineMemoryWindow()
       }
     }
   }
+
   window.barrier();
   window.resizeSegment(nb_elem);
 
+  //![snippet_arcanedoc_parallel_shmem_usage_6]
   if (my_rank == machine_ranks[0]) {
-    ArrayView av_window(window.windowView());
-    if (av_window.data() != window.dataWindow()) {
-      ARCANE_FATAL("Bad dataWindow()");
-    }
+    Span av_window(window.windowView());
     for (Integer j = 0; j < machine_nb_proc; ++j) {
       for (Integer i = 0; i < nb_elem; ++i) {
         av_window[i + (j * nb_elem)] = machine_ranks[j];
-        //info() << "Test3 " << (i + (j * nb_elem)) << " : " << av_window[i + (j * nb_elem)] << " -- " << machine_ranks[j];
-      }
-    }
-  }
-
-  window.barrier();
-
-  ConstArrayView av_window(window.windowConstView());
-  if (av_window.data() != window.dataWindow()) {
-    ARCANE_FATAL("Bad dataWindow()");
-  }
-  for (Integer j = 0; j < machine_nb_proc; ++j) {
-    for (Integer i = 0; i < nb_elem; ++i) {
-      //info() << "Test4 " << (i + (j * nb_elem)) << " : " << av_window[i + (j * nb_elem)] << " -- " << machine_ranks[j];
-      if (av_window[i + (j * nb_elem)] != machine_ranks[j]) {
-        ARCANE_FATAL("Bad element in memory window -- Expected : {0} -- Found : {1}", machine_ranks[j], av_window[i + (j * nb_elem)]);
       }
     }
   }
   window.barrier();
+
+  {
+    Span av_window(window.windowConstView());
+    for (Integer j = 0; j < machine_nb_proc; ++j) {
+      for (Integer i = 0; i < nb_elem; ++i) {
+        if (av_window[i + (j * nb_elem)] != machine_ranks[j]) {
+          ARCANE_FATAL("Bad element in memory window -- Expected : {0} -- Found : {1}", machine_ranks[j], av_window[i + (j * nb_elem)]);
+        }
+      }
+    }
+  }
+  window.barrier();
+  //![snippet_arcanedoc_parallel_shmem_usage_6]
 }
 
 /*---------------------------------------------------------------------------*/

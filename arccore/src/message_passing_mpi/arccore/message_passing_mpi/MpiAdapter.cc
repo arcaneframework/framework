@@ -33,7 +33,7 @@
 #include "arccore/message_passing_mpi/internal/MpiLock.h"
 #include "arccore/message_passing_mpi/internal/NoMpiProfiling.h"
 #include "arccore/message_passing_mpi/internal/MpiRequest.h"
-#include "arccore/message_passing_mpi/internal/MpiMachineMemoryWindowBaseCreator.h"
+#include "arccore/message_passing_mpi/internal/MpiMachineMemoryWindowBaseInternalCreator.h"
 
 #include <cstdint>
 
@@ -1753,14 +1753,14 @@ profiler() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-MpiMachineMemoryWindowBaseCreator* MpiAdapter::
+MpiMachineMemoryWindowBaseInternalCreator* MpiAdapter::
 windowCreator()
 {
   if (m_window_creator == nullptr) {
     MPI_Comm_split_type(m_communicator, MPI_COMM_TYPE_SHARED, m_comm_rank, MPI_INFO_NULL, &m_machine_communicator);
     MPI_Comm_rank(m_machine_communicator, &m_machine_comm_rank);
     MPI_Comm_size(m_machine_communicator, &m_machine_comm_size);
-    m_window_creator = new MpiMachineMemoryWindowBaseCreator(m_machine_communicator, m_machine_comm_rank, m_machine_comm_size, m_communicator, m_comm_size);
+    m_window_creator = new MpiMachineMemoryWindowBaseInternalCreator(m_machine_communicator, m_machine_comm_rank, m_machine_comm_size, m_communicator, m_comm_size);
   }
   return m_window_creator;
 }

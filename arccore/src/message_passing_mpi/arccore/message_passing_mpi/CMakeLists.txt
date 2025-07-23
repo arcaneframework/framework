@@ -31,8 +31,8 @@ set(SOURCES
   MpiTypeDispatcher.cc
   MpiMessagePassingMng.cc
   MpiMessagePassingMng.h
-  MpiMachineMemoryWindowBase.cc
-  MpiMachineMemoryWindowBaseCreator.cc
+  MpiMachineMemoryWindowBaseInternal.cc
+  MpiMachineMemoryWindowBaseInternalCreator.cc
 
   StandaloneMpiMessagePassingMng.cc
   StandaloneMpiMessagePassingMng.h
@@ -43,8 +43,8 @@ set(SOURCES
   internal/MpiAllInOneMachineMemoryWindowBase.h
   internal/MpiControlDispatcher.h
   internal/MpiLock.h
-  internal/MpiMachineMemoryWindowBase.h
-  internal/MpiMachineMemoryWindowBaseCreator.h
+  internal/MpiMachineMemoryWindowBaseInternal.h
+  internal/MpiMachineMemoryWindowBaseInternalCreator.h
   internal/MpiRequest.h
   internal/MpiRequestList.h
   internal/MpiSerializeDispatcher.h

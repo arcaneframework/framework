@@ -5,20 +5,20 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ParallelMngInternal.cc                                      (C) 2000-2025 */
+/* MachineMemoryWindowBase.cc                                  (C) 2000-2025 */
 /*                                                                           */
-/* Implémentation de la partie interne à Arcane de IParallelMng.             */
+/* Classe permettant de créer une fenêtre mémoire partagée entre les         */
+/* processus d'un même noeud.                                                */
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/core/internal/ParallelMngInternal.h"
+#include "arcane/core/MachineMemoryWindowBase.h"
 
-#include "arcane/accelerator/core/AcceleratorCoreGlobal.h"
-#include "arcane/accelerator/core/RunQueueBuildInfo.h"
+#include "arcane/core/IParallelMng.h"
+#include "arcane/core/internal/IParallelMngInternal.h"
 
-#include "arcane/core/ParallelMngDispatcher.h"
+#include "arcane/utils/NumericTypes.h"
 
-#include "arcane/utils/Convert.h"
-#include "arcane/utils/FatalErrorException.h"
+#include "arccore/message_passing/internal/IMachineMemoryWindowBaseInternal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -26,97 +26,99 @@
 namespace Arcane
 {
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ParallelMngInternal::
-ParallelMngInternal(ParallelMngDispatcher* pm)
-: m_parallel_mng(pm)
-, m_runner(Accelerator::eExecutionPolicy::Sequential)
-, m_queue(makeQueue(m_runner))
+MachineMemoryWindowBase::
+MachineMemoryWindowBase(IParallelMng* pm, Int64 nb_elem_segment, Int32 sizeof_elem)
+: m_pm_internal(pm->_internalApi())
+, m_sizeof_elem(sizeof_elem)
 {
-  if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_DISABLE_ACCELERATOR_AWARE_MESSAGE_PASSING", true))
-    m_is_accelerator_aware_disabled = (v.value() != 0);
+  m_node_window_base = m_pm_internal->createMachineMemoryWindowBase(nb_elem_segment * static_cast<Int64>(sizeof_elem), sizeof_elem);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Runner ParallelMngInternal::
-runner() const
+Span<std::byte> MachineMemoryWindowBase::
+segmentView() const
 {
-  return m_runner;
+  return m_node_window_base->segment();
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-RunQueue ParallelMngInternal::
-queue() const
+Span<std::byte> MachineMemoryWindowBase::
+segmentView(Int32 rank) const
 {
-  return m_queue;
+  return m_node_window_base->segment(rank);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-bool ParallelMngInternal::
-isAcceleratorAware() const
+Span<std::byte> MachineMemoryWindowBase::
+windowView() const
 {
-  if (m_is_accelerator_aware_disabled)
-    return false;
-  if (m_queue.isNull())
-    return false;
-  if (!m_queue.isAcceleratorPolicy())
-    return false;
-  return m_parallel_mng->_isAcceleratorAware();
+  return m_node_window_base->window();
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void ParallelMngInternal::
-setDefaultRunner(const Runner& runner)
+Span<const std::byte> MachineMemoryWindowBase::
+segmentConstView() const
 {
-  if (!m_runner.isInitialized())
-    ARCANE_FATAL("Can not set an unitialized Runner");
-
-  // Attention à bien supprimer la référence sur la RunQueue
-  // avant de détruire le Runner car s'il n'y a pas d'autres
-  // références sur \a m_runner il sera détruit avec \a m_queue
-  // et ce dernier aura un \a m_runner détruit.
-  m_queue = RunQueue{};
-  m_runner = runner;
-  Accelerator::RunQueueBuildInfo build_info(-5);
-  m_queue = makeQueue(m_runner, build_info);
-  m_queue.setAsync(true);
+  return m_node_window_base->segment();
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Ref<IParallelMng> ParallelMngInternal::
-createSubParallelMngRef(Int32 color, Int32 key)
+Span<const std::byte> MachineMemoryWindowBase::
+segmentConstView(Int32 rank) const
 {
-  return m_parallel_mng->_createSubParallelMngRef(color, key);
+  return m_node_window_base->segment(rank);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Ref<MessagePassing::IMachineMemoryWindowBaseInternal> ParallelMngInternal::
-createMachineMemoryWindowBase(Int64 sizeof_segment, Int32 sizeof_type)
+Span<const std::byte> MachineMemoryWindowBase::
+windowConstView() const
 {
-  ARCANE_UNUSED(sizeof_segment);
-  ARCANE_UNUSED(sizeof_type);
-  ARCANE_NOT_YET_IMPLEMENTED("MachineWindow is not available in your ParallelMng");
-  ARCANE_FATAL("MachineWindow is not available in your ParallelMng");
+  return m_node_window_base->window();
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // namespace Arcane
+void MachineMemoryWindowBase::
+resizeSegment(Integer new_nb_elem) const
+{
+  m_node_window_base->resizeSegment(new_nb_elem * static_cast<Int64>(m_sizeof_elem));
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+ConstArrayView<Int32> MachineMemoryWindowBase::
+machineRanks() const
+{
+  return m_node_window_base->machineRanks();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MachineMemoryWindowBase::
+barrier() const
+{
+  m_node_window_base->barrier();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+} // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
