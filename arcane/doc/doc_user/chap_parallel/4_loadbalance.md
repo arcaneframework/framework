@@ -190,7 +190,7 @@ ____
 <span class="back_section_button">
 \ref arcanedoc_parallel_simd
 </span>
-<!-- <span class="next_section_button">
-\ref 
-</span> -->
+<span class="next_section_button">
+\ref arcanedoc_parallel_shmem
+</span>
 </div>
