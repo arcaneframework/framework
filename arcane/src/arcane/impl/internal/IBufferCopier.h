@@ -77,7 +77,7 @@ class DirectBufferCopier
                            MutableMemoryView var_value) override
   {
     RunQueue* q = (m_queue.isNull()) ? nullptr : &m_queue;
-    MemoryUtils::copyToIndexes(var_value, buffer, indexes, q);
+    MemoryUtils::copyWithIndexedSource(var_value, buffer, indexes, q);
   }
 
   void copyToBufferAsync(Int32ConstArrayView indexes,
@@ -85,7 +85,7 @@ class DirectBufferCopier
                          ConstMemoryView var_value) override
   {
     RunQueue* q = (m_queue.isNull()) ? nullptr : &m_queue;
-    MemoryUtils::copyFromIndexes(buffer, var_value, indexes, q);
+    MemoryUtils::copyWithIndexedDestination(buffer, var_value, indexes, q);
   }
 
   void barrier() override;

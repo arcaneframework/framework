@@ -206,9 +206,9 @@ _executeCopy(eMemoryRessource mem_kind, bool use_queue)
     {
       ConstMemoryView source(t1.to1DSpan());
       MutableMemoryView destination(destination_buffer.to1DSpan());
-      MemoryUtils::copyFromIndexes(destination, source, indexes.to1DSpan().smallView(), queue_ptr);
+      MemoryUtils::copyWithIndexedDestination(destination, source, indexes.to1DSpan().smallView(), queue_ptr);
       // Teste copie vide
-      MemoryUtils::copyFromIndexes(destination, source, {}, queue_ptr);
+      MemoryUtils::copyWithIndexedDestination(destination, source, {}, queue_ptr);
     }
 
     NumArray<double, MDDim1> host_destination(eMemoryRessource::Host);
@@ -240,9 +240,9 @@ _executeCopy(eMemoryRessource mem_kind, bool use_queue)
     {
       MutableMemoryView t1_view(t1.to1DSpan());
       ConstMemoryView destination_view(destination_buffer.to1DSpan());
-      MemoryUtils::copyToIndexes(t1_view, destination_view,indexes.to1DSpan().smallView(), queue_ptr);
+      MemoryUtils::copyWithIndexedSource(t1_view, destination_view,indexes.to1DSpan().smallView(), queue_ptr);
       // Teste copie vide
-      MemoryUtils::copyToIndexes(t1_view, destination_view, {}, queue_ptr);
+      MemoryUtils::copyWithIndexedSource(t1_view, destination_view, {}, queue_ptr);
     }
 
     // Vérifie la validité
@@ -282,9 +282,9 @@ _executeCopy(eMemoryRessource mem_kind, bool use_queue)
     {
       ConstMemoryView source(t1.to1DSpan(), n2);
       MutableMemoryView destination(destination_buffer.to1DSpan(), n2);
-      MemoryUtils::copyFromIndexes(destination, source, indexes.to1DSpan().smallView(), queue_ptr);
+      MemoryUtils::copyWithIndexedDestination(destination, source, indexes.to1DSpan().smallView(), queue_ptr);
       // Teste copie vide
-      MemoryUtils::copyFromIndexes(destination, source, {}, queue_ptr);
+      MemoryUtils::copyWithIndexedDestination(destination, source, {}, queue_ptr);
     }
 
     NumArray<double, MDDim2> host_destination(eMemoryRessource::Host);
@@ -318,9 +318,9 @@ _executeCopy(eMemoryRessource mem_kind, bool use_queue)
     {
       MutableMemoryView t1_view(t1.to1DSpan(), n2);
       ConstMemoryView source_view(destination_buffer.to1DSpan(), n2);
-      MemoryUtils::copyToIndexes(t1_view, source_view, indexes.to1DSpan().smallView(), queue_ptr);
+      MemoryUtils::copyWithIndexedSource(t1_view, source_view, indexes.to1DSpan().smallView(), queue_ptr);
       // Teste copie vide
-      MemoryUtils::copyToIndexes(t1_view, source_view, {}, queue_ptr);
+      MemoryUtils::copyWithIndexedSource(t1_view, source_view, {}, queue_ptr);
     }
 
     {

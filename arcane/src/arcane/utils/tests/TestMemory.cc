@@ -120,7 +120,7 @@ class MemoryTester
       UniqueArray<DataType> array3(nb_index);
       MutableMemoryView to(array3.span());
       ConstMemoryView from(array1.span());
-      MemoryUtils::copyFromIndexesHost(to, from, copy_indexes);
+      MemoryUtils::copyHostWithIndexedDestination(to, from, copy_indexes);
       ASSERT_EQ(array2, array3);
       ConstMemoryView view2(array1.view());
       ASSERT_EQ(view2.bytes(), asBytes(array1));
@@ -146,7 +146,7 @@ class MemoryTester
 
       MutableMemoryView to(array3.span());
       ConstMemoryView from(array1.span());
-      MemoryUtils::copyToIndexesHost(to, from,copy_indexes);
+      MemoryUtils::copyHostWithIndexedSource(to, from, copy_indexes);
       ASSERT_EQ(array2, array3);
     }
   }

@@ -490,7 +490,7 @@ _copyToBuffer(SmallSpan<const MatVarIndex> matvar_indexes,
   const Int32 nb_item = matvar_indexes.size();
   MutableMemoryView destination_buffer(makeMutableMemoryView(bytes.data(),one_data_size,nb_item));
   ConstMultiMemoryView source_view(m_views_as_bytes.view(),one_data_size);
-  MemoryUtils::copyToIndexes(destination_buffer,source_view,indexes,queue);
+  MemoryUtils::copyWithIndexedSource(destination_buffer,source_view,indexes,queue);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -505,7 +505,7 @@ _copyFromBuffer(SmallSpan<const MatVarIndex> matvar_indexes,
   const Int32 nb_item = matvar_indexes.size();
   MutableMultiMemoryView destination_view(m_views_as_bytes.view(),one_data_size);
   ConstMemoryView source_buffer(makeConstMemoryView(bytes.data(),one_data_size,nb_item));
-  MemoryUtils::copyFromIndexes(destination_view, source_buffer,indexes,queue);
+  MemoryUtils::copyWithIndexedDestination(destination_view, source_buffer,indexes,queue);
 }
 
 /*---------------------------------------------------------------------------*/

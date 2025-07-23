@@ -240,9 +240,9 @@ _executeCopy1Rank1(eMemoryRessource mem_kind, bool use_queue)
   {
     ConstMultiMemoryView source_memory_view(memories_as_bytes.constView(), sizeof(double));
     MutableMemoryView destination(buffer.to1DSpan());
-    MemoryUtils::copyToIndexes(destination, source_memory_view, indexes.to1DSpan().smallView(), queue_ptr);
+    MemoryUtils::copyWithIndexedSource(destination, source_memory_view, indexes.to1DSpan().smallView(), queue_ptr);
     // Teste copie vide
-    MemoryUtils::copyToIndexes(destination, source_memory_view, {}, queue_ptr);
+    MemoryUtils::copyWithIndexedSource(destination, source_memory_view, {}, queue_ptr);
   }
 
   UniqueArray<NumArray<double, MDDim1>> host_memories;
@@ -283,9 +283,9 @@ _executeCopy1Rank1(eMemoryRessource mem_kind, bool use_queue)
   {
     MutableMultiMemoryView destination_memory_view(memories_as_bytes.view(), sizeof(double));
     ConstMemoryView source(buffer.to1DSpan());
-    MemoryUtils::copyFromIndexes(destination_memory_view, source, indexes.to1DSpan().smallView(), queue_ptr);
+    MemoryUtils::copyWithIndexedDestination(destination_memory_view, source, indexes.to1DSpan().smallView(), queue_ptr);
     // Teste copie vide
-    MemoryUtils::copyFromIndexes(destination_memory_view, source, {}, queue_ptr);
+    MemoryUtils::copyWithIndexedDestination(destination_memory_view, source, {}, queue_ptr);
   }
 
   // Vérifie le résultat
@@ -360,9 +360,9 @@ _executeCopy1Rank2(eMemoryRessource mem_kind, bool use_queue)
   {
     ConstMultiMemoryView source_memory_view(memories_as_bytes.constView(), sizeof(double) * n2);
     MutableMemoryView destination(buffer.to1DSpan(), n2);
-    MemoryUtils::copyToIndexes(destination, source_memory_view, indexes.to1DSpan().smallView(), queue_ptr);
+    MemoryUtils::copyWithIndexedSource(destination, source_memory_view, indexes.to1DSpan().smallView(), queue_ptr);
     // Teste copie vide
-    MemoryUtils::copyToIndexes(destination, source_memory_view, {}, queue_ptr);
+    MemoryUtils::copyWithIndexedSource(destination, source_memory_view, {}, queue_ptr);
   }
 
   UniqueArray<NumArray<double, MDDim2>> host_memories;
@@ -405,9 +405,9 @@ _executeCopy1Rank2(eMemoryRessource mem_kind, bool use_queue)
   {
     MutableMultiMemoryView destination_memory_view(memories_as_bytes.view(), sizeof(double) * n2);
     ConstMemoryView source(buffer.to1DSpan(), n2);
-    MemoryUtils::copyFromIndexes(destination_memory_view, source, indexes.to1DSpan().smallView(), queue_ptr);
+    MemoryUtils::copyWithIndexedDestination(destination_memory_view, source, indexes.to1DSpan().smallView(), queue_ptr);
     // Teste copie vide
-    MemoryUtils::copyFromIndexes(destination_memory_view, source, {}, queue_ptr);
+    MemoryUtils::copyWithIndexedDestination(destination_memory_view, source, {}, queue_ptr);
   }
 
   // Vérifie le résultat
@@ -483,7 +483,7 @@ _executeFill1Rank1(eMemoryRessource mem_kind, bool use_queue, bool use_index)
     MutableMultiMemoryView destination_memory_view(memories_as_bytes.view(), sizeof(double));
     ConstMemoryView source_memory_view(fill_buffer.constSpan());
     if (use_index)
-      MemoryUtils::fillIndexes(destination_memory_view, source_memory_view, indexes, queue_ptr);
+      MemoryUtils::fillIndexed(destination_memory_view, source_memory_view, indexes, queue_ptr);
     else
       MemoryUtils::fill(destination_memory_view, source_memory_view, queue_ptr);
   }

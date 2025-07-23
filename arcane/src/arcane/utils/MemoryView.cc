@@ -109,17 +109,17 @@ copyHost(MutableMemoryView destination, ConstMemoryView source)
 /*---------------------------------------------------------------------------*/
 
 void MemoryUtils::
-copyFromIndexesHost(MutableMemoryView destination, ConstMemoryView source,
+copyHostWithIndexedDestination(MutableMemoryView destination, ConstMemoryView source,
                     Span<const Int32> indexes)
 {
-  copyFromIndexes(destination, source, indexes.smallView(), nullptr);
+  copyWithIndexedDestination(destination, source, indexes.smallView(), nullptr);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void MemoryUtils::
-copyFromIndexes(MutableMemoryView destination, ConstMemoryView source,
+copyWithIndexedDestination(MutableMemoryView destination, ConstMemoryView source,
                 SmallSpan<const Int32> indexes, RunQueue* queue)
 {
 
@@ -139,7 +139,7 @@ copyFromIndexes(MutableMemoryView destination, ConstMemoryView source,
 /*---------------------------------------------------------------------------*/
 
 void MemoryUtils::
-fillIndexes(MutableMemoryView destination, ConstMemoryView source,
+fillIndexed(MutableMemoryView destination, ConstMemoryView source,
             SmallSpan<const Int32> indexes, const RunQueue* queue)
 {
   Int32 one_data_size = _checkDataTypeSize(A_FUNCINFO, destination.datatypeSize(), source.datatypeSize());
@@ -172,17 +172,17 @@ fill(MutableMemoryView destination, ConstMemoryView source, const RunQueue* queu
 /*---------------------------------------------------------------------------*/
 
 void MemoryUtils::
-copyToIndexesHost(MutableMemoryView destination, ConstMemoryView source,
+copyHostWithIndexedSource(MutableMemoryView destination, ConstMemoryView source,
                   Span<const Int32> indexes)
 {
-  copyToIndexes(destination, source, indexes.smallView(), nullptr);
+  copyWithIndexedSource(destination, source, indexes.smallView(), nullptr);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void MemoryUtils::
-copyToIndexes(MutableMemoryView destination, ConstMemoryView source,
+copyWithIndexedSource(MutableMemoryView destination, ConstMemoryView source,
               SmallSpan<const Int32> indexes,
               RunQueue* queue)
 {
@@ -225,7 +225,7 @@ makeConstMemoryView(const void* ptr, Int32 datatype_size, Int64 nb_element)
 /*---------------------------------------------------------------------------*/
 
 void MemoryUtils::
-copyFromIndexes(MutableMultiMemoryView destination, ConstMemoryView source,
+copyWithIndexedDestination(MutableMultiMemoryView destination, ConstMemoryView source,
                 SmallSpan<const Int32> indexes, RunQueue* queue)
 {
   Int32 one_data_size = _checkDataTypeSize(A_FUNCINFO, destination.datatypeSize(), source.datatypeSize());
@@ -241,7 +241,7 @@ copyFromIndexes(MutableMultiMemoryView destination, ConstMemoryView source,
 /*---------------------------------------------------------------------------*/
 
 void MemoryUtils::
-fillIndexes(MutableMultiMemoryView destination, ConstMemoryView source,
+fillIndexed(MutableMultiMemoryView destination, ConstMemoryView source,
             SmallSpan<const Int32> indexes, RunQueue* queue)
 {
   Int32 one_data_size = _checkDataTypeSize(A_FUNCINFO, destination.datatypeSize(), source.datatypeSize());
@@ -268,7 +268,7 @@ fill(MutableMultiMemoryView destination, ConstMemoryView source, RunQueue* queue
 /*---------------------------------------------------------------------------*/
 
 void MemoryUtils::
-copyToIndexes(MutableMemoryView destination, ConstMultiMemoryView source,
+copyWithIndexedSource(MutableMemoryView destination, ConstMultiMemoryView source,
               SmallSpan<const Int32> indexes, RunQueue* queue)
 {
   Int32 one_data_size = _checkDataTypeSize(A_FUNCINFO, destination.datatypeSize(), source.datatypeSize());
