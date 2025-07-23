@@ -5,20 +5,19 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MachineMemoryWindow.h                                       (C) 2000-2025 */
+/* MachineMemoryWindowBase.h                                   (C) 2000-2025 */
 /*                                                                           */
 /* Classe permettant de créer une fenêtre mémoire partagée entre les         */
 /* processus d'un même noeud.                                                */
 /*---------------------------------------------------------------------------*/
 
-#ifndef ARCANE_CORE_MACHINEMEMORYWINDOW_H
-#define ARCANE_CORE_MACHINEMEMORYWINDOW_H
+#ifndef ARCANE_CORE_MACHINEMEMORYWINDOWBASE_H
+#define ARCANE_CORE_MACHINEMEMORYWINDOWBASE_H
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/core/ArcaneTypes.h"
-#include "arcane/core/MachineMemoryWindowBase.h"
 #include "arcane/utils/Ref.h"
 
 #include "arccore/base/Span.h"
@@ -32,26 +31,32 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+class IParallelMng;
+class IParallelMngInternal;
+namespace MessagePassing
+{
+  class IMachineMemoryWindowBaseInternal;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 /*!
  * \brief Classe permettant de créer une fenêtre mémoire partagée entre les
  * sous-domaines d'un même noeud.
  * Les segments de cette fenêtre seront contigüs en mémoire.
- *
- * \tparam Type Le type des éléments de la fenêtre.
  */
-template <class Type>
-class MachineMemoryWindow
+class ARCANE_CORE_EXPORT MachineMemoryWindowBase
 {
  public:
 
   /*!
    * \brief Constructeur.
    * \param pm Le ParallelMng contenant les processus du noeud.
-   * \param nb_elem_segment Le nombre d'éléments pour le segment de ce sous-domaine.
+   * \param sizeof_segment La taille du segment de ce sous-domaine (en octet).
+   * \param sizeof_elem La taille d'un élément (en octet).
    */
-  MachineMemoryWindow(IParallelMng* pm, Int64 nb_elem_segment)
-  : m_impl(pm, nb_elem_segment, static_cast<Int32>(sizeof(Type)))
-  {}
+  MachineMemoryWindowBase(IParallelMng* pm, Int64 sizeof_segment, Int32 sizeof_elem);
 
  public:
 
@@ -61,10 +66,7 @@ class MachineMemoryWindow
    *
    * \return Une vue.
    */
-  Span<Type> segmentView() const
-  {
-    return asSpan<Type>(m_impl.segmentView());
-  }
+  Span<std::byte> segmentView() const;
 
   /*!
    * \brief Méthode permettant d'obtenir une vue sur le segment de fenêtre
@@ -73,20 +75,14 @@ class MachineMemoryWindow
    * \param rank Le rang du sous-domaine.
    * \return Une vue.
    */
-  Span<Type> segmentView(Int32 rank) const
-  {
-    return asSpan<Type>(m_impl.segmentView(rank));
-  }
+  Span<std::byte> segmentView(Int32 rank) const;
 
   /*!
    * \brief Méthode permettant d'obtenir une vue sur toute la fenêtre mémoire.
    *
    * \return Une vue.
    */
-  Span<Type> windowView() const
-  {
-    return asSpan<Type>(m_impl.windowView());
-  }
+  Span<std::byte> windowView() const;
 
   /*!
    * \brief Méthode permettant d'obtenir une vue constante sur notre segment
@@ -94,10 +90,7 @@ class MachineMemoryWindow
    *
    * \return Une vue constante.
    */
-  Span<const Type> segmentConstView() const
-  {
-    return asSpan<const Type>(m_impl.segmentView());
-  }
+  Span<const std::byte> segmentConstView() const;
 
   /*!
    * \brief Méthode permettant d'obtenir une vue constante sur le segment de
@@ -106,10 +99,7 @@ class MachineMemoryWindow
    * \param rank Le rang du sous-domaine.
    * \return Une vue constante.
    */
-  Span<const Type> segmentConstView(Int32 rank) const
-  {
-    return asSpan<const Type>(m_impl.segmentView(rank));
-  }
+  Span<const std::byte> segmentConstView(Int32 rank) const;
 
   /*!
    * \brief Méthode permettant d'obtenir une vue constante sur toute la fenêtre
@@ -117,10 +107,7 @@ class MachineMemoryWindow
    *
    * \return Une vue constante.
    */
-  Span<const Type> windowConstView() const
-  {
-    return asSpan<const Type>(m_impl.windowView());
-  }
+  Span<const std::byte> windowConstView() const;
 
   /*!
    * \brief Méthode permettant de redimensionner les segments de la fenêtre.
@@ -129,12 +116,9 @@ class MachineMemoryWindow
    * La taille totale de la fenêtre doit être inférieure ou égale à la taille
    * d'origine.
    *
-   * \param new_nb_elem La nouvelle taille de notre segment.
+   * \param new_size La nouvelle taille de notre segment (en octet).
    */
-  void resizeSegment(Integer new_nb_elem) const
-  {
-    m_impl.resizeSegment(new_nb_elem);
-  }
+  void resizeSegment(Integer new_size) const;
 
   /*!
    * \brief Méthode permettant d'obtenir les rangs qui possèdent un segment
@@ -145,23 +129,19 @@ class MachineMemoryWindow
    *
    * \return Une vue contenant les ids des rangs.
    */
-  ConstArrayView<Int32> machineRanks() const
-  {
-    return m_impl.machineRanks();
-  }
+  ConstArrayView<Int32> machineRanks() const;
 
   /*!
    * \brief Méthode permettant d'attendre que tous les processus/threads
    * du noeud appellent cette méthode pour continuer l'exécution.
    */
-  void barrier() const
-  {
-    m_impl.barrier();
-  }
+  void barrier() const;
 
  private:
 
-  MachineMemoryWindowBase m_impl;
+  IParallelMngInternal* m_pm_internal;
+  Ref<MessagePassing::IMachineMemoryWindowBaseInternal> m_node_window_base;
+  Int32 m_sizeof_elem;
 };
 
 /*---------------------------------------------------------------------------*/

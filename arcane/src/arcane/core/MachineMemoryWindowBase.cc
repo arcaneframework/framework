@@ -5,13 +5,13 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MachineMemoryWindow.cc                                      (C) 2000-2025 */
+/* MachineMemoryWindowBase.cc                                  (C) 2000-2025 */
 /*                                                                           */
 /* Classe permettant de créer une fenêtre mémoire partagée entre les         */
 /* processus d'un même noeud.                                                */
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/core/MachineMemoryWindow.h"
+#include "arcane/core/MachineMemoryWindowBase.h"
 
 #include "arcane/core/IParallelMng.h"
 #include "arcane/core/internal/IParallelMngInternal.h"
@@ -57,6 +57,33 @@ segmentView(Int32 rank) const
 
 Span<std::byte> MachineMemoryWindowBase::
 windowView() const
+{
+  return m_node_window_base->window();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Span<const std::byte> MachineMemoryWindowBase::
+segmentConstView() const
+{
+  return m_node_window_base->segment();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Span<const std::byte> MachineMemoryWindowBase::
+segmentConstView(Int32 rank) const
+{
+  return m_node_window_base->segment(rank);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Span<const std::byte> MachineMemoryWindowBase::
+windowConstView() const
 {
   return m_node_window_base->window();
 }
