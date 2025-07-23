@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Array2Data.h                                                (C) 2000-2024 */
+/* Array2Data.h                                                (C) 2000-2025 */
 /*                                                                           */
 /* Donnée du type 'Array2'.                                                  */
 /*---------------------------------------------------------------------------*/
@@ -240,10 +240,11 @@ class Array2DataT<DataType>::Impl
   {
     m_p->computeHash(hash_info);
   }
+  IMemoryAllocator* memoryAllocator() const override { return m_p->m_value.allocator(); }
 
  private:
 
-  Array2DataT<DataType>* m_p;
+  Array2DataT<DataType>* m_p = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/
