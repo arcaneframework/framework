@@ -5,13 +5,13 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* SharedMemoryMachineMemoryWindowBase.cc                      (C) 2000-2025 */
+/* SharedMemoryMachineMemoryWindowBaseInternal.cc              (C) 2000-2025 */
 /*                                                                           */
 /* Classe permettant de créer une fenêtre mémoire pour l'ensemble des        */
 /* sous-domaines en mémoire partagée.                                        */
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/parallel/thread/internal/SharedMemoryMachineMemoryWindowBase.h"
+#include "arcane/parallel/thread/internal/SharedMemoryMachineMemoryWindowBaseInternal.h"
 
 #include "arcane/utils/FatalErrorException.h"
 
@@ -26,8 +26,8 @@ namespace Arcane::MessagePassing
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-SharedMemoryMachineMemoryWindowBase::
-SharedMemoryMachineMemoryWindowBase(Int32 my_rank, Int32 nb_rank, ConstArrayView<Int32> ranks, Int32 sizeof_type, std::byte* window, Int64* sizeof_segments, Int64* sum_sizeof_segments, Int64 sizeof_window, IThreadBarrier* barrier)
+SharedMemoryMachineMemoryWindowBaseInternal::
+SharedMemoryMachineMemoryWindowBaseInternal(Int32 my_rank, Int32 nb_rank, ConstArrayView<Int32> ranks, Int32 sizeof_type, std::byte* window, Int64* sizeof_segments, Int64* sum_sizeof_segments, Int64 sizeof_window, IThreadBarrier* barrier)
 : m_my_rank(my_rank)
 , m_nb_rank(nb_rank)
 , m_ranks(ranks)
@@ -46,8 +46,8 @@ SharedMemoryMachineMemoryWindowBase(Int32 my_rank, Int32 nb_rank, ConstArrayView
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-SharedMemoryMachineMemoryWindowBase::
-~SharedMemoryMachineMemoryWindowBase()
+SharedMemoryMachineMemoryWindowBaseInternal::
+~SharedMemoryMachineMemoryWindowBaseInternal()
 {
   if (m_my_rank == 0) {
     delete[] m_window;
@@ -59,7 +59,7 @@ SharedMemoryMachineMemoryWindowBase::
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Int32 SharedMemoryMachineMemoryWindowBase::
+Int32 SharedMemoryMachineMemoryWindowBaseInternal::
 sizeofOneElem() const
 {
   return m_sizeof_type;
@@ -68,7 +68,7 @@ sizeofOneElem() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Span<std::byte> SharedMemoryMachineMemoryWindowBase::
+Span<std::byte> SharedMemoryMachineMemoryWindowBaseInternal::
 segment() const
 {
   const Int64 begin_segment = m_sum_sizeof_segments_span[m_my_rank];
@@ -80,7 +80,7 @@ segment() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Span<std::byte> SharedMemoryMachineMemoryWindowBase::
+Span<std::byte> SharedMemoryMachineMemoryWindowBaseInternal::
 segment(Int32 rank) const
 {
   const Int64 begin_segment = m_sum_sizeof_segments_span[rank];
@@ -92,7 +92,7 @@ segment(Int32 rank) const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Span<std::byte> SharedMemoryMachineMemoryWindowBase::
+Span<std::byte> SharedMemoryMachineMemoryWindowBaseInternal::
 window() const
 {
   return m_window_span;
@@ -101,7 +101,7 @@ window() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void SharedMemoryMachineMemoryWindowBase::
+void SharedMemoryMachineMemoryWindowBaseInternal::
 resizeSegment(Int64 new_sizeof_segment)
 {
   m_sizeof_segments_span[m_my_rank] = new_sizeof_segment;
@@ -138,7 +138,7 @@ resizeSegment(Int64 new_sizeof_segment)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ConstArrayView<Int32> SharedMemoryMachineMemoryWindowBase::
+ConstArrayView<Int32> SharedMemoryMachineMemoryWindowBaseInternal::
 machineRanks() const
 {
   return m_ranks;
@@ -147,7 +147,7 @@ machineRanks() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void SharedMemoryMachineMemoryWindowBase::
+void SharedMemoryMachineMemoryWindowBaseInternal::
 barrier() const
 {
   m_barrier->wait();

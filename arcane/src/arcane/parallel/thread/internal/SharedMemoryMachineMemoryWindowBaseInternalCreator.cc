@@ -5,16 +5,16 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* SharedMemoryMachineMemoryWindowBaseCreator.cc               (C) 2000-2025 */
+/* SharedMemoryMachineMemoryWindowBaseInternalCreator.cc       (C) 2000-2025 */
 /*                                                                           */
 /* Classe permettant de créer des objets de type                             */
-/* SharedMemoryMachineMemoryWindowBase. Une instance de cet objet doit être  */
-/* partagée par tous les threads.                                            */
+/* SharedMemoryMachineMemoryWindowBaseInternal. Une instance de cet objet    */
+/* doit être partagée par tous les threads.                                  */
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/parallel/thread/internal/SharedMemoryMachineMemoryWindowBaseCreator.h"
+#include "arcane/parallel/thread/internal/SharedMemoryMachineMemoryWindowBaseInternalCreator.h"
 
-#include "arcane/parallel/thread/internal/SharedMemoryMachineMemoryWindowBase.h"
+#include "arcane/parallel/thread/internal/SharedMemoryMachineMemoryWindowBaseInternal.h"
 #include "arccore/concurrency/IThreadBarrier.h"
 
 /*---------------------------------------------------------------------------*/
@@ -26,8 +26,8 @@ namespace Arcane::MessagePassing
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-SharedMemoryMachineMemoryWindowBaseCreator::
-SharedMemoryMachineMemoryWindowBaseCreator(Int32 nb_rank, IThreadBarrier* barrier)
+SharedMemoryMachineMemoryWindowBaseInternalCreator::
+SharedMemoryMachineMemoryWindowBaseInternalCreator(Int32 nb_rank, IThreadBarrier* barrier)
 : m_nb_rank(nb_rank)
 , m_sizeof_window(0)
 , m_barrier(barrier)
@@ -44,7 +44,7 @@ SharedMemoryMachineMemoryWindowBaseCreator(Int32 nb_rank, IThreadBarrier* barrie
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-SharedMemoryMachineMemoryWindowBase* SharedMemoryMachineMemoryWindowBaseCreator::
+SharedMemoryMachineMemoryWindowBaseInternal* SharedMemoryMachineMemoryWindowBaseInternalCreator::
 createWindow(Int32 my_rank, Int64 sizeof_segment, Int32 sizeof_type)
 {
   if (my_rank == 0) {
@@ -66,10 +66,10 @@ createWindow(Int32 my_rank, Int64 sizeof_segment, Int32 sizeof_type)
   }
   m_barrier->wait();
 
-  auto* window_obj = new SharedMemoryMachineMemoryWindowBase(my_rank, m_nb_rank, m_ranks, sizeof_type, m_window, m_sizeof_segments, m_sum_sizeof_segments, m_sizeof_window, m_barrier);
+  auto* window_obj = new SharedMemoryMachineMemoryWindowBaseInternal(my_rank, m_nb_rank, m_ranks, sizeof_type, m_window, m_sizeof_segments, m_sum_sizeof_segments, m_sizeof_window, m_barrier);
   m_barrier->wait();
 
-  // Ces tableaux doivent être delete par SharedMemoryMachineMemoryWindowBase (rang 0 uniquement).
+  // Ces tableaux doivent être delete par SharedMemoryMachineMemoryWindowBaseInternal (rang 0 uniquement).
   m_sizeof_segments = nullptr;
   m_sum_sizeof_segments = nullptr;
   m_window = nullptr;

@@ -104,7 +104,7 @@ createSubParallelMngRef(Int32 color, Int32 key)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Ref<MessagePassing::IMachineMemoryWindowBase> ParallelMngInternal::
+Ref<MessagePassing::IMachineMemoryWindowBaseInternal> ParallelMngInternal::
 createMachineMemoryWindowBase(Int64 sizeof_segment, Int32 sizeof_type)
 {
   ARCANE_UNUSED(sizeof_segment);

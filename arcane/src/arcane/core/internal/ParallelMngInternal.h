@@ -53,7 +53,7 @@ class ARCANE_CORE_EXPORT ParallelMngInternal
   bool isAcceleratorAware() const override;
   Ref<IParallelMng> createSubParallelMngRef(Int32 color, Int32 key) override;
   void setDefaultRunner(const Runner& runner) override;
-  Ref<MessagePassing::IMachineMemoryWindowBase> createMachineMemoryWindowBase(Int64 sizeof_segment, Int32 sizeof_type) override;
+  Ref<MessagePassing::IMachineMemoryWindowBaseInternal> createMachineMemoryWindowBase(Int64 sizeof_segment, Int32 sizeof_type) override;
 
  private:
 

@@ -5,25 +5,25 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* HybridMachineMemoryWindowBaseCreator.cc                     (C) 2000-2025 */
+/* HybridMachineMemoryWindowBaseInternalCreator.cc             (C) 2000-2025 */
 /*                                                                           */
 /* Classe permettant de créer des objets de type                             */
-/* HybridMachineMemoryWindowBase. Une instance de cet objet doit être        */
-/* partagée par tous les threads d'un processus.                             */
+/* HybridMachineMemoryWindowBaseInternal. Une instance de cet objet doit     */
+/* être partagée par tous les threads d'un processus.                        */
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/FatalErrorException.h"
 
-#include "arcane/parallel/mpithread/internal/HybridMachineMemoryWindowBaseCreator.h"
+#include "arcane/parallel/mpithread/internal/HybridMachineMemoryWindowBaseInternalCreator.h"
 
 #include "arcane/parallel/mpi/MpiParallelMng.h"
-#include "arcane/parallel/mpithread/internal/HybridMachineMemoryWindowBase.h"
+#include "arcane/parallel/mpithread/internal/HybridMachineMemoryWindowBaseInternal.h"
 #include "arcane/parallel/mpithread/HybridMessageQueue.h"
 
 #include "arccore/concurrency/IThreadBarrier.h"
 #include "arccore/message_passing_mpi/internal/MpiAdapter.h"
-#include "arccore/message_passing_mpi/internal/MpiMachineMemoryWindowBaseCreator.h"
-#include "arccore/message_passing_mpi/internal/MpiMachineMemoryWindowBase.h"
+#include "arccore/message_passing_mpi/internal/MpiMachineMemoryWindowBaseInternalCreator.h"
+#include "arccore/message_passing_mpi/internal/MpiMachineMemoryWindowBaseInternal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -34,8 +34,8 @@ namespace Arcane::MessagePassing
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-HybridMachineMemoryWindowBaseCreator::
-HybridMachineMemoryWindowBaseCreator(Int32 nb_rank_local_proc, IThreadBarrier* barrier)
+HybridMachineMemoryWindowBaseInternalCreator::
+HybridMachineMemoryWindowBaseInternalCreator(Int32 nb_rank_local_proc, IThreadBarrier* barrier)
 : m_nb_rank_local_proc(nb_rank_local_proc)
 , m_sizeof_segment_local_proc(0)
 , m_barrier(barrier)
@@ -44,7 +44,7 @@ HybridMachineMemoryWindowBaseCreator(Int32 nb_rank_local_proc, IThreadBarrier* b
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-HybridMachineMemoryWindowBase* HybridMachineMemoryWindowBaseCreator::
+HybridMachineMemoryWindowBaseInternal* HybridMachineMemoryWindowBaseInternalCreator::
 createWindow(Int32 my_rank_global, Int64 sizeof_segment, Int32 sizeof_type, MpiParallelMng* mpi_parallel_mng)
 {
   // On est dans un contexte où chaque processus doit avoir plusieurs segments, un par thread.
@@ -56,7 +56,7 @@ createWindow(Int32 my_rank_global, Int64 sizeof_segment, Int32 sizeof_type, MpiP
   Int32 my_rank_local_proc = my_fri.localRankValue();
   Int32 my_rank_mpi = my_fri.mpiRankValue();
 
-  Mpi::MpiMachineMemoryWindowBaseCreator* mpi_window_creator = nullptr;
+  Mpi::MpiMachineMemoryWindowBaseInternalCreator* mpi_window_creator = nullptr;
 
   if (my_rank_local_proc == 0) {
     mpi_window_creator = mpi_parallel_mng->adapter()->windowCreator();
@@ -91,10 +91,10 @@ createWindow(Int32 my_rank_global, Int64 sizeof_segment, Int32 sizeof_type, MpiP
   }
   m_barrier->wait();
 
-  auto* window_obj = new HybridMachineMemoryWindowBase(my_rank_mpi, my_rank_local_proc, m_nb_rank_local_proc, m_machine_ranks, sizeof_type, m_sizeof_sub_segments, m_sum_sizeof_sub_segments, m_window, m_barrier);
+  auto* window_obj = new HybridMachineMemoryWindowBaseInternal(my_rank_mpi, my_rank_local_proc, m_nb_rank_local_proc, m_machine_ranks, sizeof_type, m_sizeof_sub_segments, m_sum_sizeof_sub_segments, m_window, m_barrier);
   m_barrier->wait();
 
-  // Ces tableaux doivent être delete par HybridMachineMemoryWindowBase (rang 0 uniquement).
+  // Ces tableaux doivent être delete par HybridMachineMemoryWindowBaseInternal (rang 0 uniquement).
   m_sizeof_sub_segments.reset();
   m_sum_sizeof_sub_segments.reset();
   m_sizeof_segment_local_proc = 0;
@@ -106,8 +106,8 @@ createWindow(Int32 my_rank_global, Int64 sizeof_segment, Int32 sizeof_type, MpiP
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void HybridMachineMemoryWindowBaseCreator::
-_buildMachineRanksArray(const Mpi::MpiMachineMemoryWindowBaseCreator* mpi_window_creator)
+void HybridMachineMemoryWindowBaseInternalCreator::
+_buildMachineRanksArray(const Mpi::MpiMachineMemoryWindowBaseInternalCreator* mpi_window_creator)
 {
   ConstArrayView<Int32> mpi_ranks(mpi_window_creator->machineRanks());
   m_machine_ranks.resize(mpi_ranks.size() * m_nb_rank_local_proc);

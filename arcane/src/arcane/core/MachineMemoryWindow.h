@@ -33,7 +33,7 @@ class IParallelMng;
 class IParallelMngInternal;
 namespace MessagePassing
 {
-  class IMachineMemoryWindowBase;
+  class IMachineMemoryWindowBaseInternal;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -140,7 +140,7 @@ class ARCANE_CORE_EXPORT MachineMemoryWindow
  private:
 
   IParallelMngInternal* m_pm_internal;
-  Ref<MessagePassing::IMachineMemoryWindowBase> m_node_window_base;
+  Ref<MessagePassing::IMachineMemoryWindowBaseInternal> m_node_window_base;
 };
 
 /*---------------------------------------------------------------------------*/

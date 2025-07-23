@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* HybridMachineMemoryWindowBase.cc                            (C) 2000-2025 */
+/* HybridMachineMemoryWindowBaseInternal.cc                    (C) 2000-2025 */
 /*                                                                           */
 /* Classe permettant de créer une fenêtre mémoire pour l'ensemble des        */
 /* sous-domaines en mémoire partagée des processus du même noeud.            */
@@ -13,7 +13,7 @@
 
 #include "arcane/utils/FatalErrorException.h"
 
-#include "arcane/parallel/mpithread/internal/HybridMachineMemoryWindowBase.h"
+#include "arcane/parallel/mpithread/internal/HybridMachineMemoryWindowBaseInternal.h"
 
 #include "arcane/parallel/mpithread/HybridMessageQueue.h"
 
@@ -28,8 +28,8 @@ namespace Arcane::MessagePassing
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-HybridMachineMemoryWindowBase::
-HybridMachineMemoryWindowBase(Int32 my_rank_mpi, Int32 my_rank_local_proc, Int32 nb_rank_local_proc, ConstArrayView<Int32> ranks, Int32 sizeof_type, Ref<IMachineMemoryWindowBase> nb_elem, Ref<IMachineMemoryWindowBase> sum_nb_elem, Ref<IMachineMemoryWindowBase> mpi_window, IThreadBarrier* barrier)
+HybridMachineMemoryWindowBaseInternal::
+HybridMachineMemoryWindowBaseInternal(Int32 my_rank_mpi, Int32 my_rank_local_proc, Int32 nb_rank_local_proc, ConstArrayView<Int32> ranks, Int32 sizeof_type, Ref<IMachineMemoryWindowBaseInternal> nb_elem, Ref<IMachineMemoryWindowBaseInternal> sum_nb_elem, Ref<IMachineMemoryWindowBaseInternal> mpi_window, IThreadBarrier* barrier)
 : m_my_rank_local_proc(my_rank_local_proc)
 , m_nb_rank_local_proc(nb_rank_local_proc)
 , m_my_rank_mpi(my_rank_mpi)
@@ -47,7 +47,7 @@ HybridMachineMemoryWindowBase(Int32 my_rank_mpi, Int32 my_rank_local_proc, Int32
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Int32 HybridMachineMemoryWindowBase::
+Int32 HybridMachineMemoryWindowBaseInternal::
 sizeofOneElem() const
 {
   return m_sizeof_type;
@@ -56,7 +56,7 @@ sizeofOneElem() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Span<std::byte> HybridMachineMemoryWindowBase::
+Span<std::byte> HybridMachineMemoryWindowBaseInternal::
 segment() const
 {
   const Span<std::byte> segment_proc = m_mpi_window->segment();
@@ -69,7 +69,7 @@ segment() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Span<std::byte> HybridMachineMemoryWindowBase::
+Span<std::byte> HybridMachineMemoryWindowBaseInternal::
 segment(Int32 rank) const
 {
   const FullRankInfo fri = FullRankInfo::compute(MP::MessageRank(rank), m_nb_rank_local_proc);
@@ -96,7 +96,7 @@ segment(Int32 rank) const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Span<std::byte> HybridMachineMemoryWindowBase::
+Span<std::byte> HybridMachineMemoryWindowBaseInternal::
 window() const
 {
   return m_mpi_window->window();
@@ -105,7 +105,7 @@ window() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void HybridMachineMemoryWindowBase::
+void HybridMachineMemoryWindowBaseInternal::
 resizeSegment(Int64 new_sizeof_segment)
 {
   m_sizeof_sub_segments_local_proc[m_my_rank_local_proc] = new_sizeof_segment;
@@ -126,7 +126,7 @@ resizeSegment(Int64 new_sizeof_segment)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ConstArrayView<Int32> HybridMachineMemoryWindowBase::
+ConstArrayView<Int32> HybridMachineMemoryWindowBaseInternal::
 machineRanks() const
 {
   return m_machine_ranks;
@@ -135,7 +135,7 @@ machineRanks() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void HybridMachineMemoryWindowBase::
+void HybridMachineMemoryWindowBaseInternal::
 barrier() const
 {
   m_thread_barrier->wait();

@@ -48,8 +48,8 @@
 #include "arccore/message_passing_mpi/internal/MpiRequestList.h"
 #include "arccore/message_passing_mpi/internal/MpiAdapter.h"
 #include "arccore/message_passing_mpi/internal/MpiLock.h"
-#include "arccore/message_passing_mpi/internal/MpiMachineMemoryWindowBaseCreator.h"
-#include "arccore/message_passing_mpi/internal/MpiMachineMemoryWindowBase.h"
+#include "arccore/message_passing_mpi/internal/MpiMachineMemoryWindowBaseInternalCreator.h"
+#include "arccore/message_passing_mpi/internal/MpiMachineMemoryWindowBaseInternal.h"
 #include "arccore/message_passing/Dispatchers.h"
 #include "arccore/message_passing/Messages.h"
 #include "arccore/message_passing/SerializeMessageList.h"
@@ -356,7 +356,7 @@ class MpiParallelMng::Impl
 
  public:
 
-  Ref<IMachineMemoryWindowBase> createMachineMemoryWindowBase(Int64 sizeof_segment, Int32 sizeof_type) override
+  Ref<IMachineMemoryWindowBaseInternal> createMachineMemoryWindowBase(Int64 sizeof_segment, Int32 sizeof_type) override
   {
     return makeRef(m_parallel_mng->adapter()->windowCreator()->createWindow(sizeof_segment, sizeof_type));
   }

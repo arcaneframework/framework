@@ -5,15 +5,15 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* SharedMemoryMachineMemoryWindowBaseCreator.h                (C) 2000-2025 */
+/* SharedMemoryMachineMemoryWindowBaseInternalCreator.h        (C) 2000-2025 */
 /*                                                                           */
 /* Classe permettant de créer des objets de type                             */
-/* SharedMemoryMachineMemoryWindowBase. Une instance de cet objet doit être  */
-/* partagée par tous les threads.                                            */
+/* SharedMemoryMachineMemoryWindowBaseInternal. Une instance de cet objet    */
+/* doit être partagée par tous les threads.                                  */
 /*---------------------------------------------------------------------------*/
 
-#ifndef ARCANE_PARALLEL_THREAD_INTERNAL_SHAREDMEMORYMACHINEMEMORYWINDOWBASECREATOR_H
-#define ARCANE_PARALLEL_THREAD_INTERNAL_SHAREDMEMORYMACHINEMEMORYWINDOWBASECREATOR_H
+#ifndef ARCANE_PARALLEL_THREAD_INTERNAL_SHAREDMEMORYMACHINEMEMORYWINDOWBASEINTERNALCREATOR_H
+#define ARCANE_PARALLEL_THREAD_INTERNAL_SHAREDMEMORYMACHINEMEMORYWINDOWBASEINTERNALCREATOR_H
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -30,22 +30,21 @@ namespace Arcane::MessagePassing
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class IMachineMemoryWindowBase;
-class SharedMemoryMachineMemoryWindowBase;
+class SharedMemoryMachineMemoryWindowBaseInternal;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class SharedMemoryMachineMemoryWindowBaseCreator
+class SharedMemoryMachineMemoryWindowBaseInternalCreator
 {
  public:
 
-  SharedMemoryMachineMemoryWindowBaseCreator(Int32 nb_rank, IThreadBarrier* barrier);
-  ~SharedMemoryMachineMemoryWindowBaseCreator() = default;
+  SharedMemoryMachineMemoryWindowBaseInternalCreator(Int32 nb_rank, IThreadBarrier* barrier);
+  ~SharedMemoryMachineMemoryWindowBaseInternalCreator() = default;
 
  public:
 
-  SharedMemoryMachineMemoryWindowBase* createWindow(Int32 my_rank, Int64 sizeof_segment, Int32 sizeof_type);
+  SharedMemoryMachineMemoryWindowBaseInternal* createWindow(Int32 my_rank, Int64 sizeof_segment, Int32 sizeof_type);
 
  private:
 

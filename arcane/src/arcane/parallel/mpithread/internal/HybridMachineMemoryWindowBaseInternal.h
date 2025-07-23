@@ -5,21 +5,21 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* SharedMemoryMachineMemoryWindowBase.h                       (C) 2000-2025 */
+/* HybridMachineMemoryWindowBaseInternal.h                     (C) 2000-2025 */
 /*                                                                           */
 /* Classe permettant de créer une fenêtre mémoire pour l'ensemble des        */
-/* sous-domaines en mémoire partagée.                                        */
+/* sous-domaines en mémoire partagée des processus du même noeud.            */
 /*---------------------------------------------------------------------------*/
 
-#ifndef ARCANE_PARALLEL_THREAD_INTERNAL_SHAREDMEMORYMACHINEMEMORYWINDOWBASE_H
-#define ARCANE_PARALLEL_THREAD_INTERNAL_SHAREDMEMORYMACHINEMEMORYWINDOWBASE_H
+#ifndef ARCANE_PARALLEL_MPITHREAD_INTERNAL_HYBRIDMACHINEMEMORYWINDOWBASEINTERNAL_H
+#define ARCANE_PARALLEL_MPITHREAD_INTERNAL_HYBRIDMACHINEMEMORYWINDOWBASEINTERNAL_H
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arccore/message_passing/internal/IMachineMemoryWindowBase.h"
+#include "arcane/utils/Ref.h"
 
-#include "arcane/core/ArcaneTypes.h"
+#include "arccore/message_passing/internal/IMachineMemoryWindowBaseInternal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -30,14 +30,14 @@ namespace Arcane::MessagePassing
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class ARCANE_THREAD_EXPORT SharedMemoryMachineMemoryWindowBase
-: public IMachineMemoryWindowBase
+class HybridMachineMemoryWindowBaseInternal
+: public IMachineMemoryWindowBaseInternal
 {
  public:
 
-  SharedMemoryMachineMemoryWindowBase(Int32 my_rank, Int32 nb_rank, ConstArrayView<Int32> ranks, Int32 sizeof_type, std::byte* window, Int64* sizeof_segments, Int64* sum_sizeof_segments, Int64 sizeof_window, IThreadBarrier* barrier);
+  HybridMachineMemoryWindowBaseInternal(Int32 my_rank_mpi, Int32 my_rank_local_proc, Int32 nb_rank_local_proc, ConstArrayView<Int32> ranks, Int32 sizeof_type, Ref<IMachineMemoryWindowBaseInternal> nb_elem, Ref<IMachineMemoryWindowBaseInternal> sum_nb_elem, Ref<IMachineMemoryWindowBaseInternal> mpi_window, IThreadBarrier* barrier);
 
-  ~SharedMemoryMachineMemoryWindowBase() override;
+  ~HybridMachineMemoryWindowBaseInternal() override = default;
 
  public:
 
@@ -55,19 +55,17 @@ class ARCANE_THREAD_EXPORT SharedMemoryMachineMemoryWindowBase
 
  private:
 
-  Int32 m_my_rank;
-  Int32 m_nb_rank;
-  ConstArrayView<Int32> m_ranks;
+  Int32 m_my_rank_local_proc;
+  Int32 m_nb_rank_local_proc;
+  Int32 m_my_rank_mpi;
+  ConstArrayView<Int32> m_machine_ranks;
   Int32 m_sizeof_type;
-  Int64 m_actual_sizeof_win;
-  Int64 m_max_sizeof_win;
-  Span<std::byte> m_window_span;
-  Span<Int64> m_sizeof_segments_span;
-  Span<Int64> m_sum_sizeof_segments_span;
-  std::byte* m_window;
-  Int64* m_sizeof_segments;
-  Int64* m_sum_sizeof_segments;
-  IThreadBarrier* m_barrier;
+  Ref<IMachineMemoryWindowBaseInternal> m_mpi_window;
+  Ref<IMachineMemoryWindowBaseInternal> m_sizeof_sub_segments_global;
+  Ref<IMachineMemoryWindowBaseInternal> m_sum_sizeof_sub_segments_global;
+  Span<Int64> m_sizeof_sub_segments_local_proc;
+  Span<Int64> m_sum_sizeof_sub_segments_local_proc;
+  IThreadBarrier* m_thread_barrier;
 };
 
 /*---------------------------------------------------------------------------*/

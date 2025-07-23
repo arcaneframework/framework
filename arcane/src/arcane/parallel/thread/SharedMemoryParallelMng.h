@@ -32,7 +32,7 @@ class IParallelTopology;
 
 namespace Arcane::MessagePassing
 {
-class SharedMemoryMachineMemoryWindowBaseCreator;
+class SharedMemoryMachineMemoryWindowBaseInternalCreator;
 class ISharedMemoryMessageQueue;
 class SharedMemoryAllDispatcher;
 
@@ -68,7 +68,7 @@ struct ARCANE_THREAD_EXPORT SharedMemoryParallelMngBuildInfo
   IParallelMngContainerFactory* sub_builder_factory = nullptr;
   Ref<IParallelMngContainer> container;
   MP::Communicator communicator;
-  SharedMemoryMachineMemoryWindowBaseCreator* window_creator = nullptr;
+  SharedMemoryMachineMemoryWindowBaseInternalCreator* window_creator = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/

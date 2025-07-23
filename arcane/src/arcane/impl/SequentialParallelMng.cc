@@ -56,7 +56,7 @@
 
 #include "arccore/message_passing/RequestListBase.h"
 #include "arccore/message_passing/SerializeMessageList.h"
-#include "arccore/message_passing/internal/IMachineMemoryWindowBase.h"
+#include "arccore/message_passing/internal/IMachineMemoryWindowBaseInternal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -348,12 +348,12 @@ class SequentialParallelDispatchT
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class SequentialMachineMemoryWindowBase
-: public IMachineMemoryWindowBase
+class SequentialMachineMemoryWindowBaseInternal
+: public IMachineMemoryWindowBaseInternal
 {
  public:
 
-  SequentialMachineMemoryWindowBase(Int64 sizeof_segment, Int32 sizeof_type)
+  SequentialMachineMemoryWindowBaseInternal(Int64 sizeof_segment, Int32 sizeof_type)
   : m_sizeof_segment(sizeof_segment)
   , m_max_sizeof_segment(sizeof_segment)
   , m_sizeof_type(sizeof_type)
@@ -361,7 +361,7 @@ class SequentialMachineMemoryWindowBase
     m_segment = new std::byte[m_sizeof_segment];
   }
 
-  ~SequentialMachineMemoryWindowBase() override
+  ~SequentialMachineMemoryWindowBaseInternal() override
   {
     delete[] m_segment;
   }
@@ -727,9 +727,9 @@ class SequentialParallelMng::Impl
 
  public:
 
-  Ref<IMachineMemoryWindowBase> createMachineMemoryWindowBase(Int64 sizeof_segment, Int32 sizeof_type) override
+  Ref<IMachineMemoryWindowBaseInternal> createMachineMemoryWindowBase(Int64 sizeof_segment, Int32 sizeof_type) override
   {
-    return makeRef(new SequentialMachineMemoryWindowBase(sizeof_segment, sizeof_type));
+    return makeRef(new SequentialMachineMemoryWindowBaseInternal(sizeof_segment, sizeof_type));
   }
 };
 
