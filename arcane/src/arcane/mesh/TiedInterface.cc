@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* TiedInterface.cc                                            (C) 2000-2023 */
+/* TiedInterface.cc                                            (C) 2000-2025 */
 /*                                                                           */
 /* Informations sur les semi-conformitées du maillage.                       */
 /*---------------------------------------------------------------------------*/
@@ -2037,7 +2037,7 @@ _checkValid(bool is_print)
       for( Node inode : face.nodes()  )
         info() << "Master face node uid=" << inode.uniqueId();
     for( Integer zz=0, zs=tied_nodes[iface.index()].size(); zz<zs; ++zz ){
-      const TiedNode& tn = tied_nodes[iface.index()][zz];
+      TiedNode tn = tied_nodes[iface.index()][zz];
       nodes_in_master_face.insert(tn.node().uniqueId());
       if (is_print){
         info() << " node_uid=" << tn.node().uniqueId()
@@ -2063,7 +2063,7 @@ _checkValid(bool is_print)
       }
     }
     for( Integer zz=0, zs=tied_faces[iface.index()].size(); zz<zs; ++zz ){
-      const TiedFace& tf = tied_faces[iface.index()][zz];
+      TiedFace tf = tied_faces[iface.index()][zz];
       Face tied_slave_face = tf.face();
       if (!tied_slave_face.isSlaveFace()){
         ++nb_error;

@@ -435,8 +435,9 @@ createEnvironment(const MeshEnvironmentBuildInfo& infos)
 
   // Créé et ajoute les matériaux
   Integer nb_mat = infos.materials().size();
+  ConstArrayView<MeshEnvironmentBuildInfo::MatInfo> mat_build_infos = infos.materials();
   for( Integer i=0; i<nb_mat; ++i ){
-    const MeshEnvironmentBuildInfo::MatInfo& buildinfo = infos.materials()[i];
+    const MeshEnvironmentBuildInfo::MatInfo& buildinfo = mat_build_infos[i];
     const String& mat_name = buildinfo.m_name;
     String new_mat_name = env_name + "_" + mat_name;
     MeshMaterialInfo* mat_info = _findMaterialInfo(mat_name);

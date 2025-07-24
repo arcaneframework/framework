@@ -541,7 +541,7 @@ _dumpTiedInterfaces()
           info() << "Master face node uid=" << inode->uniqueId();
         }
         for( Integer zz=0, zs=tied_nodes[iface.index()].size(); zz<zs; ++zz ){
-          const TiedNode& tn = tied_nodes[iface.index()][zz];
+          TiedNode tn = tied_nodes[iface.index()][zz];
           nodes_in_master_face.insert(tn.node().uniqueId());
           if (zz<20){
             info() << " node_uid=" << tn.node().uniqueId()
@@ -563,7 +563,7 @@ _dumpTiedInterfaces()
             error() << "bad number of slave faces interne=" << slave_faces.size() << " struct=" << nb_tied;
         }
         for( Integer zz=0, zs=tied_faces[iface.index()].size(); zz<zs; ++zz ){
-          const TiedFace& tf = tied_faces[iface.index()][zz];
+          TiedFace tf = tied_faces[iface.index()][zz];
           Face tied_slave_face = tf.face();
           if (!tied_slave_face.isSlaveFace()){
             ++nb_error;
