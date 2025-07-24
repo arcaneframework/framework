@@ -91,7 +91,15 @@ goToEndOfLine()
 {
   while (m_stream->good()) {
     char c = m_stream->peek();
+#ifdef _MSC_VER
+  #if _MSC_VER < 1930
+    if (std::isspace(c,std::locale::classic()))
+  #else
     if (std::isspace(c))
+  #endif
+#else
+    if (std::isspace(c))
+#endif
       m_stream->get();
     else
       break;
