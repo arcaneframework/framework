@@ -1,5 +1,6 @@
-﻿set(PRIVATE_PKGS LibUnwind Papi Parmetis PTScotch Udunits Zoltan BZip2 LZ4 Otf2 DbgHelp HWLoc Hiredis zstd)
-set(PUBLIC_PKGS MPI vtkIOXML vtkIOLegacy)
+﻿arcane_find_package(VTKVersionHelper) # Pour obtenir VTK_PACKAGE_PREFIX qui varie en focntion des versions de VTK
+set(PRIVATE_PKGS LibUnwind Papi Parmetis PTScotch Udunits Zoltan BZip2 LZ4 Otf2 DbgHelp HWLoc Hiredis zstd)
+set(PUBLIC_PKGS MPI ${VTK_PACKAGE_PREFIX}IOXML ${VTK_PACKAGE_PREFIX}IOLegacy)
 set(PKGS ${PRIVATE_PKGS} ${PUBLIC_PKGS})
 
 foreach(package ${PKGS})
@@ -140,7 +141,7 @@ if(ARCANE_HAS_LINUX_PERF_COUNTERS)
     )
 endif()
 
-if(vtkIOXML_FOUND AND vtkIOLegacy_FOUND)
+if(${VTK_PACKAGE_PREFIX}IOXML_FOUND AND ${VTK_PACKAGE_PREFIX}IOLegacy_FOUND)
   list(APPEND ARCANE_SOURCES
     VtkPolyhedralMeshIOService.cc
     )
