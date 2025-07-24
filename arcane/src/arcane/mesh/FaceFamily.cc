@@ -974,7 +974,7 @@ applyTiedInterface(ITiedInterface* interface)
     Integer nb_slave = slave_tied_faces.size();
     slave_faces.clear();
     for( Integer zz=0; zz<nb_slave; ++zz ){
-      const TiedFace& tn = tied_faces[index][zz];
+      TiedFace tn = tied_faces[index][zz];
       Face slave_face = tn.face();
       slave_faces.add(slave_face.localId());
       _addMasterFaceToFace(slave_face,master_face);
@@ -997,7 +997,7 @@ removeTiedInterface(ITiedInterface* interface)
     ConstArrayView<TiedFace> slave_tied_faces(tied_faces[index]);
     Integer nb_slave = slave_tied_faces.size();
     for( Integer zz=0; zz<nb_slave; ++zz ){
-      const TiedFace& tn = tied_faces[index][zz];
+      TiedFace tn = tied_faces[index][zz];
       Face slave_face = tn.face();
       _removeMasterFaceToFace(slave_face);
     }
