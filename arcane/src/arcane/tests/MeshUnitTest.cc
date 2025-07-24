@@ -98,59 +98,37 @@ class MeshUnitTest
   class CountOperationByBasicType
   : public TraceAccessor, public AbstractItemOperationByBasicType
   {
-  public:
+   public:
 
     explicit CountOperationByBasicType(ITraceMng* m)
     : TraceAccessor(m)
     {}
 
    public:
-    virtual void applyVertex(ItemVectorView group)
-    { info() << "NB Vertex = " << group.size(); }
-    virtual void applyLine2(ItemVectorView group)
-    { info() << "NB Line2 = " << group.size(); }
-    virtual void applyTriangle3(ItemVectorView group) 
-    { info() << "NB Triangle3 = " << group.size(); }
-    virtual void applyQuad4(ItemVectorView group) 
-    { info() << "NB Quad4 = " << group.size(); }
-    virtual void applyPentagon5(ItemVectorView group) 
-    { info() << "NB Pentagon5 = " << group.size(); }
-    virtual void applyHexagon6(ItemVectorView group) 
-    { info() << "NB Hexagon6 = " << group.size(); }
-    virtual void applyTetraedron4(ItemVectorView group) 
-    { info() << "NB Tetraedron4 = " << group.size(); }
-    virtual void applyPyramid5(ItemVectorView group) 
-    { info() << "NB Pyramid5 = " << group.size(); }
-    virtual void applyPentaedron6(ItemVectorView group) 
-    { info() << "NB Pentaedron6 = " << group.size(); }
-    virtual void applyHexaedron8(ItemVectorView group) 
-    { info() << "NB Hexaedron8 = " << group.size(); }
-    virtual void applyHeptaedron10(ItemVectorView group) 
-    { info() << "NB Heptaedron10 = " << group.size(); }
-    virtual void applyOctaedron12(ItemVectorView group) 
-    { info() << "NB Octaedron12 = " << group.size(); }
-    virtual void applyHemiHexa7(ItemVectorView group) 
-    { info() << "NB HemiHexa7 = " << group.size(); }
-    virtual void applyHemiHexa6(ItemVectorView group) 
-    { info() << "NB HemiHexa6 = " << group.size(); }
-    virtual void applyHemiHexa5(ItemVectorView group) 
-    { info() << "NB HemiHexa5 = " << group.size(); }
-    virtual void applyAntiWedgeLeft6(ItemVectorView group) 
-    { info() << "NB AntiWedgeLeft6 = " << group.size(); }
-    virtual void applyAntiWedgeRight6(ItemVectorView group) 
-    { info() << "NB AntiWedgeRight6 = " << group.size(); }
-    virtual void applyDiTetra5(ItemVectorView group) 
-    { info() << "NB DiTetra5 = " << group.size(); }
-    virtual void applyDualNode(ItemVectorView group) 
-    { info() << "NB DualNode = " << group.size(); }
-    virtual void applyDualEdge(ItemVectorView group) 
-    { info() << "NB DualEdge = " << group.size(); }
-    virtual void applyDualFace(ItemVectorView group) 
-    { info() << "NB DualFace = " << group.size(); }
-    virtual void applyDualCell(ItemVectorView group) 
-    { info() << "NB DualCell = " << group.size(); }
-    virtual void applyLink(ItemVectorView group) 
-    { info() << "NB Link = " << group.size(); }
+
+    void applyVertex(ItemVectorView group) override { info() << "NB Vertex = " << group.size(); }
+    void applyLine2(ItemVectorView group) override { info() << "NB Line2 = " << group.size(); }
+    void applyTriangle3(ItemVectorView group) override { info() << "NB Triangle3 = " << group.size(); }
+    void applyQuad4(ItemVectorView group) override { info() << "NB Quad4 = " << group.size(); }
+    void applyPentagon5(ItemVectorView group) override { info() << "NB Pentagon5 = " << group.size(); }
+    void applyHexagon6(ItemVectorView group) override { info() << "NB Hexagon6 = " << group.size(); }
+    void applyTetraedron4(ItemVectorView group) override { info() << "NB Tetraedron4 = " << group.size(); }
+    void applyPyramid5(ItemVectorView group) override { info() << "NB Pyramid5 = " << group.size(); }
+    void applyPentaedron6(ItemVectorView group) override { info() << "NB Pentaedron6 = " << group.size(); }
+    void applyHexaedron8(ItemVectorView group) override { info() << "NB Hexaedron8 = " << group.size(); }
+    void applyHeptaedron10(ItemVectorView group) override { info() << "NB Heptaedron10 = " << group.size(); }
+    void applyOctaedron12(ItemVectorView group) override { info() << "NB Octaedron12 = " << group.size(); }
+    void applyHemiHexa7(ItemVectorView group) override { info() << "NB HemiHexa7 = " << group.size(); }
+    void applyHemiHexa6(ItemVectorView group) override { info() << "NB HemiHexa6 = " << group.size(); }
+    void applyHemiHexa5(ItemVectorView group) override { info() << "NB HemiHexa5 = " << group.size(); }
+    void applyAntiWedgeLeft6(ItemVectorView group) override { info() << "NB AntiWedgeLeft6 = " << group.size(); }
+    void applyAntiWedgeRight6(ItemVectorView group) override { info() << "NB AntiWedgeRight6 = " << group.size(); }
+    void applyDiTetra5(ItemVectorView group) override { info() << "NB DiTetra5 = " << group.size(); }
+    void applyDualNode(ItemVectorView group) override { info() << "NB DualNode = " << group.size(); }
+    void applyDualEdge(ItemVectorView group) override { info() << "NB DualEdge = " << group.size(); }
+    void applyDualFace(ItemVectorView group) override { info() << "NB DualFace = " << group.size(); }
+    void applyDualCell(ItemVectorView group) override { info() << "NB DualCell = " << group.size(); }
+    void applyLink(ItemVectorView group) override { info() << "NB Link = " << group.size(); }
   };
 
  public:
@@ -327,7 +305,8 @@ executeTest()
   _testCoherency();
   _testFindOneItem();
   _testEvents();
-  if (options()->createEdges()) {
+  Int32 mesh_dim = mesh()->dimension();
+  if (mesh_dim == 2 || (mesh_dim == 3 && options()->createEdges())) {
     // Appelle 2 fois la méthode pour vérifier que le recalcul est correct.
     _testNodeNodeViaEdgeConnectivity();
     _testNodeNodeViaEdgeConnectivity();
@@ -725,7 +704,7 @@ _dumpComputeNodeGroupDirection()
     IMesh* mesh = group.itemFamily()->mesh();
     IMeshUtilities* util = mesh->utilities();
     VariableNodeReal3& nodes_coord(mesh->toPrimaryMesh()->nodesCoordinates());
-    Real3 value = util->computeDirection(group,nodes_coord,0,0);
+    Real3 value = util->computeDirection(group, nodes_coord, nullptr, nullptr);
     info() << " DIRECTION IS <" << value << ">";
   }
 }
@@ -783,7 +762,7 @@ _testItemAdjacency3()
       const ItemGroup& sub_items = pair_group.subItemGroup();
 
       // Marque toutes les entités qui n'ont pas le droit d'appartenir à
-      // la liste des connectivités car elles ne sont pas dans \a sub_items;
+      // la liste des connectivités, car elles ne sont pas dans \a sub_items
       std::set<Int32> allowed_ids;
       ENUMERATE_CELL(iitem,sub_items) {
         allowed_ids.insert(iitem.itemLocalId());
@@ -824,7 +803,7 @@ _testItemAdjacency3()
     };
 
   CellCellGroup ad_list(allCells(),allCells(),functor::makePointer(f));
-  info() << " CUSTOM COMPUTE ITEM ADJENCY LIST2!";
+  info() << " CUSTOM COMPUTE ITEM ADJACENCY LIST2!";
   ItemPairGroupT<Cell,Cell> ref_ad_list(allCells(),allCells(),IK_Face);
 
   Int32UniqueArray items;
@@ -836,7 +815,7 @@ _testItemAdjacency3()
     }
   }
   info() << "NB_ITEM=" << items.size() << " nb_sub_item=" << sub_items.size();
-  // Vérifie que les listes sont les mêmes entre la notre fonctor et la référence.
+  // Vérifie que les listes sont les mêmes entre notre functor et la référence.
   Int32UniqueArray ref_items;
   Int32UniqueArray ref_sub_items;
   ENUMERATE_ITEMPAIR(Cell,Cell,iitem,ref_ad_list){
@@ -858,7 +837,7 @@ _testItemAdjacency(ItemGroupT<ItemKind> items, ItemGroupT<SubItemKind> subitems,
                    eItemKind link_kind)
 {
   ItemPairGroupT<ItemKind, SubItemKind> ad_list(items, subitems, link_kind);
-  info() << " COMPUTE ITEM ADJENCY LIST link_kind=" << link_kind
+  info() << " COMPUTE ITEM ADJACENCY LIST link_kind=" << link_kind
          << " items=" << items.name() << " sub_items=" << subitems.name()
          << " nb_item=" << items.size() << " nb_sub_item=" << subitems.size()
          << " dim=" << items.mesh()->dimension();
@@ -915,8 +894,8 @@ _testItemAdjacency()
 void MeshUnitTest::
 _testItemPartialAdjacency()
 {
-  info() << " COMPUTE ITEM PARTIAL ADJENCY LIST!";
-  
+  info() << " COMPUTE ITEM PARTIAL ADJACENCY LIST!";
+
   // Choisit une cellule au "milieu" des ownCells().
   CellGroup myCells = ownCells();
   Integer nb_my_cells = myCells.size();
@@ -1098,7 +1077,7 @@ _testVisitors()
 /*---------------------------------------------------------------------------*/
 
 #define ENUMERATE_CELLZ(name,array) \
-  for( ItemEnumerator2T<Cell> name(array.enumerator()); name.hasNext(); ++name )
+  for (ItemEnumerator2T<Cell> name((array).enumerator()); (name).hasNext(); ++(name))
 
 template<typename ItemType>
 class ItemEnumerator2T
@@ -1775,18 +1754,22 @@ _testNodeNodeViaEdgeConnectivity()
 
   // Tableau contenant la liste triée des nœuds connectés à un nœud.
   UniqueArray<Int32> ref_cx_nodes;
-
+  const bool use_face = mesh()->dimension() == 2;
   ENUMERATE_ (Node, inode, ownNodes()) {
     Node node = *inode;
-    Int32 nb_edge = node.nbEdge();
+    Int32 nb_edge = (use_face) ? node.nbFace() : node.nbEdge();
     Int32 nb_connectivity_node = nn_cv.nbNode(node);
     if (nb_edge != nb_connectivity_node)
       ARCANE_FATAL("Bad number of connected node uid={0} nb_edge={1} nb_connected={2}",
                    node.uniqueId(), nb_edge, nb_connectivity_node);
     ref_cx_nodes.resize(nb_edge);
     for (Int32 i = 0; i < nb_edge; ++i) {
-      Edge edge = node.edge(i);
-      Int32 connected_node_lid = (edge.node(0) == node) ? edge.node(1).localId() : edge.node(0).localId();
+      ItemWithNodes edge_or_face;
+      if (use_face)
+        edge_or_face = node.face(i);
+      else
+        edge_or_face = node.edge(i);
+      Int32 connected_node_lid = (edge_or_face.node(0) == node) ? edge_or_face.node(1).localId() : edge_or_face.node(0).localId();
       ref_cx_nodes[i] = connected_node_lid;
     }
     std::sort(ref_cx_nodes.begin(), ref_cx_nodes.end());
