@@ -7,7 +7,9 @@
 /*---------------------------------------------------------------------------*/
 /* DynamicMachineMemoryWindow.h                                (C) 2000-2025 */
 /*                                                                           */
-/* TODO.                                                */
+/* Classe permettant de créer des fenêtres mémoires pour un noeud de calcul. */
+/* Les segments de ces fenêtres ne sont pas contigües en mémoire et peuvent  */
+/* être redimensionnées.                                                     */
 /*---------------------------------------------------------------------------*/
 
 #ifndef ARCANE_CORE_DYNAMICMACHINEMEMORYWINDOW_H
@@ -45,7 +47,7 @@ class DynamicMachineMemoryWindow
     {
       m_base->enableAdditionPhase();
     }
-    ~Addition()
+    ~Addition() ARCANE_NOEXCEPT_FALSE
     {
       m_base->disableAdditionPhase();
     }
@@ -76,6 +78,15 @@ class DynamicMachineMemoryWindow
     return asSpan<Type>(m_impl.segmentView(rank));
   }
 
+  Int32 segmentOwner() const
+  {
+    return m_impl.segmentOwner();
+  }
+  Int32 segmentOwner(Int32 rank) const
+  {
+    return m_impl.segmentOwner(rank);
+  }
+
   void add(const Type& elem) const
   {
     auto ptr_elem = reinterpret_cast<const std::byte*>(&elem);
@@ -85,6 +96,16 @@ class DynamicMachineMemoryWindow
   void exchangeSegmentWith(Int32 rank) const
   {
     m_impl.exchangeSegmentWith(rank);
+  }
+
+  void exchangeSegmentWith() const
+  {
+    m_impl.exchangeSegmentWith();
+  }
+
+  void resetExchanges() const
+  {
+    m_impl.resetExchanges();
   }
 
   ConstArrayView<Int32> machineRanks() const
@@ -107,9 +128,24 @@ class DynamicMachineMemoryWindow
     m_impl.disableAdditionPhase();
   }
 
-  void reserve(Int64 new_capacity)
+  void reserve(Int64 new_capacity) const
   {
     m_impl.reserve(new_capacity);
+  }
+
+  void reserve() const
+  {
+    m_impl.reserve();
+  }
+
+  void resize(Int64 new_nb_elem_segment) const
+  {
+    m_impl.resize(new_nb_elem_segment);
+  }
+
+  void resize() const
+  {
+    m_impl.resize();
   }
 
  private:
