@@ -29,8 +29,6 @@ namespace Arcane::MessagePassing
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// TODO AH : Voir pour ajouter la possibilité de faire une fenêtre non-contigüe.
-
 /*!
  * \brief Classe permettant de créer une fenêtre mémoire pour un noeud
  * de calcul.

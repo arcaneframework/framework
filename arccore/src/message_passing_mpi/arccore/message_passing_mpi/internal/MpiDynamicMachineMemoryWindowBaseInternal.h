@@ -5,19 +5,21 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MpiDynamicMachineMemWinBaseInternal.h                        (C) 2000-2025 */
+/* MpiDynamicMachineMemoryWindowBaseInternal.h                 (C) 2000-2025 */
 /*                                                                           */
-/* TODO                                                          */
+/* Classe permettant de créer des fenêtres mémoires pour un noeud de calcul. */
+/* Les segments de ces fenêtres ne sont pas contigües en mémoire et peuvent  */
+/* être redimensionnées.                                                     */
 /*---------------------------------------------------------------------------*/
 
-#ifndef ARCCORE_MESSAGEPASSINGMPI_INTERNAL_MPIDYNAMICMACHINEMEMWINBASEINTERNAL_H
-#define ARCCORE_MESSAGEPASSINGMPI_INTERNAL_MPIDYNAMICMACHINEMEMWINBASEINTERNAL_H
+#ifndef ARCCORE_MESSAGEPASSINGMPI_INTERNAL_MPIDYNAMICMACHINEMEMORYWINDOWBASEINTERNAL_H
+#define ARCCORE_MESSAGEPASSINGMPI_INTERNAL_MPIDYNAMICMACHINEMEMORYWINDOWBASEINTERNAL_H
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #include "arccore/collections/Array.h"
-#include "arccore/message_passing/internal/IDynamicMachineMemWinBaseInternal.h"
+#include "arccore/message_passing/internal/IDynamicMachineMemoryWindowBaseInternal.h"
 
 #include "arccore/message_passing_mpi/MessagePassingMpiGlobal.h"
 
@@ -27,14 +29,14 @@
 namespace Arcane::MessagePassing::Mpi
 {
 
-class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiDynamicMachineMemWinBaseInternal
-: public IDynamicMachineMemWinBaseInternal
+class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiDynamicMachineMemoryWindowBaseInternal
+: public IDynamicMachineMemoryWindowBaseInternal
 {
  public:
 
-  explicit MpiDynamicMachineMemWinBaseInternal(Int64 sizeof_segment, Int32 sizeof_type, const MPI_Comm& comm_machine, Int32 comm_machine_rank, Int32 comm_machine_size, ConstArrayView<Int32> machine_ranks);
+  explicit MpiDynamicMachineMemoryWindowBaseInternal(Int64 sizeof_segment, Int32 sizeof_type, const MPI_Comm& comm_machine, Int32 comm_machine_rank, Int32 comm_machine_size, ConstArrayView<Int32> machine_ranks);
 
-  ~MpiDynamicMachineMemWinBaseInternal() override;
+  ~MpiDynamicMachineMemoryWindowBaseInternal() override;
 
  public:
 
@@ -43,9 +45,15 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiDynamicMachineMemWinBaseInternal
   Span<std::byte> segment() const override;
   Span<std::byte> segment(Int32 rank) const override;
 
+  Int32 segmentOwner() const override;
+  Int32 segmentOwner(Int32 rank) const override;
+
   void add(Span<const std::byte> elem) override;
 
   void exchangeSegmentWith(Int32 rank) override;
+  void exchangeSegmentWith() override;
+
+  void resetExchanges() override;
 
   ConstArrayView<Int32> machineRanks() const override;
 
@@ -53,6 +61,10 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiDynamicMachineMemWinBaseInternal
   void barrier() override;
 
   void reserve(Int64 new_capacity) override;
+  void reserve() override;
+
+  void resize(Int64 new_size) override;
+  void resize() override;
 
  private:
 
@@ -61,6 +73,7 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiDynamicMachineMemWinBaseInternal
   void _realloc(Int64 new_sizeof);
 
   Int32 _worldToMachine(Int32 world) const;
+  Int32 _machineToWorld(Int32 machine) const;
 
  private:
 

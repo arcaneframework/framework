@@ -15,7 +15,7 @@
 
 #include "arccore/base/FatalErrorException.h"
 #include "arccore/message_passing_mpi/internal/MpiMachineMemoryWindowBaseInternal.h"
-#include "arccore/message_passing_mpi/internal/MpiDynamicMachineMemWinBaseInternal.h"
+#include "arccore/message_passing_mpi/internal/MpiDynamicMachineMemoryWindowBaseInternal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -71,10 +71,10 @@ createWindow(Int64 sizeof_segment, Int32 sizeof_type) const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-MpiDynamicMachineMemWinBaseInternal* MpiMachineMemoryWindowBaseInternalCreator::
+MpiDynamicMachineMemoryWindowBaseInternal* MpiMachineMemoryWindowBaseInternalCreator::
 createDynamicWindow(Int64 sizeof_segment, Int32 sizeof_type) const
 {
-  return new MpiDynamicMachineMemWinBaseInternal(sizeof_segment, sizeof_type, m_comm_machine, m_comm_machine_rank, m_comm_machine_size, m_machine_ranks);
+  return new MpiDynamicMachineMemoryWindowBaseInternal(sizeof_segment, sizeof_type, m_comm_machine, m_comm_machine_rank, m_comm_machine_size, m_machine_ranks);
 }
 
 /*---------------------------------------------------------------------------*/
