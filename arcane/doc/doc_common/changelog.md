@@ -8,7 +8,7 @@ Les nouveautés successives apportées par les versions de %Arcane
 antérieures à la version 3 sont listées ici : \ref arcanedoc_news_changelog20
 
 ___
-## Arcane Version 3.16.5 (juin 2025) {#arcanedoc_version3160}
+## Arcane Version 3.16.7 (juillet 2025) {#arcanedoc_version3160}
 
 ### Nouveautés/Améliorations
 
@@ -27,7 +27,7 @@ ___
   `ISerializeMessage*` (\pr{1999})
 - Ajoute diverses améliorations au service de subdivision de maillage
   (\pr{2005})
-- Ajoute support pour être notifier de l'ajout ou la suppression
+- Ajoute support pour être notifié de l'ajout ou la suppression
   d'entités (\pr{2013})
 - Ajoute écrivain de maillage au format MSH 4.1 (\pr{2020},
   \pr{2026},\pr{2027}, \pr{2028}, \pr{2033}, \pr{2034}, \pr{2039},
@@ -48,9 +48,21 @@ ___
 - Ajoute méthodes permettant de créer et d'utiliser des
   \arcane{Ref<ISerializeMessage>} à la place de pointeur de
   \arcane{ISerializeMessage}. Cela permettra de gérer plus proprement
-  la durée de vie des ces instances(\pr{2108})
+  la durée de vie des ces instances (\pr{2108})
 - Rend thread-safe la gestion des buffers dans
   \arcane{VariableSynchronizerMng} (\pr{2109})
+- Ajoute tag sur les variables qui seront post-traitées à l'itération
+  courante. Cela ne fonctionne que pour le module de post-processing
+  par défaut de %Arcane (\arcane{ArcanePostProcessingModule})
+  (\pr{2145}, \pr{2148})
+- Ajoute support pour MacOS 14 et 15 (\pr{2151}, \pr{2155}, \pr{2157},
+  \pr{2164})
+- Ajoute API pour la gestion des fenêtres en mémoire partagée via
+  MPI. Cette API fonctionne aussi en mode mémoire partagée et
+  hybride. La page \ref arcanedoc_parallel_shmem indique comment
+  utiliser ces fonctionnalités (\pr{2158}, \pr{2170})
+- Ajoute support de [zstd](https://github.com/facebook/zstd) comme
+  implémentaion de \arcane{IDataCompressor} (\pr{2160})
 
 ### API Accélérateur
 
@@ -65,8 +77,8 @@ ___
 - Utilise `std::less` pour la comparaison dans
   \arcaneacc{GenericSorter} (\pr{2002})
 - Ajoute \arcaneacc{RunQueueEvent::hasPendingWork()} pour savoir si
-  les RunQueue associées à un évènement sont en cours d'exécution
-  (\pr{2006})
+  les \arcaneacc{RunQueue} associées à un évènement sont en cours
+  d'exécution (\pr{2006})
 - Ajoute vues pour le type \arcane{ItemVariableScalarRefT} (\pr{2098})
 - Ajoute possibilité de changer la politique d'exécution d'un
   \arcanemat{IMeshComponent} utilisée pour
@@ -94,6 +106,7 @@ ___
   \arcane{MeshNodeMerger} (\pr{2106})
 - Autorise l'utilisation du caractère `-` (tiret) dans les noms des
   variables (\pr{2119})
+- Autorise plusieurs instance de \arcane{StandaloneSubDomain} (\pr{2127})
 
 ### Corrections
 
@@ -109,6 +122,11 @@ ___
   l'appel à \arcanemat{ITimeHistoryMng::addValue()} n'était pas
   réalisé par tous les rangs d'un \arcane{IParallelMng}. Cela se
   traduisait par un blocage (\pr{2118})
+- Corrige divers problèmes sous Win32 (\pr{2134}, \pr{2141},
+  \pr{2142}, \pr{2143},\pr{2146}, \pr{2147}, \pr{2161}, \pr{2163},
+  \pr{2165}, \pr{2168}, \pr{2172})
+- Corrige `\0` terminal écrit en trop dans les protections/reprises au
+  format HDF5 (\pr{2144})
 
 ### Interne
 
@@ -121,7 +139,7 @@ ___
 - Nettoyage et améliorations diverses dans le support des maillages
   cartésiens par patch (\pr{2031})
 - S'assure que le type des éléments utilisés dans \arcane{NumArray}
-  remplissent bien le critère `std::is_trivially_copyable` (\pr{2032})
+  remplit bien le critère `std::is_trivially_copyable` (\pr{2032})
 - Nettoyage de la gestion des scripts utilitaires de maillage
   (\pr{2043})
 - Utilise les services de maille pour le mécanisme d'exécution directe
@@ -136,9 +154,15 @@ ___
   \arcane{ItemGroupImpl::_checkNeedUpdate()}. Ce mécanisme est
   expérimental et s'active en positionnant la variable d'environnement
   `ARCANE_USE_LOCK_FOR_ITEMGROUP_UPDATE` à `1` (\pr{2110})
-- Nettoyag et suppression d'avertissements de compilations dans
+- Nettoyage et suppression d'avertissements de compilations dans
   plusieurs fichiers de la composante `arcane_core` (\pr{2112},
   \pr{2114}, \pr{2115}, \pr{2116})
+- Améliorations diverses dans le wrapper python (\pr{2153}, \pr{2154},
+  \pr{2156}, \pr{2159})
+- Déplace les méthodes de copie et de remplissage de
+  \arcane{ConstMemoryView}, \arcane{MutableMemoryView},
+  \arcane{ConstMultiMemoryView} et \arcane{MutableMultiMemoryView}
+  dans le fichier `MemoryUtils.h` (\pr{2169}, \pr{2171})
 
 ### Compilation et Intégration Continue (CI)
 
@@ -155,6 +179,14 @@ ___
 - Ajoute workflows IFPEN utilisant le C++20 (\pr{2027})
 - Supprime le workflow utilisant `windows-2019` car ce dernier n'est
   plus supporté par github (\pr{2117})
+- Ajoute possibilité de compiler uniquement Arccore à partir de
+  `framework` (\pr{2125})
+- Ajoute support préliminaire pour compiler avec Guix (\pr{2128})
+- Ajoute workflow Win32 en mode debug (\pr{2135})
+- Mise à jour du worklow 'compile-all-vcpkg' avec la version 2025.06
+  de `vpckg` (\pr{2140})
+- Augmente le nombre de tests dans le workflow Win32 (\pr{2162})
+- Ajoute workflow pour MacOS 15 (\pr{2166}, \pr{2167})
 
 ### Arccore
 
@@ -171,6 +203,7 @@ ___
 - Ajoute support pour AdaptiveCpp 24.10 (\pr{2051}, \pr{2067})
 - Ajoute support pour la version 16.1 de Trilinos (\pr{2088})
 - Ajoute support pour Visual Studio 2022 (\pr{2095}, \pr{2096})
+
 ___
 
 ## Arcane Version 3.15.3 (04 février 2025) {#arcanedoc_version3150}
@@ -326,6 +359,8 @@ ___
   `std::remove_reference` (\pr{1844})
 - Corrige compilation quand PETSc est compilé avec le support de MUMPS
   (\pr{1917})
+
+___
 
 ## Arcane Version 3.14.15 (11 décembre 2024) {#arcanedoc_version3140}
 
@@ -671,6 +706,8 @@ ___
 - Ajoute support pour les sorties au format 'Matrix Market' avec PETSc
   (\pr{1577})
 
+___
+
 ## Arcane Version 3.13.08 (19 juillet 2024) {#arcanedoc_version3130}
 
 ### Nouveautés/Améliorations
@@ -803,6 +840,8 @@ ___
 - Corrections diverses (\pr{1395}, \pr{1415}, \pr{1465}, \pr{1491},
   \pr{1500}, \pr{1506}, \pr{1514})
 - Ajoute support de la norme infinie (\pr{1504})
+
+___
 
 ## Arcane Version 3.12.18 (02 mai 2024) {#arcanedoc_version3120}
 
@@ -1150,7 +1189,7 @@ faut alors au moins les versions GCC 11, Clang 16 ou Visual Studio
 - Ajoute possibilité de passer des paramètres supplémentaires dans
   l'API C de Alien (\pr{1259})
 
-##########################################################################################
+___
 
 ## Arcane Version 3.11.15 (23 novembre 2023) {#arcanedoc_version3110}
 
@@ -1333,6 +1372,8 @@ faut alors au moins les versions GCC 11, Clang 16 ou Visual Studio
 ### Axlstar
 
 - Améliore le support des vieilles versions de Doxygen (\pr{823}).
+
+___
 
 ## Arcane Version 3.10.11 (30 juin 2023) {#arcanedoc_version3100}
 
@@ -1616,6 +1657,8 @@ utilisateurs de %Arcane.
   types (`caseoption`, `subdomain`, ...) pour les services
   (\pr{715}).
 
+___
+
 ## Arcane Version 3.9.5 (04 avril 2023) {#arcanedoc_version390}
 
 ### Nouveautés/Améliorations
@@ -1680,6 +1723,8 @@ utilisateurs de %Arcane.
   `MPI_Gather` (\pr{556}).
 - Ajoute distinction dans Arccore::MessagePassing::MessageRank entre
   `MPI_ANY_SOURCE` et `MPI_PROC_NULL` (\pr{555}).
+
+___
 
 ## Arcane Version 3.8.15 (22 février 2023) {#arcanedoc_version380}
 
@@ -2083,6 +2128,7 @@ Utilise la version 2.0.12.0:
 - Make class ThreadPrivateStorage deprecated (\pr{400})
 
 ___
+
 ## Arcane Version 3.6.13 (06 juillet 2022) {#arcanedoc_news_changelog_version360}
 
 ### Nouveautés/Améliorations:
@@ -2193,10 +2239,8 @@ Passage version 2.0.11.0 de %Arccore:
   - Add `SpanImpl::findFirst()` method  (\pr{211})
   - Fix build on Ubuntu 22.04
 
-
-
-
 ___
+
 ## Arcane Version 3.5.7 (07 avril 2022) {#arcanedoc_news_changelog_version350}
 
 ### Nouveautés/Améliorations:
@@ -2253,10 +2297,8 @@ ___
   (\pr{156}).
 - Passage version 2.0.9.0 de Arccore
 
-
-
-
 ___
+
 ## Arcane Version 3.4.5 (10 février 2022) {#arcanedoc_news_changelog_version340}
 
 ### Nouveautés/Améliorations:
@@ -2322,11 +2364,8 @@ Passage version 2.0.8.1 de %Arccore:
   - Add some '#defines'  to compile with [hipSYCL](https://github.com/illuhad/hipSYCL).
   - Update '_clang-format' file for version 13 of LLVM/Clang.
 
-
-
-
-
 ___
+
 ## Arcane Version 3.3.0 (16 décembre 2021) {#arcanedoc_news_changelog_version330}
 
 ### Nouveautés/Améliorations:
@@ -2390,11 +2429,8 @@ Passage version 2.0.6.0 de %Arccore:
   checks are disabled by default  if CMake variable
   `ARCCORE_BUILD_MODE` is `Release`
 
-
-
-
-
 ___
+
 ## Arcane Version 3.2.0 (15 novembre 2021) {#arcanedoc_news_changelog_version320}
 
 ### Nouveautés/Améliorations:
@@ -2435,10 +2471,8 @@ ___
 - Corrige plantage (SEGV) lorsqu'on utilise les tâches et sous-tâches
   en séquentiel.
 
-
-
-
 ___
+
 ## Arcane Version 3.1.2 (21 octobre 2021) {#arcanedoc_news_changelog_version310}
 
 ### Nouveautés/Améliorations:
@@ -2471,10 +2505,8 @@ ___
   `libxml2`. Cette bibliothèque fait explicitement des divisions par 0
   lors de l'initialisation.
 
-
-
-
 ___
+
 ## Arcane Version 3.0.5 (30 septembre 2021) {#arcanedoc_news_changelog_version305}
 
 ### Nouveautés/Améliorations:
@@ -2540,10 +2572,8 @@ ENUMERATE_CELL(icell,allCells()){
 - [config] Supporte le cas où plusieurs versions du SDK pour 'dotnet'
   sont installées. Dans ce cas la version la plus récente est utilisée.
 
-
-
-
 ___
+
 ## Arcane Version 3.0.3 (Not released) {#arcanedoc_news_changelog_version303}
 
 ### Nouveautés/Améliorations:
@@ -2577,10 +2607,8 @@ ___
 - Corrige erreurs de compilation des exemples en dehors du répertoire
   des sources.
 
-
-
-
 ___
+
 ## Arcane Version 3.0.1 (27 mai 2021) {#arcanedoc_news_changelog_version301}
 
 Cette version est la première version 'open source' de %Arcane.
