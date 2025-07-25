@@ -33,6 +33,7 @@
 #include "arcane/core/IParallelTopology.h"
 #include "arcane/core/IParallelNonBlockingCollective.h"
 #include "arcane/core/MachineMemoryWindow.h"
+#include "arcane/core/DynamicMachineMemoryWindow.h"
 #include "arcane/core/ParallelMngUtils.h"
 #include "arcane/core/internal/SerializeMessage.h"
 
@@ -1127,6 +1128,85 @@ _testMachineMemoryWindow()
   }
   window.barrier();
   //![snippet_arcanedoc_parallel_shmem_usage_6]
+  {
+    Integer local_iter = 0;
+    DynamicMachineMemoryWindow<Integer> test(pm, 1);
+    test.segmentView()[0] = my_rank * 100;
+    test.reserve(3);
+    {
+      auto _ = DynamicMachineMemoryWindow<Integer>::Addition(&test);
+      if (my_rank == 0) {
+        test.add(local_iter++ + my_rank * 100);
+        test.add(local_iter++ + my_rank * 100);
+        test.add(local_iter++ + my_rank * 100);
+        test.add(local_iter++ + my_rank * 100);
+        test.add(local_iter++ + my_rank * 100);
+        test.add(local_iter++ + my_rank * 100);
+        test.add(local_iter++ + my_rank * 100);
+        test.add(local_iter++ + my_rank * 100);
+        test.add(local_iter++ + my_rank * 100);
+        test.add(local_iter++ + my_rank * 100);
+      }
+      else {
+        test.add(local_iter++ + my_rank * 100);
+        test.add(local_iter++ + my_rank * 100);
+        test.add(local_iter++ + my_rank * 100);
+        test.add(local_iter++ + my_rank * 100);
+        test.add(local_iter++ + my_rank * 100);
+      }
+    }
+
+    debug() << "Elem in win : " << test.segmentView();
+
+    if (my_rank == 0) {
+      test.exchangeSegmentWith(1);
+    }
+    else if (my_rank == 1) {
+      test.exchangeSegmentWith(0);
+    }
+    else {
+      test.exchangeSegmentWith(my_rank);
+    }
+
+    debug() << "Elem in win : " << test.segmentView();
+
+    {
+      auto _ = DynamicMachineMemoryWindow<Integer>::Addition(&test);
+      if (my_rank == 0) {
+        test.add(local_iter++ + my_rank * 100);
+        test.add(local_iter++ + my_rank * 100);
+        test.add(local_iter++ + my_rank * 100);
+        test.add(local_iter++ + my_rank * 100);
+        test.add(local_iter++ + my_rank * 100);
+        test.add(local_iter++ + my_rank * 100);
+        test.add(local_iter++ + my_rank * 100);
+        test.add(local_iter++ + my_rank * 100);
+        test.add(local_iter++ + my_rank * 100);
+        test.add(local_iter++ + my_rank * 100);
+      }
+      else {
+        test.add(local_iter++ + my_rank * 100);
+        test.add(local_iter++ + my_rank * 100);
+        test.add(local_iter++ + my_rank * 100);
+        test.add(local_iter++ + my_rank * 100);
+        test.add(local_iter++ + my_rank * 100);
+      }
+    }
+
+    debug() << "Elem in win : " << test.segmentView();
+
+    if (my_rank == 0) {
+      test.exchangeSegmentWith(1);
+    }
+    else if (my_rank == 1) {
+      test.exchangeSegmentWith(0);
+    }
+    else {
+      test.exchangeSegmentWith(my_rank);
+    }
+
+    debug() << "Elem in win : " << test.segmentView();
+  }
 }
 
 /*---------------------------------------------------------------------------*/

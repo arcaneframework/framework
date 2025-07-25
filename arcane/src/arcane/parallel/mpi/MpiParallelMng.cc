@@ -50,6 +50,7 @@
 #include "arccore/message_passing_mpi/internal/MpiLock.h"
 #include "arccore/message_passing_mpi/internal/MpiMachineMemoryWindowBaseInternalCreator.h"
 #include "arccore/message_passing_mpi/internal/MpiMachineMemoryWindowBaseInternal.h"
+#include "arccore/message_passing_mpi/internal/MpiDynamicMachineMemWinBaseInternal.h"
 #include "arccore/message_passing/Dispatchers.h"
 #include "arccore/message_passing/Messages.h"
 #include "arccore/message_passing/SerializeMessageList.h"
@@ -359,6 +360,11 @@ class MpiParallelMng::Impl
   Ref<IMachineMemoryWindowBaseInternal> createMachineMemoryWindowBase(Int64 sizeof_segment, Int32 sizeof_type) override
   {
     return makeRef(m_parallel_mng->adapter()->windowCreator()->createWindow(sizeof_segment, sizeof_type));
+  }
+
+  Ref<IDynamicMachineMemWinBaseInternal> createDynamicMachineMemWinBase(Int64 sizeof_segment, Int32 sizeof_type) override
+  {
+    return makeRef(m_parallel_mng->adapter()->windowCreator()->createDynamicWindow(sizeof_segment, sizeof_type));
   }
 
  private:

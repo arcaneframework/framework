@@ -28,6 +28,7 @@ namespace Arcane
 namespace MessagePassing
 {
   class IMachineMemoryWindowBaseInternal;
+  class IDynamicMachineMemWinBaseInternal;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -73,6 +74,17 @@ class ARCANE_CORE_EXPORT IParallelMngInternal
    * \return Une référence vers la nouvelle fenêtre.
    */
   virtual Ref<MessagePassing::IMachineMemoryWindowBaseInternal> createMachineMemoryWindowBase(Int64 sizeof_segment, Int32 sizeof_type) = 0;
+
+  /*!
+   * \brief Méthode permettant de créer une fenêtre mémoire dynamique sur le noeud.
+   *
+   * Appel collectif.
+   *
+   * \param sizeof_segment La taille initiale de notre segment (en octet).
+   * \param sizeof_type La taille d'un élément du segment (en octet).
+   * \return Une référence vers la nouvelle fenêtre.
+   */
+  virtual Ref<MessagePassing::IDynamicMachineMemWinBaseInternal> createDynamicMachineMemWinBase(Int64 sizeof_segment, Int32 sizeof_type) = 0;
 };
 
 /*---------------------------------------------------------------------------*/
