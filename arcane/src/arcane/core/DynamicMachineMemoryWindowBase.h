@@ -5,19 +5,21 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ParallelMngInternal.h                                       (C) 2000-2025 */
+/* DynamicMachineMemoryWindowBase.h                            (C) 2000-2025 */
 /*                                                                           */
-/* Implémentation de la partie interne à Arcane de IParallelMng.             */
+/* TODO.                                                */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_CORE_INTERNAL_PARALLELMNGINTERNAL_H
-#define ARCANE_CORE_INTERNAL_PARALLELMNGINTERNAL_H
+
+#ifndef ARCANE_CORE_DYNAMICMACHINEMEMORYWINDOWBASE_H
+#define ARCANE_CORE_DYNAMICMACHINEMEMORYWINDOWBASE_H
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/core/ArcaneTypes.h"
-#include "arcane/core/internal/IParallelMngInternal.h"
+#include "arcane/utils/Ref.h"
 
-#include "arcane/accelerator/core/Runner.h"
+#include "arccore/base/Span.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -28,46 +30,76 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class ParallelMngDispatcher;
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-/*!
- * \internal
- * \brief Partie interne de IParallelMng.
- */
-class ARCANE_CORE_EXPORT ParallelMngInternal
-: public IParallelMngInternal
+class IParallelMng;
+class IParallelMngInternal;
+namespace MessagePassing
 {
+  class IDynamicMachineMemWinBaseInternal;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+class ARCANE_CORE_EXPORT DynamicMachineMemoryWindowBase
+{
+
  public:
 
-  explicit ParallelMngInternal(ParallelMngDispatcher* pm);
+  class ARCANE_CORE_EXPORT Addition
+  {
+   public:
 
-  ~ParallelMngInternal() override = default;
+    //! Associe le timer \a t et le démarre
+    explicit Addition(DynamicMachineMemoryWindowBase* t)
+    : m_base(t)
+    {
+      m_base->enableAdditionPhase();
+    }
+
+    ~Addition()
+    {
+      m_base->disableAdditionPhase();
+    }
+
+   private:
+
+    DynamicMachineMemoryWindowBase* m_base; //!< Timer associé
+  };
 
  public:
 
-  Runner runner() const override;
-  RunQueue queue() const override;
-  bool isAcceleratorAware() const override;
-  Ref<IParallelMng> createSubParallelMngRef(Int32 color, Int32 key) override;
-  void setDefaultRunner(const Runner& runner) override;
-  Ref<MessagePassing::IMachineMemoryWindowBaseInternal> createMachineMemoryWindowBase(Int64 sizeof_segment, Int32 sizeof_type) override;
-  Ref<MessagePassing::IDynamicMachineMemWinBaseInternal> createDynamicMachineMemWinBase(Int64 sizeof_segment, Int32 sizeof_type) override;
+  DynamicMachineMemoryWindowBase(IParallelMng* pm, Int64 sizeof_segment, Int32 sizeof_elem);
+
+ public:
+
+  Span<std::byte> segmentView() const;
+  Span<std::byte> segmentView(Int32 rank) const;
+
+  void add(Span<const std::byte> elem) const;
+
+  void exchangeSegmentWith(Int32 rank) const;
+
+  ConstArrayView<Int32> machineRanks() const;
+
+  void barrier() const;
+
+  void enableAdditionPhase();
+  void disableAdditionPhase();
+
+  void reserve(Int64 new_nb_elem_segment_capacity) const;
 
  private:
 
-  ParallelMngDispatcher* m_parallel_mng = nullptr;
-  Runner m_runner;
-  RunQueue m_queue;
-  bool m_is_accelerator_aware_disabled = false;
+  IParallelMngInternal* m_pm_internal;
+  Ref<MessagePassing::IDynamicMachineMemWinBaseInternal> m_node_window_base;
+  Int32 m_sizeof_elem;
+  bool m_is_add_enabled;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // namespace Arcane
+} // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

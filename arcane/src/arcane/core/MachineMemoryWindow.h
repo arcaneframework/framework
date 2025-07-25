@@ -19,7 +19,6 @@
 
 #include "arcane/core/ArcaneTypes.h"
 #include "arcane/core/MachineMemoryWindowBase.h"
-#include "arcane/utils/Ref.h"
 
 #include "arccore/base/Span.h"
 

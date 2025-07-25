@@ -116,6 +116,18 @@ createMachineMemoryWindowBase(Int64 sizeof_segment, Int32 sizeof_type)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+Ref<MessagePassing::IDynamicMachineMemWinBaseInternal> ParallelMngInternal::
+createDynamicMachineMemWinBase(Int64 sizeof_segment, Int32 sizeof_type)
+{
+  ARCANE_UNUSED(sizeof_segment);
+  ARCANE_UNUSED(sizeof_type);
+  ARCANE_NOT_YET_IMPLEMENTED("MachineWindow is not available in your ParallelMng");
+  ARCANE_FATAL("MachineWindow is not available in your ParallelMng");
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 } // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
