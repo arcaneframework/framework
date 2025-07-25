@@ -7,7 +7,9 @@
 /*---------------------------------------------------------------------------*/
 /* DynamicMachineMemoryWindowBase.cc                           (C) 2000-2025 */
 /*                                                                           */
-/* TODO.                                                */
+/* Classe permettant de créer des fenêtres mémoires pour un noeud de calcul. */
+/* Les segments de ces fenêtres ne sont pas contigües en mémoire et peuvent  */
+/* être redimensionnées.                                                     */
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/core/DynamicMachineMemoryWindowBase.h"
@@ -18,7 +20,7 @@
 #include "arcane/utils/NumericTypes.h"
 #include "arcane/utils/FatalErrorException.h"
 
-#include "arccore/message_passing/internal/IDynamicMachineMemWinBaseInternal.h"
+#include "arccore/message_passing/internal/IDynamicMachineMemoryWindowBaseInternal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -65,6 +67,24 @@ segmentView(Int32 rank) const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+Int32 DynamicMachineMemoryWindowBase::
+segmentOwner() const
+{
+  return m_node_window_base->segmentOwner();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Int32 DynamicMachineMemoryWindowBase::
+segmentOwner(Int32 rank) const
+{
+  return m_node_window_base->segmentOwner(rank);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 void DynamicMachineMemoryWindowBase::
 add(Span<const std::byte> elem) const
 {
@@ -84,6 +104,30 @@ exchangeSegmentWith(Int32 rank) const
     ARCANE_FATAL("exchangeSegmentWith in an addition phase is not allowed");
   }
   m_node_window_base->exchangeSegmentWith(rank);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void DynamicMachineMemoryWindowBase::
+exchangeSegmentWith() const
+{
+  if (m_is_add_enabled) {
+    ARCANE_FATAL("exchangeSegmentWith in an addition phase is not allowed");
+  }
+  m_node_window_base->exchangeSegmentWith();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void DynamicMachineMemoryWindowBase::
+resetExchanges() const
+{
+  if (m_is_add_enabled) {
+    ARCANE_FATAL("resetExchanges in an addition phase is not allowed");
+  }
+  m_node_window_base->resetExchanges();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -139,6 +183,42 @@ reserve(Int64 new_nb_elem_segment_capacity) const
     ARCANE_FATAL("Reserve in an addition phase is not allowed");
   }
   m_node_window_base->reserve(new_nb_elem_segment_capacity * static_cast<Int64>(m_sizeof_elem));
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void DynamicMachineMemoryWindowBase::
+reserve() const
+{
+  if (m_is_add_enabled) {
+    ARCANE_FATAL("Reserve in an addition phase is not allowed");
+  }
+  m_node_window_base->reserve();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void DynamicMachineMemoryWindowBase::
+resize(Int64 new_nb_elem_segment) const
+{
+  if (m_is_add_enabled) {
+    ARCANE_FATAL("Resize in an addition phase is not allowed");
+  }
+  m_node_window_base->resize(new_nb_elem_segment * static_cast<Int64>(m_sizeof_elem));
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void DynamicMachineMemoryWindowBase::
+resize() const
+{
+  if (m_is_add_enabled) {
+    ARCANE_FATAL("Resize in an addition phase is not allowed");
+  }
+  m_node_window_base->resize();
 }
 
 /*---------------------------------------------------------------------------*/
