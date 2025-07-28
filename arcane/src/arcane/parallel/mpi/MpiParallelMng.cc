@@ -362,7 +362,7 @@ class MpiParallelMng::Impl
     return makeRef(m_parallel_mng->adapter()->windowCreator()->createWindow(sizeof_segment, sizeof_type));
   }
 
-  Ref<IDynamicMachineMemoryWindowBaseInternal> createDynamicMachineMemWinBase(Int64 sizeof_segment, Int32 sizeof_type) override
+  Ref<IDynamicMachineMemoryWindowBaseInternal> createDynamicMachineMemoryWindowBase(Int64 sizeof_segment, Int32 sizeof_type) override
   {
     return makeRef(m_parallel_mng->adapter()->windowCreator()->createDynamicWindow(sizeof_segment, sizeof_type));
   }

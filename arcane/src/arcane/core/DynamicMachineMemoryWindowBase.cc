@@ -37,7 +37,7 @@ DynamicMachineMemoryWindowBase(IParallelMng* pm, Int64 nb_elem_segment, Int32 si
 , m_sizeof_elem(sizeof_elem)
 , m_is_add_enabled(false)
 {
-  m_node_window_base = m_pm_internal->createDynamicMachineMemWinBase(nb_elem_segment * static_cast<Int64>(m_sizeof_elem), m_sizeof_elem);
+  m_node_window_base = m_pm_internal->createDynamicMachineMemoryWindowBase(nb_elem_segment * static_cast<Int64>(m_sizeof_elem), m_sizeof_elem);
 }
 
 /*---------------------------------------------------------------------------*/

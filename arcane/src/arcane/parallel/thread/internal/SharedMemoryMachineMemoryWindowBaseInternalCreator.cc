@@ -15,6 +15,7 @@
 #include "arcane/parallel/thread/internal/SharedMemoryMachineMemoryWindowBaseInternalCreator.h"
 
 #include "arcane/parallel/thread/internal/SharedMemoryMachineMemoryWindowBaseInternal.h"
+#include "arcane/parallel/thread/internal/SharedMemoryDynamicMachineMemoryWindowBaseInternal.h"
 #include "arccore/concurrency/IThreadBarrier.h"
 
 /*---------------------------------------------------------------------------*/
@@ -34,6 +35,7 @@ SharedMemoryMachineMemoryWindowBaseInternalCreator(Int32 nb_rank, IThreadBarrier
 , m_window(nullptr)
 , m_sizeof_segments(nullptr)
 , m_sum_sizeof_segments(nullptr)
+, m_windows(nullptr)
 {
   m_ranks.resize(m_nb_rank);
   for (Int32 i = 0; i < m_nb_rank; ++i) {
@@ -74,6 +76,30 @@ createWindow(Int32 my_rank, Int64 sizeof_segment, Int32 sizeof_type)
   m_sum_sizeof_segments = nullptr;
   m_window = nullptr;
   m_sizeof_window = 0;
+
+  return window_obj;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+SharedMemoryDynamicMachineMemoryWindowBaseInternal* SharedMemoryMachineMemoryWindowBaseInternalCreator::
+createDynamicWindow(Int32 my_rank, Int64 sizeof_segment, Int32 sizeof_type)
+{
+  if (my_rank == 0) {
+    m_windows = new UniqueArray<std::byte>[m_nb_rank]();
+    m_owner_segments = new Int32[m_nb_rank];
+  }
+  m_barrier->wait();
+  m_windows[my_rank].resize(sizeof_segment);
+  m_owner_segments[my_rank] = my_rank;
+
+  auto* window_obj = new SharedMemoryDynamicMachineMemoryWindowBaseInternal(my_rank, m_nb_rank, m_ranks, sizeof_type, m_windows, m_owner_segments, m_barrier);
+  m_barrier->wait();
+
+  // Ces tableaux doivent être delete par SharedMemoryDynamicMachineMemoryWindowBaseInternal (rang 0 uniquement).
+  m_windows = nullptr;
+  m_owner_segments = nullptr;
 
   return window_obj;
 }

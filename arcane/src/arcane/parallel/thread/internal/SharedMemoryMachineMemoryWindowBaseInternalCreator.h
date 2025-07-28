@@ -31,6 +31,7 @@ namespace Arcane::MessagePassing
 /*---------------------------------------------------------------------------*/
 
 class SharedMemoryMachineMemoryWindowBaseInternal;
+class SharedMemoryDynamicMachineMemoryWindowBaseInternal;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -45,16 +46,20 @@ class SharedMemoryMachineMemoryWindowBaseInternalCreator
  public:
 
   SharedMemoryMachineMemoryWindowBaseInternal* createWindow(Int32 my_rank, Int64 sizeof_segment, Int32 sizeof_type);
+  SharedMemoryDynamicMachineMemoryWindowBaseInternal* createDynamicWindow(Int32 my_rank, Int64 sizeof_segment, Int32 sizeof_type);
 
  private:
 
   Int32 m_nb_rank;
   Int64 m_sizeof_window;
+  UniqueArray<Int32> m_ranks;
   IThreadBarrier* m_barrier;
   std::byte* m_window;
   Int64* m_sizeof_segments;
   Int64* m_sum_sizeof_segments;
-  UniqueArray<Int32> m_ranks;
+  //-------
+  UniqueArray<std::byte>* m_windows;
+  Int32* m_owner_segments;
 };
 
 /*---------------------------------------------------------------------------*/

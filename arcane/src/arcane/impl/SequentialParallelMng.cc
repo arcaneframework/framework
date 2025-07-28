@@ -427,7 +427,7 @@ class SequentialDynamicMachineMemoryWindowBaseInternal
   : m_sizeof_type(sizeof_type)
   , m_segment(sizeof_segment)
   {}
-  ~SequentialDynamicMachineMemoryWindowBaseInternal() override;
+  ~SequentialDynamicMachineMemoryWindowBaseInternal() override = default;
 
  public:
 
@@ -460,6 +460,9 @@ class SequentialDynamicMachineMemoryWindowBaseInternal
   }
   void add(Span<const std::byte> elem) override
   {
+    if (elem.size() % m_sizeof_type != 0) {
+      ARCCORE_FATAL("Sizeof elem not valid");
+    }
     m_segment.addRange(elem);
   }
   void exchangeSegmentWith(Int32 rank) override
@@ -814,6 +817,11 @@ class SequentialParallelMng::Impl
   Ref<IMachineMemoryWindowBaseInternal> createMachineMemoryWindowBase(Int64 sizeof_segment, Int32 sizeof_type) override
   {
     return makeRef(new SequentialMachineMemoryWindowBaseInternal(sizeof_segment, sizeof_type));
+  }
+
+  Ref<IDynamicMachineMemoryWindowBaseInternal> createDynamicMachineMemoryWindowBase(Int64 sizeof_segment, Int32 sizeof_type) override
+  {
+    return makeRef(new SequentialDynamicMachineMemoryWindowBaseInternal(sizeof_segment, sizeof_type));
   }
 };
 

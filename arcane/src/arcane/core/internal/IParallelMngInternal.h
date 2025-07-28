@@ -84,7 +84,7 @@ class ARCANE_CORE_EXPORT IParallelMngInternal
    * \param sizeof_type La taille d'un élément du segment (en octet).
    * \return Une référence vers la nouvelle fenêtre.
    */
-  virtual Ref<MessagePassing::IDynamicMachineMemoryWindowBaseInternal> createDynamicMachineMemWinBase(Int64 sizeof_segment, Int32 sizeof_type) = 0;
+  virtual Ref<MessagePassing::IDynamicMachineMemoryWindowBaseInternal> createDynamicMachineMemoryWindowBase(Int64 sizeof_segment, Int32 sizeof_type) = 0;
 };
 
 /*---------------------------------------------------------------------------*/

@@ -117,7 +117,7 @@ createMachineMemoryWindowBase(Int64 sizeof_segment, Int32 sizeof_type)
 /*---------------------------------------------------------------------------*/
 
 Ref<MessagePassing::IDynamicMachineMemoryWindowBaseInternal> ParallelMngInternal::
-createDynamicMachineMemWinBase(Int64 sizeof_segment, Int32 sizeof_type)
+createDynamicMachineMemoryWindowBase(Int64 sizeof_segment, Int32 sizeof_type)
 {
   ARCANE_UNUSED(sizeof_segment);
   ARCANE_UNUSED(sizeof_type);
