@@ -69,7 +69,7 @@ sizeofOneElem() const
 /*---------------------------------------------------------------------------*/
 
 Span<std::byte> SharedMemoryMachineMemoryWindowBaseInternal::
-segment() const
+segment()
 {
   const Int64 begin_segment = m_sum_sizeof_segments_span[m_my_rank];
   const Int64 size_segment = m_sizeof_segments_span[m_my_rank];
@@ -81,7 +81,7 @@ segment() const
 /*---------------------------------------------------------------------------*/
 
 Span<std::byte> SharedMemoryMachineMemoryWindowBaseInternal::
-segment(Int32 rank) const
+segment(Int32 rank)
 {
   const Int64 begin_segment = m_sum_sizeof_segments_span[rank];
   const Int64 size_segment = m_sizeof_segments_span[rank];
@@ -93,7 +93,7 @@ segment(Int32 rank) const
 /*---------------------------------------------------------------------------*/
 
 Span<std::byte> SharedMemoryMachineMemoryWindowBaseInternal::
-window() const
+window()
 {
   return m_window_span;
 }

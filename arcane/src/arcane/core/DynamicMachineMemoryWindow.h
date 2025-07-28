@@ -148,6 +148,11 @@ class DynamicMachineMemoryWindow
     m_impl.resize();
   }
 
+  void shrink() const
+  {
+    m_impl.shrink();
+  }
+
  private:
 
   DynamicMachineMemoryWindowBase m_impl;

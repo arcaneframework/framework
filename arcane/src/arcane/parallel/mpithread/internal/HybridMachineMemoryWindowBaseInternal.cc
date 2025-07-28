@@ -57,7 +57,7 @@ sizeofOneElem() const
 /*---------------------------------------------------------------------------*/
 
 Span<std::byte> HybridMachineMemoryWindowBaseInternal::
-segment() const
+segment()
 {
   const Span<std::byte> segment_proc = m_mpi_window->segment();
   const Int64 begin_segment_thread = m_sum_sizeof_sub_segments_local_proc[m_my_rank_local_proc];
@@ -70,7 +70,7 @@ segment() const
 /*---------------------------------------------------------------------------*/
 
 Span<std::byte> HybridMachineMemoryWindowBaseInternal::
-segment(Int32 rank) const
+segment(Int32 rank)
 {
   const FullRankInfo fri = FullRankInfo::compute(MP::MessageRank(rank), m_nb_rank_local_proc);
 
@@ -97,7 +97,7 @@ segment(Int32 rank) const
 /*---------------------------------------------------------------------------*/
 
 Span<std::byte> HybridMachineMemoryWindowBaseInternal::
-window() const
+window()
 {
   return m_mpi_window->window();
 }

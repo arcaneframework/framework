@@ -98,6 +98,8 @@ class ARCANE_CORE_EXPORT DynamicMachineMemoryWindowBase
   void resize(Int64 new_nb_elem_segment) const;
   void resize() const;
 
+  void shrink() const;
+
  private:
 
   IParallelMngInternal* m_pm_internal;
