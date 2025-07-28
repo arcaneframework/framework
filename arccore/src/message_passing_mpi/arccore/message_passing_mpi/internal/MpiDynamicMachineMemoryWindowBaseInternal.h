@@ -42,8 +42,8 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiDynamicMachineMemoryWindowBaseInternal
 
   Int32 sizeofOneElem() const override;
 
-  Span<std::byte> segment() const override;
-  Span<std::byte> segment(Int32 rank) const override;
+  Span<std::byte> segment() override;
+  Span<std::byte> segment(Int32 rank) override;
 
   Int32 segmentOwner() const override;
   Int32 segmentOwner(Int32 rank) const override;
@@ -58,13 +58,15 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiDynamicMachineMemoryWindowBaseInternal
   ConstArrayView<Int32> machineRanks() const override;
 
   void syncAdd() override;
-  void barrier() override;
+  void barrier() const override;
 
   void reserve(Int64 new_capacity) override;
   void reserve() override;
 
   void resize(Int64 new_size) override;
   void resize() override;
+
+  void shrink() override;
 
  private:
 

@@ -199,7 +199,7 @@ sizeofOneElem() const
 /*---------------------------------------------------------------------------*/
 
 Span<std::byte> MpiDynamicMachineMemoryWindowBaseInternal::
-segment() const
+segment()
 {
   return m_reserved_part_span.subSpan(0, m_sizeof_used_part[m_owner_segment]);
 }
@@ -208,7 +208,7 @@ segment() const
 /*---------------------------------------------------------------------------*/
 
 Span<std::byte> MpiDynamicMachineMemoryWindowBaseInternal::
-segment(Int32 rank) const
+segment(Int32 rank)
 {
   Int32 machine_rank = _worldToMachine(rank);
 
@@ -327,6 +327,7 @@ exchangeSegmentWith()
 void MpiDynamicMachineMemoryWindowBaseInternal::
 resetExchanges()
 {
+  MPI_Barrier(m_comm_machine);
   m_owner_segments[m_comm_machine_rank] = m_comm_machine_rank;
   m_owner_segment = m_comm_machine_rank;
 
@@ -368,7 +369,7 @@ syncAdd()
 /*---------------------------------------------------------------------------*/
 
 void MpiDynamicMachineMemoryWindowBaseInternal::
-barrier()
+barrier() const
 {
   MPI_Barrier(m_comm_machine);
 }
@@ -403,6 +404,12 @@ reserve()
 void MpiDynamicMachineMemoryWindowBaseInternal::
 resize(Int64 new_size)
 {
+  if (new_size == -1) {
+    MPI_Barrier(m_comm_machine);
+    _realloc(0);
+    return;
+  }
+
   if (new_size < 0 || new_size % m_sizeof_type) {
     ARCCORE_FATAL("new_size not valid");
   }
@@ -428,6 +435,20 @@ resize()
 {
   MPI_Barrier(m_comm_machine);
   _realloc(0);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MpiDynamicMachineMemoryWindowBaseInternal::
+shrink()
+{
+  if (m_reserved_part_span.size() == m_sizeof_used_part[m_owner_segment]) {
+    MPI_Barrier(m_comm_machine);
+    _realloc(0);
+    return;
+  }
+  _reallocBarrier(m_sizeof_used_part[m_owner_segment]);
 }
 
 /*---------------------------------------------------------------------------*/

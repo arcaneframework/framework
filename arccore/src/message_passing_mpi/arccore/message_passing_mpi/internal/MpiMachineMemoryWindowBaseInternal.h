@@ -42,9 +42,9 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiMachineMemoryWindowBaseInternal
 
   Int32 sizeofOneElem() const override;
 
-  Span<std::byte> segment() const override;
-  Span<std::byte> segment(Int32 rank) const override;
-  Span<std::byte> window() const override;
+  Span<std::byte> segment() override;
+  Span<std::byte> segment(Int32 rank) override;
+  Span<std::byte> window() override;
 
   void resizeSegment(Int64 new_sizeof_segment) override;
 

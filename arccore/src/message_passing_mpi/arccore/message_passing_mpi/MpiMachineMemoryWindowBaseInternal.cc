@@ -257,7 +257,7 @@ sizeofOneElem() const
 /*---------------------------------------------------------------------------*/
 
 Span<std::byte> MpiMachineMemoryWindowBaseInternal::
-segment() const
+segment()
 {
   const Int64 begin_segment = m_sum_sizeof_segments_span[m_comm_machine_rank];
   const Int64 size_segment = m_sizeof_segments_span[m_comm_machine_rank];
@@ -269,7 +269,7 @@ segment() const
 /*---------------------------------------------------------------------------*/
 
 Span<std::byte> MpiMachineMemoryWindowBaseInternal::
-segment(Int32 rank) const
+segment(Int32 rank)
 {
   Int32 pos = -1;
   for (Int32 i = 0; i < m_comm_machine_size; ++i) {
@@ -292,7 +292,7 @@ segment(Int32 rank) const
 /*---------------------------------------------------------------------------*/
 
 Span<std::byte> MpiMachineMemoryWindowBaseInternal::
-window() const
+window()
 {
   return m_window_span;
 }

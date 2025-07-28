@@ -65,7 +65,7 @@ class ARCCORE_MESSAGEPASSING_EXPORT IDynamicMachineMemoryWindowBaseInternal
    */
   virtual Int32 sizeofOneElem() const = 0;
 
-/*!
+  /*!
    * \brief Méthode permettant d'obtenir une vue sur le segment que nous
    * possédons.
    *
@@ -76,7 +76,7 @@ class ARCCORE_MESSAGEPASSING_EXPORT IDynamicMachineMemoryWindowBaseInternal
    *
    * \return Une vue.
    */
-  virtual Span<std::byte> segment() const = 0;
+  virtual Span<std::byte> segment() = 0;
 
   /*!
    * \brief Méthode permettant d'obtenir une vue sur le segment que possède un
@@ -90,7 +90,7 @@ class ARCCORE_MESSAGEPASSING_EXPORT IDynamicMachineMemoryWindowBaseInternal
    * \param rank Le rang du sous-domaine.
    * \return Une vue.
    */
-  virtual Span<std::byte> segment(Int32 rank) const = 0;
+  virtual Span<std::byte> segment(Int32 rank) = 0;
 
   /*!
    * \brief Méthode permettant d'obtenir le propriétaire du segment que nous
@@ -156,6 +156,7 @@ class ARCCORE_MESSAGEPASSING_EXPORT IDynamicMachineMemoryWindowBaseInternal
    * \param rank Le rang avec qui échanger son segment.
    */
   virtual void exchangeSegmentWith(Int32 rank) = 0;
+
   /*!
    * Voir \a exchangeSegmentWith(Int32 rank).
    */
@@ -164,7 +165,7 @@ class ARCCORE_MESSAGEPASSING_EXPORT IDynamicMachineMemoryWindowBaseInternal
   /*!
    * \brief Méthode permettant de réinitialiser les échanges effectués.
    *
-   * Appel non collectif.
+   * Appel collectif.
    *
    * Chaque processus retrouvera son segment.
    */
@@ -195,7 +196,7 @@ class ARCCORE_MESSAGEPASSING_EXPORT IDynamicMachineMemoryWindowBaseInternal
    * \brief Méthode permettant d'attendre que tous les processus/threads
    * du noeud appellent cette méthode pour continuer l'exécution.
    */
-  virtual void barrier() = 0;
+  virtual void barrier() const = 0;
 
   /*!
    * \brief Méthode permettant de réserver de l'espace mémoire dans le segment
@@ -206,8 +207,9 @@ class ARCCORE_MESSAGEPASSING_EXPORT IDynamicMachineMemoryWindowBaseInternal
    * Cette méthode ne fait rien si \a new_capacity est inférieur à l'espace
    * mémoire déjà alloué pour le segment.
    * Pour les processus ne souhaitant pas augmenter l'espace mémoire
-   * disponible pour leur segment, la méthode \a reserve() (sans arguments)
-   * est disponible.
+   * disponible pour leur segment, il est possible de mettre le paramètre
+   * \a new_capacity à 0 ou d'utiliser la méthode \a reserve() (sans
+   * arguments).
    *
    * MPI réservera un espace avec une taille supérieur ou égale à
    * \a new_capacity.
@@ -237,7 +239,8 @@ class ARCCORE_MESSAGEPASSING_EXPORT IDynamicMachineMemoryWindowBaseInternal
    * éléments situés après la taille fournie seront supprimés.
    *
    * Pour les processus ne souhaitant pas redimensionner leur segment, il est
-   * possible d'appeler la méthode \a resize() (sans arguments).
+   * possible de mettre l'argument \a new_size à -1 ou d'appeler la méthode
+   * \a resize() (sans arguments).
    *
    * \param new_size La nouvelle taille.
    */
@@ -247,6 +250,12 @@ class ARCCORE_MESSAGEPASSING_EXPORT IDynamicMachineMemoryWindowBaseInternal
    * Voir \a resize(Int64 new_size)
    */
   virtual void resize() = 0;
+
+  /*!
+   * \brief Méthode permettant de réduire l'espace mémoire réservé pour le
+   * segment au minimum nécessaire.
+   */
+  virtual void shrink() = 0;
 };
 
 /*---------------------------------------------------------------------------*/

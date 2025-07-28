@@ -56,7 +56,7 @@ class ARCCORE_MESSAGEPASSING_EXPORT IMachineMemoryWindowBaseInternal
    *
    * \return Une vue.
    */
-  virtual Span<std::byte> segment() const = 0;
+  virtual Span<std::byte> segment() = 0;
 
   /*!
    * \brief Méthode permettant d'obtenir une vue sur le segment d'un autre
@@ -65,14 +65,14 @@ class ARCCORE_MESSAGEPASSING_EXPORT IMachineMemoryWindowBaseInternal
    * \param rank Le rang du sous-domaine.
    * \return Une vue.
    */
-  virtual Span<std::byte> segment(Int32 rank) const = 0;
+  virtual Span<std::byte> segment(Int32 rank) = 0;
 
   /*!
    * \brief Méthode permettant d'obtenir une vue sur toute la fenêtre.
    *
    * \return Une vue.
    */
-  virtual Span<std::byte> window() const = 0;
+  virtual Span<std::byte> window() = 0;
 
   /*!
    * \brief Méthode permettant de redimensionner les segments de la fenêtre.
