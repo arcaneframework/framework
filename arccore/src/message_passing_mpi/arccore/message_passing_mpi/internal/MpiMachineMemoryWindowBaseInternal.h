@@ -58,10 +58,10 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiMachineMemoryWindowBaseInternal
   Span<std::byte> m_window_span;
 
   MPI_Win m_win_sizeof_segments;
-  Span<Int64> m_sizeof_segments_span;
+  SmallSpan<Int64> m_sizeof_segments_span;
 
   MPI_Win m_win_sum_sizeof_segments;
-  Span<Int64> m_sum_sizeof_segments_span;
+  SmallSpan<Int64> m_sum_sizeof_segments_span;
 
   MPI_Comm m_comm_machine;
   Int32 m_comm_machine_size;

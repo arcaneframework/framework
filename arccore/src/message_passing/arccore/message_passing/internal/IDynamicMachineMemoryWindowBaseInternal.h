@@ -134,6 +134,17 @@ class ARCCORE_MESSAGEPASSING_EXPORT IDynamicMachineMemoryWindowBaseInternal
   virtual void add(Span<const std::byte> elem) = 0;
 
   /*!
+   * \brief Méthode permettant de synchroniser les add().
+   *
+   * Appel collectif.
+   *
+   * Cette méthode doit être appelée après le ou les add() du ou des
+   * processus. Aucun appel collectif ne doit être fait entre les add() et
+   * le syncAdd().
+   */
+  virtual void syncAdd() = 0;
+
+  /*!
    * \brief Méthode permettant d'échanger le segment que nous possédons avec
    * le segment de \a rank.
    *
@@ -180,17 +191,6 @@ class ARCCORE_MESSAGEPASSING_EXPORT IDynamicMachineMemoryWindowBaseInternal
    * \return Une vue contenant les ids des rangs.
    */
   virtual ConstArrayView<Int32> machineRanks() const = 0;
-
-  /*!
-   * \brief Méthode permettant de synchroniser les add().
-   *
-   * Appel collectif.
-   *
-   * Cette méthode doit être appelée après le ou les add() du ou des
-   * processus. Aucun appel collectif ne doit être fait entre les add() et
-   * le syncAdd().
-   */
-  virtual void syncAdd() = 0;
 
   /*!
    * \brief Méthode permettant d'attendre que tous les processus/threads

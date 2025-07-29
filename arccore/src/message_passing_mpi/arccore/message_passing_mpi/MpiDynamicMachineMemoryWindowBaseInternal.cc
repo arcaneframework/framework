@@ -106,7 +106,7 @@ MpiDynamicMachineMemoryWindowBaseInternal(Int64 sizeof_segment, Int32 sizeof_typ
         ARCCORE_FATAL("Error with MPI_Win_allocate_shared() call");
       }
 
-      m_need_resize = Span<bool>{ ptr_win, static_cast<Int64>(sizeof(bool)) * m_comm_machine_size };
+      m_need_resize = Span<bool>{ ptr_win, m_comm_machine_size };
       m_need_resize[m_comm_machine_rank] = false;
     }
     if (ptr_win + m_comm_machine_rank != ptr_seg) {
@@ -133,7 +133,7 @@ MpiDynamicMachineMemoryWindowBaseInternal(Int64 sizeof_segment, Int32 sizeof_typ
         ARCCORE_FATAL("Error with MPI_Win_allocate_shared() call");
       }
 
-      m_sizeof_used_part = Span<Int64>{ ptr_win, static_cast<Int64>(sizeof(Int64)) * m_comm_machine_size };
+      m_sizeof_used_part = Span<Int64>{ ptr_win, m_comm_machine_size };
       m_sizeof_used_part[m_comm_machine_rank] = sizeof_segment;
     }
     if (ptr_win + m_comm_machine_rank != ptr_seg) {
@@ -160,7 +160,7 @@ MpiDynamicMachineMemoryWindowBaseInternal(Int64 sizeof_segment, Int32 sizeof_typ
         ARCCORE_FATAL("Error with MPI_Win_allocate_shared() call");
       }
 
-      m_owner_segments = Span<Int32>{ ptr_win, static_cast<Int64>(sizeof(Int32)) * m_comm_machine_size };
+      m_owner_segments = Span<Int32>{ ptr_win, m_comm_machine_size };
       m_owner_segments[m_comm_machine_rank] = m_comm_machine_rank;
     }
     if (ptr_win + m_comm_machine_rank != ptr_seg) {
@@ -210,18 +210,19 @@ segment()
 Span<std::byte> MpiDynamicMachineMemoryWindowBaseInternal::
 segment(Int32 rank)
 {
-  Int32 machine_rank = _worldToMachine(rank);
+  const Int32 machine_rank = _worldToMachine(rank);
+  const Int32 owner_segment = m_owner_segments[machine_rank];
 
   MPI_Aint size_seg;
   int size_type;
   std::byte* ptr_seg = nullptr;
-  int error = MPI_Win_shared_query(m_all_mpi_win[machine_rank], machine_rank, &size_seg, &size_type, &ptr_seg);
+  int error = MPI_Win_shared_query(m_all_mpi_win[owner_segment], owner_segment, &size_seg, &size_type, &ptr_seg);
 
   if (error != MPI_SUCCESS) {
     ARCCORE_FATAL("Error with MPI_Win_allocate_shared() call");
   }
 
-  return Span<std::byte>{ ptr_seg, m_sizeof_used_part[machine_rank] };
+  return Span<std::byte>{ ptr_seg, m_sizeof_used_part[owner_segment] };
 }
 
 /*---------------------------------------------------------------------------*/

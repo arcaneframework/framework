@@ -103,7 +103,7 @@ MpiMachineMemoryWindowBaseInternal(Int64 sizeof_segment, Int32 sizeof_type, cons
         ARCCORE_FATAL("Error with MPI_Win_shared_query() call");
       }
       if (i == 0) {
-        m_sizeof_segments_span = Span<Int64>{ ptr_seg, m_comm_machine_size };
+        m_sizeof_segments_span = SmallSpan<Int64>{ ptr_seg, m_comm_machine_size };
       }
 
       if (m_sizeof_segments_span.data() + i != ptr_seg) {
@@ -125,7 +125,7 @@ MpiMachineMemoryWindowBaseInternal(Int64 sizeof_segment, Int32 sizeof_type, cons
         ARCCORE_FATAL("Error with MPI_Win_shared_query() call");
       }
       if (i == 0) {
-        m_sum_sizeof_segments_span = Span<Int64>{ ptr_seg, m_comm_machine_size };
+        m_sum_sizeof_segments_span = SmallSpan<Int64>{ ptr_seg, m_comm_machine_size };
       }
 
       if (m_sum_sizeof_segments_span.data() + i != ptr_seg) {
@@ -144,7 +144,7 @@ MpiMachineMemoryWindowBaseInternal(Int64 sizeof_segment, Int32 sizeof_type, cons
       ARCCORE_FATAL("Error with MPI_Win_shared_query() call");
     }
 
-    m_sizeof_segments_span = Span<Int64>{ ptr_seg, m_comm_machine_size };
+    m_sizeof_segments_span = SmallSpan<Int64>{ ptr_seg, m_comm_machine_size };
   }
 
   // On crée une vue sur toute la fenêtre contenant les positions des segments.
@@ -158,7 +158,7 @@ MpiMachineMemoryWindowBaseInternal(Int64 sizeof_segment, Int32 sizeof_type, cons
       ARCCORE_FATAL("Error with MPI_Win_shared_query() call");
     }
 
-    m_sum_sizeof_segments_span = Span<Int64>{ ptr_seg, m_comm_machine_size };
+    m_sum_sizeof_segments_span = SmallSpan<Int64>{ ptr_seg, m_comm_machine_size };
   }
 #endif
 
