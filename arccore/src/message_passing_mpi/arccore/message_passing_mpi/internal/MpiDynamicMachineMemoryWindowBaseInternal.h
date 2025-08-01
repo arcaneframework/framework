@@ -41,6 +41,8 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiDynamicMachineMemoryWindowBaseInternal
  public:
 
   Int32 sizeofOneElem() const override;
+  ConstArrayView<Int32> machineRanks() const override;
+  void barrier() const override;
 
   Span<std::byte> segment() override;
   Span<std::byte> segment(Int32 rank) override;
@@ -49,16 +51,12 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiDynamicMachineMemoryWindowBaseInternal
   Int32 segmentOwner(Int32 rank) const override;
 
   void add(Span<const std::byte> elem) override;
+  void add() override;
 
   void exchangeSegmentWith(Int32 rank) override;
   void exchangeSegmentWith() override;
 
   void resetExchanges() override;
-
-  ConstArrayView<Int32> machineRanks() const override;
-
-  void syncAdd() override;
-  void barrier() const override;
 
   void reserve(Int64 new_capacity) override;
   void reserve() override;
@@ -70,9 +68,9 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiDynamicMachineMemoryWindowBaseInternal
 
  private:
 
-  bool _checkNeedRealloc() const;
   void _reallocBarrier(Int64 new_sizeof);
-  void _realloc(Int64 new_sizeof);
+  void _reallocBarrier();
+  void _reallocCollective(Int64 new_sizeof);
 
   Int32 _worldToMachine(Int32 world) const;
   Int32 _machineToWorld(Int32 machine) const;

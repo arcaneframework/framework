@@ -77,7 +77,7 @@ MpiDynamicMachineMemoryWindowBaseInternal(Int64 sizeof_segment, Int32 sizeof_typ
       int error = MPI_Win_shared_query(m_all_mpi_win[m_comm_machine_rank], m_comm_machine_rank, &size_seg, &size_type, &ptr_seg);
 
       if (error != MPI_SUCCESS) {
-        ARCCORE_FATAL("Error with MPI_Win_allocate_shared() call");
+        ARCCORE_FATAL("Error with MPI_Win_shared_query() call");
       }
 
       // Attention : L'utilisateur demande un nombre minimum d'éléments réservés.
@@ -103,7 +103,7 @@ MpiDynamicMachineMemoryWindowBaseInternal(Int64 sizeof_segment, Int32 sizeof_typ
       int error = MPI_Win_shared_query(m_win_need_resize, 0, &size_seg, &size_type, &ptr_win);
 
       if (error != MPI_SUCCESS) {
-        ARCCORE_FATAL("Error with MPI_Win_allocate_shared() call");
+        ARCCORE_FATAL("Error with MPI_Win_shared_query() call");
       }
 
       m_need_resize = Span<bool>{ ptr_win, m_comm_machine_size };
@@ -130,7 +130,7 @@ MpiDynamicMachineMemoryWindowBaseInternal(Int64 sizeof_segment, Int32 sizeof_typ
       int error = MPI_Win_shared_query(m_win_actual_sizeof, 0, &size_seg, &size_type, &ptr_win);
 
       if (error != MPI_SUCCESS) {
-        ARCCORE_FATAL("Error with MPI_Win_allocate_shared() call");
+        ARCCORE_FATAL("Error with MPI_Win_shared_query() call");
       }
 
       m_sizeof_used_part = Span<Int64>{ ptr_win, m_comm_machine_size };
@@ -157,7 +157,7 @@ MpiDynamicMachineMemoryWindowBaseInternal(Int64 sizeof_segment, Int32 sizeof_typ
       int error = MPI_Win_shared_query(m_win_owner_segments, 0, &size_seg, &size_type, &ptr_win);
 
       if (error != MPI_SUCCESS) {
-        ARCCORE_FATAL("Error with MPI_Win_allocate_shared() call");
+        ARCCORE_FATAL("Error with MPI_Win_shared_query() call");
       }
 
       m_owner_segments = Span<Int32>{ ptr_win, m_comm_machine_size };
@@ -184,6 +184,8 @@ MpiDynamicMachineMemoryWindowBaseInternal::
     MPI_Win_free(&m_all_mpi_win[i]);
   }
   MPI_Win_free(&m_win_need_resize);
+  MPI_Win_free(&m_win_actual_sizeof);
+  MPI_Win_free(&m_win_owner_segments);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -193,6 +195,24 @@ Int32 MpiDynamicMachineMemoryWindowBaseInternal::
 sizeofOneElem() const
 {
   return m_sizeof_type;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+ConstArrayView<Int32> MpiDynamicMachineMemoryWindowBaseInternal::
+machineRanks() const
+{
+  return m_machine_ranks;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MpiDynamicMachineMemoryWindowBaseInternal::
+barrier() const
+{
+  MPI_Barrier(m_comm_machine);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -219,7 +239,7 @@ segment(Int32 rank)
   int error = MPI_Win_shared_query(m_all_mpi_win[owner_segment], owner_segment, &size_seg, &size_type, &ptr_seg);
 
   if (error != MPI_SUCCESS) {
-    ARCCORE_FATAL("Error with MPI_Win_allocate_shared() call");
+    ARCCORE_FATAL("Error with MPI_Win_shared_query() call");
   }
 
   return Span<std::byte>{ ptr_seg, m_sizeof_used_part[owner_segment] };
@@ -249,25 +269,37 @@ segmentOwner(Int32 rank) const
 void MpiDynamicMachineMemoryWindowBaseInternal::
 add(Span<const std::byte> elem)
 {
-  if (elem.size() != m_sizeof_type) {
+  if (elem.size() % m_sizeof_type) {
     ARCCORE_FATAL("Sizeof elem not valid");
   }
 
   const Int64 actual_sizeof_win = m_sizeof_used_part[m_owner_segment];
-  const Int64 future_sizeof_win = actual_sizeof_win + m_sizeof_type;
+  const Int64 future_sizeof_win = actual_sizeof_win + elem.size();
   const Int64 old_reserved = m_reserved_part_span.size();
 
   if (future_sizeof_win > old_reserved) {
-    _reallocBarrier(old_reserved * 2);
+    _reallocBarrier(future_sizeof_win);
     if (m_reserved_part_span.size() < future_sizeof_win) {
       ARCCORE_FATAL("Bad realloc -- Old size : {0} -- New size : {1} -- Needed size : {2}", old_reserved, m_reserved_part_span.size(), future_sizeof_win);
     }
+  }
+  else {
+    _reallocBarrier();
   }
 
   for (Int64 pos_win = actual_sizeof_win, pos_elem = 0; pos_win < future_sizeof_win; ++pos_win, ++pos_elem) {
     m_reserved_part_span[pos_win] = elem[pos_elem];
   }
   m_sizeof_used_part[m_owner_segment] = future_sizeof_win;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MpiDynamicMachineMemoryWindowBaseInternal::
+add()
+{
+  _reallocBarrier();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -306,7 +338,7 @@ exchangeSegmentWith(Int32 rank)
   int error = MPI_Win_shared_query(m_all_mpi_win[m_owner_segment], m_owner_segment, &size_seg, &size_type, &ptr_seg);
 
   if (error != MPI_SUCCESS) {
-    ARCCORE_FATAL("Error with MPI_Win_allocate_shared() call");
+    ARCCORE_FATAL("Error with MPI_Win_shared_query() call");
   }
 
   m_reserved_part_span = Span<std::byte>{ ptr_seg, size_seg };
@@ -338,41 +370,10 @@ resetExchanges()
   int error = MPI_Win_shared_query(m_all_mpi_win[m_owner_segment], m_owner_segment, &size_seg, &size_type, &ptr_seg);
 
   if (error != MPI_SUCCESS) {
-    ARCCORE_FATAL("Error with MPI_Win_allocate_shared() call");
+    ARCCORE_FATAL("Error with MPI_Win_shared_query() call");
   }
 
   m_reserved_part_span = Span<std::byte>{ ptr_seg, size_seg };
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ConstArrayView<Int32> MpiDynamicMachineMemoryWindowBaseInternal::
-machineRanks() const
-{
-  return m_machine_ranks;
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void MpiDynamicMachineMemoryWindowBaseInternal::
-syncAdd()
-{
-  MPI_Barrier(m_comm_machine);
-  if (_checkNeedRealloc()) {
-    _realloc(0);
-    syncAdd();
-  }
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void MpiDynamicMachineMemoryWindowBaseInternal::
-barrier() const
-{
-  MPI_Barrier(m_comm_machine);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -382,11 +383,11 @@ void MpiDynamicMachineMemoryWindowBaseInternal::
 reserve(Int64 new_capacity)
 {
   if (new_capacity <= m_reserved_part_span.size()) {
-    MPI_Barrier(m_comm_machine);
-    _realloc(0);
-    return;
+    _reallocBarrier();
   }
-  _reallocBarrier(new_capacity);
+  else {
+    _reallocBarrier(new_capacity);
+  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -395,8 +396,7 @@ reserve(Int64 new_capacity)
 void MpiDynamicMachineMemoryWindowBaseInternal::
 reserve()
 {
-  MPI_Barrier(m_comm_machine);
-  _realloc(0);
+  _reallocBarrier();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -406,8 +406,7 @@ void MpiDynamicMachineMemoryWindowBaseInternal::
 resize(Int64 new_size)
 {
   if (new_size == -1) {
-    MPI_Barrier(m_comm_machine);
-    _realloc(0);
+    _reallocBarrier();
     return;
   }
 
@@ -423,8 +422,9 @@ resize(Int64 new_size)
       ARCCORE_FATAL("Bad realloc -- Old size : {0} -- New size : {1} -- Needed size : {2}", old_reserved, m_reserved_part_span.size(), new_size);
     }
   }
-  MPI_Barrier(m_comm_machine);
-  _realloc(0);
+  else {
+    _reallocBarrier();
+  }
   m_sizeof_used_part[m_owner_segment] = new_size;
 }
 
@@ -434,8 +434,7 @@ resize(Int64 new_size)
 void MpiDynamicMachineMemoryWindowBaseInternal::
 resize()
 {
-  MPI_Barrier(m_comm_machine);
-  _realloc(0);
+  _reallocBarrier();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -445,11 +444,11 @@ void MpiDynamicMachineMemoryWindowBaseInternal::
 shrink()
 {
   if (m_reserved_part_span.size() == m_sizeof_used_part[m_owner_segment]) {
-    MPI_Barrier(m_comm_machine);
-    _realloc(0);
-    return;
+    _reallocBarrier();
   }
-  _reallocBarrier(m_sizeof_used_part[m_owner_segment]);
+  else {
+    _reallocBarrier(m_sizeof_used_part[m_owner_segment]);
+  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -460,10 +459,8 @@ _reallocBarrier(Int64 new_sizeof)
 {
   m_need_resize[m_owner_segment] = true;
 
-  // Barrier permettant de lancer le _checkNeedRealloc() des autres procs.
   MPI_Barrier(m_comm_machine);
-
-  _realloc(new_sizeof);
+  _reallocCollective(new_sizeof);
 
   m_need_resize[m_owner_segment] = false;
 }
@@ -471,21 +468,18 @@ _reallocBarrier(Int64 new_sizeof)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-bool MpiDynamicMachineMemoryWindowBaseInternal::
-_checkNeedRealloc() const
+void MpiDynamicMachineMemoryWindowBaseInternal::
+_reallocBarrier()
 {
-  for (const bool elem : m_need_resize) {
-    if (elem)
-      return true;
-  }
-  return false;
+  MPI_Barrier(m_comm_machine);
+  _reallocCollective(0);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void MpiDynamicMachineMemoryWindowBaseInternal::
-_realloc(Int64 new_sizeof)
+_reallocCollective(Int64 new_sizeof)
 {
   ARCCORE_ASSERT(new_sizeof >= 0, ("New size must be >= 0"));
   ARCCORE_ASSERT(new_sizeof % m_sizeof_type == 0, ("New size must be % sizeof type"));
@@ -503,23 +497,30 @@ _realloc(Int64 new_sizeof)
     MPI_Win old_win = m_all_mpi_win[i];
 
     std::byte* ptr_seg = nullptr;
-    int error = MPI_Win_allocate_shared(size_seg, m_sizeof_type, win_info, m_comm_machine, &ptr_seg, &m_all_mpi_win[i]);
 
+    // Si size_seg == 0 alors ptr_seg == nullptr.
+    int error = MPI_Win_allocate_shared(size_seg, m_sizeof_type, win_info, m_comm_machine, &ptr_seg, &m_all_mpi_win[i]);
     if (error != MPI_SUCCESS) {
+      MPI_Info_free(&win_info);
       ARCCORE_FATAL("Error with MPI_Win_allocate_shared() call");
     }
 
     if (m_owner_segment == i) {
-      const Int64 min_size = std::min(new_sizeof, m_sizeof_used_part[m_owner_segment]);
-      memcpy(ptr_seg, m_reserved_part_span.data(), min_size);
 
       MPI_Aint mpi_reserved_size_seg;
       int size_type;
-      error = MPI_Win_shared_query(m_all_mpi_win[m_owner_segment], m_owner_segment, &mpi_reserved_size_seg, &size_type, &ptr_seg);
 
-      if (error != MPI_SUCCESS) {
-        ARCCORE_FATAL("Error with MPI_Win_allocate_shared() call");
+      // Ici, ptr_seg n'est jamais == nullptr vu que l'on fait toujours un segment d'une taille d'au moins
+      // m_sizeof_type.
+      error = MPI_Win_shared_query(m_all_mpi_win[m_owner_segment], m_owner_segment, &mpi_reserved_size_seg, &size_type, &ptr_seg);
+      if (error != MPI_SUCCESS || ptr_seg == nullptr) {
+        MPI_Win_free(&old_win);
+        MPI_Info_free(&win_info);
+        ARCCORE_FATAL("Error with MPI_Win_shared_query() call");
       }
+
+      const Int64 min_size = std::min(new_sizeof, m_sizeof_used_part[m_owner_segment]);
+      memcpy(ptr_seg, m_reserved_part_span.data(), min_size);
 
       m_reserved_part_span = Span<std::byte>{ ptr_seg, mpi_reserved_size_seg };
     }

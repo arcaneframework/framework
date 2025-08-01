@@ -33,6 +33,7 @@ namespace Arcane::MessagePassing::Mpi
 
 class MpiMachineMemoryWindowBaseInternal;
 class MpiDynamicMachineMemoryWindowBaseInternal;
+class MpiDynamicMultiMachineMemoryWindowBaseInternal;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -49,6 +50,7 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiMachineMemoryWindowBaseInternalCreator
 
   MpiMachineMemoryWindowBaseInternal* createWindow(Int64 sizeof_segment, Int32 sizeof_type) const;
   MpiDynamicMachineMemoryWindowBaseInternal* createDynamicWindow(Int64 sizeof_segment, Int32 sizeof_type) const;
+  MpiDynamicMultiMachineMemoryWindowBaseInternal* createDynamicMultiWindow(SmallSpan<Int64> sizeof_segments, Int32 nb_segments_per_proc, Int32 sizeof_type) const;
 
   ConstArrayView<Int32> machineRanks() const;
 

@@ -39,8 +39,8 @@ namespace Arcane::MessagePassing
  * être redimensionnés (une fenêtre par processus et un segment par fenêtre).
  *
  * La méthode add() pouvant vouloir redimensionner un segment, et ce
- * redimensionnement étant une opération collective, un appel à syncAdd() doit
- * être réalisé après les add().
+ * redimensionnement étant une opération collective, l'appel à add() est donc
+ * une opération collective
  *
  * Afin d'avoir des add() non concurrents, cette opération est possible
  * uniquement sur le segment que nous possédons.
@@ -64,6 +64,22 @@ class ARCCORE_MESSAGEPASSING_EXPORT IDynamicMachineMemoryWindowBaseInternal
    * \return La taille d'un élement.
    */
   virtual Int32 sizeofOneElem() const = 0;
+
+  /*!
+   * \brief Méthode permettant d'obtenir les rangs qui possèdent un segment
+   * dans la fenêtre.
+   *
+   * Appel non collectif.
+   *
+   * \return Une vue contenant les ids des rangs.
+   */
+  virtual ConstArrayView<Int32> machineRanks() const = 0;
+
+  /*!
+   * \brief Méthode permettant d'attendre que tous les processus/threads
+   * du noeud appellent cette méthode pour continuer l'exécution.
+   */
+  virtual void barrier() const = 0;
 
   /*!
    * \brief Méthode permettant d'obtenir une vue sur le segment que nous
@@ -112,37 +128,30 @@ class ARCCORE_MESSAGEPASSING_EXPORT IDynamicMachineMemoryWindowBaseInternal
    *
    * Méthode utile lors de l'échange de segments.
    *
+   * \param rank Le rang du sous-domaine.
    * \return Le propriétaire du segment.
    */
   virtual Int32 segmentOwner(Int32 rank) const = 0;
 
   /*!
-   * \brief Méthode permettant d'ajouter un ou plusieurs éléments dans le
-   * segment que nous possédons.
+   * \brief Méthode permettant d'ajouter des élements dans le segment que nous
+   * possédons.
    *
-   * L'appel à cette méthode n'est pas collectif mais peut nécessiter des
-   * synchronisations si elle a besoin de redimensionner le segment.
-   * Une barrier spécifique est disponible (syncAdd()) et doit être mise juste
-   * après les add(). Les autres méthodes collectives ne doivent surtout pas
-   * être appelées entre les add() et le syncAdd() (sinon deadlock).
+   * Appel collectif.
    *
-   * Chaque processus est libre de faire autant de add() qu'il veut avant le
-   * syncAdd(). Pas besoin d'avoir le même nombre de add() par processus.
+   * Si le segment est trop petit, il sera redimensionné.
    *
-   * \param elem Le ou les élements à ajouter.
+   * Les sous-domaines ne souhaitant pas ajouter d'éléments peuvent appeler la
+   * méthode \a add() sans paramètres ou cette méthode avec une vue vide.
+   *
+   * \param elem Les éléments à ajouter.
    */
   virtual void add(Span<const std::byte> elem) = 0;
 
   /*!
-   * \brief Méthode permettant de synchroniser les add().
-   *
-   * Appel collectif.
-   *
-   * Cette méthode doit être appelée après le ou les add() du ou des
-   * processus. Aucun appel collectif ne doit être fait entre les add() et
-   * le syncAdd().
+   * Voir \a add(Span<const std::byte> elem).
    */
-  virtual void syncAdd() = 0;
+  virtual void add() = 0;
 
   /*!
    * \brief Méthode permettant d'échanger le segment que nous possédons avec
@@ -181,22 +190,6 @@ class ARCCORE_MESSAGEPASSING_EXPORT IDynamicMachineMemoryWindowBaseInternal
    * Chaque processus retrouvera son segment.
    */
   virtual void resetExchanges() = 0;
-
-  /*!
-   * \brief Méthode permettant d'obtenir les rangs qui possèdent un segment
-   * dans la fenêtre.
-   *
-   * Appel non collectif.
-   *
-   * \return Une vue contenant les ids des rangs.
-   */
-  virtual ConstArrayView<Int32> machineRanks() const = 0;
-
-  /*!
-   * \brief Méthode permettant d'attendre que tous les processus/threads
-   * du noeud appellent cette méthode pour continuer l'exécution.
-   */
-  virtual void barrier() const = 0;
 
   /*!
    * \brief Méthode permettant de réserver de l'espace mémoire dans le segment
