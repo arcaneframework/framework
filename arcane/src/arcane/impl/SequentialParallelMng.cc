@@ -435,6 +435,11 @@ class SequentialDynamicMachineMemoryWindowBaseInternal
   {
     return m_sizeof_type;
   }
+  ConstArrayView<Int32> machineRanks() const override
+  {
+    return ConstArrayView<Int32>{ 1, &m_my_rank };
+  }
+  void barrier() const override {}
 
   Span<std::byte> segment() override
   {
@@ -465,6 +470,7 @@ class SequentialDynamicMachineMemoryWindowBaseInternal
     }
     m_segment.addRange(elem);
   }
+  void add() override {}
   void exchangeSegmentWith(Int32 rank) override
   {
     if (rank != 0) {
@@ -473,12 +479,6 @@ class SequentialDynamicMachineMemoryWindowBaseInternal
   }
   void exchangeSegmentWith() override {}
   void resetExchanges() override {}
-  ConstArrayView<Int32> machineRanks() const override
-  {
-    return ConstArrayView<Int32>{ 1, &m_my_rank };
-  }
-  void syncAdd() override {}
-  void barrier() const override {}
   void reserve(Int64 new_capacity) override
   {
     m_segment.reserve(new_capacity);

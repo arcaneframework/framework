@@ -1134,66 +1134,94 @@ _testMachineMemoryWindow()
     test.segmentView()[0] = my_rank * 100;
     test.reserve(3);
     {
-      auto _ = DynamicMachineMemoryWindow<Integer>::Addition(&test);
+      UniqueArray<Integer> buf;
       if (my_rank == 0) {
-        test.add(local_iter++ + my_rank * 100);
-        test.add(local_iter++ + my_rank * 100);
-        test.add(local_iter++ + my_rank * 100);
-        test.add(local_iter++ + my_rank * 100);
-        test.add(local_iter++ + my_rank * 100);
-        test.add(local_iter++ + my_rank * 100);
-        test.add(local_iter++ + my_rank * 100);
-        test.add(local_iter++ + my_rank * 100);
-        test.add(local_iter++ + my_rank * 100);
-        test.add(local_iter++ + my_rank * 100);
+        buf.add(local_iter++ + my_rank * 100);
+        buf.add(local_iter++ + my_rank * 100);
+        buf.add(local_iter++ + my_rank * 100);
+        buf.add(local_iter++ + my_rank * 100);
+        buf.add(local_iter++ + my_rank * 100);
+        buf.add(local_iter++ + my_rank * 100);
+        buf.add(local_iter++ + my_rank * 100);
+        buf.add(local_iter++ + my_rank * 100);
+        buf.add(local_iter++ + my_rank * 100);
+        buf.add(local_iter++ + my_rank * 100);
+        test.add(buf);
+      }
+      else if (my_rank == 1 || my_rank == 2) {
+        buf.add(local_iter++ + my_rank * 100);
+        buf.add(local_iter++ + my_rank * 100);
+        buf.add(local_iter++ + my_rank * 100);
+        buf.add(local_iter++ + my_rank * 100);
+        buf.add(local_iter++ + my_rank * 100);
+        test.add(buf);
       }
       else {
-        test.add(local_iter++ + my_rank * 100);
-        test.add(local_iter++ + my_rank * 100);
-        test.add(local_iter++ + my_rank * 100);
-        test.add(local_iter++ + my_rank * 100);
-        test.add(local_iter++ + my_rank * 100);
+        test.add();
       }
     }
 
     debug() << "Elem in win : " << test.segmentView();
+    debug() << "Owner win : " << test.segmentOwner();
 
     if (my_rank == 0) {
       test.exchangeSegmentWith(1);
+      // test.reserve(20);
     }
     else if (my_rank == 1) {
       test.exchangeSegmentWith(0);
+      // test.reserve(0);
     }
     else {
       test.exchangeSegmentWith(my_rank);
+      // test.reserve();
     }
 
     debug() << "Elem in win : " << test.segmentView();
+    debug() << "Owner win : " << test.segmentOwner();
 
+    if (my_rank == 2) {
+      test.exchangeSegmentWith(1);
+      // test.reserve(20);
+    }
+    else if (my_rank == 1) {
+      test.exchangeSegmentWith(2);
+      // test.reserve(0);
+    }
+    else {
+      test.exchangeSegmentWith(my_rank);
+      // test.reserve();
+    }
+    debug() << "Elem in win : " << test.segmentView();
+    debug() << "Owner win : " << test.segmentOwner();
     {
-      auto _ = DynamicMachineMemoryWindow<Integer>::Addition(&test);
+      UniqueArray<Integer> buf;
       if (my_rank == 0) {
-        test.add(local_iter++ + my_rank * 100);
-        test.add(local_iter++ + my_rank * 100);
-        test.add(local_iter++ + my_rank * 100);
-        test.add(local_iter++ + my_rank * 100);
-        test.add(local_iter++ + my_rank * 100);
-        test.add(local_iter++ + my_rank * 100);
-        test.add(local_iter++ + my_rank * 100);
-        test.add(local_iter++ + my_rank * 100);
-        test.add(local_iter++ + my_rank * 100);
-        test.add(local_iter++ + my_rank * 100);
+        buf.add(local_iter++ + my_rank * 100);
+        buf.add(local_iter++ + my_rank * 100);
+        buf.add(local_iter++ + my_rank * 100);
+        buf.add(local_iter++ + my_rank * 100);
+        buf.add(local_iter++ + my_rank * 100);
+        buf.add(local_iter++ + my_rank * 100);
+        buf.add(local_iter++ + my_rank * 100);
+        buf.add(local_iter++ + my_rank * 100);
+        buf.add(local_iter++ + my_rank * 100);
+        buf.add(local_iter++ + my_rank * 100);
+      }
+      else if (my_rank == 1 || my_rank == 2) {
+        buf.add(local_iter++ + my_rank * 100);
+        buf.add(local_iter++ + my_rank * 100);
+        buf.add(local_iter++ + my_rank * 100);
+        buf.add(local_iter++ + my_rank * 100);
+        buf.add(local_iter++ + my_rank * 100);
       }
       else {
-        test.add(local_iter++ + my_rank * 100);
-        test.add(local_iter++ + my_rank * 100);
-        test.add(local_iter++ + my_rank * 100);
-        test.add(local_iter++ + my_rank * 100);
-        test.add(local_iter++ + my_rank * 100);
       }
+      test.add(buf);
     }
 
     debug() << "Elem in win : " << test.segmentView();
+    debug() << "Owner win : " << test.segmentOwner();
 
     if (my_rank == 0) {
       test.exchangeSegmentWith(1);
@@ -1204,8 +1232,14 @@ _testMachineMemoryWindow()
     else {
       test.exchangeSegmentWith(my_rank);
     }
-
     debug() << "Elem in win : " << test.segmentView();
+    debug() << "Owner win : " << test.segmentOwner();
+    test.shrink();
+    debug() << "Elem in win : " << test.segmentView();
+    debug() << "Owner win : " << test.segmentOwner();
+    test.resetExchanges();
+    debug() << "Elem in win : " << test.segmentView();
+    debug() << "Owner win : " << test.segmentOwner();
   }
 }
 

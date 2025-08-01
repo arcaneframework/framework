@@ -32,11 +32,13 @@ namespace MessagePassing
 {
   class IMachineMemoryWindowBaseInternal;
   class HybridMachineMemoryWindowBaseInternal;
+  class HybridDynamicMachineMemoryWindowBaseInternal;
 
   namespace Mpi
   {
     class MpiMachineMemoryWindowBaseInternalCreator;
-  }
+    class MpiDynamicMultiMachineMemoryWindowBaseInternal;
+  } // namespace Mpi
 } // namespace MessagePassing
 } // namespace Arcane
 
@@ -59,6 +61,7 @@ class HybridMachineMemoryWindowBaseInternalCreator
  public:
 
   HybridMachineMemoryWindowBaseInternal* createWindow(Int32 my_rank_global, Int64 sizeof_segment, Int32 sizeof_type, MpiParallelMng* mpi_parallel_mng);
+  HybridDynamicMachineMemoryWindowBaseInternal* createDynamicWindow(Int32 my_rank_global, Int64 sizeof_segment, Int32 sizeof_type, MpiParallelMng* mpi_parallel_mng);
 
  private:
 
@@ -73,8 +76,10 @@ class HybridMachineMemoryWindowBaseInternalCreator
   Ref<IMachineMemoryWindowBaseInternal> m_sizeof_sub_segments;
   Ref<IMachineMemoryWindowBaseInternal> m_sum_sizeof_sub_segments;
   UniqueArray<Int32> m_machine_ranks;
+  //-----------
+  Mpi::MpiDynamicMultiMachineMemoryWindowBaseInternal* m_windows;
+  std::unique_ptr<Int64[]> m_sizeof_resize_segments;
 };
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 

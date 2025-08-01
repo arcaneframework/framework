@@ -36,26 +36,6 @@ namespace Arcane
 template <class Type>
 class DynamicMachineMemoryWindow
 {
- public:
-
-  class Addition
-  {
-   public:
-
-    explicit Addition(DynamicMachineMemoryWindow* t)
-    : m_base(t)
-    {
-      m_base->enableAdditionPhase();
-    }
-    ~Addition() ARCANE_NOEXCEPT_FALSE
-    {
-      m_base->disableAdditionPhase();
-    }
-
-   private:
-
-    DynamicMachineMemoryWindow* m_base;
-  };
 
  public:
 
@@ -87,10 +67,15 @@ class DynamicMachineMemoryWindow
     return m_impl.segmentOwner(rank);
   }
 
-  void add(const Type& elem) const
+  void add(Span<const Type> elem) const
   {
-    auto ptr_elem = reinterpret_cast<const std::byte*>(&elem);
-    m_impl.add({ ptr_elem, sizeof(Type) });
+    const Span<const std::byte> span_bytes(reinterpret_cast<const std::byte*>(elem.data()), elem.sizeBytes());
+    m_impl.add(span_bytes);
+  }
+
+  void add() const
+  {
+    m_impl.add();
   }
 
   void exchangeSegmentWith(Int32 rank) const
@@ -116,16 +101,6 @@ class DynamicMachineMemoryWindow
   void barrier() const
   {
     m_impl.barrier();
-  }
-
-  void enableAdditionPhase()
-  {
-    m_impl.enableAdditionPhase();
-  }
-
-  void disableAdditionPhase()
-  {
-    m_impl.disableAdditionPhase();
   }
 
   void reserve(Int64 new_capacity) const

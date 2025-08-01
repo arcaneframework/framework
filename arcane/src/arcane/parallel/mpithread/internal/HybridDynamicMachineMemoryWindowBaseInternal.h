@@ -5,46 +5,51 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* SharedMemoryDynamicMachineMemoryWindowBaseInternal.h        (C) 2000-2025 */
+/* HybridDynamicMachineMemoryWindowBaseInternal.h              (C) 2000-2025 */
 /*                                                                           */
 /* Classe permettant de créer une fenêtre mémoire pour l'ensemble des        */
-/* sous-domaines en mémoire partagée.                                        */
+/* sous-domaines en mémoire partagée des processus du même noeud.            */
 /*---------------------------------------------------------------------------*/
 
-#ifndef ARCANE_PARALLEL_THREAD_INTERNAL_SHAREDMEMORYDYNAMICMACHINEMEMORYWINDOWBASEINTERNAL_H
-#define ARCANE_PARALLEL_THREAD_INTERNAL_SHAREDMEMORYDYNAMICMACHINEMEMORYWINDOWBASEINTERNAL_H
+#ifndef ARCANE_PARALLEL_MPITHREAD_INTERNAL_HYBRIDDYNAMICMACHINEMEMORYWINDOWBASEINTERNAL_H
+#define ARCANE_PARALLEL_MPITHREAD_INTERNAL_HYBRIDDYNAMICMACHINEMEMORYWINDOWBASEINTERNAL_H
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+#include "arcane/utils/Ref.h"
 
 #include "arccore/message_passing/internal/IDynamicMachineMemoryWindowBaseInternal.h"
-
-#include "arcane/core/ArcaneTypes.h"
-#include "arcane/utils/Ref.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 namespace Arcane::MessagePassing
 {
+namespace Mpi
+{
+  class MpiDynamicMultiMachineMemoryWindowBaseInternal;
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class ARCANE_THREAD_EXPORT SharedMemoryDynamicMachineMemoryWindowBaseInternal
+class HybridDynamicMachineMemoryWindowBaseInternal
 : public IDynamicMachineMemoryWindowBaseInternal
 {
  public:
 
-  SharedMemoryDynamicMachineMemoryWindowBaseInternal(Int32 my_rank, Int32 nb_rank, ConstArrayView<Int32> ranks, Int32 sizeof_type, UniqueArray<std::byte>* windows, Int32* owner_segments, IThreadBarrier* barrier);
+  HybridDynamicMachineMemoryWindowBaseInternal(Int32 my_rank_mpi, Int32 my_rank_local_proc, Int32 nb_rank_local_proc, ConstArrayView<Int32> ranks, Int32 sizeof_type,
+                                               Mpi::MpiDynamicMultiMachineMemoryWindowBaseInternal* mpi_windows, IThreadBarrier* barrier);
 
-  ~SharedMemoryDynamicMachineMemoryWindowBaseInternal() override;
+  ~HybridDynamicMachineMemoryWindowBaseInternal() override;
 
  public:
 
   Int32 sizeofOneElem() const override;
   ConstArrayView<Int32> machineRanks() const override;
   void barrier() const override;
+
   Span<std::byte> segment() override;
   Span<std::byte> segment(Int32 rank) override;
 
@@ -52,7 +57,7 @@ class ARCANE_THREAD_EXPORT SharedMemoryDynamicMachineMemoryWindowBaseInternal
   Int32 segmentOwner(Int32 rank) const override;
 
   void add(Span<const std::byte> elem) override;
-  void add() override {}
+  void add() override;
 
   void exchangeSegmentWith(Int32 rank) override;
   void exchangeSegmentWith() override;
@@ -60,23 +65,25 @@ class ARCANE_THREAD_EXPORT SharedMemoryDynamicMachineMemoryWindowBaseInternal
   void resetExchanges() override;
 
   void reserve(Int64 new_capacity) override;
-  void reserve() override {}
+  void reserve() override;
 
   void resize(Int64 new_size) override;
-  void resize() override {}
+  void resize() override;
 
   void shrink() override;
 
  private:
 
-  Int32 m_my_rank;
-  ConstArrayView<Int32> m_ranks;
+  Int32 m_my_rank_local_proc;
+  Int32 m_nb_rank_local_proc;
+  Int32 m_my_rank_mpi;
+
+  ConstArrayView<Int32> m_machine_ranks;
+
   Int32 m_sizeof_type;
-  UniqueArray<std::byte>* m_windows;
-  SmallSpan<UniqueArray<std::byte>> m_windows_span;
-  Int32* m_owner_segments;
-  SmallSpan<Int32> m_owner_segments_span;
-  IThreadBarrier* m_barrier;
+  Mpi::MpiDynamicMultiMachineMemoryWindowBaseInternal* m_mpi_windows;
+
+  IThreadBarrier* m_thread_barrier;
 };
 
 /*---------------------------------------------------------------------------*/

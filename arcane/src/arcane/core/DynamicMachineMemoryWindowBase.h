@@ -47,28 +47,6 @@ class ARCANE_CORE_EXPORT DynamicMachineMemoryWindowBase
 
  public:
 
-  class ARCANE_CORE_EXPORT Addition
-  {
-   public:
-
-    explicit Addition(DynamicMachineMemoryWindowBase* t)
-    : m_base(t)
-    {
-      m_base->enableAdditionPhase();
-    }
-
-    ~Addition() ARCANE_NOEXCEPT_FALSE
-    {
-      m_base->disableAdditionPhase();
-    }
-
-   private:
-
-    DynamicMachineMemoryWindowBase* m_base; //!< Timer associé
-  };
-
- public:
-
   DynamicMachineMemoryWindowBase(IParallelMng* pm, Int64 sizeof_segment, Int32 sizeof_elem);
 
  public:
@@ -80,6 +58,7 @@ class ARCANE_CORE_EXPORT DynamicMachineMemoryWindowBase
   Int32 segmentOwner(Int32 rank) const;
 
   void add(Span<const std::byte> elem) const;
+  void add() const;
 
   void exchangeSegmentWith(Int32 rank) const;
   void exchangeSegmentWith() const;
@@ -88,9 +67,6 @@ class ARCANE_CORE_EXPORT DynamicMachineMemoryWindowBase
   ConstArrayView<Int32> machineRanks() const;
 
   void barrier() const;
-
-  void enableAdditionPhase();
-  void disableAdditionPhase();
 
   void reserve(Int64 new_nb_elem_segment_capacity) const;
   void reserve() const;
@@ -105,7 +81,6 @@ class ARCANE_CORE_EXPORT DynamicMachineMemoryWindowBase
   IParallelMngInternal* m_pm_internal;
   Ref<MessagePassing::IDynamicMachineMemoryWindowBaseInternal> m_node_window_base;
   Int32 m_sizeof_elem;
-  bool m_is_add_enabled;
 };
 
 /*---------------------------------------------------------------------------*/

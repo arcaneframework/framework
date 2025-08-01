@@ -18,12 +18,14 @@
 
 #include "arcane/parallel/mpi/MpiParallelMng.h"
 #include "arcane/parallel/mpithread/internal/HybridMachineMemoryWindowBaseInternal.h"
+#include "arcane/parallel/mpithread/internal/HybridDynamicMachineMemoryWindowBaseInternal.h"
 #include "arcane/parallel/mpithread/HybridMessageQueue.h"
 
 #include "arccore/concurrency/IThreadBarrier.h"
 #include "arccore/message_passing_mpi/internal/MpiAdapter.h"
 #include "arccore/message_passing_mpi/internal/MpiMachineMemoryWindowBaseInternalCreator.h"
 #include "arccore/message_passing_mpi/internal/MpiMachineMemoryWindowBaseInternal.h"
+#include "arccore/message_passing_mpi/internal/MpiDynamicMultiMachineMemoryWindowBaseInternal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -39,6 +41,7 @@ HybridMachineMemoryWindowBaseInternalCreator(Int32 nb_rank_local_proc, IThreadBa
 : m_nb_rank_local_proc(nb_rank_local_proc)
 , m_sizeof_segment_local_proc(0)
 , m_barrier(barrier)
+, m_windows(nullptr)
 {}
 
 /*---------------------------------------------------------------------------*/
@@ -60,7 +63,9 @@ createWindow(Int32 my_rank_global, Int64 sizeof_segment, Int32 sizeof_type, MpiP
 
   if (my_rank_local_proc == 0) {
     mpi_window_creator = mpi_parallel_mng->adapter()->windowCreator();
-    _buildMachineRanksArray(mpi_window_creator);
+    if (m_machine_ranks.empty()) {
+      _buildMachineRanksArray(mpi_window_creator);
+    }
 
     // Le nombre d'éléments de chaque segment. Cette fenêtre fera une taille de nb_thread * nb_proc_sur_le_même_noeud.
     m_sizeof_sub_segments = makeRef(mpi_window_creator->createWindow(m_nb_rank_local_proc * static_cast<Int64>(sizeof(Int64)), sizeof(Int64)));
@@ -85,7 +90,6 @@ createWindow(Int32 my_rank_global, Int64 sizeof_segment, Int32 sizeof_type, MpiP
   }
   m_barrier->wait();
 
-
   if (my_rank_local_proc == 0) {
     m_window = makeRef(mpi_window_creator->createWindow(m_sizeof_segment_local_proc, sizeof_type));
   }
@@ -99,6 +103,46 @@ createWindow(Int32 my_rank_global, Int64 sizeof_segment, Int32 sizeof_type, MpiP
   m_sum_sizeof_sub_segments.reset();
   m_sizeof_segment_local_proc = 0;
   m_window.reset();
+
+  return window_obj;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+HybridDynamicMachineMemoryWindowBaseInternal* HybridMachineMemoryWindowBaseInternalCreator::
+createDynamicWindow(Int32 my_rank_global, Int64 sizeof_segment, Int32 sizeof_type, MpiParallelMng* mpi_parallel_mng)
+{
+  FullRankInfo my_fri = FullRankInfo::compute(MP::MessageRank(my_rank_global), m_nb_rank_local_proc);
+  Int32 my_rank_local_proc = my_fri.localRankValue();
+  Int32 my_rank_mpi = my_fri.mpiRankValue();
+
+  Mpi::MpiMachineMemoryWindowBaseInternalCreator* mpi_window_creator = nullptr;
+
+  if (my_rank_local_proc == 0) {
+    mpi_window_creator = mpi_parallel_mng->adapter()->windowCreator();
+    if (m_machine_ranks.empty()) {
+      _buildMachineRanksArray(mpi_window_creator);
+    }
+
+    m_sizeof_resize_segments = std::make_unique<Int64[]>(m_nb_rank_local_proc);
+  }
+  m_barrier->wait();
+
+  m_sizeof_resize_segments[my_rank_local_proc] = sizeof_segment;
+  m_barrier->wait();
+
+  if (my_rank_local_proc == 0) {
+    m_windows = mpi_window_creator->createDynamicMultiWindow(SmallSpan<Int64>{ m_sizeof_resize_segments.get(), m_nb_rank_local_proc }, m_nb_rank_local_proc, sizeof_type);
+    m_sizeof_resize_segments.reset();
+  }
+  m_barrier->wait();
+
+  auto* window_obj = new HybridDynamicMachineMemoryWindowBaseInternal(my_rank_mpi, my_rank_local_proc, m_nb_rank_local_proc, m_machine_ranks, sizeof_type, m_windows, m_barrier);
+  m_barrier->wait();
+
+  // Ces tableaux doivent être delete par HybridDynamicMachineMemoryWindowBaseInternal (rang local 0 uniquement).
+  m_windows = nullptr;
 
   return window_obj;
 }

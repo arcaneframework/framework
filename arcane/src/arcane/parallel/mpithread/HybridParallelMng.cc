@@ -33,6 +33,7 @@
 #include "arcane/parallel/mpithread/HybridMessageQueue.h"
 #include "arcane/parallel/mpithread/internal/HybridMachineMemoryWindowBaseInternalCreator.h"
 #include "arcane/parallel/mpithread/internal/HybridMachineMemoryWindowBaseInternal.h"
+#include "arcane/parallel/mpithread/internal/HybridDynamicMachineMemoryWindowBaseInternal.h"
 
 #include "arcane/parallel/mpi/MpiParallelMng.h"
 
@@ -178,6 +179,11 @@ class HybridParallelMng::Impl
   Ref<IMachineMemoryWindowBaseInternal> createMachineMemoryWindowBase(Int64 sizeof_segment, Int32 sizeof_type) override
   {
     return makeRef(m_window_creator->createWindow(m_parallel_mng->commRank(), sizeof_segment, sizeof_type, m_parallel_mng->mpiParallelMng()));
+  }
+
+  Ref<IDynamicMachineMemoryWindowBaseInternal> createDynamicMachineMemoryWindowBase(Int64 sizeof_segment, Int32 sizeof_type) override
+  {
+    return makeRef(m_window_creator->createDynamicWindow(m_parallel_mng->commRank(), sizeof_segment, sizeof_type, m_parallel_mng->mpiParallelMng()));
   }
 
  private:

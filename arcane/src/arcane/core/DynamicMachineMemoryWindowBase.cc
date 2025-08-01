@@ -35,7 +35,6 @@ DynamicMachineMemoryWindowBase::
 DynamicMachineMemoryWindowBase(IParallelMng* pm, Int64 nb_elem_segment, Int32 sizeof_elem)
 : m_pm_internal(pm->_internalApi())
 , m_sizeof_elem(sizeof_elem)
-, m_is_add_enabled(false)
 {
   m_node_window_base = m_pm_internal->createDynamicMachineMemoryWindowBase(nb_elem_segment * static_cast<Int64>(m_sizeof_elem), m_sizeof_elem);
 }
@@ -46,9 +45,6 @@ DynamicMachineMemoryWindowBase(IParallelMng* pm, Int64 nb_elem_segment, Int32 si
 Span<std::byte> DynamicMachineMemoryWindowBase::
 segmentView() const
 {
-  if (m_is_add_enabled) {
-    ARCANE_FATAL("segmentView in an addition phase is not allowed");
-  }
   return m_node_window_base->segment();
 }
 
@@ -58,9 +54,6 @@ segmentView() const
 Span<std::byte> DynamicMachineMemoryWindowBase::
 segmentView(Int32 rank) const
 {
-  if (m_is_add_enabled) {
-    ARCANE_FATAL("segmentView in an addition phase is not allowed");
-  }
   return m_node_window_base->segment(rank);
 }
 
@@ -88,10 +81,16 @@ segmentOwner(Int32 rank) const
 void DynamicMachineMemoryWindowBase::
 add(Span<const std::byte> elem) const
 {
-  if (!m_is_add_enabled) {
-    ARCANE_FATAL("This method needs to be called in an addition phase");
-  }
   return m_node_window_base->add(elem);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void DynamicMachineMemoryWindowBase::
+add() const
+{
+  return m_node_window_base->add();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -100,9 +99,6 @@ add(Span<const std::byte> elem) const
 void DynamicMachineMemoryWindowBase::
 exchangeSegmentWith(Int32 rank) const
 {
-  if (m_is_add_enabled) {
-    ARCANE_FATAL("exchangeSegmentWith in an addition phase is not allowed");
-  }
   m_node_window_base->exchangeSegmentWith(rank);
 }
 
@@ -112,9 +108,6 @@ exchangeSegmentWith(Int32 rank) const
 void DynamicMachineMemoryWindowBase::
 exchangeSegmentWith() const
 {
-  if (m_is_add_enabled) {
-    ARCANE_FATAL("exchangeSegmentWith in an addition phase is not allowed");
-  }
   m_node_window_base->exchangeSegmentWith();
 }
 
@@ -124,9 +117,6 @@ exchangeSegmentWith() const
 void DynamicMachineMemoryWindowBase::
 resetExchanges() const
 {
-  if (m_is_add_enabled) {
-    ARCANE_FATAL("resetExchanges in an addition phase is not allowed");
-  }
   m_node_window_base->resetExchanges();
 }
 
@@ -145,32 +135,7 @@ machineRanks() const
 void DynamicMachineMemoryWindowBase::
 barrier() const
 {
-  if (m_is_add_enabled) {
-    ARCANE_FATAL("Barrier in an addition phase is not allowed");
-  }
   m_node_window_base->barrier();
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void DynamicMachineMemoryWindowBase::
-enableAdditionPhase()
-{
-  m_is_add_enabled = true;
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void DynamicMachineMemoryWindowBase::
-disableAdditionPhase()
-{
-  if (!m_is_add_enabled) {
-    ARCANE_FATAL("The addition phase is not enabled");
-  }
-  m_node_window_base->syncAdd();
-  m_is_add_enabled = false;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -179,9 +144,6 @@ disableAdditionPhase()
 void DynamicMachineMemoryWindowBase::
 reserve(Int64 new_nb_elem_segment_capacity) const
 {
-  if (m_is_add_enabled) {
-    ARCANE_FATAL("Reserve in an addition phase is not allowed");
-  }
   m_node_window_base->reserve(new_nb_elem_segment_capacity * static_cast<Int64>(m_sizeof_elem));
 }
 
@@ -191,9 +153,6 @@ reserve(Int64 new_nb_elem_segment_capacity) const
 void DynamicMachineMemoryWindowBase::
 reserve() const
 {
-  if (m_is_add_enabled) {
-    ARCANE_FATAL("Reserve in an addition phase is not allowed");
-  }
   m_node_window_base->reserve();
 }
 
@@ -203,9 +162,6 @@ reserve() const
 void DynamicMachineMemoryWindowBase::
 resize(Int64 new_nb_elem_segment) const
 {
-  if (m_is_add_enabled) {
-    ARCANE_FATAL("Resize in an addition phase is not allowed");
-  }
   m_node_window_base->resize(new_nb_elem_segment * static_cast<Int64>(m_sizeof_elem));
 }
 
@@ -215,9 +171,6 @@ resize(Int64 new_nb_elem_segment) const
 void DynamicMachineMemoryWindowBase::
 resize() const
 {
-  if (m_is_add_enabled) {
-    ARCANE_FATAL("Resize in an addition phase is not allowed");
-  }
   m_node_window_base->resize();
 }
 
@@ -227,9 +180,6 @@ resize() const
 void DynamicMachineMemoryWindowBase::
 shrink() const
 {
-  if (m_is_add_enabled) {
-    ARCANE_FATAL("Shrink in an addition phase is not allowed");
-  }
   m_node_window_base->shrink();
 }
 
