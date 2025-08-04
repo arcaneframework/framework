@@ -46,7 +46,10 @@ PETScSolverConfigGMRESService::configure(
                                    1e-15, PETSC_DEFAULT, options()->numIterationsMax()));
   checkError("Solver set type", KSPSetType(ksp, KSPGMRES));
   checkError("Solver set restart", KSPGMRESSetRestart(ksp, options()->restart()));
-
+#ifdef PETSC_HAVE_KSPGMRESSETBREAKDOWNTOLERANCE
+  if(option()->breakdownTol()>0.)
+    checkError("Solver set breakdown tol",KSPGMRESSetBreakdownTolerance(ksp,option()->breakdownTol())) ;
+#endif
   if (options()->right()) {
 #ifndef PETSC_KSPSETPCSIDE_NEW
     checkError(
