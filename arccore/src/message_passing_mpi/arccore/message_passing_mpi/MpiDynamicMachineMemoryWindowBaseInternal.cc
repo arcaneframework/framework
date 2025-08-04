@@ -219,7 +219,7 @@ barrier() const
 /*---------------------------------------------------------------------------*/
 
 Span<std::byte> MpiDynamicMachineMemoryWindowBaseInternal::
-segment()
+segmentView()
 {
   return m_reserved_part_span.subSpan(0, m_sizeof_used_part[m_owner_segment]);
 }
@@ -228,7 +228,7 @@ segment()
 /*---------------------------------------------------------------------------*/
 
 Span<std::byte> MpiDynamicMachineMemoryWindowBaseInternal::
-segment(Int32 rank)
+segmentView(Int32 rank)
 {
   const Int32 machine_rank = _worldToMachine(rank);
   const Int32 owner_segment = m_owner_segments[machine_rank];
@@ -243,6 +243,36 @@ segment(Int32 rank)
   }
 
   return Span<std::byte>{ ptr_seg, m_sizeof_used_part[owner_segment] };
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Span<const std::byte> MpiDynamicMachineMemoryWindowBaseInternal::
+segmentConstView() const
+{
+  return m_reserved_part_span.subSpan(0, m_sizeof_used_part[m_owner_segment]);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Span<const std::byte> MpiDynamicMachineMemoryWindowBaseInternal::
+segmentConstView(Int32 rank) const
+{
+  const Int32 machine_rank = _worldToMachine(rank);
+  const Int32 owner_segment = m_owner_segments[machine_rank];
+
+  MPI_Aint size_seg;
+  int size_type;
+  std::byte* ptr_seg = nullptr;
+  int error = MPI_Win_shared_query(m_all_mpi_win[owner_segment], owner_segment, &size_seg, &size_type, &ptr_seg);
+
+  if (error != MPI_SUCCESS) {
+    ARCCORE_FATAL("Error with MPI_Win_shared_query() call");
+  }
+
+  return Span<const std::byte>{ ptr_seg, m_sizeof_used_part[owner_segment] };
 }
 
 /*---------------------------------------------------------------------------*/

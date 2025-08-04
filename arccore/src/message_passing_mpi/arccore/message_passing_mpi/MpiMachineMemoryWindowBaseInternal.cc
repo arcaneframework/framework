@@ -257,7 +257,7 @@ sizeofOneElem() const
 /*---------------------------------------------------------------------------*/
 
 Span<std::byte> MpiMachineMemoryWindowBaseInternal::
-segment()
+segmentView()
 {
   const Int64 begin_segment = m_sum_sizeof_segments_span[m_comm_machine_rank];
   const Int64 size_segment = m_sizeof_segments_span[m_comm_machine_rank];
@@ -269,7 +269,7 @@ segment()
 /*---------------------------------------------------------------------------*/
 
 Span<std::byte> MpiMachineMemoryWindowBaseInternal::
-segment(Int32 rank)
+segmentView(Int32 rank)
 {
   Int32 pos = -1;
   for (Int32 i = 0; i < m_comm_machine_size; ++i) {
@@ -292,7 +292,51 @@ segment(Int32 rank)
 /*---------------------------------------------------------------------------*/
 
 Span<std::byte> MpiMachineMemoryWindowBaseInternal::
-window()
+windowView()
+{
+  return m_window_span;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Span<const std::byte> MpiMachineMemoryWindowBaseInternal::
+segmentConstView() const
+{
+  const Int64 begin_segment = m_sum_sizeof_segments_span[m_comm_machine_rank];
+  const Int64 size_segment = m_sizeof_segments_span[m_comm_machine_rank];
+
+  return m_window_span.subSpan(begin_segment, size_segment);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Span<const std::byte> MpiMachineMemoryWindowBaseInternal::
+segmentConstView(Int32 rank) const
+{
+  Int32 pos = -1;
+  for (Int32 i = 0; i < m_comm_machine_size; ++i) {
+    if (m_machine_ranks[i] == rank) {
+      pos = i;
+      break;
+    }
+  }
+  if (pos == -1) {
+    ARCCORE_FATAL("Rank is not in machine");
+  }
+
+  const Int64 begin_segment = m_sum_sizeof_segments_span[pos];
+  const Int64 size_segment = m_sizeof_segments_span[pos];
+
+  return m_window_span.subSpan(begin_segment, size_segment);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Span<const std::byte> MpiMachineMemoryWindowBaseInternal::
+windowConstView() const
 {
   return m_window_span;
 }

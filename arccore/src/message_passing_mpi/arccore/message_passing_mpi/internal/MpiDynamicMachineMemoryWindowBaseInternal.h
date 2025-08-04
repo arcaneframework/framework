@@ -44,8 +44,11 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiDynamicMachineMemoryWindowBaseInternal
   ConstArrayView<Int32> machineRanks() const override;
   void barrier() const override;
 
-  Span<std::byte> segment() override;
-  Span<std::byte> segment(Int32 rank) override;
+  Span<std::byte> segmentView() override;
+  Span<std::byte> segmentView(Int32 rank) override;
+
+  Span<const std::byte> segmentConstView() const override;
+  Span<const std::byte> segmentConstView(Int32 rank) const override;
 
   Int32 segmentOwner() const override;
   Int32 segmentOwner(Int32 rank) const override;

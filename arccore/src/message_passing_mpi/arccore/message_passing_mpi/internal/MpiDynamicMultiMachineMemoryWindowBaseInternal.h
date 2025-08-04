@@ -120,7 +120,7 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiDynamicMultiMachineMemoryWindowBaseInt
    * \param num_seg La position (ou id) locale du segment.
    * \return Une vue.
    */
-  Span<std::byte> segment(Int32 num_seg);
+  Span<std::byte> segmentView(Int32 num_seg);
 
   /*!
    * \brief Méthode permettant d'obtenir une vue sur l'un des segments que
@@ -135,7 +135,36 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiDynamicMultiMachineMemoryWindowBaseInt
    * \param num_seg La position (ou id) locale du segment.
    * \return Une vue.
    */
-  Span<std::byte> segment(Int32 rank, Int32 num_seg);
+  Span<std::byte> segmentView(Int32 rank, Int32 num_seg);
+
+  /*!
+   * \brief Méthode permettant d'obtenir une vue sur l'un des segments que
+   * nous possédons.
+   *
+   * Appel non collectif.
+   *
+   * Dans le cas d'échange de segments, il est possible d'obtenir le
+   * propriétaire du segment que nous possédons avec la méthode segmentOwner(num_seg).
+   *
+   * \param num_seg La position (ou id) locale du segment.
+   * \return Une vue.
+   */
+  Span<const std::byte> segmentConstView(Int32 num_seg) const;
+
+  /*!
+   * \brief Méthode permettant d'obtenir une vue sur l'un des segments que
+   * possède un autre processus du noeud.
+   *
+   * Appel non collectif.
+   *
+   * Dans le cas d'échange de segments, il est possible d'obtenir le
+   * propriétaire du segment avec la méthode segmentOwner(rank, num_seg).
+   *
+   * \param rank Le rang du processus.
+   * \param num_seg La position (ou id) locale du segment.
+   * \return Une vue.
+   */
+  Span<const std::byte> segmentConstView(Int32 rank, Int32 num_seg) const;
 
   /*!
    * \brief Méthode permettant d'obtenir le propriétaire d'un des segments que
@@ -349,8 +378,8 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiDynamicMultiMachineMemoryWindowBaseInt
 
  private:
 
-  void _requestRealloc(Int32 owner_pos_segment, Int64 new_capacity);
-  void _requestRealloc(Int32 owner_pos_segment);
+  void _requestRealloc(Int32 owner_pos_segment, Int64 new_capacity) const;
+  void _requestRealloc(Int32 owner_pos_segment) const;
   void _executeRealloc();
   void _realloc();
 

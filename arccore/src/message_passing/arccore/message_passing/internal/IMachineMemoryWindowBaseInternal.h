@@ -56,7 +56,7 @@ class ARCCORE_MESSAGEPASSING_EXPORT IMachineMemoryWindowBaseInternal
    *
    * \return Une vue.
    */
-  virtual Span<std::byte> segment() = 0;
+  virtual Span<std::byte> segmentView() = 0;
 
   /*!
    * \brief Méthode permettant d'obtenir une vue sur le segment d'un autre
@@ -65,14 +65,37 @@ class ARCCORE_MESSAGEPASSING_EXPORT IMachineMemoryWindowBaseInternal
    * \param rank Le rang du sous-domaine.
    * \return Une vue.
    */
-  virtual Span<std::byte> segment(Int32 rank) = 0;
+  virtual Span<std::byte> segmentView(Int32 rank) = 0;
 
   /*!
    * \brief Méthode permettant d'obtenir une vue sur toute la fenêtre.
    *
    * \return Une vue.
    */
-  virtual Span<std::byte> window() = 0;
+  virtual Span<std::byte> windowView() = 0;
+
+  /*!
+   * \brief Méthode permettant d'obtenir une vue sur son segment.
+   *
+   * \return Une vue.
+   */
+  virtual Span<const std::byte> segmentConstView() const = 0;
+
+  /*!
+   * \brief Méthode permettant d'obtenir une vue sur le segment d'un autre
+   * sous-domaine du noeud.
+   *
+   * \param rank Le rang du sous-domaine.
+   * \return Une vue.
+   */
+  virtual Span<const std::byte> segmentConstView(Int32 rank) const = 0;
+
+  /*!
+   * \brief Méthode permettant d'obtenir une vue sur toute la fenêtre.
+   *
+   * \return Une vue.
+   */
+  virtual Span<const std::byte> windowConstView() const = 0;
 
   /*!
    * \brief Méthode permettant de redimensionner les segments de la fenêtre.

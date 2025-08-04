@@ -92,7 +92,7 @@ class ARCCORE_MESSAGEPASSING_EXPORT IDynamicMachineMemoryWindowBaseInternal
    *
    * \return Une vue.
    */
-  virtual Span<std::byte> segment() = 0;
+  virtual Span<std::byte> segmentView() = 0;
 
   /*!
    * \brief Méthode permettant d'obtenir une vue sur le segment que possède un
@@ -106,7 +106,34 @@ class ARCCORE_MESSAGEPASSING_EXPORT IDynamicMachineMemoryWindowBaseInternal
    * \param rank Le rang du sous-domaine.
    * \return Une vue.
    */
-  virtual Span<std::byte> segment(Int32 rank) = 0;
+  virtual Span<std::byte> segmentView(Int32 rank) = 0;
+
+  /*!
+   * \brief Méthode permettant d'obtenir une vue sur le segment que nous
+   * possédons.
+   *
+   * Appel non collectif.
+   *
+   * Dans le cas d'échange de segments, il est possible d'obtenir le
+   * propriétaire du segment que nous possédons avec la méthode segmentOwner().
+   *
+   * \return Une vue.
+   */
+  virtual Span<const std::byte> segmentConstView() const = 0;
+
+  /*!
+   * \brief Méthode permettant d'obtenir une vue sur le segment que possède un
+   * autre sous-domaine du noeud.
+   *
+   * Appel non collectif.
+   *
+   * Dans le cas d'échange de segments, il est possible d'obtenir le
+   * propriétaire du segment avec la méthode segmentOwner(rank).
+   *
+   * \param rank Le rang du sous-domaine.
+   * \return Une vue.
+   */
+  virtual Span<const std::byte> segmentConstView(Int32 rank) const = 0;
 
   /*!
    * \brief Méthode permettant d'obtenir le propriétaire du segment que nous
