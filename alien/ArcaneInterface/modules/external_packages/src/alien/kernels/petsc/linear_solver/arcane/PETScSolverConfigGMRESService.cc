@@ -51,8 +51,11 @@ PETScSolverConfigGMRESService::configure(
   checkError("Solver set type", KSPSetType(ksp, KSPGMRES));
   checkError("Solver set restart", KSPGMRESSetRestart(ksp, options()->restart()));
 #ifdef PETSC_HAVE_KSPGMRESSETBREAKDOWNTOLERANCE
-  if(option()->breakdownTol()>0.)
-    checkError("Solver set breakdown tol",KSPGMRESSetBreakdownTolerance(ksp,option()->breakdownTol())) ;
+  if(options()->breakdownTol()>0.)
+  {
+	  std::cout<<"CHANGE DEFAULT BREAKDOWNTOLERANCE : "<<options()->breakdownTol()<<std::endl ;
+    checkError("Solver set breakdown tol",KSPGMRESSetBreakdownTolerance(ksp,options()->breakdownTol())) ;
+  }
 #endif
   if (options()->right()) {
 #ifndef PETSC_KSPSETPCSIDE_NEW
