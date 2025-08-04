@@ -48,14 +48,24 @@ class DynamicMachineMemoryWindow
 
  public:
 
-  Span<Type> segmentView() const
+  Span<Type> segmentView()
   {
     return asSpan<Type>(m_impl.segmentView());
   }
 
-  Span<Type> segmentView(Int32 rank) const
+  Span<Type> segmentView(Int32 rank)
   {
     return asSpan<Type>(m_impl.segmentView(rank));
+  }
+
+  Span<const Type> segmentConstView() const
+  {
+    return asSpan<const Type>(m_impl.segmentConstView());
+  }
+
+  Span<const Type> segmentConstView(Int32 rank) const
+  {
+    return asSpan<const Type>(m_impl.segmentConstView(rank));
   }
 
   Int32 segmentOwner() const
@@ -67,28 +77,28 @@ class DynamicMachineMemoryWindow
     return m_impl.segmentOwner(rank);
   }
 
-  void add(Span<const Type> elem) const
+  void add(Span<const Type> elem)
   {
     const Span<const std::byte> span_bytes(reinterpret_cast<const std::byte*>(elem.data()), elem.sizeBytes());
     m_impl.add(span_bytes);
   }
 
-  void add() const
+  void add()
   {
     m_impl.add();
   }
 
-  void exchangeSegmentWith(Int32 rank) const
+  void exchangeSegmentWith(Int32 rank)
   {
     m_impl.exchangeSegmentWith(rank);
   }
 
-  void exchangeSegmentWith() const
+  void exchangeSegmentWith()
   {
     m_impl.exchangeSegmentWith();
   }
 
-  void resetExchanges() const
+  void resetExchanges()
   {
     m_impl.resetExchanges();
   }
@@ -103,27 +113,27 @@ class DynamicMachineMemoryWindow
     m_impl.barrier();
   }
 
-  void reserve(Int64 new_capacity) const
+  void reserve(Int64 new_capacity)
   {
     m_impl.reserve(new_capacity);
   }
 
-  void reserve() const
+  void reserve()
   {
     m_impl.reserve();
   }
 
-  void resize(Int64 new_nb_elem_segment) const
+  void resize(Int64 new_nb_elem_segment)
   {
     m_impl.resize(new_nb_elem_segment);
   }
 
-  void resize() const
+  void resize()
   {
     m_impl.resize();
   }
 
-  void shrink() const
+  void shrink()
   {
     m_impl.shrink();
   }

@@ -44,6 +44,35 @@ namespace MessagePassing
 
 class ARCANE_CORE_EXPORT DynamicMachineMemoryWindowBase
 {
+#ifdef ARCANE_DEBUG
+ private:
+
+  template <class T>
+  class Ref
+  {
+   public:
+
+    explicit Ref(const Arcane::Ref<T>& ptr)
+    : m_ptr(ptr)
+    {}
+    ~Ref() = default;
+
+   public:
+
+    T* operator->()
+    {
+      return m_ptr.get();
+    }
+    T const* operator->() const
+    {
+      return m_ptr.get();
+    }
+
+   private:
+
+    Arcane::Ref<T> m_ptr;
+  };
+#endif
 
  public:
 
@@ -51,30 +80,33 @@ class ARCANE_CORE_EXPORT DynamicMachineMemoryWindowBase
 
  public:
 
-  Span<std::byte> segmentView() const;
-  Span<std::byte> segmentView(Int32 rank) const;
+  Span<std::byte> segmentView();
+  Span<std::byte> segmentView(Int32 rank);
+
+  Span<const std::byte> segmentConstView() const;
+  Span<const std::byte> segmentConstView(Int32 rank) const;
 
   Int32 segmentOwner() const;
   Int32 segmentOwner(Int32 rank) const;
 
-  void add(Span<const std::byte> elem) const;
-  void add() const;
+  void add(Span<const std::byte> elem);
+  void add();
 
-  void exchangeSegmentWith(Int32 rank) const;
-  void exchangeSegmentWith() const;
-  void resetExchanges() const;
+  void exchangeSegmentWith(Int32 rank);
+  void exchangeSegmentWith();
+  void resetExchanges();
 
   ConstArrayView<Int32> machineRanks() const;
 
   void barrier() const;
 
-  void reserve(Int64 new_nb_elem_segment_capacity) const;
-  void reserve() const;
+  void reserve(Int64 new_nb_elem_segment_capacity);
+  void reserve();
 
-  void resize(Int64 new_nb_elem_segment) const;
-  void resize() const;
+  void resize(Int64 new_nb_elem_segment);
+  void resize();
 
-  void shrink() const;
+  void shrink();
 
  private:
 

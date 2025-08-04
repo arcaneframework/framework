@@ -7,8 +7,10 @@
 /*---------------------------------------------------------------------------*/
 /* HybridDynamicMachineMemoryWindowBaseInternal.cc             (C) 2000-2025 */
 /*                                                                           */
-/* Classe permettant de créer une fenêtre mémoire pour l'ensemble des        */
+/* Classe permettant de créer des fenêtres mémoires pour l'ensemble des      */
 /* sous-domaines en mémoire partagée des processus du même noeud.            */
+/* Les segments de ces fenêtres ne sont pas contigüs en mémoire et peuvent   */
+/* être redimensionnés.                                                      */
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/FatalErrorException.h"
@@ -48,6 +50,7 @@ HybridDynamicMachineMemoryWindowBaseInternal(Int32 my_rank_mpi, Int32 my_rank_lo
 HybridDynamicMachineMemoryWindowBaseInternal::
 ~HybridDynamicMachineMemoryWindowBaseInternal()
 {
+  m_thread_barrier->wait();
   if (m_my_rank_local_proc == 0) {
     delete m_mpi_windows;
   }
@@ -68,7 +71,7 @@ sizeofOneElem() const
 ConstArrayView<Int32> HybridDynamicMachineMemoryWindowBaseInternal::
 machineRanks() const
 {
-  return m_mpi_windows->machineRanks();
+  return m_machine_ranks;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -87,22 +90,44 @@ barrier() const
 /*---------------------------------------------------------------------------*/
 
 Span<std::byte> HybridDynamicMachineMemoryWindowBaseInternal::
-segment()
+segmentView()
 {
-  return m_mpi_windows->segment(m_my_rank_local_proc);
+  return m_mpi_windows->segmentView(m_my_rank_local_proc);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 Span<std::byte> HybridDynamicMachineMemoryWindowBaseInternal::
-segment(Int32 rank)
+segmentView(Int32 rank)
 {
   FullRankInfo my_fri = FullRankInfo::compute(MP::MessageRank(rank), m_nb_rank_local_proc);
   const Int32 rank_local_proc = my_fri.localRankValue();
   const Int32 rank_mpi = my_fri.mpiRankValue();
 
-  return m_mpi_windows->segment(rank_mpi, rank_local_proc);
+  return m_mpi_windows->segmentView(rank_mpi, rank_local_proc);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Span<const std::byte> HybridDynamicMachineMemoryWindowBaseInternal::
+segmentConstView() const
+{
+  return m_mpi_windows->segmentConstView(m_my_rank_local_proc);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Span<const std::byte> HybridDynamicMachineMemoryWindowBaseInternal::
+segmentConstView(Int32 rank) const
+{
+  FullRankInfo my_fri = FullRankInfo::compute(MP::MessageRank(rank), m_nb_rank_local_proc);
+  const Int32 rank_local_proc = my_fri.localRankValue();
+  const Int32 rank_mpi = my_fri.mpiRankValue();
+
+  return m_mpi_windows->segmentConstView(rank_mpi, rank_local_proc);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -193,7 +218,11 @@ exchangeSegmentWith()
 void HybridDynamicMachineMemoryWindowBaseInternal::
 resetExchanges()
 {
-  m_mpi_windows->resetExchanges();
+  m_thread_barrier->wait();
+  if (m_my_rank_local_proc == 0) {
+    m_mpi_windows->resetExchanges();
+  }
+  m_thread_barrier->wait();
 }
 
 /*---------------------------------------------------------------------------*/

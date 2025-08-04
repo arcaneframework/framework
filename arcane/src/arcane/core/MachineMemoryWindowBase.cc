@@ -32,36 +32,35 @@ namespace Arcane
 MachineMemoryWindowBase::
 MachineMemoryWindowBase(IParallelMng* pm, Int64 nb_elem_segment, Int32 sizeof_elem)
 : m_pm_internal(pm->_internalApi())
+, m_node_window_base(m_pm_internal->createMachineMemoryWindowBase(nb_elem_segment * static_cast<Int64>(sizeof_elem), sizeof_elem))
 , m_sizeof_elem(sizeof_elem)
+{}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Span<std::byte> MachineMemoryWindowBase::
+segmentView()
 {
-  m_node_window_base = m_pm_internal->createMachineMemoryWindowBase(nb_elem_segment * static_cast<Int64>(sizeof_elem), sizeof_elem);
+  return m_node_window_base->segmentView();
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 Span<std::byte> MachineMemoryWindowBase::
-segmentView() const
+segmentView(Int32 rank)
 {
-  return m_node_window_base->segment();
+  return m_node_window_base->segmentView(rank);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 Span<std::byte> MachineMemoryWindowBase::
-segmentView(Int32 rank) const
+windowView()
 {
-  return m_node_window_base->segment(rank);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-Span<std::byte> MachineMemoryWindowBase::
-windowView() const
-{
-  return m_node_window_base->window();
+  return m_node_window_base->windowView();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -70,7 +69,7 @@ windowView() const
 Span<const std::byte> MachineMemoryWindowBase::
 segmentConstView() const
 {
-  return m_node_window_base->segment();
+  return m_node_window_base->segmentConstView();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -79,7 +78,7 @@ segmentConstView() const
 Span<const std::byte> MachineMemoryWindowBase::
 segmentConstView(Int32 rank) const
 {
-  return m_node_window_base->segment(rank);
+  return m_node_window_base->segmentConstView(rank);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -88,14 +87,14 @@ segmentConstView(Int32 rank) const
 Span<const std::byte> MachineMemoryWindowBase::
 windowConstView() const
 {
-  return m_node_window_base->window();
+  return m_node_window_base->windowConstView();
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void MachineMemoryWindowBase::
-resizeSegment(Integer new_nb_elem) const
+resizeSegment(Integer new_nb_elem)
 {
   m_node_window_base->resizeSegment(new_nb_elem * static_cast<Int64>(m_sizeof_elem));
 }

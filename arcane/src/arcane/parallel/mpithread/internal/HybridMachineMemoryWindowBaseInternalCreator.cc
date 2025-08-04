@@ -74,14 +74,14 @@ createWindow(Int32 my_rank_global, Int64 sizeof_segment, Int32 sizeof_type, MpiP
   m_barrier->wait();
 
   // nb_elem est le segment de notre processus (qui contient les segments de tous nos threads).
-  Span<Int64> sizeof_sub_segments = asSpan<Int64>(m_sizeof_sub_segments->segment());
+  Span<Int64> sizeof_sub_segments = asSpan<Int64>(m_sizeof_sub_segments->segmentView());
 
   sizeof_sub_segments[my_rank_local_proc] = sizeof_segment;
   m_barrier->wait();
 
   if (my_rank_local_proc == 0) {
     m_sizeof_segment_local_proc = 0;
-    Span<Int64> sum_sizeof_sub_segments = asSpan<Int64>(m_sum_sizeof_sub_segments->segment());
+    Span<Int64> sum_sizeof_sub_segments = asSpan<Int64>(m_sum_sizeof_sub_segments->segmentView());
 
     for (Int32 i = 0; i < m_nb_rank_local_proc; ++i) {
       sum_sizeof_sub_segments[i] = m_sizeof_segment_local_proc;

@@ -7,8 +7,10 @@
 /*---------------------------------------------------------------------------*/
 /* SharedMemoryDynamicMachineMemoryWindowBaseInternal.cc       (C) 2000-2025 */
 /*                                                                           */
-/* Classe permettant de créer une fenêtre mémoire pour l'ensemble des        */
+/* Classe permettant de créer des fenêtres mémoires pour l'ensemble des      */
 /* sous-domaines en mémoire partagée.                                        */
+/* Les segments de ces fenêtres ne sont pas contigüs en mémoire et peuvent   */
+/* être redimensionnés.                                                      */
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/parallel/thread/internal/SharedMemoryDynamicMachineMemoryWindowBaseInternal.h"
@@ -82,7 +84,7 @@ barrier() const
 /*---------------------------------------------------------------------------*/
 
 Span<std::byte> SharedMemoryDynamicMachineMemoryWindowBaseInternal::
-segment()
+segmentView()
 {
   return m_windows_span[m_owner_segments_span[m_my_rank]];
 }
@@ -91,7 +93,25 @@ segment()
 /*---------------------------------------------------------------------------*/
 
 Span<std::byte> SharedMemoryDynamicMachineMemoryWindowBaseInternal::
-segment(Int32 rank)
+segmentView(Int32 rank)
+{
+  return m_windows_span[m_owner_segments_span[rank]];
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Span<const std::byte> SharedMemoryDynamicMachineMemoryWindowBaseInternal::
+segmentConstView() const
+{
+  return m_windows_span[m_owner_segments_span[m_my_rank]];
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Span<const std::byte> SharedMemoryDynamicMachineMemoryWindowBaseInternal::
+segmentConstView(Int32 rank) const
 {
   return m_windows_span[m_owner_segments_span[rank]];
 }
@@ -120,10 +140,20 @@ segmentOwner(Int32 rank) const
 void SharedMemoryDynamicMachineMemoryWindowBaseInternal::
 add(Span<const std::byte> elem)
 {
+  m_barrier->wait();
   if (elem.size() % m_sizeof_type != 0) {
     ARCCORE_FATAL("Sizeof elem not valid");
   }
   m_windows_span[m_owner_segments_span[m_my_rank]].addRange(elem);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void SharedMemoryDynamicMachineMemoryWindowBaseInternal::
+add()
+{
+  m_barrier->wait();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -181,7 +211,17 @@ resetExchanges()
 void SharedMemoryDynamicMachineMemoryWindowBaseInternal::
 reserve(Int64 new_capacity)
 {
+  m_barrier->wait();
   m_windows_span[m_owner_segments_span[m_my_rank]].reserve(new_capacity);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void SharedMemoryDynamicMachineMemoryWindowBaseInternal::
+reserve()
+{
+  m_barrier->wait();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -190,7 +230,17 @@ reserve(Int64 new_capacity)
 void SharedMemoryDynamicMachineMemoryWindowBaseInternal::
 resize(Int64 new_size)
 {
+  m_barrier->wait();
   m_windows_span[m_owner_segments_span[m_my_rank]].resize(new_size);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void SharedMemoryDynamicMachineMemoryWindowBaseInternal::
+resize()
+{
+  m_barrier->wait();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -199,6 +249,7 @@ resize(Int64 new_size)
 void SharedMemoryDynamicMachineMemoryWindowBaseInternal::
 shrink()
 {
+  m_barrier->wait();
   m_windows_span[m_owner_segments_span[m_my_rank]].shrink();
 }
 

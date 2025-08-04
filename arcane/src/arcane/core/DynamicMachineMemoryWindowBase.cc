@@ -34,27 +34,44 @@ namespace Arcane
 DynamicMachineMemoryWindowBase::
 DynamicMachineMemoryWindowBase(IParallelMng* pm, Int64 nb_elem_segment, Int32 sizeof_elem)
 : m_pm_internal(pm->_internalApi())
+, m_node_window_base(m_pm_internal->createDynamicMachineMemoryWindowBase(nb_elem_segment * static_cast<Int64>(sizeof_elem), sizeof_elem))
 , m_sizeof_elem(sizeof_elem)
+{}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Span<std::byte> DynamicMachineMemoryWindowBase::
+segmentView()
 {
-  m_node_window_base = m_pm_internal->createDynamicMachineMemoryWindowBase(nb_elem_segment * static_cast<Int64>(m_sizeof_elem), m_sizeof_elem);
+  return m_node_window_base->segmentView();
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 Span<std::byte> DynamicMachineMemoryWindowBase::
-segmentView() const
+segmentView(Int32 rank)
 {
-  return m_node_window_base->segment();
+  return m_node_window_base->segmentView(rank);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Span<std::byte> DynamicMachineMemoryWindowBase::
-segmentView(Int32 rank) const
+Span<const std::byte> DynamicMachineMemoryWindowBase::
+segmentConstView() const
 {
-  return m_node_window_base->segment(rank);
+  return m_node_window_base->segmentConstView();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Span<const std::byte> DynamicMachineMemoryWindowBase::
+segmentConstView(Int32 rank) const
+{
+  return m_node_window_base->segmentConstView(rank);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -79,7 +96,7 @@ segmentOwner(Int32 rank) const
 /*---------------------------------------------------------------------------*/
 
 void DynamicMachineMemoryWindowBase::
-add(Span<const std::byte> elem) const
+add(Span<const std::byte> elem)
 {
   return m_node_window_base->add(elem);
 }
@@ -88,7 +105,7 @@ add(Span<const std::byte> elem) const
 /*---------------------------------------------------------------------------*/
 
 void DynamicMachineMemoryWindowBase::
-add() const
+add()
 {
   return m_node_window_base->add();
 }
@@ -97,7 +114,7 @@ add() const
 /*---------------------------------------------------------------------------*/
 
 void DynamicMachineMemoryWindowBase::
-exchangeSegmentWith(Int32 rank) const
+exchangeSegmentWith(Int32 rank)
 {
   m_node_window_base->exchangeSegmentWith(rank);
 }
@@ -106,7 +123,7 @@ exchangeSegmentWith(Int32 rank) const
 /*---------------------------------------------------------------------------*/
 
 void DynamicMachineMemoryWindowBase::
-exchangeSegmentWith() const
+exchangeSegmentWith()
 {
   m_node_window_base->exchangeSegmentWith();
 }
@@ -115,7 +132,7 @@ exchangeSegmentWith() const
 /*---------------------------------------------------------------------------*/
 
 void DynamicMachineMemoryWindowBase::
-resetExchanges() const
+resetExchanges()
 {
   m_node_window_base->resetExchanges();
 }
@@ -142,7 +159,7 @@ barrier() const
 /*---------------------------------------------------------------------------*/
 
 void DynamicMachineMemoryWindowBase::
-reserve(Int64 new_nb_elem_segment_capacity) const
+reserve(Int64 new_nb_elem_segment_capacity)
 {
   m_node_window_base->reserve(new_nb_elem_segment_capacity * static_cast<Int64>(m_sizeof_elem));
 }
@@ -151,7 +168,7 @@ reserve(Int64 new_nb_elem_segment_capacity) const
 /*---------------------------------------------------------------------------*/
 
 void DynamicMachineMemoryWindowBase::
-reserve() const
+reserve()
 {
   m_node_window_base->reserve();
 }
@@ -160,7 +177,7 @@ reserve() const
 /*---------------------------------------------------------------------------*/
 
 void DynamicMachineMemoryWindowBase::
-resize(Int64 new_nb_elem_segment) const
+resize(Int64 new_nb_elem_segment)
 {
   m_node_window_base->resize(new_nb_elem_segment * static_cast<Int64>(m_sizeof_elem));
 }
@@ -169,7 +186,7 @@ resize(Int64 new_nb_elem_segment) const
 /*---------------------------------------------------------------------------*/
 
 void DynamicMachineMemoryWindowBase::
-resize() const
+resize()
 {
   m_node_window_base->resize();
 }
@@ -178,7 +195,7 @@ resize() const
 /*---------------------------------------------------------------------------*/
 
 void DynamicMachineMemoryWindowBase::
-shrink() const
+shrink()
 {
   m_node_window_base->shrink();
 }

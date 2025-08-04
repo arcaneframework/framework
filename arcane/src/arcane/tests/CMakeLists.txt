@@ -520,11 +520,23 @@ endif()
 macro(add_test_message_passing test_name)
   set(_OPTS -We,MESSAGE_PASSING_TEST,${test_name} -We,ARCCORE_ALLOW_NULL_RANK_FOR_MPI_ANY_SOURCE,1 -arcane_opt direct_test ParallelMngTest null)
   set(_TEST_NAME parallelmng_${test_name})
-  add_test(${_TEST_NAME}_seq ${ARCANE_TEST_DRIVER} launch ${_OPTS})
+
+  arcane_add_test_direct(NAME ${_TEST_NAME}_seq
+      COMMAND ${ARCANE_TEST_DRIVER} launch ${_OPTS}
+      WORKING_DIRECTORY ${ARCANE_TEST_WORKDIR})
+
   if(TARGET arcane_mpi)
-    add_test(${_TEST_NAME}_4proc ${ARCANE_TEST_DRIVER} launch -n 4 ${_OPTS})
+    arcane_add_test_direct(NAME ${_TEST_NAME}_4proc
+        COMMAND ${ARCANE_TEST_DRIVER} launch -n 4 ${_OPTS}
+        WORKING_DIRECTORY ${ARCANE_TEST_WORKDIR})
+    set_tests_properties(${_TEST_NAME}_4proc PROPERTIES PROCESSORS 4)
   endif()
-  add_test(${_TEST_NAME}_4thread ${ARCANE_TEST_DRIVER} launch -T 4 ${_OPTS})
+
+  arcane_add_test_direct(NAME ${_TEST_NAME}_4thread
+      COMMAND ${ARCANE_TEST_DRIVER} launch -T 4 ${_OPTS}
+      WORKING_DIRECTORY ${ARCANE_TEST_WORKDIR})
+  set_tests_properties(${_TEST_NAME}_4thread PROPERTIES PROCESSORS 4)
+
   arcane_add_test_message_passing_hybrid(${_TEST_NAME} NB_MPI 3 NB_SHM 4 ARGS ${_OPTS})
 endmacro()
 

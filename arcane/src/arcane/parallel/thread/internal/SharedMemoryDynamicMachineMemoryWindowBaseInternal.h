@@ -7,8 +7,10 @@
 /*---------------------------------------------------------------------------*/
 /* SharedMemoryDynamicMachineMemoryWindowBaseInternal.h        (C) 2000-2025 */
 /*                                                                           */
-/* Classe permettant de créer une fenêtre mémoire pour l'ensemble des        */
+/* Classe permettant de créer des fenêtres mémoires pour l'ensemble des      */
 /* sous-domaines en mémoire partagée.                                        */
+/* Les segments de ces fenêtres ne sont pas contigüs en mémoire et peuvent   */
+/* être redimensionnés.                                                      */
 /*---------------------------------------------------------------------------*/
 
 #ifndef ARCANE_PARALLEL_THREAD_INTERNAL_SHAREDMEMORYDYNAMICMACHINEMEMORYWINDOWBASEINTERNAL_H
@@ -45,14 +47,18 @@ class ARCANE_THREAD_EXPORT SharedMemoryDynamicMachineMemoryWindowBaseInternal
   Int32 sizeofOneElem() const override;
   ConstArrayView<Int32> machineRanks() const override;
   void barrier() const override;
-  Span<std::byte> segment() override;
-  Span<std::byte> segment(Int32 rank) override;
+
+  Span<std::byte> segmentView() override;
+  Span<std::byte> segmentView(Int32 rank) override;
+
+  Span<const std::byte> segmentConstView() const override;
+  Span<const std::byte> segmentConstView(Int32 rank) const override;
 
   Int32 segmentOwner() const override;
   Int32 segmentOwner(Int32 rank) const override;
 
   void add(Span<const std::byte> elem) override;
-  void add() override {}
+  void add() override;
 
   void exchangeSegmentWith(Int32 rank) override;
   void exchangeSegmentWith() override;
@@ -60,10 +66,10 @@ class ARCANE_THREAD_EXPORT SharedMemoryDynamicMachineMemoryWindowBaseInternal
   void resetExchanges() override;
 
   void reserve(Int64 new_capacity) override;
-  void reserve() override {}
+  void reserve() override;
 
   void resize(Int64 new_size) override;
-  void resize() override {}
+  void resize() override;
 
   void shrink() override;
 

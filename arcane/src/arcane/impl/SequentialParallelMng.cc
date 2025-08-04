@@ -358,14 +358,10 @@ class SequentialMachineMemoryWindowBaseInternal
   : m_sizeof_segment(sizeof_segment)
   , m_max_sizeof_segment(sizeof_segment)
   , m_sizeof_type(sizeof_type)
-  {
-    m_segment = new std::byte[m_sizeof_segment];
-  }
+  , m_segment(std::make_unique<std::byte[]>(sizeof_segment))
+  {}
 
-  ~SequentialMachineMemoryWindowBaseInternal() override
-  {
-    delete[] m_segment;
-  }
+  ~SequentialMachineMemoryWindowBaseInternal() override = default;
 
  public:
 
@@ -374,20 +370,36 @@ class SequentialMachineMemoryWindowBaseInternal
     return m_sizeof_type;
   }
 
-  Span<std::byte> segment() override
+  Span<std::byte> segmentView() override
   {
-    return Span<std::byte>{ m_segment, m_sizeof_segment };
+    return Span<std::byte>{ m_segment.get(), m_sizeof_segment };
   }
-  Span<std::byte> segment(const Int32 rank) override
+  Span<std::byte> segmentView(const Int32 rank) override
   {
     if (rank != 0) {
       ARCANE_FATAL("Rank {0} is unavailable (Sequential)", rank);
     }
-    return Span<std::byte>{ m_segment, m_sizeof_segment };
+    return Span<std::byte>{ m_segment.get(), m_sizeof_segment };
   }
-  Span<std::byte> window() override
+  Span<std::byte> windowView() override
   {
-    return Span<std::byte>{ m_segment, m_sizeof_segment };
+    return Span<std::byte>{ m_segment.get(), m_sizeof_segment };
+  }
+
+  Span<const std::byte> segmentConstView() const override
+  {
+    return Span<const std::byte>{ m_segment.get(), m_sizeof_segment };
+  }
+  Span<const std::byte> segmentConstView(const Int32 rank) const override
+  {
+    if (rank != 0) {
+      ARCANE_FATAL("Rank {0} is unavailable (Sequential)", rank);
+    }
+    return Span<const std::byte>{ m_segment.get(), m_sizeof_segment };
+  }
+  Span<const std::byte> windowConstView() const override
+  {
+    return Span<const std::byte>{ m_segment.get(), m_sizeof_segment };
   }
 
   void resizeSegment(const Int64 new_sizeof_segment) override
@@ -411,7 +423,7 @@ class SequentialMachineMemoryWindowBaseInternal
   Int64 m_max_sizeof_segment;
 
   Int32 m_sizeof_type;
-  std::byte* m_segment;
+  std::unique_ptr<std::byte[]> m_segment;
   Int32 m_my_rank = 0;
 };
 
@@ -441,11 +453,22 @@ class SequentialDynamicMachineMemoryWindowBaseInternal
   }
   void barrier() const override {}
 
-  Span<std::byte> segment() override
+  Span<std::byte> segmentView() override
   {
     return m_segment;
   }
-  Span<std::byte> segment(Int32 rank) override
+  Span<std::byte> segmentView(Int32 rank) override
+  {
+    if (rank != 0) {
+      ARCANE_FATAL("Rank {0} is unavailable (Sequential)", rank);
+    }
+    return m_segment;
+  }
+  Span<const std::byte> segmentConstView() const override
+  {
+    return m_segment;
+  }
+  Span<const std::byte> segmentConstView(Int32 rank) const override
   {
     if (rank != 0) {
       ARCANE_FATAL("Rank {0} is unavailable (Sequential)", rank);

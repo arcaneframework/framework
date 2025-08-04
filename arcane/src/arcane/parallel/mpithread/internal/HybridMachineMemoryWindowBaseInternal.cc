@@ -40,8 +40,8 @@ HybridMachineMemoryWindowBaseInternal(Int32 my_rank_mpi, Int32 my_rank_local_pro
 , m_sum_sizeof_sub_segments_global(sum_nb_elem)
 , m_thread_barrier(barrier)
 {
-  m_sizeof_sub_segments_local_proc = asSpan<Int64>(m_sizeof_sub_segments_global->segment());
-  m_sum_sizeof_sub_segments_local_proc = asSpan<Int64>(m_sum_sizeof_sub_segments_global->segment());
+  m_sizeof_sub_segments_local_proc = asSpan<Int64>(m_sizeof_sub_segments_global->segmentView());
+  m_sum_sizeof_sub_segments_local_proc = asSpan<Int64>(m_sum_sizeof_sub_segments_global->segmentView());
 }
 
 /*---------------------------------------------------------------------------*/
@@ -57,9 +57,9 @@ sizeofOneElem() const
 /*---------------------------------------------------------------------------*/
 
 Span<std::byte> HybridMachineMemoryWindowBaseInternal::
-segment()
+segmentView()
 {
-  const Span<std::byte> segment_proc = m_mpi_window->segment();
+  const Span<std::byte> segment_proc = m_mpi_window->segmentView();
   const Int64 begin_segment_thread = m_sum_sizeof_sub_segments_local_proc[m_my_rank_local_proc];
   const Int64 size_segment_thread = m_sizeof_sub_segments_local_proc[m_my_rank_local_proc];
 
@@ -70,23 +70,23 @@ segment()
 /*---------------------------------------------------------------------------*/
 
 Span<std::byte> HybridMachineMemoryWindowBaseInternal::
-segment(Int32 rank)
+segmentView(Int32 rank)
 {
   const FullRankInfo fri = FullRankInfo::compute(MP::MessageRank(rank), m_nb_rank_local_proc);
 
   // Si le rang est un thread de notre processus.
   if (fri.mpiRankValue() == m_my_rank_mpi) {
-    const Span<std::byte> segment_proc = m_mpi_window->segment();
+    const Span<std::byte> segment_proc = m_mpi_window->segmentView();
     const Int64 begin_segment_thread = m_sum_sizeof_sub_segments_local_proc[fri.localRankValue()];
     const Int64 size_segment_thread = m_sizeof_sub_segments_local_proc[fri.localRankValue()];
 
     return segment_proc.subSpan(begin_segment_thread, size_segment_thread);
   }
 
-  const Span<Int64> sum_nb_elem_other_proc = asSpan<Int64>(m_sum_sizeof_sub_segments_global->segment(fri.mpiRankValue()));
-  const Span<Int64> nb_elem_other_proc = asSpan<Int64>(m_sizeof_sub_segments_global->segment(fri.mpiRankValue()));
+  const Span<Int64> sum_nb_elem_other_proc = asSpan<Int64>(m_sum_sizeof_sub_segments_global->segmentView(fri.mpiRankValue()));
+  const Span<Int64> nb_elem_other_proc = asSpan<Int64>(m_sizeof_sub_segments_global->segmentView(fri.mpiRankValue()));
 
-  const Span<std::byte> segment_proc = m_mpi_window->segment(fri.mpiRankValue());
+  const Span<std::byte> segment_proc = m_mpi_window->segmentView(fri.mpiRankValue());
   const Int64 begin_segment_thread = sum_nb_elem_other_proc[fri.localRankValue()];
   const Int64 size_segment_thread = nb_elem_other_proc[fri.localRankValue()];
 
@@ -97,9 +97,58 @@ segment(Int32 rank)
 /*---------------------------------------------------------------------------*/
 
 Span<std::byte> HybridMachineMemoryWindowBaseInternal::
-window()
+windowView()
 {
-  return m_mpi_window->window();
+  return m_mpi_window->windowView();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Span<const std::byte> HybridMachineMemoryWindowBaseInternal::
+segmentConstView() const
+{
+  const Span<const std::byte> segment_proc = m_mpi_window->segmentConstView();
+  const Int64 begin_segment_thread = m_sum_sizeof_sub_segments_local_proc[m_my_rank_local_proc];
+  const Int64 size_segment_thread = m_sizeof_sub_segments_local_proc[m_my_rank_local_proc];
+
+  return segment_proc.subSpan(begin_segment_thread, size_segment_thread);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Span<const std::byte> HybridMachineMemoryWindowBaseInternal::
+segmentConstView(Int32 rank) const
+{
+  const FullRankInfo fri = FullRankInfo::compute(MP::MessageRank(rank), m_nb_rank_local_proc);
+
+  // Si le rang est un thread de notre processus.
+  if (fri.mpiRankValue() == m_my_rank_mpi) {
+    const Span<const std::byte> segment_proc = m_mpi_window->segmentConstView();
+    const Int64 begin_segment_thread = m_sum_sizeof_sub_segments_local_proc[fri.localRankValue()];
+    const Int64 size_segment_thread = m_sizeof_sub_segments_local_proc[fri.localRankValue()];
+
+    return segment_proc.subSpan(begin_segment_thread, size_segment_thread);
+  }
+
+  const Span<const Int64> sum_nb_elem_other_proc = asSpan<const Int64>(m_sum_sizeof_sub_segments_global->segmentConstView(fri.mpiRankValue()));
+  const Span<const Int64> nb_elem_other_proc = asSpan<const Int64>(m_sizeof_sub_segments_global->segmentConstView(fri.mpiRankValue()));
+
+  const Span<const std::byte> segment_proc = m_mpi_window->segmentConstView(fri.mpiRankValue());
+  const Int64 begin_segment_thread = sum_nb_elem_other_proc[fri.localRankValue()];
+  const Int64 size_segment_thread = nb_elem_other_proc[fri.localRankValue()];
+
+  return segment_proc.subSpan(begin_segment_thread, size_segment_thread);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Span<const std::byte> HybridMachineMemoryWindowBaseInternal::
+windowConstView() const
+{
+  return m_mpi_window->windowConstView();
 }
 
 /*---------------------------------------------------------------------------*/

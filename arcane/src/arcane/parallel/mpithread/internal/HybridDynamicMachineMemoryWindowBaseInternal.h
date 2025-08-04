@@ -7,8 +7,10 @@
 /*---------------------------------------------------------------------------*/
 /* HybridDynamicMachineMemoryWindowBaseInternal.h              (C) 2000-2025 */
 /*                                                                           */
-/* Classe permettant de créer une fenêtre mémoire pour l'ensemble des        */
+/* Classe permettant de créer des fenêtres mémoires pour l'ensemble des      */
 /* sous-domaines en mémoire partagée des processus du même noeud.            */
+/* Les segments de ces fenêtres ne sont pas contigüs en mémoire et peuvent   */
+/* être redimensionnés.                                                      */
 /*---------------------------------------------------------------------------*/
 
 #ifndef ARCANE_PARALLEL_MPITHREAD_INTERNAL_HYBRIDDYNAMICMACHINEMEMORYWINDOWBASEINTERNAL_H
@@ -50,8 +52,11 @@ class HybridDynamicMachineMemoryWindowBaseInternal
   ConstArrayView<Int32> machineRanks() const override;
   void barrier() const override;
 
-  Span<std::byte> segment() override;
-  Span<std::byte> segment(Int32 rank) override;
+  Span<std::byte> segmentView() override;
+  Span<std::byte> segmentView(Int32 rank) override;
+
+  Span<const std::byte> segmentConstView() const override;
+  Span<const std::byte> segmentConstView(Int32 rank) const override;
 
   Int32 segmentOwner() const override;
   Int32 segmentOwner(Int32 rank) const override;
