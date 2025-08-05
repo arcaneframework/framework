@@ -1015,129 +1015,130 @@ _testProcessMessages(const ParallelExchangerOptions* exchange_options)
 void ParallelMngTest::
 _testMachineMemoryWindow()
 {
-  // nb_elem doit être paire pour ce test.
-  //![snippet_arcanedoc_parallel_shmem_usage_1]
-  constexpr Integer nb_elem = 14;
-
-  IParallelMng* pm = m_parallel_mng;
-  Integer my_rank = pm->commRank();
-
-  MachineMemoryWindow<Integer> window(pm, nb_elem);
-  //![snippet_arcanedoc_parallel_shmem_usage_1]
-
-  //![snippet_arcanedoc_parallel_shmem_usage_2]
-  ConstArrayView<Int32> machine_ranks(window.machineRanks());
-  Integer machine_nb_proc = machine_ranks.size();
-  //![snippet_arcanedoc_parallel_shmem_usage_2]
-
   {
-    Ref<IParallelTopology> topo = ParallelMngUtils::createTopologyRef(pm);
-    if (topo->machineRanks().size() != machine_ranks.size()) {
-      // Problème avec MPI. Peut intervenir si MPICH est compilé en mode ch3:sock.
-      // On ne plante pas les tests dans ce cas.
-      warning() << "Shared memory not supported"
-                << " -- Nb machine ranks with ParallelTopo : " << topo->machineRanks().size()
-                << " -- Nb machine ranks with MPI_COMM_TYPE_SHARED : " << machine_ranks.size();
-      return;
-    }
-  }
-  if (window.windowConstView().size() != machine_nb_proc * nb_elem) {
-    ARCANE_FATAL("Bad sizeWindow()");
-  }
+    // nb_elem doit être paire pour ce test.
+    //![snippet_arcanedoc_parallel_shmem_usage_1]
+    constexpr Integer nb_elem = 14;
 
-  //![snippet_arcanedoc_parallel_shmem_usage_3]
-  {
-    Span av_my_segment(window.segmentView());
+    IParallelMng* pm = m_parallel_mng;
+    Integer my_rank = pm->commRank();
 
-    Integer iter = 0;
-    for (Integer& elem : av_my_segment) {
-      elem = iter * (my_rank + 1);
-      iter++;
-    }
-  }
-  window.barrier();
-  //![snippet_arcanedoc_parallel_shmem_usage_3]
+    MachineMemoryWindow<Integer> window(pm, nb_elem);
+    //![snippet_arcanedoc_parallel_shmem_usage_1]
 
-  for (Int32 rank : machine_ranks) {
-    Span av_segment(window.segmentView(rank));
+    //![snippet_arcanedoc_parallel_shmem_usage_2]
+    ConstArrayView<Int32> machine_ranks(window.machineRanks());
+    Integer machine_nb_proc = machine_ranks.size();
+    //![snippet_arcanedoc_parallel_shmem_usage_2]
 
-    for (Integer i = 0; i < nb_elem; ++i) {
-      //info() << "Test " << i << " : " << av_segment[i] << " -- " << rank;
-      if (av_segment[i] != i * (rank + 1)) {
-        ARCANE_FATAL("Bad element in memory window -- Expected : {0} -- Found : {1}", (i * (rank + 1)), av_segment[i]);
+    {
+      Ref<IParallelTopology> topo = ParallelMngUtils::createTopologyRef(pm);
+      if (topo->machineRanks().size() != machine_ranks.size()) {
+        // Problème avec MPI. Peut intervenir si MPICH est compilé en mode ch3:sock.
+        // On ne plante pas les tests dans ce cas.
+        warning() << "Shared memory not supported"
+                  << " -- Nb machine ranks with ParallelTopo : " << topo->machineRanks().size()
+                  << " -- Nb machine ranks with MPI_COMM_TYPE_SHARED : " << machine_ranks.size();
+        return;
       }
     }
-  }
+    if (window.windowConstView().size() != machine_nb_proc * nb_elem) {
+      ARCANE_FATAL("Bad sizeWindow()");
+    }
 
-  //![snippet_arcanedoc_parallel_shmem_usage_4]
-  for (Int32 rank : machine_ranks) {
-    Span av_segment(window.segmentConstView(rank));
+    //![snippet_arcanedoc_parallel_shmem_usage_3]
+    {
+      Span av_my_segment(window.segmentView());
 
-    for (Integer i = 0; i < nb_elem; ++i) {
-      if (av_segment[i] != i * (rank + 1)) {
-        ARCANE_FATAL("Bad element in memory window -- Expected : {0} -- Found : {1}", (i * (rank + 1)), av_segment[i]);
+      Integer iter = 0;
+      for (Integer& elem : av_my_segment) {
+        elem = iter * (my_rank + 1);
+        iter++;
       }
     }
-  }
-  //![snippet_arcanedoc_parallel_shmem_usage_4]
+    window.barrier();
+    //![snippet_arcanedoc_parallel_shmem_usage_3]
 
-  //![snippet_arcanedoc_parallel_shmem_usage_5]
-  window.barrier();
+    for (Int32 rank : machine_ranks) {
+      Span av_segment(window.segmentView(rank));
 
-  constexpr Integer nb_elem_div = nb_elem / 2;
-
-  window.resizeSegment(nb_elem_div);
-  //![snippet_arcanedoc_parallel_shmem_usage_5]
-
-  for (Int32 rank : machine_ranks) {
-    Span av_segment(window.segmentConstView(rank));
-
-    for (Integer i = 0; i < nb_elem_div; ++i) {
-      //info() << "Test2 " << i << " : " << av_segment[i] << " -- " << rank;
-      Int32 procdiv2 = rank / 2;
-      Integer i2 = (rank % 2 == 0 ? i : i + nb_elem_div);
-      if (av_segment[i] != i2 * (procdiv2 + 1)) {
-        ARCANE_FATAL("Bad element in memory window -- Expected : {0} -- Found : {1}", (i * (rank + 1)), av_segment[i]);
-      }
-    }
-  }
-
-  window.barrier();
-  window.resizeSegment(nb_elem);
-
-  //![snippet_arcanedoc_parallel_shmem_usage_6]
-  if (my_rank == machine_ranks[0]) {
-    Span av_window(window.windowView());
-    for (Integer j = 0; j < machine_nb_proc; ++j) {
       for (Integer i = 0; i < nb_elem; ++i) {
-        av_window[i + (j * nb_elem)] = machine_ranks[j];
-      }
-    }
-  }
-  window.barrier();
-
-  {
-    Span av_window(window.windowConstView());
-    for (Integer j = 0; j < machine_nb_proc; ++j) {
-      for (Integer i = 0; i < nb_elem; ++i) {
-        if (av_window[i + (j * nb_elem)] != machine_ranks[j]) {
-          ARCANE_FATAL("Bad element in memory window -- Expected : {0} -- Found : {1}", machine_ranks[j], av_window[i + (j * nb_elem)]);
+        //info() << "Test " << i << " : " << av_segment[i] << " -- " << rank;
+        if (av_segment[i] != i * (rank + 1)) {
+          ARCANE_FATAL("Bad element in memory window -- Expected : {0} -- Found : {1}", (i * (rank + 1)), av_segment[i]);
         }
       }
     }
-  }
-  window.barrier();
-  //![snippet_arcanedoc_parallel_shmem_usage_6]
 
-  {
-    ArrayView<Integer> my_rank_av(1, &my_rank);
-    DynamicMachineMemoryWindow<Integer> test(pm, 1);
-    {
-      ConstArrayView machine_ranks2(test.machineRanks());
-      if (machine_ranks != machine_ranks2) {
-        ARCANE_FATAL("Incoherence machineRanks() of MachineMemWin and machineRanks() of DynamicMachineMemWin");
+    //![snippet_arcanedoc_parallel_shmem_usage_4]
+    for (Int32 rank : machine_ranks) {
+      Span av_segment(window.segmentConstView(rank));
+
+      for (Integer i = 0; i < nb_elem; ++i) {
+        if (av_segment[i] != i * (rank + 1)) {
+          ARCANE_FATAL("Bad element in memory window -- Expected : {0} -- Found : {1}", (i * (rank + 1)), av_segment[i]);
+        }
       }
     }
+    //![snippet_arcanedoc_parallel_shmem_usage_4]
+
+    //![snippet_arcanedoc_parallel_shmem_usage_5]
+    window.barrier();
+
+    constexpr Integer nb_elem_div = nb_elem / 2;
+
+    window.resizeSegment(nb_elem_div);
+    //![snippet_arcanedoc_parallel_shmem_usage_5]
+
+    for (Int32 rank : machine_ranks) {
+      Span av_segment(window.segmentConstView(rank));
+
+      for (Integer i = 0; i < nb_elem_div; ++i) {
+        //info() << "Test2 " << i << " : " << av_segment[i] << " -- " << rank;
+        Int32 procdiv2 = rank / 2;
+        Integer i2 = (rank % 2 == 0 ? i : i + nb_elem_div);
+        if (av_segment[i] != i2 * (procdiv2 + 1)) {
+          ARCANE_FATAL("Bad element in memory window -- Expected : {0} -- Found : {1}", (i * (rank + 1)), av_segment[i]);
+        }
+      }
+    }
+
+    window.barrier();
+    window.resizeSegment(nb_elem);
+
+    //![snippet_arcanedoc_parallel_shmem_usage_6]
+    if (my_rank == machine_ranks[0]) {
+      Span av_window(window.windowView());
+      for (Integer j = 0; j < machine_nb_proc; ++j) {
+        for (Integer i = 0; i < nb_elem; ++i) {
+          av_window[i + (j * nb_elem)] = machine_ranks[j];
+        }
+      }
+    }
+    window.barrier();
+
+    {
+      Span av_window(window.windowConstView());
+      for (Integer j = 0; j < machine_nb_proc; ++j) {
+        for (Integer i = 0; i < nb_elem; ++i) {
+          if (av_window[i + (j * nb_elem)] != machine_ranks[j]) {
+            ARCANE_FATAL("Bad element in memory window -- Expected : {0} -- Found : {1}", machine_ranks[j], av_window[i + (j * nb_elem)]);
+          }
+        }
+      }
+    }
+    window.barrier();
+    //![snippet_arcanedoc_parallel_shmem_usage_6]
+  }
+
+  {
+    IParallelMng* pm = m_parallel_mng;
+    Integer my_rank = pm->commRank();
+
+    ArrayView<Integer> my_rank_av(1, &my_rank);
+    DynamicMachineMemoryWindow<Integer> test(pm, 1);
+    ConstArrayView machine_ranks(test.machineRanks());
+
     Int32 pos_in_machine_ranks = -1;
     for (Integer i = 0; i < machine_ranks.size(); ++i) {
       if (machine_ranks[i] == my_rank) {
@@ -1281,7 +1282,7 @@ _testMachineMemoryWindow()
         else
           value--;
 
-        if (value == machine_nb_proc) {
+        if (value == machine_ranks.size()) {
           pingpong = !pingpong;
           value--;
         }
@@ -1297,6 +1298,89 @@ _testMachineMemoryWindow()
       }
       debug() << ref;
     }
+  }
+
+  {
+    //![snippet_arcanedoc_parallel_shmem_usage_7]
+    IParallelMng* pm = m_parallel_mng;
+    Integer my_rank = pm->commRank();
+
+    DynamicMachineMemoryWindow<Integer> window(pm, 5);
+    ConstArrayView machine_ranks(window.machineRanks());
+    //![snippet_arcanedoc_parallel_shmem_usage_7]
+    {
+      //![snippet_arcanedoc_parallel_shmem_usage_8]
+      DynamicMachineMemoryWindow<Integer> window2(pm);
+      //![snippet_arcanedoc_parallel_shmem_usage_8]
+    }
+    //![snippet_arcanedoc_parallel_shmem_usage_9]
+    {
+      Span av_my_segment(window.segmentView());
+
+      Integer iter = 0;
+      for (Integer& elem : av_my_segment) {
+        elem = iter * (my_rank + 1);
+        iter++;
+      }
+    }
+    window.barrier();
+    for (Int32 rank : machine_ranks) {
+      Span av_segment(window.segmentConstView(rank));
+
+      for (Integer i = 0; i < 5; ++i) {
+        if (av_segment[i] != i * (rank + 1)) {
+          ARCANE_FATAL("Bad element in memory window -- Expected : {0} -- Found : {1}", (i * (rank + 1)), av_segment[i]);
+        }
+      }
+    }
+    //![snippet_arcanedoc_parallel_shmem_usage_9]
+    //![snippet_arcanedoc_parallel_shmem_usage_10]
+    Integer pos_in_machine_ranks = -1;
+    for (Integer i = 0; i < machine_ranks.size(); ++i) {
+      if (my_rank == machine_ranks[i]) {
+        pos_in_machine_ranks = i;
+        break;
+      }
+    }
+    {
+      UniqueArray<Integer> buf;
+      if (pos_in_machine_ranks == 0) {
+        for (Integer i = 0; i < 10; ++i) {
+          buf.add(i);
+        }
+      }
+      window.add(buf);
+    }
+    //![snippet_arcanedoc_parallel_shmem_usage_10]
+    //![snippet_arcanedoc_parallel_shmem_usage_11]
+    window.reserve(20);
+    //![snippet_arcanedoc_parallel_shmem_usage_11]
+    //![snippet_arcanedoc_parallel_shmem_usage_12]
+    window.resize(12);
+    info() << window.segmentConstView().size();
+    //![snippet_arcanedoc_parallel_shmem_usage_12]
+    //![snippet_arcanedoc_parallel_shmem_usage_13]
+    Int32 voisin = my_rank;
+    if (my_rank % 2 == 0 && pos_in_machine_ranks + 1 < machine_ranks.size()) {
+      voisin = machine_ranks[pos_in_machine_ranks + 1];
+    }
+    else if (my_rank % 2 == 1 && pos_in_machine_ranks - 1 >= 0) {
+      voisin = machine_ranks[pos_in_machine_ranks - 1];
+    }
+
+    window.exchangeSegmentWith(voisin);
+    info() << (window.segmentOwner() == voisin);
+    //![snippet_arcanedoc_parallel_shmem_usage_13]
+    //![snippet_arcanedoc_parallel_shmem_usage_14]
+    {
+      UniqueArray<Integer> buf;
+      for (Integer i = 0; i < 10; ++i) {
+        buf.add(my_rank);
+      }
+      window.add(buf);
+    }
+    window.resetExchanges();
+    //![snippet_arcanedoc_parallel_shmem_usage_14]
   }
 }
 
