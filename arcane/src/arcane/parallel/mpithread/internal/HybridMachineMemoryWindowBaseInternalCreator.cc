@@ -99,10 +99,12 @@ createWindow(Int32 my_rank_global, Int64 sizeof_segment, Int32 sizeof_type, MpiP
   m_barrier->wait();
 
   // Ces tableaux doivent être delete par HybridMachineMemoryWindowBaseInternal (rang 0 uniquement).
-  m_sizeof_sub_segments.reset();
-  m_sum_sizeof_sub_segments.reset();
-  m_sizeof_segment_local_proc = 0;
-  m_window.reset();
+  if (my_rank_local_proc == 0) {
+    m_sizeof_sub_segments.reset();
+    m_sum_sizeof_sub_segments.reset();
+    m_sizeof_segment_local_proc = 0;
+    m_window.reset();
+  }
 
   return window_obj;
 }
@@ -142,7 +144,9 @@ createDynamicWindow(Int32 my_rank_global, Int64 sizeof_segment, Int32 sizeof_typ
   m_barrier->wait();
 
   // Ces tableaux doivent être delete par HybridDynamicMachineMemoryWindowBaseInternal (rang local 0 uniquement).
-  m_windows = nullptr;
+  if (my_rank_local_proc == 0) {
+    m_windows = nullptr;
+  }
 
   return window_obj;
 }

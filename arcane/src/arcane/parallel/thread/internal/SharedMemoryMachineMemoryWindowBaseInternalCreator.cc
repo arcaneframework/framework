@@ -72,10 +72,12 @@ createWindow(Int32 my_rank, Int64 sizeof_segment, Int32 sizeof_type)
   m_barrier->wait();
 
   // Ces tableaux doivent être delete par SharedMemoryMachineMemoryWindowBaseInternal (rang 0 uniquement).
-  m_sizeof_segments = nullptr;
-  m_sum_sizeof_segments = nullptr;
-  m_window = nullptr;
-  m_sizeof_window = 0;
+  if (my_rank == 0) {
+    m_sizeof_segments = nullptr;
+    m_sum_sizeof_segments = nullptr;
+    m_window = nullptr;
+    m_sizeof_window = 0;
+  }
 
   return window_obj;
 }
@@ -91,6 +93,7 @@ createDynamicWindow(Int32 my_rank, Int64 sizeof_segment, Int32 sizeof_type)
     m_owner_segments = new Int32[m_nb_rank];
   }
   m_barrier->wait();
+
   m_windows[my_rank].resize(sizeof_segment);
   m_owner_segments[my_rank] = my_rank;
 
@@ -98,8 +101,10 @@ createDynamicWindow(Int32 my_rank, Int64 sizeof_segment, Int32 sizeof_type)
   m_barrier->wait();
 
   // Ces tableaux doivent être delete par SharedMemoryDynamicMachineMemoryWindowBaseInternal (rang 0 uniquement).
-  m_windows = nullptr;
-  m_owner_segments = nullptr;
+  if (my_rank == 0) {
+    m_windows = nullptr;
+    m_owner_segments = nullptr;
+  }
 
   return window_obj;
 }
