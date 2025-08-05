@@ -22,6 +22,9 @@
     <simple name="stop-criteria-value" type="real">
       <description>Expected accuracy</description>
     </simple>
+    <simple name="breakdown-tol" type="real" default="0.">
+      <description>Divergence breakdown tolerance during GMRES restart</description>
+    </simple>
 
     <simple name="right" type="bool" default="false">
       <description>Applying preconditioner on right side instead of left</description>
