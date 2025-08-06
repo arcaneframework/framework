@@ -683,7 +683,12 @@ _requestRealloc(Int32 owner_pos_segment) const
 void MpiDynamicMultiMachineMemoryWindowBaseInternal::
 _executeRealloc()
 {
+  // Barrière importante car tout le monde doit savoir que l'on doit
+  // redimensionner un des segments que nous possédons.
   MPI_Barrier(m_comm_machine);
+
+  // Pas besoin de barrière car MPI_Win_allocate_shared() de _realloc() est
+  // bloquant.
   _realloc();
 
   for (Integer num_seg = 0; num_seg < m_nb_segments_per_proc; ++num_seg) {
@@ -691,6 +696,13 @@ _executeRealloc()
     const Int32 segment_infos_pos = m_id_segments[owner_id_pos] + m_owner_segments[owner_id_pos] * m_nb_segments_per_proc;
     m_need_resize[segment_infos_pos] = -1;
   }
+
+  // Barrière importante dans le cas où un MPI_Win_shared_query() de
+  // _reallocCollective() durerait trop longtemps (un autre processus pourrait
+  // rappeler cette méthode et remettre m_need_resize[m_owner_segment] à
+  // true => deadlock dans _reallocCollective() sur MPI_Win_allocate_shared()
+  // à cause du continue).
+  MPI_Barrier(m_comm_machine);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -729,6 +741,7 @@ _realloc()
       // Si size_seg == 0 alors ptr_seg == nullptr.
       int error = MPI_Win_allocate_shared(size_seg, m_sizeof_type, win_info, m_comm_machine, &ptr_new_seg, &m_all_mpi_win[local_segment_infos_pos]);
       if (error != MPI_SUCCESS) {
+        MPI_Win_free(&old_win);
         ARCCORE_FATAL("Error with MPI_Win_allocate_shared() call");
       }
 
@@ -750,6 +763,7 @@ _realloc()
           // segment d'une taille d'au moins m_sizeof_type.
           error = MPI_Win_shared_query(old_win, m_comm_machine_rank, &size_old_seg, &size_type, &ptr_old_seg);
           if (error != MPI_SUCCESS || ptr_old_seg == nullptr) {
+            MPI_Win_free(&old_win);
             ARCCORE_FATAL("Error with MPI_Win_shared_query() call");
           }
         }
@@ -762,6 +776,7 @@ _realloc()
           // segment d'une taille d'au moins m_sizeof_type.
           error = MPI_Win_shared_query(m_all_mpi_win[local_segment_infos_pos], m_comm_machine_rank, &mpi_reserved_size_new_seg, &size_type, &ptr_seg);
           if (error != MPI_SUCCESS || ptr_seg == nullptr || ptr_seg != ptr_new_seg) {
+            MPI_Win_free(&old_win);
             ARCCORE_FATAL("Error with MPI_Win_shared_query() call");
           }
         }

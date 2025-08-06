@@ -321,6 +321,11 @@ add(Span<const std::byte> elem)
     m_reserved_part_span[pos_win] = elem[pos_elem];
   }
   m_sizeof_used_part[m_owner_segment] = future_sizeof_win;
+
+  // Barrière car d'autres peuvent utiliser la taille du segment
+  // (m_sizeof_used_part) que nous possédons (segmentView(Int32 rank) par
+  // exemple).
+  MPI_Barrier(m_comm_machine);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -456,6 +461,11 @@ resize(Int64 new_size)
     _reallocBarrier();
   }
   m_sizeof_used_part[m_owner_segment] = new_size;
+
+  // Barrière car d'autres peuvent utiliser la taille du segment
+  // (m_sizeof_used_part) que nous possédons (segmentView(Int32 rank) par
+  // exemple).
+  MPI_Barrier(m_comm_machine);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -465,6 +475,7 @@ void MpiDynamicMachineMemoryWindowBaseInternal::
 resize()
 {
   _reallocBarrier();
+  MPI_Barrier(m_comm_machine);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -489,10 +500,22 @@ _reallocBarrier(Int64 new_sizeof)
 {
   m_need_resize[m_owner_segment] = true;
 
+  // Barrière importante car tout le monde doit savoir que l'on doit
+  // redimensionner le segment que nous possédons.
   MPI_Barrier(m_comm_machine);
+
   _reallocCollective(new_sizeof);
 
+  // Pas besoin de barrière car MPI_Win_allocate_shared() de
+  // _reallocCollective() est bloquant.
   m_need_resize[m_owner_segment] = false;
+
+  // Barrière importante dans le cas où un MPI_Win_shared_query() de
+  // _reallocCollective() durerait trop longtemps (un autre processus pourrait
+  // rappeler cette méthode et remettre m_need_resize[m_owner_segment] à
+  // true => deadlock dans _reallocCollective() sur MPI_Win_allocate_shared()
+  // à cause du continue).
+  MPI_Barrier(m_comm_machine);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -503,6 +526,7 @@ _reallocBarrier()
 {
   MPI_Barrier(m_comm_machine);
   _reallocCollective(0);
+  MPI_Barrier(m_comm_machine);
 }
 
 /*---------------------------------------------------------------------------*/
