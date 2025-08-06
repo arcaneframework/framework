@@ -145,6 +145,7 @@ add(Span<const std::byte> elem)
     ARCCORE_FATAL("Sizeof elem not valid");
   }
   m_windows_span[m_owner_segments_span[m_my_rank]].addRange(elem);
+  m_barrier->wait();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -153,6 +154,7 @@ add(Span<const std::byte> elem)
 void SharedMemoryDynamicMachineMemoryWindowBaseInternal::
 add()
 {
+  m_barrier->wait();
   m_barrier->wait();
 }
 
@@ -203,6 +205,7 @@ resetExchanges()
 {
   m_barrier->wait();
   m_owner_segments_span[m_my_rank] = m_my_rank;
+  m_barrier->wait();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -213,6 +216,7 @@ reserve(Int64 new_capacity)
 {
   m_barrier->wait();
   m_windows_span[m_owner_segments_span[m_my_rank]].reserve(new_capacity);
+  m_barrier->wait();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -221,6 +225,7 @@ reserve(Int64 new_capacity)
 void SharedMemoryDynamicMachineMemoryWindowBaseInternal::
 reserve()
 {
+  m_barrier->wait();
   m_barrier->wait();
 }
 
@@ -232,6 +237,7 @@ resize(Int64 new_size)
 {
   m_barrier->wait();
   m_windows_span[m_owner_segments_span[m_my_rank]].resize(new_size);
+  m_barrier->wait();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -240,6 +246,7 @@ resize(Int64 new_size)
 void SharedMemoryDynamicMachineMemoryWindowBaseInternal::
 resize()
 {
+  m_barrier->wait();
   m_barrier->wait();
 }
 
@@ -251,6 +258,7 @@ shrink()
 {
   m_barrier->wait();
   m_windows_span[m_owner_segments_span[m_my_rank]].shrink();
+  m_barrier->wait();
 }
 
 /*---------------------------------------------------------------------------*/
