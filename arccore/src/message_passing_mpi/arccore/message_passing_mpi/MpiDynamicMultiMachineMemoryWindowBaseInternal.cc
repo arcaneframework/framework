@@ -30,15 +30,13 @@ MpiDynamicMultiMachineMemoryWindowBaseInternal::
 MpiDynamicMultiMachineMemoryWindowBaseInternal(SmallSpan<Int64> sizeof_segments, Int32 nb_segments_per_proc, Int32 sizeof_type, const MPI_Comm& comm_machine, Int32 comm_machine_rank, Int32 comm_machine_size, ConstArrayView<Int32> machine_ranks)
 : m_win_need_resize()
 , m_win_actual_sizeof()
-, m_win_owner_pos_segments()
+, m_win_target_segments()
 , m_comm_machine(comm_machine)
 , m_comm_machine_size(comm_machine_size)
 , m_comm_machine_rank(comm_machine_rank)
 , m_sizeof_type(sizeof_type)
 , m_nb_segments_per_proc(nb_segments_per_proc)
 , m_machine_ranks(machine_ranks)
-, m_exchange_requests(std::make_unique<Int32[]>(nb_segments_per_proc * 2))
-, m_exchange_requested(false)
 , m_add_requests(std::make_unique<Span<const std::byte>[]>(nb_segments_per_proc))
 , m_add_requested(false)
 , m_resize_requests(std::make_unique<Int64[]>(nb_segments_per_proc))
@@ -58,19 +56,11 @@ MpiDynamicMultiMachineMemoryWindowBaseInternal(SmallSpan<Int64> sizeof_segments,
   m_all_mpi_win.resize(m_comm_machine_size * m_nb_segments_per_proc);
   m_reserved_part_span.resize(m_nb_segments_per_proc);
 
-  m_exchange_requests_owner_segment = SmallSpan<Int32>{ m_exchange_requests.get(), nb_segments_per_proc };
-  m_exchange_requests_pos_segment = SmallSpan<Int32>{ m_exchange_requests.get() + nb_segments_per_proc, nb_segments_per_proc };
-
   m_add_requests_span = SmallSpan<Span<const std::byte>>{ m_add_requests.get(), nb_segments_per_proc };
-
   m_resize_requests_span = SmallSpan<Int64>{ m_resize_requests.get(), nb_segments_per_proc };
 
   for (Integer num_seg = 0; num_seg < m_nb_segments_per_proc; ++num_seg) {
-    m_exchange_requests_owner_segment[num_seg] = comm_machine_rank;
-    m_exchange_requests_pos_segment[num_seg] = num_seg;
-
     m_add_requests_span[num_seg] = Span<const std::byte>{ nullptr, 0 };
-
     m_resize_requests_span[num_seg] = -1;
   }
 
@@ -186,7 +176,7 @@ MpiDynamicMultiMachineMemoryWindowBaseInternal(SmallSpan<Int64> sizeof_segments,
     Int32* ptr_seg = nullptr;
     Int32* ptr_win = nullptr;
     {
-      int error = MPI_Win_allocate_shared(static_cast<Int64>(sizeof(Int32)) * m_nb_segments_per_proc * 2, sizeof(Int32), win_info_false, m_comm_machine, &ptr_seg, &m_win_owner_pos_segments);
+      int error = MPI_Win_allocate_shared(static_cast<Int64>(sizeof(Int32)) * m_nb_segments_per_proc, sizeof(Int32), win_info_false, m_comm_machine, &ptr_seg, &m_win_target_segments);
 
       if (error != MPI_SUCCESS) {
         ARCCORE_FATAL("Error with MPI_Win_allocate_shared() call");
@@ -195,21 +185,19 @@ MpiDynamicMultiMachineMemoryWindowBaseInternal(SmallSpan<Int64> sizeof_segments,
     {
       MPI_Aint size_seg;
       int size_type;
-      int error = MPI_Win_shared_query(m_win_owner_pos_segments, 0, &size_seg, &size_type, &ptr_win);
+      int error = MPI_Win_shared_query(m_win_target_segments, 0, &size_seg, &size_type, &ptr_win);
 
       if (error != MPI_SUCCESS) {
         ARCCORE_FATAL("Error with MPI_Win_shared_query() call");
       }
 
-      m_owner_segments = Span<Int32>{ ptr_win, m_comm_machine_size * m_nb_segments_per_proc };
-      m_id_segments = Span<Int32>{ ptr_win + m_comm_machine_size * m_nb_segments_per_proc, m_comm_machine_size * m_nb_segments_per_proc };
+      m_target_segments = Span<Int32>{ ptr_win, m_comm_machine_size * m_nb_segments_per_proc };
 
       for (Integer i = 0; i < m_nb_segments_per_proc; ++i) {
-        m_owner_segments[i + pos_my_wins] = m_comm_machine_rank;
-        m_id_segments[i + pos_my_wins] = i;
+        m_target_segments[i + pos_my_wins] = -1;
       }
     }
-    if (ptr_win + pos_my_wins * 2 != ptr_seg) {
+    if (ptr_win + pos_my_wins != ptr_seg) {
       ARCCORE_FATAL("m_win_owner_segments is noncontig");
     }
   }
@@ -231,7 +219,7 @@ MpiDynamicMultiMachineMemoryWindowBaseInternal::
   }
   MPI_Win_free(&m_win_need_resize);
   MPI_Win_free(&m_win_actual_sizeof);
-  MPI_Win_free(&m_win_owner_pos_segments);
+  MPI_Win_free(&m_win_target_segments);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -267,9 +255,7 @@ barrier() const
 Span<std::byte> MpiDynamicMultiMachineMemoryWindowBaseInternal::
 segmentView(Int32 num_seg)
 {
-  const Int32 owner_id_pos = num_seg + m_comm_machine_rank * m_nb_segments_per_proc;
-  const Int32 segment_infos_pos = m_id_segments[owner_id_pos] + m_owner_segments[owner_id_pos] * m_nb_segments_per_proc;
-
+  const Int32 segment_infos_pos = num_seg + m_comm_machine_rank * m_nb_segments_per_proc;
   return m_reserved_part_span[num_seg].subSpan(0, m_sizeof_used_part[segment_infos_pos]);
 }
 
@@ -279,13 +265,12 @@ segmentView(Int32 num_seg)
 Span<std::byte> MpiDynamicMultiMachineMemoryWindowBaseInternal::
 segmentView(Int32 rank, Int32 num_seg)
 {
-  const Int32 owner_id_pos = num_seg + _worldToMachine(rank) * m_nb_segments_per_proc;
-  const Int32 segment_infos_pos = m_id_segments[owner_id_pos] + m_owner_segments[owner_id_pos] * m_nb_segments_per_proc;
+  const Int32 segment_infos_pos = num_seg + _worldToMachine(rank) * m_nb_segments_per_proc;
 
   MPI_Aint size_seg;
   int size_type;
   std::byte* ptr_seg = nullptr;
-  int error = MPI_Win_shared_query(m_all_mpi_win[segment_infos_pos], m_owner_segments[owner_id_pos], &size_seg, &size_type, &ptr_seg);
+  int error = MPI_Win_shared_query(m_all_mpi_win[segment_infos_pos], rank, &size_seg, &size_type, &ptr_seg);
 
   if (error != MPI_SUCCESS) {
     ARCCORE_FATAL("Error with MPI_Win_shared_query() call");
@@ -300,9 +285,7 @@ segmentView(Int32 rank, Int32 num_seg)
 Span<const std::byte> MpiDynamicMultiMachineMemoryWindowBaseInternal::
 segmentConstView(Int32 num_seg) const
 {
-  const Int32 owner_id_pos = num_seg + m_comm_machine_rank * m_nb_segments_per_proc;
-  const Int32 segment_infos_pos = m_id_segments[owner_id_pos] + m_owner_segments[owner_id_pos] * m_nb_segments_per_proc;
-
+  const Int32 segment_infos_pos = num_seg + m_comm_machine_rank * m_nb_segments_per_proc;
   return m_reserved_part_span[num_seg].subSpan(0, m_sizeof_used_part[segment_infos_pos]);
 }
 
@@ -312,59 +295,18 @@ segmentConstView(Int32 num_seg) const
 Span<const std::byte> MpiDynamicMultiMachineMemoryWindowBaseInternal::
 segmentConstView(Int32 rank, Int32 num_seg) const
 {
-  const Int32 owner_id_pos = num_seg + _worldToMachine(rank) * m_nb_segments_per_proc;
-  const Int32 segment_infos_pos = m_id_segments[owner_id_pos] + m_owner_segments[owner_id_pos] * m_nb_segments_per_proc;
+  const Int32 segment_infos_pos = num_seg + _worldToMachine(rank) * m_nb_segments_per_proc;
 
   MPI_Aint size_seg;
   int size_type;
   std::byte* ptr_seg = nullptr;
-  int error = MPI_Win_shared_query(m_all_mpi_win[segment_infos_pos], m_owner_segments[owner_id_pos], &size_seg, &size_type, &ptr_seg);
+  int error = MPI_Win_shared_query(m_all_mpi_win[segment_infos_pos], rank, &size_seg, &size_type, &ptr_seg);
 
   if (error != MPI_SUCCESS) {
     ARCCORE_FATAL("Error with MPI_Win_shared_query() call");
   }
 
   return Span<const std::byte>{ ptr_seg, m_sizeof_used_part[segment_infos_pos] };
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-Int32 MpiDynamicMultiMachineMemoryWindowBaseInternal::
-segmentOwner(Int32 num_seg) const
-{
-  const Int32 owner_id_pos = num_seg + m_comm_machine_rank * m_nb_segments_per_proc;
-  return _machineToWorld(m_owner_segments[owner_id_pos]);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-Int32 MpiDynamicMultiMachineMemoryWindowBaseInternal::
-segmentOwner(Int32 rank, Int32 num_seg) const
-{
-  const Int32 owner_id_pos = num_seg + _worldToMachine(rank) * m_nb_segments_per_proc;
-  return _machineToWorld(m_owner_segments[owner_id_pos]);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-Int32 MpiDynamicMultiMachineMemoryWindowBaseInternal::
-segmentPos(Int32 num_seg) const
-{
-  const Int32 owner_id_pos = num_seg + m_comm_machine_rank * m_nb_segments_per_proc;
-  return m_id_segments[owner_id_pos];
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-Int32 MpiDynamicMultiMachineMemoryWindowBaseInternal::
-segmentPos(Int32 rank, Int32 num_seg) const
-{
-  const Int32 owner_id_pos = num_seg + _worldToMachine(rank) * m_nb_segments_per_proc;
-  return m_id_segments[owner_id_pos];
 }
 
 /*---------------------------------------------------------------------------*/
@@ -380,8 +322,7 @@ requestAdd(Int32 num_seg, Span<const std::byte> elem)
     return;
   }
 
-  const Int32 owner_id_pos = num_seg + m_comm_machine_rank * m_nb_segments_per_proc;
-  const Int32 segment_infos_pos = m_id_segments[owner_id_pos] + m_owner_segments[owner_id_pos] * m_nb_segments_per_proc;
+  const Int32 segment_infos_pos = num_seg + m_comm_machine_rank * m_nb_segments_per_proc;
 
   const Int64 actual_sizeof_win = m_sizeof_used_part[segment_infos_pos];
   const Int64 future_sizeof_win = actual_sizeof_win + elem.size();
@@ -416,8 +357,7 @@ executeAdd()
       continue;
     }
 
-    const Int32 owner_id_pos = num_seg + m_comm_machine_rank * m_nb_segments_per_proc;
-    const Int32 segment_infos_pos = m_id_segments[owner_id_pos] + m_owner_segments[owner_id_pos] * m_nb_segments_per_proc;
+    const Int32 segment_infos_pos = num_seg + m_comm_machine_rank * m_nb_segments_per_proc;
 
     const Int64 actual_sizeof_win = m_sizeof_used_part[segment_infos_pos];
     const Int64 future_sizeof_win = actual_sizeof_win + m_add_requests_span[num_seg].size();
@@ -439,117 +379,152 @@ executeAdd()
 /*---------------------------------------------------------------------------*/
 
 void MpiDynamicMultiMachineMemoryWindowBaseInternal::
-requestExchangeSegmentWith(Int32 num_seg_src, Int32 rank_dst, Int32 num_seg_dst)
+requestAddToAnotherSegment(Int32 thread, Int32 rank, Int32 num_seg, Span<const std::byte> elem)
 {
-  m_exchange_requests_owner_segment[num_seg_src] = _worldToMachine(rank_dst);
-  m_exchange_requests_pos_segment[num_seg_src] = num_seg_dst;
-  m_exchange_requested = true; // TODO Atomic ?
+  if (elem.size() % m_sizeof_type) {
+    ARCCORE_FATAL("Sizeof elem not valid");
+  }
+  if (elem.empty() || elem.data() == nullptr) {
+    return;
+  }
+
+  const Int32 machine_rank = _worldToMachine(rank);
+  const Int32 target_segment_infos_pos = num_seg + machine_rank * m_nb_segments_per_proc;
+
+  {
+    const Int32 segment_infos_pos = thread + m_comm_machine_rank * m_nb_segments_per_proc;
+    m_target_segments[segment_infos_pos] = target_segment_infos_pos;
+  }
+
+  Span<std::byte> rank_reserved_part_span;
+  {
+    MPI_Aint size_seg;
+    std::byte* ptr_seg = nullptr;
+    int size_type;
+    int error = MPI_Win_shared_query(m_all_mpi_win[target_segment_infos_pos], machine_rank, &size_seg, &size_type, &ptr_seg);
+
+    if (error != MPI_SUCCESS) {
+      ARCCORE_FATAL("Error with MPI_Win_shared_query() call");
+    }
+    rank_reserved_part_span = Span<std::byte>{ ptr_seg, size_seg };
+  }
+
+  const Int64 actual_sizeof_win = m_sizeof_used_part[target_segment_infos_pos];
+  const Int64 future_sizeof_win = actual_sizeof_win + elem.size();
+  const Int64 old_reserved = rank_reserved_part_span.size();
+
+  if (future_sizeof_win > old_reserved) {
+    _requestRealloc(target_segment_infos_pos, future_sizeof_win);
+  }
+  else {
+    _requestRealloc(target_segment_infos_pos);
+  }
+
+  m_add_requests_span[thread] = elem;
+  m_add_requested = true; // TODO Atomic ?
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void MpiDynamicMultiMachineMemoryWindowBaseInternal::
-executeExchangeSegmentWith()
+executeAddToAnotherSegment()
 {
-  if (!m_exchange_requested) {
-    MPI_Barrier(m_comm_machine);
-    MPI_Barrier(m_comm_machine);
-    return;
-  }
-  m_exchange_requested = false;
-
-  auto owner_segments_i_have = std::make_unique<Int32[]>(m_nb_segments_per_proc);
-  auto pos_segments_i_have = std::make_unique<Int32[]>(m_nb_segments_per_proc);
-  auto owner_segments_i_want = std::make_unique<Int32[]>(m_nb_segments_per_proc);
-  auto pos_segments_i_want = std::make_unique<Int32[]>(m_nb_segments_per_proc);
-
-  for (Integer num_seg = 0; num_seg < m_nb_segments_per_proc; ++num_seg) {
-    // La position du segment que l'on possède actuellement.
-    const Int32 owner_id_pos = num_seg + m_comm_machine_rank * m_nb_segments_per_proc;
-
-    // La position du segment que l'on souhaiterait avoir.
-    const Int32 target_owner_id_pos = m_exchange_requests_pos_segment[num_seg] + m_exchange_requests_owner_segment[num_seg] * m_nb_segments_per_proc;
-
-    // On sauve le segment actuel pour la vérification.
-    owner_segments_i_have[num_seg] = m_owner_segments[owner_id_pos];
-    pos_segments_i_have[num_seg] = m_id_segments[owner_id_pos];
-
-    // On enregistre le segment que l'on souhaiterait.
-    owner_segments_i_want[num_seg] = m_owner_segments[target_owner_id_pos];
-    pos_segments_i_want[num_seg] = m_id_segments[target_owner_id_pos];
-  }
-
   MPI_Barrier(m_comm_machine);
 
+  auto is_my_seg_edited = std::make_unique<bool[]>(m_comm_machine_size);
   for (Integer num_seg = 0; num_seg < m_nb_segments_per_proc; ++num_seg) {
-
-    // La position du segment que l'on possède actuellement.
-    const Int32 owner_id_pos = num_seg + m_comm_machine_rank * m_nb_segments_per_proc;
-
-    // On le remplace par le segment que l'on souhaite.
-    m_owner_segments[owner_id_pos] = owner_segments_i_want[num_seg];
-    m_id_segments[owner_id_pos] = pos_segments_i_want[num_seg];
+    for (const Int32 rank_asked : m_target_segments) {
+      if (rank_asked == m_comm_machine_rank) {
+        is_my_seg_edited[num_seg] = true;
+        break;
+      }
+    }
   }
 
-  MPI_Barrier(m_comm_machine);
+  if (!m_add_requested) {
+    _executeRealloc();
+  }
 
-  for (Integer num_seg = 0; num_seg < m_nb_segments_per_proc; ++num_seg) {
-    {
-      // L'échange étant symétrique, on doit retrouver notre ancien segment à la position du segment que l'on a pris.
-      const Int32 target_owner_id_pos = m_exchange_requests_pos_segment[num_seg] + m_exchange_requests_owner_segment[num_seg] * m_nb_segments_per_proc;
-      if (m_owner_segments[target_owner_id_pos] != owner_segments_i_have[num_seg] || m_id_segments[target_owner_id_pos] != pos_segments_i_have[num_seg]) {
-        ARCCORE_FATAL("Exchange from {0} to {1} is blocked : {1} would like segment {2}:{3}",
-                      m_machine_ranks[m_comm_machine_rank], m_exchange_requests_owner_segment[num_seg], m_owner_segments[target_owner_id_pos], m_id_segments[target_owner_id_pos]);
+  else {
+    m_add_requested = false;
+    for (Integer num_seg = 0; num_seg < m_nb_segments_per_proc; ++num_seg) {
+      const Int32 segment_infos_pos = num_seg + m_comm_machine_rank * m_nb_segments_per_proc;
+      const Int32 seg_needs_to_edit = m_target_segments[segment_infos_pos];
+      if (seg_needs_to_edit == -1)
+        continue;
+
+      bool is_found = false;
+      for (const Int32 rank_asked : m_target_segments) {
+        if (rank_asked == seg_needs_to_edit) {
+          if (!is_found) {
+            is_found = true;
+          }
+          else {
+            ARCCORE_FATAL("Two subdomains ask same rank for addToAnotherSegment()");
+          }
+        }
       }
     }
 
-    // Maintenant, on prend la position du segment que l'on possède.
-    const Int32 owner_id_pos = num_seg + m_comm_machine_rank * m_nb_segments_per_proc;
+    _executeRealloc();
 
-    // On cherche la position des informations de ce segment (qui n'ont pas bougé).
-    const Int32 segment_infos_pos = m_id_segments[owner_id_pos] + m_owner_segments[owner_id_pos] * m_nb_segments_per_proc;
+    for (Integer num_seg = 0; num_seg < m_nb_segments_per_proc; ++num_seg) {
+      if (m_add_requests_span[num_seg].empty() || m_add_requests_span[num_seg].data() == nullptr) {
+        continue;
+      }
 
-    MPI_Aint size_seg;
-    int size_type;
-    std::byte* ptr_seg = nullptr;
-    int error = MPI_Win_shared_query(m_all_mpi_win[segment_infos_pos], m_owner_segments[owner_id_pos], &size_seg, &size_type, &ptr_seg);
+      const Int32 segment_infos_pos = num_seg + m_comm_machine_rank * m_nb_segments_per_proc;
+      const Int32 target_segment_infos_pos = m_target_segments[segment_infos_pos];
+      if (target_segment_infos_pos == -1) {
+        ARCCORE_FATAL("Ne devrait pas aller ici");
+      }
 
-    if (error != MPI_SUCCESS) {
-      ARCCORE_FATAL("Error with MPI_Win_shared_query() call");
+      const Int64 actual_sizeof_win = m_sizeof_used_part[target_segment_infos_pos];
+      const Int64 future_sizeof_win = actual_sizeof_win + m_add_requests_span[num_seg].size();
+
+      Span<std::byte> rank_reserved_part_span;
+      {
+        MPI_Aint size_seg;
+        std::byte* ptr_seg = nullptr;
+        int size_type;
+        int error = MPI_Win_shared_query(m_all_mpi_win[target_segment_infos_pos], target_segment_infos_pos / m_nb_segments_per_proc, &size_seg, &size_type, &ptr_seg);
+
+        if (error != MPI_SUCCESS) {
+          ARCCORE_FATAL("Error with MPI_Win_shared_query() call");
+        }
+        rank_reserved_part_span = Span<std::byte>{ ptr_seg, size_seg };
+      }
+
+      if (rank_reserved_part_span.size() < future_sizeof_win) {
+        ARCCORE_FATAL("Bad realloc -- New size : {1} -- Needed size : {2}", rank_reserved_part_span.size(), future_sizeof_win);
+      }
+
+      for (Int64 pos_win = actual_sizeof_win, pos_elem = 0; pos_win < future_sizeof_win; ++pos_win, ++pos_elem) {
+        rank_reserved_part_span[pos_win] = m_add_requests_span[num_seg][pos_elem];
+      }
+      m_sizeof_used_part[target_segment_infos_pos] = future_sizeof_win;
+
+      m_add_requests_span[num_seg] = Span<const std::byte>{ nullptr, 0 };
+      m_target_segments[segment_infos_pos] = -1;
     }
-
-    m_reserved_part_span[num_seg] = Span<std::byte>{ ptr_seg, size_seg };
-
-    m_exchange_requests_owner_segment[num_seg] = m_comm_machine_rank;
-    m_exchange_requests_pos_segment[num_seg] = num_seg;
   }
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void MpiDynamicMultiMachineMemoryWindowBaseInternal::
-resetExchanges()
-{
   MPI_Barrier(m_comm_machine);
 
   for (Integer num_seg = 0; num_seg < m_nb_segments_per_proc; ++num_seg) {
-    const Int32 owner_id_pos = num_seg + m_comm_machine_rank * m_nb_segments_per_proc;
+    if (is_my_seg_edited[num_seg]) {
+      const Int32 segment_infos_pos = num_seg + m_comm_machine_rank * m_nb_segments_per_proc;
 
-    m_owner_segments[owner_id_pos] = m_comm_machine_rank;
-    m_id_segments[owner_id_pos] = num_seg;
+      MPI_Aint size_seg;
+      std::byte* ptr_seg = nullptr;
+      int size_type;
+      int error = MPI_Win_shared_query(m_all_mpi_win[segment_infos_pos], m_comm_machine_rank, &size_seg, &size_type, &ptr_seg);
 
-    MPI_Aint size_seg;
-    int size_type;
-    std::byte* ptr_seg = nullptr;
-    int error = MPI_Win_shared_query(m_all_mpi_win[owner_id_pos], m_comm_machine_rank, &size_seg, &size_type, &ptr_seg);
-
-    if (error != MPI_SUCCESS) {
-      ARCCORE_FATAL("Error with MPI_Win_shared_query() call");
+      if (error != MPI_SUCCESS) {
+        ARCCORE_FATAL("Error with MPI_Win_shared_query() call");
+      }
+      m_reserved_part_span[num_seg] = Span<std::byte>{ ptr_seg, size_seg };
     }
-
-    m_reserved_part_span[num_seg] = Span<std::byte>{ ptr_seg, size_seg };
   }
 }
 
@@ -563,8 +538,7 @@ requestReserve(Int32 num_seg, Int64 new_capacity)
     ARCCORE_FATAL("new_capacity not valid");
   }
 
-  const Int32 owner_id_pos = num_seg + m_comm_machine_rank * m_nb_segments_per_proc;
-  const Int32 segment_infos_pos = m_id_segments[owner_id_pos] + m_owner_segments[owner_id_pos] * m_nb_segments_per_proc;
+  const Int32 segment_infos_pos = num_seg + m_comm_machine_rank * m_nb_segments_per_proc;
 
   if (new_capacity <= m_reserved_part_span[num_seg].size()) {
     _requestRealloc(segment_infos_pos);
@@ -595,8 +569,7 @@ requestResize(Int32 num_seg, Int64 new_size)
     ARCCORE_FATAL("new_size not valid");
   }
 
-  const Int32 owner_id_pos = num_seg + m_comm_machine_rank * m_nb_segments_per_proc;
-  const Int32 segment_infos_pos = m_id_segments[owner_id_pos] + m_owner_segments[owner_id_pos] * m_nb_segments_per_proc;
+  const Int32 segment_infos_pos = num_seg + m_comm_machine_rank * m_nb_segments_per_proc;
 
   if (new_size > m_reserved_part_span[num_seg].size()) {
     _requestRealloc(segment_infos_pos, new_size);
@@ -627,8 +600,7 @@ executeResize()
       continue;
     }
 
-    const Int32 owner_id_pos = num_seg + m_comm_machine_rank * m_nb_segments_per_proc;
-    const Int32 segment_infos_pos = m_id_segments[owner_id_pos] + m_owner_segments[owner_id_pos] * m_nb_segments_per_proc;
+    const Int32 segment_infos_pos = num_seg + m_comm_machine_rank * m_nb_segments_per_proc;
 
     if (m_reserved_part_span[num_seg].size() < m_resize_requests_span[num_seg]) {
       ARCCORE_FATAL("Bad realloc -- New size : {0} -- Needed size : {1}", m_reserved_part_span[num_seg].size(), m_resize_requests_span[num_seg]);
@@ -646,8 +618,7 @@ void MpiDynamicMultiMachineMemoryWindowBaseInternal::
 executeShrink()
 {
   for (Integer num_seg = 0; num_seg < m_nb_segments_per_proc; ++num_seg) {
-    const Int32 owner_id_pos = num_seg + m_comm_machine_rank * m_nb_segments_per_proc;
-    const Int32 segment_infos_pos = m_id_segments[owner_id_pos] + m_owner_segments[owner_id_pos] * m_nb_segments_per_proc;
+    const Int32 segment_infos_pos = num_seg + m_comm_machine_rank * m_nb_segments_per_proc;
 
     if (m_reserved_part_span[num_seg].size() == m_sizeof_used_part[segment_infos_pos]) {
       _requestRealloc(segment_infos_pos);
@@ -692,8 +663,7 @@ _executeRealloc()
   _realloc();
 
   for (Integer num_seg = 0; num_seg < m_nb_segments_per_proc; ++num_seg) {
-    const Int32 owner_id_pos = num_seg + m_comm_machine_rank * m_nb_segments_per_proc;
-    const Int32 segment_infos_pos = m_id_segments[owner_id_pos] + m_owner_segments[owner_id_pos] * m_nb_segments_per_proc;
+    const Int32 segment_infos_pos = num_seg + m_comm_machine_rank * m_nb_segments_per_proc;
     m_need_resize[segment_infos_pos] = -1;
   }
 
@@ -719,9 +689,6 @@ _realloc()
   for (Integer rank = 0; rank < m_comm_machine_size; ++rank) {
     for (Integer num_seg = 0; num_seg < m_nb_segments_per_proc; ++num_seg) {
 
-      // Les infos des segments ne bougent pas avec les échanges.
-      // Comme on travaille sur les segments directement, pas besoin
-      // d'utiliser les tableaux m_owner_segments et m_id_segments.
       const Int32 local_segment_infos_pos = num_seg + rank * m_nb_segments_per_proc;
 
       if (m_need_resize[local_segment_infos_pos] == -1)
@@ -796,13 +763,12 @@ _realloc()
 
   // On reconstruit les spans des segments que l'on possède.
   for (Integer num_seg = 0; num_seg < m_nb_segments_per_proc; ++num_seg) {
-    const Int32 owner_id_pos = num_seg + m_comm_machine_rank * m_nb_segments_per_proc;
-    const Int32 segment_infos_pos = m_id_segments[owner_id_pos] + m_owner_segments[owner_id_pos] * m_nb_segments_per_proc;
+    const Int32 segment_infos_pos = num_seg + m_comm_machine_rank * m_nb_segments_per_proc;
 
     MPI_Aint size_seg;
     int size_type;
     std::byte* ptr_seg = nullptr;
-    int error = MPI_Win_shared_query(m_all_mpi_win[segment_infos_pos], m_owner_segments[owner_id_pos], &size_seg, &size_type, &ptr_seg);
+    int error = MPI_Win_shared_query(m_all_mpi_win[segment_infos_pos], m_comm_machine_rank, &size_seg, &size_type, &ptr_seg);
 
     if (error != MPI_SUCCESS) {
       ARCCORE_FATAL("Error with MPI_Win_shared_query() call");

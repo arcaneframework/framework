@@ -43,10 +43,9 @@ namespace Arcane::MessagePassing
  * une opération collective
  *
  * Afin d'avoir des add() non concurrents, cette opération est possible
- * uniquement sur le segment que nous possédons.
- * Pour être plus flexible, il est possible d'échanger ses segments, ce qui
- * permet de faire des add() sur le segment d'un autre processus sans
- * problème.
+ * uniquement sur notre segment.
+ * Pour ajouter des éléments dans le segment d'un autre sous-domaine,
+ * les méthodes addToAnotherSegment() sont disponibles.
  */
 class ARCCORE_MESSAGEPASSING_EXPORT IDynamicMachineMemoryWindowBaseInternal
 {
@@ -82,26 +81,19 @@ class ARCCORE_MESSAGEPASSING_EXPORT IDynamicMachineMemoryWindowBaseInternal
   virtual void barrier() const = 0;
 
   /*!
-   * \brief Méthode permettant d'obtenir une vue sur le segment que nous
-   * possédons.
+   * \brief Méthode permettant d'obtenir une vue sur notre segment.
    *
    * Appel non collectif.
-   *
-   * Dans le cas d'échange de segments, il est possible d'obtenir le
-   * propriétaire du segment que nous possédons avec la méthode segmentOwner().
    *
    * \return Une vue.
    */
   virtual Span<std::byte> segmentView() = 0;
 
   /*!
-   * \brief Méthode permettant d'obtenir une vue sur le segment que possède un
+   * \brief Méthode permettant d'obtenir une vue sur le segment d'un
    * autre sous-domaine du noeud.
    *
    * Appel non collectif.
-   *
-   * Dans le cas d'échange de segments, il est possible d'obtenir le
-   * propriétaire du segment avec la méthode segmentOwner(rank).
    *
    * \param rank Le rang du sous-domaine.
    * \return Une vue.
@@ -109,26 +101,19 @@ class ARCCORE_MESSAGEPASSING_EXPORT IDynamicMachineMemoryWindowBaseInternal
   virtual Span<std::byte> segmentView(Int32 rank) = 0;
 
   /*!
-   * \brief Méthode permettant d'obtenir une vue sur le segment que nous
-   * possédons.
+   * \brief Méthode permettant d'obtenir une vue sur notre segment
    *
    * Appel non collectif.
-   *
-   * Dans le cas d'échange de segments, il est possible d'obtenir le
-   * propriétaire du segment que nous possédons avec la méthode segmentOwner().
    *
    * \return Une vue.
    */
   virtual Span<const std::byte> segmentConstView() const = 0;
 
   /*!
-   * \brief Méthode permettant d'obtenir une vue sur le segment que possède un
+   * \brief Méthode permettant d'obtenir une vue sur le segment d'un
    * autre sous-domaine du noeud.
    *
    * Appel non collectif.
-   *
-   * Dans le cas d'échange de segments, il est possible d'obtenir le
-   * propriétaire du segment avec la méthode segmentOwner(rank).
    *
    * \param rank Le rang du sous-domaine.
    * \return Une vue.
@@ -136,35 +121,12 @@ class ARCCORE_MESSAGEPASSING_EXPORT IDynamicMachineMemoryWindowBaseInternal
   virtual Span<const std::byte> segmentConstView(Int32 rank) const = 0;
 
   /*!
-   * \brief Méthode permettant d'obtenir le propriétaire du segment que nous
-   * possédons.
-   *
-   * Appel non collectif.
-   *
-   * Méthode utile lors de l'échange de segments.
-   *
-   * \return Le propriétaire du segment.
-   */
-  virtual Int32 segmentOwner() const = 0;
-
-  /*!
-   * \brief Méthode permettant d'obtenir le propriétaire du segment que
-   * possède un autre sous-domaine du noeud.
-   *
-   * Appel non collectif.
-   *
-   * Méthode utile lors de l'échange de segments.
-   *
-   * \param rank Le rang du sous-domaine.
-   * \return Le propriétaire du segment.
-   */
-  virtual Int32 segmentOwner(Int32 rank) const = 0;
-
-  /*!
-   * \brief Méthode permettant d'ajouter des élements dans le segment que nous
-   * possédons.
+   * \brief Méthode permettant d'ajouter des élements dans notre segment.
    *
    * Appel collectif.
+   *
+   * \note Ne pas mélanger les appels de cette méthode avec les appels à
+   * addToAnotherSegment().
    *
    * Si le segment est trop petit, il sera redimensionné.
    *
@@ -181,46 +143,35 @@ class ARCCORE_MESSAGEPASSING_EXPORT IDynamicMachineMemoryWindowBaseInternal
   virtual void add() = 0;
 
   /*!
-   * \brief Méthode permettant d'échanger le segment que nous possédons avec
-   * le segment de \a rank.
+   * \brief Méthode permettant d'ajouter des éléments dans le segment d'un
+   * autre sous-domaine.
    *
    * Appel collectif.
    *
-   * Cet échange permet de faire des add() sur le segment d'un autre processus
-   * sans avoir besoin de protéger des accès concurrents.
+   * \note Ne pas mélanger les appels de cette méthode avec les appels à
+   * add().
    *
-   * Pour effectuer un échange entre deux processus (disons 0 et 1), les deux
-   * processus doivent appeler cette méthode avec le rang de l'autre :
-   * - 0 doit appeler exchangeSegmentWith(1),
-   * - 1 doit appeler exchangeSegmentWith(0).
+   * Deux sous-domaines ne doivent pas ajouter d'éléments dans un même
+   * segment de sous-domaine.
    *
-   * Les processus ne souhaitant pas échanger de segments doivent appeler
-   * \a exchangeSegmentWith() (ou exchangeSegmentWith(2) pour le processus 2).
+   * Si le segment ciblé est trop petit, il sera redimensionné.
    *
-   * Si nécessaire, il est possible de récupérer le rang d'un segment "loué"
-   * avec les méthodes \a segmentOwner().
+   * Les sous-domaines ne souhaitant pas ajouter d'éléments peuvent appeler la
+   * méthode \a addToAnotherSegment() sans paramètres.
    *
-   * \param rank Le rang avec qui échanger son segment.
+   * \param rank Le sous-domaine dans lequel ajouter des éléments.
+   * \param elem Les éléments à ajouter.
    */
-  virtual void exchangeSegmentWith(Int32 rank) = 0;
+  virtual void addToAnotherSegment(Int32 rank, Span<const std::byte> elem) = 0;
 
   /*!
-   * Voir \a exchangeSegmentWith(Int32 rank).
+   * Voir \a addToAnotherSegment(Int32 rank, Span<const std::byte> elem).
    */
-  virtual void exchangeSegmentWith() = 0;
+  virtual void addToAnotherSegment() = 0;
 
   /*!
-   * \brief Méthode permettant de réinitialiser les échanges effectués.
-   *
-   * Appel collectif.
-   *
-   * Chaque processus retrouvera son segment.
-   */
-  virtual void resetExchanges() = 0;
-
-  /*!
-   * \brief Méthode permettant de réserver de l'espace mémoire dans le segment
-   * que nous possédons.
+   * \brief Méthode permettant de réserver de l'espace mémoire dans notre
+   * segment.
    *
    * Appel collectif.
    *
@@ -250,8 +201,7 @@ class ARCCORE_MESSAGEPASSING_EXPORT IDynamicMachineMemoryWindowBaseInternal
   virtual void reserve() = 0;
 
   /*!
-   * \brief Méthode permettant de redimensionner le segment que nous
-   * possédons.
+   * \brief Méthode permettant de redimensionner notre segment.
    *
    * Appel collectif.
    *
@@ -272,8 +222,8 @@ class ARCCORE_MESSAGEPASSING_EXPORT IDynamicMachineMemoryWindowBaseInternal
   virtual void resize() = 0;
 
   /*!
-   * \brief Méthode permettant de réduire l'espace mémoire réservé pour le
-   * segment au minimum nécessaire.
+   * \brief Méthode permettant de réduire l'espace mémoire réservé pour les
+   * segments au minimum nécessaire.
    */
   virtual void shrink() = 0;
 };

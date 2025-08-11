@@ -35,42 +35,11 @@ namespace Arcane::MessagePassing::Mpi
  * Un segment est identifié par le rang de son propriétaire d'origine et par
  * un id (qui est simplement la position du segment dans la liste des segments
  * locaux).
- * Il est possible d'échanger des segments entre processus mais aussi au sein
- * d'un processus.
- * Les tableaux m_owner_segments et m_id_segments permettent de retrouver à
- * qui appartient les segments que possède chaque processus.
  *
- * Les tableaux sont tous 1D. Pour accéder à l'owner et à l'id d'un segment
- * que nous possédons, on doit calculer la position de ces informations avec
+ * Les tableaux sont tous 1D. Pour accéder aux infos d'un de nos segments,
+ * on doit calculer la position de ces informations avec
  * notre rang machine et la position de ce segment localement.
- * owner_id_pos = pos_seg + rank * m_nb_segments_per_proc
- *
- * Ensuite, m_owner_segments[owner_id_pos] est le propriétaire d'origine du
- * segment et m_id_segments[owner_id_pos] son id.
- *
- * Les informations des segments ne se déplacent pas lors des échanges de
- * segments. Alors, pour accéder à ces informations, il faut calculer leurs
- * positions :
- * infos_pos = m_id_segments[array_pos] + m_owner_segments[array_pos] * m_nb_segments_per_proc
- *
- * Ainsi, pour avoir le nombre d'éléments de ce segment, on peut y accéder
- * comme ceci :
- * m_sizeof_used_part[infos_pos]
- *
- * Cette façon de faire permet de s'assurer que tout le monde possède un
- * segment et donc que les add() ne seront pas concurrents.
- *
- * Si l'on a deux processus possèdent chacun deux segments, on aura :
- * m_id_segments    = {0, 1, 0, 1}
- * m_owner_segments = {0, 0, 1, 1}
- *
- * Si P0 veut échanger son segment ID0 avec le segment ID1 de P1, on aura
- * juste à modifier les deux tableaux :     .        .
- * m_id_segments    = {1, 1, 0, 0}
- * m_owner_segments = {1, 0, 1, 0}
- *
- * Ces modifications peuvent se faire sans atomic et l'on peut vérifier que
- * chaque échange est symétrique.
+ * infos_pos = pos_seg + rank * m_nb_segments_per_proc
  */
 class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiDynamicMultiMachineMemoryWindowBaseInternal
 {
@@ -109,27 +78,20 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiDynamicMultiMachineMemoryWindowBaseInt
   void barrier() const;
 
   /*!
-   * \brief Méthode permettant d'obtenir une vue sur l'un des segments que
-   * nous possédons.
+   * \brief Méthode permettant d'obtenir une vue sur l'un de nos segments.
    *
    * Appel non collectif.
    *
-   * Dans le cas d'échange de segments, il est possible d'obtenir le
-   * propriétaire du segment que nous possédons avec la méthode segmentOwner(num_seg).
-   *
-   * \param num_seg La position (ou id) locale du segment.
+   * \param num_seg La position (ou id) du segment.
    * \return Une vue.
    */
   Span<std::byte> segmentView(Int32 num_seg);
 
   /*!
-   * \brief Méthode permettant d'obtenir une vue sur l'un des segments que
-   * possède un autre processus du noeud.
+   * \brief Méthode permettant d'obtenir une vue sur l'un des segments
+   * d'un autre processus du noeud.
    *
    * Appel non collectif.
-   *
-   * Dans le cas d'échange de segments, il est possible d'obtenir le
-   * propriétaire du segment avec la méthode segmentOwner(rank, num_seg).
    *
    * \param rank Le rang du processus.
    * \param num_seg La position (ou id) locale du segment.
@@ -138,13 +100,9 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiDynamicMultiMachineMemoryWindowBaseInt
   Span<std::byte> segmentView(Int32 rank, Int32 num_seg);
 
   /*!
-   * \brief Méthode permettant d'obtenir une vue sur l'un des segments que
-   * nous possédons.
+   * \brief Méthode permettant d'obtenir une vue sur l'un de nos segments.
    *
    * Appel non collectif.
-   *
-   * Dans le cas d'échange de segments, il est possible d'obtenir le
-   * propriétaire du segment que nous possédons avec la méthode segmentOwner(num_seg).
    *
    * \param num_seg La position (ou id) locale du segment.
    * \return Une vue.
@@ -152,13 +110,10 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiDynamicMultiMachineMemoryWindowBaseInt
   Span<const std::byte> segmentConstView(Int32 num_seg) const;
 
   /*!
-   * \brief Méthode permettant d'obtenir une vue sur l'un des segments que
-   * possède un autre processus du noeud.
+   * \brief Méthode permettant d'obtenir une vue sur l'un des segments d'un
+   * autre processus du noeud.
    *
    * Appel non collectif.
-   *
-   * Dans le cas d'échange de segments, il est possible d'obtenir le
-   * propriétaire du segment avec la méthode segmentOwner(rank, num_seg).
    *
    * \param rank Le rang du processus.
    * \param num_seg La position (ou id) locale du segment.
@@ -167,63 +122,8 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiDynamicMultiMachineMemoryWindowBaseInt
   Span<const std::byte> segmentConstView(Int32 rank, Int32 num_seg) const;
 
   /*!
-   * \brief Méthode permettant d'obtenir le propriétaire d'un des segments que
-   * nous possédons.
-   *
-   * Appel non collectif.
-   *
-   * Méthode utile lors de l'échange de segments.
-   *
-   * \param num_seg La position (ou id) locale du segment.
-   * \return Le propriétaire du segment.
-   */
-  Int32 segmentOwner(Int32 num_seg) const;
-
-  /*!
-   * \brief Méthode permettant d'obtenir le propriétaire d'un des segments que
-   * possède un autre processus du noeud.
-   *
-   * Appel non collectif.
-   *
-   * Méthode utile lors de l'échange de segments.
-   *
-   * \param rank Le rang du processus.
-   * \param num_seg La position (ou id) locale du segment.
-   * \return Le propriétaire du segment.
-   */
-  Int32 segmentOwner(Int32 rank, Int32 num_seg) const;
-
-  /*!
-   * \brief Méthode permettant d'obtenir l'id (ou la position d'origine sur
-   * le processus d'origine) d'un des segments que nous possédons.
-   *
-   * Appel non collectif.
-   *
-   * Méthode utile lors de l'échange de segments.
-   *
-   * \param num_seg La position (ou id) locale du segment.
-   * \return L'id d'origine du segment.
-   */
-  Int32 segmentPos(Int32 num_seg) const;
-
-  /*!
-   * \brief Méthode permettant d'obtenir l'id (ou la position d'origine sur
-   * le processus d'origine) d'un des segments que possède un autre
-   * processus du noeud.
-   *
-   * Appel non collectif.
-   *
-   * Méthode utile lors de l'échange de segments.
-   *
-   * \param rank Le rang du processus.
-   * \param num_seg La position (ou id) locale du segment.
-   * \return L'id d'origine du segment.
-   */
-  Int32 segmentPos(Int32 rank, Int32 num_seg) const;
-
-  /*!
-   * \brief Méthode permettant de demander l'ajout d'éléments dans l'un des
-   * segments que nous possédons.
+   * \brief Méthode permettant de demander l'ajout d'éléments dans l'un de nos
+   * segments.
    *
    * Appel non collectif et pouvant être effectué par plusieurs threads en
    * même temps (si le paramètre \a num_seg est différent pour chaque thread).
@@ -247,62 +147,39 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiDynamicMultiMachineMemoryWindowBaseInt
   void executeAdd();
 
   /*!
-   * \brief Méthode permettant de demander l'échange d'un des segments que
-   * nous possédons avec le segment que possède quelqu'un d'autre.
-   *
-   * Cet échange permet de faire des add() sur le segment d'un autre processus
-   * sans avoir besoin de protéger des accès concurrents. L'échange étant
-   * symétrique, on peut vérifier que chaque segment aura bien une seule
-   * destination et que tout le monde possédera bien le nombre défini de
-   * segments par processus.
-   *
-   * Pour effectuer un échange entre deux processus, le processus 0 voulant le
-   * segment ID1 du processus 1 et le processus 1 voulant de segment ID2 du
-   * processus 0, les processus doivent appeler cette méthode avec le rang de
-   * l'autre, ainsi que les deux ids :
-   * - 0 doit appeler exchangeSegmentWith(2, 1, 1) ("je veux échanger mon
-   * segment ID2 avec le segment ID1 de P1),
-   *
-   * - 1 doit appeler exchangeSegmentWith(1, 0, 2) ("je veux échanger mon
-   * segment ID1 avec le segment ID2 de P0).
+   * \brief Méthode permettant de demander l'ajout d'éléments dans un des
+   * segments de la fenêtre.
    *
    * Appel non collectif et pouvant être effectué par plusieurs threads en
-   * même temps (si le paramètre \a num_seg_src est différent pour chaque
-   * thread).
-   * Un appel à cette méthode avec un même \a num_seg_src avant l'appel à
-   * \a executeExchangeSegmentWith() remplacera le premier appel.
+   * même temps (si le paramètre \a thread est différent pour chaque thread).
+   * Un appel à cette méthode avec un même \a thread avant l'appel à
+   * \a executeaddToAnotherSegment() remplacera le premier appel.
    *
-   * Un appel à executeExchangeSegmentWith() est nécessaire après le ou les
-   * appels à cette méthode.
+   * Un appel à executeaddToAnotherSegment() est nécessaire après le ou les appels à
+   * cette méthode.
    * Il ne faut pas appeler une autre méthode \a requestX() entre temps.
    *
-   * \param num_seg_src La position (ou id), locale à nous, du segment
-   * que \a rank_dst souhaite.
-   * \param rank_dst Le rang du processus avec qui échanger
-   * \param num_seg_dst La position (ou id), locale à \a rank_dst, du segment
-   * que l'on souhaite.
+   * Deux sous-domaines ne doivent pas ajouter d'éléments dans un même
+   * segment de sous-domaine.
+   *
+   * \param thread Le thread qui demande l'ajout. TODO Trouver un autre moyen que ce paramètre.
+   * \param rank Le rang du processus propriétaire du segment à modifier.
+   * \param num_seg La position (ou id) locale du segment à modifier.
+   * \param elem Les éléments à ajouter.
    */
-  void requestExchangeSegmentWith(Int32 num_seg_src, Int32 rank_dst, Int32 num_seg_dst);
+  void requestAddToAnotherSegment(Int32 thread, Int32 rank, Int32 num_seg, Span<const std::byte> elem);
 
   /*!
-   * \brief Méthode permettant d'exécuter les requêtes d'échanges.
+   * \brief Méthode permettant d'exécuter les requêtes d'ajout dans les
+   * segments d'autres processus.
    *
    * Appel collectif.
    */
-  void executeExchangeSegmentWith();
-
-  /*!
-   * \brief Méthode permettant de réinitialiser les échanges effectués.
-   *
-   * Appel collectif.
-   *
-   * Chaque processus retrouvera ses segments à leurs positions d'origine.
-   */
-  void resetExchanges();
+  void executeAddToAnotherSegment();
 
   /*!
    * \brief Méthode permettant de demander la réservation d'espace mémoire
-   * pour un des segments que nous possédons.
+   * pour un de nos segments.
    *
    * Cette méthode ne fait rien si \a new_capacity est inférieur à l'espace
    * mémoire déjà alloué pour le segment.
@@ -338,8 +215,8 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiDynamicMultiMachineMemoryWindowBaseInt
   void executeReserve();
 
   /*!
-   * \brief Méthode permettant de demander le redimensionnement d'un des
-   * segments que nous possédons.
+   * \brief Méthode permettant de demander le redimensionnement d'un de nos
+   * segments.
    *
    * Si la taille fournie est inférieure à la taille actuelle du segment, les
    * éléments situés après la taille fournie seront supprimés.
@@ -399,9 +276,8 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiDynamicMultiMachineMemoryWindowBaseInt
   MPI_Win m_win_actual_sizeof;
   Span<Int64> m_sizeof_used_part;
 
-  MPI_Win m_win_owner_pos_segments;
-  Span<Int32> m_owner_segments;
-  Span<Int32> m_id_segments;
+  MPI_Win m_win_target_segments;
+  Span<Int32> m_target_segments;
 
   MPI_Comm m_comm_machine;
   Int32 m_comm_machine_size;
@@ -411,11 +287,6 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiDynamicMultiMachineMemoryWindowBaseInt
   Int32 m_nb_segments_per_proc;
 
   ConstArrayView<Int32> m_machine_ranks;
-
-  std::unique_ptr<Int32[]> m_exchange_requests;
-  SmallSpan<Int32> m_exchange_requests_owner_segment;
-  SmallSpan<Int32> m_exchange_requests_pos_segment;
-  bool m_exchange_requested;
 
   std::unique_ptr<Span<const std::byte>[]> m_add_requests;
   SmallSpan<Span<const std::byte>> m_add_requests_span;

@@ -50,16 +50,11 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiDynamicMachineMemoryWindowBaseInternal
   Span<const std::byte> segmentConstView() const override;
   Span<const std::byte> segmentConstView(Int32 rank) const override;
 
-  Int32 segmentOwner() const override;
-  Int32 segmentOwner(Int32 rank) const override;
-
   void add(Span<const std::byte> elem) override;
   void add() override;
 
-  void exchangeSegmentWith(Int32 rank) override;
-  void exchangeSegmentWith() override;
-
-  void resetExchanges() override;
+  void addToAnotherSegment(Int32 rank, Span<const std::byte> elem) override;
+  void addToAnotherSegment() override;
 
   void reserve(Int64 new_capacity) override;
   void reserve() override;
@@ -72,8 +67,9 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiDynamicMachineMemoryWindowBaseInternal
  private:
 
   void _reallocBarrier(Int64 new_sizeof);
+  void _reallocBarrier(Int32 machine_rank, Int64 new_sizeof);
   void _reallocBarrier();
-  void _reallocCollective(Int64 new_sizeof);
+  void _reallocCollective();
 
   Int32 _worldToMachine(Int32 world) const;
   Int32 _machineToWorld(Int32 machine) const;
@@ -84,14 +80,13 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiDynamicMachineMemoryWindowBaseInternal
   Span<std::byte> m_reserved_part_span;
 
   MPI_Win m_win_need_resize;
-  Span<bool> m_need_resize;
+  Span<Int64> m_need_resize;
 
   MPI_Win m_win_actual_sizeof;
   Span<Int64> m_sizeof_used_part;
 
-  MPI_Win m_win_owner_segments;
-  Span<Int32> m_owner_segments;
-  Int32 m_owner_segment;
+  MPI_Win m_win_target_segments;
+  Span<Int32> m_target_segments;
 
   MPI_Comm m_comm_machine;
   Int32 m_comm_machine_size;
