@@ -19,7 +19,6 @@
 
 #include "arcane/core/ArcaneTypes.h"
 #include "arcane/core/MachineMemoryWindowBase.h"
-#include "arcane/utils/Ref.h"
 
 #include "arccore/base/Span.h"
 
@@ -61,7 +60,7 @@ class MachineMemoryWindow
    *
    * \return Une vue.
    */
-  Span<Type> segmentView() const
+  Span<Type> segmentView()
   {
     return asSpan<Type>(m_impl.segmentView());
   }
@@ -73,7 +72,7 @@ class MachineMemoryWindow
    * \param rank Le rang du sous-domaine.
    * \return Une vue.
    */
-  Span<Type> segmentView(Int32 rank) const
+  Span<Type> segmentView(Int32 rank)
   {
     return asSpan<Type>(m_impl.segmentView(rank));
   }
@@ -83,7 +82,7 @@ class MachineMemoryWindow
    *
    * \return Une vue.
    */
-  Span<Type> windowView() const
+  Span<Type> windowView()
   {
     return asSpan<Type>(m_impl.windowView());
   }
@@ -96,7 +95,7 @@ class MachineMemoryWindow
    */
   Span<const Type> segmentConstView() const
   {
-    return asSpan<const Type>(m_impl.segmentView());
+    return asSpan<const Type>(m_impl.segmentConstView());
   }
 
   /*!
@@ -108,7 +107,7 @@ class MachineMemoryWindow
    */
   Span<const Type> segmentConstView(Int32 rank) const
   {
-    return asSpan<const Type>(m_impl.segmentView(rank));
+    return asSpan<const Type>(m_impl.segmentConstView(rank));
   }
 
   /*!
@@ -119,7 +118,7 @@ class MachineMemoryWindow
    */
   Span<const Type> windowConstView() const
   {
-    return asSpan<const Type>(m_impl.windowView());
+    return asSpan<const Type>(m_impl.windowConstView());
   }
 
   /*!
@@ -131,7 +130,7 @@ class MachineMemoryWindow
    *
    * \param new_nb_elem La nouvelle taille de notre segment.
    */
-  void resizeSegment(Integer new_nb_elem) const
+  void resizeSegment(Integer new_nb_elem)
   {
     m_impl.resizeSegment(new_nb_elem);
   }

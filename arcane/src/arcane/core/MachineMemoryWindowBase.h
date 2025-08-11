@@ -48,6 +48,36 @@ namespace MessagePassing
  */
 class ARCANE_CORE_EXPORT MachineMemoryWindowBase
 {
+#ifdef ARCANE_DEBUG
+ private:
+
+  template <class T>
+  class Ref
+  {
+   public:
+
+    explicit Ref(const Arcane::Ref<T>& ptr)
+    : m_ptr(ptr)
+    {}
+    ~Ref() = default;
+
+   public:
+
+    T* operator->()
+    {
+      return m_ptr.get();
+    }
+    T const* operator->() const
+    {
+      return m_ptr.get();
+    }
+
+   private:
+
+    Arcane::Ref<T> m_ptr;
+  };
+#endif
+
  public:
 
   /*!
@@ -66,7 +96,7 @@ class ARCANE_CORE_EXPORT MachineMemoryWindowBase
    *
    * \return Une vue.
    */
-  Span<std::byte> segmentView() const;
+  Span<std::byte> segmentView();
 
   /*!
    * \brief Méthode permettant d'obtenir une vue sur le segment de fenêtre
@@ -75,14 +105,14 @@ class ARCANE_CORE_EXPORT MachineMemoryWindowBase
    * \param rank Le rang du sous-domaine.
    * \return Une vue.
    */
-  Span<std::byte> segmentView(Int32 rank) const;
+  Span<std::byte> segmentView(Int32 rank);
 
   /*!
    * \brief Méthode permettant d'obtenir une vue sur toute la fenêtre mémoire.
    *
    * \return Une vue.
    */
-  Span<std::byte> windowView() const;
+  Span<std::byte> windowView();
 
   /*!
    * \brief Méthode permettant d'obtenir une vue constante sur notre segment
@@ -118,7 +148,7 @@ class ARCANE_CORE_EXPORT MachineMemoryWindowBase
    *
    * \param new_size La nouvelle taille de notre segment (en octet).
    */
-  void resizeSegment(Integer new_size) const;
+  void resizeSegment(Integer new_size);
 
   /*!
    * \brief Méthode permettant d'obtenir les rangs qui possèdent un segment

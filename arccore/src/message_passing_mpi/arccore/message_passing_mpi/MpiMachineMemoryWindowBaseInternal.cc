@@ -38,10 +38,13 @@ MpiMachineMemoryWindowBaseInternal(Int64 sizeof_segment, Int32 sizeof_type, cons
 , m_max_sizeof_win(0)
 , m_actual_sizeof_win(-1)
 {
+  // Toutes les fenêtres de cette classe doivent être contigües.
   MPI_Info win_info;
   MPI_Info_create(&win_info);
   MPI_Info_set(win_info, "alloc_shared_noncontig", "false");
 
+  // On alloue la fenêtre principale (qui contiendra les données de l'utilisateur.
+  // On ne récupère pas le pointeur vers le segment.
   {
     void* ptr_seg = nullptr;
     int error = MPI_Win_allocate_shared(sizeof_segment, m_sizeof_type, win_info, m_comm_machine, &ptr_seg, &m_win);
@@ -53,6 +56,8 @@ MpiMachineMemoryWindowBaseInternal(Int64 sizeof_segment, Int32 sizeof_type, cons
 
   //--------------------------
 
+  // On alloue la fenêtre qui contiendra la taille de chaque segment de la
+  // fenêtre principale.
   {
     Int64* ptr_seg = nullptr;
     int error = MPI_Win_allocate_shared(sizeof(Int64), sizeof(Int64), win_info, m_comm_machine, &ptr_seg, &m_win_sizeof_segments);
@@ -60,8 +65,13 @@ MpiMachineMemoryWindowBaseInternal(Int64 sizeof_segment, Int32 sizeof_type, cons
     if (error != MPI_SUCCESS) {
       ARCCORE_FATAL("Error with MPI_Win_allocate_shared() call");
     }
+    // On utilise le pointeur vers notre segment pour mettre la taille de
+    // notre segment de la fenêtre principale.
     *ptr_seg = sizeof_segment;
   }
+
+  // On alloue la fenêtre qui contiendra la position de chaque segment de la
+  // fenêtre principale.
   {
     Int64* ptr_seg = nullptr;
     int error = MPI_Win_allocate_shared(sizeof(Int64), sizeof(Int64), win_info, m_comm_machine, &ptr_seg, &m_win_sum_sizeof_segments);
@@ -74,10 +84,15 @@ MpiMachineMemoryWindowBaseInternal(Int64 sizeof_segment, Int32 sizeof_type, cons
   MPI_Info_free(&win_info);
 
   MPI_Barrier(m_comm_machine);
+
   //--------------------------
 
 #ifdef ARCCORE_DEBUG
+
   for (Int32 i = 0; i < m_comm_machine_size; ++i) {
+    // On crée une vue sur toute la fenêtre contenant les tailles.
+    // (la boucle est là uniquement en mode debug pour vérifier qu'on a bien
+    // des fenêtres contigües).
     {
       MPI_Aint size_seg;
       int size_type;
@@ -88,7 +103,7 @@ MpiMachineMemoryWindowBaseInternal(Int64 sizeof_segment, Int32 sizeof_type, cons
         ARCCORE_FATAL("Error with MPI_Win_shared_query() call");
       }
       if (i == 0) {
-        m_sizeof_segments_span = Span<Int64>{ ptr_seg, m_comm_machine_size };
+        m_sizeof_segments_span = SmallSpan<Int64>{ ptr_seg, m_comm_machine_size };
       }
 
       if (m_sizeof_segments_span.data() + i != ptr_seg) {
@@ -98,6 +113,8 @@ MpiMachineMemoryWindowBaseInternal(Int64 sizeof_segment, Int32 sizeof_type, cons
         ARCCORE_FATAL("Pb taille de segment");
       }
     }
+
+    // On crée une vue sur toute la fenêtre contenant les positions des segments.
     {
       MPI_Aint size_seg;
       int size_type;
@@ -108,7 +125,7 @@ MpiMachineMemoryWindowBaseInternal(Int64 sizeof_segment, Int32 sizeof_type, cons
         ARCCORE_FATAL("Error with MPI_Win_shared_query() call");
       }
       if (i == 0) {
-        m_sum_sizeof_segments_span = Span<Int64>{ ptr_seg, m_comm_machine_size };
+        m_sum_sizeof_segments_span = SmallSpan<Int64>{ ptr_seg, m_comm_machine_size };
       }
 
       if (m_sum_sizeof_segments_span.data() + i != ptr_seg) {
@@ -117,6 +134,7 @@ MpiMachineMemoryWindowBaseInternal(Int64 sizeof_segment, Int32 sizeof_type, cons
     }
   }
 #else
+  // On crée une vue sur toute la fenêtre contenant les tailles.
   {
     MPI_Aint size_seg;
     int size_type;
@@ -126,8 +144,10 @@ MpiMachineMemoryWindowBaseInternal(Int64 sizeof_segment, Int32 sizeof_type, cons
       ARCCORE_FATAL("Error with MPI_Win_shared_query() call");
     }
 
-    m_sizeof_segments_span = Span<Int64>{ ptr_seg, m_comm_machine_size };
+    m_sizeof_segments_span = SmallSpan<Int64>{ ptr_seg, m_comm_machine_size };
   }
+
+  // On crée une vue sur toute la fenêtre contenant les positions des segments.
   {
     MPI_Aint size_seg;
     int size_type;
@@ -138,12 +158,14 @@ MpiMachineMemoryWindowBaseInternal(Int64 sizeof_segment, Int32 sizeof_type, cons
       ARCCORE_FATAL("Error with MPI_Win_shared_query() call");
     }
 
-    m_sum_sizeof_segments_span = Span<Int64>{ ptr_seg, m_comm_machine_size };
+    m_sum_sizeof_segments_span = SmallSpan<Int64>{ ptr_seg, m_comm_machine_size };
   }
 #endif
 
   //--------------------------
 
+  // Seul le processus 0 doit remplir les positions.
+  // Tout le monde calcule la taille de la fenêtre principale.
   if (m_comm_machine_rank == 0) {
     for (Int32 i = 0; i < m_comm_machine_size; ++i) {
       m_sum_sizeof_segments_span[i] = m_max_sizeof_win;
@@ -158,16 +180,19 @@ MpiMachineMemoryWindowBaseInternal(Int64 sizeof_segment, Int32 sizeof_type, cons
 
   MPI_Barrier(m_comm_machine);
 
+  // La taille actuelle de la fenêtre est sa taille max.
+  // Utile en cas de resize.
   m_actual_sizeof_win = m_max_sizeof_win;
 
   //--------------------------
-
-  std::byte* ptr_win = nullptr;
 
 #ifdef ARCCORE_DEBUG
   Int64 sum = 0;
 
   for (Int32 i = 0; i < m_comm_machine_size; ++i) {
+    // On crée la vue vers la fenêtre principale.
+    // (la boucle est là uniquement en mode debug pour vérifier qu'on a bien
+    // une fenêtre contigüe).
     MPI_Aint size_seg;
     int size_type;
     std::byte* ptr_seg = nullptr;
@@ -177,10 +202,10 @@ MpiMachineMemoryWindowBaseInternal(Int64 sizeof_segment, Int32 sizeof_type, cons
       ARCCORE_FATAL("Error with MPI_Win_shared_query() call");
     }
     if (i == 0) {
-      ptr_win = ptr_seg;
+      m_window_span = Span<std::byte>{ ptr_seg, m_max_sizeof_win };
     }
 
-    if (ptr_seg != (ptr_win + sum)) {
+    if (ptr_seg != (m_window_span.data() + sum)) {
       ARCCORE_FATAL("Pb d'adresse de segment");
     }
     if (size_seg != m_sizeof_segments_span[i]) {
@@ -192,6 +217,7 @@ MpiMachineMemoryWindowBaseInternal(Int64 sizeof_segment, Int32 sizeof_type, cons
     ARCCORE_FATAL("Pb taille de window -- Expected : {0} -- Found : {1}", m_max_sizeof_win, sum);
   }
 #else
+  // On crée la vue vers la fenêtre principale.
   {
     MPI_Aint size_seg;
     int size_type;
@@ -202,11 +228,9 @@ MpiMachineMemoryWindowBaseInternal(Int64 sizeof_segment, Int32 sizeof_type, cons
       ARCCORE_FATAL("Error with MPI_Win_shared_query() call");
     }
 
-    ptr_win = ptr_seg;
+    m_window_span = Span<std::byte>{ ptr_seg, m_max_sizeof_win };
   }
 #endif
-
-  m_window_span = Span<std::byte>{ ptr_win, m_max_sizeof_win };
 }
 
 /*---------------------------------------------------------------------------*/
@@ -233,7 +257,7 @@ sizeofOneElem() const
 /*---------------------------------------------------------------------------*/
 
 Span<std::byte> MpiMachineMemoryWindowBaseInternal::
-segment() const
+segmentView()
 {
   const Int64 begin_segment = m_sum_sizeof_segments_span[m_comm_machine_rank];
   const Int64 size_segment = m_sizeof_segments_span[m_comm_machine_rank];
@@ -245,7 +269,7 @@ segment() const
 /*---------------------------------------------------------------------------*/
 
 Span<std::byte> MpiMachineMemoryWindowBaseInternal::
-segment(Int32 rank) const
+segmentView(Int32 rank)
 {
   Int32 pos = -1;
   for (Int32 i = 0; i < m_comm_machine_size; ++i) {
@@ -268,7 +292,51 @@ segment(Int32 rank) const
 /*---------------------------------------------------------------------------*/
 
 Span<std::byte> MpiMachineMemoryWindowBaseInternal::
-window() const
+windowView()
+{
+  return m_window_span;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Span<const std::byte> MpiMachineMemoryWindowBaseInternal::
+segmentConstView() const
+{
+  const Int64 begin_segment = m_sum_sizeof_segments_span[m_comm_machine_rank];
+  const Int64 size_segment = m_sizeof_segments_span[m_comm_machine_rank];
+
+  return m_window_span.subSpan(begin_segment, size_segment);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Span<const std::byte> MpiMachineMemoryWindowBaseInternal::
+segmentConstView(Int32 rank) const
+{
+  Int32 pos = -1;
+  for (Int32 i = 0; i < m_comm_machine_size; ++i) {
+    if (m_machine_ranks[i] == rank) {
+      pos = i;
+      break;
+    }
+  }
+  if (pos == -1) {
+    ARCCORE_FATAL("Rank is not in machine");
+  }
+
+  const Int64 begin_segment = m_sum_sizeof_segments_span[pos];
+  const Int64 size_segment = m_sizeof_segments_span[pos];
+
+  return m_window_span.subSpan(begin_segment, size_segment);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Span<const std::byte> MpiMachineMemoryWindowBaseInternal::
+windowConstView() const
 {
   return m_window_span;
 }
