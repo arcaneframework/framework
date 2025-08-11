@@ -148,24 +148,48 @@ Ce `resize()` va augmenter le nombre d'éléments de tous les segments sauf du s
 Ce sous-domaine va passer de 15 éléments à 12 (comme pour `reserve()`, chaque sous-domaine peut mettre la valeur qu'il
 veut).
 
-Il est aussi possible d'ajouter des éléments dans le segment d'un autre sous-domaine avec la méthode `add()`.
-Pour cela, il est nécessaire d'échanger son segment avec un autre sous-domaine avec la méthode
-Arcane::DynamicMachineMemoryWindow::exchangeSegmentWith(Arcane::Int32 rank) :
+Il est aussi possible d'ajouter des éléments dans le segment d'un autre sous-domaine avec la méthode
+Arcane::DynamicMachineMemoryWindow::addToAnotherSegment(Arcane::Int32 rank, Arcane::Span<const Type> elem).
 
 \snippet ParallelMngTest.cc snippet_arcanedoc_parallel_shmem_usage_13
 
-\warning On échange le segment que l'on possède, pas le segment qui nous appartient. C'est important de garder ça en
-tête si on multiplie les échanges (ce qui est vivement déconseillé).
-Dans le cas où l'on a les sous-domaines {P0, P1, P2} et après l'exécution de l'échange présenté au-dessus,
-`window.segmentView(1)` retourne le segment possédé par P1 mais appartenant à P0.
 
-Après un échange, toutes les méthodes présentées au-dessus s'appliqueront sur le "nouveau" segment.
+\warning Il est impossible de mélanger les appels à `add()` et à `addToAnotherSegment()`. Si un sous-domaine appelle
+la méthode `addToAnotherSegment()`, tous les sous-domaines devront appeler collectivement `addToAnotherSegment()` (avec
+ou sans paramètres) et pas `add()`.
 
-\snippet ParallelMngTest.cc snippet_arcanedoc_parallel_shmem_usage_14
+Le fonctionnement est presque identique à la méthode `add()` mais avec un paramètre en plus pour désigner le rang du
+sous-domaine possédant le segment à modifier.
 
-Pour rendre les segments à leurs propriétaires, la méthode Arcane::DynamicMachineMemoryWindow::resetExchanges()
-est disponible. Il est recommandé de l'appeler dès que l'opération nécessitant un échange est terminé pour garder un
-code facilement lisible.
+\warning Deux sous-domaines ne peuvent pas ajouter d'éléments dans un même segment (en une fois) : pas de problème
+d'ordre d'écriture.
+```c
+// Pas possible :
+if (my_rank == 0){
+  window.addToAnotherSegment();
+}
+else if (my_rank == 1){
+  window.addToAnotherSegment(0, mon_tableau);
+}
+else if (my_rank == 2){
+  window.addToAnotherSegment(0, mon_tableau);
+}
+```
+```c
+// Possible :
+if (my_rank == 0){
+  window.addToAnotherSegment();
+  window.addToAnotherSegment();
+}
+else if (my_rank == 1){
+  window.addToAnotherSegment();
+  window.addToAnotherSegment(0, mon_tableau);
+}
+else if (my_rank == 2){
+  window.addToAnotherSegment(0, mon_tableau);
+  window.addToAnotherSegment();
+}
+```
 
 ## Mémoire partagée entre processus {#arcanedoc_parallel_shmem_shmem}
 

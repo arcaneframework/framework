@@ -1152,159 +1152,86 @@ _testMachineMemoryWindow()
     test.segmentView()[0] = my_rank;
 
     {
-      Int32 exchange_with = -1;
+      Int32 add_in = -1;
 
       if (my_rank % 2 == 0 && pos_in_machine_ranks + 1 < machine_ranks.size()) {
-        exchange_with = machine_ranks[pos_in_machine_ranks + 1];
+        add_in = machine_ranks[pos_in_machine_ranks + 1];
       }
-
       if (my_rank % 2 == 1 && pos_in_machine_ranks - 1 >= 0) {
-        exchange_with = machine_ranks[pos_in_machine_ranks - 1];
+        add_in = machine_ranks[pos_in_machine_ranks - 1];
       }
-
-      if (exchange_with == -1) {
-        test.exchangeSegmentWith();
+      if (add_in == -1) {
+        test.addToAnotherSegment();
       }
       else {
-        test.exchangeSegmentWith(exchange_with);
-
-        if (test.segmentOwner() != exchange_with) {
-          ARCANE_FATAL("(1) Error in exchange");
-        }
-        if (test.segmentOwner(exchange_with) != my_rank) {
-          ARCANE_FATAL("(2) Error in exchange");
-        }
-        if (test.segmentView(exchange_with)[0] != my_rank) {
-          ARCANE_FATAL("(3) Error in exchange");
-        }
+        test.addToAnotherSegment(add_in, my_rank_av);
+      }
+      if (my_rank % 2 == 0 && pos_in_machine_ranks + 1 < machine_ranks.size()) {
+        ARCANE_ASSERT(machine_ranks[pos_in_machine_ranks + 1] == test.segmentConstView()[test.segmentConstView().size() - 1], ("Bad elem"));
+      }
+      if (my_rank % 2 == 1 && pos_in_machine_ranks - 1 >= 0) {
+        ARCANE_ASSERT(machine_ranks[pos_in_machine_ranks - 1] == test.segmentConstView()[test.segmentConstView().size() - 1], ("Bad elem"));
       }
     }
-
-    test.reserve(2);
-    test.add(my_rank_av);
-
     {
-      Int32 exchange_with = -1;
-
-      if (my_rank % 2 == 0 && pos_in_machine_ranks - 1 >= 0) {
-        exchange_with = machine_ranks[pos_in_machine_ranks - 1];
-      }
-
+      Int32 add_in = -1;
       if (my_rank % 2 == 1 && pos_in_machine_ranks + 1 < machine_ranks.size()) {
-        exchange_with = machine_ranks[pos_in_machine_ranks + 1];
+        add_in = machine_ranks[pos_in_machine_ranks + 1];
       }
-
-      if (exchange_with == -1) {
-        test.exchangeSegmentWith();
+      if (my_rank % 2 == 0 && pos_in_machine_ranks - 1 >= 0) {
+        add_in = machine_ranks[pos_in_machine_ranks - 1];
       }
-      else {
-        Int32 owner_new_seg = test.segmentOwner(exchange_with);
-        test.exchangeSegmentWith(exchange_with);
-
-        if (test.segmentOwner() != owner_new_seg) {
-          ARCANE_FATAL("(4) Error in exchange");
-        }
-      }
-    }
-    {
-      Int64 max = 0;
-      for (Int32 rank : machine_ranks) {
-        Int64 seg_size = test.segmentConstView(rank).size();
-        if (seg_size > max) {
-          max = seg_size;
-        }
-      }
-      if (test.segmentConstView().size() != max) {
-        test.resize(max);
+      if (add_in == -1) {
+        test.addToAnotherSegment();
       }
       else {
-        test.resize();
+        test.addToAnotherSegment(add_in, my_rank_av);
       }
-      for (const Int32 rank : machine_ranks) {
-        Int64 seg_size = test.segmentConstView(rank).size();
-        if (seg_size != max) {
-          ARCANE_FATAL("Resize error -- Max : {0} -- Size : {1}", max, seg_size);
-        }
+      if (my_rank % 2 == 1 && pos_in_machine_ranks + 1 < machine_ranks.size()) {
+        ARCANE_ASSERT(machine_ranks[pos_in_machine_ranks + 1] == test.segmentConstView()[test.segmentConstView().size() - 1], ("Bad elem"));
+      }
+      if (my_rank % 2 == 0 && pos_in_machine_ranks - 1 >= 0) {
+        ARCANE_ASSERT(machine_ranks[pos_in_machine_ranks - 1] == test.segmentConstView()[test.segmentConstView().size() - 1], ("Bad elem"));
       }
     }
-    test.add(my_rank_av);
-
-    test.shrink();
-    test.resetExchanges();
-
+    debug() << "Test : " << test.segmentConstView();
     test.resize(0);
+    test.reserve(15);
     {
-      for (Integer i = 0; i < machine_ranks.size() * 2; ++i) {
-        test.add(my_rank_av);
-
-        Int32 exchange_with = -1;
-        if (i % 2 == 0) {
-          if (my_rank % 2 == 0 && pos_in_machine_ranks + 1 < machine_ranks.size()) {
-            exchange_with = machine_ranks[pos_in_machine_ranks + 1];
-          }
-          if (my_rank % 2 == 1 && pos_in_machine_ranks - 1 >= 0) {
-            exchange_with = machine_ranks[pos_in_machine_ranks - 1];
-          }
-        }
-        else {
-          if (my_rank % 2 == 1 && pos_in_machine_ranks + 1 < machine_ranks.size()) {
-            exchange_with = machine_ranks[pos_in_machine_ranks + 1];
-          }
-          if (my_rank % 2 == 0 && pos_in_machine_ranks - 1 >= 0) {
-            exchange_with = machine_ranks[pos_in_machine_ranks - 1];
-          }
-        }
-        if (exchange_with == -1) {
-          test.exchangeSegmentWith();
-        }
-        else {
-          test.exchangeSegmentWith(exchange_with);
-        }
+      UniqueArray<Integer> ref(15);
+      for (Integer i = 0; i < 15; ++i) {
+        Int32 add_in = (my_rank + i) % machine_ranks.size();
+        test.addToAnotherSegment(add_in, my_rank_av);
+        ref[i] = (((my_rank - i) % machine_ranks.size()) + machine_ranks.size()) % machine_ranks.size();
       }
-      test.resetExchanges();
-      debug() << test.segmentConstView();
+      debug() << "Test : " << test.segmentConstView();
+      debug() << "Ref : " << ref;
+      ARCANE_ASSERT(ref == test.segmentConstView(), ("Result is not egal to ref"));
     }
     {
-      Integer nb_iter = machine_ranks.size() * 2;
-      if (test.segmentConstView().size() != nb_iter) {
-        ARCANE_FATAL("Size error");
-      }
-      UniqueArray<Integer> ref(nb_iter);
-      bool pingpong = (my_rank % 2 == 0);
-      Integer value = my_rank;
-      Integer iter = 0;
-
-      while (iter < nb_iter) {
-        ref[iter] = value;
-
-        if (pingpong)
-          value++;
-        else
-          value--;
-
-        if (value == machine_ranks.size()) {
-          pingpong = !pingpong;
-          value--;
-        }
-        else if (value == -1) {
-          pingpong = !pingpong;
-          value++;
-        }
-        iter++;
+      Int32 add_in = -1;
+      if (my_rank % 2 == 1 && pos_in_machine_ranks - 1 >= 0) {
+        add_in = machine_ranks[pos_in_machine_ranks - 1];
       }
 
-      if (ref != test.segmentConstView()) {
-        ARCANE_FATAL("Memory Windows are not egal to ref");
+      if (add_in == -1) {
+        test.addToAnotherSegment();
+        test.resize();
+        test.add();
       }
-      debug() << ref;
+      else {
+        test.addToAnotherSegment(add_in, test.segmentConstView());
+        test.resize(0);
+        test.add(test.segmentConstView(add_in).subSpan(0, 15)); // Ne fonctionne pas sans reserve.
+      }
     }
+    debug() << "Test : " << test.segmentConstView();
+    test.shrink();
   }
-
   {
     //![snippet_arcanedoc_parallel_shmem_usage_7]
     IParallelMng* pm = m_parallel_mng;
     Integer my_rank = pm->commRank();
-
     DynamicMachineMemoryWindow<Integer> window(pm, 5);
     ConstArrayView machine_ranks(window.machineRanks());
     //![snippet_arcanedoc_parallel_shmem_usage_7]
@@ -1316,7 +1243,6 @@ _testMachineMemoryWindow()
     //![snippet_arcanedoc_parallel_shmem_usage_9]
     {
       Span av_my_segment(window.segmentView());
-
       Integer iter = 0;
       for (Integer& elem : av_my_segment) {
         elem = iter * (my_rank + 1);
@@ -1326,7 +1252,6 @@ _testMachineMemoryWindow()
     window.barrier();
     for (Int32 rank : machine_ranks) {
       Span av_segment(window.segmentConstView(rank));
-
       for (Integer i = 0; i < 5; ++i) {
         if (av_segment[i] != i * (rank + 1)) {
           ARCANE_FATAL("Bad element in memory window -- Expected : {0} -- Found : {1}", (i * (rank + 1)), av_segment[i]);
@@ -1360,7 +1285,7 @@ _testMachineMemoryWindow()
     info() << window.segmentConstView().size();
     //![snippet_arcanedoc_parallel_shmem_usage_12]
     //![snippet_arcanedoc_parallel_shmem_usage_13]
-    Int32 voisin = my_rank;
+    Int32 voisin = -1;
     if (my_rank % 2 == 0 && pos_in_machine_ranks + 1 < machine_ranks.size()) {
       voisin = machine_ranks[pos_in_machine_ranks + 1];
     }
@@ -1368,19 +1293,22 @@ _testMachineMemoryWindow()
       voisin = machine_ranks[pos_in_machine_ranks - 1];
     }
 
-    window.exchangeSegmentWith(voisin);
-    info() << (window.segmentOwner() == voisin);
-    //![snippet_arcanedoc_parallel_shmem_usage_13]
-    //![snippet_arcanedoc_parallel_shmem_usage_14]
-    {
+    // On efface les éléments déjà présents dans les segments.
+    window.resize(0);
+
+    if (voisin == -1) {
+      window.addToAnotherSegment();
+    }
+    else {
       UniqueArray<Integer> buf;
       for (Integer i = 0; i < 10; ++i) {
         buf.add(my_rank);
       }
-      window.add(buf);
+      window.addToAnotherSegment(voisin, buf);
     }
-    window.resetExchanges();
-    //![snippet_arcanedoc_parallel_shmem_usage_14]
+    info() << "Segment final : " << window.segmentConstView();
+    window.shrink();
+    //![snippet_arcanedoc_parallel_shmem_usage_13]
   }
 }
 

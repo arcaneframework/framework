@@ -59,7 +59,7 @@ class SharedMemoryMachineMemoryWindowBaseInternalCreator
   Int64* m_sum_sizeof_segments;
   //-------
   UniqueArray<std::byte>* m_windows;
-  Int32* m_owner_segments;
+  Int32* m_target_segments;
 };
 
 /*---------------------------------------------------------------------------*/

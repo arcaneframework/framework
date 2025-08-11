@@ -90,20 +90,20 @@ createDynamicWindow(Int32 my_rank, Int64 sizeof_segment, Int32 sizeof_type)
 {
   if (my_rank == 0) {
     m_windows = new UniqueArray<std::byte>[m_nb_rank]();
-    m_owner_segments = new Int32[m_nb_rank];
+    m_target_segments = new Int32[m_nb_rank];
   }
   m_barrier->wait();
 
   m_windows[my_rank].resize(sizeof_segment);
-  m_owner_segments[my_rank] = my_rank;
+  m_target_segments[my_rank] = -1;
 
-  auto* window_obj = new SharedMemoryDynamicMachineMemoryWindowBaseInternal(my_rank, m_nb_rank, m_ranks, sizeof_type, m_windows, m_owner_segments, m_barrier);
+  auto* window_obj = new SharedMemoryDynamicMachineMemoryWindowBaseInternal(my_rank, m_nb_rank, m_ranks, sizeof_type, m_windows, m_target_segments, m_barrier);
   m_barrier->wait();
 
   // Ces tableaux doivent être delete par SharedMemoryDynamicMachineMemoryWindowBaseInternal (rang 0 uniquement).
   if (my_rank == 0) {
     m_windows = nullptr;
-    m_owner_segments = nullptr;
+    m_target_segments = nullptr;
   }
 
   return window_obj;

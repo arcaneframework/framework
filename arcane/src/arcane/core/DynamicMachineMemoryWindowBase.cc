@@ -77,24 +77,6 @@ segmentConstView(Int32 rank) const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Int32 DynamicMachineMemoryWindowBase::
-segmentOwner() const
-{
-  return m_node_window_base->segmentOwner();
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-Int32 DynamicMachineMemoryWindowBase::
-segmentOwner(Int32 rank) const
-{
-  return m_node_window_base->segmentOwner(rank);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 void DynamicMachineMemoryWindowBase::
 add(Span<const std::byte> elem)
 {
@@ -114,27 +96,18 @@ add()
 /*---------------------------------------------------------------------------*/
 
 void DynamicMachineMemoryWindowBase::
-exchangeSegmentWith(Int32 rank)
+addToAnotherSegment(Int32 rank, Span<const std::byte> elem)
 {
-  m_node_window_base->exchangeSegmentWith(rank);
+  m_node_window_base->addToAnotherSegment(rank, elem);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void DynamicMachineMemoryWindowBase::
-exchangeSegmentWith()
+addToAnotherSegment()
 {
-  m_node_window_base->exchangeSegmentWith();
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void DynamicMachineMemoryWindowBase::
-resetExchanges()
-{
-  m_node_window_base->resetExchanges();
+  m_node_window_base->addToAnotherSegment();
 }
 
 /*---------------------------------------------------------------------------*/

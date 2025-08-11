@@ -475,17 +475,6 @@ class SequentialDynamicMachineMemoryWindowBaseInternal
     }
     return m_segment;
   }
-  Int32 segmentOwner() const override
-  {
-    return 0;
-  }
-  Int32 segmentOwner(Int32 rank) const override
-  {
-    if (rank != 0) {
-      ARCANE_FATAL("Rank {0} is unavailable (Sequential)", rank);
-    }
-    return 0;
-  }
   void add(Span<const std::byte> elem) override
   {
     if (elem.size() % m_sizeof_type != 0) {
@@ -494,14 +483,18 @@ class SequentialDynamicMachineMemoryWindowBaseInternal
     m_segment.addRange(elem);
   }
   void add() override {}
-  void exchangeSegmentWith(Int32 rank) override
+  void addToAnotherSegment(Int32 rank, Span<const std::byte> elem) override
   {
     if (rank != 0) {
       ARCANE_FATAL("Rank {0} is unavailable (Sequential)", rank);
     }
+    if (elem.size() % m_sizeof_type != 0) {
+      ARCCORE_FATAL("Sizeof elem not valid");
+    }
+    m_segment.addRange(elem);
   }
-  void exchangeSegmentWith() override {}
-  void resetExchanges() override {}
+  void addToAnotherSegment() override {}
+
   void reserve(Int64 new_capacity) override
   {
     m_segment.reserve(new_capacity);

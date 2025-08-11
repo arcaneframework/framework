@@ -133,28 +133,6 @@ segmentConstView(Int32 rank) const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Int32 HybridDynamicMachineMemoryWindowBaseInternal::
-segmentOwner() const
-{
-  return m_mpi_windows->segmentPos(m_my_rank_local_proc) + m_mpi_windows->segmentOwner(m_my_rank_local_proc) * m_nb_rank_local_proc;
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-Int32 HybridDynamicMachineMemoryWindowBaseInternal::
-segmentOwner(Int32 rank) const
-{
-  FullRankInfo fri = FullRankInfo::compute(MP::MessageRank(rank), m_nb_rank_local_proc);
-  Int32 rank_local_proc = fri.localRankValue();
-  Int32 rank_mpi = fri.mpiRankValue();
-
-  return m_mpi_windows->segmentPos(rank_mpi, rank_local_proc) + m_mpi_windows->segmentOwner(rank_mpi, rank_local_proc) * m_nb_rank_local_proc;
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 void HybridDynamicMachineMemoryWindowBaseInternal::
 add(Span<const std::byte> elem)
 {
@@ -183,17 +161,17 @@ add()
 /*---------------------------------------------------------------------------*/
 
 void HybridDynamicMachineMemoryWindowBaseInternal::
-exchangeSegmentWith(Int32 rank)
+addToAnotherSegment(Int32 rank, Span<const std::byte> elem)
 {
   FullRankInfo fri = FullRankInfo::compute(MP::MessageRank(rank), m_nb_rank_local_proc);
   Int32 rank_local_proc = fri.localRankValue();
   Int32 rank_mpi = fri.mpiRankValue();
 
-  m_mpi_windows->requestExchangeSegmentWith(m_my_rank_local_proc, rank_mpi, rank_local_proc);
+  m_mpi_windows->requestAddToAnotherSegment(m_my_rank_local_proc, rank_mpi, rank_local_proc, elem);
   m_thread_barrier->wait();
 
   if (m_my_rank_local_proc == 0) {
-    m_mpi_windows->executeExchangeSegmentWith();
+    m_mpi_windows->executeAddToAnotherSegment();
   }
   m_thread_barrier->wait();
 }
@@ -202,25 +180,12 @@ exchangeSegmentWith(Int32 rank)
 /*---------------------------------------------------------------------------*/
 
 void HybridDynamicMachineMemoryWindowBaseInternal::
-exchangeSegmentWith()
+addToAnotherSegment()
 {
   m_thread_barrier->wait();
 
   if (m_my_rank_local_proc == 0) {
-    m_mpi_windows->executeExchangeSegmentWith();
-  }
-  m_thread_barrier->wait();
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void HybridDynamicMachineMemoryWindowBaseInternal::
-resetExchanges()
-{
-  m_thread_barrier->wait();
-  if (m_my_rank_local_proc == 0) {
-    m_mpi_windows->resetExchanges();
+    m_mpi_windows->executeAddToAnotherSegment();
   }
   m_thread_barrier->wait();
 }

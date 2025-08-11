@@ -29,14 +29,14 @@ namespace Arcane::MessagePassing
 /*---------------------------------------------------------------------------*/
 
 SharedMemoryDynamicMachineMemoryWindowBaseInternal::
-SharedMemoryDynamicMachineMemoryWindowBaseInternal(Int32 my_rank, Int32 nb_rank, ConstArrayView<Int32> ranks, Int32 sizeof_type, UniqueArray<std::byte>* windows, Int32* owner_segments, IThreadBarrier* barrier)
+SharedMemoryDynamicMachineMemoryWindowBaseInternal(Int32 my_rank, Int32 nb_rank, ConstArrayView<Int32> ranks, Int32 sizeof_type, UniqueArray<std::byte>* windows, Int32* target_segments, IThreadBarrier* barrier)
 : m_my_rank(my_rank)
 , m_ranks(ranks)
 , m_sizeof_type(sizeof_type)
 , m_windows(windows)
 , m_windows_span(windows, nb_rank)
-, m_owner_segments(owner_segments)
-, m_owner_segments_span(owner_segments, nb_rank)
+, m_target_segments(target_segments)
+, m_target_segments_span(target_segments, nb_rank)
 , m_barrier(barrier)
 {}
 
@@ -49,7 +49,7 @@ SharedMemoryDynamicMachineMemoryWindowBaseInternal::
   m_barrier->wait();
   if (m_my_rank == 0) {
     delete[] m_windows;
-    delete[] m_owner_segments;
+    delete[] m_target_segments;
   }
 }
 
@@ -86,7 +86,7 @@ barrier() const
 Span<std::byte> SharedMemoryDynamicMachineMemoryWindowBaseInternal::
 segmentView()
 {
-  return m_windows_span[m_owner_segments_span[m_my_rank]];
+  return m_windows_span[m_my_rank];
 }
 
 /*---------------------------------------------------------------------------*/
@@ -95,7 +95,7 @@ segmentView()
 Span<std::byte> SharedMemoryDynamicMachineMemoryWindowBaseInternal::
 segmentView(Int32 rank)
 {
-  return m_windows_span[m_owner_segments_span[rank]];
+  return m_windows_span[rank];
 }
 
 /*---------------------------------------------------------------------------*/
@@ -104,7 +104,7 @@ segmentView(Int32 rank)
 Span<const std::byte> SharedMemoryDynamicMachineMemoryWindowBaseInternal::
 segmentConstView() const
 {
-  return m_windows_span[m_owner_segments_span[m_my_rank]];
+  return m_windows_span[m_my_rank];
 }
 
 /*---------------------------------------------------------------------------*/
@@ -113,25 +113,7 @@ segmentConstView() const
 Span<const std::byte> SharedMemoryDynamicMachineMemoryWindowBaseInternal::
 segmentConstView(Int32 rank) const
 {
-  return m_windows_span[m_owner_segments_span[rank]];
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-Int32 SharedMemoryDynamicMachineMemoryWindowBaseInternal::
-segmentOwner() const
-{
-  return m_owner_segments_span[m_my_rank];
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-Int32 SharedMemoryDynamicMachineMemoryWindowBaseInternal::
-segmentOwner(Int32 rank) const
-{
-  return m_owner_segments_span[rank];
+  return m_windows_span[rank];
 }
 
 /*---------------------------------------------------------------------------*/
@@ -144,7 +126,7 @@ add(Span<const std::byte> elem)
   if (elem.size() % m_sizeof_type != 0) {
     ARCCORE_FATAL("Sizeof elem not valid");
   }
-  m_windows_span[m_owner_segments_span[m_my_rank]].addRange(elem);
+  m_windows_span[m_my_rank].addRange(elem);
   m_barrier->wait();
 }
 
@@ -162,49 +144,39 @@ add()
 /*---------------------------------------------------------------------------*/
 
 void SharedMemoryDynamicMachineMemoryWindowBaseInternal::
-exchangeSegmentWith(Int32 rank)
+addToAnotherSegment(Int32 rank, Span<const std::byte> elem)
 {
-  const Int32 exchange_with = rank;
-
-  if (exchange_with == m_my_rank) {
-    m_barrier->wait();
-    m_barrier->wait();
-    return;
+  if (elem.size() % m_sizeof_type != 0) {
+    ARCCORE_FATAL("Sizeof elem not valid");
   }
 
-  const Int32 segment_i_have = m_owner_segments_span[m_my_rank];
-  const Int32 segment_i_want = m_owner_segments_span[exchange_with];
-
+  m_target_segments_span[m_my_rank] = rank;
   m_barrier->wait();
 
-  m_owner_segments_span[m_my_rank] = segment_i_want;
-
-  m_barrier->wait();
-
-  if (m_owner_segments_span[exchange_with] != segment_i_have) {
-    ARCCORE_FATAL("Exchange from {0} to {1} is blocked : {1} would like segment {2}",
-                  m_ranks[m_my_rank], rank, m_owner_segments_span[exchange_with]);
+  bool is_found = false;
+  for (const Int32 rank_asked : m_target_segments_span) {
+    if (rank_asked == rank) {
+      if (!is_found) {
+        is_found = true;
+      }
+      else {
+        ARCANE_FATAL("Two subdomains ask same rank for addToAnotherSegment()");
+      }
+    }
   }
+
+  m_windows_span[rank].addRange(elem);
+  m_barrier->wait();
+  m_target_segments_span[m_my_rank] = -1;
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void SharedMemoryDynamicMachineMemoryWindowBaseInternal::
-exchangeSegmentWith()
+addToAnotherSegment()
 {
   m_barrier->wait();
-  m_barrier->wait();
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void SharedMemoryDynamicMachineMemoryWindowBaseInternal::
-resetExchanges()
-{
-  m_barrier->wait();
-  m_owner_segments_span[m_my_rank] = m_my_rank;
   m_barrier->wait();
 }
 
@@ -215,7 +187,7 @@ void SharedMemoryDynamicMachineMemoryWindowBaseInternal::
 reserve(Int64 new_capacity)
 {
   m_barrier->wait();
-  m_windows_span[m_owner_segments_span[m_my_rank]].reserve(new_capacity);
+  m_windows_span[m_my_rank].reserve(new_capacity);
   m_barrier->wait();
 }
 
@@ -236,7 +208,7 @@ void SharedMemoryDynamicMachineMemoryWindowBaseInternal::
 resize(Int64 new_size)
 {
   m_barrier->wait();
-  m_windows_span[m_owner_segments_span[m_my_rank]].resize(new_size);
+  m_windows_span[m_my_rank].resize(new_size);
   m_barrier->wait();
 }
 
@@ -257,7 +229,7 @@ void SharedMemoryDynamicMachineMemoryWindowBaseInternal::
 shrink()
 {
   m_barrier->wait();
-  m_windows_span[m_owner_segments_span[m_my_rank]].shrink();
+  m_windows_span[m_my_rank].shrink();
   m_barrier->wait();
 }
 

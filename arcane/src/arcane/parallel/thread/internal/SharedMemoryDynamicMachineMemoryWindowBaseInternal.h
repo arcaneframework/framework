@@ -38,7 +38,7 @@ class ARCANE_THREAD_EXPORT SharedMemoryDynamicMachineMemoryWindowBaseInternal
 {
  public:
 
-  SharedMemoryDynamicMachineMemoryWindowBaseInternal(Int32 my_rank, Int32 nb_rank, ConstArrayView<Int32> ranks, Int32 sizeof_type, UniqueArray<std::byte>* windows, Int32* owner_segments, IThreadBarrier* barrier);
+  SharedMemoryDynamicMachineMemoryWindowBaseInternal(Int32 my_rank, Int32 nb_rank, ConstArrayView<Int32> ranks, Int32 sizeof_type, UniqueArray<std::byte>* windows, Int32* target_segments, IThreadBarrier* barrier);
 
   ~SharedMemoryDynamicMachineMemoryWindowBaseInternal() override;
 
@@ -54,16 +54,11 @@ class ARCANE_THREAD_EXPORT SharedMemoryDynamicMachineMemoryWindowBaseInternal
   Span<const std::byte> segmentConstView() const override;
   Span<const std::byte> segmentConstView(Int32 rank) const override;
 
-  Int32 segmentOwner() const override;
-  Int32 segmentOwner(Int32 rank) const override;
-
   void add(Span<const std::byte> elem) override;
   void add() override;
 
-  void exchangeSegmentWith(Int32 rank) override;
-  void exchangeSegmentWith() override;
-
-  void resetExchanges() override;
+  void addToAnotherSegment(Int32 rank, Span<const std::byte> elem) override;
+  void addToAnotherSegment() override;
 
   void reserve(Int64 new_capacity) override;
   void reserve() override;
@@ -80,8 +75,8 @@ class ARCANE_THREAD_EXPORT SharedMemoryDynamicMachineMemoryWindowBaseInternal
   Int32 m_sizeof_type;
   UniqueArray<std::byte>* m_windows;
   SmallSpan<UniqueArray<std::byte>> m_windows_span;
-  Int32* m_owner_segments;
-  SmallSpan<Int32> m_owner_segments_span;
+  Int32* m_target_segments;
+  SmallSpan<Int32> m_target_segments_span;
   IThreadBarrier* m_barrier;
 };
 

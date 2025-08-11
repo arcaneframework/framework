@@ -58,16 +58,11 @@ class HybridDynamicMachineMemoryWindowBaseInternal
   Span<const std::byte> segmentConstView() const override;
   Span<const std::byte> segmentConstView(Int32 rank) const override;
 
-  Int32 segmentOwner() const override;
-  Int32 segmentOwner(Int32 rank) const override;
-
   void add(Span<const std::byte> elem) override;
   void add() override;
 
-  void exchangeSegmentWith(Int32 rank) override;
-  void exchangeSegmentWith() override;
-
-  void resetExchanges() override;
+  void addToAnotherSegment(Int32 rank, Span<const std::byte> elem) override;
+  void addToAnotherSegment() override;
 
   void reserve(Int64 new_capacity) override;
   void reserve() override;

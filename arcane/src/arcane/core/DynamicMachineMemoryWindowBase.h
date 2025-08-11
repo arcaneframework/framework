@@ -86,15 +86,11 @@ class ARCANE_CORE_EXPORT DynamicMachineMemoryWindowBase
   Span<const std::byte> segmentConstView() const;
   Span<const std::byte> segmentConstView(Int32 rank) const;
 
-  Int32 segmentOwner() const;
-  Int32 segmentOwner(Int32 rank) const;
-
   void add(Span<const std::byte> elem);
   void add();
 
-  void exchangeSegmentWith(Int32 rank);
-  void exchangeSegmentWith();
-  void resetExchanges();
+  void addToAnotherSegment(Int32 rank, Span<const std::byte> elem);
+  void addToAnotherSegment();
 
   ConstArrayView<Int32> machineRanks() const;
 

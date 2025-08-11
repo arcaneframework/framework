@@ -80,13 +80,9 @@ class DynamicMachineMemoryWindow
     m_impl.barrier();
   }
   /*!
-   * \brief Méthode permettant d'obtenir une vue sur le segment que nous
-   * possédons.
+   * \brief Méthode permettant d'obtenir une vue sur notre segment.
    *
    * Appel non collectif.
-   *
-   * Dans le cas d'échange de segments, il est possible d'obtenir le
-   * propriétaire du segment que nous possédons avec la méthode segmentOwner().
    *
    * \return Une vue.
    */
@@ -96,13 +92,10 @@ class DynamicMachineMemoryWindow
   }
 
   /*!
-   * \brief Méthode permettant d'obtenir une vue sur le segment que possède un
+   * \brief Méthode permettant d'obtenir une vue sur le segment d'un
    * autre sous-domaine du noeud.
    *
    * Appel non collectif.
-   *
-   * Dans le cas d'échange de segments, il est possible d'obtenir le
-   * propriétaire du segment avec la méthode segmentOwner(rank).
    *
    * \param rank Le rang du sous-domaine.
    * \return Une vue.
@@ -113,13 +106,9 @@ class DynamicMachineMemoryWindow
   }
 
   /*!
-   * \brief Méthode permettant d'obtenir une vue sur le segment que nous
-   * possédons.
+   * \brief Méthode permettant d'obtenir une vue sur notre segment.
    *
    * Appel non collectif.
-   *
-   * Dans le cas d'échange de segments, il est possible d'obtenir le
-   * propriétaire du segment que nous possédons avec la méthode segmentOwner().
    *
    * \return Une vue.
    */
@@ -129,13 +118,10 @@ class DynamicMachineMemoryWindow
   }
 
   /*!
-   * \brief Méthode permettant d'obtenir une vue sur le segment que possède un
+   * \brief Méthode permettant d'obtenir une vue sur le segment d'un
    * autre sous-domaine du noeud.
    *
    * Appel non collectif.
-   *
-   * Dans le cas d'échange de segments, il est possible d'obtenir le
-   * propriétaire du segment avec la méthode segmentOwner(rank).
    *
    * \param rank Le rang du sous-domaine.
    * \return Une vue.
@@ -146,40 +132,11 @@ class DynamicMachineMemoryWindow
   }
 
   /*!
-   * \brief Méthode permettant d'obtenir le propriétaire du segment que nous
-   * possédons.
-   *
-   * Appel non collectif.
-   *
-   * Méthode utile lors de l'échange de segments.
-   *
-   * \return Le propriétaire du segment.
-   */
-  Int32 segmentOwner() const
-  {
-    return m_impl.segmentOwner();
-  }
-  /*!
-   * \brief Méthode permettant d'obtenir le propriétaire du segment que
-   * possède un autre sous-domaine du noeud.
-   *
-   * Appel non collectif.
-   *
-   * Méthode utile lors de l'échange de segments.
-   *
-   * \param rank Le rang du sous-domaine.
-   * \return Le propriétaire du segment.
-   */
-  Int32 segmentOwner(Int32 rank) const
-  {
-    return m_impl.segmentOwner(rank);
-  }
-
-  /*!
-   * \brief Méthode permettant d'ajouter des élements dans le segment que nous
-   * possédons.
+   * \brief Méthode permettant d'ajouter des élements dans notre segment.
    *
    * Appel collectif.
+   *
+   * \note Les méthodes add(..) et addToAnotherSegment(..) ne se mélangent pas.
    *
    * Si le segment est trop petit, il sera redimensionné.
    *
@@ -200,6 +157,8 @@ class DynamicMachineMemoryWindow
    *
    * Appel collectif.
    *
+   * \note Les méthodes add(..) et addToAnotherSegment(..) ne se mélangent pas.
+   *
    * Voir la documentation de \a add(Span<const std::byte> elem).
    */
   void add()
@@ -208,60 +167,47 @@ class DynamicMachineMemoryWindow
   }
 
   /*!
-   * \brief Méthode permettant d'échanger le segment que nous possédons avec
-   * le segment de \a rank.
+   * \brief Méthode permettant d'ajouter des éléments dans le segment d'un
+   * autre sous-domaine.
    *
    * Appel collectif.
    *
-   * Cet échange permet de faire des add() sur le segment d'un autre processus
-   * sans avoir besoin de protéger des accès concurrents.
+   * \note Les méthodes add(..) et addToAnotherSegment(..) ne se mélangent pas.
    *
-   * Pour effectuer un échange entre deux processus (disons 0 et 1), les deux
-   * processus doivent appeler cette méthode avec le rang de l'autre :
-   * - 0 doit appeler exchangeSegmentWith(1),
-   * - 1 doit appeler exchangeSegmentWith(0).
+   * Deux sous-domaines ne doivent pas ajouter d'éléments dans un même
+   * segment de sous-domaine.
    *
-   * Les processus ne souhaitant pas échanger de segments doivent appeler
-   * \a exchangeSegmentWith() (ou exchangeSegmentWith(2) pour le processus 2).
+   * Si le segment ciblé est trop petit, il sera redimensionné.
    *
-   * Si nécessaire, il est possible de récupérer le rang d'un segment "loué"
-   * avec les méthodes \a segmentOwner().
+   * Les sous-domaines ne souhaitant pas ajouter d'éléments peuvent appeler la
+   * méthode \a addToAnotherSegment() sans paramètres.
    *
-   * \param rank Le rang avec qui échanger son segment.
+   * \param rank Le rang du sous-domaine avec le segment à modifier.
+   * \param elem Les éléments à ajouter.
    */
-  void exchangeSegmentWith(Int32 rank)
+  void addToAnotherSegment(Int32 rank, Span<const Type> elem)
   {
-    m_impl.exchangeSegmentWith(rank);
+    const Span<const std::byte> span_bytes(reinterpret_cast<const std::byte*>(elem.data()), elem.sizeBytes());
+    m_impl.addToAnotherSegment(rank, span_bytes);
   }
 
   /*!
-   * \brief Méthode à appeler par le ou les sous-domaines ne souhaitant pas échanger
-   * leurs segments.
+   * \brief Méthode à appeler par le ou les sous-domaines ne souhaitant pas ajouter
+   * d'éléments dans le segment d'un autre sous-domaine.
    *
    * Appel collectif.
    *
-   * Voir la documentation de \a exchangeSegmentWith(Int32 rank).
+   * \note Les méthodes add(..) et addToAnotherSegment(..) ne se mélangent pas.
+   *
+   * Voir la documentation de \a addToAnotherSegment(Int32 rank, Span<const Type> elem).
    */
-  void exchangeSegmentWith()
+  void addToAnotherSegment()
   {
-    m_impl.exchangeSegmentWith();
+    m_impl.addToAnotherSegment();
   }
 
   /*!
-   * \brief Méthode permettant de réinitialiser les échanges effectués.
-   *
-   * Appel collectif.
-   *
-   * Chaque processus retrouvera son segment.
-   */
-  void resetExchanges()
-  {
-    m_impl.resetExchanges();
-  }
-
-  /*!
-   * \brief Méthode permettant de réserver de l'espace mémoire dans le segment
-   * que nous possédons.
+   * \brief Méthode permettant de réserver de l'espace mémoire dans notre segment.
    *
    * Appel collectif.
    *
@@ -302,8 +248,7 @@ class DynamicMachineMemoryWindow
   }
 
   /*!
-   * \brief Méthode permettant de redimensionner le segment que nous
-   * possédons.
+   * \brief Méthode permettant de redimensionner notre segment.
    *
    * Appel collectif.
    *
