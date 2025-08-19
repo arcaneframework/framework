@@ -37,10 +37,8 @@ MpiDynamicMultiMachineMemoryWindowBaseInternal(SmallSpan<Int64> sizeof_segments,
 , m_sizeof_type(sizeof_type)
 , m_nb_segments_per_proc(nb_segments_per_proc)
 , m_machine_ranks(machine_ranks)
-, m_add_requests(std::make_unique<Span<const std::byte>[]>(nb_segments_per_proc))
-, m_add_requested(false)
-, m_resize_requests(std::make_unique<Int64[]>(nb_segments_per_proc))
-, m_resize_requested(false)
+, m_add_requests(nb_segments_per_proc)
+, m_resize_requests(nb_segments_per_proc)
 {
   if (m_sizeof_type <= 0) {
     ARCCORE_FATAL("Invalid sizeof_type");
@@ -56,12 +54,9 @@ MpiDynamicMultiMachineMemoryWindowBaseInternal(SmallSpan<Int64> sizeof_segments,
   m_all_mpi_win.resize(m_comm_machine_size * m_nb_segments_per_proc);
   m_reserved_part_span.resize(m_nb_segments_per_proc);
 
-  m_add_requests_span = SmallSpan<Span<const std::byte>>{ m_add_requests.get(), nb_segments_per_proc };
-  m_resize_requests_span = SmallSpan<Int64>{ m_resize_requests.get(), nb_segments_per_proc };
-
   for (Integer num_seg = 0; num_seg < m_nb_segments_per_proc; ++num_seg) {
-    m_add_requests_span[num_seg] = Span<const std::byte>{ nullptr, 0 };
-    m_resize_requests_span[num_seg] = -1;
+    m_add_requests[num_seg] = Span<const std::byte>{ nullptr, 0 };
+    m_resize_requests[num_seg] = -1;
   }
 
   MPI_Info win_info_true;
@@ -335,7 +330,7 @@ requestAdd(Int32 num_seg, Span<const std::byte> elem)
     _requestRealloc(segment_infos_pos);
   }
 
-  m_add_requests_span[num_seg] = elem;
+  m_add_requests[num_seg] = elem;
   m_add_requested = true; // TODO Atomic ?
 }
 
@@ -353,25 +348,25 @@ executeAdd()
   m_add_requested = false;
 
   for (Integer num_seg = 0; num_seg < m_nb_segments_per_proc; ++num_seg) {
-    if (m_add_requests_span[num_seg].empty() || m_add_requests_span[num_seg].data() == nullptr) {
+    if (m_add_requests[num_seg].empty() || m_add_requests[num_seg].data() == nullptr) {
       continue;
     }
 
     const Int32 segment_infos_pos = num_seg + m_comm_machine_rank * m_nb_segments_per_proc;
 
     const Int64 actual_sizeof_win = m_sizeof_used_part[segment_infos_pos];
-    const Int64 future_sizeof_win = actual_sizeof_win + m_add_requests_span[num_seg].size();
+    const Int64 future_sizeof_win = actual_sizeof_win + m_add_requests[num_seg].size();
 
     if (m_reserved_part_span[num_seg].size() < future_sizeof_win) {
       ARCCORE_FATAL("Bad realloc -- New size : {1} -- Needed size : {2}", m_reserved_part_span[num_seg].size(), future_sizeof_win);
     }
 
     for (Int64 pos_win = actual_sizeof_win, pos_elem = 0; pos_win < future_sizeof_win; ++pos_win, ++pos_elem) {
-      m_reserved_part_span[num_seg][pos_win] = m_add_requests_span[num_seg][pos_elem];
+      m_reserved_part_span[num_seg][pos_win] = m_add_requests[num_seg][pos_elem];
     }
     m_sizeof_used_part[segment_infos_pos] = future_sizeof_win;
 
-    m_add_requests_span[num_seg] = Span<const std::byte>{ nullptr, 0 };
+    m_add_requests[num_seg] = Span<const std::byte>{ nullptr, 0 };
   }
 }
 
@@ -420,7 +415,7 @@ requestAddToAnotherSegment(Int32 thread, Int32 rank, Int32 num_seg, Span<const s
     _requestRealloc(target_segment_infos_pos);
   }
 
-  m_add_requests_span[thread] = elem;
+  m_add_requests[thread] = elem;
   m_add_requested = true; // TODO Atomic ?
 }
 
@@ -470,7 +465,7 @@ executeAddToAnotherSegment()
     _executeRealloc();
 
     for (Integer num_seg = 0; num_seg < m_nb_segments_per_proc; ++num_seg) {
-      if (m_add_requests_span[num_seg].empty() || m_add_requests_span[num_seg].data() == nullptr) {
+      if (m_add_requests[num_seg].empty() || m_add_requests[num_seg].data() == nullptr) {
         continue;
       }
 
@@ -481,7 +476,7 @@ executeAddToAnotherSegment()
       }
 
       const Int64 actual_sizeof_win = m_sizeof_used_part[target_segment_infos_pos];
-      const Int64 future_sizeof_win = actual_sizeof_win + m_add_requests_span[num_seg].size();
+      const Int64 future_sizeof_win = actual_sizeof_win + m_add_requests[num_seg].size();
 
       Span<std::byte> rank_reserved_part_span;
       {
@@ -501,11 +496,11 @@ executeAddToAnotherSegment()
       }
 
       for (Int64 pos_win = actual_sizeof_win, pos_elem = 0; pos_win < future_sizeof_win; ++pos_win, ++pos_elem) {
-        rank_reserved_part_span[pos_win] = m_add_requests_span[num_seg][pos_elem];
+        rank_reserved_part_span[pos_win] = m_add_requests[num_seg][pos_elem];
       }
       m_sizeof_used_part[target_segment_infos_pos] = future_sizeof_win;
 
-      m_add_requests_span[num_seg] = Span<const std::byte>{ nullptr, 0 };
+      m_add_requests[num_seg] = Span<const std::byte>{ nullptr, 0 };
       m_target_segments[segment_infos_pos] = -1;
     }
   }
@@ -578,7 +573,7 @@ requestResize(Int32 num_seg, Int64 new_size)
     _requestRealloc(segment_infos_pos);
   }
 
-  m_resize_requests_span[num_seg] = new_size;
+  m_resize_requests[num_seg] = new_size;
   m_resize_requested = true; // TODO Atomic ?
 }
 
@@ -596,18 +591,18 @@ executeResize()
   m_resize_requested = false;
 
   for (Integer num_seg = 0; num_seg < m_nb_segments_per_proc; ++num_seg) {
-    if (m_resize_requests_span[num_seg] == -1) {
+    if (m_resize_requests[num_seg] == -1) {
       continue;
     }
 
     const Int32 segment_infos_pos = num_seg + m_comm_machine_rank * m_nb_segments_per_proc;
 
-    if (m_reserved_part_span[num_seg].size() < m_resize_requests_span[num_seg]) {
-      ARCCORE_FATAL("Bad realloc -- New size : {0} -- Needed size : {1}", m_reserved_part_span[num_seg].size(), m_resize_requests_span[num_seg]);
+    if (m_reserved_part_span[num_seg].size() < m_resize_requests[num_seg]) {
+      ARCCORE_FATAL("Bad realloc -- New size : {0} -- Needed size : {1}", m_reserved_part_span[num_seg].size(), m_resize_requests[num_seg]);
     }
 
-    m_sizeof_used_part[segment_infos_pos] = m_resize_requests_span[num_seg];
-    m_resize_requests_span[num_seg] = -1;
+    m_sizeof_used_part[segment_infos_pos] = m_resize_requests[num_seg];
+    m_resize_requests[num_seg] = -1;
   }
 }
 

@@ -35,7 +35,6 @@ MpiMachineMemoryWindowBaseInternal(Int64 sizeof_segment, Int32 sizeof_type, cons
 , m_comm_machine_rank(comm_machine_rank)
 , m_sizeof_type(sizeof_type)
 , m_machine_ranks(machine_ranks)
-, m_max_sizeof_win(0)
 , m_actual_sizeof_win(-1)
 {
   // Toutes les fenêtres de cette classe doivent être contigües.

@@ -280,21 +280,19 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiDynamicMultiMachineMemoryWindowBaseInt
   Span<Int32> m_target_segments;
 
   MPI_Comm m_comm_machine;
-  Int32 m_comm_machine_size;
-  Int32 m_comm_machine_rank;
+  Int32 m_comm_machine_size = 0;
+  Int32 m_comm_machine_rank = 0;
 
-  Int32 m_sizeof_type;
-  Int32 m_nb_segments_per_proc;
+  Int32 m_sizeof_type = 0;
+  Int32 m_nb_segments_per_proc = 0;
 
   ConstArrayView<Int32> m_machine_ranks;
 
-  std::unique_ptr<Span<const std::byte>[]> m_add_requests;
-  SmallSpan<Span<const std::byte>> m_add_requests_span;
-  bool m_add_requested;
+  UniqueArray<Span<const std::byte>> m_add_requests;
+  bool m_add_requested = false;
 
-  std::unique_ptr<Int64[]> m_resize_requests;
-  SmallSpan<Int64> m_resize_requests_span;
-  bool m_resize_requested;
+  UniqueArray<Int64> m_resize_requests;
+  bool m_resize_requested = false;
 };
 
 /*---------------------------------------------------------------------------*/

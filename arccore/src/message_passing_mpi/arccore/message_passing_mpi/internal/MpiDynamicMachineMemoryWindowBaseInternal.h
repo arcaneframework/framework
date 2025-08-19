@@ -89,10 +89,10 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiDynamicMachineMemoryWindowBaseInternal
   Span<Int32> m_target_segments;
 
   MPI_Comm m_comm_machine;
-  Int32 m_comm_machine_size;
-  Int32 m_comm_machine_rank;
+  Int32 m_comm_machine_size = 0;
+  Int32 m_comm_machine_rank = 0;
 
-  Int32 m_sizeof_type;
+  Int32 m_sizeof_type = 0;
 
   ConstArrayView<Int32> m_machine_ranks;
 };

@@ -68,15 +68,15 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiMachineMemoryWindowBaseInternal
   SmallSpan<Int64> m_sum_sizeof_segments_span;
 
   MPI_Comm m_comm_machine;
-  Int32 m_comm_machine_size;
-  Int32 m_comm_machine_rank;
+  Int32 m_comm_machine_size = 0;
+  Int32 m_comm_machine_rank = 0;
 
-  Int32 m_sizeof_type;
+  Int32 m_sizeof_type = 0;
 
   ConstArrayView<Int32> m_machine_ranks;
 
-  Int64 m_max_sizeof_win;
-  Int64 m_actual_sizeof_win;
+  Int64 m_max_sizeof_win = 0;
+  Int64 m_actual_sizeof_win = 0;
 };
 
 /*---------------------------------------------------------------------------*/

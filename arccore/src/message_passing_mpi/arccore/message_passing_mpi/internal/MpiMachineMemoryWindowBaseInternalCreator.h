@@ -57,8 +57,8 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiMachineMemoryWindowBaseInternalCreator
  private:
 
   MPI_Comm m_comm_machine;
-  Int32 m_comm_machine_rank;
-  Int32 m_comm_machine_size;
+  Int32 m_comm_machine_rank = 0;
+  Int32 m_comm_machine_size = 0;
   UniqueArray<Int32> m_machine_ranks;
 };
 
