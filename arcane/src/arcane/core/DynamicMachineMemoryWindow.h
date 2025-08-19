@@ -33,6 +33,17 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+/*!
+ * \brief Classe permettant de créer une fenêtre mémoire partagée entre les
+ * sous-domaines d'un même noeud.
+ *
+ * Les segments de cette fenêtre ne sont pas contigüs en mémoire et peuvent
+ * être redimensionnés.
+ *
+ * La méthode \a add() permet d'ajouter des éléments de manière itérative.
+ *
+ * \tparam Type Le type des éléments de la fenêtre.
+ */
 template <class Type>
 class DynamicMachineMemoryWindow
 {

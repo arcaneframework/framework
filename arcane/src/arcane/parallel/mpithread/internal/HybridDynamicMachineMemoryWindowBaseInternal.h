@@ -41,10 +41,9 @@ class HybridDynamicMachineMemoryWindowBaseInternal
 {
  public:
 
-  HybridDynamicMachineMemoryWindowBaseInternal(Int32 my_rank_mpi, Int32 my_rank_local_proc, Int32 nb_rank_local_proc, ConstArrayView<Int32> ranks, Int32 sizeof_type,
-                                               Mpi::MpiDynamicMultiMachineMemoryWindowBaseInternal* mpi_windows, IThreadBarrier* barrier);
+  HybridDynamicMachineMemoryWindowBaseInternal(Int32 my_rank_mpi, Int32 my_rank_local_proc, Int32 nb_rank_local_proc, ConstArrayView<Int32> ranks, Int32 sizeof_type, Ref<Mpi::MpiDynamicMultiMachineMemoryWindowBaseInternal> mpi_windows, IThreadBarrier* barrier);
 
-  ~HybridDynamicMachineMemoryWindowBaseInternal() override;
+  ~HybridDynamicMachineMemoryWindowBaseInternal() override = default;
 
  public:
 
@@ -74,16 +73,16 @@ class HybridDynamicMachineMemoryWindowBaseInternal
 
  private:
 
-  Int32 m_my_rank_local_proc;
-  Int32 m_nb_rank_local_proc;
-  Int32 m_my_rank_mpi;
+  Int32 m_my_rank_local_proc = 0;
+  Int32 m_nb_rank_local_proc = 0;
+  Int32 m_my_rank_mpi = 0;
 
   ConstArrayView<Int32> m_machine_ranks;
 
-  Int32 m_sizeof_type;
-  Mpi::MpiDynamicMultiMachineMemoryWindowBaseInternal* m_mpi_windows;
+  Int32 m_sizeof_type = 0;
+  Ref<Mpi::MpiDynamicMultiMachineMemoryWindowBaseInternal> m_mpi_windows;
 
-  IThreadBarrier* m_thread_barrier;
+  IThreadBarrier* m_thread_barrier = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/

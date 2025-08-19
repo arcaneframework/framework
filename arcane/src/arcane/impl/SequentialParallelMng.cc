@@ -358,7 +358,7 @@ class SequentialMachineMemoryWindowBaseInternal
   : m_sizeof_segment(sizeof_segment)
   , m_max_sizeof_segment(sizeof_segment)
   , m_sizeof_type(sizeof_type)
-  , m_segment(std::make_unique<std::byte[]>(sizeof_segment))
+  , m_segment(sizeof_segment)
   {}
 
   ~SequentialMachineMemoryWindowBaseInternal() override = default;
@@ -372,34 +372,34 @@ class SequentialMachineMemoryWindowBaseInternal
 
   Span<std::byte> segmentView() override
   {
-    return Span<std::byte>{ m_segment.get(), m_sizeof_segment };
+    return m_segment.span().subSpan(0, m_sizeof_segment);
   }
   Span<std::byte> segmentView(const Int32 rank) override
   {
     if (rank != 0) {
       ARCANE_FATAL("Rank {0} is unavailable (Sequential)", rank);
     }
-    return Span<std::byte>{ m_segment.get(), m_sizeof_segment };
+    return m_segment.span().subSpan(0, m_sizeof_segment);
   }
   Span<std::byte> windowView() override
   {
-    return Span<std::byte>{ m_segment.get(), m_sizeof_segment };
+    return m_segment.span().subSpan(0, m_sizeof_segment);
   }
 
   Span<const std::byte> segmentConstView() const override
   {
-    return Span<const std::byte>{ m_segment.get(), m_sizeof_segment };
+    return m_segment.constSpan().subSpan(0, m_sizeof_segment);
   }
   Span<const std::byte> segmentConstView(const Int32 rank) const override
   {
     if (rank != 0) {
       ARCANE_FATAL("Rank {0} is unavailable (Sequential)", rank);
     }
-    return Span<const std::byte>{ m_segment.get(), m_sizeof_segment };
+    return m_segment.constSpan().subSpan(0, m_sizeof_segment);
   }
   Span<const std::byte> windowConstView() const override
   {
-    return Span<const std::byte>{ m_segment.get(), m_sizeof_segment };
+    return m_segment.constSpan().subSpan(0, m_sizeof_segment);
   }
 
   void resizeSegment(const Int64 new_sizeof_segment) override
@@ -419,11 +419,11 @@ class SequentialMachineMemoryWindowBaseInternal
 
  private:
 
-  Int64 m_sizeof_segment;
-  Int64 m_max_sizeof_segment;
+  Int64 m_sizeof_segment = 0;
+  Int64 m_max_sizeof_segment = 0;
 
-  Int32 m_sizeof_type;
-  std::unique_ptr<std::byte[]> m_segment;
+  Int32 m_sizeof_type = 0;
+  UniqueArray<std::byte> m_segment;
   Int32 m_my_rank = 0;
 };
 

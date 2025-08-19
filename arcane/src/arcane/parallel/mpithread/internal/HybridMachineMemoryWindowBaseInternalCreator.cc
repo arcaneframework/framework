@@ -39,9 +39,8 @@ namespace Arcane::MessagePassing
 HybridMachineMemoryWindowBaseInternalCreator::
 HybridMachineMemoryWindowBaseInternalCreator(Int32 nb_rank_local_proc, IThreadBarrier* barrier)
 : m_nb_rank_local_proc(nb_rank_local_proc)
-, m_sizeof_segment_local_proc(0)
 , m_barrier(barrier)
-, m_windows(nullptr)
+, m_sizeof_resize_segments(nb_rank_local_proc)
 {}
 
 /*---------------------------------------------------------------------------*/
@@ -98,7 +97,7 @@ createWindow(Int32 my_rank_global, Int64 sizeof_segment, Int32 sizeof_type, MpiP
   auto* window_obj = new HybridMachineMemoryWindowBaseInternal(my_rank_mpi, my_rank_local_proc, m_nb_rank_local_proc, m_machine_ranks, sizeof_type, m_sizeof_sub_segments, m_sum_sizeof_sub_segments, m_window, m_barrier);
   m_barrier->wait();
 
-  // Ces tableaux doivent être delete par HybridMachineMemoryWindowBaseInternal (rang 0 uniquement).
+  // Ces tableaux doivent être delete par HybridMachineMemoryWindowBaseInternal.
   if (my_rank_local_proc == 0) {
     m_sizeof_sub_segments.reset();
     m_sum_sizeof_sub_segments.reset();
@@ -126,8 +125,6 @@ createDynamicWindow(Int32 my_rank_global, Int64 sizeof_segment, Int32 sizeof_typ
     if (m_machine_ranks.empty()) {
       _buildMachineRanksArray(mpi_window_creator);
     }
-
-    m_sizeof_resize_segments = std::make_unique<Int64[]>(m_nb_rank_local_proc);
   }
   m_barrier->wait();
 
@@ -135,17 +132,17 @@ createDynamicWindow(Int32 my_rank_global, Int64 sizeof_segment, Int32 sizeof_typ
   m_barrier->wait();
 
   if (my_rank_local_proc == 0) {
-    m_windows = mpi_window_creator->createDynamicMultiWindow(SmallSpan<Int64>{ m_sizeof_resize_segments.get(), m_nb_rank_local_proc }, m_nb_rank_local_proc, sizeof_type);
-    m_sizeof_resize_segments.reset();
+    m_windows = makeRef(mpi_window_creator->createDynamicMultiWindow(m_sizeof_resize_segments.smallSpan(), m_nb_rank_local_proc, sizeof_type));
+    m_sizeof_resize_segments.fill(0);
   }
   m_barrier->wait();
 
   auto* window_obj = new HybridDynamicMachineMemoryWindowBaseInternal(my_rank_mpi, my_rank_local_proc, m_nb_rank_local_proc, m_machine_ranks, sizeof_type, m_windows, m_barrier);
   m_barrier->wait();
 
-  // Ces tableaux doivent être delete par HybridDynamicMachineMemoryWindowBaseInternal (rang local 0 uniquement).
+  // Ces tableaux doivent être delete par HybridDynamicMachineMemoryWindowBaseInternal.
   if (my_rank_local_proc == 0) {
-    m_windows = nullptr;
+    m_windows.reset();
   }
 
   return window_obj;

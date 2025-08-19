@@ -44,35 +44,6 @@ namespace MessagePassing
 
 class ARCANE_CORE_EXPORT DynamicMachineMemoryWindowBase
 {
-#ifdef ARCANE_DEBUG
- private:
-
-  template <class T>
-  class Ref
-  {
-   public:
-
-    explicit Ref(const Arcane::Ref<T>& ptr)
-    : m_ptr(ptr)
-    {}
-    ~Ref() = default;
-
-   public:
-
-    T* operator->()
-    {
-      return m_ptr.get();
-    }
-    T const* operator->() const
-    {
-      return m_ptr.get();
-    }
-
-   private:
-
-    Arcane::Ref<T> m_ptr;
-  };
-#endif
 
  public:
 

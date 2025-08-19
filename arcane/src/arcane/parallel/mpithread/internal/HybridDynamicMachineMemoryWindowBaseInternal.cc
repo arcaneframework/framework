@@ -32,8 +32,7 @@ namespace Arcane::MessagePassing
 /*---------------------------------------------------------------------------*/
 
 HybridDynamicMachineMemoryWindowBaseInternal::
-HybridDynamicMachineMemoryWindowBaseInternal(Int32 my_rank_mpi, Int32 my_rank_local_proc, Int32 nb_rank_local_proc, ConstArrayView<Int32> ranks, Int32 sizeof_type,
-                                             Mpi::MpiDynamicMultiMachineMemoryWindowBaseInternal* mpi_windows, IThreadBarrier* barrier)
+HybridDynamicMachineMemoryWindowBaseInternal(Int32 my_rank_mpi, Int32 my_rank_local_proc, Int32 nb_rank_local_proc, ConstArrayView<Int32> ranks, Int32 sizeof_type, Ref<Mpi::MpiDynamicMultiMachineMemoryWindowBaseInternal> mpi_windows, IThreadBarrier* barrier)
 : m_my_rank_local_proc(my_rank_local_proc)
 , m_nb_rank_local_proc(nb_rank_local_proc)
 , m_my_rank_mpi(my_rank_mpi)
@@ -41,20 +40,7 @@ HybridDynamicMachineMemoryWindowBaseInternal(Int32 my_rank_mpi, Int32 my_rank_lo
 , m_sizeof_type(sizeof_type)
 , m_mpi_windows(mpi_windows)
 , m_thread_barrier(barrier)
-{
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-HybridDynamicMachineMemoryWindowBaseInternal::
-~HybridDynamicMachineMemoryWindowBaseInternal()
-{
-  m_thread_barrier->wait();
-  if (m_my_rank_local_proc == 0) {
-    delete m_mpi_windows;
-  }
-}
+{}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

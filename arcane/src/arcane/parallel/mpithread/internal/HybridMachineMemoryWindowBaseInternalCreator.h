@@ -69,16 +69,17 @@ class HybridMachineMemoryWindowBaseInternalCreator
 
  private:
 
-  Int32 m_nb_rank_local_proc;
-  Int64 m_sizeof_segment_local_proc;
-  IThreadBarrier* m_barrier;
+  Int32 m_nb_rank_local_proc = 0;
+  Int64 m_sizeof_segment_local_proc = 0;
+  IThreadBarrier* m_barrier = nullptr;
+  UniqueArray<Int32> m_machine_ranks;
+
   Ref<IMachineMemoryWindowBaseInternal> m_window;
   Ref<IMachineMemoryWindowBaseInternal> m_sizeof_sub_segments;
   Ref<IMachineMemoryWindowBaseInternal> m_sum_sizeof_sub_segments;
-  UniqueArray<Int32> m_machine_ranks;
   //-----------
-  Mpi::MpiDynamicMultiMachineMemoryWindowBaseInternal* m_windows;
-  std::unique_ptr<Int64[]> m_sizeof_resize_segments;
+  Ref<Mpi::MpiDynamicMultiMachineMemoryWindowBaseInternal> m_windows;
+  UniqueArray<Int64> m_sizeof_resize_segments;
 };
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

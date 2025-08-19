@@ -20,6 +20,7 @@
 #include "arccore/message_passing/internal/IMachineMemoryWindowBaseInternal.h"
 
 #include "arcane/core/ArcaneTypes.h"
+#include "arcane/utils/Ref.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -35,9 +36,9 @@ class ARCANE_THREAD_EXPORT SharedMemoryMachineMemoryWindowBaseInternal
 {
  public:
 
-  SharedMemoryMachineMemoryWindowBaseInternal(Int32 my_rank, Int32 nb_rank, ConstArrayView<Int32> ranks, Int32 sizeof_type, std::byte* window, Int64* sizeof_segments, Int64* sum_sizeof_segments, Int64 sizeof_window, IThreadBarrier* barrier);
+  SharedMemoryMachineMemoryWindowBaseInternal(Int32 my_rank, Int32 nb_rank, ConstArrayView<Int32> ranks, Int32 sizeof_type, Ref<UniqueArray<std::byte>> window, Ref<UniqueArray<Int64>> sizeof_segments, Ref<UniqueArray<Int64>> sum_sizeof_segments, Int64 sizeof_window, IThreadBarrier* barrier);
 
-  ~SharedMemoryMachineMemoryWindowBaseInternal() override;
+  ~SharedMemoryMachineMemoryWindowBaseInternal() override = default;
 
  public:
 
@@ -59,19 +60,23 @@ class ARCANE_THREAD_EXPORT SharedMemoryMachineMemoryWindowBaseInternal
 
  private:
 
-  Int32 m_my_rank;
-  Int32 m_nb_rank;
+  Int32 m_my_rank = 0;
+  Int32 m_nb_rank = 0;
+  Int32 m_sizeof_type = 0;
+  Int64 m_actual_sizeof_win = 0;
+  Int64 m_max_sizeof_win = 0;
   ConstArrayView<Int32> m_ranks;
-  Int32 m_sizeof_type;
-  Int64 m_actual_sizeof_win;
-  Int64 m_max_sizeof_win;
+
   Span<std::byte> m_window_span;
+  Ref<UniqueArray<std::byte>> m_window;
+
+  Ref<UniqueArray<Int64>> m_sizeof_segments;
   SmallSpan<Int64> m_sizeof_segments_span;
+
+  Ref<UniqueArray<Int64>> m_sum_sizeof_segments;
   SmallSpan<Int64> m_sum_sizeof_segments_span;
-  std::byte* m_window;
-  Int64* m_sizeof_segments;
-  Int64* m_sum_sizeof_segments;
-  IThreadBarrier* m_barrier;
+
+  IThreadBarrier* m_barrier = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/

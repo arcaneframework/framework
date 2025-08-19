@@ -59,17 +59,17 @@ class HybridMachineMemoryWindowBaseInternal
 
  private:
 
-  Int32 m_my_rank_local_proc;
-  Int32 m_nb_rank_local_proc;
-  Int32 m_my_rank_mpi;
+  Int32 m_my_rank_local_proc = 0;
+  Int32 m_nb_rank_local_proc = 0;
+  Int32 m_my_rank_mpi = 0;
   ConstArrayView<Int32> m_machine_ranks;
-  Int32 m_sizeof_type;
+  Int32 m_sizeof_type = 0;
   Ref<IMachineMemoryWindowBaseInternal> m_mpi_window;
   Ref<IMachineMemoryWindowBaseInternal> m_sizeof_sub_segments_global;
   Ref<IMachineMemoryWindowBaseInternal> m_sum_sizeof_sub_segments_global;
   Span<Int64> m_sizeof_sub_segments_local_proc;
   Span<Int64> m_sum_sizeof_sub_segments_local_proc;
-  IThreadBarrier* m_thread_barrier;
+  IThreadBarrier* m_thread_barrier = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/

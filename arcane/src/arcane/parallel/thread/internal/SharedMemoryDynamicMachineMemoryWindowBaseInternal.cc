@@ -29,29 +29,16 @@ namespace Arcane::MessagePassing
 /*---------------------------------------------------------------------------*/
 
 SharedMemoryDynamicMachineMemoryWindowBaseInternal::
-SharedMemoryDynamicMachineMemoryWindowBaseInternal(Int32 my_rank, Int32 nb_rank, ConstArrayView<Int32> ranks, Int32 sizeof_type, UniqueArray<std::byte>* windows, Int32* target_segments, IThreadBarrier* barrier)
+SharedMemoryDynamicMachineMemoryWindowBaseInternal(Int32 my_rank, ConstArrayView<Int32> ranks, Int32 sizeof_type, Ref<UniqueArray<UniqueArray<std::byte>>> windows, Ref<UniqueArray<Int32>> target_segments, IThreadBarrier* barrier)
 : m_my_rank(my_rank)
-, m_ranks(ranks)
 , m_sizeof_type(sizeof_type)
+, m_ranks(ranks)
 , m_windows(windows)
-, m_windows_span(windows, nb_rank)
+, m_windows_span(windows->smallSpan())
 , m_target_segments(target_segments)
-, m_target_segments_span(target_segments, nb_rank)
+, m_target_segments_span(target_segments->smallSpan())
 , m_barrier(barrier)
 {}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-SharedMemoryDynamicMachineMemoryWindowBaseInternal::
-~SharedMemoryDynamicMachineMemoryWindowBaseInternal()
-{
-  m_barrier->wait();
-  if (m_my_rank == 0) {
-    delete[] m_windows;
-    delete[] m_target_segments;
-  }
-}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

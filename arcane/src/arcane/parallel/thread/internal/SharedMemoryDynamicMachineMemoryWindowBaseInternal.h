@@ -38,9 +38,9 @@ class ARCANE_THREAD_EXPORT SharedMemoryDynamicMachineMemoryWindowBaseInternal
 {
  public:
 
-  SharedMemoryDynamicMachineMemoryWindowBaseInternal(Int32 my_rank, Int32 nb_rank, ConstArrayView<Int32> ranks, Int32 sizeof_type, UniqueArray<std::byte>* windows, Int32* target_segments, IThreadBarrier* barrier);
+  SharedMemoryDynamicMachineMemoryWindowBaseInternal(Int32 my_rank, ConstArrayView<Int32> ranks, Int32 sizeof_type, Ref<UniqueArray<UniqueArray<std::byte>>> windows, Ref<UniqueArray<Int32>> target_segments, IThreadBarrier* barrier);
 
-  ~SharedMemoryDynamicMachineMemoryWindowBaseInternal() override;
+  ~SharedMemoryDynamicMachineMemoryWindowBaseInternal() override = default;
 
  public:
 
@@ -70,14 +70,17 @@ class ARCANE_THREAD_EXPORT SharedMemoryDynamicMachineMemoryWindowBaseInternal
 
  private:
 
-  Int32 m_my_rank;
+  Int32 m_my_rank = 0;
+  Int32 m_sizeof_type = 0;
   ConstArrayView<Int32> m_ranks;
-  Int32 m_sizeof_type;
-  UniqueArray<std::byte>* m_windows;
+
+  Ref<UniqueArray<UniqueArray<std::byte>>> m_windows;
   SmallSpan<UniqueArray<std::byte>> m_windows_span;
-  Int32* m_target_segments;
+
+  Ref<UniqueArray<Int32>> m_target_segments;
   SmallSpan<Int32> m_target_segments_span;
-  IThreadBarrier* m_barrier;
+
+  IThreadBarrier* m_barrier = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/
