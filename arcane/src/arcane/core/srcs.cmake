@@ -490,6 +490,9 @@ set(ARCANE_ORIGINAL_SOURCES
   DomLibXml2V2.cc
   DomUtils.cc
   DomUtils.h
+  DynamicMachineMemoryWindowBase.cc
+  DynamicMachineMemoryWindowBase.h
+  DynamicMachineMemoryWindow.h
   EntryPoint.cc
   EntryPoint.h
   EnumeratorTraceWrapper.h

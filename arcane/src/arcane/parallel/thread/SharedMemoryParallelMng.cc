@@ -28,6 +28,7 @@
 #include "arcane/parallel/thread/ISharedMemoryMessageQueue.h"
 #include "arcane/parallel/thread/internal/SharedMemoryMachineMemoryWindowBaseInternalCreator.h"
 #include "arcane/parallel/thread/internal/SharedMemoryMachineMemoryWindowBaseInternal.h"
+#include "arcane/parallel/thread/internal/SharedMemoryDynamicMachineMemoryWindowBaseInternal.h"
 
 #include "arcane/core/Timer.h"
 #include "arcane/core/IIOMng.h"
@@ -110,6 +111,11 @@ class SharedMemoryParallelMng::Impl
   Ref<IMachineMemoryWindowBaseInternal> createMachineMemoryWindowBase(Int64 sizeof_segment, Int32 sizeof_type) override
   {
     return makeRef(m_window_creator->createWindow(m_parallel_mng->commRank(), sizeof_segment, sizeof_type));
+  }
+
+  Ref<IDynamicMachineMemoryWindowBaseInternal> createDynamicMachineMemoryWindowBase(Int64 sizeof_segment, Int32 sizeof_type) override
+  {
+    return makeRef(m_window_creator->createDynamicWindow(m_parallel_mng->commRank(), sizeof_segment, sizeof_type));
   }
 
  private:

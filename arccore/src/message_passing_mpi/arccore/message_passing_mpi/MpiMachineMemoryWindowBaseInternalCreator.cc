@@ -15,6 +15,8 @@
 
 #include "arccore/base/FatalErrorException.h"
 #include "arccore/message_passing_mpi/internal/MpiMachineMemoryWindowBaseInternal.h"
+#include "arccore/message_passing_mpi/internal/MpiDynamicMachineMemoryWindowBaseInternal.h"
+#include "arccore/message_passing_mpi/internal/MpiDynamicMultiMachineMemoryWindowBaseInternal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -65,6 +67,24 @@ MpiMachineMemoryWindowBaseInternal* MpiMachineMemoryWindowBaseInternalCreator::
 createWindow(Int64 sizeof_segment, Int32 sizeof_type) const
 {
   return new MpiMachineMemoryWindowBaseInternal(sizeof_segment, sizeof_type, m_comm_machine, m_comm_machine_rank, m_comm_machine_size, m_machine_ranks);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+MpiDynamicMachineMemoryWindowBaseInternal* MpiMachineMemoryWindowBaseInternalCreator::
+createDynamicWindow(Int64 sizeof_segment, Int32 sizeof_type) const
+{
+  return new MpiDynamicMachineMemoryWindowBaseInternal(sizeof_segment, sizeof_type, m_comm_machine, m_comm_machine_rank, m_comm_machine_size, m_machine_ranks);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+MpiDynamicMultiMachineMemoryWindowBaseInternal* MpiMachineMemoryWindowBaseInternalCreator::
+createDynamicMultiWindow(SmallSpan<Int64> sizeof_segments, Int32 nb_segments_per_proc, Int32 sizeof_type) const
+{
+  return new MpiDynamicMultiMachineMemoryWindowBaseInternal(sizeof_segments, nb_segments_per_proc, sizeof_type, m_comm_machine, m_comm_machine_rank, m_comm_machine_size, m_machine_ranks);
 }
 
 /*---------------------------------------------------------------------------*/

@@ -20,6 +20,7 @@
 
 #include "arcane/core/ArcaneTypes.h"
 #include "arcane/utils/UniqueArray.h"
+#include "arcane/utils/Ref.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -31,6 +32,7 @@ namespace Arcane::MessagePassing
 /*---------------------------------------------------------------------------*/
 
 class SharedMemoryMachineMemoryWindowBaseInternal;
+class SharedMemoryDynamicMachineMemoryWindowBaseInternal;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -45,16 +47,21 @@ class SharedMemoryMachineMemoryWindowBaseInternalCreator
  public:
 
   SharedMemoryMachineMemoryWindowBaseInternal* createWindow(Int32 my_rank, Int64 sizeof_segment, Int32 sizeof_type);
+  SharedMemoryDynamicMachineMemoryWindowBaseInternal* createDynamicWindow(Int32 my_rank, Int64 sizeof_segment, Int32 sizeof_type);
 
  private:
 
-  Int32 m_nb_rank;
-  Int64 m_sizeof_window;
-  IThreadBarrier* m_barrier;
-  std::byte* m_window;
-  Int64* m_sizeof_segments;
-  Int64* m_sum_sizeof_segments;
+  Int32 m_nb_rank = 0;
+  Int64 m_sizeof_window = 0;
   UniqueArray<Int32> m_ranks;
+  IThreadBarrier* m_barrier = nullptr;
+
+  Ref<UniqueArray<std::byte>> m_window;
+  Ref<UniqueArray<Int64>> m_sizeof_segments;
+  Ref<UniqueArray<Int64>> m_sum_sizeof_segments;
+  //-------
+  Ref<UniqueArray<UniqueArray<std::byte>>> m_windows;
+  Ref<UniqueArray<Int32>> m_target_segments;
 };
 
 /*---------------------------------------------------------------------------*/

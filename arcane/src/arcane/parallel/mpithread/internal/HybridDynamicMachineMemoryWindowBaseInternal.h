@@ -5,70 +5,83 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* HybridMachineMemoryWindowBaseInternal.h                     (C) 2000-2025 */
+/* HybridDynamicMachineMemoryWindowBaseInternal.h              (C) 2000-2025 */
 /*                                                                           */
-/* Classe permettant de créer une fenêtre mémoire pour l'ensemble des        */
+/* Classe permettant de créer des fenêtres mémoires pour l'ensemble des      */
 /* sous-domaines en mémoire partagée des processus du même noeud.            */
+/* Les segments de ces fenêtres ne sont pas contigüs en mémoire et peuvent   */
+/* être redimensionnés.                                                      */
 /*---------------------------------------------------------------------------*/
 
-#ifndef ARCANE_PARALLEL_MPITHREAD_INTERNAL_HYBRIDMACHINEMEMORYWINDOWBASEINTERNAL_H
-#define ARCANE_PARALLEL_MPITHREAD_INTERNAL_HYBRIDMACHINEMEMORYWINDOWBASEINTERNAL_H
+#ifndef ARCANE_PARALLEL_MPITHREAD_INTERNAL_HYBRIDDYNAMICMACHINEMEMORYWINDOWBASEINTERNAL_H
+#define ARCANE_PARALLEL_MPITHREAD_INTERNAL_HYBRIDDYNAMICMACHINEMEMORYWINDOWBASEINTERNAL_H
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/Ref.h"
 
-#include "arccore/message_passing/internal/IMachineMemoryWindowBaseInternal.h"
+#include "arccore/message_passing/internal/IDynamicMachineMemoryWindowBaseInternal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 namespace Arcane::MessagePassing
 {
+namespace Mpi
+{
+  class MpiDynamicMultiMachineMemoryWindowBaseInternal;
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class HybridMachineMemoryWindowBaseInternal
-: public IMachineMemoryWindowBaseInternal
+class HybridDynamicMachineMemoryWindowBaseInternal
+: public IDynamicMachineMemoryWindowBaseInternal
 {
  public:
 
-  HybridMachineMemoryWindowBaseInternal(Int32 my_rank_mpi, Int32 my_rank_local_proc, Int32 nb_rank_local_proc, ConstArrayView<Int32> ranks, Int32 sizeof_type, Ref<IMachineMemoryWindowBaseInternal> nb_elem, Ref<IMachineMemoryWindowBaseInternal> sum_nb_elem, Ref<IMachineMemoryWindowBaseInternal> mpi_window, IThreadBarrier* barrier);
+  HybridDynamicMachineMemoryWindowBaseInternal(Int32 my_rank_mpi, Int32 my_rank_local_proc, Int32 nb_rank_local_proc, ConstArrayView<Int32> ranks, Int32 sizeof_type, Ref<Mpi::MpiDynamicMultiMachineMemoryWindowBaseInternal> mpi_windows, IThreadBarrier* barrier);
 
-  ~HybridMachineMemoryWindowBaseInternal() override = default;
+  ~HybridDynamicMachineMemoryWindowBaseInternal() override = default;
 
  public:
 
   Int32 sizeofOneElem() const override;
+  ConstArrayView<Int32> machineRanks() const override;
+  void barrier() const override;
 
   Span<std::byte> segmentView() override;
   Span<std::byte> segmentView(Int32 rank) override;
-  Span<std::byte> windowView() override;
 
   Span<const std::byte> segmentConstView() const override;
   Span<const std::byte> segmentConstView(Int32 rank) const override;
-  Span<const std::byte> windowConstView() const override;
 
-  void resizeSegment(Int64 new_sizeof_segment) override;
+  void add(Span<const std::byte> elem) override;
+  void add() override;
 
-  ConstArrayView<Int32> machineRanks() const override;
+  void addToAnotherSegment(Int32 rank, Span<const std::byte> elem) override;
+  void addToAnotherSegment() override;
 
-  void barrier() const override;
+  void reserve(Int64 new_capacity) override;
+  void reserve() override;
+
+  void resize(Int64 new_size) override;
+  void resize() override;
+
+  void shrink() override;
 
  private:
 
   Int32 m_my_rank_local_proc = 0;
   Int32 m_nb_rank_local_proc = 0;
   Int32 m_my_rank_mpi = 0;
+
   ConstArrayView<Int32> m_machine_ranks;
+
   Int32 m_sizeof_type = 0;
-  Ref<IMachineMemoryWindowBaseInternal> m_mpi_window;
-  Ref<IMachineMemoryWindowBaseInternal> m_sizeof_sub_segments_global;
-  Ref<IMachineMemoryWindowBaseInternal> m_sum_sizeof_sub_segments_global;
-  Span<Int64> m_sizeof_sub_segments_local_proc;
-  Span<Int64> m_sum_sizeof_sub_segments_local_proc;
+  Ref<Mpi::MpiDynamicMultiMachineMemoryWindowBaseInternal> m_mpi_windows;
+
   IThreadBarrier* m_thread_barrier = nullptr;
 };
 

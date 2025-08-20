@@ -27,34 +27,21 @@ namespace Arcane::MessagePassing
 /*---------------------------------------------------------------------------*/
 
 SharedMemoryMachineMemoryWindowBaseInternal::
-SharedMemoryMachineMemoryWindowBaseInternal(Int32 my_rank, Int32 nb_rank, ConstArrayView<Int32> ranks, Int32 sizeof_type, std::byte* window, Int64* sizeof_segments, Int64* sum_sizeof_segments, Int64 sizeof_window, IThreadBarrier* barrier)
+SharedMemoryMachineMemoryWindowBaseInternal(Int32 my_rank, Int32 nb_rank, ConstArrayView<Int32> ranks, Int32 sizeof_type, Ref<UniqueArray<std::byte>> window, Ref<UniqueArray<Int64>> sizeof_segments, Ref<UniqueArray<Int64>> sum_sizeof_segments, Int64 sizeof_window, IThreadBarrier* barrier)
 : m_my_rank(my_rank)
 , m_nb_rank(nb_rank)
-, m_ranks(ranks)
 , m_sizeof_type(sizeof_type)
 , m_actual_sizeof_win(sizeof_window)
 , m_max_sizeof_win(sizeof_window)
-, m_window_span(window, sizeof_window)
-, m_sizeof_segments_span(sizeof_segments, nb_rank)
-, m_sum_sizeof_segments_span(sum_sizeof_segments, nb_rank)
+, m_ranks(ranks)
+, m_window_span(window->span())
 , m_window(window)
 , m_sizeof_segments(sizeof_segments)
+, m_sizeof_segments_span(sizeof_segments->smallSpan())
 , m_sum_sizeof_segments(sum_sizeof_segments)
+, m_sum_sizeof_segments_span(sum_sizeof_segments->smallSpan())
 , m_barrier(barrier)
 {}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-SharedMemoryMachineMemoryWindowBaseInternal::
-~SharedMemoryMachineMemoryWindowBaseInternal()
-{
-  if (m_my_rank == 0) {
-    delete[] m_window;
-    delete[] m_sizeof_segments;
-    delete[] m_sum_sizeof_segments;
-  }
-}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -69,7 +56,7 @@ sizeofOneElem() const
 /*---------------------------------------------------------------------------*/
 
 Span<std::byte> SharedMemoryMachineMemoryWindowBaseInternal::
-segment() const
+segmentView()
 {
   const Int64 begin_segment = m_sum_sizeof_segments_span[m_my_rank];
   const Int64 size_segment = m_sizeof_segments_span[m_my_rank];
@@ -81,7 +68,7 @@ segment() const
 /*---------------------------------------------------------------------------*/
 
 Span<std::byte> SharedMemoryMachineMemoryWindowBaseInternal::
-segment(Int32 rank) const
+segmentView(Int32 rank)
 {
   const Int64 begin_segment = m_sum_sizeof_segments_span[rank];
   const Int64 size_segment = m_sizeof_segments_span[rank];
@@ -93,7 +80,40 @@ segment(Int32 rank) const
 /*---------------------------------------------------------------------------*/
 
 Span<std::byte> SharedMemoryMachineMemoryWindowBaseInternal::
-window() const
+windowView()
+{
+  return m_window_span;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Span<const std::byte> SharedMemoryMachineMemoryWindowBaseInternal::
+segmentConstView() const
+{
+  const Int64 begin_segment = m_sum_sizeof_segments_span[m_my_rank];
+  const Int64 size_segment = m_sizeof_segments_span[m_my_rank];
+
+  return m_window_span.subSpan(begin_segment, size_segment);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Span<const std::byte> SharedMemoryMachineMemoryWindowBaseInternal::
+segmentConstView(Int32 rank) const
+{
+  const Int64 begin_segment = m_sum_sizeof_segments_span[rank];
+  const Int64 size_segment = m_sizeof_segments_span[rank];
+
+  return m_window_span.subSpan(begin_segment, size_segment);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Span<const std::byte> SharedMemoryMachineMemoryWindowBaseInternal::
+windowConstView() const
 {
   return m_window_span;
 }

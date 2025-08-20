@@ -57,6 +57,7 @@
 #include "arccore/message_passing/RequestListBase.h"
 #include "arccore/message_passing/SerializeMessageList.h"
 #include "arccore/message_passing/internal/IMachineMemoryWindowBaseInternal.h"
+#include "arccore/message_passing/internal/IDynamicMachineMemoryWindowBaseInternal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -357,14 +358,10 @@ class SequentialMachineMemoryWindowBaseInternal
   : m_sizeof_segment(sizeof_segment)
   , m_max_sizeof_segment(sizeof_segment)
   , m_sizeof_type(sizeof_type)
-  {
-    m_segment = new std::byte[m_sizeof_segment];
-  }
+  , m_segment(sizeof_segment)
+  {}
 
-  ~SequentialMachineMemoryWindowBaseInternal() override
-  {
-    delete[] m_segment;
-  }
+  ~SequentialMachineMemoryWindowBaseInternal() override = default;
 
  public:
 
@@ -373,20 +370,36 @@ class SequentialMachineMemoryWindowBaseInternal
     return m_sizeof_type;
   }
 
-  Span<std::byte> segment() const override
+  Span<std::byte> segmentView() override
   {
-    return Span<std::byte>{ m_segment, m_sizeof_segment };
+    return m_segment.span().subSpan(0, m_sizeof_segment);
   }
-  Span<std::byte> segment(const Int32 rank) const override
+  Span<std::byte> segmentView(const Int32 rank) override
   {
     if (rank != 0) {
       ARCANE_FATAL("Rank {0} is unavailable (Sequential)", rank);
     }
-    return Span<std::byte>{ m_segment, m_sizeof_segment };
+    return m_segment.span().subSpan(0, m_sizeof_segment);
   }
-  Span<std::byte> window() const override
+  Span<std::byte> windowView() override
   {
-    return Span<std::byte>{ m_segment, m_sizeof_segment };
+    return m_segment.span().subSpan(0, m_sizeof_segment);
+  }
+
+  Span<const std::byte> segmentConstView() const override
+  {
+    return m_segment.constSpan().subSpan(0, m_sizeof_segment);
+  }
+  Span<const std::byte> segmentConstView(const Int32 rank) const override
+  {
+    if (rank != 0) {
+      ARCANE_FATAL("Rank {0} is unavailable (Sequential)", rank);
+    }
+    return m_segment.constSpan().subSpan(0, m_sizeof_segment);
+  }
+  Span<const std::byte> windowConstView() const override
+  {
+    return m_segment.constSpan().subSpan(0, m_sizeof_segment);
   }
 
   void resizeSegment(const Int64 new_sizeof_segment) override
@@ -406,11 +419,101 @@ class SequentialMachineMemoryWindowBaseInternal
 
  private:
 
-  Int64 m_sizeof_segment;
-  Int64 m_max_sizeof_segment;
+  Int64 m_sizeof_segment = 0;
+  Int64 m_max_sizeof_segment = 0;
+
+  Int32 m_sizeof_type = 0;
+  UniqueArray<std::byte> m_segment;
+  Int32 m_my_rank = 0;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+class SequentialDynamicMachineMemoryWindowBaseInternal
+: public IDynamicMachineMemoryWindowBaseInternal
+{
+ public:
+
+  SequentialDynamicMachineMemoryWindowBaseInternal(Int64 sizeof_segment, Int32 sizeof_type)
+  : m_sizeof_type(sizeof_type)
+  , m_segment(sizeof_segment)
+  {}
+  ~SequentialDynamicMachineMemoryWindowBaseInternal() override = default;
+
+ public:
+
+  Int32 sizeofOneElem() const override
+  {
+    return m_sizeof_type;
+  }
+  ConstArrayView<Int32> machineRanks() const override
+  {
+    return ConstArrayView<Int32>{ 1, &m_my_rank };
+  }
+  void barrier() const override {}
+
+  Span<std::byte> segmentView() override
+  {
+    return m_segment;
+  }
+  Span<std::byte> segmentView(Int32 rank) override
+  {
+    if (rank != 0) {
+      ARCANE_FATAL("Rank {0} is unavailable (Sequential)", rank);
+    }
+    return m_segment;
+  }
+  Span<const std::byte> segmentConstView() const override
+  {
+    return m_segment;
+  }
+  Span<const std::byte> segmentConstView(Int32 rank) const override
+  {
+    if (rank != 0) {
+      ARCANE_FATAL("Rank {0} is unavailable (Sequential)", rank);
+    }
+    return m_segment;
+  }
+  void add(Span<const std::byte> elem) override
+  {
+    if (elem.size() % m_sizeof_type != 0) {
+      ARCCORE_FATAL("Sizeof elem not valid");
+    }
+    m_segment.addRange(elem);
+  }
+  void add() override {}
+  void addToAnotherSegment(Int32 rank, Span<const std::byte> elem) override
+  {
+    if (rank != 0) {
+      ARCANE_FATAL("Rank {0} is unavailable (Sequential)", rank);
+    }
+    if (elem.size() % m_sizeof_type != 0) {
+      ARCCORE_FATAL("Sizeof elem not valid");
+    }
+    m_segment.addRange(elem);
+  }
+  void addToAnotherSegment() override {}
+
+  void reserve(Int64 new_capacity) override
+  {
+    m_segment.reserve(new_capacity);
+  }
+  void reserve() override {}
+  void resize(Int64 new_size) override
+  {
+    m_segment.resize(new_size);
+  }
+  void resize() override {}
+  void shrink() override
+  {
+    m_segment.shrink();
+  }
+
+ private:
 
   Int32 m_sizeof_type;
-  std::byte* m_segment;
+  UniqueArray<std::byte> m_segment;
   Int32 m_my_rank = 0;
 };
 
@@ -730,6 +833,11 @@ class SequentialParallelMng::Impl
   Ref<IMachineMemoryWindowBaseInternal> createMachineMemoryWindowBase(Int64 sizeof_segment, Int32 sizeof_type) override
   {
     return makeRef(new SequentialMachineMemoryWindowBaseInternal(sizeof_segment, sizeof_type));
+  }
+
+  Ref<IDynamicMachineMemoryWindowBaseInternal> createDynamicMachineMemoryWindowBase(Int64 sizeof_segment, Int32 sizeof_type) override
+  {
+    return makeRef(new SequentialDynamicMachineMemoryWindowBaseInternal(sizeof_segment, sizeof_type));
   }
 };
 

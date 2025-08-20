@@ -19,6 +19,7 @@
 
 #include "arcane/utils/Convert.h"
 #include "arcane/utils/FatalErrorException.h"
+#include "arcane/utils/NotImplementedException.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -107,10 +108,16 @@ createSubParallelMngRef(Int32 color, Int32 key)
 Ref<MessagePassing::IMachineMemoryWindowBaseInternal> ParallelMngInternal::
 createMachineMemoryWindowBase(Int64 sizeof_segment, Int32 sizeof_type)
 {
-  ARCANE_UNUSED(sizeof_segment);
-  ARCANE_UNUSED(sizeof_type);
-  ARCANE_NOT_YET_IMPLEMENTED("MachineWindow is not available in your ParallelMng");
-  ARCANE_FATAL("MachineWindow is not available in your ParallelMng");
+  ARCANE_THROW(NotImplementedException, "MachineWindow is not available in your ParallelMng");
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Ref<MessagePassing::IDynamicMachineMemoryWindowBaseInternal> ParallelMngInternal::
+createDynamicMachineMemoryWindowBase(Int64 sizeof_segment, Int32 sizeof_type)
+{
+  ARCANE_THROW(NotImplementedException, "MachineWindow is not available in your ParallelMng");
 }
 
 /*---------------------------------------------------------------------------*/
