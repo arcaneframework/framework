@@ -4,25 +4,30 @@ set(ARCANE_DOTNET_DLLS_DIR "${CMAKE_BINARY_DIR}/lib")
 set(ARCANE_PYTHON_BASE_INSTALL_DIR "${ARCANE_DOTNET_DLLS_DIR}/python")
 set(ARCANE_PYTHON_SOURCE_PATH "${CMAKE_CURRENT_LIST_DIR}")
 file(MAKE_DIRECTORY "${ARCANE_PYTHON_BASE_INSTALL_DIR}/ArcanePython")
+file(MAKE_DIRECTORY "${ARCANE_PYTHON_BASE_INSTALL_DIR}/_ArcanePython")
+
+# Configure pour le build en indiquant qu'on utilise les packages issus des sources
+set(ARCANE_PYTHON_INIT_SOURCE_PATH "r\"${ARCANE_PYTHON_SOURCE_PATH}\"")
 configure_file(ArcanePython/__init__.py.in "${ARCANE_PYTHON_BASE_INSTALL_DIR}/ArcanePython/__init__.py" @ONLY)
+# Configure pour l'installation en indiquant qu'on utilise les packages installés
+set(ARCANE_PYTHON_INIT_SOURCE_PATH "None")
+configure_file(ArcanePython/__init__.py.in "${ARCANE_PYTHON_BASE_INSTALL_DIR}/for_install/ArcanePython/__init__.py" @ONLY)
 
 set(ARCANE_PYTHON_SRCS
   _utils.py
-  SubDomainContext.py
-  app.runtime.json)
+  SubDomainContext.py)
 
 configure_file(ArcanePython/app.runtime.json "${ARCANE_PYTHON_BASE_INSTALL_DIR}/ArcanePython" COPYONLY)
 foreach(file ${ARCANE_PYTHON_SRCS})
   #configure_file(ArcanePython/${file} "${ARCANE_PYTHON_BASE_INSTALL_DIR}/ArcanePython" COPYONLY)
-  install(FILES "${ARCANE_PYTHON_BASE_INSTALL_DIR}/ArcanePython/${file}"
-    DESTINATION "lib/python/ArcanePython"
+  install(FILES "${ARCANE_PYTHON_SOURCE_PATH}/_ArcanePython/${file}"
+    DESTINATION "lib/python/_ArcanePython"
   )
 endforeach()
 
 install(FILES
-  "${ARCANE_PYTHON_BASE_INSTALL_DIR}/ArcanePython/__init__.py"
-#  "${ARCANE_PYTHON_BASE_INSTALL_DIR}/ArcanePython/_utils.py"
-#  ArcanePython/app.runtime.json
+  "${ARCANE_PYTHON_BASE_INSTALL_DIR}/for_install/ArcanePython/__init__.py"
+  "${ARCANE_PYTHON_BASE_INSTALL_DIR}/ArcanePython/app.runtime.json"
   DESTINATION "lib/python/ArcanePython")
 install(DIRECTORY tests DESTINATION . USE_SOURCE_PERMISSIONS)
 

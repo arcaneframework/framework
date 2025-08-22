@@ -6,8 +6,6 @@ import os
 import clr
 import sys
 
-#_assembly_path = r"@ARCANE_DOTNET_DLLS_DIR@"
-
 # This file is ${ARCANE_ROOT}/lib/python/ArcanePython/__init__.py
 # The libraries are in ${ARCANE_ROOT}
 
@@ -27,9 +25,11 @@ clr.AddReference(os.path.join(_assembly_path,"Arcane.Services.dll"))
 
 import Arcane
 
-source_path = r"@ARCANE_PYTHON_SOURCE_PATH@"
+# If not 'None', use files located in the source directory
+source_path = @ARCANE_PYTHON_INIT_SOURCE_PATH@
 print("SOURCE_PATH=",source_path)
-sys.path.insert(1, source_path)
+if source_path != None:
+    sys.path.insert(1, source_path)
 
 from _ArcanePython import *
 import _ArcanePython._utils as _utils
