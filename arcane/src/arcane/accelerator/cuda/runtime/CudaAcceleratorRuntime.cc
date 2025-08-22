@@ -53,6 +53,7 @@ using namespace Arccore;
 
 namespace Arcane::Accelerator::Cuda
 {
+
 namespace
 {
   Int32 global_cupti_flush = 0;
@@ -153,7 +154,12 @@ class CudaRunQueueStream
       device = d.asInt32();
     //std::cout << "PREFETCH device=" << device << " host(id)=" << cudaCpuDeviceId
     //          << " size=" << args.source().size() << " data=" << src.data() << "\n";
-    auto r = cudaMemPrefetchAsync(src.data(), src.size(), device, m_cuda_stream);
+    auto mem_location = _getMemoryLocation(device);
+#if defined(ARCANE_USING_CUDA13_OR_GREATER)
+    auto r = cudaMemPrefetchAsync(src.data(), src.size(), mem_location, 0, m_cuda_stream);
+#else
+    auto r = cudaMemPrefetchAsync(src.data(), src.size(), mem_location, m_cuda_stream);
+#endif
     ARCANE_CHECK_CUDA(r);
     if (!args.isAsync())
       barrier();
@@ -315,7 +321,7 @@ class CudaRunnerRuntime
     else
       return;
     //std::cout << "MEMADVISE p=" << ptr << " size=" << count << " advise = " << cuda_advise << " id = " << device << "\n";
-    ARCANE_CHECK_CUDA(cudaMemAdvise(ptr, count, cuda_advise, device));
+    ARCANE_CHECK_CUDA(cudaMemAdvise(ptr, count, cuda_advise, _getMemoryLocation(device)));
   }
   void unsetMemoryAdvice(ConstMemoryView buffer, eMemoryAdvice advice, DeviceId device_id) override
   {
@@ -341,7 +347,7 @@ class CudaRunnerRuntime
     }
     else
       return;
-    ARCANE_CHECK_CUDA(cudaMemAdvise(ptr, count, cuda_advise, device));
+    ARCANE_CHECK_CUDA(cudaMemAdvise(ptr, count, cuda_advise, _getMemoryLocation(device)));
   }
 
   void setCurrentDevice(DeviceId device_id) final
@@ -466,14 +472,10 @@ fillDevices(bool is_verbose)
     o << " memPitch = " << dp.memPitch << "\n";
     o << " maxThreadsPerBlock = " << dp.maxThreadsPerBlock << "\n";
     o << " totalConstMem = " << dp.totalConstMem << "\n";
-    o << " clockRate = " << dp.clockRate << "\n";
-    o << " deviceOverlap = " << dp.deviceOverlap << "\n";
     o << " cooperativeLaunch = " << dp.cooperativeLaunch << "\n";
     o << " multiProcessorCount = " << dp.multiProcessorCount << "\n";
-    o << " kernelExecTimeoutEnabled = " << dp.kernelExecTimeoutEnabled << "\n";
     o << " integrated = " << dp.integrated << "\n";
     o << " canMapHostMemory = " << dp.canMapHostMemory << "\n";
-    o << " computeMode = " << dp.computeMode << "\n";
     o << " directManagedMemAccessFromHost = " << dp.directManagedMemAccessFromHost << "\n";
     o << " hostNativeAtomicSupported = " << dp.hostNativeAtomicSupported << "\n";
     o << " pageableMemoryAccess = " << dp.pageableMemoryAccess << "\n";
@@ -484,6 +486,13 @@ fillDevices(bool is_verbose)
       << " " << dp.maxThreadsDim[2] << "\n";
     o << " maxGridSize = " << dp.maxGridSize[0] << " " << dp.maxGridSize[1]
       << " " << dp.maxGridSize[2] << "\n";
+#if !defined(ARCANE_USING_CUDA13_OR_GREATER)
+    o << " clockRate = " << dp.clockRate << "\n";
+    o << " deviceOverlap = " << dp.deviceOverlap << "\n";
+    o << " computeMode = " << dp.computeMode << "\n";
+    o << " kernelExecTimeoutEnabled = " << dp.kernelExecTimeoutEnabled << "\n";
+#endif
+
     {
       int least_val = 0;
       int greatest_val = 0;
