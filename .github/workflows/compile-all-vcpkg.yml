@@ -218,7 +218,7 @@ jobs:
       - name: Configure build script
         shell: bash
         run: |
-          cmake -S "${{ github.workspace }}" -B "${{ env.CMAKE_BUILD_DIR }}" -DCMAKE_VERBOSE_MAKEFILE=TRUE -DVCPKG_INSTALLED_DIR="${{ env.VCPKG_BUILD_DIR }}/installed" -DVCPKG_TARGET_TRIPLET='${{ matrix.triplet }}' -DBUILD_SHARED_LIBS=TRUE -DCMAKE_TOOLCHAIN_FILE="${{ env.VCPKG_ROOT }}/scripts/buildsystems/vcpkg.cmake" ${{ matrix.cmake_specific_args }} -DCMAKE_CXX_COMPILER_LAUNCHER="ccache" -GNinja -DARCANE_FORCE_NOASNEEDED=TRUE
+          cmake -S "${{ github.workspace }}" -B "${{ env.CMAKE_BUILD_DIR }}" -DCMAKE_VERBOSE_MAKEFILE=TRUE -DVCPKG_INSTALLED_DIR="${{ env.VCPKG_BUILD_DIR }}/installed" -DVCPKG_TARGET_TRIPLET='${{ matrix.triplet }}' -DBUILD_SHARED_LIBS=TRUE -DCMAKE_TOOLCHAIN_FILE="${{ env.VCPKG_ROOT }}/scripts/buildsystems/vcpkg.cmake" ${{ matrix.cmake_specific_args }} -DCMAKE_CXX_COMPILER_LAUNCHER="ccache" -GNinja -DARCANE_FORCE_NOASNEEDED=TRUE -DCMAKE_INSTALL_PREFIX="${{ env.CMAKE_BUILD_DIR }}/install"
 
       - name: Dump Some Generated files
         shell: bash
@@ -249,6 +249,11 @@ jobs:
 
       - name: Get 'ccache' status
         run: ccache -s -v
+
+      - name: Install arcane
+        shell: bash
+        run: |
+          cmake --build "${{ env.CMAKE_BUILD_DIR }}" --target install
 
       - name: Test arcane
         shell: bash
