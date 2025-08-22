@@ -461,9 +461,15 @@ fillDevices(bool is_verbose)
   for (int i = 0; i < nb_device; ++i) {
     cudaDeviceProp dp;
     cudaGetDeviceProperties(&dp, i);
+    int runtime_version = 0;
+    cudaRuntimeGetVersion(&runtime_version);
+    int driver_version = 0;
+    cudaDriverGetVersion(&driver_version);
     OStringStream ostr;
     std::ostream& o = ostr.stream();
     o << "Device " << i << " name=" << dp.name << "\n";
+    o << " Driver version = " << (driver_version / 1000) << "." << (driver_version % 1000) << "\n";
+    o << " Runtime version = " << (runtime_version / 1000) << "." << (runtime_version % 1000) << "\n";
     o << " computeCapability = " << dp.major << "." << dp.minor << "\n";
     o << " totalGlobalMem = " << dp.totalGlobalMem << "\n";
     o << " sharedMemPerBlock = " << dp.sharedMemPerBlock << "\n";
