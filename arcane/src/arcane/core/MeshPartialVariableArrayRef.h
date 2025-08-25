@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshPartialVariableArrayRef.h                               (C) 2000-2024 */
+/* MeshPartialVariableArrayRef.h                               (C) 2000-2025 */
 /*                                                                           */
 /* Classe gérant une variable partielle array sur une entité du maillage.    */
 /*---------------------------------------------------------------------------*/
@@ -153,6 +153,7 @@ class MeshPartialVariableArrayRefT
   typedef UniqueArray2<DataType> ValueType;
   typedef ConstArrayView<DataType> ConstReturnReferenceType;
   typedef ArrayView<DataType> ReturnReferenceType;
+  typedef ItemLocalIdT<ItemType> ItemLocalIdType;
 
  public:
 
@@ -175,18 +176,18 @@ class MeshPartialVariableArrayRefT
   ARCANE_CORE_EXPORT void refersTo(const MeshPartialVariableArrayRefT<ItemType,DataType>& rhs);
   
  public:
-   
-  ConstArrayType operator[](const ItemType& i) const
+
+  ConstArrayType operator[](const ItemLocalIdType& i) const
   {
     ARCANE_ASSERT((this->m_table.isUsed()),("GroupIndexTable expired"));
     const GroupIndexTable& table = *this->m_table;
-    return this->m_view[table[i.localId()]]; 
+    return this->m_view[table[i.asInt32()]];
   }
-  ArrayType operator[](const ItemType& i)
+  ArrayType operator[](const ItemLocalIdType& i)
   {
     ARCANE_ASSERT((this->m_table.isUsed()),("GroupIndexTable expired"));
     const GroupIndexTable& table = *this->m_table;
-    return this->m_view[table[i.localId()]]; 
+    return this->m_view[table[i.asInt32()]];
   }
   ConstArrayType operator[](const ItemGroupRangeIteratorT<ItemType>& i) const
   {

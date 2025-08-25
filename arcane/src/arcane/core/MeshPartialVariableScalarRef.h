@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshPartialVariableScalarRef.h                              (C) 2000-2024 */
+/* MeshPartialVariableScalarRef.h                              (C) 2000-2025 */
 /*                                                                           */
 /* Classe gérant une variable partielle scalaire sur une entité du maillage. */
 /*---------------------------------------------------------------------------*/
@@ -163,6 +163,7 @@ class MeshPartialVariableScalarRefT
   typedef UniqueArray<DataType> ValueType;
   typedef const DataType& ConstReturnReferenceType;
   typedef DataType& ReturnReferenceType;
+  typedef ItemLocalIdT<ItemType> ItemLocalIdType;
 
   typedef ItemPartialVariableScalarRefT<DataType> BaseClass;
 
@@ -181,18 +182,18 @@ class MeshPartialVariableScalarRefT
   ARCANE_CORE_EXPORT void refersTo(const MeshPartialVariableScalarRefT<ItemType,DataType>& rhs);
   
  public:
- 
-  const DataType& operator[](const ItemType& i) const
+
+  const DataType& operator[](const ItemLocalIdType& i) const
   {
-    ARCANE_ASSERT((this->m_table.isUsed()),("GroupIndexTable expired"));
+    ARCANE_ASSERT((this->m_table.isUsed()), ("GroupIndexTable expired"));
     const GroupIndexTable& table = *this->m_table;
-    return this->_value(table[i.localId()]);
+    return this->_value(table[i.asInt32()]);
   }
-  DataTypeReturnReference operator[](const ItemType& i)
+  DataTypeReturnReference operator[](const ItemLocalIdType& i)
   {
-    ARCANE_ASSERT((this->m_table.isUsed()),("GroupIndexTable expired"));
+    ARCANE_ASSERT((this->m_table.isUsed()), ("GroupIndexTable expired"));
     const GroupIndexTable& table = *this->m_table;
-    return this->_value(table[i.localId()]);
+    return this->_value(table[i.asInt32()]);
   }
 
   const DataType& operator[](const ItemGroupRangeIteratorT<ItemType>& i) const
