@@ -84,7 +84,7 @@ jobs:
         run: echo "m_date=$(/bin/date -u '+%Y%m%d%H%M%S')" >> $GITHUB_ENV
 
       - name: Checkout framework
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           path: ${{ env.SOURCE_DIR }}
           submodules: true

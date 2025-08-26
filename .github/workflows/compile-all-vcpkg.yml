@@ -120,12 +120,12 @@ jobs:
 
     steps:
       - name: Checkout actions
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           submodules: true
 
       - name: Checkout framework-ci
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           repository: ${{ github.repository_owner }}/framework-ci
           path: framework-ci
