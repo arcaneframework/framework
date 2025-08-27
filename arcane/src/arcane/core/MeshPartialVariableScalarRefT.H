@@ -11,12 +11,12 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/MeshPartialVariableScalarRef.h"
-#include "arcane/ItemGroup.h"
-#include "arcane/IMesh.h"
-#include "arcane/VariableBuildInfo.h"
-#include "arcane/VariableDataTypeTraits.h"
-#include "arcane/IParallelMng.h"
+#include "arcane/core/MeshPartialVariableScalarRef.h"
+#include "arcane/core/ItemGroup.h"
+#include "arcane/core/IMesh.h"
+#include "arcane/core/VariableBuildInfo.h"
+#include "arcane/core/VariableDataTypeTraits.h"
+#include "arcane/core/IParallelMng.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

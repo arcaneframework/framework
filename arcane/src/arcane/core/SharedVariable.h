@@ -1,27 +1,27 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* SharedVariable.h                                            (C) 2000-2023 */
+/* SharedVariable.h                                            (C) 2000-2025 */
 /*                                                                           */
 /* Classe gérant une vue partagée d'une variable.                            */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_SHARED_VARIABLE_H
-#define ARCANE_SHARED_VARIABLE_H
+#ifndef ARCANE_CORE_SHAREDVARIABLE_H
+#define ARCANE_CORE_SHAREDVARIABLE_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/Array.h"
-#include "arcane/ArcaneTypes.h"
-#include "arcane/IVariable.h"
-#include "arcane/IItemFamily.h"
 #include "arcane/utils/FatalErrorException.h"
 
-#include "arcane/IMeshSubMeshTransition.h"
-#include "arcane/ItemGroup.h"
+#include "arcane/core/ArcaneTypes.h"
+#include "arcane/core/IVariable.h"
+#include "arcane/core/IItemFamily.h"
+#include "arcane/core/IMeshSubMeshTransition.h"
+#include "arcane/core/ItemGroup.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

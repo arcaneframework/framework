@@ -1,22 +1,22 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* VariableRefScalar.h                                         (C) 2000-2020 */
+/* VariableRefScalar.h                                         (C) 2000-2025 */
 /*                                                                           */
 /* Classe gérant une référence sur une variable scalaire.                    */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_VARIABLEREFSCALAR_H
-#define ARCANE_VARIABLEREFSCALAR_H
+#ifndef ARCANE_CORE_VARIABLEREFSCALAR_H
+#define ARCANE_CORE_VARIABLEREFSCALAR_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/VariableRef.h"
-#include "arcane/Parallel.h"
-#include "arcane/MathUtils.h"
+#include "arcane/core/VariableRef.h"
+#include "arcane/core/Parallel.h"
+#include "arcane/core/MathUtils.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

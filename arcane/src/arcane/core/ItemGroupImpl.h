@@ -14,11 +14,11 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/ItemTypes.h"
-#include "arcane/SharedReference.h"
+#include "arcane/core/ItemTypes.h"
+#include "arcane/core/SharedReference.h"
 #include "arcane/utils/SharedPtr.h"
 
-#include "arcane/GroupIndexTable.h"
+#include "arcane/core/GroupIndexTable.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

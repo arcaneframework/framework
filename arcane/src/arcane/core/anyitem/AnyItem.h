@@ -1,32 +1,30 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* AnyItem.h                                                   (C) 2000-2012 */
+/* AnyItem.h                                                   (C) 2000-2025 */
 /*                                                                           */
 /* Include utilisateur regroupant les fonctionnalités AnyItem                */
 /*---------------------------------------------------------------------------*/
-
-#ifndef ARCANE_ANYITEM_ANYITEM_H
-#define ARCANE_ANYITEM_ANYITEM_H
-
+#ifndef ARCANE_CORE_ANYITEM_ANYITEM_H
+#define ARCANE_CORE_ANYITEM_ANYITEM_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/anyitem/AnyItemGroup.h"
-#include "arcane/anyitem/AnyItemFamilyObserver.h"
-#include "arcane/anyitem/AnyItemFamily.h"
-#include "arcane/anyitem/AnyItemUserGroup.h"
-#include "arcane/anyitem/AnyItemVariable.h"
-#include "arcane/anyitem/AnyItemVariableArray.h"
-#include "arcane/anyitem/AnyItemLinkFamily.h"
-#include "arcane/anyitem/AnyItemLinkVariable.h"
-#include "arcane/anyitem/AnyItemLinkVariableArray.h"
-#include "arcane/anyitem/AnyItemArray.h"
-#include "arcane/anyitem/AnyItemArray2.h"
+#include "arcane/core/anyitem/AnyItemGroup.h"
+#include "arcane/core/anyitem/AnyItemFamilyObserver.h"
+#include "arcane/core/anyitem/AnyItemFamily.h"
+#include "arcane/core/anyitem/AnyItemUserGroup.h"
+#include "arcane/core/anyitem/AnyItemVariable.h"
+#include "arcane/core/anyitem/AnyItemVariableArray.h"
+#include "arcane/core/anyitem/AnyItemLinkFamily.h"
+#include "arcane/core/anyitem/AnyItemLinkVariable.h"
+#include "arcane/core/anyitem/AnyItemLinkVariableArray.h"
+#include "arcane/core/anyitem/AnyItemArray.h"
+#include "arcane/core/anyitem/AnyItemArray2.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

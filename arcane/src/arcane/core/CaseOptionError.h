@@ -1,23 +1,23 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CaseOptionError.h                                           (C) 2000-2023 */
+/* CaseOptionError.h                                           (C) 2000-2025 */
 /*                                                                           */
 /* Erreur dans le jeu de données.                                            */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_CASEOPTIONERROR_H
-#define ARCANE_CASEOPTIONERROR_H
+#ifndef ARCANE_CORE_CASEOPTIONERROR_H
+#define ARCANE_CORE_CASEOPTIONERROR_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/String.h"
 #include "arcane/utils/TraceInfo.h"
 
-#include "arcane/XmlNode.h"
+#include "arcane/core/XmlNode.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -1,20 +1,20 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ICaseDocument.h                                             (C) 2000-2023 */
+/* ICaseDocument.h                                             (C) 2000-2025 */
 /*                                                                           */
 /* Interface d'une classe gérant un document XML du jeu de données.          */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_ICASEDOCUMENT_H
-#define ARCANE_ICASEDOCUMENT_H
+#ifndef ARCANE_CORE_ICASEDOCUMENT_H
+#define ARCANE_CORE_ICASEDOCUMENT_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/XmlNodeList.h"
+#include "arcane/core/XmlNodeList.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

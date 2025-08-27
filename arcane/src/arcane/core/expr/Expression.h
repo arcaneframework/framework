@@ -1,28 +1,28 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Expression.h                                                (C) 2000-2014 */
+/* Expression.h                                                (C) 2000-2025 */
 /*                                                                           */
 /* Référence à une expression.                                               */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_EXPR_EXPRESSION_H
-#define ARCANE_EXPR_EXPRESSION_H
+#ifndef ARCANE_CORE_EXPR_EXPRESSION_H
+#define ARCANE_CORE_EXPR_EXPRESSION_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-
-#include "arcane/datatype/ScalarVariant.h"
+#include "arcane/core/datatype/ScalarVariant.h"
 
 #include "arcane/expr/IExpressionImpl.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -164,7 +164,7 @@ class ARCANE_EXPR_EXPORT Expression
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

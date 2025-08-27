@@ -1,21 +1,21 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* PreciseOutputChecker.h                                      (C) 2000-2020 */
+/* PreciseOutputChecker.h                                      (C) 2000-2025 */
 /*                                                                           */
 /* Sorties basées sur un temps (physique ou CPU) ou un nombre d'itération.   */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_PRECISEOUTPUTCHECKER_H
-#define ARCANE_PRECISEOUTPUTCHECKER_H
+#ifndef ARCANE_CORE_PRECISEOUTPUTCHECKER_H
+#define ARCANE_CORE_PRECISEOUTPUTCHECKER_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/VariableTypes.h"
-#include "arcane/ICaseFunction.h"
+#include "arcane/core/VariableTypes.h"
+#include "arcane/core/ICaseFunction.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -1,16 +1,16 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemRefinementPattern.h                                     (C) 2000-2020 */
+/* ItemRefinementPattern.h                                     (C) 2000-2025 */
 /*                                                                           */
 /* Fonctions utilitaires pour AMR.                                           */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_ITEMREFINEMENTPATTERN_H
-#define ARCANE_ITEMREFINEMENTPATTERN_H
+#ifndef ARCANE_CORE_ITEMREFINEMENTPATTERN_H
+#define ARCANE_CORE_ITEMREFINEMENTPATTERN_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -20,7 +20,7 @@
 #include "arcane/utils/NotSupportedException.h"
 #include "arcane/utils/NotImplementedException.h"
 
-#include "arcane/ArcaneTypes.h"
+#include "arcane/core/ArcaneTypes.h"
 #include "arcane/utils/FatalErrorException.h"
 #include "arcane/utils/StringBuilder.h"
 

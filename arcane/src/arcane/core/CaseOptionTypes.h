@@ -1,20 +1,20 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CaseOptionTypes.h                                           (C) 2000-2023 */
+/* CaseOptionTypes.h                                           (C) 2000-2025 */
 /*                                                                           */
 /* Définition des types liés aux options du jeu de données.                  */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_CASEOPTIONTYPES_H
-#define ARCANE_CASEOPTIONTYPES_H
+#ifndef ARCANE_CORE_CASEOPTIONTYPES_H
+#define ARCANE_CORE_CASEOPTIONTYPES_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/ArcaneTypes.h"
+#include "arcane/core/ArcaneTypes.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

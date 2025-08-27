@@ -1,28 +1,25 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ISimpleTableWriterHelper.h                                  (C) 2000-2022 */
+/* ISimpleTableWriterHelper.h                                  (C) 2000-2025 */
 /*                                                                           */
 /* Interface représentant un écrivain simple utilisant un                    */
 /* ISimpleTableReaderWriter.                                                 */
 /*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-#ifndef ARCANE_ISIMPLETABLEWRITERHELPER_H
-#define ARCANE_ISIMPLETABLEWRITERHELPER_H
-
+#ifndef ARCANE_CORE_ISIMPLETABLEWRITERHELPER_H
+#define ARCANE_CORE_ISIMPLETABLEWRITERHELPER_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/ISimpleTableInternalMng.h"
-#include "arcane/ISimpleTableReaderWriter.h"
+#include "arcane/core/ISimpleTableInternalMng.h"
+#include "arcane/core/ISimpleTableReaderWriter.h"
 
-#include "arcane/Directory.h"
-#include "arcane/ItemTypes.h"
+#include "arcane/core/Directory.h"
+#include "arcane/core/ItemTypes.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

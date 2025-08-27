@@ -1,26 +1,26 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* VariableInfo.h                                              (C) 2000-2020 */
+/* VariableInfo.h                                              (C) 2000-2025 */
 /*                                                                           */
 /* Infos caractérisant une variable.                                         */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_VARIABLEINFO_H
-#define ARCANE_VARIABLEINFO_H
+#ifndef ARCANE_CORE_VARIABLEINFO_H
+#define ARCANE_CORE_VARIABLEINFO_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/String.h"
 
-#include "arcane/datatype/DataStorageTypeInfo.h"
+#include "arcane/core/datatype/DataStorageTypeInfo.h"
 
-#include "arcane/ArcaneTypes.h"
-#include "arcane/IVariable.h"
-#include "arcane/VariableTypeInfo.h"
+#include "arcane/core/ArcaneTypes.h"
+#include "arcane/core/IVariable.h"
+#include "arcane/core/VariableTypeInfo.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

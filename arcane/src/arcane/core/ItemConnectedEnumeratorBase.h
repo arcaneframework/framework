@@ -1,21 +1,21 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemConnectedEnumeratorBase.h                               (C) 2000-2023 */
+/* ItemConnectedEnumeratorBase.h                               (C) 2000-2025 */
 /*                                                                           */
 /* Classe de base des énumérateurs sur les entités connectées du maillage.   */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_ITEMCONNECTEDENUMERATORBASE_H
-#define ARCANE_ITEMCONNECTEDENUMERATORBASE_H
+#ifndef ARCANE_CORE_ITEMCONNECTEDENUMERATORBASE_H
+#define ARCANE_CORE_ITEMCONNECTEDENUMERATORBASE_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/ItemInternalEnumerator.h"
-#include "arcane/Item.h"
+#include "arcane/core/ItemInternalEnumerator.h"
+#include "arcane/core/Item.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

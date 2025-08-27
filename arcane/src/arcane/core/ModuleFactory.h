@@ -1,26 +1,26 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ModuleFactory.h                                             (C) 2000-2019 */
+/* ModuleFactory.h                                             (C) 2000-2025 */
 /*                                                                           */
 /* Manufacture des modules.                                                  */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_MODULEFACTORY_H
-#define ARCANE_MODULEFACTORY_H
+#ifndef ARCANE_CORE_MODULEFACTORY_H
+#define ARCANE_CORE_MODULEFACTORY_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/IServiceFactory.h"
-#include "arcane/IModuleFactory.h"
-#include "arcane/ServiceRegisterer.h"
-#include "arcane/ModuleBuildInfo.h"
-#include "arcane/IServiceInfo.h"
-#include "arcane/ModuleProperty.h"
-#include "arcane/ServiceProperty.h"
+#include "arcane/core/IServiceFactory.h"
+#include "arcane/core/IModuleFactory.h"
+#include "arcane/core/ServiceRegisterer.h"
+#include "arcane/core/ModuleBuildInfo.h"
+#include "arcane/core/IServiceInfo.h"
+#include "arcane/core/ModuleProperty.h"
+#include "arcane/core/ServiceProperty.h"
 
 #include <atomic>
 

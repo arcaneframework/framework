@@ -1,1 +1,1 @@
-#include "arcane/Configuration.h"
+#include "arcane/core/Configuration.h"

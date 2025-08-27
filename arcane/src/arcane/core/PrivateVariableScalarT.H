@@ -11,10 +11,10 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/PrivateVariableScalar.h"
-#include "arcane/IMesh.h"
-#include "arcane/ItemGroup.h"
-#include "arcane/Variable.h"
+#include "arcane/core/PrivateVariableScalar.h"
+#include "arcane/core/IMesh.h"
+#include "arcane/core/ItemGroup.h"
+#include "arcane/core/Variable.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

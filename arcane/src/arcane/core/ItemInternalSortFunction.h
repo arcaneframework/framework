@@ -15,7 +15,7 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/String.h"
-#include "arcane/IItemInternalSortFunction.h"
+#include "arcane/core/IItemInternalSortFunction.h"
 
 #include <algorithm>
 

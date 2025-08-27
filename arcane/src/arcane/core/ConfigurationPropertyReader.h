@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ConfigurationPropertyReader.h                               (C) 2000-2020 */
+/* ConfigurationPropertyReader.h                               (C) 2000-2025 */
 /*                                                                           */
 /* Lecture de propriétés à partir d'un 'IConfiguration'.                     */
 /*---------------------------------------------------------------------------*/
@@ -18,7 +18,7 @@
  * NOTE: L'API peut changer à tout moment. Ne pas utiliser en dehors de Arcane.
  */
 
-#include "arcane/IConfiguration.h"
+#include "arcane/core/IConfiguration.h"
 #include "arcane/utils/Property.h"
 
 /*---------------------------------------------------------------------------*/

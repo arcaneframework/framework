@@ -1,16 +1,16 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CaseFunction.h                                              (C) 2000-2022 */
+/* CaseFunction.h                                              (C) 2000-2025 */
 /*                                                                           */
 /* Classe gérant une fonction du jeu de données.                             */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_CASEFUNCTION_H
-#define ARCANE_CASEFUNCTION_H
+#ifndef ARCANE_CORE_CASEFUNCTION_H
+#define ARCANE_CORE_CASEFUNCTION_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -19,7 +19,7 @@
 
 #include "arcane/utils/String.h"
 
-#include "arcane/ICaseFunction.h"
+#include "arcane/core/ICaseFunction.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
