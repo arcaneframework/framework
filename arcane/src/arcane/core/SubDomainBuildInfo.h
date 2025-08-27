@@ -17,7 +17,7 @@
 #include "arcane/utils/String.h"
 #include "arcane/utils/Array.h"
 #include "arcane/utils/Ref.h"
-#include "arcane/Parallel.h"
+#include "arcane/core/Parallel.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

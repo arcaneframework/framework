@@ -16,7 +16,7 @@
 
 #include "arcane/utils/Exception.h"
 
-#include "arcane/datatype/VariantBase.h"
+#include "arcane/core/datatype/VariantBase.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

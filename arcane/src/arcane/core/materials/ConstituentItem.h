@@ -16,7 +16,7 @@
 
 #include "arcane/core/materials/ComponentItemInternal.h"
 
-#include "arcane/Item.h"
+#include "arcane/core/Item.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -17,15 +17,15 @@
 #include "arcane/utils/ITraceMng.h"
 #include "arcane/utils/Functor.h"
 
-#include "arcane/CaseOptions.h"
-#include "arcane/IServiceMng.h"
-#include "arcane/ISubDomain.h"
-#include "arcane/ServiceUtils.h"
-#include "arcane/ArcaneException.h"
-#include "arcane/IFactoryService.h"
-#include "arcane/IServiceFactory.h"
-#include "arcane/StringDictionary.h"
-#include "arcane/CaseOptionServiceImpl.h"
+#include "arcane/core/CaseOptions.h"
+#include "arcane/core/IServiceMng.h"
+#include "arcane/core/ISubDomain.h"
+#include "arcane/core/ServiceUtils.h"
+#include "arcane/core/ArcaneException.h"
+#include "arcane/core/IFactoryService.h"
+#include "arcane/core/IServiceFactory.h"
+#include "arcane/core/StringDictionary.h"
+#include "arcane/core/CaseOptionServiceImpl.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

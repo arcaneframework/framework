@@ -19,13 +19,13 @@
 #include "arcane/utils/Collection.h"
 #include "arcane/utils/Enumerator.h"
 
-#include "arcane/IServiceInfo.h"
-#include "arcane/IFactoryService.h"
-#include "arcane/IApplication.h"
-#include "arcane/IServiceFactory.h"
-#include "arcane/IServiceMng.h"
-#include "arcane/ServiceBuildInfo.h"
-#include "arcane/ServiceInstance.h"
+#include "arcane/core/IServiceInfo.h"
+#include "arcane/core/IFactoryService.h"
+#include "arcane/core/IApplication.h"
+#include "arcane/core/IServiceFactory.h"
+#include "arcane/core/IServiceMng.h"
+#include "arcane/core/ServiceBuildInfo.h"
+#include "arcane/core/ServiceInstance.h"
 
 #include <set>
 

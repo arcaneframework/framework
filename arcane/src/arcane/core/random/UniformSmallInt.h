@@ -17,7 +17,7 @@
 
 #include "arcane/utils/FatalErrorException.h"
 
-#include "arcane/random/NormalDistribution.h"
+#include "arcane/core/random/NormalDistribution.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

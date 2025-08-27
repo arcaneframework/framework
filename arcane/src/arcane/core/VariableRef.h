@@ -365,4 +365,4 @@ class ARCANE_CORE_EXPORT VariableRef
 #endif  
 
 //TODO: a supprimer quand tous les codes inclueront directement ce fichier
-#include "arcane/VariableList.h"
+#include "arcane/core/VariableList.h"

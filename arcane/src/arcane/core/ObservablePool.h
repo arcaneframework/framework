@@ -16,8 +16,8 @@
 
 #include "arcane/utils/FatalErrorException.h"
 
-#include "arcane/Observable.h"
-#include "arcane/Observer.h"
+#include "arcane/core/Observable.h"
+#include "arcane/core/Observer.h"
 
 #include <map>
 

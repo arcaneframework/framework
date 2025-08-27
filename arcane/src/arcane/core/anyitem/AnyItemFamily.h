@@ -22,11 +22,11 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/FatalErrorException.h"
-#include "arcane/anyitem/AnyItemGlobal.h"
-#include "arcane/anyitem/AnyItemPrivate.h"
-#include "arcane/anyitem/AnyItemGroup.h"
-#include "arcane/anyitem/AnyItemFamilyObserver.h"
-#include "arcane/ItemGroupObserver.h"
+#include "arcane/core/anyitem/AnyItemGlobal.h"
+#include "arcane/core/anyitem/AnyItemPrivate.h"
+#include "arcane/core/anyitem/AnyItemGroup.h"
+#include "arcane/core/anyitem/AnyItemFamilyObserver.h"
+#include "arcane/core/ItemGroupObserver.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

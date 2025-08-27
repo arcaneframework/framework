@@ -17,7 +17,7 @@
 #include "arcane/utils/FunctorUtils.h"
 #include "arcane/utils/MemoryUtils.h"
 
-#include "arcane/Item.h"
+#include "arcane/core/Item.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -53,24 +53,25 @@ writeMeshItemInfo(ISubDomain*, Face face, bool depend_info = true);
 /*---------------------------------------------------------------------------*/
 /*!
  * \brief Réordonne les noeuds d'une face.
+ *
+ * Cette méthode réordonne la liste des noeuds d'une face pour que les
+ * propriétés suivantes soient respectées:
+ * - le premier noeud de la face est celui dont le numéro global est le plus petit.
+ * - le deuxième noeud de la face est celui dont le numéro global est le deuxième plus petit.
+ *
+ * Cela permet d'orienter les faces de manière identiques en parallèle.
+ *
+ * \a before_ids et \a to doivent avoir le même nombre d'éléments
+ *
+ * \param before_ids numéros globaux des noeuds de la face avant renumérotation.
+ * \param after_ids en sortie, numéros globaux des noeuds de la face après renumérotation
+ *
+ * \retval true si la face change d'orientation lors de la renumérotation
+ * \retval false sinon.
+ */
+extern "C++" ARCANE_CORE_EXPORT bool
+reorderNodesOfFace(Int64ConstArrayView before_ids, Int64ArrayView after_ids);
 
- Cette méthode réordonne la liste des noeuds d'une face pour que les
- propritétés suivantes soient respectées:
- - le premier noeud de la face est celui dont le numéro global est le plus petit.
- - le deuxième noeud de la face est celui dont le numéro global est le deuxième plus petit.
-
- Cela permet:
- - d'orienter les faces de manière identiques en parallèle.
- - d'accélerer les recherches sur les recherches entre faces.
-
- \a before_ids et \a to doivent avoir le même nombre d'éléments
-
- \param before_ids numéros globaux des noeuds de la face avant renumérotation.
- \param after_ids en sortie, numéros globaux des noeuds de la face après renumérotation
-
- \retval true si la face change d'orientation lors de la renumérotation
- \retval false sinon.
-*/
 extern "C++" ARCANE_CORE_EXPORT bool
 reorderNodesOfFace(Int64ConstArrayView before_ids, Int64ArrayView after_ids);
 
@@ -78,30 +79,28 @@ reorderNodesOfFace(Int64ConstArrayView before_ids, Int64ArrayView after_ids);
 /*---------------------------------------------------------------------------*/
 /*!
  * \brief Réordonne les noeuds d'une face.
-
- Cette méthode réordonne la liste des noeuds d'une face pour que les
- propriétés suivantes soient respectées:
- - le premier noeud de la face est celui dont le numéro global est le plus petit.
- - le deuxième noeud de la face est celui dont le numéro global est le deuxième plus petit.
-
- Cela permet:
- - d'orienter les faces de manière identiques en parallèle.
- - d'accélerer les recherches sur les recherches entre faces.
-
- \a nodes_unique_id et \a new_index doivent avoir le même nombre d'éléments
-
- \param nodes_unique_id numéros uniques des noeuds de la face.
- \param new_index en sortie, position des numéros des noeuds après réorientation.
-
- Par exemple, si une face possède les 4 noeuds de numéros uniques 7 3 2 5,
- la réorientation donnera le quadruplet (2 3 7 5), soit le tableau d'index
- suivant (2,1,0,3).
-
- \retval true si la face change d'orientation lors de la renumérotation
- \retval false sinon.
-*/
+ *
+ * Cette méthode réordonne la liste des noeuds d'une face pour que les
+ * propriétés suivantes soient respectées:
+ * - le premier noeud de la face est celui dont le numéro global est le plus petit.
+ * - le deuxième noeud de la face est celui dont le numéro global est le deuxième plus petit.
+ *
+ * Cela permet d'orienter les faces de manière identiques en parallèle.
+ *
+ * \a nodes_unique_id et \a new_index doivent avoir le même nombre d'éléments
+ *
+ * \param nodes_unique_id numéros uniques des noeuds de la face.
+ * \param new_index en sortie, position des numéros des noeuds après réorientation.
+ *
+ * Par exemple, si une face possède les 4 noeuds de numéros uniques 7 3 2 5,
+ * la réorientation donnera le quadruplet (2 3 7 5), soit le tableau d'index
+ * suivant (2,1,0,3).
+ *
+ * \retval true si la face change d'orientation lors de la renumérotation
+ * \retval false sinon.
+ */
 extern "C++" ARCANE_CORE_EXPORT bool
-reorderNodesOfFace2(Int64ConstArrayView nodes_unique_id, IntegerArrayView new_index);
+reorderNodesOfFace2(Int64ConstArrayView nodes_unique_id, Int32ArrayView new_index);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -17,7 +17,7 @@
 #include "arcane/utils/ArrayView.h"
 #include "arcane/utils/Iostream.h"
 
-#include "arcane/datatype/VariantBase.h"
+#include "arcane/core/datatype/VariantBase.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

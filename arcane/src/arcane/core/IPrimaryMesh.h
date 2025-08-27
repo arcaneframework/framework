@@ -14,10 +14,10 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/ArcaneTypes.h"
-#include "arcane/ItemTypes.h"
-#include "arcane/VariableTypedef.h"
-#include "arcane/IMesh.h"
+#include "arcane/core/ArcaneTypes.h"
+#include "arcane/core/ItemTypes.h"
+#include "arcane/core/VariableTypedef.h"
+#include "arcane/core/IMesh.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

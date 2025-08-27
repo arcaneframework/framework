@@ -16,9 +16,9 @@
 
 #include "arcane/utils/Exception.h"
 
-#include "arcane/anyitem/AnyItemGlobal.h"
-#include "arcane/anyitem/AnyItemGroup.h"
-#include "arcane/anyitem/AnyItemLinkFamily.h"
+#include "arcane/core/anyitem/AnyItemGlobal.h"
+#include "arcane/core/anyitem/AnyItemGroup.h"
+#include "arcane/core/anyitem/AnyItemLinkFamily.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

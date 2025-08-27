@@ -16,11 +16,11 @@
 
 #include "arcane/utils/String.h"
 
-#include "arcane/datatype/DataStorageTypeInfo.h"
+#include "arcane/core/datatype/DataStorageTypeInfo.h"
 
-#include "arcane/ArcaneTypes.h"
-#include "arcane/IVariable.h"
-#include "arcane/VariableTypeInfo.h"
+#include "arcane/core/ArcaneTypes.h"
+#include "arcane/core/IVariable.h"
+#include "arcane/core/VariableTypeInfo.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

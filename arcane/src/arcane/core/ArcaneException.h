@@ -17,7 +17,7 @@
 #include "arcane/utils/Exception.h"
 #include "arcane/utils/String.h"
 
-#include "arcane/ArcaneTypes.h"
+#include "arcane/core/ArcaneTypes.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

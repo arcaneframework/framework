@@ -18,10 +18,10 @@
 #include "arcane/utils/ArcaneGlobal.h"
 
 //%% ARCANE_EXPR_SUPPRESS_BEGIN
-#include "arcane/IVariable.h"
+#include "arcane/core/IVariable.h"
 //%% ARCANE_EXPR_SUPPRESS_END
 
-#include "arcane/datatype/ArrayVariant.h"
+#include "arcane/core/datatype/ArrayVariant.h"
 
 #include "arcane/utils/Array.h"
 #include "arcane/utils/Iostream.h"

@@ -17,7 +17,7 @@
 #include "arcane/utils/ArrayView.h"
 #include "arcane/utils/Real3.h"
 
-#include "arcane/ICartesianMeshGenerationInfo.h"
+#include "arcane/core/ICartesianMeshGenerationInfo.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

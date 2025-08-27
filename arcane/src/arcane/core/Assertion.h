@@ -17,8 +17,8 @@
 
 #include "arcane/utils/TraceInfo.h"
 #include "arcane/utils/Numeric.h"
-#include "arcane/ArcaneTypes.h"
-#include "arcane/ArcaneException.h"
+#include "arcane/core/ArcaneTypes.h"
+#include "arcane/core/ArcaneException.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

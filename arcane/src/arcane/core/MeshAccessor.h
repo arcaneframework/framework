@@ -14,9 +14,9 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/ItemTypes.h"
-#include "arcane/VariableTypedef.h"
-#include "arcane/MeshHandle.h"
+#include "arcane/core/ItemTypes.h"
+#include "arcane/core/VariableTypedef.h"
+#include "arcane/core/MeshHandle.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

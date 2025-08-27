@@ -14,8 +14,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/ArcaneTypes.h"
-#include "arcane/ItemTypes.h"
+#include "arcane/core/ArcaneTypes.h"
+#include "arcane/core/ItemTypes.h"
 
 #include "arcane/mesh/MeshInfos.h"
 

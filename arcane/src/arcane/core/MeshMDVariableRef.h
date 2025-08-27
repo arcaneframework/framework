@@ -18,9 +18,9 @@
 #include "arcane/utils/ArrayShape.h"
 #include "arcane/utils/MDSpan.h"
 
-#include "arcane/DataView.h"
+#include "arcane/core/DataView.h"
 
-#include "arcane/MeshVariableArrayRef.h"
+#include "arcane/core/MeshVariableArrayRef.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

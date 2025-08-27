@@ -1,3 +1,3 @@
 ﻿#include "arccore/message_passing/ISerializeMessageList.h"
-#include "arcane/ArcaneTypes.h"
-#include "arcane/Parallel.h"
+#include "arcane/core/ArcaneTypes.h"
+#include "arcane/core/Parallel.h"

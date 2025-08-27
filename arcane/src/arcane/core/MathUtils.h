@@ -21,7 +21,7 @@
 #include "arcane/utils/Real3.h"
 #include "arcane/utils/Real2.h"
 
-#include "arcane/Algorithm.h"
+#include "arcane/core/Algorithm.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

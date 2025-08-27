@@ -16,7 +16,7 @@
 
 #include "arcane/utils/String.h"
 
-#include "arcane/VariableTypes.h"
+#include "arcane/core/VariableTypes.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

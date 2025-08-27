@@ -18,7 +18,7 @@
  * NOTE: L'API peut changer à tout moment. Ne pas utiliser en dehors de Arcane.
  */
 
-#include "arcane/IConfiguration.h"
+#include "arcane/core/IConfiguration.h"
 #include "arcane/utils/Property.h"
 
 /*---------------------------------------------------------------------------*/

@@ -18,11 +18,11 @@
 #include "arcane/utils/Array.h"
 #include "arcane/utils/TraceAccessor.h"
 
-#include "arcane/Parallel.h"
-#include "arcane/ArcaneTypes.h"
-#include "arcane/VariableCollection.h"
+#include "arcane/core/Parallel.h"
+#include "arcane/core/ArcaneTypes.h"
+#include "arcane/core/VariableCollection.h"
 
-#include "arcane/IVariableParallelOperation.h"
+#include "arcane/core/IVariableParallelOperation.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

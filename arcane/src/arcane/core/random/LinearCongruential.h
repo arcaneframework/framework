@@ -19,8 +19,8 @@
 #include "arcane/utils/TraceInfo.h"
 #include "arcane/utils/String.h"
 
-#include "arcane/random/RandomGlobal.h"
-#include "arcane/random/ConstMod.h"
+#include "arcane/core/random/RandomGlobal.h"
+#include "arcane/core/random/ConstMod.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

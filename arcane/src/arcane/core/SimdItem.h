@@ -21,7 +21,7 @@
 // entités.
 
 #ifndef ARCANE_SIMD_BENCH
-#include "arcane/ItemEnumerator.h"
+#include "arcane/core/ItemEnumerator.h"
 #endif
 
 /*---------------------------------------------------------------------------*/

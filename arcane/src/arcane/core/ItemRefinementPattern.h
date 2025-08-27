@@ -20,7 +20,7 @@
 #include "arcane/utils/NotSupportedException.h"
 #include "arcane/utils/NotImplementedException.h"
 
-#include "arcane/ArcaneTypes.h"
+#include "arcane/core/ArcaneTypes.h"
 #include "arcane/utils/FatalErrorException.h"
 #include "arcane/utils/StringBuilder.h"
 

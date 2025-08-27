@@ -16,8 +16,8 @@
 
 #include "arcane/utils/String.h"
 
-#include "arcane/IVariableFactory.h"
-#include "arcane/VariableTypeInfo.h"
+#include "arcane/core/IVariableFactory.h"
+#include "arcane/core/VariableTypeInfo.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

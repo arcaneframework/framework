@@ -15,7 +15,7 @@
 /*---------------------------------------------------------------------------*/
 
 
-#include "arcane/datatype/ScalarVariant.h"
+#include "arcane/core/datatype/ScalarVariant.h"
 
 #include "arcane/expr/IExpressionImpl.h"
 

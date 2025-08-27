@@ -16,9 +16,9 @@
 
 #include "arcane/utils/VersionInfo.h"
 
-#include "arcane/ArcaneTypes.h"
-#include "arcane/ServiceProperty.h"
-#include "arcane/MeshHandle.h"
+#include "arcane/core/ArcaneTypes.h"
+#include "arcane/core/ServiceProperty.h"
+#include "arcane/core/MeshHandle.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

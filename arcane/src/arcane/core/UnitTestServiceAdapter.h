@@ -15,10 +15,10 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/IUnitTest.h"
-#include "arcane/ArcaneException.h"
-#include "arcane/Assertion.h"
-#include "arcane/XmlNode.h"
+#include "arcane/core/IUnitTest.h"
+#include "arcane/core/ArcaneException.h"
+#include "arcane/core/Assertion.h"
+#include "arcane/core/XmlNode.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

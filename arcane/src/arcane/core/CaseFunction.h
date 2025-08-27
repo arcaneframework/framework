@@ -19,7 +19,7 @@
 
 #include "arcane/utils/String.h"
 
-#include "arcane/ICaseFunction.h"
+#include "arcane/core/ICaseFunction.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

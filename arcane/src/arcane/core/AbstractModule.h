@@ -18,9 +18,9 @@
 #include "arcane/utils/VersionInfo.h"
 #include "arcane/utils/TraceAccessor.h"
 
-#include "arcane/ArcaneTypes.h"
-#include "arcane/IModule.h"
-#include "arcane/ModuleBuildInfo.h"
+#include "arcane/core/ArcaneTypes.h"
+#include "arcane/core/IModule.h"
+#include "arcane/core/ModuleBuildInfo.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

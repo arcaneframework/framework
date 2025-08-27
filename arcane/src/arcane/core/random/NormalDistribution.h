@@ -18,7 +18,7 @@
 #include "arcane/utils/FatalErrorException.h"
 #include "arcane/utils/Math.h"
 
-#include "arcane/random/RandomGlobal.h"
+#include "arcane/core/random/RandomGlobal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -1,1 +1,1 @@
-#include "arcane/IServiceInfo.h"
+#include "arcane/core/IServiceInfo.h"

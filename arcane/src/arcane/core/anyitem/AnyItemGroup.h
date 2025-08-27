@@ -19,10 +19,10 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/ItemGroup.h"
-#include "arcane/ItemInfoListView.h"
-#include "arcane/anyitem/AnyItemGlobal.h"
-#include "arcane/anyitem/AnyItemPrivate.h"
+#include "arcane/core/ItemGroup.h"
+#include "arcane/core/ItemInfoListView.h"
+#include "arcane/core/anyitem/AnyItemGlobal.h"
+#include "arcane/core/anyitem/AnyItemPrivate.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

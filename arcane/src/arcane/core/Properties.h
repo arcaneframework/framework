@@ -16,8 +16,8 @@
 
 #include "arcane/utils/UtilsTypes.h"
 #include "arcane/utils/AutoRef.h"
-#include "arcane/SharedReference.h"
-#include "arcane/ArcaneTypes.h"
+#include "arcane/core/SharedReference.h"
+#include "arcane/core/ArcaneTypes.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -14,8 +14,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/ArcaneTypes.h"
-#include "arcane/Parallel.h"
+#include "arcane/core/ArcaneTypes.h"
+#include "arcane/core/Parallel.h"
 #include "arcane/utils/JSONWriter.h"
 #include "arccore/message_passing/IStat.h"
 

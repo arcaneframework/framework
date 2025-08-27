@@ -13,13 +13,13 @@
 #ifndef ARCANE_ANYITEM_ANYITEMARRAY2_H
 #define ARCANE_ANYITEM_ANYITEMARRAY2_H
 
-#include "arcane/IItemFamily.h"
+#include "arcane/core/IItemFamily.h"
 #include "arcane/utils/Array2.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/anyitem/AnyItemGlobal.h"
+#include "arcane/core/anyitem/AnyItemGlobal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

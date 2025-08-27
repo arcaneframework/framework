@@ -14,9 +14,9 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/ItemInternalVectorView.h"
-#include "arcane/ItemIndexArrayView.h"
-#include "arcane/ItemInfoListView.h"
+#include "arcane/core/ItemInternalVectorView.h"
+#include "arcane/core/ItemIndexArrayView.h"
+#include "arcane/core/ItemInfoListView.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

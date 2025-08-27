@@ -16,7 +16,7 @@
 
 #include "arcane/utils/String.h"
 #include "arcane/utils/FunctorWithAddress.h"
-#include "arcane/IEntryPoint.h"
+#include "arcane/core/IEntryPoint.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

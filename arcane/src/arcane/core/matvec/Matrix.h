@@ -19,7 +19,7 @@
 #include "arcane/utils/Array.h"
 #include "arcane/utils/Numeric.h"
 
-#include "arcane/matvec/Vector.h"
+#include "arcane/core/matvec/Vector.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

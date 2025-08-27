@@ -18,8 +18,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/IParallelMng.h"
-#include "arcane/ItemTypes.h"
+#include "arcane/core/IParallelMng.h"
+#include "arcane/core/ItemTypes.h"
 #include "arcane/utils/Array.h"
 #include "arcane/utils/Array2.h"
 

@@ -14,7 +14,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/VariableBuildInfo.h"
+#include "arcane/core/VariableBuildInfo.h"
 
 #include "arcane/core/materials/MaterialsCoreGlobal.h"
 

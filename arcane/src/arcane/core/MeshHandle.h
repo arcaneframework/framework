@@ -19,7 +19,7 @@
 #include "arccore/base/String.h"
 
 #include "arcane/utils/UtilsTypes.h"
-#include "arcane/ArcaneTypes.h"
+#include "arcane/core/ArcaneTypes.h"
 
 #include <atomic>
 

@@ -16,7 +16,7 @@
 
 #include "arcane/utils/String.h"
 #include "arcane/utils/FileContent.h"
-#include "arcane/IServiceInfo.h"
+#include "arcane/core/IServiceInfo.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -16,8 +16,8 @@
 
 #include "arcane/utils/Array.h"
 
-#include "arcane/VariableRef.h"
-#include "arcane/SharedReference.h"
+#include "arcane/core/VariableRef.h"
+#include "arcane/core/SharedReference.h"
 #include "arcane/utils/AutoRef.h"
 
 #include <algorithm>

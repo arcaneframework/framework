@@ -17,7 +17,7 @@
 #include "arcane/utils/String.h"
 #include "arcane/utils/TraceInfo.h"
 
-#include "arcane/XmlNode.h"
+#include "arcane/core/XmlNode.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -22,8 +22,8 @@
 #include "arcane/utils/NotImplementedException.h"
 #include "arcane/utils/Array2View.h"
 
-#include "arcane/Item.h"
-#include "arcane/VariableRef.h"
+#include "arcane/core/Item.h"
+#include "arcane/core/VariableRef.h"
 
 #include "arcane/core/materials/IMeshMaterialVariable.h"
 #include "arcane/core/materials/MatItemEnumerator.h"

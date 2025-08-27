@@ -15,8 +15,8 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/String.h"
-#include "arcane/ArcaneTypes.h"
-#include "arcane/Parallel.h"
+#include "arcane/core/ArcaneTypes.h"
+#include "arcane/core/Parallel.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

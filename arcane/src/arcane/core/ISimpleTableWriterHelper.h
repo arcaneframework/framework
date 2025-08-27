@@ -18,11 +18,11 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/ISimpleTableInternalMng.h"
-#include "arcane/ISimpleTableReaderWriter.h"
+#include "arcane/core/ISimpleTableInternalMng.h"
+#include "arcane/core/ISimpleTableReaderWriter.h"
 
-#include "arcane/Directory.h"
-#include "arcane/ItemTypes.h"
+#include "arcane/core/Directory.h"
+#include "arcane/core/ItemTypes.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

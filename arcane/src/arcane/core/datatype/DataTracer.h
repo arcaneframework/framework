@@ -17,8 +17,8 @@
 #include "arcane/utils/ITraceMng.h"
 #include "arcane/utils/String.h"
 
-#include "arcane/datatype/IDataTracer.h"
-#include "arcane/datatype/DataTypes.h"
+#include "arcane/core/datatype/IDataTracer.h"
+#include "arcane/core/datatype/DataTypes.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

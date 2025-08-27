@@ -24,7 +24,7 @@
 #include "arcane/core/materials/MatItem.h"
 #include "arcane/core/materials/IEnumeratorTracer.h"
 
-#include "arcane/EnumeratorTraceWrapper.h"
+#include "arcane/core/EnumeratorTraceWrapper.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

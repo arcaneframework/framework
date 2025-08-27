@@ -14,13 +14,13 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/IServiceFactory.h"
-#include "arcane/IModuleFactory.h"
-#include "arcane/ServiceRegisterer.h"
-#include "arcane/ModuleBuildInfo.h"
-#include "arcane/IServiceInfo.h"
-#include "arcane/ModuleProperty.h"
-#include "arcane/ServiceProperty.h"
+#include "arcane/core/IServiceFactory.h"
+#include "arcane/core/IModuleFactory.h"
+#include "arcane/core/ServiceRegisterer.h"
+#include "arcane/core/ModuleBuildInfo.h"
+#include "arcane/core/IServiceInfo.h"
+#include "arcane/core/ModuleProperty.h"
+#include "arcane/core/ServiceProperty.h"
 
 #include <atomic>
 

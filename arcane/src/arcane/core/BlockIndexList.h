@@ -17,7 +17,7 @@
 #include "arcane/utils/TraceAccessor.h"
 #include "arcane/utils/UniqueArray.h"
 
-#include "arcane/ArcaneTypes.h"
+#include "arcane/core/ArcaneTypes.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

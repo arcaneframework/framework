@@ -15,13 +15,13 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/Array.h"
-#include "arcane/ArcaneTypes.h"
-#include "arcane/IVariable.h"
-#include "arcane/IItemFamily.h"
+#include "arcane/core/ArcaneTypes.h"
+#include "arcane/core/IVariable.h"
+#include "arcane/core/IItemFamily.h"
 #include "arcane/utils/FatalErrorException.h"
 
-#include "arcane/IMeshSubMeshTransition.h"
-#include "arcane/ItemGroup.h"
+#include "arcane/core/IMeshSubMeshTransition.h"
+#include "arcane/core/ItemGroup.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

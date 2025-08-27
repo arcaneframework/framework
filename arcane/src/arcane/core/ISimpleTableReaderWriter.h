@@ -17,11 +17,11 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/ISimpleTableInternalMng.h"
+#include "arcane/core/ISimpleTableInternalMng.h"
 
-#include "arcane/Directory.h"
-#include "arcane/IParallelMng.h"
-#include "arcane/ItemTypes.h"
+#include "arcane/core/Directory.h"
+#include "arcane/core/IParallelMng.h"
+#include "arcane/core/ItemTypes.h"
 #include "arcane/utils/Iostream.h"
 
 /*---------------------------------------------------------------------------*/

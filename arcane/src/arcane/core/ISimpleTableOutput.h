@@ -17,8 +17,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/ISimpleTableInternalMng.h"
-#include "arcane/ISimpleTableWriterHelper.h"
+#include "arcane/core/ISimpleTableInternalMng.h"
+#include "arcane/core/ISimpleTableWriterHelper.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

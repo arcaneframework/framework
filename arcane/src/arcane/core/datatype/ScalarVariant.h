@@ -20,7 +20,7 @@
 #include "arcane/utils/Real2x2.h"
 #include "arcane/utils/Real3x3.h"
 
-#include "arcane/datatype/VariantBase.h"
+#include "arcane/core/datatype/VariantBase.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

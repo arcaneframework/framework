@@ -17,10 +17,10 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/SimpleTableInternal.h"
+#include "arcane/core/SimpleTableInternal.h"
 
-#include "arcane/ISubDomain.h"
-#include "arcane/ItemTypes.h"
+#include "arcane/core/ISubDomain.h"
+#include "arcane/core/ItemTypes.h"
 #include "arcane/utils/Array.h"
 #include "arcane/utils/Array2.h"
 

@@ -1,1 +1,1 @@
-#include "arcane/VariableCollection.h"
+#include "arcane/core/VariableCollection.h"

@@ -16,8 +16,8 @@
 
 #include "arcane/utils/Functor.h"
 
-#include "arcane/CaseOptions.h"
-#include "arcane/CaseOptionsMulti.h"
+#include "arcane/core/CaseOptions.h"
+#include "arcane/core/CaseOptionsMulti.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

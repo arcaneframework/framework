@@ -17,7 +17,7 @@
 #include "arcane/utils/List.h"
 #include "arcane/utils/TraceAccessor.h"
 
-#include "arcane/VariableCollection.h"
+#include "arcane/core/VariableCollection.h"
 
 #include "arcane/mesh/MeshGlobal.h"
 

@@ -17,7 +17,7 @@
 
 #include "arcane/utils/FatalErrorException.h"
 
-#include "arcane/random/UniformSmallInt.h"
+#include "arcane/core/random/UniformSmallInt.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
