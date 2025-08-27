@@ -48,6 +48,11 @@ jobs:
           echo "Display CPU information"
           sysctl -a | grep machdep.cpu
 
+      - name: Uninstall pre-installed dependencies
+        continue-on-error: true
+        run: |
+          brew uninstall cmake gcc open-mpi hdf5-mpi scotch dotnet petsc zstd ccache
+
       - name: Install dependencies
         run: |
           brew install cmake gcc open-mpi hdf5-mpi scotch dotnet petsc zstd ccache
