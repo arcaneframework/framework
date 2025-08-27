@@ -1,22 +1,24 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IStat.h                                                     (C) 2000-2023 */
+/* IStat.h                                                     (C) 2000-2025 */
 /*                                                                           */
 /* Statistiques sur les messages de 'IParallelMng'.                          */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_PARALLEL_ISTAT_H
-#define ARCANE_PARALLEL_ISTAT_H
+#ifndef ARCANE_CORE_PARALLEL_ISTAT_H
+#define ARCANE_CORE_PARALLEL_ISTAT_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+#include "arcane/utils/JSONWriter.h"
+
 #include "arcane/core/ArcaneTypes.h"
 #include "arcane/core/Parallel.h"
-#include "arcane/utils/JSONWriter.h"
+
 #include "arccore/message_passing/IStat.h"
 
 /*---------------------------------------------------------------------------*/

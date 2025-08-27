@@ -1,16 +1,16 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* SimdItem.h                                                  (C) 2000-2024 */
+/* SimdItem.h                                                  (C) 2000-2025 */
 /*                                                                           */
 /* Types des entités et des énumérateurs des entités pour la vectorisation.  */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_SIMDITEM_H
-#define ARCANE_SIMDITEM_H
+#ifndef ARCANE_CORE_SIMDITEM_H
+#define ARCANE_CORE_SIMDITEM_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 

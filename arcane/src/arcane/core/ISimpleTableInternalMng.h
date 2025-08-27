@@ -1,28 +1,25 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ISimpleTableInternalMng.h                                   (C) 2000-2022 */
+/* ISimpleTableInternalMng.h                                   (C) 2000-2025 */
 /*                                                                           */
-/* Interface représentant un gestionnaire de SimpleTableInternal.    */
+/* Interface représentant un gestionnaire de SimpleTableInternal.            */
+/*---------------------------------------------------------------------------*/
+#ifndef ARCANE_CORE_ISIMPLETABLEINTERNALMNG_H
+#define ARCANE_CORE_ISIMPLETABLEINTERNALMNG_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#ifndef ARCANE_ISIMPLETABLEINTERNALMNG_H
-#define ARCANE_ISIMPLETABLEINTERNALMNG_H
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-#include "arcane/core/SimpleTableInternal.h"
-
-#include "arcane/core/ISubDomain.h"
-#include "arcane/core/ItemTypes.h"
 #include "arcane/utils/Array.h"
 #include "arcane/utils/Array2.h"
+
+#include "arcane/core/SimpleTableInternal.h"
+#include "arcane/core/ISubDomain.h"
+#include "arcane/core/ItemTypes.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

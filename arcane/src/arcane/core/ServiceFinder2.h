@@ -1,16 +1,16 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ServiceFinder2.h                                            (C) 2000-2019 */
+/* ServiceFinder2.h                                            (C) 2000-2025 */
 /*                                                                           */
 /* Classe pour trouver un service donné.                                     */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_SERVICEFINDER2_H
-#define ARCANE_SERVICEFINDER2_H
+#ifndef ARCANE_CORE_SERVICEFINDER2_H
+#define ARCANE_CORE_SERVICEFINDER2_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -32,9 +32,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arcane
-{
-namespace Internal
+namespace Arcane::Internal
 {
 
 /*---------------------------------------------------------------------------*/
@@ -250,6 +248,9 @@ class ServiceFinderBase2T
 /*---------------------------------------------------------------------------*/
 
 } // End namespace Internal
+
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

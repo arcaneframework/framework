@@ -1,16 +1,16 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* SimpleSVGMeshExporter.h                                     (C) 2000-2021 */
+/* SimpleSVGMeshExporter.h                                     (C) 2000-2025 */
 /*                                                                           */
 /* Écrivain d'un maillage au format SVG.                                     */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_SIMPLESVGMESHEXPORTER_H
-#define ARCANE_SIMPLESVGMESHEXPORTER_H
+#ifndef ARCANE_CORE_SIMPLESVGMESHEXPORTER_H
+#define ARCANE_CORE_SIMPLESVGMESHEXPORTER_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 

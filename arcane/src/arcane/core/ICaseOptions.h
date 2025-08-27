@@ -1,16 +1,16 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ICaseOptions.h                                              (C) 2000-2023 */
+/* ICaseOptions.h                                              (C) 2000-2025 */
 /*                                                                           */
 /* Options du jeu de donnés.                                                 */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_ICASEOPTIONS_H
-#define ARCANE_ICASEOPTIONS_H
+#ifndef ARCANE_CORE_ICASEOPTIONS_H
+#define ARCANE_CORE_ICASEOPTIONS_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
