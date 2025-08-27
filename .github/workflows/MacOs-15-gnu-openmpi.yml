@@ -22,7 +22,7 @@ on:
 
 jobs:
   build:
-    runs-on: macos-latest
+    runs-on: macos-15
     env:
       CCACHE_BASEDIR: ${{github.workspace}}
       CCACHE_DIR: '${{ github.workspace }}/ccache'
@@ -47,6 +47,11 @@ jobs:
           mkdir -p ${{ env.CCACHE_DIR }}
           echo "Display CPU information"
           sysctl -a | grep machdep.cpu
+
+      - name: Uninstall pre-installed dependencies
+        continue-on-error: true
+        run: |
+          brew uninstall cmake gcc open-mpi hdf5-mpi scotch dotnet petsc zstd ccache
 
       - name: Install dependencies
         run: |
