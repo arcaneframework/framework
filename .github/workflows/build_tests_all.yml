@@ -60,7 +60,10 @@ jobs:
             acc_compilo_version: '130'
             date: '20250829'
             # Disable googletest with CUDA because it requires a GPU driver
-            args: '-DARCCORE_CXX_STANDARD=20 -DARCANE_EXECUTE_ACCELERATOR_GOOGLETEST=OFF'
+            # CUDA 13 doesn't support arch < 80
+            args: '-DARCCORE_CXX_STANDARD=20
+              -DARCANE_EXECUTE_ACCELERATOR_GOOGLETEST=OFF
+              -DCMAKE_CUDA_ARCHITECTURES=80'
             execute_tests: false
 
           - short: 'U24_C19_CU130'
@@ -71,16 +74,20 @@ jobs:
             acc_compilo_version: '130'
             date: '20250829'
             # Disable googletest with CUDA because it requires a GPU driver
-            args: '-DARCCORE_CXX_STANDARD=20 -DARCANE_EXECUTE_ACCELERATOR_GOOGLETEST=OFF'
+            # CUDA 13 doesn't support arch < 80
+            args: '-DARCCORE_CXX_STANDARD=20
+              -DARCANE_EXECUTE_ACCELERATOR_GOOGLETEST=OFF
+              -DCMAKE_CUDA_ARCHITECTURES=80'
             execute_tests: false
 
-          - short: 'U24_G14_CUC21'
+          - short: 'U24_G14_CUC19'
             long: 'ubuntu-2404'
             compilo_name: 'gcc'
             compilo_version: '14'
             acc_compilo_name: 'clang_cuda'
-            acc_compilo_version: '21'
-            date: '20250829'
+            # CLang 21 doesn't support CUDA 13.0.
+            acc_compilo_version: '19'
+            date: '20250120'
             # Disable googletest with CUDA because it requires a GPU driver
             args: '-DARCCORE_CXX_STANDARD=20 -DARCANE_EXECUTE_ACCELERATOR_GOOGLETEST=OFF'
             execute_tests: false

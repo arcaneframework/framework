@@ -74,7 +74,10 @@ jobs:
             acc_compilo_version: '130'
             date: '20250829'
             # Disable googletest with CUDA because it requires a GPU driver
-            args: '-DARCCORE_CXX_STANDARD=20 -DARCANE_EXECUTE_ACCELERATOR_GOOGLETEST=OFF'
+            # CUDA 13 doesn't support arch < 80
+            args: '-DARCCORE_CXX_STANDARD=20
+              -DARCANE_EXECUTE_ACCELERATOR_GOOGLETEST=OFF
+              -DCMAKE_CUDA_ARCHITECTURES=80'
             execute_tests: false
 
         version:
