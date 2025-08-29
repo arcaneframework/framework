@@ -54,7 +54,7 @@ jobs:
 
     executor: <<parameters.arch>>
     docker:
-      - image: ghcr.io/arcaneframework/ubuntu-2404:gcc-14_<<parameters.image_version>>_20250120
+      - image: ghcr.io/arcaneframework/ubuntu-2404:gcc_<<parameters.image_version>>_latest
 
     steps:
       - when:
