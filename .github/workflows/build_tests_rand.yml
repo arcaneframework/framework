@@ -31,15 +31,15 @@ jobs:
             long: 'ubuntu-2404'
             compilo_name: 'gcc'
             compilo_version: '14'
-            date: '20250120'
+            date: '20250829'
             args: '-DARCCORE_CXX_STANDARD=23'
             execute_tests: true
 
-          - short: 'U24_C18'
+          - short: 'U24_C21'
             long: 'ubuntu-2404'
             compilo_name: 'clang'
-            compilo_version: '18'
-            date: '20250120'
+            compilo_version: '21'
+            date: '20250829'
             args: '-DARCCORE_CXX_STANDARD=23'
             execute_tests: true
 

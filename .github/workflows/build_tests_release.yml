@@ -52,27 +52,27 @@ jobs:
             compilo_version: '14'
             acc_compilo_name: ''
             acc_compilo_version: ''
-            date: '20250120'
+            date: '20250829'
             args: '-DARCCORE_CXX_STANDARD=23'
             execute_tests: true
 
-          - short: 'U24_C19'
+          - short: 'U24_C21'
             long: 'ubuntu-2404'
             compilo_name: 'clang'
-            compilo_version: '19'
+            compilo_version: '21'
             acc_compilo_name: ''
             acc_compilo_version: ''
-            date: '20250120'
+            date: '20250829'
             args: '-DARCCORE_CXX_STANDARD=23'
             execute_tests: true
 
-          - short: 'U24_G13_CU126'
+          - short: 'U24_G14_CU130'
             long: 'ubuntu-2404'
             compilo_name: 'gcc'
-            compilo_version: '13'
+            compilo_version: '14'
             acc_compilo_name: 'cuda'
-            acc_compilo_version: '126'
-            date: '20250120'
+            acc_compilo_version: '130'
+            date: '20250829'
             # Disable googletest with CUDA because it requires a GPU driver
             args: '-DARCCORE_CXX_STANDARD=20 -DARCANE_EXECUTE_ACCELERATOR_GOOGLETEST=OFF'
             execute_tests: false
