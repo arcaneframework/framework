@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* DataSynchronizeInfo.h                                       (C) 2000-2024 */
+/* DataSynchronizeInfo.h                                       (C) 2000-2025 */
 /*                                                                           */
 /* Informations pour synchroniser les données.                               */
 /*---------------------------------------------------------------------------*/
@@ -15,15 +15,11 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/UniqueArray.h"
-#include "arcane/utils/Ref.h"
 #include "arccore/base/ReferenceCounterImpl.h"
 
 #include "arcane/core/ArcaneTypes.h"
 #include "arcane/core/Parallel.h"
 #include "arcane/core/VariableCollection.h"
-
-#include "arcane/impl/IDataSynchronizeImplementation.h"
 
 #include <array>
 
@@ -32,6 +28,7 @@
 
 namespace Arcane
 {
+class DataSynchronizeInfo;
 
 //! Comparaison des valeurs des entités fantômes avant/après une synchronisation
 enum class eDataSynchronizeCompareStatus
@@ -51,7 +48,6 @@ enum class eDataSynchronizeCompareStatus
  */
 class DataSynchronizeResult
 {
- public:
  public:
 
   eDataSynchronizeCompareStatus compareStatus() const { return m_compare_status; }
@@ -115,11 +111,11 @@ class ARCANE_IMPL_EXPORT VariableSyncInfo
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Informations pour les message d'envoi (share) ou de réception (ghost)
+ * \brief Informations pour les messages d'envoi (share) ou de réception (ghost)
  */
 class DataSynchronizeBufferInfoList
 {
-  friend class DataSynchronizeInfo;
+  friend DataSynchronizeInfo;
 
  private:
 
@@ -143,9 +139,15 @@ class DataSynchronizeBufferInfoList
 
  private:
 
+  /*!
+   * \brief Offsets dans le buffer global pour chaque rang.
+   *
+   * Ce tableau est rempli par DataSynchronizeInfo::recompute().
+   */
   UniqueArray<Int64> m_displacements_base;
   Int64 m_total_nb_item = 0;
   const DataSynchronizeInfo* m_sync_info = nullptr;
+  //! Si vrai, il s'agit du buffer d'envoi, sinon de réception.
   bool m_is_share = false;
 };
 
@@ -205,10 +207,10 @@ class ARCANE_IMPL_EXPORT DataSynchronizeInfo
   Int32 targetRank(Int32 index) const { return m_ranks_info[index].targetRank(); }
 
   //! Rangs de toutes les cibles
-  Int32ConstArrayView communicatingRanks() const { return m_communicating_ranks; }
-  
+  ConstArrayView<Int32> communicatingRanks() const { return m_communicating_ranks; }
+
   //! Notifie l'instance que les indices locaux ont changé
-  void changeLocalIds(Int32ConstArrayView old_to_new_ids);
+  void changeLocalIds(ConstArrayView<Int32> old_to_new_ids);
 
   //! Notifie l'instance que les valeurs ont changé
   void recompute();
