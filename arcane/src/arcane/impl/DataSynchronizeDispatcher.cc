@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* DataSynchronizeDispatcher.cc                                (C) 2000-2023 */
+/* DataSynchronizeDispatcher.cc                                (C) 2000-2025 */
 /*                                                                           */
 /* Gestion de la synchronisation d'une instance de 'IData'.                  */
 /*---------------------------------------------------------------------------*/
@@ -30,7 +30,6 @@
 
 #include "arcane/impl/DataSynchronizeInfo.h"
 #include "arcane/impl/internal/DataSynchronizeBuffer.h"
-#include "arcane/impl/internal/IBufferCopier.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -125,7 +124,7 @@ class ARCANE_IMPL_EXPORT DataSynchronizeDispatcher
 
   explicit DataSynchronizeDispatcher(const DataSynchronizeDispatcherBuildInfo& bi)
   : DataSynchronizeDispatcherBase(bi)
-  , m_sync_buffer(m_sync_info.get(), bi.bufferCopier())
+  , m_sync_buffer(bi.parallelMng()->traceMng(), m_sync_info.get(), bi.bufferCopier())
   {
   }
 
@@ -156,7 +155,6 @@ beginSynchronize(INumericDataInternal* data, bool is_compare_sync)
   ARCANE_CHECK_POINTER(data);
 
   MutableMemoryView mem_view = data->memoryView();
-  Int32 full_datatype_size = mem_view.datatypeSize();
 
   if (m_is_in_sync)
     ARCANE_FATAL("_beginSynchronize() has already been called");
@@ -166,7 +164,7 @@ beginSynchronize(INumericDataInternal* data, bool is_compare_sync)
   if (m_is_empty_sync)
     return;
   m_sync_buffer.setDataView(mem_view);
-  m_sync_buffer.prepareSynchronize(full_datatype_size, is_compare_sync);
+  m_sync_buffer.prepareSynchronize(is_compare_sync);
   m_synchronize_implementation->beginSynchronize(&m_sync_buffer);
 }
 
@@ -311,7 +309,6 @@ synchronize(ConstArrayView<IVariable*> vars)
   m_sync_buffer.setNbData(nb_var);
 
   // Récupère les emplacements mémoire des données des variables et leur taille
-  Int32 all_datatype_size = 0;
   {
     Int32 index = 0;
     for (IVariable* var : vars) {
@@ -319,7 +316,6 @@ synchronize(ConstArrayView<IVariable*> vars)
       if (!numapi)
         ARCANE_FATAL("Variable '{0}' can not be synchronized because it is not a numeric data", var->name());
       MutableMemoryView mem_view = numapi->memoryView();
-      all_datatype_size += mem_view.datatypeSize();
       m_sync_buffer.setDataView(index, mem_view);
       ++index;
     }
@@ -327,7 +323,7 @@ synchronize(ConstArrayView<IVariable*> vars)
 
   // TODO: à passer en paramètre de la fonction
   bool is_compare_sync = false;
-  m_sync_buffer.prepareSynchronize(all_datatype_size, is_compare_sync);
+  m_sync_buffer.prepareSynchronize(is_compare_sync);
 
   m_synchronize_implementation->beginSynchronize(&m_sync_buffer);
   m_synchronize_implementation->endSynchronize(&m_sync_buffer);
