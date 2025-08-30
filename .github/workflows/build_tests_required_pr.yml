@@ -1,4 +1,4 @@
-name: '[Require PR] Build/Install/Test Arcane Framework (Ubuntu 24.04 / CLang 19 / Minimal)'
+name: '[Require PR] Build/Install/Test Arcane Framework (Ubuntu 24.04 / CLang 21 / Minimal)'
 
 on:
   pull_request:
@@ -15,13 +15,13 @@ jobs:
       fail-fast: false
       matrix:
         image:
-          - short: 'U24_C19'
+          - short: 'U24_C21'
             long: 'ubuntu-2404'
             compilo_name: 'clang'
-            compilo_version: '19'
+            compilo_version: '21'
             acc_compilo_name: ''
             acc_compilo_version: ''
-            date: '20250120'
+            date: '20250830'
             args: '-DARCCORE_CXX_STANDARD=23'
             execute_tests: true
 
