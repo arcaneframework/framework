@@ -21,6 +21,16 @@ CONTAINER_ID=$(docker run -dt "$IMAGE_ID")
 docker exec -it "$CONTAINER_ID" bash
 ```
 
+Ou alors avec [Distrobox](https://github.com/89luca89/distrobox) :
+```sh
+distrobox create --init \
+  --name U24FullArcaneRelease \
+  --image ghcr.io/arcaneframework/arcane_ubuntu-2404:gcc-14_full_release_latest \
+  --additional-packages vim
+
+distrobox enter U24FullArcaneRelease
+```
+
 ## Les images n'incluant pas le framework Arcane
 
 Ces images était destinées à l'origine aux CI du dépôt framework. Mais ces images peuvent
@@ -35,11 +45,20 @@ Les images peuvent être trouvées [ici](https://github.com/arcaneframework/fram
 
 Exemple d'utilisation :
 ```sh
-IMAGE_ID=$(docker pull ghcr.io/arcaneframework/ubuntu-2404:gcc-14_full_latest)
+IMAGE_ID=$(docker pull ghcr.io/arcaneframework/ubuntu-2404:full_stable)
 CONTAINER_ID=$(docker run -dt "$IMAGE_ID")
 docker exec -it "$CONTAINER_ID" bash
 ```
 
+Ou alors avec [Distrobox](https://github.com/89luca89/distrobox) :
+```sh
+distrobox create --init \
+  --name U24Full \
+  --image ghcr.io/arcaneframework/ubuntu-2404:full_stable \
+  --additional-packages vim
+
+distrobox enter U24Full
+```
 
 ____
 
