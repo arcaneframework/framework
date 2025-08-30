@@ -1,4 +1,4 @@
-name: '[Rand] Build/Install/Test Arcane Framework (Ubuntu 22.04-24.04 / GCC 12-14 / CLang 16-18 / Full / Debug)'
+name: '[Rand] Build/Install/Test Arcane Framework (Ubuntu 22.04-24.04 / GCC 12-14 / CLang 16-21 / Full / Debug)'
 
 on:
   schedule:
@@ -31,7 +31,7 @@ jobs:
             long: 'ubuntu-2404'
             compilo_name: 'gcc'
             compilo_version: '14'
-            date: '20250829'
+            date: '20250830'
             args: '-DARCCORE_CXX_STANDARD=23'
             execute_tests: true
 
@@ -39,7 +39,7 @@ jobs:
             long: 'ubuntu-2404'
             compilo_name: 'clang'
             compilo_version: '21'
-            date: '20250829'
+            date: '20250830'
             args: '-DARCCORE_CXX_STANDARD=23'
             execute_tests: true
 

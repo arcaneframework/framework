@@ -1,4 +1,4 @@
-name: '[All] Build/Install/Test Arcane Framework (Ubuntu 22.04-24.04 / GCC 12-13-14 / CLang 16-18-19 / CUDA 12.6 / ROCM 6.3.1 / Minimal-Full / Release-Debug)'
+name: '[All] Build/Install/Test Arcane Framework (Ubuntu 22.04-24.04 / GCC 12-14 / CLang 16-19-21 / CUDA 13.0 / ROCM 6.4.3 / Minimal-Full / Release-Debug)'
 # Attention : GitHub limite à 20 tests à la fois.
 
 on:
@@ -38,7 +38,7 @@ jobs:
             compilo_version: '14'
             acc_compilo_name: ''
             acc_compilo_version: ''
-            date: '20250829'
+            date: '20250830'
             args: '-DARCCORE_CXX_STANDARD=23'
             execute_tests: true
 
@@ -48,7 +48,7 @@ jobs:
             compilo_version: '21'
             acc_compilo_name: ''
             acc_compilo_version: ''
-            date: '20250829'
+            date: '20250830'
             args: '-DARCCORE_CXX_STANDARD=23'
             execute_tests: true
 
@@ -58,7 +58,7 @@ jobs:
             compilo_version: '14'
             acc_compilo_name: 'cuda'
             acc_compilo_version: '130'
-            date: '20250829'
+            date: '20250830'
             # Disable googletest with CUDA because it requires a GPU driver
             # CUDA 13 doesn't support arch < 80
             args: '-DARCCORE_CXX_STANDARD=20
@@ -72,7 +72,7 @@ jobs:
             compilo_version: '19'
             acc_compilo_name: 'cuda'
             acc_compilo_version: '130'
-            date: '20250829'
+            date: '20250830'
             # Disable googletest with CUDA because it requires a GPU driver
             # CUDA 13 doesn't support arch < 80
             args: '-DARCCORE_CXX_STANDARD=20
@@ -98,7 +98,7 @@ jobs:
             compilo_version: '14'
             acc_compilo_name: 'rocm'
             acc_compilo_version: '643'
-            date: '20250829'
+            date: '20250830'
             args: '-DARCCORE_CXX_STANDARD=20 -DARCANE_EXECUTE_ACCELERATOR_GOOGLETEST=OFF'
             execute_tests: false
 
@@ -108,7 +108,7 @@ jobs:
             compilo_version: '19'
             acc_compilo_name: 'rocm'
             acc_compilo_version: '643'
-            date: '20250829'
+            date: '20250830'
             args: '-DARCCORE_CXX_STANDARD=20 -DARCANE_EXECUTE_ACCELERATOR_GOOGLETEST=OFF'
             execute_tests: false
 
@@ -118,7 +118,7 @@ jobs:
             compilo_version: '19'
             acc_compilo_name: 'acpp'
             acc_compilo_version: ''
-            date: '20250829'
+            date: '20250830'
             args: '-DARCCORE_CXX_STANDARD=23'
             execute_tests: false
 
@@ -153,7 +153,7 @@ jobs:
           - { version: { short: 'F' }, mpi: { implementation: 'MPICH' } }
           - { version: { short: 'M' }, image: { short: 'U24_G14_CU130' } }
           - { version: { short: 'M' }, image: { short: 'U24_C19_CU130' } }
-          - { version: { short: 'M' }, image: { short: 'U24_G14_CUC21' } }
+          - { version: { short: 'M' }, image: { short: 'U24_G14_CUC19' } }
           - { version: { short: 'M' }, image: { short: 'U24_G14_RC643' } }
           - { version: { short: 'M' }, image: { short: 'U24_C19_RC643' } }
           - { version: { short: 'M' }, image: { short: 'U24_ACPP' } }
@@ -163,7 +163,7 @@ jobs:
     # La partie 'uses' est déterminée à la compilation, donc on ne peut pas mettre de variable ${{}}.
     uses: 'arcaneframework/gh_actions/.github/workflows/reusable_test_framework.yml@v3'
     with:
-      image: ghcr.io/arcaneframework/${{matrix.image.long}}:${{matrix.image.compilo_name}}_${{matrix.version.long}}_latest
+      image: ghcr.io/arcaneframework/${{matrix.image.long}}:${{matrix.image.compilo_name}}-${{matrix.image.compilo_version}}_${{matrix.version.long}}_${{matrix.image.date}}
       compilo_name: ${{ matrix.image.compilo_name }}
       compilo_version: ${{ matrix.image.compilo_version }}
       acc_compilo_name: ${{ matrix.image.acc_compilo_name }}

@@ -1,4 +1,4 @@
-name: '[Check] Build/Install/Test Arcane Framework (Ubuntu 22.04-24.04 / GCC 12-14 / CLang 16-19 / CUDA 12.6 / Minimal-Full)'
+name: '[Check] Build/Install/Test Arcane Framework (Ubuntu 22.04-24.04 / GCC 12-14 / CLang 16-21 / CUDA 13.0 / Minimal-Full)'
 
 on:
   push:
@@ -52,7 +52,7 @@ jobs:
             compilo_version: '14'
             acc_compilo_name: ''
             acc_compilo_version: ''
-            date: '20250829'
+            date: '20250830'
             args: '-DARCCORE_CXX_STANDARD=23'
             execute_tests: true
 
@@ -62,7 +62,7 @@ jobs:
             compilo_version: '21'
             acc_compilo_name: ''
             acc_compilo_version: ''
-            date: '20250829'
+            date: '20250830'
             args: '-DARCCORE_CXX_STANDARD=23'
             execute_tests: true
 
@@ -72,7 +72,7 @@ jobs:
             compilo_version: '14'
             acc_compilo_name: 'cuda'
             acc_compilo_version: '130'
-            date: '20250829'
+            date: '20250830'
             # Disable googletest with CUDA because it requires a GPU driver
             # CUDA 13 doesn't support arch < 80
             args: '-DARCCORE_CXX_STANDARD=20
@@ -104,11 +104,9 @@ jobs:
 
         exclude:
           - { version: { short: 'F' }, mpi: { implementation: 'MPICH' } }
-          - { version: { short: 'M' }, image: { short: 'U24_G13_CU126' } }
-          - { version: { short: 'M' }, image: { short: 'U24_C18_CU126' } }
-          - { version: { short: 'M' }, image: { short: 'U24_ACPP' } }
+          - { version: { short: 'M' }, image: { short: 'U24_G14_CU130' } }
           # Ce test est fait par build_tests_required.
-          - { image: { short: 'U24_C19' }, version: { short: 'M' }, config: { type: 'Check' }, mpi: { implementation: 'OMPI' } }
+          - { image: { short: 'U24_C21' }, version: { short: 'M' }, config: { type: 'Check' }, mpi: { implementation: 'OMPI' } }
 
 
     name: '[${{matrix.image.short}}_${{matrix.version.short}}]_${{matrix.mpi.implementation}}_${{matrix.config.type}}'
