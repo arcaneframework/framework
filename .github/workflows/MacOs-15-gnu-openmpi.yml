@@ -51,7 +51,9 @@ jobs:
       - name: Uninstall pre-installed dependencies
         continue-on-error: true
         run: |
-          brew uninstall cmake gcc open-mpi hdf5-mpi scotch dotnet petsc zstd ccache
+          for pkg in cmake gcc open-mpi hdf5-mpi scotch dotnet petsc zstd ccache; do
+            brew uninstall --force "$pkg" || true
+          done
 
       - name: Install dependencies
         run: |
