@@ -17,7 +17,7 @@ jobs:
     name: ubuntu coverity
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/arcaneframework/ubuntu-2404:gcc-14_full_20250829
+      image: ghcr.io/arcaneframework/ubuntu-2404:gcc_full_stable
     steps:
       - name: Display CPU Infos
         shell: bash
@@ -28,7 +28,7 @@ jobs:
         shell: bash
         run: |
           source /root/scripts/use_openmpi.sh
-          source /root/scripts/use_gcc-14.sh
+          source /root/scripts/use_gcc.sh
 
       - name: Checkout
         uses: actions/checkout@v5
