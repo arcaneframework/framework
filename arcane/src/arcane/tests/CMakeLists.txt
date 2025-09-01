@@ -561,8 +561,10 @@ arcane_add_test_message_passing_hybrid(parallelmng_sub_all NB_MPI 2 NB_SHM 2 ARG
 
 # ----------------------------------------------------------------------------
 
-ARCANE_ADD_TEST_PARALLEL(parallel testParallel-1.arc 4)
-ARCANE_ADD_TEST_PARALLEL(parallel2 testParallel-2.arc 4)
+arcane_add_test_parallel(parallel testParallel-1.arc 4)
+arcane_add_accelerator_test_parallel(parallel testParallel-1.arc 4)
+arcane_add_test_parallel(parallel2 testParallel-2.arc 4)
+arcane_add_accelerator_test_parallel(parallel2 testParallel-2.arc 4)
 arcane_add_test_parallel(parallel2_synchronize testParallel-synchronize1.arc 4)
 arcane_add_test_parallel_thread(parallel2_synchronize testParallel-synchronize1.arc 4)
 arcane_add_test_parallel(parallel2_synchronize_compare testParallel-synchronize1.arc 4 -We,ARCANE_AUTO_COMPARE_SYNCHRONIZE,3)
