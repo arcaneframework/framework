@@ -76,7 +76,7 @@
 #define VTK_FILE_EXT_PVTS	"pvts"	// Parallel structured vtkStructuredGrid
 #define VTK_FILE_EXT_PVTU	"pvtu"	// Parallel UNstructured vtkUnstructuredGrid
 
-#if VTK_VERSION_NUMBER >= 90000
+#if VTK_MAJOR_VERSION >= 9
 #define CURRENT_VTK_VERSION_LONG_TYPE VTK_LONG_LONG
 #include <vtkLongLongArray.h>
 using vtkLongArrayType = vtkLongLongArray;
