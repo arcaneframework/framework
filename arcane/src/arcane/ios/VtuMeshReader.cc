@@ -85,9 +85,6 @@ using vtkLongArrayType = vtkLongLongArray;
 using vtkLongArrayType = vtkLongArray;
 #endif
 
-#define VTK_FILE_EXT_VTPU	"vtpu"	// Parallel UNstructured vtkUnstructuredGrid
-#define VTK_FILE_EXT_PVTPU	"pvtpu"	// Parallel UNstructured vtkUnstructuredGrid
-
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
