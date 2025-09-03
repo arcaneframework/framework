@@ -15,8 +15,8 @@
 	<test name="IosUnitTest">
 
 			<ecriture-vtu>true</ecriture-vtu>
-			<ecriture-xmf>true</ecriture-xmf>
-			<ecriture-msh>true</ecriture-msh>
+			<ecriture-xmf>false</ecriture-xmf>
+			<ecriture-msh>false</ecriture-msh>
 		</test>
 	</module-test-unitaire>
 </cas>

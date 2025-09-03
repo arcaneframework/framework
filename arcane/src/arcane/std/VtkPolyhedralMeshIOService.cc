@@ -33,6 +33,12 @@
 #include <vtkPolyData.h>
 #include <vtkSmartPointer.h>
 #include <vtkCellArray.h>
+#include <vtkVersion.h>
+#if VTK_VERSION_NUMBER >= 900000000
+using vtkIdType_generic = vtkIdType const;
+#else
+using vtkIdType_generic = vtkIdType;
+#endif
 
 #include <arccore/base/Ref.h>
 #include <arccore/base/String.h>
@@ -952,7 +958,7 @@ faceUids()
   vtkIdType nb_face_estimation = 0;
   while (!cell_iter->IsDoneWithTraversal()) {
     vtkIdType cell_nb_faces = 0;
-    vtkIdType* points{ nullptr };
+    vtkIdType_generic * points{ nullptr };
     m_vtk_grid->GetFaceStream(cell_iter->GetCellId(), cell_nb_faces, points);
     nb_face_estimation += cell_nb_faces;
     cell_iter->GoToNextCell();
@@ -1649,7 +1655,7 @@ _printMeshInfos() const
   // Parse cells
   auto* cell_iter = m_vtk_grid->vtkDataSet::NewCellIterator();
   cell_iter->InitTraversal();
-  vtkIdType* cell_faces{ nullptr };
+  vtkIdType_generic* cell_faces{ nullptr };
   vtkIdType nb_faces = 0;
   while (!cell_iter->IsDoneWithTraversal()) {
     std::cout << "---- visiting cell id " << cell_iter->GetCellId() << std::endl;
@@ -1734,7 +1740,7 @@ _readfaceNodesInFaceMesh()
   m_face_node_uids_in_face_mesh.reserve(m_poly_data->GetNumberOfCells() * m_poly_data->GetMaxCellSize());
   m_poly_data->InitTraversal();
   vtkIdType face_nb_nodes;
-  vtkIdType* face_nodes;
+  vtkIdType_generic* face_nodes;
 
   auto face_nb_node_index = 0;
   Int64UniqueArray current_face_node_uids;

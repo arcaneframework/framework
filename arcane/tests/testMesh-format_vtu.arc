@@ -6,9 +6,13 @@
   <boucle-en-temps>UnitTest</boucle-en-temps>
  </arcane>
 
- <maillage>
-  <fichier>elements.vtu</fichier>
- </maillage>
+ <meshes>
+  <mesh>
+   <filename>elements.vtu</filename>
+   <cell-dimension-kind>multi-dimension</cell-dimension-kind>
+  </mesh>
+ </meshes>
+
 
  <module-test-unitaire>
   <test name="MeshUnitTest">
