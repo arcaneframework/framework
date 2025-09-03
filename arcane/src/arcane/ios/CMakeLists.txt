@@ -11,6 +11,7 @@ if(${VTK_PACKAGE_PREFIX}IOXdmf2_FOUND)
       XmfMeshWriter.cc
       XmfMeshReader.cc
     )
+    set (VTK_HAS_XDMF TRUE PARENT_SCOPE)
   endif ()
 endif()
 
