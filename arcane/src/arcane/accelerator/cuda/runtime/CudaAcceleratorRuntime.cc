@@ -44,6 +44,8 @@
 #include "arcane/accelerator/cuda/runtime/internal/Cupti.h"
 
 #include <iostream>
+#include <unordered_map>
+#include <mutex>
 
 #include <cuda.h>
 
@@ -83,6 +85,54 @@ void arcaneCheckCudaErrors(const TraceInfo& ti, CUresult e)
   ARCANE_FATAL("CUDA Error trace={0} e={1} name={2} message={3}",
                ti, e, error_name, error_message);
 }
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Map contenant l'occupation idéale pour un kernel donné.
+ *
+ * \note Pour l'instant, on ne supporte pas d'avoir une valeur non nulle
+ * pour la quantité de mémoire partagée.
+ *
+ * En cas d'erreur dans le calcul, on retourne une valeur de zéro.
+ */
+class OccupancyMap
+{
+ public:
+
+  Int32 getNbThreadPerBlock(const void* kernel_ptr)
+  {
+    std::scoped_lock lock(m_mutex);
+    auto x = m_nb_thread_per_block_map.find(kernel_ptr);
+    if (x != m_nb_thread_per_block_map.end())
+      return x->second;
+    int min_grid_size = 0;
+    int computed_block_size = 0;
+    int wanted_shared_memory = 0;
+    cudaError_t r = cudaOccupancyMaxPotentialBlockSize(&min_grid_size, &computed_block_size, kernel_ptr, wanted_shared_memory);
+    if (r != cudaSuccess)
+      computed_block_size = 0;
+    int num_block_0 = 0;
+    cudaOccupancyMaxActiveBlocksPerMultiprocessor(&num_block_0, kernel_ptr, 256, wanted_shared_memory);
+    int num_block_1 = 0;
+    cudaOccupancyMaxActiveBlocksPerMultiprocessor(&num_block_1, kernel_ptr, 1024, wanted_shared_memory);
+
+    cudaFuncAttributes func_attr;
+    cudaFuncGetAttributes(&func_attr, kernel_ptr);
+    const char* func_name = nullptr;
+    cudaFuncGetName(&func_name, kernel_ptr);
+    m_nb_thread_per_block_map[kernel_ptr] = computed_block_size;
+    std::cout << "ComputedBlockSize=" << computed_block_size << " n0=" << num_block_0 << " n1=" << num_block_1
+              << " min_grid_size=" << min_grid_size << " nb_reg=" << func_attr.numRegs
+              << " name=" << func_name << "\n";
+    return computed_block_size;
+  }
+
+ private:
+
+  std::unordered_map<const void*, Int32> m_nb_thread_per_block_map;
+  std::mutex m_mutex;
+};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -181,8 +231,8 @@ class CudaRunQueueStream
 
  private:
 
-  impl::IRunnerRuntime* m_runtime;
-  cudaStream_t m_cuda_stream;
+  impl::IRunnerRuntime* m_runtime = nullptr;
+  cudaStream_t m_cuda_stream = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -446,20 +496,16 @@ class CudaRunnerRuntime
   {
     if (!m_use_computed_occupancy)
       return orig_args;
-    int min_grid_size = 0;
-    int num_block = 0;
-    int computed_block_size = 0;
-    //TODO: check return value.
     if (wanted_shared_memory < 0)
       wanted_shared_memory = 0;
-    cudaOccupancyMaxPotentialBlockSize(&min_grid_size, &computed_block_size, kernel_ptr, wanted_shared_memory);
-    cudaOccupancyMaxActiveBlocksPerMultiprocessor(&num_block, kernel_ptr, orig_args.nbThreadPerBlock(), wanted_shared_memory);
-
+    // Pour l'instant, on ne fait pas de calcul si la mémoire partagée est non nulle.
+    if (wanted_shared_memory != 0)
+      return orig_args;
+    Int32 computed_block_size = m_occupancy_map.getNbThreadPerBlock(kernel_ptr);
+    if (computed_block_size == 0)
+      return orig_args;
     Int64 big_b = (total_loop_size + computed_block_size - 1) / computed_block_size;
     int blocks_per_grid = CheckedConvert::toInt32(big_b);
-    std::cout << "ComputedOccupancy orig_nb_block=" << orig_args.nbBlockPerGrid() << " orig_nb_thread=" << orig_args.nbThreadPerBlock()
-              << " grid = " << min_grid_size << " block_size = " << computed_block_size
-              << " num_block=" << num_block << " blocks_per_grid=" << blocks_per_grid << "\n";
     return { blocks_per_grid, computed_block_size };
   }
 
@@ -478,6 +524,7 @@ class CudaRunnerRuntime
   bool m_is_verbose = false;
   bool m_use_computed_occupancy = false;
   impl::DeviceInfoList m_device_info_list;
+  OccupancyMap m_occupancy_map;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -510,6 +557,7 @@ fillDevices(bool is_verbose)
     o << " warpSize = " << dp.warpSize << "\n";
     o << " memPitch = " << dp.memPitch << "\n";
     o << " maxThreadsPerBlock = " << dp.maxThreadsPerBlock << "\n";
+    o << " maxThreadsPerMultiProcessor = " << dp.maxThreadsPerMultiProcessor << "\n";
     o << " totalConstMem = " << dp.totalConstMem << "\n";
     o << " cooperativeLaunch = " << dp.cooperativeLaunch << "\n";
     o << " multiProcessorCount = " << dp.multiProcessorCount << "\n";
@@ -620,6 +668,7 @@ arcaneRegisterAcceleratorRuntimecuda(Arcane::Accelerator::RegisterRuntimeInfo& i
 {
   using namespace Arcane;
   using namespace Arcane::Accelerator::Cuda;
+  global_cuda_runtime.build();
   Arcane::Accelerator::impl::setUsingCUDARuntime(true);
   Arcane::Accelerator::impl::setCUDARunQueueRuntime(&global_cuda_runtime);
   initializeCudaMemoryAllocators();
