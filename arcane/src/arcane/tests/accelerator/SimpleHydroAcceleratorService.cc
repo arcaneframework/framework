@@ -15,6 +15,7 @@
 #include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/StringBuilder.h"
 #include "arcane/utils/ITraceMng.h"
+#include "arcane/utils/Profiling.h"
 
 #include "arcane/core/ISubDomain.h"
 #include "arcane/core/IMesh.h"
