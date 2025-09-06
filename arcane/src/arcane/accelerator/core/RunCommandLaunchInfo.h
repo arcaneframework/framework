@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* RunCommandLaunchInfo.h                                      (C) 2000-2024 */
+/* RunCommandLaunchInfo.h                                      (C) 2000-2025 */
 /*                                                                           */
 /* Informations pour l'exécution d'une 'RunCommand'.                         */
 /*---------------------------------------------------------------------------*/
@@ -15,7 +15,6 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/ConcurrencyUtils.h"
-#include "arcane/utils/Profiling.h"
 
 #include "arcane/accelerator/core/KernelLaunchArgs.h"
 
@@ -89,7 +88,7 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RunCommandLaunchInfo
   /*!
    * \brief Informations d'exécution de la boucle.
    *
-   * Ces informations ne sont valides si executionPolicy()==eExecutionPolicy::Thread
+   * Ces informations ne sont valides que si executionPolicy()==eExecutionPolicy::Thread
    * et si beginExecute() a été appelé.
    */
   const ForLoopRunInfo& loopRunInfo() const { return m_loop_run_info; }
@@ -110,13 +109,7 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RunCommandLaunchInfo
 
  private:
 
-  /*!
-   * \brief Informations dynamiques sur le nombre de block/thread/grille du noyau à lancer.
-   *
-   * Ces informations sont calculées à partir de méthodes fournies par le runtime accélérateur
-   * sous-jacent.
-   */
-  KernelLaunchArgs _threadBlockInfo(const void* func, Int64 shared_memory_size) const;
+  KernelLaunchArgs _threadBlockInfo(const void* func, Int32 shared_memory_size) const;
   NativeStream _internalNativeStream();
   void _doEndKernelLaunch();
   KernelLaunchArgs _computeKernelLaunchArgs() const;

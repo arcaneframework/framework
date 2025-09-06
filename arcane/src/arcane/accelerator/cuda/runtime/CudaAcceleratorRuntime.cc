@@ -23,11 +23,13 @@
 #include "arcane/utils/MemoryView.h"
 #include "arcane/utils/OStringStream.h"
 #include "arcane/utils/ValueConvert.h"
+#include "arcane/utils/CheckedConvert.h"
 #include "arcane/utils/internal/IMemoryRessourceMngInternal.h"
 
 #include "arcane/accelerator/core/RunQueueBuildInfo.h"
 #include "arcane/accelerator/core/Memory.h"
 #include "arcane/accelerator/core/DeviceInfoList.h"
+#include "arcane/accelerator/core/KernelLaunchArgs.h"
 
 #include "arcane/accelerator/core/internal/IRunnerRuntime.h"
 #include "arcane/accelerator/core/internal/RegisterRuntimeInfo.h"
@@ -53,6 +55,7 @@ using namespace Arccore;
 
 namespace Arcane::Accelerator::Cuda
 {
+using impl::KernelLaunchArgs;
 
 namespace
 {
@@ -436,14 +439,44 @@ class CudaRunnerRuntime
     finalizeCudaMemoryAllocators(tm);
   }
 
+  KernelLaunchArgs computeKernalLaunchArgs(const KernelLaunchArgs& orig_args,
+                                           const void* kernel_ptr,
+                                           Int64 total_loop_size,
+                                           Int32 wanted_shared_memory) override
+  {
+    if (!m_use_computed_occupancy)
+      return orig_args;
+    int min_grid_size = 0;
+    int num_block = 0;
+    int computed_block_size = 0;
+    //TODO: check return value.
+    if (wanted_shared_memory < 0)
+      wanted_shared_memory = 0;
+    cudaOccupancyMaxPotentialBlockSize(&min_grid_size, &computed_block_size, kernel_ptr, wanted_shared_memory);
+    cudaOccupancyMaxActiveBlocksPerMultiprocessor(&num_block, kernel_ptr, orig_args.nbThreadPerBlock(), wanted_shared_memory);
+
+    Int64 big_b = (total_loop_size + computed_block_size - 1) / computed_block_size;
+    int blocks_per_grid = CheckedConvert::toInt32(big_b);
+    std::cout << "ComputedOccupancy orig_nb_block=" << orig_args.nbBlockPerGrid() << " orig_nb_thread=" << orig_args.nbThreadPerBlock()
+              << " grid = " << min_grid_size << " block_size = " << computed_block_size
+              << " num_block=" << num_block << " blocks_per_grid=" << blocks_per_grid << "\n";
+    return { blocks_per_grid, computed_block_size };
+  }
+
  public:
 
   void fillDevices(bool is_verbose);
+  void build()
+  {
+    if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_USE_COMPUTED_OCCUPANCY", true))
+      m_use_computed_occupancy = v.value();
+  }
 
  private:
 
   Int64 m_nb_kernel_launched = 0;
   bool m_is_verbose = false;
+  bool m_use_computed_occupancy = false;
   impl::DeviceInfoList m_device_info_list;
 };
 

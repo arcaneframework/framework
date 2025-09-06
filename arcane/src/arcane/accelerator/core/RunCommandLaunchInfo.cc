@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* RunCommandLaunchInfo.cc                                     (C) 2000-2024 */
+/* RunCommandLaunchInfo.cc                                     (C) 2000-2025 */
 /*                                                                           */
 /* Informations pour l'exécution d'une 'RunCommand'.                         */
 /*---------------------------------------------------------------------------*/
@@ -14,12 +14,11 @@
 #include "arcane/accelerator/core/RunCommandLaunchInfo.h"
 
 #include "arcane/utils/CheckedConvert.h"
-#include "arcane/utils/PlatformUtils.h"
 
-#include "arcane/accelerator/core/RunQueue.h"
-#include "arcane/accelerator/core/internal/IRunQueueStream.h"
+#include "arcane/accelerator/core/RunCommand.h"
 #include "arcane/accelerator/core/internal/RunQueueImpl.h"
 #include "arcane/accelerator/core/NativeStream.h"
+#include "arcane/accelerator/core/internal/IRunnerRuntime.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -167,11 +166,19 @@ _computeLoopRunInfo()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
+/*!
+ * \brief Détermine la configuration du kernel.
+ *
+ * La configuration est dépendante du runtime sous-jacent. Pour CUDA et ROCM,
+ * il s'agit d'un nombre de blocs et de thread.
+ *
+ * Il est possible de calculer dynamiquement les valeurs optimales pour
+ * maximiser l'occupation.
+ */
 KernelLaunchArgs RunCommandLaunchInfo::
-_threadBlockInfo([[maybe_unused]] const void* func,[[maybe_unused]] Int64 shared_memory_size) const
+_threadBlockInfo(const void* func, Int32 shared_memory_size) const
 {
-  return m_kernel_launch_args;
+  return m_queue_impl->_internalRuntime()->computeKernalLaunchArgs(m_kernel_launch_args, func, totalLoopSize(), shared_memory_size);
 }
 
 /*---------------------------------------------------------------------------*/

@@ -13,7 +13,6 @@
 
 #include "arcane/accelerator/core/internal/RunQueueImpl.h"
 
-#include "arcane/utils/FatalErrorException.h"
 #include "arcane/utils/MemoryUtils.h"
 #include "arcane/utils/SmallArray.h"
 
@@ -23,9 +22,9 @@
 #include "arcane/accelerator/core/internal/RunnerImpl.h"
 #include "arcane/accelerator/core/internal/IRunQueueEventImpl.h"
 #include "arcane/accelerator/core/Runner.h"
-#include "arcane/accelerator/core/RunQueueBuildInfo.h"
 #include "arcane/accelerator/core/DeviceId.h"
 #include "arcane/accelerator/core/RunQueueEvent.h"
+#include "arcane/accelerator/core/KernelLaunchArgs.h"
 
 #include <unordered_set>
 

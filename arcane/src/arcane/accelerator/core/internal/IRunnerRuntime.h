@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IRunnerRuntime.h                                            (C) 2000-2024 */
+/* IRunnerRuntime.h                                            (C) 2000-2025 */
 /*                                                                           */
 /* Interface du runtime associé à une RunQueue.                              */
 /*---------------------------------------------------------------------------*/
@@ -59,6 +59,10 @@ class ARCANE_ACCELERATOR_CORE_EXPORT IRunnerRuntime
   virtual void pushProfilerRange([[maybe_unused]] const String& name, [[maybe_unused]] Int32 color_gdb) {}
   virtual void popProfilerRange() {}
   virtual void finalize(ITraceMng*) {}
+  virtual KernelLaunchArgs computeKernalLaunchArgs(const KernelLaunchArgs& orig_args,
+                                                   const void* kernel_ptr,
+                                                   Int64 total_loop_size,
+                                                   Int32 wanted_shared_memory);
 
  protected:
 

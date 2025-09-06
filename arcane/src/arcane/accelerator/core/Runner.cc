@@ -13,7 +13,6 @@
 
 #include "arcane/accelerator/core/Runner.h"
 
-#include "arcane/utils/ITraceMng.h"
 #include "arcane/utils/FatalErrorException.h"
 #include "arcane/utils/NotImplementedException.h"
 #include "arcane/utils/ArgumentException.h"
@@ -27,6 +26,7 @@
 #include "arcane/accelerator/core/DeviceMemoryInfo.h"
 #include "arcane/accelerator/core/IDeviceInfoList.h"
 #include "arcane/accelerator/core/PointerAttribute.h"
+#include "arcane/accelerator/core/KernelLaunchArgs.h"
 #include "arcane/accelerator/core/internal/IRunnerRuntime.h"
 #include "arcane/accelerator/core/internal/AcceleratorCoreGlobalInternal.h"
 #include "arcane/accelerator/core/internal/RunQueueImpl.h"
@@ -613,6 +613,18 @@ void impl::IRunnerRuntime::
 _fillPointerAttribute(PointerAttribute& attribute, const void* pointer)
 {
   attribute = PointerAttribute(pointer);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+impl::KernelLaunchArgs impl::IRunnerRuntime::
+computeKernalLaunchArgs(const KernelLaunchArgs& orig_args,
+                        [[maybe_unused]] const void* kernel_ptr,
+                        [[maybe_unused]] Int64 total_loop_size,
+                        [[maybe_unused]] Int32 wanted_shared_memory)
+{
+  return orig_args;
 }
 
 /*---------------------------------------------------------------------------*/
