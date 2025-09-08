@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* BitonicSort.h                                               (C) 2000-2024 */
+/* BitonicSort.h                                               (C) 2000-2025 */
 /*                                                                           */
-/* Algorithme de tri bitonique parallèle                                     */
+/* Algorithme de tri bi-tonique parallèle.                                   */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_PARALLEL_BITONICSORT_H
 #define ARCANE_CORE_PARALLEL_BITONICSORT_H
@@ -15,7 +15,6 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/TraceAccessor.h"
-#include "arcane/utils/Limits.h"
 #include "arcane/utils/UniqueArray.h"
 
 #include "arcane/core/IParallelSort.h"
@@ -67,12 +66,12 @@ class BitonicSortDefaultTraits
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Algorithme de tri bitonique parallèle.
+ * \brief Algorithme de tri bi-tonique parallèle.
  *
  * Le type de la clé peut être quelconque, mais il doit posséder un opérateur
  * de comparaison. Les caractéristiques nécessaires sont données par la
- * classe KeyTypeTraints. . L'implémentation fournit les
- * opérations pour les type Int32, Int64 et Real via la classe
+ * classe KeyTypeTraits. L'implémentation fournit les
+ * opérations pour les types Int32, Int64 et Real via la classe
  * \a BitonicSortDefaultTraits. Pour les autres types, il est nécessaire de
  * spécialiser cette classe.
  *
@@ -81,13 +80,13 @@ class BitonicSortDefaultTraits
  * et indices dans la liste d'origine de chaque élément de la clé via
  * les méthodes keyRangs() et keyIndexes(). Si ces informations ne sont
  * pas utiles, il est possible d'appeler setNeedIndexAndRank() pour
- * les désactiver ce qui permet d'accéler quelque peu le tri.
+ * les désactiver ce qui permet d'accélérer quelque peu le tri.
  *
  * Le tri se fait de telle sorte que les éléments sont triés dans l'ordre croissant
  * en commençant par le processeur de rang 0, puis de rang 1 et ainsi de
  * suite jusqu'à la fin. Par exemple, pour une liste de 5000 éléments répartis
  * sur 4 rangs, le processeur de rang 0 possédera à la fin du tri les 1250 éléments
- * les plus petits, le processeur de rang 1 les 1250 éléments suivantes et ainsi
+ * les plus petits, le processeur de rang 1 les 1250 éléments suivants et ainsi
  * de suite.
  *
  * Pour accélérer l'algorithme, il est préférable que tous les processeurs
@@ -104,6 +103,7 @@ class BitonicSort
  public:
 
   explicit BitonicSort(IParallelMng* parallel_mng);
+  explicit BitonicSort(IParallelMng* parallel_mng, const KeyTypeTraits& traits);
 
  public:
 
@@ -112,7 +112,7 @@ class BitonicSort
    *
    * Cette opération est collective.
    */
-  void sort(ConstArrayView<KeyType> keys) override;
+  inline void sort(ConstArrayView<KeyType> keys) override;
 
   //! Après un tri, retourne la liste des éléments de ce rang.
   ConstArrayView<KeyType> keys() const override { return m_keys; }
@@ -149,7 +149,7 @@ class BitonicSort
   IParallelMng* m_parallel_mng = nullptr;
   //! Nombre d'éléments locaux
   Int64 m_init_size = 0;
-  //! Nombre d'éléments locaux pour le tri bitonique
+  //! Nombre d'éléments locaux pour le tri bi-tonique
   Int64 m_size = 0;
 
   //! Indique si on souhaite les infos sur les rangs et index
@@ -157,6 +157,8 @@ class BitonicSort
 
   //! Statistiques sur le nombre de niveaux de messages
   Integer m_nb_merge = 0;
+
+  KeyTypeTraits m_traits;
 
  private:
 
