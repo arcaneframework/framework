@@ -1,13 +1,16 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* BitonicSortT.H                                              (C) 2000-2024 */
+/* BitonicSortT.H                                              (C) 2000-2025 */
 /*                                                                           */
-/* Algorithme de tri bitonique parallèle                                     */
+/* Algorithme de tri bi-tonique parallèle.                                   */
+/*---------------------------------------------------------------------------*/
+#ifndef ARCANE_CORE_PARALLEL_BITONICSORT_IMPL_H
+#define ARCANE_CORE_PARALLEL_BITONICSORT_IMPL_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -33,6 +36,14 @@ BitonicSort(IParallelMng* parallel_mng)
 {
 }
 
+template <typename KeyType, typename KeyTypeTraits> BitonicSort<KeyType, KeyTypeTraits>::
+BitonicSort(IParallelMng* parallel_mng, const KeyTypeTraits& traits)
+: TraceAccessor(parallel_mng->traceMng())
+, m_parallel_mng(parallel_mng)
+, m_traits(traits)
+{
+}
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -41,7 +52,7 @@ _init(ConstArrayView<KeyType> keys)
 {
   m_init_size = keys.size();
 
-  // Il est indispensable que tout les procs aient la même valeur
+  // Il est indispensable que tous les rangs aient la même valeur
   // de m_size
   m_size = m_parallel_mng->reduce(Parallel::ReduceMax, m_init_size);
 
@@ -61,7 +72,7 @@ _init(ConstArrayView<KeyType> keys)
 
   // Remplit la fin du tableau avec des valeurs non significatives
   // Afin que chaque processeur ait le meme nombre d'elements
-  KeyType max_value = KeyTypeTraits::maxValue();
+  KeyType max_value = m_traits.maxValue();
   for (Int64 i = m_init_size; i < m_size; i++) {
     m_keys[i] = max_value;
     m_key_indexes[i] = -1;
@@ -72,7 +83,7 @@ _init(ConstArrayView<KeyType> keys)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
-  \brief Tri bitonique de la variable \a m_key
+  \brief Tri bi-tonique de la variable \a m_key
 
   En sortie de l'appel, la variable key est entièrement classée
   par ordre croissant : les premiers éléments sont situés
@@ -123,7 +134,7 @@ sort(ConstArrayView<KeyType> keys)
   // on arrête la liste.
   // TODO: partir de la fin
   for (Integer i = 0; i < m_size; ++i) {
-    if (!KeyTypeTraits::isValid(m_keys[i])) {
+    if (!m_traits.isValid(m_keys[i])) {
       m_size = i;
       break;
     }
@@ -139,7 +150,7 @@ sort(ConstArrayView<KeyType> keys)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
-  \brief Tri bitonique de la variable \a key.
+  \brief Tri bi-tonique de la variable \a key.
 
   En sortie de l'appel, la variable key est entièrement classée
   par ordre croissant : les premiers éléments sont situés
@@ -171,7 +182,7 @@ _mergeLevels(Int32 begin, Int32 size)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Etage séparateur de l'algorithme de tri bitonique
+ * \brief Etage séparateur de l'algorithme de tri bi-tonique
  */
 template <typename KeyType, typename KeyTypeTraits> void BitonicSort<KeyType, KeyTypeTraits>::
 _separator(Int32 begin, Int32 size)
@@ -183,13 +194,13 @@ _separator(Int32 begin, Int32 size)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Fusion des listes de deux processeurs .
+ * \brief Fusion des listes de deux processeurs.
  *
  \param iproc1 processeur de plus faible Id dont on fusionne la liste
  \param iproc2 processeur de plus fort Id dont on fusionne la liste
 
  * Cette opération est la brique élémentaire de 
- * l'algorithme de tri fusion bitonique. En entrée, elle
+ * l'algorithme de tri fusion bi-tonique. En entrée, elle
  * prend les numéros de deux processeurs avec iproc1<iproc2.
  * En sortie, les  tableaux m_key de ces deux processeurs
  * sont triés : les plus petits éléments sont triés par ordre croissant
@@ -226,13 +237,13 @@ _mergeProcessors(Int32 iproc1, Int32 iproc2)
     //envoi de la liste au proc 1
     UniqueArray<KeyType> send_keys(m_keys);
     UniqueArray<Request> requests;
-    requests.add(KeyTypeTraits::send(m_parallel_mng, iproc1, send_keys));
+    requests.add(m_traits.send(m_parallel_mng, iproc1, send_keys));
     if (is_want_index_rank) {
       requests.add(m_parallel_mng->send(m_key_indexes, iproc1, false));
       requests.add(m_parallel_mng->send(m_key_ranks, iproc1, false));
     }
     //reception de la fin de la liste fusionnee par le proc1
-    requests.add(KeyTypeTraits::recv(m_parallel_mng, iproc1, m_keys));
+    requests.add(m_traits.recv(m_parallel_mng, iproc1, m_keys));
     if (is_want_index_rank) {
       requests.add(m_parallel_mng->recv(m_key_indexes, iproc1, false));
       requests.add(m_parallel_mng->recv(m_key_ranks, iproc1, false));
@@ -257,7 +268,7 @@ _mergeProcessors(Int32 iproc1, Int32 iproc2)
       buf2_local_id.resize(buf_size);
     }
 
-    Request recv_request = KeyTypeTraits::recv(m_parallel_mng, iproc2, buf2);
+    Request recv_request = m_traits.recv(m_parallel_mng, iproc2, buf2);
     m_parallel_mng->waitAllRequests(ArrayView<Request>(1, &recv_request));
     if (is_want_index_rank) {
       m_parallel_mng->recv(buf2_local_id, iproc2);
@@ -265,7 +276,7 @@ _mergeProcessors(Int32 iproc1, Int32 iproc2)
     }
 
     //à remplacer par le plus grand nombre representable par un Integer
-    buf2.add(KeyTypeTraits::maxValue());
+    buf2.add(m_traits.maxValue());
 
     // allocation d'un buffer de travail pour la fusion des deux listes
     Int64 total_size = m_size + buf_size;
@@ -287,7 +298,7 @@ _mergeProcessors(Int32 iproc1, Int32 iproc2)
     Int64 cursor1 = 0;
     Int64 cursor2 = 0;
     for (Int64 i = 0; i < total_size; ++i) {
-      if (cursor1 >= m_size || (KeyTypeTraits::compareLess(buf2[cursor2], m_keys[cursor1]) && cursor2 < buf_size)) {
+      if (cursor1 >= m_size || (m_traits.compareLess(buf2[cursor2], m_keys[cursor1]) && cursor2 < buf_size)) {
         buf_merge[i] = buf2[cursor2];
         if (is_want_index_rank) {
           buf_local_id_merge[i] = buf2_local_id[cursor2];
@@ -314,7 +325,7 @@ _mergeProcessors(Int32 iproc1, Int32 iproc2)
         buf2_proc[ii] = buf_proc_merge[m_size + ii];
       }
     }
-    Request send_request = KeyTypeTraits::send(m_parallel_mng, iproc2, buf2);
+    Request send_request = m_traits.send(m_parallel_mng, iproc2, buf2);
     m_parallel_mng->waitAllRequests(ArrayView<Request>(1, &send_request));
     if (is_want_index_rank) {
       m_parallel_mng->send(buf2_local_id, iproc2);
@@ -335,12 +346,13 @@ _mergeProcessors(Int32 iproc1, Int32 iproc2)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
-  \brief Tri par tas en local de la variable \a m_key.
-  
-  En sortie de l'appel, la variable est classée
-  par ordre croissant à l'intérieur de chaque processeur
+ * \brief Tri par tas en local de la variable \a m_key.
+ *
+ * En sortie de l'appel, la variable est classée
+ * par ordre croissant à l'intérieur de chaque processeur.
  */
-template <typename KeyType, typename KeyTypeTraits> void BitonicSort<KeyType, KeyTypeTraits>::
+template <typename KeyType, typename KeyTypeTraits>
+void BitonicSort<KeyType, KeyTypeTraits>::
 _localHeapSort()
 {
   // Cas particulier d'une liste réduite à zero ou un element
@@ -382,9 +394,9 @@ _localHeapSort()
     i = l;
     j = l + l + 1;
     while (j <= ir) {
-      if (j < ir && KeyTypeTraits::compareLess(m_keys[j], m_keys[j + 1]))
+      if (j < ir && m_traits.compareLess(m_keys[j], m_keys[j + 1]))
         ++j;
-      if (KeyTypeTraits::compareLess(rra, m_keys[j])) {
+      if (m_traits.compareLess(rra, m_keys[j])) {
         m_keys[i] = m_keys[j];
         m_key_indexes[i] = m_key_indexes[j];
         m_key_ranks[i] = m_key_ranks[j];
@@ -408,3 +420,5 @@ _localHeapSort()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+#endif
