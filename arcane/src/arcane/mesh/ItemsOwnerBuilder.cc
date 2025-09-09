@@ -149,7 +149,7 @@ class ItemsOwnerBuilderImpl::ItemOwnerInfoSortTraits
 {
  public:
 
-  ItemOwnerInfoSortTraits(bool use_cell_uid_to_sort)
+  explicit ItemOwnerInfoSortTraits(bool use_cell_uid_to_sort)
   : m_use_cell_uid_to_sort(use_cell_uid_to_sort)
   {}
 
