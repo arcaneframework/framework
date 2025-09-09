@@ -28,7 +28,7 @@ env:
   CM_BUILD_TYPE: Release
   CM_CCACHE_OPTS: "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache"
   # CTest
-  CT_OPTS: "--parallel --timeout 60 --output-on-failure ${{ github.event.inputs.ctest_options }}"
+  CT_OPTS: "--parallel 4 --timeout 60 --output-on-failure ${{ github.event.inputs.ctest_options }}"
   # OpenMPI
   OMPI_MCA_rmaps_base_oversubscribe : true
   # To remove test output directory to reduce disk usage
