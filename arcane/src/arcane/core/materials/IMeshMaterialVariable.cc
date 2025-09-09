@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IMeshMaterialVariable.cc                                    (C) 2000-2024 */
+/* IMeshMaterialVariable.cc                                    (C) 2000-2025 */
 /*                                                                           */
 /* Interface des variables matériaux.                                        */
 /*---------------------------------------------------------------------------*/
@@ -21,10 +21,9 @@
 #include "arcane/core/materials/MaterialVariableBuildInfo.h"
 #include "arcane/core/materials/IMeshMaterialMng.h"
 #include "arcane/core/materials/IMeshMaterialVariableFactoryMng.h"
-#include "arcane/core/materials/internal/IMeshMaterialVariableInternal.h"
 
 #include "arcane/core/VariableDataTypeTraits.h"
-
+#include "arcane/core/IVariable.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -49,8 +48,13 @@ _buildVarTypeInfo(MatVarSpace space)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-template<typename TrueType> TrueType*
+/*!
+ * \brief Retourne une variable associée à un constituant.
+ *
+ * Retourne la variable constituant à partir des informations données par
+ * \a v \et \a mvs. Si la variable n'existe pas encore, elle est créée.
+ */
+template <typename TrueType> TrueType*
 MeshMaterialVariableBuildTraits<TrueType>::
 getVariableReference(const MaterialVariableBuildInfo& v,MatVarSpace mvs)
 {
@@ -60,8 +64,8 @@ getVariableReference(const MaterialVariableBuildInfo& v,MatVarSpace mvs)
   if (mesh_handle.isNull())
     ARCANE_FATAL("No mesh handle for material variable");
 
+  // Si le gestionnaire de matériaux n'existe pas encore, on le créé.
   IMeshMaterialMng* mat_mng = v.materialMng();
-
   // TODO: regarder si verrou necessaire
   if (!mat_mng)
     mat_mng = IMeshMaterialMng::getReference(mesh_handle,true);
@@ -71,6 +75,25 @@ getVariableReference(const MaterialVariableBuildInfo& v,MatVarSpace mvs)
 
   auto* true_var = dynamic_cast<TrueType*>(var);
   ARCANE_CHECK_POINTER(true_var);
+  return true_var;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Retourne le type concret d'une variable constituant.
+ *
+ * Converti \a var en le type \a TrueType. Si ce n'est pas possible, lève
+ * une exception.
+ */
+template <typename TrueType> TrueType*
+MeshMaterialVariableBuildTraits<TrueType>::
+getVariableReference(IMeshMaterialVariable* var)
+{
+  ARCANE_CHECK_POINTER(var);
+  auto* true_var = dynamic_cast<TrueType*>(var);
+  if (!true_var)
+    ARCANE_FATAL("Can not convert variable '{0}' in the template type of this class", var->globalVariable()->fullName());
   return true_var;
 }
 

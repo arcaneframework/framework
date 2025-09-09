@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshMaterialVariableRef.cc                                  (C) 2000-2024 */
+/* MeshMaterialVariableRef.cc                                  (C) 2000-2025 */
 /*                                                                           */
 /* Référence à une variable sur un matériau du maillage.                     */
 /*---------------------------------------------------------------------------*/
@@ -35,11 +35,6 @@ namespace Arcane::Materials
 
 MeshMaterialVariableRef::
 MeshMaterialVariableRef()
-: m_material_variable(nullptr)
-, m_previous_reference(nullptr)
-, m_next_reference(nullptr)
-, m_global_variable(nullptr)
-, m_is_registered(false)
 {
 }
 
@@ -262,7 +257,6 @@ CellMaterialVariableScalarRef(const VariableBuildInfo& vb)
 template<typename DataType> CellMaterialVariableScalarRef<DataType>::
 CellMaterialVariableScalarRef(const MaterialVariableBuildInfo& vb)
 : m_private_part(PrivatePartType::BuilderType::getVariableReference(vb,MatVarSpace::MaterialAndEnvironment))
-, m_value(nullptr)
 {
   _init();
 }
@@ -273,12 +267,25 @@ CellMaterialVariableScalarRef(const MaterialVariableBuildInfo& vb)
 template<typename DataType>  CellMaterialVariableScalarRef<DataType>::
 CellMaterialVariableScalarRef(const CellMaterialVariableScalarRef<DataType>& rhs)
 : m_private_part(rhs.m_private_part)
-, m_value(nullptr)
 {
   // Il faut incrémenter manuellement le compteur de référence car normalement
   // cela est fait dans getReference() mais ici on ne l'appelle pas
   if (m_private_part)
     m_private_part->incrementReference();
+
+  _init();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<typename DataType>  CellMaterialVariableScalarRef<DataType>::
+CellMaterialVariableScalarRef(IMeshMaterialVariable* var)
+: m_private_part(PrivatePartType::BuilderType::getVariableReference(var))
+{
+  // Il faut incrémenter manuellement le compteur de référence car normalement
+  // cela est fait dans getReference() mais ici on ne l'appelle pas
+  m_private_part->incrementReference();
 
   _init();
 }
@@ -570,8 +577,21 @@ CellMaterialVariableArrayRef(const VariableBuildInfo& vb)
 template<typename DataType> CellMaterialVariableArrayRef<DataType>::
 CellMaterialVariableArrayRef(const MaterialVariableBuildInfo& vb)
 : m_private_part(PrivatePartType::BuilderType::getVariableReference(vb,MatVarSpace::MaterialAndEnvironment))
-, m_value(nullptr)
 {
+  _init();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<typename DataType> CellMaterialVariableArrayRef<DataType>::
+CellMaterialVariableArrayRef(IMeshMaterialVariable* var)
+: m_private_part(PrivatePartType::BuilderType::getVariableReference(var))
+{
+  // Il faut incrémenter manuellement le compteur de référence car normalement
+  // cela est fait dans getReference() mais ici on ne l'appelle pas
+  m_private_part->incrementReference();
+
   _init();
 }
 
