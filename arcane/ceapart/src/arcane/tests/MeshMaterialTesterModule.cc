@@ -1600,13 +1600,46 @@ _checkCreation()
 
   info() << "CHECK CREATE N=" << n;
 
+  ValueChecker vc(A_FUNCINFO);
   {
     MaterialVariableCellReal mat_pressure(MaterialVariableBuildInfo(m_material_mng,"Pressure"));
+    MaterialVariableCellArrayReal mat_pressure_array(MaterialVariableBuildInfo(m_material_mng, "PressureArray"));
+    Int32 nb_dim2 = 5;
+    mat_pressure_array.resize(nb_dim2);
     mat_pressure.fill(0.0);
     ENUMERATE_MATCELL(imatcell,m_mat1){
       MatCell mmc = *imatcell;
       mat_pressure[mmc] += 0.2;
+      for (Int32 i = 0; i < nb_dim2; ++i)
+        mat_pressure_array[mmc][i] = 0.3 + static_cast<Real>(i);
     }
+    // Teste la création à partir d'une variable existante.
+    MaterialVariableCellReal mat_pressure_ref2(mat_pressure.materialVariable());
+    MaterialVariableCellArrayReal mat_pressure_array_ref2(mat_pressure_array.materialVariable());
+    ENUMERATE_MATCELL (imatcell, m_mat1) {
+      MatCell mmc = *imatcell;
+      vc.areEqual(mat_pressure[mmc], mat_pressure_ref2[mmc], "Bad Pressure");
+      for (Int32 i = 0; i < nb_dim2; ++i)
+        vc.areEqual(mat_pressure_array[mmc][i], mat_pressure_array_ref2[mmc][i], "Bad Pressure Array");
+    }
+    bool is_ok = false;
+    try{
+      MaterialVariableCellInt32 mat_pressure_ref3(mat_pressure.materialVariable());
+    }
+    catch(const FatalErrorException& ex){
+      is_ok = true;
+    }
+    if (!is_ok)
+      ARCANE_FATAL("Should launch exception for 'MaterialVariableCellInt32' conversion");
+    is_ok = false;
+    try{
+      MaterialVariableCellArrayInt32 mat_pressure_ref3(mat_pressure.materialVariable());
+    }
+    catch(const FatalErrorException& ex){
+      is_ok = true;
+    }
+    if (!is_ok)
+      ARCANE_FATAL("Should launch exception for 'MaterialVariableCellArrayInt32' conversion");
   }
 }
 
