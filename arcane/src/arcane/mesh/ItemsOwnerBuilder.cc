@@ -13,12 +13,9 @@
 
 #include "arcane/mesh/ItemsOwnerBuilder.h"
 
-#include "arcane/utils/FatalErrorException.h"
 #include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/SmallArray.h"
-#include "arcane/utils/TraceAccessor.h"
 #include "arcane/utils/HashTableMap2.h"
-#include "arcane/utils/ValueConvert.h"
 
 #include "arcane/core/IParallelMng.h"
 #include "arcane/core/ParallelMngUtils.h"
@@ -127,6 +124,14 @@ class ItemsOwnerBuilderImpl
   DynamicMesh* m_mesh = nullptr;
   Int32 m_verbose_level = 0;
   UniqueArray<ItemOwnerInfo> m_items_owner_info;
+  /*!
+   * \brief Indique comment effectuer le tri.
+   *
+   * Si vrai, on utilise la maille de plus petit uniqueId()
+   * pour le tri. Sinon, c'est le plus petit rang. Cela servira
+   * à déterminer qui sera le propriétaire d'une entité.
+   */
+  bool m_use_cell_uid_to_sort = true;
 
  private:
 
@@ -144,7 +149,13 @@ class ItemsOwnerBuilderImpl::ItemOwnerInfoSortTraits
 {
  public:
 
-  static bool compareLess(const ItemOwnerInfo& k1, const ItemOwnerInfo& k2)
+  ItemOwnerInfoSortTraits(bool use_cell_uid_to_sort)
+  : m_use_cell_uid_to_sort(use_cell_uid_to_sort)
+  {}
+
+ public:
+
+  bool compareLess(const ItemOwnerInfo& k1, const ItemOwnerInfo& k2) const
   {
     if (k1.m_first_node_uid < k2.m_first_node_uid)
       return true;
@@ -156,16 +167,28 @@ class ItemsOwnerBuilderImpl::ItemOwnerInfoSortTraits
     if (k1.m_item_uid > k2.m_item_uid)
       return false;
 
-    if (k1.m_cell_uid < k2.m_cell_uid)
-      return true;
-    if (k1.m_cell_uid > k2.m_cell_uid)
-      return false;
+    if (m_use_cell_uid_to_sort) {
+      if (k1.m_cell_uid < k2.m_cell_uid)
+        return true;
+      if (k1.m_cell_uid > k2.m_cell_uid)
+        return false;
 
-    if (k1.m_item_sender_rank < k2.m_item_sender_rank)
-      return true;
-    if (k1.m_item_sender_rank > k2.m_item_sender_rank)
-      return false;
+      if (k1.m_item_sender_rank < k2.m_item_sender_rank)
+        return true;
+      if (k1.m_item_sender_rank > k2.m_item_sender_rank)
+        return false;
+    }
+    else {
+      if (k1.m_item_sender_rank < k2.m_item_sender_rank)
+        return true;
+      if (k1.m_item_sender_rank > k2.m_item_sender_rank)
+        return false;
 
+      if (k1.m_cell_uid < k2.m_cell_uid)
+        return true;
+      if (k1.m_cell_uid > k2.m_cell_uid)
+        return false;
+    }
     // ke.node2_uid == k2.node2_uid
     return (k1.m_cell_owner < k2.m_cell_owner);
   }
@@ -192,6 +215,10 @@ class ItemsOwnerBuilderImpl::ItemOwnerInfoSortTraits
   {
     return fsi.m_item_uid != INT64_MAX;
   }
+
+ private:
+
+  bool m_use_cell_uid_to_sort = true;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -204,12 +231,16 @@ ItemsOwnerBuilderImpl::
 ItemsOwnerBuilderImpl(IMesh* mesh)
 : TraceAccessor(mesh->traceMng())
 {
-  DynamicMesh* dm = dynamic_cast<DynamicMesh*>(mesh);
+  auto* dm = dynamic_cast<DynamicMesh*>(mesh);
   if (!dm)
     ARCANE_FATAL("Mesh is not an instance of 'DynamicMesh'");
   m_mesh = dm;
   if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_ITEMS_OWNER_BUILDER_IMPL_DEBUG_LEVEL", true))
     m_verbose_level = v.value();
+  // Indique si on trie en fonction de la maille de plus petit uniqueId()
+  // ou en fonction du plus petit rang.
+  if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_ITEMS_OWNER_BUILDER_USE_RANK", true))
+    m_use_cell_uid_to_sort = !v.value();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -409,7 +440,8 @@ _sortInfos()
 {
   IParallelMng* pm = m_mesh->parallelMng();
   const Int32 verbose_level = m_verbose_level;
-  Parallel::BitonicSort<ItemOwnerInfo, ItemOwnerInfoSortTraits> items_sorter(pm);
+  ItemOwnerInfoSortTraits sort_traits(m_use_cell_uid_to_sort);
+  Parallel::BitonicSort<ItemOwnerInfo, ItemOwnerInfoSortTraits> items_sorter(pm, sort_traits);
   items_sorter.setNeedIndexAndRank(false);
   Real sort_begin_time = platform::getRealTime();
   items_sorter.sort(m_items_owner_info);
@@ -519,7 +551,10 @@ _processSortedInfos(ItemInternalMap& items_map)
     // Si l'id courant est différent du précédent, on commence une nouvelle liste.
     if (item_uid != current_item_uid) {
       current_item_uid = item_uid;
-      current_item_owner = first_ioi->m_cell_owner;
+      if (m_use_cell_uid_to_sort)
+        current_item_owner = first_ioi->m_cell_owner;
+      else
+        current_item_owner = first_ioi->m_item_sender_rank;
       if (verbose_level >= 2)
         info() << "SetOwner from sorted index=" << index << " item_uid=" << current_item_uid << " new_owner=" << current_item_owner;
     }
