@@ -49,22 +49,35 @@
 
 #else // ARCANE_USE_ONETBB
 
-// NOTE GG: depuis mars 2019, la version 2018+ des TBB est obligatoire.
+// NOTE GG: depuis mars 2019, la version 2018.3+ des TBB est obligatoire.
+// C'est celle qui introduit 'blocked_rangeNd.h'
 #include <tbb/tbb.h>
+#if __has_include(<tbb/blocked_rangeNd.h>)
 #include <tbb/blocked_rangeNd.h>
-/*
- * Maintenant vérifie que la version est au moins 2018.
- */
-#if (TBB_VERSION_MAJOR < 4) || (TBB_VERSION_MAJOR==4 && TBB_VERSION_MINOR<2)
-#define ARCANE_OLD_TBB
 #endif
 
-#if (TBB_VERSION_MAJOR<2018)
+/*
+ * Maintenant vérifie que la version est au moins 2018.3.
+ */
+
+// Pour TBB 2018, la valeur de TBB_VERSION_MINOR vaut toujours 0 même
+// pour TBB 2018 Update 3. On ne peut donc pas utiliser TBB_VERSION_MINO
+// pour savoir exactement quelle version de TBB 2018 on utilise.
+// A la place on utilise TBB_INTERFACE_VERSION qui est incrémenté
+// quand l'interface change. Dans notre cas pour la version 2018.3 elle
+// vaut 10003. On indique donc que la version de TBB est trop ancienne
+// si TBB_INTERFACE_VERSION est plus petit que 10003
+#if (TBB_INTERFACE_VERSION < 10003)
 #define ARCANE_OLD_TBB
 #endif
 
 #ifdef ARCANE_OLD_TBB
-#error "Your version of TBB is tool old. TBB 2018+ is required. Please disable TBB in configuration"
+#  if defined(__GNUG__)
+#    define ARCANE_STR_HELPER(x) #x
+#    define ARCANE_STR(x) ARCANE_STR_HELPER(x)
+#    pragma message "Your version of TBB is : " ARCANE_STR(TBB_VERSION_MAJOR) "." ARCANE_STR(TBB_VERSION_MINOR)
+#  endif
+#  error "Your version of TBB is too old. TBB 2018.3+ is required. Please disable TBB in configuration using -DCMAKE_DISABLE_FIND_PACKAGE_TBB=TRUE"
 #endif
 
 #include <thread>
