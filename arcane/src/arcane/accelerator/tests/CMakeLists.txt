@@ -1,23 +1,35 @@
 ﻿set(SOURCE_FILES
   TestInit.cc
   TestCommon.cc
-  TestPartition_Kernel.cc
   TestPartition.cc
+)
+
+set(ACCELERATOR_FILES
   TestReduce.cc
+  TestPartition_Kernel.cc
+  TestVirtualMethod.cc
+  TestVirtualMethod_Kernel.cc
 )
 
 arcane_add_component_test_executable(accelerator
-  FILES ${SOURCE_FILES}
-  )
-arcane_accelerator_add_source_files(TestReduce.cc TestPartition_Kernel.cc)
+  FILES ${SOURCE_FILES} ${ACCELERATOR_FILES}
+)
+arcane_accelerator_add_source_files(${ACCELERATOR_FILES})
 
 target_link_libraries(arcane_accelerator.tests PUBLIC arcane_accelerator GTest::GTest GTest::Main)
+
+# Cela est nécessaire pour utiliser un kernel défini dans une autre
+# unité de compilation
+if (ARCANE_ACCELERATOR_MODE STREQUAL "CUDA" )
+  set(CMAKE_CUDA_SEPARABLE_COMPILATION ON)
+endif()
 
 target_link_libraries(arcane_accelerator.tests PRIVATE
   "$<TARGET_NAME_IF_EXISTS:arcane_accelerator_cuda_runtime>"
   "$<TARGET_NAME_IF_EXISTS:arcane_accelerator_hip_runtime>"
   "$<TARGET_NAME_IF_EXISTS:arcane_accelerator_sycl_runtime>"
 )
+set_property(TARGET arcane_accelerator.tests PROPERTY CUDA_SEPARABLE_COMPILATION ON)
 
 gtest_discover_tests(arcane_accelerator.tests DISCOVERY_TIMEOUT 30)
 
