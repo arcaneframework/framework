@@ -13,6 +13,7 @@
 
 #include "arcane/core/ItemTypeMng.h"
 
+#include "ItemTypeId.h"
 #include "arcane/utils/Iostream.h"
 #include "arcane/utils/String.h"
 #include "arcane/utils/PlatformUtils.h"
@@ -251,12 +252,32 @@ _buildTypes(IMesh* mesh, IParallelSuperMng* parallel_mng, ITraceMng* trace)
 
   // Quad8
   {
-    // TODO: Pour l'instant comme quad4
     ItemTypeInfoBuilder* type = m_types_buffer->allocOne();
     m_types[IT_Quad8] = type;
 
     type->setInfos(this, IT_Quad8, "Quad8", Dimension::Dim2, 8, 4, 4);
     type->setOrder(2, ITI_Quad4);
+
+    type->addFaceLine3(0, 0, 1, 4);
+    type->addFaceLine3(1, 1, 2, 5);
+    type->addFaceLine3(2, 2, 3, 6);
+    type->addFaceLine3(3, 3, 0, 7);
+
+    type->addEdge(0, 0, 1, 3, 1);
+    type->addEdge(1, 1, 2, 0, 2);
+    type->addEdge(2, 2, 3, 1, 3);
+    type->addEdge(3, 3, 0, 2, 0);
+  }
+
+  // Quad9
+  {
+    // Comme Quad8 mais avec un noeud en plus au milieu du quadrangle
+    ItemTypeInfoBuilder* type = m_types_buffer->allocOne();
+    m_types[IT_Quad9] = type;
+
+    type->setInfos(this, IT_Quad9, "Quad9", Dimension::Dim2, 9, 4, 4);
+    type->setOrder(2, ITI_Quad4);
+    type->setHasCenterNode(true);
 
     type->addFaceLine3(0, 0, 1, 4);
     type->addFaceLine3(1, 1, 2, 5);
@@ -369,6 +390,37 @@ _buildTypes(IMesh* mesh, IParallelSuperMng* parallel_mng, ITraceMng* trace)
     type->addEdge(11, 7, 4, 3, 1);
   }
 
+  // Hexaedron27
+  {
+    // Pour l'instant comme Hexaedron8
+    ItemTypeInfoBuilder* type = m_types_buffer->allocOne();
+    m_types[IT_Hexaedron27] = type;
+
+    type->setInfos(this, IT_Hexaedron27, "Hexaedron27", Dimension::Dim3, 27, 12, 6);
+    type->setOrder(2, ITI_Hexaedron8);
+    type->setHasCenterNode(true);
+
+    type->addFaceQuad9(0, 0, 3, 2, 1, 11, 10, 9, 8, 24);
+    type->addFaceQuad9(1, 0, 4, 7, 3, 16, 15, 19, 11, 20);
+    type->addFaceQuad9(2, 0, 1, 5, 4, 8, 17, 12, 16, 22);
+    type->addFaceQuad9(3, 4, 5, 6, 7, 12, 13, 14, 15, 25);
+    type->addFaceQuad9(4, 1, 2, 6, 5, 9, 18, 13, 17, 21);
+    type->addFaceQuad9(5, 2, 3, 7, 6, 10, 19, 14, 18, 23);
+
+    type->addEdge(0, 0, 1, 2, 0);
+    type->addEdge(1, 1, 2, 4, 0);
+    type->addEdge(2, 2, 3, 5, 0);
+    type->addEdge(3, 3, 0, 1, 0);
+    type->addEdge(4, 0, 4, 1, 2);
+    type->addEdge(5, 1, 5, 2, 4);
+    type->addEdge(6, 2, 6, 4, 5);
+    type->addEdge(7, 3, 7, 5, 1);
+    type->addEdge(8, 4, 5, 3, 2);
+    type->addEdge(9, 5, 6, 3, 4);
+    type->addEdge(10, 6, 7, 3, 5);
+    type->addEdge(11, 7, 4, 3, 1);
+  }
+
   // Pyramid5
   {
     ItemTypeInfoBuilder* type = m_types_buffer->allocOne();
@@ -392,6 +444,29 @@ _buildTypes(IMesh* mesh, IParallelSuperMng* parallel_mng, ITraceMng* trace)
     type->addEdge(7, 3, 4, 4, 1);
   }
 
+  // Pyramid13
+  {
+    ItemTypeInfoBuilder* type = m_types_buffer->allocOne();
+    m_types[IT_Pyramid13] = type;
+    type->setOrder(2, ITI_Pyramid5);
+    type->setInfos(this, IT_Pyramid13, "Pyramid13", Dimension::Dim3, 13, 8, 5);
+
+    type->addFaceQuad8(0, 0, 3, 2, 1, 5, 6, 7, 8);
+    type->addFaceTriangle6(1, 0, 4, 3, 9, 12, 8);
+    type->addFaceTriangle6(2, 0, 1, 4, 5, 10, 9);
+    type->addFaceTriangle6(3, 1, 2, 4, 6, 11, 10);
+    type->addFaceTriangle6(4, 2, 3, 4, 7, 12, 11);
+
+    type->addEdge(0, 0, 1, 2, 0);
+    type->addEdge(1, 1, 2, 3, 0);
+    type->addEdge(2, 2, 3, 4, 0);
+    type->addEdge(3, 3, 0, 1, 0);
+    type->addEdge(4, 0, 4, 1, 2);
+    type->addEdge(5, 1, 4, 2, 3);
+    type->addEdge(6, 2, 4, 3, 4);
+    type->addEdge(7, 3, 4, 4, 1);
+  }
+
   // Pentaedron6
   {
     ItemTypeInfoBuilder* type = m_types_buffer->allocOne();
@@ -404,6 +479,31 @@ _buildTypes(IMesh* mesh, IParallelSuperMng* parallel_mng, ITraceMng* trace)
     type->addFaceQuad(2, 0, 1, 4, 3);
     type->addFaceTriangle(3, 3, 4, 5);
     type->addFaceQuad(4, 1, 2, 5, 4);
+
+    type->addEdge(0, 0, 1, 2, 0);
+    type->addEdge(1, 1, 2, 4, 0);
+    type->addEdge(2, 2, 0, 1, 0);
+    type->addEdge(3, 0, 3, 1, 2);
+    type->addEdge(4, 1, 4, 2, 4);
+    type->addEdge(5, 2, 5, 4, 1);
+    type->addEdge(6, 3, 4, 3, 2);
+    type->addEdge(7, 4, 5, 3, 4);
+    type->addEdge(8, 5, 3, 3, 1);
+  }
+
+  // Pentaedron15
+  {
+    ItemTypeInfoBuilder* type = m_types_buffer->allocOne();
+    m_types[IT_Pentaedron15] = type;
+    type->setOrder(2, ITI_Pentaedron15);
+
+    type->setInfos(this, IT_Pentaedron15, "Pentaedron15", Dimension::Dim3, 15, 9, 5);
+
+    type->addFaceTriangle6(0, 0, 2, 1, 6, 7, 8);
+    type->addFaceQuad8(1, 0, 3, 5, 2, 12, 11, 14, 8);
+    type->addFaceQuad8(2, 0, 1, 4, 3, 6, 13, 9, 3);
+    type->addFaceTriangle6(3, 3, 4, 5, 9, 10, 11);
+    type->addFaceQuad8(4, 1, 2, 5, 4, 7, 14, 10, 13);
 
     type->addEdge(0, 0, 1, 2, 0);
     type->addEdge(1, 1, 2, 4, 0);
@@ -844,6 +944,27 @@ _buildTypes(IMesh* mesh, IParallelSuperMng* parallel_mng, ITraceMng* trace)
     type->setInfos(this, IT_Cell3D_Line2, "Cell3D_Line2", Dimension::Dim1, 2, 0, 0);
   }
 
+  // CellLine3 (maille d'ordre 2 pour les maillages 1D)
+  {
+    ItemTypeInfoBuilder* type = m_types_buffer->allocOne();
+    m_types[IT_CellLine3] = type;
+    type->setOrder(2, ITI_CellLine2);
+
+    type->setInfos(this, IT_CellLine3, "CellLine3", Dimension::Dim1, 3, 0, 2);
+
+    type->addFaceVertex(0, 0);
+    type->addFaceVertex(1, 1);
+  }
+
+  // Cell3D_Line3
+  {
+    ItemTypeInfoBuilder* type = m_types_buffer->allocOne();
+    m_types[IT_Cell3D_Line3] = type;
+    type->setOrder(2, ITI_Cell3D_Line2);
+
+    type->setInfos(this, IT_Cell3D_Line3, "Cell3D_Line3", Dimension::Dim1, 3, 0, 0);
+  }
+
   // Cell3D_Triangle3
   {
     ItemTypeInfoBuilder* type = m_types_buffer->allocOne();
@@ -864,6 +985,30 @@ _buildTypes(IMesh* mesh, IParallelSuperMng* parallel_mng, ITraceMng* trace)
       type->addFaceLine(0, 0, 1);
       type->addFaceLine(1, 1, 2);
       type->addFaceLine(2, 2, 0);
+    }
+  }
+
+  // Cell3D_Triangle6
+  {
+    ItemTypeInfoBuilder* type = m_types_buffer->allocOne();
+    m_types[IT_Cell3D_Triangle6] = type;
+    Int32 nb_face = 3;
+    Int32 nb_edge = 0;
+    if (is_non_manifold)
+      std::swap(nb_face, nb_edge);
+
+    type->setInfos(this, IT_Cell3D_Triangle6, "Cell3D_Triangle6", Dimension::Dim2, 6, nb_edge, nb_face);
+    type->setOrder(2, ITI_Cell3D_Triangle3);
+
+    if (is_non_manifold) {
+      type->addEdge2D(0, 0, 1);
+      type->addEdge2D(1, 1, 2);
+      type->addEdge2D(2, 2, 0);
+    }
+    else {
+      type->addFaceLine3(0, 0, 1, 3);
+      type->addFaceLine3(1, 1, 2, 4);
+      type->addFaceLine3(2, 2, 0, 5);
     }
   }
 
@@ -888,6 +1033,60 @@ _buildTypes(IMesh* mesh, IParallelSuperMng* parallel_mng, ITraceMng* trace)
       type->addFaceLine(1, 1, 2);
       type->addFaceLine(2, 2, 3);
       type->addFaceLine(3, 3, 0);
+    }
+  }
+
+  // Cell3D_Quad8
+  {
+    ItemTypeInfoBuilder* type = m_types_buffer->allocOne();
+    m_types[IT_Cell3D_Quad8] = type;
+
+    Int32 nb_face = 4;
+    Int32 nb_edge = 0;
+    if (is_non_manifold)
+      std::swap(nb_face, nb_edge);
+
+    type->setInfos(this, IT_Cell3D_Quad8, "Cell3D_Quad8", Dimension::Dim2, 8, nb_edge, nb_face);
+    type->setOrder(2, ITI_Cell3D_Quad4);
+
+    if (is_non_manifold) {
+      type->addEdge2D(0, 0, 1);
+      type->addEdge2D(1, 1, 2);
+      type->addEdge2D(2, 2, 3);
+      type->addEdge2D(3, 3, 0);
+    }
+    else {
+      type->addFaceLine3(0, 0, 1, 4);
+      type->addFaceLine3(1, 1, 2, 5);
+      type->addFaceLine3(2, 2, 3, 6);
+      type->addFaceLine3(3, 3, 0, 7);
+    }
+  }
+
+  // Cell3D_Quad9
+  {
+    ItemTypeInfoBuilder* type = m_types_buffer->allocOne();
+    m_types[IT_Cell3D_Quad9] = type;
+
+    Int32 nb_face = 4;
+    Int32 nb_edge = 0;
+    if (is_non_manifold)
+      std::swap(nb_face, nb_edge);
+
+    type->setInfos(this, IT_Cell3D_Quad9, "Cell3D_Quad9", Dimension::Dim2, 9, nb_edge, nb_face);
+    type->setOrder(2, ITI_Cell3D_Quad4);
+
+    if (is_non_manifold) {
+      type->addEdge2D(0, 0, 1);
+      type->addEdge2D(1, 1, 2);
+      type->addEdge2D(2, 2, 3);
+      type->addEdge2D(3, 3, 0);
+    }
+    else {
+      type->addFaceLine3(0, 0, 1, 4);
+      type->addFaceLine3(1, 1, 2, 5);
+      type->addFaceLine3(2, 2, 3, 6);
+      type->addFaceLine3(3, 3, 0, 7);
     }
   }
 
