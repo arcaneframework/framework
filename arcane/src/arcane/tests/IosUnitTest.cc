@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IosUnitTest.cc                                              (C) 2000-2024 */
+/* IosUnitTest.cc                                              (C) 2000-2025 */
 /*                                                                           */
 /* Service du test des formats d'entrée/sortie du maillage.                  */
 /*---------------------------------------------------------------------------*/
@@ -24,6 +24,7 @@
 #include "arcane/core/BasicUnitTest.h"
 #include "arcane/core/IPrimaryMesh.h"
 #include "arcane/core/DomUtils.h"
+#include "arcane/core/Directory.h"
 
 #include "arcane/tests/IosUnitTest_axl.h"
 
@@ -58,7 +59,8 @@ class IosUnitTest
 
  private:
 
-	bool _testIosWriterReader(IMesh* mesh, bool option, String ext, Integer);
+  bool _testIosWriterReader(IMesh* mesh, const String& file_extension,
+                            const String& service_base_name, Integer index);
 };
 
 
@@ -79,31 +81,23 @@ IosUnitTest(const ServiceBuildInfo& mb)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-/*****************************************************************\
- * IosUnitTest
-\*****************************************************************/
-
 IosUnitTest::
 ~IosUnitTest()
 {
 }
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
-/*****************************************************************\
- * _testIosWriterReader
-\*****************************************************************/
 bool IosUnitTest::
-_testIosWriterReader(IMesh* this_mesh, bool option, String Ext, Integer z)
+_testIosWriterReader(IMesh* this_mesh, const String& file_extension,
+                     const String& service_base_name, Integer z)
 {
-	// If we aren't to be there, just tell it
-  if (option != true)
-    return false;
-	
-	info() << "\t[_testIosWriterReader] " << Ext;
+  info() << "\t[_testIosWriterReader] " << file_extension;
 
-	// Otherwise, prepare to do the test
-	String this_directory(".");
-	ISubDomain* sd = subDomain();
+  // Otherwise, prepare to do the test
+  String this_directory(".");
+  ISubDomain* sd = subDomain();
   //	IServiceMng* sm = sd->serviceMng();
 	IParallelMng* pm = sd->parallelMng();
 	IApplication* app = sd->application();
@@ -111,48 +105,41 @@ _testIosWriterReader(IMesh* this_mesh, bool option, String Ext, Integer z)
 	
 	ScopedPtrT<IXmlDocumentHolder> xdoc(domutils::createXmlDocument());
 	XmlNode dummyXmlNode = xdoc->documentNode();
+  Directory write_directory(sd->exportDirectory());
+  StringBuilder output_file_name(options()->outputFileName());
+  String file_name = output_file_name.toString() + "." + file_extension.lower();
+  String full_file_name = write_directory.file(file_name);
+  info() << "\t[_testIosWriterReader] " << file_extension << "Mesh(" << full_file_name << ")";
 
-	StringBuilder outputFileName(options()->outputFileName());
-	String file_name=outputFileName.toString();// + "." + Ext.lower();
-	String file_name_with_ext=outputFileName.toString() + "." + Ext.lower();
-	info() << "\t[_testIosWriterReader] " << Ext << "Mesh(" << file_name_with_ext <<")";
-	
-	// Prepare the mesh writer
-	String writerServiceName(Ext+"NewMeshWriter");
-	auto meshWriter(ServiceBuilder<IMeshWriter>::createReference(sd,writerServiceName));
-	//FactoryT<IMeshWriter> meshWriter_factory(sd->serviceMng());
-	//meshWriter = meshWriter_factory.createInstance(writerServiceName,true);
-	//if (!meshWriter.get())
-  //throw FatalErrorException(A_FUNCINFO, "Can not create the "+writerServiceName);
+  // Prepare the mesh writer
+  String writer_service_name(service_base_name + "MeshWriter");
+  auto mesh_writer(ServiceBuilder<IMeshWriter>::createReference(sd, writer_service_name));
 
-	// Now write to file
-	info() << "\t[_testIosWriterReader] writeMeshToFile service=" << writerServiceName << "(" << file_name <<")";
-	if (meshWriter->writeMeshToFile(this_mesh, file_name)){
-	  info() << "\t[_testIosWriterReader] ERROR while " << writerServiceName << "(" << file_name <<")";
-	  return false;
-	}
-	
-	// Prepare the mesh reader
-	String readerServiceName(Ext+"NewMeshReader");
-	auto meshReader(ServiceBuilder<IMeshReader>::createReference(sd,readerServiceName));
-	IPrimaryMesh* iMesh = main_factory->createMesh(sd,pm->sequentialParallelMng(), readerServiceName+z);
-	info() << "\t[_testIosWriterReader] " << readerServiceName << "(" << file_name <<")";
+  // Now write to file
+  info() << "\t[_testIosWriterReader] writeMeshToFile service=" << writer_service_name << "(" << file_name << ")";
+  if (mesh_writer->writeMeshToFile(this_mesh, full_file_name)) {
+    info() << "\t[_testIosWriterReader] ERROR while " << writer_service_name << "(" << file_name << ")";
+    return false;
+  }
 
-	// Now read to file
-	info() << "\t[_testIosWriterReader] " << readerServiceName << "(" << file_name <<")";
-	if (meshReader->readMeshFromFile(iMesh, dummyXmlNode, file_name_with_ext, this_directory, true) != IMeshReader::RTOk){
-	  info() << "\t[_testIosWriterReader] ERROR while "<< readerServiceName << "(" << file_name <<")";
-	  return false;
-	}
+  // Prepare the mesh reader
+  String reader_service_name(service_base_name + "MeshReader");
+  auto mesh_reader(ServiceBuilder<IMeshReader>::createReference(sd, reader_service_name));
+  IPrimaryMesh* iMesh = main_factory->createMesh(sd, pm->sequentialParallelMng(), reader_service_name + z);
+  info() << "\t[_testIosWriterReader] " << reader_service_name << "(" << file_name << ")";
 
-	// And check for validity
-	iMesh->checkValidMesh();
-	
-	info() << "\t[_testIosWriterReader] done";
-	//TODO: il ne faut pas détruire le maillage directement mais prévoir
-  // un appel au sous-domain qui ferait cela.
-  //delete iMesh;
-	return true;
+  // Now read to file
+  info() << "\t[_testIosWriterReader] " << reader_service_name << "(" << file_name << ")";
+  if (mesh_reader->readMeshFromFile(iMesh, dummyXmlNode, full_file_name, this_directory, true) != IMeshReader::RTOk) {
+    info() << "\t[_testIosWriterReader] ERROR while " << reader_service_name << "(" << file_name << ")";
+    return false;
+  }
+
+  // And check for validity
+  iMesh->checkValidMesh();
+
+  info() << "\t[_testIosWriterReader] done";
+  return true;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -178,16 +165,19 @@ executeTest()
 		info() << "[IosUnitTest] Working on mesh " << z << " name=" << current_mesh->name() << " pm=" << pm;
 		info() << "NodeFamily1=" << pm->nodeFamily();
 		info() << "NodeFamily2=" << current_mesh->nodeFamily();
-	
-		if ((options()->writeVtu()) && (!_testIosWriterReader(current_mesh, options()->writeVtu(), "Vtu", z)))
-			ARCANE_FATAL("Error in >vtu< test");
 
-		if ((options()->writeXmf()) && (!_testIosWriterReader(current_mesh, options()->writeXmf(), "Xmf", z)))
+    if (options()->writeVtu() && (!_testIosWriterReader(current_mesh, "vtu", "Vtu", z)))
+      ARCANE_FATAL("Error in >vtu< test");
+
+    if (options()->writeXmf() && (!_testIosWriterReader(current_mesh, "xmf", "Xmf", z)))
       ARCANE_FATAL("Error in >xmf< test");
 
-		if ((options()->writeMsh()) && (!_testIosWriterReader(current_mesh, options()->writeMsh(), "Msh", z)))
+    if (options()->writeMsh() && (!_testIosWriterReader(current_mesh, "msh", "MshNew", z)))
       ARCANE_FATAL("Error in >msh< test");
-	}
+
+    if (options()->writeVtkLegacy() && !_testIosWriterReader(current_mesh, "vtk", "VtkLegacy", z))
+      ARCANE_FATAL("Error in >vtk< test");
+  }
 
   // Pour test, affiche les coordonnées des noeuds des 10 premières mailles
   {

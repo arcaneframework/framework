@@ -6,46 +6,52 @@
 <!-- Options du jeu de données pour le service de test des ios -->
 
 <service name="IosUnitTest" version="1.0" type="caseoption" parent-name="Arcane::BasicUnitTest" namespace-name="ArcaneTest">
-	<interface name="Arcane::IUnitTest" inherited="false" />
-	<options>
-		<simple
-			name = "output-file-name"
-			type = "string"
-			default = "iosOutput">
-	   	<name lang='fr'>fichier-sortie</name>
-	   	<description>
-				Base du nom du fichier de sortie.
-				</description>
-		</simple>
+  <interface name="Arcane::IUnitTest" inherited="false" />
+  <options>
+    <simple
+      name = "output-file-name"
+      type = "string"
+      default = "iosOutput">
+      <name lang='fr'>fichier-sortie</name>
+      <description>
+	Base du nom du fichier de sortie.
+      </description>
+    </simple>
  
-		<simple
-			name = "write-vtu"
-			type = "bool"
-			default = "true">
-			<name lang='fr'>ecriture-vtu</name>
-				<description>
-				Vrai pour sauvegarder le maillage arcane dans un fichier VTU.
-			</description>
-		</simple>
-
-		<simple
-			name = "write-xmf"
-			type = "bool"
-			default = "true">
-			<name lang='fr'>ecriture-xmf</name>
-				<description>
-				Vrai pour sauvegarder le maillage arcane dans un fichier XMF.
-			</description>
-		</simple>
-
-		<simple
-			name = "write-msh"
-			type = "bool"
-			default = "true">
-			<name lang='fr'>ecriture-msh</name>
-				<description>
-				Vrai pour sauvegarder le maillage arcane dans un fichier MSH.
-			</description>
-		</simple>
-	</options>
+    <simple
+      name = "write-vtu"
+      type = "bool"
+      default = "true">
+      <name lang='fr'>ecriture-vtu</name>
+      <description>
+	Vrai pour sauvegarder le maillage arcane dans un fichier VTU.
+      </description>
+    </simple>
+    <simple
+      name = "write-xmf"
+      type = "bool"
+      default = "true">
+      <name lang='fr'>ecriture-xmf</name>
+      <description>
+	Vrai pour sauvegarder le maillage arcane dans un fichier XMF.
+      </description>
+    </simple>
+    <simple
+      name = "write-msh"
+      type = "bool"
+      default = "true">
+      <name lang='fr'>ecriture-msh</name>
+      <description>
+	Vrai pour sauvegarder le maillage arcane dans un fichier MSH.
+      </description>
+    </simple>
+    <simple
+      name = "write-vtk-legacy"
+      type = "bool"
+      default = "false">
+      <description>
+	Vrai pour sauvegarder le maillage arcane au format VtkLegacy
+      </description>
+    </simple>
+  </options>
 </service>
