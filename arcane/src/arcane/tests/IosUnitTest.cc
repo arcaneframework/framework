@@ -166,7 +166,7 @@ executeTest()
 		info() << "NodeFamily1=" << pm->nodeFamily();
 		info() << "NodeFamily2=" << current_mesh->nodeFamily();
 
-    if (options()->writeVtu() && (!_testIosWriterReader(current_mesh, "vtu", "Vtu", z)))
+    if (options()->writeVtu() && (!_testIosWriterReader(current_mesh, "vtu", "VtuNew", z)))
       ARCANE_FATAL("Error in >vtu< test");
 
     if (options()->writeXmf() && (!_testIosWriterReader(current_mesh, "xmf", "Xmf", z)))
