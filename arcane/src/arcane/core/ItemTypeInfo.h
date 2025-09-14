@@ -52,7 +52,7 @@ class ItemTypeInfo
   {
    public:
 
-    LocalFace(Integer* index)
+    explicit LocalFace(Integer* index)
     : m_index(index)
     {}
 
@@ -84,7 +84,7 @@ class ItemTypeInfo
   {
    public:
 
-    LocalEdge(Integer* index)
+    explicit LocalEdge(Integer* index)
     : m_index(index)
     {}
 
@@ -135,6 +135,8 @@ class ItemTypeInfo
   ItemTypeId linearItemTypeId() const { return m_linear_type_id; }
   //! Type de l'élément linéaire correspondant
   const ItemTypeInfo* linearTypeInfo() const { return m_mng->typeFromId(m_linear_type_id); }
+  //! Indique si le type a un noeud au centre
+  bool hasCenterNode() const { return m_has_center_node; }
 
  public:
 
@@ -163,6 +165,8 @@ class ItemTypeInfo
   Int16 m_dimension = (-1);
   //! Indique si le type est valide pour une maille.
   bool m_is_valid_for_cell = true;
+  //! Indique si le type a un nœud au centre (pour les faces ou les mailles)
+  bool m_has_center_node = false;
   Integer m_nb_node = 0;
   Integer m_nb_edge = 0;
   Integer m_nb_face = 0;

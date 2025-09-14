@@ -276,6 +276,32 @@ addFaceQuad8(Integer face_index, Integer n0, Integer n1, Integer n2, Integer n3,
 /*---------------------------------------------------------------------------*/
 
 void ItemTypeInfoBuilder::
+addFaceQuad9(Integer face_index, Integer n0, Integer n1, Integer n2, Integer n3,
+             Integer n4, Integer n5, Integer n6, Integer n7, Integer n8)
+{
+  _checkDimension(3);
+  Array<Integer>& buf = m_mng->m_ids_buffer;
+  buf[m_first_item_index + m_nb_edge + face_index] = buf.size();
+  buf.add(IT_Quad9);
+  buf.add(9);
+  buf.add(n0);
+  buf.add(n1);
+  buf.add(n2);
+  buf.add(n3);
+  buf.add(n4);
+  buf.add(n5);
+  buf.add(n6);
+  buf.add(n7);
+  buf.add(n8);
+  buf.add(4);
+  for (Integer i = 0; i < 4; ++i)
+    buf.add(-1); // undef value, filled by ItemTypeInfoBuilder::computeFaceEdgeInfos
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ItemTypeInfoBuilder::
 addFacePentagon(Integer face_index, Integer n0, Integer n1, Integer n2, Integer n3, Integer n4)
 {
   _checkDimension(3);

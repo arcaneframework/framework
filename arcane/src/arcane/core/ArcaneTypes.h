@@ -342,7 +342,14 @@ static const Int16 IT_Quad8 = 33;
 static const Int16 IT_Tetraedron10 = 34;
 //! Hexaèdre d'ordre 2
 static const Int16 IT_Hexaedron20 = 35;
+//! Pyramide d'ordre 2
+static const Int16 IT_Pyramid13 = 36;
+//! Prisme d'ordre 2
+static const Int16 IT_Pentaedron15 = 37;
 //@}
+
+//! Maille Line3. EXPERIMENTAL !
+static const Int16 IT_CellLine3 = 38;
 
 /*!
  * \brief Mailles 2D dans un maillage 3D.
@@ -351,15 +358,28 @@ static const Int16 IT_Hexaedron20 = 35;
  */
 //@{
 //! Maille Line2 dans un maillage 3D. EXPERIMENTAL !
-static const Int16 IT_Cell3D_Line2 = 36;
+static const Int16 IT_Cell3D_Line2 = 39;
 //! Maille Triangulaire à 3 noeuds dans un maillage 3D. EXPERIMENTAL !
-static const Int16 IT_Cell3D_Triangle3 = 37;
-//! Maille Quadrangulaire à 5 noeuds dans un maillage 3D. EXPERIMENTAL !
-static const Int16 IT_Cell3D_Quad4 = 38;
+static const Int16 IT_Cell3D_Triangle3 = 40;
+//! Maille Quadrangulaire à 4 noeuds dans un maillage 3D. EXPERIMENTAL !
+static const Int16 IT_Cell3D_Quad4 = 41;
+//! Maille Line3 dans un maillage 3D. EXPERIMENTAL !
+static const Int16 IT_Cell3D_Line3 = 42;
+//! Maille Triangulaire à 6 noeuds dans un maillage 3D. EXPERIMENTAL !
+static const Int16 IT_Cell3D_Triangle6 = 43;
+//! Maille Quadrangulaire à 8 noeuds dans un maillage 3D. EXPERIMENTAL !
+static const Int16 IT_Cell3D_Quad8 = 44;
+//! Maille Quadrangulaire à 9 noeuds dans un maillage 3D. EXPERIMENTAL !
+static const Int16 IT_Cell3D_Quad9 = 45;
 //@}
 
+//! Quadrangle d'ordre 2 (avec 4 noeuds sur les faces et 1 noeud au centre). EXPERIMENTAL !
+static const Int16 IT_Quad9 = 46;
+//! Hexaèdre d'ordre 2 (avec 12 noeuds sur les arêtes, 6 sur les faces et un noeud centre. EXPERIMENTAL !
+static const Int16 IT_Hexaedron27 = 47;
+
 //! Nombre de types d'entités disponible par défaut
-static const Integer NB_BASIC_ITEM_TYPE = 39;
+static const Integer NB_BASIC_ITEM_TYPE = 48;
 
 extern "C++" ARCANE_CORE_EXPORT eItemKind
 dualItemKind(Integer type);
