@@ -88,8 +88,8 @@ class SimpleForLoopRanges
  public:
 
   using ArrayBoundsType = ArrayBounds<typename MDDimType<N>::DimType>;
-  using ArrayIndexType = typename ArrayBoundsType::IndexType;
-  using IndexType = ArrayIndexType;
+  using ArrayIndexType = typename ArrayBoundsType::MDIndexType;
+  using IndexType ARCANE_DEPRECATED_REASON("Use 'ArrayIndexType' instead") = ArrayIndexType;
 
  public:
 
@@ -128,8 +128,8 @@ class ComplexForLoopRanges
  public:
 
   using ArrayBoundsType = ArrayBounds<typename MDDimType<N>::DimType>;
-  using ArrayIndexType = typename ArrayBoundsType::IndexType;
-  using IndexType = ArrayIndexType;
+  using ArrayIndexType = typename ArrayBoundsType::MDIndexType;
+  using IndexType ARCANE_DEPRECATED_REASON("Use 'ArrayIndexType' instead") = ArrayIndexType;
 
  public:
 

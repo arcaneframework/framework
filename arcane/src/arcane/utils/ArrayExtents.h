@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ArrayExtents.h                                              (C) 2000-2024 */
+/* ArrayExtents.h                                              (C) 2000-2025 */
 /*                                                                           */
 /* Gestion du nombre d'éléments par dimension pour les tableaux N-dimensions.*/
 /*---------------------------------------------------------------------------*/
@@ -359,8 +359,7 @@ class ArrayExtentsWithOffset<ExtentsV<SizeType_, X0>, LayoutType>
   using DynamicDimsType = typename BaseClass::DynamicDimsType;
   using MDIndexType = typename BaseClass::MDIndexType;
 
-  // TODO: Rendre obsolète mi-2024
-  using IndexType = typename BaseClass::IndexType;
+  using IndexType ARCANE_DEPRECATED_REASON("Use 'MDIndexType' instead") = typename BaseClass::MDIndexType;
 
  public:
 
@@ -379,7 +378,7 @@ class ArrayExtentsWithOffset<ExtentsV<SizeType_, X0>, LayoutType>
     BaseClass::_checkIndex(i);
     return i;
   }
-  constexpr ARCCORE_HOST_DEVICE Int64 offset(IndexType idx) const
+  constexpr ARCCORE_HOST_DEVICE Int64 offset(MDIndexType idx) const
   {
     BaseClass::_checkIndex(idx.id0());
     return idx.id0();
@@ -413,8 +412,7 @@ class ArrayExtentsWithOffset<ExtentsV<SizeType_, X0, X1>, LayoutType>
   using DynamicDimsType = typename BaseClass::DynamicDimsType;
   using MDIndexType = typename BaseClass::MDIndexType;
 
-  // TODO: Rendre obsolète mi-2024
-  using IndexType = typename BaseClass::IndexType;
+  using IndexType ARCANE_DEPRECATED_REASON("Use 'MDIndexType' instead") = typename BaseClass::MDIndexType;
 
  public:
 
@@ -432,7 +430,7 @@ class ArrayExtentsWithOffset<ExtentsV<SizeType_, X0, X1>, LayoutType>
   {
     return offset({ i, j });
   }
-  constexpr ARCCORE_HOST_DEVICE Int64 offset(IndexType idx) const
+  constexpr ARCCORE_HOST_DEVICE Int64 offset(MDIndexType idx) const
   {
     BaseClass::_checkIndex(idx);
     return Layout::offset(idx, this->template constExtent<Layout::LastExtent>());
@@ -467,8 +465,7 @@ class ArrayExtentsWithOffset<ExtentsV<SizeType_, X0, X1, X2>, LayoutType>
   using DynamicDimsType = typename BaseClass::DynamicDimsType;
   using MDIndexType = typename BaseClass::MDIndexType;
 
-  // TODO: Rendre obsolète mi-2024
-  using IndexType = typename BaseClass::IndexType;
+  using IndexType ARCANE_DEPRECATED_REASON("Use 'MDIndexType' instead") = typename BaseClass::MDIndexType;
 
  public:
 
@@ -488,7 +485,7 @@ class ArrayExtentsWithOffset<ExtentsV<SizeType_, X0, X1, X2>, LayoutType>
   {
     return offset({ i, j, k });
   }
-  constexpr ARCCORE_HOST_DEVICE Int64 offset(IndexType idx) const
+  constexpr ARCCORE_HOST_DEVICE Int64 offset(MDIndexType idx) const
   {
     this->_checkIndex(idx);
     return Layout::offset(idx, this->template constExtent<Layout::LastExtent>(), m_dim23_size);
@@ -536,8 +533,7 @@ class ArrayExtentsWithOffset<ExtentsV<SizeType_, X0, X1, X2, X3>, LayoutType>
   using DynamicDimsType = typename BaseClass::DynamicDimsType;
   using MDIndexType = typename BaseClass::MDIndexType;
 
-  // TODO: Rendre obsolète mi-2024
-  using IndexType = typename BaseClass::IndexType;
+  using IndexType ARCANE_DEPRECATED_REASON("Use 'MDIndexType' instead") = typename BaseClass::MDIndexType;
 
  public:
 
@@ -557,7 +553,7 @@ class ArrayExtentsWithOffset<ExtentsV<SizeType_, X0, X1, X2, X3>, LayoutType>
   {
     return offset({ i, j, k, l });
   }
-  constexpr ARCCORE_HOST_DEVICE Int64 offset(IndexType idx) const
+  constexpr ARCCORE_HOST_DEVICE Int64 offset(MDIndexType idx) const
   {
     this->_checkIndex(idx);
     return (m_dim234_size * idx.largeId0()) + m_dim34_size * idx.largeId1() + this->m_extent3.v * idx.largeId2() + idx.largeId3();
