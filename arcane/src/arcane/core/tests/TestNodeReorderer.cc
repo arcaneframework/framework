@@ -26,7 +26,7 @@ class NodesOfItemReordererTester
     UniqueArray<Int64> orig_nodes(orig_node_list);
     UniqueArray<Int64> expected_nodes(expected_sorted_node_list);
     UniqueArray<Int64> work_nodes(orig_nodes.size());
-    bool is_reorder = NodesOfItemReorderer::_reorderOrder2(orig_nodes, work_nodes);
+    bool is_reorder = NodesOfItemReorderer::_reorderOrder2(orig_nodes, work_nodes, false);
     ASSERT_EQ(is_reorder, expected_reorder);
     ASSERT_EQ(work_nodes.view(), expected_nodes.view()) << "Orig=" << orig_nodes;
   }

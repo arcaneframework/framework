@@ -29,7 +29,7 @@ namespace Arcane
 // TODO: fusionner avec la version d'ordre 1
 bool NodesOfItemReorderer::
 _reorderOrder2(ConstArrayView<Int64> nodes_uid,
-               ArrayView<Int64> sorted_nodes_uid)
+               ArrayView<Int64> sorted_nodes_uid, bool has_center_node)
 {
   // \a true s'il faut réorienter les faces pour que leur orientation
   // soit indépendante du partitionnement du maillage initial.
@@ -51,6 +51,11 @@ _reorderOrder2(ConstArrayView<Int64> nodes_uid,
     sorted_nodes_uid[2] = nodes_uid[2];
     return true;
   }
+  // S'il y a un nœud central, c'est le dernier nœud de la liste
+  // et il ne faut pas le trier
+  // NOTE : Dans ce cas le nombre de noeuds de l'entité est impair.
+  if (has_center_node)
+    sorted_nodes_uid[nb_node - 1] = nodes_uid[nb_node - 1];
 
   // A l'ordre 2, si on a N noeuds, il ne faut tester les N/2 premiers noeuds
   // TODO: utiliser les informations de type.
@@ -127,7 +132,7 @@ reorder(ItemTypeId type_id, ConstArrayView<Int64> nodes_uids)
   if (order > 2)
     ARCANE_THROW(NotImplementedException, "node reordering for type of order 3 or mode");
   if (order == 2)
-    return _reorderOrder2(nodes_uids, m_work_sorted_nodes);
+    return _reorderOrder2(nodes_uids, m_work_sorted_nodes, iti->hasCenterNode());
   return MeshUtils::reorderNodesOfFace(nodes_uids, m_work_sorted_nodes);
 }
 
