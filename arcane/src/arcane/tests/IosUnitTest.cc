@@ -96,7 +96,6 @@ _testIosWriterReader(IMesh* this_mesh, const String& file_extension,
   info() << "\t[_testIosWriterReader] " << file_extension;
 
   // Otherwise, prepare to do the test
-  String this_directory(".");
   ISubDomain* sd = subDomain();
   //	IServiceMng* sm = sd->serviceMng();
 	IParallelMng* pm = sd->parallelMng();
@@ -106,9 +105,10 @@ _testIosWriterReader(IMesh* this_mesh, const String& file_extension,
 	ScopedPtrT<IXmlDocumentHolder> xdoc(domutils::createXmlDocument());
 	XmlNode dummyXmlNode = xdoc->documentNode();
   Directory write_directory(sd->exportDirectory());
-  StringBuilder output_file_name(options()->outputFileName());
-  String file_name = output_file_name.toString() + "." + file_extension.lower();
-  String full_file_name = write_directory.file(file_name);
+  String this_directory(write_directory.path());
+  StringBuilder output_file_name(options()->outputFileName() + "." + file_extension.lower());
+  String base_file_name = output_file_name.toString();
+  String full_file_name = write_directory.file(base_file_name);
   info() << "\t[_testIosWriterReader] " << file_extension << "Mesh(" << full_file_name << ")";
 
   // Prepare the mesh writer
@@ -116,9 +116,9 @@ _testIosWriterReader(IMesh* this_mesh, const String& file_extension,
   auto mesh_writer(ServiceBuilder<IMeshWriter>::createReference(sd, writer_service_name));
 
   // Now write to file
-  info() << "\t[_testIosWriterReader] writeMeshToFile service=" << writer_service_name << "(" << file_name << ")";
+  info() << "\t[_testIosWriterReader] writeMeshToFile service=" << writer_service_name << "(" << full_file_name << ")";
   if (mesh_writer->writeMeshToFile(this_mesh, full_file_name)) {
-    info() << "\t[_testIosWriterReader] ERROR while " << writer_service_name << "(" << file_name << ")";
+    info() << "\t[_testIosWriterReader] ERROR while " << writer_service_name << "(" << full_file_name << ")";
     return false;
   }
 
@@ -126,12 +126,12 @@ _testIosWriterReader(IMesh* this_mesh, const String& file_extension,
   String reader_service_name(service_base_name + "MeshReader");
   auto mesh_reader(ServiceBuilder<IMeshReader>::createReference(sd, reader_service_name));
   IPrimaryMesh* iMesh = main_factory->createMesh(sd, pm->sequentialParallelMng(), reader_service_name + z);
-  info() << "\t[_testIosWriterReader] " << reader_service_name << "(" << file_name << ")";
+  info() << "\t[_testIosWriterReader] " << reader_service_name << "(" << full_file_name << ")";
 
   // Now read to file
-  info() << "\t[_testIosWriterReader] " << reader_service_name << "(" << file_name << ")";
+  info() << "\t[_testIosWriterReader] " << reader_service_name << "(" << full_file_name << ")";
   if (mesh_reader->readMeshFromFile(iMesh, dummyXmlNode, full_file_name, this_directory, true) != IMeshReader::RTOk) {
-    info() << "\t[_testIosWriterReader] ERROR while " << reader_service_name << "(" << file_name << ")";
+    info() << "\t[_testIosWriterReader] ERROR while " << reader_service_name << "(" << full_file_name << ")";
     return false;
   }
 
@@ -169,7 +169,7 @@ executeTest()
     if (options()->writeVtu() && (!_testIosWriterReader(current_mesh, "vtu", "VtuNew", z)))
       ARCANE_FATAL("Error in >vtu< test");
 
-    if (options()->writeXmf() && (!_testIosWriterReader(current_mesh, "xmf", "Xmf", z)))
+    if (options()->writeXmf() && (!_testIosWriterReader(current_mesh, "xmf", "XmfNew", z)))
       ARCANE_FATAL("Error in >xmf< test");
 
     if (options()->writeMsh() && (!_testIosWriterReader(current_mesh, "msh", "MshNew", z)))
