@@ -26,6 +26,7 @@
 
 namespace Arcane
 {
+class ItemTypeMng;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -48,14 +49,16 @@ public:
 
  protected:
 
-  Integer _addNode(const Real3& position);
+  Integer _addNode(Real3 position);
   Integer _addNode(Real x,Real y,Real z);
   void _addCell(Int16 type_id, ConstArrayView<Int64> nodes_id);
+  void _addCell(ItemTypeId type_id, ConstArrayView<Real3> nodes_coords);
 
  private:
 
   Int32 m_mode = 1;
   IPrimaryMesh* m_mesh = nullptr;
+  ItemTypeMng* m_item_type_mng = nullptr;
   IMeshModifierInternal* m_mesh_modifier_internal = nullptr;
   UniqueArray<Int64> m_nodes_unique_id;
   UniqueArray<Real3> m_nodes_coords;
@@ -80,9 +83,29 @@ public:
   void _createSimpleOctaedron12(Real x0,Real y0,Real z1,Real z2);
   void _createSimpleHeptaedron10(Real x0,Real y0,Real z1,Real z2);
   void _createSimpleHexaedron8(Real x0,Real y0,Real z1,Real z2);
+  void _createSimpleHexaedron(ItemTypeId type_id, Real x0, Real y0, Real z1, Real z2);
   void _createSimplePentaedron6(Real x0,Real y0,Real z1,Real z2);
   void _createSimplePyramid5(Real x0,Real y0,Real z1,Real z2);
   void _createSimpleTetraedron4(Real x0,Real y0,Real z1,Real z2);
+
+  void _fillHexaedronCoordinates(ItemTypeId type_id, ArrayView<Real3> coords, Real x0, Real y0, Real z1, Real z2);
+
+  static Real3 _center(Real3 n0, Real3 n1)
+  {
+    return (n0 + n1) / 2.0;
+  }
+  static Real3 _center(Real3 n0, Real3 n1, Real3 n2, Real3 n3)
+  {
+    return (n0 + n1 + n2 + n3) / 4.0;
+  }
+  static Real3 _center(ConstArrayView<Real3> coords, Int32 n0, Int32 n1)
+  {
+    return _center(coords[n0], coords[n1]);
+  }
+  static Real3 _center(ConstArrayView<Real3> coords, Int32 n0, Int32 n1, Int32 n2, Int32 n3)
+  {
+    return _center(coords[n0], coords[n1], coords[n2], coords[n3]);
+  }
 };
 
 /*---------------------------------------------------------------------------*/

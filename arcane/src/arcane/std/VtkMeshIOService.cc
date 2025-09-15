@@ -1310,7 +1310,7 @@ _readUnstructuredGrid(IPrimaryMesh* mesh, VtkFile& vtk_file, bool use_internal_p
   {
     Integer wanted_dimension = mesh_dimension;
     wanted_dimension = mesh->parallelMng()->reduce(Parallel::ReduceMax, wanted_dimension);
-    mesh->setDimension(wanted_dimension);
+    //mesh->setDimension(wanted_dimension);
     mesh_build_info.setMeshDimension(wanted_dimension);
   }
 
@@ -1948,8 +1948,7 @@ _writeMeshToFile(IMesh* mesh, const String& file_name, eItemKind cell_kind)
     // Le type doit être coherent avec celui de vtkCellType.h
     ofile << "CELL_TYPES " << nb_cell_kind << "\n";
     ENUMERATE_ (ItemWithNodes, iitem, cell_kind_family->allItems()) {
-      Int16 arcane_type = (*iitem).type();
-      int type = arcaneToVtkCellType(arcane_type);
+      int type = arcaneToVtkCellType(iitem->typeInfo());
       ofile << type << '\n';
     }
   }

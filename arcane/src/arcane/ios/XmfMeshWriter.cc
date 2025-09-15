@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* XmfMeshWriter.cc                                            (C) 2000-2009 */
+/* XmfMeshWriter.cc                                            (C) 2000-2025 */
 /*                                                                           */
 /* Ecriture d'un fichier au format Xmf.                                      */
 /*****************************************************************************
@@ -90,7 +90,6 @@ Both XdmfDataStructure and XdmfDataTransform are maintined for backwards compati
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/ArcanePrecomp.h"
 #include "arcane/utils/Iostream.h"
 #include "arcane/utils/StdHeader.h"
 #include "arcane/utils/HashTableMap.h"
@@ -105,26 +104,24 @@ Both XdmfDataStructure and XdmfDataTransform are maintined for backwards compati
 #include "arcane/utils/NotImplementedException.h"
 #include "arcane/utils/Real3.h"
 
-#include "arcane/FactoryService.h"
-#include "arcane/IMainFactory.h"
-#include "arcane/IMeshReader.h"
-#include "arcane/ISubDomain.h"
-#include "arcane/IMesh.h"
-#include "arcane/IItemFamily.h"
-#include "arcane/Item.h"
-#include "arcane/ItemEnumerator.h"
-#include "arcane/VariableTypes.h"
-#include "arcane/IVariableAccessor.h"
-#include "arcane/IParallelMng.h"
-#include "arcane/IIOMng.h"
-#include "arcane/IXmlDocumentHolder.h"
-#include "arcane/XmlNodeList.h"
-#include "arcane/XmlNode.h"
-#include "arcane/IMeshUtilities.h"
-#include "arcane/IMeshWriter.h"
-#include "arcane/BasicService.h"
-
-#include "arcane/AbstractService.h"
+#include "arcane/core/FactoryService.h"
+#include "arcane/core/IMainFactory.h"
+#include "arcane/core/IMeshReader.h"
+#include "arcane/core/ISubDomain.h"
+#include "arcane/core/IMesh.h"
+#include "arcane/core/IItemFamily.h"
+#include "arcane/core/Item.h"
+#include "arcane/core/ItemEnumerator.h"
+#include "arcane/core/VariableTypes.h"
+#include "arcane/core/IVariableAccessor.h"
+#include "arcane/core/IParallelMng.h"
+#include "arcane/core/IIOMng.h"
+#include "arcane/core/IXmlDocumentHolder.h"
+#include "arcane/core/XmlNodeList.h"
+#include "arcane/core/XmlNode.h"
+#include "arcane/core/IMeshUtilities.h"
+#include "arcane/core/IMeshWriter.h"
+#include "arcane/core/BasicService.h"
 
 #define XDMF_USE_ANSI_STDLIB
 #include <vtkxdmf2/Xdmf.h>
@@ -132,7 +129,8 @@ Both XdmfDataStructure and XdmfDataTransform are maintined for backwards compati
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 using namespace xdmf2;
 
@@ -142,13 +140,18 @@ using namespace xdmf2;
 /*!
  * \brief Ecriture des fichiers de maillage aux format xmf.
  */
-class XmfMeshWriter: public AbstractService, public IMeshWriter{
-
-public:
-	XmfMeshWriter(const ServiceBuildInfo& sbi) : AbstractService(sbi){
+class XmfMeshWriter
+: public AbstractService
+, public IMeshWriter
+{
+ public:
+	explicit XmfMeshWriter(const ServiceBuildInfo& sbi)
+  : AbstractService(sbi)
+  {
 		this->CurrIndent=0;
 	}
-	virtual void build(void) {}
+
+  virtual void build(void) {}
 	virtual bool writeMeshToFile(IMesh* mesh,const String& file_name);
 
 	bool xmfWriteHead(void);
@@ -190,7 +193,9 @@ ARCANE_REGISTER_SUB_DOMAIN_FACTORY(XmfMeshWriter,IMeshWriter,XmfNewMeshWriter);
 /*****************************************************************************\
 * [_switchXmfType]			 																	*
 \*****************************************************************************/
-void XmfMeshWriter::_switchXmfType(Integer arc_type, Array<Integer>& arcConnectivityArray){
+void XmfMeshWriter::
+_switchXmfType(Integer arc_type, Array<Integer>& arcConnectivityArray)
+{
   if (arc_type > ItemTypeMng::nbBasicItemType()){
 	 arcConnectivityArray.add(XDMF_NOTOPOLOGY);
 	 return;
@@ -261,24 +266,32 @@ case (IT_Enneedron14):
 /**********************************************************************
  * [writeMeshToFile]																	  
  **********************************************************************/
-bool XmfMeshWriter::writeMeshToFile(IMesh* mesh,const String& file_name){
+bool XmfMeshWriter::
+writeMeshToFile(IMesh* mesh,const String& file_name)
+{
   info() << "[XmfMeshWriter::writeMeshToFile] nNodes=" <<mesh->nbNode() << " nCells="<< mesh->nbCell()
 			 << " all=" << mesh->allNodes().size() << ", own=" << mesh->ownNodes().size();
 
   /****************************
 	* XDMF-side initialisation *
 	****************************/
-	XdmfRoot *xmfRoot=new XdmfRoot(); // represents the Root Element in Xdmf
-	XdmfDOM *xmfDom= new XdmfDOM();
-	if (platform::isFileReadable(file_name+".h5")==true)
-	  if (platform::removeFile(file_name+".h5"))
-			throw FatalErrorException(A_FUNCINFO, "Could not remove .h5 file!");
-	String xmfDomFileName(file_name+".xmf");
-	if (xmfDom->SetWorkingDirectory(".")!= XDMF_SUCCESS) throw IOException("writeMeshToFile", "SetOutputFileName");
-	if (xmfDom->SetOutputFileName(xmfDomFileName.localstr())!= XDMF_SUCCESS) throw IOException("writeMeshToFile", "SetOutputFileName");
+	XdmfRoot* xmfRoot=new XdmfRoot(); // represents the Root Element in Xdmf
+	XdmfDOM* xmfDom= new XdmfDOM();
+  String h5_file_name = file_name + ".h5";
+	if (platform::isFileReadable(h5_file_name))
+	  if (platform::removeFile(h5_file_name))
+			ARCANE_FATAL("Could not remove .h5 file '{0}'",h5_file_name);
+	String xmfDomFileName(file_name);
+  // Add extension '.xmf' if needed.
+  if (!xmfDomFileName.endsWith(".xmf"))
+    xmfDomFileName = file_name + ".xmf";
+	if (xmfDom->SetWorkingDirectory(".")!= XDMF_SUCCESS)
+    throw IOException("writeMeshToFile", "SetOutputFileName");
+	if (xmfDom->SetOutputFileName(xmfDomFileName.localstr())!= XDMF_SUCCESS)
+    throw IOException("writeMeshToFile", "SetOutputFileName");
 	xmfRoot->SetDOM(xmfDom);
 	xmfRoot->Build();
-	info() << "XDMF-side initialisation done";
+	info() << "XDMF-side initialisation done filename='" << xmfDomFileName << "'";
 
 	// Domain initialisation
 	XdmfDomain *xmfDomain = new XdmfDomain();
@@ -299,7 +312,7 @@ bool XmfMeshWriter::writeMeshToFile(IMesh* mesh,const String& file_name){
 	xmfCellAttribute->SetAttributeCenter(XDMF_ATTRIBUTE_CENTER_CELL);
 	xmfCellAttribute->SetAttributeType(XDMF_ATTRIBUTE_TYPE_SCALAR);
 	XdmfArray *xmfCellsUniqueIDs = xmfCellAttribute->GetValues();
-	String heavyDataForCellsUniqueIDs(file_name+".h5:/CellsUniqueIDs");
+	String heavyDataForCellsUniqueIDs(h5_file_name+":/CellsUniqueIDs");
 	xmfCellsUniqueIDs->SetHeavyDataSetName(heavyDataForCellsUniqueIDs.localstr());
 	xmfCellsUniqueIDs->SetNumberType(XDMF_INT32_TYPE);
 	xmfCellsUniqueIDs->SetNumberOfElements(mesh->nbCell());
@@ -313,7 +326,7 @@ bool XmfMeshWriter::writeMeshToFile(IMesh* mesh,const String& file_name){
 	xmfNodeAttribute->SetAttributeCenter(XDMF_ATTRIBUTE_CENTER_NODE);
 	xmfNodeAttribute->SetAttributeType(XDMF_ATTRIBUTE_TYPE_SCALAR);
 	XdmfArray *xmfNodesUniqueIDs = xmfNodeAttribute->GetValues();
-	String heavyDataForNodesUniqueIDs(file_name+".h5:/NodesUniqueIDs");
+	String heavyDataForNodesUniqueIDs(h5_file_name+":/NodesUniqueIDs");
 	xmfNodesUniqueIDs->SetHeavyDataSetName(heavyDataForNodesUniqueIDs.localstr());
 	xmfNodesUniqueIDs->SetNumberType(XDMF_INT32_TYPE);
 	xmfNodesUniqueIDs->SetNumberOfElements(mesh->nbNode());
@@ -327,7 +340,7 @@ bool XmfMeshWriter::writeMeshToFile(IMesh* mesh,const String& file_name){
 	xmfOwnerAttribute->SetAttributeCenter(XDMF_ATTRIBUTE_CENTER_NODE);
 	xmfOwnerAttribute->SetAttributeType(XDMF_ATTRIBUTE_TYPE_SCALAR);
 	XdmfArray *xmfNodesOwners = xmfOwnerAttribute->GetValues();
-	String heavyDataForOwners(file_name+".h5:/NodesOwners");
+	String heavyDataForOwners(h5_file_name+":/NodesOwners");
 	xmfNodesOwners->SetHeavyDataSetName(heavyDataForOwners.localstr());
 	xmfNodesOwners->SetNumberType(XDMF_INT32_TYPE);
 	xmfNodesOwners->SetNumberOfElements(mesh->nbNode());
@@ -344,7 +357,7 @@ bool XmfMeshWriter::writeMeshToFile(IMesh* mesh,const String& file_name){
 	xmfTopology->SetTopologyType(XDMF_MIXED);
 	xmfTopology->SetNumberOfElements(mesh->nbCell());
 	XdmfArray *xmfConnectivityArray= xmfTopology->GetConnectivity();
-	String heavyDataForConnections(file_name+".h5:/Connections");
+	String heavyDataForConnections(h5_file_name+":/Connections");
 	xmfConnectivityArray->SetHeavyDataSetName(heavyDataForConnections.localstr());
 	xmfConnectivityArray->SetNumberType(XDMF_INT32_TYPE);
 	UniqueArray<XdmfInt32> arcCellConnectivityArray;
@@ -376,7 +389,7 @@ bool XmfMeshWriter::writeMeshToFile(IMesh* mesh,const String& file_name){
 	xmfGeometry->SetGeometryType(XDMF_GEOMETRY_XYZ);
 	//xmfGeometry->SetNumberOfPoints(mesh->nbNode());  
 	XdmfArray *xmfNodeGeometryArray= xmfGeometry->GetPoints();
-	String heavyDataForGeometry(file_name+".h5:/XYZ");
+	String heavyDataForGeometry(h5_file_name+":/XYZ");
 	xmfNodeGeometryArray->SetHeavyDataSetName(heavyDataForGeometry.localstr());
 	xmfNodeGeometryArray->SetNumberType(XDMF_FLOAT32_TYPE);
 	xmfNodeGeometryArray->SetNumberOfElements(3*mesh->nbNode());// Number of points in this geometry
@@ -409,7 +422,7 @@ bool XmfMeshWriter::writeMeshToFile(IMesh* mesh,const String& file_name){
 		xmfAttribute->SetAttributeCenter(XDMF_ATTRIBUTE_CENTER_NODE);
 		xmfAttribute->SetAttributeType(XDMF_ATTRIBUTE_TYPE_SCALAR);
 		XdmfArray *xmfGroup = xmfAttribute->GetValues();
-		String heavyDataForGroup(file_name+".h5:/" + arcGroup->name());
+		String heavyDataForGroup(h5_file_name+":/" + arcGroup->name());
 		xmfGroup->SetHeavyDataSetName(heavyDataForGroup.localstr());
 		xmfGroup->SetNumberType(XDMF_INT32_TYPE);
 		xmfGroup->SetNumberOfElements(1+arcGroup->size());
@@ -446,7 +459,7 @@ bool XmfMeshWriter::writeMeshToFile(IMesh* mesh,const String& file_name){
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

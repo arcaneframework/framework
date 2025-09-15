@@ -207,23 +207,24 @@ readGroupsFromFieldData(IMesh* mesh,vtkFieldData* allFieldData,int i)
  * readMeshFromVtuFile
  *****************************************************************/
 IMeshReader::eReturnType VtuMeshReaderBase::
-readMeshFromVtuFile(IMesh* mesh,
-                    const String& file_name, const String& dir_name,
-                    bool use_internal_partition)
+readMeshFromVtuFile(IMesh* mesh, const String& file_name,
+                    const String& dir_name, bool use_internal_partition)
 {
   ARCANE_UNUSED(dir_name);
   ARCANE_UNUSED(use_internal_partition);
 	bool itWasAnArcanProduction=true;
 	IParallelMng* pm = mesh->parallelMng();
   bool is_parallel = pm->isParallel();
-  Integer sid = pm->commRank();
+  Int32 sid = pm->commRank();
 
-	m_trace_mng->info() << "[readMeshFromVtuFile] Entering";
-	vtkXMLUnstructuredGridReader *reader = vtkXMLUnstructuredGridReader::New();
-	std::string fname = file_name.localstr();
+	m_trace_mng->info() << "[readMeshFromVtuFile] Entering file_name=" << file_name;
+	vtkXMLUnstructuredGridReader* reader = vtkXMLUnstructuredGridReader::New();
+	std::string fname(file_name.toStdStringView());
   reader->SetFileName(fname.c_str());
-	if (!reader->CanReadFile(fname.c_str()))
+	if (!reader->CanReadFile(fname.c_str())){
+    m_trace_mng->info() << "Can not read file '" << file_name << "'";
     return IMeshReader::RTError;
+  }
 	reader->UpdateInformation();
 	reader->Update();// Force reading
 	vtkUnstructuredGrid *unstructuredGrid = reader->GetOutput();
@@ -231,7 +232,6 @@ readMeshFromVtuFile(IMesh* mesh,
 	//unstructuredGrid->Update();// La lecture effective du fichier n'a lieu qu'après l'appel à Update().
 	auto nbOfCells = unstructuredGrid->GetNumberOfCells();
 	auto nbOfNodes = unstructuredGrid->GetNumberOfPoints();
-
 
 	/*******************************
    *Fetching Nodes UID & Cells UID *
@@ -249,7 +249,7 @@ readMeshFromVtuFile(IMesh* mesh,
 		itWasAnArcanProduction=false;
 	}
   else {
-    m_trace_mng->info() << "dataNodeArray->GetDataType()" << dataNodeArray->GetDataType();
+    m_trace_mng->info() << "dataNodeArray->GetDataType()" << dataNodeArray->GetDataType() << " Long=" << CURRENT_VTK_VERSION_LONG_TYPE;
 		if (dataNodeArray->GetDataType() != CURRENT_VTK_VERSION_LONG_TYPE)
       return IMeshReader::RTError;
 		nodesUidArray = vtkLongArrayType::SafeDownCast(dataNodeArray);

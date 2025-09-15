@@ -780,7 +780,8 @@ if(VTK_HAS_XDMF)
   set(_XDMF_FOUND_BOOL true)
 endif()
 configure_file(${ARCANE_ARC_PATH}/testIos.cmake ${ARCANE_TEST_PATH}/testIos.arc @ONLY)
-ARCANE_ADD_TEST_SEQUENTIAL(ios ${ARCANE_TEST_PATH}/testIos.arc "-We,ARCANE_USE_PARALLEL_MSH_READER,0")
+arcane_add_test_sequential(ios ${ARCANE_TEST_PATH}/testIos.arc "-We,ARCANE_USE_PARALLEL_MSH_READER,0")
+arcane_add_test_sequential(mesh_io_simple testMeshIO-simple.arc)
 # Désactive temporairement ce test tant qu'on ne détecte pas correctement la dimension
 # du maillage
 #arcane_add_test_sequential(ios_msh testIos-msh.arc)
