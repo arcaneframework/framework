@@ -1,4 +1,4 @@
-name: MacOs-15-gnu-openmpi
+name: MacOs-gnu-openmpi
 # This workflow is designed to run on MacOs
 # tests only Arcane component install
 # hypre and swig are disabled
@@ -22,7 +22,8 @@ on:
 
 jobs:
   build:
-    runs-on: macos-15
+    runs-on: ${{ matrix.os }}
+    name: ${{ matrix.os }}-gnu-openmpi
     env:
       CCACHE_BASEDIR: ${{github.workspace}}
       CCACHE_DIR: '${{ github.workspace }}/ccache'
@@ -33,6 +34,12 @@ jobs:
       OMPI_MCA_rmaps_base_oversubscribe : true
     strategy:
       fail-fast: false
+      matrix:
+        include:
+        - os: macos-15
+          full-name: "MacOs-15-gnu-openmpi"
+        - os: macos-26
+          full-name: "MacOs-26-gnu-openmpi"
     steps:
       - uses: actions/checkout@v5
         with:
@@ -63,9 +70,9 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ${{env.CCACHE_DIR}}
-          key: framework-ccache1-macos15-${{ github.run_number }}
+          key: framework-ccache1-macos-gnu-${{ matrix.os }}-${{ github.run_number }}
           restore-keys: |
-            framework-ccache1-macos15
+            framework-ccache1-macos-gnu-${{ matrix.os }}
 
       - name: 'Display environment after setup'
         shell: 'bash'
