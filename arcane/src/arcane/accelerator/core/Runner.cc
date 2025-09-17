@@ -112,6 +112,7 @@ initialize(Runner* runner, eExecutionPolicy v, DeviceId device)
   m_execution_policy = v;
   m_device_id = device;
   m_runtime = _getRuntime(v);
+  m_device_info = m_runtime->deviceInfoList()->deviceInfo(m_device_id.asInt32());
   m_is_init = true;
   m_is_auto_prefetch_command = false;
 

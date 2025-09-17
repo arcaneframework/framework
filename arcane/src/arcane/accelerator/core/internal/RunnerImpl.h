@@ -16,7 +16,7 @@
 
 #include "arcane/accelerator/core/AcceleratorCoreGlobal.h"
 
-#include "arcane/accelerator/core/DeviceId.h"
+#include "arcane/accelerator/core/DeviceInfo.h"
 #include "arcane/accelerator/core/internal/RunnerInternal.h"
 
 #include <stack>
@@ -125,6 +125,7 @@ class RunnerImpl
   bool isInit() const { return m_is_init; }
   eDeviceReducePolicy reducePolicy() const { return m_reduce_policy; }
   DeviceId deviceId() const { return m_device_id; }
+  const DeviceInfo& deviceInfo() const { return m_device_info; }
 
  public:
 
@@ -141,6 +142,7 @@ class RunnerImpl
   bool m_is_init = false;
   const eDeviceReducePolicy m_reduce_policy = eDeviceReducePolicy::Grid;
   DeviceId m_device_id;
+  DeviceInfo m_device_info;
   impl::IRunnerRuntime* m_runtime = nullptr;
   RunQueueImplStack m_run_queue_pool;
   std::mutex m_pool_mutex;

@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ReduceMemoryImpl.cc                                         (C) 2000-2024 */
+/* ReduceMemoryImpl.cc                                         (C) 2000-2025 */
 /*                                                                           */
 /* Gestion de la mémoire pour les réductions.                                */
 /*---------------------------------------------------------------------------*/
@@ -49,6 +49,7 @@ ReduceMemoryImpl(RunCommandImpl* p)
 {
   _allocateMemoryForReduceData(128);
   _allocateMemoryForGridDeviceCount();
+  m_grid_memory_info.m_warp_size = p->runner()->deviceInfo().warpSize();
 }
 
 /*---------------------------------------------------------------------------*/
