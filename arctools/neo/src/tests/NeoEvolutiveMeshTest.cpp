@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* NeoEvolutiveMeshTest.cpp                        (C) 2000-2023             */
+/* NeoEvolutiveMeshTest.cpp                        (C) 2000-2025             */
 /*                                                                           */
 /* First very basic mesh evolution test                                      */
 /*---------------------------------------------------------------------------*/
@@ -63,14 +63,14 @@ void createMesh(Neo::Mesh& mesh) {
 
 //----------------------------------------------------------------------------/
 
-TEST(EvolutiveMeshTest, AddCells) {
+TEST(NeoEvolutiveMeshTest, AddCells) {
   auto mesh = Neo::Mesh{ "evolutive_neo_mesh" };
   createMesh(mesh);
 }
 
 //----------------------------------------------------------------------------/
 
-TEST(EvolutiveMeshTest, MoveNodes) {
+TEST(NeoEvolutiveMeshTest, MoveNodes) {
   std::cout << "Move node test " << std::endl;
   auto mesh = Neo::Mesh{ "evolutive_neo_mesh" };
   createMesh(mesh);
@@ -88,18 +88,18 @@ TEST(EvolutiveMeshTest, MoveNodes) {
 
 //----------------------------------------------------------------------------/
 
-TEST(EvolutiveMeshTest, RemoveCells) {
+TEST(NeoEvolutiveMeshTest, RemoveCells) {
   std::cout << "Remove cells test " << std::endl;
   auto mesh = Neo::Mesh{ "evolutive_neo_mesh" };
   createMesh(mesh);
   // add a connectivity to cell
-
   auto node2cells_con_name = node_family_name + "to" + cell_family_name + "_connectivity";
   std::vector<Neo::utils::Int64> node_to_cell{ 0, 0, 1, 1, 2, 3, 0, 0, 1, 2, 2, 3 };
   auto& cell_family = mesh.findFamily(Neo::ItemKind::IK_Cell, cell_family_name);
   auto& node_family = mesh.findFamily(Neo::ItemKind::IK_Node, node_family_name);
   mesh.scheduleAddConnectivity(node_family, node_family.all(), cell_family, 1,
                                node_to_cell, node2cells_con_name);
+  mesh.applyScheduledOperations();
   // Remove cell 0, 1 and 2
   std::vector<Neo::utils::Int64> removed_cells{ 0, 1, 2 };
   mesh.scheduleRemoveItems(cell_family, removed_cells);

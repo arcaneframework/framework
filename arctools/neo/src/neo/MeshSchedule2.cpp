@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshSchedule2.cpp                                           (C) 2000-2023 */
+/* MeshSchedule2.cpp                                           (C) 2000-2025 */
 /*                                                                           */
 /* Asynchronous Mesh structure based on Neo kernel                           */
 /*---------------------------------------------------------------------------*/
@@ -22,14 +22,16 @@
 
 /*-----------------------------------------------------------------------------*/
 
-void Neo::Mesh::scheduleMoveItems(Neo::Family& item_family, std::vector<Neo::utils::Int64> const& moved_item_uids, std::vector<Neo::utils::Real3> const& moved_item_new_coords) {
+void Neo::Mesh::scheduleMoveItems(Neo::Family& item_family, std::vector<Neo::utils::Int64> moved_item_uids, std::vector<Neo::utils::Real3> moved_item_new_coords) {
   auto coord_prop_name = _itemCoordPropertyName(item_family);
   item_family.addMeshScalarProperty<Neo::utils::Real3>(coord_prop_name);
   m_mesh_graph->addAlgorithm(
   Neo::MeshKernel::InProperty{ item_family, item_family.lidPropName(), Neo::PropertyStatus::ExistingProperty },
   Neo::MeshKernel::OutProperty{ item_family, coord_prop_name },
-  [&moved_item_uids, moved_item_new_coords](Neo::ItemLidsProperty const& item_lids_property,
-                                            Neo::MeshScalarPropertyT<Neo::utils::Real3>& item_coords_property) {
+  [moved_item_uids = std::move(moved_item_uids),
+        moved_item_new_coords = std::move(moved_item_new_coords)]
+        (Neo::ItemLidsProperty const& item_lids_property,
+        Neo::MeshScalarPropertyT<Neo::utils::Real3>& item_coords_property) {
     Neo::print() << "Algorithm: move items" << std::endl;
     // get range from uids and append
     auto moved_item_range = Neo::ItemRange{ Neo::ItemLocalIds::getIndexes(item_lids_property[moved_item_uids]) };

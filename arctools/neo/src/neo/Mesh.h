@@ -509,14 +509,14 @@ class Mesh
    * @param moved_item_uids uids of the moving items
    * @param moved_item_new_coords new coordinates of the moving nodes given in \p node_uids
    */
-  void scheduleMoveItems(Neo::Family& item_family, std::vector<Neo::utils::Int64> const& moved_item_uids, std::vector<Neo::utils::Real3> const& moved_item_new_coords);
+  void scheduleMoveItems(Neo::Family& item_family, std::vector<Neo::utils::Int64> moved_item_uids, std::vector<Neo::utils::Real3> moved_item_new_coords);
 
   /*!
    * @brief prepare evolutive mesh api : schedule remove item operation. Will be applied when applyScheduledOperations will be called
    * @param item_family item family of removed items
    * @param removed_item_uids unique ids of removed items
    */
-  void scheduleRemoveItems(Neo::Family& item_family, std::vector<Neo::utils::Int64> const& removed_item_uids);
+  void scheduleRemoveItems(Neo::Family& item_family, std::vector<Neo::utils::Int64> removed_item_uids);
 
   /*!
    * @brief prepare evolutive mesh api : schedule remove item operation. Will be applied when applyScheduledOperations will be called
@@ -559,6 +559,10 @@ class Mesh
  public:
   [[nodiscard]] std::string _removeItemPropertyName(Family const& item_family) const {
     return "removed_" + item_family.name() + "_items";
+  }
+
+  [[nodiscard]] std::string _isolatedItemLidsPropertyName(Family const& source_family, Family const& target_family) const {
+    return "isolated_" + source_family.name() + "_to_" + target_family.name() + "_item_lids";
   }
 };
 
