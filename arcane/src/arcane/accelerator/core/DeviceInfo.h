@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* DeviceInfo.h                                                (C) 2000-2022 */
+/* DeviceInfo.h                                                (C) 2000-2025 */
 /*                                                                           */
 /* Information sur un device.                                                */
 /*---------------------------------------------------------------------------*/
@@ -44,12 +44,16 @@ class ARCANE_ACCELERATOR_CORE_EXPORT DeviceInfo
   //! Description du device.
   String description() const { return m_description; }
 
+  //! Taille d'un warp
+  Int32 warpSize() const { return m_warp_size; }
+
  public:
 
   void setDeviceId(DeviceId id) { m_device_id = id; }
   void setUUIDAsString(const String& v) { m_uuid_as_string = v; }
   void setDescription(const String& v) { m_description = v; }
   void setName(const String& v) { m_name = v; }
+  void setWarpSize(Int32 v) { m_warp_size = v; }
 
  private:
 
@@ -57,6 +61,7 @@ class ARCANE_ACCELERATOR_CORE_EXPORT DeviceInfo
   String m_name;
   String m_uuid_as_string;
   String m_description;
+  Int32 m_warp_size = 0;
 };
 
 /*---------------------------------------------------------------------------*/

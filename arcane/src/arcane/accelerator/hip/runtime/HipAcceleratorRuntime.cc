@@ -450,6 +450,7 @@ fillDevices(bool is_verbose)
     device_info.setDescription(description);
     device_info.setDeviceId(DeviceId(i));
     device_info.setName(dp.name);
+    device_info.setWarpSize(dp.warpSize);
     m_device_info_list.addDevice(device_info);
   }
 }
