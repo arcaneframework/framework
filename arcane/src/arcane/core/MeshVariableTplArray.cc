@@ -11,12 +11,12 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/core/MeshVariableArrayRefT.H"
+#include "arcane/core/MeshVariableArrayRef.inst.h"
 
 #include "arcane/utils/BFloat16.h"
 #include "arcane/utils/Float16.h"
 
-#include "arcane/core/MeshPartialVariableArrayRefT.H"
+#include "arcane/core/MeshPartialVariableArrayRef.inst.h"
 #include "arcane/core/VariableFactoryRegisterer.h"
 
 /*---------------------------------------------------------------------------*/

@@ -1,18 +1,18 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshVariableTpl.cc                                          (C) 2000-2024 */
+/* MeshVariableTpl.cc                                          (C) 2000-2025 */
 /*                                                                           */
 /* Instanciation des classes templates des variables du maillage.            */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/core/MeshVariableScalarRefT.H"
-#include "arcane/core/MeshPartialVariableScalarRefT.H"
+#include "arcane/core/MeshVariableScalarRef.inst.h"
+#include "arcane/core/MeshPartialVariableScalarRef.inst.h"
 #include "arcane/core/VariableFactoryRegisterer.h"
 
 /*---------------------------------------------------------------------------*/
