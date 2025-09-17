@@ -43,13 +43,7 @@ __device__ __forceinline__ unsigned int getBlockId()
   return blockId;
 }
 
-#if defined(__HIP__)
-constexpr const Int32 WARP_SIZE = warpSize;
-#else
-constexpr const Int32 WARP_SIZE = 32;
-#endif
 constexpr const Int32 MAX_BLOCK_SIZE = 1024;
-constexpr const Int32 MAX_WARPS = MAX_BLOCK_SIZE / WARP_SIZE;
 
 template <typename T, enum eAtomicOperation>
 class SimpleReduceOperator;
@@ -154,9 +148,11 @@ ARCCORE_DEVICE inline Int64 shfl_sync(Int64 var, int laneMask)
 /*---------------------------------------------------------------------------*/
 // Cette implémentation est celle de RAJA
 //! reduce values in block into thread 0
-template <typename ReduceOperator,typename T>
+template <typename ReduceOperator, Int32 WarpSize, typename T>
 ARCCORE_DEVICE inline T block_reduce(T val, T identity)
 {
+  constexpr Int32 WARP_SIZE = WarpSize;
+  constexpr const Int32 MAX_WARPS = MAX_BLOCK_SIZE / WARP_SIZE;
   int numThreads = blockDim.x * blockDim.y * blockDim.z;
 
   int threadId = getThreadId();
@@ -173,8 +169,8 @@ ARCCORE_DEVICE inline T block_reduce(T val, T identity)
       T rhs = impl::shfl_xor_sync(temp, i);
       ReduceOperator::apply(temp, rhs);
     }
-
-  } else {
+  }
+  else {
 
     // reduce each warp
     for (int i = 1; i < WARP_SIZE; i *= 2) {
@@ -206,7 +202,8 @@ ARCCORE_DEVICE inline T block_reduce(T val, T identity)
       // read per warp values
       if (warpId * WARP_SIZE < numThreads) {
         temp = sd[warpId];
-      } else {
+      }
+      else {
         temp = identity;
       }
       for (int i = 1; i < WARP_SIZE; i *= 2) {
@@ -224,21 +221,21 @@ ARCCORE_DEVICE inline T block_reduce(T val, T identity)
 /*---------------------------------------------------------------------------*/
 //! reduce values in grid into thread 0 of last running block
 //  returns true if put reduced value in val
-template <typename ReduceOperator, typename T>
+template <typename ReduceOperator, Int32 WarpSize, typename T>
 ARCCORE_DEVICE inline bool
-grid_reduce(T& val,T identity,SmallSpan<T> device_mem,unsigned int* device_count)
+grid_reduce(T& val, T identity, SmallSpan<T> device_mem, unsigned int* device_count)
 {
   int numBlocks = gridDim.x * gridDim.y * gridDim.z;
   int numThreads = blockDim.x * blockDim.y * blockDim.z;
   int wrap_around = numBlocks - 1;
 
   int blockId = blockIdx.x + gridDim.x * blockIdx.y +
-                (gridDim.x * gridDim.y) * blockIdx.z;
+  (gridDim.x * gridDim.y) * blockIdx.z;
 
   int threadId = threadIdx.x + blockDim.x * threadIdx.y +
-                 (blockDim.x * blockDim.y) * threadIdx.z;
+  (blockDim.x * blockDim.y) * threadIdx.z;
 
-  T temp = block_reduce<ReduceOperator>(val, identity);
+  T temp = block_reduce<ReduceOperator, WarpSize>(val, identity);
 
   // one thread per block writes to device_mem
   bool lastBlock = false;
@@ -266,7 +263,7 @@ grid_reduce(T& val,T identity,SmallSpan<T> device_mem,unsigned int* device_count
       ReduceOperator::apply(temp, device_mem[i]);
     }
 
-    temp = block_reduce<ReduceOperator>(temp, identity);
+    temp = block_reduce<ReduceOperator, WarpSize>(temp, identity);
 
     // one thread returns value
     if (threadId == 0) {
@@ -280,9 +277,8 @@ grid_reduce(T& val,T identity,SmallSpan<T> device_mem,unsigned int* device_count
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename DataType,typename ReduceOperator,typename AtomicReduceOperator>
-ARCANE_INLINE_REDUCE ARCCORE_DEVICE
-void _applyDeviceGeneric(const ReduceDeviceInfo<DataType>& dev_info)
+template <typename DataType, typename ReduceOperator, typename AtomicReduceOperator>
+ARCANE_INLINE_REDUCE ARCCORE_DEVICE void _applyDeviceGeneric(const ReduceDeviceInfo<DataType>& dev_info)
 {
   SmallSpan<DataType> grid_buffer = dev_info.m_grid_buffer;
   DataType identity = dev_info.m_identity;
@@ -291,23 +287,29 @@ void _applyDeviceGeneric(const ReduceDeviceInfo<DataType>& dev_info)
   DataType v = dev_info.m_current_value;
   bool do_grid_reduce = dev_info.m_use_grid_reduce;
 
+#if defined(__HIP__)
+  constexpr const Int32 WARP_SIZE = warpSize;
+#else
+  constexpr const Int32 WARP_SIZE = 32;
+#endif
+
   //if (impl::getThreadId()==0){
   //  printf("BLOCK ID=%d %p s=%d ptr=%p %p use_grid_reduce=%d\n",
   //         getBlockId(),grid_buffer.data(),grid_buffer.size(),ptr,
   //         (void*)device_count,(do_grid_reduce)?1:0);
   //}
-  if (do_grid_reduce){
-    bool is_done = grid_reduce<ReduceOperator>(v,identity,grid_buffer,device_count);
-    if (is_done){
+  if (do_grid_reduce) {
+    bool is_done = grid_reduce<ReduceOperator, WARP_SIZE>(v, identity, grid_buffer, device_count);
+    if (is_done) {
       *ptr = v;
       // Il est important de remettre cette à zéro pour la prochaine utilisation d'un Reducer.
       (*device_count) = 0;
     }
   }
-  else{
-    DataType rv = impl::block_reduce<ReduceOperator>(v,identity);
-    if (impl::getThreadId()==0){
-      AtomicReduceOperator::apply(ptr,rv);
+  else {
+    DataType rv = impl::block_reduce<ReduceOperator, WARP_SIZE>(v, identity);
+    if (impl::getThreadId() == 0) {
+      AtomicReduceOperator::apply(ptr, rv);
     }
   }
 }
