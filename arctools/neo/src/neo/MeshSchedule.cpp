@@ -69,28 +69,89 @@ void Neo::Mesh::_scheduleAddConnectivity(Neo::Family& source_family, Neo::ItemRa
     }
     source2target.debugPrint();
   });
-  // update connectivity of removed items : this algo must be permanent (not removed by a call to applyScheduledOperations)
-  //  const std::string removed_item_property_name{ "removed_" + target_family.m_name + "_items" };
-  const std::string removed_item_property_name = _removeItemPropertyName(target_family);
+
+  // update connectivity of target family removed items: this algorithm must be persistant (not removed by a call to applyScheduledOperations)
+  auto removed_item_property_name = _removeItemPropertyName(target_family);
   source_family.addMeshScalarProperty<Neo::utils::Int32>(removed_item_property_name);
+  auto isolated_items_property_name = _isolatedItemLidsPropertyName(source_family, target_family);
+  source_family.addMeshScalarProperty<Neo::utils::Int32>(isolated_items_property_name);
   m_mesh_graph->addAlgorithm(
   Neo::MeshKernel::InProperty{ target_family, removed_item_property_name },
   Neo::MeshKernel::OutProperty{ source_family, connectivity_unique_name },
+  Neo::MeshKernel::OutProperty{ source_family, isolated_items_property_name },
   [&source_family, &target_family](
   Neo::MeshScalarPropertyT<Neo::utils::Int32> const& target_family_removed_items,
-  Neo::MeshArrayPropertyT<Neo::utils::Int32>& connectivity) {
-    Neo::print() << "Algorithm update connectivity after remove " << connectivity.m_name << std::endl;
+  Neo::MeshArrayPropertyT<Neo::utils::Int32>& connectivity,
+  Neo::MeshScalarPropertyT<Neo::utils::Int32>& isolated_items) {
+    Neo::print() << "Algorithm: update connectivity after target family remove items " << connectivity.m_name << std::endl;
+    isolated_items.init(source_family.all(), 0);
     for (auto item : source_family.all()) {
       auto connected_items = connectivity[item];
+      auto nb_disconnected_items = 0;
       for (auto& connected_item : connected_items) {
-        if (connected_item != Neo::utils::NULL_ITEM_LID && target_family_removed_items[connected_item] == 1) {
-          Neo::print() << "modify connected item : " << connected_item << " in family " << target_family.m_name << std::endl;
-          connected_item = Neo::utils::NULL_ITEM_LID;
+        if (connected_item == Neo::utils::NULL_ITEM_LID) {
+          ++nb_disconnected_items;
         }
+        else if (target_family_removed_items[connected_item] == 1) {
+          connected_item = Neo::utils::NULL_ITEM_LID;
+          ++nb_disconnected_items;
+        }
+      }
+      if (nb_disconnected_items == connected_items.size()) {// all connected items are removed ; item is isolated for this connectivity
+        // add to isolated items removal property
+        isolated_items[item] = 1;
       }
     }
   },
   Neo::MeshKernel::AlgorithmPropertyGraph::AlgorithmPersistence::KeepAfterExecution);
+
+  // update connectivity of source family removed items: this algorithm must be persistant
+  removed_item_property_name = _removeItemPropertyName(source_family);
+  m_mesh_graph->addAlgorithm(
+  Neo::MeshKernel::InProperty{ source_family, removed_item_property_name },
+  Neo::MeshKernel::OutProperty{ source_family, connectivity_unique_name },
+  [&source_family](
+  Neo::MeshScalarPropertyT<Neo::utils::Int32> const& source_family_removed_items,
+  Neo::MeshArrayPropertyT<Neo::utils::Int32>& connectivity) {
+    Neo::print() << "Algorithm: update connectivity after source family remove items " << connectivity.m_name << std::endl;
+    std::vector<Neo::utils::Int32> removed_source_items{};
+    removed_source_items.reserve(source_family.nbElements());
+    auto index = 0;
+    for (auto item_status : source_family_removed_items) {
+      if (item_status == 1) {
+        removed_source_items.push_back(index);
+        }
+      else {
+      }
+      ++index;
+    }
+    ItemRange removed_source_item_range{ ItemLocalIds{ removed_source_items } };
+    auto zero_sizes = std::vector<int>(removed_source_items.size(), 0);
+    connectivity.append(removed_source_item_range,{},zero_sizes);
+    },
+    MeshKernel::AlgorithmPropertyGraph::AlgorithmPersistence::KeepAfterExecution
+  );
+
+  // Add an algorithm to remove isolated items
+  m_mesh_graph->addAlgorithm(
+  Neo::MeshKernel::InProperty{ source_family, isolated_items_property_name },
+  Neo::MeshKernel::OutProperty{ source_family, source_family.lidPropName() },
+  [&source_family](
+  Neo::MeshScalarPropertyT<Neo::utils::Int32> const& isolated_items,
+  Neo::ItemLidsProperty& item_lids_property){
+    Neo::print() << "Algorithm: remove isolated items in " << source_family.name() << std::endl;
+    std::vector<utils::Int32> removed_item_lids{};
+    removed_item_lids.reserve(source_family.nbElements());
+    for (auto item : source_family.all()) {
+      if (isolated_items[item] == 1) {
+        removed_item_lids.push_back(item);
+      }
+    }
+    auto& item_uids = source_family.getConcreteProperty<MeshScalarPropertyT<utils::Int64>>(uniqueIdPropertyName(source_family.name()));
+    auto removed_item_uids = item_uids[removed_item_lids];
+    auto removed_items = item_lids_property.remove(removed_item_uids);
+    item_lids_property.debugPrint();
+  }, Neo::MeshKernel::AlgorithmPropertyGraph::AlgorithmPersistence::KeepAfterExecution);
 }
 
 /*-----------------------------------------------------------------------------*/
