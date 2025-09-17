@@ -1,24 +1,22 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IReduceMemoryImpl.h                                         (C) 2000-2023 */
+/* IReduceMemoryImpl.h                                         (C) 2000-2025 */
 /*                                                                           */
 /* Interface de la gestion mémoire pour les réductions.                      */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_ACCELERATOR_IREDUCEMEMORYIMPL_H
-#define ARCANE_ACCELERATOR_IREDUCEMEMORYIMPL_H
+#ifndef ARCANE_ACCELERATOR_CORE_IREDUCEMEMORYIMPL_H
+#define ARCANE_ACCELERATOR_CORE_IREDUCEMEMORYIMPL_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/accelerator/core/AcceleratorCoreGlobal.h"
 
 #include "arcane/utils/MemoryView.h"
-
-#include <stack>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -40,8 +38,6 @@ class ARCANE_ACCELERATOR_CORE_EXPORT IReduceMemoryImpl
   //! Informations mémoire pour la réduction sur les accélérateurs
   struct GridMemoryInfo
   {
-   public:
-
     //! Mémoire allouée pour la réduction sur une grille (de taille nb_bloc * sizeof(T))
     MutableMemoryView m_grid_memory_values;
     //! Entier utilisé pour compter le nombre de blocs ayant déjà fait leur partie de la réduction
@@ -50,6 +46,8 @@ class ARCANE_ACCELERATOR_CORE_EXPORT IReduceMemoryImpl
     eDeviceReducePolicy m_reduce_policy = eDeviceReducePolicy::Grid;
     //! Pointeur vers la mémoire sur l'hôte contenant la valeur réduite.
     void* m_host_memory_for_reduced_value = nullptr;
+    //! Taille d'un warp
+    Int32 m_warp_size = 64;
   };
 
  public:

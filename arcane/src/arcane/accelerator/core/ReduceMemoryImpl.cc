@@ -49,6 +49,7 @@ ReduceMemoryImpl(RunCommandImpl* p)
 {
   _allocateMemoryForReduceData(128);
   _allocateMemoryForGridDeviceCount();
+  m_grid_memory_info.m_warp_size = p->runner()->deviceInfo().warpSize();
 }
 
 /*---------------------------------------------------------------------------*/

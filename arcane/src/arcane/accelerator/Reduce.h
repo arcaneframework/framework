@@ -110,6 +110,9 @@ class ReduceDeviceInfo
 
   //! Indique si on utilise la réduction par grille (sinon on utilise les atomiques)
   bool m_use_grid_reduce = true;
+
+  //! Taille d'un warp
+  Int32 m_warp_size = 0;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -440,6 +443,7 @@ class HostDeviceReducerBase
     dvi.m_current_value = m_local_value;
     dvi.m_identity = m_identity;
     dvi.m_use_grid_reduce = m_grid_memory_info.m_reduce_policy != eDeviceReducePolicy::Atomic;
+    dvi.m_warp_size = m_grid_memory_info.m_warp_size;
     ReduceFunctor::applyDevice(dvi); //grid_buffer,m_grid_device_count,m_host_or_device_memory_for_reduced_value,m_local_value,m_identity);
 #else
     //      printf("Destroy host parent_value=%p this=%p\n",(void*)m_parent_value,(void*)this);

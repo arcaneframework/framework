@@ -286,11 +286,22 @@ ARCANE_INLINE_REDUCE ARCCORE_DEVICE void _applyDeviceGeneric(const ReduceDeviceI
   DataType* ptr = dev_info.m_device_final_ptr;
   DataType v = dev_info.m_current_value;
   bool do_grid_reduce = dev_info.m_use_grid_reduce;
-
+#if HIP_VERSION_MAJOR >= 7
+  // A partir de ROCM 7, il n'est pas possible de savoir à la compilation
+  // la taille d'un warp. C'est 32 ou 64. Pour contourner ce problème,
+  // on utilise deux instantiations de la reduction et on choisit
+  // dynamiquement. C'est probablement un peu moins performant qu'avec
+  // l'ancien mécanisme. Une autre solution serait de choisir à la
+  // compilation la taille d'un warp. Cela est possible sur les architectures
+  // HPC comme les MI300 car cette valeur est fixe. Mais sur les architectures
+  // RDNA les deux valeurs sont possibles.
+  const Int32 warp_size = dev_info.m_warp_size;
+#else
 #if defined(__HIP__)
   constexpr const Int32 WARP_SIZE = warpSize;
 #else
   constexpr const Int32 WARP_SIZE = 32;
+#endif
 #endif
 
   //if (impl::getThreadId()==0){
@@ -299,15 +310,35 @@ ARCANE_INLINE_REDUCE ARCCORE_DEVICE void _applyDeviceGeneric(const ReduceDeviceI
   //         (void*)device_count,(do_grid_reduce)?1:0);
   //}
   if (do_grid_reduce) {
+#if HIP_VERSION_MAJOR >= 7
+    bool is_done = false;
+    if (warp_size == 64)
+      is_done = grid_reduce<ReduceOperator, 64>(v, identity, grid_buffer, device_count);
+    else if (warp_size == 32)
+      is_done = grid_reduce<ReduceOperator, 32>(v, identity, grid_buffer, device_count);
+    else
+      assert("Bad warp size (should be 32 or 64)");
+#else
     bool is_done = grid_reduce<ReduceOperator, WARP_SIZE>(v, identity, grid_buffer, device_count);
+#endif
     if (is_done) {
       *ptr = v;
-      // Il est important de remettre cette à zéro pour la prochaine utilisation d'un Reducer.
+      // Il est important de remettre cette variable à zéro pour la prochaine utilisation d'un Reducer.
       (*device_count) = 0;
     }
   }
   else {
+#if HIP_VERSION_MAJOR >= 7
+    DataType rv;
+    if (warp_size == 64)
+      rv = impl::block_reduce<ReduceOperator, 64>(v, identity);
+    else if (warp_size == 32)
+      rv = impl::block_reduce<ReduceOperator, 32>(v, identity);
+    else
+      assert("Bad warp size (should be 32 or 64)");
+#else
     DataType rv = impl::block_reduce<ReduceOperator, WARP_SIZE>(v, identity);
+#endif
     if (impl::getThreadId() == 0) {
       AtomicReduceOperator::apply(ptr, rv);
     }
