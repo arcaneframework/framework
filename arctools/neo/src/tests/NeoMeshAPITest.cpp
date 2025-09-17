@@ -699,8 +699,8 @@ TEST(NeoMeshApiTest, UpdateConnectivityAndRemoveIsolatedItemsAfterSourceFamilyCh
   std::string node_to_cells_connectivity_name{ "node_to_cells" };
 
   // Connectivity cell to nodes
-  auto nb_node_per_cell = 3;
   {
+    auto nb_node_per_cell = 3;
     std::vector<Neo::utils::Int64> cell_nodes{ 0, 1, 2, 1, 3, 2 };
     mesh.scheduleAddConnectivity(cell_family, future_cells, node_family,
                                  nb_node_per_cell, cell_nodes,
