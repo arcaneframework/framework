@@ -552,4 +552,25 @@ TEST(NeoGraphTest, ItemAndConnectivityTest) {
 }
 
 //----------------------------------------------------------------------------/
+
+TEST(NeoGraphTest,PropertyStatusTest) {
+  Neo::MeshKernel::AlgorithmPropertyGraph mesh{ "test_mesh" };
+  Neo::Family cell_family{ Neo::ItemKind::IK_Cell, "cell_family" };
+  Neo::MeshKernel::PropertyHolder in_prop_holder{ cell_family, "in_prop1" };
+  Neo::MeshKernel::PropertyHolder out_prop_holder{ cell_family, "out_prop1" };
+  auto algo1 = [](Neo::MeshKernel::InProperty prop_in, Neo::MeshKernel::OutProperty prop_out) {};
+  std::shared_ptr<Neo::MeshKernel::IAlgorithm> ialgo1 = std::make_shared<Neo::MeshKernel::AlgoHandler<decltype(algo1)>>(
+    Neo::MeshKernel::InProperty{cell_family,"in_prop1", Neo::PropertyStatus::ExistingProperty},
+    Neo::MeshKernel::OutProperty{cell_family,"out_prop1"}, (std::move(algo1)));
+  auto algo2 = [](Neo::MeshKernel::InProperty prop_in, Neo::MeshKernel::OutProperty prop_out) {};
+  std::shared_ptr<Neo::MeshKernel::IAlgorithm> ialgo2 = std::make_shared<Neo::MeshKernel::AlgoHandler<decltype(algo2)>>(
+    Neo::MeshKernel::InProperty{cell_family,"in_prop1", Neo::PropertyStatus::ComputedProperty},
+    Neo::MeshKernel::OutProperty{cell_family,"out_prop1"}, (std::move(algo2)));
+
+  EXPECT_EQ(mesh.propertyStatus(in_prop_holder.uniqueName(), ialgo1),Neo::PropertyStatus::ExistingProperty);
+  EXPECT_EQ(mesh.propertyStatus(in_prop_holder.uniqueName(), ialgo2),Neo::PropertyStatus::ComputedProperty);
+  EXPECT_EQ(mesh.propertyStatus(out_prop_holder.uniqueName(), ialgo1),Neo::PropertyStatus::ComputedProperty);
+}
+
+//----------------------------------------------------------------------------/
 //----------------------------------------------------------------------------/
