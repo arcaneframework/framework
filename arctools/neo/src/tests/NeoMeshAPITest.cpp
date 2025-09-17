@@ -681,3 +681,92 @@ TEST(NeoMeshApiTest, AddMeshOperationAfterSettingCoordinates) {
   auto ref_sum = Neo::utils::Real3{ 1, 1, 1 };
   EXPECT_EQ(computed_sum, ref_sum);
 }
+
+/*---------------------------------------------------------------------------*/
+
+TEST(NeoMeshApiTest, UpdateConnectivityAndRemoveIsolatedItemsAfterSourceFamilyChange) {
+  auto mesh = Neo::Mesh{ "RemoveIsolatedItemsMesh" };
+  auto& node_family = mesh.addFamily(Neo::ItemKind::IK_Node, "NodeFamily");
+  auto& cell_family = mesh.addFamily(Neo::ItemKind::IK_Cell, "CellFamily");
+  std::vector<Neo::utils::Int64> node_uids{ 0, 1, 2, 3 };
+  std::vector<Neo::utils::Int64> cell_uids{ 0, 1 };
+  auto future_nodes = Neo::FutureItemRange{};
+  auto future_cells = Neo::FutureItemRange{};
+  mesh.scheduleAddItems(node_family, node_uids, future_nodes);
+  mesh.scheduleAddItems(cell_family, cell_uids, future_cells);
+  // Create connectivity (fictive mesh) cells with 4 nodes
+  std::string cell_to_nodes_connectivity_name{ "cell_to_nodes" };
+  std::string node_to_cells_connectivity_name{ "node_to_cells" };
+
+  // Connectivity cell to nodes
+  auto nb_node_per_cell = 3;
+  {
+    std::vector<Neo::utils::Int64> cell_nodes{ 0, 1, 2, 1, 3, 2 };
+    mesh.scheduleAddConnectivity(cell_family, future_cells, node_family,
+                                 nb_node_per_cell, cell_nodes,
+                                 cell_to_nodes_connectivity_name);
+  }
+  // Connectivity nodes to cells
+  mesh.scheduleAddConnectivity(node_family, future_nodes, cell_family,
+                               { 1, 2, 2, 1 }, { 0, 0, 1, 0, 1, 1 },
+                               node_to_cells_connectivity_name);
+  auto end_update = mesh.applyScheduledOperations();
+  auto nodes = future_nodes.get(end_update);
+  auto cells = future_cells.get(end_update);
+  // Check connectivities
+  auto cell_2_nodes = mesh.getConnectivity(cell_family, node_family, cell_to_nodes_connectivity_name);
+  for (auto cell : cells) {
+    std::cout << "cell " << cell << " has nodes " << cell_2_nodes[cell] << std::endl;
+  }
+  std::cout << "nb cell before remove " << cell_family.nbElements() << std::endl;
+  EXPECT_EQ(cell_family.nbElements(), 2);
+  EXPECT_EQ(cell_2_nodes[0].size(), 3);
+  EXPECT_EQ(cell_2_nodes[1].size(), 3);
+  // Remove cell 0
+  std::vector<Neo::utils::Int64> removed_cell_uids{ 0 };
+  mesh.scheduleRemoveItems(cell_family, removed_cell_uids);
+  mesh.applyScheduledOperations();
+  // Check connectivities
+  auto node_2_cells = mesh.getConnectivity(node_family, cell_family, node_to_cells_connectivity_name);
+  auto cells_new = cell_family.all();
+  std::cout << "nb cell after remove " << cells_new.size() << std::endl;
+  // Cell to nodes
+  for (auto cell : cells_new) {
+    std::cout << "cell " << cell << " has nodes " << cell_2_nodes[cell] << std::endl;
+  }
+  EXPECT_EQ(cells_new.size(), 1);
+  EXPECT_EQ(cell_family.nbElements(), 1);
+  EXPECT_EQ(cell_2_nodes[0].size(), 0);
+  EXPECT_EQ(cell_2_nodes[1].size(), 3);
+
+  // Isolated node uid(0) must be removed
+  auto const& node_uids_prop = mesh.getItemUidsProperty(node_family);
+  EXPECT_EQ(node_family.nbElements(), 3);
+  for (auto node:node_family.all()) {
+    EXPECT_FALSE(node_uids_prop[node] == 0);
+  }
+
+  // Get the 0th cell back
+  Neo::FutureItemRange future_cells2;
+  mesh.scheduleAddItems(cell_family, removed_cell_uids, future_cells2);
+  auto end_update2 = mesh.applyScheduledOperations();
+  // Check cell 0 has no connected items
+  auto cells_new2 = cell_family.all();
+  std::cout << "nb cell after re-add " << cells_new2.size() << std::endl;
+  for (auto cell : cells_new2) {
+    std::cout << "cell " << cell << " has nodes " << cell_2_nodes[cell] << std::endl;
+  }
+  EXPECT_EQ(cells_new2.size(), 2);
+  EXPECT_EQ(cell_family.nbElements(), 2);
+  EXPECT_EQ(cell_2_nodes[0].size(), 0);
+  EXPECT_EQ(cell_2_nodes[1].size(), 3);
+
+  // Finally Remove all cells: must remove connected nodes
+  removed_cell_uids.push_back(1);
+  mesh.scheduleRemoveItems(cell_family, removed_cell_uids);
+  mesh.applyScheduledOperations();
+  // Check nodes are removed
+  EXPECT_EQ(node_family.nbElements(), 0);
+}
+
+/*---------------------------------------------------------------------------*/
