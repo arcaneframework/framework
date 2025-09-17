@@ -401,7 +401,24 @@ fillDevices(bool is_verbose)
     int has_managed_memory = 0;
     ARCANE_CHECK_HIP(hipDeviceGetAttribute(&has_managed_memory, hipDeviceAttributeManagedMemory, i));
 
+    // Le format des versions dans HIP est:
+    // HIP_VERSION  =  (HIP_VERSION_MAJOR * 10000000 + HIP_VERSION_MINOR * 100000 + HIP_VERSION_PATCH)
+
+    int runtime_version = 0;
+    ARCANE_CHECK_HIP(hipRuntimeGetVersion(&runtime_version));
+    //runtime_version /= 10000;
+    int runtime_major = runtime_version / 10000000;
+    int runtime_minor = (runtime_version / 100000) % 100;
+
+    int driver_version = 0;
+    ARCANE_CHECK_HIP(hipDriverGetVersion(&driver_version));
+    //driver_version /= 10000;
+    int driver_major = driver_version / 10000000;
+    int driver_minor = (driver_version / 100000) % 100;
+
     o << "\nDevice " << i << " name=" << dp.name << "\n";
+    o << " Driver version = " << driver_major << "." << (driver_minor) << "." << (driver_version % 100000) << "\n";
+    o << " Runtime version = " << runtime_major << "." << (runtime_minor) << "." << (runtime_version % 100000) << "\n";
     o << " computeCapability = " << dp.major << "." << dp.minor << "\n";
     o << " totalGlobalMem = " << dp.totalGlobalMem << "\n";
     o << " sharedMemPerBlock = " << dp.sharedMemPerBlock << "\n";
