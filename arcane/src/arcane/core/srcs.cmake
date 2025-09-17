@@ -528,9 +528,9 @@ set(ARCANE_ORIGINAL_SOURCES
   MeshItemInternalList.h
   MeshPartInfo.cc
   MeshPartialVariableArrayRef.h
-  MeshPartialVariableArrayRefT.H
+  MeshPartialVariableArrayRef.inst.h
   MeshPartialVariableScalarRef.h
-  MeshPartialVariableScalarRefT.H
+  MeshPartialVariableScalarRef.inst.h
   MeshReaderMng.cc
   MeshStats.cc
   MeshStats.h
@@ -543,12 +543,12 @@ set(ARCANE_ORIGINAL_SOURCES
   MeshUtils.h
   MeshVariable.h
   MeshVariableArrayRef.h
-  MeshVariableArrayRefT.H
+  MeshVariableArrayRef.inst.h
   MeshVariableInfo.h
   MeshVariableRef.cc
   MeshVariableRef.h
   MeshVariableScalarRef.h
-  MeshVariableScalarRefT.H
+  MeshVariableScalarRef.inst.h
   MeshVisitor.cc
   MeshVisitor.h
   ModuleBuildInfo.cc
@@ -586,9 +586,9 @@ set(ARCANE_ORIGINAL_SOURCES
   PostProcessorWriterBase.h
   PreciseOutputChecker.cc
   PreciseOutputChecker.h
-  PrivateVariableArrayT.H
+  PrivateVariableArray.inst.h
   PrivateVariableArrayTpl.cc
-  PrivateVariableScalarT.H
+  PrivateVariableScalar.inst.h
   PrivateVariableScalarTpl.cc
   Properties.cc
   Properties.h
