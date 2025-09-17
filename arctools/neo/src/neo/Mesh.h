@@ -560,6 +560,10 @@ class Mesh
   [[nodiscard]] std::string _removeItemPropertyName(Family const& item_family) const {
     return "removed_" + item_family.name() + "_items";
   }
+
+  [[nodiscard]] std::string _isolatedItemLidsPropertyName(Family const& source_family, Family const& target_family) const {
+    return "isolated_" + source_family.name() + "_to_" + target_family.name() + "_item_lids";
+  }
 };
 
 } // end namespace Neo
