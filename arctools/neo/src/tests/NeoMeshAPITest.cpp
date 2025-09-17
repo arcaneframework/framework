@@ -28,15 +28,15 @@ TEST(NeoMeshApiTest, MeshApiCreationTest) {
 
 TEST(NeoMeshApiTest, AddFamilyTest) {
   auto mesh = Neo::Mesh{ "AddFamilyTestMesh" };
-  auto cell_family = mesh.addFamily(Neo::ItemKind::IK_Cell, "CellFamily");
+  auto& cell_family = mesh.addFamily(Neo::ItemKind::IK_Cell, "CellFamily");
   std::cout << "Create family " << cell_family.name() << " with item kind " << Neo::utils::itemKindName(cell_family.itemKind()) << std::endl;
   EXPECT_EQ(cell_family.name(), "CellFamily");
   EXPECT_EQ(cell_family.itemKind(), Neo::ItemKind::IK_Cell);
-  auto node_family = mesh.addFamily(Neo::ItemKind::IK_Node, "NodeFamily");
+  auto& node_family = mesh.addFamily(Neo::ItemKind::IK_Node, "NodeFamily");
   std::cout << "Create family " << node_family.name() << " with item kind " << Neo::utils::itemKindName(node_family.itemKind()) << std::endl;
   EXPECT_EQ(node_family.name(), "NodeFamily");
   EXPECT_EQ(node_family.itemKind(), Neo::ItemKind::IK_Node);
-  auto dof_family = mesh.addFamily(Neo::ItemKind::IK_Dof, "DoFFamily");
+  auto& dof_family = mesh.addFamily(Neo::ItemKind::IK_Dof, "DoFFamily");
   std::cout << "Create family " << dof_family.name() << " with item kind " << Neo::utils::itemKindName(dof_family.itemKind()) << std::endl;
   EXPECT_EQ(dof_family.name(), "DoFFamily");
   EXPECT_EQ(dof_family.itemKind(), Neo::ItemKind::IK_Dof);
@@ -46,7 +46,7 @@ TEST(NeoMeshApiTest, AddFamilyTest) {
 
 TEST(NeoMeshApiTest, AddItemTest) {
   auto mesh = Neo::Mesh{ "AddItemsTestMesh" };
-  auto cell_family = mesh.addFamily(Neo::ItemKind::IK_Cell, "CellFamily");
+  auto& cell_family = mesh.addFamily(Neo::ItemKind::IK_Cell, "CellFamily");
   auto added_cells = Neo::FutureItemRange{};
   auto added_cells2 = Neo::FutureItemRange{};
   auto added_cells3 = Neo::FutureItemRange{};
@@ -190,7 +190,7 @@ TEST(NeoMeshApiTest, MeshApiInfoTest) {
 
 TEST(NeoMeshApiTest, SetNodeCoordsTest) {
   auto mesh = Neo::Mesh{ "SetNodeCoordsTestMesh" };
-  auto node_family = mesh.addFamily(Neo::ItemKind::IK_Node, "NodeFamily");
+  auto& node_family = mesh.addFamily(Neo::ItemKind::IK_Node, "NodeFamily");
   auto added_nodes = Neo::FutureItemRange{};
   auto added_nodes2 = Neo::FutureItemRange{};
   std::vector<Neo::utils::Int64> node_uids{ 1, 10, 100 };
@@ -232,7 +232,7 @@ TEST(NeoMeshApiTest, SetNodeCoordsTest) {
     EXPECT_EQ(node_coord_property_const[item].z, node_coords[i++].z);
   }
   // Check throw for non-existing coord property
-  auto cell_family = mesh.addFamily(Neo::ItemKind::IK_Cell, "CellFamily");
+  auto& cell_family = mesh.addFamily(Neo::ItemKind::IK_Cell, "CellFamily");
   EXPECT_THROW(mesh.getItemCoordProperty(cell_family), std::invalid_argument);
 }
 
@@ -260,9 +260,9 @@ bool areEqual(Neo::Mesh::Connectivity const con1, Neo::Mesh::Connectivity const 
 
 TEST(NeoMeshApiTest, AddItemConnectivity) {
   auto mesh = Neo::Mesh{ "AddItemConnectivityTestMesh" };
-  auto node_family = mesh.addFamily(Neo::ItemKind::IK_Node, "NodeFamily");
-  auto cell_family = mesh.addFamily(Neo::ItemKind::IK_Cell, "CellFamily");
-  auto dof_family = mesh.addFamily(Neo::ItemKind::IK_Dof, "DoFFamily");
+  auto& node_family = mesh.addFamily(Neo::ItemKind::IK_Node, "NodeFamily");
+  auto& cell_family = mesh.addFamily(Neo::ItemKind::IK_Cell, "CellFamily");
+  auto& dof_family = mesh.addFamily(Neo::ItemKind::IK_Dof, "DoFFamily");
   std::vector<Neo::utils::Int64> node_uids{ 0, 1, 2, 3, 4, 5 };
   std::vector<Neo::utils::Int64> cell_uids{ 0, 1 };
   std::vector<Neo::utils::Int64> dof_uids{ 0, 1, 2, 3, 4 };
@@ -374,7 +374,7 @@ TEST(NeoMeshApiTest, AddItemConnectivity) {
   // check node_to_dofs
   auto node_to_dofs = mesh.getConnectivity(node_family, dof_family, node_to_dofs_connectivity_name);
   EXPECT_EQ(node_to_dofs_connectivity_name, node_to_dofs.name);
-  EXPECT_EQ(&node_family, &node_to_cells.source_family);
+  EXPECT_EQ(&node_family, &node_to_dofs.source_family);
   EXPECT_EQ(&dof_family, &node_to_dofs.target_family);
   EXPECT_EQ(node_to_dofs.maxNbConnectedItems(),nb_dof_per_node);
   connected_dofs = node_to_dofs.connectivity_value.constView();
@@ -451,7 +451,7 @@ TEST(NeoMeshApiTest, AddItemConnectivity) {
 TEST(NeoMeshApiTest, AddAndChangeItemConnectivity) {
   // Add new connectivities
   auto mesh = Neo::Mesh{ "AddAndChangeItemConnectivityTestMesh" };
-  auto cell_family = mesh.addFamily(Neo::ItemKind::IK_Cell, "cell_family");
+  auto& cell_family = mesh.addFamily(Neo::ItemKind::IK_Cell, "cell_family");
   auto& dof_family = mesh.addFamily(Neo::ItemKind::IK_Dof, "dof_family");
   std::vector<Neo::utils::Int64> cell_uids{ 0, 1 };
   std::vector<Neo::utils::Int64> dof_uids{ 0, 1, 2, 3, 4 };
@@ -658,7 +658,7 @@ TEST(NeoMeshApiTest, AddMeshOperationAfterAddingConnectivity) {
 
 TEST(NeoMeshApiTest, AddMeshOperationAfterSettingCoordinates) {
   auto mesh = Neo::Mesh{ "SetNodeCoordsTestMesh" };
-  auto node_family = mesh.addFamily(Neo::ItemKind::IK_Node, "NodeFamily");
+  auto& node_family = mesh.addFamily(Neo::ItemKind::IK_Node, "NodeFamily");
   auto added_nodes = Neo::FutureItemRange{};
   std::vector<Neo::utils::Int64> node_uids{ 1, 10, 100 };
   mesh.scheduleAddItems(node_family, node_uids, added_nodes);
