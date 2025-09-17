@@ -495,7 +495,21 @@ namespace MeshKernel
       return EndOfMeshUpdate{};
     }
 
-   private:
+    PropertyStatus propertyStatus(std::string const& property_unique_name,std::shared_ptr<IAlgorithm>const& algorithm) {
+      for (auto input_property_index = 0; input_property_index < algorithm->nbInProperties(); ++input_property_index) {
+        if (property_unique_name == algorithm->inProperty(input_property_index).uniqueName()) {
+          return algorithm->inProperty(input_property_index).m_status;
+        }
+      }
+      for (auto output_property_index = 0; output_property_index < algorithm->nbOutProperties(); ++output_property_index) {
+        if (property_unique_name == algorithm->outProperty(output_property_index).uniqueName()) {
+          return algorithm->outProperty(output_property_index).m_status;
+        }
+      }
+    }
+
+  private:
+
     void _build_graph() {
       // Mark algorithms that won't have their input properties
       std::vector<AlgoPtr> to_remove_algos;
