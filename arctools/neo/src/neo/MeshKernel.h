@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshKernel                                     (C) 2000-2024             */
+/* MeshKernel                                     (C) 2000-2025             */
 /*                                                                           */
 /* Brief code description                                                    */
 /*---------------------------------------------------------------------------*/
@@ -139,6 +139,9 @@ namespace MeshKernel
     virtual void operator()() = 0;
     virtual InProperty const& inProperty(int index = 0) const = 0;
     virtual OutProperty const& outProperty(int index = 0) const = 0;
+    virtual ~IAlgorithm() = default;
+    virtual int nbInProperties() const = 0;
+    virtual int nbOutProperties() const = 0;
   };
 
   /*---------------------------------------------------------------------------*/
@@ -167,6 +170,14 @@ namespace MeshKernel
         return m_out_property;
       else
         throw std::invalid_argument("The current algo has only one outProperty. Cannot call IAlgorithm::outProperty(index) with index > 0");
+    }
+
+    int nbInProperties() const override {
+      return 1;
+    }
+
+    int nbOutProperties() const override {
+      return 1;
     }
   };
 
@@ -201,6 +212,14 @@ namespace MeshKernel
       else
         throw std::invalid_argument("The current algo has only one outProperty. Cannot call IAlgorithm::outProperty(index) with index > 0");
     }
+
+    int nbInProperties() const override {
+      return 2;
+    }
+
+    int nbOutProperties() const override {
+      return 1;
+    }
   };
 
   /*---------------------------------------------------------------------------*/
@@ -234,6 +253,14 @@ namespace MeshKernel
       else
         throw std::invalid_argument("The current algo has only two outProperty. Cannot call IAlgorithm::outProperty(index) with index > 1");
     }
+
+    int nbInProperties() const override {
+      return 1;
+    }
+
+    int nbOutProperties() const override {
+      return 2;
+    }
   };
 
   /*---------------------------------------------------------------------------*/
@@ -257,6 +284,14 @@ namespace MeshKernel
         return m_out_property;
       else
         throw std::invalid_argument("The current algo has only one outProperty. Cannot call IAlgorithm::outProperty(index) with index > 0");
+    }
+
+    int nbInProperties() const override {
+      return 0;
+    }
+
+    int nbOutProperties() const override {
+      return 1;
     }
   };
 
@@ -285,6 +320,14 @@ namespace MeshKernel
         return m_out_property2;
       else
         throw std::invalid_argument("The current algo has only two outProperty. Cannot call IAlgorithm::inProperty(index) with index > 1");
+    }
+
+    int nbInProperties() const override {
+      return 0;
+    }
+
+    int nbOutProperties() const override {
+      return 2;
     }
   };
 
