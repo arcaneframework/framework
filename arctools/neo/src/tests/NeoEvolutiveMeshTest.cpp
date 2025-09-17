@@ -99,6 +99,7 @@ TEST(NeoEvolutiveMeshTest, RemoveCells) {
   auto& node_family = mesh.findFamily(Neo::ItemKind::IK_Node, node_family_name);
   mesh.scheduleAddConnectivity(node_family, node_family.all(), cell_family, 1,
                                node_to_cell, node2cells_con_name);
+  mesh.applyScheduledOperations();
   // Remove cell 0, 1 and 2
   std::vector<Neo::utils::Int64> removed_cells{ 0, 1, 2 };
   mesh.scheduleRemoveItems(cell_family, removed_cells);
