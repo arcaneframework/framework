@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshVariableTplArray.cc                                     (C) 2000-2024 */
+/* MeshVariableTplArray.cc                                     (C) 2000-2025 */
 /*                                                                           */
 /* Instanciation des classes templates des variables tableaux du maillage.   */
 /*---------------------------------------------------------------------------*/
@@ -28,27 +28,9 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template class ARCANE_TEMPLATE_EXPORT ItemVariableArrayRefT<Byte>;
-template class ARCANE_TEMPLATE_EXPORT ItemVariableArrayRefT<Int16>;
-template class ARCANE_TEMPLATE_EXPORT ItemVariableArrayRefT<Int32>;
-template class ARCANE_TEMPLATE_EXPORT ItemVariableArrayRefT<Int64>;
-template class ARCANE_TEMPLATE_EXPORT ItemVariableArrayRefT<Real>;
-template class ARCANE_TEMPLATE_EXPORT ItemVariableArrayRefT<Real2>;
-template class ARCANE_TEMPLATE_EXPORT ItemVariableArrayRefT<Real3>;
-template class ARCANE_TEMPLATE_EXPORT ItemVariableArrayRefT<Real2x2>;
-template class ARCANE_TEMPLATE_EXPORT ItemVariableArrayRefT<Real3x3>;
-
-template class ARCANE_TEMPLATE_EXPORT ItemPartialVariableArrayRefT<Byte>;
-template class ARCANE_TEMPLATE_EXPORT ItemPartialVariableArrayRefT<Int16>;
-template class ARCANE_TEMPLATE_EXPORT ItemPartialVariableArrayRefT<Int32>;
-template class ARCANE_TEMPLATE_EXPORT ItemPartialVariableArrayRefT<Int64>;
-template class ARCANE_TEMPLATE_EXPORT ItemPartialVariableArrayRefT<Real>;
-template class ARCANE_TEMPLATE_EXPORT ItemPartialVariableArrayRefT<Real2>;
-template class ARCANE_TEMPLATE_EXPORT ItemPartialVariableArrayRefT<Real3>;
-template class ARCANE_TEMPLATE_EXPORT ItemPartialVariableArrayRefT<Real2x2>;
-template class ARCANE_TEMPLATE_EXPORT ItemPartialVariableArrayRefT<Real3x3>;
-
 #define ARCANE_INSTANTIATE_MESHVARIABLE_ARRAY(datatype) \
+template class ARCANE_TEMPLATE_EXPORT ItemVariableArrayRefT<datatype>;\
+template class ARCANE_TEMPLATE_EXPORT ItemPartialVariableArrayRefT<datatype>;\
 template class ARCANE_TEMPLATE_EXPORT MeshVariableArrayRefT<Node,datatype>; \
 template class ARCANE_TEMPLATE_EXPORT MeshVariableArrayRefT<Edge,datatype>; \
 template class ARCANE_TEMPLATE_EXPORT MeshVariableArrayRefT<Face,datatype>; \
