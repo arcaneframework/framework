@@ -461,10 +461,12 @@ TEST(NeoMeshApiTest, AddAndChangeItemConnectivity) {
   mesh.scheduleAddItems(cell_family, cell_uids, future_cells);
   mesh.scheduleAddItems(dof_family, dof_uids, future_dofs);
   // Add en empty connectivity
-  mesh.scheduleAddConnectivity(cell_family, Neo::ItemRange{}, dof_family, 0,
-                               {}, "cell_to_dofs");
+  Neo::ItemRange empty_range{};
+  std::vector<Neo::utils::Int64> empty_dof_uids{};
+  mesh.scheduleAddConnectivity(cell_family, empty_range, dof_family, 0,
+                               empty_dof_uids, "cell_to_dofs");
   mesh.applyScheduledOperations();
-  // It is possible to modifiy an empty connectivity using ConnectivityOperation::Add (the default)
+  // It is possible to modify an empty connectivity using ConnectivityOperation::Add (the default)
   mesh.scheduleAddConnectivity(cell_family, future_cells, dof_family, 3,
                                cell_dofs, "cell_to_dofs");
   mesh.applyScheduledOperations();

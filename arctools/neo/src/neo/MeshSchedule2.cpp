@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshSchedule2.cpp                                           (C) 2000-2023 */
+/* MeshSchedule2.cpp                                           (C) 2000-2025 */
 /*                                                                           */
 /* Asynchronous Mesh structure based on Neo kernel                           */
 /*---------------------------------------------------------------------------*/
@@ -22,7 +22,7 @@
 
 /*-----------------------------------------------------------------------------*/
 
-void Neo::Mesh::scheduleMoveItems(Neo::Family& item_family, std::vector<Neo::utils::Int64> const& moved_item_uids, std::vector<Neo::utils::Real3> const& moved_item_new_coords) {
+void Neo::Mesh::scheduleMoveItems(Neo::Family& item_family, std::vector<Neo::utils::Int64> moved_item_uids, std::vector<Neo::utils::Real3> moved_item_new_coords) {
   auto coord_prop_name = _itemCoordPropertyName(item_family);
   item_family.addMeshScalarProperty<Neo::utils::Real3>(coord_prop_name);
   m_mesh_graph->addAlgorithm(
