@@ -5,17 +5,13 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshVariableTplArray.cc                                     (C) 2000-2025 */
+/* MeshVariableArrayTpl.cc                                     (C) 2000-2025 */
 /*                                                                           */
 /* Instanciation des classes templates des variables tableaux du maillage.   */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/core/MeshVariableArrayRef.inst.h"
-
-#include "arcane/utils/BFloat16.h"
-#include "arcane/utils/Float16.h"
-
 #include "arcane/core/MeshPartialVariableArrayRef.inst.h"
 #include "arcane/core/VariableFactoryRegisterer.h"
 
@@ -59,8 +55,6 @@ ARCANE_INSTANTIATE_MESHVARIABLE_ARRAY(Real2);
 ARCANE_INSTANTIATE_MESHVARIABLE_ARRAY(Real2x2);
 ARCANE_INSTANTIATE_MESHVARIABLE_ARRAY(Real3);
 ARCANE_INSTANTIATE_MESHVARIABLE_ARRAY(Real3x3);
-
-/*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
