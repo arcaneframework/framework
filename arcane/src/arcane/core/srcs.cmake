@@ -95,8 +95,10 @@ set(ARCANE_ORIGINAL_SOURCES
   Array2Variable.h
   VariableArray.cc
   VariableArray.h
-  MeshVariableTpl.cc
   MeshVariableTplArray.cc
+  MeshVariableScalarRefTpl1.cc
+  MeshVariableScalarRefTpl2.cc
+  MeshVariableScalarRefTpl3.cc
 
   AbstractModule.h
   ApplicationBuildInfo.h

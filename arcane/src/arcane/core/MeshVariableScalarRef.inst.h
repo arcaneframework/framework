@@ -31,49 +31,6 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void ItemNumericOperation<Real>::
-add(VarType& out,const VarType& v,const ItemGroup& group)
-{
-  ENUMERATE_ITEM(iitem,group){
-    out[iitem] += v[iitem];
-  }
-}
-
-void ItemNumericOperation<Real>::
-sub(VarType& out,const VarType& v,const ItemGroup& group)
-{
-  ENUMERATE_ITEM(iitem,group){
-    out[iitem] -= v[iitem];
-  }
-}
-
-void ItemNumericOperation<Real>::
-mult(VarType& out,const VarType& v,const ItemGroup& group)
-{
-  ENUMERATE_ITEM(iitem,group){
-    out[iitem] *= v[iitem];
-  }
-}
-
-void ItemNumericOperation<Real>::
-mult(VarType& out,Real v,const ItemGroup& group)
-{
-  ENUMERATE_ITEM(iitem,group){
-    out[iitem] *= v;
-  }
-}
-
-void ItemNumericOperation<Real>::
-power(VarType& out,Real v,const ItemGroup& group)
-{
-  ENUMERATE_ITEM(iitem,group){
-    out[iitem] = math::pow(out[iitem],v);
-  }
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 template<typename DataType> VariableTypeInfo
 ItemVariableScalarRefT<DataType>::
 _internalVariableTypeInfo(eItemKind ik)
@@ -338,6 +295,25 @@ swapValues(MeshVariableScalarRefT<ItemType,DataType>& rhs)
 {
   this->m_private_part->swapValues(*(rhs.m_private_part));
 }
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+#define ARCANE_INSTANTIATE_MESHVARIABLE_SCALAR(datatype) \
+template class ARCANE_TEMPLATE_EXPORT ItemVariableScalarRefT<datatype>;\
+template class ARCANE_TEMPLATE_EXPORT ItemPartialVariableScalarRefT<datatype>;\
+template class ARCANE_TEMPLATE_EXPORT MeshVariableScalarRefT<Node,datatype>; \
+template class ARCANE_TEMPLATE_EXPORT MeshVariableScalarRefT<Edge,datatype>; \
+template class ARCANE_TEMPLATE_EXPORT MeshVariableScalarRefT<Face,datatype>; \
+template class ARCANE_TEMPLATE_EXPORT MeshVariableScalarRefT<Cell,datatype>; \
+template class ARCANE_TEMPLATE_EXPORT MeshVariableScalarRefT<Particle,datatype>; \
+template class ARCANE_TEMPLATE_EXPORT MeshVariableScalarRefT<DoF,datatype>; \
+template class ARCANE_TEMPLATE_EXPORT MeshPartialVariableScalarRefT<Node,datatype>; \
+template class ARCANE_TEMPLATE_EXPORT MeshPartialVariableScalarRefT<Edge,datatype>; \
+template class ARCANE_TEMPLATE_EXPORT MeshPartialVariableScalarRefT<Face,datatype>; \
+template class ARCANE_TEMPLATE_EXPORT MeshPartialVariableScalarRefT<Cell,datatype>; \
+template class ARCANE_TEMPLATE_EXPORT MeshPartialVariableScalarRefT<Particle,datatype>; \
+template class ARCANE_TEMPLATE_EXPORT MeshPartialVariableScalarRefT<DoF,datatype>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
