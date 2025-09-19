@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* AcceleratorCoreGlobal.h                                     (C) 2000-2024 */
+/* AcceleratorCoreGlobal.h                                     (C) 2000-2025 */
 /*                                                                           */
 /* Déclarations générales pour le support des accélérateurs.                 */
 /*---------------------------------------------------------------------------*/
@@ -113,12 +113,21 @@ operator<<(std::ostream& o, eExecutionPolicy exec_policy);
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Politique des opératations de réduction sur les accélérateurs
+ * \brief Politique des opératations de réduction sur les accélérateurs.
+ *
+ * \note A partir de la version 3.15 de Arcane, seule la politique Grid
+ * est disponible.
  */
 enum class eDeviceReducePolicy
 {
-  //! Utilise des opérations atomiques entre les blocs
-  Atomic = 1,
+  /*!
+   * \brief Utilise des opérations atomiques entre les blocs.
+   *
+   * \deprecated Cette politique n'est plus disponible. Si on
+   * spécifie cette politique, elle se comportera comme
+   * eDeviceReducePolicy::Grid.
+   */
+  Atomic ARCANE_DEPRECATED_REASON("Y2025: Use eDeviceReducePolicy::Grid instead") = 1,
   //! Utilise un noyau de calcul avec une synchronisations entre les blocs.
   Grid = 2
 };

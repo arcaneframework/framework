@@ -277,7 +277,7 @@ grid_reduce(T& val, T identity, SmallSpan<T> device_mem, unsigned int* device_co
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template <typename DataType, typename ReduceOperator, typename AtomicReduceOperator>
+template <typename DataType, typename ReduceOperator>
 ARCANE_INLINE_REDUCE ARCCORE_DEVICE void _applyDeviceGeneric(const ReduceDeviceInfo<DataType>& dev_info)
 {
   SmallSpan<DataType> grid_buffer = dev_info.m_grid_buffer;
@@ -285,7 +285,6 @@ ARCANE_INLINE_REDUCE ARCCORE_DEVICE void _applyDeviceGeneric(const ReduceDeviceI
   unsigned int* device_count = dev_info.m_device_count;
   DataType* ptr = dev_info.m_device_final_ptr;
   DataType v = dev_info.m_current_value;
-  bool do_grid_reduce = dev_info.m_use_grid_reduce;
 #if HIP_VERSION_MAJOR >= 7
   // A partir de ROCM 7, il n'est pas possible de savoir à la compilation
   // la taille d'un warp. C'est 32 ou 64. Pour contourner ce problème,
@@ -295,6 +294,8 @@ ARCANE_INLINE_REDUCE ARCCORE_DEVICE void _applyDeviceGeneric(const ReduceDeviceI
   // compilation la taille d'un warp. Cela est possible sur les architectures
   // HPC comme les MI300 car cette valeur est fixe. Mais sur les architectures
   // RDNA les deux valeurs sont possibles.
+  // TODO: Sur les architectures AMD avec une taille de warp fixe,
+  // utiliser cette taille de warp comme 'constexpr' pour éviter le 'if'.
   const Int32 warp_size = dev_info.m_warp_size;
 #else
 #if defined(__HIP__)
@@ -309,39 +310,21 @@ ARCANE_INLINE_REDUCE ARCCORE_DEVICE void _applyDeviceGeneric(const ReduceDeviceI
   //         getBlockId(),grid_buffer.data(),grid_buffer.size(),ptr,
   //         (void*)device_count,(do_grid_reduce)?1:0);
   //}
-  if (do_grid_reduce) {
 #if HIP_VERSION_MAJOR >= 7
-    bool is_done = false;
-    if (warp_size == 64)
-      is_done = grid_reduce<ReduceOperator, 64>(v, identity, grid_buffer, device_count);
-    else if (warp_size == 32)
-      is_done = grid_reduce<ReduceOperator, 32>(v, identity, grid_buffer, device_count);
-    else
-      assert("Bad warp size (should be 32 or 64)");
+  bool is_done = false;
+  if (warp_size == 64)
+    is_done = grid_reduce<ReduceOperator, 64>(v, identity, grid_buffer, device_count);
+  else if (warp_size == 32)
+    is_done = grid_reduce<ReduceOperator, 32>(v, identity, grid_buffer, device_count);
+  else
+    assert("Bad warp size (should be 32 or 64)");
 #else
-    bool is_done = grid_reduce<ReduceOperator, WARP_SIZE>(v, identity, grid_buffer, device_count);
+  bool is_done = grid_reduce<ReduceOperator, WARP_SIZE>(v, identity, grid_buffer, device_count);
 #endif
-    if (is_done) {
-      *ptr = v;
-      // Il est important de remettre cette variable à zéro pour la prochaine utilisation d'un Reducer.
-      (*device_count) = 0;
-    }
-  }
-  else {
-#if HIP_VERSION_MAJOR >= 7
-    DataType rv;
-    if (warp_size == 64)
-      rv = impl::block_reduce<ReduceOperator, 64>(v, identity);
-    else if (warp_size == 32)
-      rv = impl::block_reduce<ReduceOperator, 32>(v, identity);
-    else
-      assert("Bad warp size (should be 32 or 64)");
-#else
-    DataType rv = impl::block_reduce<ReduceOperator, WARP_SIZE>(v, identity);
-#endif
-    if (impl::getThreadId() == 0) {
-      AtomicReduceOperator::apply(ptr, rv);
-    }
+  if (is_done) {
+    *ptr = v;
+    // Il est important de remettre cette variable à zéro pour la prochaine utilisation d'un Reducer.
+    (*device_count) = 0;
   }
 }
 
@@ -352,8 +335,7 @@ template <typename DataType> ARCANE_INLINE_REDUCE ARCCORE_DEVICE void ReduceFunc
 _applyDevice(const ReduceDeviceInfo<DataType>& dev_info)
 {
   using ReduceOperator = impl::SimpleReduceOperator<DataType, eAtomicOperation::Add>;
-  using AtomicReduceOperator = impl::CommonCudaHipAtomic<DataType, eAtomicOperation::Add>;
-  _applyDeviceGeneric<DataType, ReduceOperator, AtomicReduceOperator>(dev_info);
+  _applyDeviceGeneric<DataType, ReduceOperator>(dev_info);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -363,8 +345,7 @@ template <typename DataType> ARCANE_INLINE_REDUCE ARCCORE_DEVICE void ReduceFunc
 _applyDevice(const ReduceDeviceInfo<DataType>& dev_info)
 {
   using ReduceOperator = impl::SimpleReduceOperator<DataType, eAtomicOperation::Max>;
-  using AtomicReduceOperator = impl::CommonCudaHipAtomic<DataType, eAtomicOperation::Max>;
-  _applyDeviceGeneric<DataType, ReduceOperator, AtomicReduceOperator>(dev_info);
+  _applyDeviceGeneric<DataType, ReduceOperator>(dev_info);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -374,8 +355,7 @@ template <typename DataType> ARCANE_INLINE_REDUCE ARCCORE_DEVICE void ReduceFunc
 _applyDevice(const ReduceDeviceInfo<DataType>& dev_info)
 {
   using ReduceOperator = impl::SimpleReduceOperator<DataType, eAtomicOperation::Min>;
-  using AtomicReduceOperator = impl::CommonCudaHipAtomic<DataType, eAtomicOperation::Min>;
-  _applyDeviceGeneric<DataType, ReduceOperator, AtomicReduceOperator>(dev_info);
+  _applyDeviceGeneric<DataType, ReduceOperator>(dev_info);
 }
 
 /*---------------------------------------------------------------------------*/

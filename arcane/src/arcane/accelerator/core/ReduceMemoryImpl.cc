@@ -64,15 +64,6 @@ release()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void ReduceMemoryImpl::
-_setReducePolicy()
-{
-  m_grid_memory_info.m_reduce_policy = m_command->runner()->reducePolicy();
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 void* ReduceMemoryImpl::
 allocateReduceDataMemory(ConstMemoryView identity_view)
 {
