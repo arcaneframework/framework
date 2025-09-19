@@ -1,5 +1,5 @@
 ﻿arcane_find_package(VTKVersionHelper) # Pour obtenir VTK_PACKAGE_PREFIX qui varie en focntion des versions de VTK
-set(PRIVATE_PKGS LibUnwind Papi Parmetis PTScotch Udunits Zoltan BZip2 LZ4 Otf2 DbgHelp HWLoc Hiredis zstd)
+set(PRIVATE_PKGS LibUnwind Papi Parmetis PTScotch Udunits Zoltan BZip2 LZ4 Otf2 DbgHelp HWLoc Hiredis zstd DW)
 set(PUBLIC_PKGS MPI ${VTK_PACKAGE_PREFIX}IOXML ${VTK_PACKAGE_PREFIX}IOLegacy)
 set(PKGS ${PRIVATE_PKGS} ${PUBLIC_PKGS})
 

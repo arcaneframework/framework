@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* LibUnwindStackTraceService.cc                               (C) 2000-2024 */
+/* LibUnwindStackTraceService.cc                               (C) 2000-2025 */
 /*                                                                           */
 /* Service de trace des appels de fonctions utilisant 'libunwind'.           */
 /*---------------------------------------------------------------------------*/
@@ -17,34 +17,155 @@
 #include "arcane/utils/StringBuilder.h"
 #include "arcane/utils/Array.h"
 #include "arcane/utils/Process.h"
-
 #include "arcane/utils/ISymbolizerService.h"
-#include "arcane/ServiceBuilder.h"
-#include "arcane/Directory.h"
 
-#include "arcane/ServiceFactory.h"
-#include "arcane/AbstractService.h"
+#include "arcane/core/ServiceBuilder.h"
+#include "arcane/core/Directory.h"
+
+#include "arcane/core/ServiceFactory.h"
+#include "arcane/core/AbstractService.h"
+
+#include "arcane_packages.h"
 
 #define UNW_LOCAL_ONLY
 #include <libunwind.h>
-#include <stdio.h>
 #include <cxxabi.h>
 
 #include <map>
 #include <mutex>
 
 #include <execinfo.h>
-#include <stdio.h>
+#include <cstdio>
 #include <sys/types.h>
 #include <unistd.h>
-#include <stdlib.h>
+//#include <cstdlib>
 #include <dlfcn.h>
+
+#if defined(ARCANE_HAS_PACKAGE_DW)
+#include <elfutils/libdwfl.h>
+#endif
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 namespace Arcane
 {
+
+struct DebugSourceInfo
+{
+  int m_line = 0;
+  int m_column = 0;
+  const char* m_source_file = nullptr;
+};
+
+#if defined(ARCANE_HAS_PACKAGE_DW)
+/*!
+ * \brief Handler autour de 'libdw' pour récupérer les informations de debug.
+ *
+ * Cela permet de récupérer le nom du fichier source et la ligne correspondant
+ * à une adresse mémoire.
+ *
+ * \note Cela ne fonctionne qu'avec GCC et pas avec Clang car ce dernier ne
+ * sauve pas de la même manière les informations de debug.
+ *
+ * \warning Les appels aux fonctions de 'libdw' ne sont probablement pas
+ * ré-entrant. Ils sont donc protégés par un mutex.
+ */
+class DWHandler
+{
+ public:
+
+  DWHandler()
+  {
+    m_callback.find_elf = &dwfl_linux_proc_find_elf;
+    m_callback.find_debuginfo = &dwfl_standard_find_debuginfo;
+    m_callback.section_address = nullptr;
+    m_callback.debuginfo_path = nullptr;
+  }
+
+  ~DWHandler()
+  {
+    if (m_session)
+      dwfl_end(m_session);
+  }
+
+  /*!
+   * \brief Retourne le couple (ligne,colonne) correspondant à l'adresse \a func_address.
+   *
+   * Si aucune information de debug n'est trouvée, remplit (line,column) par (0,0)
+   */
+  DebugSourceInfo getInfo(unw_word_t func_address)
+  {
+    std::scoped_lock<std::mutex> lock(m_mutex);
+    DebugSourceInfo source_info;
+
+    _init();
+
+    auto dw_address = reinterpret_cast<Dwarf_Addr>(func_address);
+
+    Dwfl_Module* module = dwfl_addrmodule(m_session, dw_address);
+    if (!module)
+      return source_info;
+    Dwarf_Addr bias = 0;
+    Dwarf_Die* dw_die = dwfl_module_addrdie(module, dw_address, &bias);
+    if (dw_die)
+      return source_info;
+
+    Dwarf_Line* dw_source_info = dwarf_getsrc_die(dw_die, dw_address - bias);
+
+    if (dw_source_info) {
+      int line = 0;
+      int column = 0;
+      // ATTENTION : le pointeur retourné n'est plus valide si m_session est détruit.
+      const char* source_file = dwarf_linesrc(dw_source_info, nullptr, nullptr);
+      dwarf_lineno(dw_source_info, &line);
+      dwarf_linecol(dw_source_info, &column);
+      source_info = { line, column, source_file };
+    }
+
+    return source_info;
+  }
+
+ public:
+
+  bool m_is_init = false;
+  Dwfl_Callbacks m_callback;
+  Dwfl* m_session = nullptr;
+  std::mutex m_mutex;
+
+ private:
+
+  void _init()
+  {
+    if (m_is_init)
+      return;
+    m_is_init = true;
+
+    m_session = dwfl_begin(&m_callback);
+    // TODO: faire dwfl_end()
+    if (!m_session)
+      return;
+
+    dwfl_report_begin(m_session);
+    dwfl_linux_proc_report(m_session, getpid());
+    dwfl_report_end(m_session, nullptr, nullptr);
+  }
+};
+
+#else
+
+// Implémentation vide si libdw n'est pas trouvé.
+class DWHandler
+{
+ public:
+
+  DebugSourceInfo getInfo(unw_word_t func_address)
+  {
+    return {};
+  }
+};
+
+#endif
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -56,28 +177,40 @@ class LibUnwindStackTraceService
 , public IStackTraceService
 {
  private:
+
+  //! Information sur une adresse mémoire.
   struct ProcInfo
   {
    public:
+
     ProcInfo() = default;
-    explicit ProcInfo(const String& aname) : m_name(aname){}
+    explicit ProcInfo(const String& aname)
+    : m_name(aname)
+    {}
+
    public:
+
+    //! Nom de la fonction
     const String& name() const { return m_name; }
-    //! Nom du fichier contenant la procédure. Peut-être nul.
-    const char* fileName() const { return m_file_name; }
+    //! Nom de la bibliothèque contenant la fonction. Peut-être nul.
+    const char* libraryFileName() const { return m_library_file_name; }
+
    public:
+
     //! Nom (démanglé) de la procédure
     String m_name;
     //! Nom de la bibliothèque (.so ou .exe) dans laquelle se trouve la méthode
-    const char* m_file_name = nullptr;
+    const char* m_library_file_name = nullptr;
     //! Adresse de chargement de la bibliothèque.
     //TODO: ne pas stocker cela pour chaque fonction.
     unw_word_t m_file_loaded_address = 0;
     unw_word_t m_base_ip = 0;
+    DebugSourceInfo m_source_info;
   };
+
  public:
 
-  LibUnwindStackTraceService(const ServiceBuildInfo& sbi)
+  explicit LibUnwindStackTraceService(const ServiceBuildInfo& sbi)
   : AbstractService(sbi), m_want_gdb_info(false), m_use_backtrace(false)
   {
     m_application = sbi.application();
@@ -105,11 +238,12 @@ class LibUnwindStackTraceService
   ProcInfoMap m_proc_name_map;
   std::mutex m_proc_name_map_mutex;
 
-  bool m_want_gdb_info;
-  bool m_use_backtrace;
-  IApplication* m_application; //A SUPPRIMER
+  bool m_want_gdb_info = false;
+  bool m_use_backtrace = false;
+  IApplication* m_application = nullptr; //A SUPPRIMER
+  DWHandler m_dw_handler;
   ProcInfo _getFuncInfo(unw_word_t ip,unw_cursor_t* cursor);
-  ProcInfo _getFuncInfo(void* ip);
+  ProcInfo _getFuncInfo(const void* ip);
   String _getGDBStack();
   StackTrace _backtraceStackTrace(const FixedStackFrameArray& stack_frames);
   String _generateFileAndOffset(const FixedStackFrameArray& stack_frames);
@@ -146,7 +280,7 @@ _getFuncInfo(unw_word_t ip,unw_cursor_t* cursor)
       const char* dli_fname = dl_info.dli_fname;
       // Adresse de base de chargement du fichier.
       void* dli_fbase = dl_info.dli_fbase;
-      pi.m_file_name = dli_fname;
+      pi.m_library_file_name = dli_fname;
       pi.m_file_loaded_address = (unw_word_t)dli_fbase;
     }
   }
@@ -155,10 +289,16 @@ _getFuncInfo(unw_word_t ip,unw_cursor_t* cursor)
     pi.m_name = std::string_view(buf);
   else
     pi.m_name = std::string_view(func_name_buf);
+
+  // Il faut faire 'ip-1' car l'adresse retournée par libunwind est celle
+  // de l'instruction de retour.
+  pi.m_source_info = m_dw_handler.getInfo(ip - 1);
+
   {
     std::lock_guard<std::mutex> lk(m_proc_name_map_mutex);
-    m_proc_name_map.insert(ProcInfoMap::value_type(ip,pi));
+    m_proc_name_map.insert(ProcInfoMap::value_type(ip, pi));
   }
+
   return pi;
 }
 
@@ -169,7 +309,7 @@ _getFuncInfo(unw_word_t ip,unw_cursor_t* cursor)
  * \todo: rendre thread-safe
  */
 LibUnwindStackTraceService::ProcInfo LibUnwindStackTraceService::
-_getFuncInfo(void* addr)
+_getFuncInfo(const void* addr)
 {
   {
     std::lock_guard<std::mutex> lk(m_proc_name_map_mutex);
@@ -181,7 +321,7 @@ _getFuncInfo(void* addr)
   const size_t buf_size = 10000;
   char demangled_func_name_buf[buf_size];
   Dl_info dl_info;
-  int r = dladdr(addr,&dl_info);
+  int r = dladdr(addr, &dl_info);
   if (r==0){
     // Erreur dans dladdr.
     std::cout << "ERROR in dladdr\n";
@@ -265,6 +405,15 @@ stackTrace(int first_function)
       message += hexa;
       message += "  ";
       message += func_name;
+      if (pi.m_source_info.m_source_file) {
+        message += " \"";
+        message += pi.m_source_info.m_source_file;
+        if (pi.m_source_info.m_line > 0) {
+          message += ":";
+          message += pi.m_source_info.m_line;
+        }
+        message += "\"";
+      }
       message += "\n";
 
       stack_frames.addFrame(StackFrame((intptr_t)ip));
@@ -391,10 +540,10 @@ _generateFileAndOffset(const FixedStackFrameArray& stack_frames)
   ConstArrayView<StackFrame> frames_view = stack_frames.view();
   for( StackFrame f : frames_view ){
     intptr_t ip = f.address();
-    ProcInfo pinfo = _getFuncInfo((void*)ip);
-    message += (pinfo.fileName() ? pinfo.fileName() : "()");
+    ProcInfo pinfo = _getFuncInfo(reinterpret_cast<const void*>(ip));
+    message += (pinfo.libraryFileName() ? pinfo.libraryFileName() : "()");
     message += "  ";
-    intptr_t file_base_address = pinfo.m_file_loaded_address;
+    auto file_base_address = pinfo.m_file_loaded_address;
     // Sous Linux (CentOS 6 et 7), l'adresse 0x400000 correspond à celle
     // de chargement de  l'exécutable mais si on retranche cette adresse de celle
     // de la fonction alors le symboliser ne fonctionne pas (que ce soit
@@ -421,20 +570,32 @@ class LLVMSymbolizerService
 , public ISymbolizerService
 {
  public:
-  LLVMSymbolizerService(const ServiceBuildInfo& sbi)
-  : AbstractService(sbi), m_is_check_done(false), m_is_valid(false) {}
-  virtual ~LLVMSymbolizerService() {}
+
+  explicit LLVMSymbolizerService(const ServiceBuildInfo& sbi)
+  : AbstractService(sbi)
+  , m_is_check_done(false)
+  , m_is_valid(false)
+  {}
+
  public:
+
   void build() override
   {
     m_llvm_symbolizer_path = platform::getEnvironmentVariable("ARCANE_LLVMSYMBOLIZER_PATH");
   }
+
  public:
+
   String stackTrace(ConstArrayView<StackFrame> frames) override;
+
  private:
+
   String m_llvm_symbolizer_path;
-  bool m_is_check_done;
-  bool m_is_valid;
+  bool m_is_check_done = false;
+  bool m_is_valid = false;
+
+ private:
+
   //! Vérifie que le chemin spécifié est valid
   void _checkValid()
   {
@@ -475,16 +636,16 @@ stackTrace(ConstArrayView<StackFrame> frames)
       dli_fname = dl_info.dli_fname;
       // Adresse de base de chargement du fichier.
       void* dli_fbase = dl_info.dli_fbase;
-      intptr_t true_base = (intptr_t)dli_fbase;
+      intptr_t true_base = reinterpret_cast<intptr_t>(dli_fbase);
       // Sous Linux (CentOS 6 et 7), l'adresse 0x400000 correspond à celle
-      // de chargement de  l'exécutable mais si on retranche cette adresse de celle
+      // de chargement de l'exécutable, mais si on retranche cette adresse de celle
       // de la fonction alors le symboliser ne fonctionne pas (que ce soit
       // llvm-symbolize ou addr2line)
       if (true_base==0x400000)
         true_base = 0;
       base_address = addr - true_base;
     }
-    // TODO: écrire base address en hexa pour pouvoir le relire avec addr2line
+    // TODO: écrire base_address en hexa pour pouvoir le relire avec addr2line
     ostr << (dli_fname ? dli_fname : "??") << " " << base_address << '\n';
   }
 
@@ -493,7 +654,7 @@ stackTrace(ConstArrayView<StackFrame> frames)
   ProcessExecArgs args;
   args.setCommand(m_llvm_symbolizer_path);
   Integer input_size = arcaneCheckArraySize(input_str.length());
-  ByteConstArrayView input_bytes(input_size,(const Byte*)input_str.c_str());
+  ByteConstArrayView input_bytes(input_size, reinterpret_cast<const Byte*>(input_str.c_str()));
   args.setInputBytes(input_bytes);
   args.addArguments("--demangle");
   args.addArguments("--pretty-print");
