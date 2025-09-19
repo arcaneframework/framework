@@ -42,8 +42,6 @@ class ARCANE_ACCELERATOR_CORE_EXPORT IReduceMemoryImpl
     MutableMemoryView m_grid_memory_values;
     //! Entier utilisé pour compter le nombre de blocs ayant déjà fait leur partie de la réduction
     unsigned int* m_grid_device_count = nullptr;
-    //! Politique de réduction
-    eDeviceReducePolicy m_reduce_policy = eDeviceReducePolicy::Grid;
     //! Pointeur vers la mémoire sur l'hôte contenant la valeur réduite.
     void* m_host_memory_for_reduced_value = nullptr;
     //! Taille d'un warp

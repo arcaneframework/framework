@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ReduceMemoryImpl.h                                          (C) 2000-2023 */
+/* ReduceMemoryImpl.h                                          (C) 2000-2025 */
 /*                                                                           */
 /* Gestion de la mémoire pour les réductions.                                */
 /*---------------------------------------------------------------------------*/
@@ -40,7 +40,6 @@ class ReduceMemoryImpl
   void setGridSizeAndAllocate(Int32 grid_size) override
   {
     m_grid_size = grid_size;
-    _setReducePolicy();
     _allocateGridDataMemory();
   }
   Int32 gridSize() const override { return m_grid_size; }
