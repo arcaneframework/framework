@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8" ?><!-- -*- SGML -*- -->
+
+<!-- ###################################################################### -->
+<!-- ###################################################################### -->
+
+<!-- Options du jeu de données pour le service de test de lecture du maillage -->
+
+<service name="MeshReaderUnitTest" version="1.0" type="caseoption" parent-name="Arcane::BasicUnitTest" namespace-name="ArcaneTest">
+ <interface name="Arcane::IUnitTest" inherited="false" />
+
+ <options>
+
+  <simple name = "create-edges" type = "bool" default = "false">
+    <description>
+      Indique si en 3D on créé les arêtes.
+    </description>
+  </simple>
+
+  <simple name = "generate-uid-from-nodes-uid" type = "bool" default = "false">
+    <description>
+      Si vrai, génère les uniqueId des arêtes et des faces à partir de ceux des noeuds.
+    </description>
+  </simple>
+
+  <simple name = "compact-mesh" type = "bool" default = "false">
+    <description>
+      Indique si on applique la propriété 'compact' et 'compact-after-allocate' au maillage.
+    </description>
+  </simple>
+
+ </options>
+</service>

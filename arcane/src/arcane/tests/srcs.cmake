@@ -20,6 +20,7 @@ set(ARCANE_SOURCES
   ModuleSimpleHydroDepend.cc
   MeshMergeBoundariesUnitTest.cc
   MeshMergeNodesUnitTest.cc
+  MeshReaderUnitTest.cc
   MeshUnitTest.cc
   MultipleMeshUnitTest.cc
   ThreadUnitTest.cc
@@ -97,6 +98,7 @@ set(AXL_FILES
   TestUnitTest
   MeshMergeNodesUnitTest
   MeshUnitTest
+  MeshReaderUnitTest
   ThreadUnitTest
   TaskUnitTest
   IosUnitTest
