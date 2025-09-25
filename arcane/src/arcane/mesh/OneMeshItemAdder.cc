@@ -265,11 +265,25 @@ _findInternalFace(Integer i_face, const CellInfoProxy& cell_info, bool& is_add)
   const ItemInternalMap& nodes_map = m_mesh->nodesMap();
   ItemTypeInfo* cell_type_info = cell_info.typeInfo();
   const ItemTypeInfo::LocalFace& lf = cell_type_info->localFace(i_face);
-  // Récupère les noeuds orientés de la face
-  // (Il faut avoir appelé une des méthodes d'ajout de face avant)
   ConstArrayView<Int64> face_sorted_nodes = m_face_reorderer.sortedNodes();
-  Node nbi = nodes_map.findItem(face_sorted_nodes[0]);
-  Face face_internal = ItemTools::findFaceInNode2(nbi,lf.typeId(),face_sorted_nodes);
+  Int64 face_unique_id = NULL_ITEM_UNIQUE_ID;
+  Face face_internal;
+  const bool use_hash = m_use_hash_for_edge_and_face_unique_id;
+  // Si on calcule les uniqueId() des faces à partir des noeuds,
+  // on peut directement savoir la face existe déjà. Sinon, on
+  // appelle ItemTools::findFaceInNode2() mais cette fonction est plus
+  // couteuse car elle recherche la face en parcourant les faces connectées
+  // au premier noeud de la face.
+  if (use_hash){
+    face_unique_id = _checkGenerateFaceUniqueId(NULL_ITEM_UNIQUE_ID,face_sorted_nodes);
+    face_internal = m_face_family.itemsMap().tryFind(face_unique_id);
+  }
+  else{
+    // Récupère les noeuds orientés de la face
+    // (Il faut avoir appelé une des méthodes d'ajout de face avant)
+    Node nbi = nodes_map.findItem(face_sorted_nodes[0]);
+    face_internal = ItemTools::findFaceInNode2(nbi,lf.typeId(),face_sorted_nodes);
+  }
   if (face_internal.null()) {
     // La face n'est pas trouvée. Elle n'existe donc pas dans notre sous-domaine.
     // Si cela est autorisé, on créée la nouvelle face.
@@ -282,9 +296,11 @@ _findInternalFace(Integer i_face, const CellInfoProxy& cell_info, bool& is_add)
                    " CellUid={0} LocalFace={1} FaceNodes={2}",
                    cell_info.uniqueId(),i_face,face_sorted_nodes);
     }
-    ItemTypeInfo* face_type = m_item_type_mng->typeFromId(lf.typeId());
-    Int64 face_unique_id = _checkGenerateFaceUniqueId(NULL_ITEM_UNIQUE_ID,face_sorted_nodes);
+    // Ne recalcule le hash que si ce n'est pas déjà fait.
+    if (!use_hash)
+      face_unique_id = _checkGenerateFaceUniqueId(NULL_ITEM_UNIQUE_ID,face_sorted_nodes);
     is_add = true;
+    ItemTypeInfo* face_type = m_item_type_mng->typeFromId(lf.typeId());
     return m_face_family.allocOne(face_unique_id,face_type);
   }
   else {
