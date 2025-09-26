@@ -754,7 +754,7 @@ if (ARCANE_DEFAULT_PARTITIONER_IS_METIS)
   arcane_add_test_parallel_thread(mesh1_onesphere_msh testMesh-onesphere-1.arc 4)
   arcane_add_test_parallel_thread(mesh1_onesphere_binary_msh testMesh-onesphere-binary-1.arc 4)
 endif()
-arcane_add_test_sequential(meshreader_onesphere_msh testMeshReader-generate-edge-face-uid.arc)
+arcane_add_test_sequential(meshreader_onesphere_msh testMeshReader-generate-edge-face-uid.arc "-We,ARCANE_GMSH_VERBOSITY_LEVEL,2")
 
 ##############
 # UNIT TESTS #
