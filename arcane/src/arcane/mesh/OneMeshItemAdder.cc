@@ -333,20 +333,27 @@ _findInternalEdge(Integer i_edge, const CellInfoProxy& cell_info, Int64 first_no
 {
   ARCANE_UNUSED(i_edge);
 
-  const ItemInternalMap& nodes_map = m_mesh->nodesMap();
-  Node nbi = nodes_map.findItem(first_node);
-  Edge edge_internal = ItemTools::findEdgeInNode2(nbi,first_node,second_node);
+  const bool use_hash = m_use_hash_for_edge_and_face_unique_id;
+  FixedArray<Int64,2> nodes;
+  Int64 edge_unique_id = NULL_ITEM_UNIQUE_ID;
+  Edge edge_internal;
+  if (use_hash){
+    nodes[0] = first_node;
+    nodes[1] = second_node;
+    edge_unique_id = MeshUtils::generateHashUniqueId(nodes.view());
+    edge_internal = m_edge_family.itemsMap().tryFind(edge_unique_id);
+  }
+  else{
+    const ItemInternalMap& nodes_map = m_mesh->nodesMap();
+    Node nbi = nodes_map.findItem(first_node);
+    edge_internal = ItemTools::findEdgeInNode2(nbi,first_node,second_node);
+  }
   if (edge_internal.null()){
-    if (!cell_info.allowBuildEdge() && !m_use_hash_for_edge_and_face_unique_id)
+    if (!cell_info.allowBuildEdge() && !use_hash)
       ARCANE_FATAL("On the fly edge allocation is not allowed here."
                    " You need to add edges before with IMeshModifier::addEdges()");
-    Int64 edge_unique_id = m_next_edge_uid++;
-    if (m_use_hash_for_edge_and_face_unique_id){
-      FixedArray<Int64,2> nodes;
-      nodes[0] = first_node;
-      nodes[1] = second_node;
-      edge_unique_id = MeshUtils::generateHashUniqueId(nodes.view());
-    }
+    if (!use_hash)
+      edge_unique_id = m_next_edge_uid++;
     is_add = true;
     return m_edge_family.allocOne(edge_unique_id);
   }
