@@ -24,6 +24,7 @@
 #include "arcane/utils/OStringStream.h"
 #include "arcane/utils/ValueConvert.h"
 #include "arcane/utils/CheckedConvert.h"
+#include "arcane/utils/internal/MemoryUtilsInternal.h"
 #include "arcane/utils/internal/IMemoryRessourceMngInternal.h"
 
 #include "arcane/accelerator/core/RunQueueBuildInfo.h"
@@ -673,8 +674,8 @@ arcaneRegisterAcceleratorRuntimecuda(Arcane::Accelerator::RegisterRuntimeInfo& i
   Arcane::Accelerator::impl::setUsingCUDARuntime(true);
   Arcane::Accelerator::impl::setCUDARunQueueRuntime(&global_cuda_runtime);
   initializeCudaMemoryAllocators();
-  Arcane::platform::setAcceleratorHostMemoryAllocator(getCudaMemoryAllocator());
-  IMemoryRessourceMngInternal* mrm = platform::getDataMemoryRessourceMng()->_internal();
+  MemoryUtils::setAcceleratorHostMemoryAllocator(getCudaMemoryAllocator());
+  IMemoryRessourceMngInternal* mrm = MemoryUtils::getDataMemoryResourceMng()->_internal();
   mrm->setIsAccelerator(true);
   mrm->setAllocator(eMemoryRessource::UnifiedMemory, getCudaUnifiedMemoryAllocator());
   mrm->setAllocator(eMemoryRessource::HostPinned, getCudaHostPinnedMemoryAllocator());
