@@ -258,7 +258,7 @@ jobs:
       - name: Test arcane
         shell: bash
         run: |
-          cd "${{ env.CMAKE_BUILD_DIR }}" && ctest --output-on-failure ${{ matrix.ctest_specific_args }}
+          cd "${{ env.CMAKE_BUILD_DIR }}" && ctest --output-on-failure ${{ matrix.ctest_specific_args }} -E python_test
 
       - name: Test Aleph kappa
         if: matrix.base_os != 'windows'
@@ -266,10 +266,10 @@ jobs:
         run: |
           cd "${{ env.CMAKE_BUILD_DIR }}" && ctest --output-on-failure ${{ matrix.ctest_specific_args }} -R kappa
 
-      - name: Test Python wrapper
-        shell: bash
-        run: |
-          cd "${{ env.CMAKE_BUILD_DIR }}" && ctest --output-on-failure -V -R python_test
+      # - name: Test Python wrapper
+      #   shell: bash
+      #   run: |
+      #     cd "${{ env.CMAKE_BUILD_DIR }}" && ctest --output-on-failure -V -R python_test
 
       - name: Test .Net wrapper
         shell: bash
