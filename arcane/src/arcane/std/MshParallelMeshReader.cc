@@ -33,6 +33,7 @@
 #include "arcane/core/MeshUtils.h"
 #include "arcane/core/IMeshModifier.h"
 #include "arcane/core/MeshKind.h"
+#include "arcane/core/NodesOfItemReorderer.h"
 #include "arcane/core/internal/MshMeshGenerationInfo.h"
 
 // Element types in .msh file format, found in gmsh-2.0.4/Common/GmshDefines.h
@@ -230,9 +231,8 @@ class MshParallelMeshReader
   void _setNodesCoordinates();
   void _allocateCells();
   void _allocateGroups();
-  void _addFaceGroup(MshElementBlock& block, const String& group_name);
-  void _addFaceGroupOnePart(ConstArrayView<Int64> connectivities, Int32 item_nb_node,
-                            const String& group_name, Int32 block_index);
+  void _addFaceGroup(const MshElementBlock& block, const String& group_name);
+  void _addFaceGroupOnePart(const MshElementBlock& block, ConstArrayView<Int64> connectivities, const String& group_name);
   void _addCellOrNodeGroup(ArrayView<Int64> block_uids, Int32 block_index,
                            const String& group_name, IItemFamily* family, bool filter_invalid);
   void _addCellOrNodeGroupOnePart(ConstArrayView<Int64> uids, const String& group_name,
@@ -992,10 +992,18 @@ _readElementsFromFile()
         if (mesh_dimension == 3) {
           if (block.item_type == IT_Triangle3)
             block.item_type = ItemTypeId(IT_Cell3D_Triangle3);
+          else if (block.item_type == IT_Triangle6)
+            block.item_type = ItemTypeId(ITI_Cell3D_Triangle6);
           else if (block.item_type == IT_Quad4)
             block.item_type = ItemTypeId(IT_Cell3D_Quad4);
+          else if (block.item_type == IT_Quad8)
+            block.item_type = ItemTypeId(IT_Cell3D_Quad8);
+          else if (block.item_type == IT_Quad9)
+            block.item_type = ItemTypeId(IT_Cell3D_Quad9);
           else if (block.item_type == IT_Line2)
             block.item_type = ItemTypeId(IT_Cell3D_Line2);
+          else if (block.item_type == IT_Line3)
+            block.item_type = ItemTypeId(IT_Cell3D_Line3);
           else
             ARCANE_FATAL("Not supported sub dimension cell type={0} for 3D mesh", item_type_name);
         }
@@ -1294,7 +1302,7 @@ _allocateGroups()
  * \brief Ajoute des faces au groupe \a group_name.
  */
 void MshParallelMeshReader::
-_addFaceGroup(MshElementBlock& block, const String& group_name)
+_addFaceGroup(const MshElementBlock& block, const String& group_name)
 {
   IParallelMng* pm = m_parallel_mng;
   const Int32 item_nb_node = block.item_nb_node;
@@ -1302,7 +1310,7 @@ _addFaceGroup(MshElementBlock& block, const String& group_name)
   UniqueArray<Int64> connectivities;
   for (Int32 dest_rank : m_parts_rank) {
     ArrayView<Int64> connectivities_view = _broadcastArray(pm, block.connectivities.view(), connectivities, dest_rank);
-    _addFaceGroupOnePart(connectivities_view, item_nb_node, group_name, block.index);
+    _addFaceGroupOnePart(block, connectivities_view, group_name);
   }
 }
 
@@ -1310,10 +1318,13 @@ _addFaceGroup(MshElementBlock& block, const String& group_name)
 /*---------------------------------------------------------------------------*/
 
 void MshParallelMeshReader::
-_addFaceGroupOnePart(ConstArrayView<Int64> connectivities, Int32 item_nb_node,
-                     const String& group_name, Int32 block_index)
+_addFaceGroupOnePart(const MshElementBlock& block, ConstArrayView<Int64> connectivities,
+                     const String& group_name)
 {
   IMesh* mesh = m_mesh;
+  const Int32 item_nb_node = block.item_nb_node;
+  const Int32 block_index = block.index;
+  const ItemTypeId type_id = block.item_type;
   const Int32 nb_entity = connectivities.size() / item_nb_node;
 
   // Il peut y avoir plusieurs blocs pour le même groupe.
@@ -1331,10 +1342,11 @@ _addFaceGroupOnePart(ConstArrayView<Int64> connectivities, Int32 item_nb_node,
   Integer faces_nodes_unique_id_index = 0;
 
   UniqueArray<Int64> orig_nodes_id(item_nb_node);
-  UniqueArray<Integer> face_nodes_index(item_nb_node);
+  //UniqueArray<Integer> face_nodes_index(item_nb_node);
 
   IItemFamily* node_family = mesh->nodeFamily();
   NodeInfoListView mesh_nodes(node_family);
+  NodesOfItemReorderer m_nodes_reorderer(mesh->itemTypeMng());
 
   // Réordonne les identifiants des faces retrouver la face dans le maillage.
   // Pour cela, on récupère le premier noeud de la face et on regarde s'il
@@ -1343,11 +1355,11 @@ _addFaceGroupOnePart(ConstArrayView<Int64> connectivities, Int32 item_nb_node,
   for (Integer i_face = 0; i_face < nb_entity; ++i_face) {
     for (Integer z = 0; z < item_nb_node; ++z)
       orig_nodes_id[z] = connectivities[faces_nodes_unique_id_index + z];
-
-    MeshUtils::reorderNodesOfFace2(orig_nodes_id, face_nodes_index);
+    m_nodes_reorderer.reorder(type_id, orig_nodes_id);
+    ConstArrayView<Int64> sorted_nodes(m_nodes_reorderer.sortedNodes());
     for (Integer z = 0; z < item_nb_node; ++z)
-      faces_nodes_unique_id[faces_nodes_unique_id_index + z] = orig_nodes_id[face_nodes_index[z]];
-    faces_first_node_unique_id[i_face] = orig_nodes_id[face_nodes_index[0]];
+      faces_nodes_unique_id[faces_nodes_unique_id_index + z] = sorted_nodes[z];
+    faces_first_node_unique_id[i_face] = sorted_nodes[0];
     faces_nodes_unique_id_index += item_nb_node;
   }
 
@@ -1371,8 +1383,8 @@ _addFaceGroupOnePart(ConstArrayView<Int64> connectivities, Int32 item_nb_node,
           ostr() << "(Nodes:";
           for (Integer z = 0; z < n; ++z)
             ostr() << ' ' << face_nodes_id[z];
-          ostr() << " - " << current_node.localId() << ")";
-          String error_string = "INTERNAL: MeshMeshReader face index={0} with nodes '{1}' is not in node/face connectivity.";
+          ostr() << " - node_lid=" << current_node.localId() << ")";
+          String error_string = "INTERNAL: MshMeshReader face index={0} with nodes '{1}' is not in node/face connectivity.";
           if (!is_non_manifold)
             error_string = error_string + "\n This errors may occur if the mesh is non-manifold."
                                           "\n See Arcane documentation to specify the mesh is a non manifold one.\n";
@@ -1853,22 +1865,36 @@ _initTypes()
 {
   // Initialise les types.
   // Il faut le faire au début de la lecture et ne plus en ajouter après.
+  // La connectivité dans GMSH est décrite ici:
+  // https://gmsh.info/doc/texinfo/gmsh.html#Node-ordering
   _addMshTypeInfo(MSH_PNT, ITI_Vertex);
   _addMshTypeInfo(MSH_LIN_2, ITI_Line2);
+  _addMshTypeInfo(MSH_LIN_3, ITI_Line3);
   _addMshTypeInfo(MSH_TRI_3, ITI_Triangle3);
   _addMshTypeInfo(MSH_QUA_4, ITI_Quad4);
+  _addMshTypeInfo(MSH_QUA_8, ITI_Quad8);
+  _addMshTypeInfo(MSH_QUA_9, ITI_Quad9);
   _addMshTypeInfo(MSH_TET_4, ITI_Tetraedron4);
   _addMshTypeInfo(MSH_HEX_8, ITI_Hexaedron8);
   _addMshTypeInfo(MSH_PRI_6, ITI_Pentaedron6);
+  _addMshTypeInfo(MSH_PRI_15, ITI_Pentaedron15);
   _addMshTypeInfo(MSH_PYR_5, ITI_Pyramid5);
+  _addMshTypeInfo(MSH_PYR_13, ITI_Pyramid13);
   _addMshTypeInfo(MSH_TRI_6, ITI_Triangle6);
   {
     FixedArray<Int16, 10> x({ 0, 1, 2, 3, 4, 5, 6, 7, 9, 8 });
     _addMshTypeInfo(MSH_TET_10, ITI_Tetraedron10, x.view());
   }
   {
-    FixedArray<Int16, 20> x({ 0, 1, 2, 3, 4, 5, 6, 7, 8, 11, 13, 9, 16, 18, 19, 17, 10, 12, 14, 15 });
+    FixedArray<Int16, 20> x({ 0, 1, 2, 3, 4, 5, 6, 7,
+                              8, 11, 13, 9, 16, 18, 19, 17, 10, 12, 14, 15 });
     _addMshTypeInfo(MSH_HEX_20, ITI_Hexaedron20, x.view());
+  }
+  {
+    FixedArray<Int16, 27> x({ 0, 1, 2, 3, 4, 5, 6, 7,
+                              8, 11, 13, 9, 16, 18, 19, 17, 10, 12, 14, 15,
+                              22, 23, 21, 24, 20, 25, 26 });
+    _addMshTypeInfo(MSH_HEX_27, ITI_Hexaedron27, x.view());
   }
 }
 
@@ -1878,9 +1904,10 @@ _initTypes()
 void MshParallelMeshReader::
 _addMshTypeInfo(Int32 msh_type, ItemTypeId arcane_type, ConstArrayView<Int16> reorder_infos)
 {
+  //info() << "ADD_TYPE msh_type=" << msh_type << " Arcane=" << arcane_type;
   if (msh_type < 0)
     ARCANE_FATAL("Bad MSH type {0}", msh_type);
-  if (m_msh_to_arcane_type_infos.size() < msh_type)
+  if (m_msh_to_arcane_type_infos.size() <= msh_type)
     m_msh_to_arcane_type_infos.resize(msh_type + 1);
   ItemTypeMng* item_type_mng = m_mesh->itemTypeMng();
   ItemTypeInfo* iti = item_type_mng->typeFromId(arcane_type);

@@ -638,6 +638,10 @@ _addOneCell(const CellInfo& cell_info)
 
   ItemTypeInfo* cell_type_info = cell_info.typeInfo();
   ItemTypeId cell_type_id = cell_type_info->itemTypeId();
+  const bool is_verbose = false;
+  if (is_verbose)
+    info() << "AddNewCell type_id=" << cell_type_id << " nb_node=" << cell_info.nbNode()
+           << " type=" << cell_type_info->typeName();
   // Regarde si la maille existe déjà (auquel cas on ne fait rien)
   Cell inew_cell;
   {
@@ -655,8 +659,6 @@ _addOneCell(const CellInfo& cell_info)
       return ItemCompatibility::_itemInternal(inew_cell);
     }
   }
-
-  const bool is_verbose = false;
 
   Cell new_cell(inew_cell);
 
@@ -737,18 +739,23 @@ _addOneCell(const CellInfo& cell_info)
     bool is_add = false;
     Face face = _findInternalFace(i_face, cell_info, is_add);
     if (is_add){
+      // Pour les éléments d'ordre supérieur à 1, on ajoute les faces qu'aux noeuds
+      // qui correspondent à l'élément d'ordre 1 (linéaire) associé.
+      const ItemTypeInfo* face_type_info = m_item_type_mng->typeFromId(lf.typeId());
+      const Int32 face_nb_linear_node = face_type_info->linearTypeInfo()->nbLocalNode();
       if (is_verbose){
         info() << "AddFaceToCell (cell_uid=" << new_cell.uniqueId() << ": Create face (index=" << i_face
                << ") uid=" << face.uniqueId()
-               << " lid=" << face.localId();
+               << " lid=" << face.localId()
+               << " type=" << face_type_info->typeName()
+               << " face_nb_linear_node=" << face_nb_linear_node
+               << " sorted_nodes=" << face_sorted_nodes;
       }
       face.mutableItemBase().setOwner(cell_info.faceOwner(i_face),m_mesh_info.rank());
-      // Pour les éléments d'ordre supérieur à 1, on ajoute les faces qu'aux noeuds
-      // qui correspondent à l'élément d'ordre 1 (linéaire) associé.
-      ItemTypeInfo* face_type_info = m_item_type_mng->typeFromId(lf.typeId());
-      
-      const Int32 face_nb_linear_node = face_type_info->linearTypeInfo()->nbLocalNode();
-      for( Integer i_node=0; i_node<face_nb_node; ++i_node ){
+
+      for (Integer i_node = 0; i_node < face_nb_node; ++i_node) {
+        if (is_verbose)
+          info() << "AddNodeToFace i_node=" << i_node << " uid=" << face_sorted_nodes[i_node];
         Node current_node = nodes_map.findItem(face_sorted_nodes[i_node]);
         m_face_family.replaceNode(face, i_node, current_node);
         if (i_node<face_nb_linear_node){
