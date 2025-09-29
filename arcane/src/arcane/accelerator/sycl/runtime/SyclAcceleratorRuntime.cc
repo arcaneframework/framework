@@ -19,6 +19,7 @@
 #include "arcane/utils/NotImplementedException.h"
 #include "arcane/utils/FatalErrorException.h"
 #include "arcane/utils/IMemoryRessourceMng.h"
+#include "arcane/utils/internal/MemoryUtilsInternal.h"
 #include "arcane/utils/internal/IMemoryRessourceMngInternal.h"
 
 #include "arcane/accelerator/core/RunQueueBuildInfo.h"
@@ -311,7 +312,7 @@ class SyclRunnerRuntime
     _fillPointerAttribute(attribute, mem_type, device_id, ptr, device_ptr, host_ptr);
   }
 
-  DeviceMemoryInfo getDeviceMemoryInfo(DeviceId device_id) override
+  DeviceMemoryInfo getDeviceMemoryInfo([[maybe_unused]] DeviceId device_id) override
   {
     return {};
   }
@@ -451,8 +452,9 @@ arcaneRegisterAcceleratorRuntimesycl(Arcane::Accelerator::RegisterRuntimeInfo& i
   using namespace Arcane::Accelerator::Sycl;
   Arcane::Accelerator::impl::setUsingSYCLRuntime(true);
   Arcane::Accelerator::impl::setSYCLRunQueueRuntime(&global_sycl_runtime);
-  Arcane::platform::setAcceleratorHostMemoryAllocator(getSyclMemoryAllocator());
-  IMemoryRessourceMngInternal* mrm = platform::getDataMemoryRessourceMng()->_internal();
+  MemoryUtils::setAcceleratorHostMemoryAllocator(getSyclMemoryAllocator());
+  MemoryUtils::setDefaultDataMemoryResource(eMemoryResource::UnifiedMemory);
+  IMemoryRessourceMngInternal* mrm = MemoryUtils::getDataMemoryResourceMng()->_internal();
   mrm->setIsAccelerator(true);
   mrm->setAllocator(eMemoryRessource::UnifiedMemory, getSyclUnifiedMemoryAllocator());
   mrm->setAllocator(eMemoryRessource::HostPinned, getSyclHostPinnedMemoryAllocator());

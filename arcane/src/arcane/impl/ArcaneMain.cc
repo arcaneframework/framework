@@ -1179,10 +1179,6 @@ _checkAutoDetectAccelerator(bool& has_accelerator)
     if (!verbose_str.null())
       runtime_info.setVerbose(true);
 
-    // Par défaut utilise la mémoire unifiée pour les données.
-    // Le runtime accélérateur pourra changer cela.
-    MemoryUtils::setDefaultDataMemoryResource(eMemoryResource::UnifiedMemory);
-
     (*my_functor)(runtime_info);
     has_accelerator = true;
 

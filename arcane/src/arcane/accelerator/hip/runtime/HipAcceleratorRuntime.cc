@@ -20,6 +20,7 @@
 #include "arcane/utils/NotImplementedException.h"
 #include "arcane/utils/IMemoryRessourceMng.h"
 #include "arcane/utils/OStringStream.h"
+#include "arcane/utils/internal/MemoryUtilsInternal.h"
 #include "arcane/utils/internal/IMemoryRessourceMngInternal.h"
 
 #include "arcane/accelerator/core/RunQueueBuildInfo.h"
@@ -516,8 +517,9 @@ arcaneRegisterAcceleratorRuntimehip(Arcane::Accelerator::RegisterRuntimeInfo& in
   using namespace Arcane::Accelerator::Hip;
   Arcane::Accelerator::impl::setUsingHIPRuntime(true);
   Arcane::Accelerator::impl::setHIPRunQueueRuntime(&global_hip_runtime);
-  Arcane::platform::setAcceleratorHostMemoryAllocator(getHipMemoryAllocator());
-  IMemoryRessourceMngInternal* mrm = platform::getDataMemoryRessourceMng()->_internal();
+  MemoryUtils::setDefaultDataMemoryResource(eMemoryResource::UnifiedMemory);
+  MemoryUtils::setAcceleratorHostMemoryAllocator(getHipMemoryAllocator());
+  IMemoryRessourceMngInternal* mrm = MemoryUtils::getDataMemoryResourceMng()->_internal();
   mrm->setIsAccelerator(true);
   mrm->setAllocator(eMemoryRessource::UnifiedMemory, getHipUnifiedMemoryAllocator());
   mrm->setAllocator(eMemoryRessource::HostPinned, getHipHostPinnedMemoryAllocator());
