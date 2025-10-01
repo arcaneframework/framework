@@ -90,7 +90,7 @@ void IosFile::
 goToEndOfLine()
 {
   while (m_stream->good()) {
-    char c = m_stream->peek();
+    int c = m_stream->peek();
 #ifdef _MSC_VER
   #if _MSC_VER < 1930
     if (std::isspace(c,std::locale::classic()))
@@ -152,11 +152,11 @@ bool IosFile::
 lookForString(const String& str)
 {
   const char* bfr = getNextLine();
-  std::cout << "[IosFile::getString] Looking for '" << str << "' len=" << str.length() << "\n";
+  //std::cout << "[IosFile::getString] Looking for '" << str << "' len=" << str.length() << "\n";
   std::istringstream iline(bfr);
   std::string got;
   iline >> got;
-  std::cout << "[IosFile::getString] got='" << got << "' len=" << got.length() << "\n";
+  //std::cout << "[IosFile::getString] got='" << got << "' len=" << got.length() << "\n";
   return isEqualString(got, str);
 }
 
