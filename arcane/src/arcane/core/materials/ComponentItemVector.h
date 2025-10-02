@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ComponentItemVector.h                                       (C) 2000-2024 */
+/* ComponentItemVector.h                                       (C) 2000-2025 */
 /*                                                                           */
-/* Vecteur sur des entités composants.                                       */
+/* Vecteur sur des entités constituants.                                     */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_MATERIALS_COMPONENTITEMVECTOR_H
 #define ARCANE_CORE_MATERIALS_COMPONENTITEMVECTOR_H
@@ -61,14 +61,18 @@ class IConstituentItemVectorImpl
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Vecteur sur les entités d'un composant.
+ * \brief Vecteur sur les entités d'un constituant.
  *
  * \warning Ce vecteur n'est valide que tant que le milieu et le groupe support
  * ne change pas.
  *
  * Cette classe est similaire à la classe ItemVector mais contient une liste
- * d'entités d'un composant (IMeshComponent). Toutes les entités doivent
- * appartenir au même composant.
+ * d'entités d'un constituant (IMeshComponent). Toutes les entités doivent
+ * appartenir au même constituant.
+ *
+ * Les instances de cette classe ne sont en général pas construit
+ * directement sauf s'il s'agit de copies. Pour la création d'origine, il
+ * faut utilise MatCellVector ou EnvCellVector.
  *
  * Cette classe utilise une sémantique par référence. Pour effectuer une copie,
  * il faut utiliser la commande clone() ou construire un objet via une vue:
@@ -92,7 +96,7 @@ class ARCANE_CORE_EXPORT ComponentItemVector
 
  protected:
 
-  //! Construit un vecteur pour le composant \a component
+  //! Construit un vecteur pour le constituant \a component
   explicit ComponentItemVector(IMeshComponent* component);
   //! Constructeur de recopie. Cette instance est une copie de \a rhs.
   explicit ComponentItemVector(ComponentItemVectorView rhs);
@@ -108,7 +112,7 @@ class ARCANE_CORE_EXPORT ComponentItemVector
   //! Vue sur ce vecteur
   ComponentItemVectorView view() const;
 
-  //! Composant associé
+  //! Constituant associé
   IMeshComponent* component() const { return _component(); }
 
   //! Clone ce vecteur
@@ -116,9 +120,9 @@ class ARCANE_CORE_EXPORT ComponentItemVector
 
  public:
 
-  //! Liste des entités pures (associées à la maille globale) du composant
+  //! Liste des entités pures (associées à la maille globale) du constituant
   ComponentPurePartItemVectorView pureItems() const;
-  //! Liste des entités impures (partielles) du composant
+  //! Liste des entités impures (partielles) du constituant
   ComponentImpurePartItemVectorView impureItems() const;
 
  protected:

@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MatItemVector.h                                             (C) 2000-2024 */
+/* MatItemVector.h                                             (C) 2000-2025 */
 /*                                                                           */
 /* Vecteur sur les entités d'un matériau.                                    */
 /*---------------------------------------------------------------------------*/
@@ -27,8 +27,7 @@ namespace Arcane::Materials
 /*!
  * \brief Vecteur sur les entités d'un matériau.
  *
- * \warning Ce vecteur n'est valide que tant que le matériau et le groupe support
- * ne change pas.
+ * \warning Ce vecteur n'est valide que tant que le matériau ne change pas.
  */
 class ARCANE_CORE_EXPORT MatCellVector
 : public ComponentItemVector
@@ -45,6 +44,8 @@ class ARCANE_CORE_EXPORT MatCellVector
   MatCellVector(CellVectorView view, IMeshMaterial* material);
   //! Construit un vecteur contenant les entités \a local_ids pour le matériau \a material.
   MatCellVector(SmallSpan<const Int32> local_ids, IMeshMaterial* material);
+  //! Construit un vecteur sur les entités du matériau \a material.
+  MatCellVector(const ConstituentItemVectorBuildInfo& build_info, IMeshMaterial* material);
   //! Constructeur par recopie. L'instance fera référence à \a rhs
   MatCellVector(const MatCellVector& rhs) = default;
   //! Constructeur de recopie. Cette instance est une copie de \a rhs.

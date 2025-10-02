@@ -5,17 +5,15 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* EnvItemVector.cc                                            (C) 2000-2025 */
+/* ConstituentItemVectorBuildInfo.cc                           (C) 2000-2025 */
 /*                                                                           */
-/* Vecteur sur les entités d'un milieu.                                      */
+/* Options de construction pour 'ComponentItemVector'.                       */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/core/materials/EnvItemVector.h"
-
-#include "arcane/core/materials/MatItemEnumerator.h"
-#include "arcane/core/materials/IMeshMaterialMng.h"
 #include "arcane/core/materials/ConstituentItemVectorBuildInfo.h"
+
+#include "arcane/utils/FatalErrorException.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -26,66 +24,52 @@ namespace Arcane::Materials
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-EnvCellVector::
-EnvCellVector(const CellGroup& group, IMeshEnvironment* environment)
-: EnvCellVector(ConstituentItemVectorBuildInfo(group), environment)
+ConstituentItemVectorBuildInfo::
+ConstituentItemVectorBuildInfo(const CellGroup& group)
+: m_group(group)
+, m_build_list_type(eBuildListType::Group)
 {
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-EnvCellVector::
-EnvCellVector(CellVectorView view, IMeshEnvironment* environment)
-: EnvCellVector(ConstituentItemVectorBuildInfo(view), environment)
+ConstituentItemVectorBuildInfo::
+ConstituentItemVectorBuildInfo(CellVectorView view)
+: m_view(view)
+, m_build_list_type(eBuildListType::VectorView)
+{}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+ConstituentItemVectorBuildInfo::
+ConstituentItemVectorBuildInfo(SmallSpan<const Int32> local_ids)
+: m_local_ids(local_ids)
+, m_build_list_type(eBuildListType::LocalIds)
+{}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+SmallSpan<const Int32> ConstituentItemVectorBuildInfo::
+_localIds() const
 {
+  switch (m_build_list_type) {
+  case eBuildListType::Group:
+    return m_group.view().localIds();
+  case eBuildListType::VectorView:
+    return m_view.localIds();
+  case eBuildListType::LocalIds:
+    return m_local_ids;
+  }
+  ARCANE_FATAL("Bad value '{0}' for build type", static_cast<int>(m_build_list_type));
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-EnvCellVector::
-EnvCellVector(SmallSpan<const Int32> local_ids, IMeshEnvironment* environment)
-: EnvCellVector(ConstituentItemVectorBuildInfo(local_ids), environment)
-{
-  _build(local_ids);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-EnvCellVector::
-EnvCellVector(const ConstituentItemVectorBuildInfo& build_info, IMeshEnvironment* environment)
-: ComponentItemVector(environment)
-{
-  _build(build_info._localIds());
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void EnvCellVector::
-_build(SmallSpan<const Int32> local_ids)
-{
-  this->_setItems(local_ids);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-IMeshEnvironment* EnvCellVector::
-environment() const
-{
-  return static_cast<IMeshEnvironment*>(component());
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-} // End namespace Arcane::Materials
+} // namespace Arcane::Materials
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
