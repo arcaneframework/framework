@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* EnvItemVector.h                                             (C) 2000-2024 */
+/* EnvItemVector.h                                             (C) 2000-2025 */
 /*                                                                           */
 /* Vecteur sur les entités d'un milieu.                                      */
 /*---------------------------------------------------------------------------*/
@@ -27,8 +27,7 @@ namespace Arcane::Materials
 /*!
  * \brief Vecteur sur les entités d'un milieu.
  *
- * \warning Ce vecteur n'est valide que tant que le milieu et le groupe support
- * ne change pas.
+ * \warning Ce vecteur n'est valide que tant que le milieu ne change pas.
  */
 class ARCANE_CORE_EXPORT EnvCellVector
 : public ComponentItemVector
@@ -41,6 +40,8 @@ class ARCANE_CORE_EXPORT EnvCellVector
   EnvCellVector(CellVectorView view, IMeshEnvironment* environment);
   //! Construit un vecteur contenant les entités \a local_ids pour le milieu \a environment
   EnvCellVector(SmallSpan<const Int32> local_ids, IMeshEnvironment* environment);
+  //! Construit un vecteur sur les entités du milieu \a environment.
+  EnvCellVector(const ConstituentItemVectorBuildInfo& build_info, IMeshEnvironment* environment);
   //! Constructeur par recopie. L'instance fera référence à \a rhs
   EnvCellVector(const EnvCellVector& rhs) = default;
   //! Constructeur de recopie. Cette instance est une copie de \a rhs.
