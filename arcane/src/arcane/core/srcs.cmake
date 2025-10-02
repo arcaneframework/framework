@@ -35,6 +35,8 @@ set(ARCANE_MATERIALS_SOURCES
   materials/ComponentItemVectorView.h
   materials/ComponentPartItemVectorView.cc
   materials/ComponentPartItemVectorView.h
+  materials/ConstituentItemVectorBuildInfo.h
+  materials/ConstituentItemVectorBuildInfo.cc
   materials/ConstituentItemLocalIdList.cc
   materials/EnvItemVector.cc
   materials/EnvItemVector.h
