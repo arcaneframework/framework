@@ -23,7 +23,12 @@
 #include <HYPRE_parcsr_mv.h>
 #include <HYPRE_parcsr_ls.h>
 #include <_hypre_parcsr_mv.h>
+
+#if HYPRE_RELEASE_NUMBER >= 30000
+#include <_hypre_krylov.h>
+#else
 #include <krylov.h>
+#endif
 
 #ifndef ItacRegion
 #define ItacRegion(a, x)
