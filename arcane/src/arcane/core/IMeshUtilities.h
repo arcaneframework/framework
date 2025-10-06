@@ -165,6 +165,16 @@ class ARCANE_CORE_EXPORT IMeshUtilities
   virtual void computeAndSetOwnersForNodes() =0;
 
   /*!
+   * \brief Détermine les propriétaires des arêtes.
+   *
+   * La détermination se fait en fonction des propriétaires des mailles.
+   * Il ne doit pas y avoir de couches de mailles fantômes.
+   *
+   * Cette opération est collective.
+   */
+  virtual void computeAndSetOwnersForEdges() = 0;
+
+  /*!
    * \brief Détermine les propriétaires des faces.
    *
    * La détermination se fait en fonction des propriétaires des mailles.

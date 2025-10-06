@@ -901,12 +901,21 @@ computeAndSetOwnersForNodes()
 /*---------------------------------------------------------------------------*/
 
 void UnstructuredMeshUtilities::
+computeAndSetOwnersForEdges()
+{
+  mesh::ItemsOwnerBuilder owner_builder(m_mesh);
+  owner_builder.computeEdgesOwner();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void UnstructuredMeshUtilities::
 computeAndSetOwnersForFaces()
 {
   mesh::ItemsOwnerBuilder owner_builder(m_mesh);
   owner_builder.computeFacesOwner();
 }
-
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
