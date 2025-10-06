@@ -432,6 +432,13 @@ _setUniqueIdNumberingVersion()
     IMeshUniqueIdMng* mum = m_mesh->meshUniqueIdMng();
     mum->setFaceBuilderVersion(v);
   }
+
+  if (options()->edgeNumberingVersion.isPresent()) {
+    Int32 v = options()->edgeNumberingVersion.value();
+    info() << "Set edge uniqueId numbering version to '" << v << "' from caseoption";
+    IMeshUniqueIdMng* mum = m_mesh->meshUniqueIdMng();
+    mum->setEdgeBuilderVersion(v);
+  }
 }
 
 /*---------------------------------------------------------------------------*/
