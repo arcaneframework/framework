@@ -674,7 +674,8 @@ arcaneRegisterAcceleratorRuntimecuda(Arcane::Accelerator::RegisterRuntimeInfo& i
   Arcane::Accelerator::impl::setUsingCUDARuntime(true);
   Arcane::Accelerator::impl::setCUDARunQueueRuntime(&global_cuda_runtime);
   initializeCudaMemoryAllocators();
-  MemoryUtils::setAcceleratorHostMemoryAllocator(getCudaMemoryAllocator());
+  MemoryUtils::setDefaultDataMemoryResource(eMemoryResource::UnifiedMemory);
+  MemoryUtils::setAcceleratorHostMemoryAllocator(getCudaUnifiedMemoryAllocator());
   IMemoryRessourceMngInternal* mrm = MemoryUtils::getDataMemoryResourceMng()->_internal();
   mrm->setIsAccelerator(true);
   mrm->setAllocator(eMemoryRessource::UnifiedMemory, getCudaUnifiedMemoryAllocator());
