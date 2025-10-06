@@ -99,6 +99,7 @@ class UnstructuredMeshUtilities
                   bool allow_non_corresponding_face) override;
 
   void computeAndSetOwnersForNodes() override;
+  void computeAndSetOwnersForEdges() override;
   void computeAndSetOwnersForFaces() override;
 
   void recomputeItemsUniqueIdFromNodesUniqueId() override;
