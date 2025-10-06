@@ -92,6 +92,19 @@
       </description>
     </simple>
 
+    <simple name="edge-numbering-version"
+            type="int32"
+            optional = "true"
+            >
+      <description>
+        Version du calcul des identifiants uniques des arêtes.
+
+        Cette option n'est utilisée que pour les maillages 3D.
+
+        Cette option est interne à Arcane.
+      </description>
+    </simple>
+
     <enumeration name="cell-dimension-kind"
                  type="Arcane::eMeshCellDimensionKind"
                  default="mono-dimension"
