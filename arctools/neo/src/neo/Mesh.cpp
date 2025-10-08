@@ -12,6 +12,7 @@
 /*---------------------------------------------------------------------------*/
 
 #include <stdexcept>
+#include <fstream>
 
 #include "Mesh.h"
 #include "Neo.h"
@@ -22,6 +23,17 @@
 
 Neo::Mesh::Mesh(const std::string& mesh_name)
 : m_mesh_graph(std::make_unique<Neo::MeshKernel::AlgorithmPropertyGraph>(Neo::MeshKernel::AlgorithmPropertyGraph{ mesh_name })) {
+}
+
+/*-----------------------------------------------------------------------------*/
+
+Neo::Mesh::Mesh(const std::string& mesh_name, int mesh_rank)
+: m_mesh_graph(std::make_unique<Neo::MeshKernel::AlgorithmPropertyGraph>(Neo::MeshKernel::AlgorithmPropertyGraph{ mesh_name, mesh_rank }))
+, m_rank(mesh_rank){
+  // Remove existing output file if exists
+  NeoOutputStream output_stream{Trace::VerboseInFile,m_rank};
+  std::ofstream new_file{output_stream.fileName()};
+  new_file.close();
 }
 
 /*-----------------------------------------------------------------------------*/
@@ -54,7 +66,7 @@ std::string Neo::Mesh::_connectivityOrientationPropertyName(std::string const& s
 /*-----------------------------------------------------------------------------*/
 
 Neo::Family& Neo::Mesh::addFamily(Neo::ItemKind item_kind, std::string family_name) noexcept {
-  Neo::print() << "Add Family " << family_name << " in mesh " << name() << std::endl;
+  Neo::print(m_rank) << "= Add Family " << family_name << " in mesh " << name() << std::endl;
   auto& item_family = m_families.push_back(item_kind, family_name);
   item_family.addMeshScalarProperty<Neo::utils::Int64>(uniqueIdPropertyName(family_name));
   return item_family;
@@ -66,26 +78,26 @@ void Neo::Mesh::scheduleAddItems(Neo::Family& family, std::vector<Neo::utils::In
   ItemRange& added_items = added_item_range;
   // Add items
   m_mesh_graph->addAlgorithm(Neo::MeshKernel::OutProperty{ family, family.lidPropName() },
-                             [&family, uids, &added_items](Neo::ItemLidsProperty& lids_property) {
-                               Neo::print() << "Algorithm: create items in family " << family.name() << std::endl;
+                             [&family, uids, &added_items, rank = m_rank](Neo::ItemLidsProperty& lids_property) {
+                               Neo::print(rank) << "== Algorithm: create items in family " << family.name() << std::endl;
                                added_items = lids_property.append(uids);
-                               lids_property.debugPrint();
-                               Neo::print() << "Inserted item range : " << added_items;
+                               lids_property.debugPrint(rank);
+                               Neo::print(rank) << "Inserted item range : " << added_items;
                              });
   // register their uids
   m_mesh_graph->addAlgorithm(
   Neo::MeshKernel::InProperty{ family, family.lidPropName() },
   Neo::MeshKernel::OutProperty{ family, uniqueIdPropertyName(family.name()) },
-  [&family, uids{ std::move(uids) }, &added_items]([[maybe_unused]] Neo::ItemLidsProperty const& item_lids_property,
+  [&family, uids{ std::move(uids) }, &added_items, rank = m_rank]([[maybe_unused]] Neo::ItemLidsProperty const& item_lids_property,
                                                    Neo::MeshScalarPropertyT<Neo::utils::Int64>& item_uids_property) {
-    Neo::print() << "Algorithm: register item uids for family " << family.name() << std::endl;
+    Neo::print(rank) << "== Algorithm: register item uids for family " << family.name() << std::endl;
     if (item_uids_property.isInitializableFrom(added_items)) {
       item_uids_property.init(added_items, std::move(uids)); // init can steal the input values
     }
     else {
       item_uids_property.append(added_items, uids);
     }
-    item_uids_property.debugPrint();
+    item_uids_property.debugPrint(rank);
   }); // need to add a property check for existing uid
 }
 
@@ -99,11 +111,11 @@ void Neo::Mesh::_addConnectivityOrientationCheck(Neo::Family& source_family, Neo
   Neo::MeshKernel::InProperty{ source_family, orientation_property_name },
   Neo::MeshKernel::InProperty{ source_family, source_family.m_name + "_uids" },
   Neo::MeshKernel::OutProperty{ source_family, orientation_check_property_name },
-  [&source_family, &target_family](
+  [&source_family, &target_family, rank=m_rank](
   Neo::MeshArrayPropertyT<int> const& item_orientation,
   Neo::MeshScalarPropertyT<Neo::utils::Int64> const& item_uids,
   Neo::MeshScalarPropertyT<int>& item_orientation_check) {
-    Neo::print() << "Algorithm: check orientation in connectivity between "
+    Neo::print(rank) << "== Algorithm: check orientation in connectivity between "
                  << source_family.name() << "  and  " << target_family.name()
                  << std::endl;
     item_orientation_check.init(source_family.all(), 1);
@@ -132,9 +144,9 @@ void Neo::Mesh::scheduleSetItemCoords(Neo::Family& item_family, Neo::FutureItemR
   m_mesh_graph->addAlgorithm(
   Neo::MeshKernel::InProperty{ item_family, item_family.lidPropName(), Neo::PropertyStatus::ExistingProperty }, // TODO handle property status in Property Holder constructor
   Neo::MeshKernel::OutProperty{ item_family, coord_prop_name },
-  [item_coords{ std::move(item_coords) }, &added_items](Neo::ItemLidsProperty const& item_lids_property,
+  [item_coords{ std::move(item_coords) }, &added_items, rank=m_rank](Neo::ItemLidsProperty const& item_lids_property,
                                                         Neo::MeshScalarPropertyT<Neo::utils::Real3>& item_coords_property) {
-    Neo::print() << "Algorithm: register item coords" << std::endl;
+    Neo::print(rank) << "== Algorithm: register item coords" << std::endl;
     if (item_coords_property.isInitializableFrom(added_items)) {
       item_coords_property.init(
       added_items,
@@ -143,7 +155,7 @@ void Neo::Mesh::scheduleSetItemCoords(Neo::Family& item_family, Neo::FutureItemR
     else {
       item_coords_property.append(added_items, item_coords);
     }
-    item_coords_property.debugPrint();
+    item_coords_property.debugPrint(rank);
   });
 }
 

@@ -99,6 +99,7 @@ class Mesh
   };
 
   explicit Mesh(std::string const& mesh_name);
+  explicit Mesh(std::string const& mesh_name, int mesh_rank);
   ~Mesh();
 
  private:
@@ -109,6 +110,7 @@ class Mesh
   using ConnectivityPerFamilyMapType = std::map<std::pair<ItemKind, std::string>, std::vector<Connectivity>>;
   ConnectivityPerFamilyMapType m_connectivities_per_family;
   int m_dimension = 3;
+  int m_rank = 0;
 
   template <typename ItemRangeT>
   void _scheduleAddConnectivity(Neo::Family& source_family, Neo::ItemRangeWrapper<ItemRangeT> source_items,

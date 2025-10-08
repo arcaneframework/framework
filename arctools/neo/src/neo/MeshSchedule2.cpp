@@ -29,14 +29,14 @@ void Neo::Mesh::scheduleMoveItems(Neo::Family& item_family, std::vector<Neo::uti
   Neo::MeshKernel::InProperty{ item_family, item_family.lidPropName(), Neo::PropertyStatus::ExistingProperty },
   Neo::MeshKernel::OutProperty{ item_family, coord_prop_name },
   [moved_item_uids = std::move(moved_item_uids),
-        moved_item_new_coords = std::move(moved_item_new_coords)]
+        moved_item_new_coords = std::move(moved_item_new_coords),rank(m_rank)]
         (Neo::ItemLidsProperty const& item_lids_property,
         Neo::MeshScalarPropertyT<Neo::utils::Real3>& item_coords_property) {
-    Neo::print() << "Algorithm: move items" << std::endl;
+    Neo::print(rank) << "== Algorithm: move items" << std::endl;
     // get range from uids and append
     auto moved_item_range = Neo::ItemRange{ Neo::ItemLocalIds::getIndexes(item_lids_property[moved_item_uids]) };
     item_coords_property.append(moved_item_range, moved_item_new_coords);
-    item_coords_property.debugPrint();
+    item_coords_property.debugPrint(rank);
   });
 }
 

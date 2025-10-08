@@ -343,6 +343,7 @@ namespace MeshKernel
   {
    public:
     std::string m_name;
+    int m_rank = 0;
     std::list<std::shared_ptr<IAlgorithm>> m_algos;
     using AlgoPtr = std::shared_ptr<IAlgorithm>;
     using ProducingAlgoArray = std::vector<AlgoPtr>;
@@ -465,18 +466,18 @@ namespace MeshKernel
     }
 
     EndOfMeshUpdate _applyAlgorithms(AlgorithmExecutionOrder execution_order, bool do_keep_algorithms) {
-      Neo::print() << "-- apply added algorithms with execution order ";
+      Neo::print(m_rank) << "-- apply added algorithms with execution order ";
       switch (execution_order) {
       case AlgorithmExecutionOrder::FIFO:
-        Neo::print() << "FIFO --" << std::endl;
+        Neo::print(m_rank) << "FIFO --" << std::endl;
         std::for_each(m_algos.begin(), m_algos.end(), [](auto& algo) { (*algo.get())(); });
         break;
       case AlgorithmExecutionOrder::LIFO:
-        Neo::print() << "LIFO --" << std::endl;
+        Neo::print(m_rank) << "LIFO --" << std::endl;
         std::for_each(m_algos.rbegin(), m_algos.rend(), [](auto& algo) { (*algo.get())(); });
         break;
       case AlgorithmExecutionOrder::DAG:
-        Neo::print() << "DAG --" << std::endl;
+        Neo::print(m_rank) << "DAG --" << std::endl;
         _build_graph();
         try {
           auto sorted_graph = m_dag.topologicalSort();
