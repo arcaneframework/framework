@@ -70,7 +70,7 @@ public:
   void addScalarProperty(std::string const& name, T init_value = T{}) {
     auto [iter, is_inserted] = m_properties.insert(std::make_pair(name, ScalarPropertyT<T>{ name, init_value }));
     if (is_inserted)
-      Neo::print() << "Add scalar property " << name << " in Family " << m_name
+      Neo::print() << "= Add scalar property " << name << " in Family " << m_name
                    << std::endl;
   }
 
@@ -78,7 +78,7 @@ public:
   void addArrayProperty(std::string const& name) {
     auto [iter, is_inserted] = m_properties.insert(std::make_pair(name, ArrayPropertyT<T>{ name }));
     if (is_inserted)
-      Neo::print() << "Add scalar property " << name << " in Family " << m_name
+      Neo::print() << "= Add scalar property " << name << " in Family " << m_name
                    << std::endl;
   }
 
@@ -86,7 +86,7 @@ public:
   void addMeshScalarProperty(std::string const& name) {
     auto [iter, is_inserted] = m_properties.insert(std::make_pair(name, MeshScalarPropertyT<T>{ name }));
     if (is_inserted)
-      Neo::print() << "Add property " << name << " in Family " << m_name
+      Neo::print() << "= Add property " << name << " in Family " << m_name
                    << std::endl;
   }
 
@@ -94,7 +94,7 @@ public:
   void addMeshArrayProperty(std::string const& name) {
     auto [iter, is_inserted] = m_properties.insert(std::make_pair(name, MeshArrayPropertyT<T>{ name }));
     if (is_inserted)
-      Neo::print() << "Add array property " << name << " in Family " << m_name
+      Neo::print() << "= Add array property " << name << " in Family " << m_name
                    << std::endl;
   }
 
