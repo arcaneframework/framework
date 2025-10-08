@@ -1,0 +1,19 @@
+<?xml version="1.0" ?>
+<module name="SimpleHeat" version="1.0">
+  <description>Descripteur du module SimpleHeat</description>
+  <entry-points>
+    <entry-point method-name="compute" name="Compute" where="compute-loop" property="none" />
+    <entry-point method-name="startInit" name="StartInit" where="start-init" property="none" />
+  </entry-points>
+  <variables>
+    <variable field-name="cell_temperature" name="CellTemperature" data-type="real" item-kind="cell" dim="0" dump="true" />
+    <variable field-name="node_temperature" name="NodeTemperature" data-type="real" item-kind="node" dim="0" dump="true" />
+    <variable field-name="cell_center" name="CellCenter" data-type="real3" item-kind="cell" dim="0" dump="true" />
+  </variables>
+  <options>
+    <!-- - - - - - deltat-min - - - - -->
+    <simple name="nb-iteration" type="int32" default="100">
+      <description>Number of iteration to do.</description>
+    </simple>
+  </options>
+</module>
