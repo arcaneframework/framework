@@ -121,8 +121,6 @@ void Neo::Mesh::_scheduleAddConnectivity(Neo::Family& source_family, Neo::ItemRa
       if (item_status == 1) {
         removed_source_items.push_back(index);
         }
-      else {
-      }
       ++index;
     }
     ItemRange removed_source_item_range{ ItemLocalIds{ removed_source_items } };

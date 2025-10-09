@@ -27,7 +27,7 @@ void Neo::Mesh::scheduleMoveItems(Neo::Family& item_family, std::vector<Neo::uti
   item_family.addMeshScalarProperty<Neo::utils::Real3>(coord_prop_name);
   m_mesh_graph->addAlgorithm(
   Neo::MeshKernel::InProperty{ item_family, item_family.lidPropName(), Neo::PropertyStatus::ExistingProperty },
-  Neo::MeshKernel::OutProperty{ item_family, coord_prop_name },
+  Neo::MeshKernel::OutProperty{ item_family, std::move(coord_prop_name) },
   [moved_item_uids = std::move(moved_item_uids),
         moved_item_new_coords = std::move(moved_item_new_coords),rank(m_rank)]
         (Neo::ItemLidsProperty const& item_lids_property,

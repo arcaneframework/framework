@@ -386,6 +386,18 @@ TEST(NeoTestLidsProperty, test_lids_property) {
   std::set<Neo::utils::Int32> reordered_lids{ lids.begin(), lids.end() };
   EXPECT_EQ(reordered_lids_ref.size(), reordered_lids.size());
   EXPECT_TRUE(std::equal(reordered_lids_ref.begin(), reordered_lids_ref.end(), reordered_lids.begin()));
+  // Check add existing + new: ensure empty lids are taken, even if adding more existing than empty lids
+  std::vector<Neo::utils::Int64> test_uids{ 11, 12 };
+  lid_prop.remove(test_uids);
+  lid_prop.debugPrint();
+  lid_prop.append({1,2,11,12});
+  lid_prop.debugPrint();
+  std::vector<int> expected_lids{11,10}; // should use empty lids
+  auto new_lids = lid_prop[test_uids];
+  Neo::print() << "new lids: " << new_lids << std::endl;
+  EXPECT_TRUE(std::equal(expected_lids.begin(),expected_lids.end(),new_lids.begin()));
+
+
 }
 
 /*-----------------------------------------------------------------------------*/

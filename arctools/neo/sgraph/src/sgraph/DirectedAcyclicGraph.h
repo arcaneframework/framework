@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* DirectedAcyclicGraph                                        (C) 2000-2023 */
+/* DirectedAcyclicGraph                                        (C) 2000-2025 */
 /*                                                                           */
 /* Basic Implementation of a directed acyclic graph                          */
 /*---------------------------------------------------------------------------*/
@@ -127,7 +127,7 @@ class DirectedAcyclicGraph
     for (auto& vertex : this->m_vertices) {
       sorted_vertices.push_back(std::ref(vertex));
     }
-    std::sort(sorted_vertices.begin(), sorted_vertices.end(), [&](VertexType const& a, VertexType const& b) { return m_vertex_level_map[a] < m_vertex_level_map[b]; });
+    std::stable_sort(sorted_vertices.begin(), sorted_vertices.end(), [&](VertexType const& a, VertexType const& b) { return m_vertex_level_map[a] < m_vertex_level_map[b]; });
     return SortedVertexSet{ std::move(sorted_vertices) };
   }
 

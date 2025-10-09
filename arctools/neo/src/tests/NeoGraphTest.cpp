@@ -12,6 +12,8 @@
 /*---------------------------------------------------------------------------*/
 
 #include <gtest/gtest.h>
+#include <iterator>
+#include <algorithm>
 #include "neo/Neo.h"
 #include "neo/MeshKernel.h"
 
@@ -511,6 +513,52 @@ TEST(NeoGraphTest,CascadingRemoveAlgosTest)
   EXPECT_FALSE(is_called_1 || is_called_2 || is_called_3);
 }
 
+//----------------------------------------------------------------------------/
+
+TEST(NeoGraphTest,StableSortAlgoTest) {
+  Neo::MeshKernel::AlgorithmPropertyGraph mesh{ "test_mesh" };
+  Neo::Family cell_family{ Neo::ItemKind::IK_Cell, "cell_family" };
+  // Check two algorithm with same priority level are executed in the order of registration
+  std::vector<int> algorithm_order{};
+  cell_family.addArrayProperty<Neo::utils::Int32>("Prop1");
+  cell_family.addScalarProperty<Neo::utils::Int32>("Prop2");
+  // Add 10 algos producing
+  for (int i = 0; i < 10; ++i) {
+    mesh.addAlgorithm(Neo::MeshKernel::OutProperty{cell_family,"Prop2"},
+                      Neo::MeshKernel::OutProperty{cell_family,"Prop1"},
+      [i] (Neo::ScalarPropertyT<Neo::utils::Int32>&,
+                Neo::ArrayPropertyT<Neo::utils::Int32>& prop1) {
+        prop1.push_back(i);
+      });
+  }
+  // Add 20 Algos consuming
+  for (int i = 10; i < 30; ++i) {
+    mesh.addAlgorithm(Neo::MeshKernel::InProperty{cell_family,"Prop2"},
+                      Neo::MeshKernel::OutProperty{cell_family,"Prop1"},
+      [i] (Neo::ScalarPropertyT<Neo::utils::Int32> const&,
+                Neo::ArrayPropertyT<Neo::utils::Int32>& prop1) {
+        prop1.push_back(i);
+    });
+  }
+  // Add 30 producing
+  for (int i = 30; i < 60; ++i) {
+    mesh.addAlgorithm(Neo::MeshKernel::OutProperty{cell_family,"Prop2"},
+                      Neo::MeshKernel::OutProperty{cell_family,"Prop1"},
+      [i] (Neo::ScalarPropertyT<Neo::utils::Int32>&,
+                Neo::ArrayPropertyT<Neo::utils::Int32>& prop1) {
+        prop1.push_back(i);
+      });
+  }
+  mesh.applyAlgorithms();
+  std::vector<int> ref_order(60);
+  std::iota(ref_order.begin(),ref_order.begin()+10,0);
+  std::iota(ref_order.begin()+10,ref_order.begin()+40,30);
+  std::iota(ref_order.begin()+40,ref_order.begin()+60,10);
+  std::copy(ref_order.begin(),ref_order.end(),std::ostream_iterator<int>(std::cout," "));
+  auto prop1 = cell_family.getConcreteProperty<Neo::ArrayPropertyT<Neo::utils::Int32>>("Prop1");
+  prop1.debugPrint();
+  EXPECT_TRUE(std::equal(prop1.begin(),prop1.end(),ref_order.begin()));
+}
 
 
 //----------------------------------------------------------------------------/
