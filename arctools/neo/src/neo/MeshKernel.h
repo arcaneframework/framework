@@ -81,7 +81,7 @@ namespace tye
 #ifdef _MSC_VER
           auto functor = VisitorOverload{ [](const auto& arg1, const auto& arg2, const auto& arg3) { std::cout << "### WARNING: Algorithm not found. You may have missed its signature ###" << std::endl; }, func }; // todo: prevent this behavior (statically ?)
 #else
-                                                                                                                               auto functor = VisitorOverload{ []([[maybe_unused]] const auto& arg1, [[maybe_unused]] const auto& arg2, [[maybe_unused]] const auto& arg3) { std::cout << "### WARNING: Algorithm not found. You may have missed its signature ###" << std::endl; }, func }; // todo: prevent this behavior (statically ?)
+          auto functor = VisitorOverload{ []([[maybe_unused]] const auto& arg1, [[maybe_unused]] const auto& arg2, [[maybe_unused]] const auto& arg3) { std::cout << "### WARNING: Algorithm not found. You may have missed its signature ###" << std::endl; }, func }; // todo: prevent this behavior (statically ?)
 #endif
           functor(concrete_arg1, concrete_arg2, concrete_arg3); // arg1 & arg2 are variants, concrete_arg* are concrete arguments
         },
