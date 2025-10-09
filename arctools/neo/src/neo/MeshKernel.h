@@ -506,6 +506,7 @@ namespace MeshKernel
           return algorithm->outProperty(output_property_index).m_status;
         }
       }
+      return PropertyStatus::ComputedProperty;
     }
 
   private:

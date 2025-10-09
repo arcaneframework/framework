@@ -692,8 +692,8 @@ TEST(NeoMeshApiTest, UpdateConnectivityAndRemoveIsolatedItemsAfterSourceFamilyCh
   std::vector<Neo::utils::Int64> cell_uids{ 0, 1 };
   auto future_nodes = Neo::FutureItemRange{};
   auto future_cells = Neo::FutureItemRange{};
-  mesh.scheduleAddItems(node_family, node_uids, future_nodes);
-  mesh.scheduleAddItems(cell_family, cell_uids, future_cells);
+  mesh.scheduleAddItems(node_family, std::move(node_uids), future_nodes);
+  mesh.scheduleAddItems(cell_family, std::move(cell_uids), future_cells);
   // Create connectivity (fictive mesh) cells with 4 nodes
   std::string cell_to_nodes_connectivity_name{ "cell_to_nodes" };
   std::string node_to_cells_connectivity_name{ "node_to_cells" };
@@ -763,7 +763,7 @@ TEST(NeoMeshApiTest, UpdateConnectivityAndRemoveIsolatedItemsAfterSourceFamilyCh
 
   // Finally Remove all cells: must remove connected nodes
   removed_cell_uids.push_back(1);
-  mesh.scheduleRemoveItems(cell_family, removed_cell_uids);
+  mesh.scheduleRemoveItems(cell_family, std::move(removed_cell_uids));
   mesh.applyScheduledOperations();
   // Check nodes are removed
   EXPECT_EQ(node_family.nbElements(), 0);

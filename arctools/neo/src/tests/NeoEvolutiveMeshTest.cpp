@@ -102,7 +102,7 @@ TEST(NeoEvolutiveMeshTest, RemoveCells) {
   mesh.applyScheduledOperations();
   // Remove cell 0, 1 and 2
   std::vector<Neo::utils::Int64> removed_cells{ 0, 1, 2 };
-  mesh.scheduleRemoveItems(cell_family, removed_cells);
+  mesh.scheduleRemoveItems(cell_family, std::move(removed_cells));
   mesh.applyScheduledOperations();
   EXPECT_EQ(cell_family.nbElements(), 1);
   auto remaining_cell_uids = mesh.uniqueIds(cell_family, cell_family.all().localIds());
