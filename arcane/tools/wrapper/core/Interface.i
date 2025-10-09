@@ -24,6 +24,7 @@
   avant d'inclure le fichier d'en-tête contenant la définition de l'interface
   wrappée. L'idéal est donc de déclarer les interfaces en début de module.
 */ 
+#if defined(SWIGCSHARP)
 %include swiginterface.i
 
 // La version 4.0 de SWIG a eu une erreur dans le typemap pour les interfaces: il manque le '.Handle'.
@@ -49,3 +50,5 @@ ARCANE_OVERRIDE_INTERFACE_TYPEMAP(NAMESPACE_NAME::INTERFACE_NAME)
 %define ARCANE_DECLARE_INTERFACE_OLD(NAMESPACE_NAME,INTERFACE_NAME)
 %rename(INTERFACE_NAME##_INTERNAL) NAMESPACE_NAME::INTERFACE_NAME;
 %enddef
+
+#endif // SWIGCSHARP

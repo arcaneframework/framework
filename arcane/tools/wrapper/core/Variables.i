@@ -122,7 +122,8 @@ namespace Arcane
     ~MeshVariableRef() {}
     virtual Integer arraySize() const = 0;
     void synchronize();
-%proxycode
+#if defined(SWIGCSHARP)
+    %proxycode
 %{
     protected override void Dispose(bool is_disposing)
     {
@@ -147,6 +148,7 @@ namespace Arcane
       }
     }
 %}
+#endif
   };
 }
 

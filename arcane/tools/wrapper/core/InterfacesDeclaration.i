@@ -3,6 +3,9 @@
 // Les interfaces déclarées ici doivent ensuite avoir le fichier d'en-tête associé
 // ajouté dans le fichier 'InterfacesInclude.h'.
 
+// Déclaration des interfaces.
+// Pour l'instant cela ne fonctionne que en C#.
+#if defined(SWIGCSHARP)
 ARCANE_DECLARE_INTERFACE(Arcane,IDataReader)
 ARCANE_DECLARE_INTERFACE(Arcane,IDataWriter)
 ARCANE_DECLARE_INTERFACE(Arcane,IUnitTest)
@@ -17,3 +20,4 @@ ARCANE_DECLARE_INTERFACE(Arcane,IDirectExecution)
 ARCANE_DECLARE_INTERFACE(Arcane,ITimeHistoryCurveWriter2)
 ARCANE_DECLARE_INTERFACE(Arcane,IPostProcessorWriter)
 ARCANE_DECLARE_INTERFACE(Arcane,IExternalPlugin)
+#endif

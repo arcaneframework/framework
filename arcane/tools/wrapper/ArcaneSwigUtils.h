@@ -98,6 +98,7 @@ namespace Arcane
   template<typename Lambda> inline
   void _doSwigTryCatch(const Lambda& lambda)
   {
+#if defined(SWIGCSHARP)
     try{
       lambda();
     }
@@ -114,6 +115,9 @@ namespace Arcane
     catch(...) {
       SWIG_CSharpSetPendingException(SWIG_CSharpApplicationException, "Unknown");
     }
+#else
+    lambda();
+#endif
   }
 }
 

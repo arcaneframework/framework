@@ -24,6 +24,10 @@ install(FILES NumericWrapper.h ArcaneSwigUtils.h DESTINATION include)
 # ----------------------------------------------------------------------------
 # Note: 'core' doit être le premier car les autres wrappers dépendent de lui.
 
+if (ARCANE_ENABLE_PYTHON_WRAPPER)
+  find_package (Python 3.10 COMPONENTS Development)
+endif()
+
 add_subdirectory(core)
 add_subdirectory(services)
 add_subdirectory(hdf5)

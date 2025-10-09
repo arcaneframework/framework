@@ -12,6 +12,13 @@
 %typemap(cstype) Arccore::StringView "string"
 %typemap(csin) Arccore::StringView "$csinput"
 %typemap(typecheck) Arccore::StringView = char *;
-%typemap(in) Arccore::StringView %{ Arccore::StringView $1_str{Arcane::fromCSharpCharPtrToStringView($input)}; $1 = $1_str; %}
+#if defined(SWIGCSHARP)
+%typemap(in) Arccore::StringView %{ Arccore::StringView $1_str{Arcane::fromCSharpCharPtrToStringView($input)}; $1 = $1_str; /* IN */%}
 %typemap(directorin) Arccore::StringView %{ $input = SWIG_csharp_string_callback($1.localstr()); %}
+#endif
+#if defined(SWIGPYTHON)
+// TODO: Utiliser PyUnicode_AsUTF8AndSize
+%typemap(in) Arccore::StringView %{ $1 = PyUnicode_AsUTF8($input); /* IN */%}
+%typemap(directorin) Arccore::StringView %{ $input = SWIG_Python_str_FromChar($1.localstr()); %}
+#endif
 %typemap(csdirectorin) Arccore::StringView "$iminput"

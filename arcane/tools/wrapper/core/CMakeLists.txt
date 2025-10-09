@@ -83,8 +83,8 @@ arcane_wrapper_add_swig_target(NAME core SOURCE ArcaneSwigCore.i NAMESPACE_NAME 
   CSHARP_SOURCES ${ARCANE_SWIG_CORE_CSHARP_FILES}
   )
 
-# Indique qu'il faut avoir compiler 'Arcane.Utils' avant de compiler les sources
-# générés par le wrapper.
+# Indique qu'il faut avoir compilé 'Arcane.Utils' avant de compiler les sources
+# générées par le wrapper.
 add_dependencies(dotnet_wrapper_core dotnet_arcane_utils)
 
 # Indique les cibles dont dépend 'arcane_dotnet_wrapper_core'
@@ -92,6 +92,22 @@ target_link_libraries(arcane_dotnet_wrapper_core PUBLIC arcane_impl arcane_core)
 
 # Indique les .i dont dépend 'ArcaneSwigCore.i'
 set_property(TARGET arcane_dotnet_wrapper_core PROPERTY SWIG_DEPENDS ${ARCANE_SWIG_CORE_FILES})
+
+# ----------------------------------------------------------------------------
+# ----------------------------------------------------------------------------
+# Wrapping Python des classes de base (Core)
+
+if (ARCANE_ENABLE_PYTHON_WRAPPER)
+  arcane_wrapper_add_swig_target_python(NAME core SOURCE ArcaneSwigCorePython.i NAMESPACE_NAME Arcane)
+
+  # Indique les cibles dont dépend 'arcane_python_wrapper_core'
+  target_link_libraries(arcane_python_wrapper_core PUBLIC arcane_impl arcane_core)
+  target_link_libraries(arcane_python_wrapper_core PRIVATE Python::Python)
+
+  set_property(TARGET arcane_python_wrapper_core PROPERTY SWIG_DEPENDS ${ARCANE_SWIG_CORE_FILES})
+endif()
+
+# ----------------------------------------------------------------------------
 
 add_subdirectory(tests)
 

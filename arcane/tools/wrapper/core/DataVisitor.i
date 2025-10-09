@@ -43,6 +43,7 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+#if !defined(SWIGPYTHON)
 SWIG_ARCANE_DATAVISITOR(Byte)
 SWIG_ARCANE_DATAVISITOR(Real)
 SWIG_ARCANE_DATAVISITOR(Int16)
@@ -52,6 +53,7 @@ SWIG_ARCANE_DATAVISITOR(Real2)
 SWIG_ARCANE_DATAVISITOR(Real3)
 SWIG_ARCANE_DATAVISITOR(Real2x2)
 SWIG_ARCANE_DATAVISITOR(Real3x3)
+#endif
 
 %template(IData_Ref) Arcane::Ref<Arcane::IData>;
 %template(ISerializedData_Ref) Arcane::Ref<Arcane::ISerializedData>;

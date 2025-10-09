@@ -175,11 +175,18 @@ option(ARCANE_ADD_RPATH_TO_LIBS "True if we automatically add rpath in target_li
 
 option(ARCANE_ENABLE_TESTS "Enable compilation of tests" ON)
 option(ARCANE_ENABLE_DOTNET_WRAPPER "Enable compilation of '.Net' wrapper" ON)
+option(ARCANE_ENABLE_PYTHON_WRAPPER "Enable compilation of 'Python' wrapper (experimental, for internal use only)" OFF)
 option(ARCANE_ENABLE_ALEPH "Enable the compilation of Aleph component" ON)
 
 # Expérimental. Ne pas utiliser en dehors d'Arcane
 option(ARCANE_ENABLE_DOTNET_PYTHON_WRAPPER "Enable compilation python extension using '.Net' wrapper" OFF)
 if(ARCANE_ENABLE_DOTNET_PYTHON_WRAPPER)
+  message(STATUS "Setting ARCANE_ENABLE_DOTNET_WRAPPER to true because ARCANE_ENABLE_DOTNET_PYTHON_WRAPPER is enabled")
+  set(ARCANE_ENABLE_DOTNET_WRAPPER ON)
+endif()
+# Actuellement on ne peut pas compiler le wrapper Python sans le wrapper C#.
+if(ARCANE_ENABLE_PYTHON_WRAPPER)
+  message(STATUS "Setting ARCANE_ENABLE_DOTNET_WRAPPER to true because ARCANE_ENABLE_PYTHON_WRAPPER is enabled")
   set(ARCANE_ENABLE_DOTNET_WRAPPER ON)
 endif()
 

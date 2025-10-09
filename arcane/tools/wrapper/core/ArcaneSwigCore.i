@@ -7,12 +7,14 @@
 // en arguments soient publiques. Sans cela elles sont 'internal'
 // ce qui ne permet pas de les utiliser si on définit d'autres
 // wrapping C# (par exemple le wrapping HDF5)
+#if defined(SWIGCSHARP)
 SWIG_CSBODY_PROXY([System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)] public,
                   [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)] public,
                   SWIGTYPE)
 SWIG_CSBODY_TYPEWRAPPER([System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)] public,
                         [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)] public,
                         [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)] public, SWIGTYPE)
+#endif
 
 %{
 #include "core/ArcaneSwigCoreInclude.h"
@@ -72,6 +74,7 @@ namespace Arcane
 #define ARCANE_DEPRECATED_REASON(a)
 #define ARCANE_DEPRECATED_LONG_TERM(a)
 #define ARCANE_NOEXCEPT
+#define ARCCORE_DEPRECATED_REASON(a)
 
 #define ARCANE_EXPR_EXPORT
 #define ARCANE_CORE_EXPORT
@@ -96,6 +99,7 @@ namespace Arcane
 %typemap(imtype) unsigned long,      const unsigned long &      "ulong"
 %typemap(cstype) long,               const long &               "long"
 %typemap(cstype) unsigned long,      const unsigned long &      "ulong"
+#if defined(SWIGCSHARP)
 %typemap(csout, excode=SWIGEXCODE) long, const long &
 {
   long ret = $imcall;$excode
@@ -120,6 +124,7 @@ namespace Arcane
    return ret;
  }
  %}
+#endif
 #endif
 
 namespace Arcane
@@ -328,6 +333,18 @@ namespace Arcane
 %ignore Arcane::IItemFamily::itemsNewOwner;
 %ignore Arcane::IItemFamily::removeItems2;
 
+#if defined(SWIGPYTHON)
+%ignore Arcane::ItemGroup::view;
+%ignore Arcane::ItemGroup::enumerator;
+%ignore Arcane::ItemPairGroup::enumerator;
+%ignore Arcane::ItemGroup::_paddedView;
+%ignore Arcane::ItemGroup::_unpaddedView;
+%ignore Arcane::ItemGroupImpl::itemsInternal;
+%ignore Arcane::ItemGroupImpl::itemInfoListView;
+%ignore Arcane::IItemFamily::itemsInternal;
+%ignore Arcane::IItemFamily::itemInfoListView;
+#endif
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -387,15 +404,25 @@ ARCANE_SWIG_OVERRIDE_GETCPTR(Arcane::ItemGroupT<Arcane::Cell>,Arcane)
 
 %include Numeric.i
 
+// En C#, on a mapping 1:1 entre la structure C# et la structure C++
+// et on peut spécialiser les types ArrayView et ConstArrayView
+// mais ce n'est pas possible en python par exemple
+#if defined(SWIGCSHARP)
 %include ArrayView.i
+#else
+%include arccore/base/ArrayView.h
+#endif
+
 %include MemoryView.i
 
+#if !defined(SWIGPYTHON)
 %feature("director") Arcane::IBinaryMathFunctor;
 %include arcane/utils/IMathFunctor.h
 %template(IRealRealToRealMathFunctor) Arcane::IBinaryMathFunctor<double,double,double>;
 %template(IRealRealToReal3MathFunctor) Arcane::IBinaryMathFunctor<double,double,Arcane::Real3>;
 %template(IRealReal3ToRealMathFunctor) Arcane::IBinaryMathFunctor<double,Arcane::Real3,double>;
 %template(IRealReal3ToReal3MathFunctor) Arcane::IBinaryMathFunctor<double,Arcane::Real3,Arcane::Real3>;
+#endif
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -477,7 +504,9 @@ namespace Arcane
 %include arcane/utils/VersionInfo.h
 %include arcane/utils/ApplicationInfo.h
 
+#if !defined(SWIGPYTHON)
 %include DotNetObject.i
+#endif
 
 namespace Arcane
 {
@@ -608,4 +637,6 @@ ARCANE_STD_EXHANDLER
 %include arcane/core/MeshReaderMng.h
 %exception;
 
+#if !defined(SWIGPYTHON)
 %include core/InterfacesInclude.i
+#endif

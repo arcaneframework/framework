@@ -86,10 +86,46 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+#if defined(SWIGCSHARP)
+
 SWIG_ARCANE_NUMERIC_TYPE_NEW(Real3,Real3_POD)
 SWIG_ARCANE_NUMERIC_TYPE_NEW(Real2,Real2_POD)
 SWIG_ARCANE_NUMERIC_TYPE_NEW(Real3x3,Real3x3_POD)
 SWIG_ARCANE_NUMERIC_TYPE_NEW(Real2x2,Real2x2_POD)
+
+#else
+
+namespace Arcane
+{
+  class Real3
+  {
+  public:
+    Real x;
+    Real y;
+    Real z;
+  };
+  class Real2
+  {
+  public:
+    Real x;
+    Real y;
+  };
+  class Real3x3
+  {
+  public:
+    Real3 x;
+    Real3 y;
+    Real3 z;
+  };
+  class Real2x2
+  {
+  public:
+    Real2 x;
+    Real2 y;
+  };
+}
+
+#endif
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

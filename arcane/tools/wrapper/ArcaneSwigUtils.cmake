@@ -278,6 +278,106 @@ function(arcane_wrapper_add_swig_dependency name depend_name)
 endfunction()
 
 # ----------------------------------------------------------------------------
+
+macro(arcane_wrapper_add_swig_target_python)
+  set(options        )
+  set(oneValueArgs   NAME SOURCE NAMESPACE_NAME DLL_NAME)
+  set(multiValueArgs INCLUDE_DIRECTORIES CSHARP_SOURCES SWIG_TARGET_DEPENDS)
+
+  cmake_parse_arguments(ARGS "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+
+  set_property(SOURCE ${ARGS_SOURCE} PROPERTY CPLUSPLUS ON)
+  set_property(SOURCE ${ARGS_SOURCE} PROPERTY USE_SWIG_DEPENDENCIES TRUE)
+  set_property(SOURCE ${ARGS_SOURCE} PROPERTY USE_TARGET_INCLUDE_DIRECTORIES TRUE)
+  if (ARGS_INCLUDE_DIRECTORIES)
+    set_property(SOURCE ${ARGS_SOURCE} PROPERTY INCLUDE_DIRECTORIES ${ARGS_INCLUDE_DIRECTORIES})
+  endif()
+  set_property(SOURCE ${ARGS_SOURCE} PROPERTY COMPILE_OPTIONS -builtin)
+  if (UNIX)
+    # TODO: regarder si on ne peut pas mettre ce define dans un .i
+    set_property(SOURCE ${ARGS_SOURCE} PROPERTY COMPILE_DEFINITIONS "SWIGWORDSIZE64")
+  endif()
+  set(_TARGET_NAME arcane_python_wrapper_${ARGS_NAME})
+  message(STATUS "Swig source (target=${ARGS_NAME}) list='${ARGS_SOURCE}' "
+    "wrapper_source='${ARCANE_DOTNET_WRAPPER_SOURCE_DIR}' arcane_src_path='${ARCANE_SRC_PATH}'")
+  # Commande swig pour générer le wrapping C++ et les fichiers pythons
+  swig_add_library(${_TARGET_NAME}
+    TYPE SHARED
+    LANGUAGE PYTHON
+    SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/${ARGS_SOURCE}
+    OUTPUT_DIR ${ARCANE_DOTNET_WRAPPER_OUTDIRECTORY}/out_py_${ARGS_NAME}
+    OUTFILE_DIR ${ARCANE_DOTNET_WRAPPER_OUTDIRECTORY}/out_py_cpp_${ARGS_NAME}
+    )
+  # Avec cmake (au moins avec la 3.14 et avant) le module 'UseSWIG' supprime
+  # le préfix 'lib' ce qui empêche de trouver correctement la dll lors de l'exécution
+  if (UNIX)
+    set_target_properties(${_TARGET_NAME} PROPERTIES PREFIX "lib")
+  endif()
+
+  set_target_properties(${_TARGET_NAME}
+    PROPERTIES
+    INSTALL_RPATH_USE_LINK_PATH 1
+    INSTALL_RPATH "$ORIGIN"
+    )
+  arcane_target_set_standard_path(${_TARGET_NAME})
+
+  # Récupère la liste des fichiers générés par Swig. On s'en sert pour faire une
+  # dépendance dessus pour la compilation de la partie C#.
+  get_property(support_files TARGET ${_TARGET_NAME} PROPERTY SWIG_SUPPORT_FILES)
+  message(STATUS "Support files for wrapper '${ARGS_NAME}' (target='${_TARGET_NAME}') files='${support_files}'")
+
+  message(STATUS "CSHARP_SOURCES=${ARGS_CSHARP_SOURCES}")
+
+  # set(_DOTNET_TARGET_DEPENDS)
+  # foreach(_dtg ${ARGS_SWIG_TARGET_DEPENDS})
+  #   list(APPEND _DOTNET_TARGET_DEPENDS dotnet_wrapper_${_dtg})
+  # endforeach()
+
+  #arcane_wrapper_add_csharp_target(TARGET_NAME dotnet_wrapper_${ARGS_NAME}
+  #  PROJECT_NAME ${ARGS_DLL_NAME}
+  #  CSHARP_SOURCES ${ARGS_CSHARP_SOURCES}
+  #  DOTNET_TARGET_DEPENDS ${_DOTNET_TARGET_DEPENDS}
+  #)
+
+  # Indique que la compilation du C# dépend des fichiers générés par SWIG.
+  # NOTE: il y a probablement un bug avec CMake 3.21 sur cette partie car il indique
+  # qu'il ne sait pas comment trouver les fichiers générés. Cela est peut-être du
+  # au module UseSwig associé à cette version.
+  # NOTE: Il semble que cela ne fonctionne pas toujours correctement si on utilise 'Make'
+  # (Il y a d'ailleurs un comportement spécifique du fichier 'UseSwig.cmake' dans ce cas)
+  # On n'active donc pas cette gestion si on utilise 'Make'. Dans ce cas on ajoute
+  # une dépendance sur la cible générée par SWIG mais cela oblige à recompiler si une
+  # des dépendances est modifiée (par exemple un '.so')
+  # if (CMAKE_VERSION VERSION_LESS_EQUAL 3.21 OR CMAKE_GENERATOR MATCHES "Make")
+  #   add_dependencies(dotnet_wrapper_${ARGS_NAME} ${_TARGET_NAME})
+  # else()
+  #   message(STATUS "Adding custom target with support files for wrapper '${ARGS_NAME}'")
+  #   add_custom_target(dotnet_wrapper_${ARGS_NAME}_swig_depend ALL DEPENDS "${support_files}")
+  #   add_dependencies(dotnet_wrapper_${ARGS_NAME} dotnet_wrapper_${ARGS_NAME}_swig_depend)
+  # endif()
+
+  # Ajoute les dépendences sur les autres cibles SWIG
+  # foreach(_dtg ${ARGS_SWIG_TARGET_DEPENDS})
+  #   add_dependencies(dotnet_wrapper_${ARGS_NAME} arcane_dotnet_wrapper_${_dtg})
+  #   target_link_libraries(${_TARGET_NAME} PUBLIC arcane_dotnet_wrapper_${_dtg})
+  # endforeach()
+
+  # TODO: voir si on peut supprimer cet include et sinon voir s'il ne faut pas mettre public au lieu
+  # de private.
+  target_include_directories(${_TARGET_NAME} PRIVATE ${ARCANE_DOTNET_WRAPPER_SOURCE_DIR} ${ARGS_INCLUDE_DIRECTORIES})
+
+  # Compile uniquement avec l'option '-O1' pour compiler plus vite.
+  # La différence de performance n'est pas perceptible pour le wrapper.
+  if (UNIX)
+    if (NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
+      target_compile_options(${_TARGET_NAME} PRIVATE "-O1")
+    endif()
+  endif()
+
+  arcane_register_library(${_TARGET_NAME} OPTIONAL)
+endmacro()
+
+# ----------------------------------------------------------------------------
 # Local Variables:
 # tab-width: 2
 # indent-tabs-mode: nil
