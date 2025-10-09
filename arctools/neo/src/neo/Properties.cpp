@@ -22,8 +22,8 @@
 Neo::ItemRange Neo::ItemLidsProperty::append(std::vector<Neo::utils::Int64> const& uids) {
   ItemLocalIds item_local_ids{};
   // handle mutliple insertion
-  auto min_size = std::min(m_empty_lids.size(), uids.size());
   auto empty_lid_size = m_empty_lids.size();
+  auto min_size = std::min(empty_lid_size, uids.size());
   auto& non_contiguous_lids = item_local_ids.m_non_contiguous_lids;
   non_contiguous_lids.resize(min_size);
   auto used_empty_lid_count = 0;
@@ -33,7 +33,19 @@ Neo::ItemRange Neo::ItemLidsProperty::append(std::vector<Neo::utils::Int64> cons
     if (do_insert)
       ++used_empty_lid_count;
   }
+  // Use remaining empty lids if needed (if insertion of existing items)
+  auto remaining_empty_lids = empty_lid_size - used_empty_lid_count;
+  auto remaining_items = uids.size() - min_size;
+  auto remaining_lids_to_take = std::min(remaining_empty_lids, remaining_items);
+  non_contiguous_lids.resize(min_size + remaining_lids_to_take);
+  for (auto i = 0; i < (int)remaining_lids_to_take; ++i) {
+    const auto [inserted, do_insert] = m_uid2lid.insert({ uids[min_size + i], m_empty_lids[empty_lid_size - 1 - used_empty_lid_count] });
+    non_contiguous_lids[min_size + i] = inserted->second;
+    if (do_insert)
+      ++used_empty_lid_count;
+  }
   m_empty_lids.resize(empty_lid_size - used_empty_lid_count);
+  min_size += remaining_lids_to_take;
   using item_index_and_lid = std::pair<int, Neo::utils::Int32>;
   std::vector<item_index_and_lid> existing_items;
   existing_items.reserve(uids.size() - min_size);
