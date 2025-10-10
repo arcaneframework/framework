@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemData.cc                                                 (C) 2000-2024 */
+/* ItemData.cc                                                 (C) 2000-2025 */
 /*                                                                           */
 /* Class gathering item data : ids and connectivities                        */
 /*---------------------------------------------------------------------------*/
@@ -111,6 +111,20 @@ _deserialize(ISerializer* buffer, IMesh* mesh)
 }
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+void ItemData::
+clear()
+{
+  m_nb_items = 0;
+  m_item_infos.clear();
+  _internal_item_lids.clear();
+  m_item_lids = Int32ArrayView();
+  m_item_owners.clear();
+  m_item_family = nullptr;
+  m_item_family_modifier = nullptr;
+  m_subdomain_id = -1;
+}
+
 
 } // End namespace Arcane::mesh
 

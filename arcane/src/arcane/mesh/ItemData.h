@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemData.h                                                  (C) 2000-2018 */
+/* ItemData.h                                                  (C) 2000-2025 */
 /*                                                                           */
 /* Class gathering item data : ids and connectivities                        */
 /*---------------------------------------------------------------------------*/
@@ -77,7 +77,10 @@ public:
     , m_item_lids(item_lids)
     , m_item_family(item_family)
     , m_item_family_modifier(item_family_modifier)
-    , m_subdomain_id(subdomain_id){}
+    , m_subdomain_id(subdomain_id)
+  {
+    _ownerDefaultInit();
+  }
 
   /*! Ici on ne fournit pas les item_lids qui sont donc créés en internes.
    *
@@ -90,7 +93,10 @@ public:
     , m_item_lids(_internal_item_lids)
     , m_item_family(item_family)
     , m_item_family_modifier(item_family_modifier)
-    , m_subdomain_id(subdomain_id){}
+    , m_subdomain_id(subdomain_id)
+  {
+    _ownerDefaultInit();
+  }
 
   /** Destructeur de la classe */
   virtual ~ItemData() {}
@@ -101,7 +107,8 @@ public:
   Int64Array& itemInfos() {return m_item_infos;} // Need to return Array& since size is not always known at construction
   Int64ConstArrayView itemInfos() const {return m_item_infos;}
   Int32ArrayView itemLids() {return m_item_lids;}
-  Int32ArrayView itemOwners() { if (m_item_owners.empty()) _ownerDefaultInit(); return m_item_owners;}
+  Int32ArrayView itemOwners() { return m_item_owners;}
+  Int32ConstArrayView itemOwners() const { return m_item_owners;}
   IItemFamily* itemFamily() {return m_item_family;}
   IItemFamily const* itemFamily() const {return m_item_family;}
   IItemFamilyModifier* itemFamilyModifier() {return m_item_family_modifier;}
@@ -110,9 +117,9 @@ public:
   void serialize(ISerializer* buffer); // Fill the buffer from the data
   void deserialize(ISerializer* buffer, IMesh* mesh); // Fill the buffer from the data : using an internal lids array
   void deserialize(ISerializer* buffer, IMesh* mesh, Int32Array& item_lids); // Fill the data from the buffer using external lids array. item_lids must live as long as ItemData does...
+  void clear(); // Clear all internal data
 
-
-private:
+ private:
 
   void _deserialize(ISerializer* buffer, IMesh* mesh);
   void _ownerDefaultInit() { m_item_owners.resize(m_nb_items); m_item_owners.fill(m_subdomain_id);}
