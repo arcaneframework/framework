@@ -64,6 +64,12 @@ namespace Arcane::mesh
 
 class PolyhedralMeshImpl;
 class PolyhedralFamily;
+class PolyhedralFamilySerializer;
+class PolyhedralFamilySerializerMng;
+namespace PolyhedralTools
+{
+  class ItemLocalIds;
+}
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -74,6 +80,7 @@ class PolyhedralMesh
 {
 
   friend class PolyhedralFamily;
+  friend class PolyhedralFamilySerializer;
 
  private:
 
@@ -90,11 +97,18 @@ class PolyhedralMesh
   ItemTypeMng* m_item_type_mng = nullptr;
   MeshKind m_mesh_kind;
   MeshEventsImpl m_mesh_events;
+  std::unique_ptr<PolyhedralFamilySerializerMng> m_polyhedral_family_serializer_mng;
 
  public:
 
   // IPolyhedralMeshInitialAllocator interface
   void allocateItems(const Arcane::ItemAllocationInfo& item_allocation_info) override;
+  // Get items local ids after creation. Argument family_ids will be resized in the method
+  void allocateItems(const Arcane::ItemAllocationInfo& item_allocation_info, ArrayView<Int32UniqueArray> family_lids);
+  void scheduleAllocateItems(const Arcane::ItemAllocationInfo::FamilyInfo& family_info, PolyhedralTools::ItemLocalIds& future_item_local_ids);
+  void applyScheduledAllocateItems(UniqueArray<std::shared_ptr<PolyhedralTools::ItemLocalIds>> item_lids);
+  void removeNeedRemoveMarkedItems();
+  PolyhedralFamilySerializerMng* polyhedralFamilySerializerMng();
 
  public:
 
@@ -157,6 +171,8 @@ class PolyhedralMesh
 
   // IPrimaryMeshBase interface
   IMeshInitialAllocator* initialAllocator() override { return &m_initial_allocator; }
+
+  void _allocateItems(const Arcane::ItemAllocationInfo& item_allocation_info, ArrayView<Int32UniqueArray> family_lids);
 
   // IMeshBase interface
  public:
@@ -280,7 +296,7 @@ class PolyhedralMesh
       ARCANE_NOT_YET_IMPLEMENTED("Parallel for polyhedral mesh is WIP");
     }
   }
-  void endUpdate(bool update_ghost_layer, bool remove_old_ghost) override
+  void endUpdate(bool, bool) override
   {
     // not yet implemented : must exit in parallel
     if (m_subdomain->parallelMng()->isParallel()) {
@@ -315,21 +331,35 @@ class PolyhedralMesh
 
   void prepareForDump() override;
 
-  bool useMeshItemFamilyDependencies() const override {return true;}
+  bool useMeshItemFamilyDependencies() const override {return false;}
 
   IMeshModifierInternal* _modifierInternalApi() override;
+
+  IItemFamilyModifier* findItemFamilyModifier(eItemKind, const String&) override {return nullptr;}
+
+  void connectivities(IItemFamily* source_family);
 
  private:
 
   void addItems(Int64ConstArrayView unique_ids, Int32ArrayView local_ids, eItemKind ik, const String& family_name);
+  void addItems(Int64ConstArrayView unique_ids, Int32ArrayView local_ids, Int32ConstArrayView owners, eItemKind ik, const String& family_name);
   void removeItems(Int32ConstArrayView local_ids, eItemKind ik, const String& family_name);
+  void removeItems(Int32ConstArrayView local_ids, IItemFamily* family);
 
   PolyhedralFamily* _createItemFamily(eItemKind ik, const String& name);
   PolyhedralFamily* _itemFamily(eItemKind ik);
   PolyhedralFamily* _findItemFamily(eItemKind ik, const String& name, bool create_if_needed = false);
   const char* _className() const { return "PolyhedralMesh"; }
 
- void _exchangeItems();
+  void _exchangeItems();
+
+  void _endUpdateFamilies();
+
+  void _computeFamilySynchronizeInfos();
+
+  void _notifyEndUpdateForFamilies();
+
+  void _computeGroupSynchronizeInfos();
 
 #endif // ARCANE_HAS_POLYHEDRAL_MESH_TOOLS
 
@@ -339,6 +369,7 @@ class PolyhedralMesh
 
   void _createUnitMesh();
   void _updateMeshInternalList(eItemKind kind);
+  PolyhedralMeshImpl* _impl();
 };
 
 /*---------------------------------------------------------------------------*/

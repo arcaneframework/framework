@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* DoFTester.cc                                                (C) 2000-2024 */
+/* DoFTester.cc                                                (C) 2000-2025 */
 /*                                                                           */
 /* Comment on file content                                                   */
 /*---------------------------------------------------------------------------*/
@@ -40,6 +40,7 @@
 #include "arcane/mesh/NodeFamily.h"
 #include "arcane/core/IParallelMng.h"
 #include "arcane/core/IMeshModifier.h"
+#include "arcane/core/MeshKind.h"
 #include "arcane/core/VariableCollection.h"
 
 #include "arcane/core/internal/IPolyhedralMeshModifier.h"
@@ -142,6 +143,7 @@ private:
   String m_dofs_on_node_family_name; // Several dofs per node
   String m_dofs_multi_on_face_family_name; // Several dofs per face (non constant size)
   String m_dofs_multi_on_node_family_name; // Several dofs per node (non constant size)
+  bool m_do_compact = true;
 
 };
 
@@ -153,6 +155,7 @@ executeTest()
 {
   info() << "================ WELCOME TO DOF TESTER =====================";
 
+  if (mesh()->meshKind().meshStructure() == eMeshStructure::Polyhedral) m_do_compact = false;
   addDoF(5,0);
   removeDoF();
   doFGroups();
@@ -335,6 +338,7 @@ _node2DoFConnectivity()
   Int64UniqueArray uids;
   // Create dof on own node only. Ghost handled in the following by GhostDoFManager
   ENUMERATE_NODE(inode,ownNodes()) {
+    info() << "Add dof on node " << inode.localId() << "," << inode->uniqueId().asInt64() << " owner " << inode->owner();
     uids.add(mesh::DoFUids::uid(inode->uniqueId().asInt64()));
   }
   Int32UniqueArray lids(uids.size());
@@ -360,6 +364,8 @@ _node2DoFConnectivity()
   ENUMERATE_NODE(inode,allNodes()) {
     const DoF& connected_dof = node2dof(inode);
     dof_uid = connected_dof.uniqueId().asInt64();
+    info() << "Node " << inode.localId() << "," << inode->uniqueId().asInt64() << " owner " << inode->owner();
+    info() << "is connected to dof " << connected_dof.localId() << "," << connected_dof.uniqueId() << " owner " << connected_dof.owner();
     // Check Ghost policy node and dof have same owner
     if (connected_dof.owner() != inode->owner()) fatal() << "Error in node to dof connectivity ghost policy";
     info() << String::format("dof uid {0} owned by {1} connected to node uid {2} owned by {3} ",
@@ -379,13 +385,16 @@ _node2DoFConnectivity()
     }
   }
   // Outside an enumerate, for a one-shot use
-  NodeInfoListView nodes_view(mesh()->nodeFamily());
-  Node my_node(nodes_view[0]);
-  ConnectivityItemVector dof_vec2 = node2dof._connectedItems(my_node);
-  ENUMERATE_DOF(idof,dof_vec2){
-    dof_uid = idof->uniqueId().asInt64();
-    info() << String::format("dof uid {0} owned by {1}  connected to node uid {2} owned by {3}  ",
-                             dof_uid, idof->owner(), my_node.uniqueId().asInt64(), my_node.owner());
+  if (mesh()->nodeFamily()->nbItem() > 0) {
+    NodeInfoListView nodes_view(mesh()->nodeFamily());
+    Node my_node(nodes_view[0]);
+    ConnectivityItemVector dof_vec2 = node2dof._connectedItems(my_node);
+    ENUMERATE_DOF(idof,dof_vec2){
+      info() << "dof lid " << idof->localId() ;
+      dof_uid = idof->uniqueId().asInt64();
+      info() << String::format("dof uid {0} owned by {1}  connected to node uid {2} owned by {3}  ",
+                               dof_uid, idof->owner(), my_node.uniqueId().asInt64(), my_node.owner());
+    }
   }
 
   // clean
@@ -467,13 +476,15 @@ _cell2DoFsConnectivity()
     }
   }
   // For one-shot use
-  CellInfoListView cells_view(mesh()->cellFamily());
-  Cell my_cell(cells_view[0]);
-  ConnectivityItemVector dof_vec2 = cell2dofs(my_cell);
-  ENUMERATE_DOF(idof,dof_vec2){
-    dof_uid = idof->uniqueId().asInt64();
-    info() << String::format("dof uid {0} owned by {1}  connected to cell uid {2} owned by {3}  ",
-                             dof_uid, idof->owner(), my_cell.uniqueId().asInt64(), my_cell.owner());
+  if (mesh()->cellFamily()->nbItem() > 0) {
+    CellInfoListView cells_view(mesh()->cellFamily());
+    Cell my_cell(cells_view[0]);
+    ConnectivityItemVector dof_vec2 = cell2dofs(my_cell);
+    ENUMERATE_DOF(idof,dof_vec2){
+      dof_uid = idof->uniqueId().asInt64();
+      info() << String::format("dof uid {0} owned by {1}  connected to cell uid {2} owned by {3}  ",
+                               dof_uid, idof->owner(), my_cell.uniqueId().asInt64(), my_cell.owner());
+    }
   }
 
   // Test constructor by item_property
@@ -549,14 +560,16 @@ _Face2DoFsMultiConnectivity()
       }
     }
   // For one-shot use
-   FaceInfoListView faces_view(mesh()->faceFamily());
-   Face my_face(faces_view[0]);
-   ConnectivityItemVector dof_vec2 = face2dofs(my_face);
-   ENUMERATE_DOF(idof,dof_vec2){
-     dof_uid = idof->uniqueId().asInt64();
-     info() << String::format("dof uid {0} owned by {1}  connected to face uid {2} owned by {3}  ",
-                              dof_uid, idof->owner(), my_face.uniqueId().asInt64(), my_face.owner());
-   }
+  if (mesh()->faceFamily()->nbItem() > 0) {
+    FaceInfoListView faces_view(mesh()->faceFamily());
+    Face my_face(faces_view[0]);
+    ConnectivityItemVector dof_vec2 = face2dofs(my_face);
+    ENUMERATE_DOF(idof,dof_vec2){
+      dof_uid = idof->uniqueId().asInt64();
+      info() << String::format("dof uid {0} owned by {1}  connected to face uid {2} owned by {3}  ",
+                               dof_uid, idof->owner(), my_face.uniqueId().asInt64(), my_face.owner());
+    }
+  }
 
   // Test constructor by item_property
   FaceToDoFsMultiConnectivity face2dofs_2(mesh()->faceFamily(),dofs_multi_on_face_family->itemFamily(),face2dofs.itemProperty(),"FaceToDoFsMulti2");
@@ -673,26 +686,31 @@ _node2DoFConnectivityRegistered()
   _checkConnectivityUpdateAfterRemove(node2dof, removed_node_lids, removed_node_uids);
 
   // Compact Source family
-  debug() << "NODES " << node_family->view().localIds();
-  node_family->compactItems(true);
-  debug() << "NODES " << node_family->view().localIds();
-  // update lids
-  for (Arcane::Integer rank = 0; rank < nb_subdomain; ++rank) {
-       node_family->itemsUniqueIdToLocalId(remaining_node_lids[rank], remaining_node_uids[rank], true);
+  if (m_do_compact) {
+    debug() << "NODES " << node_family->view().localIds();
+    node_family->compactItems(true);
+    debug() << "NODES " << node_family->view().localIds();
+    // update lids
+    for (Arcane::Integer rank = 0; rank < nb_subdomain; ++rank) {
+      node_family->itemsUniqueIdToLocalId(remaining_node_lids[rank], remaining_node_uids[rank], true);
+    }
   }
 
   // Compact Target family
-  debug() << "DOFS " << dof_on_node_family->itemFamily()->view().localIds();
-  debug() << "DOF family size " << dof_on_node_family->nbItem();
-  dof_on_node_family->itemFamily()->compactItems(true);
-  debug() << "DOF family size " << dof_on_node_family->nbItem();
-  debug() << "DOFS " << dof_on_node_family->itemFamily()->view().localIds();
+  if (m_do_compact) {
+    debug() << "DOFS " << dof_on_node_family->itemFamily()->view().localIds();
+    debug() << "DOF family size " << dof_on_node_family->nbItem();
+    dof_on_node_family->itemFamily()->compactItems(true);
+    debug() << "DOF family size " << dof_on_node_family->nbItem();
+    debug() << "DOFS " << dof_on_node_family->itemFamily()->view().localIds();
 
-  _checkConnectivityUpdateAfterCompact(node2dof, remaining_node_lids, remaining_node_uids, node2dof.itemProperty().size());
+    _checkConnectivityUpdateAfterCompact(node2dof, remaining_node_lids, remaining_node_uids, node2dof.itemProperty().size());
+  }
 
   // Remove a second node
   // update node lids
   new_nodes_lids = remaining_node_lids;
+  info() << "New node lids " << new_nodes_lids[0];
   nb_remaining_nodes = new_nodes_lids.dim2Size() - (nb_removed_nodes + 1);
   remaining_node_lids.resize(nb_subdomain, nb_remaining_nodes);
   remaining_node_uids.resize(nb_subdomain, nb_remaining_nodes);
@@ -709,7 +727,8 @@ _node2DoFConnectivityRegistered()
   node_family->endUpdate(); // Connectivity and ghosts are updated (since own and ghost dof are removed)
   node_family->computeSynchronizeInfos(); // Not needed by connectivity but needed to have NodeFamily synchronization info up to date
 
-  node_family->compactItems(true);
+  if (m_do_compact)
+    node_family->compactItems(true);
 
   dofMng().connectivityMng()->unregisterConnectivity(&node2dof);
 }
@@ -852,20 +871,22 @@ _node2DoFsConnectivityRegistered()
   _checkConnectivityUpdateAfterRemove(node2dofs, removed_nodes_lids, removed_nodes_uids, false);
 
   // Compact Source family
-  node_family->compactItems(true);
-  debug() << "NODES " << Int32UniqueArray(node_family->view().localIds());
-  // update lids
-  for (Arcane::Integer rank = 0; rank < nb_subdomain; ++rank) {
+  if (m_do_compact) {
+    node_family->compactItems(true);
+    debug() << "NODES " << Int32UniqueArray(node_family->view().localIds());
+    // update lids
+    for (Arcane::Integer rank = 0; rank < nb_subdomain; ++rank) {
       node_family->itemsUniqueIdToLocalId(remaining_nodes_lids[rank], remaining_nodes_uids[rank], true);
-  }
+    }
 
   // Compact Target family
-  debug() << "DOFS " << dofs_on_node_family->itemFamily()->view().localIds();
-  debug() << "DOF family size " << dofs_on_node_family->nbItem();
-  dofs_on_node_family->itemFamily()->compactItems(true);
-  debug() << "DOF family size " << dofs_on_node_family->nbItem();
-  debug() << "DOFS " << dofs_on_node_family->itemFamily()->view().localIds();
-  _checkConnectivityUpdateAfterCompact(node2dofs, remaining_nodes_lids, remaining_nodes_uids, node2dofs.itemProperty().dim1Size(), false);
+    debug() << "DOFS " << dofs_on_node_family->itemFamily()->view().localIds();
+    debug() << "DOF family size " << dofs_on_node_family->nbItem();
+    dofs_on_node_family->itemFamily()->compactItems(true);
+    debug() << "DOF family size " << dofs_on_node_family->nbItem();
+    debug() << "DOFS " << dofs_on_node_family->itemFamily()->view().localIds();
+    _checkConnectivityUpdateAfterCompact(node2dofs, remaining_nodes_lids, remaining_nodes_uids, node2dofs.itemProperty().dim1Size(), false);
+  }
 
   // Check if compaction works when add&remove
   _addNodes(new_nodes_lids, new_nodes_uids);
@@ -875,7 +896,7 @@ _node2DoFsConnectivityRegistered()
   node_family->endUpdate(); // Connectivity and ghosts are updated (since own and ghost dof are removed)
   node_family->computeSynchronizeInfos(); // Not needed by connectivity but needed to have NodeFamily synchronization info up to date
 
-  node_family->compactItems(true);
+  if (m_do_compact) node_family->compactItems(true);
 
   dofMng().connectivityMng()->unregisterConnectivity(&node2dofs);
 }
@@ -1035,22 +1056,24 @@ _node2DoFsMultiConnectivityRegistered()
   _checkConnectivityUpdateAfterRemove(node2dofs, removed_nodes_lids, removed_nodes_uids, false);
 
   // Compact Source family
-  node_family->compactItems(true);
-  debug() << "NODES " << node_family->view().localIds();
-  // update lids
-  for (Arcane::Integer rank = 0; rank < nb_subdomain; ++rank)
+  if (m_do_compact) {
+    node_family->compactItems(true);
+    debug() << "NODES " << node_family->view().localIds();
+    // update lids
+    for (Arcane::Integer rank = 0; rank < nb_subdomain; ++rank)
     {
       node_family->itemsUniqueIdToLocalId(remaining_nodes_lids[rank],remaining_nodes_uids[rank],true);
     }
 
-  // Compact Target family
-  debug() << "DOFS " << dofs_multi_on_node_family->itemFamily()->view().localIds();
-  debug() << "DOF family size " << dofs_multi_on_node_family->nbItem();
-  dofs_multi_on_node_family->itemFamily()->compactItems(true);
-  debug() << "DOF family size " << dofs_multi_on_node_family->nbItem();
-  debug() << "DOFS " << dofs_multi_on_node_family->itemFamily()->view().localIds();
+    // Compact Target family
+    debug() << "DOFS " << dofs_multi_on_node_family->itemFamily()->view().localIds();
+    debug() << "DOF family size " << dofs_multi_on_node_family->nbItem();
+    dofs_multi_on_node_family->itemFamily()->compactItems(true);
+    debug() << "DOF family size " << dofs_multi_on_node_family->nbItem();
+    debug() << "DOFS " << dofs_multi_on_node_family->itemFamily()->view().localIds();
 
-  _checkConnectivityUpdateAfterCompact(node2dofs, remaining_nodes_lids, remaining_nodes_uids, node2dofs.itemProperty().dim1Size(), false);
+    _checkConnectivityUpdateAfterCompact(node2dofs, remaining_nodes_lids, remaining_nodes_uids, node2dofs.itemProperty().dim1Size(), false);
+  }
 
   // Check if compaction works when add&remove
   _addNodes(new_nodes_lids, new_nodes_uids);
@@ -1060,7 +1083,7 @@ _node2DoFsMultiConnectivityRegistered()
   node_family->endUpdate(); // Connectivity and ghosts are updated (since own and ghost dof are removed)
   node_family->computeSynchronizeInfos(); // Not needed by connectivity but needed to have NodeFamily synchronization info up to date
 
-  node_family->compactItems(true);
+  if (m_do_compact) node_family->compactItems(true);
 
   dofMng().connectivityMng()->unregisterConnectivity(&node2dofs);
 }
@@ -1183,10 +1206,6 @@ DoFTester::
 _checkConnectivityUpdateAfterCompact(IItemConnectivity& node2dof, Int32Array2View remaining_nodes_lids,
                                      Int64ConstArray2View remaining_nodes_uids, Integer item_property_size, bool is_scalar_connectivity)
 {
-  // Compacting not done for now with polyhedral mesh: an option can deactivate its check
-  bool do_check_compacting = options()->doCheckCompacting();
-  if (do_check_compacting)
-    info() << "--Do check Compacting";
   // Check target family compaction : remaining nodes must be associated to at least one dof
   ItemInternal internal; // for test
   Integer nb_subdomain = subDomain()->parallelMng()->commSize();
@@ -1202,7 +1221,7 @@ _checkConnectivityUpdateAfterCompact(IItemConnectivity& node2dof, Int32Array2Vie
         Int32 connected_dof_lids = concrete_node2dof.itemProperty()[remaining_node];
         info() << "== Connectivity value for node (uid) " << remaining_nodes_uids[rank][i] << " (lid=  " << remaining_nodes_lids[rank][i] << ")"
                << " = " << connected_dof_lids << " with nb item = " << dof_family->nbItem();
-        if (connected_dof_lids == NULL_ITEM_LOCAL_ID || connected_dof_lids+1 > dof_family->nbItem() && do_check_compacting)
+        if (connected_dof_lids == NULL_ITEM_LOCAL_ID || connected_dof_lids+1 > dof_family->nbItem())
           fatal() << "Error in check connectivity after compact";
       }
       else{
@@ -1211,14 +1230,14 @@ _checkConnectivityUpdateAfterCompact(IItemConnectivity& node2dof, Int32Array2Vie
         info() << "== Connectivity value for node (uid) " << remaining_nodes_uids[rank][i] << " (lid= " << remaining_nodes_lids[rank][i] << ")"
                << " = " << dofs_ids << " with nb item = " << dof_family->nbItem();
         for (Integer j = 0 ; j < dofs.size(); ++ j)
-          if (dofs_ids[j] == NULL_ITEM_LOCAL_ID || dofs_ids[j]+1 > dof_family->nbItem() && do_check_compacting)
+          if (dofs_ids[j] == NULL_ITEM_LOCAL_ID || dofs_ids[j]+1 > dof_family->nbItem())
             fatal() << "Error in check connectivity after compact";
       }
     }
   }
   _printNodeToDoFConnectivity(node2dof, is_scalar_connectivity,true);
   // Check source family compaction : itemProperty must have family size
-  if (item_property_size != node2dof.sourceFamily()->nbItem() && do_check_compacting) fatal() << "Error : connectivity is not correctly impacted by change in source family";
+  if (item_property_size != node2dof.sourceFamily()->nbItem()) fatal() << "Error : connectivity is not correctly impacted by change in source family";
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1242,15 +1261,17 @@ _removeNodes(Int32ConstArray2View new_nodes_lids,
   for (Integer rank = 0; rank < nb_subdomain; ++rank)
   {
     removed_node_lids[rank].copy(new_nodes_lids[rank].subConstView(0,nb_removed_nodes));
+    info() << "== Remove nodes " << removed_node_lids[rank] << " on rank " << rank;
     removed_nodes[rank] = node_family->view(removed_node_lids[rank]);
     remaining_node_lids[rank].copy(new_nodes_lids[rank].subConstView(nb_removed_nodes,nb_remaining_nodes));
+    info() << "== Remaining nodes " << remaining_node_lids[rank] << " on rank " << rank;
     remaining_nodes[rank] = node_family->view(remaining_node_lids[rank]);
     Int32 i = 0;
     mesh::NodeFamily* node_family_internal = dynamic_cast<mesh::NodeFamily*>(node_family);
     if (node_family_internal) {
       ENUMERATE_NODE (inode, removed_nodes[rank]) {
         removed_node_uids[rank][i++] = inode->uniqueId().asInt64();
-        info() << "== Remove item " << inode->localId() << " on rank " << mesh()->parallelMng()->commRank() << " with owner " << rank;
+        info() << "== Remove node " << inode->localId() << " on rank " << mesh()->parallelMng()->commRank() << " with owner " << rank;
         node_family_internal->removeNodeIfNotConnected(*inode);
       }
     }
@@ -1261,7 +1282,7 @@ _removeNodes(Int32ConstArray2View new_nodes_lids,
       ENUMERATE_NODE(inode,removed_nodes[rank])
       {
         removed_node_uids[rank][i++] = inode->uniqueId().asInt64();
-        info() << "== Remove item " << inode->localId() << " on rank " << mesh()->parallelMng()->commRank() << " with owner " << rank;
+        info() << "== Remove node " << inode->localId() << " on rank " << mesh()->parallelMng()->commRank() << " with owner " << rank;
       }
       polyhedral_modifier->removeItems(removed_node_lids[rank], IK_Node, node_family->name());
     }

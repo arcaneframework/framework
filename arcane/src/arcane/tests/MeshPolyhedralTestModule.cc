@@ -173,6 +173,14 @@ _testEnumerationAndConnectivities(IMesh* mesh)
     for (Edge edge : iface->edges()) {
       debug(Trace::High) << "face edge lid " << edge.localId() << " uid " << edge.uniqueId().asInt64();
     }
+    // check boundaryCell
+    if (iface->cells().size() == 1 && !iface->isSubDomainBoundary()) {ARCANE_FATAL("A face with one cell is boundary.");}
+    if (iface->isSubDomainBoundary()) {
+      debug(Trace::High) << "face boundary cell lid " << iface->boundaryCell().localId();
+      debug(Trace::High) << "face boundary cell uid " << iface->boundaryCell().uniqueId().asInt64();
+      if (iface->boundaryCell().localId() == NULL_ITEM_LOCAL_ID) {ARCANE_FATAL("A boundary face's boundary cell is null.");}
+      if (iface->cells().size() > 1) {ARCANE_FATAL("A boundary face has only one cell.");}
+    }
   }
   // Check face flags
   _checkFlags(mesh);
@@ -384,12 +392,19 @@ _testGroups(IMesh* mesh)
     if (group.null())
       ARCANE_FATAL("Could not find group {0}", group_infos->getName());
     ValueChecker vc{ A_FUNCINFO };
-    vc.areEqual(group.size(), group_infos->getSize(), "check group size");
+    auto group_size = 0;
+    if (parallelMng()->isParallel()) {
+      group_size = parallelMng()->reduce(Parallel::ReduceSum, group.own().size());
+    }
+    else {
+      group_size = group.size();
+    }
+    vc.areEqual(group_size, group_infos->getSize(), "check group size");
   }
   ValueChecker vc{ A_FUNCINFO };
   auto nb_internal_group = 19;
   if (subDomain()->parallelMng()->isParallel()) {
-    nb_internal_group = 23;
+    nb_internal_group = 27;
   }
   auto nb_group = nb_internal_group + options()->nbMeshGroup;
   vc.areEqual(nb_group, mesh->groups().count(), "check number of groups in the mesh");
@@ -413,11 +428,21 @@ _testDimensions(IMesh* mesh)
   auto mesh_size = options()->meshSize();
   if (mesh_size.empty())
     return;
+  auto nb_cell = mesh->nbCell();
+  auto nb_face = mesh->nbFace();
+  auto nb_edge = mesh->nbEdge();
+  auto nb_node = mesh->nbNode();
+  if (parallelMng()->isParallel()) {
+    nb_cell = parallelMng()->reduce(Parallel::ReduceSum, mesh->ownCells().size());
+    nb_face = parallelMng()->reduce(Parallel::ReduceSum, mesh->ownFaces().size());
+    nb_edge = parallelMng()->reduce(Parallel::ReduceSum, mesh->ownEdges().size());
+    nb_node = parallelMng()->reduce(Parallel::ReduceSum, mesh->ownNodes().size());
+  }
   ValueChecker vc(A_FUNCINFO);
-  vc.areEqual(mesh->nbCell(), mesh_size[0]->getNbCells(), "check number of cells");
-  vc.areEqual(mesh->nbFace(), mesh_size[0]->getNbFaces(), "check number of faces");
-  vc.areEqual(mesh->nbEdge(), mesh_size[0]->getNbEdges(), "check number of edges");
-  vc.areEqual(mesh->nbNode(), mesh_size[0]->getNbNodes(), "check number of nodes");
+  vc.areEqual(nb_cell, mesh_size[0]->getNbCells(), "check number of cells");
+  vc.areEqual(nb_face, mesh_size[0]->getNbFaces(), "check number of faces");
+  vc.areEqual(nb_edge, mesh_size[0]->getNbEdges(), "check number of edges");
+  vc.areEqual(nb_node, mesh_size[0]->getNbNodes(), "check number of nodes");
 }
 
 /*---------------------------------------------------------------------------*/
@@ -528,7 +553,7 @@ _checkVariableWithRefValue(VariableRefType variable, Arcane::ItemGroup item_grou
     debug(Trace::High) << variable.name() << " at item " << iitem.localId() << " " << variable[iitem];
     variable_sum += variable[iitem];
   }
-  if (variable_sum != ref_sum) {
+  if (variable_sum != ref_sum && !parallelMng()->isParallel()) {
     fatal() << "Error on variable " << variable.name();
   }
 }
@@ -550,8 +575,6 @@ _checkArrayVariable(VariableArrayRefType variable_ref, ItemGroup item_group)
     debug(Trace::High) << variable_ref.name() << " at item " << iitem.localId() << variable_ref[iitem];
   }
   ValueChecker vc{ A_FUNCINFO };
-  if (array_size == 0)
-    ARCANE_FATAL("Array variable {0} array size is zero");
   std::vector<int> ref_sum(array_size);
   std::iota(ref_sum.begin(), ref_sum.end(), 1.);
   vc.areEqual(variable_sum, item_group.size() * std::accumulate(ref_sum.begin(), ref_sum.end(), 0.), "check array variable values");

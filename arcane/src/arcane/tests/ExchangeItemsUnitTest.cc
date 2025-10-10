@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ExchangeItemsUnitTest.cc                                    (C) 2000-2023 */
+/* ExchangeItemsUnitTest.cc                                    (C) 2000-2025 */
 /*                                                                           */
 /* Service du test de l'échange d'items.                                     */
 /*---------------------------------------------------------------------------*/
@@ -21,6 +21,8 @@
 #include "arcane/IPrimaryMesh.h"
 #include "arcane/IMeshUtilities.h"
 #include "arcane/IVariableSynchronizer.h"
+#include "arcane/utils/ValueChecker.h"
+#include "arccore/trace/ITraceMng.h"
 
 enum TestOperation
 {
@@ -120,6 +122,20 @@ _partitionCells()
   mesh()->modifier()->setDynamic(true);
   mesh()->toPrimaryMesh()->exchangeItems();// update ghost is done.
 
+  Int32UniqueArray owners, ref_owners;
+  owners.reserve(mesh()->cellFamily()->nbItem());
+  ref_owners.reserve(mesh()->cellFamily()->nbItem());
+  ENUMERATE_CELL(icell, allCells()) {
+    info() << "Cell uid " << icell->uniqueId() << " has owner "  << icell->owner();
+    owners.push_back(icell->owner());
+    ref_owners.push_back(0);
+  }
+
+  ValueChecker vc{ A_FUNCINFO };
+  vc.areEqualArray(owners, ref_owners, "Owners must be 0.");
+
+
+
   // une fois tout sur un proc on redispatche pour mimer un partitionement initial
   ENUMERATE_CELL(icell, allCells()) {
     cell_new_owners[icell] = (icell.index()*subDomain()->parallelMng()->commSize())/mesh()->cellFamily()->nbItem();
@@ -148,11 +164,15 @@ _exchangeCellOwner()
     ENUMERATE_CELL(icell, allCells()) {
       cell_new_owners[icell] = comm_size-(icell->owner()+1); // exchange owner
       info() << "Cell uid " << icell->uniqueId() << " has owner "  << icell->owner();
+      info() << "Cell uid " << icell->uniqueId() << " will move to "  << cell_new_owners[icell];
     }
     mesh()->utilities()->changeOwnersFromCells();
     mesh()->modifier()->setDynamic(true);
     mesh()->toPrimaryMesh()->exchangeItems();// update ghost is done.
 
+  ENUMERATE_CELL(icell, allCells()) {
+    info() << "Cell uid " << icell->uniqueId() << " has owner "  << icell->owner();
+  }
     _computeGhostPPVariable();
 }
 

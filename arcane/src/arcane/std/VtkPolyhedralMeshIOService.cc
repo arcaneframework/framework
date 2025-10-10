@@ -346,7 +346,7 @@ _fillItemAllocationInfo(ItemAllocationInfo& item_allocation_info, VtkReader& vtk
   auto nb_connected_family = 3;
   item_allocation_info.family_infos.resize(nb_item_family);
   for (auto& family_info : item_allocation_info.family_infos) {
-    family_info.connected_family_info.resize(nb_connected_family);
+    family_info.connected_family_infos.resize(nb_connected_family);
   }
   // Create regular item families and connectivities
   auto& cell_family_info = item_allocation_info.family_infos[0];
@@ -367,21 +367,21 @@ _fillItemAllocationInfo(ItemAllocationInfo& item_allocation_info, VtkReader& vtk
   edge_family_info.item_uids = vtk_reader.edgeUids();
   // Cell to nodes connectivity
   auto cell_connected_family_index = 0;
-  auto& cell_connected_node_family_info = cell_family_info.connected_family_info[cell_connected_family_index++];
+  auto& cell_connected_node_family_info = cell_family_info.connected_family_infos[cell_connected_family_index++];
   cell_connected_node_family_info.name = node_family_info.name;
   cell_connected_node_family_info.item_kind = node_family_info.item_kind;
   cell_connected_node_family_info.connectivity_name = "CellToNodes";
   cell_connected_node_family_info.nb_connected_items_per_item = vtk_reader.cellNbNodes();
   cell_connected_node_family_info.connected_items_uids = vtk_reader.cellNodes();
   // Cell to faces connectivity
-  auto& cell_connected_face_family_info = cell_family_info.connected_family_info[cell_connected_family_index++];
+  auto& cell_connected_face_family_info = cell_family_info.connected_family_infos[cell_connected_family_index++];
   cell_connected_face_family_info.name = face_family_info.name;
   cell_connected_face_family_info.item_kind = face_family_info.item_kind;
   cell_connected_face_family_info.connectivity_name = "CellToFaces";
   cell_connected_face_family_info.nb_connected_items_per_item = vtk_reader.cellNbFaces();
   cell_connected_face_family_info.connected_items_uids = vtk_reader.cellFaces();
   // Cell to edges connectivity
-  auto& cell_connected_edge_family_info = cell_family_info.connected_family_info[cell_connected_family_index++];
+  auto& cell_connected_edge_family_info = cell_family_info.connected_family_infos[cell_connected_family_index++];
   cell_connected_edge_family_info.name = edge_family_info.name;
   cell_connected_edge_family_info.item_kind = edge_family_info.item_kind;
   cell_connected_edge_family_info.connectivity_name = "CellToEdges";
@@ -389,21 +389,21 @@ _fillItemAllocationInfo(ItemAllocationInfo& item_allocation_info, VtkReader& vtk
   cell_connected_edge_family_info.connected_items_uids = vtk_reader.cellEdges();
   // Face to cells connectivity
   auto face_connected_family_index = 0;
-  auto& face_connected_cell_family_info = face_family_info.connected_family_info[face_connected_family_index++];
+  auto& face_connected_cell_family_info = face_family_info.connected_family_infos[face_connected_family_index++];
   face_connected_cell_family_info.name = cell_family_info.name;
   face_connected_cell_family_info.item_kind = cell_family_info.item_kind;
   face_connected_cell_family_info.connectivity_name = "FaceToCells";
   face_connected_cell_family_info.nb_connected_items_per_item = vtk_reader.faceNbCells();
   face_connected_cell_family_info.connected_items_uids = vtk_reader.faceCells();
   // Face to nodes connectivity
-  auto& face_connected_node_family_info = face_family_info.connected_family_info[face_connected_family_index++];
+  auto& face_connected_node_family_info = face_family_info.connected_family_infos[face_connected_family_index++];
   face_connected_node_family_info.name = node_family_info.name;
   face_connected_node_family_info.item_kind = node_family_info.item_kind;
   face_connected_node_family_info.connectivity_name = "FaceToNodes";
   face_connected_node_family_info.nb_connected_items_per_item = vtk_reader.faceNbNodes();
   face_connected_node_family_info.connected_items_uids = vtk_reader.faceNodes();
   // Face to edges connectivity
-  auto& face_connected_edge_family_info = face_family_info.connected_family_info[face_connected_family_index];
+  auto& face_connected_edge_family_info = face_family_info.connected_family_infos[face_connected_family_index];
   face_connected_edge_family_info.name = edge_family_info.name;
   face_connected_edge_family_info.item_kind = edge_family_info.item_kind;
   face_connected_edge_family_info.connectivity_name = "FaceToEdges";
@@ -411,21 +411,21 @@ _fillItemAllocationInfo(ItemAllocationInfo& item_allocation_info, VtkReader& vtk
   face_connected_edge_family_info.connected_items_uids = vtk_reader.faceEdges();
   // Edge to cells connectivity
   auto edge_connected_family_index = 0;
-  auto& edge_connected_cell_family_info = edge_family_info.connected_family_info[edge_connected_family_index++];
+  auto& edge_connected_cell_family_info = edge_family_info.connected_family_infos[edge_connected_family_index++];
   edge_connected_cell_family_info.name = cell_family_info.name;
   edge_connected_cell_family_info.item_kind = cell_family_info.item_kind;
   edge_connected_cell_family_info.connectivity_name = "EdgeToCells";
   edge_connected_cell_family_info.nb_connected_items_per_item = vtk_reader.edgeNbCells();
   edge_connected_cell_family_info.connected_items_uids = vtk_reader.edgeCells();
   // Edge to faces connectivity
-  auto& edge_connected_face_family_info = edge_family_info.connected_family_info[edge_connected_family_index++];
+  auto& edge_connected_face_family_info = edge_family_info.connected_family_infos[edge_connected_family_index++];
   edge_connected_face_family_info.name = face_family_info.name;
   edge_connected_face_family_info.item_kind = face_family_info.item_kind;
   edge_connected_face_family_info.connectivity_name = "EdgeToFaces";
   edge_connected_face_family_info.nb_connected_items_per_item = vtk_reader.edgeNbFaces();
   edge_connected_face_family_info.connected_items_uids = vtk_reader.edgeFaces();
   // Edge to nodes connectivity
-  auto& edge_connected_node_family_info = edge_family_info.connected_family_info[edge_connected_family_index++];
+  auto& edge_connected_node_family_info = edge_family_info.connected_family_infos[edge_connected_family_index++];
   edge_connected_node_family_info.name = node_family_info.name;
   edge_connected_node_family_info.item_kind = node_family_info.item_kind;
   edge_connected_node_family_info.connectivity_name = "EdgeToNodes";
@@ -433,21 +433,21 @@ _fillItemAllocationInfo(ItemAllocationInfo& item_allocation_info, VtkReader& vtk
   edge_connected_node_family_info.connected_items_uids = vtk_reader.edgeNodes();
   // Node to cells connectivity
   auto node_connected_family_index = 0;
-  auto& node_connected_cell_family_info = node_family_info.connected_family_info[node_connected_family_index++];
+  auto& node_connected_cell_family_info = node_family_info.connected_family_infos[node_connected_family_index++];
   node_connected_cell_family_info.name = cell_family_info.name;
   node_connected_cell_family_info.item_kind = cell_family_info.item_kind;
   node_connected_cell_family_info.connectivity_name = "NodeToCells";
   node_connected_cell_family_info.nb_connected_items_per_item = vtk_reader.nodeNbCells();
   node_connected_cell_family_info.connected_items_uids = vtk_reader.nodeCells();
   // Node to faces connectivity
-  auto& node_connected_face_family_info = node_family_info.connected_family_info[node_connected_family_index++];
+  auto& node_connected_face_family_info = node_family_info.connected_family_infos[node_connected_family_index++];
   node_connected_face_family_info.name = face_family_info.name;
   node_connected_face_family_info.item_kind = face_family_info.item_kind;
   node_connected_face_family_info.connectivity_name = "NodeToFaces";
   node_connected_face_family_info.nb_connected_items_per_item = vtk_reader.nodeNbFaces();
   node_connected_face_family_info.connected_items_uids = vtk_reader.nodeFaces();
   // Node to edges connectivity
-  auto& node_connected_edge_family_info = node_family_info.connected_family_info[node_connected_family_index++];
+  auto& node_connected_edge_family_info = node_family_info.connected_family_infos[node_connected_family_index++];
   node_connected_edge_family_info.name = edge_family_info.name;
   node_connected_edge_family_info.item_kind = edge_family_info.item_kind;
   node_connected_edge_family_info.connectivity_name = "NodeToEdges";
@@ -536,7 +536,7 @@ _readVariablesAndGroups(IPrimaryMesh* mesh, VtkReader& reader)
       auto* face_array = face_data->GetArray(array_index);
       if (String name = face_array->GetName(); name.substring(0, 6) == "GROUP_") {
         _createGroup(face_array, name.substring(6), mesh, mesh->faceFamily(), vtk_to_Arcane_lids);
-        created_infos_str() << "<face-group name='" << name << "'/>";
+        created_infos_str() << "<face-group name='" << name.substring(6) << "'/>";
       }
       else {
         auto var_info = _createVariable(face_array, name, mesh, mesh->faceFamily(), arcane_to_vtk_lids);

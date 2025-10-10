@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshExchanger.cc                                            (C) 2000-2024 */
+/* MeshExchanger.cc                                            (C) 2000-2025 */
 /*                                                                           */
 /* Gestion d'un échange de maillage entre sous-domaines.                     */
 /*---------------------------------------------------------------------------*/
@@ -26,6 +26,8 @@
 #include "arcane/mesh/DynamicMesh.h"
 #include "arcane/mesh/MeshExchange.h"
 #include "arcane/core/internal/IMeshModifierInternal.h"
+#include "arcane/core/internal/IItemFamilySerializerMngInternal.h"
+#include "arcane/core/internal/IMeshInternal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -351,6 +353,10 @@ allocateReceivedItems()
     for( IItemFamilyExchanger* e : m_family_exchangers ){
       e->readAndAllocItems(); // Attention, ne procède plus sur les différents sous-maillages
     }
+    // If needed, finalize item allocations (for polyhedral meshes)
+    auto* family_serializer_mng = m_mesh->_internalApi()->familySerializerMng();
+    if (family_serializer_mng) family_serializer_mng->finalizeItemAllocation();
+
     // Build item relations (only dependencies are build in readAndAllocItems)
     // only for families registered in the graph
     if (m_mesh->itemFamilyNetwork() && m_mesh->itemFamilyNetwork()->isActivated())
