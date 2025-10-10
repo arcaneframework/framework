@@ -24,6 +24,7 @@ namespace Arcane
 
 class IItemConnectivityMng;
 class IPolyhedralMeshModifier;
+class IItemFamilySerializerMngInternal;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -62,6 +63,18 @@ class ARCANE_CORE_EXPORT IMeshInternal
    * Cette méthode retourne nullptr si l'implémentation du maillage n'est pas PolyhedralMesh
    */
   virtual IPolyhedralMeshModifier* polyhedralMeshModifier() const noexcept = 0;
+
+  /*!
+   * \brief Renvoie le gestionnaire des outils de sérialisation des familles.
+   *
+   * Ce gestionnaire est utilisé pour le maillage polyédrique, afin de lancer une
+   * phase de finalisation de l'ajout des items après l'appel aux méthodes de désérialisation,
+   * car ces méthodes sont asynchrones et il faut déclencher la phase de finalisation.
+   *
+   * @return Cette méthode retourne nullptr si le gestionnaire n'existe pas.
+   */
+  virtual IItemFamilySerializerMngInternal* familySerializerMng() const noexcept {return nullptr;}
+
 };
 
 

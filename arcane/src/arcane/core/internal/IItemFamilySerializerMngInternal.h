@@ -5,45 +5,52 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IMeshInternal.h                                             (C) 2000-2025 */
+/* IItemFamilySerializerMngInternal.h                          (C) 2000-2025 */
 /*                                                                           */
-/* Partie interne à Arcane de IMesh.                                         */
+/* Gestionnaire des outils de sérialisation/désérialisation d'une famille.   */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_CORE_INTERNAL_IPOLYHEDRALMESHMODIFIER_H
-#define ARCANE_CORE_INTERNAL_IPOLYHEDRALMESHMODIFIER_H
+#ifndef ARCANE_CORE_IITEMFAMILYSERIALIZERMNGINTERNAL_H
+#define ARCANE_CORE_IITEMFAMILYSERIALIZERMNGINTERNAL_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/core/ArcaneTypes.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 namespace Arcane
 {
-
-class IItemConnectivityMng;
-class IPolyhedralMeshModifier;
+class IItemFamily;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \internal
- * \brief Partie interne de IMesh.
+ * \brief Gère la sérialisation/désérialisation des entités d'une famille.
  */
-class ARCANE_CORE_EXPORT IPolyhedralMeshModifier
+class ARCANE_CORE_EXPORT IItemFamilySerializerMngInternal
 {
  public:
-  virtual ~IPolyhedralMeshModifier() = default;
 
-  virtual void addItems(Int64ConstArrayView unique_ids, Int32ArrayView local_ids, eItemKind ik, const String& family_name) = 0;
-  virtual void addItems(Int64ConstArrayView unique_ids, Int32ArrayView local_ids, Int32ConstArrayView owners, eItemKind ik, const String& family_name) = 0;
-  virtual void removeItems(Int32ConstArrayView local_ids, eItemKind ik, const String& family_name) = 0;
+  virtual ~IItemFamilySerializerMngInternal() = default;
+
+ public:
+
+   /*!
+   * \brief Finalise les allocations réalisées par les serializers enregistrés dans le gestionnaire.
+   *
+   * Utilisé pour le maillage polyédrique où les allocations ne sont réalisées qu'après avoir
+   * effectué toutes les sérialisations pour toutes les familles
+   */
+  virtual void finalizeItemAllocation() = 0;
 };
 
-}// namespace Arcane
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #endif
+
