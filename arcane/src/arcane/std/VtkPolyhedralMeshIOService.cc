@@ -536,7 +536,7 @@ _readVariablesAndGroups(IPrimaryMesh* mesh, VtkReader& reader)
       auto* face_array = face_data->GetArray(array_index);
       if (String name = face_array->GetName(); name.substring(0, 6) == "GROUP_") {
         _createGroup(face_array, name.substring(6), mesh, mesh->faceFamily(), vtk_to_Arcane_lids);
-        created_infos_str() << "<face-group name='" << name << "'/>";
+        created_infos_str() << "<face-group name='" << name.substring(6) << "'/>";
       }
       else {
         auto var_info = _createVariable(face_array, name, mesh, mesh->faceFamily(), arcane_to_vtk_lids);
