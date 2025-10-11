@@ -378,38 +378,49 @@ computeNodesOwner()
     node.mutableItemBase().setOwner(my_rank, my_rank);
   });
 
-  // Parcours toutes les faces.
-  // Ne garde que celles qui sont frontières ou dont les propriétaires des
-  // deux mailles de part et d'autre sont différents de notre sous-domaine.
-  //UniqueArray<Int32> faces_to_add;
-  //faces_map.eachItem([&](Face face) {
-  //Int32 nb_cell = face.nbCell();
-  // if (nb_cell == 1)
-  //  faces_to_add.add(face.localId());
-  //});
-  //info() << "ItemsOwnerBuilder: NB_FACE_TO_ADD=" << faces_to_add.size();
+  // Parcours toutes les faces frontières et ajoute leurs noeuds
+  // à la liste des noeuds à traiter (nodes_to_add). Les faces frontières sont
+  // celles qui ne sont connectées qu'à une seule maille.
+  // qui connectées à une seule maille.
   const Int32 verbose_level = m_verbose_level;
 
-  // Ajoute tous les noeuds des faces frontières.
+  // Liste des noeuds à traiter
+  UniqueArray<Int32> nodes_to_add;
+
+  // Ensemble pour déterminer si un noeud a déjà été ajouté à \a nodes_to_add.
   std::unordered_set<Int32> done_nodes;
 
-  FaceInfoListView faces(m_mesh->faceFamily());
-  UniqueArray<Int32> nodes_to_add;
-  faces_map.eachItem([&](Face face) {
-    Int32 face_nb_cell = face.nbCell();
-    if (face_nb_cell == 2)
-      return;
-    for (Node node : face.nodes()) {
-      Int32 node_id = node.localId();
-      if (done_nodes.find(node_id) == done_nodes.end()) {
-        nodes_to_add.add(node_id);
-        done_nodes.insert(node_id);
-        node.mutableItemBase().setOwner(A_NULL_RANK, my_rank);
-      }
-    }
-  });
+  const bool is_mono_dimension = m_mesh->meshKind().isMonoDimension();
 
-  info() << "ItemsOwnerBuilder: NB_NODE_TO_ADD=" << nodes_to_add.size();
+  FaceInfoListView faces(m_mesh->faceFamily());
+  if (is_mono_dimension) {
+    faces_map.eachItem([&](Face face) {
+      Int32 face_nb_cell = face.nbCell();
+      if (face_nb_cell == 2)
+        return;
+      for (Node node : face.nodes()) {
+        Int32 node_id = node.localId();
+        if (done_nodes.find(node_id) == done_nodes.end()) {
+          nodes_to_add.add(node_id);
+          done_nodes.insert(node_id);
+          node.mutableItemBase().setOwner(A_NULL_RANK, my_rank);
+        }
+      }
+    });
+  }
+  else {
+    // Dans le cas de maillage multi-dimension, il n'y a pas actuellement
+    // de moyen simple de détecter les noeuds frontières. On traite donc tous
+    // les noeuds même si cela n'est pas optimal.
+    // NOTE: La détection n'est difficile que pour les noeuds connectés à des mailles
+    // de dimension 1 ou 2. Pour les mailles 3D, on pourrait n'ajouter que
+    // les noeuds connectées à une face n'ayant qu'une maille.
+    ENUMERATE_ (Node, inode, m_mesh->allNodes()) {
+      nodes_to_add.add(inode.itemLocalId());
+    }
+  }
+
+  info() << "ItemsOwnerBuilder: NB_NODE_TO_ADD=" << nodes_to_add.size() << " is_mono_dim=" << is_mono_dimension;
   NodeInfoListView nodes(&node_family);
   for (Int32 lid : nodes_to_add) {
     Node node(nodes[lid]);
