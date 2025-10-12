@@ -101,7 +101,8 @@ computeEdgesUniqueIds()
 
   // S'il n'y a pas de renumérotation, il n'y a pas non de
   // calcul des propriétaires. Il faut donc le faire maintenant
-  if (need_compute_owner) {
+  // si on est en parallèle.
+  if (need_compute_owner && m_mesh->parallelMng()->isParallel()) {
     ItemsOwnerBuilder owner_builder(m_mesh);
     owner_builder.computeEdgesOwner();
   }
