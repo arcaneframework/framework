@@ -1806,9 +1806,9 @@ _testComputeOwnersDirect()
   info() << "Test: _testComputeOwnersDirect()";
   mesh()->modifier()->setDynamic(true);
   mesh()->modifier()->updateGhostLayers();
-  mesh()->utilities()->computeAndSetOwnersForNodes();
-  mesh()->utilities()->computeAndSetOwnersForEdges();
-  mesh()->utilities()->computeAndSetOwnersForFaces();
+  MeshUtils::computeAndSetOwnerForNodes(mesh());
+  MeshUtils::computeAndSetOwnerForEdges(mesh());
+  MeshUtils::computeAndSetOwnerForFaces(mesh());
 }
 
 /*---------------------------------------------------------------------------*/

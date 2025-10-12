@@ -162,6 +162,7 @@ class ARCANE_CORE_EXPORT IMeshUtilities
    *
    * Cette opération est collective.
    */
+  ARCANE_DEPRECATED_REASON("Y2025: Use MeshUtils::computeAndSetOwnerForNodes() instead")
   virtual void computeAndSetOwnersForNodes() =0;
 
   /*!
@@ -172,6 +173,7 @@ class ARCANE_CORE_EXPORT IMeshUtilities
    *
    * Cette opération est collective.
    */
+  ARCANE_DEPRECATED_REASON("Y2025: Use MeshUtils::computeAndSetOwnerForEdges() instead")
   virtual void computeAndSetOwnersForEdges() = 0;
 
   /*!
@@ -182,6 +184,7 @@ class ARCANE_CORE_EXPORT IMeshUtilities
    *
    * Cette opération est collective.
    */
+  ARCANE_DEPRECATED_REASON("Y2025: Use MeshUtils::computeAndSetOwnerForFaces() instead")
   virtual void computeAndSetOwnersForFaces() =0;
 
   /*!

@@ -461,6 +461,45 @@ computeBoundaryNodeNodeViaEdgeConnectivity(IMesh* mesh, const String& connectivi
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+/*!
+ * \brief Détermine les propriétaires des noeuds.
+ *
+ * La détermination se fait en fonction des propriétaires des mailles.
+ * Il ne doit pas y avoir de couches de mailles fantômes.
+ *
+ * Cette opération est collective.
+ */
+extern "C++" ARCANE_CORE_EXPORT void
+computeAndSetOwnerForNodes(IMesh* mesh);
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Détermine les propriétaires des arêtes.
+ *
+ * La détermination se fait en fonction des propriétaires des mailles.
+ * Il ne doit pas y avoir de couches de mailles fantômes.
+ *
+ * Cette opération est collective.
+ */
+extern "C++" ARCANE_CORE_EXPORT void
+computeAndSetOwnerForEdges(IMesh* mesh);
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Détermine les propriétaires des faces.
+ *
+ * La détermination se fait en fonction des propriétaires des mailles.
+ * Il ne doit pas y avoir de couches de mailles fantômes.
+ *
+ * Cette opération est collective.
+ */
+extern "C++" ARCANE_CORE_EXPORT void
+computeAndSetOwnerForFaces(IMesh* mesh);
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 } // namespace Arcane::MeshUtils
 
