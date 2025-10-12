@@ -374,11 +374,12 @@ checkValidConnectivity()
                    "This usually means that parent group was not symmetrically built",
                    m_mesh->name(),String::plural(nerror, "error", false));
   }
-
-  _checkValidItemOwner(m_mesh->nodeFamily());
-  _checkValidItemOwner(m_mesh->edgeFamily());
-  _checkValidItemOwner(m_mesh->faceFamily());
-  _checkValidItemOwner(m_mesh->cellFamily());
+  if (m_is_check_items_owner){
+    _checkValidItemOwner(m_mesh->nodeFamily());
+    _checkValidItemOwner(m_mesh->edgeFamily());
+    _checkValidItemOwner(m_mesh->faceFamily());
+    _checkValidItemOwner(m_mesh->cellFamily());
+  }
 }
 
 /*---------------------------------------------------------------------------*/

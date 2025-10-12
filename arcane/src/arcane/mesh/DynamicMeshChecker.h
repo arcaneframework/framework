@@ -57,6 +57,9 @@ class DynamicMeshChecker
   void checkVariablesSynchronization() override;
   void checkItemGroupsSynchronization() override;
 
+  void setIsCheckItemsOwner(bool v) override { m_is_check_items_owner = v; }
+  bool isCheckItemsOwner() const override { return m_is_check_items_owner; }
+
  public:
 
   void checkValidConnectivity();
@@ -80,6 +83,7 @@ class DynamicMeshChecker
   VariableCellArrayInt64* m_var_cells_nodes = nullptr;
 
   bool m_compare_reference_file = false;
+  bool m_is_check_items_owner = true;
 };
 
 /*---------------------------------------------------------------------------*/

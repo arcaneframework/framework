@@ -98,6 +98,25 @@ class IMeshChecker
    * Lève une exception FatalErrorException en cas d'erreur.
    */
   virtual void checkItemGroupsSynchronization() = 0;
+
+  /*!
+   * \brief Indique si on active la vérification des propriétaires des entités.
+   *
+   * Cette vérification est effectuée lors de l'appel à checkValidConnectivity().
+   * Si elle est active, on vérifie que les noeuds, arêtes et
+   * faces ont bien le même propriétaire qu'une des mailles auxquels ils sont
+   * connectés.
+   *
+   * C'est toujours le cas si lorsque les propriétaires sont gérés par %Arcane
+   * et il est donc préférable de toujours faire cette vérification pour
+   * garantir la cohérence des informations en parallèle. Cependant, si la
+   * gestion des propriétaires est faite par l'utilisateur, il est possible
+   * de désactiver cette vérification.
+   */
+  virtual void setIsCheckItemsOwner(bool v) = 0;
+
+  //! Indique si la vérification des propriétaires des entités (vrai par défaut)
+  virtual bool isCheckItemsOwner() const = 0;
 };
 
 /*---------------------------------------------------------------------------*/
