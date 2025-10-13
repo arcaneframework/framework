@@ -149,7 +149,7 @@ namespace mesh
 
    public:
 
-    PolyhedralFamilySerializerMng(PolyhedralMesh* mesh)
+    explicit PolyhedralFamilySerializerMng(PolyhedralMesh* mesh)
     : m_mesh(mesh)
     {
       ARCANE_CHECK_POINTER2(mesh, "Must give a non null PolyhedralMesh pointer.");
