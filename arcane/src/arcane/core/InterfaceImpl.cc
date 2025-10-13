@@ -147,6 +147,7 @@
 #include "arcane/core/internal/IVariableSynchronizerMngInternal.h"
 #include "arcane/core/internal/IIncrementalItemConnectivityInternal.h"
 #include "arcane/core/internal/IPolyhedralMeshModifier.h"
+#include "arcane/core/internal/IItemFamilySerializerMngInternal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
