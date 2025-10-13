@@ -88,6 +88,7 @@ set(ARCANE_INTERNAL_SOURCES
   internal/VtkCellTypes.h
   internal/ParallelMngInternal.h
   internal/ParallelMngInternal.cc
+  internal/IItemFamilySerializerMngInternal.h
   )
 
 set(ARCANE_ORIGINAL_SOURCES
