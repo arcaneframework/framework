@@ -348,38 +348,6 @@ message(STATUS "Threads are always enabled")
 
 # ----------------------------------------------------------------------------
 
-# Maintenant, on considère qu'on a toujours le support du C++11 et C++14
-set(ARCANE_USE_CXX11 TRUE CACHE BOOL "true if C++11 is supported and used" FORCE)
-set(ARCANE_USE_CXX14 TRUE CACHE BOOL "true if C++14 is supported and used" FORCE)
-
-set(ARCANE_HAS_CXX20 FALSE)
-set(ARCANE_HAS_CXX23 FALSE)
-if (DEFINED ARCCORE_CXX_STANDARD)
-  if (${ARCCORE_CXX_STANDARD} VERSION_GREATER_EQUAL 20)
-    if (${ARCCORE_CXX_STANDARD} VERSION_GREATER_EQUAL 23)
-      set(ARCANE_HAS_CXX23 TRUE)
-    endif()
-    set(ARCANE_HAS_CXX20 TRUE)
-    message(STATUS "Arcane use C++20 or greater standard")
-    # Il faut au moins GCC 11 ou Clang 15
-    if(CMAKE_COMPILER_IS_GNUCXX)
-      if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 11)
-        message(FATAL_ERROR "Your version of GNU Compiler (${CMAKE_CXX_COMPILER_VERSION}) is too old for C++20. Version 11+ is required")
-      endif()
-    endif()
-    if(CMAKE_CXX_COMPILER_ID STREQUAL Clang)
-      if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 15)
-        message(FATAL_ERROR "Your version of Clang Compiler (${CMAKE_CXX_COMPILER_VERSION}) is too old for C++20. Version 16+ is required")
-      endif()
-    endif()
-  endif()
-endif()
-set(ARCANE_HAS_CXX20 ${ARCANE_HAS_CXX20} CACHE BOOL "True if C++20 is used" FORCE)
-set(ARCANE_HAS_CXX23 ${ARCANE_HAS_CXX23} CACHE BOOL "True if C++23 is used" FORCE)
-set(ARCANE_HAS_ACCELERATOR_API ${ARCANE_HAS_CXX20} CACHE BOOL "True Arcane has accelerator API" FORCE)
-
-# ----------------------------------------------------------------------------
-
 # Si on utilise gcc, supprime les extensions pour forcer le '-std=c++11'
 # car sinon cmake va ajouter lui même l'option et dans ce cas il met '-std=gnu++11'.
 # Cela pose problème car ce mode gnu++11 n'est pas strictement équivalent à c++11,
@@ -411,6 +379,32 @@ endif()
 
 message(STATUS "[arcane] Is Check mode enabled ? ${ARCANE_WANT_CHECK} (from arccore: ${ARCCORE_CHECK})")
 message(STATUS "[arcane] Is Debug mode enabled ? ${ARCANE_WANT_DEBUG} (from arccore: ${ARCCORE_DEBUG})")
+
+# ----------------------------------------------------------------------------
+
+# Maintenant, on considère qu'on a toujours le support du C++20
+set(ARCANE_USE_CXX11 TRUE CACHE BOOL "true if C++11 is supported and used" FORCE)
+set(ARCANE_USE_CXX14 TRUE CACHE BOOL "true if C++14 is supported and used" FORCE)
+set(ARCANE_HAS_CXX20 TRUE CACHE BOOL "True if C++20 is used (should be always true)" FORCE)
+set(ARCANE_HAS_ACCELERATOR_API TRUE CACHE BOOL "True Arcane has accelerator API" FORCE)
+
+set(ARCANE_HAS_CXX23 FALSE)
+if (${ARCCORE_CXX_STANDARD} VERSION_GREATER_EQUAL 23)
+  set(ARCANE_HAS_CXX23 TRUE)
+endif()
+
+# Il faut au moins GCC 11 ou Clang 15 pour le support du C++20 dans Arcane
+if(CMAKE_COMPILER_IS_GNUCXX)
+  if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 11)
+    message(FATAL_ERROR "Your version of GNU Compiler (${CMAKE_CXX_COMPILER_VERSION}) is too old for C++20. Version 11+ is required")
+  endif()
+endif()
+if(CMAKE_CXX_COMPILER_ID STREQUAL Clang)
+  if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 15)
+    message(FATAL_ERROR "Your version of Clang Compiler (${CMAKE_CXX_COMPILER_VERSION}) is too old for C++20. Version 15+ is required")
+  endif()
+endif()
+set(ARCANE_HAS_CXX23 ${ARCANE_HAS_CXX23} CACHE BOOL "True if C++23 is used" FORCE)
 
 # ----------------------------------------------------------------------------
 # Utilise les mêmes options de compilation que 'Arccore'.
