@@ -124,6 +124,7 @@ if (NOT ${ARCCORE_CXX_STANDARD} IN_LIST ARCCORE_CXX_STANDARD_LIST)
     " Valid values are '${ARCCORE_CXX_STANDARD_LIST}'")
 endif()
 message(STATUS "Compiling with C++ standard: ${ARCCORE_CXX_STANDARD}")
+set(ARCCORE_CXX_STANDARD ${ARCCORE_CXX_STANDARD} CACHE BOOL "C++ standard used for Arccore" FORCE)
 
 # ----------------------------------------------------------------------------
 # Définit une cible fictive 'arccore_build_compile_flags' et qui contient les
