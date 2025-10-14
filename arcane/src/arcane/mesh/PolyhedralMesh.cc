@@ -1409,7 +1409,7 @@ _allocateItems(const Arcane::ItemAllocationInfo& item_allocation_info, ArrayView
 
   if (!family_lids.empty()) {
     auto index = 0;
-    ARCANE_CHECK(family_lids.size() == item_local_ids.size());
+    ARCANE_ASSERT((family_lids.size() == item_local_ids.size()),("Incoherence in item number"));
     for (auto& lid_array : item_local_ids) {
       family_lids[index].resize(lid_array.size());
       lid_array.fillArrayView(family_lids[index].view(), mesh_state);
