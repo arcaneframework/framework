@@ -8,7 +8,10 @@ Les nouveautés successives apportées par les versions de %Arcane
 antérieures à la version 3 sont listées ici : \ref arcanedoc_news_changelog20
 
 ___
-## Arcane Version 3.16.7 (juillet 2025) {#arcanedoc_version3160}
+## Arcane Version 3.16.12 (14 octobre 2025) {#arcanedoc_version3160}
+
+\note Cette version est la dernière à supporter le standard C++17. Les
+versions ultérieures (4+) nécessitent le support du C++20.
 
 ### Nouveautés/Améliorations
 
@@ -60,9 +63,24 @@ ___
 - Ajoute API pour la gestion des fenêtres en mémoire partagée via
   MPI. Cette API fonctionne aussi en mode mémoire partagée et
   hybride. La page \ref arcanedoc_parallel_shmem indique comment
-  utiliser ces fonctionnalités (\pr{2158}, \pr{2170})
+  utiliser ces fonctionnalités (\pr{2158}, \pr{2170}, \pr{2179})
 - Ajoute support de [zstd](https://github.com/facebook/zstd) comme
   implémentaion de \arcane{IDataCompressor} (\pr{2160})
+- Ajoute méthode
+  \arcane{MeshUtils::computeNodeNodeViaEdgeConnectivity()}
+  pour calculer les noeuds connectés entre eux par des arêtes
+  (\pr{2176})
+- Ajoute possibilité d'utiliser une instance de classe comme paramètre
+  de \arcane{Parallel::BitonicSort} (\pr{2198})
+- Ajoute constructeurs de \arcanemat{MeshMaterialVariableRef} à partir
+  d'un \arcanemat{IMeshMaterialMng} (\pr{2200})
+- Ajoute support expérimental des types `Quad9`, `Hexaedron27` et
+  `Pyramid13` (\pr{2205}, \pr{2206})
+- Ajoute méthodes dans \arcane{MeshUtils} pour calculer directement
+  les propriétaires des noeuds, arêtes et faces dans le cas où il n'y
+  a pas de mailles fantômes (\pr{2230}, \pr{2236}, \pr{2237}, \pr{2238})
+- Ajoute possibilité de supprimer le test de vérification des
+  propriétaires des entités (\pr{2239})
 
 ### API Accélérateur
 
@@ -86,7 +104,14 @@ ___
   \arcanemat{MatCellVector} et \arcanemat{EnvCellVector} qui lui sont
   associés. Ce mécanisme est expérimental et s'active via la méthode
   \arcanemat{IMeshComponent::setSpecificExecutionPolicy()}. (\pr{2105})
-  
+- Ajoute support pour CUDA 13 (\pr{2183})
+- Ajoute support pour ROCM 7 (\pr{2212})
+- Ajoute support expérimental pour calculer automatiquement le nombre
+  de threads par bloc pour avoir l'occupation maximale de
+  l'accélérateur (\pr{2196}, \pr{2197})
+- Supprime l'implémentation des réductions utilisant les opérations
+  atomiques (\pr{2214})
+
 ### Changements
 
 - Déplace les classes de %Arccore du namespace Arccore vers le
@@ -107,6 +132,9 @@ ___
 - Autorise l'utilisation du caractère `-` (tiret) dans les noms des
   variables (\pr{2119})
 - Autorise plusieurs instance de \arcane{StandaloneSubDomain} (\pr{2127})
+- Utilise \arcane{ItemLocalId} au lieu de \arcane{Item} pour les
+  méthodes d'indexation des classes qui dérivent de
+  \arcane{MeshPartialVariable} (\pr{2184})
 
 ### Corrections
 
@@ -127,6 +155,8 @@ ___
   \pr{2165}, \pr{2168}, \pr{2172})
 - Corrige `\0` terminal écrit en trop dans les protections/reprises au
   format HDF5 (\pr{2144})
+- S'assure que le padding des données est correcte lorsqu'on utilise
+  la synchronisation multiple sur accélérateur (\pr{2193})
 
 ### Interne
 
@@ -158,11 +188,20 @@ ___
   plusieurs fichiers de la composante `arcane_core` (\pr{2112},
   \pr{2114}, \pr{2115}, \pr{2116})
 - Améliorations diverses dans le wrapper python (\pr{2153}, \pr{2154},
-  \pr{2156}, \pr{2159})
+  \pr{2156}, \pr{2159}, \pr{2181})
 - Déplace les méthodes de copie et de remplissage de
   \arcane{ConstMemoryView}, \arcane{MutableMemoryView},
   \arcane{ConstMultiMemoryView} et \arcane{MutableMultiMemoryView}
   dans le fichier `MemoryUtils.h` (\pr{2169}, \pr{2171})
+- Mise à jour de la version de RapidJSON sur le commit '24b5e7a8'
+  (\pr{2180})
+- Utilise `arcane/core` au lieu de `arcane` pour les chemins des
+  fichiers d'en-tête dans Arcane (\pr{2187})
+- Améliorations diverses dans la bibliothèque Neo (\pr{2210},
+  \pr{2233}, \pr{2234}, \pr{2235})
+- Optimise la rechercher des faces et arêtes existantes lorsqu'on
+  utilise un hash des noeuds pour le `uniqueId()` (\pr{2218}, \pr{2219})
+- Ajoute support pour Hypre 3.0 (\pr{2228})
 
 ### Compilation et Intégration Continue (CI)
 
@@ -183,10 +222,21 @@ ___
   `framework` (\pr{2125})
 - Ajoute support préliminaire pour compiler avec Guix (\pr{2128})
 - Ajoute workflow Win32 en mode debug (\pr{2135})
-- Mise à jour du worklow 'compile-all-vcpkg' avec la version 2025.06
+- Mise à jour du worklow `compile-all-vcpkg` avec la version 2025.06
   de `vpckg` (\pr{2140})
 - Augmente le nombre de tests dans le workflow Win32 (\pr{2162})
-- Ajoute workflow pour MacOS 15 (\pr{2166}, \pr{2167})
+- Ajoute workflow pour MacOS 15 et MacOS 26 (\pr{2166}, \pr{2167}, \pr{2188},
+  \pr{2192}, \pr{2208})
+- Ajoute installation de Arcane dans le workflow `compile-all-vcpkg`
+  (\pr{2182})
+- Passage à la version 5 de `actions/checkout` (\pr{2186})
+- Ajoute option `--parallel 4` pour `ctest` dans les workflows IFPEN
+  2021 (\pr{2189}, \pr{2201})
+- Mise à jour des images docker pour ajouter CUDA 13 et CLANG 21
+  (\pr{2190}, \pr{2191})
+- Supprime les tests `vtu` dans le workflow ARM64 pour CircleCI car la
+  version système de VTK contient un bug lors de la lecture XML
+  (\pr{2195})
 
 ### Arccore
 
@@ -203,6 +253,7 @@ ___
 - Ajoute support pour AdaptiveCpp 24.10 (\pr{2051}, \pr{2067})
 - Ajoute support pour la version 16.1 de Trilinos (\pr{2088})
 - Ajoute support pour Visual Studio 2022 (\pr{2095}, \pr{2096})
+- Ajoute option PETSc KSPGMRESSetBreakdownTolerance (\pr{2178})
 
 ___
 
