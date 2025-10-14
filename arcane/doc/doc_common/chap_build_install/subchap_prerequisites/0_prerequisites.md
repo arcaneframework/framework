@@ -3,6 +3,8 @@
 Pour compiler et utiliser %Arcane, il est nécessaire d'installer certaines
 dépendances. Ce sous-chapitre est dédié à l'installation de ces dépendances.
 
+\note A partir de la version 4 de %Arcane, le support du C++20 est obligatoire.
+
 <details>
 <summary>Liste des dépendances nécessaires</summary>
 <table>
@@ -12,7 +14,7 @@ dépendances. Ce sous-chapitre est dédié à l'installation de ces dépendances
 <tr><td>[Visual Studio](https://visualstudio.microsoft.com/) <td>17.4/
 <tr><td>[Make](https://www.gnu.org/software/make/) <td> <td>Système de génération d'exécutable
 <tr><td>[CMake](https://cmake.org/) <td>3.21/ (3.26/ si utilisation de CUDA) <td>Système de build de projet
-<tr><td>[DotNet](https://dotnet.microsoft.com/) <td>6/ <td>Pour la partie C#
+<tr><td>[DotNet](https://dotnet.microsoft.com/) <td>8/ <td>Pour la partie C#
 <tr><td>[GLib](https://www.gtk.org/) <td> <td>Support du multi-threading
 <tr><td>[LibXml2](http://www.xmlsoft.org/) <td> <td>Lecture des fichiers AXL/ARC
 </table>
@@ -23,9 +25,10 @@ dépendances. Ce sous-chapitre est dédié à l'installation de ces dépendances
 <summary>Liste des dépendances recommandées</summary>
 <table>
 <tr><th>Nom de la dépendance <th>Version (Mini/Maxi) <th>Description
-<tr><td>[IntelTBB/oneTBB](https://www.intel.com/content/www/us/en/developer/tools/oneapi/onetbb.html) <td>2018/ <td>Support du multi-threading
-<tr><td>[OpenMPI](https://www.open-mpi.org/) <td>2.0/ <td rowspan="2">Ou une autre implémentation qui supporte la norme MPI 3.1
+<tr><td>[oneTBB](https://www.intel.com/content/www/us/en/developer/tools/oneapi/onetbb.html) <td>2021/ <td>Support du multi-threading
+<tr><td>[OpenMPI](https://www.open-mpi.org/) <td>4.0/ <td rowspan="2">Ou une autre implémentation qui supporte la norme MPI 3.1
 <tr><td>[MPICH](https://www.mpich.org/) <td>3.2/
+<tr><td>[ParMetis](https://github.com/KarypisLab/ParMETIS) </td><td>4.0</td><td>Partitionneur de graphe pour l'équilibrage de charge<td></tr>
 </table>
 </details>
 
@@ -33,23 +36,20 @@ dépendances. Ce sous-chapitre est dédié à l'installation de ces dépendances
 <details>
 <summary>Liste des dépendances optionnelles</summary>
 <table>
-<tr><th>Nom de la dépendance <th>Version (Mini/Maxi) <th>Description
-<tr><td>[HDF5](https://www.hdfgroup.org/solutions/hdf5/) <td>1.10/ <td>Bibliothèque de stockage de données
-<tr><td>[Google Test](https://github.com/google/googletest) <td> <td>Bibliothèque de tests unitaires
-<tr><td>[Ninja](https://ninja-build.org/) <td>1.10/ <td>Système de génération d'exécutable
-<tr><td>[SWIG](https://www.swig.org/) <td>4.0/ <td>Bibliothèque permettant d'appeler le C++ d'%Arcane avec du C#
-<tr><td>[Hypre](https://computing.llnl.gov/projects/hypre-scalable-linear-solvers-multigrid-methods) <td> <td>TODO
-<tr><td>[PETSc](https://gitlab.com/petsc/petsc) <td> <td>TODO
-<tr><td>[Trilinos](https://trilinos.github.io/) <td> <td>TODO
-<tr><td>[Zoltan](https://github.com/sandialabs/Zoltan) <td> <td>Bibliothèque permettant d'équilibrage de charge
-<tr><td>[Doxygen](https://doxygen.nl/) <td>1.9.1/1.13.2 <td>Génération de la documentation
+<tr><th>Nom de la dépendance</th><th>Version (Mini/Maxi)</th><th>Description</th></tr>
+<tr><td>[HDF5](https://www.hdfgroup.org/solutions/hdf5/) </td> <td>1.10/ </td><td>Bibliothèque de stockage de données</td></tr>
+<tr><td>[Google Test](https://github.com/google/googletest) </td> <td>1.10</td> <td>Bibliothèque de tests unitaires</td></tr>
+<tr><td>[Ninja](https://ninja-build.org/) </td><td>1.10/ </td><td>Système de génération d'exécutable</td></tr>
+<tr><td>[SWIG](https://www.swig.org/) </td><td>4.1/ </td><td>Bibliothèque permettant d'appeler le C++ d'%Arcane avec du C#</td></tr>
+<tr><td>[Hypre](https://computing.llnl.gov/projects/hypre-scalable-linear-solvers-multigrid-methods) </td><td>2.20</td><td>Bibliothèque d'algèbre linéaire</td></tr>
+<tr><td>[PETSc](https://gitlab.com/petsc/petsc) </td> <td>3.6</td><td>Bibliothèque d'algèbre linéaire</td></tr>
+<tr><td>[Trilinos](https://trilinos.github.io/) </td> <td>16</td><td>Bibliothèque d'algèbre linéaire et de partitionnement de graphe</td></tr>
+<tr><td>[Doxygen](https://doxygen.nl/) </td> <td>1.9.1/1.13.2 </td><td>Génération de la documentation</td></tr>
+
 </table>
 </details>
 
 Choisissez votre OS :
-
-- \subpage arcanedoc_build_install_prerequisites_ubuntu20 <br>
-  Présente les prérequis nécessaires pour %Arcane sous Ubuntu 20.04.
 
 - \subpage arcanedoc_build_install_prerequisites_ubuntu22 <br>
   Présente les prérequis nécessaires pour %Arcane sous Ubuntu 22.04.
