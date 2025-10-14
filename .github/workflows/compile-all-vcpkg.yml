@@ -43,21 +43,12 @@ jobs:
         include:
           - os: ubuntu-22.04
             base_os: ubuntu
-            full_name: 'ubuntu-22.04'
-            package_name: 'ubuntu-22.04'
-            triplet: x64-linux-dynamic
-            vcpkg_os: ubuntu-22.04
-            dotnet_version : "6.0.x"
-            cmake_specific_args : '-DALIEN_BUILD_COMPONENT=all -DARCCORE_BUILD_MODE=Debug -DCMAKE_BUILD_TYPE=Debug'
-            ctest_specific_args : '-I 1,200'
-          - os: ubuntu-22.04
-            base_os: ubuntu
             full_name: 'ubuntu-cxx20-22.04'
             package_name: 'ubuntu-22.04'
             triplet: x64-linux-dynamic
             vcpkg_os: ubuntu-22.04
             dotnet_version : "6.0.x"
-            cmake_specific_args : '-DALIEN_BUILD_COMPONENT=all -DARCCORE_BUILD_MODE=Debug -DCMAKE_BUILD_TYPE=Debug -DARCCORE_CXX_STANDARD=20 -DARCANE_ENABLE_DOTNET_PYTHON_WRAPPER=OFF'
+            cmake_specific_args : '-DALIEN_BUILD_COMPONENT=all -DARCCORE_BUILD_MODE=Debug -DCMAKE_BUILD_TYPE=Debug -DARCANE_ENABLE_DOTNET_PYTHON_WRAPPER=OFF'
             ctest_specific_args : '-I 1,210'
           - os: ubuntu-24.04
             base_os: ubuntu
@@ -66,17 +57,8 @@ jobs:
             triplet: x64-linux-dynamic
             vcpkg_os: ubuntu-24.04
             dotnet_version : "8.0.x"
-            cmake_specific_args : '-DALIEN_BUILD_COMPONENT=all -DARCCORE_BUILD_MODE=Debug -DCMAKE_BUILD_TYPE=Debug -DARCCORE_CXX_STANDARD=20 -DARCANE_ENABLE_DOTNET_PYTHON_WRAPPER=ON'
+            cmake_specific_args : '-DALIEN_BUILD_COMPONENT=all -DARCCORE_BUILD_MODE=Debug -DCMAKE_BUILD_TYPE=Debug -DARCANE_ENABLE_DOTNET_PYTHON_WRAPPER=ON'
             ctest_specific_args : '-I 1,210'
-          - os: 'windows-2022'
-            base_os: windows
-            full_name: 'windows-2022-intelmpi'
-            package_name: 'windows-2022-intelmpi'
-            triplet: x64-windows
-            vcpkg_os: windows-2022
-            dotnet_version : "6.0.x"
-            cmake_specific_args : '-DCMAKE_BUILD_TYPE=Release'
-            ctest_specific_args : '-I 1,160'
           - os: 'windows-2022'
             base_os: windows
             full_name: 'windows-2022-cxx20-intelmpi'
@@ -84,7 +66,7 @@ jobs:
             triplet: x64-windows
             vcpkg_os: windows-2022
             dotnet_version : "8.0.x"
-            cmake_specific_args : '-DCMAKE_BUILD_TYPE=Release -DARCCORE_CXX_STANDARD=20'
+            cmake_specific_args : '-DCMAKE_BUILD_TYPE=Release'
             ctest_specific_args : '-I 1,160'
           - os: 'windows-2022'
             base_os: windows
@@ -93,7 +75,7 @@ jobs:
             triplet: x64-windows
             vcpkg_os: windows-2022
             dotnet_version : "8.0.x"
-            cmake_specific_args : '-DCMAKE_BUILD_TYPE=Debug -DARCCORE_CXX_STANDARD=20'
+            cmake_specific_args : '-DCMAKE_BUILD_TYPE=Debug'
             ctest_specific_args : '-I 1,160'
 
     env:
