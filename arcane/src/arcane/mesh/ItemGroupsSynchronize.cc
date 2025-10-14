@@ -181,6 +181,7 @@ checkSynchronize()
   // TODO: vérifier que tous les sous-domaines ont les mêmes groupes.
   Integer nb_diff = 0;
   for( const ItemGroup& group : m_item_family->groups() ){
+    if (group.isOwn()) continue;
     m_var.fill(0);
     ENUMERATE_ITEM(i_item,group){
       m_var[*i_item] = 1;
@@ -188,7 +189,7 @@ checkSynchronize()
     Integer diff = m_var.checkIfSync(10);
     if (diff!=0){
       error() << "Group is not in sync (name=" << group.name()
-              << ", nb_diff=" << nb_diff << ")";
+              << ", nb_diff=" << diff << ")";
     }
     nb_diff += diff;
   }
