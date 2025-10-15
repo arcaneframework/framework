@@ -180,7 +180,7 @@ class SpanImpl
  public:
 
   using ThatClass = SpanImpl<T, SizeType, Extent, MinValue>;
-  using DynamicEquivalentType = SpanImpl<T, SizeType, DynExtent, MinValue>;
+  using SubSpanType = SpanImpl<T, SizeType, DynExtent, 0>;
   using size_type = SizeType;
   using ElementType = T;
   using element_type = ElementType;
@@ -389,7 +389,7 @@ class SpanImpl
    * Si `(abegin+asize` est supérieur à la taille du tableau,
    * la vue est tronquée à cette taille, retournant éventuellement une vue vide.
    */
-  constexpr ARCCORE_HOST_DEVICE DynamicEquivalentType subSpan(SizeType abegin, SizeType asize) const
+  constexpr ARCCORE_HOST_DEVICE SubSpanType subSpan(SizeType abegin, SizeType asize) const
   {
     if (abegin >= m_size.m_size)
       return {};
@@ -401,7 +401,7 @@ class SpanImpl
    * \brief Sous-vue à partir de l'élément \a abegin et contenant \a asize éléments.
    * \sa subSpan()
    */
-  constexpr ARCCORE_HOST_DEVICE DynamicEquivalentType subPart(SizeType abegin, SizeType asize) const
+  constexpr ARCCORE_HOST_DEVICE SubSpanType subPart(SizeType abegin, SizeType asize) const
   {
     return subSpan(abegin, asize);
   }
@@ -414,32 +414,32 @@ class SpanImpl
    * la vue est tronquée à cette taille, retournant éventuellement une vue vide.
    */
   ARCCORE_DEPRECATED_REASON("Y2023: use subSpan() instead")
-  constexpr DynamicEquivalentType subView(SizeType abegin, SizeType asize) const
+  constexpr SubSpanType subView(SizeType abegin, SizeType asize) const
   {
     return subSpan(abegin, asize);
   }
 
   //! Pour compatibilité avec le C++20
-  constexpr ARCCORE_HOST_DEVICE DynamicEquivalentType subspan(SizeType abegin, SizeType asize) const
+  constexpr ARCCORE_HOST_DEVICE SubSpanType subspan(SizeType abegin, SizeType asize) const
   {
     return subSpan(abegin, asize);
   }
 
   //! Sous-vue correspondant à l'interval \a index sur \a nb_interval
   ARCCORE_DEPRECATED_REASON("Y2023: use subSpanInterval() instead")
-  constexpr DynamicEquivalentType subViewInterval(SizeType index, SizeType nb_interval) const
+  constexpr SubSpanType subViewInterval(SizeType index, SizeType nb_interval) const
   {
     return impl::subViewInterval<ThatClass>(*this, index, nb_interval);
   }
 
   //! Sous-vue correspondant à l'interval \a index sur \a nb_interval
-  constexpr DynamicEquivalentType subSpanInterval(SizeType index, SizeType nb_interval) const
+  constexpr SubSpanType subSpanInterval(SizeType index, SizeType nb_interval) const
   {
     return impl::subViewInterval<ThatClass>(*this, index, nb_interval);
   }
 
   //! Sous-vue correspondant à l'interval \a index sur \a nb_interval
-  constexpr DynamicEquivalentType subPartInterval(SizeType index, SizeType nb_interval) const
+  constexpr SubSpanType subPartInterval(SizeType index, SizeType nb_interval) const
   {
     return impl::subViewInterval<ThatClass>(*this, index, nb_interval);
   }
