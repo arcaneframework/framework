@@ -8,6 +8,14 @@ Les nouveautés successives apportées par les versions de %Arcane
 antérieures à la version 3 sont listées ici : \ref arcanedoc_news_changelog20
 
 ___
+
+## Arcane Version 4.0.0 (15 octobre 2025) {#arcanedoc_version4000}
+
+La version 4.0.0 est identique à la version 3.16.12 et se contente de supprimer
+le support du C++17.
+
+___
+
 ## Arcane Version 3.16.12 (14 octobre 2025) {#arcanedoc_version3160}
 
 \note Cette version est la dernière à supporter le standard C++17. Les
