@@ -749,8 +749,11 @@ TEST(Span,FixedValue)
   std::cout << "sizeof(Span<Int64,DynExtent>) = " << sizeof(Span<Int64,DynExtent>) << "\n";
 
   // Vérifie que [[no_unique_address]] est bien pris en compte
+  // A priori cela n'est pas le cas avec VS2022.
+#if !defined(ARCCORE_OS_WIN32)
   ASSERT_EQ(sizeof(Span<Int32,1>),sizeof(void*));
   ASSERT_EQ(sizeof(Span<Int64, 1>), sizeof(void*));
+#endif
 
   std::array<Int64, 12> vlist{ 9, 13, 32, 27, 43, -5, 2, -7, 8, 11, 25, 48 };
   Span<Int64, 12> fixed_list(vlist);
