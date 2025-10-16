@@ -12,6 +12,7 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/SmallArray.h"
+#include "arcane/utils/FatalErrorException.h"
 
 #include <cstdlib>
 #include <cstring>
@@ -19,7 +20,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arcane::impl
+namespace Arcane::Impl
 {
 
 namespace
@@ -31,18 +32,15 @@ namespace
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-AllocatedMemoryInfo StackMemoryAllocator::
-allocate(MemoryAllocationArgs, Int64 new_size)
+void* StackMemoryAllocator::
+_allocateMemory(Int64 new_size)
 {
-  if (new_size <= m_preallocated_size) {
-    if (is_verbose)
-      std::cout << "ALLOCATE: use preallocated s=" << new_size << "\n";
-    return { m_preallocated_buffer, new_size };
-  }
-
   if (is_verbose)
     std::cout << "ALLOCATE: use malloc s=" << new_size << "\n";
-  return { std::malloc(new_size), new_size };
+  void* ptr = std::malloc(new_size);
+  if (!ptr)
+    ARCANE_FATAL("Can not allocated memory for size '{0}'", new_size);
+  return ptr;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -88,11 +86,9 @@ reallocate(MemoryAllocationArgs, AllocatedMemoryInfo current_ptr_info, Int64 new
 /*---------------------------------------------------------------------------*/
 
 void StackMemoryAllocator::
-deallocate(MemoryAllocationArgs, AllocatedMemoryInfo ptr_info)
+_freeMemory(void* ptr)
 {
-  void* ptr = ptr_info.baseAddress();
-  if (ptr != m_preallocated_buffer)
-    std::free(ptr);
+  std::free(ptr);
 }
 
 /*---------------------------------------------------------------------------*/

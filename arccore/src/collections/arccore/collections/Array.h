@@ -18,6 +18,8 @@
 #include "arccore/base/Span.h"
 #include "arccore/collections/MemoryAllocationOptions.h"
 #include "arccore/collections/ArrayTraits.h"
+#include "arccore/collections/MemoryAllocationArgs.h"
+#include "arccore/collections/IMemoryAllocator.h"
 
 #include <memory>
 #include <initializer_list>
@@ -101,7 +103,13 @@ class ARCCORE_COLLECTIONS_EXPORT ArrayMetaData
 
   MemoryPointer _allocate(Int64 nb, Int64 sizeof_true_type, RunQueue* queue);
   MemoryPointer _reallocate(const AllocatedMemoryInfo& mem_info, Int64 new_capacity, Int64 sizeof_true_type, RunQueue* queue);
-  void _deallocate(const AllocatedMemoryInfo& mem_info, RunQueue* queue) ARCCORE_NOEXCEPT;
+  void _deallocate(const AllocatedMemoryInfo& mem_info, RunQueue* queue) noexcept
+  {
+    if (_allocator()) {
+      MemoryAllocationArgs alloc_args = _getAllocationArgs(queue);
+      _allocator()->deallocate(alloc_args, mem_info);
+    }
+  }
   void _setMemoryLocationHint(eMemoryLocationHint new_hint, void* ptr, Int64 sizeof_true_type);
   void _setHostDeviceMemoryLocation(eHostDeviceMemoryLocation location);
   void _copyFromMemory(MemoryPointer destination, ConstMemoryPointer source, Int64 sizeof_true_type, RunQueue* queue);
@@ -109,8 +117,11 @@ class ARCCORE_COLLECTIONS_EXPORT ArrayMetaData
  private:
 
   void _checkAllocator() const;
-  MemoryAllocationArgs _getAllocationArgs() const;
-  MemoryAllocationArgs _getAllocationArgs(RunQueue* queue) const;
+  MemoryAllocationArgs _getAllocationArgs() const {  return allocation_options.allocationArgs(); }
+  MemoryAllocationArgs _getAllocationArgs(RunQueue* queue) const
+  {
+    return allocation_options.allocationArgs(queue);
+  }
 };
 
 /*---------------------------------------------------------------------------*/
@@ -381,9 +392,10 @@ class AbstractArray
    * Cette méthode ne doit être appelée que dans un constructeur de la classe dérivée
    * et uniquement par les classes utilisant une sémantique à la UniqueArray.
    */
-  void _initFromAllocator(MemoryAllocationOptions o, Int64 acapacity)
+  void _initFromAllocator(MemoryAllocationOptions o, Int64 acapacity,
+                          void* pre_allocated_buffer = nullptr)
   {
-    _directFirstAllocateWithAllocator(acapacity,o);
+    _directFirstAllocateWithAllocator(acapacity,o, pre_allocated_buffer);
   }
 
  public:
@@ -627,7 +639,16 @@ class AbstractArray
 
  private:
 
-  void _directFirstAllocateWithAllocator(Int64 new_capacity,MemoryAllocationOptions options)
+  /*!
+   * \brief Effectue la première allocation.
+   *
+   * Si \a pre_allocated_buffer est non nul, on l'utilise comme buffer
+   * pour la première allocation. C'est à l'appelant de s'assurer que
+   * ce buffer est valide pour la capacité demandée. Le \a pre_allocated_buffer
+   * est utilisé notamment par l'allocateur de SmallArray.
+   */
+  void _directFirstAllocateWithAllocator(Int64 new_capacity, MemoryAllocationOptions options,
+                                         void* pre_allocated_buffer = nullptr)
   {
     IMemoryAllocator* wanted_allocator = options.allocator();
     if (!wanted_allocator) {
@@ -636,8 +657,12 @@ class AbstractArray
     }
     _allocateMetaData();
     m_md->allocation_options = options;
-    if (new_capacity > 0)
-      _allocateMP(new_capacity, options.runQueue());
+    if (new_capacity > 0) {
+      if (!pre_allocated_buffer)
+        _allocateMP(new_capacity, options.runQueue());
+      else
+        _setMPCast(pre_allocated_buffer);
+    }
     m_md->nb_ref = _getNbRef();
     m_md->size = 0;
     _updateReferences();
