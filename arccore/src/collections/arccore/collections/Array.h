@@ -18,6 +18,8 @@
 #include "arccore/base/Span.h"
 #include "arccore/collections/MemoryAllocationOptions.h"
 #include "arccore/collections/ArrayTraits.h"
+#include "arccore/collections/MemoryAllocationArgs.h"
+#include "arccore/collections/IMemoryAllocator.h"
 
 #include <memory>
 #include <initializer_list>
@@ -101,7 +103,13 @@ class ARCCORE_COLLECTIONS_EXPORT ArrayMetaData
 
   MemoryPointer _allocate(Int64 nb, Int64 sizeof_true_type, RunQueue* queue);
   MemoryPointer _reallocate(const AllocatedMemoryInfo& mem_info, Int64 new_capacity, Int64 sizeof_true_type, RunQueue* queue);
-  void _deallocate(const AllocatedMemoryInfo& mem_info, RunQueue* queue) ARCCORE_NOEXCEPT;
+  void _deallocate(const AllocatedMemoryInfo& mem_info, RunQueue* queue) noexcept
+  {
+    if (_allocator()) {
+      MemoryAllocationArgs alloc_args = _getAllocationArgs(queue);
+      _allocator()->deallocate(alloc_args, mem_info);
+    }
+  }
   void _setMemoryLocationHint(eMemoryLocationHint new_hint, void* ptr, Int64 sizeof_true_type);
   void _setHostDeviceMemoryLocation(eHostDeviceMemoryLocation location);
   void _copyFromMemory(MemoryPointer destination, ConstMemoryPointer source, Int64 sizeof_true_type, RunQueue* queue);
@@ -109,8 +117,11 @@ class ARCCORE_COLLECTIONS_EXPORT ArrayMetaData
  private:
 
   void _checkAllocator() const;
-  MemoryAllocationArgs _getAllocationArgs() const;
-  MemoryAllocationArgs _getAllocationArgs(RunQueue* queue) const;
+  MemoryAllocationArgs _getAllocationArgs() const {  return allocation_options.allocationArgs(); }
+  MemoryAllocationArgs _getAllocationArgs(RunQueue* queue) const
+  {
+    return allocation_options.allocationArgs(queue);
+  }
 };
 
 /*---------------------------------------------------------------------------*/

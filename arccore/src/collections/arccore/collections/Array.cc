@@ -64,24 +64,6 @@ _checkAllocator() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-MemoryAllocationArgs ArrayMetaData::
-_getAllocationArgs() const
-{
-  return allocation_options.allocationArgs();
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-MemoryAllocationArgs ArrayMetaData::
-_getAllocationArgs(RunQueue* queue) const
-{
-  return allocation_options.allocationArgs(queue);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 /*
  * TODO: pour les allocations, faire en sorte que le
  * début du tableau soit aligné sur 16 octets dans tous les cas.
@@ -204,18 +186,6 @@ _reallocate(const AllocatedMemoryInfo& current_info, Int64 new_capacity, Int64 s
   }
   this->capacity = new_capacity;
   return p;
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void ArrayMetaData::
-_deallocate(const AllocatedMemoryInfo& mem_info, RunQueue* queue) noexcept
-{
-  if (_allocator()) {
-    MemoryAllocationArgs alloc_args = _getAllocationArgs(queue);
-    _allocator()->deallocate(alloc_args, mem_info);
-  }
 }
 
 /*---------------------------------------------------------------------------*/
