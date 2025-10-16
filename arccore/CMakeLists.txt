@@ -96,18 +96,26 @@ set(ARCCORE_ENABLE_GLIB TRUE CACHE BOOL "Is Glib enabled in Arccon?" FORCE)
 set(CMAKE_INCLUDE_CURRENT_DIR FALSE)
 
 # ----------------------------------------------------------------------------
-# Arccore nécessite un support complet du C++17. Malheureusement, mettre
-# cxx_std_17 via target_compile_features() ne suffit pas pour savoir
-# si le compilateur supporte toute la norme et certaines fonctionnalités de la
-# norme n'ont pas de compile-features dans CMake.
-# Par exemple, c'est le cas de la classe std::string_view. Pour GCC, cette
-# classe n'existe que dans les versions 7+ mais pourtant CMake considère que
-# GCC 6 supporte 'cxx_std_17'. Il n'y a donc pas d'autres solutions que
-# de tester la version du compilateur
 
-if (CMAKE_COMPILER_IS_GNUCXX)
-  if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS "7.0.0")
-    message(FATAL_ERROR "You version of GCC (${CMAKE_CXX_COMPILER_VERSION}) is too old. Version 7+ is required")
+set(ARCCORE_CXX_COMPILER_IS_GNU_OR_CLANG_BASED FALSE)
+if (
+    (CMAKE_CXX_COMPILER_ID STREQUAL GNU) OR
+    (CMAKE_CXX_COMPILER_ID STREQUAL Clang) OR
+    (CMAKE_CXX_COMPILER_ID STREQUAL IntelLLVM)
+  )
+  set(ARCCORE_CXX_COMPILER_IS_GNU_OR_CLANG_BASED TRUE)
+endif()
+
+# ----------------------------------------------------------------------------
+# Il faut au moins GCC 11 ou Clang 15 pour le support du C++20 dans Arccore/Arcane
+if(CMAKE_CXX_COMPILER_ID STREQUAL GNU)
+  if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 11)
+    message(FATAL_ERROR "Your version of GNU Compiler (${CMAKE_CXX_COMPILER_VERSION}) is too old for C++20. Version 11+ is required")
+  endif()
+endif()
+if(CMAKE_CXX_COMPILER_ID STREQUAL Clang)
+  if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 16)
+    message(FATAL_ERROR "Your version of Clang Compiler (${CMAKE_CXX_COMPILER_VERSION}) is too old for C++20. Version 16+ is required")
   endif()
 endif()
 
@@ -135,6 +143,12 @@ add_library(arccore_build_compile_flags INTERFACE)
 install(TARGETS arccore_build_compile_flags EXPORT ${ARCCORE_EXPORT_TARGET})
 
 add_library(Arccore::arccore_build_compile_flags ALIAS arccore_build_compile_flags)
+
+# ----------------------------------------------------------------------------
+# N'exporte pas par défaut les symboles
+if (ARCCORE_CXX_COMPILER_IS_GNU_OR_CLANG_BASED)
+  target_compile_options(arccore_build_compile_flags INTERFACE -fvisibility-inlines-hidden -fvisibility=hidden)
+endif()
 
 # ----------------------------------------------------------------------------
 # Meme si on n'est pas en mode verif, il faut toujours avoir les symboles de debug

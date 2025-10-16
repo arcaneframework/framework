@@ -392,18 +392,6 @@ set(ARCANE_HAS_CXX23 FALSE)
 if (${ARCCORE_CXX_STANDARD} VERSION_GREATER_EQUAL 23)
   set(ARCANE_HAS_CXX23 TRUE)
 endif()
-
-# Il faut au moins GCC 11 ou Clang 15 pour le support du C++20 dans Arcane
-if(CMAKE_COMPILER_IS_GNUCXX)
-  if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 11)
-    message(FATAL_ERROR "Your version of GNU Compiler (${CMAKE_CXX_COMPILER_VERSION}) is too old for C++20. Version 11+ is required")
-  endif()
-endif()
-if(CMAKE_CXX_COMPILER_ID STREQUAL Clang)
-  if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 15)
-    message(FATAL_ERROR "Your version of Clang Compiler (${CMAKE_CXX_COMPILER_VERSION}) is too old for C++20. Version 15+ is required")
-  endif()
-endif()
 set(ARCANE_HAS_CXX23 ${ARCANE_HAS_CXX23} CACHE BOOL "True if C++23 is used" FORCE)
 
 # ----------------------------------------------------------------------------
