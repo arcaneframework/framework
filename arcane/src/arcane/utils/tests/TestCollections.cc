@@ -92,7 +92,7 @@ TEST(Collections,SmallArray)
   {
     constexpr int N = 934;
     char buf[N];
-    impl::StackMemoryAllocator b(buf,N);
+    Impl::StackMemoryAllocator b(buf,N);
     ASSERT_EQ(b.guarantedAlignment({}),0);
   }
   {

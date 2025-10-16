@@ -20,7 +20,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arcane::impl
+namespace Arcane::Impl
 {
 
 /*---------------------------------------------------------------------------*/
@@ -48,9 +48,20 @@ class ARCANE_UTILS_EXPORT StackMemoryAllocator final
  public:
 
   bool hasRealloc(MemoryAllocationArgs) const final { return true; }
-  AllocatedMemoryInfo allocate(MemoryAllocationArgs args, Int64 new_size) final;
+  AllocatedMemoryInfo allocate([[maybe_unused]] MemoryAllocationArgs args, Int64 new_size) final
+  {
+    if (new_size <= m_preallocated_size) {
+      return { m_preallocated_buffer, new_size };
+    }
+    return { _allocateMemory(new_size), new_size };
+  }
   AllocatedMemoryInfo reallocate(MemoryAllocationArgs args, AllocatedMemoryInfo current_ptr, Int64 new_size) final;
-  void deallocate(MemoryAllocationArgs args, AllocatedMemoryInfo ptr) final;
+  void deallocate([[maybe_unused]] MemoryAllocationArgs args, AllocatedMemoryInfo ptr_info) final
+  {
+    void* ptr = ptr_info.baseAddress();
+    if (ptr != m_preallocated_buffer)
+      _freeMemory(ptr);
+  }
   Int64 adjustedCapacity(MemoryAllocationArgs, Int64 wanted_capacity, Int64) const final { return wanted_capacity; }
   size_t guaranteedAlignment(MemoryAllocationArgs) const final { return 0; }
 
@@ -58,9 +69,17 @@ class ARCANE_UTILS_EXPORT StackMemoryAllocator final
 
   void* m_preallocated_buffer = nullptr;
   Int64 m_preallocated_size = 0;
+
+ private:
+
+  void* _allocateMemory(Int64 size);
+  void _freeMemory(void* pointer);
 };
 
-} // namespace Arcane::impl
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+} // namespace Arcane::Impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -102,7 +121,7 @@ class SmallArray final
   SmallArray()
   : m_stack_allocator(m_stack_buffer, MemorySize)
   {
-    this->_initFromAllocator(&m_stack_allocator, nb_element_in_buf);
+    this->_initFromAllocator(MemoryAllocationOptions(&m_stack_allocator), nb_element_in_buf, m_stack_buffer);
   }
 
   //! Créé un tableau de \a size éléments contenant la valeur \a value.
@@ -217,7 +236,7 @@ class SmallArray final
  private:
 
   char m_stack_buffer[MemorySize];
-  impl::StackMemoryAllocator m_stack_allocator;
+  Impl::StackMemoryAllocator m_stack_allocator;
 };
 
 /*---------------------------------------------------------------------------*/
