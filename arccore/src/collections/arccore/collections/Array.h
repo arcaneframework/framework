@@ -381,9 +381,10 @@ class AbstractArray
    * Cette méthode ne doit être appelée que dans un constructeur de la classe dérivée
    * et uniquement par les classes utilisant une sémantique à la UniqueArray.
    */
-  void _initFromAllocator(MemoryAllocationOptions o, Int64 acapacity)
+  void _initFromAllocator(MemoryAllocationOptions o, Int64 acapacity,
+                          void* pre_allocated_buffer = nullptr)
   {
-    _directFirstAllocateWithAllocator(acapacity,o);
+    _directFirstAllocateWithAllocator(acapacity,o, pre_allocated_buffer);
   }
 
  public:
@@ -627,7 +628,16 @@ class AbstractArray
 
  private:
 
-  void _directFirstAllocateWithAllocator(Int64 new_capacity,MemoryAllocationOptions options)
+  /*!
+   * \brief Effectue la première allocation.
+   *
+   * Si \a pre_allocated_buffer est non nul, on l'utilise comme buffer
+   * pour la première allocation. C'est à l'appelant de s'assurer que
+   * ce buffer est valide pour la capacité demandée. Le \a pre_allocated_buffer
+   * est utilisé notamment par l'allocateur de SmallArray.
+   */
+  void _directFirstAllocateWithAllocator(Int64 new_capacity, MemoryAllocationOptions options,
+                                         void* pre_allocated_buffer = nullptr)
   {
     IMemoryAllocator* wanted_allocator = options.allocator();
     if (!wanted_allocator) {
@@ -636,8 +646,12 @@ class AbstractArray
     }
     _allocateMetaData();
     m_md->allocation_options = options;
-    if (new_capacity > 0)
-      _allocateMP(new_capacity, options.runQueue());
+    if (new_capacity > 0) {
+      if (!pre_allocated_buffer)
+        _allocateMP(new_capacity, options.runQueue());
+      else
+        _setMPCast(pre_allocated_buffer);
+    }
     m_md->nb_ref = _getNbRef();
     m_md->size = 0;
     _updateReferences();
