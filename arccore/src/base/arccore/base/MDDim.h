@@ -5,17 +5,16 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* NumericTraits.h                                             (C) 2000-2025 */
+/* MDDim.h                                                     (C) 2000-2025 */
 /*                                                                           */
-/* Vue sur un tableaux multi-dimensionnel pour les types numériques.         */
+/* Tag pour les tableaux N-dimensions.                                       */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_UTILS_NUMERICTRAITS_H
-#define ARCANE_UTILS_NUMERICTRAITS_H
+#ifndef ARCCORE_BASE_MDDIM_H
+#define ARCCORE_BASE_MDDIM_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arccore/base/NumericTraits.h"
-#include "arcane/utils/UtilsTypes.h"
+#include "arccore/base/ExtentsV.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -26,74 +25,58 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<>
-class NumericTraitsT<Real2>
-{
- public:
-  using SubscriptType = Real&;
-  using SubscriptConstType = Real;
-};
+//! Constante pour un tableau dynamique de rang 0
+using MDDim0 = ExtentsV<Int32>;
 
-template<>
-class NumericTraitsT<const Real2>
-{
- public:
-  using SubscriptType = const Real;
-  using SubscriptConstType = const Real;
-};
+//! Constante pour un tableau dynamique de rang 1
+using MDDim1 = ExtentsV<Int32, DynExtent>;
 
-template<>
-class NumericTraitsT<Real3>
-{
- public:
-  using SubscriptType = Real&;
-  using SubscriptConstType = Real;
-};
+//! Constante pour un tableau dynamique de rang 2
+using MDDim2 = ExtentsV<Int32, DynExtent, DynExtent>;
 
-template<>
-class NumericTraitsT<const Real3>
-{
- public:
-  using SubscriptType = const Real;
-  using SubscriptConstType = const Real;
-};
+//! Constante pour un tableau dynamique de rang 3
+using MDDim3 = ExtentsV<Int32, DynExtent, DynExtent, DynExtent>;
 
-template<>
-class NumericTraitsT<Real2x2>
-{
- public:
-  using SubscriptType = const Real2;
-  using Subscript2Type = Real&;
-  using Subscript2ConstType = const Real;
-};
+//! Constante pour un tableau dynamique de rang 4
+using MDDim4 = ExtentsV<Int32, DynExtent, DynExtent, DynExtent, DynExtent>;
 
-template<>
-class NumericTraitsT<const Real2x2>
-{
- public:
-  using SubscriptType = const Real2;
-  using Subscript2Type = const Real;
-  using Subscript2ConstType = const Real;
-};
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
-template<>
-class NumericTraitsT<Real3x3>
+template <>
+class MDDimType<0>
 {
  public:
-  //! Type de retour de operator[] pour ce type
-  using SubscriptType = const Real3;
-  using Subscript2Type = Real&;
-  using Subscript2ConstType = const Real;
-};
 
-template<>
-class NumericTraitsT<const Real3x3>
+  using DimType = MDDim0;
+};
+template <>
+class MDDimType<1>
 {
  public:
-  //! Type de retour de operator[] pour ce type
-  using SubscriptType = const Real3;
-  using Subscript2Type = const Real;
-  using Subscript2ConstType = const Real;
+
+  using DimType = MDDim1;
+};
+template <>
+class MDDimType<2>
+{
+ public:
+
+  using DimType = MDDim2;
+};
+template <>
+class MDDimType<3>
+{
+ public:
+
+  using DimType = MDDim3;
+};
+template <>
+class MDDimType<4>
+{
+ public:
+
+  using DimType = MDDim4;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -105,3 +88,4 @@ class NumericTraitsT<const Real3x3>
 /*---------------------------------------------------------------------------*/
 
 #endif
+
