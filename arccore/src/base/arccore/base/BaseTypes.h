@@ -130,6 +130,58 @@ class BasicTranscoder;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+// Ces classes ne sont pas accessibles dans 'utils' mais il est possible
+// d'utiliser des pointeurs sur ces instances.
+// La définition est dans 'arcane_accelerator_core'
+namespace Accelerator
+{
+class Runner;
+class RunQueue;
+}
+using Accelerator::Runner;
+using Accelerator::RunQueue;
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+class DefaultLayout;
+template<int RankValue> class RightLayoutN;
+template<int RankValue> class LeftLayoutN;
+template<int RankValue> class MDDimType;
+class IMemoryResourceMng;
+using IMemoryRessourceMng = IMemoryResourceMng;
+template <typename IndexType_ = Int32, Int32... RankSize> class ExtentsV;
+template<class DataType,typename Extents,typename LayoutPolicy = DefaultLayout >
+class MDSpan;
+template<typename DataType,typename Extents,typename LayoutPolicy = DefaultLayout >
+using MDSpanBase ARCCORE_DEPRECATED_REASON("Use 'MDSpan' type instead") = MDSpan<DataType,Extents,LayoutPolicy>;
+template<typename ExtentType> class ArrayBounds;
+
+template<class DataType,typename Extents,typename LayoutType = DefaultLayout >
+class NumArray;
+template<typename DataType,typename Extents,typename LayoutPolicy = DefaultLayout >
+using NumArrayBase ARCCORE_DEPRECATED_REASON("Use 'NumArray' type instead") = NumArray<DataType,Extents,LayoutPolicy>;
+
+template<typename Extents,typename LayoutPolicy> class ArrayExtentsWithOffset;
+template<int RankValue, typename IndexType_ = Int32> class MDIndexBase;
+template<int RankValue, typename IndexType_ = Int32> class MDIndex;
+template<int RankValue, typename IndexType_ = Int32> using ArrayIndexBase = MDIndexBase<RankValue,IndexType_>;
+template<int RankValue, typename IndexType_ = Int32> using ArrayIndex = MDIndex<RankValue,IndexType_>;
+template<int RankValue> using ArrayBoundsIndexBase ARCCORE_DEPRECATED_REASON("Use 'MDIndexBase' type instead") = ArrayIndexBase<RankValue>;
+template<int RankValue> using ArrayBoundsIndex ARCCORE_DEPRECATED_REASON("Use 'MDIndex' type instead") = ArrayIndex<RankValue>;
+template<typename Extents> class ArrayExtentsBase;
+template<typename Extents> class ArrayExtents;
+template<int RankValue> class ArrayStridesBase;
+template<int RankValue> class IMDRangeFunctor;
+template<int RankValue> class ArrayExtentsValueDynamic;
+namespace impl
+{
+template<typename IndexType_, Int32... RankSize> class ArrayExtentsValue;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 //! Equivalent C d'un tableau à une dimension de pointeurs
 typedef ArrayView<Pointer> PointerArrayView;
 //! Equivalent C d'un tableau à une dimension de caractères
