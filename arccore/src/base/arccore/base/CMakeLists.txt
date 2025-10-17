@@ -6,6 +6,7 @@ set(SOURCES
   ArccoreGlobal.h
   ArccoreGlobal.cc
   APReal.h
+  ArrayBounds.h
   ArrayIterator.h
   ArrayRange.h
   ArrayViewCommon.h
@@ -14,6 +15,9 @@ set(SOURCES
   Array2View.h
   Array3View.h
   Array4View.h
+  ArrayExtents.h
+  ArrayExtentsValue.h
+  ArrayLayout.h
   ArgumentException.cc
   ArgumentException.h
   BuiltInDataTypeContainer.h
@@ -32,6 +36,7 @@ set(SOURCES
   Exception.cc
   ExternalRef.h
   ExternalRef.cc
+  ExtentsV.h
   FatalErrorException.cc
   FatalErrorException.h
   Float16.h
@@ -42,10 +47,15 @@ set(SOURCES
   IndexOutOfRangeException.h
   Int128.h
   IStackTraceService.h
+  MDDim.h
+  MDIndex.h
+  MDSpan.h
+  MDSpan.cc
   NotSupportedException.h
   NotSupportedException.cc
   NotImplementedException.h
   NotImplementedException.cc
+  NumericTraits.h
   PlatformUtils.h
   PlatformUtils.cc
   ReferenceCounter.h

@@ -9,13 +9,12 @@
 /*                                                                           */
 /* Vue sur un tableaux multi-dimensionnel pour les types numériques.         */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_UTILS_NUMERICTRAITS_H
-#define ARCANE_UTILS_NUMERICTRAITS_H
+#ifndef ARCCORE_BASE_NUMERICTRAITS_H
+#define ARCCORE_BASE_NUMERICTRAITS_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arccore/base/NumericTraits.h"
-#include "arcane/utils/UtilsTypes.h"
+#include "arccore/base/BaseTypes.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -25,75 +24,26 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-template<>
-class NumericTraitsT<Real2>
+/*!
+ * \brief Informations pour les types numériques.
+ *
+ * Permet d'indiquer si un type numérique à un ou plusieurs opérateurs
+ * 'operator[]' ainsi que leur type de retour.
+ */
+template<typename DataType>
+class NumericTraitsT
 {
- public:
-  using SubscriptType = Real&;
-  using SubscriptConstType = Real;
-};
+  //! Type de retour de operator[]
+  // using SubscriptType = Real2;
 
-template<>
-class NumericTraitsT<const Real2>
-{
- public:
-  using SubscriptType = const Real;
-  using SubscriptConstType = const Real;
-};
+  //! Type de retour de operator[] const
+  // using SubscriptConstType = Real2;
 
-template<>
-class NumericTraitsT<Real3>
-{
- public:
-  using SubscriptType = Real&;
-  using SubscriptConstType = Real;
-};
+  //! Type de retour de operator[][]
+  // using Subscript2Type = Real;
 
-template<>
-class NumericTraitsT<const Real3>
-{
- public:
-  using SubscriptType = const Real;
-  using SubscriptConstType = const Real;
-};
-
-template<>
-class NumericTraitsT<Real2x2>
-{
- public:
-  using SubscriptType = const Real2;
-  using Subscript2Type = Real&;
-  using Subscript2ConstType = const Real;
-};
-
-template<>
-class NumericTraitsT<const Real2x2>
-{
- public:
-  using SubscriptType = const Real2;
-  using Subscript2Type = const Real;
-  using Subscript2ConstType = const Real;
-};
-
-template<>
-class NumericTraitsT<Real3x3>
-{
- public:
-  //! Type de retour de operator[] pour ce type
-  using SubscriptType = const Real3;
-  using Subscript2Type = Real&;
-  using Subscript2ConstType = const Real;
-};
-
-template<>
-class NumericTraitsT<const Real3x3>
-{
- public:
-  //! Type de retour de operator[] pour ce type
-  using SubscriptType = const Real3;
-  using Subscript2Type = const Real;
-  using Subscript2ConstType = const Real;
+  //! Type de retour de operator[][] const
+  // using Subscript2ConstType = Real;
 };
 
 /*---------------------------------------------------------------------------*/
