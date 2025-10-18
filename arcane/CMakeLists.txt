@@ -888,8 +888,8 @@ option(ARCANE_DISABLE_PERFCOUNTER_TESTS "True if we disable tests using perf cou
 # Option pour indiquer si on veut utiliser la nouvelle implémentation
 # de ItemInternalMap. Cette nouvelle implémentation est plus rapide et consomme
 # moins de mémoire que l'ancienne.
-# L'ancienne version est conservée tant que la validation est en cours
-option(ARCANE_USE_HASHTABLEMAP2_FOR_ITEMINTERNALMAP "True if we want to use new implementation of ItemInternalMap" ON)
+# A partir de la version 4.0 de Arcane, seule la nouvelle implémentation est disponible.
+set(ARCANE_USE_HASHTABLEMAP2_FOR_ITEMINTERNALMAP TRUE)
 
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
