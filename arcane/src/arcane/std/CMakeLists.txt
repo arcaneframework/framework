@@ -53,6 +53,8 @@ endif()
 
 include(srcs.cmake)
 
+list(APPEND ARCANE_SOURCES BackwardCppStackTraceService.cc)
+
 if(BZIP2_FOUND)
   list(APPEND ARCANE_SOURCES Bzip2DeflateService.cc)
 endif()
