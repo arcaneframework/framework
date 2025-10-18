@@ -52,7 +52,7 @@ class BackwardCppStackTraceService
   explicit BackwardCppStackTraceService(const ServiceBuildInfo& sbi)
   : AbstractService(sbi)
   , m_hide_arcane_file_info(false)
-  , m_hide_snippet(false)
+  , m_hide_snippet(true)
   , m_hide_file_info(false)
   {}
 
@@ -65,9 +65,9 @@ class BackwardCppStackTraceService
       m_hide_arcane_file_info = true;
     }
 
-    // On retire les snippets pour tous les appels.
-    if (!platform::getEnvironmentVariable("ARCANE_CALLSTACK_NO_SNIPPET").null()) {
-      m_hide_snippet = true;
+    // On ajoute les snippets pour tous les appels.
+    if (!platform::getEnvironmentVariable("ARCANE_CALLSTACK_SNIPPET").null()) {
+      m_hide_snippet = false;
     }
 
     // On retire les infos complémentaires (fichier/ligne/snippet) pour tous les appels.
@@ -125,11 +125,10 @@ stackTrace(int first_function)
       message += " -- File: ";
       message += trace.source.filename;
       if (!m_hide_snippet) {
-        message += "\n                  Snippet:";
         for (const auto& [line_num, line] : lines) {
           message += (line_num == src_line ? "\n                  >>>  " : "\n                       ");
           message += line_num;
-          message += "  ";
+          message += ":  ";
           message += line;
         }
       }
