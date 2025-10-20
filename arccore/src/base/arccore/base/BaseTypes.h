@@ -148,7 +148,10 @@ class DefaultLayout;
 template<int RankValue> class RightLayoutN;
 template<int RankValue> class LeftLayoutN;
 template<int RankValue> class MDDimType;
+class ConstMemoryView;
+class MutableMemoryView;
 class IMemoryResourceMng;
+// TODO: Rendre obsolète
 using IMemoryRessourceMng = IMemoryResourceMng;
 template <typename IndexType_ = Int32, Int32... RankSize> class ExtentsV;
 template<class DataType,typename Extents,typename LayoutPolicy = DefaultLayout >
@@ -178,6 +181,8 @@ namespace impl
 {
 template<typename IndexType_, Int32... RankSize> class ArrayExtentsValue;
 }
+template <typename T, Int32 NbElement>
+class FixedArray;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
