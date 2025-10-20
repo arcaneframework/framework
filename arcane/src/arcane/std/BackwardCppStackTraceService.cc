@@ -22,9 +22,7 @@
 #include "arcane_packages.h"
 
 //TODO : Ajouter les autres packages.
-#if defined(ARCANE_HAS_PACKAGE_DW)
 #define BACKWARD_HAS_DW 1
-#endif
 
 #if defined(ARCANE_HAS_PACKAGE_LIBUNWIND)
 #define BACKWARD_HAS_LIBUNWIND 1
