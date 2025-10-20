@@ -21,8 +21,7 @@
 
 #include "arcane_packages.h"
 
-#define UNW_LOCAL_ONLY
-
+//TODO : Ajouter les autres packages.
 #if defined(ARCANE_HAS_PACKAGE_DW)
 #define BACKWARD_HAS_DW 1
 #endif
@@ -166,7 +165,7 @@ stackTraceFunction(int function_index)
 /*---------------------------------------------------------------------------*/
 
 ARCANE_REGISTER_SERVICE(BackwardCppStackTraceService,
-                        ServiceProperty("BackwardCpp", ST_Application),
+                        ServiceProperty("BackwardCppStackTraceService", ST_Application),
                         ARCANE_SERVICE_INTERFACE(IStackTraceService));
 
 /*---------------------------------------------------------------------------*/
