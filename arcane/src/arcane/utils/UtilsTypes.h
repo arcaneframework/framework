@@ -96,9 +96,7 @@ class Observable;
 class Observer;
 
 class ArrayShape;
-class ConstMemoryView;
 using MemoryView ARCANE_DEPRECATED_REASON("Use 'ConstMemoryView' instead") = ConstMemoryView;
-class MutableMemoryView;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -42,6 +42,7 @@ set(SOURCES
   Float16.h
   Float128.h
   FloatConversion.h
+  FixedArray.h
   Iterator.h
   IndexOutOfRangeException.cc
   IndexOutOfRangeException.h
@@ -51,6 +52,8 @@ set(SOURCES
   MDIndex.h
   MDSpan.h
   MDSpan.cc
+  MemoryView.h
+  MemoryView.cc
   NotSupportedException.h
   NotSupportedException.cc
   NotImplementedException.h

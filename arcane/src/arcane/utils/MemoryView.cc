@@ -201,26 +201,6 @@ copyWithIndexedSource(MutableMemoryView destination, ConstMemoryView source,
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-MutableMemoryView
-makeMutableMemoryView(void* ptr, Int32 datatype_size, Int64 nb_element)
-{
-  Span<std::byte> bytes(reinterpret_cast<std::byte*>(ptr), datatype_size * nb_element);
-  return { bytes, datatype_size, nb_element };
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ConstMemoryView
-makeConstMemoryView(const void* ptr, Int32 datatype_size, Int64 nb_element)
-{
-  Span<const std::byte> bytes(reinterpret_cast<const std::byte*>(ptr), datatype_size * nb_element);
-  return { bytes, datatype_size, nb_element };
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
