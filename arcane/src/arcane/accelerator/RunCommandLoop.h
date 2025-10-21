@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* RunCommandLoop.h                                            (C) 2000-2024 */
+/* RunCommandLoop.h                                            (C) 2000-2025 */
 /*                                                                           */
 /* Macros pour exécuter une boucle sur une commande.                         */
 /*---------------------------------------------------------------------------*/
@@ -13,8 +13,6 @@
 #define ARCANE_ACCELERATOR_RUNCOMMANDLOOP_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-#include "arcane/utils/ArcaneCxx20.h"
 
 #include "arcane/accelerator/RunCommand.h"
 #include "arcane/accelerator/KernelLauncher.h"

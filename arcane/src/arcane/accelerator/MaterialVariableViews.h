@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MaterialVariableViews.h                                     (C) 2000-2024 */
+/* MaterialVariableViews.h                                     (C) 2000-2025 */
 /*                                                                           */
 /* Gestion des vues sur les variables matériaux pour les accélérateurs.      */
 /*---------------------------------------------------------------------------*/
@@ -13,8 +13,6 @@
 #define ARCANE_ACCELERATOR_MATERIALVARIABLEVIEWS_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-#include "arcane/utils/ArcaneCxx20.h"
 
 #include "arcane/core/materials/IMeshMaterialVariable.h"
 #include "arcane/core/materials/MeshMaterialVariableRef.h"

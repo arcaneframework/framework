@@ -14,8 +14,6 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/ArcaneCxx20.h"
-
 #include "arcane/core/ItemTypes.h"
 #include "arcane/core/SimdItem.h"
 #include "arcane/core/ItemLocalId.h"
