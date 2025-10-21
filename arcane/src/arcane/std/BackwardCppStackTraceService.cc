@@ -15,6 +15,7 @@
 #include "arcane/utils/IStackTraceService.h"
 #include "arcane/utils/StackTrace.h"
 #include "arcane/utils/StringBuilder.h"
+#include "arcane/utils/Convert.h"
 
 #include "arcane/core/ServiceFactory.h"
 #include "arcane/core/AbstractService.h"
@@ -48,29 +49,23 @@ class BackwardCppStackTraceService
 
   explicit BackwardCppStackTraceService(const ServiceBuildInfo& sbi)
   : AbstractService(sbi)
-  , m_hide_arcane_file_info(false)
-  , m_hide_snippet(true)
-  , m_hide_file_info(false)
+  , m_verbose_level(2)
   {}
 
  public:
 
   void build() override
   {
-    // On retire les infos complémentaires (fichier/ligne/snippet) pour les appels Arcane uniquement.
-    if (!platform::getEnvironmentVariable("ARCANE_CALLSTACK_NO_FILE_INFO_FOR_ARCANE_CALL").null()) {
-      m_hide_arcane_file_info = true;
-    }
-
-    // On ajoute les snippets pour tous les appels.
-    if (!platform::getEnvironmentVariable("ARCANE_CALLSTACK_SNIPPET").null()) {
-      m_hide_snippet = false;
-    }
-
-    // On retire les infos complémentaires (fichier/ligne/snippet) pour tous les appels.
-    if (!platform::getEnvironmentVariable("ARCANE_CALLSTACK_NO_FILE_INFO").null()) {
-      m_hide_snippet = true;
-      m_hide_file_info = true;
+    // 0 : CallStack classique (nom de fonction uniquement)
+    // 1 : CallStack classique avec numéro de ligne et fichier pour les classes/fonctions hors du namespace Arcane
+    // 2 : (default) CallStack classique avec numéro de ligne et fichier pour toutes les classes/fonctions
+    // 3 : CallStack classique avec numéro de ligne, fichier pour toutes les classes/fonctions et snippet pour les classes/fonctions hors du namespace Arcane
+    // 4 : CallStack classique avec numéro de ligne, fichier et snippet pour toutes les classes/fonctions
+    if (const auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_CALLSTACK_VERBOSE", true)) {
+      if (v.value() < 0 || v.value() > 4) {
+        return;
+      }
+      m_verbose_level = v.value();
     }
   }
 
@@ -81,9 +76,7 @@ class BackwardCppStackTraceService
 
  private:
 
-  bool m_hide_arcane_file_info;
-  bool m_hide_snippet;
-  bool m_hide_file_info;
+  Int32 m_verbose_level;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -115,21 +108,26 @@ stackTrace(int first_function)
     message += trace.object_function;
 
     UInt32 src_line = trace.source.line;
-    if (!(m_hide_file_info || src_line == 0 || (m_hide_arcane_file_info && String(trace.object_function).startsWith("Arcane")))) {
-      auto lines = sf.get_snippet(trace.source.filename, src_line, 5);
-      message += "\n                  Line: ";
-      message += src_line;
-      message += " -- File: ";
-      message += trace.source.filename;
-      if (!m_hide_snippet) {
-        for (const auto& [line_num, line] : lines) {
-          message += (line_num == src_line ? "\n                  >>>  " : "\n                       ");
-          message += line_num;
-          message += ":  ";
-          message += line;
+
+    if (m_verbose_level > 0 && src_line > 0) {
+      bool arcane_function = String(trace.object_function).startsWith("Arcane");
+      if (m_verbose_level > 1 || !arcane_function) {
+        auto lines = sf.get_snippet(trace.source.filename, src_line, 5);
+        message += "\n                  Line: ";
+        message += src_line;
+        message += " -- File: ";
+        message += trace.source.filename;
+        if (m_verbose_level > 3 || (m_verbose_level > 2 && !arcane_function)) {
+          for (const auto& [line_num, line] : lines) {
+            message += (line_num == src_line ? "\n                  >>>  " : "\n                       ");
+            message += line_num;
+            message += ":  ";
+            message += line;
+          }
         }
       }
     }
+
     message += "\n";
 
     stack_frames.addFrame(StackFrame(reinterpret_cast<intptr_t>(trace.addr)));
@@ -148,7 +146,7 @@ stackTraceFunction(int function_index)
   st.skip_n_firsts(function_index);
   st.load_here(1);
 
-  if (st.size() != 1) {
+  if (st.size() < 1) {
     return {};
   }
   backward::TraceResolver tr;

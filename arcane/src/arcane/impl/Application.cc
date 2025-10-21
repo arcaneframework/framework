@@ -400,7 +400,8 @@ build()
     {
       ServiceBuilder<IStackTraceService> sf(this);
       Ref<IStackTraceService> sv;
-      if (!platform::getEnvironmentVariable("ARCANE_USE_BACKWARDCPP").null()) {
+      const auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_USE_BACKWARDCPP", true);
+      if (v && v.value() != 0) {
         sv = sf.createReference("BackwardCppStackTraceService", SB_AllowNull);
       }
       else {
