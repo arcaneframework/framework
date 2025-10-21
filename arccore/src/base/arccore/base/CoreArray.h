@@ -156,11 +156,36 @@ class CoreArray
   {
     return _data(m_p);
   }
+  bool contains(const_reference v) const
+  {
+    for (const auto& x : m_p)
+      if (x == v)
+        return true;
+    return false;
+  }
+  /*!
+   * \brief Supprime de la liste l'élément ayant la valeur \a v.
+   *
+   * Seul la première instance de l'élément ayant la valeur \a v
+   * est supprimée. Si la valeur n'est pas trouvée, aucune opération
+   * n'est effectuée.
+   */
+  void removeValue(const_reference v)
+  {
+    auto e = m_p.end();
+    for (auto b = m_p.begin(); b != e; ++b)
+      if (*b == v) {
+        m_p.erase(b);
+        return;
+      }
+  }
+
  private:
+
   static Span<const DataType> _constView(const std::vector<DataType>& c)
   {
     Int64 s = static_cast<Int64>(c.size());
-    return Span<const DataType>(c.data(),s);
+    return Span<const DataType>(c.data(), s);
   }
   static Span<DataType> _view(std::vector<DataType>& c)
   {
