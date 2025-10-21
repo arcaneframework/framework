@@ -25,8 +25,6 @@
 #include "arccore/base/Span.h"
 #include "arccore/base/ReferenceCounterImpl.h"
 
-#include "arccore/concurrency/Mutex.h"
-
 #include <sstream>
 #include <fstream>
 #include <limits>
@@ -34,6 +32,7 @@
 #include <map>
 #include <vector>
 #include <memory>
+#include <mutex>
 
 #include <time.h>
 
@@ -380,7 +379,7 @@ class TraceMng
   {
     bool v = false;
     {
-      Mutex::ScopedLock sl(m_trace_mutex);
+      std::scoped_lock sl(m_trace_mutex);
       v = m_current_msg_class.m_info->isActivated();
     }
     return v;
@@ -390,7 +389,7 @@ class TraceMng
   {
     bool v = false;
     {
-      Mutex::ScopedLock sl(m_trace_mutex);
+      std::scoped_lock sl(m_trace_mutex);
       v = m_current_msg_class.m_info->isParallelActivated();
     }
     return v;
@@ -400,7 +399,7 @@ class TraceMng
   {
     Trace::eDebugLevel dbg_level;
     {
-      Mutex::ScopedLock sl(m_trace_mutex);
+      std::scoped_lock sl(m_trace_mutex);
       dbg_level = m_current_msg_class.m_info->debugLevel();
     }
     return dbg_level;
@@ -448,7 +447,7 @@ class TraceMng
   String m_trace_id;
   ReferenceCounter<ITraceStream> m_error_file;
   ReferenceCounter<ITraceStream> m_log_file;
-  Mutex* m_trace_mutex = nullptr;
+  mutable std::mutex m_trace_mutex;
   bool m_is_error_disabled = false;
   bool m_is_log_disabled = false;
   bool m_has_color = false;
@@ -481,7 +480,7 @@ class TraceMng
   }
   String _currentTraceClassName() const
   {
-    Mutex::ScopedLock sl(m_trace_mutex);
+    std::scoped_lock sl(m_trace_mutex);
     return m_current_msg_class.m_name;
   }
   void _checkFlush();
@@ -523,7 +522,6 @@ TraceMng()
 : m_default_trace_class("Internal", &m_default_trace_class_config)
 , m_current_msg_class(m_default_trace_class)
 , m_error_file_name("errors")
-, m_trace_mutex(new Mutex())
 {
   m_has_color = Platform::getConsoleHasColor();
 }
@@ -537,7 +535,6 @@ TraceMng::
   for( const auto& i : m_trace_class_config_map )
     delete i.second;
   delete m_listeners;
-  delete m_trace_mutex;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -565,7 +562,7 @@ _sendToProxy2(const TraceMessage* msg,Span<const Byte> buf)
 std::ostream* TraceMng::
 _errorStream()
 {
-  Mutex::ScopedLock sl(m_trace_mutex);
+  std::scoped_lock sl(m_trace_mutex);
   if (m_is_error_disabled)
     return nullptr;
   if (m_error_file.isNull())
@@ -579,7 +576,7 @@ _errorStream()
 std::ostream* TraceMng::
 _logStream()
 {
-  Mutex::ScopedLock sl(m_trace_mutex);
+  std::scoped_lock sl(m_trace_mutex);
   if (m_is_log_disabled)
     return nullptr;
   if (m_log_file.isNull())
@@ -845,7 +842,7 @@ _writeColor(std::ostream& output,Span<const Byte> input,int color, bool do_flush
   // Pour être sur que les message sont écrits en une seule fois,
   // il ne faut faire qu'un seul write.
   if (color!=0){
-    Mutex::ScopedLock sl(m_trace_mutex);
+    std::scoped_lock sl(m_trace_mutex);
     output << "\33[" << color_fmt[color] << "m";
     Int64 len = input.size();
     // Le message se termine toujours par un '\n'. On écrit la fin de la couleur
@@ -1146,7 +1143,7 @@ _updateCurrentClassConfig()
 void TraceMng::
 pushTraceClass(const String& name)
 {
-  Mutex::ScopedLock sl(m_trace_mutex);
+  std::scoped_lock sl(m_trace_mutex);
   const TraceClassConfig* tcc = _msgClassConfig(name);
   m_trace_class_stack.push_back(TraceClass(name,tcc));
   m_current_msg_class = m_trace_class_stack.back();
@@ -1159,7 +1156,7 @@ pushTraceClass(const String& name)
 void TraceMng::
 popTraceClass()
 {
-  Mutex::ScopedLock sl(m_trace_mutex);
+  std::scoped_lock sl(m_trace_mutex);
   m_trace_class_stack.pop_back();
   m_current_msg_class = m_trace_class_stack.back();
   _updateCurrentClassConfig();
@@ -1188,7 +1185,7 @@ finishInitialize()
 void TraceMng::
 setClassConfig(const String& name,const TraceClassConfig& config)
 {
-  Mutex::ScopedLock sl(m_trace_mutex);
+  std::scoped_lock sl(m_trace_mutex);
   if (name=="*"){
     m_default_trace_class_config = config;
   }
@@ -1214,7 +1211,7 @@ setClassConfig(const String& name,const TraceClassConfig& config)
 TraceClassConfig TraceMng::
 classConfig(const String& name) const
 {
-  Mutex::ScopedLock sl(m_trace_mutex);
+  std::scoped_lock sl(m_trace_mutex);
   return *(_msgClassConfig(name));
 }
 
@@ -1224,7 +1221,7 @@ classConfig(const String& name) const
 void TraceMng::
 removeAllClassConfig()
 {
-  Mutex::ScopedLock sl(m_trace_mutex);
+  std::scoped_lock sl(m_trace_mutex);
   // Comme tous les TraceClassConfig vont être détruit, il ne faut plus les
   // référencer dans les TraceClass.
   for( auto& i : m_trace_class_stack )
@@ -1281,9 +1278,6 @@ setStandardOutputVerbosityLevel(Int32 level)
 void TraceMng::
 resetThreadStatus()
 {
-  // Détruit et reconstruit le mutex.
-  m_trace_mutex->~Mutex();
-  new (m_trace_mutex) Mutex();
 }
 
 /*---------------------------------------------------------------------------*/
