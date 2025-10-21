@@ -1,0 +1,16 @@
+set(SOURCES
+  TraceGlobal.h
+  TraceGlobal.cc
+  Trace.h
+  TraceAccessor.h
+  TraceAccessor.cc
+  TraceClassConfig.h
+  TraceMessage.h
+  TraceMessage.cc
+  ITraceMng.h
+  TraceMng.cc
+  ITimeMetricCollector.h
+  TimeMetric.h
+  TimeMetric.cc
+  StandaloneTraceMessage.h
+)

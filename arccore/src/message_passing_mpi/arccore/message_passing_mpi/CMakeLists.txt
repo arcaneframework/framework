@@ -1,4 +1,4 @@
-find_package(MPI)
+﻿find_package(MPI)
 
 if(NOT MPI_FOUND)
   message(FATAL_ERROR "'MPI' is not available."
@@ -17,45 +17,7 @@ if (NOT WIN32)
   endif()
 endif()
 
-set(SOURCES
-  MessagePassingMpiGlobal.h
-  MessagePassingMpiGlobal.cc
-  MessagePassingMpiEnum.cc
-  MpiAdapter.cc
-  MpiAllInOneMachineMemoryWindowBase.cc
-  MpiDatatype.h
-  MpiDatatype.cc
-  MpiControlDispatcher.cc
-  MpiRequestList.cc
-  MpiSerializeDispatcher.cc
-  MpiTypeDispatcher.cc
-  MpiMessagePassingMng.cc
-  MpiMessagePassingMng.h
-  MpiMachineMemoryWindowBaseInternal.cc
-  MpiMachineMemoryWindowBaseInternalCreator.cc
-  MpiDynamicMachineMemoryWindowBaseInternal.cc
-  MpiDynamicMultiMachineMemoryWindowBaseInternal.cc
-
-  StandaloneMpiMessagePassingMng.cc
-  StandaloneMpiMessagePassingMng.h
-
-  internal/IMpiProfiling.h
-  internal/MessagePassingMpiEnum.h
-  internal/MpiAdapter.h
-  internal/MpiAllInOneMachineMemoryWindowBase.h
-  internal/MpiControlDispatcher.h
-  internal/MpiLock.h
-  internal/MpiMachineMemoryWindowBaseInternal.h
-  internal/MpiMachineMemoryWindowBaseInternalCreator.h
-  internal/MpiDynamicMachineMemoryWindowBaseInternal.h
-  internal/MpiDynamicMultiMachineMemoryWindowBaseInternal.h
-  internal/MpiRequest.h
-  internal/MpiRequestList.h
-  internal/MpiSerializeDispatcher.h
-  internal/MpiTypeDispatcher.h
-  internal/MpiTypeDispatcherImpl.h
-  internal/NoMpiProfiling.h
-)
+include(srcs.cmake)
 
 arccore_add_component_library(message_passing_mpi
   FILES ${SOURCES})
@@ -65,3 +27,10 @@ target_link_libraries(arccore_message_passing_mpi PUBLIC arcconpkg_MPI)
 if (ARCCORE_ADDITIONAL_MPI_LIBRARIES)
   target_link_libraries(arccore_message_passing_mpi PUBLIC ${ARCCORE_ADDITIONAL_MPI_LIBRARIES})
 endif()
+
+# ----------------------------------------------------------------------------
+# Local Variables:
+# tab-width: 2
+# indent-tabs-mode: nil
+# coding: utf-8-with-signature
+# End:
