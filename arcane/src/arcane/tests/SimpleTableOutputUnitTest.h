@@ -1,21 +1,24 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* SimpleTableOutputUnitTest.h                                 (C) 2000-2023 */
+/* SimpleTableOutputUnitTest.h                                 (C) 2000-2025 */
 /*                                                                           */
 /* Service de test pour les services implémentant ISimpleTableOutput.        */
 /*---------------------------------------------------------------------------*/
+
+#ifndef ARCANE_TESTS_SIMPLETABLEOUTPUTUNITTEST_H
+#define ARCANE_TESTS_SIMPLETABLEOUTPUTUNITTEST_H
+
+/*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/BasicUnitTest.h"
-#include "arcane/IParallelMng.h"
-#include "arcane/ISimpleTableOutput.h"
-#include "arcane/ITimeLoopMng.h"
-#include "arcane/ServiceBuilder.h"
+#include "arcane/core/BasicUnitTest.h"
+#include "arcane/core/ISimpleTableOutput.h"
+#include "arcane/core/ITimeLoopMng.h"
 
 #include "arcane/tests/SimpleTableOutputUnitTest_axl.h"
 
@@ -129,12 +132,9 @@ class SimpleTableOutputUnitTest
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_REGISTER_SERVICE_SIMPLETABLEOUTPUTUNITTEST(SimpleTableOutputUnitTest, SimpleTableOutputUnitTest);
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 } // End namespace ArcaneTest
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+#endif
