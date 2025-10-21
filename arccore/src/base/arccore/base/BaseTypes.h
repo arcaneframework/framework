@@ -184,6 +184,11 @@ template<typename IndexType_, Int32... RankSize> class ArrayExtentsValue;
 template <typename T, Int32 NbElement>
 class FixedArray;
 
+class IObservable;
+class IObserver;
+class Observable;
+class Observer;
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 

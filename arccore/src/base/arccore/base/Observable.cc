@@ -1,18 +1,18 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Observable.cc                                               (C) 2000-2021 */
+/* Observable.cc                                               (C) 2000-2025 */
 /*                                                                           */
 /* Observateur.                                                              */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/Observable.h"
-#include "arcane/utils/Observer.h"
+#include "arccore/base/Observable.h"
+#include "arccore/base/Observer.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -26,11 +26,11 @@ namespace Arcane
 Observable::
 ~Observable()
 {
-  if (arcaneIsCheck()){
+  if (arccoreIsCheck()) {
     if (!m_observers.empty())
-      cout << "** WARNING: Observable p=" << this
-           << " is destroyed but has n="
-           << m_observers.size() << " observer(s) attached\n";
+      std::cout << "** WARNING: Observable p=" << this
+                << " is destroyed but has n="
+                << m_observers.size() << " observer(s) attached\n";
   }
 }
 
@@ -57,12 +57,7 @@ detachObserver(IObserver* obs)
   //          << " destroyed=" << m_is_destroyed << '\n';
   if (m_is_destroyed)
     return;
-  for( Integer i=0, n=m_observers.size(); i<n; ++i ){
-    if (m_observers[i]==obs){
-      m_observers.remove(i);
-      return;
-    }
-  }
+  m_observers.removeValue(obs);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -73,8 +68,8 @@ notifyAllObservers()
 {
   if (m_observers.empty())
     return;
-  for( Integer i=0, n=m_observers.size(); i<n; ++i )
-    m_observers[i]->observerUpdate(this);
+  for( IObserver* o : m_observers)
+    o->observerUpdate(this);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -89,36 +84,11 @@ hasObservers() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-bool Observable::
-isDestroyed() const
-{
-  return m_is_destroyed;
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void Observable::
-destroy()
-{
-  if (m_is_destroyed)
-    return;
-  m_is_destroyed = true;
-  detachAllObservers();
-  m_observers.clear();
-  delete this;
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 void Observable::
 _detachAllObservers()
 {
   //std::cout << "DESTROY this=" << this << '\n';
-  for( Integer i=0, n=m_observers.size(); i<n; ++i ){
-    IObserver* o = m_observers[i];
-    //std::cout << "DETACH o=" << o << '\n';
+  for (IObserver* o : m_observers) {
     o->detach();
   }
   m_observers.clear();

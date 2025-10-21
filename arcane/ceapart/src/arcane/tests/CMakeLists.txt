@@ -45,9 +45,9 @@ if (TARGET arcane_dotnet_wrapper_cea_materials)
   set_property(SOURCE MaterialEosService.i PROPERTY CPLUSPLUS ON)
   set_property(SOURCE MaterialEosService.i PROPERTY USE_SWIG_DEPENDENCIES TRUE)
   set_property(SOURCE MaterialEosService.i PROPERTY INCLUDE_DIRECTORIES
+    ${Arccore_SOURCE_DIR}/src/base
     ${Arcane_SOURCE_DIR}/src
     ${Arcane_SOURCE_DIR}/tools/wrapper
-#    ${Arcane_SOURCE_DIR}/ceapart/src
     ${Arcane_SOURCE_DIR}/ceapart/tools/wrapper)
   set_property(SOURCE MaterialEosService.i PROPERTY GENERATED_INCLUDE_DIRECTORIES
     ${Arcane_SOURCE_DIR}/ceapart/src

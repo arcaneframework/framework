@@ -110,8 +110,6 @@ set(ARCANE_SOURCES
   NumericTraits.h
   NumMatrix.h
   NumVector.h
-  Observable.cc
-  Observer.cc
   Observable.h
   Observer.h
   OStringStream.cc

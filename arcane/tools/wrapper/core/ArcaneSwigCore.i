@@ -73,6 +73,7 @@ namespace Arcane
 #define ARCANE_DEPRECATED_LONG_TERM(a)
 #define ARCANE_NOEXCEPT
 
+#define ARCCORE_BASE_EXPORT
 #define ARCANE_EXPR_EXPORT
 #define ARCANE_CORE_EXPORT
 #define ARCANE_UTILS_EXPORT
@@ -273,8 +274,6 @@ namespace Arcane
 %rename("$ignore", fullname=1) "Arcane::ApplicationInfo::m_argv";
 %rename("$ignore", fullname=1) "Arcane::ApplicationInfo::commandLineArgc";
 %rename("$ignore", fullname=1) "Arcane::ApplicationInfo::commandLineArgv";
-%rename("$ignore", fullname=1) "Arcane::IObservable::destroy";
-%rename("$ignore", fullname=1) "Arcane::IObservable::isDestroyed";
 %rename("$ignore", fullname=1) "Arcane::IApplication::configRootElement";
 %rename("$ignore", fullname=1) "Arcane::IApplication::userConfigRootElement";
 %rename("$ignore", fullname=1) "Arcane::ITimeHistoryMng::removeCurveWriter";
@@ -514,9 +513,9 @@ class IEntryPoint
 %include arcane/core/IDirectory.h
 %include arcane/core/ItemGroupImpl.h
 %include arcane/core/SharedReference.h
-%include arcane/utils/IObserver.h
-%include arcane/utils/Observer.h
-%include arcane/utils/IObservable.h
+%include arccore/base/IObserver.h
+%include arccore/base/Observer.h
+%include arccore/base/IObservable.h
 %include arcane/utils/ArrayShape.h
 %include arcane/core/IMainFactory.h
 %include arcane/core/ApplicationBuildInfo.h
