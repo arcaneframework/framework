@@ -205,14 +205,12 @@ TEST(ValueConvert, Basic)
   std::cout << "TEST_ValueConvert Basic\n";
   impl::arcaneSetValueConvertVerbosity(1);
 
-#if defined(ARCANE_HAS_CXX20)
   impl::arcaneSetIsValueConvertUseFromChars(true);
   _testDoubleConvert(true);
   _testReal2Convert(true);
   _testReal2Convert(false);
   _testReal3Convert(true);
   _testReal3Convert(false);
-#endif
 
   impl::arcaneSetIsValueConvertUseFromChars(false);
   _testDoubleConvert(false);

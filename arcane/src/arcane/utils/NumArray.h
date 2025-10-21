@@ -17,7 +17,6 @@
 #include "arcane/utils/MDSpan.h"
 #include "arcane/utils/MDDim.h"
 #include "arcane/utils/NumArrayContainer.h"
-#include "arcane/utils/ArcaneCxx20.h"
 #include "arcane/utils/String.h"
 
 /*---------------------------------------------------------------------------*/

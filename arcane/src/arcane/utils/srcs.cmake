@@ -33,6 +33,7 @@ set(ARCANE_SOURCES
   CStringUtils.h
   DependencyInjection.cc
   DualUniqueArray.h
+  DualUniqueArray.cc
   Enumerator.cc
   Enumerator.h
   ExternalRef.h
@@ -102,8 +103,10 @@ set(ARCANE_SOURCES
   Numeric.h
   NumericTypes.h
   NumArray.h
+  NumArray.cc
   NumArrayContainer.h
   NumArrayUtils.h
+  NumArrayUtils.cc
   NumericTraits.h
   NumMatrix.h
   NumVector.h
@@ -339,6 +342,7 @@ set(ARCANE_SOURCES
   GraphBaseT.h
   DirectedGraphT.h
   DirectedAcyclicGraphT.h
+
   internal/DependencyInjection.h
   internal/ApplicationInfoProperties.h
   internal/MemoryResourceMng.h
@@ -355,17 +359,3 @@ set(ARCANE_SOURCES
   internal/ParallelLoopOptionsProperties.h
   internal/TaskFactoryInternal.h
   )
-
-if (ARCANE_HAS_CXX20)
-  list(APPEND ARCANE_SOURCES
-    ArcaneCxx20.cc
-    )
-endif()
-
-if (ARCANE_HAS_ACCELERATOR_API)
-  list(APPEND ARCANE_SOURCES
-    NumArray.cc
-    DualUniqueArray.cc
-    NumArrayUtils.cc
-  )
-endif()
