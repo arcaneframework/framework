@@ -17,17 +17,7 @@
 #include "arcane/utils/NotSupportedException.h"
 #include "arcane/utils/internal/ValueConvertInternal.h"
 
-// En théorie std::from_chars() est disponible avec le C++17 mais pour
-// GCC cela n'est implémenté pour les flottants qu'à partir de GCC 11.
-// Comme c'est la version requise pour le C++20, on n'active cette fonctionnalité
-// qu'à partir du C++20.
-#if defined(ARCANE_HAS_CXX20)
-#define ARCANE_USE_FROMCHARS
-#endif
-
-#if defined(ARCANE_USE_FROMCHARS)
 #include <charconv>
-#endif
 
 // TODO: Pour builtInGetValue(), retourner `true` si la chaîne en entrée est vide.
 
@@ -145,13 +135,11 @@ class StringViewToDoubleConverter
 Int64 StringViewToDoubleConverter::
 _getDoubleValue(double& v, StringView s)
 {
-#if defined(ARCANE_USE_FROMCHARS)
   if (global_use_from_chars) {
     s = _removeLeadingSpaces(s);
     Int64 p = _getDoubleValueWithFromChars(v, s);
     return p;
   }
-#endif
 
   const char* ptr = _stringViewData(s);
 #ifdef WIN32
@@ -186,7 +174,6 @@ _getDoubleValue(double& v, StringView s)
 Int64 StringViewToDoubleConverter::
 _getDoubleValueWithFromChars(double& v, StringView s)
 {
-#if defined(ARCANE_USE_FROMCHARS)
   // NOTE: si on veut le même comportement que 'strtod',
   // on suppose que l'appelant a enlevé les blancs en début de s.
   auto bytes = s.bytes();
@@ -244,9 +231,6 @@ _getDoubleValueWithFromChars(double& v, StringView s)
     std::cout << "FromChars: COMPARE GET_DOUBLE via strtod v2=" << v2 << " pos=" << (ptr2 - orig_data) << "\n";
   }
   return (last_ptr - orig_data);
-#else
-  ARCANE_THROW(NotSupportedException, "using std::from_chars() is not available on this platform");
-#endif
 }
 
 /*---------------------------------------------------------------------------*/
@@ -258,13 +242,11 @@ _getDoubleValueWithFromChars(double& v, StringView s)
 template <> ARCANE_UTILS_EXPORT bool
 builtInGetValue(double& v, StringView s)
 {
-#if defined(ARCANE_USE_FROMCHARS)
   if (global_use_from_chars) {
     s = _removeLeadingSpaces(s);
     Int64 p = StringViewToDoubleConverter::_getDoubleValueWithFromChars(v, s);
     return (p == (-1) || (p != s.size()));
   }
-#endif
 
   const char* ptr = _stringViewData(s);
 #ifdef WIN32
