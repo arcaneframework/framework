@@ -2,18 +2,7 @@
   find_package(Glib REQUIRED)
 endif()
 
-set(SOURCES
-  ConcurrencyGlobal.h
-  ConcurrencyGlobal.cc
-  IThreadImplementation.h
-  IThreadBarrier.h
-  Mutex.h
-  Mutex.cc
-  NullThreadImplementation.h
-  SpinLock.h
-  SpinLock.cc
-  StdThreadImplementation.cc
-)
+include(srcs.cmake)
 
 if(ARCCORE_ENABLE_GLIB)
   list(APPEND SOURCES
