@@ -45,6 +45,8 @@ set(SOURCES
   IndexOutOfRangeException.h
   Int128.h
   IStackTraceService.h
+  IObserver.h
+  IObservable.h
   MDDim.h
   MDIndex.h
   MDSpan.h
@@ -56,6 +58,10 @@ set(SOURCES
   NotImplementedException.h
   NotImplementedException.cc
   NumericTraits.h
+  Observer.h
+  Observer.cc
+  Observable.h
+  Observable.cc
   PlatformUtils.h
   PlatformUtils.cc
   ReferenceCounter.h
