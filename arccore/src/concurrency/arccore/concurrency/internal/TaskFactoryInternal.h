@@ -9,12 +9,12 @@
 /*                                                                           */
 /* API interne à Arcane de 'TaskFactory'.                                    */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_UTILS_INTERNAL_TASKFACTORYINTERNAL_H
-#define ARCANE_UTILS_INTERNAL_TASKFACTORYINTERNAL_H
+#ifndef ARCCORE_CONCURRENCY_INTERNAL_TASKFACTORYINTERNAL_H
+#define ARCCORE_CONCURRENCY_INTERNAL_TASKFACTORYINTERNAL_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/UtilsTypes.h"
+#include "arccore/concurrency/ConcurrencyGlobal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -27,7 +27,7 @@ namespace Arcane
 /*!
  * \brief API interne à Arcane de 'TaskFactory'.
  */
-class ARCANE_UTILS_EXPORT TaskFactoryInternal
+class ARCCORE_CONCURRENCY_EXPORT TaskFactoryInternal
 {
  public:
 

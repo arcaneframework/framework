@@ -11,11 +11,13 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/ConcurrencyUtils.h"
+#include "arccore/concurrency/ITaskImplementation.h"
 
-#include "arcane/utils/internal/TaskFactoryInternal.h"
-#include "arcane/utils/TraceInfo.h"
-#include "arcane/utils/Observable.h"
+#include "arccore/concurrency/Task.h"
+#include "arccore/concurrency/ParallelFor.h"
+#include "arccore/concurrency/internal/TaskFactoryInternal.h"
+
+#include "arccore/base/Observable.h"
 
 #include <mutex>
 
@@ -32,10 +34,15 @@ class SerialTask
 : public ITask
 {
  public:
+
   typedef TaskFunctor<SerialTask> TaskType;
+
  public:
+
   static const int FUNCTOR_CLASS_SIZE = sizeof(TaskType);
+
  public:
+
   SerialTask(ITaskFunctor* f)
   : m_functor(f)
   {
@@ -44,12 +51,14 @@ class SerialTask
     // d'avoir à faire une allocation sur le tas via le new
     // classique. On utilise donc le new avec placement.
 
-    m_functor = f->clone(functor_buf,FUNCTOR_CLASS_SIZE);
+    m_functor = f->clone(functor_buf, FUNCTOR_CLASS_SIZE);
   }
+
  public:
+
   void launchAndWait() override
   {
-    if (m_functor){
+    if (m_functor) {
       ITaskFunctor* tmp_f = m_functor;
       m_functor = nullptr;
       TaskContext task_context(this);
@@ -59,14 +68,16 @@ class SerialTask
   }
   void launchAndWait(ConstArrayView<ITask*> tasks) override
   {
-    for( Integer i=0,n=tasks.size(); i<n; ++i )
+    for (Integer i = 0, n = tasks.size(); i < n; ++i)
       tasks[i]->launchAndWait();
   }
   ITask* _createChildTask(ITaskFunctor* functor) override
   {
     return new SerialTask(functor);
   }
+
  private:
+
   ITaskFunctor* m_functor;
   char functor_buf[FUNCTOR_CLASS_SIZE];
 };
@@ -78,8 +89,11 @@ class NullTaskImplementation
 : public ITaskImplementation
 {
  public:
+
   static NullTaskImplementation singleton;
+
  public:
+
   void initialize([[maybe_unused]] Int32 nb_thread) override
   {
   }
@@ -90,21 +104,24 @@ class NullTaskImplementation
   {
     return new SerialTask(f);
   }
-  void executeParallelFor(Integer begin,Integer size,[[maybe_unused]] Integer block_size,IRangeFunctor* f) override
+  void executeParallelFor(Integer begin, Integer size,
+                          [[maybe_unused]] Integer block_size, IRangeFunctor* f) override
   {
-    f->executeFunctor(begin,size);
+    f->executeFunctor(begin, size);
   }
-  void executeParallelFor(Integer begin,Integer size,[[maybe_unused]] const ParallelLoopOptions& options,IRangeFunctor* f) override
+  void executeParallelFor(Integer begin, Integer size,
+                          [[maybe_unused]] const ParallelLoopOptions& options,
+                          IRangeFunctor* f) override
   {
-    f->executeFunctor(begin,size);
+    f->executeFunctor(begin, size);
   }
-  void executeParallelFor(Integer begin,Integer size,IRangeFunctor* f) override
+  void executeParallelFor(Integer begin, Integer size, IRangeFunctor* f) override
   {
-    f->executeFunctor(begin,size);
+    f->executeFunctor(begin, size);
   }
   void executeParallelFor(const ParallelFor1DLoopInfo& loop_info) override
   {
-    loop_info.functor()->executeFunctor(loop_info.beginIndex(),loop_info.size());
+    loop_info.functor()->executeFunctor(loop_info.beginIndex(), loop_info.size());
   }
   void executeParallelFor(const ComplexForLoopRanges<1>& loop_ranges,
                           [[maybe_unused]] const ForLoopRunInfo& run_info,
@@ -150,7 +167,7 @@ class NullTaskImplementation
   void printInfos(std::ostream& o) const final
   {
     o << "NullTaskImplementation";
- }
+  }
 };
 
 /*---------------------------------------------------------------------------*/
@@ -166,26 +183,18 @@ ParallelLoopOptions TaskFactory::m_default_loop_options;
 
 namespace
 {
+  IObservable* global_created_thread_observable = 0;
+  IObservable* global_destroyed_thread_observable = 0;
+  std::mutex global_observable_mutex;
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-IObservable* global_created_thread_observable = 0;
-IObservable* global_destroyed_thread_observable = 0;
-std::mutex global_observable_mutex;
-
-IObservable*
-_checkCreateGlobalThreadObservable()
-{
-  if (!global_created_thread_observable)
-    global_created_thread_observable = new Observable();
-  return global_created_thread_observable;
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-}
+  IObservable*
+  _checkCreateGlobalThreadObservable()
+  {
+    if (!global_created_thread_observable)
+      global_created_thread_observable = new Observable();
+    return global_created_thread_observable;
+  }
+} // namespace
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -193,8 +202,8 @@ _checkCreateGlobalThreadObservable()
 void TaskFactoryInternal::
 setImplementation(ITaskImplementation* task_impl)
 {
-  if (TaskFactory::m_impl && TaskFactory::m_impl!=&NullTaskImplementation::singleton)
-    ARCANE_FATAL("TaskFactory already has an implementation");
+  if (TaskFactory::m_impl && TaskFactory::m_impl != &NullTaskImplementation::singleton)
+    ARCCORE_FATAL("TaskFactory already has an implementation");
   TaskFactory::m_impl = task_impl;
 }
 
@@ -237,7 +246,7 @@ _internalSetImplementation(ITaskImplementation* task_impl)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-IObservable*  TaskFactory::
+IObservable* TaskFactory::
 createThreadObservable()
 {
   std::scoped_lock slock(global_observable_mutex);
@@ -247,7 +256,7 @@ createThreadObservable()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-IObservable*  TaskFactory::
+IObservable* TaskFactory::
 destroyThreadObservable()
 {
   if (!global_destroyed_thread_observable)
@@ -262,7 +271,7 @@ void TaskFactory::
 terminate()
 {
   // C'est celui qui a positionné l'implémentation qui gère sa destruction.
-  if (m_impl==&NullTaskImplementation::singleton)
+  if (m_impl == &NullTaskImplementation::singleton)
     return;
   if (m_impl)
     m_impl->terminate();
@@ -272,18 +281,16 @@ terminate()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arcane
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
 /*!
  * \file ConcurrencyUtils.h
- 
- \brief Classes, Types et macros pour gérer la concurrence.
-
- Pour plus de renseignements, se reporter à la page \ref arcanedoc_parallel_concurrency
-*/
-
+ * 
+ * \brief Classes, Types et macros pour gérer la concurrence.
+ *
+ * Pour plus de renseignements, se reporter à la page \ref arcanedoc_parallel_concurrency
+ */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

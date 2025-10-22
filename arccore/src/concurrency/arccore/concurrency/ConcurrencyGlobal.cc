@@ -11,12 +11,19 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+#include "arccore/concurrency/ConcurrencyGlobal.h"
+
 #include "arccore/base/ReferenceCounterImpl.h"
 #include "arccore/base/ReferenceCounter.h"
 #include "arccore/base/Ref.h"
 #include "arccore/base/NotSupportedException.h"
 
-#include "arccore/concurrency/ConcurrencyGlobal.h"
+#include "arccore/concurrency/ParallelFor.h"
+#include "arccore/concurrency/TaskFactory.h"
+#include "arccore/concurrency/ITaskImplementation.h"
+#include "arccore/concurrency/Task.h"
+#include "arccore/concurrency/ForLoopRunInfo.h"
+#include "arccore/concurrency/ParallelLoopOptions.h"
 
 #include "arccore/concurrency/NullThreadImplementation.h"
 #include "arccore/concurrency/SpinLock.h"
