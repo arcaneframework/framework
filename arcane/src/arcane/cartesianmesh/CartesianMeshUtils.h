@@ -18,6 +18,7 @@
 
 #include "arcane/cartesianmesh/CartesianMeshGlobal.h"
 #include "arcane/cartesianmesh/ICartesianMeshAMRPatchMng.h"
+#include "arcane/cartesianmesh/ICartesianMeshNumberingMng.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -43,6 +44,12 @@ createCartesianMeshCoarsening2(ICartesianMesh* cm);
  */
 extern "C++" ARCANE_CARTESIANMESH_EXPORT Ref<ICartesianMeshAMRPatchMng>
 cartesianMeshAMRPatchMng(ICartesianMesh* cm);
+
+/*!
+ * TODO
+ */
+extern "C++" ARCANE_CARTESIANMESH_EXPORT Ref<ICartesianMeshNumberingMng>
+cartesianMeshNumberingMng(ICartesianMesh* cm);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

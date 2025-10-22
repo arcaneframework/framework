@@ -49,4 +49,6 @@ set(ARCANE_SOURCES
   CartesianMeshNumberingMng.h
   AMRZonePosition.cc
   AMRZonePosition.h
+  AMRPatchPosition.h
+  AMRPatchPosition.cc
 )
