@@ -92,7 +92,10 @@ _testStackTrace()
   String s = platform::getStackTrace();
   info() << "CurrentStackTrace=" << s;
 
-  const StackTrace s2 = platform::getStackTraceService()->stackTraceFunction(0);
+  StackTrace s2;
+  if (platform::getStackTraceService()) {
+    s2 = platform::getStackTraceService()->stackTraceFunction(0);
+  }
   info() << "Last call=" << s2.toString();
 }
 
