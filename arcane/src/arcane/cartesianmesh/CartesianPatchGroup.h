@@ -34,9 +34,10 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianPatchGroup
 {
  public:
 
-  explicit CartesianPatchGroup(ICartesianMesh* cmesh) : m_cmesh(cmesh){}
+  explicit CartesianPatchGroup(ICartesianMesh* cmesh);
 
  public:
+
   Ref<CartesianMeshPatch> groundPatch();
 
   void addPatch(CellGroup cell_group);
@@ -55,22 +56,25 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianPatchGroup
 
   void removeCellsInAllPatches(ConstArrayView<Int32> cells_local_id);
 
-  void removeCellsInAllPatches(ConstArrayView<Int32> cells_local_id, SharedArray<Integer> altered_patches);
+  void removeCellsInAllPatches(ConstArrayView<Int32> cells_local_id, const AMRPatchPosition& patch_position);
 
   void applyPatchEdit(bool remove_empty_patches);
 
-  // void repairPatch(Integer index, ICartesianMeshNumberingMng* numbering_mng);
-
-  void updateLevelsBeforeCoarsen();
+  void updateLevelsBeforeAddGroundPatch();
 
   Integer nextIndexForNewPatch();
 
  private:
+
   void _addPatchInstance(Ref<CartesianMeshPatch> v);
 
   void _removeOnePatch(Integer index);
   void _removeMultiplePatches(ConstArrayView<Integer> indexes);
   void _createGroundPatch();
+
+  bool _isPatchInContact(const AMRPatchPosition& patch_position0, const AMRPatchPosition& patch_position1);
+  void _splitPatch(Integer index_patch, const AMRPatchPosition& patch_position);
+  void _addCutPatch(const AMRPatchPosition& new_patch_position, CellGroup parent_patch_cell_group);
 
  private:
 
@@ -79,6 +83,7 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianPatchGroup
   UniqueArray<Ref<CartesianMeshPatch>> m_amr_patches;
   ICartesianMesh* m_cmesh;
   UniqueArray<Integer> m_patches_to_delete;
+  Int32 m_index_new_patches;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -89,5 +94,4 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianPatchGroup
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

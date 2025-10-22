@@ -54,15 +54,11 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianPatch
   //! Groupe de mailles du patch
   CellGroup cells();
 
-  Integer index() const
-  {
-    ARCANE_CHECK_POINTER(m_patch);
-    return m_patch->index();
-  }
+  Integer index() const;
   Integer level() const
   {
     ARCANE_CHECK_POINTER(m_patch);
-    return m_patch->level();
+    return m_patch->position().level();
   }
 
   //! Liste des mailles dans la direction \a dir

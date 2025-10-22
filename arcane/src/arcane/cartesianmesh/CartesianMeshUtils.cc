@@ -45,6 +45,15 @@ cartesianMeshAMRPatchMng(ICartesianMesh* cm)
   return cm->_internalApi()->cartesianMeshAMRPatchMng();
 }
 
+/*!
+ * TODO
+ */
+Ref<ICartesianMeshNumberingMng> CartesianMeshUtils::
+cartesianMeshNumberingMng(ICartesianMesh* cm)
+{
+  return cm->_internalApi()->cartesianMeshNumberingMng();
+}
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
