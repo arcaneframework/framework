@@ -2002,7 +2002,10 @@ createSubLevel()
     else {
       // Ça peut arriver si le partitionnement n'est pas adapté.
       if (around_parent_cells_uid_to_owner[parent_uid] != cell.owner()) {
-        ARCANE_FATAL("Pb owner");
+        ARCANE_FATAL("Pb owner -- Two+ children, two+ different owners, same parent\n"
+                     "The ground patch size in x, y (and z if 3D) must be a multiple of four (need partitionner update to support multiple of two)\n"
+                     "CellUID : {0} -- CellOwner : {1} -- OtherChildOwner : {2}",
+                     cell.uniqueId(), cell.owner(), around_parent_cells_uid_to_owner[parent_uid]);
       }
     }
 

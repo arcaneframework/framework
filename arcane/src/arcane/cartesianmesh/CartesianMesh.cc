@@ -239,8 +239,7 @@ class CartesianMeshImpl
                              VariableFaceReal3& faces_center,CellGroup all_cells,
                              NodeGroup all_nodes);
   void _applyRefine(const AMRZonePosition &position);
-  void _removeCellsInPatches(ConstArrayView<Int32> const_array_view);
-  void _applyCoarse(const AMRZonePosition &position);
+  void _applyCoarse(const AMRZonePosition& zone_position);
   void _addPatch(const CellGroup& parent_cells);
   void _saveInfosInProperties();
 
@@ -889,6 +888,8 @@ reduceNbGhostLayers(Integer level, Integer target_nb_ghost_layers)
 void CartesianMeshImpl::
 _addPatchFromExistingChildren(ConstArrayView<Int32> parent_cells_local_id)
 {
+  m_patch_group.updateLevelsBeforeAddGroundPatch();
+
   IItemFamily* cell_family = m_mesh->cellFamily();
   Integer index = m_patch_group.nextIndexForNewPatch();
   String parent_group_name = String("CartesianMeshPatchParentCells")+index;
@@ -926,37 +927,9 @@ _addPatch(const CellGroup& parent_cells)
 /*---------------------------------------------------------------------------*/
 
 void CartesianMeshImpl::
-_removeCellsInPatches(ConstArrayView<Int32> const_array_view)
-{
-  if (m_amr_type == eMeshAMRKind::Cell) {
-    m_patch_group.removeCellsInAllPatches(const_array_view);
-    m_patch_group.applyPatchEdit(true);
-  }
-  else if (m_amr_type == eMeshAMRKind::PatchCartesianMeshOnly) {
-    m_patch_group.removeCellsInAllPatches(const_array_view);
-    // SharedArray<Integer> altered_patches;
-    // m_patch_group.removeCellsInAllPatches(const_array_view, altered_patches);
-    // info() << "altered_patches : " << altered_patches;
-    // for (Integer index : altered_patches) {
-    //   m_patch_group.repairPatch(index, _internalApi()->cartesianMeshNumberingMng().get());
-    // }
-    m_patch_group.applyPatchEdit(true);
-  }
-  else if (m_amr_type == eMeshAMRKind::Patch) {
-    ARCANE_FATAL("General patch AMR is not implemented. Please use PatchCartesianMeshOnly (3)");
-  }
-  else {
-    ARCANE_FATAL("AMR is not enabled");
-  }
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void CartesianMeshImpl::
 _applyRefine(const AMRZonePosition& position)
 {
-  SharedArray<Int32> cells_local_id;
+  UniqueArray<Int32> cells_local_id;
   position.cellsInPatch(mesh(), cells_local_id);
 
   IItemFamily* cell_family = m_mesh->cellFamily();
@@ -1001,10 +974,16 @@ _applyRefine(const AMRZonePosition& position)
 /*---------------------------------------------------------------------------*/
 
 void CartesianMeshImpl::
-_applyCoarse(const AMRZonePosition& position)
+_applyCoarse(const AMRZonePosition& zone_position)
 {
-  SharedArray<Int32> cells_local_id;
-  position.cellsInPatch(mesh(), cells_local_id);
+  UniqueArray<Int32> cells_local_id;
+  AMRPatchPosition patch_position;
+  if (m_amr_type == eMeshAMRKind::Cell) {
+    zone_position.cellsInPatch(mesh(), cells_local_id);
+  }
+  else if (m_amr_type == eMeshAMRKind::PatchCartesianMeshOnly) {
+    zone_position.cellsInPatch(this, cells_local_id, patch_position);
+  }
 
   Integer nb_cell = cells_local_id.size();
   info(4) << "Local_NbCellToCoarsen = " << nb_cell;
@@ -1015,15 +994,19 @@ _applyCoarse(const AMRZonePosition& position)
   if (total_nb_cell == 0)
     return;
 
-  _removeCellsInPatches(cells_local_id);
-
   if (m_amr_type == eMeshAMRKind::Cell) {
     debug() << "Coarse with modifier() (for all mesh types)";
+    m_patch_group.removeCellsInAllPatches(cells_local_id);
+    m_patch_group.applyPatchEdit(true);
+
     m_mesh->modifier()->flagCellToCoarsen(cells_local_id);
     m_mesh->modifier()->coarsenItemsV2(true);
   }
   else if (m_amr_type == eMeshAMRKind::PatchCartesianMeshOnly) {
     debug() << "Coarsen with specific coarser (for cartesian mesh only)";
+    m_patch_group.removeCellsInAllPatches(cells_local_id, patch_position);
+    m_patch_group.applyPatchEdit(true);
+
     computeDirections();
     m_internal_api.cartesianMeshAMRPatchMng()->flagCellToCoarsen(cells_local_id, true);
     m_internal_api.cartesianMeshAMRPatchMng()->coarsen(true);
