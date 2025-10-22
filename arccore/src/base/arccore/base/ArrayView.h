@@ -92,8 +92,8 @@ template<typename T> class IterT;
 template<class T>
 class ArrayView
 {
-  template <typename T2, Int64 Extent, Int64 MinValue> friend class Span;
-  template <typename T2, Int32 Extent, Int32 MinValue> friend class SmallSpan;
+  template <typename T2, Int64 Extent> friend class Span;
+  template <typename T2, Int32 Extent> friend class SmallSpan;
 
  public:
 

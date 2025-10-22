@@ -428,8 +428,8 @@ TEST(Span, StdArray)
     SmallSpan<const Real> small2(v2r);
     LargeSpan<const std::byte> small_fb2(asBytes(small2));
 
-    Span<Int64,DynExtent,-1> a4(v2.data()+1,v2.size()-1);
-    ASSERT_EQ(a4[-1],2);
+    //Span<Int64,DynExtent,-1> a4(v2.data()+1,v2.size()-1);
+    //ASSERT_EQ(a4[-1],2);
   }
 }
 
@@ -782,16 +782,6 @@ template class SmallSpan<const Int32>;
 template class SmallSpan<double>;
 template class SmallSpan<const double>;
 
-template class Span<Int32,DynExtent,-1>;
-template class Span<const Int32,DynExtent,-1>;
-template class Span<double,DynExtent,-1>;
-template class Span<const double,DynExtent,-1>;
-
-template class SmallSpan<Int32,DynExtent,-1>;
-template class SmallSpan<const Int32,DynExtent,-1>;
-template class SmallSpan<double,DynExtent,-1>;
-template class SmallSpan<const double,DynExtent,-1>;
-
 template class Span<Int32,4>;
 template class Span<const Int32,5>;
 template class Span<double,6>;
@@ -801,16 +791,6 @@ template class SmallSpan<Int32,4>;
 template class SmallSpan<const Int32,5>;
 template class SmallSpan<double,6>;
 template class SmallSpan<const double,7>;
-
-template class Span<Int32,4,-1>;
-template class Span<const Int32,5,-1>;
-template class Span<double,6,-1>;
-template class Span<const double,7,-1>;
-
-template class SmallSpan<Int32,4,-1>;
-template class SmallSpan<const Int32,5,-1>;
-template class SmallSpan<double,6,-1>;
-template class SmallSpan<const double,7,-1>;
 
 template class Span2<Int32>;
 template class Span2<const Int32>;

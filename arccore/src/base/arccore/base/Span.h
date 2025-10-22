@@ -76,7 +76,7 @@ class SpanTypeFromSize<T, Int64>
 template <typename SizeType>
 class DynamicExtentStorage
 {
-  template <typename T, typename SpanSizeType, SpanSizeType SpanExtent, SpanSizeType MinValue>
+  template <typename T, typename SpanSizeType, SpanSizeType SpanExtent>
   friend class ::Arcane::SpanImpl;
 
  public:
@@ -98,7 +98,7 @@ class DynamicExtentStorage
 template <typename SizeType, SizeType FixedExtent>
 class ExtentStorage
 {
-  template <typename T, typename SpanSizeType, SpanSizeType SpanExtent, SpanSizeType MinValue>
+  template <typename T, typename SpanSizeType, SpanSizeType SpanExtent>
   friend class ::Arcane::SpanImpl;
 
  public:
@@ -170,17 +170,16 @@ namespace Arcane
  *
  * Si \a Extent est différent de DynExtent (le défaut), la taille est
  * variable, sinon elle est fixe et a pour valeur \a Extent.
- * \a MinValue est la valeur minimale possible (0 par défaut).
  */
-template <typename T, typename SizeType, SizeType Extent, SizeType MinValue>
+template <typename T, typename SizeType, SizeType Extent>
 class SpanImpl
 {
   using ExtentStorageType = Impl::ExtentStorage<SizeType, Extent>;
 
  public:
 
-  using ThatClass = SpanImpl<T, SizeType, Extent, MinValue>;
-  using SubSpanType = SpanImpl<T, SizeType, DynExtent, 0>;
+  using ThatClass = SpanImpl<T, SizeType, Extent>;
+  using SubSpanType = SpanImpl<T, SizeType, DynExtent>;
   using size_type = SizeType;
   using ElementType = T;
   using element_type = ElementType;
@@ -212,14 +211,14 @@ class SpanImpl
 
   //! Constructeur de recopie depuis une autre vue
   // Pour un Span<const T>, on a le droit de construire depuis un Span<T>
-  template <typename X, SizeType XExtent, SizeType XMinValue, typename = std::enable_if_t<std::is_same_v<const X, T>>>
-  constexpr ARCCORE_HOST_DEVICE SpanImpl(const SpanImpl<X, SizeType, XExtent, XMinValue>& from) noexcept
+  template <typename X, SizeType XExtent, typename = std::enable_if_t<std::is_same_v<const X, T>>>
+  constexpr ARCCORE_HOST_DEVICE SpanImpl(const SpanImpl<X, SizeType, XExtent>& from) noexcept
   : m_ptr(from.data())
   , m_size(from.size())
   {}
 
-  template <SizeType XExtent, SizeType XMinValue>
-  constexpr ARCCORE_HOST_DEVICE SpanImpl(const SpanImpl<T, SizeType, XExtent, XMinValue>& from) noexcept
+  template <SizeType XExtent>
+  constexpr ARCCORE_HOST_DEVICE SpanImpl(const SpanImpl<T, SizeType, XExtent>& from) noexcept
   : m_ptr(from.data())
   , m_size(from.size())
   {}
@@ -264,7 +263,7 @@ class SpanImpl
    */
   constexpr ARCCORE_HOST_DEVICE reference operator[](SizeType i) const
   {
-    ARCCORE_CHECK_RANGE(i, MinValue, m_size.m_size);
+    ARCCORE_CHECK_AT(i, m_size.m_size);
     return m_ptr[i];
   }
 
@@ -275,7 +274,7 @@ class SpanImpl
    */
   constexpr ARCCORE_HOST_DEVICE reference operator()(SizeType i) const
   {
-    ARCCORE_CHECK_RANGE(i, MinValue, m_size.m_size);
+    ARCCORE_CHECK_AT(i, m_size.m_size);
     return m_ptr[i];
   }
 
@@ -286,7 +285,7 @@ class SpanImpl
    */
   constexpr ARCCORE_HOST_DEVICE reference item(SizeType i) const
   {
-    ARCCORE_CHECK_RANGE(i, MinValue, m_size.m_size);
+    ARCCORE_CHECK_AT(i, m_size.m_size);
     return m_ptr[i];
   }
 
@@ -297,7 +296,7 @@ class SpanImpl
    */
   constexpr ARCCORE_HOST_DEVICE void setItem(SizeType i, const_reference v) noexcept
   {
-    ARCCORE_CHECK_RANGE(i, MinValue, m_size.m_size);
+    ARCCORE_CHECK_AT(i, m_size.m_size);
     m_ptr[i] = v;
   }
 
@@ -517,29 +516,29 @@ class SpanImpl
   constexpr ARCCORE_HOST_DEVICE pointer data() const noexcept { return m_ptr; }
 
   //! Opérateur d'égalité (valide si T est const mais pas X)
-  template <typename X, SizeType Extent2, SizeType MinValue2, typename = std::enable_if_t<std::is_same_v<X, value_type>>> friend bool
-  operator==(const SpanImpl<T, SizeType, Extent, MinValue>& rhs, const SpanImpl<X, SizeType, Extent2, MinValue2>& lhs)
+  template <typename X, SizeType Extent2, typename = std::enable_if_t<std::is_same_v<X, value_type>>> friend bool
+  operator==(const SpanImpl<T, SizeType, Extent>& rhs, const SpanImpl<X, SizeType, Extent2>& lhs)
   {
     return impl::areEqual(SpanImpl<T, SizeType>(rhs), SpanImpl<T, SizeType>(lhs));
   }
 
   //! Opérateur d'inégalité (valide si T est const mais pas X)
-  template <typename X, SizeType Extent2, SizeType MinValue2, typename = std::enable_if_t<std::is_same_v<X, value_type>>> friend bool
-  operator!=(const SpanImpl<T, SizeType, Extent, MinValue>& rhs, const SpanImpl<X, SizeType, Extent2, MinValue2>& lhs)
+  template <typename X, SizeType Extent2, typename = std::enable_if_t<std::is_same_v<X, value_type>>> friend bool
+  operator!=(const SpanImpl<T, SizeType, Extent>& rhs, const SpanImpl<X, SizeType, Extent2>& lhs)
   {
     return !operator==(rhs, lhs);
   }
 
   //! Opérateur d'égalité
-  template <SizeType Extent2, SizeType MinValue2> friend bool
-  operator==(const SpanImpl<T, SizeType, Extent, MinValue>& rhs, const SpanImpl<T, SizeType, Extent2, MinValue2>& lhs)
+  template <SizeType Extent2> friend bool
+  operator==(const SpanImpl<T, SizeType, Extent>& rhs, const SpanImpl<T, SizeType, Extent2>& lhs)
   {
     return impl::areEqual(SpanImpl<T, SizeType>(rhs), SpanImpl<T, SizeType>(lhs));
   }
 
   //! Opérateur d'inégalité
-  template <SizeType Extent2, SizeType MinValue2> friend bool
-  operator!=(const SpanImpl<T, SizeType, Extent, MinValue>& rhs, const SpanImpl<T, SizeType, Extent2, MinValue2>& lhs)
+  template <SizeType Extent2> friend bool
+  operator!=(const SpanImpl<T, SizeType, Extent>& rhs, const SpanImpl<T, SizeType, Extent2>& lhs)
   {
     return !operator==(rhs, lhs);
   }
@@ -607,14 +606,14 @@ class SpanImpl
  peut donc dépasser 2Go. Elle est concue pour être similaire à la classe
  std::span du C++20.
 */
-template <typename T, Int64 Extent, Int64 MinValue>
+template <typename T, Int64 Extent>
 class Span
-: public SpanImpl<T, Int64, Extent, MinValue>
+: public SpanImpl<T, Int64, Extent>
 {
  public:
 
-  using ThatClass = Span<T, Extent, MinValue>;
-  using BaseClass = SpanImpl<T, Int64, Extent, MinValue>;
+  using ThatClass = Span<T, Extent>;
+  using BaseClass = SpanImpl<T, Int64, Extent>;
   using size_type = Int64;
   using value_type = typename BaseClass::value_type;
   using pointer = typename BaseClass::pointer;
@@ -636,21 +635,21 @@ class Span
   : BaseClass(from.m_ptr, from.m_size)
   {}
   // Pour un Span<const T>, on a le droit de construire depuis un Span<T>
-  template <typename X, Int64 XExtent, Int64 XMinValue, typename = std::enable_if_t<std::is_same_v<const X, T>>>
-  constexpr ARCCORE_HOST_DEVICE Span(const Span<X, XExtent, XMinValue>& from) noexcept
+  template <typename X, Int64 XExtent, typename = std::enable_if_t<std::is_same_v<const X, T>>>
+  constexpr ARCCORE_HOST_DEVICE Span(const Span<X, XExtent>& from) noexcept
   : BaseClass(from)
   {}
   // Pour un Span<const T>, on a le droit de construire depuis un SmallSpan<T>
-  template <typename X, Int32 XExtent, Int32 XMinValue, typename = std::enable_if_t<std::is_same_v<const X, T>>>
-  constexpr ARCCORE_HOST_DEVICE Span(const SmallSpan<X, XExtent, XMinValue>& from) noexcept
+  template <typename X, Int32 XExtent, typename = std::enable_if_t<std::is_same_v<const X, T>>>
+  constexpr ARCCORE_HOST_DEVICE Span(const SmallSpan<X, XExtent>& from) noexcept
   : BaseClass(from.data(), from.size())
   {}
-  template <Int64 XExtent, Int64 XMinValue>
-  constexpr ARCCORE_HOST_DEVICE Span(const SpanImpl<T, Int64, XExtent, XMinValue>& from) noexcept
+  template <Int64 XExtent>
+  constexpr ARCCORE_HOST_DEVICE Span(const SpanImpl<T, Int64, XExtent>& from) noexcept
   : BaseClass(from)
   {}
-  template <Int32 XExtent, Int32 XMinValue>
-  constexpr ARCCORE_HOST_DEVICE Span(const SpanImpl<T, Int32, XExtent, XMinValue>& from) noexcept
+  template <Int32 XExtent>
+  constexpr ARCCORE_HOST_DEVICE Span(const SpanImpl<T, Int32, XExtent>& from) noexcept
   : BaseClass(from.data(), from.size())
   {}
 
@@ -769,14 +768,14 @@ class Span
  * \note Pour être valide, il faut aussi que le nombre d'octets associés à la vue
  * (sizeBytes()) puisse tenir dans un \a Int32.
  */
-template <typename T, Int32 Extent, Int32 MinValue>
+template <typename T, Int32 Extent>
 class SmallSpan
-: public SpanImpl<T, Int32, Extent, MinValue>
+: public SpanImpl<T, Int32, Extent>
 {
  public:
 
-  using ThatClass = SmallSpan<T, Extent, MinValue>;
-  using BaseClass = SpanImpl<T, Int32, Extent, MinValue>;
+  using ThatClass = SmallSpan<T, Extent>;
+  using BaseClass = SpanImpl<T, Int32, Extent>;
   using size_type = Int32;
   using value_type = typename BaseClass::value_type;
   using pointer = typename BaseClass::pointer;
@@ -806,8 +805,8 @@ class SmallSpan
   : BaseClass(from)
   {}
 
-  template <Int32 XExtent, Int32 XMinValue>
-  constexpr ARCCORE_HOST_DEVICE SmallSpan(const SpanImpl<T, Int32, XExtent, XMinValue>& from) noexcept
+  template <Int32 XExtent>
+  constexpr ARCCORE_HOST_DEVICE SmallSpan(const SpanImpl<T, Int32, XExtent>& from) noexcept
   : BaseClass(from)
   {}
 
