@@ -39,6 +39,17 @@ class GlobalMutex;
 class IThreadBarrier;
 class NullThreadImplementation;
 class NullThreadBarrier;
+class ParallelLoopOptions;
+class ParallelFor1DLoopInfo;
+class ForLoopRunInfo;
+class TaskFactoryInternal;
+class ITaskImplementation;
+class ITask;
+class TaskContext;
+class TaskFactory;
+class ITaskFunctor;
+template <typename InstanceType> class TaskFunctor;
+template <typename InstanceType> class TaskFunctorWithContext;
 
 //@{ Classe internes à Arccore/Arcane
 class SpinLockImpl;

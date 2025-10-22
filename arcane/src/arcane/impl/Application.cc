@@ -36,8 +36,9 @@
 #include "arcane/utils/ITraceMngPolicy.h"
 #include "arcane/utils/JSONReader.h"
 #include "arcane/utils/Profiling.h"
-#include "arcane/utils/internal/TaskFactoryInternal.h"
 #include "arcane/utils/internal/DependencyInjection.h"
+
+#include "arccore/concurrency/internal/TaskFactoryInternal.h"
 
 #include "arcane/core/ArcaneVersion.h"
 #include "arcane/core/ISubDomain.h"

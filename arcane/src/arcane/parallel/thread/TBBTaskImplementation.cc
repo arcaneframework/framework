@@ -22,7 +22,7 @@
 #include "arcane/utils/Profiling.h"
 #include "arcane/utils/MemoryAllocator.h"
 #include "arcane/utils/FixedArray.h"
-#include "arcane/utils/internal/TaskFactoryInternal.h"
+#include "arccore/concurrency/internal/TaskFactoryInternal.h"
 #include "arcane/utils/internal/DependencyInjection.h"
 
 #include "arcane/core/FactoryService.h"
