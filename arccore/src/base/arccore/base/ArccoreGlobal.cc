@@ -25,6 +25,7 @@
 #include "arccore/base/BFloat16.h"
 #include "arccore/base/Float128.h"
 #include "arccore/base/Int128.h"
+#include "arccore/base/IRangeFunctor.h"
 
 #include <iostream>
 #include <cstring>
