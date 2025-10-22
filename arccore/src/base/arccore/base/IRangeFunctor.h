@@ -5,14 +5,16 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemFunctor.cc                                              (C) 2000-2025 */
+/* IRangeFunctor.h                                             (C) 2000-2025 */
 /*                                                                           */
-/* Fonctor sur les entités.                                                  */
+/* Interface d'un fonctor sur un interval d'itération.                       */
+/*---------------------------------------------------------------------------*/
+#ifndef ARCCORE_BASE_IRANGEFUNCTOR_H
+#define ARCCORE_BASE_IRANGEFUNCTOR_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/core/ItemFunctor.h"
-#include "arcane/utils/Math.h"
+#include "arccore/base/BaseTypes.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -22,47 +24,56 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-AbstractItemRangeFunctor::
-AbstractItemRangeFunctor(ItemVectorView items_view,Integer grain_size)
-: m_items(items_view)
-, m_block_size(SIMD_PADDING_SIZE)
-, m_nb_block(items_view.size())
-, m_block_grain_size(grain_size)
+/*!
+ * \brief Interface d'un fonctor sur un interval d'itération.
+ * \ingroup Core
+ */
+class ARCCORE_BASE_EXPORT IRangeFunctor
 {
-  // NOTE: si le range functor est utilisé pour la vectorisation, il faut
-  // que items_view.localIds() soit aligné. Le problème est qu'on ne sait
-  // pas exactement quel est l'alignement requis. On pourrait se base sur
-  // \a m_block_size et dire que l'alignement est m_block_size * sizeof(Int32).
-  // De toute facon, le problème éventuel d'alignement sera détecté par
-  // SimdItemEnumerator.
-  Integer nb_item = m_items.size();
-  m_nb_block = nb_item / m_block_size;
-  if ( (nb_item % m_block_size)!=0 )
-    ++m_nb_block;
+ public:
 
-  m_block_grain_size = grain_size / m_block_size;
-}
+  //! Libère les ressources
+  virtual ~IRangeFunctor() = default;
+
+ public:
+
+  /*!
+   * \brief Exécute la méthode associée.
+   * \param begin indice du début de l'itération.
+   * \param size nombre d'éléments à itérer.
+   */
+  virtual void executeFunctor(Int32 begin, Int32 size) = 0;
+};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-ItemVectorView AbstractItemRangeFunctor::
-_view(Integer begin_block, Integer nb_block, Int32* true_begin) const
+/*!
+ * \brief Interface d'un fonctor sur un interval d'itération multi-dimensionnel
+ * de dimension \a RankValue
+ * \ingroup Core
+ */
+template <int RankValue>
+class IMDRangeFunctor
 {
-  // Converti (begin_block,nb_block) en (begin,size) correspondant à m_items.
-  Integer begin = begin_block * m_block_size;
-  Integer nb_item = m_items.size();
-  Integer size = math::min(nb_block * m_block_size,nb_item-begin);
-  if (true_begin)
-    *true_begin = begin;
-  return m_items.subView(begin,size);
-}
+ public:
+
+  //! Libère les ressources
+  virtual ~IMDRangeFunctor() = default;
+
+ public:
+
+  /*!
+   * \brief Exécute la méthode associée.
+   */
+  virtual void executeFunctor(const ComplexForLoopRanges<RankValue>& loop_range) = 0;
+};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-}
+} // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+#endif

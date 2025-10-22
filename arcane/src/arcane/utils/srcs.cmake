@@ -49,7 +49,6 @@ set(ARCANE_SOURCES
   FloatingPointExceptionSentry.h
   FileContent.cc
   FileContent.h
-  ForLoopTraceInfo.cc
   ForLoopTraceInfo.h
   ForLoopRanges.h
   GenericRegisterer.h
