@@ -79,6 +79,17 @@ class StringBuilder;
 class StringFormatterArg;
 struct ReferenceCounterTag;
 
+class IRangeFunctor;
+template<int RankValue> class IMDRangeFunctor;
+template<typename InstanceType> class RangeFunctorT;
+template<typename LambdaType> class LambdaRangeFunctorT;
+template<typename LambdaType, typename... Views> class LambdaRangeFunctorTVa;
+class ForLoopTraceInfo;
+class ForLoopRange;
+template<int RankValue, typename IndexType_ = Int32> class SimpleForLoopRanges;
+template<int RankValue, typename IndexType_ = Int32> class ComplexForLoopRanges;
+class ForLoopOneExecStat;
+
 class TraceInfo;
 class StackTrace;
 class Exception;

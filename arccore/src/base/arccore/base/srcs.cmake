@@ -40,6 +40,9 @@ set(SOURCES
   Float128.h
   FloatConversion.h
   FixedArray.h
+  ForLoopRanges.h
+  ForLoopTraceInfo.h
+  ForLoopTraceInfo.cc
   Iterator.h
   IndexOutOfRangeException.cc
   IndexOutOfRangeException.h
@@ -47,6 +50,8 @@ set(SOURCES
   IStackTraceService.h
   IObserver.h
   IObservable.h
+  IRangeFunctor.h
+  RangeFunctor.h
   MDDim.h
   MDIndex.h
   MDSpan.h

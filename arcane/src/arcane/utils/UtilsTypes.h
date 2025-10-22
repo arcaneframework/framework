@@ -102,7 +102,6 @@ using MemoryView ARCANE_DEPRECATED_REASON("Use 'ConstMemoryView' instead") = Con
 /*---------------------------------------------------------------------------*/
 
 class IPerformanceCounterService;
-class ForLoopTraceInfo;
 class ForLoopOneExecStat;
 namespace impl
 {
@@ -129,10 +128,6 @@ class TaskFactory;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-class ForLoopRange;
-template<int RankValue, typename IndexType_ = Int32> class SimpleForLoopRanges;
-template<int RankValue, typename IndexType_ = Int32> class ComplexForLoopRanges;
 
 // Pour compatibilité avec l'existant (à supprimer après la version 3.8)
 using LoopRange = ForLoopRange;
