@@ -603,6 +603,16 @@ void AMRCartesianMeshTesterModule::
 compute()
 {
   _compute1();
+  info() << "NbPatch : " << m_cartesian_mesh->nbPatch();
+  info() << "NbPatch : " << m_cartesian_mesh->patches().size();
+
+  for (Integer i = 0; i < m_cartesian_mesh->patches().size(); ++i) {
+    auto patch = m_cartesian_mesh->amrPatch(i);
+    info() << "Patch #" << i;
+    info() << "\tMin Point : " << patch.patchInterface()->position().minPoint();
+    info() << "\tMax Point : " << patch.patchInterface()->position().maxPoint();
+    info() << "\tLevel : " << patch.patchInterface()->position().level();
+  }
 }
 
 /*---------------------------------------------------------------------------*/
