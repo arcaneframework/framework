@@ -1,22 +1,25 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* SimpleTableComparatorUnitTest.hh                            (C) 2000-2022 */
+/* SimpleTableComparatorUnitTest.hh                            (C) 2000-2025 */
 /*                                                                           */
 /* Service de test pour les services implémentant ISimpleTableComparator.    */
 /*---------------------------------------------------------------------------*/
+
+#ifndef ARCANE_TESTS_SIMPLETABLECOMPARATORUNITTEST_H
+#define ARCANE_TESTS_SIMPLETABLECOMPARATORUNITTEST_H
+
+/*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/BasicUnitTest.h"
-#include "arcane/IParallelMng.h"
-#include "arcane/ISimpleTableComparator.h"
-#include "arcane/ISimpleTableOutput.h"
-#include "arcane/ITimeLoopMng.h"
-#include "arcane/ServiceBuilder.h"
+#include "arcane/core/BasicUnitTest.h"
+#include "arcane/core/ISimpleTableComparator.h"
+#include "arcane/core/ISimpleTableOutput.h"
+#include "arcane/core/ITimeLoopMng.h"
 
 #include "arcane/tests/SimpleTableComparatorUnitTest_axl.h"
 
@@ -81,12 +84,9 @@ class SimpleTableComparatorUnitTest
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_REGISTER_SERVICE_SIMPLETABLECOMPARATORUNITTEST(SimpleTableComparatorUnitTest, SimpleTableComparatorUnitTest);
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 } // End namespace ArcaneTest
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+#endif

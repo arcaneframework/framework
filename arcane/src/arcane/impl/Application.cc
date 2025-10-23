@@ -399,7 +399,14 @@ build()
     bool has_dbghelp = false;
     {
       ServiceBuilder<IStackTraceService> sf(this);
-      Ref<IStackTraceService> sv = sf.createReference("LibUnwind",SB_AllowNull);
+      Ref<IStackTraceService> sv;
+      const auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_USE_BACKWARDCPP", true);
+      if (v && v.value() != 0) {
+        sv = sf.createReference("BackwardCppStackTraceService", SB_AllowNull);
+      }
+      else {
+        sv = sf.createReference("LibUnwind", SB_AllowNull);
+      }
       if (!sv.get()){
         sv = sf.createReference("DbgHelpStackTraceService", SB_AllowNull);
         if (sv.get())

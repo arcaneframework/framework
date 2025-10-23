@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* RandomNumberGeneratorUnitTest.cc                            (C) 2000-2022 */
+/* RandomNumberGeneratorUnitTest.cc                            (C) 2000-2025 */
 /*                                                                           */
 /* Service de test des générateurs de nombres (pseudo-)aléatoires            */
 /* implémentant l'interface IRandomNumberGenerator                           */
@@ -122,6 +122,11 @@ void RandomNumberGeneratorUnitTest::
 tearDownForClass()
 {
 }
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+ARCANE_REGISTER_SERVICE_RANDOMNUMBERGENERATORUNITTEST(RandomNumberGeneratorUnitTest, RandomNumberGeneratorUnitTest);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

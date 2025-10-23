@@ -53,6 +53,11 @@ endif()
 
 include(srcs.cmake)
 
+# Backward-cpp peut fonctionner avec d'autres lib. Voir pour les ajouter.
+if (DW_FOUND)
+  list(APPEND ARCANE_SOURCES BackwardCppStackTraceService.cc)
+endif ()
+
 if(BZIP2_FOUND)
   list(APPEND ARCANE_SOURCES Bzip2DeflateService.cc)
 endif()

@@ -82,6 +82,7 @@ set(ARCANE_SOURCES
   TimeHistoryAdderTestModule.cc
   MeshCriteriaLoadBalanceMngTestModule.cc
   ParameterOptionTest.cc
+  StackTraceUnitTest.cc
 )
 
 set(AXL_FILES
