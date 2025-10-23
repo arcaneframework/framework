@@ -59,7 +59,7 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianPatchGroup
 
   void applyPatchEdit(bool remove_empty_patches);
 
-  void updateLevelsBeforeCoarsen();
+  void updateLevelsBeforeAddGroundPatch();
 
   Integer nextIndexForNewPatch();
 

@@ -888,6 +888,8 @@ reduceNbGhostLayers(Integer level, Integer target_nb_ghost_layers)
 void CartesianMeshImpl::
 _addPatchFromExistingChildren(ConstArrayView<Int32> parent_cells_local_id)
 {
+  m_patch_group.updateLevelsBeforeAddGroundPatch();
+
   IItemFamily* cell_family = m_mesh->cellFamily();
   Integer index = m_patch_group.nextIndexForNewPatch();
   String parent_group_name = String("CartesianMeshPatchParentCells")+index;

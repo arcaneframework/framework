@@ -66,9 +66,16 @@ addPatch(CellGroup cell_group)
     ArrayView min(min_n_max.view().subView(0, 3));
     ArrayView max(min_n_max.view().subView(3, 3));
     Int64 nb_cells = 0;
+    Integer level = -1;
     ENUMERATE_ (Cell, icell, cell_group) {
       if (icell->isOwn())
         nb_cells++;
+      if (level == -1) {
+        level = icell->level();
+      }
+      if (level != icell->level()) {
+        ARCANE_FATAL("Bad level");
+      }
       Int64 pos_x = numbering->cellUniqueIdToCoordX(*icell);
       if (pos_x < min[MD_DirX])
         min[MD_DirX] = pos_x;
@@ -90,6 +97,11 @@ addPatch(CellGroup cell_group)
     m_cmesh->mesh()->parallelMng()->reduce(MessagePassing::ReduceMin, min);
     m_cmesh->mesh()->parallelMng()->reduce(MessagePassing::ReduceMax, max);
     nb_cells = m_cmesh->mesh()->parallelMng()->reduce(MessagePassing::ReduceSum, nb_cells);
+    Integer level_r = m_cmesh->mesh()->parallelMng()->reduce(MessagePassing::ReduceMax, level);
+
+    if (level != -1 && level != level_r) {
+      ARCANE_FATAL("Bad level reduced");
+    }
 
     max[MD_DirX] += 1;
     max[MD_DirY] += 1;
@@ -101,10 +113,14 @@ addPatch(CellGroup cell_group)
         ARCANE_FATAL("Not regular patch");
       }
     }
+
     cdi->position().setMinPoint({ min[MD_DirX], min[MD_DirY], min[MD_DirZ] });
     cdi->position().setMaxPoint({ max[MD_DirX], max[MD_DirY], max[MD_DirZ] });
-    // TODO : Pas de level, à ajouter !
+    cdi->position().setLevel(level_r);
   }
+  m_cmesh->traceMng()->info() << "Min Point : " << cdi->position().minPoint();
+  m_cmesh->traceMng()->info() << "Max Point : " << cdi->position().maxPoint();
+  m_cmesh->traceMng()->info() << "Level : " << cdi->position().level();
 }
 
 // Attention : avant _createGroundPatch() = 0, après _createGroundPatch(); = 1
@@ -206,10 +222,26 @@ applyPatchEdit(bool remove_empty_patches)
 }
 
 void CartesianPatchGroup::
-updateLevelsBeforeCoarsen()
+updateLevelsBeforeAddGroundPatch()
 {
-  for (ICartesianMeshPatch* patch : m_amr_patches_pointer) {
-    patch->position().setLevel(patch->position().level() + 1);
+  if (m_cmesh->mesh()->meshKind().meshAMRKind() == eMeshAMRKind::PatchCartesianMeshOnly) {
+    auto numbering = m_cmesh->_internalApi()->cartesianMeshNumberingMng();
+    for (ICartesianMeshPatch* patch : m_amr_patches_pointer) {
+      Integer level = patch->position().level();
+      // Si le niveau est 0, c'est le patch spécial 0 donc on ne modifie que le max, le niveau reste à 0.
+      if (level == 0) {
+        Int64x3 max_point = patch->position().maxPoint();
+        patch->position().setMaxPoint({
+        numbering->offsetLevelToLevel(max_point.x, level, level - 1),
+        numbering->offsetLevelToLevel(max_point.y, level, level - 1),
+        numbering->offsetLevelToLevel(max_point.z, level, level - 1),
+        });
+      }
+      // Sinon, on "surélève" le niveau des patchs vu qu'il va y avoir le patch "-1"
+      else {
+        patch->position().setLevel(level + 1);
+      }
+    }
   }
 }
 
@@ -247,7 +279,15 @@ void CartesianPatchGroup::
 _createGroundPatch()
 {
   if (!m_amr_patches.empty()) return;
-  _addPatchInstance(makeRef(new CartesianMeshPatch(m_cmesh, -1)));
+  auto patch = makeRef(new CartesianMeshPatch(m_cmesh, -1));
+  _addPatchInstance(patch);
+
+  if (m_cmesh->mesh()->meshKind().meshAMRKind() == eMeshAMRKind::PatchCartesianMeshOnly) {
+    auto numbering = m_cmesh->_internalApi()->cartesianMeshNumberingMng();
+    patch->position().setMinPoint({ 0, 0, 0 });
+    patch->position().setMaxPoint({ numbering->globalNbCellsX(0), numbering->globalNbCellsY(0), numbering->globalNbCellsZ(0) });
+    patch->position().setLevel(0);
+  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -271,6 +311,11 @@ _splitPatch(Integer index_patch, const AMRPatchPosition& part_to_remove)
 {
   // Il est nécessaire que le patch source et le patch part_to_remove soient
   // en contact pour que cette méthode fonctionne.
+
+  m_cmesh->mesh()->traceMng()->info() << "Coarse Zone"
+                                      << " -- Min point : " << part_to_remove.minPoint()
+                                      << " -- Max point : " << part_to_remove.maxPoint()
+                                      << " -- Level : " << part_to_remove.level();
 
   auto cut_point_p0 = [](Int64 p0_min, Int64 p0_max, Int64 p1_min, Int64 p1_max) -> std::pair<Int64, Int64> {
     std::pair<Int64, Int64> to_return{ -1, -1 };
@@ -452,15 +497,28 @@ _splitPatch(Integer index_patch, const AMRPatchPosition& part_to_remove)
   // TODO Voir pour fusion des AMRPatchPosition (ici ou après ?)
 
   if (m_cmesh->mesh()->dimension() == 2) {
+    m_cmesh->mesh()->traceMng()->info() << "Nb of new patch 2d : " << new_patch_y.size();
     for (auto new_patch : new_patch_y) {
-      if (new_patch.minPoint().x != patch_to_exclude_x && new_patch.minPoint().y != patch_to_exclude_y) {
+      m_cmesh->mesh()->traceMng()->info() << "patch_to_exclude_x : " << patch_to_exclude_x << " -- patch_to_exclude_y : " << patch_to_exclude_y;
+      if (new_patch.minPoint().x != patch_to_exclude_x || new_patch.minPoint().y != patch_to_exclude_y) {
+        m_cmesh->mesh()->traceMng()->info() << "\tNew cut patch"
+                                            << " -- Min point : " << new_patch.minPoint()
+                                            << " -- Max point : " << new_patch.maxPoint()
+                                            << " -- Level : " << new_patch.level();
         _addCutPatch(new_patch, m_amr_patch_cell_groups[index_patch - 1]);
+      }
+      else {
+        m_cmesh->mesh()->traceMng()->info() << "\tExclude cut patch"
+                                            << " -- Min point : " << new_patch.minPoint()
+                                            << " -- Max point : " << new_patch.maxPoint()
+                                            << " -- Level : " << new_patch.level();
       }
     }
   }
   else {
+    m_cmesh->mesh()->traceMng()->info() << "Nb of new patch 3d : " << new_patch_z.size();
     for (auto new_patch : new_patch_z) {
-      if (new_patch.minPoint().x != patch_to_exclude_x && new_patch.minPoint().y != patch_to_exclude_y && new_patch.minPoint().z != patch_to_exclude_z) {
+      if (new_patch.minPoint().x != patch_to_exclude_x || new_patch.minPoint().y != patch_to_exclude_y || new_patch.minPoint().z != patch_to_exclude_z) {
         _addCutPatch(new_patch, m_amr_patch_cell_groups[index_patch - 1]);
       }
     }

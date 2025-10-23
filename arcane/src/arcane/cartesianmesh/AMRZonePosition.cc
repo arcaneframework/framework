@@ -18,6 +18,7 @@
 #include "arcane/cartesianmesh/internal/ICartesianMeshInternal.h"
 #include "arcane/core/IParallelMng.h"
 #include "arcane/utils/FixedArray.h"
+#include "arcane/utils/ITraceMng.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -95,10 +96,11 @@ cellsInPatch(ICartesianMesh* mesh, UniqueArray<Int32>& cells_local_id, AMRPatchP
     bool is_inside_y = center.y > min_pos.y && center.y < max_pos.y;
     bool is_inside_z = (center.z > min_pos.z && center.z < max_pos.z) || !m_is_3d;
     if (is_inside_x && is_inside_y && is_inside_z) {
+      mesh->mesh()->traceMng()->info() << "CellUID : " << cell.uniqueId() << " -- Level : " << cell.level();
       if (level == -10)
         level = cell.level();
       else if (level != cell.level())
-        ARCANE_FATAL("Level pb"); // TODO plus clair.
+        ARCANE_FATAL("Level pb -- Level recorded before : {0} -- Cell Level : {1} -- CellUID : {2}", level, cell.level(), cell.uniqueId());
       cells_local_id.add(icell.itemLocalId());
 
       if (icell->isOwn())
