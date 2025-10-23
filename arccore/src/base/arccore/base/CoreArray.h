@@ -21,7 +21,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arcane
+namespace Arcane::Impl
 {
 
 /*---------------------------------------------------------------------------*/
@@ -32,11 +32,13 @@ namespace Arcane
  *
  * Cette classe est privée et ne doit être utilisé que par les classes de Arccore.
  */
-template<class DataType>
+template <class DataType>
 class CoreArray
 {
  private:
+
   typedef std::vector<DataType> ContainerType;
+
  public:
 
   //! Type des éléments du tableau
@@ -66,18 +68,20 @@ class CoreArray
   CoreArray(ConstArrayView<DataType> v)
   : m_p(v.range().begin(),v.range().end()) {}
   CoreArray(Span<const DataType> v)
-  : m_p(v.begin(),v.end()) {}
+  : m_p(v.begin(), v.end())
+  {}
+
  public:
 
-  //! Conversion vers un ConstArrayView
+  //! Conversion vers un Span<const DataType>
   operator Span<const DataType>() const
   {
-    return CoreArray::_constView(m_p);
+    return CoreArray::_constSpan(m_p);
   }
-  //! Conversion vers un ArrayView
+  //! Conversion vers un Span<DataType>
   operator Span<DataType>()
   {
-    return CoreArray::_view(m_p);
+    return CoreArray::_span(m_p);
   }
 
  public:
@@ -85,12 +89,14 @@ class CoreArray
   //! i-ème élément du tableau.
   inline DataType& operator[](Int64 i)
   {
+    ARCCORE_CHECK_AT(i, m_p.size());
     return m_p[i];
   }
 
   //! i-ème élément du tableau.
   inline const DataType& operator[](Int64 i) const
   {
+    ARCCORE_CHECK_AT(i, m_p.size());
     return m_p[i];
   }
 
@@ -107,15 +113,27 @@ class CoreArray
   inline const_iterator end() const { return m_p.end(); }
 
   //! Vue constante
-  Span<const DataType> constView() const
+  ConstArrayView<DataType> constView() const
   {
     return CoreArray::_constView(m_p);
   }
 
   //! Vue modifiable
-  Span<DataType> view()
+  ArrayView<DataType> view()
   {
     return CoreArray::_view(m_p);
+  }
+
+  //! Vue constante
+  Span<const DataType> constSpan() const
+  {
+    return CoreArray::_constSpan(m_p);
+  }
+
+  //! Vue modifiable
+  Span<DataType> span()
+  {
+    return CoreArray::_span(m_p);
   }
 
   //! Retourne \a true si le tableau est vide
@@ -182,12 +200,22 @@ class CoreArray
 
  private:
 
-  static Span<const DataType> _constView(const std::vector<DataType>& c)
+  static ConstArrayView<DataType> _constView(const std::vector<DataType>& c)
+  {
+    Int32 s = arccoreCheckArraySize(c.size());
+    return ConstArrayView<DataType>(s, c.data());
+  }
+  static ArrayView<DataType> _view(std::vector<DataType>& c)
+  {
+    Int32 s = arccoreCheckArraySize(c.size());
+    return ArrayView<DataType>(s, c.data());
+  }
+  static Span<const DataType> _constSpan(const std::vector<DataType>& c)
   {
     Int64 s = static_cast<Int64>(c.size());
     return Span<const DataType>(c.data(), s);
   }
-  static Span<DataType> _view(std::vector<DataType>& c)
+  static Span<DataType> _span(std::vector<DataType>& c)
   {
     Int64 s = static_cast<Int64>(c.size());
     return Span<DataType>(c.data(),s);

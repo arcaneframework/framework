@@ -94,8 +94,8 @@ class ARCCORE_BASE_EXPORT StringImpl
   };
   std::atomic<Int32> m_nb_ref;
   int m_flags;
-  CoreArray<UChar> m_utf16_array;
-  CoreArray<Byte> m_utf8_array;
+  Impl::CoreArray<UChar> m_utf16_array;
+  Impl::CoreArray<Byte> m_utf8_array;
 
   void _setUtf16(Span<const UChar> src);
   void _createUtf16();

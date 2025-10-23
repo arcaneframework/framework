@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -16,6 +16,8 @@
 /*---------------------------------------------------------------------------*/
 
 using namespace Arccore;
+using namespace Arcane;
+using namespace Arcane::Impl;
 
 template <typename DataType>
 class TestInstance
@@ -31,7 +33,7 @@ class TestInstance
     const Int64 rng_seed{ 512515 };
     CoreArray<DataType> values;
     values.resize(nb_value);
-    ValueFiller::fillRandom(rng_seed, values.view());
+    ValueFiller::fillRandom(rng_seed, values.span());
     if (nb_value < 5)
       std::cout << "Values=" << values.view() << "\n";
   }

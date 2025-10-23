@@ -61,7 +61,6 @@ template <typename T> class ConstArray3View;
 template <typename T> class Array3View;
 template <typename T> class ConstArray4View;
 template <typename T> class Array4View;
-template <class DataType> class CoreArray;
 template <typename T, typename SizeType, SizeType Extent = DynExtent> class SpanImpl;
 template <typename T, Int64 Extent = DynExtent> class Span;
 template <typename T, Int32 Extent = DynExtent> class SmallSpan;
@@ -136,7 +135,11 @@ namespace impl
 // Ces classes sont internes à Arccore/Arcane
 template <typename T>
 class ArrayRange;
+namespace Impl
+{
 class BasicTranscoder;
+template <class DataType> class CoreArray;
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -310,7 +313,6 @@ using Arcane::ConstArray3View;
 using Arcane::ConstArray4View;
 using Arcane::ConstArrayView;
 using Arcane::ConstIterT;
-using Arcane::CoreArray;
 using Arcane::eBasicDataType;
 using Arcane::IterT;
 using Arcane::SmallSpan;
@@ -402,7 +404,6 @@ using Arcane::IntegerConstSpan;
 using Arcane::DynExtent;
 
 // Ces classes sont internes à Arccore/Arcane
-using Arcane::BasicTranscoder;
 using Arcane::ArrayRange;
 }
 

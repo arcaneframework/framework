@@ -81,7 +81,7 @@ int _notEnoughChar(Int32& wc)
  * \param wc valeur ucs4 du caractère à convertir
  * \param utf8[out] Tableau contenant les caractères utf8 convertis
  */
-void ucs4_to_utf8(Int32 wc, CoreArray<Byte>& utf8)
+void ucs4_to_utf8(Int32 wc, Impl::CoreArray<Byte>& utf8)
 {
   Int32 r[6];
   int count;
@@ -265,7 +265,7 @@ Int64 utf16_to_ucs4(Span<const UChar> uchar, Int64 index, Int32& wc)
  * \param uchar[out] Tableau contenant les caractères utf16 convertis
  */
 void
-ucs4_to_utf16(Int32 wc,CoreArray<UChar>& uchar)
+ucs4_to_utf16(Int32 wc,Impl::CoreArray<UChar>& uchar)
 {
   if (wc < 0xd800){
     uchar.add((UChar)wc);
@@ -289,7 +289,10 @@ ucs4_to_utf16(Int32 wc,CoreArray<UChar>& uchar)
   uchar.add(0x1A);
 }
 
-namespace Arcane
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace Arcane::Impl
 {
 
 /*---------------------------------------------------------------------------*/
@@ -301,7 +304,7 @@ stringLen(const UChar* ustr)
   if (!ustr || ustr[0] == 0)
     return 0;
   const UChar* u = ustr + 1;
-  while ((*u)!=0)
+  while ((*u) != 0)
     ++u;
   return arccoreCheckLargeArraySize((std::size_t)(u - ustr));
 }
@@ -311,12 +314,12 @@ stringLen(const UChar* ustr)
 
 //! Traduit depuis UTF16 vers UTF8
 void BasicTranscoder::
-transcodeFromUtf16ToUtf8(Span<const UChar> utf16,CoreArray<Byte>& utf8)
+transcodeFromUtf16ToUtf8(Span<const UChar> utf16, CoreArray<Byte>& utf8)
 {
-  for( Int64 i=0, n=utf16.size(); i<n; ){
+  for (Int64 i = 0, n = utf16.size(); i < n;) {
     Int32 wc;
-    i += utf16_to_ucs4(utf16,i,wc);
-    ucs4_to_utf8(wc,utf8);
+    i += utf16_to_ucs4(utf16, i, wc);
+    ucs4_to_utf8(wc, utf8);
   }
 }
 
@@ -324,12 +327,12 @@ transcodeFromUtf16ToUtf8(Span<const UChar> utf16,CoreArray<Byte>& utf8)
 /*---------------------------------------------------------------------------*/
 
 void BasicTranscoder::
-transcodeFromUtf8ToUtf16(Span<const Byte> utf8,CoreArray<UChar>& utf16)
+transcodeFromUtf8ToUtf16(Span<const Byte> utf8, CoreArray<UChar>& utf16)
 {
-  for( Int64 i=0, n=utf8.size(); i<n; ){
+  for (Int64 i = 0, n = utf8.size(); i < n;) {
     Int32 wc;
-    i += utf8_to_ucs4(utf8,i,wc);
-    ucs4_to_utf16(wc,utf16);
+    i += utf8_to_ucs4(utf8, i, wc);
+    ucs4_to_utf16(wc, utf16);
   }
 }
 
@@ -339,8 +342,8 @@ transcodeFromUtf8ToUtf16(Span<const Byte> utf8,CoreArray<UChar>& utf16)
 void BasicTranscoder::
 replaceWS(CoreArray<Byte>& out_utf8)
 {
-  CoreArray<Byte> copy_utf8(out_utf8);
-  Span<const Byte> utf8(copy_utf8.view());
+  Impl::CoreArray<Byte> copy_utf8(out_utf8);
+  Span<const Byte> utf8(copy_utf8);
   out_utf8.clear();
   for (Int64 i = 0, n = utf8.size(); i < n;) {
     Int32 wc;
@@ -358,8 +361,8 @@ replaceWS(CoreArray<Byte>& out_utf8)
 void BasicTranscoder::
 collapseWS(CoreArray<Byte>& out_utf8)
 {
-  CoreArray<Byte> copy_utf8(out_utf8);
-  Span<const Byte> utf8(copy_utf8.view());
+  Impl::CoreArray<Byte> copy_utf8(out_utf8);
+  Span<const Byte> utf8(copy_utf8);
   out_utf8.clear();
   Int64 i = 0;
   Int64 n = utf8.size();
@@ -435,28 +438,28 @@ lowerCase(CoreArray<Byte>& out_utf8)
 /*---------------------------------------------------------------------------*/
 
 void BasicTranscoder::
-substring(CoreArray<Byte>& out_utf8,Span<const Byte> utf8,Int64 pos,Int64 len)
+substring(CoreArray<Byte>& out_utf8, Span<const Byte> utf8, Int64 pos, Int64 len)
 {
   // Copie les \a len caractères unicodes de \a utf8 à partir de la position \a pos
   Int64 current_pos = 0;
-  for( Int64 i=0, n=utf8.size(); i<n; ){
+  for (Int64 i = 0, n = utf8.size(); i < n;) {
     Int32 wc;
-    i += utf8_to_ucs4(utf8,i,wc);
-    if (current_pos>=pos && current_pos<(pos+len)){
+    i += utf8_to_ucs4(utf8, i, wc);
+    if (current_pos >= pos && current_pos < (pos + len)) {
       // Pour être sur de ne pas ajouter le 0 terminal
-      if (wc!=0)
-        ucs4_to_utf8(wc,out_utf8);
+      if (wc != 0)
+        ucs4_to_utf8(wc, out_utf8);
     }
     ++current_pos;
   }
   // Ajoute le 0 terminal
-  ucs4_to_utf8(0,out_utf8);
+  ucs4_to_utf8(0, out_utf8);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-}
+} // namespace Arcane::Impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

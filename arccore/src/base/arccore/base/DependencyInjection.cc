@@ -15,14 +15,14 @@
 
 #include "arccore/base/ExternalRef.h"
 #include "arccore/base/FatalErrorException.h"
-
-#include <vector>
+#include "arccore/base/CoreArray.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 namespace Arcane::DependencyInjection
 {
+using Arcane::Impl::CoreArray;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -60,21 +60,21 @@ class Injector::Impl
   void addInstance(IInjectedInstance* instance)
   {
     size_t index = m_instance_list.size();
-    m_instance_list.push_back(InstanceInfo{ instance, index });
+    m_instance_list.add(InstanceInfo{ instance, index });
   }
   IInjectedInstance* instance(size_t index) const { return m_instance_list[index].m_instance; }
   size_t nbInstance() const { return m_instance_list.size(); }
 
  private:
 
-  std::vector<InstanceInfo> m_instance_list;
+  CoreArray<InstanceInfo> m_instance_list;
 
  public:
 
   // Il faut conserver une instance de FactoryInfo pour éviter sa
   // destruction prématurée car les instances dans m_factories en ont besoin.
-  std::vector<Ref<impl::IInstanceFactory>> m_factories;
-  std::vector<impl::FactoryInfo> m_factories_info;
+  CoreArray<Ref<impl::IInstanceFactory>> m_factories;
+  CoreArray<impl::FactoryInfo> m_factories_info;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -176,12 +176,12 @@ class FactoryInfoImpl
  public:
 
   bool hasName(const String& str) const { return str == m_name; }
-  void fillWithImplementationNames(std::vector<String>& names) const { names.push_back(m_name); }
+  void fillWithImplementationNames(CoreArray<String>& names) const { names.add(m_name); }
 
  public:
 
   const ProviderProperty m_property;
-  std::vector<Ref<IInstanceFactory>> m_factories;
+  CoreArray<Ref<IInstanceFactory>> m_factories;
   String m_name;
 };
 
@@ -200,7 +200,7 @@ FactoryInfo(const ProviderProperty& property)
 void FactoryInfo::
 addFactory(Ref<IInstanceFactory> f)
 {
-  m_p->m_factories.push_back(f);
+  m_p->m_factories.add(f);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -250,10 +250,9 @@ fillWithGlobalFactories()
     auto func = g->infoCreatorWithPropertyFunction();
     if (func) {
       impl::FactoryInfo fi = (*func)(g->property());
-      m_p->m_factories_info.push_back(fi);
+      m_p->m_factories_info.add(fi);
       for (auto& x : fi.m_p->m_factories)
-        m_p->m_factories.push_back(x);
-      //m_p->m_factories.addRange(fi.m_p->m_factories);
+        m_p->m_factories.add(x);
     }
 
     g = g->nextRegisterer();
@@ -354,7 +353,7 @@ _printValidImplementationAndThrow(const TraceInfo& ti,
   // Pas d'implémentation correspondante trouvée.
   // Dans ce cas on récupère la liste des implémentations valides et on les affiche dans
   // le message d'erreur.
-  std::vector<String> valid_names;
+  CoreArray<String> valid_names;
   for (size_t i = 0, n = _nbFactory(); i < n; ++i) {
     impl::IInstanceFactory* f = _factory(i);
     if (filter_func(f)) {
