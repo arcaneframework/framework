@@ -22,10 +22,9 @@
 #include "arcane/utils/Profiling.h"
 #include "arcane/utils/MemoryAllocator.h"
 #include "arcane/utils/FixedArray.h"
+#include "arcane/utils/Array.h"
 #include "arccore/concurrency/internal/TaskFactoryInternal.h"
 #include "arccore/base/internal/DependencyInjection.h"
-
-#include "arcane/core/FactoryService.h"
 
 #include <new>
 #include <stack>
@@ -458,9 +457,6 @@ class TBBTaskImplementation
   };
 
  public:
-  TBBTaskImplementation(const ServiceBuildInfo& sbi)
-  {
-  }
   TBBTaskImplementation() = default;
   ~TBBTaskImplementation() override;
  public:
@@ -1429,10 +1425,6 @@ _createChildTask(ITaskFunctor* functor)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-// TODO: a supprimer maintenant qu'on utilise 'DependencyInjection'
-ARCANE_REGISTER_APPLICATION_FACTORY(TBBTaskImplementation,ITaskImplementation,
-                                    TBBTaskImplementation);
 
 ARCANE_DI_REGISTER_PROVIDER(TBBTaskImplementation,
                             DependencyInjection::ProviderProperty("TBBTaskImplementation"),
