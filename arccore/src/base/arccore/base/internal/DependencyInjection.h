@@ -9,23 +9,21 @@
 /*                                                                           */
 /* Types et fonctions pour gérer le pattern 'DependencyInjection'.           */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_UTILS_INTERNAL_DEPENDENCYINJECTION_H
-#define ARCANE_UTILS_INTERNAL_DEPENDENCYINJECTION_H
+#ifndef ARCCORE_BASE_INTERNAL_DEPENDENCYINJECTION_H
+#define ARCCORE_BASE_INTERNAL_DEPENDENCYINJECTION_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
 /*
- * NOTE: API en cours de définition. Ne pas utiliser.
+ * NOTE: API en cours de définition.
+ * Ne pas utiliser en dehors de Arccore/Arcane
  */
-
-#include "arcane/utils/Ref.h"
-#include "arcane/utils/ExternalRef.h"
-#include "arcane/utils/GenericRegisterer.h"
-
+#include "arccore/base/Ref.h"
+#include "arccore/base/ExternalRef.h"
+#include "arccore/base/GenericRegisterer.h"
 #include "arccore/base/ReferenceCounterImpl.h"
 
 //TODO Mettre le lancement des exceptions dans le '.cc'
-#include "arcane/utils/NotImplementedException.h"
+#include "arccore/base/NotImplementedException.h"
 
 #include <tuple>
 #include <typeinfo>
@@ -66,7 +64,7 @@ namespace Arcane::DependencyInjection
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class ARCANE_UTILS_EXPORT IInjectedInstance
+class ARCCORE_BASE_EXPORT IInjectedInstance
 {
  public:
   virtual ~IInjectedInstance() = default;
@@ -82,7 +80,7 @@ class ARCANE_UTILS_EXPORT IInjectedInstance
  * globaux et ne doit pas faire d'allocation/désallocation ni utiliser de
  * types qui en font.
  */
-class ARCANE_UTILS_EXPORT ProviderProperty
+class ARCCORE_BASE_EXPORT ProviderProperty
 {
  public:
 
@@ -146,7 +144,7 @@ class TypeInfo
  * l'interface concernée, le type concret qu'on souhaité créer et les
  * paramètres du constructeur.
  */
-class ARCANE_UTILS_EXPORT ConcreteFactoryTypeInfo
+class ARCCORE_BASE_EXPORT ConcreteFactoryTypeInfo
 {
  private:
 
@@ -282,7 +280,7 @@ class InjectedValueInstance
  * Cette classe est gérée via un compteur de référence à la manière
  * de la classe std::shared_ptr.
  */
-class ARCANE_UTILS_EXPORT InjectedInstanceRef
+class ARCCORE_BASE_EXPORT InjectedInstanceRef
 {
   typedef Ref<IInjectedInstance> RefType;
 
@@ -327,7 +325,7 @@ class ARCANE_UTILS_EXPORT InjectedInstanceRef
  * \internal
  * \brief Fabrique pour une instance encapsulée par une référence (i.e Ref<T>).
  */
-class ARCANE_UTILS_EXPORT IInstanceFactory
+class ARCCORE_BASE_EXPORT IInstanceFactory
 {
   ARCCORE_DECLARE_REFERENCE_COUNTED_INCLASS_METHODS();
 
@@ -349,7 +347,7 @@ class ARCANE_UTILS_EXPORT IInstanceFactory
  * \internal
  * \brief Informations pour une fabrique.
  */
-class ARCANE_UTILS_EXPORT FactoryInfo
+class ARCCORE_BASE_EXPORT FactoryInfo
 {
   friend class Arcane::DependencyInjection::Injector;
 
@@ -359,10 +357,10 @@ class ARCANE_UTILS_EXPORT FactoryInfo
 
  public:
 
-  static FactoryInfo create(const ProviderProperty& property, const char* file_name, int line_number)
+  static FactoryInfo create(const ProviderProperty& property,
+                            [[maybe_unused]] const char* file_name,
+                            [[maybe_unused]] int line_number)
   {
-    ARCANE_UNUSED(file_name);
-    ARCANE_UNUSED(line_number);
     return FactoryInfo(property);
   }
   void addFactory(Ref<IInstanceFactory> f);
@@ -382,7 +380,7 @@ class ARCANE_UTILS_EXPORT FactoryInfo
  *
  * Cette classe s'utiliser via un ReferenceCounter pour gérer sa destruction.
  */
-class ARCANE_UTILS_EXPORT AbstractInstanceFactory
+class ARCCORE_BASE_EXPORT AbstractInstanceFactory
 : public ReferenceCounterImpl
 , public IInstanceFactory
 {
@@ -460,7 +458,7 @@ class InstanceFactory
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class ARCANE_UTILS_EXPORT IConcreteFactoryBase
+class ARCCORE_BASE_EXPORT IConcreteFactoryBase
 {
  public:
 
@@ -496,7 +494,7 @@ class IConcreteFactory
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class ARCANE_UTILS_EXPORT GlobalRegisterer
+class ARCCORE_BASE_EXPORT GlobalRegisterer
 : public GenericRegisterer<GlobalRegisterer>
 {
   using BaseClass = GenericRegisterer<GlobalRegisterer>;
@@ -553,7 +551,7 @@ namespace Arcane::DependencyInjection
 /*!
  * \brief Injecteur
  */
-class ARCANE_UTILS_EXPORT Injector
+class ARCCORE_BASE_EXPORT Injector
 {
   class Impl;
   using FactoryFilterFunc = bool (*)(impl::IInstanceFactory*);
@@ -730,8 +728,8 @@ class ARCANE_UTILS_EXPORT Injector
   // Itère sur la lambda et s'arrête dès que cette dernière retourne \a true
   void _iterateInstances(const std::type_info& t_info, const String& instance_name,
                          IInstanceVisitorFunctor* lambda);
-  Integer _nbValue() const;
-  IInjectedInstance* _value(Integer i) const;
+  size_t _nbValue() const;
+  IInjectedInstance* _value(size_t i) const;
 
   /*!
    * \brief Itère sur les fabriques et applique le fonctor \a functor.
@@ -742,8 +740,8 @@ class ARCANE_UTILS_EXPORT Injector
    * FactoryInfo::hasName(factory_name) est vrai sont utilisées.
    */
   void _iterateFactories(const String& factory_name, IFactoryVisitorFunctor* functor) const;
-  Integer _nbFactory() const;
-  impl::IInstanceFactory* _factory(Integer i) const;
+  size_t _nbFactory() const;
+  impl::IInstanceFactory* _factory(size_t i) const;
 
   // Spécialisation pour les références
   template <typename InterfaceType> Ref<InterfaceType>
@@ -760,7 +758,7 @@ class ARCANE_UTILS_EXPORT Injector
     if (t)
       return t->instance();
     // TODO: faire un fatal ou créer l'instance
-    ARCANE_THROW(NotImplementedException, "Create Ref<InterfaceType> from factory");
+    ARCCORE_THROW(NotImplementedException, "Create Ref<InterfaceType> from factory");
   }
 
   template <typename Type> Type
@@ -795,7 +793,7 @@ namespace Arcane::DependencyInjection::impl
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class ARCANE_UTILS_EXPORT ConstructorRegistererBase
+class ARCCORE_BASE_EXPORT ConstructorRegistererBase
 {
  protected:
 

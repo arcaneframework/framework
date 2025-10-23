@@ -30,7 +30,6 @@ set(ARCANE_SOURCES
   ConcurrencyUtils.h
   CStringUtils.cc
   CStringUtils.h
-  DependencyInjection.cc
   DualUniqueArray.h
   DualUniqueArray.cc
   Enumerator.cc
@@ -51,7 +50,6 @@ set(ARCANE_SOURCES
   ForLoopTraceInfo.h
   ForLoopRanges.h
   GenericRegisterer.h
-  GenericRegisterer.cc
   GoBackwardException.cc
   GoBackwardException.h
   HashSuite.h
@@ -339,7 +337,6 @@ set(ARCANE_SOURCES
   DirectedGraphT.h
   DirectedAcyclicGraphT.h
 
-  internal/DependencyInjection.h
   internal/ApplicationInfoProperties.h
   internal/MemoryResourceMng.h
   internal/MemoryUtilsInternal.h
