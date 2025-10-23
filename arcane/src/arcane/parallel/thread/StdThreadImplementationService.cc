@@ -19,8 +19,6 @@
 #include "arcane/utils/UtilsTypes.h"
 #include "arcane/utils/IThreadImplementationService.h"
 
-#include "arcane/core/FactoryService.h"
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -35,7 +33,6 @@ class StdThreadImplementationService
 {
  public:
 
-  explicit StdThreadImplementationService(const ServiceBuildInfo&) {}
   StdThreadImplementationService() = default;
 
  public:
@@ -52,10 +49,6 @@ class StdThreadImplementationService
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-ARCANE_REGISTER_APPLICATION_FACTORY(StdThreadImplementationService,
-                                    IThreadImplementationService,
-                                    StdThreadImplementationService);
 
 ARCANE_DI_REGISTER_PROVIDER(StdThreadImplementationService,
                             DependencyInjection::ProviderProperty("StdThreadImplementationService"),

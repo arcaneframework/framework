@@ -19,9 +19,6 @@
 #include "arcane/utils/PlatformUtils.h"
 #include "arccore/base/internal/DependencyInjection.h"
 
-#include "arcane/FactoryService.h"
-#include "arcane/Concurrency.h"
-
 #include "arcane/parallel/thread/ArcaneThreadMisc.h"
 
 #include <tbb/tbb.h>
@@ -297,7 +294,6 @@ class TBBThreadImplementationService
 {
  public:
 
-  explicit TBBThreadImplementationService(const ServiceBuildInfo&) {}
   TBBThreadImplementationService() = default;
 
  public:
@@ -312,11 +308,6 @@ class TBBThreadImplementationService
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-// TODO: a supprimer maintenant qu'on utilise 'DependencyInjection'
-ARCANE_REGISTER_SERVICE(TBBThreadImplementationService,
-                        ServiceProperty("TBBThreadImplementationService",ST_Application),
-                        ARCANE_SERVICE_INTERFACE(IThreadImplementationService));
 
 ARCANE_DI_REGISTER_PROVIDER(TBBThreadImplementationService,
                             DependencyInjection::ProviderProperty("TBBThreadImplementationService"),

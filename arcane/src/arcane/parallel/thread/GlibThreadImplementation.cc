@@ -18,8 +18,6 @@
 #include "arcane/utils/UtilsTypes.h"
 #include "arcane/utils/IThreadImplementationService.h"
 
-#include "arcane/core/FactoryService.h"
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -53,7 +51,6 @@ class GlibThreadImplementationService
 {
  public:
 
-  explicit GlibThreadImplementationService(const ServiceBuildInfo&) {}
   GlibThreadImplementationService() = default;
 
  public:
@@ -70,11 +67,6 @@ class GlibThreadImplementationService
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-// TODO: a supprimer maintenant qu'on utilise 'DependencyInjection'
-ARCANE_REGISTER_APPLICATION_FACTORY(GlibThreadImplementationService,
-                                    IThreadImplementationService,
-                                    GlibThreadImplementationService);
 
 ARCANE_DI_REGISTER_PROVIDER(GlibThreadImplementationService,
                             DependencyInjection::ProviderProperty("GlibThreadImplementationService"),
