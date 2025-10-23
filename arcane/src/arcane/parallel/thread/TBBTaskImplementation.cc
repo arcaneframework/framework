@@ -23,7 +23,7 @@
 #include "arcane/utils/MemoryAllocator.h"
 #include "arcane/utils/FixedArray.h"
 #include "arccore/concurrency/internal/TaskFactoryInternal.h"
-#include "arcane/utils/internal/DependencyInjection.h"
+#include "arccore/base/internal/DependencyInjection.h"
 
 #include "arcane/core/FactoryService.h"
 

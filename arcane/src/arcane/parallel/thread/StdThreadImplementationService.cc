@@ -13,10 +13,11 @@
 
 #include "arccore/concurrency/ConcurrencyGlobal.h"
 
+#include "arccore/base/internal/DependencyInjection.h"
+
 #include "arcane/utils/FatalErrorException.h"
 #include "arcane/utils/UtilsTypes.h"
 #include "arcane/utils/IThreadImplementationService.h"
-#include "arcane/utils/internal/DependencyInjection.h"
 
 #include "arcane/core/FactoryService.h"
 

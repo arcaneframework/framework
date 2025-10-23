@@ -29,6 +29,7 @@ set(SOURCES
   BasicTranscoder.cc
   BaseTypes.h
   CoreArray.h
+  DependencyInjection.cc
   Exception.h
   Exception.cc
   ExternalRef.h
@@ -43,6 +44,8 @@ set(SOURCES
   ForLoopRanges.h
   ForLoopTraceInfo.h
   ForLoopTraceInfo.cc
+  GenericRegisterer.h
+  GenericRegisterer.cc
   Iterator.h
   IndexOutOfRangeException.cc
   IndexOutOfRangeException.h
@@ -98,4 +101,5 @@ set(SOURCES
   Functor.cc
 
   internal/StringImpl.h
+  internal/DependencyInjection.h
 )

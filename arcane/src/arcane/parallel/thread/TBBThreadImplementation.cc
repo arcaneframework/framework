@@ -17,7 +17,7 @@
 #include "arcane/utils/IFunctor.h"
 #include "arcane/utils/Mutex.h"
 #include "arcane/utils/PlatformUtils.h"
-#include "arcane/utils/internal/DependencyInjection.h"
+#include "arccore/base/internal/DependencyInjection.h"
 
 #include "arcane/FactoryService.h"
 #include "arcane/Concurrency.h"

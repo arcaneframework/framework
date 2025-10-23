@@ -7,7 +7,7 @@
 
 #include <gtest/gtest.h>
 
-#include "arcane/utils/internal/DependencyInjection.h"
+#include "arccore/base/internal/DependencyInjection.h"
 #include "arcane/utils/FatalErrorException.h"
 
 #include "arcane/utils/ITraceMng.h"
