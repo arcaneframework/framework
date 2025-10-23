@@ -20,7 +20,8 @@
 #include <windows.h>
 #endif
 
-using namespace Arccore;
+using namespace Arcane;
+using namespace Arcane::Impl;
 
 namespace
 {

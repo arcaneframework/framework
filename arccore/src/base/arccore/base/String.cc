@@ -1285,7 +1285,7 @@ asUtf16BE(const String& str)
 /*---------------------------------------------------------------------------*/
 
 std::wstring StringUtils::
-convertToStdWString(const String& str)
+convertToStdWString([[maybe_unused]] const String& str)
 {
 #ifdef ARCCORE_OS_WIN32
   ConstArrayView<UChar> utf16 = str.utf16();
@@ -1302,7 +1302,7 @@ convertToStdWString(const String& str)
 /*---------------------------------------------------------------------------*/
 
 String StringUtils::
-convertToArcaneString(const std::wstring_view& wstr)
+convertToArcaneString([[maybe_unused]] const std::wstring_view& wstr)
 {
 #ifdef ARCCORE_OS_WIN32
   const UChar* ux = reinterpret_cast<const UChar*>(wstr.data());

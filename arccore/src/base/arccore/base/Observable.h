@@ -65,7 +65,7 @@ class ARCCORE_BASE_EXPORT Observable
  private:
 
   bool m_is_destroyed;
-  CoreArray<IObserver*> m_observers;
+  Impl::CoreArray<IObserver*> m_observers;
 };
 
 /*---------------------------------------------------------------------------*/
