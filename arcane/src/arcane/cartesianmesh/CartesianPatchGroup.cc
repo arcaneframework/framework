@@ -12,22 +12,32 @@
 
 #include "arcane/cartesianmesh/CartesianPatchGroup.h"
 
-#include "arcane/cartesianmesh/internal/CartesianMeshPatch.h"
-#include "arcane/core/IMesh.h"
-#include "arcane/core/IParallelMng.h"
-#include "arccore/trace/ITraceMng.h"
-
 #include "arcane/cartesianmesh/ICartesianMeshNumberingMng.h"
-#include "arcane/core/MeshKind.h"
+
+#include "arcane/utils/ITraceMng.h"
 #include "arcane/utils/FixedArray.h"
 #include "arcane/utils/Vector3.h"
-#include "internal/ICartesianMeshInternal.h"
+
+#include "arcane/core/IMesh.h"
+#include "arcane/core/IParallelMng.h"
+#include "arcane/core/MeshKind.h"
+
+#include "arcane/cartesianmesh/internal/CartesianMeshPatch.h"
+#include "arcane/cartesianmesh/internal/ICartesianMeshInternal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 namespace Arcane
 {
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+CartesianPatchGroup::CartesianPatchGroup(ICartesianMesh* cmesh)
+: m_cmesh(cmesh)
+, m_index_new_patches(0)
+{}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -39,20 +49,24 @@ groundPatch()
   return patch(0);
 }
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 void CartesianPatchGroup::
 addPatch(CellGroup cell_group)
 {
   _createGroundPatch();
-  if (cell_group.null()) ARCANE_FATAL("Null cell group");
-  auto* cdi = new CartesianMeshPatch(m_cmesh, nextIndexForNewPatch()+1); // +1 pour reproduire l'ancien comportement.
+  if (cell_group.null())
+    ARCANE_FATAL("Null cell group");
+  Integer index = nextIndexForNewPatch();
+  auto* cdi = new CartesianMeshPatch(m_cmesh, index);
   m_amr_patch_cell_groups.add(cell_group);
   _addPatchInstance(makeRef(cdi));
   m_cmesh->traceMng()->info() << "m_amr_patch_cell_groups : " << m_amr_patch_cell_groups.size()
-        << " -- m_amr_patches : " << m_amr_patches.size()
-        << " -- m_amr_patches_pointer : " << m_amr_patches_pointer.size()
-        << " -- cell_group name : " << m_amr_patch_cell_groups[nextIndexForNewPatch()-1].name()
-        << " -- index : " << nextIndexForNewPatch()-1
-  ;
+                              << " -- m_amr_patches : " << m_amr_patches.size()
+                              << " -- m_amr_patches_pointer : " << m_amr_patches_pointer.size()
+                              << " -- index : " << index - 1
+                              << " -- cell_group name : " << m_amr_patch_cell_groups[index - 1].name(); // m_index_new_patches commence par 1, pas le tableau m_amr_patch_cell_groups
 
   if (m_cmesh->mesh()->meshKind().meshAMRKind() == eMeshAMRKind::PatchCartesianMeshOnly) {
     auto numbering = m_cmesh->_internalApi()->cartesianMeshNumberingMng();
@@ -74,7 +88,7 @@ addPatch(CellGroup cell_group)
         level = icell->level();
       }
       if (level != icell->level()) {
-        ARCANE_FATAL("Bad level");
+        ARCANE_FATAL("Level pb -- Level recorded before : {0} -- Cell Level : {1} -- CellUID : {2}", level, icell->level(), icell->uniqueId());
       }
       Int64 pos_x = numbering->cellUniqueIdToCoordX(*icell);
       if (pos_x < min[MD_DirX])
@@ -123,6 +137,9 @@ addPatch(CellGroup cell_group)
   m_cmesh->traceMng()->info() << "Level : " << cdi->position().level();
 }
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 // Attention : avant _createGroundPatch() = 0, après _createGroundPatch(); = 1
 Integer CartesianPatchGroup::
 nbPatch() const
@@ -130,17 +147,26 @@ nbPatch() const
   return m_amr_patches.size();
 }
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 Ref<CartesianMeshPatch> CartesianPatchGroup::
 patch(const Integer index) const
 {
   return m_amr_patches[index];
 }
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 CartesianMeshPatchListView CartesianPatchGroup::
 patchListView() const
 {
-  return CartesianMeshPatchListView{m_amr_patches_pointer};
+  return CartesianMeshPatchListView{ m_amr_patches_pointer };
 }
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 CellGroup CartesianPatchGroup::
 cells(const Integer index)
@@ -148,8 +174,11 @@ cells(const Integer index)
   if (index == 0) {
     ARCANE_FATAL("You cannot get cells of ground patch with this method");
   }
-  return m_amr_patch_cell_groups[index-1];
+  return m_amr_patch_cell_groups[index - 1];
 }
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 // Attention : efface aussi le ground patch. Nécessaire de le récupérer après coup.
 void CartesianPatchGroup::
@@ -160,6 +189,9 @@ clear()
   m_amr_patches.clear();
   _createGroundPatch();
 }
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 void CartesianPatchGroup::
 removePatch(const Integer index)
@@ -177,6 +209,9 @@ removePatch(const Integer index)
   m_patches_to_delete.add(index);
 }
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 void CartesianPatchGroup::
 removeCellsInAllPatches(ConstArrayView<Int32> cells_local_id)
 {
@@ -185,6 +220,9 @@ removeCellsInAllPatches(ConstArrayView<Int32> cells_local_id)
   }
 }
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 void CartesianPatchGroup::
 removeCellsInAllPatches(ConstArrayView<Int32> cells_local_id, const AMRPatchPosition& patch_position)
 {
@@ -192,12 +230,23 @@ removeCellsInAllPatches(ConstArrayView<Int32> cells_local_id, const AMRPatchPosi
   // Attention si suppression de la suppression en deux étapes : _splitPatch() supprime aussi des patchs.
   for (Integer i = 0; i < m_amr_patches_pointer.size(); ++i) {
     ICartesianMeshPatch* patch = m_amr_patches_pointer[i];
+    m_cmesh->mesh()->traceMng()->info() << "I : " << i
+                                        << " -- Compare Patch (min : " << patch->position().minPoint()
+                                        << ", max : " << patch->position().maxPoint()
+                                        << ", level : " << patch->position().level()
+                                        << ") and Zone (min : " << patch_position.minPoint()
+                                        << ", max : " << patch_position.maxPoint()
+                                        << ", level : " << patch_position.level() << ")";
+
     if (_isPatchInContact(patch->position(), patch_position)) {
-      m_amr_patch_cell_groups[i - 1].removeItems(cells_local_id); // TODO : toujours utile ? Le patch sera supprimé.
+      //m_amr_patch_cell_groups[i - 1].removeItems(cells_local_id); // TODO : toujours utile ? Le patch sera supprimé.
       _splitPatch(i, patch_position);
     }
   }
 }
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 void CartesianPatchGroup::
 applyPatchEdit(bool remove_empty_patches)
@@ -213,13 +262,16 @@ applyPatchEdit(bool remove_empty_patches)
     m_cmesh->mesh()->parallelMng()->reduce(MessagePassing::ReduceMax, size_of_patches);
     for (Integer i = 0; i < size_of_patches.size(); ++i) {
       if (size_of_patches[i] == 0) {
-        m_patches_to_delete.add(i+1);
+        m_patches_to_delete.add(i + 1);
       }
     }
     _removeMultiplePatches(m_patches_to_delete);
     m_patches_to_delete.clear();
   }
 }
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 void CartesianPatchGroup::
 updateLevelsBeforeAddGroundPatch()
@@ -231,11 +283,20 @@ updateLevelsBeforeAddGroundPatch()
       // Si le niveau est 0, c'est le patch spécial 0 donc on ne modifie que le max, le niveau reste à 0.
       if (level == 0) {
         Int64x3 max_point = patch->position().maxPoint();
-        patch->position().setMaxPoint({
-        numbering->offsetLevelToLevel(max_point.x, level, level - 1),
-        numbering->offsetLevelToLevel(max_point.y, level, level - 1),
-        numbering->offsetLevelToLevel(max_point.z, level, level - 1),
-        });
+        if (m_cmesh->mesh()->dimension() == 2) {
+          patch->position().setMaxPoint({
+          numbering->offsetLevelToLevel(max_point.x, level, level - 1),
+          numbering->offsetLevelToLevel(max_point.y, level, level - 1),
+          1,
+          });
+        }
+        else {
+          patch->position().setMaxPoint({
+          numbering->offsetLevelToLevel(max_point.x, level, level - 1),
+          numbering->offsetLevelToLevel(max_point.y, level, level - 1),
+          numbering->offsetLevelToLevel(max_point.z, level, level - 1),
+          });
+        }
       }
       // Sinon, on "surélève" le niveau des patchs vu qu'il va y avoir le patch "-1"
       else {
@@ -245,26 +306,40 @@ updateLevelsBeforeAddGroundPatch()
   }
 }
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 Integer CartesianPatchGroup::
 nextIndexForNewPatch()
 {
-  return m_amr_patch_cell_groups.size();
+  return m_index_new_patches;
 }
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 void CartesianPatchGroup::
 _addPatchInstance(Ref<CartesianMeshPatch> v)
 {
   m_amr_patches.add(v);
   m_amr_patches_pointer.add(v.get());
+  m_index_new_patches++;
 }
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 void CartesianPatchGroup::
 _removeOnePatch(Integer index)
 {
-  m_amr_patch_cell_groups.remove(index-1);
+  m_amr_patch_cell_groups.remove(index - 1);
   m_amr_patches_pointer.remove(index);
   m_amr_patches.remove(index);
 }
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 void CartesianPatchGroup::
 _removeMultiplePatches(ConstArrayView<Integer> indexes)
 {
@@ -275,10 +350,14 @@ _removeMultiplePatches(ConstArrayView<Integer> indexes)
   }
 }
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 void CartesianPatchGroup::
 _createGroundPatch()
 {
-  if (!m_amr_patches.empty()) return;
+  if (!m_amr_patches.empty())
+    return;
   auto patch = makeRef(new CartesianMeshPatch(m_cmesh, -1));
   _addPatchInstance(patch);
 
@@ -289,6 +368,9 @@ _createGroundPatch()
     patch->position().setLevel(0);
   }
 }
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -363,11 +445,9 @@ _splitPatch(Integer index_patch, const AMRPatchPosition& part_to_remove)
 
   UniqueArray<AMRPatchPosition> new_patch_x;
   UniqueArray<AMRPatchPosition> new_patch_y;
-  UniqueArray<AMRPatchPosition> new_patch_z;
 
   Int64 patch_to_exclude_x = -1;
   Int64 patch_to_exclude_y = -1;
-  Int64 patch_to_exclude_z = -1;
 
   {
     std::pair<Int64, Int64> cut_point_x = cut_point_p0(patch_position.minPoint().x, patch_position.maxPoint().x, part_to_remove.minPoint().x, part_to_remove.maxPoint().x);
@@ -411,7 +491,7 @@ _splitPatch(Integer index_patch, const AMRPatchPosition& part_to_remove)
     // p0   |-----|
     // p1 |---------|
     if (cut_point_y.first == -1 && cut_point_y.second == -1) {
-      for (auto patch_x : new_patch_x) {
+      for (const auto& patch_x : new_patch_x) {
         patch_to_exclude_y = patch_x.minPoint().y;
         new_patch_y.add(patch_x);
       }
@@ -419,8 +499,8 @@ _splitPatch(Integer index_patch, const AMRPatchPosition& part_to_remove)
     // p0   |-----|
     // p1       |-----|
     else if (cut_point_y.second == -1) {
-      for (auto patch_x : new_patch_x) {
-        patch_to_exclude_y = cut_point_y.first;
+      patch_to_exclude_y = cut_point_y.first;
+      for (const auto& patch_x : new_patch_x) {
         auto new_patch = cut_patch(patch_x, cut_point_y.first, MD_DirY);
         new_patch_y.add(new_patch.first);
         new_patch_y.add(new_patch.second);
@@ -429,7 +509,7 @@ _splitPatch(Integer index_patch, const AMRPatchPosition& part_to_remove)
     // p0   |-----|
     // p1 |-----|
     else if (cut_point_y.first == -1) {
-      for (auto patch_x : new_patch_x) {
+      for (const auto& patch_x : new_patch_x) {
         patch_to_exclude_y = patch_x.minPoint().y;
         auto new_patch = cut_patch(patch_x, cut_point_y.second, MD_DirY);
         new_patch_y.add(new_patch.first);
@@ -439,8 +519,8 @@ _splitPatch(Integer index_patch, const AMRPatchPosition& part_to_remove)
     // p0   |-----|
     // p1    |---|
     else {
-      for (auto patch_x : new_patch_x) {
-        patch_to_exclude_y = cut_point_y.first;
+      patch_to_exclude_y = cut_point_y.first;
+      for (const auto& patch_x : new_patch_x) {
         auto new_patch_0 = cut_patch(patch_x, cut_point_y.first, MD_DirY);
         new_patch_y.add(new_patch_0.first);
         auto new_patch_1 = cut_patch(new_patch_0.second, cut_point_y.second, MD_DirY);
@@ -449,13 +529,74 @@ _splitPatch(Integer index_patch, const AMRPatchPosition& part_to_remove)
       }
     }
   }
-  if (m_cmesh->mesh()->dimension() == 3) {
+
+  if (m_cmesh->mesh()->dimension() == 2) {
+    for (AMRPatchPosition& new_patch : new_patch_y) {
+      if (new_patch.minPoint().x == patch_to_exclude_x && new_patch.minPoint().y == patch_to_exclude_y) {
+        new_patch.setLevel(-2); // Devient null.
+      }
+    }
+
+    bool fusion = true;
+    while (fusion) {
+      fusion = false;
+      Int64 nb_cells_min = INT64_MAX;
+      Integer pos_min = -1;
+      for (Integer i = 0; i < new_patch_y.size(); ++i) {
+        if (new_patch_y[i].isNull())
+          continue;
+        Int64 nb_cells = new_patch_y[i].nbCells();
+        if (nb_cells < nb_cells_min) {
+          nb_cells_min = nb_cells;
+          pos_min = i;
+        }
+      }
+      if (pos_min == -1)
+        break; // Pas de patchs dans new_patch_y. TODO Mettre un fatal ?
+
+      AMRPatchPosition& patch_min = new_patch_y[pos_min];
+
+      for (Integer i = 0; i < new_patch_y.size(); ++i) {
+        if (i == pos_min)
+          continue;
+
+        AMRPatchPosition& patch = new_patch_y[i];
+
+        if (patch_min.canBeFusion(patch)) {
+          patch_min.fusion(patch);
+          patch.setLevel(-2); // Devient null.
+          fusion = true;
+        }
+      }
+    }
+
+    m_cmesh->mesh()->traceMng()->info() << "Nb of new patch 2d : " << new_patch_y.size();
+    for (const auto& new_patch : new_patch_y) {
+      m_cmesh->mesh()->traceMng()->info() << "patch_to_exclude_x : " << patch_to_exclude_x << " -- patch_to_exclude_y : " << patch_to_exclude_y;
+      if (new_patch.isNull()) {
+        m_cmesh->mesh()->traceMng()->info() << "\tExclude cut patch"
+                                            << " -- Min point : " << new_patch.minPoint()
+                                            << " -- Max point : " << new_patch.maxPoint()
+                                            << " -- Level : " << new_patch.level();
+      }
+      else {
+        m_cmesh->mesh()->traceMng()->info() << "\tNew cut patch"
+                                            << " -- Min point : " << new_patch.minPoint()
+                                            << " -- Max point : " << new_patch.maxPoint()
+                                            << " -- Level : " << new_patch.level();
+        _addCutPatch(new_patch, m_amr_patch_cell_groups[index_patch - 1]);
+      }
+    }
+  }
+  else if (m_cmesh->mesh()->dimension() == 3) {
+    Int64 patch_to_exclude_z = -1;
+    UniqueArray<AMRPatchPosition> new_patch_z;
     std::pair<Int64, Int64> cut_point_z = cut_point_p0(patch_position.minPoint().z, patch_position.maxPoint().z, part_to_remove.minPoint().z, part_to_remove.maxPoint().z);
 
     // p0   |-----|
     // p1 |---------|
     if (cut_point_z.first == -1 && cut_point_z.second == -1) {
-      for (auto patch_y : new_patch_y) {
+      for (const auto& patch_y : new_patch_y) {
         patch_to_exclude_z = patch_y.minPoint().z;
         new_patch_z.add(patch_y);
       }
@@ -463,7 +604,7 @@ _splitPatch(Integer index_patch, const AMRPatchPosition& part_to_remove)
     // p0   |-----|
     // p1       |-----|
     else if (cut_point_z.second == -1) {
-      for (auto patch_y : new_patch_y) {
+      for (const auto& patch_y : new_patch_y) {
         patch_to_exclude_z = cut_point_z.first;
         auto new_patch = cut_patch(patch_y, cut_point_z.first, MD_DirZ);
         new_patch_z.add(new_patch.first);
@@ -473,7 +614,7 @@ _splitPatch(Integer index_patch, const AMRPatchPosition& part_to_remove)
     // p0   |-----|
     // p1 |-----|
     else if (cut_point_z.first == -1) {
-      for (auto patch_y : new_patch_y) {
+      for (const auto& patch_y : new_patch_y) {
         patch_to_exclude_z = patch_y.minPoint().z;
         auto new_patch = cut_patch(patch_y, cut_point_z.second, MD_DirZ);
         new_patch_z.add(new_patch.first);
@@ -483,7 +624,7 @@ _splitPatch(Integer index_patch, const AMRPatchPosition& part_to_remove)
     // p0   |-----|
     // p1    |---|
     else {
-      for (auto patch_y : new_patch_y) {
+      for (const auto& patch_y : new_patch_y) {
         patch_to_exclude_z = cut_point_z.first;
         auto new_patch_0 = cut_patch(patch_y, cut_point_z.first, MD_DirZ);
         new_patch_z.add(new_patch_0.first);
@@ -492,37 +633,53 @@ _splitPatch(Integer index_patch, const AMRPatchPosition& part_to_remove)
         new_patch_z.add(new_patch_1.second);
       }
     }
-  }
 
-  // TODO Voir pour fusion des AMRPatchPosition (ici ou après ?)
-
-  if (m_cmesh->mesh()->dimension() == 2) {
-    m_cmesh->mesh()->traceMng()->info() << "Nb of new patch 2d : " << new_patch_y.size();
-    for (auto new_patch : new_patch_y) {
-      m_cmesh->mesh()->traceMng()->info() << "patch_to_exclude_x : " << patch_to_exclude_x << " -- patch_to_exclude_y : " << patch_to_exclude_y;
-      if (new_patch.minPoint().x != patch_to_exclude_x || new_patch.minPoint().y != patch_to_exclude_y) {
-        m_cmesh->mesh()->traceMng()->info() << "\tNew cut patch"
-                                            << " -- Min point : " << new_patch.minPoint()
-                                            << " -- Max point : " << new_patch.maxPoint()
-                                            << " -- Level : " << new_patch.level();
-        _addCutPatch(new_patch, m_amr_patch_cell_groups[index_patch - 1]);
-      }
-      else {
-        m_cmesh->mesh()->traceMng()->info() << "\tExclude cut patch"
-                                            << " -- Min point : " << new_patch.minPoint()
-                                            << " -- Max point : " << new_patch.maxPoint()
-                                            << " -- Level : " << new_patch.level();
+    m_cmesh->mesh()->traceMng()->info() << "Nb of new patch 3d : " << new_patch_z.size();
+    for (AMRPatchPosition& new_patch : new_patch_z) {
+      if (new_patch.minPoint().x == patch_to_exclude_x && new_patch.minPoint().y == patch_to_exclude_y && new_patch.minPoint().z == patch_to_exclude_z) {
+        new_patch.setLevel(-2); // Devient null.
       }
     }
-  }
-  else {
-    m_cmesh->mesh()->traceMng()->info() << "Nb of new patch 3d : " << new_patch_z.size();
-    for (auto new_patch : new_patch_z) {
+
+    bool fusion = true;
+    while (fusion) {
+      fusion = false;
+      Int64 nb_cells_min = INT64_MAX;
+      Integer pos_min = -1;
+      for (Integer i = 0; i < new_patch_z.size(); ++i) {
+        if (new_patch_z[i].isNull())
+          continue;
+        Int64 nb_cells = new_patch_z[i].nbCells();
+        if (nb_cells < nb_cells_min) {
+          nb_cells_min = nb_cells;
+          pos_min = i;
+        }
+      }
+      if (pos_min == -1)
+        break; // Pas de patchs dans new_patch_z. TODO Mettre un fatal ?
+
+      AMRPatchPosition& patch_min = new_patch_z[pos_min];
+
+      for (Integer i = 0; i < new_patch_z.size(); ++i) {
+        if (i == pos_min)
+          continue;
+
+        AMRPatchPosition& patch = new_patch_z[i];
+
+        if (patch_min.canBeFusion(patch)) {
+          patch_min.fusion(patch);
+          patch.setLevel(-2); // Devient null.
+          fusion = true;
+        }
+      }
+    }
+    for (const auto& new_patch : new_patch_z) {
       if (new_patch.minPoint().x != patch_to_exclude_x || new_patch.minPoint().y != patch_to_exclude_y || new_patch.minPoint().z != patch_to_exclude_z) {
         _addCutPatch(new_patch, m_amr_patch_cell_groups[index_patch - 1]);
       }
     }
   }
+
   removePatch(index_patch);
 }
 

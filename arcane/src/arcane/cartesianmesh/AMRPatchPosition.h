@@ -43,6 +43,11 @@ class ARCANE_CARTESIANMESH_EXPORT AMRPatchPosition
 
   bool isIn(Int64 x, Int64 y, Int64 z) const;
 
+  Int64 nbCells() const;
+  bool canBeFusion(const AMRPatchPosition& other_patch) const;
+  void fusion(const AMRPatchPosition& other_patch);
+  bool isNull() const;
+
  private:
   Integer m_level;
   Int64x3 m_min_point;

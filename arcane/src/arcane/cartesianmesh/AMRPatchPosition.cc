@@ -24,7 +24,7 @@ namespace Arcane
 
 AMRPatchPosition::
 AMRPatchPosition()
-: m_level(0)
+: m_level(-2)
 {
 
 }
@@ -97,6 +97,74 @@ bool AMRPatchPosition::
 isIn(Int64 x, Int64 y, Int64 z) const
 {
   return x >= m_min_point.x && x < m_max_point.x && y >= m_min_point.y && y < m_max_point.y && z >= m_min_point.z && z < m_max_point.z;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Int64 AMRPatchPosition::
+nbCells() const
+{
+  return (m_max_point.x - m_min_point.x) * (m_max_point.y - m_min_point.y) * (m_max_point.z - m_min_point.z);
+}
+
+bool AMRPatchPosition::
+canBeFusion(const AMRPatchPosition& other_patch) const
+{
+  const Int64x3 min_point = other_patch.minPoint();
+  const Int64x3 max_point = other_patch.maxPoint();
+  return m_level == other_patch.level() &&
+  (((m_min_point.x == max_point.x || m_max_point.x == min_point.x) &&
+    (m_min_point.y == min_point.y && m_max_point.y == max_point.y) &&
+    (m_min_point.z == min_point.z && m_max_point.z == max_point.z)) ||
+
+   ((m_min_point.x == min_point.x && m_max_point.x == max_point.x) &&
+    (m_min_point.y == max_point.y || m_max_point.y == min_point.y) &&
+    (m_min_point.z == min_point.z && m_max_point.z == max_point.z)) ||
+
+   ((m_min_point.x == min_point.x && m_max_point.x == max_point.x) &&
+    (m_min_point.y == min_point.y && m_max_point.y == max_point.y) &&
+    (m_min_point.z == max_point.z || m_max_point.z == min_point.z)));
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void AMRPatchPosition::
+fusion(const AMRPatchPosition& other_patch)
+{
+  const Int64x3 min_point = other_patch.minPoint();
+  const Int64x3 max_point = other_patch.maxPoint();
+
+  if (m_min_point.x > min_point.x) {
+    m_min_point.x = min_point.x;
+  }
+  else if (m_max_point.x < max_point.x) {
+    m_max_point.x = max_point.x;
+  }
+
+  else if (m_min_point.y > min_point.y) {
+    m_min_point.y = min_point.y;
+  }
+  else if (m_max_point.y < max_point.y) {
+    m_max_point.y = max_point.y;
+  }
+
+  else if (m_min_point.z > min_point.z) {
+    m_min_point.z = min_point.z;
+  }
+  else if (m_max_point.z < max_point.z) {
+    m_max_point.z = max_point.z;
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+bool AMRPatchPosition::
+isNull() const
+{
+  return m_level == -2;
 }
 
 /*---------------------------------------------------------------------------*/
