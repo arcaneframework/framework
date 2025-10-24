@@ -84,7 +84,7 @@ cellsInPatch(ICartesianMesh* mesh, UniqueArray<Int32>& cells_local_id, AMRPatchP
   // à raffiner celles qui sont contenues dans la boîte englobante.
   Real3 min_pos = m_position;
   Real3 max_pos = min_pos + m_length;
-  Int32 level = -10;
+  Int32 level = -1;
   cells_local_id.clear();
   ENUMERATE_ (Cell, icell, mesh->mesh()->allActiveCells()) {
     Cell cell = *icell;
@@ -97,7 +97,7 @@ cellsInPatch(ICartesianMesh* mesh, UniqueArray<Int32>& cells_local_id, AMRPatchP
     bool is_inside_z = (center.z > min_pos.z && center.z < max_pos.z) || !m_is_3d;
     if (is_inside_x && is_inside_y && is_inside_z) {
       mesh->mesh()->traceMng()->info() << "CellUID : " << cell.uniqueId() << " -- Level : " << cell.level();
-      if (level == -10)
+      if (level == -1)
         level = cell.level();
       else if (level != cell.level())
         ARCANE_FATAL("Level pb -- Level recorded before : {0} -- Cell Level : {1} -- CellUID : {2}", level, cell.level(), cell.uniqueId());
@@ -128,6 +128,11 @@ cellsInPatch(ICartesianMesh* mesh, UniqueArray<Int32>& cells_local_id, AMRPatchP
   mesh->mesh()->parallelMng()->reduce(MessagePassing::ReduceMin, min);
   mesh->mesh()->parallelMng()->reduce(MessagePassing::ReduceMax, max);
   nb_cells = mesh->mesh()->parallelMng()->reduce(MessagePassing::ReduceSum, nb_cells);
+  Integer level_r = mesh->mesh()->parallelMng()->reduce(MessagePassing::ReduceMax, level);
+
+  if (level != -1 && level != level_r) {
+    ARCANE_FATAL("Bad level reduced");
+  }
 
   max[MD_DirX] += 1;
   max[MD_DirY] += 1;
@@ -141,7 +146,7 @@ cellsInPatch(ICartesianMesh* mesh, UniqueArray<Int32>& cells_local_id, AMRPatchP
   }
   position.setMinPoint({ min[MD_DirX], min[MD_DirY], min[MD_DirZ] });
   position.setMaxPoint({ max[MD_DirX], max[MD_DirY], max[MD_DirZ] });
-  position.setLevel(level);
+  position.setLevel(level_r);
 }
 
 /*---------------------------------------------------------------------------*/

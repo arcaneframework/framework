@@ -34,9 +34,10 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianPatchGroup
 {
  public:
 
-  explicit CartesianPatchGroup(ICartesianMesh* cmesh) : m_cmesh(cmesh){}
+  explicit CartesianPatchGroup(ICartesianMesh* cmesh);
 
  public:
+
   Ref<CartesianMeshPatch> groundPatch();
 
   void addPatch(CellGroup cell_group);
@@ -64,6 +65,7 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianPatchGroup
   Integer nextIndexForNewPatch();
 
  private:
+
   void _addPatchInstance(Ref<CartesianMeshPatch> v);
 
   void _removeOnePatch(Integer index);
@@ -81,6 +83,7 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianPatchGroup
   UniqueArray<Ref<CartesianMeshPatch>> m_amr_patches;
   ICartesianMesh* m_cmesh;
   UniqueArray<Integer> m_patches_to_delete;
+  Int32 m_index_new_patches;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -91,5 +94,4 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianPatchGroup
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif
