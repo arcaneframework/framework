@@ -81,9 +81,9 @@ namespace MeshSubdivider
   {
    public:
 
-    //! Type de l'élément a rafiner
+    //! Type de l'élément à raffiner
     Int16 type;
-    //! Type de la face de l'élément a rafiner
+    //! Type de la face de l'élément à raffiner
     Int16 face_type;
     //! Type des cellules enfants
     Int16 cell_type;
@@ -540,7 +540,7 @@ MeshSubdivider::Pattern PatternBuilder::hextotet()
 {
   StorageRefine nodes = {}; // Pas de nouveaux noeuds
   StorageRefine faces = {
-    // Ne fonctionne pas avec les même faces que arcane pourtant
+    // Ne fonctionne pas avec les mêmes faces que arcane pourtant
     { 0, 1, 3 }, // 0
     { 0, 3, 4 }, // 1
     { 0, 1, 4 }, // 2
@@ -823,8 +823,8 @@ class ArcaneBasicMeshSubdividerService
   void _generatePattern(IPrimaryMesh* mesh);
   //! Vérification que tout les uids sont >= 0
   void _checkMeshUid(IPrimaryMesh* mesh);
-  //! Renumérote les Noeuds Faces selon les cellules
-  //! TODO faire une numérotation normale par uid de cellule dans subdivider
+  //! Renumérote les Noeuds et les Faces en fonction des cellules
+  //! Attention pas de garantie de ne pas avoir de trou dans la nouvelle numérotation
   void _renumberNodesFaces(IPrimaryMesh* mesh);
   //! Renumérote la famille TODO mettre en commun avec AMR
   void _applyFamilyRenumbering(IItemFamily* family, VariableItemInt64& items_new_uid);
@@ -1011,6 +1011,52 @@ void ArcaneBasicMeshSubdividerService::_generatePattern3D(IPrimaryMesh* mesh)
   
 }*/
 
+static void _writeEnsight(IMesh* mesh, const String& dirname,
+                          const VariableList& variables)
+{
+  const char* debug_env = std::getenv("WRITE_ENSIGHT");
+  if (debug_env == "0")
+    return;
+  Directory d = mesh->subDomain()->exportDirectory();
+  ServiceBuilder<IPostProcessorWriter> spp(mesh->handle());
+  auto post_processor = spp.createReference(
+    "Ensight7PostProcessor"); // autres mais moins bien VtkHdfV2PostProcessor ou Ensight7PostProcessor
+  post_processor->setTimes(
+    UniqueArray<Real>{ 0.0 }); // Juste pour fixer le pas de temps
+
+  ItemGroupList groups;
+  groups.add(mesh->allCells());
+  groups.add(mesh->allNodes());
+  post_processor->setBaseDirectoryName(d.path() + "/" + dirname);
+
+  VariableNodeInt64 arcane_node_uid(VariableNodeInt64(Arcane::VariableBuildInfo(mesh, "arcane_node_uid", mesh->nodeFamily()->name())));
+  VariableCellInt64 arcane_cell_uid(VariableCellInt64(Arcane::VariableBuildInfo(mesh, "arcane_cell_uid", mesh->cellFamily()->name())));
+  VariableCellInt64 arcane_rank(VariableCellInt64(Arcane::VariableBuildInfo(mesh, "arcane_rank", mesh->cellFamily()->name())));
+
+  ENUMERATE_CELL(icell, mesh->allCells()) {
+    arcane_cell_uid[*icell] = icell->uniqueId();
+  }
+
+  ENUMERATE_CELL(icell, mesh->allCells()) {
+    arcane_rank[*icell] = mesh->parallelMng()->commRank();
+  }
+
+  ENUMERATE_NODE(inode, mesh->allNodes()) {
+    arcane_node_uid[*inode] = inode->uniqueId();
+  }
+
+  VariableList all_variables = variables.clone();
+  all_variables.add(mesh->nodesCoordinates().variable());
+  all_variables.add(arcane_rank);
+  all_variables.add(arcane_cell_uid);
+  all_variables.add(arcane_node_uid);
+
+  post_processor->setVariables(all_variables);
+  post_processor->setGroups(groups);
+  IVariableMng* vm = mesh->subDomain()->variableMng();
+  vm->writePostProcessing(post_processor.get());
+}
+
 void ArcaneBasicMeshSubdividerService::_refineOnce(IPrimaryMesh* mesh, std::unordered_map<Arccore::Int16, MeshSubdivider::Pattern>& pattern_manager)
 {
 
@@ -1194,7 +1240,7 @@ void ArcaneBasicMeshSubdividerService::_refineOnce(IPrimaryMesh* mesh, std::unor
         // Coords
         Arcane::Real3 middle_coord(0.0, 0.0, 0.0);
         for (Integer j = 0; j < node_pattern[i].size(); j++) {
-          info() << "loop" << cell.node(static_cast<Integer>(node_pattern[i][j])) << " " << nodes_coords[cell.node(static_cast<Integer>(node_pattern[i][j]))];
+          //info() << "loop" << cell.node(static_cast<Integer>(node_pattern[i][j])) << " " << nodes_coords[cell.node(static_cast<Integer>(node_pattern[i][j]))];
           middle_coord += nodes_coords[cell.node(static_cast<Integer>(node_pattern[i][j]))];
         }
         if (node_pattern[i].size() == 0) {
@@ -2050,13 +2096,13 @@ void ArcaneBasicMeshSubdividerService::_applyFamilyRenumbering(IItemFamily* fami
   family->notifyItemsUniqueIdChanged();
 }
 
-/*Renumérote les noeuds et les faces en fonction des cellules
-Attention il y a des trous il faut recompacter
+/** \brief Renumérote les noeuds et les faces en fonction des cellules
+* Cette méthode ne compacte pas, c.à.d
+* Pour l'instant les variables ne se suivent pas forcéments
 Comment on recompacte ? 
 => Sort et on renumérote en incrémentant. 
 Pas sûr que ça soit reproductible.
 */
-
 void ArcaneBasicMeshSubdividerService::_renumberNodesFaces(IPrimaryMesh* mesh)
 {
   // Pour chaque noeud, on met la cell incidente avec l'uid le plus petit
@@ -2119,6 +2165,7 @@ void ArcaneBasicMeshSubdividerService::_renumberNodesFaces(IPrimaryMesh* mesh)
   _applyFamilyRenumbering(mesh->nodeFamily(), nodes_new_uid);
   _applyFamilyRenumbering(mesh->faceFamily(), faces_new_uid);
   // mesh->checkValidMesh();
+
 }
 
 void ArcaneBasicMeshSubdividerService::_checkHashNodesFacesCells(IPrimaryMesh* mesh)
@@ -2157,10 +2204,10 @@ subdivideMesh([[maybe_unused]] IPrimaryMesh* mesh)
   }
   // Renumbering Node, Faces, using Cells uids
   _renumberNodesFaces(mesh);
-
+  // VariableList vl;
+  //_writeEnsight(mesh,"SubdividerRenumberTests",vl);
   // Debug After
   // mesh->utilities()->writeToFile("subdivider_output_"+std::to_string(mesh->parallelMng()->commRank())+".vtk", "VtkLegacyMeshWriter");
-
   //mesh->utilities()->writeToFile("subdivider_after_" + std::to_string(options()->nbSubdivision) + "refine.vtk", "VtkLegacyMeshWriter");
   //debug() << "write file with name:" << "subdivider_after_";
   /*
