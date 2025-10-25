@@ -247,10 +247,10 @@ class ARCANE_CORE_EXPORT Item
   IItemFamily* itemFamily() const { return m_shared_info->m_item_family; }
 
   //! Genre de l'entité
-  eItemKind kind() const { return m_shared_info->m_item_kind; }
+  constexpr eItemKind kind() const { return m_shared_info->m_item_kind; }
 
   //! \a true si l'entité est appartient au sous-domaine
-  bool isOwn() const { return (_flags() & ItemFlags::II_Own)!=0; }
+  constexpr bool isOwn() const { return (_flags() & ItemFlags::II_Own)!=0; }
 
   /*!
    * \brief Vrai si l'entité est partagé d'autres sous-domaines.
@@ -291,43 +291,43 @@ class ARCANE_CORE_EXPORT Item
  public:
 
   //! \a true si l'entité est du genre \a ItemWithNodes.
-  bool isItemWithNodes() const
+  constexpr bool isItemWithNodes() const
   {
     eItemKind ik = kind();
     return (ik==IK_Unknown || ik==IK_Edge || ik==IK_Face || ik==IK_Cell );
   }
 
   //! \a true si l'entité est du genre \a Node.
-  bool isNode() const
+  constexpr bool isNode() const
   {
     eItemKind ik = kind();
     return (ik==IK_Unknown || ik==IK_Node);
   }
   //! \a true si l'entité est du genre \a Cell.
-  bool isCell() const
+  constexpr bool isCell() const
   {
     eItemKind ik = kind();
     return (ik==IK_Unknown || ik==IK_Cell);
   }
   //! \a true si l'entité est du genre \a Edge.
-  bool isEdge() const
+  constexpr bool isEdge() const
   {
     eItemKind ik = kind();
     return (ik==IK_Unknown || ik==IK_Edge);
   }
   //! \a true si l'entité est du genre \a Edge.
-  bool isFace() const
+  constexpr bool isFace() const
   {
     eItemKind ik = kind();
     return (ik==IK_Unknown || ik==IK_Face);
   }
   //! \a true is l'entité est du genre \a Particle.
-  bool isParticle() const
+  constexpr bool isParticle() const
   {
     eItemKind ik = kind();
     return (ik==IK_Unknown || ik==IK_Particle);
   }
-  //! \a true is l'entité est du genre \a DoF
+  constexpr //! \a true is l'entité est du genre \a DoF
   bool isDoF() const
   {
     eItemKind ik = kind();
@@ -335,10 +335,10 @@ class ARCANE_CORE_EXPORT Item
   }
 
   //! Retourne si les flags \a flags sont positionnées pour l'entité
-  bool hasFlags(Int32 flags) const { return (_flags() & flags); }
+  constexpr bool hasFlags(Int32 flags) const { return (_flags() & flags); }
 
   //! Flags de l'entité
-  Int32 flags() const { return m_shared_info->_flagsV2(m_local_id); }
+  constexpr Int32 flags() const { return m_shared_info->_flagsV2(m_local_id); }
 
  public:
 
@@ -416,17 +416,17 @@ class ARCANE_CORE_EXPORT Item
 
  protected:
 
-  void _checkKind(bool is_valid) const
+  constexpr void _checkKind(bool is_valid) const
   {
     if (!is_valid)
       _badConversion();
   }
-  void _badConversion() const;
+  [[noreturn]] void _badConversion() const;
   void _set(ItemInternal* ainternal)
   {
     _setFromInternal(ainternal);
   }
-  void _set(const Item& rhs)
+  constexpr void _set(const Item& rhs)
   {
     _setFromItem(rhs);
   }
@@ -434,25 +434,25 @@ class ARCANE_CORE_EXPORT Item
  protected:
 
   //! Flags de l'entité
-  Int32 _flags() const { return m_shared_info->_flagsV2(m_local_id); }
+  constexpr Int32 _flags() const { return m_shared_info->_flagsV2(m_local_id); }
   //! Nombre de noeuds de l'entité
-  Integer _nbNode() const { return _connectivity()->_nbNodeV2(m_local_id); }
+  constexpr Integer _nbNode() const { return _connectivity()->_nbNodeV2(m_local_id); }
   //! Nombre d'arêtes de l'entité ou nombre d'arêtes connectés à l'entités (pour les noeuds)
-  Integer _nbEdge() const { return _connectivity()->_nbEdgeV2(m_local_id); }
+  constexpr Integer _nbEdge() const { return _connectivity()->_nbEdgeV2(m_local_id); }
   //! Nombre de faces de l'entité ou nombre de faces connectés à l'entités (pour les noeuds et arêtes)
-  Integer _nbFace() const { return _connectivity()->_nbFaceV2(m_local_id); }
+  constexpr Integer _nbFace() const { return _connectivity()->_nbFaceV2(m_local_id); }
   //! Nombre de mailles connectées à l'entité (pour les noeuds, arêtes et faces)
-  Integer _nbCell() const { return _connectivity()->_nbCellV2(m_local_id); }
+  constexpr Integer _nbCell() const { return _connectivity()->_nbCellV2(m_local_id); }
   //! Nombre de parent pour l'AMR
   Int32 _nbHParent() const { return _connectivity()->_nbHParentV2(m_local_id); }
   //! Nombre d' enfants pour l'AMR
   Int32 _nbHChildren() const { return _connectivity()->_nbHChildrenV2(m_local_id); }
   //! Nombre de parent pour les sous-maillages
   Integer _nbParent() const { return m_shared_info->nbParent(); }
-  NodeLocalId _nodeId(Int32 index) const { return NodeLocalId(_connectivity()->_nodeLocalIdV2(m_local_id,index)); }
-  EdgeLocalId _edgeId(Int32 index) const { return EdgeLocalId(_connectivity()->_edgeLocalIdV2(m_local_id,index)); }
-  FaceLocalId _faceId(Int32 index) const { return FaceLocalId(_connectivity()->_faceLocalIdV2(m_local_id,index)); }
-  CellLocalId _cellId(Int32 index) const { return CellLocalId(_connectivity()->_cellLocalIdV2(m_local_id,index)); }
+  constexpr NodeLocalId _nodeId(Int32 index) const { return NodeLocalId(_connectivity()->_nodeLocalIdV2(m_local_id,index)); }
+  constexpr EdgeLocalId _edgeId(Int32 index) const { return EdgeLocalId(_connectivity()->_edgeLocalIdV2(m_local_id,index)); }
+  constexpr FaceLocalId _faceId(Int32 index) const { return FaceLocalId(_connectivity()->_faceLocalIdV2(m_local_id,index)); }
+  constexpr CellLocalId _cellId(Int32 index) const { return CellLocalId(_connectivity()->_cellLocalIdV2(m_local_id,index)); }
   Int32 _hParentId(Int32 index) const { return _connectivity()->_hParentLocalIdV2(m_local_id,index); }
   Int32 _hChildId(Int32 index) const { return _connectivity()->_hChildLocalIdV2(m_local_id,index); }
   impl::ItemIndexedListView<DynExtent> _nodeList() const { return _connectivity()->nodeList(m_local_id); }
@@ -464,10 +464,10 @@ class ARCANE_CORE_EXPORT Item
   FaceLocalIdView _faceIds() const { return _connectivity()->faceLocalIdsView(m_local_id); }
   CellLocalIdView _cellIds() const { return _connectivity()->cellLocalIdsView(m_local_id); }
 
-  inline Node _node(Int32 index) const;
-  inline Edge _edge(Int32 index) const;
-  inline Face _face(Int32 index) const;
-  inline Cell _cell(Int32 index) const;
+  constexpr inline Node _node(Int32 index) const;
+  constexpr inline Edge _edge(Int32 index) const;
+  constexpr inline Face _face(Int32 index) const;
+  constexpr inline Cell _cell(Int32 index) const;
 
   ItemBase _hParentBase(Int32 index) const { return _connectivity()->hParentBase(m_local_id, index, m_shared_info); }
   ItemBase _hChildBase(Int32 index) const { return _connectivity()->hChildBase(m_local_id, index, m_shared_info); }
@@ -478,7 +478,7 @@ class ARCANE_CORE_EXPORT Item
 
  private:
 
-  ItemInternalConnectivityList* _connectivity() const
+  constexpr ItemInternalConnectivityList* _connectivity() const
   {
     return m_shared_info->m_connectivity;
   }
@@ -488,7 +488,7 @@ class ARCANE_CORE_EXPORT Item
     m_local_id = rhs->m_local_id;
     m_shared_info = rhs->m_shared_info;
   }
-  void _setFromItem(const Item& rhs)
+  constexpr void _setFromItem(const Item& rhs)
   {
     m_local_id = rhs.m_local_id;
     m_shared_info = rhs.m_shared_info;
@@ -613,7 +613,7 @@ class ARCANE_CORE_EXPORT Node
  protected:
 
   //! Constructeur réservé pour les énumérateurs
-  Node(Int32 local_id,ItemSharedInfo* shared_info)
+  constexpr Node(Int32 local_id,ItemSharedInfo* shared_info)
   : Item(local_id,shared_info) {}
 
  public:
@@ -624,16 +624,16 @@ class ARCANE_CORE_EXPORT Node
   //! Création d'un noeud non connecté au maillage
   Node() = default;
 
-  //! Construit une référence à l'entité \a internal
+  //! (deprecated) Construit une référence à l'entité \a internal
   Node(ItemInternal* ainternal) : Item(ainternal)
   { ARCANE_CHECK_KIND(isNode); }
 
   //! Construit une référence à l'entité \a abase
-  Node(const ItemBase& abase) : Item(abase)
+  constexpr Node(const ItemBase& abase) : Item(abase)
   { ARCANE_CHECK_KIND(isNode); }
 
   //! Construit une référence à l'entité \a abase
-  explicit Node(const Item& aitem) : Item(aitem)
+  constexpr explicit Node(const Item& aitem) : Item(aitem)
   { ARCANE_CHECK_KIND(isNode); }
 
   //! Construit une référence à l'entité \a internal
@@ -650,13 +650,13 @@ class ARCANE_CORE_EXPORT Node
  public:
 
   //! Identifiant local de l'entité dans le sous-domaine du processeur
-  NodeLocalId itemLocalId() const { return NodeLocalId{ m_local_id }; }
+  constexpr NodeLocalId itemLocalId() const { return NodeLocalId{ m_local_id }; }
 
   //! Nombre d'arêtes connectées au noeud
-  Int32 nbEdge() const { return _nbEdge(); }
+  constexpr Int32 nbEdge() const { return _nbEdge(); }
 
   //! Nombre de faces connectées au noeud
-  Int32 nbFace() const { return _nbFace(); }
+  constexpr Int32 nbFace() const { return _nbFace(); }
 
   //! Nombre de mailles connectées au noeud
   Int32 nbCell() const { return _nbCell(); }
@@ -715,7 +715,7 @@ class ARCANE_CORE_EXPORT Node
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-inline Node Item::
+constexpr inline Node Item::
 _node(Int32 index) const
 {
   return Node(_connectivity()->nodeBase(m_local_id,index));
@@ -747,7 +747,7 @@ class ARCANE_CORE_EXPORT ItemWithNodes
  protected:
 
   //! Constructeur réservé pour les énumérateurs
-  ItemWithNodes(Int32 local_id,ItemSharedInfo* shared_info)
+  constexpr ItemWithNodes(Int32 local_id,ItemSharedInfo* shared_info)
   : Item(local_id,shared_info) {}
 
  public:
@@ -755,16 +755,16 @@ class ARCANE_CORE_EXPORT ItemWithNodes
   //! Création d'une entité non connectée au maillage
   ItemWithNodes() = default;
 
-  //! Construit une référence à l'entité \a internal
+  //! (deprecated) Construit une référence à l'entité \a internal
   ItemWithNodes(ItemInternal* ainternal) : Item(ainternal)
   { ARCANE_CHECK_KIND(isItemWithNodes); }
 
   //! Construit une référence à l'entité \a abase
-  ItemWithNodes(const ItemBase& abase) : Item(abase)
+  constexpr ItemWithNodes(const ItemBase& abase) : Item(abase)
   { ARCANE_CHECK_KIND(isItemWithNodes); }
 
   //! Construit une référence à l'entité \a aitem
-  explicit ItemWithNodes(const Item& aitem) : Item(aitem)
+  constexpr explicit ItemWithNodes(const Item& aitem) : Item(aitem)
   { ARCANE_CHECK_KIND(isItemWithNodes); }
 
   //! Construit une référence à l'entité \a internal
@@ -865,16 +865,16 @@ class ARCANE_CORE_EXPORT Edge
   //! Créé une arête nulle
   Edge() = default;
 
-  //! Construit une référence à l'entité \a internal
+  //! (deprecated) Construit une référence à l'entité \a internal
   Edge(ItemInternal* ainternal) : ItemWithNodes(ainternal)
   { ARCANE_CHECK_KIND(isEdge); }
 
   //! Construit une référence à l'entité \a abase
-  Edge(const ItemBase& abase) : ItemWithNodes(abase)
+  constexpr Edge(const ItemBase& abase) : ItemWithNodes(abase)
   { ARCANE_CHECK_KIND(isEdge); }
 
   //! Construit une référence à l'entité \a aitem
-  explicit Edge(const Item& aitem) : ItemWithNodes(aitem)
+  constexpr explicit Edge(const Item& aitem) : ItemWithNodes(aitem)
   { ARCANE_CHECK_KIND(isEdge); }
 
   //! Construit une référence à l'entité \a internal
@@ -937,7 +937,7 @@ class ARCANE_CORE_EXPORT Edge
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-inline Edge Item::
+constexpr inline Edge Item::
 _edge(Int32 index) const
 {
   return Edge(_connectivity()->edgeBase(m_local_id,index));
@@ -989,7 +989,7 @@ class ARCANE_CORE_EXPORT Face
  private:
 
   //! Constructeur réservé pour les énumérateurs
-  Face(Int32 local_id,ItemSharedInfo* shared_info)
+  constexpr Face(Int32 local_id,ItemSharedInfo* shared_info)
   : ItemWithNodes(local_id,shared_info) {}
 
  public:
@@ -1000,16 +1000,16 @@ class ARCANE_CORE_EXPORT Face
   //! Création d'une face non connecté au maillage
   Face() = default;
 
-  //! Construit une référence à l'entité \a internal
+  //! (deprecated) Construit une référence à l'entité \a internal
   Face(ItemInternal* ainternal) : ItemWithNodes(ainternal)
   { ARCANE_CHECK_KIND(isFace); }
 
   //! Construit une référence à l'entité \a abase
-  Face(const ItemBase& abase) : ItemWithNodes(abase)
+  constexpr Face(const ItemBase& abase) : ItemWithNodes(abase)
   { ARCANE_CHECK_KIND(isFace); }
 
   //! Construit une référence à l'entité \a aitem
-  explicit Face(const Item& aitem) : ItemWithNodes(aitem)
+  constexpr explicit Face(const Item& aitem) : ItemWithNodes(aitem)
   { ARCANE_CHECK_KIND(isFace); }
 
   //! Construit une référence à l'entité \a internal
@@ -1165,7 +1165,7 @@ class ARCANE_CORE_EXPORT Face
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-inline Face Item::
+constexpr inline Face Item::
 _face(Int32 index) const
 {
   return Face(_connectivity()->faceBase(m_local_id,index));
@@ -1247,16 +1247,16 @@ class ARCANE_CORE_EXPORT Cell
   //! Constructeur d'une maille nulle
   Cell() = default;
 
-  //! Construit une référence à l'entité \a internal
+  //! (deprecated) Construit une référence à l'entité \a internal
   Cell(ItemInternal* ainternal) : ItemWithNodes(ainternal)
   { ARCANE_CHECK_KIND(isCell); }
 
   //! Construit une référence à l'entité \a abase
-  Cell(const ItemBase& abase) : ItemWithNodes(abase)
+  constexpr Cell(const ItemBase& abase) : ItemWithNodes(abase)
   { ARCANE_CHECK_KIND(isCell); }
 
   //! Construit une référence à l'entité \a aitem
-  explicit Cell(const Item& aitem) : ItemWithNodes(aitem)
+  constexpr explicit Cell(const Item& aitem) : ItemWithNodes(aitem)
   { ARCANE_CHECK_KIND(isCell); }
 
   //! Construit une référence à l'entité \a internal
@@ -1394,7 +1394,7 @@ class ARCANE_CORE_EXPORT Cell
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-inline Cell Item::
+constexpr inline Cell Item::
 _cell(Int32 index) const
 {
   return Cell(_connectivity()->cellBase(m_local_id,index));
@@ -1436,16 +1436,16 @@ class Particle
   //! Constructeur d'une particule nulle
   Particle() = default;
 
-  //! Construit une référence à l'entité \a internal
+  //! (deprecated) Construit une référence à l'entité \a internal
   Particle(ItemInternal* ainternal) : Item(ainternal)
   { ARCANE_CHECK_KIND(isParticle); }
 
   //! Construit une référence à l'entité \a abase
-  Particle(const ItemBase& abase) : Item(abase)
+  constexpr Particle(const ItemBase& abase) : Item(abase)
   { ARCANE_CHECK_KIND(isParticle); }
 
   //! Construit une référence à l'entité \a aitem
-  explicit Particle(const Item& aitem) : Item(aitem)
+  constexpr explicit Particle(const Item& aitem) : Item(aitem)
   { ARCANE_CHECK_KIND(isParticle); }
 
   //! Construit une référence à l'entité \a internal
@@ -1531,7 +1531,7 @@ class DoF
  private:
 
   //! Constructeur réservé pour les énumérateurs
-  DoF(Int32 local_id,ItemSharedInfo* shared_info)
+  constexpr DoF(Int32 local_id,ItemSharedInfo* shared_info)
   : Item(local_id,shared_info) {}
 
 
@@ -1542,16 +1542,16 @@ class DoF
   //! Constructeur d'une maille non connectée
   DoF() = default;
 
-  //! Construit une référence à l'entité \a internal
+  //! (deprecated) Construit une référence à l'entité \a internal
   DoF(ItemInternal* ainternal) : Item(ainternal)
   { ARCANE_CHECK_KIND(isDoF); }
 
   //! Construit une référence à l'entité \a abase
-  DoF(const ItemBase& abase) : Item(abase)
+  constexpr DoF(const ItemBase& abase) : Item(abase)
   { ARCANE_CHECK_KIND(isDoF); }
 
   //! Construit une référence à l'entité \a abase
-  explicit DoF(const Item& aitem) : Item(aitem)
+  constexpr explicit DoF(const Item& aitem) : Item(aitem)
   { ARCANE_CHECK_KIND(isDoF); }
 
   //! Construit une référence à l'entité \a internal
