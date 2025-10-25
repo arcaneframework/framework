@@ -70,7 +70,7 @@ class ARCANE_CORE_EXPORT ItemBaseBuildInfo
 {
  public:
   ItemBaseBuildInfo() = default;
-  ItemBaseBuildInfo(Int32 local_id,ItemSharedInfo* shared_info)
+  constexpr ItemBaseBuildInfo(Int32 local_id,ItemSharedInfo* shared_info)
   : m_local_id(local_id), m_shared_info(shared_info) {}
  public:
   Int32 m_local_id = NULL_ITEM_LOCAL_ID;
@@ -114,7 +114,7 @@ class ARCANE_CORE_EXPORT ItemInternalConnectivityList
   struct Int32View
   {
    public:
-    Int32 operator[](Int32 index) const
+    constexpr Int32 operator[](Int32 index) const
     {
 #ifdef ARCANE_CHECK
       if (index==NULL_ITEM_LOCAL_ID){
@@ -127,7 +127,7 @@ class ARCANE_CORE_EXPORT ItemInternalConnectivityList
 #endif
       return m_data[index];
     }
-    void operator=(ConstArrayView<Int32> v)
+    constexpr void operator=(ConstArrayView<Int32> v)
     {
       m_data = v.data();
       m_size = v.size();
@@ -204,7 +204,7 @@ class ARCANE_CORE_EXPORT ItemInternalConnectivityList
    * \brief localId() de la \a index-ème entité de type \a item_kind
    * connectés à l'entité de de localid() \a lid.
    */
-  Int32 itemLocalId(Int32 item_kind,Int32 lid,Integer index) const
+  constexpr Int32 itemLocalId(Int32 item_kind,Int32 lid,Integer index) const
   {
     return m_container[item_kind].itemLocalId(lid,index);
   }
@@ -273,13 +273,13 @@ class ARCANE_CORE_EXPORT ItemInternalConnectivityList
 
  public:
 
-  ItemBaseBuildInfo nodeBase(Int32 lid,Int32 aindex) const
+  constexpr ItemBaseBuildInfo nodeBase(Int32 lid,Int32 aindex) const
   { return ItemBaseBuildInfo(_nodeLocalIdV2(lid,aindex),A_INTERNAL_SI(node)); }
-  ItemBaseBuildInfo edgeBase(Int32 lid,Int32 aindex) const
+  constexpr ItemBaseBuildInfo edgeBase(Int32 lid,Int32 aindex) const
   { return ItemBaseBuildInfo(_edgeLocalIdV2(lid,aindex),A_INTERNAL_SI(edge)); }
-  ItemBaseBuildInfo faceBase(Int32 lid,Int32 aindex) const
+  constexpr ItemBaseBuildInfo faceBase(Int32 lid,Int32 aindex) const
   { return ItemBaseBuildInfo(_faceLocalIdV2(lid,aindex),A_INTERNAL_SI(face)); }
-  ItemBaseBuildInfo cellBase(Int32 lid,Int32 aindex) const
+  constexpr ItemBaseBuildInfo cellBase(Int32 lid,Int32 aindex) const
   { return ItemBaseBuildInfo(_cellLocalIdV2(lid,aindex),A_INTERNAL_SI(cell)); }
   ItemBaseBuildInfo hParentBase(Int32 lid, Int32 aindex, ItemSharedInfo* isf) const
   {
@@ -311,12 +311,12 @@ class ARCANE_CORE_EXPORT ItemInternalConnectivityList
 
  private:
 
-  Int32 _nodeLocalIdV2(Int32 lid,Int32 index) const { return itemLocalId(NODE_IDX,lid,index); }
-  Int32 _edgeLocalIdV2(Int32 lid,Int32 index) const { return itemLocalId(EDGE_IDX,lid,index); }
-  Int32 _faceLocalIdV2(Int32 lid,Int32 index) const { return itemLocalId(FACE_IDX,lid,index); }
-  Int32 _cellLocalIdV2(Int32 lid,Int32 index) const { return itemLocalId(CELL_IDX,lid,index); }
-  Int32 _hParentLocalIdV2(Int32 lid,Int32 index) const { return itemLocalId(HPARENT_IDX,lid,index); }
-  Int32 _hChildLocalIdV2(Int32 lid,Int32 index) const { return itemLocalId(HCHILD_IDX,lid,index); }
+  constexpr Int32 _nodeLocalIdV2(Int32 lid,Int32 index) const { return itemLocalId(NODE_IDX,lid,index); }
+  constexpr Int32 _edgeLocalIdV2(Int32 lid,Int32 index) const { return itemLocalId(EDGE_IDX,lid,index); }
+  constexpr Int32 _faceLocalIdV2(Int32 lid,Int32 index) const { return itemLocalId(FACE_IDX,lid,index); }
+  constexpr Int32 _cellLocalIdV2(Int32 lid,Int32 index) const { return itemLocalId(CELL_IDX,lid,index); }
+  constexpr Int32 _hParentLocalIdV2(Int32 lid,Int32 index) const { return itemLocalId(HPARENT_IDX,lid,index); }
+  constexpr Int32 _hChildLocalIdV2(Int32 lid,Int32 index) const { return itemLocalId(HCHILD_IDX,lid,index); }
 
  private:
 
@@ -329,10 +329,10 @@ class ARCANE_CORE_EXPORT ItemInternalConnectivityList
 
  private:
 
-  Int32 _nbNodeV2(Int32 lid) const { return m_container[NODE_IDX].m_nb_item[lid]; }
-  Int32 _nbEdgeV2(Int32 lid) const { return m_container[EDGE_IDX].m_nb_item[lid]; }
-  Int32 _nbFaceV2(Int32 lid) const { return m_container[FACE_IDX].m_nb_item[lid]; }
-  Int32 _nbCellV2(Int32 lid) const { return m_container[CELL_IDX].m_nb_item[lid]; }
+  constexpr Int32 _nbNodeV2(Int32 lid) const { return m_container[NODE_IDX].m_nb_item[lid]; }
+  constexpr Int32 _nbEdgeV2(Int32 lid) const { return m_container[EDGE_IDX].m_nb_item[lid]; }
+  constexpr Int32 _nbFaceV2(Int32 lid) const { return m_container[FACE_IDX].m_nb_item[lid]; }
+  constexpr Int32 _nbCellV2(Int32 lid) const { return m_container[CELL_IDX].m_nb_item[lid]; }
   Int32 _nbHParentV2(Int32 lid) const { return m_container[HPARENT_IDX].m_nb_item[lid]; }
   Int32 _nbHChildrenV2(Int32 lid) const { return m_container[HCHILD_IDX].m_nb_item[lid]; }
 
@@ -365,7 +365,7 @@ class ARCANE_CORE_EXPORT ItemInternalConnectivityList
     {
       return &(m_list[ m_indexes[lid] ]);
     }
-    Int32 itemLocalId(Int32 lid,Integer index) const
+    constexpr Int32 itemLocalId(Int32 lid,Integer index) const
     {
       return m_list[ m_indexes[lid] + index] + itemOffset(lid);
     }
@@ -373,7 +373,7 @@ class ARCANE_CORE_EXPORT ItemInternalConnectivityList
     {
       return ItemConnectivityContainerView( m_list, m_indexes, m_nb_item );
     }
-    Int32 itemOffset([[maybe_unused]] Int32 lid) const
+    constexpr Int32 itemOffset([[maybe_unused]] Int32 lid) const
     {
 #ifdef ARCANE_USE_OFFSET_FOR_CONNECTIVITY
       return m_offset[lid];
@@ -445,13 +445,13 @@ class ARCANE_CORE_EXPORT ItemBase
 
  private:
 
-  ItemBase(Int32 local_id,ItemSharedInfo* shared_info)
+  constexpr ItemBase(Int32 local_id,ItemSharedInfo* shared_info)
   : m_local_id(local_id), m_shared_info(shared_info) {}
 
  public:
 
   ItemBase() : m_shared_info(ItemSharedInfo::nullItemSharedInfoPointer) {}
-  ItemBase(ItemBaseBuildInfo x) : m_local_id(x.m_local_id), m_shared_info(x.m_shared_info) {}
+  constexpr ItemBase(ItemBaseBuildInfo x) : m_local_id(x.m_local_id), m_shared_info(x.m_shared_info) {}
 
  public:
 
