@@ -71,6 +71,7 @@ class DynamicMeshChecker
  private:
 
   void _checkFacesOrientation();
+  void _checkEdgesOrientation();
   void _checkValidItemOwner(IItemFamily* family);
   void _checkReplicationFamily(IItemFamily* family);
 

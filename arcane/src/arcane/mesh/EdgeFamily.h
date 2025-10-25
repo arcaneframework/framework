@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* EdgeFamily.h                                                (C) 2000-2022 */
+/* EdgeFamily.h                                                (C) 2000-2025 */
 /*                                                                           */
 /* Famille d'arêtes.                                                         */
 /*---------------------------------------------------------------------------*/
@@ -14,8 +14,9 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+#include "arcane/core/IItemFamilyModifier.h"
+
 #include "arcane/mesh/ItemFamily.h"
-#include "arcane/IItemFamilyModifier.h"
 #include "arcane/mesh/ItemInternalConnectivityIndex.h"
 
 /*---------------------------------------------------------------------------*/
@@ -76,6 +77,8 @@ class ARCANE_MESH_EXPORT EdgeFamily
   //! Définit la connectivité active pour le maillage associé
   /*! Ceci conditionne les connectivités à la charge de cette famille */
   void setConnectivity(const Integer c);
+
+  void reorientEdgesIfNeeded();
 
  protected:
 

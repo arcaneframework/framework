@@ -324,6 +324,7 @@ checkValidConnectivity()
   }
 
   _checkFacesOrientation();
+  _checkEdgesOrientation();
 
   if (m_mesh->parentMesh()){
     Integer nerror = 0;
@@ -374,6 +375,7 @@ checkValidConnectivity()
                    "This usually means that parent group was not symmetrically built",
                    m_mesh->name(),String::plural(nerror, "error", false));
   }
+
   if (m_is_check_items_owner){
     _checkValidItemOwner(m_mesh->nodeFamily());
     _checkValidItemOwner(m_mesh->edgeFamily());
@@ -509,6 +511,34 @@ _checkFacesOrientation()
       }
     }
   }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Vérifie que les arêtes sont correctement numérotées.
+ */
+void DynamicMeshChecker::
+_checkEdgesOrientation()
+{
+  // Pour les arêtes, vérifie que le uniqueId() du premier noeud est
+  // inférieur à celui du deuxième.
+  Int32 nb_error = 0;
+  ENUMERATE_ (Edge, iedge, m_mesh->allEdges()) {
+    Edge edge = *iedge;
+    Int32 nb_node = edge.nbNode();
+    if (nb_node >= 2) {
+      Node node0 = edge.node(0);
+      Node node1 = edge.node(1);
+      if (node0.uniqueId() > node1.uniqueId()) {
+        ++nb_error;
+        info() << "Error: bad orientation for edge '" << ItemPrinter(edge)
+               << " n0=" << node0.uniqueId() << " n1=" << node1.uniqueId();
+      }
+    }
+  }
+  if (nb_error != 0)
+    ARCANE_FATAL("Bad connectivity for '{0}' edges", nb_error);
 }
 
 /*---------------------------------------------------------------------------*/

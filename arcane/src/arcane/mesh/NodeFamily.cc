@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* NodeFamily.cc                                               (C) 2000-2024 */
+/* NodeFamily.cc                                               (C) 2000-2025 */
 /*                                                                           */
 /* Famille de noeuds.                                                        */
 /*---------------------------------------------------------------------------*/
@@ -33,6 +33,7 @@
 #include "arcane/mesh/AbstractItemFamilyTopologyModifier.h"
 #include "arcane/mesh/NewWithLegacyConnectivity.h"
 #include "arcane/mesh/FaceFamily.h"
+#include "arcane/mesh/EdgeFamily.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -105,6 +106,7 @@ build()
     m_nodes_coords = new VariableNodeReal3(VariableBuildInfo(mesh(),"NodeCoord"));
 
   m_face_family = ARCANE_CHECK_POINTER(dynamic_cast<FaceFamily*>(mesh()->faceFamily()));
+  m_edge_family = ARCANE_CHECK_POINTER(dynamic_cast<EdgeFamily*>(mesh()->edgeFamily()));
 
   if (m_mesh->useMeshItemFamilyDependencies()) // temporary to fill legacy, even with family dependencies
   {
@@ -409,9 +411,9 @@ notifyItemsUniqueIdChanged()
 {
   ItemFamily::notifyItemsUniqueIdChanged();
   // Si les uniqueId() des noeuds changent, cela peut avoir une influence sur
-  // l'orientation des faces. Il faut donc renuméroter ces dernières
-  if (m_face_family)
-    m_face_family->reorientFacesIfNeeded();
+  // l'orientation des faces et des arêtes. Il faut donc renuméroter ces dernières
+  m_face_family->reorientFacesIfNeeded();
+  m_edge_family->reorientEdgesIfNeeded();
 }
 
 /*---------------------------------------------------------------------------*/
