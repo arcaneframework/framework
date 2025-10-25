@@ -28,5 +28,11 @@
     </description>
   </simple>
 
+  <simple name = "swap-nodes-unique-id" type = "bool" default = "false">
+    <description>
+      Indique si on test la modification des uniqueId() des noeuds.
+    </description>
+  </simple>
+
  </options>
 </service>
