@@ -96,6 +96,14 @@ getCurrentTime();
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+/*!
+ * \brief Temps horloge en nano-secondes.
+ */
+extern "C++" ARCCORE_BASE_EXPORT Int64
+getRealTimeNS();
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 /*!
  * \brief Date et l'heure courante sous la forme ISO 8601.
@@ -395,6 +403,7 @@ using Arcane::Platform::stdMemcpy;
 using Arcane::Platform::getMemoryUsed;
 using Arcane::Platform::getCPUTime;
 using Arcane::Platform::getRealTime;
+using Arcane::Platform::getRealTimeNS;
 using Arcane::Platform::timeToHourMinuteSecond;
 using Arcane::Platform::isDenormalized;
 using Arcane::Platform::safeStringCopy;

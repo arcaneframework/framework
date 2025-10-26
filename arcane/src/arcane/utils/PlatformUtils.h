@@ -265,7 +265,6 @@ extern "C++" ARCANE_DEPRECATED_REASON("Y2024: This method is internal to Arcane"
 ARCANE_UTILS_EXPORT IMemoryRessourceMng*
 setDataMemoryRessourceMng(IMemoryRessourceMng* mng);
 
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
@@ -317,14 +316,6 @@ readAllFile(StringView filename, bool is_binary, Array<std::byte>& out_bytes);
  */
 extern "C++" ARCANE_UTILS_EXPORT String
 getExeFullPath();
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
- * \brief Temps horloge en nano-secondes.
- */
-extern "C++" ARCANE_UTILS_EXPORT Int64
-getRealTimeNS();
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
