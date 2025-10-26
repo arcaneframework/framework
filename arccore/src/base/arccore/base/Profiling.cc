@@ -1,28 +1,28 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Profiling.cc                                                (C) 2000-2024 */
+/* Profiling.cc                                                (C) 2000-2025 */
 /*                                                                           */
 /* Classes pour gérer le profilage.                                          */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/Profiling.h"
+#include "arccore/base/Profiling.h"
 
-#include "arcane/utils/ForLoopTraceInfo.h"
-#include "arcane/utils/PlatformUtils.h"
-
-#include "arcane/utils/internal/ProfilingInternal.h"
+#include "arccore/base/ForLoopTraceInfo.h"
+#include "arccore/base/PlatformUtils.h"
+#include "arccore/base/internal/ProfilingInternal.h"
 
 #include <iostream>
 #include <iomanip>
 #include <vector>
 #include <mutex>
 #include <map>
+#include <memory>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -33,7 +33,7 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-impl::ForLoopStatInfoList::
+Impl::ForLoopStatInfoList::
 ForLoopStatInfoList()
 : m_p(new ForLoopStatInfoListImpl())
 {
@@ -42,7 +42,7 @@ ForLoopStatInfoList()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-impl::ForLoopStatInfoList::
+Impl::ForLoopStatInfoList::
 ~ForLoopStatInfoList()
 {
   delete m_p;
@@ -53,29 +53,29 @@ impl::ForLoopStatInfoList::
 
 namespace
 {
-  impl::ForLoopCumulativeStat global_stat;
+  Impl::ForLoopCumulativeStat global_stat;
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-impl::ScopedStatLoop::
+Impl::ScopedStatLoop::
 ScopedStatLoop(ForLoopOneExecStat* s)
 : m_stat_info(s)
 {
   if (m_stat_info) {
-    m_begin_time = platform::getRealTimeNS();
+    m_begin_time = Platform::getRealTimeNS();
   }
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-impl::ScopedStatLoop::
+Impl::ScopedStatLoop::
 ~ScopedStatLoop()
 {
   if (m_stat_info) {
-    Int64 end_time = platform::getRealTimeNS();
+    Int64 end_time = Platform::getRealTimeNS();
     m_stat_info->setBeginTime(m_begin_time);
     m_stat_info->setEndTime(end_time);
   }
@@ -88,30 +88,30 @@ class AllStatInfoList
 {
  public:
 
-  impl::ForLoopStatInfoList* createForLoopStatInfoList()
+  Impl::ForLoopStatInfoList* createForLoopStatInfoList()
   {
     std::lock_guard<std::mutex> lk(m_mutex);
-    std::unique_ptr<impl::ForLoopStatInfoList> x(new impl::ForLoopStatInfoList());
+    std::unique_ptr<Impl::ForLoopStatInfoList> x(new Impl::ForLoopStatInfoList());
     auto* ptr = x.get();
     m_for_loop_stat_info_list_vector.push_back(std::move(x));
     return ptr;
   }
-  impl::AcceleratorStatInfoList* createAcceleratorStatInfoList()
+  Impl::AcceleratorStatInfoList* createAcceleratorStatInfoList()
   {
     std::lock_guard<std::mutex> lk(m_mutex);
-    std::unique_ptr<impl::AcceleratorStatInfoList> x(new impl::AcceleratorStatInfoList());
+    std::unique_ptr<Impl::AcceleratorStatInfoList> x(new Impl::AcceleratorStatInfoList());
     auto* ptr = x.get();
     m_accelerator_stat_info_list_vector.push_back(std::move(x));
     return ptr;
   }
 
-  void visitForLoop(const std::function<void(const impl::ForLoopStatInfoList&)>& f)
+  void visitForLoop(const std::function<void(const Impl::ForLoopStatInfoList&)>& f)
   {
     for (const auto& x : m_for_loop_stat_info_list_vector)
       f(*x);
   }
 
-  void visitAccelerator(const std::function<void(const impl::AcceleratorStatInfoList&)>& f)
+  void visitAccelerator(const std::function<void(const Impl::AcceleratorStatInfoList&)>& f)
   {
     for (const auto& x : m_accelerator_stat_info_list_vector)
       f(*x);
@@ -120,8 +120,8 @@ class AllStatInfoList
  public:
 
   std::mutex m_mutex;
-  std::vector<std::unique_ptr<impl::ForLoopStatInfoList>> m_for_loop_stat_info_list_vector;
-  std::vector<std::unique_ptr<impl::AcceleratorStatInfoList>> m_accelerator_stat_info_list_vector;
+  std::vector<std::unique_ptr<Impl::ForLoopStatInfoList>> m_for_loop_stat_info_list_vector;
+  std::vector<std::unique_ptr<Impl::AcceleratorStatInfoList>> m_accelerator_stat_info_list_vector;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -137,29 +137,29 @@ class ThreadLocalStatInfo
 {
  public:
 
-  impl::ForLoopStatInfoList* forLoopStatInfoList()
+  Impl::ForLoopStatInfoList* forLoopStatInfoList()
   {
     return _createOrGetForLoopStatInfoList();
   }
-  impl::AcceleratorStatInfoList* acceleratorStatInfoList()
+  Impl::AcceleratorStatInfoList* acceleratorStatInfoList()
   {
     return _createOrGetAcceleratorStatInfoList();
   }
   void merge(const ForLoopOneExecStat& stat_info, const ForLoopTraceInfo& trace_info)
   {
-    impl::ForLoopStatInfoList* stat_list = _createOrGetForLoopStatInfoList();
+    Impl::ForLoopStatInfoList* stat_list = _createOrGetForLoopStatInfoList();
     stat_list->merge(stat_info, trace_info);
   }
 
  private:
 
-  impl::ForLoopStatInfoList* _createOrGetForLoopStatInfoList()
+  Impl::ForLoopStatInfoList* _createOrGetForLoopStatInfoList()
   {
     if (!m_for_loop_stat_info_list)
       m_for_loop_stat_info_list = global_all_stat_info_list.createForLoopStatInfoList();
     return m_for_loop_stat_info_list;
   }
-  impl::AcceleratorStatInfoList* _createOrGetAcceleratorStatInfoList()
+  Impl::AcceleratorStatInfoList* _createOrGetAcceleratorStatInfoList()
   {
     if (!m_accelerator_stat_info_list)
       m_accelerator_stat_info_list = global_all_stat_info_list.createAcceleratorStatInfoList();
@@ -168,8 +168,8 @@ class ThreadLocalStatInfo
 
  private:
 
-  impl::ForLoopStatInfoList* m_for_loop_stat_info_list = nullptr;
-  impl::AcceleratorStatInfoList* m_accelerator_stat_info_list = nullptr;
+  Impl::ForLoopStatInfoList* m_for_loop_stat_info_list = nullptr;
+  Impl::AcceleratorStatInfoList* m_accelerator_stat_info_list = nullptr;
 };
 thread_local ThreadLocalStatInfo thread_local_stat_info;
 
@@ -181,7 +181,7 @@ Int32 ProfilingRegistry::m_profiling_level = 0;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-impl::ForLoopStatInfoList* ProfilingRegistry::
+Impl::ForLoopStatInfoList* ProfilingRegistry::
 threadLocalInstance()
 {
   return thread_local_stat_info.forLoopStatInfoList();
@@ -190,7 +190,7 @@ threadLocalInstance()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-impl::ForLoopStatInfoList* ProfilingRegistry::
+Impl::ForLoopStatInfoList* ProfilingRegistry::
 _threadLocalForLoopInstance()
 {
   return thread_local_stat_info.forLoopStatInfoList();
@@ -199,7 +199,7 @@ _threadLocalForLoopInstance()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-impl::AcceleratorStatInfoList* ProfilingRegistry::
+Impl::AcceleratorStatInfoList* ProfilingRegistry::
 _threadLocalAcceleratorInstance()
 {
   return thread_local_stat_info.acceleratorStatInfoList();
@@ -209,7 +209,7 @@ _threadLocalAcceleratorInstance()
 /*---------------------------------------------------------------------------*/
 
 void ProfilingRegistry::
-visitLoopStat(const std::function<void(const impl::ForLoopStatInfoList&)>& f)
+visitLoopStat(const std::function<void(const Impl::ForLoopStatInfoList&)>& f)
 {
   global_all_stat_info_list.visitForLoop(f);
 }
@@ -218,7 +218,7 @@ visitLoopStat(const std::function<void(const impl::ForLoopStatInfoList&)>& f)
 /*---------------------------------------------------------------------------*/
 
 void ProfilingRegistry::
-visitAcceleratorStat(const std::function<void(const impl::AcceleratorStatInfoList&)>& f)
+visitAcceleratorStat(const std::function<void(const Impl::AcceleratorStatInfoList&)>& f)
 {
   global_all_stat_info_list.visitAccelerator(f);
 }
@@ -235,7 +235,7 @@ setProfilingLevel(Int32 level)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-const impl::ForLoopCumulativeStat& ProfilingRegistry::
+const Impl::ForLoopCumulativeStat& ProfilingRegistry::
 globalLoopStat()
 {
   return global_stat;
@@ -247,7 +247,7 @@ globalLoopStat()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void impl::ForLoopProfilingStat::
+void Impl::ForLoopProfilingStat::
 add(const ForLoopOneExecStat& s)
 {
   ++m_nb_call;
@@ -261,7 +261,7 @@ add(const ForLoopOneExecStat& s)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void impl::ForLoopStatInfoList::
+void Impl::ForLoopStatInfoList::
 merge(const ForLoopOneExecStat& loop_stat_info, const ForLoopTraceInfo& loop_trace_info)
 {
   global_stat.merge(loop_stat_info);
@@ -277,7 +277,7 @@ merge(const ForLoopOneExecStat& loop_stat_info, const ForLoopTraceInfo& loop_tra
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void impl::AcceleratorStatInfoList::
+void Impl::AcceleratorStatInfoList::
 print(std::ostream& o) const
 {
   const auto& htod = memoryTransfer(eMemoryTransferType::HostToDevice);

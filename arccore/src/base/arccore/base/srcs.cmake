@@ -72,6 +72,8 @@ set(SOURCES
   Observable.cc
   PlatformUtils.h
   PlatformUtils.cc
+  Profiling.h
+  Profiling.cc
   ReferenceCounter.h
   ReferenceCounterImpl.h
   Ref.h
@@ -102,4 +104,5 @@ set(SOURCES
 
   internal/StringImpl.h
   internal/DependencyInjection.h
+  internal/ProfilingInternal.h
 )

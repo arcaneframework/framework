@@ -80,13 +80,13 @@ class FixedArray final
   //! Valeur du \a i-ème élément
   constexpr ARCCORE_HOST_DEVICE T& operator[](Int32 index)
   {
-    ARCANE_CHECK_AT(index, NbElement);
+    ARCCORE_CHECK_AT(index, NbElement);
     return m_value[index];
   }
   //! Valeur du \a i-ème élément
   constexpr ARCCORE_HOST_DEVICE const T& operator[](Int32 index) const
   {
-    ARCANE_CHECK_AT(index, NbElement);
+    ARCCORE_CHECK_AT(index, NbElement);
     return m_value[index];
   }
   //! Vue modifiable sur le tableau

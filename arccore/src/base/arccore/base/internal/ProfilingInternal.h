@@ -1,24 +1,24 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ProfilingInternal.h                                         (C) 2000-2024 */
+/* ProfilingInternal.h                                         (C) 2000-2025 */
 /*                                                                           */
 /* Classes internes pour gérer le profilage.                                 */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_UTILS_INTERNAL_PROFILINGINTERNAL_H
-#define ARCANE_UTILS_INTERNAL_PROFILINGINTERNAL_H
+#ifndef ARCCORE_BASE_INTERNAL_PROFILINGINTERNAL_H
+#define ARCCORE_BASE_INTERNAL_PROFILINGINTERNAL_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 // Note: ce fichier n'est pas disponible pour les utilisateurs de Arcane.
 // Il ne faut donc pas l'inclure dans un fichier d'en-tête public.
 
-#include "arcane/utils/String.h"
-#include "arcane/utils/FixedArray.h"
+#include "arccore/base/String.h"
+#include "arccore/base/FixedArray.h"
 
 #include <map>
 #include <atomic>
@@ -26,7 +26,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arcane::impl
+namespace Arcane::Impl
 {
 
 /*---------------------------------------------------------------------------*/
@@ -34,7 +34,7 @@ namespace Arcane::impl
 /*!
  * \brief Statistiques d'exécution d'une boucle.
  */
-struct ARCANE_UTILS_EXPORT ForLoopProfilingStat
+struct ARCCORE_BASE_EXPORT ForLoopProfilingStat
 {
  public:
 
@@ -55,7 +55,7 @@ struct ARCANE_UTILS_EXPORT ForLoopProfilingStat
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class ARCANE_UTILS_EXPORT ForLoopStatInfoListImpl
+class ARCCORE_BASE_EXPORT ForLoopStatInfoListImpl
 {
  public:
 
@@ -72,7 +72,7 @@ class ARCANE_UTILS_EXPORT ForLoopStatInfoListImpl
 /*!
  * \brief Statistiques cumulées sur le nombre de boucles exécutées.
  */
-class ARCANE_UTILS_EXPORT ForLoopCumulativeStat
+class ARCCORE_BASE_EXPORT ForLoopCumulativeStat
 {
  public:
 
@@ -104,7 +104,7 @@ class ARCANE_UTILS_EXPORT ForLoopCumulativeStat
  * TODO: regarder comment rendre cela plus générique et permettre à
  * l'implémentation d'ajouter ses évènements
  */
-class ARCANE_UTILS_EXPORT AcceleratorStatInfoList
+class ARCCORE_BASE_EXPORT AcceleratorStatInfoList
 {
  public:
 

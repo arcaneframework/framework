@@ -132,6 +132,9 @@ namespace impl
   class ReferenceCounterWrapper;
 }
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 // Ces classes sont internes à Arccore/Arcane
 template <typename T>
 class ArrayRange;
@@ -139,6 +142,9 @@ namespace Impl
 {
 class BasicTranscoder;
 template <class DataType> class CoreArray;
+class ForLoopStatInfoList;
+class ForLoopStatInfoListImpl;
+class ForLoopCumulativeStat;
 }
 
 /*---------------------------------------------------------------------------*/
