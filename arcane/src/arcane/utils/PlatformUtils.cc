@@ -557,20 +557,6 @@ fillCommandLineArguments(StringList& arg_list)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-// TODO: mettre ensuite dans 'Arccore'
-
-extern "C++" ARCANE_UTILS_EXPORT Int64 platform::
-getRealTimeNS()
-{
-  auto x = std::chrono::high_resolution_clock::now();
-  // Converti la valeur en nanosecondes.
-  auto y = std::chrono::time_point_cast<std::chrono::nanoseconds>(x);
-  // Retourne le temps en nano-secondes.
-  return static_cast<Int64>(y.time_since_epoch().count());
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 
 extern "C++" ARCANE_UTILS_EXPORT Int64 platform::
 getPageSize()

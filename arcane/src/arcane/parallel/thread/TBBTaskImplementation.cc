@@ -11,20 +11,25 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/IThreadImplementation.h"
-#include "arcane/utils/NotImplementedException.h"
-#include "arcane/utils/IFunctor.h"
-#include "arcane/utils/CheckedConvert.h"
-#include "arcane/utils/ForLoopRanges.h"
-#include "arcane/utils/ConcurrencyUtils.h"
-#include "arcane/utils/IObservable.h"
-#include "arcane/utils/PlatformUtils.h"
-#include "arcane/utils/Profiling.h"
-#include "arcane/utils/MemoryAllocator.h"
-#include "arcane/utils/FixedArray.h"
-#include "arcane/utils/Array.h"
-#include "arccore/concurrency/internal/TaskFactoryInternal.h"
+#include "arccore/base/NotImplementedException.h"
+#include "arccore/base/IFunctor.h"
+#include "arccore/base/ForLoopRanges.h"
+#include "arccore/base/IObservable.h"
+#include "arccore/base/PlatformUtils.h"
+#include "arccore/base/FixedArray.h"
+#include "arccore/base/Profiling.h"
 #include "arccore/base/internal/DependencyInjection.h"
+
+#include "arccore/concurrency/IThreadImplementation.h"
+#include "arccore/concurrency/ForLoopRunInfo.h"
+#include "arccore/concurrency/Task.h"
+#include "arccore/concurrency/ITaskImplementation.h"
+#include "arccore/concurrency/TaskFactory.h"
+#include "arccore/concurrency/ParallelFor.h"
+#include "arccore/concurrency/internal/TaskFactoryInternal.h"
+
+#include "arcane/utils/CheckedConvert.h"
+#include "arcane/utils/Array.h"
 
 #include <new>
 #include <stack>
@@ -1155,7 +1160,7 @@ _executeParallelFor(const ParallelFor1DLoopInfo& loop_info)
 {
   ScopedExecInfo sei(loop_info.runInfo());
   ForLoopOneExecStat* stat_info = sei.statInfo();
-  impl::ScopedStatLoop scoped_loop(sei.isOwn() ? stat_info : nullptr);
+  ::Arcane::Impl::ScopedStatLoop scoped_loop(sei.isOwn() ? stat_info : nullptr);
 
   Int32 begin = loop_info.beginIndex();
   Int32 size = loop_info.size();
@@ -1222,7 +1227,7 @@ _executeMDParallelFor(const ComplexForLoopRanges<RankValue>& loop_ranges,
 
   ScopedExecInfo sei(run_info);
   ForLoopOneExecStat* stat_info = sei.statInfo();
-  impl::ScopedStatLoop scoped_loop(sei.isOwn() ? stat_info : nullptr);
+  ::Arcane::Impl::ScopedStatLoop scoped_loop(sei.isOwn() ? stat_info : nullptr);
 
   if (TaskFactory::verboseLevel()>=1){
     std::cout << "TBB: TBBTaskImplementation executeMDParallelFor nb_dim=" << RankValue

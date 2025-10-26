@@ -13,13 +13,14 @@
 
 #include "arcane/accelerator/core/Runner.h"
 
-#include "arcane/utils/FatalErrorException.h"
-#include "arcane/utils/NotImplementedException.h"
-#include "arcane/utils/ArgumentException.h"
+#include "arccore/base/FatalErrorException.h"
+#include "arccore/base/NotImplementedException.h"
+#include "arccore/base/ArgumentException.h"
+
 #include "arcane/utils/MemoryView.h"
 #include "arcane/utils/ValueConvert.h"
 #include "arcane/utils/Profiling.h"
-#include "arcane/utils/internal/ProfilingInternal.h"
+#include "arccore/base/internal/ProfilingInternal.h"
 
 #include "arcane/accelerator/core/RunQueueBuildInfo.h"
 #include "arcane/accelerator/core/DeviceId.h"
@@ -561,7 +562,7 @@ printProfilingInfos(std::ostream& o)
 
   {
     // Affiche les statistiques de profiling.
-    using Arcane::impl::AcceleratorStatInfoList;
+    using Arcane::Impl::AcceleratorStatInfoList;
     auto f = [&](const AcceleratorStatInfoList& stat_list) {
       stat_list.print(o);
     };

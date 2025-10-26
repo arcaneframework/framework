@@ -695,6 +695,19 @@ raiseFloatingException()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+extern "C++" ARCCORE_BASE_EXPORT Int64 Platform::
+getRealTimeNS()
+{
+  auto x = std::chrono::high_resolution_clock::now();
+  // Converti la valeur en nanosecondes.
+  auto y = std::chrono::time_point_cast<std::chrono::nanoseconds>(x);
+  // Retourne le temps en nano-secondes.
+  return static_cast<Int64>(y.time_since_epoch().count());
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 bool _getHasColorTerminal()
 {
 #ifdef ARCCORE_OS_UNIX

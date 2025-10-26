@@ -103,12 +103,6 @@ using MemoryView ARCANE_DEPRECATED_REASON("Use 'ConstMemoryView' instead") = Con
 
 class IPerformanceCounterService;
 class ForLoopOneExecStat;
-namespace impl
-{
-class ForLoopStatInfoList;
-class ForLoopStatInfoListImpl;
-class ForLoopCumulativeStat;
-}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -123,7 +123,6 @@ set(ARCANE_SOURCES
   Process.cc
   Process.h
   Profiling.h
-  Profiling.cc
   Property.cc
   Property.h
   PropertyDeclarations.h
@@ -344,7 +343,6 @@ set(ARCANE_SOURCES
   internal/IMemoryCopier.h
   internal/ParameterOption.h
   internal/ParameterOption.cc
-  internal/ProfilingInternal.h
   internal/ValueConvertInternal.h
   internal/SpecificMemoryCopyList.h
   internal/MemoryBuffer.h

@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ExecutionStatsDumper.h                                      (C) 2000-2024 */
+/* ExecutionStatsDumper.h                                      (C) 2000-2025 */
 /*                                                                           */
 /* Ecriture des statistiques d'exécution.                                    */
 /*---------------------------------------------------------------------------*/
@@ -16,7 +16,7 @@
 
 #include "arcane/utils/TraceAccessor.h"
 
-#include "arcane/ArcaneTypes.h"
+#include "arcane/core/ArcaneTypes.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -54,8 +54,8 @@ class ExecutionStatsDumper
  private:
 
   void _dumpProfiling(std::ostream& o);
-  void _dumpOneLoopListStat(std::ostream& o, const impl::ForLoopStatInfoList& stat_list);
-  void _printGlobalLoopInfos(std::ostream& o, const impl::ForLoopCumulativeStat& cumulative_stat);
+  void _dumpOneLoopListStat(std::ostream& o, const Impl::ForLoopStatInfoList& stat_list);
+  void _printGlobalLoopInfos(std::ostream& o, const Impl::ForLoopCumulativeStat& cumulative_stat);
   void _dumpProfilingJSON(const String& filename);
   void _dumpProfilingJSON(JSONWriter& json_writer);
   void _dumpProfilingTable(ISimpleTableOutput* table);
