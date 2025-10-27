@@ -20,6 +20,7 @@
 #include "arcane/core/IParallelMng.h"
 #include "arcane/core/VariableTypes.h"
 #include "arcane/core/ICartesianMeshGenerationInfo.h"
+#include "arcane/core/Properties.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -86,6 +87,77 @@ CartesianMeshNumberingMng(IMesh* mesh)
       }
     }
   }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void CartesianMeshNumberingMng::
+_build()
+{
+  m_properties = makeRef(new Properties(*(m_mesh->properties()), "CartesianMeshNumberingMng"));
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void CartesianMeshNumberingMng::
+_saveInfosInProperties()
+{
+  m_properties->set("Version", 1);
+  m_properties->set("FirstCellUIDByLevel", m_first_cell_uid_level);
+
+  // Voir pour le recalculer à la reprise.
+  m_properties->set("FirstNodeUIDByLevel", m_first_node_uid_level);
+  m_properties->set("FirstFaceUIDByLevel", m_first_face_uid_level);
+
+  m_properties->set("PositionToLevel", m_p_to_l_level); // Tableau à supprimer.
+
+  m_properties->set("OriginalGroundLevel", m_ori_level);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void CartesianMeshNumberingMng::
+_recreateFromDump()
+{
+  Int32 v = m_properties->getInt32("Version");
+  if (v != 1)
+    ARCANE_FATAL("Bad numbering mng version: trying to read from incompatible checkpoint v={0} expected={1}", v, 1);
+
+  m_properties->get("FirstCellUIDByLevel", m_first_cell_uid_level);
+  m_properties->get("FirstNodeUIDByLevel", m_first_node_uid_level);
+  m_properties->get("FirstFaceUIDByLevel", m_first_face_uid_level);
+
+  m_properties->get("PositionToLevel", m_p_to_l_level);
+
+  m_nb_cell = { globalNbCellsX(0), globalNbCellsY(0), globalNbCellsZ(0) };
+
+  m_properties->get("OriginalGroundLevel", m_ori_level);
+
+  m_max_level = m_first_cell_uid_level.size() - 1;
+
+  m_latest_cell_uid = m_first_cell_uid_level[m_max_level] + nbCellInLevel(m_max_level);
+  m_latest_node_uid = m_first_node_uid_level[m_max_level] + nbNodeInLevel(m_max_level);
+  m_latest_face_uid = m_first_face_uid_level[m_max_level] + nbFaceInLevel(m_max_level);
+
+  // À activer lorsqu'on retirera m_p_to_l_level.
+  // {
+  //   Integer pos = 0;
+  //   Int64 max = 0;
+  //   Integer iter = 0;
+  //   for (const Int64 elem : m_first_cell_uid_level) {
+  //     if (elem > max) {
+  //       max = elem;
+  //       pos = iter;
+  //     }
+  //     iter++;
+  //   }
+  //   m_latest_cell_uid = m_first_cell_uid_level[pos] + nbCellInLevel(pos);
+  //   m_latest_node_uid = m_first_node_uid_level[pos] + nbNodeInLevel(pos);
+  //   m_latest_face_uid = m_first_face_uid_level[pos] + nbFaceInLevel(pos);
+  // }
 }
 
 /*---------------------------------------------------------------------------*/
