@@ -13,6 +13,8 @@
 
 #include "arcane/cartesianmesh/AMRPatchPosition.h"
 
+#include "arcane/core/ArcaneTypes.h"
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -107,6 +109,44 @@ nbCells() const
 {
   return (m_max_point.x - m_min_point.x) * (m_max_point.y - m_min_point.y) * (m_max_point.z - m_min_point.z);
 }
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+std::pair<AMRPatchPosition, AMRPatchPosition> AMRPatchPosition::
+cut(Int64 cut_point, Integer dim) const
+{
+  Int64x3 patch_max_cut = m_max_point;
+  Int64x3 patch_min_cut = m_min_point;
+
+  if (dim == MD_DirX) {
+    patch_max_cut.x = cut_point;
+    patch_min_cut.x = cut_point;
+  }
+  else if (dim == MD_DirY) {
+    patch_max_cut.y = cut_point;
+    patch_min_cut.y = cut_point;
+  }
+  else {
+    patch_max_cut.z = cut_point;
+    patch_min_cut.z = cut_point;
+  }
+
+  AMRPatchPosition p0;
+  p0.setLevel(m_level);
+  p0.setMinPoint(m_min_point);
+  p0.setMaxPoint(patch_max_cut);
+
+  AMRPatchPosition p1;
+  p1.setLevel(m_level);
+  p1.setMinPoint(patch_min_cut);
+  p1.setMaxPoint(m_max_point);
+
+  return { p0, p1 };
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 bool AMRPatchPosition::
 canBeFusion(const AMRPatchPosition& other_patch) const
