@@ -34,6 +34,14 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+// Le patch 0 est un patch spécial "ground". Il ne possède pas de cell_group
+// dans le tableau "m_amr_patch_cell_groups".
+// Pour les index, on utilise toujours celui des tableaux m_amr_patches_pointer
+// et m_amr_patches.
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 CartesianPatchGroup::CartesianPatchGroup(ICartesianMesh* cmesh)
 : m_cmesh(cmesh)
 , m_index_new_patches(0)
@@ -88,7 +96,7 @@ addPatch(CellGroup cell_group)
         level = icell->level();
       }
       if (level != icell->level()) {
-        ARCANE_FATAL("Level pb -- Level recorded before : {0} -- Cell Level : {1} -- CellUID : {2}", level, icell->level(), icell->uniqueId());
+        ARCANE_FATAL("Level pb -- Zone with cells to different levels -- Level recorded before : {0} -- Cell Level : {1} -- CellUID : {2}", level, icell->level(), icell->uniqueId());
       }
       Int64 pos_x = numbering->cellUniqueIdToCoordX(*icell);
       if (pos_x < min[MD_DirX])
@@ -202,7 +210,7 @@ removePatch(const Integer index)
   if (index == 0) {
     ARCANE_FATAL("You cannot remove ground patch");
   }
-  if (index < 1 || index >= m_amr_patch_cell_groups.size()) {
+  if (index < 1 || index >= m_amr_patches.size()) {
     ARCANE_FATAL("Invalid index");
   }
 
@@ -228,7 +236,9 @@ removeCellsInAllPatches(ConstArrayView<Int32> cells_local_id, const AMRPatchPosi
 {
   // Pas de foreach : _splitPatch() ajoute des patchs.
   // Attention si suppression de la suppression en deux étapes : _splitPatch() supprime aussi des patchs.
-  for (Integer i = 0; i < m_amr_patches_pointer.size(); ++i) {
+  // i = 1 car on ne peut pas déraffjner le patch ground.
+  Integer nb_patchs = m_amr_patches_pointer.size();
+  for (Integer i = 1; i < nb_patchs; ++i) {
     ICartesianMeshPatch* patch = m_amr_patches_pointer[i];
     m_cmesh->mesh()->traceMng()->info() << "I : " << i
                                         << " -- Compare Patch (min : " << patch->position().minPoint()
@@ -251,6 +261,7 @@ removeCellsInAllPatches(ConstArrayView<Int32> cells_local_id, const AMRPatchPosi
 void CartesianPatchGroup::
 applyPatchEdit(bool remove_empty_patches)
 {
+  m_cmesh->mesh()->traceMng()->info() << "applyPatchEdit() -- Remove nb patch : " << m_patches_to_delete.size();
   _removeMultiplePatches(m_patches_to_delete);
   m_patches_to_delete.clear();
 
@@ -531,46 +542,65 @@ _splitPatch(Integer index_patch, const AMRPatchPosition& part_to_remove)
   }
 
   if (m_cmesh->mesh()->dimension() == 2) {
+    m_cmesh->mesh()->traceMng()->info() << "Nb of new patch 2d before fusion : " << new_patch_y.size();
+
     for (AMRPatchPosition& new_patch : new_patch_y) {
       if (new_patch.minPoint().x == patch_to_exclude_x && new_patch.minPoint().y == patch_to_exclude_y) {
         new_patch.setLevel(-2); // Devient null.
       }
     }
 
+    // Algo de fusion.
+    // D'abord, on trie les patchs du plus petit nb de mailles au plus grand nb de mailles (optionnel).
+    // Ensuite, pour chaque patch, on regarde si l'on peut le fusionner avec un autre.
+    // Si on arrive à faire une fusion, on recommence l'algo jusqu'à ne plus pouvoir fusionner.
     bool fusion = true;
     while (fusion) {
       fusion = false;
-      Int64 nb_cells_min = INT64_MAX;
-      Integer pos_min = -1;
-      for (Integer i = 0; i < new_patch_y.size(); ++i) {
-        if (new_patch_y[i].isNull())
-          continue;
-        Int64 nb_cells = new_patch_y[i].nbCells();
-        if (nb_cells < nb_cells_min) {
-          nb_cells_min = nb_cells;
-          pos_min = i;
-        }
-      }
-      if (pos_min == -1)
-        break; // Pas de patchs dans new_patch_y. TODO Mettre un fatal ?
 
-      AMRPatchPosition& patch_min = new_patch_y[pos_min];
+      std::sort(new_patch_y.begin(), new_patch_y.end(),
+                [](const AMRPatchPosition& a, const AMRPatchPosition& b) {
+                  return a.nbCells() < b.nbCells();
+                });
 
-      for (Integer i = 0; i < new_patch_y.size(); ++i) {
-        if (i == pos_min)
+      for (Integer p0 = 0; p0 < new_patch_y.size(); ++p0) {
+        AMRPatchPosition& patch_fusion_0 = new_patch_y[p0];
+        if (patch_fusion_0.isNull())
           continue;
 
-        AMRPatchPosition& patch = new_patch_y[i];
+        // Si une fusion a déjà eu lieu, on doit alors regarder les patchs avant "p0"
+        // (vu qu'il y en a au moins un qui a été modifié).
+        // (une "optimisation" pourrait être de récupérer la position du premier
+        // patch fusionné mais bon, moins lisible + pas beaucoup de patchs).
+        Integer p1 = (fusion ? 0 : p0 + 1);
+        for (; p1 < new_patch_y.size(); ++p1) {
+          if (p1 == p0)
+            continue;
 
-        if (patch_min.canBeFusion(patch)) {
-          patch_min.fusion(patch);
-          patch.setLevel(-2); // Devient null.
-          fusion = true;
+          AMRPatchPosition& patch_fusion_1 = new_patch_y[p1];
+
+          if (patch_fusion_1.isNull())
+            continue;
+
+          m_cmesh->mesh()->traceMng()->info() << "\tCheck fusion"
+                                              << " -- 0 Min point : " << patch_fusion_0.minPoint()
+                                              << " -- 0 Max point : " << patch_fusion_0.maxPoint()
+                                              << " -- 0 Level : " << patch_fusion_0.level()
+                                              << " -- 1 Min point : " << patch_fusion_1.minPoint()
+                                              << " -- 1 Max point : " << patch_fusion_1.maxPoint()
+                                              << " -- 1 Level : " << patch_fusion_1.level();
+          if (patch_fusion_0.canBeFusion(patch_fusion_1)) {
+            m_cmesh->mesh()->traceMng()->info() << "Fusion OK";
+            patch_fusion_0.fusion(patch_fusion_1);
+            patch_fusion_1.setLevel(-2); // Devient null.
+            fusion = true;
+            break;
+          }
         }
       }
     }
 
-    m_cmesh->mesh()->traceMng()->info() << "Nb of new patch 2d : " << new_patch_y.size();
+    Integer d_nb_patch_final = 0;
     for (const auto& new_patch : new_patch_y) {
       m_cmesh->mesh()->traceMng()->info() << "patch_to_exclude_x : " << patch_to_exclude_x << " -- patch_to_exclude_y : " << patch_to_exclude_y;
       if (new_patch.isNull()) {
@@ -585,8 +615,10 @@ _splitPatch(Integer index_patch, const AMRPatchPosition& part_to_remove)
                                             << " -- Max point : " << new_patch.maxPoint()
                                             << " -- Level : " << new_patch.level();
         _addCutPatch(new_patch, m_amr_patch_cell_groups[index_patch - 1]);
+        d_nb_patch_final++;
       }
     }
+    m_cmesh->mesh()->traceMng()->info() << "Nb of new patch 2d after fusion : " << d_nb_patch_final;
   }
   else if (m_cmesh->mesh()->dimension() == 3) {
     Int64 patch_to_exclude_z = -1;
@@ -606,9 +638,9 @@ _splitPatch(Integer index_patch, const AMRPatchPosition& part_to_remove)
     else if (cut_point_z.second == -1) {
       for (const auto& patch_y : new_patch_y) {
         patch_to_exclude_z = cut_point_z.first;
-        auto new_patch = cut_patch(patch_y, cut_point_z.first, MD_DirZ);
-        new_patch_z.add(new_patch.first);
-        new_patch_z.add(new_patch.second);
+        auto [fst, snd] = cut_patch(patch_y, cut_point_z.first, MD_DirZ);
+        new_patch_z.add(fst);
+        new_patch_z.add(snd);
       }
     }
     // p0   |-----|
@@ -616,9 +648,9 @@ _splitPatch(Integer index_patch, const AMRPatchPosition& part_to_remove)
     else if (cut_point_z.first == -1) {
       for (const auto& patch_y : new_patch_y) {
         patch_to_exclude_z = patch_y.minPoint().z;
-        auto new_patch = cut_patch(patch_y, cut_point_z.second, MD_DirZ);
-        new_patch_z.add(new_patch.first);
-        new_patch_z.add(new_patch.second);
+        auto [fst, snd] = cut_patch(patch_y, cut_point_z.second, MD_DirZ);
+        new_patch_z.add(fst);
+        new_patch_z.add(snd);
       }
     }
     // p0   |-----|
@@ -626,58 +658,78 @@ _splitPatch(Integer index_patch, const AMRPatchPosition& part_to_remove)
     else {
       for (const auto& patch_y : new_patch_y) {
         patch_to_exclude_z = cut_point_z.first;
-        auto new_patch_0 = cut_patch(patch_y, cut_point_z.first, MD_DirZ);
-        new_patch_z.add(new_patch_0.first);
-        auto new_patch_1 = cut_patch(new_patch_0.second, cut_point_z.second, MD_DirZ);
-        new_patch_z.add(new_patch_1.first);
-        new_patch_z.add(new_patch_1.second);
+        auto [fst, snd_thr] = cut_patch(patch_y, cut_point_z.first, MD_DirZ);
+        new_patch_z.add(fst);
+        auto [snd, thr] = cut_patch(snd_thr, cut_point_z.second, MD_DirZ);
+        new_patch_z.add(snd);
+        new_patch_z.add(thr);
       }
     }
 
-    m_cmesh->mesh()->traceMng()->info() << "Nb of new patch 3d : " << new_patch_z.size();
+    m_cmesh->mesh()->traceMng()->info() << "Nb of new patch 3d before fusion : " << new_patch_z.size();
     for (AMRPatchPosition& new_patch : new_patch_z) {
       if (new_patch.minPoint().x == patch_to_exclude_x && new_patch.minPoint().y == patch_to_exclude_y && new_patch.minPoint().z == patch_to_exclude_z) {
         new_patch.setLevel(-2); // Devient null.
       }
     }
 
+    // Algo de fusion.
+    // D'abord, on trie les patchs du plus petit nb de mailles au plus grand nb de mailles (optionnel).
+    // Ensuite, pour chaque patch, on regarde si l'on peut le fusionner avec un autre.
+    // Si on arrive à faire une fusion, on recommence l'algo jusqu'à ne plus pouvoir fusionner.
     bool fusion = true;
     while (fusion) {
       fusion = false;
-      Int64 nb_cells_min = INT64_MAX;
-      Integer pos_min = -1;
-      for (Integer i = 0; i < new_patch_z.size(); ++i) {
-        if (new_patch_z[i].isNull())
-          continue;
-        Int64 nb_cells = new_patch_z[i].nbCells();
-        if (nb_cells < nb_cells_min) {
-          nb_cells_min = nb_cells;
-          pos_min = i;
-        }
-      }
-      if (pos_min == -1)
-        break; // Pas de patchs dans new_patch_z. TODO Mettre un fatal ?
 
-      AMRPatchPosition& patch_min = new_patch_z[pos_min];
+      std::sort(new_patch_z.begin(), new_patch_z.end(),
+                [](const AMRPatchPosition& a, const AMRPatchPosition& b) {
+                  return a.nbCells() < b.nbCells();
+                });
 
-      for (Integer i = 0; i < new_patch_z.size(); ++i) {
-        if (i == pos_min)
+      for (Integer p0 = 0; p0 < new_patch_z.size(); ++p0) {
+        AMRPatchPosition& patch_fusion_0 = new_patch_z[p0];
+        if (patch_fusion_0.isNull())
           continue;
 
-        AMRPatchPosition& patch = new_patch_z[i];
+        // Si une fusion a déjà eu lieu, on doit alors regarder les patchs avant "p0"
+        // (vu qu'il y en a au moins un qui a été modifié).
+        // (une "optimisation" pourrait être de récupérer la position du premier
+        // patch fusionné mais bon, moins lisible + pas beaucoup de patchs).
+        Integer p1 = (fusion ? 0 : p0 + 1);
+        for (; p1 < new_patch_z.size(); ++p1) {
+          if (p1 == p0)
+            continue;
 
-        if (patch_min.canBeFusion(patch)) {
-          patch_min.fusion(patch);
-          patch.setLevel(-2); // Devient null.
-          fusion = true;
+          AMRPatchPosition& patch_fusion_1 = new_patch_z[p1];
+
+          if (patch_fusion_1.isNull())
+            continue;
+
+          m_cmesh->mesh()->traceMng()->info() << "\tCheck fusion"
+                                              << " -- 0 Min point : " << patch_fusion_0.minPoint()
+                                              << " -- 0 Max point : " << patch_fusion_0.maxPoint()
+                                              << " -- 0 Level : " << patch_fusion_0.level()
+                                              << " -- 1 Min point : " << patch_fusion_1.minPoint()
+                                              << " -- 1 Max point : " << patch_fusion_1.maxPoint()
+                                              << " -- 1 Level : " << patch_fusion_1.level();
+          if (patch_fusion_0.canBeFusion(patch_fusion_1)) {
+            m_cmesh->mesh()->traceMng()->info() << "Fusion OK";
+            patch_fusion_0.fusion(patch_fusion_1);
+            patch_fusion_1.setLevel(-2); // Devient null.
+            fusion = true;
+            break;
+          }
         }
       }
     }
+    Integer d_nb_patch_final = 0;
     for (const auto& new_patch : new_patch_z) {
-      if (new_patch.minPoint().x != patch_to_exclude_x || new_patch.minPoint().y != patch_to_exclude_y || new_patch.minPoint().z != patch_to_exclude_z) {
+      if (!new_patch.isNull()) {
         _addCutPatch(new_patch, m_amr_patch_cell_groups[index_patch - 1]);
+        d_nb_patch_final++;
       }
     }
+    m_cmesh->mesh()->traceMng()->info() << "Nb of new patch 3d after fusion : " << d_nb_patch_final;
   }
 
   removePatch(index_patch);
