@@ -195,6 +195,8 @@ class CartesianMeshImpl
 
   Integer reduceNbGhostLayers(Integer level, Integer target_nb_ghost_layers) override;
 
+  void mergePatches() override;
+
   void renumberItemsUniqueId(const CartesianMeshRenumberingInfo& v) override;
 
   void checkValid() const override;
@@ -886,6 +888,18 @@ reduceNbGhostLayers(Integer level, Integer target_nb_ghost_layers)
 /*---------------------------------------------------------------------------*/
 
 void CartesianMeshImpl::
+mergePatches()
+{
+  if (m_amr_type == eMeshAMRKind::PatchCartesianMeshOnly) {
+    m_patch_group.mergePatches();
+    m_patch_group.applyPatchEdit(false);
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void CartesianMeshImpl::
 _addPatchFromExistingChildren(ConstArrayView<Int32> parent_cells_local_id)
 {
   m_patch_group.updateLevelsBeforeAddGroundPatch();
@@ -1004,7 +1018,7 @@ _applyCoarse(const AMRZonePosition& zone_position)
   }
   else if (m_amr_type == eMeshAMRKind::PatchCartesianMeshOnly) {
     debug() << "Coarsen with specific coarser (for cartesian mesh only)";
-    m_patch_group.removeCellsInAllPatches(cells_local_id, patch_position);
+    m_patch_group.removeCellsInAllPatches(patch_position);
     m_patch_group.applyPatchEdit(true);
 
     computeDirections();

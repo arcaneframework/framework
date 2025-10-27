@@ -98,6 +98,7 @@ class AMRCartesianMeshTesterModule
   Ref<CartesianMeshTestUtils> m_utils;
   UniqueArray<VariableCellReal*> m_cell_patch_variables;
   Int32 m_nb_expected_patch = 0;
+  bool m_merge_patches = true;
 
  private:
 
@@ -105,6 +106,7 @@ class AMRCartesianMeshTesterModule
   void _compute2();
   void _initAMR();
   void _coarseZone();
+  void _mergePatches();
   void _reduceNbGhostLayers();
   void _computeSubCellDensity(Cell cell);
   void _computeCenters();
@@ -258,9 +260,14 @@ init()
   m_cartesian_mesh = ICartesianMesh::getReference(mesh);
   m_utils = makeRef(new CartesianMeshTestUtils(m_cartesian_mesh,acceleratorMng()));
 
+  m_merge_patches = options()->mergePatches();
+
   if (!subDomain()->isContinue()) {
     _initAMR();
     _coarseZone();
+    if (m_merge_patches) {
+      _mergePatches();
+    }
     _reduceNbGhostLayers();
   }
 
@@ -379,10 +386,11 @@ _processPatches()
   // à computeDirections() n'ajoutent pas de patchs.
   // Cette vérification ne s'applique que s'il n'y a pas de zone de dé-raffinement.
   // En effet, dé-raffiner un patch complet le supprime de la liste des patchs.
+  // Elle est aussi désactivée s'il y a fusion possible des patchs.
   Integer nb_expected_patch = m_nb_expected_patch;
     
   Integer nb_patch = m_cartesian_mesh->nbPatch();
-  if (without_coarse_zone && nb_expected_patch != nb_patch)
+  if (without_coarse_zone && nb_expected_patch != nb_patch && !m_merge_patches)
     ARCANE_FATAL("Bad number of patchs expected={0} value={1}",nb_expected_patch,nb_patch);
 
   IParallelMng* pm = parallelMng();
@@ -578,6 +586,16 @@ _coarseZone()
       m_cartesian_mesh->computeDirections();
     }
   }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void AMRCartesianMeshTesterModule::
+_mergePatches()
+{
+  m_cartesian_mesh->mergePatches();
+  m_cartesian_mesh->computeDirections();
 }
 
 /*---------------------------------------------------------------------------*/

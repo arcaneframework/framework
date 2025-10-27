@@ -251,6 +251,8 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMesh
    */
   virtual Integer reduceNbGhostLayers(Integer level, Integer target_nb_ghost_layers) = 0;
 
+  virtual void mergePatches() = 0;
+
   /*!
    * \brief Renumérote les uniqueId() des entités.
    *

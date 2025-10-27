@@ -56,13 +56,15 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianPatchGroup
 
   void removeCellsInAllPatches(ConstArrayView<Int32> cells_local_id);
 
-  void removeCellsInAllPatches(ConstArrayView<Int32> cells_local_id, const AMRPatchPosition& patch_position);
+  void removeCellsInAllPatches(const AMRPatchPosition& zone_to_delete);
 
   void applyPatchEdit(bool remove_empty_patches);
 
   void updateLevelsBeforeAddGroundPatch();
 
   Integer nextIndexForNewPatch();
+
+  void mergePatches();
 
  private:
 
