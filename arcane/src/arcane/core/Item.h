@@ -649,6 +649,9 @@ class ARCANE_CORE_EXPORT Node
 
  public:
 
+  //! Genre de l'entité
+  constexpr eItemKind kind() const { return IK_Node; }
+
   //! Identifiant local de l'entité dans le sous-domaine du processeur
   constexpr NodeLocalId itemLocalId() const { return NodeLocalId{ m_local_id }; }
 
@@ -891,6 +894,9 @@ class ARCANE_CORE_EXPORT Edge
 
  public:
 
+  //! Genre de l'entité
+  constexpr eItemKind kind() const { return IK_Edge; }
+
   //! Identifiant local de l'entité dans le sous-domaine du processeur
   EdgeLocalId itemLocalId() const { return EdgeLocalId{ m_local_id }; }
 
@@ -1025,6 +1031,9 @@ class ARCANE_CORE_EXPORT Face
   }
 
  public:
+
+  //! Genre de l'entité
+  constexpr eItemKind kind() const { return IK_Face; }
 
   //! Identifiant local de l'entité dans le sous-domaine du processeur
   FaceLocalId itemLocalId() const { return FaceLocalId{ m_local_id }; }
@@ -1273,6 +1282,9 @@ class ARCANE_CORE_EXPORT Cell
 
  public:
 
+  //! Genre de l'entité
+  constexpr eItemKind kind() const { return IK_Cell; }
+
   //! Identifiant local de l'entité dans le sous-domaine du processeur
   CellLocalId itemLocalId() const { return CellLocalId{ m_local_id }; }
 
@@ -1462,6 +1474,9 @@ class Particle
 
  public:
 
+  //! Genre de l'entité
+  constexpr eItemKind kind() const { return IK_Particle; }
+
   //! Identifiant local de l'entité dans le sous-domaine du processeur
   ParticleLocalId itemLocalId() const { return ParticleLocalId{ m_local_id }; }
 
@@ -1571,6 +1586,9 @@ class DoF
 
   ARCANE_DEPRECATED_REASON("Y2022: Do not use this operator. Use operator '.' instead")
   const DoF* operator->() const { return this; }
+
+  //! Genre de l'entité
+  constexpr eItemKind kind() const { return IK_DoF; }
 
   //! Identifiant local de l'entité dans le sous-domaine du processeur
   DoFLocalId itemLocalId() const { return DoFLocalId{ m_local_id }; }
