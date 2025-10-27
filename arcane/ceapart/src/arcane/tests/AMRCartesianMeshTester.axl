@@ -38,6 +38,13 @@
      >
      <description>Si présent, total sur tous les sous-domaines du nombre de mailles fantôme que doit avoir chaque patch</description>
    </simple>
+   <simple name="merge-patches" type="bool" default="true">
+     <description>
+       Indique si on souhaite fusionner les patchs après raffinement/déraffinement.
+       Permet de réduire le nombre de patchs s'ils ont côte-à-côte.
+       Fonctionne uniquement avec amr-type=3.
+     </description>
+   </simple>
 
    <simple name="hash-with-ghost" type="bool" default="false">
      <description>
