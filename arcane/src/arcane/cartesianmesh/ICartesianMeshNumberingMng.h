@@ -39,6 +39,10 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMeshNumberingMng
 
  public:
 
+  virtual void _build() = 0;
+  virtual void _saveInfosInProperties() = 0;
+  virtual void _recreateFromDump() = 0;
+
   /*!
    * \brief Méthode permettant de préparer un nouveau niveau.
    *
@@ -52,7 +56,7 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMeshNumberingMng
    *
    * \param level Le nouveau niveau à préparer.
    */
-  virtual void prepareLevel(Int32 level) =0;
+  virtual void prepareLevel(Int32 level) = 0;
 
   /*!
    * \brief Méthode permettant de mettre à jour le premier niveau.

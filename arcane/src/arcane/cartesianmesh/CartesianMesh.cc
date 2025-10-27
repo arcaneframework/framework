@@ -290,6 +290,9 @@ void CartesianMeshImpl::
 build()
 {
   m_properties = new Properties(*(mesh()->properties()),"CartesianMesh");
+  if (m_amr_type == eMeshAMRKind::PatchCartesianMeshOnly) {
+    m_internal_api.cartesianMeshNumberingMng()->_build();
+  }
 }
 
 namespace
@@ -325,6 +328,10 @@ _saveInfosInProperties()
     patch_group_names.add(m_patch_group.cells(i).name());
   }
   m_properties->set("PatchGroupNames",patch_group_names);
+
+  if (m_amr_type == eMeshAMRKind::PatchCartesianMeshOnly) {
+    m_internal_api.cartesianMeshNumberingMng()->_saveInfosInProperties();
+  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -334,6 +341,10 @@ void CartesianMeshImpl::
 recreateFromDump()
 {
   info() << "Creating 'CartesianMesh' infos from dump";
+
+  if (m_amr_type == eMeshAMRKind::PatchCartesianMeshOnly) {
+    m_internal_api.cartesianMeshNumberingMng()->_recreateFromDump();
+  }
 
   // Sauve le numéro de version pour être sur que c'est OK en reprise
   Int32 v = m_properties->getInt32("Version");

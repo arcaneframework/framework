@@ -46,6 +46,10 @@ class CartesianMeshNumberingMng
 
  public:
 
+  void _build() override;
+  void _saveInfosInProperties() override;
+  void _recreateFromDump() override;
+
   void prepareLevel(Int32 level) override;
   void updateFirstLevel() override;
 
@@ -172,6 +176,8 @@ class CartesianMeshNumberingMng
  private:
 
   IMesh* m_mesh;
+
+  Ref<Properties> m_properties;
 
   Integer m_dimension;
   Integer m_pattern;
